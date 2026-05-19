@@ -9,6 +9,7 @@
 
 import { describe, it, expect, vi } from 'vitest'
 import { RequestState, SparkData } from '@spark-view/spark-data'
+import { setMember } from './test-type-helpers'
 
 function createTestDataSet() {
   return SparkData.createDataSet({
@@ -262,10 +263,8 @@ describe('DataView 事件流端到端', () => {
       getHttpClient: vi.fn(),
     }
 
-    const tableInternal = table as any
-    const viewInternal = view as any
-    tableInternal._crudService = mockCrud
-    viewInternal._crudDelegate = undefined
+    setMember(table, '_crudService', mockCrud)
+    setMember(view, '_crudDelegate', undefined)
 
     view.events.on('crud:before', before)
     view.events.on('crud:after', after)

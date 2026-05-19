@@ -160,13 +160,16 @@ describe('SparkData Namespace', () => {
       SparkData.createDataSet('{"dataSetName":"Bad","tables":{}}')
 
       // createDataSet 只接受 canonical metadata；legacy/pagedata 结构（rows 在错误层级）应走 fromJson
+      const invalidLegacyTable = {
+        columns: [{ name: 'id', type: 'number' }],
+        rows: [{ id: 1 }]
+      }
+
       SparkData.createDataSet({
         dataSetName: 'LegacyShape',
         tables: {
-          Users: {
-            columns: [{ name: 'id', type: 'number' }],
-            rows: [{ id: 1 }]
-          } as any
+          // @ts-expect-error legacy table is not canonical TableMetadata
+          Users: invalidLegacyTable
         }
       })
     }

@@ -12,7 +12,7 @@ import {
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
   type CapabilityKey,
-  type ICapabilityContext,
+  type CapabilityContext,
   type LoggerApi,
   type SparkCapabilityConsumer,
 } from '@spark-view/spark-utils'
@@ -30,6 +30,15 @@ import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwn
 // 约束当前文件内部使用的 Vue 运行时实例类型，避免到处重复写 ReturnType。
 type RuntimeInstance = ReturnType<typeof getCurrentInstance>
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function toSparkRuntimeOwner(instance: RuntimeInstance): SparkRuntimeOwner | null {
+  if (instance === null) return null
+  return instance
+}
+
 /**
  * 组件上下文完整返回 — 容器 / 字段 / 页面组件的标准上下文入口。
  *
@@ -42,8 +51,8 @@ type RuntimeInstance = ReturnType<typeof getCurrentInstance>
  */
 export interface UseSparkComponentReturn {
   provider: {
-    nearestCapabilityProvider<T>(name: CapabilityKey<T>): ICapabilityContext | null
-    nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): ICapabilityContext | null
+    nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
+    nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
   }
   isVisible: { readonly value: boolean }
   isDisabled: { readonly value: boolean }
@@ -66,23 +75,23 @@ export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
  */
 export interface UseSparkCapabilityReaderReturn {
   provider: {
-    nearestCapabilityProvider<T>(name: CapabilityKey<T>): ICapabilityContext | null
-    nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): ICapabilityContext | null
+    nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
+    nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
   }
   sparkConsume: SparkCapabilityConsumer
 }
 
 export interface UseSparkComponentOptions {
-  parentContext?: ICapabilityContext
+  parentContext?: CapabilityContext
 }
 
-interface HostTypeResolverOptions<T extends string = string> {
-  hostTypes?: readonly T[]
+interface HostTypeResolverOptions {
+  hostTypes?: readonly string[]
 }
 
-interface ResolvedHostType<T extends string = string> {
-  hostType: T | null
-  parentContext: ICapabilityContext | null
+interface ResolvedHostType {
+  hostType: string | null
+  parentContext: CapabilityContext | null
 }
 
 export type SparkNodeInput = {
@@ -92,21 +101,21 @@ export type SparkNodeInput = {
   id?: string | undefined
 }
 
-function normalizeHostType<T extends string>(
+function normalizeHostType(
   type: string,
-  options: HostTypeResolverOptions<T>,
-): T | null {
+  options: HostTypeResolverOptions,
+): string | null {
   if (options.hostTypes === undefined) {
-    return type as T
+    return type
   }
 
-  return options.hostTypes.includes(type as T) ? (type as T) : null
+  return options.hostTypes.includes(type) ? type : null
 }
 
-export function resolveHostTypeFromContext<T extends string = string>(
-  parentContext: ICapabilityContext | null,
-  options: HostTypeResolverOptions<T> = {},
-): ResolvedHostType<T> {
+export function resolveHostTypeFromContext(
+  parentContext: CapabilityContext | null,
+  options: HostTypeResolverOptions = {},
+): ResolvedHostType {
   let currentContext = parentContext
 
   while (currentContext !== null) {
@@ -176,9 +185,8 @@ function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknow
 }
 
 function readInlineRuntimeProps(configInput: SparkNodeInput): Record<string, unknown> {
-  const source = configInput as unknown as Record<string, unknown>
   const runtimeProps: Record<string, unknown> = {}
-  for (const [key, value] of Object.entries(source)) {
+  for (const [key, value] of Object.entries(configInput)) {
     if (SPARK_NODE_STRUCT_KEYS.has(key)) continue
     runtimeProps[key] = value
   }
@@ -214,14 +222,14 @@ function buildEffectiveConfig(instance: RuntimeInstance, configInput: SparkNodeI
 // 这样组件即使经过中间包装层，也仍然能沿 Spark 运行时树正确消费能力。
 function resolveParentContext(
   currentOwner: SparkRuntimeOwner | null,
-  overrideParentContext?: ICapabilityContext,
-): ICapabilityContext | null {
+  overrideParentContext?: CapabilityContext,
+): CapabilityContext | null {
   return sparkResolveParentContext(currentOwner, overrideParentContext)
 }
 
 function registerPageComponentInstance(
   registry: PageComponentRegistry | null | undefined,
-  context: ICapabilityContext,
+  context: CapabilityContext,
   props?: Record<string, unknown>,
 ): void {
   if (!registry) return
@@ -237,19 +245,18 @@ function registerPageComponentInstance(
 // ===== 页面级日志桥接 =====
 
 function isLoggerApi(value: unknown): value is LoggerApi {
-  if (typeof value !== 'object' || value === null) {
+  if (!isRecord(value)) {
     return false
   }
 
-  const candidate = value as Partial<LoggerApi>
-  return typeof candidate.debug === 'function'
-    && typeof candidate.info === 'function'
-    && typeof candidate.warn === 'function'
-    && typeof candidate.error === 'function'
+  return typeof value['debug'] === 'function'
+    && typeof value['info'] === 'function'
+    && typeof value['warn'] === 'function'
+    && typeof value['error'] === 'function'
 }
 
 // logger 始终从页面层 APP_SERVICES 取，避免局部子树私自覆盖后形成日志分叉。
-function createPageLoggerProxy(context: ICapabilityContext): LoggerApi {
+function createPageLoggerProxy(context: CapabilityContext): LoggerApi {
   const consumeFromCurrent = createSparkCapabilityConsumer(context)
   const resolveLogger = (): LoggerApi => {
     const appServices = consumeFromCurrent(APP_SERVICES)
@@ -275,8 +282,8 @@ const PURE_PLACEHOLDER_RE = /^\$\[([^\]]+)\]$/
 function hasPlaceholderString(value: unknown): boolean {
   if (typeof value === 'string') return value.includes('$[')
   if (Array.isArray(value)) return value.some(hasPlaceholderString)
-  if (value !== null && typeof value === 'object') {
-    return Object.values(value as Record<string, unknown>).some(hasPlaceholderString)
+  if (isRecord(value)) {
+    return Object.values(value).some(hasPlaceholderString)
   }
   return false
 }
@@ -297,11 +304,10 @@ function resolveValuePlaceholders(value: unknown, row: Record<string, unknown>):
     if (!value.some(hasPlaceholderString)) return value
     return value.map(v => resolveValuePlaceholders(v, row))
   }
-  if (value !== null && typeof value === 'object') {
-    const obj = value as Record<string, unknown>
-    if (!Object.values(obj).some(hasPlaceholderString)) return value
+  if (isRecord(value)) {
+    if (!Object.values(value).some(hasPlaceholderString)) return value
     const result: Record<string, unknown> = {}
-    for (const [k, v] of Object.entries(obj)) {
+    for (const [k, v] of Object.entries(value)) {
       result[k] = resolveValuePlaceholders(v, row)
     }
     return result
@@ -328,7 +334,7 @@ export function resolvePlaceholderProps(
  * 轻量能力消费 — 仅沿 parent 链查找能力，不创建自身上下文。
  */
 export function useSparkConsume(): UseSparkCapabilityReaderReturn {
-  const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
+  const currentOwner = toSparkRuntimeOwner(getCurrentInstance())
   const parentContext = resolveParentContext(currentOwner)
   return {
     provider: {
@@ -345,7 +351,7 @@ export function useSparkComponent(
 ): UseSparkComponentReturn {
   // 先将 Vue 当前实例和 configInput 归一化为 SparkNode，再挂接到父能力上下文之下。
   const currentInstance = getCurrentInstance()
-  const currentOwner = currentInstance as SparkRuntimeOwner | null
+  const currentOwner = toSparkRuntimeOwner(currentInstance)
   const config: SparkNode = buildEffectiveConfig(currentInstance, configInput)
   const contextId = nodeId(config) ?? `spark-${++_idCounter}`
   const parentContext = resolveParentContext(
@@ -365,7 +371,7 @@ export function useSparkComponent(
 
   if (currentInstance !== null) {
     // 绑定 owner 后，后代组件就能通过当前 Vue 实例回溯到这棵 SparkContext 子树。
-    sparkBindContextOwner(currentInstance as object, context)
+    sparkBindContextOwner(currentInstance, context)
   }
 
   // 页面注册表保存组件实例元信息，供页面级 API、调试和联动能力做反查。
@@ -384,7 +390,7 @@ export function useSparkComponent(
   // props 中若引用了 DATA_ROW 占位符，在这里统一投影为最终给组件消费的运行时 props。
   const resolvedProps = computed(() => {
     const props = effectiveConfig.value.props ?? {}
-    const row = consumeCapability(DATA_ROW) as Record<string, unknown> | null
+    const row = consumeCapability(DATA_ROW)
     return resolvePlaceholderProps(props, row)
   })
 
@@ -420,7 +426,7 @@ export function useSparkComponent(
     pageComponentRegistry?.unregisterInstance(context.id)
     context.capabilities.clear()
     if (currentInstance !== null) {
-      sparkUnbindContextOwner(currentInstance as object)
+      sparkUnbindContextOwner(currentInstance)
     }
   }
 

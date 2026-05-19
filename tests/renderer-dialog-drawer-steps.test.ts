@@ -15,6 +15,10 @@ function readConfigProps(config: Record<string, unknown>): Record<string, unknow
     : {}
 }
 
+function isStringCapability(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
 const SparkActionStub = defineComponent({
   props: {
     config: {
@@ -304,7 +308,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 })
 
 // 验证 dialog/drawer slot 子组件能沿 Spark 上下文链消费到祖先提供的能力
-const DIALOG_BRIDGE_MARKER = defineCapability<string>('test:dialog-bridge-marker')
+const DIALOG_BRIDGE_MARKER = defineCapability<string>('test:dialog-bridge-marker', isStringCapability)
 
 describe('Direct Vue children bridge (dialog / drawer)', () => {
   // ContextProbe 消费外层提供的标记能力：能消费到 → 上下文链穿过容器 slot 正常工作
@@ -312,7 +316,7 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
     name: 'ContextProbe',
     setup() {
       const { sparkConsume } = useSparkComponent({ type: 'probe-field' })
-      const marker = sparkConsume(DIALOG_BRIDGE_MARKER) as string | null
+      const marker = sparkConsume(DIALOG_BRIDGE_MARKER)
       return () => h('div', {
         class: 'context-probe',
         'data-connected': marker ?? 'none',

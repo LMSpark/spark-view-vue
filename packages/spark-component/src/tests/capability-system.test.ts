@@ -25,6 +25,18 @@ import type { SparkNode } from '@spark-view/spark-component'
 import type { SparkEventEmitter } from '@spark-view/spark-data'
 import { createPageComponentRegistry } from '../page/context/page-component-registry'
 
+function isStringCapability(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function hasCallable(record: Record<string, unknown>, key: string): boolean {
+  return typeof record[key] === 'function'
+}
+
 describe('Capability system integration', () => {
   /**
    * 创建测试用 Vue 应用插件
@@ -104,7 +116,7 @@ describe('Capability system integration', () => {
 
     it('child can consume capabilities provided by parent via sparkConsume', () => {
       const { plugin } = createTestPlugin()
-      const TEST_CAP = defineCapability<string>('test:parent-marker')
+      const TEST_CAP = defineCapability<string>('test:parent-marker', isStringCapability)
 
       const ChildComp = defineComponent({
         setup() {
@@ -130,7 +142,7 @@ describe('Capability system integration', () => {
 
     it('child can consume parent-provided capabilities via useSparkComponent', () => {
       const { plugin } = createTestPlugin()
-      const TEST_CAP = defineCapability<string>('test:parent-marker-2')
+      const TEST_CAP = defineCapability<string>('test:parent-marker-2', isStringCapability)
 
       const ChildComp = defineComponent({
         setup() {
@@ -217,15 +229,17 @@ describe('Capability system integration', () => {
       // consumer 通过 parent chain 找到 capability
       const found = sparkConsume(childCtx, APP_SERVICES)
       expect(found).toBeTruthy()
-      const impl = found as { router: unknown; logger: unknown }
-      expect(impl.router).toBeDefined()
-      expect(impl.logger).toBeDefined()
+      expect(found?.router).toBeDefined()
+      expect(found?.logger).toBeDefined()
     })
 
     it('custom capability key with defineCapability', () => {
       const { createContext, rootContext } = Spark.createSystem()
       interface CustomCapability { getValue(): string }
-      const CUSTOM = defineCapability<CustomCapability>('test:custom-cap-sys')
+      const CUSTOM = defineCapability<CustomCapability>(
+        'test:custom-cap-sys',
+        (value): value is CustomCapability => isRecord(value) && hasCallable(value, 'getValue'),
+      )
 
       const parentCtx = createContext({ type: 'provider', id: 'p-2' }, rootContext)
       const childCtx = createContext({ type: 'consumer', id: 'c-2' }, parentCtx)
@@ -246,7 +260,15 @@ describe('Capability system integration', () => {
       const rowCtx = createContext({ type: 'row', id: 'row-1' }, gridCtx)
 
       // Provider 注册事件能力（使用自定义能力键）
-      const TEST_EVENTS = defineCapability<SparkEventEmitter>('test:grid-events')
+      const TEST_EVENTS = defineCapability<SparkEventEmitter>(
+        'test:grid-events',
+        (value): value is SparkEventEmitter => isRecord(value)
+          && hasCallable(value, 'on')
+          && hasCallable(value, 'off')
+          && hasCallable(value, 'emit')
+          && hasCallable(value, 'removeAllListeners')
+          && hasCallable(value, 'listenerCount'),
+      )
       const handler = vi.fn()
       const eventBus: Record<string, Array<(...args: unknown[]) => void>> = {}
 
@@ -290,8 +312,8 @@ describe('Capability system integration', () => {
         PAGE_SERVICE,
       ]
 
-      // 全部是 symbol
-      symbols.forEach(s => expect(typeof s).toBe('symbol'))
+      // 全部有稳定 token
+      symbols.forEach(s => expect(typeof s.token).toBe('symbol'))
 
       // 全部唯一
       const uniqueSet = new Set(symbols)

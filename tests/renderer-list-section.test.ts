@@ -21,6 +21,10 @@ const SparkActionStub = defineComponent({
   },
 })
 
+function isStringCapability(value: unknown): value is string {
+  return typeof value === 'string'
+}
+
 const ElCardStub = defineComponent({
   setup(_, { slots }) {
     return () => h('div', { class: 'el-card-stub' }, [
@@ -366,7 +370,7 @@ describe('RendererList and RendererSection container integration', () => {
 })
 
 // 验证 RendererSection slot 子组件能沿 Spark 上下文链消费到祖先提供的能力
-const SECTION_BRIDGE_MARKER = defineCapability<string>('test:section-bridge-marker')
+const SECTION_BRIDGE_MARKER = defineCapability<string>('test:section-bridge-marker', isStringCapability)
 
 describe('RendererSection direct Vue children bridge', () => {
   // ContextProbe 消费外层提供的标记能力：能消费到 → 上下文链穿过 RendererSection slot 正常工作
@@ -374,7 +378,7 @@ describe('RendererSection direct Vue children bridge', () => {
     name: 'ContextProbe',
     setup() {
       const { sparkConsume } = useSparkComponent({ type: 'probe-field' })
-      const marker = sparkConsume(SECTION_BRIDGE_MARKER) as string | null
+      const marker = sparkConsume(SECTION_BRIDGE_MARKER)
       return () => h('div', {
         class: 'context-probe',
         'data-connected': marker ?? 'none',

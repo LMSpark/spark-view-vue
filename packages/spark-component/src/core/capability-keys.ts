@@ -38,6 +38,18 @@ export type {
   AppServicesCapability,
 } from './app-service-types.js'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isCallable(value: unknown): value is (...args: never[]) => unknown {
+  return typeof value === 'function'
+}
+
+function hasCallable(record: Record<string, unknown>, key: string): boolean {
+  return isCallable(record[key])
+}
+
 // ── 主题类型（spark-component 层自有定义，spark-app 用自己本地的副本） ──────
 
 /** 主题模式 */
@@ -124,16 +136,91 @@ declare module '@spark-view/spark-utils' {
   }
 }
 
+function isDataSetContract(value: unknown): value is DataSetContract {
+  if (!isRecord(value)) return false
+  return typeof value['dataSetName'] === 'string'
+    && isRecord(value['tables'])
+    && hasCallable(value, 'getChildRelations')
+    && hasCallable(value, 'getParentRelations')
+    && hasCallable(value, 'getTableChildRelations')
+    && hasCallable(value, 'getTableParentRelations')
+    && hasCallable(value, 'addTable')
+    && hasCallable(value, 'removeTable')
+    && hasCallable(value, 'getTable')
+    && hasCallable(value, 'getView')
+    && hasCallable(value, 'saveChanges')
+    && hasCallable(value, 'setAppServices')
+    && hasCallable(value, 'setPageRoute')
+    && hasCallable(value, 'getRequestTemplateParams')
+    && hasCallable(value, 'toJson')
+    && hasCallable(value, 'on')
+    && hasCallable(value, 'onAnyViewChange')
+    && hasCallable(value, 'triggerAutoLoad')
+    && hasCallable(value, 'destroy')
+}
+
+function isDataSource(value: unknown): value is DataSource {
+  return isRecord(value)
+}
+
+function isDataRow(value: unknown): value is DataRow {
+  return isRecord(value)
+}
+
+function isModuleContextCapability(value: unknown): value is ModuleContextCapability {
+  if (!isRecord(value)) return false
+  return hasCallable(value, 'getCurrent') && hasCallable(value, 'subscribe')
+}
+
+function isPageComponentRegistry(value: unknown): value is PageComponentRegistry {
+  if (!isRecord(value)) return false
+  return hasCallable(value, 'registerInstance')
+    && hasCallable(value, 'unregisterInstance')
+    && hasCallable(value, 'listInstances')
+    && hasCallable(value, 'getInstance')
+    && hasCallable(value, 'registerApi')
+    && hasCallable(value, 'unregisterApi')
+    && hasCallable(value, 'listApis')
+    && hasCallable(value, 'getApi')
+    && hasCallable(value, 'getApisByType')
+}
+
+function isPageCssScopeCapability(value: unknown): value is PageCssScopeCapability {
+  return isRecord(value) && hasCallable(value, 'inject')
+}
+
+function isAppServicesCapability(value: unknown): value is AppServicesCapability {
+  return isRecord(value)
+}
+
+function isPageServiceCapability(value: unknown): value is PageServiceCapability {
+  if (!isRecord(value)) return false
+  return hasCallable(value, 'showMessage')
+    && hasCallable(value, 'showConfirm')
+    && hasCallable(value, 'showPrompt')
+    && hasCallable(value, 'showAlert')
+    && hasCallable(value, 'showDialog')
+    && hasCallable(value, 'selectEntities')
+    && hasCallable(value, 'browseFiles')
+    && hasCallable(value, 'uploadFiles')
+    && hasCallable(value, 'showLoading')
+    && hasCallable(value, 'navigate')
+}
+
+function isNavPermissionMode(value: unknown): value is NavPermissionMode {
+  return value === 'none' || value === 'masked' || value === 'invisible'
+}
+
 // ── 能力键 ────────────────────────────────────────────────────────────────
 
-export const PAGE_DATASET = defineCapability<DataSetContract>('spark:capability:page-dataset')
-export const DATA_SOURCE = defineCapability<DataSource>('spark:capability:data-source')
-export const DATA_ROW = defineCapability<DataRow>('spark:capability:data-row')
+export const PAGE_DATASET = defineCapability<DataSetContract>('spark:capability:page-dataset', isDataSetContract)
+export const DATA_SOURCE = defineCapability<DataSource>('spark:capability:data-source', isDataSource)
+export const DATA_ROW = defineCapability<DataRow>('spark:capability:data-row', isDataRow)
 
-export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:capability:module-context')
-export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry')
-export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope')
+export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:capability:module-context', isModuleContextCapability)
+export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry', isPageComponentRegistry)
+export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope', isPageCssScopeCapability)
 
-export const APP_SERVICES = defineCapability<AppServicesCapability>('spark:capability:app-services')
-export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service')
-export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode')
+export const APP_SERVICES = defineCapability<AppServicesCapability>('spark:capability:app-services', isAppServicesCapability)
+export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service', isPageServiceCapability)
+export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode', isNavPermissionMode)

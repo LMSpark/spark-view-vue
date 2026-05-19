@@ -30,7 +30,7 @@ plugins/
 
 ```
 ┌─────────────────────────┐
-│  IPluginRegistry        │  插件注册表实例
+│  PluginRegistry         │  插件注册表实例
 ├─────────────────────────┤
 │ + register()            │  注册插件加载器
 │ + get()                 │  获取插件加载器
@@ -242,7 +242,7 @@ async function startApp() {
 
 ### 1. 关注点分离
 
-- **IPluginRegistry**: 管理映射关系
+- **PluginRegistry**: 管理映射关系
 - **PluginManager**: 管理加载流程
 - **Presets**: 提供预设插件
 

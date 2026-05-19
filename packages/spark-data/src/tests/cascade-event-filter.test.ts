@@ -96,7 +96,7 @@ describe('cascade event filter — no spurious child requests', () => {
     // 父已加载，selectedRows 设为第一行
     setParentLoaded(pView, [{ id: 1 }, { id: 2 }])
     const selectedKey = pView.getPkKey(pView.rows[0]!)
-    if (selectedKey === null) throw new Error('Expected selected row key')
+    if (selectedKey === null || selectedKey === undefined) throw new Error('Expected selected row key')
     pView._selectedRowIds.splice(0, pView._selectedRowIds.length, selectedKey)
 
     const cSpy = vi.spyOn(cView, 'loadFromServer').mockImplementation(async () => {

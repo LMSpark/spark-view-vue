@@ -1,17 +1,17 @@
 /**
  * 能力树遍历辅助工具 —— 纯基础设施，无业务语义。
  *
- * 所有函数只操作 ICapabilityContext / CapabilityKey 原语，
+ * 所有函数只操作 CapabilityContext / CapabilityKey 原语，
  * 不引用任何业务类型。
  */
 
-import type { ICapabilityContext } from './core.js'
+import type { CapabilityContext } from './core.js'
 import type { CapabilityKey } from './core.js'
 import { consumeSparkCapability } from './core.js'
 
 // ==================== 内部工具 ====================
 
-function hasLocalCapability<T>(ctx: ICapabilityContext, key: CapabilityKey<T>): boolean {
+function hasLocalCapability<T>(ctx: CapabilityContext, key: CapabilityKey<T>): boolean {
   return ctx.capabilities.has(key)
 }
 
@@ -28,12 +28,12 @@ function hasLocalCapability<T>(ctx: ICapabilityContext, key: CapabilityKey<T>): 
  * @param options.includeSelf  是否将 ctx 本层纳入搜索范围（默认 false）
  */
 export function sparkFindNearestProvider<T>(
-  ctx: ICapabilityContext | null | undefined,
+  ctx: CapabilityContext | null | undefined,
   key: CapabilityKey<T>,
   options?: { includeSelf?: boolean },
-): ICapabilityContext | null {
+): CapabilityContext | null {
   if (!ctx) return null
-  let current: ICapabilityContext | undefined = options?.includeSelf ? ctx : ctx.parent
+  let current: CapabilityContext | undefined = options?.includeSelf ? ctx : ctx.parent
   while (current) {
     if (hasLocalCapability(current, key)) {
       return current
@@ -50,12 +50,12 @@ export function sparkFindNearestProvider<T>(
  * @param keys  候选键列表（只要命中任意一个即返回）
  */
 export function sparkFindNearestProviderByKeys(
-  ctx: ICapabilityContext | null | undefined,
+  ctx: CapabilityContext | null | undefined,
   keys: ReadonlyArray<CapabilityKey<unknown>>,
   options?: { includeSelf?: boolean },
-): ICapabilityContext | null {
+): CapabilityContext | null {
   if (!ctx) return null
-  let current: ICapabilityContext | null = options?.includeSelf ? ctx : ctx.parent ?? null
+  let current: CapabilityContext | null = options?.includeSelf ? ctx : ctx.parent ?? null
   while (current) {
     for (const key of keys) {
       if (hasLocalCapability(current, key)) {
@@ -75,15 +75,19 @@ export function sparkFindNearestProviderByKeys(
  * @param options.localOnly  true 时只读该层本地（不向上继续消费）
  */
 export function sparkConsumeFromProvider<T>(
-  provider: ICapabilityContext | null | undefined,
+  provider: CapabilityContext | null | undefined,
   key: CapabilityKey<T>,
   options?: { localOnly?: boolean },
 ): T | null {
   if (!provider) return null
   if (options?.localOnly) {
-    return hasLocalCapability(provider, key)
-      ? (provider.capabilities.get(key) as T)
-      : null
+    const value = provider.capabilities.get(key)
+    if (value === undefined) return null
+    const capability = key.read(value)
+    if (capability === null) {
+      throw new TypeError(`[spark] capability "${key.name}" failed runtime validation`)
+    }
+    return capability
   }
   return consumeSparkCapability(provider, key)
 }

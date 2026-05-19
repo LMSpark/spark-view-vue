@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { APP_SERVICES, type AppServicesCapability, type ICapabilityContext } from '@spark-view/spark-component'
+import { APP_SERVICES, type AppServicesCapability, type CapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 type LoggerTestAppServices = AppServicesCapability & Required<Pick<AppServicesCapability, 'logger' | 'router'>>
@@ -26,7 +26,7 @@ describe('page logger transport payload', () => {
       error: (..._args: unknown[]) => {}
     }
 
-    const ctx: ICapabilityContext = {
+    const ctx: CapabilityContext = {
       id: 'ctx-transport',
       type: 'test',
       capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])

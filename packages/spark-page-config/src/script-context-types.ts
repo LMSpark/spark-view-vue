@@ -122,7 +122,7 @@ export interface ScriptContext {
    * ✅ 推荐：所有消息提示、确认框、输入框、导航均通过此接口调用。
    *
    * 注意：此接口类型声明为 `unknown`（使用导入类型时改为具体类型）；
-   * 实际运行时注入 `IPageServiceCapability` 实现。
+   * 实际运行时注入 `PageServiceCapability` 实现。
    * 为保持此文件对 capability 系统无依赖，此处使用结构等价的内联类型。
    */
   $page: PageServiceInScript
@@ -161,10 +161,10 @@ export interface ScriptContext {
 }
 
 /**
- * `$page` 的内联类型（结构与 `IPageServiceCapability` 完全等价）。
+ * `$page` 的内联类型（结构与 `PageServiceCapability` 完全等价）。
  *
  * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
- * 渲染层以 `IPageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
+ * 渲染层以 `PageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
  */
 export interface PageServiceInScript {
   /** 通用弹层（APP 层承载，页面层通过 service 调用） */
@@ -360,17 +360,17 @@ export interface PageUploadedFileInScript extends PageSelectedFileInScript {
 
 // ==================== 模块上下文（内联类型）====================
 
-/** 模块上下文选项（结构与 `IModuleContextItem` 等价） */
+/** 模块上下文选项（结构与 `ModuleContextItem` 等价） */
 export interface ModuleContextItemInScript {
   id: string | number
   title: string
 }
 
 /**
- * `$moduleContext` 的内联类型（结构与 `IModuleContext` 完全等价）。
+ * `$moduleContext` 的内联类型（结构与 `ModuleContext` 完全等价）。
  *
  * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
- * 渲染层以 `IModuleContext` 作为实现类型；两者通过结构化类型兼容。
+ * 渲染层以 `ModuleContext` 作为实现类型；两者通过结构化类型兼容。
  */
 export interface ModuleContextInScript {
   /** 当前选中值 */

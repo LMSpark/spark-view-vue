@@ -19,7 +19,7 @@ export type {
 
 export type {
   CapabilityName,
-  ICapabilityContext,
+  CapabilityContext,
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,

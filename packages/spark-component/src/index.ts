@@ -30,7 +30,7 @@ export type { FieldRenderConfig, FieldRenderState, PermissionActionContext } fro
 // ── 4. 核心类型 ──
 export type {
   CapabilityName,
-  ICapabilityContext,
+  CapabilityContext,
   SparkCapabilityContext,
   SparkNode,
   SparkNodeChildren,

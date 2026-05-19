@@ -6,6 +6,7 @@ import {
   getDataSetSnapshot,
   listDataSetSnapshots,
 } from '@spark-view/spark-data'
+import { requireArray, requireRecord } from './test-type-helpers'
 
 type MemoryStorageMap = Map<string, string>
 
@@ -85,14 +86,16 @@ describe('DataSet history/version', () => {
     expect(history.map((entry) => entry.version)).toEqual([2, 1])
 
     const restoredText = formatPageDataSnapshot(history[1]!)
-    const restoredPageData = JSON.parse(restoredText) as {
-      dataSetName?: string
-      dataset?: unknown
-      tables?: Record<string, { views?: { default?: { rows?: Array<Record<string, unknown>> } } }>
-    }
-    expect(restoredPageData.dataset).toBeUndefined()
-    expect(restoredPageData.dataSetName).toBe('OrdersDS')
-    expect(restoredPageData.tables?.['Orders']?.views?.default?.rows?.[0]?.['name']).toBe('Alice')
+    const restoredPageData = requireRecord(JSON.parse(restoredText), 'snapshot must parse to an object')
+    expect(restoredPageData['dataset']).toBeUndefined()
+    expect(restoredPageData['dataSetName']).toBe('OrdersDS')
+    const tables = requireRecord(restoredPageData['tables'], 'snapshot must include tables')
+    const orders = requireRecord(tables['Orders'], 'snapshot must include Orders table')
+    const views = requireRecord(orders['views'], 'Orders table must include views')
+    const defaultView = requireRecord(views['default'], 'Orders table must include default view')
+    const restoredRows = requireArray(defaultView['rows'], 'default view must include rows')
+    const firstRow = requireRecord(restoredRows[0], 'default view must include a first row')
+    expect(firstRow['name']).toBe('Alice')
   })
 
   it('should restore a previous version into the same DataSet instance', () => {
@@ -141,15 +144,14 @@ describe('DataSet history/version', () => {
     expect(history).toHaveLength(3)
     expect(history.map((entry) => entry.version)).toEqual([5, 4, 3])
 
-    const rawEnvelope = JSON.parse(storage.get('spark:data-history:orders-ring-page') ?? '{}') as {
-      entries?: Array<{ version?: number }>
-      nextSlot?: number
-      capacity?: number
-    }
+    const rawEnvelope = requireRecord(
+      JSON.parse(storage.get('spark:data-history:orders-ring-page') ?? '{}'),
+      'history envelope must parse to an object',
+    )
 
-    expect(rawEnvelope.capacity).toBe(3)
-    expect(rawEnvelope.nextSlot).toBe(2)
-    expect(Array.isArray(rawEnvelope.entries)).toBe(true)
-    expect(rawEnvelope.entries?.length).toBe(3)
+    expect(rawEnvelope['capacity']).toBe(3)
+    expect(rawEnvelope['nextSlot']).toBe(2)
+    const entries = requireArray(rawEnvelope['entries'], 'history envelope must include entries')
+    expect(entries).toHaveLength(3)
   })
 })

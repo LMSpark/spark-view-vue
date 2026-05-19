@@ -2,10 +2,19 @@ import { describe, it, expect } from 'vitest'
 import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
 import { Spark } from '@spark-view/spark-component'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
 describe('Capability late-binding', () => {
   it('capability provided on parent should be discoverable from child via sparkConsume', () => {
     const { createContext, rootContext } = Spark.createSystem()
-    const TEST_CAP = defineCapability<{ foo: () => string }>('test:capability-late-binding')
+    const TEST_CAP = defineCapability<{ foo: () => string }>(
+      'test:capability-late-binding',
+      (value): value is { foo: () => string } => (
+        isRecord(value) && typeof value['foo'] === 'function'
+      ),
+    )
 
     // Create a parent context and a child
     const parentCtx = createContext({ type: 'parent', id: 'parent-1' }, rootContext)

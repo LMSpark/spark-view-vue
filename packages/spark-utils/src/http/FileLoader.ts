@@ -475,7 +475,7 @@ export class FileLoader {
 
       const params = FileLoader.timestampParams(knownTimestamp)
 
-      const response = await this.request.requestFull<FileResponse>({
+      const response = await this.request.requestFull({
         url: fileName,
         method: 'GET',
         params,
@@ -484,6 +484,10 @@ export class FileLoader {
         },
       })
       const result = response.data
+      if (!this.isFileResponse(result)) {
+        this.emit('file-error', { fileName, error: '响应格式错误：响应体不是文件响应对象', reason: 'invalid-response' })
+        return { success: false, error: '响应格式错误：响应体不是文件响应对象', fromCache: false, reason: 'invalid-response' }
+      }
 
       if (result.notModified === true) {
         if (cached && typeof cached.data === 'string') {
@@ -604,6 +608,13 @@ export class FileLoader {
       && typeof value['cachedAt'] === 'number'
       && typeof value['lastAccess'] === 'number'
       && typeof value['expirationLevel'] === 'number'
+  }
+
+  private isFileResponse(value: unknown): value is FileResponse {
+    if (!isRecord(value)) return false
+    return (value['content'] === undefined || typeof value['content'] === 'string')
+      && (value['timestamp'] === undefined || typeof value['timestamp'] === 'string')
+      && (value['notModified'] === undefined || typeof value['notModified'] === 'boolean')
   }
 
   private writeEntry(key: string, data: unknown, sourceTimestamp: string, expirationLevel: number): void {

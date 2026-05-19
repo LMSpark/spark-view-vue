@@ -7,8 +7,28 @@
 
 // ==================== 类型定义 ====================
 
-/** 带有幻影类型参数的能力键（编译期类型安全，运行时为 Symbol）。 */
-export type CapabilityKey<T> = symbol & { readonly __capabilityType?: T }
+/** 能力值读取器：把运行时 unknown 显式校验为能力类型。 */
+export type CapabilityReader<T> = (value: unknown) => value is T
+
+/** 带运行时校验的能力键。 */
+export class CapabilityKey<T> {
+  readonly token: symbol
+
+  constructor(
+    readonly name: string,
+    private readonly reader: CapabilityReader<T>,
+  ) {
+    this.token = Symbol.for(name)
+  }
+
+  read(value: unknown): T | null {
+    return this.reader(value) ? value : null
+  }
+
+  toString(): string {
+    return this.name
+  }
+}
 
 /** 未具体化类型的能力名（用于 Map 的 key）。 */
 export type CapabilityName = CapabilityKey<unknown>
@@ -25,13 +45,13 @@ export type SparkCapabilityConsumer = <T>(name: CapabilityKey<T>) => T | null
 export interface CapabilityTypeMap {}
 
 /** 能力树节点：持有本地能力 Map，以及指向父节点的可选链。 */
-export interface ICapabilityContext {
+export interface CapabilityContext {
   /** 当前能力上下文节点 ID，用于调试、日志和父子链定位。 */
   id: string
   /** 当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。 */
   type: string
   /** 父级能力上下文；消费能力时会沿此链向上查找。 */
-  parent?: ICapabilityContext
+  parent?: CapabilityContext
   /** 当前节点本地提供的能力实现表，key 为 CapabilityKey。 */
   capabilities: Map<CapabilityName, unknown>
 }
@@ -39,29 +59,34 @@ export interface ICapabilityContext {
 // ==================== 原语函数 ====================
 
 /**
- * 创建一个全局唯一的能力键。
- * 使用 `Symbol.for(name)` 保证跨模块共享同一键实例。
+ * 创建一个带运行时校验的能力键。
  */
-export function defineCapability<T>(name: string): CapabilityKey<T> {
-  return Symbol.for(name) as CapabilityKey<T>
+export function defineCapability<T>(name: string, reader: CapabilityReader<T>): CapabilityKey<T> {
+  return new CapabilityKey(name, reader)
 }
 
 /** 向上下文本地 capabilities map 写入实现。 */
-export function sparkProvide<T>(ctx: ICapabilityContext, name: CapabilityKey<T>, impl: T): void {
+export function sparkProvide<T>(ctx: CapabilityContext, name: CapabilityKey<T>, impl: T): void {
   ctx.capabilities.set(name, impl)
 }
 
 /** 从上下文本地 capabilities map 删除能力键。 */
-export function sparkRemove(ctx: ICapabilityContext, name: CapabilityKey<unknown>): void {
+export function sparkRemove(ctx: CapabilityContext, name: CapabilityKey<unknown>): void {
   ctx.capabilities.delete(name)
 }
 
 /** 沿父链向上查找能力实现，找不到返回 null。 */
-export function sparkConsume<T>(ctx: ICapabilityContext, name: CapabilityKey<T>): T | null {
-  let current: ICapabilityContext | undefined = ctx
+export function sparkConsume<T>(ctx: CapabilityContext, name: CapabilityKey<T>): T | null {
+  let current: CapabilityContext | undefined = ctx
   while (current) {
     const impl = current.capabilities.get(name)
-    if (impl !== undefined) return impl as T
+    if (impl !== undefined) {
+      const value = name.read(impl)
+      if (value === null) {
+        throw new TypeError(`[spark] capability "${name.name}" failed runtime validation`)
+      }
+      return value
+    }
     current = current.parent
   }
   return null
@@ -70,9 +95,9 @@ export function sparkConsume<T>(ctx: ICapabilityContext, name: CapabilityKey<T>)
 /** 创建一个新的能力上下文节点，可选挂接父节点。 */
 export function createSparkCapabilityContext(
   config: { id: string; type: string },
-  parent?: ICapabilityContext | null,
-): ICapabilityContext {
-  const context: ICapabilityContext = {
+  parent?: CapabilityContext | null,
+): CapabilityContext {
+  const context: CapabilityContext = {
     id: config.id,
     type: config.type,
     capabilities: new Map<CapabilityName, unknown>(),
@@ -85,7 +110,7 @@ export function createSparkCapabilityContext(
 
 /** 允许 ctx 为 null/undefined 的安全版 sparkConsume。 */
 export function consumeSparkCapability<T>(
-  context: ICapabilityContext | null | undefined,
+  context: CapabilityContext | null | undefined,
   name: CapabilityKey<T>,
 ): T | null {
   if (!context) return null
@@ -94,14 +119,14 @@ export function consumeSparkCapability<T>(
 
 /** 创建绑定到指定上下文的消费函数（闭包形式）。 */
 export function createSparkCapabilityConsumer(
-  context: ICapabilityContext | null,
+  context: CapabilityContext | null,
 ): SparkCapabilityConsumer {
   return <T>(name: CapabilityKey<T>): T | null => consumeSparkCapability(context, name)
 }
 
 /** 仅读取本层 capabilities map 中指定键，不向上查找。 */
 export function getSparkCapabilityProvider(
-  context: ICapabilityContext,
+  context: CapabilityContext,
   name: CapabilityKey<unknown>,
 ): unknown {
   return context.capabilities.get(name)

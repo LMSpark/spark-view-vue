@@ -46,8 +46,8 @@ describe('CrudService - Permission Data Sanitization', () => {
     expect(sanitized).not.toHaveProperty(MODEL_PERMISSION_FIELD)
 
     // Verify other fields are preserved
-    expect(sanitized.name).toBe('Test Item')
-    expect(sanitized.value).toBe(123)
+    expect(sanitized['name']).toBe('Test Item')
+    expect(sanitized['value']).toBe(123)
   })
 
   it('should handle data without permission fields', () => {
@@ -62,8 +62,8 @@ describe('CrudService - Permission Data Sanitization', () => {
 
     const sanitized = sanitizeDataForUpload(service, testData)
 
-    expect(sanitized.name).toBe('Clean Item')
-    expect(sanitized.value).toBe(456)
+    expect(sanitized['name']).toBe('Clean Item')
+    expect(sanitized['value']).toBe(456)
     expect(sanitized).not.toHaveProperty(INSTANCE_PERMISSION_FIELD)
     expect(sanitized).not.toHaveProperty(MODEL_PERMISSION_FIELD)
   })

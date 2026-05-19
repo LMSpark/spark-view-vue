@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { HttpClient } from '@spark-view/spark-utils'
 import { SparkData } from '../spark-data'
 import { CrudService } from '../crud-service'
 
@@ -19,6 +20,10 @@ describe('database CrudApi helper', () => {
   it('lets retrieve use POST for database metadata endpoints', async () => {
     const api = SparkData.createDatabaseCrudApi('Orders')
     const mockClient = {
+      interceptors: {
+        request: { use: vi.fn(() => () => undefined) },
+        response: { use: vi.fn(() => () => undefined) },
+      },
       get: vi.fn(),
       post: vi.fn().mockResolvedValue({ id: 1, name: 'Order 1' }),
       put: vi.fn(),
@@ -26,8 +31,9 @@ describe('database CrudApi helper', () => {
       delete: vi.fn(),
       request: vi.fn(),
       requestFull: vi.fn(),
-    }
-    const service = new CrudService(api, mockClient as any, () => ({ tenantId: 't1', projectId: 'p1' }))
+      clearCache: vi.fn(),
+    } satisfies HttpClient
+    const service = new CrudService(api, mockClient, () => ({ tenantId: 't1', projectId: 'p1' }))
 
     const result = await service.retrieve({ id: 1 })
 

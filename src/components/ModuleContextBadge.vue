@@ -12,7 +12,6 @@ import {
 } from '@spark-view/spark-component'
 import type {
   SparkNode,
-  ModuleContextCapability,
 } from '@spark-view/spark-component'
 
 interface Props {
@@ -27,7 +26,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const { sparkConsume } = useSparkComponent(props.config ?? { type: 'r-module-context-badge' })
-const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
+const moduleContextCapability = sparkConsume(MODULE_CONTEXT)
 
 const moduleContext = ref(moduleContextCapability?.getCurrent() ?? null)
 

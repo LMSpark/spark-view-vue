@@ -1,4 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
+import type { HttpClient } from '@spark-view/spark-utils'
 import { DataSet } from '../dataset'
 import { TreeManager } from '../tree-manager'
 import type { FlatTreeNode } from '../types'
@@ -6,7 +7,24 @@ import type { FlatTreeNode } from '../types'
 const NAV_BASE = '/api/tenants/tenant-test/projects/homepage/navigation/nodes'
 const RELATIVE_NAV_BASE = '/navigation/nodes'
 
-function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
+function createTreeHttpClient(methods: Partial<Pick<HttpClient, 'get' | 'post' | 'put'>>): HttpClient {
+  return {
+    interceptors: {
+      request: { use: vi.fn(() => () => undefined) },
+      response: { use: vi.fn(() => () => undefined) },
+    },
+    request: vi.fn(),
+    requestFull: vi.fn(),
+    get: methods.get ?? vi.fn(),
+    post: methods.post ?? vi.fn(),
+    put: methods.put ?? vi.fn(),
+    patch: vi.fn(),
+    delete: vi.fn(),
+    clearCache: vi.fn(),
+  }
+}
+
+function createRemoteTreeDataSet(mockHttpClient: HttpClient): DataSet {
   const dataSet = DataSet.fromJson({
     dataSetName: 'Tree4Plus7',
     tables: {
@@ -40,11 +58,11 @@ function createRemoteTreeDataSet(mockHttpClient: unknown): DataSet {
     },
   })
 
-  dataSet.setSharedHttpClient(mockHttpClient as never)
+  dataSet.setSharedHttpClient(mockHttpClient)
   return dataSet
 }
 
-function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
+function createScopedRelativeTreeDataSet(mockHttpClient: HttpClient): DataSet {
   const dataSet = DataSet.fromJson({
     dataSetName: 'Tree4Plus7ScopedRelative',
     tables: {
@@ -78,7 +96,7 @@ function createScopedRelativeTreeDataSet(mockHttpClient: unknown): DataSet {
     },
   })
 
-  dataSet.setSharedHttpClient(mockHttpClient as never)
+  dataSet.setSharedHttpClient(mockHttpClient)
   dataSet.setAppServices({
     router: {
       currentRoute: {
@@ -101,7 +119,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
         },
       ])
       const post = vi.fn()
-      const dataSet = createRemoteTreeDataSet({ get, post })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
       view!.treeMode = 'nested'
@@ -127,7 +145,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
         },
       ])
       const post = vi.fn()
-      const dataSet = createRemoteTreeDataSet({ get, post })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -145,7 +163,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
         { id: 1, parentId: null, name: 'Root' },
       ])
       const post = vi.fn()
-      const dataSet = createRemoteTreeDataSet({ get, post })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -164,7 +182,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
         { id: 1, parentId: null, name: 'Root' },
       ])
       const post = vi.fn()
-      const dataSet = createScopedRelativeTreeDataSet({ get, post })
+      const dataSet = createScopedRelativeTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -179,7 +197,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
     it('loadTreePath should call navigation path endpoint and return pathIds', async () => {
       const get = vi.fn().mockResolvedValue({ pathIds: [1, 2, 3] })
       const post = vi.fn()
-      const dataSet = createRemoteTreeDataSet({ get, post })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -193,7 +211,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
     it('expandTreeToNode should call navigation path then subtree and skip subtree when cache is complete', async () => {
       const get = vi.fn()
       const post = vi.fn()
-      const dataSet = createRemoteTreeDataSet({ get, post })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -230,7 +248,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
       ])
       const post = vi.fn()
       const put = vi.fn().mockResolvedValue({ node: { id: 2, parentId: 1, name: 'Leaf' } })
-      const dataSet = createRemoteTreeDataSet({ get, post, put })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post, put }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -250,7 +268,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
       ])
       const post = vi.fn()
       const put = vi.fn().mockResolvedValue({ node: { id: 2, parentId: 1, name: 'Leaf' } })
-      const dataSet = createScopedRelativeTreeDataSet({ get, post, put })
+      const dataSet = createScopedRelativeTreeDataSet(createTreeHttpClient({ get, post, put }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 
@@ -275,7 +293,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
         },
       ])
       const post = vi.fn()
-      const dataSet = createRemoteTreeDataSet({ get, post })
+      const dataSet = createRemoteTreeDataSet(createTreeHttpClient({ get, post }))
       const view = dataSet.getView('NavigationNodes', 'default')
       expect(view).toBeDefined()
 

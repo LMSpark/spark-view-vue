@@ -22,8 +22,8 @@ export class Request extends HttpClientBase {
 
   // ==================== 模板方法实现 ====================
 
-  protected async executeRequest<T>(config: RequestConfig): Promise<HttpResponse<T>> {
-    const res: AxiosResponse<T> = await this.ax.request(this.toAxios(config))
+  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    const res: AxiosResponse<unknown> = await this.ax.request(this.toAxios(config))
     return this.toHttpResponse(res)
   }
 
@@ -98,7 +98,7 @@ export class Request extends HttpClientBase {
     }
   }
 
-  private toHttpResponse<T>(res: AxiosResponse<T>): HttpResponse<T> {
+  private toHttpResponse(res: AxiosResponse<unknown>): HttpResponse<unknown> {
     const headers: Record<string, string> = {}
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition, @typescript-eslint/strict-boolean-expressions -- axios headers 可能为任意结构
     if (res.headers && typeof res.headers === 'object') {

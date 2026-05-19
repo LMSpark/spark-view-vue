@@ -3,7 +3,7 @@
  *
  * 设计原则：
  * - 最小化类型，只定义必要的接口
- * - 能力系统通过 capabilities Map 实现（继承自 ICapabilityContext）
+ * - 能力系统通过 capabilities Map 实现（继承自 CapabilityContext）
  */
 
 export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config'
@@ -17,11 +17,11 @@ export {
   nodeInputProps,
 } from '@spark-view/spark-page-config'
 
-import type { ICapabilityContext } from '@spark-view/spark-utils'
+import type { CapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
-export type { CapabilityName, ICapabilityContext } from '@spark-view/spark-utils'
-export type SparkCapabilityContext = ICapabilityContext
+export type { CapabilityName, CapabilityContext } from '@spark-view/spark-utils'
+export type SparkCapabilityContext = CapabilityContext
 
 // ============================================================================
 // 组件定义（注册表使用）

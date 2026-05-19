@@ -24,7 +24,7 @@ export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
 export type {
   SparkNode,
   SparkNodeChildren,
-  ICapabilityContext,
+  CapabilityContext,
   LoggerApi,
 } from '../core/index.js'
 export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode, isSparkNode, getSparkNodeChildren } from '../core/index.js'

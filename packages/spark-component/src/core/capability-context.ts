@@ -1,7 +1,7 @@
 /**
  * Spark 运行时上下文锚点表。
  *
- * ICapabilityContext 自己形成结构树；
+ * CapabilityContext 自己形成结构树；
  * 运行时仅保留 owner 链与 pageRoot 锚点，
  * 不再通过 provide/inject 传递父上下文。
  *
@@ -13,18 +13,18 @@
  *   显式 unbind（onUnmounted）作为双保险，不依赖 GC 时机。
  */
 
-import type { ICapabilityContext } from '@spark-view/spark-utils'
+import type { CapabilityContext } from '@spark-view/spark-utils'
 
-export interface SparkRuntimeOwner {
+export type SparkRuntimeOwner = object & {
   parent?: SparkRuntimeOwner | null
   pageRoot?: unknown
 }
 
-const OWNER_CONTEXTS = new WeakMap<object, ICapabilityContext>()
+const OWNER_CONTEXTS = new WeakMap<object, CapabilityContext>()
 /** key = 页面根 DOM 元素（HTMLElement），DOM 天然防泄漏 */
-const PAGE_ROOT_CONTEXTS = new WeakMap<HTMLElement, ICapabilityContext>()
+const PAGE_ROOT_CONTEXTS = new WeakMap<HTMLElement, CapabilityContext>()
 
-export function sparkBindContextOwner(owner: object, context: ICapabilityContext): void {
+export function sparkBindContextOwner(owner: object, context: CapabilityContext): void {
   OWNER_CONTEXTS.set(owner, context)
 }
 
@@ -32,12 +32,12 @@ export function sparkUnbindContextOwner(owner: object): void {
   OWNER_CONTEXTS.delete(owner)
 }
 
-export function sparkResolveContextOwner(owner: object): ICapabilityContext | null {
+export function sparkResolveContextOwner(owner: object): CapabilityContext | null {
   return OWNER_CONTEXTS.get(owner) ?? null
 }
 
 /** pageRoot 必须是页面根 DOM 元素（HTMLElement）。 */
-export function sparkBindPageRootContext(pageRoot: HTMLElement, context: ICapabilityContext): void {
+export function sparkBindPageRootContext(pageRoot: HTMLElement, context: CapabilityContext): void {
   PAGE_ROOT_CONTEXTS.set(pageRoot, context)
 }
 
@@ -45,22 +45,22 @@ export function sparkUnbindPageRootContext(pageRoot: HTMLElement): void {
   PAGE_ROOT_CONTEXTS.delete(pageRoot)
 }
 
-export function sparkResolvePageRootContext(pageRoot: unknown): ICapabilityContext | null {
+export function sparkResolvePageRootContext(pageRoot: unknown): CapabilityContext | null {
   if (!(pageRoot instanceof HTMLElement)) return null
   return PAGE_ROOT_CONTEXTS.get(pageRoot) ?? null
 }
 
 export function sparkResolveParentContext(
   owner: SparkRuntimeOwner | null,
-  overrideHostContext?: ICapabilityContext,
-): ICapabilityContext | null {
+  overrideHostContext?: CapabilityContext,
+): CapabilityContext | null {
   if (overrideHostContext !== undefined) {
     return overrideHostContext
   }
 
   let currentOwner = owner?.parent ?? null
   while (currentOwner !== null) {
-    const boundContext = OWNER_CONTEXTS.get(currentOwner as object)
+    const boundContext = OWNER_CONTEXTS.get(currentOwner)
     if (boundContext !== undefined) {
       return boundContext
     }

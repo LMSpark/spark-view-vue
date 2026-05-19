@@ -10,7 +10,7 @@
  *   - 延时工具（重试用，支持 AbortSignal 取消）
  *
  * 子类仅需实现：
- *   - `executeRequest<T>(config): Promise<HttpResponse<T>>`  — 适配层核心
+ *   - `executeRequest(config): Promise<HttpResponse<unknown>>`  — 适配层核心
  *   - `normalizeAdapterError(err, config?): RequestError`    — 适配层错误转换
  *
  * 设计原则：
@@ -32,6 +32,10 @@ export const DEFAULT_TIMEOUT = 10_000
 
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
 interface CacheItem { data: unknown; timestamp: number; expiry: number }
+
+type CacheLookupResult =
+  | { hit: true; data: unknown }
+  | { hit: false }
 
 /** 缓存最大条目数——超出后淘汰最旧 20% 条目（LRU-like） */
 const MAX_CACHE_SIZE = 500
@@ -60,7 +64,7 @@ export abstract class HttpClientBase implements HttpClient {
    * - 不含重试、缓存、拦截器——这些由基类统一处理
    * - 子类只负责"发出请求 → 读取响应"
    */
-  protected abstract executeRequest<T>(config: RequestConfig): Promise<HttpResponse<T>>
+  protected abstract executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>>
 
   /**
    * 将适配层特定错误（如 AxiosError、fetch TypeError）转换为统一 RequestError。
@@ -92,13 +96,15 @@ export abstract class HttpClientBase implements HttpClient {
 
   // ==================== 核心请求（单一重试循环） ====================
 
-  async request<T = unknown>(config: RequestConfig): Promise<T> {
-    const res = await this.requestWithRetry<T>(config, true)
+  async request<T = unknown>(config: RequestConfig): Promise<T>
+  async request(config: RequestConfig): Promise<unknown> {
+    const res = await this.requestWithRetry(config, true)
     return res.data
   }
 
-  async requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>> {
-    return this.requestWithRetry<T>(config, false)
+  async requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>>
+  async requestFull(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    return this.requestWithRetry(config, false)
   }
 
   /**
@@ -106,14 +112,14 @@ export abstract class HttpClientBase implements HttpClient {
    *
    * @param useCache 仅 request() 启用缓存（返回 data 时），requestFull() 不缓存
    */
-  private async requestWithRetry<T>(config: RequestConfig, useCache: boolean): Promise<HttpResponse<T>> {
+  private async requestWithRetry(config: RequestConfig, useCache: boolean): Promise<HttpResponse<unknown>> {
     const merged = this.mergeConfig(config)
     const method = merged.method ?? 'GET'
 
     // 缓存检查（仅 GET + cache 开启 + useCache=true）
     if (useCache && method === 'GET' && (merged.cache ?? false)) {
-      const cached = this.getCache<T>(merged)
-      if (cached !== null) return { data: cached, status: 200, statusText: 'OK (cached)', headers: {} }
+      const cached = this.getCache(merged)
+      if (cached.hit) return { data: cached.data, status: 200, statusText: 'OK (cached)', headers: {} }
     }
 
     const maxRetries = Math.max(0, merged.retry ?? 0)  // 防御负数
@@ -127,7 +133,7 @@ export abstract class HttpClientBase implements HttpClient {
         }
 
         const cfg = await this.applyRequestInterceptors(merged)
-        const res = await this.executeRequest<T>(cfg)
+        const res = await this.executeRequest(cfg)
         const processed = await this.applyResponseInterceptors(res)
         const unwrapped = this.unwrapApiEnvelopeResponse(processed, cfg)
 
@@ -174,24 +180,29 @@ export abstract class HttpClientBase implements HttpClient {
 
   // ==================== HTTP 快捷方法（单一来源） ====================
 
-  async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'GET', ...(params !== undefined ? { params } : {}) })
+  async get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
+  async get(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<unknown> {
+    return this.request({ ...config, url, method: 'GET', ...(params !== undefined ? { params } : {}) })
   }
 
-  async post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'POST', data })
+  async post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
+  async post(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<unknown> {
+    return this.request({ ...config, url, method: 'POST', data })
   }
 
-  async put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'PUT', data })
+  async put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
+  async put(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<unknown> {
+    return this.request({ ...config, url, method: 'PUT', data })
   }
 
-  async patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'PATCH', data })
+  async patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
+  async patch(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<unknown> {
+    return this.request({ ...config, url, method: 'PATCH', data })
   }
 
-  async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T> {
-    return this.request<T>({ ...config, url, method: 'DELETE', ...(params !== undefined ? { params } : {}) })
+  async delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
+  async delete(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<unknown> {
+    return this.request({ ...config, url, method: 'DELETE', ...(params !== undefined ? { params } : {}) })
   }
 
   // ==================== 缓存管理（单一来源） ====================
@@ -321,13 +332,13 @@ export abstract class HttpClientBase implements HttpClient {
     return typeof code === 'string' && code.trim() !== '' ? code.trim() : undefined
   }
 
-  private unwrapApiEnvelopeResponse<T>(response: HttpResponse<T>, config: RequestConfig): HttpResponse<T> {
+  private unwrapApiEnvelopeResponse(response: HttpResponse<unknown>, config: RequestConfig): HttpResponse<unknown> {
     if (config.meta?.['rawEnvelope'] === true || !this.isApiEnvelope(response.data)) {
       return response
     }
     const envelope = response.data
     if (envelope.ok === true) {
-      return { ...response, data: envelope.data as T }
+      return { ...response, data: envelope.data }
     }
     throw this.buildRequestError(
       this.extractApiEnvelopeErrorMessage(envelope) ?? 'API request failed',
@@ -360,15 +371,18 @@ export abstract class HttpClientBase implements HttpClient {
 
   // ==================== 缓存内部实现 ====================
 
-  private getCache<T>(config: RequestConfig): T | null {
+  private getCache(config: RequestConfig): CacheLookupResult {
     const key = config.cacheKey ?? this.cacheKey(config)
     const item = this.cache.get(key)
-    if (item === undefined) return null
-    if (Date.now() - item.timestamp > item.expiry) { this.cache.delete(key); return null }
+    if (item === undefined) return { hit: false }
+    if (Date.now() - item.timestamp > item.expiry) {
+      this.cache.delete(key)
+      return { hit: false }
+    }
     // 命中时刷新顺序，实现 O(1) 近似 LRU（Map 按插入顺序迭代）
     this.cache.delete(key)
     this.cache.set(key, item)
-    return item.data as T
+    return { hit: true, data: item.data }
   }
 
   private setCache(config: RequestConfig, data: unknown): void {

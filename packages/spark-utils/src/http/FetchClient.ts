@@ -21,14 +21,14 @@ export class FetchClient extends HttpClientBase implements FetchHttpClient {
 
   // ==================== 模板方法实现 ====================
 
-  protected async executeRequest<T>(config: RequestConfig): Promise<HttpResponse<T>> {
+  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     const response = await this.fetchRaw(config)
 
     if (!response.ok) {
       throw await this.buildHttpError(response, config)
     }
 
-    const data = await this.readBody<T>(response, config.responseType ?? 'json')
+    const data = await this.readBody(response, config.responseType ?? 'json')
     return {
       data,
       status: response.status,
@@ -201,18 +201,18 @@ export class FetchClient extends HttpClientBase implements FetchHttpClient {
     return url
   }
 
-  private async readBody<T>(response: Response, responseType: string): Promise<T> {
+  private async readBody(response: Response, responseType: string): Promise<unknown> {
     switch (responseType) {
-      case 'text': return await response.text() as T
-      case 'blob': return await response.blob() as T
-      case 'arraybuffer': return await response.arrayBuffer() as T
-      case 'formdata': return await response.formData() as T
+      case 'text': return await response.text()
+      case 'blob': return await response.blob()
+      case 'arraybuffer': return await response.arrayBuffer()
+      case 'formdata': return await response.formData()
       case 'stream': {
         if (response.body === null) throw new Error('Response body is null, streaming not supported')
-        return response.body as T
+        return response.body
       }
-      case 'document': return await response.text() as T
-      default: return await response.json() as T
+      case 'document': return await response.text()
+      default: return await response.json()
     }
   }
 

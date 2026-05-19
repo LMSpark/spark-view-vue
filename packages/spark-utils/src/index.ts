@@ -28,7 +28,7 @@ export type {
   CapabilityName,
   SparkCapabilityConsumer,
   CapabilityTypeMap,
-  ICapabilityContext,
+  CapabilityContext,
 } from './capability/index'
 
 // ==================== HTTP 模块 ====================

@@ -92,7 +92,7 @@ import {
   isSparkNode,
   normalizeSparkNode,
 } from '../core/types.js'
-import type { SparkNode, SparkNodeChildren, ICapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
+import type { SparkNode, SparkNodeChildren, CapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
 import { consumeSparkCapability, createSparkCapabilityContext, sparkProvide, sparkRemove } from '@spark-view/spark-utils'
 import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE } from '../core/capability-keys.js'
@@ -154,7 +154,7 @@ type RecursiveChildrenList = RenderableChild[]
 type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'global-el' | 'native' | 'fallback'
 
-type ParentCapabilityContext = ICapabilityContext | null
+type ParentCapabilityContext = CapabilityContext | null
 type HostTypeConstraintState = {
   matched: boolean
   expectedTypes: string[]
@@ -205,7 +205,7 @@ interface RendererProps {
    * 仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。
    * 普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。
    */
-  parentContext?: ICapabilityContext
+  parentContext?: CapabilityContext
 }
 
 const rendererProps = defineProps<RendererProps>()
@@ -624,7 +624,7 @@ const rendererRowCapabilityContext = createSparkCapabilityContext({
   type: 'r-renderer-row-scope',
 })
 
-let boundCapabilityContext: ICapabilityContext | null = null
+let boundCapabilityContext: CapabilityContext | null = null
 
 watchEffect(() => {
   const row = rendererScopedRow.value
