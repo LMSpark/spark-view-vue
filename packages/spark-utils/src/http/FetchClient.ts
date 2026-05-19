@@ -6,6 +6,7 @@
  */
 
 import { HttpClientBase, DEFAULT_TIMEOUT } from './HttpClientBase'
+import { isRecord, readStringProperty } from '../internal/guards.js'
 import type {
   RequestConfig, HttpResponse,
   RequestError,
@@ -309,20 +310,20 @@ export class FetchClient extends HttpClientBase implements FetchHttpClient {
       return trimmed.length > 0 ? trimmed : undefined
     }
 
-    if (body === null || typeof body !== 'object') {
+    if (!isRecord(body)) {
       return undefined
     }
 
-    const record = body as Record<string, unknown>
-    const message = record['message']
+    const record = body
+    const message = readStringProperty(record, 'message')
     if (typeof message === 'string' && message.trim() !== '') {
       return message.trim()
     }
 
     const error = record['error']
-    if (error !== null && typeof error === 'object') {
-      const errorRecord = error as Record<string, unknown>
-      const nestedMessage = errorRecord['message']
+    if (isRecord(error)) {
+      const errorRecord = error
+      const nestedMessage = readStringProperty(errorRecord, 'message')
       if (typeof nestedMessage === 'string' && nestedMessage.trim() !== '') {
         return nestedMessage.trim()
       }
@@ -347,8 +348,8 @@ export class FetchClient extends HttpClientBase implements FetchHttpClient {
 
     const base = this.describeErrorCode(code)
     const handoff = body['handoff']
-    const nextAction = handoff !== null && typeof handoff === 'object'
-      ? (handoff as Record<string, unknown>)['nextAction']
+    const nextAction = isRecord(handoff)
+      ? handoff['nextAction']
       : undefined
 
     if (typeof nextAction === 'string' && nextAction.trim() !== '') {

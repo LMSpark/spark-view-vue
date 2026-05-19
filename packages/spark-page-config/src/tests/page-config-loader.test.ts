@@ -24,7 +24,7 @@ const mockFileLoader = {
   store: vi.fn(),
   retrieve: vi.fn(),
   /**
-   * withTransform 返回一个 DerivedLoader，其 load() 委托给 mockFileLoader.load。
+   * withTransform 返回一个 TransformedFileLoader-like 对象，其 load() 委托给 mockFileLoader.load。
    * 这样测试中对 mockFileLoader.load.mockResolvedValue() 的设置
    * 对所有三个派生加载器（ruleLoader / dataLoader / scriptLoader）同样生效。
    */

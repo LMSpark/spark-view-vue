@@ -9,7 +9,7 @@ import type {
   ActionExecutionScope,
   ActionFormApi,
 } from '../packages/spark-component/src/page/actions/action-types'
-import type { IPageServiceCapability } from '@spark-view/spark-component'
+import type { PageServiceCapability } from '@spark-view/spark-component'
 
 function createDataView() {
   const dataSet = SparkData.createDataSet({
@@ -38,7 +38,7 @@ function createDataView() {
   return { dataSet, view }
 }
 
-function createPageService(overrides: Partial<IPageServiceCapability> = {}): IPageServiceCapability {
+function createPageService(overrides: Partial<PageServiceCapability> = {}): PageServiceCapability {
   return {
     showMessage: vi.fn(),
     showConfirm: vi.fn(async () => true),
@@ -52,10 +52,10 @@ function createPageService(overrides: Partial<IPageServiceCapability> = {}): IPa
     browseFile: vi.fn(async () => null),
     uploadFile: vi.fn(async () => null),
     ...overrides,
-  } as unknown as IPageServiceCapability
+  } as unknown as PageServiceCapability
 }
 
-function createActionContext(dataSet: ReturnType<typeof createDataView>['dataSet'], pageService: IPageServiceCapability): ActionExecutionContext {
+function createActionContext(dataSet: ReturnType<typeof createDataView>['dataSet'], pageService: PageServiceCapability): ActionExecutionContext {
   return {
     getDataSet: () => dataSet,
     getPageService: () => pageService,

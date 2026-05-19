@@ -15,7 +15,7 @@ import {
   getGlobalPluginRegistry,
   PluginManager,
 } from '../registry'
-import type { PluginLoader, IPluginRegistry } from '../registry'
+import type { PluginLoader, PluginRegistry } from '../registry'
 
 // ─────────────────────────────────────────────
 // Helpers
@@ -36,7 +36,7 @@ function fakeLoader(name: string, overrides?: Partial<Omit<PluginLoader, 'id'>>)
 // ─────────────────────────────────────────────
 
 describe('createPluginRegistry', () => {
-  let registry: IPluginRegistry
+  let registry: PluginRegistry
 
   beforeEach(() => {
     registry = createPluginRegistry()
@@ -112,7 +112,7 @@ describe('getGlobalPluginRegistry', () => {
 // ─────────────────────────────────────────────
 
 describe('PluginManager', () => {
-  let registry: IPluginRegistry
+  let registry: PluginRegistry
 
   beforeEach(() => {
     registry = createPluginRegistry()

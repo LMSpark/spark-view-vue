@@ -35,7 +35,7 @@ import {
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, DerivedLoader, HttpClient, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
+import type { FileLoader, TransformedFileLoader, HttpClient, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
 
 // 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
@@ -100,10 +100,10 @@ export class PageConfigLoader implements ConfigLoader {
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
    * 相同 timestamp → 直接返回缓存结果，跳过 transform 函数。
    */
-  private ruleLoader!: DerivedLoader<RuleConfig[]>
-  private dataLoader!: DerivedLoader<PageDataConfig>
-  private scriptLoader!: DerivedLoader<PageScriptConfig>
-  private cssLoader!: DerivedLoader<PageCssConfig>
+  private ruleLoader!: TransformedFileLoader<RuleConfig[]>
+  private dataLoader!: TransformedFileLoader<PageDataConfig>
+  private scriptLoader!: TransformedFileLoader<PageScriptConfig>
+  private cssLoader!: TransformedFileLoader<PageCssConfig>
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
@@ -269,7 +269,7 @@ export class PageConfigLoader implements ConfigLoader {
   ): Promise<ConfigLoadResult<string>> {
     this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)
-    const result = await this.fileLoader.load<string>(path, {
+    const result = await this.fileLoader.load(path, {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
     })
@@ -307,7 +307,7 @@ export class PageConfigLoader implements ConfigLoader {
       return { success: false, error: `Unknown file type: ${filename}`, timestamp: Date.now() }
     }
     const path = this.toPageFilePath(pageId, filename)
-    const result = await this.fileLoader.load<string>(path, {
+    const result = await this.fileLoader.load(path, {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
     })
@@ -394,7 +394,7 @@ export class PageConfigLoader implements ConfigLoader {
   private async loadRequiredPageFile<T>(
     pageId: string,
     filename: string,
-    localLoader: DerivedLoader<T>,
+    localLoader: TransformedFileLoader<T>,
   ): Promise<ConfigLoadResult<T>> {
     return this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
   }
@@ -402,7 +402,7 @@ export class PageConfigLoader implements ConfigLoader {
   private async loadOptionalPageFile<T>(
     pageId: string,
     filename: PageConfigFileName,
-    localLoader: DerivedLoader<T>,
+    localLoader: TransformedFileLoader<T>,
     knownFiles: Set<PageConfigFileName> | null,
   ): Promise<ConfigLoadResult<T | undefined>> {
     if (this.isKnownMissing(knownFiles, filename)) {
@@ -458,11 +458,11 @@ export class PageConfigLoader implements ConfigLoader {
   }
 
   /**
-   * 通过 DerivedLoader 加载页面文件并转为 ConfigLoadResult。
+   * 通过 TransformedFileLoader 加载页面文件并转为 ConfigLoadResult。
    * timestamp 未变时直接命中编译缓存，跳过 transform 函数。
    */
   private async derivedResult<T>(
-    loader: DerivedLoader<T>,
+    loader: TransformedFileLoader<T>,
     path: string
   ): Promise<ConfigLoadResult<T>> {
     return this.fileResultFromData(await loader.load(path), path)

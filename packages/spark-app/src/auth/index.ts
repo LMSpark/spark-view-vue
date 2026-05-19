@@ -8,6 +8,5 @@ export type {
   AuthConfig,
   LoginCredentials,
   AuthResult,
-  TokenStorage,
-  IAuthService
+  TokenStorage
 } from './types'

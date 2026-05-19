@@ -10,6 +10,8 @@
  * 实现 spark-utils → spark-app → AI 闭环的 **全链路贯穿**。
  */
 
+import { isCallable, isRecord } from './internal/guards.js'
+
 /** 日志级别 */
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
@@ -80,8 +82,8 @@ export function parseLogArgs(prefix: string | undefined, args: unknown[]): { mes
       strings.push(a)
     } else if (a instanceof Error) {
       meta = { ...meta, error: a.message, stack: a.stack }
-    } else if (a !== null && a !== undefined && typeof a === 'object') {
-      meta = { ...meta, ...(a as Record<string, unknown>) }
+    } else if (isRecord(a)) {
+      meta = { ...meta, ...a }
     } else if (a !== undefined) {
       strings.push(String(a))
     }
@@ -129,6 +131,14 @@ function consoleLogger(prefix?: string): LoggerApi {
   }
 }
 
+function isLoggerApi(value: unknown): value is LoggerApi {
+  if (!isRecord(value)) return false
+  return isCallable(value['debug'])
+    && isCallable(value['info'])
+    && isCallable(value['warn'])
+    && isCallable(value['error'])
+}
+
 /**
  * 创建 Logger
  * @param context 字符串标签 或 含 capabilities Map 的上下文
@@ -142,14 +152,12 @@ export function Logger(context?: string | CapabilityHolder): LoggerApi {
   // 直接使用 Symbol.for 匹配，避免引入 symbols 模块的循环依赖风险
   const cap = context.capabilities.get(Symbol.for('spark:capability:logger'))
   const raw = cap !== undefined ? cap : undefined
-  const impl = raw !== null && raw !== undefined && typeof raw === 'object' && 'info' in raw ? raw as Partial<LoggerApi> : undefined
-  if (impl === undefined) return consoleLogger()
+  if (!isLoggerApi(raw)) return consoleLogger()
 
-  const fb = consoleLogger()
   return {
-    debug: impl.debug?.bind(impl) ?? fb.debug,
-    info:  impl.info?.bind(impl)  ?? fb.info,
-    warn:  impl.warn?.bind(impl)  ?? fb.warn,
-    error: impl.error?.bind(impl) ?? fb.error,
+    debug: raw.debug.bind(raw),
+    info:  raw.info.bind(raw),
+    warn:  raw.warn.bind(raw),
+    error: raw.error.bind(raw),
   }
 }

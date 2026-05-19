@@ -13,8 +13,9 @@ export { HttpClientBase } from './HttpClientBase'
 export { Request, createRequest } from './Request'
 export { FetchClient, createFetchClient } from './FetchClient'
 export { createHttpClient } from './HttpClientFactory'
-export { FileLoader, createFileLoader } from './FileLoader'
-export type { LoadOptions, DerivedLoader } from './FileLoader'
+export { FileLoader, TransformedFileLoader, createFileLoader } from './FileLoader'
+export { isRequestError } from './guards'
+export type { LoadOptions, JsonLoadOptions, TextLoadOptions, TransformLoadOptions, TransformedFileLoadOptions } from './FileLoader'
 export type {
 	RequestConfig,
 	Method,

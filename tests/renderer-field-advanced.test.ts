@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, reactive } from 'vue'
-import type { IPageServiceCapability } from '@spark-view/spark-component'
+import type { PageServiceCapability } from '@spark-view/spark-component'
 import {
   FieldText,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
@@ -9,7 +9,7 @@ import {
 } from '@spark-view/spark-component'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
 
-function createPageService(overrides?: Partial<IPageServiceCapability>): IPageServiceCapability {
+function createPageService(overrides?: Partial<PageServiceCapability>): PageServiceCapability {
   return {
     showMessage: () => {},
     showConfirm: async () => false,
@@ -50,7 +50,7 @@ function resolveFieldType(component: object, componentProps?: Record<string, unk
 function mountWithFieldContext(
   component: object,
   model: Record<string, unknown>,
-  pageService?: IPageServiceCapability,
+  pageService?: PageServiceCapability,
   componentProps?: Record<string, unknown>,
   options?: { hostType?: string }
 ) {

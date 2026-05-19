@@ -20,12 +20,12 @@ import { RendererTable } from '@spark-view/spark-component'
 import { normalizeRuleEvents, normalizeOnProps } from '../packages/spark-component/src/page/binding/bind-normalize'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import type { ActionExecutionContext, ActionDescriptor } from '../packages/spark-component/src/page/actions/action-types'
-import type { IPageServiceCapability } from '@spark-view/spark-component'
+import type { PageServiceCapability } from '@spark-view/spark-component'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
 // ── 工具函数 ───────────────────────────────────────────────────────────────
 
-function createPageService(overrides: Partial<IPageServiceCapability> = {}): IPageServiceCapability {
+function createPageService(overrides: Partial<PageServiceCapability> = {}): PageServiceCapability {
   return {
     showMessage: vi.fn(),
     showConfirm: vi.fn(async () => true),
@@ -39,7 +39,7 @@ function createPageService(overrides: Partial<IPageServiceCapability> = {}): IPa
     browseFile: vi.fn(async () => null),
     uploadFile: vi.fn(async () => null),
     ...overrides,
-  } as unknown as IPageServiceCapability
+  } as unknown as PageServiceCapability
 }
 
 function createActionContext(overrides?: Partial<ActionExecutionContext>): ActionExecutionContext {

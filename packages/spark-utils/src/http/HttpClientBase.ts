@@ -20,6 +20,7 @@
  */
 
 import { Logger } from '../logger'
+import { isRecord } from '../internal/guards.js'
 import type {
   RequestConfig, HttpResponse,
   RequestError, RequestInterceptor, ResponseInterceptor, HttpClient, ApiEnvelope,
@@ -302,7 +303,7 @@ export abstract class HttpClientBase implements HttpClient {
   ): RequestError {
     const result: RequestError = Object.assign(new Error(message), {
       config,
-      name: 'RequestError' as const,
+      name: 'RequestError',
       status: opts.status ?? 0,
     })
     if (opts.code !== undefined) result.code = opts.code
@@ -340,8 +341,8 @@ export abstract class HttpClientBase implements HttpClient {
   }
 
   private isApiEnvelope(value: unknown): value is ApiEnvelope {
-    if (value === null || typeof value !== 'object') return false
-    const record = value as Record<string, unknown>
+    if (!isRecord(value)) return false
+    const record = value
     return typeof record['ok'] === 'boolean'
       && Object.prototype.hasOwnProperty.call(record, 'data')
       && Object.prototype.hasOwnProperty.call(record, 'error')

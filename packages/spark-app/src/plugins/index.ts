@@ -6,6 +6,7 @@
 
 export {
   PluginManager,
+  PluginRegistry,
   createPluginRegister,
   createPluginRegistry,
   getGlobalPluginRegistry
@@ -17,7 +18,6 @@ export {
 } from './presets'
 
 export type {
-  IPluginRegistry,
   PluginConfigItem,
   PluginConfig,
   PluginLoader,

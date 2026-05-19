@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SPARK Application Layer Types
  * 应用层类型定义
  */
@@ -10,7 +10,7 @@ import type { LogLevel } from '@spark-view/spark-utils'
 import type { App } from 'vue'
 import type { Router } from 'vue-router'
 import type { AuthConfig } from './auth'
-import type { IThemeCapability } from './theme'
+import type { ThemeCapability } from './theme'
 export type { LogLevel }
 
 /**
@@ -117,7 +117,7 @@ export interface BootstrapContext extends AppContext {
   /** Vue Router 实例 */
   router: Router
   /** 主题服务（仅在启用 theme 选项时存在） */
-  theme?: IThemeCapability
+  theme?: ThemeCapability
 }
 
 /**
@@ -135,7 +135,7 @@ export interface BootstrapOptions {
   /** 挂载目标元素选择器（默认 '#app'） */
   mountTarget?: string
   /** 主题服务实例（由 start() 创建并传入，或手动传入） */
-  themeService?: IThemeCapability
+  themeService?: ThemeCapability
   /** 挂载前钩子 */
   beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */

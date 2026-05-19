@@ -20,6 +20,7 @@ export type { BootstrapOptions } from './types'
 // 插件管理系统
 export {
   PluginManager,
+  PluginRegistry,
   createPluginRegister,
   createPluginRegistry,
   getGlobalPluginRegistry,
@@ -28,7 +29,6 @@ export {
 } from './plugins'
 
 export type {
-  IPluginRegistry,
   PluginConfigItem,
   PluginConfig,
   PluginLoader,
@@ -46,7 +46,6 @@ export type {
   LoginCredentials,
   AuthResult,
   TokenStorage,
-  IAuthService
 } from './auth'
 
 // Logger

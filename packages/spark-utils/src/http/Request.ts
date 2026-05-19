@@ -7,6 +7,7 @@
 
 import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
+import { isRecord } from '../internal/guards.js'
 import { HttpClientBase, DEFAULT_TIMEOUT } from './HttpClientBase'
 import type { RequestConfig, Method, HttpResponse, RequestError, HttpClient } from './types'
 
@@ -67,15 +68,33 @@ export class Request extends HttpClientBase {
         if (typeof v === 'string') headers[k] = v
       }
     }
-    return {
+    const result: RequestConfig = {
       url: c.url ?? '',
-      method: (c.method?.toUpperCase() ?? 'GET') as Method,
+      method: this.toMethod(c.method),
       headers,
-      ...(c.params !== null && c.params !== undefined && { params: c.params as Record<string, unknown> }),
-      data: c.data as unknown,
+      data: c.data,
       timeout: c.timeout ?? DEFAULT_TIMEOUT,
       responseType: c.responseType ?? 'json',
       baseURL: c.baseURL ?? '',
+    }
+    if (isRecord(c.params)) {
+      result.params = c.params
+    }
+    return result
+  }
+
+  private toMethod(method: string | undefined): Method {
+    const normalized = method?.toUpperCase()
+    switch (normalized) {
+      case 'POST':
+      case 'PUT':
+      case 'PATCH':
+      case 'DELETE':
+        return normalized
+      case 'GET':
+      case undefined:
+      default:
+        return 'GET'
     }
   }
 

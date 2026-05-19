@@ -20,7 +20,7 @@
 import { computed, getCurrentScope, inject, onScopeDispose, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
-export interface IThemeCapability {
+export interface ThemeCapability {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
@@ -30,7 +30,7 @@ export interface IThemeCapability {
 }
 
 /** Vue DI 注入键（仅供 App.vue / Settings.vue 等非 SPARK 组件使用） */
-export const THEME_INJECTION_KEY: InjectionKey<IThemeCapability> = Symbol('spark-theme')
+export const THEME_INJECTION_KEY: InjectionKey<ThemeCapability> = Symbol('spark-theme')
 
 /** 主题服务配置 */
 export interface ThemeServiceOptions {
@@ -43,7 +43,7 @@ export interface ThemeServiceOptions {
 }
 
 /** 响应式主题服务（内部使用，组件层可直接读 ref） */
-export interface ThemeServiceReactive extends IThemeCapability {
+export interface ThemeServiceReactive extends ThemeCapability {
   /** 响应式当前模式 */
   readonly modeRef: Ref<ThemeMode>
   /** 响应式 isDark */
@@ -207,6 +207,6 @@ export function createThemeService(options: ThemeServiceOptions = {}): ThemeServ
  * 适用于 App.vue / Settings.vue 等非 SPARK 组件；
  * SPARK 组件使用 `consume(THEME)` 获取。
  */
-export function useTheme(): IThemeCapability | undefined {
+export function useTheme(): ThemeCapability | undefined {
   return inject(THEME_INJECTION_KEY, undefined)
 }

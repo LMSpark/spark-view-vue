@@ -62,68 +62,64 @@ export interface PluginInstance {
   loader: PluginLoader
 }
 
-/**
- * 插件注册表接口
- */
-export interface IPluginRegistry {
-  register(id: string, loader: Omit<PluginLoader, 'id'>): void
-  registerAll(loaders: Record<string, Omit<PluginLoader, 'id'>>): void
-  get(id: string): PluginLoader | undefined
-  has(id: string): boolean
-  getAll(): PluginLoader[]
-  getAllIds(): string[]
-  unregister(id: string): boolean
-  clear(): void
-  getStats(): { total: number; plugins: string[] }
+export class PluginRegistry {
+  private readonly loaders = new Map<string, PluginLoader>()
+
+  register(id: string, loader: Omit<PluginLoader, 'id'>): void {
+    if (this.loaders.has(id)) {
+      pluginLogger.warn(`Plugin "${id}" already registered, will be overwritten`)
+    }
+    this.loaders.set(id, { id, ...loader })
+  }
+
+  registerAll(entries: Record<string, Omit<PluginLoader, 'id'>> | null | undefined): void {
+    if (entries === null || entries === undefined) return
+    for (const [id, loader] of Object.entries(entries)) {
+      this.register(id, loader)
+    }
+  }
+
+  get(id: string): PluginLoader | undefined {
+    return this.loaders.get(id)
+  }
+
+  has(id: string): boolean {
+    return this.loaders.has(id)
+  }
+
+  getAll(): PluginLoader[] {
+    return Array.from(this.loaders.values())
+  }
+
+  getAllIds(): string[] {
+    return Array.from(this.loaders.keys())
+  }
+
+  unregister(id: string): boolean {
+    return this.loaders.delete(id)
+  }
+
+  clear(): void {
+    this.loaders.clear()
+  }
+
+  getStats(): { total: number; plugins: string[] } {
+    return { total: this.loaders.size, plugins: Array.from(this.loaders.keys()) }
+  }
 }
 
 /**
  * 创建隔离的插件注册表实例（测试 / 微前端场景）
  */
-export function createPluginRegistry(): IPluginRegistry {
-  const loaders = new Map<string, PluginLoader>()
-  return {
-    register(id: string, loader: Omit<PluginLoader, 'id'>): void {
-      if (loaders.has(id)) {
-        pluginLogger.warn(`Plugin "${id}" already registered, will be overwritten`)
-      }
-      loaders.set(id, { id, ...loader })
-    },
-    registerAll(entries: Record<string, Omit<PluginLoader, 'id'>> | null | undefined): void {
-      if (entries === null || entries === undefined) return
-      for (const [id, loader] of Object.entries(entries)) {
-        this.register(id, loader)
-      }
-    },
-    get(id: string): PluginLoader | undefined {
-      return loaders.get(id)
-    },
-    has(id: string): boolean {
-      return loaders.has(id)
-    },
-    getAll(): PluginLoader[] {
-      return Array.from(loaders.values())
-    },
-    getAllIds(): string[] {
-      return Array.from(loaders.keys())
-    },
-    unregister(id: string): boolean {
-      return loaders.delete(id)
-    },
-    clear(): void {
-      loaders.clear()
-    },
-    getStats() {
-      return { total: loaders.size, plugins: Array.from(loaders.keys()) }
-    }
-  }
+export function createPluginRegistry(): PluginRegistry {
+  return new PluginRegistry()
 }
 
 /** 全局插件注册表单例（惰性创建） */
-let _globalPluginRegistry: IPluginRegistry | undefined
+let _globalPluginRegistry: PluginRegistry | undefined
 
 /** 获取全局插件注册表单例 */
-export function getGlobalPluginRegistry(): IPluginRegistry {
+export function getGlobalPluginRegistry(): PluginRegistry {
   _globalPluginRegistry ??= createPluginRegistry()
   return _globalPluginRegistry
 }
@@ -156,7 +152,7 @@ export class PluginManager {
    */
   static async loadPlugins(
     pluginConfigs: Record<string, PluginConfig> | null | undefined,
-    registry: IPluginRegistry = getGlobalPluginRegistry()
+    registry: PluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance[]> {
     const plugins: PluginInstance[] = []
     const safePluginConfigs = pluginConfigs ?? {}
@@ -210,7 +206,7 @@ export class PluginManager {
   static async loadPlugin(
     id: string,
     config: PluginConfig = { enabled: true },
-    registry: IPluginRegistry = getGlobalPluginRegistry()
+    registry: PluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance | null> {
     const normalized = this.normalizeConfig(config)
     
@@ -259,7 +255,7 @@ export class PluginManager {
  * })
  * ```
  */
-export function createPluginRegister(registry: IPluginRegistry = getGlobalPluginRegistry()) {
+export function createPluginRegister(registry: PluginRegistry = getGlobalPluginRegistry()) {
   return {
     register: (id: string, loader: Omit<PluginLoader, 'id'>) => {
       registry.register(id, loader)

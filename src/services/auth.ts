@@ -7,8 +7,7 @@
  * 所有 API 调用自动附带 X-Tenant-Id 头。
  */
 
-import { createFetchClient } from '@spark-view/spark-utils'
-import type { RequestError } from '@spark-view/spark-utils'
+import { createFetchClient, isRequestError } from '@spark-view/spark-utils'
 
 // ── Token 管理 ──────────────────────────────────────────────────────────────
 
@@ -89,15 +88,20 @@ export function switchProject(projectId: string): void {
 
 const authHttp = createFetchClient()
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
 async function authFetch(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
   try {
     return await authHttp.post<Record<string, unknown>>(url, body)
   } catch (err) {
-    const reqErr = err as RequestError
-    const response = reqErr.response as Record<string, unknown> | undefined
-    const error = response?.['error'] as Record<string, unknown> | undefined
-    const serverMsg = typeof error?.['message'] === 'string' ? error['message'] : response?.['message']
-    throw new Error(typeof serverMsg === 'string' ? serverMsg : `请求失败 (${reqErr.status ?? 0})`)
+    const response = isRequestError(err) ? err.response : undefined
+    const error = isRecord(response) && isRecord(response['error']) ? response['error'] : undefined
+    const message = isRecord(response) ? response['message'] : undefined
+    const serverMsg = typeof error?.['message'] === 'string' ? error['message'] : message
+    const status = isRequestError(err) ? err.status ?? 0 : 0
+    throw new Error(typeof serverMsg === 'string' ? serverMsg : typeof message === 'string' ? message : `请求失败 (${status})`)
   }
 }
 

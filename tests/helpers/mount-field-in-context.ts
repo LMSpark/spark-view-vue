@@ -10,7 +10,7 @@ import {
   Spark,
   useSparkComponent,
 } from '@spark-view/spark-component'
-import type { SparkNode, SparkCapabilityContext, ComponentRegistry, IPageServiceCapability } from '@spark-view/spark-component'
+import type { SparkNode, SparkCapabilityContext, ComponentRegistry, PageServiceCapability } from '@spark-view/spark-component'
 import type { DataRow, DataSetContract } from '@spark-view/spark-data'
 
 interface MountFieldInContextOptions {
@@ -22,7 +22,7 @@ interface MountFieldInContextOptions {
   global?: ComponentMountingOptions<unknown>['global'] | undefined
   pageDataSet?: DataSetContract | undefined
   dataSource?: unknown
-  pageService?: IPageServiceCapability | undefined
+  pageService?: PageServiceCapability | undefined
   hostType?: string | undefined
 }
 

@@ -16,14 +16,14 @@
 // =============================================================================
 
 // ==================== 类型定义 ====================
-import type { AuthConfig, LoginCredentials, AuthResult, IAuthService } from './types'
+import type { AuthConfig, LoginCredentials, AuthResult } from './types'
 import type { AppEnvironment, EnvironmentInfo } from '../types'
 
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
-import { toError, createRequest } from '@spark-view/spark-utils'
-import type { HttpClient, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import { toError, createRequest, isRequestError } from '@spark-view/spark-utils'
+import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
 import { envAdapter } from '../env'
 
 // =============================================================================
@@ -50,7 +50,7 @@ const authLogger = createLogger('auth')
  * - 完整的生命周期钩子
  * - 错误处理和日志记录
  */
-export class AuthService implements IAuthService {
+export class AuthService {
   // =============================================================================
   // 私有属性 (Private Properties)
   // =============================================================================
@@ -536,13 +536,12 @@ export class AuthService implements IAuthService {
         json: () => Promise.resolve(resp.data),
       }
     } catch (err) {
-      const reqErr = err as RequestError
-      if (reqErr.status !== undefined) {
+      if (isRequestError(err) && err.status !== undefined) {
         return {
           ok: false,
-          status: reqErr.status,
-          statusText: reqErr.message,
-          json: () => Promise.resolve(reqErr.response),
+          status: err.status,
+          statusText: err.message,
+          json: () => Promise.resolve(err.response),
         }
       }
       throw err
@@ -719,7 +718,7 @@ export class AuthService implements IAuthService {
  * authService.initialize(config)
  * ```
  */
-export function createAuthService(): IAuthService {
+export function createAuthService(): AuthService {
   return new AuthService()
 }
 

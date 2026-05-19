@@ -111,7 +111,7 @@ describe('FileLoader', () => {
         config: {}
       })
 
-      const result = await loader.load<string>('script.js', { parseJSON: false })
+      const result = await loader.load('script.js', { parseJSON: false })
 
       expect(result.success).toBe(true)
       expect(result.data).toBe('function test() { return 42; }')
@@ -544,7 +544,7 @@ describe('FileLoader', () => {
       }
       internal.storage = fakeStorage
 
-      const data = localLoader.retrieve<string>('kept.json', 'ts-kept')
+      const data = localLoader.retrieve('kept.json', 'ts-kept')
 
       expect(data).toBe('kept-content')
       expect(fakeStorage.getItem(cacheKey)).not.toBeNull()
@@ -602,7 +602,7 @@ describe('FileLoader', () => {
         config: {}
       })
 
-      const result = await loader.load<string>('empty.css', { parseJSON: false })
+      const result = await loader.load('empty.css', { parseJSON: false })
 
       expect(result.success).toBe(true)
       expect(result.data).toBe('')
@@ -639,14 +639,14 @@ describe('FileLoader', () => {
       })
 
       const toUpper = (raw: string) => raw.toUpperCase()
-      const result = await loader.load<string>('t.json', { transform: toUpper, parseJSON: false })
+      const result = await loader.load('t.json', { transform: toUpper })
 
       expect(result.success).toBe(true)
       expect(result.data).toBe('{"VALUE":1}')
       expect(result.fromCache).toBe(false)
     })
 
-    it('相同 timestamp → 第二次命中变换缓存，不再调用 transform', async () => {
+    it('内联 transform 每次调用保持一次性语义', async () => {
       // 首次：HTTP 请求
       mockAxiosInstance.request.mockResolvedValue({
         data: { content: '{"x":42}', timestamp: 'ts-same' },
@@ -659,9 +659,8 @@ describe('FileLoader', () => {
         return `${raw  }-transformed`
       }
 
-      await loader.load<string>('cached-transform.json', {
+      await loader.load('cached-transform.json', {
         transform: countedTransform,
-        parseJSON: false
       })
 
       // 第二次请求返回 notModified（timestamp 不变）
@@ -670,14 +669,13 @@ describe('FileLoader', () => {
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
 
-      const result2 = await loader.load<string>('cached-transform.json', {
+      const result2 = await loader.load('cached-transform.json', {
         transform: countedTransform,
-        parseJSON: false
       })
 
       expect(result2.success).toBe(true)
       expect(result2.fromCache).toBe(true)
-      expect(callCount).toBe(1) // transform 只执行一次
+      expect(callCount).toBe(2)
       expect(mockAxiosInstance.request).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
@@ -695,7 +693,7 @@ describe('FileLoader', () => {
       let callCount = 0
       const fn = (raw: string) => { callCount++; return raw }
 
-      await loader.load<string>('force.json', { transform: fn, parseJSON: false })
+      await loader.load('force.json', { transform: fn })
       expect(callCount).toBe(1)
 
       mockAxiosInstance.request.mockResolvedValue({
@@ -703,9 +701,8 @@ describe('FileLoader', () => {
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
 
-      await loader.load<string>('force.json', {
+      await loader.load('force.json', {
         transform: fn,
-        parseJSON: false,
         forceRefresh: true
       })
       expect(callCount).toBe(2)
@@ -718,7 +715,7 @@ describe('FileLoader', () => {
       })
 
       const brokenFn = (_raw: string) => { throw new Error('解析崩了') }
-      const result = await loader.load<string>('err.json', { transform: brokenFn })
+      const result = await loader.load('err.json', { transform: brokenFn })
 
       expect(result.success).toBe(false)
       // error 包含原始异常消息（FileLoader 直接返回 error.message，不添加前缀）
@@ -784,7 +781,7 @@ describe('FileLoader', () => {
   describe('store() / retrieve() 高级 API', () => {
     it('store 后 retrieve 命中（timestamp 匹配）', () => {
       loader.store('my-key', { computed: true }, 'ts-store')
-      const result = loader.retrieve<{ computed: boolean }>('my-key', 'ts-store')
+      const result = loader.retrieve('my-key', 'ts-store')
       expect(result).toEqual({ computed: true })
     })
 

@@ -89,7 +89,7 @@ import {
   MODULE_CONTEXT,
   CSS_SCOPE,
 } from '../../core/capability-keys'
-import type { ModuleContextCapability, PageCssScopeCapability } from '../../core/capability-keys'
+import type { PageCssScopeCapability } from '../../core/capability-keys'
 import { useRendererSetup } from './useRendererSetup'
 import { useCssScope } from './useCssScope'
 import { usePageDataSet } from './usePageDataSet'
@@ -355,7 +355,7 @@ const props = withDefaults(defineProps<Props>(), {
 const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page', logger)
 const route = useRoute()
 const vueApp = currentInstance?.appContext.app
-const moduleContextCapability = sparkConsume(MODULE_CONTEXT) as ModuleContextCapability | null
+const moduleContextCapability = sparkConsume(MODULE_CONTEXT)
 
 // PAGE_SERVICE
 const pageService = buildPageService(router, {

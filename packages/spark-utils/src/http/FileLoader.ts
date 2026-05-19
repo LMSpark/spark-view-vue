@@ -9,7 +9,7 @@
  * ## 内联变换（一次性）
  * ```ts
  * const result = await loader.load<DataSet>('/pagedata.json', {
- *   transform: buildDataSet   // 变换结果自动缓存，下次命中跳过 buildDataSet
+ *   transform: buildDataSet
  * })
  * ```
  *
@@ -28,6 +28,7 @@
 
 import { Logger } from '../logger'
 import { toErrorMessage } from '../error-utils'
+import { isRecord, readNumberProperty } from '../internal/guards.js'
 import { createRequest } from './Request'
 import type {
   FileLoadOptions,
@@ -60,25 +61,125 @@ interface CacheWriteOptions {
   reportFailureAsError?: boolean
 }
 
-/** load() 选项 */
-export interface LoadOptions<T = unknown> {
+type FileLoaderListeners = {
+  [K in keyof FileLoaderEventMap]: Array<(payload: FileLoaderEventMap[K]) => void>
+}
+
+interface LoadOptionBase {
   /** false = 返回原始字符串，不 JSON.parse（默认 true） */
-  parseJSON?: boolean
   /** 跳过缓存强制重新请求（默认 false） */
   forceRefresh?: boolean
-  /**
-   * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。
-   * 提供后 load() 返回 T（变换结果），而非原始 JSON。
-   */
-  transform?: (rawContent: string) => T | Promise<T>
   /** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */
   expirationLevel?: number
 }
 
-/** withTransform() 返回的子加载器接口 */
-export interface DerivedLoader<T> {
-  load(fileName: string, opts?: Pick<LoadOptions<T>, 'forceRefresh'>): Promise<FileLoadResult<T>>
-  loadBatch(fileNames: string[], opts?: Pick<LoadOptions<T>, 'forceRefresh'>): Promise<Map<string, FileLoadResult<T>>>
+export type JsonLoadOptions = LoadOptionBase & {
+  parseJSON?: true
+}
+
+export type TextLoadOptions = LoadOptionBase & {
+  parseJSON: false
+}
+
+export type TransformLoadOptions<T> = LoadOptionBase & {
+  /**
+   * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。
+   * 提供后 load() 返回 T（变换结果），而非原始 JSON。
+   */
+  transform: (rawContent: string) => T | Promise<T>
+}
+
+/** load() 选项 */
+export type LoadOptions<T = unknown> = JsonLoadOptions | TextLoadOptions | TransformLoadOptions<T>
+
+export type TransformedFileLoadOptions = Pick<LoadOptionBase, 'forceRefresh'>
+
+export class TransformedFileLoader<T> {
+  private readonly transformedCache = new Map<string, CacheEntry<T>>()
+
+  constructor(
+    private readonly owner: FileLoader,
+    private readonly transform: (rawContent: string) => T | Promise<T>,
+  ) {}
+
+  load(fileName: string, opts?: TransformedFileLoadOptions): Promise<FileLoadResult<T>> {
+    return this.loadTransformed(fileName, opts)
+  }
+
+  async loadBatch(fileNames: string[], opts?: TransformedFileLoadOptions): Promise<Map<string, FileLoadResult<T>>> {
+    const results = new Map<string, FileLoadResult<T>>()
+    await Promise.all(
+      fileNames.map(async (fileName) => {
+        results.set(fileName, await this.load(fileName, opts))
+      }),
+    )
+    return results
+  }
+
+  private async loadTransformed(fileName: string, opts?: TransformedFileLoadOptions): Promise<FileLoadResult<T>> {
+    const cached = opts?.forceRefresh === true ? null : this.readTransformedEntry(fileName)
+    const raw = await this.owner.loadText(fileName, opts)
+    if (!raw.success) return this.failureFrom(raw)
+
+    if (raw.notModified === true && cached !== null && cached.sourceTimestamp === raw.timestamp) {
+      return {
+        success: true,
+        data: cached.data,
+        timestamp: cached.sourceTimestamp,
+        fromCache: true,
+        notModified: true,
+      }
+    }
+
+    let data: T
+    try {
+      data = await this.transform(raw.data ?? '')
+    } catch (error) {
+      return {
+        success: false,
+        error: toErrorMessage(error),
+        fromCache: false,
+        reason: 'parse',
+      }
+    }
+    const timestamp = raw.timestamp ?? ''
+    if (timestamp !== '') {
+      this.transformedCache.set(fileName, {
+        data,
+        sourceTimestamp: timestamp,
+        cachedAt: Date.now(),
+        lastAccess: Date.now(),
+        expirationLevel: 0,
+      })
+    }
+    return {
+      success: true,
+      data,
+      timestamp,
+      fromCache: raw.fromCache,
+      ...(raw.notModified !== undefined && { notModified: raw.notModified }),
+      ...(raw.error !== undefined && { error: raw.error }),
+    }
+  }
+
+  private readTransformedEntry(fileName: string): CacheEntry<T> | null {
+    const entry = this.transformedCache.get(fileName) ?? null
+    if (entry === null) return null
+    entry.lastAccess = Date.now()
+    return entry
+  }
+
+  private failureFrom(result: FileLoadResult<unknown>): FileLoadResult<never> {
+    return {
+      success: false,
+      fromCache: result.fromCache,
+      ...(result.error !== undefined && { error: result.error }),
+      ...(result.timestamp !== undefined && { timestamp: result.timestamp }),
+      ...(result.notModified !== undefined && { notModified: result.notModified }),
+      ...(result.status !== undefined && { status: result.status }),
+      ...(result.reason !== undefined && { reason: result.reason }),
+    }
+  }
 }
 
 export class FileLoader {
@@ -86,9 +187,7 @@ export class FileLoader {
   private memCache = new Map<string, CacheEntry<unknown>>()
   private request: HttpClient
   private storage: Storage | null
-  private listeners: {
-    [K in keyof FileLoaderEventMap]: Array<(payload: FileLoaderEventMap[K]) => void>
-  } = {
+  private listeners: FileLoaderListeners = {
     'file-loaded': [],
     'file-missing': [],
     'file-error': [],
@@ -145,16 +244,44 @@ export class FileLoader {
     event: K,
     listener: (payload: FileLoaderEventMap[K]) => void,
   ): () => void {
-    const bucket = this.listeners[event] as Array<(payload: FileLoaderEventMap[K]) => void>
-    bucket.push(listener)
-    return () => {
-      const idx = bucket.indexOf(listener)
-      if (idx >= 0) bucket.splice(idx, 1)
+    this.listeners[event].push(listener)
+    return () => this.removeListener(event, listener)
+  }
+
+  private removeListener<K extends keyof FileLoaderEventMap>(
+    event: K,
+    listener: (payload: FileLoaderEventMap[K]) => void,
+  ): void {
+    const bucket = this.listeners[event]
+    const idx = bucket.indexOf(listener)
+    if (idx >= 0) bucket.splice(idx, 1)
+  }
+
+  private emit(event: 'file-loaded', payload: FileLoaderEventMap['file-loaded']): void
+  private emit(event: 'file-missing', payload: FileLoaderEventMap['file-missing']): void
+  private emit(event: 'file-error', payload: FileLoaderEventMap['file-error']): void
+  private emit(event: keyof FileLoaderEventMap, payload: unknown): void {
+    switch (event) {
+      case 'file-loaded':
+        if (!this.isFileLoadedPayload(payload)) throw new Error('Invalid file-loaded payload')
+        this.notifyListeners(event, this.listeners['file-loaded'], payload)
+        return
+      case 'file-missing':
+        if (!this.isFileMissingPayload(payload)) throw new Error('Invalid file-missing payload')
+        this.notifyListeners(event, this.listeners['file-missing'], payload)
+        return
+      case 'file-error':
+        if (!this.isFileErrorPayload(payload)) throw new Error('Invalid file-error payload')
+        this.notifyListeners(event, this.listeners['file-error'], payload)
+        return
     }
   }
 
-  private emit<K extends keyof FileLoaderEventMap>(event: K, payload: FileLoaderEventMap[K]): void {
-    const bucket = this.listeners[event] as Array<(payload: FileLoaderEventMap[K]) => void>
+  private notifyListeners<TPayload>(
+    event: keyof FileLoaderEventMap,
+    bucket: Array<(payload: TPayload) => void>,
+    payload: TPayload,
+  ): void {
     if (bucket.length === 0) return
     for (const listener of bucket) {
       try {
@@ -165,134 +292,63 @@ export class FileLoader {
     }
   }
 
+  private isFileLoadedPayload(value: unknown): value is FileLoaderEventMap['file-loaded'] {
+    return isRecord(value)
+      && typeof value['fileName'] === 'string'
+      && typeof value['fromCache'] === 'boolean'
+  }
+
+  private isFileMissingPayload(value: unknown): value is FileLoaderEventMap['file-missing'] {
+    return isRecord(value)
+      && typeof value['fileName'] === 'string'
+      && value['reason'] === 'not-found'
+  }
+
+  private isFileErrorPayload(value: unknown): value is FileLoaderEventMap['file-error'] {
+    return isRecord(value)
+      && typeof value['fileName'] === 'string'
+      && typeof value['error'] === 'string'
+      && (value['reason'] === 'network'
+        || value['reason'] === 'invalid-response'
+        || value['reason'] === 'parse'
+        || value['reason'] === 'unknown')
+  }
+
+  loadText(fileName: string, options?: TransformedFileLoadOptions): Promise<FileLoadResult<string>> {
+    const textOptions: TextLoadOptions = options?.forceRefresh === true
+      ? { parseJSON: false, forceRefresh: true }
+      : { parseJSON: false }
+    return this.load(fileName, textOptions)
+  }
+
   /**
    * 加载单个文件。
    * - 不传 transform：返回解析后的原始 JSON（或字符串）。
    * - 传入 transform：返回变换结果，变换产物自动缓存，timestamp 未变时跳过变换。
    */
-  async load<T = unknown>(
+  async load<T>(fileName: string, options: TransformLoadOptions<T>): Promise<FileLoadResult<T>>
+  async load(fileName: string, options: TextLoadOptions): Promise<FileLoadResult<string>>
+  async load(fileName: string, options?: JsonLoadOptions): Promise<FileLoadResult<unknown>>
+  async load<T>(
     fileName: string,
-    options?: LoadOptions<T>
-  ): Promise<FileLoadResult<T>> {
-    const parseJSON = options?.parseJSON ?? true
+    options?: LoadOptions<T>,
+  ): Promise<FileLoadResult<T> | FileLoadResult<string> | FileLoadResult<unknown>> {
+    const parseJSON = options !== undefined && 'parseJSON' in options ? options.parseJSON ?? true : true
     const forceRefresh = options?.forceRefresh ?? false
-    const transform = options?.transform
+    const transform = options !== undefined && 'transform' in options ? options.transform : undefined
     const expirationLevel = options?.expirationLevel ?? this.opts.defaultExpirationLevel
 
-    // --- 1. 有 transform：两阶段缓存（防止 DataSet 等不可序列化对象经 JSON 往返后丢失原型方法） ---
-    // rawKey:   存原始文件字符串 → localStorage（可序列化）
-    // xformKey: 存 transform 结果 → 仅 memCache（DataSet 实例等，刷新后由 rawKey 重算）
-    if (transform) {
-      const rawKey   = `${fileName  }:raw`
-      const xformKey = `${fileName  }:transform`
-
-      // 同时读两层缓存
-      const xformEntry = forceRefresh ? null : this.readEntryMem<T>(xformKey)
-      const rawEntry   = forceRefresh ? null : this.readEntry<string>(rawKey)
-      // 注意：这是“源文件时间戳”，不是前端缓存写入时间。
-      // 后端用它判断页面四文件是否变化；未变化时只返回 notModified，不返回文件内容。
-      // 因此请求参数必须来自上一次响应的 sourceTimestamp，不能替换成 Date.now()/cachedAt。
-      const knownTimestamp = rawEntry?.sourceTimestamp ?? xformEntry?.sourceTimestamp ?? ''
-
-      try {
-        const params = FileLoader.timestampParams(knownTimestamp)
-
-        const response = await this.request.requestFull<FileResponse>({
-          url: fileName,
-          method: 'GET',
-          params,
-          meta: {
-            silentHttpErrorStatusCodes: [404],
-          },
-        })
-        const result = response.data
-
-        if (result.notModified === true) {
-          // 路径 1：内存命中 → 直接返回 DataSet 实例（最快）
-          if (xformEntry) {
-            this.emit('file-loaded', { fileName, fromCache: true, timestamp: xformEntry.sourceTimestamp, notModified: true })
-            return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, notModified: true }
-          }
-          // 路径 2：内存冷（页面刷新）+ localStorage raw 命中 → 重执行 transform，恢复原型
-          // 守卫：rawEntry.data 必须是字符串（旧版可能错误存入对象）
-          if (rawEntry && typeof rawEntry.data === 'string') {
-            const transformed = await transform(rawEntry.data)
-            this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
-            this.emit('file-loaded', { fileName, fromCache: true, timestamp: rawEntry.sourceTimestamp, notModified: true })
-            return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, notModified: true }
-          }
-          this.emit('file-error', { fileName, error: 'notModified 但无本地缓存', reason: 'invalid-response' })
-          return { success: false, error: 'notModified 但无本地缓存', fromCache: false, reason: 'invalid-response' }
-        }
-
-        // 文件不存在或响应体为空（如可选的 style.css）——静默返回
-        if (typeof result.content !== 'string' || !result.timestamp) {
-          this.emit('file-error', { fileName, error: '响应格式错误：缺少 content 或 timestamp', reason: 'invalid-response' })
-          return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }
-        }
-
-        // 新内容：raw 存 localStorage，transform 结果仅存内存
-        const transformed = await transform(result.content)
-        this.store(rawKey, result.content, result.timestamp, expirationLevel)
-        this.writeEntryMem(xformKey, transformed, result.timestamp, expirationLevel)
-        this.emit('file-loaded', { fileName, fromCache: false, timestamp: result.timestamp })
-        return { success: true, data: transformed, timestamp: result.timestamp, fromCache: false }
-
-      } catch (error) {
-        // 网络失败降级：优先内存 transform 结果，再尝试从 raw 重算
-        if (this.opts.fallbackToCache) {
-          if (xformEntry) {
-            const msg = toErrorMessage(error)
-            logger.warn('网络失败，使用 transform 缓存', { fileName, error: msg })
-            this.emit('file-loaded', { fileName, fromCache: true, timestamp: xformEntry.sourceTimestamp })
-            return { success: true, data: xformEntry.data, timestamp: xformEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
-          }
-          if (rawEntry && typeof rawEntry.data === 'string') {
-            try {
-              const transformed = await transform(rawEntry.data)
-              this.writeEntryMem(xformKey, transformed, rawEntry.sourceTimestamp, expirationLevel)
-              const msg = toErrorMessage(error)
-              logger.warn('网络失败，从 raw 缓存重执行 transform', { fileName, error: msg })
-              this.emit('file-loaded', { fileName, fromCache: true, timestamp: rawEntry.sourceTimestamp })
-              return { success: true, data: transformed, timestamp: rawEntry.sourceTimestamp, fromCache: true, error: `降级缓存（${msg}）` }
-            } catch { /* transform 失败，继续抛原始网络错误 */ }
-          }
-        }
-        const msg = toErrorMessage(error)
-        // 404 是可选文件（如 style.css）的正常情况，降级为 debug 避免控制台红色错误
-        const status = (error as { status?: number }).status
-        if (status === 404) {
-          logger.debug('文件不存在（可选）', { fileName, status })
-          this.emit('file-missing', { fileName, status, reason: 'not-found' })
-        } else {
-          // 同时传入原始 error 对象，使浏览器控制台能展展完整 stack trace
-          logger.error('文件加载或 transform 失败', { fileName, error: msg }, error)
-          this.emit('file-error', {
-            fileName,
-            ...(status !== undefined && { status }),
-            error: msg,
-            reason: status === 0 ? 'network' : 'unknown',
-          })
-        }
-        return {
-          success: false,
-          error: msg,
-          fromCache: false,
-          ...(status !== undefined && { status }),
-          reason: status === 404 ? 'not-found' : status === 0 ? 'network' : 'unknown',
-        }
-      }
-    }
+    if (transform) return new TransformedFileLoader(this, transform).load(fileName, { forceRefresh })
 
     // --- 2. 无 transform：缓存原始文件（保持原有逻辑） ---
     const rawResult = await this.loadRaw(fileName, forceRefresh, expirationLevel)
-    if (!rawResult.success) return rawResult as FileLoadResult<T>
+    if (!rawResult.success) return this.fileLoadFailure(rawResult)
 
     const rawContent = rawResult.data ?? ''
     const timestamp = rawResult.timestamp ?? ''
 
     try {
-      const data = parseJSON ? (JSON.parse(rawContent) as T) : (rawContent as T)
+      const data: unknown = parseJSON ? JSON.parse(rawContent) : rawContent
       return { success: true, data, timestamp, fromCache: rawResult.fromCache, ...(rawResult.notModified !== undefined && { notModified: rawResult.notModified }), ...(rawResult.error !== undefined && { error: rawResult.error }) }
     } catch (e) {
       const parseError = `JSON 解析失败: ${e instanceof Error ? e.message : String(e)}`
@@ -302,13 +358,26 @@ export class FileLoader {
   }
 
   /** 批量加载（并行） */
-  async loadBatch<T = unknown>(
+  async loadBatch<T>(fileNames: string[], options: TransformLoadOptions<T>): Promise<Map<string, FileLoadResult<T>>>
+  async loadBatch(fileNames: string[], options: TextLoadOptions): Promise<Map<string, FileLoadResult<string>>>
+  async loadBatch(fileNames: string[], options?: JsonLoadOptions): Promise<Map<string, FileLoadResult<unknown>>>
+  async loadBatch<T>(
     fileNames: string[],
-    options?: LoadOptions<T>
-  ): Promise<Map<string, FileLoadResult<T>>> {
-    const results = new Map<string, FileLoadResult<T>>()
+    options?: LoadOptions<T>,
+  ): Promise<Map<string, FileLoadResult<T> | FileLoadResult<string> | FileLoadResult<unknown>>> {
+    const results = new Map<string, FileLoadResult<T> | FileLoadResult<string> | FileLoadResult<unknown>>()
     await Promise.all(
-      fileNames.map(async (f) => { results.set(f, await this.load<T>(f, options)) })
+      fileNames.map(async (f) => {
+        if (options !== undefined && 'transform' in options) {
+          results.set(f, await this.load(f, options))
+          return
+        }
+        if (options !== undefined && 'parseJSON' in options && options.parseJSON === false) {
+          results.set(f, await this.load(f, options))
+          return
+        }
+        results.set(f, await this.load(f, options))
+      })
     )
     return results
   }
@@ -326,13 +395,8 @@ export class FileLoader {
    */
   withTransform<T>(
     transform: (rawContent: string) => T | Promise<T>
-  ): DerivedLoader<T> {
-    return {
-      load: (fileName, opts) =>
-        this.load<T>(fileName, { ...opts, transform }),
-      loadBatch: (fileNames, opts) =>
-        this.loadBatch<T>(fileNames, { ...opts, transform })
-    }
+  ): TransformedFileLoader<T> {
+    return new TransformedFileLoader(this, transform)
   }
 
   // ==================== 底层缓存操作（供高级使用） ====================
@@ -341,16 +405,16 @@ export class FileLoader {
    * 手动缓存任意计算结果。
    * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。
    */
-  store<T>(key: string, data: T, sourceTimestamp: string, expirationLevel?: number): void {
-    this.writeEntry<T>(key, data, sourceTimestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
+  store(key: string, data: unknown, sourceTimestamp: string, expirationLevel?: number): void {
+    this.writeEntry(key, data, sourceTimestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
   }
 
   /**
    * 取回计算结果缓存，时间戳不匹配返回 null。
    * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。
    */
-  retrieve<T>(key: string, sourceTimestamp: string): T | null {
-    const entry = this.readEntry<T>(key)
+  retrieve(key: string, sourceTimestamp: string): unknown {
+    const entry = this.readEntry(key)
     if (entry?.sourceTimestamp !== sourceTimestamp) return null
     return entry.data
   }
@@ -404,7 +468,7 @@ export class FileLoader {
   /** 加载原始文件内容（仅维护 string 缓存，不做 JSON.parse 或 transform） */
   private async loadRaw(fileName: string, forceRefresh: boolean, expirationLevel?: number): Promise<FileLoadResult<string>> {
     try {
-      const cached = forceRefresh ? null : this.readEntry<string>(fileName)
+      const cached = forceRefresh ? null : this.readEntry(fileName)
       // 同上：这里的 timestamp 是后端文件版本戳，用于条件读取。
       // 如果随手改成 lastAccess/cachedAt，服务端会误判为变化并重复返回文件内容。
       const knownTimestamp = cached?.sourceTimestamp ?? ''
@@ -422,7 +486,7 @@ export class FileLoader {
       const result = response.data
 
       if (result.notModified === true) {
-        if (cached) {
+        if (cached && typeof cached.data === 'string') {
           this.emit('file-loaded', { fileName, fromCache: true, timestamp: cached.sourceTimestamp, notModified: true })
           return { success: true, data: cached.data, timestamp: cached.sourceTimestamp, fromCache: true, notModified: true }
         }
@@ -436,14 +500,14 @@ export class FileLoader {
         return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }
       }
 
-      this.writeEntry<string>(fileName, result.content, result.timestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
+      this.writeEntry(fileName, result.content, result.timestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
       this.emit('file-loaded', { fileName, fromCache: false, timestamp: result.timestamp })
       return { success: true, data: result.content, timestamp: result.timestamp, fromCache: false }
 
     } catch (error) {
       if (this.opts.fallbackToCache) {
-        const cached = this.readEntry<string>(fileName)
-        if (cached) {
+        const cached = this.readEntry(fileName)
+        if (cached && typeof cached.data === 'string') {
           const msg = toErrorMessage(error)
           logger.warn('网络失败，使用缓存', { fileName, error: msg })
           this.emit('file-loaded', { fileName, fromCache: true, timestamp: cached.sourceTimestamp })
@@ -451,7 +515,7 @@ export class FileLoader {
         }
       }
       const msg = toErrorMessage(error)
-      const status = (error as { status?: number }).status
+      const status = readNumberProperty(error, 'status')
       if (status === 404) {
         this.emit('file-missing', { fileName, status, reason: 'not-found' })
       } else {
@@ -472,17 +536,16 @@ export class FileLoader {
     }
   }
 
-  private readEntry<T>(key: string): CacheEntry<T> | null {
+  private readEntry(key: string): CacheEntry<unknown> | null {
     const k = this.opts.cachePrefix + key
-    let entry: CacheEntry<T> | null = null
+    let entry: CacheEntry<unknown> | null = null
 
     if (this.opts.storage === 'memory') {
-      const cached = this.memCache.get(k) as CacheEntry<T> | undefined
-      entry = cached ?? null
+      entry = this.memCache.get(k) ?? null
     } else {
       try {
         const raw = this.storage?.getItem(k)
-        entry = raw ? (JSON.parse(raw) as CacheEntry<T>) : null
+        entry = raw ? this.parseCacheEntry(raw) : null
       } catch {
         // 损坏的缓存项：清理后返回 null，避免反复 parse 失败
         try { this.storage?.removeItem(k) } catch { /* ignore removeItem failure */ }
@@ -517,9 +580,35 @@ export class FileLoader {
     return entry
   }
 
-  private writeEntry<T>(key: string, data: T, sourceTimestamp: string, expirationLevel: number): void {
+  private fileLoadFailure(result: FileLoadResult<unknown>): FileLoadResult<never> {
+    return {
+      success: false,
+      fromCache: result.fromCache,
+      ...(result.error !== undefined && { error: result.error }),
+      ...(result.timestamp !== undefined && { timestamp: result.timestamp }),
+      ...(result.notModified !== undefined && { notModified: result.notModified }),
+      ...(result.status !== undefined && { status: result.status }),
+      ...(result.reason !== undefined && { reason: result.reason }),
+    }
+  }
+
+  private parseCacheEntry(raw: string): CacheEntry<unknown> | null {
+    const parsed: unknown = JSON.parse(raw)
+    return this.isCacheEntry(parsed) ? parsed : null
+  }
+
+  private isCacheEntry(value: unknown): value is CacheEntry<unknown> {
+    return isRecord(value)
+      && Object.prototype.hasOwnProperty.call(value, 'data')
+      && typeof value['sourceTimestamp'] === 'string'
+      && typeof value['cachedAt'] === 'number'
+      && typeof value['lastAccess'] === 'number'
+      && typeof value['expirationLevel'] === 'number'
+  }
+
+  private writeEntry(key: string, data: unknown, sourceTimestamp: string, expirationLevel: number): void {
     const now = Date.now()
-    const entry: CacheEntry<T> = {
+    const entry: CacheEntry<unknown> = {
       data,
       sourceTimestamp,
       cachedAt: now,
@@ -534,45 +623,10 @@ export class FileLoader {
     this.writeEntryDirect(k, entry)
   }
 
-  /** 只读内存缓存，跳过 localStorage（适用于 DataSet 等不可序列化的 transform 结果） */
-  private readEntryMem<T>(key: string): CacheEntry<T> | null {
-    const k = this.opts.cachePrefix + key
-    const cached = this.memCache.get(k) as CacheEntry<T> | undefined
-    const entry = cached ?? null
-    if (entry === null) return null
-
-    const now = Date.now()
-    const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
-    const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
-    if (maxAge !== Infinity && idleTime > maxAge) {
-      this.memCache.delete(k)
-      return null
-    }
-
-    entry.lastAccess = now
-    this.memCache.set(k, entry as CacheEntry<unknown>)
-    return entry
-  }
-
-  /** 只写内存缓存，跳过 localStorage（适用于 DataSet 等不可序列化的 transform 结果） */
-  private writeEntryMem<T>(key: string, data: T, sourceTimestamp: string, expirationLevel: number): void {
-    const k = this.opts.cachePrefix + key
-    const now = Date.now()
-    const entry: CacheEntry<T> = {
-      data,
-      sourceTimestamp,
-      cachedAt: now,
-      lastAccess: now,
-      expirationLevel
-    }
-    this.enforceMaxCacheSize()
-    this.memCache.set(k, entry as CacheEntry<unknown>)
-  }
-
   /** 直接写入缓存（不检查限制，内部方法） */
-  private writeEntryDirect<T>(key: string, entry: CacheEntry<T>, options: CacheWriteOptions = {}): void {
+  private writeEntryDirect(key: string, entry: CacheEntry<unknown>, options: CacheWriteOptions = {}): void {
     if (this.opts.storage === 'memory') {
-      this.memCache.set(key, entry as CacheEntry<unknown>)
+      this.memCache.set(key, entry)
       return
     }
     const storage = this.storage
@@ -638,11 +692,8 @@ export class FileLoader {
     if (error instanceof DOMException) {
       return error.name === 'QuotaExceededError' || error.code === 22 || error.code === 1014
     }
-    if (error !== null && typeof error === 'object') {
-      const maybe = error as { name?: unknown; code?: unknown }
-      return maybe.name === 'QuotaExceededError' || maybe.code === 22 || maybe.code === 1014
-    }
-    return false
+    if (!isRecord(error)) return false
+    return error['name'] === 'QuotaExceededError' || error['code'] === 22 || error['code'] === 1014
   }
 
   private evictLeastRecentlyUsedStorageEntry(protectedKey: string): string | null {
@@ -661,7 +712,11 @@ export class FileLoader {
       try {
         const raw = storage.getItem(key)
         if (!raw) continue
-        const entry = JSON.parse(raw) as CacheEntry<unknown>
+        const entry = this.parseCacheEntry(raw)
+        if (entry === null) {
+          entries.push({ key, lastAccess: 0 })
+          continue
+        }
         entries.push({ key, lastAccess: entry.lastAccess || entry.cachedAt || 0 })
       } catch {
         entries.push({ key, lastAccess: 0 })
@@ -698,7 +753,11 @@ export class FileLoader {
       try {
         const raw = storage.getItem(key)
         if (!raw) continue
-        const entry = JSON.parse(raw) as CacheEntry<unknown>
+        const entry = this.parseCacheEntry(raw)
+        if (entry === null) {
+          entries.push({ key, lastAccess: 0 })
+          continue
+        }
         entries.push({ key, lastAccess: entry.lastAccess || entry.cachedAt || 0 })
       } catch {
         entries.push({ key, lastAccess: 0 })
@@ -732,7 +791,12 @@ export class FileLoader {
       try {
         const raw = storage.getItem(key)
         if (!raw) continue
-        const entry = JSON.parse(raw) as CacheEntry<unknown>
+        const entry = this.parseCacheEntry(raw)
+        if (entry === null) {
+          storage.removeItem(key)
+          cleaned++
+          continue
+        }
         const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
         const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
         if (maxAge !== Infinity && idleTime > maxAge) {
@@ -781,7 +845,12 @@ export class FileLoader {
         try {
           const raw = storage.getItem(key)
           if (!raw) continue
-          const entry = JSON.parse(raw) as CacheEntry<unknown>
+          const entry = this.parseCacheEntry(raw)
+          if (entry === null) {
+            storage.removeItem(key)
+            cleaned++
+            continue
+          }
           const idleTime = now - (entry.lastAccess || entry.cachedAt || 0)
           const maxAge = this.getMaxAgeForLevel(entry.expirationLevel)
           if (maxAge !== Infinity && idleTime > maxAge) {
@@ -823,7 +892,8 @@ export class FileLoader {
         try {
           const raw = storage.getItem(key)
           if (!raw) continue
-          const entry = JSON.parse(raw) as CacheEntry<unknown>
+          const entry = this.parseCacheEntry(raw)
+          if (entry === null) continue
           entries.push({ key, lastAccess: entry.lastAccess || 0 })
         } catch { /* ignore */ }
       }
