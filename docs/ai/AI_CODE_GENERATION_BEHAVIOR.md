@@ -228,6 +228,8 @@ export class PageDataLoader extends BaseDataLoader {
 
 ## SPARK AI Core 约束
 
+> **有效期**：本节约束为 AI Core 清理期的临时红线。清理完成后（以 git log 中相关重构 PR 合并为准），本节自动降级为"建议"级别，仅保留 class-first 主路径和 `as` 类型断言禁止两条。
+
 `packages/spark-ai` 的 AI core 采用 class-first 主路径：
 
 - `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 等旧兼容契约已删除；AI core、registrations、app-ai 都不得重新引入。
@@ -245,6 +247,20 @@ export class PageDataLoader extends BaseDataLoader {
 - runtime 主路径使用 `getFunctions()`；不得重新添加 `.functions` 兼容读取。静态模块函数表用模块级常量传入 `super({ functionRegistrations })`，不要在子类里覆盖 `functions` 属性。
 - core 内部不得重新添加旧业务注册适配器、旧 business registration data/store snapshot 转换器或任何旧 `I*` 兼容命名。
 - `src/services/app-ai/index.ts` 只导出 app-ai 层实际拥有的 class、factory 和本地类型；不得把 `@spark-view/spark-ai/host` 或 registrations 的类型重新批量命名为 `AppAi*` 镜像别名。
+
+## 错误处理风格
+
+- 优先使用 `throw new Error(...)` 或自定义 Error 子类表达不可恢复的错误
+- 可预期的业务异常应通过返回值（如 `Result<T>` 或 `{ ok: boolean; data?: T; error?: string }`）显式表达，不依赖异常流
+- 禁止吞掉异常：`catch` 块必须至少执行 log 或重新 throw 之一操作
+- 错误消息应包含足够的上下文（如相关 ID、参数值）以便排查，但不包含敏感信息
+
+## async/await 与 Promise 使用约定
+
+- 优先使用 `async/await`，不混用 `.then()` 链式调用和 `await`
+- `Promise.all` 用于无依赖的并行请求；有依赖关系时使用顺序 `await`
+- 禁止在无 `try/catch` 或外层错误边界的情况下静默 `await` 可能拒绝的 Promise
+- 超时、重试、取消等高级控制应封装到专门的工具类或方法中，不要散落在业务代码里
 
 ## 编码前判断清单
 
