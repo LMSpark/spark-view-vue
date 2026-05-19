@@ -17,4 +17,3 @@
 ## 相关入口
 
 - [../services/README.md](../services/README.md)
-- [../../packages/spark-ai/README.md](../../packages/spark-ai/README.md)

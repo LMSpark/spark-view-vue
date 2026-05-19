@@ -23,7 +23,6 @@ const DEFAULT_CONFIG: AppConfig = {
   enableRemoteConfig: false,
   version: '0.1.0',
   features: {
-    enableAI: false,
     enableExport: true,
     enableOffline: false
   }

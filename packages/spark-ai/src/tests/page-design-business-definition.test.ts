@@ -2,13 +2,13 @@ import { describe, expect, it } from 'vitest'
 
 import {
   PageDesignModule,
-} from '../packages/spark-ai/src'
+} from '../index'
 import {
   PageDesignService,
   type PageDesignEditHost,
-} from '../packages/spark-page-config/src'
-import { SparkNodeTree } from '../packages/spark-page-config/src'
-import { DataSetCrudTool } from '../packages/spark-data/src'
+} from '@spark-view/spark-page-config'
+import { SparkNodeTree } from '@spark-view/spark-page-config'
+import { DataSetCrudTool } from '@spark-view/spark-data'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)

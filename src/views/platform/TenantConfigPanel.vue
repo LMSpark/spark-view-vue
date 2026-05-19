@@ -308,7 +308,6 @@ async function copyJson(): Promise<void> {
 
 function featureName(feature: string): string {
   const names: Record<string, string> = {
-    enableAI: '智能功能',
     enableExport: '导出功能',
     enableOffline: '离线模式',
   }

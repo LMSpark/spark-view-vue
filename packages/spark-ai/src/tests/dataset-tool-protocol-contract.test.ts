@@ -3,11 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
   TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
-} from '../packages/spark-data/src'
+} from '@spark-view/spark-data'
 import {
   DatasetModule,
-} from '../packages/spark-ai/src/registrations/page-design/modules/dataset-tool-catalog'
-import { LlmParamsValidator } from '../packages/spark-ai/src'
+} from '../registrations/page-design/modules/dataset-tool-catalog'
+import { LlmParamsValidator } from '../index'
 
 const LEGACY_EXAMPLE_FUNCTIONS = new Set(['getAggregate', 'setComputeExpression'])
 

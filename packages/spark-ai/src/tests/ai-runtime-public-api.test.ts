@@ -3,16 +3,17 @@ import { join, relative } from 'node:path'
 
 import { describe, expect, it } from 'vitest'
 
-import * as SparkAi from '../packages/spark-ai/src'
-import * as SparkAiHost from '@spark-view/spark-ai/host'
+import * as SparkAi from '../index'
+import * as SparkAiHost from '../core/host/index'
+
+const AI_SOURCE_ROOT = join(process.cwd(), 'packages', 'spark-ai', 'src')
 
 const CONSUMER_SOURCE_ROOTS: readonly string[] = [
-  'packages/spark-ai/src/registrations',
-  'src/services/app-ai',
+  join(AI_SOURCE_ROOT, 'registrations'),
 ]
 
 const AI_CORE_AND_CONSUMER_SOURCE_ROOTS: readonly string[] = [
-  'packages/spark-ai/src/core',
+  join(AI_SOURCE_ROOT, 'core'),
   ...CONSUMER_SOURCE_ROOTS,
 ]
 
@@ -95,24 +96,24 @@ function collectSourceFiles(root: string): string[] {
 
 function legacyRegistrationSourceViolations(): string[] {
   return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
-    .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
+    .flatMap((root) => collectSourceFiles(root))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       return content.split(/\r?\n/).flatMap((line, index) => (
         LEGACY_REGISTRATION_SOURCE_RE.test(line)
-          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
           : []
       ))
     })
 }
 
 function legacyFunctionsReadViolations(): string[] {
-  return collectSourceFiles(join(process.cwd(), 'packages/spark-ai/src/registrations'))
+  return collectSourceFiles(join(AI_SOURCE_ROOT, 'registrations'))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       return content.split(/\r?\n/).flatMap((line, index) => (
         LEGACY_FUNCTIONS_READ_RE.test(line)
-          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
           : []
       ))
     })
@@ -120,12 +121,12 @@ function legacyFunctionsReadViolations(): string[] {
 
 function consumerInterfaceDeclViolations(): string[] {
   return CONSUMER_SOURCE_ROOTS
-    .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
+    .flatMap((root) => collectSourceFiles(root))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       return content.split(/\r?\n/).flatMap((line, index) => (
         CONSUMER_INTERFACE_DECL_RE.test(line)
-          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
           : []
       ))
     })
@@ -133,7 +134,7 @@ function consumerInterfaceDeclViolations(): string[] {
 
 function typeAssertionViolations(): string[] {
   return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
-    .flatMap((root) => collectSourceFiles(join(process.cwd(), root)))
+    .flatMap((root) => collectSourceFiles(root))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       let importOrExportBlock = false
@@ -147,7 +148,7 @@ function typeAssertionViolations(): string[] {
         const scan = stripNonCodeSegments(line, inBlockComment)
         inBlockComment = scan.inBlockComment
         return TS_ASSERTION_RE.test(scan.code)
-          ? [`${relative(process.cwd(), file)}:${index + 1}`]
+          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
           : []
       })
     })
@@ -206,7 +207,7 @@ describe('ai runtime class-only public surface', () => {
     expect(legacyFunctionsReadViolations()).toEqual([])
   })
 
-  it('keeps registrations and app-ai consumers off interface declarations', () => {
+  it('keeps registrations off interface declarations', () => {
     expect(consumerInterfaceDeclViolations()).toEqual([])
   })
 

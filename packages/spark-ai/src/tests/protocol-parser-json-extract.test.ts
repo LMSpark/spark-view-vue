@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { AiInvocationProtocol } from '../packages/spark-ai/src'
+import { AiInvocationProtocol } from '../index'
 
 describe('extractFirstJsonObject', () => {
   it('extracts the first balanced object from mixed text', () => {

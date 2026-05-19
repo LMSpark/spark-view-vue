@@ -65,6 +65,9 @@
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest",
     "test:run": "vitest run",
+    "smoke:sessions:stream": "node scripts/verify-ai-session-stream-smoke.mjs",
+    "smoke:sse": "node scripts/verify-ai-sse-smoke.mjs",
+    "upload:component-metadata": "node scripts/upload-component-metadata.mjs",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },

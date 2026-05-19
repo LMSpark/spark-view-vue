@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LeaveRequestModule,
-} from '../packages/spark-ai/src'
+} from '../index'
 
 function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:session`) {
   return {

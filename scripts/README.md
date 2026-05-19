@@ -7,8 +7,8 @@
 - `start-dev.mjs`：一键启动项目 Docker MySQL、Java 后端和前端开发环境。
 - `build-all.mjs`：完整构建流水线；需要临时后端上传元数据时会先启动项目 Docker MySQL。
 - `publish-packages.mjs`：工作区包发布脚本。
-- `upload-component-metadata.mjs`：上传组件元数据到后端。
-- `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`、`verify-ai-session-stream-smoke.mjs`：链路验证脚本。
+- `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`：根应用链路验证脚本。
+- AI 包专属的元数据上传与 smoke 脚本放在 `packages/spark-ai/scripts/`。
 - `claude-model.ps1`：Claude Code 后端模型环境切换、备份和冒烟验证脚本；默认只影响当前进程，显式传入 `-Persist` 才写入用户环境变量。
 - `setup-claude-deepseek.ps1`：历史 DeepSeek 接入脚本；新配置优先使用 `claude-model.ps1`。
 - `migrate-*.mjs`：结构迁移或批量修复脚本。

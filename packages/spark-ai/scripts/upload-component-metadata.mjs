@@ -7,15 +7,15 @@
  * 上传到 Java 后端的 POST /api/ai/component-metadata 端点。
  *
  * 用法：
- *   node scripts/upload-component-metadata.mjs [--url <serverUrl>]
+ *   node packages/spark-ai/scripts/upload-component-metadata.mjs [--url <serverUrl>]
  *
  * 环境变量：
  *   AI_BACKEND_URL  — 后端地址（默认 http://localhost:8080）
  *
  * 示例：
- *   node scripts/upload-component-metadata.mjs
- *   node scripts/upload-component-metadata.mjs --url http://192.168.1.100:8080
- *   AI_BACKEND_URL=https://api.example.com node scripts/upload-component-metadata.mjs
+ *   node packages/spark-ai/scripts/upload-component-metadata.mjs
+ *   node packages/spark-ai/scripts/upload-component-metadata.mjs --url http://192.168.1.100:8080
+ *   AI_BACKEND_URL=https://api.example.com node packages/spark-ai/scripts/upload-component-metadata.mjs
  */
 
 import { readFileSync, existsSync } from 'node:fs'
@@ -23,7 +23,7 @@ import { resolve, dirname } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const __dirname = dirname(fileURLToPath(import.meta.url))
-const projectRoot = resolve(__dirname, '..')
+const packageRoot = resolve(__dirname, '..')
 
 // ── 参数解析 ──────────────────────────────────────────────────────────────
 
@@ -44,7 +44,7 @@ function parseArgs() {
 
 async function main() {
   const { url } = parseArgs()
-  const metadataPath = resolve(projectRoot, 'packages', 'spark-ai', 'src', 'registrations', 'page-design', 'payloads', 'component-catalog.json')
+  const metadataPath = resolve(packageRoot, 'src', 'registrations', 'page-design', 'payloads', 'component-catalog.json')
 
   // 检查文件存在
   if (!existsSync(metadataPath)) {

@@ -79,3 +79,18 @@ export type {
   AiHostSendContext,
   AiHostSendInput,
 } from './sending'
+
+// Fetch/SSE 传输实现
+export {
+  AiHostFetchTransport,
+  parseAiHostSseBlocks,
+  uploadAiHostAttachment,
+} from './fetch-transport'
+
+export type {
+  AiHostFetch,
+  AiHostFetchTransportOptions,
+  AiHostHeadersProvider,
+  AiHostParsedSseEvent,
+  AiHostUploadedAttachment,
+} from './fetch-transport'

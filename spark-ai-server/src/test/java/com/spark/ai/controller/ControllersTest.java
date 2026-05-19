@@ -1,8 +1,6 @@
 package com.spark.ai.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.spark.ai.service.AiStreamService;
-import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.PageConfigService;
 import com.spark.ai.service.SseService;
 import com.spark.ai.service.TenantService;
@@ -25,7 +23,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 /**
  * Controller 层集成测试 — MockMvc + 模拟 Service。
  */
-@WebMvcTest({ AiChatController.class, PageConfigController.class, AppConfigController.class })
+@WebMvcTest({ PageConfigController.class, AppConfigController.class })
 @AutoConfigureMockMvc(addFilters = false)
 class ControllersTest {
 
@@ -34,12 +32,6 @@ class ControllersTest {
 
     @Autowired
     ObjectMapper objectMapper;
-
-    @MockBean
-    AiStreamService aiStreamService;
-
-    @MockBean
-    ComponentMetadataService componentMetadataService;
 
     @MockBean
     PageConfigService pageConfigService;

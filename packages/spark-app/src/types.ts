@@ -102,7 +102,6 @@ export interface AppConfig {
   version?: string
   /** 功能开关 */
   features?: {
-    enableAI?: boolean
     enableExport?: boolean
     enableOffline?: boolean
   }

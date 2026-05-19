@@ -1,7 +1,7 @@
 /**
  * DevSystem 全局共享状态 — 跨面板的响应式数据中心。
  *
- * 编辑能力是普通业务能力，不依赖 AI core；AI 只能在更外层复用这些 service 能力做会话编排。
+ * 编辑能力是普通业务能力，只负责 DevSystem 的页面配置编辑。
  *
  * SSOT 设计：
  * - 页面 4 文件（rule / pagedata / script / style）的真源是 `documents` 注册表。

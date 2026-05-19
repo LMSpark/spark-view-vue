@@ -15,7 +15,7 @@
 
     <!-- 右侧：操作区（工具栏配置驱动） -->
     <div class="app-header__right">
-      <!-- 自定义操作槽位（AI 按钮等，仅当导航配置中存在对应 action 时显示） -->
+      <!-- 自定义操作槽位 -->
       <slot name="actions" />
 
       <el-tooltip
@@ -185,7 +185,7 @@ const emit = defineEmits<{
 
 const safeToolbarItems = computed<NavNode[]>(() => Array.isArray(props.toolbarItems) ? props.toolbarItems : [])
 const safeUserMenuItems = computed<NavNode[]>(() => Array.isArray(props.userMenuItems) ? props.userMenuItems : [])
-const builtInToolbarActions = new Set(['ai-chat', 'search', 'fullscreen', 'notifications', 'theme-toggle'])
+const builtInToolbarActions = new Set(['search', 'fullscreen', 'notifications', 'theme-toggle'])
 const genericToolbarItems = computed<NavNode[]>(() =>
   safeToolbarItems.value.filter(item => !builtInToolbarActions.has(toolbarCommand(item))),
 )

@@ -22,7 +22,7 @@
  */
 
 import { spawn, execSync } from 'node:child_process'
-import { existsSync, readFileSync } from 'node:fs'
+import { existsSync } from 'node:fs'
 import { resolve } from 'node:path'
 import http from 'node:http'
 import { loadLocalJavaEnv } from './load-java-env.mjs'
@@ -146,42 +146,8 @@ function waitForBackend(timeoutMs = 120_000) {
 }
 
 // ── 上传组件元数据 ──────────────────────────────────────────────────────────
-async function uploadMetadata() {
-  const metadataPath = resolve(ROOT_DIR, 'packages', 'spark-ai', 'src', 'registrations', 'page-design', 'payloads', 'component-catalog.json')
-  if (!existsSync(metadataPath)) {
-    console.warn('⚠️  未找到 packages/spark-ai/src/registrations/page-design/payloads/component-catalog.json，跳过上传')
-    return
-  }
-
-  const json = readFileSync(metadataPath, 'utf-8')
-  let metadata
-  try {
-    metadata = JSON.parse(json)
-  } catch {
-    console.warn('⚠️  component-catalog.json 不是有效 JSON，跳过上传')
-    return
-  }
-
-  const endpoint = `${getBackendUrl()}/api/ai/component-metadata`
-  const componentCount = Number(metadata?.componentCount)
-    || Object.keys(metadata?.components ?? {}).length
-  console.log(`\n📦 组件元数据: ${componentCount} 个组件`)
-  console.log(`📤 上传到: ${endpoint}`)
-
-  const resp = await fetch(endpoint, {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: json,
-  })
-
-  if (!resp.ok) {
-    const text = await resp.text()
-    console.error(`❌ 上传失败: HTTP ${resp.status} — ${text}`)
-    process.exit(1)
-  }
-
-  const result = await resp.json()
-  console.log(`✅ 元数据上传成功:`, result)
+function uploadMetadata() {
+  run(`pnpm --filter @spark-view/spark-ai run upload:component-metadata -- --url ${getBackendUrl()}`, { cwd: ROOT_DIR })
 }
 
 let backendProcess = null
@@ -283,7 +249,7 @@ try {
 
   // ── 4. 上传组件元数据 ─────────────────────────────────────────────────────
   if (needBackend) {
-    await uploadMetadata()
+    uploadMetadata()
   }
 
   // ── 5. 关闭 Java 后端 ─────────────────────────────────────────────────────

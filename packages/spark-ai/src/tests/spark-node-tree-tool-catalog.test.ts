@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   NodeTreeModule,
-} from '../packages/spark-ai/src/registrations/page-design/modules/node-tree-tool-catalog'
+} from '../registrations/page-design/modules/node-tree-tool-catalog'
 
 const NODE_TREE_ROWS = new NodeTreeModule().getFunctions()
 

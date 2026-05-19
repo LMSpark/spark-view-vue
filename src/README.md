@@ -4,7 +4,7 @@
 
 ## 主要分层
 
-- `components/`：应用层组件和 AI/UI 宿主组件。
+- `components/`：应用层组件和 UI 宿主组件。
 - `views/`：页面级视图与平台页面入口。
 - `services/`：前端服务、协议适配、HTTP 与调试链路封装。
 - `layout/`：布局、导航和应用骨架。

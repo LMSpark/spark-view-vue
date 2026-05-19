@@ -14,7 +14,7 @@
  * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
  * 此文件仅导入实例，不再本地调用 `createPassthrough()`。
  *
- * display-image / display-calendar / display-countdown / display-icon / ai-studio-panel
+ * display-image / display-calendar / display-countdown / display-icon
  * 由 virtual:spark-components 自动扫描注册（文件名 = 注册名），无需在此重复。
  */
 import { Spark } from '../system/spark.js'

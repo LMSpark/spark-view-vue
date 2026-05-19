@@ -4,7 +4,7 @@
  * 所有消费者共享同一个 EventSource（连接 /api/events），
  * 通过 SSE event 字段按类型分发回调。
  *
- * 职责单一：仅管理 SSE 连接和事件分发，不涉及 AI 逻辑 / 缓存 / 文件操作。
+ * 职责单一：仅管理 SSE 连接和事件分发，不涉及缓存或文件操作。
  */
 
 import { Logger } from '@spark-view/spark-utils'

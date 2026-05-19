@@ -8,7 +8,7 @@ import {
   type LlmParameterSchemaRoot,
   type AiModuleRegistration,
   type FunctionExecutionContext,
-} from '../packages/spark-ai/src'
+} from '../index'
 
 type ExecutableFunctionRegistration = AiFunctionRegistration & {
   execute(args: unknown, context: FunctionExecutionContext): object

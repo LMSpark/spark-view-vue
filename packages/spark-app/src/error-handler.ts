@@ -108,7 +108,7 @@ export function setupErrorHandler(app: App, options: ErrorHandlerOptions = {}): 
     }
   }
 
-  // Vue 警告处理（模板警告、prop 验证失败等 → 进入 Logger → AI 迭代闭环可检测）
+  // Vue 警告处理（模板警告、prop 验证失败等 → 进入 Logger）
   app.config.warnHandler = (msg, _instance, trace) => {
     errorLogger.warn('[Vue Warning]', {
       message: msg,

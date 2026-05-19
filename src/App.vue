@@ -120,13 +120,6 @@
   <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
   <AppPageUiHost />
 
-  <!-- APP 层统一 AI 工作台面板 -->
-  <AppAiPanel
-    :resolve-runtime-session="appAiRuntimeMonitor.resolveRuntimeSession"
-    :runtime-monitor="appAiRuntimeMonitor"
-    :upload-file="uploadAppAiAttachment"
-  />
-
   </template>
 </template>
 
@@ -153,7 +146,6 @@ import {
 import type { NavNode, AppNavRoot } from '@spark-view/spark-page-config'
 import {
   APP_SERVICES,
-  AppAiPanel,
   MODULE_CONTEXT,
   useSparkComponent,
   type ModuleContext,
@@ -176,20 +168,6 @@ import type { ProjectSwitchService } from '@/services/project-switch'
 import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project-ui-settings'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPublicPaths } from '@/config/vue-page-map'
-import {
-  FetchAppAiTransport,
-  createAppAiRuntimeMonitor,
-  uploadAppAiAttachment,
-} from '@/services/app-ai'
-import {
-  AiHostBusinessRegistry,
-} from '@spark-view/spark-ai/host'
-import {
-  registerAppAiBusinesses,
-} from '@spark-view/spark-ai/registrations'
-import {
-  resolvePageDesignEditHost,
-} from '@spark-view/spark-page-config'
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
 
@@ -199,21 +177,6 @@ const isLoginPage = computed(() => route.path === '/login' || route.path === '/'
 const publicPaths = getPublicPaths()
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'
-const appAiRegistry = new AiHostBusinessRegistry()
-registerAppAiBusinesses({
-  registry: appAiRegistry,
-  getPageDesignEditHost: (context) => {
-    const host = resolvePageDesignEditHost(context.moduleInstanceId)
-    if (host === null) {
-      throw new Error(`PageDesign edit host unavailable for page ${context.moduleInstanceId}. 请先在开发系统中打开并选中目标配置页面。`)
-    }
-    return host
-  },
-})
-const appAiRuntimeMonitor = createAppAiRuntimeMonitor({
-  registry: appAiRegistry,
-  transport: new FetchAppAiTransport(),
-})
 const currentUsername = computed(() => {
   const user = getUser()
   return user?.displayName ?? user?.username ?? '管理员'

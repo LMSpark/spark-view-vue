@@ -7,6 +7,7 @@
     "composite": false,
     "target": "ES2020",
     "noEmit": true,
+    "types": ["node", "vitest/globals"],
     "paths": {
       "@spark-view/spark-page-config": ["../spark-page-config/dist/index"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],

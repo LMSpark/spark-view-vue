@@ -346,7 +346,7 @@ export async function start(options: StartOptions): Promise<void> {
         router.removeRoute('spark-bootstrap-login')
       }
 
-      // 注入到全局访问模块：导航访问 + 缓存管理（AI 热重载需要）
+      // 注入到全局访问模块：导航访问 + 缓存管理
       setDynamicRouter(dynamicRouter)
       setPageCacheHandle(createPageCache(configLoader))
     }

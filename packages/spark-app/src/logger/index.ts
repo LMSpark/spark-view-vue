@@ -138,9 +138,9 @@ export interface BatchTransportOptions {
   batchSize?: number
   /** 定时 flush 间隔 ms（默认 5000） */
   flushInterval?: number
-  /** 获取当前页面 ID（每条日志自动附带，用于 AI 闭环） */
+  /** 获取当前页面 ID（每条日志自动附带） */
   getPageId?: () => string | undefined
-  /** 会话 ID（整个浏览器生命周期不变，用于 AI 闭环追踪） */
+  /** 会话 ID（整个浏览器生命周期不变，用于日志关联） */
   sessionId?: string
 }
 
@@ -150,9 +150,9 @@ interface LogEntry {
   meta?: Record<string, unknown> | undefined
   timestamp: number
   userAgent?: string | undefined
-  /** 当前页面 ID（AI 闭环：标识日志来源页面） */
+  /** 当前页面 ID（标识日志来源页面） */
   pageId?: string | undefined
-  /** 会话 ID（AI 闭环：追踪一次对话的所有日志） */
+  /** 会话 ID（追踪一次浏览器生命周期内的日志） */
   sessionId?: string | undefined
 }
 

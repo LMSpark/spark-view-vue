@@ -4,7 +4,7 @@ import {
   LlmParamsValidator,
   DatasetModule,
   type LlmParameterSchemaRoot,
-} from '../packages/spark-ai/src'
+} from '../index'
 
 const DATASET_ROWS = new DatasetModule().getFunctions()
 

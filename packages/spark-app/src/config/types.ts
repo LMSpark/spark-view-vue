@@ -84,7 +84,6 @@ export interface AppFullConfig {
     enableMock?: boolean
     version: string
     features: {
-      enableAI?: boolean
       enableExport?: boolean
       enableOffline?: boolean
     }

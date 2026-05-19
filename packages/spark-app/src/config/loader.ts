@@ -277,7 +277,6 @@ export class ConfigLoader {
         enableMock: true,  // 演示项目始终启用 Mock 数据
         version: '1.0.0',
         features: {
-          enableAI: false,
           enableExport: true,
           enableOffline: false
         }
