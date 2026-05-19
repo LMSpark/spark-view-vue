@@ -27,11 +27,10 @@ import {
   toAiHostRuntimeScope,
 } from '@spark-view/spark-ai/host'
 
-export { createAppAiPanelResolver, createAppAiRuntimeMonitor } from './panel-resolver'
+export { AppAiRuntimeMonitor, createAppAiPanelResolver, createAppAiRuntimeMonitor } from './panel-resolver'
 export type {
   AppAiPanelResolverOptions,
   AppAiPanelSessionResolver,
-  AppAiRuntimeMonitor,
   AppAiRuntimeMonitorSnapshot,
   AppAiRuntimeSessionSnapshot,
 } from './panel-resolver'

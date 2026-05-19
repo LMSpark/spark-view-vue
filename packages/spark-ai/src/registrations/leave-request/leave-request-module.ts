@@ -1,9 +1,6 @@
 import type {
   AiFunctionRegistration,
   AiRuntimeFunctionCallResult,
-  AiRuntimeKnowledgeProjection,
-  AiRuntimeMessageRole,
-  AiRuntimeMessageSource,
   AiRuntimeStartSessionResult,
   FunctionExecutionContext,
 } from '../../core/protocol/runtime-contracts'
@@ -30,27 +27,10 @@ import {
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 
-export interface LeaveRequestRuntimeContext {
+type LeaveRequestRuntimeContext = {
   readonly instanceId: string
   readonly moduleId: typeof LEAVE_REQUEST_MODULE_ID
   readonly moduleInstanceId: string
-}
-
-export interface LeaveRequestAppendMessageOptions extends LeaveRequestRuntimeContext {
-  readonly role: AiRuntimeMessageRole
-  readonly content: string
-  readonly source?: AiRuntimeMessageSource | undefined
-  readonly metadata?: Record<string, unknown> | undefined
-}
-
-export interface LeaveRequestExecuteFunctionCallOptions extends LeaveRequestRuntimeContext {
-  readonly action: string
-  readonly args: unknown
-  readonly projection?: AiRuntimeKnowledgeProjection | undefined
-}
-
-export interface LeaveRequestStopSessionOptions extends LeaveRequestRuntimeContext {
-  readonly reason?: string | undefined
 }
 
 const NO_PARAMS: LlmParameterSchemaRoot = {
