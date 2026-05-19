@@ -241,13 +241,35 @@ class ProjectServiceNavigationSeedTest {
                 .thenReturn(Optional.of(homepage));
 
         projectService.ensureHomepage("lmspark");
+        List<Map<String, Object>> before = navigationTreeService.listRawFlatRows(
+                "lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
         projectService.ensureHomepage("lmspark");
+        List<Map<String, Object>> after = navigationTreeService.listRawFlatRows(
+                "lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
 
         Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
+        assertEquals(before, after);
         assertEquals(1, countPath(nav, "/app-list"));
         assertEquals(1, countPath(nav, "/dev"));
         assertEquals(1, countPath(nav, "/dbms"));
         assertEquals(1, countPath(nav, "/cache-manager"));
+    }
+
+    @Test
+    void ensurePlatformHomepageIsNavigationIdempotent() throws Exception {
+        ProjectEntity homepage = project(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE);
+        when(projectRepo.findByTenantIdAndProjectId(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID))
+                .thenReturn(Optional.empty())
+                .thenReturn(Optional.of(homepage));
+
+        projectService.ensureHomepage(ProjectService.PLATFORM_TENANT_ID);
+        List<Map<String, Object>> before = navigationTreeService.listRawFlatRows(
+                ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID);
+        projectService.ensureHomepage(ProjectService.PLATFORM_TENANT_ID);
+        List<Map<String, Object>> after = navigationTreeService.listRawFlatRows(
+                ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID);
+
+        assertEquals(before, after);
     }
 
     private static ProjectEntity project(String tenantId, String projectId, String projectType) {

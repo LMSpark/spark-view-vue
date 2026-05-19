@@ -329,9 +329,10 @@ public class ProjectService {
             return changed;
         }
 
-        boolean changed = removeNodesByPath(children, Set.of(PATH_APP_LIST));
-        insertAt(children, appListNode(tenantId, projectId), indexAfterPath(children, "/dashboard"));
-        changed = true;
+        boolean changed = ensureRootNodeByPath(
+                children,
+                appListNode(tenantId, projectId),
+                "/dashboard");
         changed |= rebuildDevelopmentCenter(children, tenantId, projectId, false);
         return changed;
     }
@@ -364,9 +365,11 @@ public class ProjectService {
         // 查找已有的开发中心节点
         String devCenterIdSuffix = platform ? "platform-dev-center" : "dev-center";
         Map<String, Object> devCenter = findNodeByIdSuffix(children, devCenterIdSuffix);
+        Set<String> managedPaths = Set.of(PATH_DEV, PATH_DBMS, PATH_CACHE_MANAGER);
 
         if (devCenter == null) {
-            // 不存在则新建
+            // 不存在则新建，并把散落在根节点或旧模块中的管理入口收敛进去。
+            changed |= removeNodesByPath(children, managedPaths);
             int index = platform ? indexAfterPath(children, PATH_PLATFORM_APPS) : indexAfterPath(children, PATH_APP_LIST);
             insertAt(children, developmentCenterNode(tenantId, projectId, platform), index);
             return true;
@@ -385,6 +388,8 @@ public class ProjectService {
         Map<String, Object> templateCenter = developmentCenterNode(tenantId, projectId, platform);
         List<Map<String, Object>> templateChildren = (List<Map<String, Object>>) templateCenter.get("children");
 
+        changed |= removeNodesByPathOutsideSubtree(children, managedPaths, devCenter);
+
         for (Map<String, Object> templateChild : templateChildren) {
             String templatePath = normalizePath(asString(templateChild.get("path")));
             if (!containsNodeByPath(devChildren, templatePath)) {
@@ -393,7 +398,61 @@ public class ProjectService {
             }
         }
 
+        changed |= removeDuplicateChildPaths(devChildren, managedPaths);
         return changed;
+    }
+
+    private boolean ensureRootNodeByPath(List<Map<String, Object>> children,
+                                         Map<String, Object> template,
+                                         String afterPath) {
+        String path = normalizePath(asString(template.get("path")));
+        int existingIndex = indexOfDirectPath(children, path);
+        if (existingIndex >= 0) {
+            Map<String, Object> existing = children.get(existingIndex);
+            boolean changed = false;
+            Map<String, Object> retained = existing;
+            if (!nodeHasTemplateId(existing, template)) {
+                children.set(existingIndex, template);
+                retained = template;
+                moveRootNodeAfterPath(children, retained, afterPath);
+                changed = true;
+            }
+            changed |= removeNodesByPathExcept(children, Set.of(path), retained);
+            return changed;
+        }
+
+        removeNodesByPath(children, Set.of(path));
+        insertAt(children, template, indexAfterPath(children, afterPath));
+        return true;
+    }
+
+    private boolean nodeHasTemplateId(Map<String, Object> node, Map<String, Object> template) {
+        String nodeId = asString(node.get("id"));
+        String templateId = asString(template.get("id"));
+        return !templateId.isBlank() && templateId.equals(nodeId);
+    }
+
+    private int indexOfDirectPath(List<Map<String, Object>> nodes, String path) {
+        String normalizedPath = normalizePath(path);
+        for (int i = 0; i < nodes.size(); i++) {
+            if (normalizedPath.equals(normalizePath(asString(nodes.get(i).get("path"))))) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    private boolean moveRootNodeAfterPath(List<Map<String, Object>> children,
+                                          Map<String, Object> node,
+                                          String afterPath) {
+        int currentIndex = children.indexOf(node);
+        if (currentIndex < 0) {
+            return false;
+        }
+        children.remove(currentIndex);
+        int targetIndex = indexAfterPath(children, afterPath);
+        insertAt(children, node, targetIndex);
+        return currentIndex != children.indexOf(node);
     }
 
     private void insertAt(List<Map<String, Object>> children, Map<String, Object> node, int index) {
@@ -416,10 +475,7 @@ public class ProjectService {
 
     @SuppressWarnings("unchecked")
     private boolean removeNodesByPath(List<Map<String, Object>> nodes, Set<String> paths) {
-        Set<String> normalizedPaths = new HashSet<>();
-        for (String path : paths) {
-            normalizedPaths.add(normalizePath(path));
-        }
+        Set<String> normalizedPaths = normalizePaths(paths);
         boolean changed = false;
         Iterator<Map<String, Object>> iterator = nodes.iterator();
         while (iterator.hasNext()) {
@@ -435,6 +491,61 @@ public class ProjectService {
             }
         }
         return changed;
+    }
+
+    private boolean removeNodesByPathOutsideSubtree(List<Map<String, Object>> nodes,
+                                                    Set<String> paths,
+                                                    Map<String, Object> retainedSubtreeRoot) {
+        return removeNodesByPathExcept(nodes, paths, retainedSubtreeRoot);
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean removeNodesByPathExcept(List<Map<String, Object>> nodes,
+                                            Set<String> paths,
+                                            Map<String, Object> retainedSubtreeRoot) {
+        Set<String> normalizedPaths = normalizePaths(paths);
+        boolean changed = false;
+        Iterator<Map<String, Object>> iterator = nodes.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> node = iterator.next();
+            if (node == retainedSubtreeRoot) {
+                continue;
+            }
+            if (normalizedPaths.contains(normalizePath(asString(node.get("path"))))) {
+                iterator.remove();
+                changed = true;
+                continue;
+            }
+            Object children = node.get("children");
+            if (children instanceof List<?> childList) {
+                changed |= removeNodesByPathExcept((List<Map<String, Object>>) childList, paths, retainedSubtreeRoot);
+            }
+        }
+        return changed;
+    }
+
+    private boolean removeDuplicateChildPaths(List<Map<String, Object>> nodes, Set<String> paths) {
+        Set<String> normalizedPaths = normalizePaths(paths);
+        Set<String> seen = new HashSet<>();
+        boolean changed = false;
+        Iterator<Map<String, Object>> iterator = nodes.iterator();
+        while (iterator.hasNext()) {
+            Map<String, Object> node = iterator.next();
+            String path = normalizePath(asString(node.get("path")));
+            if (normalizedPaths.contains(path) && !seen.add(path)) {
+                iterator.remove();
+                changed = true;
+            }
+        }
+        return changed;
+    }
+
+    private Set<String> normalizePaths(Set<String> paths) {
+        Set<String> normalizedPaths = new HashSet<>();
+        for (String path : paths) {
+            normalizedPaths.add(normalizePath(path));
+        }
+        return normalizedPaths;
     }
 
     @SuppressWarnings("unchecked")
@@ -467,6 +578,14 @@ public class ProjectService {
     }
 
     private boolean rebuildPlatformVueCleanupCandidates(List<Map<String, Object>> children) {
+        Map<String, Object> desired = platformVueCleanupModule();
+        Map<String, Object> existing = findTopLevelPlatformVueCleanupModule(children);
+        if (existing != null
+                && managedNodeEquals(existing, desired)
+                && !hasPlatformVueCleanupNodeOutside(children, existing)) {
+            return false;
+        }
+
         removePlatformVueCleanupNodes(children);
         int index = indexAfterPath(children, PATH_PLATFORM_APPS);
         Map<String, Object> developmentCenter = findNodeByIdSuffix(children, "platform-dev-center");
@@ -476,8 +595,19 @@ public class ProjectService {
                 index = devCenterIndex + 1;
             }
         }
-        insertAt(children, platformVueCleanupModule(), index);
+        insertAt(children, desired, index);
         return true;
+    }
+
+    private Map<String, Object> findTopLevelPlatformVueCleanupModule(List<Map<String, Object>> children) {
+        for (Map<String, Object> node : children) {
+            String id = asString(node.get("id"));
+            String title = asString(node.get("title"));
+            if (PLATFORM_VUE_CLEANUP_MODULE_ID.equals(id) || PLATFORM_VUE_CLEANUP_MODULE_TITLE.equals(title)) {
+                return node;
+            }
+        }
+        return null;
     }
 
     @SuppressWarnings("unchecked")
@@ -505,6 +635,61 @@ public class ProjectService {
         return PLATFORM_VUE_CLEANUP_MODULE_TITLE.equals(title)
                 || PLATFORM_VUE_CLEANUP_MODULE_ID.equals(id)
                 || id.startsWith(PLATFORM_VUE_CLEANUP_MODULE_ID + "-");
+    }
+
+    @SuppressWarnings("unchecked")
+    private boolean hasPlatformVueCleanupNodeOutside(List<Map<String, Object>> nodes,
+                                                     Map<String, Object> retainedSubtreeRoot) {
+        for (Map<String, Object> node : nodes) {
+            if (node == retainedSubtreeRoot) {
+                continue;
+            }
+            String id = asString(node.get("id"));
+            String title = asString(node.get("title"));
+            if (isPlatformVueCleanupNode(id, title)) {
+                return true;
+            }
+            Object children = node.get("children");
+            if (children instanceof List<?> childList
+                    && hasPlatformVueCleanupNodeOutside((List<Map<String, Object>>) childList, retainedSubtreeRoot)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean managedNodeEquals(Map<String, Object> actual, Map<String, Object> expected) {
+        for (String key : List.of("id", "nodeKind", "title", "description", "icon", "path", "childPlacement", "linkTarget", "refId")) {
+            if (!asString(actual.get(key)).equals(asString(expected.get(key)))) {
+                return false;
+            }
+        }
+        for (String key : List.of("dividerAfter", "hidden", "disabled")) {
+            if (Boolean.TRUE.equals(actual.get(key)) != Boolean.TRUE.equals(expected.get(key))) {
+                return false;
+            }
+        }
+
+        List<Map<String, Object>> actualChildren = childNodes(actual);
+        List<Map<String, Object>> expectedChildren = childNodes(expected);
+        if (actualChildren.size() != expectedChildren.size()) {
+            return false;
+        }
+        for (int i = 0; i < actualChildren.size(); i++) {
+            if (!managedNodeEquals(actualChildren.get(i), expectedChildren.get(i))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    @SuppressWarnings("unchecked")
+    private List<Map<String, Object>> childNodes(Map<String, Object> node) {
+        Object children = node.get("children");
+        if (children instanceof List<?> childList) {
+            return (List<Map<String, Object>>) childList;
+        }
+        return List.of();
     }
 
     @SuppressWarnings("unchecked")
