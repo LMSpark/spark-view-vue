@@ -72,13 +72,16 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const hasExplicitModelValue = computed(() => hasRawProp('modelValue', 'model-value'))
   const hasExplicitValue = computed(() => hasRawProp('value'))
 
+  function coerceFieldValue(rawValue: unknown): TValue {
+    return options.coerce ? options.coerce(rawValue) : rawValue as TValue
+  }
+
   const sourceFieldValue = computed<TValue>(() => {
     if (hasExplicitModelValue.value && props.modelValue !== undefined) return props.modelValue
     if (hasExplicitValue.value && props.value !== undefined) return props.value
     const row = activeRow.value
     if (row !== null && fieldName.value && fieldName.value in row) {
-      if (options.coerce !== undefined) return options.coerce(row[fieldName.value])
-      return <TValue>row[fieldName.value]
+      return coerceFieldValue(row[fieldName.value])
     }
     return fallbackValue
   })

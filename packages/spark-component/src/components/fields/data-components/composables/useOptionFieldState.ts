@@ -18,7 +18,7 @@ interface UseOptionFieldStateOptions<TValue> {
   fieldType: string
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void
-  coerce?: (rawValue: unknown) => TValue
+  coerce: (rawValue: unknown) => TValue
   formatDisplay?: (value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string
 }
 
@@ -27,7 +27,7 @@ export function useOptionFieldState<TValue>(options: UseOptionFieldStateOptions<
     props: options.props,
     type: options.fieldType,
     fallbackValue: options.fallbackValue,
-    ...(options.coerce !== undefined ? { coerce: options.coerce } : {}),
+    coerce: options.coerce,
     ...(options.formatDisplay !== undefined ? { formatDisplay: options.formatDisplay } : {}),
   })
 

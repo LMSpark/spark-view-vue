@@ -26,7 +26,7 @@ interface UseBasicFieldStateOptions<TValue> {
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void
   formatDisplay?: (value: unknown) => string
-  coerce?: (rawValue: unknown) => TValue
+  coerce: (rawValue: unknown) => TValue
 }
 
 export function useBasicFieldState<TValue>(options: UseBasicFieldStateOptions<TValue>) {
@@ -34,7 +34,7 @@ export function useBasicFieldState<TValue>(options: UseBasicFieldStateOptions<TV
     props: options.props,
     type: options.fieldType,
     fallbackValue: options.fallbackValue,
-    ...(options.coerce !== undefined ? { coerce: options.coerce } : {}),
+    coerce: options.coerce,
     ...(options.formatDisplay !== undefined ? { formatDisplay: options.formatDisplay } : {}),
   })
 

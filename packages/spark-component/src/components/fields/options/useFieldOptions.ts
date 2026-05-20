@@ -54,7 +54,7 @@ interface UseOptionFieldOptions<TValue> {
   props: FieldOptionProps & FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue
-  coerce?: (rawValue: unknown) => TValue
+  coerce: (rawValue: unknown) => TValue
   formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string
 }
 
@@ -183,7 +183,7 @@ export function useOptionField<TValue>(options: UseOptionFieldOptions<TValue>) {
     props: options.props,
     type: options.type,
     fallbackValue: options.fallbackValue,
-    ...(options.coerce !== undefined ? { coerce: options.coerce } : {}),
+    coerce: options.coerce,
     formatDisplay: (value: unknown) => options.formatDisplay
       ? options.formatDisplay(value, optionHelpers)
       : optionHelpers.formatOptionValue(value),
