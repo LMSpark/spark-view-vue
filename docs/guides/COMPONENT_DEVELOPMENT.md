@@ -151,7 +151,7 @@ const {
 |------|------|
 | `sparkConsume()` 返回 `T \| null` | `null` 是正常情况（延迟绑定），不是错误 |
 | `sparkProvide()` / `sparkConsume()` 是 SPARK 能力系统 | ≠ Vue 的 `provide/inject` |
-| `logger` 自动解析 | 无需 `sparkConsume(LOGGER)`，代理自动查找最近祖先 |
+| `logger` 自动解析 | 代理自动读取页面根的 `PAGE_RUNTIME_SERVICES.logger` |
 | `initialize` / `destroy` 自动调用 | `onMounted` / `onUnmounted` 内自动触发 |
 
 ---
@@ -164,22 +164,22 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 
 | 能力键 | 定义包 | 类型 | 典型提供者 |
 |---|---|---|---|
-| `APP_SERVICES` | `spark-component` | `IAppServicesCapability` — router、logger、租户 | 应用层 |
-| `LOGGER` | `spark-component` | `LoggerApi` — 自定义日志覆盖 | 任意祖先 |
-| `PAGE_SERVICE` | `spark-component` | `IPageServiceCapability` — 弹框、导航、消息 | PageRenderer |
-| `PAGE_DATASET` | `spark-component` | `IDataSet` — 页面级 DataSet | PageRenderer |
-| `DATA_SOURCE` | `spark-component` | `IDataSource` — 组件级数据视图 | 容器组件 |
+| `PAGE_RUNTIME_SERVICES` | `spark-page-config/page` | `PageRuntimeServicesCapability` — router、logger、租户 | 页面根 |
+| `PAGE_SERVICE` | `spark-component` | `PageServiceCapability` — 弹框、导航、消息 | PageRenderer |
+| `PAGE_DATASET` | `spark-component` | `DataSetContract` — 页面级 DataSet | PageRenderer |
+| `DATA_SOURCE` | `spark-component` | `DataView` — 组件级数据视图 | 容器组件 |
 
 ### 4.2 消费内置能力
 
 ```typescript
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES, PAGE_SERVICE, PAGE_DATASET } from '@spark-view/spark-component'
+import { PAGE_SERVICE, PAGE_DATASET } from '@spark-view/spark-component'
 
 const { sparkConsume } = useSparkComponent(props.config)
 
 // 路由跳转
-sparkConsume(APP_SERVICES)?.router?.push('/detail/1')
+sparkConsume(PAGE_RUNTIME_SERVICES)?.router?.push('/detail/1')
 
 // 弹出确认框
 sparkConsume(PAGE_SERVICE)?.confirm('确认删除？').then(ok => { if (ok) doDelete() })
@@ -228,11 +228,11 @@ function handleSearch() {
 ### 4.4 能力查找链示意
 
 ```
-APP (sparkProvide APP_SERVICES)
+PageRoot (sparkProvide PAGE_RUNTIME_SERVICES)
  └─ PageRenderer (sparkProvide PAGE_DATASET, PAGE_SERVICE)
    └─ 容器组件   (sparkProvide DATA_SOURCE)
      └─ 子组件 → sparkConsume(DATA_SOURCE) ✅ 向上找到容器组件
-          → sparkConsume(APP_SERVICES) ✅ 向上找到 APP
+          → sparkConsume(PAGE_RUNTIME_SERVICES) ✅ 向上找到页面根
 ```
 
 ---
@@ -302,12 +302,12 @@ onUnmounted(() => {
   dataSource?.events.off('cleared', handleCleared)
 })
 
-function handleCurrentRowChanged(currentRow: IDataRow | null, originatorId?: string) {
+function handleCurrentRowChanged(currentRow: DataRow | null, originatorId?: string) {
   console.log('当前行:', currentRow)
   updateCurrentRowUI(currentRow)
 }
 
-function handleSelectedRowsChanged(selectedRows: IDataRow[], originatorId?: string) {
+function handleSelectedRowsChanged(selectedRows: DataRow[], originatorId?: string) {
   console.log('选中行:', selectedRows)
   updateSelectedRowsUI(selectedRows)
 }
@@ -343,7 +343,7 @@ if (dataView) {
 
 ## 6. DataView 交互
 
-`IDataSource` 是 `DataView` 的公开接口，组件通过 `sparkConsume(DATA_SOURCE)` 获得它。
+`DataView` 是组件通过 `sparkConsume(DATA_SOURCE)` 获得的公开数据视图。
 DataView 内部通过委托层（`SelectionDelegate` / `LocalMutationDelegate` / `CrudDelegate`）处理各类操作，组件无需感知委托细节，直接调用 `DataView` 的公开方法即可。
 
 ### 6.1 只读状态
@@ -351,12 +351,12 @@ DataView 内部通过委托层（`SelectionDelegate` / `LocalMutationDelegate` /
 ```typescript
 const ds = sparkConsume(DATA_SOURCE)
 
-const allRows    = ds?.rows              // IDataRow[]
+const allRows    = ds?.rows              // DataRow[]
 const total      = ds?.total            // 服务端总记录数
 const page       = ds?.page
 const pageSize   = ds?.pageSize
-const current    = ds?.currentRow       // IDataRow | null
-const selected   = ds?.selectedRows     // IDataRow[]
+const current    = ds?.currentRow       // DataRow | null
+const selected   = ds?.selectedRows     // DataRow[]
 const state      = ds?.requestState     // RequestState 枚举
 const isLoading  = ds?.mutating         // CRUD 请求中
 const err        = ds?.loadingError     // Error | null
@@ -425,10 +425,10 @@ await ds?.batchDeleteRecords([1, 2, 3])
 ```typescript
 import { defineCapability } from '@spark-view/spark-component'
 import { createEventEmitter } from '@spark-view/spark-data'
-import type { IEventEmitter } from '@spark-view/spark-data'
+import type { SparkEventEmitter } from '@spark-view/spark-data'
 
 // 定义自定义事件能力键
-const MY_EVENTS = defineCapability<IEventEmitter>('app:my-events')
+const MY_EVENTS = defineCapability<SparkEventEmitter>('app:my-events')
 
 const { sparkProvide } = useSparkComponent(props.config)
 const myEvents = createEventEmitter()
@@ -473,7 +473,7 @@ onUnmounted(() => gridEvents?.off('rowClick', onRowClick))
 ## 8. 日志与调试
 
 `useSparkComponent` 返回的 `logger` 统一按以下方式解析：
-1. 页面层 `APP_SERVICES.logger`（应用层统一提供）
+1. 页面层 `PAGE_RUNTIME_SERVICES.logger`（页面根统一提供）
 
 ```typescript
 const { logger } = useSparkComponent(props.config)
@@ -487,10 +487,10 @@ logger.error('请求失败', { error })
 ### 页面层 Logger（推荐）
 
 ```typescript
-import { APP_SERVICES } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 
 // 由页面根节点统一提供，组件内只消费 logger，不再做子树级覆盖
-sparkProvide(APP_SERVICES, { router, logger: pageLogger })
+sparkProvide(PAGE_RUNTIME_SERVICES, { router, logger: pageLogger })
 ```
 
 ---

@@ -151,7 +151,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config'
+import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config/page/workspace'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import { DEV_COMPONENT_METADATA } from './policies/devComponentMetadata'

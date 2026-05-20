@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDescriptionsProps extends SparkNodeProps {
+export type RDescriptionsProps = SparkNodeProps & {
   /** 描述列表标题 */
   title?: SparkText
   /** 操作区附加内容 */

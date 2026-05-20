@@ -55,7 +55,6 @@ export {
 
 // ── 6. 数据 + Renderer 能力键 ──
 export {
-  APP_SERVICES,
   PAGE_SERVICE,
   PAGE_PERMISSION_MODE,
   PAGE_DATASET,
@@ -69,7 +68,6 @@ export {
   sparkConsumeFromProvider,
 } from './core/index.js'
 export type {
-  AppServicesCapability,
   PageServiceCapability,
   ThemeCapability,
   ThemeMode,

@@ -29,7 +29,7 @@ export type PrimaryKeyStrategy =
 /**
  * 主键生成器配置
  */
-export interface PrimaryKeyGeneratorConfig {
+export type PrimaryKeyGeneratorConfig = {
   /** 生成策略 */
   strategy: PrimaryKeyStrategy
   /** 主键字段名 */

@@ -1,7 +1,7 @@
 import type { DataRow } from '@spark-view/spark-data'
 import type { BaseCrudContainerApi } from '../../support/base-container-api.js'
 
-export interface RendererTreeApi extends BaseCrudContainerApi {
+export type RendererTreeApi = BaseCrudContainerApi & {
   getTreeData(): DataRow[]
   getNativeTree(): unknown
   getCurrentNode(): DataRow | null

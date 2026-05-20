@@ -1,6 +1,6 @@
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types'
 
-export interface RTimeSelectProps extends SparkNodeProps, SparkFieldSemanticProps<string> {
+export type RTimeSelectProps = SparkNodeProps & SparkFieldSemanticProps<string> & {
   /** 可选时间段的起始时间。 */
   start?: SparkText
   /** 可选时间段的结束时间。 */

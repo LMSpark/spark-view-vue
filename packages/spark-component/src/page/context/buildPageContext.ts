@@ -8,7 +8,7 @@
 import { h, type Ref } from 'vue'
 import type { PageServiceCapability } from '../../core/capability-keys.js'
 import type { ModuleContext, PageComponentRegistry } from '../../core/capability-keys.js'
-import type { PageRoute } from '@spark-view/spark-page-config'
+import type { PageRoute } from '@spark-view/spark-page-config/page/sandbox'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
@@ -76,7 +76,7 @@ function createScriptConsole(): Pick<Console, 'log' | 'info' | 'warn' | 'error' 
 // ─── 共享基础上下文（两条渲染线共用）────────────────────────────────────
 
 /** buildPageContext 所需的依赖引用 */
-interface PageContextDeps {
+type PageContextDeps = {
   /** DataSet getter（闭包引用，每次调用返回最新值） */
   getDataSet: () => DataSet | null
   pageRoute: PageRoute

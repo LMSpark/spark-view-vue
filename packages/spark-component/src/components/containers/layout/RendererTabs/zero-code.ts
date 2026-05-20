@@ -4,7 +4,7 @@ import type { ValueRef } from '../../../shared-types.js'
 
 type TabsEmit = (event: 'update:modelValue', value: string | number) => void
 
-interface RendererTabsZeroCodeOptions {
+type RendererTabsZeroCodeOptions = {
   emit: TabsEmit
   currentActiveName: ValueRef<string | number | undefined>
   paneConfigs: ValueRef<SparkNode[]>

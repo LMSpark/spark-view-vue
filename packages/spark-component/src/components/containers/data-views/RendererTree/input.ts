@@ -4,14 +4,14 @@ import type { REditorProps } from '../../zones/RendererEditor.types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
 import { useContainerToolbar } from '../../runtime/container-ui'
 
-interface RendererTreeInputProps {
+type RendererTreeInputProps = {
   children?: SparkNode['children'] | undefined
   toolbar?: RToolbarProps | undefined
   actions?: RToolbarProps | undefined
   editor?: REditorProps | undefined
 }
 
-interface RendererTreeInputOptions {
+type RendererTreeInputOptions = {
   props: RendererTreeInputProps
 }
 

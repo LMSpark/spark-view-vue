@@ -13,7 +13,7 @@ export type OptionFieldStateProps<TValue> = OptionalWithUndefined<Omit<SparkOpti
   options?: unknown[] | undefined
 }
 
-interface UseOptionFieldStateOptions<TValue> {
+type UseOptionFieldStateOptions<TValue> = {
   props: OptionFieldStateProps<TValue>
   fieldType: string
   fallbackValue: TValue

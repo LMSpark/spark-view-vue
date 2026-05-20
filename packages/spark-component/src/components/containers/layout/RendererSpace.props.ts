@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RSpaceProps extends SparkNodeProps {
+export type RSpaceProps = SparkNodeProps & {
   /** 主轴方向 */
   direction?: 'horizontal' | 'vertical'
   /** 间距 */

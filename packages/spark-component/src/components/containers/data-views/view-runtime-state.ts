@@ -16,7 +16,7 @@ import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
 /**
  * DataView 标识态：来自 DataView 快照的静态元信息。
  */
-export interface DataViewIdentityState {
+export type DataViewIdentityState = {
   tableName: ComputedRef<string>
   viewId: ComputedRef<string | undefined>
   primaryKey: ComputedRef<string | undefined>
@@ -24,7 +24,7 @@ export interface DataViewIdentityState {
 }
 
 /** DataView 行数据态：当前视图下的行级数据与选择状态。 */
-export interface DataViewRowsState {
+export type DataViewRowsState = {
   rows: ComputedRef<readonly DataRow[]>
   columns: ComputedRef<readonly DataColumn[]>
   currentRow: ComputedRef<DataRow | null>
@@ -34,7 +34,7 @@ export interface DataViewRowsState {
 }
 
 /** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */
-export interface DataViewDisplayState {
+export type DataViewDisplayState = {
   _modelPerm: ComputedRef<ModelPermission | undefined>
   value: ComputedRef<string>
   label: ComputedRef<string | null>
@@ -42,12 +42,12 @@ export interface DataViewDisplayState {
 }
 
 /** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */
-export interface DataViewPermissionState {
+export type DataViewPermissionState = {
   modelPermission: ComputedRef<ModelPermission | undefined>
 }
 
 /** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */
-export interface DataViewRequestAndAggregateState {
+export type DataViewRequestAndAggregateState = {
   requestState: ComputedRef<RequestState>
   aggregateResult: ComputedRef<AggregateResultState>
   selectionAggregateResult: ComputedRef<AggregateResultState>
@@ -68,7 +68,7 @@ export type DataViewRuntimeState =
   & DataViewRequestAndAggregateState
 
 /** 容器级数据解析上下文（不属于 DataView 原始字段）。 */
-export interface ContainerDataViewContextState {
+export type ContainerDataViewContextState = {
   resolvedView: ComputedRef<DataView | null>
   resolvedDataRow: ComputedRef<DataRow | null>
 }
@@ -80,7 +80,7 @@ export type DataViewState = DataViewRuntimeState & ContainerDataViewContextState
 export type AggregateResultState = Readonly<Record<string, unknown>>
 
 /** resolvedView 的标准只读 ref 形态。 */
-export interface ResolvedViewRef {
+export type ResolvedViewRef = {
   readonly value: DataView | null
 }
 
@@ -90,7 +90,7 @@ const EMPTY_ROWS: readonly DataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
-interface DataViewRuntimeRevisions {
+type DataViewRuntimeRevisions = {
   rowsRevision: ValueRef<number>
   selectionRevision: ValueRef<number>
   requestRevision: ValueRef<number>

@@ -1,8 +1,9 @@
-import { isSparkNode, normalizeSparkNode, nodeId as readNodeId, type SparkNode, type SparkNodeChildren } from './spark-node.js'
+import { isSparkNode, normalizeSparkNode, nodeId as getSparkNodeId, type SparkNode, type SparkNodeChildren } from './spark-node.js'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 
 export const SPARK_PAGE_NODE_TYPE = 'spark-page'
 export const SPARK_PAGE_ROOT_ID = 'spark-page-root'
+const readNodeId = getSparkNodeId
 
 export type SparkNodeTreeJsonInput = SparkNode | Record<string, unknown> | string
 export type SparkNodeTreeRuleJsonInput =
@@ -1193,11 +1194,11 @@ function requireNonEmptySparkNodeArray(value: unknown, fieldName: string): Spark
  */
 function assertUniqueNodeIds(nodeIds: string[], fieldName: string): void {
   const seen = new Set<string>()
-  for (const nodeId of nodeIds) {
-    if (seen.has(nodeId)) {
-      throw new Error(`Duplicate node id "${nodeId}" in ${fieldName}`)
+  for (const currentNodeId of nodeIds) {
+    if (seen.has(currentNodeId)) {
+      throw new Error(`Duplicate node id "${currentNodeId}" in ${fieldName}`)
     }
-    seen.add(nodeId)
+    seen.add(currentNodeId)
   }
 }
 
@@ -1255,12 +1256,12 @@ function copySparkNode(
  */
 function findLocationRecursive(
   current: SparkNode,
-  nodeId: string,
+  targetNodeId: string,
   parent: SparkNode | null,
   index: number,
   depth: number,
 ): SparkNodeLocation | null {
-  if (readNodeId(current) === nodeId) {
+  if (readNodeId(current) === targetNodeId) {
     return { node: current, parent, index, depth }
   }
 
@@ -1269,7 +1270,7 @@ function findLocationRecursive(
   for (let childIndex = 0; childIndex < current.children.length; childIndex += 1) {
     const child = current.children[childIndex]
     if (!isSparkNode(child)) continue
-    const found = findLocationRecursive(child, nodeId, current, childIndex, depth + 1)
+    const found = findLocationRecursive(child, targetNodeId, current, childIndex, depth + 1)
     if (found !== null) return found
   }
 
@@ -1299,10 +1300,10 @@ function buildPathIndexRecursive(
 /**
  * 强制要求某个节点存在；不存在时立即 fail-fast。
  */
-function requireLocation(root: SparkNode, nodeId: string): SparkNodeLocation {
-  const location = findLocationRecursive(root, nodeId, null, -1, 0)
+function requireLocation(root: SparkNode, targetNodeId: string): SparkNodeLocation {
+  const location = findLocationRecursive(root, targetNodeId, null, -1, 0)
   if (location === null) {
-    throw new Error(`Node "${nodeId}" not found`)
+    throw new Error(`Node "${targetNodeId}" not found`)
   }
   return location
 }
@@ -1654,13 +1655,13 @@ function applyRemoveNode(
  */
 function rewriteNodeById<TResult>(
   current: SparkNode,
-  nodeId: string,
+  targetNodeId: string,
   updater: (location: SparkNodeLocation) => { nextNode: SparkNode | null; result: TResult },
   parent: SparkNode | null = null,
   index = -1,
   depth = 0,
 ): NodeRewriteResult<TResult> {
-  if (readNodeId(current) === nodeId) {
+  if (readNodeId(current) === targetNodeId) {
     const updated = updater({ node: current, parent, index, depth })
     return {
       next: updated.nextNode,
@@ -1685,7 +1686,7 @@ function rewriteNodeById<TResult>(
       continue
     }
 
-    const childResult = rewriteNodeById(child, nodeId, updater, current, childIndex, depth + 1)
+    const childResult = rewriteNodeById(child, targetNodeId, updater, current, childIndex, depth + 1)
     if (!childResult.changed) {
       nextChildren.push(child)
       continue

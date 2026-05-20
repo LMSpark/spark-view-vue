@@ -21,7 +21,7 @@ const logger = createLogger('spark-catalog')
  * 插件选项
  * ----------------------------------------------------------------------- */
 
-export interface SparkCatalogPluginOptions {
+export type SparkCatalogPluginOptions = {
   /** Feature 组件的 glob 扫描模式（相对于项目 root） */
   featurePatterns?: string[]
   /** 排除模式 */

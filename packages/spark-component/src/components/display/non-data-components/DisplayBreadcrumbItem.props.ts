@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RBreadcrumbItemProps extends SparkNodeProps {
+export type RBreadcrumbItemProps = SparkNodeProps & {
   /** 面包屑文本 */
   label?: SparkText
   /** 跳转目标（路径或路由对象） */

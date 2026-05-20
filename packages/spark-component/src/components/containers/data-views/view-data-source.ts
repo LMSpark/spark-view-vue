@@ -19,7 +19,7 @@ import { useDataViewState } from './view-runtime-state.js'
 import { toDataRecord } from './data-row-utils.js'
 
 /** 极简日志接口，仅供 useContainerDataSource 内部使用。 */
-interface DataSourceLoggerLike {
+type DataSourceLoggerLike = {
   warn(message: string): void
   error(message: string, error?: unknown): void
 }
@@ -47,7 +47,7 @@ function isDataView(value: unknown): value is DataView {
     && typeof Reflect.get(value, 'dataTable') === 'object'
 }
 
-interface UseContainerDataSourceOptions<TSource> {
+type UseContainerDataSourceOptions<TSource> = {
   dataViewKey: MaybeRefOrGetter<string | undefined>
   contextDataMember?: MaybeRefOrGetter<DataMember | `${DataMember}` | undefined>
   contextDataField?: MaybeRefOrGetter<string | undefined>
@@ -63,7 +63,7 @@ interface UseContainerDataSourceOptions<TSource> {
   skipAutoLoadEffect?: boolean
 }
 
-interface UseContainerDataSourceEffectsOptions<TSource> {
+type UseContainerDataSourceEffectsOptions<TSource> = {
   resolvedView: ComputedRef<TSource | null>
   diagnostic?: ComputedRef<ContainerDataSourceDiagnostic | null>
   provideDataSource?: (source: TSource) => void
@@ -73,7 +73,7 @@ interface UseContainerDataSourceEffectsOptions<TSource> {
   skipAutoLoadEffect?: boolean
 }
 
-export interface ContainerDataSourceState<TSource> {
+export type ContainerDataSourceState<TSource> = {
   resolvedView: ComputedRef<TSource | null>
   resolvedDataRow: ComputedRef<DataRow | null>
 }

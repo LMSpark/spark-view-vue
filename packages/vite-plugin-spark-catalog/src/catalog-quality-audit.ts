@@ -31,7 +31,7 @@ const logger = createLogger('spark-catalog-audit')
 
 export type AuditSeverity = 'error' | 'warning' | 'info'
 
-export interface AuditIssue {
+export type AuditIssue = {
   severity: AuditSeverity
   rule: string
   component: string
@@ -39,7 +39,7 @@ export interface AuditIssue {
   message: string
 }
 
-export interface AuditReport {
+export type AuditReport = {
   timestamp: string
   totalComponents: number
   issues: AuditIssue[]
@@ -53,7 +53,7 @@ export interface AuditReport {
   }
 }
 
-export interface AuditOptions {
+export type AuditOptions = {
   /** 忽略的规则 ID 列表 */
   ignoreRules?: string[]
   /** 忽略的组件 type 列表 */
@@ -62,7 +62,7 @@ export interface AuditOptions {
   strict?: boolean
 }
 
-interface AuditableComponentCatalog {
+type AuditableComponentCatalog = {
   componentCount: number
   components: Record<string, ComponentEntry>
   schemas?: Record<string, PropSchema>
@@ -99,7 +99,7 @@ function auditPropDescriptions(entry: ComponentEntry, issues: AuditIssue[]): voi
         rule: 'prop-description-missing',
         component: entry.type,
         field: prop.name,
-        message: `Prop "${prop.name}" 缺少 description（请在 Vue SFC 的 interface Props 中为该字段添加 JSDoc 注释）`,
+        message: `Prop "${prop.name}" 缺少 description（请在 Vue SFC 的 Props 类型中为该字段添加 JSDoc 注释）`,
       })
     }
   }
@@ -480,7 +480,7 @@ export function generateFixGuide(report: AuditReport, catalog: AuditableComponen
     if (descMissing.length > 0) {
       lines.push('### 需要添加 JSDoc 注释的 Props:')
       lines.push('```typescript')
-      lines.push('interface Props {')
+      lines.push('type Props = {')
       for (const issue of descMissing) {
         lines.push(`  /** TODO: 添加描述 */`)
         lines.push(`  ${issue.field ?? 'unknown'}?: ...`)
@@ -494,7 +494,7 @@ export function generateFixGuide(report: AuditReport, catalog: AuditableComponen
     if (precedenceIssues.length > 0) {
       lines.push('### 需要说明 field / value 优先级:')
       lines.push('```typescript')
-      lines.push('interface Props {')
+      lines.push('type Props = {')
       lines.push('  /** 字段绑定名，优先于 value 取值 */')
       lines.push('  field?: string')
       lines.push('  /** 静态回退值（field 未指定或为空时使用） */')

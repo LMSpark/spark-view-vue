@@ -6,10 +6,7 @@ import type {
 import type { RFooterProps } from '../../zones/RendererFooter.types'
 import type { RHeaderProps } from '../../zones/RendererHeader.types'
 
-export interface RDrawerProps
-  extends SparkNodeProps,
-    SparkVisibilityContainerProps,
-    SparkGridLayoutProps {
+export type RDrawerProps = SparkNodeProps & SparkVisibilityContainerProps & SparkGridLayoutProps & {
   /** 结构化头部 */
   header?: RHeaderProps
   /** 结构化底部 */

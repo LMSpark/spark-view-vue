@@ -11,10 +11,7 @@ import type { RToolbarProps } from '../../layout/RendererToolbar.types'
  *
  * 命名规范：组件 type `r-detail` → 接口名 `RDetailProps`。
  */
-export interface RDetailProps
-  extends SparkNodeProps,
-    SparkCrudDataContainerProps,
-    SparkGridLayoutProps {
+export type RDetailProps = SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {
   /** 显式收窄为详情容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 */

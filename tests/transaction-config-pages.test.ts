@@ -1,23 +1,19 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { compileRule, parsePageData } from '@spark-view/spark-page-config'
+import { compileRule, parsePageData } from '@spark-view/spark-page-config/page/loading'
 import { HttpClientBase } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
+import type { SparkNode } from '@spark-view/spark-component'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import { executeSaveDataSet } from '../packages/spark-component/src/page/actions/action-data'
-import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions/action-types'
+import type { ActionDescriptor, ActionExecutionContext, SaveDataSetAction } from '../packages/spark-component/src/page/actions/action-types'
 
 const pageRoot = join(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/homepage')
 
-const pages = ['tx-editing-rows', 'tx-transaction-commit', 'tx-transaction-retry'] as const
+const pages: readonly string[] = ['tx-editing-rows', 'tx-transaction-commit', 'tx-transaction-retry']
 
-interface RuleNodeLike {
-  props?: Record<string, unknown>
-  children?: unknown[]
-}
-
-interface CapturedPost {
+type CapturedPost = {
   url: string
   data: unknown
 }
@@ -26,37 +22,70 @@ function readPageFile(pageId: string, fileName: string): string {
   return readFileSync(join(pageRoot, pageId, fileName), 'utf8')
 }
 
+function readObjectProp(value: unknown, key: string): unknown {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
+  return Object.getOwnPropertyDescriptor(value, key)?.value
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isSparkNodeLike(value: unknown): value is SparkNode {
+  return typeof readObjectProp(value, 'type') === 'string'
+}
+
+function readProps(value: unknown): Record<string, unknown> | null {
+  const props = readObjectProp(value, 'props')
+  return isRecord(props) ? Object.fromEntries(Object.entries(props)) : null
+}
+
+function readChildren(value: unknown): unknown[] {
+  const children = readObjectProp(value, 'children')
+  return Array.isArray(children) ? children : []
+}
+
+function requireValue<T>(value: T | null | undefined, message: string): T {
+  if (value !== null && value !== undefined) return value
+  throw new Error(message)
+}
+
+function requireSaveDataSetAction(descriptor: ActionDescriptor | null, message: string): SaveDataSetAction {
+  if (descriptor?.action === 'save-dataset') return descriptor
+  throw new Error(message)
+}
+
+function readRequestId(data: unknown): string | undefined {
+  const requestId = readObjectProp(data, 'requestId')
+  return typeof requestId === 'string' ? requestId : undefined
+}
+
 function collectActions(nodes: unknown[]): string[] {
   const actions: string[] = []
   const visit = (node: unknown): void => {
-    if (node === null || typeof node !== 'object' || Array.isArray(node)) return
-    const current = node as RuleNodeLike
-    const action = current.props?.['action']
+    if (!isSparkNodeLike(node)) return
+    const action = readProps(node)?.['action']
     if (typeof action === 'string') actions.push(action)
-    for (const child of current.children ?? []) visit(child)
+    for (const child of readChildren(node)) visit(child)
   }
   for (const node of nodes) visit(node)
   return actions
 }
 
-function findNodeById(nodes: unknown[], id: string): RuleNodeLike | undefined {
+function findNodeById(nodes: unknown[], id: string): SparkNode | undefined {
   for (const node of nodes) {
-    if (node === null || typeof node !== 'object' || Array.isArray(node)) continue
-    const current = node as RuleNodeLike & { id?: unknown }
-    if (current.id === id) return current
-    const found = findNodeById(current.children ?? [], id)
+    if (!isSparkNodeLike(node)) continue
+    if (readObjectProp(node, 'id') === id) return node
+    const found = findNodeById(readChildren(node), id)
     if (found) return found
   }
   return undefined
 }
 
 function readOperations(data: unknown): Array<Record<string, unknown>> {
-  if (data === null || typeof data !== 'object' || Array.isArray(data)) return []
-  const operations = (data as { operations?: unknown }).operations
+  const operations = readObjectProp(data, 'operations')
   if (!Array.isArray(operations)) return []
-  return operations.filter((item): item is Record<string, unknown> => (
-    item !== null && typeof item === 'object' && !Array.isArray(item)
-  ))
+  return operations.filter(isRecord).map((item) => Object.fromEntries(Object.entries(item)))
 }
 
 class TransactionMockHttpClient extends HttpClientBase {
@@ -142,10 +171,12 @@ describe('transaction validation page configs', () => {
 
   it('tx-transaction-retry conflict button stages a different payload before reusing requestId', async () => {
     const compiledRule = compileRule(readPageFile('tx-transaction-retry', 'rule.json'))
-    const conflictButton = findNodeById(compiledRule, 'btn-save-retry-conflict')
-    expect(conflictButton).toBeDefined()
+    const conflictButton = requireValue(
+      findNodeById(compiledRule, 'btn-save-retry-conflict'),
+      'Expected retry conflict button',
+    )
 
-    const descriptor = nodeToActionDescriptor(conflictButton as Parameters<typeof nodeToActionDescriptor>[0])
+    const descriptor = nodeToActionDescriptor(conflictButton)
     expect(descriptor).toMatchObject({
       action: 'append-row',
       dataViewKey: 'SparkTxAudit@default', idField: 'id',
@@ -185,8 +216,8 @@ describe('transaction validation page configs', () => {
     await dataSet.saveChanges({ mode: 'transaction', transaction: { requestId: 'tx-config-retry-v1' } })
 
     expect(posts).toHaveLength(2)
-    expect((posts[0]!.data as { requestId?: string }).requestId).toBe('tx-config-retry-v1')
-    expect((posts[1]!.data as { requestId?: string }).requestId).toBe('tx-config-retry-v1')
+    expect(readRequestId(posts[0]!.data)).toBe('tx-config-retry-v1')
+    expect(readRequestId(posts[1]!.data)).toBe('tx-config-retry-v1')
 
     const firstOperations = readOperations(posts[0]!.data)
     const secondOperations = readOperations(posts[1]!.data)
@@ -198,7 +229,7 @@ describe('transaction validation page configs', () => {
   })
 
   it('save-dataset supports zero-code auto requestId while fixed requestId keeps priority', async () => {
-    const autoNode = {
+    const autoNode: SparkNode = {
       type: 'r-button',
       props: {
         action: 'save-dataset',
@@ -248,7 +279,7 @@ describe('transaction validation page configs', () => {
         showConfirm: vi.fn(async () => true),
         showPrompt: vi.fn(async () => null),
         showAlert: vi.fn(async () => undefined),
-        showDialog: vi.fn(async () => 'cancel' as const),
+        showDialog: vi.fn(async (): Promise<'cancel'> => 'cancel'),
         selectEntities: vi.fn(async () => []),
         browseFiles: vi.fn(async () => []),
         uploadFiles: vi.fn(async () => []),
@@ -258,13 +289,13 @@ describe('transaction validation page configs', () => {
       getRouter: () => null,
     }
 
-    await executeSaveDataSet(autoDescriptor as Parameters<typeof executeSaveDataSet>[0], ctx)
+    await executeSaveDataSet(requireSaveDataSetAction(autoDescriptor, 'Expected save-dataset descriptor'), ctx)
 
     expect(messages.at(-1)?.type).toBe('success')
     expect(posts).toHaveLength(1)
-    const requestId = (posts[0]!.data as { requestId?: string }).requestId
+    const requestId = readRequestId(posts[0]!.data)
     expect(requestId).toBeDefined()
     expect(requestId).not.toBe('fixed-request-id')
-    expect(requestId!.length).toBeGreaterThan(10)
+    expect(requireValue(requestId, 'Expected auto requestId').length).toBeGreaterThan(10)
   })
 })

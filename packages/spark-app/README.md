@@ -111,8 +111,8 @@ logger.debug('调试信息', { data: {...} })
 ### 服务访问（推荐使用 SPARK 能力系统）
 
 ```typescript
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-component'
 import { useRouter } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
 
@@ -123,9 +123,9 @@ export default {
     const logger = Logger('MyComponent')  // 工厂函数
     logger.info('组件初始化')
     
-    // 方式 2：通过 APP_SERVICES 能力获取（组件内）
+    // 方式 2：通过页面运行时服务能力获取（组件内）
     const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
-    const services = sparkConsume(APP_SERVICES)
+    const services = sparkConsume(PAGE_RUNTIME_SERVICES)
     if (services) {
       services.router?.push('/home')
       services.logger?.info('Action')
@@ -209,7 +209,7 @@ const ErrorBoundary = createErrorBoundary((error) => {
 |------|------|------|
 | `useRouter()` from vue-router | 路由导航 | `const router = useRouter()` |
 | `Logger('module')` 工厂函数 | 日志记录 | `const logger = Logger('MyComponent')` |
-| `sparkConsume(APP_SERVICES)` | 应用服务能力 | `const services = sparkConsume(APP_SERVICES)` |
+| `sparkConsume(PAGE_RUNTIME_SERVICES)` | 页面运行时服务能力 | `const services = sparkConsume(PAGE_RUNTIME_SERVICES)` |
 | `useSparkRegistry()` | 组件注册表 | `const registry = useSparkRegistry()` |
 
 ### 认证服务
@@ -237,7 +237,7 @@ const ErrorBoundary = createErrorBoundary((error) => {
 ## 类型定义
 
 ```typescript
-interface AppContext {
+type AppContext = {
   user: UserInfo
   tenant: TenantInfo
   env: EnvironmentInfo
@@ -245,7 +245,7 @@ interface AppContext {
   initializedAt: string
 }
 
-interface UserInfo {
+type UserInfo = {
   id: string | number
   name: string
   email?: string
@@ -253,7 +253,7 @@ interface UserInfo {
   permissions: string[]
 }
 
-interface TenantInfo {
+type TenantInfo = {
   id: string
   name: string
   domain?: string
@@ -274,10 +274,10 @@ import { Logger } from '@spark-view/spark-utils'
 const logger = Logger('MyComponent')
 
 // 使用 SPARK 能力系统
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-component'
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
-const services = sparkConsume(APP_SERVICES)
+const services = sparkConsume(PAGE_RUNTIME_SERVICES)
 
 // 使用命名空间 API
 await SparkApp.start({ ... })

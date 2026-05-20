@@ -1,3 +1,3 @@
 import type { SparkMultilineFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RHtmlEditorProps extends SparkNodeProps, SparkMultilineFieldProps<string> {}
+export type RHtmlEditorProps = SparkNodeProps & SparkMultilineFieldProps<string> & {}

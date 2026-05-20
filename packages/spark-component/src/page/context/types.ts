@@ -5,7 +5,8 @@
  */
 
 import type { DataSetContract, SparkData } from '@spark-view/spark-data'
-import type { PageConfig, PageRoute, ScriptContext } from '@spark-view/spark-page-config'
+import type { PageConfig } from '@spark-view/spark-page-config/page/loading'
+import type { PageRoute, ScriptContext } from '@spark-view/spark-page-config/page/sandbox'
 import type { h } from 'vue'
 import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'
 
@@ -19,7 +20,7 @@ export type { PageRoute }
 // ── 分区 C：脚本沙箱能力（页面运行时访问面） ─────────────────────────────────
 
 /** 页面脚本组件访问 API（由渲染器根节点注入） */
-export interface PageComponentAccessApi {
+export type PageComponentAccessApi = {
   /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
   get(id: string): PageComponentInstanceEntry | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
@@ -41,7 +42,7 @@ export interface PageComponentAccessApi {
  * - `h` — 渲染函数（Render* 专用）
  * - Timer API — 沙箱白名单
  */
-export interface PageContext extends ScriptContext {
+export type PageContext = ScriptContext & {
   /** 页面 DataSet（比 ScriptContext 额外注入的具体类型） */
   $dataSet: DataSetContract | null
   /** 组件访问 API（覆盖 ScriptContext 基类，提供更丰富方法） */

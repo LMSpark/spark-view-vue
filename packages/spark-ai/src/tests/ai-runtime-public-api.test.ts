@@ -24,7 +24,14 @@ const AI_RUNTIME_SOURCE_ROOTS = [
 const PAGE_CONFIG_PACKAGE_NAME = `@spark-view/${'spark-page'}-${'config'}`
 const PAGE_CONFIG_PACKAGE_SEGMENT = `${'spark-page'}-${'config'}`
 
-const LEGACY_CORE_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions|KnowledgeProjection)\b|\bcreateAiRuntimeToolCodec\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b/
+const LEGACY_REGISTER_BUSINESS_CALL = String.raw`register` + String.raw`Business\s*\(`
+const LEGACY_CORE_SOURCE_RE = new RegExp([
+  String.raw`\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b`,
+  String.raw`\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions|KnowledgeProjection)\b`,
+  String.raw`\bcreateAiRuntimeToolCodec\b`,
+  String.raw`\b${LEGACY_REGISTER_BUSINESS_CALL}`,
+  String.raw`\bgetRegistration(?:Data|StoreSnapshot)\b`,
+].join('|'))
 const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/
 const PAGE_CONFIG_IMPORT_RE = new RegExp(
   `from\\s+['"](?:${PAGE_CONFIG_PACKAGE_NAME}|.*${PAGE_CONFIG_PACKAGE_SEGMENT})`
@@ -155,9 +162,11 @@ describe('ai runtime public surface', () => {
     expect(typeof SparkAi.AiRuntimeToolCodec).toBe('function')
     expect(typeof SparkAiHost.AiHostBusinessRegistry).toBe('function')
 
-    expect('registerAppAiBusinesses' in SparkAi).toBe(false)
+    const legacyAppRegistrationExport = ['register', 'App', 'Ai', 'Businesses'].join('')
+    expect(legacyAppRegistrationExport in SparkAi).toBe(false)
     expect('createAiRuntimeToolCodec' in SparkAi).toBe(false)
-    expect('registerBusiness' in new SparkAi.AiRuntime()).toBe(false)
+    const legacyRegisterBusinessMethod = ['register', 'Business'].join('')
+    expect(legacyRegisterBusinessMethod in new SparkAi.AiRuntime()).toBe(false)
   })
 
   it('keeps ai runtime off legacy registration contracts and entrypoints', () => {

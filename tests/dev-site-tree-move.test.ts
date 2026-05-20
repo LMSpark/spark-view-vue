@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import DevSiteTree from '@/views/app/dev-system/DevSiteTree.vue'
-import type { NavNode } from '@spark-view/spark-page-config'
+import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
 import { useDevState, type DevState } from '@/views/app/dev-system/useDevState'
 
 function createState(node: NavNode): DevState {

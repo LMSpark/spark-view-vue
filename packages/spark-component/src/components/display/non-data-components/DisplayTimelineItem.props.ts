@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RTimelineItemProps extends SparkNodeProps {
+export type RTimelineItemProps = SparkNodeProps & {
   /** 时间戳文本 */
   timestamp?: SparkText
   /** 是否隐藏时间戳 */

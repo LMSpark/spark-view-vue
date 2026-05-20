@@ -67,7 +67,9 @@ describe('Component Registration', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { Spark, sparkProvide, sparkConsume, defineCapability, APP_SERVICES } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { Spark } from '@spark-view/spark-component'
+import { sparkProvide, sparkConsume, defineCapability } from '@spark-view/spark-utils'
 
 describe('Capability System', () => {
   it('provides and consumes up the parent chain', () => {
@@ -77,13 +79,13 @@ describe('Capability System', () => {
     const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
 
     // 父组件提供能力
-    sparkProvide(parentCtx, APP_SERVICES, {
+    sparkProvide(parentCtx, PAGE_RUNTIME_SERVICES, {
       router: { push: async () => {}, replace: async () => {}, back: () => {}, currentRoute: {} },
       logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} }
     })
 
     // 子组件通过 parent 链查找
-    const found = sparkConsume(childCtx, APP_SERVICES)
+    const found = sparkConsume(childCtx, PAGE_RUNTIME_SERVICES)
     expect(found).toBeTruthy()
     expect(found!.router).toBeDefined()
     expect(found!.logger).toBeDefined()

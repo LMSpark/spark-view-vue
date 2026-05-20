@@ -6,7 +6,15 @@
     "paths": {
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
-      "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"]
+      "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"],
+      "@spark-view/spark-page-config/page": ["../spark-page-config/dist/page/index.d.ts"],
+      "@spark-view/spark-page-config/page/model": ["../spark-page-config/dist/page/model/index.d.ts"],
+      "@spark-view/spark-page-config/page/loading": ["../spark-page-config/dist/page/loading/index.d.ts"],
+      "@spark-view/spark-page-config/page/workspace": ["../spark-page-config/dist/page/workspace/index.d.ts"],
+      "@spark-view/spark-page-config/page/navigation": ["../spark-page-config/dist/page/navigation/index.d.ts"],
+      "@spark-view/spark-page-config/page/sandbox": ["../spark-page-config/dist/page/sandbox/index.d.ts"],
+      "@spark-view/spark-page-config/assistant": ["../spark-page-config/dist/assistant/index.d.ts"],
+      "@spark-view/spark-page-config/assistant/registrations": ["../spark-page-config/dist/assistant/registrations/index.d.ts"]
     },
     "declaration": true,
     "declarationMap": true,

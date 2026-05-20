@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RResultProps extends SparkNodeProps {
+export type RResultProps = SparkNodeProps & {
   /** 结果图标类型 */
   icon?: 'success' | 'warning' | 'info' | 'error'
   /** 结果标题 */

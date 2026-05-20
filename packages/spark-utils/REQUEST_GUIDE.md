@@ -388,7 +388,7 @@ const [users, posts, comments] = await Promise.all([
 请求配置项：
 
 ```typescript
-interface RequestConfig {
+type RequestConfig = {
   url: string                        // 请求 URL
   method?: 'GET' | 'POST' | ...      // HTTP 方法
   params?: Record<string, any>       // 查询参数

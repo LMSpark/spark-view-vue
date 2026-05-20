@@ -1,6 +1,6 @@
 import type { BaseContainerApi } from '../../support/base-container-api.js'
 
-export interface RendererFormApi extends BaseContainerApi {
+export type RendererFormApi = BaseContainerApi & {
   getFormData(): Record<string, unknown>
   getNativeForm(): unknown
   validate(): Promise<boolean>

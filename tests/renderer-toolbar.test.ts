@@ -1,24 +1,25 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import type { PropType } from 'vue'
 import { RendererToolbar } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 
-const SparkActionStub = defineComponent({
-  props: {
-    config: {
-      type: Object as PropType<SparkNode>,
-      required: true,
-    },
-  },
-  setup(props) {
+const SparkActionStub = defineComponent(
+  (props: { config: SparkNode }) => {
     return () => h('button', {
       class: 'spark-action-stub',
       'data-type': props.config.type,
     }, props.config.type)
   },
-})
+  {
+    props: {
+      config: {
+        type: Object,
+        required: true,
+      },
+    },
+  },
+)
 
 describe('RendererToolbar integration', () => {
   it('should render default and tail children in separate horizontal lanes', () => {

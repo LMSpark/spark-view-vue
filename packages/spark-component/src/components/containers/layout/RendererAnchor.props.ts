@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RAnchorProps extends SparkNodeProps {
+export type RAnchorProps = SparkNodeProps & {
   /** 滚动容器选择器 */
   container?: SparkText
   /** 偏移量 */

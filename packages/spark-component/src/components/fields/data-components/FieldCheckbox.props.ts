@@ -1,6 +1,6 @@
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types'
 
-export interface RCheckboxProps extends SparkNodeProps, SparkFieldSemanticProps<boolean> {
+export type RCheckboxProps = SparkNodeProps & SparkFieldSemanticProps<boolean> & {
   /** 选中状态下展示的文本。 */
   checkedText?: SparkText
   /** 未选中状态下展示的文本。 */

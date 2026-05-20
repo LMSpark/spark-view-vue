@@ -203,7 +203,7 @@ export function normalizeSpan(value: unknown, fallback: number): number {
 // ============================================================
 
 /** `useContainerGrid` 输入选项。 */
-export interface UseContainerGridOptions {
+export type UseContainerGridOptions = {
   /** 子节点数组（响应式 getter 或 ref）。 */
   children: MaybeRefOrGetter<SparkNode[]>
   /** 网格列数（默认 24）。 */
@@ -221,7 +221,7 @@ export interface UseContainerGridOptions {
 }
 
 /** `useContainerGrid` 返回状态。 */
-export interface ContainerGridState {
+export type ContainerGridState = {
   /** 网格容器的 CSS 样式对象（display: grid + gridTemplateColumns 等）。 */
   gridStyle: ComputedRef<CSSProperties>
   /** 计算子元素的 CSS 样式（传入节点和索引）。 */
@@ -295,7 +295,7 @@ export function useContainerGrid(options: UseContainerGridOptions): ContainerGri
 // § useCompositeItemGrid
 // ============================================================
 
-interface UseCompositeItemGridOptions {
+type UseCompositeItemGridOptions = {
   children?: () => SparkNode['children'] | undefined
   bodyClass?: () => OptionalString
   gridColumns?: () => OptionalStringOrNumber
@@ -304,7 +304,7 @@ interface UseCompositeItemGridOptions {
 }
 
 /** `useCompositeItemGrid` 返回状态。 */
-export interface CompositeItemGridState {
+export type CompositeItemGridState = {
   contentChildren: ComputedRef<SparkNode[]>
   contentBodyClass: ComputedRef<string>
   contentGridStyle: ComputedRef<CSSProperties>

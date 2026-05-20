@@ -22,12 +22,12 @@ import type { DataSet } from '@spark-view/spark-data'
 /**
  * DataSet 管理选项接口
  */
-export interface UsePageDataSetOptions {
+export type UsePageDataSetOptions = {
   enableDataSet?: boolean
 }
 
 /** DataSet 管理返回值接口 */
-export interface UsePageDataSetReturn {
+export type UsePageDataSetReturn = {
   /** 当前 DataSet 实例（getter，无响应式，每次访问返回最新值） */
   readonly dataSet: DataSet | null
   /** 设置 DataSet 实例（必须是已编译好的 DataSet） */

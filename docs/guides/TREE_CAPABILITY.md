@@ -205,19 +205,19 @@ RendererTree 是当前树容器主入口，定位不是“一个普通 Vue 组�
 
 ```ts
 type RendererTreeApi = {
-  getDataSource(): IDataSource | null
-  getTreeData(): IDataRow[]
+  getDataSource(): DataView | null
+  getTreeData(): DataRow[]
   getNativeTree(): unknown
-  getCurrentNode(): IDataRow | null
+  getCurrentNode(): DataRow | null
   setCurrentKey(key: string | number): void
   expandToNode(key: string | number): Promise<void>
   filter(keyword: string): void
   getCheckedKeys(): Array<string | number>
   setCheckedKeys(keys: Array<string | number>): void
-  appendNode(parentKey: string | number | null, nodeData: IDataRow): void
-  insertBefore(refKey: string | number, nodeData: IDataRow): void
-  insertAfter(refKey: string | number, nodeData: IDataRow): void
-  updateNode(key: string | number, patch: Partial<IDataRow>): boolean
+  appendNode(parentKey: string | number | null, nodeData: DataRow): void
+  insertBefore(refKey: string | number, nodeData: DataRow): void
+  insertAfter(refKey: string | number, nodeData: DataRow): void
+  updateNode(key: string | number, patch: Partial<DataRow>): boolean
   removeNode(key: string | number): boolean
   getAllowAppend(): boolean
   getAllowDelete(): boolean
@@ -344,7 +344,7 @@ RendererTree 仍兼容旧式：
 
 ## 7. 权限接入
 
-树能力直接复用统一权限体系，完整权限模型、字段语义、默认值与动作判定统一以 [PERMISSION_SYSTEM.md](../architecture/PERMISSION_SYSTEM.md) 为准，本文件不再重复定义 `IModelPermission` / `IInstancePermission`。
+树能力直接复用统一权限体系，完整权限模型、字段语义、默认值与动作判定统一以 [PERMISSION_SYSTEM.md](../architecture/PERMISSION_SYSTEM.md) 为准，本文件不再重复定义权限 DTO。
 
 树场景只补充树专属落点：
 
@@ -595,7 +595,7 @@ PUT /navigation/nodes/{id}/move
 ```bash
 pnpm run test -- -t "tree"
 npx vitest run packages/spark-data/src/tests/dataset-tree-4-plus-7.test.ts --reporter verbose
-npx vitest run tests/renderer-table.datasource.test.ts --reporter verbose
+npx vitest run tests/renderer-list-section.test.ts tests/renderer-layout-containers.test.ts --reporter verbose
 ```
 
 ---

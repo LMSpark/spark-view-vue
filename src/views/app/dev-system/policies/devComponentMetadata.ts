@@ -1,4 +1,4 @@
-import type { JsonObject, JsonValue, RuleEditorComponentMetadata } from '@spark-view/spark-page-config'
+import type { JsonObject, JsonValue, RuleEditorComponentMetadata } from '@spark-view/spark-page-config/page/workspace'
 import { skillCatalog, type PropMeta, type SkillMeta } from 'virtual:spark-skill-catalog'
 
 const STRUCT_KEYS = new Set(['type', 'props', 'children', 'id'])

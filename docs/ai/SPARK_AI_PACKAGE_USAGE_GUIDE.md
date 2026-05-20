@@ -79,7 +79,7 @@ App AI Center host 的目标职责只有：
 
 ## 禁止事项
 
-- 不恢复 `app-ai-businesses` 作为 APP 业务注册入口。
+- 不恢复旧 app AI 业务注册入口。
 - 不恢复 `@spark-view/spark-ai/registrations` 作为具体业务模块出口。
 - 不让 `spark-ai` import `spark-page-config`、`spark-app` 或任何具体业务 service。
 - 不让 App AI Center host 成为业务 runtime factory。

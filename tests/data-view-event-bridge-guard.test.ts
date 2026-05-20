@@ -30,7 +30,7 @@ function walkFiles(dir: string): string[] {
   return result
 }
 
-interface Violation {
+type Violation = {
   file: string
   pattern: string
   line: number

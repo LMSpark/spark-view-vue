@@ -47,7 +47,7 @@ function mountRendererLinkWithDataSource(dataSource: DataView, componentProps?: 
         'el-link': ElLinkStub,
       },
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       },
     },
   })

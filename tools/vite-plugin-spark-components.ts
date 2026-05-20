@@ -94,9 +94,9 @@ export type LoadStrategy = 'sync' | 'async'
  * ```
  */
 /**
- * 组件 Props 属性元数据（从 defineProps<Props> interface 自动提取）
+ * 组件 Props 属性元数据（从 defineProps<Props> 类型自动提取）
  */
-export interface PropMeta {
+export type PropMeta = {
   /** 属性名 */
   name: string
   /** TypeScript 类型字符串 */
@@ -109,7 +109,7 @@ export interface PropMeta {
   default?: string
 }
 
-export interface SkillMeta {
+export type SkillMeta = {
   /** Skill 注册名（默认取 kebab-case 文件名，@skill 标签可覆盖） */
   type: string
   /** Skill 功能描述（@description 标签） */
@@ -122,7 +122,7 @@ export interface SkillMeta {
   inputSchema?: string
   /** 调用示例（@example 标签，JSON 格式字符串） */
   example?: string
-  /** 组件 Props 定义（从 defineProps<Props> interface 自动提取） */
+  /** 组件 Props 定义（从 defineProps<Props> 类型自动提取） */
   props?: PropMeta[]
 }
 
@@ -133,7 +133,7 @@ export interface SkillMeta {
 /**
  * 组件元数据
  */
-export interface ComponentMetadata {
+export type ComponentMetadata = {
   /** 组件名称（kebab-case） */
   name: string
   /** 文件路径（相对于 root） */
@@ -157,7 +157,7 @@ export interface ComponentMetadata {
 /**
  * 插件配置
  */
-export interface SparkComponentsPluginOptions {
+export type SparkComponentsPluginOptions = {
   /**
    * 组件扫描模式（glob 模式）
    * @default ['./features/**\/*.vue', './src/components/**\/*.vue']
@@ -640,7 +640,7 @@ export default skillCatalog
 
 export type ComponentName = ${componentNames || 'string'}
 
-export interface ComponentStats {
+export type ComponentStats = {
   total: number
   sync: number
   async: number

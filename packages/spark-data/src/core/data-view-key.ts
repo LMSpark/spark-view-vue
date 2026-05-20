@@ -35,7 +35,7 @@ export enum DataMember {
   MutatingError = 'mutatingError',
 }
 
-export interface DataViewKeyDescriptor {
+export type DataViewKeyDescriptor = {
   /** DataSet scope, present only for cross-page `#scope` references. */
   scope?: string
   /** DataTable name. */
@@ -48,14 +48,14 @@ export interface DataViewKeyDescriptor {
   crossPage?: boolean
 }
 
-export interface DataViewMemberDescriptor extends DataViewKeyDescriptor {
+export type DataViewMemberDescriptor = DataViewKeyDescriptor & {
   /** DataView output member. */
   dataMember: DataMember
   /** Optional business field/path inside object-shaped members. */
   dataField?: string
 }
 
-export interface DataViewMemberInput {
+export type DataViewMemberInput = {
   dataViewKey: string | undefined
   dataMember: DataMember | `${DataMember}` | undefined
   dataField?: string | undefined
@@ -288,7 +288,7 @@ export type DataViewKeyDiagnosticStatus =
   | 'missing-table'
   | 'missing-view'
 
-export interface DataViewKeyDiagnostic {
+export type DataViewKeyDiagnostic = {
   ok: boolean
   status: DataViewKeyDiagnosticStatus
   rawKey: string
@@ -304,7 +304,7 @@ export type DataViewMemberDiagnosticStatus =
   | 'missing-field'
   | 'unsupported-data-field'
 
-export interface DataViewMemberDiagnostic {
+export type DataViewMemberDiagnostic = {
   ok: boolean
   status: DataViewMemberDiagnosticStatus
   rawKey: string
@@ -429,7 +429,7 @@ export function getDataViewIdentity(descriptor: DataViewKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
 }
 
-export interface ResolvedDataViewCapabilities {
+export type ResolvedDataViewCapabilities = {
   /** Resolved DataView, or null when unavailable. */
   dataSource: DataView | null
   /** Resolved row-like context, or null when unavailable. */

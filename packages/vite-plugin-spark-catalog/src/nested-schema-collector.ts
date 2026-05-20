@@ -7,7 +7,7 @@
 
 import type { PropSchema } from './component-catalog-schema'
 
-export interface NestedSchemaRecord {
+export type NestedSchemaRecord = {
   /** 嵌套类型的完整类型名称（如 "SomeNestedType" 或 "SomeNestedType | undefined"） */
   typeName: string
   /** 转换后的 PropSchema */

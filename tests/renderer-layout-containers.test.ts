@@ -12,7 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import type { Component, PropType } from 'vue'
+import type { Component } from 'vue'
 import {
   RendererContainer,
   RendererAside,
@@ -101,27 +101,29 @@ const ElColStub = defineComponent({
   },
 })
 
-const SparkComponentRendererStub = defineComponent({
-  name: 'SparkComponentRenderer',
-  props: {
-    config: {
-      type: Object as PropType<SparkNode>,
-      required: true,
-    },
-  },
-  setup(props) {
+const SparkComponentRendererStub = defineComponent(
+  (props: { config: SparkNode }) => {
     return () => h('div', {
       class: 'renderer-stub',
       'data-type': props.config.type,
     })
   },
-})
+  {
+    name: 'SparkComponentRenderer',
+    props: {
+      config: {
+        type: Object,
+        required: true,
+      },
+    },
+  },
+)
 
 // ── Helpers ──
 
 import { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 
-interface TestSystem { registry: ComponentRegistry; rootContext: SparkCapabilityContext }
+type TestSystem = { registry: ComponentRegistry; rootContext: SparkCapabilityContext }
 
 function createTestSystem(): TestSystem {
   return Spark.createSystem()

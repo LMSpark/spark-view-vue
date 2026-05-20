@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { defineComponent, h, type PropType } from 'vue'
+import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import {
   PAGE_DATASET,
@@ -14,11 +14,13 @@ import { useFieldOptions } from '../packages/spark-component/src/components/fiel
 const OptionProbe = defineComponent({
   props: {
     optionDataViewKey: { type: String, required: true },
-    optionDataMember: { type: String as PropType<DataMember | `${DataMember}`>, default: undefined },
     sampleValue: { type: [String, Array], default: undefined },
   },
   setup(props) {
-    const { options, formatOptionValue } = useFieldOptions(props)
+    const { options, formatOptionValue } = useFieldOptions({
+      optionDataViewKey: props.optionDataViewKey,
+      optionDataMember: DataMember.Rows,
+    })
 
     return () => {
       const firstOption = options.value[0]
@@ -49,7 +51,6 @@ function mountOptionProbe(dataSet: ReturnType<typeof SparkData.createDataSet>, s
 
       return () => h(OptionProbe, {
         optionDataViewKey: 'Dict@default',
-        optionDataMember: 'rows',
         ...(normalizedSampleValue !== undefined ? { sampleValue: normalizedSampleValue } : {}),
       })
     },

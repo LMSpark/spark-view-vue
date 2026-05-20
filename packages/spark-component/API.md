@@ -161,16 +161,16 @@ sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 沿 `parent` 链向上查找能力（就近原则）。**找不到返回 `null` 是正常情况（late-binding），不应视为错误。**
 
 ```typescript
-import { APP_SERVICES } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 
-const services = sparkConsume(APP_SERVICES)
+const services = sparkConsume(PAGE_RUNTIME_SERVICES)
 services?.router?.push('/home')
 services?.logger?.info('navigated')
 ```
 
 #### `logger: LoggerApi`
 
-页面级日志代理，要求页面根能力提供 `APP_SERVICES.logger`。
+页面级日志代理，要求页面根能力提供 `PAGE_RUNTIME_SERVICES.logger`。
 
 #### `getComponent(type): unknown`
 
@@ -189,7 +189,7 @@ services?.logger?.info('navigated')
 组件的最小输入类型（可序列化，来自 JSON 配置）。
 
 ```typescript
-interface ComponentConfig {
+type ComponentConfig = {
   type: string          // kebab-case 组件类型，对应注册名
   id?: string           // 实例 ID（默认运行时自动生成）
   props?: Record<string, unknown>
@@ -202,7 +202,7 @@ interface ComponentConfig {
 扩展 `ComponentConfig` 定义业务组件配置：
 
 ```typescript
-interface MyGridConfig extends ComponentConfig {
+type MyGridConfig = ComponentConfig & {
   type: 'my-grid'
   pageSize?: number
   columns?: ColumnDef[]
@@ -216,14 +216,14 @@ defineProps<{ config: MyGridConfig }>()
 组件的最小运行时能力上下文。
 
 ```typescript
-interface ICapabilityContext {
+type CapabilityContextContract = {
   id: string
   type: string
-  parent?: ICapabilityContext
+  parent?: CapabilityContextContract
   capabilities: Map<CapabilityName, unknown>
 }
 
-type SparkCapabilityContext = ICapabilityContext
+type SparkCapabilityContext = CapabilityContextContract
 ```
 
 ### `ComponentDefinition`
@@ -231,7 +231,7 @@ type SparkCapabilityContext = ICapabilityContext
 注册表中存储的组件条目：
 
 ```typescript
-interface ComponentDefinition {
+type ComponentDefinition = {
   type: string
   component: unknown   // Vue 组件对象
   meta?: Record<string, unknown>
@@ -241,7 +241,7 @@ interface ComponentDefinition {
 ### `ComponentRegistry`
 
 ```typescript
-interface ComponentRegistry {
+type ComponentRegistry = {
   register(type, component, meta?, options?: { silent?: boolean }): void
   get(type): ComponentDefinition | undefined
   has(type): boolean
@@ -276,12 +276,12 @@ const cap = sparkConsume(MY_CAP)   // 类型推断为 { doWork(): void } | null
 cap?.doWork()
 ```
 
-### 内置能力键（来自 `@spark-view/spark-component`）
+### 内置能力键
 
 | 键 | 类型 | 说明 |
 |---|---|---|
-| `APP_SERVICES` | `IAppServicesCapability` | `{ router?, logger?, tenant?, configLoader?, authService? }` |
-| `PAGE_SERVICE` | `IPageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
+| `PAGE_RUNTIME_SERVICES` | `PageRuntimeServicesCapability`，来自 `@spark-view/spark-page-config/page` | `{ router?, logger?, tenant?, configLoader?, authService?, pageService? }` |
+| `PAGE_SERVICE` | `PageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
 | `PAGE_DATASET` | `DataSetContract` | 页面级 DataSet，由 PageRenderer 提供 |
 | `DATA_SOURCE` | `DataSource` | 组件级 DataView，由容器组件提供 |
 | `DATA_ROW` | `DataRow` | 当前行作用域 |

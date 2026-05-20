@@ -220,7 +220,7 @@ DataView
 | **P2-B** | ~~**`RendererHostScope` / `RendererFieldScope` 升类**~~ ⏸ 暂缓：`containers/support/` 现已是清晰的"容器辅助"分类（CRUD + Scope + InteractionControl + map-node-props），升类对运行时与可读性收益有限；保持现状以减小 import 冲击面。如未来 `support/` 目录继续膨胀再触发。 | — |
 | **P2-C** | ~~**`layout/` 改名**~~ ⏸ 暂缓：`containers/layout/` 仅 3 个 composable + 1 个测试 import；命名稍显误导但不影响功能。机械改名性价比低。 | — |
 | **P2-D** | ~~**`RendererFilter` / `RendererHeader/Footer/Tail` / `RendererEditor` 归类**~~ ⏸ 暂缓：现位置在 `containers/` 顶层，已与 README 索引匹配；移动会触发大量类型 import 改动而无运行时收益。 | — |
-| **P2-E** | ~~**AI composable 出包**~~ ⏸ 暂缓：实际盘点显示 4 个 composable 还耦合 3 个 Vue 组件（`AiLauncherButton` / `AiChatWidget` / `AppAiPanel`），且通过 [packages/spark-component/src/components/index.ts](../../packages/spark-component/src/components/index.ts) 公开导出。出包属真正破坏性变更（新建 `@spark-view/spark-ai-ui` 包 + 修依赖图 + 改外部调用方），需独立立项与设计评审，不纳入本轮精简。 | — |
+| **P2-E** | ~~**AI composable 出包**~~ ⏸ 暂缓：实际盘点显示 4 个 composable 还耦合 3 个 Vue 组件（launcher button / chat widget / legacy AI panel），且通过 [packages/spark-component/src/components/index.ts](../../packages/spark-component/src/components/index.ts) 公开导出。出包属真正破坏性变更（新建 `@spark-view/spark-ai-ui` 包 + 修依赖图 + 改外部调用方），需独立立项与设计评审，不纳入本轮精简。 | — |
 
 ### P3：命名/术语收敛
 
@@ -267,7 +267,7 @@ DataView
 
 1. `pnpm run typecheck` 通过；
 2. `pnpm run lint` 通过；
-3. 在工作区根运行 `npx vitest run tests/renderer-table.datasource.test.ts tests/permission-resolver.test.ts tests/permission-checker.test.ts`；
+3. 在工作区根运行 `npx vitest run tests/permission-resolver.test.ts tests/permission-checker.test.ts tests/renderer-list-section.test.ts`；
 4. 手测页面：
    - [r-table-series](../../spark-ai-server/data/pages-config/lmspark/homepage/r-table-series/rule.json)（含 delete-current / delete-selected / refresh / patch-current / message-current 全套 BuiltinAction）
    - [section-grid-demo](../../spark-ai-server/data/pages-config/lmspark/homepage/section-grid-demo/rule.json)

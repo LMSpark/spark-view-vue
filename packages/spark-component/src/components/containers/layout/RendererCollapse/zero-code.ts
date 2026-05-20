@@ -4,7 +4,7 @@ import type { ValueRef } from '../../../shared-types.js'
 
 type CollapseValue = string | number | Array<string | number>
 
-interface RendererCollapseZeroCodeOptions {
+type RendererCollapseZeroCodeOptions = {
   currentValue: ValueRef<CollapseValue | undefined>
   commitCollapseValue: (value: CollapseValue, options?: { emit?: boolean }) => void
   itemConfigs: ValueRef<SparkNode[]>

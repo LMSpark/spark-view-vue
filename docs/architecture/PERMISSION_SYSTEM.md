@@ -28,12 +28,12 @@ SPARK 的权限体系**目标模型**是“后端统一验证，前端按快照�
 
 这里描述的是**前端消费约定**与目标快照结构，不代表当前后端已经在所有真实接口中统一返回这些字段。
 
-### 2.1 行级权限：`IInstancePermission`
+### 2.1 行级权限：`InstancePermission`
 
 行级权限存放在 `row._perm`：
 
 ```ts
-interface IInstancePermission {
+type InstancePermission = {
   allowCreateChild?: boolean
   allowDelete?: boolean
   editableFields?: string[]
@@ -56,12 +56,12 @@ interface IInstancePermission {
 | `maskedFields` | 当前记录中可见但脱敏展示的字段列表 |
 | `permissionToken` | 回写给服务端做合法性校验的令牌 |
 
-### 2.2 表级权限：`IModelPermission`
+### 2.2 表级权限：`ModelPermission`
 
 表级权限存放在 `dataSource._modelPerm`：
 
 ```ts
-interface IModelPermission {
+type ModelPermission = {
   allowCreate?: boolean
   allowImport?: boolean
   allowExport?: boolean
@@ -195,7 +195,7 @@ enum FieldVisibility {
 | 模块 | 位置 | 作用 | 关键点 |
 |------|------|------|--------|
 | `PermissionChecker` | `packages/spark-component/src/permission/PermissionChecker.ts` | 最基础的模型级、行级、字段级判断 | `create/import/export` 需要显式 `true`；`edit` 由 `editableFields` 推导；`hiddenFields` 优先于 `maskedFields` |
-| `FieldRenderHelper` | `packages/spark-component/src/permission/FieldRenderHelper.ts` | 计算字段级 `IFieldRenderState` | 把字段状态整理为 `readable / editable / visibility / shouldRender` |
+| `FieldRenderHelper` | `packages/spark-component/src/permission/FieldRenderHelper.ts` | 计算字段级 `FieldRenderState` | 把字段状态整理为 `readable / editable / visibility / shouldRender` |
 | `PermissionResolver` | `packages/spark-component/src/permission/PermissionResolver.ts` | 对外统一入口 | 暴露 `isPermittedAction()`、`resolveFieldPermissionState()`、`formatPermissionAwareFieldValue()` |
 | `PermissionFilter` | `packages/spark-component/src/permission/PermissionFilter.ts` | 展示层批量过滤 | `hidden` 字段移除、`masked` 原样保留；它不是安全边界 |
 | `useFieldPermission` | `packages/spark-component/src/components/fields/context/useFieldPermission.ts` | 把权限结果桥接到字段组件 | `r-form` 下 `readable || editable` 即可渲染；`editable + masked/hidden` 时清空初始值 |
@@ -215,7 +215,7 @@ enum FieldVisibility {
 ```text
 后端响应
   -> 数据行携带 row._perm
-  -> DataView / IDataSource 携带 _modelPerm
+  -> DataView 携带 _modelPerm
   -> PermissionResolver / FieldRenderHelper 统一计算字段与动作状态
   -> useFieldPermission / action-permission 分别桥接到字段与容器
   -> FieldContextRenderer / 容器动作区按宿主规则渲染 UI
@@ -230,7 +230,7 @@ enum FieldVisibility {
 ```text
 后端/业务脚本写入 row._perm
   ↓
-DataView（IDataSource）持有行数据
+DataView 持有行数据
   ↓
 容器组件（r-table / r-form / r-detail）provide(DATA_SOURCE, dataView)
   ↓
@@ -481,11 +481,11 @@ return {
 | `type` | `string` | 当前节点类型 |
 | `props` | `Record<string, unknown>` | 当前节点业务 props（已去掉 `onBeforeRender` 自身） |
 | `children` | `SparkNodeChildren` | 当前节点 children |
-| `row` | `IDataRow \| null` | 当前行作用域（通用路径来自父能力链，增强路径来自容器逐行作用域） |
+| `row` | `DataRow \| null` | 当前行作用域（通用路径来自父能力链，增强路径来自容器逐行作用域） |
 | `data` | `unknown` | 作用域数据，优先取 `scopedProps['data']`，否则退回 `row` |
 | `index` | `number` | 行索引或作用域索引 |
-| `dataSource` | `IDataSource \| null` | 当前节点可见的数据源（DataView） |
-| `modelPermission` | `IModelPermission \| undefined` | `dataSource._modelPerm` |
+| `dataSource` | `DataView \| null` | 当前节点可见的数据源 |
+| `modelPermission` | `ModelPermission \| undefined` | `dataSource._modelPerm` |
 
 #### 6.4.5 返回值语义
 
@@ -734,7 +734,7 @@ detail/list 只看读通道：
 | `tests/permission-resolver.test.ts` | 读写双通道、动作权限统一入口、hidden/masked+editable |
 | `tests/permission-filter.test.ts` | hidden 字段移除、masked 值透传 |
 | `tests/renderer-field-advanced.test.ts` | form/detail/table 级字段渲染差异，尤其是隐藏字段与敏感字段编辑场景 |
-| `tests/renderer-table.datasource.test.ts` | 容器动作权限：toolbar、row action、tree node action |
+| `tests/renderer-list-section.test.ts` | 列表容器动作区和行作用域 |
 
 这些测试共同保证：
 
@@ -794,7 +794,7 @@ detail/list 只看读通道：
 12. `tests/permission-resolver.test.ts`
 13. `tests/permission-filter.test.ts`
 14. `tests/renderer-field-advanced.test.ts`
-15. `tests/renderer-table.datasource.test.ts`
+15. `tests/renderer-list-section.test.ts`
 
 ---
 

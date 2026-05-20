@@ -12,7 +12,7 @@ import type {
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
-interface UseEntityPickerStateOptions {
+type UseEntityPickerStateOptions = {
   buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
   readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
   clearable: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>

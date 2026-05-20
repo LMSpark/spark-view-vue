@@ -2,7 +2,7 @@ import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
 export type ProgressColor = string | Array<{ color: SparkText; percentage: number }>
 
-export interface RProgressProps extends SparkNodeProps, SparkDataDisplayProps<number> {
+export type RProgressProps = SparkNodeProps & SparkDataDisplayProps<number> & {
   /** 百分比值（优先级高于 value/field） */
   percentage?: number
   /** 进度条类型 */

@@ -46,7 +46,7 @@ import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-deleg
 
 /** DataView 事件映射 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface DataViewEventMap extends Record<string, any[]> {
+type DataViewEventMap = Record<string, any[]> & {
   /** 当前行变化 */
   currentRowChanged: [currentRow: DataRow | null, originatorId?: string]
   /** 选中行变化 */

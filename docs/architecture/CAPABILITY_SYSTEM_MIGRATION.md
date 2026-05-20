@@ -14,11 +14,11 @@ Scope: move capability system ownership from `@spark-view/spark-utils` to `@spar
   - ~~`ACTION_CAPABILITY`~~（2026-04-30 P1-C 已删除：声明 + RendererButton consume，零 provider；动作链统一走 `executeActionDescriptor`）
   - relation-only host link (`HostLink`)
 - `spark-component` source/tests switched to consume capability APIs from `spark-component` exports (not `spark-utils` capability entry).
-- `spark-data` removed dependency on `IAppServicesCapability` and `IEventEmitter` from `spark-utils` capability layer:
+- `spark-data` removed dependency on app service and event emitter contracts from `spark-utils` capability layer:
   - local `DataSetAppServices`
-  - local event emitter + local `IEventEmitter` interface
+  - local event emitter contract
 - `spark-app` theme capability types localized:
-  - local `IThemeCapability` / `ThemeMode` in `packages/spark-app/src/theme/index.ts`
+  - local theme capability contract / `ThemeMode` in `packages/spark-app/src/theme/index.ts`
 
 ## Hard Cutover (No Compatibility)
 

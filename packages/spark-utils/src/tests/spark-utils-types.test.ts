@@ -26,7 +26,7 @@ describe('Logger basic', () => {
     expect(typeof logger.error).toBe('function')
   })
 
-  it('logger conforms to LoggerApi interface', () => {
+  it('logger conforms to LoggerApi contract', () => {
     const logger: LoggerApi = Logger()
     // 每个方法都接受 ...args: unknown[]
     logger.debug('test debug')

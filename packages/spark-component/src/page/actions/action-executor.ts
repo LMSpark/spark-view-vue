@@ -155,7 +155,7 @@ const logger = Logger('action-executor')
 
 // ── 公开执行入口 ──────────────────────────────────────────────────────────
 
-export interface ActionExecutionOptions {
+export type ActionExecutionOptions = {
   /** 原始事件参数（如行数据、CancellableControl 等） */
   eventArgs?: unknown[]
   /** 流程控制信号（cancelDefault 时置 cancel=true） */

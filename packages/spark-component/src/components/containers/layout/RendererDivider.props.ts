@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDividerProps extends SparkNodeProps {
+export type RDividerProps = SparkNodeProps & {
   /** 分割方向 */
   direction?: 'horizontal' | 'vertical'
   /** 边框样式 */

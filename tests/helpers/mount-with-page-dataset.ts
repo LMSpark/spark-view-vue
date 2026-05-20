@@ -3,7 +3,8 @@ import type { ComponentMountingOptions } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import type { Component } from 'vue'
-import { APP_SERVICES, PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import type { DataSetContract, DataView } from '@spark-view/spark-data'
 import type { PageComponentRegistry } from '@spark-view/spark-component'
@@ -20,7 +21,7 @@ type MountedWithPageDataSetWrapper = VueWrapper & {
   __pageComponentRegistry?: PageComponentRegistry
 }
 
-interface MountWithPageDataSetOptions {
+type MountWithPageDataSetOptions = {
   dataSet: DataSetContract
   props?: Record<string, unknown>
   global?: ComponentMountingOptions<unknown>['global']
@@ -41,7 +42,7 @@ export function mountWithPageDataSet(
       const { sparkProvide } = useSparkComponent(node)
       sparkProvide(PAGE_DATASET, options.dataSet)
       sparkProvide(PAGE_COMPONENT_REGISTRY, pageComponentRegistry)
-      sparkProvide(APP_SERVICES, { logger: TEST_APP_LOGGER })
+      sparkProvide(PAGE_RUNTIME_SERVICES, { logger: TEST_APP_LOGGER })
       return () => h(component, options.props ?? {}, options.slots ?? {})
     },
   })
@@ -53,17 +54,18 @@ export function mountWithPageDataSet(
     },
   })
 
-  const componentWrapper = wrapper.findComponent(component) as MountedWithPageDataSetWrapper
-  componentWrapper.__pageComponentRegistry = pageComponentRegistry
+  const componentWrapper = Object.assign(wrapper.findComponent(component), {
+    __pageComponentRegistry: pageComponentRegistry,
+  })
   return componentWrapper
 }
 
 export function getMountedComponentApi<T>(
-  wrapper: VueWrapper,
+  wrapper: MountedWithPageDataSetWrapper,
   type: string,
   index = 0,
 ): T {
-  const registry = (wrapper as MountedWithPageDataSetWrapper).__pageComponentRegistry
+  const registry = wrapper.__pageComponentRegistry
   if (!registry) {
     throw new Error('mountWithPageDataSet 未附带 PAGE_COMPONENT_REGISTRY。')
   }
@@ -76,7 +78,7 @@ export function getMountedComponentApi<T>(
   return api
 }
 
-interface MountWithDataViewOptions {
+type MountWithDataViewOptions = {
   view: DataView
   field?: 'rows' | 'currentRow'
   props?: Record<string, unknown>

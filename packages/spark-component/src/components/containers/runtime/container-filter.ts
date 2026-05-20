@@ -65,7 +65,7 @@ const FILTER_OPERATORS: ReadonlySet<string> = new Set([
 // ============================================================
 
 /** 极简日志接口（最小化依赖）。 */
-interface ErrorLoggerLike {
+type ErrorLoggerLike = {
   error(message: string, error?: unknown): void
 }
 
@@ -225,13 +225,13 @@ function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator 
 // § 过滤描述符类型
 // ============================================================
 
-interface InputFilterDescriptor {
+type InputFilterDescriptor = {
   kind: 'input'
   config: SparkNode
   field: string | undefined
 }
 
-interface ResidentFieldRefFilterDescriptor {
+type ResidentFieldRefFilterDescriptor = {
   kind: 'field-ref'
   field: string
   op: FilterOperator
@@ -444,7 +444,7 @@ async function applyFilterSafely(params: {
 // § useFilterPanel
 // ============================================================
 
-interface UseFilterPanelOptions {
+type UseFilterPanelOptions = {
   /** 过滤器子节点列表（响应式）。 */
   filterChildren: MaybeRefOrGetter<SparkNode[]>
   /** 目标 DataView（响应式）。 */
@@ -454,7 +454,7 @@ interface UseFilterPanelOptions {
 }
 
 /** `useFilterPanel` 返回状态。 */
-export interface FilterPanelState {
+export type FilterPanelState = {
   /** 双向绑定的过滤模型（field → 用户输入值）。 */
   filterModel: Record<string, unknown>
   /** 当前可渲染的过滤器配置列表（input 类型）。 */

@@ -16,7 +16,7 @@ export type CrudOperation =
  * - `before` 阶段：业务脚本可调用 `cancel()` 取消操作（如弹窗确认、权限二次校验）
  * - `after` 阶段：业务脚本可根据 result 执行联动（如刷新关联表、弹出提示）
  */
-export interface CrudLifecycleEvent {
+export type CrudLifecycleEvent = {
   readonly operation: CrudOperation
   readonly phase: 'before' | 'after'
   /** 提交的数据（before 阶段为原始入参，after 阶段同前） */

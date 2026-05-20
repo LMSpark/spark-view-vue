@@ -17,7 +17,7 @@ export function emitFieldValueUpdate<TValue>(
   emit('update:modelValue', value)
 }
 
-interface UseControlledFieldChangeOptions<TValue> {
+type UseControlledFieldChangeOptions<TValue> = {
   getValue: () => TValue
   emitUpdate: (value: TValue) => void
   syncValue: (value: TValue) => void

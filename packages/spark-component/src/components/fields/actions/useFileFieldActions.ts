@@ -9,7 +9,7 @@ import type {
 } from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
-interface UseFileFieldActionsOptions {
+type UseFileFieldActionsOptions = {
   pageService: PageServiceCapability | null
   isEditable: ComputedRef<boolean>
 }

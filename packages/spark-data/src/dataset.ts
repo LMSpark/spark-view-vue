@@ -112,19 +112,19 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   return result
 }
 
-interface DataSetSaveChangesTarget {
+type DataSetSaveChangesTarget = {
   view: DataView
   ids?: PkValue[]
 }
 
-interface DataSetTransactionOperationPlan {
+type DataSetTransactionOperationPlan = {
   operation: DataSetTransactionOperation
   view: DataView
   id: PkValue
   kind: DataSetTransactionOperation['op']
 }
 
-interface DataSetTransactionViewPlan {
+type DataSetTransactionViewPlan = {
   viewResult: DataSetSaveChangesViewResult
   operations: DataSetTransactionOperationPlan[]
 }
@@ -457,10 +457,10 @@ export class DataSet implements DataSetContract {
    */
     _sharedHttpClient?: HttpClientBase | undefined
 
-  /** @internal 应用能力上下文（用于 URL 模板 tenant/project 占位参数解析） */
+  /** @internal 页面运行时服务上下文（用于 URL 模板 tenant/project 占位参数解析） */
   _appServices?: DataSetAppServices | undefined
 
-  /** @internal 页面路由快照（APP_SERVICES 缺失时的作用域兜底） */
+  /** @internal 页面路由快照（页面运行时服务缺失时的作用域兜底） */
   _pageRoute?: unknown
 
   /** @internal 关系索引（视图级）：parentTable:parentViewId → children relations */

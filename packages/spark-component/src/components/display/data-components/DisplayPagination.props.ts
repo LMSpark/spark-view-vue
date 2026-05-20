@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RPaginationProps extends SparkNodeProps {
+export type RPaginationProps = SparkNodeProps & {
   /** 总条数 */
 total?: number
   /** 每页条数 */

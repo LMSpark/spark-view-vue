@@ -238,7 +238,7 @@ describe('基础值字段组件', () => {
     const wrapper = mount(Provider, {
       global: {
         provide: {
-          [SPARK_REGISTRY_KEY as symbol]: registry,
+          [SPARK_REGISTRY_KEY]: registry,
         },
         stubs: {
           'el-form-item': ElFormItemStub,
@@ -283,7 +283,7 @@ describe('基础值字段组件', () => {
     const wrapper = mount(Provider, {
       global: {
         provide: {
-          [SPARK_REGISTRY_KEY as symbol]: registry,
+          [SPARK_REGISTRY_KEY]: registry,
         },
         stubs: {
           'el-form-item': ElFormItemStub,

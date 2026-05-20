@@ -31,7 +31,6 @@ export { nodeId, nodeInputProp, nodeInputProps, SPARK_NODE_STRUCT_KEYS, normaliz
 
 // ── 能力键 ──
 export {
-  APP_SERVICES,
   PAGE_SERVICE,
   PAGE_DATASET,
   DATA_SOURCE,
@@ -43,7 +42,6 @@ export {
   sparkConsumeFromProvider,
 } from '../core/index.js'
 export type {
-  AppServicesCapability,
   PageServiceCapability,
   ModuleContext,
   PageMessageType,

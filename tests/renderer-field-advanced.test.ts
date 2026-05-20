@@ -8,6 +8,7 @@ import {
   FieldDeptPicker, FieldProductPicker, FieldDate, FieldNumber,
 } from '@spark-view/spark-component'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
+import { requireHtmlInput, requireHtmlTextArea, requireTextControl } from './helpers/runtime-guards'
 
 function createPageService(overrides?: Partial<PageServiceCapability>): PageServiceCapability {
   return {
@@ -81,7 +82,7 @@ function mountWithFieldContext(
             return () => h(props.type === 'textarea' ? 'textarea' : 'input', {
               class: 'el-input-stub',
               value: props.modelValue,
-              onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLInputElement).value),
+              onInput: (event: Event) => emit('update:modelValue', requireTextControl(event.target, 'el-input input event target').value),
             })
           },
         }),
@@ -93,7 +94,7 @@ function mountWithFieldContext(
               class: 'el-input-number-stub',
               type: 'number',
               value: props.modelValue,
-              onInput: (event: Event) => emit('update:modelValue', Number((event.target as HTMLInputElement).value)),
+              onInput: (event: Event) => emit('update:modelValue', Number(requireHtmlInput(event.target, 'el-input-number input event target').value)),
             })
           },
         }),
@@ -107,7 +108,7 @@ function mountWithFieldContext(
               'data-type': props.type,
               'data-range-separator': props.rangeSeparator,
               value: Array.isArray(props.modelValue) ? props.modelValue.join(',') : props.modelValue,
-              onInput: (event: Event) => emit('update:modelValue', (event.target as HTMLInputElement).value),
+              onInput: (event: Event) => emit('update:modelValue', requireHtmlInput(event.target, 'el-date-picker input event target').value),
             })
           },
         }),
@@ -369,7 +370,7 @@ describe('advanced renderer fields', () => {
 
     expect(wrapper.find('.el-form-item-stub').exists()).toBe(true)
     expect(wrapper.find('textarea').exists()).toBe(true)
-    expect((wrapper.find('textarea').element as HTMLTextAreaElement).value).toBe('')
+    expect(requireHtmlTextArea(wrapper.find('textarea').element, 'textarea field').value).toBe('')
   })
 
   it('textarea should hide when hidden permission is explicit even if there is no field value', () => {
@@ -377,7 +378,7 @@ describe('advanced renderer fields', () => {
       _perm: { hiddenFields: ['content'] },
     })
 
-    const wrapper = mountWithFieldContext(FieldTextarea, model as Record<string, unknown>, createPageService())
+    const wrapper = mountWithFieldContext(FieldTextarea, model, createPageService())
 
     expect(wrapper.find('.el-form-item-stub').exists()).toBe(false)
   })
@@ -415,7 +416,7 @@ describe('advanced renderer fields', () => {
 
     expect(wrapper.find('.el-form-item-stub').exists()).toBe(true)
     expect(wrapper.find('input').exists()).toBe(true)
-    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('')
+    expect(requireHtmlInput(wrapper.find('input').element, 'hidden input').value).toBe('')
     expect(wrapper.text()).not.toContain('secret value')
   })
 
@@ -433,7 +434,7 @@ describe('advanced renderer fields', () => {
     })
 
     expect(wrapper.find('.el-form-item-stub').exists()).toBe(true)
-    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('')
+    expect(requireHtmlInput(wrapper.find('input').element, 'masked input').value).toBe('')
     expect(wrapper.text()).not.toContain('138****1234')
   })
 
@@ -447,7 +448,7 @@ describe('advanced renderer fields', () => {
 
     expect(wrapper.find('.image-preview').exists()).toBe(true)
     expect(wrapper.find('.image-preview').attributes('src')).toBe('/img/mosaic-secret.png')
-    expect((wrapper.find('input').element as HTMLInputElement).value).toBe('/img/mosaic-secret.png')
+    expect(requireHtmlInput(wrapper.find('input').element, 'masked image input').value).toBe('/img/mosaic-secret.png')
   })
 
   it('entity picker should sync selected entity values into context data', async () => {
@@ -526,7 +527,8 @@ describe('advanced renderer fields', () => {
   })
 
   it('product picker should support multi-select array mode', async () => {
-    const model = createEditableFieldModel([] as string[])
+    const selectedProducts: string[] = []
+    const model = createEditableFieldModel(selectedProducts)
     const wrapper = mountWithFieldContext(FieldProductPicker, model, createPageService({
       selectEntities: async () => [
         { label: '商品A', value: 'sku-1' },

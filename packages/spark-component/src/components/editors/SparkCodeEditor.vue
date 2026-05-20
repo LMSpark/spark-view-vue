@@ -26,7 +26,7 @@ import type { EditorView } from '@codemirror/view'
 
 type SparkCodeLanguage = 'javascript' | 'css'
 
-interface Props {
+type Props = {
   /** 编辑器内容 */
   modelValue?: string
   /** 语言模式 */

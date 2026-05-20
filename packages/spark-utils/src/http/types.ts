@@ -10,7 +10,7 @@ export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 /**
  * 请求配置
  */
-export interface RequestConfig {
+export type RequestConfig = {
   url: string
   method?: Method
   headers?: Record<string, string>
@@ -49,7 +49,7 @@ export interface RequestConfig {
 // ==================== 响应 ====================
 
 /** HTTP 响应（不泄露 axios 实现） */
-export interface HttpResponse<T = unknown> {
+export type HttpResponse<T = unknown> = {
   data: T
   status: number
   statusText: string
@@ -57,7 +57,7 @@ export interface HttpResponse<T = unknown> {
 }
 
 /** 旧版标准业务 API 响应（{ code, message, data } 格式） */
-export interface ApiResponse<T = unknown> {
+export type ApiResponse<T = unknown> = {
   code: number
   message: string
   data: T
@@ -66,14 +66,14 @@ export interface ApiResponse<T = unknown> {
 }
 
 /** SPARK AI Server 统一 API envelope */
-export interface ApiEnvelope<T = unknown> {
+export type ApiEnvelope<T = unknown> = {
   ok: boolean
   data: T | null
   error: ApiEnvelopeError | null
   requestId: string
 }
 
-export interface ApiEnvelopeError {
+export type ApiEnvelopeError = {
   code: string
   message: string
   category: string
@@ -82,7 +82,7 @@ export interface ApiEnvelopeError {
 
 // ==================== 错误 ====================
 
-export interface RequestError extends Error {
+export type RequestError = Error & {
   config: RequestConfig
   code?: string
   status?: number
@@ -91,7 +91,7 @@ export interface RequestError extends Error {
 
 // ==================== 拦截器 ====================
 
-export interface RequestInterceptor {
+export type RequestInterceptor = {
   name?: string
   onRequest?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>
   /**
@@ -103,7 +103,7 @@ export interface RequestInterceptor {
   onRequestError?: (error: RequestError) => void | Promise<void>
 }
 
-export interface ResponseInterceptor {
+export type ResponseInterceptor = {
   name?: string
   onResponse?: <T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>
   onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>
@@ -113,14 +113,14 @@ export interface ResponseInterceptor {
 export type HttpClientAdapter = 'axios' | 'fetch'
 
 /** createHttpClient 工厂参数 */
-export interface HttpClientFactoryOptions extends Partial<RequestConfig> {
+export type HttpClientFactoryOptions = Partial<RequestConfig> & {
   adapter?: HttpClientAdapter
 }
 
 // ==================== 文件加载器 / 缓存层 ====================
 
 /** 缓存过期策略级别定义 */
-export interface CacheExpirationTier {
+export type CacheExpirationTier = {
   /** 级别编号 */
   level: number
   /** 最大闲置时间（毫秒），Infinity 表示永不过期 */
@@ -129,7 +129,7 @@ export interface CacheExpirationTier {
   description?: string
 }
 
-export interface FileLoadOptions {
+export type FileLoadOptions = {
   /** API 基础路径（文件 HTTP 加载使用） */
   baseUrl: string
   /** 缓存存储方式 */
@@ -160,7 +160,7 @@ export interface FileLoadOptions {
  * - 文件内容：T = string
  * - DataSet、编译后脚本、编译后规则等计算结果：T = 具体类型
  */
-export interface CacheEntry<T = string> {
+export type CacheEntry<T = string> = {
   /** 缓存的数据（文件原始内容或任意计算结果） */
   data: T
   /**
@@ -176,7 +176,7 @@ export interface CacheEntry<T = string> {
   expirationLevel: number
 }
 
-export interface FileLoadResult<T = unknown> {
+export type FileLoadResult<T = unknown> = {
   success: boolean
   data?: T
   /** 来源时间戳 */
@@ -191,7 +191,7 @@ export interface FileLoadResult<T = unknown> {
 }
 
 /** FileLoader 事件映射（用于全链路订阅消费） */
-export interface FileLoaderEventMap {
+export type FileLoaderEventMap = {
   'file-loaded': {
     fileName: string
     fromCache: boolean
@@ -214,7 +214,7 @@ export interface FileLoaderEventMap {
 // ==================== 流式响应（fetch-only） ====================
 
 /** 流式 HTTP 响应（fetch ReadableStream） */
-export interface StreamResponse {
+export type StreamResponse = {
   body: ReadableStream<Uint8Array>
   status: number
   statusText: string
@@ -222,7 +222,7 @@ export interface StreamResponse {
 }
 
 /** 解析后的 SSE 事件 */
-export interface SSEEvent {
+export type SSEEvent = {
   /** 事件类型（event: 字段） */
   event?: string
   /** 数据内容（data: 字段，多行拼接） */

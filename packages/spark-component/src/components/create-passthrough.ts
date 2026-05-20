@@ -9,14 +9,24 @@
  *
  * @module create-passthrough
  */
-import { h, computed, defineComponent, resolveComponent, type Component, type PropType } from 'vue'
+import { h, computed, defineComponent, resolveComponent, type Component } from 'vue'
 import SparkComponentRenderer from './SparkComponentRenderer.vue'
-import { getSparkNodeChildren, nodeId, useSparkPageComponent, type SparkNodeChildren, type SparkNodeInput } from './internal.js'
+import { getSparkNodeChildren, isSparkNode, nodeId, useSparkPageComponent, type SparkNodeChildren, type SparkNodeInput } from './internal.js'
 
 /** 透传组件配置 */
-interface PassthroughOptions {
+type PassthroughOptions = {
   /** 属性默认值，key 为透传给目标渲染节点的 prop 名。 */
   propDefaults?: Record<string, unknown>
+}
+
+function isSparkNodeChild(value: unknown): value is SparkNodeChildren[number] {
+  return typeof value === 'string' || typeof value === 'number' || isSparkNode(value)
+}
+
+function readSparkNodeChildren(value: unknown, context: string): SparkNodeChildren | undefined {
+  if (value === undefined) return undefined
+  if (Array.isArray(value) && value.every(isSparkNodeChild)) return value
+  throw new TypeError(`[spark] ${context} must be SparkNodeChildren`)
 }
 
 /**
@@ -38,15 +48,18 @@ export function createPassthrough(
     inheritAttrs: false,
     props: {
       type: { type: String, default: type },
-      children: { type: Array as PropType<SparkNodeChildren>, default: undefined },
+      children: { type: Array, default: undefined },
     },
     setup(props, { attrs }) {
+      const rawChildren = readSparkNodeChildren(props.children, `${type}.children`)
       const sparkNodeInput: SparkNodeInput = {
         type: props.type,
-        ...(props.children !== undefined ? { children: props.children } : {}),
+        ...(rawChildren !== undefined ? { children: rawChildren } : {}),
       }
       const { isVisible } = useSparkPageComponent(sparkNodeInput)
-      const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
+      const resolvedChildren = computed(() =>
+        getSparkNodeChildren(readSparkNodeChildren(props.children, `${type}.children`)),
+      )
 
       return () => {
         if (!isVisible.value) return null

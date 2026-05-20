@@ -82,7 +82,6 @@ import {
   onUnmounted,
   watchEffect,
 } from 'vue'
-import type { PropType } from 'vue'
 import { DataView, type DataRow } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
@@ -184,7 +183,7 @@ const NATIVE_HTML_TAGS = new Set([
 
 // ── 渲染器输入：外部只传节点本体与可选父上下文 ───────────────────────────────
 
-interface RendererProps {
+type RendererProps = {
   /**
    * 被渲染的节点本体。
    *
@@ -288,6 +287,21 @@ function renderRecursiveChild(child: RenderableChild, index: number) {
   return h(currentRendererComponent, { key, config: child })
 }
 
+function readRecursiveChildrenList(value: unknown): RecursiveChildrenList {
+  if (!Array.isArray(value)) {
+    throw new TypeError('[spark] RecursiveChildrenBlock.children must be an array')
+  }
+  const children: RecursiveChildrenList = []
+  for (const child of value) {
+    if (isSparkNode(child) || typeof child === 'string' || typeof child === 'number') {
+      children.push(child)
+      continue
+    }
+    throw new TypeError('[spark] RecursiveChildrenBlock.children must contain only SparkNode, string or number')
+  }
+  return children
+}
+
 /**
  * 递归 child 渲染块：
  * - 把模板里重复的 SparkNode / 文本子节点渲染逻辑集中到一处。
@@ -298,13 +312,13 @@ const RecursiveChildrenBlock = defineComponent({
   name: 'RecursiveChildrenBlock',
   props: {
     children: {
-      type: Array as PropType<RecursiveChildrenList>,
+      type: Array,
       required: true,
     },
   },
   setup(props) {
     // 本地小组件本身不持有业务上下文，只负责把子节点重新路由回渲染器入口。
-    return () => props.children.map(renderRecursiveChild)
+    return () => readRecursiveChildrenList(props.children).map(renderRecursiveChild)
   },
 })
 

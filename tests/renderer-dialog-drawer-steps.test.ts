@@ -358,7 +358,7 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
           'el-dialog': ElDialogStub,
           'el-drawer': ElDrawerStub,
         },
-        ...(options['global'] as Record<string, unknown> | undefined),
+        ...(isRecord(options['global']) ? options['global'] : {}),
       },
     })
   }

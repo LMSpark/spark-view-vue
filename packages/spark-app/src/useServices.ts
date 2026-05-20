@@ -4,10 +4,10 @@
  * 📌 DI 架构统一说明：
  * 
  * SPARK 项目采用单一 DI 管道（管道 B - SPARK 能力系统）：
- * - ✅ 推荐：使用 APP_SERVICES 能力获取应用服务
+ * - ✅ 推荐：使用 PAGE_RUNTIME_SERVICES 能力获取页面运行时服务
  *   ```ts
  *   const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
- *   const services = consume(APP_SERVICES)
+ *   const services = sparkConsume(PAGE_RUNTIME_SERVICES)
  *   services?.router?.push('/home')
  *   services?.logger?.info('Action')
  *   ```

@@ -16,7 +16,7 @@ import {
 
 export type { FieldOption } from './option-normalization.js'
 
-export interface FieldTransferOption {
+export type FieldTransferOption = {
   key: string | number
   label: string
   disabled?: boolean
@@ -39,7 +39,7 @@ type FieldOptionProps = OptionalWithUndefined<Pick<
   | 'valueSeparator'
 >>
 
-interface UseFieldOptionsReturn {
+type UseFieldOptionsReturn = {
   options: ComputedRef<FieldOption[]>
   flatOptions: ComputedRef<FieldOption[]>
   normalizeOptionValues: (value: unknown) => FieldOptionValue[]
@@ -50,7 +50,7 @@ interface UseFieldOptionsReturn {
   transferData: ComputedRef<FieldTransferOption[]>
 }
 
-interface UseOptionFieldOptions<TValue> {
+type UseOptionFieldOptions<TValue> = {
   props: FieldOptionProps & FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue

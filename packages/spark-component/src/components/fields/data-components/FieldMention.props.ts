@@ -1,7 +1,7 @@
 import type { SparkMultilineFieldProps, SparkNodeProps } from '../../shared-types'
 
 /** Mention 候选项：提供展示值、标签、禁用状态和可选的持久化回写值。 */
-export interface RMentionOption {
+export type RMentionOption = {
   /** 展示值（必填）。 */
   value: SparkText
   /** 展示标签。 */
@@ -12,7 +12,7 @@ export interface RMentionOption {
   persistedValue?: SparkText | number | boolean
 }
 
-export interface RMentionProps extends SparkNodeProps, SparkMultilineFieldProps {
+export type RMentionProps = SparkNodeProps & SparkMultilineFieldProps & {
   /**
    * 完整的提及触发规则列表。
    *

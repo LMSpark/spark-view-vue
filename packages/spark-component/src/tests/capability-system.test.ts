@@ -3,21 +3,21 @@
  * 
  * 验证 SPARK 能力系统的核心功能：
  * - Symbol-based CapabilityKey 的 sparkProvide/sparkConsume 流程
- * - 能力符号与接口的配对使用
+ * - 能力符号与契约的配对使用
  * - useSparkComponent / useSparkPageComponent 返回值边界清晰（无 use 别名）
- * - AppServicesCapability 结构验证
+ * - 页面运行时服务契约验证
  */
 
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import {
   Spark,
   useSparkComponent,
   useSparkConsume,
   useSparkPageComponent,
-  APP_SERVICES,
   PAGE_SERVICE,
   PAGE_COMPONENT_REGISTRY,
 } from '@spark-view/spark-component'
@@ -50,7 +50,7 @@ describe('Capability system integration', () => {
     return { plugin: Spark.createPlugin({ registry }), registry }
   }
 
-  describe('useSparkComponent return interface', () => {
+  describe('useSparkComponent return contract', () => {
     it('does NOT return use alias', () => {
       const { plugin } = createTestPlugin()
 
@@ -225,13 +225,13 @@ describe('Capability system integration', () => {
       const childCtx = createContext({ type: 'consumer', id: 'c-1' }, parentCtx)
 
       // 使用纯函数 sparkProvide 注册能力
-      sparkProvide(parentCtx, APP_SERVICES, {
+      sparkProvide(parentCtx, PAGE_RUNTIME_SERVICES, {
         router: { push: async () => {}, replace: async () => {}, back: () => {}, currentRoute: {} },
         logger: { debug: () => {}, info: () => {}, warn: () => {}, error: () => {} }
       })
 
       // consumer 通过 parent chain 找到 capability
-      const found = sparkConsume(childCtx, APP_SERVICES)
+      const found = sparkConsume(childCtx, PAGE_RUNTIME_SERVICES)
       expect(found).toBeTruthy()
       expect(found?.router).toBeDefined()
       expect(found?.logger).toBeDefined()
@@ -239,7 +239,7 @@ describe('Capability system integration', () => {
 
     it('custom capability key with defineCapability', () => {
       const { createContext, rootContext } = Spark.createSystem()
-      interface CustomCapability { getValue(): string }
+      type CustomCapability = { getValue(): string }
       const CUSTOM = defineCapability<CustomCapability>(
         'test:custom-cap-sys',
         (value): value is CustomCapability => isRecord(value) && hasCallable(value, 'getValue'),
@@ -312,7 +312,7 @@ describe('Capability system integration', () => {
   describe('All capability symbols are defined', () => {
     it('core symbols exist and are unique', () => {
       const symbols = [
-        APP_SERVICES,
+        PAGE_RUNTIME_SERVICES,
         PAGE_SERVICE,
       ]
 

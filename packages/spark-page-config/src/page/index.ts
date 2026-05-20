@@ -79,3 +79,24 @@ export {
   normalizePageIdFromPath,
   normalizeRootChildPlacement,
 } from './navigation'
+
+export type {
+  PageBrowseFilesOptions,
+  PageDialogOptions,
+  PageDialogResult,
+  PageMessageType,
+  PageRouterService,
+  PageRuntimeServicesCapability,
+  PageSelectableValue,
+  PageSelectEntitiesOptions,
+  PageSelectedEntity,
+  PageSelectedFile,
+  PageSelectorOption,
+  PageServiceCapability,
+  PageUploadFilesOptions,
+  PageUploadedFile,
+} from './services'
+
+export {
+  PAGE_RUNTIME_SERVICES,
+} from './services'

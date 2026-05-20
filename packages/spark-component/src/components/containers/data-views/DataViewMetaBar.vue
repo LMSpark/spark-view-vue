@@ -24,7 +24,7 @@
 import { computed } from 'vue'
 import type { DataColumn, DataRow, RequestState } from '@spark-view/spark-data'
 
-interface AggregateEntry {
+type AggregateEntry = {
   key: string
   label: string
   value: string

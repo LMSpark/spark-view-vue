@@ -20,6 +20,19 @@
  */
 
 import type { FieldVisibility, DataRow, ModelPermission } from '@spark-view/spark-data'
+import type {
+  PageBrowseFilesOptions,
+  PageDialogOptions,
+  PageDialogResult,
+  PageSelectableValue,
+  PageSelectEntitiesOptions,
+  PageSelectedEntity,
+  PageSelectedFile,
+  PageSelectorOption,
+  PageServiceCapability,
+  PageUploadFilesOptions,
+  PageUploadedFile,
+} from '../services'
 
 // ==================== 路由快照 ====================
 
@@ -121,9 +134,7 @@ export type ScriptContext = {
    *
    * ✅ 推荐：所有消息提示、确认框、输入框、导航均通过此接口调用。
    *
-   * 注意：此接口类型声明为 `unknown`（使用导入类型时改为具体类型）；
-   * 实际运行时注入 `PageServiceCapability` 实现。
-   * 为保持此文件对 capability 系统无依赖，此处使用结构等价的内联类型。
+   * 类型直接来自 page-config 的 runtime service contract，渲染层注入对应实现。
    */
   $page: PageServiceInScript
 
@@ -161,45 +172,19 @@ export type ScriptContext = {
 }
 
 /**
- * `$page` 的内联类型（结构与 `PageServiceCapability` 完全等价）。
- *
- * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
- * 渲染层以 `PageServiceCapability` 作为实现类型；两者通过结构化类型兼容。
+ * `$page` 的脚本侧别名，直接复用 page-config runtime service contract。
  */
-export type PageServiceInScript = {
-  /** 通用弹层（APP 层承载，页面层通过 service 调用） */
-  showDialog(options: PageDialogOptionsInScript): Promise<PageDialogResultInScript>
-  /** 打开通用实体选择器（APP 层承载，可用于选人/选部门/选商品等） */
-  selectEntities(options: PageSelectEntitiesOptionsInScript): Promise<PageSelectedEntityInScript[]>
-  /** 打开文件浏览选择器（APP 层承载） */
-  browseFiles(options?: PageBrowseFilesOptionsInScript): Promise<PageSelectedFileInScript[]>
-  /** 选择文件并上传（APP 层承载） */
-  uploadFiles(options: PageUploadFilesOptionsInScript): Promise<PageUploadedFileInScript[]>
-  /** 消息提示（替代 ElMessage） */
-  showMessage(message: string, type?: 'success' | 'error' | 'warning' | 'info'): void
-  /** 确认框，返回 true=确定 / false=取消（替代 ElMessageBox.confirm） */
-  showConfirm(
-    message: string,
-    title?: string,
-    options?: { confirmText?: string; cancelText?: string; type?: 'warning' | 'info' | 'error' | 'success' }
-  ): Promise<boolean>
-  /** 输入框，返回输入值；取消返回 null（替代 ElMessageBox.prompt） */
-  showPrompt(
-    message: string,
-    title?: string,
-    options?: { placeholder?: string; defaultValue?: string }
-  ): Promise<string | null>
-  /** 纯提示框，仅确定按钮（替代 ElMessageBox.alert） */
-  showAlert(
-    message: string,
-    title?: string,
-    options?: { type?: 'warning' | 'info' | 'error' | 'success' }
-  ): Promise<void>
-  /** 全局加载遮罩 */
-  showLoading(show: boolean, text?: string): void
-  /** 路由导航 */
-  navigate(path: string, params?: Record<string, unknown>): void
-}
+export type PageServiceInScript = PageServiceCapability
+export type PageDialogResultInScript = PageDialogResult
+export type PageDialogOptionsInScript = PageDialogOptions
+export type PageSelectableValueInScript = PageSelectableValue
+export type PageSelectorOptionInScript = PageSelectorOption
+export type PageSelectEntitiesOptionsInScript = PageSelectEntitiesOptions
+export type PageSelectedEntityInScript = PageSelectedEntity
+export type PageBrowseFilesOptionsInScript = PageBrowseFilesOptions
+export type PageSelectedFileInScript = PageSelectedFile
+export type PageUploadFilesOptionsInScript = PageUploadFilesOptions
+export type PageUploadedFileInScript = PageUploadedFile
 
 export type PermissionActionContextInScript = {
   modelPermission?: ModelPermission
@@ -287,75 +272,6 @@ export type PageComponentAccessInScript = {
   getApi<T = unknown>(id: string): T | null
   /** 按 type 获取同类组件 API 列表 */
   getApisByType<T = unknown>(type: string): T[]
-}
-
-export type PageDialogResultInScript = 'confirm' | 'cancel' | 'close'
-
-export type PageDialogOptionsInScript = {
-  title?: string
-  message?: string
-  content?: string
-  confirmText?: string
-  cancelText?: string
-  showCancelButton?: boolean
-  dangerouslyUseHTMLString?: boolean
-  type?: 'success' | 'error' | 'warning' | 'info'
-  width?: string
-}
-
-export type PageSelectableValueInScript = string | number | boolean
-
-export type PageSelectorOptionInScript = {
-  label: string
-  value: PageSelectableValueInScript
-  description?: string
-  disabled?: boolean
-  raw?: unknown
-}
-
-export type PageSelectEntitiesOptionsInScript = {
-  title?: string
-  entityName?: string
-  placeholder?: string
-  multiple?: boolean
-  searchable?: boolean
-  confirmText?: string
-  cancelText?: string
-  emptyText?: string
-  currentValue?: PageSelectableValueInScript | PageSelectableValueInScript[] | string
-  options?: PageSelectorOptionInScript[]
-}
-
-export type PageSelectedEntityInScript = PageSelectorOptionInScript
-
-export type PageBrowseFilesOptionsInScript = {
-  title?: string
-  accept?: string
-  multiple?: boolean
-  currentValue?: string
-}
-
-export type PageSelectedFileInScript = {
-  name: string
-  size: number
-  type: string
-  lastModified: number
-  file: File
-}
-
-export type PageUploadFilesOptionsInScript = PageBrowseFilesOptionsInScript & {
-  action: string
-  method?: 'POST' | 'PUT' | 'PATCH'
-  fieldName?: string
-  headers?: Record<string, string>
-  data?: Record<string, string | Blob>
-  withCredentials?: boolean
-  files?: File[]
-}
-
-export type PageUploadedFileInScript = PageSelectedFileInScript & {
-  response: unknown
-  url?: string
 }
 
 // ==================== 模块上下文（内联类型）====================

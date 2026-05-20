@@ -79,7 +79,9 @@ import { Logger } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { SparkNodeTree, type BasePageConfigLoader, type PageRoute, type PageConfig } from '@spark-view/spark-page-config'
+import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
+import type { BasePageConfigLoader, PageConfig } from '@spark-view/spark-page-config/page/loading'
+import type { PageRoute } from '@spark-view/spark-page-config/page/sandbox'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
 import {
@@ -111,7 +113,7 @@ const currentInstance = getCurrentInstance()
 
 type PageRuntimeErrorPhase = 'load' | 'script-compile' | 'init' | 'script-function' | 'render'
 
-interface PageRuntimeErrorPayload {
+type PageRuntimeErrorPayload = {
   phase: PageRuntimeErrorPhase
   message: string
   pageId: string
@@ -121,7 +123,7 @@ interface PageRuntimeErrorPayload {
 type RenderFunction = (props?: Record<string, unknown>) => unknown
 type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
 type RenderFunctionRevisionRef = ReturnType<typeof shallowRef<number>>
-interface RenderFunctionRegistration {
+type RenderFunctionRegistration = {
   fnRef: RenderFunctionRef
   revisionRef: RenderFunctionRevisionRef
   invalidatePage?: () => void
@@ -361,7 +363,7 @@ type SparkPageNodePropsInput = Omit<PageConfig, 'pageId'> & { pageId?: string }
  * - props    = configLoader / pageId / pageConfig / enable* / 钩子等（本接口所有字段）
  * - children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入
  */
-interface Props extends Omit<SparkNode, 'type'> {
+type Props = Omit<SparkNode, 'type'> & {
   /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */
   type?: string
   /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
@@ -396,7 +398,7 @@ const props = withDefaults(defineProps<Props>(), {
 
 // ==================== 基础设施 ====================
 
-const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, appServices, runLoad } = useRendererSetup('spark-page', logger)
+const { router, sparkProvide, sparkConsume, loading, error, componentRegistry, pageRuntimeServices, runLoad } = useRendererSetup('spark-page', logger)
 const route = useRoute()
 const vueApp = currentInstance?.appContext.app
 const moduleContextCapability = sparkConsume(MODULE_CONTEXT)
@@ -405,7 +407,7 @@ const moduleContextCapability = sparkConsume(MODULE_CONTEXT)
 const pageService = buildPageService(router, {
   messageService: props.messageService,
   confirmService: props.confirmService,
-  pageService: appServices.pageService,
+  pageService: pageRuntimeServices.pageService,
 })
 sparkProvide(PAGE_SERVICE, pageService)
 
@@ -648,7 +650,7 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
   if (ds) {
     const loaderClient = props.configLoader?.getHttpClient?.()
     if (loaderClient) ds.setSharedHttpClient(loaderClient)
-    ds.setAppServices(appServices)
+    ds.setAppServices(pageRuntimeServices)
     ds.setPageRoute(pageRoute)
     sparkProvide(PAGE_DATASET, ds)
     _crudTool = DataSetCrudTool.fromDataSet(ds)

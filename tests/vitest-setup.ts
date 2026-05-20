@@ -73,9 +73,10 @@ if (stubs['spark-component-renderer'] === undefined) {
 config.global.stubs = stubs
 
 const originalGetComputedStyle = window.getComputedStyle.bind(window)
-window.getComputedStyle = ((element: Element, pseudoElement?: string | null): CSSStyleDeclaration => {
+const getComputedStyleOverride: typeof window.getComputedStyle = (element, pseudoElement) => {
 	if (typeof pseudoElement === 'string' && pseudoElement.trim() !== '') {
 		return originalGetComputedStyle(element)
 	}
 	return originalGetComputedStyle(element)
-}) as typeof window.getComputedStyle
+}
+window.getComputedStyle = getComputedStyleOverride

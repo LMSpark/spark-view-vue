@@ -34,25 +34,20 @@
  * @category internal
  */
 import { computed, ref, useSlots } from 'vue'
-import type { PropType } from 'vue'
 import type { SparkNode } from '../../core/types.js'
 
-const props = defineProps({
+type Props = {
   /** 未注册的源节点 */
-  node: {
-    type: Object as PropType<SparkNode>,
-    required: true,
-  },
+  node: SparkNode
   /** 提示标题 */
-  title: {
-    type: String,
-    default: '未注册的组件类型',
-  },
+  title?: string
   /** 说明文本 */
-  description: {
-    type: String,
-    default: '',
-  },
+  description?: string
+}
+
+const props = withDefaults(defineProps<Props>(), {
+  title: '未注册的组件类型',
+  description: '',
 })
 
 const slots = useSlots()

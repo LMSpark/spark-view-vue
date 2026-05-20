@@ -4,7 +4,7 @@ import type { ValueRef } from '../../../shared-types.js'
 
 type StepsEmit = (event: 'update:modelValue', value: string | number) => void
 
-interface RendererStepsZeroCodeOptions {
+type RendererStepsZeroCodeOptions = {
   emit: StepsEmit
   stepConfigs: ValueRef<SparkNode[]>
   activeStepName: ValueRef<string | number | undefined>

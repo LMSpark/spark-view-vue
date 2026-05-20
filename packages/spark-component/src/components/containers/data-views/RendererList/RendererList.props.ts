@@ -13,10 +13,7 @@ import type { RToolbarProps } from '../../layout/RendererToolbar.types'
  *
  * 命名规范：组件 type `r-list` → 接口名 `RListProps`。
  */
-export interface RListProps
-  extends SparkNodeProps,
-    SparkCrudDataContainerProps,
-    SparkGridLayoutProps {
+export type RListProps = SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {
   /** 显式收窄为列表容器使用的 DataView 数据线。 */
   dataSource?: DataView
   /** 结构化工具栏 */

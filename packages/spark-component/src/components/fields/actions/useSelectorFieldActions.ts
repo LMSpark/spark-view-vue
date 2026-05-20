@@ -7,7 +7,7 @@ import type {
 } from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
-interface UseSelectorFieldActionsOptions {
+type UseSelectorFieldActionsOptions = {
   pageService: PageServiceCapability | null
   isEditable: ComputedRef<boolean>
 }

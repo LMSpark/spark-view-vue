@@ -1,6 +1,6 @@
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RDisplayImageProps extends SparkNodeProps, SparkDataDisplayProps<string> {
+export type RDisplayImageProps = SparkNodeProps & SparkDataDisplayProps<string> & {
   /** 图片 URL（静态传入）。 */
   src?: SparkText
   /** 图片适应模式 */

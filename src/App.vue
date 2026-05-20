@@ -143,9 +143,9 @@ import {
   useTabPages,
   useTheme,
 } from '@spark-view/spark-app'
-import type { AppNavRoot } from '@spark-view/spark-page-config'
+import type { AppNavRoot } from '@spark-view/spark-page-config/page/navigation'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import {
-  APP_SERVICES,
   MODULE_CONTEXT,
   useSparkComponent,
   type ModuleContext,
@@ -435,7 +435,7 @@ const nav = useNavigation(_navRoot, {
   actionRegistry: navigationActionRegistry,
 })
 const pageUiService = appPageUiService
-sparkProvide(APP_SERVICES, { pageService: pageUiService })
+sparkProvide(PAGE_RUNTIME_SERVICES, { pageService: pageUiService })
 const isSparkRendererRoute = computed(() => {
   const routeType = route.meta['type']
   return routeType === 'config-page' || routeType === 'cross-project-ref'

@@ -2,7 +2,7 @@ import type { SparkNodeProps } from '../../../shared-types'
 import type { SparkNode } from '../../../internal'
 import type { RToolbarProps } from '../RendererToolbar.types'
 
-export interface RStepsProps extends SparkNodeProps {
+export type RStepsProps = SparkNodeProps & {
   /** 结构化工具栏 */
   toolbar?: RToolbarProps
   /** 当前步骤 */

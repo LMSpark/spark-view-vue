@@ -1,7 +1,7 @@
 import type { RendererDrawerApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface RendererDrawerZeroCodeOptions {
+type RendererDrawerZeroCodeOptions = {
   visibleValue: ValueRef<boolean>
   commitVisibleValue: (value: boolean) => void
   onOpen: (() => void) | undefined

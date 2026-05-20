@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import type { NavNode } from '@spark-view/spark-page-config'
+import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 

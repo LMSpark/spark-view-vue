@@ -145,7 +145,9 @@ describe('AppSidebar navigation rendering', () => {
         path: '/cache-manager',
       },
     ]
-    const nav = createNavigationContext([devCenter, items[1] as NavNode])
+    const platformDev = items[1]
+    if (platformDev === undefined) throw new Error('Expected platform dev nav item')
+    const nav = createNavigationContext([devCenter, platformDev])
 
     const wrapper = mount(AppSidebar, {
       props: {
@@ -154,7 +156,7 @@ describe('AppSidebar navigation rendering', () => {
       global: {
         plugins: [router],
         provide: {
-          [NAV_KEY as symbol]: nav,
+          [NAV_KEY]: nav,
         },
         stubs: {
           ElMenu: ElMenuStub,

@@ -1,4 +1,4 @@
-export interface PropMeta {
+export type PropMeta = {
   name: string
   type: string
   required?: boolean
@@ -6,7 +6,7 @@ export interface PropMeta {
   description?: string
 }
 
-export interface SkillMeta {
+export type SkillMeta = {
   type: string
   description?: string
   props?: PropMeta[]

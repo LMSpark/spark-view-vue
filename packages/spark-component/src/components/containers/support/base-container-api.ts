@@ -11,7 +11,7 @@ import type { CrudResult, DataView, DataRow } from '@spark-view/spark-data'
  *
  * 该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。
  */
-export interface BaseCrudContainerApi {
+export type BaseCrudContainerApi = {
   getDataSource(): DataView | null
   addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>
   editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>
@@ -21,7 +21,7 @@ export interface BaseCrudContainerApi {
 /**
  * 表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。
  */
-export interface BaseContainerApi extends BaseCrudContainerApi {
+export type BaseContainerApi = BaseCrudContainerApi & {
   getCurrentRow(): DataRow | null
   refresh(): Promise<void>
   appendRow(row: DataRow): void
@@ -34,7 +34,7 @@ export interface BaseContainerApi extends BaseCrudContainerApi {
 /**
  * 可见性容器 API（Dialog/Drawer 等）。
  */
-export interface VisibilityContainerApi {
+export type VisibilityContainerApi = {
   open(): void
   close(): void
   isVisible(): boolean

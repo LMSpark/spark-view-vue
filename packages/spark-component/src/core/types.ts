@@ -6,7 +6,7 @@
  * - 能力系统通过 capabilities Map 实现（继承自 CapabilityContext）
  */
 
-export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config'
+export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config/page/model'
 export {
   SPARK_NODE_STRUCT_KEYS,
   normalizeSparkNode,
@@ -15,7 +15,7 @@ export {
   nodeId,
   nodeInputProp,
   nodeInputProps,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/model'
 
 import type { CapabilityContext } from '@spark-view/spark-utils'
 
@@ -30,7 +30,7 @@ export type SparkCapabilityContext = CapabilityContext
 /**
  * 组件定义 - Registry 中的条目
  */
-export interface ComponentDefinition {
+export type ComponentDefinition = {
   /** 组件类型（kebab-case，如 'r-table'） */
   type: string
   /** Vue 组件实现 */
@@ -62,7 +62,7 @@ export type ComponentChildrenMode = 'auto' | 'prop' | 'slot'
  *
  * 简写：直接写字段名字符串，等价于 `{ field: 'xxx', component: 'text' }`。
  */
-export interface FilterItemConfig {
+export type FilterItemConfig = {
   /** 字段名（映射到数据源字段） */
   field: string
   /** 显示标签（省略则用字段名） */
@@ -91,7 +91,7 @@ export interface FilterItemConfig {
 // 注册表接口
 // ============================================================================
 
-export interface ComponentRegistry {
+export type ComponentRegistry = {
   register(type: string, component: unknown, meta?: Record<string, unknown>, options?: { silent?: boolean }): void
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean

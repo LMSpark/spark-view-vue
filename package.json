@@ -42,6 +42,7 @@
         "test:run": "vitest run",
         "test:all": "pnpm run build:packages && pnpm run test:run && pnpm run test:packages:run",
         "verify:arch": "node tools/verify-architecture.mjs",
+        "verify:ai-codegen": "node tools/verify-ai-codegen-rules.mjs",
         "migrate:nav:nodekind": "node scripts/migrate-nav-nodekind.mjs",
         "verify": "pnpm run build:packages && pnpm run typecheck && pnpm run lint && pnpm run verify:arch",
         "commitlint": "commitlint --edit",

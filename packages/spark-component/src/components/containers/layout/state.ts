@@ -31,7 +31,7 @@ export function useDefaultedSelection<TItem, TValue>(options: {
   return state
 }
 
-export interface UnifiedValueBridgeOptions<TValue> {
+export type UnifiedValueBridgeOptions<TValue> = {
   value: ValueRef<TValue | undefined>
   fallbackValue: TValue
   debounceMs?: number
@@ -40,7 +40,7 @@ export interface UnifiedValueBridgeOptions<TValue> {
   emitValue?: (value: TValue) => void
 }
 
-interface CommitValueOptions {
+type CommitValueOptions = {
   emit?: boolean
 }
 

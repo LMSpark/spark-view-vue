@@ -1,19 +1,20 @@
 /**
  * 页面层 Logger 集成测试
  *
- * 验证 useSparkComponent 返回的 logger 只依赖页面层 APP_SERVICES.logger：
+ * 验证 useSparkComponent 返回的 logger 只依赖页面运行时 logger：
  * 1. 页面层未提供 logger 时 fail-fast 抛错
- * 2. 页面根提供 APP_SERVICES.logger 后组件使用该 logger
+ * 2. 页面根提供 PAGE_RUNTIME_SERVICES.logger 后组件使用该 logger
  * 3. 子组件继承页面层 logger，不再依赖局部 LOGGER 覆盖
  */
 
 import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { Spark, useSparkComponent, APP_SERVICES, type AppServicesCapability } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page'
+import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
-function createAppServices(logger: LoggerApi): AppServicesCapability {
+function createPageRuntimeServices(logger: LoggerApi): PageRuntimeServicesCapability {
   return {
     router: {
       push: async () => undefined,
@@ -38,10 +39,10 @@ describe('Logger Context Integration', () => {
 
     expect(() => mount(TestComponent, {
       global: { plugins: [Spark.createPlugin()] }
-    })).toThrow('[spark] APP_SERVICES.logger is required but missing. Ensure page root provides APP_SERVICES before components log.')
+    })).toThrow('[spark] PAGE_RUNTIME_SERVICES.logger is required but missing. Ensure page root provides PAGE_RUNTIME_SERVICES before components log.')
   })
 
-  it('页面根提供 APP_SERVICES.logger 后组件使用页面 logger', async () => {
+  it('页面根提供 PAGE_RUNTIME_SERVICES.logger 后组件使用页面 logger', async () => {
     const logs: string[] = []
 
     const customLogger: LoggerApi = {
@@ -65,7 +66,7 @@ describe('Logger Context Integration', () => {
     const PageRoot = defineComponent({
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'page-root' })
-        sparkProvide(APP_SERVICES, createAppServices(customLogger))
+        sparkProvide(PAGE_RUNTIME_SERVICES, createPageRuntimeServices(customLogger))
         return () => h(ChildComponent)
       }
     })
@@ -81,7 +82,7 @@ describe('Logger Context Integration', () => {
     expect(logs).toContain('WARN: warning message')
   })
 
-  it('子组件继承页面层 APP_SERVICES.logger', async () => {
+  it('子组件继承页面层 PAGE_RUNTIME_SERVICES.logger', async () => {
     const logs: string[] = []
 
     const customLogger: LoggerApi = {
@@ -106,7 +107,7 @@ describe('Logger Context Integration', () => {
       name: 'PageRoot',
       setup() {
         const { logger, sparkProvide } = useSparkComponent({ type: 'parent-comp' })
-        sparkProvide(APP_SERVICES, createAppServices(customLogger))
+        sparkProvide(PAGE_RUNTIME_SERVICES, createPageRuntimeServices(customLogger))
         logger.info('parent message')
 
         return () => h('div', {}, [

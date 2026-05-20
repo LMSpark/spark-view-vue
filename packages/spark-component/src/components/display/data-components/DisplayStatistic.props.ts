@@ -1,6 +1,6 @@
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RStatisticProps extends SparkNodeProps, SparkDataDisplayProps<number | string> {
+export type RStatisticProps = SparkNodeProps & SparkDataDisplayProps<number | string> & {
   /** 统计标题 */
   title?: SparkText
   /** 小数精度 */

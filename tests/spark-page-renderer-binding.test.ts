@@ -6,10 +6,10 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
 import {
   compileRule,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -19,7 +19,7 @@ import type {
   PageDataConfig,
   PageScriptConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 

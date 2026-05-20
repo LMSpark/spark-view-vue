@@ -155,4 +155,4 @@ type AiBusinessFunctionContract = {
 3. `spark-ai` 保留协议、SSE、tool codec、session reducer、knowledge projection 和函数调用契约；移除任何业务服务 import。
 4. 业务服务通过契约注册函数，函数执行由业务服务自己完成。
 5. tool call 闭环统一为：后端 SSE tool_call -> `spark-ai` 校验/执行契约 -> tool result append -> 后端继续 LLM。
-6. 文档、测试和导出面同步更新，避免旧的 `app-ai-businesses`、`registerAppAiBusinesses`、`spark-ai/registrations` 入口复活。
+6. 文档、测试和导出面同步更新，避免旧的 app AI 业务注册入口和 `spark-ai/registrations` 入口复活。

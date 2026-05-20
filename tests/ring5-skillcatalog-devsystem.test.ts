@@ -1,6 +1,6 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config'
+import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config/page/workspace'
 
 import {
   DEV_COMPONENT_METADATA,
@@ -11,6 +11,23 @@ import {
 
 const rulePolicy = createRuleTreePolicy(DEV_COMPONENT_METADATA)
 const RULE_JSON_SCHEMA = createRuleJsonSchema(DEV_COMPONENT_METADATA)
+
+function requireValue<T>(value: T | null | undefined, message: string): T {
+  if (value !== null && value !== undefined) return value
+  throw new Error(message)
+}
+
+function requireRecord(value: unknown, message: string): Record<string, unknown> {
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    return Object.fromEntries(Object.entries(value))
+  }
+  throw new Error(message)
+}
+
+function requireStringArray(value: unknown, message: string): string[] {
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) return value
+  throw new Error(message)
+}
 
 describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
   it('SkillCatalog 页面可展示组件列表、Props 明细、类型字典', async () => {
@@ -54,19 +71,18 @@ describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
       throw new Error('rulePolicy.getValueLabels 未定义')
     }
     const labels = getValueLabels(['type'])
-    expect(labels).toBeDefined()
-    expect(labels!.length).toBeGreaterThan(0)
-    expect(labels!.some(item => item.value === 'div')).toBe(true)
+    const typeLabels = requireValue(labels, 'type labels 未生成')
+    expect(typeLabels.length).toBeGreaterThan(0)
+    expect(typeLabels.some(item => item.value === 'div')).toBe(true)
     expect(DEV_TYPES.length).toBeGreaterThan(0)
-    expect(labels!.some(item => item.value === DEV_TYPES[0])).toBe(true)
+    expect(typeLabels.some(item => item.value === DEV_TYPES[0])).toBe(true)
 
     // 2) props 枚举建议可用
     const enumProbe = Object.entries(DEV_PROP_ENUMS)
       .flatMap(([, propMap]) => Object.entries(propMap))
       .find(([, values]) => values.length > 0)
 
-    expect(enumProbe).toBeDefined()
-    const [propName, enumValues] = enumProbe!
+    const [propName, enumValues] = requireValue(enumProbe, '未找到 props 枚举样例')
     const getValueOptions = rulePolicy.getValueOptions
     if (getValueOptions === undefined) {
       throw new Error('rulePolicy.getValueOptions 未定义')
@@ -78,24 +94,23 @@ describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
     const requiredProbe = Object.entries(DEV_REQUIRED_PROPS)
       .find(([, required]) => Object.keys(required).length > 0)
 
-    expect(requiredProbe).toBeDefined()
-    const [componentType, requiredProps] = requiredProbe!
+    const [componentType, requiredProps] = requireValue(requiredProbe, '未找到必填 props 样例')
     const getAutoPopulate = rulePolicy.getAutoPopulate
     if (getAutoPopulate === undefined) {
       throw new Error('rulePolicy.getAutoPopulate 未定义')
     }
     const autoPopulate = getAutoPopulate(['type'], componentType)
-    expect(autoPopulate).toBeDefined()
-    expect(autoPopulate![0]?.targetPath).toEqual([])
-    expect(autoPopulate![0]?.entries).toEqual({ props: requiredProps })
+    const autoPopulateEntries = requireValue(autoPopulate, 'type 自动填充规则未生成')
+    expect(autoPopulateEntries[0]?.targetPath).toEqual([])
+    expect(autoPopulateEntries[0]?.entries).toEqual({ props: requiredProps })
   })
 
   it('Rule JSON Schema 的 type 枚举来自 DEV_TYPES', () => {
-    const defs = (RULE_JSON_SCHEMA as Record<string, unknown>)['$defs'] as Record<string, unknown>
-    const sparkNode = defs['sparkNode'] as Record<string, unknown>
-    const properties = sparkNode['properties'] as Record<string, unknown>
-    const typeSchema = properties['type'] as Record<string, unknown>
-    const enums = typeSchema['enum'] as string[]
+    const defs = requireRecord(RULE_JSON_SCHEMA['$defs'], 'Rule JSON Schema 缺少 $defs')
+    const sparkNode = requireRecord(defs['sparkNode'], 'Rule JSON Schema 缺少 sparkNode')
+    const properties = requireRecord(sparkNode['properties'], 'sparkNode 缺少 properties')
+    const typeSchema = requireRecord(properties['type'], 'sparkNode.type schema 缺失')
+    const enums = requireStringArray(typeSchema['enum'], 'sparkNode.type enum 无效')
 
     expect(enums).toEqual(DEV_TYPES)
     expect(enums.length).toBeGreaterThan(0)

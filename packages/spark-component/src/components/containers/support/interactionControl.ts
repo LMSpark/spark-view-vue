@@ -2,7 +2,7 @@ import type { CrudResult, DataRow } from '@spark-view/spark-data'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 
-export interface CancellableControl {
+export type CancellableControl = {
   cancel: boolean
 }
 

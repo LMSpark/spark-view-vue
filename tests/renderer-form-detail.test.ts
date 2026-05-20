@@ -3,6 +3,15 @@ import { defineComponent, h, nextTick } from 'vue'
 import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { requireRecord, requireString } from './helpers/runtime-guards'
+
+function setModelPermission(view: object, permission: Record<string, unknown>): void {
+  Reflect.set(view, '_modelPerm', permission)
+}
+
+function readConfigType(config: unknown): string {
+  return requireString(requireRecord(config, 'action config')['type'], 'action config type')
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -14,8 +23,8 @@ const SparkActionStub = defineComponent({
   setup(props) {
     return () => h('button', {
       class: 'spark-action-stub',
-      'data-type': (props.config as Record<string, unknown>)['type'] as string,
-    }, (props.config as Record<string, unknown>)['type'] as string)
+      'data-type': readConfigType(props.config),
+    }, readConfigType(props.config))
   },
 })
 
@@ -81,7 +90,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     })
     const formView = ds.getView('Users', 'default')!
     formView.selection.setCurrentRow(formView.rows[0] ?? null)
-    ;(formView as typeof formView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
+    setModelPermission(formView, { allowCreate: true })
 
     const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
@@ -92,7 +101,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       slots: {
         default: ({ model }: Record<string, unknown>) => h('div', {
           class: 'biz-form-template',
-          'data-name': String((model as Record<string, unknown>)['name'] ?? ''),
+          'data-name': String(requireRecord(model, 'form slot model')['name'] ?? ''),
         }, 'biz-form-template'),
       },
       global: {
@@ -219,7 +228,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     })
     const detailView = ds.getView('Users', 'default')!
     detailView.selection.setCurrentRow(detailView.rows[0] ?? null)
-    ;(detailView as typeof detailView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowExport: true }
+    setModelPermission(detailView, { allowExport: true })
 
     const wrapper = mountWithPageDataSet(RendererDetail, {
       dataSet: ds,
@@ -230,7 +239,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       slots: {
         default: ({ row }: Record<string, unknown>) => h('div', {
           class: 'biz-detail-template',
-          'data-title': String((row as Record<string, unknown>)['title'] ?? ''),
+          'data-title': String(requireRecord(row, 'detail slot row')['title'] ?? ''),
         }, 'biz-detail-template'),
       },
       global: {

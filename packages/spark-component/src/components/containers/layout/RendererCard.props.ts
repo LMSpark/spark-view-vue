@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RCardProps extends SparkNodeProps {
+export type RCardProps = SparkNodeProps & {
   /** 卡片头部文本 */
   header?: SparkText
   /** 阴影显示策略 */

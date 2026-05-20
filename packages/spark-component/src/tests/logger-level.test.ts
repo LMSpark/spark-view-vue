@@ -1,23 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { APP_SERVICES, type AppServicesCapability, type CapabilityContext } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import type { CapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
-
-type LoggerTestAppServices = AppServicesCapability & Required<Pick<AppServicesCapability, 'logger' | 'router'>>
-
-function createAppServices(logger: LoggerApi): LoggerTestAppServices {
-  return {
-    router: {
-      push: async () => undefined,
-      replace: async () => undefined,
-      back: () => undefined,
-      currentRoute: undefined,
-    },
-    logger,
-  }
-}
+import { createPageRuntimeServices, readPageRuntimeServices } from './logger-test-helpers'
 
 describe('page logger methods', () => {
-  it('warn and error stay available through APP_SERVICES.logger', () => {
+  it('warn and error stay available through PAGE_RUNTIME_SERVICES.logger', () => {
     let calledWarn = false
     let calledError = false
 
@@ -31,12 +19,12 @@ describe('page logger methods', () => {
     const ctx: CapabilityContext = {
       id: 'ctx-level',
       type: 'test',
-      capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
+      capabilities: new Map([[PAGE_RUNTIME_SERVICES, createPageRuntimeServices(loggerImpl)]])
     }
 
-    const appServices = ctx.capabilities.get(APP_SERVICES) as LoggerTestAppServices
-    appServices.logger.warn('should call warn')
-    appServices.logger.error('should call error')
+    const pageRuntimeServices = readPageRuntimeServices(ctx)
+    pageRuntimeServices.logger.warn('should call warn')
+    pageRuntimeServices.logger.error('should call error')
 
     expect(calledWarn).toBe(true)
     expect(calledError).toBe(true)

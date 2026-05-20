@@ -5,7 +5,7 @@
 import { ref, onUnmounted } from 'vue'
 import { scopeCSS, removeScopedStyle } from './scopeCSS'
 
-interface UseCssScopeOptions {
+type UseCssScopeOptions = {
   enableScope?: boolean
 }
 

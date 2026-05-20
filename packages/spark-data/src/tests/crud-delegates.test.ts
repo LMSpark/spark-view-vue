@@ -212,7 +212,7 @@ describe('M5: CrudService shared HTTP client', () => {
     expect(mockClient.get).not.toHaveBeenCalled()
   })
 
-  it('DataTable.crudService should resolve {tenantId}/{projectId} from page route when APP_SERVICES is missing', async () => {
+  it('DataTable.crudService should resolve {tenantId}/{projectId} from page route when page runtime services are missing', async () => {
     const mockClient = createMockHttpClient()
     vi.mocked(mockClient.get).mockResolvedValue([])
 

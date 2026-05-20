@@ -3,7 +3,7 @@
  * 独立 Catalog 生成命令（不依赖 Vite 运行时）
  *
  * 调用 json-catalog-generator 生成单一 rich component-catalog.json。
- * 输出写入 packages/spark-page-config/src/ai/registrations/page-design/payloads/，所有消费端按需投影。
+ * 输出写入 packages/spark-page-config/src/assistant/registrations/page-design/payloads/，所有消费端按需投影。
  *
  * 用法：
  *   npx tsx packages/vite-plugin-spark-catalog/src/cli.ts
@@ -36,13 +36,19 @@ function parseBooleanEnv(name: string): boolean | undefined {
   return undefined
 }
 
-function pickDefined<T extends Record<string, unknown>>(source: T): { [K in keyof T]?: Exclude<T[K], undefined> } {
-  return Object.fromEntries(
-    Object.entries(source).filter(([, value]) => value !== undefined),
-  ) as { [K in keyof T]?: Exclude<T[K], undefined> }
+function pickDefinedVcmOptions(source: {
+  rawType: boolean | undefined
+  schema: boolean | undefined
+  noDeclarations: boolean | undefined
+}): VcmCheckerOptions {
+  const options: VcmCheckerOptions = {}
+  if (source.rawType !== undefined) options.rawType = source.rawType
+  if (source.schema !== undefined) options.schema = source.schema
+  if (source.noDeclarations !== undefined) options.noDeclarations = source.noDeclarations
+  return options
 }
 
-const vcmCheckerOptions: VcmCheckerOptions = pickDefined({
+const vcmCheckerOptions: VcmCheckerOptions = pickDefinedVcmOptions({
   rawType: parseBooleanEnv('SPARK_CATALOG_VCM_RAW_TYPE'),
   schema: parseBooleanEnv('SPARK_CATALOG_VCM_SCHEMA'),
   noDeclarations: parseBooleanEnv('SPARK_CATALOG_VCM_NO_DECLARATIONS'),

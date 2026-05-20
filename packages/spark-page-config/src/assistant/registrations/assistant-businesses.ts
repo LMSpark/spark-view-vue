@@ -1,5 +1,5 @@
 /**
- * App 层 AI 业务注册。
+ * Assistant 业务注册。
  *
  * 把 LeaveRequest 和 PageDesign 模块包装为 AiHostBusinessRuntime，
  * 并注册到 AiHostBusinessRegistry。
@@ -27,7 +27,7 @@ import type { RuntimeBackedBusinessModule } from './internal/registration-base'
 import { LeaveRequestModule } from './leave-request'
 import { PageDesignModule } from './page-design'
 
-export type RegisterAppAiBusinessesOptions = {
+export type RegisterAssistantBusinessesOptions = {
   readonly registry: AiHostBusinessRegistry
   readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
 }
@@ -248,7 +248,7 @@ class PageDesignHostRuntime extends ModuleBackedHostRuntime {
   }
 }
 
-export function registerAppAiBusinesses(options: RegisterAppAiBusinessesOptions): void {
+export function registerAssistantBusinesses(options: RegisterAssistantBusinessesOptions): void {
   const leaveModule = new LeaveRequestModule()
   options.registry.register(new LeaveRequestHostRuntime(leaveModule))
 

@@ -81,18 +81,6 @@ export type {
 export { createThemeService, useTheme, THEME_INJECTION_KEY } from './theme'
 export type { ThemeMode, ThemeServiceOptions, ThemeServiceReactive } from './theme'
 
-// AI Host
-export {
-  AppAiHost,
-  createAppAiHost,
-  uploadAppAiAttachment,
-} from './ai/app-ai-host'
-
-export type {
-  AppAiAttachmentUploadOptions,
-  AppAiHostOptions,
-} from './ai/app-ai-host'
-
 // 类型导出
 export type {
   AppContext,
@@ -144,7 +132,7 @@ export type { AutoRegisterOptions } from './auto-register'
 
 // Composables
 // ⚠️ DI 架构已统一到 SPARK 能力系统（管道 B）
-// - 推荐：使用 consume(APP_SERVICES) 获取应用服务
+// - 推荐：使用 sparkConsume(PAGE_RUNTIME_SERVICES) 获取页面运行时服务
 // - Router：直接使用 vue-router 的 useRouter()
 // - Logger：使用 Logger('module') 工厂函数
 export {

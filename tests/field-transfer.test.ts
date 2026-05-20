@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
 import { FieldTransfer } from '@spark-view/spark-component'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
+import { requireRecord } from './helpers/runtime-guards'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -15,12 +16,13 @@ const ElTransferStub = defineComponent({
   emits: ['update:modelValue'],
   setup(props) {
     const rows = Array.isArray(props.data) ? props.data : []
+    const firstRow = rows[0] !== undefined ? requireRecord(rows[0], 'transfer first row') : undefined
     return () => h('div', {
       class: 'el-transfer-stub',
       'data-value': JSON.stringify(props.modelValue ?? []),
       'data-size': String(rows.length),
-      'data-first-key': String((rows[0] as Record<string, unknown> | undefined)?.['key'] ?? ''),
-      'data-first-label': String((rows[0] as Record<string, unknown> | undefined)?.['label'] ?? ''),
+      'data-first-key': String(firstRow?.['key'] ?? ''),
+      'data-first-label': String(firstRow?.['label'] ?? ''),
       'data-target-order': String(props.targetOrder ?? ''),
     })
   },

@@ -54,7 +54,7 @@ import {
 /**
  * 事件默认行为声明
  */
-export interface EventDefaultDeclaration<TArgs extends readonly unknown[] = readonly unknown[]> {
+export type EventDefaultDeclaration<TArgs extends readonly unknown[] = readonly unknown[]> = {
   /**
    * 系统默认处理方法 (A)
    *

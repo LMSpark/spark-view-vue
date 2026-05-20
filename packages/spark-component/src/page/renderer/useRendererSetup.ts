@@ -2,7 +2,7 @@
  * useRendererSetup — 渲染器共享基础设施 Composable
  *
  * 提取自 SparkPageRenderer 渲染器的公共模式：
- *   - SPARK 能力上下文（useSparkComponent + APP_SERVICES）
+ *   - SPARK 能力上下文（useSparkComponent + PAGE_RUNTIME_SERVICES）
  *   - 加载状态机（loading / error + 竞态保护）
  *
  * 差异化逻辑（DataSet / CSS scope / 脚本沙箱 / fetch）
@@ -25,20 +25,17 @@
 
 import { ref, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
-import {
-  APP_SERVICES,
-} from '../../core/capability-keys.js'
-import type { AppServicesCapability } from '../../core/capability-keys.js'
+import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { PAGE_COMPONENT_REGISTRY } from '../../core/capability-keys'
 import type { PageComponentRegistry } from '../../core/capability-keys'
 import { useSparkComponent, type UseSparkComponentReturn } from '../../core/useSparkComponent'
-import { buildAppServices } from '../services/provideAppServices'
+import { buildPageRuntimeServices } from '../services/providePageRuntimeServices'
 import { createPageComponentRegistry } from '../context/page-component-registry'
 
 // ─── 公共接口 ────────────────────────────────────────────────────────────────
 
-interface RendererSetupReturn {
+type RendererSetupReturn = {
   /** 路由能力实例（消费方如 buildPageService / 页面动作可能需要） */
   router: Router
   /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */
@@ -51,8 +48,8 @@ interface RendererSetupReturn {
   error: Ref<string>
   /** 页面级组件注册中心（实例 + API） */
   componentRegistry: PageComponentRegistry
-  /** APP_SERVICES 能力载荷（用于下游注入到 DataSet 等运行时） */
-  appServices: AppServicesCapability
+  /** 页面运行时服务能力载荷（用于下游注入到 DataSet 等运行时） */
+  pageRuntimeServices: PageRuntimeServicesCapability
   /**
    * 带竞态保护的异步加载封装
    *
@@ -89,12 +86,12 @@ export function useRendererSetup(
     id: `${componentType}-root`,
   })
   const componentRegistry = createPageComponentRegistry()
-  const inheritedAppServices = sparkConsume(APP_SERVICES) ?? {}
-  const appServices = {
-    ...inheritedAppServices,
-    ...buildAppServices(router, logger),
+  const inheritedPageRuntimeServices = sparkConsume(PAGE_RUNTIME_SERVICES) ?? {}
+  const pageRuntimeServices = {
+    ...inheritedPageRuntimeServices,
+    ...buildPageRuntimeServices(router, logger),
   }
-  sparkProvide(APP_SERVICES, appServices)
+  sparkProvide(PAGE_RUNTIME_SERVICES, pageRuntimeServices)
   sparkProvide(PAGE_COMPONENT_REGISTRY, componentRegistry)
 
   // ── 加载状态机 ──
@@ -130,5 +127,5 @@ export function useRendererSetup(
     }
   }
 
-  return { router, sparkProvide, sparkConsume, loading, error, componentRegistry, appServices, runLoad }
+  return { router, sparkProvide, sparkConsume, loading, error, componentRegistry, pageRuntimeServices, runLoad }
 }

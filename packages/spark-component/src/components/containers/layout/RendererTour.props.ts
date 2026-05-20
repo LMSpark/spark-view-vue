@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface TourStep {
+export type TourStep = {
   /** CSS 选择器或元素引用（运行时解析） */
   target?: SparkText | HTMLElement | null
   /** 步骤标题 */
@@ -15,7 +15,7 @@ export interface TourStep {
   showArrow?: boolean
 }
 
-export interface RTourProps extends SparkNodeProps {
+export type RTourProps = SparkNodeProps & {
   /** 步骤配置列表 */
   steps?: TourStep[]
   /** 是否显示 */

@@ -2,7 +2,7 @@ import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
 export type TagType = 'success' | 'info' | 'warning' | 'danger'
 
-export interface RTagProps extends SparkNodeProps, SparkDataDisplayProps<string> {
+export type RTagProps = SparkNodeProps & SparkDataDisplayProps<string> & {
   /** 显式内容，优先级高于 value/field */
   content?: SparkText
   /** 标签类型 */

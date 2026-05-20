@@ -6,7 +6,8 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { SparkPageConfig, type ConfigLoaderOptions } from '@spark-view/spark-page-config'
+import { SparkPageConfig } from '@spark-view/spark-page-config/page'
+import type { ConfigLoaderOptions } from '@spark-view/spark-page-config/page/loading'
 import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'

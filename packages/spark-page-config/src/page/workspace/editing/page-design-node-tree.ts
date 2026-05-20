@@ -1,7 +1,7 @@
 import type {
   SparkNodeTree,
-  SparkNodeTreeMethodKey as PageConfigSparkNodeTreeMethodKey,
+  SparkNodeTreeMethodKey,
 } from '../../model/spark-node-tree'
 
-export type SparkNodeTreeMethodKey = PageConfigSparkNodeTreeMethodKey
+export type { SparkNodeTreeMethodKey } from '../../model/spark-node-tree'
 export type PageDesignNodeTree = Pick<SparkNodeTree, SparkNodeTreeMethodKey | 'toJSON'>

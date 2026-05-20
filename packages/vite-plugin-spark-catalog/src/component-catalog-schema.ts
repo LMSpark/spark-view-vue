@@ -15,7 +15,7 @@
  * ----------------------------------------------------------------------- */
 
 /** 组件目录 JSON 根结构 */
-export interface ComponentCatalog {
+export type ComponentCatalog = {
   /** JSON Schema draft 标识；catalog envelope 内的 schema 引用遵循 2020-12。 */
   $schema: 'https://json-schema.org/draft/2020-12/schema'
   /** Schema 版本，遵循 semver */
@@ -39,7 +39,7 @@ export interface ComponentCatalog {
  * 保留 version / buildTime / componentCount 元信息，
  * components 内为 vue-component-meta 的直接提取结果。
  */
-export interface RawComponentCatalog {
+export type RawComponentCatalog = {
   /** Schema 版本 */
   version: string
   /** 构建时间 ISO 8601 */
@@ -50,7 +50,7 @@ export interface RawComponentCatalog {
   components: Record<string, RawComponentEntry>
 }
 
-export interface RawComponentEntry {
+export type RawComponentEntry = {
   type: string
   filePath: string
   props: PropEntry[]
@@ -61,7 +61,7 @@ export interface RawComponentEntry {
  * 注册表
  * ----------------------------------------------------------------------- */
 
-export interface ComponentRegistry {
+export type ComponentRegistry = {
   /** 容器组件 */
   containers: string[]
   /** 字段组件 */
@@ -76,7 +76,7 @@ export interface ComponentRegistry {
  * 组件条目
  * ----------------------------------------------------------------------- */
 
-export interface ComponentEntry {
+export type ComponentEntry = {
   /** kebab-case 注册名 */
   type: string
   /** 源文件相对路径（用于诊断与差异分析） */
@@ -130,7 +130,7 @@ export interface ComponentEntry {
  * 命名规范：组件 type `r-xxx` → 接口名 `RXxxProps`，
  * 定义在 `{ComponentName}.props.ts` 中并通过 barrel 导出。
  */
-export interface PropsInterfaceRef {
+export type PropsInterfaceRef = {
   /** 接口名（如 `RTableProps`） */
   name: string
   /** 定义文件相对路径 */
@@ -140,13 +140,13 @@ export interface PropsInterfaceRef {
 }
 
 /** 组件命中的治理契约引用 */
-export interface ComponentContractRefs {
+export type ComponentContractRefs = {
   props?: string[]
   events?: string[]
   api?: string[]
 }
 
-export interface PropEntry {
+export type PropEntry = {
   name: string
   type: string
   required: boolean
@@ -163,7 +163,7 @@ export interface PropEntry {
   schema?: PropSchema
 }
 
-export interface EmitEntry {
+export type EmitEntry = {
   name: string
   /** 事件类型签名 */
   type?: string
@@ -192,7 +192,7 @@ export interface EmitEntry {
   __payloadParamDocs?: EmitPayloadParamDoc[]
 }
 
-export interface EmitPayloadParamDoc {
+export type EmitPayloadParamDoc = {
   name: string
   description?: string
 }
@@ -201,7 +201,7 @@ export interface EmitPayloadParamDoc {
 export type JsonSchemaTypeName = 'object' | 'array' | 'string' | 'number' | 'integer' | 'boolean' | 'null'
 
 /** 对象 schema 中的属性条目。 */
-export interface PropSchemaProperty extends PropSchema {
+export type PropSchemaProperty = PropSchema & {
   /**
    * @internal 临时字段 — 仅在生成阶段使用
    * 暂存需要递归提取到 schema type 池的嵌套 schema
@@ -217,7 +217,7 @@ export interface PropSchemaProperty extends PropSchema {
  * - 复杂对象以真实 type 为键进入 `$defs`；
  * - TypeScript 类型名使用标准 `title` 表达，不占用 JSON Schema `type`。
  */
-export interface PropSchema {
+export type PropSchema = {
   /** 标准 JSON Schema type。 */
   type?: JsonSchemaTypeName | JsonSchemaTypeName[]
   /** 对象属性。 */
@@ -249,7 +249,7 @@ export interface PropSchema {
 }
 
 /** 根级语义字段（组件对 rule.json 的结构化语义说明） */
-export interface RootFieldEntry {
+export type RootFieldEntry = {
   name: string
   type: string
   description: string
@@ -261,7 +261,7 @@ export interface RootFieldEntry {
  * 平台约束（校验器复用）
  * ----------------------------------------------------------------------- */
 
-export interface PlatformConstraints {
+export type PlatformConstraints = {
   /** DataViewKey字段正则（字符串形式，校验器重建 RegExp） */
   dataViewKeyPattern: CatalogConstraintEntry<string>
   /** 合法组件类型前缀 */
@@ -276,7 +276,7 @@ export interface PlatformConstraints {
   nestingRules: CatalogConstraintEntry<Record<string, NestingRule>>
 }
 
-export interface CatalogConstraintEntry<TValue> {
+export type CatalogConstraintEntry<TValue> = {
   /** 约束值，供校验器或后端直接消费。 */
   value: TValue
   /** LLM 可读说明：解释该约束限制什么、何时使用。 */
@@ -285,7 +285,7 @@ export interface CatalogConstraintEntry<TValue> {
   examples?: unknown[]
 }
 
-export interface NestingRule {
+export type NestingRule = {
   /** 允许的子组件类型模式 */
   allowedChildren: string[]
   /** 禁止的子组件类型 */
@@ -304,7 +304,7 @@ export interface NestingRule {
  * 声明一个组件类型在绑定管线中的角色和特征。
  * 构建时由 VCM props 自动推断（r-*）或静态声明（el-*）。
  */
-export interface CatalogBindingDescriptor {
+export type CatalogBindingDescriptor = {
   /** LLM 可读绑定说明，解释该组件如何参与 dataViewKey、dataMember、dataField、field、options、value 管线。 */
   description?: string
   /** 可直接参考的绑定配置示例。 */
@@ -331,11 +331,11 @@ export interface CatalogBindingDescriptor {
  * 治理契约（Vue 侧标准 -> AI 侧标准）
  * ----------------------------------------------------------------------- */
 
-export interface CatalogGovernance {
+export type CatalogGovernance = {
   contracts: Record<string, GovernanceContract>
 }
 
-export interface GovernanceContract {
+export type GovernanceContract = {
   layer: 'props' | 'events' | 'api'
   description: string
   members: string[]
@@ -346,7 +346,7 @@ export interface GovernanceContract {
  * ----------------------------------------------------------------------- */
 
 /** 全息 API 表面：组件 catalog 之外的编程接口 */
-export interface ApiSurface {
+export type ApiSurface = {
   /** DataView 公共方法 */
   dataView: ApiMethodEntry[]
   /** DataSet 公共方法 */
@@ -360,7 +360,7 @@ export interface ApiSurface {
 }
 
 /** API 方法条目 */
-export interface ApiMethodEntry {
+export type ApiMethodEntry = {
   name: string
   /** 方法签名（TypeScript 格式） */
   signature: string
@@ -373,7 +373,7 @@ export interface ApiMethodEntry {
 }
 
 /** API 参数条目 */
-export interface ApiParamEntry {
+export type ApiParamEntry = {
   name: string
   type: string
   required?: boolean
@@ -381,7 +381,7 @@ export interface ApiParamEntry {
 }
 
 /** API 成员条目（属性或方法） */
-export interface ApiMemberEntry {
+export type ApiMemberEntry = {
   name: string
   type: string
   kind: 'property' | 'method'

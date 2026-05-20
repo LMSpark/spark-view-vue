@@ -61,7 +61,7 @@ const CANONICAL_CATALOG_FILE = 'component-catalog.json'
  * - 使用哪个 tsconfig 建立类型检查器；
  * - 是否执行目录质量审计。
  */
-export interface JsonCatalogOptions {
+export type JsonCatalogOptions = {
   featurePatterns?: string[] | undefined
   exclude?: string[] | undefined
   tsconfigPath?: string | undefined
@@ -78,7 +78,7 @@ export interface JsonCatalogOptions {
  * component-catalog.json 是当前仓库组件目录的单一事实源，所有消费者都应从该路径读取。
  */
 export function getCanonicalCatalogOutputPath(root: string): string {
-  return resolve(root, 'packages/spark-page-config/src/ai/registrations/page-design/payloads', CANONICAL_CATALOG_FILE)
+  return resolve(root, 'packages/spark-page-config/src/assistant/registrations/page-design/payloads', CANONICAL_CATALOG_FILE)
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -88,7 +88,7 @@ type SchemaOwner = 'workspace' | 'external'
  *
  * 这些字段只在生成阶段使用，不应直接写入最终 JSON。
  */
-interface PropEntryWithMeta extends PropEntry {
+type PropEntryWithMeta = PropEntry & {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
   /** 自动提取的字符串字面量枚举 variants（已用引号包裹） */
@@ -98,11 +98,11 @@ interface PropEntryWithMeta extends PropEntry {
 }
 
 /** 共享 schema 构建上下文，key 固定为 TypeScript 类型名。 */
-interface SchemaPoolContext {
+type SchemaPoolContext = {
   pool: Record<string, PropSchema>
 }
 
-interface EnumValueDoc {
+type EnumValueDoc = {
   title?: string
   description?: string
 }
@@ -319,12 +319,28 @@ function stableStringify(value: unknown): string {
     return `[${value.map((item) => stableStringify(item)).join(',')}]`
   }
   if (value !== null && typeof value === 'object') {
-    const entries = Object.entries(value as Record<string, unknown>)
+    const entries = recordEntries(value)
       .sort(([a], [b]) => a.localeCompare(b))
       .map(([key, val]) => `${JSON.stringify(key)}:${stableStringify(val)}`)
     return `{${entries.join(',')}}`
   }
   return JSON.stringify(value)
+}
+
+function recordEntries(value: object): Array<[string, unknown]> {
+  const entries: Array<[string, unknown]> = []
+  for (const key of Object.keys(value)) {
+    entries.push([key, Reflect.get(value, key)])
+  }
+  return entries
+}
+
+function recordFromEntries<T>(entries: Iterable<readonly [string, T]>): Record<string, T> {
+  const record: Record<string, T> = {}
+  for (const [key, value] of entries) {
+    record[key] = value
+  }
+  return record
 }
 
 function splitTopLevel(text: string, delimiter: string): string[] {
@@ -408,7 +424,7 @@ function buildPropsInterfaceTypeIndex(registeredComponentTypes: ReadonlySet<stri
     if (propsInterfaceName === undefined) continue
     const existing = index.get(propsInterfaceName)
     if (existing !== undefined && existing !== componentType) {
-      throw new Error(`component-catalog props interface 命名冲突: ${propsInterfaceName} -> ${existing}, ${componentType}`)
+      throw new Error(`component-catalog props type 命名冲突: ${propsInterfaceName} -> ${existing}, ${componentType}`)
     }
     index.set(propsInterfaceName, componentType)
   }
@@ -429,7 +445,7 @@ function assertNoLegacyComponentPropsTypeName(
   if (legacyComponentType === undefined || !registeredComponentTypes.has(legacyComponentType)) return
   const canonicalName = componentTypeToPropsInterfaceName(legacyComponentType)
   throw new Error(
-    `component-catalog props interface 命名不规范: ${typeName} 指向 ${legacyComponentType}，请改为 ${canonicalName ?? 'R{Component}Props'}`,
+    `component-catalog props type 命名不规范: ${typeName} 指向 ${legacyComponentType}，请改为 ${canonicalName ?? 'R{Component}Props'}`,
   )
 }
 
@@ -507,11 +523,11 @@ function shouldRetainSchema(schema: PropSchema): boolean {
 }
 
 function stripInternalSchemaFields(schema: PropSchema): PropSchema {
-  const clean: PropSchema = { ...schema }
-  delete (clean as PropSchemaProperty).__nestedSchema
+  const clean: PropSchemaProperty = { ...schema }
+  delete clean.__nestedSchema
   if (clean.properties !== undefined) {
-    clean.properties = Object.fromEntries(
-      Object.entries(clean.properties).map(([name, property]) => [name, stripInternalSchemaFields(property) as PropSchemaProperty]),
+    clean.properties = recordFromEntries(
+      Object.entries(clean.properties).map(([name, property]) => [name, stripInternalSchemaFields(property)]),
     )
   }
   if (clean.items !== undefined) clean.items = stripInternalSchemaFields(clean.items)
@@ -1099,7 +1115,7 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): Emi
   return result
 }
 
-interface CatalogRuntimeModel {
+type CatalogRuntimeModel = {
   version: ComponentCatalog['version']
   buildTime: string
   componentCount: number
@@ -1109,7 +1125,7 @@ interface CatalogRuntimeModel {
   bindingDescriptors: Record<string, CatalogBindingDescriptor>
 }
 
-interface ExtractedComponentRecord {
+type ExtractedComponentRecord = {
   type: string
   normalizedFilePath: string
   category: ComponentEntry['category']
@@ -1120,7 +1136,7 @@ interface ExtractedComponentRecord {
 }
 
 function sortRecord<T>(record: Record<string, T>): Record<string, T> {
-  return Object.fromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right))) as Record<string, T>
+  return recordFromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right)))
 }
 
 function escapeJsonPointerSegment(value: string): string {
@@ -1141,10 +1157,10 @@ function normalizePublicSchemaRefs(schema: PropSchema): PropSchema {
 
   if (normalized.$ref !== undefined) normalized.$ref = toDefsRef(normalized.$ref)
   if (normalized.properties !== undefined) {
-    normalized.properties = Object.fromEntries(
+    normalized.properties = recordFromEntries(
       Object.entries(normalized.properties).map(([name, property]) => [
         name,
-        normalizePublicSchemaRefs(property) as PropSchemaProperty,
+        normalizePublicSchemaRefs(property),
       ]),
     )
   }
@@ -1223,17 +1239,18 @@ function createComponentPropSchema(prop: PropEntry): PropSchemaProperty {
     ? inferSimpleSchemaFromType(prop.type)
     : normalizePublicSchemaRefs(rawSchema)
   const defaultValue = prop.default === undefined ? undefined : parseJsonSafeDefault(prop.default)
-  return {
+  const property: PropSchemaProperty = {
     ...schema,
     ...(schema.description === undefined && prop.description !== undefined ? { description: prop.description } : {}),
     ...(schema.default === undefined && defaultValue !== undefined ? { default: defaultValue } : {}),
-  } as PropSchemaProperty
+  }
+  return property
 }
 
 function createComponentNodeSchema(entry: ComponentEntry): PropSchema {
-  const propSchemas = Object.fromEntries(
+  const propSchemas = recordFromEntries(
     entry.props.map((prop) => [prop.name, createComponentPropSchema(prop)]),
-  ) as Record<string, PropSchemaProperty>
+  )
   const requiredProps = entry.props.filter((prop) => prop.required).map((prop) => prop.name)
   const propsSchema: PropSchemaProperty = {
     type: 'object',
@@ -1282,13 +1299,13 @@ function buildComponentDefs(components: Record<string, ComponentEntry>): Record<
   const refs = collectComponentTypeRefs(components)
   if (refs.size === 0) return undefined
   return sortRecord(
-    Object.fromEntries([...refs].sort((left, right) => left.localeCompare(right)).map((type) => {
+    recordFromEntries([...refs].sort((left, right) => left.localeCompare(right)).map((type) => {
       const entry = components[type]
       if (entry === undefined) {
         throw new Error(`component-catalog 组件 schema 引用未注册: ${type}`)
       }
       return [type, createComponentNodeSchema(entry)]
-    })) as Record<string, PropSchema>,
+    })),
   )
 }
 
@@ -1369,17 +1386,17 @@ function toPublicComponent(entry: ComponentEntry): ComponentEntry {
 }
 
 function buildComponentCatalog(model: CatalogRuntimeModel): ComponentCatalog {
-  const components = Object.fromEntries(
+  const components = recordFromEntries(
     Object.entries(model.components)
       .sort(([left], [right]) => left.localeCompare(right))
       .map(([type, entry]) => [type, toPublicComponent(entry)]),
-  ) as Record<string, ComponentEntry>
+  )
   const schemaDefs = model.schemaPool === undefined
     ? undefined
     : sortRecord(
-      Object.fromEntries(
+      recordFromEntries(
         Object.entries(model.schemaPool).map(([type, schema]) => [type, normalizePublicRootSchema(type, schema)]),
-      ) as Record<string, PropSchema>,
+      ),
     )
   const componentDefs = buildComponentDefs(model.components)
   const defs = mergeDefs(schemaDefs, componentDefs)
@@ -1440,11 +1457,12 @@ function pruneReachableSchemas(
 
   if (reachable.size === 0) return undefined
 
-  return Object.fromEntries(
-    [...reachable]
-      .sort((left, right) => left.localeCompare(right))
-      .map((ref) => [ref, schemas[ref]]),
-  ) as Record<string, PropSchema>
+  const entries: Array<readonly [string, PropSchema]> = []
+  for (const ref of [...reachable].sort((left, right) => left.localeCompare(right))) {
+    const schema = schemas[ref]
+    if (schema !== undefined) entries.push([ref, schema])
+  }
+  return recordFromEntries(entries)
 }
 
 // ── 7. 组件扫描与目录构建 (Scanner & Builder) ─────────────────────────────────────
@@ -1485,7 +1503,7 @@ function buildSortedComponents(
     const vcmApi = extractComponentApiVcm(checker, abs, file, type, { includeGlobalProps })
     if (vcmApi === null) continue
 
-    const rawProps = vcmApi.props as PropEntryWithMeta[]
+    const rawProps: PropEntryWithMeta[] = vcmApi.props.map((prop) => ({ ...prop }))
     const normalizedFilePath = normalizePath(vcmApi.filePath)
     const category = inferCategory(normalizedFilePath, skillMeta?.category)
 

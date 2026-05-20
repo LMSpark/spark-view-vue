@@ -1,6 +1,7 @@
 import type { Preview } from '@storybook/vue3'
 import { setup } from '@storybook/vue3'
-import { APP_SERVICES, Spark } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { Spark } from '@spark-view/spark-component'
 import { createLogger } from '@spark-view/spark-app'
 import ElementPlus from 'element-plus'
 import 'element-plus/dist/index.css'
@@ -26,7 +27,7 @@ setup((app) => {
     showTimestamp: false
   })
 
-  app.provide(APP_SERVICES as symbol, {
+  app.provide(PAGE_RUNTIME_SERVICES.token, {
     logger: appLogger,
     router: null
   })

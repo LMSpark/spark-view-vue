@@ -7,6 +7,7 @@ import {
 } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
+import { requireRecord, requireRecordArray } from './helpers/runtime-guards'
 
 const ElFormItemStub = defineComponent({
   props: ['label', 'prop', 'rules'],
@@ -20,15 +21,17 @@ const ElTreeSelectStub = defineComponent({
   emits: ['update:modelValue'],
   setup(props) {
     const rootNodes = Array.isArray(props.data) ? props.data : []
-    const firstNode = rootNodes[0] as Record<string, unknown> | undefined
-    const firstChildren = Array.isArray(firstNode?.['children']) ? firstNode['children'] as unknown[] : []
+    const firstNode = rootNodes[0] !== undefined ? requireRecord(rootNodes[0], 'tree select first node') : undefined
+    const firstChildren = firstNode !== undefined && Array.isArray(firstNode['children'])
+      ? requireRecordArray(firstNode['children'], 'tree select first children')
+      : []
     return () => h('div', {
       class: 'el-tree-select-stub',
       'data-root-count': String(rootNodes.length),
       'data-first-label': String(firstNode?.['label'] ?? ''),
       'data-first-value': String(firstNode?.['value'] ?? ''),
       'data-first-children-count': String(firstChildren.length),
-      'data-first-child-label': String((firstChildren[0] as Record<string, unknown> | undefined)?.['label'] ?? ''),
+      'data-first-child-label': String(firstChildren[0]?.['label'] ?? ''),
     })
   },
 })
@@ -38,15 +41,17 @@ const ElCascaderStub = defineComponent({
   emits: ['update:modelValue'],
   setup(componentProps) {
     const rootNodes = Array.isArray(componentProps.options) ? componentProps.options : []
-    const firstNode = rootNodes[0] as Record<string, unknown> | undefined
-    const firstChildren = Array.isArray(firstNode?.['children']) ? firstNode['children'] as unknown[] : []
+    const firstNode = rootNodes[0] !== undefined ? requireRecord(rootNodes[0], 'cascader first node') : undefined
+    const firstChildren = firstNode !== undefined && Array.isArray(firstNode['children'])
+      ? requireRecordArray(firstNode['children'], 'cascader first children')
+      : []
     return () => h('div', {
       class: 'el-cascader-stub',
       'data-root-count': String(rootNodes.length),
       'data-first-label': String(firstNode?.['label'] ?? ''),
       'data-first-value': String(firstNode?.['value'] ?? ''),
       'data-first-children-count': String(firstChildren.length),
-      'data-first-child-label': String((firstChildren[0] as Record<string, unknown> | undefined)?.['label'] ?? ''),
+      'data-first-child-label': String(firstChildren[0]?.['label'] ?? ''),
     })
   },
 })

@@ -8,20 +8,22 @@
  * 每个变体组件仅覆盖 FieldEntityPicker 的若干默认 prop，其余完全透传。
  */
 import { computed, defineComponent, h } from 'vue'
-import type { PropType } from 'vue'
 import type { PageSelectableValue } from '../internal'
-import type { SparkNodeChildren } from '../internal'
 import type { SparkOptionValueMode } from '../shared-types'
 import { emitFieldValueUpdate } from './data-components/composables/useControlledFieldChange'
 import FieldEntityPicker from './data-components/FieldEntityPicker.vue'
 
 type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
 
-interface PickerPresetDefaults {
+type PickerPresetDefaults = {
   placeholder: string
   buttonText: string
   readonlyButtonText: string
   entityName: string
+}
+
+function isSparkOptionValueMode(value: unknown): value is SparkOptionValueMode {
+  return value === 'auto' || value === 'array' || value === 'separated-string'
 }
 
 /**
@@ -38,9 +40,9 @@ const SHARED_PROPS = {
   /** 字段宽度 */
   width: { type: Number, default: undefined },
   /** 直接传入的值 */
-  modelValue: { type: [String, Number, Array, Boolean] as PropType<EntityPickerValue>, default: undefined },
+  modelValue: { type: [String, Number, Array, Boolean], default: undefined },
   /** 可选项数组 */
-  options: { type: Array as PropType<unknown[]>, default: undefined },
+  options: { type: Array, default: undefined },
   /** 选项 DataView 定位键 */
   optionDataViewKey: { type: String, default: undefined },
   /** 选项显示字段 */
@@ -66,11 +68,11 @@ const SHARED_PROPS = {
   /** 文本储存字段 */
   textStorageField: { type: String, default: undefined },
   /** 主值持久化模式 */
-  valueMode: { type: String as PropType<SparkOptionValueMode>, default: 'auto' },
+  valueMode: { type: String, default: 'auto', validator: isSparkOptionValueMode },
   /** 实体名称 */
   entityName: { type: String, default: undefined },
-  children: { type: Array as PropType<SparkNodeChildren>, default: undefined },
-} as const
+  children: { type: Array, default: undefined },
+}
 
 /**
  * 根据预设默认值创建一个 EntityPicker 变体组件。
@@ -124,7 +126,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
         if (props['textStorageField'] !== undefined) {
           result['textStorageField'] = props['textStorageField']
         }
-        result['valueMode'] = props['valueMode']
+        result['valueMode'] = isSparkOptionValueMode(props['valueMode']) ? props['valueMode'] : 'auto'
 
         return result
       })

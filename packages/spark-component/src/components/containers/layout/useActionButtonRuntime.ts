@@ -48,7 +48,7 @@ function resolveActionNode(
 
 // ── 公共接口 ──────────────────────────────────────────────────────────────
 
-export interface ActionButtonRuntimeOptions {
+export type ActionButtonRuntimeOptions = {
   /** 当前节点（来自 resolvedProps） */
   currentNode: ComputedRef<SparkNode>
   /** 解析关联 DataView */
@@ -61,7 +61,7 @@ export interface ActionButtonRuntimeOptions {
   warn: (msg: string) => void
 }
 
-export interface ActionButtonRuntime {
+export type ActionButtonRuntime = {
   hasBuiltinAction: ComputedRef<boolean>
   /** 当前解析后的 ActionDescriptor（null 表示非内置或未识别） */
   actionDescriptor: ComputedRef<ActionDescriptor | null>

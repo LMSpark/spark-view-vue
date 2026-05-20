@@ -15,13 +15,12 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-export interface FieldPermissionProps<TValue>
-  extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> {
+export type FieldPermissionProps<TValue> = OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> & {
   modelValue?: TValue | undefined
   value?: TValue | undefined
 }
 
-interface UseFieldPermissionOptions<TValue> {
+type UseFieldPermissionOptions<TValue> = {
   props: FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue

@@ -84,9 +84,9 @@ const dataSet = SparkData.createDataSet({
 DataRelation 定义父子视图之间的依赖关系，支持级联操作和动态过滤。
 公共辅助函数也遵循同一条规矩：直接接受命名类型对象，而不是匿名 options。
 
-**接口定义：**
+**类型定义：**
 ```typescript
-interface DataRelation {
+type DataRelation = {
   parentTable: string             // 父表名（数据源标识）
   parentViewId?: string           // 父视图 ID（默认 'default'）
 
@@ -435,7 +435,7 @@ enum DataMember {
   MutatingError = 'mutatingError'
 }
 
-interface DataViewKeyDescriptor {
+type DataViewKeyDescriptor = {
   scope?: string        // 仅跨页面 #scope 前缀存在
   tableName: string
   viewId: string

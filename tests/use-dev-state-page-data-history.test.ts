@@ -12,19 +12,32 @@ vi.mock('@/services/http', () => ({
   http: { get: httpGet, post: httpPost, put: httpPut },
 }))
 
-vi.mock('@spark-view/spark-page-config', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config')>()
+vi.mock('@spark-view/spark-page-config/page/loading', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/page/loading')>()
+  const readObjectProp = (value: unknown, key: string): unknown => {
+    if (value === null || typeof value !== 'object') return undefined
+    return Object.getOwnPropertyDescriptor(value, key)?.value
+  }
+  const requireRecord = (value: unknown, message: string): Record<string, unknown> => {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      return Object.fromEntries(Object.entries(value))
+    }
+    throw new Error(message)
+  }
   const isStatus = (error: unknown, status: number): boolean => {
-    if (error === null || typeof error !== 'object') return false
-    const candidate = error as { status?: unknown; response?: { status?: unknown } }
-    return candidate.status === status || candidate.response?.status === status
+    const directStatus = readObjectProp(error, 'status')
+    const responseStatus = readObjectProp(readObjectProp(error, 'response'), 'status')
+    return directStatus === status || responseStatus === status
   }
   return {
     ...actual,
     createConfigLoader: vi.fn(() => ({
       loadPageFileContent: async (pageId: string, filename: string) => {
         try {
-          const data = await httpGet(`/api/pages-config/${pageId}/${filename}`) as Record<string, unknown>
+          const data = requireRecord(
+            await httpGet(`/api/pages-config/${pageId}/${filename}`),
+            `Invalid page file response: ${pageId}/${filename}`,
+          )
           return { success: true, data: String(data['content'] ?? ''), source: 'remote', timestamp: Date.now() }
         } catch (error) {
           if ((filename === 'script.js' || filename === 'style.css') && isStatus(error, 404)) {
@@ -49,9 +62,25 @@ vi.mock('@/services/api-paths', () => ({
   getNavApi: () => '/api/navigation',
 }))
 
-import { canonicalizePageDataJson } from '@spark-view/spark-page-config'
+import { canonicalizePageDataJson } from '@spark-view/spark-page-config/page/workspace'
 import { PAGE_FILE_NAMES, useDevState, type PageFileName } from '../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
+
+function requireValue<T>(value: T | null | undefined, message: string): T {
+  if (value !== null && value !== undefined) return value
+  throw new Error(message)
+}
+
+function readFirstChildType(children: unknown): string {
+  if (!Array.isArray(children)) throw new Error('Expected SparkNode children')
+  const firstChild = children[0]
+  if (firstChild === null || typeof firstChild !== 'object') {
+    throw new Error('Expected first SparkNode child')
+  }
+  const type = Object.getOwnPropertyDescriptor(firstChild, 'type')?.value
+  if (typeof type === 'string') return type
+  throw new Error('Expected first SparkNode child type')
+}
 
 function createPageDataText(name: string, compact = false): string {
   const payload = {
@@ -208,12 +237,12 @@ describe('useDevState documents SSOT', () => {
     doc.setText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
     doc.setText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
 
-    const treeNow = doc.model.value!.toJSON()
-    expect((treeNow.children?.[0] as { type?: string }).type).toBe('el-button')
+    const treeNow = requireValue(doc.model.value, 'rule model 未初始化').toJSON()
+    expect(readFirstChildType(treeNow.children)).toBe('el-button')
 
     expect(doc.undo()).toBe(true)
-    const treeUndo = doc.model.value!.toJSON()
-    expect((treeUndo.children?.[0] as { type?: string }).type).toBe('div')
+    const treeUndo = requireValue(doc.model.value, 'rule model 未初始化').toJSON()
+    expect(readFirstChildType(treeUndo.children)).toBe('div')
     expect(JSON.parse(doc.text.value)).toMatchObject({ type: 'div' })
   })
 

@@ -21,19 +21,19 @@ export type RendererTreeViewState = DataViewState & {
 }
 
 /** SparkData.createTreeManager 消费的种子节点形状。 */
-interface TreeManagerSeedNode extends Record<string, unknown> {
+type TreeManagerSeedNode = Record<string, unknown> & {
   id: string | number
   name: string
   parentId?: string | number | null
 }
 
-interface TreeFieldNames {
+type TreeFieldNames = {
   idField: string
   parentIdField: string
   textField: string
 }
 
-interface TreeSeedBuildResult {
+type TreeSeedBuildResult = {
   seedNodes: TreeManagerSeedNode[]
   hasParentLink: boolean
 }

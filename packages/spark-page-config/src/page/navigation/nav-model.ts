@@ -28,12 +28,11 @@ export type NavContextConfig = {
 
 export type NavContextInput = string | NavContextItem[] | NavContextConfig
 
-export type AppModuleBase<TChild = unknown> = {
+export type AppModuleBase = {
   id?: string
   title: string
   description?: string
   version?: string
-  children?: TChild[]
 }
 
 export type NavPermissionMode = 'none' | 'masked' | 'invisible'
@@ -50,8 +49,9 @@ export type AppNavigation = {
   permissionMode?: NavPermissionMode
 }
 
-export type NavNode = AppModuleBase<NavNode> & AppNavigation & {
+export type NavNode = AppModuleBase & AppNavigation & {
   id: string
+  children?: NavNode[]
   path?: string
   linkTarget?: LinkTarget
   redirect?: string
@@ -63,7 +63,7 @@ export type NavNode = AppModuleBase<NavNode> & AppNavigation & {
   refBroken?: boolean
 }
 
-export type AppNavRoot = AppModuleBase<NavNode> & {
+export type AppNavRoot = AppModuleBase & {
   childPlacement: 'header' | 'sidebar'
   children: NavNode[]
   homePath?: string

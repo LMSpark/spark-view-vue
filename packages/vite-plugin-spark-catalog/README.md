@@ -37,7 +37,7 @@
 - `@catalogInternal`：写入技术目录，但生成 `internal: true`、`configurable: false`；用于运行时内部组件、应用壳层组件、只能被代码组合而不能由 LLM 生成到页面配置的组件。
 - `@configurable false`：保留在目录中但标记不可配置；适合不是 internal、但暂时不允许页面配置直接使用的组件。
 - 第一段 summary：一句话说明用途、绑定语义、何时使用；中英混合短句即可。
-- 共享 `interface` / `type` 的 JSDoc 会成为 `schemaNodes.root.description`；复杂 props 请优先给类型本身写说明，再给字段写 property JSDoc。
+- 共享 `type` 的 JSDoc 会成为 `schemaNodes.root.description`；复杂 props 请优先给类型本身写说明，再给字段写 property JSDoc。
 - `@default <json>`：配置默认值 annotation。必须写 JSON literal，例如 `true`、`0`、`"small"`、`[]`、`{}`；真实运行默认值优先写在 `withDefaults`。
 - `@example <json>`：LLM 可直接照抄的配置示例。必须是 JSON literal；同一字段可写多个 `@example`。
 - `@param <name> <text>`：事件 payload 参数说明，仅用于 `defineEmits` call signature 或 tuple property；tuple property 可以写成 `change: [value: string]` 或 `'update:modelValue': [value: string]`。
@@ -51,7 +51,7 @@
  * @skill r-button
  * @description 声明式动作按钮，支持 action CRUD 动作、template 样式预设和显式 props 合并；适合 toolbar、table 操作列和表单提交区。
  */
-interface RButtonProps {
+type RButtonProps = {
   /**
    * Button action; 绑定数据视图动作，通常用于 toolbar 或 table 操作列。
    * @default "refresh"

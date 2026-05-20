@@ -14,7 +14,7 @@ import {
 import type { SparkNode, SparkCapabilityContext, ComponentRegistry, PageServiceCapability } from '@spark-view/spark-component'
 import type { DataRow, DataSetContract, DataView } from '@spark-view/spark-data'
 
-interface MountFieldInContextOptions {
+type MountFieldInContextOptions = {
   component: Component
   type: string
   model: DataRow
@@ -27,7 +27,7 @@ interface MountFieldInContextOptions {
   hostType?: string | undefined
 }
 
-interface SparkTestSystem {
+type SparkTestSystem = {
   registry: ComponentRegistry
   rootContext: SparkCapabilityContext
 }

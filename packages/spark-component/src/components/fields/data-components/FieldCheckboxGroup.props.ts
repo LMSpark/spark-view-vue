@@ -2,6 +2,4 @@ import type { SparkButtonOptionFieldProps, SparkNodeProps } from '../../shared-t
 
 export type CheckboxGroupMultiValue = Array<string | number | boolean>
 
-export interface RCheckboxGroupProps
-  extends SparkNodeProps,
-    SparkButtonOptionFieldProps<CheckboxGroupMultiValue> {}
+export type RCheckboxGroupProps = SparkNodeProps & SparkButtonOptionFieldProps<CheckboxGroupMultiValue> & {}

@@ -42,7 +42,6 @@ export {
 } from './types.js'
 
 export type {
-  AppServicesCapability,
   PageServiceCapability,
   PageMessageType,
   PageDialogResult,
@@ -59,7 +58,6 @@ export type {
 } from './capability-keys.js'
 
 export {
-  APP_SERVICES,
   PAGE_SERVICE,
   PAGE_PERMISSION_MODE,
 } from './capability-keys.js'
@@ -90,4 +88,3 @@ export {
   sparkFindNearestProviderByKeys,
   sparkConsumeFromProvider,
 } from '@spark-view/spark-utils'
-

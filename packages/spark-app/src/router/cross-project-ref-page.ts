@@ -7,7 +7,7 @@ import {
   parseCss,
   parsePageData,
   parseScript,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -16,7 +16,7 @@ import type {
   PageDataConfig,
   PageScriptConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
 import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'

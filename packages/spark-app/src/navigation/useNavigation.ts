@@ -1,7 +1,7 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-view/spark-utils'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
 import type {
   ChildPlacement,
   NavContextConfig,

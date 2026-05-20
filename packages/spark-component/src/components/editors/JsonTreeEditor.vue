@@ -220,11 +220,11 @@ import {
   type MutationResult,
   type TreeModel,
   type TreeDisplayNode,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/workspace'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 
-interface DisplayRow extends TreeDisplayNode {
+type DisplayRow = TreeDisplayNode & {
   displayKey: string
   valuePreview: string
   stringValue: string
@@ -262,7 +262,7 @@ function isDisplayRow(value: unknown): value is DisplayRow {
 
 // ── Props ─────────────────────────────────────────────────────
 
-interface JsonTreeEditorProps {
+type JsonTreeEditorProps = {
   type?: 'json-tree-editor'
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string

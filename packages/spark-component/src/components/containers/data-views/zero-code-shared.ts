@@ -4,7 +4,7 @@ import type { ValueRef } from '../../shared-types.js'
 
 type CrudEventDefaults = Parameters<typeof createCrudDispatcher>[1]
 
-interface CreateContainerCrudContextOptions {
+type CreateContainerCrudContextOptions = {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
   eventDefaults?: CrudEventDefaults

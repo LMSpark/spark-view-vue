@@ -33,7 +33,7 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
-interface Props extends SparkNodeProps {
+type Props = SparkNodeProps & {
   /** 步骤标题 */
   title?: string
   /** 步骤描述文本 */

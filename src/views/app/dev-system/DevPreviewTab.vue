@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import { BasePageConfigLoader, compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
+import { BasePageConfigLoader, compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config/page/loading'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -66,7 +66,7 @@ import type {
   PageDataConfig,
   PageScriptConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'

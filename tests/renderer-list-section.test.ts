@@ -5,6 +5,15 @@ import { RendererList, RendererSection, Spark, useSparkComponent } from '@spark-
 import { defineCapability } from '@spark-view/spark-utils'
 import { SparkData } from '@spark-view/spark-data'
 import { getMountedComponentApi, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
+import { requireFunction, requireRecord, requireString } from './helpers/runtime-guards'
+
+function setModelPermission(view: object, permission: Record<string, unknown>): void {
+  Reflect.set(view, '_modelPerm', permission)
+}
+
+function readConfigType(config: unknown): string {
+  return requireString(requireRecord(config, 'action config')['type'], 'action config type')
+}
 
 const SparkActionStub = defineComponent({
   props: {
@@ -16,8 +25,8 @@ const SparkActionStub = defineComponent({
   setup(props) {
     return () => h('button', {
       class: 'spark-action-stub',
-      'data-type': (props.config as Record<string, unknown>)['type'] as string,
-    }, (props.config as Record<string, unknown>)['type'] as string)
+      'data-type': readConfigType(props.config),
+    }, readConfigType(props.config))
   },
 })
 
@@ -57,7 +66,7 @@ describe('RendererList and RendererSection container integration', () => {
       },
     })
     const listView = ds.getView('Users', 'default')!
-    ;(listView as typeof listView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowExport: true }
+    setModelPermission(listView, { allowExport: true })
 
     const wrapper = mountWithPageDataSet(RendererList, {
       dataSet: ds,
@@ -71,7 +80,7 @@ describe('RendererList and RendererSection container integration', () => {
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
           class: 'biz-list-item',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-id': String(requireRecord(row, 'list slot row')['id'] ?? ''),
           'data-row-index': String(rowIndex ?? ''),
         }, 'biz-list-item'),
       },
@@ -131,7 +140,7 @@ describe('RendererList and RendererSection container integration', () => {
       slots: {
         default: ({ row, rowIndex }: Record<string, unknown>) => h('div', {
           class: 'biz-list-item',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-id': String(requireRecord(row, 'list permission slot row')['id'] ?? ''),
           'data-row-index': String(rowIndex ?? ''),
         }, 'biz-list-item'),
       },
@@ -257,7 +266,7 @@ describe('RendererList and RendererSection container integration', () => {
       slots: {
         default: ({ row }: Record<string, unknown>) => h('div', {
           class: 'biz-list-item',
-          'data-row-id': String((row as Record<string, unknown>)['id'] ?? ''),
+          'data-row-id': String(requireRecord(row, 'list click slot row')['id'] ?? ''),
         }, 'biz-list-item'),
       },
       global: {
@@ -288,7 +297,9 @@ describe('RendererList and RendererSection container integration', () => {
         'header-actions': ({ collapsed, toggleCollapsed }: Record<string, unknown>) => h('button', {
           class: 'biz-section-header-action',
           'data-collapsed': String(collapsed ?? ''),
-          onClick: () => (toggleCollapsed as () => void)(),
+          onClick: () => {
+            requireFunction(toggleCollapsed, 'section toggleCollapsed')()
+          },
         }, 'biz-section-header-action'),
         default: ({ title, collapsed }: Record<string, unknown>) => h('div', {
           class: 'biz-section-body',

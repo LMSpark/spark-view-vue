@@ -1,23 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { APP_SERVICES, type AppServicesCapability, type CapabilityContext } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import type { CapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
-
-type LoggerTestAppServices = AppServicesCapability & Required<Pick<AppServicesCapability, 'logger' | 'router'>>
-
-function createAppServices(logger: LoggerApi): LoggerTestAppServices {
-  return {
-    router: {
-      push: async () => undefined,
-      replace: async () => undefined,
-      back: () => undefined,
-      currentRoute: undefined,
-    },
-    logger,
-  }
-}
+import { createPageRuntimeServices, readPageRuntimeServices } from './logger-test-helpers'
 
 describe('page-level logger capability', () => {
-  it('stores logger under APP_SERVICES payload', () => {
+  it('stores logger under PAGE_RUNTIME_SERVICES payload', () => {
     let called = false
     const loggerImpl: LoggerApi = {
       info: (..._args: unknown[]) => { called = true },
@@ -29,11 +17,11 @@ describe('page-level logger capability', () => {
     const ctx: CapabilityContext = {
       id: 'ctx-logger',
       type: 'test',
-      capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
+      capabilities: new Map([[PAGE_RUNTIME_SERVICES, createPageRuntimeServices(loggerImpl)]])
     }
 
-    const appServices = ctx.capabilities.get(APP_SERVICES) as LoggerTestAppServices
-    appServices.logger.info('test')
+    const pageRuntimeServices = readPageRuntimeServices(ctx)
+    pageRuntimeServices.logger.info('test')
 
     expect(called).toBe(true)
   })
@@ -50,12 +38,12 @@ describe('page-level logger capability', () => {
     const ctx: CapabilityContext = {
       id: 'ctx-1',
       type: 'test',
-      capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
+      capabilities: new Map([[PAGE_RUNTIME_SERVICES, createPageRuntimeServices(loggerImpl)]])
     }
 
-    const appServices = ctx.capabilities.get(APP_SERVICES) as LoggerTestAppServices
-    await appServices.router.push('/orders')
-    appServices.logger.info('hello')
+    const pageRuntimeServices = readPageRuntimeServices(ctx)
+    await pageRuntimeServices.router.push('/orders')
+    pageRuntimeServices.logger.info('hello')
 
     expect(calledLocal).toBe(true)
   })

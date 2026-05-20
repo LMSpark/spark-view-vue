@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RAlertProps extends SparkNodeProps {
+export type RAlertProps = SparkNodeProps & {
   /** 标题 */
   title?: SparkText
   /** 描述文本 */

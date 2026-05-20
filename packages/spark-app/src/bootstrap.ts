@@ -257,8 +257,8 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
     // =========================================================================
     // 阶段 4: SPARK 组件系统和服务注册
     // =========================================================================
-    // SPARK 通过"能力系统"管理组件与服务：SparkApp.start() 已安装插件并暴露
-    // SPARK_REGISTRY_KEY；服务通过 consume(APP_SERVICES) 或直接 useRouter()/Logger() 获取。
+    // SPARK 通过"能力系统"管理组件与页面运行时服务：SparkApp.start() 已安装插件并暴露
+    // SPARK_REGISTRY_KEY；服务通过 sparkConsume(PAGE_RUNTIME_SERVICES) 或直接 useRouter()/Logger() 获取。
 
     logPhase('SERVICES', 'SPARK 能力系统服务已就绪')
 

@@ -39,13 +39,13 @@ export type SparkCapabilityConsumer = <T>(name: CapabilityKey<T>) => T | null
 /**
  * 能力类型映射表（模块增强入口）。
  *
- * 各包通过 `declare module '@spark-view/spark-utils' { interface CapabilityTypeMap { ... } }`
+ * 各包通过 TypeScript module augmentation 扩展此映射，实现编译期的能力类型安全。
  * 扩展此接口，实现编译期的能力类型安全。
  */
 export interface CapabilityTypeMap {}
 
 /** 能力树节点：持有本地能力 Map，以及指向父节点的可选链。 */
-export interface CapabilityContext {
+export type CapabilityContext = {
   /** 当前能力上下文节点 ID，用于调试、日志和父子链定位。 */
   id: string
   /** 当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。 */

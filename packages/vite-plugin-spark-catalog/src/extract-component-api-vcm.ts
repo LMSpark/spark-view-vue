@@ -110,7 +110,7 @@ export function resetChecker(): void {
  * 2) 提取结果结构
  * ========================================================================== */
 
-export interface VcmApiDescriptor {
+export type VcmApiDescriptor = {
   /** kebab-case 注册名 */
   type: string
   /** 相对于项目 root 的文件路径 */
@@ -119,7 +119,7 @@ export interface VcmApiDescriptor {
   emits: EmitEntry[]
 }
 
-export interface ExtractComponentApiVcmOptions {
+export type ExtractComponentApiVcmOptions = {
   /** 是否保留 VCM 注入的全局 props（class/style/key/ref 等） */
   includeGlobalProps?: boolean
 }
@@ -139,6 +139,12 @@ type RawTypeSymbolLike = {
   declarations?: RawTypeDeclarationLike[]
 }
 
+function isRawTypeSymbolLike(value: unknown): value is RawTypeSymbolLike {
+  if (value === null || typeof value !== 'object') return false
+  const declarations = readObjectProperty(value, 'declarations')
+  return declarations === undefined || Array.isArray(declarations)
+}
+
 type PropEntryWithIdentity = PropEntry & {
   __schemaIdentityKey?: string
   __schemaOwner?: SchemaOwner
@@ -148,17 +154,35 @@ type PropEntryWithIdentity = PropEntry & {
   __enumValueDocs?: Record<string, EnumValueDoc>
 }
 
-interface EnumValueDoc {
+type EnumValueDoc = {
   title?: string
   description?: string
 }
 
-interface EmitDoc {
+type EmitDoc = {
   description?: string
   params: EmitPayloadParamDoc[]
 }
 
 const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase()}/`
+
+function readObjectProperty(value: object, key: string): unknown {
+  let current: object | null = value
+  while (current !== null) {
+    const descriptor = Object.getOwnPropertyDescriptor(current, key)
+    if (descriptor !== undefined) return descriptor.value
+    const prototype: unknown = Object.getPrototypeOf(current)
+    current = prototype !== null && typeof prototype === 'object' ? prototype : null
+  }
+  return undefined
+}
+
+function callBooleanMethod(owner: object, key: string): boolean {
+  const method = readObjectProperty(owner, key)
+  if (typeof method !== 'function') return false
+  const result: unknown = Reflect.apply(method, owner, [])
+  return result === true
+}
 
 /* ==========================================================================
  * 3) 消费 VCM rawType
@@ -180,17 +204,19 @@ const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase
  */
 function getRawTypeStringLiteralVariants(rawType: unknown): string[] | undefined {
   if (rawType === null || typeof rawType !== 'object') return undefined
-  const rt = rawType as { isUnion?: () => boolean; types?: unknown[] }
-  if (typeof rt.isUnion !== 'function' || !rt.isUnion()) return undefined
-  const types = rt.types ?? []
+  if (!callBooleanMethod(rawType, 'isUnion')) return undefined
+  const rawTypes = readObjectProperty(rawType, 'types')
+  if (!Array.isArray(rawTypes)) return undefined
+  const typeItems: readonly unknown[] = rawTypes
   const variants: string[] = []
-  for (const t of types) {
+  for (const t of typeItems) {
     if (t === null || typeof t !== 'object') return undefined
-    const member = t as { isStringLiteral?: () => boolean; intrinsicName?: string; value?: unknown }
-    if (member.intrinsicName === 'undefined') continue
-    if (typeof member.isStringLiteral !== 'function' || !member.isStringLiteral()) return undefined
-    if (typeof member.value !== 'string') return undefined
-    variants.push(`"${member.value}"`)
+    const intrinsicName = readObjectProperty(t, 'intrinsicName')
+    const value = readObjectProperty(t, 'value')
+    if (intrinsicName === 'undefined') continue
+    if (!callBooleanMethod(t, 'isStringLiteral')) return undefined
+    if (typeof value !== 'string') return undefined
+    variants.push(`"${value}"`)
   }
   return variants.length > 0 ? variants : undefined
 }
@@ -199,9 +225,9 @@ function getRawTypeSymbols(rawType: unknown): RawTypeSymbolLike[] {
   if (rawType === null || typeof rawType !== 'object') return []
 
   const symbols = [
-    (rawType as { symbol?: RawTypeSymbolLike }).symbol,
-    (rawType as { aliasSymbol?: RawTypeSymbolLike }).aliasSymbol,
-  ].filter((value): value is RawTypeSymbolLike => value !== undefined)
+    readObjectProperty(rawType, 'symbol'),
+    readObjectProperty(rawType, 'aliasSymbol'),
+  ].filter(isRawTypeSymbolLike)
 
   return symbols
 }
@@ -234,7 +260,7 @@ function getRawTypeOwner(rawType: unknown): SchemaOwner | undefined {
 function getRawTypeIdentityKey(rawType: unknown): string | undefined {
   if (rawType === null || typeof rawType !== 'object') return undefined
 
-  const rawTypeId = (rawType as { id?: unknown }).id
+  const rawTypeId = readObjectProperty(rawType, 'id')
   return typeof rawTypeId === 'number' ? `ts:${rawTypeId}` : undefined
 }
 
@@ -519,8 +545,8 @@ function readDefineEmitsTypeArgument(source: string): string | undefined {
 
   const start = markerIndex + marker.length
   let depth = 1
-  for (let index = start; index < source.length; index++) {
-    const char = source[index]
+  for (const [offset, char] of Array.from(source.slice(start)).entries()) {
+    const index = start + offset
     const previous = source[index - 1]
     if (char === '<') depth++
     else if (char === '>' && previous !== '=') {
@@ -904,7 +930,8 @@ function isVcmNoiseDescription(description: string): boolean {
 
 function readVcmSchemaDescription(vcmSchema: PropertyMetaSchema): string | undefined {
   if (typeof vcmSchema === 'string') return undefined
-  const description = normalizeDescription((vcmSchema as { description?: string }).description ?? '').trim()
+  const rawDescription = readObjectProperty(vcmSchema, 'description')
+  const description = normalizeDescription(typeof rawDescription === 'string' ? rawDescription : '').trim()
   if (description.length === 0 || isVcmNoiseDescription(description)) return undefined
   return stripCatalogDocTags(description)
 }

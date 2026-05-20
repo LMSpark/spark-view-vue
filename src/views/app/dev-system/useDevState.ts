@@ -14,42 +14,46 @@ import { refreshRoutes } from '@spark-view/spark-app'
 import {
   NavigationConfigClient,
   NavigationEditSession,
-  PageConfigEditWorkspace,
-  PageConfigFileApi,
-  PageConfigFileLifecycle,
   applyNavigationNodeDraftToNode,
   applyNodeKindPresetToDraft,
   buildNavRoot,
-  canUseModuleNodeKind as canUseModuleNodeKindForTree,
+  canUseModuleNodeKind,
   createChildPageNode,
-  createConfigLoader,
   createNavigationNodeDraft,
   createReservedRootGroup,
   createRootModuleNode,
   findConfigNodeByPageId,
   findNodeById,
   findNodeLocation,
-  PAGE_FILE_NAMES,
-  forEachDocument,
   isConfigNodeKind,
-  isSystemRootDirectory as isSystemRootDirectoryNode,
+  isSystemRootDirectory,
   normalizeNavRoot,
   normalizePageIdFromPath,
-  type BasePageConfigLoader,
   type LinkTarget,
   type NavNode,
   type NavNodeKind,
   type NavigationNodeDraft,
+} from '@spark-view/spark-page-config/page/navigation'
+import {
+  PageConfigFileApi,
+  createConfigLoader,
+  type BasePageConfigLoader,
   type PageConfigPageSummary,
   type PageConfigFileVersionSummary,
+} from '@spark-view/spark-page-config/page/loading'
+import {
+  PageConfigEditWorkspace,
+  PageConfigFileLifecycle,
+  PAGE_FILE_NAMES,
+  forEachDocument,
   type PageFileName,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/workspace'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
 export type { PageConfigFileVersionSummary }
-export type { PageFileDocument } from '@spark-view/spark-page-config'
+export type { PageFileDocument } from '@spark-view/spark-page-config/page/workspace'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -283,12 +287,12 @@ export function useDevState() {
   // 导航树工具
   // ═══════════════════════════════════════════════════════════
 
-  function isSystemRootDirectory(node: NavNode | null | undefined): boolean {
-    return isSystemRootDirectoryNode(node, treeData.value)
+  function isSystemRootDirectoryInTree(node: NavNode | null | undefined): boolean {
+    return isSystemRootDirectory(node, treeData.value)
   }
 
-  function canUseModuleNodeKind(node: NavNode | null | undefined): boolean {
-    return canUseModuleNodeKindForTree(node, treeData.value)
+  function canUseModuleNodeKindInTree(node: NavNode | null | undefined): boolean {
+    return canUseModuleNodeKind(node, treeData.value)
   }
 
   function createDraftFromEditForm(): NavigationNodeDraft {
@@ -488,14 +492,14 @@ export function useDevState() {
   function applyNavChanges(): void {
     if (!selectedNode.value) return
     const node = selectedNode.value
-    if (isSystemRootDirectory(node)) {
+    if (isSystemRootDirectoryInTree(node)) {
       loadNodeToForm(node)
       navDirty.value = false
       addStatus(`系统目录 ${node.title} 不可修改目录属性，仅可编辑子项`, 'warning')
       return
     }
 
-    if (editForm.nodeKind === 'module' && !canUseModuleNodeKind(node)) {
+    if (editForm.nodeKind === 'module' && !canUseModuleNodeKindInTree(node)) {
       applyNodeKindPreset('page')
       addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
     }
@@ -534,7 +538,7 @@ export function useDevState() {
     autoSaveTimer = null
     if (!navDirty.value) { autoSaveStatus.value = 'idle'; return }
     if (!selectedNode.value) { autoSaveStatus.value = 'idle'; return }
-    if (isSystemRootDirectory(selectedNode.value)) { autoSaveStatus.value = 'idle'; return }
+    if (isSystemRootDirectoryInTree(selectedNode.value)) { autoSaveStatus.value = 'idle'; return }
 
     autoSaveStatus.value = 'saving'
     try {
@@ -572,7 +576,7 @@ export function useDevState() {
     applyNavChanges()
     if (!selectedNode.value) return false
     const node = selectedNode.value
-    if (isSystemRootDirectory(node)) {
+    if (isSystemRootDirectoryInTree(node)) {
       navDirty.value = false
       addStatus(`系统目录 ${node.title} 仅允许编辑子项，跳过节点保存`, 'warning')
       return true
@@ -717,7 +721,7 @@ export function useDevState() {
   }
 
   function handleNodeKindChange(kind: NavNodeKind): void {
-    if (kind === 'module' && !canUseModuleNodeKind(selectedNode.value)) {
+    if (kind === 'module' && !canUseModuleNodeKindInTree(selectedNode.value)) {
       addStatus('页面下不能创建模块', 'warning')
       const fallbackKind = selectedNode.value?.nodeKind ?? 'page'
       applyNodeKindPreset(fallbackKind)
@@ -842,7 +846,7 @@ export function useDevState() {
   }
 
   function removeNodeFromTree(node: { parent: { data: NavNode } }, data: NavNode): void {
-    if (isSystemRootDirectory(data)) {
+    if (isSystemRootDirectoryInTree(data)) {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
     }
@@ -876,7 +880,7 @@ export function useDevState() {
   }
 
   async function moveNodeInTree(data: NavNode): Promise<void> {
-    if (isSystemRootDirectory(data)) return
+    if (isSystemRootDirectoryInTree(data)) return
     const location = findNodeLocation(treeData.value, data.id)
     if (!location) return
     navSaving.value = true
@@ -1013,9 +1017,9 @@ export function useDevState() {
     handleNodeKindChange,
     addRootNode,
     hasReservedRootGroup,
-    isSystemRootDirectory,
+    isSystemRootDirectory: isSystemRootDirectoryInTree,
     restoreReservedRootGroup,
-    canUseModuleNodeKind,
+    canUseModuleNodeKind: canUseModuleNodeKindInTree,
     addChildNode,
     removeNodeFromTree,
     moveNodeInTree,

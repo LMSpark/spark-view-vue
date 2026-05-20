@@ -10,7 +10,7 @@ App / main.ts
 SparkPlugin
   ↓  Vue DI: SPARK_REGISTRY_KEY, internal root capability context
 PageRenderer (SparkPageRenderer + useRendererSetup)
-  ↓  sparkProvide(APP_SERVICES, ...)    SPARK 能力系统
+  ↓  sparkProvide(PAGE_RUNTIME_SERVICES, ...)    SPARK 能力系统
   ↓  sparkProvide(PAGE_DATASET, ...)
 Table容器 (e.g. r-table)
   ↓  sparkConsume(PAGE_DATASET) → DataSet
@@ -77,8 +77,8 @@ Spark.registerAll({
 // SparkPageRenderer 内部（简化）
 const { provideCapability } = useRendererSetup('page-renderer', pageLogger)
 
-// 1. 注入应用服务（路由、logger、租户等）
-provideCapability(APP_SERVICES, buildAppServices(router, pageLogger))
+// 1. 注入页面运行时服务（路由、logger、租户等）
+provideCapability(PAGE_RUNTIME_SERVICES, buildPageRuntimeServices(router, pageLogger))
 
 // 2. 加载页面配置并创建 DataSet
 const dataSet = SparkData.createDataSet(pageConfig.dataset)
@@ -87,7 +87,7 @@ const dataSet = SparkData.createDataSet(pageConfig.dataset)
 provideCapability(PAGE_DATASET, dataSet)
 ```
 
-所有子组件都可通过 `sparkConsume(APP_SERVICES)` 和 `sparkConsume(PAGE_DATASET)` 获取这两个关键能力。
+所有子组件都可通过 `sparkConsume(PAGE_RUNTIME_SERVICES)` 和 `sparkConsume(PAGE_DATASET)` 获取这两个关键能力。
 
 ---
 
@@ -205,7 +205,7 @@ rootContext (SparkPlugin 创建)
     ↓
 PageRenderer context
   capabilities = Map {
-    APP_SERVICES → { router, logger }
+    PAGE_RUNTIME_SERVICES → { router, logger }
     PAGE_DATASET → DataSet
   }
     ↓
@@ -227,25 +227,25 @@ r-row 或 r-cell context
 
 | 键 | 定义包 | 类型 | 提供者 | 消费者 |
 |---|---|---|---|---|
-| `APP_SERVICES` | `spark-component` | `IAppServicesCapability` | PageRenderer | 任意业务组件 |
-| `PAGE_SERVICE` | `spark-component` | `IPageServiceCapability` | — | — |
-| `PAGE_DATASET` | `spark-component` | `IDataSet` | PageRenderer | 表容器 |
-| `DATA_SOURCE` | `spark-component` | `IDataSource` | 表容器 | 行/单元格 |
+| `PAGE_RUNTIME_SERVICES` | `spark-page-config/page` | `PageRuntimeServicesCapability` | PageRenderer | 任意业务组件 |
+| `PAGE_SERVICE` | `spark-component` | `PageServiceCapability` | — | — |
+| `PAGE_DATASET` | `spark-component` | `DataSetContract` | PageRenderer | 表容器 |
+| `DATA_SOURCE` | `spark-component` | `DataView` | 表容器 | 行/单元格 |
 
-> `useSparkComponent` 返回的 `logger` 统一来自页面层 `APP_SERVICES.logger`；未提供时回退到 `console`。
+> `useSparkComponent` 返回的 `logger` 统一来自页面层 `PAGE_RUNTIME_SERVICES.logger`；未提供时 fail-fast。
 
 ---
 
 ## 8. Logger 体系
 
 ```typescript
-import { APP_SERVICES } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 
 // 应用层统一 logger（PageRenderer 已自动注入）
-sparkProvide(APP_SERVICES, { logger: appLogger, router })
+sparkProvide(PAGE_RUNTIME_SERVICES, { logger: appLogger, router })
 ```
 
-每个组件调用 `logger.info()` 时，`useSparkComponent` 内部的代理只解析页面层 `APP_SERVICES.logger`，无需手动消费。
+每个组件调用 `logger.info()` 时，`useSparkComponent` 内部的代理只解析页面层 `PAGE_RUNTIME_SERVICES.logger`，无需手动消费。
 
 ---
 

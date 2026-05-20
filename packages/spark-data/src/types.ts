@@ -8,7 +8,7 @@ import type { DataView } from './data-view'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface SparkEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
+export type SparkEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> = {
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
@@ -19,7 +19,7 @@ export interface SparkEventEmitter<TEventMap extends Record<string, any[]> = Rec
 /**
  * DataSet 用到的应用服务最小形状（避免依赖上层能力体系类型）。
  */
-export interface DataSetAppServices {
+export type DataSetAppServices = {
   router?: {
     currentRoute: unknown
   }
@@ -47,7 +47,7 @@ export interface DataSetAppServices {
  * })
  * ```
  */
-export interface ViewChangeHandlers {
+export type ViewChangeHandlers = {
   currentRowChanged?: (tableName: string, viewId: string, currentRow: DataRow | null, originatorId?: string) => void
   selectedRowsChanged?: (tableName: string, viewId: string, selectedRows: DataRow[], originatorId?: string) => void
   rowsChanged?: (tableName: string, viewId: string) => void
@@ -69,7 +69,7 @@ export interface ViewChangeHandlers {
  * 采用类似JWT的设计理念，权限信息由服务端一次性计算并返回前端，
  * 前端保存权限快照，在数据更新时回传给服务端，避免重复计算。
  */
-export interface InstancePermission {
+export type InstancePermission = {
   allowCreateChild?: boolean
   allowDelete?: boolean
   editableFields?: string[]
@@ -86,7 +86,7 @@ export interface InstancePermission {
  * 权限信息在首次数据加载时由服务端计算并缓存，
  * 前端负责维护和传递权限状态。
  */
-export interface ModelPermission {
+export type ModelPermission = {
   /** 是否允许新增记录。 */
   allowCreate?: boolean
   /** 是否允许导入记录。 */
@@ -141,7 +141,7 @@ export type DataRow = Record<string, unknown> & {
 }
 
 /** DataView 编辑态字段变更事件。 */
-export interface DataViewEditingFieldChangeEvent {
+export type DataViewEditingFieldChangeEvent = {
   tableName: string
   viewId: string
   rowId: PkValue
@@ -153,7 +153,7 @@ export interface DataViewEditingFieldChangeEvent {
 }
 
 /** DataView 编辑态应用结果。 */
-export interface DataViewApplyEditingRowsResult {
+export type DataViewApplyEditingRowsResult = {
   appliedCount: number
   failedCount: number
   failedIds: PkValue[]
@@ -161,7 +161,7 @@ export interface DataViewApplyEditingRowsResult {
 }
 
 /** DataSet 级保存目标：用于一次提交一个主从编辑范围。 */
-export interface DataSetSaveChangesViewSelector {
+export type DataSetSaveChangesViewSelector = {
   tableName: string
   viewId?: string
   ids?: PkValue[]
@@ -169,7 +169,7 @@ export interface DataSetSaveChangesViewSelector {
 
 export type DataSetSaveChangesMode = 'perView' | 'transaction'
 
-export interface DataSetTransactionOperation {
+export type DataSetTransactionOperation = {
   operationId?: string
   tableName: string
   op: 'create' | 'update' | 'delete'
@@ -177,19 +177,19 @@ export interface DataSetTransactionOperation {
   pk?: Record<string, unknown>
 }
 
-export interface DataSetTransactionRequest {
+export type DataSetTransactionRequest = {
   requestId?: string
   operations: DataSetTransactionOperation[]
 }
 
-export interface DataSetTransactionOperationResult {
+export type DataSetTransactionOperationResult = {
   operationId?: string
   status?: string
   result?: unknown
   error?: string
 }
 
-export interface DataSetTransactionResponse {
+export type DataSetTransactionResponse = {
   success?: boolean
   transactionId?: string
   requestId?: string
@@ -198,23 +198,23 @@ export interface DataSetTransactionResponse {
   replayed?: boolean
 }
 
-export interface DataSetSaveChangesTransactionConfig {
+export type DataSetSaveChangesTransactionConfig = {
   endpoint: HttpEndpoint
   requestId?: string
 }
 
-export interface DataSetSaveChangesTransactionOptions {
+export type DataSetSaveChangesTransactionOptions = {
   endpoint?: HttpEndpoint
   requestId?: string
 }
 
-export interface DataSetSaveChangesConfig {
+export type DataSetSaveChangesConfig = {
   mode?: DataSetSaveChangesMode
   transaction?: DataSetSaveChangesTransactionConfig
 }
 
 /** DataSet 级保存选项。 */
-export interface DataSetSaveChangesOptions {
+export type DataSetSaveChangesOptions = {
   views?: DataSetSaveChangesViewSelector[]
   applyEditingRows?: boolean
   mode?: DataSetSaveChangesMode
@@ -222,7 +222,7 @@ export interface DataSetSaveChangesOptions {
 }
 
 /** DataSet 级单视图保存结果。 */
-export interface DataSetSaveChangesViewResult {
+export type DataSetSaveChangesViewResult = {
   tableName: string
   viewId: string
   appliedEditingRows: number
@@ -236,7 +236,7 @@ export interface DataSetSaveChangesViewResult {
 }
 
 /** DataSet 级跨视图保存结果。 */
-export interface DataSetSaveChangesResult {
+export type DataSetSaveChangesResult = {
   viewCount: number
   appliedEditingRows: number
   failedEditingRows: number
@@ -273,7 +273,7 @@ export interface DataSetSaveChangesResult {
  * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */
-export interface DataSource {
+export type DataSource = {
   /** 当前视图行集合，表格/列表/树等数据容器的主要渲染输入。 */
   rows?: readonly DataRow[]
   /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
@@ -367,7 +367,7 @@ export type AggregateResultRow = Record<string, AggregateResultValue>
  * }
  * ```
  */
-export interface AggregateColumnConfig {
+export type AggregateColumnConfig = {
   /** 聚合函数类型 */
   type: AggregateType
   /**
@@ -408,18 +408,9 @@ export type ColumnType =
 /**
  * ColumnType → TypeScript 类型映射表。
  *
- * 用于类型匹配、泛型推断，也可用 `declare module` 扩展自定义类型映射。
- *
- * @example
- * ```ts
- * declare module '@spark-view/spark-data' {
- *   interface ColumnTypeMap {
- *     json: Record<string, unknown>
- *   }
- * }
- * ```
+ * 用于类型匹配、泛型推断；未知或业务自定义列类型会推断为 unknown。
  */
-export interface ColumnTypeMap {
+export type ColumnTypeMap = {
   // 数字类
   number: number; int: number; integer: number
   decimal: number; float: number; double: number
@@ -458,10 +449,10 @@ export type InferColumnValue<T extends ColumnType> =
  * 渲染属性均为可选，不影响纯数据层使用。
  * UI 组件通过 `DataSource.columns` 或 `DataView.columns` 读取列元数据。
  */
-export interface DataColumn {
+export type DataColumn = {
   name: string
   /**
-   * 列值类型。已知类型见 `ColumnType`，支持自定义扩展（通过 `ColumnTypeMap` 声明合并）。
+   * 列值类型。已知类型见 `ColumnType`；未知业务类型按 unknown 处理。
    *
    * 常用值：`'string'` | `'number'` | `'boolean'` | `'date'` | `'datetime'`
    */
@@ -608,7 +599,7 @@ export type TableBusinessCategory =
  * 这组字段不表达运行时行为，而是补充表的“资源身份”和“业务角色”。
  * 适合给 AI 规划、管理后台、建模工具、导出元数据时消费。
  */
-export interface TableSemanticMetadata {
+export type TableSemanticMetadata = {
   /** 资源类型：标记该表背后对应的资源来源或承载形态，并决定该表是否允许直接声明静态 rows。 */
   resourceType?: TableResourceType
   /** 资源 ID：对应外部系统中的稳定标识，如库表名、字典编码、第三方资源编码或静态资源标识。 */
@@ -623,7 +614,7 @@ export interface TableSemanticMetadata {
  * 语义：描述“每个操作对应哪个接口”。
  * 这里只定义各 CRUD / Tree 操作对应的 URL、HTTP 方法和端点级参数，不包含重试、校验、转换等运行策略。
  */
-export interface CrudApi extends TreeApi {
+export type CrudApi = TreeApi & {
   create?: HttpEndpoint
   retrieve?: HttpEndpoint
   update?: HttpEndpoint
@@ -646,7 +637,7 @@ export interface CrudApi extends TreeApi {
 }
 
 /** 单条记录拉取选项。 */
-export interface RetrieveRecordOptions {
+export type RetrieveRecordOptions = {
   /** 是否将拉取结果同步回本地 rows。默认 true。 */
   syncToRows?: boolean
   /** 是否将拉取结果设为当前行。默认 false。 */
@@ -654,7 +645,7 @@ export interface RetrieveRecordOptions {
 }
 
 /** HTTP端点定义 */
-export interface HttpEndpoint {
+export type HttpEndpoint = {
   /** 请求URL */
   url: string
   /** HTTP方法 */
@@ -672,7 +663,7 @@ export interface HttpEndpoint {
 // ===== 序列化接口 =====
 
 /** 数据视图元数据 */
-export interface ViewMetadata {
+export type ViewMetadata = {
   tableName?: string
   viewId?: string
   /**
@@ -761,7 +752,7 @@ export interface ViewMetadata {
  * - 所有默认视图字段均必须进入 `views.default`
  * - 表级不再承载 `rows / autoCurrentFirst / autoSelectFirst / page / pageSize` 等视图字段
  */
-export interface TableMetadata extends TableSemanticMetadata {
+export type TableMetadata = TableSemanticMetadata & {
   tableName: string
   columns: DataColumn[]
   /**
@@ -782,7 +773,7 @@ export interface TableMetadata extends TableSemanticMetadata {
  *
  * 顶层只承载数据集自身字段；表的默认视图数据必须继续下沉到 `tables.*.views.default`。
  */
-export interface DataSetMetadata {
+export type DataSetMetadata = {
   /**
    * Schema 格式版本（用于未来迁移兼容）。
    * 当前 canonical 结构为 2：`tables -> views -> default`。
@@ -809,7 +800,7 @@ export interface DataSetMetadata {
  *
  * 该结构不参与运行时数据计算，仅用于设计器/编辑器恢复画布布局。
  */
-export interface DataSetLayoutMetadata {
+export type DataSetLayoutMetadata = {
   /** 表名 -> 画布位置。 */
   tablePositions?: Record<string, { x: number; y: number }>
 }
@@ -837,7 +828,7 @@ export type DependencyType =
 export type SortDirection = 'asc' | 'desc'
 
 /** 排序规则项（direction 默认 'asc'） */
-export interface SortField {
+export type SortField = {
   field: string
   direction?: SortDirection
 }
@@ -878,7 +869,7 @@ export type FilterOperator =
  * 将过滤值绑定到父视图当前行的某个字段，而非写死静态值。
  * 例如 `{ kind: 'field', field: 'deptId' }` 表示"用当前行的 deptId 字段值做过滤"。
  */
-export interface FilterFieldRef {
+export type FilterFieldRef = {
   kind: 'field'
   field: string
 }
@@ -938,7 +929,7 @@ export type FilterExpression =
  * { "parentTable": "Users", "childTable": "Orders", "childField": "userId" }
  * ```
  */
-export interface TableRelation {
+export type TableRelation = {
   /** 关系名称（可选，用于日志和调试） */
   relationName?: string
   /** 父表名 */
@@ -985,7 +976,7 @@ export interface TableRelation {
  * }
  * ```
  */
-export interface ViewDependency {
+export type ViewDependency = {
   /** 与 TableRelation 对齐的父表名 */
   parentTable: string
   /** 与 TableRelation 对齐的子表名 */
@@ -1006,7 +997,7 @@ export interface ViewDependency {
  * @internal 仅供 spark-data 内部消费（CascadeDelegate / DataView）。
  * 外部配置使用 `TableRelation` + `ViewDependency`。
  */
-export interface DataRelation {
+export type DataRelation = {
   parentTable: string
   parentViewId?: string
   childTable: string
@@ -1032,7 +1023,7 @@ export interface DataRelation {
  * 每个端点均继承 `HttpEndpoint`，`url` 中可使用 `{id}`、`{parentId}` 等路径占位符。
  * flat 模式（node/children/path/subtree/move/search）与 nested 模式（nested/nestedSearch）可按需配置，互不依赖。
  */
-export interface TreeApi {
+export type TreeApi = {
   /**
    * /tree/node — 获取单节点详情
    * params: id
@@ -1097,7 +1088,7 @@ export interface TreeApi {
  *
  * 树操作 HTTP 接口族配置在 `CrudApi`；模型层始终存储平铺数据，树形态由视图层组织。
  */
-export interface TreeConfig {
+export type TreeConfig = {
   idField?: string
   parentIdField?: string
   textField?: string
@@ -1112,7 +1103,7 @@ export interface TreeConfig {
 }
 
 /** 平面树节点 */
-export interface FlatTreeNode {
+export type FlatTreeNode = {
   id: string | number
   parentId?: string | number | null
   name: string
@@ -1123,12 +1114,12 @@ export interface FlatTreeNode {
 }
 
 /** 嵌套树节点 */
-export interface NestedTreeNode extends FlatTreeNode {
+export type NestedTreeNode = FlatTreeNode & {
   children: NestedTreeNode[]
 }
 
 /** 树路径 */
-export interface TreePath {
+export type TreePath = {
   pathIds: Array<string | number>
   pathNodes?: FlatTreeNode[]
 }
@@ -1138,7 +1129,7 @@ export interface TreePath {
  * 对应 /tree/nested/search 接口返回格式
  * 匹配节点 + 从根到该节点的祖先链（含自身），前端可直接展开定位
  */
-export interface NestedTreeSearchResult {
+export type NestedTreeSearchResult = {
   /** 匹配的节点 */
   node: FlatTreeNode
   /** 从根到该节点的祖先链（含自身，顺序为根→叶） */
@@ -1186,7 +1177,7 @@ export enum RequestState {
  * 消费者（渲染层、能力系统）应依赖此接口而非具体 DataSet 类，
  * 便于测试 mock 与未来扩展。
  */
-export interface DataSetContract {
+export type DataSetContract = {
   /** 数据集名称 */
   readonly dataSetName: string
   /** 数据表集合 */
@@ -1257,9 +1248,9 @@ export interface DataSetContract {
   getView(tableName: string, viewId?: string): DataView | undefined
   /** 保存 DataSet 范围内的编辑态和 staged 变更；默认按表关系父表先于子表提交所有有变更视图。 */
   saveChanges(options?: DataSetSaveChangesOptions): Promise<CrudResult<DataSetSaveChangesResult>>
-  /** 注入 APP_SERVICES（用于 URL 模板 tenant/project 作用域解析） */
+  /** 注入页面运行时服务（用于 URL 模板 tenant/project 作用域解析） */
   setAppServices(appServices: DataSetAppServices): void
-  /** 注入页面路由快照（APP_SERVICES 缺失时用于 URL 模板 tenant/project 作用域解析） */
+  /** 注入页面路由快照（页面运行时服务缺失时用于 URL 模板 tenant/project 作用域解析） */
   setPageRoute(route: unknown): void
   /** 生成端点 URL 模板上下文参数 */
   getRequestTemplateParams(): Record<string, unknown>
@@ -1301,7 +1292,7 @@ export interface DataSetContract {
 /**
  * CRUD操作结果
  */
-export interface CrudResult<T = unknown> {
+export type CrudResult<T = unknown> = {
   success: boolean
   data?: T
   error?: Error
@@ -1313,7 +1304,7 @@ export interface CrudResult<T = unknown> {
 /**
  * 分页查询参数 - 支持权限快照传递
  */
-export interface QueryParams {
+export type QueryParams = {
   page?: number
   pageSize?: number
   sort?: string
@@ -1339,7 +1330,7 @@ export interface QueryParams {
 /**
  * 批量操作结果
  */
-export interface BatchResult {
+export type BatchResult = {
   successCount: number
   failureCount: number
   results: CrudResult[]
@@ -1353,7 +1344,7 @@ export interface BatchResult {
  * 语义：描述“调用端点时应用什么策略”。
  * 这里定义超时、重试、权限校验、数据校验，以及请求/响应转换等运行期策略，不负责声明端点映射。
  */
-export interface CrudOperationConfig {
+export type CrudOperationConfig = {
   timeout?: number
   retryCount?: number
   skipPermissionCheck?: boolean

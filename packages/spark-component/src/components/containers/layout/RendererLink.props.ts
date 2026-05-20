@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RLinkProps extends SparkNodeProps {
+export type RLinkProps = SparkNodeProps & {
   /** 链接文本 */
   label?: SparkText
   /** 链接类型 */

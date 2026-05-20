@@ -13,7 +13,7 @@ import {
 import { isDataRecord } from '../data-row-utils.js'
 import type { RendererTreeApi } from './types'
 
-export interface TreeNode {
+export type TreeNode = {
   id?: string | number
   label?: string
   name?: string
@@ -22,7 +22,7 @@ export interface TreeNode {
   [key: string]: unknown
 }
 
-export interface ElTreeNode {
+export type ElTreeNode = {
   level: number
   expanded: boolean
   data?: DataRow
@@ -30,11 +30,11 @@ export interface ElTreeNode {
   [key: string]: unknown
 }
 
-export interface ElTreeComponent {
+export type ElTreeComponent = {
   [key: string]: unknown
 }
 
-export interface NativeTreeLike {
+export type NativeTreeLike = {
   getCurrentNode?: () => unknown
   setCurrentKey?: (key: string | number | null) => void
   filter?: (value: string) => void
@@ -48,7 +48,7 @@ export interface NativeTreeLike {
   getNode?: (key: string | number) => NativeTreeNodeLike | undefined
 }
 
-export interface NativeTreeNodeLike {
+export type NativeTreeNodeLike = {
   expand?: () => void
   data?: DataRow
 }
@@ -62,13 +62,13 @@ export type TreeEventHandler = (
   control: TreeEventControl,
 ) => void | Promise<void>
 
-interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
+type RendererTreeBehaviorProps = Readonly<Record<string, unknown>> & {
   onNodeClick?: TreeEventHandler | undefined
   onNodeExpand?: TreeEventHandler | undefined
   onNodeCollapse?: TreeEventHandler | undefined
 }
 
-interface RendererTreeZeroCodeOptions {
+type RendererTreeZeroCodeOptions = {
   props: RendererTreeBehaviorProps
   resolvedView: ValueRef<DataView | null>
   treeData: ValueRef<DataRow[]>

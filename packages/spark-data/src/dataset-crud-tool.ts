@@ -35,7 +35,7 @@ function isCrudResult(value: unknown): value is CrudResult {
 /**
  * 创建数据表时的输入参数。
  */
-interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
+type DataSetCrudToolCreateTableOptions = TableSemanticMetadata & {
   /**
    * 表名。
    * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。
@@ -64,7 +64,7 @@ interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
 /**
  * 更新数据表时的输入参数。
  */
-interface DataSetCrudToolUpdateTableOptions {
+type DataSetCrudToolUpdateTableOptions = {
   /**
    * 需要新增的列。
    * 内部统一走 DataTable.addColumns，保证 validator 与 DataView 列缓存同步刷新。

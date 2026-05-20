@@ -1,23 +1,11 @@
 import { describe, it, expect } from 'vitest'
-import { APP_SERVICES, type AppServicesCapability, type CapabilityContext } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import type { CapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
-
-type LoggerTestAppServices = AppServicesCapability & Required<Pick<AppServicesCapability, 'logger' | 'router'>>
-
-function createAppServices(logger: LoggerApi): LoggerTestAppServices {
-  return {
-    router: {
-      push: async () => undefined,
-      replace: async () => undefined,
-      back: () => undefined,
-      currentRoute: undefined,
-    },
-    logger,
-  }
-}
+import { createPageRuntimeServices, readPageRuntimeServices } from './logger-test-helpers'
 
 describe('page logger transport payload', () => {
-  it('passes structured payload through APP_SERVICES.logger', () => {
+  it('passes structured payload through PAGE_RUNTIME_SERVICES.logger', () => {
     let written = ''
     const loggerImpl: LoggerApi = {
       info: (..._args: unknown[]) => { written += JSON.stringify(_args) },
@@ -29,11 +17,11 @@ describe('page logger transport payload', () => {
     const ctx: CapabilityContext = {
       id: 'ctx-transport',
       type: 'test',
-      capabilities: new Map([[APP_SERVICES, createAppServices(loggerImpl)]])
+      capabilities: new Map([[PAGE_RUNTIME_SERVICES, createPageRuntimeServices(loggerImpl)]])
     }
 
-    const appServices = ctx.capabilities.get(APP_SERVICES) as LoggerTestAppServices
-    appServices.logger.info('hello', { a: 1 })
+    const pageRuntimeServices = readPageRuntimeServices(ctx)
+    pageRuntimeServices.logger.info('hello', { a: 1 })
 
     expect(written).toContain('hello')
   })

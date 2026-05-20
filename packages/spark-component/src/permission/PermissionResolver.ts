@@ -15,7 +15,7 @@ import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 // ── 动作权限上下文 ──
 
-export interface PermissionActionContext {
+export type PermissionActionContext = {
   modelPermission?: ModelPermission
   row?: DataRow | null
   permissionMode?: NavPermissionMode | undefined
@@ -31,7 +31,7 @@ export type PermissionActionName =
 
 export type PermissionAction = PermissionActionName | (string & {})
 
-interface ResolvedPermAction {
+type ResolvedPermAction = {
   action?: PermissionAction
 }
 

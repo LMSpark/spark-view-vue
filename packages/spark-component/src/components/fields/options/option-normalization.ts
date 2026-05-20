@@ -1,6 +1,6 @@
 export type FieldOptionValue = string | number | boolean
 
-export interface FieldOption {
+export type FieldOption = {
   label: string
   value: FieldOptionValue
   disabled?: boolean

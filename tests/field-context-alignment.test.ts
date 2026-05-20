@@ -19,6 +19,7 @@ import { DATA_ROW } from '../packages/spark-component/src/components/internal'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import type { DataRow } from '@spark-view/spark-data'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
+import { requireRecord } from './helpers/runtime-guards'
 
 // el-table-column stub：将所有 props/attrs 输出到 data-* 属性，便于断言
 const ElTableColumnStub = defineComponent({
@@ -81,7 +82,16 @@ const ElOptionStub = defineComponent({
   },
 })
 
-const noop = () => false
+const isTableCellVisible = (_row: DataRow): boolean => false
+
+function getTableCellId(row: DataRow): string {
+  return String(requireRecord(row, 'table cell row')['id'] ?? '')
+}
+
+function readAlign(value: unknown): 'left' | 'center' | 'right' | undefined {
+  if (value === 'left' || value === 'center' || value === 'right') return value
+  return undefined
+}
 
 function mountFCR(overrides: Record<string, unknown> = {}) {
   return mountFieldInContext({
@@ -97,8 +107,8 @@ function mountFCR(overrides: Record<string, unknown> = {}) {
       mergedChildren: [],
       isCurrentFieldHidden: false,
       currentDisplayValue: '1',
-      isTableCellHidden: noop as (row: DataRow) => boolean,
-      getTableCellDisplayValue: ((row: DataRow) => String((row as Record<string, unknown>)['id'] ?? '')) as (row: DataRow) => string,
+      isTableCellHidden: isTableCellVisible,
+      getTableCellDisplayValue: getTableCellId,
       validationRules: [],
       ...overrides,
     },
@@ -218,8 +228,8 @@ describe('useFieldContext attrs 集成传递', () => {
     name: 'FieldLikeStub',
     props: {
       field: String, label: String, width: Number,
-      titleAlign: String as () => 'left' | 'center' | 'right' | undefined,
-      valueAlign: String as () => 'left' | 'center' | 'right' | undefined,
+      titleAlign: String,
+      valueAlign: String,
       headerCellClassName: String,
       cellClassName: String,
       titleClassName: String,
@@ -233,14 +243,16 @@ describe('useFieldContext attrs 集成传递', () => {
         shouldRenderCurrentField: computed(() => true),
         currentDisplayValue: computed(() => '1'),
         isTableCellHidden: () => false,
-        getTableCellDisplayValue: (row: DataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
+        getTableCellDisplayValue: getTableCellId,
         validationRules: computed(() => []),
       }
+      const titleAlign = readAlign(props.titleAlign)
+      const valueAlign = readAlign(props.valueAlign)
       const fieldCtx = useFieldContext({
         type: 'r-text',
         width: props.width,
-        ...(props.titleAlign !== undefined ? { titleAlign: props.titleAlign } : {}),
-        ...(props.valueAlign !== undefined ? { valueAlign: props.valueAlign } : {}),
+        ...(titleAlign !== undefined ? { titleAlign } : {}),
+        ...(valueAlign !== undefined ? { valueAlign } : {}),
         ...(props.headerCellClassName !== undefined ? { headerCellClassName: props.headerCellClassName } : {}),
         ...(props.cellClassName !== undefined ? { cellClassName: props.cellClassName } : {}),
         ...(props.titleClassName !== undefined ? { titleClassName: props.titleClassName } : {}),

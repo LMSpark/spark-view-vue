@@ -11,9 +11,7 @@ import type { RFilterProps } from '../../zones/RendererFilter.types'
  *
  * 命名规范：组件 type `r-table` → 接口名 `RTableProps`。
  */
-export interface RTableProps
-  extends SparkNodeProps,
-    SparkInteractiveDataContainerProps {
+export type RTableProps = SparkNodeProps & SparkInteractiveDataContainerProps & {
   /**
    * 透传给 el-table 的原生属性（兼容 JSON 规则里常见的 tableProps 写法）。
    * 顶层同名 props（如 resizable / border / rowKey）优先级更高。

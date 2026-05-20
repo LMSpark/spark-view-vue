@@ -52,7 +52,7 @@ import {
 } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config'
+import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/page/navigation'
 
 import { consumePendingLogout, getUser, isAuthenticated, switchProject } from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
@@ -246,7 +246,7 @@ async function startApp() {
     // 三条日志链路统一汇入同一组 transport：
     //   A) spark-utils  Logger()  → addLogTransport()   — FileLoader / bindRules / PageRenderer
     //   B) spark-app    AppLogger → addGlobalTransport() — error handler / warnHandler / startupLogger
-    //   C) APP_SERVICES.logger    → 实际是 Logger('PageRenderer')，走链路 A
+    //   C) PAGE_RUNTIME_SERVICES.logger → 实际是 Logger('PageRenderer')，走链路 A
     //
     // 远程日志仍然通过统一 logger 配置上报；旧本地 collector 已下线。
     // ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━

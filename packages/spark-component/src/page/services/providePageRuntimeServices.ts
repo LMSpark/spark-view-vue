@@ -1,11 +1,11 @@
 /**
- * 构造 APP_SERVICES 能力 payload 的工厂函数。
+ * 构造页面运行时服务能力 payload 的工厂函数。
  *
  * 被 SparkPageRenderer 的 useRendererSetup 使用，避免重复构造相同对象。
  */
 
 import type { RouteLocationRaw, Router } from 'vue-router'
-import type { AppServicesCapability } from '../../core/capability-keys.js'
+import type { PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 type AppRouteTarget = string | { path: string; query?: Record<string, unknown> }
@@ -29,12 +29,12 @@ function toRouteLocation(to: AppRouteTarget): RouteLocationRaw {
 }
 
 /**
- * 根据 vue-router 实例和 Logger 构建 APP_SERVICES payload。
+ * 根据 vue-router 实例和 Logger 构建页面运行时服务 payload。
  */
-export function buildAppServices(
+export function buildPageRuntimeServices(
   router: Router,
   logger: LoggerApi
-): AppServicesCapability {
+): PageRuntimeServicesCapability {
   return {
     router: {
       push: (to) => router.push(toRouteLocation(to)),

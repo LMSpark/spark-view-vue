@@ -7,7 +7,7 @@
 
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
 import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'

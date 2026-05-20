@@ -1,6 +1,6 @@
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RAvatarProps extends SparkNodeProps, SparkDataDisplayProps<string> {
+export type RAvatarProps = SparkNodeProps & SparkDataDisplayProps<string> & {
   /** 头像尺寸 */
   avatarSize?: number | 'large' | 'default' | 'small'
   /** 头像形状 */

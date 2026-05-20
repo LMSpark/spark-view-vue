@@ -11,7 +11,7 @@ import type { ComponentRegistry } from '../core/types.js'
 import { getGlobalRegistry } from './registry.js'
 import { SPARK_REGISTRY_KEY } from './keys.js'
 
-export interface SparkPluginOptions {
+export type SparkPluginOptions = {
   /** 自定义注册表（测试/隔离场景用） */
   registry?: ComponentRegistry
 }

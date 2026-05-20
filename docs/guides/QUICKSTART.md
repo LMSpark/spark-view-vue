@@ -536,15 +536,15 @@ A: 使用动态导入进行代码分割，避免一次性加载所有组件。
 
 ```vue
 <script setup lang="ts">
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-component'
 
-const { provide, consume, logger } = useSparkComponent({
+const { sparkProvide, logger } = useSparkComponent({
   type: 'my-grid'
 })
 
-// 应用层统一提供 APP_SERVICES.logger，组件侧只消费 logger
-provide(APP_SERVICES, { router, logger: pageLogger })
+// 页面根统一提供 PAGE_RUNTIME_SERVICES.logger，组件侧只消费 logger
+sparkProvide(PAGE_RUNTIME_SERVICES, { router, logger: pageLogger })
 </script>
 ```
 
@@ -673,14 +673,14 @@ logger.info('初始化')
 logger.error('出错了', error)
 ```
 
-### APP_SERVICES（组件内）
+### PAGE_RUNTIME_SERVICES（组件内）
 
 ```typescript
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-component'
 
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
-const services = sparkConsume(APP_SERVICES)
+const services = sparkConsume(PAGE_RUNTIME_SERVICES)
 
 services?.router?.push('/home')
 services?.logger?.info('Action')
@@ -692,15 +692,15 @@ services?.auth?.isAuthenticated()
 ```vue
 <script setup lang="ts">
 import { createLogger } from '@spark-view/spark-app'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { useSparkComponent } from '@spark-view/spark-component'
-import { APP_SERVICES } from '@spark-view/spark-component'
 import { useRouter } from 'vue-router'
 
 const { sparkProvide } = useSparkComponent({ type: 'root' })
 const appLogger = createLogger('App')
 const router = useRouter()
 
-sparkProvide(APP_SERVICES, {
+sparkProvide(PAGE_RUNTIME_SERVICES, {
   router: { push: (to) => router.push(to), replace: (to) => router.replace(to), back: () => router.back() },
   logger: appLogger
 })
@@ -711,7 +711,7 @@ sparkProvide(APP_SERVICES, {
 |------|----------|
 | 路由访问 | `useRouter()` from `vue-router` |
 | 日志记录 | `Logger('module')` from `@spark-view/spark-utils` |
-| 组件内服务 | `sparkConsume(APP_SERVICES)` |
+| 组件内服务 | `sparkConsume(PAGE_RUNTIME_SERVICES)` |
 | 组件注册表 | `useSparkRegistry()` |
 
 ---

@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface REmptyProps extends SparkNodeProps {
+export type REmptyProps = SparkNodeProps & {
   /** 空状态图片地址 */
   image?: SparkText
   /** 图片尺寸（像素） */

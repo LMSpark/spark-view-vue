@@ -19,7 +19,7 @@ import { nodeId, SPARK_NODE_STRUCT_KEYS, normalizeSparkNode } from '../core/type
 /* -------------------------------------------------------------------------- */
 
 /** Spark.createSystem() 返回的隔离测试系统 */
-export interface SparkSystem {
+export type SparkSystem = {
   registry: ComponentRegistry
   rootContext: CapabilityContext
   createContext(config: Partial<CapabilityContext> & { type: string }, parent?: CapabilityContext): CapabilityContext

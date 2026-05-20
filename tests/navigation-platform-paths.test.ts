@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -13,7 +13,7 @@ import type {
   PageDataConfig,
   PageScriptConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { useNavigation } from '../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
@@ -27,7 +27,7 @@ vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
   refreshRoutes: refreshRoutesMock,
 }))
 
-interface MountedNavigationProbe {
+type MountedNavigationProbe = {
   router: Router
   navigateToPath: NavigateToPath
   navigateTo: NavigateToNode

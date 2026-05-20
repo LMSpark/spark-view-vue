@@ -10,7 +10,7 @@ export {
   PageDesignEditRuntimePrompt,
   PageDesignModule,
   TextModelModule,
-  registerAppAiBusinesses,
+  registerAssistantBusinesses,
 } from './registrations'
 
 export type {
@@ -24,7 +24,7 @@ export type {
   LeaveRequestServiceContext,
   LeaveRequestServiceResult,
   PageDesignModuleOptions,
-  RegisterAppAiBusinessesOptions,
+  RegisterAssistantBusinessesOptions,
   SparkNodeTreeToolFailureMode,
   SparkNodeTreeToolFunctionId,
   TextModelFunctionFailureMode,

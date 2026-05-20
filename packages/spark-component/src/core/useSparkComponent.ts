@@ -3,7 +3,7 @@
  * - 统一封装 Spark 组件的上下文创建、能力提供/消费、事件订阅与生命周期清理。
  * - 将 Vue 当前实例的运行时输入归一化为 SparkNode，并接入 Spark 自己的上下文树。
  * - 能力上下文的创建、消费和本地 provider 读取统一收口于 capabilities.ts，本文件只负责 Vue 运行时桥接。
- * - 组件 logger 统一取页面层 APP_SERVICES.logger；不再支持通过局部 LOGGER 覆盖形成子树级日志分叉。
+ * - 组件 logger 统一取页面运行时 logger；不再支持通过局部 LOGGER 覆盖形成子树级日志分叉。
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
@@ -16,7 +16,7 @@ import {
   type LoggerApi,
   type SparkCapabilityConsumer,
 } from '@spark-view/spark-utils'
-import { APP_SERVICES } from './capability-keys.js'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
 import { sparkFindNearestProvider, sparkFindNearestProviderByKeys } from '@spark-view/spark-utils'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
@@ -49,7 +49,7 @@ function toSparkRuntimeOwner(instance: RuntimeInstance): SparkRuntimeOwner | nul
  * 容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。
  * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。
  */
-export interface UseSparkComponentReturn {
+export type UseSparkComponentReturn = {
   provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
@@ -65,7 +65,7 @@ export interface UseSparkComponentReturn {
   logger: LoggerApi
 }
 
-export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
+export type UseSparkPageComponentReturn = UseSparkComponentReturn & {
   registerApi: (api: unknown) => void
 }
 
@@ -73,7 +73,7 @@ export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
  * 轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。
  * 由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。
  */
-export interface UseSparkCapabilityReaderReturn {
+export type UseSparkCapabilityReaderReturn = {
   provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
@@ -81,15 +81,15 @@ export interface UseSparkCapabilityReaderReturn {
   sparkConsume: SparkCapabilityConsumer
 }
 
-export interface UseSparkComponentOptions {
+export type UseSparkComponentOptions = {
   parentContext?: CapabilityContext
 }
 
-interface HostTypeResolverOptions {
+type HostTypeResolverOptions = {
   hostTypes?: readonly string[]
 }
 
-interface ResolvedHostType {
+type ResolvedHostType = {
   hostType: string | null
   parentContext: CapabilityContext | null
 }
@@ -255,15 +255,15 @@ function isLoggerApi(value: unknown): value is LoggerApi {
     && typeof value['error'] === 'function'
 }
 
-// logger 始终从页面层 APP_SERVICES 取，避免局部子树私自覆盖后形成日志分叉。
+// logger 始终从页面运行时服务取，避免局部子树私自覆盖后形成日志分叉。
 function createPageLoggerProxy(context: CapabilityContext): LoggerApi {
   const consumeFromCurrent = createSparkCapabilityConsumer(context)
   const resolveLogger = (): LoggerApi => {
-    const appServices = consumeFromCurrent(APP_SERVICES)
-    if (!isLoggerApi(appServices?.logger)) {
-      throw new Error('[spark] APP_SERVICES.logger is required but missing. Ensure page root provides APP_SERVICES before components log.')
+    const pageRuntimeServices = consumeFromCurrent(PAGE_RUNTIME_SERVICES)
+    if (!isLoggerApi(pageRuntimeServices?.logger)) {
+      throw new Error('[spark] PAGE_RUNTIME_SERVICES.logger is required but missing. Ensure page root provides PAGE_RUNTIME_SERVICES before components log.')
     }
-    return appServices.logger
+    return pageRuntimeServices.logger
   }
 
   return {

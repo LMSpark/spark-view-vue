@@ -98,7 +98,7 @@ import { TABLE_COLUMN_RESIZABLE_KEY } from '../context/tableColumnContext'
 
 type TextAlign = 'left' | 'center' | 'right'
 
-interface Props extends SparkNodeProps {
+type Props = SparkNodeProps & {
   /** 显示标签 */
   displayLabel?: string | undefined
   /** 字段绑定名 */

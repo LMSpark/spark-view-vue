@@ -1,6 +1,6 @@
 import type { SparkNodeProps, SparkUploadFieldProps } from '../../shared-types'
 
-export interface RUploadProps extends SparkNodeProps, SparkUploadFieldProps {
+export type RUploadProps = SparkNodeProps & SparkUploadFieldProps & {
   /** 选择文件后是否立即开始上传。 */
   autoUpload?: boolean
   /** 是否展示已选择文件列表。 */

@@ -31,9 +31,9 @@ export {
 } from './leave-request'
 
 export {
-  registerAppAiBusinesses,
-} from './app-ai-businesses'
+  registerAssistantBusinesses,
+} from './assistant-businesses'
 
 export type {
-  RegisterAppAiBusinessesOptions,
-} from './app-ai-businesses'
+  RegisterAssistantBusinessesOptions,
+} from './assistant-businesses'

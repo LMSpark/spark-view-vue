@@ -1,22 +1,10 @@
-/**
- * 应用服务与页面服务能力类型定义。
- *
- * 与 capability-keys.ts 分离，避免在同一文件里既
- * `import from '@spark-view/spark-utils'` 又
- * `declare module '@spark-view/spark-utils'` 产生的循环增强问题。
- */
-import type { LoggerApi } from '@spark-view/spark-utils'
-
-/** 页面权限模式：none=无限制, masked=字段遮蔽, invisible=隐藏 */
-export type NavPermissionMode = 'none' | 'masked' | 'invisible'
-
-// ── 页面服务能力类型 ──────────────────────────────────────────────────────
+import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
 
 export type PageMessageType = 'success' | 'error' | 'warning' | 'info'
 export type PageDialogResult = 'confirm' | 'cancel' | 'close'
 export type PageSelectableValue = string | number | boolean
 
-export interface PageDialogOptions {
+export type PageDialogOptions = {
   title?: string
   message?: string
   content?: string
@@ -28,14 +16,14 @@ export interface PageDialogOptions {
   width?: string
 }
 
-export interface PageBrowseFilesOptions {
+export type PageBrowseFilesOptions = {
   title?: string
   accept?: string
   multiple?: boolean
   currentValue?: string
 }
 
-export interface PageSelectedFile {
+export type PageSelectedFile = {
   name: string
   size: number
   type: string
@@ -43,7 +31,7 @@ export interface PageSelectedFile {
   file: File
 }
 
-export interface PageUploadFilesOptions extends PageBrowseFilesOptions {
+export type PageUploadFilesOptions = PageBrowseFilesOptions & {
   action: string
   method?: 'POST' | 'PUT' | 'PATCH'
   fieldName?: string
@@ -53,12 +41,12 @@ export interface PageUploadFilesOptions extends PageBrowseFilesOptions {
   files?: File[]
 }
 
-export interface PageUploadedFile extends PageSelectedFile {
+export type PageUploadedFile = PageSelectedFile & {
   response: unknown
   url?: string
 }
 
-export interface PageSelectorOption {
+export type PageSelectorOption = {
   label: string
   value: PageSelectableValue
   description?: string
@@ -66,7 +54,7 @@ export interface PageSelectorOption {
   raw?: unknown
 }
 
-export interface PageSelectEntitiesOptions {
+export type PageSelectEntitiesOptions = {
   title?: string
   entityName?: string
   placeholder?: string
@@ -81,7 +69,7 @@ export interface PageSelectEntitiesOptions {
 
 export type PageSelectedEntity = PageSelectorOption
 
-export interface PageServiceCapability {
+export type PageServiceCapability = {
   showMessage(message: string, type?: PageMessageType): void
   showConfirm(message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: PageMessageType }): Promise<boolean>
   showPrompt(message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }): Promise<string | null>
@@ -94,16 +82,37 @@ export interface PageServiceCapability {
   navigate(path: string, params?: Record<string, unknown>): void
 }
 
-export interface AppServicesCapability {
-  router?: {
-    push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
-    replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
-    back(): void
-    currentRoute: unknown
-  }
+export type PageRouterService = {
+  push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
+  replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
+  back(): void
+  currentRoute: unknown
+}
+
+export type PageRuntimeServicesCapability = {
+  router?: PageRouterService
   logger?: LoggerApi
   tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
   configLoader?: unknown
   authService?: unknown
   pageService?: Partial<PageServiceCapability>
 }
+
+declare module '@spark-view/spark-utils' {
+  interface CapabilityTypeMap {
+    'spark:capability:page-runtime-services': PageRuntimeServicesCapability
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
+function isPageRuntimeServicesCapability(value: unknown): value is PageRuntimeServicesCapability {
+  return isRecord(value)
+}
+
+export const PAGE_RUNTIME_SERVICES = defineCapability<PageRuntimeServicesCapability>(
+  'spark:capability:page-runtime-services',
+  isPageRuntimeServicesCapability,
+)

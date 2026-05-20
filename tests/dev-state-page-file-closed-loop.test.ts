@@ -23,19 +23,32 @@ vi.mock('@/services/http', () => ({
   http: httpFns,
 }))
 
-vi.mock('@spark-view/spark-page-config', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config')>()
+vi.mock('@spark-view/spark-page-config/page/loading', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/page/loading')>()
+  const readObjectProp = (value: unknown, key: string): unknown => {
+    if (value === null || typeof value !== 'object') return undefined
+    return Object.getOwnPropertyDescriptor(value, key)?.value
+  }
+  const requireRecord = (value: unknown, message: string): Record<string, unknown> => {
+    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+      return Object.fromEntries(Object.entries(value))
+    }
+    throw new Error(message)
+  }
   const isStatus = (error: unknown, status: number): boolean => {
-    if (error === null || typeof error !== 'object') return false
-    const candidate = error as { status?: unknown; response?: { status?: unknown } }
-    return candidate.status === status || candidate.response?.status === status
+    const directStatus = readObjectProp(error, 'status')
+    const responseStatus = readObjectProp(readObjectProp(error, 'response'), 'status')
+    return directStatus === status || responseStatus === status
   }
   return {
     ...actual,
     createConfigLoader: vi.fn(() => ({
       loadPageFileContent: async (pageId: string, filename: string) => {
         try {
-          const data = await httpFns.get(`/api/pages-config/${pageId}/${filename}`) as Record<string, unknown>
+          const data = requireRecord(
+            await httpFns.get(`/api/pages-config/${pageId}/${filename}`),
+            `Invalid page file response: ${pageId}/${filename}`,
+          )
           return { success: true, data: String(data['content'] ?? ''), source: 'remote', timestamp: Date.now() }
         } catch (error) {
           if ((filename === 'script.js' || filename === 'style.css') && isStatus(error, 404)) {

@@ -5,12 +5,11 @@
  * 1. 数据层键（依赖 @spark-view/spark-data 类型）：PAGE_DATASET / DATA_SOURCE / DATA_ROW
  * 2. 渲染层键（原在 spark-utils 中但属于 spark-component 语义）：
  *    MODULE_CONTEXT / PAGE_COMPONENT_REGISTRY / CSS_SCOPE
- * 3. 应用服务与权限键（从 spark-utils 迁入）：
- *    APP_SERVICES / PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
+ * 3. 页面 UI 服务与权限键（从 spark-utils 迁入）：
+ *    PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
  *
- * 注：AppServicesCapability / PageServiceCapability 等依赖 LoggerApi 的类型定义
- * 放在 app-service-types.ts，避免在同一文件里既 import 又 declare module
- * '@spark-view/spark-utils'，防止循环模块增强问题。
+ * 注：PageServiceCapability 等运行时服务契约以
+ * @spark-view/spark-page-config/page 为 SSOT。
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
@@ -18,8 +17,7 @@ import { DataView, type DataRow, type DataSetContract } from '@spark-view/spark-
 import type {
   NavPermissionMode,
   PageServiceCapability,
-  AppServicesCapability,
-} from './app-service-types.js'
+} from '@spark-view/spark-page-config/page'
 
 export type {
   NavPermissionMode,
@@ -35,8 +33,7 @@ export type {
   PageSelectEntitiesOptions,
   PageSelectedEntity,
   PageServiceCapability,
-  AppServicesCapability,
-} from './app-service-types.js'
+} from '@spark-view/spark-page-config/page'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -56,7 +53,7 @@ function hasCallable(record: Record<string, unknown>, key: string): boolean {
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 /** 主题服务能力接口（最小契约，不含 Vue 响应式） */
-export interface ThemeCapability {
+export type ThemeCapability = {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
@@ -67,40 +64,40 @@ export interface ThemeCapability {
 // ── 模块上下文能力 ────────────────────────────────────────────────────────
 
 /** 模块列表项 */
-export interface ModuleContextItem {
+export type ModuleContextItem = {
   id: string | number
   title: string
 }
 
 /** 当前模块上下文快照 */
-export interface ModuleContext {
+export type ModuleContext = {
   selected: string | number | null
   items: readonly ModuleContextItem[]
   nodeId: string
 }
 
 /** MODULE_CONTEXT 能力接口 */
-export interface ModuleContextCapability {
+export type ModuleContextCapability = {
   getCurrent(): ModuleContext | null
   subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void
 }
 
 // ── 页面组件注册表能力 ─────────────────────────────────────────────────────
 
-export interface PageComponentInstanceEntry {
+export type PageComponentInstanceEntry = {
   id: string
   type: string
   props?: Record<string, unknown>
 }
 
-export interface PageComponentApiEntry {
+export type PageComponentApiEntry = {
   id: string
   type: string
   api: unknown
 }
 
 /** 页面内组件实例/API 注册表能力接口 */
-export interface PageComponentRegistry {
+export type PageComponentRegistry = {
   registerInstance(entry: PageComponentInstanceEntry): void
   unregisterInstance(id: string): void
   listInstances(type?: string): PageComponentInstanceEntry[]
@@ -116,11 +113,11 @@ export interface PageComponentRegistry {
 // ── CSS 作用域注入能力 ─────────────────────────────────────────────────────
 
 /** 页面作用域 CSS 注入能力（由 SparkPageRenderer 提供） */
-export interface PageCssScopeCapability {
+export type PageCssScopeCapability = {
   inject(css: string): void
 }
 
-// ── CapabilityTypeMap 扩展（数据层键 + 渲染层键 + 应用服务键） ────────────
+// ── CapabilityTypeMap 扩展（数据层键 + 渲染层键 + 页面 UI/权限键） ────────
 
 declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
@@ -130,7 +127,6 @@ declare module '@spark-view/spark-utils' {
     'spark:capability:page-component-registry': PageComponentRegistry
     'spark:capability:module-context': ModuleContextCapability
     'spark:capability:css-scope': PageCssScopeCapability
-    'spark:capability:app-services': AppServicesCapability
     'spark:capability:page-service': PageServiceCapability
     'spark:capability:permission-mode': NavPermissionMode
   }
@@ -189,10 +185,6 @@ function isPageCssScopeCapability(value: unknown): value is PageCssScopeCapabili
   return isRecord(value) && hasCallable(value, 'inject')
 }
 
-function isAppServicesCapability(value: unknown): value is AppServicesCapability {
-  return isRecord(value)
-}
-
 function isPageServiceCapability(value: unknown): value is PageServiceCapability {
   if (!isRecord(value)) return false
   return hasCallable(value, 'showMessage')
@@ -221,6 +213,5 @@ export const MODULE_CONTEXT = defineCapability<ModuleContextCapability>('spark:c
 export const PAGE_COMPONENT_REGISTRY = defineCapability<PageComponentRegistry>('spark:capability:page-component-registry', isPageComponentRegistry)
 export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capability:css-scope', isPageCssScopeCapability)
 
-export const APP_SERVICES = defineCapability<AppServicesCapability>('spark:capability:app-services', isAppServicesCapability)
 export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service', isPageServiceCapability)
 export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode', isNavPermissionMode)

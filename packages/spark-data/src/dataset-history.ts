@@ -5,25 +5,25 @@ import type { DataSetContract, DataSetMetadata } from './types'
 const DEFAULT_HISTORY_NAMESPACE = 'spark:data-history'
 const DEFAULT_HISTORY_LIMIT = 20
 
-export interface DataSetHistoryStorageAdapter {
+export type DataSetHistoryStorageAdapter = {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
   removeItem(key: string): void
 }
 
-export interface DataSetHistoryScope {
+export type DataSetHistoryScope = {
   dataSetName?: string
   pageId?: string
   scopeId?: string
   namespace?: string
 }
 
-export interface DataSetSnapshotSelector {
+export type DataSetSnapshotSelector = {
   entryId?: string
   version?: number
 }
 
-export interface DataSetHistorySnapshot {
+export type DataSetHistorySnapshot = {
   id: string
   version: number
   timestamp: number
@@ -35,11 +35,11 @@ export interface DataSetHistorySnapshot {
   sourceData?: Record<string, unknown>
 }
 
-export interface DataSetHistoryListOptions extends DataSetHistoryScope {
+export type DataSetHistoryListOptions = DataSetHistoryScope & {
   adapter?: DataSetHistoryStorageAdapter | null
 }
 
-export interface DataSetSnapshotCommitOptions extends DataSetHistoryListOptions {
+export type DataSetSnapshotCommitOptions = DataSetHistoryListOptions & {
   maxEntries?: number
   label?: string
   summary?: string
@@ -48,11 +48,11 @@ export interface DataSetSnapshotCommitOptions extends DataSetHistoryListOptions 
   timestamp?: number
 }
 
-export interface DataSetCommitSnapshotOptions extends Omit<DataSetSnapshotCommitOptions, 'version'> {
+export type DataSetCommitSnapshotOptions = Omit<DataSetSnapshotCommitOptions, 'version'> & {
   bumpVersion?: boolean
 }
 
-interface DataSetHistoryEnvelope {
+type DataSetHistoryEnvelope = {
   entries: DataSetHistorySnapshot[]
   nextSlot: number
   capacity: number
