@@ -18,5 +18,5 @@
 
 说明：
 
-1. `r-row-fragment` 是 `FieldContextRenderer` 的注册别名，由 `RendererTable` 在列区投影为表格列。
+1. `r-column-group` 是 `FieldContextRenderer` 的表格列投影节点，由 `RendererTable` 在列区投影为 `el-table-column`。
 2. 不保留没有真实组件实现的 `RendererRowFragment/` 空壳目录。

@@ -530,23 +530,20 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(loadPageConfig).toHaveBeenCalledTimes(1)
   })
 
-  it('promotes legacy props.id in page rules', () => {
+  it('rejects props.id in page rules', () => {
     const ruleNodes: SparkNode[] = [
       {
         type: 'r-button',
         props: {
-          id: 'legacy-button',
+          id: 'invalid-button',
           label: '旧按钮',
         },
       },
     ]
-    const children = buildPageChildren(ruleNodes, {
+    expect(() => buildPageChildren(ruleNodes, {
       callFunc: () => undefined,
       actionCtx: createActionContext(),
-    })
-
-    expect(children[0]?.id).toBe('legacy-button')
-    expect(children[0]?.props).toEqual({ label: '旧按钮' })
+    })).toThrow(/SparkNode\.props\.id is invalid/)
   })
 
   it('tree-node-scope demo keeps native tree props typed and button clicks executable', () => {

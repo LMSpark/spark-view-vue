@@ -429,7 +429,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     },
     example: {
       componentId: 'name-column',
-      node: { type: 'r-row-fragment', id: 'name-column', props: { field: 'displayName' } },
+      node: { type: 'r-column-group', id: 'name-column', props: { field: 'displayName' } },
     },
     usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
@@ -454,7 +454,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     },
     example: {
       items: [
-        { componentId: 'name-column', node: { type: 'r-row-fragment', id: 'name-column', props: { field: 'displayName' } } },
+        { componentId: 'name-column', node: { type: 'r-column-group', id: 'name-column', props: { field: 'displayName' } } },
         { componentId: 'toolbar', node: { type: 'r-toolbar', id: 'toolbar', props: { dense: true } } },
       ],
     },

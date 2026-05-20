@@ -82,7 +82,7 @@
                         }
                       },
                       {
-                        "type": "r-row-fragment",
+                        "type": "r-column-group",
                         "children": [
                           {
                             "type": "r-space",
@@ -203,7 +203,7 @@
                         "type": "r-statistic",
                         "props": {
                           "field": "age",
-                          "title": "$[name] 的年龄（表格年龄列走 r-row-fragment 单元格模板）",
+                          "title": "$[name] 的年龄（表格年龄列走 r-column-group 单元格模板）",
                           "suffix": "岁"
                         }
                       },

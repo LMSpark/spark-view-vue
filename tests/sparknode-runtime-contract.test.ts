@@ -125,10 +125,11 @@ describe('SparkNode runtime contract', () => {
     )
   })
 
-  it('registers r-row-fragment as a public row-scoped primitive', () => {
+  it('registers built-in primitives through the component registry', () => {
     registerAllRenderers()
 
-    expect(Spark.getRegistry().get('r-row-fragment')).toBeDefined()
+    expect(Spark.getRegistry().get('r-column-group')).toBeDefined()
+    expect(Spark.getRegistry().get('r-row-fragment')).toBeUndefined()
     expect(Spark.getRegistry().get('display-image')).toBeDefined()
     expect(Spark.getRegistry().get('display-calendar')).toBeDefined()
     expect(Spark.getRegistry().get('display-countdown')).toBeDefined()

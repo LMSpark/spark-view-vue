@@ -196,7 +196,7 @@
         }
       },
       {
-        "type": "display-tag",
+        "type": "r-tag",
         "children": [],
         "id": "col-status",
         "props": {

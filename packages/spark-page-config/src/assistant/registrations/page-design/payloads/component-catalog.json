@@ -1713,182 +1713,6 @@
       "emits": [],
       "source": "vcm+meta"
     },
-    "display-tag": {
-      "type": "display-tag",
-      "filePath": "packages/spark-component/src/components/display/data-components/DisplayTag.vue",
-      "category": "feature",
-      "description": "标签展示组件，支持类型/尺寸/主题样式和可关闭功能。 配置入口：type=\"display-tag\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。 主要事件：close。",
-      "props": [
-        {
-          "name": "permissionDeniedMode",
-          "type": "\"disable\" | \"hide\"",
-          "required": false,
-          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
-          "schema": {
-            "enum": [
-              "disable",
-              "hide"
-            ],
-            "type": "string",
-            "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
-          }
-        },
-        {
-          "name": "value",
-          "type": "string",
-          "required": false,
-          "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
-        },
-        {
-          "name": "dataViewKey",
-          "type": "string",
-          "required": false,
-          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
-        },
-        {
-          "name": "dataMember",
-          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
-          "required": false,
-          "description": "DataView 成员枚举值。",
-          "schema": {
-            "enum": [
-              "rows",
-              "columns",
-              "selectedRows",
-              "total",
-              "page",
-              "pageSize",
-              "requestState",
-              "mutating",
-              "loadingError",
-              "mutatingError",
-              "aggregateResult",
-              "selectionAggregateResult",
-              "currentRow"
-            ],
-            "type": "string",
-            "description": "DataView 成员枚举值。"
-          }
-        },
-        {
-          "name": "dataField",
-          "type": "string",
-          "required": false,
-          "description": "DataView 成员内部业务字段或点路径。"
-        },
-        {
-          "name": "field",
-          "type": "string",
-          "required": false,
-          "description": "数据字段绑定键。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n用于详情展示、只读文本渲染或行内展示等场景。"
-        },
-        {
-          "name": "content",
-          "type": "string",
-          "required": false,
-          "description": "显式内容，优先级高于 value/field"
-        },
-        {
-          "name": "tagType",
-          "type": "\"\" | TagType",
-          "required": false,
-          "description": "标签类型",
-          "schema": {
-            "enum": [
-              "",
-              "success",
-              "warning",
-              "info",
-              "danger"
-            ],
-            "type": "string",
-            "description": "标签类型"
-          }
-        },
-        {
-          "name": "dynamicType",
-          "type": "Record<string, \"\" | TagType>",
-          "required": false,
-          "description": "动态类型映射（按值命中）"
-        },
-        {
-          "name": "closable",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否可关闭"
-        },
-        {
-          "name": "disableTransitions",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否禁用过渡动画"
-        },
-        {
-          "name": "hit",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否描边"
-        },
-        {
-          "name": "round",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否圆角"
-        },
-        {
-          "name": "color",
-          "type": "string",
-          "required": false,
-          "description": "自定义颜色"
-        },
-        {
-          "name": "size",
-          "type": "\"default\" | \"large\" | \"small\"",
-          "required": false,
-          "default": "\"default\"",
-          "description": "尺寸",
-          "schema": {
-            "enum": [
-              "default",
-              "large",
-              "small"
-            ],
-            "type": "string",
-            "description": "尺寸",
-            "default": "default"
-          }
-        },
-        {
-          "name": "effect",
-          "type": "\"dark\" | \"light\" | \"plain\"",
-          "required": false,
-          "default": "\"light\"",
-          "description": "视觉效果",
-          "schema": {
-            "enum": [
-              "dark",
-              "light",
-              "plain"
-            ],
-            "type": "string",
-            "description": "视觉效果",
-            "default": "light"
-          }
-        }
-      ],
-      "emits": [
-        {
-          "name": "close",
-          "type": "[]",
-          "description": "Tag close requested; 用户点击可关闭标签的关闭入口。"
-        }
-      ],
-      "source": "vcm+meta"
-    },
     "display-text": {
       "type": "display-text",
       "filePath": "packages/spark-component/src/components/display/data-components/DisplayText.vue",
@@ -10467,12 +10291,6 @@
           "description": "当前行变化回调。\n当前高亮行、焦点行或主选择行切换时触发。"
         },
         {
-          "name": "tableProps",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "透传给 el-table 的原生属性（兼容 JSON 规则里常见的 tableProps 写法）。\n顶层同名 props（如 resizable / border / rowKey）优先级更高。"
-        },
-        {
           "name": "border",
           "type": "boolean",
           "required": false,
@@ -13137,11 +12955,220 @@
       ],
       "source": "vcm"
     },
-    "tree-node-summary": {
-      "type": "tree-node-summary",
+    "unregistered-node-fallback": {
+      "type": "unregistered-node-fallback",
+      "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
+      "category": "feature",
+      "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。 配置入口：type=\"unregistered-node-fallback\"，category=feature（功能组件）。 必填 props：node。 关键 props：node, title。",
+      "props": [
+        {
+          "name": "node",
+          "type": "SparkNode",
+          "required": true,
+          "description": "未注册的源节点",
+          "schema": {
+            "$ref": "#/$defs/SparkNode"
+          }
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\"",
+          "description": "提示标题"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "说明文本"
+        }
+      ],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tag": {
+      "type": "r-tag",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayTag.vue",
+      "category": "feature",
+      "description": "标签展示组件，支持类型/尺寸/主题样式和可关闭功能。 配置入口：type=\"r-tag\"，category=feature（功能组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, dataMember, dataField, field, value。 主要事件：close。",
+      "props": [
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "schema": {
+            "enum": [
+              "disable",
+              "hide"
+            ],
+            "type": "string",
+            "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+          }
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "required": false,
+          "description": "显式展示值。\n\n适用于不依赖运行时上下文、直接由配置或外层受控传入的只读展示场景。"
+        },
+        {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键，用于从页面数据空间读取展示值。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "数据字段绑定键。\n\n常见语义是从当前上下文数据中读取 `currentRow[field]`，\n用于详情展示、只读文本渲染或行内展示等场景。"
+        },
+        {
+          "name": "content",
+          "type": "string",
+          "required": false,
+          "description": "显式内容，优先级高于 value/field"
+        },
+        {
+          "name": "tagType",
+          "type": "\"\" | TagType",
+          "required": false,
+          "description": "标签类型",
+          "schema": {
+            "enum": [
+              "",
+              "success",
+              "warning",
+              "info",
+              "danger"
+            ],
+            "type": "string",
+            "description": "标签类型"
+          }
+        },
+        {
+          "name": "dynamicType",
+          "type": "Record<string, \"\" | TagType>",
+          "required": false,
+          "description": "动态类型映射（按值命中）"
+        },
+        {
+          "name": "closable",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否可关闭"
+        },
+        {
+          "name": "disableTransitions",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否禁用过渡动画"
+        },
+        {
+          "name": "hit",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否描边"
+        },
+        {
+          "name": "round",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否圆角"
+        },
+        {
+          "name": "color",
+          "type": "string",
+          "required": false,
+          "description": "自定义颜色"
+        },
+        {
+          "name": "size",
+          "type": "\"default\" | \"large\" | \"small\"",
+          "required": false,
+          "default": "\"default\"",
+          "description": "尺寸",
+          "schema": {
+            "enum": [
+              "default",
+              "large",
+              "small"
+            ],
+            "type": "string",
+            "description": "尺寸",
+            "default": "default"
+          }
+        },
+        {
+          "name": "effect",
+          "type": "\"dark\" | \"light\" | \"plain\"",
+          "required": false,
+          "default": "\"light\"",
+          "description": "视觉效果",
+          "schema": {
+            "enum": [
+              "dark",
+              "light",
+              "plain"
+            ],
+            "type": "string",
+            "description": "视觉效果",
+            "default": "light"
+          }
+        }
+      ],
+      "emits": [
+        {
+          "name": "close",
+          "type": "[]",
+          "description": "Tag close requested; 用户点击可关闭标签的关闭入口。"
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "r-tree-node-summary": {
+      "type": "r-tree-node-summary",
       "filePath": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.vue",
       "category": "field",
-      "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。 配置入口：type=\"tree-node-summary\"，category=field（字段组件）。",
+      "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。 配置入口：type=\"r-tree-node-summary\"，category=field（字段组件）。",
       "props": [
         {
           "name": "permissionDeniedMode",
@@ -13233,39 +13260,6 @@
           "required": false,
           "default": "false",
           "description": "是否展示扩展信息"
-        }
-      ],
-      "emits": [],
-      "source": "vcm+meta"
-    },
-    "unregistered-node-fallback": {
-      "type": "unregistered-node-fallback",
-      "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
-      "category": "feature",
-      "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。 配置入口：type=\"unregistered-node-fallback\"，category=feature（功能组件）。 必填 props：node。 关键 props：node, title。",
-      "props": [
-        {
-          "name": "node",
-          "type": "SparkNode",
-          "required": true,
-          "description": "未注册的源节点",
-          "schema": {
-            "$ref": "#/$defs/SparkNode"
-          }
-        },
-        {
-          "name": "title",
-          "type": "string",
-          "required": false,
-          "default": "\"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\"",
-          "description": "提示标题"
-        },
-        {
-          "name": "description",
-          "type": "string",
-          "required": false,
-          "default": "\"\"",
-          "description": "说明文本"
         }
       ],
       "emits": [],

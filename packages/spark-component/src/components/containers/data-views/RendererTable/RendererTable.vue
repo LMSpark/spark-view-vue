@@ -56,13 +56,13 @@
           </template>
         </el-table-column>
 
-        <!-- 主数据列：普通列直接交 SparkComponentRenderer；r-row-fragment 由表格定主投影为 el-table-column -->
+        <!-- 主数据列：普通列直接交 SparkComponentRenderer；r-column-group 由表格定主投影为 el-table-column -->
         <template
           v-for="(child, index) in normalizedContentChildNodes"
           :key="nodeId(child) ?? `r-table-child-${index}`"
         >
           <el-table-column
-            v-if="child.type === 'r-row-fragment'"
+            v-if="child.type === 'r-column-group'"
             :label="rowFragmentLabel(child)"
             :width="rowFragmentStringOrNumberProp(child, 'width')"
             :min-width="rowFragmentStringOrNumberProp(child, 'minWidth')"
@@ -197,8 +197,7 @@ const normalizedContentChildNodes = computed<SparkNode[]>(() => {
     const sourceProps = nodeInputProps(rawNode)
     const field = sourceProps['field'] ?? sourceProps['fieldName'] ?? sourceProps['prop'] ?? sourceProps['property']
     return (
-      rawNode.type === 'r-row-fragment'
-      || rawNode.type === 'r-column-group'
+      rawNode.type === 'r-column-group'
       || sourceProps['sortable'] !== undefined
       || typeof field !== 'string'
       || field.trim().length === 0
@@ -311,28 +310,18 @@ function rowFragmentChildren(node: SparkNode): SparkNode[] {
   return getSparkNodeChildren(node.children)
 }
 
-function toPlainRecord(value: unknown): Record<string, unknown> {
-  return toDataRecord(value) ?? {}
-}
-
 function toScopeRow(value: unknown): DataRow | undefined {
   return toDataRecord(value) ?? undefined
 }
 
-function readBoolean(value: unknown): boolean | undefined {
-  return typeof value === 'boolean' ? value : undefined
-}
-
 // ── 基础 el-table props：resizable 默认 true，且与 border 联动 ──────────────────────────
 const baseElTableProps = computed<Record<string, unknown>>(() => {
-  const legacyTableProps = toPlainRecord(props.tableProps)
-  const resolvedResizable = props.resizable ?? readBoolean(legacyTableProps['resizable']) ?? true
+  const resolvedResizable = props.resizable ?? true
   const resolvedBorder = resolvedResizable === true
     ? true
-    : (props.border ?? readBoolean(legacyTableProps['border']) ?? true)
+    : (props.border ?? true)
 
   return {
-    ...legacyTableProps,
     ...(props.stripe !== undefined ? { stripe: props.stripe } : {}),
     ...(props.highlightCurrentRow !== undefined ? { highlightCurrentRow: props.highlightCurrentRow } : {}),
     ...(props.rowKey !== undefined ? { rowKey: props.rowKey } : {}),

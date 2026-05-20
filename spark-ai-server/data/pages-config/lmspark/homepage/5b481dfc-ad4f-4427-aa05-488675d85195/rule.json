@@ -234,7 +234,7 @@
                 }
               },
               {
-                "type": "display-tag",
+                "type": "r-tag",
                 "id": "colStatus",
                 "children": [],
                 "props": {
@@ -331,12 +331,6 @@
                 "props": {},
                 "id": "ordersToolbar"
               },
-              "tableProps": {
-                "rowKey": "id",
-                "highlightCurrentRow": true,
-                "border": true,
-                "stripe": true
-              },
               "actions": {
                 "type": "r-toolbar",
                 "children": [
@@ -371,7 +365,11 @@
                   "align": "center"
                 }
               },
-              "dataViewKey": "Orders@orderListView"
+              "dataViewKey": "Orders@orderListView",
+              "rowKey": "id",
+              "highlightCurrentRow": true,
+              "border": true,
+              "stripe": true
             }
           }
         ],
@@ -479,12 +477,6 @@
                 "props": {},
                 "id": "customersToolbar"
               },
-              "tableProps": {
-                "rowKey": "id",
-                "highlightCurrentRow": true,
-                "border": true,
-                "stripe": true
-              },
               "actions": {
                 "type": "r-toolbar",
                 "children": [
@@ -519,7 +511,11 @@
                   "align": "center"
                 }
               },
-              "dataViewKey": "Customers@default"
+              "dataViewKey": "Customers@default",
+              "rowKey": "id",
+              "highlightCurrentRow": true,
+              "border": true,
+              "stripe": true
             }
           }
         ],
@@ -630,12 +626,6 @@
                 "props": {},
                 "id": "productsToolbar"
               },
-              "tableProps": {
-                "rowKey": "id",
-                "highlightCurrentRow": true,
-                "border": true,
-                "stripe": true
-              },
               "actions": {
                 "type": "r-toolbar",
                 "children": [
@@ -670,7 +660,11 @@
                   "align": "center"
                 }
               },
-              "dataViewKey": "Products@default"
+              "dataViewKey": "Products@default",
+              "rowKey": "id",
+              "highlightCurrentRow": true,
+              "border": true,
+              "stripe": true
             }
           }
         ],

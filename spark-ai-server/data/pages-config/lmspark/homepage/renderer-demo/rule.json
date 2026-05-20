@@ -64,10 +64,8 @@
                 "border": true,
                 "stripe": true,
                 "highlightCurrentRow": true,
-                "tableProps": {
-                  "rowKey": "id"
-                },
-                "dataViewKey": "users@default"
+                "dataViewKey": "users@default",
+                "rowKey": "id"
               }
             }
           ],
@@ -147,10 +145,8 @@
               "props": {
                 "border": true,
                 "stripe": true,
-                "tableProps": {
-                  "rowKey": "id"
-                },
-                "dataViewKey": "education_dict@default"
+                "dataViewKey": "education_dict@default",
+                "rowKey": "id"
               }
             }
           ],
@@ -340,11 +336,9 @@
           "props": {
             "border": true,
             "stripe": true,
-            "tableProps": {
-              "rowKey": "id"
-            },
             "highlightCurrentRow": true,
-            "dataViewKey": "user_resumes@default"
+            "dataViewKey": "user_resumes@default",
+            "rowKey": "id"
           }
         }
       ],

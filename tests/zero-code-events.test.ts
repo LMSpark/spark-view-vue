@@ -636,7 +636,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     })
 
     // 使用 normalizeOnProps 包装 action descriptor
-    const tableProps: Record<string, unknown> = {
+    const nodeProps: Record<string, unknown> = {
       dataViewKey: 'Users@default',
       onRowClick: {
         action: 'show-message',
@@ -644,11 +644,11 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
         cancelDefault: true,
       },
     }
-    normalizeOnProps(tableProps, vi.fn(), actionCtx)
+    normalizeOnProps(nodeProps, vi.fn(), actionCtx)
 
     const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
-      props: tableProps,
+      props: nodeProps,
       global: {
         stubs: {
           'el-table': ElTableStub,
@@ -684,7 +684,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
       getPageService: () => pageService,
     })
 
-    const tableProps: Record<string, unknown> = {
+    const nodeProps: Record<string, unknown> = {
       dataViewKey: 'Users@default',
       onSelectionChange: {
         action: 'show-message',
@@ -692,11 +692,11 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
         cancelDefault: true,
       },
     }
-    normalizeOnProps(tableProps, vi.fn(), actionCtx)
+    normalizeOnProps(nodeProps, vi.fn(), actionCtx)
 
     const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
-      props: tableProps,
+      props: nodeProps,
       global: {
         stubs: {
           'el-table': ElTableStub,
@@ -730,7 +730,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
       getPageService: () => pageService,
     })
 
-    const tableProps: Record<string, unknown> = {
+    const nodeProps: Record<string, unknown> = {
       dataViewKey: 'Users@default',
       onRowClick: {
         action: 'show-message',
@@ -738,11 +738,11 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
         // 无 cancelDefault
       },
     }
-    normalizeOnProps(tableProps, vi.fn(), actionCtx)
+    normalizeOnProps(nodeProps, vi.fn(), actionCtx)
 
     const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
-      props: tableProps,
+      props: nodeProps,
       global: {
         stubs: {
           'el-table': ElTableStub,

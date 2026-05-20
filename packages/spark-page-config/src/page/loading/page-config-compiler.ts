@@ -153,7 +153,7 @@ function createDataSetFromInput(input: Record<string, unknown>): PageDataConfig 
  * 规范化内容：
  * - 顶层可以是单个 SparkNode，也可以是 SparkNode[]
  * - 每条规则必须是合法 SparkNode
- * - 旧 `props.id` 只作为输入兼容读取，输出统一为顶层 `id`
+ * - 节点定位只接受顶层 `id`
  * - 根级业务字段提升等旧兼容逻辑已移除
  */
 export function compileRule(raw: string): RuleConfig[] {

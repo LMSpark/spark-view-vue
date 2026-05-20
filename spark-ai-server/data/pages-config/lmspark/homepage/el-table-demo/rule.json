@@ -106,12 +106,6 @@
               }
             ],
             "props": {
-              "tableProps": {
-                "rowKey": "id",
-                "highlightCurrentRow": true,
-                "border": true,
-                "stripe": true
-              },
               "toolbar": {
                 "type": "r-toolbar",
                 "children": [
@@ -173,7 +167,11 @@
                   "align": "center"
                 }
               },
-              "dataViewKey": "Users@default"
+              "dataViewKey": "Users@default",
+              "rowKey": "id",
+              "highlightCurrentRow": true,
+              "border": true,
+              "stripe": true
             }
           }
         ],

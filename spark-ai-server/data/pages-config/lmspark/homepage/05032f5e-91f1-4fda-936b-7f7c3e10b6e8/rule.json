@@ -152,12 +152,10 @@
                       }
                     ],
                     "props": {
-                      "tableProps": {
-                        "highlightCurrentRow": true,
-                        "rowKey": "id"
-                      },
                       "onCurrentChange": "onVoucherChange",
-                      "dataViewKey": "Voucher@all"
+                      "dataViewKey": "Voucher@all",
+                      "rowKey": "id",
+                      "highlightCurrentRow": true
                     },
                     "id": "table__voucherAll"
                   }
@@ -239,12 +237,10 @@
                       }
                     ],
                     "props": {
-                      "tableProps": {
-                        "highlightCurrentRow": true,
-                        "rowKey": "id"
-                      },
                       "onCurrentChange": "onVoucherChange",
-                      "dataViewKey": "Voucher@draft"
+                      "dataViewKey": "Voucher@draft",
+                      "rowKey": "id",
+                      "highlightCurrentRow": true
                     },
                     "id": "table__voucherDraft"
                   }
@@ -326,12 +322,10 @@
                       }
                     ],
                     "props": {
-                      "tableProps": {
-                        "highlightCurrentRow": true,
-                        "rowKey": "id"
-                      },
                       "onCurrentChange": "onVoucherChange",
-                      "dataViewKey": "Voucher@audited"
+                      "dataViewKey": "Voucher@audited",
+                      "rowKey": "id",
+                      "highlightCurrentRow": true
                     },
                     "id": "table__voucherAudited"
                   }

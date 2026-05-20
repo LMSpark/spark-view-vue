@@ -53,20 +53,12 @@ function normalizeSparkNodeChildren(children: SparkNodeChildren | undefined): Sp
   })
 }
 
-function normalizeSparkNodeIdentity(node: SparkNode, props: Record<string, unknown> | undefined): string | undefined {
-  const rawTopLevelId = node['id']
-  if (typeof rawTopLevelId === 'string') return rawTopLevelId
-
-  const legacyPropsId = props?.['id']
-  return typeof legacyPropsId === 'string' ? legacyPropsId : undefined
-}
-
 /**
  * 归一化 SparkNode 的结构语义。
  *
  * 统一处理：
  * - type 必须是非空字符串
- * - 节点定位 id：输出统一为顶层 id，旧输入 `props.id` 会被提升后移除
+ * - 节点定位 id：只接受顶层 id
  * - props 非纯对象（null / 数组 / 原始值）→ 省略 props 键
  * - children 缺省或非数组 → `[]`
  */
@@ -79,16 +71,13 @@ export function normalizeSparkNode(node: SparkNode): SparkNode {
 
   const normalizedProps = node.props !== undefined ? { ...node.props } : undefined
 
-  const normalizedId = normalizeSparkNodeIdentity(node, normalizedProps)
-
-  // 兼容旧 rule.json：props.id 只作为输入时的定位 id，规范化后不再向下游传播。
-  if (normalizedProps !== undefined) {
-    delete normalizedProps['id']
+  if (normalizedProps !== undefined && Object.prototype.hasOwnProperty.call(normalizedProps, 'id')) {
+    throw new Error('[spark] SparkNode.props.id is invalid. Put component identity on SparkNode.id.')
   }
 
   return {
     type: node.type,
-    ...(normalizedId !== undefined ? { id: normalizedId } : {}),
+    ...(typeof node.id === 'string' ? { id: node.id } : {}),
     ...(normalizedProps !== undefined && Object.keys(normalizedProps).length > 0 ? { props: normalizedProps } : {}),
     children: normalizeSparkNodeChildren(node.children),
   }

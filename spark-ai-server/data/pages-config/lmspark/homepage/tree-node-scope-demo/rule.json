@@ -8,7 +8,7 @@
         "id": "tree-demo",
         "children": [
           {
-            "type": "tree-node-summary",
+            "type": "r-tree-node-summary",
             "id": "tree-summary",
             "props": {
               "fields": [

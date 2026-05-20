@@ -182,7 +182,7 @@ DATA_ROW 来源：
   },
   "children": [
     {
-      "type": "r-row-fragment",
+      "type": "r-column-group",
       "props": { "label": "年龄画像" },
       "children": [
         {
@@ -260,7 +260,7 @@ flowchart LR
   },
   "children": [
     {
-      "type": "r-row-fragment",
+      "type": "r-column-group",
       "props": { "title": "订单号" },
       "children": [
         { "type": "r-text", "props": { "field": "orderNo" } }
@@ -651,7 +651,7 @@ flowchart TD
         },
         "children": [
           {
-            "type": "r-row-fragment",
+            "type": "r-column-group",
             "props": { "title": "订单号" },
             "children": [
               { "type": "r-text", "props": { "field": "orderNo" } }
