@@ -5,7 +5,7 @@ import {
   parseAiHostSseBlocks,
   type AiHostFetch,
   type AiHostSseEvent,
-} from '../core/host/index'
+} from '../host/index'
 
 const encoder = new TextEncoder()
 
@@ -35,10 +35,10 @@ function createFetch(fn: AiHostFetch) {
 }
 
 const scope = {
-  businessRegistrationId: 'pageDesign',
-  businessInstanceId: 'page-a',
-  instanceId: 'pageDesign:page-a',
-  runtimeInstanceId: 'pageDesign:page-a',
+  businessRegistrationId: 'demoRuntime',
+  businessInstanceId: 'business-a',
+  instanceId: 'demoRuntime:business-a',
+  runtimeInstanceId: 'demoRuntime:business-a',
 }
 
 const turn = {
@@ -104,13 +104,13 @@ describe('AiHostFetchTransport', () => {
     expect(reasoning).toEqual(['thinking'])
     expect(usage).toEqual([{ totalTokens: 3 }])
     expect(events.map((event) => event.type)).toEqual(['delta', 'reasoning', 'usage', 'result'])
-    expect(events[0]?.streamKey).toBe('pageDesign::page-a::llm::turn-1')
+    expect(events[0]?.streamKey).toBe('demoRuntime::business-a::llm::turn-1')
 
     expect(fetchClient).toHaveBeenCalledOnce()
     const [, init] = fetchClient.mock.calls[0] ?? []
     expect(init?.method).toBe('POST')
     expect(init?.body).toContain('"protocolVersion":3')
-    expect(init?.body).toContain('"moduleId":"pageDesign"')
+    expect(init?.body).toContain('"moduleId":"demoRuntime"')
   })
 
   it('unwraps append-message API envelopes and validates session identity', async () => {

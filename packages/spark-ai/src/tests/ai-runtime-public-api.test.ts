@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 
 import * as SparkAi from '../index'
-import * as SparkAiHost from '../core/host/index'
+import * as SparkAiHost from '../host/index'
 
 function resolveAiSourceRoot(): string {
   try {
@@ -16,10 +16,20 @@ function resolveAiSourceRoot(): string {
 }
 
 const AI_SOURCE_ROOT = resolveAiSourceRoot()
-const AI_CORE_SOURCE_ROOT = join(AI_SOURCE_ROOT, 'core')
+const AI_RUNTIME_SOURCE_ROOTS = [
+  join(AI_SOURCE_ROOT, 'protocol'),
+  join(AI_SOURCE_ROOT, 'internal'),
+  join(AI_SOURCE_ROOT, 'host'),
+]
+const PAGE_CONFIG_PACKAGE_NAME = `@spark-view/${'spark-page'}-${'config'}`
+const PAGE_CONFIG_PACKAGE_SEGMENT = `${'spark-page'}-${'config'}`
 
 const LEGACY_CORE_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions|KnowledgeProjection)\b|\bcreateAiRuntimeToolCodec\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b/
 const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/
+const PAGE_CONFIG_IMPORT_RE = new RegExp(
+  `from\\s+['"](?:${PAGE_CONFIG_PACKAGE_NAME}|.*${PAGE_CONFIG_PACKAGE_SEGMENT})`
+  + `|import\\s*\\(\\s*['"](?:${PAGE_CONFIG_PACKAGE_NAME}|.*${PAGE_CONFIG_PACKAGE_SEGMENT})`,
+)
 
 function stripNonCodeSegments(line: string, inBlockComment: boolean): { code: string; inBlockComment: boolean } {
   let code = ''
@@ -94,7 +104,7 @@ function collectSourceFiles(root: string): string[] {
 }
 
 function legacyCoreSourceViolations(): string[] {
-  return collectSourceFiles(AI_CORE_SOURCE_ROOT)
+  return AI_RUNTIME_SOURCE_ROOTS.flatMap((root) => collectSourceFiles(root))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       return content.split(/\r?\n/).flatMap((line, index) => (
@@ -106,7 +116,7 @@ function legacyCoreSourceViolations(): string[] {
 }
 
 function typeAssertionViolations(): string[] {
-  return collectSourceFiles(AI_CORE_SOURCE_ROOT)
+  return AI_RUNTIME_SOURCE_ROOTS.flatMap((root) => collectSourceFiles(root))
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       let importOrExportBlock = false
@@ -126,6 +136,18 @@ function typeAssertionViolations(): string[] {
     })
 }
 
+function pageConfigImportViolations(): string[] {
+  return AI_RUNTIME_SOURCE_ROOTS.flatMap((root) => collectSourceFiles(root))
+    .flatMap((file) => {
+      const content = readFileSync(file, 'utf8')
+      return content.split(/\r?\n/).flatMap((line, index) => (
+        PAGE_CONFIG_IMPORT_RE.test(line)
+          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
+          : []
+      ))
+    })
+}
+
 describe('ai runtime public surface', () => {
   it('exposes runtime protocol, host, function calling, and knowledge classes from spark-ai', () => {
     expect(typeof SparkAi.AiRuntime).toBe('function')
@@ -133,9 +155,6 @@ describe('ai runtime public surface', () => {
     expect(typeof SparkAi.AiRuntimeToolCodec).toBe('function')
     expect(typeof SparkAiHost.AiHostBusinessRegistry).toBe('function')
 
-    expect('PageDesignModule' in SparkAi).toBe(false)
-    expect('LeaveRequestModule' in SparkAi).toBe(false)
-    expect('LifecycleModule' in SparkAi).toBe(false)
     expect('registerAppAiBusinesses' in SparkAi).toBe(false)
     expect('createAiRuntimeToolCodec' in SparkAi).toBe(false)
     expect('registerBusiness' in new SparkAi.AiRuntime()).toBe(false)
@@ -147,5 +166,9 @@ describe('ai runtime public surface', () => {
 
   it('keeps ai runtime off TypeScript assertion escapes', () => {
     expect(typeAssertionViolations()).toEqual([])
+  })
+
+  it('keeps spark-ai independent from page config package imports', () => {
+    expect(pageConfigImportViolations()).toEqual([])
   })
 })

@@ -9,4 +9,5 @@
  * calling, tool codec, and knowledge projection.
  */
 
-export * from './core'
+export * from './protocol'
+export * from './host'

@@ -6,8 +6,8 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'core/index': resolve(__dirname, 'src/core/index.ts'),
-        'core/host/index': resolve(__dirname, 'src/core/host/index.ts'),
+        'protocol/index': resolve(__dirname, 'src/protocol/index.ts'),
+        'host/index': resolve(__dirname, 'src/host/index.ts'),
       },
       formats: ['es'],
     },

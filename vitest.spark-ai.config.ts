@@ -13,11 +13,12 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@spark-view/spark-ai/host': resolve(root, './packages/spark-ai/src/core/host/index.ts'),
+      '@spark-view/spark-ai/protocol': resolve(root, './packages/spark-ai/src/protocol/index.ts'),
+      '@spark-view/spark-ai/core': resolve(root, './packages/spark-ai/src/index.ts'),
+      '@spark-view/spark-ai/host': resolve(root, './packages/spark-ai/src/host/index.ts'),
       '@spark-view/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-utils': resolve(root, './packages/spark-utils/src/index.ts'),
-      '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
     },
   },
 })
