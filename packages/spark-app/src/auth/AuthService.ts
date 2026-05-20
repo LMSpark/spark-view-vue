@@ -771,7 +771,7 @@ export class AuthService {
    * @private
    * @returns Mock 认证结果
    */
-  // eslint-disable-next-line @typescript-eslint/require-await -- implements async interface contract; mock returns synchronously
+  // eslint-disable-next-line @typescript-eslint/require-await -- matches the async auth flow while mock data is local
   private async mockCheckAuth(): Promise<AuthResult> {
     authLogger.debug('🎭 [Mock] 模拟认证检查')
 

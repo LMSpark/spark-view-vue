@@ -21,7 +21,7 @@ export type FilterOperator =
   | 'between' | 'not between'
   | 'startsWith' | 'endsWith' | 'contains'
 
-export interface FilterFieldRef {
+export type FilterFieldRef = {
   kind: 'field'
   field: string
 }

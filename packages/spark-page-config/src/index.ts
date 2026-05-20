@@ -200,6 +200,14 @@ export {
   updateNodeValue,
 } from './files'
 
+export {
+  registerAppAiBusinesses,
+} from './ai/registrations'
+
+export type {
+  RegisterAppAiBusinessesOptions,
+} from './ai/registrations'
+
 export type {
   AppModuleBase,
   AppNavRoot,

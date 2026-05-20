@@ -11,12 +11,10 @@ import {
 } from '@spark-view/spark-ai/host'
 import type {
   AiHostAppendMessagesInput,
+  AiHostFetchTransportOptions,
   AiHostStreamTurnInput,
   AiHostStreamTurnResult,
   AiHostTransport,
-} from '@spark-view/spark-ai/host'
-import type {
-  AiHostFetchTransportOptions,
   AiHostUploadedAttachment,
 } from '@spark-view/spark-ai/host'
 
@@ -31,6 +29,7 @@ export type AppAiAttachmentUploadOptions = {
 
 export class AppAiHost {
   readonly transport: AiHostTransport
+
   private readonly transportOptions: AiHostFetchTransportOptions
 
   constructor(options: AppAiHostOptions = {}) {

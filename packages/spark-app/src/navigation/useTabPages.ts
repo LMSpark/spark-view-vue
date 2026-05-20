@@ -2,7 +2,7 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 
-export interface TabPage {
+export type TabPage = {
   /** 路由完整路径（唯一标识） */
   path: string
   /** 显示标题 */
@@ -19,7 +19,7 @@ export interface TabPage {
 
 export type PageMode = 'single' | 'multi'
 
-export interface UseTabPagesOptions {
+export type UseTabPagesOptions = {
   navigate?: (fullPath: string) => Promise<void> | void
 }
 

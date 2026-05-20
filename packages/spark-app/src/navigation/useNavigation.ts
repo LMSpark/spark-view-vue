@@ -96,7 +96,7 @@ function resolveRemoteSource(source: string): { url: string } {
   return { url: source }
 }
 
-interface UseNavigationOptions {
+type UseNavigationOptions = {
   /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */
   onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>
   /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */

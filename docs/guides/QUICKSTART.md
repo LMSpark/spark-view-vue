@@ -193,7 +193,7 @@ import { ref } from 'vue'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 
-interface HelloWorldConfig extends SparkNode {
+type HelloWorldConfig = SparkNode & {
   title?: string
   initialCount?: number
 }

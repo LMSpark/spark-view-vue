@@ -34,26 +34,26 @@ export type {
 
 export type AiRuntimeAction = string
 
-export interface AiRuntimeInstanceScope {
+export type AiRuntimeInstanceScope = {
   readonly moduleId: AiRuntimeModuleId
   readonly moduleInstanceId: AiRuntimeModuleInstanceId
   readonly instanceId: string
   readonly runtimeInstanceId: string
 }
 
-export interface AiModuleInstanceBinding {
+export type AiModuleInstanceBinding = {
   readonly modulePath: AiRuntimeModulePath
   readonly instanceId: AiRuntimeModuleInstanceId
   readonly paramName?: string | undefined
 }
 
-export interface AiRuntimeActivePathSnapshot {
+export type AiRuntimeActivePathSnapshot = {
   readonly instanceId: string
   readonly bindings: readonly AiModuleInstanceBinding[]
   readonly moduleInstances: Readonly<Record<string, string>>
 }
 
-export interface FunctionExecutionContext extends AiRuntimeInstanceScope {
+export type FunctionExecutionContext = AiRuntimeInstanceScope & {
   readonly modulePath: AiRuntimeModulePath
   readonly moduleIds: readonly string[]
   readonly functionId: AiRuntimeFunctionId
@@ -62,14 +62,14 @@ export interface FunctionExecutionContext extends AiRuntimeInstanceScope {
   readonly activePath: AiRuntimeActivePathSnapshot
 }
 
-export interface AiRuntimeFunctionContextParam {
+export type AiRuntimeFunctionContextParam = {
   readonly modulePath: AiRuntimeModulePath
   readonly moduleId: AiRuntimeModuleId
   readonly paramName: string
   readonly description: string
 }
 
-export interface AiRuntimeFunctionExposure {
+export type AiRuntimeFunctionExposure = {
   readonly action: AiRuntimeAction
   readonly moduleId: AiRuntimeModuleId
   readonly modulePath: AiRuntimeModulePath
@@ -83,7 +83,7 @@ export interface AiRuntimeFunctionExposure {
   readonly contextParams: readonly AiRuntimeFunctionContextParam[]
 }
 
-export interface AiRuntimeModuleExposure {
+export type AiRuntimeModuleExposure = {
   readonly moduleId: AiRuntimeModuleId
   readonly modulePath: AiRuntimeModulePath
   readonly moduleIds: readonly string[]
@@ -95,14 +95,14 @@ export interface AiRuntimeModuleExposure {
   readonly modules: readonly AiRuntimeModuleExposure[]
 }
 
-export interface AiRuntimeKnowledgeProjection {
+export type AiRuntimeKnowledgeProjection = {
   readonly scope: AiRuntimeInstanceScope
   readonly module: AiRuntimeModuleExposure
   readonly promptSnapshot: string
   readonly availableFunctions: readonly AiRuntimeFunctionExposure[]
 }
 
-export interface AiRuntimeFunctionCallFailure {
+export type AiRuntimeFunctionCallFailure = {
   readonly ok: false
   readonly code: string
   readonly msg: string
@@ -115,13 +115,13 @@ export type AiRuntimeFunctionCallResult<TData> = {
   readonly summary?: string | undefined
 } | AiRuntimeFunctionCallFailure
 
-export interface AiRuntimeFunctionResultMessage {
+export type AiRuntimeFunctionResultMessage = {
   readonly action: AiRuntimeAction
   readonly result: AiRuntimeFunctionCallResult<unknown>
   readonly content: string
 }
 
-export interface AiRuntimeFunctionCallTranslation {
+export type AiRuntimeFunctionCallTranslation = {
   readonly action: AiRuntimeAction
   readonly rawArgs: unknown
   readonly effectiveArgs: Record<string, unknown>
@@ -137,16 +137,16 @@ export type AiRuntimeFunctionCallTranslationResult = {
   readonly translation: AiRuntimeFunctionCallTranslation
 } | AiRuntimeFunctionCallFailure
 
-export interface AiRuntimeProjectKnowledgeOptions extends AiRuntimeInstanceScope {}
+export type AiRuntimeProjectKnowledgeOptions = AiRuntimeInstanceScope & {}
 
-export interface AiRuntimeTranslateFunctionCallOptions extends AiRuntimeProjectKnowledgeOptions {
+export type AiRuntimeTranslateFunctionCallOptions = AiRuntimeProjectKnowledgeOptions & {
   readonly action: AiRuntimeAction
   readonly args: unknown
   readonly activePath?: readonly AiModuleInstanceBinding[] | undefined
   readonly projection?: AiRuntimeKnowledgeProjection | undefined
 }
 
-export interface AiRuntimeFunctionCallRunInput {
+export type AiRuntimeFunctionCallRunInput = {
   readonly translation: AiRuntimeFunctionCallTranslation
   readonly moduleRegistration: AiModuleRegistration
   readonly functionRegistration: AiFunctionRegistration
@@ -161,7 +161,7 @@ export type AiRuntimeFunctionCallResultNormalizer = (
   input: AiRuntimeFunctionCallRunInput,
 ) => AiRuntimeFunctionCallResult<unknown>
 
-export interface AiRuntimeExecuteFunctionCallOptions extends AiRuntimeTranslateFunctionCallOptions {
+export type AiRuntimeExecuteFunctionCallOptions = AiRuntimeTranslateFunctionCallOptions & {
   readonly run: AiRuntimeFunctionCallRunner
   readonly validate?: AiRuntimeFunctionCallValidator | undefined
   readonly normalizeResult?: AiRuntimeFunctionCallResultNormalizer | undefined
@@ -169,12 +169,12 @@ export interface AiRuntimeExecuteFunctionCallOptions extends AiRuntimeTranslateF
   readonly metadata?: Record<string, unknown> | undefined
 }
 
-export interface AiRuntimeCreateFunctionResultMessageOptions {
+export type AiRuntimeCreateFunctionResultMessageOptions = {
   readonly action: AiRuntimeAction
   readonly result: AiRuntimeFunctionCallResult<unknown>
 }
 
-export interface AiRuntimeOptions {
+export type AiRuntimeOptions = {
   readonly now?: (() => number) | undefined
 }
 

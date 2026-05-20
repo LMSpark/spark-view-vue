@@ -19,13 +19,13 @@ import type {
   AiHostTurnMeta,
 } from './types'
 
-export interface AiHostSendInput {
+export type AiHostSendInput = {
   readonly request: AiHostChatRequest
   readonly turn: AiHostTurnMeta
   readonly scope: AiHostBusinessScope
 }
 
-export interface AiHostSendContext {
+export type AiHostSendContext = {
   selected: AiHostSelectedBusiness | null
   clearSelected(): void
   setSelected(selected: AiHostSelectedBusiness): void

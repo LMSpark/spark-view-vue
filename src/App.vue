@@ -276,7 +276,7 @@ function persistCurrentProjectUiSettings(): void {
 
 watch([headerFirst, sidebarCollapsed, showFooter, mode], persistCurrentProjectUiSettings, { flush: 'sync' })
 
-interface AppContextGuardState {
+type AppContextGuardState = {
   title: string
   message: string
   primaryActionLabel: string

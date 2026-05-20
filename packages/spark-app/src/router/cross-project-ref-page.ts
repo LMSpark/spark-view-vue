@@ -22,23 +22,23 @@ import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
 
-interface ReloadableRenderer {
+type ReloadableRenderer = {
   reload?: () => Promise<void>
 }
 
-interface ParsedRefPath {
+type ParsedRefPath = {
   projectId: string | null
   pageId: string | null
 }
 
-interface ResolvedRefTarget {
+type ResolvedRefTarget = {
   hostRefNodeId: string | null
   targetProjectId: string | null
   refPath: string | null
   pageId: string | null
 }
 
-export interface CrossProjectRefPageRouteProps {
+export type CrossProjectRefPageRouteProps = {
   configLoader: BasePageConfigLoader
   tenantId?: string | undefined
   hostProjectId?: string | undefined

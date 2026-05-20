@@ -126,7 +126,7 @@ export function registerCustomPlugins(): void {
     description: 'Vue 状态管理库',
     defaultOptions: {}
   })
-  
+
   // 注册 Vue Router（如果需要自定义）
   PluginRegistry.register('vue-router', {
     name: 'Vue Router',
@@ -141,7 +141,7 @@ export function registerCustomPlugins(): void {
     },
     description: 'Vue 路由管理器'
   })
-  
+
   // 注册自定义插件
   PluginRegistry.register('my-plugin', {
     name: 'My Custom Plugin',
@@ -165,16 +165,16 @@ import { registerCustomPlugins } from './config/custom-plugins'
 async function startApp() {
   // 注册内置插件
   registerBuiltinPlugins()
-  
+
   // 注册自定义插件
   registerCustomPlugins()
-  
+
   // 加载配置
   const appConfig = await loadAppConfig()
-  
+
   // 加载插件
   const plugins = await PluginManager.loadPlugins(appConfig.plugins)
-  
+
   // 启动应用
   await SparkApp.start({ plugins, ... })
 }
@@ -344,7 +344,7 @@ PluginRegistry.register('element-plus', {
 
 ```typescript
 // src/config/types.ts
-export interface MyPluginOptions {
+export type MyPluginOptions = {
   theme: 'light' | 'dark'
   debug: boolean
   apiEndpoint?: string
@@ -425,19 +425,19 @@ try {
 class PluginRegistry {
   // 注册单个插件
   static register(id: string, loader: PluginLoader): void
-  
+
   // 批量注册插件
   static registerAll(loaders: Record<string, PluginLoader>): void
-  
+
   // 获取插件加载器
   static get(id: string): PluginLoader | undefined
-  
+
   // 检查插件是否已注册
   static has(id: string): boolean
-  
+
   // 获取所有插件 ID
   static getAllIds(): string[]
-  
+
   // 清除所有注册
   static clear(): void
 }
@@ -457,7 +457,7 @@ class PluginManager {
 ### PluginLoader
 
 ```typescript
-interface PluginLoader {
+type PluginLoader = {
   name: string                                      // 插件名称
   module: string                                    // 模块路径
   loader: () => Promise<{ default: Plugin }>        // 动态导入函数
@@ -469,7 +469,7 @@ interface PluginLoader {
 ### PluginConfigItem
 
 ```typescript
-interface PluginConfigItem {
+type PluginConfigItem = {
   enabled: boolean                  // 是否启用
   options?: Record<string, any>     // 插件选项
   lazy?: boolean                    // 是否懒加载

@@ -2,29 +2,29 @@ import type { NavNode } from './nav-model'
 
 export type NavNodeRouteTargetKind = 'page' | 'external-link' | 'cross-project-ref'
 
-export interface NavNodeRouteTarget {
+export type NavNodeRouteTarget = {
   kind: 'route'
   routeKind: NavNodeRouteTargetKind
   path: string
 }
 
-export interface NavNodeExternalTarget {
+export type NavNodeExternalTarget = {
   kind: 'external'
   mode: 'new-tab' | 'self'
   href: string
 }
 
-export interface NavNodeActionTarget {
+export type NavNodeActionTarget = {
   kind: 'action'
   command: string
 }
 
-export interface NavNodeContainerTarget {
+export type NavNodeContainerTarget = {
   kind: 'container'
   redirect?: string
 }
 
-export interface NavNodeHiddenTarget {
+export type NavNodeHiddenTarget = {
   kind: 'hidden'
   reason: 'sub-page'
 }

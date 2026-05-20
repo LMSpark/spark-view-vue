@@ -18,7 +18,7 @@ import type { AppNavRoot } from '@spark-view/spark-page-config'
 export type PageScope = 'public' | 'tenant' | 'app'
 
 /** 组件页面描述 */
-export interface VuePageEntry {
+export type VuePageEntry = {
   /** 显示标题（用于编辑器选择器） */
   title: string
   /** 图标 */

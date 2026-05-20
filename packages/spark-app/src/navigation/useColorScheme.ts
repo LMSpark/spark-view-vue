@@ -35,25 +35,25 @@ function mixColor(c1: string, c2: string, weight: number): string {
 
 // ── Preset definitions ──
 
-export interface PrimaryPreset {
+export type PrimaryPreset = {
   name: string
   color: string
 }
 
-export interface NavColorSet {
+export type NavColorSet = {
   headerBg: string
   sidebarBg: string
   textColor: string
 }
 
-export interface NavPreset {
+export type NavPreset = {
   name: string
   color: string
   light: NavColorSet
   dark: NavColorSet
 }
 
-export interface StyleColorSet {
+export type StyleColorSet = {
   bg: string
   page: string
   overlay: string
@@ -79,7 +79,7 @@ export interface StyleColorSet {
   scrollbarThumbHover: string
 }
 
-export interface StylePreset {
+export type StylePreset = {
   name: string
   description: string
   icon: string
@@ -515,7 +515,7 @@ const FALLBACK_STYLE = getFallbackStylePreset()
 
 const STORAGE_KEY = 'spark-color-scheme'
 
-interface SchemeState {
+type SchemeState = {
   primaryColor: string
   navIndex: number
   styleIndex: number

@@ -3,12 +3,12 @@ import type {
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
 
-export interface AiKnowledgeScope {
+export type AiKnowledgeScope = {
   readonly moduleId: string
   readonly moduleInstanceId: string
 }
 
-export interface AiKnowledgeFunctionSummary {
+export type AiKnowledgeFunctionSummary = {
   readonly action: AiRuntimeFunctionExposure['action']
   readonly moduleId: AiRuntimeFunctionExposure['moduleId']
   readonly modulePath: AiRuntimeFunctionExposure['modulePath']
@@ -19,7 +19,7 @@ export interface AiKnowledgeFunctionSummary {
   readonly failureCodes?: readonly string[] | undefined
 }
 
-export interface AiKnowledgeModuleSummary {
+export type AiKnowledgeModuleSummary = {
   readonly moduleId: AiRuntimeModuleExposure['moduleId']
   readonly modulePath: AiRuntimeModuleExposure['modulePath']
   readonly moduleIds: AiRuntimeModuleExposure['moduleIds']

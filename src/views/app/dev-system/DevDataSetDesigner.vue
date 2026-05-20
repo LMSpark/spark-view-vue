@@ -1,6 +1,6 @@
-<!-- 
+<!--
   DevDataSetDesigner — DataSet 可视化设计器
-  
+
   功能：
   - 可视化展示表结构和关联关系
   - 可视化编辑数据模型
@@ -307,7 +307,7 @@ type DesignerColumn = DesignerTableProjection['columns'][number]
 type DesignerTable = DesignerTableProjection
 type DesignerRelation = DesignerRelationProjection
 
-interface RelationDraftState {
+type RelationDraftState = {
   sourceIndex: number
   sourceSelector: ReturnType<typeof buildRelationSelector>
   draft: DesignerRelation

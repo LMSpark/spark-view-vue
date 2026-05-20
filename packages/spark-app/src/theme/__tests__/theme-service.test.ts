@@ -143,7 +143,7 @@ describe('ThemeService', () => {
     })
   })
 
-  it('should satisfy ThemeCapability interface', () => {
+  it('should satisfy ThemeCapability contract', () => {
     scope.run(() => {
       const theme = createThemeService()
       // All ThemeCapability members must exist

@@ -28,7 +28,7 @@ import { createFetchClient } from '@spark-view/spark-utils'
  * - spark-utils LoggerApi: 轻量级，(...args: unknown[]) => void
  * - AppLoggerApi: 结构化参数，(message: string, meta?) => void
  */
-export interface AppLoggerApi {
+export type AppLoggerApi = {
   debug(message: string, meta?: Record<string, unknown>): void
   info(message: string, meta?: Record<string, unknown>): void
   warn(message: string, meta?: Record<string, unknown>): void
@@ -39,7 +39,7 @@ export interface AppLoggerApi {
 /**
  * 日志配置
  */
-export interface AppLoggerConfig {
+export type AppLoggerConfig = {
   /** 最小日志级别 */
   level?: LogLevel
   /** 是否启用颜色 */
@@ -65,7 +65,7 @@ export interface AppLoggerConfig {
  *
  * 继承 spark-utils LogTransport（SSoT）并补充批量传输需要的 flush/destroy。
  */
-export interface LogTransport extends BaseLogTransport {
+export type LogTransport = BaseLogTransport & {
   /** 立即刷新队列中的日志（批量传输器可选实现） */
   flush?(): void
   /** 销毁传输器，释放定时器等资源 */
@@ -129,7 +129,7 @@ export function getGlobalTransportCount(): number {
 
 // ─── 批量 HTTP 传输器配置 ─────────────────────────────────────────────────────
 
-export interface BatchTransportOptions {
+export type BatchTransportOptions = {
   /** 远程端点 URL */
   endpoint: string
   /** 上报的最小日志级别（默认 'debug'） */
@@ -144,7 +144,7 @@ export interface BatchTransportOptions {
   sessionId?: string
 }
 
-interface LogEntry {
+type LogEntry = {
   level: LogLevel
   message: string
   meta?: Record<string, unknown> | undefined

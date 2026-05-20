@@ -112,7 +112,7 @@ import { getPlatformTenantApi } from '@/services/api-paths'
 import { buildTenantPath } from '@/services/tenant-scope'
 import TenantConfigPanel from './TenantConfigPanel.vue'
 
-interface PlatformTenant {
+type PlatformTenant = {
   tenantId: string
   tenantName: string
   tenantCode: string

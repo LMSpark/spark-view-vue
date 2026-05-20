@@ -148,10 +148,18 @@ import { skillCatalog, type SkillMeta, type PropMeta } from 'virtual:spark-skill
 
 // ── 类型字典 ──────────────────────────────────────────────────────────────
 
-interface TypeDictEntry {
+type TypeDictEntry = {
   name: string
   definition: string
   fields?: Array<{ name: string; type: string; desc: string }>
+}
+
+type PropsTableProps = {
+  readonly props: PropMeta[]
+}
+
+type PropsTableEmits = {
+  'type-click': (name: string) => boolean
 }
 
 const TYPE_DICT: Record<string, TypeDictEntry> = {
@@ -166,7 +174,7 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'DockToolbarNode': {
     name: 'DockToolbarNode',
-    definition: 'interface extends SparkNode { type: "r-toolbar" }',
+    definition: 'type DockToolbarNode = SparkNode & { type: "r-toolbar" }',
     fields: [
       { name: 'type', type: '"r-toolbar"', desc: '固定值' },
       { name: 'props.position', type: 'ToolbarPosition', desc: '工具栏位置' },
@@ -176,7 +184,7 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'DockFilterNode': {
     name: 'DockFilterNode',
-    definition: 'interface extends SparkNode { type: "r-filter" }',
+    definition: 'type DockFilterNode = SparkNode & { type: "r-filter" }',
     fields: [
       { name: 'type', type: '"r-filter"', desc: '固定值' },
       { name: 'props.columns', type: 'Array<string | DockFilterItem>', desc: '筛选列配置' },
@@ -187,7 +195,7 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'DockActionsNode': {
     name: 'DockActionsNode',
-    definition: 'interface extends SparkNode { type: "r-toolbar" }',
+    definition: 'type DockActionsNode = SparkNode & { type: "r-toolbar" }',
     fields: [
       { name: 'type', type: '"r-toolbar"', desc: '固定值' },
       { name: 'props.position', type: 'LateralActionPosition', desc: '行操作列位置' },
@@ -199,7 +207,7 @@ const TYPE_DICT: Record<string, TypeDictEntry> = {
   },
   'DockEditorNode': {
     name: 'DockEditorNode',
-    definition: 'interface extends SparkNode { type: "r-editor" }',
+    definition: 'type DockEditorNode = SparkNode & { type: "r-editor" }',
     fields: [
       { name: 'type', type: '"r-editor"', desc: '固定值' },
       { name: 'children', type: 'SparkNode[]', desc: '编辑区子节点' },
@@ -361,12 +369,8 @@ function handleTypeClick(typeName: string) {
 
 // ── PropsTable 内联组件（类型可点击） ─────────────────────────────────────
 
-const PropsTable = defineComponent({
-  props: {
-    props: { type: Array as () => PropMeta[], required: true },
-  },
-  emits: ['type-click'],
-  setup(p, { emit }) {
+const PropsTable = defineComponent<PropsTableProps, PropsTableEmits>(
+  (p, { emit }) => {
     return () => h('table', { class: 'props-table' }, [
       h('thead', [h('tr', [
         h('th', '属性'), h('th', '类型'), h('th', '必填'), h('th', '默认值'), h('th', '说明'),
@@ -385,7 +389,13 @@ const PropsTable = defineComponent({
       )),
     ])
   },
-})
+  {
+    props: ['props'],
+    emits: {
+      'type-click': (name: string) => name.length > 0,
+    },
+  },
+)
 
 function createTypeCells(typeStr: string, emit: (event: 'type-click', name: string) => void) {
   const parts = extractClickableTypes(typeStr)

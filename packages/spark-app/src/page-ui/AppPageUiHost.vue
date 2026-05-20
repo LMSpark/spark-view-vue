@@ -53,7 +53,7 @@
               type="checkbox"
               :checked="appPageUiState.selector.selectedValues.includes(String(option.value))"
               :disabled="option.disabled === true"
-              @change="toggleSelectorOption(option, ($event.target as HTMLInputElement).checked)"
+              @change="handleSelectorCheckboxChange(option, $event)"
             />
             <span class="app-page-selector-texts">
               <span class="app-page-selector-label">{{ option.label }}</span>
@@ -145,6 +145,13 @@ function toggleSelectorOption(option: PageSelectedEntity, checked: boolean): voi
     return
   }
   appPageUiState.selector.selectedValues = appPageUiState.selector.selectedValues.filter(value => value !== key)
+}
+
+function handleSelectorCheckboxChange(option: PageSelectedEntity, event: Event): void {
+  if (!(event.target instanceof HTMLInputElement)) {
+    throw new Error('App page selector checkbox change event target must be an HTMLInputElement')
+  }
+  toggleSelectorOption(option, event.target.checked)
 }
 
 function selectSingleOption(option: PageSelectedEntity): void {

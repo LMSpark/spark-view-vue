@@ -204,7 +204,7 @@ RendererTree 是当前树容器主入口，定位不是“一个普通 Vue 组�
 当前稳定 API：
 
 ```ts
-interface RendererTreeApi {
+type RendererTreeApi = {
   getDataSource(): IDataSource | null
   getTreeData(): IDataRow[]
   getNativeTree(): unknown

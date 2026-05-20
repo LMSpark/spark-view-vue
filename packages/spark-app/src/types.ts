@@ -21,7 +21,7 @@ export type AppEnvironment = 'development' | 'production' | 'test'
 /**
  * 用户信息
  */
-export interface UserInfo {
+export type UserInfo = {
   userId: string
   username: string
   displayName?: string
@@ -34,7 +34,7 @@ export interface UserInfo {
 /**
  * 租户信息
  */
-export interface TenantInfo {
+export type TenantInfo = {
   tenantId: string
   tenantName: string
   tenantCode?: string
@@ -45,7 +45,7 @@ export interface TenantInfo {
 /**
  * 环境信息
  */
-export interface EnvironmentInfo {
+export type EnvironmentInfo = {
   mode: AppEnvironment
   apiBaseUrl: string
   version: string
@@ -54,26 +54,26 @@ export interface EnvironmentInfo {
 
 /**
  * 应用全局上下文接口
- * 
+ *
  * 作用域：整个 SPA 应用
  * 生命周期：应用启动时创建，应用关闭时销毁（单例）
- * 
+ *
  * 用途：
  * - 存储应用级全局信息（用户、租户、环境）
  * - 提供跨页面共享的配置和状态
  * - 支持 SSR/CSR 环境检测
- * 
+ *
  * 注意：
  * - 此 Context 是应用级单例，所有页面共享
  * - 不应存储页面级状态，避免内存泄漏
  * - 通过依赖注入（DI）在需要时注入到组件中
- * 
+ *
  * 典型使用场景：
  * - 权限校验（基于 user/tenant）
  * - 环境判断（SSR vs CSR）
  * - 全局配置读取
  */
-export interface AppContext {
+export type AppContext = {
   /** 用户信息 */
   user: UserInfo
   /** 租户信息 */
@@ -89,7 +89,7 @@ export interface AppContext {
 /**
  * 应用配置
  */
-export interface AppConfig {
+export type AppConfig = {
   /** API 基础地址 */
   apiBaseUrl: string
   /** 日志级别 */
@@ -110,7 +110,7 @@ export interface AppConfig {
 /**
  * Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由
  */
-export interface BootstrapContext extends AppContext {
+export type BootstrapContext = AppContext & {
   /** Vue 应用实例 */
   app: App
   /** Vue Router 实例 */
@@ -122,7 +122,7 @@ export interface BootstrapContext extends AppContext {
 /**
  * 初始化选项
  */
-export interface BootstrapOptions {
+export type BootstrapOptions = {
   /** Vue 应用实例 */
   app: App
   /** Vue Router 实例 */
@@ -144,7 +144,7 @@ export interface BootstrapOptions {
 /**
  * 路由守卫选项
  */
-export interface RouterGuardOptions {
+export type RouterGuardOptions = {
   /** 自定义权限检查 */
   checkPermission?: (permissions: string[], required: string[]) => boolean
 }
@@ -152,7 +152,7 @@ export interface RouterGuardOptions {
 /**
  * 错误处理选项
  */
-export interface ErrorHandlerOptions {
+export type ErrorHandlerOptions = {
   /** 错误回调 */
   onError?: (error: Error, context: ErrorContext) => void
   /** 自定义错误分类 */
@@ -163,21 +163,21 @@ export interface ErrorHandlerOptions {
 
 /**
  * 错误上下文接口
- * 
+ *
  * 作用域：单次错误发生时的临时上下文
  * 生命周期：错误捕获时创建，用于错误日志记录和上报
- * 
+ *
  * 用途：
  * - 记录错误发生的位置和时间
  * - 为错误监控和追踪提供结构化信息
  * - 支持错误日志聚合和分析
- * 
+ *
  * 典型使用场景：
  * - 组件渲染失败时记录 source
  * - API 请求错误时记录 info 和 timestamp
  * - 用户操作异常时进行错误上报
  */
-export interface ErrorContext {
+export type ErrorContext = {
   /** 错误来源（组件名） */
   source?: string
   /** 组件文件路径（Vue SFC __file） */

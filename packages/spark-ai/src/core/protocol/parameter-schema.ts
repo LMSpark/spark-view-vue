@@ -34,7 +34,7 @@ export type LlmJsonSchemaType =
 export type LlmJsonSchema = boolean | LlmJsonSchemaObject
 
 /** 标准 JSON Schema 节点。保留有限扩展字段，但不允许 `kind`。 */
-export interface LlmJsonSchemaObject {
+export type LlmJsonSchemaObject = {
   readonly $ref?: string
   readonly type?: LlmJsonSchemaType | readonly LlmJsonSchemaType[]
   readonly title?: string

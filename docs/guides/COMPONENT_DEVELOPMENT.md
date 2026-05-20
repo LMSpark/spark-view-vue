@@ -39,7 +39,7 @@ import { useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 
 // 1. 扩展 SparkNode，声明组件专属配置
-interface MyWidgetConfig extends SparkNode {
+type MyWidgetConfig = SparkNode & {
   title?: string
   theme?: 'light' | 'dark'
 }
@@ -194,12 +194,12 @@ const dataSet = sparkConsume(PAGE_DATASET)
 // capability.ts
 import { defineCapability } from '@spark-view/spark-component'
 
-export interface IMySearchCapability {
+export type MySearchCapability = {
   search(keyword: string): void
   getKeyword(): string
 }
 
-export const MY_SEARCH = defineCapability<IMySearchCapability>('app:my-search')
+export const MY_SEARCH = defineCapability<MySearchCapability>('app:my-search')
 ```
 
 ```typescript
@@ -218,7 +218,7 @@ sparkProvide(MY_SEARCH, {
 // ResultList.vue（Consumer，任意深度子孙）
 import { MY_SEARCH } from './capability'
 const { sparkConsume } = useSparkComponent(props.config)
-const search = sparkConsume(MY_SEARCH)   // IMySearchCapability | null，类型自动推断
+const search = sparkConsume(MY_SEARCH)   // MySearchCapability | null，类型自动推断
 
 function handleSearch() {
   search?.search('keyword')
@@ -564,12 +564,12 @@ it('provides and consumes capability', () => {
   const consumerCtx = createContext(providerCtx, { type: 'consumer' })
 
   // 模拟 provide
-  const searchImpl = { search: vi.fn(), getKeyword: () => 'test' }
-  providerCtx.capabilities.set(MY_SEARCH.key, searchImpl)
+  const searchProvider = { search: vi.fn(), getKeyword: () => 'test' }
+  providerCtx.capabilities.set(MY_SEARCH.key, searchProvider)
 
   // 验证 consume 沿 parent 链查找
   const found = consumerCtx.capabilities.lookup(MY_SEARCH.key)
-  expect(found).toBe(searchImpl)
+  expect(found).toBe(searchProvider)
   expect(found?.getKeyword()).toBe('test')
 })
 ```
@@ -622,7 +622,7 @@ Spark.register('userDetailForm', ...)
 
 ```typescript
 // ✅ 继承 SparkNode，只声明本组件需要的字段
-interface MyGridConfig extends SparkNode {
+type MyGridConfig = SparkNode & {
   dataViewKey?: string          // DataViewKey 字符串
   pageSize?: number
   showPagination?: boolean
@@ -750,7 +750,7 @@ import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-component'
 
-interface MasterGridConfig extends SparkNode {
+type MasterGridConfig = SparkNode & {
   dataViewKey: string
 }
 
@@ -785,7 +785,7 @@ import { PAGE_DATASET } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-component'
 
-interface DetailGridConfig extends SparkNode {
+type DetailGridConfig = SparkNode & {
   dataViewKey: string
 }
 

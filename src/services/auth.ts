@@ -15,7 +15,7 @@ const TOKEN_KEY = 'spark_token'
 const USER_KEY = 'spark_user'
 const LOGOUT_PENDING_KEY = 'spark_logout_pending'
 
-export interface AuthUser {
+export type AuthUser = {
   userId: string
   username: string
   displayName: string
@@ -146,7 +146,7 @@ async function authFetch(url: string, body: Record<string, string>): Promise<Rec
   }
 }
 
-export interface LoginParams {
+export type LoginParams = {
   tenantId: string
   username: string
   password: string
@@ -162,7 +162,7 @@ export async function login(params: LoginParams): Promise<AuthUser> {
   return authUser
 }
 
-export interface RegisterParams {
+export type RegisterParams = {
   tenantId: string
   username: string
   password: string
@@ -188,7 +188,7 @@ export async function register(params: RegisterParams): Promise<AuthUser> {
   return authUser
 }
 
-export interface RegisterTenantParams {
+export type RegisterTenantParams = {
   tenantId: string
   tenantName: string
   username: string

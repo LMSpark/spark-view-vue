@@ -1,6 +1,6 @@
 # 插件管理系统
 
-**位置**: `@spark-view/spark-app/plugins`  
+**位置**: `@spark-view/spark-app/plugins`
 **职责**: 提供统一的插件注册、配置和加载机制
 
 ## 📋 概述
@@ -84,10 +84,10 @@ class PluginManager {
   static async loadPlugins(
     configs: Record<string, PluginConfig>
   ): Promise<PluginInstance[]>
-  
+
   // 加载单个插件
   static async loadPlugin(
-    id: string, 
+    id: string,
     config: PluginConfig
   ): Promise<PluginInstance | null>
 }
@@ -105,7 +105,7 @@ type PluginConfig = boolean | {
 }
 
 // 插件加载器
-interface PluginLoader {
+type PluginLoader = {
   id: string
   name: string
   module: string
@@ -116,7 +116,7 @@ interface PluginLoader {
 }
 
 // 插件实例（加载后）
-interface PluginInstance {
+type PluginInstance = {
   plugin: Plugin
   options?: Record<string, any>
   loader: PluginLoader
@@ -128,9 +128,9 @@ interface PluginInstance {
 ### 1. 基本用法
 
 ```typescript
-import { 
-  registerBuiltinPlugins, 
-  PluginManager 
+import {
+  registerBuiltinPlugins,
+  PluginManager
 } from '@spark-view/spark-app'
 
 // 注册内置插件
@@ -174,11 +174,11 @@ import { SparkApp, registerBuiltinPlugins, PluginManager } from '@spark-view/spa
 
 async function startApp() {
   registerBuiltinPlugins()
-  
+
   const config = await loadConfig()
   const pluginInstances = await PluginManager.loadPlugins(config.plugins)
   const plugins = pluginInstances.map(p => p.plugin)
-  
+
   await SparkApp.start({
     rootComponent: App,
     plugins
@@ -218,22 +218,22 @@ async function startApp() {
 ```
 1. 注册插件加载器
   getGlobalPluginRegistry().register('my-plugin', loader)
-   
+
 2. 定义插件配置（JSON）
    { "my-plugin": { "enabled": true, "options": {...} } }
-   
+
 3. 加载插件
    PluginManager.loadPlugins(config)
-   
+
 4. 按优先级排序
    priority: 1 → 2 → 3 → ...
-   
+
 5. 动态导入模块
    await loader.loader()
-   
+
 6. 合并选项
    { ...defaultOptions, ...userOptions }
-   
+
 7. 返回插件实例
    { plugin, options, loader }
 ```
@@ -301,7 +301,7 @@ describe('registry', () => {
       module: 'test',
       loader: () => import('./test')
     })
-    
+
     expect(registry.has('test')).toBe(true)
   })
 })
@@ -311,7 +311,7 @@ describe('PluginManager', () => {
     const plugins = await PluginManager.loadPlugins({
       'test': true
     })
-    
+
     expect(plugins).toHaveLength(1)
   })
 })
@@ -347,5 +347,5 @@ getGlobalPluginRegistry().register('my-plugin', {
 
 ---
 
-**维护者**: SPARK Team  
+**维护者**: SPARK Team
 **最后更新**: 2026-02-10

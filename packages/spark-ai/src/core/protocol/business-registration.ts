@@ -16,13 +16,13 @@ export type AiRuntimeFunctionId = string
 
 // ── 函数注册 ──
 
-export interface FunctionFailureMode {
+export type FunctionFailureMode = {
   readonly code: string
   readonly when: string
   readonly fix: string
 }
 
-export interface AiFunctionRegistration {
+export type AiFunctionRegistration = {
   readonly functionId: AiRuntimeFunctionId
   readonly description: string
   readonly paramsSchema: LlmParameterSchemaRoot
@@ -36,14 +36,14 @@ export interface AiFunctionRegistration {
 
 // ── 实例参数 ──
 
-export interface AiModuleInstanceParam {
+export type AiModuleInstanceParam = {
   readonly name: string
   readonly description: string
 }
 
 // ── 模块注册契约 ──
 
-export interface AiModuleRegistration {
+export type AiModuleRegistration = {
   readonly moduleId: AiRuntimeModuleId
   readonly name: string
   readonly description: string
@@ -59,7 +59,7 @@ export type ModulePromptProvider = string | {
   bivarianceHack(context: ModulePromptContext): string | null | Promise<string | null>
 }['bivarianceHack']
 
-export interface ModulePromptContext {
+export type ModulePromptContext = {
   readonly moduleId: AiRuntimeModuleId
   readonly moduleInstanceId: AiRuntimeModuleInstanceId
   readonly instanceId: string

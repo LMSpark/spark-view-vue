@@ -55,13 +55,13 @@ export type { PageFileDocument } from '@spark-view/spark-page-config'
 // 类型
 // ═══════════════════════════════════════════════════════════
 
-export interface StatusMessage {
+export type StatusMessage = {
   text: string
   type: 'success' | 'warning' | 'error' | 'info'
   time: string
 }
 
-export interface DevEditForm {
+export type DevEditForm = {
   id: string
   title: string
   icon: string
@@ -80,7 +80,7 @@ export interface DevEditForm {
   permissionMode: 'none' | 'masked' | 'invisible'
 }
 
-export interface DevContextConfig {
+export type DevContextConfig = {
   placeholder: string
   defaultValue: string
   paramName: string

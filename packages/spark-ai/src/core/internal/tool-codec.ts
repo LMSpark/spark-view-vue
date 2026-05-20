@@ -4,7 +4,7 @@ import type {
 } from '../protocol/runtime-protocol'
 import type { LlmParameterSchemaRoot } from '../protocol/parameter-schema'
 
-export interface AiRuntimeToolSpec {
+export type AiRuntimeToolSpec = {
   readonly type: 'function'
   readonly function: {
     readonly name: string

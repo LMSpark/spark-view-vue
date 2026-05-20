@@ -81,6 +81,18 @@ export type {
 export { createThemeService, useTheme, THEME_INJECTION_KEY } from './theme'
 export type { ThemeMode, ThemeServiceOptions, ThemeServiceReactive } from './theme'
 
+// AI Host
+export {
+  AppAiHost,
+  createAppAiHost,
+  uploadAppAiAttachment,
+} from './ai/app-ai-host'
+
+export type {
+  AppAiAttachmentUploadOptions,
+  AppAiHostOptions,
+} from './ai/app-ai-host'
+
 // 类型导出
 export type {
   AppContext,
@@ -205,14 +217,3 @@ export {
 
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
-
-// ── App AI Center Host ──
-export {
-  AppAiHost,
-  createAppAiHost,
-  uploadAppAiAttachment,
-} from './ai/app-ai-host'
-export type {
-  AppAiAttachmentUploadOptions,
-  AppAiHostOptions,
-} from './ai/app-ai-host'

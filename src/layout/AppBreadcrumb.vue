@@ -27,7 +27,7 @@ import type { NavNode } from '@spark-view/spark-page-config'
 import { getNavHomePath, useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
-interface BreadcrumbItem {
+type BreadcrumbItem = {
   id?: string
   path: string
   title: string

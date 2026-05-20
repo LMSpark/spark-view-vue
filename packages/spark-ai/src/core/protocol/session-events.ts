@@ -29,7 +29,7 @@ export type AiRuntimeFunctionCallHistoryStatus = 'requested' | 'completed' | 'fa
 
 // ── 生命周期快照 ──
 
-export interface AiRuntimeSessionLifecycleSnapshot extends AiRuntimeInstanceScope {
+export type AiRuntimeSessionLifecycleSnapshot = AiRuntimeInstanceScope & {
   readonly status: AiRuntimeSessionStatus
   readonly updatedAt?: number | undefined
   readonly reason?: string | undefined
@@ -37,14 +37,14 @@ export interface AiRuntimeSessionLifecycleSnapshot extends AiRuntimeInstanceScop
 
 // ── 历史条目 ──
 
-export interface AiRuntimeHistoryEntryBase extends AiRuntimeInstanceScope {
+export type AiRuntimeHistoryEntryBase = AiRuntimeInstanceScope & {
   readonly id: string
   readonly seq: number
   readonly timestamp: number
   readonly kind: 'message' | 'functionCall'
 }
 
-export interface AiRuntimeMessageHistoryEntry extends AiRuntimeHistoryEntryBase {
+export type AiRuntimeMessageHistoryEntry = AiRuntimeHistoryEntryBase & {
   readonly kind: 'message'
   readonly role: AiRuntimeMessageRole
   readonly source: AiRuntimeMessageSource
@@ -52,7 +52,7 @@ export interface AiRuntimeMessageHistoryEntry extends AiRuntimeHistoryEntryBase 
   readonly metadata?: Record<string, unknown> | undefined
 }
 
-export interface AiRuntimeFunctionCallHistoryEntry extends AiRuntimeHistoryEntryBase {
+export type AiRuntimeFunctionCallHistoryEntry = AiRuntimeHistoryEntryBase & {
   readonly kind: 'functionCall'
   readonly action: AiRuntimeAction
   readonly args: unknown
@@ -71,7 +71,7 @@ export type AiRuntimeHistoryEntry = AiRuntimeMessageHistoryEntry | AiRuntimeFunc
 
 // ── 会话记录 ──
 
-export interface AiRuntimeSessionRecord extends AiRuntimeInstanceScope {
+export type AiRuntimeSessionRecord = AiRuntimeInstanceScope & {
   readonly moduleId: AiRuntimeModuleId
   readonly moduleInstanceId: AiRuntimeModuleInstanceId
   readonly status: AiRuntimeSessionStatus
@@ -85,7 +85,7 @@ export interface AiRuntimeSessionRecord extends AiRuntimeInstanceScope {
 
 // ── 追加消息 ──
 
-export interface AiRuntimeAppendMessageOptions extends AiRuntimeInstanceScope {
+export type AiRuntimeAppendMessageOptions = AiRuntimeInstanceScope & {
   readonly role: AiRuntimeMessageRole
   readonly content: string
   readonly source?: AiRuntimeMessageSource | undefined
@@ -94,7 +94,7 @@ export interface AiRuntimeAppendMessageOptions extends AiRuntimeInstanceScope {
 
 // ── 追加函数调用 ──
 
-export interface AiRuntimeAppendFunctionCallOptions extends AiRuntimeInstanceScope {
+export type AiRuntimeAppendFunctionCallOptions = AiRuntimeInstanceScope & {
   readonly action: AiRuntimeAction
   readonly args: unknown
   readonly status?: AiRuntimeFunctionCallHistoryStatus | undefined
@@ -109,7 +109,7 @@ export interface AiRuntimeAppendFunctionCallOptions extends AiRuntimeInstanceSco
 
 // ── 记录函数调用请求 ──
 
-export interface AiRuntimeRecordFunctionCallRequestOptions extends AiRuntimeInstanceScope {
+export type AiRuntimeRecordFunctionCallRequestOptions = AiRuntimeInstanceScope & {
   readonly action: AiRuntimeAction
   readonly args: unknown
   readonly modulePath?: AiRuntimeModulePath | undefined
@@ -120,7 +120,7 @@ export interface AiRuntimeRecordFunctionCallRequestOptions extends AiRuntimeInst
 
 // ── 完成函数调用 ──
 
-export interface AiRuntimeCompleteFunctionCallOptions extends AiRuntimeInstanceScope {
+export type AiRuntimeCompleteFunctionCallOptions = AiRuntimeInstanceScope & {
   readonly historyEntryId: string
   readonly status?: Extract<AiRuntimeFunctionCallHistoryStatus, 'completed' | 'failed'> | undefined
   readonly result?: unknown
@@ -131,7 +131,7 @@ export interface AiRuntimeCompleteFunctionCallOptions extends AiRuntimeInstanceS
 
 // ── 会话启动/停止 ──
 
-export interface AiRuntimeStartSessionOptions {
+export type AiRuntimeStartSessionOptions = {
   readonly moduleId: AiRuntimeModuleId
   readonly moduleInstanceId: AiRuntimeModuleInstanceId
   readonly instanceId?: string | undefined
@@ -139,7 +139,7 @@ export interface AiRuntimeStartSessionOptions {
   readonly reason?: string | undefined
 }
 
-export interface AiRuntimeStartSessionResult extends AiRuntimeKnowledgeProjection {
+export type AiRuntimeStartSessionResult = AiRuntimeKnowledgeProjection & {
   readonly status: 'Started'
   readonly instanceId: string
   readonly moduleId: AiRuntimeModuleId
@@ -148,14 +148,14 @@ export interface AiRuntimeStartSessionResult extends AiRuntimeKnowledgeProjectio
   readonly session: AiRuntimeSessionRecord
 }
 
-export interface AiRuntimeStopSessionOptions {
+export type AiRuntimeStopSessionOptions = {
   readonly moduleId: AiRuntimeModuleId
   readonly moduleInstanceId: AiRuntimeModuleInstanceId
   readonly instanceId?: string | undefined
   readonly reason?: string | undefined
 }
 
-export interface AiRuntimeStopSessionResult {
+export type AiRuntimeStopSessionResult = {
   readonly status: 'Stopped'
   readonly instanceId: string
   readonly moduleId: AiRuntimeModuleId

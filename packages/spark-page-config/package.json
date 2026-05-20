@@ -36,6 +36,7 @@
     "lint:fix": "eslint src --ext .ts --fix"
   },
   "dependencies": {
+    "@spark-view/spark-ai": "workspace:*",
     "@spark-view/spark-data": "workspace:*",
     "@spark-view/spark-utils": "workspace:*"
   },

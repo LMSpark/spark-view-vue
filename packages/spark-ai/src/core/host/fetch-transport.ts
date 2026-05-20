@@ -19,19 +19,19 @@ export type AiHostHeadersProvider = () => HeadersInit | Promise<HeadersInit>
 
 export type AiHostFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
 
-export interface AiHostFetchTransportOptions {
+export type AiHostFetchTransportOptions = {
   readonly baseUrl?: string | undefined
   readonly fetch?: AiHostFetch | undefined
   readonly getHeaders?: AiHostHeadersProvider | undefined
   readonly protocolVersion?: number | undefined
 }
 
-export interface AiHostParsedSseEvent {
+export type AiHostParsedSseEvent = {
   readonly event: string
   readonly data: string
 }
 
-export interface AiHostUploadedAttachment {
+export type AiHostUploadedAttachment = {
   readonly fileId: string
   readonly name: string
   readonly size: number
@@ -124,8 +124,8 @@ function parseAiHostFinalSseBlock(buffer: string): readonly AiHostParsedSseEvent
   return parsed === null ? [] : [parsed]
 }
 
-function resolveFetch(fetchImpl: AiHostFetch | undefined): AiHostFetch {
-  if (fetchImpl !== undefined) return fetchImpl
+function resolveFetch(fetchClient: AiHostFetch | undefined): AiHostFetch {
+  if (fetchClient !== undefined) return fetchClient
   if (typeof fetch !== 'function') {
     throw new Error('AiHostFetchTransport requires a fetch implementation')
   }
@@ -189,13 +189,13 @@ async function assertOkResponse(response: Response, action: string): Promise<voi
 
 export class AiHostFetchTransport implements AiHostTransport {
   private readonly baseUrl: string
-  private readonly fetchImpl: AiHostFetch
+  private readonly fetchClient: AiHostFetch
   private readonly getHeaders: AiHostHeadersProvider
   private readonly protocolVersion: number
 
   constructor(options: AiHostFetchTransportOptions = {}) {
     this.baseUrl = normalizeBaseUrl(options.baseUrl)
-    this.fetchImpl = resolveFetch(options.fetch)
+    this.fetchClient = resolveFetch(options.fetch)
     this.getHeaders = options.getHeaders ?? (() => ({}))
     this.protocolVersion = options.protocolVersion ?? DEFAULT_PROTOCOL_VERSION
   }
@@ -207,7 +207,7 @@ export class AiHostFetchTransport implements AiHostTransport {
   }
 
   async streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult> {
-    const response = await this.fetchImpl(
+    const response = await this.fetchClient(
       `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`,
       {
         method: 'POST',
@@ -304,7 +304,7 @@ export class AiHostFetchTransport implements AiHostTransport {
   }
 
   async appendMessages(input: AiHostAppendMessagesInput): Promise<void> {
-    const response = await this.fetchImpl(
+    const response = await this.fetchClient(
       `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`,
       {
         method: 'POST',
@@ -337,12 +337,12 @@ export async function uploadAiHostAttachment(
   options: AiHostFetchTransportOptions = {},
 ): Promise<AiHostUploadedAttachment> {
   const baseUrl = normalizeBaseUrl(options.baseUrl)
-  const fetchImpl = resolveFetch(options.fetch)
+  const fetchClient = resolveFetch(options.fetch)
   const getHeaders: AiHostHeadersProvider = options.getHeaders ?? (() => ({}))
   const form = new FormData()
   form.append('file', file)
 
-  const response = await fetchImpl(`${baseUrl}/upload`, {
+  const response = await fetchClient(`${baseUrl}/upload`, {
     method: 'POST',
     headers: await Promise.resolve(getHeaders()),
     body: form,

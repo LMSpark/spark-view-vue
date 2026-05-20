@@ -1,7 +1,7 @@
 /**
  * 插件管理系统
  * @module @spark-view/spark-app/plugins
- * 
+ *
  * 提供统一的插件注册、配置和加载机制
  */
 
@@ -14,7 +14,7 @@ const pluginLogger = createLogger('plugins')
 /**
  * 插件配置项
  */
-export interface PluginConfigItem {
+export type PluginConfigItem = {
   /** 是否启用 */
   enabled: boolean
   /** 插件选项 */
@@ -33,7 +33,7 @@ export type PluginConfig = boolean | PluginConfigItem
 /**
  * 插件加载器定义
  */
-export interface PluginLoader {
+export type PluginLoader = {
   /** 插件 ID */
   id: string
   /** 插件名称 */
@@ -53,7 +53,7 @@ export interface PluginLoader {
 /**
  * 插件实例（加载后的结果）
  */
-export interface PluginInstance {
+export type PluginInstance = {
   /** 插件对象 */
   plugin: Plugin
   /** 插件选项 */
@@ -145,7 +145,7 @@ export class PluginManager {
 
   /**
    * 根据配置加载插件
-   * 
+   *
    * @param pluginConfigs - 插件配置对象
    * @param registry - 可选的插件注册表实例（默认使用全局注册表）
    * @returns 插件实例数组（按优先级排序）
@@ -156,13 +156,13 @@ export class PluginManager {
   ): Promise<PluginInstance[]> {
     const plugins: PluginInstance[] = []
     const safePluginConfigs = pluginConfigs ?? {}
-    
+
     // 1. 标准化配置并按优先级排序
     const normalizedConfigs = Object.entries(safePluginConfigs)
       .map(([id, config]) => {
         const normalized = this.normalizeConfig(config)
         const loader = registry.get(id)
-        
+
         return {
           id,
           config: normalized,
@@ -172,30 +172,30 @@ export class PluginManager {
       })
       .filter(item => item.config.enabled === true && item.loader !== undefined)
       .sort((a, b) => a.priority - b.priority)
-    
+
     // 2. 并行加载插件（按优先级分批）
     pluginLogger.info(`Loading ${normalizedConfigs.length} plugins...`)
-    
+
     for (const { id, config, loader } of normalizedConfigs) {
       if (!loader) continue
-      
+
       try {
         pluginLogger.info(`Loading plugin: ${loader.name} (${id})`)
-        
+
         const instance = await PluginManager.createInstance(loader, config.options)
         plugins.push(instance)
-        
+
         pluginLogger.info(`Plugin loaded: ${loader.name}`)
       } catch (error) {
         pluginLogger.error(`Failed to load plugin "${id}"`, toError(error))
       }
     }
-    
+
     pluginLogger.info(`Successfully loaded ${plugins.length} plugins`)
-    
+
     return plugins
   }
-  
+
   /**
    * 加载单个插件
    *
@@ -209,17 +209,17 @@ export class PluginManager {
     registry: PluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance | null> {
     const normalized = this.normalizeConfig(config)
-    
+
     if (!normalized.enabled) {
       return null
     }
-    
+
     const loader = registry.get(id)
     if (!loader) {
       pluginLogger.warn(`Plugin "${id}" not registered`)
       return null
     }
-    
+
     try {
       pluginLogger.info(`Loading plugin: ${loader.name}`)
       return await PluginManager.createInstance(loader, normalized.options)
@@ -228,7 +228,7 @@ export class PluginManager {
       return null
     }
   }
-  
+
   /**
    * 标准化插件配置
    */
@@ -242,7 +242,7 @@ export class PluginManager {
 
 /**
  * 便捷函数：创建插件注册器
- * 
+ *
  * @param registry - 可选的插件注册表实例（默认使用全局注册表）
  *
  * @example

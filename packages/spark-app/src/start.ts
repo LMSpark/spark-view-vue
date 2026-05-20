@@ -1,6 +1,6 @@
 ﻿/**
  * SparkApp.start() - 最高层级 API
- * 
+ *
  * 完全声明式启动应用，无需手动创建 app/router
  */
 
@@ -34,7 +34,7 @@ function logStartDebug(message: string, meta?: Record<string, unknown>): void {
   }
 }
 
-interface RegisterStats {
+type RegisterStats = {
   total: number
   sync: number
   async: number
@@ -57,13 +57,13 @@ function isRegisterComponentsFn(value: unknown): value is RegisterComponentsFn {
 /**
  * SPARK 组件系统配置
  */
-export interface SparkOptions {
+export type SparkOptions = {
   /** 是否启用 SPARK 组件系统（默认 true） */
   enabled?: boolean
-  
-  /** 
+
+  /**
    * 是否自动导入并执行编译时组件注册（默认 true）
-   * 
+   *
    * SparkApp 会自动导入 virtual:spark-components 并执行注册函数。
    * 设置为 false 可禁用自动注册（用于自定义注册流程）。
    */
@@ -73,7 +73,7 @@ export interface SparkOptions {
 /**
  * 页面配置系统配置
  */
-export interface PageConfigOptions {
+export type PageConfigOptions = {
   /** API 基础路径 */
   apiBaseUrl: string
   /**
@@ -125,56 +125,56 @@ export interface PageConfigOptions {
 /**
  * 启动配置（扩展自 BootstrapOptions）
  */
-export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
+export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
   /** 根组件 */
   rootComponent: Component
-  
+
   /** 路由模式（默认 'history'） */
   routerMode?: 'history' | 'hash'
-  
+
   /** 挂载点（默认 '#app'） */
   mountTarget?: string
-  
+
   /** SPARK 组件系统配置 */
   spark?: SparkOptions
-  
+
   /** 页面配置系统配置 */
   pageConfig?: PageConfigOptions
-  
+
   /** UI 插件列表 */
   plugins?: Plugin[]
-  
+
   /**
    * CSS 主题配置
-   * 
+   *
    * - `true` — 启用主题（默认 auto 跟随系统）
    * - `ThemeServiceOptions` — 自定义初始模式 / 存储键
    * - `false` / 不传 — 不启用主题服务
    */
   theme?: boolean | ThemeServiceOptions
-  
+
   /** 启动前钩子 */
   onBeforeStart?: () => void | Promise<void>
-  
+
   /** 启动失败钩子（如果提供，将完全接管错误处理） */
   onStartError?: (error: Error) => void | Promise<void>
 }
 
 /**
  * 启动 SPARK 应用
- * 
+ *
  * 最高层级 API，自动完成：
  * 1. 创建 Vue 应用实例
  * 2. 创建 Vue Router 实例
  * 3. 执行 Bootstrap 流程
  * 4. 错误降级处理
  * 5. 挂载应用
- * 
+ *
  * @example
  * ```typescript
  * import { SparkApp } from '@spark-view/spark-app'
  * import App from './App.vue'
- * 
+ *
  * SparkApp.start({
  *   rootComponent: App,
  *   config: APP_CONFIG,
@@ -233,8 +233,8 @@ export async function start(options: StartOptions): Promise<void> {
 
     // 3. 创建 Vue Router 实例
     logStartDebug('创建 Vue Router...')
-    const history = routerMode === 'hash' 
-      ? createWebHashHistory() 
+    const history = routerMode === 'hash'
+      ? createWebHashHistory()
       : createWebHistory()
     const router = createRouter({
       history,
@@ -263,7 +263,7 @@ export async function start(options: StartOptions): Promise<void> {
 
       // 自动导入并执行编译时组件注册
       const shouldAutoRegister = spark?.autoRegister !== false
-      
+
       if (shouldAutoRegister) {
         logStartDebug('注册内置 renderer 组件...')
         registerAllRenderers()
@@ -274,7 +274,7 @@ export async function start(options: StartOptions): Promise<void> {
           // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）
           const virtualModule = await import('virtual:spark-components')
           const registerComponents = readProperty(virtualModule, 'registerComponents')
-          
+
           if (isRegisterComponentsFn(registerComponents)) {
             logStartDebug('执行自动组件注册...')
             const stats = normalizeRegisterStats(registerComponents(app))
@@ -300,27 +300,27 @@ export async function start(options: StartOptions): Promise<void> {
     // 5. 配置动态路由系统
     if (pageConfig) {
       logStartDebug('配置动态路由系统...')
-      
+
       const configLoaderOptions: Partial<ConfigLoaderOptions> = {
         apiBaseUrl: pageConfig.apiBaseUrl
       }
-      
+
       if (pageConfig.pagesConfigBaseUrl !== undefined) configLoaderOptions.pagesConfigBaseUrl = pageConfig.pagesConfigBaseUrl
       if (pageConfig.timeout !== undefined) configLoaderOptions.timeout = pageConfig.timeout
       if (pageConfig.getHeaders) configLoaderOptions.getHeaders = pageConfig.getHeaders
-      
+
       const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)
-      
+
       // 默认使用 SparkPageRenderer 组件（SPARK 原生页面渲染器）
       let pageComponent = pageConfig.pageComponent
-      
+
       // 如果未提供 pageComponent，自动导入 SparkPageRenderer
       if (!pageComponent) {
         logStartDebug('未提供 pageComponent，使用 SparkPageRenderer...')
         pageComponent = SparkPageRenderer
         logStartDebug('✅ SparkPageRenderer 已就绪')
       }
-      
+
       const dynamicRouterOptions: DynamicRouterOptions = {
         router,
         configLoader,

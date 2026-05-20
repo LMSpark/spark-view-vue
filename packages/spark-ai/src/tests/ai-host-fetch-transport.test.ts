@@ -30,8 +30,8 @@ function createJsonResponse(value: unknown): Response {
   })
 }
 
-function createFetch(fn: AiHostFetch): AiHostFetch {
-  return vi.fn(fn) as unknown as AiHostFetch
+function createFetch(fn: AiHostFetch) {
+  return vi.fn<AiHostFetch>(fn)
 }
 
 const scope = {
@@ -59,7 +59,7 @@ describe('AiHostFetchTransport', () => {
   })
 
   it('streams an AI turn through package-owned SSE transport', async () => {
-    const fetchImpl = createFetch(async () => createStreamResponse([
+    const fetchClient = createFetch(async () => createStreamResponse([
       'event: delta\ndata: {"delta":"he"}\n\n',
       'event: reasoning\ndata: {"reasoning":"thinking"}\n\n',
       'event: usage\ndata: {"usage":{"totalTokens":3}}\n\n',
@@ -67,7 +67,7 @@ describe('AiHostFetchTransport', () => {
     ]))
     const transport = new AiHostFetchTransport({
       baseUrl: '/api/ai',
-      fetch: fetchImpl,
+      fetch: fetchClient,
       getHeaders: () => ({ Authorization: 'Bearer token' }),
     })
     const deltas: string[] = []
@@ -106,15 +106,15 @@ describe('AiHostFetchTransport', () => {
     expect(events.map((event) => event.type)).toEqual(['delta', 'reasoning', 'usage', 'result'])
     expect(events[0]?.streamKey).toBe('pageDesign::page-a::llm::turn-1')
 
-    expect(fetchImpl).toHaveBeenCalledOnce()
-    const [, init] = vi.mocked(fetchImpl).mock.calls[0] ?? []
+    expect(fetchClient).toHaveBeenCalledOnce()
+    const [, init] = fetchClient.mock.calls[0] ?? []
     expect(init?.method).toBe('POST')
     expect(init?.body).toContain('"protocolVersion":3')
     expect(init?.body).toContain('"moduleId":"pageDesign"')
   })
 
   it('unwraps append-message API envelopes and validates session identity', async () => {
-    const fetchImpl = createFetch(async () => createJsonResponse({
+    const fetchClient = createFetch(async () => createJsonResponse({
       ok: true,
       data: {
         sessionId: 'session-1',
@@ -123,7 +123,7 @@ describe('AiHostFetchTransport', () => {
       error: null,
       requestId: 'request-1',
     }))
-    const transport = new AiHostFetchTransport({ fetch: fetchImpl })
+    const transport = new AiHostFetchTransport({ fetch: fetchClient })
 
     await expect(transport.appendMessages({
       sessionId: 'session-1',

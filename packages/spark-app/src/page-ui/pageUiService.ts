@@ -12,7 +12,7 @@ import type {
   PageDialogResult,
 } from '@spark-view/spark-component'
 
-interface DialogState {
+type DialogState = {
   visible: boolean
   title: string
   content: string
@@ -23,7 +23,7 @@ interface DialogState {
   width: string
 }
 
-interface SelectorState {
+type SelectorState = {
   visible: boolean
   title: string
   placeholder: string

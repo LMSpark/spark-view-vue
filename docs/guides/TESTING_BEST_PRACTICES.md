@@ -91,7 +91,7 @@ describe('Capability System', () => {
 
   it('supports custom capability keys', () => {
     const { createContext, rootContext } = Spark.createSystem()
-    interface ThemeApi { color: string }
+    type ThemeApi = { color: string }
     const THEME = defineCapability<ThemeApi>('test:theme')
 
     const parentCtx = createContext({ type: 'provider' }, rootContext)
@@ -269,7 +269,7 @@ import { defineComponent, h } from 'vue'
 import { mount } from '@vue/test-utils'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 
-it('useSparkComponent returns correct interface', () => {
+it('useSparkComponent returns the expected contract', () => {
   const { plugin } = (() => {
     const registry = Spark.createRegistry()
     return { plugin: Spark.createPlugin({ registry }) }

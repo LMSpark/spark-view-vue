@@ -647,7 +647,7 @@ import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 import { parseTenantScope } from '@/services/tenant-scope'
 
-interface DbmsServer {
+type DbmsServer = {
   ID: number
   SERVER_NAME: string
   HOST: string
@@ -656,7 +656,7 @@ interface DbmsServer {
   ISOLATION_MODE: IsolationMode
 }
 
-interface DbmsDatabase {
+type DbmsDatabase = {
   ID: number
   SERVER_ID: number
   DATABASE_NAME: string
@@ -667,7 +667,7 @@ interface DbmsDatabase {
   duplicateDatabaseIds?: number[]
 }
 
-interface DbmsColumn {
+type DbmsColumn = {
   name: string
   physicalColumnName?: string
   type?: string
@@ -683,7 +683,7 @@ interface DbmsColumn {
 
 type DbmsObjectType = 'TABLE' | 'VIEW'
 
-interface PhysicalObjectKey {
+type PhysicalObjectKey = {
   databaseId: number | null
   objectType: DbmsObjectType
   schemaName: string | null
@@ -715,7 +715,7 @@ function parsePhysicalObjectKey(text: string): PhysicalObjectKey {
   }
 }
 
-interface DbmsTable {
+type DbmsTable = {
   id: number
   tableName: string
   objectType?: DbmsObjectType
@@ -728,7 +728,7 @@ interface DbmsTable {
   columns?: DbmsColumn[]
 }
 
-interface DbmsRelation {
+type DbmsRelation = {
   ID: number
   RELATION_NAME: string
   PARENT_TABLE_ID?: number
@@ -743,7 +743,7 @@ interface DbmsRelation {
   CHILD_FIELD: string
 }
 
-interface DbmsObjectSql {
+type DbmsObjectSql = {
   objectId: number
   objectType: DbmsObjectType
   dialect: string
@@ -752,7 +752,7 @@ interface DbmsObjectSql {
   readOnly: boolean
 }
 
-interface DbmsObjectData {
+type DbmsObjectData = {
   objectId: number
   objectType: DbmsObjectType
   dialect: string
@@ -764,7 +764,7 @@ interface DbmsObjectData {
   readOnly: boolean
 }
 
-interface DbmsCatalogObject {
+type DbmsCatalogObject = {
   databaseId: number | null
   objectId: number | null
   objectType: DbmsObjectType
@@ -777,13 +777,13 @@ interface DbmsCatalogObject {
   physicalObjectKey: PhysicalObjectKey
 }
 
-interface DbmsCatalogSchema {
+type DbmsCatalogSchema = {
   schemaName: string | null
   tables: DbmsCatalogObject[]
   views: DbmsCatalogObject[]
 }
 
-interface DbmsCatalogDatabase {
+type DbmsCatalogDatabase = {
   databaseName: string
   databaseId: number | null
   registered: boolean
@@ -791,19 +791,19 @@ interface DbmsCatalogDatabase {
   relations: unknown[]
 }
 
-interface DbmsCatalog {
+type DbmsCatalog = {
   serverId: number
   serverName: string
   databases: DbmsCatalogDatabase[]
 }
 
-interface ApiMessage {
+type ApiMessage = {
   success?: boolean
   message?: string
   error?: string
 }
 
-interface DatabaseCreatePayload {
+type DatabaseCreatePayload = {
   serverId: number
   databaseName: string
   isolationMode: IsolationMode
@@ -814,7 +814,7 @@ interface DatabaseCreatePayload {
   collation?: string
 }
 
-interface TableCreatePayload {
+type TableCreatePayload = {
   tableName: string
   databaseId: number
   isolationMode: IsolationMode

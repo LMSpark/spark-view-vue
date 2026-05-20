@@ -17,7 +17,7 @@ import type {
 
 // ── 聊天请求（框架无关的最小接口） ──
 
-export interface AiHostChatRequest {
+export type AiHostChatRequest = {
   historyMsgs: Array<{ readonly role: 'user' | 'assistant' | 'system'; readonly content: string }>
   turn?: AiHostTurnMeta
   systemPrompt?: string
@@ -29,7 +29,7 @@ export interface AiHostChatRequest {
   onFcCall?: (record: AiHostFcCallRecord) => void
 }
 
-export interface AiHostSseEvent {
+export type AiHostSseEvent = {
   type: string
   data: unknown
   streamKey: string
@@ -41,7 +41,7 @@ export interface AiHostSseEvent {
   }
 }
 
-export interface AiHostFcCallRecord {
+export type AiHostFcCallRecord = {
   toolName: string
   args: unknown
   turnId: string
@@ -54,21 +54,21 @@ export interface AiHostFcCallRecord {
 
 // ── 业务作用域 ──
 
-export interface AiHostBusinessScope {
+export type AiHostBusinessScope = {
   readonly businessRegistrationId: string
   readonly businessInstanceId: string
   readonly instanceId: string
   readonly runtimeInstanceId: string
 }
 
-export interface AiHostBusinessTarget {
+export type AiHostBusinessTarget = {
   readonly businessRegistrationId: string
   readonly businessInstanceId: string
 }
 
 // ── 业务运行时上下文 ──
 
-export interface AiHostBusinessRuntimeContext {
+export type AiHostBusinessRuntimeContext = {
   readonly moduleId: string
   readonly moduleInstanceId: string
   readonly instanceId: string
@@ -76,14 +76,14 @@ export interface AiHostBusinessRuntimeContext {
 
 // ── 运行时方法选项 ──
 
-export interface AiHostBusinessAppendMessageOptions extends AiHostBusinessRuntimeContext {
+export type AiHostBusinessAppendMessageOptions = AiHostBusinessRuntimeContext & {
   readonly role: 'system' | 'user' | 'assistant'
   readonly content: string
   readonly source?: 'system' | 'ui' | 'llm' | undefined
   readonly metadata?: Record<string, unknown> | undefined
 }
 
-export interface AiHostBusinessExecuteFunctionCallOptions extends AiHostBusinessRuntimeContext {
+export type AiHostBusinessExecuteFunctionCallOptions = AiHostBusinessRuntimeContext & {
   readonly action: string
   readonly args: unknown
   readonly projection?: AiRuntimeKnowledgeProjection | undefined
@@ -91,14 +91,14 @@ export interface AiHostBusinessExecuteFunctionCallOptions extends AiHostBusiness
 
 export type AiHostBusinessLifecycleStatus = 'continue' | 'complete' | 'abort'
 
-export interface AiHostBusinessLifecycleDirective {
+export type AiHostBusinessLifecycleDirective = {
   readonly status: AiHostBusinessLifecycleStatus
   readonly reason?: string | undefined
   readonly finalAssistantMessage?: string | undefined
   readonly releaseInstance?: boolean | undefined
 }
 
-export interface AiHostBusinessAfterFunctionCallOptions extends AiHostBusinessRuntimeContext {
+export type AiHostBusinessAfterFunctionCallOptions = AiHostBusinessRuntimeContext & {
   readonly action: string
   readonly args: unknown
   readonly result: AiRuntimeFunctionCallResult<unknown>
@@ -106,7 +106,7 @@ export interface AiHostBusinessAfterFunctionCallOptions extends AiHostBusinessRu
 
 // ── 业务运行时契约 ──
 
-export interface AiHostBusinessRuntime {
+export type AiHostBusinessRuntime = {
   readonly moduleId: string
   getSystemPrompt?(context: AiHostBusinessRuntimeContext): string | undefined
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult>
@@ -122,7 +122,7 @@ export interface AiHostBusinessRuntime {
 
 // ── Turn 元信息 ──
 
-export interface AiHostTurnMeta {
+export type AiHostTurnMeta = {
   readonly turnId: string
   readonly seq: number
   readonly baseRevision: number
@@ -133,7 +133,7 @@ export interface AiHostTurnMeta {
 
 // ── 传输层类型 ──
 
-export interface AiHostTransportToolSpec {
+export type AiHostTransportToolSpec = {
   readonly type: 'function'
   readonly function: {
     readonly name: string
@@ -142,14 +142,14 @@ export interface AiHostTransportToolSpec {
   }
 }
 
-export interface AiHostTransportMessage {
+export type AiHostTransportMessage = {
   readonly role: string
   readonly content: string
   readonly tool_call_id?: string | undefined
   readonly tool_calls?: readonly AiHostTransportToolCall[] | undefined
 }
 
-export interface AiHostTransportToolCall {
+export type AiHostTransportToolCall = {
   readonly id?: string | undefined
   readonly type?: string | undefined
   readonly function?: {
@@ -158,7 +158,7 @@ export interface AiHostTransportToolCall {
   } | undefined
 }
 
-export interface AiHostStreamTurnInput {
+export type AiHostStreamTurnInput = {
   readonly sessionId: string
   readonly scope: AiHostBusinessScope
   readonly turn: AiHostTurnMeta
@@ -172,13 +172,13 @@ export interface AiHostStreamTurnInput {
   readonly onUsage?: ((usage: Record<string, unknown>) => void) | undefined
 }
 
-export interface AiHostStreamTurnResult {
+export type AiHostStreamTurnResult = {
   readonly text: string
   readonly reasoning?: string | undefined
   readonly toolCalls: readonly AiHostTransportToolCall[]
 }
 
-export interface AiHostAppendMessagesInput {
+export type AiHostAppendMessagesInput = {
   readonly sessionId: string
   readonly scope: AiHostBusinessScope
   readonly turn: AiHostTurnMeta
@@ -187,14 +187,14 @@ export interface AiHostAppendMessagesInput {
 
 // ── 传输层契约 ──
 
-export interface AiHostTransport {
+export type AiHostTransport = {
   streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult>
   appendMessages(input: AiHostAppendMessagesInput): Promise<void>
 }
 
 // ── 宿主选项 ──
 
-export interface AiHostOptions {
+export type AiHostOptions = {
   readonly registry: {
     get(moduleId: string): AiHostBusinessRuntime | undefined
     list(): readonly AiHostBusinessRuntime[]
@@ -207,7 +207,7 @@ export interface AiHostOptions {
 
 export type AiHostSender = (request: AiHostChatRequest) => Promise<void>
 
-export interface AiHostBusinessSession {
+export type AiHostBusinessSession = {
   readonly target: AiHostBusinessTarget
   readonly scope: AiHostBusinessScope
   readonly storageKey: string
@@ -221,7 +221,7 @@ export interface AiHostBusinessSession {
 
 // ── 已选业务 ──
 
-export interface AiHostSelectedBusiness {
+export type AiHostSelectedBusiness = {
   readonly runtime: AiHostBusinessRuntime
   readonly scope: AiHostBusinessScope
   projection: AiRuntimeKnowledgeProjection

@@ -11,7 +11,7 @@ export type SimpleEnvironment = 'client' | 'server'
 /**
  * 环境信息接口
  */
-export interface SimpleEnvironmentInfo {
+export type SimpleEnvironmentInfo = {
   /** 环境类型 */
   type: SimpleEnvironment
   /** 是否为服务端 */
@@ -44,14 +44,14 @@ export const envAdapter = {
       isTest: !!isTest
     }
   },
-  
+
   /**
    * localStorage（浏览器环境）
    */
   get localStorage(): Storage | undefined {
     return typeof window !== 'undefined' ? window.localStorage : undefined
   },
-  
+
   /**
    * sessionStorage（浏览器环境）
    */
