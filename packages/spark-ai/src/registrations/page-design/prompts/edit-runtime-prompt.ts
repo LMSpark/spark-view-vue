@@ -50,7 +50,7 @@ export class PageDesignEditRuntimePrompt {
   - 当前会话仅允许 pageDesign 子模块函数：lifecycle / textModel / dataset / nodeTree / knowledge
   - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
   - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
-  - 首轮可调用 lifecycle.describeProgress 了解当前状态；函数参数以当前投影的 tool schema 和 description 为准，之后不要重复能力探测
+  - 首轮可调用 lifecycle.describeProgress 了解当前状态；复杂页面设计先调用 lifecycle.describeDesignFlow 查询 100 步流程；函数参数以当前投影的 tool schema 和 description 为准，之后不要重复能力探测
   - 构造或替换 SparkNode 前，必须先调用 guidePayload 获取目标组件 type 的参数荷载指南
   - 函数执行结果由当前 LLM 轮次自行解读；若返回错误，先读 code / msg / fix，再按当前 tool schema 和修复建议重试
   - 若 guidePayload 返回 PAYLOAD_NOT_FOUND（组件不存在），同一 key 禁止再次 guide 重试；必须先 queryPayloads 选择可用替代组件
@@ -96,6 +96,8 @@ export class PageDesignEditRuntimePrompt {
   - 需求完成后立即停止工具调用并给出简短总结
 
 ${this.flowPrompts.dataFirstPolicy}
+
+${this.flowPrompts.designFlow}
 
 ${this.flowPrompts.dataFirstSequence}
 `

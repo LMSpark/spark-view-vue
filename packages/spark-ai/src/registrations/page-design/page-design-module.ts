@@ -278,6 +278,15 @@ function toServiceContext(context: PageDesignRuntimeContext | FunctionExecutionC
   }
 }
 
+function toDesignFlowQuery(args: unknown): { phase?: string; step?: number; afterStep?: number } {
+  const input = toObject(args) ?? {}
+  return {
+    ...(typeof input['phase'] === 'string' ? { phase: input['phase'] } : {}),
+    ...(typeof input['step'] === 'number' ? { step: input['step'] } : {}),
+    ...(typeof input['afterStep'] === 'number' ? { afterStep: input['afterStep'] } : {}),
+  }
+}
+
 function toKnowledgeScope(context: FunctionExecutionContext): { moduleId: string; moduleInstanceId: string } {
   return {
     moduleId: context.moduleId,
@@ -460,6 +469,8 @@ function createLifecycleHandlers(
           return service.bootstrap(toServiceContext(context))
         case 'describeProgress':
           return service.describeProgress(toServiceContext(context))
+        case 'describeDesignFlow':
+          return service.describeDesignFlow(toServiceContext(context), toDesignFlowQuery(_args))
         default:
           throw new Error(`unreachable: ${row.functionId}`)
       }

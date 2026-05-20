@@ -8,8 +8,8 @@
 
 ## 源码镜头
 
-- `packages/spark-page-config/src/loader/index.ts`
-- `packages/spark-page-config/src/compiler/index.ts`
+- `packages/spark-page-config/src/files/runtime/page-config-loader.ts`
+- `packages/spark-page-config/src/files/runtime/page-config-compiler.ts`
 - `spark-ai-server/src/main/java/com/spark/ai/controller/PageConfigController.java`
 - `src/views/app/dev-system/page-file-documents.ts`
 

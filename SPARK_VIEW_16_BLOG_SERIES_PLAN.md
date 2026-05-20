@@ -103,8 +103,8 @@ flowchart LR
 
 **源码锚点**
 
-- `packages/spark-page-config/src/loader/index.ts`
-- `packages/spark-page-config/src/compiler/index.ts`
+- `packages/spark-page-config/src/files/runtime/page-config-loader.ts`
+- `packages/spark-page-config/src/files/runtime/page-config-compiler.ts`
 - `spark-ai-server/src/main/java/com/spark/ai/controller/PageConfigController.java`
 - `src/views/app/dev-system/page-file-documents.ts`
 
@@ -264,8 +264,8 @@ flowchart LR
 
 **源码锚点**
 
-- `packages/spark-page-config/src/loader/index.ts`
-- `packages/spark-page-config/src/compiler/index.ts`
+- `packages/spark-page-config/src/files/runtime/page-config-loader.ts`
+- `packages/spark-page-config/src/files/runtime/page-config-compiler.ts`
 - `src/views/app/dev-system/DevPreviewTab.vue`
 - `spark-ai-server/src/main/java/com/spark/ai/controller/PageConfigController.java`
 
@@ -634,12 +634,15 @@ flowchart LR
 4. dataset 工具：围绕 DataSetCrudTool 修改 `pagedata.json`。
 5. textModel 与 jsonDoc：处理脚本、样式和结构化 JSON 修改。
 6. knowledge：组件目录、组件 spec、配置 guide、函数目录如何约束 AI；Component PayloadProvider 属于 PageDesign knowledge，不属于 core。
+7. PageDesign 100 步流程：把入口、数据模型、视图、结构、行为、样式、校验和预览收尾固化成可查询的设计步骤。
 
 **源码锚点**
 
 - `packages/spark-ai/src/registrations/page-design/page-design-business.ts`
 - `packages/spark-ai/src/registrations/page-design/functions/tool-catalog.ts`
 - `packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts`
+- `packages/spark-page-config/src/files/services/page-design-service.ts`
+- `packages/spark-page-config/src/files/design/page-design-100-step-flow.ts`
 - `packages/spark-ai/src/catalog/catalog-projections.ts`
 - `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts`
 

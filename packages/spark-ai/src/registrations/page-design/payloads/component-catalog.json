@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-19T16:17:08.583Z",
-  "componentCount": 110,
+  "buildTime": "2026-05-20T00:31:47.927Z",
+  "componentCount": 106,
   "components": {
     "about": {
       "type": "about",
@@ -12,623 +12,6 @@
       "internal": true,
       "configurable": false,
       "props": [],
-      "emits": [],
-      "source": "vcm+meta"
-    },
-    "ai-chat-shell": {
-      "type": "ai-chat-shell",
-      "filePath": "packages/spark-component/src/components/ai/AiChatShell.vue",
-      "category": "feature",
-      "description": "AI 聊天壳层组件，负责渲染消息列表、输入区、附件、工具日志、SSE/FC 调试信息和策略切换事件；适合被 AiChatWidget 等上层会话容器托管。 配置入口：type=\"ai-chat-shell\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 关键 props：messages, pendingFiles, inputText, isStreaming, isRecording, error。 主要事件：send, clear, clearMessages, clearToolLogs, triggerFileInput。",
-      "internal": true,
-      "configurable": false,
-      "props": [
-        {
-          "name": "messages",
-          "type": "ChatMessageLike[]",
-          "required": true,
-          "description": "Chat message list; 按时间顺序渲染用户、系统和 LLM 消息。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/ChatMessageLike"
-            },
-            "description": "Chat message list; 按时间顺序渲染用户、系统和 LLM 消息。",
-            "examples": [
-              []
-            ]
-          }
-        },
-        {
-          "name": "pendingFiles",
-          "type": "FileAttachment[]",
-          "required": true,
-          "description": "Pending file attachments; 尚未发送、等待随下一条消息上传的文件。",
-          "schema": {
-            "type": "array",
-            "items": {
-              "$ref": "#/$defs/FileAttachment"
-            },
-            "description": "Pending file attachments; 尚未发送、等待随下一条消息上传的文件。",
-            "examples": [
-              []
-            ]
-          }
-        },
-        {
-          "name": "inputText",
-          "type": "string",
-          "required": true,
-          "description": "Current input text; 与输入框内容双向同步。"
-        },
-        {
-          "name": "isStreaming",
-          "type": "boolean",
-          "required": true,
-          "description": "Streaming state; true 表示当前有 AI turn 正在输出或执行。"
-        },
-        {
-          "name": "activeTurnCount",
-          "type": "number",
-          "required": false,
-          "description": "Active turn count; 当前正在运行的并发 turn 数。"
-        },
-        {
-          "name": "queuedTurnCount",
-          "type": "number",
-          "required": false,
-          "description": "Queued turn count; 已提交但等待执行的 turn 数。"
-        },
-        {
-          "name": "maxParallelTurns",
-          "type": "number",
-          "required": false,
-          "description": "Max parallel turns; UI 展示允许并发执行的 turn 上限。"
-        },
-        {
-          "name": "canSend",
-          "type": "boolean",
-          "required": false,
-          "description": "Send availability; false 时禁用发送入口。"
-        },
-        {
-          "name": "isRecording",
-          "type": "boolean",
-          "required": true,
-          "description": "Voice recording state; true 表示正在录音输入。"
-        },
-        {
-          "name": "error",
-          "type": "string | null",
-          "required": true,
-          "description": "Error message; 展示当前聊天流程的错误提示。"
-        },
-        {
-          "name": "title",
-          "type": "string",
-          "required": false,
-          "description": "Panel title; 显示在 chat shell 顶部。"
-        },
-        {
-          "name": "placeholder",
-          "type": "string",
-          "required": false,
-          "description": "Input placeholder; 空输入时的提示文案。"
-        },
-        {
-          "name": "compact",
-          "type": "boolean",
-          "required": false,
-          "description": "Compact layout; true 时使用更紧凑的聊天面板间距。"
-        },
-        {
-          "name": "toolLogs",
-          "type": "ToolLogLike[]",
-          "required": false,
-          "description": "Tool log list; 展示 AI 工具调用、调试或流程日志。"
-        },
-        {
-          "name": "canClearToolLogs",
-          "type": "boolean",
-          "required": false,
-          "description": "Whether tool logs can be cleared; true 时显示清空工具日志操作。"
-        },
-        {
-          "name": "sseEvents",
-          "type": "SseEventLike[]",
-          "required": false,
-          "description": "SSE event timeline; 展示流式响应的底层事件轨迹。"
-        },
-        {
-          "name": "fcCalls",
-          "type": "FcCallLike[]",
-          "required": false,
-          "description": "Function-call records; 展示本轮 AI 调用的函数调用明细。"
-        },
-        {
-          "name": "pageId",
-          "type": "string",
-          "required": false,
-          "description": "Page id; 标记当前 AI 会话所属页面上下文。"
-        },
-        {
-          "name": "draftActions",
-          "type": "readonly DraftActionLike[]",
-          "required": false,
-          "description": "Draft action list; LLM 可触发的草稿操作入口。"
-        },
-        {
-          "name": "draftLoadingId",
-          "type": "string | null",
-          "required": false,
-          "description": "Draft loading id; 当前正在执行的草稿 action id。"
-        },
-        {
-          "name": "recoveryPolicy",
-          "type": "RecoveryPolicyLike",
-          "required": false,
-          "description": "Recovery policy; 控制 AI 出错或偏航时的恢复策略。",
-          "schema": {
-            "enum": [
-              "layered",
-              "manual",
-              "strict"
-            ],
-            "type": "string",
-            "description": "Recovery policy; 控制 AI 出错或偏航时的恢复策略。"
-          }
-        },
-        {
-          "name": "collaborationPolicy",
-          "type": "CollaborationPolicyLike",
-          "required": false,
-          "description": "Collaboration policy; 控制 AI 与人工确认之间的协作强度。",
-          "schema": {
-            "enum": [
-              "auto",
-              "critical-confirm",
-              "plan-confirm",
-              "step-confirm",
-              "human-takeover"
-            ],
-            "type": "string",
-            "description": "Collaboration policy; 控制 AI 与人工确认之间的协作强度。"
-          }
-        },
-        {
-          "name": "actionTitleMap",
-          "type": "Record<string, string>",
-          "required": false,
-          "description": "Action title map; 为 action id 覆盖展示标题。"
-        },
-        {
-          "name": "actionPrefixTitleMap",
-          "type": "Record<string, string>",
-          "required": false,
-          "description": "Action prefix title map; 为 action id 增加标题前缀。"
-        },
-        {
-          "name": "actionSuffixTitleMap",
-          "type": "Record<string, string>",
-          "required": false,
-          "description": "Action suffix title map; 为 action id 增加标题后缀。"
-        }
-      ],
-      "emits": [
-        {
-          "name": "send",
-          "type": "[]",
-          "description": "Send requested; 用户提交当前输入内容。"
-        },
-        {
-          "name": "clear",
-          "type": "[]",
-          "description": "Clear input requested; 清空当前输入区。"
-        },
-        {
-          "name": "clearMessages",
-          "type": "[]",
-          "description": "Clear messages requested; 清空当前聊天消息列表。"
-        },
-        {
-          "name": "clearToolLogs",
-          "type": "[]",
-          "description": "Clear tool logs requested; 清空工具日志面板。"
-        },
-        {
-          "name": "triggerFileInput",
-          "type": "[]",
-          "description": "File picker requested; 打开外部文件选择器。"
-        },
-        {
-          "name": "toggleVoice",
-          "type": "[]",
-          "description": "Voice input toggled; 切换录音输入状态。"
-        },
-        {
-          "name": "update:inputText",
-          "type": "[value: string]",
-          "description": "Input text changed; 同步用户输入框内容。"
-        },
-        {
-          "name": "removePendingFile",
-          "type": "[index: number]",
-          "description": "Remove pending file; 从待发送附件列表移除一项。"
-        },
-        {
-          "name": "update:recoveryPolicy",
-          "type": "[value: RecoveryPolicyLike]",
-          "description": "Recovery policy changed; 同步 AI 恢复策略。",
-          "schema": {
-            "title": "[value: RecoveryPolicyLike]",
-            "type": "array",
-            "prefixItems": [
-              {
-                "$ref": "#/$defs/RecoveryPolicyLike",
-                "title": "value",
-                "description": "Next recovery policy."
-              }
-            ],
-            "description": "Recovery policy changed; 同步 AI 恢复策略。"
-          }
-        },
-        {
-          "name": "update:collaborationPolicy",
-          "type": "[value: CollaborationPolicyLike]",
-          "description": "Collaboration policy changed; 同步人工确认协作策略。",
-          "schema": {
-            "title": "[value: CollaborationPolicyLike]",
-            "type": "array",
-            "prefixItems": [
-              {
-                "$ref": "#/$defs/CollaborationPolicyLike",
-                "title": "value",
-                "description": "Next collaboration policy."
-              }
-            ],
-            "description": "Collaboration policy changed; 同步人工确认协作策略。"
-          }
-        },
-        {
-          "name": "triggerDraftAction",
-          "type": "[actionId: string]",
-          "description": "Draft action triggered; 用户点击或 LLM 请求执行草稿动作。"
-        }
-      ],
-      "source": "vcm+meta"
-    },
-    "ai-chat-widget": {
-      "type": "ai-chat-widget",
-      "filePath": "packages/spark-component/src/components/ai/AiChatWidget.vue",
-      "category": "feature",
-      "description": "AI 聊天会话容器，封装 useAiChat 状态、消息发送、附件上传、工具日志和草稿动作；适合直接挂到页面或全局 AI 面板中。 配置入口：type=\"ai-chat-widget\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 关键 props：title, placeholder。",
-      "internal": true,
-      "configurable": false,
-      "props": [
-        {
-          "name": "mode",
-          "type": "ChatMode",
-          "required": false,
-          "description": "Chat mode; 控制单轮或多轮会话行为。",
-          "schema": {
-            "enum": [
-              "multi",
-              "single"
-            ],
-            "type": "string",
-            "description": "Chat mode; 控制单轮或多轮会话行为。"
-          }
-        },
-        {
-          "name": "systemPrompt",
-          "type": "string",
-          "required": false,
-          "description": "System prompt; 注入给 AI 的系统级指令。"
-        },
-        {
-          "name": "title",
-          "type": "string",
-          "required": false,
-          "description": "Panel title; 传递给聊天壳层顶部标题。"
-        },
-        {
-          "name": "placeholder",
-          "type": "string",
-          "required": false,
-          "description": "Input placeholder; 传递给消息输入框的提示文案。"
-        },
-        {
-          "name": "compact",
-          "type": "boolean",
-          "required": false,
-          "description": "Compact layout; true 时使用更紧凑的聊天 UI。"
-        },
-        {
-          "name": "sender",
-          "type": "AiChatSender",
-          "required": false,
-          "description": "Custom sender; 覆盖默认 AI 消息发送实现。"
-        },
-        {
-          "name": "storageKey",
-          "type": "string",
-          "required": false,
-          "description": "Storage key; 用于持久化会话和面板状态。"
-        },
-        {
-          "name": "disablePersistence",
-          "type": "boolean",
-          "required": false,
-          "description": "Disable persistence; true 时不读写本地会话缓存。"
-        },
-        {
-          "name": "pageId",
-          "type": "string",
-          "required": false,
-          "description": "Page id; 当前 AI 会话绑定的页面上下文。"
-        },
-        {
-          "name": "showToolLogs",
-          "type": "boolean",
-          "required": false,
-          "description": "Show tool logs; true 时展示内置工具日志。"
-        },
-        {
-          "name": "externalToolLogs",
-          "type": "{ type: \"error\" | \"info\" | \"success\"; tag: string; text: string; timestamp?: string; }[]",
-          "required": false,
-          "description": "External tool logs; 由宿主传入并接管展示的工具日志。"
-        },
-        {
-          "name": "clearExternalToolLogs",
-          "type": "(() => void)",
-          "required": false,
-          "description": "Clear external tool logs; 宿主提供的外部日志清空函数。"
-        },
-        {
-          "name": "reportFcError",
-          "type": "AiFcErrorReporter",
-          "required": false,
-          "description": "Function-call error reporter; 上报 AI 函数调用错误。"
-        },
-        {
-          "name": "turnConcurrency",
-          "type": "AiTurnConcurrencyConfig",
-          "required": false,
-          "description": "Turn concurrency config; 控制 AI turn 的并发和排队行为。",
-          "schema": {
-            "$ref": "#/$defs/AiTurnConcurrencyConfig"
-          }
-        },
-        {
-          "name": "streamAiChatText",
-          "type": "StreamAiChatText",
-          "required": false,
-          "description": "Streaming chat implementation; 由宿主注入真实 LLM 流式调用。"
-        },
-        {
-          "name": "parseTokenUsage",
-          "type": "((usageRaw: Record<string, unknown>) => TokenUsage)",
-          "required": false,
-          "description": "Token usage parser; 将 provider 原始 usage 转成统一 token 统计。"
-        },
-        {
-          "name": "uploadFile",
-          "type": "((file: File) => Promise<FileAttachment>)",
-          "required": false,
-          "description": "File upload implementation; 由宿主接管附件上传并返回可引用信息。"
-        },
-        {
-          "name": "draftActions",
-          "type": "readonly AiDraftActionConfig[]",
-          "required": false,
-          "description": "Draft actions; 可由 AI 或用户触发的草稿编辑动作。"
-        },
-        {
-          "name": "actionTitleMap",
-          "type": "Record<string, string>",
-          "required": false,
-          "description": "Action title map; 为 action id 覆盖展示标题。"
-        },
-        {
-          "name": "actionPrefixTitleMap",
-          "type": "Record<string, string>",
-          "required": false,
-          "description": "Action prefix title map; 为 action id 增加标题前缀。"
-        },
-        {
-          "name": "actionSuffixTitleMap",
-          "type": "Record<string, string>",
-          "required": false,
-          "description": "Action suffix title map; 为 action id 增加标题后缀。"
-        }
-      ],
-      "emits": [],
-      "source": "vcm+meta"
-    },
-    "ai-launcher-button": {
-      "type": "ai-launcher-button",
-      "filePath": "packages/spark-component/src/components/ai/AiLauncherButton.vue",
-      "category": "feature",
-      "description": "AI 面板启动按钮，绑定 AiSessionConfig 并负责打开/关闭全局 AI 面板，支持图标、快捷键、激活态事件和打开前取消钩子。 配置入口：type=\"ai-launcher-button\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。 必填 props：config。 关键 props：config, label。 主要事件：active-change, shortcut-trigger, resolve-target, before-open, launch-error。",
-      "internal": true,
-      "configurable": false,
-      "props": [
-        {
-          "name": "config",
-          "type": "AiSessionConfigInput",
-          "required": true,
-          "description": "AI 会话配置。业务按钮可只提供展示配置，target 由 resolveTarget / resolve-target 解析。",
-          "schema": {
-            "$ref": "#/$defs/AiSessionConfigInput"
-          }
-        },
-        {
-          "name": "resolveTarget",
-          "type": "(() => AiBusinessSessionTarget | Promise<AiBusinessSessionTarget>)",
-          "required": false,
-          "description": "程序式业务目标解析 API；返回业务注册 ID 与业务实例 ID。"
-        },
-        {
-          "name": "label",
-          "type": "string",
-          "required": false,
-          "default": "\"AI\"",
-          "description": "Button label; 展示在 AI 启动按钮上的文字。"
-        },
-        {
-          "name": "size",
-          "type": "\"small\" | \"default\" | \"large\"",
-          "required": false,
-          "default": "\"small\"",
-          "description": "Button size; 对齐 Element Plus small/default/large 尺寸。",
-          "schema": {
-            "enum": [
-              "small",
-              "default",
-              "large"
-            ],
-            "type": "string",
-            "description": "Button size; 对齐 Element Plus small/default/large 尺寸。",
-            "default": "small"
-          }
-        },
-        {
-          "name": "link",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "Link style; true 时使用轻量链接按钮外观。"
-        },
-        {
-          "name": "icon",
-          "type": "string",
-          "required": false,
-          "default": "\"ChatRound\"",
-          "description": "Icon name; 对应 Element Plus icons-vue 的图标组件名。"
-        },
-        {
-          "name": "iconSize",
-          "type": "number",
-          "required": false,
-          "default": "14",
-          "description": "Icon size; 设置按钮图标像素尺寸。"
-        },
-        {
-          "name": "disabled",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "Disabled state; true 时禁止点击和快捷键打开面板。"
-        },
-        {
-          "name": "shortcut",
-          "type": "string",
-          "required": false,
-          "description": "全局快捷键，例如 `\"ctrl+shift+a\"` / `\"meta+k\"`。\n支持修饰符：`ctrl` / `meta` / `shift` / `alt`，键名使用小写（`a` / `k` / `escape` 等）。\n在输入框 / 可编辑元素中按下时会被忽略，避免劫持用户输入。\n快捷键触发行为与点击完全一致（toggle）。"
-        }
-      ],
-      "emits": [
-        {
-          "name": "active-change",
-          "type": "[active: boolean]",
-          "description": "激活态变化（`isActive` = 面板可见 **且** 当前 config 就是本按钮的 sessionConfig）。"
-        },
-        {
-          "name": "shortcut-trigger",
-          "type": "[]",
-          "description": "快捷键命中（在执行 open/close 之前触发，可用于埋点）。"
-        },
-        {
-          "name": "resolve-target",
-          "type": "[payload: AiLauncherResolveTargetPayload]",
-          "description": "解析业务目标——在打开面板前触发；处理器通过 resolve/cancel/reject/waitUntil 返回结果。",
-          "schema": {
-            "title": "[payload: AiLauncherResolveTargetPayload]",
-            "type": "array",
-            "prefixItems": [
-              {
-                "$ref": "#/$defs/AiLauncherResolveTargetPayload",
-                "title": "payload",
-                "description": "Event payload; 承载本次事件的上下文数据。"
-              }
-            ],
-            "description": "解析业务目标——在打开面板前触发；处理器通过 resolve/cancel/reject/waitUntil 返回结果。"
-          }
-        },
-        {
-          "name": "before-open",
-          "type": "[payload: AiLauncherBeforeOpenPayload]",
-          "description": "即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。",
-          "schema": {
-            "title": "[payload: AiLauncherBeforeOpenPayload]",
-            "type": "array",
-            "prefixItems": [
-              {
-                "$ref": "#/$defs/AiLauncherBeforeOpenPayload",
-                "title": "payload",
-                "description": "Before-open payload with session config and cancel function."
-              }
-            ],
-            "description": "即将打开——在 `store.open()` 之前触发，payload 提供 `cancel()` 阻止本次打开。"
-          }
-        },
-        {
-          "name": "launch-error",
-          "type": "[error: unknown]",
-          "description": "启动失败；用于业务页把 target 解析错误直接展示给用户。"
-        }
-      ],
-      "source": "vcm+meta"
-    },
-    "app-ai-panel": {
-      "type": "app-ai-panel",
-      "filePath": "packages/spark-component/src/components/ai/AppAiPanel.vue",
-      "category": "feature",
-      "description": "全局可拖拽/缩放 AI 面板，读取 useAiPanelStore 当前会话配置并承载 AiChatWidget；适合应用层统一挂载一次作为 AI 工作台入口。 配置入口：type=\"app-ai-panel\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
-      "props": [
-        {
-          "name": "resolveRuntimeSession",
-          "type": "((config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>)",
-          "required": false,
-          "description": "Resolve raw session config into an AI runtime session monitored by this panel."
-        },
-        {
-          "name": "resolveSessionConfig",
-          "type": "((config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>)",
-          "required": false,
-          "description": "resolveSessionConfig prop (((config: AiSessionConfig) => AiResolvedSessionConfig | Promise<AiResolvedSessionConfig>)); 用于配置该组件的 resolveSessionConfig 行为或展示。"
-        },
-        {
-          "name": "runtimeMonitor",
-          "type": "RuntimeMonitor",
-          "required": false,
-          "description": "Runtime monitor; 面板只订阅并展示 AI core session，不持有业务状态事实。",
-          "schema": {
-            "$ref": "#/$defs/RuntimeMonitor"
-          }
-        },
-        {
-          "name": "streamAiChatText",
-          "type": "StreamAiChatText",
-          "required": false,
-          "description": "Streaming chat implementation; 由应用层注入真实 LLM 流式调用。"
-        },
-        {
-          "name": "parseTokenUsage",
-          "type": "((usageRaw: Record<string, unknown>) => TokenUsage)",
-          "required": false,
-          "description": "Token usage parser; 将 provider 原始 usage 转成统一 token 统计。"
-        },
-        {
-          "name": "uploadFile",
-          "type": "((file: File) => Promise<FileAttachment>)",
-          "required": false,
-          "description": "File upload implementation; 由应用层处理附件上传并返回引用信息。"
-        }
-      ],
       "emits": [],
       "source": "vcm+meta"
     },
@@ -808,16 +191,16 @@
         },
         {
           "name": "alertType",
-          "type": "\"error\" | \"info\" | \"success\" | \"warning\"",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
           "required": false,
           "default": "\"info\"",
           "description": "提示类型",
           "schema": {
             "enum": [
-              "error",
-              "info",
               "success",
-              "warning"
+              "warning",
+              "info",
+              "error"
             ],
             "type": "string",
             "description": "提示类型",
@@ -899,15 +282,15 @@
       "props": [
         {
           "name": "avatarSize",
-          "type": "number | \"small\" | \"default\" | \"large\"",
+          "type": "number | \"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "头像尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "头像尺寸",
@@ -1081,17 +464,17 @@
         },
         {
           "name": "badgeType",
-          "type": "\"\" | \"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"danger\"",
           "description": "徽标主题类型。",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -1438,15 +821,15 @@
         },
         {
           "name": "descriptionsSize",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "尺寸",
@@ -2107,16 +1490,16 @@
       "props": [
         {
           "name": "icon",
-          "type": "\"error\" | \"info\" | \"success\" | \"warning\"",
+          "type": "\"success\" | \"warning\" | \"info\" | \"error\"",
           "required": false,
           "default": "\"info\"",
           "description": "结果图标类型",
           "schema": {
             "enum": [
-              "error",
-              "info",
               "success",
-              "warning"
+              "warning",
+              "info",
+              "error"
             ],
             "type": "string",
             "description": "结果图标类型",
@@ -2350,9 +1733,9 @@
           "schema": {
             "enum": [
               "",
-              "info",
               "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -2401,15 +1784,15 @@
         },
         {
           "name": "size",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "尺寸",
@@ -2708,16 +2091,16 @@
         },
         {
           "name": "itemType",
-          "type": "\"info\" | \"success\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"primary\"",
           "description": "节点类型",
           "schema": {
             "enum": [
-              "info",
-              "success",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -2733,14 +2116,14 @@
         },
         {
           "name": "itemSize",
-          "type": "\"large\" | \"normal\"",
+          "type": "\"normal\" | \"large\"",
           "required": false,
           "default": "\"normal\"",
           "description": "节点尺寸",
           "schema": {
             "enum": [
-              "large",
-              "normal"
+              "normal",
+              "large"
             ],
             "type": "string",
             "description": "节点尺寸",
@@ -5105,23 +4488,17 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
-          "name": "placeholder",
-          "type": "string",
+          "name": "multiple",
+          "type": "boolean",
           "required": false,
-          "description": "占位文案"
+          "default": "false",
+          "description": "是否启用多选"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
           "description": "展示标签"
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
         },
         {
           "name": "modelValue",
@@ -5146,6 +4523,12 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -7651,18 +7034,18 @@
         },
         {
           "name": "linkType",
-          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"default\"",
           "description": "链接类型",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "default",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -8778,18 +8161,18 @@
         },
         {
           "name": "confirmButtonType",
-          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"primary\"",
           "description": "确认按钮类型",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "default",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -8799,18 +8182,18 @@
         },
         {
           "name": "cancelButtonType",
-          "type": "\"\" | \"info\" | \"success\" | \"default\" | \"primary\" | \"warning\" | \"danger\"",
+          "type": "\"\" | \"default\" | \"primary\" | \"success\" | \"warning\" | \"info\" | \"danger\"",
           "required": false,
           "default": "\"\"",
           "description": "取消按钮类型",
           "schema": {
             "enum": [
               "",
-              "info",
-              "success",
               "default",
               "primary",
+              "success",
               "warning",
+              "info",
               "danger"
             ],
             "type": "string",
@@ -9008,23 +8391,17 @@
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
-          "name": "placeholder",
-          "type": "string",
+          "name": "multiple",
+          "type": "boolean",
           "required": false,
-          "description": "占位文案"
+          "default": "false",
+          "description": "是否启用多选"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
           "description": "展示标签"
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
         },
         {
           "name": "modelValue",
@@ -9049,6 +8426,12 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -9763,15 +9146,15 @@
       "props": [
         {
           "name": "size",
-          "type": "\"small\" | \"default\" | \"large\"",
+          "type": "\"default\" | \"large\" | \"small\"",
           "required": false,
           "default": "\"default\"",
           "description": "尺寸",
           "schema": {
             "enum": [
-              "small",
               "default",
-              "large"
+              "large",
+              "small"
             ],
             "type": "string",
             "description": "尺寸",
@@ -12258,7 +11641,7 @@
       "type": "r-tour",
       "filePath": "packages/spark-component/src/components/containers/layout/RendererTour.vue",
       "category": "container",
-      "description": "引导流程组件，管理引导打开/关闭状态。 配置入口：type=\"r-tour\"，category=container（容器组件）。 主要事件：close, change, finish, update:open。",
+      "description": "引导流程组件，管理引导打开/关闭状态。 配置入口：type=\"r-tour\"，category=container（容器组件）。 主要事件：change, close, finish, update:open。",
       "props": [
         {
           "name": "steps",
@@ -12338,14 +11721,14 @@
       ],
       "emits": [
         {
-          "name": "close",
-          "type": "[current: number]",
-          "description": "Tour closed; 用户关闭引导浮层。"
-        },
-        {
           "name": "change",
           "type": "[current: number]",
           "description": "Tour step changed; 当前引导步骤发生切换。"
+        },
+        {
+          "name": "close",
+          "type": "[current: number]",
+          "description": "Tour closed; 用户关闭引导浮层。"
         },
         {
           "name": "finish",
@@ -13380,23 +12763,17 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
-          "name": "placeholder",
-          "type": "string",
+          "name": "multiple",
+          "type": "boolean",
           "required": false,
-          "description": "占位文案"
+          "default": "false",
+          "description": "是否启用多选"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
           "description": "展示标签"
-        },
-        {
-          "name": "multiple",
-          "type": "boolean",
-          "required": false,
-          "default": "false",
-          "description": "是否启用多选"
         },
         {
           "name": "modelValue",
@@ -13421,6 +12798,12 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
         },
         {
           "name": "clearable",
@@ -13617,11 +13000,11 @@
         },
         {
           "name": "parentContext",
-          "type": "ICapabilityContext",
+          "type": "CapabilityContext",
           "required": false,
           "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
           "schema": {
-            "$ref": "#/$defs/ICapabilityContext"
+            "$ref": "#/$defs/CapabilityContext"
           }
         }
       ],
@@ -13920,373 +13303,31 @@
     }
   },
   "$defs": {
-    "(promise: Promise<AiBusinessSessionTarget | null>): void": {
-      "title": "(promise: Promise<AiBusinessSessionTarget | null>): void",
-      "type": "array",
-      "prefixItems": [
-        {
-          "type": "null"
-        }
-      ],
-      "description": "注册异步解析 API。事件处理器应同步调用 waitUntil(api())。"
-    },
-    "AiFcLoopConfig": {
-      "title": "AiFcLoopConfig",
-      "type": "object",
-      "properties": {
-        "enabled": {
-          "type": "boolean",
-          "description": "是否启用本地 FC 循环（业务 sender 自行实现时读取本字段）。"
-        },
-        "maxRounds": {
-          "type": "number",
-          "description": "单次 sender 调用内允许的最大工具往返轮数。"
-        },
-        "endpoint": {
-          "type": "string",
-          "description": "自定义后端端点（默认走 /api/ai/chat/stream）。"
-        }
-      },
-      "description": "SSE + Function-Call 循环配置。"
-    },
-    "AiFeedbackConfig": {
-      "title": "AiFeedbackConfig",
-      "type": "object",
-      "properties": {
-        "value": {
-          "type": "string",
-          "description": "绑定到 UI 文本框的 ref。"
-        },
-        "onSubmit": {
-          "type": "string",
-          "description": "提交反馈文本；target 标识对应消息和点赞/点踩来源。"
-        }
-      },
-      "description": "反馈机制（文本 + 点赞点踩）。"
-    },
-    "AiLauncherBeforeOpenPayload": {
-      "title": "AiLauncherBeforeOpenPayload",
-      "type": "object",
-      "properties": {
-        "config": {
-          "description": "即将打开的 AI 会话配置。",
-          "$ref": "#/$defs/AiSessionConfig"
-        },
-        "cancel": {
-          "description": "取消本次打开请求；调用后不会执行 store.open。"
-        }
-      },
-      "required": [
-        "config",
-        "cancel"
-      ],
-      "description": "Before-open payload with session config and cancel function."
-    },
-    "AiLauncherResolveTargetPayload": {
-      "title": "AiLauncherResolveTargetPayload",
-      "type": "object",
-      "properties": {
-        "config": {
-          "description": "原始按钮配置。",
-          "$ref": "#/$defs/AiSessionConfigInput"
-        },
-        "resolve": {
-          "description": "同步提供解析结果。"
-        },
-        "cancel": {
-          "description": "取消本次打开。"
-        },
-        "reject": {
-          "description": "上报解析失败。"
-        },
-        "waitUntil": {
-          "description": "注册异步解析 API。事件处理器应同步调用 waitUntil(api())。",
-          "$ref": "#/$defs/(promise: Promise<AiBusinessSessionTarget | null>): void"
-        }
-      },
-      "required": [
-        "config",
-        "resolve",
-        "cancel",
-        "reject",
-        "waitUntil"
-      ],
-      "description": "Event payload; 承载本次事件的上下文数据。"
-    },
-    "AiSessionConfig": {
-      "title": "AiSessionConfig",
-      "type": "object",
-      "properties": {
-        "target": {
-          "description": "已解析的业务 AI 会话目标。打开面板前必须确定。"
-        },
-        "storageKey": {
-          "type": "string",
-          "description": "AI core runtime 生成的持久化 key；业务按钮不应手写。"
-        },
-        "disablePersistence": {
-          "type": "boolean",
-          "description": "禁用会话快照读写。通常只有临时诊断或特殊会话需要关闭。"
-        },
-        "pageId": {
-          "type": "string",
-          "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 businessInstanceId。"
-        },
-        "sender": {
-          "description": "AI core runtime 生成的发送器；业务按钮不应手写。"
-        },
-        "title": {
-          "type": "string",
-          "description": "面板标题。"
-        },
-        "placeholder": {
-          "type": "string",
-          "description": "输入框 placeholder。"
-        },
-        "externalToolLogs": {
-          "type": "array",
-          "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。"
-        },
-        "clearExternalToolLogs": {
-          "description": "清空外部工具日志。若未提供，面板只清空自身内部日志。"
-        },
-        "fcErrorReporter": {
-          "description": "FC 调用失败时的诊断回传器。"
-        },
-        "turnConcurrency": {
-          "description": "turn 并发配置；默认由 AiChatWidget 保持 1 个在途 turn。"
-        },
-        "beforeOpen": {
-          "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
-        },
-        "systemPrompt": {
-          "type": "string",
-          "description": "自定义 system prompt。sender 可读取并随请求下发。"
-        },
-        "toolGuide": {
-          "type": "string",
-          "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。"
-        },
-        "toolCatalog": {
-          "type": "array",
-          "description": "工具目录（function schema 列表）。"
-        },
-        "toolInstances": {
-          "type": "string",
-          "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。"
-        },
-        "fcLoop": {
-          "description": "SSE + Function-Call 循环配置。",
-          "$ref": "#/$defs/AiFcLoopConfig"
-        },
-        "feedback": {
-          "description": "反馈机制（文本 + 点赞点踩）。",
-          "$ref": "#/$defs/AiFeedbackConfig"
-        },
-        "draftActions": {
-          "type": "array",
-          "description": "人工触发的诊断草稿按钮。"
-        },
-        "actionTitleMap": {
-          "type": "string",
-          "description": "action 精确标题映射（可选，业务侧注入）。"
-        },
-        "actionPrefixTitleMap": {
-          "type": "string",
-          "description": "action 前缀标题映射（可选，业务侧注入）。"
-        },
-        "actionSuffixTitleMap": {
-          "type": "string",
-          "description": "action 后缀标题映射（可选，业务侧注入）。"
-        },
-        "hooks": {
-          "description": "声明式生命周期 hooks（事件名即字段名）。"
-        }
-      },
-      "required": [
-        "target"
-      ],
-      "description": "即将打开的 AI 会话配置。"
-    },
-    "AiSessionConfigInput": {
-      "title": "AiSessionConfigInput",
-      "type": "object",
-      "properties": {
-        "title": {
-          "type": "string",
-          "description": "面板标题。"
-        },
-        "placeholder": {
-          "type": "string",
-          "description": "输入框 placeholder。"
-        },
-        "pageId": {
-          "type": "string",
-          "description": "业务页 ID。用于把诊断流按页面归属聚合；未提供时退回 businessInstanceId。"
-        },
-        "draftActions": {
-          "type": "array",
-          "description": "人工触发的诊断草稿按钮。"
-        },
-        "actionTitleMap": {
-          "type": "string",
-          "description": "action 精确标题映射（可选，业务侧注入）。"
-        },
-        "actionPrefixTitleMap": {
-          "type": "string",
-          "description": "action 前缀标题映射（可选，业务侧注入）。"
-        },
-        "actionSuffixTitleMap": {
-          "type": "string",
-          "description": "action 后缀标题映射（可选，业务侧注入）。"
-        },
-        "systemPrompt": {
-          "type": "string",
-          "description": "自定义 system prompt。sender 可读取并随请求下发。"
-        },
-        "disablePersistence": {
-          "type": "boolean",
-          "description": "禁用会话快照读写。通常只有临时诊断或特殊会话需要关闭。"
-        },
-        "externalToolLogs": {
-          "type": "array",
-          "description": "外部工具日志。面板展示此流，业务端在 sender 执行过程中 push 条目。"
-        },
-        "clearExternalToolLogs": {
-          "description": "清空外部工具日志。若未提供，面板只清空自身内部日志。"
-        },
-        "turnConcurrency": {
-          "description": "turn 并发配置；默认由 AiChatWidget 保持 1 个在途 turn。"
-        },
-        "fcErrorReporter": {
-          "description": "FC 调用失败时的诊断回传器。"
-        },
-        "beforeOpen": {
-          "description": "打开面板前的准备钩子（例如预加载上下文文件）。失败不会阻止面板打开。"
-        },
-        "toolGuide": {
-          "type": "string",
-          "description": "工具使用指南文本；sender 通常拼接到 system prompt 尾部。"
-        },
-        "toolCatalog": {
-          "type": "array",
-          "description": "工具目录（function schema 列表）。"
-        },
-        "toolInstances": {
-          "type": "string",
-          "description": "工具实例（函数名 → 执行器）；sender 在 FC 循环中按名查找并调用。"
-        },
-        "fcLoop": {
-          "description": "SSE + Function-Call 循环配置。",
-          "$ref": "#/$defs/AiFcLoopConfig"
-        },
-        "feedback": {
-          "description": "反馈机制（文本 + 点赞点踩）。",
-          "$ref": "#/$defs/AiFeedbackConfig"
-        },
-        "hooks": {
-          "description": "声明式生命周期 hooks（事件名即字段名）。"
-        },
-        "target": {}
-      },
-      "description": "AI 会话配置。业务按钮可只提供展示配置，target 由 resolveTarget / resolve-target 解析。",
-      "examples": [
-        {}
-      ]
-    },
-    "AiTurnConcurrencyConfig": {
-      "title": "AiTurnConcurrencyConfig",
-      "type": "object",
-      "properties": {
-        "maxParallelTurns": {
-          "type": "number",
-          "description": "允许同时请求 LLM 的最大 turn 数。默认 1，保持旧的串行行为。"
-        },
-        "overflow": {
-          "description": "达到并发上限后的策略。默认 reject；queue 会排队等待空闲槽位。",
-          "enum": [
-            "reject",
-            "queue",
-            "cancel-oldest"
-          ],
-          "type": "string"
-        }
-      },
-      "description": "Turn concurrency config; 控制 AI turn 的并发和排队行为。",
-      "examples": [
-        {
-          "maxParallelTurns": 1,
-          "overflow": "queue"
-        },
-        {}
-      ]
-    },
-    "ChatMessageLike": {
-      "title": "ChatMessageLike",
+    "CapabilityContext": {
+      "title": "CapabilityContext",
       "type": "object",
       "properties": {
         "id": {
-          "type": "string"
-        },
-        "role": {
           "type": "string",
-          "enum": [
-            "user",
-            "assistant"
-          ]
+          "description": "当前能力上下文节点 ID，用于调试、日志和父子链定位。"
         },
-        "content": {
-          "type": "string"
-        },
-        "reasoning": {
-          "type": "string"
-        },
-        "attachments": {
-          "type": "array"
-        },
-        "timestamp": {
-          "type": "string"
-        },
-        "streaming": {
-          "type": "boolean"
-        },
-        "turnId": {
-          "type": "string"
-        },
-        "turnSeq": {
-          "type": "number"
-        },
-        "turnStatus": {
+        "type": {
           "type": "string",
-          "enum": [
-            "done",
-            "error",
-            "queued",
-            "running",
-            "cancelled"
-          ]
+          "description": "当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。"
         },
-        "usage": {
-          "$ref": "#/$defs/TokenUsageLike"
+        "parent": {
+          "description": "父级能力上下文；消费能力时会沿此链向上查找。"
+        },
+        "capabilities": {
+          "description": "当前节点本地提供的能力实现表，key 为 CapabilityKey。"
         }
       },
       "required": [
         "id",
-        "role",
-        "content"
-      ]
-    },
-    "CollaborationPolicyLike": {
-      "title": "CollaborationPolicyLike",
-      "enum": [
-        "auto",
-        "critical-confirm",
-        "plan-confirm",
-        "step-confirm",
-        "human-takeover"
+        "type",
+        "capabilities"
       ],
-      "type": "string",
-      "description": "Next collaboration policy."
+      "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
     },
     "Date": {
       "title": "Date",
@@ -14464,7 +13505,7 @@
           "type": "string",
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@12332": {
+        "__@toPrimitive@46206": {
           "type": "string",
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
         }
@@ -14513,59 +13554,9 @@
         "toUTCString",
         "toISOString",
         "toJSON",
-        "__@toPrimitive@12332"
+        "__@toPrimitive@46206"
       ],
       "description": "当前日期"
-    },
-    "FileAttachment": {
-      "title": "FileAttachment",
-      "type": "object",
-      "properties": {
-        "fileId": {
-          "type": "string"
-        },
-        "name": {
-          "type": "string"
-        },
-        "size": {
-          "type": "number"
-        },
-        "mimeType": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "fileId",
-        "name",
-        "size",
-        "mimeType"
-      ]
-    },
-    "ICapabilityContext": {
-      "title": "ICapabilityContext",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string",
-          "description": "当前能力上下文节点 ID，用于调试、日志和父子链定位。"
-        },
-        "type": {
-          "type": "string",
-          "description": "当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。"
-        },
-        "parent": {
-          "description": "父级能力上下文；消费能力时会沿此链向上查找。"
-        },
-        "capabilities": {
-          "description": "当前节点本地提供的能力实现表，key 为 CapabilityKey。"
-        }
-      },
-      "required": [
-        "id",
-        "type",
-        "capabilities"
-      ],
-      "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
     },
     "JsonTreePolicy": {
       "title": "JsonTreePolicy",
@@ -15023,16 +14014,6 @@
         "type"
       ]
     },
-    "RecoveryPolicyLike": {
-      "title": "RecoveryPolicyLike",
-      "enum": [
-        "layered",
-        "manual",
-        "strict"
-      ],
-      "type": "string",
-      "description": "Next recovery policy."
-    },
     "RMentionOption": {
       "title": "RMentionOption",
       "type": "object",
@@ -15061,34 +14042,6 @@
         "value"
       ],
       "description": "Selected mention option."
-    },
-    "RuntimeMonitor": {
-      "title": "RuntimeMonitor",
-      "type": "object",
-      "properties": {
-        "getSnapshot": {},
-        "subscribe": {},
-        "focusSession": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "appendHumanMessage": {
-          "type": "string"
-        },
-        "closeSession": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "getSnapshot",
-        "subscribe",
-        "focusSession",
-        "appendHumanMessage",
-        "closeSession"
-      ],
-      "description": "Runtime monitor; 面板只订阅并展示 AI core session，不持有业务状态事实。"
     },
     "SparkNode": {
       "title": "SparkNode",
@@ -15122,27 +14075,6 @@
           }
         }
       ]
-    },
-    "TokenUsageLike": {
-      "title": "TokenUsageLike",
-      "type": "object",
-      "properties": {
-        "promptTokens": {
-          "type": "number"
-        },
-        "completionTokens": {
-          "type": "number"
-        },
-        "totalTokens": {
-          "type": "number"
-        },
-        "promptCacheHitTokens": {
-          "type": "number"
-        },
-        "promptCacheMissTokens": {
-          "type": "number"
-        }
-      }
     },
     "TransferValue": {
       "title": "TransferValue",

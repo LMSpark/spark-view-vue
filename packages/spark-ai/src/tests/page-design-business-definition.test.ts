@@ -20,6 +20,12 @@ function resultItemCount(value: unknown): number {
   return Array.isArray(items) ? items.length : 0
 }
 
+function resultStepCount(value: unknown): number {
+  if (!isRecord(value) || !isRecord(value['data'])) return 0
+  const steps = value['data']['steps']
+  return Array.isArray(steps) ? steps.length : 0
+}
+
 function createHost(options: { script?: string; style?: string } = {}): {
   host: PageDesignEditHost
   reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number }
@@ -81,6 +87,7 @@ describe('pageDesign module definition', () => {
     expect(projection.scope.instanceId).toBe('page-design-1')
     expect(projection.scope.moduleId).toBe(PageDesignModule.moduleId)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@lifecycle@bootstrap')).toBe(true)
+    expect(projection.availableFunctions.some((item) => item.action === 'page-designer@lifecycle@describeDesignFlow')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@textModel@writeScript')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@nodeTree@countNodes')).toBe(true)
     expect(projection.availableFunctions.some((item) => item.action === 'page-designer@knowledge@queryPayloads')).toBe(true)
@@ -122,6 +129,17 @@ describe('pageDesign module definition', () => {
       projection,
     })
     expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
+
+    const designFlow = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@lifecycle@describeDesignFlow',
+      args: { phase: '入口', afterStep: 10 },
+      projection,
+    })
+    expect(designFlow).toMatchObject({ ok: true, data: { nextStep: { step: 11, phase: '盘点' } } })
+    expect(resultStepCount(designFlow)).toBe(10)
 
     const readScript = await pageDesign.executeFunctionCall({
       moduleId: PageDesignModule.moduleId,
@@ -182,6 +200,7 @@ describe('pageDesign module definition', () => {
     })
     expect(history.map((entry) => entry.kind)).toEqual([
       'message',
+      'functionCall',
       'functionCall',
       'functionCall',
       'functionCall',

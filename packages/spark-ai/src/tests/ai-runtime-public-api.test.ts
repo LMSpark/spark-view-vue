@@ -1,12 +1,21 @@
 import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join, relative } from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import { describe, expect, it } from 'vitest'
 
 import * as SparkAi from '../index'
 import * as SparkAiHost from '../core/host/index'
 
-const AI_SOURCE_ROOT = join(process.cwd(), 'packages', 'spark-ai', 'src')
+function resolveAiSourceRoot(): string {
+  try {
+    return fileURLToPath(new URL('..', import.meta.url))
+  } catch {
+    return join(process.cwd(), 'packages', 'spark-ai', 'src')
+  }
+}
+
+const AI_SOURCE_ROOT = resolveAiSourceRoot()
 
 const CONSUMER_SOURCE_ROOTS: readonly string[] = [
   join(AI_SOURCE_ROOT, 'registrations'),

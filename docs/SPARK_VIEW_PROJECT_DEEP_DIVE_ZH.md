@@ -289,7 +289,9 @@ await SparkApp.start({
 
 ## 8. `spark-page-config`：配置加载与编译边界
 
-`spark-page-config` 的核心类是 [packages/spark-page-config/src/loader/index.ts](../packages/spark-page-config/src/loader/index.ts) 中的 `PageConfigLoader`。它负责从本地或远程读取页面四文件，再交给编译器变成运行时对象。
+`spark-page-config` 的核心类是 [packages/spark-page-config/src/files/runtime/page-config-loader.ts](../packages/spark-page-config/src/files/runtime/page-config-loader.ts) 中的 `PageConfigLoader`。它负责从本地或远程读取页面四文件，再交给编译器变成运行时对象。
+
+页面文件域已经收敛到 [packages/spark-page-config/src/files](../packages/spark-page-config/src/files)：`runtime` 负责远程 API、加载和编译；`documents` 负责内存文档与 JSON 文档编辑核心；`editing` 负责编辑工作区和 live edit host；`design` 放 schema、设计器投影、规则策略和页面设计 100 步流程；`services` 暴露 PageDesign 可调用的受控服务；`lifecycle` 负责页面文件创建、导航挂载、移动、卸载、删除和缓存清理。
 
 ```mermaid
 flowchart LR
@@ -317,6 +319,8 @@ flowchart LR
 加载器对必需文件和可选文件做了不同处理：运行时页面加载仍将 `rule.json` 与 `pagedata.json` 视为关键资产；DevSystem 编辑态可以显式开启 `allowMissingAsEmpty`，让缺失文件以空文档进入编辑状态，避免把占位内容写回远端。远程模式下，它通过统一 HTTP client 读取 `/pages-config/{pageId}/{filename}`，并支持动态请求头注入，以配合租户和项目上下文。
 
 `page-data-json-schema.ts` 也已经跟随数据层扩展，`CrudApi` 新增 `transaction` 端点，DataSet 顶层新增 `saveChanges` 配置，用于声明 `perView` 或 `transaction` 保存策略。
+
+[PageConfigFileLifecycle](../packages/spark-page-config/src/files/lifecycle/page-config-file-lifecycle.ts) 把页面文件生命周期和导航生命周期放在同一个包内协调：创建页面文件后挂载导航节点；删除页面时先解析并移除导航节点，再删除四文件并清理 loader 缓存。它不是 UI 层能力，也不依赖 Vue，而是 `spark-page-config` 对“页面资产完整生命周期”的框架无关编排。
 
 这个包是配置资产和运行时之间的契约边界。后续优化应优先增强这里，而不是让渲染器在下游反复兜底。
 
@@ -579,7 +583,9 @@ flowchart TD
 | `nodeTree` | 读写 `rule.json` 对应的 SparkNodeTree |
 | `dataset` | 读写 `pagedata.json` 对应的 DataSetCrudTool |
 
-真正落地到页面文件的能力在 [PageDesignService](../packages/spark-page-config/src/page-design/operations/page-design-service.ts)。它通过 `PageDesignEditHost` 获取活体编辑对象：`getNodeTree`、`getDataSetTool`、`readScript/writeScript`、`readStyle/writeStyle`。也就是说，AI 工具不是直接改 Vue 组件或后端文件，而是调用宿主暴露的编辑会话。
+真正落地到页面文件的能力在 [PageDesignService](../packages/spark-page-config/src/files/services/page-design-service.ts)。它通过 `PageDesignEditHost` 获取活体编辑对象：`getNodeTree`、`getDataSetTool`、`readScript/writeScript`、`readStyle/writeStyle`。也就是说，AI 工具不是直接改 Vue 组件或后端文件，而是调用宿主暴露的编辑会话。
+
+页面设计的 100 步过程也沉到 `spark-page-config` 的 design 域：[page-design-100-step-flow.ts](../packages/spark-page-config/src/files/design/page-design-100-step-flow.ts) 固化了从入口、数据盘点、模型规划、视图依赖、结构行为到预览收尾的完整步骤；`PageDesignService.describeDesignFlow()` 负责把阶段汇总、指定步骤和下一步返回给消费层。这样消费层只接收流程事实，不需要重新解释页面设计方法论。
 
 ```mermaid
 flowchart TD
@@ -958,7 +964,7 @@ flowchart LR
 2. [src/main.ts](../src/main.ts)：理解前端启动、插件、租户路由和页面配置接入。
 3. [packages/spark-app/src/start.ts](../packages/spark-app/src/start.ts)：理解应用启动抽象。
 4. [packages/spark-app/src/router/dynamic.ts](../packages/spark-app/src/router/dynamic.ts)：理解导航树如何派生路由。
-5. [packages/spark-page-config/src/loader/index.ts](../packages/spark-page-config/src/loader/index.ts)：理解页面四文件加载。
+5. [packages/spark-page-config/src/files/runtime/page-config-loader.ts](../packages/spark-page-config/src/files/runtime/page-config-loader.ts)：理解页面四文件加载。
 6. [packages/spark-component/src/page/renderer/SparkPageRenderer.vue](../packages/spark-component/src/page/renderer/SparkPageRenderer.vue)：理解页面运行时流水线。
 7. [packages/spark-component/src/components/SparkComponentRenderer.vue](../packages/spark-component/src/components/SparkComponentRenderer.vue)：理解递归渲染器。
 8. [packages/spark-component/src/core/spark-node-tree.ts](../packages/spark-component/src/core/spark-node-tree.ts)：理解节点树模型。
