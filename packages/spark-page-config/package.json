@@ -14,6 +14,38 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./page": {
+      "types": "./dist/page/index.d.ts",
+      "import": "./dist/page/index.js"
+    },
+    "./page/model": {
+      "types": "./dist/page/model/index.d.ts",
+      "import": "./dist/page/model/index.js"
+    },
+    "./page/loading": {
+      "types": "./dist/page/loading/index.d.ts",
+      "import": "./dist/page/loading/index.js"
+    },
+    "./page/workspace": {
+      "types": "./dist/page/workspace/index.d.ts",
+      "import": "./dist/page/workspace/index.js"
+    },
+    "./page/navigation": {
+      "types": "./dist/page/navigation/index.d.ts",
+      "import": "./dist/page/navigation/index.js"
+    },
+    "./page/sandbox": {
+      "types": "./dist/page/sandbox/index.d.ts",
+      "import": "./dist/page/sandbox/index.js"
+    },
+    "./assistant": {
+      "types": "./dist/assistant/index.d.ts",
+      "import": "./dist/assistant/index.js"
+    },
+    "./assistant/registrations": {
+      "types": "./dist/assistant/registrations/index.d.ts",
+      "import": "./dist/assistant/registrations/index.js"
     }
   },
   "main": "./dist/index.js",

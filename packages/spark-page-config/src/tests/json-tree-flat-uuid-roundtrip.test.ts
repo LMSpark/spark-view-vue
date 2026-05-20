@@ -6,7 +6,7 @@ import {
   restoreJsonDocumentFromFlat,
   type FlatJsonTreeDocument,
   type JsonDocument,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/workspace'
 
 describe('jsonTreeEditor flat uuid pipeline', () => {
   it('should round-trip object root document', () => {

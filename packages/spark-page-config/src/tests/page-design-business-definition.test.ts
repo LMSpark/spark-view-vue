@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest'
 
 import {
   PageDesignModule,
-} from '../ai/registrations/page-design'
+} from '../assistant/registrations/page-design'
 import {
   PageDesignService,
   type PageDesignEditHost,
-} from '@spark-view/spark-page-config'
-import { SparkNodeTree } from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/workspace'
+import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 
 function isRecord(value: unknown): value is Record<string, unknown> {

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LeaveRequestModule,
-} from '../ai/registrations/leave-request'
+} from '../assistant/registrations/leave-request'
 
 function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:session`) {
   return {

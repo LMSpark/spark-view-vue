@@ -1,0 +1,1942 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "3.0.0",
+  "buildTime": "2026-05-20T06:54:10.471Z",
+  "componentCount": 106,
+  "components": {
+    "about": {
+      "type": "about",
+      "filePath": "src/views/platform/About.vue",
+      "category": "feature",
+      "description": "关于页面，展示系统版本、技术栈和项目信息；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"about\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "app-list": {
+      "type": "app-list",
+      "filePath": "src/views/tenant/AppList.vue",
+      "category": "feature",
+      "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"app-list\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "cache-manager": {
+      "type": "cache-manager",
+      "filePath": "src/views/tenant/CacheManager.vue",
+      "category": "feature",
+      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"cache-manager\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "dashboard": {
+      "type": "dashboard",
+      "filePath": "src/views/app/Dashboard.vue",
+      "category": "feature",
+      "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口；属于应用路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"dashboard\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "data-view-meta-bar": {
+      "type": "data-view-meta-bar",
+      "filePath": "packages/spark-component/src/components/containers/data-views/DataViewMetaBar.vue",
+      "category": "container",
+      "description": "SPARK 包组件，可在 rule.json 中通过 type=\"data-view-meta-bar\" 使用。 配置入口：type=\"data-view-meta-bar\"，category=container（容器组件）。 关键 props：columns。",
+      "props": [
+        {
+          "name": "rows",
+          "type": "readonly DataRow[]",
+          "required": false,
+          "default": "[]",
+          "description": "rows prop (readonly DataRow[]); 用于配置该组件的 rows 行为或展示。"
+        },
+        {
+          "name": "columns",
+          "type": "readonly DataColumn[]",
+          "required": false,
+          "default": "[]",
+          "description": "columns prop (readonly DataColumn[]); 用于配置该组件的 columns 行为或展示。"
+        },
+        {
+          "name": "selectedRows",
+          "type": "readonly DataRow[]",
+          "required": false,
+          "default": "[]",
+          "description": "selectedRows prop (readonly DataRow[]); 用于配置该组件的 selectedRows 行为或展示。"
+        },
+        {
+          "name": "total",
+          "type": "number",
+          "required": false,
+          "default": "0",
+          "description": "total prop (number); 用于配置该组件的 total 行为或展示。"
+        },
+        {
+          "name": "page",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "page prop (number); 用于配置该组件的 page 行为或展示。"
+        },
+        {
+          "name": "pageSize",
+          "type": "number",
+          "required": false,
+          "default": "20",
+          "description": "pageSize prop (number); 用于配置该组件的 pageSize 行为或展示。"
+        },
+        {
+          "name": "requestState",
+          "type": "RequestState",
+          "required": false,
+          "description": "requestState prop (RequestState); 用于配置该组件的 requestState 行为或展示。"
+        },
+        {
+          "name": "mutating",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "mutating prop (boolean); 用于配置该组件的 mutating 行为或展示。"
+        },
+        {
+          "name": "loadingError",
+          "type": "Error | null",
+          "required": false,
+          "default": "null",
+          "description": "loadingError prop (Error | null); 用于配置该组件的 loadingError 行为或展示。"
+        },
+        {
+          "name": "mutatingError",
+          "type": "Error | null",
+          "required": false,
+          "default": "null",
+          "description": "mutatingError prop (Error | null); 用于配置该组件的 mutatingError 行为或展示。"
+        },
+        {
+          "name": "aggregateResult",
+          "type": "Readonly<Record<string, unknown>>",
+          "required": false,
+          "default": "{}",
+          "description": "aggregateResult prop (Readonly<Record<string, unknown>>); 用于配置该组件的 aggregateResult 行为或展示。"
+        },
+        {
+          "name": "selectionAggregateResult",
+          "type": "Readonly<Record<string, unknown>>",
+          "required": false,
+          "default": "{}",
+          "description": "selectionAggregateResult prop (Readonly<Record<string, unknown>>); 用于配置该组件的 selectionAggregateResult 行为或展示。"
+        },
+        {
+          "name": "showDataViewMeta",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "showDataViewMeta prop (boolean); 用于配置该组件的 showDataViewMeta 行为或展示。"
+        },
+        {
+          "name": "showAggregateSummary",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "showAggregateSummary prop (boolean); 用于配置该组件的 showAggregateSummary 行为或展示。"
+        },
+        {
+          "name": "showSelectionSummary",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "showSelectionSummary prop (boolean); 用于配置该组件的 showSelectionSummary 行为或展示。"
+        }
+      ],
+      "emits": [],
+      "source": "vcm"
+    },
+    "dbms": {
+      "type": "dbms",
+      "filePath": "src/views/app/DBMS.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"dbms\" 引用。 配置入口：type=\"dbms\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm"
+    },
+    "display-alert": {
+      "type": "display-alert",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayAlert.vue",
+      "category": "feature",
+      "description": "警告提示组件，支持 success/warning/info/error 四种类型。 配置入口：type=\"display-alert\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-avatar": {
+      "type": "display-avatar",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayAvatar.vue",
+      "category": "feature",
+      "description": "头像展示组件，支持图片/图标/文字多种模式和尺寸配置。 配置入口：type=\"display-avatar\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-badge": {
+      "type": "display-badge",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayBadge.vue",
+      "category": "feature",
+      "description": "徽章展示组件。 配置入口：type=\"display-badge\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-breadcrumb": {
+      "type": "display-breadcrumb",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumb.vue",
+      "category": "feature",
+      "description": "面包屑导航容器，支持自定义分隔符。 配置入口：type=\"display-breadcrumb\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-breadcrumb-item": {
+      "type": "display-breadcrumb-item",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayBreadcrumbItem.vue",
+      "category": "feature",
+      "description": "面包屑导航项，支持链接跳转。 配置入口：type=\"display-breadcrumb-item\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-calendar": {
+      "type": "display-calendar",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayCalendar.vue",
+      "category": "feature",
+      "description": "日历展示组件，支持日期范围和选中绑定。 配置入口：type=\"display-calendar\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-countdown": {
+      "type": "display-countdown",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayCountdown.vue",
+      "category": "feature",
+      "description": "倒计时组件，支持自定义格式和结束事件。 配置入口：type=\"display-countdown\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-descriptions": {
+      "type": "display-descriptions",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptions.vue",
+      "category": "feature",
+      "description": "描述列表容器。 配置入口：type=\"display-descriptions\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-descriptions-item": {
+      "type": "display-descriptions-item",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayDescriptionsItem.vue",
+      "category": "feature",
+      "description": "描述列表项，支持字段绑定。 配置入口：type=\"display-descriptions-item\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-empty": {
+      "type": "display-empty",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayEmpty.vue",
+      "category": "feature",
+      "description": "空状态占位组件。 配置入口：type=\"display-empty\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-icon": {
+      "type": "display-icon",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayIcon.vue",
+      "category": "feature",
+      "description": "图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。 配置入口：type=\"display-icon\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-image": {
+      "type": "display-image",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayImage.vue",
+      "category": "feature",
+      "description": "图片展示组件，支持懒加载、预览画廊和加载占位。 配置入口：type=\"display-image\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-pagination": {
+      "type": "display-pagination",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayPagination.vue",
+      "category": "feature",
+      "description": "分页控制组件，触发页码/页大小变更事件。 配置入口：type=\"display-pagination\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-progress": {
+      "type": "display-progress",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayProgress.vue",
+      "category": "feature",
+      "description": "进度条展示组件，支持动态颜色。 配置入口：type=\"display-progress\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-result": {
+      "type": "display-result",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayResult.vue",
+      "category": "feature",
+      "description": "结果页组件，含标题、副标题和按钮区。 配置入口：type=\"display-result\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-skeleton": {
+      "type": "display-skeleton",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplaySkeleton.vue",
+      "category": "feature",
+      "description": "骨架屏加载占位组件。 配置入口：type=\"display-skeleton\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-statistic": {
+      "type": "display-statistic",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayStatistic.vue",
+      "category": "feature",
+      "description": "统计数值展示组件，支持精度、前后缀和千分位分隔。 配置入口：type=\"display-statistic\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-tag": {
+      "type": "display-tag",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayTag.vue",
+      "category": "feature",
+      "description": "标签展示组件，支持类型/尺寸/主题样式和可关闭功能。 配置入口：type=\"display-tag\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-text": {
+      "type": "display-text",
+      "filePath": "packages/spark-component/src/components/display/data-components/DisplayText.vue",
+      "category": "feature",
+      "description": "文本展示组件，以 div/span/p 等 HTML 元素渲染文本值，支持前后缀和数字/货币/百分比/日期格式化。 配置入口：type=\"display-text\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-timeline": {
+      "type": "display-timeline",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayTimeline.vue",
+      "category": "feature",
+      "description": "时间线容器。 配置入口：type=\"display-timeline\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "display-timeline-item": {
+      "type": "display-timeline-item",
+      "filePath": "packages/spark-component/src/components/display/non-data-components/DisplayTimelineItem.vue",
+      "category": "feature",
+      "description": "时间线项。 配置入口：type=\"display-timeline-item\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "home-page": {
+      "type": "home-page",
+      "filePath": "src/views/platform/HomePage.vue",
+      "category": "feature",
+      "description": "平台首页，展示系统介绍、功能亮点和快速开始入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"home-page\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "json-tree-editor": {
+      "type": "json-tree-editor",
+      "filePath": "packages/spark-component/src/components/editors/JsonTreeEditor.vue",
+      "category": "feature",
+      "description": "JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。 配置入口：type=\"json-tree-editor\"，category=feature（功能组件）。 绑定语义：通过 field 绑定行字段，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, label。 主要事件：update:modelValue, update:documentValue。",
+      "props": [
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名，映射到 DataView 行字段"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "显示标签"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "r-table 内列宽"
+        },
+        {
+          "name": "modelValue",
+          "type": "string",
+          "required": false,
+          "description": "JSON 字符串内容"
+        },
+        {
+          "name": "documentValue",
+          "type": "any",
+          "required": false,
+          "default": "null",
+          "description": "已解析的 JSON 文档对象"
+        },
+        {
+          "name": "height",
+          "type": "string | number",
+          "required": false,
+          "default": "420",
+          "description": "编辑器高度"
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否只读"
+        },
+        {
+          "name": "schema",
+          "type": "{ [key: string]: unknown; } | null",
+          "required": false,
+          "default": "null",
+          "description": "JSON Schema 校验规则"
+        },
+        {
+          "name": "filterPlaceholder",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\"",
+          "description": "筛选框占位文本"
+        },
+        {
+          "name": "policy",
+          "type": "any",
+          "required": false,
+          "description": "策略聚合对象（复杂场景一次传入）"
+        },
+        {
+          "name": "rootLabel",
+          "type": "string",
+          "required": false,
+          "description": "根节点标签"
+        },
+        {
+          "name": "isProtected",
+          "type": "((path: JsonPath) => boolean)",
+          "required": false,
+          "description": "判断路径是否受保护"
+        },
+        {
+          "name": "canEditKey",
+          "type": "((path: JsonPath) => boolean)",
+          "required": false,
+          "description": "判断路径是否可编辑键名"
+        },
+        {
+          "name": "canEditType",
+          "type": "((path: JsonPath) => boolean)",
+          "required": false,
+          "description": "判断路径是否可编辑类型"
+        },
+        {
+          "name": "suggestChildKey",
+          "type": "((target: JsonObject, parentPath: JsonPath) => string)",
+          "required": false,
+          "description": "推荐子节点键名"
+        },
+        {
+          "name": "createDefaultArrayItem",
+          "type": "((parentPath: JsonPath) => JsonValue)",
+          "required": false,
+          "description": "创建数组默认子项"
+        },
+        {
+          "name": "createDefaultObjectValue",
+          "type": "((parentPath: JsonPath, key: string) => JsonValue)",
+          "required": false,
+          "description": "创建对象默认子值"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        },
+        {
+          "name": "update:documentValue",
+          "type": "[value: JsonDocument]",
+          "description": "Emitted when documentValue changes; 用于同步父级绑定值。",
+          "schema": {
+            "title": "[value: JsonDocument]",
+            "type": "array",
+            "prefixItems": [
+              {
+                "$ref": "#/$defs/JsonDocument",
+                "title": "value",
+                "description": "Next value for the bound model; 用于同步父级状态。"
+              }
+            ],
+            "description": "Emitted when documentValue changes; 用于同步父级绑定值。"
+          }
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "login-view": {
+      "type": "login-view",
+      "filePath": "src/views/platform/LoginView.vue",
+      "category": "feature",
+      "description": "多租户登录页面，提供用户名/密码认证和租户选择入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"login-view\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "platform-apps": {
+      "type": "platform-apps",
+      "filePath": "src/views/platform/PlatformApps.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"platform-apps\" 引用。 配置入口：type=\"platform-apps\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm"
+    },
+    "platform-tenant-management": {
+      "type": "platform-tenant-management",
+      "filePath": "src/views/platform/PlatformTenantManagement.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"platform-tenant-management\" 引用。 配置入口：type=\"platform-tenant-management\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm"
+    },
+    "r-anchor": {
+      "type": "r-anchor",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererAnchor.vue",
+      "category": "container",
+      "description": "锚点导航容器。 配置入口：type=\"r-anchor\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-anchor-link": {
+      "type": "r-anchor-link",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererAnchorLink.vue",
+      "category": "container",
+      "description": "锚点链接项，支持嵌套子链接。 配置入口：type=\"r-anchor-link\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-autocomplete": {
+      "type": "r-autocomplete",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldAutocomplete.vue",
+      "category": "field",
+      "description": "自动补全输入字段，绑定 string 值。 配置入口：type=\"r-autocomplete\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-button": {
+      "type": "r-button",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererButton.vue",
+      "category": "container",
+      "description": "声明式动作按钮，支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。 配置入口：type=\"r-button\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-card": {
+      "type": "r-card",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererCard.vue",
+      "category": "container",
+      "description": "卡片容器，在卡片体内渲染子组件。 配置入口：type=\"r-card\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-cascader": {
+      "type": "r-cascader",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldCascader.vue",
+      "category": "field",
+      "description": "级联选择字段，绑定路径数组值。 配置入口：type=\"r-cascader\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-check-tag": {
+      "type": "r-check-tag",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckTag.vue",
+      "category": "field",
+      "description": "标签选择字段，绑定 boolean 值。 配置入口：type=\"r-check-tag\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-checkbox": {
+      "type": "r-checkbox",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckbox.vue",
+      "category": "field",
+      "description": "单个复选框字段，绑定 boolean 值，支持自定义选中/未选中显示文本。 配置入口：type=\"r-checkbox\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-checkbox-group": {
+      "type": "r-checkbox-group",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldCheckboxGroup.vue",
+      "category": "field",
+      "description": "复选框组字段，绑定数组值，可切换按钮样式。 配置入口：type=\"r-checkbox-group\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-collapse": {
+      "type": "r-collapse",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.vue",
+      "category": "container",
+      "description": "折叠面板容器。 配置入口：type=\"r-collapse\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-collapse-item": {
+      "type": "r-collapse-item",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue",
+      "category": "container",
+      "description": "折叠面板项，面板体内以 24 列网格渲染子组件。 配置入口：type=\"r-collapse-item\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-color": {
+      "type": "r-color",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldColor.vue",
+      "category": "field",
+      "description": "颜色选择字段，绑定十六进制颜色字符串，表格/详情模式显示色块预览。 配置入口：type=\"r-color\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-context-renderer": {
+      "type": "r-context-renderer",
+      "filePath": "packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue",
+      "category": "field",
+      "description": "语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。 配置入口：type=\"r-context-renderer\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-date": {
+      "type": "r-date",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldDate.vue",
+      "category": "field",
+      "description": "日期选择字段，绑定日期/字符串值。 配置入口：type=\"r-date\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-dept-picker": {
+      "type": "r-dept-picker",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldDeptPicker.vue",
+      "category": "field",
+      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度"
+        },
+        {
+          "name": "modelValue",
+          "type": "EntityPickerValue",
+          "required": false,
+          "description": "直接传入的值"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "组件名称"
+        },
+        {
+          "name": "options",
+          "type": "unknown[]",
+          "required": false,
+          "description": "可选项数组"
+        },
+        {
+          "name": "optionDataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "选项 DataView 定位键"
+        },
+        {
+          "name": "optionLabelField",
+          "type": "string",
+          "required": false,
+          "description": "选项显示字段"
+        },
+        {
+          "name": "optionValueField",
+          "type": "string",
+          "required": false,
+          "description": "选项值字段"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
+        },
+        {
+          "name": "buttonText",
+          "type": "string",
+          "required": false,
+          "description": "主动作按钮文案"
+        },
+        {
+          "name": "readonlyButtonText",
+          "type": "string",
+          "required": false,
+          "description": "只读模式按钮文案"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "searchable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否支持搜索"
+        },
+        {
+          "name": "valueSeparator",
+          "type": "string",
+          "required": false,
+          "description": "值分隔符"
+        },
+        {
+          "name": "textSeparator",
+          "type": "string",
+          "required": false,
+          "description": "文本分隔符"
+        },
+        {
+          "name": "textStorageField",
+          "type": "string",
+          "required": false,
+          "description": "文本储存字段"
+        },
+        {
+          "name": "valueMode",
+          "type": "SparkOptionValueMode",
+          "required": false,
+          "default": "'auto'",
+          "description": "主值持久化模式",
+          "schema": {
+            "enum": [
+              "auto",
+              "array",
+              "separated-string"
+            ],
+            "type": "string",
+            "description": "主值持久化模式",
+            "default": "auto"
+          }
+        },
+        {
+          "name": "entityName",
+          "type": "string",
+          "required": false,
+          "description": "实体名称"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "any[]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "r-detail": {
+      "type": "r-detail",
+      "filePath": "packages/spark-component/src/components/containers/data-views/RendererDetail/RendererDetail.vue",
+      "category": "container",
+      "description": "数据详情容器，与 r-form 结构一致但不可编辑。 配置入口：type=\"r-detail\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-dialog": {
+      "type": "r-dialog",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererDialog/RendererDialog.vue",
+      "category": "container",
+      "description": "对话框容器，支持结构化 header/footer 区域和网格主体布局。 配置入口：type=\"r-dialog\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-divider": {
+      "type": "r-divider",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererDivider.vue",
+      "category": "container",
+      "description": "分割线组件，支持文字内容定位。 配置入口：type=\"r-divider\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-drawer": {
+      "type": "r-drawer",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererDrawer/RendererDrawer.vue",
+      "category": "container",
+      "description": "抽屉容器，支持结构化 header/footer 区域和网格主体布局。 配置入口：type=\"r-drawer\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-dropdown": {
+      "type": "r-dropdown",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererDropdown.vue",
+      "category": "container",
+      "description": "下拉菜单容器，支持分裂按钮模式和命令事件。 配置入口：type=\"r-dropdown\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-editor": {
+      "type": "r-editor",
+      "filePath": "packages/spark-component/src/components/containers/zones/RendererEditor.vue",
+      "category": "container",
+      "description": "编辑面板组件，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。 配置入口：type=\"r-editor\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-entity-picker": {
+      "type": "r-entity-picker",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldEntityPicker.vue",
+      "category": "field",
+      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。 配置入口：type=\"r-entity-picker\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-file-browser": {
+      "type": "r-file-browser",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldFileBrowser.vue",
+      "category": "field",
+      "description": "文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。 配置入口：type=\"r-file-browser\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-file-path": {
+      "type": "r-file-path",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldFilePath.vue",
+      "category": "field",
+      "description": "文件上传路径字段，绑定文件路径字符串，支持单/多文件上传并返回服务端路径。 配置入口：type=\"r-file-path\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-filter": {
+      "type": "r-filter",
+      "filePath": "packages/spark-component/src/components/containers/zones/RendererFilter.vue",
+      "category": "container",
+      "description": "筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点； 配置入口：type=\"r-filter\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-footer": {
+      "type": "r-footer",
+      "filePath": "packages/spark-component/src/components/containers/zones/RendererFooter.vue",
+      "category": "container",
+      "description": "底部组件，在 r-dialog/r-drawer 中作为底部操作区域提取渲染。 配置入口：type=\"r-footer\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-form": {
+      "type": "r-form",
+      "filePath": "packages/spark-component/src/components/containers/data-views/RendererForm/RendererForm.vue",
+      "category": "container",
+      "description": "数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。 配置入口：type=\"r-form\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-header": {
+      "type": "r-header",
+      "filePath": "packages/spark-component/src/components/containers/zones/RendererHeader.vue",
+      "category": "container",
+      "description": "头部组件，在 r-dialog/r-drawer/r-section 中作为顶部操作区域提取渲染。 配置入口：type=\"r-header\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-html-editor": {
+      "type": "r-html-editor",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldHtmlEditor.vue",
+      "category": "field",
+      "description": "富文本编辑器字段，绑定 HTML 字符串值，内置加粗/斜体/列表工具栏和 HTML 源码编辑模式。 配置入口：type=\"r-html-editor\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-icon": {
+      "type": "r-icon",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldIcon.vue",
+      "category": "field",
+      "description": "图标选择字段，绑定图标名称字符串。 配置入口：type=\"r-icon\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-image": {
+      "type": "r-image",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldImage.vue",
+      "category": "field",
+      "description": "图片上传字段，绑定图片路径字符串，支持图片上传和缩略图预览显示。 配置入口：type=\"r-image\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-link": {
+      "type": "r-link",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererLink.vue",
+      "category": "container",
+      "description": "链接组件，可渲染子内容。 配置入口：type=\"r-link\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-list": {
+      "type": "r-list",
+      "filePath": "packages/spark-component/src/components/containers/data-views/RendererList/RendererList.vue",
+      "category": "container",
+      "description": "列表容器，绑定 DataView.rows 以 CSS Grid 网格卡片布局渲染数据项，支持项选择和操作区域。 配置入口：type=\"r-list\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-mention": {
+      "type": "r-mention",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldMention.vue",
+      "category": "field",
+      "description": "提及输入字段，绑定 string 值。 配置入口：type=\"r-mention\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-multi-select": {
+      "type": "r-multi-select",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldMultiSelect.vue",
+      "category": "field",
+      "description": "多选下拉字段，绑定数组值，支持标签折叠（collapseTags）显示。 配置入口：type=\"r-multi-select\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-number": {
+      "type": "r-number",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldNumber.vue",
+      "category": "field",
+      "description": "数字输入字段，绑定 number 值，筛选模式下支持范围（最小-最大）双输入。 配置入口：type=\"r-number\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-page-header": {
+      "type": "r-page-header",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererPageHeader.vue",
+      "category": "container",
+      "description": "页面头部组件。 配置入口：type=\"r-page-header\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-popconfirm": {
+      "type": "r-popconfirm",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererPopconfirm.vue",
+      "category": "container",
+      "description": "确认气泡组件。 配置入口：type=\"r-popconfirm\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-popover": {
+      "type": "r-popover",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererPopover.vue",
+      "category": "container",
+      "description": "弹出提示容器，支持多种触发方式和位置。 配置入口：type=\"r-popover\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-product-picker": {
+      "type": "r-product-picker",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldProductPicker.vue",
+      "category": "field",
+      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度"
+        },
+        {
+          "name": "modelValue",
+          "type": "EntityPickerValue",
+          "required": false,
+          "description": "直接传入的值"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "组件名称"
+        },
+        {
+          "name": "options",
+          "type": "unknown[]",
+          "required": false,
+          "description": "可选项数组"
+        },
+        {
+          "name": "optionDataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "选项 DataView 定位键"
+        },
+        {
+          "name": "optionLabelField",
+          "type": "string",
+          "required": false,
+          "description": "选项显示字段"
+        },
+        {
+          "name": "optionValueField",
+          "type": "string",
+          "required": false,
+          "description": "选项值字段"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
+        },
+        {
+          "name": "buttonText",
+          "type": "string",
+          "required": false,
+          "description": "主动作按钮文案"
+        },
+        {
+          "name": "readonlyButtonText",
+          "type": "string",
+          "required": false,
+          "description": "只读模式按钮文案"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "searchable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否支持搜索"
+        },
+        {
+          "name": "valueSeparator",
+          "type": "string",
+          "required": false,
+          "description": "值分隔符"
+        },
+        {
+          "name": "textSeparator",
+          "type": "string",
+          "required": false,
+          "description": "文本分隔符"
+        },
+        {
+          "name": "textStorageField",
+          "type": "string",
+          "required": false,
+          "description": "文本储存字段"
+        },
+        {
+          "name": "valueMode",
+          "type": "SparkOptionValueMode",
+          "required": false,
+          "default": "'auto'",
+          "description": "主值持久化模式",
+          "schema": {
+            "enum": [
+              "auto",
+              "array",
+              "separated-string"
+            ],
+            "type": "string",
+            "description": "主值持久化模式",
+            "default": "auto"
+          }
+        },
+        {
+          "name": "entityName",
+          "type": "string",
+          "required": false,
+          "description": "实体名称"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "any[]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "r-radio": {
+      "type": "r-radio",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldRadio.vue",
+      "category": "field",
+      "description": "单选按钮组字段，绑定 string/number 值，可切换按钮样式渲染。 配置入口：type=\"r-radio\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-rate": {
+      "type": "r-rate",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldRate.vue",
+      "category": "field",
+      "description": "评分字段，绑定 number 值，支持半星模式。 配置入口：type=\"r-rate\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-section": {
+      "type": "r-section",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererSection/RendererSection.vue",
+      "category": "container",
+      "description": "分区容器，支持可选卡片化包装以及标题/描述/折叠/头部操作区。 配置入口：type=\"r-section\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-segmented": {
+      "type": "r-segmented",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldSegmented.vue",
+      "category": "field",
+      "description": "分段选择器字段，绑定 string/number 值。 配置入口：type=\"r-segmented\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-select": {
+      "type": "r-select",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldSelect.vue",
+      "category": "field",
+      "description": "单选下拉字段，绑定 string/number 值，支持静态选项列表或 optionDataViewKey 动态数据源绑定。 配置入口：type=\"r-select\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-slider": {
+      "type": "r-slider",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldSlider.vue",
+      "category": "field",
+      "description": "滑块字段，绑定 number 值。 配置入口：type=\"r-slider\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-space": {
+      "type": "r-space",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererSpace.vue",
+      "category": "container",
+      "description": "间距容器，使用 flex 布局为子组件提供均匀的水平或垂直间距，支持换行和填充。 配置入口：type=\"r-space\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-step-item": {
+      "type": "r-step-item",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererStepItem.vue",
+      "category": "container",
+      "description": "步骤项组件（r-steps 内部），双模式渲染：步骤头部与步骤内容区（24 列网格）。 配置入口：type=\"r-step-item\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-steps": {
+      "type": "r-steps",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererSteps/RendererSteps.vue",
+      "category": "container",
+      "description": "步骤条容器，支持工具栏和步骤内容切换。 配置入口：type=\"r-steps\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-switch": {
+      "type": "r-switch",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldSwitch.vue",
+      "category": "field",
+      "description": "开关字段，绑定 boolean 值，支持自定义开/关文本说明。 配置入口：type=\"r-switch\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tab-pane": {
+      "type": "r-tab-pane",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererTabPane.vue",
+      "category": "container",
+      "description": "标签页面板（r-tabs 内部）。 配置入口：type=\"r-tab-pane\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-table": {
+      "type": "r-table",
+      "filePath": "packages/spark-component/src/components/containers/data-views/RendererTable/RendererTable.vue",
+      "category": "container",
+      "description": "数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。 配置入口：type=\"r-table\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tabs": {
+      "type": "r-tabs",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererTabs/RendererTabs.vue",
+      "category": "container",
+      "description": "标签页容器，支持工具栏。 配置入口：type=\"r-tabs\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tail": {
+      "type": "r-tail",
+      "filePath": "packages/spark-component/src/components/containers/zones/RendererTail.vue",
+      "category": "container",
+      "description": "尾部组件，在 r-toolbar 中作为工具栏末尾区域提取渲染。 配置入口：type=\"r-tail\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-text": {
+      "type": "r-text",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldText.vue",
+      "category": "field",
+      "description": "文本输入字段，绑定 string 值。 配置入口：type=\"r-text\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-textarea": {
+      "type": "r-textarea",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldTextarea.vue",
+      "category": "field",
+      "description": "多行文本字段，绑定 string 值，支持自动高度和字数限制。 配置入口：type=\"r-textarea\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-time-picker": {
+      "type": "r-time-picker",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldTimePicker.vue",
+      "category": "field",
+      "description": "时间选择字段，绑定时间字符串或 Date 值。 配置入口：type=\"r-time-picker\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-time-select": {
+      "type": "r-time-select",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldTimeSelect.vue",
+      "category": "field",
+      "description": "时间间隔选择字段，绑定时间字符串值。 配置入口：type=\"r-time-select\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-toolbar": {
+      "type": "r-toolbar",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererToolbar.vue",
+      "category": "container",
+      "description": "工具栏容器，flex 水平布局分为起始区（默认 children）和尾部区（r-tail 子节点），组织操作按钮。 配置入口：type=\"r-toolbar\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tooltip": {
+      "type": "r-tooltip",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererTooltip.vue",
+      "category": "container",
+      "description": "文字提示组件，支持位置和延迟配置。 配置入口：type=\"r-tooltip\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tour": {
+      "type": "r-tour",
+      "filePath": "packages/spark-component/src/components/containers/layout/RendererTour.vue",
+      "category": "container",
+      "description": "引导流程组件，管理引导打开/关闭状态。 配置入口：type=\"r-tour\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-transfer": {
+      "type": "r-transfer",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldTransfer.vue",
+      "category": "field",
+      "description": "穿梭框字段，绑定数组值，支持搜索过滤。 配置入口：type=\"r-transfer\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tree": {
+      "type": "r-tree",
+      "filePath": "packages/spark-component/src/components/containers/data-views/RendererTree/RendererTree.vue",
+      "category": "container",
+      "description": "树形容器，支持懒加载、节点操作和编辑器侧面板。 配置入口：type=\"r-tree\"，category=container（容器组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-tree-select": {
+      "type": "r-tree-select",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.vue",
+      "category": "field",
+      "description": "树形选择字段，绑定单值或数组。 配置入口：type=\"r-tree-select\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-upload": {
+      "type": "r-upload",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldUpload.vue",
+      "category": "field",
+      "description": "文件上传字段，绑定文件路径字符串。 配置入口：type=\"r-upload\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "r-user-picker": {
+      "type": "r-user-picker",
+      "filePath": "packages/spark-component/src/components/fields/data-components/FieldUserPicker.vue",
+      "category": "field",
+      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "required": false,
+          "description": "展示标签"
+        },
+        {
+          "name": "width",
+          "type": "number",
+          "required": false,
+          "description": "字段宽度"
+        },
+        {
+          "name": "modelValue",
+          "type": "EntityPickerValue",
+          "required": false,
+          "description": "直接传入的值"
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "required": false,
+          "description": "组件名称"
+        },
+        {
+          "name": "options",
+          "type": "unknown[]",
+          "required": false,
+          "description": "可选项数组"
+        },
+        {
+          "name": "optionDataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "选项 DataView 定位键"
+        },
+        {
+          "name": "optionLabelField",
+          "type": "string",
+          "required": false,
+          "description": "选项显示字段"
+        },
+        {
+          "name": "optionValueField",
+          "type": "string",
+          "required": false,
+          "description": "选项值字段"
+        },
+        {
+          "name": "placeholder",
+          "type": "string",
+          "required": false,
+          "description": "占位文案"
+        },
+        {
+          "name": "buttonText",
+          "type": "string",
+          "required": false,
+          "description": "主动作按钮文案"
+        },
+        {
+          "name": "readonlyButtonText",
+          "type": "string",
+          "required": false,
+          "description": "只读模式按钮文案"
+        },
+        {
+          "name": "clearable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否允许清空"
+        },
+        {
+          "name": "multiple",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否启用多选"
+        },
+        {
+          "name": "searchable",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否支持搜索"
+        },
+        {
+          "name": "valueSeparator",
+          "type": "string",
+          "required": false,
+          "description": "值分隔符"
+        },
+        {
+          "name": "textSeparator",
+          "type": "string",
+          "required": false,
+          "description": "文本分隔符"
+        },
+        {
+          "name": "textStorageField",
+          "type": "string",
+          "required": false,
+          "description": "文本储存字段"
+        },
+        {
+          "name": "valueMode",
+          "type": "SparkOptionValueMode",
+          "required": false,
+          "default": "'auto'",
+          "description": "主值持久化模式",
+          "schema": {
+            "enum": [
+              "auto",
+              "array",
+              "separated-string"
+            ],
+            "type": "string",
+            "description": "主值持久化模式",
+            "default": "auto"
+          }
+        },
+        {
+          "name": "entityName",
+          "type": "string",
+          "required": false,
+          "description": "实体名称"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "any[]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "settings": {
+      "type": "settings",
+      "filePath": "src/views/tenant/Settings.vue",
+      "category": "feature",
+      "description": "系统设置面板，提供全局参数配置和偏好设置管理界面；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"settings\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "spark-code-editor": {
+      "type": "spark-code-editor",
+      "filePath": "packages/spark-component/src/components/editors/SparkCodeEditor.vue",
+      "category": "feature",
+      "description": "代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。 配置入口：type=\"spark-code-editor\"，category=feature（功能组件）。 绑定语义：valueType=string。 关键 props：modelValue。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "modelValue",
+          "type": "string",
+          "required": false,
+          "description": "编辑器内容"
+        },
+        {
+          "name": "language",
+          "type": "SparkCodeLanguage",
+          "required": false,
+          "default": "\"javascript\"",
+          "description": "语言模式",
+          "schema": {
+            "enum": [
+              "javascript",
+              "css"
+            ],
+            "type": "string",
+            "description": "语言模式",
+            "default": "javascript"
+          }
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否只读"
+        },
+        {
+          "name": "height",
+          "type": "string | number",
+          "required": false,
+          "default": "360",
+          "description": "编辑器高度"
+        },
+        {
+          "name": "tabSize",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "Tab 缩进空格数"
+        },
+        {
+          "name": "lineWrapping",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否自动换行"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "spark-component-renderer": {
+      "type": "spark-component-renderer",
+      "filePath": "packages/spark-component/src/components/SparkComponentRenderer.vue",
+      "category": "feature",
+      "description": "通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册组件，是 SPARK 渲染引擎的核心入口。 配置入口：type=\"spark-component-renderer\"，category=feature（功能组件）。 必填 props：config。 关键 props：config。",
+      "props": [
+        {
+          "name": "config",
+          "type": "SparkNode",
+          "required": true,
+          "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+          "schema": {
+            "type": "array",
+            "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+            "examples": [
+              [],
+              {
+                "type": "r-text",
+                "props": {
+                  "value": "text"
+                }
+              }
+            ]
+          }
+        },
+        {
+          "name": "parentContext",
+          "type": "CapabilityContext",
+          "required": false,
+          "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。",
+          "schema": {
+            "$ref": "#/$defs/CapabilityContext"
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "spark-json-editor": {
+      "type": "spark-json-editor",
+      "filePath": "packages/spark-component/src/components/editors/SparkJsonEditor.vue",
+      "category": "feature",
+      "description": "JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。 配置入口：type=\"spark-json-editor\"，category=feature（功能组件）。 绑定语义：valueType=string。 关键 props：modelValue。 主要事件：update:modelValue。",
+      "props": [
+        {
+          "name": "modelValue",
+          "type": "string",
+          "required": false,
+          "description": "JSON 字符串内容"
+        },
+        {
+          "name": "readOnly",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否只读"
+        },
+        {
+          "name": "height",
+          "type": "string | number",
+          "required": false,
+          "default": "360",
+          "description": "编辑器高度"
+        },
+        {
+          "name": "mode",
+          "type": "SparkJsonEditorMode",
+          "required": false,
+          "default": "\"text\"",
+          "description": "编辑模式",
+          "schema": {
+            "enum": [
+              "text",
+              "tree",
+              "table"
+            ],
+            "type": "string",
+            "description": "编辑模式",
+            "default": "text"
+          }
+        },
+        {
+          "name": "indentation",
+          "type": "string | number",
+          "required": false,
+          "default": "2",
+          "description": "缩进空格数"
+        },
+        {
+          "name": "tabSize",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "Tab 缩进空格数"
+        },
+        {
+          "name": "mainMenuBar",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否显示主菜单栏"
+        },
+        {
+          "name": "navigationBar",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否显示导航栏"
+        },
+        {
+          "name": "statusBar",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否显示状态栏"
+        },
+        {
+          "name": "askToFormat",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "是否提示格式化"
+        },
+        {
+          "name": "schema",
+          "type": "JSONSchema | null",
+          "required": false,
+          "default": "null",
+          "description": "JSON Schema 校验规则"
+        },
+        {
+          "name": "schemaDefinitions",
+          "type": "JSONSchemaDefinitions | null",
+          "required": false,
+          "default": "null",
+          "description": "JSON Schema 定义引用"
+        },
+        {
+          "name": "enableSchemaValidation",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否启用 Schema 校验"
+        },
+        {
+          "name": "enableSchemaEnumRenderer",
+          "type": "boolean",
+          "required": false,
+          "default": "true",
+          "description": "是否启用 Schema 枚举渲染"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: string]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        }
+      ],
+      "source": "vcm+meta"
+    },
+    "tenant-config": {
+      "type": "tenant-config",
+      "filePath": "src/views/tenant/TenantConfig.vue",
+      "category": "feature",
+      "description": "旧租户配置演示入口；已整合到平台租户管理页，仅保留兼容重定向。 配置入口：type=\"tenant-config\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
+      "internal": true,
+      "configurable": false,
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "tenant-config-panel": {
+      "type": "tenant-config-panel",
+      "filePath": "src/views/platform/TenantConfigPanel.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"tenant-config-panel\" 引用。 配置入口：type=\"tenant-config-panel\"，category=feature（功能组件）。 必填 props：tenantId。 关键 props：tenantId。 主要事件：updated。",
+      "props": [
+        {
+          "name": "tenantId",
+          "type": "string",
+          "required": true,
+          "description": "tenantId prop (string); 用于配置该组件的 tenantId 行为或展示。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "updated",
+          "type": "[]",
+          "description": "Emitted when updated occurs; 用于通知父级处理该事件。"
+        }
+      ],
+      "source": "vcm"
+    },
+    "tree-node-summary": {
+      "type": "tree-node-summary",
+      "filePath": "packages/spark-component/src/components/fields/non-data-components/TreeNodeSummary.vue",
+      "category": "field",
+      "description": "树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。 配置入口：type=\"tree-node-summary\"，category=field（字段组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "unregistered-node-fallback": {
+      "type": "unregistered-node-fallback",
+      "filePath": "packages/spark-component/src/components/support/UnregisteredNodeFallback.vue",
+      "category": "feature",
+      "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。 配置入口：type=\"unregistered-node-fallback\"，category=feature（功能组件）。 必填 props：node。 关键 props：node, title。",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "default": "'未注册的组件类型'",
+          "description": "提示标题"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": "''",
+          "description": "说明文本"
+        },
+        {
+          "name": "node",
+          "type": "SparkNode",
+          "required": true,
+          "description": "未注册的源节点",
+          "schema": {
+            "type": "array",
+            "description": "未注册的源节点",
+            "examples": [
+              [],
+              {
+                "type": "r-text",
+                "props": {
+                  "value": "text"
+                }
+              }
+            ]
+          }
+        }
+      ],
+      "emits": [],
+      "source": "vcm+meta"
+    }
+  },
+  "$defs": {
+    "CapabilityContext": {
+      "title": "CapabilityContext",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string",
+          "description": "当前能力上下文节点 ID，用于调试、日志和父子链定位。"
+        },
+        "type": {
+          "type": "string",
+          "description": "当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。"
+        },
+        "parent": {
+          "description": "父级能力上下文；消费能力时会沿此链向上查找。"
+        },
+        "capabilities": {
+          "description": "当前节点本地提供的能力实现表，key 为 CapabilityKey。"
+        }
+      },
+      "required": [
+        "id",
+        "type",
+        "capabilities"
+      ],
+      "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
+    },
+    "JsonDocument": {
+      "title": "JsonDocument",
+      "type": "array",
+      "description": "Next value for the bound model; 用于同步父级状态。"
+    },
+    "SparkNode": {
+      "title": "SparkNode",
+      "type": "object",
+      "description": "Spark h-function 节点：通过 type 选择组件，props 配置属性，children 描述子节点。",
+      "properties": {
+        "type": {
+          "type": "string",
+          "description": "组件 type，例如 r-table 或 r-text。"
+        },
+        "props": {
+          "type": "object",
+          "description": "组件 props 配置对象。"
+        },
+        "children": {
+          "type": "array",
+          "description": "子节点列表。",
+          "items": {
+            "$ref": "#/$defs/SparkNode"
+          }
+        }
+      },
+      "required": [
+        "type"
+      ]
+    }
+  }
+}

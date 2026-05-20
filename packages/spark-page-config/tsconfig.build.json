@@ -11,10 +11,19 @@
     "noEmitOnError": true,
     "removeComments": false,
     "paths": {
-      "@spark-view/spark-ai": ["../spark-ai/src/index.ts"],
-      "@spark-view/spark-ai/core": ["../spark-ai/src/core/index.ts"],
-      "@spark-view/spark-ai/host": ["../spark-ai/src/core/host/index.ts"],
+      "@spark-view/spark-ai": ["../spark-ai/dist/index.d.ts"],
+      "@spark-view/spark-ai/protocol": ["../spark-ai/dist/protocol/index.d.ts"],
+      "@spark-view/spark-ai/core": ["../spark-ai/dist/index.d.ts"],
+      "@spark-view/spark-ai/host": ["../spark-ai/dist/host/index.d.ts"],
       "@spark-view/spark-page-config": ["./src/index.ts"],
+      "@spark-view/spark-page-config/page": ["./src/page/index.ts"],
+      "@spark-view/spark-page-config/page/model": ["./src/page/model/index.ts"],
+      "@spark-view/spark-page-config/page/loading": ["./src/page/loading/index.ts"],
+      "@spark-view/spark-page-config/page/workspace": ["./src/page/workspace/index.ts"],
+      "@spark-view/spark-page-config/page/navigation": ["./src/page/navigation/index.ts"],
+      "@spark-view/spark-page-config/page/sandbox": ["./src/page/sandbox/index.ts"],
+      "@spark-view/spark-page-config/assistant": ["./src/assistant/index.ts"],
+      "@spark-view/spark-page-config/assistant/registrations": ["./src/assistant/registrations/index.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
     }

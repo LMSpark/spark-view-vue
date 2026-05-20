@@ -6,6 +6,14 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
+        'page/index': resolve(__dirname, 'src/page/index.ts'),
+        'page/model/index': resolve(__dirname, 'src/page/model/index.ts'),
+        'page/loading/index': resolve(__dirname, 'src/page/loading/index.ts'),
+        'page/workspace/index': resolve(__dirname, 'src/page/workspace/index.ts'),
+        'page/navigation/index': resolve(__dirname, 'src/page/navigation/index.ts'),
+        'page/sandbox/index': resolve(__dirname, 'src/page/sandbox/index.ts'),
+        'assistant/index': resolve(__dirname, 'src/assistant/index.ts'),
+        'assistant/registrations/index': resolve(__dirname, 'src/assistant/registrations/index.ts'),
       },
       formats: ['es'],
     },

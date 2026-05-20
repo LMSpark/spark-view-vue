@@ -1,0 +1,41 @@
+import type { DataSetCrudTool } from '@spark-view/spark-data'
+import type { PageDesignNodeTree } from './page-design-node-tree'
+
+export type PageDesignEditPhase = 'idle' | 'editing' | 'saved'
+
+export type PageDesignEditHost = {
+  getNodeTree?: () => PageDesignNodeTree | null
+  onNodeTreeChanged?: (nodeTree: PageDesignNodeTree) => void
+  getDataSetTool?: () => DataSetCrudTool | null
+  onDataSetChanged?: (tool: DataSetCrudTool) => void
+  readScript?: () => string
+  writeScript?: (content: string) => void
+  readStyle?: () => string
+  writeStyle?: (content: string) => void
+}
+
+export class PageDesignEditSession {
+  phase: PageDesignEditPhase = 'idle'
+
+  host: PageDesignEditHost | null = null
+
+  bindHost(host: PageDesignEditHost): void {
+    this.host = host
+  }
+
+  getActiveNodeTree(): PageDesignNodeTree | null {
+    return this.host?.getNodeTree?.() ?? null
+  }
+
+  notifyNodeTreeChanged(nodeTree: PageDesignNodeTree): void {
+    this.host?.onNodeTreeChanged?.(nodeTree)
+  }
+
+  getActiveDataSetTool(): DataSetCrudTool | null {
+    return this.host?.getDataSetTool?.() ?? null
+  }
+
+  notifyDataSetChanged(tool: DataSetCrudTool): void {
+    this.host?.onDataSetChanged?.(tool)
+  }
+}

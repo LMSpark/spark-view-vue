@@ -4,40 +4,44 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { DataSetMetadata } from '@spark-view/spark-data'
 import {
   NavigationConfigClient,
-  PAGE_DESIGN_100_STEP_FLOW,
-  PageConfigEditWorkspace,
-  PageConfigFileApi,
-  PageConfigFileLifecycle,
-  PageDesignService,
   applyNavigationNodeDraftToNode,
-  buildDataSetMetadataFromDesignerProjection,
   buildNavRoot,
-  canUseStructuredPageDataEditor,
   createNavigationNodeDraft,
   createReservedRootGroup,
-  createRuleJsonSchema,
-  createRuleTreePolicy,
   findConfigNodeByPageId,
   findNodeLocation,
-  getNextPageDesignFlowStep,
   normalizeNavRoot,
-  projectDesignerRelations,
-  projectDesignerTables,
-  reconcileDesignerTableUiState,
-  summarizePageDesignFlowPhases,
   type AppNavRoot,
-  BasePageConfigLoader,
-  type ConfigLoadResult,
   type NavNode,
+} from '@spark-view/spark-page-config/page/navigation'
+import {
+  BasePageConfigLoader,
+  PageConfigFileApi,
+  type ConfigLoadResult,
   type PageConfig,
   type PageConfigFileLoadOptions,
   type PageConfigFileName,
   type PageCssConfig,
   type PageDataConfig,
   type PageScriptConfig,
-  type RuleEditorComponentMetadata,
   type RuleConfig,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-page-config/page/loading'
+import {
+  PAGE_DESIGN_100_STEP_FLOW,
+  PageConfigEditWorkspace,
+  PageConfigFileLifecycle,
+  PageDesignService,
+  buildDataSetMetadataFromDesignerProjection,
+  canUseStructuredPageDataEditor,
+  createRuleJsonSchema,
+  createRuleTreePolicy,
+  getNextPageDesignFlowStep,
+  projectDesignerRelations,
+  projectDesignerTables,
+  reconcileDesignerTableUiState,
+  summarizePageDesignFlowPhases,
+  type RuleEditorComponentMetadata,
+} from '@spark-view/spark-page-config/page/workspace'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()
