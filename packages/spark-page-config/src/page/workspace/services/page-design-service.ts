@@ -16,7 +16,6 @@ import {
   type PageDesignServiceMethodBinding,
   type PageDesignServiceOptions,
   type PageDesignServiceResult,
-  type PageDesignServiceState,
   type PageDesignTextFileKey,
 } from './page-design-service-contract'
 import { useMethodBackedTarget } from './page-design-method-target'
@@ -32,33 +31,44 @@ export type {
   PageDesignServiceMethodBinding,
   PageDesignServiceOptions,
   PageDesignServiceResult,
-  PageDesignServiceState,
   PageDesignTextFileKey,
 } from './page-design-service-contract'
 
 export interface PageDesignFlowQuery {
+  /** 可选阶段名；用于先按阶段缩小 100 步流程范围。 */
   phase?: string
+  /** 精确步骤号；传入后只返回该步骤及它之后的下一步。 */
   step?: number
+  /** 已完成步骤号；用于恢复上下文时计算下一步。 */
   afterStep?: number
 }
 
 export interface PageDesignFlowDescription {
+  /** 阶段摘要，供调用方先判断当前页面设计应推进到哪一段。 */
   phases: PageDesignFlowPhaseSummary[]
+  /** 查询命中的步骤列表；按 phase 过滤或由 step 精确定位。 */
   steps: readonly PageDesignFlowStep[]
+  /** step 命中的单步；未传 step 或未命中时为 null。 */
   selectedStep: PageDesignFlowStep | null
+  /** afterStep 或 selectedStep 之后的下一步；没有后续步骤时为 null。 */
   nextStep: PageDesignFlowStep | null
 }
 
-type PageDesignTextReadMethod = 'readScript' | 'readStyle'
-type PageDesignTextWriteMethod = 'writeScript' | 'writeStyle'
-
+/**
+ * 文本模型文件到宿主读写方法的绑定。
+ *
+ * script.js 与 style.css 在 PageDesignService 内走同一套读写时序：
+ * 校验宿主方法存在 → 读取或写入 live text model → 对 script 写入追加契约校验。
+ * 读写方法直接内联为稳定字符串集合，避免额外 type alias 分散阅读路径。
+ */
 interface PageDesignTextFileBinding {
   label: string
-  readMethod: PageDesignTextReadMethod
-  writeMethod: PageDesignTextWriteMethod
+  readMethod: 'readScript' | 'readStyle'
+  writeMethod: 'writeScript' | 'writeStyle'
   validateWrite?: (content: string) => PageDesignServiceResult<undefined> | null
 }
 
+/** 文本文件入口表：所有 textModel read/write 都先通过 fileKey 落到这里。 */
 const TEXT_FILE_BINDING_BY_KEY: Record<PageDesignTextFileKey, PageDesignTextFileBinding> = {
   script: {
     label: 'script.js',
@@ -73,6 +83,12 @@ const TEXT_FILE_BINDING_BY_KEY: Record<PageDesignTextFileKey, PageDesignTextFile
   },
 }
 
+/**
+ * 汇总当前编辑状态。
+ *
+ * describeProgress 是只读诊断入口，按“会话阶段 → live binding 可用性 → 下一步”
+ * 的顺序返回，方便 LLM 或调试面板先判断是否需要 bootstrap。
+ */
 function describeProgress(state: PageDesignEditSession): Record<string, unknown> {
   return {
     phase: state.phase,
@@ -90,6 +106,15 @@ function describeProgress(state: PageDesignEditSession): Record<string, unknown>
   }
 }
 
+/**
+ * 引导 PageDesign 编辑会话进入 editing。
+ *
+ * 启动时序必须保持严格：
+ * 1. 校验 nodeTree，保证 rule.json 结构编辑入口存在。
+ * 2. 校验 DataSet tool，保证 pagedata.json 编辑入口存在。
+ * 3. 校验 script/style 的读写方法，保证文本模型可双向同步。
+ * 4. 主动读取四类模型，提前暴露宿主实现异常；全部通过后再切 phase。
+ */
 function bootstrapEditState(state: PageDesignEditSession): PageDesignServiceResult<{ phase: PageDesignEditSession['phase'] }> {
   const tree = state.getActiveNodeTree()
   if (tree === null) {
@@ -123,6 +148,7 @@ function bootstrapEditState(state: PageDesignEditSession): PageDesignServiceResu
   return pageDesignServiceSuccess({ phase: state.phase }, '编辑会话已完成宿主检查，进入 editing 状态')
 }
 
+/** 校验指定文本模型在当前模式下是否有宿主方法，缺失时返回可直接展示的错误原因。 */
 function ensureTextModelAccess(
   state: PageDesignEditSession,
   fileKey: PageDesignTextFileKey,
@@ -133,6 +159,7 @@ function ensureTextModelAccess(
   return typeof state.host?.[method] === 'function' ? null : `缺少 live text model: ${String(method)}`
 }
 
+/** 读取已绑定的 live text model；调用前由 ensureTextModelAccess 做用户态错误返回。 */
 function readBoundTextModel(state: PageDesignEditSession, binding: PageDesignTextFileBinding): string {
   const reader = state.host?.[binding.readMethod]
   if (typeof reader !== 'function') {
@@ -141,6 +168,7 @@ function readBoundTextModel(state: PageDesignEditSession, binding: PageDesignTex
   return reader()
 }
 
+/** 写入已绑定的 live text model；script.js 的 API 契约校验在调用本函数前完成。 */
 function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTextFileBinding, content: string): void {
   const writer = state.host?.[binding.writeMethod]
   if (typeof writer !== 'function') {
@@ -150,7 +178,7 @@ function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTe
 }
 
 export class PageDesignService {
-  private readonly states = new Map<string, PageDesignServiceState>()
+  private readonly states = new Map<string, PageDesignEditSession>()
 
   private readonly getEditHost: PageDesignServiceOptions['getEditHost']
 

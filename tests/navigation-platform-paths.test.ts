@@ -19,7 +19,6 @@ import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/rou
 interface NavigateToPath {
   (path: string): void
 }
-type NavigateToNode = ReturnType<typeof useNavigation>['navigateTo']
 
 const refreshRoutesMock = vi.hoisted(() => vi.fn<() => Promise<AppNavRoot | null>>())
 
@@ -30,7 +29,7 @@ vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
 interface MountedNavigationProbe {
   router: Router
   navigateToPath: NavigateToPath
-  navigateTo: NavigateToNode
+  navigateTo: ReturnType<typeof useNavigation>['navigateTo']
 }
 
 const DummyPage = defineComponent({
@@ -89,7 +88,7 @@ const DUMMY_CONFIG_LOADER = new DummyPageConfigLoader()
 
 async function mountNavigationProbe(initialPath: string): Promise<MountedNavigationProbe> {
   let navigateToPath: NavigateToPath | null = null
-  let navigateTo: NavigateToNode | null = null
+  let navigateTo: ReturnType<typeof useNavigation>['navigateTo'] | null = null
 
   const ProbeRoot = defineComponent({
     name: 'ProbeRoot',
@@ -166,7 +165,7 @@ async function mountNavigationProbe(initialPath: string): Promise<MountedNavigat
   }
 
   const resolvedNavigateToPath: NavigateToPath = navigateToPath
-  const resolvedNavigateTo: NavigateToNode = navigateTo
+  const resolvedNavigateTo: ReturnType<typeof useNavigation>['navigateTo'] = navigateTo
 
   return { router, navigateToPath: resolvedNavigateToPath, navigateTo: resolvedNavigateTo }
 }

@@ -29,8 +29,6 @@ const DEFAULT_DATA_SOURCE_LOGGER: DataSourceLoggerLike = {
   error: () => {},
 }
 
-type ContainerDataSourceDiagnostic = DataViewKeyDiagnostic | DataViewMemberDiagnostic
-
 function resolveMaybeValue<T>(source: MaybeRefOrGetter<T> | undefined): T | undefined {
   return source === undefined ? undefined : toValue(source)
 }
@@ -65,7 +63,7 @@ interface UseContainerDataSourceOptions<TSource> {
 
 interface UseContainerDataSourceEffectsOptions<TSource> {
   resolvedView: ComputedRef<TSource | null>
-  diagnostic?: ComputedRef<ContainerDataSourceDiagnostic | null>
+  diagnostic?: ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>
   provideDataSource?: (source: TSource) => void
   logger: DataSourceLoggerLike
   logPrefix: string
@@ -81,12 +79,14 @@ export interface ContainerDataSourceState<TSource> {
 function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOptions<TSource>): ContainerDataSourceState<TSource> {
   const pageDataSet = options.sparkConsume(PAGE_DATASET)
 
+  // 1. 先诊断 dataViewKey。诊断只负责日志提示，不参与 resolvedView 兜底选择。
   const diagnostic = computed(() => {
     const rawKey = toValue(options.dataViewKey)
     if (typeof rawKey !== 'string' || rawKey.trim().length === 0) return null
     return diagnoseDataViewKey(rawKey, pageDataSet)
   })
 
+  // 2. 再解析 DataView 上下文能力，供 dataMember/dataField 绑定和行上下文复用。
   const contextCapabilities = computed(() =>
     resolveDataViewCapabilities({
       dataViewKey: toValue(options.dataViewKey),
@@ -95,6 +95,7 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
     }, pageDataSet),
   )
 
+  // 3. 按优先级选择数据源：外部显式传入 > dataViewKey > 上下文能力 > 父级继承。
   const resolvedView = computed<TSource | null>(() => {
     const provided = resolveMaybeValue(options.externalDataSource)
     if (provided !== undefined) return provided
@@ -112,6 +113,7 @@ function useContainerDataSourceCore<TSource>(options: UseContainerDataSourceOpti
     return null
   })
 
+  // 4. 行数据同样按显式来源优先；找不到时尝试从当前视图 currentRow 或继承源读取。
   const resolvedDataRow = computed<DataRow | null>(() => {
     const provided = resolveMaybeValue(options.externalDataSource)
     if (provided !== undefined) return pickRowFromSource(provided)
@@ -197,7 +199,7 @@ function useContainerDataSourceAutoLoadEffect<TSource>(options: {
 }
 
 function useContainerDataSourceDiagnosticEffect(options: {
-  diagnostic: ComputedRef<ContainerDataSourceDiagnostic | null>
+  diagnostic: ComputedRef<DataViewKeyDiagnostic | DataViewMemberDiagnostic | null>
   logger: DataSourceLoggerLike
   logPrefix: string
 }): void {
@@ -212,7 +214,7 @@ function useContainerDataSourceDiagnosticEffect(options: {
   )
 }
 
-function shouldLogContainerDiagnostic(diagnostic: ContainerDataSourceDiagnostic): boolean {
+function shouldLogContainerDiagnostic(diagnostic: DataViewKeyDiagnostic | DataViewMemberDiagnostic): boolean {
   return diagnostic.status !== 'empty-current-row' && diagnostic.status !== 'empty-selection'
 }
 

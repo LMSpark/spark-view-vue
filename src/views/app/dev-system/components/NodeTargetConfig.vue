@@ -336,14 +336,21 @@ const parentPageOptions = computed(() => {
 
 // ── 路径有效性状态 ──
 
-type NodeTargetStatusType = 'success' | 'info' | 'warning' | 'danger'
-
 interface NodeTargetStatus {
-  type: NodeTargetStatusType
+  /** Element Plus tag 类型：success=匹配，info=可接受提示，warning=配置缺失，danger=不可用。 */
+  type: 'success' | 'info' | 'warning' | 'danger'
   icon: string
   text: string
 }
 
+/**
+ * 根据当前节点类型检查 path 的业务含义。
+ *
+ * 判断顺序与 UI 目标选择时序保持一致：
+ * 1. system-action：先匹配内置动作，未知动作作为自定义标识。
+ * 2. system-page：检查 VUE_PAGE_MAP，允许导航标题与组件标题不同。
+ * 3. page：检查配置页是否已存在，不存在时提示可新建。
+ */
 const pathStatus = computed<NodeTargetStatus | null>(() => {
   if (!flags.showPathStatus.value) return null
   const path = props.state.editForm.path
