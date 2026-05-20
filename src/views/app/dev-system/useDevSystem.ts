@@ -127,7 +127,7 @@ export function useDevSystem() {
   }
 }
 
-export type DevSystemCtx = ReturnType<typeof useDevSystem>
+export interface DevSystemCtx extends ReturnType<typeof useDevSystem> {}
 
 function createPageDesignEditHost(state: DevState): PageDesignEditHost {
   return {

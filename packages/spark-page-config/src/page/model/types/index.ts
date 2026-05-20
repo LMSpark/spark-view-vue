@@ -10,7 +10,7 @@ import type { SparkNode } from '../spark-node'
 /**
  * 页面规则配置（rule.json）。
  */
-export type RuleConfig = SparkNode
+export interface RuleConfig extends SparkNode {}
 
 export type { SparkNode, SparkNodeChildren } from '../spark-node'
 
@@ -18,7 +18,7 @@ export type { SparkNode, SparkNodeChildren } from '../spark-node'
  * 页面数据配置（pagedata.json）编译结果
  * parsePageData 统一编译为 DataSet 实例
  */
-export type PageDataConfig = DataSet
+export interface PageDataConfig extends DataSet {}
 
 /**
  * 页面脚本配置（script.js）
@@ -78,7 +78,7 @@ export interface PageConfigFileDescriptor {
 /**
  * 页面文件注册表：按文件名映射到描述符。
  */
-export type PageFileRegistry = ReadonlyMap<string, PageConfigFileDescriptor>
+export interface PageFileRegistry extends ReadonlyMap<string, PageConfigFileDescriptor> {}
 
 /**
  * 创建默认的四文件注册表。

@@ -123,8 +123,8 @@ interface PageRuntimeErrorPayload {
 interface RenderFunction {
   (props?: Record<string, unknown>): unknown
 }
-type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
-type RenderFunctionRevisionRef = ReturnType<typeof shallowRef<number>>
+interface RenderFunctionRef extends ReturnType<typeof shallowRef<RenderFunction | null>> {}
+interface RenderFunctionRevisionRef extends ReturnType<typeof shallowRef<number>> {}
 interface RenderFunctionRegistration {
   fnRef: RenderFunctionRef
   revisionRef: RenderFunctionRevisionRef

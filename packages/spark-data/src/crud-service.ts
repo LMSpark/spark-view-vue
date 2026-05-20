@@ -32,14 +32,28 @@ const UNRESOLVED_URL_TEMPLATE_RE = /:\w+|\{\w+\}/
 
 /** 批量操作默认并发度 */
 const DEFAULT_BATCH_CONCURRENCY = 5
-type WrappedResultKey = 'data' | 'node' | 'record' | 'item' | 'result' | 'rows' | 'deleted'
-interface WrappedEndpointResult<T> extends Partial<Record<WrappedResultKey, T>> {
-  success?: boolean
-    message?: string
-}
-type EndpointResult<T> = T | WrappedEndpointResult<T>
 
-const WRAPPED_RESULT_KEYS: readonly WrappedResultKey[] = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted']
+/**
+ * 后端 CRUD 接口常见的包裹响应。
+ *
+ * 不同业务后端可能把真实数据放在 data/node/record 等不同字段里；这里把这些
+ * 字段逐一声明出来，避免再用额外的 type alias 表达“可解包字段集合”。解包时
+ * 仍然通过 WRAPPED_RESULT_KEYS 保持统一顺序，保证同一个响应里出现多个字段时
+ * 选择行为稳定可预期。
+ */
+interface WrappedEndpointResult<T> {
+  success?: boolean
+  message?: string
+  data?: T
+  node?: T
+  record?: T
+  item?: T
+  result?: T
+  rows?: T
+  deleted?: T
+}
+
+const WRAPPED_RESULT_KEYS = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted'] as const
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -49,7 +63,13 @@ function isHttpClient(value: unknown): value is HttpClientBase {
   return value instanceof HttpClientBase
 }
 
-function isWrappedEndpointResult<T>(value: EndpointResult<T>): value is WrappedEndpointResult<T> {
+/**
+ * 判断响应是否是“业务包裹格式”。
+ *
+ * 这里刻意只看 success 或已知载荷字段，不猜测任意对象结构，避免把普通实体对象
+ * 错误当作包裹响应；一旦判定为包裹响应，后续会进入明确的 fail-fast 解包流程。
+ */
+function isWrappedEndpointResult<T>(value: T | WrappedEndpointResult<T>): value is WrappedEndpointResult<T> {
   if (!isRecord(value)) return false
   return 'success' in value || WRAPPED_RESULT_KEYS.some(key => key in value)
 }
@@ -526,7 +546,7 @@ export class CrudService {
     data?: unknown,
     config?: Partial<RequestConfig>
   ): Promise<T> {
-    const value = await this.executeEndpointRaw<EndpointResult<T>>(endpoint, data, config)
+    const value = await this.executeEndpointRaw<T | WrappedEndpointResult<T>>(endpoint, data, config)
     return this.unwrapEndpointResult(value)
   }
 
@@ -568,7 +588,15 @@ export class CrudService {
     }
   }
 
-  private unwrapEndpointResult<T>(value: EndpointResult<T>): T {
+  /**
+   * 解包 CRUD 端点响应。
+   *
+   * 时序：
+   * 1. 普通响应直接返回，兼容后端直接返回实体/数组的接口。
+   * 2. 包裹响应若 success=false，立即抛错，不允许静默吞掉后端业务失败。
+   * 3. 按固定字段顺序取第一个非 undefined 数据，字段缺失则 fail-fast。
+   */
+  private unwrapEndpointResult<T>(value: T | WrappedEndpointResult<T>): T {
     if (!isWrappedEndpointResult(value)) return value
 
     if (value.success === false) {

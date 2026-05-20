@@ -61,7 +61,9 @@ export interface DataViewMemberInput {
   dataField?: string | undefined
 }
 
-export type DataViewMemberObject = Record<string, unknown>
+export interface DataViewMemberObject {
+  [key: string]: unknown
+}
 
 // 这里不再为 JS 基础类型保留导出别名，DataView 标量成员直接在联合类型中内联。
 export type DataViewMemberValue =

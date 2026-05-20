@@ -148,8 +148,9 @@ const MODEL_VALUE_PROP_COMPONENT_TYPES = new Set([
 ])
 
 type RenderableChild = SparkNode | string | number
-type RecursiveChildrenList = RenderableChild[]
-type NodeRuntimeProps = Record<string, unknown>
+interface NodeRuntimeProps {
+  [key: string]: unknown
+}
 type RenderBranch = 'hidden' | 'registry' | 'global-el' | 'native' | 'fallback'
 
 type ParentCapabilityContext = CapabilityContext | null
@@ -162,7 +163,7 @@ interface ScopedRuntimeInput {
   rawProps: NodeRuntimeProps
   parentContext: ParentCapabilityContext
 }
-type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'>
+interface ResolvedBeforeRenderContext extends Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'> {}
 
 // 复用空对象常量，避免多个 computed 在“无 props”场景反复制造新引用。
 const EMPTY_RUNTIME_PROPS: NodeRuntimeProps = {}
@@ -250,11 +251,11 @@ function renderRecursiveChild(child: RenderableChild, index: number) {
   return h(currentRendererComponent, { key, config: child })
 }
 
-function readRecursiveChildrenList(value: unknown): RecursiveChildrenList {
+function readRecursiveChildrenList(value: unknown): Array<RenderableChild> {
   if (!Array.isArray(value)) {
     throw new TypeError('[spark] RecursiveChildrenBlock.children must be an array')
   }
-  const children: RecursiveChildrenList = []
+  const children: Array<RenderableChild> = []
   for (const child of value) {
     if (isSparkNode(child) || typeof child === 'string' || typeof child === 'number') {
       children.push(child)

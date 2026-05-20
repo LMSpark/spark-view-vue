@@ -49,7 +49,9 @@ export interface FieldChange {
 }
 
 /** 行级字段变更映射（字段名 → 变更） */
-export type RowDiff = Record<string, FieldChange>
+export interface RowDiff {
+  [field: string]: FieldChange
+}
 
 /**
  * saveChanges() 执行结果（三态统计）

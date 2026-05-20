@@ -1,6 +1,6 @@
 import type { SparkHierarchicalOptionFieldProps, SparkNodeProps } from '../../shared-types'
 
-export type CascaderPath = Array<string | number | boolean>
+export interface CascaderPath extends Array<string | number | boolean> {}
 export type CascaderValue = CascaderPath | CascaderPath[]
 
 export interface RCascaderProps extends SparkNodeProps, SparkHierarchicalOptionFieldProps<CascaderValue> {

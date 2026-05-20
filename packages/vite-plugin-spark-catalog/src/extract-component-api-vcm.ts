@@ -39,9 +39,9 @@ let _checker: ComponentMetaChecker | null = null
 let _tsconfigPath: string | null = null
 let _checkerOptionsKey: string | null = null
 
-type SupportedCheckerOptions = Pick<MetaCheckerOptions, 'rawType' | 'schema' | 'noDeclarations'>
+interface SupportedCheckerOptions extends Pick<MetaCheckerOptions, 'rawType' | 'schema' | 'noDeclarations'> {}
 
-export type VcmCheckerOptions = Partial<SupportedCheckerOptions>
+export interface VcmCheckerOptions extends Partial<SupportedCheckerOptions> {}
 
 const DEFAULT_CHECKER_OPTIONS: SupportedCheckerOptions = {
   // 默认同时启用 rawType + schema：

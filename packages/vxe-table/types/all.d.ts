@@ -22,7 +22,7 @@ export const VXETable: VxeUIExport
  * 已废弃，请使用 VxeUIExport
  * @deprecated
  */
-export type VXETableCore = VxeUIExport
+export interface VXETableCore extends VxeUIExport {}
 
 export function install (app: App, options?: VxeGlobalConfig): void
 

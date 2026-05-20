@@ -39,7 +39,9 @@ const logger = Logger('DataView:Computed')
 // ─────────────────────────────────────────────
 
 /** 表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用） */
-type ComputedColumnContext = Record<string, unknown>
+interface ComputedColumnContext {
+  [key: string]: unknown
+}
 
 /**
  * 子表聚合行解析器（$sum/$count/$avg/$min/$max/$list/$join）。

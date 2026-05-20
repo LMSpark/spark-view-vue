@@ -92,7 +92,7 @@ export interface TransformLoadOptions<T> extends LoadOptionBase {
 /** load() 选项 */
 export type LoadOptions<T = unknown> = JsonLoadOptions | TextLoadOptions | TransformLoadOptions<T>
 
-export type TransformedFileLoadOptions = Pick<LoadOptionBase, 'forceRefresh'>
+export interface TransformedFileLoadOptions extends Pick<LoadOptionBase, 'forceRefresh'> {}
 
 export class TransformedFileLoader<T> {
   private readonly transformedCache = new Map<string, CacheEntry<T>>()

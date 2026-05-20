@@ -1,7 +1,18 @@
 /**
  * 会话事件协议（UI 侧）。
  *
- * AI 会话记录、历史条目、消息追加、函数调用记录/完成等 UI 交互事件类型。
+ * 定义 AI 会话记录、历史条目、消息追加、函数调用记录/完成等 UI 交互事件类型。
+ *
+ * 类型分组（按会话生命周期/事件类型）：
+ * ┌──────────────────────────────────────────────────────────┐
+ * │ 1. 枚举类型         Status / Role / Source / HistoryStatus│
+ * │ 2. 生命周期快照     AiRuntimeSessionLifecycleSnapshot     │
+ * │ 3. 历史条目         HistoryEntryBase / Message / Function │
+ * │ 4. 会话记录         AiRuntimeSessionRecord                │
+ * │ 5. 消息操作         AppendMessage / AppendFunctionCall    │
+ * │                    RecordRequest / CompleteFunctionCall   │
+ * │ 6. 会话启停         StartSession / StopSession            │
+ * └──────────────────────────────────────────────────────────┘
  */
 
 import type {
@@ -12,19 +23,25 @@ import type {
   AiRuntimeKnowledgeProjection,
 } from './runtime-protocol'
 
-// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
+// ═══════════════════════════════════════════════════════
+// 1. 枚举类型
+// ═══════════════════════════════════════════════════════
 
-// ── 枚举类型 ──
-
+/** 会话状态：Started（运行中）| Stopped（已停止） */
 export type AiRuntimeSessionStatus = 'Started' | 'Stopped'
 
+/** 消息角色：system / user / assistant */
 export type AiRuntimeMessageRole = 'system' | 'user' | 'assistant'
 
+/** 消息来源：ui（用户输入）| llm（模型生成）| system（系统生成） */
 export type AiRuntimeMessageSource = 'ui' | 'llm' | 'system'
 
+/** 函数调用状态：requested（已请求）| completed（已完成）| failed（已失败） */
 export type AiRuntimeFunctionCallHistoryStatus = 'requested' | 'completed' | 'failed'
 
-// ── 生命周期快照 ──
+// ═══════════════════════════════════════════════════════
+// 2. 生命周期快照
+// ═══════════════════════════════════════════════════════
 
 export interface AiRuntimeSessionLifecycleSnapshot extends AiRuntimeInstanceScope {
   readonly status: AiRuntimeSessionStatus
@@ -32,7 +49,9 @@ export interface AiRuntimeSessionLifecycleSnapshot extends AiRuntimeInstanceScop
     readonly reason?: string | undefined
 }
 
-// ── 历史条目 ──
+// ═══════════════════════════════════════════════════════
+// 3. 历史条目
+// ═══════════════════════════════════════════════════════
 
 export interface AiRuntimeHistoryEntryBase extends AiRuntimeInstanceScope {
   readonly id: string
@@ -66,7 +85,9 @@ export interface AiRuntimeFunctionCallHistoryEntry extends AiRuntimeHistoryEntry
 
 export type AiRuntimeHistoryEntry = AiRuntimeMessageHistoryEntry | AiRuntimeFunctionCallHistoryEntry
 
-// ── 会话记录 ──
+// ═══════════════════════════════════════════════════════
+// 4. 会话记录
+// ═══════════════════════════════════════════════════════
 
 export interface AiRuntimeSessionRecord extends AiRuntimeInstanceScope {
   readonly moduleId: string
@@ -80,7 +101,9 @@ export interface AiRuntimeSessionRecord extends AiRuntimeInstanceScope {
     readonly history: readonly AiRuntimeHistoryEntry[]
 }
 
-// ── 追加消息 ──
+// ═══════════════════════════════════════════════════════
+// 5. 消息操作
+// ═══════════════════════════════════════════════════════
 
 export interface AiRuntimeAppendMessageOptions extends AiRuntimeInstanceScope {
   readonly role: AiRuntimeMessageRole
@@ -126,7 +149,9 @@ export interface AiRuntimeCompleteFunctionCallOptions extends AiRuntimeInstanceS
     readonly metadata?: Record<string, unknown> | undefined
 }
 
-// ── 会话启动/停止 ──
+// ═══════════════════════════════════════════════════════
+// 6. 会话启停
+// ═══════════════════════════════════════════════════════
 
 export interface AiRuntimeStartSessionOptions {
   readonly moduleId: string // 模块标识符

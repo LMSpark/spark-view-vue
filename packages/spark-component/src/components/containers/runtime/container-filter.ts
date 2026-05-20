@@ -116,7 +116,7 @@ function viewHasField(view: FilterPanelDataView | null | undefined, field: strin
 
 function assertResidentFieldRefs(
   view: FilterPanelDataView | null | undefined,
-  descriptors: readonly FilterDescriptor[],
+  descriptors: ReadonlyArray<InputFilterDescriptor | ResidentFieldRefFilterDescriptor>,
 ): void {
   for (const descriptor of descriptors) {
     if (descriptor.kind !== 'field-ref') continue
@@ -238,10 +238,11 @@ interface ResidentFieldRefFilterDescriptor {
   refField: string
 }
 
-type FilterDescriptor = InputFilterDescriptor | ResidentFieldRefFilterDescriptor
-
 /**
  * 尝试从节点创建常驻字段引用描述符（filterValueRefField 存在时）。
+ *
+ * 常驻字段引用不进入 filterModel，它直接把 DataView 中另一个字段作为过滤值；
+ * 因此创建时必须立即校验 field/refField，避免后续应用过滤时才暴露配置错误。
  */
 function createResidentFieldRefDescriptor(
   config: SparkNode,
@@ -262,21 +263,27 @@ function createResidentFieldRefDescriptor(
   }
 }
 
-/** 将节点配置描述为 FilterDescriptor（优先检测 field-ref，否则 input）。 */
-function describeFilterNode(config: SparkNode): FilterDescriptor {
+/** 将节点配置描述为过滤描述符（优先检测 field-ref，否则作为用户输入过滤器）。 */
+function describeFilterNode(config: SparkNode): InputFilterDescriptor | ResidentFieldRefFilterDescriptor {
   const residentFieldRef = createResidentFieldRefDescriptor(config)
   if (residentFieldRef) return residentFieldRef
   return { kind: 'input', config, field: getNodeField(config) }
 }
 
-function isInputFilterDescriptor(descriptor: FilterDescriptor): descriptor is InputFilterDescriptor {
+function isInputFilterDescriptor(
+  descriptor: InputFilterDescriptor | ResidentFieldRefFilterDescriptor,
+): descriptor is InputFilterDescriptor {
   return descriptor.kind === 'input'
 }
 
 /**
  * 将描述符数组拆分为 input 和 field-ref 两组。
+ *
+ * 拆分后执行顺序更清晰：
+ * - input 描述符负责驱动 UI 和 filterModel 双向绑定。
+ * - field-ref 描述符始终进入最终表达式，不需要用户输入。
  */
-function splitFilterDescriptors(descriptors: readonly FilterDescriptor[]): {
+function splitFilterDescriptors(descriptors: ReadonlyArray<InputFilterDescriptor | ResidentFieldRefFilterDescriptor>): {
   input: InputFilterDescriptor[]
   residentFieldRef: ResidentFieldRefFilterDescriptor[]
 } {
@@ -397,13 +404,6 @@ function clearFilterModel(model: Record<string, unknown>): void {
 // ============================================================
 
 /**
- * 过滤应用模式：
- * - `'set'`     : 更新表达式并让 DataView 决定后续处理
- * - `'execute'` : 立即执行过滤查询（自动处理 refresh）
- */
-type FilterApplyMode = 'set' | 'execute'
-
-/**
  * 安全地将过滤表达式应用到 DataView。
  *
  * - `execute` 模式：调用 `view.executeFilter(expr)`（适合"搜索"按钮触发场景）
@@ -416,7 +416,8 @@ async function applyFilterSafely(params: {
   hasFilters: boolean
   logger: ErrorLoggerLike
   message: string
-  mode?: FilterApplyMode
+  /** set=同步表达式；execute=立即执行过滤查询。 */
+  mode?: 'set' | 'execute'
 }): Promise<boolean> {
   const { view, expr, hasFilters, logger, message, mode = 'set' } = params
   if (!view || !hasFilters) return false

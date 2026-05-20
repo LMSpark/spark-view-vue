@@ -21,16 +21,7 @@
 
 import type { FieldVisibility, DataRow, ModelPermission } from '@spark-view/spark-data'
 import type {
-  PageBrowseFilesOptions,
-  PageDialogOptions,
-  PageDialogResult,
-  PageSelectEntitiesOptions,
-  PageSelectedEntity,
-  PageSelectedFile,
-  PageSelectorOption,
   PageServiceCapability,
-  PageUploadFilesOptions,
-  PageUploadedFile,
 } from '../services'
 
 // ==================== 路由快照 ====================
@@ -135,7 +126,7 @@ export interface ScriptContext {
    *
    * 类型直接来自 page-config 的 runtime service contract，渲染层注入对应实现。
    */
-  $page: PageServiceInScript
+  $page: PageServiceCapability
 
   /**
    * 权限 helper 命名空间。
@@ -169,21 +160,6 @@ export interface ScriptContext {
    */
   $moduleContext: ModuleContextInScript | null
 }
-
-/**
- * `$page` 的脚本侧别名，直接复用 page-config runtime service contract。
- */
-export type PageServiceInScript = PageServiceCapability
-export type PageDialogResultInScript = PageDialogResult
-export type PageDialogOptionsInScript = PageDialogOptions
-// 这里不再为 JS 基础类型保留脚本侧二次别名，直接复用原生联合类型。
-export type PageSelectorOptionInScript = PageSelectorOption
-export type PageSelectEntitiesOptionsInScript = PageSelectEntitiesOptions
-export type PageSelectedEntityInScript = PageSelectedEntity
-export type PageBrowseFilesOptionsInScript = PageBrowseFilesOptions
-export type PageSelectedFileInScript = PageSelectedFile
-export type PageUploadFilesOptionsInScript = PageUploadFilesOptions
-export type PageUploadedFileInScript = PageUploadedFile
 
 export interface PermissionActionContextInScript {
   modelPermission?: ModelPermission

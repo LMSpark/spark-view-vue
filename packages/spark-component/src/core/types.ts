@@ -21,7 +21,7 @@ import type { CapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
 export type { CapabilityName, CapabilityContext } from '@spark-view/spark-utils'
-export type SparkCapabilityContext = CapabilityContext
+export interface SparkCapabilityContext extends CapabilityContext {}
 
 // ============================================================================
 // 组件定义（注册表使用）

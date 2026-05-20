@@ -24,13 +24,11 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import type { Extension } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 
-type SparkCodeLanguage = 'javascript' | 'css'
-
 interface Props {
   /** 编辑器内容 */
   modelValue?: string
-  /** 语言模式 */
-  language?: SparkCodeLanguage
+  /** 语言模式；当前只加载脚本与样式两类 CodeMirror language package。 */
+  language?: 'javascript' | 'css'
   /** 是否只读 */
   readOnly?: boolean
   /** 编辑器高度 */
@@ -63,6 +61,12 @@ const rootStyle = computed(() => ({
   height: typeof props.height === 'number' ? `${props.height}px` : props.height,
 }))
 
+/**
+ * 创建 CodeMirror 主题扩展。
+ *
+ * 主题只负责把编辑器视觉贴合 Element Plus 变量；编辑能力、快捷键和语言扩展
+ * 在 mountEditor 中按初始化时序组装，避免样式和行为配置混在一起。
+ */
 function createEditorTheme(EditorViewCtor: typeof import('@codemirror/view').EditorView): Extension {
   return EditorViewCtor.theme({
     '&': {
@@ -122,6 +126,7 @@ function createEditorTheme(EditorViewCtor: typeof import('@codemirror/view').Edi
   })
 }
 
+/** 根据 props.language 选择语言扩展；未知值由 props 类型在编译期挡住。 */
 function resolveLanguageExtension(
   javascript: typeof import('@codemirror/lang-javascript').javascript,
   css: typeof import('@codemirror/lang-css').css,
@@ -129,6 +134,15 @@ function resolveLanguageExtension(
   return props.language === 'css' ? css() : javascript()
 }
 
+/**
+ * 初始化或重建 CodeMirror 实例。
+ *
+ * 时序：
+ * 1. 清理旧实例，避免语言/只读状态切换后残留旧扩展。
+ * 2. 并行加载 CodeMirror 核心、视图、语言包和命令包，降低首开等待。
+ * 3. 按基础能力 → 行为配置 → 主题 → 语言 → 更新监听的顺序组装 extensions。
+ * 4. 任意加载失败都降级到 textarea，保证配置编辑功能仍可用。
+ */
 async function mountEditor(): Promise<void> {
   if (!containerRef.value || typeof window === 'undefined') return
 
@@ -195,6 +209,7 @@ async function mountEditor(): Promise<void> {
   }
 }
 
+/** textarea 降级模式的输入同步路径。 */
 function handleFallbackInput(event: Event): void {
   if (!(event.target instanceof HTMLTextAreaElement)) return
   const target = event.target
@@ -202,6 +217,7 @@ function handleFallbackInput(event: Event): void {
   emit('update:modelValue', target.value)
 }
 
+// 外部 modelValue 变化时同步到编辑器；本地输入已同步过的值直接跳过，避免循环派发。
 watch(() => props.modelValue, (value) => {
   if (value === lastSyncedValue.value) return
   lastSyncedValue.value = value
@@ -218,6 +234,7 @@ watch(() => props.modelValue, (value) => {
   })
 })
 
+// 语言、只读、缩进或换行策略变化会影响扩展集合，直接重建编辑器实例。
 watch(
   () => [props.language, props.readOnly, props.tabSize, props.lineWrapping] as const,
   () => {
@@ -231,9 +248,9 @@ onMounted(() => {
 })
 
 onBeforeUnmount(() => {
-    editorRef.value?.destroy()
-    editorRef.value = null
-  })
+  editorRef.value?.destroy()
+  editorRef.value = null
+})
 </script>
 
 <style scoped>

@@ -35,11 +35,8 @@ const DEFAULT_COL_SPAN_KEYS = ['colSpan', 'gridColSpan', 'span'] as const
 const DEFAULT_ROW_SPAN_KEYS = ['rowSpan', 'gridRowSpan'] as const
 
 // ============================================================
-// § 内部类型与工具函数
+// § 内部工具函数
 // ============================================================
-
-type OptionalString = string | null | undefined
-type OptionalStringOrNumber = string | number | null | undefined
 
 /**
  * 将值转换为有限整数。
@@ -297,10 +294,14 @@ export function useContainerGrid(options: UseContainerGridOptions): ContainerGri
 
 interface UseCompositeItemGridOptions {
   children?: () => SparkNode['children'] | undefined
-  bodyClass?: () => OptionalString
-  gridColumns?: () => OptionalStringOrNumber
-  gridAutoRows?: () => OptionalString
-  gridGap?: () => OptionalStringOrNumber
+  /** 复合容器内容区 class；空值会被标准化为空字符串。 */
+  bodyClass?: () => string | null | undefined
+  /** 复合容器内容区列数；字符串/数字都会被标准化为正整数。 */
+  gridColumns?: () => string | number | null | undefined
+  /** 复合容器内容区自动行高；仅接受有效字符串。 */
+  gridAutoRows?: () => string | null | undefined
+  /** 复合容器内容区间距；数字转 px，字符串按 CSS 原样透传。 */
+  gridGap?: () => string | number | null | undefined
 }
 
 /** `useCompositeItemGrid` 返回状态。 */

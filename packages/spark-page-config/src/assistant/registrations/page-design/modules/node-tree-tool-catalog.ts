@@ -25,7 +25,7 @@ import {
 } from '@spark-view/spark-ai/protocol'
 import { StaticAiToolModule } from '../../internal/registration-base'
 
-export type SparkNodeTreeToolFailureMode = FunctionFailureMode
+export interface SparkNodeTreeToolFailureMode extends FunctionFailureMode {}
 export type SparkNodeTreeToolFunctionId =
   | 'getNode'
   | 'getLocation'

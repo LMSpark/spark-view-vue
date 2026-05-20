@@ -30,110 +30,30 @@ import type { RTextareaProps } from '../packages/spark-component/src/components/
 import type { RTreeSelectProps } from '../packages/spark-component/src/components/fields/data-components/FieldTreeSelect.props'
 import type { RUploadProps } from '../packages/spark-component/src/components/fields/data-components/FieldUpload.props'
 
-type Extends<T, U> = [T] extends [U] ? true : false
-type AssertTrue<T extends true> = T
-
-type _FieldPermissionPropsTracksSharedFieldContract = AssertTrue<Extends<
-  FieldPermissionProps<string>,
-  {
-    field?: string | undefined
-    label?: string | undefined
-    value?: string | undefined
-  }
->>
-
-type _DatePropsReuseTemporalAndRangeContracts = AssertTrue<Extends<
-  RDateProps,
-  SparkTemporalPickerProps & SparkRangeFilterProps
->>
-
-type _NumberPropsReuseNumericBoundsAndRangeContracts = AssertTrue<Extends<
-  RNumberProps,
-  SparkFieldSemanticProps & SparkNumericBoundsProps & SparkRangeFilterProps
->>
-
-type _SliderPropsReuseNumericBoundsContract = AssertTrue<Extends<
-  RSliderProps,
-  SparkFieldSemanticProps & SparkNumericBoundsProps
->>
-
-type _RatePropsReuseNumericMaxContract = AssertTrue<Extends<
-  RRateProps,
-  SparkFieldSemanticProps & SparkNumericMaxProps
->>
-
-type _CascaderPropsReuseHierarchicalSelectionContract = AssertTrue<Extends<
-  RCascaderProps,
-  SparkHierarchicalSelectionProps
->>
-
-type _TreeSelectPropsReuseHierarchicalSelectionContract = AssertTrue<Extends<
-  RTreeSelectProps,
-  SparkHierarchicalSelectionProps
->>
-
-type _RadioPropsReuseOptionButtonStyleContract = AssertTrue<Extends<
-  RRadioProps,
-  SparkOptionButtonStyleProps
->>
-
-type _CheckboxGroupPropsReuseOptionButtonStyleContract = AssertTrue<Extends<
-  RCheckboxGroupProps,
-  SparkOptionButtonStyleProps
->>
-
-type _TextareaPropsReuseMultilineRowsContract = AssertTrue<Extends<
-  RTextareaProps,
-  SparkMultilineRowsProps
->>
-
-type _HtmlEditorPropsReuseMultilineRowsContract = AssertTrue<Extends<
-  RHtmlEditorProps,
-  SparkMultilineRowsProps
->>
-
-type _MentionPropsReuseMultilineRowsContract = AssertTrue<Extends<
-  RMentionProps,
-  SparkMultilineRowsProps
->>
-
-type _FilePathPropsReuseFilePickerContract = AssertTrue<Extends<
-  RFilePathProps,
-  SparkFilePickerFieldProps
->>
-
-type _UploadPropsReuseFileContracts = AssertTrue<Extends<
-  RUploadProps,
-  SparkFileFieldProps & SparkFileUploadActionProps
->>
-
-type _EntityPickerPropsReuseActionTextContracts = AssertTrue<Extends<
-  REntityPickerProps,
-  SparkPrimaryActionTextProps & SparkReadonlyActionTextProps
->>
-
-type _FieldSharedContractAssertions = [
-  _FieldPermissionPropsTracksSharedFieldContract,
-  _DatePropsReuseTemporalAndRangeContracts,
-  _NumberPropsReuseNumericBoundsAndRangeContracts,
-  _SliderPropsReuseNumericBoundsContract,
-  _RatePropsReuseNumericMaxContract,
-  _CascaderPropsReuseHierarchicalSelectionContract,
-  _TreeSelectPropsReuseHierarchicalSelectionContract,
-  _RadioPropsReuseOptionButtonStyleContract,
-  _CheckboxGroupPropsReuseOptionButtonStyleContract,
-  _TextareaPropsReuseMultilineRowsContract,
-  _HtmlEditorPropsReuseMultilineRowsContract,
-  _MentionPropsReuseMultilineRowsContract,
-  _FilePathPropsReuseFilePickerContract,
-  _UploadPropsReuseFileContracts,
-  _EntityPickerPropsReuseActionTextContracts,
-]
+function assertExtends<TValue extends TExpected, TExpected>(): void {}
 
 describe('field shared prop contracts', () => {
   it('keeps the shared contract assertions in typecheck scope', () => {
-    const _assertions: _FieldSharedContractAssertions | null = null
-    expect(_assertions).toBeNull()
+    // 中文说明：这些调用没有运行期断言，只把共享 props 契约纳入 TypeScript 检查。
+    assertExtends<FieldPermissionProps<string>, {
+      field?: string | undefined
+      label?: string | undefined
+      value?: string | undefined
+    }>()
+    assertExtends<RDateProps, SparkTemporalPickerProps & SparkRangeFilterProps>()
+    assertExtends<RNumberProps, SparkFieldSemanticProps & SparkNumericBoundsProps & SparkRangeFilterProps>()
+    assertExtends<RSliderProps, SparkFieldSemanticProps & SparkNumericBoundsProps>()
+    assertExtends<RRateProps, SparkFieldSemanticProps & SparkNumericMaxProps>()
+    assertExtends<RCascaderProps, SparkHierarchicalSelectionProps>()
+    assertExtends<RTreeSelectProps, SparkHierarchicalSelectionProps>()
+    assertExtends<RRadioProps, SparkOptionButtonStyleProps>()
+    assertExtends<RCheckboxGroupProps, SparkOptionButtonStyleProps>()
+    assertExtends<RTextareaProps, SparkMultilineRowsProps>()
+    assertExtends<RHtmlEditorProps, SparkMultilineRowsProps>()
+    assertExtends<RMentionProps, SparkMultilineRowsProps>()
+    assertExtends<RFilePathProps, SparkFilePickerFieldProps>()
+    assertExtends<RUploadProps, SparkFileFieldProps & SparkFileUploadActionProps>()
+    assertExtends<REntityPickerProps, SparkPrimaryActionTextProps & SparkReadonlyActionTextProps>()
     expect(true).toBe(true)
   })
 })

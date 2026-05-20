@@ -26,18 +26,16 @@ import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { coercePrimitiveOptionArray } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { RCheckboxGroupProps } from './FieldCheckboxGroup.props'
-
-type MultiValue = Array<string | number | boolean>
+import type { CheckboxGroupMultiValue, RCheckboxGroupProps } from './FieldCheckboxGroup.props'
 
 const props = withDefaults(defineProps<RCheckboxGroupProps>(), {
   type: 'r-checkbox-group',
   buttonStyle: false,
 })
 
-const emit = defineEmits<FieldValueUpdateEmits<MultiValue>>()
+const emit = defineEmits<FieldValueUpdateEmits<CheckboxGroupMultiValue>>()
 
-const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<MultiValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<CheckboxGroupMultiValue>({
   props,
   fieldType: 'r-checkbox-group',
   fallbackValue: [],
@@ -47,7 +45,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<M
 
 const { options, fieldName, currentRow, fieldValue, isCurrentFieldEditable } = optionResult
 
-const displayValue = computed<MultiValue>(() => {
+const displayValue = computed<CheckboxGroupMultiValue>(() => {
   const boundField = fieldName.value
   const rowValue = boundField ? currentRow.value?.[boundField] : undefined
 
@@ -62,7 +60,7 @@ const displayValue = computed<MultiValue>(() => {
   return coercePrimitiveOptionArray(fieldValue.value)
 })
 
-async function handleChange(value: MultiValue): Promise<void> {
+async function handleChange(value: CheckboxGroupMultiValue): Promise<void> {
   await handleControlledChange(value)
 }
 </script>

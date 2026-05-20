@@ -4,7 +4,9 @@ import type {
 } from './json-document'
 import { isJsonObject } from './json-document'
 
-type JsonSchemaRecord = Record<string, unknown>
+interface JsonSchemaRecord {
+  [key: string]: unknown
+}
 
 /**
  * 根据路径从 JSON Schema 解析出该节点的标题、描述、是否必填、枚举值列表。

@@ -32,7 +32,7 @@ import {
 } from '@spark-view/spark-ai/protocol'
 import { StaticAiToolModule } from '../../internal/registration-base'
 
-export type DatasetCrudToolFunctionFailureMode = FunctionFailureMode
+export interface DatasetCrudToolFunctionFailureMode extends FunctionFailureMode {}
 // 这里不再为 JS 基础类型保留导出别名，函数标识符直接使用原生 string。
 
 const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请传 {} 或留空。')

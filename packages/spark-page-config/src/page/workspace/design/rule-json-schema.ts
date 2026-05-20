@@ -3,7 +3,9 @@ import {
   type RuleEditorComponentMetadata,
 } from './rule-editor-metadata'
 
-type JsonSchemaNode = Record<string, unknown>
+interface JsonSchemaNode {
+  [key: string]: unknown
+}
 
 function withMeta<T extends JsonSchemaNode>(
   title: string,

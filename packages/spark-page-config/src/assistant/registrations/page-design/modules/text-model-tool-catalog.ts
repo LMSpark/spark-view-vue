@@ -16,7 +16,7 @@ import {
 } from '@spark-view/spark-ai/protocol'
 import { StaticAiToolModule } from '../../internal/registration-base'
 
-export type TextModelFunctionFailureMode = FunctionFailureMode
+export interface TextModelFunctionFailureMode extends FunctionFailureMode {}
 export type TextModelFunctionFileKey = 'script' | 'style'
 export type TextModelFunctionId = 'readScript' | 'writeScript' | 'readStyle' | 'writeStyle'
 

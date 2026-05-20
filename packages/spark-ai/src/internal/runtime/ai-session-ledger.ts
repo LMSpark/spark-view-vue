@@ -1,34 +1,8 @@
-import type {
-  AiRuntimeAppendFunctionCallOptions,
-  AiRuntimeAppendMessageOptions,
-  AiRuntimeCompleteFunctionCallOptions,
-  AiRuntimeFunctionCallFailure,
-  AiRuntimeFunctionCallHistoryEntry,
-  AiRuntimeHistoryEntry,
-  AiRuntimeHistoryEntryBase,
-  AiRuntimeKnowledgeProjection,
-  AiRuntimeMessageHistoryEntry,
-  AiRuntimeOptions,
-  AiRuntimeProjectKnowledgeOptions,
-  AiRuntimeRecordFunctionCallRequestOptions,
-  AiRuntimeSessionRecord,
-  AiRuntimeStartSessionOptions,
-  AiRuntimeStartSessionResult,
-  AiRuntimeStopSessionOptions,
-  AiRuntimeStopSessionResult,
-} from '../../protocol/runtime-contracts'
-import {
-  assertNonEmptyId,
-  cloneRuntimeValue,
-  createFunctionCallFailure,
-  defaultMessageSource,
-  moduleScopeKey,
-} from './runtime-utils'
-
 /**
  * AI 会话账本。
  *
  * 职责：内存中管理 AI 会话状态、历史记录和别名映射。
+ * 不持久化，不发布事件，不执行函数。
  *
  * ┌──────────────────────────────────────────────────────────┐
  * │                    AiSessionLedger                        │
@@ -55,6 +29,33 @@ import {
  * │    assertInstanceAliasesAvailable() → 校验别名不冲突       │
  * └──────────────────────────────────────────────────────────┘
  */
+
+import type {
+  AiRuntimeAppendFunctionCallOptions,
+  AiRuntimeAppendMessageOptions,
+  AiRuntimeCompleteFunctionCallOptions,
+  AiRuntimeFunctionCallFailure,
+  AiRuntimeFunctionCallHistoryEntry,
+  AiRuntimeHistoryEntry,
+  AiRuntimeHistoryEntryBase,
+  AiRuntimeKnowledgeProjection,
+  AiRuntimeMessageHistoryEntry,
+  AiRuntimeOptions,
+  AiRuntimeProjectKnowledgeOptions,
+  AiRuntimeRecordFunctionCallRequestOptions,
+  AiRuntimeSessionRecord,
+  AiRuntimeStartSessionOptions,
+  AiRuntimeStartSessionResult,
+  AiRuntimeStopSessionOptions,
+  AiRuntimeStopSessionResult,
+} from '../../protocol/runtime-contracts'
+import {
+  assertNonEmptyId,
+  cloneRuntimeValue,
+  createFunctionCallFailure,
+  defaultMessageSource,
+  moduleScopeKey,
+} from './runtime-utils'
 
 export class AiSessionLedger {
   private readonly sessions = new Map<string, AiRuntimeSessionRecord>()

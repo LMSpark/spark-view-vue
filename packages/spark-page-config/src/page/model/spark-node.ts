@@ -10,7 +10,7 @@
  * 允许混合结构节点与纯文本子节点（string / number）；消费侧可用
  * `getSparkNodeChildren()` 过滤出结构节点。
  */
-export type SparkNodeChildren = Array<SparkNode | string | number>
+export interface SparkNodeChildren extends Array<SparkNode | string | number> {}
 
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */

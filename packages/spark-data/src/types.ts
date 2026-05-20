@@ -352,7 +352,9 @@ export type AggregateType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'
 // 这里不再为 JS 基础类型保留导出别名，聚合结果直接在输出行类型中内联。
 
 /** 视图聚合输出行（key 来自 aggregates 的输出字段名） */
-export type AggregateResultRow = Record<string, number | string | undefined>
+export interface AggregateResultRow {
+  [field: string]: number | string | undefined
+}
 
 /**
  * 单个聚合列配置。
@@ -846,7 +848,7 @@ export interface SortField {
  * [{ field: 'age', direction: 'desc' }, { field: 'name' }]
  * ```
  */
-export type SortExpression = SortField[]
+export interface SortExpression extends Array<SortField> {}
 
 /**
  * 过滤操作符。

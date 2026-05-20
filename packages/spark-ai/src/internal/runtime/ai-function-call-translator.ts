@@ -36,7 +36,7 @@ import type {
   AiRuntimeTranslateFunctionCallOptions,
   FunctionExecutionContext,
 } from '../../protocol/runtime-contracts'
-import { AiInvocationProtocol } from '../invocation-helpers'
+import { AiInvocationProtocol, type ActionPathParts } from '../invocation-helpers'
 import {
   AiRuntimeArgValidator,
 } from './ai-runtime-support'
@@ -48,8 +48,6 @@ import {
   createFunctionCallFailure,
   isRecord,
 } from './runtime-utils'
-
-type ActionAddress = ReturnType<typeof AiInvocationProtocol.parseActionPath>
 
 export class AiFunctionCallTranslator {
   private readonly argValidator = new AiRuntimeArgValidator()
@@ -85,7 +83,7 @@ export class AiFunctionCallTranslator {
     const session = this.sessions.requireStartedSession(scope)
 
     // 阶段 2：解析 action 路径
-    let address: ActionAddress
+    let address: ActionPathParts
     try {
       address = AiInvocationProtocol.parseActionPath(options.action)
     } catch (error) {
@@ -333,7 +331,7 @@ export class AiFunctionCallTranslator {
 
   private findFunctionExposure(
     functions: readonly AiRuntimeFunctionExposure[],
-    address: ActionAddress,
+    address: ActionPathParts,
     action: string,
   ): AiRuntimeFunctionExposure | undefined {
     if (address.format === 'legacy') {
@@ -350,7 +348,7 @@ export class AiFunctionCallTranslator {
   }
 
   private mergeActionInstancePath(
-    address: ActionAddress,
+    address: ActionPathParts,
     exposure: AiRuntimeFunctionExposure,
     activePath: readonly AiModuleInstanceBinding[],
     scope: AiRuntimeProjectKnowledgeOptions,
@@ -383,7 +381,7 @@ export class AiFunctionCallTranslator {
   }
 
   private validateActionInstancePath(
-    address: ActionAddress,
+    address: ActionPathParts,
     exposure: AiRuntimeFunctionExposure,
     scope: AiRuntimeProjectKnowledgeOptions,
   ): AiRuntimeFunctionCallFailure | null {

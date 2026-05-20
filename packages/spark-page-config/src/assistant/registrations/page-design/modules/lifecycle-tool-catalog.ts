@@ -17,7 +17,7 @@ import {
 } from '@spark-view/spark-ai/protocol'
 import { StaticAiToolModule } from '../../internal/registration-base'
 
-export type EditLifecycleFunctionFailureMode = FunctionFailureMode
+export interface EditLifecycleFunctionFailureMode extends FunctionFailureMode {}
 export type EditLifecycleFunctionId = 'bootstrap' | 'describeProgress' | 'describeDesignFlow'
 
 const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')

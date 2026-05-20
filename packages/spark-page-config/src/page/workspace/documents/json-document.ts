@@ -66,7 +66,7 @@ function objectKeyFromSegment(segment: string | number): string {
 // ── 路径类型 ────────────────────────────────────────────────
 
 // 这里不再为 JS 基础类型保留导出别名，路径段直接使用 string | number。
-export type JsonPath = Array<string | number>
+export interface JsonPath extends Array<string | number> {}
 
 // ── 节点类型 ────────────────────────────────────────────────
 
@@ -126,7 +126,7 @@ export interface TreeDisplayNode extends TreeNode {
     readonly deletable: boolean
 }
 
-export type TreeModel = ReadonlyMap<string, TreeNode>
+export interface TreeModel extends ReadonlyMap<string, TreeNode> {}
 
 /** 查找根节点 ID（parentId === null 的唯一节点） */
 export function rootOf(model: TreeModel): string {

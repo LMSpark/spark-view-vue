@@ -1,16 +1,24 @@
 /**
  * 业务注册协议。
  *
- * 模块注册契约与便捷基类。
- * 注册实现优先继承 class 主路径，不再保留旧 I* 兼容契约。
+ * 模块注册契约与便捷基类。注册实现优先继承 class 主路径。
+ *
+ * ┌──────────────────────────────────────────────────────────┐
+ * │                业务注册契约                               │
+ * │                                                           │
+ * │  函数注册：FunctionFailureMode / AiFunctionRegistration   │
+ * │  实例参数：AiModuleInstanceParam                           │
+ * │  模块注册：AiModuleRegistration                            │
+ * │  Prompt 提供：ModulePromptProvider / ModulePromptContext  │
+ * │  便捷基类：AiModuleRegistrationBase（abstract class）      │
+ * └──────────────────────────────────────────────────────────┘
  */
 
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
 
-// ── 基础 ID（foundation，也被 AI host protocol 引用） ──
-// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
-
-// ── 函数注册 ──
+// ═══════════════════════════════════════════════════════
+// 1. 函数注册
+// ═══════════════════════════════════════════════════════
 
 export interface FunctionFailureMode {
   readonly code: string
@@ -30,14 +38,18 @@ export interface AiFunctionRegistration {
   readonly example?: LlmJsonObject | undefined
 }
 
-// ── 实例参数 ──
+// ═══════════════════════════════════════════════════════
+// 2. 实例参数
+// ═══════════════════════════════════════════════════════
 
 export interface AiModuleInstanceParam {
   readonly name: string
   readonly description: string
 }
 
-// ── 模块注册契约 ──
+// ═══════════════════════════════════════════════════════
+// 3. 模块注册契约
+// ═══════════════════════════════════════════════════════
 
 export interface AiModuleRegistration {
   readonly moduleId: string
@@ -49,7 +61,9 @@ export interface AiModuleRegistration {
   getFunctions(): readonly AiFunctionRegistration[]
 }
 
-// ── 便捷基类 ──
+// ═══════════════════════════════════════════════════════
+// 4. Prompt 提供 & 便捷基类
+// ═══════════════════════════════════════════════════════
 
 export type ModulePromptProvider = string | {
   bivarianceHack(context: ModulePromptContext): string | null | Promise<string | null>

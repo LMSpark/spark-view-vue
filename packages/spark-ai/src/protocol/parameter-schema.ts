@@ -4,11 +4,19 @@
  * 函数 `paramsSchema` 与 payload guide 统一使用标准 JSON Schema object。
  * 旧的 spark-ai 私有 DSL（`kind` / 叶子描述字符串 / 简写对象根）不再是合法输入；
  * 需要在注册源头显式输出 `type`、`properties`、`items`、`required` 等 JSON Schema 字段。
+ *
+ * 类型分组：
+ * ┌──────────────────────────────────────────────────────┐
+ * │ 1. JSON 值类型    LlmJsonValue / LlmJsonObject        │
+ * │ 2. Schema 类型    LlmJsonSchemaType / LlmJsonSchema   │
+ * │ 3. Schema 节点    LlmJsonSchemaObject（完整字段）      │
+ * │ 4. 参数根         LlmParameterSchemaRoot              │
+ * └──────────────────────────────────────────────────────┘
  */
 
-// =========================================================
-// 一、对外类型定义
-// =========================================================
+// ═══════════════════════════════════════════════════════
+// 1. JSON 值类型
+// ═══════════════════════════════════════════════════════
 
 /** 参数协议允许直接持久化的 JSON 值；不包含 function、undefined、symbol、bigint 等运行时形态。 */
 export type LlmJsonValue =
@@ -22,6 +30,10 @@ export type LlmJsonValue =
 /** 参数协议中的 JSON 对象。 */
 export interface LlmJsonObject { readonly [key: string]: LlmJsonValue }
 
+// ═══════════════════════════════════════════════════════
+// 2. Schema 类型
+// ═══════════════════════════════════════════════════════
+
 export type LlmJsonSchemaType =
   | 'null'
   | 'boolean'
@@ -32,6 +44,10 @@ export type LlmJsonSchemaType =
   | 'string'
 
 export type LlmJsonSchema = boolean | LlmJsonSchemaObject
+
+// ═══════════════════════════════════════════════════════
+// 3. Schema 节点
+// ═══════════════════════════════════════════════════════
 
 /** 标准 JSON Schema 节点。保留有限扩展字段，但不允许 `kind`。 */
 export interface LlmJsonSchemaObject {
@@ -61,5 +77,9 @@ export interface LlmJsonSchemaObject {
   readonly format?: string
 }
 
+// ═══════════════════════════════════════════════════════
+// 4. 参数根
+// ═══════════════════════════════════════════════════════
+
 /** 函数 paramsSchema / 参数 payload guide 共用的根 schema。 */
-export type LlmParameterSchemaRoot = LlmJsonSchemaObject
+export interface LlmParameterSchemaRoot extends LlmJsonSchemaObject {}

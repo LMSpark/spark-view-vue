@@ -65,7 +65,9 @@ export interface EventDefaultDeclaration<TArgs extends readonly unknown[] = read
 }
 
 /** dispatch 调用签名 */
-export type EventArgsMap = Record<string, readonly unknown[]>
+export interface EventArgsMap {
+  [eventName: string]: readonly unknown[]
+}
 
 export type EventDefaultDeclarations<TEvents extends EventArgsMap> = Readonly<{
   [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>

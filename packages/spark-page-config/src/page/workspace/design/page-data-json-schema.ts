@@ -55,7 +55,9 @@ export function canUseStructuredPageDataEditor(rawText: string): boolean {
   }
 }
 
-type JsonSchemaNode = Record<string, unknown>
+interface JsonSchemaNode {
+  [key: string]: unknown
+}
 
 function withMeta<T extends JsonSchemaNode>(
   title: string,

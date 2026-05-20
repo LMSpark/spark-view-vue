@@ -87,15 +87,17 @@ import { SparkCodeEditor, SparkJsonEditor } from './editors/index.js'
 // 注册表
 // ═══════════════════════════════════════════════════════════════════════════════
 
-type RegisteredComponent = Parameters<typeof Spark.register>[1]
-type RegistrationEntry = readonly [string, RegisteredComponent]
-
 /**
  * 同步注册清单：核心组件集合
  *
- * 这些组件在启动时直接导入并注册，以确保首屏路径稳定。
+ * 注册时序：
+ * 1. CORE_COMPONENTS 先注册首屏必需的数据容器、布局、字段和基础展示组件。
+ * 2. EXTENDED_COMPONENTS 后注册扩展能力，避免首屏核心类型被扩展清单淹没。
+ *
+ * Spark.register 的组件参数本身是 unknown，因此清单直接使用 tuple 数组表达，
+ * 不再额外引入仅用于转述参数类型的别名。
  */
-const CORE_COMPONENTS: RegistrationEntry[] = [
+const CORE_COMPONENTS: Array<readonly [string, unknown]> = [
   // 数据容器
   ['r-table', RendererTable],
   ['r-form', RendererForm],
@@ -173,8 +175,8 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-watermark', RendererWatermark],
 ]
 
-/** 扩展组件：随内置注册表同步注册。 */
-const EXTENDED_COMPONENTS: ReadonlyArray<readonly [string, RegisteredComponent]> = [
+/** 扩展组件：随内置注册表同步注册，但在核心组件之后执行。 */
+const EXTENDED_COMPONENTS: ReadonlyArray<readonly [string, unknown]> = [
   // 扩展容器
   ['r-popconfirm', RendererPopconfirm],
   ['r-page-header', RendererPageHeader],
@@ -224,12 +226,12 @@ const EXTENDED_COMPONENTS: ReadonlyArray<readonly [string, RegisteredComponent]>
 // ═══════════════════════════════════════════════════════════════════════════════
 
 export function registerAllRenderers(): void {
-  // Core — 核心 + Passthrough
+  // 先注册核心组件：保证页面首屏和基础配置解析路径稳定。
   for (const [type, component] of CORE_COMPONENTS) {
     Spark.register(type, component)
   }
 
-  // Extended
+  // 再注册扩展组件：补齐高级字段、展示和交互容器。
   for (const [type, component] of EXTENDED_COMPONENTS) {
     Spark.register(type, component)
   }

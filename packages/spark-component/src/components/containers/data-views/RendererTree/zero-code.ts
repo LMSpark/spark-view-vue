@@ -53,7 +53,7 @@ export interface NativeTreeNodeLike {
   data?: DataRow
 }
 
-export type TreeEventControl = CancellableControl
+export interface TreeEventControl extends CancellableControl {}
 
 export interface TreeEventHandler {
   (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>

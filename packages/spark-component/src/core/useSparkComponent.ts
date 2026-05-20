@@ -29,14 +29,11 @@ import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwn
 
 // ===== 类型与返回值约定 =====
 
-// 约束当前文件内部使用的 Vue 运行时实例类型，避免到处重复写 ReturnType。
-type RuntimeInstance = ReturnType<typeof getCurrentInstance>
-
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
 }
 
-function toSparkRuntimeOwner(instance: RuntimeInstance): SparkRuntimeOwner | null {
+function toSparkRuntimeOwner(instance: ReturnType<typeof getCurrentInstance>): SparkRuntimeOwner | null {
   if (instance === null) return null
   return instance
 }
@@ -172,7 +169,7 @@ function isVueInternalVNodeProp(key: string): boolean {
     || key.startsWith('onVnode')
 }
 
-function readRuntimeVNodeProps(instance: RuntimeInstance): Record<string, unknown> {
+function readRuntimeVNodeProps(instance: ReturnType<typeof getCurrentInstance>): Record<string, unknown> {
   const rawProps = instance?.vnode.props
   if (!rawProps || typeof rawProps !== 'object') return {}
 
@@ -195,7 +192,7 @@ function readInlineRuntimeProps(configInput: SparkNodeInput): Record<string, unk
   return runtimeProps
 }
 
-function buildEffectiveConfig(instance: RuntimeInstance, configInput: SparkNodeInput): SparkNode {
+function buildEffectiveConfig(instance: ReturnType<typeof getCurrentInstance>, configInput: SparkNodeInput): SparkNode {
   // configInput 提供静态配置骨架，vnode.props 负责补齐运行时传参，最终统一走 normalizeSparkNode。
   const inlineProps = readInlineRuntimeProps(configInput)
   const runtimeProps = readRuntimeVNodeProps(instance)

@@ -1032,4 +1032,4 @@ export function useDevState() {
   }
 }
 
-export type DevState = ReturnType<typeof useDevState>
+export interface DevState extends ReturnType<typeof useDevState> {}

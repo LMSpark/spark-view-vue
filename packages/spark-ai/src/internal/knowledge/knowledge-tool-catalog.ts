@@ -1,8 +1,34 @@
+/**
+ * 知识投射工具目录。
+ *
+ * 定义知识投影内置函数的注册表（queryFunctions / queryModules / guideFunction），
+ * 供 LLM 在运行时通过 knowledge 模块探索可用能力。
+ *
+ * ┌──────────────────────────────────────────────────────────┐
+ * │                 AiKnowledgeCatalog                        │
+ * │                                                           │
+ * │  内置函数（3 个）：                                       │
+ * │    queryFunctions  → 按 modulePath/moduleId/keyword 过滤   │
+ * │    queryModules    → 列出模块目录（无参数）                │
+ * │    guideFunction   → 按 action 查询完整函数指南            │
+ * │                                                           │
+ * │  工作流程：                                                │
+ * │    构造函数 → 注册 3 个内置函数到 parameterTable           │
+ * │               → 建立 parameterIndex 索引                  │
+ * │    getParameterRow() → 按 functionId 查找                 │
+ * │    validateParams()  → 用 LlmParamsValidator 校验参数      │
+ * └──────────────────────────────────────────────────────────┘
+ */
+
 import type { FunctionFailureMode } from '../../protocol/runtime-contracts'
 import type { LlmJsonObject, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../llm-params-validator'
 
-export type AiKnowledgeFunctionFailureMode = FunctionFailureMode
+// ═══════════════════════════════════════════════════════
+// 1. 函数 ID / 类型
+// ═══════════════════════════════════════════════════════
+
+export interface AiKnowledgeFunctionFailureMode extends FunctionFailureMode {}
 export type AiKnowledgeFunctionTarget = 'knowledge'
 export type AiKnowledgeFunctionId =
   | 'queryFunctions'
@@ -24,10 +50,10 @@ export interface AiKnowledgeFunctionParameterRow extends AiKnowledgeFunctionBase
     target: AiKnowledgeFunctionTarget
 }
 
-export type AiKnowledgeCatalogRowOptions = Omit<
+export interface AiKnowledgeCatalogRowOptions extends Omit<
   AiKnowledgeFunctionParameterRow,
   'functionId' | 'type' | 'target'
->
+> {}
 
 const KNOWLEDGE_TARGET: AiKnowledgeFunctionTarget = 'knowledge'
 const NO_PARAMS: LlmParameterSchemaRoot = {
@@ -44,11 +70,17 @@ function stringParam(description: string, options: { minLength?: number } = {}):
   }
 }
 
+// ═══════════════════════════════════════════════════════
+// 2. 目录实现
+// ═══════════════════════════════════════════════════════
+
 export class AiKnowledgeCatalog {
   readonly parameterTable: readonly AiKnowledgeFunctionParameterRow[]
 
+  /** functionId → 参数行索引，用于 O(1) 查找 */
   private readonly parameterIndex: ReadonlyMap<string, AiKnowledgeFunctionParameterRow>
 
+  /** 构造函数：注册 3 个内置 knowledge 函数并建立索引 */
   constructor() {
     this.parameterTable = [
       {
@@ -122,10 +154,12 @@ export class AiKnowledgeCatalog {
     this.parameterIndex = new Map(this.parameterTable.map((row) => [row.functionId, row]))
   }
 
+  /** 按 functionId 查找参数行 */
   getParameterRow(functionId: string): AiKnowledgeFunctionParameterRow | undefined {
     return this.parameterIndex.get(functionId)
   }
 
+  /** 校验指定 knowledge 函数的参数，返回 null 表示通过 */
   validateParams(functionId: string, params: unknown): string | null {
     const row = this.getParameterRow(functionId)
     if (row === undefined) {

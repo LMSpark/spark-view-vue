@@ -33,9 +33,17 @@ export const DEFAULT_TIMEOUT = 10_000
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
 interface CacheItem { data: unknown; timestamp: number; expiry: number }
 
-type CacheLookupResult =
-  | { hit: true; data: unknown }
-  | { hit: false }
+/**
+ * 缓存读取结果。
+ *
+ * hit 表示是否命中；data 只在命中时由 getCache 写入。这里使用接口承载结果状态，
+ * 避免为内部私有流程再定义联合 type alias，同时保留调用侧 `if (cached.hit)` 的
+ * 时序表达：先判断命中，再消费缓存数据。
+ */
+interface CacheLookupResult {
+  hit: boolean
+  data?: unknown
+}
 
 /** 缓存最大条目数——超出后淘汰最旧 20% 条目（LRU-like） */
 const MAX_CACHE_SIZE = 500

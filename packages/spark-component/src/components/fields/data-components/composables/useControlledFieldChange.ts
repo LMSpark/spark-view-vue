@@ -1,7 +1,7 @@
 import { useEventDefaults } from '../../../containers/support/index.js'
 import type { CancellableControl } from '../../../internal'
 
-export type FieldChangeControl = CancellableControl
+export interface FieldChangeControl extends CancellableControl {}
 
 export interface FieldValueUpdateEmitter<TValue> {
   (event: 'update:modelValue', value: TValue): void

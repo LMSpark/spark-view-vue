@@ -72,7 +72,9 @@ export interface ContainerDataViewContextState {
 export interface DataViewState extends DataViewRuntimeState, ContainerDataViewContextState {}
 
 /** 聚合结果运行时类型（key -> 聚合值）。 */
-export type AggregateResultState = Readonly<Record<string, unknown>>
+export interface AggregateResultState {
+  readonly [key: string]: unknown
+}
 
 /** resolvedView 的标准只读 ref 形态。 */
 export interface ResolvedViewRef {

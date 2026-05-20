@@ -15,7 +15,7 @@
 
 import type { CapabilityContext } from '@spark-view/spark-utils'
 
-export type SparkRuntimeOwner = object & {
+export interface SparkRuntimeOwner {
   parent?: SparkRuntimeOwner | null
   pageRoot?: unknown
 }
