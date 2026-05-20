@@ -8,9 +8,11 @@ export default defineConfig({
     include: ['src/**/*.test.ts', 'src/**/*.spec.ts']
   },
   resolve: {
-    alias: {
-      '@spark-view/spark-page-config': resolve(__dirname, './src/index.ts'),
-      '@spark-view/spark-page-config/*': resolve(__dirname, './src/*')
-    }
+    alias: [
+      { find: /^@spark-view\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
+      { find: /^@spark-view\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
+      { find: /^@spark-view\/spark-page-config$/, replacement: resolve(__dirname, './src/index.ts') },
+      { find: /^@spark-view\/spark-page-config\/(.*)$/, replacement: resolve(__dirname, './src/$1') },
+    ]
   }
 })

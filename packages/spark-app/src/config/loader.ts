@@ -12,8 +12,115 @@
 import type { AppFullConfig, TenantConfig, ConfigSourceOptions } from './types'
 import { createLogger } from '../logger'
 import { createRequest } from '@spark-view/spark-utils'
+import { isRecord, readBooleanProperty, readNumberProperty, readProperty, readStringProperty } from '../internal/guards'
 
 const configLogger = createLogger('config')
+
+function isStringRecord(value: unknown): value is Record<string, string> {
+  return isRecord(value) && Object.values(value).every((item) => typeof item === 'string')
+}
+
+function isConfigSourceOptions(value: unknown): value is ConfigSourceOptions {
+  if (!isRecord(value)) return false
+  const type = readProperty(value, 'type')
+  if (type !== 'local' && type !== 'remote') return false
+
+  const api = readProperty(value, 'api')
+  if (api !== undefined) {
+    if (!isRecord(api)) return false
+    if (readStringProperty(api, 'defaultConfigEndpoint') === undefined) return false
+    if (readStringProperty(api, 'tenantConfigEndpoint') === undefined) return false
+    const timeout = readProperty(api, 'timeout')
+    if (timeout !== undefined && typeof timeout !== 'number') return false
+    const headers = readProperty(api, 'headers')
+    if (headers !== undefined && !isStringRecord(headers)) return false
+  }
+
+  const local = readProperty(value, 'local')
+  if (local !== undefined) {
+    if (!isRecord(local)) return false
+    if (readStringProperty(local, 'defaultConfigPath') === undefined) return false
+    if (readStringProperty(local, 'tenantConfigTemplate') === undefined) return false
+  }
+
+  return true
+}
+
+function isFullTenantInfo(value: unknown): boolean {
+  return isRecord(value)
+    && readStringProperty(value, 'tenantId') !== undefined
+    && readStringProperty(value, 'tenantName') !== undefined
+}
+
+function isRouterConfig(value: unknown): boolean {
+  if (!isRecord(value)) return false
+  const mode = readProperty(value, 'mode')
+  return mode === 'history' || mode === 'hash'
+}
+
+function isSparkConfig(value: unknown): boolean {
+  return isRecord(value) && typeof readProperty(value, 'enabled') === 'boolean'
+}
+
+function isPageConfig(value: unknown): boolean {
+  return isRecord(value)
+    && readStringProperty(value, 'apiBaseUrl') !== undefined
+    && readStringProperty(value, 'homePath') !== undefined
+}
+
+function isAppBaseConfig(value: unknown): boolean {
+  if (!isRecord(value)) return false
+  const logLevel = readProperty(value, 'logLevel')
+  return readStringProperty(value, 'apiBaseUrl') !== undefined
+    && (logLevel === 'debug' || logLevel === 'info' || logLevel === 'warn' || logLevel === 'error')
+    && readStringProperty(value, 'version') !== undefined
+    && isRecord(readProperty(value, 'features'))
+}
+
+function isLoggerConfig(value: unknown): boolean {
+  if (!isRecord(value)) return false
+  const level = readProperty(value, 'level')
+  if (level !== undefined && level !== 'debug' && level !== 'info' && level !== 'warn' && level !== 'error') return false
+  const enableColors = readBooleanProperty(value, 'enableColors')
+  if (readProperty(value, 'enableColors') !== undefined && enableColors === undefined) return false
+  const showTimestamp = readBooleanProperty(value, 'showTimestamp')
+  if (readProperty(value, 'showTimestamp') !== undefined && showTimestamp === undefined) return false
+  const batchSize = readNumberProperty(value, 'batchSize')
+  if (readProperty(value, 'batchSize') !== undefined && batchSize === undefined) return false
+  return true
+}
+
+function isAppFullConfig(value: unknown): value is AppFullConfig {
+  if (!isRecord(value)) return false
+
+  const configSource = readProperty(value, 'configSource')
+  if (configSource !== undefined && !isConfigSourceOptions(configSource)) return false
+
+  const tenant = readProperty(value, 'tenant')
+  if (tenant !== undefined && !isFullTenantInfo(tenant)) return false
+
+  return isRouterConfig(readProperty(value, 'router'))
+    && readStringProperty(value, 'mountTarget') !== undefined
+    && isRecord(readProperty(value, 'plugins'))
+    && isSparkConfig(readProperty(value, 'spark'))
+    && isPageConfig(readProperty(value, 'pageConfig'))
+    && isAppBaseConfig(readProperty(value, 'config'))
+    && isLoggerConfig(readProperty(value, 'logger'))
+}
+
+function parseAppFullConfig(value: unknown, source: string): AppFullConfig {
+  if (isAppFullConfig(value)) return value
+  throw new Error(`${source} 不是有效的 AppFullConfig`)
+}
+
+function isTenantConfig(value: unknown): value is TenantConfig {
+  return isRecord(value) && isFullTenantInfo(readProperty(value, 'tenant'))
+}
+
+function parseTenantConfig(value: unknown, source: string): TenantConfig {
+  if (isTenantConfig(value)) return value
+  throw new Error(`${source} 不是有效的 TenantConfig`)
+}
 
 /**
  * 配置加载器
@@ -60,7 +167,10 @@ export class ConfigLoader {
     try {
       // 首次加载：从本地获取配置源设置
       if (!this.configSource) {
-        const localConfig = await this.fetchFromLocal('/config/default.json') as AppFullConfig
+        const localConfig = parseAppFullConfig(
+          await this.fetchFromLocal('/config/default.json'),
+          '/config/default.json',
+        )
         if (localConfig.configSource) {
           this.configSource = localConfig.configSource
         }
@@ -81,7 +191,10 @@ export class ConfigLoader {
 
           if (apiEndpoint) {
             configLogger.info(`Loading default config from API: ${apiEndpoint}`)
-            config = await this.fetchFromAPI(apiEndpoint, timeout) as AppFullConfig
+            config = parseAppFullConfig(
+              await this.fetchFromAPI(apiEndpoint, timeout),
+              apiEndpoint,
+            )
             configLogger.info('Default config loaded from API')
           }
         } catch (error) {
@@ -94,7 +207,7 @@ export class ConfigLoader {
       if (!config && this.configSource?.type === 'local') {
         const localPath = this.configSource.local?.defaultConfigPath ?? '/config/default.json'
         configLogger.info(`Loading default config from local: ${localPath}`)
-        config = await this.fetchFromLocal(localPath) as AppFullConfig
+        config = parseAppFullConfig(await this.fetchFromLocal(localPath), localPath)
         configLogger.info('Default config loaded from local file')
       }
 
@@ -128,7 +241,10 @@ export class ConfigLoader {
 
           if (apiEndpoint) {
             configLogger.info(`Loading tenant config from API: ${apiEndpoint}`)
-            config = await this.fetchFromAPI(apiEndpoint, timeout) as TenantConfig
+            config = parseTenantConfig(
+              await this.fetchFromAPI(apiEndpoint, timeout),
+              apiEndpoint,
+            )
             configLogger.info(`Tenant config loaded from API for: ${tenantId}`)
           }
         } catch (error) {
@@ -146,7 +262,7 @@ export class ConfigLoader {
 
         configLogger.info(`Loading tenant config from local: ${localPath}`)
         try {
-          config = await this.fetchFromLocal(localPath) as TenantConfig
+          config = parseTenantConfig(await this.fetchFromLocal(localPath), localPath)
           configLogger.info(`Tenant config loaded from local file for: ${tenantId}`)
         } catch {
           configLogger.warn(`No local tenant config found for ${tenantId}`)
@@ -186,7 +302,7 @@ export class ConfigLoader {
 
     // 合并配置
     const mergedConfig = tenantConfig
-      ? this.deepMerge(defaultConfig, tenantConfig)
+      ? this.mergeConfig(defaultConfig, tenantConfig)
       : defaultConfig
 
     // 缓存结果
@@ -198,33 +314,24 @@ export class ConfigLoader {
   /**
    * 深度合并配置
    */
-  private deepMerge<T>(target: T, source: Partial<T>): T {
-    const result = { ...target }
+  private mergeConfig(target: AppFullConfig, source: TenantConfig): AppFullConfig {
+    const merged = this.deepMergeRecord(target, source)
+    return parseAppFullConfig(merged, 'merged tenant config')
+  }
 
-    for (const key in source) {
-      if (Object.prototype.hasOwnProperty.call(source, key)) {
-        const sourceValue = source[key]
-        const targetValue = result[key as keyof T]
+  private deepMergeRecord(target: object, source: object): Record<string, unknown> {
+    const result: Record<string, unknown> = Object.fromEntries(Object.entries(target))
 
-        if (this.isObject(sourceValue) && this.isObject(targetValue)) {
-          (result as Record<string, unknown>)[key] = this.deepMerge(
-            targetValue as Record<string, unknown>,
-            sourceValue as Partial<Record<string, unknown>>
-          )
-        } else if (sourceValue !== undefined) {
-          (result as Record<string, unknown>)[key] = sourceValue
-        }
+    for (const [key, sourceValue] of Object.entries(source)) {
+      const targetValue = result[key]
+      if (isRecord(sourceValue) && isRecord(targetValue)) {
+        result[key] = this.deepMergeRecord(targetValue, sourceValue)
+      } else if (sourceValue !== undefined) {
+        result[key] = sourceValue
       }
     }
 
     return result
-  }
-
-  /**
-   * 判断是否为对象
-   */
-  private isObject(value: unknown): value is Record<string, unknown> {
-    return value !== null && typeof value === 'object' && !Array.isArray(value)
   }
 
   /**

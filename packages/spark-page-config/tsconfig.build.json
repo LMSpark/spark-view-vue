@@ -9,7 +9,11 @@
     "noEmit": false,
     "emitDeclarationOnly": true,
     "noEmitOnError": true,
-    "removeComments": false
+    "removeComments": false,
+    "paths": {
+      "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
+      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts", "dist", "node_modules"]

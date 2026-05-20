@@ -17,14 +17,20 @@
 
 // ==================== 类型定义 ====================
 import type { AuthConfig, LoginCredentials, AuthResult } from './types'
-import type { AppEnvironment, EnvironmentInfo } from '../types'
+import type { AppEnvironment, EnvironmentInfo, TenantInfo, UserInfo } from '../types'
 
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
 import { toError, createRequest, isRequestError } from '@spark-view/spark-utils'
-import type { HttpClientBase, RequestConfig } from '@spark-view/spark-utils'
+import type { HttpClientBase, Method, RequestConfig } from '@spark-view/spark-utils'
 import { envAdapter } from '../env'
+import {
+  isRecord,
+  readProperty,
+  readStringArrayProperty,
+  readStringProperty,
+} from '../internal/guards'
 
 // =============================================================================
 // 2. 常量和日志 (Constants & Logger)
@@ -35,6 +41,99 @@ const MOCK_DELAY_MS = 500
 
 /** 认证服务日志器 */
 const authLogger = createLogger('auth')
+
+function isAppEnvironment(value: unknown): value is AppEnvironment {
+  return value === 'development' || value === 'production' || value === 'test'
+}
+
+function requiredRecord(value: unknown, context: string): Record<string, unknown> {
+  if (isRecord(value)) return value
+  throw new Error(`${context} 必须是对象`)
+}
+
+function requiredString(value: unknown, context: string): string {
+  if (typeof value === 'string') return value
+  throw new Error(`${context} 必须是字符串`)
+}
+
+function optionalString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
+function requiredStringArray(value: unknown, context: string): string[] {
+  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) return value
+  throw new Error(`${context} 必须是字符串数组`)
+}
+
+function parseUserInfo(value: unknown, context: string): UserInfo {
+  const user = requiredRecord(value, context)
+  const displayName = optionalString(readProperty(user, 'displayName'))
+  const email = optionalString(readProperty(user, 'email'))
+  const avatar = optionalString(readProperty(user, 'avatar'))
+  return {
+    userId: requiredString(readProperty(user, 'userId'), `${context}.userId`),
+    username: requiredString(readProperty(user, 'username'), `${context}.username`),
+    ...(displayName !== undefined ? { displayName } : {}),
+    ...(email !== undefined ? { email } : {}),
+    ...(avatar !== undefined ? { avatar } : {}),
+    roles: requiredStringArray(readProperty(user, 'roles'), `${context}.roles`),
+    permissions: requiredStringArray(readProperty(user, 'permissions'), `${context}.permissions`),
+  }
+}
+
+function parseTenantInfo(value: unknown, context: string): TenantInfo {
+  const tenant = requiredRecord(value, context)
+  const tenantCode = optionalString(readProperty(tenant, 'tenantCode'))
+  const config = readProperty(tenant, 'config')
+  const features = readStringArrayProperty(tenant, 'features')
+  return {
+    tenantId: requiredString(readProperty(tenant, 'tenantId'), `${context}.tenantId`),
+    tenantName: requiredString(readProperty(tenant, 'tenantName'), `${context}.tenantName`),
+    ...(tenantCode !== undefined ? { tenantCode } : {}),
+    ...(isRecord(config) ? { config } : {}),
+    ...(features !== undefined ? { features } : {}),
+  }
+}
+
+function parseEnvironmentInfo(value: unknown, context: string): EnvironmentInfo {
+  const env = requiredRecord(value, context)
+  const mode = readProperty(env, 'mode')
+  if (!isAppEnvironment(mode)) {
+    throw new Error(`${context}.mode 必须是 development、production 或 test`)
+  }
+  const buildTime = optionalString(readProperty(env, 'buildTime'))
+  return {
+    mode,
+    apiBaseUrl: requiredString(readProperty(env, 'apiBaseUrl'), `${context}.apiBaseUrl`),
+    version: requiredString(readProperty(env, 'version'), `${context}.version`),
+    ...(buildTime !== undefined ? { buildTime } : {}),
+  }
+}
+
+function parseAuthResult(value: unknown, context: string): AuthResult {
+  const body = requiredRecord(value, context)
+  const token = readStringProperty(body, 'token')
+  return {
+    user: parseUserInfo(readProperty(body, 'user'), `${context}.user`),
+    tenant: parseTenantInfo(readProperty(body, 'tenant'), `${context}.tenant`),
+    env: parseEnvironmentInfo(readProperty(body, 'env'), `${context}.env`),
+    ...(token !== undefined ? { token } : {}),
+  }
+}
+
+function normalizeRequestMethod(method: string | undefined): Method {
+  const normalized = method?.toUpperCase() ?? 'GET'
+  switch (normalized) {
+    case 'GET':
+    case 'POST':
+    case 'PUT':
+    case 'PATCH':
+    case 'DELETE':
+      return normalized
+    default:
+      throw new Error(`不支持的 HTTP method: ${normalized}`)
+  }
+}
 
 // =============================================================================
 // 3. 核心类 (Core Class)
@@ -406,9 +505,7 @@ export class AuthService {
       }
 
       const body: unknown = await response.json()
-      const token = (typeof body === 'object' && body !== null && 'token' in body && typeof (body as Record<string, unknown>)['token'] === 'string')
-        ? (body as Record<string, unknown>)['token'] as string
-        : undefined
+      const token = readStringProperty(body, 'token')
       if (!token) {
         throw new Error('Token 刷新响应缺少有效的 token 字段')
       }
@@ -504,8 +601,9 @@ export class AuthService {
   /** 构建 Mock 环境信息（mockLogin / mockCheckAuth 共用） */
   private buildMockEnv(): EnvironmentInfo {
     const env = envAdapter.getEnvironment()
+    const mode: AppEnvironment = env.isClient ? 'development' : 'production'
     return {
-      mode: (env.isClient ? 'development' : 'production') as AppEnvironment,
+      mode,
       apiBaseUrl: this.config.apiBaseUrl ?? '',
       version: '1.0.0'
     }
@@ -517,7 +615,7 @@ export class AuthService {
     timeout: number
   ): Promise<{ ok: boolean; status: number; statusText: string; json: () => Promise<unknown> }> {
     const client = this.getOrCreateClient(timeout)
-    const method = (options.method?.toUpperCase() ?? 'GET') as 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
+    const method = normalizeRequestMethod(options.method)
     const config: RequestConfig = {
       url,
       method,
@@ -582,10 +680,7 @@ export class AuthService {
     }
 
     const body: unknown = await response.json()
-    if (typeof body !== 'object' || body === null || !('user' in body)) {
-      throw new Error('登录响应格式异常')
-    }
-    return body as AuthResult
+    return parseAuthResult(body, '登录响应')
   }
 
   /**
@@ -631,10 +726,7 @@ export class AuthService {
     }
 
     const body: unknown = await response.json()
-    if (typeof body !== 'object' || body === null || !('user' in body)) {
-      throw new Error('认证检查响应格式异常')
-    }
-    return body as AuthResult
+    return parseAuthResult(body, '认证检查响应')
   }
 
   // =============================================================================

@@ -16,19 +16,9 @@ function resolveAiSourceRoot(): string {
 }
 
 const AI_SOURCE_ROOT = resolveAiSourceRoot()
+const AI_CORE_SOURCE_ROOT = join(AI_SOURCE_ROOT, 'core')
 
-const CONSUMER_SOURCE_ROOTS: readonly string[] = [
-  join(AI_SOURCE_ROOT, 'registrations'),
-]
-
-const AI_CORE_AND_CONSUMER_SOURCE_ROOTS: readonly string[] = [
-  join(AI_SOURCE_ROOT, 'core'),
-  ...CONSUMER_SOURCE_ROOTS,
-]
-
-const LEGACY_REGISTRATION_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions|KnowledgeProjection)\b|\bcreateAiRuntimeToolCodec\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b|from\s+['"](?:\.\.\/)+(?:index|core|core\/host)?['"]|from\s+['"]@spark-view\/spark-ai['"]|new\s*\(\s*class\s+extends/
-const LEGACY_FUNCTIONS_READ_RE = /\.functions\b/
-const CONSUMER_INTERFACE_DECL_RE = /^\s*(?:export\s+)?interface\s+/
+const LEGACY_CORE_SOURCE_RE = /\bI(?:ModuleRegistration|BusinessRegistration|BusinessRegistrationData|BusinessRegistrationStoreSnapshot)\b|\bAi(?:ModuleRegistrationData|ModuleRegistrationStoreSnapshot|RegisteredBusinessApi|RegisteredModuleApi|RuntimeApi|KnowledgeCatalogOptions|KnowledgeProjection)\b|\bcreateAiRuntimeToolCodec\b|\bregisterBusiness\s*\(|\bgetRegistration(?:Data|StoreSnapshot)\b/
 const TS_ASSERTION_RE = /\bas\s+(?!const\s+[_a-zA-Z])(?:const\b|unknown\b|readonly\b|Record\b|Partial\b|\{|[A-Za-z_$][\w$]*(?:\b|<|\[))/
 
 function stripNonCodeSegments(line: string, inBlockComment: boolean): { code: string; inBlockComment: boolean } {
@@ -103,38 +93,12 @@ function collectSourceFiles(root: string): string[] {
   return files
 }
 
-function legacyRegistrationSourceViolations(): string[] {
-  return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
-    .flatMap((root) => collectSourceFiles(root))
+function legacyCoreSourceViolations(): string[] {
+  return collectSourceFiles(AI_CORE_SOURCE_ROOT)
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       return content.split(/\r?\n/).flatMap((line, index) => (
-        LEGACY_REGISTRATION_SOURCE_RE.test(line)
-          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
-          : []
-      ))
-    })
-}
-
-function legacyFunctionsReadViolations(): string[] {
-  return collectSourceFiles(join(AI_SOURCE_ROOT, 'registrations'))
-    .flatMap((file) => {
-      const content = readFileSync(file, 'utf8')
-      return content.split(/\r?\n/).flatMap((line, index) => (
-        LEGACY_FUNCTIONS_READ_RE.test(line)
-          ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
-          : []
-      ))
-    })
-}
-
-function consumerInterfaceDeclViolations(): string[] {
-  return CONSUMER_SOURCE_ROOTS
-    .flatMap((root) => collectSourceFiles(root))
-    .flatMap((file) => {
-      const content = readFileSync(file, 'utf8')
-      return content.split(/\r?\n/).flatMap((line, index) => (
-        CONSUMER_INTERFACE_DECL_RE.test(line)
+        LEGACY_CORE_SOURCE_RE.test(line)
           ? [`${relative(AI_SOURCE_ROOT, file)}:${index + 1}`]
           : []
       ))
@@ -142,8 +106,7 @@ function consumerInterfaceDeclViolations(): string[] {
 }
 
 function typeAssertionViolations(): string[] {
-  return AI_CORE_AND_CONSUMER_SOURCE_ROOTS
-    .flatMap((root) => collectSourceFiles(root))
+  return collectSourceFiles(AI_CORE_SOURCE_ROOT)
     .flatMap((file) => {
       const content = readFileSync(file, 'utf8')
       let importOrExportBlock = false
@@ -163,64 +126,26 @@ function typeAssertionViolations(): string[] {
     })
 }
 
-describe('ai runtime class-only public surface', () => {
-  it('exposes class-first runtime only', () => {
-    expect('createAiRuntime' in SparkAi).toBe(false)
-
+describe('ai runtime public surface', () => {
+  it('exposes runtime protocol, host, function calling, and knowledge classes from spark-ai', () => {
     expect(typeof SparkAi.AiRuntime).toBe('function')
     expect(typeof SparkAi.AiRegisteredModule).toBe('function')
     expect(typeof SparkAi.AiRuntimeToolCodec).toBe('function')
-    expect('createAiRuntimeToolCodec' in SparkAi).toBe(false)
-    expect('PageDesignBusiness' in SparkAi).toBe(false)
-    expect(typeof SparkAi.PageDesignModule).toBe('function')
-    expect(typeof SparkAi.LeaveRequestModule).toBe('function')
-    expect(typeof SparkAi.LifecycleModule).toBe('function')
     expect(typeof SparkAiHost.AiHostBusinessRegistry).toBe('function')
+
+    expect('PageDesignModule' in SparkAi).toBe(false)
+    expect('LeaveRequestModule' in SparkAi).toBe(false)
+    expect('LifecycleModule' in SparkAi).toBe(false)
+    expect('registerAppAiBusinesses' in SparkAi).toBe(false)
+    expect('createAiRuntimeToolCodec' in SparkAi).toBe(false)
+    expect('registerBusiness' in new SparkAi.AiRuntime()).toBe(false)
   })
 
-  it('exposes class-first registrations without legacy compatibility fields', () => {
-    const lifecycle = new SparkAi.LifecycleModule()
-    const leaveRegistration = new SparkAi.LeaveRequestModuleRegistration()
-    const leaveModule = new SparkAi.LeaveRequestModule()
-    const pageDesignModule = new SparkAi.PageDesignModule({
-      getEditToolHost: () => {
-        throw new Error('not needed')
-      },
-    })
-
-    expect(lifecycle.getFunctions().length).toBeGreaterThan(0)
-    expect('functions' in lifecycle).toBe(false)
-    expect('entity' in lifecycle).toBe(false)
-
-    expect(leaveRegistration.getFunctions().length).toBeGreaterThan(0)
-    expect('functions' in leaveRegistration).toBe(false)
-
-    expect('businessId' in leaveModule).toBe(false)
-    expect('entity' in leaveModule).toBe(false)
-    expect(leaveModule.getFunctions().length).toBeGreaterThan(0)
-    expect(pageDesignModule.getFunctions()).toEqual([])
-    expect('getRegistrationData' in leaveModule).toBe(false)
-    expect('getRegistrationStoreSnapshot' in leaveModule).toBe(false)
+  it('keeps ai runtime off legacy registration contracts and entrypoints', () => {
+    expect(legacyCoreSourceViolations()).toEqual([])
   })
 
-  it('removes legacy business registration entrypoints from core', () => {
-    const core = new SparkAi.AiRuntime()
-    expect('registerBusiness' in core).toBe(false)
-  })
-
-  it('keeps ai core and consumers off legacy registration contracts and entrypoints', () => {
-    expect(legacyRegistrationSourceViolations()).toEqual([])
-  })
-
-  it('keeps runtime-backed modules on getFunctions as the primary function path', () => {
-    expect(legacyFunctionsReadViolations()).toEqual([])
-  })
-
-  it('keeps registrations off interface declarations', () => {
-    expect(consumerInterfaceDeclViolations()).toEqual([])
-  })
-
-  it('keeps ai core and consumers off TypeScript assertion escapes', () => {
+  it('keeps ai runtime off TypeScript assertion escapes', () => {
     expect(typeAssertionViolations()).toEqual([])
   })
 })

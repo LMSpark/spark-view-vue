@@ -33,8 +33,9 @@ export const envAdapter = {
   getEnvironment(): SimpleEnvironmentInfo {
     const isServer = typeof window === 'undefined'
     // 检测测试环境：Vitest (import.meta.env.VITEST) 或 MODE=test
+    const vitestFlag: unknown = import.meta.env['VITEST']
     const isTest =
-      (import.meta.env['VITEST'] as string | undefined) === 'true' ||
+      vitestFlag === 'true' ||
       import.meta.env.MODE === 'test'
     return {
       type: isServer ? 'server' : 'client',
@@ -57,4 +58,4 @@ export const envAdapter = {
   get sessionStorage(): Storage | undefined {
     return typeof window !== 'undefined' ? window.sessionStorage : undefined
   }
-} as const
+}

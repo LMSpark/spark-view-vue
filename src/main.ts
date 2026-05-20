@@ -52,7 +52,7 @@ import {
 } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
-import type { NavNode } from '@spark-view/spark-page-config'
+import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config'
 
 import { consumePendingLogout, getUser, isAuthenticated, switchProject } from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
@@ -124,15 +124,29 @@ function normalizeChildPlacement(value: string | undefined): 'header' | 'sidebar
   throw new Error(`Invalid navigation childPlacement: ${value}`)
 }
 
-function normalizeNavData(data: { childPlacement?: string; children?: unknown[]; homePath?: string }): {
-  childPlacement: 'header' | 'sidebar'
-  children: unknown[]
-  homePath?: string
-} {
+function isNavNode(value: unknown): value is NavNode {
+  if (!isRecord(value)) return false
+  if (typeof value['id'] !== 'string') return false
+  if (typeof value['title'] !== 'string') return false
+  const children = value['children']
+  return children === undefined || (Array.isArray(children) && children.every(isNavNode))
+}
+
+function requireNavNodes(value: unknown, context: string): NavNode[] {
+  if (Array.isArray(value) && value.every(isNavNode)) return value
+  throw new Error(`${context} 必须是 NavNode[]`)
+}
+
+function normalizeNavData(data: unknown): AppNavRoot {
+  if (!isRecord(data)) throw new Error('导航接口返回值必须是对象')
+  const rawChildPlacement = data['childPlacement']
+  const rawTitle = data['title']
+  const rawHomePath = data['homePath']
   return {
-    childPlacement: normalizeChildPlacement(data.childPlacement),
-    children: Array.isArray(data.children) ? data.children : [],
-    ...(data.homePath ? { homePath: data.homePath } : {}),
+    title: typeof rawTitle === 'string' ? rawTitle : '',
+    childPlacement: normalizeChildPlacement(typeof rawChildPlacement === 'string' ? rawChildPlacement : undefined),
+    children: requireNavNodes(data['children'], '导航 children'),
+    ...(typeof rawHomePath === 'string' && rawHomePath.length > 0 ? { homePath: rawHomePath } : {}),
   }
 }
 
@@ -348,11 +362,11 @@ async function startApp() {
         preAuthNavTree,
         // 导航树作为路由唯一来源 — DynamicRouter 从导航树派生路由
         loadNavigation: async () => {
-          const data = await appHttpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getNavApi())
+          const data = await appHttpClient.get<unknown>(getNavApi())
           return normalizeNavData(data)
         },
         loadPlatformNavigation: async () => {
-          const data = await appHttpClient.get<{ childPlacement?: string; children?: unknown[]; homePath?: string }>(getPlatformNavApi())
+          const data = await appHttpClient.get<unknown>(getPlatformNavApi())
           return normalizeNavData(data)
         },
         isPlatformNavigationEnabled: () => isPlatformAdminUser(),

@@ -15,14 +15,16 @@ import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
 import { setDynamicRouter } from './navigation/nav-access'
 import { setPageCacheHandle } from './navigation/page-cache-access'
+import type { AppNavRoot } from './navigation/nav-model'
 import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
 import { toError } from '@spark-view/spark-utils'
+import { readNumberProperty, readProperty } from './internal/guards'
 
 const startLogger = createLogger('start')
 
 function shouldLogStartDetails(): boolean {
   if (typeof globalThis === 'undefined') return false
-  const flag = (globalThis as Record<string, unknown>)['__SPARK_DEBUG_START__']
+  const flag = readProperty(globalThis, '__SPARK_DEBUG_START__')
   return flag === true
 }
 
@@ -39,15 +41,17 @@ interface RegisterStats {
 }
 
 function normalizeRegisterStats(raw: unknown): RegisterStats | null {
-  if (raw === null || typeof raw !== 'object') return null
-  const candidate = raw as Record<string, unknown>
-  const total = candidate['total']
-  const sync = candidate['sync']
-  const async = candidate['async']
-  if (typeof total !== 'number' || typeof sync !== 'number' || typeof async !== 'number') {
-    return null
-  }
+  const total = readNumberProperty(raw, 'total')
+  const sync = readNumberProperty(raw, 'sync')
+  const async = readNumberProperty(raw, 'async')
+  if (total === undefined || sync === undefined || async === undefined) return null
   return { total, sync, async }
+}
+
+type RegisterComponentsFn = (app: ReturnType<typeof createApp>) => unknown
+
+function isRegisterComponentsFn(value: unknown): value is RegisterComponentsFn {
+  return typeof value === 'function'
 }
 
 /**
@@ -102,9 +106,9 @@ export interface PageConfigOptions {
    * 已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。
    * refreshRoutes() 返回加载后的导航树供 UI 直接消费。
    */
-  loadNavigation?: () => Promise<{ childPlacement: 'header' | 'sidebar'; children: unknown[] }>
+  loadNavigation?: () => Promise<AppNavRoot>
   /** 平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。 */
-  loadPlatformNavigation?: () => Promise<{ childPlacement: 'header' | 'sidebar'; children: unknown[] }>
+  loadPlatformNavigation?: () => Promise<AppNavRoot>
   /** 是否启用平台工作台导航注册。 */
   isPlatformNavigationEnabled?: () => boolean
   /** 平台工作台路由前缀，默认 /platform。 */
@@ -115,7 +119,7 @@ export interface PageConfigOptions {
    * 当用户未登录时，`registerRoutes()` 使用此本地导航树注册路由（如 / 和 /login）。
    * 登录后 `refreshRoutes()` 会用远程导航树替换。
    */
-  preAuthNavTree?: { childPlacement: 'header' | 'sidebar'; children: unknown[] }
+  preAuthNavTree?: AppNavRoot
 }
 
 /**
@@ -268,13 +272,10 @@ export async function start(options: StartOptions): Promise<void> {
         try {
           logStartDebug('自动导入 virtual:spark-components...')
           // 动态导入虚拟模块（由 vite-plugin-spark-components 生成）
-          type RegisterFn = (app: ReturnType<typeof createApp>) => unknown
           const virtualModule = await import('virtual:spark-components')
-          const { registerComponents } = virtualModule as unknown as { 
-            registerComponents?: RegisterFn
-          }
+          const registerComponents = readProperty(virtualModule, 'registerComponents')
           
-          if (typeof registerComponents === 'function') {
+          if (isRegisterComponentsFn(registerComponents)) {
             logStartDebug('执行自动组件注册...')
             const stats = normalizeRegisterStats(registerComponents(app))
             if (stats !== null) {
@@ -326,12 +327,12 @@ export async function start(options: StartOptions): Promise<void> {
         pageComponent, // SparkPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageConfig.componentMap !== undefined && { componentMap: pageConfig.componentMap }),
         ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix }),
-        loadNavigation: pageConfig.loadNavigation as DynamicRouterOptions['loadNavigation'],
-        loadPlatformNavigation: pageConfig.loadPlatformNavigation as DynamicRouterOptions['loadPlatformNavigation'],
-        isPlatformNavigationEnabled: pageConfig.isPlatformNavigationEnabled,
+        ...(pageConfig.loadNavigation !== undefined && { loadNavigation: pageConfig.loadNavigation }),
+        ...(pageConfig.loadPlatformNavigation !== undefined && { loadPlatformNavigation: pageConfig.loadPlatformNavigation }),
+        ...(pageConfig.isPlatformNavigationEnabled !== undefined && { isPlatformNavigationEnabled: pageConfig.isPlatformNavigationEnabled }),
         ...(pageConfig.platformPathPrefix !== undefined && { platformPathPrefix: pageConfig.platformPathPrefix }),
-        preAuthNavTree: pageConfig.preAuthNavTree as DynamicRouterOptions['preAuthNavTree'],
-        isAuthenticated: pageConfig.isAuthenticated,
+        ...(pageConfig.preAuthNavTree !== undefined && { preAuthNavTree: pageConfig.preAuthNavTree }),
+        ...(pageConfig.isAuthenticated !== undefined && { isAuthenticated: pageConfig.isAuthenticated }),
       }
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)

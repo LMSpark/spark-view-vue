@@ -638,12 +638,12 @@ flowchart LR
 
 **源码锚点**
 
-- `packages/spark-ai/src/registrations/page-design/page-design-business.ts`
-- `packages/spark-ai/src/registrations/page-design/functions/tool-catalog.ts`
-- `packages/spark-ai/src/registrations/page-design/payloads/component-payload-provider.ts`
+- `packages/spark-page-config/src/ai/registrations/page-design/page-design-module.ts`
+- `packages/spark-page-config/src/ai/registrations/page-design/modules/*-tool-catalog.ts`
+- `packages/spark-page-config/src/ai/registrations/page-design/payloads/component-catalog.json`
 - `packages/spark-page-config/src/files/services/page-design-service.ts`
 - `packages/spark-page-config/src/files/design/page-design-100-step-flow.ts`
-- `packages/spark-ai/src/catalog/catalog-projections.ts`
+- `packages/spark-ai/src/core/internal/knowledge/knowledge-projection.ts`
 - `packages/vite-plugin-spark-catalog/src/json-catalog-generator.ts`
 
 **配图方案**

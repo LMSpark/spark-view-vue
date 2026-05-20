@@ -272,8 +272,7 @@ export class TokenManager {
    */
   private getFromLocalStorage(): string | null {
     // 注意：服务端/测试环境已由公共方法提前拦截，此处无需重复检查
-    const adapter = envAdapter as { localStorage?: Storage }
-    return adapter.localStorage?.getItem(this.tokenKey) ?? null
+    return envAdapter.localStorage?.getItem(this.tokenKey) ?? null
   }
 
   /**
@@ -282,8 +281,7 @@ export class TokenManager {
    * @param token - 要存储的令牌
    */
   private setToLocalStorage(token: string): void {
-    const adapter = envAdapter as { localStorage?: Storage }
-    adapter.localStorage?.setItem(this.tokenKey, token)
+    envAdapter.localStorage?.setItem(this.tokenKey, token)
   }
 
   /**
@@ -291,8 +289,7 @@ export class TokenManager {
    * @private
    */
   private clearFromLocalStorage(): void {
-    const adapter = envAdapter as { localStorage?: Storage }
-    adapter.localStorage?.removeItem(this.tokenKey)
+    envAdapter.localStorage?.removeItem(this.tokenKey)
   }
 
   /**
@@ -307,8 +304,7 @@ export class TokenManager {
    * @returns {string | null} 令牌字符串或 null
    */
   private getFromSessionStorage(): string | null {
-    const adapter = envAdapter as { sessionStorage?: Storage }
-    return adapter.sessionStorage?.getItem(this.tokenKey) ?? null
+    return envAdapter.sessionStorage?.getItem(this.tokenKey) ?? null
   }
 
   /**
@@ -317,8 +313,7 @@ export class TokenManager {
    * @param token - 要存储的令牌
    */
   private setToSessionStorage(token: string): void {
-    const adapter = envAdapter as { sessionStorage?: Storage }
-    adapter.sessionStorage?.setItem(this.tokenKey, token)
+    envAdapter.sessionStorage?.setItem(this.tokenKey, token)
   }
 
   /**
@@ -326,8 +321,7 @@ export class TokenManager {
    * @private
    */
   private clearFromSessionStorage(): void {
-    const adapter = envAdapter as { sessionStorage?: Storage }
-    adapter.sessionStorage?.removeItem(this.tokenKey)
+    envAdapter.sessionStorage?.removeItem(this.tokenKey)
   }
 
   /**

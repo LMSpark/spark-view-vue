@@ -6,13 +6,15 @@
   "types": "./dist/index.d.ts",
   "private": false,
   "license": "MIT",
-  "description": "SPARK AI Layer - Function Calling 会话、组件知识目录、页面编辑工具运行时",
+  "description": "Spark AI Runtime - framework-neutral runtime core for SPARK AI Platform protocols, SSE, sessions, function calling, and knowledge projection",
   "keywords": [
     "spark",
     "ai",
     "function-calling",
-    "page-design",
-    "component-catalog"
+    "runtime",
+    "host-protocol",
+    "sse",
+    "knowledge"
   ],
   "files": [
     "dist",
@@ -31,33 +33,13 @@
       "import": "./dist/core/index.js",
       "types": "./dist/core/index.d.ts"
     },
-    "./registrations": {
-      "import": "./dist/registrations/index.js",
-      "types": "./dist/registrations/index.d.ts"
-    },
-    "./registrations/page-design": {
-      "import": "./dist/registrations/page-design/index.js",
-      "types": "./dist/registrations/page-design/index.d.ts"
-    },
-    "./registrations/leave-request": {
-      "import": "./dist/registrations/leave-request/index.js",
-      "types": "./dist/registrations/leave-request/index.d.ts"
-    },
-    "./registrations/page-design/payloads": {
-      "import": "./dist/registrations/page-design/payloads/index.js",
-      "types": "./dist/registrations/page-design/payloads/index.d.ts"
-    },
     "./host": {
       "import": "./dist/core/host/index.js",
       "types": "./dist/core/host/index.d.ts"
     }
   },
   "dependencies": {
-    "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-page-config": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*",
-    "ajv": "^8.18.0",
-    "jmespath": "0.16.0"
+    "ajv": "^8.18.0"
   },
   "scripts": {
     "clean": "rimraf dist",
@@ -67,7 +49,6 @@
     "test:run": "vitest run",
     "smoke:sessions:stream": "node scripts/verify-ai-session-stream-smoke.mjs",
     "smoke:sse": "node scripts/verify-ai-sse-smoke.mjs",
-    "upload:component-metadata": "node scripts/upload-component-metadata.mjs",
     "lint": "eslint \"src/**/*.{ts,tsx}\" --max-warnings=0",
     "lint:fix": "eslint \"src/**/*.{ts,tsx}\" --fix"
   },

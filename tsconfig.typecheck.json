@@ -43,11 +43,7 @@
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
       "@spark-view/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"],
-      "@spark-view/spark-ai/host": ["./packages/spark-ai/src/core/host/index.ts"],
-      "@spark-view/spark-ai/registrations": ["./packages/spark-ai/src/registrations/index.ts"],
-      "@spark-view/spark-ai/services": ["./packages/spark-ai/src/services/index.ts"],
-      "@spark-view/spark-ai/services/page-design": ["./packages/spark-ai/src/services/page-design/index.ts"],
-      "@spark-view/spark-ai/registrations/page-design/payloads": ["./packages/spark-ai/src/registrations/page-design/payloads/index.ts"]
+      "@spark-view/spark-ai/host": ["./packages/spark-ai/src/core/host/index.ts"]
     },
     "types": ["vite/client", "vitest/globals", "node"]
   },

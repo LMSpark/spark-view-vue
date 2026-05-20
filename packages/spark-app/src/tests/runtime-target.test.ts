@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest'
-import type { NavNode } from '../navigation/nav-model'
 import { resolveNavNodeRuntimeTarget } from '../navigation/runtime-target'
 import { createNavigationActionRegistry } from '../navigation/action-registry'
 
@@ -56,7 +55,7 @@ describe('resolveNavNodeRuntimeTarget', () => {
       id: 'sub',
       title: 'Sub',
       nodeKind: 'sub-page',
-    } as NavNode)).toEqual({ kind: 'hidden', reason: 'sub-page' })
+    })).toEqual({ kind: 'hidden', reason: 'sub-page' })
   })
 })
 
@@ -64,7 +63,9 @@ describe('NavigationActionRegistry', () => {
   it('executes registered commands and reports unknown commands as unhandled', async () => {
     const calls: string[] = []
     const registry = createNavigationActionRegistry()
-    registry.register('settings', ({ command }) => calls.push(command))
+    registry.register('settings', ({ command }) => {
+      calls.push(command)
+    })
 
     await expect(registry.execute('settings')).resolves.toBe(true)
     await expect(registry.execute('/settings')).resolves.toBe(false)

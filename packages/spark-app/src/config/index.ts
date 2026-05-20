@@ -6,6 +6,7 @@
 import type { AppConfig } from '../types'
 import { createLogger } from '../logger'
 import { toErrorMessage, createRequest } from '@spark-view/spark-utils'
+import { isRecord, readProperty } from '../internal/guards'
 
 // ── 多租户配置系统（从 loader.ts 导出） ──
 export { ConfigLoader, TenantResolver, loadAppConfig } from './loader'
@@ -57,16 +58,49 @@ export async function loadConfig(envConfig?: Partial<AppConfig>): Promise<AppCon
  * 获取远程配置
  */
 async function fetchRemoteConfig(): Promise<Partial<AppConfig>> {
-  try {
-    const client = createRequest({ timeout: 10_000 })
-    const body = await client.get<unknown>('/api/config')
-    if (typeof body !== 'object' || body === null) {
-      throw new Error('配置接口返回了非对象数据')
-    }
-    return body as Partial<AppConfig>
-  } catch (error) {
-    throw error
+  const client = createRequest({ timeout: 10_000 })
+  const body = await client.get<unknown>('/api/config')
+  if (!isAppConfigPatch(body)) {
+    throw new Error('配置接口返回了无效的应用配置')
   }
+  return body
+}
+
+function isLogLevel(value: unknown): value is AppConfig['logLevel'] {
+  return value === undefined
+    || value === 'debug'
+    || value === 'info'
+    || value === 'warn'
+    || value === 'error'
+}
+
+function isAppConfigPatch(value: unknown): value is Partial<AppConfig> {
+  if (!isRecord(value)) return false
+
+  const apiBaseUrl = readProperty(value, 'apiBaseUrl')
+  if (apiBaseUrl !== undefined && typeof apiBaseUrl !== 'string') return false
+
+  const logLevel = readProperty(value, 'logLevel')
+  if (!isLogLevel(logLevel)) return false
+
+  const enableMock = readProperty(value, 'enableMock')
+  if (enableMock !== undefined && typeof enableMock !== 'boolean') return false
+
+  const enableRemoteConfig = readProperty(value, 'enableRemoteConfig')
+  if (enableRemoteConfig !== undefined && typeof enableRemoteConfig !== 'boolean') return false
+
+  const version = readProperty(value, 'version')
+  if (version !== undefined && typeof version !== 'string') return false
+
+  const features = readProperty(value, 'features')
+  if (features === undefined) return true
+  if (!isRecord(features)) return false
+
+  const enableExport = readProperty(features, 'enableExport')
+  if (enableExport !== undefined && typeof enableExport !== 'boolean') return false
+
+  const enableOffline = readProperty(features, 'enableOffline')
+  return enableOffline === undefined || typeof enableOffline === 'boolean'
 }
 
 /**

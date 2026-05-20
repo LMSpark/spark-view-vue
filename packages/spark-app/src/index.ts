@@ -4,7 +4,18 @@
  */
 
 // 符号常量表
-export * from './constants'
+export {
+  SPARK_REGISTRY_KEY,
+  ErrorCodes,
+  Environments,
+  DefaultConfig,
+  getErrorMessage,
+} from './constants'
+
+export type {
+  ErrorCode,
+  Environment,
+} from './constants'
 
 // 核心命名空间
 export { SparkApp } from './namespace'
@@ -194,3 +205,14 @@ export {
 
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
+
+// ── App AI Center Host ──
+export {
+  AppAiHost,
+  createAppAiHost,
+  uploadAppAiAttachment,
+} from './ai/app-ai-host'
+export type {
+  AppAiAttachmentUploadOptions,
+  AppAiHostOptions,
+} from './ai/app-ai-host'

@@ -534,7 +534,7 @@ describe('PageConfigFileApi', () => {
   it('saveFileContent: 写入页面配置文件原文', async () => {
     const api = new PageConfigFileApi({
       getPageConfigApi: () => '/api/pages-config',
-      http: mockRequestClient,
+      http: createRequest(),
     })
     mockRequestClient.put.mockResolvedValue({})
 
@@ -550,7 +550,7 @@ describe('PageConfigFileApi', () => {
   it('listVersions: 归一化后端版本摘要', async () => {
     const api = new PageConfigFileApi({
       getPageConfigApi: () => '/api/pages-config/',
-      http: mockRequestClient,
+      http: createRequest(),
     })
     mockRequestClient.get.mockResolvedValue([
       { version: '2', createdAt: 1710000000000, isCurrent: true, modifiedBy: 'alice' },
@@ -571,7 +571,7 @@ describe('PageConfigFileApi', () => {
   it('restore/deleteVersion: 拒绝无效版本号', async () => {
     const api = new PageConfigFileApi({
       getPageConfigApi: () => '/api/pages-config',
-      http: mockRequestClient,
+      http: createRequest(),
     })
 
     await expect(api.restoreVersion('my-page', 'style.css', 0)).rejects.toThrow(/positive integer/)

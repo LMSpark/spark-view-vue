@@ -119,7 +119,7 @@ flowchart TB
 | `spark-component` | 组件注册、能力系统、递归渲染器、页面渲染、权限接入 | 把 `SparkNode` 节点树转为真实 UI |
 | `spark-data` | DataSet、DataTable、DataView、CRUD、关系、树、历史 | 让页面数据有统一模型 |
 | `spark-page-config` | 四文件加载、解析、编译、缓存、远程 API 接入 | 连接配置资产和运行时 |
-| `spark-ai` | AI runtime、业务注册、页面设计工具、函数暴露、知识目录 | 让 AI 在受约束函数空间中工作 |
+| `spark-ai` | AI Runtime 协议、SSE 闭环、函数调用契约、会话规则、知识投影 | 让 LLM 只在受约束的注册函数空间中工作 |
 | `spark-utils` | Logger、HTTP、FileLoader、能力基础工具 | 提供框架无关底座 |
 | `vite-plugin-spark-catalog` | 构建期提取组件元数据和目录 | 让 AI 与 DevSystem 看到真实组件 API |
 | `vxe-table` | VXE Table 集成与适配 | 支持更重的表格场景 |
@@ -533,13 +533,13 @@ flowchart TD
 
 建议 DevSystem 为选中节点增加权限诊断卡片，把运行时判断过程变成可读报告。
 
-## 12. `spark-ai`：受约束的 AI 编辑体系
+## 12. SPARK AI Platform 与 `spark-ai` Runtime
 
-`spark-ai` 的设计方向是克制的：AI 不直接拥有整个仓库的修改权，而是在业务、模块、函数和知识目录定义的范围内工作。
+SPARK AI Platform 是产品与架构总称，覆盖 App AI Center、`spark-ai` Runtime、AI Backend 和业务能力注册。`spark-ai` 本身仍是克制的运行时内核：AI 不直接拥有整个仓库的修改权，而是在协议、SSE、业务注册契约、函数调用和知识投影定义的范围内工作。平台命名和边界以 [SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md](./ai/SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md) 为 SSOT。
 
 ### 12.1 AI runtime
 
-[packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts) 中的 `AiRuntime` 不是模型网关，也不是页面编辑器本身，而是 AI Core 的组合根。它把注册、知识投影、会话账本、函数调用翻译和函数执行串起来，并且只通过 `registerBusiness` / `registerModule` 返回的注册句柄暴露能力。
+[packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts) 中的 `AiRuntime` 不是模型网关，也不是页面编辑器本身，而是 AI Runtime 的组合根。它把注册、知识投影、会话账本、函数调用翻译和函数执行串起来，并且只通过 `registerModule` 返回的注册句柄暴露能力。
 
 ```mermaid
 flowchart TD
@@ -565,60 +565,53 @@ flowchart TD
   Executor --> Ledger
 ```
 
-前端 AI Core 的会话生命周期目前只有 `Started` 和 `Stopped`。它保存的是当前模块实例的 AI 会话记录、UI/LLM 消息和函数调用历史，不创建、不恢复、不暂停模块服务实例，也不直接调用后端 LLM。函数调用由 `AiInvocationProtocol` 解析 action，再经 projection、scope、activePath 和参数 schema 校验；执行器只调用注册方提供的 `run` 落点，并把函数调用记录成 `requested/completed/failed`。
+前端 AI Runtime 的会话生命周期目前只有 `Started` 和 `Stopped`。它保存的是当前模块实例的 AI 会话记录、UI/LLM 消息和函数调用历史，不创建、不恢复、不暂停模块服务实例，也不直接调用后端 LLM。函数调用由 `AiInvocationProtocol` 解析 action，再经 projection、scope、activePath 和参数 schema 校验；执行器只调用注册方提供的 `run` 落点，并把函数调用记录成 `requested/completed/failed`。
 
 这个边界非常重要。它让 AI 行为从“拼 prompt 后直接生成代码”变成“LLM 看到投影出来的工具，前端 runtime 把工具调用翻译成受约束的平台函数”。可验证性高很多，职责也更清楚。
 
 需要特别区分两层会话：前端 `AiRuntime/AiSessionLedger` 是工具执行侧的内存账本；后端 `AiSessionService` 是 LLM 会话、SSE 流和数据库持久化服务。二者通过应用层 transport 协作，但不是同一个对象，也不是互相自动同步完整状态。
 
-### 12.2 page-design 业务
+### 12.2 业务注册契约
 
-[packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts) 是页面设计业务适配器。它内部创建 `AiRuntime`，把自己注册成 business，并把页面编辑能力拆成五个子模块：
+具体业务注册不属于 `spark-ai`，也不属于 App AI Center host。业务服务在自己的包内拥有业务状态、业务校验和业务函数实现，再通过稳定契约注册给 `spark-ai`。`spark-ai` 只消费注册快照、参数 schema、函数描述和 `invoke` 入口；它不 import `PageDesignService`、`LeaveRequestService` 或任何具体业务 service。
 
-| 模块 | 职责 |
-|---|---|
-| `lifecycle` | 初始化编辑会话、查询编辑进度 |
-| `textModel` | 读写 `script.js` 和 `style.css` |
-| `knowledge` | 查询组件参数 payload 和组件知识 |
-| `nodeTree` | 读写 `rule.json` 对应的 SparkNodeTree |
-| `dataset` | 读写 `pagedata.json` 对应的 DataSetCrudTool |
+这条链路固定为：
 
-真正落地到页面文件的能力在 [PageDesignService](../packages/spark-page-config/src/files/services/page-design-service.ts)。它通过 `PageDesignEditHost` 获取活体编辑对象：`getNodeTree`、`getDataSetTool`、`readScript/writeScript`、`readStyle/writeStyle`。也就是说，AI 工具不是直接改 Vue 组件或后端文件，而是调用宿主暴露的编辑会话。
+```text
+业务服务 ==注册==> spark-ai ==函数调用契约<==> 业务服务函数执行
+```
 
-页面设计的 100 步过程也沉到 `spark-page-config` 的 design 域：[page-design-100-step-flow.ts](../packages/spark-page-config/src/files/design/page-design-100-step-flow.ts) 固化了从入口、数据盘点、模型规划、视图依赖、结构行为到预览收尾的完整步骤；`PageDesignService.describeDesignFlow()` 负责把阶段汇总、指定步骤和下一步返回给消费层。这样消费层只接收流程事实，不需要重新解释页面设计方法论。
+业务注册内容只回答三个问题：
+
+1. 这个业务暴露哪些 LLM 可调用函数。
+2. 每个函数的参数 schema、描述、知识和可见边界是什么。
+3. 当 tool call 命中该函数时，应该调用业务服务的哪个契约入口。
+
+页面设计、请假、审批等都只是注册方示例。页面设计可以把 `rule.json`、`pagedata.json`、`script.js`、`style.css` 的读写能力投影成工具，但真实状态仍在页面配置服务和编辑 host 中；请假可以把草稿创建、字段填写、提交、取消投影成工具，但草稿状态仍在请假业务服务中。
 
 ```mermaid
 flowchart TD
   LLM["LLM"]
-  Panel["AppAiPanel / RuntimeMonitor"]
-  Transport["FetchAppAiTransport"]
-  BackendSession["spark-ai-server<br/>AiSessionService"]
-  Runtime["PageDesignModule / AiRuntime"]
-  Service["PageDesignService"]
-  EditHost["PageDesignEditHost"]
-  NodeTree["SparkNodeTree"]
-  DataSetTool["DataSetCrudTool"]
-  TextModels["script.js / style.css live model"]
-  Files["rule / pagedata / script / style"]
+  App["App AI Center<br/>启动 SSE 服务"]
+  Sse["Spark AI Runtime SSE"]
+  BackendSession["AI Backend<br/>AiSessionService"]
+  Runtime["Spark AI Runtime<br/>纯函数内核"]
+  Biz["业务服务<br/>状态与函数实现"]
 
-  Panel --> Transport
-  Transport --> BackendSession
+  App --> Sse
+  Sse --> Runtime
+  Runtime --> BackendSession
   BackendSession --> LLM
   LLM --> BackendSession
-  BackendSession --> Transport
-  Transport --> Panel
-  Panel --> Runtime
-  Runtime --> Service
-  Service --> EditHost
-  EditHost --> NodeTree
-  EditHost --> DataSetTool
-  EditHost --> TextModels
-  NodeTree --> Files
-  DataSetTool --> Files
-  TextModels --> Files
+  BackendSession --> Sse
+  Sse --> Runtime
+  Runtime --> Biz
+  Biz --> Runtime
+  Runtime --> BackendSession
+  Sse --> App
 ```
 
-这里还有一个关键细节：LLM tool call 的闭环由 [packages/spark-ai/src/core/host/tool-loop.ts](../packages/spark-ai/src/core/host/tool-loop.ts) 驱动。后端 SSE 返回 `toolCalls` 后，前端在本地执行 `runtime.executeFunctionCall`，再把 assistant/tool messages 通过 `/turn/append` 追加回后端会话。因此后端保存的是 LLM 对话、计划中的 tool calls 和追加回去的 tool result 消息；页面配置的实际编辑仍发生在前端业务 runtime 绑定的编辑对象里。
+这里还有一个关键细节：LLM tool call 的闭环由 `spark-ai` 的 SSE/runtime 层驱动。后端 SSE 返回 `tool_call` 后，`spark-ai` 解析并校验 action 与参数，通过业务注册契约调用业务服务，再把 tool result append 回后端会话。因此后端保存的是 LLM 对话、计划中的 tool call 和追加回去的 tool result 消息；业务状态的真实修改仍发生在业务服务里。
 
 ### 12.3 后端 AI session
 
@@ -972,17 +965,17 @@ flowchart LR
 10. [packages/spark-data/src/core/data-view-key.ts](../packages/spark-data/src/core/data-view-key.ts)：理解组件到 DataView 的绑定协议。
 11. [packages/spark-component/src/components/containers/data-views/view-data-source.ts](../packages/spark-component/src/components/containers/data-views/view-data-source.ts)：理解容器如何通过 `dataViewKey` 解析 DataView。
 12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView 领域事件如何映射到 UI 状态。
-13. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Core 组合根和函数调用边界。
-14. [packages/spark-ai/src/registrations/page-design/page-design-module.ts](../packages/spark-ai/src/registrations/page-design/page-design-module.ts)：理解 page-design 工具如何绑定页面编辑服务。
-15. [packages/spark-ai/src/core/host/tool-loop.ts](../packages/spark-ai/src/core/host/tool-loop.ts)：理解 LLM tool call 如何在前端执行并 append 回后端。
-16. [src/services/app-ai/transport.ts](../src/services/app-ai/transport.ts)：理解前端 AI transport、SSE envelope unwrap 和 protocol v3。
+13. [docs/ai/SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md](ai/SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md)：理解 AI Platform、AI Center、Runtime、AI Backend 和业务注册的 SSOT。
+14. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Runtime 组合根和函数调用边界。
+15. [packages/spark-ai/src/core/host/tool-loop.ts](../packages/spark-ai/src/core/host/tool-loop.ts)：理解 LLM tool call 如何由 `spark-ai` 执行契约并 append 回后端。
+16. [packages/spark-app/src/ai/app-ai-host.ts](../packages/spark-app/src/ai/app-ai-host.ts)：理解 App AI Center host 只负责 SSE 服务启动和 AI 包传输的边界。
 17. [src/views/app/dev-system/DevSystem.vue](../src/views/app/dev-system/DevSystem.vue)：理解设计时工作台。
 18. [spark-ai-server/src/main/java/com/spark/ai/api/ApiEnvelopeAdvice.java](../spark-ai-server/src/main/java/com/spark/ai/api/ApiEnvelopeAdvice.java)：理解统一 API envelope。
 19. [spark-ai-server/src/main/java/com/spark/ai/security/AccessGuardService.java](../spark-ai-server/src/main/java/com/spark/ai/security/AccessGuardService.java)：理解 tenant/project/user 访问校验。
 20. [spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java](../spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java)：理解页面配置存储 SPI。
 21. [spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java](../spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java)：理解后端 LLM 会话持久化和 SSE envelope。
 22. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
-23. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 AI Core、显式业务会话与 APP 装配关系。
+23. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 SPARK AI Platform 使用边界与禁用入口。
 
 ## 21. 结语
 

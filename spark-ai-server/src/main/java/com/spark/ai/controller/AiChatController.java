@@ -60,7 +60,7 @@ public class AiChatController {
     /**
      * POST /api/ai/component-metadata
      * 接收前端构建输出的组件元数据 JSON（组件注册表 + Skill 目录 + 预构建 prompt）。
-     * 由 packages/spark-ai/scripts/upload-component-metadata.mjs 在 vite build 后调用。
+     * 由 packages/spark-page-config/scripts/upload-component-metadata.mjs 在 vite build 后调用。
      */
     @PostMapping("/component-metadata")
     public ResponseEntity<Map<String, Object>> uploadMetadata(@RequestBody String body) {

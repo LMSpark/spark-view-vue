@@ -57,7 +57,7 @@ export class LlmParamsValidator {
 
   static validateLlmDeserializedParams(
     params: unknown,
-    schema: LlmParameterSchemaRoot,
+    schema: unknown,
   ): LlmParamValidationResult {
     const issues: LlmParamValidationIssue[] = []
     if (!isPlainRecord(params)) {

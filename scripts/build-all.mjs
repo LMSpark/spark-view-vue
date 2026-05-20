@@ -147,7 +147,7 @@ function waitForBackend(timeoutMs = 120_000) {
 
 // ── 上传组件元数据 ──────────────────────────────────────────────────────────
 function uploadMetadata() {
-  run(`pnpm --filter @spark-view/spark-ai run upload:component-metadata -- --url ${getBackendUrl()}`, { cwd: ROOT_DIR })
+  run(`pnpm --filter @spark-view/spark-page-config run upload:component-metadata -- --url ${getBackendUrl()}`, { cwd: ROOT_DIR })
 }
 
 let backendProcess = null

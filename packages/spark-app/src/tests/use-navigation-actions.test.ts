@@ -31,10 +31,10 @@ describe('useNavigation system-action handling', () => {
     const handler = vi.fn()
     registry.register('settings', handler)
 
-    let nav: NavigationContext | null = null
+    const navigationContext: { value?: NavigationContext } = {}
     const Harness = defineComponent({
       setup() {
-        nav = useNavigation(navRoot, { actionRegistry: registry })
+        navigationContext.value = useNavigation(navRoot, { actionRegistry: registry })
         return () => null
       },
     })
@@ -42,7 +42,11 @@ describe('useNavigation system-action handling', () => {
     const push = vi.spyOn(router, 'push')
     mount(Harness, { global: { plugins: [router] } })
 
-    nav?.navigateTo(actionNode)
+    const nav = navigationContext.value
+    if (nav === undefined) {
+      throw new Error('Navigation context was not initialized')
+    }
+    nav.navigateTo(actionNode)
     await Promise.resolve()
 
     expect(handler).toHaveBeenCalledWith(expect.objectContaining({ command: 'settings', node: actionNode }))

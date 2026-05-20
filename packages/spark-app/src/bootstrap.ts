@@ -51,6 +51,7 @@ import { loadConfig } from './config'
 import { AuthService } from './auth'
 import type { AuthConfig } from './auth/types'
 import { toErrorMessage, toError, createRequest } from '@spark-view/spark-utils'
+import { isRecord, readProperty, readStringArrayProperty, readStringProperty } from './internal/guards'
 
 /**
  * =============================================================================
@@ -66,6 +67,78 @@ const bootstrapLogger = createLogger('bootstrap')
 
 /** 默认认证请求超时（毫秒） */
 const DEFAULT_AUTH_TIMEOUT_MS = 10_000
+
+function isAppEnvironment(value: unknown): value is AppContext['env']['mode'] {
+  return value === 'development' || value === 'production' || value === 'test'
+}
+
+function appConfigToRecord(config: AppConfig): Record<string, unknown> {
+  return Object.fromEntries(Object.entries(config))
+}
+
+function requireRecord(value: unknown, context: string): Record<string, unknown> {
+  if (isRecord(value)) return value
+  throw new Error(`${context} 必须是对象`)
+}
+
+function requireString(value: unknown, context: string): string {
+  if (typeof value === 'string') return value
+  throw new Error(`${context} 必须是字符串`)
+}
+
+function requireStringArray(value: unknown, context: string): string[] {
+  const values = Array.isArray(value) && value.every((item) => typeof item === 'string')
+    ? value
+    : null
+  if (values !== null) return values
+  throw new Error(`${context} 必须是字符串数组`)
+}
+
+function parseAppContext(value: unknown): AppContext {
+  const root = requireRecord(value, '认证响应')
+  const user = requireRecord(readProperty(root, 'user'), '认证响应.user')
+  const tenant = requireRecord(readProperty(root, 'tenant'), '认证响应.tenant')
+  const env = requireRecord(readProperty(root, 'env'), '认证响应.env')
+  const config = readProperty(root, 'config')
+  const mode = readProperty(env, 'mode')
+  if (!isAppEnvironment(mode)) {
+    throw new Error('认证响应.env.mode 必须是 development、production 或 test')
+  }
+  const userDisplayName = readStringProperty(user, 'displayName')
+  const userEmail = readStringProperty(user, 'email')
+  const userAvatar = readStringProperty(user, 'avatar')
+  const tenantCode = readStringProperty(tenant, 'tenantCode')
+  const tenantConfig = readProperty(tenant, 'config')
+  const tenantFeatures = readStringArrayProperty(tenant, 'features')
+  const buildTime = readStringProperty(env, 'buildTime')
+
+  return {
+    user: {
+      userId: requireString(readProperty(user, 'userId'), '认证响应.user.userId'),
+      username: requireString(readProperty(user, 'username'), '认证响应.user.username'),
+      ...(userDisplayName !== undefined ? { displayName: userDisplayName } : {}),
+      ...(userEmail !== undefined ? { email: userEmail } : {}),
+      ...(userAvatar !== undefined ? { avatar: userAvatar } : {}),
+      roles: requireStringArray(readProperty(user, 'roles'), '认证响应.user.roles'),
+      permissions: requireStringArray(readProperty(user, 'permissions'), '认证响应.user.permissions'),
+    },
+    tenant: {
+      tenantId: requireString(readProperty(tenant, 'tenantId'), '认证响应.tenant.tenantId'),
+      tenantName: requireString(readProperty(tenant, 'tenantName'), '认证响应.tenant.tenantName'),
+      ...(tenantCode !== undefined ? { tenantCode } : {}),
+      ...(isRecord(tenantConfig) ? { config: tenantConfig } : {}),
+      ...(tenantFeatures !== undefined ? { features: tenantFeatures } : {}),
+    },
+    env: {
+      mode,
+      apiBaseUrl: requireString(readProperty(env, 'apiBaseUrl'), '认证响应.env.apiBaseUrl'),
+      version: requireString(readProperty(env, 'version'), '认证响应.env.version'),
+      ...(buildTime !== undefined ? { buildTime } : {}),
+    },
+    config: isRecord(config) ? config : {},
+    initializedAt: readStringProperty(root, 'initializedAt') ?? new Date().toISOString(),
+  }
+}
 
 /**
  * =============================================================================
@@ -166,7 +239,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
           user: result.user,
           tenant: result.tenant,
           env: result.env,
-          config: appConfig as unknown as Record<string, unknown>,
+          config: appConfigToRecord(appConfig),
           initializedAt: new Date().toISOString()
         }
       } else {
@@ -288,17 +361,12 @@ async function defaultAuthenticate(config: AppConfig): Promise<AppContext | null
   const timeoutId = setTimeout(() => controller.abort(), DEFAULT_AUTH_TIMEOUT_MS)
   try {
     const client = createRequest({ timeout: DEFAULT_AUTH_TIMEOUT_MS })
-    const resp = await client.requestFull<Record<string, unknown>>({
+    const resp = await client.requestFull<unknown>({
       url: '/api/auth/me',
       signal: controller.signal,
     })
     const data = resp.data
-    // 运行时校验关键字段存在，防止后端返回非预期结构导致启动崩溃
-    if (data['user'] === undefined || data['tenant'] === undefined || data['env'] === undefined) {
-      bootstrapLogger.error('认证响应缺少必需字段 (user/tenant/env)', { data })
-      return null
-    }
-    return data as unknown as AppContext
+    return parseAppContext(data)
   } catch (error) {
     bootstrapLogger.warn('认证请求失败', { error: toErrorMessage(error) })
   } finally {

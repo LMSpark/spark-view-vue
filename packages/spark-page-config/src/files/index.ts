@@ -9,7 +9,51 @@ export {
   PageConfigFileApi,
 } from './runtime/page-config-file-api'
 
-export * from './documents/json-document'
+export {
+  addChildNode,
+  addSiblingNode,
+  applyAutoPopulatePatches,
+  buildJsonTreeRows,
+  buildTreeModel,
+  deleteNode,
+  ensureUniqueObjectKey,
+  exportJsonDocument,
+  filterTreeNodes,
+  flattenJsonDocumentForEdit,
+  formatJsonPath,
+  formatValuePreview,
+  getNodePath,
+  getValueAtJsonPath,
+  isJsonObject,
+  normalizeJsonDocument,
+  parseJsonDocument,
+  renameNodeKey,
+  resolveSchemaInfoForPath,
+  restoreJsonDocumentByOriginalType,
+  restoreJsonDocumentFromFlat,
+  rootOf,
+  serializeJsonDocument,
+  toDisplayRows,
+  updateNodeType,
+  updateNodeValue,
+} from './documents/json-document'
+
+export type {
+  AutoPopulateEntry,
+  FlatJsonTreeDocument,
+  JsonDocument,
+  JsonNodeType,
+  JsonObject,
+  JsonPath,
+  JsonPathSegment,
+  JsonSchemaInfo,
+  JsonTreePolicy,
+  JsonValue,
+  MutationResult,
+  TreeDisplayNode,
+  TreeModel,
+  TreeNode,
+} from './documents/json-document'
 
 export {
   PAGE_FILE_NAMES,

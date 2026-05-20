@@ -226,17 +226,18 @@ export class PageDataLoader extends BaseDataLoader {
 }
 ```
 
-## SPARK AI Core 约束
+## SPARK AI Runtime 约束
 
-> **有效期**：本节约束为 AI Core 清理期的临时红线。清理完成后（以 git log 中相关重构 PR 合并为准），本节自动降级为"建议"级别，仅保留 class-first 主路径和 `as` 类型断言禁止两条。
+> **有效期**：本节约束为 AI Runtime 清理期的临时红线。清理完成后（以 git log 中相关重构 PR 合并为准），本节自动降级为"建议"级别，仅保留 class-first 主路径和 `as` 类型断言禁止两条。
 
-`packages/spark-ai` 的 AI core 采用 class-first 主路径：
+`packages/spark-ai` 的 AI Runtime 采用 class-first 主路径：
 
-- `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 等旧兼容契约已删除；AI core、registrations、app-ai 都不得重新引入。
-- `packages/spark-ai/src/registrations/**` 与 `src/services/app-ai/**` 不得 `implements I*` 注册类型，也不得把旧 `I*` 注册类型作为显式返回类型或字段类型。
+- `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 等旧兼容契约已删除；AI Runtime、业务注册模块、App AI Center host 都不得重新引入。
+- 业务注册模块不得 `implements I*` 注册类型，也不得把旧 `I*` 注册类型作为显式返回类型或字段类型。
+- App AI Center host 只负责启动 SSE 服务和 AI 包传输，不得持有业务 registry，不得包装 page-design、leave-request 等具体业务模块。
 - 新增注册模块优先继承或组合已有 class：`AiModuleRegistrationBase`、`StaticAiToolModule`、`RuntimeBackedBusinessModule`，或在本地建立清晰的 class 层次。
 - 注册对象不要使用匿名 `class extends ...`；需要临时注册层时也使用具名本地 class。
-- AI core 与消费层不得用 `as` 类型断言绕过 TypeScript 检查；需要收窄 unknown 时使用类型守卫、显式返回类型、`satisfies` 或运行时校验后构造 typed object。
+- AI Runtime core 与消费层不得用 `as` 类型断言绕过 TypeScript 检查；需要收窄 unknown 时使用类型守卫、显式返回类型、`satisfies` 或运行时校验后构造 typed object。
 - 注册运行时必须走 `registerModule()` / module-bound API 主路径；不得重新添加 `registerBusiness()` 或 `AiRegisteredBusinessApi`。
 - module-bound runtime handle 使用具名 `AiRegisteredModule` class；不得重新添加 `AiRegisteredModuleApi`、`AiRuntimeApi` 这类单实现机械接口。
 - LLM tool codec 使用具名 `AiRuntimeToolCodec` class；不得重新添加 `createAiRuntimeToolCodec()` 这类返回匿名对象的工厂主路径。
@@ -246,7 +247,7 @@ export class PageDataLoader extends BaseDataLoader {
 - 消费层不得依赖 `AiRegisteredBusinessApi`、相对包根 `../index`、`../core`、`../../core`、`../core/host` 等 barrel 入口；同包内部按 protocol/internal/host 的具体文件导入，应用层只使用公开 subpath（如 `@spark-view/spark-ai/host`）。
 - runtime 主路径使用 `getFunctions()`；不得重新添加 `.functions` 兼容读取。静态模块函数表用模块级常量传入 `super({ functionRegistrations })`，不要在子类里覆盖 `functions` 属性。
 - core 内部不得重新添加旧业务注册适配器、旧 business registration data/store snapshot 转换器或任何旧 `I*` 兼容命名。
-- `src/services/app-ai/index.ts` 只导出 app-ai 层实际拥有的 class、factory 和本地类型；不得把 `@spark-view/spark-ai/host` 或 registrations 的类型重新批量命名为 `AppAi*` 镜像别名。
+- App AI Center host 只导出 SSE 启动、transport 和本地 host 类型；不得把 `@spark-view/spark-ai/host` 或业务 registrations 的类型重新批量命名为 `AppAi*` 镜像别名。
 
 ## 错误处理风格
 

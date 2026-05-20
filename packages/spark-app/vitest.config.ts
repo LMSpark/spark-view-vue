@@ -8,10 +8,15 @@ export default defineConfig({
     include: ['src/**/*.test.ts', 'src/**/*.spec.ts']
   },
   resolve: {
-    alias: {
-      '@spark-view/spark-utils': resolve(__dirname, '../spark-utils/src/index.ts'),
-      '@spark-view/spark-app': resolve(__dirname, './src/index.ts'),
-      '@spark-view/spark-app/*': resolve(__dirname, './src/*')
-    }
+    alias: [
+      { find: /^@spark-view\/spark-ai\/core$/, replacement: resolve(__dirname, '../spark-ai/src/core/index.ts') },
+      { find: /^@spark-view\/spark-ai\/host$/, replacement: resolve(__dirname, '../spark-ai/src/core/host/index.ts') },
+      { find: /^@spark-view\/spark-ai$/, replacement: resolve(__dirname, '../spark-ai/src/index.ts') },
+      { find: /^@spark-view\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
+      { find: /^@spark-view\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
+      { find: /^@spark-view\/spark-page-config$/, replacement: resolve(__dirname, '../spark-page-config/src/index.ts') },
+      { find: /^@spark-view\/spark-app$/, replacement: resolve(__dirname, './src/index.ts') },
+      { find: /^@spark-view\/spark-app\/(.*)$/, replacement: resolve(__dirname, './src/$1') },
+    ]
   }
 })

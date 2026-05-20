@@ -203,9 +203,9 @@ function classifyError(error: Error): ErrorType {
 export function createErrorBoundary(fallbackRender?: (error: Error) => unknown) {
   return defineComponent({
     name: 'ErrorBoundary',
-    data() {
+    data(): { error: Error | null } {
       return {
-        error: null as Error | null
+        error: null
       }
     },
     errorCaptured(err: unknown) {

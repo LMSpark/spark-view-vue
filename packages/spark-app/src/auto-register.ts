@@ -29,8 +29,6 @@ const DEFAULT_EXCLUDE = [
   '**/*.spec.vue'
 ]
 
-type ComponentModuleLoader = () => Promise<{ default: unknown }>
-
 /**
  * 运行时扫描并注册所有匹配的 Vue 组件。
  *
@@ -43,16 +41,16 @@ export function setupAutoRegister(options: AutoRegisterOptions = {}) {
   logger.info('🚀 启动组件自动注册...')
 
   // 只能静态声明所有扫描目录
-  const modulesA = import.meta.glob('./packages/*/src/components/**/*.vue')
-  const modulesB = import.meta.glob('./features/**/components/**/*.vue')
-  const modulesC = import.meta.glob('./src/components/**/*.vue')
-  const modulesD = import.meta.glob('./src/views/**/*.vue')
+  const modulesA = import.meta.glob<{ default: unknown }>('./packages/*/src/components/**/*.vue')
+  const modulesB = import.meta.glob<{ default: unknown }>('./features/**/components/**/*.vue')
+  const modulesC = import.meta.glob<{ default: unknown }>('./src/components/**/*.vue')
+  const modulesD = import.meta.glob<{ default: unknown }>('./src/views/**/*.vue')
   const allModules = {
     ...modulesA,
     ...modulesB,
     ...modulesC,
     ...modulesD,
-  } as Record<string, ComponentModuleLoader>
+  }
   const registered: string[] = []
 
   for (const path of Object.keys(allModules)) {

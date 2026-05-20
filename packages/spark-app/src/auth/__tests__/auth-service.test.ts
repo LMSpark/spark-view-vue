@@ -6,12 +6,27 @@
  * - Mock 模式登录 / checkAuth / isAuthenticated
  * - Token 管理集成
  * - 生命周期钩子触发
- * - 真实 API 路径（mock fetch）
+ * - 真实 API 路径（mock HTTP client）
  * - refreshToken 并发锁
  * - logout 清除 token（即使 API 失败）
  */
 
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
+
+const httpMock = vi.hoisted(() => ({
+  requestFull: vi.fn(),
+}))
+
+vi.mock('@spark-view/spark-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-utils')>()
+  return {
+    ...actual,
+    createRequest: vi.fn(() => ({
+      requestFull: httpMock.requestFull,
+    })),
+  }
+})
+
 import { AuthService } from '../AuthService'
 import type { AuthConfig, AuthResult } from '../types'
 
@@ -42,28 +57,13 @@ function mockConfig(overrides?: Partial<AuthConfig>): AuthConfig {
   }
 }
 
-/**
- * 构造 fake Response
- */
-function fakeResponse(body: unknown, ok = true, statusText = 'OK'): Response {
+function httpResponse(data: unknown, status = 200, statusText = 'OK') {
   return {
-    ok,
+    data,
+    status,
     statusText,
-    json: () => Promise.resolve(body),
-    headers: new Headers(),
-    redirected: false,
-    status: ok ? 200 : 401,
-    type: 'basic' as ResponseType,
-    url: '',
-    clone: () => fakeResponse(body, ok, statusText),
-    body: null,
-    bodyUsed: false,
-    arrayBuffer: () => Promise.resolve(new ArrayBuffer(0)),
-    blob: () => Promise.resolve(new Blob()),
-    formData: () => Promise.resolve(new FormData()),
-    text: () => Promise.resolve(JSON.stringify(body)),
-    bytes: () => Promise.resolve(new Uint8Array()),
-  } as Response
+    headers: {},
+  }
 }
 
 function fakeAuthResult(token?: string): AuthResult {
@@ -95,6 +95,7 @@ describe('AuthService', () => {
   })
 
   afterEach(() => {
+    httpMock.requestFull.mockReset()
     vi.restoreAllMocks()
   })
 
@@ -112,13 +113,11 @@ describe('AuthService', () => {
     })
 
     it('未显式初始化时，login 自动初始化默认配置', async () => {
-      // 默认 config enableMock=false，且无 token → real login → fetch
-      const fetchMock = vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(fakeAuthResult('tok'))
-      )
+      // 默认 config enableMock=false，且无 token → real login → HTTP client
+      httpMock.requestFull.mockResolvedValue(httpResponse(fakeAuthResult('tok')))
 
       await auth.login({ username: 'a', password: 'b' })
-      expect(fetchMock).toHaveBeenCalled()
+      expect(httpMock.requestFull).toHaveBeenCalled()
     })
   })
 
@@ -214,9 +213,7 @@ describe('AuthService', () => {
         onAuthError: errorHook,
       }))
 
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(null, false, 'Unauthorized')
-      )
+      httpMock.requestFull.mockResolvedValue(httpResponse(null, 401, 'Unauthorized'))
 
       await expect(auth.login({ username: 'a', password: 'b' })).rejects.toThrow('登录失败')
       expect(errorHook).toHaveBeenCalledTimes(1)
@@ -231,9 +228,7 @@ describe('AuthService', () => {
     })
 
     it('login 成功 → 解析 AuthResult 并保存 token', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(fakeAuthResult('server-token'))
-      )
+      httpMock.requestFull.mockResolvedValue(httpResponse(fakeAuthResult('server-token')))
 
       const result = await auth.login({ username: 'a', password: 'b' })
       expect(result.token).toBe('server-token')
@@ -241,9 +236,7 @@ describe('AuthService', () => {
     })
 
     it('login 失败 → 抛出错误', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(null, false, 'Unauthorized')
-      )
+      httpMock.requestFull.mockResolvedValue(httpResponse(null, 401, 'Unauthorized'))
 
       await expect(auth.login({ username: 'a', password: 'b' }))
         .rejects.toThrow('登录失败')
@@ -256,9 +249,7 @@ describe('AuthService', () => {
 
     it('checkAuth 有 token → 调用 /api/auth/me', async () => {
       auth.setToken('tok')
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(fakeAuthResult())
-      )
+      httpMock.requestFull.mockResolvedValue(httpResponse(fakeAuthResult()))
 
       const result = await auth.checkAuth()
       expect(result).not.toBeNull()
@@ -267,9 +258,7 @@ describe('AuthService', () => {
 
     it('logout 即使 API 失败也清除本地 token', async () => {
       auth.setToken('tok')
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(null, false, 'Internal Error')
-      )
+      httpMock.requestFull.mockResolvedValue(httpResponse(null, 500, 'Internal Error'))
 
       await expect(auth.logout()).rejects.toThrow('登出失败')
       expect(auth.getToken()).toBeNull()
@@ -286,10 +275,10 @@ describe('AuthService', () => {
 
     it('并发调用共享同一个请求', async () => {
       let callCount = 0
-      vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      httpMock.requestFull.mockImplementation(async () => {
         callCount++
         await new Promise(r => setTimeout(r, 50))
-        return fakeResponse({ token: 'new-tok' })
+        return httpResponse({ token: 'new-tok' })
       })
 
       const [t1, t2, t3] = await Promise.all([
@@ -306,9 +295,7 @@ describe('AuthService', () => {
     })
 
     it('刷新失败 → 清除 token 并抛错', async () => {
-      vi.spyOn(globalThis, 'fetch').mockResolvedValue(
-        fakeResponse(null, false, 'Expired')
-      )
+      httpMock.requestFull.mockResolvedValue(httpResponse(null, 401, 'Expired'))
 
       await expect(auth.refreshToken()).rejects.toThrow('Token 刷新失败')
       expect(auth.getToken()).toBeNull()
@@ -316,9 +303,9 @@ describe('AuthService', () => {
 
     it('刷新完成后锁释放，下次调用发起新请求', async () => {
       let callCount = 0
-      vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      httpMock.requestFull.mockImplementation(async () => {
         callCount++
-        return fakeResponse({ token: `tok-${callCount}` })
+        return httpResponse({ token: `tok-${callCount}` })
       })
 
       await auth.refreshToken()

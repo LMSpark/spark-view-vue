@@ -50,10 +50,8 @@ export interface ThemeServiceReactive extends ThemeCapability {
   readonly isDarkRef: ComputedRef<boolean>
 }
 
-const THEME_MODES = new Set<ThemeMode>(['light', 'dark', 'auto'])
-
 function isThemeMode(value: unknown): value is ThemeMode {
-  return typeof value === 'string' && THEME_MODES.has(value as ThemeMode)
+  return value === 'light' || value === 'dark' || value === 'auto'
 }
 
 function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
