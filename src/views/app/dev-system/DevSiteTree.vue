@@ -62,7 +62,7 @@
           </el-tag>
           <span v-if="data.path" class="node-path">{{ data.path }}</span>
           <el-tag v-if="data.childPlacement" size="small" type="info" class="node-tag">
-            {{ data.childPlacement }}
+            {{ formatChildPlacementLabel(data.childPlacement) }}
           </el-tag>
           <el-tag v-if="data.context" size="small" type="warning" class="node-tag">
             context
@@ -92,6 +92,7 @@ import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
 import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
 import type { DevState } from './useDevState'
+import { formatChildPlacementLabel } from './childPlacementLabels'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = defineProps<{ state: DevState }>()

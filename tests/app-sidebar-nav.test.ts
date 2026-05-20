@@ -172,4 +172,74 @@ describe('AppSidebar navigation rendering', () => {
     expect(wrapper.findAll('.app-sidebar__node-divider')).toHaveLength(1)
     expect(wrapper.find('.app-sidebar__menu-item--active').text()).toContain('开发工作台')
   })
+
+  it('renders sidebar directory nodes with nested directory children as submenus', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/settings', component: { template: '<div />' } },
+        { path: '/page-manager', component: { template: '<div />' } },
+      ],
+    })
+    await router.push('/settings')
+    await router.isReady()
+
+    const settingsLeaf: NavNode = {
+      id: 'settings-basic',
+      nodeKind: 'system-page',
+      title: '基本设置',
+      icon: 'Setting',
+      path: '/settings',
+    }
+    const settingsGroup: NavNode = {
+      id: 'system-settings',
+      nodeKind: 'module',
+      title: '系统设置',
+      icon: 'Setting',
+      childPlacement: 'parent',
+      children: [settingsLeaf],
+    }
+    const rootGroup: NavNode = {
+      id: 'system-config',
+      nodeKind: 'module',
+      title: '系统配置',
+      icon: 'Tools',
+      childPlacement: 'sidebar',
+      children: [
+        settingsGroup,
+        {
+          id: 'page-manager',
+          nodeKind: 'system-page',
+          title: '页面管理',
+          icon: 'Grid',
+          path: '/page-manager',
+        },
+      ],
+    }
+    const nav = createNavigationContext([rootGroup, settingsGroup, settingsLeaf])
+
+    const wrapper = mount(AppSidebar, {
+      props: {
+        items: [rootGroup],
+      },
+      global: {
+        plugins: [router],
+        provide: {
+          [NAV_KEY]: nav,
+        },
+        stubs: {
+          ElMenu: ElMenuStub,
+          ElMenuItem: ElMenuItemStub,
+          ElSubMenu: ElSubMenuStub,
+          ElMenuItemGroup: ElMenuItemGroupStub,
+          NavIcon: NavIconStub,
+        },
+      },
+    })
+
+    const submenuIndexes = wrapper.findAll('.el-sub-menu').map((node) => node.attributes('data-index'))
+    expect(submenuIndexes).toEqual(expect.arrayContaining(['system-config', 'system-settings']))
+    expect(wrapper.find('.el-menu-item-group[data-title="系统配置"]').exists()).toBe(false)
+    expect(wrapper.text()).toContain('基本设置')
+  })
 })

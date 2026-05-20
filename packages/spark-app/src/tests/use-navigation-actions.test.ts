@@ -52,4 +52,69 @@ describe('useNavigation system-action handling', () => {
     expect(handler).toHaveBeenCalledWith(expect.objectContaining({ command: 'settings', node: actionNode }))
     expect(push).not.toHaveBeenCalled()
   })
+
+  it('keeps the first sidebar projection when a deeper active node also resolves to sidebar', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        { path: '/dev', component: { template: '<div />' } },
+        { path: '/dbms', component: { template: '<div />' } },
+        { path: '/cache-manager', component: { template: '<div />' } },
+        { path: '/settings', component: { template: '<div />' } },
+        { path: '/page-manager', component: { template: '<div />' } },
+      ],
+    })
+    await router.push('/settings')
+    await router.isReady()
+
+    const navRoot = reactive<AppNavRoot>({
+      title: '',
+      childPlacement: 'header',
+      children: [
+        {
+          id: 'dev-center',
+          nodeKind: 'module',
+          title: '开发中心',
+          childPlacement: 'sidebar',
+          children: [
+            { id: 'dev', nodeKind: 'system-page', title: '开发工作台', path: '/dev' },
+            { id: 'dbms', nodeKind: 'system-page', title: '数据库管理', path: '/dbms' },
+            { id: 'cache', nodeKind: 'system-page', title: '缓存管理', path: '/cache-manager' },
+            {
+              id: 'system-config',
+              nodeKind: 'module',
+              title: '系统配置',
+              childPlacement: 'sidebar',
+              children: [
+                { id: 'settings', nodeKind: 'system-page', title: '系统设置', path: '/settings' },
+                { id: 'page-manager', nodeKind: 'system-page', title: '页面管理', path: '/page-manager' },
+              ],
+            },
+          ],
+        },
+      ],
+    })
+
+    const navigationContext: { value?: NavigationContext } = {}
+    const Harness = defineComponent({
+      setup() {
+        navigationContext.value = useNavigation(navRoot)
+        return () => null
+      },
+    })
+
+    mount(Harness, { global: { plugins: [router] } })
+
+    const nav = navigationContext.value
+    if (nav === undefined) {
+      throw new Error('Navigation context was not initialized')
+    }
+
+    expect(nav.regionItems.value.sidebar.map((node) => node.title)).toEqual([
+      '开发工作台',
+      '数据库管理',
+      '缓存管理',
+      '系统配置',
+    ])
+  })
 })

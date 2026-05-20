@@ -234,6 +234,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   const regionItems = computed<RegionItems>(() => {
     const regions: RegionItems = { header: [], sidebar: [], toolbar: [], userMenu: [] }
+    const claimedPlacements = new Set<ChildPlacement>()
 
     // 根级子项：toolbar/user-menu 组提取到对应区域，其余放入 root childPlacement 指定区域
     const rootVisible = filterVisible(navRoot.children)
@@ -255,7 +256,10 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
       const placement = resolveChildPlacement(node)
       // parent / flat / toolbar / user-menu 不创建新区域
       if (placement === 'parent' || placement === 'flat' || placement === 'toolbar' || placement === 'user-menu') continue
+      // 同一区域只投影离根最近的一层；更深层节点交给区域内递归导航渲染，避免点击子项后把当前层整体替换掉。
+      if (claimedPlacements.has(placement)) continue
       regions[placement] = filterVisible(node.children)
+      claimedPlacements.add(placement)
     }
 
     return regions

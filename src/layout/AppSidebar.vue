@@ -14,70 +14,13 @@
       active-text-color="var(--el-color-primary)"
       :collapse="collapsed"
     >
-      <template v-for="item in safeItems" :key="item.id">
-        <!-- 带子菜单的节点（parent / flat） -->
-        <el-sub-menu v-if="hasNestedChildren(item)" :index="item.id">
-          <template #title>
-            <span class="app-sidebar__menu-label">
-              <NavIcon :name="item.icon" class="app-sidebar__menu-icon" />
-              <span v-if="!collapsed" class="app-sidebar__menu-text">{{ item.title }}</span>
-            </span>
-          </template>
-          <template v-for="child in visibleChildren(item)" :key="child.id">
-            <el-menu-item
-              :index="menuIndex(child)"
-              :class="{ 'app-sidebar__menu-item--active': isActive(child) }"
-              :disabled="child.disabled"
-              @click="onItemClick(child)"
-            >
-              <template #default>
-                <span class="app-sidebar__menu-label">
-                  <NavIcon :name="child.icon" class="app-sidebar__menu-icon" />
-                  <span class="app-sidebar__menu-text">{{ child.title }}</span>
-                </span>
-              </template>
-            </el-menu-item>
-            <li v-if="showDividerAfter(child)" class="app-sidebar__node-divider" role="separator" aria-hidden="true" />
-          </template>
-        </el-sub-menu>
-
-        <!-- 分组标题 -->
-        <el-menu-item-group v-else-if="isDirectoryGroupNode(item)" :title="collapsed ? '' : item.title">
-          <template v-for="child in visibleChildren(item)" :key="child.id">
-            <el-menu-item
-              :index="menuIndex(child)"
-              :class="{ 'app-sidebar__menu-item--active': isActive(child) }"
-              :disabled="child.disabled"
-              @click="onItemClick(child)"
-            >
-              <template #default>
-                <span class="app-sidebar__menu-label">
-                  <NavIcon :name="child.icon" class="app-sidebar__menu-icon" />
-                  <span v-if="!collapsed" class="app-sidebar__menu-text">{{ child.title }}</span>
-                </span>
-              </template>
-            </el-menu-item>
-            <li v-if="showDividerAfter(child)" class="app-sidebar__node-divider" role="separator" aria-hidden="true" />
-          </template>
-        </el-menu-item-group>
-
-        <!-- 普通菜单项 -->
-        <el-menu-item
-          v-else
-          :index="menuIndex(item)"
-          :class="{ 'app-sidebar__menu-item--active': isActive(item) }"
-          :disabled="item.disabled"
-          @click="onItemClick(item)"
-        >
-          <template #default>
-            <span class="app-sidebar__menu-label">
-              <NavIcon :name="item.icon" class="app-sidebar__menu-icon" />
-              <span v-if="!collapsed" class="app-sidebar__menu-text">{{ item.title }}</span>
-            </span>
-          </template>
-        </el-menu-item>
-        <li v-if="showDividerAfter(item)" class="app-sidebar__node-divider" role="separator" aria-hidden="true" />
-      </template>
+      <AppSidebarNode
+        v-for="item in safeItems"
+        :key="item.id"
+        :item="item"
+        :collapsed="collapsed"
+        :show-text="!collapsed"
+      />
     </el-menu>
 
     <!-- 兜底：无导航模型时读路由表 -->
@@ -111,6 +54,7 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
 import { useNav } from '@spark-view/spark-app'
+import AppSidebarNode from './AppSidebarNode.vue'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -139,40 +83,6 @@ const activeIndex = computed(() => {
 
 function menuIndex(item: NavNode): string {
   return item.path ?? item.id
-}
-
-/** 判断节点是否需要渲染为 el-sub-menu */
-function hasNestedChildren(item: NavNode): boolean {
-  if (visibleChildren(item).length === 0) return false
-  if (item.nodeKind !== 'module' && item.nodeKind !== 'system-directory') return false
-  const cp = item.childPlacement
-  return cp === 'parent' || cp === 'flat'
-}
-
-function isDirectoryNode(item: NavNode): boolean {
-  return item.nodeKind === 'module' || item.nodeKind === 'system-directory'
-}
-
-function isDirectoryGroupNode(item: NavNode): boolean {
-  return isDirectoryNode(item) && visibleChildren(item).length > 0
-}
-
-/** 过滤可见子项 */
-function visibleChildren(item: NavNode): NavNode[] {
-  return (item.children ?? []).filter((c) => !c.hidden && c.nodeKind !== 'sub-page')
-}
-
-function isActive(item: NavNode): boolean {
-  return nav?.isNodeActive(item) ?? menuIndex(item) === activeIndex.value
-}
-
-function showDividerAfter(item: NavNode): boolean {
-  return !props.collapsed && item.dividerAfter === true
-}
-
-/** 菜单项点击 */
-function onItemClick(item: NavNode) {
-  nav?.navigateTo(item)
 }
 
 /* ── 兜底路由（无导航树时使用） ── */
@@ -263,7 +173,12 @@ function routeIcon(item: { meta?: Record<string | number | symbol, unknown> }): 
   line-height: 40px;
   margin: 4px 0;
   border-radius: 10px;
-  padding: 0 12px !important;
+  padding-right: 12px !important;
+}
+
+.app-sidebar :deep(.el-menu--collapse > .el-menu-item),
+.app-sidebar :deep(.el-menu--collapse > .el-sub-menu > .el-sub-menu__title) {
+  padding-left: 12px !important;
 }
 
 .app-sidebar :deep(.el-menu-item:hover),
