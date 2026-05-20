@@ -15,10 +15,6 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./page": {
-      "types": "./dist/page/index.d.ts",
-      "import": "./dist/page/index.js"
-    },
     "./page/model": {
       "types": "./dist/page/model/index.d.ts",
       "import": "./dist/page/model/index.js"
@@ -39,9 +35,9 @@
       "types": "./dist/page/sandbox/index.d.ts",
       "import": "./dist/page/sandbox/index.js"
     },
-    "./assistant": {
-      "types": "./dist/assistant/index.d.ts",
-      "import": "./dist/assistant/index.js"
+    "./page/services": {
+      "types": "./dist/page/services/index.d.ts",
+      "import": "./dist/page/services/index.js"
     },
     "./assistant/registrations": {
       "types": "./dist/assistant/registrations/index.d.ts",

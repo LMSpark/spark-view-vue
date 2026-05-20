@@ -9,18 +9,23 @@
  *    PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
  *
  * 注：PageServiceCapability 等运行时服务契约以
- * @spark-view/spark-page-config/page 为 SSOT。
+ * @spark-view/spark-page-config/page/services 为 SSOT。
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
 import { DataView, type DataRow, type DataSetContract } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
+} from '@spark-view/spark-page-config/page/navigation'
+import type {
   PageServiceCapability,
-} from '@spark-view/spark-page-config/page'
+} from '@spark-view/spark-page-config/page/services'
 
 export type {
   NavPermissionMode,
+} from '@spark-view/spark-page-config/page/navigation'
+
+export type {
   PageMessageType,
   PageDialogResult,
   PageSelectableValue,
@@ -33,7 +38,7 @@ export type {
   PageSelectEntitiesOptions,
   PageSelectedEntity,
   PageServiceCapability,
-} from '@spark-view/spark-page-config/page'
+} from '@spark-view/spark-page-config/page/services'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null

@@ -7,17 +7,19 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import * as capabilityApi from '@spark-view/spark-utils'
 import {
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+  sparkProvide,
+  sparkRemove,
   type CapabilityKey,
   type CapabilityContext,
   type LoggerApi,
   type SparkCapabilityConsumer,
 } from '@spark-view/spark-utils'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
-import { sparkFindNearestProvider, sparkFindNearestProviderByKeys } from '@spark-view/spark-utils'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 import { DATA_ROW } from './capability-keys.js'
@@ -396,15 +398,15 @@ export function useSparkComponent(
 
   // ===== 当前组件暴露给后代的能力读写 =====
 
-  function sparkProvide<T>(name: CapabilityKey<T>, implementation: T): void {
+  function provideSparkCapability<T>(name: CapabilityKey<T>, implementation: T): void {
     if (implementation === undefined) {
       throw new Error(`[spark] sparkProvide received undefined implementation: ${String(name)}. Use sparkRemove(name) to clear capability explicitly.`)
     }
-    capabilityApi.sparkProvide(context, name, implementation)
+    sparkProvide(context, name, implementation)
   }
 
-  function sparkRemove<T>(name: CapabilityKey<T>): void {
-    capabilityApi.sparkRemove(context, name)
+  function removeSparkCapability<T>(name: CapabilityKey<T>): void {
+    sparkRemove(context, name)
   }
 
   function sparkConsume<T>(name: CapabilityKey<T>): T | null {
@@ -438,8 +440,8 @@ export function useSparkComponent(
     isVisible,
     isDisabled,
     resolvedProps,
-    sparkProvide,
-    sparkRemove,
+    sparkProvide: provideSparkCapability,
+    sparkRemove: removeSparkCapability,
     sparkConsume,
     logger,
   }

@@ -1,6 +1,7 @@
 import { expect, test, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 import { defineComponent, h } from 'vue'
 import SparkComponentRendererSource from '../packages/spark-component/src/components/SparkComponentRenderer.vue'
 
@@ -128,6 +129,23 @@ test('SparkComponentRenderer only forwards config.props to registered components
   expect(reader.attributes('data-label')).toBe('props 标签')
   expect(reader.attributes('data-status')).toBe('active')
   expect(reader.attributes('data-gap')).toBe('18')
+})
+
+test('SparkComponentRenderer rejects root-level business fields', () => {
+  expect(() => mount(SparkComponentRenderer, {
+    props: {
+      config: {
+        type: 'root-field-reader',
+        label: 'root label',
+      } as SparkNode,
+      parentContext: rootContext,
+    },
+    global: {
+      provide: {
+        [SPARK_REGISTRY_KEY]: registry,
+      },
+    },
+  })).toThrow(/SparkNode root field "label" is invalid/)
 })
 
 test('SparkComponentRenderer maps cross-framework config value to Vue modelValue before forwarding', () => {

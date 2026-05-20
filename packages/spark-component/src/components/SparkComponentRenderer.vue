@@ -86,7 +86,6 @@ import { DataView, type DataRow } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
 import {
-  SPARK_NODE_STRUCT_KEYS,
   nodeId,
   isSparkNode,
   normalizeSparkNode,
@@ -229,44 +228,8 @@ function normalizeRenderableChildren(children: SparkNodeChildren | undefined): R
   return normalized
 }
 
-function toRendererSparkNodeChildrenInput(children: SparkNodeChildren | undefined): SparkNodeChildren | undefined {
-  if (!Array.isArray(children)) return undefined
-
-  return children.map((child) => {
-    if (typeof child === 'string' || typeof child === 'number') return child
-    if (isSparkNode(child)) return toRendererSparkNodeInput(child)
-    throw new Error('[spark] SparkNode.children must contain only SparkNode, string or number')
-  })
-}
-
-// 兼容历史输入：非结构根字段一次性并入 props；type/id/children 继续保留 SparkNode 结构语义。
-function toRendererSparkNodeInput(node: SparkNode): SparkNode {
-  const rootRuntimeProps: NodeRuntimeProps = {}
-  for (const [key, value] of Object.entries(node)) {
-    if (!SPARK_NODE_STRUCT_KEYS.has(key)) {
-      rootRuntimeProps[key] = value
-    }
-  }
-
-  const rawProps = node.props
-  const normalizedProps = rawProps !== undefined
-    ? {
-      ...rootRuntimeProps,
-      ...rawProps,
-    }
-    : rootRuntimeProps
-
-  const normalizedChildren = toRendererSparkNodeChildrenInput(node.children)
-  return {
-    type: node.type,
-    ...(node.id !== undefined ? { id: node.id } : {}),
-    ...(Object.keys(normalizedProps).length > 0 ? { props: normalizedProps } : {}),
-    ...(normalizedChildren !== undefined ? { children: normalizedChildren } : {}),
-  }
-}
-
 function normalizeRendererSparkNodeInput(node: SparkNode): SparkNode {
-  return normalizeSparkNode(toRendererSparkNodeInput(node))
+  return normalizeSparkNode(node)
 }
 
 function nodeKey(child: RenderableChild, index: number): string {

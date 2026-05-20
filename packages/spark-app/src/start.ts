@@ -6,8 +6,7 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { SparkPageConfig } from '@spark-view/spark-page-config/page'
-import type { ConfigLoaderOptions } from '@spark-view/spark-page-config/page/loading'
+import { createConfigLoader, type ConfigLoaderOptions } from '@spark-view/spark-page-config/page/loading'
 import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
@@ -310,7 +309,7 @@ export async function start(options: StartOptions): Promise<void> {
       if (pageConfig.timeout !== undefined) configLoaderOptions.timeout = pageConfig.timeout
       if (pageConfig.getHeaders) configLoaderOptions.getHeaders = pageConfig.getHeaders
 
-      const configLoader = SparkPageConfig.createConfigLoader(configLoaderOptions)
+      const configLoader = createConfigLoader(configLoaderOptions)
 
       // 默认使用 SparkPageRenderer 组件（SPARK 原生页面渲染器）
       let pageComponent = pageConfig.pageComponent

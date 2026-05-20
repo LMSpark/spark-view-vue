@@ -1,9 +1,8 @@
 /**
  * Picker 变体工厂 —— 配置驱动生成 EntityPicker 的预设包装组件。
  *
- * 用法（renderer-components.ts）：
- *   import { createPickerPreset } from './renderer-fields/createPickerPreset'
- *   Spark.register('r-user-picker', createPickerPreset({ entityName: '人员', ... }))
+ * FieldUserPicker.vue 等预设组件从 `../createPickerPreset` 引入该工厂，
+ * 再注册为 `r-user-picker` / `r-dept-picker` 等具体字段类型。
  *
  * 每个变体组件仅覆盖 FieldEntityPicker 的若干默认 prop，其余完全透传。
  */

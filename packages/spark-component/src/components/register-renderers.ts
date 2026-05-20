@@ -14,8 +14,8 @@
  * Passthrough 组件由 barrel (`non-data-components/index`) 统一创建，
  * 此文件仅导入实例，不再本地调用 `createPassthrough()`。
  *
- * display-image / display-calendar / display-countdown / display-icon
- * 由 virtual:spark-components 自动扫描注册（文件名 = 注册名），无需在此重复。
+ * 内置组件全部由 registerAllRenderers() 显式注册；应用层的
+ * virtual:spark-components 只负责业务扩展组件。
  */
 import { Spark } from '../system/spark.js'
 
@@ -61,11 +61,14 @@ import {
 
 // ── 核心展示 ──
 import {
-  DisplayText, DisplayTag, DisplayPagination, DisplayStatistic,
+  DisplayText, DisplayTag, DisplayPagination, DisplayStatistic, DisplayImage,
   DisplayProgress, DisplayBadge, DisplayAvatar,
 } from './display/data-components/index.js'
 import {
   DisplayAlert,
+  DisplayCalendar,
+  DisplayCountdown,
+  DisplayIcon,
   DisplayDescriptions,
   DisplayDescriptionsItem,
   DisplayTimeline,
@@ -143,6 +146,10 @@ const CORE_COMPONENTS: RegistrationEntry[] = [
   ['r-pagination', DisplayPagination],
   ['r-statistic', DisplayStatistic],
   ['r-alert', DisplayAlert],
+  ['display-image', DisplayImage],
+  ['display-calendar', DisplayCalendar],
+  ['display-countdown', DisplayCountdown],
+  ['display-icon', DisplayIcon],
   // 非数据字段
   ['r-column-group', FieldContextRenderer],
   ['r-row-fragment', FieldContextRenderer],

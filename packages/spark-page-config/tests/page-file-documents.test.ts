@@ -100,7 +100,7 @@ describe('PageFileDocument primitives', () => {
       unsubscribe()
     })
 
-    it('accepts a single root SparkNode as page children', () => {
+    it('accepts a single root SparkNode for page children', () => {
       const docs = createPageDocuments()
       const doc = docs['rule.json']
       doc.loadFromText(JSON.stringify({ type: 'r-section', children: [] }))

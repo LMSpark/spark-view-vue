@@ -12,7 +12,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
 import {
   Spark,
   useSparkComponent,

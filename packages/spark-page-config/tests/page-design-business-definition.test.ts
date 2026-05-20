@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   PageDesignModule,
-} from '../assistant/registrations/page-design'
+} from '@spark-view/spark-page-config/assistant/registrations'
 import {
   PageDesignService,
   type PageDesignEditHost,
@@ -74,7 +74,7 @@ describe('pageDesign module definition', () => {
     expect(service.getState(context).phase).toBe('editing')
   })
 
-  it('registers pageDesign as recursive modules and executes through the registering module', async () => {
+  it('registers pageDesign through recursive modules and executes through the registering module', async () => {
     const { host, reads } = createHost()
     const pageDesign = new PageDesignModule({ getEditToolHost: () => host })
 

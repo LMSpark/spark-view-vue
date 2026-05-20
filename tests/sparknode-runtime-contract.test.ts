@@ -129,5 +129,9 @@ describe('SparkNode runtime contract', () => {
     registerAllRenderers()
 
     expect(Spark.getRegistry().get('r-row-fragment')).toBeDefined()
+    expect(Spark.getRegistry().get('display-image')).toBeDefined()
+    expect(Spark.getRegistry().get('display-calendar')).toBeDefined()
+    expect(Spark.getRegistry().get('display-countdown')).toBeDefined()
+    expect(Spark.getRegistry().get('display-icon')).toBeDefined()
   })
 })

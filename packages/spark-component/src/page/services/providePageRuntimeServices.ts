@@ -5,7 +5,7 @@
  */
 
 import type { RouteLocationRaw, Router } from 'vue-router'
-import type { PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page'
+import type { PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/services'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
 type AppRouteTarget = string | { path: string; query?: Record<string, unknown> }

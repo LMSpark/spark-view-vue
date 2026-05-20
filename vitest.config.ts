@@ -10,7 +10,7 @@ export default defineConfig({
   test: {
     globals: true,
     environment: 'jsdom',
-    include: ['tests/**/*.test.ts', 'packages/**/src/tests/**/*.test.ts'],
+    include: ['tests/**/*.test.ts', 'packages/**/src/tests/**/*.test.ts', 'packages/**/tests/**/*.test.ts'],
     setupFiles: ['./tests/vitest-setup.ts']
   },
   resolve: {
@@ -27,9 +27,8 @@ export default defineConfig({
       '@spark-view/spark-page-config/page/workspace': resolve(root, './packages/spark-page-config/src/page/workspace/index.ts'),
       '@spark-view/spark-page-config/page/navigation': resolve(root, './packages/spark-page-config/src/page/navigation/index.ts'),
       '@spark-view/spark-page-config/page/sandbox': resolve(root, './packages/spark-page-config/src/page/sandbox/index.ts'),
-      '@spark-view/spark-page-config/page': resolve(root, './packages/spark-page-config/src/page/index.ts'),
+      '@spark-view/spark-page-config/page/services': resolve(root, './packages/spark-page-config/src/page/services/index.ts'),
       '@spark-view/spark-page-config/assistant/registrations': resolve(root, './packages/spark-page-config/src/assistant/registrations/index.ts'),
-      '@spark-view/spark-page-config/assistant': resolve(root, './packages/spark-page-config/src/assistant/index.ts'),
       '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
       '@spark-view/spark-ai/protocol': resolve(root, './packages/spark-ai/src/protocol/index.ts'),

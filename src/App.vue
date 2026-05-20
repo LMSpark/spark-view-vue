@@ -144,7 +144,7 @@ import {
   useTheme,
 } from '@spark-view/spark-app'
 import type { AppNavRoot } from '@spark-view/spark-page-config/page/navigation'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
 import {
   MODULE_CONTEXT,
   useSparkComponent,

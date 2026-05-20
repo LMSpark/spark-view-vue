@@ -1,9 +1,9 @@
 /**
  * @spark-view/spark-page-config
  *
- * Page configuration owns page model/loading/navigation/workspace contracts and
- * assistant registrations that are specific to page-config editing.
+ * Package root keeps only the minimal runtime namespace. Feature consumers use
+ * explicit subpaths including page/loading, page/model, page/workspace,
+ * page/navigation, page/sandbox, page/services, and assistant/registrations.
  */
 
-export * from './page'
-export * from './assistant'
+export { SparkPageConfig } from './page/namespace'

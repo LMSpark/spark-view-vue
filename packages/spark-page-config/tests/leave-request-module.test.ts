@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 
 import {
   LeaveRequestModule,
-} from '../assistant/registrations/leave-request'
+} from '@spark-view/spark-page-config/assistant/registrations'
 
 function createContext(leaveDraftId: string, instanceId = `${leaveDraftId}:session`) {
   return {

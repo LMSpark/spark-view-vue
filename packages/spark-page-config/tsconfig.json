@@ -14,18 +14,17 @@
       "@spark-view/spark-ai/core": ["../spark-ai/src/index.ts"],
       "@spark-view/spark-ai/host": ["../spark-ai/src/host/index.ts"],
       "@spark-view/spark-page-config": ["./src/index.ts"],
-      "@spark-view/spark-page-config/page": ["./src/page/index.ts"],
       "@spark-view/spark-page-config/page/model": ["./src/page/model/index.ts"],
       "@spark-view/spark-page-config/page/loading": ["./src/page/loading/index.ts"],
       "@spark-view/spark-page-config/page/workspace": ["./src/page/workspace/index.ts"],
       "@spark-view/spark-page-config/page/navigation": ["./src/page/navigation/index.ts"],
       "@spark-view/spark-page-config/page/sandbox": ["./src/page/sandbox/index.ts"],
-      "@spark-view/spark-page-config/assistant": ["./src/assistant/index.ts"],
+      "@spark-view/spark-page-config/page/services": ["./src/page/services/index.ts"],
       "@spark-view/spark-page-config/assistant/registrations": ["./src/assistant/registrations/index.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
     }
   },
-  "include": ["src/**/*"],
+  "include": ["src/**/*", "tests/**/*"],
   "exclude": ["node_modules", "dist"]
 }

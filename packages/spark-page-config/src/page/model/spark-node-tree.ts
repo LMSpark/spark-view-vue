@@ -1,9 +1,9 @@
-import { isSparkNode, normalizeSparkNode, nodeId as getSparkNodeId, type SparkNode, type SparkNodeChildren } from './spark-node.js'
+import { isSparkNode, normalizeSparkNode, nodeId, type SparkNode, type SparkNodeChildren } from './spark-node.js'
 import { SnapshotHistory } from '@spark-view/spark-utils'
 
 export const SPARK_PAGE_NODE_TYPE = 'spark-page'
 export const SPARK_PAGE_ROOT_ID = 'spark-page-root'
-const readNodeId = getSparkNodeId
+const readNodeId = nodeId
 
 export type SparkNodeTreeJsonInput = SparkNode | Record<string, unknown> | string
 export type SparkNodeTreeRuleJsonInput =

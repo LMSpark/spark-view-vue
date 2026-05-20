@@ -542,6 +542,16 @@ function stripRootSchemaAnnotations(schema: PropSchema): PropSchema {
   delete clean.description
   delete clean.default
   delete clean.examples
+  delete clean.title
+  if (clean.properties !== undefined) {
+    clean.properties = recordFromEntries(
+      Object.entries(clean.properties).map(([name, property]) => [name, stripRootSchemaAnnotations(property)]),
+    )
+  }
+  if (clean.items !== undefined) clean.items = stripRootSchemaAnnotations(clean.items)
+  if (clean.prefixItems !== undefined) clean.prefixItems = clean.prefixItems.map(stripRootSchemaAnnotations)
+  if (clean.anyOf !== undefined) clean.anyOf = clean.anyOf.map(stripRootSchemaAnnotations)
+  if (clean.oneOf !== undefined) clean.oneOf = clean.oneOf.map(stripRootSchemaAnnotations)
   return clean
 }
 
@@ -564,12 +574,79 @@ function mergeRootSchemaAnnotations(existing: PropSchema, next: PropSchema): Pro
     ...(existing.examples ?? []),
     ...(next.examples ?? []),
   ])
-  return {
+  const merged: PropSchema = {
     ...existing,
+    ...(existing.title === undefined && next.title !== undefined ? { title: next.title } : {}),
     ...(existing.description === undefined && next.description !== undefined ? { description: next.description } : {}),
     ...(existing.default === undefined && next.default !== undefined ? { default: next.default } : {}),
     ...(examples.length > 0 ? { examples } : {}),
   }
+
+  if (existing.properties !== undefined || next.properties !== undefined) {
+    const existingProperties = existing.properties ?? {}
+    const nextProperties = next.properties ?? {}
+    const propertyNames = new Set([...Object.keys(existingProperties), ...Object.keys(nextProperties)])
+    const propertyEntries: Array<readonly [string, PropSchemaProperty]> = []
+    for (const propertyName of propertyNames) {
+      const existingProperty = existingProperties[propertyName]
+      const nextProperty = nextProperties[propertyName]
+      if (existingProperty === undefined) {
+        if (nextProperty !== undefined) {
+          propertyEntries.push([propertyName, nextProperty])
+        }
+        continue
+      }
+      if (nextProperty === undefined) {
+        propertyEntries.push([propertyName, existingProperty])
+        continue
+      }
+      propertyEntries.push([propertyName, mergeRootSchemaAnnotations(existingProperty, nextProperty)])
+    }
+    merged.properties = recordFromEntries(
+      propertyEntries,
+    )
+  }
+
+  if (existing.items !== undefined || next.items !== undefined) {
+    if (existing.items === undefined) {
+      if (next.items !== undefined) {
+        merged.items = next.items
+      }
+    } else if (next.items === undefined) {
+      merged.items = existing.items
+    } else {
+      merged.items = mergeRootSchemaAnnotations(existing.items, next.items)
+    }
+  }
+
+  if (existing.prefixItems !== undefined || next.prefixItems !== undefined) {
+    const existingPrefixItems = existing.prefixItems ?? []
+    const nextPrefixItems = next.prefixItems ?? []
+    merged.prefixItems = existingPrefixItems.map((item, index) => {
+      const nextItem = nextPrefixItems[index]
+      return nextItem === undefined ? item : mergeRootSchemaAnnotations(item, nextItem)
+    })
+  }
+
+  if (existing.anyOf !== undefined || next.anyOf !== undefined) {
+    const existingAnyOf = existing.anyOf ?? []
+    const nextAnyOf = next.anyOf ?? []
+    merged.anyOf = existingAnyOf.map((item, index) => {
+      const nextItem = nextAnyOf[index]
+      return nextItem === undefined ? item : mergeRootSchemaAnnotations(item, nextItem)
+    })
+  }
+
+  if (existing.oneOf !== undefined || next.oneOf !== undefined) {
+    const existingOneOf = existing.oneOf ?? []
+    const nextOneOf = next.oneOf ?? []
+    merged.oneOf = existingOneOf.map((item, index) => {
+      const nextItem = nextOneOf[index]
+      return nextItem === undefined ? item : mergeRootSchemaAnnotations(item, nextItem)
+    })
+  }
+
+  return merged
 }
 
 /**
