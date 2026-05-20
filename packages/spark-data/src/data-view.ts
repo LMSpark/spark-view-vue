@@ -7,7 +7,7 @@
  */
 
 import type {
-  DataRow, ViewMetadata, FilterExpression, FilterFieldRef, FilterOperator, FilterValueExpression, SortExpression,
+  DataRow, ViewMetadata, FilterExpression, FilterOperator, FilterValueExpression, SortExpression,
   QueryParams, DataColumn, DataRelation,
   CrudResult, CrudOperationConfig,
   DataSource,
@@ -18,6 +18,12 @@ import type {
   SparkEventEmitter,
   DataViewEditingFieldChangeEvent, DataViewApplyEditingRowsResult,
 } from './types'
+
+/** 过滤值字段引用形状（与 types.ts 中 FilterValueExpression 的内联形状一致） */
+interface FilterFieldRefShape {
+  kind: 'field'
+  field: string
+}
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
@@ -127,7 +133,7 @@ function normalizeServerRowsData(
   return normalized
 }
 
-function isFilterFieldRef(value: unknown): value is FilterFieldRef {
+function isFilterFieldRef(value: unknown): value is FilterFieldRefShape {
   return isRecord(value)
     && value['kind'] === 'field'
     && typeof value['field'] === 'string'

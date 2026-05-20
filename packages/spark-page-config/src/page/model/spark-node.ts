@@ -2,7 +2,24 @@
  * SparkNode - 页面配置层的组件节点模型。
  *
  * 这是 rule.json 的唯一结构契约，也对应运行时渲染树的最小输入结构。
+ *
+ * ┌──────────────────────────────────────────────────────┐
+ * │  类型分组（按节点结构定义与操作）                      │
+ * │                                                      │
+ * │  1. 节点类型：  SparkNode / SparkNodeChildren         │
+ * │  2. 结构常量：  SPARK_NODE_STRUCT_KEYS                │
+ * │  3. 归一化：    normalizeSparkNode()                  │
+ * │                normalizeSparkNodeChildren()           │
+ * │                assertSparkNodeRootKeys()              │
+ * │  4. 类型守卫：  isSparkNode()                         │
+ * │  5. 节点访问：  nodeId() / nodeInputProp()            │
+ * │                nodeInputProps() / getSparkNodeChildren()│
+ * └──────────────────────────────────────────────────────┘
  */
+
+// ═══════════════════════════════════════════════════════
+// 1. 节点类型
+// ═══════════════════════════════════════════════════════
 
 /**
  * SparkNode 子节点数组。
@@ -12,6 +29,12 @@
  */
 export interface SparkNodeChildren extends Array<SparkNode | string | number> {}
 
+/**
+ * 页面配置组件节点。
+ *
+ * rule.json 中每个条目的基本结构，渲染器根据 type 查找对应组件，
+ * 将 props 注入为组件属性，递归渲染 children。
+ */
 export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
@@ -23,10 +46,22 @@ export interface SparkNode {
   children?: SparkNodeChildren
 }
 
+// ═══════════════════════════════════════════════════════
+// 2. 结构常量
+// ═══════════════════════════════════════════════════════
+
 /**
- * SparkNode 结构键集合（type / id / props / children）。
+ * SparkNode 结构键集合。
+ *
+ * 用于校验节点是否包含非法字段，业务输入必须放在 props 中。
  */
 export const SPARK_NODE_STRUCT_KEYS: ReadonlySet<string> = new Set<string>(['type', 'id', 'props', 'children'])
+
+// ═══════════════════════════════════════════════════════
+// 3. 归一化
+//
+// 将用户输入或外部来源的节点转为合法形态。
+// ═══════════════════════════════════════════════════════
 
 function getOwnPropertyKeys(value: object): string[] {
   const keys: string[] = []
@@ -36,6 +71,7 @@ function getOwnPropertyKeys(value: object): string[] {
   return keys
 }
 
+/** 校验节点不包含非结构键（业务字段必须在 props 中） */
 function assertSparkNodeRootKeys(node: SparkNode): void {
   for (const key of getOwnPropertyKeys(node)) {
     if (!SPARK_NODE_STRUCT_KEYS.has(key)) {
@@ -44,6 +80,7 @@ function assertSparkNodeRootKeys(node: SparkNode): void {
   }
 }
 
+/** 递归归一化子节点数组：校验类型、过滤非法值 */
 function normalizeSparkNodeChildren(children: SparkNodeChildren | undefined): SparkNodeChildren {
   if (!Array.isArray(children)) return []
   return children.map((child) => {
@@ -54,7 +91,7 @@ function normalizeSparkNodeChildren(children: SparkNodeChildren | undefined): Sp
 }
 
 /**
- * 归一化 SparkNode 的结构语义。
+ * 归一化 SparkNode。
  *
  * 统一处理：
  * - type 必须是非空字符串
@@ -83,37 +120,47 @@ export function normalizeSparkNode(node: SparkNode): SparkNode {
   }
 }
 
+// ═══════════════════════════════════════════════════════
+// 4. 类型守卫
+// ═══════════════════════════════════════════════════════
+
 function getStringProp(value: object, key: string): string | undefined {
   const desc = Object.getOwnPropertyDescriptor(value, key)
   return desc && typeof desc.value === 'string' ? desc.value : undefined
 }
 
-/** 判断值是否为 SparkNode 配置对象。 */
+/** 判断值是否为 SparkNode 配置对象 */
 export function isSparkNode(value: unknown): value is SparkNode {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
   const typeVal = getStringProp(value, 'type')
   return typeVal !== undefined && typeVal.trim().length > 0
 }
 
-/** 从混合 children 中提取结构子节点。 */
+// ═══════════════════════════════════════════════════════
+// 5. 节点访问
+//
+// 从节点中安全读取 id、props 和结构子节点。
+// ═══════════════════════════════════════════════════════
+
+/** 从混合 children 中提取结构子节点 */
 export function getSparkNodeChildren(children: SparkNodeChildren | undefined): SparkNode[] {
   if (!Array.isArray(children) || children.length === 0) return []
   return children.filter(isSparkNode)
 }
 
-/** 读取节点 id。 */
+/** 读取节点 id */
 export function nodeId(node: { id?: unknown; props?: Record<string, unknown> }): string | undefined {
   const topLevelId = node.id
   if (typeof topLevelId === 'string') return topLevelId
   return undefined
 }
 
-/** 读取节点输入属性。 */
+/** 读取节点单个输入属性 */
 export function nodeInputProp(node: SparkNode, key: string): unknown {
   return node.props?.[key]
 }
 
-/** 收集节点可传递输入属性。 */
+/** 读取节点全部可传递输入属性 */
 export function nodeInputProps(node: SparkNode): Record<string, unknown> {
   return node.props ?? {}
 }

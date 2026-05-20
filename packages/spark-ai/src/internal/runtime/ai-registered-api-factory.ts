@@ -1,3 +1,32 @@
+/**
+ * 已注册模块 API 工厂。
+ *
+ * 职责：将 AiModuleRegistration 包装为 AiRegisteredModule 实例，
+ * 作为 AiRuntime.registerModule() 的返回值，是外部与特定模块交互的唯一公共路径。
+ *
+ * 在组合根中的位置：
+ * ┌──────────────────────────────────────────────────────────┐
+ * │ AiRuntime.registerModule(source)                         │
+ * │   ├─ ① registrations.registerModule(source)               │
+ * │   │   → 存储到仓库 + 校验唯一性                            │
+ * │   ├─ ② apiFactory.createRegisteredModuleApi(registration) │
+ * │   │   └─ new AiRegisteredModule(                          │
+ * │   │        registrations, sessions, projections,          │
+ * │   │        translator, executor, registration)            │
+ * │   └─ ③ 返回 AiRegisteredModule 句柄                        │
+ * │                                                             │
+ * │ 依赖注入链：                                                │
+ * │ AiRuntime → AiRegisteredApiFactory → AiRegisteredModule   │
+ * │   (传入所有内部组件引用，句柄可访问完整运行时能力)           │
+ * └──────────────────────────────────────────────────────────┘
+ *
+ * 使用流程：
+ * 1. 外部调用 runtime.registerModule(registration) 获取句柄
+ * 2. 通过句柄操作：startSession / stopSession / projectKnowledge
+ *    / executeFunctionCall / getFunctions / getSessionHistory
+ * 3. 句柄持有对内部组件的引用，但外部无法直接访问组件本身
+ */
+
 import type {
   AiModuleRegistration,
 } from '../../protocol/runtime-contracts'

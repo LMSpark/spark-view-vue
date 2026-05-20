@@ -252,8 +252,3 @@ export class PageConfigEditWorkspace {
     return `/${encodeURIComponent(pageId)}/${encodeURIComponent(name)}`
   }
 }
-
-export type {
-  PageConfigPageSummary,
-  PageConfigCreatePageParams,
-}

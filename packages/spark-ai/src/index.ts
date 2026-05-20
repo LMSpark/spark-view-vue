@@ -1,13 +1,23 @@
 /**
  * @packageDocumentation
  *
- * SPARK AI runtime public entry point.
+ * SPARK AI 运行时公共入口。
  *
- * Business registrations and page-design editing adapters live in application
- * packages. This package owns the framework-neutral AI runtime: protocols,
- * annotation metadata, session ledger, SSE/host transport contracts, function
- * calling, tool codec, and knowledge projection.
+ * 业务注册和页面编辑适配器位于应用包中。
+ * 本包拥有框架无关的 AI 运行时：协议、注解元数据、会话账本、
+ * SSE/Host 传输契约、函数调用、工具编解码和知识投影。
+ *
+ * 导出分组：
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │ 1. protocol → 运行时协议类型、注册基类、工具编解码、          │
+ * │               知识投影、参数校验、JSON Schema 构造器          │
+ * │ 2. host     → 框架无关的 AI Host 协议、传输、会话、           │
+ * │               工具循环、业务注册表                            │
+ * └──────────────────────────────────────────────────────────────┘
  */
 
+// 运行时协议层：类型定义、注册基类、工具编解码、知识投影
 export * from './protocol'
+
+// AI Host 层：框架无关的会话、传输、工具循环
 export * from './host'

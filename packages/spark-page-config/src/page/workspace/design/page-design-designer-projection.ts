@@ -22,9 +22,8 @@ export interface DesignerTableUiState {
   columnIds: Record<string, string>
 }
 
-export interface LayoutForNewTable {
-  (tableName: string, newIndex: number): { x: number; y: number }
-}
+/** 为新表分配布局位置的回调函数类型。 */
+type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
 
 function getDefaultTablePosition(index: number): { x: number; y: number } {
   return {

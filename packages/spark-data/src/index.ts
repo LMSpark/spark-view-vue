@@ -108,7 +108,6 @@ export type {
 
   // 视图配置
   ViewMetadata,
-  FilterFieldRef,
   FilterExpression,
   FilterOperator,
   FilterValueExpression,

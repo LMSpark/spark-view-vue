@@ -208,6 +208,24 @@ export class AiFunctionCallTranslator {
     return { ok: true, translation }
   }
 
+  // ═══════════════════════════════════════════════════════
+  // 内部辅助：上下文参数注入 & 执行参数准备
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * 准备执行参数。
+   *
+   * 流程：
+   * 1. 遍历函数曝光的 contextParams（上下文参数列表）
+   * 2. 对每个 context param，从 activePath 或 rawArgs 中解析模块实例 ID
+   * 3. 校验类型和一致性（不能同时传入矛盾的 instanceId）
+   * 4. 将上下文参数注入 effectiveArgs，同时从 executionArgs 中移除
+   *
+   * 返回值：
+   * - effectiveArgs: 包含上下文参数的完整参数（用于 schema 校验）
+   * - executionArgs: 移除了上下文参数的纯业务参数（传给执行器）
+   * - moduleInstances: paramName → instanceId 的映射
+   */
   private prepareExecutionArgs(
     scope: AiRuntimeProjectKnowledgeOptions,
     exposure: AiRuntimeFunctionExposure,
@@ -264,6 +282,11 @@ export class AiFunctionCallTranslator {
     }
   }
 
+  // ═══════════════════════════════════════════════════════
+  // 内部辅助：ActivePath 归一化
+  // ═══════════════════════════════════════════════════════
+
+  /** 批量归一化 activePath 中的每个 binding */
   private normalizeActivePath(
     module: AiRuntimeModuleExposure,
     bindings: readonly AiModuleInstanceBinding[],
@@ -271,6 +294,10 @@ export class AiFunctionCallTranslator {
     return bindings.map((binding) => this.normalizeActivePathBinding(module, binding))
   }
 
+  /**
+   * 归一化单个 activePath binding。
+   * 校验模块在曝光树中存在，并补充 paramName（默认使用模块的 instanceParam.name）。
+   */
   private normalizeActivePathBinding(module: AiRuntimeModuleExposure, binding: AiModuleInstanceBinding): AiModuleInstanceBinding {
     const target = this.findModuleExposure(module, binding.modulePath)
     if (target === null) {
@@ -287,6 +314,10 @@ export class AiFunctionCallTranslator {
     }
   }
 
+  /**
+   * 解析活跃绑定：按 modulePath 或 paramName 在 activePath 中查找。
+   * 如果未找到且 modulePath 等于当前 scope.moduleId，则回退到 scope.moduleInstanceId。
+   */
   private resolveActiveBinding(
     scope: AiRuntimeProjectKnowledgeOptions,
     activePath: readonly AiModuleInstanceBinding[],
@@ -301,6 +332,14 @@ export class AiFunctionCallTranslator {
     return undefined
   }
 
+  // ═══════════════════════════════════════════════════════
+  // 内部辅助：模块和函数查找
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * 按 moduleIds 数组递归查找模块注册。
+   * moduleIds[0] 必须是当前模块的 moduleId，后续元素逐层深入子模块。
+   */
   private findModuleRegistration(module: AiModuleRegistration, moduleIds: readonly string[]): AiModuleRegistration | null {
     if (moduleIds.length === 0 || module.moduleId !== moduleIds[0]) return null
     let current: AiModuleRegistration = module
@@ -312,6 +351,10 @@ export class AiFunctionCallTranslator {
     return current
   }
 
+  /**
+   * 按 moduleId 在注册树中递归查找（不考虑路径，仅按 ID 匹配）。
+   * 如果找到多个同名模块则抛出 MODULE_AMBIGUOUS 错误。
+   */
   private findModuleRegistrationByModuleId(module: AiModuleRegistration, moduleId: string): AiModuleRegistration | null {
     const found: AiModuleRegistration[] = []
     this.collectModuleRegistrationsById(module, moduleId, found)
@@ -322,6 +365,7 @@ export class AiFunctionCallTranslator {
     return null
   }
 
+  /** 递归收集所有匹配 moduleId 的模块注册（用于 findModuleRegistrationByModuleId） */
   private collectModuleRegistrationsById(module: AiModuleRegistration, moduleId: string, out: AiModuleRegistration[]): void {
     if (module.moduleId === moduleId) out.push(module)
     for (const child of module.modules ?? []) {
@@ -329,6 +373,13 @@ export class AiFunctionCallTranslator {
     }
   }
 
+  /**
+   * 在函数曝光列表中查找匹配的函数。
+   *
+   * 查找策略：
+   * - legacy 格式（无实例路径）：按 action 字符串精确匹配
+   * - instance 格式：按 moduleId + function 匹配，如果找到多个则抛出 FUNCTION_AMBIGUOUS
+   */
   private findFunctionExposure(
     functions: readonly AiRuntimeFunctionExposure[],
     address: ActionPathParts,
@@ -347,6 +398,21 @@ export class AiFunctionCallTranslator {
     return found[0]
   }
 
+  // ═══════════════════════════════════════════════════════
+  // 内部辅助：实例路径合并与校验
+  // ═══════════════════════════════════════════════════════
+
+  /**
+   * 合并 action 实例路径与 activePath。
+   *
+   * 流程：
+   * 1. 遍历 exposure 的 contextParams
+   * 2. 从 action 的 instanceIds 中提取对应位置的实例 ID
+   * 3. 校验是否与 activePath 中的 binding 冲突
+   * 4. 构建新的 bindings 列表并追加 activePath
+   *
+   * legacy 格式的 action 不携带实例路径，直接返回 activePath。
+   */
   private mergeActionInstancePath(
     address: ActionPathParts,
     exposure: AiRuntimeFunctionExposure,
@@ -380,6 +446,15 @@ export class AiFunctionCallTranslator {
     return [...bindings, ...activePath]
   }
 
+  /**
+   * 校验 action 实例路径长度和根实例。
+   *
+   * 校验规则：
+   * - instanceIds 长度必须等于 contextParams 数量（至少为 1）
+   * - 根实例（instanceIds[0]）必须等于 scope.moduleInstanceId
+   *
+   * legacy 格式不携带实例路径，跳过此校验。
+   */
   private validateActionInstancePath(
     address: ActionPathParts,
     exposure: AiRuntimeFunctionExposure,
@@ -404,6 +479,7 @@ export class AiFunctionCallTranslator {
     return null
   }
 
+  /** 在模块曝光树中按 modulePath 递归查找 */
   private findModuleExposure(module: AiRuntimeModuleExposure, modulePath: string): AiRuntimeModuleExposure | null {
     if (module.modulePath === modulePath) return module
     for (const child of module.modules) {

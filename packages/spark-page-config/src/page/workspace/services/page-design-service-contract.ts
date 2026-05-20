@@ -1,18 +1,25 @@
+/**
+ * PageDesign 服务契约。
+ *
+ * 定义 PageDesignService 的上下文、选项、结果类型和方法绑定接口。
+ * 所有通过该服务调用的宿主方法都遵循统一的 success/failure 响应格式。
+ */
 import type {
-  PageDesignEditSession,
   PageDesignEditHost,
 } from '../editing/page-design-edit-session'
 
+/** 服务调用上下文：标识哪个页面发起的请求。 */
 export interface PageDesignServiceContext {
   requestId: string
   pageId: string
 }
 
+/** 服务构造选项：提供编辑宿主的解析函数。 */
 export interface PageDesignServiceOptions {
   getEditHost: (context: PageDesignServiceContext) => PageDesignEditHost
 }
 
-export type PageDesignServiceState = PageDesignEditSession
+/** 服务方法调用结果：成功时返回 data + 摘要，失败时返回错误码和修复建议。 */
 export type PageDesignServiceResult<TResult> =
   | { ok: true; data: TResult; summary: string }
   | { ok: false; code: string; msg: string; fix: string }

@@ -1,12 +1,32 @@
+/**
+ * JSON Schema 便捷构造器。
+ *
+ * 为函数注册的 paramsSchema 提供类型安全的快捷创建函数，避免手写标准 JSON Schema 对象时遗漏 type/properties。
+ *
+ * ┌──────────────────────────────────────────────────────┐
+ * │            json-schema-helpers 函数清单               │
+ * │                                                      │
+ * │  基础类型：stringSchema() / numberSchema()           │
+ * │            booleanSchema() / anySchema()             │
+ * │  枚举/数组：enumSchema() / arraySchema()             │
+ * │  对象：objectSchema() / noParamsSchema()             │
+ * │  根节点：paramsSchema() → LlmParameterSchemaRoot     │
+ * └──────────────────────────────────────────────────────┘
+ */
+
 import type {
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmParameterSchemaRoot,
 } from '../protocol/parameter-schema'
 
-// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
+// ── 内部类型 ──
 
-export type JsonSchemaProperties = Readonly<Record<string, LlmJsonSchema>>
+export interface JsonSchemaProperties {
+  readonly [key: string]: LlmJsonSchema
+}
+
+// ── 基础类型 ──
 
 export function anySchema(description?: string): LlmJsonSchemaObject {
   return {
@@ -39,6 +59,8 @@ export function booleanSchema(description: string, options: { nullable?: boolean
   }
 }
 
+// ── 枚举 / 数组 ──
+
 export function enumSchema(
   values: ReadonlyArray<string | number | boolean | null>,
   description: string,
@@ -59,6 +81,8 @@ export function arraySchema(items: LlmJsonSchema = anySchema(), description?: st
     ...(description !== undefined ? { description } : {}),
   }
 }
+
+// ── 对象 / 根节点 ──
 
 export function objectSchema(
   properties: JsonSchemaProperties = {},

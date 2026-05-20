@@ -4,7 +4,6 @@ import type {
   AiRuntimeFunctionResultMessage,
   AiRuntimeKnowledgeProjection,
 } from '../../protocol/runtime-contracts'
-// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 import type {
   AiRegisteredModuleAppendFunctionCallOptions,
   AiRegisteredModuleAppendMessageOptions,
@@ -56,7 +55,7 @@ import type { AiFunctionCallExecutor } from './ai-function-call-executor'
  */
 
 export class AiRegisteredModule {
-  readonly moduleId: string
+  readonly moduleId: string // 模块标识符
 
   readonly registration: AiModuleRegistration
 
@@ -80,7 +79,7 @@ export class AiRegisteredModule {
   }
 
   /** 获取指定模块实例的会话记录 */
-  getSession(moduleInstanceId: string): AiRuntimeSessionRecord | null {
+  getSession(moduleInstanceId: string /* 模块实例标识符 */): AiRuntimeSessionRecord | null {
     return this.sessions.getSession(this.moduleId, moduleInstanceId)
   }
 
@@ -90,7 +89,7 @@ export class AiRegisteredModule {
   }
 
   /** 获取指定会话的历史记录 */
-  getSessionHistory(moduleInstanceId: string): readonly AiRuntimeHistoryEntry[] {
+  getSessionHistory(moduleInstanceId: string /* 模块实例标识符 */): readonly AiRuntimeHistoryEntry[] {
     return this.sessions.getSessionHistory(this.moduleId, moduleInstanceId)
   }
 

@@ -157,7 +157,6 @@ export type {
   DesignerRelationProjection,
   DesignerTableProjection,
   DesignerTableUiState,
-  LayoutForNewTable,
 } from './design/page-design-designer-projection'
 
 export {
@@ -173,7 +172,6 @@ export type {
   PageDesignServiceContext,
   PageDesignServiceOptions,
   PageDesignServiceResult,
-  PageDesignServiceState,
   PageDesignTextFileKey,
 } from './services/page-design-service'
 

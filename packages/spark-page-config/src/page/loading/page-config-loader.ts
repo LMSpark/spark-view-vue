@@ -45,7 +45,7 @@ const pageLogger = Logger('PageConfig')
 const REQUEST_TIMEOUT = 10_000
 const REQUIRED_PAGE_CONFIG_FILE_NAMES: readonly PageConfigFileName[] = ['rule.json', 'pagedata.json']
 
-// ─────────────────────────────────────────────────────────────────────────────
+// ═══ 选项解析：加载器构造参数的默认值与归一化 ═══
 
 /** 必填字段默认值（getHeaders / pagesConfigBaseUrl 可选，不在此列） */
 const DEFAULT_OPTIONS = {
@@ -55,21 +55,26 @@ const DEFAULT_OPTIONS = {
   timeout: REQUEST_TIMEOUT,
 } satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
+/** 已解析的加载器选项：所有必填字段均有值，可选字段保持可选。 */
 interface ResolvedConfigLoaderOptions extends Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>, Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'> {}
 
+/** 安全判断未知值是否为数组。 */
 function isUnknownArray(value: unknown): value is readonly unknown[] {
   return Array.isArray(value)
 }
 
+/** 去除 URL 尾部斜杠。 */
 function trimTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')
 }
 
+/** 为缓存前缀生成作用域标识符，避免不同后端路径之间的缓存冲突。 */
 function cacheScopePrefix(baseUrl: string): string {
   const scope = baseUrl.replace(/[^a-zA-Z0-9]+/g, '_').replace(/^_+|_+$/g, '')
   return `spark_page_${scope}_`
 }
 
+/** 解析页面配置基础 URL：优先使用显式配置，否则从 apiBaseUrl 推导。 */
 function resolvePagesConfigBaseUrl(options: ResolvedConfigLoaderOptions): string {
   const baseUrl = options.pagesConfigBaseUrl
   if (baseUrl !== undefined) {

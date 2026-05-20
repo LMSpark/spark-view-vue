@@ -287,7 +287,6 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-  type LayoutForNewTable,
 } from '@spark-view/spark-page-config/page/workspace'
 import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
@@ -304,8 +303,11 @@ import type {
  * 设计器列 — DataColumn + 画布唯一标识
  */
 type DesignerColumn = DesignerTableProjection['columns'][number]
-type DesignerTable = DesignerTableProjection
-type DesignerRelation = DesignerRelationProjection
+interface DesignerTable extends DesignerTableProjection {}
+interface DesignerRelation extends DesignerRelationProjection {}
+
+/** 为新表分配布局位置的回调。 */
+type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
 
 interface RelationDraftState {
   sourceIndex: number
@@ -658,7 +660,7 @@ function addTable() {
       columns: [{ name: 'id', label: 'ID', type: 'number', isPrimaryKey: true }],
       views: { default: { rows: [] } },
     })
-  }, (_name, i) => ({
+  }, (_name: string, i: number) => ({
     x: 50 + ((tableCount + i) % 3) * 220,
     y: 50 + Math.floor((tableCount + i) / 3) * 200,
   }))
