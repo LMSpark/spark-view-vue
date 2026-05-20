@@ -33,7 +33,7 @@
  * │    ├─ startSession() / stopSession()                          │
  * │    ├─ projectKnowledge()                                      │
  * │    ├─ executeFunctionCall()                                   │
- * │    └─ getFunctions() / getSessionHistory()                    │
+ * │    └─ 读取 registration.functionRegistrations / getSessionHistory() │
  * │ 4. getKnowledgeProjection() → 查询全局知识缓存                │
  * └──────────────────────────────────────────────────────────────┘
  */

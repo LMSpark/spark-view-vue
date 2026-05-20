@@ -100,7 +100,7 @@ describe('pageDesign module definition', () => {
     expect('getRegistrationStoreSnapshot' in pageDesign).toBe(false)
     expect(pageDesign.description).toBe('单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。')
     expect(pageDesign.prompt).toBe('你正在处理页面设计业务，支持 lifecycle、textModel、nodeTree、dataset、knowledge 五大子模块。')
-    expect(pageDesign.getFunctions()).toEqual([])
+    expect(pageDesign.functionRegistrations).toEqual([])
     expect(pageDesign.modules.map((module) => module.moduleId)).toEqual([
       'lifecycle',
       'textModel',
@@ -110,7 +110,7 @@ describe('pageDesign module definition', () => {
     ])
     expect(pageDesign.modules
       .find((module) => module.moduleId === 'lifecycle')
-      ?.getFunctions().some((definition) => definition.functionId === 'bootstrap')).toBe(true)
+      ?.functionRegistrations.some((definition) => definition.functionId === 'bootstrap')).toBe(true)
 
     pageDesign.appendMessage({
       moduleId: PageDesignModule.moduleId,

@@ -12,7 +12,7 @@
  * │   ├─ prompt: 模块提示文本（静态字符串或动态提供者）             │
  * │   ├─ modules: 子模块列表（递归结构）                           │
  * │   ├─ instanceParam: 实例参数声明（可选）                        │
- * │   └─ getFunctions(): 函数注册列表                              │
+ * │   └─ functionRegistrations: 函数注册列表                       │
  * │        ├─ functionId: 函数标识                                │
  * │        ├─ description: 函数描述                               │
  * │        ├─ paramsSchema: 参数 JSON Schema                      │
@@ -75,7 +75,7 @@ export interface AiFunctionRegistration {
 }
 
 // ═══════════════════════════════════════════════════════
-// 2. 实例参数
+// 2. 模块元数据与实例参数
 // ═══════════════════════════════════════════════════════
 
 /**
@@ -90,18 +90,11 @@ export interface AiModuleInstanceParam {
   readonly description: string
 }
 
-// ═══════════════════════════════════════════════════════
-// 3. 模块注册契约
-// ═══════════════════════════════════════════════════════
-
 /**
- * 模块注册树节点。
- * 模块注册的核心接口，定义了模块的元数据和子模块结构。
- *
- * 实现方式：业务模块应继承 AiModuleRegistrationBase 抽象类，
- * 而不是直接 implements 此接口。
+ * 模块注册元数据。
+ * 不包含函数注册表，便于运行时树节点和构造参数复用同一组语义字段。
  */
-export interface AiModuleRegistration {
+export interface AiModuleRegistrationMetadata {
   /** 模块唯一标识符 */
   readonly moduleId: string
   /** 模块名称，展示给 LLM */
@@ -114,8 +107,31 @@ export interface AiModuleRegistration {
   readonly modules?: readonly AiModuleRegistration[] | undefined
   /** 实例参数声明（可选） */
   readonly instanceParam?: AiModuleInstanceParam | undefined
-  /** 获取函数注册列表 */
-  getFunctions(): readonly AiFunctionRegistration[]
+}
+
+// ═══════════════════════════════════════════════════════
+// 3. 模块注册契约
+// ═══════════════════════════════════════════════════════
+
+/**
+ * 模块注册树节点。
+ * 模块注册的核心接口，定义了模块的元数据和子模块结构。
+ *
+ * 实现方式：业务模块应继承 AiModuleRegistrationBase 抽象类，
+ * 而不是直接 implements 此接口。
+ */
+export interface AiModuleRegistration extends AiModuleRegistrationMetadata {
+  /** 函数注册列表 */
+  readonly functionRegistrations: readonly AiFunctionRegistration[]
+}
+
+/**
+ * 模块注册基类构造参数。
+ * functionRegistrations 可省略，表示该节点只组织子模块或 prompt。
+ */
+export interface AiModuleRegistrationBaseOptions extends AiModuleRegistrationMetadata {
+  /** 函数注册列表（可选，默认空列表） */
+  readonly functionRegistrations?: readonly AiFunctionRegistration[] | undefined
 }
 
 // ═══════════════════════════════════════════════════════
@@ -165,36 +181,48 @@ export type ModulePromptProvider = string | {
 /**
  * 模块注册便捷基类。
  *
- * 业务模块实现应继承此类，通过构造函数传入 metadata，
- * 并实现 getFunctions() 方法提供函数注册列表。
+ * 业务模块实现应继承此类，通过构造函数传入注册 options。
  *
  * 使用示例：
  * ```ts
  * export class MyModule extends AiModuleRegistrationBase {
  *   constructor() {
- *     super('my-module', 'My Module', 'Description of my module')
- *   }
- *
- *   getFunctions() {
- *     return [{
- *       functionId: 'doSomething',
- *       description: 'Does something useful',
- *       paramsSchema: { type: 'object', properties: {} },
- *     }]
+ *     super({
+ *       moduleId: 'my-module',
+ *       name: 'My Module',
+ *       description: 'Description of my module',
+ *       functionRegistrations: [{
+ *         functionId: 'doSomething',
+ *         description: 'Does something useful',
+ *         paramsSchema: { type: 'object', properties: {} },
+ *       }],
+ *     })
  *   }
  * }
  * ```
  */
 export abstract class AiModuleRegistrationBase implements AiModuleRegistration {
-  protected constructor(
-    public readonly moduleId: string,
-    public readonly name: string,
-    public readonly description: string,
-    public readonly prompt?: ModulePromptProvider,
-    public readonly modules: readonly AiModuleRegistration[] = [],
-    public readonly instanceParam?: AiModuleInstanceParam,
-  ) {}
+  public readonly moduleId: string
 
-  /** 子类必须实现此方法，返回函数注册列表 */
-  abstract getFunctions(): readonly AiFunctionRegistration[]
+  public readonly name: string
+
+  public readonly description: string
+
+  public readonly prompt?: ModulePromptProvider | undefined
+
+  public readonly modules: readonly AiModuleRegistration[]
+
+  public readonly instanceParam?: AiModuleInstanceParam | undefined
+
+  public readonly functionRegistrations: readonly AiFunctionRegistration[]
+
+  protected constructor(options: AiModuleRegistrationBaseOptions) {
+    this.moduleId = options.moduleId
+    this.name = options.name
+    this.description = options.description
+    this.prompt = options.prompt
+    this.modules = options.modules ?? []
+    this.instanceParam = options.instanceParam
+    this.functionRegistrations = options.functionRegistrations ?? []
+  }
 }

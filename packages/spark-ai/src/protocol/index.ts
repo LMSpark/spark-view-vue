@@ -79,7 +79,9 @@ export type {
   ModulePromptContext,
   ModulePromptProvider,
   // 模块/函数注册契约
+  AiModuleRegistrationMetadata,
   AiModuleRegistration,
+  AiModuleRegistrationBaseOptions,
   AiFunctionRegistration,
 } from './runtime-contracts'
 

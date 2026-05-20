@@ -35,7 +35,7 @@
  * │    └─ modulePath + moduleId + paramName + description         │
  * │                                                               │
  * │ 步骤 3：投影模块中的函数列表                                   │
- * │    ├─ 遍历 module.getFunctions()                              │
+ * │    ├─ 遍历 module.functionRegistrations                       │
  * │    ├─ 确定 contextParams：instance 作用域携带当前模块的 contextParam │
  * │    ├─ 拼接 action 字符串（由 actionOf 策略决定）               │
  * │    ├─ 注入上下文参数到 paramsSchema（在 properties 中新增字段） │
@@ -202,7 +202,7 @@ export class AiRuntimeProjector {
         } satisfies AiRuntimeFunctionContextParam
 
     // 投影函数列表：为每个函数生成 action、注入上下文参数到 schema
-    const functions = module.getFunctions().map((definition) => {
+    const functions = module.functionRegistrations.map((definition) => {
       this.assertId('functionId', definition.functionId)
       // instance 作用域的函数携带当前模块的 contextParam，其他作用域只携带父级的
       const contextParams = definition.scope === 'instance' && currentContextParam !== null
@@ -468,7 +468,7 @@ export class AiRuntimeProjector {
 
     // 同一个模块节点内注册函数键不能重复，整棵树中的目录地址也不能重复。
     const functionIds = new Set<string>()
-    for (const definition of module.getFunctions()) {
+    for (const definition of module.functionRegistrations) {
       this.assertId('functionId', definition.functionId)
       if (functionIds.has(definition.functionId)) {
         throw new Error(`Duplicate function ${definition.functionId} in module ${modulePath}`)

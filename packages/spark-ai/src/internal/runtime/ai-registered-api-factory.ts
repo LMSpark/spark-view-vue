@@ -23,7 +23,7 @@
  * 使用流程：
  * 1. 外部调用 runtime.registerModule(registration) 获取句柄
  * 2. 通过句柄操作：startSession / stopSession / projectKnowledge
- *    / executeFunctionCall / getFunctions / getSessionHistory
+ *    / executeFunctionCall / 读取 registration.functionRegistrations / getSessionHistory
  * 3. 句柄持有对内部组件的引用，但外部无法直接访问组件本身
  */
 

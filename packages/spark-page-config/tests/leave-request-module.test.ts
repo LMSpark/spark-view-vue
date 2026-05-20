@@ -21,13 +21,13 @@ describe('leave-request module', () => {
     expect(leave.moduleId).toBe(LeaveRequestModule.moduleId)
     expect(leave.description).toBe('帮助员工收集、确认并提交人工请假申请。')
     expect(typeof leave.prompt).toBe('string')
-    expect(leave.getFunctions().map((item) => item.functionId)).toEqual([
+    expect(leave.functionRegistrations.map((item) => item.functionId)).toEqual([
       'describeDraft',
       'setDraftFields',
       'submitDraft',
       'cancelDraft',
     ])
-    const setDraftFields = leave.getFunctions().find((item) => item.functionId === 'setDraftFields')
+    const setDraftFields = leave.functionRegistrations.find((item) => item.functionId === 'setDraftFields')
     expect(JSON.stringify(setDraftFields?.paramsSchema)).toContain('系统提示中的当前日期')
     expect(setDraftFields?.usageRules).toEqual(expect.arrayContaining([
       expect.stringContaining('当前日期换算'),

@@ -13,10 +13,8 @@
 import {
   AiModuleRegistrationBase,
   AiRuntime,
-  type AiFunctionRegistration,
   type AiKnowledgeProjector,
-  type AiModuleInstanceParam,
-  type AiModuleRegistration,
+  type AiModuleRegistrationBaseOptions,
   type AiRegisteredModule,
   type AiRuntimeExecuteFunctionCallOptions,
   type AiRuntimeFunctionCallResult,
@@ -30,37 +28,14 @@ import {
   type AiRuntimeSessionRecord,
   type AiRuntimeStartSessionResult,
   type AiRuntimeStopSessionResult,
-  type ModulePromptProvider,
 } from '@spark-view/spark-ai/protocol'
 
-export interface StaticAiToolModuleOptions {
-  readonly moduleId: string
-  readonly name: string
-  readonly description: string
-  readonly prompt?: ModulePromptProvider | undefined
-  readonly functionRegistrations?: readonly AiFunctionRegistration[] | undefined
-  readonly modules?: readonly AiModuleRegistration[] | undefined
-  readonly instanceParam?: AiModuleInstanceParam | undefined
-}
+export type StaticAiToolModuleOptions = AiModuleRegistrationBaseOptions
 
 /** 静态 AI 工具模块基类：持有 moduleId / name / description / prompt 和函数注册表，不依赖 Runtime。 */
 export abstract class StaticAiToolModule extends AiModuleRegistrationBase {
-  private readonly functionRegistrations: readonly AiFunctionRegistration[]
-
   protected constructor(options: StaticAiToolModuleOptions) {
-    super(
-      options.moduleId,
-      options.name,
-      options.description,
-      options.prompt,
-      options.modules ?? [],
-      options.instanceParam,
-    )
-    this.functionRegistrations = options.functionRegistrations ?? []
-  }
-
-  override getFunctions(): readonly AiFunctionRegistration[] {
-    return this.functionRegistrations
+    super(options)
   }
 }
 
@@ -72,9 +47,9 @@ export interface RuntimeBackedModuleContext {
 
 export interface RuntimeBackedAppendMessageOptions extends RuntimeBackedModuleContext {
   readonly role: AiRuntimeMessageRole
-    readonly content: string
-    readonly source?: AiRuntimeMessageSource | undefined
-    readonly metadata?: Record<string, unknown> | undefined
+  readonly content: string
+  readonly source?: AiRuntimeMessageSource | undefined
+  readonly metadata?: Record<string, unknown> | undefined
 }
 
 export interface RuntimeBackedStopSessionOptions extends RuntimeBackedModuleContext {
@@ -83,13 +58,13 @@ export interface RuntimeBackedStopSessionOptions extends RuntimeBackedModuleCont
 
 export interface RuntimeBackedExecuteFunctionCallOptions extends RuntimeBackedModuleContext {
   readonly action: string
-    readonly args: unknown
-    readonly projection?: AiRuntimeKnowledgeProjection | undefined
+  readonly args: unknown
+  readonly projection?: AiRuntimeKnowledgeProjection | undefined
 }
 
 export interface RuntimeBackedBusinessModuleOptions extends StaticAiToolModuleOptions {
   readonly runtime?: AiRuntime | undefined
-    readonly runtimeOptions?: AiRuntimeOptions | undefined
+  readonly runtimeOptions?: AiRuntimeOptions | undefined
 }
 
 /**

@@ -34,8 +34,12 @@ export type {
   FunctionFailureMode,
   /** 函数注册信息 */
   AiFunctionRegistration,
+  /** 模块注册元数据 */
+  AiModuleRegistrationMetadata,
   /** 模块注册树 */
   AiModuleRegistration,
+  /** 模块注册基类构造参数 */
+  AiModuleRegistrationBaseOptions,
   /** 模块实例参数声明 */
   AiModuleInstanceParam,
   /** 模块 prompt 提供者函数 */

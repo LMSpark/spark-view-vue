@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-20T01:47:22.922Z",
+  "buildTime": "2026-05-20T16:34:16.687Z",
   "componentCount": 106,
   "components": {
     "about": {
@@ -1375,7 +1375,7 @@
         },
         {
           "name": "color",
-          "type": "ProgressColor",
+          "type": "string | { color: string; percentage: number; }[]",
           "required": false,
           "description": "进度色"
         },
@@ -1916,15 +1916,15 @@
         },
         {
           "name": "format",
-          "type": "\"number\" | \"currency\" | \"percent\" | \"date\"",
+          "type": "\"number\" | \"date\" | \"currency\" | \"percent\"",
           "required": false,
           "description": "格式化方式",
           "schema": {
             "enum": [
               "number",
+              "date",
               "currency",
-              "percent",
-              "date"
+              "percent"
             ],
             "type": "string",
             "description": "格式化方式"
@@ -3030,8 +3030,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -3538,8 +3538,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -3739,14 +3739,14 @@
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: MultiValue]",
+          "type": "[value: CheckboxGroupMultiValue]",
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。",
           "schema": {
-            "title": "[value: MultiValue]",
+            "title": "[value: CheckboxGroupMultiValue]",
             "type": "array",
             "prefixItems": [
               {
-                "$ref": "#/$defs/MultiValue",
+                "$ref": "#/$defs/CheckboxGroupMultiValue",
                 "title": "value",
                 "description": "Next value for the bound model; 用于同步父级状态。"
               }
@@ -3761,7 +3761,7 @@
       "type": "r-collapse",
       "filePath": "packages/spark-component/src/components/containers/layout/RendererCollapse/RendererCollapse.vue",
       "category": "container",
-      "description": "折叠面板容器。 配置入口：type=\"r-collapse\"，category=container（容器组件）。 绑定语义：valueType=string。 关键 props：modelValue, toolbar。 主要事件：update:modelValue。",
+      "description": "折叠面板容器。 配置入口：type=\"r-collapse\"，category=container（容器组件）。 绑定语义：valueType=array。 关键 props：modelValue, toolbar。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "toolbar",
@@ -3774,13 +3774,13 @@
         },
         {
           "name": "modelValue",
-          "type": "CollapseValue",
+          "type": "string | number | (string | number)[]",
           "required": false,
           "description": "当前展开的面板"
         },
         {
           "name": "onChange",
-          "type": "((value: CollapseValue) => void)",
+          "type": "((value: string | number | (string | number)[]) => void)",
           "required": false,
           "description": "展开/折叠切换回调"
         },
@@ -3802,7 +3802,7 @@
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: CollapseValue]",
+          "type": "[value: string | number | (string | number)[]]",
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
         }
       ],
@@ -4111,7 +4111,7 @@
         },
         {
           "name": "align",
-          "type": "TextAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
           "required": false,
           "description": "列对齐",
           "schema": {
@@ -4126,7 +4126,7 @@
         },
         {
           "name": "headerAlign",
-          "type": "TextAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
           "required": false,
           "description": "表头对齐",
           "schema": {
@@ -4183,7 +4183,7 @@
         },
         {
           "name": "titleAlign",
-          "type": "TextAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
           "required": false,
           "description": "标题对齐（table/detail）",
           "schema": {
@@ -4198,7 +4198,7 @@
         },
         {
           "name": "valueAlign",
-          "type": "TextAlign",
+          "type": "\"left\" | \"center\" | \"right\"",
           "required": false,
           "description": "值对齐（table/detail）",
           "schema": {
@@ -4267,10 +4267,10 @@
           "schema": {
             "enum": [
               "date",
+              "datetime",
               "year",
               "month",
               "dates",
-              "datetime",
               "week",
               "datetimerange",
               "daterange",
@@ -4485,7 +4485,7 @@
       "type": "r-dept-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldDeptPicker.vue",
       "category": "field",
-      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
+      "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "multiple",
@@ -4502,7 +4502,7 @@
         },
         {
           "name": "modelValue",
-          "type": "EntityPickerValue",
+          "type": "string | number | boolean | unknown[]",
           "required": false,
           "description": "直接传入的值"
         },
@@ -4551,20 +4551,10 @@
         },
         {
           "name": "valueMode",
-          "type": "SparkOptionValueMode",
+          "type": "string",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式",
-          "schema": {
-            "enum": [
-              "auto",
-              "array",
-              "separated-string"
-            ],
-            "type": "string",
-            "description": "主值持久化模式",
-            "default": "auto"
-          }
+          "description": "主值持久化模式"
         },
         {
           "name": "textSeparator",
@@ -4979,16 +4969,16 @@
         },
         {
           "name": "borderStyle",
-          "type": "\"none\" | \"dashed\" | \"dotted\" | \"double\" | \"solid\"",
+          "type": "\"double\" | \"none\" | \"dashed\" | \"dotted\" | \"solid\"",
           "required": false,
           "default": "\"solid\"",
           "description": "边框样式",
           "schema": {
             "enum": [
+              "double",
               "none",
               "dashed",
               "dotted",
-              "double",
               "solid"
             ],
             "type": "string",
@@ -5339,7 +5329,7 @@
       "type": "r-entity-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldEntityPicker.vue",
       "category": "field",
-      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。 配置入口：type=\"r-entity-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
+      "description": "通用实体选择器字段，绑定实体对象或 ID 值，弹窗选择单个或多个实体记录。 配置入口：type=\"r-entity-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "searchable",
@@ -5420,8 +5410,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -5475,13 +5465,13 @@
         },
         {
           "name": "modelValue",
-          "type": "EntityPickerValue",
+          "type": "string | number | boolean | (string | number | boolean)[]",
           "required": false,
           "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "value",
-          "type": "EntityPickerValue",
+          "type": "string | number | boolean | (string | number | boolean)[]",
           "required": false,
           "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
@@ -5632,7 +5622,7 @@
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: EntityPickerValue]",
+          "type": "[value: NonNullable<string | number | boolean | (string | number | boolean)[]>]",
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
         }
       ],
@@ -6615,8 +6605,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -7396,14 +7386,14 @@
         },
         {
           "name": "inputType",
-          "type": "\"textarea\" | \"text\"",
+          "type": "\"text\" | \"textarea\"",
           "required": false,
           "default": "\"text\"",
           "description": "输入框类型",
           "schema": {
             "enum": [
-              "textarea",
-              "text"
+              "text",
+              "textarea"
             ],
             "type": "string",
             "description": "输入框类型",
@@ -7682,8 +7672,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -8388,7 +8378,7 @@
       "type": "r-product-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldProductPicker.vue",
       "category": "field",
-      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
+      "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "multiple",
@@ -8405,7 +8395,7 @@
         },
         {
           "name": "modelValue",
-          "type": "EntityPickerValue",
+          "type": "string | number | boolean | unknown[]",
           "required": false,
           "description": "直接传入的值"
         },
@@ -8454,20 +8444,10 @@
         },
         {
           "name": "valueMode",
-          "type": "SparkOptionValueMode",
+          "type": "string",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式",
-          "schema": {
-            "enum": [
-              "auto",
-              "array",
-              "separated-string"
-            ],
-            "type": "string",
-            "description": "主值持久化模式",
-            "default": "auto"
-          }
+          "description": "主值持久化模式"
         },
         {
           "name": "textSeparator",
@@ -8604,8 +8584,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -9232,8 +9212,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -9388,7 +9368,7 @@
         },
         {
           "name": "options",
-          "type": "SegmentedOption[]",
+          "type": "(string | number | { label: string; value: string | number; disabled?: boolean; })[]",
           "required": false,
           "description": "可选项数组。\n通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。"
         },
@@ -9501,8 +9481,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -10381,12 +10361,6 @@
       "category": "container",
       "description": "数据表格容器，支持工具栏/筛选区/行操作等区域，自动同步当前行和选中行状态。 配置入口：type=\"r-table\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, toolbar, filter, actions。",
       "props": [
-        {
-          "name": "tableProps",
-          "type": "Record<string, unknown>",
-          "required": false,
-          "description": "透传给 el-table 的原生属性（兼容 JSON 规则里常见的 tableProps 写法）。\n顶层同名 props（如 resizable / border / rowKey）优先级更高。"
-        },
         {
           "name": "border",
           "type": "boolean",
@@ -11753,7 +11727,7 @@
           "name": "titles",
           "type": "[string, string]",
           "required": false,
-          "default": "[\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"] as [\n    string,\n    string\n]",
+          "default": "[\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"]",
           "description": "左右面板标题。"
         },
         {
@@ -11844,8 +11818,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -12233,7 +12207,7 @@
       "type": "r-tree-select",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldTreeSelect.vue",
       "category": "field",
-      "description": "树形选择字段，绑定单值或数组。 配置入口：type=\"r-tree-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
+      "description": "树形选择字段，绑定单值或数组。 配置入口：type=\"r-tree-select\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "defaultExpandAll",
@@ -12313,8 +12287,8 @@
           "description": "主值持久化模式。\n\n用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，\n还是按 `valueSeparator` 序列化成单个字符串。",
           "schema": {
             "enum": [
-              "auto",
               "array",
+              "auto",
               "separated-string"
             ],
             "type": "string",
@@ -12368,13 +12342,13 @@
         },
         {
           "name": "modelValue",
-          "type": "TreeSelectValue",
+          "type": "string | number | boolean | (string | number | boolean)[]",
           "required": false,
           "description": "直接传入的受控字段值。\n\n对应 Vue v-model 标准命名，支持 `v-model=\"xxx\"` 写法。"
         },
         {
           "name": "value",
-          "type": "TreeSelectValue",
+          "type": "string | number | boolean | (string | number | boolean)[]",
           "required": false,
           "description": "跨框架配置模型值。\n\n页面配置可继续使用 `value` 表达字段当前值；Vue 渲染适配层会在下发组件前映射为 `modelValue`。"
         },
@@ -12518,7 +12492,7 @@
       "emits": [
         {
           "name": "update:modelValue",
-          "type": "[value: TreeSelectValue]",
+          "type": "[value: string | number | boolean | (string | number | boolean)[]]",
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
         }
       ],
@@ -12760,7 +12734,7 @@
       "type": "r-user-picker",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldUserPicker.vue",
       "category": "field",
-      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
+      "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
           "name": "multiple",
@@ -12777,7 +12751,7 @@
         },
         {
           "name": "modelValue",
-          "type": "EntityPickerValue",
+          "type": "string | number | boolean | unknown[]",
           "required": false,
           "description": "直接传入的值"
         },
@@ -12826,20 +12800,10 @@
         },
         {
           "name": "valueMode",
-          "type": "SparkOptionValueMode",
+          "type": "string",
           "required": false,
           "default": "'auto'",
-          "description": "主值持久化模式",
-          "schema": {
-            "enum": [
-              "auto",
-              "array",
-              "separated-string"
-            ],
-            "type": "string",
-            "description": "主值持久化模式",
-            "default": "auto"
-          }
+          "description": "主值持久化模式"
         },
         {
           "name": "textSeparator",
@@ -12931,17 +12895,17 @@
         },
         {
           "name": "language",
-          "type": "SparkCodeLanguage",
+          "type": "\"javascript\" | \"css\"",
           "required": false,
           "default": "\"javascript\"",
-          "description": "语言模式",
+          "description": "语言模式；当前只加载脚本与样式两类 CodeMirror language package。",
           "schema": {
             "enum": [
               "javascript",
               "css"
             ],
             "type": "string",
-            "description": "语言模式",
+            "description": "语言模式；当前只加载脚本与样式两类 CodeMirror language package。",
             "default": "javascript"
           }
         },
@@ -13098,14 +13062,14 @@
         },
         {
           "name": "schema",
-          "type": "SparkJsonSchema | null",
+          "type": "JSONSchema | null",
           "required": false,
           "default": "null",
           "description": "JSON Schema 校验规则"
         },
         {
           "name": "schemaDefinitions",
-          "type": "SparkJsonSchema | null",
+          "type": "JSONSchemaDefinitions | null",
           "required": false,
           "default": "null",
           "description": "JSON Schema 定义引用"
@@ -13275,20 +13239,6 @@
       "description": "未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。 配置入口：type=\"unregistered-node-fallback\"，category=feature（功能组件）。 必填 props：node。 关键 props：node, title。",
       "props": [
         {
-          "name": "title",
-          "type": "string",
-          "required": false,
-          "default": "'未注册的组件类型'",
-          "description": "提示标题"
-        },
-        {
-          "name": "description",
-          "type": "string",
-          "required": false,
-          "default": "''",
-          "description": "说明文本"
-        },
-        {
           "name": "node",
           "type": "SparkNode",
           "required": true,
@@ -13296,6 +13246,20 @@
           "schema": {
             "$ref": "#/$defs/SparkNode"
           }
+        },
+        {
+          "name": "title",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\"",
+          "description": "提示标题"
+        },
+        {
+          "name": "description",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "说明文本"
         }
       ],
       "emits": [],
@@ -13328,6 +13292,11 @@
         "capabilities"
       ],
       "description": "显式父上下文（可选）。\n\n仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。\n普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。"
+    },
+    "CheckboxGroupMultiValue": {
+      "title": "CheckboxGroupMultiValue",
+      "type": "array",
+      "description": "Next value for the bound model; 用于同步父级状态。"
     },
     "Date": {
       "title": "Date",
@@ -13505,7 +13474,7 @@
           "type": "string",
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@46206": {
+        "__@toPrimitive@881": {
           "type": "string",
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
         }
@@ -13554,7 +13523,7 @@
         "toUTCString",
         "toISOString",
         "toJSON",
-        "__@toPrimitive@46206"
+        "__@toPrimitive@881"
       ],
       "description": "当前日期"
     },
@@ -13613,13 +13582,6 @@
     "MultiValue": {
       "title": "MultiValue",
       "type": "array",
-      "items": {
-        "type": [
-          "string",
-          "number",
-          "boolean"
-        ]
-      },
       "description": "Next value for the bound model; 用于同步父级状态。"
     },
     "r-editor": {
@@ -14079,12 +14041,6 @@
     "TransferValue": {
       "title": "TransferValue",
       "type": "array",
-      "items": {
-        "type": [
-          "string",
-          "number"
-        ]
-      },
       "description": "Next value for the bound model; 用于同步父级状态。"
     }
   }

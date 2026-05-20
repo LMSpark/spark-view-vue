@@ -79,7 +79,7 @@ function createLeaveModule(execute = vi.fn()): AiModuleRegistration {
     name: 'Leave approval',
     description: 'Help users finish a leave request.',
     prompt: 'Collect leave reason only.',
-    getFunctions: () => functions,
+    functionRegistrations: functions,
   }
 }
 
@@ -89,20 +89,20 @@ function createDepartmentModule(): AiModuleRegistration {
     name: 'Department',
     description: 'Manage department information.',
     instanceParam: { name: 'departmentId', description: '当前部门 ID' },
-    getFunctions: () => [],
+    functionRegistrations: [],
     modules: [
       {
         moduleId: 'personnel',
         name: 'Personnel',
         description: 'Manage personnel in a department.',
         instanceParam: { name: 'personId', description: '当前人员 ID' },
-        getFunctions: () => [],
+        functionRegistrations: [],
         modules: [
           {
             moduleId: 'basicInfo',
             name: 'Basic info',
             description: 'Manage basic personnel information.',
-            getFunctions: () => [
+            functionRegistrations: [
               {
                 functionId: 'update',
                 description: 'Update person basic info.',
@@ -126,7 +126,7 @@ describe('AI core module projection and translation API', () => {
   it('registers business roots without owning business live state', async () => {
     const core = createDeterministicRuntime()
     const liveState = { touched: false }
-const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      name: 'Leave approval',      description: 'Leave approval business.',      prompt: 'Help users finish a leave request. Collect leave reason only.',      getFunctions: () => [{        functionId: 'setReason',        description: 'Set leave reason.',        paramsSchema: {          type: 'object',          properties: { reason: { type: 'string' } },          required: ['reason'],        },      }],    }
+const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      name: 'Leave approval',      description: 'Leave approval business.',      prompt: 'Help users finish a leave request. Collect leave reason only.',      functionRegistrations: [{        functionId: 'setReason',        description: 'Set leave reason.',        paramsSchema: {          type: 'object',          properties: { reason: { type: 'string' } },          required: ['reason'],        },      }],    }
 
     const api = core.registerModule(business)
     const started = await api.startSession({
@@ -316,7 +316,7 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
     expect(departmentApi.getRegistration()).toBe(departmentApi.registration)
     expect('getRegistrationData' in departmentApi).toBe(false)
     expect('getRegistrationStoreSnapshot' in departmentApi).toBe(false)
-    expect(departmentApi.registration.getFunctions()).toEqual([])
+    expect(departmentApi.registration.functionRegistrations).toEqual([])
     expect(departmentApi.registration.modules?.map((module) => module.moduleId)).toEqual(['personnel'])
   })
 
@@ -687,13 +687,13 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
       moduleId: 'workflow',
       name: 'Workflow',
       description: 'Root workflow.',
-      getFunctions: () => [],
+      functionRegistrations: [],
       modules: [
         {
           moduleId: 'tool',
           name: 'Tool A',
           description: 'First tool.',
-          getFunctions: () => [{
+          functionRegistrations: [{
             functionId: 'run',
             description: 'Run first tool.',
             paramsSchema: NO_PARAMS_SCHEMA,
@@ -703,7 +703,7 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
           moduleId: 'tool',
           name: 'Tool B',
           description: 'Second tool.',
-          getFunctions: () => [{
+          functionRegistrations: [{
             functionId: 'run',
             description: 'Run second tool.',
             paramsSchema: NO_PARAMS_SCHEMA,

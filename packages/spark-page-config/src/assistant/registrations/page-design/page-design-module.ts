@@ -468,7 +468,7 @@ function createServiceMethodBinding(row: AiFunctionRegistration, methodName: str
 function createLifecycleHandlers(
   service: PageDesignService,
 ): readonly PageDesignFunctionHandler[] {
-  return LIFECYCLE_TOOL_MODULE.getFunctions().map((row) => ({
+  return LIFECYCLE_TOOL_MODULE.functionRegistrations.map((row) => ({
     functionId: row.functionId,
     validate: (args) => validateFunctionParams(row, args),
     apply: (_args, context) => {
@@ -492,7 +492,7 @@ function createLifecycleHandlers(
 function createTextModelHandlers(
   service: PageDesignService,
 ): readonly PageDesignFunctionHandler[] {
-  return TEXT_MODEL_TOOL_MODULE.getFunctions().map((row) => ({
+  return TEXT_MODEL_TOOL_MODULE.functionRegistrations.map((row) => ({
     functionId: row.functionId,
     validate: (args) => validateFunctionParams(row, args),
     apply: (args, context) => {
@@ -566,7 +566,7 @@ function createKnowledgeHandlers(
 function createNodeTreeHandlers(
   service: PageDesignService,
 ): readonly PageDesignFunctionHandler[] {
-  return NODE_TREE_TOOL_MODULE.getFunctions().map((row) => ({
+  return NODE_TREE_TOOL_MODULE.functionRegistrations.map((row) => ({
     functionId: row.functionId,
     validate: (args) => validateFunctionParams(row, args),
     apply: (args, context) => {
@@ -593,7 +593,7 @@ function createDatasetHandlers(
     'addAggregate', 'updateAggregate', 'removeAggregate',
     'setComputeExpression', 'clearComputeExpression',
   ])
-  return DATASET_TOOL_MODULE.getFunctions().map((row) => ({
+  return DATASET_TOOL_MODULE.functionRegistrations.map((row) => ({
     functionId: row.functionId,
     validate: (args) => validateFunctionParams(row, args),
     apply: (args, context) => {
@@ -611,10 +611,10 @@ function createPageDesignRuntimeModule(
   handlers: readonly PageDesignFunctionHandler[],
 ): AiModuleRegistration {
   const allRows: readonly AiFunctionRegistration[] = [
-    ...LIFECYCLE_TOOL_MODULE.getFunctions(),
-    ...TEXT_MODEL_TOOL_MODULE.getFunctions(),
-    ...NODE_TREE_TOOL_MODULE.getFunctions(),
-    ...DATASET_TOOL_MODULE.getFunctions(),
+    ...LIFECYCLE_TOOL_MODULE.functionRegistrations,
+    ...TEXT_MODEL_TOOL_MODULE.functionRegistrations,
+    ...NODE_TREE_TOOL_MODULE.functionRegistrations,
+    ...DATASET_TOOL_MODULE.functionRegistrations,
     ...new AiKnowledgeCatalog().parameterTable,
     ...PAGE_DESIGN_PAYLOAD_FUNCTIONS,
   ]

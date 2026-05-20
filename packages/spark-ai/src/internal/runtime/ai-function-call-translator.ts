@@ -161,7 +161,7 @@ export class AiFunctionCallTranslator {
     if (actionPathError !== null) return actionPathError
 
     // 阶段 7：查找函数定义
-    const definition = targetModule.getFunctions().find((candidate) => candidate.functionId === address.function)
+    const definition = targetModule.functionRegistrations.find((candidate) => candidate.functionId === address.function)
     if (definition === undefined) {
       return createFunctionCallFailure(
         'FUNCTION_DEFINITION_MISSING',

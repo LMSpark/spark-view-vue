@@ -158,7 +158,7 @@ function toServiceContext(context: LeaveRequestRuntimeContext | FunctionExecutio
 
 /** 基于函数注册表的 paramsSchema 校验 LLM 传入的参数。 */
 function validateParams(functionId: string, args: unknown): string | null {
-  const row = LEAVE_REQUEST_REGISTRATION.getFunctions().find((r) => r.functionId === functionId)
+  const row = LEAVE_REQUEST_REGISTRATION.functionRegistrations.find((r) => r.functionId === functionId)
   if (!row) return `未知 ${functionId} 函数`
   const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
   return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
@@ -242,7 +242,7 @@ export class LeaveRequestModule extends RuntimeBackedBusinessModule {
         'Live state 由人工请假服务维护；不要声称已经保存到数据库，除非 submitDraft 成功。',
         '提交前必须补齐必填字段；日期不明确时先追问，不要猜测。',
       ].join('\n'),
-      functionRegistrations: LEAVE_REQUEST_REGISTRATION.getFunctions(),
+      functionRegistrations: LEAVE_REQUEST_REGISTRATION.functionRegistrations,
       runtimeOptions: options.now === undefined ? {} : { now: options.now },
     })
     this.service = service
