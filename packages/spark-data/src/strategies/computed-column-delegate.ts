@@ -5,7 +5,7 @@
  * - 表达式编译（`new Function` + `with` 沙箱）、子表聚合函数注入
  * - 已编译函数注册表（`ComputedColumnDelegate`）
  * - 编译缓存管理（列指纹 + ctx 变更检测）
- * - 聚合解析器构建（通过 Host 接口访问 DataSet/DataRelation）
+ * - 聚合解析器构建（通过 DataView 访问 DataSet/DataRelation）
  *
  * DataView 仅保留薄代理（setComputedContext / recomputeColumns / aggregateResult getter），
  * 所有编排逻辑委托到本文件。
@@ -29,24 +29,49 @@
 
 import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
 import type { DataRow, ComputedColumnFn, TableRelation } from '../types'
+import type { DataSet } from '../dataset'
+import type { DataView } from '../data-view'
 
 const logger = Logger('DataView:Computed')
 
 // ─────────────────────────────────────────────
-// 类型 & 接口
+// 类型
 // ─────────────────────────────────────────────
 
 /** 表达式求值时可传入的外部上下文（在表达式中以 `ctx` 变量引用） */
-export type ComputedColumnContext = Record<string, unknown>
+type ComputedColumnContext = Record<string, unknown>
 
 /**
- * 聚合解析器——提供子表行解析（$sum/$count/$avg/$min/$max/$list/$join）。
+ * 子表聚合行解析器（$sum/$count/$avg/$min/$max/$list/$join）。
  *
  * 子表引用格式：`'子表名'`。当前 resolver 按 TableRelation.childTable 匹配并读取 default 视图。
  */
-export interface AggregateResolver {
-  /** 解析子表匹配行（$sum/$count/$avg/$min/$max/$list/$join） */
-  resolveChildRows(childRef: string, parentRow: DataRow): DataRow[]
+class ComputedColumnAggregateResolver {
+  private readonly relMap = new Map<string, TableRelation>()
+
+  constructor(
+    relations: readonly TableRelation[],
+    private readonly dataSet: DataSet,
+    private readonly defaultParentField: string,
+  ) {
+    for (const relation of relations) {
+      if (!this.relMap.has(relation.childTable)) {
+        this.relMap.set(relation.childTable, relation)
+      }
+    }
+  }
+
+  resolveChildRows(childRef: string, parentRow: DataRow): DataRow[] {
+    const rel = this.relMap.get(childRef)
+    if (!rel) return []
+    const parentField = rel.parentField ?? this.defaultParentField
+    const parentValue = parentRow[parentField]
+    if (parentValue === null || parentValue === undefined) return []
+    const childView = this.dataSet.getView(rel.childTable, 'default')
+    const childField = rel.childField
+    if (!childView || !childField) return []
+    return childView.rows.filter(row => row[childField] === parentValue)
+  }
 }
 
 // ─────────────────────────────────────────────
@@ -76,10 +101,10 @@ const AGG_PATTERN = /\$(?:sum|count|avg|min|max|list|join)\s*\(/
  * compileExpression('amount * ctx.taxRate', { taxRate: 0.13 })
  * compileExpression("$sum('Items', 'amount')", undefined, resolver)
  */
-export function compileExpression(
+function compileExpression(
   expression: string,
   ctx?: ComputedColumnContext,
-  resolver?: AggregateResolver,
+  resolver?: ComputedColumnAggregateResolver,
 ): ComputedColumnFn {
   if (expression.length > MAX_EXPRESSION_LENGTH) {
     throw new Error(`表达式超长（${expression.length} > ${MAX_EXPRESSION_LENGTH}），已拒绝编译`)
@@ -159,10 +184,10 @@ export function compileExpression(
  * 从 DataColumn[] 批量编译含 `computeExpression` 的列。
  * 编译失败的列跳过并打印警告，不中断其他列。
  */
-export function compileColumnsExpressions(
+function compileColumnsExpressions(
   columns: ReadonlyArray<{ name: string; computeExpression?: string }>,
   ctx?: ComputedColumnContext,
-  resolver?: AggregateResolver,
+  resolver?: ComputedColumnAggregateResolver,
 ): Map<string, ComputedColumnFn> {
   const result = new Map<string, ComputedColumnFn>()
   for (const col of columns) {
@@ -177,44 +202,13 @@ export function compileColumnsExpressions(
 }
 
 // ─────────────────────────────────────────────
-// Host 接口（ISP 最小子集）
-// ─────────────────────────────────────────────
-
-/**
- * ComputedColumnDelegate 所需的宿主能力。
- *
- * DataView 实现此接口，delegate 仅通过此接口访问宿主状态。
- * 遵循 ISP：只暴露计算列编排所需的最小属性集。
- */
-export interface ComputedColumnHost {
-  readonly tableName: string
-  readonly viewId: string
-  readonly primaryKey: string
-  /** 宿主的行数据 */
-  readonly rows: DataRow[]
-  /** DataTable 列定义（可能为 undefined——dataTable 尚未 attach） */
-  readonly columns: ReadonlyArray<{ name: string; computeExpression?: string }> | undefined
-  /** 获取 DataSet 实例（可能为 undefined——无 DataSet 上下文） */
-  getDataSet(): ComputedColumnDataSet | undefined
-}
-
-/**
- * Delegate 所需的 DataSet 最小接口——避免导入完整 DataSet 类型。
- */
-export interface ComputedColumnDataSet {
-  readonly tableRelations: TableRelation[] | undefined
-  getTableChildRelations(parentTable: string): TableRelation[]
-  getView(tableName: string, viewId?: string): { readonly rows: DataRow[] } | undefined
-}
-
-// ─────────────────────────────────────────────
 // ComputedColumnDelegate
 // ─────────────────────────────────────────────
 
 /**
  * 计算列管理器——编译、求值、缓存的统一委托。
  *
- * 通过 ComputedColumnHost 访问 DataView 状态，自身管理：
+ * 通过 DataView 访问运行时状态，自身管理：
  * - 已编译函数注册表（Map<name, fn>）
  * - 编译缓存（列指纹字符串 + ctx 对象引用，=== 比较，零序列化开销）
  * - 聚合解析器构建（DataRelation → 子行解析）
@@ -222,16 +216,13 @@ export interface ComputedColumnDataSet {
 export class ComputedColumnDelegate {
   private _columns = new Map<string, ComputedColumnFn>()
   private _namesCache: ReadonlySet<string> | undefined
-  private _host: ComputedColumnHost
   /** 上次编译时的列表达式指纹（用于检测列定义变更） */
   private _compiledExprKey: string | undefined
   /** 上次编译时传入的 ctx 对象引用（用于检测 ctx 切换，不做深比较） */
   private _compiledCtxRef: ComputedColumnContext | undefined
   private _ctx: ComputedColumnContext = {}
 
-  constructor(host: ComputedColumnHost) {
-    this._host = host
-  }
+  constructor(private readonly host: DataView) {}
 
   // ── 公共 API ─────────────────────────────────
 
@@ -264,8 +255,8 @@ export class ComputedColumnDelegate {
    * 内置编译缓存：列指纹 + ctx 不变时跳过。
    */
   syncFromConfig(): void {
-    const columns = this._host.columns
-    if (!columns?.length) return
+    const columns = this.host.columns
+    if (columns.length === 0) return
 
     // 编译缓存：列表达式指纹（字符串比较）+ ctx 对象引用（=== 比较，不做深序列化）
     // 单次遍历构建指纹，避免 filter+map+join 分配临时数组
@@ -337,35 +328,13 @@ export class ComputedColumnDelegate {
   /**
    * 构建聚合解析器——子表行解析。
    */
-  private _createAggregateResolver(): AggregateResolver | undefined {
-    const ds = this._host.getDataSet()
+  private _createAggregateResolver(): ComputedColumnAggregateResolver | undefined {
+    const ds = this.host.getDataSet()
     if (!ds) return undefined
 
     const tableRelations = ds.tableRelations?.length
-      ? ds.getTableChildRelations(this._host.tableName)
+      ? ds.getTableChildRelations(this.host.tableName)
       : []
-
-    // 双重索引：短键 "childTable"（取第一匹配）
-    const relMap = new Map<string, TableRelation>()
-    for (const r of tableRelations) {
-      if (!relMap.has(r.childTable)) relMap.set(r.childTable, r)
-    }
-
-    const defaultParentField = this._host.primaryKey
-
-    return {
-      resolveChildRows: (childRef: string, parentRow: DataRow): DataRow[] => {
-        const rel = relMap.get(childRef)
-        if (!rel) return []
-        const parentField = rel.parentField ?? defaultParentField
-        const parentValue = parentRow[parentField]
-        if (parentValue === null || parentValue === undefined) return []
-        const childView = ds.getView(rel.childTable, 'default')
-        if (!childView) return []
-        const childField = rel.childField
-        if (!childField) return []
-        return childView.rows.filter(r => r[childField] === parentValue)
-      },
-    }
+    return new ComputedColumnAggregateResolver(tableRelations, ds, this.host.primaryKey)
   }
 }

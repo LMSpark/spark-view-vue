@@ -249,35 +249,7 @@ export interface DataSetSaveChangesResult {
   transaction?: DataSetTransactionResponse
 }
 
-// ── 数据源接口（分层，ISP）──────────────────
-
-/**
- * 最小行数据源——提供行集合 + 列元数据。
- *
- * r-table 等纯列表容器仅需此接口。
- */
-export interface RowDataSource {
-  /** 当前视图行集合，表格/列表/树等数据容器的主要渲染输入。 */
-  rows?: readonly DataRow[]
-  /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
-  columns?: readonly DataColumn[]
-  /** 表名（来自 DataView.tableName） */
-  tableName?: string
-  /** 数据加载状态（Idle / Loading / Loaded / Failed） */
-  requestState?: RequestState
-}
-
-/**
- * 当前行数据源——扩展行集合，增加聚焦行 + 选中行。
- *
- * r-form / r-detail 等详情容器消费此接口。
- */
-export interface CurrentRowSource extends RowDataSource {
-  /** 当前聚焦行（UI 高亮行 / 级联父行） */
-  currentRow?: DataRow | null
-  /** 当前选中行集合（勾选行 / 级联选中行） */
-  selectedRows?: readonly DataRow[]
-}
+// ── 数据源契约 ──────────────────────────────
 
 /**
  * 完整数据源全量接口，包含分页、聚合结果、权限、值序列化。
@@ -301,7 +273,19 @@ export interface CurrentRowSource extends RowDataSource {
  * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */
-export interface DataSource extends CurrentRowSource {
+export interface DataSource {
+  /** 当前视图行集合，表格/列表/树等数据容器的主要渲染输入。 */
+  rows?: readonly DataRow[]
+  /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
+  columns?: readonly DataColumn[]
+  /** 表名（来自 DataView.tableName） */
+  tableName?: string
+  /** 数据加载状态（Idle / Loading / Loaded / Failed） */
+  requestState?: RequestState
+  /** 当前聚焦行（UI 高亮行 / 级联父行） */
+  currentRow?: DataRow | null
+  /** 当前选中行集合（勾选行 / 级联选中行） */
+  selectedRows?: readonly DataRow[]
   /** 模型级权限快照，供工具栏和容器判断新增、导入、导出等按钮可用性。 */
   _modelPerm?: ModelPermission
   /** 当前查询结果总行数，用于分页器展示总量。 */

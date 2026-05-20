@@ -9,8 +9,8 @@
  * - 数据校验代理
  * - CRUD 生命周期事件（before/after hooks）
  *
- * 通过 CrudHost 接口与宿主（DataView）交互，
- * 不直接依赖 DataView 类（避免循环引用）。
+ * 通过 DataView 宿主交互。delegate 是 DataView 的内部职责切分，
+ * 不再维护单实现宿主接口。
  *
  * CrudService 实例由 DataTable 持有并缓存（模型级共享）。
  */
@@ -22,10 +22,14 @@ import type {
   CrudOperationConfig, QueryParams,
 } from '../types'
 import type { ValidationResult, ValidationError } from '../validation'
-import type { CrudHost, EmitCrudLifecycleFn, MutatingFn, CrudOperation } from './types'
+import type { DataView } from '../data-view'
+import type { CrudLifecycleEvent, CrudOperation } from './types'
 import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
+
+type EmitCrudLifecycleFn = (event: CrudLifecycleEvent) => void
+type MutatingFn = (delta: 1 | -1, error?: Error | null) => void
 
 function isDataRow(value: unknown): value is DataRow {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
@@ -45,7 +49,7 @@ function dataRowFromPartial(row: Partial<DataRow>): DataRow {
 export class CrudDelegate {
 
   constructor(
-    private host: CrudHost,
+    private host: DataView,
     private emitCrudLifecycle: EmitCrudLifecycleFn,
     private emitMutating: MutatingFn,
   ) {}
@@ -396,9 +400,9 @@ export class CrudDelegate {
       if (result.success) {
         this.host.resetState()
         // fire-and-forget：结果经领域事件通知；捕获异常防止 unhandled rejection
-        try { this.host.requestData() } catch (e: unknown) {
+        void this.host.requestData().catch((e: unknown) => {
           logger.error('importData 后 requestData 失败', e)
-        }
+        })
       }
       this.fireAfter('import', file, result)
       return result

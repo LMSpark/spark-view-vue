@@ -11,11 +11,11 @@
  *
  * 子类仅需实现：
  *   - `executeRequest(config): Promise<HttpResponse<unknown>>`  — 适配层核心
- *   - `normalizeAdapterError(err, config?): RequestError`    — 适配层错误转换
+ *   - 需要识别适配器特定错误时，再覆盖 `normalizeTransportError`
  *
  * 设计原则：
  *   - SRP：基类只管公共流程，子类只管传输适配
- *   - OCP：扩展新传输层只需新子类 + 2 个方法
+ *   - OCP：扩展新传输层只需新子类 + executeRequest()
  *   - DRY：重试、缓存、拦截器、快捷方法仅存一处
  */
 
@@ -66,10 +66,19 @@ export abstract class HttpClientBase {
    */
   protected abstract executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>>
 
+  /** 将错误转换为统一 RequestError，保留已经归一化过的错误。 */
+  protected normalizeAdapterError(err: unknown, config?: RequestConfig): RequestError {
+    if (this.isRequestError(err)) return err
+    return this.normalizeTransportError(err, config)
+  }
+
   /**
-   * 将适配层特定错误（如 AxiosError、fetch TypeError）转换为统一 RequestError。
+   * 将适配器原始错误转换为统一 RequestError。适配器可覆盖以保留 status/code/response 等细节。
    */
-  protected abstract normalizeAdapterError(err: unknown, config?: RequestConfig): RequestError
+  protected normalizeTransportError(err: unknown, config?: RequestConfig): RequestError {
+    const base = err instanceof Error ? err : new Error(String(err))
+    return this.buildRequestError(base.message, config ?? { url: '' }, { code: 'ERR_NETWORK' })
+  }
 
   // ==================== 拦截器 ====================
 
@@ -143,7 +152,7 @@ export abstract class HttpClientBase {
         }
         return unwrapped
       } catch (err) {
-        const normalized = this.isRequestError(err) ? err : this.normalizeAdapterError(err, merged)
+        const normalized = this.normalizeAdapterError(err, merged)
         const transformed = await this.applyResponseErrorInterceptors(normalized)
         // 用户主动取消（signal.abort）不重试——信号已中止说明调用方不希望继续
         const userCancelled = merged.signal?.aborted === true

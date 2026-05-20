@@ -35,7 +35,6 @@ import type { CrudLifecycleEvent } from './strategies/types'
 
 import { PrimaryKeyDelegate } from './strategies/primary-key-delegate'
 import { ComputedColumnDelegate } from './strategies/computed-column-delegate'
-import type { ComputedColumnContext } from './strategies/computed-column-delegate'
 import { DirtyTrackingDelegate } from './strategies/dirty-tracking-delegate'
 import { AggregateDelegate } from './strategies/aggregate-delegate'
 import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-delegate'
@@ -627,7 +626,7 @@ export class DataView implements DataSource {
   // ─────────────────────────────────────────────
 
   /** 设置计算列共享上下文（表达式中通过 ctx 引用），重新编译并对现有 rows 求值 */
-  setComputedContext(ctx: ComputedColumnContext): void {
+  setComputedContext(ctx: Record<string, unknown>): void {
     this._computedDelegate.setContext(ctx)
     this._applyComputedColumns(this.rows)
     this.aggregateDelegate.recompute(this.rows, this.selectedRows)
@@ -1012,14 +1011,11 @@ export class DataView implements DataSource {
 
   /** 获取手工编辑追踪委托（懒初始化） */
   private get dirtyTrackingDelegate(): DirtyTrackingDelegate {
-    if (!this._dirtyTrackingDelegate) {
-      const view = this
-      this._dirtyTrackingDelegate = new DirtyTrackingDelegate({
-        get columns() { return view._dataTable?.columns },
-        getComputedColumnNames: () => view._computedDelegate.names,
-        getPrimaryKeyFields: () => view.effectivePkFields,
-      })
-    }
+    this._dirtyTrackingDelegate ??= new DirtyTrackingDelegate(
+      () => this._dataTable?.columns,
+      () => this._computedDelegate.names,
+      () => this.effectivePkFields,
+    )
     return this._dirtyTrackingDelegate
   }
 
@@ -1089,36 +1085,36 @@ export class DataView implements DataSource {
   }
 
   // ─────────────────────────────────────────────
-  // 接口实现 getter（CrudHost / CascadeHost）
+  // 委托所需的 DataTable 派生能力
   // ─────────────────────────────────────────────
 
-  /** CascadeHost：向上访问 DataSet（独立 DataTable 未关联 DataSet 时返回 undefined） */
+  /** 向上访问 DataSet（独立 DataTable 未关联 DataSet 时返回 undefined） */
   get dataSet(): DataSet | undefined {
     this.checkDestroyed()
     return this.checkDataTableAttached().dataSet
   }
 
-  /** CrudHost: CrudService 实例 */
+  /** CrudService 实例 */
   get crudService(): CrudService | undefined { this.checkDestroyed(); return this.checkDataTableAttached().crudService }
-  /** CrudHost: CRUD 操作配置 */
+  /** CRUD 操作配置 */
   get crudConfig(): CrudOperationConfig | undefined { this.checkDestroyed(); return this.checkDataTableAttached().crudConfig }
-  /** CrudHost: 数据校验器 */
+  /** 数据校验器 */
   get validator(): DataValidator | undefined { this.checkDestroyed(); return this.checkDataTableAttached().validator }
 
   // ─────────────────────────────────────────────
-  // 主键（RowStore 接口 + SaveChangesHost 接口 + 公共委托访问器）
+  // 主键（委托访问器 + 公共访问器）
   // ─────────────────────────────────────────────
 
   /** 主键委托访问器（setPrimaryKeyGenerator / generatePrimaryKey 等通过 view.pk.xxx 访问） */
   get pk(): PrimaryKeyDelegate { return this._primaryKeyDelegate }
 
-  /** RowStore: 实际生效的主键字段名列表（不含合成列 `_pk`） */
+  /** 实际生效的主键字段名列表（不含合成列 `_pk`） */
   get effectivePkFields(): string[] { return this._primaryKeyDelegate.effectivePkFields }
 
-  /** RowStore: 获取行的主键值（标量） */
+  /** 获取行的主键值（标量） */
   getPkKey(row: DataRow): string | number | undefined { return this._primaryKeyDelegate.getPkKey(row) }
 
-  /** SaveChangesHost: 从行数据构建服务端 PK payload */
+  /** 从行数据构建服务端 PK payload */
   buildServerPk(row: DataRow): Record<string, unknown> { return this._primaryKeyDelegate.buildServerPk(row) }
 
   // ─────────────────────────────────────────────

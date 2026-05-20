@@ -13,7 +13,7 @@ import type {
   PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config'
-import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'
 
@@ -120,11 +120,6 @@ class RecordingHttpClient extends HttpClientBase {
       statusText: 'OK',
       headers: {},
     }
-  }
-
-  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
-    const message = error instanceof Error ? error.message : String(error)
-    return this.buildRequestError(message, config ?? { url: '' })
   }
 }
 

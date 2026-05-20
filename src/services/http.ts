@@ -25,8 +25,8 @@
  * ```
  */
 
-import { HttpClientBase, createHttpClient, createRequest, isRequestError } from '@spark-view/spark-utils'
-import type { FetchClient, HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import { HttpClientBase, createHttpClient, createRequest } from '@spark-view/spark-utils'
+import type { FetchClient, HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import { getToken, getUser, clearAuth } from './auth'
 
 export function createAuthHeaders(): Record<string, string> {
@@ -49,17 +49,6 @@ class LazyHttpClient extends HttpClientBase {
 
   protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     return getHttpClient().requestFull(config)
-  }
-
-  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
-    if (isRequestError(error)) return error
-    const base = error instanceof Error ? error : new Error(String(error))
-    return Object.assign(new Error(base.message), {
-      config: config ?? { url: '' },
-      name: 'RequestError',
-      status: 0,
-      code: 'ERR_NETWORK',
-    })
   }
 
   override clearCache(url?: string): void {

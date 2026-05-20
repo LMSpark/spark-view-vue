@@ -8,17 +8,20 @@
  * - 无效选中状态清理（行数据刷新后同步调用）
  * - 行索引缓存管理（rowIndexMap，O(n) 构建 O(1) 查找）
  *
- * 通过 SelectionHost 接口与宿主（DataView）交互：
- * - 仅依赖最小公共状态集合，不直接引用 DataView 类（避免循环依赖）
+ * 通过 DataView 宿主交互：
+ * - delegate 是 DataView 的内部职责切分，不再维护单实现宿主接口
  * - 选中状态字段与宿主同引用，外部访问 DataView.currentRow 等字段时即可读到最新值
  */
 
 import { Logger } from '@spark-view/spark-utils'
 import type { DataRow } from '../types'
-import type { SelectionHost, EmitCurrentRowChangedFn, EmitSelectedRowsChangedFn } from './types'
+import type { DataView } from '../data-view'
 import { pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
+
+type EmitCurrentRowChangedFn = (originatorId?: string) => void
+type EmitSelectedRowsChangedFn = (originatorId?: string) => void
 
 function isDataRow(value: unknown): value is DataRow {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
@@ -34,7 +37,7 @@ export class SelectionDelegate {
   private _cachedIdToRowMap: Map<string | number, DataRow> | undefined
 
   constructor(
-    private host: SelectionHost,
+    private host: DataView,
     private emitCurrentRowChanged: EmitCurrentRowChangedFn,
     private emitSelectedRowsChanged: EmitSelectedRowsChangedFn,
   ) {}

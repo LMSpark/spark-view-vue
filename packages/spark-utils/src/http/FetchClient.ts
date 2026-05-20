@@ -20,7 +20,7 @@ export class FetchClient extends HttpClientBase {
 
   // ==================== 模板方法实现 ====================
 
-  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+  protected override async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     const response = await this.fetchRaw(config)
 
     if (!response.ok) {
@@ -36,7 +36,7 @@ export class FetchClient extends HttpClientBase {
     }
   }
 
-  protected normalizeAdapterError(err: unknown, config?: RequestConfig): RequestError {
+  protected override normalizeTransportError(err: unknown, config?: RequestConfig): RequestError {
     const base = err instanceof Error ? err : new Error(String(err))
     // 区分三种网络错误：用户取消 / 超时 / 其他网络故障
     const code = base.name === 'AbortError'   ? 'ECONNABORTED'

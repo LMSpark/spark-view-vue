@@ -17,8 +17,8 @@ import type {
   PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config'
-import { HttpClientBase, createRequest, isRequestError, Logger } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
 
@@ -269,17 +269,6 @@ class ScopedHttpClient extends HttpClientBase {
 
   protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     return this.baseClient.requestFull(this.rewriteConfig(config))
-  }
-
-  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
-    if (isRequestError(error)) return error
-    const base = error instanceof Error ? error : new Error(String(error))
-    return Object.assign(new Error(base.message), {
-      config: config ?? { url: '' },
-      name: 'RequestError',
-      status: 0,
-      code: 'ERR_NETWORK',
-    })
   }
 
   override clearCache(url?: string): void {

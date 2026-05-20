@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { HttpClientBase } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import { DataSet } from '../dataset'
 import { TreeManager } from '../tree-manager'
 import type { FlatTreeNode } from '../types'
@@ -29,12 +29,6 @@ class TreeHttpClient extends HttpClientBase {
       headers: {},
     }
   }
-
-  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
-    const message = error instanceof Error ? error.message : String(error)
-    return this.buildRequestError(message, config ?? { url: '' })
-  }
-
   private dispatch(method: NonNullable<RequestConfig['method']>, config: RequestConfig): Promise<unknown> {
     switch (method) {
       case 'GET':

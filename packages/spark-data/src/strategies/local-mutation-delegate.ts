@@ -13,12 +13,15 @@
  */
 
 import type { DataRow } from '../types'
-import type { EmitRowsChangedFn, LocalMutationHost, PostMutationFn } from './types'
+import type { DataView } from '../data-view'
 import { buildPkSet, pruneInvalidSelections } from '../core/utils'
+
+type EmitRowsChangedFn = (options?: { selectionChanged?: boolean }) => void
+type PostMutationFn = (affectedRows: DataRow[] | 'all' | null) => void
 
 export class LocalMutationDelegate {
   constructor(
-    private readonly host: LocalMutationHost,
+    private readonly host: DataView,
     private readonly emitRowsChanged: EmitRowsChangedFn,
     private readonly postMutation?: PostMutationFn,
   ) {}

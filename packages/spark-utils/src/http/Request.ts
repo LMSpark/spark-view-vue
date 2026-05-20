@@ -22,12 +22,12 @@ export class Request extends HttpClientBase {
 
   // ==================== 模板方法实现 ====================
 
-  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+  protected override async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     const res: AxiosResponse<unknown> = await this.ax.request(this.toAxios(config))
     return this.toHttpResponse(res)
   }
 
-  protected normalizeAdapterError(err: unknown, config?: RequestConfig): RequestError {
+  protected override normalizeTransportError(err: unknown, config?: RequestConfig): RequestError {
     const base = err instanceof Error ? err : new Error(String(err))
 
     if (axios.isAxiosError(err)) {

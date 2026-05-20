@@ -33,37 +33,8 @@
  */
 
 import type { DataRow, DataColumn, CrudResult } from '../types'
-import type { SaveChangesHost, CrudNetworkOps } from './types'
-
-// ─────────────────────────────────────────────
-// Host 接口
-// ─────────────────────────────────────────────
-
-/**
- * DirtyTrackingDelegate 的宿主接口——提供列元数据。
- *
- * 快照和 diff 只关心**可变业务列**：
- * - 排除主键列（isPrimaryKey）
- * - 排除计算列（computeExpression）
- * - 排除权限元字段（_perm / _modelPerm）
- */
-export interface DirtyTrackingHost {
-  /** 返回 DataTable 列定义（未 attach 时可能返回 undefined） */
-  readonly columns: readonly DataColumn[] | undefined
-  /** 返回计算列名集合（用于排除） */
-  getComputedColumnNames(): ReadonlySet<string>
-  /**
-   * 返回实际生效的主键字段名数组。
-   *
-   * 主键来源优先级（与 DataView.primaryKey getter 一致）：
-   * 1. 显式覆盖值（`view.primaryKey = ['orderId', 'productId']`）
-   * 2. 列定义 `isPrimaryKey: true`
-   * 3. 回退 `['id']`
-   *
-   * 返回数组而非 string | string[]，方便统一迭代。
-   */
-  getPrimaryKeyFields(): string[]
-}
+import type { DataView } from '../data-view'
+import type { CrudDelegate } from './crud-delegate'
 
 // ─────────────────────────────────────────────
 // 导出类型
@@ -104,11 +75,11 @@ export interface SaveChangesData {
 
 export class DirtyTrackingDelegate {
 
-  private _host: DirtyTrackingHost
-
-  constructor(host: DirtyTrackingHost) {
-    this._host = host
-  }
+  constructor(
+    private readonly getColumns: () => readonly DataColumn[] | undefined,
+    private readonly getComputedColumnNames: () => ReadonlySet<string>,
+    private readonly getPrimaryKeyFields: () => string[],
+  ) {}
 
   // ── 列元数据辅助 ─────────────────────────
 
@@ -121,12 +92,12 @@ export class DirtyTrackingDelegate {
    * 无列定义时回退到 null（getDiff/snapshot 降级为全字段对比）。
    */
   private _getEditableFields(): Set<string> | null {
-    const columns = this._host.columns
+    const columns = this.getColumns()
     if (!columns?.length) return null
 
     // 实际生效的主键字段（可能来自 override 而非 col.isPrimaryKey）
-    const pkFields = new Set(this._host.getPrimaryKeyFields())
-    const computedNames = this._host.getComputedColumnNames()
+    const pkFields = new Set(this.getPrimaryKeyFields())
+    const computedNames = this.getComputedColumnNames()
     const fields = new Set<string>()
     for (const col of columns) {
       // 排除主键列——同时兼顾 col.isPrimaryKey 标记和实际 primaryKey 覆盖
@@ -400,8 +371,8 @@ export class DirtyTrackingDelegate {
    * @param ids  指定要保存的行主键列表；不传则保存全部待提交变更
    */
   async executeChanges(
-    host: SaveChangesHost,
-    crud: CrudNetworkOps,
+    host: DataView,
+    crud: CrudDelegate,
     ids?: Array<string | number>,
   ): Promise<CrudResult<SaveChangesData>> {
     const filterByIds = ids !== undefined ? new Set(ids) : undefined

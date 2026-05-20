@@ -3,7 +3,7 @@ import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { compileRule, parsePageData } from '@spark-view/spark-page-config'
 import { HttpClientBase } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import { executeSaveDataSet } from '../packages/spark-component/src/page/actions/action-data'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions/action-types'
@@ -85,11 +85,6 @@ class TransactionMockHttpClient extends HttpClientBase {
       statusText: 'OK',
       headers: {},
     }
-  }
-
-  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
-    const message = error instanceof Error ? error.message : String(error)
-    return this.buildRequestError(message, config ?? { url: '' })
   }
 }
 
