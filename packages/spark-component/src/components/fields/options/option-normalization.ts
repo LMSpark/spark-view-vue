@@ -7,6 +7,14 @@ export interface FieldOption {
   children?: FieldOption[]
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isFieldOptionValue(value: unknown): value is FieldOptionValue {
+  return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
+}
+
 export function normalizeOption(
   raw: unknown,
   labelField: string,
@@ -18,25 +26,24 @@ export function normalizeOption(
   if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') {
     return { label: String(raw), value: raw }
   }
-  if (typeof raw !== 'object') return null
+  if (!isRecord(raw)) return null
 
-  const record = raw as Record<string, unknown>
-  const label = record[labelField] ?? record['label'] ?? record['text'] ?? record['name'] ?? record[valueField] ?? record['value']
-  const value = record[valueField] ?? record['value'] ?? record['id'] ?? record['code'] ?? label
-  if (label === undefined || value === undefined) return null
+  const label = raw[labelField] ?? raw['label'] ?? raw['text'] ?? raw['name'] ?? raw[valueField] ?? raw['value']
+  const value = raw[valueField] ?? raw['value'] ?? raw['id'] ?? raw['code'] ?? label
+  if (label === undefined || !isFieldOptionValue(value)) return null
 
-  const rawChildren = record[childrenField] ?? record['children'] ?? record['items'] ?? record['nodes']
+  const rawChildren = raw[childrenField] ?? raw['children'] ?? raw['items'] ?? raw['nodes']
   const children = Array.isArray(rawChildren)
     ? rawChildren
       .map(item => normalizeOption(item, labelField, valueField, childrenField, disabledField))
       .filter((item): item is FieldOption => item !== null)
     : []
 
-  const rawDisabled = record[disabledField] ?? record['disabled']
+  const rawDisabled = raw[disabledField] ?? raw['disabled']
 
   const option: FieldOption = {
     label: String(label),
-    value: value as FieldOptionValue,
+    value,
     disabled: rawDisabled === true,
   }
 
@@ -48,14 +55,14 @@ export function normalizeOption(
 }
 
 export function normalizeMultiValue(value: unknown, separator = ','): FieldOptionValue[] {
-  if (Array.isArray(value)) return value as FieldOptionValue[]
+  if (Array.isArray(value)) return value.filter(isFieldOptionValue)
   if (typeof value === 'string') {
     if (!value.trim()) return []
     if (separator === '') return [value]
     return value.split(separator).map(item => item.trim())
   }
   if (value === null || value === undefined || value === '') return []
-  return [value as FieldOptionValue]
+  return isFieldOptionValue(value) ? [value] : []
 }
 
 export function flattenOptions(source: FieldOption[]): FieldOption[] {

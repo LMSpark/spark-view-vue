@@ -66,6 +66,10 @@ const startupLogger = createLogger('main')
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 consumePendingLogout()
 
 // late-binding pageId（路由就绪后由 afterMount 注入）
@@ -114,13 +118,19 @@ function isPlatformAdminUser(user = getUser()): boolean {
   return user?.tenantId === 'platform' && Array.isArray(user.roles) && user.roles.includes('platform_admin')
 }
 
+function normalizeChildPlacement(value: string | undefined): 'header' | 'sidebar' {
+  if (value === undefined || value === 'header') return 'header'
+  if (value === 'sidebar') return 'sidebar'
+  throw new Error(`Invalid navigation childPlacement: ${value}`)
+}
+
 function normalizeNavData(data: { childPlacement?: string; children?: unknown[]; homePath?: string }): {
   childPlacement: 'header' | 'sidebar'
   children: unknown[]
   homePath?: string
 } {
   return {
-    childPlacement: (data.childPlacement ?? 'header') as 'header' | 'sidebar',
+    childPlacement: normalizeChildPlacement(data.childPlacement),
     children: Array.isArray(data.children) ? data.children : [],
     ...(data.homePath ? { homePath: data.homePath } : {}),
   }
@@ -190,10 +200,9 @@ async function startApp() {
           const cached = localStorage.getItem(k)
           if (cached === null) return false
           const parsed: unknown = JSON.parse(cached)
-          if (parsed === null || typeof parsed !== 'object') return true  // 格式不合法
-          const obj = parsed as { data?: unknown }
+          if (!isRecord(parsed)) return true  // 格式不合法
           // :raw 槽位必须存字符串（原始文件内容）
-          if (k.endsWith(':raw') && typeof obj.data !== 'string') return true
+          if (k.endsWith(':raw') && typeof parsed['data'] !== 'string') return true
         } catch { return true /* JSON.parse 失败 → 强制清除 */ }
         return false
       })

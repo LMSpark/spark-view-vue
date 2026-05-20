@@ -46,6 +46,30 @@ function isAuthUser(value: unknown): value is AuthUser {
     && typeof value['defaultProjectId'] === 'string'
 }
 
+function readOptionalString(record: Record<string, unknown>, key: string): string | undefined {
+  const value = record[key]
+  return typeof value === 'string' ? value : undefined
+}
+
+function normalizeAuthUser(value: unknown, defaultProjectId: unknown, context: string): AuthUser {
+  if (!isRecord(value) || typeof value['userId'] !== 'string') {
+    throw new Error(`${context}缺少有效 user 对象`)
+  }
+  const username = readOptionalString(value, 'username') ?? value['userId']
+  return {
+    userId: value['userId'],
+    username,
+    displayName: readOptionalString(value, 'displayName') ?? username,
+    email: readOptionalString(value, 'email') ?? '',
+    avatar: readOptionalString(value, 'avatar') ?? '',
+    roles: isStringArray(value['roles']) ? value['roles'] : [],
+    tenantId: readOptionalString(value, 'tenantId') ?? '',
+    defaultProjectId: typeof defaultProjectId === 'string' && defaultProjectId.length > 0
+      ? defaultProjectId
+      : readOptionalString(value, 'defaultProjectId') ?? 'homepage',
+  }
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
@@ -133,11 +157,7 @@ export async function login(params: LoginParams): Promise<AuthUser> {
   const token = data['token']
   const user = data['user']
   if (typeof token !== 'string' || token === '') throw new Error('登录响应缺少有效 token')
-  if (typeof user !== 'object' || user === null || typeof (user as Record<string, unknown>)['userId'] !== 'string') {
-    throw new Error('登录响应缺少有效 user 对象')
-  }
-  const authUser = user as AuthUser
-  authUser.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
+  const authUser = normalizeAuthUser(user, data['defaultProjectId'], '登录响应')
   saveAuth(token, authUser)
   return authUser
 }
@@ -163,11 +183,7 @@ export async function register(params: RegisterParams): Promise<AuthUser> {
   const token = data['token']
   const user = data['user']
   if (typeof token !== 'string' || token === '') throw new Error('注册响应缺少有效 token')
-  if (typeof user !== 'object' || user === null || typeof (user as Record<string, unknown>)['userId'] !== 'string') {
-    throw new Error('注册响应缺少有效 user 对象')
-  }
-  const authUser = user as AuthUser
-  authUser.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
+  const authUser = normalizeAuthUser(user, data['defaultProjectId'], '注册响应')
   saveAuth(token, authUser)
   return authUser
 }
@@ -184,11 +200,7 @@ export async function registerTenant(params: RegisterTenantParams): Promise<Auth
   const token = data['token']
   const user = data['user']
   if (typeof token !== 'string' || token === '') throw new Error('租户注册响应缺少有效 token')
-  if (typeof user !== 'object' || user === null || typeof (user as Record<string, unknown>)['userId'] !== 'string') {
-    throw new Error('租户注册响应缺少有效 user 对象')
-  }
-  const authUser = user as AuthUser
-  authUser.defaultProjectId = (data['defaultProjectId'] as string | undefined) ?? 'homepage'
+  const authUser = normalizeAuthUser(user, data['defaultProjectId'], '租户注册响应')
   saveAuth(token, authUser)
   return authUser
 }

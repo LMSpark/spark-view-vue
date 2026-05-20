@@ -19,6 +19,7 @@ import { ref, computed, watch } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import { coercePrimitiveOptionValue } from './composables/fieldValueCoercion'
 import type { RSegmentedProps } from './FieldSegmented.props'
 
 const props = withDefaults(defineProps<RSegmentedProps>(), {
@@ -41,6 +42,7 @@ const { optionResult, handleControlledChange } = useOptionFieldState<string | nu
   props,
   fieldType: 'r-segmented',
   fallbackValue: '',
+  coerce: coercePrimitiveOptionValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
@@ -85,4 +87,3 @@ async function handleChange(val: string | number) {
   emit('change', val)
 }
 </script>
-

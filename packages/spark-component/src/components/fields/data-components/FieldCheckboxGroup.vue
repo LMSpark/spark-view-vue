@@ -24,6 +24,7 @@
 import { computed } from 'vue'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coercePrimitiveOptionArray } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RCheckboxGroupProps } from './FieldCheckboxGroup.props'
 
@@ -40,6 +41,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<M
   props,
   fieldType: 'r-checkbox-group',
   fallbackValue: [],
+  coerce: coercePrimitiveOptionArray,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
@@ -50,22 +52,17 @@ const displayValue = computed<MultiValue>(() => {
   const rowValue = boundField ? currentRow.value?.[boundField] : undefined
 
   if (rowValue !== undefined) {
-    return Array.isArray(rowValue) ? (rowValue as MultiValue) : []
+    return coercePrimitiveOptionArray(rowValue)
   }
 
-  if (!boundField && Array.isArray(props.modelValue)) {
-    return props.modelValue as MultiValue
+  if (!boundField) {
+    return coercePrimitiveOptionArray(props.modelValue)
   }
 
-  const rawValue = fieldValue.value
-  if (Array.isArray(rawValue)) {
-    return rawValue as MultiValue
-  }
-  return []
+  return coercePrimitiveOptionArray(fieldValue.value)
 })
 
 async function handleChange(value: MultiValue): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
-

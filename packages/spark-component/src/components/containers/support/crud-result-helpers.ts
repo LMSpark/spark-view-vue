@@ -5,16 +5,14 @@
  */
 import type { CrudResult, DataRow } from '@spark-view/spark-data'
 
-/** 运行时 CrudResult 形状检测用中间类型（仅供 isCrudResult 内部收窄使用） */
-interface CrudResultShape {
-  success: unknown
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 export function isCrudResult<T>(value: unknown): value is CrudResult<T> {
-  return value !== null
-    && typeof value === 'object'
+  return isRecord(value)
     && 'success' in value
-    && typeof (value as CrudResultShape).success === 'boolean'
+    && typeof value['success'] === 'boolean'
 }
 
 export function isCrudSuccess<T>(value: boolean | DataRow | CrudResult<T>): boolean {

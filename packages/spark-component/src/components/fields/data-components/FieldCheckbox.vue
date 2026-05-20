@@ -20,6 +20,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceBooleanValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RCheckboxProps } from './FieldCheckbox.props'
 
@@ -41,6 +42,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   fieldType: 'r-checkbox',
   fallbackValue: false,
   formatDisplay: formatCheckboxValue,
+  coerce: coerceBooleanValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

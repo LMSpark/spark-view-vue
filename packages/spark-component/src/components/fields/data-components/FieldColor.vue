@@ -41,6 +41,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RColorProps } from './FieldColor.props'
 
@@ -55,6 +56,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-color',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
+  coerce: coerceStringValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

@@ -2,7 +2,7 @@
   <FieldContextRenderer v-bind="fieldCtx">
     <template #form>
       <el-autocomplete
-        :model-value="fieldValue as string"
+        :model-value="fieldValue"
         :placeholder="placeholder"
         :fetch-suggestions="fetchSuggestions"
         :trigger-on-focus="triggerOnFocus"
@@ -24,6 +24,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RAutocompleteProps } from './FieldAutocomplete.props'
 
@@ -51,6 +52,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-autocomplete',
   fallbackValue: '',
   formatDisplay: value => (value != null ? String(value) : ''),
+  coerce: coerceStringValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

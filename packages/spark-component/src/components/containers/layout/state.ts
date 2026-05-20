@@ -22,9 +22,10 @@ export function useDefaultedSelection<TItem, TValue>(options: {
 
   watch(() => options.items.value, items => {
     if (state.value !== undefined) return
-    if (items.length === 0) return
-    const firstItem = items[0] as TItem
-    state.value = options.getValue(firstItem, 0)
+    for (const firstItem of items) {
+      state.value = options.getValue(firstItem, 0)
+      return
+    }
   }, { immediate: true })
 
   return state

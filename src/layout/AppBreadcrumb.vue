@@ -57,8 +57,8 @@ const crumbs = computed<BreadcrumbItem[]>(() => {
   // 兜底：vue-router matched
   const items: BreadcrumbItem[] = []
   for (const record of route.matched) {
-    const title = record.meta?.['title'] as string | undefined
-    if (title) {
+    const title = record.meta?.['title']
+    if (typeof title === 'string' && title.length > 0) {
       items.push({ path: record.path, title })
     }
   }

@@ -53,6 +53,13 @@ const FILTER_NODE_TYPE_TEXT = 'r-text'
 const FILTER_NODE_TYPE_DATE = 'r-date'
 /** 数字字段组件类型。 */
 const FILTER_NODE_TYPE_NUMBER = 'r-number'
+const FILTER_OPERATORS: ReadonlySet<string> = new Set([
+  '==', '!=', '>', '>=', '<', '<=',
+  'in', 'not in', 'like', 'not like',
+  'is null', 'is not null',
+  'between', 'not between',
+  'startsWith', 'endsWith', 'contains',
+])
 
 // ============================================================
 // § 内部类型与工具函数
@@ -71,34 +78,27 @@ function isEmptyFilterValue(value: unknown): boolean {
   return false
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 function hasNamedColumn(columns: unknown, field: string): boolean | undefined {
   if (!Array.isArray(columns)) return undefined
-  return columns.some(column =>
-    column !== null &&
-    typeof column === 'object' &&
-    (column as { name?: unknown }).name === field,
+  return columns.some((column: unknown) =>
+    isRecord(column) && column['name'] === field,
   )
 }
 
 function viewHasField(view: DataView | null | undefined, field: string): boolean {
   if (!view) return true
-  const fieldView = view as {
-    columns?: unknown
-    getColumn?: (name: string) => unknown
-    rows?: unknown
-  }
 
-  if (typeof fieldView.getColumn === 'function') return fieldView.getColumn(field) !== undefined
+  if (view.getColumn(field) !== undefined) return true
 
-  const columnMatch = hasNamedColumn(fieldView.columns, field)
+  const columnMatch = hasNamedColumn(view.columns, field)
   if (columnMatch !== undefined) return columnMatch
 
-  if (!Array.isArray(fieldView.rows) || fieldView.rows.length === 0) return true
-  return fieldView.rows.some(row =>
-    row !== null &&
-    typeof row === 'object' &&
-    Object.prototype.hasOwnProperty.call(row, field),
-  )
+  if (view.rows.length === 0) return true
+  return view.rows.some(row => Object.prototype.hasOwnProperty.call(row, field))
 }
 
 function assertResidentFieldRefs(
@@ -117,7 +117,7 @@ function assertResidentFieldRefs(
 }
 
 function isRemoteListView(view: DataView): boolean {
-  const table = (view as { dataTable?: { api?: { list?: unknown }; resourceType?: string } }).dataTable
+  const table = view.dataTable
   return table?.resourceType !== 'static-data' && table?.api?.list !== undefined
 }
 
@@ -154,6 +154,23 @@ function getNodeFilterValueRefField(config: SparkNode): string | undefined {
   return value.trim()
 }
 
+function isFilterOperator(value: string): value is FilterOperator {
+  return FILTER_OPERATORS.has(value)
+}
+
+function toFilterValueExpression(value: unknown): FilterValueExpression {
+  if (
+    typeof value === 'string' ||
+    typeof value === 'number' ||
+    typeof value === 'boolean' ||
+    value === null
+  ) {
+    return value
+  }
+  if (Array.isArray(value)) return value.map(toFilterValueExpression)
+  throw new Error(`RendererFilter: 不支持的过滤值类型 ${Object.prototype.toString.call(value)}`)
+}
+
 /** 断言过滤节点数组类型（配置错误 fail-fast）。 */
 function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
   if (Array.isArray(value)) return
@@ -165,7 +182,12 @@ function assertFilterNodesArray(value: unknown): asserts value is SparkNode[] {
  */
 function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator {
   const explicit = nodeInputProp(config, 'filterOp') ?? nodeInputProp(config, 'filterOperator')
-  if (typeof explicit === 'string') return explicit as FilterOperator
+  if (typeof explicit === 'string') {
+    if (!isFilterOperator(explicit)) {
+      throw new Error(`RendererFilter: 不支持的过滤操作符 "${explicit}"`)
+    }
+    return explicit
+  }
 
   if (Array.isArray(value)) {
     if (
@@ -262,7 +284,7 @@ function toResidentFieldRefCondition(descriptor: ResidentFieldRefFilterDescripto
     value: {
       kind: FILTER_VALUE_KIND_FIELD,
       field: descriptor.refField,
-    } as FilterValueExpression,
+    },
   }
 }
 
@@ -273,7 +295,7 @@ function buildCondition(config: SparkNode, value: unknown): FilterExpression | u
   return {
     field,
     op: inferFilterOperator(config, value),
-    value: value as FilterValueExpression,
+    value: toFilterValueExpression(value),
   }
 }
 
@@ -390,17 +412,12 @@ async function applyFilterSafely(params: {
     if (mode === 'execute') {
       await view.executeFilter(expr)
     } else {
-      const filterHost = view as {
-        filterExpression?: FilterExpression
-        refresh?: () => Promise<void>
-      }
       await view.setFilter(expr)
       if (
         isRemoteListView(view) &&
-        !isSameFilterExpression(filterHost.filterExpression, expr) &&
-        typeof filterHost.refresh === 'function'
+        !isSameFilterExpression(view.filterExpression, expr)
       ) {
-        await filterHost.refresh()
+        await view.refresh()
       }
     }
     return true

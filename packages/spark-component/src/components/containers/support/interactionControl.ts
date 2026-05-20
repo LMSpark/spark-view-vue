@@ -10,12 +10,14 @@ export function createCancellableControl(): CancellableControl {
   return { cancel: false }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 export function isCancellableControl(value: unknown): value is CancellableControl {
-  return value !== null
-    && value !== undefined
-    && typeof value === 'object'
+  return isRecord(value)
     && 'cancel' in value
-    && typeof (value as Record<string, unknown>)['cancel'] === 'boolean'
+    && typeof value['cancel'] === 'boolean'
 }
 
 export type InteractionControl = CancellableControl

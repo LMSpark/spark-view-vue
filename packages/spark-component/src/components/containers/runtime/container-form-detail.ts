@@ -194,6 +194,10 @@ export function useFormDetailContainer(
   const contextData = shallowReactive<DataRow>({})
   let prevRow: unknown = Symbol('initial')
 
+  function aggregateToDataRow(row: Readonly<Record<string, unknown>>): DataRow {
+    return { ...row }
+  }
+
   /**
    * 解析当前容器应绑定的"上下文行"。
    *
@@ -206,11 +210,11 @@ export function useFormDetailContainer(
     const view = dataState.resolvedView.value
     // 选中行汇总：仅统计 selectedRows 的聚合输出。
     if (props.contextDataMember === DataMember.SelectionAggregateResult) {
-      return (view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value) as DataRow
+      return aggregateToDataRow(view?.selectionAggregateResult ?? dataState.selectionAggregateResult.value)
     }
     // 全量汇总：统计当前视图 rows 的聚合输出。
     if (props.contextDataMember === DataMember.AggregateResult) {
-      return (view?.aggregateResult ?? dataState.aggregateResult.value) as DataRow
+      return aggregateToDataRow(view?.aggregateResult ?? dataState.aggregateResult.value)
     }
     return dataState.resolvedDataRow.value ?? dataState.currentRow.value
   }

@@ -143,7 +143,7 @@ import {
   useTabPages,
   useTheme,
 } from '@spark-view/spark-app'
-import type { NavNode, AppNavRoot } from '@spark-view/spark-page-config'
+import type { AppNavRoot } from '@spark-view/spark-page-config'
 import {
   APP_SERVICES,
   MODULE_CONTEXT,
@@ -428,7 +428,7 @@ navigationActionRegistry.register('theme-toggle', () => {
 })
 
 /* ── 导航模型（预认证时使用 preAuthNavTree，登录后使用远程导航树） ── */
-const _navRoot = reactive({ title: '', childPlacement: 'header' as AppNavRoot['childPlacement'], children: [] as NavNode[] })
+const _navRoot = reactive<AppNavRoot>({ title: '', childPlacement: 'header', children: [] })
 const nav = useNavigation(_navRoot, {
   onCrossAppNavigate: handleCrossAppNavigate,
   getHeaders: createAuthHeaders,
@@ -565,8 +565,11 @@ onMounted(() => {
   applyNavTree(getNavTree())
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
-  const w = window as unknown as Record<string, unknown>
-  w['__sparkDev'] = { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes }
+  Object.defineProperty(window, '__sparkDev', {
+    value: { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes },
+    configurable: true,
+    writable: true,
+  })
 
   // 允许任意组件通过自定义事件触发导航重新加载
   window.addEventListener('spark:reloadNavigation', () => { void reloadNavigation() })

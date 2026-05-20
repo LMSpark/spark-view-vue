@@ -31,8 +31,13 @@ function resolveModeFromContextChain(start: CapabilityContext | null): FieldRend
   return 'detail'
 }
 
+function isSparkRuntimeOwner(value: unknown): value is SparkRuntimeOwner {
+  return (typeof value === 'object' && value !== null) || typeof value === 'function'
+}
+
 export function useResolvedFieldContext() {
-  const currentOwner = getCurrentInstance() as SparkRuntimeOwner | null
+  const instance = getCurrentInstance()
+  const currentOwner = isSparkRuntimeOwner(instance) ? instance : null
   return computed<FieldRenderMode>(() => {
     const parentContext = sparkResolveParentContext(currentOwner)
     return resolveModeFromContextChain(parentContext)

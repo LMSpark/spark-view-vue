@@ -29,6 +29,7 @@
 import { computed } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceDateFieldValue } from './composables/fieldValueCoercion'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RDateProps, DatePickerType } from './FieldDate.props'
@@ -68,6 +69,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-date',
   fallbackValue: '',
   formatDisplay: formatDateValue,
+  coerce: coerceDateFieldValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
@@ -84,4 +86,3 @@ async function handleChange(value: string | Date | Array<string | Date>): Promis
   await handleControlledChange(value)
 }
 </script>
-

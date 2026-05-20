@@ -24,10 +24,17 @@
  * @description JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。
  */
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
-import type { Content, JSONEditorPropsOptional } from 'vanilla-jsoneditor'
+import type {
+  AjvValidatorOptions,
+  Content,
+  JSONEditorPropsOptional,
+  JSONSchema,
+  JSONSchemaDefinitions,
+} from 'vanilla-jsoneditor'
 
 type SparkJsonEditorMode = 'text' | 'tree' | 'table'
-type SparkJsonSchema = Record<string, unknown>
+type SparkJsonEditorModeValue = NonNullable<JSONEditorPropsOptional['mode']>
+type SparkJsonSchema = JSONSchema
 type SparkJsonEditorValidator = NonNullable<JSONEditorPropsOptional['validator']>
 type SparkJsonEditorRenderValue = NonNullable<JSONEditorPropsOptional['onRenderValue']>
 type SparkJsonEditorRenderValueProps = Parameters<SparkJsonEditorRenderValue>[0]
@@ -43,14 +50,12 @@ interface SparkJsonEditorModule {
     target: HTMLDivElement
     props: JSONEditorPropsOptional
   }) => SparkJsonEditorInstance
-  createAjvValidator?: (options: {
-    schema: SparkJsonSchema
-    schemaDefinitions?: SparkJsonSchema
-  }) => SparkJsonEditorValidator
+  Mode: Record<SparkJsonEditorMode, SparkJsonEditorModeValue>
+  createAjvValidator?: (options: AjvValidatorOptions) => SparkJsonEditorValidator
   renderJSONSchemaEnum?: (
     props: SparkJsonEditorRenderValueProps,
     schema: SparkJsonSchema,
-    schemaDefinitions?: SparkJsonSchema,
+    schemaDefinitions?: JSONSchemaDefinitions,
   ) => SparkJsonEditorRenderValueResult | undefined
   renderValue?: SparkJsonEditorRenderValue
 }
@@ -79,7 +84,7 @@ interface Props {
   /** JSON Schema 校验规则 */
   schema?: SparkJsonSchema | null
   /** JSON Schema 定义引用 */
-  schemaDefinitions?: SparkJsonSchema | null
+  schemaDefinitions?: JSONSchemaDefinitions | null
   /** 是否启用 Schema 校验 */
   enableSchemaValidation?: boolean
   /** 是否启用 Schema 枚举渲染 */
@@ -122,7 +127,7 @@ const rootStyle = computed(() => ({
 
 function toEditorContent(rawText: string): Content {
   try {
-    return { json: JSON.parse(rawText) as unknown }
+    return { json: JSON.parse(rawText) }
   } catch {
     return { text: rawText }
   }
@@ -131,6 +136,10 @@ function toEditorContent(rawText: string): Content {
 function toEditorText(content: Content): string {
   if ('text' in content) return content.text
   return JSON.stringify(content.json, null, props.indentation) ?? ''
+}
+
+function resolveEditorMode(module: SparkJsonEditorModule | null, mode: SparkJsonEditorMode): SparkJsonEditorModeValue | undefined {
+  return module?.Mode[mode]
 }
 
 function refreshSchemaExtensions(): void {
@@ -180,10 +189,11 @@ function refreshSchemaExtensions(): void {
 }
 
 function buildEditorProps(): JSONEditorPropsOptional {
+  const mode = resolveEditorMode(editorModuleRef.value, props.mode)
   return {
     content: currentContent.value,
     readOnly: props.readOnly,
-    mode: props.mode as NonNullable<JSONEditorPropsOptional['mode']>,
+    ...(mode !== undefined ? { mode } : {}),
     indentation: props.indentation,
     tabSize: props.tabSize,
     mainMenuBar: props.mainMenuBar,
@@ -211,7 +221,7 @@ async function mountEditor(): Promise<void> {
   }
 
   try {
-    const editorModule = await import('vanilla-jsoneditor') as SparkJsonEditorModule
+    const editorModule: SparkJsonEditorModule = await import('vanilla-jsoneditor')
     editorModuleRef.value = editorModule
     refreshSchemaExtensions()
     editorRef.value = editorModule.createJSONEditor({
@@ -227,7 +237,8 @@ async function mountEditor(): Promise<void> {
 }
 
 function handleFallbackInput(event: Event): void {
-  const target = event.target as HTMLTextAreaElement
+  if (!(event.target instanceof HTMLTextAreaElement)) return
+  const target = event.target
   currentContent.value = { text: target.value }
   lastSerializedValue.value = target.value
   emit('update:modelValue', target.value)

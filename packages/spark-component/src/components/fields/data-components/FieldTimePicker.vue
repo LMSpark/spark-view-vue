@@ -2,7 +2,7 @@
   <FieldContextRenderer v-bind="fieldCtx">
     <template #form>
       <el-time-picker
-        :model-value="fieldValue as string | Date"
+        :model-value="fieldValue"
         :placeholder="placeholder"
         :is-range="isRange"
         :range-separator="rangeSeparator"
@@ -25,6 +25,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringOrDateValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTimePickerProps } from './FieldTimePicker.props'
 
@@ -54,6 +55,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-time-picker',
   fallbackValue: '',
   formatDisplay: formatTimeValue,
+  coerce: coerceStringOrDateValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

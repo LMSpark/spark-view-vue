@@ -25,6 +25,7 @@
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceTreeSelectValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTreeSelectProps, TreeSelectValue } from './FieldTreeSelect.props'
 
@@ -45,6 +46,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<T
   props,
   fieldType: 'r-tree-select',
   fallbackValue: '',
+  coerce: coerceTreeSelectValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

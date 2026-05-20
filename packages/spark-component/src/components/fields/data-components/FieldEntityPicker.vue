@@ -25,6 +25,7 @@ import { useSelectorFieldActions } from '../actions/useSelectorFieldActions'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useEntityPickerState } from './composables/useEntityPickerState'
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import { coerceTreeSelectValue } from './composables/fieldValueCoercion'
 import type { REntityPickerProps, EntityPickerValue } from './FieldEntityPicker.props'
 
 const props = withDefaults(defineProps<REntityPickerProps>(), {
@@ -45,6 +46,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<E
   props,
   fieldType: 'r-entity-picker',
   fallbackValue: '',
+  coerce: coerceTreeSelectValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

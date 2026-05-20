@@ -54,18 +54,25 @@ import {
 /**
  * 事件默认行为声明
  */
-export interface EventDefaultDeclaration {
+export interface EventDefaultDeclaration<TArgs extends readonly unknown[] = readonly unknown[]> {
   /**
    * 系统默认处理方法 (A)
    *
    * 有值时：dispatch 走完整 A/B/C 流程（B 不取消 → 执行 A）
    * 无值时：dispatch 仅执行 B 并返回 cancel 控制器
    */
-  systemDefault?: (...args: unknown[]) => void | Promise<void>
+  systemDefault?: (...args: TArgs) => void | Promise<void>
 }
 
 /** dispatch 调用签名 */
-export type EventDispatcher = (eventName: string, ...args: unknown[]) => Promise<InteractionControl>
+export type EventArgsMap = Record<string, readonly unknown[]>
+
+export type EventDefaultDeclarations<TEvents extends EventArgsMap> = Readonly<{
+  [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>
+}>
+
+export type EventDispatcher<TEvents extends EventArgsMap = Record<string, readonly unknown[]>> =
+  <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]) => Promise<InteractionControl>
 
 // ── 事件名 → prop 名 ─────────────────────────────────────────────────────
 
@@ -91,15 +98,19 @@ function toHandlerPropName(eventName: string): string {
 
 type HandlerFn = (...a: unknown[]) => void | Promise<void>
 
+function isHandlerFn(value: unknown): value is HandlerFn {
+  return typeof value === 'function'
+}
+
 /**
  * 从 handlerSource 值中解析出业务回调函数
  *
  * 支持单函数及函数数组（Vue attr 合并可能产生数组）
  */
 function resolveHandler(raw: unknown): HandlerFn | undefined {
-  if (typeof raw === 'function') return raw as HandlerFn
+  if (isHandlerFn(raw)) return raw
   if (Array.isArray(raw)) {
-    const fns = raw.filter((fn): fn is HandlerFn => typeof fn === 'function')
+    const fns = raw.filter(isHandlerFn)
     if (fns.length === 0) return undefined
     if (fns.length === 1) return fns[0]
     // 多回调 → 顺序执行，共享同一 control 引用（作为 args 最后一个元素）
@@ -117,6 +128,11 @@ function resolveHandler(raw: unknown): HandlerFn | undefined {
  * @param handlerSource 业务回调来源，通常是组件 props（步骤 2 的查找数据源）
  * @returns `{ dispatch }` — 按事件名称执行 A/B/C 合并分发
  */
+export function useEventDefaults<TEvents extends EventArgsMap>(
+  declarations: EventDefaultDeclarations<TEvents>,
+  handlerSource: Readonly<Record<string, unknown>>,
+): { dispatch: EventDispatcher<TEvents> }
+
 export function useEventDefaults(
   declarations: Readonly<Record<string, EventDefaultDeclaration>>,
   handlerSource: Readonly<Record<string, unknown>>,

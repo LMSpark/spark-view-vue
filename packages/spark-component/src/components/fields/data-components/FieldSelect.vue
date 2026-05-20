@@ -28,6 +28,7 @@
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coercePrimitiveOptionValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RSelectProps } from './FieldSelect.props'
 
@@ -50,6 +51,7 @@ const {
   props,
   fieldType: 'r-select',
   fallbackValue: '',
+  coerce: coercePrimitiveOptionValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

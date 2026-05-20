@@ -6,7 +6,7 @@ export function buildOptionSourceFromView(
   childrenField: string,
 ): unknown[] {
   const rows = view.rows
-  if (rows.some(row => Array.isArray((row as Record<string, unknown> | undefined)?.[childrenField]))) {
+  if (rows.some(row => Array.isArray(row[childrenField]))) {
     return rows
   }
 
@@ -23,23 +23,22 @@ export function buildOptionSourceFromView(
   const textField = treeConfig.textField ?? labelField
 
   const seedNodes: FlatTreeNode[] = rows.flatMap(row => {
-    const record = row as Record<string, unknown>
-    const rawId = record[idField]
+    const rawId = row[idField]
     if (typeof rawId !== 'string' && typeof rawId !== 'number') {
       return []
     }
 
-    const rawParentId = record[parentIdField]
+    const rawParentId = row[parentIdField]
     const parentId = typeof rawParentId === 'string' || typeof rawParentId === 'number'
       ? rawParentId
       : rawParentId === null || rawParentId === undefined
         ? null
         : String(rawParentId)
 
-    const rawText = record[textField]
+    const rawText = row[textField]
 
     return [{
-      ...record,
+      ...row,
       id: rawId,
       parentId,
       name: typeof rawText === 'string'

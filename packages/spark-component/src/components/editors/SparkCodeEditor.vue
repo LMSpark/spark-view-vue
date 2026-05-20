@@ -196,7 +196,8 @@ async function mountEditor(): Promise<void> {
 }
 
 function handleFallbackInput(event: Event): void {
-  const target = event.target as HTMLTextAreaElement
+  if (!(event.target instanceof HTMLTextAreaElement)) return
+  const target = event.target
   lastSyncedValue.value = target.value
   emit('update:modelValue', target.value)
 }

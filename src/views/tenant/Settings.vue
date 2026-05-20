@@ -211,6 +211,10 @@ import type { ThemeMode } from '@spark-view/spark-app'
 const router = useRouter()
 const theme = useTheme()
 
+function isThemeMode(value: unknown): value is ThemeMode {
+  return value === 'light' || value === 'dark' || value === 'auto'
+}
+
 // 设置数据
 const settings = ref({
   appName: 'SPARK 混合渲染系统',
@@ -318,8 +322,8 @@ onMounted(() => {
 
 // 主题模式变更时实时同步到 ThemeService
 watch(() => settings.value.theme, (newMode) => {
-  if (theme && newMode) {
-    theme.setMode(newMode as ThemeMode)
+  if (theme && isThemeMode(newMode)) {
+    theme.setMode(newMode)
   }
 })
 </script>

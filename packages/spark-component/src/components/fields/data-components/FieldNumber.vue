@@ -41,6 +41,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceNumberRangeValue } from './composables/fieldValueCoercion'
 import { useRangeFilterMode } from './composables/useRangeFilterMode'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RNumberProps } from './FieldNumber.props'
@@ -66,6 +67,7 @@ const { permission, fieldCtx } = useBasicFieldState<number | [number | undefined
   fieldType: 'r-number',
   fallbackValue: 0,
   formatDisplay: formatNumberValue,
+  coerce: coerceNumberRangeValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
@@ -103,4 +105,3 @@ function handleRangeEndChange(value: number | undefined): void {
   color: #606266;
 }
 </style>
-

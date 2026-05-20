@@ -36,6 +36,7 @@ import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringValue } from './composables/fieldValueCoercion'
 import { useFileBrowserFieldState } from './composables/useFileFieldState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RFileBrowserProps } from './FieldFileBrowser.props'
@@ -57,6 +58,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   fieldType: 'r-file-browser',
   fallbackValue: '',
   formatDisplay: value => String(value ?? ''),
+  coerce: coerceStringValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

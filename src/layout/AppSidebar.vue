@@ -97,8 +97,8 @@
       >
         <template #default>
           <span class="app-sidebar__menu-label">
-            <NavIcon :name="(item.meta?.['icon'] as string)" class="app-sidebar__menu-icon" />
-            <span v-if="!collapsed" class="app-sidebar__menu-text">{{ item.meta?.['title'] }}</span>
+            <NavIcon :name="routeIcon(item)" class="app-sidebar__menu-icon" />
+            <span v-if="!collapsed" class="app-sidebar__menu-text">{{ routeTitle(item) }}</span>
           </span>
         </template>
       </el-menu-item>
@@ -186,6 +186,16 @@ const fallbackRoutes = computed(() => {
     .filter(r => r.meta?.['title'] && r.path !== '/')
     .sort((a, b) => a.path.localeCompare(b.path))
 })
+
+function routeTitle(item: { meta?: Record<string | number | symbol, unknown> }): string {
+  const title = item.meta?.['title']
+  return typeof title === 'string' ? title : ''
+}
+
+function routeIcon(item: { meta?: Record<string | number | symbol, unknown> }): string | undefined {
+  const icon = item.meta?.['icon']
+  return typeof icon === 'string' ? icon : undefined
+}
 </script>
 
 <style scoped>

@@ -2,7 +2,7 @@
   <el-popover trigger="click" :width="360" placement="bottom-start">
     <template #reference>
       <el-button class="icon-trigger" :style="{ width: triggerWidth }">
-        <el-icon v-if="hasResolvedIcon" :size="18"><component :is="iconMap[resolvedIconName]" /></el-icon>
+        <el-icon v-if="resolvedIcon" :size="18"><component :is="resolvedIcon" /></el-icon>
         <span v-else-if="props.modelValue" class="icon-fallback">{{ props.modelValue }}</span>
         <span v-else class="icon-placeholder">{{ props.placeholder }}</span>
       </el-button>
@@ -18,7 +18,7 @@
         :class="{ active: name === resolvedIconName }"
         :title="name"
         @click="select(name)"
-      ><el-icon :size="18"><component :is="iconMap[name]" /></el-icon></button>
+      ><el-icon :size="18"><component :is="resolveIcon(name)" /></el-icon></button>
     </div>
     <div v-if="!filtered.length" class="icon-empty">无匹配图标</div>
     <div v-if="props.modelValue" class="icon-footer">
@@ -53,8 +53,8 @@ const emit = defineEmits<{
   'update:modelValue': [value: string]
 }>()
 
-const iconMap = Icons as unknown as Record<string, ReturnType<typeof import('vue')['defineComponent']>>
-const allNames = Object.keys(Icons).filter(k => k !== 'default').sort()
+const iconEntries = Object.entries(Icons).filter(([name]) => name !== 'default')
+const allNames = iconEntries.map(([name]) => name).sort()
 
 const keyword = ref('')
 
@@ -64,9 +64,13 @@ const resolvedIconName = computed(() => {
   return raw
 })
 
-const hasResolvedIcon = computed(() => {
-  if (!resolvedIconName.value) return false
-  return iconMap[resolvedIconName.value] !== undefined
+function resolveIcon(name: string) {
+  return iconEntries.find(([entryName]) => entryName === name)?.[1] ?? null
+}
+
+const resolvedIcon = computed(() => {
+  if (!resolvedIconName.value) return null
+  return resolveIcon(resolvedIconName.value)
 })
 
 const filtered = computed(() => {

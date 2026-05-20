@@ -165,6 +165,10 @@ interface FeCacheRow {
 
 const feEntries = ref<FeCacheRow[]>([])
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 const feTotalSizeKB = computed(() => {
   const total = feEntries.value.reduce((sum, e) => sum + e.sizeKB, 0)
   return total.toFixed(1)
@@ -246,11 +250,10 @@ function loadFrontendCache() {
 
       try {
         const parsed: unknown = JSON.parse(raw)
-        if (parsed && typeof parsed === 'object') {
-          const obj = parsed as Record<string, unknown>
-          sourceTimestamp = normalizeSourceTimestamp(obj['sourceTimestamp'])
-          if (typeof obj['lastAccess'] === 'number') lastAccess = obj['lastAccess'] as number
-          if (typeof obj['expirationLevel'] === 'number') expirationLevel = obj['expirationLevel'] as number
+        if (isRecord(parsed)) {
+          sourceTimestamp = normalizeSourceTimestamp(parsed['sourceTimestamp'])
+          if (typeof parsed['lastAccess'] === 'number') lastAccess = parsed['lastAccess']
+          if (typeof parsed['expirationLevel'] === 'number') expirationLevel = parsed['expirationLevel']
         }
       } catch {
         // 解析失败，保留默认值

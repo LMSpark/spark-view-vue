@@ -55,6 +55,7 @@
 import { ref } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringValue } from './composables/fieldValueCoercion'
 import { stripHtml, useHtmlEditorState } from './composables/useHtmlEditorState'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RHtmlEditorProps } from './FieldHtmlEditor.props'
@@ -71,6 +72,7 @@ const { permission, fieldCtx } = useBasicFieldState<string>({
   fieldType: 'r-html-editor',
   fallbackValue: '',
   formatDisplay: stripHtml,
+  coerce: coerceStringValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

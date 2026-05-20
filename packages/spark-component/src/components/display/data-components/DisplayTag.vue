@@ -25,11 +25,10 @@ import { useSparkPageComponent } from '../../internal'
 import { useDisplayDataSource } from '../useDisplayDataSource'
 import type { RTagProps, TagType } from './DisplayTag.props'
 
-const TAG_TYPES = ['success', 'info', 'warning', 'danger'] as const
-
 function normalizeTagType(value: unknown): TagType | undefined {
   if (typeof value !== 'string') return undefined
-  return TAG_TYPES.includes(value as TagType) ? (value as TagType) : undefined
+  if (value === 'success' || value === 'info' || value === 'warning' || value === 'danger') return value
+  return undefined
 }
 
 

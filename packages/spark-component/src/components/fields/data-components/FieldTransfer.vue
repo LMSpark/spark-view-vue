@@ -22,12 +22,13 @@
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringNumberArray } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTransferProps, TransferValue } from './FieldTransfer.props'
 
 const props = withDefaults(defineProps<RTransferProps>(), {
   type: 'r-transfer',
-  titles: () => ['待选', '已选'] as [string, string],
+  titles: () => ['待选', '已选'],
   filterable: false,
   filterPlaceholder: '请输入关键词',
   targetOrder: 'original',
@@ -39,6 +40,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<T
   props,
   fieldType: 'r-transfer',
   fallbackValue: [],
+  coerce: coerceStringNumberArray,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

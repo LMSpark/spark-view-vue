@@ -38,6 +38,10 @@ function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
   return isObjectRecord(value) && typeof value['then'] === 'function'
 }
 
+function isBeforeRenderHandler(value: unknown): value is BeforeRenderHandler {
+  return typeof value === 'function'
+}
+
 function sanitizeContextProps(props: Record<string, unknown>): Record<string, unknown> {
   const { onBeforeRender: _onBeforeRender, [BEFORE_RENDER_RESOLVED_PROP]: _resolved, ...next } = props
   return next
@@ -72,12 +76,12 @@ export function resolveNodeBeforeRender(
 
   const handler = props['onBeforeRender']
 
-  if (typeof handler !== 'function') {
+  if (!isBeforeRenderHandler(handler)) {
     return { visible: baseVisible, propsPatch: {} }
   }
 
   try {
-    const result = (handler as BeforeRenderHandler)({
+    const result = handler({
       id: node.id,
       type: node.type,
       props: sanitizeContextProps(props),

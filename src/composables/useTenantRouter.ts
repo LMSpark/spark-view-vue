@@ -1,6 +1,14 @@
 import { useRoute, useRouter } from 'vue-router'
 import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isConfigLoader(value: unknown): value is { clearCache(key?: string): void } {
+  return isRecord(value) && typeof value['clearCache'] === 'function'
+}
+
 /**
  * 租户路由工具 composable
  *
@@ -39,8 +47,10 @@ export function useTenantRouter() {
     const comp = configRoute.components?.['default']
     if (!comp) return
 
-    const routeProps = configRoute.props['default'] as Record<string, unknown> | undefined
-    const configLoader = routeProps?.['configLoader'] as { clearCache(key?: string): void } | undefined
+    const rawRouteProps = configRoute.props['default']
+    const configLoader = isRecord(rawRouteProps) && isConfigLoader(rawRouteProps['configLoader'])
+      ? rawRouteProps['configLoader']
+      : undefined
 
     router.addRoute({
       path: tenantPrefixed,

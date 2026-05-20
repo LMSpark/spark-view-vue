@@ -65,7 +65,7 @@ const resolvedPreviewList = computed(() => {
   // 如果有 previewField，从当前行数据读取
   if (props.previewField) {
     const v = dataValue.value
-    if (Array.isArray(v)) return v as string[]
+    if (Array.isArray(v)) return v.filter((item): item is string => typeof item === 'string')
   }
   // 单图时用自身 src 作为预览列表
   const src = resolvedSrc.value

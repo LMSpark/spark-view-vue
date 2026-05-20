@@ -11,17 +11,21 @@ import { Logger } from '@spark-view/spark-utils'
 
 const logger = Logger('SSE')
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 // ─── 类型定义 ────────────────────────────────────────────────────────────────
 
 /**
  * 服务端 SSE 事件类型常量
  * 与后端 SseService.EVENT_* 保持一致
  */
-const ServerEventType = {
+const ServerEventType = Object.freeze({
   PAGE_CONFIG: 'page-config',
   DATA_BATCH_JOB: 'data-batch-job',
   DATA_CHANGE: 'data-change',
-} as const
+})
 
 export interface FileChangeEvent {
   pageId: string
@@ -51,11 +55,10 @@ export interface DataChangeEvent {
 }
 
 function normalizeFileChangeEvent(data: unknown): FileChangeEvent | null {
-  if (data === null || typeof data !== 'object') return null
-  const record = data as Record<string, unknown>
-  const pageId = record['pageId']
-  const file = record['file']
-  const timestamp = record['timestamp']
+  if (!isRecord(data)) return null
+  const pageId = data['pageId']
+  const file = data['file']
+  const timestamp = data['timestamp']
   if (typeof pageId !== 'string' || typeof file !== 'string') return null
 
   let normalizedTimestamp: number
@@ -89,44 +92,46 @@ function normalizeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+
 function normalizeDataBatchJobEvent(data: unknown): DataBatchJobEvent | null {
-  if (data === null || typeof data !== 'object') return null
-  const record = data as Record<string, unknown>
-  const tenantId = record['tenantId']
-  const projectId = record['projectId']
-  const jobId = record['jobId']
-  const status = record['status']
+  if (!isRecord(data)) return null
+  const tenantId = data['tenantId']
+  const projectId = data['projectId']
+  const jobId = data['jobId']
+  const status = data['status']
   if (typeof tenantId !== 'string' || typeof projectId !== 'string' || typeof jobId !== 'string' || typeof status !== 'string') return null
   const event: DataBatchJobEvent = {
     tenantId,
     projectId,
     jobId,
     status,
-    completed: normalizeNumber(record['completed']),
-    total: normalizeNumber(record['total']),
-    timestamp: normalizeTimestamp(record['timestamp']),
+    completed: normalizeNumber(data['completed']),
+    total: normalizeNumber(data['total']),
+    timestamp: normalizeTimestamp(data['timestamp']),
   }
-  if ('result' in record) event.result = record['result']
-  if (typeof record['error'] === 'string') event.error = record['error']
+  if ('result' in data) event.result = data['result']
+  if (typeof data['error'] === 'string') event.error = data['error']
   return event
 }
 
 function normalizeDataChangeEvent(data: unknown): DataChangeEvent | null {
-  if (data === null || typeof data !== 'object') return null
-  const record = data as Record<string, unknown>
-  const tenantId = record['tenantId']
-  const projectId = record['projectId']
-  const tableName = record['tableName']
-  const operation = record['operation']
+  if (!isRecord(data)) return null
+  const tenantId = data['tenantId']
+  const projectId = data['projectId']
+  const tableName = data['tableName']
+  const operation = data['operation']
   if (typeof tenantId !== 'string' || typeof projectId !== 'string' || typeof tableName !== 'string' || typeof operation !== 'string') return null
   const event: DataChangeEvent = {
     tenantId,
     projectId,
     tableName,
     operation,
-    timestamp: normalizeTimestamp(record['timestamp']),
+    timestamp: normalizeTimestamp(data['timestamp']),
   }
-  if (typeof record['jobId'] === 'string') event.jobId = record['jobId']
+  if (typeof data['jobId'] === 'string') event.jobId = data['jobId']
   return event
 }
 
@@ -171,10 +176,13 @@ function _ensureConnection(): void {
 }
 
 function _addEsListener(es: EventSource, eventType: string): void {
-  es.addEventListener(eventType, ((e: MessageEvent) => {
+  const listener: EventListener = (event) => {
     _retryCount = 0
     try {
-      const data: unknown = JSON.parse(e.data as string)
+      if (!(event instanceof MessageEvent) || typeof event.data !== 'string') {
+        throw new Error('SSE event payload must be a string')
+      }
+      const data: unknown = JSON.parse(event.data)
       const subs = _eventSubscribers.get(eventType)
       if (subs) {
         for (const cb of subs) {
@@ -186,10 +194,12 @@ function _addEsListener(es: EventSource, eventType: string): void {
       logger.warn('丢弃畸形事件', {
         eventType,
         totalMalformed: _malformedEventCount,
-        error: (err as Error).message,
+        error: errorMessage(err),
       })
     }
-  }) as EventListener)
+  }
+
+  es.addEventListener(eventType, listener)
 }
 
 function _teardown(): void {
@@ -206,9 +216,9 @@ function _teardown(): void {
  * @param callback  事件回调
  * @returns 取消订阅函数
  */
-export function onServerEvent<T = unknown>(
+export function onServerEvent(
   eventType: string,
-  callback: (data: T) => void,
+  callback: (data: unknown) => void,
 ): () => void {
   let subs = _eventSubscribers.get(eventType)
   if (!subs) {
@@ -219,11 +229,11 @@ export function onServerEvent<T = unknown>(
       _addEsListener(_sharedEs, eventType)
     }
   }
-  subs.add(callback as (data: unknown) => void)
+  subs.add(callback)
   _ensureConnection()
 
   return () => {
-    subs.delete(callback as (data: unknown) => void)
+    subs.delete(callback)
     if (subs.size === 0) {
       _eventSubscribers.delete(eventType)
     }
@@ -241,7 +251,7 @@ export function onServerEvent<T = unknown>(
 export function onPageConfigChange(
   callback: (event: FileChangeEvent) => void,
 ): () => void {
-  return onServerEvent<unknown>(ServerEventType.PAGE_CONFIG, (data) => {
+  return onServerEvent(ServerEventType.PAGE_CONFIG, (data) => {
     const event = normalizeFileChangeEvent(data)
     if (event === null) {
       _malformedEventCount += 1
@@ -260,7 +270,7 @@ export function onPageConfigChange(
 export function onDataBatchJob(
   callback: (event: DataBatchJobEvent) => void,
 ): () => void {
-  return onServerEvent<unknown>(ServerEventType.DATA_BATCH_JOB, (data) => {
+  return onServerEvent(ServerEventType.DATA_BATCH_JOB, (data) => {
     const event = normalizeDataBatchJobEvent(data)
     if (event === null) {
       _malformedEventCount += 1
@@ -279,7 +289,7 @@ export function onDataBatchJob(
 export function onDataChange(
   callback: (event: DataChangeEvent) => void,
 ): () => void {
-  return onServerEvent<unknown>(ServerEventType.DATA_CHANGE, (data) => {
+  return onServerEvent(ServerEventType.DATA_CHANGE, (data) => {
     const event = normalizeDataChangeEvent(data)
     if (event === null) {
       _malformedEventCount += 1

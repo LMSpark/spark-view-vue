@@ -38,7 +38,8 @@ export function useHtmlEditorState(options: UseHtmlEditorStateOptions) {
   }
 
   function handleSurfaceInput(event: Event): void {
-    const target = event.target as HTMLElement
+    if (!(event.target instanceof HTMLElement)) return
+    const target = event.target
     updateValue(target.innerHTML)
   }
 

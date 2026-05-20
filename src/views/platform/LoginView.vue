@@ -167,10 +167,8 @@ function goHome() {
   void router.replace('/')
 }
 
-function getUserHomePath(user: { tenantId: string; defaultProjectId: string }): string {
-  const roles = 'roles' in user && Array.isArray((user as { roles?: unknown }).roles)
-    ? (user as { roles: string[] }).roles
-    : []
+function getUserHomePath(user: { tenantId: string; defaultProjectId: string; roles?: readonly string[] }): string {
+  const roles = user.roles ?? []
   if (user.tenantId === 'platform' && roles.includes('platform_admin')) {
     return '/platform/dashboard'
   }

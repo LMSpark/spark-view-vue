@@ -19,6 +19,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceNumberValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RRateProps } from './FieldRate.props'
 
@@ -35,6 +36,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<numb
   fieldType: 'r-rate',
   fallbackValue: 0,
   formatDisplay: value => String(value ?? 0),
+  coerce: coerceNumberValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

@@ -6,6 +6,7 @@ interface UseChoiceFieldStateOptions<TValue> {
   fieldType: string
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void
+  coerce?: (rawValue: unknown) => TValue
 }
 
 export function useChoiceFieldState<TValue>(
@@ -16,6 +17,7 @@ export function useChoiceFieldState<TValue>(
     fieldType: options.fieldType,
     fallbackValue: options.fallbackValue,
     emitUpdate: value => options.emitUpdate(value),
+    ...(options.coerce !== undefined ? { coerce: options.coerce } : {}),
   })
 
   return {

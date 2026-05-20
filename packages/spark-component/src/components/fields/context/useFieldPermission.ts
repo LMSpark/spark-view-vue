@@ -77,7 +77,8 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
     if (hasExplicitValue.value && props.value !== undefined) return props.value
     const row = activeRow.value
     if (row !== null && fieldName.value && fieldName.value in row) {
-      return row[fieldName.value] as TValue
+      if (options.coerce !== undefined) return options.coerce(row[fieldName.value])
+      return <TValue>row[fieldName.value]
     }
     return fallbackValue
   })

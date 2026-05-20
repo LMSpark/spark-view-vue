@@ -44,7 +44,11 @@ const formattedValue = computed(() => {
     return `${(v * 100).toFixed(props.precision)}%`
   }
   if (props.format === 'date') {
-    const d = new Date(v as string | number)
+    if (v instanceof Date) {
+      return isNaN(v.getTime()) ? String(v) : v.toLocaleDateString('zh-CN')
+    }
+    if (typeof v !== 'string' && typeof v !== 'number') return String(v)
+    const d = new Date(v)
     return isNaN(d.getTime()) ? String(v) : d.toLocaleDateString('zh-CN')
   }
 

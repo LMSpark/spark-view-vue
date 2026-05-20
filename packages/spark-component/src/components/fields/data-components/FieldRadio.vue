@@ -23,6 +23,7 @@
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coercePrimitiveOptionValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RRadioProps } from './FieldRadio.props'
 
@@ -43,6 +44,7 @@ const {
   props,
   fieldType: 'r-radio',
   fallbackValue: '',
+  coerce: coercePrimitiveOptionValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

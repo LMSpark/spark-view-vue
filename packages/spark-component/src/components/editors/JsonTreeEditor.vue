@@ -193,6 +193,7 @@ import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue
 import { deepClone } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
+import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
 import {
   addChildNode,
   addSiblingNode,
@@ -235,6 +236,28 @@ interface DisplayRow extends TreeDisplayNode {
   _schemaRequired: boolean
   _schemaEnumValues: string[]
   _schemaEnumLabels: Record<string, string>
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isJsonValue(value: unknown): value is JsonValue {
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) return true
+  if (Array.isArray(value)) return value.every(isJsonValue)
+  if (!isRecord(value)) return false
+  return Object.values(value).every(isJsonValue)
+}
+
+function isJsonDocument(value: unknown): value is JsonDocument {
+  if (Array.isArray(value)) return value.every(isJsonValue)
+  return isRecord(value) && Object.values(value).every(isJsonValue)
+}
+
+function isDisplayRow(value: unknown): value is DisplayRow {
+  return isRecord(value)
+    && typeof value['id'] === 'string'
+    && Array.isArray(value['path'])
 }
 
 // ── Props ─────────────────────────────────────────────────────
@@ -298,6 +321,7 @@ const { permission, handleControlledChange } = useBasicFieldState<string>({
   props,
   fieldType: 'json-tree-editor',
   fallbackValue: '',
+  coerce: coerceStringValue,
   emitUpdate: value => emit('update:modelValue', value),
 })
 
@@ -316,7 +340,7 @@ const isEditable = computed(() =>
 const effectiveFieldInput = computed<string | JsonDocument>(() => {
   if (props.field) {
     const raw: unknown = fieldValue.value
-    if (raw !== null && typeof raw === 'object') return raw as JsonDocument
+    if (isJsonDocument(raw)) return raw
     return typeof raw === 'string' ? raw : ''
   }
   return props.modelValue ?? ''
@@ -413,8 +437,7 @@ const allRows = computed<DisplayRow[]>(() => {
   const schemaCache = new Map<string, ReturnType<typeof resolveSchemaInfoForPath>>()
   const rootLabel = mergedPolicy.value.rootLabel ?? '$'
   const policy = mergedPolicy.value
-  for (const row of rawRows) enrichRow(row, schemaCache, rootLabel, policy)
-  return rawRows as DisplayRow[]
+  return rawRows.map(row => enrichRow(row, schemaCache, rootLabel, policy))
 })
 
 const filteredRows = computed<DisplayRow[]>(() => {
@@ -479,7 +502,7 @@ function serializePath(path: JsonPath): string {
 function captureTreeState(): void {
   const table = tableRef.value
   if (!table) return
-  const expandedRecords = table.getTreeExpandRecords() as DisplayRow[]
+  const expandedRecords = table.getTreeExpandRecords().filter(isDisplayRow)
   const expandPaths = new Set(expandedRecords.map(r => serializePath(r.path)))
   const currentRow = allRows.value.find(r => r.id === currentRowId.value)
   const currentPath = currentRow ? serializePath(currentRow.path) : null
@@ -554,37 +577,41 @@ function enrichRow(
     schemaInfo.enumValues.join(' '),
   ].join(' ').toLowerCase()
 
-  const display = row as DisplayRow
-  display.displayKey = displayKey
-  display.valuePreview = valuePreview
-  display.stringValue = stringValue
-  display.numberValue = numberValue
-  display.booleanValue = booleanValue
-  display._searchText = searchText
-  display._schemaTitle = schemaInfo.title
-  display._schemaDescription = schemaInfo.description
-  display._schemaRequired = schemaInfo.required
+  let schemaEnumValues: string[]
+  let schemaEnumLabels: Record<string, string>
   // 优先级：getValueLabels > Schema enum > getValueOptions
   const labeledOptions = policy.getValueLabels?.(row.path)
   if (labeledOptions !== undefined && labeledOptions.length > 0) {
-    display._schemaEnumValues = labeledOptions.map(o => o.value)
     const labels: Record<string, string> = {}
     for (const o of labeledOptions) labels[o.value] = o.label
-    display._schemaEnumLabels = labels
+    schemaEnumValues = labeledOptions.map(o => o.value)
+    schemaEnumLabels = labels
   } else {
-    display._schemaEnumValues = schemaInfo.enumValues.length > 0
+    schemaEnumValues = schemaInfo.enumValues.length > 0
       ? schemaInfo.enumValues
       : (policyOptions ?? [])
-    display._schemaEnumLabels = {}
+    schemaEnumLabels = {}
   }
   // 确保当前值始终在选项中（处理目录外的自定义类型如 div、el-card）
-  if (row.type === 'string' && display._schemaEnumValues.length > 0) {
-    const sv = row.value as string | undefined
-    if (sv !== undefined && sv.length > 0 && !display._schemaEnumValues.includes(sv)) {
-      display._schemaEnumValues = [sv, ...display._schemaEnumValues]
+  if (row.type === 'string' && schemaEnumValues.length > 0 && typeof row.value === 'string') {
+    if (row.value.length > 0 && !schemaEnumValues.includes(row.value)) {
+      schemaEnumValues = [row.value, ...schemaEnumValues]
     }
   }
-  return display
+  return {
+    ...row,
+    displayKey,
+    valuePreview,
+    stringValue,
+    numberValue,
+    booleanValue,
+    _searchText: searchText,
+    _schemaTitle: schemaInfo.title,
+    _schemaDescription: schemaInfo.description,
+    _schemaRequired: schemaInfo.required,
+    _schemaEnumValues: schemaEnumValues,
+    _schemaEnumLabels: schemaEnumLabels,
+  }
 }
 
 // ── 工具栏交互 ──────────────────────────────────────────────

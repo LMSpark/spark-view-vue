@@ -23,6 +23,7 @@
 import { computed } from 'vue'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { useOptionFieldState } from './composables/useOptionFieldState'
+import { coerceCascaderValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RCascaderProps, CascaderValue } from './FieldCascader.props'
 
@@ -43,6 +44,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<C
   fieldType: 'r-cascader',
   fallbackValue: [],
   formatDisplay: (value, helpers) => helpers.formatCascaderValue(value),
+  coerce: coerceCascaderValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

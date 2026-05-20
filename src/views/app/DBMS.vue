@@ -840,6 +840,13 @@ const isolationModeRanks: Record<IsolationMode, number> = {
   PROJECT_ISOLATED: 3,
 }
 
+function isIsolationMode(value: string): value is IsolationMode {
+  return value === 'TENANT_SHARED'
+    || value === 'TENANT_ISOLATED'
+    || value === 'PROJECT_SHARED'
+    || value === 'PROJECT_ISOLATED'
+}
+
 function isolationModeLabel(mode: string | undefined): string {
   const option = isolationModeOptions.find((item) => item.value === mode)
   return option?.label ?? `未知模式: ${mode ?? '空'}`
@@ -854,8 +861,8 @@ function isolationTagType(mode: string | undefined): TagType {
 }
 
 function isolationRank(mode: string | undefined): number | null {
-  if (!mode || !(mode in isolationModeRanks)) return null
-  return isolationModeRanks[mode as IsolationMode]
+  if (!mode || !isIsolationMode(mode)) return null
+  return isolationModeRanks[mode]
 }
 
 function childIsolationOptions(parentMode: string | undefined) {
@@ -897,11 +904,10 @@ const scopePath = computed(() => `/api/tenants/${currentTenant.value}/projects/$
 
 function apiErrorMessage(error: unknown): string {
   if (error instanceof Error && error.message.trim().length > 0) return error.message
-  if (error && typeof error === 'object') {
-    const response = (error as { response?: unknown }).response
-    if (response && typeof response === 'object') {
-      const payload = response as Record<string, unknown>
-      const message = payload['error'] ?? payload['message']
+  if (isRecord(error)) {
+    const response = error['response']
+    if (isRecord(response)) {
+      const message = response['error'] ?? response['message']
       if (typeof message === 'string' && message.trim().length > 0) return message
     }
   }
@@ -919,11 +925,19 @@ const tables = ref<DbmsTable[]>([])
 const relations = ref<DbmsRelation[]>([])
 const physicalDatabaseNames = ref<string[]>([])
 const physicalDatabasesLoading = ref(false)
-const dlgSync = reactive({
+
+type SyncDialogState = {
+  visible: boolean
+  loading: boolean
+  syncing: boolean
+  catalog: DbmsCatalog | null
+}
+
+const dlgSync = reactive<SyncDialogState>({
   visible: false,
   loading: false,
   syncing: false,
-  catalog: null as DbmsCatalog | null,
+  catalog: null,
 })
 
 const selectedServer = ref<DbmsServer | null>(null)
@@ -1285,10 +1299,26 @@ async function submitSyncServer() {
 }
 
 // ── 服务器 Dialog ──
-const dlgServer = reactive({
+type ServerForm = {
+  serverName: string
+  host: string
+  port: number
+  dbType: string
+  username: string
+  password: string
+  isolationMode: IsolationMode
+}
+
+type ServerDialogState = {
+  visible: boolean
+  loading: boolean
+  form: ServerForm
+}
+
+const dlgServer = reactive<ServerDialogState>({
   visible: false,
   loading: false,
-  form: { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' as IsolationMode }
+  form: { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
 })
 
 function resetServerForm() {
@@ -1356,10 +1386,26 @@ async function _deleteServerConfirm(srv: DbmsServer) {
 }
 
 // ── 数据库 Dialog ──
-const dlgDb = reactive({
+type DatabaseForm = {
+  databaseName: string
+  createNew: boolean
+  isolationMode: IsolationMode
+  connectionMode: string
+  jndiName: string
+  charset: string
+  collation: string
+}
+
+type DatabaseDialogState = {
+  visible: boolean
+  loading: boolean
+  form: DatabaseForm
+}
+
+const dlgDb = reactive<DatabaseDialogState>({
   visible: false,
   loading: false,
-  form: { databaseName: '', createNew: false, isolationMode: 'PROJECT_ISOLATED' as IsolationMode, connectionMode: 'DIRECT', jndiName: '', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' }
+  form: { databaseName: '', createNew: false, isolationMode: 'PROJECT_ISOLATED', connectionMode: 'DIRECT', jndiName: '', charset: 'utf8mb4', collation: 'utf8mb4_unicode_ci' }
 })
 
 function resetDbForm() {
@@ -1463,11 +1509,24 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
 }
 
 // ── 表 Dialog ──
-interface ColumnForm { name: string; type: string; maxLength: number | null; primaryKey: boolean; required: boolean }
-const dlgTable = reactive({
+type ColumnForm = { name: string; type: string; maxLength: number | null; primaryKey: boolean; required: boolean }
+type TableForm = {
+  tableName: string
+  physicalTableName: string
+  isolationMode: IsolationMode
+  columns: ColumnForm[]
+}
+
+type TableDialogState = {
+  visible: boolean
+  loading: boolean
+  form: TableForm
+}
+
+const dlgTable = reactive<TableDialogState>({
   visible: false,
   loading: false,
-  form: { tableName: '', physicalTableName: '', isolationMode: 'PROJECT_ISOLATED' as IsolationMode, columns: [] as ColumnForm[] }
+  form: { tableName: '', physicalTableName: '', isolationMode: 'PROJECT_ISOLATED', columns: [] }
 })
 
 function resetTableForm() {
@@ -1533,10 +1592,23 @@ async function deleteTableConfirm(tbl: DbmsTable) {
 }
 
 // ── 表关系 Dialog ──
-const dlgRelation = reactive({
+type RelationForm = {
+  parentTableId: number | null
+  parentField: string
+  childTableId: number | null
+  childField: string
+}
+
+type RelationDialogState = {
+  visible: boolean
+  loading: boolean
+  form: RelationForm
+}
+
+const dlgRelation = reactive<RelationDialogState>({
   visible: false,
   loading: false,
-  form: { parentTableId: null as number | null, parentField: '', childTableId: null as number | null, childField: '' }
+  form: { parentTableId: null, parentField: '', childTableId: null, childField: '' }
 })
 const parentColumns = ref<DbmsColumn[]>([])
 const childColumns = ref<DbmsColumn[]>([])
@@ -1557,7 +1629,7 @@ async function fetchTableColumns(tableId: number): Promise<DbmsColumn[]> {
   if (!tbl) return []
   try {
     const full = await http.get<DbmsTable>(`${scopePath.value}/data-model/tables/by-id/${tbl.id}`)
-    return (full.columns as DbmsColumn[]) ?? []
+    return full.columns ?? []
   } catch (error) {
     ElMessage.error(`加载字段失败: ${apiErrorMessage(error)}`)
     return []

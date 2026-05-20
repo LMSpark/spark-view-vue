@@ -166,15 +166,8 @@ type ScopedRuntimeInput = {
 }
 type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'>
 
-// Vue 组件 props 声明有两种常见形态：数组或对象。
-type DeclaredProps = NodeRuntimeProps | string[]
-
-interface VueComponentLike {
-  props?: DeclaredProps
-}
-
 // 复用空对象常量，避免多个 computed 在“无 props”场景反复制造新引用。
-const EMPTY_RUNTIME_PROPS = Object.freeze({}) as NodeRuntimeProps
+const EMPTY_RUNTIME_PROPS: NodeRuntimeProps = {}
 let _rendererScopedContextId = 0
 
 // 仅放行标准 HTML 标签；未知业务类型仍保留 fail-fast 告警分支。
@@ -210,7 +203,7 @@ interface RendererProps {
 
 const rendererProps = defineProps<RendererProps>()
 const currentInstance = getCurrentInstance()
-const currentOwner = currentInstance as SparkRuntimeOwner | null
+const currentOwner: SparkRuntimeOwner | null = isSparkRuntimeOwner(currentInstance) ? currentInstance : null
 // 保存当前渲染器组件类型，供本地递归块继续回到同一个渲染入口。
 const currentRendererComponent = currentInstance?.type ?? null
 
@@ -249,22 +242,18 @@ function toRendererSparkNodeChildrenInput(children: SparkNodeChildren | undefine
 
 // 兼容历史输入：非结构根字段一次性并入 props；type/id/children 继续保留 SparkNode 结构语义。
 function toRendererSparkNodeInput(node: SparkNode): SparkNode {
-  const source = node as unknown as NodeRuntimeProps
   const rootRuntimeProps: NodeRuntimeProps = {}
-  for (const [key, value] of Object.entries(source)) {
+  for (const [key, value] of Object.entries(node)) {
     if (!SPARK_NODE_STRUCT_KEYS.has(key)) {
       rootRuntimeProps[key] = value
     }
   }
 
-  const rawProps = source['props']
-  const normalizedProps = rawProps !== null
-    && rawProps !== undefined
-    && typeof rawProps === 'object'
-    && !Array.isArray(rawProps)
+  const rawProps = node.props
+  const normalizedProps = rawProps !== undefined
     ? {
       ...rootRuntimeProps,
-      ...(rawProps as NodeRuntimeProps),
+      ...rawProps,
     }
     : rootRuntimeProps
 
@@ -323,9 +312,8 @@ const RecursiveChildrenBlock = defineComponent({
 
 // 判断目标组件是否显式声明某个 prop，用于 children prop / slot 协商。
 function declaresProp(component: unknown, propName: string): boolean {
-  if (component === null || component === undefined) return false
-  if (typeof component !== 'object' && typeof component !== 'function') return false
-  const declared = (component as VueComponentLike).props
+  if (!isObjectLike(component)) return false
+  const declared = Reflect.get(component, 'props')
   if (declared === null || declared === undefined) return false
   if (Array.isArray(declared)) return declared.includes(propName)
   if (typeof declared !== 'object' && typeof declared !== 'function') return false
@@ -397,6 +385,14 @@ function resolveHostTypeConstraintState(
 // 从 unknown 中识别非数组对象；供行数据等运行时作用域复用。
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isObjectLike(value: unknown): value is object {
+  return (typeof value === 'object' && value !== null) || typeof value === 'function'
+}
+
+function isSparkRuntimeOwner(value: unknown): value is SparkRuntimeOwner {
+  return isObjectLike(value)
 }
 
 function isDataView(value: unknown): value is DataView {
@@ -528,10 +524,7 @@ function hasFilteredKeys(obj: NodeRuntimeProps): boolean {
 
 // 仅把“非空对象”视为事件 map，避免把 null / 原始值误判成可展开对象。
 function isNonEmptyRecord(value: unknown): value is NodeRuntimeProps {
-  return value !== null
-    && value !== undefined
-    && typeof value === 'object'
-    && Object.keys(value as NodeRuntimeProps).length > 0
+  return isRecord(value) && Object.keys(value).length > 0
 }
 
 const _listenerNameCache = new Map<string, string>()
@@ -660,11 +653,11 @@ watchEffect(() => {
   if (boundCapabilityContext === nextBoundContext) return
 
   if (boundCapabilityContext !== null) {
-    sparkUnbindContextOwner(currentInstance as object)
+    sparkUnbindContextOwner(currentInstance)
   }
 
   if (nextBoundContext !== null) {
-    sparkBindContextOwner(currentInstance as object, nextBoundContext)
+    sparkBindContextOwner(currentInstance, nextBoundContext)
   }
 
   boundCapabilityContext = nextBoundContext
@@ -672,7 +665,7 @@ watchEffect(() => {
 
 onUnmounted(() => {
   if (currentInstance !== null && boundCapabilityContext !== null) {
-    sparkUnbindContextOwner(currentInstance as object)
+    sparkUnbindContextOwner(currentInstance)
   }
   boundCapabilityContext = null
 })
@@ -699,8 +692,12 @@ const registryComponent = computed(() => {
   const definition = registryDefinition.value
   if (!definition) return null
   if (!registryHostTypeState.value.matched) return null
-  return definition.component ? markRaw(definition.component as object) : null
+  return resolveRenderableComponent(definition.component)
 })
+
+function resolveRenderableComponent(component: unknown): object | null {
+  return isObjectLike(component) ? markRaw(component) : null
+}
 
 function isNativeHtmlTag(type: string | null): type is string {
   return type !== null && NATIVE_HTML_TAGS.has(type)
@@ -721,17 +718,17 @@ function resolveGlobalElComponent(type: string | null) {
 
   if (/^Render[A-Z0-9_]/.test(type)) {
     const directRender = appComponents[type]
-    if (directRender !== undefined) return markRaw(directRender as object)
+    if (directRender !== undefined) return resolveRenderableComponent(directRender)
   }
 
   if (!type.startsWith('el-')) return null
 
   const direct = appComponents[type]
-  if (direct !== undefined) return markRaw(direct as object)
+  if (direct !== undefined) return resolveRenderableComponent(direct)
 
   const pascal = kebabToPascalCase(type)
   const byPascal = appComponents[pascal]
-  if (byPascal !== undefined) return markRaw(byPascal as object)
+  if (byPascal !== undefined) return resolveRenderableComponent(byPascal)
 
   return null
 }

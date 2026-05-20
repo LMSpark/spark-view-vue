@@ -32,12 +32,12 @@ interface UseControlledFieldChangeOptions<TValue> {
  * 内部统一委托给 useEventDefaults，避免各字段组件重复拼装 change 分发逻辑。
  */
 export function useControlledFieldChange<TValue>(options: UseControlledFieldChangeOptions<TValue>) {
-  const { dispatch } = useEventDefaults({
+  const { dispatch } = useEventDefaults<{ change: [nextValue: TValue, previousValue: TValue] }>({
     change: {
       systemDefault: async (nextValue, previousValue) => {
-        options.emitUpdate(nextValue as TValue)
-        options.syncValue(nextValue as TValue)
-        await options.afterDefault?.(nextValue as TValue, previousValue as TValue)
+        options.emitUpdate(nextValue)
+        options.syncValue(nextValue)
+        await options.afterDefault?.(nextValue, previousValue)
       },
     },
   }, options.handlerSource ?? {})

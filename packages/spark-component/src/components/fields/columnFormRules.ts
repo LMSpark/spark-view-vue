@@ -48,14 +48,14 @@ function convertRule(rule: ColumnValidationRule): FormItemRule {
 
     case 'minLength':
       return {
-        min: rule.value as number,
+        min: rule.value,
         message: rule.message,
         trigger: 'blur',
       }
 
     case 'maxLength':
       return {
-        max: rule.value as number,
+        max: rule.value,
         message: rule.message,
         trigger: 'blur',
       }
@@ -68,7 +68,7 @@ function convertRule(rule: ColumnValidationRule): FormItemRule {
             return
           }
           const num = Number(value)
-          if (isNaN(num) || num < (rule.value as number)) {
+          if (isNaN(num) || num < rule.value) {
             callback(new Error(rule.message))
           } else {
             callback()
@@ -85,7 +85,7 @@ function convertRule(rule: ColumnValidationRule): FormItemRule {
             return
           }
           const num = Number(value)
-          if (isNaN(num) || num > (rule.value as number)) {
+          if (isNaN(num) || num > rule.value) {
             callback(new Error(rule.message))
           } else {
             callback()
@@ -96,7 +96,7 @@ function convertRule(rule: ColumnValidationRule): FormItemRule {
 
     case 'pattern': {
       let regex: RegExp | undefined
-      try { regex = new RegExp(rule.value as string) } catch { /* invalid pattern */ }
+      try { regex = new RegExp(rule.value) } catch { /* invalid pattern */ }
       return regex
         ? { pattern: regex, message: rule.message, trigger: 'blur' }
         : { validator: (_r: unknown, _v: unknown, cb: (e?: Error) => void) => { cb(new Error(`无效正则: ${String(rule.value)}`)) }, trigger: 'blur' }

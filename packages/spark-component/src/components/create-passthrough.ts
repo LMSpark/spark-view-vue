@@ -41,7 +41,11 @@ export function createPassthrough(
       children: { type: Array as PropType<SparkNodeChildren>, default: undefined },
     },
     setup(props, { attrs }) {
-      const { isVisible } = useSparkPageComponent(props as unknown as SparkNodeInput)
+      const sparkNodeInput: SparkNodeInput = {
+        type: props.type,
+        ...(props.children !== undefined ? { children: props.children } : {}),
+      }
+      const { isVisible } = useSparkPageComponent(sparkNodeInput)
       const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 
       return () => {

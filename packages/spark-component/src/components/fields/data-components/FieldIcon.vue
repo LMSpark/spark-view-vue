@@ -54,6 +54,7 @@
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RIconProps } from './FieldIcon.props'
 
@@ -71,6 +72,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<s
   props,
   fieldType: 'r-icon',
   fallbackValue: '',
+  coerce: coerceStringValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

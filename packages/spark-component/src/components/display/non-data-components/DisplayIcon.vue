@@ -22,9 +22,8 @@ const { isVisible } = useSparkPageComponent(props)
 
 const resolvedIconComponent = computed((): Component | null => {
   if (!props.icon) return null
-  const icons = ElIcons as Record<string, Component>
-  const comp = icons[props.icon]
-  return comp ? markRaw(comp) : null
+  const entry = Object.entries(ElIcons).find(([key]) => key === props.icon)
+  return entry ? markRaw(entry[1]) : null
 })
 </script>
 

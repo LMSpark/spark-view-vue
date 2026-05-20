@@ -32,6 +32,7 @@
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coercePrimitiveOptionArray } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RMultiSelectProps, MultiValue } from './FieldMultiSelect.props'
 
@@ -57,6 +58,7 @@ const {
   props,
   fieldType: 'r-multi-select',
   fallbackValue: [],
+  coerce: coercePrimitiveOptionArray,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 

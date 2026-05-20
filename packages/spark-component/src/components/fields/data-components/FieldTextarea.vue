@@ -35,6 +35,7 @@
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceStringValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RTextareaProps } from './FieldTextarea.props'
 
@@ -52,6 +53,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<stri
   props,
   fieldType: 'r-textarea',
   fallbackValue: '',
+  coerce: coerceStringValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
@@ -68,4 +70,3 @@ async function handleChange(value: string): Promise<void> {
   word-break: break-word;
 }
 </style>
-

@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
 import { FieldSwitch } from '@spark-view/spark-component'
-import type { DataColumn } from '@spark-view/spark-data'
+import { SparkData, type DataColumn, type DataView } from '@spark-view/spark-data'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({
@@ -27,16 +27,20 @@ function mountFieldSwitch(
   fieldName: string,
   componentProps?: Record<string, unknown>,
   columns?: DataColumn[],
-  dataSource?: unknown,
+  dataSource?: DataView,
 ) {
+  const resolvedDataSource = dataSource ?? (columns !== undefined
+    ? createSwitchDataView(model, columns)
+    : undefined)
+
   return mountFieldInContext({
     component: FieldSwitch,
     type: 'r-switch',
     model,
     fieldName,
     componentProps,
-    ...((dataSource ?? (columns !== undefined ? { columns } : undefined)) !== undefined
-      ? { dataSource: dataSource ?? { columns } }
+    ...(resolvedDataSource !== undefined
+      ? { dataSource: resolvedDataSource }
       : {}),
     global: {
       stubs: {
@@ -48,6 +52,45 @@ function mountFieldSwitch(
       },
     },
   })
+}
+
+function createSwitchDataView(model: Record<string, unknown>, columns: DataColumn[]): DataView {
+  const dataSet = SparkData.createDataSet({
+    dataSetName: 'FieldSwitchDS',
+    tables: {
+      SwitchRows: {
+        tableName: 'SwitchRows',
+        columns: withPrimaryKeyColumn(columns),
+        views: {
+          default: {
+            rows: [model],
+            autoCurrentFirst: false,
+            autoSelectFirst: false,
+          },
+        },
+      },
+    },
+  })
+  const view = dataSet.getView('SwitchRows', 'default')
+  if (!view) throw new Error('测试 DataView 创建失败: SwitchRows@default')
+  const currentRow = view.rows[0]
+  if (currentRow) view.setCurrentRow(currentRow)
+  return view
+}
+
+function withPrimaryKeyColumn(columns: DataColumn[]): DataColumn[] {
+  if (columns.some(column => column.name === 'id')) return columns
+  return [{ name: 'id', type: 'string', isPrimaryKey: true }, ...columns]
+}
+
+function readSwitchFieldValue(view: DataView, row: Record<string, unknown>, fieldName: string): unknown {
+  const rowId = view.getPkKey(row)
+  if (rowId === undefined) return row[fieldName]
+  const editingRow = view.getEditingRow(rowId)
+  if (editingRow && Object.prototype.hasOwnProperty.call(editingRow, fieldName)) {
+    return editingRow[fieldName]
+  }
+  return row[fieldName]
 }
 
 describe('FieldSwitch 业务回调模式', () => {
@@ -70,50 +113,48 @@ describe('FieldSwitch 业务回调模式', () => {
   })
 
   it('应将可空布尔空值归一为 null', async () => {
-    const model = reactive<Record<string, unknown>>({ dividerAfter: '' })
-
-    mountFieldSwitch(model, 'dividerAfter', undefined, [
+    const model = reactive<Record<string, unknown>>({ id: 'nullable-row', dividerAfter: '' })
+    const dataSource = createSwitchDataView(model, [
       { name: 'dividerAfter', type: 'boolean', allowDBNull: true },
     ])
 
+    mountFieldSwitch(model, 'dividerAfter', undefined, undefined, dataSource)
+
     await nextTick()
 
-    expect(model['dividerAfter']).toBeNull()
+    expect(readSwitchFieldValue(dataSource, model, 'dividerAfter')).toBeNull()
   })
 
   it('应将非可空布尔缺字段归一为 false', async () => {
-    const model = reactive<Record<string, unknown>>({})
-
-    mountFieldSwitch(model, 'hidden', undefined, [
+    const model = reactive<Record<string, unknown>>({ id: 'required-row' })
+    const dataSource = createSwitchDataView(model, [
       { name: 'hidden', type: 'boolean', allowDBNull: false },
     ])
 
+    mountFieldSwitch(model, 'hidden', undefined, undefined, dataSource)
+
     await nextTick()
 
-    expect(model['hidden']).toBe(false)
+    expect(readSwitchFieldValue(dataSource, model, 'hidden')).toBe(false)
   })
 
   it('绑定 DataView 且当前行缺少主键时应跳过初始化归一写回', async () => {
     const model = reactive<Record<string, unknown>>({ active: '' })
-    const updateEditingValue = vi.fn()
+    const dataSource = createSwitchDataView(model, [
+      { name: 'active', type: 'boolean', allowDBNull: false },
+    ])
 
     mountFieldSwitch(
       model,
       'active',
       undefined,
       undefined,
-      {
-        columns: [{ name: 'active', type: 'boolean', allowDBNull: false }],
-        getPkKey: vi.fn(() => undefined),
-        hasEditingChanges: vi.fn(() => false),
-        getEditingRow: vi.fn(() => null),
-        updateEditingValue,
-      },
+      dataSource,
     )
 
     await nextTick()
 
-    expect(updateEditingValue).not.toHaveBeenCalled()
+    expect(dataSource.getPkKey(model)).toBeUndefined()
     expect(model['active']).toBe('')
   })
 

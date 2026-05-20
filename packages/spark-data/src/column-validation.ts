@@ -15,14 +15,10 @@ import type { DataColumn } from './types'
 export type ValidationRuleType = 'required' | 'type' | 'minLength' | 'maxLength' | 'min' | 'max' | 'pattern'
 
 /** 框架无关的验证规则描述符 */
-export interface ColumnValidationRule {
-  /** 规则类型 */
-  type: ValidationRuleType
-  /** 错误提示消息 */
-  message: string
-  /** 规则参数值（min/max/minLength/maxLength 的数值，pattern 的正则字符串） */
-  value?: unknown
-}
+export type ColumnValidationRule =
+  | { type: 'required' | 'type'; message: string }
+  | { type: 'minLength' | 'maxLength' | 'min' | 'max'; message: string; value: number }
+  | { type: 'pattern'; message: string; value: string }
 
 // ===== 字符串类型集合 =====
 const STRING_TYPES = new Set(['string', 'varchar', 'text'])

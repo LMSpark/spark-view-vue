@@ -21,6 +21,7 @@ import { computed } from 'vue'
 import { useSparkPageComponent } from '../../internal'
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
+import { coerceNullableBooleanValue } from './composables/fieldValueCoercion'
 import { useSwitchNullValue } from './composables/useSwitchNullValue'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RSwitchProps } from './FieldSwitch.props'
@@ -44,6 +45,7 @@ const { permission, fieldCtx, handleControlledChange } = useBasicFieldState<bool
   fieldType: 'r-switch',
   fallbackValue: false,
   formatDisplay: formatSwitchValue,
+  coerce: coerceNullableBooleanValue,
   emitUpdate: value => emitFieldValueUpdate(emit, value),
 })
 
@@ -68,4 +70,3 @@ async function handleChange(value: boolean): Promise<void> {
   await handleControlledChange(value)
 }
 </script>
-

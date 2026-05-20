@@ -14,8 +14,7 @@ const logger = Logger('Spark:Registry')
 
 function shouldLogRegistryDetails(): boolean {
   if (typeof globalThis === 'undefined') return false
-  const flag = (globalThis as Record<string, unknown>)['__SPARK_DEBUG_REGISTRY__']
-  return flag === true
+  return Reflect.get(globalThis, '__SPARK_DEBUG_REGISTRY__') === true
 }
 
 /* -------------------------------------------------------------------------- */

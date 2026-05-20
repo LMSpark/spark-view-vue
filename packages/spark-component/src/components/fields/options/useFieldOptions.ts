@@ -54,6 +54,7 @@ interface UseOptionFieldOptions<TValue> {
   props: FieldOptionProps & FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue
+  coerce?: (rawValue: unknown) => TValue
   formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string
 }
 
@@ -137,13 +138,13 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
     if (!Array.isArray(value) || value.length === 0) return ''
 
     if (value.every(item => Array.isArray(item))) {
-      return (value as unknown[])
-        .map(item => formatCascaderValue(item))
+      return value
+        .map((item) => formatCascaderValue(item))
         .filter(Boolean)
         .join(' ; ')
     }
 
-    return (value as unknown[])
+    return value
       .map(item => findOptionLabel(item))
       .filter(Boolean)
       .join(' / ')
@@ -182,6 +183,7 @@ export function useOptionField<TValue>(options: UseOptionFieldOptions<TValue>) {
     props: options.props,
     type: options.type,
     fallbackValue: options.fallbackValue,
+    ...(options.coerce !== undefined ? { coerce: options.coerce } : {}),
     formatDisplay: (value: unknown) => options.formatDisplay
       ? options.formatDisplay(value, optionHelpers)
       : optionHelpers.formatOptionValue(value),

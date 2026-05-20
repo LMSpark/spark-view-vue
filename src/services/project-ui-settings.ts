@@ -22,6 +22,10 @@ function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 export function getProjectUiSettingsStorageKey(scopeKey: string | null): string {
   const normalized = normalizeScopeKey(scopeKey)
   return normalized === null
@@ -30,20 +34,19 @@ export function getProjectUiSettingsStorageKey(scopeKey: string | null): string 
 }
 
 function normalizeSettings(raw: unknown): ProjectUiSettings | null {
-  if (raw === null || typeof raw !== 'object') return null
-  const input = raw as Partial<ProjectUiSettings>
+  if (!isRecord(raw)) return null
   return {
-    headerFirst: typeof input.headerFirst === 'boolean'
-      ? input.headerFirst
+    headerFirst: typeof raw['headerFirst'] === 'boolean'
+      ? raw['headerFirst']
       : DEFAULT_PROJECT_UI_SETTINGS.headerFirst,
-    sidebarCollapsed: typeof input.sidebarCollapsed === 'boolean'
-      ? input.sidebarCollapsed
+    sidebarCollapsed: typeof raw['sidebarCollapsed'] === 'boolean'
+      ? raw['sidebarCollapsed']
       : DEFAULT_PROJECT_UI_SETTINGS.sidebarCollapsed,
-    showFooter: typeof input.showFooter === 'boolean'
-      ? input.showFooter
+    showFooter: typeof raw['showFooter'] === 'boolean'
+      ? raw['showFooter']
       : DEFAULT_PROJECT_UI_SETTINGS.showFooter,
-    pageMode: input.pageMode === 'single' || input.pageMode === 'multi'
-      ? input.pageMode
+    pageMode: raw['pageMode'] === 'single' || raw['pageMode'] === 'multi'
+      ? raw['pageMode']
       : DEFAULT_PROJECT_UI_SETTINGS.pageMode,
   }
 }
