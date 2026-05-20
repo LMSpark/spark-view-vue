@@ -3,10 +3,10 @@ import { ref } from 'vue'
 import { buildPageContext } from '../packages/spark-component/src/page/context/buildPageContext'
 import { compileFunctions } from '../packages/spark-component/src/page/createSandbox'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
-import type { PageServiceCapability } from '@spark-view/spark-component'
+import type { PageDialogOptions, PageDialogResult, PageServiceCapability } from '@spark-view/spark-component'
 
-const mockPageService = {
-  showDialog: vi.fn(async () => 'close'),
+const mockPageService: PageServiceCapability = {
+  showDialog: vi.fn(async (_options: PageDialogOptions): Promise<PageDialogResult> => 'close'),
   selectEntities: vi.fn(async () => []),
   browseFiles: vi.fn(async () => []),
   uploadFiles: vi.fn(async () => []),
@@ -33,7 +33,7 @@ describe('PageContext $components (metadata only)', () => {
       getComponentRegistry: () => registry,
       pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
       pageContainer: ref<HTMLElement | null>(null),
-      pageService: mockPageService as unknown as PageServiceCapability,
+      pageService: mockPageService,
     })
 
     const instance = context.$components.get('orders-table')
@@ -51,7 +51,7 @@ describe('PageContext $components (metadata only)', () => {
       getComponentRegistry: () => registry,
       pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
       pageContainer: ref<HTMLElement | null>(null),
-      pageService: mockPageService as unknown as PageServiceCapability,
+      pageService: mockPageService,
     })
 
     expect(context.$components.get('nonexistent')).toBeNull()
@@ -63,7 +63,7 @@ describe('PageContext $components (metadata only)', () => {
       getDataSet: () => null,
       pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
       pageContainer: ref<HTMLElement | null>(null),
-      pageService: mockPageService as unknown as PageServiceCapability,
+      pageService: mockPageService,
     })
 
     expect(context.permission.isPermittedAction('create', {
@@ -83,7 +83,7 @@ describe('PageContext $components (metadata only)', () => {
       getDataSet: () => null,
       pageRoute: { path: '/', fullPath: '/', params: {}, query: {}, name: '', hash: '' },
       pageContainer: ref<HTMLElement | null>(null),
-      pageService: mockPageService as unknown as PageServiceCapability,
+      pageService: mockPageService,
     })
 
     const fns = compileFunctions(`

@@ -59,7 +59,7 @@ describe('RendererList and RendererSection container integration', () => {
     const listView = ds.getView('Users', 'default')!
     ;(listView as typeof listView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowExport: true }
 
-    const wrapper = mountWithPageDataSet(RendererList as any, {
+    const wrapper = mountWithPageDataSet(RendererList, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -118,7 +118,7 @@ describe('RendererList and RendererSection container integration', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererList as any, {
+    const wrapper = mountWithPageDataSet(RendererList, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -167,7 +167,7 @@ describe('RendererList and RendererSection container integration', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererList as any, {
+    const wrapper = mountWithPageDataSet(RendererList, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -245,7 +245,7 @@ describe('RendererList and RendererSection container integration', () => {
     const view = ds.getView('Users', 'default')!
     const observed: string[] = []
 
-    const wrapper = mountWithPageDataSet(RendererList as any, {
+    const wrapper = mountWithPageDataSet(RendererList, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -276,7 +276,7 @@ describe('RendererList and RendererSection container integration', () => {
   })
 
   it('should allow section header slot and default slot scopes to control collapse state', async () => {
-    const wrapper = mount(RendererSection as any, {
+    const wrapper = mount(RendererSection, {
       props: {
         title: '基础信息',
         description: 'desc',
@@ -316,7 +316,7 @@ describe('RendererList and RendererSection container integration', () => {
   })
 
   it('should keep section body on CSS Grid and honor child spans', () => {
-    const wrapper = mount(RendererSection as any, {
+    const wrapper = mount(RendererSection, {
       props: {
         title: '布局区块',
         gridGap: 16,
@@ -343,7 +343,7 @@ describe('RendererList and RendererSection container integration', () => {
   })
 
   it('should honor child span props in section grid layout', () => {
-    const wrapper = mount(RendererSection as any, {
+    const wrapper = mount(RendererSection, {
       props: {
         title: '根级布局区块',
         gridGap: 10,
@@ -393,7 +393,7 @@ describe('RendererSection direct Vue children bridge', () => {
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
         sparkProvide(SECTION_BRIDGE_MARKER, 'connected')
-        return () => h(RendererSection as any, { title: '分区' }, { default: () => h(ContextProbe) })
+        return () => h(RendererSection, { title: '分区' }, { default: () => h(ContextProbe) })
       },
     })
     const wrapper = mount(OuterProvider, {
@@ -412,7 +412,7 @@ describe('RendererSection direct Vue children bridge', () => {
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
         sparkProvide(SECTION_BRIDGE_MARKER, 'connected')
-        return () => h(RendererSection as any, { title: '卡片分区', useCard: true }, { default: () => h(ContextProbe) })
+        return () => h(RendererSection, { title: '卡片分区', useCard: true }, { default: () => h(ContextProbe) })
       },
     })
     const wrapper = mount(OuterProvider, {

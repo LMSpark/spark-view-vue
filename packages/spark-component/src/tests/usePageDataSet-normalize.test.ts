@@ -31,12 +31,12 @@ describe('usePageDataSet - DataSet 生命周期管理', () => {
     const statsView = ds.getView('stats', 'default')!
     expect(statsView).toBeDefined()
     expect(statsView.rows).toHaveLength(1)
-    expect((statsView.rows[0] as any).totalUsers).toBe(8523)
+    expect(statsView.rows[0]?.['totalUsers']).toBe(8523)
 
     const ordersView = ds.getView('recentOrders', 'default')!
     expect(ordersView).toBeDefined()
     expect(ordersView.rows).toHaveLength(5)
-    expect((ordersView.rows[0] as any).orderNo).toBe('ORD1738653421001')
+    expect(ordersView.rows[0]?.['orderNo']).toBe('ORD1738653421001')
 
     const titleView = ds.getView('title', 'default')!
     expect(titleView.rows[0]).toEqual({ value: 'Async Demo' })

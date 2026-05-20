@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
+import type { Component } from 'vue'
 import {
   FieldCascader,
   FieldTreeSelect,
@@ -82,7 +83,7 @@ function createFlatTreeOptionDataSet() {
 }
 
 function mountTreeOptionField(
-  component: unknown,
+  component: Component,
   type: 'r-tree-select' | 'r-cascader',
   fieldName: string,
 ) {
@@ -114,7 +115,7 @@ function mountTreeOptionField(
 
 describe('树选项字段同步 treeConfig 能力', () => {
   it('FieldTreeSelect 应从 flat rows + treeConfig 自动重建嵌套选项', () => {
-    const { wrapper } = mountTreeOptionField(FieldTreeSelect as never, 'r-tree-select', 'categoryId')
+    const { wrapper } = mountTreeOptionField(FieldTreeSelect, 'r-tree-select', 'categoryId')
     const treeSelect = wrapper.find('.el-tree-select-stub')
 
     expect(treeSelect.attributes('data-root-count')).toBe('2')
@@ -125,7 +126,7 @@ describe('树选项字段同步 treeConfig 能力', () => {
   })
 
   it('FieldCascader 应从 flat rows + treeConfig 自动重建嵌套选项', () => {
-    const { wrapper } = mountTreeOptionField(FieldCascader as never, 'r-cascader', 'categoryPath')
+    const { wrapper } = mountTreeOptionField(FieldCascader, 'r-cascader', 'categoryPath')
     const cascader = wrapper.find('.el-cascader-stub')
 
     expect(cascader.attributes('data-root-count')).toBe('2')
@@ -136,7 +137,7 @@ describe('树选项字段同步 treeConfig 能力', () => {
   })
 
   it('FieldTreeSelect 选择后应继续同步写回 contextData', async () => {
-    const { wrapper, model } = mountTreeOptionField(FieldTreeSelect as never, 'r-tree-select', 'categoryId')
+    const { wrapper, model } = mountTreeOptionField(FieldTreeSelect, 'r-tree-select', 'categoryId')
     const treeSelect = wrapper.findComponent(ElTreeSelectStub)
 
     treeSelect.vm.$emit('update:modelValue', 'child-a1')
@@ -146,7 +147,7 @@ describe('树选项字段同步 treeConfig 能力', () => {
   })
 
   it('FieldCascader 选择后应继续同步写回 contextData', async () => {
-    const { wrapper, model } = mountTreeOptionField(FieldCascader as never, 'r-cascader', 'categoryPath')
+    const { wrapper, model } = mountTreeOptionField(FieldCascader, 'r-cascader', 'categoryPath')
     const cascader = wrapper.findComponent(ElCascaderStub)
 
     cascader.vm.$emit('update:modelValue', ['root-a', 'child-a1'])

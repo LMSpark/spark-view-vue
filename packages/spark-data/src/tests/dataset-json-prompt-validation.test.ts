@@ -20,6 +20,21 @@ import type { DataRow } from '@spark-view/spark-data'
 /** 读取行字段（绕过 noPropertyAccessFromIndexSignature） */
 const f = (row: DataRow | undefined | null, field: string): unknown => row?.[field]
 
+function numberField(value: unknown): number {
+  if (typeof value === 'number') return value
+  throw new Error('Expected numeric field value')
+}
+
+function stringField(value: unknown): string {
+  if (typeof value === 'string') return value
+  throw new Error('Expected string field value')
+}
+
+function arrayField(value: unknown): unknown[] {
+  if (Array.isArray(value)) return value
+  throw new Error('Expected array field value')
+}
+
 const flushDataViewDebouncers = () => new Promise<void>(resolve => setTimeout(resolve, 32))
 
 afterEach(async () => {
@@ -258,15 +273,15 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
     const ds = fromPromptJson(CASE_B_JSON)
     const items = ds.getView('OrderItems')!
     // items[0]: 2 * 99.99 = 199.98
-    expect(f(items.rows[0], 'subtotal') as number).toBeCloseTo(199.98, 2)
+    expect(numberField(f(items.rows[0], 'subtotal'))).toBeCloseTo(199.98, 2)
     // items[1]: 1 * 299.00 = 299.00
-    expect(f(items.rows[1], 'subtotal') as number).toBeCloseTo(299.00, 2)
+    expect(numberField(f(items.rows[1], 'subtotal'))).toBeCloseTo(299.00, 2)
     // items[2]: 3 * 59.00 = 177.00
-    expect(f(items.rows[2], 'subtotal') as number).toBeCloseTo(177.00, 2)
+    expect(numberField(f(items.rows[2], 'subtotal'))).toBeCloseTo(177.00, 2)
     // items[3]: 1 * 189.00 = 189.00
-    expect(f(items.rows[3], 'subtotal') as number).toBeCloseTo(189.00, 2)
+    expect(numberField(f(items.rows[3], 'subtotal'))).toBeCloseTo(189.00, 2)
     // items[4]: 2 * 35.00 = 70.00
-    expect(f(items.rows[4], 'subtotal') as number).toBeCloseTo(70.00, 2)
+    expect(numberField(f(items.rows[4], 'subtotal'))).toBeCloseTo(70.00, 2)
   })
 
   it('B-3: 子表聚合 itemCount = $count(\'OrderItems\')', () => {
@@ -284,11 +299,11 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
     const ds = fromPromptJson(CASE_B_JSON)
     const orders = ds.getView('Orders')!
     // 订单1: 199.98 + 299.00 = 498.98
-    expect(f(orders.rows[0], 'totalAmount') as number).toBeCloseTo(498.98, 1)
+    expect(numberField(f(orders.rows[0], 'totalAmount'))).toBeCloseTo(498.98, 1)
     // 订单2: 177.00
-    expect(f(orders.rows[1], 'totalAmount') as number).toBeCloseTo(177.00, 2)
+    expect(numberField(f(orders.rows[1], 'totalAmount'))).toBeCloseTo(177.00, 2)
     // 订单3: 189.00 + 70.00 = 259.00
-    expect(f(orders.rows[2], 'totalAmount') as number).toBeCloseTo(259.00, 2)
+    expect(numberField(f(orders.rows[2], 'totalAmount'))).toBeCloseTo(259.00, 2)
   })
 
   it('B-5: 内存级联 — 选中订单 1 → OrderItems 显示 2 条', () => {
@@ -309,8 +324,8 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
     orders.selection.setCurrentRow(orders.rows[0]!) // 订单1: 2 件
     // 级联后只有 2 行，aggregateResult 仅汇总这 2 行
     expect(items.aggregateResult).not.toBeNull()
-    expect(f(items.aggregateResult, 'quantity') as number).toBeCloseTo(3, 2)  // 2+1
-    expect(f(items.aggregateResult, 'subtotal') as number).toBeCloseTo(498.98, 1) // 199.98+299
+    expect(numberField(f(items.aggregateResult, 'quantity'))).toBeCloseTo(3, 2)  // 2+1
+    expect(numberField(f(items.aggregateResult, 'subtotal'))).toBeCloseTo(498.98, 1) // 199.98+299
   })
 
   it('B-7: 切换到订单 2 → OrderItems 级联 1 条，汇总更新', () => {
@@ -322,7 +337,7 @@ describe('PROMPT 验证 — 案例 B: 电商订单管理', () => {
     orders.selection.setCurrentRow(orders.rows[1]!) // 订单 id=2
     expect(items.rows).toHaveLength(1)
     expect(f(items.rows[0], 'orderId')).toBe(2)
-    expect(f(items.aggregateResult, 'subtotal') as number).toBeCloseTo(177.00, 2) // 3*59
+    expect(numberField(f(items.aggregateResult, 'subtotal'))).toBeCloseTo(177.00, 2) // 3*59
   })
 })
 
@@ -400,11 +415,11 @@ describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
     const ds = fromPromptJson(EXAMPLE_9_JSON)
     const students = ds.getView('Students')!
     // 张三: (95+82)/2 = 88.5
-    expect(f(students.rows[0], 'gradeAvg') as number).toBeCloseTo(88.5, 1)
+    expect(numberField(f(students.rows[0], 'gradeAvg'))).toBeCloseTo(88.5, 1)
     // 李四: (76+68)/2 = 72.0
-    expect(f(students.rows[1], 'gradeAvg') as number).toBeCloseTo(72.0, 1)
+    expect(numberField(f(students.rows[1], 'gradeAvg'))).toBeCloseTo(72.0, 1)
     // 王五: (55+70)/2 = 62.5
-    expect(f(students.rows[2], 'gradeAvg') as number).toBeCloseTo(62.5, 1)
+    expect(numberField(f(students.rows[2], 'gradeAvg'))).toBeCloseTo(62.5, 1)
   })
 
   it('E9-3: 多语句计算列 grade — 各分支正确', () => {
@@ -429,7 +444,7 @@ describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
     const grades = ds.getView('Grades')!
     expect(grades.aggregateResult).not.toBeNull()
     // avg(95,82,76,68,55,70) = 446/6 ≈ 74.33
-    expect(f(grades.aggregateResult, 'score') as number).toBeCloseTo(74.33, 1)
+    expect(numberField(f(grades.aggregateResult, 'score'))).toBeCloseTo(74.33, 1)
     // count = 6
     expect(f(grades.aggregateResult, 'id')).toBe(6)
   })
@@ -451,7 +466,7 @@ describe('PROMPT 验证 — 示例 9: 学生成绩管理', () => {
 
     students.selection.setCurrentRow(students.rows[0]!) // 张三：95, 82
     expect(f(grades.aggregateResult, 'id')).toBe(2)           // count=2
-    expect(f(grades.aggregateResult, 'score') as number).toBeCloseTo(88.5, 1) // avg(95,82)
+    expect(numberField(f(grades.aggregateResult, 'score'))).toBeCloseTo(88.5, 1) // avg(95,82)
   })
 })
 
@@ -561,7 +576,7 @@ describe('PROMPT 验证 — 案例 C: HR 部门管理', () => {
     const ds = fromPromptJson(CASE_C_JSON)
     const employees = ds.getView('Employees')!
     // avg salary: (28000+18000+35000+22000+9500)/5 = 112500/5 = 22500
-    expect(f(employees.aggregateResult, 'salary') as number).toBeCloseTo(22500, 0)
+    expect(numberField(f(employees.aggregateResult, 'salary'))).toBeCloseTo(22500, 0)
     // count = 5
     expect(f(employees.aggregateResult, 'id')).toBe(5)
   })
@@ -691,13 +706,13 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
     const ds = fromPromptJson(CASE_G_JSON)
     const items = ds.getView('StockItems')!
     // P001@仓库1: 10 * 5999.99 = 59999.9
-    expect(f(items.rows[0], 'totalValue') as number).toBeCloseTo(59999.9, 1)
+    expect(numberField(f(items.rows[0], 'totalValue'))).toBeCloseTo(59999.9, 1)
     // P002@仓库1: 50 * 99.50 = 4975
-    expect(f(items.rows[1], 'totalValue') as number).toBeCloseTo(4975, 1)
+    expect(numberField(f(items.rows[1], 'totalValue'))).toBeCloseTo(4975, 1)
     // P001@仓库2: 5 * 5999.99 = 29999.95
-    expect(f(items.rows[2], 'totalValue') as number).toBeCloseTo(29999.95, 1)
+    expect(numberField(f(items.rows[2], 'totalValue'))).toBeCloseTo(29999.95, 1)
     // P003@仓库2: 20 * 299.00 = 5980
-    expect(f(items.rows[3], 'totalValue') as number).toBeCloseTo(5980, 1)
+    expect(numberField(f(items.rows[3], 'totalValue'))).toBeCloseTo(5980, 1)
   })
 
   it('G-5: $join 计算列 productNames 在 Warehouses 上正确聚合（级联前基于全量行）', () => {
@@ -713,9 +728,9 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
     const ds = fromPromptJson(CASE_G_JSON)
     const warehouses = ds.getView('Warehouses')!
     // 仓库1: 59999.9 + 4975 = 64974.9
-    expect(f(warehouses.rows[0], 'totalStockValue') as number).toBeCloseTo(64974.9, 0)
+    expect(numberField(f(warehouses.rows[0], 'totalStockValue'))).toBeCloseTo(64974.9, 0)
     // 仓库2: 29999.95 + 5980 = 35979.95
-    expect(f(warehouses.rows[1], 'totalStockValue') as number).toBeCloseTo(35979.95, 0)
+    expect(numberField(f(warehouses.rows[1], 'totalStockValue'))).toBeCloseTo(35979.95, 0)
   })
 
   it('G-7: aggregates field 覆盖 — totalVal.field = totalValue', () => {
@@ -723,7 +738,7 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
     const items = ds.getView('StockItems')!
     // aggregateResult 输出键是 totalVal（不是 totalValue）
     // 全部 4 行: 59999.9 + 4975 + 29999.95 + 5980 = 100954.85
-    expect(f(items.aggregateResult, 'totalVal') as number).toBeCloseTo(100954.85, 0)
+    expect(numberField(f(items.aggregateResult, 'totalVal'))).toBeCloseTo(100954.85, 0)
     // 原字段名 totalValue 不应出现在 aggregateResult 中（键名覆盖）
     expect(f(items.aggregateResult, 'totalValue')).toBeUndefined()
   })
@@ -752,7 +767,7 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
 
     warehouses.selection.setCurrentRow(warehouses.rows[0]!) // 北京仓：2 条
     // totalVal = 59999.9 + 4975 = 64974.9
-    expect(f(items.aggregateResult, 'totalVal') as number).toBeCloseTo(64974.9, 0)
+    expect(numberField(f(items.aggregateResult, 'totalVal'))).toBeCloseTo(64974.9, 0)
     // productList separator
     expect(f(items.aggregateResult, 'productList')).toBe('笔记本电脑 | 无线鼠标')
   })
@@ -761,13 +776,13 @@ describe('PROMPT 验证 — 案例 G: 仓库库存管理（v1.9 新特性）', (
     const ds = fromPromptJson(CASE_G_JSON)
     const warehouses = ds.getView('Warehouses')!
     // 仓库1（北京仓）: P001, P002
-    const codes1 = f(warehouses.rows[0], 'productCodes') as unknown[]
+    const codes1 = arrayField(f(warehouses.rows[0], 'productCodes'))
     expect(Array.isArray(codes1)).toBe(true)
     expect(codes1).toHaveLength(2)
     expect(codes1).toContain('P001')
     expect(codes1).toContain('P002')
     // 仓库2（上海仓）: P001, P003
-    const codes2 = f(warehouses.rows[1], 'productCodes') as unknown[]
+    const codes2 = arrayField(f(warehouses.rows[1], 'productCodes'))
     expect(Array.isArray(codes2)).toBe(true)
     expect(codes2).toHaveLength(2)
     expect(codes2).toContain('P001')
@@ -1173,7 +1188,7 @@ describe('Case I：标准提示词模板自测 - 物业管理系统（三级层�
 
   it('I-13: aggregates join (field 覆盖) 全量', () => {
     const ds = fromPromptJson(CASE_I_JSON)
-    const typeList = f(ds.getView('RepairOrders')!.aggregateResult, 'typeList') as string
+    const typeList = stringField(f(ds.getView('RepairOrders')!.aggregateResult, 'typeList'))
     expect(typeList).toContain('水管漏水')
     expect(typeList).toContain('电梯故障')
     expect(typeList).toContain('门禁损坏')
@@ -1190,7 +1205,7 @@ describe('Case I：标准提示词模板自测 - 物业管理系统（三级层�
     buildings.selection.setCurrentRow(buildings.rows[0]!)     // 1栋 101
     // 过滤后只有 1001, 1002
     expect(f(repairOrders.aggregateResult, 'id')).toBe(2)
-    const typeList = f(repairOrders.aggregateResult, 'typeList') as string
+    const typeList = stringField(f(repairOrders.aggregateResult, 'typeList'))
     expect(typeList).toBe('水管漏水 | 电梯故障')
   })
 

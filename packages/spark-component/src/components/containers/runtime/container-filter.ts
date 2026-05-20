@@ -19,7 +19,6 @@
 import { computed, reactive, toValue, watch } from 'vue'
 import type { ComputedRef, MaybeRefOrGetter } from 'vue'
 import type {
-  DataView,
   FilterExpression,
   FilterOperator,
   FilterValueExpression,
@@ -70,6 +69,20 @@ interface ErrorLoggerLike {
   error(message: string, error?: unknown): void
 }
 
+type FilterPanelDataView = {
+  readonly rows: ReadonlyArray<Record<string, unknown>>
+  readonly columns?: readonly unknown[]
+  readonly filterExpression?: FilterExpression | undefined
+  readonly dataTable?: {
+    readonly api?: { readonly list?: unknown } | undefined
+    readonly resourceType?: string | undefined
+  } | null | undefined
+  getColumn?: (field: string) => unknown
+  setFilter(expr: FilterExpression | undefined): Promise<void>
+  executeFilter(expr: FilterExpression | undefined): Promise<void>
+  refresh(): Promise<void>
+}
+
 /** 判断过滤值是否为空（空字符串、空数组、null、undefined 均视为空）。 */
 function isEmptyFilterValue(value: unknown): boolean {
   if (value === undefined || value === null) return true
@@ -89,10 +102,10 @@ function hasNamedColumn(columns: unknown, field: string): boolean | undefined {
   )
 }
 
-function viewHasField(view: DataView | null | undefined, field: string): boolean {
+function viewHasField(view: FilterPanelDataView | null | undefined, field: string): boolean {
   if (!view) return true
 
-  if (view.getColumn(field) !== undefined) return true
+  if (view.getColumn?.(field) !== undefined) return true
 
   const columnMatch = hasNamedColumn(view.columns, field)
   if (columnMatch !== undefined) return columnMatch
@@ -102,7 +115,7 @@ function viewHasField(view: DataView | null | undefined, field: string): boolean
 }
 
 function assertResidentFieldRefs(
-  view: DataView | null | undefined,
+  view: FilterPanelDataView | null | undefined,
   descriptors: readonly FilterDescriptor[],
 ): void {
   for (const descriptor of descriptors) {
@@ -116,7 +129,7 @@ function assertResidentFieldRefs(
   }
 }
 
-function isRemoteListView(view: DataView): boolean {
+function isRemoteListView(view: FilterPanelDataView): boolean {
   const table = view.dataTable
   return table?.resourceType !== 'static-data' && table?.api?.list !== undefined
 }
@@ -398,7 +411,7 @@ type FilterApplyMode = 'set' | 'execute'
  * - 捕获所有异常并通过 logger 记录（不向外抛出）
  */
 async function applyFilterSafely(params: {
-  view: DataView | null | undefined
+  view: FilterPanelDataView | null | undefined
   expr: FilterExpression | undefined
   hasFilters: boolean
   logger: ErrorLoggerLike
@@ -435,7 +448,7 @@ interface UseFilterPanelOptions {
   /** 过滤器子节点列表（响应式）。 */
   filterChildren: MaybeRefOrGetter<SparkNode[]>
   /** 目标 DataView（响应式）。 */
-  dataView: MaybeRefOrGetter<DataView | null>
+  dataView: MaybeRefOrGetter<FilterPanelDataView | null>
   /** 错误日志接口。 */
   logger: ErrorLoggerLike
 }

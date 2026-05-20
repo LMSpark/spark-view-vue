@@ -83,7 +83,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     formView.selection.setCurrentRow(formView.rows[0] ?? null)
     ;(formView as typeof formView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: true }
 
-    const wrapper = mountWithPageDataSet(RendererForm as any, {
+    const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -128,7 +128,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const formView = ds.getView('Users', 'default')!
     formView.selection.setCurrentRow(formView.rows[0] ?? null)
 
-    const wrapper = mountWithPageDataSet(RendererForm as any, {
+    const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -169,7 +169,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const DirectFormFields = defineComponent({
       name: 'DirectFormFields',
       setup() {
-        return () => h(FieldText as any, {
+        return () => h(FieldText, {
           type: 'r-text',
           field: 'name',
           label: '姓名',
@@ -177,7 +177,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererForm as any, {
+    const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -221,7 +221,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     detailView.selection.setCurrentRow(detailView.rows[0] ?? null)
     ;(detailView as typeof detailView & { _modelPerm?: Record<string, unknown> })._modelPerm = { allowExport: true }
 
-    const wrapper = mountWithPageDataSet(RendererDetail as any, {
+    const wrapper = mountWithPageDataSet(RendererDetail, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -265,7 +265,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const detailView = ds.getView('Users', 'default')!
     detailView.selection.setCurrentRow(detailView.rows[0] ?? null)
 
-    const wrapper = mountWithPageDataSet(RendererDetail as any, {
+    const wrapper = mountWithPageDataSet(RendererDetail, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -302,7 +302,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const view = ds.getView('Users', 'default')!
     view.selection.setCurrentRow(view.rows[0] ?? null)
 
-    const wrapper = mountWithPageDataSet(RendererForm as any, {
+    const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -380,7 +380,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     const view = ds.getView('Users', 'default')!
     view.selection.setCurrentRow(view.rows[0] ?? null)
 
-    const wrapper = mountWithPageDataSet(RendererDetail as any, {
+    const wrapper = mountWithPageDataSet(RendererDetail, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -455,7 +455,7 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererForm as any, {
+    const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -502,13 +502,13 @@ describe('RendererForm and RendererDetail toolbar integration', () => {
     })
     // 不预设 currentRow，模拟运行时 initAutoSelection 后触发
 
-    const wrapper = mountWithPageDataSet(RendererForm as any, {
+    const wrapper = mountWithPageDataSet(RendererForm, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
       },
       slots: {
-        default: () => h(FieldText as any, {
+        default: () => h(FieldText, {
           type: 'r-text',
           field: 'name',
           label: '姓名',

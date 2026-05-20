@@ -2,15 +2,34 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
+import type { SparkNode, SparkNodeChildren } from '@spark-view/spark-component'
 import RendererTabPane from '../packages/spark-component/src/components/containers/layout/RendererTabPane.vue'
 import RendererCollapseItem from '../packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue'
 import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isSparkNode(value: unknown): value is SparkNode {
+  return isRecord(value) && typeof Reflect.get(value, 'type') === 'string'
+}
+
+function readSparkNodeChildren(value: unknown): SparkNodeChildren | undefined {
+  return Array.isArray(value) && value.every(isSparkNode) ? value : undefined
+}
+
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']
-  return props !== null && props !== undefined && typeof props === 'object' && !Array.isArray(props)
-    ? props as Record<string, unknown>
-    : {}
+  return isRecord(props) ? props : {}
+}
+
+function readConfigChildren(config: Record<string, unknown>, propsMap: Record<string, unknown>): SparkNodeChildren {
+  return readSparkNodeChildren(propsMap['children']) ?? readSparkNodeChildren(config['children']) ?? []
+}
+
+function readNumber(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
 }
 
 const SparkActionStub = defineComponent({
@@ -22,37 +41,36 @@ const SparkActionStub = defineComponent({
   },
   setup(props) {
     return () => {
-      const config = props.config as Record<string, unknown>
+      if (!isRecord(props.config)) {
+        throw new TypeError('SparkActionStub config must be an object')
+      }
+      const config = props.config
       const type = String(config['type'] ?? '')
       const propsMap = readConfigProps(config)
 
       if (type === 'r-toolbar') {
-        const children = Array.isArray(propsMap['children'])
-          ? propsMap['children']
-          : (Array.isArray(config['children']) ? config['children'] : [])
-        return h(RendererToolbar as any, {
+        const children = readConfigChildren(config, propsMap)
+        return h(RendererToolbar, {
           ...propsMap,
           children,
         })
       }
 
       if (type === 'r-tab-pane') {
-        const children = Array.isArray(propsMap['children'])
-          ? propsMap['children']
-          : (Array.isArray(config['children']) ? config['children'] : [])
-        return h(RendererTabPane as any, {
+        const children = readConfigChildren(config, propsMap)
+        return h(RendererTabPane, {
           ...propsMap,
           children,
+          index: readNumber(propsMap['index'], 0),
         })
       }
 
       if (type === 'r-collapse-item') {
-        const children = Array.isArray(propsMap['children'])
-          ? propsMap['children']
-          : (Array.isArray(config['children']) ? config['children'] : [])
-        return h(RendererCollapseItem as any, {
+        const children = readConfigChildren(config, propsMap)
+        return h(RendererCollapseItem, {
           ...propsMap,
           children,
+          index: readNumber(propsMap['index'], 0),
         })
       }
 
@@ -109,7 +127,7 @@ const ElCollapseItemStub = defineComponent({
 describe('RendererTabs and RendererCollapse integration', () => {
   it('should render tabs panes with toolbar children and pane grid body', () => {
     const onTabChange = vi.fn()
-    const wrapper = mount(RendererTabs as any, {
+    const wrapper = mount(RendererTabs, {
       props: {
         onTabChange,
         toolbar: { type: 'r-toolbar', children: [{ type: 'tabs-toolbar-action' }] },
@@ -151,7 +169,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
   })
 
   it('should resolve pane fields from props only', () => {
-    const wrapper = mount(RendererTabs as any, {
+    const wrapper = mount(RendererTabs, {
       props: {
         children: [
           {
@@ -183,7 +201,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
   })
 
   it('should emit tabs value updates', () => {
-    const wrapper = mount(RendererTabs as any, {
+    const wrapper = mount(RendererTabs, {
       props: {
         children: [
           { type: 'r-tab-pane', props: { label: 'A', name: 'a' }, children: [] },
@@ -204,7 +222,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
 
   it('should render collapse items with toolbar children and item grid body', () => {
     const onChange = vi.fn()
-    const wrapper = mount(RendererCollapse as any, {
+    const wrapper = mount(RendererCollapse, {
       props: {
         onChange,
         toolbar: { type: 'r-toolbar', children: [{ type: 'collapse-toolbar-action' }] },
@@ -246,7 +264,7 @@ describe('RendererTabs and RendererCollapse integration', () => {
   })
 
   it('should resolve collapse item fields from props only', () => {
-    const wrapper = mount(RendererCollapse as any, {
+    const wrapper = mount(RendererCollapse, {
       props: {
         children: [
           {

@@ -10,7 +10,7 @@ import type {
   ActionExecutionScope,
   ActionFormApi,
 } from '../packages/spark-component/src/page/actions/action-types'
-import type { PageServiceCapability } from '@spark-view/spark-component'
+import type { PageDialogOptions, PageDialogResult, PageServiceCapability } from '@spark-view/spark-component'
 
 function createDataView() {
   const dataSet = SparkData.createDataSet({
@@ -45,15 +45,14 @@ function createPageService(overrides: Partial<PageServiceCapability> = {}): Page
     showConfirm: vi.fn(async () => true),
     showPrompt: vi.fn(async () => null),
     showAlert: vi.fn(async () => {}),
-    showLoading: vi.fn(() => ({ close: vi.fn() })),
-    showDialog: vi.fn(async () => ({ action: 'close' })),
+    showLoading: vi.fn(),
+    showDialog: vi.fn(async (_options: PageDialogOptions): Promise<PageDialogResult> => 'close'),
     navigate: vi.fn(),
-    goBack: vi.fn(),
-    selectEntities: vi.fn(async () => ({ selected: [] })),
-    browseFile: vi.fn(async () => null),
-    uploadFile: vi.fn(async () => null),
+    selectEntities: vi.fn(async () => []),
+    browseFiles: vi.fn(async () => []),
+    uploadFiles: vi.fn(async () => []),
     ...overrides,
-  } as unknown as PageServiceCapability
+  }
 }
 
 function createActionContext(dataSet: ReturnType<typeof createDataView>['dataSet'], pageService: PageServiceCapability): ActionExecutionContext {
@@ -167,7 +166,8 @@ describe('DataView CRUD bridge', () => {
   it('builtin append-row should call view.addRow instead of appendRow', async () => {
     const { dataSet, view } = createDataView()
     const pageService = createPageService()
-    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as DataRow)
+    const createdRow: DataRow = { id: 2, name: 'Bob' }
+    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue(createdRow)
     const appendRowSpy = vi.spyOn(view, 'appendRow')
 
     const desc = nodeToActionDescriptor({
@@ -377,7 +377,8 @@ describe('DataView CRUD bridge', () => {
   it('action executor append-row should call view.addRow instead of appendRow', async () => {
     const { dataSet, view } = createDataView()
     const pageService = createPageService()
-    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue({ id: 2, name: 'Bob' } as DataRow)
+    const createdRow: DataRow = { id: 2, name: 'Bob' }
+    const addRowSpy = vi.spyOn(view, 'addRow').mockResolvedValue(createdRow)
     const appendRowSpy = vi.spyOn(view, 'appendRow')
 
     await executeActionDescriptor(

@@ -12,8 +12,9 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
   it('keeps cached DATA_ROW consumers in sync when row prop changes', async () => {
     const Probe = defineComponent({
       setup() {
-        const { sparkConsume } = useSparkComponent({ type: 'row-probe' } as SparkNode)
-        const row = sparkConsume(DATA_ROW) as DataRow | null
+        const node: SparkNode = { type: 'row-probe' }
+        const { sparkConsume } = useSparkComponent(node)
+        const row = sparkConsume(DATA_ROW)
 
         return () => h('div', {
           class: 'row-probe',
@@ -30,7 +31,8 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
 
     const Harness = defineComponent({
       setup() {
-        useSparkComponent({ type: 'test-page-root' } as SparkNode)
+        const node: SparkNode = { type: 'test-page-root' }
+        useSparkComponent(node)
         return () => h(RendererHostScope, {
           row: rowRef.value,
         }, {
@@ -82,11 +84,13 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
 
     const Probe = defineComponent({
       setup() {
-        useSparkComponent({ type: 'field-probe' } as SparkNode)
+        const node: SparkNode = { type: 'field-probe' }
+        useSparkComponent(node)
         const field = useFieldPermission<string>({
           props: { field: 'name' },
           type: 'field-probe',
           fallbackValue: '',
+          coerce: value => typeof value === 'string' ? value : String(value ?? ''),
         })
 
         return () => h('button', {
@@ -103,7 +107,8 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
 
     const Harness = defineComponent({
       setup() {
-        const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
+        const node: SparkNode = { type: 'test-page-root' }
+        const { sparkProvide } = useSparkComponent(node)
         sparkProvide(DATA_SOURCE, view)
         return () => h(RendererHostScope, {
           row: view.rows[0],

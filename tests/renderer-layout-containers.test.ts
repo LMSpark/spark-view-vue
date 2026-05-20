@@ -12,6 +12,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
+import type { Component, PropType } from 'vue'
 import {
   RendererContainer,
   RendererAside,
@@ -102,11 +103,16 @@ const ElColStub = defineComponent({
 
 const SparkComponentRendererStub = defineComponent({
   name: 'SparkComponentRenderer',
-  props: { config: Object },
+  props: {
+    config: {
+      type: Object as PropType<SparkNode>,
+      required: true,
+    },
+  },
   setup(props) {
     return () => h('div', {
       class: 'renderer-stub',
-      'data-type': (props.config as SparkNode)?.type ?? 'unknown',
+      'data-type': props.config.type,
     })
   },
 })
@@ -122,16 +128,17 @@ function createTestSystem(): TestSystem {
 }
 
 function mountWithSpark(
-  component: unknown,
-  config: SparkNode,
+  component: Component,
+  config: Record<string, unknown>,
   stubs: Record<string, unknown>,
 ) {
   const { registry, rootContext } = createTestSystem()
 
   const Provider = defineComponent({
     setup() {
-      useSparkComponent({ type: 'test-parent' } as SparkNode, { parentContext: rootContext })
-      return () => h(component as never, config)
+      const node: SparkNode = { type: 'test-parent' }
+      useSparkComponent(node, { parentContext: rootContext })
+      return () => h(component, config)
     },
   })
 
@@ -142,7 +149,7 @@ function mountWithSpark(
         ...stubs,
       },
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       },
     },
   })
@@ -168,7 +175,7 @@ describe('RendererContainer (r-container)', () => {
     const wrapper = mountWithSpark(RendererContainer, {
       type: 'r-container',
       direction: 'vertical',
-    } as SparkNode, { 'el-container': ElContainerStub })
+    }, { 'el-container': ElContainerStub })
 
     expect(wrapper.find('.el-container-stub').attributes('data-direction')).toBe('vertical')
   })
@@ -188,7 +195,7 @@ describe('RendererAside (r-aside)', () => {
     const wrapper = mountWithSpark(RendererAside, {
       type: 'r-aside',
       width: '200px',
-    } as SparkNode, { 'el-aside': ElAsideStub })
+    }, { 'el-aside': ElAsideStub })
 
     expect(wrapper.find('.el-aside-stub').attributes('data-width')).toBe('200px')
   })
@@ -219,7 +226,7 @@ describe('RendererLayoutHeader (r-layout-header)', () => {
     const wrapper = mountWithSpark(RendererLayoutHeader, {
       type: 'r-layout-header',
       height: '80px',
-    } as SparkNode, { 'el-header': ElHeaderStub })
+    }, { 'el-header': ElHeaderStub })
 
     expect(wrapper.find('.el-header-stub').attributes('data-height')).toBe('80px')
   })
@@ -260,7 +267,7 @@ describe('RendererRow (r-row)', () => {
         { type: 'r-col', props: { span: 12 } },
         { type: 'r-col', props: { span: 12 } },
       ],
-    } as SparkNode, { 'el-row': ElRowStub })
+    }, { 'el-row': ElRowStub })
 
     expect(wrapper.find('.el-row-stub').exists()).toBe(true)
     expect(wrapper.find('.el-row-stub').attributes('data-gutter')).toBe('20')
@@ -274,7 +281,7 @@ describe('RendererCol (r-col)', () => {
       type: 'r-col',
       span: 8,
       children: [{ type: 'div', props: {} }],
-    } as SparkNode, { 'el-col': ElColStub })
+    }, { 'el-col': ElColStub })
 
     expect(wrapper.find('.el-col-stub').exists()).toBe(true)
     expect(wrapper.find('.el-col-stub').attributes('data-span')).toBe('8')

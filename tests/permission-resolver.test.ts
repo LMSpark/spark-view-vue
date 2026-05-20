@@ -18,8 +18,8 @@ describe('PermissionResolver', () => {
       allowImport: true,
       allowExport: false,
     }
-    const editableRow = { id: 1, _perm: { editableFields: ['name'], allowDelete: true, allowCreateChild: false } } as DataRow
-    const lockedRow = { id: 2, _perm: { editableFields: [], allowDelete: false } } as DataRow
+    const editableRow: DataRow = { id: 1, _perm: { editableFields: ['name'], allowDelete: true, allowCreateChild: false } }
+    const lockedRow: DataRow = { id: 2, _perm: { editableFields: [], allowDelete: false } }
 
     expect(isPermittedAction('create', { modelPermission: modelPerm })).toBe(false)
     expect(isPermittedAction('import', { modelPermission: modelPerm })).toBe(true)
@@ -30,7 +30,7 @@ describe('PermissionResolver', () => {
   })
 
   it('defaults missing permission data to baseline allow for actions; field editable still requires grant', () => {
-    const row = { id: 1, name: 'Alice' } as DataRow
+    const row: DataRow = { id: 1, name: 'Alice' }
 
     const state = resolveFieldPermissionState('name', row)
 
@@ -50,7 +50,7 @@ describe('PermissionResolver', () => {
   })
 
   it('does not treat empty values as hidden without an explicit hidden permission', () => {
-    const row = { id: 1, name: '', _perm: { editableFields: [] } } as DataRow
+    const row: DataRow = { id: 1, name: '', _perm: { editableFields: [] } }
 
     const state = resolveFieldPermissionState('name', row)
 
@@ -61,7 +61,7 @@ describe('PermissionResolver', () => {
   })
 
   it('treats empty or missing values as hidden only when hiddenFields explicitly marks the field', () => {
-    const row = { id: 1, _perm: { hiddenFields: ['name'], editableFields: [] } } as DataRow
+    const row: DataRow = { id: 1, _perm: { hiddenFields: ['name'], editableFields: [] } }
 
     const state = resolveFieldPermissionState('name', row)
 
@@ -73,7 +73,7 @@ describe('PermissionResolver', () => {
 
   it('requires both model and row grants when create-child receives both contexts', () => {
     const modelPerm: ModelPermission = { allowCreate: true }
-    const row = { id: 1, _perm: { allowCreateChild: true, editableFields: ['name'] } } as DataRow
+    const row: DataRow = { id: 1, _perm: { allowCreateChild: true, editableFields: ['name'] } }
     const readonlyModel: ModelPermission = { allowCreate: false }
 
     expect(isPermittedAction('create-child', { modelPermission: modelPerm, row })).toBe(true)
@@ -81,7 +81,7 @@ describe('PermissionResolver', () => {
   })
 
   it('returns hidden state for hidden fields and preserves backend-masked text', () => {
-    const row = {
+    const row: DataRow = {
       id: 1,
       phone: '138****1234',
       secret: 'top-secret',
@@ -90,7 +90,7 @@ describe('PermissionResolver', () => {
         hiddenFields: ['secret'],
         maskedFields: ['phone'],
       },
-    } as DataRow
+    }
 
     const hiddenState = resolveFieldPermissionState('secret', row)
     const maskedState = resolveFieldPermissionState('phone', row)
@@ -105,14 +105,14 @@ describe('PermissionResolver', () => {
   })
 
   it('keeps read and write channels independent for hidden editable fields', () => {
-    const row = {
+    const row: DataRow = {
       id: 1,
       password: 'secret-from-backend',
       _perm: {
         hiddenFields: ['password'],
         editableFields: ['password'],
       },
-    } as DataRow
+    }
 
     const state = resolveFieldPermissionState('password', row)
 

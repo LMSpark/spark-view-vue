@@ -1,6 +1,17 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import type {
+  ConfigLoadResult,
+  PageConfig,
+  PageConfigFileLoadOptions,
+  PageConfigFileName,
+  PageCssConfig,
+  PageDataConfig,
+  PageScriptConfig,
+  RuleConfig,
+} from '@spark-view/spark-page-config'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { createDynamicRouter } from '../packages/spark-app/src/router/dynamic'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
@@ -9,6 +20,46 @@ const DummyPage = defineComponent({
   name: 'DummyPage',
   template: '<div />',
 })
+
+class DummyPageConfigLoader extends BasePageConfigLoader {
+  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
+    return { success: false }
+  }
+
+  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
+    return { success: false }
+  }
+
+  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
+    return { success: false }
+  }
+
+  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+    return { success: false }
+  }
+
+  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+    return { success: false }
+  }
+
+  override async loadPageFileContent(
+    _pageId: string,
+    _filename: PageConfigFileName,
+    _options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>> {
+    return { success: false }
+  }
+
+  override clearCache(): void {
+    return undefined
+  }
+
+  override getCacheStats(): { size: number; keys: string[] } {
+    return { size: 0, keys: [] }
+  }
+}
+
+const DUMMY_CONFIG_LOADER = new DummyPageConfigLoader()
 
 const PRE_AUTH_NAV: AppNavRoot = {
   id: 'root',
@@ -39,7 +90,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -76,7 +127,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -113,7 +164,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -156,7 +207,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -194,7 +245,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -231,7 +282,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -267,7 +318,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -300,7 +351,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -352,7 +403,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -407,7 +458,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -457,7 +508,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,

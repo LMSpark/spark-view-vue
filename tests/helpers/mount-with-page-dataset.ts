@@ -2,6 +2,7 @@ import { mount } from '@vue/test-utils'
 import type { ComponentMountingOptions } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
+import type { Component } from 'vue'
 import { APP_SERVICES, PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import type { DataSetContract, DataView } from '@spark-view/spark-data'
@@ -15,7 +16,7 @@ const TEST_APP_LOGGER = {
   error: (message: string, context?: unknown) => console.error(message, context),
 }
 
-type MountedWithPageDataSetWrapper = VueWrapper<any> & {
+type MountedWithPageDataSetWrapper = VueWrapper & {
   __pageComponentRegistry?: PageComponentRegistry
 }
 
@@ -27,7 +28,7 @@ interface MountWithPageDataSetOptions {
 }
 
 export function mountWithPageDataSet(
-  component: unknown,
+  component: Component,
   options: MountWithPageDataSetOptions,
 ) : MountedWithPageDataSetWrapper {
   const registry = Spark.createRegistry()
@@ -36,11 +37,12 @@ export function mountWithPageDataSet(
 
   const Harness = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
+      const node: SparkNode = { type: 'test-page-root' }
+      const { sparkProvide } = useSparkComponent(node)
       sparkProvide(PAGE_DATASET, options.dataSet)
       sparkProvide(PAGE_COMPONENT_REGISTRY, pageComponentRegistry)
       sparkProvide(APP_SERVICES, { logger: TEST_APP_LOGGER })
-      return () => h(component as never, options.props ?? {}, options.slots ?? {})
+      return () => h(component, options.props ?? {}, options.slots ?? {})
     },
   })
 
@@ -51,13 +53,13 @@ export function mountWithPageDataSet(
     },
   })
 
-  const componentWrapper = wrapper.findComponent(component as never) as MountedWithPageDataSetWrapper
+  const componentWrapper = wrapper.findComponent(component) as MountedWithPageDataSetWrapper
   componentWrapper.__pageComponentRegistry = pageComponentRegistry
   return componentWrapper
 }
 
 export function getMountedComponentApi<T>(
-  wrapper: VueWrapper<any>,
+  wrapper: VueWrapper,
   type: string,
   index = 0,
 ): T {
@@ -83,7 +85,7 @@ interface MountWithDataViewOptions {
 }
 
 export function mountWithDataView(
-  component: unknown,
+  component: Component,
   options: MountWithDataViewOptions,
 ) {
   const dataSet = options.view.dataSet

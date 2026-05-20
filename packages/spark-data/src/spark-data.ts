@@ -7,7 +7,6 @@ import { TreeManager } from './tree-manager'
 import { DataTable } from './data-table'
 import { DataView } from './data-view'
 import { DataSetCrudTool } from './dataset-crud-tool'
-import { CrudService } from './crud-service'
 import {
   commitDataSetSnapshot,
   createLocalStorageHistoryAdapter,
@@ -34,12 +33,9 @@ import type {
   DataSetMetadata,
   FlatTreeNode,
   TableMetadata,
-  TableRelation,
   TreeConfig,
-  ViewDependency,
   ViewMetadata,
 } from './types'
-import type { RequestConfig } from '@spark-view/spark-utils'
 
 function createDataSet(meta: DataSetMetadata): DataSet {
   return DataSet.fromJson(meta)
@@ -55,10 +51,6 @@ function createTreeManager(config: TreeConfig, initialNodes?: FlatTreeNode[]): T
 
 function createDataTable(meta: TableMetadata): DataTable {
   return DataTable.fromJson(meta)
-}
-
-function createCrudService(api: CrudApi, httpConfig?: RequestConfig): CrudService {
-  return new CrudService(api, httpConfig)
 }
 
 function createDatabaseCrudApi(tableName: string): CrudApi {
@@ -95,20 +87,11 @@ function createDataSetCrudTool(dataSetName: string): DataSetCrudTool {
   return new DataSetCrudTool(dataSetName)
 }
 
-function createTableRelation(relation: TableRelation): TableRelation {
-  return { ...relation }
-}
-
-function createViewDependency(dependency: ViewDependency): ViewDependency {
-  return { ...dependency }
-}
-
 export const SparkData = {
   createDataSet,
   fromJson,
   createTreeManager,
   createDataTable,
-  createCrudService,
   createDatabaseCrudApi,
   createDataView,
   createDataSetCrudTool,
@@ -117,8 +100,6 @@ export const SparkData = {
   commitDataSetSnapshot,
   createLocalStorageHistoryAdapter,
   formatPageDataSnapshot,
-  createTableRelation,
-  createViewDependency,
   DataMember,
   isDataViewKey,
   parseDataViewKey,

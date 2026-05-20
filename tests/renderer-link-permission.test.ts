@@ -9,6 +9,8 @@ import {
   useSparkComponent,
 } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
+import type { DataView } from '@spark-view/spark-data'
+import type { SparkNode } from '@spark-view/spark-component'
 
 const ElLinkStub = defineComponent({
   props: ['type', 'underline', 'disabled', 'href', 'target'],
@@ -21,15 +23,16 @@ const ElLinkStub = defineComponent({
   },
 })
 
-function mountRendererLinkWithDataSource(dataSource: unknown, componentProps?: Record<string, unknown>) {
+function mountRendererLinkWithDataSource(dataSource: DataView, componentProps?: Record<string, unknown>) {
   const { registry, rootContext } = Spark.createSystem()
 
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-toolbar' } as never, { parentContext: rootContext })
-      sparkProvide(DATA_SOURCE, dataSource as never)
+      const node: SparkNode = { type: 'r-toolbar' }
+      const { sparkProvide } = useSparkComponent(node, { parentContext: rootContext })
+      sparkProvide(DATA_SOURCE, dataSource)
 
-      return () => h(RendererLink as never, {
+      return () => h(RendererLink, {
         type: 'r-link',
         label: '批量删除',
         permissionDeniedMode: 'disable',

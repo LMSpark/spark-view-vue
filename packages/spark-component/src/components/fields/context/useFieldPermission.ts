@@ -35,7 +35,7 @@ interface UseFieldPermissionOptions<TValue> {
    *
    * 注意：仅对来自行数据的值应用；`props.modelValue` 显式传入时直接使用（调用方负责类型正确性）。
    */
-  coerce?: (rawValue: unknown) => TValue
+  coerce: (rawValue: unknown) => TValue
 }
 
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
@@ -72,16 +72,12 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   const hasExplicitModelValue = computed(() => hasRawProp('modelValue', 'model-value'))
   const hasExplicitValue = computed(() => hasRawProp('value'))
 
-  function coerceFieldValue(rawValue: unknown): TValue {
-    return options.coerce ? options.coerce(rawValue) : rawValue as TValue
-  }
-
   const sourceFieldValue = computed<TValue>(() => {
     if (hasExplicitModelValue.value && props.modelValue !== undefined) return props.modelValue
     if (hasExplicitValue.value && props.value !== undefined) return props.value
     const row = activeRow.value
     if (row !== null && fieldName.value && fieldName.value in row) {
-      return coerceFieldValue(row[fieldName.value])
+      return options.coerce(row[fieldName.value])
     }
     return fallbackValue
   })

@@ -3,7 +3,7 @@ import { flushPromises, mount } from '@vue/test-utils'
 import { RendererTable, FieldText, DATA_ROW, DATA_SOURCE, PAGE_SERVICE, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { createRequest } from '@spark-view/spark-utils'
-import type { DataRow, DataView, DataSetContract } from '@spark-view/spark-data'
+import type { DataRow, DataView, DataSetContract, ModelPermission } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 import type { SparkNode } from '@spark-view/spark-component'
@@ -17,6 +17,38 @@ import {
   isRowActionAllowed,
   PAGE_PERMISSION_MODE,
 } from '../packages/spark-component/src/permission'
+
+function sparkNode(type: string): SparkNode {
+  return { type }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function requireDataRows(value: unknown): DataRow[] {
+  if (!Array.isArray(value)) throw new Error('Expected rows array')
+  return value.map((row, index) => {
+    if (isRecord(row)) return row
+    throw new Error(`Expected row object at index ${index}`)
+  })
+}
+
+function readRowsApi(vm: unknown): { rows: DataRow[] } {
+  if (!isRecord(vm)) throw new Error('Expected component vm object')
+  return { rows: requireDataRows(vm['rows']) }
+}
+
+function readFilterModel(vm: unknown): Record<string, unknown> {
+  if (!isRecord(vm)) throw new Error('Expected filter vm object')
+  const filterModel = vm['filterModel']
+  if (isRecord(filterModel)) return filterModel
+  throw new Error('Expected filterModel object')
+}
+
+function setModelPermission(view: DataView & { _modelPerm?: ModelPermission }, permission: ModelPermission): void {
+  view._modelPerm = permission
+}
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']
@@ -69,14 +101,13 @@ function invokeScopedClick(click: unknown, scopedRow: Record<string, unknown> | 
   return true
 }
 
-function withScopedRowProp(config: Record<string, unknown>, scopedRow: Record<string, unknown> | undefined): Record<string, unknown> {
-  if (scopedRow === undefined) return config
+function withScopedRowProp(config: Record<string, unknown>, scopedRow: Record<string, unknown> | undefined): SparkNode {
+  const type = config['type']
+  if (typeof type !== 'string') throw new Error('Expected action config type')
+  const props = readConfigProps(config)
   return {
-    ...config,
-    props: {
-      ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
-      row: scopedRow,
-    },
+    type,
+    props: scopedRow === undefined ? props : { ...props, row: scopedRow },
   }
 }
 
@@ -101,7 +132,7 @@ function renderActionFallbackButton(options: {
     onClick: () => {
       if (invokeScopedClick(click, scopedRow)) return
       const actionForExecute = withScopedRowProp(config, scopedRow)
-      executeAction(actionForExecute as unknown as SparkNode)
+      executeAction(actionForExecute)
     },
   }, label)
 }
@@ -114,7 +145,7 @@ const SparkActionStub = defineComponent({
     },
   },
   setup(props) {
-    const { sparkConsume } = useSparkComponent({ type: 'spark-action-stub' } as SparkNode)
+    const { sparkConsume } = useSparkComponent(sparkNode('spark-action-stub'))
     const dataRow = sparkConsume(DATA_ROW)
     return () => {
       const config = props.config as Record<string, unknown>
@@ -126,14 +157,14 @@ const SparkActionStub = defineComponent({
       const type = String(config['type'] ?? '')
 
       if (type === 'r-toolbar') {
-        return h(RendererToolbar as any, {
+        return h(RendererToolbar, {
           ...propsMap,
           children: Array.isArray(config['children']) ? config['children'] : [],
         })
       }
 
       if (type === 'r-filter') {
-        return h(RendererFilter as any, {
+        return h(RendererFilter, {
           ...readConfigProps(config),
           children: Array.isArray(config['children']) ? config['children'] : [],
         })
@@ -143,7 +174,7 @@ const SparkActionStub = defineComponent({
         const childrenList = Array.isArray(propsMap['children'])
           ? propsMap['children']
           : (Array.isArray(propsMap['configs']) ? propsMap['configs'] : [])
-        return h(RendererFieldScopeStub as any, {
+        return h(RendererFieldScopeStub, {
           model: (propsMap['model'] as Record<string, unknown> | undefined) ?? {},
           configs: childrenList,
           autoFitMinWidth: String(propsMap['autoFitMinWidth'] ?? ''),
@@ -154,7 +185,7 @@ const SparkActionStub = defineComponent({
       // 模拟 RendererButton 自管权限：当节点是内置/受权限管的动作时，做叶子级权限投影。
       const modelPerm = extractModelPermission(dataSource)
       const permissionMode = sparkConsume(PAGE_PERMISSION_MODE) ?? undefined
-      const actionNode = { type, props: propsMap } as SparkNode
+      const actionNode: SparkNode = { type, props: propsMap }
       const permissionAllowed = isModelActionAllowed(actionNode, modelPerm, permissionMode)
         && isRowActionAllowed(actionNode, scopedRow, permissionMode)
       const stubPropsMap = permissionAllowed
@@ -304,7 +335,7 @@ const ElTableColumnStub = defineComponent({
 
 const TableRowFragmentProbe = defineComponent({
   setup() {
-    const { sparkConsume } = useSparkComponent({ type: 'row-fragment-probe' } as SparkNode)
+    const { sparkConsume } = useSparkComponent(sparkNode('row-fragment-probe'))
     const row = sparkConsume(DATA_ROW)
 
     return () => h('div', {
@@ -316,7 +347,7 @@ const TableRowFragmentProbe = defineComponent({
 
 const TableRowFragmentIconProbe = defineComponent({
   setup() {
-    const { sparkConsume } = useSparkComponent({ type: 'row-fragment-icon-probe' } as SparkNode)
+    const { sparkConsume } = useSparkComponent(sparkNode('row-fragment-icon-probe'))
     const row = sparkConsume(DATA_ROW)
 
     return () => h('i', {
@@ -328,7 +359,7 @@ const TableRowFragmentIconProbe = defineComponent({
 
 const TableRowFragmentLinkProbe = defineComponent({
   setup() {
-    const { sparkConsume } = useSparkComponent({ type: 'row-fragment-link-probe' } as SparkNode)
+    const { sparkConsume } = useSparkComponent(sparkNode('row-fragment-link-probe'))
     const row = sparkConsume(DATA_ROW)
 
     return () => h('a', {
@@ -463,7 +494,7 @@ const SparkColumnRendererStub = defineComponent({
     },
   },
   setup(props) {
-    const { sparkConsume } = useSparkComponent({ type: 'spark-column-renderer-stub' } as SparkNode)
+    const { sparkConsume } = useSparkComponent(sparkNode('spark-column-renderer-stub'))
     const dataRow = sparkConsume(DATA_ROW)
     return () => {
       const config = props.config as Record<string, unknown>
@@ -477,19 +508,19 @@ const SparkColumnRendererStub = defineComponent({
       }
 
       if (type === 'r-toolbar') {
-        return h(RendererToolbar as any, {
+        return h(RendererToolbar, {
           ...readConfigProps(config),
           children: Array.isArray(config['children']) ? config['children'] : [],
         })
       }
 
       if (type === 'r-filter') {
-        return h(RendererFilter as any, readConfigProps(config))
+        return h(RendererFilter, readConfigProps(config))
       }
 
       const component = componentMap[type]
       if (component) {
-        return h(component as never, {
+        return h(component, {
           config,
           ...(type === 'r-column-group' && { children: ((config['children'] as unknown[]) ?? []) }),
           ...((config['props'] as Record<string, unknown> | undefined) ?? {}),
@@ -691,7 +722,7 @@ function mountRendererTableWithView(
     mountOptions.slots = options.slots
   }
 
-  return mountWithDataView(RendererTable as any, mountOptions)
+  return mountWithDataView(RendererTable, mountOptions)
 }
 
 async function mountRendererTreeWithView(
@@ -719,7 +750,7 @@ async function mountRendererTreeWithView(
     mountOptions.slots = options.slots
   }
 
-  return mountWithDataView(RendererTree as any, mountOptions)
+  return mountWithDataView(RendererTree, mountOptions)
 }
 
 describe('RendererTable - DataView as single data intermediary', () => {
@@ -760,7 +791,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const DirectTableColumns = defineComponent({
       name: 'DirectTableColumns',
       setup() {
-        return () => h(FieldText as any, {
+        return () => h(FieldText, {
           type: 'r-text',
           field: 'name',
           label: '姓名',
@@ -768,7 +799,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -812,7 +843,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const DirectTableColumns = defineComponent({
       name: 'DirectTableColumnsWithResize',
       setup() {
-        return () => h(FieldText as any, {
+        return () => h(FieldText, {
           type: 'r-text',
           field: 'name',
           label: '姓名',
@@ -822,7 +853,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -883,7 +914,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const DirectTableColumns = defineComponent({
       name: 'DirectTableColumnsWithoutResize',
       setup() {
-        return () => h(FieldText as any, {
+        return () => h(FieldText, {
           type: 'r-text',
           field: 'name',
           label: '姓名',
@@ -891,7 +922,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -928,7 +959,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [{ id: 1 }, { id: 2 }] as DataRow[],
+              rows: [{ id: 1 }, { id: 2 }],
             },
           },
         }
@@ -939,15 +970,16 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const wrapper = mountRendererTableWithView(dv)
 
     // component's computed tableData should come from DataView.rows
-    const vm = wrapper.vm as any
+    const vm = readRowsApi(wrapper.vm)
     expect(vm.rows).toBeDefined()
     expect(vm.rows).toEqual(dv.rows)
 
     // reactive: when DataView.rows changes, component updates
     dv.appendRow({ id: 3 })
     await nextTick()
-    expect(vm.rows).toHaveLength(3)
-    expect(vm.rows[2].id).toBe(3)
+    const updatedVm = readRowsApi(wrapper.vm)
+    expect(updatedVm.rows).toHaveLength(3)
+    expect(updatedVm.rows[2]?.['id']).toBe(3)
   })
 
   it('should call requestData() on mount when table has API and rows empty', async () => {
@@ -959,7 +991,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [] as DataRow[],
+              rows: [],
             },
           },
         }
@@ -991,7 +1023,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [{ id: 1 }] as DataRow[],
+              rows: [{ id: 1 }],
             },
           },
         }
@@ -1019,7 +1051,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'number' as const }],
           views: {
             default: {
-              rows: [] as DataRow[],
+              rows: [],
             },
           },
         }
@@ -1054,7 +1086,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }],
             },
           },
         }
@@ -1097,7 +1129,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }],
             },
           },
         }
@@ -1137,7 +1169,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }],
             },
           },
         }
@@ -1190,7 +1222,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                     { id: 'leaf', label: '叶子节点', children: [] },
                   ],
                 },
-              ] as DataRow[],
+              ],
             },
           },
         }
@@ -1263,7 +1295,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
             default: {
               rows: [
                 { id: 'root', label: '根节点', children: [{ id: 'leaf', label: '叶子节点', children: [] }] },
-              ] as DataRow[],
+              ],
             },
           },
         },
@@ -1328,7 +1360,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                     },
                   ],
                 },
-              ] as DataRow[],
+              ],
             },
           },
         }
@@ -1406,7 +1438,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 'root', parentId: null, label: '根节点' },
                 { id: 'leaf', parentId: null, label: '叶子节点' },
-              ] as DataRow[],
+              ],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1416,7 +1448,8 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     ds.getTable('Nodes')!.setApi({ move: { url: '/api/tree/{id}/move', method: 'PUT' } })
     const dv = ds.getView('Nodes', 'default')!
-    const moveSpy = vi.spyOn(dv, 'moveTreeNode').mockResolvedValue({ id: 'leaf', parentId: 'root', label: '叶子节点' } as DataRow)
+    const movedRow: DataRow = { id: 'leaf', parentId: 'root', label: '叶子节点' }
+    const moveSpy = vi.spyOn(dv, 'moveTreeNode').mockResolvedValue(movedRow)
 
     const wrapper = await mountRendererTreeWithView(dv, {}, {
       global: {
@@ -1449,7 +1482,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 'root', parentId: null, label: '根节点' },
                 { id: 'leaf', parentId: 'root', label: '叶子节点' },
-              ] as DataRow[],
+              ],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1457,7 +1490,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Nodes@default',
@@ -1500,14 +1533,14 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }, { id: 2, name: 'Bob' }],
             },
           },
         },
       },
     })
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -1582,7 +1615,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
       { id: 2, name: 'Bob' },
     ])
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -1616,7 +1649,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const view = ds.getView('Users', 'default')!
     const observed: string[] = []
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -1651,7 +1684,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
   it('should run table CRUD business handlers before default methods and allow cancel', async () => {
     const ds = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -1700,7 +1733,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [] as DataRow[],
+              rows: [],
               treeConfig: { idField: 'id', parentIdField: 'parentId', textField: 'label', treeMode: 'flat' },
             },
           },
@@ -1727,7 +1760,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     ])
     const setCurrentRowByIdSpy = vi.spyOn(view.selection, 'setCurrentRowById')
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Nodes@default',
@@ -1795,7 +1828,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           },
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         },
@@ -1808,7 +1841,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const deleteRequest = vi.spyOn(httpClient, 'delete').mockResolvedValue(true)
     ds.setSharedHttpClient(httpClient)
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: {
         dataViewKey: 'Users@default',
@@ -1849,7 +1882,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const rowActionSpy = vi.fn()
 
     const toolbarDataSet = createInlineDataSet('Users', [{ id: 7, name: 'Alice' }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: toolbarDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -1885,7 +1918,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should default row-action header to center while keeping action content left-aligned and single-line', () => {
     const rowActionDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: rowActionDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -1927,7 +1960,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }
@@ -2005,7 +2038,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }
@@ -2065,7 +2098,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }
@@ -2132,7 +2165,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 7, name: 'Alice', _perm: { allowDelete: true } },
                 { id: 8, name: 'Bob', _perm: { allowDelete: true } },
-              ] as DataRow[],
+              ],
             },
           },
         }
@@ -2193,7 +2226,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                 { id: 1, name: 'Alice', _perm: { allowDelete: true } },
                 { id: 2, name: 'Bob', _perm: { allowDelete: true } },
                 { id: 3, name: 'Carol', _perm: { allowDelete: true } },
-              ] as DataRow[],
+              ],
             },
           },
         }
@@ -2249,7 +2282,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }
@@ -2310,7 +2343,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }
@@ -2372,7 +2405,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice', _perm: { allowDelete: true } }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice', _perm: { allowDelete: true } }],
             },
           },
         }
@@ -2427,7 +2460,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const nodeActionSpy = vi.fn()
 
     const { RendererTree } = await import('@spark-view/spark-component')
-    const wrapper = mount(RendererTree as any, {
+    const wrapper = mount(RendererTree, {
       props: {
         data: [{ id: 'node-1', label: '节点 1' }],
         toolbar: { position: 'right', children: [{ type: 'tree-toolbar' }] },
@@ -2465,7 +2498,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }],
             },
           },
           api: { list: { url: '/api/nodes', method: 'GET' } },
@@ -2510,7 +2543,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should render structured row actions and toolbar children', () => {
     const actionDataSet = createInlineDataSet('Users', [{ id: 1 }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: actionDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2539,7 +2572,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should disable structured row actions when row permission denies (leaf-managed)', () => {
     const permissionDataSet = createInlineDataSet('Users', [{ id: 1 }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: permissionDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2568,7 +2601,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should default config-driven raw table columns to sortable when they bind a field', () => {
     const sortableDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice' }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: sortableDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2599,7 +2632,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should render primitive field configs as direct table columns', () => {
     const primitiveDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice', score: 95, joinedAt: '2026-03-10' }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: primitiveDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2632,7 +2665,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should render table columns from config.children', () => {
     const childrenDataSet = createInlineDataSet('Users', [{ id: 1, name: 'Alice', score: 95 }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: childrenDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2663,7 +2696,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
   it('should recurse grouped table columns through r-column-group children', () => {
     const groupedDataSet = createInlineDataSet('Users', [{ id: 1, province: '浙江', city: '杭州', score: 95 }])
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: groupedDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2715,9 +2748,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const Harness = defineComponent({
       setup() {
-        const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
+        const { sparkProvide } = useSparkComponent(sparkNode('test-page-root'))
         sparkProvide(PAGE_DATASET, fragmentDataSet)
-        return () => h(RendererTable as never, {
+        return () => h(RendererTable, {
           dataViewKey: 'Users@default',
           children: [
             {
@@ -2805,9 +2838,9 @@ describe('RendererTable - DataView as single data intermediary', () => {
 
     const Harness = defineComponent({
       setup() {
-        const { sparkProvide } = useSparkComponent({ type: 'test-page-root' } as SparkNode)
+        const { sparkProvide } = useSparkComponent(sparkNode('test-page-root'))
         sparkProvide(PAGE_DATASET, fragmentDataSet)
-        return () => h(RendererTable as never, {
+        return () => h(RendererTable, {
           dataViewKey: 'Users@default',
           children: [
             {
@@ -2858,7 +2891,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }],
             },
           },
         }
@@ -2895,7 +2928,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1' }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1' }],
             },
           },
         }
@@ -2927,7 +2960,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     const permissionView = permissionDataSet.getView('Users', 'default')!
     ;(permissionView as { _modelPerm?: Record<string, unknown> })._modelPerm = { allowCreate: false, allowExport: true }
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: permissionDataSet,
       props: {
         dataViewKey: 'Users@default',
@@ -2980,7 +3013,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 1, _perm: { allowDelete: false } },
                 { id: 2, _perm: { allowDelete: true } },
-              ] as DataRow[],
+              ],
             },
           },
         },
@@ -3033,7 +3066,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 1, _perm: { allowDelete: false } },
                 { id: 2, _perm: { allowDelete: true } },
-              ] as DataRow[],
+              ],
             },
           },
         },
@@ -3086,7 +3119,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
               rows: [
                 { id: 1 },
                 { id: 2 },
-              ] as DataRow[],
+              ],
             },
           },
         },
@@ -3146,7 +3179,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'id', type: 'string' as const }, { name: 'label', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false, allowCreateChild: false } }] as DataRow[],
+              rows: [{ id: 'node-2', label: '节点 2', _perm: { allowDelete: false, allowCreateChild: false } }],
             },
           },
         }
@@ -3154,7 +3187,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
     const dv = ds.getView('Nodes', 'default')!
     // Inject _modelPerm on the DataView
-    ;(dv as any)._modelPerm = { allowImport: false, allowCreate: false, allowExport: true }
+    setModelPermission(dv, { allowImport: false, allowCreate: false, allowExport: true })
 
     const wrapper = await mountRendererTreeWithView(dv, {
       toolbar: {
@@ -3219,7 +3252,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } }] as DataRow[],
+              rows: [{ id: 'node-1', label: '节点 1', _perm: { allowCreateChild: true } }],
             },
           },
         }
@@ -3281,7 +3314,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           ],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         },
@@ -3352,7 +3385,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                 { id: 1, name: 'Alice' },
                 { id: 2, name: 'Bob' },
                 { id: 3, name: 'Alicia' },
-              ] as DataRow[],
+              ],
             },
           },
         }
@@ -3389,7 +3422,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
     await filterInput.setValue('Ali')
     await nextTick()
 
-    const vm = wrapper.vm as unknown as { rows: DataRow[] }
+    const vm = readRowsApi(wrapper.vm)
     expect(vm.rows).toHaveLength(2)
     expect(vm.rows.map(row => row['name'])).toEqual(['Alice', 'Alicia'])
   })
@@ -3403,7 +3436,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'name', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }
@@ -3458,7 +3491,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'name', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         },
@@ -3508,7 +3541,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
                 { id: 1, score: 10, status: 'draft' },
                 { id: 2, score: 20, status: 'done' },
                 { id: 3, score: 30, status: 'archived' },
-              ] as DataRow[],
+              ],
             },
           },
         }
@@ -3538,17 +3571,18 @@ describe('RendererTable - DataView as single data intermediary', () => {
     })
 
     const filterWrapper = wrapper.findComponent(RendererFilter)
-    const filterVm = filterWrapper.vm as unknown as { filterModel: Record<string, unknown> }
-    const vm = wrapper.vm as unknown as { rows: DataRow[] }
-    filterVm.filterModel['score'] = [15, 25]
+    const filterModel = readFilterModel(filterWrapper.vm)
+    filterModel['score'] = [15, 25]
     await nextTick()
-    expect(vm.rows).toHaveLength(1)
-    expect(vm.rows[0]?.['score']).toBe(20)
+    const scoreFilteredVm = readRowsApi(wrapper.vm)
+    expect(scoreFilteredVm.rows).toHaveLength(1)
+    expect(scoreFilteredVm.rows[0]?.['score']).toBe(20)
 
-    filterVm.filterModel['status'] = ['done', 'archived']
+    filterModel['status'] = ['done', 'archived']
     await nextTick()
-    expect(vm.rows).toHaveLength(1)
-    expect(vm.rows[0]?.['status']).toBe('done')
+    const statusFilteredVm = readRowsApi(wrapper.vm)
+    expect(statusFilteredVm.rows).toHaveLength(1)
+    expect(statusFilteredVm.rows[0]?.['status']).toBe('done')
   })
 
   it('should support collapsible filter panel and default collapsed state', async () => {
@@ -3560,7 +3594,7 @@ describe('RendererTable - DataView as single data intermediary', () => {
           columns: [{ name: 'name', type: 'string' as const }],
           views: {
             default: {
-              rows: [{ id: 1, name: 'Alice' }] as DataRow[],
+              rows: [{ id: 1, name: 'Alice' }],
             },
           },
         }

@@ -1,26 +1,28 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
+import type { PropType } from 'vue'
 import { RendererToolbar } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
 const SparkActionStub = defineComponent({
   props: {
     config: {
-      type: Object,
+      type: Object as PropType<SparkNode>,
       required: true,
     },
   },
   setup(props) {
     return () => h('button', {
       class: 'spark-action-stub',
-      'data-type': (props.config as Record<string, unknown>)['type'] as string,
-    }, (props.config as Record<string, unknown>)['type'] as string)
+      'data-type': props.config.type,
+    }, props.config.type)
   },
 })
 
 describe('RendererToolbar integration', () => {
   it('should render default and tail children in separate horizontal lanes', () => {
-    const wrapper = mount(RendererToolbar as any, {
+    const wrapper = mount(RendererToolbar, {
       props: {
         gap: 10,
         zoneGap: 24,
@@ -58,7 +60,7 @@ describe('RendererToolbar integration', () => {
   })
 
   it('should apply classes from r-tail child props', () => {
-    const wrapper = mount(RendererToolbar as any, {
+    const wrapper = mount(RendererToolbar, {
       props: {
         children: [
           { type: 'main-action' },
@@ -76,7 +78,7 @@ describe('RendererToolbar integration', () => {
   })
 
   it('should render structured tail prop without requiring wrapper child input', () => {
-    const wrapper = mount(RendererToolbar as any, {
+    const wrapper = mount(RendererToolbar, {
       props: {
         children: [
           { type: 'main-action' },

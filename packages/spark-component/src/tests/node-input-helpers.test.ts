@@ -25,18 +25,18 @@ describe('SparkNode input helpers', () => {
   })
 
   it('nodeInputProp should ignore root-level non-props fields', () => {
-    const node = {
+    const node: SparkNode & Record<string, unknown> = {
       type: 'r-number',
       name: 'node-id',
       field: 'root-field',
-    } as SparkNode & Record<string, unknown>
+    }
 
     expect(nodeInputProp(node, 'field')).toBeUndefined()
     expect(nodeInputProp(node, 'name')).toBeUndefined()
   })
 
   it('nodeInputProps should only return props and exclude structural keys', () => {
-    const node = {
+    const node: SparkNode & Record<string, unknown> = {
       type: 'r-step',
       id: 'step-1',
       order: 2,
@@ -48,7 +48,7 @@ describe('SparkNode input helpers', () => {
         status: 'process',
       },
       children: [],
-    } as SparkNode & Record<string, unknown>
+    }
 
     const merged = nodeInputProps(node)
 
@@ -63,8 +63,7 @@ describe('SparkNode input helpers', () => {
   })
 
   it('isSparkNode should reject arrays even if they carry a type property', () => {
-    const value = [] as unknown[] & { type?: string }
-    value.type = 'r-text'
+    const value = Object.assign([], { type: 'r-text' })
 
     expect(isSparkNode(value)).toBe(false)
   })
@@ -75,8 +74,9 @@ describe('SparkNode input helpers', () => {
   })
 
   it('normalizeSparkNode should reject missing or empty type', () => {
-    expect(() => normalizeSparkNode({ type: '' } as SparkNode)).toThrow(/type must be a non-empty string/)
-    expect(() => normalizeSparkNode({ props: {} } as SparkNode)).toThrow(/type must be a non-empty string/)
+    expect(() => normalizeSparkNode({ type: '' })).toThrow(/type must be a non-empty string/)
+    // @ts-expect-error negative runtime validation case: missing required type
+    expect(() => normalizeSparkNode({ props: {} })).toThrow(/type must be a non-empty string/)
   })
 
   it('getSparkNodeChildren should filter text and invalid entries', () => {
@@ -87,8 +87,9 @@ describe('SparkNode input helpers', () => {
       42,
       { props: { label: 'missing type' } },
       Object.assign([], { type: 'r-button' }),
-    ] as unknown as SparkNode['children']
+    ]
 
+    // @ts-expect-error negative runtime validation case: children may contain invalid external input
     expect(getSparkNodeChildren(children)).toEqual([child])
   })
 })

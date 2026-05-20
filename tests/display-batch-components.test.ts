@@ -8,6 +8,7 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, reactive } from 'vue'
+import type { Component } from 'vue'
 import {
   DisplayIcon,
   DisplayCalendar,
@@ -18,7 +19,7 @@ import {
   DATA_ROW,
   SPARK_REGISTRY_KEY,
 } from '@spark-view/spark-component'
-import type { SparkNode, SparkCapabilityContext, ComponentRegistry } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 
 // ── Stubs ──
 
@@ -68,32 +69,29 @@ const ElImageStub = defineComponent({
 // ── Helpers ──
 
 function mountDisplayComponent(
-  component: unknown,
+  component: Component,
   config: SparkNode & Record<string, unknown>,
-  stubs: Record<string, unknown> | undefined,
+  stubs: Record<string, Component> | undefined,
   dataRow?: Record<string, unknown>,
 ) {
-  const { registry, rootContext } = Spark.createSystem() as {
-    registry: ComponentRegistry
-    rootContext: SparkCapabilityContext
-  }
+  const { registry, rootContext } = Spark.createSystem()
 
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'test-parent' } as SparkNode, { parentContext: rootContext })
+      const node: SparkNode = { type: 'test-parent' }
+      const { sparkProvide } = useSparkComponent(node, { parentContext: rootContext })
       if (dataRow) {
         sparkProvide(DATA_ROW, dataRow)
       }
-      return () => h(component as never, config)
+      return () => h(component, config)
     },
   })
 
   return mount(Provider, {
     global: {
-       
-      stubs: stubs as any,
+      ...(stubs !== undefined ? { stubs } : {}),
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       },
     },
   })

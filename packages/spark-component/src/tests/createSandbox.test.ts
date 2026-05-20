@@ -14,6 +14,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { compileFunctions } from '../page/createSandbox'
 import type { PageContext } from '../page/context/types'
+import { SparkData } from '@spark-view/spark-data'
+import { h } from 'vue'
 import * as permissionApi from '../permission/index'
 
 function createMockComponents(): PageContext['$components'] {
@@ -40,6 +42,22 @@ function createMockPageService(): PageContext['$page'] {
   }
 }
 
+function pageSetTimeout(handler: (...args: unknown[]) => void, timeout?: number): number {
+  return window.setTimeout(handler, timeout)
+}
+
+function pageClearTimeout(id?: number): void {
+  window.clearTimeout(id)
+}
+
+function pageSetInterval(handler: (...args: unknown[]) => void, timeout?: number): number {
+  return window.setInterval(handler, timeout)
+}
+
+function pageClearInterval(id?: number): void {
+  window.clearInterval(id)
+}
+
 /** 创建最小化的 PageContext mock */
 function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
   const base: PageContext = {
@@ -51,13 +69,13 @@ function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
     $components: createMockComponents(),
     $refreshData: async () => {},
     $page: createMockPageService(),
-    permission: permissionApi as PageContext['permission'],
-    SparkData: {} as PageContext['SparkData'],
-    h: vi.fn() as unknown as PageContext['h'],
-    setTimeout: window.setTimeout.bind(window) as unknown as PageContext['setTimeout'],
-    clearTimeout: window.clearTimeout.bind(window) as unknown as PageContext['clearTimeout'],
-    setInterval: window.setInterval.bind(window) as unknown as PageContext['setInterval'],
-    clearInterval: window.clearInterval.bind(window) as unknown as PageContext['clearInterval'],
+    permission: permissionApi,
+    SparkData,
+    h,
+    setTimeout: pageSetTimeout,
+    clearTimeout: pageClearTimeout,
+    setInterval: pageSetInterval,
+    clearInterval: pageClearInterval,
     console,
     $moduleContext: null,
   }

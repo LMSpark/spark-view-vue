@@ -20,7 +20,7 @@ import { RendererTable } from '@spark-view/spark-component'
 import { normalizeRuleEvents, normalizeOnProps } from '../packages/spark-component/src/page/binding/bind-normalize'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import type { ActionExecutionContext, ActionDescriptor } from '../packages/spark-component/src/page/actions/action-types'
-import type { PageServiceCapability } from '@spark-view/spark-component'
+import type { PageDialogOptions, PageDialogResult, PageMessageType, PageServiceCapability } from '@spark-view/spark-component'
 import { mountWithPageDataSet } from './helpers/mount-with-page-dataset'
 
 // ── 工具函数 ───────────────────────────────────────────────────────────────
@@ -31,15 +31,33 @@ function createPageService(overrides: Partial<PageServiceCapability> = {}): Page
     showConfirm: vi.fn(async () => true),
     showPrompt: vi.fn(async () => null),
     showAlert: vi.fn(async () => {}),
-    showLoading: vi.fn(() => ({ close: vi.fn() })),
-    showDialog: vi.fn(async () => ({ action: 'close' })),
+    showLoading: vi.fn(),
+    showDialog: vi.fn(async (_options: PageDialogOptions): Promise<PageDialogResult> => 'close'),
     navigate: vi.fn(),
-    goBack: vi.fn(),
-    selectEntities: vi.fn(async () => ({ selected: [] })),
-    browseFile: vi.fn(async () => null),
-    uploadFile: vi.fn(async () => null),
+    selectEntities: vi.fn(async () => []),
+    browseFiles: vi.fn(async () => []),
+    uploadFiles: vi.fn(async () => []),
     ...overrides,
-  } as unknown as PageServiceCapability
+  }
+}
+
+function requireHandler(value: unknown): (...args: unknown[]) => unknown {
+  if (typeof value === 'function') {
+    return (...args: unknown[]) => Reflect.apply(value, undefined, args)
+  }
+  throw new Error('Expected normalized event handler')
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readRecordRows(value: unknown): Array<Record<string, unknown>> {
+  if (!Array.isArray(value)) return []
+  return value.map((item, index) => {
+    if (isRecord(item)) return item
+    throw new Error(`Expected table row object at index ${index}`)
+  })
 }
 
 function createActionContext(overrides?: Partial<ActionExecutionContext>): ActionExecutionContext {
@@ -99,7 +117,7 @@ const ElTableStub = defineComponent({
   },
   setup(props, { slots, emit }) {
     return () => {
-      const rows = Array.isArray(props.data) ? props.data as Array<Record<string, unknown>> : []
+      const rows = readRecordRows(props.data)
       const firstRow = rows[0]
       return h('div', { class: 'el-table-stub' }, [
         h('button', {
@@ -145,7 +163,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
     // 模拟 runControlledInteraction 调用模式：handler(...args, control)
     const control = { cancel: false }
     const row = { id: 1, name: 'Alice' }
-    await (result['row-click'] as Function)(row, null, null, control)
+    await requireHandler(result['row-click'])(row, null, null, control)
 
     // cancelDefault 应通过执行器控制传播将 control.cancel 设为 true
     expect(control.cancel).toBe(true)
@@ -163,7 +181,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
 
     const result = normalizeRuleEvents(on, vi.fn(), actionCtx)
     const control = { cancel: false }
-    await (result['click'] as Function)(control)
+    await requireHandler(result['click'])(control)
 
     // 无 cancelDefault → cancel 保持 false
     expect(control.cancel).toBe(false)
@@ -195,7 +213,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
 
     // 模拟 runControlledInteraction 调用模式
     const control = { cancel: false }
-    await (props['onRowClick'] as Function)({ id: 1 }, null, null, control)
+    await requireHandler(props['onRowClick'])({ id: 1 }, null, null, control)
     expect(control.cancel).toBe(true)
     expect(pageService.showMessage).toHaveBeenCalledWith('row clicked!', 'success')
   })
@@ -216,7 +234,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
 
     // 模拟 useControlledFieldChange 调用模式：handler(nextValue, prevValue, control)
     const control = { cancel: false }
-    await (props['onChange'] as Function)('new-val', 'old-val', control)
+    await requireHandler(props['onChange'])('new-val', 'old-val', control)
     expect(control.cancel).toBe(true)
     expect(pageService.showMessage).toHaveBeenCalledWith('value changed', 'info')
   })
@@ -232,7 +250,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
     const result = normalizeRuleEvents(on, vi.fn(), actionCtx)
 
     // 无控制对象调用 — 不应抛异常
-    await (result['click'] as Function)()
+    await requireHandler(result['click'])()
     expect(pageService.showMessage).toHaveBeenCalledWith('ok', 'info')
   })
 
@@ -247,7 +265,7 @@ describe('cancelDefault — 控制器传播 + action descriptor', () => {
     const result = normalizeRuleEvents(on, vi.fn(), actionCtx)
 
     // 最后一个参数是字符串，不是控制对象 → 不设 cancel
-    await (result['click'] as Function)('some-string')
+    await requireHandler(result['click'])('some-string')
     expect(pageService.showMessage).toHaveBeenCalled()
   })
 })
@@ -271,7 +289,7 @@ describe('数组折叠 — 多 handler 折叠为单函数', () => {
 
     expect(typeof result['click']).toBe('function')
 
-    await (result['click'] as Function)('arg1')
+    await requireHandler(result['click'])('arg1')
 
     // 1. string handler → callFunc
     expect(callFunc).toHaveBeenCalledWith('handleClick', 'arg1')
@@ -293,7 +311,7 @@ describe('数组折叠 — 多 handler 折叠为单函数', () => {
 
     const result = normalizeRuleEvents(on, callFunc, actionCtx)
     const control = { cancel: false }
-    await (result['row-click'] as Function)({ id: 1 }, null, null, control)
+    await requireHandler(result['row-click'])({ id: 1 }, null, null, control)
 
     // callFunc 先执行
     expect(callFunc).toHaveBeenCalledWith('handleRowClick', { id: 1 }, null, null, control)
@@ -318,7 +336,7 @@ describe('数组折叠 — 多 handler 折叠为单函数', () => {
     normalizeOnProps(props, callFunc, actionCtx)
     expect(typeof props['onSelectionChange']).toBe('function')
 
-    await (props['onSelectionChange'] as Function)([{ id: 1 }])
+    await requireHandler(props['onSelectionChange'])([{ id: 1 }])
 
     expect(callFunc).toHaveBeenCalledWith('handleSelection', [{ id: 1 }])
     expect(pageService.showMessage).toHaveBeenCalledWith('selection logged', 'info')
@@ -326,10 +344,13 @@ describe('数组折叠 — 多 handler 折叠为单函数', () => {
 
   it('array execution is sequential (each handler awaited before next)', async () => {
     const order: string[] = []
+    const showMessage = vi.fn((_message: string, _type?: PageMessageType) => {
+      order.push('action')
+    })
     const actionCtx = createActionContext({
       getPageService: () => createPageService({
-        showMessage: vi.fn(async () => { order.push('action') }),
-      } as any),
+        showMessage,
+      }),
     })
 
     const slowFn = async () => {
@@ -345,7 +366,7 @@ describe('数组折叠 — 多 handler 折叠为单函数', () => {
     }
 
     const result = normalizeRuleEvents(on, vi.fn(), actionCtx)
-    await (result['click'] as Function)()
+    await requireHandler(result['click'])()
 
     // slow 先完成，然后 action
     expect(order).toEqual(['slow', 'action'])
@@ -361,7 +382,7 @@ describe('string handler — callFunc 透传', () => {
     const on: Record<string, unknown> = { 'click': 'handleClick' }
     const result = normalizeRuleEvents(on, callFunc)
 
-    await (result['click'] as Function)('a', 'b')
+    await requireHandler(result['click'])('a', 'b')
     expect(callFunc).toHaveBeenCalledWith('handleClick', 'a', 'b')
   })
 
@@ -371,7 +392,7 @@ describe('string handler — callFunc 透传', () => {
     const props: Record<string, unknown> = { onRowClick: 'handleRowClick' }
     normalizeOnProps(props, callFunc)
 
-    await (props['onRowClick'] as Function)('row', 'col')
+    await requireHandler(props['onRowClick'])('row', 'col')
     expect(callFunc).toHaveBeenCalledWith('handleRowClick', 'row', 'col')
   })
 
@@ -516,7 +537,7 @@ describe('navigate action — 事件行插值', () => {
 
     const result = normalizeRuleEvents(on, vi.fn(), actionCtx)
     // 模拟 row-click 事件参数
-    await (result['row-click'] as Function)({ id: 7, name: 'Test' }, null, null)
+    await requireHandler(result['row-click'])({ id: 7, name: 'Test' }, null, null)
 
     expect(router.push).toHaveBeenCalledWith('/detail/7')
   })
@@ -543,7 +564,7 @@ describe('action descriptor — then 链式执行', () => {
     }
 
     const result = normalizeRuleEvents(on, vi.fn(), actionCtx)
-    await (result['click'] as Function)()
+    await requireHandler(result['click'])()
 
     expect(pageService.showMessage).toHaveBeenCalledTimes(2)
     expect(pageService.showMessage).toHaveBeenNthCalledWith(1, 'first', 'info')
@@ -603,9 +624,12 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     const observed: string[] = []
 
     // 直接传 已包装的 action descriptor 闭包（模拟 normalizeOnProps 输出）
+    const showMessage = vi.fn((_message: string, _type?: PageMessageType) => {
+      observed.push('msg')
+    })
     const pageService = createPageService({
-      showMessage: vi.fn(() => { observed.push('msg') }),
-    } as any)
+      showMessage,
+    })
     const actionCtx = createActionContext({
       getDataSet: () => ds,
       getPageService: () => pageService,
@@ -622,7 +646,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     }
     normalizeOnProps(tableProps, vi.fn(), actionCtx)
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: tableProps,
       global: {
@@ -670,7 +694,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     }
     normalizeOnProps(tableProps, vi.fn(), actionCtx)
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: tableProps,
       global: {
@@ -716,7 +740,7 @@ describe('集成测试 — RendererTable cancelDefault 全链路', () => {
     }
     normalizeOnProps(tableProps, vi.fn(), actionCtx)
 
-    const wrapper = mountWithPageDataSet(RendererTable as any, {
+    const wrapper = mountWithPageDataSet(RendererTable, {
       dataSet: ds,
       props: tableProps,
       global: {

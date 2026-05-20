@@ -37,6 +37,10 @@ function hasCallable(record: Record<string, unknown>, key: string): boolean {
   return typeof record[key] === 'function'
 }
 
+function sparkNode(type: string, id?: string): SparkNode {
+  return id === undefined ? { type } : { type, id }
+}
+
 describe('Capability system integration', () => {
   /**
    * 创建测试用 Vue 应用插件
@@ -52,7 +56,7 @@ describe('Capability system integration', () => {
 
       const TestComp = defineComponent({
         setup() {
-          const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
+          const result = useSparkComponent(sparkNode('test-comp'))
           // 验证返回值包含 sparkConsume 但不包含 use
           expect(typeof result.sparkConsume).toBe('function')
           expect('use' in result).toBe(false)
@@ -70,7 +74,7 @@ describe('Capability system integration', () => {
 
       const TestComp = defineComponent({
         setup() {
-          const result = useSparkComponent({ type: 'test-comp' } as SparkNode)
+          const result = useSparkComponent(sparkNode('test-comp'))
 
           // 核心状态
           expect(result.provider).toBeDefined()
@@ -99,7 +103,7 @@ describe('Capability system integration', () => {
 
       const TestComp = defineComponent({
         setup() {
-          const result = useSparkPageComponent({ type: 'test-comp' } as SparkNode)
+          const result = useSparkPageComponent(sparkNode('test-comp'))
 
           expect(typeof result.sparkProvide).toBe('function')
           expect(typeof result.sparkConsume).toBe('function')
@@ -129,7 +133,7 @@ describe('Capability system integration', () => {
 
       const ParentComp = defineComponent({
         setup() {
-          const { sparkProvide } = useSparkComponent({ type: 'parent-comp' } as SparkNode)
+          const { sparkProvide } = useSparkComponent(sparkNode('parent-comp'))
           sparkProvide(TEST_CAP, 'parent-comp')
           return () => h(ChildComp)
         }
@@ -146,7 +150,7 @@ describe('Capability system integration', () => {
 
       const ChildComp = defineComponent({
         setup() {
-          const { sparkConsume } = useSparkComponent({ type: 'child-comp' } as SparkNode)
+          const { sparkConsume } = useSparkComponent(sparkNode('child-comp'))
           // 验证能力链正确贯通：子可以消费到祖先提供的能力
           expect(sparkConsume(TEST_CAP)).toBe('parent-comp')
           return () => h('span')
@@ -155,7 +159,7 @@ describe('Capability system integration', () => {
 
       const ParentComp = defineComponent({
         setup() {
-          const { sparkProvide } = useSparkComponent({ type: 'parent-comp' } as SparkNode)
+          const { sparkProvide } = useSparkComponent(sparkNode('parent-comp'))
           sparkProvide(TEST_CAP, 'parent-comp')
           return () => h(ChildComp)
         }
@@ -178,7 +182,7 @@ describe('Capability system integration', () => {
           field: String,
         },
         setup() {
-          const result = useSparkComponent({ type: 'test-comp', id: 'orders-table' } as SparkNode)
+          const result = useSparkComponent(sparkNode('test-comp', 'orders-table'))
           const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
 
           expect(result.isVisible.value).toBe(false)
@@ -197,7 +201,7 @@ describe('Capability system integration', () => {
 
       const RootComp = defineComponent({
         setup() {
-          const result = useSparkComponent({ type: 'root-comp' } as SparkNode)
+          const result = useSparkComponent(sparkNode('root-comp'))
           result.sparkProvide(PAGE_COMPONENT_REGISTRY, registry)
           return () => h(TestComp, {
             visible: false,

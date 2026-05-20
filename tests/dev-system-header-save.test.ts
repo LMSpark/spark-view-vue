@@ -2,15 +2,14 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import DevSystem from '@/views/app/dev-system/DevSystem.vue'
-import type { DevSystemCtx } from '@/views/app/dev-system/useDevSystem'
 
-let devSystemCtx: DevSystemCtx
+let devSystemCtx: ReturnType<typeof createDevSystemCtx>
 
 vi.mock('@/views/app/dev-system/useDevSystem', () => ({
   useDevSystem: () => devSystemCtx,
 }))
 
-function createDevSystemCtx(overrides: Partial<DevSystemCtx> = {}): DevSystemCtx {
+function createDevSystemCtx(overrides: Record<string, unknown> = {}) {
   const state = {
     hasAnyDirty: ref(false),
     navSaving: ref(false),
@@ -40,7 +39,7 @@ function createDevSystemCtx(overrides: Partial<DevSystemCtx> = {}): DevSystemCtx
     saveAll: vi.fn(),
     isWorkspaceTabDirty: vi.fn(() => false),
     ...overrides,
-  } as unknown as DevSystemCtx
+  }
 }
 
 const ButtonStub = defineComponent({

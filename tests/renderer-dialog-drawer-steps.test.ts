@@ -2,17 +2,40 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
+import type { SparkNode, SparkNodeChildren } from '@spark-view/spark-component'
 import { defineCapability } from '@spark-view/spark-utils'
 import RendererStepItem from '../packages/spark-component/src/components/containers/layout/RendererStepItem.vue'
 import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
 import { createRendererDialogZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDialog/zero-code'
 import { createRendererDrawerZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDrawer/zero-code'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isSparkNode(value: unknown): value is SparkNode {
+  return isRecord(value) && typeof Reflect.get(value, 'type') === 'string'
+}
+
+function readSparkNodeChildren(value: unknown): SparkNodeChildren | undefined {
+  return Array.isArray(value) && value.every(isSparkNode) ? value : undefined
+}
+
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
   const props = config['props']
-  return props !== null && props !== undefined && typeof props === 'object' && !Array.isArray(props)
-    ? props as Record<string, unknown>
-    : {}
+  return isRecord(props) ? props : {}
+}
+
+function readConfigChildren(config: Record<string, unknown>, propsMap: Record<string, unknown>): SparkNodeChildren {
+  return readSparkNodeChildren(propsMap['children']) ?? readSparkNodeChildren(config['children']) ?? []
+}
+
+function readNumber(value: unknown, fallback: number): number {
+  return typeof value === 'number' && Number.isFinite(value) ? value : fallback
+}
+
+function readStepMode(value: unknown): 'header' | 'content' {
+  return value === 'header' || value === 'content' ? value : 'content'
 }
 
 function isStringCapability(value: unknown): value is string {
@@ -28,27 +51,28 @@ const SparkActionStub = defineComponent({
   },
   setup(props) {
     return () => {
-      const config = props.config as Record<string, unknown>
+      if (!isRecord(props.config)) {
+        throw new TypeError('SparkActionStub config must be an object')
+      }
+      const config = props.config
       const type = String(config['type'] ?? '')
       const propsMap = readConfigProps(config)
 
       if (type === 'r-toolbar') {
-        const children = Array.isArray(propsMap['children'])
-          ? propsMap['children']
-          : (Array.isArray(config['children']) ? config['children'] : [])
-        return h(RendererToolbar as any, {
+        const children = readConfigChildren(config, propsMap)
+        return h(RendererToolbar, {
           ...propsMap,
           children,
         })
       }
 
       if (type === 'r-step') {
-        const children = Array.isArray(propsMap['children'])
-          ? propsMap['children']
-          : (Array.isArray(config['children']) ? config['children'] : [])
-        return h(RendererStepItem as any, {
+        const children = readConfigChildren(config, propsMap)
+        return h(RendererStepItem, {
           ...propsMap,
           children,
+          index: readNumber(propsMap['index'], 0),
+          mode: readStepMode(propsMap['mode']),
         })
       }
 
@@ -167,7 +191,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   })
 
   it('should render dialog header/footer actions and body grid', () => {
-    const wrapper = mount(RendererDialog as any, {
+    const wrapper = mount(RendererDialog, {
       props: {
         title: '编辑用户',
         value: true,
@@ -202,7 +226,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
   })
 
   it('should emit drawer value updates and render footer slot', () => {
-    const wrapper = mount(RendererDrawer as any, {
+    const wrapper = mount(RendererDrawer, {
       props: {
         title: '抽屉详情',
         value: true,
@@ -228,7 +252,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 
   it('should render steps toolbar children and switch active step content', async () => {
     const onStepChange = vi.fn()
-    const wrapper = mount(RendererSteps as any, {
+    const wrapper = mount(RendererSteps, {
       props: {
         onStepChange,
         toolbar: { type: 'r-toolbar', children: [{ type: 'steps-toolbar-action' }] },
@@ -269,7 +293,7 @@ describe('RendererDialog, RendererDrawer and RendererSteps integration', () => {
 
   it('should resolve step fields from props only', async () => {
     const onStepChange = vi.fn()
-    const wrapper = mount(RendererSteps as any, {
+    const wrapper = mount(RendererSteps, {
       props: {
         onStepChange,
         children: [
@@ -345,7 +369,7 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
         sparkProvide(DIALOG_BRIDGE_MARKER, 'connected')
-        return () => h(RendererDialog as any, { title: '对话框', value: true }, { default: () => h(ContextProbe) })
+        return () => h(RendererDialog, { title: '对话框', value: true }, { default: () => h(ContextProbe) })
       },
     })
     const wrapper = mountWithSpark(OuterProvider, {})
@@ -358,7 +382,7 @@ describe('Direct Vue children bridge (dialog / drawer)', () => {
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'outer-provider' })
         sparkProvide(DIALOG_BRIDGE_MARKER, 'connected')
-        return () => h(RendererDrawer as any, { title: '抽屉', value: true }, { default: () => h(ContextProbe) })
+        return () => h(RendererDrawer, { title: '抽屉', value: true }, { default: () => h(ContextProbe) })
       },
     })
     const wrapper = mountWithSpark(OuterProvider, {})

@@ -3,13 +3,20 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, registerAllRenderers, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
+import type { RuleConfig } from '@spark-view/spark-page-config'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding/build-page-children'
+import type { BuildPageChildrenOptions } from '../packages/spark-component/src/page/binding/build-page-children'
 
 describe('SparkNode runtime contract', () => {
   function createTestPlugin() {
     const registry = Spark.createRegistry()
     return { plugin: Spark.createPlugin({ registry }), registry }
+  }
+
+  function requireSparkNode(value: SparkNode | string | number | undefined): SparkNode {
+    if (value !== undefined && typeof value !== 'string' && typeof value !== 'number') return value
+    throw new Error('Expected SparkNode child')
   }
 
   it('uses child runtime inputs for context id and instance registry instead of parent config injection', () => {
@@ -25,7 +32,11 @@ describe('SparkNode runtime contract', () => {
       },
       setup(props) {
         // 节点定位 id 走顶层 id（硬切换语义：不再从 vnode.props.id 自动提升）。
-        const result = useSparkComponent({ type: 'test-child', id: props.id } as SparkNode)
+        const node: SparkNode = {
+          type: 'test-child',
+          ...(props.id !== undefined ? { id: props.id } : {}),
+        }
+        const result = useSparkComponent(node)
         const pageRegistry = result.sparkConsume(PAGE_COMPONENT_REGISTRY)
 
         expect(result.isVisible.value).toBe(false)
@@ -44,7 +55,8 @@ describe('SparkNode runtime contract', () => {
 
     const RootComp = defineComponent({
       setup() {
-        const result = useSparkComponent({ type: 'root-comp' } as SparkNode)
+        const node: SparkNode = { type: 'root-comp' }
+        const result = useSparkComponent(node)
         result.sparkProvide(PAGE_COMPONENT_REGISTRY, componentRegistry)
         return () => h(ChildComp, {
           id: 'orders-table',
@@ -79,11 +91,17 @@ describe('SparkNode runtime contract', () => {
       ],
     }
 
+    const rule: RuleConfig = node
+    const actionCtx: BuildPageChildrenOptions['actionCtx'] = {
+      getDataSet: () => null,
+      getPageService: () => null,
+      getRouter: () => null,
+    }
     const [built] = buildPageChildren(
-      [node as unknown as import('@spark-view/spark-page-config').RuleConfig],
+      [rule],
       {
         callFunc: () => undefined,
-        actionCtx: {} as Parameters<typeof buildPageChildren>[1]['actionCtx'],
+        actionCtx,
       },
     )
     expect(built).toBeDefined()
@@ -92,12 +110,14 @@ describe('SparkNode runtime contract', () => {
     expect(built.props?.['editor']).toBeUndefined()
     expect(built.props?.['toolbar']).toBeUndefined()
     expect(built.children).toHaveLength(3)
-    expect((built.children?.[0] as SparkNode).children).toHaveLength(1)
-    expect(((built.children?.[0] as SparkNode).children ?? [])[0]).toEqual(
+    const firstChild = requireSparkNode(built.children?.[0])
+    const secondChild = requireSparkNode(built.children?.[1])
+    expect(firstChild.children).toHaveLength(1)
+    expect((firstChild.children ?? [])[0]).toEqual(
       expect.objectContaining({ type: 'r-form' }),
     )
-    expect((built.children?.[1] as SparkNode).children).toHaveLength(1)
-    expect(((built.children?.[1] as SparkNode).children ?? [])[0]).toEqual(
+    expect(secondChild.children).toHaveLength(1)
+    expect((secondChild.children ?? [])[0]).toEqual(
       expect.objectContaining({ type: 'builtin-action' }),
     )
     expect(built.children?.[2]).toEqual(

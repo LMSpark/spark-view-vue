@@ -43,7 +43,10 @@ describe('useDataViewState', () => {
     const getSnapshot = vi.fn(() => {
       throw new Error('getSnapshot should not be called')
     })
-    ;(view as unknown as { getSnapshot: typeof getSnapshot }).getSnapshot = getSnapshot
+    Object.defineProperty(view, 'getSnapshot', {
+      configurable: true,
+      value: getSnapshot,
+    })
 
     const resolvedView = shallowRef<DataView | null>(view)
     const scope = effectScope()

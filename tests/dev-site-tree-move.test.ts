@@ -1,25 +1,25 @@
 import { mount } from '@vue/test-utils'
-import { defineComponent, ref } from 'vue'
+import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import DevSiteTree from '@/views/app/dev-system/DevSiteTree.vue'
 import type { NavNode } from '@spark-view/spark-page-config'
-import type { DevState } from '@/views/app/dev-system/useDevState'
+import { useDevState, type DevState } from '@/views/app/dev-system/useDevState'
 
 function createState(node: NavNode): DevState {
-  return {
-    treeData: ref([node]),
-    navEmpty: ref(false),
-    selectedNode: ref(null),
-    hasReservedRootGroup: vi.fn(() => false),
-    restoreReservedRootGroup: vi.fn(),
-    addRootNode: vi.fn(),
-    addChildNode: vi.fn(),
-    isSystemRootDirectory: vi.fn(() => false),
-    removeNodeFromTree: vi.fn(),
-    selectNode: vi.fn(),
-    moveNodeInTree: vi.fn().mockResolvedValue(undefined),
-    resetToDemo: vi.fn().mockResolvedValue(undefined),
-  } as unknown as DevState
+  const state = useDevState()
+  state.treeData.value = [node]
+  state.navEmpty.value = false
+  state.selectedNode.value = null
+  state.hasReservedRootGroup = vi.fn<DevState['hasReservedRootGroup']>(() => false)
+  state.restoreReservedRootGroup = vi.fn<DevState['restoreReservedRootGroup']>(async () => {})
+  state.addRootNode = vi.fn<DevState['addRootNode']>()
+  state.addChildNode = vi.fn<DevState['addChildNode']>()
+  state.isSystemRootDirectory = vi.fn<DevState['isSystemRootDirectory']>(() => false)
+  state.removeNodeFromTree = vi.fn<DevState['removeNodeFromTree']>()
+  state.selectNode = vi.fn<DevState['selectNode']>(async () => {})
+  state.moveNodeInTree = vi.fn<DevState['moveNodeInTree']>(async () => {})
+  state.resetToDemo = vi.fn<DevState['resetToDemo']>(async () => {})
+  return state
 }
 
 const ElTreeDropStub = defineComponent({

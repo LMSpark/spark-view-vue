@@ -8,6 +8,7 @@
 import { describe, it, expect } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
+import type { Component } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, FieldSelect, FieldText, useSparkContextScope } from '@spark-view/spark-component'
 import FieldContextRenderer from '../packages/spark-component/src/components/fields/non-data-components/FieldContextRenderer.vue'
 import { useFieldContext } from '../packages/spark-component/src/components/fields/context/useFieldContext'
@@ -33,6 +34,7 @@ const ElTableColumnStub = defineComponent({
     fixed: [Boolean, String],
   },
   setup(props, { slots }) {
+    const slotRow: DataRow = { id: 1, name: 'Test' }
     return () => h('div', {
       class: 'el-table-column-test-stub',
       'data-label': props.label ?? '',
@@ -41,7 +43,7 @@ const ElTableColumnStub = defineComponent({
       'data-align': props.align ?? '',
       'data-label-class-name': props.labelClassName ?? '',
       'data-class-name': props.className ?? '',
-    }, slots['default']?.({ row: { id: 1, name: 'Test' } as DataRow, $index: 0 }))
+    }, slots['default']?.({ row: slotRow, $index: 0 }))
   },
 })
 
@@ -232,7 +234,7 @@ describe('useFieldContext attrs 集成传递', () => {
         currentDisplayValue: computed(() => '1'),
         isTableCellHidden: () => false,
         getTableCellDisplayValue: (row: DataRow) => String((row as Record<string, unknown>)['id'] ?? ''),
-        validationRules: computed(() => [] as never[]),
+        validationRules: computed(() => []),
       }
       const fieldCtx = useFieldContext({
         type: 'r-text',
@@ -306,12 +308,13 @@ describe('字段宿主推导会考虑中间层', () => {
     },
   })
 
-  function createIntermediateBridge(intermediateType: string, next: object = ProviderContextProbe) {
+  function createIntermediateBridge(intermediateType: string, next: Component = ProviderContextProbe) {
     return defineComponent({
       name: `IntermediateBridge_${intermediateType}`,
       setup() {
-        useSparkComponent({ type: intermediateType } as SparkNode)
-        return () => h(next as never)
+        const node: SparkNode = { type: intermediateType }
+        useSparkComponent(node)
+        return () => h(next)
       },
     })
   }
@@ -401,7 +404,7 @@ describe('字段宿主推导会考虑中间层', () => {
           type: 'r-field-scope',
           ...(props.id !== undefined ? { id: props.id } : {}),
         })
-        sparkProvide(DATA_ROW, { id: 1 } as DataRow)
+        sparkProvide(DATA_ROW, { id: 1 })
 
         return () => h('div', { class: 'scope-comp' }, 'scope')
       },
@@ -409,7 +412,8 @@ describe('字段宿主推导会考虑中间层', () => {
 
     const RootComp = defineComponent({
       setup() {
-        const result = useSparkComponent({ type: 'root-comp' } as SparkNode)
+        const node: SparkNode = { type: 'root-comp' }
+        const result = useSparkComponent(node)
         result.sparkProvide(PAGE_COMPONENT_REGISTRY, registry)
         return () => h(ScopeComp, { id: 'filter-scope' })
       },
@@ -435,7 +439,7 @@ describe('字段宿主推导会考虑中间层', () => {
       setup() {
         useSparkContextScope('r-table')
         return () => h(ElTableStub, null, {
-          default: () => h(FieldText as never, {
+          default: () => h(FieldText, {
             type: 'r-text',
             field: 'name',
             label: '姓名',

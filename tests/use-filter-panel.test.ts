@@ -1,15 +1,17 @@
-import { computed, effectScope, nextTick, ref } from 'vue'
+import { effectScope, nextTick, shallowRef } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import type { CrudApi, FilterExpression, DataRow, TableResourceType } from '@spark-view/spark-data'
-import { useFilterPanel } from '../packages/spark-component/src/components/containers/runtime/container-filter'
+import type { SparkNode } from '@spark-view/spark-component'
+import { useFilterPanel, type FilterPanelState } from '../packages/spark-component/src/components/containers/runtime/container-filter'
 
 interface FilterViewLike {
   rows: DataRow[]
   columns?: Array<{ name: string }>
   getColumn?: (name: string) => unknown
   filterExpression?: FilterExpression
-  setFilter?: (expr: FilterExpression | undefined) => Promise<void>
-  refresh?: () => Promise<void>
+  setFilter: (expr: FilterExpression | undefined) => Promise<void>
+  executeFilter: (expr: FilterExpression | undefined) => Promise<void>
+  refresh: () => Promise<void>
   dataTable?: {
     api?: CrudApi
     resourceType?: TableResourceType
@@ -24,6 +26,7 @@ function createView(options?: {
   resourceType?: TableResourceType
 }) {
   const setFilter = vi.fn<(expr: FilterExpression | undefined) => Promise<void>>().mockResolvedValue()
+  const executeFilter = vi.fn<(expr: FilterExpression | undefined) => Promise<void>>().mockResolvedValue()
   const refresh = vi.fn<() => Promise<void>>().mockResolvedValue()
   const columnMap = new Map((options?.columns ?? []).map(column => [column.name, column]))
   const view: FilterViewLike = {
@@ -36,6 +39,7 @@ function createView(options?: {
       : {}),
     ...(options?.filterExpression !== undefined ? { filterExpression: options.filterExpression } : {}),
     setFilter,
+    executeFilter,
     refresh,
     dataTable: {
       ...(options?.api !== undefined ? { api: options.api } : {}),
@@ -45,24 +49,27 @@ function createView(options?: {
   return { view, setFilter, refresh }
 }
 
-async function mountTableFilters(view: FilterViewLike, filterChildren: Array<Record<string, unknown>>) {
+async function mountTableFilters(view: FilterViewLike, filterChildren: SparkNode[]) {
   const scope = effectScope()
   const logger = {
     error: vi.fn<(message: string, error?: unknown) => void>(),
   }
-  const viewRef = ref(view)
-  let api!: ReturnType<typeof useFilterPanel>
+  const viewRef = shallowRef(view)
+  let api: FilterPanelState | undefined
 
   scope.run(() => {
     api = useFilterPanel({
-      filterChildren: computed(() => filterChildren as any),
-      dataView: computed(() => viewRef.value as any),
+      filterChildren,
+      dataView: () => viewRef.value,
       logger,
     })
   })
 
   await nextTick()
   await Promise.resolve()
+  if (api === undefined) {
+    throw new Error('useFilterPanel did not initialize')
+  }
 
   return {
     scope,

@@ -7,6 +7,7 @@ import {
   Spark,
   useSparkComponent,
 } from '@spark-view/spark-component'
+import type { SparkNode } from '@spark-view/spark-component'
 import { DataMember, SparkData } from '@spark-view/spark-data'
 import { useFieldOptions } from '../packages/spark-component/src/components/fields/options/useFieldOptions'
 
@@ -42,21 +43,22 @@ function mountOptionProbe(dataSet: ReturnType<typeof SparkData.createDataSet>, s
 
   const Provider = defineComponent({
     setup() {
-      const { sparkProvide } = useSparkComponent({ type: 'r-form' } as never, { parentContext: rootContext })
+      const node: SparkNode = { type: 'r-form' }
+      const { sparkProvide } = useSparkComponent(node, { parentContext: rootContext })
       sparkProvide(PAGE_DATASET, dataSet)
 
-      return () => h(OptionProbe as never, {
+      return () => h(OptionProbe, {
         optionDataViewKey: 'Dict@default',
         optionDataMember: 'rows',
-        sampleValue: normalizedSampleValue,
-      } as never)
+        ...(normalizedSampleValue !== undefined ? { sampleValue: normalizedSampleValue } : {}),
+      })
     },
   })
 
   return mount(Provider, {
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       },
     },
   })

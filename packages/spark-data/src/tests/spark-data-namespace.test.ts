@@ -4,7 +4,7 @@
 
 import { describe, it, expect } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
-import type { DataSetMetadata, TableMetadata, TreeConfig, ViewMetadata, TableRelation, ViewDependency } from '@spark-view/spark-data'
+import type { DataSetMetadata, TableMetadata, TreeConfig, ViewMetadata } from '@spark-view/spark-data'
 
 describe('SparkData Namespace', () => {
   it('应该提供 createDataSet 工厂方法', () => {
@@ -79,28 +79,6 @@ describe('SparkData Namespace', () => {
 
     expect(table.tableName).toBe('Users')
     expect(table.views['default']!.rows).toHaveLength(1)
-  })
-
-  it('应该提供 createTableRelation 工厂方法', () => {
-    const relation: TableRelation = {
-      parentTable: 'Users',
-      childTable: 'Orders',
-      childField: 'userId',
-      cascadeDelete: true,
-    }
-
-    expect(SparkData.createTableRelation(relation)).toEqual(relation)
-  })
-
-  it('应该提供 createViewDependency 工厂方法', () => {
-    const dependency: ViewDependency = {
-      parentTable: 'Users',
-      childTable: 'Orders',
-      dependencyType: 'selectedRows',
-      autoLoad: true,
-    }
-
-    expect(SparkData.createViewDependency(dependency)).toEqual(dependency)
   })
 
   it('应该提供 fromJson 工厂方法', () => {

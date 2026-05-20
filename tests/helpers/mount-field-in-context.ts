@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import type { ComponentMountingOptions } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
+import type { Component } from 'vue'
 import {
   DATA_ROW,
   DATA_SOURCE,
@@ -11,17 +12,17 @@ import {
   useSparkComponent,
 } from '@spark-view/spark-component'
 import type { SparkNode, SparkCapabilityContext, ComponentRegistry, PageServiceCapability } from '@spark-view/spark-component'
-import type { DataRow, DataSetContract } from '@spark-view/spark-data'
+import type { DataRow, DataSetContract, DataView } from '@spark-view/spark-data'
 
 interface MountFieldInContextOptions {
-  component: unknown
+  component: Component
   type: string
   model: DataRow
   fieldName: string
   componentProps?: Record<string, unknown> | undefined
   global?: ComponentMountingOptions<unknown>['global'] | undefined
   pageDataSet?: DataSetContract | undefined
-  dataSource?: unknown
+  dataSource?: DataView
   pageService?: PageServiceCapability | undefined
   hostType?: string | undefined
 }
@@ -43,20 +44,21 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
   const Provider = defineComponent({
     setup() {
       const hostType = options.hostType ?? 'r-form'
-      const { sparkProvide } = useSparkComponent({ type: hostType } as SparkNode, { parentContext: rootContext })
+      const node: SparkNode = { type: hostType }
+      const { sparkProvide } = useSparkComponent(node, { parentContext: rootContext })
       sparkProvide(DATA_ROW, options.model)
 
       if (options.pageDataSet !== undefined) {
         sparkProvide(PAGE_DATASET, options.pageDataSet)
       }
       if (options.dataSource !== undefined) {
-        sparkProvide(DATA_SOURCE, options.dataSource as never)
+        sparkProvide(DATA_SOURCE, options.dataSource)
       }
       if (options.pageService !== undefined) {
         sparkProvide(PAGE_SERVICE, options.pageService)
       }
 
-      return () => h(options.component as never, {
+      return () => h(options.component, {
         type: options.type,
         field: options.fieldName,
         ...(options.componentProps ?? {}),
@@ -68,7 +70,7 @@ export function mountFieldInContext(options: MountFieldInContextOptions) {
     global: {
       ...globalOptions,
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
         ...providedValues,
       },
     },

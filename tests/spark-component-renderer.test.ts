@@ -2,7 +2,6 @@ import { expect, test, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 import { defineComponent, h } from 'vue'
-import type { DefineComponent } from 'vue'
 import SparkComponentRendererSource from '../packages/spark-component/src/components/SparkComponentRenderer.vue'
 
 const { registry, rootContext } = Spark.createSystem()
@@ -17,14 +16,14 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
   registry.register('test-click-emitter', ClickEmitter)
 
   const clickSpy = vi.fn()
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
-      config: { type: 'test-click-emitter', props: { on: { click: clickSpy } } } as unknown as Record<string, unknown>,
+      config: { type: 'test-click-emitter', props: { on: { click: clickSpy } } },
       parentContext: rootContext
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -41,7 +40,7 @@ test('SparkComponentRenderer requires registry registration for generic Vue glob
     }
   })
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: { type: 'SearchBar' },
       parentContext: rootContext
@@ -51,7 +50,7 @@ test('SparkComponentRenderer requires registry registration for generic Vue glob
         SearchBar
       },
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -68,7 +67,7 @@ test('SparkComponentRenderer resolves Render* global components for page script 
     }
   })
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: { type: 'RenderStatusAction' },
       parentContext: rootContext
@@ -78,7 +77,7 @@ test('SparkComponentRenderer resolves Render* global components for page script 
         RenderStatusAction
       },
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -106,7 +105,7 @@ test('SparkComponentRenderer only forwards config.props to registered components
 
   registry.register('root-field-reader', RootFieldReader)
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'root-field-reader',
@@ -115,12 +114,12 @@ test('SparkComponentRenderer only forwards config.props to registered components
           status: 'active',
           gridGap: 18,
         },
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -149,19 +148,19 @@ test('SparkComponentRenderer maps cross-framework config value to Vue modelValue
   })
   system.registry.register('r-text', ModelValueReader)
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: {
         type: 'r-text',
         props: {
           value: 'config-value',
         },
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: system.rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: system.registry,
+        [SPARK_REGISTRY_KEY]: system.registry,
       },
     },
   })
@@ -190,7 +189,7 @@ test('SparkComponentRenderer drops config value when Vue modelValue is already p
   })
   system.registry.register('r-text', ModelValueReader)
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: {
         type: 'r-text',
@@ -198,12 +197,12 @@ test('SparkComponentRenderer drops config value when Vue modelValue is already p
           value: 'config-value',
           modelValue: 'vue-model',
         },
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: system.rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: system.registry,
+        [SPARK_REGISTRY_KEY]: system.registry,
       },
     },
   })
@@ -227,16 +226,16 @@ test('SparkComponentRenderer does not forward empty children prop to registered 
 
   registry.register('registered-attr-reader', AttrReader)
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'registered-attr-reader',
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -262,7 +261,7 @@ test('SparkComponentRenderer auto mode forwards children prop to registered comp
 
   registry.register('registered-prop-reader', PropReader)
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: {
         type: 'registered-prop-reader',
@@ -272,7 +271,7 @@ test('SparkComponentRenderer auto mode forwards children prop to registered comp
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -292,7 +291,7 @@ test('SparkComponentRenderer renders registered components without children prop
 
   registry.register('registered-slot-reader', SlotReader)
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: {
         type: 'registered-slot-reader',
@@ -302,7 +301,7 @@ test('SparkComponentRenderer renders registered components without children prop
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -329,7 +328,7 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
 
   registry.register('registered-hybrid-reader', HybridReader, { childrenMode: 'slot' })
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: {
         type: 'registered-hybrid-reader',
@@ -339,7 +338,7 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -350,61 +349,19 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
   expect(wrapper.text()).toContain('slot-forced-content')
 })
 
-test('SparkComponentRenderer normalizes root-level non-struct fields into props for registered components', () => {
-  const RootFieldReader = defineComponent({
-    props: {
-      label: String,
-      status: String,
-      gridGap: Number,
-    },
-    setup(componentProps) {
-      return () => h('div', {
-        class: 'root-field-reader-ignored',
-        'data-label': componentProps.label ?? '',
-        'data-status': componentProps.status ?? '',
-        'data-gap': String(componentProps.gridGap ?? ''),
-      }, 'root')
-    }
-  })
-
-  registry.register('root-field-reader-ignored', RootFieldReader)
-
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
-    props: {
-      config: {
-        type: 'root-field-reader-ignored',
-        label: '根级标签',
-        status: 'active',
-        gridGap: 18,
-      } as unknown as Record<string, unknown>,
-      parentContext: rootContext,
-    },
-    global: {
-      provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
-      }
-    }
-  })
-
-  const reader = wrapper.find('.root-field-reader-ignored')
-  expect(reader.attributes('data-label')).toBe('根级标签')
-  expect(reader.attributes('data-status')).toBe('active')
-  expect(reader.attributes('data-gap')).toBe('18')
-})
-
 test('SparkComponentRenderer renders native html tags directly', () => {
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'div',
         props: { class: 'native-wrapper' },
         children: ['hello']
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -415,18 +372,18 @@ test('SparkComponentRenderer renders native html tags directly', () => {
 })
 
 test('SparkComponentRenderer preserves numeric literal children in native rendering', () => {
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'div',
         props: { class: 'native-wrapper-number' },
         children: [123],
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -437,7 +394,7 @@ test('SparkComponentRenderer preserves numeric literal children in native render
 })
 
 test('SparkComponentRenderer renders native buttons and still filters internal props', () => {
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'button',
@@ -447,12 +404,12 @@ test('SparkComponentRenderer renders native buttons and still filters internal p
           rowIndex: 3,
         },
         children: ['action'],
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -465,7 +422,7 @@ test('SparkComponentRenderer renders native buttons and still filters internal p
 })
 
 test('SparkComponentRenderer keeps scoped row props away from native tags', () => {
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'button',
@@ -476,12 +433,12 @@ test('SparkComponentRenderer keeps scoped row props away from native tags', () =
           data: { id: 'n-1' },
         },
         children: ['action'],
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -506,7 +463,7 @@ test('SparkComponentRenderer renders globally registered el-* components', () =>
     }
   })
 
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'el-button',
@@ -514,7 +471,7 @@ test('SparkComponentRenderer renders globally registered el-* components', () =>
           type: 'primary',
         },
         children: ['保存'],
-      } as unknown as Record<string, unknown>,
+      },
       parentContext: rootContext,
     },
     global: {
@@ -522,7 +479,7 @@ test('SparkComponentRenderer renders globally registered el-* components', () =>
         ElButton,
       },
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -534,14 +491,14 @@ test('SparkComponentRenderer renders globally registered el-* components', () =>
 })
 
 test('SparkComponentRenderer keeps warning fallback for unknown non-native component types', () => {
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: { type: 'unknown-widget', children: [] },
       parentContext: rootContext
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -550,7 +507,7 @@ test('SparkComponentRenderer keeps warning fallback for unknown non-native compo
 })
 
 test('SparkComponentRenderer fallback can expand node snapshot for unknown component types', async () => {
-  const wrapper = mount(SparkComponentRenderer as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRenderer, {
     props: {
       config: {
         type: 'unknown-widget',
@@ -565,7 +522,7 @@ test('SparkComponentRenderer fallback can expand node snapshot for unknown compo
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -589,14 +546,14 @@ test('SparkComponentRenderer falls back when registry component hostTypes do not
 
   registry.register('host-locked-card', HostLockedCard, { hostTypes: ['r-table'] })
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: { type: 'host-locked-card' },
       parentContext: rootContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })
@@ -624,14 +581,14 @@ test('SparkComponentRenderer renders registry component when hostTypes match cur
     parent: rootContext,
   }
 
-  const wrapper = mount(SparkComponentRendererSource as unknown as DefineComponent, {
+  const wrapper = mount(SparkComponentRendererSource, {
     props: {
       config: { type: 'host-locked-card-matched' },
       parentContext: tableContext,
     },
     global: {
       provide: {
-        [SPARK_REGISTRY_KEY as symbol]: registry,
+        [SPARK_REGISTRY_KEY]: registry,
       }
     }
   })

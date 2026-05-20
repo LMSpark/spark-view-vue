@@ -6,7 +6,7 @@ const { filterDisplayableFields } = permission
 
 describe('PermissionFilter', () => {
   it('keeps backend-masked values and removes hidden fields', () => {
-    const row = {
+    const row: DataRow = {
       id: 1,
       phone: '138****1234',
       secret: 'top-secret',
@@ -14,7 +14,7 @@ describe('PermissionFilter', () => {
         maskedFields: ['phone'],
         hiddenFields: ['secret'],
       },
-    } as DataRow
+    }
 
     const filtered = filterDisplayableFields(row)
 

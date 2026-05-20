@@ -21,6 +21,7 @@ export { SparkData } from './spark-data'
 export { DataSet } from './dataset'
 export { DataTable } from './data-table'
 export { DataView } from './data-view'
+export { TreeManager } from './tree-manager'
 export { DataSetCrudTool } from './dataset-crud-tool'
 export {
   clearDataSetSnapshots,
