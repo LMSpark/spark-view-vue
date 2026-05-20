@@ -1,14 +1,14 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export type RLinkProps = SparkNodeProps & {
+export interface RLinkProps extends SparkNodeProps {
   /** 链接文本 */
-  label?: SparkText
-  /** 链接类型 */
-  linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
-  /** 是否显示下划线 */
-  underline?: boolean
-  /** 跳转地址 */
-  href?: SparkText
-  /** 跳转目标 */
-  target?: '_blank' | '_self' | '_parent' | '_top'
+    label?: string
+    /** 链接类型 */
+    linkType?: '' | 'default' | 'primary' | 'success' | 'warning' | 'info' | 'danger'
+    /** 是否显示下划线 */
+    underline?: boolean
+    /** 跳转地址 */
+    href?: string
+    /** 跳转目标 */
+    target?: '_blank' | '_self' | '_parent' | '_top'
 }

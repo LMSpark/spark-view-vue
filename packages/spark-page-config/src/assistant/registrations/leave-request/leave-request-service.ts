@@ -1,6 +1,16 @@
+/**
+ * 人工请假草稿服务。
+ *
+ * 纯内存状态管理（Map<string, LeaveRequestDraftState>），维护请假草稿的完整生命周期：
+ * getDraft → setDraftFields → submitDraft / cancelDraft → releaseDraft
+ *
+ * 每个草稿由 leaveDraftId 唯一标识，状态流转为：draft → submitted / cancelled。
+ * 已提交或已取消的草稿不可再编辑。
+ */
+
 export type LeaveRequestDraftStatus = 'draft' | 'submitted' | 'cancelled'
 
-export type LeaveRequestDraftFields = {
+export interface LeaveRequestDraftFields {
   readonly applicantName?: string | undefined
   readonly leaveType?: string | undefined
   readonly startDate?: string | undefined
@@ -10,7 +20,7 @@ export type LeaveRequestDraftFields = {
   readonly approver?: string | undefined
 }
 
-export type LeaveRequestDraftState = {
+export interface LeaveRequestDraftState {
   readonly leaveDraftId: string
   readonly status: LeaveRequestDraftStatus
   readonly fields: LeaveRequestDraftFields
@@ -21,7 +31,7 @@ export type LeaveRequestDraftState = {
   readonly cancelReason?: string | undefined
 }
 
-export type LeaveRequestServiceContext = {
+export interface LeaveRequestServiceContext {
   readonly requestId: string
   readonly leaveDraftId: string
 }
@@ -39,10 +49,12 @@ function success<TResult>(data: TResult, summary: string): LeaveRequestServiceRe
   return { ok: true, data, summary }
 }
 
+/** 构造业务失败结果，包含错误码、消息和修复建议。 */
 export function leaveRequestServiceFailure(code: string, msg: string, fix: string): LeaveRequestServiceResult<never> {
   return { ok: false, code, msg, fix }
 }
 
+/** 运行时校验：判断值是否为合法的 LeaveRequestServiceResult。 */
 export function isLeaveRequestServiceResult(value: unknown): value is LeaveRequestServiceResult<unknown> {
   if (!isRecord(value)) return false
   if (value['ok'] === true) return 'data' in value && typeof value['summary'] === 'string'
@@ -75,6 +87,7 @@ function parseDateOnly(value: string | undefined): number | null {
   return Number.isFinite(timestamp) ? timestamp : null
 }
 
+/** 解析并校验输入对象，提取合法请假字段；返回失败结果时阻断写入。 */
 function normalizeDraftFields(input: unknown): LeaveRequestDraftFields | LeaveRequestServiceResult<never> {
   if (!isRecord(input)) {
     return leaveRequestServiceFailure('INVALID_FIELDS', 'fields 必须是对象。', '把要更新的请假字段放在 fields 对象中。')
@@ -107,6 +120,7 @@ function normalizeDraftFields(input: unknown): LeaveRequestDraftFields | LeaveRe
   return fields
 }
 
+/** 检查草稿中缺少的必填字段（applicantName / leaveType / startDate / endDate / reason）。 */
 function missingRequiredFields(fields: LeaveRequestDraftFields): string[] {
   const missing: string[] = []
   if (fields.applicantName === undefined || fields.applicantName === '') missing.push('applicantName')
@@ -117,6 +131,7 @@ function missingRequiredFields(fields: LeaveRequestDraftFields): string[] {
   return missing
 }
 
+/** 校验日期格式和范围：startDate 不能晚于 endDate。 */
 function validateDateRange(fields: LeaveRequestDraftFields): LeaveRequestServiceResult<never> | null {
   const start = parseDateOnly(fields.startDate)
   const end = parseDateOnly(fields.endDate)
@@ -132,11 +147,18 @@ function validateDateRange(fields: LeaveRequestDraftFields): LeaveRequestService
   return null
 }
 
+/**
+ * 请假草稿状态管理服务。
+ *
+ * 生命周期：getDraft(创建或获取) → setDraftFields(填写) → submitDraft(提交) / cancelDraft(取消) → releaseDraft(清理)
+ * 所有状态保存在内存 Map 中，key 为 leaveDraftId。
+ */
 export class LeaveRequestService {
   private readonly states = new Map<string, LeaveRequestDraftState>()
 
   constructor(private readonly now: () => number = Date.now) {}
 
+  /** 获取或创建草稿：不存在时自动初始化空草稿。 */
   getDraft(leaveDraftId: string): LeaveRequestDraftState {
     const existing = this.states.get(leaveDraftId)
     if (existing !== undefined) return existing
@@ -152,6 +174,7 @@ export class LeaveRequestService {
     return draft
   }
 
+  /** 读取草稿状态并计算缺失字段，供 LLM 了解当前收集进度。 */
   describeDraft(context: LeaveRequestServiceContext): LeaveRequestServiceResult<{
     draft: LeaveRequestDraftState
     missingFields: string[]
@@ -163,6 +186,7 @@ export class LeaveRequestService {
     )
   }
 
+  /** 增量更新草稿字段：先校验状态、解析输入、验证日期范围，再合并写入。 */
   setDraftFields(context: LeaveRequestServiceContext, fieldsInput: unknown): LeaveRequestServiceResult<{
     draft: LeaveRequestDraftState
     missingFields: string[]
@@ -194,6 +218,7 @@ export class LeaveRequestService {
     )
   }
 
+  /** 提交草稿：校验状态、日期、必填字段，通过后标记为 submitted。 */
   submitDraft(context: LeaveRequestServiceContext): LeaveRequestServiceResult<{
     draft: LeaveRequestDraftState
     missingFields: string[]
@@ -231,6 +256,7 @@ export class LeaveRequestService {
     )
   }
 
+  /** 取消草稿：已提交的不可取消，未提交的标记为 cancelled 并记录原因。 */
   cancelDraft(context: LeaveRequestServiceContext, reason: string | undefined): LeaveRequestServiceResult<{
     draft: LeaveRequestDraftState
   }> {
@@ -251,6 +277,7 @@ export class LeaveRequestService {
     return success({ draft: cloneJson(cancelled) }, '请假草稿已取消')
   }
 
+  /** 从内存中移除草稿，会话结束时调用。 */
   releaseDraft(leaveDraftId: string): void {
     this.states.delete(leaveDraftId)
   }

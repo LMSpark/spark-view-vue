@@ -3,7 +3,7 @@ import type { DataRow } from '@spark-view/spark-data'
 import type { Ref } from 'vue'
 import type { ValueRef } from '../../../shared-types.js'
 
-type UseHtmlEditorStateOptions = {
+interface UseHtmlEditorStateOptions {
   editorRef: Ref<HTMLElement | null>
   fieldValue: ValueRef<unknown>
   isCurrentFieldEditable: ValueRef<boolean>

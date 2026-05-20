@@ -7,14 +7,12 @@
  * 每个变体组件仅覆盖 FieldEntityPicker 的若干默认 prop，其余完全透传。
  */
 import { computed, defineComponent, h } from 'vue'
-import type { PageSelectableValue } from '../internal'
+import type { PageSelectorOption } from '../internal'
 import type { SparkOptionValueMode } from '../shared-types'
 import { emitFieldValueUpdate } from './data-components/composables/useControlledFieldChange'
 import FieldEntityPicker from './data-components/FieldEntityPicker.vue'
 
-type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
-
-type PickerPresetDefaults = {
+interface PickerPresetDefaults {
   placeholder: string
   buttonText: string
   readonlyButtonText: string
@@ -133,7 +131,7 @@ export function createPickerPreset(defaults: PickerPresetDefaults) {
       return () => h(FieldEntityPicker, {
         type: 'r-entity-picker',
         ...forwardedProps.value,
-        'onUpdate:modelValue': (value: EntityPickerValue) => emitFieldValueUpdate(emit, value),
+        'onUpdate:modelValue': (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => emitFieldValueUpdate(emit, value),
       })
     },
   })

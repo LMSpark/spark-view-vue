@@ -5,13 +5,13 @@ import {
   type PageDesignServiceResult,
 } from './page-design-service-contract'
 
-type TargetMethodMissing = {
+interface TargetMethodMissing {
   ok: false
   code: 'METHOD_NOT_FOUND'
   methodName: string
 }
 
-type TargetMethodSucceeded = {
+interface TargetMethodSucceeded {
   ok: true
   data: unknown
 }

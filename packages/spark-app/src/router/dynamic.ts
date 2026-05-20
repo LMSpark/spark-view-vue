@@ -39,7 +39,7 @@ function shouldLogDynamicRouteDetails(): boolean {
 /**
  * 动态路由注册选项
  */
-export type DynamicRouterOptions = {
+export interface DynamicRouterOptions {
   /** Vue Router 实例 */
   router: Router
 
@@ -112,7 +112,7 @@ export type DynamicRouterOptions = {
   isAuthenticated?: (() => boolean) | undefined
 }
 
-type RouteRegistrationOptions = {
+interface RouteRegistrationOptions {
   skipTenantPrefix?: boolean
   routePathPrefix?: string
   routeNamePrefix?: string

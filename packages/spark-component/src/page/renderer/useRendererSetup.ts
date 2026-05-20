@@ -35,7 +35,7 @@ import { createPageComponentRegistry } from '../context/page-component-registry'
 
 // ─── 公共接口 ────────────────────────────────────────────────────────────────
 
-type RendererSetupReturn = {
+interface RendererSetupReturn {
   /** 路由能力实例（消费方如 buildPageService / 页面动作可能需要） */
   router: Router
   /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */

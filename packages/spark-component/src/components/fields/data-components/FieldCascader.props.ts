@@ -3,7 +3,7 @@ import type { SparkHierarchicalOptionFieldProps, SparkNodeProps } from '../../sh
 export type CascaderPath = Array<string | number | boolean>
 export type CascaderValue = CascaderPath | CascaderPath[]
 
-export type RCascaderProps = SparkNodeProps & SparkHierarchicalOptionFieldProps<CascaderValue> & {
+export interface RCascaderProps extends SparkNodeProps, SparkHierarchicalOptionFieldProps<CascaderValue> {
   /** 选中结果是否保留完整路径。 */
-  emitPath?: boolean
+    emitPath?: boolean
 }

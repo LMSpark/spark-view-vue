@@ -50,13 +50,13 @@ const DEFAULT_EXPIRATION_TIERS: CacheExpirationTier[] = [
   { level: 4, maxAge: 30 * 24 * 60 * 60 * 1000, description: '30天' }
 ]
 
-type FileResponse = {
+interface FileResponse {
   content?: string
   timestamp?: string
   notModified?: boolean
 }
 
-type CacheWriteOptions = {
+interface CacheWriteOptions {
   recoverQuota?: boolean
   reportFailureAsError?: boolean
 }
@@ -65,7 +65,7 @@ type FileLoaderListeners = {
   [K in keyof FileLoaderEventMap]: Array<(payload: FileLoaderEventMap[K]) => void>
 }
 
-type LoadOptionBase = {
+interface LoadOptionBase {
   /** false = 返回原始字符串，不 JSON.parse（默认 true） */
   /** 跳过缓存强制重新请求（默认 false） */
   forceRefresh?: boolean
@@ -73,20 +73,20 @@ type LoadOptionBase = {
   expirationLevel?: number
 }
 
-export type JsonLoadOptions = LoadOptionBase & {
+export interface JsonLoadOptions extends LoadOptionBase {
   parseJSON?: true
 }
 
-export type TextLoadOptions = LoadOptionBase & {
+export interface TextLoadOptions extends LoadOptionBase {
   parseJSON: false
 }
 
-export type TransformLoadOptions<T> = LoadOptionBase & {
+export interface TransformLoadOptions<T> extends LoadOptionBase {
   /**
-   * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。
-   * 提供后 load() 返回 T（变换结果），而非原始 JSON。
-   */
-  transform: (rawContent: string) => T | Promise<T>
+     * 对原始文件内容应用变换，结果自动缓存（缓存键=文件路径）。
+     * 提供后 load() 返回 T（变换结果），而非原始 JSON。
+     */
+    transform: (rawContent: string) => T | Promise<T>
 }
 
 /** load() 选项 */

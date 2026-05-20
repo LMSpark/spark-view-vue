@@ -65,11 +65,11 @@ const FILTER_OPERATORS: ReadonlySet<string> = new Set([
 // ============================================================
 
 /** 极简日志接口（最小化依赖）。 */
-type ErrorLoggerLike = {
+interface ErrorLoggerLike {
   error(message: string, error?: unknown): void
 }
 
-type FilterPanelDataView = {
+interface FilterPanelDataView {
   readonly rows: ReadonlyArray<Record<string, unknown>>
   readonly columns?: readonly unknown[]
   readonly filterExpression?: FilterExpression | undefined
@@ -225,13 +225,13 @@ function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator 
 // § 过滤描述符类型
 // ============================================================
 
-type InputFilterDescriptor = {
+interface InputFilterDescriptor {
   kind: 'input'
   config: SparkNode
   field: string | undefined
 }
 
-type ResidentFieldRefFilterDescriptor = {
+interface ResidentFieldRefFilterDescriptor {
   kind: 'field-ref'
   field: string
   op: FilterOperator
@@ -444,7 +444,7 @@ async function applyFilterSafely(params: {
 // § useFilterPanel
 // ============================================================
 
-type UseFilterPanelOptions = {
+interface UseFilterPanelOptions {
   /** 过滤器子节点列表（响应式）。 */
   filterChildren: MaybeRefOrGetter<SparkNode[]>
   /** 目标 DataView（响应式）。 */
@@ -454,7 +454,7 @@ type UseFilterPanelOptions = {
 }
 
 /** `useFilterPanel` 返回状态。 */
-export type FilterPanelState = {
+export interface FilterPanelState {
   /** 双向绑定的过滤模型（field → 用户输入值）。 */
   filterModel: Record<string, unknown>
   /** 当前可渲染的过滤器配置列表（input 类型）。 */

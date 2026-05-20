@@ -14,7 +14,6 @@ export type {
   PageSelectedFileInScript,
   PageSelectorOptionInScript,
   PageServiceInScript,
-  PageSelectableValueInScript,
   PageUploadFilesOptionsInScript,
   PageUploadedFileInScript,
   PermissionActionContextInScript,

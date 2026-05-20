@@ -25,6 +25,37 @@ import {
   moduleScopeKey,
 } from './runtime-utils'
 
+/**
+ * AI 会话账本。
+ *
+ * 职责：内存中管理 AI 会话状态、历史记录和别名映射。
+ *
+ * ┌──────────────────────────────────────────────────────────┐
+ * │                    AiSessionLedger                        │
+ * │                                                           │
+ * │  会话生命周期：                                            │
+ * │    prepareStartScope() → 归一化 scope + 别名校验           │
+ * │    startSession()    → 创建 Started 状态会话               │
+ * │    stopSession()     → 更新为 Stopped 状态                 │
+ * │                                                           │
+ * │  会话查询：                                                │
+ * │    getSession() / listSessions() / getSessionHistory()    │
+ * │    requireStartedSession() / getSessionFailure()          │
+ * │    normalizeScope()                                       │
+ * │                                                           │
+ * │  消息操作：                                                │
+ * │    appendMessage()        → 追加消息到历史                 │
+ * │    appendFunctionCall()   → 追加函数调用记录               │
+ * │    recordFunctionCallRequest()                            │
+ * │    completeFunctionCall() → 更新函数调用状态               │
+ * │                                                           │
+ * │  别名管理：                                                │
+ * │    bindSessionAliases()   → instanceId/runtimeInstanceId   │
+ * │                           → sessionKey 映射               │
+ * │    assertInstanceAliasesAvailable() → 校验别名不冲突       │
+ * └──────────────────────────────────────────────────────────┘
+ */
+
 export class AiSessionLedger {
   private readonly sessions = new Map<string, AiRuntimeSessionRecord>()
 
@@ -38,22 +69,30 @@ export class AiSessionLedger {
     this.now = options.now ?? Date.now
   }
 
+  // ── 会话查询 ──
+
+  /** 获取指定模块实例的会话记录（深拷贝） */
   getSession(moduleId: string, moduleInstanceId: string): AiRuntimeSessionRecord | null {
     const session = this.sessions.get(moduleScopeKey(moduleId, moduleInstanceId))
     return session === undefined ? null : this.cloneSession(session)
   }
 
+  /** 列出会话（可按 moduleId 过滤） */
   listSessions(moduleId?: string): readonly AiRuntimeSessionRecord[] {
     return Array.from(this.sessions.values())
       .filter((session) => moduleId === undefined || session.moduleId === moduleId)
       .map((session) => this.cloneSession(session))
   }
 
+  /** 获取指定会话的历史记录 */
   getSessionHistory(moduleId: string, moduleInstanceId: string): readonly AiRuntimeHistoryEntry[] {
     const session = this.sessions.get(moduleScopeKey(moduleId, moduleInstanceId))
     return session?.history.map((entry) => this.cloneHistoryEntry(entry)) ?? []
   }
 
+  // ── 消息操作 ──
+
+  /** 追加用户/助手/系统消息到会话历史 */
   appendMessage(options: AiRuntimeAppendMessageOptions): AiRuntimeMessageHistoryEntry {
     const session = this.requireStartedSession(options)
     const timestamp = this.now()
@@ -68,6 +107,7 @@ export class AiSessionLedger {
     return this.cloneHistoryEntry(entry)
   }
 
+  /** 记录函数调用请求（状态: requested） */
   recordFunctionCallRequest(options: AiRuntimeRecordFunctionCallRequestOptions): AiRuntimeFunctionCallHistoryEntry {
     return this.appendFunctionCall({
       ...options,
@@ -75,6 +115,7 @@ export class AiSessionLedger {
     })
   }
 
+  /** 更新已有函数调用记录的状态和结果 */
   completeFunctionCall(options: AiRuntimeCompleteFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry {
     const session = this.requireStartedSession(options)
     const index = session.history.findIndex((entry) => entry.id === options.historyEntryId)
@@ -101,6 +142,7 @@ export class AiSessionLedger {
     return this.cloneHistoryEntry(updated)
   }
 
+  /** 追加函数调用记录到历史 */
   appendFunctionCall(options: AiRuntimeAppendFunctionCallOptions): AiRuntimeFunctionCallHistoryEntry {
     const session = this.requireStartedSession(options)
     const timestamp = this.now()
@@ -122,6 +164,12 @@ export class AiSessionLedger {
     return this.cloneHistoryEntry(entry)
   }
 
+  // ── 会话生命周期 ──
+
+  /**
+   * 准备启动会话的 scope。
+   * 归一化 instanceId / runtimeInstanceId，校验别名不冲突。
+   */
   prepareStartScope(options: AiRuntimeStartSessionOptions): AiRuntimeProjectKnowledgeOptions {
     const previous = this.sessions.get(moduleScopeKey(options.moduleId, options.moduleInstanceId))
     const instanceId = options.instanceId ?? previous?.instanceId ?? options.moduleInstanceId
@@ -138,6 +186,7 @@ export class AiSessionLedger {
     return scope
   }
 
+  /** 创建 Started 状态的会话并存储 */
   startSession(
     scope: AiRuntimeProjectKnowledgeOptions,
     projection: AiRuntimeKnowledgeProjection,
@@ -160,6 +209,7 @@ export class AiSessionLedger {
     }
   }
 
+  /** 停止会话：更新状态为 Stopped，记录停止时间 */
   stopSession(options: AiRuntimeStopSessionOptions): AiRuntimeStopSessionResult {
     const sessionKey = moduleScopeKey(options.moduleId, options.moduleInstanceId)
     const previous = this.sessions.get(sessionKey)
@@ -196,6 +246,7 @@ export class AiSessionLedger {
     }
   }
 
+  /** 归一化 scope：校验非空、设置默认值 */
   normalizeScope(options: AiRuntimeStartSessionOptions | AiRuntimeProjectKnowledgeOptions): AiRuntimeProjectKnowledgeOptions {
     const instanceId = options.instanceId ?? options.moduleInstanceId
     assertNonEmptyId('moduleId', options.moduleId)
@@ -210,6 +261,7 @@ export class AiSessionLedger {
     }
   }
 
+  /** 获取已启动的会话，未启动则抛出 */
   requireStartedSession(scope: AiRuntimeProjectKnowledgeOptions): AiRuntimeSessionRecord {
     const normalized = this.normalizeScope(scope)
     const failure = this.getSessionFailure(normalized)
@@ -225,6 +277,7 @@ export class AiSessionLedger {
     return session
   }
 
+  /** 检查指定 scope 的会话是否失败（未启动或已停止） */
   getSessionFailure(scope: AiRuntimeProjectKnowledgeOptions): AiRuntimeFunctionCallFailure | null {
     const session = this.sessions.get(moduleScopeKey(scope.moduleId, scope.moduleInstanceId))
     if (session === undefined) {
@@ -244,6 +297,9 @@ export class AiSessionLedger {
     return null
   }
 
+  // ── 别名管理 ──
+
+  /** 绑定 instanceId / runtimeInstanceId → sessionKey 别名映射 */
   bindSessionAliases(scope: AiRuntimeProjectKnowledgeOptions): void {
     const sessionKey = moduleScopeKey(scope.moduleId, scope.moduleInstanceId)
     this.assertInstanceAliasesAvailable(scope)

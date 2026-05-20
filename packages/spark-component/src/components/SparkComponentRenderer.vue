@@ -153,12 +153,12 @@ type NodeRuntimeProps = Record<string, unknown>
 type RenderBranch = 'hidden' | 'registry' | 'global-el' | 'native' | 'fallback'
 
 type ParentCapabilityContext = CapabilityContext | null
-type HostTypeConstraintState = {
+interface HostTypeConstraintState {
   matched: boolean
   expectedTypes: string[]
   actualTypes: string[]
 }
-type ScopedRuntimeInput = {
+interface ScopedRuntimeInput {
   rawProps: NodeRuntimeProps
   parentContext: ParentCapabilityContext
 }
@@ -182,7 +182,7 @@ const NATIVE_HTML_TAGS = new Set([
 
 // ── 渲染器输入：外部只传节点本体与可选父上下文 ───────────────────────────────
 
-type RendererProps = {
+interface RendererProps {
   /**
    * 被渲染的节点本体。
    *

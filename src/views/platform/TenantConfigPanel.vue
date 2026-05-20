@@ -144,7 +144,7 @@ import { DocumentCopy, Refresh } from '@element-plus/icons-vue'
 import { http } from '@/services/http'
 import { getPlatformTenantApi, getTenantConfigApi } from '@/services/api-paths'
 
-type TenantInfo = {
+interface TenantInfo {
   tenantId: string
   tenantName?: string
   tenantCode?: string
@@ -158,7 +158,7 @@ type TenantInfo = {
   }
 }
 
-type TenantFullConfig = {
+interface TenantFullConfig {
   tenant?: TenantInfo
   config?: {
     apiBaseUrl?: string

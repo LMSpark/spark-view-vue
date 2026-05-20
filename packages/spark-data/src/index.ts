@@ -76,7 +76,6 @@ export type {
   // 基础数据行 / 数据源契约
   DataRow,
   DataSource,
-  PkValue,
   DataViewEditingFieldChangeEvent,
   DataViewApplyEditingRowsResult,
   DataSetSaveChangesOptions,

@@ -14,7 +14,7 @@ const pluginLogger = createLogger('plugins')
 /**
  * 插件配置项
  */
-export type PluginConfigItem = {
+export interface PluginConfigItem {
   /** 是否启用 */
   enabled: boolean
   /** 插件选项 */
@@ -28,12 +28,12 @@ export type PluginConfigItem = {
 /**
  * 插件配置类型（支持简单布尔值或详细配置）
  */
-export type PluginConfig = boolean | PluginConfigItem
+// 这里不再为 JS 基础类型保留导出别名，插件配置直接使用 boolean | PluginConfigItem。
 
 /**
  * 插件加载器定义
  */
-export type PluginLoader = {
+export interface PluginLoader {
   /** 插件 ID */
   id: string
   /** 插件名称 */
@@ -53,7 +53,7 @@ export type PluginLoader = {
 /**
  * 插件实例（加载后的结果）
  */
-export type PluginInstance = {
+export interface PluginInstance {
   /** 插件对象 */
   plugin: Plugin
   /** 插件选项 */
@@ -151,7 +151,7 @@ export class PluginManager {
    * @returns 插件实例数组（按优先级排序）
    */
   static async loadPlugins(
-    pluginConfigs: Record<string, PluginConfig> | null | undefined,
+    pluginConfigs: Record<string, boolean | PluginConfigItem> | null | undefined,
     registry: PluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance[]> {
     const plugins: PluginInstance[] = []
@@ -205,7 +205,7 @@ export class PluginManager {
    */
   static async loadPlugin(
     id: string,
-    config: PluginConfig = { enabled: true },
+    config: boolean | PluginConfigItem = { enabled: true },
     registry: PluginRegistry = getGlobalPluginRegistry()
   ): Promise<PluginInstance | null> {
     const normalized = this.normalizeConfig(config)
@@ -232,7 +232,7 @@ export class PluginManager {
   /**
    * 标准化插件配置
    */
-  private static normalizeConfig(config: PluginConfig): PluginConfigItem {
+  private static normalizeConfig(config: boolean | PluginConfigItem): PluginConfigItem {
     if (typeof config === 'boolean') {
       return { enabled: config }
     }

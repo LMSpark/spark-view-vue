@@ -41,7 +41,6 @@ export {
 
 export type {
   PluginConfigItem,
-  PluginConfig,
   PluginLoader,
   PluginInstance
 } from './plugins'
@@ -178,7 +177,6 @@ export type {
   NavContextState,
   NavContextItem,
   NavContextConfig,
-  NavContextInput,
   RegionItems,
   RegionVisibility,
   ChildPlacement,

@@ -30,23 +30,23 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
-type Props = SparkNodeProps & {
+interface Props extends SparkNodeProps {
   /** 面板唯一标识 */
-  name?: string | number
-  /** 面板标题 */
-  title?: string
-  /** 是否禁用 */
-  disabled?: boolean
-  /** 面板体自定义 class */
-  bodyClass?: string
-  /** CSS Grid 列数 */
-  gridColumns?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 在父容器中的位置序号 */
-  index: number
+    name?: string | number
+    /** 面板标题 */
+    title?: string
+    /** 是否禁用 */
+    disabled?: boolean
+    /** 面板体自定义 class */
+    bodyClass?: string
+    /** CSS Grid 列数 */
+    gridColumns?: number | string
+    /** 栅格行高 */
+    gridAutoRows?: string
+    /** 栅格间距 */
+    gridGap?: number | string
+    /** 在父容器中的位置序号 */
+    index: number
 }
 
 const props = withDefaults(defineProps<Props>(), {

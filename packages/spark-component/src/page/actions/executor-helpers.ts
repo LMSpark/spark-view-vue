@@ -235,7 +235,7 @@ export function getActionProps(action: SparkNode): Record<string, unknown> {
  * - `notify`：受 `silent` 控制，静默模式下吞掉非 error 消息
  * - `notifyError`：始终展示 error（无视 silent），用于运行时异常
  */
-export type ActionNotifier = {
+export interface ActionNotifier {
   /** 发送成功/警告/info 类型消息；`silent=true` 时静默忽略 */
   notify(type: PageMessageType, message: string): void
   /** 发送 error 消息（无视 silent，始终展示） */
@@ -306,7 +306,7 @@ export async function confirmIfNeeded(
 /**
  * 数据能力解析结果：执行器从此结构中读取操作目标。
  */
-export type ResolvedActionDataCapabilities = {
+export interface ResolvedActionDataCapabilities {
   /** 解析到的目标 DataView；未就绪时为 null */
   dataSource: DataView | null
   /** DataView 当前行（currentRow）；无当前行时为 null */
@@ -357,7 +357,7 @@ export function resolveActionDataCapabilities(
 // 内置动作名称枚举 + 默认标签，是 node-to-descriptor.ts 和 button-templates.ts 的共同来源。
 // 新增 BuiltinAction 时在此注册，TypeScript 会自动推断 BuiltinActionName 联合类型。
 
-type BuiltinActionMeta = {
+interface BuiltinActionMeta {
   /** 动作的默认按钮标签（可被 r-button 的 label prop 覆盖） */
   label: string
 }

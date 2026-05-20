@@ -101,16 +101,13 @@ describe('SparkNodeTree', () => {
     expect(column.id).toBe('el-table-column__0_1_0')
   })
 
-  it('fromJson should promote legacy props.id component ids', () => {
-    const tree = SparkNodeTree.fromJson({
+  it('fromJson rejects props.id component ids', () => {
+    expect(() => SparkNodeTree.fromJson({
       type: 'page-root',
       children: [
-        { type: 'r-text', props: { id: 'legacy-text' } },
+        { type: 'r-text', props: { id: 'props-id' } },
       ],
-    })
-    const child = expectNode(tree.root.children?.[0])
-    expect(child.id).toBe('legacy-text')
-    expect(child.props?.['id']).toBeUndefined()
+    })).toThrow(/SparkNode\.props\.id is invalid/)
   })
 
   it('fromRuleJson wraps a single rule node into the spark-page root', () => {

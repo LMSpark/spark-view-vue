@@ -13,7 +13,7 @@ const pageRoot = join(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/
 
 const pages: readonly string[] = ['tx-editing-rows', 'tx-transaction-commit', 'tx-transaction-retry']
 
-type CapturedPost = {
+interface CapturedPost {
   url: string
   data: unknown
 }

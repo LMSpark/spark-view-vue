@@ -5,7 +5,7 @@ import type { DataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types.js'
 
-export type FieldContextProps = {
+export interface FieldContextProps {
   type: string
   displayLabel: string
   fieldName: string
@@ -27,7 +27,7 @@ export type FieldContextProps = {
   validationRules: FormItemRule[]
 }
 
-type FieldPermissionForContext = {
+interface FieldPermissionForContext {
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
@@ -42,16 +42,16 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-type FieldContextInputProps = OptionalWithUndefined<Pick<SparkNodeProps,
+interface FieldContextInputProps extends OptionalWithUndefined<Pick<SparkNodeProps,
   | 'type' | 'children'
->> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+>>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
   | 'width'
   | 'resizable'
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
   | 'sortable'
->> & {
+>> {
   type: string
 }
 

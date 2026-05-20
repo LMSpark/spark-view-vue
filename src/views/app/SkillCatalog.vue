@@ -142,23 +142,23 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, nextTick, defineComponent, h } from 'vue'
+import { ref, computed, nextTick, defineComponent, h, type ObjectEmitsOptions } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import { skillCatalog, type SkillMeta, type PropMeta } from 'virtual:spark-skill-catalog'
 
 // ── 类型字典 ──────────────────────────────────────────────────────────────
 
-type TypeDictEntry = {
+interface TypeDictEntry {
   name: string
   definition: string
   fields?: Array<{ name: string; type: string; desc: string }>
 }
 
-type PropsTableProps = {
+interface PropsTableProps {
   readonly props: PropMeta[]
 }
 
-type PropsTableEmits = {
+interface PropsTableEmits extends ObjectEmitsOptions {
   'type-click': (name: string) => boolean
 }
 

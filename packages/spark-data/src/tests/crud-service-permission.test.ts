@@ -3,7 +3,9 @@ import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/s
 import { CrudService } from '../crud-service'
 import { getMember, requireRecord } from './test-type-helpers'
 
-type SanitizeDataForUpload = (data: Record<string, unknown>) => unknown
+interface SanitizeDataForUpload {
+  (data: Record<string, unknown>): unknown
+}
 
 function isSanitizeDataForUpload(value: unknown): value is SanitizeDataForUpload {
   return typeof value === 'function'

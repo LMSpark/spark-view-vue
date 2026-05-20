@@ -2,12 +2,12 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from './nav-model'
 import { normalizeNavRoot } from './nav-editing'
 
-export type NavigationConfigClientOptions = {
+export interface NavigationConfigClientOptions {
   getNavigationApi: () => string
   http: HttpClientBase
 }
 
-export type LinkProbeResult = {
+export interface LinkProbeResult {
   embeddable: boolean
   reason: string
 }

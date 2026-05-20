@@ -1,13 +1,13 @@
 import type {
   AiModuleInstanceBinding,
   AiModuleRegistration,
-  AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
   AiRuntimeFunctionContextParam,
   AiRuntimeFunctionExposure,
   AiRuntimeInstanceScope,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 import type { LlmJsonSchema, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../llm-params-validator'
 import { cloneRuntimeValue } from './runtime-utils'
@@ -19,7 +19,7 @@ import { cloneRuntimeValue } from './runtime-utils'
  * 不保存实例，不发布事件，也不执行注册方函数。
  */
 
-type ProjectModuleOptions = {
+interface ProjectModuleOptions {
   /** 当前要投影的模块注册。 */
   readonly module: AiModuleRegistration
   /** 调用方传入的会话 scope。 */
@@ -39,7 +39,7 @@ export class AiRuntimeProjector {
       functionId: string,
       scope: AiRuntimeInstanceScope,
       contextParams: readonly AiRuntimeFunctionContextParam[],
-    ) => AiRuntimeAction,
+    ) => string,
     /** ID 校验策略，由 facade 注入，保证注册校验集中维护。 */
     private readonly assertId: (kind: string, value: string) => void,
   ) {}

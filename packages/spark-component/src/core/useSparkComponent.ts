@@ -51,7 +51,7 @@ function toSparkRuntimeOwner(instance: RuntimeInstance): SparkRuntimeOwner | nul
  * 容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。
  * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。
  */
-export type UseSparkComponentReturn = {
+export interface UseSparkComponentReturn {
   provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
@@ -67,7 +67,7 @@ export type UseSparkComponentReturn = {
   logger: LoggerApi
 }
 
-export type UseSparkPageComponentReturn = UseSparkComponentReturn & {
+export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
   registerApi: (api: unknown) => void
 }
 
@@ -75,7 +75,7 @@ export type UseSparkPageComponentReturn = UseSparkComponentReturn & {
  * 轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。
  * 由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。
  */
-export type UseSparkCapabilityReaderReturn = {
+export interface UseSparkCapabilityReaderReturn {
   provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
@@ -83,20 +83,20 @@ export type UseSparkCapabilityReaderReturn = {
   sparkConsume: SparkCapabilityConsumer
 }
 
-export type UseSparkComponentOptions = {
+export interface UseSparkComponentOptions {
   parentContext?: CapabilityContext
 }
 
-type HostTypeResolverOptions = {
+interface HostTypeResolverOptions {
   hostTypes?: readonly string[]
 }
 
-type ResolvedHostType = {
+interface ResolvedHostType {
   hostType: string | null
   parentContext: CapabilityContext | null
 }
 
-export type SparkNodeInput = {
+export interface SparkNodeInput {
   type: string
   props?: Record<string, unknown> | undefined
   children?: SparkNode['children'] | undefined

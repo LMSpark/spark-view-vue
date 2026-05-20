@@ -70,13 +70,13 @@ export function useContainerModuleContext(
 export type ToolbarPosition = 'top' | 'bottom' | 'left' | 'right'
 
 /** 工具栏节点所需的最小属性形状（与 RToolbarProps 结构对齐）。 */
-type ToolbarLike = {
+interface ToolbarLike {
   children?: SparkNodeChildren
   position?: string
   class?: string | string[]
 }
 
-type UseContainerToolbarOptions = {
+interface UseContainerToolbarOptions {
   /** toolbar SparkNode（响应式 getter 或 ref）。 */
   toolbarNode: MaybeRefOrGetter<ToolbarLike | null | undefined>
   /**
@@ -92,7 +92,7 @@ type UseContainerToolbarOptions = {
 }
 
 /** `useContainerToolbar` 返回状态。 */
-export type ContainerToolbarState = {
+export interface ContainerToolbarState {
   /** 当前可见的工具栏子节点列表。 */
   visibleToolbarConfigs: ComputedRef<SparkNode[]>
   /** 工具栏位置（经过合法性校验后的值）。 */
@@ -144,7 +144,7 @@ export function useContainerToolbar(options: UseContainerToolbarOptions): Contai
 // ============================================================
 
 /** `useDataViewSyncGuard` 返回状态。 */
-export type DataViewSyncGuardState = {
+export interface DataViewSyncGuardState {
   /**
    * 在同步深度保护内执行同步操作。
    * 同步深度 > 0 时，事件桥接层可跳过循环回写。

@@ -1,7 +1,7 @@
 import type { RendererDialogApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type RendererDialogZeroCodeOptions = {
+interface RendererDialogZeroCodeOptions {
   visibleValue: ValueRef<boolean>
   commitVisibleValue: (value: boolean) => void
   onOpen: (() => void) | undefined

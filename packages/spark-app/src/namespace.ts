@@ -31,14 +31,14 @@ import { createThemeService } from './theme'
  * ```ts
  * // main.ts - 显式导入各层
  * import { SparkApp } from '@spark-view/spark-app'        // L1 应用层
- * import { SparkPageConfig } from '@spark-view/spark-page-config' // L2 配置层
+ * import { createConfigLoader } from '@spark-view/spark-page-config' // L2 配置层
  * // 其他层级包按需在主应用中导入
  * 
  * // 使用应用层功能
  * await SparkApp.bootstrap({ app, router, config })
  * 
  * // 使用配置层功能
- * const loader = SparkPageConfig.createConfigLoader()
+ * const loader = createConfigLoader()
  * 
  * // 其他功能在主应用中按需组合使用
  * ```
@@ -83,7 +83,7 @@ export const SparkApp = {
 
   /**
    * 创建动态路由管理器
-   * 根据 SparkPageConfig 配置加载器动态注册路由
+   * 根据页面配置加载器动态注册路由
    */
   createDynamicRouter,
 

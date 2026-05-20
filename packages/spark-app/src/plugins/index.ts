@@ -19,7 +19,6 @@ export {
 
 export type {
   PluginConfigItem,
-  PluginConfig,
   PluginLoader,
   PluginInstance
 } from './registry'

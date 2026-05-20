@@ -3,7 +3,7 @@ import {
   type PageDesignServiceResult,
 } from './page-design-service-contract'
 
-type ScriptApiViolationRule = {
+interface ScriptApiViolationRule {
   pattern: RegExp
   api: string
   fix: string

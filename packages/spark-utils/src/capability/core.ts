@@ -8,7 +8,9 @@
 // ==================== 类型定义 ====================
 
 /** 能力值读取器：把运行时 unknown 显式校验为能力类型。 */
-export type CapabilityReader<T> = (value: unknown) => value is T
+export interface CapabilityReader<T> {
+  (value: unknown): value is T
+}
 
 /** 带运行时校验的能力键。 */
 export class CapabilityKey<T> {
@@ -34,7 +36,9 @@ export class CapabilityKey<T> {
 export type CapabilityName = CapabilityKey<unknown>
 
 /** 能力消费函数签名：给定键返回实现或 null。 */
-export type SparkCapabilityConsumer = <T>(name: CapabilityKey<T>) => T | null
+export interface SparkCapabilityConsumer {
+  <T>(name: CapabilityKey<T>): T | null
+}
 
 /**
  * 能力类型映射表（模块增强入口）。
@@ -45,7 +49,7 @@ export type SparkCapabilityConsumer = <T>(name: CapabilityKey<T>) => T | null
 export interface CapabilityTypeMap {}
 
 /** 能力树节点：持有本地能力 Map，以及指向父节点的可选链。 */
-export type CapabilityContext = {
+export interface CapabilityContext {
   /** 当前能力上下文节点 ID，用于调试、日志和父子链定位。 */
   id: string
   /** 当前上下文类型，例如 renderer/component/page，用于区分能力节点来源。 */

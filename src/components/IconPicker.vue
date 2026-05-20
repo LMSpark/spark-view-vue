@@ -33,7 +33,7 @@ import { computed, ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import * as Icons from '@element-plus/icons-vue'
 
-type Props = {
+interface Props {
   modelValue?: string
   placeholder?: string
   width?: number | string

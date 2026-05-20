@@ -1,11 +1,11 @@
 import type {
-  AiRuntimeAction,
   AiRuntimeFunctionCallFailure,
   AiRuntimeFunctionCallResult,
   AiRuntimeFunctionContextParam,
   AiRuntimeInstanceScope,
   AiRuntimeProjectKnowledgeOptions,
 } from '../../protocol/runtime-contracts'
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 import { AiInvocationProtocol } from '../invocation-helpers'
 
 /** 克隆 runtime 对外返回值，避免调用方修改 core 保存的 session/history 快照。 */
@@ -40,7 +40,7 @@ export function actionOf(
   functionId: string,
   scope: AiRuntimeInstanceScope,
   contextParams: readonly AiRuntimeFunctionContextParam[],
-): AiRuntimeAction {
+): string {
   const modulePathParts = modulePath.split('/')
   const moduleId = modulePathParts[modulePathParts.length - 1] ?? modulePath
   const instancePath = actionInstancePath(scope, contextParams)

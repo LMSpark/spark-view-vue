@@ -1,9 +1,10 @@
 import type {
-  LlmJsonPrimitive,
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmParameterSchemaRoot,
 } from '../protocol/parameter-schema'
+
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 
 export type JsonSchemaProperties = Readonly<Record<string, LlmJsonSchema>>
 
@@ -39,7 +40,7 @@ export function booleanSchema(description: string, options: { nullable?: boolean
 }
 
 export function enumSchema(
-  values: readonly LlmJsonPrimitive[],
+  values: ReadonlyArray<string | number | boolean | null>,
   description: string,
   options: { type?: 'string' | 'number'; nullable?: boolean } = {},
 ): LlmJsonSchemaObject {

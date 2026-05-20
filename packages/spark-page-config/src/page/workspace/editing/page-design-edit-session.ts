@@ -3,7 +3,7 @@ import type { PageDesignNodeTree } from './page-design-node-tree'
 
 export type PageDesignEditPhase = 'idle' | 'editing' | 'saved'
 
-export type PageDesignEditHost = {
+export interface PageDesignEditHost {
   getNodeTree?: () => PageDesignNodeTree | null
   onNodeTreeChanged?: (nodeTree: PageDesignNodeTree) => void
   getDataSetTool?: () => DataSetCrudTool | null

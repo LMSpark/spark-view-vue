@@ -36,68 +36,68 @@ type OriginatorBridgeEventName = Extract<DataViewBridgeEventName, 'currentRowCha
 type DataViewRequestState = DataView['requestState']
 
 /** 桥接层基础上下文：用于统一错误处理、诊断与日志。 */
-export type DataViewBridgeBaseContext = {
+export interface DataViewBridgeBaseContext {
   view: DataView
   eventName: DataViewBridgeEventName
 }
 
-export type CurrentRowChangedContext = {
+export interface CurrentRowChangedContext {
   row: DataRow | null
   originatorId?: string
   view: DataView
   eventName: 'currentRowChanged'
 }
 
-export type SelectedRowsChangedContext = {
+export interface SelectedRowsChangedContext {
   rows: DataRow[]
   originatorId?: string
   view: DataView
   eventName: 'selectedRowsChanged'
 }
 
-export type RowsChangedContext = {
+export interface RowsChangedContext {
   view: DataView
   eventName: 'rowsChanged'
 }
 
-export type ClearedContext = {
+export interface ClearedContext {
   view: DataView
   eventName: 'cleared'
 }
 
-export type RequestStateChangedContext = {
+export interface RequestStateChangedContext {
   state: DataViewRequestState
   view: DataView
   eventName: 'requestStateChanged'
 }
 
-export type SummaryChangedContext = {
+export interface SummaryChangedContext {
   view: DataView
   eventName: 'summaryChanged'
 }
 
-export type SelectionSummaryChangedContext = {
+export interface SelectionSummaryChangedContext {
   view: DataView
   eventName: 'selectionSummaryChanged'
 }
 
-export type MutatingChangedContext = {
+export interface MutatingChangedContext {
   mutating: boolean
   view: DataView
   eventName: 'mutatingChanged'
 }
 
-export type ConfigChangedContext = {
+export interface ConfigChangedContext {
   view: DataView
   eventName: 'configChanged'
 }
 
-export type EditingChangedContext = {
+export interface EditingChangedContext {
   view: DataView
   eventName: 'editingChanged'
 }
 
-export type OriginatorFilterContext = {
+export interface OriginatorFilterContext {
   originatorId: string | undefined
   view: DataView
   eventName: 'currentRowChanged' | 'selectedRowsChanged'
@@ -110,7 +110,7 @@ export type OriginatorFilterContext = {
  * - 让调用方只声明“需要哪些事件回调”，桥接层负责注册与清理。
  * - 对 originatorId 提供统一过滤点，避免由每个调用方重复实现。
  */
-export type DataViewEventBridgeOptions = {
+export interface DataViewEventBridgeOptions {
   /** 已解析 DataView（为空时桥接层处于 detached 状态）。 */
   resolvedView: { readonly value: DataView | null }
   /** 命中该 originatorId 的事件会被过滤。 */
@@ -160,11 +160,15 @@ type DataViewBridgeEventArgs =
   | [requestState: DataViewRequestState]
   | [mutating: boolean]
 
-type DataViewBridgeEventHandler = (...args: DataViewBridgeEventArgs) => void
+interface DataViewBridgeEventHandler {
+  (...args: DataViewBridgeEventArgs): void
+}
 
-type BridgeHandlerFactory = () => unknown
+interface BridgeHandlerFactory {
+  (): unknown
+}
 
-type BridgeRegistrationFactory = {
+interface BridgeRegistrationFactory {
   enabled: boolean
   eventName: DataViewBridgeEventName
   createHandler: BridgeHandlerFactory

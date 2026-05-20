@@ -1,3 +1,3 @@
 import type { SparkNodeProps, SparkOptionFieldProps } from '../../shared-types'
 
-export type RSelectProps = SparkNodeProps & SparkOptionFieldProps<string | number> & {}
+export interface RSelectProps extends SparkNodeProps, SparkOptionFieldProps<string | number> {}

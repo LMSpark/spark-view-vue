@@ -5,7 +5,7 @@
 /**
  * CSS 作用域选项
  */
-export type CssScopeOptions = {
+export interface CssScopeOptions {
   pageId: string
   css: string
 }

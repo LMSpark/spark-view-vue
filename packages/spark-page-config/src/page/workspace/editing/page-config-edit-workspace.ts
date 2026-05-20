@@ -15,7 +15,7 @@ import type {
   PageConfigPageSummary,
 } from '../../loading/page-config-file-api'
 
-export type PageConfigEditWorkspaceOptions = {
+export interface PageConfigEditWorkspaceOptions {
   fileApi: PageConfigFileApi
   getConfigLoader: () => BasePageConfigLoader
 }

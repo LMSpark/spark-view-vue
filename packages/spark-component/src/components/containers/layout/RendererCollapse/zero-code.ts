@@ -2,14 +2,12 @@ import type { SparkNode } from '../../../internal'
 import type { RendererCollapseApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type CollapseValue = string | number | Array<string | number>
-
-type RendererCollapseZeroCodeOptions = {
-  currentValue: ValueRef<CollapseValue | undefined>
-  commitCollapseValue: (value: CollapseValue, options?: { emit?: boolean }) => void
+interface RendererCollapseZeroCodeOptions {
+  currentValue: ValueRef<string | number | Array<string | number> | undefined>
+  commitCollapseValue: (value: string | number | Array<string | number>, options?: { emit?: boolean }) => void
   itemConfigs: ValueRef<SparkNode[]>
   getItemName: (item: SparkNode, index: number) => string | number
-  onChange: ((value: CollapseValue) => void) | undefined
+  onChange: ((value: string | number | Array<string | number>) => void) | undefined
 }
 
 export function createRendererCollapseZeroCode(options: RendererCollapseZeroCodeOptions) {
@@ -43,10 +41,10 @@ export function createRendererCollapseZeroCode(options: RendererCollapseZeroCode
 
   return {
     collapseApi,
-    handleModelUpdate(value: CollapseValue) {
+    handleModelUpdate(value: string | number | Array<string | number>) {
       options.commitCollapseValue(value)
     },
-    handleChange(value: CollapseValue) {
+    handleChange(value: string | number | Array<string | number>) {
       options.commitCollapseValue(value, { emit: false })
       options.onChange?.(value)
     },

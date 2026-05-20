@@ -5,7 +5,6 @@ export type {
   PageMessageType,
   PageRouterService,
   PageRuntimeServicesCapability,
-  PageSelectableValue,
   PageSelectEntitiesOptions,
   PageSelectedEntity,
   PageSelectedFile,

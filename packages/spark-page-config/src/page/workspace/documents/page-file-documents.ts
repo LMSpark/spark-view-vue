@@ -29,7 +29,7 @@ export type PageFileName = PageConfigFileName
 
 export type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 
-export type LoadFromTextOptions = {
+export interface LoadFromTextOptions {
   markSaved?: boolean
 }
 
@@ -85,7 +85,7 @@ export function isPageFileDocumentDirty(
   return doc.text.value !== doc.savedText.value
 }
 
-type PageDocumentModelMap = {
+interface PageDocumentModelMap {
   'rule.json': SparkNodeTree
   'pagedata.json': DataSetCrudTool
   'script.js': string
@@ -100,12 +100,12 @@ export type DynamicPageFileDocument =
   | PageFileDocument<DataSetCrudTool>
   | PageFileDocument<string>
 
-type ModelParseResult<TModel> = {
+interface ModelParseResult<TModel> {
   model: TModel | null
   touchModelRef: boolean
 }
 
-type ModelDocumentFactoryOptions<TModel> = {
+interface ModelDocumentFactoryOptions<TModel> {
   toText: (model: TModel) => string
   parseFromText: (rawText: string, current: TModel | null, preserveHistory: boolean) => ModelParseResult<TModel>
   canUndo: (model: TModel) => boolean
@@ -114,7 +114,7 @@ type ModelDocumentFactoryOptions<TModel> = {
   redo: (model: TModel) => boolean
 }
 
-type IngestTextOptions = {
+interface IngestTextOptions {
   preserveHistory: boolean
   onErrorResetModel: boolean
   markSaved: boolean

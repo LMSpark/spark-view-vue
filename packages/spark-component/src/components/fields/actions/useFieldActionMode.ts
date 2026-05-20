@@ -3,11 +3,11 @@ import type { ComputedRef } from 'vue'
 
 export type FieldActionMode = 'editable' | 'readonly'
 
-type UseFieldActionModeOptions = {
+interface UseFieldActionModeOptions {
   isEditable: ComputedRef<boolean>
 }
 
-type UseFieldActionModeReturn = {
+interface UseFieldActionModeReturn {
   actionMode: ComputedRef<FieldActionMode>
   chooseByMode: <T>(editableValue: T, readonlyValue: T) => ComputedRef<T>
 }

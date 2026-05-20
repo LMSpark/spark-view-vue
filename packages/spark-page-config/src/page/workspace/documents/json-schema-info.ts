@@ -1,6 +1,5 @@
 import type {
   JsonPath,
-  JsonPathSegment,
   JsonSchemaInfo,
 } from './json-document'
 import { isJsonObject } from './json-document'
@@ -67,7 +66,7 @@ function normalizeSchemaNode(
 
 function selectChildSchema(
   schemaNode: JsonSchemaRecord,
-  segment: JsonPathSegment,
+  segment: string | number,
   defs: JsonSchemaRecord | null,
 ): JsonSchemaRecord | null {
   const normalized = normalizeSchemaNode(schemaNode, defs)
@@ -95,7 +94,7 @@ function selectChildSchema(
 
 function schemaCanAcceptSegment(
   schemaNode: JsonSchemaRecord,
-  segment: JsonPathSegment,
+  segment: string | number,
   defs: JsonSchemaRecord | null,
 ): boolean {
   const normalized = normalizeSchemaNode(schemaNode, defs)

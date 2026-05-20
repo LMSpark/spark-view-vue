@@ -2,6 +2,15 @@ import {
   PageDesignEditFlowPrompts,
 } from './edit-flow-prompts'
 
+/**
+ * Page-design 编辑运行时系统提示词组装。
+ *
+ * 将 AI Runtime 架构边界、四文件编辑规则、函数纪律和 100 步流程片段组装为完整的系统提示词，
+ * 在 LLM 会话初始化时注入，指导 AI 正确执行页面设计编辑操作。
+ *
+ * 组装顺序：AI_RUNTIME_ARCHITECTURE → 四文件直接编辑 → 函数纪律 → dataFirstPolicy → designFlow → dataFirstSequence
+ */
+
 const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Runtime: recursive module boundary ══
 
   - action 路径由 AI Runtime 按当前会话投影生成，格式为 根实例ID[/子实例ID]@模块名@函数名。
@@ -15,6 +24,7 @@ const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Runtime: recursive module bou
   - 函数调用必须使用当前 tool schema 投影出的 action；action 内根实例段可能是 URI 编码后的页面实体 ID。
   - instanceId 只是宿主传给 core 的技术 envelope，不进入函数 args，也不由 LLM 自行拼接。`
 
+/** 组装完整的 pageDesign 编辑系统提示词，包含架构说明、编辑规则和流程指导。 */
 export class PageDesignEditRuntimePrompt {
   private readonly flowPrompts: PageDesignEditFlowPrompts
 

@@ -8,7 +8,7 @@ import type { Component } from 'vue'
 /**
  * 登录凭证
  */
-export type LoginCredentials = {
+export interface LoginCredentials {
   username: string
   password: string
   [key: string]: unknown
@@ -17,7 +17,7 @@ export type LoginCredentials = {
 /**
  * 认证结果
  */
-export type AuthResult = {
+export interface AuthResult {
   user: UserInfo
   tenant: TenantInfo
   env: EnvironmentInfo
@@ -32,7 +32,7 @@ export type TokenStorage = 'localStorage' | 'sessionStorage' | 'cookie' | 'memor
 /**
  * 认证配置
  */
-export type AuthConfig = {
+export interface AuthConfig {
   /**
    * API 端点配置
    */

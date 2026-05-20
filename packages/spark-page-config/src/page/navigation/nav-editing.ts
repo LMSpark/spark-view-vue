@@ -4,14 +4,13 @@ import type {
   ChildPlacement,
   LinkTarget,
   NavContextConfig,
-  NavContextInput,
   NavContextItem,
   NavNode,
   NavNodeKind,
   NavPermissionMode,
 } from './nav-model'
 
-function isNavContextConfig(value: NavContextInput | undefined): value is NavContextConfig {
+function isNavContextConfig(value: string | NavContextItem[] | NavContextConfig | undefined): value is NavContextConfig {
   return typeof value === 'object' && !Array.isArray(value) && 'source' in value
 }
 
@@ -21,7 +20,7 @@ function isChildPlacement(value: string): value is ChildPlacement {
   return CHILD_PLACEMENT_VALUES.has(value)
 }
 
-export type NavigationNodeDraft = {
+export interface NavigationNodeDraft {
   id: string
   title: string
   icon: string
@@ -40,29 +39,29 @@ export type NavigationNodeDraft = {
   permissionMode: NavPermissionMode
 }
 
-export type NavigationContextDraftConfig = {
+export interface NavigationContextDraftConfig {
   placeholder: string
   defaultValue: string
   paramName: string
 }
 
-export type NavigationContextDraft = {
+export interface NavigationContextDraft {
   hasContext: boolean
   items: Array<{ id: string; title: string }>
   config: NavigationContextDraftConfig
 }
 
-export type NavigationNodeDraftInput = {
+export interface NavigationNodeDraftInput {
   draft: NavigationNodeDraft
   context: NavigationContextDraft
 }
 
-export type NavigationNodeDraftApplyResult = {
+export interface NavigationNodeDraftApplyResult {
   patch: Partial<NavNode> & Pick<NavNode, 'id' | 'title' | 'nodeKind'>
   warnings: string[]
 }
 
-export type NavNodeLocation = {
+export interface NavNodeLocation {
   node: NavNode
   parent: NavNode | null
   parentId: string | null

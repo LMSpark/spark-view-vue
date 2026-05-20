@@ -163,7 +163,7 @@ const flags = useNodeKindFlags(props.state)
 
 // ── 目标选项 ──
 
-type TargetOption = {
+interface TargetOption {
   value: string
   label: string
 }
@@ -175,7 +175,7 @@ const actionTargetOptions: TargetOption[] = [
   { value: 'action:theme-toggle', label: '动作 · 主题切换' },
 ]
 
-type VuePathOption = {
+interface VuePathOption {
   path: string
   title: string
   displayTitle: string
@@ -303,7 +303,7 @@ const targetValue = computed<string>({
 
 // ── 父页面选项（sub-page 用） ──
 
-type ParentPageOption = {
+interface ParentPageOption {
   id: string
   label: string
 }
@@ -338,7 +338,7 @@ const parentPageOptions = computed(() => {
 
 type NodeTargetStatusType = 'success' | 'info' | 'warning' | 'danger'
 
-type NodeTargetStatus = {
+interface NodeTargetStatus {
   type: NodeTargetStatusType
   icon: string
   text: string
@@ -406,7 +406,7 @@ const createPageCandidateId = computed(() => {
 
 // ── 跨工程引用：工程选择 → 页面选择 ──
 
-type SelectOption = {
+interface SelectOption {
   value: string
   label: string
 }

@@ -61,7 +61,7 @@ const CANONICAL_CATALOG_FILE = 'component-catalog.json'
  * - 使用哪个 tsconfig 建立类型检查器；
  * - 是否执行目录质量审计。
  */
-export type JsonCatalogOptions = {
+export interface JsonCatalogOptions {
   featurePatterns?: string[] | undefined
   exclude?: string[] | undefined
   tsconfigPath?: string | undefined
@@ -88,21 +88,21 @@ type SchemaOwner = 'workspace' | 'external'
  *
  * 这些字段只在生成阶段使用，不应直接写入最终 JSON。
  */
-type PropEntryWithMeta = PropEntry & {
+interface PropEntryWithMeta extends PropEntry {
   __schemaIdentityKey?: string
-  __schemaOwner?: SchemaOwner
-  /** 自动提取的字符串字面量枚举 variants（已用引号包裹） */
-  __enumVariants?: string[]
-  /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
-  __enumValueDocs?: Record<string, EnumValueDoc>
+    __schemaOwner?: SchemaOwner
+    /** 自动提取的字符串字面量枚举 variants（已用引号包裹） */
+    __enumVariants?: string[]
+    /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
+    __enumValueDocs?: Record<string, EnumValueDoc>
 }
 
 /** 共享 schema 构建上下文，key 固定为 TypeScript 类型名。 */
-type SchemaPoolContext = {
+interface SchemaPoolContext {
   pool: Record<string, PropSchema>
 }
 
-type EnumValueDoc = {
+interface EnumValueDoc {
   title?: string
   description?: string
 }
@@ -1192,7 +1192,7 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): Emi
   return result
 }
 
-type CatalogRuntimeModel = {
+interface CatalogRuntimeModel {
   version: ComponentCatalog['version']
   buildTime: string
   componentCount: number
@@ -1202,7 +1202,7 @@ type CatalogRuntimeModel = {
   bindingDescriptors: Record<string, CatalogBindingDescriptor>
 }
 
-type ExtractedComponentRecord = {
+interface ExtractedComponentRecord {
   type: string
   normalizedFilePath: string
   category: ComponentEntry['category']

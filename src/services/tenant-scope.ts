@@ -1,4 +1,4 @@
-export type TenantProjectScope = {
+export interface TenantProjectScope {
   tenantId: string
   projectId: string
 }

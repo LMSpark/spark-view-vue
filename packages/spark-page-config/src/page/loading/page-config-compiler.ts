@@ -13,14 +13,14 @@
 import type {
   RuleConfig,
   PageDataConfig,
-  PageScriptConfig,
-  PageCssConfig
 } from '../model/types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
 import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from '../model/spark-node'
 import { SparkNodeTree } from '../model/spark-node-tree'
 
-type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
+interface ObjectFactory {
+  (input: Record<string, unknown>): PageDataConfig
+}
 
 function hasOwn(obj: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key)
@@ -198,21 +198,22 @@ export function parsePageData(raw: string): PageDataConfig {
 // ── Script / CSS 编译 ────────────────────────────────────────────────
 
 /**
- * script.js 原始字符串 → PageScriptConfig（脚本文本）
+ * script.js 原始字符串 → 原生 string（脚本文本）
  *
  * 当前：透传（占位）。
  * 后续可加：语法检查、沙箱包装、依赖提取、压缩。
  */
-export function parseScript(raw: string): PageScriptConfig {
+// 这里不再为 JS 基础类型保留导出别名，script/style 直接使用原生 string。
+export function parseScript(raw: string): string {
   return raw
 }
 
 /**
- * style.css 原始字符串 → PageCssConfig（样式文本）
+ * style.css 原始字符串 → 原生 string（样式文本）
  *
  * 当前：透传（占位）。
  * 后续可加：CSS 变量提取、作用域前缀注入、压缩。
  */
-export function parseCss(raw: string): PageCssConfig {
+export function parseCss(raw: string): string {
   return raw
 }

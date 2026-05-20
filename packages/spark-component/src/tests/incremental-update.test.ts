@@ -8,7 +8,7 @@ import { describe, it, expect } from 'vitest'
 
 // ---------- Types ----------
 
-type SparkNode = {
+interface SparkNode {
   type: string
   props?: Record<string, unknown>
   children?: SparkNode[]

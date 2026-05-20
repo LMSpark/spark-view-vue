@@ -12,7 +12,7 @@
  */
 export type SparkNodeChildren = Array<SparkNode | string | number>
 
-export type SparkNode = {
+export interface SparkNode {
   /** 组件类型（对应 ComponentDefinition.type） */
   type: string
   /** 节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准） */

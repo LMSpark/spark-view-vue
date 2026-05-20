@@ -20,10 +20,12 @@ import { normalizeOnProps } from './bind-normalize.js'
 // ── 导出类型 ───────────────────────────────────────────────────────────────
 
 /** 页面脚本函数调用签名。 */
-export type PageScriptCaller = (functionName: string, ...args: unknown[]) => unknown
+export interface PageScriptCaller {
+  (functionName: string, ...args: unknown[]): unknown
+}
 
 /** buildPageChildren 运行时依赖。 */
-export type BuildPageChildrenOptions = {
+export interface BuildPageChildrenOptions {
   /** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */
   callFunc: PageScriptCaller
   /** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */

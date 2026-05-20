@@ -40,14 +40,14 @@ import { useContainerToolbar } from '../../runtime/container-ui'
 import type { RendererCollapseApi } from './types'
 import { createRendererCollapseZeroCode } from './zero-code'
 import { useUnifiedValueBridge } from '../state'
-import type { RCollapseProps, CollapseValue } from './RendererCollapse.props'
+import type { RCollapseProps } from './RendererCollapse.props'
 
 const props = withDefaults(defineProps<RCollapseProps>(), {
   type: 'r-collapse',
 })
 
 const emit = defineEmits<{
-  'update:modelValue': [value: CollapseValue]
+  'update:modelValue': [value: string | number | Array<string | number>]
 }>()
 
 const { registerApi } = useSparkPageComponent(props)
@@ -58,7 +58,7 @@ const { visibleToolbarConfigs, showToolbar } = useContainerToolbar({ toolbarNode
 const {
   state: currentValue,
   commitValue: commitCollapseValue,
-} = useUnifiedValueBridge<CollapseValue>({
+} = useUnifiedValueBridge<string | number | Array<string | number>>({
   value: computed(() => props.modelValue),
   fallbackValue: [],
   normalize: value => value ?? [],
@@ -73,8 +73,8 @@ const {
   handleChange,
 }: {
   collapseApi: RendererCollapseApi
-  handleModelUpdate: (value: CollapseValue) => void
-  handleChange: (value: CollapseValue) => void
+  handleModelUpdate: (value: string | number | Array<string | number>) => void
+  handleChange: (value: string | number | Array<string | number>) => void
 } = createRendererCollapseZeroCode({
   currentValue,
   commitCollapseValue,

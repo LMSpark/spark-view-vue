@@ -12,7 +12,7 @@ import type { DataRow } from './types.js'
 /**
  * 校验错误
  */
-export type ValidationError = {
+export interface ValidationError {
   /** 字段名 */
   field: string
   /** 错误消息 */
@@ -26,7 +26,7 @@ export type ValidationError = {
 /**
  * 校验结果
  */
-export type ValidationResult = {
+export interface ValidationResult {
   /** 是否有效 */
   valid: boolean
   /** 错误列表 */
@@ -36,12 +36,14 @@ export type ValidationResult = {
 /**
  * 行级校验函数
  */
-export type RowValidator = (row: DataRow) => ValidationError[] | null
+export interface RowValidator {
+  (row: DataRow): ValidationError[] | null
+}
 
 /**
  * 数据模式（包含列定义和校验规则）
  */
-export type DataSchema = {
+export interface DataSchema {
   /** 列定义 */
   columns: DataColumn[]
   /** 自定义行级校验 */

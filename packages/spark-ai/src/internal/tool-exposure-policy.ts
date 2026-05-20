@@ -1,7 +1,31 @@
+/**
+ * AI 工具暴露策略。
+ *
+ * 职责：控制 LLM 可用的工具集合——渐进式暴露。
+ *
+ * 策略：当可用工具超过阈值（默认 24）时，
+ * 初始仅暴露 knowledge 和 lifecycle 模块的函数。
+ * 当 LLM 调用 guideFunction 后，根据返回结果逐步解锁更多工具。
+ *
+ * ┌──────────────────────────────────────────────────────────┐
+ * │                工具暴露策略                               │
+ * │                                                           │
+ * │  createInitialAiToolActionSet()                           │
+ * │    ├─ 检查函数数量是否超过阈值（默认 24）                   │
+ * │    ├─ 未超过 → 返回 null（全部暴露）                       │
+ * │    └─ 超过 → 仅暴露 knowledge/lifecycle 模块的 action      │
+ * │                                                           │
+ * │  addGuidedAiToolAction()                                  │
+ * │    ├─ 检查执行的 action 是否为 guideFunction               │
+ * │    ├─ 从 args 中提取 guided action                         │
+ * │    └─ 如果该 action 在投影中 → 添加到 enabledActions       │
+ * └──────────────────────────────────────────────────────────┘
+ */
+
 import type { AiRuntimeKnowledgeProjection } from '../protocol/runtime-protocol'
 import { AiInvocationProtocol } from './invocation-helpers'
 
-export type AiRuntimeToolExposurePolicyOptions = {
+export interface AiRuntimeToolExposurePolicyOptions {
   readonly threshold?: number | undefined
   readonly initialModuleIds?: readonly string[] | ReadonlySet<string> | undefined
   readonly guideFunctionId?: string | undefined
@@ -34,10 +58,15 @@ function shouldStageToolExposure(
     && projection.availableFunctions.some((exposure) => initialModuleIds.has(exposure.moduleId))
 }
 
+/** 检查指定 action 是否已在投影中 */
 function hasProjectedAction(projection: AiRuntimeKnowledgeProjection, action: string): boolean {
   return projection.availableFunctions.some((exposure) => exposure.action === action)
 }
 
+/**
+ * 创建初始工具集。
+ * 超过阈值时仅暴露 knowledge/lifecycle 模块的 action，实现渐进式工具暴露。
+ */
 export function createInitialAiToolActionSet(
   projection: AiRuntimeKnowledgeProjection,
   options: AiRuntimeToolExposurePolicyOptions = {},
@@ -53,6 +82,10 @@ export function createInitialAiToolActionSet(
   return actions.size > 0 ? actions : null
 }
 
+/**
+ * 添加引导工具 action。
+ * 当 LLM 调用 guideFunction 后，从返回的 args.action 中提取并解锁新的工具。
+ */
 export function addGuidedAiToolAction(
   projection: AiRuntimeKnowledgeProjection,
   enabledActions: Set<string> | null,

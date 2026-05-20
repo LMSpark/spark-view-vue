@@ -1,3 +1,12 @@
+/**
+ * 页面设计文本模型工具模块。
+ *
+ * 提供四个函数：readScript / writeScript / readStyle / writeStyle
+ * 用于读写当前页面的 script.js 和 style.css 文本模型内容。
+ * 调用前必须先完成 lifecycle.bootstrap，确保宿主已绑定 readScript/readStyle/writeScript/writeStyle 能力。
+ * 写入为全量覆盖，不支持 patch。
+ */
+
 import {
   noParamsSchema,
   paramsSchema,

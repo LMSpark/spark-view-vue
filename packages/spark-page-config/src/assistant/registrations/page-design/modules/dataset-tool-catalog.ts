@@ -1,3 +1,20 @@
+/**
+ * 页面设计 DataSet 工具模块。
+ *
+ * 提供 DataSetCrudTool/pagedata.json 数据空间的完整 CRUD 函数注册表，覆盖：
+ * 历史：undo / redo / clearHistory / canUndo / canRedo / historyCursor / export
+ * 表：listTables / getTable / createTable / updateTable / renameTable / deleteTable
+ * 列：listColumns / getColumn / createColumn / updateColumn / renameColumn / deleteColumn
+ * 视图：listViews / getView / createView / updateView / deleteView
+ * 行：listRows / getRow / createRow / createRows / updateRow / updateRows / deleteRow / deleteRows
+ * 关系：listRelations / getRelation / createRelation / updateRelation / deleteRelation
+ * 依赖：listDependencies / getDependency / createDependency / updateDependency / deleteDependency
+ * 聚合：listAggregates / getAggregate / addAggregate / updateAggregate / removeAggregate
+ * 计算列：getComputeExpression / setComputeExpression / clearComputeExpression
+ *
+ * 所有操作直接作用于 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool 实例。
+ */
+
 import {
   anySchema,
   arraySchema,
@@ -16,7 +33,7 @@ import {
 import { StaticAiToolModule } from '../../internal/registration-base'
 
 export type DatasetCrudToolFunctionFailureMode = FunctionFailureMode
-export type DatasetCrudToolFunctionId = string
+// 这里不再为 JS 基础类型保留导出别名，函数标识符直接使用原生 string。
 
 const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请传 {} 或留空。')
 const TABLE_NAME_PARAM = stringSchema('表名')
@@ -289,6 +306,7 @@ const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.ge
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
 const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用当前 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
 
+/** DataSet 静态工具模块：定义 pagedata.json 数据空间读写的函数注册表。 */
 export class DatasetModule extends StaticAiToolModule {
   constructor() {
     super({

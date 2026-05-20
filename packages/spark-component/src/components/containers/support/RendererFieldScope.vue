@@ -42,7 +42,7 @@ import type { DataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../runtime/container-layout'
 import { syncReactiveRow } from './row-mirror-sync'
 
-type RendererFieldScopeProps = {
+interface RendererFieldScopeProps {
   type?: 'r-field-scope'
   id?: string
   /** 表单数据模型 */

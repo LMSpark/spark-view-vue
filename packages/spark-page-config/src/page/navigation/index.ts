@@ -5,7 +5,6 @@ export type {
   ChildPlacement,
   LinkTarget,
   NavContextConfig,
-  NavContextInput,
   NavContextItem,
   NavContextState,
   NavNode,

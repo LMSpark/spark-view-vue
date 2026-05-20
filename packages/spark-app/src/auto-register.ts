@@ -14,7 +14,7 @@ import { createLogger } from './logger'
 
 const logger = createLogger('AutoRegister')
 
-export type AutoRegisterOptions = {
+export interface AutoRegisterOptions {
   /**
    * 排除规则（glob 模式）
    */

@@ -1,14 +1,32 @@
+/**
+ * AI 知识投射缓存。
+ *
+ * 职责：缓存已投影的模块知识，提供查询/导航函数和模块的接口。
+ * LLM 需要通过 queryFunctions 和 guideFunction 来动态探索可用能力。
+ *
+ * ┌────────────────────────────────────────────────────────┐
+ * │                 AiKnowledgeProjector                    │
+ * │                                                         │
+ * │  updateProjection()  → 缓存新的投影快照                  │
+ * │                                                         │
+ * │  queryFunctions()   → 按 modulePath/moduleId/keyword 过滤 │
+ * │  guideFunction()    → 获取指定 action 的完整曝光信息      │
+ * │  queryModules()     → 扁平化模块树 → 模块摘要列表         │
+ * │  guideModule()      → 按 modulePath 查找模块摘要          │
+ * └────────────────────────────────────────────────────────┘
+ */
+
 import type {
   AiRuntimeFunctionExposure,
   AiRuntimeModuleExposure,
 } from '../../protocol/runtime-contracts'
 
-export type AiKnowledgeScope = {
+export interface AiKnowledgeScope {
   readonly moduleId: string
   readonly moduleInstanceId: string
 }
 
-export type AiKnowledgeFunctionSummary = {
+export interface AiKnowledgeFunctionSummary {
   readonly action: AiRuntimeFunctionExposure['action']
   readonly moduleId: AiRuntimeFunctionExposure['moduleId']
   readonly modulePath: AiRuntimeFunctionExposure['modulePath']
@@ -19,7 +37,7 @@ export type AiKnowledgeFunctionSummary = {
   readonly failureCodes?: readonly string[] | undefined
 }
 
-export type AiKnowledgeModuleSummary = {
+export interface AiKnowledgeModuleSummary {
   readonly moduleId: AiRuntimeModuleExposure['moduleId']
   readonly modulePath: AiRuntimeModuleExposure['modulePath']
   readonly moduleIds: AiRuntimeModuleExposure['moduleIds']
@@ -29,7 +47,7 @@ export type AiKnowledgeModuleSummary = {
   readonly childModuleCount: number
 }
 
-type RuntimeProjectionSnapshot = {
+interface RuntimeProjectionSnapshot {
   readonly scope: AiKnowledgeScope
   readonly availableFunctions: readonly AiRuntimeFunctionExposure[]
   readonly module: AiRuntimeModuleExposure
@@ -38,10 +56,16 @@ type RuntimeProjectionSnapshot = {
 export class AiKnowledgeProjector {
   private readonly projections = new Map<string, RuntimeProjectionSnapshot>()
 
+  /** 更新指定 scope 的投影缓存 */
   updateProjection(projection: RuntimeProjectionSnapshot): void {
     this.projections.set(AiKnowledgeProjector.scopeKey(projection.scope), projection)
   }
 
+  /**
+   * 查询可用函数摘要。
+   * 支持按 modulePath、moduleId、keyword 过滤。
+   * 用于 LLM 通过 knowledge 模块动态探索可用工具。
+   */
   queryFunctions(
     scope: AiKnowledgeScope,
     filter?: { readonly modulePath?: string; readonly moduleId?: string; readonly keyword?: string },
@@ -68,19 +92,23 @@ export class AiKnowledgeProjector {
     return functions.map((fn) => this.summarizeFunction(fn))
   }
 
+  /** 获取指定 action 的完整函数曝光信息 */
   guideFunction(scope: AiKnowledgeScope, action: string): AiRuntimeFunctionExposure | null {
     return this.requireProjection(scope).availableFunctions.find((fn) => fn.action === action) ?? null
   }
 
+  /** 扁平化模块树 → 模块摘要列表（用于 LLM 模块导航） */
   queryModules(scope: AiKnowledgeScope): readonly AiKnowledgeModuleSummary[] {
     return this.flattenModules(this.requireProjection(scope).module)
   }
 
+  /** 按 modulePath 在模块树中查找模块摘要 */
   guideModule(scope: AiKnowledgeScope, modulePath: string): AiKnowledgeModuleSummary | null {
     const module = this.findModuleInTree(this.requireProjection(scope).module, modulePath)
     return module === null ? null : this.summarizeModule(module)
   }
 
+  /** 获取指定 scope 的投影缓存，不存在则抛出 */
   private requireProjection(scope: AiKnowledgeScope): RuntimeProjectionSnapshot {
     const projection = this.projections.get(AiKnowledgeProjector.scopeKey(scope))
     if (projection !== undefined) return projection

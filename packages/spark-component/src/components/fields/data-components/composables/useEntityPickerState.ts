@@ -1,5 +1,5 @@
 import { computed } from 'vue'
-import type { PageSelectableValue } from '../../../internal'
+import type { PageSelectorOption } from '../../../internal'
 import type { FieldOption } from '../../options/index.js'
 import type {
   SparkFieldSemanticProps,
@@ -10,9 +10,7 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
-type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
-
-type UseEntityPickerStateOptions = {
+interface UseEntityPickerStateOptions {
   buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
   readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
   clearable: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
@@ -23,7 +21,7 @@ type UseEntityPickerStateOptions = {
   entityName: ValueRef<string>
   placeholder: ValueRef<NonNullable<SparkFieldSemanticProps['placeholder']>>
   flatOptions: ValueRef<FieldOption[]>
-  currentRawValue: ValueRef<EntityPickerValue>
+  currentRawValue: ValueRef<PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string>
   currentRawStringValue: ValueRef<string>
   isCurrentFieldEditable: ValueRef<boolean>
   hasSelectorCapability: ValueRef<boolean>
@@ -34,10 +32,10 @@ type UseEntityPickerStateOptions = {
     placeholder: string
     multiple: boolean
     searchable: boolean
-    currentValue: EntityPickerValue
-    options: Array<{ label: string; value: PageSelectableValue; disabled?: boolean }>
-  }) => Promise<Array<{ label: string; value: PageSelectableValue }>>
-  updateValue: (value: EntityPickerValue) => void | Promise<void>
+    currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string
+    options: Array<{ label: string; value: PageSelectorOption['value']; disabled?: boolean }>
+  }) => Promise<Array<{ label: string; value: PageSelectorOption['value'] }>>
+  updateValue: (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>
 }
 
 export function useEntityPickerState(options: UseEntityPickerStateOptions) {
@@ -47,7 +45,7 @@ export function useEntityPickerState(options: UseEntityPickerStateOptions) {
     : options.currentRawStringValue.value.trim().length > 0)
   const showClearButton = computed(() => options.clearable.value && options.isCurrentFieldEditable.value && hasValue.value)
 
-  function buildNextValue(values: PageSelectableValue[]): EntityPickerValue {
+  function buildNextValue(values: Array<PageSelectorOption['value']>): PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string {
     if (options.multiple.value) {
       if (options.valueMode.value === 'array') return values
       if (options.valueMode.value === 'auto' && Array.isArray(options.currentRawValue.value)) return values

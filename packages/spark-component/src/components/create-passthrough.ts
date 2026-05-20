@@ -14,7 +14,7 @@ import SparkComponentRenderer from './SparkComponentRenderer.vue'
 import { getSparkNodeChildren, isSparkNode, nodeId, useSparkPageComponent, type SparkNodeChildren, type SparkNodeInput } from './internal.js'
 
 /** 透传组件配置 */
-type PassthroughOptions = {
+interface PassthroughOptions {
   /** 属性默认值，key 为透传给目标渲染节点的 prop 名。 */
   propDefaults?: Record<string, unknown>
 }

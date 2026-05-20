@@ -54,7 +54,7 @@ import {
 /**
  * 事件默认行为声明
  */
-export type EventDefaultDeclaration<TArgs extends readonly unknown[] = readonly unknown[]> = {
+export interface EventDefaultDeclaration<TArgs extends readonly unknown[] = readonly unknown[]> {
   /**
    * 系统默认处理方法 (A)
    *
@@ -71,8 +71,9 @@ export type EventDefaultDeclarations<TEvents extends EventArgsMap> = Readonly<{
   [TName in keyof TEvents]: EventDefaultDeclaration<NoInfer<TEvents[TName]>>
 }>
 
-export type EventDispatcher<TEvents extends EventArgsMap = Record<string, readonly unknown[]>> =
-  <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]) => Promise<InteractionControl>
+export interface EventDispatcher<TEvents extends EventArgsMap = Record<string, readonly unknown[]>> {
+  <TName extends Extract<keyof TEvents, string>>(eventName: TName, ...args: TEvents[TName]): Promise<InteractionControl>
+}
 
 // ── 事件名 → prop 名 ─────────────────────────────────────────────────────
 
@@ -96,7 +97,9 @@ function toHandlerPropName(eventName: string): string {
 
 // ── 分发器 ────────────────────────────────────────────────────────────────
 
-type HandlerFn = (...a: unknown[]) => void | Promise<void>
+interface HandlerFn {
+  (...a: unknown[]): void | Promise<void>
+}
 
 function isHandlerFn(value: unknown): value is HandlerFn {
   return typeof value === 'function'

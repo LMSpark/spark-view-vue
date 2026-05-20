@@ -21,9 +21,7 @@ import {
   type PageConfig,
   type PageConfigFileLoadOptions,
   type PageConfigFileName,
-  type PageCssConfig,
   type PageDataConfig,
-  type PageScriptConfig,
   type RuleConfig,
 } from '@spark-view/spark-page-config/page/loading'
 import {
@@ -114,11 +112,11 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     return this.unsupported(pageId, 'pagedata')
   }
 
-  override loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+  override loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
     return this.unsupported(pageId, 'script')
   }
 
-  override loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+  override loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
     return this.unsupported(pageId, 'style')
   }
 

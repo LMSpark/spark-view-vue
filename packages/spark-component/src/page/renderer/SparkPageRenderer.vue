@@ -113,24 +113,26 @@ const currentInstance = getCurrentInstance()
 
 type PageRuntimeErrorPhase = 'load' | 'script-compile' | 'init' | 'script-function' | 'render'
 
-type PageRuntimeErrorPayload = {
+interface PageRuntimeErrorPayload {
   phase: PageRuntimeErrorPhase
   message: string
   pageId: string
   at: string
 }
 
-type RenderFunction = (props?: Record<string, unknown>) => unknown
+interface RenderFunction {
+  (props?: Record<string, unknown>): unknown
+}
 type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
 type RenderFunctionRevisionRef = ReturnType<typeof shallowRef<number>>
-type RenderFunctionRegistration = {
+interface RenderFunctionRegistration {
   fnRef: RenderFunctionRef
   revisionRef: RenderFunctionRevisionRef
   invalidatePage?: () => void
 }
 const renderFunctionRegistries = new WeakMap<object, Map<string, RenderFunctionRegistration>>()
 
-type VueComponentRegistry = {
+interface VueComponentRegistry {
   component(name: string): unknown
   component(name: string, component: object): void
 }
@@ -354,7 +356,9 @@ function createRenderFunction(fn: (...args: unknown[]) => unknown): RenderFuncti
 // ==================== Props — h(type, props, children) ====================
 
 /** 直传四文件输入（跳过 configLoader 异步加载，pageId 可选） */
-type SparkPageNodePropsInput = Omit<PageConfig, 'pageId'> & { pageId?: string }
+interface SparkPageNodePropsInput extends Omit<PageConfig, 'pageId'> {
+  pageId?: string
+}
 
 /**
  * SparkPageRenderer props — 对齐 h(type, props, children) 三段式。
@@ -363,31 +367,31 @@ type SparkPageNodePropsInput = Omit<PageConfig, 'pageId'> & { pageId?: string }
  * - props    = configLoader / pageId / pageConfig / enable* / 钩子等（本接口所有字段）
  * - children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入
  */
-type Props = Omit<SparkNode, 'type'> & {
+interface Props extends Omit<SparkNode, 'type'> {
   /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */
-  type?: string
-  /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
-  configLoader?: BasePageConfigLoader
-  /** 页面唯一标识符（优先级最高） */
-  pageId?: string
-  /** 页面配置对象（直接传入四文件，跳过加载） */
-  pageConfig?: SparkPageNodePropsInput
-  /** 是否启用 CSS 作用域隔离 @default true */
-  enableCssScope?: boolean
-  /** 是否启用 DataSet 自动初始化 @default true */
-  enableDataSet?: boolean
-  /** UI 消息服务接口 */
-  messageService?: PageServiceOverrides['messageService']
-  /** UI 确认对话框服务接口 */
-  confirmService?: PageServiceOverrides['confirmService']
-  /** 页面加载前钩子（loadNodeProps 之前） */
-  beforeLoad?: (pageId: string) => void | Promise<void>
-  /** 页面加载后钩子（applyNodeProps 之后） */
-  afterLoad?: (config: PageConfig) => void | Promise<void>
-  /** 错误处理函数 */
-  onError?: (error: Error) => void
-  /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */
-  onRuntimeError?: (payload: PageRuntimeErrorPayload) => void
+    type?: string
+    /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
+    configLoader?: BasePageConfigLoader
+    /** 页面唯一标识符（优先级最高） */
+    pageId?: string
+    /** 页面配置对象（直接传入四文件，跳过加载） */
+    pageConfig?: SparkPageNodePropsInput
+    /** 是否启用 CSS 作用域隔离 @default true */
+    enableCssScope?: boolean
+    /** 是否启用 DataSet 自动初始化 @default true */
+    enableDataSet?: boolean
+    /** UI 消息服务接口 */
+    messageService?: PageServiceOverrides['messageService']
+    /** UI 确认对话框服务接口 */
+    confirmService?: PageServiceOverrides['confirmService']
+    /** 页面加载前钩子（loadNodeProps 之前） */
+    beforeLoad?: (pageId: string) => void | Promise<void>
+    /** 页面加载后钩子（applyNodeProps 之后） */
+    afterLoad?: (config: PageConfig) => void | Promise<void>
+    /** 错误处理函数 */
+    onError?: (error: Error) => void
+    /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */
+    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void
 }
 
 const props = withDefaults(defineProps<Props>(), {

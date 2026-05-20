@@ -10,17 +10,17 @@
 // 一、对外类型定义
 // =========================================================
 
-/** 参数协议允许直接持久化的 JSON 原子值。 */
-export type LlmJsonPrimitive = string | number | boolean | null
-
 /** 参数协议允许直接持久化的 JSON 值；不包含 function、undefined、symbol、bigint 等运行时形态。 */
 export type LlmJsonValue =
-  | LlmJsonPrimitive
+  | string
+  | number
+  | boolean
+  | null
   | readonly LlmJsonValue[]
   | LlmJsonObject
 
 /** 参数协议中的 JSON 对象。 */
-export type LlmJsonObject = { readonly [key: string]: LlmJsonValue }
+export interface LlmJsonObject { readonly [key: string]: LlmJsonValue }
 
 export type LlmJsonSchemaType =
   | 'null'
@@ -34,7 +34,7 @@ export type LlmJsonSchemaType =
 export type LlmJsonSchema = boolean | LlmJsonSchemaObject
 
 /** 标准 JSON Schema 节点。保留有限扩展字段，但不允许 `kind`。 */
-export type LlmJsonSchemaObject = {
+export interface LlmJsonSchemaObject {
   readonly $ref?: string
   readonly type?: LlmJsonSchemaType | readonly LlmJsonSchemaType[]
   readonly title?: string
@@ -44,8 +44,9 @@ export type LlmJsonSchemaObject = {
   readonly items?: LlmJsonSchema
   readonly prefixItems?: readonly LlmJsonSchema[]
   readonly additionalProperties?: LlmJsonSchema
-  readonly enum?: readonly LlmJsonPrimitive[]
-  readonly const?: LlmJsonPrimitive
+  // 这里不再为 JS 基础类型保留类型别名，直接使用原生联合类型。
+  readonly enum?: ReadonlyArray<string | number | boolean | null>
+  readonly const?: string | number | boolean | null
   readonly default?: LlmJsonValue
   readonly examples?: readonly LlmJsonValue[]
   readonly oneOf?: readonly LlmJsonSchema[]

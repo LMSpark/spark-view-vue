@@ -36,13 +36,13 @@ export type {
   PageDesignTextFileKey,
 } from './page-design-service-contract'
 
-export type PageDesignFlowQuery = {
+export interface PageDesignFlowQuery {
   phase?: string
   step?: number
   afterStep?: number
 }
 
-export type PageDesignFlowDescription = {
+export interface PageDesignFlowDescription {
   phases: PageDesignFlowPhaseSummary[]
   steps: readonly PageDesignFlowStep[]
   selectedStep: PageDesignFlowStep | null
@@ -52,7 +52,7 @@ export type PageDesignFlowDescription = {
 type PageDesignTextReadMethod = 'readScript' | 'readStyle'
 type PageDesignTextWriteMethod = 'writeScript' | 'writeStyle'
 
-type PageDesignTextFileBinding = {
+interface PageDesignTextFileBinding {
   label: string
   readMethod: PageDesignTextReadMethod
   writeMethod: PageDesignTextWriteMethod

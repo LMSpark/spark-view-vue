@@ -8,22 +8,18 @@
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
 
 // ── 基础 ID（foundation，也被 AI host protocol 引用） ──
-
-export type AiRuntimeModuleId = string
-export type AiRuntimeModuleInstanceId = string
-export type AiRuntimeModulePath = string
-export type AiRuntimeFunctionId = string
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 
 // ── 函数注册 ──
 
-export type FunctionFailureMode = {
+export interface FunctionFailureMode {
   readonly code: string
   readonly when: string
   readonly fix: string
 }
 
-export type AiFunctionRegistration = {
-  readonly functionId: AiRuntimeFunctionId
+export interface AiFunctionRegistration {
+  readonly functionId: string // 函数标识符
   readonly description: string
   readonly paramsSchema: LlmParameterSchemaRoot
   readonly resultSchema?: LlmJsonObject | undefined
@@ -36,15 +32,15 @@ export type AiFunctionRegistration = {
 
 // ── 实例参数 ──
 
-export type AiModuleInstanceParam = {
+export interface AiModuleInstanceParam {
   readonly name: string
   readonly description: string
 }
 
 // ── 模块注册契约 ──
 
-export type AiModuleRegistration = {
-  readonly moduleId: AiRuntimeModuleId
+export interface AiModuleRegistration {
+  readonly moduleId: string
   readonly name: string
   readonly description: string
   readonly prompt?: ModulePromptProvider | undefined
@@ -59,12 +55,12 @@ export type ModulePromptProvider = string | {
   bivarianceHack(context: ModulePromptContext): string | null | Promise<string | null>
 }['bivarianceHack']
 
-export type ModulePromptContext = {
-  readonly moduleId: AiRuntimeModuleId
-  readonly moduleInstanceId: AiRuntimeModuleInstanceId
+export interface ModulePromptContext {
+  readonly moduleId: string // 模块标识符
+  readonly moduleInstanceId: string // 模块实例标识符
   readonly instanceId: string
   readonly runtimeInstanceId: string
-  readonly modulePath: AiRuntimeModulePath
+  readonly modulePath: string // 模块路径（以 / 分隔的 moduleId 序列）
   readonly moduleIds: readonly string[]
 }
 

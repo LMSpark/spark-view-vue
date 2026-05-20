@@ -34,7 +34,7 @@ function logStartDebug(message: string, meta?: Record<string, unknown>): void {
   }
 }
 
-type RegisterStats = {
+interface RegisterStats {
   total: number
   sync: number
   async: number
@@ -48,7 +48,9 @@ function normalizeRegisterStats(raw: unknown): RegisterStats | null {
   return { total, sync, async }
 }
 
-type RegisterComponentsFn = (app: ReturnType<typeof createApp>) => unknown
+interface RegisterComponentsFn {
+  (app: ReturnType<typeof createApp>): unknown
+}
 
 function isRegisterComponentsFn(value: unknown): value is RegisterComponentsFn {
   return typeof value === 'function'
@@ -57,7 +59,7 @@ function isRegisterComponentsFn(value: unknown): value is RegisterComponentsFn {
 /**
  * SPARK 组件系统配置
  */
-export type SparkOptions = {
+export interface SparkOptions {
   /** 是否启用 SPARK 组件系统（默认 true） */
   enabled?: boolean
 
@@ -73,7 +75,7 @@ export type SparkOptions = {
 /**
  * 页面配置系统配置
  */
-export type PageConfigOptions = {
+export interface PageConfigOptions {
   /** API 基础路径 */
   apiBaseUrl: string
   /**
@@ -125,39 +127,39 @@ export type PageConfigOptions = {
 /**
  * 启动配置（扩展自 BootstrapOptions）
  */
-export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
+export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
   /** 根组件 */
-  rootComponent: Component
-
-  /** 路由模式（默认 'history'） */
-  routerMode?: 'history' | 'hash'
-
-  /** 挂载点（默认 '#app'） */
-  mountTarget?: string
-
-  /** SPARK 组件系统配置 */
-  spark?: SparkOptions
-
-  /** 页面配置系统配置 */
-  pageConfig?: PageConfigOptions
-
-  /** UI 插件列表 */
-  plugins?: Plugin[]
-
-  /**
-   * CSS 主题配置
-   *
-   * - `true` — 启用主题（默认 auto 跟随系统）
-   * - `ThemeServiceOptions` — 自定义初始模式 / 存储键
-   * - `false` / 不传 — 不启用主题服务
-   */
-  theme?: boolean | ThemeServiceOptions
-
-  /** 启动前钩子 */
-  onBeforeStart?: () => void | Promise<void>
-
-  /** 启动失败钩子（如果提供，将完全接管错误处理） */
-  onStartError?: (error: Error) => void | Promise<void>
+    rootComponent: Component
+  
+    /** 路由模式（默认 'history'） */
+    routerMode?: 'history' | 'hash'
+  
+    /** 挂载点（默认 '#app'） */
+    mountTarget?: string
+  
+    /** SPARK 组件系统配置 */
+    spark?: SparkOptions
+  
+    /** 页面配置系统配置 */
+    pageConfig?: PageConfigOptions
+  
+    /** UI 插件列表 */
+    plugins?: Plugin[]
+  
+    /**
+     * CSS 主题配置
+     *
+     * - `true` — 启用主题（默认 auto 跟随系统）
+     * - `ThemeServiceOptions` — 自定义初始模式 / 存储键
+     * - `false` / 不传 — 不启用主题服务
+     */
+    theme?: boolean | ThemeServiceOptions
+  
+    /** 启动前钩子 */
+    onBeforeStart?: () => void | Promise<void>
+  
+    /** 启动失败钩子（如果提供，将完全接管错误处理） */
+    onStartError?: (error: Error) => void | Promise<void>
 }
 
 /**

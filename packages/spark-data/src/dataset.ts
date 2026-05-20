@@ -8,7 +8,7 @@
 
 import type {
   DataSetContract, DataSetMetadata, TableMetadata, DataRelation, TableRelation, ViewDependency, DataRow, DataColumn,
-  ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression, CrudResult, PkValue,
+  ColumnType, ViewChangeHandlers, FilterExpression, FilterValueExpression, CrudResult,
   DataSetSaveChangesOptions, DataSetSaveChangesResult, DataSetSaveChangesViewResult,
   DataSetSaveChangesConfig, DataSetTransactionOperation, DataSetTransactionRequest,
   DataSetTransactionResponse, HttpEndpoint,
@@ -112,24 +112,24 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   return result
 }
 
-type DataSetSaveChangesTarget = {
+interface DataSetSaveChangesTarget {
   view: DataView
-  ids?: PkValue[]
+  ids?: Array<string | number>
 }
 
-type DataSetTransactionOperationPlan = {
+interface DataSetTransactionOperationPlan {
   operation: DataSetTransactionOperation
   view: DataView
-  id: PkValue
+  id: string | number
   kind: DataSetTransactionOperation['op']
 }
 
-type DataSetTransactionViewPlan = {
+interface DataSetTransactionViewPlan {
   viewResult: DataSetSaveChangesViewResult
   operations: DataSetTransactionOperationPlan[]
 }
 
-type DataSetConfig = {
+interface DataSetConfig {
   dataSetName: string
   tables: Record<string, TableMetadata>
   schemaVersion?: number | undefined
@@ -155,13 +155,13 @@ function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesRes
   }
 }
 
-function hasEditingChanges(view: DataView, ids?: PkValue[]): boolean {
+function hasEditingChanges(view: DataView, ids?: Array<string | number>): boolean {
   return ids === undefined
     ? view.hasEditingChanges()
     : ids.some(id => view.hasEditingChanges(id))
 }
 
-function hasPendingChanges(view: DataView, ids?: PkValue[]): boolean {
+function hasPendingChanges(view: DataView, ids?: Array<string | number>): boolean {
   if (ids === undefined) return view.dirtyTracking.hasPendingChanges()
   return ids.some(id =>
     view.dirtyTracking.isDirty(id)
@@ -1629,18 +1629,18 @@ export class DataSet implements DataSetContract {
 
   private collectTransactionOperations(
     view: DataView,
-    ids: PkValue[] | undefined,
+    ids: Array<string | number> | undefined,
     viewResult: DataSetSaveChangesViewResult,
   ): DataSetTransactionOperationPlan[] {
-    const idFilter = ids !== undefined ? new Set<PkValue>(ids) : undefined
-    const includesId = (id: PkValue): boolean => idFilter === undefined || idFilter.has(id)
+    const idFilter = ids !== undefined ? new Set<string | number>(ids) : undefined
+    const includesId = (id: string | number): boolean => idFilter === undefined || idFilter.has(id)
     const plans: DataSetTransactionOperationPlan[] = []
-    const rowById = new Map<PkValue, DataRow>()
+    const rowById = new Map<string | number, DataRow>()
     for (const row of view.rows) {
       const rowId = view.getPkKey(row)
       if (rowId !== undefined) rowById.set(rowId, row)
     }
-    const pendingCreateRows = new Map<PkValue, DataRow>()
+    const pendingCreateRows = new Map<string | number, DataRow>()
     for (const row of view.dirtyTracking.pendingCreateRows) {
       const rowId = view.getPkKey(row)
       if (rowId !== undefined) pendingCreateRows.set(rowId, row)
@@ -1694,7 +1694,7 @@ export class DataSet implements DataSetContract {
   private buildTransactionOperationId(
     kind: DataSetTransactionOperation['op'],
     view: DataView,
-    id: PkValue,
+    id: string | number,
   ): string {
     return `${view.tableName}@${view.viewId}:${kind}:${String(id)}`
   }
@@ -1726,7 +1726,7 @@ export class DataSet implements DataSetContract {
     }
   }
 
-  private syncTransactionCreatedRow(view: DataView, localId: PkValue, serverRow: DataRow): void {
+  private syncTransactionCreatedRow(view: DataView, localId: string | number, serverRow: DataRow): void {
     const serverId = view.getPkKey(serverRow)
     if (serverId !== undefined && serverId !== localId) {
       view.deleteRowById(localId)

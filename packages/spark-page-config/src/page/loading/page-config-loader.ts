@@ -24,8 +24,6 @@ import type {
   PageConfig,
   RuleConfig,
   PageDataConfig,
-  PageScriptConfig,
-  PageCssConfig,
   PageFileRegistry,
 } from '../model/types'
 import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from '../model/types'
@@ -57,9 +55,7 @@ const DEFAULT_OPTIONS = {
   timeout: REQUEST_TIMEOUT,
 } satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
-type ResolvedConfigLoaderOptions =
-  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
-  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
+interface ResolvedConfigLoaderOptions extends Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>, Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'> {}
 
 function isUnknownArray(value: unknown): value is readonly unknown[] {
   return Array.isArray(value)
@@ -101,8 +97,9 @@ export class PageConfigLoader extends BasePageConfigLoader {
    */
   private ruleLoader!: TransformedFileLoader<RuleConfig[]>
   private dataLoader!: TransformedFileLoader<PageDataConfig>
-  private scriptLoader!: TransformedFileLoader<PageScriptConfig>
-  private cssLoader!: TransformedFileLoader<PageCssConfig>
+  // 这里不再为 JS 基础类型保留导出别名，直接使用原生 string。
+  private scriptLoader!: TransformedFileLoader<string>
+  private cssLoader!: TransformedFileLoader<string>
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
     super()
@@ -204,13 +201,13 @@ export class PageConfigLoader extends BasePageConfigLoader {
     return this.loadRequiredPageFile(pageId, 'pagedata.json', this.dataLoader)
   }
 
-  async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+  async loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
     this.ensurePageFileContext()
     pageLogger.debug('加载页面样式', { pageId })
     return this.loadRequiredPageFile(pageId, 'style.css', this.cssLoader)
   }
 
-  async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+  async loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
     this.ensurePageFileContext()
     pageLogger.debug('加载页面脚本', { pageId })
     return this.loadRequiredPageFile(pageId, 'script.js', this.scriptLoader)

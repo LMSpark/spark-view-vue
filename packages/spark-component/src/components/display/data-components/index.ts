@@ -9,7 +9,7 @@ export { default as DisplayImage } from './DisplayImage.vue'
 
 // ── Props 类型 ──
 export type { RStatisticProps } from './DisplayStatistic.props'
-export type { RProgressProps, ProgressColor } from './DisplayProgress.props'
+export type { RProgressProps } from './DisplayProgress.props'
 export type { RTagProps, TagType } from './DisplayTag.props'
 export type { RBadgeProps } from './DisplayBadge.props'
 export type { RAvatarProps } from './DisplayAvatar.props'

@@ -13,7 +13,7 @@ import type { BuiltinActionName } from './index.js'
 
 // ── 模板属性类型 ──────────────────────────────────────────────────────────
 
-export type ButtonTemplateProps = {
+export interface ButtonTemplateProps {
   buttonType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
   plain?: boolean
   text?: boolean
@@ -67,7 +67,7 @@ const BUTTON_TEMPLATES: Record<string, ButtonTemplateProps> = {
 
 // ── action → template 自动映射 ────────────────────────────────────────────
 
-type ActionDefaults = {
+interface ActionDefaults {
   template: string
   label: string
   icon?: string
@@ -100,7 +100,7 @@ const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
 
 // ── 解析入口 ──────────────────────────────────────────────────────────────
 
-export type ResolvedButtonStyle = {
+export interface ResolvedButtonStyle {
   buttonType: string
   buttonSize: string
   plain: boolean

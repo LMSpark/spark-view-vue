@@ -4,9 +4,9 @@ import type { LoggerApi } from '@spark-view/spark-utils'
 
 type LoggerRouter = NonNullable<PageRuntimeServicesCapability['router']>
 
-export type LoggerTestRuntimeServices = Omit<PageRuntimeServicesCapability, 'logger' | 'router'> & {
+export interface LoggerTestRuntimeServices extends Omit<PageRuntimeServicesCapability, 'logger' | 'router'> {
   logger: LoggerApi
-  router: LoggerRouter
+    router: LoggerRouter
 }
 
 export function createPageRuntimeServices(logger: LoggerApi): LoggerTestRuntimeServices {

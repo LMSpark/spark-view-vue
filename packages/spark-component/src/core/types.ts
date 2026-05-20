@@ -30,7 +30,7 @@ export type SparkCapabilityContext = CapabilityContext
 /**
  * 组件定义 - Registry 中的条目
  */
-export type ComponentDefinition = {
+export interface ComponentDefinition {
   /** 组件类型（kebab-case，如 'r-table'） */
   type: string
   /** Vue 组件实现 */
@@ -62,7 +62,7 @@ export type ComponentChildrenMode = 'auto' | 'prop' | 'slot'
  *
  * 简写：直接写字段名字符串，等价于 `{ field: 'xxx', component: 'text' }`。
  */
-export type FilterItemConfig = {
+export interface FilterItemConfig {
   /** 字段名（映射到数据源字段） */
   field: string
   /** 显示标签（省略则用字段名） */
@@ -91,7 +91,7 @@ export type FilterItemConfig = {
 // 注册表接口
 // ============================================================================
 
-export type ComponentRegistry = {
+export interface ComponentRegistry {
   register(type: string, component: unknown, meta?: Record<string, unknown>, options?: { silent?: boolean }): void
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean

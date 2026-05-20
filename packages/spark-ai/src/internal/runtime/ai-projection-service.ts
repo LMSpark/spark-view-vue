@@ -1,3 +1,22 @@
+/**
+ * AI 知识投射服务。
+ *
+ * 职责：将模块注册信息投影为 LLM 可用的知识，并缓存到 AiKnowledgeProjector。
+ *
+ * ┌──────────────────────────────────────────────────────┐
+ * │               AiProjectionService                     │
+ * │                                                       │
+ * │  projectKnowledge()                                   │
+ * │    ├─ normalizeScope()                                │
+ * │    ├─ AiRuntimeProjector.projectModule() → 模块曝光树   │
+ * │    ├─ flattenFunctions() → 扁平函数列表                 │
+ * │    ├─ buildPromptSnapshot() → 提示词聚合               │
+ * │    └─ AiKnowledgeProjector.updateProjection() → 缓存   │
+ * │                                                       │
+ * │  getKnowledgeProjection() → 返回全局缓存                │
+ * └──────────────────────────────────────────────────────┘
+ */
+
 import type {
   AiRuntimeKnowledgeProjection,
   AiRuntimeProjectKnowledgeOptions,
@@ -16,10 +35,15 @@ export class AiProjectionService {
     private readonly projector: AiRuntimeProjector,
   ) {}
 
+  /** 获取全局知识投射缓存 */
   getKnowledgeProjection(): AiKnowledgeProjector {
     return this.knowledgeProjector
   }
 
+  /**
+   * 投射模块知识。
+   * 流程：归一化 scope → 获取注册 → 投影模块树 → 展平函数 → 构建 prompt → 更新缓存。
+   */
   async projectKnowledge(options: AiRuntimeProjectKnowledgeOptions): Promise<AiRuntimeKnowledgeProjection> {
     const scope = this.sessions.normalizeScope(options)
     const module = this.registrations.getModuleOrThrow(scope.moduleId)

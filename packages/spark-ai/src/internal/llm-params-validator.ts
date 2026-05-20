@@ -9,12 +9,12 @@
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
 import type { LlmParameterSchemaRoot } from '../protocol/parameter-schema'
 
-export type LlmParamValidationIssue = {
+export interface LlmParamValidationIssue {
   path: string
   message: string
 }
 
-export type LlmParamValidationResult = {
+export interface LlmParamValidationResult {
   readonly ok: boolean
   readonly issues: readonly LlmParamValidationIssue[]
 }

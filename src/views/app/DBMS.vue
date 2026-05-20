@@ -647,7 +647,7 @@ import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 import { parseTenantScope } from '@/services/tenant-scope'
 
-type DbmsServer = {
+interface DbmsServer {
   ID: number
   SERVER_NAME: string
   HOST: string
@@ -656,7 +656,7 @@ type DbmsServer = {
   ISOLATION_MODE: IsolationMode
 }
 
-type DbmsDatabase = {
+interface DbmsDatabase {
   ID: number
   SERVER_ID: number
   DATABASE_NAME: string
@@ -667,7 +667,7 @@ type DbmsDatabase = {
   duplicateDatabaseIds?: number[]
 }
 
-type DbmsColumn = {
+interface DbmsColumn {
   name: string
   physicalColumnName?: string
   type?: string
@@ -683,7 +683,7 @@ type DbmsColumn = {
 
 type DbmsObjectType = 'TABLE' | 'VIEW'
 
-type PhysicalObjectKey = {
+interface PhysicalObjectKey {
   databaseId: number | null
   objectType: DbmsObjectType
   schemaName: string | null
@@ -715,7 +715,7 @@ function parsePhysicalObjectKey(text: string): PhysicalObjectKey {
   }
 }
 
-type DbmsTable = {
+interface DbmsTable {
   id: number
   tableName: string
   objectType?: DbmsObjectType
@@ -728,7 +728,7 @@ type DbmsTable = {
   columns?: DbmsColumn[]
 }
 
-type DbmsRelation = {
+interface DbmsRelation {
   ID: number
   RELATION_NAME: string
   PARENT_TABLE_ID?: number
@@ -743,7 +743,7 @@ type DbmsRelation = {
   CHILD_FIELD: string
 }
 
-type DbmsObjectSql = {
+interface DbmsObjectSql {
   objectId: number
   objectType: DbmsObjectType
   dialect: string
@@ -752,7 +752,7 @@ type DbmsObjectSql = {
   readOnly: boolean
 }
 
-type DbmsObjectData = {
+interface DbmsObjectData {
   objectId: number
   objectType: DbmsObjectType
   dialect: string
@@ -764,7 +764,7 @@ type DbmsObjectData = {
   readOnly: boolean
 }
 
-type DbmsCatalogObject = {
+interface DbmsCatalogObject {
   databaseId: number | null
   objectId: number | null
   objectType: DbmsObjectType
@@ -777,13 +777,13 @@ type DbmsCatalogObject = {
   physicalObjectKey: PhysicalObjectKey
 }
 
-type DbmsCatalogSchema = {
+interface DbmsCatalogSchema {
   schemaName: string | null
   tables: DbmsCatalogObject[]
   views: DbmsCatalogObject[]
 }
 
-type DbmsCatalogDatabase = {
+interface DbmsCatalogDatabase {
   databaseName: string
   databaseId: number | null
   registered: boolean
@@ -791,19 +791,19 @@ type DbmsCatalogDatabase = {
   relations: unknown[]
 }
 
-type DbmsCatalog = {
+interface DbmsCatalog {
   serverId: number
   serverName: string
   databases: DbmsCatalogDatabase[]
 }
 
-type ApiMessage = {
+interface ApiMessage {
   success?: boolean
   message?: string
   error?: string
 }
 
-type DatabaseCreatePayload = {
+interface DatabaseCreatePayload {
   serverId: number
   databaseName: string
   isolationMode: IsolationMode
@@ -814,7 +814,7 @@ type DatabaseCreatePayload = {
   collation?: string
 }
 
-type TableCreatePayload = {
+interface TableCreatePayload {
   tableName: string
   databaseId: number
   isolationMode: IsolationMode
@@ -926,7 +926,7 @@ const relations = ref<DbmsRelation[]>([])
 const physicalDatabaseNames = ref<string[]>([])
 const physicalDatabasesLoading = ref(false)
 
-type SyncDialogState = {
+interface SyncDialogState {
   visible: boolean
   loading: boolean
   syncing: boolean
@@ -1299,7 +1299,7 @@ async function submitSyncServer() {
 }
 
 // ── 服务器 Dialog ──
-type ServerForm = {
+interface ServerForm {
   serverName: string
   host: string
   port: number
@@ -1309,7 +1309,7 @@ type ServerForm = {
   isolationMode: IsolationMode
 }
 
-type ServerDialogState = {
+interface ServerDialogState {
   visible: boolean
   loading: boolean
   form: ServerForm
@@ -1386,7 +1386,7 @@ async function _deleteServerConfirm(srv: DbmsServer) {
 }
 
 // ── 数据库 Dialog ──
-type DatabaseForm = {
+interface DatabaseForm {
   databaseName: string
   createNew: boolean
   isolationMode: IsolationMode
@@ -1396,7 +1396,7 @@ type DatabaseForm = {
   collation: string
 }
 
-type DatabaseDialogState = {
+interface DatabaseDialogState {
   visible: boolean
   loading: boolean
   form: DatabaseForm
@@ -1509,15 +1509,15 @@ async function deleteDatabaseConfirm(db: DbmsDatabase) {
 }
 
 // ── 表 Dialog ──
-type ColumnForm = { name: string; type: string; maxLength: number | null; primaryKey: boolean; required: boolean }
-type TableForm = {
+interface ColumnForm { name: string; type: string; maxLength: number | null; primaryKey: boolean; required: boolean }
+interface TableForm {
   tableName: string
   physicalTableName: string
   isolationMode: IsolationMode
   columns: ColumnForm[]
 }
 
-type TableDialogState = {
+interface TableDialogState {
   visible: boolean
   loading: boolean
   form: TableForm
@@ -1592,14 +1592,14 @@ async function deleteTableConfirm(tbl: DbmsTable) {
 }
 
 // ── 表关系 Dialog ──
-type RelationForm = {
+interface RelationForm {
   parentTableId: number | null
   parentField: string
   childTableId: number | null
   childField: string
 }
 
-type RelationDialogState = {
+interface RelationDialogState {
   visible: boolean
   loading: boolean
   form: RelationForm

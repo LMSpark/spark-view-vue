@@ -1,3 +1,23 @@
+/**
+ * AI 函数调用执行器。
+ *
+ * 职责：执行翻译后的函数调用，包括：记录请求 → 调用方校验 → 运行 → 标准化结果 → 完成记录。
+ *
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │                  AiFunctionCallExecutor                       │
+ * │                                                               │
+ * │  executeFunctionCall()                                        │
+ * │    ├─ ① translator.translateFunctionCall() → 翻译             │
+ * │    ├─ ② recordFunctionCallRequest() → 记录请求                │
+ * │    ├─ ③ validate?(runInput) → 调用方校验（可选）               │
+ * │    ├─ ④ run(runInput) → 执行函数                              │
+ * │    ├─ ⑤ normalizeResult / normalizeFunctionCallResult → 标准化 │
+ * │    └─ ⑥ completeFunctionCall() → 完成记录                      │
+ * │                                                               │
+ * │  createFunctionResultMessage() → 创建消息（用于追加历史）       │
+ * └──────────────────────────────────────────────────────────────┘
+ */
+
 import type {
   AiRuntimeCreateFunctionResultMessageOptions,
   AiRuntimeExecuteFunctionCallOptions,
@@ -22,6 +42,7 @@ export class AiFunctionCallExecutor {
     private readonly translator: AiFunctionCallTranslator,
   ) {}
 
+  /** 创建函数结果消息（序列化结果为字符串） */
   createFunctionResultMessage(options: AiRuntimeCreateFunctionResultMessageOptions): AiRuntimeFunctionResultMessage {
     return {
       action: options.action,
@@ -30,7 +51,12 @@ export class AiFunctionCallExecutor {
     }
   }
 
+  /**
+   * 执行函数调用。
+   * 流程：翻译 → 记录请求 → 调用方校验 → 运行 → 标准化结果 → 完成记录。
+   */
   async executeFunctionCall(options: AiRuntimeExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
+    // 步骤 1：翻译 action → 可执行上下文
     const translated = await this.translator.translateFunctionCall(options)
     if (!translated.ok) {
       this.tryRecordFailedFunctionCall(options, translated)
@@ -38,6 +64,7 @@ export class AiFunctionCallExecutor {
     }
 
     const translation = translated.translation
+    // 步骤 2：构建运行输入
     const runInput: AiRuntimeFunctionCallRunInput = {
       translation,
       moduleRegistration: translation.moduleRegistration,
@@ -57,6 +84,7 @@ export class AiFunctionCallExecutor {
       activePath: translation.context.activePath,
     })
 
+    // 步骤 3：调用方校验（可选）
     const validationError = options.validate?.(runInput) ?? null
     if (validationError !== null) {
       const failed = createFunctionCallFailure('INVALID_ARGS', validationError, `Fix args for ${translation.action} before retrying.`)
@@ -64,6 +92,7 @@ export class AiFunctionCallExecutor {
       return failed
     }
 
+    // 步骤 4 & 5：执行函数 → 标准化结果
     try {
       const rawResult = await options.run(runInput)
       const result = options.normalizeResult?.(rawResult, runInput)

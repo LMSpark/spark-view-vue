@@ -1,28 +1,30 @@
 import type { DataColumn, DataSetMetadata, TableMetadata, TableRelation } from '@spark-view/spark-data'
 
-export type DesignerColumnProjection = DataColumn & {
+export interface DesignerColumnProjection extends DataColumn {
   id: string
 }
 
-export type DesignerTableProjection = Omit<TableMetadata, 'columns'> & {
+export interface DesignerTableProjection extends Omit<TableMetadata, 'columns'> {
   id: string
-  x: number
-  y: number
-  columns: DesignerColumnProjection[]
+    x: number
+    y: number
+    columns: DesignerColumnProjection[]
 }
 
-export type DesignerRelationProjection = TableRelation & {
+export interface DesignerRelationProjection extends TableRelation {
   relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many'
 }
 
-export type DesignerTableUiState = {
+export interface DesignerTableUiState {
   id: string
   x: number
   y: number
   columnIds: Record<string, string>
 }
 
-export type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
+export interface LayoutForNewTable {
+  (tableName: string, newIndex: number): { x: number; y: number }
+}
 
 function getDefaultTablePosition(index: number): { x: number; y: number } {
   return {

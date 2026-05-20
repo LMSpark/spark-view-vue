@@ -18,7 +18,7 @@ type JsonPrimitive = string | number | boolean | null
 
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[]
 
-export type JsonObject = {
+export interface JsonObject {
   [key: string]: JsonValue
 }
 
@@ -59,14 +59,14 @@ function toPrimitive(value: JsonValue): JsonPrimitive {
   return null
 }
 
-function objectKeyFromSegment(segment: JsonPathSegment): string {
+function objectKeyFromSegment(segment: string | number): string {
   return typeof segment === 'string' ? segment : String(segment)
 }
 
 // ── 路径类型 ────────────────────────────────────────────────
 
-export type JsonPathSegment = string | number
-export type JsonPath = JsonPathSegment[]
+// 这里不再为 JS 基础类型保留导出别名，路径段直接使用 string | number。
+export type JsonPath = Array<string | number>
 
 // ── 节点类型 ────────────────────────────────────────────────
 
@@ -74,7 +74,7 @@ export type JsonNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' 
 
 // ── Schema 信息 ──────────────────────────────────────────────
 
-export type JsonSchemaInfo = {
+export interface JsonSchemaInfo {
   title: string
   description: string
   required: boolean
@@ -83,7 +83,7 @@ export type JsonSchemaInfo = {
 
 // ── Mutation 结果（模型 + 焦点/展开 UID）────────────────────
 
-export type MutationResult = {
+export interface MutationResult {
   /** 变更后的新树模型 */
   readonly model: TreeModel
   /** 操作后应聚焦的节点 ID */
@@ -94,7 +94,7 @@ export type MutationResult = {
 
 // ── 树节点（纯模型，6 字段）─────────────────────────────────
 
-export type TreeNode = {
+export interface TreeNode {
   /** 节点 UUID */
   readonly id: string
   /** 父节点 ID；根节点为 null */
@@ -111,19 +111,19 @@ export type TreeNode = {
 
 // ── 显示行（toDisplayRows 输出，附加遍历上下文 + 策略字段）──
 
-export type TreeDisplayNode = TreeNode & {
+export interface TreeDisplayNode extends TreeNode {
   /** 嵌套深度（根 = 0） */
-  readonly depth: number
-  /** 从根到此节点的路径 */
-  readonly path: JsonPath
-  /** 直接子节点数量 */
-  readonly childCount: number
-  /** 键是否可重命名 */
-  readonly keyEditable: boolean
-  /** 类型是否可切换 */
-  readonly typeEditable: boolean
-  /** 是否可删除 */
-  readonly deletable: boolean
+    readonly depth: number
+    /** 从根到此节点的路径 */
+    readonly path: JsonPath
+    /** 直接子节点数量 */
+    readonly childCount: number
+    /** 键是否可重命名 */
+    readonly keyEditable: boolean
+    /** 类型是否可切换 */
+    readonly typeEditable: boolean
+    /** 是否可删除 */
+    readonly deletable: boolean
 }
 
 export type TreeModel = ReadonlyMap<string, TreeNode>
@@ -153,7 +153,7 @@ function getChildIds(model: ReadonlyMap<string, TreeNode>, parentId: string): st
 
 // ── 策略接口（领域特化注入点）────────────────────────────────
 
-export type JsonTreePolicy = {
+export interface JsonTreePolicy {
   /** 根节点显示标签。默认 '$' */
   rootLabel?: string
   /** 该路径是否受保护（不可删除）。默认全部可删除 */
@@ -182,7 +182,7 @@ export type JsonTreePolicy = {
  * - 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）
  * - 若某 key 已存在且不都是 object，跳过（不覆盖）
  */
-export type AutoPopulateEntry = {
+export interface AutoPopulateEntry {
   targetPath: JsonPath
   entries: Record<string, JsonValue>
 }
@@ -302,7 +302,7 @@ export function exportJsonDocument(model: TreeModel): JsonDocument {
 
 /** 从根到目标节点重建 JsonPath */
 export function getNodePath(model: TreeModel, uid: string): JsonPath {
-  const segments: JsonPathSegment[] = []
+  const segments: Array<string | number> = []
   let current = model.get(uid)
   while (current?.parentId !== undefined && current.parentId !== null) {
     segments.unshift(current.segment)
@@ -710,7 +710,7 @@ export function applyAutoPopulatePatches(
 // ════════════════════════════════════════════════════════════
 
 /** 平铺文档（保留根类型，便于还原） */
-export type FlatJsonTreeDocument = {
+export interface FlatJsonTreeDocument {
   readonly rootType: 'object' | 'array'
   readonly rows: TreeNode[]
 }

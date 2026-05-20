@@ -1,7 +1,7 @@
 import { useOptionFieldState } from './useOptionFieldState'
 import type { OptionFieldStateProps } from './useOptionFieldState'
 
-type UseChoiceFieldStateOptions<TValue> = {
+interface UseChoiceFieldStateOptions<TValue> {
   props: OptionFieldStateProps<TValue>
   fieldType: string
   fallbackValue: TValue

@@ -5,7 +5,7 @@ import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-ty
 import { useFieldContext } from '../../context/useFieldContext'
 import { useControlledFieldChange } from './useControlledFieldChange'
 
-type FieldContextStateLike = {
+interface FieldContextStateLike {
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
@@ -16,21 +16,21 @@ type FieldContextStateLike = {
   validationRules: ComputedRef<FormItemRule[]>
 }
 
-type ControlledFieldStateLike<TValue> = FieldContextStateLike & {
+interface ControlledFieldStateLike<TValue> extends FieldContextStateLike {
   fieldValue: ComputedRef<TValue>
-  contextData: DataRow | null
-  dataSource: unknown
-  currentRow: ComputedRef<DataRow | null>
-  syncValue: (value: TValue) => void
+    contextData: DataRow | null
+    dataSource: unknown
+    currentRow: ComputedRef<DataRow | null>
+    syncValue: (value: TValue) => void
 }
 
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-type FieldControlProps = OptionalWithUndefined<Pick<SparkNodeProps,
+interface FieldControlProps extends OptionalWithUndefined<Pick<SparkNodeProps,
   | 'type' | 'children'
->> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+>>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
   | 'width'
   | 'resizable'
   | 'onChange'
@@ -38,10 +38,9 @@ type FieldControlProps = OptionalWithUndefined<Pick<SparkNodeProps,
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
   | 'sortable'
->> & {
-}
+>> {}
 
-type UseFieldControlStateOptions<TValue> = {
+interface UseFieldControlStateOptions<TValue> {
   props: FieldControlProps
   fieldType: string
   state: ControlledFieldStateLike<TValue>

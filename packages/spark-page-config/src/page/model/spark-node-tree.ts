@@ -28,7 +28,7 @@ function createSparkPageRoot(children: readonly SparkNode[] = []): SparkNode {
 /**
  * 创建 SparkNodeTree 实例时的输入参数。
  */
-export type SparkNodeTreeRootParams = {
+export interface SparkNodeTreeRootParams {
   /**
    * 当前被编辑的组件实例节点。
    *
@@ -45,7 +45,7 @@ export type SparkNodeTreeRootParams = {
 /**
  * SparkNodeTree.fromJson 的可选参数。
  */
-export type SparkNodeTreeFromJsonOptions = {
+export interface SparkNodeTreeFromJsonOptions {
   /**
    * 历史记录最大条目数。省略时沿用默认值。
    */
@@ -59,82 +59,82 @@ export type SparkNodeTreeFromJsonOptions = {
 /**
  * 需要按 componentId 查找节点时使用的参数。
  */
-export type SparkNodeTreeLookupParams = {
+export interface SparkNodeTreeLookupParams {
   componentId: string
 }
 
 /**
  * 需要定位某个父节点 children 时使用的参数。
  */
-export type SparkNodeTreeChildrenParams = {
+export interface SparkNodeTreeChildrenParams {
   parentComponentId?: string | null
 }
 
 /**
  * 添加节点时使用的参数。
  */
-export type SparkNodeTreeAddParams = SparkNodeTreeChildrenParams & {
+export interface SparkNodeTreeAddParams extends SparkNodeTreeChildrenParams {
   node: SparkNode
-  index?: number
+    index?: number
 }
 
 /**
  * 批量添加节点时使用的参数。
  */
-export type SparkNodeTreeAddNodesParams = SparkNodeTreeChildrenParams & {
+export interface SparkNodeTreeAddNodesParams extends SparkNodeTreeChildrenParams {
   nodes: SparkNode[]
-  index?: number
+    index?: number
 }
 
 /**
  * 移动已有节点时使用的参数。
  */
-export type SparkNodeTreeMoveParams = SparkNodeTreeChildrenParams & {
+export interface SparkNodeTreeMoveParams extends SparkNodeTreeChildrenParams {
   componentId: string
-  index?: number
+    index?: number
 }
 
 /**
  * 设置节点 props 时使用的参数。
  */
-export type SparkNodeTreeSetPropsParams = SparkNodeTreeLookupParams & {
+export interface SparkNodeTreeSetPropsParams extends SparkNodeTreeLookupParams {
   props: Record<string, unknown>
-  merge?: boolean
+    merge?: boolean
 }
 
 /**
  * 批量设置节点 props 的单项参数。
  */
-export type SparkNodeTreeSetPropsBatchItem = SparkNodeTreeLookupParams & {
+export interface SparkNodeTreeSetPropsBatchItem extends SparkNodeTreeLookupParams {
   props: Record<string, unknown>
-  merge?: boolean
+    merge?: boolean
 }
 
 /**
  * 批量设置节点 props 时使用的参数。
  */
-export type SparkNodeTreeSetPropsBatchParams = {
+export interface SparkNodeTreeSetPropsBatchParams {
   items: SparkNodeTreeSetPropsBatchItem[]
 }
 
 /**
  * 替换整个节点时使用的参数。
  */
-export type SparkNodeTreeReplaceParams = SparkNodeTreeLookupParams & {
+export interface SparkNodeTreeReplaceParams extends SparkNodeTreeLookupParams {
   node: SparkNode
 }
 
 /**
  * 批量替换节点的单项参数。
  */
-export type SparkNodeTreeReplaceNodesItem = SparkNodeTreeLookupParams & {
+export interface SparkNodeTreeReplaceNodesItem extends SparkNodeTreeLookupParams {
   node: SparkNode
 }
 
 /**
  * 批量替换节点时使用的参数。
  */
-export type SparkNodeTreeReplaceNodesParams = {
+export interface SparkNodeTreeReplaceNodesParams {
   items: SparkNodeTreeReplaceNodesItem[]
 }
 
@@ -146,7 +146,7 @@ export type SparkNodeTreeRemoveParams = SparkNodeTreeLookupParams
 /**
  * 批量删除节点时使用的参数。
  */
-export type SparkNodeTreeRemoveNodesParams = {
+export interface SparkNodeTreeRemoveNodesParams {
   componentIds: string[]
 }
 
@@ -158,7 +158,7 @@ export type SparkNodeTreeRemoveNodesParams = {
  * - index: 在父节点 children 中的直接索引；根节点固定为 -1
  * - depth: 根节点深度为 0，子节点依次递增
  */
-export type SparkNodeLocation = {
+export interface SparkNodeLocation {
   node: SparkNode
   parent: SparkNode | null
   index: number
@@ -168,7 +168,7 @@ export type SparkNodeLocation = {
 /**
  * addNode 的返回结果。
  */
-export type SparkNodeAddResult = {
+export interface SparkNodeAddResult {
   node: SparkNode
   index: number
 }
@@ -176,7 +176,7 @@ export type SparkNodeAddResult = {
 /**
  * addNodes 的返回结果。
  */
-export type SparkNodeAddNodesResult = {
+export interface SparkNodeAddNodesResult {
   nodes: SparkNode[]
   indexes: number[]
 }
@@ -184,7 +184,7 @@ export type SparkNodeAddNodesResult = {
 /**
  * moveNode 的返回结果。
  */
-export type SparkNodeMoveResult = {
+export interface SparkNodeMoveResult {
   componentId: string
   fromParentComponentId: string | null
   toParentComponentId: string | null
@@ -195,21 +195,21 @@ export type SparkNodeMoveResult = {
 /**
  * setProps 的返回结果。
  */
-export type SparkNodeSetPropsResult = {
+export interface SparkNodeSetPropsResult {
   node: SparkNode
 }
 
 /**
  * setPropsBatch 的返回结果。
  */
-export type SparkNodeSetPropsBatchResult = {
+export interface SparkNodeSetPropsBatchResult {
   nodes: SparkNode[]
 }
 
 /**
  * replaceNode 的返回结果。
  */
-export type SparkNodeReplaceResult = {
+export interface SparkNodeReplaceResult {
   node: SparkNode
   previous: SparkNode
 }
@@ -217,14 +217,14 @@ export type SparkNodeReplaceResult = {
 /**
  * replaceNodes 的返回结果。
  */
-export type SparkNodeReplaceNodesResult = {
+export interface SparkNodeReplaceNodesResult {
   items: SparkNodeReplaceResult[]
 }
 
 /**
  * removeNode 的返回结果。
  */
-export type SparkNodeRemoveResult = {
+export interface SparkNodeRemoveResult {
   removed: SparkNode
   index: number
 }
@@ -232,14 +232,14 @@ export type SparkNodeRemoveResult = {
 /**
  * removeNodes 的返回结果。
  */
-export type SparkNodeRemoveNodesResult = {
+export interface SparkNodeRemoveNodesResult {
   items: SparkNodeRemoveResult[]
 }
 
 /**
  * findByType 的查询参数。
  */
-export type SparkNodeFindByTypeParams = {
+export interface SparkNodeFindByTypeParams {
   /**
    * 要搜索的组件类型名，精确匹配（如 'r-tabs'、'r-form'、'r-table'）。
    */
@@ -259,7 +259,7 @@ export type SparkNodeFindByTypeParams = {
 /**
  * findByType 单条匹配结果。
  */
-export type SparkNodeFindByTypeMatch = {
+export interface SparkNodeFindByTypeMatch {
   /** 节点的真实 id（来自顶层 id 字段）。节点未设置 id 时为 undefined。 */
   id: string | undefined
   /** 组件类型名 */
@@ -277,7 +277,7 @@ export type SparkNodeFindByTypeMatch = {
 /**
  * findByType 的返回结果。
  */
-export type SparkNodeFindByTypeResult = {
+export interface SparkNodeFindByTypeResult {
   /** 按深度优先顺序排列的匹配结果数组 */
   matches: SparkNodeFindByTypeMatch[]
   /** 命中数；当提供 limit 且提前终止时，该值等于 matches.length（实际总数可能更大） */
@@ -834,7 +834,7 @@ export class SparkNodeTree {
 /**
  * 路径重写的内部返回结构。
  */
-type NodeRewriteResult<TResult> = {
+interface NodeRewriteResult<TResult> {
   next: SparkNode | null
   changed: boolean
   result: TResult | null

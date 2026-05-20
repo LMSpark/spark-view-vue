@@ -10,11 +10,11 @@ import {
   type FunctionExecutionContext,
 } from '../index'
 
-type ExecutableFunctionRegistration = AiFunctionRegistration & {
+interface ExecutableFunctionRegistration extends AiFunctionRegistration {
   execute(args: unknown, context: FunctionExecutionContext): object
 }
 
-type LeaveFormState = {
+interface LeaveFormState {
   readonly draft: {
     reason: string | null
   }

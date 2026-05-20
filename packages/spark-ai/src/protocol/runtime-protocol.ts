@@ -9,10 +9,6 @@ import type {
   AiFunctionRegistration,
   AiModuleInstanceParam,
   AiModuleRegistration,
-  AiRuntimeFunctionId,
-  AiRuntimeModuleId,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeModulePath,
   FunctionFailureMode,
 } from './business-registration'
 import type { LlmJsonObject, LlmParameterSchemaRoot } from './parameter-schema'
@@ -25,54 +21,47 @@ import type {
   AiRuntimeStopSessionOptions,
 } from './session-events'
 
-export type {
-  AiRuntimeFunctionId,
-  AiRuntimeModuleId,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeModulePath,
-}
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 
-export type AiRuntimeAction = string
-
-export type AiRuntimeInstanceScope = {
-  readonly moduleId: AiRuntimeModuleId
-  readonly moduleInstanceId: AiRuntimeModuleInstanceId
+export interface AiRuntimeInstanceScope {
+  readonly moduleId: string // 模块标识符
+  readonly moduleInstanceId: string // 模块实例标识符
   readonly instanceId: string
   readonly runtimeInstanceId: string
 }
 
-export type AiModuleInstanceBinding = {
-  readonly modulePath: AiRuntimeModulePath
-  readonly instanceId: AiRuntimeModuleInstanceId
+export interface AiModuleInstanceBinding {
+  readonly modulePath: string // 模块路径
+  readonly instanceId: string
   readonly paramName?: string | undefined
 }
 
-export type AiRuntimeActivePathSnapshot = {
+export interface AiRuntimeActivePathSnapshot {
   readonly instanceId: string
   readonly bindings: readonly AiModuleInstanceBinding[]
   readonly moduleInstances: Readonly<Record<string, string>>
 }
 
-export type FunctionExecutionContext = AiRuntimeInstanceScope & {
-  readonly modulePath: AiRuntimeModulePath
-  readonly moduleIds: readonly string[]
-  readonly functionId: AiRuntimeFunctionId
-  readonly action: AiRuntimeAction
-  readonly moduleInstances: Readonly<Record<string, string>>
-  readonly activePath: AiRuntimeActivePathSnapshot
+export interface FunctionExecutionContext extends AiRuntimeInstanceScope {
+  readonly modulePath: string // 模块路径
+    readonly moduleIds: readonly string[]
+    readonly functionId: string // 函数标识符
+    readonly action: string // LLM 工具 action 字符串
+    readonly moduleInstances: Readonly<Record<string, string>>
+    readonly activePath: AiRuntimeActivePathSnapshot
 }
 
-export type AiRuntimeFunctionContextParam = {
-  readonly modulePath: AiRuntimeModulePath
-  readonly moduleId: AiRuntimeModuleId
+export interface AiRuntimeFunctionContextParam {
+  readonly modulePath: string // 模块路径
+  readonly moduleId: string // 模块标识符
   readonly paramName: string
   readonly description: string
 }
 
-export type AiRuntimeFunctionExposure = {
-  readonly action: AiRuntimeAction
-  readonly moduleId: AiRuntimeModuleId
-  readonly modulePath: AiRuntimeModulePath
+export interface AiRuntimeFunctionExposure {
+  readonly action: string // LLM 工具 action 字符串
+  readonly moduleId: string // 模块标识符
+  readonly modulePath: string // 模块路径
   readonly moduleIds: readonly string[]
   readonly description: string
   readonly paramsSchema: LlmParameterSchemaRoot
@@ -83,9 +72,9 @@ export type AiRuntimeFunctionExposure = {
   readonly contextParams: readonly AiRuntimeFunctionContextParam[]
 }
 
-export type AiRuntimeModuleExposure = {
-  readonly moduleId: AiRuntimeModuleId
-  readonly modulePath: AiRuntimeModulePath
+export interface AiRuntimeModuleExposure {
+  readonly moduleId: string // 模块标识符
+  readonly modulePath: string // 模块路径
   readonly moduleIds: readonly string[]
   readonly name: string
   readonly description: string
@@ -95,14 +84,14 @@ export type AiRuntimeModuleExposure = {
   readonly modules: readonly AiRuntimeModuleExposure[]
 }
 
-export type AiRuntimeKnowledgeProjection = {
+export interface AiRuntimeKnowledgeProjection {
   readonly scope: AiRuntimeInstanceScope
   readonly module: AiRuntimeModuleExposure
   readonly promptSnapshot: string
   readonly availableFunctions: readonly AiRuntimeFunctionExposure[]
 }
 
-export type AiRuntimeFunctionCallFailure = {
+export interface AiRuntimeFunctionCallFailure {
   readonly ok: false
   readonly code: string
   readonly msg: string
@@ -115,14 +104,14 @@ export type AiRuntimeFunctionCallResult<TData> = {
   readonly summary?: string | undefined
 } | AiRuntimeFunctionCallFailure
 
-export type AiRuntimeFunctionResultMessage = {
-  readonly action: AiRuntimeAction
+export interface AiRuntimeFunctionResultMessage {
+  readonly action: string // LLM 工具 action 字符串
   readonly result: AiRuntimeFunctionCallResult<unknown>
   readonly content: string
 }
 
-export type AiRuntimeFunctionCallTranslation = {
-  readonly action: AiRuntimeAction
+export interface AiRuntimeFunctionCallTranslation {
+  readonly action: string // LLM 工具 action 字符串
   readonly rawArgs: unknown
   readonly effectiveArgs: Record<string, unknown>
   readonly executionArgs: unknown
@@ -137,16 +126,16 @@ export type AiRuntimeFunctionCallTranslationResult = {
   readonly translation: AiRuntimeFunctionCallTranslation
 } | AiRuntimeFunctionCallFailure
 
-export type AiRuntimeProjectKnowledgeOptions = AiRuntimeInstanceScope & {}
+export interface AiRuntimeProjectKnowledgeOptions extends AiRuntimeInstanceScope {}
 
-export type AiRuntimeTranslateFunctionCallOptions = AiRuntimeProjectKnowledgeOptions & {
-  readonly action: AiRuntimeAction
-  readonly args: unknown
-  readonly activePath?: readonly AiModuleInstanceBinding[] | undefined
-  readonly projection?: AiRuntimeKnowledgeProjection | undefined
+export interface AiRuntimeTranslateFunctionCallOptions extends AiRuntimeProjectKnowledgeOptions {
+  readonly action: string // LLM 工具 action 字符串
+    readonly args: unknown
+    readonly activePath?: readonly AiModuleInstanceBinding[] | undefined
+    readonly projection?: AiRuntimeKnowledgeProjection | undefined
 }
 
-export type AiRuntimeFunctionCallRunInput = {
+export interface AiRuntimeFunctionCallRunInput {
   readonly translation: AiRuntimeFunctionCallTranslation
   readonly moduleRegistration: AiModuleRegistration
   readonly functionRegistration: AiFunctionRegistration
@@ -154,27 +143,30 @@ export type AiRuntimeFunctionCallRunInput = {
   readonly context: FunctionExecutionContext
 }
 
-export type AiRuntimeFunctionCallValidator = (input: AiRuntimeFunctionCallRunInput) => string | null
-export type AiRuntimeFunctionCallRunner = (input: AiRuntimeFunctionCallRunInput) => unknown
-export type AiRuntimeFunctionCallResultNormalizer = (
-  value: unknown,
-  input: AiRuntimeFunctionCallRunInput,
-) => AiRuntimeFunctionCallResult<unknown>
-
-export type AiRuntimeExecuteFunctionCallOptions = AiRuntimeTranslateFunctionCallOptions & {
-  readonly run: AiRuntimeFunctionCallRunner
-  readonly validate?: AiRuntimeFunctionCallValidator | undefined
-  readonly normalizeResult?: AiRuntimeFunctionCallResultNormalizer | undefined
-  readonly errorFix?: string | undefined
-  readonly metadata?: Record<string, unknown> | undefined
+export interface AiRuntimeFunctionCallValidator {
+  (input: AiRuntimeFunctionCallRunInput): string | null
+}
+export interface AiRuntimeFunctionCallRunner {
+  (input: AiRuntimeFunctionCallRunInput): unknown
+}
+export interface AiRuntimeFunctionCallResultNormalizer {
+  (value: unknown, input: AiRuntimeFunctionCallRunInput): AiRuntimeFunctionCallResult<unknown>
 }
 
-export type AiRuntimeCreateFunctionResultMessageOptions = {
-  readonly action: AiRuntimeAction
+export interface AiRuntimeExecuteFunctionCallOptions extends AiRuntimeTranslateFunctionCallOptions {
+  readonly run: AiRuntimeFunctionCallRunner
+    readonly validate?: AiRuntimeFunctionCallValidator | undefined
+    readonly normalizeResult?: AiRuntimeFunctionCallResultNormalizer | undefined
+    readonly errorFix?: string | undefined
+    readonly metadata?: Record<string, unknown> | undefined
+}
+
+export interface AiRuntimeCreateFunctionResultMessageOptions {
+  readonly action: string // LLM 工具 action 字符串
   readonly result: AiRuntimeFunctionCallResult<unknown>
 }
 
-export type AiRuntimeOptions = {
+export interface AiRuntimeOptions {
   readonly now?: (() => number) | undefined
 }
 

@@ -2,16 +2,16 @@
  * 应用配置类型定义
  * 支持多租户配置
  *
- * PluginConfigItem / PluginConfig 复用本包的定义，不重复声明。
+ * PluginConfigItem 复用本包的定义，不重复声明。
  */
 
 import type { AppLoggerConfig } from '../logger'
-import type { PluginConfig } from '../plugins'
+import type { PluginConfigItem } from '../plugins'
 
 /**
  * 配置源类型
  */
-export type ConfigSourceOptions = {
+export interface ConfigSourceOptions {
   /** 配置源类型 */
   type: 'local' | 'remote'
 
@@ -34,7 +34,7 @@ export type ConfigSourceOptions = {
 /**
  * 租户信息（完整版，含 logo/theme 等展示字段）
  */
-export type FullTenantInfo = {
+export interface FullTenantInfo {
   tenantId: string
   tenantName: string
   tenantCode?: string
@@ -48,7 +48,7 @@ export type FullTenantInfo = {
 /**
  * 完整的应用配置
  */
-export type AppFullConfig = {
+export interface AppFullConfig {
   /** 配置源设置 */
   configSource?: ConfigSourceOptions
 
@@ -65,7 +65,7 @@ export type AppFullConfig = {
   mountTarget: string
 
   /** UI 插件配置（简单: true / 详细: PluginConfigItem） */
-  plugins: Record<string, PluginConfig>
+  plugins: Record<string, boolean | PluginConfigItem>
 
   /** SPARK 组件系统 */
   spark: { enabled: boolean }
@@ -96,6 +96,6 @@ export type AppFullConfig = {
 /**
  * 租户配置（可覆盖默认配置的部分）
  */
-export type TenantConfig = Partial<AppFullConfig> & {
+export interface TenantConfig extends Partial<AppFullConfig> {
   tenant: FullTenantInfo
 }

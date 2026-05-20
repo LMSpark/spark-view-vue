@@ -14,7 +14,7 @@ import type {
   SparkNode,
 } from '@spark-view/spark-component'
 
-type Props = {
+interface Props {
   config?: SparkNode
   label?: string
   emptyText?: string

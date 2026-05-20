@@ -135,18 +135,16 @@ describe('PageFileDocument primitives', () => {
       expect(text?.id).toBe('r-text__0_0_0')
     })
 
-    it('promotes legacy props.id when loading rule text', () => {
+    it('rejects props.id when loading rule text', () => {
       const docs = createPageDocuments()
       const doc = docs['rule.json']
 
       doc.loadFromText(`${JSON.stringify([
-        { type: 'r-section', props: { id: 'legacy-section', title: '假期管理' } },
+        { type: 'r-section', props: { id: 'props-id', title: '假期管理' } },
       ], null, 2)}\n`)
 
-      expect(doc.parseError.value).toBeNull()
-      const section = getSparkNodeChildren(doc.model.value!.toJSON().children)[0]
-      expect(section?.id).toBe('legacy-section')
-      expect(section?.props).toEqual({ title: '假期管理' })
+      expect(doc.parseError.value).toMatch(/SparkNode\.props\.id is invalid/)
+      expect(doc.model.value).toBeNull()
     })
 
     it('replaceModel adopts an externally provided tree', () => {

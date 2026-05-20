@@ -2,7 +2,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { addLogTransport, removeLogTransport, type LogTransport } from '../packages/spark-utils/src/logger'
 import { FetchClient } from '../packages/spark-utils/src/http/FetchClient'
 
-type Captured = {
+interface Captured {
   level: string
   message: string
   meta?: Record<string, unknown> | undefined

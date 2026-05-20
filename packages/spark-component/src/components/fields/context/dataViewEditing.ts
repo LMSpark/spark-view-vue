@@ -1,4 +1,4 @@
-import type { DataRow, PkValue } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-view/spark-data'
 
 export type DataViewEditingEventName =
   | 'editingFieldChanged'
@@ -8,16 +8,16 @@ export type DataViewEditingEventName =
   | 'selectedRowsChanged'
   | 'cleared'
 
-export type DataViewEditingEvents = {
+export interface DataViewEditingEvents {
   on(eventName: DataViewEditingEventName, handler: () => void): void
   off(eventName: DataViewEditingEventName, handler: () => void): void
 }
 
-export type DataViewEditingSource = {
-  getPkKey(row: DataRow): PkValue | undefined
-  hasEditingChanges(id?: PkValue): boolean
-  getEditingRow(id: PkValue): DataRow | null
-  updateEditingValue(id: PkValue, field: string, value: unknown): DataRow
+export interface DataViewEditingSource {
+  getPkKey(row: DataRow): string | number | undefined
+  hasEditingChanges(id?: string | number): boolean
+  getEditingRow(id: string | number): DataRow | null
+  updateEditingValue(id: string | number, field: string, value: unknown): DataRow
   events?: DataViewEditingEvents
 }
 

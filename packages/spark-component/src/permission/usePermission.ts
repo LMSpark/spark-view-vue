@@ -23,7 +23,7 @@ import {
 import type { PermissionAction, PermissionActionContext } from './PermissionResolver'
 import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
-export type UsePermissionReturn = {
+export interface UsePermissionReturn {
   /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */
   readonly permissionMode: NavPermissionMode | undefined
 

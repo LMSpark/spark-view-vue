@@ -53,7 +53,9 @@ import { extractModelPermission, usePermission } from '../../../permission'
 import type { DataView, DataRow } from '@spark-view/spark-data'
 import { useActionButtonRuntime } from './useActionButtonRuntime'
 
-type ClickHandler = (...args: unknown[]) => unknown
+interface ClickHandler {
+  (...args: unknown[]): unknown
+}
 
 const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',

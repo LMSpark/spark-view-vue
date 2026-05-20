@@ -47,7 +47,7 @@ import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../componen
 // ── 目标行解析 ────────────────────────────────────────────────────────────
 
 /** 目标行解析结果：单行操作用 primary，批量操作用 rows。 */
-type TargetRows = {
+interface TargetRows {
   /** 操作目标行列表 */
   rows: DataRow[]
   /**

@@ -1,7 +1,7 @@
 import type { RendererSectionApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type RendererSectionZeroCodeOptions = {
+interface RendererSectionZeroCodeOptions {
   collapsed: ValueRef<boolean>
   collapsible: ValueRef<boolean>
 }

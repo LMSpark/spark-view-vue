@@ -33,10 +33,10 @@ const UNRESOLVED_URL_TEMPLATE_RE = /:\w+|\{\w+\}/
 /** 批量操作默认并发度 */
 const DEFAULT_BATCH_CONCURRENCY = 5
 type WrappedResultKey = 'data' | 'node' | 'record' | 'item' | 'result' | 'rows' | 'deleted'
-type WrappedEndpointResult<T> = {
+interface WrappedEndpointResult<T> extends Partial<Record<WrappedResultKey, T>> {
   success?: boolean
-  message?: string
-} & Partial<Record<WrappedResultKey, T>>
+    message?: string
+}
 type EndpointResult<T> = T | WrappedEndpointResult<T>
 
 const WRAPPED_RESULT_KEYS: readonly WrappedResultKey[] = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted']

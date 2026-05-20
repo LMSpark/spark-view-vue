@@ -15,25 +15,25 @@ import {
 } from './data-row-utils.js'
 
 /** 树形视图态（RendererTree 专用扩展）。 */
-export type RendererTreeViewState = DataViewState & {
+export interface RendererTreeViewState extends DataViewState {
   treeData: ComputedRef<TreeNode[]>
-  treeIdField: ComputedRef<string>
+    treeIdField: ComputedRef<string>
 }
 
 /** SparkData.createTreeManager 消费的种子节点形状。 */
-type TreeManagerSeedNode = Record<string, unknown> & {
+interface TreeManagerSeedNode extends Record<string, unknown> {
   id: string | number
-  name: string
-  parentId?: string | number | null
+    name: string
+    parentId?: string | number | null
 }
 
-type TreeFieldNames = {
+interface TreeFieldNames {
   idField: string
   parentIdField: string
   textField: string
 }
 
-type TreeSeedBuildResult = {
+interface TreeSeedBuildResult {
   seedNodes: TreeManagerSeedNode[]
   hasParentLink: boolean
 }
@@ -156,7 +156,7 @@ export function buildTreeTableRows(
   return buildNestedTreeRows(fields, seedNodes)
 }
 
-type RendererTreeViewStateOptions = {
+interface RendererTreeViewStateOptions {
   dataState: DataViewState
 }
 

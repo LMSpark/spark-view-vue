@@ -17,11 +17,11 @@ const TEST_APP_LOGGER = {
   error: (message: string, context?: unknown) => console.error(message, context),
 }
 
-type MountedWithPageDataSetWrapper = VueWrapper & {
+interface MountedWithPageDataSetWrapper extends VueWrapper {
   __pageComponentRegistry?: PageComponentRegistry
 }
 
-type MountWithPageDataSetOptions = {
+interface MountWithPageDataSetOptions {
   dataSet: DataSetContract
   props?: Record<string, unknown>
   global?: ComponentMountingOptions<unknown>['global']
@@ -78,7 +78,7 @@ export function getMountedComponentApi<T>(
   return api
 }
 
-type MountWithDataViewOptions = {
+interface MountWithDataViewOptions {
   view: DataView
   field?: 'rows' | 'currentRow'
   props?: Record<string, unknown>

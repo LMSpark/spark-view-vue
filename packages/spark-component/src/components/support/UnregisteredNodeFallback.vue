@@ -36,7 +36,7 @@
 import { computed, ref, useSlots } from 'vue'
 import type { SparkNode } from '../../core/types.js'
 
-type Props = {
+interface Props {
   /** 未注册的源节点 */
   node: SparkNode
   /** 提示标题 */

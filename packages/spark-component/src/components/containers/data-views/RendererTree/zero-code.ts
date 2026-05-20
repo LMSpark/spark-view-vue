@@ -13,7 +13,7 @@ import {
 import { isDataRecord } from '../data-row-utils.js'
 import type { RendererTreeApi } from './types'
 
-export type TreeNode = {
+export interface TreeNode {
   id?: string | number
   label?: string
   name?: string
@@ -22,7 +22,7 @@ export type TreeNode = {
   [key: string]: unknown
 }
 
-export type ElTreeNode = {
+export interface ElTreeNode {
   level: number
   expanded: boolean
   data?: DataRow
@@ -30,11 +30,11 @@ export type ElTreeNode = {
   [key: string]: unknown
 }
 
-export type ElTreeComponent = {
+export interface ElTreeComponent {
   [key: string]: unknown
 }
 
-export type NativeTreeLike = {
+export interface NativeTreeLike {
   getCurrentNode?: () => unknown
   setCurrentKey?: (key: string | number | null) => void
   filter?: (value: string) => void
@@ -48,27 +48,24 @@ export type NativeTreeLike = {
   getNode?: (key: string | number) => NativeTreeNodeLike | undefined
 }
 
-export type NativeTreeNodeLike = {
+export interface NativeTreeNodeLike {
   expand?: () => void
   data?: DataRow
 }
 
 export type TreeEventControl = CancellableControl
 
-export type TreeEventHandler = (
-  data: TreeNode,
-  node: ElTreeNode,
-  component: ElTreeComponent,
-  control: TreeEventControl,
-) => void | Promise<void>
-
-type RendererTreeBehaviorProps = Readonly<Record<string, unknown>> & {
-  onNodeClick?: TreeEventHandler | undefined
-  onNodeExpand?: TreeEventHandler | undefined
-  onNodeCollapse?: TreeEventHandler | undefined
+export interface TreeEventHandler {
+  (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>
 }
 
-type RendererTreeZeroCodeOptions = {
+interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
+  onNodeClick?: TreeEventHandler | undefined
+    onNodeExpand?: TreeEventHandler | undefined
+    onNodeCollapse?: TreeEventHandler | undefined
+}
+
+interface RendererTreeZeroCodeOptions {
   props: RendererTreeBehaviorProps
   resolvedView: ValueRef<DataView | null>
   treeData: ValueRef<DataRow[]>

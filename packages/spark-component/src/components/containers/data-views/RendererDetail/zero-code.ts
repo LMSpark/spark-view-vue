@@ -4,7 +4,7 @@ import { createContainerCrudContext } from '../zero-code-shared.js'
 import type { RendererDetailApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type RendererDetailZeroCodeOptions = {
+interface RendererDetailZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
   detailData: Record<string, unknown>

@@ -76,7 +76,7 @@ function createScriptConsole(): Pick<Console, 'log' | 'info' | 'warn' | 'error' 
 // ─── 共享基础上下文（两条渲染线共用）────────────────────────────────────
 
 /** buildPageContext 所需的依赖引用 */
-type PageContextDeps = {
+interface PageContextDeps {
   /** DataSet getter（闭包引用，每次调用返回最新值） */
   getDataSet: () => DataSet | null
   pageRoute: PageRoute

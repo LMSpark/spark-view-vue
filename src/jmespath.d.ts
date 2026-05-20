@@ -1,5 +1,5 @@
 declare module 'jmespath' {
-  export type CompiledExpression = {
+  export interface CompiledExpression {
     search(data: unknown): unknown
   }
 

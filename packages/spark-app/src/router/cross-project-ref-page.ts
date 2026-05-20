@@ -12,9 +12,7 @@ import type {
   ConfigLoadResult,
   PageConfig,
   PageConfigFileName,
-  PageCssConfig,
   PageDataConfig,
-  PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config/page/loading'
 import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
@@ -22,23 +20,23 @@ import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
 
-type ReloadableRenderer = {
+interface ReloadableRenderer {
   reload?: () => Promise<void>
 }
 
-type ParsedRefPath = {
+interface ParsedRefPath {
   projectId: string | null
   pageId: string | null
 }
 
-type ResolvedRefTarget = {
+interface ResolvedRefTarget {
   hostRefNodeId: string | null
   targetProjectId: string | null
   refPath: string | null
   pageId: string | null
 }
 
-export type CrossProjectRefPageRouteProps = {
+export interface CrossProjectRefPageRouteProps {
   configLoader: BasePageConfigLoader
   tenantId?: string | undefined
   hostProjectId?: string | undefined
@@ -46,7 +44,7 @@ export type CrossProjectRefPageRouteProps = {
   routeMeta?: Record<string, unknown> | undefined
 }
 
-type FileResponse = {
+interface FileResponse {
   content?: unknown
   timestamp?: unknown
   notModified?: unknown
@@ -332,11 +330,11 @@ class CrossProjectPageConfigLoader extends BasePageConfigLoader {
     return this.loadRequired(pageId, 'pagedata.json', parsePageData)
   }
 
-  async loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+  async loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
     return this.loadOptional(pageId, 'script.js', parseScript)
   }
 
-  async loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+  async loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
     return this.loadOptional(pageId, 'style.css', parseCss)
   }
 

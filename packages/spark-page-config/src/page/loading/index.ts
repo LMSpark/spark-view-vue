@@ -5,10 +5,8 @@ export type {
   PageConfigFileLoadOptions,
   PageConfigFileName,
   PageConfigFiles,
-  PageCssConfig,
   PageDataConfig,
   PageFileRegistry,
-  PageScriptConfig,
   RuleConfig,
 } from '../model/types'
 

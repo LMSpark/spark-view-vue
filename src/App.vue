@@ -276,7 +276,7 @@ function persistCurrentProjectUiSettings(): void {
 
 watch([headerFirst, sidebarCollapsed, showFooter, mode], persistCurrentProjectUiSettings, { flush: 'sync' })
 
-type AppContextGuardState = {
+interface AppContextGuardState {
   title: string
   message: string
   primaryActionLabel: string
@@ -449,7 +449,9 @@ const pageModuleContext = computed<ModuleContext | null>(() => {
     nodeId: state.nodeId,
   }
 })
-type ModuleContextChangeHandler = (next: ModuleContext | null, prev: ModuleContext | null) => void
+interface ModuleContextChangeHandler {
+  (next: ModuleContext | null, prev: ModuleContext | null): void
+}
 const moduleContextListeners = new Set<ModuleContextChangeHandler>()
 
 function cloneModuleContext(value: ModuleContext | null | undefined): ModuleContext | null {

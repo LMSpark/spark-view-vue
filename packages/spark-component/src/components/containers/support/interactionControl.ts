@@ -2,7 +2,7 @@ import type { CrudResult, DataRow } from '@spark-view/spark-data'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 
-export type CancellableControl = {
+export interface CancellableControl {
   cancel: boolean
 }
 
@@ -22,9 +22,9 @@ export function isCancellableControl(value: unknown): value is CancellableContro
 
 export type InteractionControl = CancellableControl
 
-export type CancelableHandler<TArgs extends unknown[]> = (
-  ...args: [...TArgs, InteractionControl]
-) => void | Promise<void>
+export interface CancelableHandler<TArgs extends unknown[]> {
+  (...args: [...TArgs, InteractionControl]): void | Promise<void>
+}
 
 export async function runControlledInteraction<TArgs extends unknown[]>(
   handler: CancelableHandler<TArgs> | undefined,

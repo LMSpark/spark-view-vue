@@ -41,7 +41,7 @@ import type { CrudDelegate } from './crud-delegate'
 // ─────────────────────────────────────────────
 
 /** 单字段变更记录（from → to） */
-export type FieldChange = {
+export interface FieldChange {
   /** 修改前的原始值 */
   from: unknown
   /** 修改后的当前值 */
@@ -54,7 +54,7 @@ export type RowDiff = Record<string, FieldChange>
 /**
  * saveChanges() 执行结果（三态统计）
  */
-export type SaveChangesData = {
+export interface SaveChangesData {
   /** 新增行成功提交数 */
   createdCount: number
   /** 编辑行成功保存数 */

@@ -1,6 +1,6 @@
 import type { BaseContainerApi } from '../../support/base-container-api.js'
 
-export type RendererDetailApi = BaseContainerApi & {
+export interface RendererDetailApi extends BaseContainerApi {
   getDetailData(): Record<string, unknown>
-  getFieldValue(field: string): unknown
+    getFieldValue(field: string): unknown
 }

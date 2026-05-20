@@ -27,7 +27,7 @@ import { useOptionFieldState } from './composables/useOptionFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
 import { coerceTreeSelectValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
-import type { RTreeSelectProps, TreeSelectValue } from './FieldTreeSelect.props'
+import type { RTreeSelectProps } from './FieldTreeSelect.props'
 
 const props = withDefaults(defineProps<RTreeSelectProps>(), {
   type: 'r-tree-select',
@@ -40,9 +40,9 @@ const props = withDefaults(defineProps<RTreeSelectProps>(), {
   renderAfterExpand: true,
 })
 
-const emit = defineEmits<FieldValueUpdateEmits<TreeSelectValue>>()
+const emit = defineEmits<FieldValueUpdateEmits<string | number | boolean | Array<string | number | boolean>>>()
 
-const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<TreeSelectValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<string | number | boolean | Array<string | number | boolean>>({
   props,
   fieldType: 'r-tree-select',
   fallbackValue: '',
@@ -52,7 +52,7 @@ const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<T
 
 const { options, fieldValue, isCurrentFieldEditable } = optionResult
 
-async function handleChange(value: TreeSelectValue): Promise<void> {
+async function handleChange(value: string | number | boolean | Array<string | number | boolean>): Promise<void> {
   await handleControlledChange(value)
 }
 </script>

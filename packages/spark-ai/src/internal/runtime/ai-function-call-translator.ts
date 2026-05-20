@@ -1,3 +1,29 @@
+/**
+ * AI 函数调用翻译器。
+ *
+ * 职责：将 LLM 产生的 action 字符串翻译为可执行的函数调用上下文。
+ *
+ * ┌──────────────────────────────────────────────────────────────┐
+ * │              AiFunctionCallTranslator                          │
+ * │                                                               │
+ * │  translateFunctionCall()                                      │
+ * │    ├─ ① normalizeScope + 检查会话状态                          │
+ * │    ├─ ② parseActionPath(action) → 解析实例路径/模块/函数       │
+ * │    ├─ ③ 校验模块匹配（MODULE_MISMATCH / CONTEXT_MISMATCH）     │
+ * │    ├─ ④ 查找目标模块注册（递归或按 ID 搜索）                    │
+ * │    ├─ ⑤ 获取知识投影 → 查找匹配的 FunctionExposure             │
+ * │    ├─ ⑥ 校验 action 实例路径长度和根实例                       │
+ * │    ├─ ⑦ 合并 activePath → 归一化                              │
+ * │    ├─ ⑧ 注入上下文参数到 args → 校验 schema                   │
+ * │    └─ ⑨ 构建 FunctionExecutionContext + Translation           │
+ * └──────────────────────────────────────────────────────────────┘
+ *
+ * 失败码：INVALID_ACTION / MODULE_MISMATCH / CONTEXT_MISMATCH /
+ *         MODULE_AMBIGUOUS / MODULE_NOT_AVAILABLE / PROJECTION_SCOPE_MISMATCH /
+ *         FUNCTION_AMBIGUOUS / FUNCTION_NOT_AVAILABLE /
+ *         INVALID_ACTION_INSTANCE_PATH / INVALID_ARGS / MISSING_CONTEXT_INSTANCE
+ */
+
 import type {
   AiModuleInstanceBinding,
   AiModuleRegistration,
@@ -35,10 +61,16 @@ export class AiFunctionCallTranslator {
     private readonly projector: AiRuntimeProjector,
   ) {}
 
+  /**
+   * 翻译函数调用。
+   * 核心流程：校验会话 → 解析 action → 查找模块 → 获取投影 → 匹配函数 → 注入上下文 → 校验 schema。
+   * 每一步失败均返回 FunctionCallFailure，成功则返回 translation。
+   */
   async translateFunctionCall(
     options: AiRuntimeTranslateFunctionCallOptions,
   ): Promise<AiRuntimeFunctionCallTranslationResult> {
     const scope = this.sessions.normalizeScope(options)
+    // 阶段 1：检查会话状态
     const sessionFailure = this.sessions.getSessionFailure(scope)
     if (sessionFailure !== null) return sessionFailure
     try {
@@ -52,6 +84,7 @@ export class AiFunctionCallTranslator {
     }
     const session = this.sessions.requireStartedSession(scope)
 
+    // 阶段 2：解析 action 路径
     let address: ActionAddress
     try {
       address = AiInvocationProtocol.parseActionPath(options.action)
@@ -75,6 +108,7 @@ export class AiFunctionCallTranslator {
       )
     }
 
+    // 阶段 3 & 4：查找目标模块注册
     const rootModule = this.registrations.getModuleOrThrow(scope.moduleId)
     let targetModule: AiModuleRegistration | null
     try {
@@ -96,6 +130,7 @@ export class AiFunctionCallTranslator {
       )
     }
 
+    // 阶段 5：获取知识投影并查找匹配的函数曝光
     const projection = options.projection ?? await this.projections.projectKnowledge(scope)
     if (projection.scope.moduleId !== scope.moduleId || projection.scope.moduleInstanceId !== scope.moduleInstanceId) {
       return createFunctionCallFailure(
@@ -123,9 +158,11 @@ export class AiFunctionCallTranslator {
       )
     }
 
+    // 阶段 6：校验 action 实例路径
     const actionPathError = this.validateActionInstancePath(address, exposure, session)
     if (actionPathError !== null) return actionPathError
 
+    // 阶段 7：查找函数定义
     const definition = targetModule.getFunctions().find((candidate) => candidate.functionId === address.function)
     if (definition === undefined) {
       return createFunctionCallFailure(
@@ -135,6 +172,7 @@ export class AiFunctionCallTranslator {
       )
     }
 
+    // 阶段 8：合并 activePath → 注入上下文参数 → 校验 schema
     const mergedActivePath = this.mergeActionInstancePath(address, exposure, options.activePath ?? [], session)
     if ('ok' in mergedActivePath) return mergedActivePath
     const activePath = this.normalizeActivePath(projection.module, mergedActivePath)

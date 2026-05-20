@@ -1,3 +1,19 @@
+/**
+ * PageDesign AI 模块注册。
+ *
+ * 整体架构：
+ * PageDesignModule（主模块）
+ * ├── LifecycleModule（生命周期：bootstrap / describeProgress / describeDesignFlow）
+ * ├── TextModelModule（文本模型：readScript / writeScript / readStyle / writeStyle）
+ * ├── KnowledgeModule（知识查询：queryFunctions / queryModules / guideFunction / queryPayloads / guidePayload）
+ * ├── NodeTreeModule（节点树：getNode / listChildren / addNode / setProps / moveNode / removeNode ...）
+ * └── DatasetModule（数据集：表/列/视图/行/关系/依赖/聚合 CRUD）
+ *
+ * 流程：构造函数中创建 PageDesignService → 为各子模块创建 handler factory →
+ * 包装为 PageDesignRuntimeModule → 注入到 RuntimeBackedBusinessModule 的子模块列表 →
+ * LLM 调用函数时 executeFunctionCall 通过 validate/apply 链路路由到对应 handler。
+ */
+
 import type {
   AiFunctionRegistration,
   AiKnowledgeProjector,
@@ -50,38 +66,37 @@ export type PageDesignModuleId =
   | typeof DATASET_MODULE_ID
   | typeof KNOWLEDGE_MODULE_ID
 
-type PageDesignRuntimeContext = {
+interface PageDesignRuntimeContext {
   readonly instanceId: string
   readonly moduleId: typeof PAGE_DESIGN_MODULE_ID
   readonly moduleInstanceId: string
 }
 
-export type PageDesignModuleOptions = {
+export interface PageDesignModuleOptions {
   readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
 }
 
 type PageDesignFunctionApplyResult = object | AiRuntimeFunctionCallResult<unknown>
-type PageDesignFunctionApply = (
-  args: unknown,
-  context: FunctionExecutionContext,
-) => PageDesignFunctionApplyResult | Promise<PageDesignFunctionApplyResult>
-type PageDesignRuntimeFunctionRegistration = AiFunctionRegistration & {
+interface PageDesignFunctionApply {
+  (args: unknown, context: FunctionExecutionContext): PageDesignFunctionApplyResult | Promise<PageDesignFunctionApplyResult>
+}
+interface PageDesignRuntimeFunctionRegistration extends AiFunctionRegistration {
   readonly apply: PageDesignFunctionApply
-  readonly validate?: ((args: unknown, context: FunctionExecutionContext) => string | null) | undefined
+    readonly validate?: ((args: unknown, context: FunctionExecutionContext) => string | null) | undefined
 }
 
-type PageDesignFunctionHandler = {
+interface PageDesignFunctionHandler {
   readonly functionId: string
   readonly validate?: ((args: unknown, context: FunctionExecutionContext) => string | null) | undefined
   readonly apply: PageDesignFunctionApply
 }
 
-type PageDesignFunctionBindingRuntime = {
+interface PageDesignFunctionBindingRuntime {
   readonly service: PageDesignService
   readonly knowledge: AiKnowledgeProjector
 }
 
-type PageDesignPayloadProp = {
+interface PageDesignPayloadProp {
   readonly name: string
   readonly type?: string | undefined
   readonly required?: boolean | undefined
@@ -89,7 +104,7 @@ type PageDesignPayloadProp = {
   readonly schema?: LlmJsonSchema | undefined
 }
 
-type PageDesignPayloadEntry = {
+interface PageDesignPayloadEntry {
   readonly type: string
   readonly filePath?: string | undefined
   readonly category?: string | undefined
@@ -101,11 +116,15 @@ type PageDesignPayloadEntry = {
   readonly source?: string | undefined
 }
 
-type PageDesignPayloadCatalog = {
+interface PageDesignPayloadCatalog {
   readonly version: string
   readonly componentCount: number
   readonly components: Readonly<Record<string, PageDesignPayloadEntry>>
 }
+
+// =========================================================
+// Payload 类型校验器（组件荷载目录 JSON 验证）
+// =========================================================
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -163,6 +182,10 @@ function readPageDesignPayloadCatalog(value: unknown): PageDesignPayloadCatalog 
   }
 }
 
+// =========================================================
+// PageDesign 运行时子模块（将 handler 包装为 StaticAiToolModule）
+// =========================================================
+
 class PageDesignRuntimeToolModule extends StaticAiToolModule {
   constructor(
     moduleId: PageDesignModuleId,
@@ -183,14 +206,17 @@ class PageDesignRuntimeToolModule extends StaticAiToolModule {
 
 const PAGE_DESIGN_COMPONENT_CATALOG: PageDesignPayloadCatalog = readPageDesignPayloadCatalog(componentCatalogPayload)
 
+// =========================================================
+// 组件荷载查询函数（queryPayloads / guidePayload）
+// =========================================================
+
 const PAGE_DESIGN_PAYLOAD_FUNCTIONS: readonly AiFunctionRegistration[] = [
   {
     functionId: 'queryPayloads',
-    description: '查询可用于当前页面设计的组件参数荷载目录，支持 category/keyword/key/expression 过滤。',
+    description: '查询可用于当前页面设计的组件参数荷载目录，支持 category/keyword/key 过滤。',
     paramsSchema: {
       type: 'object',
       properties: {
-        expression: { type: 'string', description: '兼容旧调用的查询表达式，例如 components[?category==`container`].type。' },
         category: { type: 'string', description: '按组件 category 精确过滤，例如 container、field、display。' },
         keyword: { type: 'string', description: '按 type、category、description 或 filePath 模糊搜索。' },
         key: { type: 'string', description: '按组件 type/key 精确查询。' },
@@ -234,6 +260,10 @@ const PAGE_DESIGN_PAYLOAD_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
 ]
+
+// =========================================================
+// 工具函数：参数解析和路由
+// =========================================================
 
 function toObject(value: unknown): Record<string, unknown> | null {
   return isObjectRecord(value) ? value : null
@@ -301,18 +331,6 @@ function payloadKey(entry: PageDesignPayloadEntry): string {
   return entry.type
 }
 
-function payloadMatchesExpression(entry: PageDesignPayloadEntry, expression: string): boolean {
-  const categoryMatch = /category\s*==\s*`([^`]+)`/.exec(expression)
-  if (categoryMatch !== null) {
-    return entry.category === categoryMatch[1]
-  }
-  const typeMatch = /type\s*==\s*`([^`]+)`/.exec(expression)
-  if (typeMatch !== null) {
-    return entry.type === typeMatch[1]
-  }
-  return true
-}
-
 function payloadMatchesKeyword(entry: PageDesignPayloadEntry, keyword: string): boolean {
   const haystack = [
     entry.type,
@@ -371,7 +389,6 @@ function createPayloadParamsSchema(entry: PageDesignPayloadEntry): LlmParameterS
 
 function queryPageDesignPayloads(args: unknown): AiRuntimeFunctionCallResult<unknown> {
   const input = toObject(args) ?? {}
-  const expression = typeof input['expression'] === 'string' ? input['expression'].trim() : ''
   const category = typeof input['category'] === 'string' ? input['category'].trim() : ''
   const keyword = typeof input['keyword'] === 'string' ? input['keyword'].trim() : ''
   const key = typeof input['key'] === 'string' ? input['key'].trim() : ''
@@ -379,9 +396,6 @@ function queryPageDesignPayloads(args: unknown): AiRuntimeFunctionCallResult<unk
   const limit = payloadLimit(input)
 
   let rows = payloadRows()
-  if (expression.length > 0) {
-    rows = rows.filter((entry) => payloadMatchesExpression(entry, expression))
-  }
   if (category.length > 0) {
     rows = rows.filter((entry) => entry.category === category)
   }
@@ -449,7 +463,7 @@ function createServiceMethodBinding(row: AiFunctionRegistration, methodName: str
 }
 
 // =========================================================
-// Lifecycle handler factory
+// Handler Factory：为各子模块创建 PageDesignFunctionHandler
 // =========================================================
 function createLifecycleHandlers(
   service: PageDesignService,
@@ -619,6 +633,12 @@ function createPageDesignRuntimeModule(
   return new PageDesignRuntimeToolModule(moduleId, name, description, prompt, functions)
 }
 
+/**
+ * PageDesign 主模块。
+ *
+ * 构造函数中按顺序创建：PageDesignService → 5 个子模块 runtime → 注入 RuntimeBackedBusinessModule。
+ * executeFunctionCall 通过 PageDesignRuntimeFunctionRegistration.validate / apply 路由到对应 handler。
+ */
 export class PageDesignModule extends RuntimeBackedBusinessModule {
   static readonly moduleId = PAGE_DESIGN_MODULE_ID
 
@@ -661,6 +681,7 @@ export class PageDesignModule extends RuntimeBackedBusinessModule {
     this.service = service
   }
 
+  /** LLM 函数调用入口：通过 PageDesignRuntimeFunctionRegistration.validate / apply 路由到 handler。 */
   override async executeFunctionCall(options: RuntimeBackedExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
     PageDesignModule.assertContext(options)
     return this.executeRegisteredFunctionCall({

@@ -7,7 +7,7 @@ import {
   type LogTransport,
 } from '@spark-view/spark-utils'
 
-type CapturedLog = {
+interface CapturedLog {
   level: string
   message: string
   meta?: Record<string, unknown> | undefined

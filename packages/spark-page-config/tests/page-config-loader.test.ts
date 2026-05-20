@@ -113,7 +113,7 @@ describe('PageConfigLoader', () => {
     })
 
     it('loadRule: 成功返回规则数组', async () => {
-      const rules = [{ type: 'div', props: { id: 'root' } }]
+      const rules = [{ type: 'div', id: 'root' }]
       mockFileLoader.load.mockResolvedValue(fileOk(rules))
       const r = await loader.loadRule('order-page')
       expect(r.success).toBe(true)
@@ -122,7 +122,7 @@ describe('PageConfigLoader', () => {
     })
 
     it('loadRule: 保留后端文件时间戳和 notModified 缓存状态', async () => {
-      const rules = [{ type: 'div', props: { id: 'root' } }]
+      const rules = [{ type: 'div', id: 'root' }]
       mockFileLoader.load.mockResolvedValue({
         success: true,
         data: rules,
@@ -600,25 +600,22 @@ describe('compileRule', () => {
     expect(result[0]!.children).toEqual([])
   })
 
-  it('兼容 props.id 输入，规范化后只保留顶层 id', () => {
+  it('拒绝 props.id 输入', () => {
     const raw = JSON.stringify([{
       type: 'r-table',
       props: {
-        id: 'legacy-table',
+        id: 'props-id',
         dataViewKey: 'Orders@default',
       },
     }])
-    const result = compileRule(raw)
-    expect(result[0]!.id).toBe('legacy-table')
-    expect(result[0]!.props).toEqual({ dataViewKey: 'Orders@default' })
+    expect(() => compileRule(raw)).toThrow(/SparkNode\.props\.id is invalid/)
   })
 
-  it('props.id 与顶层 id 同时存在时以顶层 id 为准', () => {
+  it('顶层 id 与 props 分离', () => {
     const raw = JSON.stringify([{
       type: 'r-table',
       id: 'orders-table',
       props: {
-        id: 'legacy-table',
         dataViewKey: 'Orders@default',
       },
     }])

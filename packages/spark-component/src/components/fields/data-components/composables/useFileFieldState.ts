@@ -10,7 +10,7 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
-type UploadBrowseFieldStateOptions = {
+interface UploadBrowseFieldStateOptions {
   displayLabel: ValueRef<string>
   fieldName: ValueRef<string>
   currentRawStringValue: ValueRef<string>
@@ -44,7 +44,7 @@ type UploadBrowseFieldStateOptions = {
   getUploadValue?: ((file: PageUploadedFile) => string) | undefined
 }
 
-type FileBrowserFieldStateOptions = {
+interface FileBrowserFieldStateOptions {
   displayLabel: ValueRef<string>
   currentRawStringValue: ValueRef<string>
   isCurrentFieldEditable: ValueRef<boolean>

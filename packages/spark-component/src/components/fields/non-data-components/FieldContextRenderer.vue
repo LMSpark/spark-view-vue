@@ -98,53 +98,53 @@ import { TABLE_COLUMN_RESIZABLE_KEY } from '../context/tableColumnContext'
 
 type TextAlign = 'left' | 'center' | 'right'
 
-type Props = SparkNodeProps & {
+interface Props extends SparkNodeProps {
   /** 显示标签 */
-  displayLabel?: string | undefined
-  /** 字段绑定名 */
-  fieldName?: string | undefined
-  /** 列宽 */
-  width?: string | number | undefined
-  /** 表格列是否允许拖动列宽 */
-  resizable?: boolean | undefined
-  /** 表格列排序能力 */
-  sortable?: boolean | 'custom' | undefined
-  /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */
-  filterable?: boolean | undefined
-  /** 最小列宽 */
-  minWidth?: string | number | undefined
-  /** 固定列方向 */
-  fixed?: boolean | 'left' | 'right' | undefined
-  /** 列对齐 */
-  align?: TextAlign | undefined
-  /** 表头对齐 */
-  headerAlign?: TextAlign | undefined
-  /** 子组件配置 */
-  mergedChildren?: SparkNode[] | undefined
-  /** 当前字段是否隐藏 */
-  isCurrentFieldHidden?: boolean | undefined
-  /** 当前宿主下字段是否应渲染 */
-  shouldRenderCurrentField?: boolean | undefined
-  /** 当前显示值 */
-  currentDisplayValue?: string | undefined
-  /** 表格行级隐藏判断 */
-  isTableCellHidden?: ((row: DataRow) => boolean) | undefined
-  /** 表格行级显示值获取 */
-  getTableCellDisplayValue?: ((row: DataRow) => string) | undefined
-  /** 表单验证规则 */
-  validationRules?: FormItemRule[] | undefined
-  /** 标题对齐（table/detail） */
-  titleAlign?: TextAlign | undefined
-  /** 值对齐（table/detail） */
-  valueAlign?: TextAlign | undefined
-  /** 表头 class（table） */
-  headerCellClassName?: string | undefined
-  /** 单元格 class（table） */
-  cellClassName?: string | undefined
-  /** 标题 class（detail） */
-  titleClassName?: string | undefined
-  /** 值 class（detail/table value） */
-  valueClassName?: string | undefined
+    displayLabel?: string | undefined
+    /** 字段绑定名 */
+    fieldName?: string | undefined
+    /** 列宽 */
+    width?: string | number | undefined
+    /** 表格列是否允许拖动列宽 */
+    resizable?: boolean | undefined
+    /** 表格列排序能力 */
+    sortable?: boolean | 'custom' | undefined
+    /** 表格字段是否可参与过滤区生成；由上层容器消费，此处仅声明避免 fallthrough warning */
+    filterable?: boolean | undefined
+    /** 最小列宽 */
+    minWidth?: string | number | undefined
+    /** 固定列方向 */
+    fixed?: boolean | 'left' | 'right' | undefined
+    /** 列对齐 */
+    align?: TextAlign | undefined
+    /** 表头对齐 */
+    headerAlign?: TextAlign | undefined
+    /** 子组件配置 */
+    mergedChildren?: SparkNode[] | undefined
+    /** 当前字段是否隐藏 */
+    isCurrentFieldHidden?: boolean | undefined
+    /** 当前宿主下字段是否应渲染 */
+    shouldRenderCurrentField?: boolean | undefined
+    /** 当前显示值 */
+    currentDisplayValue?: string | undefined
+    /** 表格行级隐藏判断 */
+    isTableCellHidden?: ((row: DataRow) => boolean) | undefined
+    /** 表格行级显示值获取 */
+    getTableCellDisplayValue?: ((row: DataRow) => string) | undefined
+    /** 表单验证规则 */
+    validationRules?: FormItemRule[] | undefined
+    /** 标题对齐（table/detail） */
+    titleAlign?: TextAlign | undefined
+    /** 值对齐（table/detail） */
+    valueAlign?: TextAlign | undefined
+    /** 表头 class（table） */
+    headerCellClassName?: string | undefined
+    /** 单元格 class（table） */
+    cellClassName?: string | undefined
+    /** 标题 class（detail） */
+    titleClassName?: string | undefined
+    /** 值 class（detail/table value） */
+    valueClassName?: string | undefined
 }
 
 const props = defineProps<Props>()

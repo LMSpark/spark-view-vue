@@ -33,27 +33,27 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
-type Props = SparkNodeProps & {
+interface Props extends SparkNodeProps {
   /** 步骤标题 */
-  title?: string
-  /** 步骤描述文本 */
-  description?: string
-  /** 步骤状态 */
-  status?: string
-  /** 是否禁用 */
-  disabled?: boolean
-  /** 步骤体自定义 class */
-  bodyClass?: string
-  /** CSS Grid 列数 */
-  gridColumns?: number | string
-  /** 栅格行高 */
-  gridAutoRows?: string
-  /** 栅格间距 */
-  gridGap?: number | string
-  /** 在父容器中的位置序号 */
-  index: number
-  /** 渲染模式：步骤头部或内容区 */
-  mode: 'header' | 'content'
+    title?: string
+    /** 步骤描述文本 */
+    description?: string
+    /** 步骤状态 */
+    status?: string
+    /** 是否禁用 */
+    disabled?: boolean
+    /** 步骤体自定义 class */
+    bodyClass?: string
+    /** CSS Grid 列数 */
+    gridColumns?: number | string
+    /** 栅格行高 */
+    gridAutoRows?: string
+    /** 栅格间距 */
+    gridGap?: number | string
+    /** 在父容器中的位置序号 */
+    index: number
+    /** 渲染模式：步骤头部或内容区 */
+    mode: 'header' | 'content'
 }
 
 const props = withDefaults(defineProps<Props>(), {

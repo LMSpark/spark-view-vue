@@ -78,13 +78,13 @@ import { http } from '@/services/http'
 import { getPlatformTenantApi } from '@/services/api-paths'
 import { buildTenantPath } from '@/services/tenant-scope'
 
-type PlatformTenant = {
+interface PlatformTenant {
   tenantId: string
   tenantName: string
   status: string
 }
 
-type ProjectItem = {
+interface ProjectItem {
   projectId: string
   name: string
   projectType: string

@@ -28,7 +28,7 @@ export type PageDataConfig = DataSet
  * - 脚本是纯函数定义，不使用 ES6 export 或 CommonJS exports
  * - 由 PageRenderer 使用 Function 构造器编译和执行
  */
-export type PageScriptConfig = string
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生 string。
 
 /**
  * 页面样式配置（style.css）
@@ -36,7 +36,6 @@ export type PageScriptConfig = string
  *
  * 后续可加：作用域前缀注入、CSS 变量展开、预处理器编译结果缓存。
  */
-export type PageCssConfig = string
 
 /**
  * 页面四文件载荷（不含 pageId）
@@ -48,11 +47,11 @@ export type PageCssConfig = string
  * - script → 沙箱函数表
  * - css    → 作用域样式文本
  */
-export type PageConfigFiles = {
+export interface PageConfigFiles {
   rule: RuleConfig[]
   data: PageDataConfig
-  script: PageScriptConfig | undefined
-  css: PageCssConfig | undefined
+  script: string | undefined
+  css: string | undefined
 }
 
 /**
@@ -69,7 +68,7 @@ export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
 /**
  * 页面配置文件的描述符，用于动态注册文件类型。
  */
-export type PageConfigFileDescriptor = {
+export interface PageConfigFileDescriptor {
   /** 文件名，如 'rule.json' */
   name: string
   /** 是否必需（加载失败时是否阻断） */
@@ -93,7 +92,7 @@ export function createDefaultFileRegistry(): PageFileRegistry {
   )
 }
 
-export type PageConfigFileLoadOptions = {
+export interface PageConfigFileLoadOptions {
   /**
    * 跳过客户端缓存，强制重新请求后端文件接口。
    */
@@ -103,14 +102,14 @@ export type PageConfigFileLoadOptions = {
 /**
  * 完整页面配置
  */
-export type PageConfig = PageConfigFiles & {
+export interface PageConfig extends PageConfigFiles {
   pageId: string
 }
 
 /**
  * 配置加载器选项
  */
-export type ConfigLoaderOptions = {
+export interface ConfigLoaderOptions {
   /**
    * 远程 API 基础路径。
    *
@@ -159,7 +158,7 @@ export type ConfigLoaderOptions = {
 /**
  * 配置加载结果
  */
-export type ConfigLoadResult<T = unknown> = {
+export interface ConfigLoadResult<T = unknown> {
   success: boolean
   data?: T
   error?: string
@@ -192,10 +191,10 @@ export abstract class BasePageConfigLoader {
   abstract loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>>
 
   /** 加载页面脚本。 */
-  abstract loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>>
+  abstract loadScript(pageId: string): Promise<ConfigLoadResult<string>>
 
   /** 加载页面样式。 */
-  abstract loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>>
+  abstract loadCss(pageId: string): Promise<ConfigLoadResult<string>>
 
   /**
    * 加载单个页面配置文件原文。

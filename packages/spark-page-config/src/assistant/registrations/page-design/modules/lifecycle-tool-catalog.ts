@@ -1,3 +1,12 @@
+/**
+ * 页面设计生命周期工具模块。
+ *
+ * 提供三个函数：
+ * - bootstrap — 引导编辑会话，校验 live binding 能力并进入 editing phase
+ * - describeProgress — 查询当前编辑运行状态、可用性和下一步建议
+ * - describeDesignFlow — 查询页面设计 100 步流程，支持阶段/步骤过滤
+ */
+
 import {
   noParamsSchema,
   numberSchema,
@@ -89,6 +98,7 @@ const LIFECYCLE_FUNCTIONS: readonly AiFunctionRegistration[] = [
   },
 ]
 
+/** 页面设计生命周期静态工具模块：定义 bootstrap / describeProgress / describeDesignFlow 函数注册表。 */
 export class LifecycleModule extends StaticAiToolModule {
   constructor() {
     super({

@@ -7,19 +7,18 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-type BasicFieldProps<TValue> = FieldPermissionProps<TValue> & OptionalWithUndefined<Pick<SparkNodeProps,
+interface BasicFieldProps<TValue> extends FieldPermissionProps<TValue>, OptionalWithUndefined<Pick<SparkNodeProps,
     | 'type' | 'children'
-  >> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+  >>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
     | 'width'
     | 'resizable'
     | 'titleAlign' | 'valueAlign'
     | 'headerCellClassName' | 'cellClassName'
     | 'titleClassName' | 'valueClassName'
     | 'sortable'
-  >> & {
-}
+  >> {}
 
-type UseBasicFieldStateOptions<TValue> = {
+interface UseBasicFieldStateOptions<TValue> {
   props: BasicFieldProps<TValue>
   fieldType: string
   fallbackValue: TValue

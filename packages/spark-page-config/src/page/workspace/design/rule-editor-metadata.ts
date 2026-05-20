@@ -1,6 +1,6 @@
 import type { JsonObject } from '../documents/json-document'
 
-export type RuleEditorComponentMetadata = {
+export interface RuleEditorComponentMetadata {
   types: string[]
   propNames: Record<string, string[]>
   propEnums: Record<string, Record<string, string[]>>

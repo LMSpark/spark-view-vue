@@ -96,7 +96,7 @@ export type LoadStrategy = 'sync' | 'async'
 /**
  * 组件 Props 属性元数据（从 defineProps<Props> 类型自动提取）
  */
-export type PropMeta = {
+export interface PropMeta {
   /** 属性名 */
   name: string
   /** TypeScript 类型字符串 */
@@ -109,7 +109,7 @@ export type PropMeta = {
   default?: string
 }
 
-export type SkillMeta = {
+export interface SkillMeta {
   /** Skill 注册名（默认取 kebab-case 文件名，@skill 标签可覆盖） */
   type: string
   /** Skill 功能描述（@description 标签） */
@@ -133,7 +133,7 @@ export type SkillMeta = {
 /**
  * 组件元数据
  */
-export type ComponentMetadata = {
+export interface ComponentMetadata {
   /** 组件名称（kebab-case） */
   name: string
   /** 文件路径（相对于 root） */
@@ -157,7 +157,7 @@ export type ComponentMetadata = {
 /**
  * 插件配置
  */
-export type SparkComponentsPluginOptions = {
+export interface SparkComponentsPluginOptions {
   /**
    * 组件扫描模式（glob 模式）
    * @default ['./features/**\/*.vue', './src/components/**\/*.vue']

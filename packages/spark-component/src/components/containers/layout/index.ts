@@ -30,7 +30,7 @@ export { default as RendererAnchorLink } from './RendererAnchorLink.vue'
 
 // ── Props 类型 ──
 export type { RTabsProps, TabsClickEvent } from './RendererTabs/index.js'
-export type { RCollapseProps, CollapseValue } from './RendererCollapse/index.js'
+export type { RCollapseProps } from './RendererCollapse/index.js'
 export type { RDialogProps } from './RendererDialog/index.js'
 export type { RDrawerProps } from './RendererDrawer/index.js'
 export type { RStepsProps } from './RendererSteps/index.js'

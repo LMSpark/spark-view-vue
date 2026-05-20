@@ -4,7 +4,7 @@ import { isDataRecord } from '../data-row-utils.js'
 import type { RendererListApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-type RendererListZeroCodeOptions = {
+interface RendererListZeroCodeOptions {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
   rows: ValueRef<readonly DataRow[]>

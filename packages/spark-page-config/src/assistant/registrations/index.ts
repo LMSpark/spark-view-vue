@@ -1,3 +1,10 @@
+/**
+ * Assistant 注册模块 barrel 入口。
+ *
+ * 汇总导出两大业务模块（PageDesign / LeaveRequest）和统一注册入口 registerAssistantBusinesses()。
+ * 消费方通过此文件获取所有 AI Assistant 相关的模块、服务和类型。
+ */
+
 export {
   PageDesignModule,
   DatasetModule,
@@ -8,7 +15,6 @@ export {
   PageDesignEditFlowPrompts,
   PageDesignEditRuntimePrompt,
   type DatasetCrudToolFunctionFailureMode,
-  type DatasetCrudToolFunctionId,
   type EditLifecycleFunctionFailureMode,
   type EditLifecycleFunctionId,
   type PageDesignModuleOptions,

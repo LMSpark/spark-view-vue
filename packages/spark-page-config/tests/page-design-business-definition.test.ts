@@ -177,7 +177,7 @@ describe('pageDesign module definition', () => {
       moduleInstanceId: 'page-designer',
       instanceId: 'page-design-1',
       action: 'page-designer@knowledge@queryPayloads',
-      args: { expression: 'components[?category==`container`].type', limit: 1 },
+      args: { category: 'container', limit: 1 },
       projection,
     })
     expect(payloads).toMatchObject({ ok: true })

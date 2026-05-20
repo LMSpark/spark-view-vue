@@ -21,7 +21,7 @@ export type AppEnvironment = 'development' | 'production' | 'test'
 /**
  * 用户信息
  */
-export type UserInfo = {
+export interface UserInfo {
   userId: string
   username: string
   displayName?: string
@@ -34,7 +34,7 @@ export type UserInfo = {
 /**
  * 租户信息
  */
-export type TenantInfo = {
+export interface TenantInfo {
   tenantId: string
   tenantName: string
   tenantCode?: string
@@ -45,7 +45,7 @@ export type TenantInfo = {
 /**
  * 环境信息
  */
-export type EnvironmentInfo = {
+export interface EnvironmentInfo {
   mode: AppEnvironment
   apiBaseUrl: string
   version: string
@@ -73,7 +73,7 @@ export type EnvironmentInfo = {
  * - 环境判断（SSR vs CSR）
  * - 全局配置读取
  */
-export type AppContext = {
+export interface AppContext {
   /** 用户信息 */
   user: UserInfo
   /** 租户信息 */
@@ -89,7 +89,7 @@ export type AppContext = {
 /**
  * 应用配置
  */
-export type AppConfig = {
+export interface AppConfig {
   /** API 基础地址 */
   apiBaseUrl: string
   /** 日志级别 */
@@ -110,19 +110,19 @@ export type AppConfig = {
 /**
  * Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由
  */
-export type BootstrapContext = AppContext & {
+export interface BootstrapContext extends AppContext {
   /** Vue 应用实例 */
-  app: App
-  /** Vue Router 实例 */
-  router: Router
-  /** 主题服务（仅在启用 theme 选项时存在） */
-  theme?: ThemeCapability
+    app: App
+    /** Vue Router 实例 */
+    router: Router
+    /** 主题服务（仅在启用 theme 选项时存在） */
+    theme?: ThemeCapability
 }
 
 /**
  * 初始化选项
  */
-export type BootstrapOptions = {
+export interface BootstrapOptions {
   /** Vue 应用实例 */
   app: App
   /** Vue Router 实例 */
@@ -144,7 +144,7 @@ export type BootstrapOptions = {
 /**
  * 路由守卫选项
  */
-export type RouterGuardOptions = {
+export interface RouterGuardOptions {
   /** 自定义权限检查 */
   checkPermission?: (permissions: string[], required: string[]) => boolean
 }
@@ -152,7 +152,7 @@ export type RouterGuardOptions = {
 /**
  * 错误处理选项
  */
-export type ErrorHandlerOptions = {
+export interface ErrorHandlerOptions {
   /** 错误回调 */
   onError?: (error: Error, context: ErrorContext) => void
   /** 自定义错误分类 */
@@ -177,7 +177,7 @@ export type ErrorHandlerOptions = {
  * - API 请求错误时记录 info 和 timestamp
  * - 用户操作异常时进行错误上报
  */
-export type ErrorContext = {
+export interface ErrorContext {
   /** 错误来源（组件名） */
   source?: string
   /** 组件文件路径（Vue SFC __file） */

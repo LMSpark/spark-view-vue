@@ -1,6 +1,6 @@
 import type { PageMode } from '@spark-view/spark-app'
 
-export type ProjectUiSettings = {
+export interface ProjectUiSettings {
   headerFirst: boolean
   sidebarCollapsed: boolean
   showFooter: boolean

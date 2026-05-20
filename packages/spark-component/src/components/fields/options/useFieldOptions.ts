@@ -8,7 +8,6 @@ import type { FieldPermissionProps } from '../context/useFieldPermission'
 import { buildOptionSourceFromView } from './option-source.js'
 import {
   flattenOptions,
-  type FieldOptionValue,
   normalizeMultiValue,
   normalizeOption,
   type FieldOption,
@@ -16,7 +15,7 @@ import {
 
 export type { FieldOption } from './option-normalization.js'
 
-export type FieldTransferOption = {
+export interface FieldTransferOption {
   key: string | number
   label: string
   disabled?: boolean
@@ -39,10 +38,10 @@ type FieldOptionProps = OptionalWithUndefined<Pick<
   | 'valueSeparator'
 >>
 
-type UseFieldOptionsReturn = {
+interface UseFieldOptionsReturn {
   options: ComputedRef<FieldOption[]>
   flatOptions: ComputedRef<FieldOption[]>
-  normalizeOptionValues: (value: unknown) => FieldOptionValue[]
+  normalizeOptionValues: (value: unknown) => Array<string | number | boolean>
   findOptionLabel: (value: unknown) => string
   findOptionLabels: (value: unknown) => string[]
   formatOptionValue: (value: unknown) => string
@@ -50,7 +49,7 @@ type UseFieldOptionsReturn = {
   transferData: ComputedRef<FieldTransferOption[]>
 }
 
-type UseOptionFieldOptions<TValue> = {
+interface UseOptionFieldOptions<TValue> {
   props: FieldOptionProps & FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue
@@ -120,7 +119,7 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
     return match?.label ?? String(value ?? '')
   }
 
-  function normalizeOptionValues(value: unknown): FieldOptionValue[] {
+  function normalizeOptionValues(value: unknown): Array<string | number | boolean> {
     return normalizeMultiValue(value, valueSeparator.value)
   }
 

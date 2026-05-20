@@ -1,4 +1,4 @@
-import type { PageSelectableValue } from '../../internal'
+import type { PageSelectorOption } from '../../internal'
 import type {
   SparkNodeProps,
   SparkOptionFieldProps,
@@ -6,11 +6,9 @@ import type {
   SparkReadonlyActionTextProps,
 } from '../../shared-types'
 
-export type EntityPickerValue = PageSelectableValue | PageSelectableValue[] | string
-
-export type REntityPickerProps = SparkNodeProps & SparkOptionFieldProps<EntityPickerValue> & SparkPrimaryActionTextProps & SparkReadonlyActionTextProps & {
+export interface REntityPickerProps extends SparkNodeProps, SparkOptionFieldProps<PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string>, SparkPrimaryActionTextProps, SparkReadonlyActionTextProps {
   /** 是否允许对实体候选项执行搜索。 */
-  searchable?: boolean
-  /** 实体类型名称，用于驱动选择器语义或远端查询。 */
-  entityName?: SparkText
+    searchable?: boolean
+    /** 实体类型名称，用于驱动选择器语义或远端查询。 */
+    entityName?: string
 }

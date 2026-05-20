@@ -31,7 +31,7 @@ const logger = createLogger('spark-catalog-audit')
 
 export type AuditSeverity = 'error' | 'warning' | 'info'
 
-export type AuditIssue = {
+export interface AuditIssue {
   severity: AuditSeverity
   rule: string
   component: string
@@ -39,7 +39,7 @@ export type AuditIssue = {
   message: string
 }
 
-export type AuditReport = {
+export interface AuditReport {
   timestamp: string
   totalComponents: number
   issues: AuditIssue[]
@@ -53,7 +53,7 @@ export type AuditReport = {
   }
 }
 
-export type AuditOptions = {
+export interface AuditOptions {
   /** 忽略的规则 ID 列表 */
   ignoreRules?: string[]
   /** 忽略的组件 type 列表 */
@@ -62,7 +62,7 @@ export type AuditOptions = {
   strict?: boolean
 }
 
-type AuditableComponentCatalog = {
+interface AuditableComponentCatalog {
   componentCount: number
   components: Record<string, ComponentEntry>
   schemas?: Record<string, PropSchema>

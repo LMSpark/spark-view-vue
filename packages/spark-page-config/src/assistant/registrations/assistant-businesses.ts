@@ -1,8 +1,19 @@
 /**
- * Assistant 业务注册。
+ * Assistant 业务注册入口。
  *
- * 把 LeaveRequest 和 PageDesign 模块包装为 AiHostBusinessRuntime，
- * 并注册到 AiHostBusinessRegistry。
+ * 整体架构流程：
+ * 1. registerAssistantBusinesses() — 注册函数，由 App AI Center host 调用
+ *    ↓
+ * 2. 创建业务模块实例（LeaveRequestModule / PageDesignModule）
+ *    ↓
+ * 3. 包装为 HostRuntime（LeaveRequestHostRuntime / PageDesignHostRuntime）
+ *    ↓
+ * 4. 注册到 AiHostBusinessRegistry，供 AI Runtime 调度
+ *
+ * HostRuntime 生命周期：
+ *   startSession → appendMessage → executeFunctionCall → afterFunctionCall → endBusinessInstance → releaseModuleInstance
+ *
+ * ModuleBackedHostRuntime 抽象基类处理了所有公共委托逻辑，子类只需覆盖 moduleId 和 afterFunctionCall。
  */
 
 import type {
@@ -27,10 +38,14 @@ import type { RuntimeBackedBusinessModule } from './internal/registration-base'
 import { LeaveRequestModule } from './leave-request'
 import { PageDesignModule } from './page-design'
 
-export type RegisterAssistantBusinessesOptions = {
+export interface RegisterAssistantBusinessesOptions {
   readonly registry: AiHostBusinessRegistry
   readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
 }
+
+// =========================================================
+// 工具函数：时区与日期格式化（LeaveRequest 系统提示词使用）
+// =========================================================
 
 function getRuntimeTimeZone(): string {
   try {
@@ -115,6 +130,10 @@ function pageDesignEditHostUnavailableMessage(result: AiRuntimeFunctionCallResul
   return null
 }
 
+// =========================================================
+// 业务运行时抽象基类：处理公共委托逻辑
+// =========================================================
+
 /**
  * 基于模块的业务运行时抽象基类。
  *
@@ -187,6 +206,10 @@ abstract class ModuleBackedHostRuntime implements AiHostBusinessRuntime {
   getSystemPrompt?(_context: AiHostBusinessRuntimeContext): string | undefined
 }
 
+// =========================================================
+// 人工请假业务运行时：自定义系统提示词 + submit/cancel 后自动结束会话
+// =========================================================
+
 /**
  * 人工请假业务运行时。
  *
@@ -224,6 +247,10 @@ class LeaveRequestHostRuntime extends ModuleBackedHostRuntime {
   }
 }
 
+// =========================================================
+// 页面设计业务运行时：EditHost 不可用时自动结束会话
+// =========================================================
+
 /**
  * 页面设计业务运行时。
  *
@@ -247,6 +274,10 @@ class PageDesignHostRuntime extends ModuleBackedHostRuntime {
     return { status: 'continue' }
   }
 }
+
+// =========================================================
+// 统一注册入口：创建模块实例并包装为 HostRuntime 注册到 Registry
+// =========================================================
 
 export function registerAssistantBusinesses(options: RegisterAssistantBusinessesOptions): void {
   const leaveModule = new LeaveRequestModule()

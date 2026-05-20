@@ -8,7 +8,7 @@ import type { NavContextState, NavNode, RegionItems, RegionVisibility } from './
  * 此文件仅保留 Vue 特有的类型。
  * ══════════════════════════════════════════════════════════ */
 
-export type NavigationContext = {
+export interface NavigationContext {
   /** 从根到当前叶子的节点路径 */
   activePath: ComputedRef<NavNode[]>
   /** 各区域的导航项 */

@@ -15,7 +15,7 @@ export { default as RendererFieldScope } from './support/RendererFieldScope.vue'
 // ── 结构节点类型（供容器 Props 组合使用） ──
 export type { RToolbarProps, InlineAlign, InlineJustify } from './layout/RendererToolbar.types.js'
 export type { RFilterProps } from './zones/RendererFilter.types.js'
-export type { ActionsAlign, ActionsPosition, ActionsFixed, RendererActionsProps } from './support/RendererActions.types.js'
+export type { ActionsAlign, ActionsPosition, RendererActionsProps } from './support/RendererActions.types.js'
 export type { REditorProps } from './zones/RendererEditor.types.js'
 export type { RHeaderProps } from './zones/RendererHeader.types.js'
 export type { RFooterProps } from './zones/RendererFooter.types.js'

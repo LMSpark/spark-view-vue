@@ -1,4 +1,3 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export type RTimelineProps = SparkNodeProps & {
-}
+export interface RTimelineProps extends SparkNodeProps {}

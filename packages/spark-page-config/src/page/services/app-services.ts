@@ -2,9 +2,9 @@ import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
 
 export type PageMessageType = 'success' | 'error' | 'warning' | 'info'
 export type PageDialogResult = 'confirm' | 'cancel' | 'close'
-export type PageSelectableValue = string | number | boolean
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生联合类型。
 
-export type PageDialogOptions = {
+export interface PageDialogOptions {
   title?: string
   message?: string
   content?: string
@@ -16,14 +16,14 @@ export type PageDialogOptions = {
   width?: string
 }
 
-export type PageBrowseFilesOptions = {
+export interface PageBrowseFilesOptions {
   title?: string
   accept?: string
   multiple?: boolean
   currentValue?: string
 }
 
-export type PageSelectedFile = {
+export interface PageSelectedFile {
   name: string
   size: number
   type: string
@@ -31,30 +31,30 @@ export type PageSelectedFile = {
   file: File
 }
 
-export type PageUploadFilesOptions = PageBrowseFilesOptions & {
+export interface PageUploadFilesOptions extends PageBrowseFilesOptions {
   action: string
-  method?: 'POST' | 'PUT' | 'PATCH'
-  fieldName?: string
-  headers?: Record<string, string>
-  data?: Record<string, string | Blob>
-  withCredentials?: boolean
-  files?: File[]
+    method?: 'POST' | 'PUT' | 'PATCH'
+    fieldName?: string
+    headers?: Record<string, string>
+    data?: Record<string, string | Blob>
+    withCredentials?: boolean
+    files?: File[]
 }
 
-export type PageUploadedFile = PageSelectedFile & {
+export interface PageUploadedFile extends PageSelectedFile {
   response: unknown
-  url?: string
+    url?: string
 }
 
-export type PageSelectorOption = {
+export interface PageSelectorOption {
   label: string
-  value: PageSelectableValue
+  value: string | number | boolean
   description?: string
   disabled?: boolean
   raw?: unknown
 }
 
-export type PageSelectEntitiesOptions = {
+export interface PageSelectEntitiesOptions {
   title?: string
   entityName?: string
   placeholder?: string
@@ -63,13 +63,14 @@ export type PageSelectEntitiesOptions = {
   confirmText?: string
   cancelText?: string
   emptyText?: string
-  currentValue?: PageSelectableValue | PageSelectableValue[] | string
+  currentValue?: string | number | boolean | Array<string | number | boolean>
   options?: PageSelectorOption[]
 }
 
-export type PageSelectedEntity = PageSelectorOption
+/** 选中实体沿用候选项结构，不再额外定义基础值类型别名。 */
+export interface PageSelectedEntity extends PageSelectorOption {}
 
-export type PageServiceCapability = {
+export interface PageServiceCapability {
   showMessage(message: string, type?: PageMessageType): void
   showConfirm(message: string, title?: string, options?: { confirmText?: string; cancelText?: string; type?: PageMessageType }): Promise<boolean>
   showPrompt(message: string, title?: string, options?: { placeholder?: string; defaultValue?: string }): Promise<string | null>
@@ -82,14 +83,14 @@ export type PageServiceCapability = {
   navigate(path: string, params?: Record<string, unknown>): void
 }
 
-export type PageRouterService = {
+export interface PageRouterService {
   push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
   replace(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
   back(): void
   currentRoute: unknown
 }
 
-export type PageRuntimeServicesCapability = {
+export interface PageRuntimeServicesCapability {
   router?: PageRouterService
   logger?: LoggerApi
   tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }

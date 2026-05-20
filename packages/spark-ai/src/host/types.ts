@@ -4,6 +4,21 @@
  * 定义业务运行时、作用域、传输层和选项的接口契约，
  * 不依赖任何前端框架（Vue/React/Angular）。
  * 具体框架的实现只需满足这些接口的结构类型。
+ *
+ * 类型分组（按流程/功能）：
+ * ┌─────────────────────────────────────────────┐
+ * │ 1. 聊天请求类型       AiHostChatRequest 等   │
+ * │ 2. SSE 事件类型       AiHostSseEvent 等      │
+ * │ 3. 业务作用域类型     AiHostBusinessScope 等 │
+ * │ 4. 运行时上下文类型   AiHostBusinessRuntimeContext 等 │
+ * │ 5. 生命周期指令       AiHostBusinessLifecycleDirective 等 │
+ * │ 6. 业务运行时契约     AiHostBusinessRuntime  │
+ * │ 7. Turn 元信息        AiHostTurnMeta          │
+ * │ 8. 传输层类型         AiHostTransport* 系列    │
+ * │ 9. 宿主选项           AiHostOptions           │
+ * │ 10. 会话与发送器      AiHostSender / AiHostBusinessSession │
+ * │ 11. 已选业务          AiHostSelectedBusiness  │
+ * └─────────────────────────────────────────────┘
  */
 
 import type {
@@ -15,9 +30,11 @@ import type {
   AiRuntimeStartSessionResult,
 } from '../protocol/runtime-contracts'
 
-// ── 聊天请求（框架无关的最小接口） ──
+// ═══════════════════════════════════════════════════════
+// 1. 聊天请求（框架无关的最小接口）
+// ═══════════════════════════════════════════════════════
 
-export type AiHostChatRequest = {
+export interface AiHostChatRequest {
   historyMsgs: Array<{ readonly role: 'user' | 'assistant' | 'system'; readonly content: string }>
   turn?: AiHostTurnMeta
   systemPrompt?: string
@@ -29,7 +46,11 @@ export type AiHostChatRequest = {
   onFcCall?: (record: AiHostFcCallRecord) => void
 }
 
-export type AiHostSseEvent = {
+// ═══════════════════════════════════════════════════════
+// 2. SSE 事件与函数调用记录
+// ═══════════════════════════════════════════════════════
+
+export interface AiHostSseEvent {
   type: string
   data: unknown
   streamKey: string
@@ -41,7 +62,7 @@ export type AiHostSseEvent = {
   }
 }
 
-export type AiHostFcCallRecord = {
+export interface AiHostFcCallRecord {
   toolName: string
   args: unknown
   turnId: string
@@ -52,61 +73,73 @@ export type AiHostFcCallRecord = {
   durationMs: number
 }
 
-// ── 业务作用域 ──
+// ═══════════════════════════════════════════════════════
+// 3. 业务作用域
+// ═══════════════════════════════════════════════════════
 
-export type AiHostBusinessScope = {
+export interface AiHostBusinessScope {
   readonly businessRegistrationId: string
   readonly businessInstanceId: string
   readonly instanceId: string
   readonly runtimeInstanceId: string
 }
 
-export type AiHostBusinessTarget = {
+export interface AiHostBusinessTarget {
   readonly businessRegistrationId: string
   readonly businessInstanceId: string
 }
 
-// ── 业务运行时上下文 ──
+// ═══════════════════════════════════════════════════════
+// 4. 业务运行时上下文 & 方法选项
+// ═══════════════════════════════════════════════════════
 
-export type AiHostBusinessRuntimeContext = {
+export interface AiHostBusinessRuntimeContext {
   readonly moduleId: string
   readonly moduleInstanceId: string
   readonly instanceId: string
 }
 
-// ── 运行时方法选项 ──
+// ═══════════════════════════════════════════════════════
+// 4b. 运行时方法选项
+// ═══════════════════════════════════════════════════════
 
-export type AiHostBusinessAppendMessageOptions = AiHostBusinessRuntimeContext & {
+export interface AiHostBusinessAppendMessageOptions extends AiHostBusinessRuntimeContext {
   readonly role: 'system' | 'user' | 'assistant'
-  readonly content: string
-  readonly source?: 'system' | 'ui' | 'llm' | undefined
-  readonly metadata?: Record<string, unknown> | undefined
+    readonly content: string
+    readonly source?: 'system' | 'ui' | 'llm' | undefined
+    readonly metadata?: Record<string, unknown> | undefined
 }
 
-export type AiHostBusinessExecuteFunctionCallOptions = AiHostBusinessRuntimeContext & {
+export interface AiHostBusinessExecuteFunctionCallOptions extends AiHostBusinessRuntimeContext {
   readonly action: string
-  readonly args: unknown
-  readonly projection?: AiRuntimeKnowledgeProjection | undefined
+    readonly args: unknown
+    readonly projection?: AiRuntimeKnowledgeProjection | undefined
 }
+
+// ═══════════════════════════════════════════════════════
+// 5. 生命周期指令
+// ═══════════════════════════════════════════════════════
 
 export type AiHostBusinessLifecycleStatus = 'continue' | 'complete' | 'abort'
 
-export type AiHostBusinessLifecycleDirective = {
+export interface AiHostBusinessLifecycleDirective {
   readonly status: AiHostBusinessLifecycleStatus
   readonly reason?: string | undefined
   readonly finalAssistantMessage?: string | undefined
   readonly releaseInstance?: boolean | undefined
 }
 
-export type AiHostBusinessAfterFunctionCallOptions = AiHostBusinessRuntimeContext & {
+export interface AiHostBusinessAfterFunctionCallOptions extends AiHostBusinessRuntimeContext {
   readonly action: string
-  readonly args: unknown
-  readonly result: AiRuntimeFunctionCallResult<unknown>
+    readonly args: unknown
+    readonly result: AiRuntimeFunctionCallResult<unknown>
 }
 
-// ── 业务运行时契约 ──
+// ═══════════════════════════════════════════════════════
+// 6. 业务运行时契约
+// ═══════════════════════════════════════════════════════
 
-export type AiHostBusinessRuntime = {
+export interface AiHostBusinessRuntime {
   readonly moduleId: string
   getSystemPrompt?(context: AiHostBusinessRuntimeContext): string | undefined
   startSession(context: AiHostBusinessRuntimeContext): Promise<AiRuntimeStartSessionResult>
@@ -120,9 +153,11 @@ export type AiHostBusinessRuntime = {
   releaseModuleInstance?(moduleInstanceId: string): void
 }
 
-// ── Turn 元信息 ──
+// ═══════════════════════════════════════════════════════
+// 7. Turn 元信息
+// ═══════════════════════════════════════════════════════
 
-export type AiHostTurnMeta = {
+export interface AiHostTurnMeta {
   readonly turnId: string
   readonly seq: number
   readonly baseRevision: number
@@ -131,9 +166,11 @@ export type AiHostTurnMeta = {
   readonly maxParallelTurns: number
 }
 
-// ── 传输层类型 ──
+// ═══════════════════════════════════════════════════════
+// 8. 传输层类型
+// ═══════════════════════════════════════════════════════
 
-export type AiHostTransportToolSpec = {
+export interface AiHostTransportToolSpec {
   readonly type: 'function'
   readonly function: {
     readonly name: string
@@ -142,14 +179,14 @@ export type AiHostTransportToolSpec = {
   }
 }
 
-export type AiHostTransportMessage = {
+export interface AiHostTransportMessage {
   readonly role: string
   readonly content: string
   readonly tool_call_id?: string | undefined
   readonly tool_calls?: readonly AiHostTransportToolCall[] | undefined
 }
 
-export type AiHostTransportToolCall = {
+export interface AiHostTransportToolCall {
   readonly id?: string | undefined
   readonly type?: string | undefined
   readonly function?: {
@@ -158,7 +195,7 @@ export type AiHostTransportToolCall = {
   } | undefined
 }
 
-export type AiHostStreamTurnInput = {
+export interface AiHostStreamTurnInput {
   readonly sessionId: string
   readonly scope: AiHostBusinessScope
   readonly turn: AiHostTurnMeta
@@ -172,29 +209,31 @@ export type AiHostStreamTurnInput = {
   readonly onUsage?: ((usage: Record<string, unknown>) => void) | undefined
 }
 
-export type AiHostStreamTurnResult = {
+export interface AiHostStreamTurnResult {
   readonly text: string
   readonly reasoning?: string | undefined
   readonly toolCalls: readonly AiHostTransportToolCall[]
 }
 
-export type AiHostAppendMessagesInput = {
+export interface AiHostAppendMessagesInput {
   readonly sessionId: string
   readonly scope: AiHostBusinessScope
   readonly turn: AiHostTurnMeta
   readonly messages: readonly AiHostTransportMessage[]
 }
 
-// ── 传输层契约 ──
+// ═══════════════════════════════════════════════════════
+// 8b. 传输层契约
+// ═══════════════════════════════════════════════════════
 
-export type AiHostTransport = {
+export interface AiHostTransport {
   streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult>
   appendMessages(input: AiHostAppendMessagesInput): Promise<void>
 }
 
 // ── 宿主选项 ──
 
-export type AiHostOptions = {
+export interface AiHostOptions {
   readonly registry: {
     get(moduleId: string): AiHostBusinessRuntime | undefined
     list(): readonly AiHostBusinessRuntime[]
@@ -203,11 +242,15 @@ export type AiHostOptions = {
   readonly maxToolRounds?: number | undefined
 }
 
-// ── 宿主发送器 ──
+// ═══════════════════════════════════════════════════════
+// 9. 宿主选项 & 发送器 & 会话
+// ═══════════════════════════════════════════════════════
 
-export type AiHostSender = (request: AiHostChatRequest) => Promise<void>
+export interface AiHostSender {
+  (request: AiHostChatRequest): Promise<void>
+}
 
-export type AiHostBusinessSession = {
+export interface AiHostBusinessSession {
   readonly target: AiHostBusinessTarget
   readonly scope: AiHostBusinessScope
   readonly storageKey: string
@@ -219,9 +262,11 @@ export type AiHostBusinessSession = {
   send(request: AiHostChatRequest): Promise<void>
 }
 
-// ── 已选业务 ──
+// ═══════════════════════════════════════════════════════
+// 10. 已选业务
+// ═══════════════════════════════════════════════════════
 
-export type AiHostSelectedBusiness = {
+export interface AiHostSelectedBusiness {
   readonly runtime: AiHostBusinessRuntime
   readonly scope: AiHostBusinessScope
   projection: AiRuntimeKnowledgeProjection

@@ -1,7 +1,5 @@
 /// <reference types="vite/client" />
 
-declare type SparkText = string
-
 declare module '*.vue' {
   import type { DefineComponent } from 'vue'
   const component: DefineComponent<Record<string, never>, Record<string, never>, unknown>
@@ -18,12 +16,12 @@ declare module 'virtual:spark-components' {
   /**
    * 组件名称（kebab-case）
    */
-  export type ComponentName = string
+  // 这里不再为 JS 基础类型保留导出别名，组件名称直接使用 string。
 
   /**
    * 组件统计信息
    */
-  export type ComponentStats = {
+  export interface ComponentStats {
     /** 组件总数 */
     total: number
     /** 同步加载组件数量 */
@@ -37,9 +35,9 @@ declare module 'virtual:spark-components' {
   /**
    * 组件元数据
    */
-  export type ComponentMetadata = {
+  export interface ComponentMetadata {
     /** 组件名称 */
-    name: ComponentName
+    name: string
     /** 文件路径 */
     path: string
     /** 文件大小 (KB) */
@@ -93,7 +91,7 @@ declare module 'virtual:spark-components' {
  * 包含所有生成 Skill 元数据的组件；JSDoc 注解可覆盖默认 type/description/能力声明
  */
 declare module 'virtual:spark-skill-catalog' {
-  export type PropMeta = {
+  export interface PropMeta {
     name: string
     type: string
     required: boolean
@@ -101,7 +99,7 @@ declare module 'virtual:spark-skill-catalog' {
     default?: string
   }
 
-  export type SkillMeta = {
+  export interface SkillMeta {
     /** Skill 类型名（对应组件注册名，如 'r-table'） */
     type: string
     /** 组件功能描述 */

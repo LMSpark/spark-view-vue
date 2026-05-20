@@ -80,7 +80,7 @@ export function buildImplicitSkillDescription(absolutePath: string, skillType: s
  * Skill 元数据解析
  * ----------------------------------------------------------------------- */
 
-export type SkillMeta = {
+export interface SkillMeta {
   type: string
   description: string
   /** @catalogIgnore / @sparkCatalogIgnore：完全不进入组件 catalog。 */
@@ -101,7 +101,7 @@ export type SkillMeta = {
   notes?: string[]
 }
 
-export type ParseSkillMetaOptions = {
+export interface ParseSkillMetaOptions {
   /** true 时要求存在 @skill 注解；缺失则返回 null（用于 feature opt-in）。 */
   requireSkillTag?: boolean
 }

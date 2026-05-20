@@ -62,9 +62,7 @@ import type {
   PageConfig,
   PageConfigFileLoadOptions,
   PageConfigFileName,
-  PageCssConfig,
   PageDataConfig,
-  PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config/page/loading'
 import type { DevState } from './useDevState'
@@ -91,11 +89,11 @@ class PreviewPageConfigLoader extends BasePageConfigLoader {
     return this.unsupported(pageId, 'pagedata')
   }
 
-  override loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+  override loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
     return this.unsupported(pageId, 'script')
   }
 
-  override loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+  override loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
     return this.unsupported(pageId, 'style')
   }
 

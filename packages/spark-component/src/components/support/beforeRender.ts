@@ -3,7 +3,7 @@ import type { SparkNode, SparkNodeChildren } from '../../core/types.js'
 
 export const BEFORE_RENDER_RESOLVED_PROP = '$beforeRenderResolved'
 
-export type BeforeRenderContext = {
+export interface BeforeRenderContext {
   id?: string | undefined
   type: string
   props: Record<string, unknown>
@@ -18,14 +18,16 @@ export type BeforeRenderContext = {
   } | undefined
 }
 
-export type BeforeRenderState = {
+export interface BeforeRenderState {
   visible: boolean
   propsPatch: Record<string, unknown>
 }
 
-type BeforeRenderHandler = (context: BeforeRenderContext) => unknown
+interface BeforeRenderHandler {
+  (context: BeforeRenderContext): unknown
+}
 
-type MergeBeforeRenderOptions = {
+interface MergeBeforeRenderOptions {
 
   markResolved?: boolean
 }

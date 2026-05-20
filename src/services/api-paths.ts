@@ -7,7 +7,7 @@
 
 import { getUser } from './auth'
 
-type Scope = {
+interface Scope {
   tenantId: string
   projectId: string
 }

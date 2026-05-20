@@ -30,7 +30,9 @@ import type { ActionExecutionContext, ActionDescriptor, ActionExecutionOptions }
 import { extractActionExecutionControl } from '../actions'
 
 /** 沙箱函数调用签名 */
-type CallFunc = (functionName: string, ...args: unknown[]) => unknown
+interface CallFunc {
+  (functionName: string, ...args: unknown[]): unknown
+}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)

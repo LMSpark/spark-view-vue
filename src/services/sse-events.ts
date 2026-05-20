@@ -27,13 +27,13 @@ const ServerEventType = Object.freeze({
   DATA_CHANGE: 'data-change',
 })
 
-export type FileChangeEvent = {
+export interface FileChangeEvent {
   pageId: string
   file: string
   timestamp: number
 }
 
-export type DataBatchJobEvent = {
+export interface DataBatchJobEvent {
   tenantId: string
   projectId: string
   jobId: string
@@ -45,7 +45,7 @@ export type DataBatchJobEvent = {
   error?: string
 }
 
-export type DataChangeEvent = {
+export interface DataChangeEvent {
   tenantId: string
   projectId: string
   tableName: string

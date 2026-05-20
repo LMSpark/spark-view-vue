@@ -4,7 +4,7 @@ import type { CrudApi, FilterExpression, DataRow, TableResourceType } from '@spa
 import type { SparkNode } from '@spark-view/spark-component'
 import { useFilterPanel, type FilterPanelState } from '../packages/spark-component/src/components/containers/runtime/container-filter'
 
-type FilterViewLike = {
+interface FilterViewLike {
   rows: DataRow[]
   columns?: Array<{ name: string }>
   getColumn?: (name: string) => unknown

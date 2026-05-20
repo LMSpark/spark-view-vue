@@ -15,11 +15,8 @@ export {
   AiModuleRegistrationBase,
 } from './business-registration'
 
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 export type {
-  AiRuntimeModuleId,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeModulePath,
-  AiRuntimeFunctionId,
   FunctionFailureMode,
   AiFunctionRegistration,
   AiModuleRegistration,
@@ -54,7 +51,6 @@ export type {
 // ── Core 内部运行时协议 ──
 
 export type {
-  AiRuntimeAction,
   AiRuntimeInstanceScope,
   AiModuleInstanceBinding,
   AiRuntimeActivePathSnapshot,

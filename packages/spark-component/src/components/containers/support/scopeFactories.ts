@@ -3,7 +3,7 @@ import type { ModuleContext } from '../../internal'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────
 
-export type BaseScopeContext<TSource> = {
+export interface BaseScopeContext<TSource> {
   dataSource: TSource | null | undefined
   modelPermission: ModelPermission | undefined
   moduleContext?: ModuleContext | null | undefined

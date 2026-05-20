@@ -1,8 +1,8 @@
-export type FieldOptionValue = string | number | boolean
+// 这里不再为 JS 基础类型保留导出别名，选项值直接使用原生联合类型。
 
-export type FieldOption = {
+export interface FieldOption {
   label: string
-  value: FieldOptionValue
+  value: string | number | boolean
   disabled?: boolean
   children?: FieldOption[]
 }
@@ -11,7 +11,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function isFieldOptionValue(value: unknown): value is FieldOptionValue {
+function isFieldOptionValue(value: unknown): value is string | number | boolean {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'
 }
 
@@ -54,7 +54,7 @@ export function normalizeOption(
   return option
 }
 
-export function normalizeMultiValue(value: unknown, separator = ','): FieldOptionValue[] {
+export function normalizeMultiValue(value: unknown, separator = ','): Array<string | number | boolean> {
   if (Array.isArray(value)) return value.filter(isFieldOptionValue)
   if (typeof value === 'string') {
     if (!value.trim()) return []

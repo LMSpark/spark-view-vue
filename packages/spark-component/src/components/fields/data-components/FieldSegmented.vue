@@ -48,7 +48,7 @@ const { optionResult, handleControlledChange } = useOptionFieldState<string | nu
 
 const { options: fieldOptions, fieldValue, isCurrentFieldEditable } = optionResult
 
-type ResolvedSegmentedOption = {
+interface ResolvedSegmentedOption {
   label: string
   value: string | number
   disabled?: boolean

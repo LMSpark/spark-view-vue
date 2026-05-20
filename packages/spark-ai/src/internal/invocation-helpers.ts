@@ -10,7 +10,7 @@
  */
 
 /** 各模型 SDK usage 字段归一化后的 token 统计。 */
-export type TokenUsage = {
+export interface TokenUsage {
   /** prompt 消耗 token 数。 */
   promptTokens?: number
   /** completion 消耗 token 数。 */
@@ -30,7 +30,7 @@ export type TokenUsage = {
  * 调用时机：协议层或运行时需要按段访问 action 各部分时使用。
  * 所有字段只读：解析结果不应被外部修改。
  */
-export type ActionPathParts = {
+export interface ActionPathParts {
   readonly format: 'instance' | 'legacy'
   readonly instanceIds: readonly string[]
   readonly moduleIds: readonly string[]

@@ -1,4 +1,6 @@
-export type PageFileDocumentListener = () => void
+export interface PageFileDocumentListener {
+  (): void
+}
 
 export class PageConfigValueRef<T> {
   private current: T

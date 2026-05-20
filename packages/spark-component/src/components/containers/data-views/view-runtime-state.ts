@@ -16,7 +16,7 @@ import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
 /**
  * DataView 标识态：来自 DataView 快照的静态元信息。
  */
-export type DataViewIdentityState = {
+export interface DataViewIdentityState {
   tableName: ComputedRef<string>
   viewId: ComputedRef<string | undefined>
   primaryKey: ComputedRef<string | undefined>
@@ -24,7 +24,7 @@ export type DataViewIdentityState = {
 }
 
 /** DataView 行数据态：当前视图下的行级数据与选择状态。 */
-export type DataViewRowsState = {
+export interface DataViewRowsState {
   rows: ComputedRef<readonly DataRow[]>
   columns: ComputedRef<readonly DataColumn[]>
   currentRow: ComputedRef<DataRow | null>
@@ -34,7 +34,7 @@ export type DataViewRowsState = {
 }
 
 /** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */
-export type DataViewDisplayState = {
+export interface DataViewDisplayState {
   _modelPerm: ComputedRef<ModelPermission | undefined>
   value: ComputedRef<string>
   label: ComputedRef<string | null>
@@ -42,12 +42,12 @@ export type DataViewDisplayState = {
 }
 
 /** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */
-export type DataViewPermissionState = {
+export interface DataViewPermissionState {
   modelPermission: ComputedRef<ModelPermission | undefined>
 }
 
 /** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */
-export type DataViewRequestAndAggregateState = {
+export interface DataViewRequestAndAggregateState {
   requestState: ComputedRef<RequestState>
   aggregateResult: ComputedRef<AggregateResultState>
   selectionAggregateResult: ComputedRef<AggregateResultState>
@@ -60,27 +60,22 @@ export type DataViewRequestAndAggregateState = {
 }
 
 /** DataView 完整运行时投影（不含容器级解析上下文）。 */
-export type DataViewRuntimeState =
-  & DataViewIdentityState
-  & DataViewRowsState
-  & DataViewPermissionState
-  & DataViewDisplayState
-  & DataViewRequestAndAggregateState
+export interface DataViewRuntimeState extends DataViewIdentityState, DataViewRowsState, DataViewPermissionState, DataViewDisplayState, DataViewRequestAndAggregateState {}
 
 /** 容器级数据解析上下文（不属于 DataView 原始字段）。 */
-export type ContainerDataViewContextState = {
+export interface ContainerDataViewContextState {
   resolvedView: ComputedRef<DataView | null>
   resolvedDataRow: ComputedRef<DataRow | null>
 }
 
 /** 五类容器共享顶层视图态。 */
-export type DataViewState = DataViewRuntimeState & ContainerDataViewContextState
+export interface DataViewState extends DataViewRuntimeState, ContainerDataViewContextState {}
 
 /** 聚合结果运行时类型（key -> 聚合值）。 */
 export type AggregateResultState = Readonly<Record<string, unknown>>
 
 /** resolvedView 的标准只读 ref 形态。 */
-export type ResolvedViewRef = {
+export interface ResolvedViewRef {
   readonly value: DataView | null
 }
 
@@ -90,7 +85,7 @@ const EMPTY_ROWS: readonly DataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
-type DataViewRuntimeRevisions = {
+interface DataViewRuntimeRevisions {
   rowsRevision: ValueRef<number>
   selectionRevision: ValueRef<number>
   requestRevision: ValueRef<number>

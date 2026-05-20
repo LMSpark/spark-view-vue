@@ -239,7 +239,7 @@ describe('Capability system integration', () => {
 
     it('custom capability key with defineCapability', () => {
       const { createContext, rootContext } = Spark.createSystem()
-      type CustomCapability = { getValue(): string }
+      interface CustomCapability { getValue(): string }
       const CUSTOM = defineCapability<CustomCapability>(
         'test:custom-cap-sys',
         (value): value is CustomCapability => isRecord(value) && hasCallable(value, 'getValue'),

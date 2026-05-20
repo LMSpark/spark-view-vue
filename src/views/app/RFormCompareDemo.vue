@@ -130,9 +130,9 @@ import {
   type SparkNode,
   useSparkContextScope,
 } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData, type DataRow } from '@spark-view/spark-data'
 
-type EmployeeRecord = {
+interface EmployeeRecord extends DataRow {
   id: number
   name: string
   department: string

@@ -1,4 +1,4 @@
-export type RendererStepsApi = {
+export interface RendererStepsApi {
   getActiveStep(): string | number | undefined
   getActiveStepIndex(): number
   setActiveStep(index: number): void

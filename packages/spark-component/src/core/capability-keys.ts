@@ -28,7 +28,6 @@ export type {
 export type {
   PageMessageType,
   PageDialogResult,
-  PageSelectableValue,
   PageDialogOptions,
   PageBrowseFilesOptions,
   PageSelectedFile,
@@ -58,7 +57,7 @@ function hasCallable(record: Record<string, unknown>, key: string): boolean {
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 /** 主题服务能力接口（最小契约，不含 Vue 响应式） */
-export type ThemeCapability = {
+export interface ThemeCapability {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
@@ -69,40 +68,40 @@ export type ThemeCapability = {
 // ── 模块上下文能力 ────────────────────────────────────────────────────────
 
 /** 模块列表项 */
-export type ModuleContextItem = {
+export interface ModuleContextItem {
   id: string | number
   title: string
 }
 
 /** 当前模块上下文快照 */
-export type ModuleContext = {
+export interface ModuleContext {
   selected: string | number | null
   items: readonly ModuleContextItem[]
   nodeId: string
 }
 
 /** MODULE_CONTEXT 能力接口 */
-export type ModuleContextCapability = {
+export interface ModuleContextCapability {
   getCurrent(): ModuleContext | null
   subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void
 }
 
 // ── 页面组件注册表能力 ─────────────────────────────────────────────────────
 
-export type PageComponentInstanceEntry = {
+export interface PageComponentInstanceEntry {
   id: string
   type: string
   props?: Record<string, unknown>
 }
 
-export type PageComponentApiEntry = {
+export interface PageComponentApiEntry {
   id: string
   type: string
   api: unknown
 }
 
 /** 页面内组件实例/API 注册表能力接口 */
-export type PageComponentRegistry = {
+export interface PageComponentRegistry {
   registerInstance(entry: PageComponentInstanceEntry): void
   unregisterInstance(id: string): void
   listInstances(type?: string): PageComponentInstanceEntry[]
@@ -118,7 +117,7 @@ export type PageComponentRegistry = {
 // ── CSS 作用域注入能力 ─────────────────────────────────────────────────────
 
 /** 页面作用域 CSS 注入能力（由 SparkPageRenderer 提供） */
-export type PageCssScopeCapability = {
+export interface PageCssScopeCapability {
   inject(css: string): void
 }
 

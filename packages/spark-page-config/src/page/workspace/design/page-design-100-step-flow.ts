@@ -1,11 +1,11 @@
-export type PageDesignFlowStep = {
+export interface PageDesignFlowStep {
   step: number
   phase: string
   action: string
   checkpoint: string
 }
 
-export type PageDesignFlowPhaseSummary = {
+export interface PageDesignFlowPhaseSummary {
   phase: string
   firstStep: number
   lastStep: number

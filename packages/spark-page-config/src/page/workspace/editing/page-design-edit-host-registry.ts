@@ -7,12 +7,14 @@
 
 import type { PageDesignEditHost } from './page-design-edit-session'
 
-export type PageDesignEditHostSnapshot = {
+export interface PageDesignEditHostSnapshot {
   readonly pageId: string
   readonly host: PageDesignEditHost
 }
 
-type PageDesignEditHostResolver = () => PageDesignEditHostSnapshot | null
+interface PageDesignEditHostResolver {
+  (): PageDesignEditHostSnapshot | null
+}
 
 const resolvers = new Set<PageDesignEditHostResolver>()
 

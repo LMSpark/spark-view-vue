@@ -10,7 +10,7 @@ import { FieldVisibility } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
 
-export type FieldRenderConfig = {
+export interface FieldRenderConfig {
   field: string
   visible?: boolean
   editable?: boolean
@@ -18,7 +18,7 @@ export type FieldRenderConfig = {
   width?: number | string
 }
 
-export type FieldRenderState = {
+export interface FieldRenderState {
   field: string
   visibility: FieldVisibility
   readable: boolean

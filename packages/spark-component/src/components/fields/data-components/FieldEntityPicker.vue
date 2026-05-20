@@ -26,7 +26,7 @@ import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/
 import { useEntityPickerState } from './composables/useEntityPickerState'
 import { useOptionFieldState } from './composables/useOptionFieldState'
 import { coerceTreeSelectValue } from './composables/fieldValueCoercion'
-import type { REntityPickerProps, EntityPickerValue } from './FieldEntityPicker.props'
+import type { REntityPickerProps } from './FieldEntityPicker.props'
 
 const props = withDefaults(defineProps<REntityPickerProps>(), {
   type: 'r-entity-picker',
@@ -40,9 +40,9 @@ const props = withDefaults(defineProps<REntityPickerProps>(), {
   entityName: '项目',
 })
 
-const emit = defineEmits<FieldValueUpdateEmits<EntityPickerValue>>()
+const emit = defineEmits<FieldValueUpdateEmits<NonNullable<REntityPickerProps['modelValue']>>>()
 
-const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<EntityPickerValue>({
+const { optionResult, fieldCtx, handleControlledChange } = useOptionFieldState<NonNullable<REntityPickerProps['modelValue']>>({
   props,
   fieldType: 'r-entity-picker',
   fallbackValue: '',
@@ -66,7 +66,7 @@ const { hasSelectorCapability, primaryAction, selectEntities } = useSelectorFiel
   isEditable: isCurrentFieldEditable,
 })
 
-async function updateValue(value: EntityPickerValue): Promise<void> {
+async function updateValue(value: NonNullable<REntityPickerProps['modelValue']>): Promise<void> {
   await handleControlledChange(value)
 }
 

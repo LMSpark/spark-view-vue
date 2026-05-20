@@ -3,12 +3,12 @@ import type {
   PageDesignEditHost,
 } from '../editing/page-design-edit-session'
 
-export type PageDesignServiceContext = {
+export interface PageDesignServiceContext {
   requestId: string
   pageId: string
 }
 
-export type PageDesignServiceOptions = {
+export interface PageDesignServiceOptions {
   getEditHost: (context: PageDesignServiceContext) => PageDesignEditHost
 }
 
@@ -19,7 +19,7 @@ export type PageDesignServiceResult<TResult> =
 
 export type PageDesignTextFileKey = 'script' | 'style'
 
-export type PageDesignServiceMethodBinding = {
+export interface PageDesignServiceMethodBinding {
   serviceLabel: string
   methodName: string
   mutates: boolean

@@ -50,7 +50,6 @@ export type {
   PageBrowseFilesOptions,
   PageUploadFilesOptions,
   PageSelectEntitiesOptions,
-  PageSelectableValue,
   PageSelectorOption,
   PageSelectedFile,
   PageUploadedFile,

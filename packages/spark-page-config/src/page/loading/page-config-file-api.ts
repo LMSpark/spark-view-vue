@@ -1,26 +1,26 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { PageConfigFileName } from '../model/types'
 
-export type PageConfigFileVersionSummary = {
+export interface PageConfigFileVersionSummary {
   version: number
   createdAt: string
   isCurrent: boolean
   modifiedBy: string | null
 }
 
-export type PageConfigPageSummary = Record<string, unknown> & {
+export interface PageConfigPageSummary extends Record<string, unknown> {
   pageId: string
-  pageType?: string
-  files?: PageConfigFileName[]
+    pageType?: string
+    files?: PageConfigFileName[]
 }
 
-export type PageConfigCreatePageParams = {
+export interface PageConfigCreatePageParams {
   pageId: string
   title?: string
   icon?: string
 }
 
-export type PageConfigFileApiOptions = {
+export interface PageConfigFileApiOptions {
   getPageConfigApi: () => string
   http: HttpClientBase
 }

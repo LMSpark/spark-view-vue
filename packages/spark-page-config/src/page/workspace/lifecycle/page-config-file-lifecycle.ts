@@ -15,34 +15,34 @@ import type {
   PageConfigCreatePageParams,
 } from '../../loading/page-config-file-api'
 
-export type PageConfigFileLifecycleOptions = {
+export interface PageConfigFileLifecycleOptions {
   fileApi: PageConfigFileApi
   navigationClient: NavigationConfigClient
   getConfigLoader?: () => Pick<BasePageConfigLoader, 'clearCache'>
 }
 
-export type PageNavigationMountParams = PageConfigCreatePageParams & {
+export interface PageNavigationMountParams extends PageConfigCreatePageParams {
   node?: NavNode
-  parentId?: string | null
-  index?: number
+    parentId?: string | null
+    index?: number
 }
 
-export type CreateMountedPageParams = PageNavigationMountParams & {
+export interface CreateMountedPageParams extends PageNavigationMountParams {
   rollbackPageOnNavigationFailure?: boolean
 }
 
-export type CreateMountedPageResult = {
+export interface CreateMountedPageResult {
   page: Record<string, unknown>
   node: NavNode
 }
 
-export type RemoveMountedPageParams = {
+export interface RemoveMountedPageParams {
   pageId: string
   nodeId?: string
   deleteFiles?: boolean
 }
 
-export type RemoveMountedPageResult = {
+export interface RemoveMountedPageResult {
   deletedNode: NavNode | null
   deletedFiles: boolean
 }

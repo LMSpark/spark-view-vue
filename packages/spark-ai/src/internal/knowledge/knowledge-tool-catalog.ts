@@ -9,7 +9,7 @@ export type AiKnowledgeFunctionId =
   | 'queryModules'
   | 'guideFunction'
 
-type AiKnowledgeFunctionBaseFields = {
+interface AiKnowledgeFunctionBaseFields {
   functionId: AiKnowledgeFunctionId
   type: 'describe'
   description: string
@@ -19,9 +19,9 @@ type AiKnowledgeFunctionBaseFields = {
   usageRules: readonly string[]
 }
 
-export type AiKnowledgeFunctionParameterRow = AiKnowledgeFunctionBaseFields & {
+export interface AiKnowledgeFunctionParameterRow extends AiKnowledgeFunctionBaseFields {
   failureModes: readonly AiKnowledgeFunctionFailureMode[]
-  target: AiKnowledgeFunctionTarget
+    target: AiKnowledgeFunctionTarget
 }
 
 export type AiKnowledgeCatalogRowOptions = Omit<

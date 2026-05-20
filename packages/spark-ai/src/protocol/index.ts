@@ -9,6 +9,7 @@
  */
 
 // 一、模块注册、生命周期通知、知识投影与函数调用翻译契约。
+// 这里不再为 JS 基础类型保留导出别名，直接使用原生类型。
 export type {
   AiModuleRegistration,
   AiModuleInstanceBinding,
@@ -18,12 +19,10 @@ export type {
   AiRuntimeAppendMessageOptions,
   AiRuntimeCompleteFunctionCallOptions,
   AiRuntimeExecuteFunctionCallOptions,
-  AiRuntimeAction,
   AiRuntimeActivePathSnapshot,
   AiRuntimeCreateFunctionResultMessageOptions,
   AiRuntimeFunctionContextParam,
   AiRuntimeFunctionExposure,
-  AiRuntimeFunctionId,
   AiRuntimeFunctionCallTranslation,
   AiRuntimeFunctionCallTranslationResult,
   AiRuntimeFunctionCallFailure,
@@ -43,9 +42,6 @@ export type {
   AiRuntimeMessageRole,
   AiRuntimeMessageSource,
   AiRuntimeModuleExposure,
-  AiRuntimeModuleId,
-  AiRuntimeModuleInstanceId,
-  AiRuntimeModulePath,
   AiRuntimeOptions,
   AiRuntimeProjectKnowledgeOptions,
   AiRuntimeRecordFunctionCallRequestOptions,
@@ -125,7 +121,6 @@ export type {
 
 export type {
   LlmJsonObject,
-  LlmJsonPrimitive,
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmJsonSchemaType,

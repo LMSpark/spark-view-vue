@@ -45,7 +45,6 @@ export type {
   JsonNodeType,
   JsonObject,
   JsonPath,
-  JsonPathSegment,
   JsonSchemaInfo,
   JsonTreePolicy,
   JsonValue,

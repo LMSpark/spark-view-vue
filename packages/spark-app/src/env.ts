@@ -11,7 +11,7 @@ export type SimpleEnvironment = 'client' | 'server'
 /**
  * 环境信息接口
  */
-export type SimpleEnvironmentInfo = {
+export interface SimpleEnvironmentInfo {
   /** 环境类型 */
   type: SimpleEnvironment
   /** 是否为服务端 */

@@ -1,3 +1,25 @@
+/**
+ * AI Host SSE/Fetch 传输层实现。
+ *
+ * ┌──────────────────────────────────────────────────────────────────┐
+ * │                    AiHostFetchTransport                           │
+ * │                                                                   │
+ * │  streamTurn() ─ SSE 流式请求 LLM                                  │
+ * │    ├─ POST /sessions/{id}/turn/stream                            │
+ * │    ├─ 读取 ReadableStream → 解析 SSE blocks                       │
+ * │    ├─ 按事件类型分发：delta / reasoning / usage / result / error  │
+ * │    └─ 返回 { text, reasoning?, toolCalls }                       │
+ * │                                                                   │
+ * │  appendMessages() ─ 追加消息到会话                                │
+ * │    └─ POST /sessions/{id}/turn/append                            │
+ * │                                                                   │
+ * │  uploadAiHostAttachment() ─ 上传附件（独立函数）                   │
+ * │    └─ POST /upload → FormData                                    │
+ * └──────────────────────────────────────────────────────────────────┘
+ *
+ * SSE 解析流程：buffer → split('\n\n') → parseAiHostSseBlock → event + data → unwrapApiEnvelope
+ */
+
 import type {
   AiHostAppendMessagesInput,
   AiHostBusinessScope,
@@ -15,23 +37,27 @@ import {
 const DEFAULT_PROTOCOL_VERSION = 3
 const DEFAULT_BASE_URL = '/api/ai'
 
-export type AiHostHeadersProvider = () => HeadersInit | Promise<HeadersInit>
+export interface AiHostHeadersProvider {
+  (): HeadersInit | Promise<HeadersInit>
+}
 
-export type AiHostFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
+export interface AiHostFetch {
+  (input: RequestInfo | URL, init?: RequestInit): Promise<Response>
+}
 
-export type AiHostFetchTransportOptions = {
+export interface AiHostFetchTransportOptions {
   readonly baseUrl?: string | undefined
   readonly fetch?: AiHostFetch | undefined
   readonly getHeaders?: AiHostHeadersProvider | undefined
   readonly protocolVersion?: number | undefined
 }
 
-export type AiHostParsedSseEvent = {
+export interface AiHostParsedSseEvent {
   readonly event: string
   readonly data: string
 }
 
-export type AiHostUploadedAttachment = {
+export interface AiHostUploadedAttachment {
   readonly fileId: string
   readonly name: string
   readonly size: number
@@ -193,6 +219,7 @@ export class AiHostFetchTransport implements AiHostTransport {
   private readonly getHeaders: AiHostHeadersProvider
   private readonly protocolVersion: number
 
+  /** 初始化传输层：解析 baseUrl / fetch / headers / protocolVersion */
   constructor(options: AiHostFetchTransportOptions = {}) {
     this.baseUrl = normalizeBaseUrl(options.baseUrl)
     this.fetchClient = resolveFetch(options.fetch)
@@ -206,6 +233,11 @@ export class AiHostFetchTransport implements AiHostTransport {
     return headers
   }
 
+  /**
+   * SSE 流式请求 LLM。
+   * 流程：POST → 读取 ReadableStream → 解析 SSE blocks → 按事件分发 → 返回最终结果。
+   * 事件类型：delta（文本增量）、reasoning（推理）、usage（token 统计）、result（最终结果）、error（错误）
+   */
   async streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult> {
     const response = await this.fetchClient(
       `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`,
@@ -236,15 +268,18 @@ export class AiHostFetchTransport implements AiHostTransport {
     let finalReasoning: string | undefined
     let finalToolCalls: readonly AiHostTransportToolCall[] = []
 
+    // SSE 事件处理器：按事件类型分发
     const handle = (parsedEvent: AiHostParsedSseEvent): void => {
       const rawPayload = tryParseJson(parsedEvent.data)
       const payload = unwrapApiEnvelope(rawPayload)
       input.onSseEvent?.(createSseEvent(parsedEvent, payload, input.scope, input.turn.turnId))
 
+      // error 事件 → 抛出异常中断
       if (parsedEvent.event === 'error') {
         throw new Error(typeof payload === 'string' ? payload : 'AI stream failed')
       }
 
+      // delta 事件 → 累积文本 → 回调 onDelta
       if (parsedEvent.event === 'delta') {
         const delta = isRecord(payload) && typeof payload['delta'] === 'string'
           ? payload['delta']
@@ -256,6 +291,7 @@ export class AiHostFetchTransport implements AiHostTransport {
         return
       }
 
+      // reasoning 事件 → 累积推理文本 → 回调 onReasoning
       if (parsedEvent.event === 'reasoning') {
         const reasoning = isRecord(payload) && typeof payload['reasoning'] === 'string'
           ? payload['reasoning']
@@ -267,11 +303,13 @@ export class AiHostFetchTransport implements AiHostTransport {
         return
       }
 
+      // usage 事件 → 回调 onUsage
       if (parsedEvent.event === 'usage' && isRecord(payload) && isRecord(payload['usage'])) {
         input.onUsage?.(payload['usage'])
         return
       }
 
+      // result 事件 → 校验 sessionId/turnId → 提取最终文本/推理/toolCalls
       if (parsedEvent.event === 'result' && isRecord(payload)) {
         const responseSessionId = typeof payload['sessionId'] === 'string' ? payload['sessionId'] : ''
         const responseTurnId = typeof payload['turnId'] === 'string' ? payload['turnId'] : ''
@@ -287,6 +325,7 @@ export class AiHostFetchTransport implements AiHostTransport {
       }
     }
 
+    // 读取流式响应体：累积 buffer → 解析 SSE → 处理事件
     await readStreamBody(response.body, (chunk) => {
       buffer += decoder.decode(chunk, { stream: true })
       const parsed = parseAiHostSseBlocks(buffer)
@@ -303,6 +342,10 @@ export class AiHostFetchTransport implements AiHostTransport {
     }
   }
 
+  /**
+   * 追加消息到会话。
+   * POST /sessions/{id}/turn/append → 校验响应体 sessionId/turnId 一致性。
+   */
   async appendMessages(input: AiHostAppendMessagesInput): Promise<void> {
     const response = await this.fetchClient(
       `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/append`,

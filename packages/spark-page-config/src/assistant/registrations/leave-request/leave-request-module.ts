@@ -1,3 +1,11 @@
+/**
+ * 人工请假 AI 模块注册。
+ *
+ * 流程：LeaveRequestModuleRegistration 定义函数目录表 → LeaveRequestModule 在构造时注册到 AiRuntime →
+ * 会话启动时 LeaveRequestModule.startSession 初始化草稿 → LLM 调用函数时 executeFunctionCall
+ * 委托 LeaveRequestService 执行业务逻辑 → 会话结束时 releaseModuleInstance 清理草稿。
+ */
+
 import {
   LlmParamsValidator,
   type AiFunctionRegistration,
@@ -25,7 +33,7 @@ import {
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 
-type LeaveRequestRuntimeContext = {
+interface LeaveRequestRuntimeContext {
   readonly instanceId: string
   readonly moduleId: typeof LEAVE_REQUEST_MODULE_ID
   readonly moduleInstanceId: string
@@ -75,6 +83,7 @@ const DRAFT_RESULT_SCHEMA: LlmJsonObject = {
   missingFields: 'string[] — 提交前仍缺少的字段。',
 }
 
+/** 静态注册类：定义模块 ID / 名称 / 描述和函数注册表，不参与运行时。 */
 export class LeaveRequestModuleRegistration extends StaticAiToolModule {
   constructor() {
     super({
@@ -147,6 +156,7 @@ function toServiceContext(context: LeaveRequestRuntimeContext | FunctionExecutio
   }
 }
 
+/** 基于函数注册表的 paramsSchema 校验 LLM 传入的参数。 */
 function validateParams(functionId: string, args: unknown): string | null {
   const row = LEAVE_REQUEST_REGISTRATION.getFunctions().find((r) => r.functionId === functionId)
   if (!row) return `未知 ${functionId} 函数`
@@ -154,6 +164,7 @@ function validateParams(functionId: string, args: unknown): string | null {
   return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
 }
 
+/** 根据 functionId 分派到 LeaveRequestService 的对应方法。 */
 function executeServiceMethod(
   functionId: string,
   service: LeaveRequestService,
@@ -193,15 +204,24 @@ function cloneJson<T>(value: T): T {
   return globalThis.structuredClone(value)
 }
 
+/**
+ * 人工请假运行时模块。
+ *
+ * 继承 RuntimeBackedBusinessModule，构造函数中创建 LeaveRequestService 并注入到
+ * executeFunctionCall 的 validate / run / normalizeResult 链路。
+ * 会话启动时自动获取/创建草稿，会话结束时释放。
+ */
 export class LeaveRequestModule extends RuntimeBackedBusinessModule {
   static readonly moduleId = LEAVE_REQUEST_MODULE_ID
 
+  /** 断言上下文 moduleId 必须为 'manualLeave'。 */
   static assertContext(context: { readonly moduleId: string }): asserts context is LeaveRequestRuntimeContext {
     if (context.moduleId !== LEAVE_REQUEST_MODULE_ID) {
       throw new Error(`LeaveRequest context moduleId must be ${LEAVE_REQUEST_MODULE_ID}, got ${context.moduleId}`)
     }
   }
 
+  /** 生成唯一草稿 ID，格式 leaveDraft:<uuid>，由业务按钮或 API 在打开面板前传入。 */
   static createDraftId(): string {
     const randomId = typeof globalThis.crypto.randomUUID === 'function'
       ? globalThis.crypto.randomUUID()
@@ -228,12 +248,14 @@ export class LeaveRequestModule extends RuntimeBackedBusinessModule {
     this.service = service
   }
 
+  /** 会话启动时先获取/创建草稿，再启动 AI Runtime 会话。 */
   override async startSession(context: RuntimeBackedModuleContext): Promise<AiRuntimeStartSessionResult> {
     LeaveRequestModule.assertContext(context)
     this.service.getDraft(context.moduleInstanceId)
     return super.startSession(context)
   }
 
+  /** LLM 函数调用入口：注入 validate（参数校验）、run（Service 分派）、normalizeResult（结果包装）。 */
   override async executeFunctionCall(options: RuntimeBackedExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
     LeaveRequestModule.assertContext(options)
     return this.executeRegisteredFunctionCall({
@@ -251,10 +273,12 @@ export class LeaveRequestModule extends RuntimeBackedBusinessModule {
     })
   }
 
+  /** 外部读取草稿（深拷贝），供面板监视器读取。 */
   getDraft(leaveDraftId: string): LeaveRequestDraftState {
     return cloneJson(this.service.getDraft(leaveDraftId))
   }
 
+  /** 会话结束时释放草稿，从内存 Map 中移除。 */
   override releaseModuleInstance(leaveDraftId: string): void {
     this.service.releaseDraft(leaveDraftId)
   }

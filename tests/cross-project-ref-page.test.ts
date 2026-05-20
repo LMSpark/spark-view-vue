@@ -8,9 +8,7 @@ import type {
   PageConfig,
   PageConfigFileLoadOptions,
   PageConfigFileName,
-  PageCssConfig,
   PageDataConfig,
-  PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config/page/loading'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
@@ -69,11 +67,11 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     return { success: false }
   }
 
-  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+  override async loadScript(): Promise<ConfigLoadResult<string>> {
     return { success: true, data: '', source: 'remote' }
   }
 
-  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+  override async loadCss(): Promise<ConfigLoadResult<string>> {
     return { success: true, data: '', source: 'remote' }
   }
 

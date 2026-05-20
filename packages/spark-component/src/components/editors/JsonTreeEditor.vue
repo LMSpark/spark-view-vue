@@ -224,18 +224,18 @@ import {
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 
-type DisplayRow = TreeDisplayNode & {
+interface DisplayRow extends TreeDisplayNode {
   displayKey: string
-  valuePreview: string
-  stringValue: string
-  numberValue: number | null
-  booleanValue: boolean
-  _searchText: string
-  _schemaTitle: string
-  _schemaDescription: string
-  _schemaRequired: boolean
-  _schemaEnumValues: string[]
-  _schemaEnumLabels: Record<string, string>
+    valuePreview: string
+    stringValue: string
+    numberValue: number | null
+    booleanValue: boolean
+    _searchText: string
+    _schemaTitle: string
+    _schemaDescription: string
+    _schemaRequired: boolean
+    _schemaEnumValues: string[]
+    _schemaEnumLabels: Record<string, string>
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
@@ -262,7 +262,7 @@ function isDisplayRow(value: unknown): value is DisplayRow {
 
 // ── Props ─────────────────────────────────────────────────────
 
-type JsonTreeEditorProps = {
+interface JsonTreeEditorProps {
   type?: 'json-tree-editor'
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string

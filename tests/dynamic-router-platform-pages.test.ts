@@ -7,9 +7,7 @@ import type {
   PageConfig,
   PageConfigFileLoadOptions,
   PageConfigFileName,
-  PageCssConfig,
   PageDataConfig,
-  PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config/page/loading'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
@@ -34,11 +32,11 @@ class DummyPageConfigLoader extends BasePageConfigLoader {
     return { success: false }
   }
 
-  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+  override async loadScript(): Promise<ConfigLoadResult<string>> {
     return { success: false }
   }
 
-  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+  override async loadCss(): Promise<ConfigLoadResult<string>> {
     return { success: false }
   }
 

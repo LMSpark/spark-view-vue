@@ -16,7 +16,7 @@ import type {
   TreeConfig, AggregateColumnConfig, CrudApi,
   CommitMode, RetrieveRecordOptions,
   SparkEventEmitter,
-  PkValue, DataViewEditingFieldChangeEvent, DataViewApplyEditingRowsResult,
+  DataViewEditingFieldChangeEvent, DataViewApplyEditingRowsResult,
 } from './types'
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
@@ -46,33 +46,33 @@ import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-deleg
 
 /** DataView 事件映射 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-type DataViewEventMap = Record<string, any[]> & {
+interface DataViewEventMap extends Record<string, any[]> {
   /** 当前行变化 */
-  currentRowChanged: [currentRow: DataRow | null, originatorId?: string]
-  /** 选中行变化 */
-  selectedRowsChanged: [selectedRows: DataRow[], originatorId?: string]
-  /** 行数据批量变化（防抖 16ms） */
-  rowsChanged: []
-  /** 编辑态字段变化 */
-  editingFieldChanged: [event: DataViewEditingFieldChangeEvent]
-  /** 编辑态 patch 集合变化 */
-  editingChanged: []
-  /** 数据已清空 */
-  cleared: []
-  /** 视图配置变化（分页、排序、过滤、主键、树、聚合等） */
-  configChanged: []
-  /** 请求状态变化（Idle→Loading→Loaded/Failed） */
-  requestStateChanged: [requestState: RequestState]
-  /** CRUD 变更状态变化 */
-  mutatingChanged: [mutating: boolean]
-  /** aggregateResult 已重算 */
-  summaryChanged: []
-  /** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
-  selectionSummaryChanged: []
-  /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
-  'crud:before': [CrudLifecycleEvent]
-  /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
-  'crud:after': [CrudLifecycleEvent]
+    currentRowChanged: [currentRow: DataRow | null, originatorId?: string]
+    /** 选中行变化 */
+    selectedRowsChanged: [selectedRows: DataRow[], originatorId?: string]
+    /** 行数据批量变化（防抖 16ms） */
+    rowsChanged: []
+    /** 编辑态字段变化 */
+    editingFieldChanged: [event: DataViewEditingFieldChangeEvent]
+    /** 编辑态 patch 集合变化 */
+    editingChanged: []
+    /** 数据已清空 */
+    cleared: []
+    /** 视图配置变化（分页、排序、过滤、主键、树、聚合等） */
+    configChanged: []
+    /** 请求状态变化（Idle→Loading→Loaded/Failed） */
+    requestStateChanged: [requestState: RequestState]
+    /** CRUD 变更状态变化 */
+    mutatingChanged: [mutating: boolean]
+    /** aggregateResult 已重算 */
+    summaryChanged: []
+    /** selectionAggregateResult 已单独重算（仅选中行变更时触发，数据变更走 summaryChanged） */
+    selectionSummaryChanged: []
+    /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
+    'crud:before': [CrudLifecycleEvent]
+    /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
+    'crud:after': [CrudLifecycleEvent]
 }
 
 /** rowsChanged 事件按微任务合并，保证同一同步批次只通知一次，同时让 Vue nextTick 可观测。 */
@@ -783,9 +783,9 @@ export class DataView implements DataSource {
   private _rowByIdCache: { ver: number; rows: Map<string | number, DataRow> } = { ver: -1, rows: new Map() }
 
   /** 编辑态 patch：UI 字段变化先进入这里，apply 后再进入 editRowById / dirtyTracking。 */
-  private _editingPatches = new Map<PkValue, Partial<DataRow>>()
+  private _editingPatches = new Map<string | number, Partial<DataRow>>()
   /** 首次进入编辑态前的行快照，用于 discard / diff / 诊断。 */
-  private _editingOriginalRows = new Map<PkValue, DataRow>()
+  private _editingOriginalRows = new Map<string | number, DataRow>()
 
   /** 当前 loadFromServer 请求 ID（用于防止竞态） */
   private currentLoadRequestId = 0
@@ -1049,7 +1049,7 @@ export class DataView implements DataSource {
   get editingRows(): DataRow[] {
     if (this._editingPatches.size === 0) return []
     const result: DataRow[] = []
-    const included = new Set<PkValue>()
+    const included = new Set<string | number>()
     for (const row of this.rows) {
       const rowId = this.getPkKey(row)
       if (rowId === undefined) continue
@@ -1403,18 +1403,18 @@ export class DataView implements DataSource {
   // ─────────────────────────────────────────────
 
   /** 是否存在编辑态变更。 */
-  hasEditingChanges(id?: PkValue): boolean {
+  hasEditingChanges(id?: string | number): boolean {
     return id === undefined ? this._editingPatches.size > 0 : this._editingPatches.has(id)
   }
 
   /** 获取指定行当前编辑态 patch。 */
-  getEditingPatch(id: PkValue): Partial<DataRow> | undefined {
+  getEditingPatch(id: string | number): Partial<DataRow> | undefined {
     const patch = this._editingPatches.get(id)
     return patch ? { ...patch } : undefined
   }
 
   /** 获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。 */
-  getEditingRow(id: PkValue): DataRow | null {
+  getEditingRow(id: string | number): DataRow | null {
     const row = this.getRowById(id) ?? this._editingOriginalRows.get(id) ?? null
     if (!row) return null
     const patch = this._editingPatches.get(id)
@@ -1426,7 +1426,7 @@ export class DataView implements DataSource {
   }
 
   /** 将 UI 字段值写入编辑态，不直接污染 rows。 */
-  updateEditingValue(id: PkValue, field: string, value: unknown): DataRow {
+  updateEditingValue(id: string | number, field: string, value: unknown): DataRow {
     this.checkDestroyed()
     const normalizedField = field.trim()
     if (normalizedField.length === 0) {
@@ -1485,7 +1485,7 @@ export class DataView implements DataSource {
   }
 
   /** 丢弃指定行或全部编辑态变更。 */
-  discardEditingRows(ids?: PkValue[]): number {
+  discardEditingRows(ids?: Array<string | number>): number {
     this.checkDestroyed()
     const targets = ids ?? [...this._editingPatches.keys()]
     let discardedCount = 0
@@ -1499,11 +1499,11 @@ export class DataView implements DataSource {
   }
 
   /** 将编辑态 patch 应用到现有 editRowById 管线。 */
-  async applyEditingRows(ids?: PkValue[]): Promise<CrudResult<DataViewApplyEditingRowsResult>> {
+  async applyEditingRows(ids?: Array<string | number>): Promise<CrudResult<DataViewApplyEditingRowsResult>> {
     this.checkDestroyed()
     const targets = ids ?? [...this._editingPatches.keys()]
     let appliedCount = 0
-    const failedIds: PkValue[] = []
+    const failedIds: Array<string | number> = []
     const failedErrors: Record<string, string> = {}
 
     for (const id of targets) {

@@ -35,7 +35,7 @@ export enum DataMember {
   MutatingError = 'mutatingError',
 }
 
-export type DataViewKeyDescriptor = {
+export interface DataViewKeyDescriptor {
   /** DataSet scope, present only for cross-page `#scope` references. */
   scope?: string
   /** DataTable name. */
@@ -48,22 +48,22 @@ export type DataViewKeyDescriptor = {
   crossPage?: boolean
 }
 
-export type DataViewMemberDescriptor = DataViewKeyDescriptor & {
+export interface DataViewMemberDescriptor extends DataViewKeyDescriptor {
   /** DataView output member. */
-  dataMember: DataMember
-  /** Optional business field/path inside object-shaped members. */
-  dataField?: string
+    dataMember: DataMember
+    /** Optional business field/path inside object-shaped members. */
+    dataField?: string
 }
 
-export type DataViewMemberInput = {
+export interface DataViewMemberInput {
   dataViewKey: string | undefined
   dataMember: DataMember | `${DataMember}` | undefined
   dataField?: string | undefined
 }
 
-export type DataViewMemberScalar = string | number | boolean | bigint | symbol | null | undefined
 export type DataViewMemberObject = Record<string, unknown>
 
+// 这里不再为 JS 基础类型保留导出别名，DataView 标量成员直接在联合类型中内联。
 export type DataViewMemberValue =
   | DataRow
   | AggregateResultRow
@@ -71,7 +71,13 @@ export type DataViewMemberValue =
   | readonly DataColumn[]
   | DataViewMemberObject
   | readonly unknown[]
-  | DataViewMemberScalar
+  | string
+  | number
+  | boolean
+  | bigint
+  | symbol
+  | null
+  | undefined
   | Error
 
 export type DataViewMemberResolvedValue = DataViewMemberValue
@@ -252,7 +258,7 @@ export function resolveDataViewMember(
   )
 }
 
-export type DataViewMemberBinding = {
+export interface DataViewMemberBinding {
   kind: 'value'
   value: DataViewMemberValue
   source: DataSource
@@ -288,7 +294,7 @@ export type DataViewKeyDiagnosticStatus =
   | 'missing-table'
   | 'missing-view'
 
-export type DataViewKeyDiagnostic = {
+export interface DataViewKeyDiagnostic {
   ok: boolean
   status: DataViewKeyDiagnosticStatus
   rawKey: string
@@ -304,7 +310,7 @@ export type DataViewMemberDiagnosticStatus =
   | 'missing-field'
   | 'unsupported-data-field'
 
-export type DataViewMemberDiagnostic = {
+export interface DataViewMemberDiagnostic {
   ok: boolean
   status: DataViewMemberDiagnosticStatus
   rawKey: string
@@ -429,7 +435,7 @@ export function getDataViewIdentity(descriptor: DataViewKeyDescriptor): string {
   return `${descriptor.tableName}.${descriptor.viewId}`
 }
 
-export type ResolvedDataViewCapabilities = {
+export interface ResolvedDataViewCapabilities {
   /** Resolved DataView, or null when unavailable. */
   dataSource: DataView | null
   /** Resolved row-like context, or null when unavailable. */

@@ -161,7 +161,7 @@ sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 沿 `parent` 链向上查找能力（就近原则）。**找不到返回 `null` 是正常情况（late-binding），不应视为错误。**
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
 
 const services = sparkConsume(PAGE_RUNTIME_SERVICES)
 services?.router?.push('/home')
@@ -280,7 +280,7 @@ cap?.doWork()
 
 | 键 | 类型 | 说明 |
 |---|---|---|
-| `PAGE_RUNTIME_SERVICES` | `PageRuntimeServicesCapability`，来自 `@spark-view/spark-page-config/page` | `{ router?, logger?, tenant?, configLoader?, authService?, pageService? }` |
+| `PAGE_RUNTIME_SERVICES` | `PageRuntimeServicesCapability`，来自 `@spark-view/spark-page-config/page/services` | `{ router?, logger?, tenant?, configLoader?, authService?, pageService? }` |
 | `PAGE_SERVICE` | `PageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
 | `PAGE_DATASET` | `DataSetContract` | 页面级 DataSet，由 PageRenderer 提供 |
 | `DATA_SOURCE` | `DataSource` | 组件级 DataView，由容器组件提供 |

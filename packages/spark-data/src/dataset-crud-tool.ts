@@ -35,36 +35,36 @@ function isCrudResult(value: unknown): value is CrudResult {
 /**
  * 创建数据表时的输入参数。
  */
-type DataSetCrudToolCreateTableOptions = TableSemanticMetadata & {
+interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
   /**
-   * 表名。
-   * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。
-   */
-  tableName: string
-  /**
-   * 初始列定义。
-   */
-  columns: DataColumn[]
-  /**
-   * 可选的 CRUD API 配置。
-   * 传入后，表及其视图可直接走远端 CRUD 能力。
-   */
-  api?: CrudApi | string | boolean
-  /**
-   * 可选的 CRUD 运行配置。
-   */
-  crudConfig?: CrudOperationConfig
-  /**
-   * 需要一起创建或初始化的视图配置。
-   * 其中 default 视图不会新建，只会复用建表时自动创建的实例并应用配置。
-   */
-  views?: Record<string, ViewMetadata>
+     * 表名。
+     * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。
+     */
+    tableName: string
+    /**
+     * 初始列定义。
+     */
+    columns: DataColumn[]
+    /**
+     * 可选的 CRUD API 配置。
+     * 传入后，表及其视图可直接走远端 CRUD 能力。
+     */
+    api?: CrudApi | string | boolean
+    /**
+     * 可选的 CRUD 运行配置。
+     */
+    crudConfig?: CrudOperationConfig
+    /**
+     * 需要一起创建或初始化的视图配置。
+     * 其中 default 视图不会新建，只会复用建表时自动创建的实例并应用配置。
+     */
+    views?: Record<string, ViewMetadata>
 }
 
 /**
  * 更新数据表时的输入参数。
  */
-type DataSetCrudToolUpdateTableOptions = {
+interface DataSetCrudToolUpdateTableOptions {
   /**
    * 需要新增的列。
    * 内部统一走 DataTable.addColumns，保证 validator 与 DataView 列缓存同步刷新。
@@ -114,7 +114,7 @@ type DataSetCrudToolUpdateTableOptions = {
  * 默认可用 parentTable + childTable 定位；当同一父子表之间存在多条关系时，
  * 需要继续提供 parentField / childField 做字段级消歧。
  */
-type RelationSelector = {
+interface RelationSelector {
   parentTable: string
   childTable: string
   parentField?: string

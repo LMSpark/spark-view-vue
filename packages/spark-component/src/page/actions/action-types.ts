@@ -33,7 +33,7 @@ import type { CancellableControl } from '../../components/containers/support/int
  * - `{count}` — 批量操作影响的行数
  * - `{row.fieldName}` — 当前行的字段值（例如 `{row.name}`）
  */
-export type ActionUiDecorator = {
+export interface ActionUiDecorator {
   /** 静默模式：设为 true 时所有成功/失败消息都不展示（errorMessage 除外） */
   silent?: boolean
   /** 操作成功后的提示文案；支持插值（如 `已删除 {count} 条`） */
@@ -62,7 +62,7 @@ export type ActionUiDecorator = {
  * 由包含表单的容器（如 r-form）在渲染期注入到 `ActionExecutionScope.formApi`，
  * 让动作执行器能够读取表单数据并触发校验。
  */
-export type ActionFormApi = {
+export interface ActionFormApi {
   /** 获取表单当前绑定的数据行（未绑定时返回 null） */
   getCurrentRow(): DataRow | null
   /** 获取表单当前填写的字段数据（不含主键） */
@@ -78,7 +78,7 @@ export type ActionFormApi = {
  * - `index`：行索引（移动等需要位置信息的动作使用）
  * - `formApi`：仅 submit-current-form 动作需要，由表单容器注入
  */
-export type ActionExecutionScope = {
+export interface ActionExecutionScope {
   row?: DataRow
   index?: number
   formApi?: ActionFormApi
@@ -136,7 +136,7 @@ export type ActionDescriptorActionName =
 export type ActionRowTarget = 'scope' | 'current' | 'selected'
 
 /** 所有 ActionDescriptor 的公共基础字段（不直接使用，通过具体类型继承）。 */
-type ActionDescriptorBase = {
+interface ActionDescriptorBase {
   /** 动作标识（判别字段，唯一确定 descriptor 子类型） */
   action: ActionDescriptorActionName
   /** 链式执行：当前动作成功后自动执行下一个 descriptor */
@@ -152,51 +152,51 @@ type ActionDescriptorBase = {
 // ── UI 类动作（不涉及数据变更） ──────────────────────────────────────────
 
 /** 展示一条消息通知（不阻塞，立即返回）。 */
-export type ShowMessageAction = ActionDescriptorBase & {
+export interface ShowMessageAction extends ActionDescriptorBase {
   action: 'show-message'
-  /** 消息文案（不支持插值） */
-  message: string
-  /** 消息类型，默认 `'info'` */
-  messageType?: PageMessageType
+    /** 消息文案（不支持插值） */
+    message: string
+    /** 消息类型，默认 `'info'` */
+    messageType?: PageMessageType
 }
 
 /** 展示确认对话框（阻塞，等待用户选择后执行对应分支）。 */
-export type ShowConfirmAction = ActionDescriptorBase & {
+export interface ShowConfirmAction extends ActionDescriptorBase {
   action: 'confirm'
-  /** 确认对话框正文 */
-  message: string
-  /** 对话框标题 */
-  title?: string
-  /** 对话框类型 */
-  confirmType?: PageMessageType
-  /** 用户点击"确认"后执行的子动作 */
-  onConfirm?: ActionDescriptor
-  /** 用户点击"取消"后执行的子动作 */
-  onCancel?: ActionDescriptor
+    /** 确认对话框正文 */
+    message: string
+    /** 对话框标题 */
+    title?: string
+    /** 对话框类型 */
+    confirmType?: PageMessageType
+    /** 用户点击"确认"后执行的子动作 */
+    onConfirm?: ActionDescriptor
+    /** 用户点击"取消"后执行的子动作 */
+    onCancel?: ActionDescriptor
 }
 
 /** 展示 Alert 对话框（只有"确认"按钮，阻塞）。 */
-export type ShowAlertAction = ActionDescriptorBase & {
+export interface ShowAlertAction extends ActionDescriptorBase {
   action: 'alert'
-  message: string
-  title?: string
+    message: string
+    title?: string
 }
 
 /** 路由跳转（通过 RouterLike 接口，不直接依赖 vue-router）。 */
-export type NavigateAction = ActionDescriptorBase & {
+export interface NavigateAction extends ActionDescriptorBase {
   action: 'navigate'
-  /**
-   * 目标路径。
-   * 支持 `{field}` 从触发事件的 row 插值，例如 `/detail/{id}`。
-   */
-  path: string
+    /**
+     * 目标路径。
+     * 支持 `{field}` 从触发事件的 row 插值，例如 `/detail/{id}`。
+     */
+    path: string
 }
 
 /** 发射自定义事件，触发容器（如 Drawer/Dialog）打开指定目标。 */
-export type OpenAction = ActionDescriptorBase & {
+export interface OpenAction extends ActionDescriptorBase {
   action: 'open'
-  /** 容器标识，由容器的 `name` prop 匹配 */
-  target: string
+    /** 容器标识，由容器的 `name` prop 匹配 */
+    target: string
 }
 
 // ── 字段操作（静默，无 UI 装饰） ─────────────────────────────────────────
@@ -205,16 +205,16 @@ export type OpenAction = ActionDescriptorBase & {
  * 静默更新当前行的单个字段，不弹任何消息。
  * 与 patch 的区别：不带 ActionUiDecorator，语义上是"配置驱动的字段赋值"。
  */
-export type SetFieldAction = ActionDescriptorBase & {
+export interface SetFieldAction extends ActionDescriptorBase {
   action: 'set-field'
-  /** 可选 DataViewKey，省略时使用容器作用域 DataView 的 currentRow */
-  dataViewKey?: string
-  /** 目标字段名 */
-  field: string
-  /** 新值 */
-  value: unknown
-  /** 主键字段名，默认 `'id'` */
-  idField?: string
+    /** 可选 DataViewKey，省略时使用容器作用域 DataView 的 currentRow */
+    dataViewKey?: string
+    /** 目标字段名 */
+    field: string
+    /** 新值 */
+    value: unknown
+    /** 主键字段名，默认 `'id'` */
+    idField?: string
 }
 
 // ── 数据变更类动作（均继承 ActionUiDecorator） ───────────────────────────
@@ -223,7 +223,7 @@ export type SetFieldAction = ActionDescriptorBase & {
  * Prompt 输入框配置。
  * append-row 和 patch（prompt 模式）动作在执行前弹出输入框让用户填写某个字段。
  */
-export type ActionPromptConfig = {
+export interface ActionPromptConfig {
   /** 要写入/更新的字段名 */
   field: string
   /** 输入框正文提示，默认 `请输入{field}` */
@@ -237,108 +237,108 @@ export type ActionPromptConfig = {
 }
 
 /** 追加新行动作。 */
-export type AppendRowAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface AppendRowAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'append-row'
-  /** 目标 DataViewKey；省略时使用容器作用域 DataView */
-  dataViewKey?: string
-  /** 新行初始字段值（会与 inheritFields 合并，idField 不足时自动生成） */
-  appendPayload?: Record<string, unknown>
-  /** 主键字段名，默认 `'id'` */
-  idField?: string
-  /** 从父行继承的字段名列表（适用于树/子表追加场景） */
-  inheritFields?: string[]
-  /** 父行字段映射：`{ 新行字段: 父行字段 }`（支持字段重命名） */
-  inheritFieldMap?: Record<string, string>
-  /** 新增成功后将新行设为 currentRow */
-  setCurrentRowOnSuccess?: boolean
-  /** Prompt 模式配置；设置后执行器先弹输入框再追加 */
-  prompt?: ActionPromptConfig
+    /** 目标 DataViewKey；省略时使用容器作用域 DataView */
+    dataViewKey?: string
+    /** 新行初始字段值（会与 inheritFields 合并，idField 不足时自动生成） */
+    appendPayload?: Record<string, unknown>
+    /** 主键字段名，默认 `'id'` */
+    idField?: string
+    /** 从父行继承的字段名列表（适用于树/子表追加场景） */
+    inheritFields?: string[]
+    /** 父行字段映射：`{ 新行字段: 父行字段 }`（支持字段重命名） */
+    inheritFieldMap?: Record<string, string>
+    /** 新增成功后将新行设为 currentRow */
+    setCurrentRowOnSuccess?: boolean
+    /** Prompt 模式配置；设置后执行器先弹输入框再追加 */
+    prompt?: ActionPromptConfig
 }
 
 /** 删除行动作（支持单行/当前行/选中行批量）。 */
-export type DeleteAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface DeleteAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'delete'
-  /** 删除目标：`scope`=行内当前行，`current`=视图 currentRow，`selected`=批量删除 */
-  target: ActionRowTarget
-  dataViewKey?: string
-  idField?: string
+    /** 删除目标：`scope`=行内当前行，`current`=视图 currentRow，`selected`=批量删除 */
+    target: ActionRowTarget
+    dataViewKey?: string
+    idField?: string
 }
 
 /** 更新行字段动作（支持静态 patch、单字段赋值、Prompt 输入三种模式）。 */
-export type PatchAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface PatchAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'patch'
-  target: ActionRowTarget
-  dataViewKey?: string
-  idField?: string
-  /** 静态 patch 对象（多字段批量赋值，与 field/value 互斥） */
-  patch?: Record<string, unknown>
-  /** 单字段名（与 value 搭配，优先级低于 patch） */
-  field?: string
-  /** 单字段新值 */
-  value?: unknown
-  /** Prompt 模式（仅支持 scope/current，不支持 selected） */
-  prompt?: ActionPromptConfig
+    target: ActionRowTarget
+    dataViewKey?: string
+    idField?: string
+    /** 静态 patch 对象（多字段批量赋值，与 field/value 互斥） */
+    patch?: Record<string, unknown>
+    /** 单字段名（与 value 搭配，优先级低于 patch） */
+    field?: string
+    /** 单字段新值 */
+    value?: unknown
+    /** Prompt 模式（仅支持 scope/current，不支持 selected） */
+    prompt?: ActionPromptConfig
 }
 
 /** 移动树节点动作（要求 DataView 是树视图并实现 moveTreeNode API）。 */
-export type MoveAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface MoveAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'move'
-  /** 移动目标：`scope`=行内当前行，`current`=视图 currentRow */
-  target: 'scope' | 'current'
-  dataViewKey?: string
-  idField?: string
-  /** 静态目标父节点 ID（null 表示移到根节点） */
-  newParentId?: string | number | null
-  /** 目标父节点来源：`field`=从 row 字段读，`scope`=用 scope.row 作为父节点 */
-  targetParentSource?: 'field' | 'scope'
-  /** targetParentSource='field' 时读取的字段名 */
-  targetParentField?: string
-  /** 目标位置索引（可选，不传则追加到末尾） */
-  index?: number
+    /** 移动目标：`scope`=行内当前行，`current`=视图 currentRow */
+    target: 'scope' | 'current'
+    dataViewKey?: string
+    idField?: string
+    /** 静态目标父节点 ID（null 表示移到根节点） */
+    newParentId?: string | number | null
+    /** 目标父节点来源：`field`=从 row 字段读，`scope`=用 scope.row 作为父节点 */
+    targetParentSource?: 'field' | 'scope'
+    /** targetParentSource='field' 时读取的字段名 */
+    targetParentField?: string
+    /** 目标位置索引（可选，不传则追加到末尾） */
+    index?: number
 }
 
 /** 展示行数据消息（适合调试/只读信息场景）。 */
-export type MessageRowAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface MessageRowAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'message-row'
-  target: 'scope' | 'current'
-  dataViewKey?: string
-  /** 自定义消息模板，支持 `{field}` 插值（优先于 messageFields） */
-  message?: string
-  /** 展示哪些字段（格式：`字段: 值 | 字段: 值`） */
-  messageFields?: string[]
-  /** 消息类型，默认 `'info'` */
-  messageType?: PageMessageType
+    target: 'scope' | 'current'
+    dataViewKey?: string
+    /** 自定义消息模板，支持 `{field}` 插值（优先于 messageFields） */
+    message?: string
+    /** 展示哪些字段（格式：`字段: 值 | 字段: 值`） */
+    messageFields?: string[]
+    /** 消息类型，默认 `'info'` */
+    messageType?: PageMessageType
 }
 
 /** 刷新数据视图（重新触发远程加载）。 */
-export type RefreshAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface RefreshAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'refresh'
-  dataViewKey?: string
+    dataViewKey?: string
 }
 
 /** 清空数据视图的所有行（本地操作，不发远程请求）。 */
-export type ClearRowsAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface ClearRowsAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'clear-rows'
-  dataViewKey?: string
+    dataViewKey?: string
 }
 
 /** 提交当前表单（读取 formApi 数据，调用 editRowById 保存）。 */
-export type SubmitCurrentFormAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface SubmitCurrentFormAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'submit-current-form'
-  dataViewKey?: string
-  idField?: string
-  /** 表单校验失败时的提示文案 */
-  validateMessage?: string
+    dataViewKey?: string
+    idField?: string
+    /** 表单校验失败时的提示文案 */
+    validateMessage?: string
 }
 
 /** 提交当前 DataSet 范围内的 staged/editing 变更。 */
-export type SaveDataSetAction = ActionDescriptorBase & ActionUiDecorator & {
+export interface SaveDataSetAction extends ActionDescriptorBase, ActionUiDecorator {
   action: 'save-dataset'
-  mode?: DataSetSaveChangesMode
-  requestId?: string
-  requestIdStrategy?: 'auto'
-  applyEditingRows?: boolean
-  views?: DataSetSaveChangesViewSelector[]
+    mode?: DataSetSaveChangesMode
+    requestId?: string
+    requestIdStrategy?: 'auto'
+    applyEditingRows?: boolean
+    views?: DataSetSaveChangesViewSelector[]
 }
 
 // ── 类型守卫 ──────────────────────────────────────────────────────────────
@@ -361,7 +361,7 @@ export function isActionDescriptor(value: unknown): value is ActionDescriptor {
  * 执行器不直接持有 Vue 组件或 DataSet 引用，而是通过此接口的工厂函数按需获取，
  * 从而保持执行器框架无关性并支持懒解析。
  */
-export type ActionExecutionContext = {
+export interface ActionExecutionContext {
   /** 获取当前页面的 DataSet 实例（用于 DataViewKey 解析）；页面未就绪时返回 null */
   getDataSet: () => DataSetContract | null
   /**
@@ -388,7 +388,7 @@ export type ActionExecutionControl = CancellableControl
  * 路由器最小接口，隔离对 vue-router 的直接依赖。
  * spark-component 通过能力系统注入具体实现。
  */
-export type RouterLike = {
+export interface RouterLike {
   push(to: string | { path: string; query?: Record<string, string> }): unknown
 }
 

@@ -20,7 +20,7 @@ export type { PageRoute }
 // ── 分区 C：脚本沙箱能力（页面运行时访问面） ─────────────────────────────────
 
 /** 页面脚本组件访问 API（由渲染器根节点注入） */
-export type PageComponentAccessApi = {
+export interface PageComponentAccessApi {
   /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
   get(id: string): PageComponentInstanceEntry | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
@@ -42,20 +42,20 @@ export type PageComponentAccessApi = {
  * - `h` — 渲染函数（Render* 专用）
  * - Timer API — 沙箱白名单
  */
-export type PageContext = ScriptContext & {
+export interface PageContext extends ScriptContext {
   /** 页面 DataSet（比 ScriptContext 额外注入的具体类型） */
-  $dataSet: DataSetContract | null
-  /** 组件访问 API（覆盖 ScriptContext 基类，提供更丰富方法） */
-  $components: PageComponentAccessApi
-  /** SPARK 数据空间工具命名空间（createTreeManager 等，Render* 函数用） */
-  SparkData: typeof SparkData
-  /** 渲染函数（运行时由渲染层注入，Render* 函数专用） */
-  h: typeof h
-
-  // Timer API（沙箱白名单）
-  setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
-  clearTimeout: (id?: number) => void
-  setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
-  clearInterval: (id?: number) => void
+    $dataSet: DataSetContract | null
+    /** 组件访问 API（覆盖 ScriptContext 基类，提供更丰富方法） */
+    $components: PageComponentAccessApi
+    /** SPARK 数据空间工具命名空间（createTreeManager 等，Render* 函数用） */
+    SparkData: typeof SparkData
+    /** 渲染函数（运行时由渲染层注入，Render* 函数专用） */
+    h: typeof h
+  
+    // Timer API（沙箱白名单）
+    setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
+    clearTimeout: (id?: number) => void
+    setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
+    clearInterval: (id?: number) => void
 }
 

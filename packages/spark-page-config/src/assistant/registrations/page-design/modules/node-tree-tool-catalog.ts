@@ -1,3 +1,14 @@
+/**
+ * 页面设计节点树工具模块。
+ *
+ * 提供 nodeTree 的完整 CRUD 函数注册表：
+ * 读取：getNode / getLocation / hasNode / getParent / listChildren / countNodes / getAllData / collectDataKeys / collectHandlerNames / findByType
+ * 写入：addNode / addNodes / moveNode / setProps / setPropsBatch / replaceNode / replaceNodes / removeNode / removeNodes
+ *
+ * 所有操作作用于 SparkNodeTree/rule.json 模型，通过 componentId（节点顶层 id 字段）定位节点，
+ * 绝对禁止将组件类型名（r-table / r-tabs 等）当作 componentId 使用。
+ */
+
 import {
   anySchema,
   arraySchema,
@@ -86,6 +97,7 @@ const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点�
 const SCALAR_PARENT_COMPONENT_RULE = 'parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。'
 const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实例对应的 root；如需最新子树快照，请读取 tree.root 或 toJSON()。'
 
+/** 节点树静态工具模块：定义 SparkNodeTree/rule.json 结构读写的函数注册表。 */
 export class NodeTreeModule extends StaticAiToolModule {
   constructor() {
     super({

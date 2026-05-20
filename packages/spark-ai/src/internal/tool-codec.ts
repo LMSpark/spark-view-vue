@@ -1,10 +1,28 @@
+/**
+ * AI Runtime 工具编解码器。
+ *
+ * 职责：将知识投影中的 AiRuntimeFunctionExposure 编码为 LLM tool specs，
+ * 并维护 toolName → action 的反向映射，用于解码 LLM 返回的 tool_call。
+ *
+ * ┌──────────────────────────────────────────────────────┐
+ * │                  AiRuntimeToolCodec                   │
+ * │                                                       │
+ * │  编码：projection.availableFunctions                  │
+ * │    → toolNameForExposure() → ai_0_module_action       │
+ * │    → buildToolDescription() → description             │
+ * │    → schemaToParameters() → parameters                │
+ * │                                                       │
+ * │  解码：actionOf(toolName) → action string              │
+ * └──────────────────────────────────────────────────────┘
+ */
+
 import type {
   AiRuntimeFunctionExposure,
   AiRuntimeKnowledgeProjection,
 } from '../protocol/runtime-protocol'
 import type { LlmParameterSchemaRoot } from '../protocol/parameter-schema'
 
-export type AiRuntimeToolSpec = {
+export interface AiRuntimeToolSpec {
   readonly type: 'function'
   readonly function: {
     readonly name: string
@@ -13,7 +31,7 @@ export type AiRuntimeToolSpec = {
   }
 }
 
-export type AiRuntimeToolCodecOptions = {
+export interface AiRuntimeToolCodecOptions {
   readonly includeActions?: ReadonlySet<string> | ((exposure: AiRuntimeFunctionExposure) => boolean) | undefined
 }
 
@@ -58,8 +76,14 @@ function shouldIncludeExposure(exposure: AiRuntimeFunctionExposure, options: AiR
 export class AiRuntimeToolCodec {
   readonly tools: readonly AiRuntimeToolSpec[]
 
+  /** toolName → action 反向映射，用于解码 LLM tool_call */
   private readonly actionByToolName = new Map<string, string>()
 
+  /**
+   * 构造函数：遍历投影中的 availableFunctions，
+   * 为每个函数生成 LLM tool spec 并注册 toolName → action 映射。
+   * includeActions 选项支持渐进式工具暴露。
+   */
   constructor(
     projection: AiRuntimeKnowledgeProjection,
     options: AiRuntimeToolCodecOptions = {},
@@ -80,6 +104,7 @@ export class AiRuntimeToolCodec {
     })
   }
 
+  /** 根据 LLM 返回的 toolName 反查原始 action 字符串 */
   actionOf(toolName: string): string | null {
     return this.actionByToolName.get(toolName) ?? null
   }

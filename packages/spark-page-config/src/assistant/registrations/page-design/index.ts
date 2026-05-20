@@ -1,3 +1,10 @@
+/**
+ * Page-design 模块 barrel 入口。
+ *
+ * 汇总导出 PageDesignModule（主模块）、五大子模块（lifecycle / textModel / nodeTree / dataset / knowledge）、
+ * prompt 组装类（PageDesignEditRuntimePrompt / PageDesignEditFlowPrompts）和动作分类器（PageDesignEditActionClassifier）。
+ */
+
 export {
   PageDesignEditActionClassifier,
 } from './prompts/edit-action-classifier'
@@ -25,7 +32,6 @@ export type {
 
 export type {
   DatasetCrudToolFunctionFailureMode,
-  DatasetCrudToolFunctionId,
 } from './modules/dataset-tool-catalog'
 
 export type {

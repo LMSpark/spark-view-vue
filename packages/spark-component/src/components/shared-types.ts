@@ -15,7 +15,7 @@ import type {
   CurrentRowChangeHandler,
 } from './containers/support'
 
-export type ValueRef<T> = {
+export interface ValueRef<T> {
   /**
    * 当前持有的值。
    *
@@ -37,7 +37,7 @@ export type ValueRef<T> = {
  * - `children` 允许包含文本子节点，因此不能错误收窄成 `SparkNode[]`
  * - 只消费结构子节点的容器，应在本地使用 `getSparkNodeChildren()` 再收窄
  */
-export type SparkNodeProps = {
+export interface SparkNodeProps {
   /**
    * 组件类型标识。
    *
@@ -74,7 +74,7 @@ export type SparkNodeProps = {
 /**
  * 标题 + 内容文本语义（容器/展示组件复用）。
  */
-export type SparkTitleContentProps = {
+export interface SparkTitleContentProps {
   /**
    * 标题位文本。
    * 通常用于卡片头、统计标题、面板标题等“主说明”区域。
@@ -104,7 +104,7 @@ export type SparkTitleContentProps = {
  * - 这里只描述“值来源”语义，不包含字段编辑语义
  * - 组件自身仍应显式 `extends SparkNodeProps`，保持 props 入口可读
  */
-export type SparkDataDisplayProps<TValue = unknown> = {
+export interface SparkDataDisplayProps<TValue = unknown> {
   /**
    * 显式展示值。
    *
@@ -132,7 +132,7 @@ export type SparkDataDisplayProps<TValue = unknown> = {
  * 只描述 field 组件自己的值/标签/占位等编辑语义，
  * 不引入 `SparkNodeProps`，以便具体组件能够显式挂在根层上而不形成重复继承。
  */
-export type SparkFieldSemanticProps<TValue = unknown> = {
+export interface SparkFieldSemanticProps<TValue = unknown> {
   /**
    * 字段宽度。
    *
@@ -238,7 +238,7 @@ export type SparkFieldSemanticProps<TValue = unknown> = {
  * 适用于带显式主操作按钮的字段，
  * 例如“选择”“上传”“浏览文件”。
  */
-export type SparkPrimaryActionTextProps = {
+export interface SparkPrimaryActionTextProps {
   /**
    * 主动作按钮文案。
    */
@@ -251,7 +251,7 @@ export type SparkPrimaryActionTextProps = {
  * 适用于字段在可编辑与只读模式之间切换时，
  * 主动作按钮文本也需要跟随切换的场景。
  */
-export type SparkReadonlyActionTextProps = {
+export interface SparkReadonlyActionTextProps {
   /**
    * 只读或查看模式下的主动作按钮文案。
    */
@@ -264,7 +264,7 @@ export type SparkReadonlyActionTextProps = {
  * 适用于 textarea、mention 的多行输入模式、
  * 以及带源码编辑区的 html-editor 这类“以文本区显示行数”为主的输入组件。
  */
-export type SparkMultilineRowsProps = {
+export interface SparkMultilineRowsProps {
   /**
    * 多行输入的可见行数。
    *
@@ -279,14 +279,14 @@ export type SparkMultilineRowsProps = {
  * 适用于 textarea、mention、html-editor 这类建立在字段语义之上，
  * 同时复用多行行数配置的输入组件。
  */
-export type SparkMultilineFieldProps<TValue = string> = SparkFieldSemanticProps<TValue> & SparkMultilineRowsProps & {}
+export interface SparkMultilineFieldProps<TValue = string> extends SparkFieldSemanticProps<TValue>, SparkMultilineRowsProps {}
 
 /**
  * 数值上界语义。
  *
  * 适用于评分、数字输入、滑块等需要声明“最大允许值”或“最大档位”的数值字段。
  */
-export type SparkNumericMaxProps = {
+export interface SparkNumericMaxProps {
   /**
    * 最大值。
    */
@@ -299,11 +299,11 @@ export type SparkNumericMaxProps = {
  * 适用于同时需要声明最小值和最大值的数值字段，
  * 例如 number / slider 这类连续区间输入组件。
  */
-export type SparkNumericBoundsProps = SparkNumericMaxProps & {
+export interface SparkNumericBoundsProps extends SparkNumericMaxProps {
   /**
-   * 最小值。
-   */
-  min?: number
+     * 最小值。
+     */
+    min?: number
 }
 
 /**
@@ -311,23 +311,21 @@ export type SparkNumericBoundsProps = SparkNumericMaxProps & {
  *
  * 适用于 rate 这类只声明最大档位、但不要求最小值边界的数值字段。
  */
-export type SparkMaxNumericFieldProps<TValue = number> = SparkFieldSemanticProps<TValue> & SparkNumericMaxProps & {}
+export interface SparkMaxNumericFieldProps<TValue = number> extends SparkFieldSemanticProps<TValue>, SparkNumericMaxProps {}
 
 /**
  * 有上下界的数值字段语义。
  *
  * 适用于 slider、number 这类需要共同声明最小值和最大值的字段组件。
  */
-export type SparkBoundedFieldProps<TValue = number> = SparkFieldSemanticProps<TValue> & SparkNumericBoundsProps & {}
+export interface SparkBoundedFieldProps<TValue = number> extends SparkFieldSemanticProps<TValue>, SparkNumericBoundsProps {}
 
 /**
  * 支持区间筛选的数值字段语义。
  *
  * 适用于在普通数值输入与范围筛选之间切换的 number 类组件。
  */
-export type SparkRangeNumericFieldProps<
-  TValue = number | [number | undefined, number | undefined],
-> = SparkBoundedFieldProps<TValue> & SparkRangeFilterProps & {}
+export interface SparkRangeNumericFieldProps<TValue = number | [number | undefined, number | undefined]> extends SparkBoundedFieldProps<TValue>, SparkRangeFilterProps {}
 
 /**
  * 文件字段核心语义。
@@ -335,36 +333,36 @@ export type SparkRangeNumericFieldProps<
  * 用于“字段值本身是文件路径/文件名字符串”的场景，
  * 统一收口文件类型过滤、字符串拼接规则，以及主动作按钮文案。
  */
-export type SparkFileFieldProps<TValue = string> = SparkFieldSemanticProps<TValue> & SparkPrimaryActionTextProps & {
+export interface SparkFileFieldProps<TValue = string> extends SparkFieldSemanticProps<TValue>, SparkPrimaryActionTextProps {
   /**
-   * 文件类型过滤条件。
-   *
-   * 一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。
-   */
-  accept?: string
-  /**
-   * 多文件字符串分隔符。
-   *
-   * 当一个字段以单个字符串承载多个文件值时，用它拼接文件名或路径。
-   */
-  separator?: string
+     * 文件类型过滤条件。
+     *
+     * 一般透传给文件浏览/上传能力，例如 `image/*`、`.pdf,.docx`。
+     */
+    accept?: string
+    /**
+     * 多文件字符串分隔符。
+     *
+     * 当一个字段以单个字符串承载多个文件值时，用它拼接文件名或路径。
+     */
+    separator?: string
 }
 
-/** 文件上传/浏览动作地址（例如上传接口 URL 或 '#'） */
-export type SparkFileUploadAction = string
+/** 文件上传/浏览动作地址（例如上传接口 URL 或 '#'）。 */
+// 这里不再为 JS 基础类型保留导出别名，上传动作地址直接使用 string。
 
 /**
  * 文件上传/浏览切换动作语义。
  *
  * 适用于既可能上传，也可能只读浏览的文件字段。
  */
-export type SparkFileUploadActionProps = SparkReadonlyActionTextProps & {
+export interface SparkFileUploadActionProps extends SparkReadonlyActionTextProps {
   /**
-   * 上传目标地址。
-   *
-   * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。
-   */
-  action?: SparkFileUploadAction
+     * 上传目标地址。
+     *
+     * 当值为空或 `#` 时，字段通常会退化为纯浏览模式。
+     */
+  action?: string
 }
 
 /**
@@ -372,7 +370,7 @@ export type SparkFileUploadActionProps = SparkReadonlyActionTextProps & {
  *
  * 适用于值仍是文件字段，但交互上需要上传目标地址与文件字段本体同时存在的组件。
  */
-export type SparkUploadFieldProps<TValue = string> = SparkFileFieldProps<TValue> & SparkFileUploadActionProps & {}
+export interface SparkUploadFieldProps<TValue = string> extends SparkFileFieldProps<TValue>, SparkFileUploadActionProps {}
 
 /**
  * 可选择多个文件，并支持上传/浏览双动作的文件字段语义。
@@ -380,11 +378,11 @@ export type SparkUploadFieldProps<TValue = string> = SparkFileFieldProps<TValue>
  * 适用于文件路径选择器、图片选择器这类“值仍是字符串，
  * 但交互上同时支持上传与浏览”的文件字段。
  */
-export type SparkFilePickerFieldProps<TValue = string> = SparkFileFieldProps<TValue> & SparkFileUploadActionProps & {
+export interface SparkFilePickerFieldProps<TValue = string> extends SparkFileFieldProps<TValue>, SparkFileUploadActionProps {
   /**
-   * 是否允许一次选择多个文件。
-   */
-  multiple?: boolean
+     * 是否允许一次选择多个文件。
+     */
+    multiple?: boolean
 }
 
 /**
@@ -393,25 +391,25 @@ export type SparkFilePickerFieldProps<TValue = string> = SparkFileFieldProps<TVa
  * 适用于 date-picker / time-picker 这类既可能选择单值，
  * 也可能选择范围值的时间输入组件。
  */
-export type SparkTemporalPickerProps<TValue = unknown> = SparkFieldSemanticProps<TValue> & {
+export interface SparkTemporalPickerProps<TValue = unknown> extends SparkFieldSemanticProps<TValue> {
   /**
-   * 显示格式。
-   *
-   * 只影响控件展示层，不直接决定底层实际写回值的格式。
-   */
-  format?: string
-  /**
-   * 范围起点占位文案。
-   */
-  startPlaceholder?: string
-  /**
-   * 范围终点占位文案。
-   */
-  endPlaceholder?: string
-  /**
-   * 范围值中间的展示分隔文案。
-   */
-  rangeSeparator?: string
+     * 显示格式。
+     *
+     * 只影响控件展示层，不直接决定底层实际写回值的格式。
+     */
+    format?: string
+    /**
+     * 范围起点占位文案。
+     */
+    startPlaceholder?: string
+    /**
+     * 范围终点占位文案。
+     */
+    endPlaceholder?: string
+    /**
+     * 范围值中间的展示分隔文案。
+     */
+    rangeSeparator?: string
 }
 
 /**
@@ -420,7 +418,7 @@ export type SparkTemporalPickerProps<TValue = unknown> = SparkFieldSemanticProps
  * 适用于既可作为普通输入字段，也可切换到“区间筛选”模式的组件，
  * 例如 number/date 这类在查询表单里支持单值与范围值两种交互的字段。
  */
-export type SparkRangeFilterProps = {
+export interface SparkRangeFilterProps {
   /**
    * 过滤模式。
    * 当值为 `range` 时，组件通常切换到范围筛选 UI。
@@ -434,7 +432,7 @@ export type SparkRangeFilterProps = {
  * 适用于 date/date-range 一类既保留时间选择器能力，
  * 又能切换到范围筛选模式的字段组件。
  */
-export type SparkRangeTemporalFieldProps<TValue = unknown> = SparkTemporalPickerProps<TValue> & SparkRangeFilterProps & {}
+export interface SparkRangeTemporalFieldProps<TValue = unknown> extends SparkTemporalPickerProps<TValue>, SparkRangeFilterProps {}
 
 /**
  * 选项按钮样式语义。
@@ -442,7 +440,7 @@ export type SparkRangeTemporalFieldProps<TValue = unknown> = SparkTemporalPicker
  * 适用于同一组选项既可以普通项渲染，
  * 也可以切换成“按钮式选项”渲染的字段组件。
  */
-export type SparkOptionButtonStyleProps = {
+export interface SparkOptionButtonStyleProps {
   /**
    * 是否启用按钮样式。
    *
@@ -457,7 +455,7 @@ export type SparkOptionButtonStyleProps = {
  *
  * 适用于树形/级联类选择组件，用来声明父子节点是否保持联动选择。
  */
-export type SparkHierarchicalSelectionProps = {
+export interface SparkHierarchicalSelectionProps {
   /**
    * 是否启用严格选择。
    *
@@ -492,69 +490,69 @@ export type SparkOptionValueMode = 'auto' | 'array' | 'separated-string'
  * - 某些组件可通过为 `SparkOptionFieldProps<TValue, TOption>` 传入更具体的 `TOption` 收窄本地 `options` 类型，无需在组件 props 中重复声明 `options`
  * - 如果某组件只有“候选项结构”语义，而没有 field/value/placeholder 等字段语义，可直接复用 `SparkOptionSourceProps`
  */
-export type SparkOptionFieldProps<TValue = unknown, TOption = unknown> = SparkFieldSemanticProps<TValue> & SparkOptionSourceProps<TOption> & {
+export interface SparkOptionFieldProps<TValue = unknown, TOption = unknown> extends SparkFieldSemanticProps<TValue>, SparkOptionSourceProps<TOption> {
   /**
-   * @internal 运行时数据线，由框架注入，不属于页面配置。
-   *
-   * 作用：
-   * - 为字段组件提供当前 DataView 上下文
-   * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表
-   */
-  dataSource?: DataView
-  /**
-   * 选项 DataView 定位键。
-   *
-   * 通常指向某个 DataView，例如 `Categories@default`，
-   * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。
-   */
-  optionDataViewKey?: string
-  /** 选项来源 DataView 成员，默认 rows。 */
-  optionDataMember?: DataMember | `${DataMember}`
-  /** 选项来源成员内部字段或路径。 */
-  optionDataField?: string
-  /**
-   * 值分隔符。
-   *
-   * 当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，
-   * 使用该分隔符把多个候选值序列化到主字段中。
-   *
-   * 示例：
-   * - 当前选中值为 `[101, 102]`
-   * - `valueSeparator` 为 `,`
-   * - 最终写入 `field` 为 `101,102`
-   */
-  valueSeparator?: string
-  /**
-   * 主值持久化模式。
-   *
-   * 用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，
-   * 还是按 `valueSeparator` 序列化成单个字符串。
-   */
-  valueMode?: SparkOptionValueMode
-  /**
-   * 文本分隔符。
-   *
-   * 当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，
-   * 使用该分隔符拼接展示文本。
-   */
-  textSeparator?: string
-  /**
-   * 文本储存字段。
-   *
-   * 主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，
-   * 例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。
-   */
-  textStorageField?: string
-  /**
-   * 是否允许在候选项中搜索。
-   * 一般用于候选集较大、需要关键字过滤的组件。
-   */
-  filterable?: boolean
-  /**
-   * 是否启用多选模式。
-   * 开启后，组件的值语义通常从单值切换为数组值。
-   */
-  multiple?: boolean
+     * @internal 运行时数据线，由框架注入，不属于页面配置。
+     *
+     * 作用：
+     * - 为字段组件提供当前 DataView 上下文
+     * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表
+     */
+    dataSource?: DataView
+    /**
+     * 选项 DataView 定位键。
+     *
+     * 通常指向某个 DataView，例如 `Categories@default`，
+     * 组件可据此从运行时数据中动态生成候选项，而不是写死静态枚举。
+     */
+    optionDataViewKey?: string
+    /** 选项来源 DataView 成员，默认 rows。 */
+    optionDataMember?: DataMember | `${DataMember}`
+    /** 选项来源成员内部字段或路径。 */
+    optionDataField?: string
+    /**
+     * 值分隔符。
+     *
+     * 当组件处于多选语义，但主字段 `field` 选择以单个字符串而不是数组形式持久化时，
+     * 使用该分隔符把多个候选值序列化到主字段中。
+     *
+     * 示例：
+     * - 当前选中值为 `[101, 102]`
+     * - `valueSeparator` 为 `,`
+     * - 最终写入 `field` 为 `101,102`
+     */
+    valueSeparator?: string
+    /**
+     * 主值持久化模式。
+     *
+     * 用于声明当前选项字段把选中结果写回 `field` 时，应保留数组，
+     * 还是按 `valueSeparator` 序列化成单个字符串。
+     */
+    valueMode?: SparkOptionValueMode
+    /**
+     * 文本分隔符。
+     *
+     * 当组件把候选项文本额外写入 `textStorageField`，且当前选择包含多个候选项时，
+     * 使用该分隔符拼接展示文本。
+     */
+    textSeparator?: string
+    /**
+     * 文本储存字段。
+     *
+     * 主字段 `field` 仍负责持久化候选值；`textStorageField` 仅用于额外保存候选项文本，
+     * 例如把选中的 ID 存到 `userIds`，同时把姓名串存到 `userNames`。
+     */
+    textStorageField?: string
+    /**
+     * 是否允许在候选项中搜索。
+     * 一般用于候选集较大、需要关键字过滤的组件。
+     */
+    filterable?: boolean
+    /**
+     * 是否启用多选模式。
+     * 开启后，组件的值语义通常从单值切换为数组值。
+     */
+    multiple?: boolean
 }
 
 /**
@@ -563,7 +561,7 @@ export type SparkOptionFieldProps<TValue = unknown, TOption = unknown> = SparkFi
  * 适用于 radio / checkbox-group 这类既是选项字段，
  * 又支持按钮式渲染的组件。
  */
-export type SparkButtonOptionFieldProps<TValue = unknown, TOption = unknown> = SparkOptionFieldProps<TValue, TOption> & SparkOptionButtonStyleProps & {}
+export interface SparkButtonOptionFieldProps<TValue = unknown, TOption = unknown> extends SparkOptionFieldProps<TValue, TOption>, SparkOptionButtonStyleProps {}
 
 /**
  * 层级选项字段语义。
@@ -571,7 +569,7 @@ export type SparkButtonOptionFieldProps<TValue = unknown, TOption = unknown> = S
  * 适用于 cascader / tree-select 这类既是选项字段，
  * 又需要父子选择联动控制的组件。
  */
-export type SparkHierarchicalOptionFieldProps<TValue = unknown, TOption = unknown> = SparkOptionFieldProps<TValue, TOption> & SparkHierarchicalSelectionProps & {}
+export interface SparkHierarchicalOptionFieldProps<TValue = unknown, TOption = unknown> extends SparkOptionFieldProps<TValue, TOption>, SparkHierarchicalSelectionProps {}
 
 /**
  * 选项源配置（源层通用）：
@@ -586,7 +584,7 @@ export type SparkHierarchicalOptionFieldProps<TValue = unknown, TOption = unknow
  * - 这里的 `options` 只是在类型层描述“本地直接传入的候选项”
  * - 若具体字段组件还支持 `optionDataViewKey`，动态候选项会在运行时由共享解析链补进来，而不是受这里的静态类型声明限制
  */
-export type SparkOptionSourceProps<TOption = unknown> = {
+export interface SparkOptionSourceProps<TOption = unknown> {
   /**
    * 可选项数组。
    * 通常用于静态枚举场景，例如状态、性别、开关类型等固定候选列表。
@@ -618,7 +616,7 @@ export type SparkOptionSourceProps<TOption = unknown> = {
  * 浮层行为配置（容器层通用）：
  * 提供 popover、tooltip、dropdown 一类“挂载到目标元素附近”的浮层组件共通行为。
  */
-export type SparkFloatingLayerProps = {
+export interface SparkFloatingLayerProps {
   /**
    * 浮层位置。
    * 一般透传给底层 UI 库的 placement 语义，例如 top / bottom-start / right-end。
@@ -666,7 +664,7 @@ export type SparkFloatingLayerProps = {
  *
  * 适用于 form、detail、dialog、section 等需要统一声明内容区 CSS Grid 布局的容器。
  */
-export type SparkGridLayoutProps = {
+export interface SparkGridLayoutProps {
   /** CSS Grid 列数 */
   gridColumns?: number
   /** 栅格间距 */
@@ -679,7 +677,7 @@ export type SparkGridLayoutProps = {
  * 表级模型属性（第五层）：
  * 用于 DataView 驱动的数据容器，描述它们和页面数据空间的连接点。
  */
-export type SparkTableModelProps = {
+export interface SparkTableModelProps {
   /**
    * @internal 运行时数据线，由框架注入，不属于页面配置。
    *
@@ -707,7 +705,7 @@ export type SparkTableModelProps = {
  * 数据容器 CRUD 事件（统一命名层）。
  * 为表格、列表等可编辑容器提供统一命名的增删改动作入口。
  */
-export type SparkCrudEventProps = {
+export interface SparkCrudEventProps {
   /**
    * 新增动作回调。
    * 常由工具栏“新增”按钮、空态入口或快捷动作触发。
@@ -729,7 +727,7 @@ export type SparkCrudEventProps = {
  * 行交互事件（统一命名层）。
  * 用于承接用户对数据行的常见交互行为，并向上层暴露稳定的事件名。
  */
-export type SparkRowInteractionEventProps = {
+export interface SparkRowInteractionEventProps {
   /**
    * 行点击回调。
    * 用户点击某一行时触发，常用于详情联动、主子表级联或进入编辑态。
@@ -756,19 +754,19 @@ export type SparkRowInteractionEventProps = {
  *
  * 在数据容器基础上增加统一 CRUD 动作入口，适用于 form、detail、list、tree、table。
  */
-export type SparkCrudDataContainerProps = SparkTableModelProps & SparkCrudEventProps & {}
+export interface SparkCrudDataContainerProps extends SparkTableModelProps, SparkCrudEventProps {}
 
 /**
  *
  * 在可编辑数据容器基础上继续收口行点击、选中集合变化、当前行变化等交互事件。
  */
-export type SparkInteractiveDataContainerProps = SparkCrudDataContainerProps & SparkRowInteractionEventProps & {}
+export interface SparkInteractiveDataContainerProps extends SparkCrudDataContainerProps, SparkRowInteractionEventProps {}
 
 /**
  * 可见性生命周期事件（统一命名层）。
  * 适用于 dialog、drawer、popover 等具备显隐状态的组件。
  */
-export type SparkVisibilityEventProps = {
+export interface SparkVisibilityEventProps {
   /**
    * 打开动作触发时回调。
    * 一般用于进入显示流程前准备数据或记录埋点。
@@ -796,11 +794,11 @@ export type SparkVisibilityEventProps = {
  *
  * 适用于 dialog、drawer 这类公开显隐生命周期事件的容器组件。
  */
-export type SparkVisibilityContainerProps = SparkVisibilityEventProps & {
+export interface SparkVisibilityContainerProps extends SparkVisibilityEventProps {
   /**
-   * 跨框架显隐配置值。
-   *
-   * 页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。
-   */
-  value?: boolean
+     * 跨框架显隐配置值。
+     *
+     * 页面配置可继续使用 `value` 表达容器显隐；Vue 渲染适配层会在下发组件前映射为 `modelValue`。
+     */
+    value?: boolean
 }

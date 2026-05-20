@@ -6,7 +6,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createFileLoader, FileLoader } from '@spark-view/spark-utils'
 import type { AxiosRequestConfig } from 'axios'
 
-type FakeStorageRecord = {
+interface FakeStorageRecord {
   value: string
 }
 

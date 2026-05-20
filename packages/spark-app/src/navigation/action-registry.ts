@@ -1,15 +1,17 @@
 import type { InjectionKey } from 'vue'
 import type { NavNode } from './nav-model'
 
-export type NavigationActionContext = {
+export interface NavigationActionContext {
   command: string
   node?: NavNode
   source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell'
 }
 
-export type NavigationActionHandler = (context: NavigationActionContext) => void | Promise<void>
+export interface NavigationActionHandler {
+  (context: NavigationActionContext): void | Promise<void>
+}
 
-export type NavigationActionRegistry = {
+export interface NavigationActionRegistry {
   register(command: string, handler: NavigationActionHandler): () => void
   unregister(command: string): boolean
   has(command: string): boolean

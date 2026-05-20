@@ -307,7 +307,7 @@ type DesignerColumn = DesignerTableProjection['columns'][number]
 type DesignerTable = DesignerTableProjection
 type DesignerRelation = DesignerRelationProjection
 
-type RelationDraftState = {
+interface RelationDraftState {
   sourceIndex: number
   sourceSelector: ReturnType<typeof buildRelationSelector>
   draft: DesignerRelation
@@ -728,7 +728,7 @@ function applyHistoryMutationWithFeedback(
   }, failureTitle)
 }
 
-type TableUpdatePayload = {
+interface TableUpdatePayload {
   resourceType?: TableResourceType | null
   businessCategory?: TableBusinessCategory | null
   resourceId?: string | null

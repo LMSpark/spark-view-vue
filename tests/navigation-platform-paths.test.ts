@@ -9,16 +9,16 @@ import type {
   PageConfig,
   PageConfigFileLoadOptions,
   PageConfigFileName,
-  PageCssConfig,
   PageDataConfig,
-  PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config/page/loading'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { useNavigation } from '../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
 
-type NavigateToPath = (path: string) => void
+interface NavigateToPath {
+  (path: string): void
+}
 type NavigateToNode = ReturnType<typeof useNavigation>['navigateTo']
 
 const refreshRoutesMock = vi.hoisted(() => vi.fn<() => Promise<AppNavRoot | null>>())
@@ -27,7 +27,7 @@ vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
   refreshRoutes: refreshRoutesMock,
 }))
 
-type MountedNavigationProbe = {
+interface MountedNavigationProbe {
   router: Router
   navigateToPath: NavigateToPath
   navigateTo: NavigateToNode
@@ -60,11 +60,11 @@ class DummyPageConfigLoader extends BasePageConfigLoader {
     return { success: false }
   }
 
-  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+  override async loadScript(): Promise<ConfigLoadResult<string>> {
     return { success: true, data: '' }
   }
 
-  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+  override async loadCss(): Promise<ConfigLoadResult<string>> {
     return { success: true, data: '' }
   }
 

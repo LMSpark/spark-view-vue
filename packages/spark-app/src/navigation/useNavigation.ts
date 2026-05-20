@@ -5,7 +5,6 @@ import type { BasePageConfigLoader } from '@spark-view/spark-page-config/page/lo
 import type {
   ChildPlacement,
   NavContextConfig,
-  NavContextInput,
   NavContextItem,
   NavContextState,
   NavNode,
@@ -78,7 +77,7 @@ function parseStoredContextValue(stored: string): string | number | null {
 }
 
 /** 约定优先：将简写形式归一化为完整 NavContextConfig */
-function normalizeContextConfig(input: NavContextInput): NavContextConfig {
+function normalizeContextConfig(input: string | NavContextItem[] | NavContextConfig): NavContextConfig {
   // 字符串 → URL 简写
   if (typeof input === 'string') {
     return { source: input }
@@ -96,7 +95,7 @@ function resolveRemoteSource(source: string): { url: string } {
   return { url: source }
 }
 
-type UseNavigationOptions = {
+interface UseNavigationOptions {
   /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */
   onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>
   /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */

@@ -110,7 +110,7 @@ export function resetChecker(): void {
  * 2) 提取结果结构
  * ========================================================================== */
 
-export type VcmApiDescriptor = {
+export interface VcmApiDescriptor {
   /** kebab-case 注册名 */
   type: string
   /** 相对于项目 root 的文件路径 */
@@ -119,14 +119,14 @@ export type VcmApiDescriptor = {
   emits: EmitEntry[]
 }
 
-export type ExtractComponentApiVcmOptions = {
+export interface ExtractComponentApiVcmOptions {
   /** 是否保留 VCM 注入的全局 props（class/style/key/ref 等） */
   includeGlobalProps?: boolean
 }
 
 type SchemaOwner = 'workspace' | 'external'
 
-type RawTypeDeclarationLike = {
+interface RawTypeDeclarationLike {
   getSourceFile?: () => { fileName?: string }
   getFullText?: () => string
   jsDoc?: Array<{
@@ -135,7 +135,7 @@ type RawTypeDeclarationLike = {
   }>
 }
 
-type RawTypeSymbolLike = {
+interface RawTypeSymbolLike {
   declarations?: RawTypeDeclarationLike[]
 }
 
@@ -145,21 +145,21 @@ function isRawTypeSymbolLike(value: unknown): value is RawTypeSymbolLike {
   return declarations === undefined || Array.isArray(declarations)
 }
 
-type PropEntryWithIdentity = PropEntry & {
+interface PropEntryWithIdentity extends PropEntry {
   __schemaIdentityKey?: string
-  __schemaOwner?: SchemaOwner
-  /** 自动从 rawType 中提取的字符串字面量枚举 variants（引号包裹，如 `"\"start\""`） */
-  __enumVariants?: string[]
-  /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
-  __enumValueDocs?: Record<string, EnumValueDoc>
+    __schemaOwner?: SchemaOwner
+    /** 自动从 rawType 中提取的字符串字面量枚举 variants（引号包裹，如 `"\"start\""`） */
+    __enumVariants?: string[]
+    /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
+    __enumValueDocs?: Record<string, EnumValueDoc>
 }
 
-type EnumValueDoc = {
+interface EnumValueDoc {
   title?: string
   description?: string
 }
 
-type EmitDoc = {
+interface EmitDoc {
   description?: string
   params: EmitPayloadParamDoc[]
 }

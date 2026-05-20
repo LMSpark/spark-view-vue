@@ -47,7 +47,7 @@ export function computeAggregateRow(
   }
 
   // ── 单遍扫描：一次遍历 rows 更新所有聚合列的累加器 ──
-  type Acc = { type: AggregateType; field: string; name: string; count: number; sum: number; extremum: number; separator: string; segments: string[] }
+  interface Acc { type: AggregateType; field: string; name: string; count: number; sum: number; extremum: number; separator: string; segments: string[] }
   const accs: Acc[] = aggCols.map(([name, config]) => ({
     type: config.type, field: config.field ?? name, name,
     count: 0,       // count / avg 非空计数

@@ -14,21 +14,21 @@ export type NavNodeKind =
 
 export type LinkTarget = 'iframe' | 'new-tab' | 'self'
 
-export type NavContextItem = {
+export interface NavContextItem {
   id: string | number
   title: string
 }
 
-export type NavContextConfig = {
+export interface NavContextConfig {
   source: string | NavContextItem[]
   placeholder?: string
   defaultValue?: string | number
   paramName?: string
 }
 
-export type NavContextInput = string | NavContextItem[] | NavContextConfig
+// 这里不再为 JS 基础类型保留导出别名，导航上下文输入直接内联为原生联合类型。
 
-export type AppModuleBase = {
+export interface AppModuleBase {
   id?: string
   title: string
   description?: string
@@ -37,11 +37,11 @@ export type AppModuleBase = {
 
 export type NavPermissionMode = 'none' | 'masked' | 'invisible'
 
-export type AppNavigation = {
+export interface AppNavigation {
   icon?: string
   nodeKind?: NavNodeKind
   childPlacement?: ChildPlacement
-  context?: NavContextInput
+  context?: string | NavContextItem[] | NavContextConfig
   order?: number
   hidden?: boolean
   disabled?: boolean
@@ -49,41 +49,41 @@ export type AppNavigation = {
   permissionMode?: NavPermissionMode
 }
 
-export type NavNode = AppModuleBase & AppNavigation & {
+export interface NavNode extends AppModuleBase, AppNavigation {
   id: string
-  children?: NavNode[]
-  path?: string
-  linkTarget?: LinkTarget
-  redirect?: string
-  parentPageId?: string
-  refId?: string
-  refPath?: string
-  refProjectId?: string
-  refNodeKind?: NavNodeKind
-  refBroken?: boolean
+    children?: NavNode[]
+    path?: string
+    linkTarget?: LinkTarget
+    redirect?: string
+    parentPageId?: string
+    refId?: string
+    refPath?: string
+    refProjectId?: string
+    refNodeKind?: NavNodeKind
+    refBroken?: boolean
 }
 
-export type AppNavRoot = AppModuleBase & {
+export interface AppNavRoot extends AppModuleBase {
   childPlacement: 'header' | 'sidebar'
-  children: NavNode[]
-  homePath?: string
+    children: NavNode[]
+    homePath?: string
 }
 
-export type RegionItems = {
+export interface RegionItems {
   header: NavNode[]
   sidebar: NavNode[]
   toolbar: NavNode[]
   userMenu: NavNode[]
 }
 
-export type RegionVisibility = {
+export interface RegionVisibility {
   header: boolean
   sidebar: boolean
   toolbar: boolean
   userMenu: boolean
 }
 
-export type NavContextState = {
+export interface NavContextState {
   config: NavContextConfig
   nodeId: string
   selected: string | number | null

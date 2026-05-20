@@ -31,7 +31,7 @@ import type {
 export const DEFAULT_TIMEOUT = 10_000
 
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
-type CacheItem = { data: unknown; timestamp: number; expiry: number }
+interface CacheItem { data: unknown; timestamp: number; expiry: number }
 
 type CacheLookupResult =
   | { hit: true; data: unknown }
