@@ -140,7 +140,7 @@ export interface SparkNodeTreeReplaceNodesParams {
 /**
  * 删除节点时使用的参数。
  */
-export interface SparkNodeTreeRemoveParams extends SparkNodeTreeLookupParams {}
+export type SparkNodeTreeRemoveParams = SparkNodeTreeLookupParams
 
 /**
  * 批量删除节点时使用的参数。

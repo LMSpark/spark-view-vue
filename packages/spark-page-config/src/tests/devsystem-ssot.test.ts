@@ -1,10 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { HttpClient } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { DataSetMetadata } from '@spark-view/spark-data'
 import {
   NavigationConfigClient,
+  PAGE_DESIGN_100_STEP_FLOW,
   PageConfigEditWorkspace,
   PageConfigFileApi,
+  PageConfigFileLifecycle,
+  PageDesignService,
   applyNavigationNodeDraftToNode,
   buildDataSetMetadataFromDesignerProjection,
   buildNavRoot,
@@ -15,32 +19,37 @@ import {
   createRuleTreePolicy,
   findConfigNodeByPageId,
   findNodeLocation,
+  getNextPageDesignFlowStep,
   normalizeNavRoot,
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
+  summarizePageDesignFlowPhases,
   type AppNavRoot,
+  BasePageConfigLoader,
   type ConfigLoadResult,
-  type ConfigLoader,
   type NavNode,
+  type PageConfig,
+  type PageConfigFileLoadOptions,
+  type PageConfigFileName,
+  type PageCssConfig,
+  type PageDataConfig,
+  type PageScriptConfig,
   type RuleEditorComponentMetadata,
+  type RuleConfig,
 } from '@spark-view/spark-page-config'
 
-function createHttpMock(): HttpClient {
-  return {
-    interceptors: {
-      request: { use: vi.fn(() => () => undefined) },
-      response: { use: vi.fn(() => () => undefined) },
-    },
-    request: vi.fn(),
-    requestFull: vi.fn(),
-    get: vi.fn(),
-    post: vi.fn(),
-    put: vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-    clearCache: vi.fn(),
-  }
+function createHttpMock(): HttpClientBase {
+  const client = createRequest()
+  vi.spyOn(client, 'request').mockRejectedValue(new Error('Unexpected request call'))
+  vi.spyOn(client, 'requestFull').mockRejectedValue(new Error('Unexpected requestFull call'))
+  vi.spyOn(client, 'get').mockRejectedValue(new Error('Unexpected get call'))
+  vi.spyOn(client, 'post').mockRejectedValue(new Error('Unexpected post call'))
+  vi.spyOn(client, 'put').mockRejectedValue(new Error('Unexpected put call'))
+  vi.spyOn(client, 'patch').mockRejectedValue(new Error('Unexpected patch call'))
+  vi.spyOn(client, 'delete').mockRejectedValue(new Error('Unexpected delete call'))
+  vi.spyOn(client, 'clearCache').mockImplementation(() => undefined)
+  return client
 }
 
 function requireValue<T>(value: T | null | undefined, message: string): T {
@@ -57,37 +66,85 @@ function requireRecord(value: unknown, message: string): Record<string, unknown>
   throw new Error(message)
 }
 
-function createLoader(files: Partial<Record<string, string>>): ConfigLoader {
-  const loadPageFileContent = vi.fn(async (pageId: string, filename: string, options?: { forceReload?: boolean }) => {
-    const key = `${pageId}/${filename}`
-    if (!Object.hasOwn(files, key)) {
+class TestPageConfigLoader extends BasePageConfigLoader {
+  readonly loadPageFileContentSpy: (
+    pageId: string,
+    filename: PageConfigFileName,
+    options?: PageConfigFileLoadOptions,
+  ) => Promise<ConfigLoadResult<string>>
+
+  readonly clearCacheSpy = vi.fn()
+
+  constructor(files: Partial<Record<string, string>>) {
+    super()
+    this.loadPageFileContentSpy = vi.fn(async (pageId: string, filename: PageConfigFileName, options?: PageConfigFileLoadOptions) => {
+      const key = `${pageId}/${filename}`
+      if (!Object.hasOwn(files, key)) {
+        const result: ConfigLoadResult<string> = {
+          success: false,
+          error: `${key} not found`,
+          reason: 'not-found',
+          timestamp: options?.forceReload ? 2 : 1,
+        }
+        return result
+      }
       const result: ConfigLoadResult<string> = {
-        success: false,
-        error: `${key} not found`,
-        reason: 'not-found',
+        success: true,
+        data: files[key] ?? '',
+        source: 'remote',
         timestamp: options?.forceReload ? 2 : 1,
       }
       return result
-    }
-    const result: ConfigLoadResult<string> = {
-      success: true,
-      data: files[key] ?? '',
-      source: 'remote',
-      timestamp: options?.forceReload ? 2 : 1,
-    }
-    return result
-  })
-
-  return {
-    loadPageConfig: vi.fn(),
-    loadRule: vi.fn(),
-    loadPageData: vi.fn(),
-    loadScript: vi.fn(),
-    loadCss: vi.fn(),
-    loadPageFileContent,
-    clearCache: vi.fn(),
-    getCacheStats: vi.fn(() => ({ size: 0, keys: [] })),
+    })
   }
+
+  override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+    return this.unsupported(pageId, 'page config')
+  }
+
+  override loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+    return this.unsupported(pageId, 'rule')
+  }
+
+  override loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+    return this.unsupported(pageId, 'pagedata')
+  }
+
+  override loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+    return this.unsupported(pageId, 'script')
+  }
+
+  override loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+    return this.unsupported(pageId, 'style')
+  }
+
+  override loadPageFileContent(
+    pageId: string,
+    filename: PageConfigFileName,
+    options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>> {
+    return this.loadPageFileContentSpy(pageId, filename, options)
+  }
+
+  override clearCache(key?: string): void {
+    this.clearCacheSpy(key)
+  }
+
+  override getCacheStats(): { size: number; keys: string[] } {
+    return { size: 0, keys: [] }
+  }
+
+  private unsupported<T>(pageId: string, label: string): Promise<ConfigLoadResult<T>> {
+    return Promise.resolve({
+      success: false,
+      error: `TestPageConfigLoader does not load ${label}: ${pageId}`,
+      timestamp: 0,
+    })
+  }
+}
+
+function createLoader(files: Partial<Record<string, string>>): TestPageConfigLoader {
+  return new TestPageConfigLoader(files)
 }
 
 describe('DevSystem navigation SSOT', () => {
@@ -192,7 +249,7 @@ describe('PageConfigEditWorkspace', () => {
     workspace.setActivePage('orders')
     await workspace.ensureActivePageFilesLoaded()
 
-    expect(loader.loadPageFileContent).toHaveBeenCalledTimes(4)
+    expect(loader.loadPageFileContentSpy).toHaveBeenCalledTimes(4)
     expect(workspace.documents['rule.json'].loadState.value).toBe('loaded')
     expect(workspace.documents['script.js'].text.value).toBe('export default {}')
 
@@ -206,7 +263,7 @@ describe('PageConfigEditWorkspace', () => {
       { headers: { 'Content-Type': 'text/plain' } },
     )
     expect(workspace.isDocumentDirty('script.js')).toBe(false)
-    expect(loader.clearCache).toHaveBeenCalledWith('/orders/script.js')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/script.js')
   })
 
   it('fails active page file load when the loader reports a missing file', async () => {
@@ -248,8 +305,122 @@ describe('PageConfigEditWorkspace', () => {
     expect(http.post).toHaveBeenCalledWith('/api/pages-config/__create', { pageId: 'new-page', title: 'New Page' })
     expect(http.delete).toHaveBeenCalledWith('/api/pages-config/new-page')
     expect(http.post).toHaveBeenCalledWith('/api/pages-config/orders/script.js/__versions/2/__restore', {})
-    expect(loader.loadPageFileContent).toHaveBeenCalledWith('orders', 'script.js', { forceReload: true })
+    expect(loader.loadPageFileContentSpy).toHaveBeenCalledWith('orders', 'script.js', { forceReload: true })
     expect(workspace.documents['script.js'].text.value).toBe('console.log("restored")')
+  })
+})
+
+describe('PageConfigFileLifecycle', () => {
+  it('creates page files, mounts navigation, and clears page cache', async () => {
+    const http = createHttpMock()
+    const mountedNode: NavNode = { id: 'new-page', title: 'New Page', nodeKind: 'page', path: '/new-page' }
+    vi.mocked(http.post)
+      .mockResolvedValueOnce({ created: true })
+      .mockResolvedValueOnce({ node: mountedNode })
+    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
+    const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
+    const loader = createLoader({})
+    const lifecycle = new PageConfigFileLifecycle({
+      fileApi: api,
+      navigationClient,
+      getConfigLoader: () => loader,
+    })
+
+    await expect(lifecycle.createMountedPage({
+      pageId: 'new-page',
+      title: 'New Page',
+      parentId: 'parent',
+      index: 2,
+    })).resolves.toEqual({
+      page: { created: true },
+      node: mountedNode,
+    })
+
+    expect(http.post).toHaveBeenCalledWith('/api/pages-config/__create', {
+      pageId: 'new-page',
+      title: 'New Page',
+    })
+    expect(http.post).toHaveBeenCalledWith('/api/navigation/nodes', {
+      parentId: 'parent',
+      node: {
+        id: 'new-page',
+        title: 'New Page',
+        icon: 'Document',
+        nodeKind: 'page',
+        path: '/new-page',
+      },
+      index: 2,
+    })
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/rule.json')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/pagedata.json')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/script.js')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/style.css')
+  })
+
+  it('removes navigation mount, deletes page files, and clears page cache', async () => {
+    const http = createHttpMock()
+    const node: NavNode = { id: 'node-1', title: 'Orders', nodeKind: 'page', path: '/orders' }
+    vi.mocked(http.get).mockResolvedValueOnce(buildNavRoot([node]))
+    vi.mocked(http.delete)
+      .mockResolvedValueOnce({ deleted: node })
+      .mockResolvedValueOnce({})
+    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
+    const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
+    const loader = createLoader({})
+    const lifecycle = new PageConfigFileLifecycle({
+      fileApi: api,
+      navigationClient,
+      getConfigLoader: () => loader,
+    })
+
+    await expect(lifecycle.removeMountedPage({ pageId: 'orders' })).resolves.toEqual({
+      deletedNode: node,
+      deletedFiles: true,
+    })
+
+    expect(http.get).toHaveBeenCalledWith('/api/navigation')
+    expect(http.delete).toHaveBeenCalledWith('/api/navigation/nodes/node-1')
+    expect(http.delete).toHaveBeenCalledWith('/api/pages-config/orders')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/rule.json')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/pagedata.json')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/script.js')
+    expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/style.css')
+  })
+})
+
+describe('Page design 100-step flow', () => {
+  it('keeps the flow complete, ordered and grouped by phase', () => {
+    expect(PAGE_DESIGN_100_STEP_FLOW).toHaveLength(100)
+    expect(PAGE_DESIGN_100_STEP_FLOW[0]).toMatchObject({ step: 1, phase: '入口' })
+    expect(PAGE_DESIGN_100_STEP_FLOW.at(-1)).toMatchObject({ step: 100, phase: '收尾' })
+    expect(PAGE_DESIGN_100_STEP_FLOW.map(item => item.step)).toEqual(
+      Array.from({ length: 100 }, (_item, index) => index + 1),
+    )
+
+    const phases = summarizePageDesignFlowPhases()
+    expect(phases[0]).toEqual({ phase: '入口', firstStep: 1, lastStep: 10, stepCount: 10 })
+    expect(phases.at(-1)).toEqual({ phase: '收尾', firstStep: 100, lastStep: 100, stepCount: 1 })
+    expect(getNextPageDesignFlowStep(88)).toMatchObject({ step: 89, phase: '结构' })
+    expect(getNextPageDesignFlowStep(100)).toBeNull()
+  })
+
+  it('lets PageDesignService expose selected and phase-scoped flow context', () => {
+    const service = new PageDesignService({ getEditHost: () => ({}) })
+    const context = { pageId: 'orders', requestId: 'flow-test' }
+
+    const selected = service.describeDesignFlow(context, { step: 40 })
+    expect(selected.ok).toBe(true)
+    if (!selected.ok) throw new Error(selected.msg)
+    expect(selected.data.selectedStep).toMatchObject({ step: 40, phase: '最小表模型' })
+    expect(selected.data.steps).toHaveLength(1)
+    expect(selected.data.nextStep).toMatchObject({ step: 41, phase: '表关系' })
+
+    const phase = service.describeDesignFlow(context, { phase: '数据利用', afterStep: 70 })
+    expect(phase.ok).toBe(true)
+    if (!phase.ok) throw new Error(phase.msg)
+    expect(phase.data.steps).toHaveLength(10)
+    expect(phase.data.steps[0]).toMatchObject({ step: 61, phase: '数据利用' })
+    expect(phase.data.nextStep).toMatchObject({ step: 71, phase: '按需视图' })
   })
 })
 

@@ -1,5 +1,5 @@
-import type { AutoPopulateEntry, JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '../../json-document'
-import { ensureUniqueObjectKey } from '../../json-document'
+import type { AutoPopulateEntry, JsonObject, JsonPath, JsonTreePolicy, JsonValue } from '../documents/json-document'
+import { ensureUniqueObjectKey } from '../documents/json-document'
 import {
   EMPTY_RULE_EDITOR_COMPONENT_METADATA,
   type RuleEditorComponentMetadata,

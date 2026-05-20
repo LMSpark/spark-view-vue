@@ -30,12 +30,12 @@ import { Logger } from '../logger'
 import { toErrorMessage } from '../error-utils'
 import { isRecord, readNumberProperty } from '../internal/guards.js'
 import { createRequest } from './Request'
+import type { HttpClientBase } from './HttpClientBase'
 import type {
   FileLoadOptions,
   CacheEntry,
   FileLoadResult,
   CacheExpirationTier,
-  HttpClient,
   FileLoaderEventMap,
 } from './types'
 
@@ -50,13 +50,13 @@ const DEFAULT_EXPIRATION_TIERS: CacheExpirationTier[] = [
   { level: 4, maxAge: 30 * 24 * 60 * 60 * 1000, description: '30天' }
 ]
 
-interface FileResponse {
+type FileResponse = {
   content?: string
   timestamp?: string
   notModified?: boolean
 }
 
-interface CacheWriteOptions {
+type CacheWriteOptions = {
   recoverQuota?: boolean
   reportFailureAsError?: boolean
 }
@@ -65,7 +65,7 @@ type FileLoaderListeners = {
   [K in keyof FileLoaderEventMap]: Array<(payload: FileLoaderEventMap[K]) => void>
 }
 
-interface LoadOptionBase {
+type LoadOptionBase = {
   /** false = 返回原始字符串，不 JSON.parse（默认 true） */
   /** 跳过缓存强制重新请求（默认 false） */
   forceRefresh?: boolean
@@ -185,7 +185,7 @@ export class TransformedFileLoader<T> {
 export class FileLoader {
   private opts: Required<Omit<FileLoadOptions, 'getHeaders'>> & Pick<FileLoadOptions, 'getHeaders'>
   private memCache = new Map<string, CacheEntry<unknown>>()
-  private request: HttpClient
+  private request: HttpClientBase
   private storage: Storage | null
   private listeners: FileLoaderListeners = {
     'file-loaded': [],

@@ -23,7 +23,7 @@ import { Logger } from '../logger'
 import { isRecord } from '../internal/guards.js'
 import type {
   RequestConfig, HttpResponse,
-  RequestError, RequestInterceptor, ResponseInterceptor, HttpClient, ApiEnvelope,
+  RequestError, RequestInterceptor, ResponseInterceptor, ApiEnvelope,
 } from './types'
 
 // ==================== 常量（单一来源） ====================
@@ -31,7 +31,7 @@ import type {
 export const DEFAULT_TIMEOUT = 10_000
 
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
-interface CacheItem { data: unknown; timestamp: number; expiry: number }
+type CacheItem = { data: unknown; timestamp: number; expiry: number }
 
 type CacheLookupResult =
   | { hit: true; data: unknown }
@@ -46,7 +46,7 @@ const ABSOLUTE_URL_RE = /^[a-z][a-z\d+\-.]*:\/\//i
 
 // ==================== 抽象基类 ====================
 
-export abstract class HttpClientBase implements HttpClient {
+export abstract class HttpClientBase {
   private cache = new Map<string, CacheItem>()
   private reqInterceptors: RequestInterceptor[] = []
   private resInterceptors: ResponseInterceptor[] = []

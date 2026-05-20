@@ -8,7 +8,7 @@ describe('FetchClient error handling', () => {
   })
 
   it('includes JSON response message in HTTP error details', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(JSON.stringify({
       error: 'TENANT_EXISTS',
       message: '租户 ID 已存在: demo',
     }), {
@@ -17,7 +17,8 @@ describe('FetchClient error handling', () => {
       headers: {
         'content-type': 'application/json',
       },
-    })) as typeof fetch)
+    }))
+    vi.stubGlobal('fetch', fetchMock)
 
     const client = createFetchClient({ baseURL: '/api' })
 
@@ -33,7 +34,7 @@ describe('FetchClient error handling', () => {
   })
 
   it('synthesizes a readable message from AI error envelopes without error.message', async () => {
-    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify({
+    const fetchMock = vi.fn<typeof fetch>(async () => new Response(JSON.stringify({
       error: {
         code: 'SESSION_SCOPE_MISMATCH',
         category: 'session-scope',
@@ -49,7 +50,8 @@ describe('FetchClient error handling', () => {
       headers: {
         'content-type': 'application/json',
       },
-    })) as typeof fetch)
+    }))
+    vi.stubGlobal('fetch', fetchMock)
 
     const client = createFetchClient({ baseURL: '/api' })
 

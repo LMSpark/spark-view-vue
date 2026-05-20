@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { createPageDocuments, isPageFileDocumentDirty } from '@spark-view/spark-page-config'
+import { createPageDocuments, getSparkNodeChildren, isPageFileDocumentDirty } from '@spark-view/spark-page-config'
 
 function makePageDataText(label: string): string {
   return JSON.stringify({
@@ -69,12 +69,12 @@ describe('PageFileDocument primitives', () => {
 
       doc.setText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
       const current = doc.model.value!.toJSON()
-      expect((current.children?.[0] as { type?: string }).type).toBe('el-button')
+      expect(getSparkNodeChildren(current.children)[0]?.type).toBe('el-button')
       expect(isPageFileDocumentDirty(doc)).toBe(true)
 
       expect(doc.undo()).toBe(true)
       const undone = doc.model.value!.toJSON()
-      expect((undone.children?.[0] as { type?: string }).type).toBe('div')
+      expect(getSparkNodeChildren(undone.children)[0]?.type).toBe('div')
     })
 
     it('captures parseError for invalid JSON without throwing', () => {
@@ -108,7 +108,7 @@ describe('PageFileDocument primitives', () => {
       const root = doc.model.value!.toJSON()
       expect(root.type).toBe('spark-page')
       expect(root.id).toBe('spark-page-root')
-      expect((root.children?.[0] as { type?: string }).type).toBe('r-section')
+      expect(getSparkNodeChildren(root.children)[0]?.type).toBe('r-section')
       expect(JSON.parse(doc.text.value)).toMatchObject({ type: 'r-section' })
     })
 
@@ -127,11 +127,11 @@ describe('PageFileDocument primitives', () => {
 
       expect(doc.parseError.value).toBeNull()
       const root = doc.model.value!.toJSON()
-      const section = root.children?.[0] as { id?: string; children?: unknown[] }
-      const text = section.children?.[0] as { id?: string }
+      const section = getSparkNodeChildren(root.children)[0]
+      const text = getSparkNodeChildren(section?.children)[0]
       expect(root.id).toBe('spark-page-root')
-      expect(section.id).toBe('r-section__0_0')
-      expect(text.id).toBe('r-text__0_0_0')
+      expect(section?.id).toBe('r-section__0_0')
+      expect(text?.id).toBe('r-text__0_0_0')
     })
 
     it('promotes legacy props.id when loading rule text', () => {
@@ -143,9 +143,9 @@ describe('PageFileDocument primitives', () => {
       ], null, 2)}\n`)
 
       expect(doc.parseError.value).toBeNull()
-      const section = doc.model.value!.toJSON().children?.[0] as { id?: string; props?: Record<string, unknown> }
-      expect(section.id).toBe('legacy-section')
-      expect(section.props).toEqual({ title: '假期管理' })
+      const section = getSparkNodeChildren(doc.model.value!.toJSON().children)[0]
+      expect(section?.id).toBe('legacy-section')
+      expect(section?.props).toEqual({ title: '假期管理' })
     })
 
     it('replaceModel adopts an externally provided tree', () => {

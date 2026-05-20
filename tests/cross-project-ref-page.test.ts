@@ -1,17 +1,28 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import type { ConfigLoader } from '@spark-view/spark-page-config'
-import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import { HttpClientBase } from '@spark-view/spark-utils'
+import type {
+  ConfigLoadResult,
+  PageConfig,
+  PageConfigFileLoadOptions,
+  PageConfigFileName,
+  PageCssConfig,
+  PageDataConfig,
+  PageScriptConfig,
+  RuleConfig,
+} from '@spark-view/spark-page-config'
+import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'
 
-const navTreeState = vi.hoisted(() => ({
-  tree: null as AppNavRoot | null,
+const navTreeState = vi.hoisted((): { tree: AppNavRoot | null } => ({
+  tree: null,
 }))
 
-const rendererState = vi.hoisted(() => ({
-  props: null as Record<string, unknown> | null,
+const rendererState = vi.hoisted((): { props: Record<string, unknown> | null } => ({
+  props: null,
 }))
 
 vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
@@ -41,33 +52,79 @@ vi.mock('@spark-view/spark-component', async () => {
   }
 })
 
-function createConfigLoader(httpClient: HttpClient): ConfigLoader {
-  return {
-    async loadPageConfig() {
-      return { success: false }
-    },
-    async loadRule() {
-      return { success: false }
-    },
-    async loadPageData() {
-      return { success: false }
-    },
-    async loadScript() {
-      return { success: true, data: '', source: 'remote' }
-    },
-    async loadCss() {
-      return { success: true, data: '', source: 'remote' }
-    },
-    async loadPageFileContent() {
-      return { success: false }
-    },
-    clearCache() {},
-    getCacheStats() {
-      return { size: 0, keys: [] }
-    },
-    getHttpClient() {
-      return httpClient
-    },
+class TestPageConfigLoader extends BasePageConfigLoader {
+  constructor(private readonly httpClient: HttpClientBase) {
+    super()
+  }
+
+  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
+    return { success: false }
+  }
+
+  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
+    return { success: false }
+  }
+
+  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
+    return { success: false }
+  }
+
+  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+    return { success: true, data: '', source: 'remote' }
+  }
+
+  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+    return { success: true, data: '', source: 'remote' }
+  }
+
+  override async loadPageFileContent(
+    _pageId: string,
+    _filename: PageConfigFileName,
+    _options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>> {
+    return { success: false }
+  }
+
+  override clearCache(): void {
+    this.httpClient.clearCache()
+  }
+
+  override getCacheStats(): { size: number; keys: string[] } {
+    return { size: 0, keys: [] }
+  }
+
+  override getHttpClient(): HttpClientBase {
+    return this.httpClient
+  }
+}
+
+function createConfigLoader(httpClient: HttpClientBase): BasePageConfigLoader {
+  return new TestPageConfigLoader(httpClient)
+}
+
+function requirePageConfigLoader(value: unknown): BasePageConfigLoader {
+  if (value instanceof BasePageConfigLoader) return value
+  throw new Error('Expected BasePageConfigLoader instance')
+}
+
+class RecordingHttpClient extends HttpClientBase {
+  constructor(private readonly requests: RequestConfig[]) {
+    super({}, 'RecordingHttpClient')
+  }
+
+  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    this.requests.push(config)
+    return {
+      data: { content: '[]' },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    }
+  }
+
+  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
+    const message = error instanceof Error ? error.message : String(error)
+    return this.buildRequestError(message, config ?? { url: '' })
   }
 }
 
@@ -80,32 +137,7 @@ describe('CrossProjectRefPage', () => {
   it('resolves stale host UUID meta through the ref node target', async () => {
     const hostRefNodeId = '06c56d10-4ff6-4c4d-a6ce-772536592c75'
     const requests: RequestConfig[] = []
-    const httpClient = {
-      interceptors: {},
-      async request<T = unknown>(config: RequestConfig): Promise<T> {
-        requests.push(config)
-        return { content: '[]' } as T
-      },
-      async requestFull() {
-        return { data: { content: '[]' } }
-      },
-      async get() {
-        return {}
-      },
-      async post() {
-        return {}
-      },
-      async put() {
-        return {}
-      },
-      async patch() {
-        return {}
-      },
-      async delete() {
-        return {}
-      },
-      clearCache() {},
-    } as unknown as HttpClient
+    const httpClient = new RecordingHttpClient(requests)
 
     navTreeState.tree = {
       id: 'root',
@@ -159,7 +191,7 @@ describe('CrossProjectRefPage', () => {
 
     expect(rendererState.props?.['pageId']).toBe('project-list')
 
-    const scopedLoader = rendererState.props?.['configLoader'] as ConfigLoader
+    const scopedLoader = requirePageConfigLoader(rendererState.props?.['configLoader'])
     await scopedLoader.loadRule('project-list')
 
     expect(requests[0]?.url).toBe('/tenants/lmspark/projects/engineering-pm/pages-config/project-list/rule.json')

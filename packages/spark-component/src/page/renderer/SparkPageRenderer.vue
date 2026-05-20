@@ -79,7 +79,7 @@ import { Logger } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { SparkNodeTree, type ConfigLoader, type PageRoute, type PageConfig } from '@spark-view/spark-page-config'
+import { SparkNodeTree, type BasePageConfigLoader, type PageRoute, type PageConfig } from '@spark-view/spark-page-config'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
 import {
@@ -365,7 +365,7 @@ interface Props extends Omit<SparkNode, 'type'> {
   /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */
   type?: string
   /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
-  configLoader?: ConfigLoader
+  configLoader?: BasePageConfigLoader
   /** 页面唯一标识符（优先级最高） */
   pageId?: string
   /** 页面配置对象（直接传入四文件，跳过加载） */

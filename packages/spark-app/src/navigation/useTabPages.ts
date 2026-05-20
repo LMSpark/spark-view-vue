@@ -30,13 +30,17 @@ const _mode = ref<PageMode>('multi')
 /** 是否已初始化（避免多组件重复 watch） */
 let _watchInstalled = false
 
+function readString(value: unknown): string | undefined {
+  return typeof value === 'string' ? value : undefined
+}
+
 function toTab(route: RouteLocationNormalizedGeneric): TabPage | null {
-  const title = route.meta['title'] as string | undefined
+  const title = readString(route.meta['title'])
   if (!title) return null
-  const icon = route.meta['icon'] as string | undefined
-  const name = route.name as string | undefined
+  const icon = readString(route.meta['icon'])
+  const name = readString(route.name)
   // pageId 由 DynamicRouter 从 NavNode.id 写入 route.meta
-  const pageId = route.meta['pageId'] as string | undefined
+  const pageId = readString(route.meta['pageId'])
   return {
     path: route.path,
     title,

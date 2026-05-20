@@ -154,7 +154,7 @@ import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
-import { getPageApi, getProjectApi } from '@/services/api-paths'
+import { getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 
@@ -336,7 +336,15 @@ const parentPageOptions = computed(() => {
 
 // ── 路径有效性状态 ──
 
-const pathStatus = computed(() => {
+type NodeTargetStatusType = 'success' | 'info' | 'warning' | 'danger'
+
+interface NodeTargetStatus {
+  type: NodeTargetStatusType
+  icon: string
+  text: string
+}
+
+const pathStatus = computed<NodeTargetStatus | null>(() => {
   if (!flags.showPathStatus.value) return null
   const path = props.state.editForm.path
   if (!path) return null
@@ -344,9 +352,9 @@ const pathStatus = computed(() => {
   if (flags.isSystemActionNode.value) {
     const knownAction = actionTargetOptions.find(o => o.value === `action:${path}`)
     if (knownAction) {
-      return { type: 'success' as const, icon: 'SuccessFilled', text: `已知动作：${path}` }
+      return { type: 'success', icon: 'SuccessFilled', text: `已知动作：${path}` }
     }
-    return { type: 'info' as const, icon: 'InfoFilled', text: `自定义动作标识符：${path}` }
+    return { type: 'info', icon: 'InfoFilled', text: `自定义动作标识符：${path}` }
   }
 
   if (flags.isSystemPageNode.value) {
@@ -355,14 +363,14 @@ const pathStatus = computed(() => {
       const nodeTitle = props.state.editForm.title.trim()
       if (nodeTitle && nodeTitle !== entry.title) {
         return {
-          type: 'info' as const,
+          type: 'info',
           icon: 'InfoFilled',
           text: `组件页为「${entry.title}」，当前导航标题为「${nodeTitle}」（允许不同）`,
         }
       }
-      return { type: 'success' as const, icon: 'SuccessFilled', text: `匹配 Vue 组件：${entry.title}` }
+      return { type: 'success', icon: 'SuccessFilled', text: `匹配 Vue 组件：${entry.title}` }
     }
-    return { type: 'warning' as const, icon: 'WarningFilled', text: `路径 ${path} 未在 VUE_PAGE_MAP 中注册` }
+    return { type: 'warning', icon: 'WarningFilled', text: `路径 ${path} 未在 VUE_PAGE_MAP 中注册` }
   }
 
   // 配置页面：检查 pageList
@@ -372,9 +380,9 @@ const pathStatus = computed(() => {
     (p: Record<string, unknown>) => String(p['pageId'] ?? '') === pageId,
   )
   if (exists) {
-    return { type: 'success' as const, icon: 'SuccessFilled', text: `配置页面已存在：${pageId}` }
+    return { type: 'success', icon: 'SuccessFilled', text: `配置页面已存在：${pageId}` }
   }
-  return { type: 'danger' as const, icon: 'CircleCloseFilled', text: `配置页面不存在：${pageId}（需先创建）` }
+  return { type: 'danger', icon: 'CircleCloseFilled', text: `配置页面不存在：${pageId}（需先创建）` }
 })
 
 function normalizeConfigPageId(value: string | undefined): string {
@@ -534,26 +542,26 @@ watch(refPageSelection, (nodeId) => {
 
 // ── 引用状态提示 ──
 
-const refStatus = computed(() => {
+const refStatus = computed<NodeTargetStatus | null>(() => {
   if (!flags.isRefNode.value) return null
   const refId = props.state.editForm.refId
   if (!refId) return null
 
   if (refId === props.state.editForm.id) {
-    return { type: 'danger' as const, icon: 'CircleCloseFilled', text: '不能引用自身' }
+    return { type: 'danger', icon: 'CircleCloseFilled', text: '不能引用自身' }
   }
 
   const selectedNode = props.state.selectedNode.value
   if (!selectedNode || selectedNode.nodeKind !== 'ref') return null
 
   if (selectedNode.refBroken) {
-    return { type: 'danger' as const, icon: 'CircleCloseFilled', text: '引用断链：目标节点不存在或不是 page 类型' }
+    return { type: 'danger', icon: 'CircleCloseFilled', text: '引用断链：目标节点不存在或不是 page 类型' }
   }
   if (selectedNode.refPath) {
     const cross = selectedNode.refProjectId ? `（跨工程: ${selectedNode.refProjectId}）` : '（同工程）'
-    return { type: 'success' as const, icon: 'SuccessFilled', text: `引用有效 → ${selectedNode.refPath} ${cross}` }
+    return { type: 'success', icon: 'SuccessFilled', text: `引用有效 → ${selectedNode.refPath} ${cross}` }
   }
-  return { type: 'info' as const, icon: 'InfoFilled', text: '保存后可验证引用状态' }
+  return { type: 'info', icon: 'InfoFilled', text: '保存后可验证引用状态' }
 })
 
 // ── 快速创建页面 ──
@@ -573,20 +581,17 @@ async function createPageFromPath() {
     return
   }
 
-  const targetPath = `/${pageId}`
   const nodeTitle = props.state.editForm.title.trim() || pageId
   const nodeIcon = props.state.editForm.icon.trim() || 'Document'
-
   creatingPage.value = true
   try {
-    await http.post(`${getPageApi()}/__create`, { pageId, title: nodeTitle, icon: nodeIcon })
-    await props.state.loadPages()
-    props.state.editForm.path = targetPath
-    props.state.handlePathChange(targetPath)
-    await props.state.saveNodeChanges()
-
-    if (props.state.navDirty.value) {
-      props.state.addStatus(`页面 ${pageId} 已创建，但导航目标保存失败`, 'warning')
+    const created = await props.state.createPageForSelectedNode({
+      pageId,
+      title: nodeTitle,
+      icon: nodeIcon,
+    })
+    if (!created) {
+      props.state.addStatus(`页面 ${pageId} 创建失败或导航目标保存失败`, 'warning')
       return
     }
 

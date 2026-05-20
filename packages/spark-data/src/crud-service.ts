@@ -5,7 +5,7 @@
  * 与 DataSet/DataTable 深度集成，支持权限和数据转换
  */
 
-import { type HttpClient, createRequest, Logger, toError } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest, Logger, toError } from '@spark-view/spark-utils'
 import type {
   RequestConfig
 } from '@spark-view/spark-utils'
@@ -45,9 +45,8 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
-function isHttpClient(value: unknown): value is HttpClient {
-  if (!isRecord(value)) return false
-  return typeof value['get'] === 'function'
+function isHttpClient(value: unknown): value is HttpClientBase {
+  return value instanceof HttpClientBase
 }
 
 function isWrappedEndpointResult<T>(value: EndpointResult<T>): value is WrappedEndpointResult<T> {
@@ -66,7 +65,7 @@ function isWrappedEndpointResult<T>(value: EndpointResult<T>): value is WrappedE
  * 自动处理权限、数据转换、分页等业务逻辑
  */
 export class CrudService {
-  private http: HttpClient
+  private http: HttpClientBase
   private logger = Logger('CrudService')
   private endpointContextProvider?: (() => Record<string, unknown>) | undefined
 
@@ -75,16 +74,16 @@ export class CrudService {
   /**
    * 创建CRUD服务实例
    * @param api CRUD API配置
-   * @param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 HttpClient 实例（共享 auth/拦截器）
+   * @param httpConfigOrClient 可选：HTTP 客户端配置对象 **或** 已有 HttpClientBase 实例（共享 auth/拦截器）
    */
   constructor(
     private api: CrudApi,
-    httpConfigOrClient?: Partial<RequestConfig> | HttpClient,
+    httpConfigOrClient?: Partial<RequestConfig> | HttpClientBase,
     endpointContextProvider?: () => Record<string, unknown>
   ) {
     this.endpointContextProvider = endpointContextProvider
     if (isHttpClient(httpConfigOrClient)) {
-      // M5: 传入现有 HttpClient 实例，跳过 createRequest（共享 auth/拦截器）
+      // M5: 传入现有 HttpClientBase 实例，跳过 createRequest（共享 auth/拦截器）
       this.http = httpConfigOrClient
     } else {
       this.http = httpConfigOrClient
@@ -96,9 +95,9 @@ export class CrudService {
   /**
    * 获取内部 HTTP 客户端实例（供 TreeManager 等模块共享拦截器/认证/配置）
    *
-   * @returns HttpClient 实例
+   * @returns HttpClientBase 实例
    */
-  getHttpClient(): HttpClient {
+  getHttpClient(): HttpClientBase {
     return this.http
   }
 
@@ -742,12 +741,12 @@ export class CrudService {
 /**
  * 创建CRUD服务工厂函数
  * @param api CRUD API配置
- * @param httpConfigOrClient HTTP 客户端配置 **或** 已有 HttpClient 实例（共享 auth/拦截器）
+ * @param httpConfigOrClient HTTP 客户端配置 **或** 已有 HttpClientBase 实例（共享 auth/拦截器）
  * @returns CrudService实例
  */
 export function createCrudService(
   api: CrudApi,
-  httpConfigOrClient?: Partial<RequestConfig> | HttpClient,
+  httpConfigOrClient?: Partial<RequestConfig> | HttpClientBase,
   endpointContextProvider?: () => Record<string, unknown>
 ): CrudService {
   return new CrudService(api, httpConfigOrClient, endpointContextProvider)

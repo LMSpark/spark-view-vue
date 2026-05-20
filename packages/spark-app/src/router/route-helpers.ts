@@ -35,12 +35,14 @@ export function resolveNavRoutePageId(node: NavNode, rawNodePath: string): strin
     node.nodeKind !== 'system-action' &&
     node.nodeKind !== 'link'
 
-  if (isConfigLikeNode && slugSegments.length === 1) {
-    return slugSegments[0] as string
+  const firstSlugSegment = slugSegments[0]
+  if (isConfigLikeNode && slugSegments.length === 1 && firstSlugSegment !== undefined) {
+    return firstSlugSegment
   }
 
-  if (isConfigLikeNode && slugSegments.length > 1 && isUuidLike(node.id)) {
-    return slugSegments[slugSegments.length - 1] as string
+  const lastSlugSegment = slugSegments.at(-1)
+  if (isConfigLikeNode && slugSegments.length > 1 && isUuidLike(node.id) && lastSlugSegment !== undefined) {
+    return lastSlugSegment
   }
 
   return node.id

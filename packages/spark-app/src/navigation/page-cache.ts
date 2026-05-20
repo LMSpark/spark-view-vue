@@ -2,7 +2,7 @@
  * 页面配置缓存管理（spark-app 内聚）
  */
 
-interface ConfigLoaderRef {
+interface PageCacheLoader {
   clearCache(key?: string): void
   getCacheStats?(): { size: number; keys: string[] }
 }
@@ -13,7 +13,7 @@ export interface PageCacheHandle {
   getCacheStats(): { size: number; keys: string[] }
 }
 
-export function createPageCache(loader: ConfigLoaderRef): PageCacheHandle {
+export function createPageCache(loader: PageCacheLoader): PageCacheHandle {
   return {
     clearPageCache(pageId: string): void {
       for (const file of PAGE_FILES) {
@@ -49,4 +49,4 @@ export function createPageCache(loader: ConfigLoaderRef): PageCacheHandle {
 }
 
 const CACHE_PREFIX = 'spark_page_'
-const PAGE_FILES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
+const PAGE_FILES: readonly string[] = ['rule.json', 'pagedata.json', 'script.js', 'style.css']

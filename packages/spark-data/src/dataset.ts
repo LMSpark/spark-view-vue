@@ -16,7 +16,7 @@ import type {
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView } from './data-view'
-import type { HttpClient } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import { deepClone, Logger } from '@spark-view/spark-utils'
 
 const dsLogger = Logger('DataSet')
@@ -451,11 +451,11 @@ export class DataSet implements DataSetContract {
   layout: DataSetMetadata['layout'] | undefined
 
   /**
-    * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 HttpClient 实例。
+    * M5: 共享 HTTP 客户端——所有 DataTable 的 CrudService 复用同一 HttpClientBase 实例。
    * 由外部通过 `setSharedHttpClient(client)` 注入。未设置时各 CrudService 各自 createRequest()。
    * @internal
    */
-    _sharedHttpClient?: HttpClient | undefined
+    _sharedHttpClient?: HttpClientBase | undefined
 
   /** @internal 应用能力上下文（用于 URL 模板 tenant/project 占位参数解析） */
   _appServices?: DataSetAppServices | undefined
@@ -541,11 +541,11 @@ export class DataSet implements DataSetContract {
    * 注入共享 HTTP 客户端（M5）——所有 DataTable 的 CrudService 将复用该实例。
    *
    * 调用时机：DataSet 构建完成后、首次数据请求之前。
-  * 已创建的 CrudService 实例不受影响（它们保留初始化时的 HttpClient）。
+  * 已创建的 CrudService 实例不受影响（它们保留初始化时的 HttpClientBase）。
    *
-   * @param client  HttpClient 实例（通常由应用层 auth 模块创建，带统一拦截器）
+   * @param client  HttpClientBase 实例（通常由应用层 auth 模块创建，带统一拦截器）
    */
-  setSharedHttpClient(client: HttpClient): void {
+  setSharedHttpClient(client: HttpClientBase): void {
     this._sharedHttpClient = client
   }
 

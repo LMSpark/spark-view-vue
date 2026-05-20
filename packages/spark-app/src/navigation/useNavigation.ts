@@ -1,7 +1,7 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-view/spark-utils'
-import type { ConfigLoader } from '@spark-view/spark-page-config'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config'
 import type {
   ChildPlacement,
   NavContextConfig,
@@ -51,6 +51,30 @@ function contextConfigSignature(config: NavContextConfig): string {
 
 function isSameContextConfig(a: NavContextConfig, b: NavContextConfig): boolean {
   return contextConfigSignature(a) === contextConfigSignature(b)
+}
+
+function readObjectProp(value: unknown, key: string): unknown {
+  if (value === null || typeof value !== 'object') return undefined
+  let current: object | null = value
+  while (current !== null) {
+    const descriptor: { value?: unknown } | undefined = Object.getOwnPropertyDescriptor(current, key)
+    if (descriptor !== undefined) return descriptor.value
+    const prototype: unknown = Object.getPrototypeOf(current)
+    current = prototype !== null && typeof prototype === 'object' ? prototype : null
+  }
+  return undefined
+}
+
+function isNavContextItem(value: unknown): value is NavContextItem {
+  if (value === null || typeof value !== 'object') return false
+  const id = readObjectProp(value, 'id')
+  const title = readObjectProp(value, 'title')
+  return (typeof id === 'string' || typeof id === 'number') && typeof title === 'string'
+}
+
+function parseStoredContextValue(stored: string): string | number | null {
+  const parsed: unknown = JSON.parse(stored)
+  return typeof parsed === 'string' || typeof parsed === 'number' ? parsed : null
 }
 
 /** 约定优先：将简写形式归一化为完整 NavContextConfig */
@@ -158,7 +182,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   }
 
   watch(
-    [() => route.path, () => navRoot.children] as const,
+    [() => route.path, () => navRoot.children],
     ([path]) => {
       const shortPath = stripWorkspacePrefix(path)
       _activePath.value = findActivePath(navRoot.children, shortPath)
@@ -269,7 +293,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   function syncModuleContext() {
     // 模块 = activePath 中的第一个节点（根的直接子节点）
-    const moduleNode = _activePath.value[0] as NavNode | undefined
+    const moduleNode = _activePath.value[0]
     if (moduleNode?.context === undefined) {
       _moduleContext.value = null
       return
@@ -336,7 +360,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
         headers,
       })
 
-      const items = (Array.isArray(data) ? data : []) as NavContextItem[]
+      const items = Array.isArray(data) ? data.filter(isNavContextItem) : []
       state.items = items
       _contextCache.set(cacheKey, items)
     } catch (e) {
@@ -357,7 +381,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     const stored = localStorage.getItem(CONTEXT_STORAGE_PREFIX + nodeId)
     if (stored !== null) {
       try {
-        return JSON.parse(stored) as string | number
+        return parseStoredContextValue(stored)
       } catch {
         // ignore
       }
@@ -384,11 +408,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     if (state.config.paramName !== undefined && state.config.paramName !== '') {
       const paramName = state.config.paramName
       const newQuery: Record<string, string> = {}
-      const querySource: unknown = route.query
-      const queryEntries = querySource !== null && typeof querySource === 'object'
-        ? Object.entries(querySource as Record<string, unknown>)
-        : []
-      for (const [k, v] of queryEntries) {
+      for (const [k, v] of Object.entries(route.query)) {
         if (k === paramName) continue
         if (typeof v === 'string') newQuery[k] = v
       }
@@ -421,24 +441,26 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     })
   }
 
-  function isConfigLoader(value: unknown): value is ConfigLoader {
+  function isConfigLoader(value: unknown): value is BasePageConfigLoader {
     return value !== null &&
       typeof value === 'object' &&
-      typeof (value as { loadPageConfig?: unknown }).loadPageConfig === 'function'
+      typeof readObjectProp(value, 'loadPageConfig') === 'function'
   }
 
-  function readRouteRecordConfigLoader(routeRecord: { props?: unknown }): ConfigLoader | null {
+  function readRouteRecordConfigLoader(routeRecord: { props?: unknown }): BasePageConfigLoader | null {
     const propsByView = routeRecord.props
     if (propsByView === null || typeof propsByView !== 'object') return null
 
-    const defaultProps = (propsByView as Record<string, unknown>)['default']
-    if (defaultProps === null || typeof defaultProps !== 'object') return null
+    const defaultProps = readObjectProp(propsByView, 'default')
+    const propsObject = defaultProps !== null && typeof defaultProps === 'object'
+      ? defaultProps
+      : propsByView
 
-    const configLoader = (defaultProps as Record<string, unknown>)['configLoader']
+    const configLoader = readObjectProp(propsObject, 'configLoader')
     return isConfigLoader(configLoader) ? configLoader : null
   }
 
-  function findRegisteredConfigLoader(): ConfigLoader | null {
+  function findRegisteredConfigLoader(): BasePageConfigLoader | null {
     for (const routeRecord of router.getRoutes()) {
       const configLoader = readRouteRecordConfigLoader(routeRecord)
       if (configLoader !== null) return configLoader
@@ -448,8 +470,8 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   function ensureCrossProjectRefHostRoute(): boolean {
     const existing = router.getRoutes().find(routeRecord => routeRecord.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
-    const existingProps = existing?.props as Record<string, unknown> | undefined
-    if (existing?.meta['crossProjectRefHost'] === true && typeof existingProps?.['default'] === 'function') return true
+    const defaultProps = readObjectProp(existing?.props, 'default')
+    if (existing?.meta['crossProjectRefHost'] === true && typeof defaultProps === 'function') return true
 
     const configLoader = findRegisteredConfigLoader()
     if (configLoader === null) return false

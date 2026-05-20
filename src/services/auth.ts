@@ -26,6 +26,26 @@ export interface AuthUser {
   defaultProjectId: string
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isStringArray(value: unknown): value is string[] {
+  return Array.isArray(value) && value.every(item => typeof item === 'string')
+}
+
+function isAuthUser(value: unknown): value is AuthUser {
+  return isRecord(value)
+    && typeof value['userId'] === 'string'
+    && typeof value['username'] === 'string'
+    && typeof value['displayName'] === 'string'
+    && typeof value['email'] === 'string'
+    && typeof value['avatar'] === 'string'
+    && isStringArray(value['roles'])
+    && typeof value['tenantId'] === 'string'
+    && typeof value['defaultProjectId'] === 'string'
+}
+
 export function getToken(): string | null {
   return localStorage.getItem(TOKEN_KEY)
 }
@@ -34,7 +54,8 @@ export function getUser(): AuthUser | null {
   const raw = localStorage.getItem(USER_KEY)
   if (!raw) return null
   try {
-    return JSON.parse(raw) as AuthUser
+    const parsed: unknown = JSON.parse(raw)
+    return isAuthUser(parsed) ? parsed : null
   } catch {
     return null
   }
@@ -87,10 +108,6 @@ export function switchProject(projectId: string): void {
 // ── API 调用 ────────────────────────────────────────────────────────────────
 
 const authHttp = createFetchClient()
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
 
 async function authFetch(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
   try {

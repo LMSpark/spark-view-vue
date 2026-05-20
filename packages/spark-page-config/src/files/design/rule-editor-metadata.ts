@@ -1,4 +1,4 @@
-import type { JsonObject } from '../../json-document'
+import type { JsonObject } from '../documents/json-document'
 
 export interface RuleEditorComponentMetadata {
   types: string[]

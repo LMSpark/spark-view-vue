@@ -1,5 +1,5 @@
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { PageDesignNodeTree } from './node-tree-types'
+import type { PageDesignNodeTree } from './page-design-node-tree'
 
 export type PageDesignEditPhase = 'idle' | 'editing' | 'saved'
 

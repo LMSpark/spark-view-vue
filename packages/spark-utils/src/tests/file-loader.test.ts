@@ -2,46 +2,45 @@
  * FileLoader 单元测试
  */
 
-import { describe, it, expect, beforeEach, vi } from 'vitest'
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest'
 import { createFileLoader, FileLoader } from '@spark-view/spark-utils'
-import axios from 'axios'
+import type { AxiosRequestConfig } from 'axios'
+
+type FakeStorageRecord = {
+  value: string
+}
+
+function parseNumberArray(raw: string): number[] {
+  const parsed: unknown = JSON.parse(raw)
+  if (!Array.isArray(parsed) || parsed.some(item => typeof item !== 'number')) {
+    throw new Error('Expected JSON number array')
+  }
+  return parsed
+}
 
 // Mock axios.create
-vi.mock('axios', async () => {
-  const actualAxios = await vi.importActual<any>('axios')
+const mockAxiosRequest = vi.hoisted(() =>
+  vi.fn<(config: AxiosRequestConfig) => Promise<unknown>>()
+)
+
+vi.mock('axios', () => {
   return {
-    ...actualAxios,
     default: {
-      ...actualAxios.default,
-      create: vi.fn()
-    }
+      create: vi.fn(() => ({ request: mockAxiosRequest })),
+      isAxiosError: (value: unknown): boolean =>
+        value instanceof Error && Object.prototype.hasOwnProperty.call(value, 'isAxiosError'),
+    },
   }
 })
 
 describe('FileLoader', () => {
   let loader: FileLoader
-  let mockAxiosInstance: any
 
   beforeEach(() => {
+    mockAxiosRequest.mockReset()
     // 清理所有缓存
     localStorage.clear()
     sessionStorage.clear()
-
-    // 创建mock axios实例
-    mockAxiosInstance = {
-      request: vi.fn(),
-      defaults: {
-        responseType: 'json',
-        timeout: 5000
-      },
-      interceptors: {
-        request: { use: vi.fn() },
-        response: { use: vi.fn() }
-      }
-    }
-
-    // 设置mock返回值
-    vi.mocked(axios.create).mockReturnValue(mockAxiosInstance)
 
     // 创建测试加载器
     loader = createFileLoader({
@@ -51,10 +50,14 @@ describe('FileLoader', () => {
     })
   })
 
+  afterEach(() => {
+    vi.unstubAllGlobals()
+  })
+
   describe('基本加载功能', () => {
     it('应该能够加载文件（首次加载）', async () => {
       // 设置mock响应
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -73,7 +76,7 @@ describe('FileLoader', () => {
       expect(result.fromCache).toBe(false)
 
       // 验证request被调用
-      expect(mockAxiosInstance.request).toHaveBeenCalledWith(
+      expect(mockAxiosRequest).toHaveBeenCalledWith(
         expect.objectContaining({
           url: 'test.json',
           method: 'GET',
@@ -82,7 +85,7 @@ describe('FileLoader', () => {
     })
 
     it('应该解析 JSON 文件', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '{"name": "test", "value": 123}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -100,7 +103,7 @@ describe('FileLoader', () => {
     })
 
     it('应该加载文本文件（不解析 JSON）', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: 'function test() { return 42; }',
           timestamp: '2024-02-11T10:00:00Z'
@@ -120,7 +123,7 @@ describe('FileLoader', () => {
 
   describe('缓存机制', () => {
     it('应该缓存加载的文件', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '{"cached": true}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -141,7 +144,7 @@ describe('FileLoader', () => {
 
     it('应该在文件未修改时使用缓存（notModified 标志）', async () => {
       // 首次加载
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: {
           content: '{"version": 1}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -155,7 +158,7 @@ describe('FileLoader', () => {
       await loader.load('version.json')
 
       // 再次加载，服务器返回 notModified=true
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: {
           notModified: true
         },
@@ -171,7 +174,7 @@ describe('FileLoader', () => {
       expect(result.fromCache).toBe(true)
       expect(result.notModified).toBe(true)
       expect(result.timestamp).toBe('2024-02-11T10:00:00Z')
-      expect(mockAxiosInstance.request).toHaveBeenNthCalledWith(
+      expect(mockAxiosRequest).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           params: { timestamp: '2024-02-11T10:00:00Z' },
@@ -181,7 +184,7 @@ describe('FileLoader', () => {
 
     it('应该在强制刷新时忽略缓存', async () => {
       // 首次加载
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: {
           content: '{"version": 1}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -195,7 +198,7 @@ describe('FileLoader', () => {
       await loader.load('refresh.json')
 
       // 强制刷新
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: {
           content: '{"version": 2}',
           timestamp: '2024-02-11T11:00:00Z'
@@ -218,7 +221,7 @@ describe('FileLoader', () => {
   describe('自动降级', () => {
     it('应该在网络失败时自动降级到缓存', async () => {
       // 首次加载成功
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: {
           content: '{"data": "cached"}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -232,7 +235,7 @@ describe('FileLoader', () => {
       await loader.load('fallback.json')
 
       // 网络失败
-      mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network error'))
+      mockAxiosRequest.mockRejectedValueOnce(new Error('Network error'))
 
       const result = await loader.load('fallback.json')
 
@@ -243,7 +246,7 @@ describe('FileLoader', () => {
     })
 
     it('应该在无缓存时返回失败', async () => {
-      mockAxiosInstance.request.mockRejectedValue(new Error('Network error'))
+      mockAxiosRequest.mockRejectedValue(new Error('Network error'))
 
       const result = await loader.load('no-cache.json')
 
@@ -260,7 +263,7 @@ describe('FileLoader', () => {
       })
 
       // 首次加载成功
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: {
           content: '{"data": "test"}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -274,7 +277,7 @@ describe('FileLoader', () => {
       await strictLoader.load('strict.json')
 
       // 网络失败，不使用缓存
-      mockAxiosInstance.request.mockRejectedValueOnce(new Error('Network error'))
+      mockAxiosRequest.mockRejectedValueOnce(new Error('Network error'))
 
       const result = await strictLoader.load('strict.json')
 
@@ -285,7 +288,7 @@ describe('FileLoader', () => {
 
   describe('批量加载', () => {
     it('应该并行加载多个文件', async () => {
-      mockAxiosInstance.request
+      mockAxiosRequest
         .mockResolvedValueOnce({
           data: {
             content: '{"file": "1"}',
@@ -332,7 +335,7 @@ describe('FileLoader', () => {
 
   describe('缓存管理', () => {
     it('应该清除特定文件缓存', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -351,7 +354,7 @@ describe('FileLoader', () => {
     })
 
     it('应该清除所有缓存', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -371,7 +374,7 @@ describe('FileLoader', () => {
     })
 
     it('应该返回缓存统计信息', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '{"test": "data"}',
           timestamp: '2024-02-11T10:00:00Z'
@@ -393,10 +396,6 @@ describe('FileLoader', () => {
     })
 
     it('localStorage 配额不足时应按 lastAccess 驱逐，不按 sourceTimestamp 驱逐', () => {
-      interface FakeStorageRecord {
-        value: string
-      }
-
       class FakeStorage implements Storage {
         private readonly map = new Map<string, FakeStorageRecord>()
         private readonly quotaTargetKey: string
@@ -452,16 +451,12 @@ describe('FileLoader', () => {
         expirationLevel: 3,
       }))
 
+      vi.stubGlobal('localStorage', fakeStorage)
       const localLoader = createFileLoader({
         baseUrl: '/api/config',
         storage: 'localStorage',
         cachePrefix: 'spark_page_',
       })
-
-      const internal = localLoader as unknown as {
-        storage: Storage | null
-      }
-      internal.storage = fakeStorage
 
       localLoader.store('new.json', 'new-content', 'ts-new')
 
@@ -472,10 +467,6 @@ describe('FileLoader', () => {
     })
 
     it('读取缓存更新 lastAccess 遇到配额不足时不应驱逐缓存', () => {
-      interface FakeStorageRecord {
-        value: string
-      }
-
       class TouchFailingStorage implements Storage {
         private readonly map = new Map<string, FakeStorageRecord>()
         private blockedKey: string | null = null
@@ -533,16 +524,12 @@ describe('FileLoader', () => {
       }))
       fakeStorage.blockSetItem(cacheKey)
 
+      vi.stubGlobal('localStorage', fakeStorage)
       const localLoader = createFileLoader({
         baseUrl: '/api/config',
         storage: 'localStorage',
         cachePrefix: 'spark_page_',
       })
-
-      const internal = localLoader as unknown as {
-        storage: Storage | null
-      }
-      internal.storage = fakeStorage
 
       const data = localLoader.retrieve('kept.json', 'ts-kept')
 
@@ -564,7 +551,7 @@ describe('FileLoader', () => {
           }
         }
       )
-      mockAxiosInstance.request.mockRejectedValue(error)
+      mockAxiosRequest.mockRejectedValue(error)
 
       const result = await loader.load('not-found.json')
 
@@ -573,7 +560,7 @@ describe('FileLoader', () => {
     })
 
     it('应该处理无效的响应格式', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           // 缺少 content 或 timestamp
           invalid: true
@@ -591,7 +578,7 @@ describe('FileLoader', () => {
     })
 
     it('应该接受空字符串文件内容', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: '',
           timestamp: '2024-02-11T10:00:00Z'
@@ -609,7 +596,7 @@ describe('FileLoader', () => {
     })
 
     it('应该处理 JSON 解析错误', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: {
           content: 'invalid json {',
           timestamp: '2024-02-11T10:00:00Z'
@@ -633,7 +620,7 @@ describe('FileLoader', () => {
 
   describe('load() 内联 transform', () => {
     it('transform 正常执行并返回变换结果', async () => {
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: { content: '{"value":1}', timestamp: 'ts-1' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
@@ -648,7 +635,7 @@ describe('FileLoader', () => {
 
     it('内联 transform 每次调用保持一次性语义', async () => {
       // 首次：HTTP 请求
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: { content: '{"x":42}', timestamp: 'ts-same' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
@@ -664,7 +651,7 @@ describe('FileLoader', () => {
       })
 
       // 第二次请求返回 notModified（timestamp 不变）
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: { notModified: true },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
@@ -676,7 +663,7 @@ describe('FileLoader', () => {
       expect(result2.success).toBe(true)
       expect(result2.fromCache).toBe(true)
       expect(callCount).toBe(2)
-      expect(mockAxiosInstance.request).toHaveBeenNthCalledWith(
+      expect(mockAxiosRequest).toHaveBeenNthCalledWith(
         2,
         expect.objectContaining({
           params: { timestamp: 'ts-same' },
@@ -685,7 +672,7 @@ describe('FileLoader', () => {
     })
 
     it('forceRefresh 跳过变换缓存，重新执行 transform', async () => {
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: { content: '{"n":1}', timestamp: 'ts-x' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
@@ -696,7 +683,7 @@ describe('FileLoader', () => {
       await loader.load('force.json', { transform: fn })
       expect(callCount).toBe(1)
 
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: { content: '{"n":2}', timestamp: 'ts-x' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
@@ -709,7 +696,7 @@ describe('FileLoader', () => {
     })
 
     it('transform 抛出异常时返回 success: false', async () => {
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: { content: '{}', timestamp: 'ts-err' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
@@ -725,16 +712,12 @@ describe('FileLoader', () => {
 
   describe('withTransform() 子加载器', () => {
     it('子加载器 .load() 返回变换结果', async () => {
-      mockAxiosInstance.request.mockResolvedValueOnce({
+      mockAxiosRequest.mockResolvedValueOnce({
         data: { content: '[1,2,3]', timestamp: 'ts-w1' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })
 
-      function parseNumbers(raw: string): number[] {
-        return JSON.parse(raw) as number[]
-      }
-
-      const numLoader = loader.withTransform(parseNumbers)
+      const numLoader = loader.withTransform(parseNumberArray)
       const result = await numLoader.load('nums.json')
 
       expect(result.success).toBe(true)
@@ -742,7 +725,7 @@ describe('FileLoader', () => {
     })
 
     it('子加载器 .loadBatch() 返回 Map', async () => {
-      mockAxiosInstance.request
+      mockAxiosRequest
         .mockResolvedValueOnce({
           data: { content: '[1]', timestamp: 'ts-b1' },
           status: 200, statusText: 'OK', headers: {}, config: {}
@@ -752,7 +735,7 @@ describe('FileLoader', () => {
           status: 200, statusText: 'OK', headers: {}, config: {}
         })
 
-      const numLoader = loader.withTransform((raw: string) => JSON.parse(raw) as number[])
+      const numLoader = loader.withTransform(parseNumberArray)
       const map = await numLoader.loadBatch(['a.json', 'b.json'])
 
       expect(map.size).toBe(2)
@@ -762,7 +745,7 @@ describe('FileLoader', () => {
 
     it('不同 transform key 互不污染缓存', async () => {
       const baseContent = '{"v":1}'
-      mockAxiosInstance.request.mockResolvedValue({
+      mockAxiosRequest.mockResolvedValue({
         data: { content: baseContent, timestamp: 'ts-key' },
         status: 200, statusText: 'OK', headers: {}, config: {}
       })

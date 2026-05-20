@@ -25,8 +25,8 @@
  * ```
  */
 
-import { createHttpClient, createRequest } from '@spark-view/spark-utils'
-import type { FetchHttpClient, HttpClient } from '@spark-view/spark-utils'
+import { HttpClientBase, createHttpClient, createRequest, isRequestError } from '@spark-view/spark-utils'
+import type { FetchClient, HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import { getToken, getUser, clearAuth } from './auth'
 
 export function createAuthHeaders(): Record<string, string> {
@@ -39,13 +39,38 @@ export function createAuthHeaders(): Record<string, string> {
   return headers
 }
 
-let _instance: HttpClient | null = null
-let _fetchInstance: FetchHttpClient | null = null
+let _instance: HttpClientBase | null = null
+let _fetchInstance: FetchClient | null = null
+
+class LazyHttpClient extends HttpClientBase {
+  constructor() {
+    super({}, 'LazyHttpClient')
+  }
+
+  protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    return getHttpClient().requestFull(config)
+  }
+
+  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
+    if (isRequestError(error)) return error
+    const base = error instanceof Error ? error : new Error(String(error))
+    return Object.assign(new Error(base.message), {
+      config: config ?? { url: '' },
+      name: 'RequestError',
+      status: 0,
+      code: 'ERR_NETWORK',
+    })
+  }
+
+  override clearCache(url?: string): void {
+    _instance?.clearCache(url)
+  }
+}
 
 /**
  * 获取带认证拦截器的全局 Request 实例（懒初始化单例）
  */
-export function getHttpClient(): HttpClient {
+export function getHttpClient(): HttpClientBase {
   if (_instance) return _instance
 
   _instance = createRequest({ timeout: 30_000 })
@@ -75,7 +100,7 @@ export function getHttpClient(): HttpClient {
   return _instance
 }
 
-export function getFetchHttpClient(): FetchHttpClient {
+export function getFetchHttpClient(): FetchClient {
   if (_fetchInstance) return _fetchInstance
 
   _fetchInstance = createHttpClient({ adapter: 'fetch', timeout: 30_000 })
@@ -101,8 +126,4 @@ export function getFetchHttpClient(): FetchHttpClient {
 }
 
 /** 全局 HTTP 客户端（带认证拦截器） */
-export const http: HttpClient = new Proxy({} as HttpClient, {
-  get(_target, prop, receiver): unknown {
-    return Reflect.get(getHttpClient(), prop, receiver) as unknown
-  },
-})
+export const http: HttpClientBase = new LazyHttpClient()

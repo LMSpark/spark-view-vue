@@ -7,7 +7,7 @@
 
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { ConfigLoader } from '@spark-view/spark-page-config'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config'
 import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
@@ -18,11 +18,13 @@ import { resolveNavNodeRuntimeTarget } from '../navigation/runtime-target'
 import { resolveCrossProjectRefPageId, resolveNavRoutePageId } from './route-helpers'
 
 function isUnauthorizedError(error: unknown): boolean {
-  if (error === null || error === undefined || typeof error !== 'object') return false
-  const candidate = error as { status?: unknown; response?: { status?: unknown } }
-  if (candidate.status === 401) return true
-  if (candidate.response?.status === 401) return true
-  return false
+  return readObjectProp(error, 'status') === 401
+    || readObjectProp(readObjectProp(error, 'response'), 'status') === 401
+}
+
+function readObjectProp(value: unknown, key: string): unknown {
+  if (value === null || typeof value !== 'object') return undefined
+  return Object.getOwnPropertyDescriptor(value, key)?.value
 }
 
 const routerLogger = createLogger('DynamicRouter')
@@ -30,7 +32,7 @@ export { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 
 function shouldLogDynamicRouteDetails(): boolean {
   if (typeof globalThis === 'undefined') return false
-  const flag = (globalThis as Record<string, unknown>)['__SPARK_DEBUG_DYNAMIC_ROUTER__']
+  const flag = readObjectProp(globalThis, '__SPARK_DEBUG_DYNAMIC_ROUTER__')
   return flag === true
 }
 
@@ -42,7 +44,7 @@ export interface DynamicRouterOptions {
   router: Router
 
   /** 配置加载器 */
-  configLoader: ConfigLoader
+  configLoader: BasePageConfigLoader
 
   /**
    * 动态页面组件（必需）
@@ -121,7 +123,7 @@ interface RouteRegistrationOptions {
  */
 export class DynamicRouter {
   private router: Router
-  private configLoader: ConfigLoader
+  private configLoader: BasePageConfigLoader
   private pageComponent: Component
   private registeredRoutes: Set<string> = new Set()
   /** path → Component 映射（system-page 路由使用） */
@@ -244,8 +246,8 @@ export class DynamicRouter {
 
     const routePath = this.addTenantPrefix('/__ref/:refNodeId')
     const existing = this.router.getRoutes().find(route => route.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
-    const existingProps = existing?.props as Record<string, unknown> | undefined
-    if (existing?.meta['crossProjectRefHost'] === true && typeof existingProps?.['default'] === 'function') {
+    const existingDefaultProps = readObjectProp(existing?.props, 'default')
+    if (existing?.meta['crossProjectRefHost'] === true && typeof existingDefaultProps === 'function') {
       return
     }
     if (existing?.name !== undefined) {

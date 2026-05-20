@@ -109,59 +109,6 @@ export interface ResponseInterceptor {
   onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>
 }
 
-// ==================== 统一客户端契约 ====================
-
-/**
- * HTTP 客户端统一契约。
- *
- * 说明：
- * - `Request`（axios）与 `FetchClient`（fetch）都实现此接口
- * - 业务侧优先依赖 `HttpClient` 类型，避免绑定具体实现
- */
-export interface HttpClient {
-  readonly interceptors: {
-    request: {
-      use: (interceptor: RequestInterceptor) => (() => void)
-    }
-    response: {
-      use: (interceptor: ResponseInterceptor) => (() => void)
-    }
-  }
-
-  request<T = unknown>(config: RequestConfig): Promise<T>
-  requestFull<T = unknown>(config: RequestConfig): Promise<HttpResponse<T>>
-
-  get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
-  post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
-  put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
-  patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>): Promise<T>
-  delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>): Promise<T>
-
-  clearCache(url?: string): void
-}
-
-/**
- * Fetch 扩展客户端契约。
- *
- * 相比 `HttpClient`，额外暴露流式能力与 beacon 发送能力。
- * stream / streamSSE **不走重试循环**，业务侧按需自行重连。
- *
- * @example
- * ```ts
- * const client: FetchHttpClient = createFetchClient({ baseURL: '/api' })
- * const events = await client.streamSSE({ url: '/ai/chat', method: 'POST', data: body })
- * for await (const e of events) { ... }
- * ```
- */
-export interface FetchHttpClient extends HttpClient {
-  /** 发起流式请求并返回原始 ReadableStream（⚠️ 不走重试循环） */
-  stream(config: RequestConfig): Promise<StreamResponse>
-  /** 发起 SSE 请求并返回事件异步迭代器（⚠️ 不走重试循环） */
-  streamSSE(config: RequestConfig): Promise<AsyncGenerator<SSEEvent>>
-  /** 使用 sendBeacon（或 fetch keepalive 降级）发送卸载期数据 */
-  beacon(url: string, data: unknown): boolean
-}
-
 /** HttpClient 底层适配器类型 */
 export type HttpClientAdapter = 'axios' | 'fetch'
 

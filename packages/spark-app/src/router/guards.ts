@@ -19,6 +19,11 @@ function hasAnyPermission(context: AppContext, permissions: string[]): boolean {
   return permissions.some(perm => context.user.permissions.includes(perm))
 }
 
+function readStringArray(value: unknown): string[] | undefined {
+  if (!Array.isArray(value)) return undefined
+  return value.every((item): item is string => typeof item === 'string') ? value : undefined
+}
+
 /**
  * 设置路由守卫
  * 
@@ -46,7 +51,7 @@ export function setupRouterGuards(
     }
 
     // 页面级权限检查（仅当 meta.permissions 声明时生效）
-    const requiredPermissions = to.meta['permissions'] as string[] | undefined
+    const requiredPermissions = readStringArray(to.meta['permissions'])
     if (!requiredPermissions?.length) return true
 
     const appContext = resolveContext()
@@ -83,7 +88,9 @@ export function setupRouterGuards(
     routerLogger.error('路由错误', logError)
   })
 
-  routerLogger.info('路由守卫已设置', options as Record<string, unknown>)
+  routerLogger.info('路由守卫已设置', {
+    hasPermissionChecker: checkPermission !== undefined,
+  })
 }
 
 /**

@@ -16,6 +16,7 @@ import {
   NavigationEditSession,
   PageConfigEditWorkspace,
   PageConfigFileApi,
+  PageConfigFileLifecycle,
   applyNavigationNodeDraftToNode,
   applyNodeKindPresetToDraft,
   buildNavRoot,
@@ -34,7 +35,7 @@ import {
   isSystemRootDirectory as isSystemRootDirectoryNode,
   normalizeNavRoot,
   normalizePageIdFromPath,
-  type ConfigLoader,
+  type BasePageConfigLoader,
   type LinkTarget,
   type NavNode,
   type NavNodeKind,
@@ -91,10 +92,10 @@ import { getPageApi, getNavApi } from '@/services/api-paths'
 import { createAuthHeaders, http } from '@/services/http'
 
 const pageFileApi = new PageConfigFileApi({ getPageConfigApi: getPageApi, http })
-let pageConfigLoader: ConfigLoader | null = null
+let pageConfigLoader: BasePageConfigLoader | null = null
 let pageConfigLoaderApiBaseUrl = ''
 
-function getPageConfigLoader(): ConfigLoader {
+function getPageConfigLoader(): BasePageConfigLoader {
   const apiBaseUrl = toPageConfigApiBaseUrl(getPageApi())
   if (pageConfigLoader === null || pageConfigLoaderApiBaseUrl !== apiBaseUrl) {
     pageConfigLoader = createConfigLoader({
@@ -122,6 +123,11 @@ function toPageConfigApiBaseUrl(pageApi: string): string {
 
 export function useDevState() {
   const navigationClient = new NavigationConfigClient({ getNavigationApi: getNavApi, http })
+  const pageFileLifecycle = new PageConfigFileLifecycle({
+    fileApi: pageFileApi,
+    navigationClient,
+    getConfigLoader: getPageConfigLoader,
+  })
   const navigationSession = new NavigationEditSession()
   const pageWorkspace = new PageConfigEditWorkspace({
     fileApi: pageFileApi,
@@ -150,7 +156,7 @@ export function useDevState() {
     id: '', title: '', icon: '', nodeKind: 'page',
     dividerAfter: false,
     description: '',
-    path: '', redirect: '', linkTarget: 'iframe' as LinkTarget,
+    path: '', redirect: '', linkTarget: 'iframe',
     parentPageId: '', refId: '',
     childPlacement: '', order: 0,
     hidden: false, disabled: false,
@@ -285,6 +291,10 @@ export function useDevState() {
     return canUseModuleNodeKindForTree(node, treeData.value)
   }
 
+  function createDraftFromEditForm(): NavigationNodeDraft {
+    return { ...editForm }
+  }
+
   async function syncPageFilesForNode(node: NavNode, forceReload: boolean): Promise<void> {
     const pageId = normalizePageIdFromPath(node.path)
     if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
@@ -296,7 +306,7 @@ export function useDevState() {
   }
 
   function applyNodeKindPreset(kind: NavNodeKind): void {
-    Object.assign(editForm, applyNodeKindPresetToDraft({ ...editForm } as NavigationNodeDraft, kind))
+    Object.assign(editForm, applyNodeKindPresetToDraft(createDraftFromEditForm(), kind))
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -491,7 +501,7 @@ export function useDevState() {
     }
 
     const result = applyNavigationNodeDraftToNode(node, {
-      draft: { ...editForm } as NavigationNodeDraft,
+      draft: createDraftFromEditForm(),
       context: {
         hasContext: hasContext.value,
         items: contextItems.value,
@@ -558,14 +568,14 @@ export function useDevState() {
     }
   }
 
-  async function saveNodeChanges(): Promise<void> {
+  async function saveNodeChanges(): Promise<boolean> {
     applyNavChanges()
-    if (!selectedNode.value) return
+    if (!selectedNode.value) return false
     const node = selectedNode.value
     if (isSystemRootDirectory(node)) {
       navDirty.value = false
       addStatus(`系统目录 ${node.title} 仅允许编辑子项，跳过节点保存`, 'warning')
-      return
+      return true
     }
     const { children: _children, order: _order, ...patch } = node
     navSaving.value = true
@@ -574,8 +584,10 @@ export function useDevState() {
       await refreshRoutes()
       navDirty.value = false
       addStatus(`节点 ${node.title} 已保存`, 'success')
+      return true
     } catch (e) {
       addStatus(`节点保存失败: ${String(e)}`, 'error')
+      return false
     } finally {
       navSaving.value = false
     }
@@ -603,6 +615,42 @@ export function useDevState() {
       await loadPages()
     } catch (e) {
       addStatus(`保存 ${name} 失败: ${String(e)}`, 'error')
+    } finally {
+      fileSaving.value = false
+    }
+  }
+
+  async function createPageForSelectedNode(params: { pageId: string; title: string; icon: string }): Promise<boolean> {
+    const pageId = params.pageId.trim()
+    if (!pageId || !selectedNode.value) return false
+
+    fileSaving.value = true
+    try {
+      await pageFileLifecycle.createPage({
+        pageId,
+        title: params.title,
+        icon: params.icon,
+      })
+      await loadPages()
+
+      const targetPath = `/${pageId}`
+      editForm.path = targetPath
+      editForm.title = params.title
+      editForm.icon = params.icon
+      handlePathChange(targetPath)
+
+      const saved = await saveNodeChanges()
+      if (!saved) {
+        await pageFileLifecycle.deletePage(pageId)
+        await loadPages()
+        notifyPageFileChanged(pageId, '__deleted')
+        return false
+      }
+
+      notifyPageFileChanged(pageId, '__created')
+      setActivePageContext(pageId, true)
+      await ensureActivePageFilesLoaded({ forceReload: true })
+      return true
     } finally {
       fileSaving.value = false
     }
@@ -769,10 +817,21 @@ export function useDevState() {
 
   function addChildNode(parent: NavNode): void {
     const node = createChildPageNode(() => crypto.randomUUID())
+    const pageId = normalizePageIdFromPath(node.path)
     ;(parent.children ??= []).push(node)
-    void navigationClient.addNode({ parentId: parent.id, node }).then(
-      () => {
-        notifyPageFileChanged(node.id, '__created')
+    void pageFileLifecycle.createMountedPage({
+      pageId,
+      title: node.title,
+      node,
+      parentId: parent.id,
+      rollbackPageOnNavigationFailure: true,
+      ...(node.icon === undefined ? {} : { icon: node.icon }),
+    }).then(
+      async (result) => {
+        Object.assign(node, result.node)
+        notifyPageFileChanged(pageId, '__created')
+        await loadPages()
+        await refreshRoutes()
         addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
       },
       (e: unknown) => {
@@ -799,10 +858,16 @@ export function useDevState() {
       selectedNode.value = null
       clearFiles()
     }
-    void navigationClient.deleteNode(data.id).then(
+    const pageId = normalizePageIdFromPath(data.path)
+    const shouldRemoveMountedPage = pageId.length > 0 && isConfigNodeKind(data.nodeKind ?? 'page')
+    const deletePromise = shouldRemoveMountedPage
+      ? pageFileLifecycle.removeMountedPage({ pageId, nodeId: data.id })
+      : navigationClient.deleteNode(data.id)
+    void deletePromise.then(
       () => {
-        if (data.path) {
-          notifyPageFileChanged(data.path.replace(/^\/+/, ''), '__deleted')
+        if (shouldRemoveMountedPage) {
+          notifyPageFileChanged(pageId, '__deleted')
+          void loadPages()
         }
         addStatus(`已删除 ${data.title}`, 'info')
       },
@@ -816,7 +881,7 @@ export function useDevState() {
     if (!location) return
     navSaving.value = true
     try {
-      await navigationClient.moveNode(data.id, location.parentId, location.index)
+      await pageFileLifecycle.moveMountedPage(data.id, location.parentId, location.index)
       await refreshRoutes()
       navDirty.value = false
       addStatus(`节点 ${data.title} 已移动`, 'success')
@@ -934,6 +999,7 @@ export function useDevState() {
     createRemotePageVersion,
     deleteRemotePageVersion,
     savePageFile,
+    createPageForSelectedNode,
     onLinkUrlChanged,
     probeLinkTarget,
     selectPage,

@@ -15,10 +15,10 @@ import type {
   PageDataConfig,
   PageScriptConfig,
   PageCssConfig
-} from '../types'
+} from '../../types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
-import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from '../spark-node'
-import { SparkNodeTree } from '../spark-node-tree'
+import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from '../../spark-node'
+import { SparkNodeTree } from '../../spark-node-tree'
 
 type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
 

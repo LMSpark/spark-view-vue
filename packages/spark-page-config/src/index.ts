@@ -19,23 +19,12 @@ export type {
   PageConfig,
   ConfigLoaderOptions,
   ConfigLoadResult,
-  ConfigLoader,
 } from './types'
 
 export {
+  BasePageConfigLoader,
   PAGE_CONFIG_FILE_NAMES,
 } from './types'
-
-export type {
-  PageConfigCreatePageParams,
-  PageConfigFileApiOptions,
-  PageConfigFileVersionSummary,
-  PageConfigPageSummary,
-} from './files'
-
-export {
-  PageConfigFileApi,
-} from './files'
 
 export {
   SPARK_NODE_STRUCT_KEYS,
@@ -87,22 +76,8 @@ export {
   SPARK_PAGE_ROOT_ID,
 } from './spark-node-tree'
 
-export * from './json-document'
-export * from './documents'
-export * from './page-design'
+export * from './files'
 export * from './navigation'
-export * from './page-edit'
-
-// 配置加载器
-export {
-  PageConfigLoader,
-  createConfigLoader,
-  compileRule,
-  normalizeRuleNode,
-  parsePageData,
-  parseScript,
-  parseCss,
-} from './loader'
 
 // 命名空间 API
 export { SparkPageConfig } from './namespace'

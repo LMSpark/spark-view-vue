@@ -10,11 +10,10 @@ import { isRecord, readStringProperty } from '../internal/guards.js'
 import type {
   RequestConfig, HttpResponse,
   RequestError,
-  FetchHttpClient,
   StreamResponse, SSEEvent,
 } from './types'
 
-export class FetchClient extends HttpClientBase implements FetchHttpClient {
+export class FetchClient extends HttpClientBase {
   constructor(defaults: Partial<RequestConfig> = {}) {
     super(defaults, 'FetchClient')
   }
@@ -400,6 +399,6 @@ export class FetchClient extends HttpClientBase implements FetchHttpClient {
 // ==================== 工厂函数 ====================
 
 /** 创建 Fetch 扩展客户端（支持 stream / streamSSE / beacon）。 */
-export function createFetchClient(config?: Partial<RequestConfig>): FetchHttpClient {
+export function createFetchClient(config?: Partial<RequestConfig>): FetchClient {
   return new FetchClient(config)
 }

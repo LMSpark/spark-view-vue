@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { SparkData } from '@spark-view/spark-data'
 import type { DataRow } from '@spark-view/spark-data'
+import { createRequest } from '@spark-view/spark-utils'
 import { isActionDescriptorDisabled } from '../packages/spark-component/src/page/actions/executor-helpers'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
@@ -93,13 +94,11 @@ describe('DataView CRUD bridge', () => {
       },
     })
 
-    const httpClient = {
-      get: vi.fn(),
-      post: vi.fn(async () => ({ id: 2, name: 'Bob' })),
-      put: vi.fn(async () => ({ id: 1, name: 'Alice-2', status: 'active' })),
-      delete: vi.fn(async () => true),
-    }
-    dataSet.setSharedHttpClient(httpClient as never)
+    const httpClient = createRequest()
+    const post = vi.spyOn(httpClient, 'post').mockResolvedValue({ id: 2, name: 'Bob' })
+    const put = vi.spyOn(httpClient, 'put').mockResolvedValue({ id: 1, name: 'Alice-2', status: 'active' })
+    const deleteRequest = vi.spyOn(httpClient, 'delete').mockResolvedValue(true)
+    dataSet.setSharedHttpClient(httpClient)
 
     const view = dataSet.getView('Users', 'default')!
     const appendRowSpy = vi.spyOn(view, 'appendRow')
@@ -107,20 +106,20 @@ describe('DataView CRUD bridge', () => {
     const deleteRowByIdSpy = vi.spyOn(view, 'deleteRowById')
 
     const createResult = await view.addRow({ id: 2, name: 'Bob' })
-    expect(httpClient.post).toHaveBeenCalledOnce()
+    expect(post).toHaveBeenCalledOnce()
     expect(createResult).toMatchObject({ success: true, data: { id: 2, name: 'Bob' } })
     expect(appendRowSpy).toHaveBeenCalledWith(expect.objectContaining({ id: 2, name: 'Bob' }))
     expect(view.rows.map(row => row['id'])).toEqual([1, 2])
 
     const updateResult = await view.editRowById(1, { name: 'Alice-2' })
-    expect(httpClient.put).toHaveBeenCalledOnce()
-    expect(httpClient.put).toHaveBeenCalledWith('/api/users/1', { id: 1, name: 'Alice-2', status: 'active' }, expect.anything())
+    expect(put).toHaveBeenCalledOnce()
+    expect(put).toHaveBeenCalledWith('/api/users/1', { id: 1, name: 'Alice-2', status: 'active' }, expect.anything())
     expect(updateResult).toMatchObject({ success: true, data: { id: 1, name: 'Alice-2', status: 'active' } })
     expect(updateRowByIdSpy).toHaveBeenCalledWith(1, expect.objectContaining({ id: 1, name: 'Alice-2', status: 'active' }))
     expect(view.rows.find(row => row['id'] === 1)?.['name']).toBe('Alice-2')
 
     const deleteResult = await view.removeRow(2)
-    expect(httpClient.delete).toHaveBeenCalledOnce()
+    expect(deleteRequest).toHaveBeenCalledOnce()
     expect(deleteResult).toMatchObject({ success: true, data: true })
     expect(deleteRowByIdSpy).toHaveBeenCalledWith(2)
     expect(view.rows.map(row => row['id'])).toEqual([1])
@@ -149,17 +148,12 @@ describe('DataView CRUD bridge', () => {
       },
     })
 
-    const httpClient = {
-      get: vi.fn(),
-      post: vi.fn(),
-      put: vi.fn(async () => ({
-        success: true,
-        node: { id: 'node-1', title: '新标题', path: '/new' },
-      })),
-      delete: vi.fn(),
-      patch: vi.fn(),
-    }
-    dataSet.setSharedHttpClient(httpClient as never)
+    const httpClient = createRequest()
+    vi.spyOn(httpClient, 'put').mockResolvedValue({
+      success: true,
+      node: { id: 'node-1', title: '新标题', path: '/new' },
+    })
+    dataSet.setSharedHttpClient(httpClient)
 
     const view = dataSet.getView('Nodes', 'default')!
 

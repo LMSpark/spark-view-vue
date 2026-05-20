@@ -6,12 +6,64 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
-import type { PageConfig } from '@spark-view/spark-page-config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import {
+  compileRule,
+} from '@spark-view/spark-page-config'
+import type {
+  ConfigLoadResult,
+  PageConfig,
+  PageConfigFileLoadOptions,
+  PageConfigFileName,
+  PageCssConfig,
+  PageDataConfig,
+  PageScriptConfig,
+  RuleConfig,
+} from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function requireRecord(value: unknown, message: string): Record<string, unknown> {
+  if (isRecord(value)) return value
+  throw new Error(message)
+}
+
+function requireRecordArray(value: unknown, message: string): Record<string, unknown>[] {
+  if (!Array.isArray(value)) throw new Error(message)
+  return value.map((item, index) => requireRecord(item, `${message}: item ${index} is not an object`))
+}
+
+function parseChildrenJson(text: string): Record<string, unknown>[] {
+  const parsed: unknown = JSON.parse(text)
+  return requireRecordArray(parsed, 'Expected rendered children JSON array')
+}
+
+function firstChildPropsFromJson(text: string): Record<string, unknown> {
+  const children = parseChildrenJson(text)
+  return requireRecord(children[0]?.['props'], 'Expected first child props')
+}
+
+function readOptionalFunction(value: unknown): (() => unknown) | undefined {
+  return typeof value === 'function' ? () => Reflect.apply(value, undefined, []) : undefined
+}
+
+function requireFunction(value: unknown, message: string): () => unknown {
+  const fn = readOptionalFunction(value)
+  if (fn !== undefined) return fn
+  throw new Error(message)
+}
+
+function requireSparkNode(value: SparkNode | string | number | undefined, message: string): SparkNode {
+  if (value !== undefined && typeof value === 'object') return value
+  throw new Error(message)
+}
+
 function disableSparkComponentRendererStub(): () => void {
-  const stubs = (testUtilsConfig.global.stubs ?? {}) as Record<string, unknown>
+  const stubs = isRecord(testUtilsConfig.global.stubs) ? testUtilsConfig.global.stubs : {}
   const hadPascal = Object.prototype.hasOwnProperty.call(stubs, 'SparkComponentRenderer')
   const hadKebab = Object.prototype.hasOwnProperty.call(stubs, 'spark-component-renderer')
   const previousPascal = stubs['SparkComponentRenderer']
@@ -19,14 +71,14 @@ function disableSparkComponentRendererStub(): () => void {
 
   delete stubs['SparkComponentRenderer']
   delete stubs['spark-component-renderer']
-  testUtilsConfig.global.stubs = stubs as typeof testUtilsConfig.global.stubs
+  testUtilsConfig.global.stubs = stubs
 
   return () => {
-    if (hadPascal) stubs['SparkComponentRenderer'] = previousPascal
+    if (hadPascal && previousPascal !== undefined) stubs['SparkComponentRenderer'] = previousPascal
     else delete stubs['SparkComponentRenderer']
-    if (hadKebab) stubs['spark-component-renderer'] = previousKebab
+    if (hadKebab && previousKebab !== undefined) stubs['spark-component-renderer'] = previousKebab
     else delete stubs['spark-component-renderer']
-    testUtilsConfig.global.stubs = stubs as typeof testUtilsConfig.global.stubs
+    testUtilsConfig.global.stubs = stubs
   }
 }
 
@@ -74,6 +126,50 @@ describe('SparkPageRenderer root props aggregation', () => {
     }
   }
 
+  class TestRendererPageConfigLoader extends BasePageConfigLoader {
+    constructor(
+      private readonly loadPageConfigHandler: (pageId: string) => Promise<ConfigLoadResult<PageConfig>>,
+    ) {
+      super()
+    }
+
+    override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+      return this.loadPageConfigHandler(pageId)
+    }
+
+    override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
+      return { success: false }
+    }
+
+    override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
+      return { success: false }
+    }
+
+    override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+      return { success: false }
+    }
+
+    override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+      return { success: false }
+    }
+
+    override async loadPageFileContent(
+      _pageId: string,
+      _filename: PageConfigFileName,
+      _options?: PageConfigFileLoadOptions,
+    ): Promise<ConfigLoadResult<string>> {
+      return { success: false }
+    }
+
+    override clearCache(): void {
+      return undefined
+    }
+
+    override getCacheStats(): { size: number; keys: string[] } {
+      return { size: 0, keys: [] }
+    }
+  }
+
   it('passes SparkNode props through before rendering registered components', async () => {
     const debugSpy = vi.spyOn(console, 'debug').mockImplementation(() => undefined)
     const logSpy = vi.spyOn(console, 'log').mockImplementation(() => undefined)
@@ -109,9 +205,9 @@ describe('SparkPageRenderer root props aggregation', () => {
     await flushPromises()
 
     const text = wrapper.find('.children-json').text()
-    const children = JSON.parse(text) as Array<Record<string, unknown>>
-    const firstChild = children[0] as Record<string, unknown>
-    const props = firstChild['props'] as Record<string, unknown>
+    const children = parseChildrenJson(text)
+    const firstChild = requireRecord(children[0], 'Expected first rendered child')
+    const props = requireRecord(firstChild['props'], 'Expected first rendered child props')
 
     expect(Array.isArray(children)).toBe(true)
     expect(props['dataViewKey']).toBe('Users@default')
@@ -154,9 +250,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     const readLabel = (): string => {
       const text = wrapper.find('.children-json').text()
-      const children = JSON.parse(text) as Array<Record<string, unknown>>
-      const firstChild = children[0] as Record<string, unknown>
-      const props = firstChild['props'] as Record<string, unknown>
+      const props = firstChildPropsFromJson(text)
       return String(props['label'])
     }
 
@@ -253,7 +347,7 @@ describe('SparkPageRenderer root props aggregation', () => {
       },
       slots: {
         content: ({ children }: { children: Array<{ props?: Record<string, unknown> }> }) => {
-          boundClick = children[0]?.props?.['onClick'] as (() => unknown) | undefined
+          boundClick = readOptionalFunction(children[0]?.props?.['onClick'])
           return h('button', { class: 'script-button' }, 'run')
         },
       },
@@ -272,7 +366,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
   it('does not map non-builtin r-button action strings to page script clicks', async () => {
     const callFunc = vi.fn<(functionName: string, ...args: unknown[]) => unknown>()
-    const children = buildPageChildren([
+    const ruleNodes: SparkNode[] = [
       {
         type: 'r-button',
         id: 'btn__new',
@@ -289,13 +383,14 @@ describe('SparkPageRenderer root props aggregation', () => {
           action: 'refresh',
         },
       },
-    ] as never, {
+    ]
+    const children = buildPageChildren(ruleNodes, {
       callFunc,
       actionCtx: createActionContext(),
     })
 
-    const createButtonProps = children[0]?.props as Record<string, unknown>
-    const refreshButtonProps = children[1]?.props as Record<string, unknown>
+    const createButtonProps = children[0]?.props ?? {}
+    const refreshButtonProps = children[1]?.props ?? {}
 
     expect(createButtonProps['onClick']).toBeUndefined()
     expect(callFunc).not.toHaveBeenCalled()
@@ -317,23 +412,14 @@ describe('SparkPageRenderer root props aggregation', () => {
         },
       ],
     })
-    const loadPageConfig = vi.fn()
+    const loadPageConfig = vi.fn(async (): Promise<ConfigLoadResult<PageConfig>> => ({ success: false }))
 
     await router.push('/t/lmspark/homepage/__ref/ref-node')
     await router.isReady()
 
     mount(SparkPageRenderer, {
       props: {
-        configLoader: {
-          loadPageConfig,
-          loadRule: vi.fn(),
-          loadPageData: vi.fn(),
-          loadScript: vi.fn(),
-          loadCss: vi.fn(),
-          loadPageFileContent: vi.fn(),
-          clearCache: vi.fn(),
-          getCacheStats: () => ({ size: 0, keys: [] }),
-        },
+        configLoader: new TestRendererPageConfigLoader(loadPageConfig),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -361,13 +447,13 @@ describe('SparkPageRenderer root props aggregation', () => {
       ],
     })
     const pageConfig = createPageConfig('跨项目目标')
-    const loadPageConfig = vi.fn(async () => ({
+    const loadPageConfig = vi.fn(async (): Promise<ConfigLoadResult<PageConfig>> => ({
       success: true,
       data: {
         ...pageConfig,
         pageId: 'project-list',
       },
-      source: 'remote' as const,
+      source: 'remote',
       timestamp: Date.now(),
     }))
 
@@ -377,16 +463,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     mount(SparkPageRenderer, {
       props: {
         pageId: 'project-list',
-        configLoader: {
-          loadPageConfig,
-          loadRule: vi.fn(),
-          loadPageData: vi.fn(),
-          loadScript: vi.fn(),
-          loadCss: vi.fn(),
-          loadPageFileContent: vi.fn(),
-          clearCache: vi.fn(),
-          getCacheStats: () => ({ size: 0, keys: [] }),
-        },
+        configLoader: new TestRendererPageConfigLoader(loadPageConfig),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -419,13 +496,13 @@ describe('SparkPageRenderer root props aggregation', () => {
         },
       ],
     })
-    const loadPageConfig = vi.fn(async (pageId: string) => ({
+    const loadPageConfig = vi.fn(async (pageId: string): Promise<ConfigLoadResult<PageConfig>> => ({
       success: true,
       data: {
         ...createPageConfig(pageId),
         pageId,
       },
-      source: 'remote' as const,
+      source: 'remote',
       timestamp: Date.now(),
     }))
 
@@ -435,16 +512,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     mount(SparkPageRenderer, {
       props: {
         pageId: 'old-page',
-        configLoader: {
-          loadPageConfig,
-          loadRule: vi.fn(),
-          loadPageData: vi.fn(),
-          loadScript: vi.fn(),
-          loadCss: vi.fn(),
-          loadPageFileContent: vi.fn(),
-          clearCache: vi.fn(),
-          getCacheStats: () => ({ size: 0, keys: [] }),
-        },
+        configLoader: new TestRendererPageConfigLoader(loadPageConfig),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -463,7 +531,7 @@ describe('SparkPageRenderer root props aggregation', () => {
   })
 
   it('promotes legacy props.id in page rules', () => {
-    const children = buildPageChildren([
+    const ruleNodes: SparkNode[] = [
       {
         type: 'r-button',
         props: {
@@ -471,7 +539,8 @@ describe('SparkPageRenderer root props aggregation', () => {
           label: '旧按钮',
         },
       },
-    ] as never, {
+    ]
+    const children = buildPageChildren(ruleNodes, {
       callFunc: () => undefined,
       actionCtx: createActionContext(),
     })
@@ -486,19 +555,19 @@ describe('SparkPageRenderer root props aggregation', () => {
       resolve(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/homepage/tree-node-scope-demo/rule.json'),
       'utf8',
     )
-    const children = buildPageChildren(JSON.parse(ruleText) as never, {
+    const children = buildPageChildren(compileRule(ruleText), {
       callFunc,
       actionCtx: createActionContext(),
     })
 
-    const section = children[0] as SparkNode
+    const section = requireSparkNode(children[0], 'Expected first child to be a SparkNode')
     const sectionChildren = Array.isArray(section.children) ? section.children : []
     const treeNode = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.type === 'r-tree')
     const currentButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.id === 'btn-get-current')
     const checkedButton = sectionChildren.find((child): child is SparkNode => typeof child === 'object' && child !== null && child.id === 'btn-get-checked')
 
     expect(treeNode).toBeDefined()
-    const treeProps = treeNode?.props?.['treeProps'] as Record<string, unknown>
+    const treeProps = requireRecord(treeNode?.props?.['treeProps'], 'Expected r-tree treeProps')
     expect(treeProps['filterNodeMethod']).toBeUndefined()
     expect(treeProps['showCheckbox']).toBe(true)
     expect(treeProps['draggable']).toBe(true)
@@ -511,8 +580,8 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(checkedButton?.props?.['label']).toBe('获取勾选节点')
     expect(checkedButton?.props?.['onClick']).toBeTypeOf('function')
 
-    ;(currentButton?.props?.['onClick'] as (() => unknown))()
-    ;(checkedButton?.props?.['onClick'] as (() => unknown))()
+    requireFunction(currentButton?.props?.['onClick'], 'Expected current button click handler')()
+    requireFunction(checkedButton?.props?.['onClick'], 'Expected checked button click handler')()
 
     expect(callFunc).toHaveBeenCalledWith('getCurrentNode')
     expect(callFunc).toHaveBeenCalledWith('getCheckedNodes')

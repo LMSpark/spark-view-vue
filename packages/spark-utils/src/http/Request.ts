@@ -9,7 +9,7 @@ import axios from 'axios'
 import type { AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios'
 import { isRecord } from '../internal/guards.js'
 import { HttpClientBase, DEFAULT_TIMEOUT } from './HttpClientBase'
-import type { RequestConfig, Method, HttpResponse, RequestError, HttpClient } from './types'
+import type { RequestConfig, Method, HttpResponse, RequestError } from './types'
 
 export class Request extends HttpClientBase {
   private ax: AxiosInstance
@@ -113,6 +113,6 @@ export class Request extends HttpClientBase {
 // ==================== 工厂函数 ====================
 
 /** 创建 HTTP 客户端实例（默认基于 axios）；支持传入默认配置（baseURL、timeout、headers 等） */
-export function createRequest(config?: Partial<RequestConfig>): HttpClient {
+export function createRequest(config?: Partial<RequestConfig>): Request {
   return new Request(config)
 }

@@ -2,7 +2,8 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { compileRule, parsePageData } from '@spark-view/spark-page-config'
-import type { HttpClient } from '@spark-view/spark-utils'
+import { HttpClientBase } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import { executeSaveDataSet } from '../packages/spark-component/src/page/actions/action-data'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions/action-types'
@@ -58,39 +59,42 @@ function readOperations(data: unknown): Array<Record<string, unknown>> {
   ))
 }
 
-function createMockHttpClient(posts: CapturedPost[]): HttpClient {
-  const notUsed = vi.fn(async () => {
-    throw new Error('unexpected HTTP method')
-  })
-  const post = vi.fn(async (url: string, data?: unknown) => {
-    posts.push({ url, data })
-    const operations = readOperations(data)
-    return {
-      success: true,
-      transactionId: 'tx-test-1',
-      operationCount: operations.length,
-      results: operations.map((operation) => ({
-        operationId: typeof operation['operationId'] === 'string' ? operation['operationId'] : undefined,
-        status: 'success',
-        result: operation['data'] ?? { deleted: true },
-      })),
-    }
-  })
-
-  return {
-    interceptors: {
-      request: { use: vi.fn(() => () => {}) },
-      response: { use: vi.fn(() => () => {}) },
-    },
-    request: notUsed as HttpClient['request'],
-    requestFull: notUsed as HttpClient['requestFull'],
-    get: notUsed as HttpClient['get'],
-    post: post as HttpClient['post'],
-    put: notUsed as HttpClient['put'],
-    patch: notUsed as HttpClient['patch'],
-    delete: notUsed as HttpClient['delete'],
-    clearCache: vi.fn(),
+class TransactionMockHttpClient extends HttpClientBase {
+  constructor(private readonly posts: CapturedPost[]) {
+    super({}, 'TransactionMockHttpClient')
   }
+
+  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    if (config.method !== 'POST') {
+      throw new Error('unexpected HTTP method')
+    }
+    this.posts.push({ url: config.url, data: config.data })
+    const operations = readOperations(config.data)
+    return {
+      data: {
+        success: true,
+        transactionId: 'tx-test-1',
+        operationCount: operations.length,
+        results: operations.map((operation) => ({
+          operationId: typeof operation['operationId'] === 'string' ? operation['operationId'] : undefined,
+          status: 'success',
+          result: operation['data'] ?? { deleted: true },
+        })),
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    }
+  }
+
+  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
+    const message = error instanceof Error ? error.message : String(error)
+    return this.buildRequestError(message, config ?? { url: '' })
+  }
+}
+
+function createMockHttpClient(posts: CapturedPost[]): HttpClientBase {
+  return new TransactionMockHttpClient(posts)
 }
 
 describe('transaction validation page configs', () => {

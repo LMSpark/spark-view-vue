@@ -1,4 +1,4 @@
-import type { ConfigLoader } from '../types'
+import type { BasePageConfigLoader } from '../../types'
 import {
   PAGE_FILE_NAMES,
   createPageDocuments,
@@ -7,17 +7,17 @@ import {
   type PageDocumentRegistry,
   type PageFileLoadState,
   type PageFileName,
-} from '../documents'
+} from '../documents/page-file-documents'
 import type {
   PageConfigCreatePageParams,
   PageConfigFileApi,
   PageConfigFileVersionSummary,
   PageConfigPageSummary,
-} from '../files'
+} from '../runtime/page-config-file-api'
 
 export interface PageConfigEditWorkspaceOptions {
   fileApi: PageConfigFileApi
-  getConfigLoader: () => ConfigLoader
+  getConfigLoader: () => BasePageConfigLoader
 }
 
 export class PageConfigEditWorkspace {
@@ -26,7 +26,7 @@ export class PageConfigEditWorkspace {
   activePageId = ''
 
   private readonly fileApi: PageConfigFileApi
-  private readonly getConfigLoader: () => ConfigLoader
+  private readonly getConfigLoader: () => BasePageConfigLoader
   private activePageFilesLoadPromise: Promise<void> | null = null
   private activePageFilesLoadPageId = ''
   private activePageFilesLoadEpoch = 0

@@ -31,8 +31,6 @@ export type {
 	HttpResponse,
 	StreamResponse,
 	SSEEvent,
-	HttpClient,
-	FetchHttpClient,
 	HttpClientAdapter,
 	HttpClientFactoryOptions,
 } from './types'

@@ -56,15 +56,79 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import { compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
-import type { ConfigLoader, PageConfig } from '@spark-view/spark-page-config'
+import { BasePageConfigLoader, compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
+import type {
+  ConfigLoadResult,
+  PageConfig,
+  PageConfigFileLoadOptions,
+  PageConfigFileName,
+  PageCssConfig,
+  PageDataConfig,
+  PageScriptConfig,
+  RuleConfig,
+} from '@spark-view/spark-page-config'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
 import { createRequest } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import { createAuthHeaders } from '@/services/http'
 
-// ── 为预览渲染器提供带 baseURL + auth 的 HttpClient ──
+class PreviewPageConfigLoader extends BasePageConfigLoader {
+  constructor(private readonly client: HttpClientBase) {
+    super()
+  }
+
+  override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+    return this.unsupported(pageId, 'page config')
+  }
+
+  override loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+    return this.unsupported(pageId, 'rule')
+  }
+
+  override loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+    return this.unsupported(pageId, 'pagedata')
+  }
+
+  override loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>> {
+    return this.unsupported(pageId, 'script')
+  }
+
+  override loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>> {
+    return this.unsupported(pageId, 'style')
+  }
+
+  override loadPageFileContent(
+    pageId: string,
+    filename: PageConfigFileName,
+    _options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>> {
+    return this.unsupported(pageId, filename)
+  }
+
+  override clearCache(): void {
+    this.client.clearCache()
+  }
+
+  override getCacheStats(): { size: number; keys: string[] } {
+    return { size: 0, keys: [] }
+  }
+
+  override getHttpClient(): HttpClientBase {
+    return this.client
+  }
+
+  private unsupported<T>(pageId: string, label: string): Promise<ConfigLoadResult<T>> {
+    return Promise.resolve({
+      success: false,
+      error: `Preview loader only exposes HTTP client; ${label} is not loaded here: ${pageId}`,
+      timestamp: Date.now(),
+    })
+  }
+}
+
+// ── 为预览渲染器提供带 baseURL + auth 的 HttpClientBase ──
 // DevPreviewTab 直接传 pageConfig（跳过加载器），但 DataSet 仍需要 HTTP 客户端
 // 来执行 api.list 等远程请求。这里构造一个最小 configLoader 仅暴露 getHttpClient()。
 const previewConfigLoader = (() => {
@@ -84,7 +148,7 @@ const previewConfigLoader = (() => {
       return config
     },
   })
-  return { getHttpClient: () => client } as ConfigLoader
+  return new PreviewPageConfigLoader(client)
 })()
 
 const props = defineProps<{

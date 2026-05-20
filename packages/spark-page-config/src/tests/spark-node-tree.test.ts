@@ -134,15 +134,15 @@ describe('SparkNodeTree', () => {
   })
 
   it('fromJson should reject root-level non-struct fields', () => {
+    const invalidChild = {
+      type: 'div',
+      class: 'dataset-demo',
+      children: [{ type: 'h1', children: ['title'] }],
+    }
+
     expect(() => SparkNodeTree.fromJson({
       type: 'page-root',
-      children: [
-        {
-          type: 'div',
-          class: 'dataset-demo',
-          children: [{ type: 'h1', children: ['title'] }],
-        } as unknown as SparkNode,
-      ],
+      children: [invalidChild],
     })).toThrow(/root field "class" is invalid/)
   })
 

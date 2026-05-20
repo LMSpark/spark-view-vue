@@ -3,7 +3,17 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
-import type { ConfigLoader } from '@spark-view/spark-page-config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import type {
+  ConfigLoadResult,
+  PageConfig,
+  PageConfigFileLoadOptions,
+  PageConfigFileName,
+  PageCssConfig,
+  PageDataConfig,
+  PageScriptConfig,
+  RuleConfig,
+} from '@spark-view/spark-page-config'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { useNavigation } from '../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
@@ -37,30 +47,45 @@ const NAV_ROOT: AppNavRoot = {
   children: [],
 }
 
-const DUMMY_CONFIG_LOADER: ConfigLoader = {
-  async loadPageConfig() {
+class DummyPageConfigLoader extends BasePageConfigLoader {
+  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
     return { success: false }
-  },
-  async loadRule() {
+  }
+
+  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
     return { success: false }
-  },
-  async loadPageData() {
+  }
+
+  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
     return { success: false }
-  },
-  async loadScript() {
+  }
+
+  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
     return { success: true, data: '' }
-  },
-  async loadCss() {
+  }
+
+  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
     return { success: true, data: '' }
-  },
-  async loadPageFileContent() {
+  }
+
+  override async loadPageFileContent(
+    _pageId: string,
+    _filename: PageConfigFileName,
+    _options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>> {
     return { success: false }
-  },
-  clearCache() {},
-  getCacheStats() {
+  }
+
+  override clearCache(): void {
+    return undefined
+  }
+
+  override getCacheStats(): { size: number; keys: string[] } {
     return { size: 0, keys: [] }
-  },
+  }
 }
+
+const DUMMY_CONFIG_LOADER = new DummyPageConfigLoader()
 
 async function mountNavigationProbe(initialPath: string): Promise<MountedNavigationProbe> {
   let navigateToPath: NavigateToPath | null = null
@@ -68,14 +93,8 @@ async function mountNavigationProbe(initialPath: string): Promise<MountedNavigat
 
   const ProbeRoot = defineComponent({
     name: 'ProbeRoot',
-    props: {
-      navRoot: {
-        type: Object,
-        required: true,
-      },
-    },
-    setup(props) {
-      const navigation = useNavigation(props.navRoot as AppNavRoot)
+    setup() {
+      const navigation = useNavigation(NAV_ROOT)
       navigateToPath = navigation.navigateToPath
       navigateTo = navigation.navigateTo
       return () => h('div')
@@ -134,7 +153,6 @@ async function mountNavigationProbe(initialPath: string): Promise<MountedNavigat
   await router.isReady()
 
   mount(ProbeRoot, {
-    props: { navRoot: NAV_ROOT },
     global: {
       plugins: [router],
     },

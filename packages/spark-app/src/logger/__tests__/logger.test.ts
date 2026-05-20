@@ -24,6 +24,15 @@ function callArgs(spy: ReturnType<typeof vi.spyOn>, n = 0): unknown[] {
   return spy.mock.calls[n] ?? []
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readFetchBody(options: unknown): string {
+  if (!isRecord(options)) return '{}'
+  return String(options['body'] ?? '{}')
+}
+
 describe('AppLogger', () => {
   let debugSpy: ReturnType<typeof vi.spyOn>
   let infoSpy: ReturnType<typeof vi.spyOn>
@@ -254,10 +263,13 @@ describe('AppLogger', () => {
 
       // 解析 body 验证完整结构
       const fetchSpy = vi.mocked(globalThis.fetch)
-      const sentBody = String((fetchSpy.mock.calls[0]?.[1] as Record<string, unknown> | undefined)?.['body'] ?? '{}')
-      const body = JSON.parse(sentBody) as Record<string, unknown>
-      const logs = body['logs'] as Array<Record<string, unknown>>
-      expect(Array.isArray(logs)).toBe(true)
+      const sentBody = readFetchBody(fetchSpy.mock.calls[0]?.[1])
+      const body: unknown = JSON.parse(sentBody)
+      if (!isRecord(body)) throw new Error('Expected log payload object')
+      const logs = body['logs']
+      if (!Array.isArray(logs) || !logs.every(isRecord)) {
+        throw new Error('Expected log payload logs array')
+      }
       expect(logs).toHaveLength(1)
       expect(logs[0]?.['level']).toBe('error')
       expect(logs[0]?.['message']).toBe('boom')

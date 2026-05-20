@@ -66,7 +66,7 @@ export const InvalidSystemPage = defineComponent({
   name: 'InvalidSystemPage',
   setup() {
     const route = useRoute()
-    const meta = computed(() => route.meta as Record<string, unknown>)
+    const meta = computed(() => route.meta)
     const title = computed(() => readMetaString(meta.value, 'title') ?? '未注册的系统页面')
     const pageId = computed(() => readMetaString(meta.value, 'pageId') ?? '(missing)')
     const path = computed(() => route.path)

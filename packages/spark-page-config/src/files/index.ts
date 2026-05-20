@@ -1,167 +1,159 @@
-import type { HttpClient } from '@spark-view/spark-utils'
-import type { PageConfigFileName } from '../types'
+export type {
+  PageConfigCreatePageParams,
+  PageConfigFileApiOptions,
+  PageConfigFileVersionSummary,
+  PageConfigPageSummary,
+} from './runtime/page-config-file-api'
 
-export interface PageConfigFileVersionSummary {
-  version: number
-  createdAt: string
-  isCurrent: boolean
-  modifiedBy: string | null
-}
+export {
+  PageConfigFileApi,
+} from './runtime/page-config-file-api'
 
-export interface PageConfigPageSummary extends Record<string, unknown> {
-  pageId: string
-  pageType?: string
-  files?: PageConfigFileName[]
-}
+export * from './documents/json-document'
 
-export interface PageConfigCreatePageParams {
-  pageId: string
-  title?: string
-  icon?: string
-}
+export {
+  PAGE_FILE_NAMES,
+  canonicalizePageDataJson,
+  canonicalizePageDataValue,
+  createPageDocuments,
+  createPageDocumentsFromRegistry,
+  forEachDocument,
+  forEachDynamicDocument,
+  isPageFileDocumentDirty,
+} from './documents/page-file-documents'
 
-export interface PageConfigFileApiOptions {
-  getPageConfigApi: () => string
-  http: HttpClient
-}
+export type {
+  LoadFromTextOptions,
+  DynamicPageFileDocument,
+  PageDocumentRegistry,
+  PageFileDocument,
+  PageFileLoadState,
+  PageFileName,
+} from './documents/page-file-documents'
 
-function parseOptionalNumber(value: unknown): number | null {
-  if (typeof value === 'number' && Number.isFinite(value)) return value
-  if (typeof value === 'string') {
-    const parsed = Number(value)
-    return Number.isFinite(parsed) ? parsed : null
-  }
-  return null
-}
+export {
+  PageConfigEditWorkspace,
+} from './editing/page-config-edit-workspace'
 
-function normalizeVersionCreatedAt(value: unknown): string {
-  if (typeof value === 'string' && value.trim() !== '') {
-    const date = new Date(value)
-    return Number.isNaN(date.getTime()) ? value : date.toISOString()
-  }
-  if (typeof value === 'number' && Number.isFinite(value)) {
-    return new Date(value).toISOString()
-  }
-  return ''
-}
+export type {
+  PageConfigEditWorkspaceOptions,
+} from './editing/page-config-edit-workspace'
 
-function normalizeVersionSummary(item: Record<string, unknown>): PageConfigFileVersionSummary | null {
-  const version = parseOptionalNumber(item['version']) ?? 0
-  if (version <= 0) return null
-  return {
-    version,
-    createdAt: normalizeVersionCreatedAt(item['createdAt']),
-    isCurrent: item['isCurrent'] === true,
-    modifiedBy: typeof item['modifiedBy'] === 'string' ? item['modifiedBy'] : null,
-  }
-}
+export {
+  registerPageDesignEditHost,
+  resolvePageDesignEditHost,
+  resolvePageDesignEditPageId,
+} from './editing/page-design-edit-host-registry'
 
-function assertNonEmptyPageId(pageId: string): void {
-  if (pageId.trim().length === 0) {
-    throw new Error('pageId must be a non-empty string')
-  }
-}
+export type {
+  PageDesignEditHostSnapshot,
+} from './editing/page-design-edit-host-registry'
 
-function assertPositiveVersion(version: number): void {
-  if (!Number.isInteger(version) || version <= 0) {
-    throw new Error('version must be a positive integer')
-  }
-}
+export {
+  PageDesignEditSession,
+} from './editing/page-design-edit-session'
 
-/**
- * 页面配置文件远程写入与版本管理 API。
- *
- * 读路径由 ConfigLoader/FileLoader 负责；写路径集中在这里，
- * 让页面配置包成为 rule/pagedata/script/style 文件 IO 的单一来源。
- */
-export class PageConfigFileApi {
-  private readonly getPageConfigApi: () => string
-  private readonly http: HttpClient
+export type {
+  PageDesignEditPhase,
+  PageDesignEditHost,
+} from './editing/page-design-edit-session'
 
-  constructor(options: PageConfigFileApiOptions) {
-    this.getPageConfigApi = options.getPageConfigApi
-    this.http = options.http
-  }
+export type {
+  PageDesignNodeTree,
+  SparkNodeTreeMethodKey,
+} from './editing/page-design-node-tree'
 
-  async saveFileContent(pageId: string, filename: PageConfigFileName, content: string): Promise<void> {
-    assertNonEmptyPageId(pageId)
-    await this.http.put<Record<string, unknown>>(
-      this.fileUrl(pageId, filename),
-      content,
-      { headers: { 'Content-Type': 'text/plain' } },
-    )
-  }
+export {
+  EMPTY_RULE_EDITOR_COMPONENT_METADATA,
+} from './design/rule-editor-metadata'
 
-  async listPages(): Promise<PageConfigPageSummary[]> {
-    const rows = await this.http.get<Array<Record<string, unknown>>>(`${this.baseUrl()}/__list`)
-    return rows
-      .map((row): PageConfigPageSummary | null => {
-        const pageId = row['pageId']
-        if (typeof pageId !== 'string' || pageId.trim() === '') return null
-        return {
-          ...row,
-          pageId,
-          ...(typeof row['pageType'] === 'string' ? { pageType: row['pageType'] } : {}),
-          ...(Array.isArray(row['files'])
-            ? {
-                files: row['files'].filter(
-                  (name): name is PageConfigFileName => typeof name === 'string',
-                ),
-              }
-            : {}),
-        }
-      })
-      .filter((row): row is PageConfigPageSummary => row !== null)
-  }
+export type {
+  RuleEditorComponentMetadata,
+} from './design/rule-editor-metadata'
 
-  async createPage(params: PageConfigCreatePageParams): Promise<Record<string, unknown>> {
-    assertNonEmptyPageId(params.pageId)
-    return this.http.post<Record<string, unknown>>(`${this.baseUrl()}/__create`, params)
-  }
+export {
+  createRuleTreePolicy,
+} from './design/rule-tree-policy'
 
-  async deletePage(pageId: string): Promise<void> {
-    assertNonEmptyPageId(pageId)
-    await this.http.delete(`${this.baseUrl()}/${encodeURIComponent(pageId)}`)
-  }
+export {
+  createRuleJsonSchema,
+} from './design/rule-json-schema'
 
-  async listVersions(pageId: string, filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
-    assertNonEmptyPageId(pageId)
-    const result = await this.http.get<Array<Record<string, unknown>>>(
-      `${this.fileUrl(pageId, filename)}/__versions`,
-    )
-    return result
-      .map(normalizeVersionSummary)
-      .filter((item): item is PageConfigFileVersionSummary => item !== null)
-  }
+export {
+  PAGE_DATA_JSON_SCHEMA,
+  canUseStructuredPageDataEditor,
+} from './design/page-data-json-schema'
 
-  async restoreVersion(pageId: string, filename: PageConfigFileName, version: number): Promise<void> {
-    assertNonEmptyPageId(pageId)
-    assertPositiveVersion(version)
-    await this.http.post<Record<string, unknown>>(
-      `${this.fileUrl(pageId, filename)}/__versions/${version}/__restore`,
-      {},
-    )
-  }
+export type {
+  PageDataEditorMode,
+} from './design/page-data-json-schema'
 
-  async createVersion(pageId: string, filename: PageConfigFileName): Promise<void> {
-    assertNonEmptyPageId(pageId)
-    await this.http.post<Record<string, unknown>>(
-      `${this.fileUrl(pageId, filename)}/__versions`,
-      {},
-    )
-  }
+export {
+  buildDataSetMetadataFromDesignerProjection,
+  hasDesignerProjectionChanges,
+  projectDesignerRelations,
+  projectDesignerTables,
+  reconcileDesignerTableUiState,
+} from './design/page-design-designer-projection'
 
-  async deleteVersion(pageId: string, filename: PageConfigFileName, version: number): Promise<void> {
-    assertNonEmptyPageId(pageId)
-    assertPositiveVersion(version)
-    await this.http.delete(`${this.fileUrl(pageId, filename)}/__versions/${version}`)
-  }
+export {
+  PAGE_DESIGN_100_STEP_FLOW,
+  getNextPageDesignFlowStep,
+  getPageDesignFlowStep,
+  listPageDesignFlowSteps,
+  summarizePageDesignFlowPhases,
+} from './design/page-design-100-step-flow'
 
-  private fileUrl(pageId: string, filename: PageConfigFileName): string {
-    return `${this.baseUrl()}/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
-  }
+export type {
+  PageDesignFlowPhaseSummary,
+  PageDesignFlowStep,
+} from './design/page-design-100-step-flow'
 
-  private baseUrl(): string {
-    return this.getPageConfigApi().replace(/\/+$/, '')
-  }
-}
+export type {
+  DesignerColumnProjection,
+  DesignerRelationProjection,
+  DesignerTableProjection,
+  DesignerTableUiState,
+  LayoutForNewTable,
+} from './design/page-design-designer-projection'
+
+export {
+  PageDesignService,
+  isPageDesignServiceResult,
+  pageDesignServiceFailure,
+} from './services/page-design-service'
+
+export type {
+  PageDesignFlowDescription,
+  PageDesignFlowQuery,
+  PageDesignServiceMethodBinding,
+  PageDesignServiceContext,
+  PageDesignServiceOptions,
+  PageDesignServiceResult,
+  PageDesignServiceState,
+  PageDesignTextFileKey,
+} from './services/page-design-service'
+
+// 配置加载器
+export {
+  PageConfigLoader,
+  createConfigLoader,
+  compileRule,
+  normalizeRuleNode,
+  parsePageData,
+  parseScript,
+  parseCss,
+} from './runtime/page-config-loader'
+
+export {
+  PageConfigFileLifecycle,
+} from './lifecycle/page-config-file-lifecycle'
+
+export type {
+  CreateMountedPageParams,
+  CreateMountedPageResult,
+  PageConfigFileLifecycleOptions,
+  PageNavigationMountParams,
+  RemoveMountedPageParams,
+  RemoveMountedPageResult,
+} from './lifecycle/page-config-file-lifecycle'

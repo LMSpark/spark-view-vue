@@ -16,7 +16,7 @@ import type {
 import { resolveUrlTemplate } from './core/url-template'
 import { applyPlatformProjectScope } from './core/platform-scoped-url'
 
-import { Logger, createRequest, type HttpClient } from '@spark-view/spark-utils'
+import { Logger, createRequest, type HttpClientBase } from '@spark-view/spark-utils'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
@@ -55,7 +55,7 @@ export class TreeManager {
   private api?: TreeApi
 
   /** HTTP 客户端（优先使用外部注入的实例，共享拦截器/认证/配置；否则懒初始化独立实例） */
-  private _http?: HttpClient
+  private _http?: HttpClientBase
 
   /** 端点上下文（tenantId/projectId 等），用于内部 scoped URL 归一化 */
   private endpointContextProvider?: (() => Record<string, unknown>) | undefined
@@ -75,7 +75,7 @@ export class TreeManager {
     config: TreeConfig,
     api?: TreeApi,
     initialNodes?: FlatTreeNode[],
-    httpClient?: HttpClient,
+    httpClient?: HttpClientBase,
     endpointContextProvider?: () => Record<string, unknown>
   ) {
     this.config = {
@@ -95,7 +95,7 @@ export class TreeManager {
 
   // ===== HTTP 辅助 =====
 
-  private _getHttp(): HttpClient {
+  private _getHttp(): HttpClientBase {
     this._http ??= createRequest()
     return this._http
   }

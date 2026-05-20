@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { HttpClient } from '@spark-view/spark-utils'
+import { HttpClientBase } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import { DataSet } from '../dataset'
 import { TreeManager } from '../tree-manager'
 import type { FlatTreeNode } from '../types'
@@ -7,24 +8,53 @@ import type { FlatTreeNode } from '../types'
 const NAV_BASE = '/api/tenants/tenant-test/projects/homepage/navigation/nodes'
 const RELATIVE_NAV_BASE = '/navigation/nodes'
 
-function createTreeHttpClient(methods: Partial<Pick<HttpClient, 'get' | 'post' | 'put'>>): HttpClient {
-  return {
-    interceptors: {
-      request: { use: vi.fn(() => () => undefined) },
-      response: { use: vi.fn(() => () => undefined) },
-    },
-    request: vi.fn(),
-    requestFull: vi.fn(),
-    get: methods.get ?? vi.fn(),
-    post: methods.post ?? vi.fn(),
-    put: methods.put ?? vi.fn(),
-    patch: vi.fn(),
-    delete: vi.fn(),
-    clearCache: vi.fn(),
+type TreeHttpMethod = (
+  url: string,
+  dataOrParams?: unknown,
+  config?: Partial<RequestConfig>,
+) => Promise<unknown>
+
+class TreeHttpClient extends HttpClientBase {
+  constructor(private readonly methods: Partial<Record<'get' | 'post' | 'put', TreeHttpMethod>>) {
+    super({}, 'TreeHttpClient')
+  }
+
+  protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    const method = config.method ?? 'GET'
+    const data = await this.dispatch(method, config)
+    return {
+      data,
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    }
+  }
+
+  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
+    const message = error instanceof Error ? error.message : String(error)
+    return this.buildRequestError(message, config ?? { url: '' })
+  }
+
+  private dispatch(method: NonNullable<RequestConfig['method']>, config: RequestConfig): Promise<unknown> {
+    switch (method) {
+      case 'GET':
+        return this.methods.get?.(config.url, config.params, config) ?? Promise.resolve(undefined)
+      case 'POST':
+        return this.methods.post?.(config.url, config.data, config) ?? Promise.resolve(undefined)
+      case 'PUT':
+        return this.methods.put?.(config.url, config.data, config) ?? Promise.resolve(undefined)
+      case 'PATCH':
+      case 'DELETE':
+        throw new Error(`Unexpected tree HTTP method: ${method}`)
+    }
   }
 }
 
-function createRemoteTreeDataSet(mockHttpClient: HttpClient): DataSet {
+function createTreeHttpClient(methods: Partial<Record<'get' | 'post' | 'put', TreeHttpMethod>>): HttpClientBase {
+  return new TreeHttpClient(methods)
+}
+
+function createRemoteTreeDataSet(mockHttpClient: HttpClientBase): DataSet {
   const dataSet = DataSet.fromJson({
     dataSetName: 'Tree4Plus7',
     tables: {
@@ -62,7 +92,7 @@ function createRemoteTreeDataSet(mockHttpClient: HttpClient): DataSet {
   return dataSet
 }
 
-function createScopedRelativeTreeDataSet(mockHttpClient: HttpClient): DataSet {
+function createScopedRelativeTreeDataSet(mockHttpClient: HttpClientBase): DataSet {
   const dataSet = DataSet.fromJson({
     dataSetName: 'Tree4Plus7ScopedRelative',
     tables: {

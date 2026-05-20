@@ -8,14 +8,14 @@
  *    消费层不再持有 workTab / previewRefreshToken 等中间 ref。
  */
 import { computed, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
-import type { PageDesignEditHost, SparkNodeTree } from '@spark-view/spark-page-config'
+import type { PageDesignEditHost } from '@spark-view/spark-page-config'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { registerPageDesignEditHost } from '@spark-view/spark-page-config'
+import { registerPageDesignEditHost, SparkNodeTree } from '@spark-view/spark-page-config'
 import { PAGE_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
 
 function isPageFileName(value: string): value is PageFileName {
-  return PAGE_FILE_NAMES.includes(value as PageFileName)
+  return PAGE_FILE_NAMES.some((name) => name === value)
 }
 
 export function useDevSystem() {
@@ -132,7 +132,10 @@ function createPageDesignEditHost(state: DevState): PageDesignEditHost {
   return {
     getNodeTree: () => state.documents['rule.json'].model.value,
     onNodeTreeChanged: (nodeTree) => {
-      state.documents['rule.json'].replaceModel(nodeTree as SparkNodeTree)
+      if (!(nodeTree instanceof SparkNodeTree)) {
+        throw new Error('PageDesignEditHost.onNodeTreeChanged expected a SparkNodeTree instance')
+      }
+      state.documents['rule.json'].replaceModel(nodeTree)
     },
     getDataSetTool: () => state.documents['pagedata.json'].model.value,
     onDataSetChanged: (tool) => {

@@ -694,7 +694,7 @@ function addColumn(table: DesignerTable) {
 }
 
 function readInputValue(event: Event): string {
-  return (event.target as HTMLInputElement | null)?.value ?? ''
+  return event.target instanceof HTMLInputElement ? event.target.value : ''
 }
 
 function applyMutationWithFeedback(action: () => void, failureTitle: string): void {
@@ -972,7 +972,8 @@ function autoLayout() {
 // ═══ 拖拽交互 ═══
 
 function onCardMouseDown(e: MouseEvent, table: DesignerTable) {
-  const target = e.target as HTMLElement
+  if (!(e.target instanceof HTMLElement)) return
+  const target = e.target
   if (target.closest('input, .el-select, .el-button, .el-tag')) return
 
   dragState.value = {

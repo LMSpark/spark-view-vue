@@ -1,10 +1,10 @@
-import type { HttpClient } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from './nav-model'
 import { normalizeNavRoot } from './nav-editing'
 
 export interface NavigationConfigClientOptions {
   getNavigationApi: () => string
-  http: HttpClient
+  http: HttpClientBase
 }
 
 export interface LinkProbeResult {
@@ -33,7 +33,7 @@ function extractOptionalNavNode(response: Record<string, unknown>): NavNode | nu
 
 export class NavigationConfigClient {
   private readonly getNavigationApi: () => string
-  private readonly http: HttpClient
+  private readonly http: HttpClientBase
 
   constructor(options: NavigationConfigClientOptions) {
     this.getNavigationApi = options.getNavigationApi

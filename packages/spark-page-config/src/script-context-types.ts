@@ -326,7 +326,7 @@ export interface PageSelectEntitiesOptionsInScript {
   options?: PageSelectorOptionInScript[]
 }
 
-export interface PageSelectedEntityInScript extends PageSelectorOptionInScript {}
+export type PageSelectedEntityInScript = PageSelectorOptionInScript
 
 export interface PageBrowseFilesOptionsInScript {
   title?: string

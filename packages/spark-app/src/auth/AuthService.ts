@@ -23,7 +23,7 @@ import type { AppEnvironment, EnvironmentInfo } from '../types'
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
 import { toError, createRequest, isRequestError } from '@spark-view/spark-utils'
-import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
+import type { HttpClientBase, RequestConfig } from '@spark-view/spark-utils'
 import { envAdapter } from '../env'
 
 // =============================================================================
@@ -62,7 +62,7 @@ export class AuthService {
   private tokenManager!: TokenManager
 
   /** HTTP 客户端（延迟初始化） */
-  private httpClient: HttpClient | null = null
+  private httpClient: HttpClientBase | null = null
 
   /** 初始化状态 */
   private initialized = false
@@ -549,7 +549,7 @@ export class AuthService {
   }
 
   /** 获取或创建 HTTP 客户端（懒初始化） */
-  private getOrCreateClient(timeout?: number): HttpClient {
+  private getOrCreateClient(timeout?: number): HttpClientBase {
     this.httpClient ??= createRequest({ timeout: timeout ?? this.callTimeout })
     return this.httpClient
   }

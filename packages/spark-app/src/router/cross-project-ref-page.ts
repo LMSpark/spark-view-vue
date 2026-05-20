@@ -2,13 +2,13 @@ import { computed, defineComponent, h, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import {
+  BasePageConfigLoader,
   compileRule,
   parseCss,
   parsePageData,
   parseScript,
 } from '@spark-view/spark-page-config'
 import type {
-  ConfigLoader,
   ConfigLoadResult,
   PageConfig,
   PageConfigFileName,
@@ -17,8 +17,8 @@ import type {
   PageScriptConfig,
   RuleConfig,
 } from '@spark-view/spark-page-config'
-import { createRequest, Logger } from '@spark-view/spark-utils'
-import type { HttpClient, RequestConfig } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest, isRequestError, Logger } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig, RequestError } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
 
@@ -39,11 +39,11 @@ interface ResolvedRefTarget {
 }
 
 export interface CrossProjectRefPageRouteProps {
-  configLoader: ConfigLoader
-  tenantId?: string
-  hostProjectId?: string
-  routePath?: string
-  routeMeta?: Record<string, unknown>
+  configLoader: BasePageConfigLoader
+  tenantId?: string | undefined
+  hostProjectId?: string | undefined
+  routePath?: string | undefined
+  routeMeta?: Record<string, unknown> | undefined
 }
 
 type FileResponse = {
@@ -60,7 +60,7 @@ function asNonEmptyString(value: unknown): string | null {
   return trimmed === '' ? null : trimmed
 }
 
-export function createCrossProjectRefRouteProps(configLoader: ConfigLoader) {
+export function createCrossProjectRefRouteProps(configLoader: BasePageConfigLoader) {
   return (route: RouteLocationNormalizedLoaded): CrossProjectRefPageRouteProps => {
     const tenantId = asNonEmptyString(route.params['tenantId'])
     const hostProjectId = asNonEmptyString(route.params['projectId'])
@@ -75,15 +75,24 @@ export function createCrossProjectRefRouteProps(configLoader: ConfigLoader) {
 }
 
 function isNotFoundError(error: unknown): boolean {
-  if (error === null || error === undefined || typeof error !== 'object') return false
-  const candidate = error as { status?: unknown; response?: { status?: unknown } }
-  return candidate.status === 404 || candidate.response?.status === 404
+  return readHttpStatus(error) === 404 || readHttpResponseStatus(error) === 404
 }
 
 function isUnauthorizedError(error: unknown): boolean {
-  if (error === null || error === undefined || typeof error !== 'object') return false
-  const candidate = error as { status?: unknown; response?: { status?: unknown } }
-  return candidate.status === 401 || candidate.response?.status === 401
+  return readHttpStatus(error) === 401 || readHttpResponseStatus(error) === 401
+}
+
+function readObjectProp(value: unknown, key: string): unknown {
+  if (value === null || typeof value !== 'object') return undefined
+  return Object.getOwnPropertyDescriptor(value, key)?.value
+}
+
+function readHttpStatus(error: unknown): unknown {
+  return readObjectProp(error, 'status')
+}
+
+function readHttpResponseStatus(error: unknown): unknown {
+  return readObjectProp(readObjectProp(error, 'response'), 'status')
 }
 
 function stripQueryAndHash(path: string): string {
@@ -247,62 +256,69 @@ function rewriteScopedUrl(
   return nextUrl.includes(scopedPath) ? nextUrl.replace(scopedPath, targetScopedPath) : nextUrl
 }
 
+class ScopedHttpClient extends HttpClientBase {
+  constructor(
+    private readonly baseClient: HttpClientBase,
+    private readonly scopedHeaders: Record<string, string>,
+    private readonly tenantId: string,
+    private readonly hostProjectId: string | null,
+    private readonly targetProjectId: string,
+  ) {
+    super({}, 'ScopedHttpClient')
+  }
+
+  protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
+    return this.baseClient.requestFull(this.rewriteConfig(config))
+  }
+
+  protected normalizeAdapterError(error: unknown, config?: RequestConfig): RequestError {
+    if (isRequestError(error)) return error
+    const base = error instanceof Error ? error : new Error(String(error))
+    return Object.assign(new Error(base.message), {
+      config: config ?? { url: '' },
+      name: 'RequestError',
+      status: 0,
+      code: 'ERR_NETWORK',
+    })
+  }
+
+  override clearCache(url?: string): void {
+    if (url === undefined) {
+      this.baseClient.clearCache()
+      return
+    }
+    this.baseClient.clearCache(this.rewriteUrl(url))
+  }
+
+  private rewriteConfig(config: RequestConfig): RequestConfig {
+    return {
+      ...config,
+      url: this.rewriteUrl(config.url),
+      headers: mergeHeaders(config.headers, this.scopedHeaders),
+    }
+  }
+
+  private rewriteUrl(url: string): string {
+    return rewriteScopedUrl(url, this.tenantId, this.hostProjectId, this.targetProjectId)
+  }
+}
+
 function createScopedHttpClient(
-  baseClient: HttpClient,
+  baseClient: HttpClientBase,
   scopedHeaders: Record<string, string>,
   tenantId: string,
   hostProjectId: string | null,
   targetProjectId: string,
-): HttpClient {
-  const mergeConfig = (config?: Partial<RequestConfig>): Partial<RequestConfig> => ({
-    ...(config ?? {}),
-    headers: mergeHeaders(config?.headers, scopedHeaders),
-  })
-
-  const rewriteConfig = (config: RequestConfig): RequestConfig => ({
-    ...config,
-    url: rewriteScopedUrl(config.url, tenantId, hostProjectId, targetProjectId),
-    headers: mergeHeaders(config.headers, scopedHeaders),
-  })
-
-  return {
-    interceptors: baseClient.interceptors,
-    request<T = unknown>(config: RequestConfig): Promise<T> {
-      return baseClient.request<T>(rewriteConfig(config))
-    },
-    requestFull<T = unknown>(config: RequestConfig) {
-      return baseClient.requestFull<T>(rewriteConfig(config))
-    },
-    get<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>) {
-      return baseClient.get<T>(rewriteScopedUrl(url, tenantId, hostProjectId, targetProjectId), params, mergeConfig(config))
-    },
-    post<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>) {
-      return baseClient.post<T>(rewriteScopedUrl(url, tenantId, hostProjectId, targetProjectId), data, mergeConfig(config))
-    },
-    put<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>) {
-      return baseClient.put<T>(rewriteScopedUrl(url, tenantId, hostProjectId, targetProjectId), data, mergeConfig(config))
-    },
-    patch<T = unknown>(url: string, data?: unknown, config?: Partial<RequestConfig>) {
-      return baseClient.patch<T>(rewriteScopedUrl(url, tenantId, hostProjectId, targetProjectId), data, mergeConfig(config))
-    },
-    delete<T = unknown>(url: string, params?: Record<string, unknown>, config?: Partial<RequestConfig>) {
-      return baseClient.delete<T>(rewriteScopedUrl(url, tenantId, hostProjectId, targetProjectId), params, mergeConfig(config))
-    },
-    clearCache(url?: string): void {
-      if (url === undefined) {
-        baseClient.clearCache()
-        return
-      }
-      baseClient.clearCache(rewriteScopedUrl(url, tenantId, hostProjectId, targetProjectId))
-    },
-  }
+): HttpClientBase {
+  return new ScopedHttpClient(baseClient, scopedHeaders, tenantId, hostProjectId, targetProjectId)
 }
 
-class CrossProjectPageConfigLoader implements ConfigLoader {
-  private readonly client: HttpClient
+class CrossProjectPageConfigLoader extends BasePageConfigLoader {
+  private readonly client: HttpClientBase
   private readonly basePath: string
 
-  constructor(client: HttpClient, basePath: string) {
+  constructor(client: HttpClientBase, basePath: string) {
+    super()
     this.client = client
     this.basePath = basePath
   }
@@ -315,7 +331,7 @@ class CrossProjectPageConfigLoader implements ConfigLoader {
     return { size: 0, keys: [] }
   }
 
-  getHttpClient(): HttpClient {
+  override getHttpClient(): HttpClientBase {
     return this.client
   }
 
@@ -464,7 +480,7 @@ export const CrossProjectRefPage = defineComponent({
   name: 'SparkCrossProjectRefPage',
   props: {
     configLoader: {
-      type: Object as () => ConfigLoader,
+      type: Object,
       required: true,
     },
     tenantId: {
@@ -480,12 +496,12 @@ export const CrossProjectRefPage = defineComponent({
       required: false,
     },
     routeMeta: {
-      type: Object as () => Record<string, unknown>,
+      type: Object,
       required: false,
       default: () => ({}),
     },
   },
-  setup(props, { expose }) {
+  setup(props: Readonly<CrossProjectRefPageRouteProps>, { expose }) {
     const pageRendererRef = ref<ReloadableRenderer | null>(null)
     let lastLoggedErrorKey: string | null = null
 
@@ -501,19 +517,19 @@ export const CrossProjectRefPage = defineComponent({
       const resolved = asNonEmptyString(props.routePath)
       return resolved ?? '/'
     })
-    const routeMeta = computed(() => props.routeMeta)
+    const routeMeta = computed(() => props.routeMeta ?? {})
     const refTarget = computed(() =>
       resolveRefTarget(getNavTree(), routePath.value, routeMeta.value, hostProjectId.value)
     )
     const targetProjectId = computed(() => refTarget.value.targetProjectId)
     const targetPageId = computed(() => refTarget.value.pageId)
 
-    const scopedLoader = computed<ConfigLoader | null>(() => {
+    const scopedLoader = computed<BasePageConfigLoader | null>(() => {
       const scopedTenantId = tenantId.value
       const scopedProjectId = targetProjectId.value
       if (scopedTenantId === null || scopedProjectId === null) return null
 
-      const baseClient = props.configLoader.getHttpClient?.() ?? createRequest()
+      const baseClient = props.configLoader.getHttpClient() ?? createRequest()
       const scopedClient = createScopedHttpClient(baseClient, {
         'X-Tenant-Id': scopedTenantId,
         'X-Project-Id': scopedProjectId,

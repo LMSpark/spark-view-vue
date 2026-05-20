@@ -2,7 +2,7 @@
  * 配置加载器 - 统一页面配置加载
  *
  * 职责：通过后端页面配置文件 API 加载四文件，并管理客户端缓存策略。
- * 编译函数（**如何解析**）拆分到 `../compiler/index.ts`。
+ * 编译函数（**如何解析**）拆分到 `page-config-compiler.ts`。
  *
  * ## 数据流
  * ```
@@ -17,7 +17,6 @@
  */
 
 import type {
-  ConfigLoader,
   ConfigLoaderOptions,
   ConfigLoadResult,
   PageConfigFileLoadOptions,
@@ -28,20 +27,20 @@ import type {
   PageScriptConfig,
   PageCssConfig,
   PageFileRegistry,
-} from '../types'
-import { PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from '../types'
+} from '../../types'
+import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from '../../types'
 import {
   Logger,
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, TransformedFileLoader, HttpClient, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
+import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
 
-// 编译函数从 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
-import { compileRule, parsePageData, parseScript, parseCss } from '../compiler'
+// 编译函数从同一文件域的 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
+import { compileRule, parsePageData, parseScript, parseCss } from './page-config-compiler'
 
-// re-export 编译函数，允许消费方从 './loader' 直接导入
-export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '../compiler'
+// re-export 编译函数，允许消费方从文件域入口直接导入
+export { compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from './page-config-compiler'
 
 const pageLogger = Logger('PageConfig')
 
@@ -83,13 +82,13 @@ function resolvePagesConfigBaseUrl(options: ResolvedConfigLoaderOptions): string
   return `${trimTrailingSlash(options.apiBaseUrl)}/pages-config`
 }
 
-export class PageConfigLoader implements ConfigLoader {
+export class PageConfigLoader extends BasePageConfigLoader {
   private opts: ResolvedConfigLoaderOptions
   private fileLoader!: FileLoader
   /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
-  private request: HttpClient
+  private request: HttpClientBase
   /** 页面配置文件 API 请求实例，baseURL 固定到 .../pages-config。 */
-  private fileApiRequest!: HttpClient
+  private fileApiRequest!: HttpClientBase
   private pagesConfigBase = ''
   private readonly recentMissingFiles = new Set<string>()
   private pageFileManifest: Map<string, Set<PageConfigFileName>> | null = null
@@ -106,6 +105,7 @@ export class PageConfigLoader implements ConfigLoader {
   private cssLoader!: TransformedFileLoader<PageCssConfig>
 
   constructor(options: Partial<ConfigLoaderOptions> = {}) {
+    super()
     this.opts = { ...DEFAULT_OPTIONS, ...options }
     this.fileRegistry = options.fileRegistry ?? createDefaultFileRegistry()
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
@@ -292,11 +292,11 @@ export class PageConfigLoader implements ConfigLoader {
     return this.fileLoader.getCacheStats()
   }
 
-  getHttpClient(): HttpClient {
+  override getHttpClient(): HttpClientBase {
     return this.request
   }
 
-  async loadPageFile(
+  override async loadPageFile(
     pageId: string,
     filename: string,
     options?: PageConfigFileLoadOptions,
@@ -525,6 +525,6 @@ export class PageConfigLoader implements ConfigLoader {
 
 }
 
-export function createConfigLoader(options?: Partial<ConfigLoaderOptions>): ConfigLoader {
+export function createConfigLoader(options?: Partial<ConfigLoaderOptions>): PageConfigLoader {
   return new PageConfigLoader(options)
 }

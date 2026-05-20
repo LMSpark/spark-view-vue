@@ -174,6 +174,21 @@ interface TenantFullConfig {
   [key: string]: unknown
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isOptionalRecord(value: unknown): boolean {
+  return value === undefined || isRecord(value)
+}
+
+function isTenantFullConfig(value: unknown): value is TenantFullConfig {
+  return isRecord(value)
+    && isOptionalRecord(value['tenant'])
+    && isOptionalRecord(value['config'])
+    && isOptionalRecord(value['pageConfig'])
+}
+
 const props = defineProps<{
   tenantId: string
 }>()
@@ -278,7 +293,11 @@ async function saveFullConfig(): Promise<void> {
   if (!props.tenantId) return
   let parsed: TenantFullConfig
   try {
-    parsed = JSON.parse(jsonDraft.value) as TenantFullConfig
+    const candidate: unknown = JSON.parse(jsonDraft.value)
+    if (!isTenantFullConfig(candidate)) {
+      throw new Error('完整租户配置必须是对象')
+    }
+    parsed = candidate
   } catch (error) {
     ElMessage.error(`JSON 格式无效: ${errorMessage(error)}`)
     return

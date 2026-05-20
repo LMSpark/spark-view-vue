@@ -1,7 +1,7 @@
 import {
   canonicalizePageDataJson,
   canonicalizePageDataValue,
-} from '../../documents'
+} from '../documents/page-file-documents'
 
 export {
   canonicalizePageDataJson,

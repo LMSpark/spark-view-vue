@@ -2,6 +2,7 @@ import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { flushPromises, mount } from '@vue/test-utils'
 import { RendererTable, FieldText, DATA_ROW, DATA_SOURCE, PAGE_SERVICE, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
+import { createRequest } from '@spark-view/spark-utils'
 import type { DataRow, DataView, DataSetContract } from '@spark-view/spark-data'
 import { defineComponent, h, nextTick } from 'vue'
 import { getMountedComponentApi, mountWithDataView, mountWithPageDataSet } from './helpers/mount-with-page-dataset'
@@ -1802,13 +1803,11 @@ describe('RendererTable - DataView as single data intermediary', () => {
       },
     })
 
-    const httpClient = {
-      get: vi.fn(),
-      post: vi.fn(async () => ({ id: 2, name: 'Bob' })),
-      put: vi.fn(async () => ({ id: 1, name: 'Alice-2' })),
-      delete: vi.fn(async () => true),
-    }
-    ds.setSharedHttpClient(httpClient as never)
+    const httpClient = createRequest()
+    const post = vi.spyOn(httpClient, 'post').mockResolvedValue({ id: 2, name: 'Bob' })
+    const put = vi.spyOn(httpClient, 'put').mockResolvedValue({ id: 1, name: 'Alice-2' })
+    const deleteRequest = vi.spyOn(httpClient, 'delete').mockResolvedValue(true)
+    ds.setSharedHttpClient(httpClient)
 
     const wrapper = mountWithPageDataSet(RendererTable as any, {
       dataSet: ds,
@@ -1835,15 +1834,15 @@ describe('RendererTable - DataView as single data intermediary', () => {
     }>(wrapper, 'r-table')
 
     await expect(api.addRow({ id: 2, name: 'Bob' })).resolves.toMatchObject({ success: true, data: { id: 2, name: 'Bob' } })
-    expect(httpClient.post).toHaveBeenCalledOnce()
+    expect(post).toHaveBeenCalledOnce()
     expect(api.getRows().map(row => row['id'])).toEqual([1, 2])
 
     await expect(api.editRowById(1, { name: 'Alice-2' })).resolves.toMatchObject({ success: true, data: { id: 1, name: 'Alice-2' } })
-    expect(httpClient.put).toHaveBeenCalledOnce()
+    expect(put).toHaveBeenCalledOnce()
     expect(api.getRows().find(row => row['id'] === 1)?.['name']).toBe('Alice-2')
 
     await expect(api.removeRow(2)).resolves.toMatchObject({ success: true, data: true })
-    expect(httpClient.delete).toHaveBeenCalledOnce()
+    expect(deleteRequest).toHaveBeenCalledOnce()
     expect(api.getRows().map(row => row['id'])).toEqual([1])
   })
 

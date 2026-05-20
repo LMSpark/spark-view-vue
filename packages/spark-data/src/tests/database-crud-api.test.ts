@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { HttpClient } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-view/spark-utils'
 import { SparkData } from '../spark-data'
 import { CrudService } from '../crud-service'
 
@@ -19,27 +19,16 @@ describe('database CrudApi helper', () => {
 
   it('lets retrieve use POST for database metadata endpoints', async () => {
     const api = SparkData.createDatabaseCrudApi('Orders')
-    const mockClient = {
-      interceptors: {
-        request: { use: vi.fn(() => () => undefined) },
-        response: { use: vi.fn(() => () => undefined) },
-      },
-      get: vi.fn(),
-      post: vi.fn().mockResolvedValue({ id: 1, name: 'Order 1' }),
-      put: vi.fn(),
-      patch: vi.fn(),
-      delete: vi.fn(),
-      request: vi.fn(),
-      requestFull: vi.fn(),
-      clearCache: vi.fn(),
-    } satisfies HttpClient
+    const mockClient = createRequest()
+    const getMock = vi.spyOn(mockClient, 'get').mockResolvedValue({})
+    const postMock = vi.spyOn(mockClient, 'post').mockResolvedValue({ id: 1, name: 'Order 1' })
     const service = new CrudService(api, mockClient, () => ({ tenantId: 't1', projectId: 'p1' }))
 
     const result = await service.retrieve({ id: 1 })
 
     expect(result.success).toBe(true)
     expect(result.data).toEqual({ id: 1, name: 'Order 1' })
-    expect(mockClient.post).toHaveBeenCalledWith('/tenants/t1/projects/p1/data/Orders/records/get', { id: 1 }, expect.any(Object))
-    expect(mockClient.get).not.toHaveBeenCalled()
+    expect(postMock).toHaveBeenCalledWith('/tenants/t1/projects/p1/data/Orders/records/get', { id: 1 }, expect.any(Object))
+    expect(getMock).not.toHaveBeenCalled()
   })
 })

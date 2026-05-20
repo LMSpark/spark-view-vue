@@ -690,6 +690,31 @@ interface PhysicalObjectKey {
   physicalName: string
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isDbmsObjectType(value: unknown): value is DbmsObjectType {
+  return value === 'TABLE' || value === 'VIEW'
+}
+
+function parsePhysicalObjectKey(text: string): PhysicalObjectKey {
+  const parsed: unknown = JSON.parse(text)
+  if (!isRecord(parsed)
+    || !(typeof parsed['databaseId'] === 'number' || parsed['databaseId'] === null)
+    || !isDbmsObjectType(parsed['objectType'])
+    || !(typeof parsed['schemaName'] === 'string' || parsed['schemaName'] === null)
+    || typeof parsed['physicalName'] !== 'string') {
+    throw new Error('Invalid physical object key')
+  }
+  return {
+    databaseId: parsed['databaseId'],
+    objectType: parsed['objectType'],
+    schemaName: parsed['schemaName'],
+    physicalName: parsed['physicalName'],
+  }
+}
+
 interface DbmsTable {
   id: number
   tableName: string
@@ -1235,7 +1260,7 @@ async function submitSyncServer() {
   }
   dlgSync.syncing = true
   try {
-    const mutateKeys = Array.from(mutatePhysicalObjectKeys.value).map((text) => JSON.parse(text) as PhysicalObjectKey)
+    const mutateKeys = Array.from(mutatePhysicalObjectKeys.value).map(parsePhysicalObjectKey)
     await http.post(`${scopePath.value}/dbms/servers/${server.ID}/sync`, {
       scopeMode: 'PLATFORM_SHARED',
       includeTables: true,

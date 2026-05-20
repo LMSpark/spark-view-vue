@@ -4,7 +4,7 @@
  */
 
 import type { DataSet } from '@spark-view/spark-data'
-import type { HttpClient } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '../spark-node'
 
 /**
@@ -176,33 +176,26 @@ export interface ConfigLoadResult<T = unknown> {
 }
 
 /**
- * 配置加载器接口
+ * 页面配置加载器基类。
+ *
+ * 加载器是运行期有状态对象：持有缓存、HTTP client、项目作用域等生命周期数据。
+ * 因此用抽象 class 承载稳定协议，具体加载器通过继承表达实现关系。
  */
-export interface ConfigLoader {
-  /**
-   * 加载页面配置
-   */
-  loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>>
-  
-  /**
-   * 加载页面规则
-   */
-  loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>>
-  
-  /**
-   * 加载页面数据
-   */
-  loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>>
-  
-  /**
-   * 加载页面脚本
-   */
-  loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>>
+export abstract class BasePageConfigLoader {
+  /** 加载完整页面配置。 */
+  abstract loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>>
 
-  /**
-   * 加载页面样式
-   */
-  loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>>
+  /** 加载页面规则。 */
+  abstract loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>>
+
+  /** 加载页面数据。 */
+  abstract loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>>
+
+  /** 加载页面脚本。 */
+  abstract loadScript(pageId: string): Promise<ConfigLoadResult<PageScriptConfig>>
+
+  /** 加载页面样式。 */
+  abstract loadCss(pageId: string): Promise<ConfigLoadResult<PageCssConfig>>
 
   /**
    * 加载单个页面配置文件原文。
@@ -210,7 +203,7 @@ export interface ConfigLoader {
    * DevSystem / 编辑器等设计时入口需要拿到原文，再交给各自的
    * PageFileDocument 维护 dirty、undo/redo 和领域模型同步。
    */
-  loadPageFileContent(
+  abstract loadPageFileContent(
     pageId: string,
     filename: PageConfigFileName,
     options?: PageConfigFileLoadOptions,
@@ -218,28 +211,28 @@ export interface ConfigLoader {
 
   /**
    * 按文件名动态加载单个页面配置文件（编译后结果）。
-   * 适用于通过 fileRegistry 注册的非标准文件类型。
+   * 非动态加载器不应吞掉调用错误。
    */
-  loadPageFile?(
+  loadPageFile(
     pageId: string,
     filename: string,
-    options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<unknown>>
-  
-  /**
-   * 清除缓存
-   */
-  clearCache(key?: string): void
-  
-  /**
-   * 获取缓存统计
-   */
-  getCacheStats(): { size: number; keys: string[] }
+    _options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<unknown>> {
+    throw new Error(`Page config loader does not support dynamic file loading: ${pageId}/${filename}`)
+  }
+
+  /** 清除缓存。 */
+  abstract clearCache(key?: string): void
+
+  /** 获取缓存统计。 */
+  abstract getCacheStats(): { size: number; keys: string[] }
 
   /**
-   * 获取内部 HTTP 客户端（可选）。
+   * 获取内部 HTTP 客户端。
    *
    * 渲染层可用该客户端注入到 DataSet，以复用认证/租户请求头与拦截器。
    */
-  getHttpClient?(): HttpClient
+  getHttpClient(): HttpClientBase | undefined {
+    return undefined
+  }
 }

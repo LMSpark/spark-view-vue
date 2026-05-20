@@ -3,6 +3,17 @@ import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
 import type { AppNavRoot } from '../../navigation/nav-model'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import type {
+  ConfigLoadResult,
+  PageConfig,
+  PageConfigFileLoadOptions,
+  PageConfigFileName,
+  PageCssConfig,
+  PageDataConfig,
+  PageScriptConfig,
+  RuleConfig,
+} from '@spark-view/spark-page-config'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',
@@ -31,6 +42,46 @@ const PRE_AUTH_NAV: AppNavRoot = {
   ],
 }
 
+class DummyPageConfigLoader extends BasePageConfigLoader {
+  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
+    return { success: false }
+  }
+
+  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
+    return { success: false }
+  }
+
+  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
+    return { success: false }
+  }
+
+  override async loadScript(): Promise<ConfigLoadResult<PageScriptConfig>> {
+    return { success: false }
+  }
+
+  override async loadCss(): Promise<ConfigLoadResult<PageCssConfig>> {
+    return { success: false }
+  }
+
+  override async loadPageFileContent(
+    _pageId: string,
+    _filename: PageConfigFileName,
+    _options?: PageConfigFileLoadOptions,
+  ): Promise<ConfigLoadResult<string>> {
+    return { success: false }
+  }
+
+  override clearCache(): void {
+    return undefined
+  }
+
+  override getCacheStats(): { size: number; keys: string[] } {
+    return { size: 0, keys: [] }
+  }
+}
+
+const DUMMY_CONFIG_LOADER = new DummyPageConfigLoader()
+
 describe('DynamicRouter unauthorized fallback', () => {
   it('falls back to preAuthNavTree when loadNavigation returns 401', async () => {
     const router = createRouter({ history: createMemoryHistory(), routes: [] })
@@ -38,7 +89,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -73,7 +124,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -97,7 +148,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: {} as never,
+      configLoader: DUMMY_CONFIG_LOADER,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,

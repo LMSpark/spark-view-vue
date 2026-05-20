@@ -499,7 +499,7 @@ export const STYLE_PRESETS: readonly StylePreset[] = [
       chromeBorder: 'rgba(251, 113, 133, 0.13)',
     },
   },
-] as const
+]
 
 function getFallbackStylePreset(): StylePreset {
   const first = STYLE_PRESETS[0]
@@ -535,13 +535,20 @@ function getDefaultState(): SchemeState {
   return { primaryColor: '#409eff', navIndex: 0, styleIndex: 0 }
 }
 
+function readOwnProperty(value: object, key: string): unknown {
+  const descriptor: { value?: unknown } | undefined = Object.getOwnPropertyDescriptor(value, key)
+  return descriptor?.value
+}
+
 function normalizeState(raw: unknown): SchemeState | null {
   if (raw === null || typeof raw !== 'object') return null
-  const parsed = raw as Partial<SchemeState>
+  const primaryColor = readOwnProperty(raw, 'primaryColor')
+  const navIndex = readOwnProperty(raw, 'navIndex')
+  const styleIndex = readOwnProperty(raw, 'styleIndex')
   return {
-    primaryColor: typeof parsed.primaryColor === 'string' ? parsed.primaryColor : '#409eff',
-    navIndex: typeof parsed.navIndex === 'number' && Number.isFinite(parsed.navIndex) ? parsed.navIndex : 0,
-    styleIndex: typeof parsed.styleIndex === 'number' && Number.isFinite(parsed.styleIndex) ? parsed.styleIndex : 0,
+    primaryColor: typeof primaryColor === 'string' ? primaryColor : '#409eff',
+    navIndex: typeof navIndex === 'number' && Number.isFinite(navIndex) ? navIndex : 0,
+    styleIndex: typeof styleIndex === 'number' && Number.isFinite(styleIndex) ? styleIndex : 0,
   }
 }
 

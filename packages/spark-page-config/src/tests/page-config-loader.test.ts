@@ -725,9 +725,9 @@ describe('compileRule', () => {
     const rule = compileRule(raw)[0]!
     expect(rule.children).toHaveLength(3)
     expect(rule.children![0]).toBe('文本节点')
-    expect((rule.children![1] as typeof rule).type).toBe('span')
-    expect((rule.children![1] as typeof rule).props).toBeUndefined()
-    expect((rule.children![2] as typeof rule).children).toEqual([])
+    expect(rule.children![1]).toMatchObject({ type: 'span' })
+    expect(rule.children![1]).not.toHaveProperty('props')
+    expect(rule.children![2]).toMatchObject({ children: [] })
   })
 })
 
