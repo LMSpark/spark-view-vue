@@ -16,7 +16,7 @@ import { isRecord } from './internal/guards.js'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 /** Logger API */
-export interface LoggerApi {
+export type LoggerApi = {
   debug(...args: unknown[]): void
   info(...args: unknown[]): void
   warn(...args: unknown[]): void
@@ -32,12 +32,154 @@ export interface LoggerApi {
  * spark-app 的 LogTransport 扩展了 `flush?()` / `destroy?()`，但 send 签名一致，
  * 因此同一个 transport 实例可同时注册到两个系统。
  */
-export interface LogTransport {
+export type LogTransport = {
   send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>
 }
 
 /** 全局传输器列表 */
 const _transports: LogTransport[] = []
+
+type LogCaller = {
+  frame: string
+  stack: string
+}
+
+const LOGGER_INTERNAL_FRAME_RE = /(packages[\\/]+spark-utils[\\/]+src[\\/]+logger\.(ts|js)|spark-utils[\\/]+dist[\\/]+logger\.js)/i
+
+function isLoggerInternalFrame(line: string): boolean {
+  return LOGGER_INTERNAL_FRAME_RE.test(line)
+    || /\b(captureLogCaller|compactLogCallerStack|withHook|consoleLogger)\b/.test(line)
+}
+
+function compactLogCallerStack(stack: string | undefined, maxFrames = 8): LogCaller | undefined {
+  if (typeof stack !== 'string' || stack.trim() === '') return undefined
+
+  const frames = stack
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line !== '' && line !== 'Error')
+    .filter(line => !isLoggerInternalFrame(line))
+
+  const frame = frames[0]
+  if (frame === undefined) return undefined
+
+  return {
+    frame,
+    stack: frames.slice(0, maxFrames).join('\n'),
+  }
+}
+
+function captureLogCaller(): LogCaller | undefined {
+  return compactLogCallerStack(new Error().stack)
+}
+
+function serializeError(error: Error): Record<string, unknown> {
+  return {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+  }
+}
+
+function isPlainRecord(value: Record<string, unknown>): boolean {
+  const prototype: unknown = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
+}
+
+function normalizeLogValue(value: unknown, seen: WeakSet<object>): unknown {
+  if (value instanceof Error) return serializeError(value)
+  if (Array.isArray(value)) return value.map(item => normalizeLogValue(item, seen))
+  if (!isRecord(value)) return value
+  if (!isPlainRecord(value)) return value
+
+  if (seen.has(value)) return '[Circular]'
+  seen.add(value)
+
+  const normalized: Record<string, unknown> = {}
+  for (const [key, item] of Object.entries(value)) {
+    normalized[key] = normalizeLogValue(item, seen)
+  }
+
+  seen.delete(value)
+  return normalized
+}
+
+function normalizeLogRecord(value: Record<string, unknown>, seen: WeakSet<object>): Record<string, unknown> {
+  if (seen.has(value)) return { value: '[Circular]' }
+  seen.add(value)
+
+  const normalized: Record<string, unknown> = {}
+  for (const [key, item] of Object.entries(value)) {
+    normalized[key] = normalizeLogValue(item, seen)
+  }
+
+  seen.delete(value)
+  return normalized
+}
+
+function normalizeLogMeta(meta: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (meta === undefined) return undefined
+  return normalizeLogRecord(meta, new WeakSet())
+}
+
+function withLogCaller(
+  meta: Record<string, unknown> | undefined,
+  caller: LogCaller | undefined,
+): Record<string, unknown> | undefined {
+  const normalized = normalizeLogMeta(meta)
+  if (caller === undefined) return normalized
+  return { ...(normalized ?? {}), logCaller: caller }
+}
+
+function readStack(value: unknown, seen: WeakSet<object>): string | undefined {
+  if (value instanceof Error) return value.stack
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const stack = readStack(item, seen)
+      if (stack !== undefined) return stack
+    }
+    return undefined
+  }
+  if (!isRecord(value)) return undefined
+  if (seen.has(value)) return undefined
+  seen.add(value)
+
+  const stack = value['stack']
+  if (typeof stack === 'string' && stack.trim() !== '') {
+    seen.delete(value)
+    return stack
+  }
+
+  for (const item of Object.values(value)) {
+    const nested = readStack(item, seen)
+    if (nested !== undefined) {
+      seen.delete(value)
+      return nested
+    }
+  }
+
+  seen.delete(value)
+  return undefined
+}
+
+function hasTopLevelError(args: unknown[]): boolean {
+  return args.some(arg => arg instanceof Error)
+}
+
+function readNestedStack(args: unknown[]): string | undefined {
+  for (const arg of args) {
+    if (arg instanceof Error) continue
+    const stack = readStack(arg, new WeakSet())
+    if (stack !== undefined) return stack
+  }
+  return undefined
+}
+
+function appendErrorStack(args: unknown[], caller: LogCaller | undefined): unknown[] {
+  if (hasTopLevelError(args)) return args
+  const stack = readNestedStack(args) ?? caller?.stack
+  return stack === undefined ? args : [...args, stack]
+}
 
 /**
  * 添加全局传输器。所有通过 `Logger()` 创建的实例在输出控制台后，
@@ -83,7 +225,7 @@ export function parseLogArgs(prefix: string | undefined, args: unknown[]): { mes
     } else if (a instanceof Error) {
       meta = { ...meta, error: a.message, stack: a.stack }
     } else if (isRecord(a)) {
-      meta = { ...meta, ...a }
+      meta = { ...meta, ...normalizeLogMeta(a) }
     } else if (a !== undefined) {
       strings.push(String(a))
     }
@@ -107,13 +249,16 @@ function consoleLogger(prefix?: string): LoggerApi {
     [...(prefix ? [prefix] : []), ...args]
 
   function withHook(level: LogLevel, consoleFn: (...a: unknown[]) => void, args: unknown[]): void {
-    consoleFn(LEVEL_EMOJI[level], ...fmt(level, args))
+    const caller = level === 'error' ? captureLogCaller() : undefined
+    const consoleArgs = level === 'error' ? appendErrorStack(args, caller) : args
+    consoleFn(LEVEL_EMOJI[level], ...fmt(level, consoleArgs))
 
     // 结构化传输器（推荐路径：APP 层贯穿）
     if (_transports.length > 0) {
       const { message, meta } = parseLogArgs(prefix, args)
+      const diagnosticMeta = level === 'error' ? withLogCaller(meta, caller) : meta
       for (const t of _transports) {
-        try { void t.send(level, message, meta) } catch { /* transport 异常不影响日志输出 */ }
+        try { void t.send(level, message, diagnosticMeta) } catch { /* transport 异常不影响日志输出 */ }
       }
     }
   }

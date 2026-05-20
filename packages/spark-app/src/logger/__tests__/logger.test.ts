@@ -147,9 +147,11 @@ describe('AppLogger', () => {
       logger.error('failed', err)
 
       expect(errorSpy).toHaveBeenCalledTimes(1)
+      expect(String(callArgs(errorSpy)[0])).toContain('Error: boom')
       const meta = callArgs(errorSpy)[1]
       expect(meta).toHaveProperty('message', 'boom')
       expect(meta).toHaveProperty('stack')
+      expect(meta).toHaveProperty('logCaller')
     })
 
     it('error 传入普通对象 → 直通', () => {
@@ -158,7 +160,27 @@ describe('AppLogger', () => {
       logger.error('failed', obj)
 
       const meta = callArgs(errorSpy)[1]
-      expect(meta).toEqual(obj)
+      expect(meta).toEqual(expect.objectContaining(obj))
+      expect(meta).toHaveProperty('logCaller')
+    })
+
+    it('error 缺少 Error 对象时，补充调用点栈', () => {
+      const transport: LogTransport = { send: vi.fn() }
+      const logger = createAppLogger({ level: 'error' })
+      logger.addTransport(transport)
+
+      function writeLog(): void {
+        logger.error('failed')
+      }
+
+      writeLog()
+
+      expect(String(callArgs(errorSpy)[0])).toContain('logger.test.ts')
+      expect(transport.send).toHaveBeenCalledWith('error', 'failed', expect.objectContaining({
+        logCaller: expect.objectContaining({
+          stack: expect.stringContaining('logger.test.ts'),
+        }),
+      }))
     })
 
     it('suppressErrorConsoleTrace=true → 控制台不用 console.error，但 transport 保持 error 级别', () => {
@@ -170,8 +192,8 @@ describe('AppLogger', () => {
       logger.error('failed', meta)
 
       expect(errorSpy).not.toHaveBeenCalled()
-      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('failed'), meta)
-      expect(transport.send).toHaveBeenCalledWith('error', 'failed', meta)
+      expect(infoSpy).toHaveBeenCalledWith(expect.stringContaining('failed'), expect.objectContaining(meta))
+      expect(transport.send).toHaveBeenCalledWith('error', 'failed', expect.objectContaining(meta))
     })
   })
 

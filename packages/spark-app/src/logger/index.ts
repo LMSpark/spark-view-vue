@@ -94,6 +94,136 @@ const EMOJI_ICONS: Record<string, string> = {
   loading: '⏳'
 }
 
+type LogCaller = {
+  frame: string
+  stack: string
+}
+
+const LOGGER_INTERNAL_FRAME_RE = /(packages[\\/]+spark-app[\\/]+src[\\/]+logger[\\/]+index\.(ts|js)|spark-app[\\/]+dist[\\/]+logger[\\/]+index\.js)/i
+
+function isLoggerInternalFrame(line: string): boolean {
+  return LOGGER_INTERNAL_FRAME_RE.test(line)
+    || /\b(captureLogCaller|compactLogCallerStack|AppLogger\.(log|error|debug|info|warn|success)|createLogger|createAppLogger)\b/.test(line)
+}
+
+function compactLogCallerStack(stack: string | undefined, maxFrames = 8): LogCaller | undefined {
+  if (typeof stack !== 'string' || stack.trim() === '') return undefined
+
+  const frames = stack
+    .split('\n')
+    .map(line => line.trim())
+    .filter(line => line !== '' && line !== 'Error')
+    .filter(line => !isLoggerInternalFrame(line))
+
+  const frame = frames[0]
+  if (frame === undefined) return undefined
+
+  return {
+    frame,
+    stack: frames.slice(0, maxFrames).join('\n'),
+  }
+}
+
+function captureLogCaller(): LogCaller | undefined {
+  return compactLogCallerStack(new Error().stack)
+}
+
+function serializeError(error: Error): Record<string, unknown> {
+  return {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+  }
+}
+
+function isPlainRecord(value: object): boolean {
+  const prototype: unknown = Object.getPrototypeOf(value)
+  return prototype === Object.prototype || prototype === null
+}
+
+function normalizeLogValue(value: unknown, seen: WeakSet<object>): unknown {
+  if (value instanceof Error) return serializeError(value)
+  if (Array.isArray(value)) return value.map(item => normalizeLogValue(item, seen))
+  if (value === null || typeof value !== 'object') return value
+  if (!isPlainRecord(value)) return value
+
+  if (seen.has(value)) return '[Circular]'
+  seen.add(value)
+
+  const normalized: Record<string, unknown> = {}
+  for (const [key, item] of Object.entries(value)) {
+    normalized[key] = normalizeLogValue(item, seen)
+  }
+
+  seen.delete(value)
+  return normalized
+}
+
+function normalizeLogRecord(value: Record<string, unknown>, seen: WeakSet<object>): Record<string, unknown> {
+  if (seen.has(value)) return { value: '[Circular]' }
+  seen.add(value)
+
+  const normalized: Record<string, unknown> = {}
+  for (const [key, item] of Object.entries(value)) {
+    normalized[key] = normalizeLogValue(item, seen)
+  }
+
+  seen.delete(value)
+  return normalized
+}
+
+function normalizeLogMeta(meta: Record<string, unknown> | undefined): Record<string, unknown> | undefined {
+  if (meta === undefined) return undefined
+  return normalizeLogRecord(meta, new WeakSet())
+}
+
+function withLogCaller(
+  meta: Record<string, unknown> | undefined,
+  caller: LogCaller | undefined,
+): Record<string, unknown> | undefined {
+  const normalized = normalizeLogMeta(meta)
+  if (caller === undefined) return normalized
+  return { ...(normalized ?? {}), logCaller: caller }
+}
+
+function readStack(value: unknown, seen: WeakSet<object>): string | undefined {
+  if (value instanceof Error) return value.stack
+  if (Array.isArray(value)) {
+    for (const item of value) {
+      const stack = readStack(item, seen)
+      if (stack !== undefined) return stack
+    }
+    return undefined
+  }
+  if (value === null || typeof value !== 'object') return undefined
+  if (seen.has(value)) return undefined
+  seen.add(value)
+
+  const entries = Object.entries(value)
+  for (const [key, item] of entries) {
+    if (key === 'stack' && typeof item === 'string' && item.trim() !== '') {
+      seen.delete(value)
+      return item
+    }
+  }
+
+  for (const [, item] of entries) {
+    const nested = readStack(item, seen)
+    if (nested !== undefined) {
+      seen.delete(value)
+      return nested
+    }
+  }
+
+  seen.delete(value)
+  return undefined
+}
+
+function buildErrorConsoleMessage(message: string, meta: Record<string, unknown> | undefined, caller: LogCaller | undefined): string {
+  const stack = readStack(meta, new WeakSet()) ?? caller?.stack
+  return stack === undefined ? message : `${message}\n${stack}`
+}
+
 // ─── 全局传输器（所有 AppLogger 实例共享） ────────────────────────────────────
 
 /**
@@ -328,8 +458,13 @@ class AppLogger {
   private log(level: LogLevel, message: string, meta?: Record<string, unknown>): void {
     if (!this.shouldLog(level)) return
 
+    const caller = level === 'error' ? captureLogCaller() : undefined
+    const diagnosticMeta = level === 'error' ? withLogCaller(meta, caller) : normalizeLogMeta(meta)
     const emoji = EMOJI_ICONS[level]
     const formattedMessage = this.formatMessage(message, emoji)
+    const consoleMessage = level === 'error'
+      ? buildErrorConsoleMessage(formattedMessage, diagnosticMeta, caller)
+      : formattedMessage
 
     // 直接输出到控制台
     // Note: Logger 系统需要使用原生 console API 进行输出
@@ -340,14 +475,14 @@ class AppLogger {
                      this.config.suppressErrorConsoleTrace ? console.info :
                      console.error
 
-    if (meta) {
-      consoleFn(formattedMessage, meta)
+    if (diagnosticMeta) {
+      consoleFn(consoleMessage, diagnosticMeta)
     } else {
-      consoleFn(formattedMessage)
+      consoleFn(consoleMessage)
     }
 
     // 触发所有传输器（实例级 + 全局）
-    this.sendToTransports(level, message, meta)
+    this.sendToTransports(level, message, diagnosticMeta)
   }
 
   /**
