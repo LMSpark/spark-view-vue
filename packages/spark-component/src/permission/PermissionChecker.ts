@@ -124,18 +124,24 @@ function defaultMaskRule(field: string, value: unknown): string {
 
 // ── 工具函数 ──
 
-/**
- * 任何携带模型级权限快照的数据源形状。
- * DataView / DataSource 均满足此约束。
- */
-export interface ModelPermissionSource {
-  _modelPerm?: ModelPermission
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isModelPermission(value: unknown): value is ModelPermission {
+  if (!isRecord(value)) return false
+  return (value['allowCreate'] === undefined || typeof value['allowCreate'] === 'boolean')
+    && (value['allowImport'] === undefined || typeof value['allowImport'] === 'boolean')
+    && (value['allowExport'] === undefined || typeof value['allowExport'] === 'boolean')
+    && (value['permissionToken'] === undefined || typeof value['permissionToken'] === 'string')
 }
 
 /**
  * 从数据源提取模型级权限快照。
  * 权限数据读取收口到 permission 模块，组件层不直接访问 _modelPerm。
  */
-export function extractModelPermission(dataSource: ModelPermissionSource | null | undefined): ModelPermission | undefined {
-  return dataSource?._modelPerm
+export function extractModelPermission(dataSource: unknown): ModelPermission | undefined {
+  if (!isRecord(dataSource)) return undefined
+  const value = dataSource['_modelPerm']
+  return isModelPermission(value) ? value : undefined
 }

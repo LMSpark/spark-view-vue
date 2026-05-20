@@ -74,7 +74,6 @@
  * 与 DataView.setFilter 同步，无需父容器注入桥接字段。
  */
 import { computed, ref, toRef, watch } from 'vue'
-import type { DataView, DataRow } from '@spark-view/spark-data'
 import { PAGE_PERMISSION_MODE } from '../../../permission'
 import { DATA_SOURCE, SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkPageComponent,
   type SparkNode,
@@ -105,7 +104,7 @@ const isPanelMode = computed(() => {
 })
 
 // ── DataView 自治解析 ───────────────────────────────────────────────────
-const inheritedDataSource = sparkConsume(DATA_SOURCE) as DataView | null
+const inheritedDataSource = sparkConsume(DATA_SOURCE)
 
 const dataState = useContainerDataSource({
   dataViewKey: toRef(props, 'dataViewKey'),
@@ -206,7 +205,7 @@ const resolvedActionsStyle = computed<Record<string, string>>(() => {
 const fieldScopeConfig = computed<SparkNode>(() => ({
   type: 'r-field-scope',
   props: {
-    model: filterModel as DataRow,
+    model: filterModel,
     children: standaloneChildren.value,
     gridColumns: resolvedGridColumns.value,
     gridGap: resolvedGridGap.value,

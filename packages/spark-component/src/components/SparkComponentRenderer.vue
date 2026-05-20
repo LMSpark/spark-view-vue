@@ -83,7 +83,7 @@ import {
   watchEffect,
 } from 'vue'
 import type { PropType } from 'vue'
-import type { DataRow, DataSource } from '@spark-view/spark-data'
+import { DataView, type DataRow } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
 import {
@@ -394,11 +394,17 @@ function resolveHostTypeConstraintState(
 
 // ── 基础工具：渲染时作用域数据解析 ─────────────────────────────────────────
 
-// 从 unknown 中识别非数组对象；供行数据、DataSource 等场景复用。
-function asObject<T extends object>(value: unknown): T | null {
+// 从 unknown 中识别非数组对象；供行数据等运行时作用域复用。
+function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-    ? value as T
-    : null
+}
+
+function isDataView(value: unknown): value is DataView {
+  return value instanceof DataView
+}
+
+function isDataRow(value: unknown): value is DataRow {
+  return isRecord(value)
 }
 
 function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
@@ -406,16 +412,19 @@ function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {
 }
 
 // dataSource 优先取节点显式注入，其次沿父能力链回溯 DATA_SOURCE。
-function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): DataSource | null {
-  return asObject<DataSource>(rawProps['dataSource'])
-    ?? consumeSparkCapability<DataSource>(parentContext, DATA_SOURCE)
+function resolveScopedDataSource({ rawProps, parentContext }: ScopedRuntimeInput): DataView | null {
+  const propDataSource = rawProps['dataSource']
+  if (isDataView(propDataSource)) return propDataSource
+  return consumeSparkCapability(parentContext, DATA_SOURCE)
 }
 
 // row 优先取节点局部作用域，其次退回 data，再次沿父能力链回溯 DATA_ROW。
 function resolveScopedRow({ rawProps, parentContext }: ScopedRuntimeInput): DataRow | null {
-  return asObject<DataRow>(rawProps['row'])
-    ?? asObject<DataRow>(rawProps['data'])
-    ?? consumeSparkCapability<DataRow>(parentContext, DATA_ROW)
+  const row = rawProps['row']
+  if (isDataRow(row)) return row
+  const data = rawProps['data']
+  if (isDataRow(data)) return data
+  return consumeSparkCapability(parentContext, DATA_ROW)
 }
 
 /**

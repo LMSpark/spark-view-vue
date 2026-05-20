@@ -12,7 +12,7 @@
 // ============================================================
 
 import { watchEffect } from 'vue'
-import type { DataView, DataRow, DataSource } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 
 // ============================================================
 // § 类型定义
@@ -33,6 +33,7 @@ export type DataViewBridgeEventName =
 
 type NoArgBridgeEventName = Extract<DataViewBridgeEventName, 'rowsChanged' | 'cleared' | 'summaryChanged' | 'selectionSummaryChanged' | 'configChanged' | 'editingChanged'>
 type OriginatorBridgeEventName = Extract<DataViewBridgeEventName, 'currentRowChanged' | 'selectedRowsChanged'>
+type DataViewRequestState = DataView['requestState']
 
 /** 桥接层基础上下文：用于统一错误处理、诊断与日志。 */
 export interface DataViewBridgeBaseContext {
@@ -65,7 +66,7 @@ export interface ClearedContext {
 }
 
 export interface RequestStateChangedContext {
-  state: NonNullable<DataSource['requestState']>
+  state: DataViewRequestState
   view: DataView
   eventName: 'requestStateChanged'
 }
@@ -156,7 +157,7 @@ type DataViewBridgeEventArgs =
   | [currentRow: DataRow | null, originatorId?: string]
   | [selectedRows: DataRow[], originatorId?: string]
   | []
-  | [requestState: NonNullable<DataSource['requestState']>]
+  | [requestState: DataViewRequestState]
   | [mutating: boolean]
 
 type DataViewBridgeEventHandler = (...args: DataViewBridgeEventArgs) => void
@@ -359,7 +360,7 @@ export function useDataViewEventBridge(options: DataViewEventBridgeOptions) {
 
     const handleCleared = createNoArgBridgeHandler('cleared', options.onCleared)
 
-    const handleRequestStateChanged = (state: NonNullable<DataSource['requestState']>) => {
+    const handleRequestStateChanged = (state: DataViewRequestState) => {
       runWithErrorBoundary('requestStateChanged', view, () =>
         options.onRequestStateChanged?.({ state, view, eventName: 'requestStateChanged' })
       )

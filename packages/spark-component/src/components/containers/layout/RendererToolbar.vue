@@ -87,8 +87,8 @@ const dataState = useContainerDataSource({
   contextDataMember: toRef(props, 'dataMember'),
   contextDataField: toRef(props, 'dataField'),
   sparkConsume,
-  externalDataSource: computed(() => props.dataSource as DataView | undefined),
-  inheritedDataSource: computed(() => inheritedDataSource as DataView | null),
+  externalDataSource: computed(() => props.dataSource),
+  inheritedDataSource: computed(() => inheritedDataSource),
   provideDataSource: (source: DataView) => {
     // 工具栏子动作通常直接消费 DATA_SOURCE；统一在数据解析层提供。
     sparkProvide(DATA_SOURCE, source)
@@ -122,9 +122,7 @@ function resolveToolbarActionNode(node: SparkNode): SparkNode {
   // 行上下文优先使用父级明确传入的 DATA_ROW，
   // 若不存在则回退到当前 DataView.currentRow。
   const rowInput = inheritedDataRow ?? dataSource?.currentRow
-  const row = rowInput !== null && rowInput !== undefined && typeof rowInput === 'object' && !Array.isArray(rowInput)
-    ? rowInput as DataRow
-    : undefined
+  const row: DataRow | undefined = rowInput ?? undefined
 
   const beforeRender = resolveNodeBeforeRender(node, {
     row,

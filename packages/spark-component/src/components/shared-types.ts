@@ -5,7 +5,7 @@
  * 用于纯 TS 文件中接受 ref-like 对象而无需 import vue。
  */
 import type { SparkNodeChildren } from '../core/types.js'
-import type { DataMember, DataSource } from '@spark-view/spark-data'
+import type { DataMember, DataView } from '@spark-view/spark-data'
 import type {
   AddRowHandler,
   EditRowHandler,
@@ -505,10 +505,10 @@ export interface SparkOptionFieldProps<TValue = unknown, TOption = unknown>
    * @internal 运行时数据线，由框架注入，不属于页面配置。
    *
    * 作用：
-   * - 为字段组件提供当前 DataView / DataSource 上下文
+   * - 为字段组件提供当前 DataView 上下文
    * - 让组件可以结合 `optionDataViewKey` 等配置解析出真实选项列表
    */
-  dataSource?: DataSource
+  dataSource?: DataView
   /**
    * 选项 DataView 定位键。
    *
@@ -693,10 +693,9 @@ export interface SparkTableModelProps {
   /**
    * @internal 运行时数据线，由框架注入，不属于页面配置。
    *
-   * 它通常代表当前容器实际绑定到的 `DataSource`，
-   * 便于子组件复用统一的数据读取接口，而不直接依赖具体 DataView 实现细节。
+   * 它代表当前容器实际绑定到的 DataView。
    */
-  dataSource?: DataSource
+  dataSource?: DataView
   /**
    * DataView 定位键。
    * 固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。

@@ -53,6 +53,8 @@ import { extractModelPermission, usePermission } from '../../../permission'
 import type { DataView, DataRow } from '@spark-view/spark-data'
 import { useActionButtonRuntime } from './useActionButtonRuntime'
 
+type ClickHandler = (...args: unknown[]) => unknown
+
 const props = withDefaults(defineProps<RButtonProps>(), {
   type: 'r-button',
   bg: false,
@@ -60,6 +62,14 @@ const props = withDefaults(defineProps<RButtonProps>(), {
   autoInsertSpace: false,
   dark: false,
 })
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isClickHandler(value: unknown): value is ClickHandler {
+  return typeof value === 'function'
+}
 
 // ── 一、基础能力与上下文 ─────────────────────────────────────────────────
 // useSparkPageComponent 负责接入可见性、禁用态、规范化 props 以及 capability 消费入口。
@@ -75,28 +85,27 @@ const currentNode = computed<SparkNode>(() => ({
 }))
 
 function resolveActionView(): DataView | null {
-  const dataSource = sparkConsume(DATA_SOURCE)
-  return dataSource as DataView | null
+  return sparkConsume(DATA_SOURCE)
 }
 
 // 优先 DATA_ROW；退化到 DATA_SOURCE.currentRow（覆盖行内按钮与工具栏按钮）
 function resolveScopedRow(): DataRow | undefined {
   const dataSource = sparkConsume(DATA_SOURCE)
   const dataRow = sparkConsume(DATA_ROW)
-  return (dataRow ?? ((dataSource as { currentRow?: DataRow } | null)?.currentRow)) ?? undefined
+  return (dataRow ?? dataSource?.currentRow) ?? undefined
 }
 
 function resolvePermissionScopeRows(): DataRow[] {
   const dataRow = sparkConsume(DATA_ROW)
-  if (dataRow !== null && dataRow !== undefined && typeof dataRow === 'object' && !Array.isArray(dataRow)) {
-    return [dataRow as DataRow]
+  if (dataRow !== null) {
+    return [dataRow]
   }
-  const dataSource = sparkConsume(DATA_SOURCE) as DataView | null
+  const dataSource = sparkConsume(DATA_SOURCE)
   if (dataSource && dataSource.isMultiSelect === true) {
     const selected = dataSource.selectedRows ?? []
     return selected.length > 0 ? selected.slice() : []
   }
-  const currentRow = (dataSource as { currentRow?: DataRow } | null)?.currentRow
+  const currentRow = dataSource?.currentRow
   return currentRow !== null && currentRow !== undefined ? [currentRow] : []
 }
 
@@ -169,9 +178,8 @@ const resolved = computed(() => {
 const resolvedIcon = computed((): Component | null => {
   const name = resolved.value.icon
   if (!name) return null
-  const icons = ElIcons as Record<string, Component>
-  const comp = icons[name]
-  return comp ? markRaw(comp) : null
+  const entry = Object.entries(ElIcons).find(([key]) => key === name)
+  return entry ? markRaw(entry[1]) : null
 })
 
 // children 统一规范化，避免模板层处理原始 mixed children。
@@ -181,12 +189,12 @@ const resolvedChildren = computed(() => getSparkNodeChildren(props.children))
 // 支持 props.on.click 和 props.onClick 两种声明式入口。
 const resolvedOnClick = computed<((...args: unknown[]) => unknown) | null>(() => {
   const on = resolvedProps.value['on']
-  if (on !== null && typeof on === 'object' && !Array.isArray(on)) {
-    const click = (on as Record<string, unknown>)['click']
-    if (typeof click === 'function') return click as (...args: unknown[]) => unknown
+  if (isRecord(on)) {
+    const click = on['click']
+    if (isClickHandler(click)) return click
   }
   const onClick = resolvedProps.value['onClick']
-  if (typeof onClick === 'function') return onClick as (...args: unknown[]) => unknown
+  if (isClickHandler(onClick)) return onClick
   return null
 })
 

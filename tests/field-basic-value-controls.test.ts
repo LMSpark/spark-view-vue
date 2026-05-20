@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
 import { FieldText, FieldCheckbox, FieldSlider, FieldRate, FieldColor, FieldMention } from '@spark-view/spark-component'
 import { DATA_SOURCE, SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
+import { SparkData, type DataView } from '@spark-view/spark-data'
 import { mountFieldInContext } from './helpers/mount-field-in-context'
 import { mount } from '@vue/test-utils'
 
@@ -84,6 +85,44 @@ const ElMentionStub = defineComponent({
     })
   },
 })
+
+function createCurrentRowDataView(row: Record<string, unknown>): DataView {
+  const dataSet = SparkData.createDataSet({
+    dataSetName: 'FieldBasicValueControlsDS',
+    tables: {
+      Fields: {
+        tableName: 'Fields',
+        columns: [
+          { name: 'id', type: 'string', isPrimaryKey: true },
+          { name: 'name', type: 'string' },
+          { name: 'assignee', type: 'string' },
+        ],
+        views: {
+          default: {
+            rows: [{ id: 'current', ...row }],
+            autoCurrentFirst: false,
+            autoSelectFirst: false,
+          },
+        },
+      },
+    },
+  })
+
+  const view = dataSet.getView('Fields', 'default')
+  if (!view) throw new Error('测试 DataView 创建失败: Fields@default')
+  const currentRow = view.rows[0]
+  if (!currentRow) throw new Error('测试 DataView 缺少 currentRow')
+  view.setCurrentRow(currentRow)
+  return view
+}
+
+function readCurrentFieldValue(view: DataView, field: string): unknown {
+  const currentRow = view.currentRow
+  if (!currentRow) throw new Error('测试 DataView 未设置 currentRow')
+  const rowId = view.getPkKey(currentRow)
+  if (rowId === undefined) return currentRow[field]
+  return view.getEditingRow(rowId)?.[field] ?? currentRow[field]
+}
 
 function mountBasicField(
   component: object,
@@ -185,13 +224,13 @@ describe('基础值字段组件', () => {
   })
 
   it('FieldText 在缺失 DATA_ROW 时应通过 DATA_SOURCE.currentRow 读写', async () => {
-    const model = reactive<Record<string, unknown>>({ name: '' })
+    const view = createCurrentRowDataView({ name: '' })
     const { registry, rootContext } = Spark.createSystem()
 
     const Provider = defineComponent({
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-        sparkProvide(DATA_SOURCE, { currentRow: model })
+        sparkProvide(DATA_SOURCE, view)
         return () => h(FieldText, { type: 'r-text', field: 'name' })
       },
     })
@@ -220,18 +259,18 @@ describe('基础值字段组件', () => {
     input.vm.$emit('update:modelValue', 'Bob')
     await nextTick()
 
-    expect(model['name']).toBe('Bob')
+    expect(readCurrentFieldValue(view, 'name')).toBe('Bob')
     expect(wrapper.find('.el-input-stub').attributes('data-value')).toBe('Bob')
   })
 
   it('FieldMention 在缺失 DATA_ROW 时应通过 DATA_SOURCE.currentRow 写回字段', async () => {
-    const model = reactive<Record<string, unknown>>({ assignee: '' })
+    const view = createCurrentRowDataView({ assignee: '' })
     const { registry, rootContext } = Spark.createSystem()
 
     const Provider = defineComponent({
       setup() {
         const { sparkProvide } = useSparkComponent({ type: 'r-form' }, { parentContext: rootContext })
-        sparkProvide(DATA_SOURCE, { currentRow: model })
+        sparkProvide(DATA_SOURCE, view)
         return () => h(FieldMention, {
           type: 'r-mention',
           field: 'assignee',
@@ -265,7 +304,7 @@ describe('基础值字段组件', () => {
     mention.vm.$emit('update:model-value', 'Alice')
     await nextTick()
 
-    expect(model['assignee']).toBe('Alice')
+    expect(readCurrentFieldValue(view, 'assignee')).toBe('Alice')
     expect(wrapper.find('.el-mention-stub').attributes('data-value')).toBe('Alice')
   })
 })

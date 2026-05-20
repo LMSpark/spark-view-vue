@@ -20,7 +20,7 @@ import {
 } from '../../../page/actions/index'
 import { getActionProps, readBoolean } from '../../../page/actions/executor-helpers'
 import type { SparkNode } from '../../internal'
-import type { DataView, DataRow, DataSource } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-view/spark-data'
 
 // ── 私有：beforeRender 解析（从 view + scope 取上下文，不从 node props 取） ──
 
@@ -32,7 +32,7 @@ function resolveActionNode(
   scope?: ActionExecutionScope,
 ): SparkNode {
   const currentRow = scope?.row ?? view?.currentRow ?? null
-  const dataSource = (view ?? null) as DataSource | null
+  const dataSource = view ?? null
   const state = resolveNodeBeforeRender(action, {
     row: currentRow,
     data: currentRow,

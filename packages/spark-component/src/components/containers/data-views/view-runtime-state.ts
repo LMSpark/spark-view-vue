@@ -5,13 +5,11 @@ import {
   type DataView,
   type DataColumn,
   type DataRow,
-  type DataSource,
   type ModelPermission,
   type TreeConfig,
 } from '@spark-view/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import { extractModelPermission } from '../../../permission/index.js'
-import type { ModelPermissionSource } from '../../../permission/index.js'
 import { toDataRecord } from './data-row-utils.js'
 import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
 
@@ -19,7 +17,7 @@ import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
  * DataView 标识态：来自 DataView 快照的静态元信息。
  */
 export interface DataViewIdentityState {
-  tableName: ComputedRef<DataSource['tableName']>
+  tableName: ComputedRef<string>
   viewId: ComputedRef<string | undefined>
   primaryKey: ComputedRef<string | undefined>
   treeConfig: ComputedRef<TreeConfig | undefined>
@@ -37,10 +35,10 @@ export interface DataViewRowsState {
 
 /** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */
 export interface DataViewDisplayState {
-  _modelPerm: ComputedRef<DataSource['_modelPerm']>
-  value: ComputedRef<DataSource['value']>
-  label: ComputedRef<DataSource['label']>
-  labels: ComputedRef<DataSource['labels']>
+  _modelPerm: ComputedRef<ModelPermission | undefined>
+  value: ComputedRef<string>
+  label: ComputedRef<string | null>
+  labels: ComputedRef<readonly string[]>
 }
 
 /** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */
@@ -50,7 +48,7 @@ export interface DataViewPermissionState {
 
 /** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */
 export interface DataViewRequestAndAggregateState {
-  requestState: ComputedRef<DataSource['requestState']>
+  requestState: ComputedRef<RequestState>
   aggregateResult: ComputedRef<AggregateResultState>
   selectionAggregateResult: ComputedRef<AggregateResultState>
   total: ComputedRef<number>
@@ -91,15 +89,6 @@ const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_ROWS: readonly DataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
-
-function isModelPermissionSource(value: unknown): value is ModelPermissionSource {
-  if (value === null || typeof value !== 'object') return false
-  return !('_modelPerm' in value) || (typeof value._modelPerm === 'object' && value._modelPerm !== null)
-}
-
-function readModelPermissionSource(value: unknown): ModelPermissionSource | null {
-  return isModelPermissionSource(value) ? value : null
-}
 
 interface DataViewRuntimeRevisions {
   rowsRevision: ValueRef<number>
@@ -180,7 +169,7 @@ export function useDataViewState(
 ): DataViewRuntimeState & DataViewPermissionState {
   const revisions = useDataViewRuntimeRevisions(resolvedView)
 
-  const tableName = computed<DataSource['tableName']>(() => {
+  const tableName = computed<string>(() => {
     revisions.configRevision.value
     return resolvedView.value?.tableName ?? ''
   })
@@ -227,30 +216,30 @@ export function useDataViewState(
     return resolvedView.value?.isMultiSelect ?? false
   })
 
-  const _modelPerm = computed<DataSource['_modelPerm']>(() => {
+  const _modelPerm = computed<ModelPermission | undefined>(() => {
     revisions.configRevision.value
-    return readModelPermissionSource(resolvedView.value)?._modelPerm
+    return extractModelPermission(resolvedView.value)
   })
-  const value = computed<DataSource['value']>(() => {
+  const value = computed<string>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     revisions.configRevision.value
     return resolvedView.value?.value ?? ''
   })
-  const label = computed<DataSource['label']>(() => {
+  const label = computed<string | null>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     revisions.configRevision.value
     return resolvedView.value?.label ?? null
   })
-  const labels = computed<DataSource['labels']>(() => {
+  const labels = computed<readonly string[]>(() => {
     revisions.selectionRevision.value
     revisions.rowsRevision.value
     revisions.configRevision.value
     return resolvedView.value?.labels ?? EMPTY_LABELS
   })
 
-  const requestState = computed<DataSource['requestState']>(() => {
+  const requestState = computed<RequestState>(() => {
     revisions.requestRevision.value
     return resolvedView.value?.requestState ?? RequestState.Idle
   })
@@ -296,7 +285,7 @@ export function useDataViewState(
 
   const modelPermission = computed<ModelPermission | undefined>(() => {
     revisions.configRevision.value
-    return extractModelPermission(readModelPermissionSource(resolvedView.value))
+    return _modelPerm.value
   })
 
   return {

@@ -22,7 +22,6 @@ export {
   maskFieldValue,
   extractModelPermission,
 } from './PermissionChecker'
-export type { ModelPermissionSource } from './PermissionChecker'
 
 // ── 权限过滤纯函数 ──
 export {

@@ -16,7 +16,6 @@ import {
   isModelActionAllowed,
   isRowActionAllowed,
   PAGE_PERMISSION_MODE,
-  type ModelPermissionSource,
 } from '../packages/spark-component/src/permission'
 
 function readConfigProps(config: Record<string, unknown>): Record<string, unknown> {
@@ -153,7 +152,7 @@ const SparkActionStub = defineComponent({
       }
 
       // 模拟 RendererButton 自管权限：当节点是内置/受权限管的动作时，做叶子级权限投影。
-      const modelPerm = extractModelPermission(dataSource as ModelPermissionSource | null)
+      const modelPerm = extractModelPermission(dataSource)
       const permissionMode = sparkConsume(PAGE_PERMISSION_MODE) ?? undefined
       const actionNode = { type, props: propsMap } as SparkNode
       const permissionAllowed = isModelActionAllowed(actionNode, modelPerm, permissionMode)

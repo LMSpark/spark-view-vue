@@ -1,4 +1,4 @@
-import type { DataRow, DataSource, ModelPermission } from '@spark-view/spark-data'
+import type { DataRow, DataView, ModelPermission } from '@spark-view/spark-data'
 import type { SparkNode, SparkNodeChildren } from '../../core/types.js'
 
 export const BEFORE_RENDER_RESOLVED_PROP = '$beforeRenderResolved'
@@ -11,7 +11,7 @@ export interface BeforeRenderContext {
   row?: DataRow | null | undefined
   data?: unknown
   index?: number | undefined
-  dataSource?: DataSource | null | undefined
+  dataSource?: DataView | null | undefined
   modelPermission?: ModelPermission | undefined
   host?: {
     type: string | null
