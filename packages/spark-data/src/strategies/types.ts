@@ -1,10 +1,3 @@
-/**
- * Strategy/Delegate shared domain types.
- *
- * Host shape aliases used to live here. They were single-implementation
- * abstractions over DataView, so delegates now depend on the concrete class.
- */
-
 import type { CrudResult } from '../types'
 
 // ─────────────────────────────────────────────
