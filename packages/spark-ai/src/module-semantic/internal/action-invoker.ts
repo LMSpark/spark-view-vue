@@ -15,6 +15,7 @@
 
 import type { LlmJsonValue } from '../../protocol/parameter-schema'
 import { LlmParamsValidator } from '../../internal/llm-params-validator'
+import type { ModuleHostContext } from '../protocol/capability'
 import type { ActionSchema } from '../protocol/module-kind'
 import {
   type CheckEntry,
@@ -43,8 +44,9 @@ export class ActionInvoker {
     path: ModulePath,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<LlmJsonValue>> {
-    const navResult = await this.navigator.navigate(path)
+    const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
     }

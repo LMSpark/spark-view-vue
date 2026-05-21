@@ -25,21 +25,41 @@ import type { OperationResult } from './operation-result'
 // ═══════════════════════════════════════════════════════
 
 /**
+ * host 作用域信息。
+ *
+ * 由 host 适配层(如 ModuleSemanticBusinessRuntime)在 executeTool 时注入,
+ * 协议核心本身不持有也不解释,只逐层透传给 Capability。
+ *
+ * Capability 用它来回答"当前 session 操作的是哪个业务实例" — 典型场景:
+ * `findInstance(rootCtx, 'node-tree', {})` 返当前页面 id,让 LLM 可以
+ * 不靠 systemPrompt 拼路径。
+ */
+export interface ModuleHostContext {
+  readonly moduleId: string
+  readonly moduleInstanceId: string
+  readonly instanceId: string
+}
+
+/**
  * 调用 Capability 方法时传入的路径上下文。
  *
  * 段序列 + 末段位置。Capability 可同时看到:
  * - 自己处于哪一段(`segment`)
  * - 上下文路径(`segments`)用于跨级判断、含环识别、租户路由
+ * - host 作用域(`host`),由 host 适配层注入,协议核心透传不解释
  *
  * 协议保证:
  * - 调用 attribute / action 方法时,`segment === segments[segments.length - 1]`
  * - 调用 resolveChild 时,`segment` 是被验证的子段,`segments` 是父路径(不含子段)
+ * - `host` 在脱离 host 适配层(直接 new ModuleSemanticRuntime() 调用)时为 undefined
  */
 export interface ModulePathContext {
   /** 完整段序列(根 → 当前) */
   readonly segments: readonly ModulePathSegment[]
   /** 当前段(对应 Capability 自己的 kind / instanceId) */
   readonly segment: ModulePathSegment
+  /** host 适配层注入的当前业务实例作用域,直接调用时为 undefined */
+  readonly host?: ModuleHostContext | undefined
 }
 
 // ═══════════════════════════════════════════════════════

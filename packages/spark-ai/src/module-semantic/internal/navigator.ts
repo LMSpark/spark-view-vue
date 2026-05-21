@@ -22,11 +22,12 @@
 
 import type {
   ModuleCapability,
+  ModuleHostContext,
   ModuleInstanceQuery,
   ModuleInstanceRef,
   ModulePathContext,
 } from '../protocol/capability'
-import type { ActionFailureMode, ModuleKind } from '../protocol/module-kind'
+import type { ActionSchema, AttributeSchema, ModuleKind } from '../protocol/module-kind'
 import type { ModulePath, ModulePathSegment } from '../protocol/module-path'
 import {
   errorCheck,
@@ -41,23 +42,18 @@ import type { ModuleNavigator, ModuleNavigationSuccess } from './module-navigato
  * describeKind 返回的元数据(仅用于 LLM 阅读)。
  *
  * 字段是 JSON 兼容,可直接作为工具返回值。
+ *
+ * 注:attributes 与 actions 直接复用 ModuleKind 的 schema 类型,保证
+ * paramsSchema / resultSchema / schema / example / usageRules / failureModes
+ * 全量传递给 LLM。任何剥离都让 LLM 在写参数时盲注,违反 describeKind 工具描述
+ * "complete schema" 的承诺。
  */
 export interface ModuleKindDescription {
   readonly kind: string
   readonly name: string
   readonly description: string
-  readonly attributes: ReadonlyArray<{
-    readonly name: string
-    readonly description: string
-    readonly readable: boolean
-    readonly writable: boolean
-  }>
-  readonly actions: ReadonlyArray<{
-    readonly name: string
-    readonly description: string
-    readonly usageRules?: readonly string[] | undefined
-    readonly failureModes?: readonly ActionFailureMode[] | undefined
-  }>
+  readonly attributes: readonly AttributeSchema[]
+  readonly actions: readonly ActionSchema[]
   readonly children: readonly string[]
 }
 
@@ -79,6 +75,7 @@ export class Navigator {
   public async listChildren(
     path: ModulePath,
     childKind?: string,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
     if (path.isRoot) {
       if (childKind === undefined) {
@@ -100,7 +97,7 @@ export class Navigator {
         ],
       }
     }
-    const navResult = await this.moduleNavigator.navigate(path)
+    const navResult = await this.moduleNavigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
     }
@@ -122,6 +119,7 @@ export class Navigator {
     path: ModulePath,
     childKind: string,
     query: ModuleInstanceQuery,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
     if (!this.kinds.has(childKind)) {
       return {
@@ -151,10 +149,11 @@ export class Navigator {
       const rootCtx: ModulePathContext = {
         segments: [],
         segment: ROOT_SEGMENT_SENTINEL,
+        ...(host === undefined ? {} : { host }),
       }
       return capability.findInstance(rootCtx, childKind, query)
     }
-    const navResult = await this.moduleNavigator.navigate(path)
+    const navResult = await this.moduleNavigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
     }
@@ -217,18 +216,8 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
     kind: moduleKind.kind,
     name: moduleKind.name,
     description: moduleKind.description,
-    attributes: moduleKind.attributes.map((attr) => ({
-      name: attr.name,
-      description: attr.description,
-      readable: attr.readable,
-      writable: attr.writable,
-    })),
-    actions: moduleKind.actions.map((action) => ({
-      name: action.name,
-      description: action.description,
-      usageRules: action.usageRules,
-      failureModes: action.failureModes,
-    })),
+    attributes: moduleKind.attributes,
+    actions: moduleKind.actions,
     children: moduleKind.children,
   }
 }

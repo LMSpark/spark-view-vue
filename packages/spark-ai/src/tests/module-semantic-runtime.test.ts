@@ -69,10 +69,14 @@ class NodeTreeKind extends ModuleKindBase {
 class NodeTreeCapability extends ModuleCapability {
   public readonly kind = 'node-tree'
 
+  /** 测试观测点:最近一次方法被调用时收到的 ctx.host(可能 undefined) */
+  public lastHost: ModulePathContext['host']
+
   public getAttribute(
-    _ctx: ModulePathContext,
+    ctx: ModulePathContext,
     attrName: string,
   ): Promise<OperationResult<LlmJsonValue>> {
+    this.lastHost = ctx.host
     if (attrName === 'rootId') return Promise.resolve(okResult<LlmJsonValue>('root-1'))
     return Promise.resolve({ ok: false, checks: [errorCheck('UNKNOWN_ATTR', `${attrName} 未声明`)] })
   }
@@ -82,10 +86,11 @@ class NodeTreeCapability extends ModuleCapability {
   }
 
   public invokeAction(
-    _ctx: ModulePathContext,
+    ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<OperationResult<LlmJsonValue>> {
+    this.lastHost = ctx.host
     if (actionName === 'getNode') {
       const id = args['id']
       if (typeof id !== 'string' || id.length === 0) {
@@ -100,17 +105,25 @@ class NodeTreeCapability extends ModuleCapability {
   }
 
   public listChildren(
-    _ctx: ModulePathContext,
+    ctx: ModulePathContext,
     _childKind?: string,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    this.lastHost = ctx.host
     return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
   }
 
   public findInstance(
-    _ctx: ModulePathContext,
+    ctx: ModulePathContext,
     _childKind: string,
     _query: ModuleInstanceQuery,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    this.lastHost = ctx.host
+    const hostInstanceId = ctx.host?.moduleInstanceId
+    if (hostInstanceId !== undefined && hostInstanceId.length > 0) {
+      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
+        { id: hostInstanceId, label: '当前实例' },
+      ]))
+    }
     return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
       { id: 'node-tree-1', label: '主页节点树' },
     ]))
@@ -126,6 +139,15 @@ function createRuntime(): ModuleSemanticRuntime {
   runtime.registerKind(new NodeTreeKind())
   runtime.registerCapability(new NodeTreeCapability())
   return runtime
+}
+
+/** 测试用:取注册到 runtime 上的 NodeTreeCapability 实例,以观测 lastHost */
+function createRuntimeWithSpy(): { runtime: ModuleSemanticRuntime; capability: NodeTreeCapability } {
+  const runtime = new ModuleSemanticRuntime()
+  runtime.registerKind(new NodeTreeKind())
+  const capability = new NodeTreeCapability()
+  runtime.registerCapability(capability)
+  return { runtime, capability }
 }
 
 // ═══════════════════════════════════════════════════════
@@ -276,6 +298,93 @@ describe('ModuleSemanticRuntime 直接调用入口', () => {
     expect(result.data?.kind).toBe('node-tree')
     expect(result.data?.attributes.map((attr) => attr.name)).toEqual(['rootId'])
     expect(result.data?.actions.map((action) => action.name)).toEqual(['getNode'])
+  })
+})
+
+describe('ModuleSemanticRuntime describeKind 完整 schema(plan 闭环 2)', () => {
+  it('actions[].paramsSchema 透传(不为 additionalProperties:true)', async () => {
+    const runtime = createRuntime()
+    const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
+    expect(result.ok).toBe(true)
+    if (!isRecord(result.data)) throw new Error('expected object payload')
+    const actions = result.data['actions']
+    if (!Array.isArray(actions) || actions.length === 0) {
+      throw new Error('expected non-empty actions array')
+    }
+    const getNode = actions.find((a) => isRecord(a) && a['name'] === 'getNode')
+    if (!isRecord(getNode)) throw new Error('getNode action missing')
+    const paramsSchema = getNode['paramsSchema']
+    if (!isRecord(paramsSchema)) throw new Error('paramsSchema must be object payload')
+    expect(paramsSchema['type']).toBe('object')
+    expect(paramsSchema['additionalProperties']).toBe(false)
+    expect(paramsSchema['required']).toEqual(['id'])
+    const properties = paramsSchema['properties']
+    if (!isRecord(properties)) throw new Error('properties must be object')
+    expect(isRecord(properties['id']) && properties['id']['type']).toBe('string')
+  })
+
+  it('attributes[].schema 透传', async () => {
+    const runtime = createRuntime()
+    const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
+    expect(result.ok).toBe(true)
+    if (!isRecord(result.data)) throw new Error('expected object payload')
+    const attributes = result.data['attributes']
+    if (!Array.isArray(attributes) || attributes.length === 0) {
+      throw new Error('expected non-empty attributes array')
+    }
+    const rootId = attributes[0]
+    if (!isRecord(rootId)) throw new Error('attr shape')
+    const schema = rootId['schema']
+    if (!isRecord(schema)) throw new Error('schema must be object')
+    expect(schema['type']).toBe('string')
+  })
+})
+
+describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
+  it('executeTool 第三参数 host 透传到 Capability.ctx.host', async () => {
+    const { runtime, capability } = createRuntimeWithSpy()
+    const host = { moduleId: 'page-design', moduleInstanceId: 'page-42', instanceId: 'session-1' }
+    const result = await runtime.executeTool(
+      'findInstance',
+      { path: '/', childKind: 'node-tree', query: {} },
+      host,
+    )
+    expect(result.ok).toBe(true)
+    expect(capability.lastHost).toEqual(host)
+    if (!Array.isArray(result.data) || result.data.length === 0) throw new Error('expected non-empty')
+    const first = result.data[0]
+    if (!isRecord(first)) throw new Error('expected record')
+    expect(first['id']).toBe('page-42')
+  })
+
+  it('host 不传时 ctx.host === undefined,保持向后兼容', async () => {
+    const { runtime, capability } = createRuntimeWithSpy()
+    const result = await runtime.executeTool('findInstance', {
+      path: '/',
+      childKind: 'node-tree',
+      query: {},
+    })
+    expect(result.ok).toBe(true)
+    expect(capability.lastHost).toBeUndefined()
+  })
+
+  it('直接调用 findInstance 接受 host 形参并透传', async () => {
+    const { runtime, capability } = createRuntimeWithSpy()
+    const host = { moduleId: 'm', moduleInstanceId: 'i', instanceId: 's' }
+    await runtime.findInstance(ModulePath.parse('/'), 'node-tree', {}, host)
+    expect(capability.lastHost).toEqual(host)
+  })
+
+  it('非根路径 invokeAction 也透传 host', async () => {
+    const { runtime, capability } = createRuntimeWithSpy()
+    const host = { moduleId: 'm', moduleInstanceId: 'page-42', instanceId: 's' }
+    const result = await runtime.executeTool(
+      'invokeAction',
+      { path: '/node-tree[page-42]', actionName: 'getNode', args: { id: 'n1' } },
+      host,
+    )
+    expect(result.ok).toBe(true)
+    expect(capability.lastHost).toEqual(host)
   })
 })
 

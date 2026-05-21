@@ -49,6 +49,7 @@ import type {
 } from '../../protocol/runtime-contracts'
 import type { LlmJsonValue } from '../../protocol/parameter-schema'
 import type { ModuleSemanticToolSpec } from '../internal/protocol-tool-generator'
+import type { ModuleHostContext } from '../protocol/capability'
 import type { CheckEntry, OperationResult } from '../protocol/operation-result'
 import type {
   ModuleSemanticRuntime,
@@ -196,7 +197,12 @@ export class ModuleSemanticBusinessRuntime implements AiHostBusinessRuntime {
     options: AiHostBusinessExecuteFunctionCallOptions,
   ): Promise<AiRuntimeFunctionCallResult<unknown>> {
     const args = toProtocolToolArgs(options.args)
-    const operationResult = await this.runtime.executeTool(options.action, args)
+    const host: ModuleHostContext = {
+      moduleId: options.moduleId,
+      moduleInstanceId: options.moduleInstanceId,
+      instanceId: options.instanceId,
+    }
+    const operationResult = await this.runtime.executeTool(options.action, args, host)
     const callResult = toFunctionCallResult(operationResult)
 
     this.sessions.appendFunctionCall({

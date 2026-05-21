@@ -32,6 +32,7 @@ import {
 } from '../internal/protocol-tool-generator'
 import type {
   ModuleCapability,
+  ModuleHostContext,
   ModuleInstanceQuery,
   ModuleInstanceRef,
 } from '../protocol/capability'
@@ -116,10 +117,14 @@ export class ModuleSemanticRuntime {
    * - INVALID_TOOL_ARGS: 缺字段或类型错
    * - INVALID_PATH:    path 字符串解析失败(透传 ModulePathParseError code)
    * - (其它):           由下层路由返回
+   *
+   * @param host host 适配层注入的当前业务实例作用域。直接 new ModuleSemanticRuntime()
+   *             调用时为 undefined,Capability 自行判断是否消费。
    */
   public async executeTool(
     toolName: string,
     rawArgs: ProtocolToolArgs,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<LlmJsonValue>> {
     if (!isProtocolToolName(toolName)) {
       return failWith('UNKNOWN_TOOL', `工具 "${toolName}" 未在协议中定义`, '可调用的工具列表见 getLlmTools()')
@@ -127,15 +132,15 @@ export class ModuleSemanticRuntime {
     try {
       switch (toolName) {
         case PROTOCOL_TOOL_NAMES.getAttribute:
-          return await this.routeGetAttribute(rawArgs)
+          return await this.routeGetAttribute(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.setAttribute:
-          return await this.routeSetAttribute(rawArgs)
+          return await this.routeSetAttribute(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.invokeAction:
-          return await this.routeInvokeAction(rawArgs)
+          return await this.routeInvokeAction(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.listChildren:
-          return await this.routeListChildren(rawArgs)
+          return await this.routeListChildren(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.findInstance:
-          return await this.routeFindInstance(rawArgs)
+          return await this.routeFindInstance(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.describeKind:
           return this.routeDescribeKind(rawArgs)
       }
@@ -156,35 +161,47 @@ export class ModuleSemanticRuntime {
 
   // ───────── 直接调用入口(测试 / 程序化) ─────────
 
-  public async getAttribute(path: ModulePath, attrName: string): Promise<OperationResult<LlmJsonValue>> {
-    return this.attributes.get(path, attrName)
+  public async getAttribute(
+    path: ModulePath,
+    attrName: string,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<LlmJsonValue>> {
+    return this.attributes.get(path, attrName, host)
   }
 
-  public async setAttribute(path: ModulePath, attrName: string, value: LlmJsonValue): Promise<OperationResult<void>> {
-    return this.attributes.set(path, attrName, value)
+  public async setAttribute(
+    path: ModulePath,
+    attrName: string,
+    value: LlmJsonValue,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<void>> {
+    return this.attributes.set(path, attrName, value, host)
   }
 
   public async invokeAction(
     path: ModulePath,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<LlmJsonValue>> {
-    return this.actions.invoke(path, actionName, args)
+    return this.actions.invoke(path, actionName, args, host)
   }
 
   public async listChildren(
     path: ModulePath,
     childKind?: string,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    return this.navigator.listChildren(path, childKind)
+    return this.navigator.listChildren(path, childKind, host)
   }
 
   public async findInstance(
     path: ModulePath,
     childKind: string,
     query: ModuleInstanceQuery,
+    host?: ModuleHostContext,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    return this.navigator.findInstance(path, childKind, query)
+    return this.navigator.findInstance(path, childKind, query, host)
   }
 
   public describeKind(kind: string): OperationResult<ModuleKindDescription> {
@@ -193,42 +210,57 @@ export class ModuleSemanticRuntime {
 
   // ───────── 路由实现 ─────────
 
-  private async routeGetAttribute(args: ProtocolToolArgs): Promise<OperationResult<LlmJsonValue>> {
+  private async routeGetAttribute(
+    args: ProtocolToolArgs,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const attrName = requireString(args, 'attrName')
-    return this.attributes.get(ModulePath.parse(pathStr), attrName)
+    return this.attributes.get(ModulePath.parse(pathStr), attrName, host)
   }
 
-  private async routeSetAttribute(args: ProtocolToolArgs): Promise<OperationResult<LlmJsonValue>> {
+  private async routeSetAttribute(
+    args: ProtocolToolArgs,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const attrName = requireString(args, 'attrName')
     if (!('value' in args)) {
       throw new ToolArgsError(`参数 "value" 缺失`)
     }
     const value = args['value']
-    const result = await this.attributes.set(ModulePath.parse(pathStr), attrName, value)
+    const result = await this.attributes.set(ModulePath.parse(pathStr), attrName, value, host)
     return castVoidResult(result)
   }
 
-  private async routeInvokeAction(args: ProtocolToolArgs): Promise<OperationResult<LlmJsonValue>> {
+  private async routeInvokeAction(
+    args: ProtocolToolArgs,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const actionName = requireString(args, 'actionName')
     const actionArgs = requireObject(args, 'args')
-    return this.actions.invoke(ModulePath.parse(pathStr), actionName, actionArgs)
+    return this.actions.invoke(ModulePath.parse(pathStr), actionName, actionArgs, host)
   }
 
-  private async routeListChildren(args: ProtocolToolArgs): Promise<OperationResult<LlmJsonValue>> {
+  private async routeListChildren(
+    args: ProtocolToolArgs,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const childKind = optionalString(args, 'childKind')
-    const result = await this.navigator.listChildren(ModulePath.parse(pathStr), childKind)
+    const result = await this.navigator.listChildren(ModulePath.parse(pathStr), childKind, host)
     return castInstanceListResult(result)
   }
 
-  private async routeFindInstance(args: ProtocolToolArgs): Promise<OperationResult<LlmJsonValue>> {
+  private async routeFindInstance(
+    args: ProtocolToolArgs,
+    host?: ModuleHostContext,
+  ): Promise<OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const childKind = requireString(args, 'childKind')
     const query = requireObject(args, 'query')
-    const result = await this.navigator.findInstance(ModulePath.parse(pathStr), childKind, query)
+    const result = await this.navigator.findInstance(ModulePath.parse(pathStr), childKind, query, host)
     return castInstanceListResult(result)
   }
 
@@ -345,12 +377,7 @@ function castDescribeKindResult(
     kind: result.data.kind,
     name: result.data.name,
     description: result.data.description,
-    attributes: result.data.attributes.map((attr) => ({
-      name: attr.name,
-      description: attr.description,
-      readable: attr.readable,
-      writable: attr.writable,
-    })),
+    attributes: result.data.attributes.map((attr) => describeAttributeToJson(attr)),
     actions: result.data.actions.map((action) => describeActionToJson(action)),
     children: [...result.data.children],
   }
@@ -362,10 +389,31 @@ function castDescribeKindResult(
   }
 }
 
+function describeAttributeToJson(attr: ModuleKindDescription['attributes'][number]): Record<string, LlmJsonValue> {
+  const out: Record<string, LlmJsonValue> = {
+    name: attr.name,
+    description: attr.description,
+    readable: attr.readable,
+    writable: attr.writable,
+    schema: jsonSchemaToJson(attr.schema),
+  }
+  if (attr.example !== undefined) {
+    out['example'] = attr.example
+  }
+  return out
+}
+
 function describeActionToJson(action: ModuleKindDescription['actions'][number]): Record<string, LlmJsonValue> {
   const out: Record<string, LlmJsonValue> = {
     name: action.name,
     description: action.description,
+    paramsSchema: jsonSchemaToJson(action.paramsSchema),
+  }
+  if (action.resultSchema !== undefined) {
+    out['resultSchema'] = jsonSchemaToJson(action.resultSchema)
+  }
+  if (action.example !== undefined) {
+    out['example'] = action.example
   }
   if (action.usageRules && action.usageRules.length > 0) {
     out['usageRules'] = [...action.usageRules]
@@ -378,6 +426,31 @@ function describeActionToJson(action: ModuleKindDescription['actions'][number]):
     }))
   }
   return out
+}
+
+/**
+ * 把 LlmJsonSchema 投影成 LlmJsonValue 形态(JSON Schema 本身就是 JSON 兼容,
+ * 这里只做结构性递归遍历以让 TypeScript 类型对齐 LlmJsonValue)。
+ */
+function jsonSchemaToJson(schema: unknown): LlmJsonValue {
+  if (schema === null) return null
+  if (typeof schema === 'boolean') return schema
+  if (typeof schema === 'number') return schema
+  if (typeof schema === 'string') return schema
+  if (Array.isArray(schema)) {
+    return schema.map((item) => jsonSchemaToJson(item))
+  }
+  if (typeof schema === 'object') {
+    const obj = schema as Record<string, unknown>
+    const out: Record<string, LlmJsonValue> = {}
+    for (const key of Object.keys(obj)) {
+      const value = obj[key]
+      if (value === undefined) continue
+      out[key] = jsonSchemaToJson(value)
+    }
+    return out
+  }
+  return null
 }
 
 function instanceRefToJson(ref: ModuleInstanceRef): LlmJsonValue {

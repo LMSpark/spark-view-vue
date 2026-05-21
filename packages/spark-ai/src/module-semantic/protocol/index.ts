@@ -70,5 +70,6 @@ export {
 export type {
   ModuleInstanceQuery,
   ModuleInstanceRef,
+  ModuleHostContext,
   ModulePathContext,
 } from './capability'

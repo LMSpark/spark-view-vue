@@ -66,6 +66,9 @@ class NodeTreeKind extends ModuleKindBase {
 class NodeTreeCapability extends ModuleCapability {
   public readonly kind = 'node-tree'
 
+  /** 测试观测点:最近一次 invokeAction / findInstance 收到的 ctx.host */
+  public lastHost: ModulePathContext['host']
+
   public getAttribute(
     _ctx: ModulePathContext,
     attrName: string,
@@ -79,10 +82,11 @@ class NodeTreeCapability extends ModuleCapability {
   }
 
   public invokeAction(
-    _ctx: ModulePathContext,
+    ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<OperationResult<LlmJsonValue>> {
+    this.lastHost = ctx.host
     if (actionName === 'getNode') {
       const id = args['id']
       if (typeof id !== 'string' || id.length === 0) {
@@ -101,10 +105,11 @@ class NodeTreeCapability extends ModuleCapability {
   }
 
   public findInstance(
-    _ctx: ModulePathContext,
+    ctx: ModulePathContext,
     _childKind: string,
     _query: ModuleInstanceQuery,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    this.lastHost = ctx.host
     return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
       { id: 'node-tree-1', label: '主页节点树' },
     ]))
@@ -129,6 +134,24 @@ function createBusinessRuntime(): ModuleSemanticBusinessRuntime {
     description: '页面节点树编辑能力',
     runtime,
   })
+}
+
+/** 测试用:同时返回 business runtime 和 Capability spy(检查 host 透传) */
+function createBusinessRuntimeWithSpy(): {
+  business: ModuleSemanticBusinessRuntime
+  capability: NodeTreeCapability
+} {
+  const runtime = new ModuleSemanticRuntime()
+  runtime.registerKind(new NodeTreeKind())
+  const capability = new NodeTreeCapability()
+  runtime.registerCapability(capability)
+  const business = new ModuleSemanticBusinessRuntime({
+    moduleId: 'node-tree-module',
+    name: '节点树业务模块',
+    description: '页面节点树编辑能力',
+    runtime,
+  })
+  return { business, capability }
 }
 
 const SCOPE_CONTEXT = {
@@ -231,6 +254,21 @@ describe('ModuleSemanticBusinessRuntime.executeFunctionCall', () => {
       args: { kind: 'node-tree' },
     })
     expect(result.ok).toBe(true)
+  })
+
+  it('host 作用域透传到协议层 Capability.ctx.host(plan 闭环 3)', async () => {
+    const { business, capability } = createBusinessRuntimeWithSpy()
+    await business.startSession(SCOPE_CONTEXT)
+    await business.executeFunctionCall({
+      ...SCOPE_CONTEXT,
+      action: 'findInstance',
+      args: { path: '/', childKind: 'node-tree', query: {} },
+    })
+    expect(capability.lastHost).toEqual({
+      moduleId: SCOPE_CONTEXT.moduleId,
+      moduleInstanceId: SCOPE_CONTEXT.moduleInstanceId,
+      instanceId: SCOPE_CONTEXT.instanceId,
+    })
   })
 })
 

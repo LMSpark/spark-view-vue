@@ -16,6 +16,7 @@
  */
 
 import type { LlmJsonValue } from '../../protocol/parameter-schema'
+import type { ModuleHostContext } from '../protocol/capability'
 import type { AttributeSchema } from '../protocol/module-kind'
 import {
   errorCheck,
@@ -39,8 +40,8 @@ export class AttributeAccessor {
    * - ATTRIBUTE_NOT_READABLE: 属性声明为不可读
    * - (其它):由 navigator 或 Capability 抛
    */
-  public async get(path: ModulePath, attrName: string): Promise<OperationResult<LlmJsonValue>> {
-    const navResult = await this.navigator.navigate(path)
+  public async get(path: ModulePath, attrName: string, host?: ModuleHostContext): Promise<OperationResult<LlmJsonValue>> {
+    const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
     }
@@ -78,8 +79,8 @@ export class AttributeAccessor {
    * - ATTRIBUTE_NOT_DECLARED
    * - ATTRIBUTE_NOT_WRITABLE
    */
-  public async set(path: ModulePath, attrName: string, value: LlmJsonValue): Promise<OperationResult<void>> {
-    const navResult = await this.navigator.navigate(path)
+  public async set(path: ModulePath, attrName: string, value: LlmJsonValue, host?: ModuleHostContext): Promise<OperationResult<void>> {
+    const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
     }

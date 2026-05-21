@@ -14,7 +14,7 @@
  * 由调用方(AttributeAccessor / ActionInvoker / Navigator)继续执行业务操作。
  */
 
-import type { ModuleCapability, ModulePathContext } from '../protocol/capability'
+import type { ModuleCapability, ModuleHostContext, ModulePathContext } from '../protocol/capability'
 import type { ModulePath, ModulePathSegment } from '../protocol/module-path'
 import {
   type CheckEntry,
@@ -79,7 +79,10 @@ export class ModuleNavigator {
    * 5. 第二段及之后,调用父 Capability.resolveChild 验证
    *    返回 false → PATH_INVALID;返回 ok=false → RESOLVE_ERROR
    */
-  public async navigate(path: ModulePath): Promise<ModuleNavigationSuccess | ModuleNavigationFailure> {
+  public async navigate(
+    path: ModulePath,
+    host?: ModuleHostContext,
+  ): Promise<ModuleNavigationSuccess | ModuleNavigationFailure> {
     if (path.isRoot) {
       return {
         ok: false,
@@ -115,6 +118,7 @@ export class ModuleNavigator {
       const parentCtx: ModulePathContext = {
         segments: segments.slice(0, i),
         segment: parentSegment,
+        ...(host === undefined ? {} : { host }),
       }
       const resolveResult = await parentCapability.resolveChild(parentCtx, childSegment.kind, childSegment.id)
       if (!resolveResult.ok) {
@@ -141,6 +145,7 @@ export class ModuleNavigator {
       segmentCtx: {
         segments,
         segment: tail,
+        ...(host === undefined ? {} : { host }),
       },
     }
   }

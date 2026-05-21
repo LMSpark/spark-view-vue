@@ -110,11 +110,20 @@ export class NodeTreeCapability extends ModuleCapability {
   }
 
   public findInstance(
-    _ctx: ModulePathContext,
-    _childKind: string,
+    ctx: ModulePathContext,
+    childKind: string,
     _query: ModuleInstanceQuery,
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
+    if (childKind !== 'node-tree') {
+      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
+    }
+    const pageId = ctx.host?.moduleInstanceId
+    if (pageId === undefined || pageId.length === 0) {
+      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
+    }
+    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
+      { id: pageId, label: '当前页面节点树' },
+    ]))
   }
 
   public resolveChild(): Promise<OperationResult<boolean>> {
