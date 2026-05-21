@@ -40,6 +40,10 @@
     "./host": {
       "import": "./dist/host/index.js",
       "types": "./dist/host/index.d.ts"
+    },
+    "./module-semantic": {
+      "import": "./dist/module-semantic/index.js",
+      "types": "./dist/module-semantic/index.d.ts"
     }
   },
   "dependencies": {

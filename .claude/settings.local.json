@@ -15,7 +15,10 @@
       "Bash(npx eslint *)",
       "Bash(curl -s \"http://127.0.0.1:8080/api/tenants/platform/projects/default/databases/catalog/physical-names?serverId=1\")",
       "Bash(curl -s -H \"Authorization: Bearer test\" \"http://127.0.0.1:8080/api/tenants/platform/projects/default/databases/catalog/physical-names?serverId=1\")",
-      "Bash(pnpm run *)"
+      "Bash(pnpm run *)",
+      "Bash(git commit *)",
+      "Bash(git reset *)",
+      "Bash(git pull *)"
     ],
     "additionalDirectories": [
       "D:\\SPARK_VIEW\\.claude"
