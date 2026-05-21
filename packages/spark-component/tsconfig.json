@@ -17,9 +17,9 @@
       "@spark-view/spark-page-config/page/services": ["../spark-page-config/src/page/services/index.ts"],
       "@spark-view/spark-page-config/assistant/registrations": ["../spark-page-config/src/assistant/registrations/index.ts"],
       "@spark-view/spark-ai": ["../spark-ai/src/index.ts"],
-      "@spark-view/spark-ai/protocol": ["../spark-ai/src/protocol/index.ts"],
-      "@spark-view/spark-ai/core": ["../spark-ai/src/index.ts"],
-      "@spark-view/spark-ai/host": ["../spark-ai/src/host/index.ts"]
+      "@spark-view/spark-ai/schema": ["../spark-ai/src/schema/index.ts"],
+      "@spark-view/spark-ai/host": ["../spark-ai/src/host/index.ts"],
+      "@spark-view/spark-ai/module-semantic": ["../spark-ai/src/module-semantic/index.ts"]
     },
     "outDir": "./dist",
     "composite": false,

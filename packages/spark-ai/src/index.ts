@@ -1,23 +1,18 @@
 /**
  * @packageDocumentation
  *
- * SPARK AI 运行时公共入口。
+ * SPARK AI 公共入口。
  *
- * 业务注册和页面编辑适配器位于应用包中。
- * 本包拥有框架无关的 AI 运行时：协议、注解元数据、会话账本、
- * SSE/Host 传输契约、函数调用、工具编解码和知识投影。
+ * 本包只暴露三块稳定能力：
+ * - schema：LLM JSON Schema 类型、构造器和参数校验。
+ * - module-semantic：语义模块协议、Capability 和 ModuleSemanticRuntime。
+ * - host：框架无关的 Host 会话、传输和工具循环。
  *
- * 导出分组：
- * ┌──────────────────────────────────────────────────────────────┐
- * │ 1. protocol → 运行时协议类型、注册基类、工具编解码、          │
- * │               知识投影、参数校验、JSON Schema 构造器          │
- * │ 2. host     → 框架无关的 AI Host 协议、传输、会话、           │
- * │               工具循环、业务注册表                            │
- * └──────────────────────────────────────────────────────────────┘
+ * 旧 runtime / protocol / core 入口已经删除，不再提供兼容导出。
  */
 
-// 运行时协议层：类型定义、注册基类、工具编解码、知识投影
-export * from './protocol'
+export * from './schema'
 
-// AI Host 层：框架无关的会话、传输、工具循环
+export * from './module-semantic'
+
 export * from './host'

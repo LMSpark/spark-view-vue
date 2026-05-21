@@ -18,7 +18,7 @@ import type {
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmParameterSchemaRoot,
-} from '../protocol/parameter-schema'
+} from './types'
 
 // ── 内部类型 ──
 

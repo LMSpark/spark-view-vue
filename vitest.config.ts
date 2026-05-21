@@ -31,9 +31,9 @@ export default defineConfig({
       '@spark-view/spark-page-config/assistant/registrations': resolve(root, './packages/spark-page-config/src/assistant/registrations/index.ts'),
       '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
-      '@spark-view/spark-ai/protocol': resolve(root, './packages/spark-ai/src/protocol/index.ts'),
-      '@spark-view/spark-ai/core': resolve(root, './packages/spark-ai/src/index.ts'),
+      '@spark-view/spark-ai/schema': resolve(root, './packages/spark-ai/src/schema/index.ts'),
       '@spark-view/spark-ai/host': resolve(root, './packages/spark-ai/src/host/index.ts'),
+      '@spark-view/spark-ai/module-semantic': resolve(root, './packages/spark-ai/src/module-semantic/index.ts'),
       '@spark-view/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
       '@spark-view/vite-plugin-spark-catalog': resolve(root, './packages/vite-plugin-spark-catalog/src/index.ts')
     }

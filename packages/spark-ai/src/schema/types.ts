@@ -87,6 +87,9 @@ export type LlmJsonSchema = boolean | LlmJsonSchemaObject
  * 保留有限扩展字段，但不允许旧 DSL 的 'kind' 字段。
  */
 export interface LlmJsonSchemaObject {
+  /** 保留标准 JSON Schema 扩展关键字与 resultSchema 文档型字段。 */
+  readonly [keyword: string]: unknown
+
   // ── 引用 ──
   /** JSON Reference，引用另一个 schema（可选） */
   readonly $ref?: string

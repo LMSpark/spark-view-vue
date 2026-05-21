@@ -6,7 +6,7 @@
  * - 将 AJV error 转成现有中文诊断。
  *
  * ┌──────────────────────────────────────────────────────────┐
- * │                  LlmParamsValidator                        │
+ * │                  LlmSchemaValidator                        │
  * │                                                           │
  * │  validateLlmDeserializedParams()                          │
  * │    ├─ ① params 必须是 JSON 对象                           │
@@ -25,7 +25,7 @@
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
-import type { LlmParameterSchemaRoot } from '../protocol/parameter-schema'
+import type { LlmParameterSchemaRoot } from './types'
 
 export interface LlmParamValidationIssue {
   path: string
@@ -72,7 +72,7 @@ function unknownArrayParam(error: ErrorObject, key: string): readonly unknown[] 
   return Array.isArray(value) ? value : undefined
 }
 
-export class LlmParamsValidator {
+export class LlmSchemaValidator {
   private constructor() {}
 
   /**
@@ -100,7 +100,7 @@ export class LlmParamsValidator {
 
     const validate = ajv.compile(schema)
     if (!validate(params)) {
-      issues.push(...(validate.errors ?? []).map(LlmParamsValidator.issueFromAjvError))
+      issues.push(...(validate.errors ?? []).map(LlmSchemaValidator.issueFromAjvError))
     }
 
     return {
@@ -122,10 +122,10 @@ export class LlmParamsValidator {
 
   /** 将 AJV error 对象转换为 LlmParamValidationIssue */
   private static issueFromAjvError(error: ErrorObject): LlmParamValidationIssue {
-    const path = LlmParamsValidator.pathFromAjvError(error)
+    const path = LlmSchemaValidator.pathFromAjvError(error)
     return {
       path,
-      message: LlmParamsValidator.messageFromAjvError(error),
+      message: LlmSchemaValidator.messageFromAjvError(error),
     }
   }
 
@@ -134,16 +134,16 @@ export class LlmParamsValidator {
     if (error.keyword === 'required') {
       const missingProperty = stringParam(error, 'missingProperty')
       return missingProperty === undefined
-        ? LlmParamsValidator.jsonPointerToPath(error.instancePath)
-        : `${LlmParamsValidator.jsonPointerToPath(error.instancePath)}.${missingProperty}`
+        ? LlmSchemaValidator.jsonPointerToPath(error.instancePath)
+        : `${LlmSchemaValidator.jsonPointerToPath(error.instancePath)}.${missingProperty}`
     }
     if (error.keyword === 'additionalProperties') {
       const additionalProperty = stringParam(error, 'additionalProperty')
       return additionalProperty === undefined
-        ? LlmParamsValidator.jsonPointerToPath(error.instancePath)
-        : `${LlmParamsValidator.jsonPointerToPath(error.instancePath)}.${additionalProperty}`
+        ? LlmSchemaValidator.jsonPointerToPath(error.instancePath)
+        : `${LlmSchemaValidator.jsonPointerToPath(error.instancePath)}.${additionalProperty}`
     }
-    return LlmParamsValidator.jsonPointerToPath(error.instancePath)
+    return LlmSchemaValidator.jsonPointerToPath(error.instancePath)
   }
 
   /** JSON Pointer → $.a.b[0]：处理 ~1 → /、~0 → ~ 转义 */

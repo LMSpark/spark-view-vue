@@ -12,12 +12,10 @@ import {
   numberSchema,
   paramsSchema,
   stringSchema,
-  type AiFunctionRegistration,
-  type FunctionFailureMode,
-} from '@spark-view/spark-ai/protocol'
-import { StaticAiToolModule } from '../../internal/registration-base'
+} from '@spark-view/spark-ai/schema'
+import type { ActionFailureMode, ActionSchema } from '@spark-view/spark-ai/module-semantic'
 
-export interface EditLifecycleFunctionFailureMode extends FunctionFailureMode {}
+export interface EditLifecycleFunctionFailureMode extends ActionFailureMode {}
 export type EditLifecycleFunctionId = 'bootstrap' | 'describeProgress' | 'describeDesignFlow'
 
 const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')
@@ -31,9 +29,9 @@ const BOOTSTRAP_RULE = 'bootstrap 仅做 live binding 可用性校验，不接�
 const PHASE_RULE = '执行成功后进入 editing phase。'
 const DESIGN_FLOW_READONLY_RULE = '只返回页面设计 100 步流程事实，不修改页面内容。'
 
-const LIFECYCLE_FUNCTIONS: readonly AiFunctionRegistration[] = [
+export const LIFECYCLE_ACTIONS: readonly ActionSchema[] = [
   {
-    functionId: 'bootstrap',
+    name: 'bootstrap',
     description: '引导编辑会话：校验 live binding 能力并进入 editing phase。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -60,7 +58,7 @@ const LIFECYCLE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'describeProgress',
+    name: 'describeProgress',
     description: '查询当前 pageDesign 编辑运行状态、live binding 可用性和下一步建议。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -76,7 +74,7 @@ const LIFECYCLE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'describeDesignFlow',
+    name: 'describeDesignFlow',
     description: '查询页面设计 100 步流程，可返回阶段汇总、指定步骤、阶段步骤列表和下一步。',
     paramsSchema: DESIGN_FLOW_PARAMS,
     resultSchema: {
@@ -97,16 +95,3 @@ const LIFECYCLE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
 ]
-
-/** 页面设计生命周期静态工具模块：定义 bootstrap / describeProgress / describeDesignFlow 函数注册表。 */
-export class LifecycleModule extends StaticAiToolModule {
-  constructor() {
-    super({
-      moduleId: 'lifecycle',
-      name: 'Page Design Lifecycle',
-      description: '页面设计编辑运行态引导与进度查询。',
-      prompt: '页面设计编辑运行态引导与进度查询。',
-      functionRegistrations: LIFECYCLE_FUNCTIONS,
-    })
-  }
-}

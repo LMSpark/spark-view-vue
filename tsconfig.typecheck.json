@@ -49,9 +49,9 @@
       // (e.g. setupAutoRegister) are picked up without rebuilding the package
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
-      "@spark-view/spark-ai/protocol": ["./packages/spark-ai/src/protocol/index.ts"],
-      "@spark-view/spark-ai/core": ["./packages/spark-ai/src/index.ts"],
-      "@spark-view/spark-ai/host": ["./packages/spark-ai/src/host/index.ts"]
+      "@spark-view/spark-ai/schema": ["./packages/spark-ai/src/schema/index.ts"],
+      "@spark-view/spark-ai/host": ["./packages/spark-ai/src/host/index.ts"],
+      "@spark-view/spark-ai/module-semantic": ["./packages/spark-ai/src/module-semantic/index.ts"]
     },
     "types": ["vite/client", "vitest/globals", "node"]
   },

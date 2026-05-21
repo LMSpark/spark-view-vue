@@ -17,7 +17,7 @@
  * 不持有业务状态。所有业务数据由 Capability 实现自管。
  */
 
-import type { LlmJsonValue } from '../../protocol/parameter-schema'
+import type { LlmJsonValue } from '../../schema'
 import { ActionInvoker } from '../internal/action-invoker'
 import { AttributeAccessor } from '../internal/attribute-accessor'
 import { CapabilityRegistry } from '../internal/capability-registry'

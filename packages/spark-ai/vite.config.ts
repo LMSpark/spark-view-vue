@@ -6,7 +6,7 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'protocol/index': resolve(__dirname, 'src/protocol/index.ts'),
+        'schema/index': resolve(__dirname, 'src/schema/index.ts'),
         'host/index': resolve(__dirname, 'src/host/index.ts'),
         'module-semantic/index': resolve(__dirname, 'src/module-semantic/index.ts'),
       },

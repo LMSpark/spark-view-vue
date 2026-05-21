@@ -1,35 +1,30 @@
 /**
- * 模块语义协议 host 适配层测试。
- *
- * 覆盖范围:
- * - ModuleSemanticBusinessRuntime.executeFunctionCall 路由到协议工具
- * - 成功 / 失败结果到 AiRuntimeFunctionCallResult 的映射(含 PROTOCOL_FAILURE 兜底)
- * - startSession 投影包含 6 个协议工具(供旧 AiRuntimeToolCodec 复用)
- * - session lifecycle:startSession / appendMessage / endBusinessInstance
- * - ModuleSemanticToolCodec.actionOf 反查协议工具名,未知工具返回 null
+ * Host 直连 module-semantic 注册测试。
  */
 
 import { describe, expect, it } from 'vitest'
 
 import {
+  DefaultAiHostSessionStore,
+  AiHostToolLoopRunner,
+  startRegistrationSession,
+  type AiHostBusinessRegistration,
+  type AiHostTransport,
+} from '../host'
+import {
   ModuleCapability,
   ModuleKindBase,
-  ModuleSemanticBusinessRuntime,
   ModuleSemanticRuntime,
   ModuleSemanticToolCodec,
   PROTOCOL_TOOL_NAMES,
-  ok as okResult,
   errorCheck,
+  ok as okResult,
   type ModuleInstanceQuery,
   type ModuleInstanceRef,
   type ModulePathContext,
   type OperationResult,
 } from '../module-semantic'
-import type { LlmJsonValue } from '../protocol/parameter-schema'
-
-// ═══════════════════════════════════════════════════════
-// 测试用 Kind / Capability(与 runtime 测试保持对齐)
-// ═══════════════════════════════════════════════════════
+import type { LlmJsonValue } from '../schema'
 
 class NodeTreeKind extends ModuleKindBase {
   public constructor() {
@@ -37,15 +32,6 @@ class NodeTreeKind extends ModuleKindBase {
       kind: 'node-tree',
       name: '节点树',
       description: '页面节点树',
-      attributes: [
-        {
-          name: 'rootId',
-          description: '根节点 id',
-          schema: { type: 'string' },
-          readable: true,
-          writable: false,
-        },
-      ],
       actions: [
         {
           name: 'getNode',
@@ -56,6 +42,14 @@ class NodeTreeKind extends ModuleKindBase {
             required: ['id'],
             additionalProperties: false,
           },
+          resultSchema: {
+            node: '节点对象',
+          },
+          example: { id: 'n1' },
+          usageRules: ['只能在已知节点 id 时调用'],
+          failureModes: [
+            { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
+          ],
         },
       ],
       children: [],
@@ -66,19 +60,14 @@ class NodeTreeKind extends ModuleKindBase {
 class NodeTreeCapability extends ModuleCapability {
   public readonly kind = 'node-tree'
 
-  /** 测试观测点:最近一次 invokeAction / findInstance 收到的 ctx.host */
   public lastHost: ModulePathContext['host']
 
-  public getAttribute(
-    _ctx: ModulePathContext,
-    attrName: string,
-  ): Promise<OperationResult<LlmJsonValue>> {
-    if (attrName === 'rootId') return Promise.resolve(okResult<LlmJsonValue>('root-1'))
-    return Promise.resolve({ ok: false, checks: [errorCheck('UNKNOWN_ATTR', `${attrName} 未声明`)] })
+  public getAttribute(): Promise<OperationResult<LlmJsonValue>> {
+    return Promise.resolve({ ok: false, checks: [errorCheck('NO_ATTR', '无属性')] })
   }
 
   public setAttribute(): Promise<OperationResult<void>> {
-    return Promise.resolve({ ok: false, checks: [errorCheck('ATTR_READ_ONLY', 'rootId 不可写')] })
+    return Promise.resolve({ ok: false, checks: [errorCheck('NO_ATTR', '无属性')] })
   }
 
   public invokeAction(
@@ -87,17 +76,17 @@ class NodeTreeCapability extends ModuleCapability {
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<OperationResult<LlmJsonValue>> {
     this.lastHost = ctx.host
-    if (actionName === 'getNode') {
-      const id = args['id']
-      if (typeof id !== 'string' || id.length === 0) {
-        return Promise.resolve({
-          ok: false,
-          checks: [errorCheck('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')],
-        })
-      }
-      return Promise.resolve(okResult<LlmJsonValue>({ id, label: `node-${id}` }))
+    if (actionName !== 'getNode') {
+      return Promise.resolve({ ok: false, checks: [errorCheck('UNKNOWN_ACTION', actionName)] })
     }
-    return Promise.resolve({ ok: false, checks: [errorCheck('UNKNOWN_ACTION', `${actionName} 未实现`)] })
+    const id = args['id']
+    if (typeof id !== 'string' || id.length === 0) {
+      return Promise.resolve({
+        ok: false,
+        checks: [errorCheck('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')],
+      })
+    }
+    return Promise.resolve(okResult<LlmJsonValue>({ id, label: `node-${id}` }))
   }
 
   public listChildren(): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
@@ -111,7 +100,7 @@ class NodeTreeCapability extends ModuleCapability {
   ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
     this.lastHost = ctx.host
     return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
-      { id: 'node-tree-1', label: '主页节点树' },
+      { id: ctx.host?.moduleInstanceId ?? 'node-tree-1', label: '当前节点树' },
     ]))
   }
 
@@ -120,60 +109,60 @@ class NodeTreeCapability extends ModuleCapability {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// 测试夹具
-// ═══════════════════════════════════════════════════════
-
-function createBusinessRuntime(): ModuleSemanticBusinessRuntime {
-  const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(new NodeTreeKind())
-  runtime.registerCapability(new NodeTreeCapability())
-  return new ModuleSemanticBusinessRuntime({
-    moduleId: 'node-tree-module',
-    name: '节点树业务模块',
-    description: '页面节点树编辑能力',
-    runtime,
-  })
-}
-
-/** 测试用:同时返回 business runtime 和 Capability spy(检查 host 透传) */
-function createBusinessRuntimeWithSpy(): {
-  business: ModuleSemanticBusinessRuntime
-  capability: NodeTreeCapability
-} {
-  const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(new NodeTreeKind())
-  const capability = new NodeTreeCapability()
-  runtime.registerCapability(capability)
-  const business = new ModuleSemanticBusinessRuntime({
-    moduleId: 'node-tree-module',
-    name: '节点树业务模块',
-    description: '页面节点树编辑能力',
-    runtime,
-  })
-  return { business, capability }
-}
-
-const SCOPE_CONTEXT = {
-  moduleId: 'node-tree-module',
-  moduleInstanceId: 'inst-1',
-  instanceId: 'node-tree-module:inst-1',
+const CONTEXT = {
+  moduleId: 'pageDesign',
+  moduleInstanceId: 'page-1',
+  instanceId: 'pageDesign:page-1',
 } as const
 
-// ═══════════════════════════════════════════════════════
-// 测试用例
-// ═══════════════════════════════════════════════════════
+const SCOPE = {
+  businessRegistrationId: 'pageDesign',
+  businessInstanceId: 'page-1',
+  instanceId: 'pageDesign:page-1',
+  runtimeInstanceId: 'pageDesign:page-1',
+} as const
 
-describe('ModuleSemanticBusinessRuntime.startSession', () => {
-  it('返回 6 个协议工具作为 availableFunctions(供旧 codec 复用)', async () => {
-    const business = createBusinessRuntime()
-    const result = await business.startSession(SCOPE_CONTEXT)
-    expect(result.status).toBe('Started')
-    expect(result.instanceId).toBe(SCOPE_CONTEXT.instanceId)
-    expect(result.module.moduleId).toBe('node-tree-module')
-    expect(result.availableFunctions).toHaveLength(6)
-    const actions = result.availableFunctions.map((fn) => fn.action)
-    expect(actions).toEqual([
+const TURN = {
+  turnId: 'turn-1',
+  seq: 1,
+  baseRevision: 0,
+  queuedAt: '2026-05-21T00:00:00.000Z',
+  startedAt: '2026-05-21T00:00:00.000Z',
+  maxParallelTurns: 1,
+} as const
+
+function createRegistration(): { registration: AiHostBusinessRegistration; capability: NodeTreeCapability; released: string[] } {
+  const runtime = new ModuleSemanticRuntime()
+  const capability = new NodeTreeCapability()
+  runtime.registerKind(new NodeTreeKind())
+  runtime.registerCapability(capability)
+  const released: string[] = []
+  return {
+    capability,
+    released,
+    registration: {
+      moduleId: 'pageDesign',
+      name: 'Page Design',
+      description: '页面设计',
+      runtime,
+      sessionStore: new DefaultAiHostSessionStore({ now: () => 1000 }),
+      afterFunctionCall: (call) => call.result.ok
+        ? { status: 'complete', reason: 'done', releaseInstance: true }
+        : { status: 'continue' },
+      releaseModuleInstance: (moduleInstanceId) => {
+        released.push(moduleInstanceId)
+      },
+    },
+  }
+}
+
+describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
+  it('startRegistrationSession 返回 6 个协议工具', async () => {
+    const { registration } = createRegistration()
+    const started = await startRegistrationSession(registration, CONTEXT)
+    expect(started.status).toBe('Started')
+    expect(started.moduleId).toBe('pageDesign')
+    expect(started.tools.map((tool) => tool.function.name)).toEqual([
       PROTOCOL_TOOL_NAMES.getAttribute,
       PROTOCOL_TOOL_NAMES.setAttribute,
       PROTOCOL_TOOL_NAMES.invokeAction,
@@ -183,128 +172,95 @@ describe('ModuleSemanticBusinessRuntime.startSession', () => {
     ])
   })
 
-  it('每个 functionExposure 的 paramsSchema 是 JSON Schema object', async () => {
-    const business = createBusinessRuntime()
-    const result = await business.startSession(SCOPE_CONTEXT)
-    for (const fn of result.availableFunctions) {
-      expect(fn.paramsSchema.type).toBe('object')
+  it('tool loop 直接执行协议工具,记录 Host 命名历史并透传 host scope', async () => {
+    const { registration, capability, released } = createRegistration()
+    await startRegistrationSession(registration, CONTEXT)
+    const transport: AiHostTransport = {
+      streamTurn: () => Promise.resolve({
+        text: '',
+        toolCalls: [{
+          id: 'call-1',
+          type: 'function',
+          function: {
+            name: 'invokeAction',
+            arguments: JSON.stringify({
+              path: '/node-tree[page-1]',
+              actionName: 'getNode',
+              args: { id: 'n1' },
+            }),
+          },
+        }],
+      }),
+      appendMessages: () => Promise.resolve(),
     }
-  })
-})
-
-describe('ModuleSemanticBusinessRuntime.executeFunctionCall', () => {
-  it('invokeAction 透传 args 并返回 ok=true,session 记录 completed', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    const result = await business.executeFunctionCall({
-      ...SCOPE_CONTEXT,
-      action: 'invokeAction',
-      args: { path: '/node-tree[t1]', actionName: 'getNode', args: { id: 'n1' } },
+    const runner = new AiHostToolLoopRunner({
+      registry: { get: () => registration, list: () => [registration] },
+      transport,
+      maxToolRounds: 1,
     })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('expected ok')
-    expect(result.data).toEqual({ id: 'n1', label: 'node-n1' })
-    const history = business.getSessionHistory(SCOPE_CONTEXT)
-    const fcEntries = history.filter((entry) => entry.kind === 'functionCall')
-    expect(fcEntries).toHaveLength(1)
-    const first = fcEntries[0]
-    if (first === undefined || first.kind !== 'functionCall') throw new Error('no fc entry')
-    expect(first.status).toBe('completed')
-    expect(first.action).toBe('invokeAction')
-  })
+    let cleared = false
 
-  it('协议返回 ok=false 时映射为 AiRuntimeFunctionCallFailure 并记录 failed', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    const result = await business.executeFunctionCall({
-      ...SCOPE_CONTEXT,
-      action: 'invokeAction',
-      args: { path: '/node-tree[t1]', actionName: 'getNode', args: { id: '' } },
+    await runner.runToolLoop(registration, SCOPE, { historyMsgs: [] }, TURN, () => {
+      cleared = true
     })
-    expect(result.ok).toBe(false)
-    if (result.ok) throw new Error('expected failure')
-    expect(result.code).toBe('NODE_NOT_FOUND')
-    expect(result.msg).toContain('id 为空')
-    const history = business.getSessionHistory(SCOPE_CONTEXT)
-    const last = history[history.length - 1]
-    if (last === undefined || last.kind !== 'functionCall') throw new Error('no fc entry')
-    expect(last.status).toBe('failed')
-    expect(last.error?.code).toBe('NODE_NOT_FOUND')
-  })
 
-  it('未知协议工具时返回 UNKNOWN_TOOL 失败', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    const result = await business.executeFunctionCall({
-      ...SCOPE_CONTEXT,
-      action: 'no-such-tool',
-      args: {},
+    expect(capability.lastHost).toEqual(CONTEXT)
+    const history = registration.sessionStore?.getSessionHistory(CONTEXT) ?? []
+    expect(history).toHaveLength(1)
+    expect(history[0]).toMatchObject({
+      kind: 'functionCall',
+      toolName: 'invokeAction',
+      status: 'completed',
     })
-    expect(result.ok).toBe(false)
-    if (result.ok) throw new Error('expected failure')
-    expect(result.code).toBe('UNKNOWN_TOOL')
+    expect(registration.sessionStore?.getSession(CONTEXT)?.status).toBe('Stopped')
+    expect(released).toEqual(['page-1'])
+    expect(cleared).toBe(true)
   })
 
-  it('describeKind 走通,无 session 时也能调用(协议无状态)', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    const result = await business.executeFunctionCall({
-      ...SCOPE_CONTEXT,
-      action: 'describeKind',
-      args: { kind: 'node-tree' },
+  it('协议失败映射为 AiHostFunctionCallResult failure 并记录 failed', async () => {
+    const { registration } = createRegistration()
+    await startRegistrationSession(registration, CONTEXT)
+    const transport: AiHostTransport = {
+      streamTurn: () => Promise.resolve({
+        text: '',
+        toolCalls: [{
+          type: 'function',
+          function: {
+            name: 'invokeAction',
+            arguments: JSON.stringify({
+              path: '/node-tree[page-1]',
+              actionName: 'getNode',
+              args: { id: '' },
+            }),
+          },
+        }],
+      }),
+      appendMessages: () => Promise.resolve(),
+    }
+    const calls: string[] = []
+    const runner = new AiHostToolLoopRunner({
+      registry: { get: () => registration, list: () => [registration] },
+      transport,
+      maxToolRounds: 1,
     })
-    expect(result.ok).toBe(true)
-  })
 
-  it('host 作用域透传到协议层 Capability.ctx.host(plan 闭环 3)', async () => {
-    const { business, capability } = createBusinessRuntimeWithSpy()
-    await business.startSession(SCOPE_CONTEXT)
-    await business.executeFunctionCall({
-      ...SCOPE_CONTEXT,
-      action: 'findInstance',
-      args: { path: '/', childKind: 'node-tree', query: {} },
+    await runner.runToolLoop(
+      registration,
+      SCOPE,
+      { historyMsgs: [], onFcCall: (record) => calls.push(record.status) },
+      TURN,
+      () => undefined,
+    )
+
+    expect(calls).toEqual(['error'])
+    const history = registration.sessionStore?.getSessionHistory(CONTEXT) ?? []
+    expect(history.at(-1)).toMatchObject({
+      kind: 'functionCall',
+      status: 'failed',
+      error: {
+        code: 'NODE_NOT_FOUND',
+      },
     })
-    expect(capability.lastHost).toEqual({
-      moduleId: SCOPE_CONTEXT.moduleId,
-      moduleInstanceId: SCOPE_CONTEXT.moduleInstanceId,
-      instanceId: SCOPE_CONTEXT.instanceId,
-    })
-  })
-})
-
-describe('ModuleSemanticBusinessRuntime session lifecycle', () => {
-  it('appendMessage 与 getSessionHistory 串通', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    business.appendMessage({
-      ...SCOPE_CONTEXT,
-      role: 'user',
-      content: '帮我查节点 n1',
-    })
-    const history = business.getSessionHistory(SCOPE_CONTEXT)
-    const messages = history.filter((entry) => entry.kind === 'message')
-    expect(messages).toHaveLength(1)
-    const first = messages[0]
-    if (first === undefined || first.kind !== 'message') throw new Error('no message entry')
-    expect(first.role).toBe('user')
-    expect(first.content).toBe('帮我查节点 n1')
-  })
-
-  it('endBusinessInstance 将 session 状态转为 Stopped', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    await business.endBusinessInstance(SCOPE_CONTEXT, { status: 'complete', reason: '结束' })
-    const session = business.getSession(SCOPE_CONTEXT)
-    if (session === null) throw new Error('session missing')
-    expect(session.status).toBe('Stopped')
-    expect(session.reason).toBe('结束')
-  })
-
-  it('releaseModuleInstance 删除会话记录', async () => {
-    const business = createBusinessRuntime()
-    await business.startSession(SCOPE_CONTEXT)
-    business.releaseModuleInstance(SCOPE_CONTEXT.moduleInstanceId)
-    expect(business.getSession(SCOPE_CONTEXT)).toBeNull()
   })
 })
 
@@ -329,14 +285,5 @@ describe('ModuleSemanticToolCodec', () => {
       expect(tool.type).toBe('function')
       expect(tool.function.parameters['type']).toBe('object')
     }
-  })
-
-  it('isProtocolToolName 判定 6 个协议工具名通过,其它为 false', () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new NodeTreeKind())
-    runtime.registerCapability(new NodeTreeCapability())
-    const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
-    expect(codec.isProtocolToolName('listChildren')).toBe(true)
-    expect(codec.isProtocolToolName('foo')).toBe(false)
   })
 })

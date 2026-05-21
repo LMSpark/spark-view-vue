@@ -11,12 +11,10 @@ import {
   noParamsSchema,
   paramsSchema,
   stringSchema,
-  type AiFunctionRegistration,
-  type FunctionFailureMode,
-} from '@spark-view/spark-ai/protocol'
-import { StaticAiToolModule } from '../../internal/registration-base'
+} from '@spark-view/spark-ai/schema'
+import type { ActionFailureMode, ActionSchema } from '@spark-view/spark-ai/module-semantic'
 
-export interface TextModelFunctionFailureMode extends FunctionFailureMode {}
+export interface TextModelFunctionFailureMode extends ActionFailureMode {}
 export type TextModelFunctionFileKey = 'script' | 'style'
 export type TextModelFunctionId = 'readScript' | 'writeScript' | 'readStyle' | 'writeStyle'
 
@@ -27,9 +25,9 @@ const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.boot
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
-const TEXT_MODEL_FUNCTIONS: readonly AiFunctionRegistration[] = [
+export const TEXT_MODEL_ACTIONS: readonly ActionSchema[] = [
   {
-    functionId: 'readScript',
+    name: 'readScript',
     description: '读取 script.js 当前完整文本模型内容。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -46,7 +44,7 @@ const TEXT_MODEL_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'writeScript',
+    name: 'writeScript',
     description: '覆盖写入 script.js 全量文本模型内容。',
     paramsSchema: paramsSchema({ content: CONTENT_SCHEMA }, ['content']),
     resultSchema: {
@@ -70,7 +68,7 @@ const TEXT_MODEL_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'readStyle',
+    name: 'readStyle',
     description: '读取 style.css 当前完整文本模型内容。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -87,7 +85,7 @@ const TEXT_MODEL_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'writeStyle',
+    name: 'writeStyle',
     description: '覆盖写入 style.css 全量文本模型内容。',
     paramsSchema: paramsSchema({ content: CONTENT_SCHEMA }, ['content']),
     resultSchema: {
@@ -106,15 +104,3 @@ const TEXT_MODEL_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
 ]
-
-export class TextModelModule extends StaticAiToolModule {
-  constructor() {
-    super({
-      moduleId: 'textModel',
-      name: 'Page Design Text Model',
-      description: '当前页面 script.js/style.css live 文本模型读写。',
-      prompt: '当前页面 script.js/style.css live 文本模型读写。',
-      functionRegistrations: TEXT_MODEL_FUNCTIONS,
-    })
-  }
-}

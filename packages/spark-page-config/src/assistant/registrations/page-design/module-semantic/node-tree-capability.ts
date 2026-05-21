@@ -24,7 +24,7 @@ import {
   type ModulePathContext,
   type OperationResult,
 } from '@spark-view/spark-ai/module-semantic'
-import type { LlmJsonValue } from '@spark-view/spark-ai/protocol'
+import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
 import type {
   PageDesignService,
   PageDesignServiceContext,

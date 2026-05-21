@@ -16,7 +16,7 @@
  * - resolveChild                  ← 路径段验证(协议遍历用,不直接暴露给 LLM)
  */
 
-import type { LlmJsonValue } from '../../protocol/parameter-schema'
+import type { LlmJsonValue } from '../../schema'
 import type { ModulePathSegment } from './module-path'
 import type { OperationResult } from './operation-result'
 

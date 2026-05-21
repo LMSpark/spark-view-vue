@@ -23,7 +23,7 @@
 
 import type { ModuleKindRegistry } from './module-kind-registry'
 import type { ModuleKind } from '../protocol/module-kind'
-import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
+import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../schema'
 
 /**
  * 协议级工具规约(OpenAI 兼容形状)。

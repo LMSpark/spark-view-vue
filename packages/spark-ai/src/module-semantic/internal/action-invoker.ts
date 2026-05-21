@@ -8,13 +8,13 @@
  * 流程:
  * 1. ModuleNavigator 解析路径,定位末段 Capability + PathContext
  * 2. 用末段 kind 的 ModuleKind 校验动作是否声明
- * 3. 用 LlmParamsValidator 按 ActionSchema.paramsSchema 校验参数
+ * 3. 用 LlmSchemaValidator 按 ActionSchema.paramsSchema 校验参数
  * 4. 委托末段 Capability.invokeAction 执行业务
  * 5. 透传业务返回的 OperationResult 给 LLM
  */
 
-import type { LlmJsonValue } from '../../protocol/parameter-schema'
-import { LlmParamsValidator } from '../../internal/llm-params-validator'
+import type { LlmJsonValue } from '../../schema'
+import { LlmSchemaValidator } from '../../schema'
 import type { ModuleHostContext } from '../protocol/capability'
 import type { ActionSchema } from '../protocol/module-kind'
 import {
@@ -65,14 +65,14 @@ export class ActionInvoker {
       }
     }
 
-    const validation = LlmParamsValidator.validateLlmDeserializedParams(args, action.paramsSchema)
+    const validation = LlmSchemaValidator.validateLlmDeserializedParams(args, action.paramsSchema)
     if (!validation.ok) {
       const checks: CheckEntry[] = validation.issues.map((issue) =>
         errorCheck('INVALID_ARGS', `${issue.path} ${issue.message}`),
       )
       const summary: CheckEntry = errorCheck(
         'INVALID_ARGS',
-        LlmParamsValidator.formatLlmParamValidationIssues(validation.issues),
+        LlmSchemaValidator.formatLlmParamValidationIssues(validation.issues),
         '请按 ModuleKind 上声明的 paramsSchema 调整参数后重试',
       )
       return { ok: false, checks: [summary, ...checks] }

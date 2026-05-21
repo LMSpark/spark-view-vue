@@ -1,42 +1,45 @@
 /**
- * 人工请假 AI 模块注册。
+ * 人工请假 module-semantic 业务注册。
  *
- * 流程：LeaveRequestModuleRegistration 定义函数目录表 → LeaveRequestModule 在构造时注册到 AiRuntime →
- * 会话启动时 LeaveRequestModule.startSession 初始化草稿 → LLM 调用函数时 executeFunctionCall
- * 委托 LeaveRequestService 执行业务逻辑 → 会话结束时 releaseModuleInstance 清理草稿。
+ * Host 业务 ID 保持 manualLeave；语义协议内只暴露一个 kind: manual-leave。
  */
 
 import {
-  LlmParamsValidator,
-  type AiFunctionRegistration,
-  type AiRuntimeFunctionCallResult,
-  type AiRuntimeStartSessionResult,
-  type FunctionExecutionContext,
-  type LlmJsonObject,
-  type LlmJsonSchema,
-  type LlmParameterSchemaRoot,
-} from '@spark-view/spark-ai/protocol'
+  DefaultAiHostSessionStore,
+  type AiHostBusinessRegistration,
+  type AiHostBusinessRuntimeContext,
+  type AiHostFunctionCallResult,
+} from '@spark-view/spark-ai/host'
 import {
-  RuntimeBackedBusinessModule,
-  StaticAiToolModule,
-  type RuntimeBackedExecuteFunctionCallOptions,
-  type RuntimeBackedModuleContext,
-} from '../internal/registration-base'
+  ModuleCapability,
+  ModuleKindBase,
+  ModuleSemanticRuntime,
+  errorCheck,
+  infoCheck,
+  ok as okResult,
+  type ActionSchema,
+  type ModuleInstanceQuery,
+  type ModuleInstanceRef,
+  type ModulePathContext,
+  type OperationResult,
+} from '@spark-view/spark-ai/module-semantic'
+import type {
+  LlmJsonSchema,
+  LlmJsonValue,
+  LlmParameterSchemaRoot,
+} from '@spark-view/spark-ai/schema'
 import {
   LeaveRequestService,
-  isLeaveRequestServiceResult,
   leaveRequestServiceFailure,
-  type LeaveRequestDraftState,
   type LeaveRequestServiceContext,
   type LeaveRequestServiceResult,
 } from './leave-request-service'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
+export const LEAVE_REQUEST_KIND = 'manual-leave'
 
-interface LeaveRequestRuntimeContext {
-  readonly instanceId: string
-  readonly moduleId: typeof LEAVE_REQUEST_MODULE_ID
-  readonly moduleInstanceId: string
+export interface LeaveRequestBusinessRegistrationOptions {
+  readonly now?: (() => number) | undefined
 }
 
 const NO_PARAMS: LlmParameterSchemaRoot = {
@@ -63,9 +66,11 @@ const SET_DRAFT_FIELDS_SCHEMA: LlmParameterSchemaRoot = {
       type: 'object',
       description: '要写入请假草稿的字段。只传用户明确给出的字段。',
       properties: DRAFT_FIELDS_SCHEMA,
+      additionalProperties: false,
     },
   },
   required: ['fields'],
+  additionalProperties: false,
 }
 
 const CANCEL_DRAFT_SCHEMA: LlmParameterSchemaRoot = {
@@ -76,39 +81,40 @@ const CANCEL_DRAFT_SCHEMA: LlmParameterSchemaRoot = {
       description: '取消原因。用户未说明时可省略。',
     },
   },
+  additionalProperties: false,
 }
 
-const DRAFT_RESULT_SCHEMA: LlmJsonObject = {
-  draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
-  missingFields: 'string[] — 提交前仍缺少的字段。',
-}
-
-/** 静态注册类：定义模块 ID / 名称 / 描述和函数注册表，不参与运行时。 */
-export class LeaveRequestModuleRegistration extends StaticAiToolModule {
-  constructor() {
-    super({
-      moduleId: 'manualLeave',
-      name: '人工请假',
-      description: '帮助员工收集、确认并提交人工请假申请。',
-      prompt: '帮助员工收集、确认并提交人工请假申请。',
-      functionRegistrations: LEAVE_REQUEST_FUNCTIONS,
-    })
-  }
-}
-
-const LEAVE_REQUEST_FUNCTIONS: readonly AiFunctionRegistration[] = [
+export const LEAVE_REQUEST_ACTIONS: readonly ActionSchema[] = [
   {
-    functionId: 'describeDraft',
+    name: 'describeDraft',
     description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
     paramsSchema: NO_PARAMS,
-    resultSchema: DRAFT_RESULT_SCHEMA,
+    resultSchema: {
+      draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
+      missingFields: 'string[] — 提交前仍缺少的字段。',
+    },
+    example: {},
     usageRules: ['用户要求查看当前申请、确认已收集信息或不知道下一步时调用。', '本函数只读业务 Live state。'],
+    failureModes: [],
   },
   {
-    functionId: 'setDraftFields',
+    name: 'setDraftFields',
     description: '把用户明确给出的请假信息写入当前草稿。',
     paramsSchema: SET_DRAFT_FIELDS_SCHEMA,
-    resultSchema: DRAFT_RESULT_SCHEMA,
+    resultSchema: {
+      draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
+      missingFields: 'string[] — 提交前仍缺少的字段。',
+    },
+    example: {
+      fields: {
+        applicantName: 'Ada',
+        leaveType: 'annual',
+        startDate: '2026-05-14',
+        endDate: '2026-05-15',
+        totalDays: 2,
+        reason: 'family care',
+      },
+    },
     usageRules: [
       '只写入用户明确表达的字段；不要虚构请假人、日期、原因或审批人。',
       '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算，无法唯一确定时先追问。',
@@ -122,10 +128,14 @@ const LEAVE_REQUEST_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'submitDraft',
+    name: 'submitDraft',
     description: '提交当前人工请假申请。提交前会校验必填字段和日期范围。',
     paramsSchema: NO_PARAMS,
-    resultSchema: DRAFT_RESULT_SCHEMA,
+    resultSchema: {
+      draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
+      missingFields: 'string[] — 提交前仍缺少的字段。',
+    },
+    example: {},
     usageRules: ['只有用户明确表示提交或确认信息完整时调用。', '如果返回 MISSING_REQUIRED_FIELDS，继续追问缺失字段。'],
     failureModes: [
       { code: 'MISSING_REQUIRED_FIELDS', when: '提交前缺少必填字段', fix: '追问缺失字段后再提交。' },
@@ -134,12 +144,13 @@ const LEAVE_REQUEST_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'cancelDraft',
+    name: 'cancelDraft',
     description: '取消当前未提交的人工请假草稿。',
     paramsSchema: CANCEL_DRAFT_SCHEMA,
     resultSchema: {
       draft: 'LeaveRequestDraftState — 取消后的草稿状态。',
     },
+    example: { reason: '用户取消申请' },
     usageRules: ['只有用户明确表示取消当前请假流程时调用。'],
     failureModes: [
       { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '不要取消草稿，提示用户走审批撤回流程。' },
@@ -147,141 +158,271 @@ const LEAVE_REQUEST_FUNCTIONS: readonly AiFunctionRegistration[] = [
   },
 ]
 
-const LEAVE_REQUEST_REGISTRATION = new LeaveRequestModuleRegistration()
+class LeaveRequestModuleKind extends ModuleKindBase {
+  public constructor() {
+    super({
+      kind: LEAVE_REQUEST_KIND,
+      name: '人工请假',
+      description: '帮助员工收集、确认并提交人工请假申请。',
+      actions: LEAVE_REQUEST_ACTIONS,
+      children: [],
+    })
+  }
+}
 
-function toServiceContext(context: LeaveRequestRuntimeContext | FunctionExecutionContext): LeaveRequestServiceContext {
+class LeaveRequestCapability extends ModuleCapability {
+  public readonly kind = LEAVE_REQUEST_KIND
+
+  public constructor(private readonly service: LeaveRequestService) {
+    super()
+  }
+
+  public getAttribute(): Promise<OperationResult<LlmJsonValue>> {
+    return Promise.resolve({
+      ok: false,
+      checks: [errorCheck('ATTRIBUTE_NOT_DECLARED', 'manual-leave 未暴露任何属性', '请通过 invokeAction 调用具体动作')],
+    })
+  }
+
+  public setAttribute(): Promise<OperationResult<void>> {
+    return Promise.resolve({
+      ok: false,
+      checks: [errorCheck('ATTRIBUTE_NOT_DECLARED', 'manual-leave 未暴露任何属性', '请通过 invokeAction 调用具体动作')],
+    })
+  }
+
+  public invokeAction(
+    ctx: ModulePathContext,
+    actionName: string,
+    args: Readonly<Record<string, LlmJsonValue>>,
+  ): Promise<OperationResult<LlmJsonValue>> {
+    return Promise.resolve(serviceResultToOperationResult(this.runAction(ctx, actionName, args)))
+  }
+
+  public listChildren(): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
+  }
+
+  public findInstance(
+    ctx: ModulePathContext,
+    childKind: string,
+    _query: ModuleInstanceQuery,
+  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    if (childKind !== LEAVE_REQUEST_KIND) {
+      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
+    }
+    const leaveDraftId = ctx.host?.moduleInstanceId
+    if (leaveDraftId === undefined || leaveDraftId.length === 0) {
+      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
+    }
+    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
+      { id: leaveDraftId, label: '当前请假草稿', summary: '当前人工请假业务实例' },
+    ]))
+  }
+
+  public resolveChild(): Promise<OperationResult<boolean>> {
+    return Promise.resolve(okResult<boolean>(false))
+  }
+
+  private runAction(
+    ctx: ModulePathContext,
+    actionName: string,
+    args: Readonly<Record<string, LlmJsonValue>>,
+  ): LeaveRequestServiceResult<unknown> {
+    const context = toServiceContext(ctx)
+    switch (actionName) {
+      case 'describeDraft':
+        return this.service.describeDraft(context)
+      case 'setDraftFields':
+        return this.service.setDraftFields(context, args['fields'])
+      case 'submitDraft':
+        return this.service.submitDraft(context)
+      case 'cancelDraft':
+        return this.service.cancelDraft(context, typeof args['reason'] === 'string' ? args['reason'] : undefined)
+      default:
+        return leaveRequestServiceFailure('UNKNOWN_ACTION', `不支持 ${actionName}`, '请查阅 describeKind("manual-leave")。')
+    }
+  }
+}
+
+export function createLeaveRequestBusinessRegistration(
+  options: LeaveRequestBusinessRegistrationOptions = {},
+): AiHostBusinessRegistration {
+  const service = new LeaveRequestService(options.now)
+  const runtime = new ModuleSemanticRuntime()
+  runtime.registerKind(new LeaveRequestModuleKind())
+  runtime.registerCapability(new LeaveRequestCapability(service))
+
   return {
-    requestId: context.instanceId,
-    leaveDraftId: context.moduleInstanceId,
+    moduleId: LEAVE_REQUEST_MODULE_ID,
+    name: '人工请假',
+    description: '帮助员工收集、确认并提交人工请假申请。',
+    runtime,
+    sessionStore: new DefaultAiHostSessionStore(options.now === undefined ? {} : { now: options.now }),
+    systemPrompt: () => createLeaveRequestSystemPrompt(new Date((options.now ?? Date.now)())),
+    onStartSession: (context) => {
+      service.getDraft(context.moduleInstanceId)
+    },
+    afterFunctionCall: (call) => {
+      const actionName = readInvokeActionName(call.toolName, call.args)
+      if (actionName === 'submitDraft' && call.result.ok) {
+        return {
+          status: 'complete',
+          reason: 'leave request submitted',
+          finalAssistantMessage: submittedLeaveMessage(call.result),
+          releaseInstance: true,
+        }
+      }
+      if (actionName === 'cancelDraft' && call.result.ok) {
+        return {
+          status: 'abort',
+          reason: 'leave request cancelled',
+          finalAssistantMessage: '当前请假草稿已取消。',
+          releaseInstance: true,
+        }
+      }
+      return { status: 'continue' }
+    },
+    releaseModuleInstance: (moduleInstanceId) => {
+      service.releaseDraft(moduleInstanceId)
+    },
   }
 }
 
-/** 基于函数注册表的 paramsSchema 校验 LLM 传入的参数。 */
-function validateParams(functionId: string, args: unknown): string | null {
-  const row = LEAVE_REQUEST_REGISTRATION.functionRegistrations.find((r) => r.functionId === functionId)
-  if (!row) return `未知 ${functionId} 函数`
-  const result = LlmParamsValidator.validateLlmDeserializedParams(args ?? {}, row.paramsSchema)
-  return result.ok ? null : LlmParamsValidator.formatLlmParamValidationIssues(result.issues)
+export function createLeaveRequestDraftId(now = Date.now): string {
+  const randomId = typeof globalThis.crypto.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${now()}-${Math.random().toString(36).slice(2, 10)}`
+  return `leaveDraft:${randomId}`
 }
 
-/** 根据 functionId 分派到 LeaveRequestService 的对应方法。 */
-function executeServiceMethod(
-  functionId: string,
-  service: LeaveRequestService,
-  args: unknown,
-  context: FunctionExecutionContext,
-): LeaveRequestServiceResult<unknown> {
-  switch (functionId) {
-    case 'describeDraft':
-      return service.describeDraft(toServiceContext(context))
-    case 'setDraftFields':
-      return service.setDraftFields(toServiceContext(context), readRequiredArg(args, 'fields'))
-    case 'submitDraft':
-      return service.submitDraft(toServiceContext(context))
-    case 'cancelDraft':
-      return service.cancelDraft(
-        toServiceContext(context),
-        isRecord(args) && typeof args['reason'] === 'string' ? args['reason'] : undefined,
-      )
-    default:
-      return leaveRequestServiceFailure('UNKNOWN_FUNCTION', `不支持 ${functionId}`, '请查阅函数目录。')
+function toServiceContext(ctx: ModulePathContext | AiHostBusinessRuntimeContext): LeaveRequestServiceContext {
+  if ('host' in ctx || 'segment' in ctx) {
+    const pathCtx = ctx
+    return {
+      requestId: pathCtx.host?.instanceId ?? pathCtx.segment.id,
+      leaveDraftId: pathCtx.host?.moduleInstanceId ?? pathCtx.segment.id,
+    }
   }
+  return {
+    requestId: ctx.instanceId,
+    leaveDraftId: ctx.moduleInstanceId,
+  }
+}
+
+function serviceResultToOperationResult(result: LeaveRequestServiceResult<unknown>): OperationResult<LlmJsonValue> {
+  if (result.ok) {
+    const data = coerceLlmJsonValue(result.data)
+    return {
+      ok: true,
+      ...(data === undefined ? {} : { data }),
+      checks: [infoCheck('OK', result.summary)],
+    }
+  }
+  return {
+    ok: false,
+    checks: [errorCheck(result.code, result.msg, result.fix)],
+  }
+}
+
+function readInvokeActionName(toolName: string, args: Readonly<Record<string, LlmJsonValue>>): string | null {
+  if (toolName !== 'invokeAction') return null
+  return typeof args['actionName'] === 'string' ? args['actionName'] : null
+}
+
+function submittedLeaveMessage(result: AiHostFunctionCallResult<unknown>): string {
+  const data = result.ok && isRecord(result.data) ? result.data : {}
+  const draft = isRecord(data['draft']) ? data['draft'] : {}
+  const fields = isRecord(draft['fields']) ? draft['fields'] : {}
+  const totalDays = typeof fields['totalDays'] === 'number' ? `${fields['totalDays']}天` : '-'
+  return [
+    '请假申请已提交成功。',
+    '',
+    `请假人：${typeof fields['applicantName'] === 'string' ? fields['applicantName'] : '-'}`,
+    `请假类型：${leaveTypeLabel(fields['leaveType'])}`,
+    `开始日期：${typeof fields['startDate'] === 'string' ? fields['startDate'] : '-'}`,
+    `结束日期：${typeof fields['endDate'] === 'string' ? fields['endDate'] : '-'}`,
+    `请假天数：${totalDays}`,
+    `请假事由：${typeof fields['reason'] === 'string' ? fields['reason'] : '-'}`,
+  ].join('\n')
+}
+
+function leaveTypeLabel(value: unknown): string {
+  if (value === 'annual') return '年假'
+  if (value === 'sick') return '病假'
+  if (value === 'personal') return '事假'
+  if (value === 'other') return '其他'
+  return typeof value === 'string' && value.trim().length > 0 ? value : '-'
+}
+
+function createLeaveRequestSystemPrompt(now: Date): string {
+  const timeZone = getRuntimeTimeZone()
+  const currentDate = formatDateInTimeZone(now, timeZone)
+  return [
+    '人工请假运行时上下文：',
+    `- 当前日期：${currentDate}`,
+    `- 当前 UTC 时间：${now.toISOString()}`,
+    `- 当前时区：${timeZone}`,
+    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先追问，不要假设或使用训练样本中的日期。',
+  ].join('\n')
+}
+
+function getRuntimeTimeZone(): string {
+  try {
+    return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'
+  } catch {
+    return 'local'
+  }
+}
+
+function formatDateInTimeZone(date: Date, timeZone: string): string {
+  try {
+    const parts = new Intl.DateTimeFormat('en-CA', {
+      timeZone,
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).formatToParts(date)
+    const byType = new Map(parts.map((part) => [part.type, part.value]))
+    const year = byType.get('year')
+    const month = byType.get('month')
+    const day = byType.get('day')
+    if (year !== undefined && month !== undefined && day !== undefined) {
+      return `${year}-${month}-${day}`
+    }
+  } catch {
+    // fall through to UTC date
+  }
+  return date.toISOString().slice(0, 10)
+}
+
+function coerceLlmJsonValue(value: unknown): LlmJsonValue | undefined {
+  if (value === null) return null
+  if (value === undefined) return undefined
+  if (typeof value === 'string') return value
+  if (typeof value === 'number') return value
+  if (typeof value === 'boolean') return value
+  if (Array.isArray(value)) {
+    const out: LlmJsonValue[] = []
+    for (const item of value) {
+      const coerced = coerceLlmJsonValue(item)
+      if (coerced !== undefined) out.push(coerced)
+    }
+    return out
+  }
+  if (typeof value === 'object') {
+    const obj: Record<string, LlmJsonValue> = {}
+    for (const [key, raw] of Object.entries(value)) {
+      const coerced = coerceLlmJsonValue(raw)
+      if (coerced !== undefined) obj[key] = coerced
+    }
+    return obj
+  }
+  return undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function readRequiredArg(args: unknown, key: string): unknown {
-  if (!isRecord(args) || !(key in args)) {
-    throw new Error(`Missing required argument: ${key}`)
-  }
-  return args[key]
-}
-
-function cloneJson<T>(value: T): T {
-  if (value === null || value === undefined || typeof value !== 'object') return value
-  return globalThis.structuredClone(value)
-}
-
-/**
- * 人工请假运行时模块。
- *
- * 继承 RuntimeBackedBusinessModule，构造函数中创建 LeaveRequestService 并注入到
- * executeFunctionCall 的 validate / run / normalizeResult 链路。
- * 会话启动时自动获取/创建草稿，会话结束时释放。
- */
-export class LeaveRequestModule extends RuntimeBackedBusinessModule {
-  static readonly moduleId = LEAVE_REQUEST_MODULE_ID
-
-  /** 断言上下文 moduleId 必须为 'manualLeave'。 */
-  static assertContext(context: { readonly moduleId: string }): asserts context is LeaveRequestRuntimeContext {
-    if (context.moduleId !== LEAVE_REQUEST_MODULE_ID) {
-      throw new Error(`LeaveRequest context moduleId must be ${LEAVE_REQUEST_MODULE_ID}, got ${context.moduleId}`)
-    }
-  }
-
-  /** 生成唯一草稿 ID，格式 leaveDraft:<uuid>，由业务按钮或 API 在打开面板前传入。 */
-  static createDraftId(): string {
-    const randomId = typeof globalThis.crypto.randomUUID === 'function'
-      ? globalThis.crypto.randomUUID()
-      : `${Date.now()}-${Math.random().toString(36).slice(2, 10)}`
-    return `leaveDraft:${randomId}`
-  }
-
-  private readonly service: LeaveRequestService
-
-  constructor(options: { now?: () => number } = {}) {
-    const service = new LeaveRequestService(options.now)
-    super({
-      moduleId: LEAVE_REQUEST_MODULE_ID,
-      name: '人工请假',
-      description: '帮助员工收集、确认并提交人工请假申请。',
-      prompt: [
-        '你正在处理人工请假业务。请根据用户输入收集请假人、请假类型、开始日期、结束日期和请假事由。',
-        'Live state 由人工请假服务维护；不要声称已经保存到数据库，除非 submitDraft 成功。',
-        '提交前必须补齐必填字段；日期不明确时先追问，不要猜测。',
-      ].join('\n'),
-      functionRegistrations: LEAVE_REQUEST_REGISTRATION.functionRegistrations,
-      runtimeOptions: options.now === undefined ? {} : { now: options.now },
-    })
-    this.service = service
-  }
-
-  /** 会话启动时先获取/创建草稿，再启动 AI Runtime 会话。 */
-  override async startSession(context: RuntimeBackedModuleContext): Promise<AiRuntimeStartSessionResult> {
-    LeaveRequestModule.assertContext(context)
-    this.service.getDraft(context.moduleInstanceId)
-    return super.startSession(context)
-  }
-
-  /** LLM 函数调用入口：注入 validate（参数校验）、run（Service 分派）、normalizeResult（结果包装）。 */
-  override async executeFunctionCall(options: RuntimeBackedExecuteFunctionCallOptions): Promise<AiRuntimeFunctionCallResult<unknown>> {
-    LeaveRequestModule.assertContext(options)
-    return this.executeRegisteredFunctionCall({
-      ...options,
-      validate: ({ functionRegistration, args }) => validateParams(functionRegistration.functionId, args),
-      run: ({ functionRegistration, args, context }) => executeServiceMethod(functionRegistration.functionId, this.service, args, context),
-      normalizeResult: (value) => isLeaveRequestServiceResult(value)
-        ? value
-        : {
-          ok: true,
-          data: value,
-          summary: `${options.action} executed`,
-        },
-      errorFix: `Fix ${options.action} args or retry after checking manualLeave draft state.`,
-    })
-  }
-
-  /** 外部读取草稿（深拷贝），供面板监视器读取。 */
-  getDraft(leaveDraftId: string): LeaveRequestDraftState {
-    return cloneJson(this.service.getDraft(leaveDraftId))
-  }
-
-  /** 会话结束时释放草稿，从内存 Map 中移除。 */
-  override releaseModuleInstance(leaveDraftId: string): void {
-    this.service.releaseDraft(leaveDraftId)
-  }
 }
 
 export type {

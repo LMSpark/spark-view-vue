@@ -24,7 +24,7 @@ import {
   type ModulePathContext,
   type OperationResult,
 } from '../module-semantic'
-import type { LlmJsonValue } from '../protocol/parameter-schema'
+import type { LlmJsonValue } from '../schema'
 
 // ═══════════════════════════════════════════════════════
 // 测试用 Kind / Capability

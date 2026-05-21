@@ -22,8 +22,7 @@ import {
   ModuleKindBase,
   type ActionSchema,
 } from '@spark-view/spark-ai/module-semantic'
-import type { AiFunctionRegistration } from '@spark-view/spark-ai/protocol'
-import { NodeTreeModule } from '../modules/node-tree-tool-catalog'
+import { NODE_TREE_ACTIONS } from '../modules/node-tree-tool-catalog'
 
 /** SparkNodeTree 19 个公开方法键名(与 SparkNodeTreeMethodKey 联合类型一致)。 */
 const NODE_TREE_METHOD_NAMES = [
@@ -61,10 +60,9 @@ const OLD_FUNCTION_ID_OF: ReadonlyMap<string, string> = new Map([
   ['collectDataViewKeys', 'collectDataKeys'],
 ])
 
-const OLD_FUNCTION_REGISTRATIONS: ReadonlyMap<string, AiFunctionRegistration> = (() => {
-  const module = new NodeTreeModule()
-  return new Map(module.functionRegistrations.map((registration) => [registration.functionId, registration]))
-})()
+const OLD_ACTIONS: ReadonlyMap<string, ActionSchema> = new Map(
+  NODE_TREE_ACTIONS.map((action) => [action.name, action]),
+)
 
 /**
  * 节点树模块的语义协议 Kind 声明。
@@ -88,23 +86,23 @@ export class NodeTreeModuleKind extends ModuleKindBase {
 
 function actionFor(methodName: typeof NODE_TREE_METHOD_NAMES[number]): ActionSchema {
   const oldId = OLD_FUNCTION_ID_OF.get(methodName) ?? methodName
-  const registration = OLD_FUNCTION_REGISTRATIONS.get(oldId)
-  if (registration === undefined) {
+  const action = OLD_ACTIONS.get(oldId)
+  if (action === undefined) {
     throw new Error(
       `NodeTreeModuleKind missing legacy registration for ${methodName}/${oldId}`,
     )
   }
   return {
     name: methodName,
-    description: registration.description,
-    paramsSchema: registration.paramsSchema,
-    ...(registration.resultSchema !== undefined ? { resultSchema: registration.resultSchema } : {}),
-    ...(registration.usageRules !== undefined && registration.usageRules.length > 0
-      ? { usageRules: registration.usageRules }
+    description: action.description,
+    paramsSchema: action.paramsSchema,
+    ...(action.resultSchema !== undefined ? { resultSchema: action.resultSchema } : {}),
+    ...(action.usageRules !== undefined && action.usageRules.length > 0
+      ? { usageRules: action.usageRules }
       : {}),
-    ...(registration.failureModes !== undefined && registration.failureModes.length > 0
-      ? { failureModes: registration.failureModes }
+    ...(action.failureModes !== undefined && action.failureModes.length > 0
+      ? { failureModes: action.failureModes }
       : {}),
-    ...(registration.example !== undefined ? { example: registration.example } : {}),
+    ...(action.example !== undefined ? { example: action.example } : {}),
   }
 }

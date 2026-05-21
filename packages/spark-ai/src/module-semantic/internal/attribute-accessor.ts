@@ -15,7 +15,7 @@
  * 因为属性 schema 的语义对值的解释权在业务方。
  */
 
-import type { LlmJsonValue } from '../../protocol/parameter-schema'
+import type { LlmJsonValue } from '../../schema'
 import type { ModuleHostContext } from '../protocol/capability'
 import type { AttributeSchema } from '../protocol/module-kind'
 import {

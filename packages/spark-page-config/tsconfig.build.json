@@ -12,8 +12,7 @@
     "removeComments": false,
     "paths": {
       "@spark-view/spark-ai": ["../spark-ai/dist/index.d.ts"],
-      "@spark-view/spark-ai/protocol": ["../spark-ai/dist/protocol/index.d.ts"],
-      "@spark-view/spark-ai/core": ["../spark-ai/dist/index.d.ts"],
+      "@spark-view/spark-ai/schema": ["../spark-ai/dist/schema/index.d.ts"],
       "@spark-view/spark-ai/host": ["../spark-ai/dist/host/index.d.ts"],
       "@spark-view/spark-ai/module-semantic": ["../spark-ai/dist/module-semantic/index.d.ts"],
       "@spark-view/spark-page-config": ["./src/index.ts"],

@@ -25,14 +25,12 @@ import {
   objectSchema,
   paramsSchema,
   stringSchema,
-  type AiFunctionRegistration,
-  type FunctionFailureMode,
   type JsonSchemaProperties,
   type LlmJsonSchemaObject,
-} from '@spark-view/spark-ai/protocol'
-import { StaticAiToolModule } from '../../internal/registration-base'
+} from '@spark-view/spark-ai/schema'
+import type { ActionFailureMode, ActionSchema } from '@spark-view/spark-ai/module-semantic'
 
-export interface DatasetCrudToolFunctionFailureMode extends FunctionFailureMode {}
+export interface DatasetCrudToolFunctionFailureMode extends ActionFailureMode {}
 // 这里不再为 JS 基础类型保留导出别名，函数标识符直接使用原生 string。
 
 const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请传 {} 或留空。')
@@ -306,22 +304,43 @@ const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.ge
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
 const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用当前 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
 
-/** DataSet 静态工具模块：定义 pagedata.json 数据空间读写的函数注册表。 */
-export class DatasetModule extends StaticAiToolModule {
-  constructor() {
-    super({
-      moduleId: 'dataset',
-      name: 'Page Design DataSet',
-      description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
-      prompt: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
-      functionRegistrations: DATASET_FUNCTIONS,
-    })
-  }
-}
+export const DATASET_MUTATING_ACTION_NAMES: ReadonlySet<string> = new Set([
+  'undo',
+  'redo',
+  'clearHistory',
+  'createColumn',
+  'updateColumn',
+  'renameColumn',
+  'deleteColumn',
+  'createTable',
+  'updateTable',
+  'renameTable',
+  'deleteTable',
+  'createView',
+  'updateView',
+  'deleteView',
+  'createRow',
+  'createRows',
+  'updateRow',
+  'updateRows',
+  'deleteRow',
+  'deleteRows',
+  'createRelation',
+  'updateRelation',
+  'deleteRelation',
+  'createDependency',
+  'updateDependency',
+  'deleteDependency',
+  'addAggregate',
+  'updateAggregate',
+  'removeAggregate',
+  'setComputeExpression',
+  'clearComputeExpression',
+])
 
-const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
+export const DATASET_ACTIONS: readonly ActionSchema[] = [
   {
-    functionId: 'export',
+    name: 'export',
     description: '导出当前 DataSet 元数据快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -336,7 +355,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'canUndo',
+    name: 'canUndo',
     description: '读取当前历史栈是否可撤销',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -350,7 +369,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'canRedo',
+    name: 'canRedo',
     description: '读取当前历史栈是否可重做',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -364,7 +383,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'historyCursor',
+    name: 'historyCursor',
     description: '读取当前历史游标位置',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -378,7 +397,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'undo',
+    name: 'undo',
     description: '撤销最近一次写操作快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -398,7 +417,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'redo',
+    name: 'redo',
     description: '重做最近一次被撤销的写操作快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -418,7 +437,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'clearHistory',
+    name: 'clearHistory',
     description: '清空历史栈并以当前状态重建基线快照',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -432,7 +451,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'listTables',
+    name: 'listTables',
     description: '列出当前 DataSet 的全部数据表',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -446,7 +465,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'getTable',
+    name: 'getTable',
     description: '获取指定数据表',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -464,7 +483,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'listColumns',
+    name: 'listColumns',
     description: '列出指定表的全部列定义',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -488,7 +507,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'getColumn',
+    name: 'getColumn',
     description: '获取指定表中的单个列定义',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -514,7 +533,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'createColumn',
+    name: 'createColumn',
     description: '向指定表追加一列',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -546,7 +565,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateColumn',
+    name: 'updateColumn',
     description: '更新指定列定义',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -575,7 +594,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'renameColumn',
+    name: 'renameColumn',
     description: '重命名指定列，并同步更新该表视图、静态 rows 与相关关系引用',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -614,7 +633,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteColumn',
+    name: 'deleteColumn',
     description: '删除指定列',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -640,7 +659,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'createTable',
+    name: 'createTable',
     description: '创建数据表，并按需初始化资源语义、API、CRUD 配置和视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -686,7 +705,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateTable',
+    name: 'updateTable',
     description: '更新数据表结构、资源语义及运行配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -733,7 +752,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'renameTable',
+    name: 'renameTable',
     description: '重命名数据表，并同步更新视图、关系、依赖与布局引用',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -765,7 +784,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteTable',
+    name: 'deleteTable',
     description: '删除指定数据表',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -789,7 +808,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'listViews',
+    name: 'listViews',
     description: '列出指定表下的全部视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -813,7 +832,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'getView',
+    name: 'getView',
     description: '获取指定视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -836,7 +855,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'createView',
+    name: 'createView',
     description: '创建一个非 default 视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -877,7 +896,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateView',
+    name: 'updateView',
     description: '更新指定视图的元数据配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -921,7 +940,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteView',
+    name: 'deleteView',
     description: '删除指定视图',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -947,7 +966,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'listRows',
+    name: 'listRows',
     description: '列出指定视图当前持有的全部行',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -974,7 +993,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'getRow',
+    name: 'getRow',
     description: '按主键查找一条行数据，支持树形 children 递归扫描',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -997,7 +1016,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'createRow',
+    name: 'createRow',
     description: '在指定视图中创建一条新行',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1027,7 +1046,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'createRows',
+    name: 'createRows',
     description: '批量创建多条行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1060,7 +1079,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateRow',
+    name: 'updateRow',
     description: '更新指定主键的行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1092,7 +1111,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateRows',
+    name: 'updateRows',
     description: '批量更新多条行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1128,7 +1147,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteRow',
+    name: 'deleteRow',
     description: '删除指定主键的行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1157,7 +1176,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteRows',
+    name: 'deleteRows',
     description: '批量删除多条行数据',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1186,7 +1205,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'listRelations',
+    name: 'listRelations',
     description: '列出 DataSet 中的表关系，可按 parentTable 或 childTable 过滤',
     paramsSchema: paramsSchema({
       parentTable: stringSchema('可选父表过滤条件'),
@@ -1205,7 +1224,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'getRelation',
+    name: 'getRelation',
     description: '获取单条表关系；命中多条关系时要求字段级消歧',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1235,7 +1254,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'createRelation',
+    name: 'createRelation',
     description: '创建一条表关系',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1266,7 +1285,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateRelation',
+    name: 'updateRelation',
     description: '更新一条表关系',
     paramsSchema: paramsSchema({
       selector: RELATION_SELECTOR_SCHEMA,
@@ -1293,7 +1312,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteRelation',
+    name: 'deleteRelation',
     description: '删除一条表关系（单一签名：关系选择器）',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1325,7 +1344,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'listDependencies',
+    name: 'listDependencies',
     description: '列出 DataSet 中的视图依赖，可按 parentTable 或 childTable 过滤',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1344,7 +1363,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'getDependency',
+    name: 'getDependency',
     description: '获取一条视图依赖',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1364,7 +1383,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'createDependency',
+    name: 'createDependency',
     description: '创建一条视图依赖',
     paramsSchema: paramsSchema({
       dependency: VIEW_DEPENDENCY_SCHEMA,
@@ -1393,7 +1412,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateDependency',
+    name: 'updateDependency',
     description: '更新一条视图依赖',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1423,7 +1442,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'deleteDependency',
+    name: 'deleteDependency',
     description: '删除一条视图依赖',
     paramsSchema: paramsSchema({
       parentTable: PARENT_TABLE_PARAM,
@@ -1449,7 +1468,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'listAggregates',
+    name: 'listAggregates',
     description: '列出指定视图当前的全部聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1478,7 +1497,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'getAggregate',
+    name: 'getAggregate',
     description: '获取指定视图中单条聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1506,7 +1525,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'addAggregate',
+    name: 'addAggregate',
     description: '向指定视图新增一条聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1546,7 +1565,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'updateAggregate',
+    name: 'updateAggregate',
     description: '更新指定视图中一条已有聚合配置（浅合并 updates）',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1589,7 +1608,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'removeAggregate',
+    name: 'removeAggregate',
     description: '删除指定视图中一条聚合配置',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1618,7 +1637,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'getComputeExpression',
+    name: 'getComputeExpression',
     description: '获取指定列的计算表达式字符串',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1649,7 +1668,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'setComputeExpression',
+    name: 'setComputeExpression',
     description: '设置（或替换）指定列的计算表达式；设置后自动重编译并对现有行立即重算',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,
@@ -1731,7 +1750,7 @@ const DATASET_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'clearComputeExpression',
+    name: 'clearComputeExpression',
     description: '移除指定列的计算表达式，恢复为普通列（值保留，但不再重算）',
     paramsSchema: paramsSchema({
       tableName: TABLE_NAME_PARAM,

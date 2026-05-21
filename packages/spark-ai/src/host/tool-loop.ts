@@ -1,139 +1,67 @@
 /**
  * AI Host 工具调用循环。
  *
- * 职责：管理 LLM 与业务工具之间的多轮交互循环。
- * 核心策略：工具渐进式暴露（超过阈值时仅暴露 knowledge/lifecycle 模块）。
- *
- * 主循环时序：
- * ┌──────────────────────────────────────────────────────────────────┐
- * │ 阶段 1：创建初始工具集                                            │
- * │   └─ createInitialAiToolActionSet()                              │
- * │      → 检查函数数量是否超过阈值（默认 24）                         │
- * │      → 超过则仅暴露 knowledge/lifecycle 模块的 action              │
- * │                                                                   │
- * │ 阶段 2：组装 systemPrompt                                         │
- * │   └─ 按优先级拼接：runtime.getSystemPrompt() > request.systemPrompt│
- * │                        > projection.promptSnapshot                │
- * │                                                                   │
- * │ 阶段 3：工具调用主循环（maxToolRounds 轮）                         │
- * │   ├─ 3a. 检查 abort signal → 已中止则直接返回                      │
- * │   ├─ 3b. 编码工具：AiRuntimeToolCodec → 将投影函数转为 LLM specs   │
- * │   ├─ 3c. 上报 llm-request 诊断事件                                │
- * │   ├─ 3d. transport.streamTurn() → SSE 流式请求 LLM                │
- * │   ├─ 3e. 如有文本回复 → runtime.appendMessage('assistant')        │
- * │   ├─ 3f. 无工具调用 → 循环自然结束（return）                       │
- * │   ├─ 3g. 有工具调用 → 逐个执行：                                   │
- * │   │    ├─ actionOf(toolName) → 解码 toolName 为 action 字符串      │
- * │   │    ├─ runtime.executeFunctionCall() → 执行业务函数             │
- * │   │    ├─ runtime.afterFunctionCall() → 获取生命周期指令           │
- * │   │    ├─ directive != continue → 记录指令，中断工具遍历           │
- * │   │    └─ addGuidedAiToolAction() → 渐进式解锁工具                 │
- * │   ├─ 3h. 组装本轮消息：assistant 消息 + 所有 tool 结果             │
- * │   ├─ 3i. 如果 directive.finalAssistantMessage 存在 → 追加消息      │
- * │   ├─ 3j. 如果 directive != null → 上报消息 → endBusinessInstance   │
- * │   │                        → clearSelected → return               │
- * │   └─ 3k. pendingMessages = 本轮消息 → 进入下一轮循环               │
- * │                                                                   │
- * │ 阶段 4：超过最大轮次 → 输出警告消息                                 │
- * └──────────────────────────────────────────────────────────────────┘
+ * Host 直接调度 module-semantic 的 6 个协议工具,不再经过旧 projection /
+ * AiRuntimeToolCodec / action path。
  */
 
-import type { AiRuntimeKnowledgeProjection } from '../protocol/runtime-protocol'
+import type { LlmJsonValue } from '../schema'
+import { ModuleSemanticToolCodec } from '../module-semantic/host/module-semantic-tool-codec'
+import type { CheckEntry, OperationResult } from '../module-semantic/protocol/operation-result'
 import { createAiHostStreamKey, toAiHostRuntimeScope } from './scope'
-import { AiRuntimeToolCodec } from '../internal/tool-codec'
-import { addGuidedAiToolAction, createInitialAiToolActionSet } from '../internal/tool-exposure-policy'
-import { actionModuleId, emitLlmDiagnosticEvent, stringifyAiHostPayload } from './diagnostics'
+import { emitLlmDiagnosticEvent, eventModuleIdFromProtocolCall, stringifyAiHostPayload } from './diagnostics'
 import { toCurrentTurnMessages } from './turn-utils'
 import type {
   AiHostBusinessLifecycleDirective,
-  AiHostBusinessRuntime,
+  AiHostBusinessRegistration,
   AiHostBusinessScope,
   AiHostChatRequest,
+  AiHostFunctionCallFailure,
+  AiHostFunctionCallResult,
   AiHostOptions,
   AiHostTransportMessage,
   AiHostTransportToolCall,
   AiHostTurnMeta,
 } from './types'
 
-// ═══════════════════════════════════════════════════════
-// 工具函数
-// ═══════════════════════════════════════════════════════
-
-/**
- * 解析 LLM 工具调用参数字符串为 JSON 对象。
- * LLM 返回的 arguments 是 JSON 字符串，需要解析为对象。
- * 空字符串或解析失败时返回空对象 {}。
- */
-function parseToolArgs(raw: string | undefined): unknown {
+function parseToolArgs(raw: string | undefined): Readonly<Record<string, LlmJsonValue>> {
   if (raw === undefined || raw.trim() === '') return {}
   try {
-    return JSON.parse(raw)
+    const parsed = JSON.parse(raw) as unknown
+    return toProtocolArgs(parsed)
   } catch {
     return {}
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// 工具调用循环
-// ═══════════════════════════════════════════════════════
-
 export class AiHostToolLoopRunner {
-  constructor(private readonly options: AiHostOptions) {}
+  public constructor(private readonly options: AiHostOptions) {}
 
-  /**
-   * 执行工具调用循环。
-   *
-   * 参数说明：
-   * - runtime: 业务运行时实例，提供 executeFunctionCall 等方法
-   * - scope: 业务作用域，标识当前会话上下文
-   * - projection: 知识投影快照，包含可用函数和模块树
-   * - request: 聊天请求，包含历史消息和回调
-   * - turn: Turn 轮次元信息
-   * - clearSelected: 清除已选中业务运行时的回调
-   *
-   * 循环终止条件（任一满足即退出）：
-   * 1. abort signal 被触发
-   * 2. LLM 没有返回工具调用（自然结束）
-   * 3. 生命周期指令要求 complete 或 abort
-   * 4. 达到 maxToolRounds 最大轮次
-   */
-  async runToolLoop(
-    runtime: AiHostBusinessRuntime,
+  public async runToolLoop(
+    registration: AiHostBusinessRegistration,
     scope: AiHostBusinessScope,
-    projection: AiRuntimeKnowledgeProjection,
     request: AiHostChatRequest,
     turn: AiHostTurnMeta,
     clearSelected: () => void,
   ): Promise<void> {
-    // 阶段 1：创建初始工具集（渐进式暴露策略）
-    const enabledActions = createInitialAiToolActionSet(projection)
-
-    // 阶段 2：组装 systemPrompt（按优先级：runtime > request > projection）
     const runtimeContext = toAiHostRuntimeScope(scope)
+    const sessionId = scope.instanceId
+    const maxRounds = this.options.maxToolRounds
+    const sessionStore = requireSessionStore(registration)
     const systemPrompt = [
-      runtime.getSystemPrompt?.(runtimeContext),
+      registration.systemPrompt?.(runtimeContext),
       request.systemPrompt,
-      projection.promptSnapshot,
+      registration.description,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
 
     let pendingMessages = toCurrentTurnMessages(request)
-    const sessionId = scope.instanceId
-    const maxRounds = this.options.maxToolRounds
 
-    // 阶段 3：工具调用主循环
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
-      // 3a. 检查取消信号
       if (request.signal?.aborted) return
 
       const currentRound = round + 1
+      const codec = new ModuleSemanticToolCodec(registration.runtime.getLlmTools())
 
-      // 3b. 编码工具：将投影中的函数曝光为 LLM tool specs
-      const codec = new AiRuntimeToolCodec(
-        projection,
-        enabledActions === null ? {} : { includeActions: enabledActions },
-      )
-
-      // 3c. 上报 llm-request 诊断事件（记录当前轮的工具列表和消息）
       emitLlmDiagnosticEvent(request, scope, turn, 'llm-request', {
         kind: 'streamTurn',
         round: currentRound,
@@ -144,7 +72,6 @@ export class AiHostToolLoopRunner {
         messages: pendingMessages,
       })
 
-      // 3d. SSE 流式请求 LLM
       const result = await this.options.transport.streamTurn({
         sessionId,
         scope,
@@ -159,9 +86,8 @@ export class AiHostToolLoopRunner {
         onSseEvent: request.onSseEvent,
       })
 
-      // 3e. 处理 LLM 文本回复 → 追加到会话历史
       if (result.text.trim().length > 0) {
-        runtime.appendMessage({
+        sessionStore.appendMessage({
           ...runtimeContext,
           role: 'assistant',
           content: result.text,
@@ -169,34 +95,23 @@ export class AiHostToolLoopRunner {
         })
       }
 
-      // 3f. 无工具调用 → 循环自然结束
       if (result.toolCalls.length === 0) return
 
-      // 3g. 处理工具调用：逐个执行
       const toolMessages: AiHostTransportMessage[] = []
       const executedToolCalls: AiHostTransportToolCall[] = []
       let lifecycleDirective: AiHostBusinessLifecycleDirective | null = null
 
       for (const call of result.toolCalls) {
-        // 解码 action → 执行业务函数 → 获取生命周期指令
-        const output = await this.executeToolCall(
-          runtime, scope, projection, turn, currentRound,
-          codec.actionOf.bind(codec), call, request,
-        )
-        if (output !== null) {
-          executedToolCalls.push(call)
-          toolMessages.push(output.toolMessage)
-          // 渐进式解锁工具：如果 LLM 调用了 guideFunction，解锁其返回的工具
-          addGuidedAiToolAction(projection, enabledActions, output.action, output.args, output.result)
-          // 生命周期指令不是 continue → 记录并终止工具遍历
-          if (output.directive.status !== 'continue') {
-            lifecycleDirective = output.directive
-            break
-          }
+        const output = await this.executeToolCall(registration, scope, turn, currentRound, codec.actionOf.bind(codec), call, request)
+        if (output === null) continue
+        executedToolCalls.push(call)
+        toolMessages.push(output.toolMessage)
+        if (output.directive.status !== 'continue') {
+          lifecycleDirective = output.directive
+          break
         }
       }
 
-      // 3h. 组装本轮消息：assistant 消息 + 所有工具调用结果
       const assistantMessage: AiHostTransportMessage = {
         role: 'assistant',
         content: result.text,
@@ -204,10 +119,9 @@ export class AiHostToolLoopRunner {
       }
       const messagesToAppend: AiHostTransportMessage[] = [assistantMessage, ...toolMessages]
 
-      // 3i. 如果生命周期指令要求附带最终回复消息 → 追加
       if (lifecycleDirective?.finalAssistantMessage !== undefined && lifecycleDirective.finalAssistantMessage.trim().length > 0) {
         request.onDelta?.(lifecycleDirective.finalAssistantMessage)
-        runtime.appendMessage({
+        sessionStore.appendMessage({
           ...runtimeContext,
           role: 'assistant',
           content: lifecycleDirective.finalAssistantMessage,
@@ -223,8 +137,6 @@ export class AiHostToolLoopRunner {
         })
       }
 
-      // 3j. 生命周期指令 != null → 终止循环
-      // 上报消息 → appendMessages → endBusinessInstance → clearSelected
       if (lifecycleDirective !== null) {
         emitLlmDiagnosticEvent(request, scope, turn, 'llm-append', {
           kind: 'appendMessages',
@@ -238,52 +150,36 @@ export class AiHostToolLoopRunner {
           turn,
           messages: messagesToAppend,
         })
-        await runtime.endBusinessInstance?.(runtimeContext, lifecycleDirective)
+        sessionStore.stopSession(runtimeContext, lifecycleDirective.reason ?? lifecycleDirective.status)
+        await registration.onEndBusinessInstance?.(runtimeContext, lifecycleDirective)
+        if (lifecycleDirective.releaseInstance === true) {
+          registration.releaseModuleInstance?.(runtimeContext.moduleInstanceId)
+        }
         clearSelected()
         return
       }
 
-      // 3k. 将本轮消息作为下一轮的 pendingMessages
       pendingMessages = messagesToAppend
     }
 
-    // 阶段 4：超过最大轮次 → 警告消息
     request.onDelta?.('工具调用轮次已达上限，请检查当前业务状态后继续。')
   }
 
-  /**
-   * 执行单个工具调用。
-   *
-   * 流程：
-   * 1. 解码 toolName → action 字符串（通过 codec.actionOf）
-   * 2. 解析参数 → runtime.executeFunctionCall() → 执行业务函数
-   * 3. runtime.afterFunctionCall() → 获取生命周期指令（默认 continue）
-   * 4. 上报函数调用记录（onFcCall 回调 + SSE tool-result 事件）
-   * 5. 构建 tool 结果消息 → 返回
-   *
-   * 返回 null 表示 toolName 无法解码为有效 action，不应中断循环。
-   */
   private async executeToolCall(
-    runtime: AiHostBusinessRuntime,
+    registration: AiHostBusinessRegistration,
     scope: AiHostBusinessScope,
-    projection: AiRuntimeKnowledgeProjection,
     turn: AiHostTurnMeta,
     round: number,
     actionOf: (toolName: string) => string | null,
     call: AiHostTransportToolCall,
     request: AiHostChatRequest,
   ): Promise<{
-    toolMessage: AiHostTransportMessage
-    directive: AiHostBusinessLifecycleDirective
-    action: string
-    args: unknown
-    result: Awaited<ReturnType<AiHostBusinessRuntime['executeFunctionCall']>>
+    readonly toolMessage: AiHostTransportMessage
+    readonly directive: AiHostBusinessLifecycleDirective
   } | null> {
     const toolName = call.function?.name ?? ''
-
-    // 解码 toolName → action 字符串
-    const action = actionOf(toolName)
-    if (action === null) {
+    const protocolToolName = actionOf(toolName)
+    if (protocolToolName === null) {
       request.onDelta?.(`未识别的工具调用：${toolName}`)
       return null
     }
@@ -291,44 +187,49 @@ export class AiHostToolLoopRunner {
     const args = parseToolArgs(call.function?.arguments)
     const started = Date.now()
     const runtimeContext = toAiHostRuntimeScope(scope)
+    const sessionStore = requireSessionStore(registration)
+    const operationResult = await registration.runtime.executeTool(protocolToolName, args, {
+      moduleId: runtimeContext.moduleId,
+      moduleInstanceId: runtimeContext.moduleInstanceId,
+      instanceId: runtimeContext.instanceId,
+    })
+    const callResult = toFunctionCallResult(operationResult)
 
-    // 执行函数调用
-    const result = await runtime.executeFunctionCall({
-      ...runtimeContext,
-      action,
+    sessionStore.appendFunctionCall({
+      moduleId: runtimeContext.moduleId,
+      moduleInstanceId: runtimeContext.moduleInstanceId,
+      instanceId: runtimeContext.instanceId,
+      runtimeInstanceId: runtimeContext.instanceId,
+      toolName: protocolToolName,
       args,
-      projection,
+      status: callResult.ok ? 'completed' : 'failed',
+      ...(callResult.ok ? { result: callResult.data } : { error: failureFromCallResult(callResult) }),
     })
 
-    const defaultDirective: AiHostBusinessLifecycleDirective = { status: 'continue' }
-
-    // 获取生命周期指令（默认 continue）
-    const directive = await runtime.afterFunctionCall?.({
+    const directive = await registration.afterFunctionCall?.({
       ...runtimeContext,
-      action,
+      toolName: protocolToolName,
       args,
-      result,
-    }) ?? defaultDirective
+      result: callResult,
+    }) ?? { status: 'continue' as const }
 
     const durationMs = Date.now() - started
-    const eventModuleId = actionModuleId(action)
+    const eventModuleId = eventModuleIdFromProtocolCall(protocolToolName, args)
 
-    // 上报函数调用记录（onFcCall 回调）
     request.onFcCall?.({
-      toolName: action,
+      toolName: protocolToolName,
       args,
       turnId: turn.turnId,
       round,
       ...(call.id === undefined ? {} : { callId: call.id }),
-      status: result.ok ? 'success' : 'error',
-      result,
+      status: callResult.ok ? 'success' : 'error',
+      result: callResult,
       durationMs,
     })
 
-    // 上报 SSE tool-result 事件
     request.onSseEvent?.({
       type: 'tool-result',
-      data: stringifyAiHostPayload(result),
+      data: stringifyAiHostPayload(callResult),
       streamKey: createAiHostStreamKey(scope, eventModuleId, turn.turnId),
       scope: {
         businessRegistrationId: scope.businessRegistrationId,
@@ -341,13 +242,88 @@ export class AiHostToolLoopRunner {
     return {
       toolMessage: {
         role: 'tool',
-        content: stringifyAiHostPayload(result),
+        content: stringifyAiHostPayload(callResult),
         ...(call.id === undefined ? {} : { tool_call_id: call.id }),
       },
       directive,
-      action,
-      args,
-      result,
     }
   }
+}
+
+function requireSessionStore(registration: AiHostBusinessRegistration) {
+  if (registration.sessionStore === undefined) {
+    throw new Error(`AI host business registration missing sessionStore: ${registration.moduleId}`)
+  }
+  return registration.sessionStore
+}
+
+function toProtocolArgs(value: unknown): Readonly<Record<string, LlmJsonValue>> {
+  if (value === null || value === undefined || typeof value !== 'object' || Array.isArray(value)) return {}
+  const out: Record<string, LlmJsonValue> = {}
+  for (const [key, raw] of Object.entries(value)) {
+    const coerced = coerceLlmJsonValue(raw)
+    if (coerced !== undefined) out[key] = coerced
+  }
+  return out
+}
+
+function coerceLlmJsonValue(value: unknown): LlmJsonValue | undefined {
+  if (value === null) return null
+  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
+  if (Array.isArray(value)) {
+    const out: LlmJsonValue[] = []
+    for (const item of value) {
+      const coerced = coerceLlmJsonValue(item)
+      if (coerced !== undefined) out.push(coerced)
+    }
+    return out
+  }
+  if (typeof value === 'object') {
+    const out: Record<string, LlmJsonValue> = {}
+    for (const [key, raw] of Object.entries(value)) {
+      const coerced = coerceLlmJsonValue(raw)
+      if (coerced !== undefined) out[key] = coerced
+    }
+    return out
+  }
+  return undefined
+}
+
+function toFunctionCallResult(result: OperationResult<LlmJsonValue>): AiHostFunctionCallResult<unknown> {
+  if (result.ok) {
+    const summary = firstInfoOrWarnSummary(result.checks)
+    return {
+      ok: true,
+      ...(result.data === undefined ? {} : { data: result.data }),
+      ...(summary === undefined ? {} : { summary }),
+    }
+  }
+  const failure = pickFirstErrorCheck(result.checks)
+  if (failure === undefined) {
+    return {
+      ok: false,
+      code: 'PROTOCOL_FAILURE',
+      msg: '协议层返回失败但未携带 error 级 check',
+      fix: '请检查 OperationResult.checks 是否正确填充',
+    }
+  }
+  return {
+    ok: false,
+    code: failure.code,
+    msg: failure.message,
+    fix: failure.hint ?? '请根据 message 调整调用方式或参数',
+  }
+}
+
+function firstInfoOrWarnSummary(checks: readonly CheckEntry[] | undefined): string | undefined {
+  return checks?.find((check) => check.level === 'info' || check.level === 'warn')?.message
+}
+
+function pickFirstErrorCheck(checks: readonly CheckEntry[] | undefined): CheckEntry | undefined {
+  return checks?.find((check) => check.level === 'error')
+}
+
+function failureFromCallResult(result: AiHostFunctionCallResult<unknown>): AiHostFunctionCallFailure {
+  if (result.ok) throw new Error('[AiHostToolLoopRunner] failureFromCallResult called with success result')
+  return { ok: false, code: result.code, msg: result.msg, fix: result.fix }
 }

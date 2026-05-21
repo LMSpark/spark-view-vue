@@ -15,7 +15,7 @@
  * 协议层从 ModuleKindRegistry 收集所有 kind 后派生 LLM 工具集。
  */
 
-import type { LlmJsonSchema, LlmJsonValue, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
+import type { LlmJsonObject, LlmJsonSchema, LlmJsonValue, LlmParameterSchemaRoot } from '../../schema'
 
 // ═══════════════════════════════════════════════════════
 // 1. 属性 / 动作 schema
@@ -58,6 +58,8 @@ export interface ActionFailureMode {
   readonly fix: string
 }
 
+export type ActionResultSchema = LlmJsonSchema | LlmJsonObject
+
 /**
  * 动作声明。
  *
@@ -76,7 +78,7 @@ export interface ActionSchema {
   readonly name: string
   readonly description: string
   readonly paramsSchema: LlmParameterSchemaRoot
-  readonly resultSchema?: LlmJsonSchema | undefined
+  readonly resultSchema?: ActionResultSchema | undefined
   readonly usageRules?: readonly string[] | undefined
   readonly failureModes?: readonly ActionFailureMode[] | undefined
   readonly example?: LlmJsonValue | undefined

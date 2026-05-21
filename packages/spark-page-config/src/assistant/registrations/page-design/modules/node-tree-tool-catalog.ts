@@ -18,14 +18,12 @@ import {
   objectSchema,
   paramsSchema,
   stringSchema,
-  type AiFunctionRegistration,
-  type FunctionFailureMode,
   type LlmJsonObject,
   type LlmJsonSchemaObject,
-} from '@spark-view/spark-ai/protocol'
-import { StaticAiToolModule } from '../../internal/registration-base'
+} from '@spark-view/spark-ai/schema'
+import type { ActionFailureMode, ActionSchema } from '@spark-view/spark-ai/module-semantic'
 
-export interface SparkNodeTreeToolFailureMode extends FunctionFailureMode {}
+export interface SparkNodeTreeToolFailureMode extends ActionFailureMode {}
 export type SparkNodeTreeToolFunctionId =
   | 'getNode'
   | 'getLocation'
@@ -97,22 +95,9 @@ const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点�
 const SCALAR_PARENT_COMPONENT_RULE = 'parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。'
 const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实例对应的 root；如需最新子树快照，请读取 tree.root 或 toJSON()。'
 
-/** 节点树静态工具模块：定义 SparkNodeTree/rule.json 结构读写的函数注册表。 */
-export class NodeTreeModule extends StaticAiToolModule {
-  constructor() {
-    super({
-      moduleId: 'nodeTree',
-      name: 'Page Design Node Tree',
-      description: '当前页面 SparkNodeTree/rule.json 结构读写。',
-      prompt: '当前页面 SparkNodeTree/rule.json 结构读写。',
-      functionRegistrations: NODE_TREE_FUNCTIONS,
-    })
-  }
-}
-
-const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
+export const NODE_TREE_ACTIONS: readonly ActionSchema[] = [
   {
-    functionId: 'getNode',
+    name: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -125,7 +110,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'getLocation',
+    name: 'getLocation',
     description: '查找节点并返回其父节点、层级深度和直接索引位置。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -138,7 +123,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'hasNode',
+    name: 'hasNode',
     description: '判断指定 componentId 是否存在于当前树中。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -151,7 +136,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'getParent',
+    name: 'getParent',
     description: '获取指定节点的直接父节点；当前绑定 root 或未命中时返回 null。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -164,7 +149,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'listChildren',
+    name: 'listChildren',
     description: '读取当前组件实例或指定子组件的直接 children 数组。',
     paramsSchema: paramsSchema(
       { parentComponentId: PARENT_COMPONENT_ID_SCHEMA },
@@ -187,7 +172,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'countNodes',
+    name: 'countNodes',
     description: '统计当前组件实例子树中的结构节点数量，不包含字符串/数字字面量子节点。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -198,7 +183,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'getAllData',
+    name: 'getAllData',
     description: '获取当前绑定组件实例完整子树的全部数据快照（包含递归 children）。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -209,7 +194,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'collectDataKeys',
+    name: 'collectDataKeys',
     description: '收集当前组件实例子树中出现过的全部唯一 dataViewKey / optionDataViewKey，用于确认页面现有数据绑定。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -220,7 +205,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'collectHandlerNames',
+    name: 'collectHandlerNames',
     description: '收集当前组件实例子树 props.on 中出现的全部唯一处理器名。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
@@ -231,7 +216,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     failureModes: [],
   },
   {
-    functionId: 'findByType',
+    name: 'findByType',
     description:
       '按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父节点 id。' +
       '当知道目标组件的 type（如 r-tabs、r-form）但不知道其节点 id 时，用本动作代替多步 listChildren→getNode，' +
@@ -264,7 +249,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'addNode',
+    name: 'addNode',
     description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
     paramsSchema: paramsSchema({
       node: NODE_PARAM,
@@ -294,7 +279,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'addNodes',
+    name: 'addNodes',
     description: '向同一个子组件容器批量插入多个新节点。警告：入参 nodes 必须是由指定 type 的 props schema 组装而成的合法 SparkNode 数组。构造前必须查阅组件规格，绝对禁止凭空猜测 props。',
     paramsSchema: paramsSchema({
       nodes: NODES_SCHEMA,
@@ -327,7 +312,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'moveNode',
+    name: 'moveNode',
     description: '把已有节点移动到新的父节点或兄弟位置。用于调整布局顺序或容器归属，避免 removeNode + addNode 重建已有子树造成大块文本输出。',
     paramsSchema: paramsSchema({
       componentId: COMPONENT_ID_SCHEMA,
@@ -380,7 +365,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'setProps',
+    name: 'setProps',
     description: '写入或替换目标节点的 props。',
     paramsSchema: paramsSchema({
       componentId: COMPONENT_ID_SCHEMA,
@@ -405,7 +390,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'setPropsBatch',
+    name: 'setPropsBatch',
     description: '批量写入多个节点的 props，整个批次只提交一次树状态。',
     paramsSchema: paramsSchema({ items: SET_PROPS_BATCH_ITEMS_SCHEMA }, ['items']),
     resultSchema: {
@@ -432,7 +417,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'replaceNode',
+    name: 'replaceNode',
     description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA, node: NODE_PARAM }, ['componentId', 'node']),
     resultSchema: {
@@ -458,7 +443,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'replaceNodes',
+    name: 'replaceNodes',
     description: '批量替换多个节点，适合一次性重建多个字段或容器节点。',
     paramsSchema: paramsSchema({ items: REPLACE_NODES_ITEMS_SCHEMA }, ['items']),
     resultSchema: {
@@ -485,7 +470,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'removeNode',
+    name: 'removeNode',
     description: '删除当前组件实例子树内的指定节点，并返回被删除节点和原始索引。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA }, ['componentId']),
     resultSchema: {
@@ -510,7 +495,7 @@ const NODE_TREE_FUNCTIONS: readonly AiFunctionRegistration[] = [
     ],
   },
   {
-    functionId: 'removeNodes',
+    name: 'removeNodes',
     description: '按 componentIds 批量删除当前组件实例子树内的多个节点，整个批次只提交一次树状态。',
     paramsSchema: paramsSchema({ componentIds: COMPONENT_IDS_SCHEMA }, ['componentIds']),
     resultSchema: {
