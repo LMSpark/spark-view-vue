@@ -10,7 +10,7 @@
  * - LLM 看到的工具数固定为 6(协议核心承诺),不随业务 kind 数量膨胀。
  * - toolName 直接复用协议工具名(getAttribute / setAttribute / invokeAction /
  *   listChildren / findInstance / describeKind),便于 LLM 跨会话稳定记忆。
- * - 不引入 AiRuntimeToolCodec 的 ai_序号_模块_函数 命名规范,因为协议层不存在
+ * - 不引入按模块和函数展开的工具命名规范,因为协议层不存在
  *   "模块 × 函数"的笛卡尔积工具。
  * - 反向映射只用于校验:LLM 调用未知工具时,actionOf() 返回 null。
  */

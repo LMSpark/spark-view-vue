@@ -1,8 +1,7 @@
 /**
  * Assistant 业务注册入口。
  *
- * Host 直接注册 module-semantic 业务，不再经过旧 RuntimeBackedBusinessModule /
- * ModuleBackedHostRuntime 适配层。
+ * Host 直接注册 module-semantic 业务，注册对象就是 Host 可调度的业务单元。
  */
 
 import type {

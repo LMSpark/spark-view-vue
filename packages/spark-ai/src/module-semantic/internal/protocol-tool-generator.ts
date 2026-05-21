@@ -28,12 +28,10 @@ import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from 
 /**
  * 协议级工具规约(OpenAI 兼容形状)。
  *
- * 与 AiRuntimeToolSpec 结构对齐,但不依赖 AI Runtime 模块,
- * 让 module-semantic 协议自成体系。
+ * 与 Host transport tool spec 的结构对齐,让 module-semantic 协议自成体系。
  *
  * `function.parameters` 复用 `LlmParameterSchemaRoot`(标准 JSON Schema 子集),
- * 这样 host 适配层可以把同一份 schema 直接喂给旧 host 的 AiRuntimeToolCodec,
- * 无需 `as` 断言绕过 TS。
+ * 这样 Host 可以把同一份 schema 直接交给 transport,无需 `as` 断言绕过 TS。
  */
 export interface ModuleSemanticToolSpec {
   readonly type: 'function'
@@ -132,7 +130,7 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.setAttribute,
         description: [
           '写入指定路径末段模块的某个属性。',
-          'value 的类型必须符合属性 schema,由末段 Capability 自行校验。',
+          'value 的类型必须符合属性 schema,由末段 ModuleKind 自行校验。',
           '当前注册的 kind 及其属性列表:',
           digest,
           '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ATTRIBUTE_NOT_DECLARED / ATTRIBUTE_NOT_WRITABLE',
@@ -196,7 +194,7 @@ export class ProtocolToolGenerator {
         description: [
           '列出指定路径下可用的子实例。',
           'path="/" 时返回所有已注册的 kind 名单(用于发现入口)。',
-          '非根路径时返回末段 Capability 提供的子实例列表;childKind 可选,用于过滤。',
+          '非根路径时返回末段 ModuleKind 提供的子实例列表;childKind 可选,用于过滤。',
           '当前注册的 kind 及其可挂子 kind:',
           digest,
         ].join('\n'),
@@ -222,9 +220,9 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.findInstance,
         description: [
           '在指定路径下按业务条件查询子实例。',
-          'path="/" 表示在全局查询某个 kind(由 Capability 自行决定根级搜索范围)。',
+          'path="/" 表示在全局查询某个 kind(由目标 ModuleKind 自行决定根级搜索范围)。',
           '非根路径下,childKind 必须是末段 kind 在 children 中声明的子 kind。',
-          'query 由对应 Capability 解释,通常包含 label 关键字、过滤条件或 hint。',
+          'query 由对应 ModuleKind.find 委托解释,通常包含 label 关键字、过滤条件或 hint。',
           '当前注册的 kind 及其可挂子 kind:',
           digest,
           '失败码: KIND_NOT_REGISTERED / CHILD_KIND_NOT_DECLARED / CAPABILITY_NOT_REGISTERED',
@@ -239,7 +237,7 @@ export class ProtocolToolGenerator {
             },
             query: {
               type: 'object',
-              description: '查询条件,具体字段由对应 Capability 约定',
+              description: '查询条件,具体字段由对应 ModuleKind.find 委托约定',
               additionalProperties: true,
             },
           },
@@ -256,7 +254,7 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.describeKind,
         description: [
           '查询某个 kind 的元数据:attributes(含 readable / writable)、actions(含 usageRules、failureModes)、children。',
-          '纯协议层操作,不调用 Capability。LLM 用它精确了解模块开放的属性表与动作表。',
+          '纯协议层操作,不调用业务 runner。LLM 用它精确了解模块开放的属性表与动作表。',
           '当前注册的 kind:',
           digest,
           '失败码: KIND_NOT_REGISTERED',

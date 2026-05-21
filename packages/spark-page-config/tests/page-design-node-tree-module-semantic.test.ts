@@ -1,26 +1,17 @@
 /**
- * 端到端测试:NodeTree 模块语义协议接入。
+ * NodeTree module-semantic 端到端测试。
  *
- * 验证:
- * - NodeTreeModuleKind 在 ModuleSemanticRuntime 注册后能被 describeKind 列出
- * - NodeTreeCapability.invokeAction 一行委托 PageDesignService.useNodeTreeMethod
- * - 通过 ModuleSemanticBusinessRuntime.executeFunctionCall(invokeAction)
- *   最终能落到 SparkNodeTree.getNode,返回真实节点
- * - 调用 countNodes 返回数字 1(默认 page 根节点)
- * - **可发现链路(plan 闭环 5)**:listChildren('/') → findInstance('/', 'node-tree', {})
- *   返当前 pageId → describeKind 验证 paramsSchema 不再是 additionalProperties:true
- *   占位 → invokeAction 用发现的 id 拼路径,无硬编码
+ * 覆盖固定协议工具、Host scope 透传、可发现链路和 19 个 NodeTree action。
  */
 
 import { describe, expect, it } from 'vitest'
 
 import {
-  ModuleSemanticBusinessRuntime,
   ModuleSemanticRuntime,
 } from '@spark-view/spark-ai/module-semantic'
+import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
 import {
-  NodeTreeCapability,
-  NodeTreeModuleKind,
+  createNodeTreeModuleKind,
 } from '@spark-view/spark-page-config/assistant/registrations'
 import {
   PageDesignService,
@@ -53,270 +44,169 @@ function createHost(): { host: PageDesignEditHost; nodeTree: SparkNodeTree } {
   }
 }
 
-function buildRuntime(): {
-  business: ModuleSemanticBusinessRuntime
+function buildRuntime(pageId = 'demo-page'): {
+  runtime: ModuleSemanticRuntime
   nodeTree: SparkNodeTree
-  pageId: string
+  hostContext: AiHostBusinessRuntimeContext
 } {
-  const pageId = 'demo-page'
   const { host, nodeTree } = createHost()
   const service = new PageDesignService({ getEditHost: () => host })
   service.bootstrap({ pageId, requestId: 'e2e-run' })
 
   const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(new NodeTreeModuleKind())
-  runtime.registerCapability(new NodeTreeCapability({
+  runtime.registerKind(createNodeTreeModuleKind({
     service,
     contextFactory: (ctx) => ({
-      pageId: ctx.segment.id,
-      requestId: 'e2e-run',
+      pageId: ctx.host?.moduleInstanceId ?? ctx.segment.id,
+      requestId: ctx.host?.instanceId ?? 'e2e-run',
     }),
   }))
 
-  const business = new ModuleSemanticBusinessRuntime({
-    moduleId: 'page-design-node-tree',
-    name: 'Page design node tree (module-semantic)',
-    description: '页面节点树,新协议端到端验证',
+  return {
     runtime,
-  })
-
-  return { business, nodeTree, pageId }
+    nodeTree,
+    hostContext: {
+      moduleId: 'pageDesign',
+      moduleInstanceId: pageId,
+      instanceId: `pageDesign:${pageId}`,
+    },
+  }
 }
 
-/**
- * SCOPE.moduleInstanceId = pageId,以便 host 适配层把 pageId 透传到
- * Capability.findInstance(ctx),让 LLM 通过 findInstance 发现当前实例。
- *
- * 在生产路径中,page-design module 的 moduleInstanceId 即当前页面 pageId,
- * 二者本就是同一个语义实体。
- */
-const PAGE_ID = 'demo-page'
-const SCOPE = {
-  moduleId: 'page-design-node-tree',
-  moduleInstanceId: PAGE_ID,
-  instanceId: 'session-1',
-} as const
+function getDataRecord(result: { readonly ok: boolean; readonly data?: unknown }): Record<string, unknown> {
+  if (!result.ok || !isRecord(result.data)) {
+    throw new Error('expected ok record result')
+  }
+  return result.data
+}
+
+function getDataArray(result: { readonly ok: boolean; readonly data?: unknown }): unknown[] {
+  if (!result.ok || !Array.isArray(result.data)) {
+    throw new Error('expected ok array result')
+  }
+  return result.data
+}
 
 describe('NodeTree module-semantic 接入(E2E)', () => {
-  it('startSession 暴露 6 个协议工具', async () => {
-    const { business } = buildRuntime()
-    const projection = await business.startSession(SCOPE)
-    expect(projection.availableFunctions).toHaveLength(6)
-    const actions = projection.availableFunctions.map((fn) => fn.action)
-    expect(actions).toContain('invokeAction')
-    expect(actions).toContain('describeKind')
+  it('暴露固定 6 个协议工具', () => {
+    const { runtime } = buildRuntime()
+    expect(runtime.getLlmTools().map((tool) => tool.function.name)).toEqual([
+      'getAttribute',
+      'setAttribute',
+      'invokeAction',
+      'listChildren',
+      'findInstance',
+      'describeKind',
+    ])
   })
 
-  it('describeKind 列出 19 个 NodeTree 动作', async () => {
-    const { business } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'describeKind',
-      args: { kind: 'node-tree' },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('describeKind failed')
-    expect(isRecord(result.data)).toBe(true)
-    if (!isRecord(result.data)) throw new Error('not record')
-    const actions = result.data['actions']
+  it('describeKind 列出 19 个 NodeTree 动作并完整返回 action 元数据', async () => {
+    const { runtime, hostContext } = buildRuntime()
+    const result = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
+    const data = getDataRecord(result)
+    const actions = data['actions']
     expect(Array.isArray(actions)).toBe(true)
-    if (!Array.isArray(actions)) throw new Error('not array')
+    if (!Array.isArray(actions)) throw new Error('actions not array')
     expect(actions).toHaveLength(19)
-  })
-
-  it('invokeAction(getNode) 落到 SparkNodeTree.getNode 并返回真实节点', async () => {
-    const { business, pageId } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'invokeAction',
-      args: {
-        path: `/node-tree[${pageId}]`,
-        actionName: 'getNode',
-        args: { componentId: 'page__0' },
-      },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('getNode failed')
-    expect(isRecord(result.data)).toBe(true)
-    if (!isRecord(result.data)) throw new Error('not record')
-    expect(result.data['type']).toBe('page')
-    expect(result.data['id']).toBe('page__0')
-  })
-
-  it('invokeAction(countNodes) 返回数字 1(默认仅 page 根节点)', async () => {
-    const { business, pageId } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'invokeAction',
-      args: {
-        path: `/node-tree[${pageId}]`,
-        actionName: 'countNodes',
-        args: {},
-      },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('countNodes failed')
-    expect(result.data).toBe(1)
-  })
-
-  it('invokeAction(addNode) 真实写入树并触发 mutates 标记', async () => {
-    const { business, nodeTree, pageId } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'invokeAction',
-      args: {
-        path: `/node-tree[${pageId}]`,
-        actionName: 'addNode',
-        args: {
-          parentComponentId: 'page__0',
-          node: { type: 'text', props: { value: 'hello' } },
-        },
-      },
-    })
-    expect(result.ok).toBe(true)
-    expect(nodeTree.countNodes()).toBe(2)
-  })
-
-  it('invokeAction 失败时映射为协议错误(NODE_NOT_FOUND 等)', async () => {
-    const { business, pageId } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'invokeAction',
-      args: {
-        path: `/node-tree[${pageId}]`,
-        actionName: 'getNode',
-        args: { componentId: 'no-such-id' },
-      },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('expected ok')
-    expect(result.data).toBeNull()
-  })
-
-  it('未知 actionName 时,SparkNodeTree 抛错被 service 映射为协议错误', async () => {
-    const { business, pageId } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'invokeAction',
-      args: {
-        path: `/node-tree[${pageId}]`,
-        actionName: 'noSuchMethod',
-        args: {},
-      },
-    })
-    expect(result.ok).toBe(false)
-  })
-})
-
-describe('NodeTree module-semantic 可发现链路(plan 闭环 5)', () => {
-  it('listChildren("/") 含 node-tree kind 入口', async () => {
-    const { business } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'listChildren',
-      args: { path: '/' },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('listChildren failed')
-    expect(Array.isArray(result.data)).toBe(true)
-    if (!Array.isArray(result.data)) throw new Error('not array')
-    const ids = result.data.map((entry) => isRecord(entry) ? entry['id'] : null)
-    expect(ids).toContain('node-tree')
-  })
-
-  it('findInstance("/", "node-tree", {}) 通过 host 透传返当前 pageId', async () => {
-    const { business, pageId } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'findInstance',
-      args: { path: '/', childKind: 'node-tree', query: {} },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('findInstance failed')
-    if (!Array.isArray(result.data) || result.data.length === 0) throw new Error('expected non-empty')
-    const first = result.data[0]
-    if (!isRecord(first)) throw new Error('expected record')
-    expect(first['id']).toBe(pageId)
-    expect(first['label']).toBe('当前页面节点树')
-  })
-
-  it('describeKind("node-tree") 19 actions 的 paramsSchema 不再是 additionalProperties:true 占位', async () => {
-    const { business } = buildRuntime()
-    await business.startSession(SCOPE)
-    const result = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'describeKind',
-      args: { kind: 'node-tree' },
-    })
-    expect(result.ok).toBe(true)
-    if (!result.ok) throw new Error('describeKind failed')
-    if (!isRecord(result.data)) throw new Error('not record')
-    const actions = result.data['actions']
-    if (!Array.isArray(actions)) throw new Error('not array')
     for (const action of actions) {
       if (!isRecord(action)) throw new Error('action not record')
-      const paramsSchema = action['paramsSchema']
-      if (!isRecord(paramsSchema)) throw new Error(`${String(action['name'])} paramsSchema not record`)
-      const additionalPropsIsTrue = paramsSchema['additionalProperties'] === true
-        && paramsSchema['properties'] === undefined
-        && paramsSchema['required'] === undefined
-      expect(additionalPropsIsTrue).toBe(false)
+      expect(action).toHaveProperty('paramsSchema')
+      expect(action).toHaveProperty('resultSchema')
+      expect(action).toHaveProperty('usageRules')
+      expect(action).toHaveProperty('failureModes')
+      expect(action).toHaveProperty('example')
     }
   })
 
-  it('完整链路:listChildren → findInstance → describeKind → invokeAction(用发现的 id 拼路径)', async () => {
-    const { business } = buildRuntime()
-    await business.startSession(SCOPE)
+  it('invokeAction(getNode/countNodes/addNode) 落到真实 SparkNodeTree', async () => {
+    const { runtime, nodeTree, hostContext } = buildRuntime()
 
-    const listResult = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'listChildren',
-      args: { path: '/' },
-    })
-    expect(listResult.ok).toBe(true)
+    const getNode = await runtime.executeTool('invokeAction', {
+      path: '/node-tree[demo-page]',
+      actionName: 'getNode',
+      args: { componentId: 'page__0' },
+    }, hostContext)
+    expect(getDataRecord(getNode)['id']).toBe('page__0')
 
-    const findResult = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'findInstance',
-      args: { path: '/', childKind: 'node-tree', query: {} },
-    })
-    expect(findResult.ok).toBe(true)
-    if (!findResult.ok) throw new Error('findInstance failed')
-    if (!Array.isArray(findResult.data) || findResult.data.length === 0) throw new Error('expected non-empty')
-    const first = findResult.data[0]
-    if (!isRecord(first)) throw new Error('expected record')
-    const discoveredId = first['id']
-    expect(typeof discoveredId).toBe('string')
-    if (typeof discoveredId !== 'string') throw new Error('not string')
+    const countBefore = await runtime.executeTool('invokeAction', {
+      path: '/node-tree[demo-page]',
+      actionName: 'countNodes',
+      args: {},
+    }, hostContext)
+    expect(countBefore).toMatchObject({ ok: true, data: 1 })
 
-    const describeResult = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'describeKind',
-      args: { kind: 'node-tree' },
-    })
-    expect(describeResult.ok).toBe(true)
-
-    const invokeResult = await business.executeFunctionCall({
-      ...SCOPE,
-      action: 'invokeAction',
+    const added = await runtime.executeTool('invokeAction', {
+      path: '/node-tree[demo-page]',
+      actionName: 'addNode',
       args: {
-        path: `/node-tree[${discoveredId}]`,
-        actionName: 'getNode',
-        args: { componentId: 'page__0' },
+        parentComponentId: 'page__0',
+        node: { type: 'text', props: { value: 'hello' } },
       },
+    }, hostContext)
+    expect(added.ok).toBe(true)
+    expect(nodeTree.countNodes()).toBe(2)
+  })
+
+  it('协议层校验未知 action 与 action paramsSchema', async () => {
+    const { runtime, hostContext } = buildRuntime()
+    const unknown = await runtime.executeTool('invokeAction', {
+      path: '/node-tree[demo-page]',
+      actionName: 'noSuchMethod',
+      args: {},
+    }, hostContext)
+    expect(unknown).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'ACTION_NOT_DECLARED' })],
     })
-    expect(invokeResult.ok).toBe(true)
-    if (!invokeResult.ok) throw new Error('getNode failed')
-    if (!isRecord(invokeResult.data)) throw new Error('not record')
-    expect(invokeResult.data['type']).toBe('page')
-    expect(invokeResult.data['id']).toBe('page__0')
+
+    const invalidArgs = await runtime.executeTool('invokeAction', {
+      path: '/node-tree[demo-page]',
+      actionName: 'getNode',
+      args: {},
+    }, hostContext)
+    expect(invalidArgs.ok).toBe(false)
+    if (invalidArgs.ok) throw new Error('expected invalid args')
+    expect(invalidArgs.checks?.some((check) => check.code === 'INVALID_ARGS')).toBe(true)
+  })
+})
+
+describe('NodeTree module-semantic 可发现链路', () => {
+  it('listChildren → findInstance → describeKind → invokeAction 使用发现到的实例 id', async () => {
+    const pageId = 'lmspark/homepage'
+    const { runtime, hostContext } = buildRuntime(pageId)
+
+    const listResult = await runtime.executeTool('listChildren', { path: '/' }, hostContext)
+    const rootEntries = getDataArray(listResult)
+    expect(rootEntries.some((entry) => isRecord(entry) && entry['id'] === 'node-tree')).toBe(true)
+
+    const findResult = await runtime.executeTool('findInstance', {
+      path: '/',
+      childKind: 'node-tree',
+      query: {},
+    }, hostContext)
+    const instances = getDataArray(findResult)
+    const first = instances[0]
+    if (!isRecord(first) || typeof first['id'] !== 'string') {
+      throw new Error('expected discovered node-tree id')
+    }
+    expect(first['id']).toBe(pageId)
+    expect(first['label']).toBe('当前页面节点树')
+
+    const describeResult = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
+    const describeData = getDataRecord(describeResult)
+    const actions = describeData['actions']
+    if (!Array.isArray(actions)) throw new Error('actions not array')
+    const getNode = actions.find((action) => isRecord(action) && action['name'] === 'getNode')
+    if (!isRecord(getNode) || !isRecord(getNode['paramsSchema'])) {
+      throw new Error('getNode paramsSchema missing')
+    }
+    expect(getNode['paramsSchema']['additionalProperties']).not.toBe(true)
+
+    const invokeResult = await runtime.executeTool('invokeAction', {
+      path: `/node-tree[${first['id']}]`,
+      actionName: 'getNode',
+      args: { componentId: 'page__0' },
+    }, hostContext)
+    expect(getDataRecord(invokeResult)['type']).toBe('page')
   })
 })

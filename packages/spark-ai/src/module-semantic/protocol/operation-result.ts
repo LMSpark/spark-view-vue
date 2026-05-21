@@ -3,7 +3,7 @@
  *
  * 模块语义协议 — 操作结果。
  *
- * 协议层所有 Capability 方法的统一返回形态。handler 不抛异常打断,
+ * 协议层所有 ModuleKind 运行入口的统一返回形态。handler 不抛异常打断,
  * 而是把任何错误、警告、提示作为 checks 装进 OperationResult,
  * 由 LLM 自行决定下一步动作。
  *
@@ -37,7 +37,7 @@ export interface CheckEntry {
 /**
  * 协议级标准结果对象。
  *
- * 由所有 Capability 方法返回,协议透传给 LLM。
+ * 由所有 ModuleKind 运行入口返回,协议透传给 LLM。
  *
  * - ok:     总体成功标志
  * - data:   业务返回值(LLM 可读)

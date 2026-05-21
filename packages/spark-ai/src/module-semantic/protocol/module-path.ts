@@ -117,8 +117,7 @@ export class ModulePath {
     if (raw === '/') {
       return ModulePath.root()
     }
-    const body = raw.slice(1)
-    const rawSegments = body.split('/')
+    const rawSegments = ModulePath.splitRawSegments(raw)
     const segments: ModulePathSegment[] = []
     let cursor = 1
     for (const part of rawSegments) {
@@ -219,5 +218,34 @@ export class ModulePath {
       throw new ModulePathParseError('EMPTY_ID', raw, `empty id in segment "${part}"`, position)
     }
     return { kind, id }
+  }
+
+  private static splitRawSegments(raw: string): string[] {
+    const body = raw.slice(1)
+    const segments: string[] = []
+    let bracketDepth = 0
+    let segmentStart = 0
+
+    for (let index = 0; index < body.length; index += 1) {
+      const char = body[index]
+      if (char === '[') {
+        bracketDepth += 1
+      } else if (char === ']') {
+        bracketDepth -= 1
+        if (bracketDepth < 0) {
+          throw new ModulePathParseError('INVALID_SEGMENT', raw, 'unexpected closing bracket in path', index + 1)
+        }
+      } else if (char === '/' && bracketDepth === 0) {
+        segments.push(body.slice(segmentStart, index))
+        segmentStart = index + 1
+      }
+    }
+
+    if (bracketDepth !== 0) {
+      throw new ModulePathParseError('INVALID_SEGMENT', raw, 'unclosed bracket in path')
+    }
+
+    segments.push(body.slice(segmentStart))
+    return segments
   }
 }

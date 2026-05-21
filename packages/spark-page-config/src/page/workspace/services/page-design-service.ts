@@ -7,18 +7,18 @@ import {
   type PageDesignFlowPhaseSummary,
   type PageDesignFlowStep,
 } from '../design/page-design-100-step-flow'
-import { PageDesignEditSession } from '../editing/page-design-edit-session'
+import { PageDesignEditSession, type PageDesignEditHost } from '../editing/page-design-edit-session'
 import type { PageDesignNodeTree } from '../editing/page-design-node-tree'
 import {
   pageDesignServiceFailure,
   pageDesignServiceSuccess,
+  type PageDesignServiceActionBinding,
   type PageDesignServiceContext,
-  type PageDesignServiceMethodBinding,
   type PageDesignServiceOptions,
   type PageDesignServiceResult,
   type PageDesignTextFileKey,
 } from './page-design-service-contract'
-import { useMethodBackedTarget } from './page-design-method-target'
+import { runRegisteredActionTarget } from './page-design-action-target'
 import { validateScriptServiceContract } from './page-design-script-contract'
 
 export {
@@ -27,8 +27,8 @@ export {
 } from './page-design-service-contract'
 
 export type {
+  PageDesignServiceActionBinding,
   PageDesignServiceContext,
-  PageDesignServiceMethodBinding,
   PageDesignServiceOptions,
   PageDesignServiceResult,
   PageDesignTextFileKey,
@@ -63,8 +63,10 @@ export interface PageDesignFlowDescription {
  */
 interface PageDesignTextFileBinding {
   label: string
-  readMethod: 'readScript' | 'readStyle'
-  writeMethod: 'writeScript' | 'writeStyle'
+  readName: 'readScript' | 'readStyle'
+  writeName: 'writeScript' | 'writeStyle'
+  read: (host: PageDesignEditHost) => (() => string) | undefined
+  write: (host: PageDesignEditHost) => ((content: string) => void) | undefined
   validateWrite?: (content: string) => PageDesignServiceResult<undefined> | null
 }
 
@@ -72,14 +74,18 @@ interface PageDesignTextFileBinding {
 const TEXT_FILE_BINDING_BY_KEY: Record<PageDesignTextFileKey, PageDesignTextFileBinding> = {
   script: {
     label: 'script.js',
-    readMethod: 'readScript',
-    writeMethod: 'writeScript',
+    readName: 'readScript',
+    writeName: 'writeScript',
+    read: (host) => host.readScript,
+    write: (host) => host.writeScript,
     validateWrite: validateScriptServiceContract,
   },
   style: {
     label: 'style.css',
-    readMethod: 'readStyle',
-    writeMethod: 'writeStyle',
+    readName: 'readStyle',
+    writeName: 'writeStyle',
+    read: (host) => host.readStyle,
+    write: (host) => host.writeStyle,
   },
 }
 
@@ -128,8 +134,8 @@ function bootstrapEditState(state: PageDesignEditSession): PageDesignServiceResu
 
   const missingTextBindings = Object.values(TEXT_FILE_BINDING_BY_KEY).flatMap((binding) => {
     const missing: string[] = []
-    if (typeof state.host?.[binding.readMethod] !== 'function') missing.push(String(binding.readMethod))
-    if (typeof state.host?.[binding.writeMethod] !== 'function') missing.push(String(binding.writeMethod))
+    if (state.host === null || binding.read(state.host) === undefined) missing.push(binding.readName)
+    if (state.host === null || binding.write(state.host) === undefined) missing.push(binding.writeName)
     return missing
   })
   if (missingTextBindings.length > 0) {
@@ -155,24 +161,27 @@ function ensureTextModelAccess(
   mode: 'read' | 'write',
 ): string | null {
   const binding = TEXT_FILE_BINDING_BY_KEY[fileKey]
-  const method = mode === 'read' ? binding.readMethod : binding.writeMethod
-  return typeof state.host?.[method] === 'function' ? null : `缺少 live text model: ${String(method)}`
+  if (state.host === null) {
+    return `缺少 live text model: ${mode === 'read' ? binding.readName : binding.writeName}`
+  }
+  const action = mode === 'read' ? binding.read(state.host) : binding.write(state.host)
+  return action === undefined ? `缺少 live text model: ${mode === 'read' ? binding.readName : binding.writeName}` : null
 }
 
 /** 读取已绑定的 live text model；调用前由 ensureTextModelAccess 做用户态错误返回。 */
 function readBoundTextModel(state: PageDesignEditSession, binding: PageDesignTextFileBinding): string {
-  const reader = state.host?.[binding.readMethod]
-  if (typeof reader !== 'function') {
-    throw new Error(`缺少 live text model: ${String(binding.readMethod)}`)
+  const reader = state.host === null ? undefined : binding.read(state.host)
+  if (reader === undefined) {
+    throw new Error(`缺少 live text model: ${binding.readName}`)
   }
   return reader()
 }
 
 /** 写入已绑定的 live text model；script.js 的 API 契约校验在调用本函数前完成。 */
 function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTextFileBinding, content: string): void {
-  const writer = state.host?.[binding.writeMethod]
-  if (typeof writer !== 'function') {
-    throw new Error(`缺少 live text model: ${String(binding.writeMethod)}`)
+  const writer = state.host === null ? undefined : binding.write(state.host)
+  if (writer === undefined) {
+    throw new Error(`缺少 live text model: ${binding.writeName}`)
   }
   writer(content)
 }
@@ -250,34 +259,34 @@ export class PageDesignService {
     return pageDesignServiceSuccess(undefined, `${binding.label} 已更新`)
   }
 
-  useNodeTreeMethod(
+  async runNodeTreeAction(
     context: PageDesignServiceContext,
     args: unknown,
-    options: PageDesignServiceMethodBinding,
-  ): PageDesignServiceResult<unknown> {
+    options: PageDesignServiceActionBinding<PageDesignNodeTree>,
+  ): Promise<PageDesignServiceResult<unknown>> {
     const state = this.getState(context)
     const tree: PageDesignNodeTree | null = state.getActiveNodeTree()
     if (tree === null) {
       return pageDesignServiceFailure('NO_NODE_TREE', 'nodeTree 未初始化', '请先调用 PageDesignService.bootstrap 初始化编辑会话。')
     }
-    const result = useMethodBackedTarget(options, tree, args)
+    const result = await runRegisteredActionTarget(options, tree, args)
     if (result.ok && options.mutates) {
       state.notifyNodeTreeChanged(tree)
     }
     return result
   }
 
-  useDatasetMethod(
+  async runDatasetAction(
     context: PageDesignServiceContext,
     args: unknown,
-    options: PageDesignServiceMethodBinding,
-  ): PageDesignServiceResult<unknown> {
+    options: PageDesignServiceActionBinding<DataSetCrudTool>,
+  ): Promise<PageDesignServiceResult<unknown>> {
     const state = this.getState(context)
     const tool: DataSetCrudTool | null = state.getActiveDataSetTool()
     if (tool === null) {
       return pageDesignServiceFailure('NO_DATASET_EDIT', 'dataset 未初始化', '请先调用 PageDesignService.bootstrap 初始化编辑会话。')
     }
-    const result = useMethodBackedTarget(options, tool, args)
+    const result = await runRegisteredActionTarget(options, tool, args)
     if (result.ok && options.mutates) {
       state.notifyDataSetChanged(tool)
     }

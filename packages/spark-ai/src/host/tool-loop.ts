@@ -1,8 +1,7 @@
 /**
  * AI Host 工具调用循环。
  *
- * Host 直接调度 module-semantic 的 6 个协议工具,不再经过旧 projection /
- * AiRuntimeToolCodec / action path。
+ * Host 直接调度 module-semantic 的 6 个协议工具。
  */
 
 import type { LlmJsonValue } from '../schema'

@@ -8,8 +8,7 @@
  * 冲突规则:同一 kind 重复注册直接抛 ModuleKindConflictError,
  * 不允许覆盖,避免业务方误用导致 silent 覆盖。
  *
- * 该注册表不持有 Capability 实现,只持有"模块类型描述"。
- * Capability 由 CapabilityRegistry 单独注册。
+ * ModuleKind 同时是语义描述对象和通用运行入口,业务无需额外注册第二套对象。
  */
 
 import type { ModuleKind } from '../protocol/module-kind'
@@ -46,8 +45,8 @@ export class ModuleKindNotFoundError extends Error {
  * 使用模式:
  * ```ts
  * const registry = new ModuleKindRegistry()
- * registry.register(new SchoolModuleKind())
- * registry.register(new GradeModuleKind())
+ * registry.register(createSchoolModuleKind())
+ * registry.register(createGradeModuleKind())
  * // ... 启动结束
  * const schoolKind = registry.require('school')
  * ```

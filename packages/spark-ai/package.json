@@ -6,15 +6,15 @@
   "types": "./dist/index.d.ts",
   "private": false,
   "license": "MIT",
-  "description": "Spark AI Runtime - framework-neutral runtime core for SPARK AI Platform protocols, SSE, sessions, function calling, and knowledge projection",
+  "description": "Spark AI Host - schema, module-semantic protocol, sessions, tool loop, and transport contracts",
   "keywords": [
     "spark",
     "ai",
-    "function-calling",
-    "runtime",
-    "host-protocol",
-    "sse",
-    "knowledge"
+    "host",
+    "module-semantic",
+    "tool-calling",
+    "json-schema",
+    "sse"
   ],
   "files": [
     "dist",
@@ -26,20 +26,20 @@
   },
   "exports": {
     ".": {
-      "import": "./dist/index.js",
-      "types": "./dist/index.d.ts"
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
     },
     "./schema": {
-      "import": "./dist/schema/index.js",
-      "types": "./dist/schema/index.d.ts"
+      "types": "./dist/schema/index.d.ts",
+      "import": "./dist/schema/index.js"
     },
     "./host": {
-      "import": "./dist/host/index.js",
-      "types": "./dist/host/index.d.ts"
+      "types": "./dist/host/index.d.ts",
+      "import": "./dist/host/index.js"
     },
     "./module-semantic": {
-      "import": "./dist/module-semantic/index.js",
-      "types": "./dist/module-semantic/index.d.ts"
+      "types": "./dist/module-semantic/index.d.ts",
+      "import": "./dist/module-semantic/index.js"
     }
   },
   "dependencies": {

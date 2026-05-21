@@ -62,10 +62,9 @@ export type {
 } from './modules/text-model-tool-catalog'
 
 export {
-  NodeTreeModuleKind,
-  NodeTreeCapability,
+  createNodeTreeModuleKind,
 } from './module-semantic'
 export type {
-  NodeTreeCapabilityOptions,
+  NodeTreeModuleKindOptions,
 } from './module-semantic'
 

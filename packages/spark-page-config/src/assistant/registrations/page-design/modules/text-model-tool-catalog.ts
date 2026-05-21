@@ -21,7 +21,7 @@ export type TextModelFunctionId = 'readScript' | 'writeScript' | 'readStyle' | '
 const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')
 const CONTENT_SCHEMA = stringSchema('完整文本内容（全量覆盖写入，不支持 patch）')
 
-const BOOTSTRAP_RULE = `调用 textModel 函数前必须先完成 lifecycle.bootstrap，确保宿主绑定 read*/write*。`
+const BOOTSTRAP_RULE = `调用 text-model action 前必须先完成 lifecycle.bootstrap，确保宿主绑定 read*/write*。`
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 

@@ -16,31 +16,31 @@ import {
   type AiHostFunctionCallResult,
 } from '@spark-view/spark-ai/host'
 import {
-  ModuleCapability,
-  ModuleKindBase,
+  ModuleKind,
   ModuleSemanticRuntime,
-  errorCheck,
-  infoCheck,
-  ok as okResult,
+  ok,
   type ActionSchema,
-  type ModuleInstanceQuery,
+  type ModuleInstanceFinder,
   type ModuleInstanceRef,
+  type ModuleKindRunner,
   type ModulePathContext,
   type OperationResult,
 } from '@spark-view/spark-ai/module-semantic'
 import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
+import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
   PageDesignService,
   type PageDesignServiceContext,
-  type PageDesignServiceMethodBinding,
+  type PageDesignServiceActionBinding,
   type PageDesignServiceResult,
 } from '../../../page/workspace/services/page-design-service'
 import type { PageDesignEditHost } from '../../../page/workspace/editing/page-design-edit-session'
 import { DATASET_ACTIONS, DATASET_MUTATING_ACTION_NAMES } from './modules/dataset-tool-catalog'
 import { LIFECYCLE_ACTIONS } from './modules/lifecycle-tool-catalog'
-import { PAYLOAD_CATALOG_ACTIONS, runPayloadCatalogAction } from './modules/payload-catalog-tool-catalog'
+import { PAYLOAD_CATALOG_ACTIONS, PAYLOAD_CATALOG_ACTION_RUNNERS, isPayloadCatalogFunctionId } from './modules/payload-catalog-tool-catalog'
 import { TEXT_MODEL_ACTIONS } from './modules/text-model-tool-catalog'
-import { NodeTreeCapability, NodeTreeModuleKind } from './module-semantic'
+import { createNodeTreeModuleKind } from './module-semantic'
+import { serviceResultToOperationResult } from '../module-semantic-service-result'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -61,203 +61,222 @@ export interface PageDesignModuleOptions {
   readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
 }
 
-class LifecycleModuleKind extends ModuleKindBase {
-  public constructor() {
-    super({
-      kind: 'lifecycle',
-      name: 'Page Design Lifecycle',
-      description: '页面设计编辑运行态引导与进度查询。',
-      actions: LIFECYCLE_ACTIONS,
-      children: [],
-    })
+type DatasetActionBinding = PageDesignServiceActionBinding<DataSetCrudTool>
+type DatasetActionRunner = DatasetActionBinding['run']
+
+const DATASET_ACTION_RUNNERS: Readonly<Record<string, DatasetActionRunner>> = {
+  export: (tool) => tool.toJson(),
+  canUndo: (tool) => tool.canUndo,
+  canRedo: (tool) => tool.canRedo,
+  historyCursor: (tool) => tool.historyCursor,
+  undo: (tool) => tool.undo(),
+  redo: (tool) => tool.redo(),
+  clearHistory: (tool) => tool.clearHistory(),
+  listTables: (tool) => tool.listTables(),
+  getTable: (tool, args) => tool.getTable(args as Parameters<DataSetCrudTool['getTable']>[0]),
+  listColumns: (tool, args) => tool.listColumns(args as Parameters<DataSetCrudTool['listColumns']>[0]),
+  getColumn: (tool, args) => tool.getColumn(args as Parameters<DataSetCrudTool['getColumn']>[0]),
+  createColumn: (tool, args) => tool.createColumn(args as Parameters<DataSetCrudTool['createColumn']>[0]),
+  updateColumn: (tool, args) => tool.updateColumn(args as Parameters<DataSetCrudTool['updateColumn']>[0]),
+  renameColumn: (tool, args) => tool.renameColumn(args as Parameters<DataSetCrudTool['renameColumn']>[0]),
+  deleteColumn: (tool, args) => tool.deleteColumn(args as Parameters<DataSetCrudTool['deleteColumn']>[0]),
+  createTable: (tool, args) => tool.createTable(args as Parameters<DataSetCrudTool['createTable']>[0]),
+  updateTable: (tool, args) => tool.updateTable(args as Parameters<DataSetCrudTool['updateTable']>[0]),
+  renameTable: (tool, args) => tool.renameTable(args as Parameters<DataSetCrudTool['renameTable']>[0]),
+  deleteTable: (tool, args) => tool.deleteTable(args as Parameters<DataSetCrudTool['deleteTable']>[0]),
+  listViews: (tool, args) => tool.listViews(args as Parameters<DataSetCrudTool['listViews']>[0]),
+  getView: (tool, args) => tool.getView(args as Parameters<DataSetCrudTool['getView']>[0]),
+  createView: (tool, args) => tool.createView(args as Parameters<DataSetCrudTool['createView']>[0]),
+  updateView: (tool, args) => tool.updateView(args as Parameters<DataSetCrudTool['updateView']>[0]),
+  deleteView: (tool, args) => tool.deleteView(args as Parameters<DataSetCrudTool['deleteView']>[0]),
+  listRows: (tool, args) => tool.listRows(args as Parameters<DataSetCrudTool['listRows']>[0]),
+  getRow: (tool, args) => tool.getRow(args as Parameters<DataSetCrudTool['getRow']>[0]),
+  createRow: (tool, args) => tool.createRow(args as Parameters<DataSetCrudTool['createRow']>[0]),
+  createRows: (tool, args) => tool.createRows(args as Parameters<DataSetCrudTool['createRows']>[0]),
+  updateRow: (tool, args) => tool.updateRow(args as Parameters<DataSetCrudTool['updateRow']>[0]),
+  updateRows: (tool, args) => tool.updateRows(args as Parameters<DataSetCrudTool['updateRows']>[0]),
+  deleteRow: (tool, args) => tool.deleteRow(args as Parameters<DataSetCrudTool['deleteRow']>[0]),
+  deleteRows: (tool, args) => tool.deleteRows(args as Parameters<DataSetCrudTool['deleteRows']>[0]),
+  listRelations: (tool, args) => tool.listRelations(args as Parameters<DataSetCrudTool['listRelations']>[0]),
+  getRelation: (tool, args) => tool.getRelation(args as Parameters<DataSetCrudTool['getRelation']>[0]),
+  createRelation: (tool, args) => tool.createRelation(args as Parameters<DataSetCrudTool['createRelation']>[0]),
+  updateRelation: (tool, args) => tool.updateRelation(args as Parameters<DataSetCrudTool['updateRelation']>[0]),
+  deleteRelation: (tool, args) => tool.deleteRelation(args as Parameters<DataSetCrudTool['deleteRelation']>[0]),
+  listDependencies: (tool, args) => tool.listDependencies(args as Parameters<DataSetCrudTool['listDependencies']>[0]),
+  getDependency: (tool, args) => tool.getDependency(args as Parameters<DataSetCrudTool['getDependency']>[0]),
+  createDependency: (tool, args) => tool.createDependency(args as Parameters<DataSetCrudTool['createDependency']>[0]),
+  updateDependency: (tool, args) => tool.updateDependency(args as Parameters<DataSetCrudTool['updateDependency']>[0]),
+  deleteDependency: (tool, args) => tool.deleteDependency(args as Parameters<DataSetCrudTool['deleteDependency']>[0]),
+  listAggregates: (tool, args) => tool.listAggregates(args as Parameters<DataSetCrudTool['listAggregates']>[0]),
+  getAggregate: (tool, args) => tool.getAggregate(args as Parameters<DataSetCrudTool['getAggregate']>[0]),
+  addAggregate: (tool, args) => tool.addAggregate(args as Parameters<DataSetCrudTool['addAggregate']>[0]),
+  updateAggregate: (tool, args) => tool.updateAggregate(args as Parameters<DataSetCrudTool['updateAggregate']>[0]),
+  removeAggregate: (tool, args) => tool.removeAggregate(args as Parameters<DataSetCrudTool['removeAggregate']>[0]),
+  getComputeExpression: (tool, args) => tool.getComputeExpression(args as Parameters<DataSetCrudTool['getComputeExpression']>[0]),
+  setComputeExpression: (tool, args) => tool.setComputeExpression(args as Parameters<DataSetCrudTool['setComputeExpression']>[0]),
+  clearComputeExpression: (tool, args) => tool.clearComputeExpression(args as Parameters<DataSetCrudTool['clearComputeExpression']>[0]),
+}
+
+interface PageDesignActionModuleKindOptions {
+  readonly kind: Exclude<PageDesignModuleKindId, 'node-tree'>
+  readonly name: string
+  readonly description: string
+  readonly label: string
+  readonly service: PageDesignService
+  readonly actions: readonly ActionSchema[]
+}
+
+/**
+ * @moduleFactory createPageDesignActionModuleKind
+ * @moduleRunner createPageDesignRunnerDelegate
+ * @moduleFindDelegate createPageDesignFindDelegate
+ */
+function createPageDesignActionModuleKind(options: PageDesignActionModuleKindOptions): ModuleKind {
+  const actionByName = new Map(options.actions.map((action) => [action.name, action]))
+  return new ModuleKind({
+    kind: options.kind,
+    name: options.name,
+    description: options.description,
+    actions: options.actions,
+    children: [],
+    runner: createPageDesignRunnerDelegate(options.service, options.kind, actionByName),
+    find: createPageDesignFindDelegate(options.kind, options.label),
+  })
+}
+
+function createPageDesignRunnerDelegate(
+  service: PageDesignService,
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+): ModuleKindRunner {
+  return (ctx, actionName, args) => runPageDesignAction(service, kind, actionByName, ctx, actionName, args)
+}
+
+function createPageDesignFindDelegate(
+  kind: PageDesignActionModuleKindOptions['kind'],
+  label: string,
+): ModuleInstanceFinder {
+  return (ctx, childKind, query) => {
+    void query
+    if (childKind !== kind || ctx.segments.length !== 0) {
+      return ok<readonly ModuleInstanceRef[]>([])
+    }
+    const ref = createCurrentPageRef(ctx, label)
+    return ok<readonly ModuleInstanceRef[]>(ref === null ? [] : [ref])
   }
 }
 
-class TextModelModuleKind extends ModuleKindBase {
-  public constructor() {
-    super({
-      kind: 'text-model',
-      name: 'Page Design Text Model',
-      description: '当前页面 script.js/style.css live 文本模型读写。',
-      actions: TEXT_MODEL_ACTIONS,
-      children: [],
-    })
+function createCurrentPageRef(ctx: ModulePathContext, label: string): ModuleInstanceRef | null {
+  const pageId = currentPageId(ctx)
+  if (pageId.length === 0) {
+    return null
+  }
+  return { id: pageId, label, summary: '当前 PageDesign 业务实例' }
+}
+
+async function runPageDesignAction(
+  service: PageDesignService,
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+  ctx: ModulePathContext,
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): Promise<OperationResult<LlmJsonValue>> {
+  switch (kind) {
+    case 'lifecycle':
+      return runLifecycleAction(service, kind, actionByName, ctx, actionName, args)
+    case 'text-model':
+      return runTextModelAction(service, kind, actionByName, ctx, actionName, args)
+    case 'payload-catalog':
+      return runPayloadCatalogAction(kind, actionByName, actionName, args)
+    case 'dataset':
+      return serviceResultToOperationResult(await runDatasetAction(service, kind, actionByName, ctx, actionName, args))
   }
 }
 
-class PayloadCatalogModuleKind extends ModuleKindBase {
-  public constructor() {
-    super({
-      kind: 'payload-catalog',
-      name: 'Page Design Payload Catalog',
-      description: '当前页面设计组件参数荷载知识查询。',
-      actions: PAYLOAD_CATALOG_ACTIONS,
-      children: [],
-    })
+function runLifecycleAction(
+  service: PageDesignService,
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+  ctx: ModulePathContext,
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): OperationResult<LlmJsonValue> {
+  requirePageDesignAction(kind, actionByName, actionName)
+  switch (actionName) {
+    case 'bootstrap':
+      return serviceResultToOperationResult(service.bootstrap(toServiceContext(ctx)))
+    case 'describeProgress':
+      return serviceResultToOperationResult(service.describeProgress(toServiceContext(ctx)))
+    case 'describeDesignFlow':
+      return serviceResultToOperationResult(service.describeDesignFlow(toServiceContext(ctx), toDesignFlowQuery(args)))
+    default:
+      throw new Error(`${kind} action runner is not registered: ${actionName}`)
   }
 }
 
-class DatasetModuleKind extends ModuleKindBase {
-  public constructor() {
-    super({
-      kind: 'dataset',
-      name: 'Page Design DataSet',
-      description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
-      actions: DATASET_ACTIONS,
-      children: [],
-    })
+function runTextModelAction(
+  service: PageDesignService,
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+  ctx: ModulePathContext,
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): OperationResult<LlmJsonValue> {
+  requirePageDesignAction(kind, actionByName, actionName)
+  switch (actionName) {
+    case 'readScript':
+      return serviceResultToOperationResult(service.readTextModel(toServiceContext(ctx), 'script'))
+    case 'writeScript':
+      return serviceResultToOperationResult(service.writeTextModel(toServiceContext(ctx), 'script', readRequiredStringArg(args, 'content')))
+    case 'readStyle':
+      return serviceResultToOperationResult(service.readTextModel(toServiceContext(ctx), 'style'))
+    case 'writeStyle':
+      return serviceResultToOperationResult(service.writeTextModel(toServiceContext(ctx), 'style', readRequiredStringArg(args, 'content')))
+    default:
+      throw new Error(`${kind} action runner is not registered: ${actionName}`)
   }
 }
 
-class PageDesignActionCapability extends ModuleCapability {
-  public readonly kind: PageDesignModuleKindId
-
-  private readonly service: PageDesignService
-
-  private readonly label: string
-
-  private readonly actions: ReadonlyMap<string, ActionSchema>
-
-  public constructor(options: {
-    readonly kind: PageDesignModuleKindId
-    readonly label: string
-    readonly service: PageDesignService
-    readonly actions: readonly ActionSchema[]
-  }) {
-    super()
-    this.kind = options.kind
-    this.label = options.label
-    this.service = options.service
-    this.actions = new Map(options.actions.map((action) => [action.name, action]))
+function runPayloadCatalogAction(
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): OperationResult<LlmJsonValue> {
+  requirePageDesignAction(kind, actionByName, actionName)
+  if (!isPayloadCatalogFunctionId(actionName)) {
+    throw new Error(`payload-catalog action runner is not registered: ${actionName}`)
   }
+  return serviceResultToOperationResult(PAYLOAD_CATALOG_ACTION_RUNNERS[actionName](args))
+}
 
-  public getAttribute(): Promise<OperationResult<LlmJsonValue>> {
-    return Promise.resolve({
-      ok: false,
-      checks: [errorCheck('ATTRIBUTE_NOT_DECLARED', `${this.kind} 未暴露任何属性`, '请通过 invokeAction 调用具体动作')],
-    })
-  }
+async function runDatasetAction(
+  service: PageDesignService,
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+  ctx: ModulePathContext,
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): Promise<PageDesignServiceResult<unknown>> {
+  const action = requirePageDesignAction(kind, actionByName, actionName)
+  return service.runDatasetAction(
+    toServiceContext(ctx),
+    args,
+    createDatasetActionBinding(action),
+  )
+}
 
-  public setAttribute(): Promise<OperationResult<void>> {
-    return Promise.resolve({
-      ok: false,
-      checks: [errorCheck('ATTRIBUTE_NOT_DECLARED', `${this.kind} 未暴露任何属性`, '请通过 invokeAction 调用具体动作')],
-    })
+function requirePageDesignAction(
+  kind: PageDesignActionModuleKindOptions['kind'],
+  actionByName: ReadonlyMap<string, ActionSchema>,
+  actionName: string,
+): ActionSchema {
+  const action = actionByName.get(actionName)
+  if (action === undefined) {
+    throw new Error(`${kind} action is not declared: ${actionName}`)
   }
-
-  public invokeAction(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<OperationResult<LlmJsonValue>> {
-    return Promise.resolve(this.runAction(ctx, actionName, args))
-  }
-
-  public listChildren(): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-  }
-
-  public findInstance(
-    ctx: ModulePathContext,
-    childKind: string,
-    _query: ModuleInstanceQuery,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    if (childKind !== this.kind) {
-      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-    }
-    const pageId = currentPageId(ctx)
-    if (pageId.length === 0) {
-      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-    }
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
-      { id: pageId, label: this.label, summary: '当前 PageDesign 业务实例' },
-    ]))
-  }
-
-  public resolveChild(): Promise<OperationResult<boolean>> {
-    return Promise.resolve(okResult<boolean>(false))
-  }
-
-  private runAction(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): OperationResult<LlmJsonValue> {
-    try {
-      switch (this.kind) {
-        case 'lifecycle':
-          return serviceResultToOperationResult(this.runLifecycle(ctx, actionName, args))
-        case 'text-model':
-          return serviceResultToOperationResult(this.runTextModel(ctx, actionName, args))
-        case 'payload-catalog':
-          return serviceResultToOperationResult(runPayloadCatalogAction(actionName, args))
-        case 'dataset':
-          return serviceResultToOperationResult(this.runDataset(ctx, actionName, args))
-        case 'node-tree':
-          throw new Error('node-tree is handled by NodeTreeCapability')
-      }
-    } catch (error) {
-      return executeErrorResult(error)
-    }
-  }
-
-  private runLifecycle(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): PageDesignServiceResult<unknown> {
-    const context = toServiceContext(ctx)
-    switch (actionName) {
-      case 'bootstrap':
-        return this.service.bootstrap(context)
-      case 'describeProgress':
-        return this.service.describeProgress(context)
-      case 'describeDesignFlow':
-        return this.service.describeDesignFlow(context, toDesignFlowQuery(args))
-      default:
-        return unknownAction(actionName, this.kind)
-    }
-  }
-
-  private runTextModel(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): PageDesignServiceResult<unknown> {
-    const context = toServiceContext(ctx)
-    switch (actionName) {
-      case 'readScript':
-        return this.service.readTextModel(context, 'script')
-      case 'writeScript':
-        return this.service.writeTextModel(context, 'script', readRequiredStringArg(args, 'content'))
-      case 'readStyle':
-        return this.service.readTextModel(context, 'style')
-      case 'writeStyle':
-        return this.service.writeTextModel(context, 'style', readRequiredStringArg(args, 'content'))
-      default:
-        return unknownAction(actionName, this.kind)
-    }
-  }
-
-  private runDataset(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): PageDesignServiceResult<unknown> {
-    return this.service.useDatasetMethod(
-      toServiceContext(ctx),
-      args,
-      createMethodBinding(this.requireAction(actionName), actionName, DATASET_MUTATING_ACTION_NAMES.has(actionName)),
-    )
-  }
-
-  private requireAction(actionName: string): ActionSchema {
-    const action = this.actions.get(actionName)
-    if (action === undefined) {
-      throw new Error(`${this.kind} action is not declared: ${actionName}`)
-    }
-    return action
-  }
+  return action
 }
 
 export function createPageDesignBusinessRegistration(
@@ -272,36 +291,38 @@ export function createPageDesignBusinessRegistration(
   })
   const runtime = new ModuleSemanticRuntime()
 
-  runtime.registerKind(new LifecycleModuleKind())
-  runtime.registerKind(new TextModelModuleKind())
-  runtime.registerKind(new PayloadCatalogModuleKind())
-  runtime.registerKind(new NodeTreeModuleKind())
-  runtime.registerKind(new DatasetModuleKind())
-
-  runtime.registerCapability(new PageDesignActionCapability({
+  runtime.registerKind(createPageDesignActionModuleKind({
     kind: 'lifecycle',
+    name: 'Page Design Lifecycle',
+    description: '页面设计编辑运行态引导与进度查询。',
     label: '当前页面生命周期',
     service,
     actions: LIFECYCLE_ACTIONS,
   }))
-  runtime.registerCapability(new PageDesignActionCapability({
+  runtime.registerKind(createPageDesignActionModuleKind({
     kind: 'text-model',
+    name: 'Page Design Text Model',
+    description: '当前页面 script.js/style.css live 文本模型读写。',
     label: '当前页面文本模型',
     service,
     actions: TEXT_MODEL_ACTIONS,
   }))
-  runtime.registerCapability(new PageDesignActionCapability({
+  runtime.registerKind(createPageDesignActionModuleKind({
     kind: 'payload-catalog',
+    name: 'Page Design Payload Catalog',
+    description: '当前页面设计组件参数荷载知识查询。',
     label: '当前页面组件荷载目录',
     service,
     actions: PAYLOAD_CATALOG_ACTIONS,
   }))
-  runtime.registerCapability(new NodeTreeCapability({
+  runtime.registerKind(createNodeTreeModuleKind({
     service,
     contextFactory: toServiceContext,
   }))
-  runtime.registerCapability(new PageDesignActionCapability({
+  runtime.registerKind(createPageDesignActionModuleKind({
     kind: 'dataset',
+    name: 'Page Design DataSet',
+    description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
     label: '当前页面数据集',
     service,
     actions: DATASET_ACTIONS,
@@ -366,7 +387,11 @@ function readRequiredStringArg(args: Readonly<Record<string, LlmJsonValue>>, key
   return value
 }
 
-function createMethodBinding(action: ActionSchema, methodName: string, mutates: boolean): PageDesignServiceMethodBinding {
+function createDatasetActionBinding(action: ActionSchema): DatasetActionBinding {
+  const run = DATASET_ACTION_RUNNERS[action.name]
+  if (run === undefined) {
+    throw new Error(`dataset action runner is not registered: ${action.name}`)
+  }
   const parts = [`参数格式: ${JSON.stringify(action.paramsSchema)}`]
   if (action.example !== undefined && isRecord(action.example) && Object.keys(action.example).length > 0) {
     parts.push(`示例: ${JSON.stringify(action.example)}`)
@@ -376,83 +401,20 @@ function createMethodBinding(action: ActionSchema, methodName: string, mutates: 
   }
   return {
     serviceLabel: action.name,
-    methodName,
-    mutates,
+    run,
+    mutates: DATASET_MUTATING_ACTION_NAMES.has(action.name),
     fixHint: parts.join('；'),
   }
 }
 
-function serviceResultToOperationResult(result: PageDesignServiceResult<unknown>): OperationResult<LlmJsonValue> {
-  if (result.ok) {
-    const data = coerceLlmJsonValue(result.data)
-    return {
-      ok: true,
-      ...(data === undefined ? {} : { data }),
-      checks: [infoCheck('OK', result.summary)],
-    }
-  }
-  return {
-    ok: false,
-    checks: [errorCheck(result.code, result.msg, result.fix)],
-  }
-}
-
-function executeErrorResult(error: unknown): OperationResult<LlmJsonValue> {
-  const message = error instanceof Error ? error.message : String(error)
-  return {
-    ok: false,
-    checks: [
-      errorCheck(
-        'EXECUTE_ERROR',
-        message,
-        '请先在开发系统中打开并选中目标配置页面；若已打开页面，请检查 PageDesign edit host 是否完成注册。',
-      ),
-    ],
-  }
-}
-
 function pageDesignEditHostUnavailableMessage(result: AiHostFunctionCallResult<unknown>): string | null {
-  if (result.ok || result.code !== 'EXECUTE_ERROR') return null
+  if (result.ok || (result.code !== 'EXECUTE_ERROR' && result.code !== 'ACTION_EXECUTE_ERROR')) return null
   const message = result.msg.trim()
   if (message === '') return null
   if (message.includes('PageDesign edit host unavailable')) return message
   if (message.includes('PageDesign edit host is not registered')) return '请先在开发系统中打开并选中目标配置页面。'
   if (message.includes('请先在开发系统中打开并选中目标配置页面')) return message
   return null
-}
-
-function unknownAction(actionName: string, kind: string): PageDesignServiceResult<never> {
-  return {
-    ok: false,
-    code: 'UNKNOWN_ACTION',
-    msg: `kind "${kind}" 不支持动作 "${actionName}"`,
-    fix: `请先调用 describeKind("${kind}") 查看动作表。`,
-  }
-}
-
-function coerceLlmJsonValue(value: unknown): LlmJsonValue | undefined {
-  if (value === null) return null
-  if (value === undefined) return undefined
-  if (typeof value === 'string') return value
-  if (typeof value === 'number') return value
-  if (typeof value === 'boolean') return value
-  if (Array.isArray(value)) {
-    const out: LlmJsonValue[] = []
-    for (const item of value) {
-      const coerced = coerceLlmJsonValue(item)
-      if (coerced !== undefined) out.push(coerced)
-    }
-    return out
-  }
-  if (typeof value === 'object') {
-    const obj: Record<string, LlmJsonValue> = {}
-    for (const [key, raw] of Object.entries(value)) {
-      const coerced = coerceLlmJsonValue(raw)
-      if (coerced !== undefined) obj[key] = coerced
-    }
-    return obj
-  }
-  return undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {

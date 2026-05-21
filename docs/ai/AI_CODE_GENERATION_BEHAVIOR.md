@@ -30,7 +30,7 @@
 4. 不要把仅当前文件使用的类型、常量、helper 函数导出。
 5. 新增抽象前，必须能说明它解决的真实重复、稳定扩展点或跨模块契约。
 6. 如果只有一个实现，默认使用具体 class 或普通函数，不额外创建接口层。
-7. 先寻找已有 class、base class、registry、factory、capability，再决定是否新增结构。
+7. 先寻找已有 class、registry、factory 和稳定领域对象，再决定是否新增结构。
 8. 公共 API 应少而稳定；内部实现可以具体、直接、可读。
 
 ## Interface 使用规则
@@ -169,14 +169,13 @@ export type { DataViewProvider } from './core/DataViewProvider'
 ```ts
 DataViewProvider
 PageConfigResolver
-CapabilityRegistry
+PageDataProvider
 ```
 
 类命名表达实现和职责：
 
 ```ts
 DefaultPageConfigResolver
-RuntimeCapabilityRegistry
 JsonPageDataParser
 ```
 
@@ -226,28 +225,23 @@ export class PageDataLoader extends BaseDataLoader {
 }
 ```
 
-## SPARK AI Runtime 约束
+## SPARK AI Host 约束
 
-> **有效期**：本节约束为 AI Runtime 清理期的临时红线。清理完成后（以 git log 中相关重构 PR 合并为准），本节自动降级为"建议"级别，仅保留 class-first 主路径和 `as` 类型断言禁止两条。
+`packages/spark-ai` 只保留 `schema`、`module-semantic`、`host` 三块稳定能力：
 
-`packages/spark-ai` 的 AI Runtime 采用 class-first 主路径：
-
-- `IModuleRegistration`、`IBusinessRegistration`、`IBusinessRegistrationData`、`IBusinessRegistrationStoreSnapshot` 等旧兼容契约已删除；AI Runtime、业务注册模块、App AI Center host 都不得重新引入。
-- 业务注册模块不得 `implements I*` 注册类型，也不得把旧 `I*` 注册类型作为显式返回类型或字段类型。
-- App AI Center host 只负责启动 SSE 服务和 AI 包传输，不得持有业务 registry，不得包装 page-design、leave-request 等具体业务模块。
-- 新增注册模块优先继承或组合已有 class：`AiModuleRegistrationBase`、`StaticAiToolModule`、`RuntimeBackedBusinessModule`，或在本地建立清晰的 class 层次。
-- 注册对象不要使用匿名 `class extends ...`；需要临时注册层时也使用具名本地 class。
-- AI Runtime core 与消费层不得用 `as` 类型断言绕过 TypeScript 检查；需要收窄 unknown 时使用类型守卫、显式返回类型、`satisfies` 或运行时校验后构造 typed object。
-- 注册运行时必须走 `registerModule()` / module-bound API 主路径；不得重新添加 `registerBusiness()` 或 `AiRegisteredBusinessApi`。
-- module-bound runtime handle 使用具名 `AiRegisteredModule` class；不得重新添加 `AiRegisteredModuleApi`、`AiRuntimeApi` 这类单实现机械接口。
-- LLM tool codec 使用具名 `AiRuntimeToolCodec` class；不得重新添加 `createAiRuntimeToolCodec()` 这类返回匿名对象的工厂主路径。
-- knowledge projection 返回具体 `AiKnowledgeProjector` class；不得重新添加 `AiKnowledgeProjection` 这种单实现接口影子。
-- `registerModule()` 只接收 class-first `AiModuleRegistration` 实例；不得重新支持 `AiModuleRegistrationData`、`AiModuleRegistrationStoreSnapshot` 或其它纯数据注册源。
-- registered module handle、business module、host runtime 不得重新暴露 `getRegistrationData()` / `getRegistrationStoreSnapshot()` 兼容 API。
-- 消费层不得依赖 `AiRegisteredBusinessApi`、相对包根 `../index`、`../core`、`../../core`、`../core/host` 等 barrel 入口；同包内部按 protocol/internal/host 的具体文件导入，应用层只使用公开 subpath（如 `@spark-view/spark-ai/host`）。
-- runtime 主路径使用 `getFunctions()`；不得重新添加 `.functions` 兼容读取。静态模块函数表用模块级常量传入 `super({ functionRegistrations })`，不要在子类里覆盖 `functions` 属性。
-- core 内部不得重新添加旧业务注册适配器、旧 business registration data/store snapshot 转换器或任何旧 `I*` 兼容命名。
-- App AI Center host 只导出 SSE 启动、transport 和本地 host 类型；不得把 `@spark-view/spark-ai/host` 或业务 registrations 的类型重新批量命名为 `AppAi*` 镜像别名。
+- 公共入口只允许 `@spark-view/spark-ai`、`@spark-view/spark-ai/schema`、`@spark-view/spark-ai/module-semantic`、`@spark-view/spark-ai/host`。
+- 不得恢复旧 core/protocol 公共 subpath 或旧 adapter 过渡层。
+- 新业务注册统一返回 `AiHostBusinessRegistration`，其中 `runtime` 直接持有 `ModuleSemanticRuntime`。
+- 业务能力进入协议层前必须投影成标准 `ModuleKind` / `ModuleSemanticRuntime`；手写 `ModuleKind` class 只作为迁移期形态，目标是由 VCM 提取属性、动作、子模块、构造函数、注册工厂边界以及 `runner/list/find` 委托标识，生成 `ModuleKindOptions` / factory 后调用 `runtime.registerKind`。
+- `ActionSchema` 只保存声明，运行侧统一挂在 `ModuleKind.runner(ctx, actionName, args)` 函数上。
+- `ModuleKind` 可通过 `list` / `find` 函数委托适配任意业务系统；属性语义只来自 `attributes` 元数据并通过 `describeKind` 暴露给 LLM，最终能力元数据可由 VCM 等构建期链路生成，但进入协议层必须投影成标准 `ModuleKindOptions` 并创建 `ModuleKind`。
+- `getAttribute` / `setAttribute` 由基类按元数据校验后直接读写 `runner` 函数对象属性；`resolveChild` 和内部 resolve 逻辑由基类实现，不要求业务层实现额外适配协议。
+- LLM 可见工具固定为 `listChildren`、`findInstance`、`describeKind`、`invokeAction`、`getAttribute`、`setAttribute`。
+- `describeKind` 必须完整暴露 action 的 `paramsSchema`、`resultSchema`、`usageRules`、`failureModes`、`example`。
+- 参数 schema 使用标准 JSON Schema object root，并由 `LlmSchemaValidator` 校验；不得恢复私有参数 DSL。
+- Host 只记录 `AiHostSessionRecord / AiHostHistoryEntry / AiHostFunctionCallResult`；业务 live state 由业务 service 自管。
+- 业务 release 只清 live state，不删除 Host 会话历史。
+- `spark-ai` 与消费层不得用 `as` 类型断言绕过 TypeScript 检查；需要收窄 unknown 时使用类型守卫、显式返回类型、`satisfies` 或运行时校验后构造 typed object。
 
 ## 错误处理风格
 

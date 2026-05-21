@@ -3,26 +3,24 @@
  *
  * 模块语义协议运行时(组合根)。
  *
- * 把 ModuleKindRegistry / CapabilityRegistry / ModuleNavigator /
- * AttributeAccessor / ActionInvoker / Navigator / ProtocolToolGenerator
+ * 把 ModuleKindRegistry / Navigator /
+ * AttributeAccessor / ActionInvoker / ProtocolToolGenerator
  * 组合成一个对外可用的运行时句柄。
  *
  * 暴露面:
- * - 注册:registerKind / registerCapability
+ * - 注册:registerKind(moduleKind)
  * - 工具规约:getLlmTools()(供 LLM tool spec)
  * - 工具路由:executeTool(toolName, rawArgs)(LLM tool_call 入口)
  * - 直接调用:getAttribute / setAttribute / invokeAction /
  *            listChildren / findInstance / describeKind
  *
- * 不持有业务状态。所有业务数据由 Capability 实现自管。
+ * 不持有业务状态。业务数据由注册的 ModuleKind 运行入口自行适配。
  */
 
 import type { LlmJsonValue } from '../../schema'
 import { ActionInvoker } from '../internal/action-invoker'
 import { AttributeAccessor } from '../internal/attribute-accessor'
-import { CapabilityRegistry } from '../internal/capability-registry'
 import { ModuleKindRegistry } from '../internal/module-kind-registry'
-import { ModuleNavigator } from '../internal/module-navigator'
 import { Navigator, type ModuleKindDescription } from '../internal/navigator'
 import {
   PROTOCOL_TOOL_NAMES,
@@ -31,12 +29,11 @@ import {
   type ProtocolToolName,
 } from '../internal/protocol-tool-generator'
 import type {
-  ModuleCapability,
   ModuleHostContext,
   ModuleInstanceQuery,
   ModuleInstanceRef,
-} from '../protocol/capability'
-import type { ModuleKind } from '../protocol/module-kind'
+  ModuleKind,
+} from '../protocol/module-kind'
 import { ModulePath, ModulePathParseError } from '../protocol/module-path'
 import {
   errorCheck,
@@ -55,20 +52,15 @@ export type ProtocolToolArgs = Readonly<Record<string, LlmJsonValue>>
  *
  * 典型生命周期:
  * 1. `new ModuleSemanticRuntime()`
- * 2. `registerKind(new SchoolModuleKind())` × N
- * 3. `registerCapability(new SchoolCapability())` × N
- * 4. `getLlmTools()` 取规约喂给 LLM
- * 5. LLM 调 tool → `executeTool(toolName, args)` 路由
+ * 2. `registerKind(createSchoolModuleKind(...))` × N
+ * 3. `getLlmTools()` 取规约喂给 LLM
+ * 4. LLM 调 tool → `executeTool(toolName, args)` 路由
  *
  * 注册阶段允许冲突抛错(由 registry 抛 ConflictError),
  * 调用阶段所有失败统一走 OperationResult.checks 反馈。
  */
 export class ModuleSemanticRuntime {
   private readonly kinds: ModuleKindRegistry
-
-  private readonly capabilities: CapabilityRegistry
-
-  private readonly moduleNavigator: ModuleNavigator
 
   private readonly attributes: AttributeAccessor
 
@@ -80,22 +72,16 @@ export class ModuleSemanticRuntime {
 
   public constructor() {
     this.kinds = new ModuleKindRegistry()
-    this.capabilities = new CapabilityRegistry()
-    this.moduleNavigator = new ModuleNavigator(this.kinds, this.capabilities)
-    this.attributes = new AttributeAccessor(this.kinds, this.moduleNavigator)
-    this.actions = new ActionInvoker(this.kinds, this.moduleNavigator)
-    this.navigator = new Navigator(this.kinds, this.capabilities, this.moduleNavigator)
+    this.navigator = new Navigator(this.kinds)
+    this.attributes = new AttributeAccessor(this.navigator)
+    this.actions = new ActionInvoker(this.navigator)
     this.toolGenerator = new ProtocolToolGenerator(this.kinds)
   }
 
   // ───────── 注册 ─────────
 
-  public registerKind(kind: ModuleKind): void {
-    this.kinds.register(kind)
-  }
-
-  public registerCapability(capability: ModuleCapability): void {
-    this.capabilities.register(capability)
+  public registerKind(moduleKind: ModuleKind): void {
+    this.kinds.register(moduleKind)
   }
 
   // ───────── 协议工具规约 ─────────
@@ -119,7 +105,7 @@ export class ModuleSemanticRuntime {
    * - (其它):           由下层路由返回
    *
    * @param host host 适配层注入的当前业务实例作用域。直接 new ModuleSemanticRuntime()
-   *             调用时为 undefined,Capability 自行判断是否消费。
+   *             调用时为 undefined,ModuleKind 自行判断是否消费。
    */
   public async executeTool(
     toolName: string,
@@ -408,22 +394,16 @@ function describeActionToJson(action: ModuleKindDescription['actions'][number]):
     name: action.name,
     description: action.description,
     paramsSchema: jsonSchemaToJson(action.paramsSchema),
-  }
-  if (action.resultSchema !== undefined) {
-    out['resultSchema'] = jsonSchemaToJson(action.resultSchema)
-  }
-  if (action.example !== undefined) {
-    out['example'] = action.example
-  }
-  if (action.usageRules && action.usageRules.length > 0) {
-    out['usageRules'] = [...action.usageRules]
-  }
-  if (action.failureModes && action.failureModes.length > 0) {
-    out['failureModes'] = action.failureModes.map((mode) => ({
-      code: mode.code,
-      when: mode.when,
-      fix: mode.fix,
-    }))
+    resultSchema: action.resultSchema === undefined ? null : jsonSchemaToJson(action.resultSchema),
+    usageRules: action.usageRules === undefined ? [] : [...action.usageRules],
+    failureModes: action.failureModes === undefined
+      ? []
+      : action.failureModes.map((mode) => ({
+        code: mode.code,
+        when: mode.when,
+        fix: mode.fix,
+      })),
+    example: action.example === undefined ? null : action.example,
   }
   return out
 }

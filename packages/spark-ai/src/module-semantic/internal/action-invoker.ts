@@ -6,30 +6,27 @@
  * 协议从 ModuleKind.actions 派生出 LLM 工具 invokeAction,调用时路由到这里。
  *
  * 流程:
- * 1. ModuleNavigator 解析路径,定位末段 Capability + PathContext
- * 2. 用末段 kind 的 ModuleKind 校验动作是否声明
+ * 1. Navigator 解析路径,定位末段 ModuleKind + PathContext
+ * 2. 用末段 kind 的 ModuleKind 查询动作元数据
  * 3. 用 LlmSchemaValidator 按 ActionSchema.paramsSchema 校验参数
- * 4. 委托末段 Capability.invokeAction 执行业务
+ * 4. 委托末段 ModuleKind.invokeAction 执行业务
  * 5. 透传业务返回的 OperationResult 给 LLM
  */
 
 import type { LlmJsonValue } from '../../schema'
 import { LlmSchemaValidator } from '../../schema'
-import type { ModuleHostContext } from '../protocol/capability'
-import type { ActionSchema } from '../protocol/module-kind'
+import type { ModuleHostContext } from '../protocol/module-kind'
 import {
   type CheckEntry,
   errorCheck,
   type OperationResult,
 } from '../protocol/operation-result'
-import type { ModuleKindRegistry } from './module-kind-registry'
-import type { ModuleNavigator, ModuleNavigationSuccess } from './module-navigator'
+import type { ModuleNavigationSuccess, Navigator } from './navigator'
 import type { ModulePath } from '../protocol/module-path'
 
 export class ActionInvoker {
   public constructor(
-    private readonly kinds: ModuleKindRegistry,
-    private readonly navigator: ModuleNavigator,
+    private readonly navigator: Navigator,
   ) {}
 
   /**
@@ -38,7 +35,7 @@ export class ActionInvoker {
    * 失败码:
    * - ACTION_NOT_DECLARED: 末段 ModuleKind 未声明此动作
    * - INVALID_ARGS:        参数 schema 校验失败,checks 包含具体路径和原因
-   * - (其它):              由 navigator 或 Capability 抛
+   * - (其它):              由 navigator 或 ModuleKind 抛
    */
   public async invoke(
     path: ModulePath,
@@ -51,7 +48,7 @@ export class ActionInvoker {
       return navResult
     }
 
-    const action = this.findAction(navResult, actionName)
+    const action = navResult.moduleKind.findAction(actionName)
     if (action === undefined) {
       return {
         ok: false,
@@ -78,17 +75,12 @@ export class ActionInvoker {
       return { ok: false, checks: [summary, ...checks] }
     }
 
-    return navResult.capability.invokeAction(navResult.segmentCtx, actionName, args)
-  }
-
-  private findAction(navResult: ModuleNavigationSuccess, actionName: string): ActionSchema | undefined {
-    const kind = this.kinds.require(navResult.segmentCtx.segment.kind)
-    return kind.actions.find((action) => action.name === actionName)
+    return navResult.moduleKind.invokeAction(navResult.segmentCtx, actionName, args)
   }
 }
 
 function isNavigationSuccess(
   result: ModuleNavigationSuccess | OperationResult<never>,
 ): result is ModuleNavigationSuccess {
-  return 'capability' in result
+  return 'moduleKind' in result
 }

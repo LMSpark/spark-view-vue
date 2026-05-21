@@ -12,101 +12,69 @@ import {
   type AiHostTransport,
 } from '../host'
 import {
-  ModuleCapability,
-  ModuleKindBase,
+  ModuleKind,
   ModuleSemanticRuntime,
   ModuleSemanticToolCodec,
   PROTOCOL_TOOL_NAMES,
   errorCheck,
   ok as okResult,
-  type ModuleInstanceQuery,
   type ModuleInstanceRef,
   type ModulePathContext,
-  type OperationResult,
 } from '../module-semantic'
 import type { LlmJsonValue } from '../schema'
 
-class NodeTreeKind extends ModuleKindBase {
-  public constructor() {
-    super({
-      kind: 'node-tree',
-      name: '节点树',
-      description: '页面节点树',
-      actions: [
-        {
-          name: 'getNode',
-          description: '按 id 取节点',
-          paramsSchema: {
-            type: 'object',
-            properties: { id: { type: 'string' } },
-            required: ['id'],
-            additionalProperties: false,
-          },
-          resultSchema: {
-            node: '节点对象',
-          },
-          example: { id: 'n1' },
-          usageRules: ['只能在已知节点 id 时调用'],
-          failureModes: [
-            { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
-          ],
-        },
-      ],
-      children: [],
-    })
-  }
+interface ModuleKindSpy {
+  lastHost?: ModulePathContext['host'] | undefined
 }
 
-class NodeTreeCapability extends ModuleCapability {
-  public readonly kind = 'node-tree'
-
-  public lastHost: ModulePathContext['host']
-
-  public getAttribute(): Promise<OperationResult<LlmJsonValue>> {
-    return Promise.resolve({ ok: false, checks: [errorCheck('NO_ATTR', '无属性')] })
-  }
-
-  public setAttribute(): Promise<OperationResult<void>> {
-    return Promise.resolve({ ok: false, checks: [errorCheck('NO_ATTR', '无属性')] })
-  }
-
-  public invokeAction(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<OperationResult<LlmJsonValue>> {
-    this.lastHost = ctx.host
-    if (actionName !== 'getNode') {
-      return Promise.resolve({ ok: false, checks: [errorCheck('UNKNOWN_ACTION', actionName)] })
-    }
-    const id = args['id']
-    if (typeof id !== 'string' || id.length === 0) {
-      return Promise.resolve({
-        ok: false,
-        checks: [errorCheck('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')],
-      })
-    }
-    return Promise.resolve(okResult<LlmJsonValue>({ id, label: `node-${id}` }))
-  }
-
-  public listChildren(): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-  }
-
-  public findInstance(
-    ctx: ModulePathContext,
-    _childKind: string,
-    _query: ModuleInstanceQuery,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    this.lastHost = ctx.host
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
-      { id: ctx.host?.moduleInstanceId ?? 'node-tree-1', label: '当前节点树' },
-    ]))
-  }
-
-  public resolveChild(): Promise<OperationResult<boolean>> {
-    return Promise.resolve(okResult<boolean>(false))
-  }
+function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
+  return new ModuleKind({
+    kind: 'node-tree',
+    name: '节点树',
+    description: '页面节点树',
+    actions: [
+      {
+        name: 'getNode',
+        description: '按 id 取节点',
+        paramsSchema: {
+          type: 'object',
+          properties: { id: { type: 'string' } },
+          required: ['id'],
+          additionalProperties: false,
+        },
+        resultSchema: {
+          node: '节点对象',
+        },
+        example: { id: 'n1' },
+        usageRules: ['只能在已知节点 id 时调用'],
+        failureModes: [
+          { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
+        ],
+      },
+    ],
+    children: [],
+    runner: (ctx, actionName, args) => {
+      spy.lastHost = ctx.host
+      if (actionName !== 'getNode') {
+        return { ok: false, checks: [errorCheck('UNKNOWN_ACTION', actionName)] }
+      }
+      const id = args['id']
+      if (typeof id !== 'string' || id.length === 0) {
+        return {
+          ok: false,
+          checks: [errorCheck('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')],
+        }
+      }
+      return okResult<LlmJsonValue>({ id, label: `node-${id}` })
+    },
+    list: () => okResult<readonly ModuleInstanceRef[]>([]),
+    find: (ctx) => {
+      spy.lastHost = ctx.host
+      return okResult<readonly ModuleInstanceRef[]>([
+        { id: ctx.host?.moduleInstanceId ?? 'node-tree-1', label: '当前节点树' },
+      ])
+    },
+  })
 }
 
 const CONTEXT = {
@@ -131,14 +99,14 @@ const TURN = {
   maxParallelTurns: 1,
 } as const
 
-function createRegistration(): { registration: AiHostBusinessRegistration; capability: NodeTreeCapability; released: string[] } {
+function createRegistration(): { registration: AiHostBusinessRegistration; spy: ModuleKindSpy; released: string[] } {
   const runtime = new ModuleSemanticRuntime()
-  const capability = new NodeTreeCapability()
-  runtime.registerKind(new NodeTreeKind())
-  runtime.registerCapability(capability)
+  const spy: ModuleKindSpy = {}
+  const moduleKind = createNodeTreeKind(spy)
+  runtime.registerKind(moduleKind)
   const released: string[] = []
   return {
-    capability,
+    spy,
     released,
     registration: {
       moduleId: 'pageDesign',
@@ -173,7 +141,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
   })
 
   it('tool loop 直接执行协议工具,记录 Host 命名历史并透传 host scope', async () => {
-    const { registration, capability, released } = createRegistration()
+    const { registration, spy, released } = createRegistration()
     await startRegistrationSession(registration, CONTEXT)
     const transport: AiHostTransport = {
       streamTurn: () => Promise.resolve({
@@ -204,7 +172,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       cleared = true
     })
 
-    expect(capability.lastHost).toEqual(CONTEXT)
+    expect(spy.lastHost).toEqual(CONTEXT)
     const history = registration.sessionStore?.getSessionHistory(CONTEXT) ?? []
     expect(history).toHaveLength(1)
     expect(history[0]).toMatchObject({
@@ -267,8 +235,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
 describe('ModuleSemanticToolCodec', () => {
   it('actionOf 协议工具名原样返回;未知工具返回 null', () => {
     const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new NodeTreeKind())
-    runtime.registerCapability(new NodeTreeCapability())
+    runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
     expect(codec.actionOf('invokeAction')).toBe('invokeAction')
     expect(codec.actionOf('describeKind')).toBe('describeKind')
@@ -277,8 +244,7 @@ describe('ModuleSemanticToolCodec', () => {
 
   it('tools 暴露 6 个 transport spec,parameters.type=object', () => {
     const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new NodeTreeKind())
-    runtime.registerCapability(new NodeTreeCapability())
+    runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
     expect(codec.tools).toHaveLength(6)
     for (const tool of codec.tools) {

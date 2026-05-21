@@ -168,7 +168,7 @@ export {
 export type {
   PageDesignFlowDescription,
   PageDesignFlowQuery,
-  PageDesignServiceMethodBinding,
+  PageDesignServiceActionBinding,
   PageDesignServiceContext,
   PageDesignServiceOptions,
   PageDesignServiceResult,

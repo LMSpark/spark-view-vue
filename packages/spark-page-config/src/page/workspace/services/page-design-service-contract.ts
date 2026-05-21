@@ -1,8 +1,8 @@
 /**
  * PageDesign 服务契约。
  *
- * 定义 PageDesignService 的上下文、选项、结果类型和方法绑定接口。
- * 所有通过该服务调用的宿主方法都遵循统一的 success/failure 响应格式。
+ * 定义 PageDesignService 的上下文、选项、结果类型和 action 绑定接口。
+ * 所有通过该服务调用的业务动作都遵循统一的 success/failure 响应格式。
  */
 import type {
   PageDesignEditHost,
@@ -26,9 +26,9 @@ export type PageDesignServiceResult<TResult> =
 
 export type PageDesignTextFileKey = 'script' | 'style'
 
-export interface PageDesignServiceMethodBinding {
+export interface PageDesignServiceActionBinding<TTarget> {
   serviceLabel: string
-  methodName: string
+  run: (target: TTarget, args: unknown) => unknown
   mutates: boolean
   fixHint?: string
 }

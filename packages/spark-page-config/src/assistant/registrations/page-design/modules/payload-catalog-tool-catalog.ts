@@ -16,6 +16,7 @@ import componentCatalogPayload from '../payloads/component-catalog.json'
 
 export interface PayloadCatalogFunctionFailureMode extends ActionFailureMode {}
 export type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
+export type PayloadCatalogActionRunner = (args: Readonly<Record<string, LlmJsonValue>>) => PageDesignServiceResult<unknown>
 
 interface PageDesignPayloadProp {
   readonly name: string
@@ -99,22 +100,27 @@ export const PAYLOAD_CATALOG_ACTIONS: readonly ActionSchema[] = [
   },
 ]
 
+export const PAYLOAD_CATALOG_ACTION_RUNNERS: Readonly<Record<PayloadCatalogFunctionId, PayloadCatalogActionRunner>> = {
+  queryPayloads: queryPageDesignPayloads,
+  guidePayload: guidePageDesignPayload,
+}
+
 export function runPayloadCatalogAction(
   actionName: string,
   args: Readonly<Record<string, LlmJsonValue>>,
 ): PageDesignServiceResult<unknown> {
-  switch (actionName) {
-    case 'queryPayloads':
-      return queryPageDesignPayloads(args)
-    case 'guidePayload':
-      return guidePageDesignPayload(args)
-    default:
-      return pageDesignServiceFailure(
-        'UNKNOWN_ACTION',
-        `payload-catalog 不支持动作 "${actionName}"`,
-        '请先调用 describeKind("payload-catalog") 查看动作表。',
-      )
+  if (isPayloadCatalogFunctionId(actionName)) {
+    return PAYLOAD_CATALOG_ACTION_RUNNERS[actionName](args)
   }
+  return pageDesignServiceFailure(
+    'UNKNOWN_ACTION',
+    `payload-catalog 不支持动作 "${actionName}"`,
+    '请先调用 describeKind("payload-catalog") 查看动作表。',
+  )
+}
+
+export function isPayloadCatalogFunctionId(value: string): value is PayloadCatalogFunctionId {
+  return value === 'queryPayloads' || value === 'guidePayload'
 }
 
 function queryPageDesignPayloads(args: Readonly<Record<string, LlmJsonValue>>): PageDesignServiceResult<unknown> {

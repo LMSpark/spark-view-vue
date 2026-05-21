@@ -11,17 +11,14 @@ import {
   type AiHostFunctionCallResult,
 } from '@spark-view/spark-ai/host'
 import {
-  ModuleCapability,
-  ModuleKindBase,
+  ModuleKind,
   ModuleSemanticRuntime,
-  errorCheck,
-  infoCheck,
-  ok as okResult,
+  ok,
   type ActionSchema,
-  type ModuleInstanceQuery,
+  type ModuleInstanceFinder,
   type ModuleInstanceRef,
+  type ModuleKindRunner,
   type ModulePathContext,
-  type OperationResult,
 } from '@spark-view/spark-ai/module-semantic'
 import type {
   LlmJsonSchema,
@@ -30,10 +27,9 @@ import type {
 } from '@spark-view/spark-ai/schema'
 import {
   LeaveRequestService,
-  leaveRequestServiceFailure,
   type LeaveRequestServiceContext,
-  type LeaveRequestServiceResult,
 } from './leave-request-service'
+import { serviceResultToOperationResult } from '../module-semantic-service-result'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 export const LEAVE_REQUEST_KIND = 'manual-leave'
@@ -158,90 +154,64 @@ export const LEAVE_REQUEST_ACTIONS: readonly ActionSchema[] = [
   },
 ]
 
-class LeaveRequestModuleKind extends ModuleKindBase {
-  public constructor() {
-    super({
-      kind: LEAVE_REQUEST_KIND,
-      name: '人工请假',
-      description: '帮助员工收集、确认并提交人工请假申请。',
-      actions: LEAVE_REQUEST_ACTIONS,
-      children: [],
-    })
-  }
+/**
+ * @moduleKind manual-leave
+ * @moduleFactory createLeaveRequestModuleKind
+ * @moduleRunner createLeaveRequestRunnerDelegate
+ * @moduleFindDelegate findCurrentLeaveRequestInstance
+ */
+function createLeaveRequestModuleKind(service: LeaveRequestService): ModuleKind {
+  return new ModuleKind({
+    kind: LEAVE_REQUEST_KIND,
+    name: '人工请假',
+    description: '帮助员工收集、确认并提交人工请假申请。',
+    actions: LEAVE_REQUEST_ACTIONS,
+    children: [],
+    runner: createLeaveRequestRunnerDelegate(service),
+    find: findCurrentLeaveRequestInstance,
+  })
 }
 
-class LeaveRequestCapability extends ModuleCapability {
-  public readonly kind = LEAVE_REQUEST_KIND
+function createLeaveRequestRunnerDelegate(service: LeaveRequestService): ModuleKindRunner {
+  return (ctx, actionName, args) => runLeaveRequestAction(service, ctx, actionName, args)
+}
 
-  public constructor(private readonly service: LeaveRequestService) {
-    super()
+const findCurrentLeaveRequestInstance: ModuleInstanceFinder = (ctx, childKind, query) => {
+  void query
+  if (childKind !== LEAVE_REQUEST_KIND || ctx.segments.length !== 0) {
+    return ok<readonly ModuleInstanceRef[]>([])
   }
+  const ref = createCurrentLeaveRequestRef(ctx)
+  return ok<readonly ModuleInstanceRef[]>(ref === null ? [] : [ref])
+}
 
-  public getAttribute(): Promise<OperationResult<LlmJsonValue>> {
-    return Promise.resolve({
-      ok: false,
-      checks: [errorCheck('ATTRIBUTE_NOT_DECLARED', 'manual-leave 未暴露任何属性', '请通过 invokeAction 调用具体动作')],
-    })
+function createCurrentLeaveRequestRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  const leaveDraftId = ctx.host?.moduleInstanceId
+  if (leaveDraftId === undefined || leaveDraftId.length === 0) {
+    return null
   }
+  return { id: leaveDraftId, label: '当前请假草稿', summary: '当前人工请假业务实例' }
+}
 
-  public setAttribute(): Promise<OperationResult<void>> {
-    return Promise.resolve({
-      ok: false,
-      checks: [errorCheck('ATTRIBUTE_NOT_DECLARED', 'manual-leave 未暴露任何属性', '请通过 invokeAction 调用具体动作')],
-    })
-  }
-
-  public invokeAction(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<OperationResult<LlmJsonValue>> {
-    return Promise.resolve(serviceResultToOperationResult(this.runAction(ctx, actionName, args)))
-  }
-
-  public listChildren(): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-  }
-
-  public findInstance(
-    ctx: ModulePathContext,
-    childKind: string,
-    _query: ModuleInstanceQuery,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
-    if (childKind !== LEAVE_REQUEST_KIND) {
-      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-    }
-    const leaveDraftId = ctx.host?.moduleInstanceId
-    if (leaveDraftId === undefined || leaveDraftId.length === 0) {
-      return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([]))
-    }
-    return Promise.resolve(okResult<readonly ModuleInstanceRef[]>([
-      { id: leaveDraftId, label: '当前请假草稿', summary: '当前人工请假业务实例' },
-    ]))
-  }
-
-  public resolveChild(): Promise<OperationResult<boolean>> {
-    return Promise.resolve(okResult<boolean>(false))
-  }
-
-  private runAction(
-    ctx: ModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): LeaveRequestServiceResult<unknown> {
-    const context = toServiceContext(ctx)
-    switch (actionName) {
-      case 'describeDraft':
-        return this.service.describeDraft(context)
-      case 'setDraftFields':
-        return this.service.setDraftFields(context, args['fields'])
-      case 'submitDraft':
-        return this.service.submitDraft(context)
-      case 'cancelDraft':
-        return this.service.cancelDraft(context, typeof args['reason'] === 'string' ? args['reason'] : undefined)
-      default:
-        return leaveRequestServiceFailure('UNKNOWN_ACTION', `不支持 ${actionName}`, '请查阅 describeKind("manual-leave")。')
-    }
+function runLeaveRequestAction(
+  service: LeaveRequestService,
+  ctx: ModulePathContext,
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+) {
+  switch (actionName) {
+    case 'describeDraft':
+      return serviceResultToOperationResult(service.describeDraft(toServiceContext(ctx)))
+    case 'setDraftFields':
+      return serviceResultToOperationResult(service.setDraftFields(toServiceContext(ctx), args['fields']))
+    case 'submitDraft':
+      return serviceResultToOperationResult(service.submitDraft(toServiceContext(ctx)))
+    case 'cancelDraft':
+      return serviceResultToOperationResult(
+        service.cancelDraft(toServiceContext(ctx), typeof args['reason'] === 'string' ? args['reason'] : undefined),
+      )
+    default:
+      throw new Error(`manual-leave action runner is not registered: ${actionName}`)
   }
 }
 
@@ -250,8 +220,7 @@ export function createLeaveRequestBusinessRegistration(
 ): AiHostBusinessRegistration {
   const service = new LeaveRequestService(options.now)
   const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(new LeaveRequestModuleKind())
-  runtime.registerCapability(new LeaveRequestCapability(service))
+  runtime.registerKind(createLeaveRequestModuleKind(service))
 
   return {
     moduleId: LEAVE_REQUEST_MODULE_ID,
@@ -307,21 +276,6 @@ function toServiceContext(ctx: ModulePathContext | AiHostBusinessRuntimeContext)
   return {
     requestId: ctx.instanceId,
     leaveDraftId: ctx.moduleInstanceId,
-  }
-}
-
-function serviceResultToOperationResult(result: LeaveRequestServiceResult<unknown>): OperationResult<LlmJsonValue> {
-  if (result.ok) {
-    const data = coerceLlmJsonValue(result.data)
-    return {
-      ok: true,
-      ...(data === undefined ? {} : { data }),
-      checks: [infoCheck('OK', result.summary)],
-    }
-  }
-  return {
-    ok: false,
-    checks: [errorCheck(result.code, result.msg, result.fix)],
   }
 }
 
@@ -394,31 +348,6 @@ function formatDateInTimeZone(date: Date, timeZone: string): string {
     // fall through to UTC date
   }
   return date.toISOString().slice(0, 10)
-}
-
-function coerceLlmJsonValue(value: unknown): LlmJsonValue | undefined {
-  if (value === null) return null
-  if (value === undefined) return undefined
-  if (typeof value === 'string') return value
-  if (typeof value === 'number') return value
-  if (typeof value === 'boolean') return value
-  if (Array.isArray(value)) {
-    const out: LlmJsonValue[] = []
-    for (const item of value) {
-      const coerced = coerceLlmJsonValue(item)
-      if (coerced !== undefined) out.push(coerced)
-    }
-    return out
-  }
-  if (typeof value === 'object') {
-    const obj: Record<string, LlmJsonValue> = {}
-    for (const [key, raw] of Object.entries(value)) {
-      const coerced = coerceLlmJsonValue(raw)
-      if (coerced !== undefined) obj[key] = coerced
-    }
-    return obj
-  }
-  return undefined
 }
 
 function isRecord(value: unknown): value is Record<string, unknown> {
