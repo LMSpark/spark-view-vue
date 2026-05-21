@@ -49,6 +49,7 @@ import { AiProjectionService } from './ai-projection-service'
 import { AiFunctionCallTranslator } from './ai-function-call-translator'
 import { AiFunctionCallExecutor } from './ai-function-call-executor'
 import { AiRegisteredApiFactory } from './ai-registered-api-factory'
+import { AiModuleRegistrationNavigator } from './ai-module-registration-navigator'
 import type { AiRegisteredModule } from './ai-registered-module'
 import {
   actionOf,
@@ -81,6 +82,9 @@ export class AiRuntime {
   /** 知识投射服务：注册信息 → LLM 可用的知识投影 */
   private readonly projections: AiProjectionService
 
+  /** 模块树导航器：集中处理注册树和曝光树查找 */
+  private readonly moduleNavigator = new AiModuleRegistrationNavigator()
+
   /** 函数调用翻译器：action 字符串 → 可执行的翻译结果 */
   private readonly translator: AiFunctionCallTranslator
 
@@ -99,7 +103,13 @@ export class AiRuntime {
   constructor(options: AiRuntimeOptions = {}) {
     this.sessions = new AiSessionLedger(options)
     this.projections = new AiProjectionService(this.registrations, this.sessions, this.projector)
-    this.translator = new AiFunctionCallTranslator(this.registrations, this.sessions, this.projections, this.projector)
+    this.translator = new AiFunctionCallTranslator(
+      this.registrations,
+      this.sessions,
+      this.projections,
+      this.projector,
+      this.moduleNavigator,
+    )
     this.executor = new AiFunctionCallExecutor(this.sessions, this.translator)
     this.apiFactory = new AiRegisteredApiFactory(
       this.registrations,

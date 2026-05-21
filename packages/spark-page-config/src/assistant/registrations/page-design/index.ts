@@ -50,3 +50,11 @@ export type {
   TextModelFunctionId,
 } from './modules/text-model-tool-catalog'
 
+export {
+  NodeTreeModuleKind,
+  NodeTreeCapability,
+} from './module-semantic'
+export type {
+  NodeTreeCapabilityOptions,
+} from './module-semantic'
+

@@ -183,6 +183,24 @@ describe('pageDesign module definition', () => {
     expect(payloads).toMatchObject({ ok: true })
     expect(resultItemCount(payloads)).toBeLessThanOrEqual(1)
 
+    const moduleGuide = await pageDesign.executeFunctionCall({
+      moduleId: PageDesignModule.moduleId,
+      moduleInstanceId: 'page-designer',
+      instanceId: 'page-design-1',
+      action: 'page-designer@knowledge@guideModule',
+      args: { modulePath: 'pageDesign/nodeTree' },
+      projection,
+    })
+    expect(moduleGuide).toMatchObject({
+      ok: true,
+      data: {
+        guide: {
+          moduleId: 'nodeTree',
+          modulePath: 'pageDesign/nodeTree',
+        },
+      },
+    })
+
     const listTables = await pageDesign.executeFunctionCall({
       moduleId: PageDesignModule.moduleId,
       moduleInstanceId: 'page-designer',
@@ -200,6 +218,7 @@ describe('pageDesign module definition', () => {
     })
     expect(history.map((entry) => entry.kind)).toEqual([
       'message',
+      'functionCall',
       'functionCall',
       'functionCall',
       'functionCall',

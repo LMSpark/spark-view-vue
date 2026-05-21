@@ -127,15 +127,15 @@ export class ModuleSemanticRuntime {
     try {
       switch (toolName) {
         case PROTOCOL_TOOL_NAMES.getAttribute:
-          return this.routeGetAttribute(rawArgs)
+          return await this.routeGetAttribute(rawArgs)
         case PROTOCOL_TOOL_NAMES.setAttribute:
-          return this.routeSetAttribute(rawArgs)
+          return await this.routeSetAttribute(rawArgs)
         case PROTOCOL_TOOL_NAMES.invokeAction:
-          return this.routeInvokeAction(rawArgs)
+          return await this.routeInvokeAction(rawArgs)
         case PROTOCOL_TOOL_NAMES.listChildren:
-          return this.routeListChildren(rawArgs)
+          return await this.routeListChildren(rawArgs)
         case PROTOCOL_TOOL_NAMES.findInstance:
-          return this.routeFindInstance(rawArgs)
+          return await this.routeFindInstance(rawArgs)
         case PROTOCOL_TOOL_NAMES.describeKind:
           return this.routeDescribeKind(rawArgs)
       }
@@ -146,6 +146,9 @@ export class ModuleSemanticRuntime {
           `路径解析失败: ${error.message}`,
           '路径语法: / 或 /<kind>[<id>]/<kind>[<id>]/...',
         )
+      }
+      if (error instanceof ToolArgsError) {
+        return failWith('INVALID_TOOL_ARGS', error.message, '请按工具描述补齐参数后重试')
       }
       throw error
     }
@@ -348,10 +351,7 @@ function castDescribeKindResult(
       readable: attr.readable,
       writable: attr.writable,
     })),
-    actions: result.data.actions.map((action) => ({
-      name: action.name,
-      description: action.description,
-    })),
+    actions: result.data.actions.map((action) => describeActionToJson(action)),
     children: [...result.data.children],
   }
   return {
@@ -360,6 +360,24 @@ function castDescribeKindResult(
     ...(result.checks ? { checks: result.checks } : {}),
     ...(result.state ? { state: result.state } : {}),
   }
+}
+
+function describeActionToJson(action: ModuleKindDescription['actions'][number]): Record<string, LlmJsonValue> {
+  const out: Record<string, LlmJsonValue> = {
+    name: action.name,
+    description: action.description,
+  }
+  if (action.usageRules && action.usageRules.length > 0) {
+    out['usageRules'] = [...action.usageRules]
+  }
+  if (action.failureModes && action.failureModes.length > 0) {
+    out['failureModes'] = action.failureModes.map((mode) => ({
+      code: mode.code,
+      when: mode.when,
+      fix: mode.fix,
+    }))
+  }
+  return out
 }
 
 function instanceRefToJson(ref: ModuleInstanceRef): LlmJsonValue {

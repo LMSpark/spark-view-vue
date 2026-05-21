@@ -44,6 +44,7 @@ import type { AiRuntimeProjector } from './ai-runtime-support'
 import type { AiRegistrationRepository } from './ai-registration-repository'
 import type { AiProjectionService } from './ai-projection-service'
 import type { AiSessionLedger } from './ai-session-ledger'
+import type { AiModuleRegistrationNavigator } from './ai-module-registration-navigator'
 import {
   createFunctionCallFailure,
   isRecord,
@@ -57,6 +58,7 @@ export class AiFunctionCallTranslator {
     private readonly sessions: AiSessionLedger,
     private readonly projections: AiProjectionService,
     private readonly projector: AiRuntimeProjector,
+    private readonly moduleNavigator: AiModuleRegistrationNavigator,
   ) {}
 
   /**
@@ -111,8 +113,8 @@ export class AiFunctionCallTranslator {
     let targetModule: AiModuleRegistration | null
     try {
       targetModule = address.format === 'instance'
-        ? this.findModuleRegistrationByModuleId(rootModule, address.moduleId)
-        : this.findModuleRegistration(rootModule, address.moduleIds)
+        ? this.moduleNavigator.findUniqueByModuleId(rootModule, address.moduleId)
+        : this.moduleNavigator.findByModuleIds(rootModule, address.moduleIds)
     } catch (error) {
       return createFunctionCallFailure(
         'MODULE_AMBIGUOUS',
@@ -299,7 +301,7 @@ export class AiFunctionCallTranslator {
    * 校验模块在曝光树中存在，并补充 paramName（默认使用模块的 instanceParam.name）。
    */
   private normalizeActivePathBinding(module: AiRuntimeModuleExposure, binding: AiModuleInstanceBinding): AiModuleInstanceBinding {
-    const target = this.findModuleExposure(module, binding.modulePath)
+    const target = this.moduleNavigator.findExposureByModulePath(module, binding.modulePath)
     if (target === null) {
       throw new Error(`Unknown active path module: ${binding.modulePath}`)
     }
@@ -330,47 +332,6 @@ export class AiFunctionCallTranslator {
       return { modulePath, paramName, instanceId: scope.moduleInstanceId }
     }
     return undefined
-  }
-
-  // ═══════════════════════════════════════════════════════
-  // 内部辅助：模块和函数查找
-  // ═══════════════════════════════════════════════════════
-
-  /**
-   * 按 moduleIds 数组递归查找模块注册。
-   * moduleIds[0] 必须是当前模块的 moduleId，后续元素逐层深入子模块。
-   */
-  private findModuleRegistration(module: AiModuleRegistration, moduleIds: readonly string[]): AiModuleRegistration | null {
-    if (moduleIds.length === 0 || module.moduleId !== moduleIds[0]) return null
-    let current: AiModuleRegistration = module
-    for (const moduleId of moduleIds.slice(1)) {
-      const child = (current.modules ?? []).find((candidate) => candidate.moduleId === moduleId)
-      if (child === undefined) return null
-      current = child
-    }
-    return current
-  }
-
-  /**
-   * 按 moduleId 在注册树中递归查找（不考虑路径，仅按 ID 匹配）。
-   * 如果找到多个同名模块则抛出 MODULE_AMBIGUOUS 错误。
-   */
-  private findModuleRegistrationByModuleId(module: AiModuleRegistration, moduleId: string): AiModuleRegistration | null {
-    const found: AiModuleRegistration[] = []
-    this.collectModuleRegistrationsById(module, moduleId, found)
-    if (found.length === 1) return found[0] ?? null
-    if (found.length > 1) {
-      throw new Error(`Ambiguous AI module id in registration tree: ${moduleId}`)
-    }
-    return null
-  }
-
-  /** 递归收集所有匹配 moduleId 的模块注册（用于 findModuleRegistrationByModuleId） */
-  private collectModuleRegistrationsById(module: AiModuleRegistration, moduleId: string, out: AiModuleRegistration[]): void {
-    if (module.moduleId === moduleId) out.push(module)
-    for (const child of module.modules ?? []) {
-      this.collectModuleRegistrationsById(child, moduleId, out)
-    }
   }
 
   /**
@@ -479,13 +440,4 @@ export class AiFunctionCallTranslator {
     return null
   }
 
-  /** 在模块曝光树中按 modulePath 递归查找 */
-  private findModuleExposure(module: AiRuntimeModuleExposure, modulePath: string): AiRuntimeModuleExposure | null {
-    if (module.modulePath === modulePath) return module
-    for (const child of module.modules) {
-      const found = this.findModuleExposure(child, modulePath)
-      if (found !== null) return found
-    }
-    return null
-  }
 }

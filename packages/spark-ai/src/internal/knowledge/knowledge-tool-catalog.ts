@@ -1,7 +1,7 @@
 /**
  * 知识投射工具目录。
  *
- * 职责：定义 knowledge 模块的 3 个内置函数，
+ * 职责：定义 knowledge 模块的 4 个内置函数，
  * 供 LLM 在运行时动态探索可用能力。
  *
  * 内置函数说明：
@@ -15,6 +15,11 @@
  * │   - 用途：确认模块边界与模块路径                                │
  * │   - 参数：无                                                   │
  * │   - 返回：轻量模块摘要（ID、路径、名称、描述、函数数量）        │
+ * │                                                               │
+ * │ guideModule     → 按 modulePath 查询模块指南                    │
+ * │   - 用途：查看模块直属函数、子模块、prompt 和实例参数             │
+ * │   - 参数：modulePath（必填）                                    │
+ * │   - 返回：AiKnowledgeModuleGuide                               │
  * │                                                               │
  * │ guideFunction   → 按 action 查询完整函数指南                    │
  * │   - 用途：执行函数前获取完整参数 schema/规则/失败模式           │
@@ -46,6 +51,7 @@ export type AiKnowledgeFunctionTarget = 'knowledge'
 export type AiKnowledgeFunctionId =
   | 'queryFunctions'
   | 'queryModules'
+  | 'guideModule'
   | 'guideFunction'
 
 // ═══════════════════════════════════════════════════════
@@ -115,13 +121,13 @@ function stringParam(description: string, options: { minLength?: number } = {}):
 /**
  * 知识工具目录。
  *
- * 构造函数中注册 3 个内置函数到 parameterTable，
+ * 构造函数中注册 4 个内置函数到 parameterTable，
  * 并建立 parameterIndex 索引（functionId → 参数行）用于 O(1) 查找。
  *
  * 调用方通过 getParameterRow() 和 validateParams() 使用。
  */
 export class AiKnowledgeCatalog {
-  /** 3 个内置知识函数的参数行列表 */
+  /** 4 个内置知识函数的参数行列表 */
   readonly parameterTable: readonly AiKnowledgeFunctionParameterRow[]
 
   /** functionId → 参数行索引，用于 O(1) 查找 */
@@ -161,13 +167,44 @@ export class AiKnowledgeCatalog {
         description: '查询当前 AI 会话的模块目录（含根模块与子模块）。',
         paramsSchema: NO_PARAMS,
         resultSchema: {
-          items: 'AiKnowledgeModuleSummary[] — 轻量模块目录（moduleId/modulePath/name/description/functionCount/childModuleCount），不包含函数 schema。',
+          items: 'AiKnowledgeModuleSummary[] — 轻量模块目录（moduleId/modulePath/name/description/functionCount/childModuleCount）；完整模块指南请用 guideModule(modulePath) 按需查询。',
         },
         example: {},
         usageRules: [
           '用于确认模块边界与模块路径。',
         ],
         failureModes: [],
+      },
+      // ── guideModule：按 modulePath 查询模块指南 ──
+      {
+        functionId: 'guideModule',
+        type: 'describe',
+        target: KNOWLEDGE_TARGET,
+        description: '查询单个模块指南（按 modulePath 精确查询）。',
+        paramsSchema: {
+          type: 'object',
+          required: ['modulePath'],
+          properties: {
+            modulePath: stringParam('模块路径，例如 root/child。', { minLength: 1 }),
+          },
+        },
+        resultSchema: {
+          guide: 'AiKnowledgeModuleGuide — 模块完整指南（直属函数摘要、直属子模块、prompt、instanceParam）。',
+        },
+        example: {
+          modulePath: 'root/child',
+        },
+        usageRules: [
+          '需要理解某个模块边界、子模块或直属函数时调用。',
+          '先用 queryModules 确认 modulePath，再用 guideModule(modulePath) 查看模块指南。',
+        ],
+        failureModes: [
+          {
+            code: 'MODULE_NOT_FOUND',
+            when: 'modulePath 不在当前会话模块目录中。',
+            fix: '先调用 queryModules 确认 modulePath，再重试。',
+          },
+        ],
       },
       // ── guideFunction：按 action 查询完整指南 ──
       {

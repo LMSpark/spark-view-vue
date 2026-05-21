@@ -23,19 +23,24 @@
 
 import type { ModuleKindRegistry } from './module-kind-registry'
 import type { ModuleKind } from '../protocol/module-kind'
+import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../protocol/parameter-schema'
 
 /**
  * 协议级工具规约(OpenAI 兼容形状)。
  *
  * 与 AiRuntimeToolSpec 结构对齐,但不依赖 AI Runtime 模块,
  * 让 module-semantic 协议自成体系。
+ *
+ * `function.parameters` 复用 `LlmParameterSchemaRoot`(标准 JSON Schema 子集),
+ * 这样 host 适配层可以把同一份 schema 直接喂给旧 host 的 AiRuntimeToolCodec,
+ * 无需 `as` 断言绕过 TS。
  */
 export interface ModuleSemanticToolSpec {
   readonly type: 'function'
   readonly function: {
     readonly name: string
     readonly description: string
-    readonly parameters: Record<string, unknown>
+    readonly parameters: LlmParameterSchemaRoot
   }
 }
 
@@ -158,7 +163,8 @@ export class ProtocolToolGenerator {
         description: [
           '调用指定路径末段模块声明的某个动作。',
           'args 必须符合该动作的 paramsSchema,协议层会按 schema 预校验。',
-          '当前注册的 kind 及其动作列表:',
+          '调用前若不确定参数形状/注意事项/失败模式,先调 describeKind(kind) 获取完整动作元数据(含 usageRules / failureModes / paramsSchema)。',
+          '当前注册的 kind 及其动作列表(rules=N 表示该动作声明了 N 条 usageRules,fails=N 表示声明了 N 条 failureModes):',
           digest,
           '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ACTION_NOT_DECLARED / INVALID_ARGS',
         ].join('\n'),
@@ -249,7 +255,7 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.describeKind,
         description: [
-          '查询某个 kind 的元数据:attributes / actions / children。',
+          '查询某个 kind 的元数据:attributes(含 readable / writable)、actions(含 usageRules、failureModes)、children。',
           '纯协议层操作,不调用 Capability。LLM 用它精确了解模块开放的属性表与动作表。',
           '当前注册的 kind:',
           digest,
@@ -276,11 +282,19 @@ function formatKindLine(kind: ModuleKind): string {
     : `[${kind.attributes.map((attr) => formatAttrFlag(attr.name, attr.readable, attr.writable)).join(', ')}]`
   const actions = kind.actions.length === 0
     ? '[]'
-    : `[${kind.actions.map((action) => action.name).join(', ')}]`
+    : `[${kind.actions.map((action) => formatActionLabel(action.name, action.usageRules?.length ?? 0, action.failureModes?.length ?? 0)).join(', ')}]`
   const children = kind.children.length === 0
     ? '[]'
     : `[${kind.children.join(', ')}]`
   return `- ${kind.kind}(${kind.name}): attrs=${attrs} actions=${actions} children=${children}`
+}
+
+function formatActionLabel(name: string, rulesCount: number, failsCount: number): string {
+  if (rulesCount === 0 && failsCount === 0) return name
+  const parts: string[] = []
+  if (rulesCount > 0) parts.push(`rules=${rulesCount}`)
+  if (failsCount > 0) parts.push(`fails=${failsCount}`)
+  return `${name}(${parts.join(',')})`
 }
 
 function formatAttrFlag(name: string, readable: boolean, writable: boolean): string {
@@ -288,7 +302,7 @@ function formatAttrFlag(name: string, readable: boolean, writable: boolean): str
   return `${name}(${flag})`
 }
 
-function pathProperty(allowRoot = false): Record<string, unknown> {
+function pathProperty(allowRoot = false): LlmJsonSchemaObject {
   const description = allowRoot
     ? '模块路径,根路径用 "/" 表示;具体路径形如 /<kind>[<id>]/<kind>[<id>]/...'
     : '模块路径,必须指向具体实例,形如 /<kind>[<id>]/<kind>[<id>]/...'
@@ -298,16 +312,17 @@ function pathProperty(allowRoot = false): Record<string, unknown> {
   }
 }
 
-function pathPlusName(propertyName: string, description: string): Record<string, unknown> {
+function pathPlusName(propertyName: string, description: string): LlmParameterSchemaRoot {
+  const properties: Record<string, LlmJsonSchema> = {
+    path: pathProperty(),
+    [propertyName]: {
+      type: 'string',
+      description,
+    },
+  }
   return {
     type: 'object',
-    properties: {
-      path: pathProperty(),
-      [propertyName]: {
-        type: 'string',
-        description,
-      },
-    },
+    properties,
     required: ['path', propertyName],
   }
 }

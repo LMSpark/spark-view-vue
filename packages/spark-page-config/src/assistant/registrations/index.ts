@@ -23,6 +23,9 @@ export {
   type TextModelFunctionFailureMode,
   type TextModelFunctionFileKey,
   type TextModelFunctionId,
+  NodeTreeModuleKind,
+  NodeTreeCapability,
+  type NodeTreeCapabilityOptions,
 } from './page-design'
 
 export {

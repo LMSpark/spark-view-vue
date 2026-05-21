@@ -5,7 +5,7 @@
  * PageDesignModule（主模块）
  * ├── LifecycleModule（生命周期：bootstrap / describeProgress / describeDesignFlow）
  * ├── TextModelModule（文本模型：readScript / writeScript / readStyle / writeStyle）
- * ├── KnowledgeModule（知识查询：queryFunctions / queryModules / guideFunction / queryPayloads / guidePayload）
+ * ├── KnowledgeModule（知识查询：queryFunctions / queryModules / guideModule / guideFunction / queryPayloads / guidePayload）
  * ├── NodeTreeModule（节点树：getNode / listChildren / addNode / setProps / moveNode / removeNode ...）
  * └── DatasetModule（数据集：表/列/视图/行/关系/依赖/聚合 CRUD）
  *
@@ -536,6 +536,18 @@ function createKnowledgeHandlers(
         case 'queryModules': {
           const items = runtime.knowledge.queryModules(toKnowledgeScope(context))
           return { ok: true, data: { items }, summary: `已返回 ${items.length} 个模块目录项` }
+        }
+        case 'guideModule': {
+          const modulePath = readRequiredStringArg(args, 'modulePath')
+          const guide = runtime.knowledge.guideModule(toKnowledgeScope(context), modulePath)
+          if (guide === null) {
+            return pageDesignServiceFailure(
+              'MODULE_NOT_FOUND',
+              `模块 "${modulePath}" 不在当前会话模块目录中`,
+              '先调用 queryModules 确认 modulePath，再重试。',
+            )
+          }
+          return { ok: true, data: { guide }, summary: `${modulePath} 模块指南已返回` }
         }
         case 'guideFunction': {
           const action = readRequiredStringArg(args, 'action')

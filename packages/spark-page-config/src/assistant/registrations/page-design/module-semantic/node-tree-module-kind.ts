@@ -1,0 +1,76 @@
+/**
+ * @packageDocumentation
+ *
+ * 节点树模块语义协议 — ModuleKind 声明(参考实现)。
+ *
+ * 把 SparkNodeTree 的 19 个公开方法翻译成协议层 ActionSchema。
+ * 与旧 NodeTreeModule 静态工具表完全等价(action.name 与 SparkNodeTreeMethodKey
+ * 一一对应),但语义协议要求 LLM 通过固定的 invokeAction 工具调用,
+ * action 名由 describeKind 暴露给 LLM。
+ *
+ * 设计要点:
+ * - 仅声明结构(name / description / paramsSchema / usageRules / failureModes),
+ *   不持有任何执行逻辑(执行下沉到 NodeTreeCapability)。
+ * - 不重复维护参数 schema 的完整副本;用 `{}` 占位的 add* / set* 等动作
+ *   实际参数校验仍由 SparkNodeTree 方法自身完成。本阶段允许 reference 不填全。
+ * - attributes 留空:节点树本体不暴露可读写属性,所有状态改动走 actions。
+ * - children 留空:节点树不再分层声明子模块。
+ */
+
+import {
+  ModuleKindBase,
+  type ActionSchema,
+} from '@spark-view/spark-ai/module-semantic'
+
+/** SparkNodeTree 19 个公开方法键名(与 SparkNodeTreeMethodKey 联合类型一致)。 */
+const NODE_TREE_METHOD_NAMES = [
+  'getNode',
+  'getLocation',
+  'hasNode',
+  'getParent',
+  'listChildren',
+  'countNodes',
+  'getAllData',
+  'collectDataViewKeys',
+  'collectHandlerNames',
+  'findByType',
+  'addNode',
+  'addNodes',
+  'moveNode',
+  'setProps',
+  'setPropsBatch',
+  'replaceNode',
+  'replaceNodes',
+  'removeNode',
+  'removeNodes',
+] as const
+
+/**
+ * 节点树模块的语义协议 Kind 声明。
+ *
+ * 协议层 describeKind 会让 LLM 看到所有 19 个 action 名;
+ * 具体调用经 invokeAction(actionName=getNode, args=...) 路由到 NodeTreeCapability。
+ */
+export class NodeTreeModuleKind extends ModuleKindBase {
+  public constructor() {
+    super({
+      kind: 'node-tree',
+      name: 'Page Design Node Tree',
+      description: '当前页面 SparkNodeTree/rule.json 结构读写;通过 invokeAction 调用 19 个公开方法。',
+      attributes: [],
+      actions: NODE_TREE_METHOD_NAMES.map((methodName) => actionFor(methodName)),
+      children: [],
+    })
+  }
+}
+
+function actionFor(methodName: typeof NODE_TREE_METHOD_NAMES[number]): ActionSchema {
+  return {
+    name: methodName,
+    description: `SparkNodeTree.${methodName}`,
+    paramsSchema: {
+      type: 'object',
+      additionalProperties: true,
+    },
+  }
+}

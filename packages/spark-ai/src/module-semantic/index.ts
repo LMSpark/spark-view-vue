@@ -70,3 +70,12 @@ export {
   CapabilityConflictError,
   CapabilityNotFoundError,
 } from './internal/capability-registry'
+
+// ═══════════════════════════════════════════════════════
+// 6. host 适配层(re-export from ./host)
+//
+// 复用旧 AiHostToolLoopRunner / AiHostFetchTransport / SSE 传输,
+// 把模块语义协议挂接到 AiHostBusinessRuntime 契约。
+// ═══════════════════════════════════════════════════════
+
+export * from './host/index'

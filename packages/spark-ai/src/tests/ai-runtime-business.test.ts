@@ -222,6 +222,19 @@ const business: AiModuleRegistration = {      moduleId: 'leaveApproval',      na
     })
     expect(modules[0]).not.toHaveProperty('functions')
     expect(modules[0]).not.toHaveProperty('modules')
+    expect(knowledge.guideModule({
+      moduleId: 'leaveApproval',
+      moduleInstanceId: 'leave-instance',
+    }, 'leaveApproval')).toMatchObject({
+      moduleId: 'leaveApproval',
+      modulePath: 'leaveApproval',
+      functions: [{
+        action: 'leave-instance@leaveApproval@setReason',
+        moduleId: 'leaveApproval',
+        paramNames: ['reason'],
+      }],
+      children: [],
+    })
     expect(knowledge.guideFunction({
       moduleId: 'leaveApproval',
       moduleInstanceId: 'leave-instance',

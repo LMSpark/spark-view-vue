@@ -2,7 +2,7 @@
  * AI 知识投射缓存。
  *
  * 职责：缓存已投影的模块知识，提供查询/导航函数和模块的接口。
- * LLM 需要通过 queryFunctions 和 guideFunction 来动态探索可用能力。
+ * LLM 需要通过 queryFunctions、guideModule 和 guideFunction 来动态探索可用能力。
  *
  * 使用流程：
  * ┌────────────────────────────────────────────────────────────┐
@@ -20,8 +20,8 @@
  * │ 4. queryModules(scope) → 扁平化模块树 → 模块摘要列表         │
  * │    用于 LLM 了解有哪些模块可用                               │
  * │                                                             │
- * │ 5. guideModule(scope, modulePath) → 按路径查找模块摘要       │
- * │    用于 LLM 深入了解某个模块的功能                           │
+ * │ 5. guideModule(scope, modulePath) → 按路径查找模块指南       │
+ * │    用于 LLM 深入了解某个模块的直属函数和子模块                 │
  * └────────────────────────────────────────────────────────────┘
  *
  * 缓存策略：内存 Map，key 为 "moduleId::moduleInstanceId"。
@@ -81,6 +81,21 @@ export interface AiKnowledgeModuleSummary {
   readonly functionCount: number
   /** 子模块数量 */
   readonly childModuleCount: number
+}
+
+/** 模块指南：在摘要基础上展开当前模块直属函数和子模块。 */
+export interface AiKnowledgeModuleGuide extends AiKnowledgeModuleSummary {
+  /** 模块 prompt 文本（可选） */
+  readonly prompt?: string | undefined
+  /** 模块实例参数声明（可选） */
+  readonly instanceParam?: {
+    readonly name: string
+    readonly description: string
+  } | undefined
+  /** 当前模块直属函数摘要 */
+  readonly functions: readonly AiKnowledgeFunctionSummary[]
+  /** 当前模块直属子模块摘要 */
+  readonly children: readonly AiKnowledgeModuleSummary[]
 }
 
 /** 运行时投影快照，用于内部缓存 */
@@ -172,14 +187,14 @@ export class AiKnowledgeProjector {
   }
 
   /**
-   * 按 modulePath 在模块树中查找模块摘要。
+   * 按 modulePath 在模块树中查找模块指南。
    * 未找到返回 null。
    *
-   * 用途：LLM 深入了解某个特定模块的功能和结构。
+   * 用途：LLM 深入了解某个特定模块的直属函数、子模块和实例参数。
    */
-  guideModule(scope: AiKnowledgeScope, modulePath: string): AiKnowledgeModuleSummary | null {
+  guideModule(scope: AiKnowledgeScope, modulePath: string): AiKnowledgeModuleGuide | null {
     const module = this.findModuleInTree(this.requireProjection(scope).module, modulePath)
-    return module === null ? null : this.summarizeModule(module)
+    return module === null ? null : this.guideModuleNode(module)
   }
 
   // ═══════════════════════════════════════════════════════
@@ -237,6 +252,17 @@ export class AiKnowledgeProjector {
       description: module.description,
       functionCount: module.functions.length,
       childModuleCount: module.modules.length,
+    }
+  }
+
+  /** 将模块曝光信息转换为展开指南。 */
+  private guideModuleNode(module: AiRuntimeModuleExposure): AiKnowledgeModuleGuide {
+    return {
+      ...this.summarizeModule(module),
+      ...(module.prompt !== undefined ? { prompt: module.prompt } : {}),
+      ...(module.instanceParam !== undefined ? { instanceParam: { ...module.instanceParam } } : {}),
+      functions: module.functions.map((fn) => this.summarizeFunction(fn)),
+      children: module.modules.map((child) => this.summarizeModule(child)),
     }
   }
 

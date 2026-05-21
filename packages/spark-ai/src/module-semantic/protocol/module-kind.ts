@@ -68,6 +68,7 @@ export interface ActionFailureMode {
  * - description:  给 LLM 看的中文说明
  * - paramsSchema: 参数 schema(根 type 必须是 object)
  * - resultSchema: 返回值 schema(可选,告知 LLM 期望的返回结构)
+ * - usageRules:   调用前注意事项列表(LLM 在 describeKind / invokeAction 描述里能看到)
  * - failureModes: 失败模式列表,展示给 LLM
  * - example:      示例参数(可选)
  */
@@ -76,6 +77,7 @@ export interface ActionSchema {
   readonly description: string
   readonly paramsSchema: LlmParameterSchemaRoot
   readonly resultSchema?: LlmJsonSchema | undefined
+  readonly usageRules?: readonly string[] | undefined
   readonly failureModes?: readonly ActionFailureMode[] | undefined
   readonly example?: LlmJsonValue | undefined
 }

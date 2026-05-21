@@ -26,7 +26,7 @@ import type {
   ModuleInstanceRef,
   ModulePathContext,
 } from '../protocol/capability'
-import type { ModuleKind } from '../protocol/module-kind'
+import type { ActionFailureMode, ModuleKind } from '../protocol/module-kind'
 import type { ModulePath, ModulePathSegment } from '../protocol/module-path'
 import {
   errorCheck,
@@ -55,6 +55,8 @@ export interface ModuleKindDescription {
   readonly actions: ReadonlyArray<{
     readonly name: string
     readonly description: string
+    readonly usageRules?: readonly string[] | undefined
+    readonly failureModes?: readonly ActionFailureMode[] | undefined
   }>
   readonly children: readonly string[]
 }
@@ -224,6 +226,8 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
     actions: moduleKind.actions.map((action) => ({
       name: action.name,
       description: action.description,
+      usageRules: action.usageRules,
+      failureModes: action.failureModes,
     })),
     children: moduleKind.children,
   }
