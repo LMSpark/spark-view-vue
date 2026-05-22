@@ -37,10 +37,6 @@ export type {
 } from './page-design-module'
 
 export type {
-  DatasetCrudToolFunctionFailureMode,
-} from './modules/dataset-tool-catalog'
-
-export type {
   EditLifecycleFunctionFailureMode,
   EditLifecycleFunctionId,
 } from './modules/lifecycle-tool-catalog'

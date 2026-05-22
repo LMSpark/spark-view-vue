@@ -16,7 +16,6 @@ export {
   PageDesignEditActionClassifier,
   PageDesignEditFlowPrompts,
   PageDesignEditRuntimePrompt,
-  type DatasetCrudToolFunctionFailureMode,
   type EditLifecycleFunctionFailureMode,
   type EditLifecycleFunctionId,
   type PageDesignModuleKindId,

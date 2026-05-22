@@ -28,9 +28,22 @@ import {
   type JsonSchemaProperties,
   type LlmJsonSchemaObject,
 } from '@spark-view/spark-ai/schema'
-import type { ActionFailureMode, ActionSchema } from '@spark-view/spark-ai/module-semantic'
+import type { ActionSchema } from '@spark-view/spark-ai/module-semantic'
+import type { DataSetCrudTool } from '@spark-view/spark-data'
+import type { PageDesignServiceActionBinding } from '../../../../page/workspace/services/page-design-service'
 
-export interface DatasetCrudToolFunctionFailureMode extends ActionFailureMode {}
+type DatasetActionRunner = PageDesignServiceActionBinding<DataSetCrudTool>['run']
+type DataSetCrudToolMethodName = Extract<{
+  [Key in keyof DataSetCrudTool]: DataSetCrudTool[Key] extends (...args: never[]) => unknown ? Key : never
+}[keyof DataSetCrudTool], string>
+
+const DATASET_ACTION_METHOD_NAMES = {
+  export: 'toJson',
+  canUndo: 'getCanUndo',
+  canRedo: 'getCanRedo',
+  historyCursor: 'getHistoryCursor',
+} satisfies Readonly<Record<string, DataSetCrudToolMethodName>>
+
 // 这里不再为 JS 基础类型保留导出别名，函数标识符直接使用原生 string。
 
 const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请传 {} 或留空。')
@@ -1781,3 +1794,54 @@ export const DATASET_ACTIONS: readonly ActionSchema[] = [
     ],
   },
 ]
+
+export function createDatasetActionBinding(
+  action: ActionSchema,
+): PageDesignServiceActionBinding<DataSetCrudTool> {
+  return {
+    serviceLabel: action.name,
+    run: createDatasetActionRunner(action.name),
+    mutates: DATASET_MUTATING_ACTION_NAMES.has(action.name),
+    fixHint: createDatasetActionFixHint(action),
+  }
+}
+
+function createDatasetActionRunner(actionName: string): DatasetActionRunner {
+  return (tool, args) => {
+    const methodName = resolveDatasetMethodName(actionName)
+    const method: unknown = Reflect.get(tool, methodName) as unknown
+    if (!isCallable(method)) {
+      throw new Error(`DataSetCrudTool method is not registered for dataset action "${actionName}": ${methodName}`)
+    }
+    return method.call(tool, args)
+  }
+}
+
+function resolveDatasetMethodName(actionName: string): string {
+  return isDatasetActionMethodAlias(actionName) ? DATASET_ACTION_METHOD_NAMES[actionName] : actionName
+}
+
+function isDatasetActionMethodAlias(actionName: string): actionName is keyof typeof DATASET_ACTION_METHOD_NAMES {
+  return Object.prototype.hasOwnProperty.call(DATASET_ACTION_METHOD_NAMES, actionName)
+}
+
+function createDatasetActionFixHint(action: ActionSchema): string {
+  const parts = [`参数格式: ${JSON.stringify(action.paramsSchema)}`]
+  if (action.example !== undefined && isRecord(action.example) && Object.keys(action.example).length > 0) {
+    parts.push(`示例: ${JSON.stringify(action.example)}`)
+  }
+  if (action.usageRules !== undefined && action.usageRules.length > 0) {
+    parts.push(`关键规则: ${action.usageRules.join('；')}`)
+  }
+  return parts.join('；')
+}
+
+type UnknownFunction = (this: DataSetCrudTool, ...args: unknown[]) => unknown
+
+function isCallable(value: unknown): value is UnknownFunction {
+  return typeof value === 'function'
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}

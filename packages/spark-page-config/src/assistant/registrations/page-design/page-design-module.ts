@@ -27,15 +27,13 @@ import {
   type OperationResult,
 } from '@spark-view/spark-ai/module-semantic'
 import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
-import type { DataSetCrudTool } from '@spark-view/spark-data'
 import {
   PageDesignService,
   type PageDesignServiceContext,
-  type PageDesignServiceActionBinding,
   type PageDesignServiceResult,
 } from '../../../page/workspace/services/page-design-service'
 import type { PageDesignEditHost } from '../../../page/workspace/editing/page-design-edit-session'
-import { DATASET_ACTIONS, DATASET_MUTATING_ACTION_NAMES } from './modules/dataset-tool-catalog'
+import { DATASET_ACTIONS, createDatasetActionBinding } from './modules/dataset-tool-catalog'
 import { LIFECYCLE_ACTIONS } from './modules/lifecycle-tool-catalog'
 import { PAYLOAD_CATALOG_ACTIONS, PAYLOAD_CATALOG_ACTION_RUNNERS, isPayloadCatalogFunctionId } from './modules/payload-catalog-tool-catalog'
 import { TEXT_MODEL_ACTIONS } from './modules/text-model-tool-catalog'
@@ -59,62 +57,6 @@ export interface PageDesignRuntimeContext {
 
 export interface PageDesignModuleOptions {
   readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
-}
-
-type DatasetActionBinding = PageDesignServiceActionBinding<DataSetCrudTool>
-type DatasetActionRunner = DatasetActionBinding['run']
-
-const DATASET_ACTION_RUNNERS: Readonly<Record<string, DatasetActionRunner>> = {
-  export: (tool) => tool.toJson(),
-  canUndo: (tool) => tool.canUndo,
-  canRedo: (tool) => tool.canRedo,
-  historyCursor: (tool) => tool.historyCursor,
-  undo: (tool) => tool.undo(),
-  redo: (tool) => tool.redo(),
-  clearHistory: (tool) => tool.clearHistory(),
-  listTables: (tool) => tool.listTables(),
-  getTable: (tool, args) => tool.getTable(args as Parameters<DataSetCrudTool['getTable']>[0]),
-  listColumns: (tool, args) => tool.listColumns(args as Parameters<DataSetCrudTool['listColumns']>[0]),
-  getColumn: (tool, args) => tool.getColumn(args as Parameters<DataSetCrudTool['getColumn']>[0]),
-  createColumn: (tool, args) => tool.createColumn(args as Parameters<DataSetCrudTool['createColumn']>[0]),
-  updateColumn: (tool, args) => tool.updateColumn(args as Parameters<DataSetCrudTool['updateColumn']>[0]),
-  renameColumn: (tool, args) => tool.renameColumn(args as Parameters<DataSetCrudTool['renameColumn']>[0]),
-  deleteColumn: (tool, args) => tool.deleteColumn(args as Parameters<DataSetCrudTool['deleteColumn']>[0]),
-  createTable: (tool, args) => tool.createTable(args as Parameters<DataSetCrudTool['createTable']>[0]),
-  updateTable: (tool, args) => tool.updateTable(args as Parameters<DataSetCrudTool['updateTable']>[0]),
-  renameTable: (tool, args) => tool.renameTable(args as Parameters<DataSetCrudTool['renameTable']>[0]),
-  deleteTable: (tool, args) => tool.deleteTable(args as Parameters<DataSetCrudTool['deleteTable']>[0]),
-  listViews: (tool, args) => tool.listViews(args as Parameters<DataSetCrudTool['listViews']>[0]),
-  getView: (tool, args) => tool.getView(args as Parameters<DataSetCrudTool['getView']>[0]),
-  createView: (tool, args) => tool.createView(args as Parameters<DataSetCrudTool['createView']>[0]),
-  updateView: (tool, args) => tool.updateView(args as Parameters<DataSetCrudTool['updateView']>[0]),
-  deleteView: (tool, args) => tool.deleteView(args as Parameters<DataSetCrudTool['deleteView']>[0]),
-  listRows: (tool, args) => tool.listRows(args as Parameters<DataSetCrudTool['listRows']>[0]),
-  getRow: (tool, args) => tool.getRow(args as Parameters<DataSetCrudTool['getRow']>[0]),
-  createRow: (tool, args) => tool.createRow(args as Parameters<DataSetCrudTool['createRow']>[0]),
-  createRows: (tool, args) => tool.createRows(args as Parameters<DataSetCrudTool['createRows']>[0]),
-  updateRow: (tool, args) => tool.updateRow(args as Parameters<DataSetCrudTool['updateRow']>[0]),
-  updateRows: (tool, args) => tool.updateRows(args as Parameters<DataSetCrudTool['updateRows']>[0]),
-  deleteRow: (tool, args) => tool.deleteRow(args as Parameters<DataSetCrudTool['deleteRow']>[0]),
-  deleteRows: (tool, args) => tool.deleteRows(args as Parameters<DataSetCrudTool['deleteRows']>[0]),
-  listRelations: (tool, args) => tool.listRelations(args as Parameters<DataSetCrudTool['listRelations']>[0]),
-  getRelation: (tool, args) => tool.getRelation(args as Parameters<DataSetCrudTool['getRelation']>[0]),
-  createRelation: (tool, args) => tool.createRelation(args as Parameters<DataSetCrudTool['createRelation']>[0]),
-  updateRelation: (tool, args) => tool.updateRelation(args as Parameters<DataSetCrudTool['updateRelation']>[0]),
-  deleteRelation: (tool, args) => tool.deleteRelation(args as Parameters<DataSetCrudTool['deleteRelation']>[0]),
-  listDependencies: (tool, args) => tool.listDependencies(args as Parameters<DataSetCrudTool['listDependencies']>[0]),
-  getDependency: (tool, args) => tool.getDependency(args as Parameters<DataSetCrudTool['getDependency']>[0]),
-  createDependency: (tool, args) => tool.createDependency(args as Parameters<DataSetCrudTool['createDependency']>[0]),
-  updateDependency: (tool, args) => tool.updateDependency(args as Parameters<DataSetCrudTool['updateDependency']>[0]),
-  deleteDependency: (tool, args) => tool.deleteDependency(args as Parameters<DataSetCrudTool['deleteDependency']>[0]),
-  listAggregates: (tool, args) => tool.listAggregates(args as Parameters<DataSetCrudTool['listAggregates']>[0]),
-  getAggregate: (tool, args) => tool.getAggregate(args as Parameters<DataSetCrudTool['getAggregate']>[0]),
-  addAggregate: (tool, args) => tool.addAggregate(args as Parameters<DataSetCrudTool['addAggregate']>[0]),
-  updateAggregate: (tool, args) => tool.updateAggregate(args as Parameters<DataSetCrudTool['updateAggregate']>[0]),
-  removeAggregate: (tool, args) => tool.removeAggregate(args as Parameters<DataSetCrudTool['removeAggregate']>[0]),
-  getComputeExpression: (tool, args) => tool.getComputeExpression(args as Parameters<DataSetCrudTool['getComputeExpression']>[0]),
-  setComputeExpression: (tool, args) => tool.setComputeExpression(args as Parameters<DataSetCrudTool['setComputeExpression']>[0]),
-  clearComputeExpression: (tool, args) => tool.clearComputeExpression(args as Parameters<DataSetCrudTool['clearComputeExpression']>[0]),
 }
 
 interface PageDesignActionModuleKindOptions {
@@ -387,26 +329,6 @@ function readRequiredStringArg(args: Readonly<Record<string, LlmJsonValue>>, key
   return value
 }
 
-function createDatasetActionBinding(action: ActionSchema): DatasetActionBinding {
-  const run = DATASET_ACTION_RUNNERS[action.name]
-  if (run === undefined) {
-    throw new Error(`dataset action runner is not registered: ${action.name}`)
-  }
-  const parts = [`参数格式: ${JSON.stringify(action.paramsSchema)}`]
-  if (action.example !== undefined && isRecord(action.example) && Object.keys(action.example).length > 0) {
-    parts.push(`示例: ${JSON.stringify(action.example)}`)
-  }
-  if (action.usageRules !== undefined && action.usageRules.length > 0) {
-    parts.push(`关键规则: ${action.usageRules.join('；')}`)
-  }
-  return {
-    serviceLabel: action.name,
-    run,
-    mutates: DATASET_MUTATING_ACTION_NAMES.has(action.name),
-    fixHint: parts.join('；'),
-  }
-}
-
 function pageDesignEditHostUnavailableMessage(result: AiHostFunctionCallResult<unknown>): string | null {
   if (result.ok || (result.code !== 'EXECUTE_ERROR' && result.code !== 'ACTION_EXECUTE_ERROR')) return null
   const message = result.msg.trim()
@@ -415,8 +337,4 @@ function pageDesignEditHostUnavailableMessage(result: AiHostFunctionCallResult<u
   if (message.includes('PageDesign edit host is not registered')) return '请先在开发系统中打开并选中目标配置页面。'
   if (message.includes('请先在开发系统中打开并选中目标配置页面')) return message
   return null
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
