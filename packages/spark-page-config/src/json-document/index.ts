@@ -127,6 +127,13 @@ export type TreeDisplayNode = TreeNode & {
 
 export type TreeModel = ReadonlyMap<string, TreeNode>
 
+type AddJsonNodeInput = {
+  nodes: Map<string, TreeNode>
+  value: JsonValue
+  parentId: string | null
+  segment: string | number
+  order: number}
+
 /** 查找根节点 ID（parentId === null 的唯一节点） */
 export function rootOf(model: TreeModel): string {
   for (const [id, node] of model) {
@@ -240,13 +247,8 @@ export function normalizeJsonDocument(value: unknown): JsonDocument {
 // ════════════════════════════════════════════════════════════
 
 /** 将 JsonValue 子树递归写入 mutable nodes Map，返回节点 id */
-function addNodeToMap(
-  nodes: Map<string, TreeNode>,
-  value: JsonValue,
-  parentId: string | null,
-  segment: string | number,
-  order: number,
-): string {
+function addNodeToMap(input: AddJsonNodeInput): string {
+  const { nodes, value, parentId, segment, order } = input
   const id = generateUid()
   const type = inferNodeType(value)
   const isContainer = type === 'object' || type === 'array'
@@ -258,11 +260,11 @@ function addNodeToMap(
   })
 
   if (isContainer && Array.isArray(value)) {
-    value.forEach((item, i) => addNodeToMap(nodes, item, id, i, i))
+    value.forEach((item, i) => addNodeToMap({ nodes, value: item, parentId: id, segment: i, order: i }))
   } else if (isContainer && isJsonObject(value)) {
     let idx = 0
     for (const [k, v] of Object.entries(value))
-      addNodeToMap(nodes, v, id, k, idx++)
+      addNodeToMap({ nodes, value: v, parentId: id, segment: k, order: idx++ })
   }
 
   return id
@@ -288,7 +290,13 @@ function toJsonValue(nodes: ReadonlyMap<string, TreeNode>, uid: string): JsonVal
 /** 从 JSON 文档构建内部树模型 */
 export function buildTreeModel(doc: JsonDocument, policy?: Partial<JsonTreePolicy>): TreeModel {
   const nodes = new Map<string, TreeNode>()
-  addNodeToMap(nodes, doc, null, resolvePolicy(policy).rootLabel, 0)
+  addNodeToMap({
+    nodes,
+    value: doc,
+    parentId: null,
+    segment: resolvePolicy(policy).rootLabel,
+    order: 0,
+  })
   return nodes
 }
 
@@ -425,10 +433,22 @@ export function addChildNode(model: TreeModel, uid: string, policy?: Partial<Jso
   let newId: string
 
   if (target.type === 'array') {
-    newId = addNodeToMap(nodes, p.createDefaultArrayItem(path), uid, nextOrder, nextOrder)
+    newId = addNodeToMap({
+      nodes,
+      value: p.createDefaultArrayItem(path),
+      parentId: uid,
+      segment: nextOrder,
+      order: nextOrder,
+    })
   } else {
     const nextKey = p.suggestChildKey(collectSiblingKeys(model, uid), path)
-    newId = addNodeToMap(nodes, p.createDefaultObjectValue(path, nextKey), uid, nextKey, nextOrder)
+    newId = addNodeToMap({
+      nodes,
+      value: p.createDefaultObjectValue(path, nextKey),
+      parentId: uid,
+      segment: nextKey,
+      order: nextOrder,
+    })
   }
   return makeResult(nodes, newId, uid)
 }
@@ -454,12 +474,24 @@ export function addSiblingNode(model: TreeModel, uid: string, policy?: Partial<J
         nodes.set(sib.id, { ...sib, order: sib.order + 1 })
       }
     }
-    newId = addNodeToMap(nodes, p.createDefaultArrayItem(parentPath), parent.id, newOrder, newOrder)
+    newId = addNodeToMap({
+      nodes,
+      value: p.createDefaultArrayItem(parentPath),
+      parentId: parent.id,
+      segment: newOrder,
+      order: newOrder,
+    })
     reindexChildren(nodes, parent.id)
   } else {
     const siblings = getChildIds(model, parent.id)
     const nextKey = p.suggestChildKey(collectSiblingKeys(model, parent.id), parentPath)
-    newId = addNodeToMap(nodes, p.createDefaultObjectValue(parentPath, nextKey), parent.id, nextKey, siblings.length)
+    newId = addNodeToMap({
+      nodes,
+      value: p.createDefaultObjectValue(parentPath, nextKey),
+      parentId: parent.id,
+      segment: nextKey,
+      order: siblings.length,
+    })
   }
   return makeResult(nodes, newId, parent.id)
 }
@@ -531,11 +563,11 @@ export function updateNodeValue(model: TreeModel, uid: string, nextValue: JsonVa
   if (isContainer) {
     // 重建子树
     if (Array.isArray(nextValue)) {
-      nextValue.forEach((item, i) => addNodeToMap(nodes, item, uid, i, i))
+      nextValue.forEach((item, i) => addNodeToMap({ nodes, value: item, parentId: uid, segment: i, order: i }))
     } else if (isJsonObject(nextValue)) {
       let idx = 0
       for (const [k, v] of Object.entries(nextValue))
-        addNodeToMap(nodes, v, uid, k, idx++)
+        addNodeToMap({ nodes, value: v, parentId: uid, segment: k, order: idx++ })
     }
     nodes.set(uid, { ...target, type: newType, value: null })
   } else {

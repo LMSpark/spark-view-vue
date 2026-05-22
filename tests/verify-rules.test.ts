@@ -68,6 +68,37 @@ describe('verification rules', () => {
     expect(output).toContain('bad.vue')
   })
 
+  it('rejects flat public surfaces and bulk workspace imports', () => {
+    const root = createTempRoot()
+    writeFile(root, 'packages/spark-ai/src/index.ts', [
+      'export type {',
+      '  RuntimeProvider,',
+      '  RuntimeResolver,',
+      '  RuntimeAdapter,',
+      '  RuntimeContext,',
+      "} from './flat'",
+    ].join('\n'))
+    writeFile(root, 'packages/spark-ai/src/consumer.ts', [
+      "import { One, Two, Three, Four, Five, Six, Seven, Eight, Nine } from '@spark-view/spark-ai/host'",
+      'export const names = [One, Two, Three, Four, Five, Six, Seven, Eight, Nine]',
+    ].join('\n'))
+    writeFile(root, 'packages/spark-ai/src/flat.ts', [
+      'export type RuntimeProvider = () => void',
+      'export type RuntimeResolver = () => void',
+      'export type RuntimeAdapter = () => void',
+      'export type RuntimeContext = { value: string }',
+      'export class RuntimeImpl {}',
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'packages'])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('flat public surface')
+    expect(output).toContain('too many named imports')
+    expect(output).toContain('mechanical Interface/Impl name is forbidden')
+  })
+
   it('rejects framework imports inside framework-free packages', () => {
     const root = createTempRoot()
     writeJson(root, 'packages/spark-data/package.json', {

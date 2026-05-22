@@ -53,8 +53,7 @@ import {
 import { demoNavRoot } from '@/layout/demo-nav'
 
 export { PAGE_CONFIG_FILE_NAMES }
-export type PageFileName = PageConfigFileName
-export type { PageConfigFileVersionSummary }
+export type { PageConfigFileName, PageConfigFileVersionSummary }
 export type { PageFileDocument } from '@spark-view/spark-page-config/design'
 
 // ═══════════════════════════════════════════════════════════
@@ -89,7 +88,7 @@ export type DevContextConfig = {
   defaultValue: string
   paramName: string}
 
-export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
+export type DevWorkspaceTab = 'props' | 'preview' | PageConfigFileName
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { createAuthHeaders, http } from '@/services/http'
@@ -183,7 +182,7 @@ export function useDevState() {
     })
   })
 
-  function notifyPageFileChanged(pageId: string, filename: PageFileName | '__created' | '__deleted' | '__bulk'): void {
+  function notifyPageFileChanged(pageId: string, filename: PageConfigFileName | '__created' | '__deleted' | '__bulk'): void {
     pageWorkspace.notifyPageFileChanged(pageId, filename)
     if (pageId && pageId === activePageId.value) {
       pageFilesRevision.value += 1
@@ -206,7 +205,7 @@ export function useDevState() {
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
-  function isDocumentDirty(name: PageFileName): boolean {
+  function isDocumentDirty(name: PageConfigFileName): boolean {
     void pageFilesRevision.value
     return pageWorkspace.isDocumentDirty(name)
   }
@@ -413,7 +412,7 @@ export function useDevState() {
     })
   }
 
-  async function loadPageFile(name: PageFileName, options?: { forceReload?: boolean }): Promise<void> {
+  async function loadPageFile(name: PageConfigFileName, options?: { forceReload?: boolean }): Promise<void> {
     pageWorkspace.setActivePage(activePageId.value)
     await pageWorkspace.loadPageFile(name, options)
   }
@@ -422,7 +421,7 @@ export function useDevState() {
   // 后端版本 API
   // ═══════════════════════════════════════════════════════════
 
-  async function listRemotePageVersions(filename: PageFileName): Promise<PageConfigFileVersionSummary[]> {
+  async function listRemotePageVersions(filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
     if (!activePageId.value) return []
     pageWorkspace.setActivePage(activePageId.value)
     try {
@@ -433,7 +432,7 @@ export function useDevState() {
     }
   }
 
-  async function restoreRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
+  async function restoreRemotePageVersion(version: number, filename: PageConfigFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
     pageWorkspace.setActivePage(pageId)
@@ -448,7 +447,7 @@ export function useDevState() {
     }
   }
 
-  async function createRemotePageVersion(filename: PageFileName): Promise<boolean> {
+  async function createRemotePageVersion(filename: PageConfigFileName): Promise<boolean> {
     if (!activePageId.value) return false
     pageWorkspace.setActivePage(activePageId.value)
     try {
@@ -461,7 +460,7 @@ export function useDevState() {
     }
   }
 
-  async function deleteRemotePageVersion(version: number, filename: PageFileName): Promise<boolean> {
+  async function deleteRemotePageVersion(version: number, filename: PageConfigFileName): Promise<boolean> {
     if (!activePageId.value) return false
     pageWorkspace.setActivePage(activePageId.value)
     try {
@@ -605,7 +604,7 @@ export function useDevState() {
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
-  async function savePageFile(name: PageFileName): Promise<void> {
+  async function savePageFile(name: PageConfigFileName): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
 

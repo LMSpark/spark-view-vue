@@ -165,8 +165,14 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     })
     let cleared = false
 
-    await runner.runToolLoop(registration, SCOPE, { historyMsgs: [] }, TURN, () => {
+    await runner.runToolLoop({
+      registration,
+      scope: SCOPE,
+      request: { historyMsgs: [] },
+      turn: TURN,
+      clearSelected: () => {
       cleared = true
+      },
     })
 
     expect(spy.lastHost).toEqual(CONTEXT)
@@ -209,13 +215,13 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       maxToolRounds: 1,
     })
 
-    await runner.runToolLoop(
+    await runner.runToolLoop({
       registration,
-      SCOPE,
-      { historyMsgs: [], onFcCall: (record) => calls.push(record.status) },
-      TURN,
-      () => undefined,
-    )
+      scope: SCOPE,
+      request: { historyMsgs: [], onFcCall: (record) => calls.push(record.status) },
+      turn: TURN,
+      clearSelected: () => undefined,
+    })
 
     expect(calls).toEqual(['error'])
     const history = registration.sessionStore?.getSessionHistory(CONTEXT) ?? []

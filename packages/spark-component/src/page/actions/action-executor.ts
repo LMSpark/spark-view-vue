@@ -69,20 +69,8 @@ async function executeAlert(desc: ShowAlertAction, ctx: ActionExecutionContext):
  * - 取消 → 执行 desc.onCancel（若存在）
  * - 子动作使用 runChild 回调以支持递归链式（避免循环依赖）
  */
-async function executeConfirm(
-  desc: ShowConfirmAction,
-  ctx: ActionExecutionContext,
-  scope: ActionExecutionScope | undefined,
-  eventArgs: unknown[] | undefined,
-  control: ActionExecutionControl | undefined,
-  runChild: (
-    next: ActionDescriptor,
-    ctx: ActionExecutionContext,
-    scope: ActionExecutionScope | undefined,
-    eventArgs: unknown[] | undefined,
-    control: ActionExecutionControl | undefined,
-  ) => Promise<void>,
-): Promise<void> {
+async function executeConfirm(input: ConfirmExecutionInput): Promise<void> {
+  const { desc, ctx, scope, eventArgs, control, runChild } = input
   const ps = ctx.getPageService()
   if (!ps) return
 
@@ -93,9 +81,9 @@ async function executeConfirm(
   const nestedControl = control ?? extractActionExecutionControl(eventArgs)
 
   if (confirmed && desc.onConfirm) {
-    await runChild(desc.onConfirm, ctx, scope, eventArgs, nestedControl)
+    await runChild(desc.onConfirm, ctx, childActionOptions(scope, eventArgs, nestedControl))
   } else if (!confirmed && desc.onCancel) {
-    await runChild(desc.onCancel, ctx, scope, eventArgs, nestedControl)
+    await runChild(desc.onCancel, ctx, childActionOptions(scope, eventArgs, nestedControl))
   }
 }
 
@@ -163,6 +151,27 @@ export type ActionExecutionOptions = {
   /** 执行作用域（行内动作注入的当前行 + formApi 等） */
   scope?: ActionExecutionScope}
 
+type ChildActionRunner = (
+  next: ActionDescriptor,
+  ctx: ActionExecutionContext,
+  options: ActionExecutionOptions,
+) => Promise<void>
+
+type ConfirmExecutionInput = {
+  desc: ShowConfirmAction
+  ctx: ActionExecutionContext
+  scope: ActionExecutionScope | undefined
+  eventArgs: unknown[] | undefined
+  control: ActionExecutionControl | undefined
+  runChild: ChildActionRunner}
+
+type DispatchActionInput = {
+  descriptor: ActionDescriptor
+  ctx: ActionExecutionContext
+  scope: ActionExecutionScope | undefined
+  eventArgs: unknown[] | undefined
+  control: ActionExecutionControl | undefined}
+
 /**
  * 执行单个 action descriptor（单一真源入口）。
  *
@@ -189,7 +198,7 @@ export async function executeActionDescriptor(
   }
 
   try {
-    await dispatchAction(descriptor, ctx, effectiveScope, eventArgs, control)
+    await dispatchAction({ descriptor, ctx, scope: effectiveScope, eventArgs, control })
   } catch (error) {
     handleTopLevelError(descriptor, ctx, error)
     return
@@ -236,6 +245,18 @@ function readUnknownActionName(value: unknown): string {
   return 'unknown'
 }
 
+function childActionOptions(
+  scope: ActionExecutionScope | undefined,
+  eventArgs: unknown[] | undefined,
+  control: ActionExecutionControl | undefined,
+): ActionExecutionOptions {
+  const options: ActionExecutionOptions = {}
+  if (eventArgs !== undefined) options.eventArgs = eventArgs
+  if (control !== undefined) options.control = control
+  if (scope !== undefined) options.scope = scope
+  return options
+}
+
 /**
  * 顶层错误处理：捕获执行器抛出的异常，组合 errorMessage 文案后通过 notifier 展示。
  * 同时在开发模式下打 warn 日志，生产环境不额外上报。
@@ -265,32 +286,23 @@ function handleTopLevelError(
  * switch 覆盖所有 ActionDescriptorActionName，default 分支做 never 穷举检查。
  * 新增动作类型时：1) 在 action-types.ts 添加类型；2) 在此处添加 case；3) 在 action-data.ts 实现执行器。
  */
-async function dispatchAction(
-  descriptor: ActionDescriptor,
-  ctx: ActionExecutionContext,
-  scope: ActionExecutionScope | undefined,
-  eventArgs: unknown[] | undefined,
-  control: ActionExecutionControl | undefined,
-): Promise<void> {
+async function dispatchAction(input: DispatchActionInput): Promise<void> {
+  const { descriptor, ctx, scope, eventArgs, control } = input
   switch (descriptor.action) {
     case 'show-message':
       executeShowMessage(descriptor, ctx)
       return
     case 'confirm':
-      await executeConfirm(
-        descriptor,
+      await executeConfirm({
+        desc: descriptor,
         ctx,
         scope,
         eventArgs,
         control,
-        async (next, c, s, e, ctrl) => {
-          const opts: ActionExecutionOptions = {}
-          if (e !== undefined) opts.eventArgs = e
-          if (ctrl !== undefined) opts.control = ctrl
-          if (s !== undefined) opts.scope = s
-          await executeActionDescriptor(next, c, opts)
+        runChild: async (next, childCtx, childOptions) => {
+          await executeActionDescriptor(next, childCtx, childOptions)
         },
-      )
+      })
       return
     case 'alert':
       await executeAlert(descriptor, ctx)

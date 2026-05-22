@@ -65,7 +65,6 @@ export type {
   DataViewMemberDiagnostic,
   DataViewMemberDiagnosticStatus,
   DataViewMemberInput,
-  DataViewMemberResolvedValue,
   DataViewMemberValue,
   ResolvedDataViewCapabilities,
 } from './core/data-view-key'

@@ -68,13 +68,13 @@ async function runToolCall(
     transport,
     maxToolRounds: 2,
   })
-  await runner.runToolLoop(
+  await runner.runToolLoop({
     registration,
     scope,
-    { historyMsgs: [], onDelta: (delta) => deltas.push(delta), onFcCall: (item) => { record = item } },
-    turn(seq),
-    () => { cleared = true },
-  )
+    request: { historyMsgs: [], onDelta: (delta) => deltas.push(delta), onFcCall: (item) => { record = item } },
+    turn: turn(seq),
+    clearSelected: () => { cleared = true },
+  })
   if (record === null) throw new Error('expected function call record')
   return { record, cleared, deltas }
 }

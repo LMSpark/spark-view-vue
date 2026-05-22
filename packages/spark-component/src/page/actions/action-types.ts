@@ -361,7 +361,8 @@ export type ActionExecutionContext = {
  * 执行器在 `cancelDefault: true` 时将 `control.cancel` 置 true，
  * 通知容器跳过其内置处理（例如内联编辑的行确认）。
  */
-export type ActionExecutionControl = CancellableControl
+export type ActionExecutionControl = {
+  cancel: CancellableControl['cancel']}
 
 /**
  * 路由器最小接口，隔离对 vue-router 的直接依赖。

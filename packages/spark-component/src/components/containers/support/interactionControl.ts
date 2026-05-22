@@ -19,7 +19,9 @@ export function isCancellableControl(value: unknown): value is CancellableContro
     && typeof value['cancel'] === 'boolean'
 }
 
-export type InteractionControl = CancellableControl
+export type InteractionControl = {
+  cancel: boolean
+}
 
 export type CancelableHandler<TArgs extends unknown[]> = {
   (...args: [...TArgs, InteractionControl]): void | Promise<void>}

@@ -56,6 +56,22 @@ type TargetRows = {
    */
   primary: DataRow | null}
 
+type AppendOperation = {
+  view: DataView
+  payload: Record<string, unknown>
+  idField: string
+  desc: AppendRowAction
+  notifier: ActionNotifier}
+
+type UpdateOperation = {
+  view: DataView
+  id: string | number
+  patch: Partial<DataRow>
+  decorator: ActionUiDecorator
+  notifier: ActionNotifier
+  successFallback: string
+  failureFallback: string}
+
 /**
  * 按 target 语义从 DataView 和执行作用域中解析操作目标行。
  * - `scope`：使用 scope.row（行内动作注入的当前行）
@@ -195,26 +211,20 @@ export async function executeAppendRow(
 
     const payload = applyInheritFields({ ...(desc.appendPayload ?? {}) }, scope, desc.inheritFields, desc.inheritFieldMap)
     payload[desc.prompt.field] = result
-    await doAppend(view, payload, idField, desc, scope, notifier)
+    await doAppend({ view, payload, idField, desc, notifier })
     return
   }
 
   const payload = applyInheritFields({ ...(desc.appendPayload ?? {}) }, scope, desc.inheritFields, desc.inheritFieldMap)
-  await doAppend(view, payload, idField, desc, scope, notifier)
+  await doAppend({ view, payload, idField, desc, notifier })
 }
 
 /**
  * doAppend 内部实现：补充 idField + 调用 view.addRow() + 处理结果。
  * 从 executeAppendRow 中分离，方便 prompt 模式和普通模式复用。
  */
-async function doAppend(
-  view: DataView,
-  payload: Record<string, unknown>,
-  idField: string,
-  desc: AppendRowAction,
-  _scope: ActionExecutionScope | undefined,
-  notifier: ActionNotifier,
-): Promise<void> {
+async function doAppend(operation: AppendOperation): Promise<void> {
+  const { view, payload, idField, desc, notifier } = operation
   if (!(idField in payload) || payload[idField] === undefined || payload[idField] === null) {
     payload[idField] = inferNextRowId(view, idField)
   }
@@ -381,7 +391,15 @@ export async function executePatch(
       promptOpts,
     )
     if (result === null) return
-    await doUpdate(view, id, { [desc.prompt.field]: result }, desc, notifier, '更新成功', '更新失败')
+    await doUpdate({
+      view,
+      id,
+      patch: { [desc.prompt.field]: result },
+      decorator: desc,
+      notifier,
+      successFallback: '更新成功',
+      failureFallback: '更新失败',
+    })
     return
   }
 
@@ -419,19 +437,20 @@ export async function executePatch(
     notifier.notifyError(`当前行缺少主键字段: ${idField}`)
     return
   }
-  await doUpdate(view, id, patch, desc, notifier, '更新成功', '更新失败：记录不存在或已删除')
+  await doUpdate({
+    view,
+    id,
+    patch,
+    decorator: desc,
+    notifier,
+    successFallback: '更新成功',
+    failureFallback: '更新失败：记录不存在或已删除',
+  })
 }
 
 /** doUpdate 内部实现：调用 editRowById 并统一处理成功/失败消息。 */
-async function doUpdate(
-  view: DataView,
-  id: string | number,
-  patch: Partial<DataRow>,
-  decorator: ActionUiDecorator,
-  notifier: ActionNotifier,
-  successFallback: string,
-  failureFallback: string,
-): Promise<void> {
+async function doUpdate(operation: UpdateOperation): Promise<void> {
+  const { view, id, patch, decorator, notifier, successFallback, failureFallback } = operation
   const result = await view.editRowById(id, patch)
   if (isCrudSuccess(result)) {
     notifier.notify('success', decorator.successMessage ?? successFallback)

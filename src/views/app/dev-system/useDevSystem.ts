@@ -12,10 +12,10 @@ import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
 import { registerPageDesignEditHost } from '@spark-view/spark-page-config/design'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
-import { PAGE_CONFIG_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
+import { PAGE_CONFIG_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageConfigFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
 
-function isPageFileName(value: string): value is PageFileName {
+function isPageFileName(value: string): value is PageConfigFileName {
   return PAGE_CONFIG_FILE_NAMES.some((name) => name === value)
 }
 
@@ -42,7 +42,7 @@ export function useDevSystem() {
   const workTab = ref<DevWorkspaceTab>('props')
   const previewRefreshToken = ref(0)
 
-  const currentWorkspaceFile = computed<PageFileName | null>(() =>
+  const currentWorkspaceFile = computed<PageConfigFileName | null>(() =>
     isPageFileName(workTab.value) ? workTab.value : null,
   )
 
@@ -108,7 +108,7 @@ export function useDevSystem() {
     void state.saveAll()
   }
 
-  function isWorkspaceTabDirty(name: PageFileName): boolean {
+  function isWorkspaceTabDirty(name: PageConfigFileName): boolean {
     return state.isDocumentDirty(name)
   }
 

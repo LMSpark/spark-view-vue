@@ -156,7 +156,7 @@ import { ElMessageBox } from 'element-plus'
 import componentCatalog from '@spark-view/spark-page-config/ai/payloads/component-catalog.json'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import { PAGE_CONFIG_FILE_NAMES } from './useDevState'
-import type { DevState, PageConfigFileVersionSummary, PageFileName } from './useDevState'
+import type { DevState, PageConfigFileVersionSummary, PageConfigFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
@@ -166,17 +166,17 @@ const RULE_JSON_SCHEMA = createRuleJsonSchema(pageDesignComponentCatalog)
 
 const props = withDefaults(defineProps<{
   state: DevState
-  activeFile?: PageFileName
+  activeFile?: PageConfigFileName
   showTabs?: boolean
 }>(), {
   showTabs: true,
 })
 
 const emit = defineEmits<{
-  (e: 'active-file-change', file: PageFileName): void
+  (e: 'active-file-change', file: PageConfigFileName): void
 }>()
 
-const localActiveFile = ref<PageFileName>('rule.json')
+const localActiveFile = ref<PageConfigFileName>('rule.json')
 const showVersionPanel = ref(false)
 const remoteVersionLoading = ref(false)
 const restoringVersion = ref<number | null>(null)
@@ -184,7 +184,7 @@ const creatingVersion = ref(false)
 const remotePageVersions = ref<PageConfigFileVersionSummary[]>([])
 const pageDataViewMode = ref<'visual' | 'text'>('visual')
 const pageDataViewModePinned = ref(false)
-const resolvedActiveFile = computed<PageFileName>(() => props.activeFile ?? localActiveFile.value)
+const resolvedActiveFile = computed<PageConfigFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs)
 const editor = useDevFileEditor(props.state, resolvedActiveFile)
 

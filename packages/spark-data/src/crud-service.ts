@@ -54,6 +54,13 @@ type WrappedEndpointResult<T> = {
 
 const WRAPPED_RESULT_KEYS = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted'] as const
 
+type BatchExecutionOptions<T> = {
+  endpoint: HttpEndpoint
+  items: T[]
+  config?: Partial<RequestConfig>
+  concurrency?: number
+  onProgress?: (completed: number, total: number) => void}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -350,7 +357,11 @@ export class CrudService {
     try {
       const requestConfig = this.buildRequestConfig(config)
       const sanitizedItems = items.map(item => this.sanitizeDataForUpload(item))
-      const results = await this.executeBatch(this.api.batch.create, sanitizedItems, requestConfig)
+      const results = await this.executeBatch({
+        endpoint: this.api.batch.create,
+        items: sanitizedItems,
+        ...(requestConfig === undefined ? {} : { config: requestConfig }),
+      })
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量创建完成', { total: items.length, success: successCount })
       return this.buildBatchResult(results, successCount)
@@ -377,7 +388,11 @@ export class CrudService {
     try {
       const requestConfig = this.buildRequestConfig(config)
       const sanitizedItems = items.map(item => this.sanitizeDataForUpload(item))
-      const results = await this.executeBatch(this.api.batch.update, sanitizedItems, requestConfig)
+      const results = await this.executeBatch({
+        endpoint: this.api.batch.update,
+        items: sanitizedItems,
+        ...(requestConfig === undefined ? {} : { config: requestConfig }),
+      })
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量更新完成', { total: items.length, success: successCount })
       return this.buildBatchResult(results, successCount)
@@ -403,7 +418,11 @@ export class CrudService {
 
     try {
       const requestConfig = this.buildRequestConfig(config)
-      const results = await this.executeBatch(this.api.batch.delete, pks, requestConfig)
+      const results = await this.executeBatch({
+        endpoint: this.api.batch.delete,
+        items: pks,
+        ...(requestConfig === undefined ? {} : { config: requestConfig }),
+      })
       const successCount = results.filter(r => r.success).length
       this.logger.info('批量删除完成', { total: pks.length, success: successCount })
       return this.buildBatchResult(results, successCount)
@@ -625,13 +644,14 @@ export class CrudService {
    * @param onProgress 进度回调 (completed, total) => void
    * @returns 批量操作结果数组（顺序与 items 一致）
    */
-  private async executeBatch<T>(
-    endpoint: HttpEndpoint,
-    items: T[],
-    config?: Partial<RequestConfig>,
-    concurrency = DEFAULT_BATCH_CONCURRENCY,
-    onProgress?: (completed: number, total: number) => void
-  ): Promise<Array<CrudResult<T>>> {
+  private async executeBatch<T>(options: BatchExecutionOptions<T>): Promise<Array<CrudResult<T>>> {
+    const {
+      endpoint,
+      items,
+      config,
+      concurrency = DEFAULT_BATCH_CONCURRENCY,
+      onProgress,
+    } = options
     const results: Array<CrudResult<T>> = items.map(() => ({ success: false, message: 'Batch item not executed' }))
     let nextIndex = 0
     let completed = 0

@@ -35,6 +35,13 @@ function resolveMovedNode(response: { node?: FlatTreeNode } | FlatTreeNode): Fla
   throw new Error('[TreeManager] move endpoint returned invalid node')
 }
 
+export type TreeManagerOptions = {
+  config: TreeConfig
+  api?: TreeApi
+  initialNodes?: FlatTreeNode[]
+  httpClient?: HttpClientBase
+  endpointContextProvider?: () => Record<string, unknown>}
+
 /**
  * 树管理器类
  * 管理 DataView 中的树形数据视图
@@ -71,13 +78,8 @@ export class TreeManager {
    * @param initialNodes 初始节点
    * @param dataView 关联的数据视图
    */
-  constructor(
-    config: TreeConfig,
-    api?: TreeApi,
-    initialNodes?: FlatTreeNode[],
-    httpClient?: HttpClientBase,
-    endpointContextProvider?: () => Record<string, unknown>
-  ) {
+  constructor(options: TreeManagerOptions) {
+    const { config, api, initialNodes, httpClient, endpointContextProvider } = options
     this.config = {
       idField: 'id',
       parentIdField: 'parentId',

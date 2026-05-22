@@ -98,14 +98,26 @@ export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn 
           }, pageDataSet)
 
       const rows = Array.isArray(source) ? source : []
+      const optionFields = {
+        labelField: optionLabelField.value,
+        valueField: optionValueField.value,
+        childrenField: optionChildrenField.value,
+        disabledField: optionDisabledField.value,
+      }
       return rows
-        .map(row => normalizeOption(row, optionLabelField.value, optionValueField.value, optionChildrenField.value, optionDisabledField.value))
+        .map(row => normalizeOption(row, optionFields))
         .filter((item): item is FieldOption => item !== null)
     }
     const source = props.options ?? []
     if (!Array.isArray(source)) return []
+    const optionFields = {
+      labelField: optionLabelField.value,
+      valueField: optionValueField.value,
+      childrenField: optionChildrenField.value,
+      disabledField: optionDisabledField.value,
+    }
     return source
-      .map(item => normalizeOption(item, optionLabelField.value, optionValueField.value, optionChildrenField.value, optionDisabledField.value))
+      .map(item => normalizeOption(item, optionFields))
       .filter((item): item is FieldOption => item !== null)
   })
 

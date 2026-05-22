@@ -11,7 +11,6 @@ import {
   isPageFileDocumentDirty,
   type PageDocumentRegistry,
   type PageFileLoadState,
-  type PageFileName,
 } from './page-file-document'
 import type {
   PageConfigCreatePageParams,
@@ -73,7 +72,7 @@ export class PageConfigEditWorkspace {
     forEachDocument(this.documents, (_name, doc) => doc.reset())
   }
 
-  isDocumentDirty(name: PageFileName): boolean {
+  isDocumentDirty(name: PageConfigFileName): boolean {
     return isPageFileDocumentDirty(this.documents[name])
   }
 
@@ -81,7 +80,7 @@ export class PageConfigEditWorkspace {
     return PAGE_CONFIG_FILE_NAMES.some(name => this.isDocumentDirty(name))
   }
 
-  notifyPageFileChanged(pageId: string, filename: PageFileName | '__created' | '__deleted' | '__bulk'): void {
+  notifyPageFileChanged(pageId: string, filename: PageConfigFileName | '__created' | '__deleted' | '__bulk'): void {
     if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
       this.clearPageConfigCache(pageId)
       this.invalidateActivePageFilesLoad()
@@ -90,7 +89,7 @@ export class PageConfigEditWorkspace {
     this.clearPageConfigCache(pageId, filename)
   }
 
-  clearPageConfigCache(pageId: string, filename?: PageFileName): void {
+  clearPageConfigCache(pageId: string, filename?: PageConfigFileName): void {
     const loader = this.getConfigLoader()
     if (filename !== undefined) {
       loader.clearCache(this.toPageConfigLoaderPath(pageId, filename))
@@ -120,7 +119,7 @@ export class PageConfigEditWorkspace {
 
     const loadEpoch = this.activePageFilesLoadEpoch
     this.activePageFilesLoadPageId = pageId
-    const previousLoadStates = new Map<PageFileName, PageFileLoadState>()
+    const previousLoadStates = new Map<PageConfigFileName, PageFileLoadState>()
     for (const entry of PAGE_CONFIG_FILE_NAMES) {
       previousLoadStates.set(entry, this.documents[entry].loadState.value)
     }
@@ -135,7 +134,7 @@ export class PageConfigEditWorkspace {
     }
 
     const loadPromise = (async () => {
-      let loadedSnapshots: Array<{ name: PageFileName; text: string }>
+      let loadedSnapshots: Array<{ name: PageConfigFileName; text: string }>
       try {
         loadedSnapshots = await Promise.all(
           PAGE_CONFIG_FILE_NAMES.map(async (entry) => ({
@@ -173,11 +172,11 @@ export class PageConfigEditWorkspace {
     return loadPromise
   }
 
-  async loadPageFile(_name: PageFileName, options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
+  async loadPageFile(_name: PageConfigFileName, options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
     await this.ensureActivePageFilesLoaded(options)
   }
 
-  async savePageFile(name: PageFileName): Promise<void> {
+  async savePageFile(name: PageConfigFileName): Promise<void> {
     if (!this.activePageId) return
     const doc = this.documents[name]
     await this.fileApi.saveFileContent(this.activePageId, name, doc.text.value)
@@ -200,12 +199,12 @@ export class PageConfigEditWorkspace {
     this.notifyPageFileChanged(pageId, '__deleted')
   }
 
-  async listRemotePageVersions(filename: PageFileName): Promise<PageConfigFileVersionSummary[]> {
+  async listRemotePageVersions(filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
     if (!this.activePageId) return []
     return this.fileApi.listVersions(this.activePageId, filename)
   }
 
-  async restoreRemotePageVersion(version: number, filename: PageFileName): Promise<void> {
+  async restoreRemotePageVersion(version: number, filename: PageConfigFileName): Promise<void> {
     if (!this.activePageId) return
     const pageId = this.activePageId
     await this.fileApi.restoreVersion(pageId, filename, version)
@@ -216,19 +215,19 @@ export class PageConfigEditWorkspace {
     this.notifyPageFileChanged(pageId, filename)
   }
 
-  async createRemotePageVersion(filename: PageFileName): Promise<void> {
+  async createRemotePageVersion(filename: PageConfigFileName): Promise<void> {
     if (!this.activePageId) return
     await this.fileApi.createVersion(this.activePageId, filename)
   }
 
-  async deleteRemotePageVersion(version: number, filename: PageFileName): Promise<void> {
+  async deleteRemotePageVersion(version: number, filename: PageConfigFileName): Promise<void> {
     if (!this.activePageId) return
     await this.fileApi.deleteVersion(this.activePageId, filename, version)
   }
 
   private async fetchRemotePageFileContent(
     pageId: string,
-    name: PageFileName,
+    name: PageConfigFileName,
     options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean },
   ): Promise<string> {
     const result = await this.getConfigLoader().loadPageFileContent(pageId, name, {
@@ -259,7 +258,7 @@ export class PageConfigEditWorkspace {
     this.activePageFilesLoadEpoch += 1
   }
 
-  private toPageConfigLoaderPath(pageId: string, name: PageFileName): string {
+  private toPageConfigLoaderPath(pageId: string, name: PageConfigFileName): string {
     return `/${encodeURIComponent(pageId)}/${encodeURIComponent(name)}`
   }
 }

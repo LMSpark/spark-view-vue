@@ -48,7 +48,8 @@ export type NativeTreeNodeLike = {
   expand?: () => void
   data?: DataRow}
 
-export type TreeEventControl = CancellableControl
+export type TreeEventControl = {
+  cancel: CancellableControl['cancel']}
 
 export type TreeEventHandler = {
   (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>}
@@ -66,6 +67,13 @@ type RendererTreeZeroCodeOptions = {
   logger: LoggerApi
   nodeKeyField: ValueRef<string>
   treeIdField: ValueRef<string>}
+
+type TreeEventRunOptions = {
+  handler: TreeEventHandler | undefined
+  data: TreeNode
+  node: ElTreeNode
+  component: ElTreeComponent
+  autoHandle?: () => void}
 
 function isDataRow(value: unknown): value is DataRow {
   return isDataRecord(value)
@@ -235,13 +243,8 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
     },
   }
 
-  async function runTreeEvent(
-    handler: TreeEventHandler | undefined,
-    data: TreeNode,
-    node: ElTreeNode,
-    component: ElTreeComponent,
-    autoHandle?: () => void,
-  ): Promise<void> {
+  async function runTreeEvent(eventOptions: TreeEventRunOptions): Promise<void> {
+    const { handler, data, node, component, autoHandle } = eventOptions
     const control = createCancellableControl()
     await handler?.(data, node, component, control)
     if (!control.cancel) {
@@ -252,7 +255,12 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
   }
 
   const handleNodeClick = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-    await runTreeEvent(props.onNodeClick, data, node, component, () => {
+    await runTreeEvent({
+      handler: props.onNodeClick,
+      data,
+      node,
+      component,
+      autoHandle: () => {
       const key = getNodeKey(data)
       if (key === null) {
         logger.warn('RendererTree node-click 跳过自动选中：节点缺少主键', {
@@ -262,15 +270,16 @@ export function createRendererTreeZeroCode(options: RendererTreeZeroCodeOptions)
         return
       }
       resolvedView.value?.setCurrentRowById(key)
+      },
     })
   }
 
   const handleNodeExpand = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-    await runTreeEvent(props.onNodeExpand, data, node, component)
+    await runTreeEvent({ handler: props.onNodeExpand, data, node, component })
   }
 
   const handleNodeCollapse = async (data: TreeNode, node: ElTreeNode, component: ElTreeComponent) => {
-    await runTreeEvent(props.onNodeCollapse, data, node, component)
+    await runTreeEvent({ handler: props.onNodeCollapse, data, node, component })
   }
 
   const handleNodeDrop = async (draggingNode: ElTreeNode, dropNode: ElTreeNode, dropType: string) => {

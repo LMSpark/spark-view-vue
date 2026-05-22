@@ -64,6 +64,16 @@ const forbiddenLegacyIdentifiers = new Set([
   'ModuleModuleAction',
 ])
 
+const maxNamedImportsPerWorkspaceModule = 8
+const maxPublicSurfaceExportsPerModule = 8
+const maxLayeringExportsPerModule = 3
+const maxPositionalSignatureParams = 4
+
+const layeringExportSuffixPattern = /(?:Provider|Resolver|Adapter|Factory|Context|Options|Interface|Impl)$/u
+const mechanicalNameSuffixPattern = /(?:Interface|Impl)$/u
+const repeatedRoleTypeSuffixPattern = /(?:Context|Options|Provider|Resolver|Adapter|Factory|Interface|Impl)$/u
+const multiWordTypeNamePattern = /[a-z][A-Z]/u
+
 export function scanAiCodegenRules(options = {}) {
   const root = options.root ?? process.cwd()
   const files = collectSourceFiles({
@@ -102,6 +112,10 @@ export function runAiCodegenCli(argv = process.argv.slice(2)) {
 
 function scanSource(parsed, violations) {
   const { file, sourceFile, lineOffset } = parsed
+
+  scanNamedImportConvergence(parsed, violations)
+  scanPublicSurfaceConvergence(parsed, violations)
+  scanSignatureConventions(parsed, violations)
 
   for (const ref of collectModuleReferences(sourceFile)) {
     if (isForbiddenSparkAiSpecifier(ref.specifier)) {
@@ -176,10 +190,210 @@ function scanSource(parsed, violations) {
       })
     }
 
+    if (hasMechanicalDeclarationName(node)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `mechanical Interface/Impl name is forbidden: ${node.name.text}`,
+      })
+    }
+
+    if ((ts.isImportSpecifier(node) || ts.isExportSpecifier(node)) && isMechanicalName(node.name.text)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `mechanical Interface/Impl import/export is forbidden: ${node.name.text}`,
+      })
+    }
+
     ts.forEachChild(node, visit)
   }
 
   visit(sourceFile)
+}
+
+function scanNamedImportConvergence(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
+  if (isTestFile(file)) return
+
+  const importsByModule = new Map()
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isImportDeclaration(statement)) continue
+    if (!statement.importClause?.namedBindings || !ts.isNamedImports(statement.importClause.namedBindings)) continue
+    if (!ts.isStringLiteralLike(statement.moduleSpecifier)) continue
+
+    const specifier = statement.moduleSpecifier.text
+    if (!specifier.startsWith('@spark-view/')) continue
+
+    const key = `${file}:${specifier}`
+    let entry = importsByModule.get(key)
+    if (entry === undefined) {
+      entry = { specifier, names: new Set(), node: statement }
+      importsByModule.set(key, entry)
+    }
+
+    for (const element of statement.importClause.namedBindings.elements) {
+      entry.names.add((element.propertyName ?? element.name).text)
+    }
+  }
+
+  for (const [key, entry] of importsByModule) {
+    const count = entry.names.size
+    if (count <= maxNamedImportsPerWorkspaceModule) continue
+
+    violations.push({
+      file,
+      line: lineFor(sourceFile, entry.node, lineOffset),
+      message: `too many named imports from ${entry.specifier}: ${count}; use a module facade or main object instead of a flat import list`,
+    })
+  }
+}
+
+function scanPublicSurfaceConvergence(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
+  if (!isProtocolPublicSurfaceFile(file)) return
+
+  const exportsByModule = new Map()
+
+  for (const statement of sourceFile.statements) {
+    if (!ts.isExportDeclaration(statement)) continue
+    if (statement.exportClause === undefined || !ts.isNamedExports(statement.exportClause)) continue
+
+    const specifier = statement.moduleSpecifier !== undefined && ts.isStringLiteralLike(statement.moduleSpecifier)
+      ? statement.moduleSpecifier.text
+      : '<local>'
+    const key = `${file}:${specifier}`
+    let entry = exportsByModule.get(key)
+    if (entry === undefined) {
+      entry = { specifier, names: new Set(), layeringNames: new Set(), node: statement }
+      exportsByModule.set(key, entry)
+    }
+
+    for (const element of statement.exportClause.elements) {
+      const exportedName = element.name.text
+      entry.names.add(exportedName)
+      if (isLayeringExportName(exportedName)) {
+        entry.layeringNames.add(exportedName)
+      }
+    }
+  }
+
+  for (const [key, entry] of exportsByModule) {
+    const nameCount = entry.names.size
+    const layeringCount = entry.layeringNames.size
+    const exceedsThreshold = nameCount > maxPublicSurfaceExportsPerModule
+      || layeringCount > maxLayeringExportsPerModule
+
+    if (!exceedsThreshold) continue
+
+    violations.push({
+      file,
+      line: lineFor(sourceFile, entry.node, lineOffset),
+      message: `flat public surface from ${entry.specifier}: ${nameCount} export(s), ${layeringCount} Provider/Resolver/Adapter/Factory/Context/Options export(s); expose a smaller facade or main object`,
+    })
+  }
+}
+
+function scanSignatureConventions(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
+  if (isTestFile(file)) return
+
+  function visit(node) {
+    const signatureName = functionLikeName(node, sourceFile)
+    if (signatureName !== null && node.parameters.length > maxPositionalSignatureParams) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `signature has too many positional parameters: ${signatureName} has ${node.parameters.length}; use a named options object or domain command object`,
+      })
+    }
+
+    if (ts.isParameter(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node)) {
+      const repeatedRoleName = repeatedTypeRoleName(node)
+      if (repeatedRoleName !== null) {
+        violations.push({
+          file,
+          line: lineFor(sourceFile, node, lineOffset),
+          message: `signature name repeats its type name: ${repeatedRoleName}; use a role name like context, options, request, or result`,
+        })
+      }
+    }
+
+    if (ts.isTypeAliasDeclaration(node)) {
+      const aliasTarget = thinTypeAliasTarget(node.type)
+      if (aliasTarget !== null) {
+        violations.push({
+          file,
+          line: lineFor(sourceFile, node, lineOffset),
+          message: `thin type alias is forbidden: ${node.name.text} = ${aliasTarget}; use the original type or define a real domain shape`,
+        })
+      }
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+}
+
+function functionLikeName(node, sourceFile) {
+  if (
+    ts.isFunctionDeclaration(node)
+    || ts.isMethodDeclaration(node)
+    || ts.isGetAccessorDeclaration(node)
+    || ts.isSetAccessorDeclaration(node)
+  ) {
+    return node.name !== undefined && ts.isIdentifier(node.name) ? node.name.text : null
+  }
+
+  if (ts.isConstructorDeclaration(node)) {
+    return 'constructor'
+  }
+
+  if (ts.isArrowFunction(node) || ts.isFunctionExpression(node)) {
+    const parent = node.parent
+    if (ts.isVariableDeclaration(parent) && ts.isIdentifier(parent.name)) {
+      return parent.name.text
+    }
+    if (ts.isPropertyAssignment(parent) && ts.isIdentifier(parent.name)) {
+      return parent.name.text
+    }
+    if (ts.isPropertyDeclaration(parent) && ts.isIdentifier(parent.name)) {
+      return parent.name.text
+    }
+    if (ts.isBinaryExpression(parent) && ts.isIdentifier(parent.left)) {
+      return parent.left.text
+    }
+  }
+
+  if (isFunctionLikeWithParameters(node)) {
+    return null
+  }
+
+  return null
+}
+
+function repeatedTypeRoleName(node) {
+  if (!ts.isIdentifier(node.name)) return null
+
+  const typeName = typeReferenceName(node.type)
+  if (typeName === null) return null
+  if (!multiWordTypeNamePattern.test(typeName) || !repeatedRoleTypeSuffixPattern.test(typeName)) return null
+
+  const roleName = node.name.text
+  return roleName === lowerCamelCase(typeName) ? `${roleName}=${typeName}` : null
+}
+
+function thinTypeAliasTarget(typeNode) {
+  if (!ts.isTypeReferenceNode(typeNode) || typeNode.typeArguments !== undefined) return null
+  return typeReferenceName(typeNode)
+}
+
+function typeReferenceName(typeNode) {
+  if (typeNode === undefined || !ts.isTypeReferenceNode(typeNode)) return null
+  if (ts.isIdentifier(typeNode.typeName)) return typeNode.typeName.text
+  return null
 }
 
 function isForbiddenSparkAiSpecifier(specifier) {
@@ -201,6 +415,57 @@ function isForbiddenModuleKindAccess(node) {
     return node.left.getText() === 'ModuleKind' && forbiddenModuleKindMembers.has(node.right.text)
   }
   return false
+}
+
+function isFunctionLikeWithParameters(node) {
+  return ts.isFunctionDeclaration(node)
+    || ts.isMethodDeclaration(node)
+    || ts.isConstructorDeclaration(node)
+    || ts.isArrowFunction(node)
+    || ts.isFunctionExpression(node)
+    || ts.isGetAccessorDeclaration(node)
+    || ts.isSetAccessorDeclaration(node)
+}
+
+function lowerCamelCase(name) {
+  return name.length === 0 ? name : `${name[0].toLowerCase()}${name.slice(1)}`
+}
+
+function hasMechanicalDeclarationName(node) {
+  return (
+    ts.isClassDeclaration(node)
+    || ts.isFunctionDeclaration(node)
+    || ts.isTypeAliasDeclaration(node)
+    || ts.isEnumDeclaration(node)
+  )
+    && node.name !== undefined
+    && isMechanicalName(node.name.text)
+}
+
+function isMechanicalName(name) {
+  return mechanicalNameSuffixPattern.test(name)
+}
+
+function isLayeringExportName(name) {
+  return layeringExportSuffixPattern.test(name)
+}
+
+function isProtocolPublicSurfaceFile(file) {
+  return file.endsWith('/index.ts')
+    && (
+      file.startsWith('packages/spark-ai/src/')
+      || file.startsWith('packages/spark-page-config/src/')
+    )
+}
+
+function isTestFile(file) {
+  return file.startsWith('tests/')
+    || file.includes('/tests/')
+    || file.includes('/__tests__/')
+    || file.endsWith('.test.ts')
+    || file.endsWith('.test.tsx')
+    || file.endsWith('.spec.ts')
+    || file.endsWith('.spec.tsx')
 }
 
 if (isCliEntrypoint(import.meta.url)) {

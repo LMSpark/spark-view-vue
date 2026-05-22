@@ -338,38 +338,38 @@ describe('DataSet Tree 4+7 interfaces', () => {
     ]
 
     it('getNode should return node by id', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       expect(tree.getNode(2)?.name).toBe('Child A1')
       expect(tree.getNode(999)).toBeUndefined()
     })
 
     it('getChildren should return direct children of parent', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       const children = tree.getChildren(1)
       expect(children.map(item => item.id)).toEqual([2, 3])
     })
 
     it('getRoots should return top-level nodes', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       const roots = tree.getRoots()
       expect(roots.map(item => item.id)).toEqual([1, 5])
     })
 
     it('getNodePath should return pathIds from root to target', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       const path = tree.getNodePath(4)
       expect(path.pathIds).toEqual([1, 2, 4])
       expect(path.pathNodes?.map(item => item.name)).toEqual(['Root A', 'Child A1', 'Leaf A1-1'])
     })
 
     it('searchNodes should match keyword by textField (case-insensitive)', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       const found = tree.searchNodes('child')
       expect(found.map(item => item.id)).toEqual([2, 3])
     })
 
     it('buildNestedTree should build full nested tree from roots', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       const nested = tree.buildNestedTree()
 
       expect(nested).toHaveLength(2)
@@ -380,7 +380,7 @@ describe('DataSet Tree 4+7 interfaces', () => {
     })
 
     it('buildSubTree should build subtree from specific root', () => {
-      const tree = new TreeManager({ idField: 'id', parentIdField: 'parentId', textField: 'name' }, undefined, nodes)
+      const tree = new TreeManager({ config: { idField: 'id', parentIdField: 'parentId', textField: 'name' }, initialNodes: nodes })
       const subtree = tree.buildSubTree(2)
 
       expect(subtree?.id).toBe(2)

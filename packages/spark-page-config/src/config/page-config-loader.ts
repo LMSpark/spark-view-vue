@@ -22,11 +22,11 @@ import type {
   PageConfigFileLoadOptions,
   PageConfigFileName,
   PageConfig,
-  RuleConfig,
-  PageDataConfig,
   PageFileRegistry,
 } from './config-types'
 import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from './config-types'
+import type { DataSet } from '@spark-view/spark-data'
+import type { SparkNode } from '../node-tree'
 import {
   Logger,
   createFileLoader,
@@ -101,8 +101,8 @@ export class PageConfigLoader extends BasePageConfigLoader {
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
    * 相同 timestamp → 直接返回缓存结果，跳过 transform 函数。
    */
-  private ruleLoader!: TransformedFileLoader<RuleConfig[]>
-  private dataLoader!: TransformedFileLoader<PageDataConfig>
+  private ruleLoader!: TransformedFileLoader<SparkNode[]>
+  private dataLoader!: TransformedFileLoader<DataSet>
   // 这里不再为 JS 基础类型保留导出别名，直接使用原生 string。
   private scriptLoader!: TransformedFileLoader<string>
   private cssLoader!: TransformedFileLoader<string>
@@ -195,13 +195,13 @@ export class PageConfigLoader extends BasePageConfigLoader {
   // ── 公开 API ──────────────────────────────────────────────────────
 
 
-  async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+  async loadRule(pageId: string): Promise<ConfigLoadResult<SparkNode[]>> {
     this.ensurePageFileContext()
     pageLogger.info('加载页面规则', { pageId })
     return this.loadRequiredPageFile(pageId, 'rule.json', this.ruleLoader)
   }
 
-  async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+  async loadPageData(pageId: string): Promise<ConfigLoadResult<DataSet>> {
     this.ensurePageFileContext()
     pageLogger.info('加载页面数据', { pageId })
     return this.loadRequiredPageFile(pageId, 'pagedata.json', this.dataLoader)

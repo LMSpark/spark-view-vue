@@ -12,9 +12,9 @@ import type {
   ConfigLoadResult,
   PageConfig,
   PageConfigFileName,
-  PageDataConfig,
-  RuleConfig,
 } from '@spark-view/spark-page-config/config'
+import type { DataSet } from '@spark-view/spark-data'
+import type { SparkNode } from '@spark-view/spark-page-config/node-tree'
 import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
@@ -44,6 +44,13 @@ type FileResponse = {
   content?: unknown
   timestamp?: unknown
   notModified?: unknown}
+
+type ScopedHttpClientOptions = {
+  baseClient: HttpClientBase
+  scopedHeaders: Record<string, string>
+  tenantId: string
+  hostProjectId: string | null
+  targetProjectId: string}
 
 const logger = Logger('CrossProjectRefPage')
 
@@ -250,14 +257,19 @@ function rewriteScopedUrl(
 }
 
 class ScopedHttpClient extends HttpClientBase {
-  constructor(
-    private readonly baseClient: HttpClientBase,
-    private readonly scopedHeaders: Record<string, string>,
-    private readonly tenantId: string,
-    private readonly hostProjectId: string | null,
-    private readonly targetProjectId: string,
-  ) {
+  private readonly baseClient: HttpClientBase
+  private readonly scopedHeaders: Record<string, string>
+  private readonly tenantId: string
+  private readonly hostProjectId: string | null
+  private readonly targetProjectId: string
+
+  constructor(options: ScopedHttpClientOptions) {
     super({}, 'ScopedHttpClient')
+    this.baseClient = options.baseClient
+    this.scopedHeaders = options.scopedHeaders
+    this.tenantId = options.tenantId
+    this.hostProjectId = options.hostProjectId
+    this.targetProjectId = options.targetProjectId
   }
 
   protected executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
@@ -285,14 +297,8 @@ class ScopedHttpClient extends HttpClientBase {
   }
 }
 
-function createScopedHttpClient(
-  baseClient: HttpClientBase,
-  scopedHeaders: Record<string, string>,
-  tenantId: string,
-  hostProjectId: string | null,
-  targetProjectId: string,
-): HttpClientBase {
-  return new ScopedHttpClient(baseClient, scopedHeaders, tenantId, hostProjectId, targetProjectId)
+function createScopedHttpClient(options: ScopedHttpClientOptions): HttpClientBase {
+  return new ScopedHttpClient(options)
 }
 
 class CrossProjectPageConfigLoader extends BasePageConfigLoader {
@@ -317,11 +323,11 @@ class CrossProjectPageConfigLoader extends BasePageConfigLoader {
     return this.client
   }
 
-  async loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+  async loadRule(pageId: string): Promise<ConfigLoadResult<SparkNode[]>> {
     return this.loadRequired(pageId, 'rule.json', compileRule)
   }
 
-  async loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+  async loadPageData(pageId: string): Promise<ConfigLoadResult<DataSet>> {
     return this.loadRequired(pageId, 'pagedata.json', parsePageData)
   }
 
@@ -512,10 +518,16 @@ export const CrossProjectRefPage = defineComponent({
       if (scopedTenantId === null || scopedProjectId === null) return null
 
       const baseClient = props.configLoader.getHttpClient() ?? createRequest()
-      const scopedClient = createScopedHttpClient(baseClient, {
-        'X-Tenant-Id': scopedTenantId,
-        'X-Project-Id': scopedProjectId,
-      }, scopedTenantId, hostProjectId.value, scopedProjectId)
+      const scopedClient = createScopedHttpClient({
+        baseClient,
+        scopedHeaders: {
+          'X-Tenant-Id': scopedTenantId,
+          'X-Project-Id': scopedProjectId,
+        },
+        tenantId: scopedTenantId,
+        hostProjectId: hostProjectId.value,
+        targetProjectId: scopedProjectId,
+      })
 
       return new CrossProjectPageConfigLoader(
         scopedClient,

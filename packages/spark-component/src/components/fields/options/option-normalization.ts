@@ -6,6 +6,12 @@ export type FieldOption = {
   disabled?: boolean
   children?: FieldOption[]}
 
+export type NormalizeOptionFields = {
+  labelField: string
+  valueField: string
+  childrenField: string
+  disabledField: string}
+
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
@@ -16,11 +22,9 @@ function isFieldOptionValue(value: unknown): value is string | number | boolean 
 
 export function normalizeOption(
   raw: unknown,
-  labelField: string,
-  valueField: string,
-  childrenField: string,
-  disabledField: string,
+  fields: NormalizeOptionFields,
 ): FieldOption | null {
+  const { labelField, valueField, childrenField, disabledField } = fields
   if (raw === null || raw === undefined) return null
   if (typeof raw === 'string' || typeof raw === 'number' || typeof raw === 'boolean') {
     return { label: String(raw), value: raw }
@@ -34,7 +38,7 @@ export function normalizeOption(
   const rawChildren = raw[childrenField] ?? raw['children'] ?? raw['items'] ?? raw['nodes']
   const children = Array.isArray(rawChildren)
     ? rawChildren
-      .map(item => normalizeOption(item, labelField, valueField, childrenField, disabledField))
+      .map(item => normalizeOption(item, fields))
       .filter((item): item is FieldOption => item !== null)
     : []
 

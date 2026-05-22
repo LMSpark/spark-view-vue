@@ -1,16 +1,16 @@
 import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
-import type { DevState, PageFileName } from '../useDevState'
+import type { DevState, PageConfigFileName } from '../useDevState'
 
 const TEXT_DRAFT_COMMIT_DELAY = 600
 
 /**
- * 手动编辑器绑定器 — 将任意 PageFileName 接入 state.documents 注册表。
+ * 手动编辑器绑定器 — 将任意 PageConfigFileName 接入 state.documents 注册表。
  * PageFileDocument 的历史栈只记录已提交编辑，用于 undo/redo；后端版本由版本面板手动管理。
  * 原始文本输入先进入本地草稿，避免 JSON 在每个按键都解析、归一化并压入历史栈。
  */
-export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageFileName>>) {
+export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageConfigFileName>>) {
   const doc = computed(() => state.documents[activeFile.value])
-  const drafts = ref<Partial<Record<PageFileName, string>>>({})
+  const drafts = ref<Partial<Record<PageConfigFileName, string>>>({})
   let commitTimer: ReturnType<typeof setTimeout> | null = null
 
   const isReady = computed(() => {
@@ -41,19 +41,19 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     await state.ensureActivePageFilesLoaded(options)
   }
 
-  function hasDraft(name: PageFileName): boolean {
+  function hasDraft(name: PageConfigFileName): boolean {
     return Object.prototype.hasOwnProperty.call(drafts.value, name)
   }
 
-  function getDraft(name: PageFileName): string {
+  function getDraft(name: PageConfigFileName): string {
     return drafts.value[name] ?? ''
   }
 
-  function setDraft(name: PageFileName, value: string): void {
+  function setDraft(name: PageConfigFileName, value: string): void {
     drafts.value = { ...drafts.value, [name]: value }
   }
 
-  function clearDraft(name: PageFileName = activeFile.value): void {
+  function clearDraft(name: PageConfigFileName = activeFile.value): void {
     if (!hasDraft(name)) return
     const { [name]: _removed, ...next } = drafts.value
     drafts.value = next
@@ -63,15 +63,15 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     drafts.value = {}
   }
 
-  function getDisplayText(name: PageFileName): string {
+  function getDisplayText(name: PageConfigFileName): string {
     return hasDraft(name) ? getDraft(name) : state.documents[name].text.value
   }
 
-  function isJsonBackedFile(name: PageFileName): boolean {
+  function isJsonBackedFile(name: PageConfigFileName): boolean {
     return name === 'rule.json' || name === 'pagedata.json'
   }
 
-  function isFileDirty(name: PageFileName): boolean {
+  function isFileDirty(name: PageConfigFileName): boolean {
     const targetDoc = state.documents[name]
     return state.isDocumentDirty(name) || getDisplayText(name) !== targetDoc.savedText.value
   }
@@ -82,7 +82,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     commitTimer = null
   }
 
-  function scheduleDraftCommit(name: PageFileName): void {
+  function scheduleDraftCommit(name: PageConfigFileName): void {
     clearCommitTimer()
     if (isJsonBackedFile(name)) return
     commitTimer = setTimeout(() => {
@@ -102,7 +102,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageF
     scheduleDraftCommit(name)
   }
 
-  function commitDraft(name: PageFileName = activeFile.value): boolean {
+  function commitDraft(name: PageConfigFileName = activeFile.value): boolean {
     clearCommitTimer()
     if (!hasDraft(name)) return true
 

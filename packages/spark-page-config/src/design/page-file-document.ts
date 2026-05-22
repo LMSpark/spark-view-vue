@@ -121,8 +121,6 @@ import { SnapshotHistory } from '@spark-view/spark-utils'
 import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../config'
 import { getSparkNodeChildren, SparkNodeTree, type SparkNode } from '../node-tree'
 
-export type PageFileName = PageConfigFileName
-
 export type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 
 export type LoadFromTextOptions = {
@@ -494,7 +492,7 @@ export function createPageDocuments(): PageDocumentRegistry {
 
 export function forEachDocument(
   registry: PageDocumentRegistry,
-  visit: <K extends PageFileName>(name: K, doc: PageDocumentRegistry[K]) => void,
+  visit: <K extends PageConfigFileName>(name: K, doc: PageDocumentRegistry[K]) => void,
 ): void {
   for (const name of PAGE_CONFIG_FILE_NAMES) {
     visit(name, registry[name])

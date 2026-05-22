@@ -46,7 +46,10 @@ function fromJson(json: DataSetMetadata | Record<string, unknown> | string): Dat
 }
 
 function createTreeManager(config: TreeConfig, initialNodes?: FlatTreeNode[]): TreeManager {
-  return new TreeManager({ ...config }, undefined, initialNodes)
+  return new TreeManager({
+    config: { ...config },
+    ...(initialNodes === undefined ? {} : { initialNodes }),
+  })
 }
 
 function createDataTable(meta: TableMetadata): DataTable {

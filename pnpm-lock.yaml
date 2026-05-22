@@ -168,21 +168,9 @@ importers:
 
   packages/spark-ai:
     dependencies:
-      '@spark-view/spark-data':
-        specifier: workspace:*
-        version: link:../spark-data
-      '@spark-view/spark-page-config':
-        specifier: workspace:*
-        version: link:../spark-page-config
-      '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
       ajv:
         specifier: ^8.18.0
         version: 8.18.0
-      jmespath:
-        specifier: 0.16.0
-        version: 0.16.0
     devDependencies:
       '@eslint/js':
         specifier: ^10.0.1
@@ -217,6 +205,9 @@ importers:
       '@spark-view/spark-component':
         specifier: workspace:*
         version: link:../spark-component
+      '@spark-view/spark-data':
+        specifier: workspace:*
+        version: link:../spark-data
       '@spark-view/spark-page-config':
         specifier: workspace:*
         version: link:../spark-page-config
@@ -376,6 +367,9 @@ importers:
 
   packages/spark-page-config:
     dependencies:
+      '@spark-view/spark-ai':
+        specifier: workspace:*
+        version: link:../spark-ai
       '@spark-view/spark-data':
         specifier: workspace:*
         version: link:../spark-data
@@ -447,9 +441,6 @@ importers:
 
   packages/vite-plugin-spark-catalog:
     dependencies:
-      '@spark-view/spark-utils':
-        specifier: workspace:*
-        version: link:../spark-utils
       glob:
         specifier: ^13.0.6
         version: 13.0.6
@@ -4605,8 +4596,8 @@ packages:
   vue-component-type-helpers@3.2.8:
     resolution: {integrity: sha512-9689efAXhN/EV86plgkL/XFiJSXhGtWPG6JDboZ+QnjlUWUUQrQ0ILKQtw4iQsuwIwu5k6Aw+JnehDe7161e7A==}
 
-  vue-component-type-helpers@3.2.9:
-    resolution: {integrity: sha512-S3BiWYaLSzHxTpln665ELSrMR9UYmrIDUmhik7nVZxmJjTKL2/a+ew1hvGxksKelivm0ujjWfG1fYOiU/2e8rA==}
+  vue-component-type-helpers@3.3.1:
+    resolution: {integrity: sha512-pu58kqxmVyEH6VfNYW1UyEfR3XAnJ27ZXT3yzXxxpjLxVzAbyC35Zk/nm/RMs7ijWnJNSd9fWkeex2OhUsx3MA==}
 
   vue-docgen-api@4.79.2:
     resolution: {integrity: sha512-n9ENAcs+40awPZMsas7STqjkZiVlIjxIKgiJr5rSohDP0/JCrD9VtlzNojafsA1MChm/hz2h3PDtUedx3lbgfA==}
@@ -5861,7 +5852,7 @@ snapshots:
       storybook: 10.3.5(@testing-library/dom@10.4.0)(prettier@2.8.8)(react-dom@19.2.4(react@19.2.4))(react@19.2.4)
       type-fest: 2.19.0
       vue: 3.5.32(typescript@6.0.2)
-      vue-component-type-helpers: 3.2.9
+      vue-component-type-helpers: 3.3.1
 
   '@stylistic/eslint-plugin@4.4.1(eslint@10.2.0(jiti@2.6.1))(typescript@6.0.2)':
     dependencies:
@@ -9049,7 +9040,7 @@ snapshots:
 
   vue-component-type-helpers@3.2.8: {}
 
-  vue-component-type-helpers@3.2.9: {}
+  vue-component-type-helpers@3.3.1: {}
 
   vue-docgen-api@4.79.2(vue@3.5.32(typescript@6.0.2)):
     dependencies:

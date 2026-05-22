@@ -197,7 +197,10 @@ export type SparkNodeTreeReplaceNodesParams = {
 }
 
 /** 删除单个节点的参数 */
-export type SparkNodeTreeRemoveParams = SparkNodeTreeLookupParams
+export type SparkNodeTreeRemoveParams = {
+  /** 待删除节点的 ID */
+  componentId: string
+}
 
 /** 批量删除节点的参数 */
 export type SparkNodeTreeRemoveNodesParams = {

@@ -78,8 +78,6 @@ export type DataViewMemberValue =
   | undefined
   | Error
 
-export type DataViewMemberResolvedValue = DataViewMemberValue
-
 const SEPARATOR = '@'
 const CROSS_PAGE_PREFIX = '#'
 
@@ -178,7 +176,7 @@ function resolveValueWithField(
   value: DataViewMemberValue,
   dataMember: DataMember,
   dataField: string | undefined,
-): DataViewMemberResolvedValue {
+): DataViewMemberValue {
   if (dataField === undefined) return value
   if (!FIELD_ADDRESSABLE_MEMBERS.has(dataMember)) return undefined
   if (!isObjectRecord(value)) return undefined
@@ -243,7 +241,7 @@ function parseDataViewMemberDescriptor(input: DataViewMemberInput): DataViewMemb
 export function resolveDataViewMember(
   input: DataViewMemberInput,
   dataSet: DataSetContract | null | undefined,
-): DataViewMemberResolvedValue {
+): DataViewMemberValue {
   if (!dataSet) return undefined
   const descriptor = parseDataViewMemberDescriptor(input)
   if (!descriptor) return undefined

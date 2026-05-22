@@ -63,7 +63,7 @@ vi.mock('@/services/api-paths', () => ({
 }))
 
 import { canonicalizePageDataJson } from '@spark-view/spark-page-config/design'
-import { PAGE_CONFIG_FILE_NAMES, useDevState, type PageFileName } from '../src/views/app/dev-system/useDevState'
+import { PAGE_CONFIG_FILE_NAMES, useDevState, type PageConfigFileName } from '../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
 function requireValue<T>(value: T | null | undefined, message: string): T {
@@ -307,7 +307,7 @@ describe('useDevState documents SSOT', () => {
     const scope = effectScope()
     try {
       scope.run(() => {
-        const editor = useDevFileEditor(state, ref<PageFileName>('pagedata.json'))
+        const editor = useDevFileEditor(state, ref<PageConfigFileName>('pagedata.json'))
         const initialCanonical = canonicalizePageDataJson(initial).text
 
         editor.updateText('{"dataSetName":')

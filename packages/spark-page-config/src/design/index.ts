@@ -19,7 +19,6 @@ export type {
   PageDocumentRegistry,
   PageFileDocumentListener,
   PageFileLoadState,
-  PageFileName,
 } from './page-file-document'
 
 export {

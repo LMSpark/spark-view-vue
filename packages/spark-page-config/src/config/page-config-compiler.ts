@@ -6,21 +6,17 @@
  *
  * 与 loader/ 分离的原因：
  * - loader 负责 **从哪里加载**（本地/远程/混合 + 缓存策略）
- * - compiler 负责 **如何解析**（字符串 → DataSet / RuleConfig / 脚本 / CSS）
+ * - compiler 负责 **如何解析**（字符串 → DataSet / SparkNode / 脚本 / CSS）
  * - 两者可独立测试、独立演进
  */
 
-import type {
-  RuleConfig,
-  PageDataConfig,
-} from './config-types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
-import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree } from '../node-tree'
+import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree, type SparkNode } from '../node-tree'
 
 // ═══ 工厂解析：模块加载时一次性探测 spark-data 暴露的 DataSet 构建入口 ═══
 
-/** PageData 对象工厂签名：接收已解析的 JSON 对象，返回 PageDataConfig。 */
-type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
+/** PageData 对象工厂签名：接收已解析的 JSON 对象，返回 DataSet。 */
+type ObjectFactory = (input: Record<string, unknown>) => DataSet
 
 /** 安全探测对象是否有指定自有属性。 */
 function hasOwn(obj: Record<string, unknown>, key: string): boolean {
@@ -30,14 +26,14 @@ function hasOwn(obj: Record<string, unknown>, key: string): boolean {
 /** 判断目标是否为接收字符串的工厂函数。 */
 function isStringFactory(
   fn: unknown,
-): fn is (raw: string) => PageDataConfig {
+): fn is (raw: string) => DataSet {
   return typeof fn === 'function'
 }
 
 /** 判断目标是否为接收对象的工厂函数。 */
 function isObjectFactory(
   fn: unknown,
-): fn is (raw: Record<string, unknown>) => PageDataConfig {
+): fn is (raw: Record<string, unknown>) => DataSet {
   return typeof fn === 'function'
 }
 
@@ -153,7 +149,7 @@ function normalizeCanonicalDataSetInput(input: Record<string, unknown>): Record<
 }
 
 /** 创建空 DataSet 作为解析失败时的默认值。 */
-function createDefaultDataSet(): PageDataConfig {
+function createDefaultDataSet(): DataSet {
   return canonicalFactory({ dataSetName: 'PageDataSet', tables: {} })
 }
 
@@ -162,7 +158,7 @@ const canonicalFactory = resolveCanonicalFactory()
 const pageDataFactory = resolvePageDataFactory()
 
 /** 根据输入形态选择合适的工厂创建 DataSet 实例。 */
-function createDataSetFromInput(input: Record<string, unknown>): PageDataConfig {
+function createDataSetFromInput(input: Record<string, unknown>): DataSet {
   if (isCanonicalDataSetShape(input)) {
     return canonicalFactory(normalizeCanonicalDataSetInput(input))
   }
@@ -180,7 +176,7 @@ function createDataSetFromInput(input: Record<string, unknown>): PageDataConfig 
  * - 节点定位只接受顶层 `id`
  * - 不自动补齐缺失组件 id（fillMissingComponentId: false）
  */
-export function compileRule(raw: string): RuleConfig[] {
+export function compileRule(raw: string): SparkNode[] {
   if (raw.trim() === '') return []
   const tree = SparkNodeTree.fromRuleJson(raw, {
     fillMissingComponentId: false,
@@ -189,8 +185,8 @@ export function compileRule(raw: string): RuleConfig[] {
   return getSparkNodeChildren(tree.root.children)
 }
 
-/** 将未知值归一化为 RuleConfig（SparkNode）；类型不合法时 fail-fast。 */
-export function normalizeRuleNode(node: unknown): RuleConfig {
+/** 将未知值归一化为 SparkNode；类型不合法时 fail-fast。 */
+export function normalizeRuleNode(node: unknown): SparkNode {
   if (!isSparkNode(node)) {
     throw new Error('rule.json 节点必须是 SparkNode：需要非空字符串 type')
   }
@@ -198,7 +194,7 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
 }
 
 /**
- * pagedata.json 原始字符串 → PageDataConfig（DataSet 实例）。
+ * pagedata.json 原始字符串 → DataSet 实例。
  *
  * 流程：
  * 1. 空内容 → 返回默认空 DataSet
@@ -206,7 +202,7 @@ export function normalizeRuleNode(node: unknown): RuleConfig {
  * 3. 选择 canonical 工厂或 pageData 工厂创建实例
  * 4. 归一化 tables 结构（补齐 tableName、确保 views.default 存在）
  */
-export function parsePageData(raw: string): PageDataConfig {
+export function parsePageData(raw: string): DataSet {
   if (raw.trim() === '') return createDefaultDataSet()
   const parsed: unknown = JSON.parse(raw)
   if (parsed === null || parsed === undefined) {
@@ -235,15 +231,15 @@ export function parseCss(raw: string): string {
  * 函数导出仍保留给轻量调用方；需要注入完整编译能力时优先使用该 class。
  */
 export class PageConfigCompiler {
-  compileRule(raw: string): RuleConfig[] {
+  compileRule(raw: string): SparkNode[] {
     return compileRule(raw)
   }
 
-  normalizeRuleNode(node: unknown): RuleConfig {
+  normalizeRuleNode(node: unknown): SparkNode {
     return normalizeRuleNode(node)
   }
 
-  parsePageData(raw: string): PageDataConfig {
+  parsePageData(raw: string): DataSet {
     return parsePageData(raw)
   }
 

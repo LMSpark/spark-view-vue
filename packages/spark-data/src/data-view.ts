@@ -1689,9 +1689,15 @@ export class DataView implements DataSource {
     if (!this.treeManager) {
       const cfg = this.treeConfig ?? {}
       // S3: 将 CrudService 的 HTTP 客户端传递给 TreeManager，共享拦截器/认证/配置
+      const api = this._dataTable?.api
       const httpClient = this._dataTable?.crudService?.getHttpClient()
       const endpointContextProvider = () => this._dataTable?.dataSet?.getRequestTemplateParams() ?? {}
-      this.treeManager = new TreeManager(cfg, this._dataTable?.api, undefined, httpClient, endpointContextProvider)
+      this.treeManager = new TreeManager({
+        config: cfg,
+        ...(api === undefined ? {} : { api }),
+        ...(httpClient === undefined ? {} : { httpClient }),
+        endpointContextProvider,
+      })
     }
     return this.treeManager
   }

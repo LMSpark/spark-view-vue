@@ -51,6 +51,13 @@ export function readString(value: unknown): string | undefined {
 
 const INTERPOLATION = /\{(\w+(?:\.\w+)*)\}/g
 
+export type PickActionTextInput = {
+  decorator: ActionUiDecorator | undefined
+  key: keyof ActionUiDecorator
+  fallback: string
+  vars?: Record<string, string | number | undefined>
+  row?: DataRow | null}
+
 /**
  * 模板插值：`{count}` `{row.name}` 等。
  * - vars 直接命中 → 用 vars 值
@@ -87,13 +94,8 @@ export function interpolate(
  * - 显式设置为 `''` 视为有意清空：返回空字符串，调用方据此跳过提示展示。
  * - 调用方负责检查返回值是否为空，再决定是否调用 `notifier.notify()`。
  */
-export function pickText(
-  decorator: ActionUiDecorator | undefined,
-  key: keyof ActionUiDecorator,
-  fallback: string,
-  vars?: Record<string, string | number | undefined>,
-  row?: DataRow | null,
-): string {
+export function pickText(input: PickActionTextInput): string {
+  const { decorator, key, fallback, vars, row } = input
   const raw = decorator?.[key]
   if (typeof raw !== 'string') return interpolate(fallback, vars, row ?? null)
   if (raw.length === 0) return ''

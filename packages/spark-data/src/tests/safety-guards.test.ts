@@ -79,20 +79,18 @@ describe('S3: TreeManager HTTP client sharing', () => {
     const svc = new CrudService({ list: { url: '/api/test' } })
     const http = svc.getHttpClient()
     // 传入 httpClient 后，TreeManager 不会自行创建新实例
-    const tm = new TreeManager(
-      { idField: 'id', parentIdField: 'pid', textField: 'name' },
-      undefined,
-      undefined,
-      http,
-    )
+    const tm = new TreeManager({
+      config: { idField: 'id', parentIdField: 'pid', textField: 'name' },
+      httpClient: http,
+    })
     // 确认 TreeManager 被正确构造
     expect(tm.getConfig().idField).toBe('id')
   })
 
   it('TreeManager without httpClient creates its own (backward compat)', () => {
-    const tm = new TreeManager(
-      { idField: 'id', parentIdField: 'pid' },
-    )
+    const tm = new TreeManager({
+      config: { idField: 'id', parentIdField: 'pid' },
+    })
     expect(tm.getConfig().idField).toBe('id')
   })
 })
