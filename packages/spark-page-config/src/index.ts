@@ -8,9 +8,12 @@
 
 export {
   BasePageConfigLoader,
+} from './config/config-load-api'
+
+export {
   PageConfigLoader,
   createConfigLoader,
-} from './config'
+} from './config/page-config-loader'
 
 export type {
   ConfigLoaderOptions,
@@ -19,4 +22,4 @@ export type {
   PageConfigFileLoadOptions,
   PageConfigFileName,
   PageConfigFiles,
-} from './config'
+} from './config/config-load-api'

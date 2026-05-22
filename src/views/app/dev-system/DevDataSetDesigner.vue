@@ -303,8 +303,6 @@ import type {
  * 设计器列 — DataColumn + 画布唯一标识
  */
 type DesignerColumn = DesignerTableProjection['columns'][number]
-type DesignerTable = DesignerTableProjection
-type DesignerRelation = DesignerRelationProjection
 
 /** 为新表分配布局位置的回调。 */
 type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
@@ -312,7 +310,7 @@ type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y
 type RelationDraftState = {
   sourceIndex: number
   sourceSelector: ReturnType<typeof buildRelationSelector>
-  draft: DesignerRelation}
+  draft: DesignerRelationProjection}
 
 const props = defineProps<{
   state: DevState
@@ -345,7 +343,7 @@ function getPageDataDocument() {
   return props.state.documents['pagedata.json']
 }
 
-function buildColumnIdMap(table: DesignerTable): Record<string, string> {
+function buildColumnIdMap(table: DesignerTableProjection): Record<string, string> {
   return Object.fromEntries(table.columns.map((column) => [column.name, column.id]))
 }
 
@@ -355,14 +353,14 @@ const projectedMetadata = computed<DataSetMetadata | null>(() => {
   return getPageDataDocument().model.value?.toJson() ?? null
 })
 
-const tables = computed<DesignerTable[]>(() => {
+const tables = computed<DesignerTableProjection[]>(() => {
   const metadata = projectedMetadata.value
   if (!metadata) return []
 
   return projectDesignerTables(metadata, tableUiState.value, generateId)
 })
 
-const relations = computed<DesignerRelation[]>(() => (
+const relations = computed<DesignerRelationProjection[]>(() => (
   projectedMetadata.value ? projectDesignerRelations(projectedMetadata.value) : []
 ))
 
@@ -478,7 +476,7 @@ const CARD_W = 260
 const CARD_HEADER_H = 42
 const COL_ROW_H = 24
 
-function getCardHeight(table: DesignerTable): number {
+function getCardHeight(table: DesignerTableProjection): number {
   let base = CARD_HEADER_H + table.columns.length * COL_ROW_H + 10 + 22 // 22 = footer
   if (propsExpandedTables.value.has(table.id)) {
     base += 4 * 32 + 12 // 4 prop rows
@@ -583,7 +581,7 @@ watch(
   },
 )
 
-function normalizeRelation(rel: DesignerRelation): TableRelation {
+function normalizeRelation(rel: DesignerRelationProjection): TableRelation {
   return {
     parentTable: rel.parentTable,
     childTable: rel.childTable,
@@ -618,7 +616,7 @@ function buildRelationSelector(rel: {
 function deleteTableWithRelationFallback(
   tool: DataSetCrudTool,
   tableName: string,
-  currentRelations: DesignerRelation[],
+  currentRelations: DesignerRelationProjection[],
 ): void {
   try {
     tool.deleteTable(tableName)
@@ -640,7 +638,7 @@ function projectDesignerFromMetadata(
   tableUiState.value = reconcileDesignerTableUiState(metadata, tables.value, generateId, layoutForNewTable)
 }
 
-function snapshotRelations(): DesignerRelation[] {
+function snapshotRelations(): DesignerRelationProjection[] {
   return [...relations.value]
 }
 
@@ -680,7 +678,7 @@ async function removeTable(idx: number) {
   }
 }
 
-function addColumn(table: DesignerTable) {
+function addColumn(table: DesignerTableProjection) {
   applyHistoryMutation((tool) => {
     tool.createColumn({
       tableName: table.tableName,
@@ -736,7 +734,7 @@ type TableUpdatePayload = {
   api?: CrudApi | string | boolean}
 
 function updateTableWithFeedback(
-  table: DesignerTable,
+  table: DesignerTableProjection,
   updates: TableUpdatePayload,
   failureTitle: string,
 ): void {
@@ -751,7 +749,7 @@ function updateTableWithFeedback(
 }
 
 function updateColumnWithFeedback(
-  table: DesignerTable,
+  table: DesignerTableProjection,
   columnName: string,
   updates: Partial<DataColumn>,
   failureTitle: string,
@@ -762,7 +760,7 @@ function updateColumnWithFeedback(
 }
 
 function renameColumnWithFeedback(
-  table: DesignerTable,
+  table: DesignerTableProjection,
   columnName: string,
   newColumnName: string,
   failureTitle: string,
@@ -773,7 +771,7 @@ function renameColumnWithFeedback(
 }
 
 function deleteColumnWithFeedback(
-  table: DesignerTable,
+  table: DesignerTableProjection,
   columnName: string,
   failureTitle: string,
 ): void {
@@ -782,7 +780,7 @@ function deleteColumnWithFeedback(
   }, failureTitle)
 }
 
-function handleTableNameInputChange(table: DesignerTable, event: Event): void {
+function handleTableNameInputChange(table: DesignerTableProjection, event: Event): void {
   const nextName = readInputValue(event).trim()
   if (!nextName || nextName === table.tableName) return
   applyHistoryMutationWithFeedback((tool) => {
@@ -791,44 +789,44 @@ function handleTableNameInputChange(table: DesignerTable, event: Event): void {
 }
 
 function handleTableSemanticChange(
-  table: DesignerTable,
+  table: DesignerTableProjection,
   updates: TableUpdatePayload,
 ): void {
   updateTableWithFeedback(table, updates, '表属性更新失败')
 }
 
-function handleTableResourceIdInputChange(table: DesignerTable, event: Event): void {
+function handleTableResourceIdInputChange(table: DesignerTableProjection, event: Event): void {
   const value = readInputValue(event).trim()
   updateTableWithFeedback(table, { resourceId: value || null }, '资源 ID 更新失败')
 }
 
-function handleTableApiInputChange(table: DesignerTable, event: Event): void {
+function handleTableApiInputChange(table: DesignerTableProjection, event: Event): void {
   const value = readInputValue(event).trim()
   updateTableWithFeedback(table, { api: value || false }, 'API 更新失败')
 }
 
-function handleColumnFieldChange(table: DesignerTable, column: DesignerColumn, updates: Partial<DataColumn>): void {
+function handleColumnFieldChange(table: DesignerTableProjection, column: DesignerColumn, updates: Partial<DataColumn>): void {
   updateColumnWithFeedback(table, column.name, updates, '字段更新失败')
 }
 
-function handleColumnNameInputChange(table: DesignerTable, column: DesignerColumn, event: Event): void {
+function handleColumnNameInputChange(table: DesignerTableProjection, column: DesignerColumn, event: Event): void {
   const nextName = readInputValue(event).trim()
   if (!nextName || nextName === column.name) return
   renameColumnWithFeedback(table, column.name, nextName, '字段名更新失败')
 }
 
-function handleColumnLabelInputChange(table: DesignerTable, column: DesignerColumn, event: Event): void {
+function handleColumnLabelInputChange(table: DesignerTableProjection, column: DesignerColumn, event: Event): void {
   const nextLabel = readInputValue(event)
   if (nextLabel === (column.label ?? '')) return
   handleColumnFieldChange(table, column, { label: nextLabel })
 }
 
-function handleColumnTypeChange(table: DesignerTable, column: DesignerColumn, nextType: unknown): void {
+function handleColumnTypeChange(table: DesignerTableProjection, column: DesignerColumn, nextType: unknown): void {
   if (typeof nextType !== 'string' || nextType === column.type) return
   handleColumnFieldChange(table, column, { type: nextType })
 }
 
-function removeColumn(table: DesignerTable, idx: number) {
+function removeColumn(table: DesignerTableProjection, idx: number) {
   const column = table.columns[idx]
   if (!column) return
   deleteColumnWithFeedback(table, column.name, '字段删除失败')
@@ -856,15 +854,15 @@ async function addRelation() {
   editRelation(newIdx)
 }
 
-function getTableByName(name: string | undefined): DesignerTable | undefined {
+function getTableByName(name: string | undefined): DesignerTableProjection | undefined {
   return tables.value.find((t) => t.tableName === name)
 }
 
-function getTableById(id: string): DesignerTable | undefined {
+function getTableById(id: string): DesignerTableProjection | undefined {
   return tables.value.find((t) => t.id === id)
 }
 
-function upsertTableUiPosition(table: DesignerTable, x: number, y: number): void {
+function upsertTableUiPosition(table: DesignerTableProjection, x: number, y: number): void {
   tableUiState.value = {
     ...tableUiState.value,
     [table.tableName]: {
@@ -971,7 +969,7 @@ function autoLayout() {
 
 // ═══ 拖拽交互 ═══
 
-function onCardMouseDown(e: MouseEvent, table: DesignerTable) {
+function onCardMouseDown(e: MouseEvent, table: DesignerTableProjection) {
   if (!(e.target instanceof HTMLElement)) return
   const target = e.target
   if (target.closest('input, .el-select, .el-button, .el-tag')) return

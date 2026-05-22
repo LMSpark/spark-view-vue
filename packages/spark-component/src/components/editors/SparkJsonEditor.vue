@@ -34,7 +34,6 @@ import type {
 
 type SparkJsonEditorMode = 'text' | 'tree' | 'table'
 type SparkJsonEditorModeValue = NonNullable<JSONEditorPropsOptional['mode']>
-type SparkJsonSchema = JSONSchema
 type SparkJsonEditorValidator = NonNullable<JSONEditorPropsOptional['validator']>
 type SparkJsonEditorRenderValue = NonNullable<JSONEditorPropsOptional['onRenderValue']>
 type SparkJsonEditorRenderValueProps = Parameters<SparkJsonEditorRenderValue>[0]
@@ -53,7 +52,7 @@ type SparkJsonEditorModule = {
   createAjvValidator?: (options: AjvValidatorOptions) => SparkJsonEditorValidator
   renderJSONSchemaEnum?: (
     props: SparkJsonEditorRenderValueProps,
-    schema: SparkJsonSchema,
+    schema: JSONSchema,
     schemaDefinitions?: JSONSchemaDefinitions,
   ) => SparkJsonEditorRenderValueResult | undefined
   renderValue?: SparkJsonEditorRenderValue}
@@ -80,7 +79,7 @@ type Props = {
   /** 是否提示格式化 */
   askToFormat?: boolean
   /** JSON Schema 校验规则 */
-  schema?: SparkJsonSchema | null
+  schema?: JSONSchema | null
   /** JSON Schema 定义引用 */
   schemaDefinitions?: JSONSchemaDefinitions | null
   /** 是否启用 Schema 校验 */

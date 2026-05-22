@@ -20,7 +20,12 @@ describe('End-to-end: real component extraction (VCM)', () => {
   // VCM checker 首次调用需初始化 TypeScript 语言服务，CPU 密集，全量测试时可能超过默认 5s
   it('extracts FieldText.vue correctly', { timeout: 30_000 }, () => {
     const absPath = resolve(ROOT, `${FIELD_DIR}/FieldText.vue`)
-    const api = extractComponentApiVcm(checker, absPath, `${FIELD_DIR}/FieldText.vue`, 'r-text')
+    const api = extractComponentApiVcm({
+      checker,
+      absPath,
+      relativePath: `${FIELD_DIR}/FieldText.vue`,
+      componentType: 'r-text',
+    })
 
     expect(api).not.toBeNull()
     expect(api!.props.length).toBeGreaterThanOrEqual(4)
@@ -58,14 +63,19 @@ describe('End-to-end: real component extraction (VCM)', () => {
   it('supports includeGlobalProps option', () => {
     const absPath = resolve(ROOT, `${FIELD_DIR}/FieldText.vue`)
 
-    const apiDefault = extractComponentApiVcm(checker, absPath, `${FIELD_DIR}/FieldText.vue`, 'r-text')
-    const apiWithGlobal = extractComponentApiVcm(
+    const apiDefault = extractComponentApiVcm({
       checker,
       absPath,
-      `${FIELD_DIR}/FieldText.vue`,
-      'r-text',
-      { includeGlobalProps: true },
-    )
+      relativePath: `${FIELD_DIR}/FieldText.vue`,
+      componentType: 'r-text',
+    })
+    const apiWithGlobal = extractComponentApiVcm({
+      checker,
+      absPath,
+      relativePath: `${FIELD_DIR}/FieldText.vue`,
+      componentType: 'r-text',
+      options: { includeGlobalProps: true },
+    })
 
     expect(apiDefault).not.toBeNull()
     expect(apiWithGlobal).not.toBeNull()
@@ -95,7 +105,12 @@ describe('End-to-end: real component extraction (VCM)', () => {
     expect(checkerWithRawType).not.toBe(checker)
 
     const absPath = resolve(ROOT, `${FIELD_DIR}/FieldText.vue`)
-    const api = extractComponentApiVcm(checkerWithRawType, absPath, `${FIELD_DIR}/FieldText.vue`, 'r-text')
+    const api = extractComponentApiVcm({
+      checker: checkerWithRawType,
+      absPath,
+      relativePath: `${FIELD_DIR}/FieldText.vue`,
+      componentType: 'r-text',
+    })
     expect(api).not.toBeNull()
     expect(api!.props.length).toBeGreaterThan(0)
   })

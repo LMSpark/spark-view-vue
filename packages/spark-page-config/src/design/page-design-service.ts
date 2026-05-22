@@ -24,8 +24,8 @@ import {
   type PageDesignServiceOptions,
   type PageDesignServiceResult,
   type PageDesignTextFileKey,
-  validateScriptServiceContract,
 } from './page-edit-session'
+import { validateScriptServiceContract } from '../ai/text-model-tool-catalog'
 
 // ── SECTION 2: 编辑宿主注册 ──
 

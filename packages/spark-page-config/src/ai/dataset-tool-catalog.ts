@@ -15,19 +15,11 @@
  * 所有操作直接作用于 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool 实例。
  */
 
-import {
-  anySchema,
-  arraySchema,
-  booleanSchema,
-  enumSchema,
-  noParamsSchema,
-  numberSchema,
-  objectSchema,
-  paramsSchema,
-  stringSchema,
-  type LlmJsonSchema,
-  type LlmJsonSchemaObject,
-  type LlmJsonValue,
+import * as SparkAiSchema from '@spark-view/spark-ai/schema'
+import type {
+  LlmJsonSchema,
+  LlmJsonSchemaObject,
+  LlmJsonValue,
 } from '@spark-view/spark-ai/schema'
 import {
   ModuleKind,
@@ -48,6 +40,18 @@ type DatasetActionRunner = PageDesignServiceActionBinding<DataSetCrudTool>['run'
 type DataSetCrudToolMethodName = Extract<{
   [Key in keyof DataSetCrudTool]: DataSetCrudTool[Key] extends (...args: never[]) => unknown ? Key : never
 }[keyof DataSetCrudTool], string>
+
+const {
+  anySchema,
+  arraySchema,
+  booleanSchema,
+  enumSchema,
+  noParamsSchema,
+  numberSchema,
+  objectSchema,
+  paramsSchema,
+  stringSchema,
+} = SparkAiSchema
 
 const DATASET_ACTION_METHOD_NAMES = {
   export: 'toJson',

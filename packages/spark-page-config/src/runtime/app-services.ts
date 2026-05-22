@@ -168,7 +168,7 @@ export type PageSelectEntitiesOptions = {
 }
 
 /** 已选中的实体项，复用候选项结构 */
-export type PageSelectedEntity = PageSelectorOption
+export type { PageSelectorOption as PageSelectedEntity }
 
 // ═══════════════════════════════════════════════════════
 // 5. 服务契约
@@ -194,7 +194,7 @@ export type PageServiceCapability = {
   /** 显示自定义对话框 */
   showDialog(options: PageDialogOptions): Promise<PageDialogResult>
   /** 打开实体选择器 */
-  selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectedEntity[]>
+  selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectorOption[]>
   /** 打开文件浏览对话框 */
   browseFiles(options?: PageBrowseFilesOptions): Promise<PageSelectedFile[]>
   /** 上传文件 */

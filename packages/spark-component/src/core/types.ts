@@ -17,11 +17,12 @@ export {
   nodeInputProps,
 } from '@spark-view/spark-page-config/node-tree'
 
-import type { CapabilityContext } from '@spark-view/spark-utils'
-
 // 能力名称类型（从 spark-utils 重新导出）
-export type { CapabilityName, CapabilityContext } from '@spark-view/spark-utils'
-export type SparkCapabilityContext = CapabilityContext
+export type {
+  CapabilityName,
+  CapabilityContext,
+  CapabilityContext as SparkCapabilityContext,
+} from '@spark-view/spark-utils'
 
 // ============================================================================
 // 组件定义（注册表使用）

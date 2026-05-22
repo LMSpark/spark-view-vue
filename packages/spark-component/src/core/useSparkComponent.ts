@@ -7,18 +7,7 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import {
-  createSparkCapabilityConsumer,
-  createSparkCapabilityContext,
-  sparkFindNearestProvider,
-  sparkFindNearestProviderByKeys,
-  sparkProvide,
-  sparkRemove,
-  type CapabilityKey,
-  type CapabilityContext,
-  type LoggerApi,
-  type SparkCapabilityConsumer,
-} from '@spark-view/spark-utils'
+import * as SparkUtils from '@spark-view/spark-utils'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
@@ -28,6 +17,20 @@ import { SPARK_NODE_STRUCT_KEYS, nodeId, nodeInputProp, normalizeSparkNode } fro
 import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from './capability-context.js'
 
 // ===== 类型与返回值约定 =====
+
+const {
+  createSparkCapabilityConsumer,
+  createSparkCapabilityContext,
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+  sparkProvide,
+  sparkRemove,
+} = SparkUtils
+
+type CapabilityKey<T> = SparkUtils.CapabilityKey<T>
+type CapabilityContext = SparkUtils.CapabilityContext
+type LoggerApi = SparkUtils.LoggerApi
+type SparkCapabilityConsumer = SparkUtils.SparkCapabilityConsumer
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null

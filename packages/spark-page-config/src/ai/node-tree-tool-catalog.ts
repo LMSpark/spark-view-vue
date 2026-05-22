@@ -9,18 +9,11 @@
  * 绝对禁止将组件类型名（r-table / r-tabs 等）当作 componentId 使用。
  */
 
-import {
-  anySchema,
-  arraySchema,
-  booleanSchema,
-  noParamsSchema,
-  numberSchema,
-  objectSchema,
-  paramsSchema,
-  stringSchema,
-  type LlmJsonObject,
-  type LlmJsonValue,
-  type LlmJsonSchemaObject,
+import * as SparkAiSchema from '@spark-view/spark-ai/schema'
+import type {
+  LlmJsonObject,
+  LlmJsonValue,
+  LlmJsonSchemaObject,
 } from '@spark-view/spark-ai/schema'
 import {
   ModuleKind,
@@ -52,6 +45,17 @@ import {
   type SparkNodeTreeSetPropsParams,
 } from '../node-tree'
 import { isRecord } from '../json-document'
+
+const {
+  anySchema,
+  arraySchema,
+  booleanSchema,
+  noParamsSchema,
+  numberSchema,
+  objectSchema,
+  paramsSchema,
+  stringSchema,
+} = SparkAiSchema
 
 const NO_PARAMS = noParamsSchema('该 nodeTree 读取函数不接受参数，请传 {} 或留空。')
 const EMPTY_EXAMPLE: LlmJsonObject = {}

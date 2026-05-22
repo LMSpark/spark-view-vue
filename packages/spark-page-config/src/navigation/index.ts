@@ -2,44 +2,56 @@ export type {
   AppModuleBase,
   AppNavRoot,
   AppNavigation,
-  ChildPlacement,
-  LinkTarget,
   NavContextConfig,
   NavContextItem,
   NavContextState,
   NavNode,
   NavNodeKind,
+} from './nav-model-core-api'
+
+export type {
+  ChildPlacement,
+  LinkTarget,
   NavPermissionMode,
   RegionItems,
   RegionVisibility,
-} from './nav-model'
+} from './nav-model-placement-api'
 
 export {
-  DEFAULT_NAV_ICON_BY_KIND,
-  NavigationEditSession,
-  applyNavigationNodeDraftToNode,
-  applyNodeKindPresetToDraft,
   buildNavRoot,
-  canUseModuleNodeKind,
   createChildPageNode,
   createNavigationNodeDraft,
   createNavigationNodePatch,
   createReservedRootGroup,
   createRootModuleNode,
+  normalizeNavNode,
+  normalizeNavRoot,
+} from './nav-builder-api'
+
+export {
+  DEFAULT_NAV_ICON_BY_KIND,
+  applyNavigationNodeDraftToNode,
+  applyNodeKindPresetToDraft,
+  canUseModuleNodeKind,
   defaultNavIconByKind,
+  inferNavNodeKind,
+  isConfigNodeKind,
+  isPageLikeKind,
+} from './nav-kind-api'
+
+export {
   findConfigNodeByPageId,
   findNodeById,
   findNodeLocation,
   findParentNodeById,
-  inferNavNodeKind,
-  isConfigNodeKind,
-  isPageLikeKind,
   isSystemRootDirectory,
-  normalizeNavNode,
-  normalizeNavRoot,
   normalizePageIdFromPath,
   normalizeRootChildPlacement,
-} from './nav-editing'
+} from './nav-location-api'
+
+export {
+  NavigationEditSession,
+} from './nav-session-api'
 
 export type {
   NavNodeLocation,
@@ -48,7 +60,7 @@ export type {
   NavigationNodeDraft,
   NavigationNodeDraftApplyResult,
   NavigationNodeDraftInput,
-} from './nav-editing'
+} from './nav-session-api'
 
 export {
   NavigationConfigClient,

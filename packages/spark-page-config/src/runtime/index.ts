@@ -1,22 +1,28 @@
 export {
   PAGE_RUNTIME_SERVICES,
-} from './app-services'
+} from './page-service-api'
 
 export type {
-  PageBrowseFilesOptions,
   PageDialogOptions,
   PageDialogResult,
   PageMessageType,
   PageRouterService,
   PageRuntimeServicesCapability,
-  PageSelectedEntity,
+  PageServiceCapability,
+} from './page-service-api'
+
+export type {
+  PageBrowseFilesOptions,
   PageSelectedFile,
+  PageUploadFilesOptions,
+  PageUploadedFile,
+} from './page-file-api'
+
+export type {
+  PageSelectedEntity,
   PageSelectEntitiesOptions,
   PageSelectorOption,
-  PageServiceCapability,
-  PageUploadedFile,
-  PageUploadFilesOptions,
-} from './app-services'
+} from './page-selector-api'
 
 export type {
   FieldRenderConfigInScript,
@@ -26,7 +32,10 @@ export type {
   PageComponentAccessInScript,
   PageComponentInstanceInScript,
   PageRoute,
+  ScriptContext,
+} from './script-context-api'
+
+export type {
   PermissionActionContextInScript,
   PermissionApiInScript,
-  ScriptContext,
-} from './script-context-types'
+} from './script-permission-api'

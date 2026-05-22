@@ -17,6 +17,8 @@ import { createLogger, normalizePath } from './utils'
 
 const logger = createLogger('spark-catalog')
 
+type CatalogVcmCheckerSettings = VcmCheckerOptions & {}
+
 /* --------------------------------------------------------------------------
  * 插件选项
  * ----------------------------------------------------------------------- */
@@ -31,7 +33,7 @@ export type SparkCatalogPluginOptions = {
   /** 是否保留 VCM 全局 props（class/style/key/ref 等） */
   includeGlobalProps?: boolean
   /** 透传给 vue-component-meta createChecker 的选项 */
-  vcmCheckerOptions?: VcmCheckerOptions}
+  vcmCheckerOptions?: CatalogVcmCheckerSettings}
 
 /* --------------------------------------------------------------------------
  * 插件工厂

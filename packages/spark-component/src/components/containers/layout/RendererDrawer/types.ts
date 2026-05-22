@@ -1,3 +1,1 @@
-import type { VisibilityContainerApi } from '../../support/base-container-api.js'
-
-export type RendererDrawerApi = VisibilityContainerApi
+export type { VisibilityContainerApi as RendererDrawerApi } from '../../support/base-container-api.js'

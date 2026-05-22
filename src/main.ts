@@ -39,17 +39,7 @@
  */
 
 // SPARK 架构包
-import {
-  SparkApp,
-  PluginManager,
-  configureRemoteLogger,
-  createLogger,
-  getNavTree,
-  getNavHomePath,
-  loadAppConfig,
-  registerBuiltinPlugins,
-  resolveNavNodeRuntimeTarget,
-} from '@spark-view/spark-app'
+import * as SparkAppRuntime from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/navigation'
@@ -62,6 +52,17 @@ import {
   stripTenantScope,
 } from './services/tenant-scope'
 import type { Router } from 'vue-router'
+const {
+  SparkApp,
+  PluginManager,
+  configureRemoteLogger,
+  createLogger,
+  getNavTree,
+  getNavHomePath,
+  loadAppConfig,
+  registerBuiltinPlugins,
+  resolveNavNodeRuntimeTarget,
+} = SparkAppRuntime
 const startupLogger = createLogger('main')
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'

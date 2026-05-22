@@ -2,16 +2,19 @@ export {
   canonicalizeDataSetMetadata,
   canonicalizePageDataJson,
   canonicalizePageDataValue,
+  PageConfigComputedValue,
+  PageConfigDocumentChangeNotifier,
+  PageConfigValueRef,
+  PageFileDocument,
+} from './page-document-model-api'
+
+export {
   createPageDocuments,
   createPageDocumentsFromRegistry,
   forEachDocument,
   forEachDynamicDocument,
   isPageFileDocumentDirty,
-  PageConfigComputedValue,
-  PageConfigDocumentChangeNotifier,
-  PageConfigValueRef,
-  PageFileDocument,
-} from './page-file-document'
+} from './page-document-ops-api'
 
 export type {
   DynamicPageFileDocument,
@@ -19,27 +22,29 @@ export type {
   PageDocumentRegistry,
   PageFileDocumentListener,
   PageFileLoadState,
-} from './page-file-document'
+} from './page-document-types-api'
 
 export {
   isPageDesignServiceResult,
   pageDesignServiceFailure,
   pageDesignServiceSuccess,
   PageDesignEditSession,
-  validateScriptServiceContract,
-} from './page-edit-session'
+} from './page-design-session-api'
+
+export type {
+  PageDesignEditPhase,
+  PageDesignServiceResult,
+  PageDesignTextFileKey,
+} from './page-design-session-api'
 
 export type {
   PageDesignEditHost,
-  PageDesignEditPhase,
   PageDesignNodeTree,
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
   PageDesignServiceOptions,
-  PageDesignServiceResult,
-  PageDesignTextFileKey,
   SparkNodeTreeMethodKey,
-} from './page-edit-session'
+} from './page-design-host-api'
 
 export {
   PageDesignService,
@@ -57,50 +62,62 @@ export type {
 export {
   PageConfigEditWorkspace,
   PageConfigFileLifecycle,
-} from './page-edit-workspace'
+} from './page-design-workspace-api'
 
 export type {
   CreateMountedPageParams,
   CreateMountedPageResult,
   PageConfigEditWorkspaceOptions,
   PageConfigFileLifecycleOptions,
+} from './page-design-workspace-api'
+
+export type {
   PageNavigationMountParams,
   RemoveMountedPageParams,
   RemoveMountedPageResult,
-} from './page-edit-workspace'
+} from './page-design-mount-api'
 
 export {
   EMPTY_RULE_EDITOR_COMPONENT_METADATA,
   createRuleEditorComponentMetadata,
   createRuleJsonSchema,
   createRuleTreePolicy,
-} from './artifacts'
+} from './artifacts/rule-editor-metadata-api'
 
 export type {
   RuleEditorComponentCatalog,
   RuleEditorComponentCatalogEntry,
   RuleEditorComponentCatalogProp,
   RuleEditorComponentMetadata,
+} from './artifacts/rule-editor-metadata-api'
+
+export type {
   RuleEditorComponentMetadataSource,
-} from './artifacts'
+} from './artifacts/rule-editor-source-api'
 
 export {
   buildDataSetMetadataFromDesignerProjection,
-  canUseStructuredPageDataEditor,
-  hasDesignerProjectionChanges,
-  PAGE_DATA_JSON_SCHEMA,
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-} from './artifacts'
+} from './artifacts/designer-projection-api'
 
 export type {
   DesignerColumnProjection,
   DesignerRelationProjection,
   DesignerTableProjection,
   DesignerTableUiState,
+} from './artifacts/designer-projection-api'
+
+export {
+  PAGE_DATA_JSON_SCHEMA,
+  canUseStructuredPageDataEditor,
+  hasDesignerProjectionChanges,
+} from './artifacts/page-data-editor-api'
+
+export type {
   PageDataEditorMode,
-} from './artifacts'
+} from './artifacts/page-data-editor-api'
 
 export {
   getNextPageDesignFlowStep,

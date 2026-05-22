@@ -126,23 +126,7 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import {
-  AppPageUiHost,
-  clearAllPageCache,
-  appPageUiService,
-  createNavigationActionRegistry,
-  getPageCacheHandle,
-  getNavHomePath,
-  getNavTree,
-  getPageCacheStats,
-  NAVIGATION_ACTION_REGISTRY_KEY,
-  refreshRoutes,
-  setColorSchemeStorageScope,
-  useColorScheme,
-  useNavigation,
-  useTabPages,
-  useTheme,
-} from '@spark-view/spark-app'
+import * as SparkAppRuntime from '@spark-view/spark-app'
 import type { AppNavRoot } from '@spark-view/spark-page-config/navigation'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import {
@@ -168,6 +152,24 @@ import type { ProjectSwitchService } from '@/services/project-switch'
 import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project-ui-settings'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import { getPublicPaths } from '@/config/vue-page-map'
+
+const {
+  AppPageUiHost,
+  clearAllPageCache,
+  appPageUiService,
+  createNavigationActionRegistry,
+  getPageCacheHandle,
+  getNavHomePath,
+  getNavTree,
+  getPageCacheStats,
+  NAVIGATION_ACTION_REGISTRY_KEY,
+  refreshRoutes,
+  setColorSchemeStorageScope,
+  useColorScheme,
+  useNavigation,
+  useTabPages,
+  useTheme,
+} = SparkAppRuntime
 
 const { sparkProvide } = useSparkComponent({ type: 'app-shell' })
 

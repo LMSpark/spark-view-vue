@@ -901,13 +901,21 @@ function shouldKeepExamplesForSchema(schema: PropSchema | undefined, typeText: s
   return false
 }
 
-function createPropExamples(
-  name: string,
-  type: string,
-  schema: PropSchema | undefined,
-  defaultValue: unknown,
-  sourceExamples: unknown[] = [],
-): unknown[] {
+type PropExamplesRequest = {
+  name: string
+  type: string
+  schema: PropSchema | undefined
+  defaultValue: unknown
+  sourceExamples?: unknown[]}
+
+function createPropExamples(request: PropExamplesRequest): unknown[] {
+  const {
+    name,
+    type,
+    schema,
+    defaultValue,
+    sourceExamples = [],
+  } = request
   void defaultValue
   if (!shouldKeepExamplesForSchema(schema, type)) return []
   return uniqueExamples([
@@ -942,7 +950,13 @@ function annotateSchemaExamples(
   type: string,
   defaultValue: unknown,
 ): PropSchema {
-  const examples = createPropExamples(name, type, schema, defaultValue, schema.examples)
+  const examples = createPropExamples({
+    name,
+    type,
+    schema,
+    defaultValue,
+    sourceExamples: schema.examples,
+  })
   return {
     ...schema,
     ...(defaultValue !== undefined ? { default: defaultValue } : {}),
@@ -1553,13 +1567,21 @@ function pruneReachableSchemas(
  * - 提取每个组件的 VCM API；
  * - 生成组件条目、bindingDescriptors、schema type 池；
  */
-function buildSortedComponents(
-  root: string,
-  files: string[],
-  includeGlobalProps: boolean,
-  tsconfigPath: string,
-  checkerOptions: VcmCheckerOptions,
-) {
+type BuildSortedComponentsRequest = {
+  root: string
+  files: string[]
+  includeGlobalProps: boolean
+  tsconfigPath: string
+  checkerOptions: VcmCheckerOptions}
+
+function buildSortedComponents(request: BuildSortedComponentsRequest) {
+  const {
+    root,
+    files,
+    includeGlobalProps,
+    tsconfigPath,
+    checkerOptions,
+  } = request
   const checker = getOrCreateChecker(resolve(root, tsconfigPath).replace(/\\/g, '/'), checkerOptions)
 
   const components: Record<string, ComponentEntry> = {}
@@ -1578,7 +1600,13 @@ function buildSortedComponents(
     const explicitSkillMeta = parseSkillMeta(abs, type, { requireSkillTag: true })
 
     // 通过 VCM 抽取组件 API 明细；抽取失败说明该文件不属于可索引组件。
-    const vcmApi = extractComponentApiVcm(checker, abs, file, type, { includeGlobalProps })
+    const vcmApi = extractComponentApiVcm({
+      checker,
+      absPath: abs,
+      relativePath: file,
+      componentType: type,
+      options: { includeGlobalProps },
+    })
     if (vcmApi === null) continue
 
     const rawProps: PropEntryWithMeta[] = vcmApi.props.map((prop) => ({ ...prop }))
@@ -1699,7 +1727,13 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     components,
     bindingDescriptors,
     schemaPool,
-  } = buildSortedComponents(root, files, includeGlobalProps, tsconfigPath, vcmCheckerOptions)
+  } = buildSortedComponents({
+    root,
+    files,
+    includeGlobalProps,
+    tsconfigPath,
+    checkerOptions: vcmCheckerOptions,
+  })
   const reachableSchemaPool = pruneReachableSchemas(components, schemaPool)
 
   const runtimeCatalog: CatalogRuntimeModel = {

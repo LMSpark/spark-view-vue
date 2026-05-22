@@ -22,27 +22,36 @@ export {
   ModulePath,
   ModulePathParseError,
   ModulePathSegment,
-} from './protocol/index'
+} from './protocol-core-api'
+
+export type {
+  ModuleCheckEntryLevel,
+} from './protocol-core-api'
 
 export type {
   ModuleActionFailureMode,
   ModuleActionMetadata,
   ModuleActionResultSchema,
+  ModuleKindOperation,
+  ModuleKindRunner,
+  ModuleOperationResultOptions,
+} from './protocol-action-api'
+
+export type {
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
-  ModuleCheckEntryLevel,
   ModuleChildrenLister,
   ModuleHostContext,
   ModuleInstanceFinder,
   ModuleInstanceQuery,
   ModuleInstanceRef,
-  ModuleKindOperation,
   ModuleKindOptions,
-  ModuleKindRunner,
-  ModuleOperationResultOptions,
+} from './protocol-instance-api'
+
+export type {
   ModulePathContext,
   ModulePathParseErrorCode,
-} from './protocol/index'
+} from './protocol-path-api'
 
 // ── 5. 运行时 ─────────────────────────────────────────────────
 export {

@@ -8,17 +8,8 @@ import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '../node-tree'
 
-/**
- * 页面规则配置（rule.json）。
- */
-export type RuleConfig = SparkNode
-
-/**
- * 页面数据配置（pagedata.json）编译结果。
- *
- * parsePageData 统一编译为 DataSet 实例。
- */
-export type PageDataConfig = DataSet
+export type { SparkNode as RuleConfig } from '../node-tree'
+export type { DataSet as PageDataConfig } from '@spark-view/spark-data'
 
 /**
  * 页面四文件载荷（不含 pageId）。
@@ -26,8 +17,8 @@ export type PageDataConfig = DataSet
  * 只描述页面内容本身，不掺入路由、Vue、能力系统等运行时语义。
  */
 export type PageConfigFiles = {
-  rule: RuleConfig[]
-  data: PageDataConfig
+  rule: SparkNode[]
+  data: DataSet
   script: string | undefined
   css: string | undefined
 }
@@ -179,10 +170,10 @@ export abstract class BasePageConfigLoader {
   abstract loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>>
 
   /** 加载页面规则。 */
-  abstract loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>>
+  abstract loadRule(pageId: string): Promise<ConfigLoadResult<SparkNode[]>>
 
   /** 加载页面数据。 */
-  abstract loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>>
+  abstract loadPageData(pageId: string): Promise<ConfigLoadResult<DataSet>>
 
   /** 加载页面脚本。 */
   abstract loadScript(pageId: string): Promise<ConfigLoadResult<string>>

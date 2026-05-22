@@ -11,29 +11,7 @@
  */
 import { ref, reactive, computed } from 'vue'
 import { refreshRoutes } from '@spark-view/spark-app'
-import {
-  NavigationConfigClient,
-  NavigationEditSession,
-  applyNavigationNodeDraftToNode,
-  applyNodeKindPresetToDraft,
-  buildNavRoot,
-  canUseModuleNodeKind,
-  createChildPageNode,
-  createNavigationNodeDraft,
-  createReservedRootGroup,
-  createRootModuleNode,
-  findConfigNodeByPageId,
-  findNodeById,
-  findNodeLocation,
-  isConfigNodeKind,
-  isSystemRootDirectory,
-  normalizeNavRoot,
-  normalizePageIdFromPath,
-  type LinkTarget,
-  type NavNode,
-  type NavNodeKind,
-  type NavigationNodeDraft,
-} from '@spark-view/spark-page-config/navigation'
+import * as SparkNavigation from '@spark-view/spark-page-config/navigation'
 import {
   PageConfigFileApi,
   PAGE_CONFIG_FILE_NAMES,
@@ -51,6 +29,31 @@ import {
   forEachDocument,
 } from '@spark-view/spark-page-config/design'
 import { demoNavRoot } from '@/layout/demo-nav'
+
+const {
+  NavigationConfigClient,
+  NavigationEditSession,
+  applyNavigationNodeDraftToNode,
+  applyNodeKindPresetToDraft,
+  buildNavRoot,
+  canUseModuleNodeKind,
+  createChildPageNode,
+  createNavigationNodeDraft,
+  createReservedRootGroup,
+  createRootModuleNode,
+  findConfigNodeByPageId,
+  findNodeById,
+  findNodeLocation,
+  isConfigNodeKind,
+  isSystemRootDirectory,
+  normalizeNavRoot,
+  normalizePageIdFromPath,
+} = SparkNavigation
+
+type LinkTarget = SparkNavigation.LinkTarget
+type NavNode = SparkNavigation.NavNode
+type NavNodeKind = SparkNavigation.NavNodeKind
+type NavigationNodeDraft = SparkNavigation.NavigationNodeDraft
 
 export { PAGE_CONFIG_FILE_NAMES }
 export type { PageConfigFileName, PageConfigFileVersionSummary }
@@ -1031,4 +1034,3 @@ export function useDevState() {
 }
 
 export type DevState = ReturnType<typeof useDevState>
-

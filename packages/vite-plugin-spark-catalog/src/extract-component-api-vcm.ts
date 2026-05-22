@@ -122,6 +122,13 @@ export type ExtractComponentApiVcmOptions = {
   /** 是否保留 VCM 注入的全局 props（class/style/key/ref 等） */
   includeGlobalProps?: boolean}
 
+export type ExtractComponentApiVcmRequest = {
+  checker: ComponentMetaChecker
+  absPath: string
+  relativePath: string
+  componentType: string
+  options?: ExtractComponentApiVcmOptions}
+
 type SchemaOwner = 'workspace' | 'external'
 
 type RawTypeDeclarationLike = {
@@ -308,13 +315,14 @@ function getRawTypeJsDocDescription(rawType: unknown): string | undefined {
  * @param relativePath - 相对路径（用于输出）
  * @param componentType - 组件注册名（kebab-case）
  */
-export function extractComponentApiVcm(
-  checker: ComponentMetaChecker,
-  absPath: string,
-  relativePath: string,
-  componentType: string,
-  options: ExtractComponentApiVcmOptions = {},
-): VcmApiDescriptor | null {
+export function extractComponentApiVcm(request: ExtractComponentApiVcmRequest): VcmApiDescriptor | null {
+  const {
+    checker,
+    absPath,
+    relativePath,
+    componentType,
+    options = {},
+  } = request
   const normalizedPath = absPath.replace(/\\/g, '/')
   const { includeGlobalProps = false } = options
 
@@ -356,13 +364,13 @@ export function extractAllComponentApisVcm(
 ): VcmApiDescriptor[] {
   const results: VcmApiDescriptor[] = []
   for (const comp of components) {
-    const api = extractComponentApiVcm(
+    const api = extractComponentApiVcm({
       checker,
-      comp.absolutePath,
-      comp.relativePath,
-      comp.skillType,
+      absPath: comp.absolutePath,
+      relativePath: comp.relativePath,
+      componentType: comp.skillType,
       options,
-    )
+    })
     if (api !== null) results.push(api)
   }
   return results

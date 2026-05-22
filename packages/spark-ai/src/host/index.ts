@@ -28,17 +28,20 @@ export {
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
   AiHostBusinessTarget,
-} from './business/business-types'
+} from './business/business-registration-api'
+
+export type {
+  AiHostBusinessLifecycleDirective,
+  AiHostBusinessLifecycleStatus,
+  AiHostBusinessRegistrationOptions,
+} from './business/business-registration-api'
 
 export type {
   AiHostBusinessAfterFunctionCallOptions,
   AiHostBusinessAppendMessageOptions,
-  AiHostBusinessLifecycleDirective,
-  AiHostBusinessLifecycleStatus,
-  AiHostBusinessRegistrationOptions,
   AiHostOptions,
   AiHostSender,
-} from './business/business-types'
+} from './business/business-host-api'
 
 // ── 2. 业务作用域工厂 ───────────────────────────────────────
 
@@ -75,22 +78,25 @@ export type {
 
 export {
   AiHostSessionStore,
-} from './session/session-types'
+} from './session/session-record-api'
+
+export type {
+  AiHostHistoryEntry,
+  AiHostHistoryEntryBase,
+  AiHostMessageHistoryEntry,
+  AiHostMessageRole,
+  AiHostSessionRecord,
+  AiHostSessionStatus,
+  AiHostStartSessionResult,
+} from './session/session-record-api'
 
 export type {
   AiHostFunctionCallFailure,
   AiHostFunctionCallHistoryEntry,
   AiHostFunctionCallHistoryStatus,
   AiHostFunctionCallResult,
-  AiHostHistoryEntry,
-  AiHostHistoryEntryBase,
-  AiHostMessageHistoryEntry,
-  AiHostMessageRole,
   AiHostMessageSource,
-  AiHostSessionRecord,
-  AiHostSessionStatus,
-  AiHostStartSessionResult,
-} from './session/session-types'
+} from './session/session-function-call-api'
 
 // ── 7. 内存会话存储实现 ─────────────────────────────────────
 
@@ -106,20 +112,23 @@ export type {
 
 export {
   AiHostTransport,
-} from './transport/transport-types'
+} from './transport/transport-core-api'
 
 export type {
-  AiHostAppendMessagesInput,
-  AiHostFetch,
-  AiHostFetchTransportOptions,
-  AiHostHeadersProvider,
   AiHostStreamTurnInput,
   AiHostStreamTurnResult,
   AiHostTransportMessage,
   AiHostTransportToolCall,
   AiHostTransportToolSpec,
   AiHostUploadedAttachment,
-} from './transport/transport-types'
+} from './transport/transport-core-api'
+
+export type {
+  AiHostAppendMessagesInput,
+  AiHostFetch,
+  AiHostFetchTransportOptions,
+  AiHostHeadersProvider,
+} from './transport/transport-fetch-api'
 
 // ── 9. Fetch + SSE 传输实现 ─────────────────────────────────
 

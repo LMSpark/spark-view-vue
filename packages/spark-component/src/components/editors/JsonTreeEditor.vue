@@ -194,7 +194,11 @@ import { deepClone } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
-import {
+import * as JsonDocumentRuntime from '@spark-view/spark-page-config/json-document'
+
+// ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
+
+const {
   addChildNode,
   addSiblingNode,
   applyAutoPopulatePatches,
@@ -211,18 +215,17 @@ import {
   toDisplayRows,
   updateNodeType,
   updateNodeValue,
-  type JsonDocument,
-  type JsonNodeType,
-  type JsonObject,
-  type JsonPath,
-  type JsonTreePolicy,
-  type JsonValue,
-  type MutationResult,
-  type TreeModel,
-  type TreeDisplayNode,
-} from '@spark-view/spark-page-config/json-document'
+} = JsonDocumentRuntime
 
-// ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
+type JsonDocument = JsonDocumentRuntime.JsonDocument
+type JsonNodeType = JsonDocumentRuntime.JsonNodeType
+type JsonObject = JsonDocumentRuntime.JsonObject
+type JsonPath = JsonDocumentRuntime.JsonPath
+type JsonTreePolicy = JsonDocumentRuntime.JsonTreePolicy
+type JsonValue = JsonDocumentRuntime.JsonValue
+type MutationResult = JsonDocumentRuntime.MutationResult
+type TreeModel = JsonDocumentRuntime.TreeModel
+type TreeDisplayNode = JsonDocumentRuntime.TreeDisplayNode
 
 type DisplayRow = TreeDisplayNode & {
   displayKey: string

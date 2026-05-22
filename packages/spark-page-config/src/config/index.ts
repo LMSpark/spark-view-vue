@@ -5,18 +5,27 @@ export type {
   PageConfigFileLoadOptions,
   PageConfigFileName,
   PageConfigFiles,
+} from './config-load-api'
+
+export type {
   PageDataConfig,
-  PageFileRegistry,
   RuleConfig,
-} from './config-types'
+} from './config-content-api'
 
 export {
   BasePageConfigLoader,
+} from './config-load-api'
+
+export {
   PAGE_CONFIG_FILE_NAMES,
   PageConfigFileDescriptor,
   PageConfigFileRegistry,
   createDefaultFileRegistry,
-} from './config-types'
+} from './config-file-registry-api'
+
+export type {
+  PageFileRegistry,
+} from './config-file-registry-api'
 
 export {
   PageConfigCompiler,

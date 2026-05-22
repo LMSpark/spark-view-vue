@@ -56,21 +56,28 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import { BasePageConfigLoader, compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config/config'
-import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageDataConfig,
-  RuleConfig,
-} from '@spark-view/spark-page-config/config'
+import * as SparkPageConfig from '@spark-view/spark-page-config/config'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
 import { createRequest } from '@spark-view/spark-utils'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import { createAuthHeaders } from '@/services/http'
+
+const {
+  BasePageConfigLoader,
+  compileRule,
+  parsePageData,
+  parseScript,
+  parseCss,
+} = SparkPageConfig
+
+type ConfigLoadResult<T = unknown> = SparkPageConfig.ConfigLoadResult<T>
+type PageConfig = SparkPageConfig.PageConfig
+type PageConfigFileLoadOptions = SparkPageConfig.PageConfigFileLoadOptions
+type PageConfigFileName = SparkPageConfig.PageConfigFileName
+type PageDataConfig = SparkPageConfig.PageDataConfig
+type RuleConfig = SparkPageConfig.RuleConfig
 
 class PreviewPageConfigLoader extends BasePageConfigLoader {
   constructor(private readonly client: HttpClientBase) {

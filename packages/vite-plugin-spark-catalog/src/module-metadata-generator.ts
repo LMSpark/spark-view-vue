@@ -139,7 +139,14 @@ function extractAbilityMetadata(
       const tags = readDocTags(node, sourceFile)
       const abilityId = firstTagText(tags, 'moduleAbility')
       if (abilityId !== undefined) {
-        abilities.push(createAbilityMetadata(root, sourceFile, checker, node, tags, abilityId))
+        abilities.push(createAbilityMetadata({
+          root,
+          sourceFile,
+          checker,
+          node,
+          tags,
+          abilityId,
+        }))
       }
     }
     ts.forEachChild(node, visit)
@@ -149,14 +156,23 @@ function extractAbilityMetadata(
   return abilities
 }
 
-function createAbilityMetadata(
-  root: string,
-  sourceFile: ts.SourceFile,
-  checker: ts.TypeChecker,
-  node: ts.ClassDeclaration,
-  tags: readonly ModuleDocTag[],
-  abilityId: string,
-): ModuleAbilityMetadata {
+type CreateAbilityMetadataRequest = {
+  root: string
+  sourceFile: ts.SourceFile
+  checker: ts.TypeChecker
+  node: ts.ClassDeclaration
+  tags: readonly ModuleDocTag[]
+  abilityId: string}
+
+function createAbilityMetadata(request: CreateAbilityMetadataRequest): ModuleAbilityMetadata {
+  const {
+    root,
+    sourceFile,
+    checker,
+    node,
+    tags,
+    abilityId,
+  } = request
   const source = sourceRef(root, sourceFile, node)
   const kind = firstTagText(tags, 'moduleKind')
   const name = firstTagText(tags, 'moduleName')

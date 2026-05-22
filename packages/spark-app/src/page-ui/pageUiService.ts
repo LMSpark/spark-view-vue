@@ -3,14 +3,15 @@ import { createRequest } from '@spark-view/spark-utils'
 import type {
   PageBrowseFilesOptions,
   PageDialogOptions,
-  PageSelectedEntity,
+  PageDialogResult,
+  PageSelectedFile,
   PageSelectEntitiesOptions,
   PageServiceCapability,
-  PageSelectedFile,
-  PageUploadFilesOptions,
   PageUploadedFile,
-  PageDialogResult,
+  PageUploadFilesOptions,
 } from '@spark-view/spark-component'
+
+type PageSelectedEntity = NonNullable<PageSelectEntitiesOptions['options']>[number]
 
 type DialogState = {
   visible: boolean

@@ -638,7 +638,13 @@ export class SparkNodeTree {
     if (path !== undefined) {
       return this._findNodeByPath(path)
     }
-    return findLocationRecursive(this._root, next.componentId, null, -1, 0)?.node ?? null
+    return findLocationRecursive({
+      current: this._root,
+      targetNodeId: next.componentId,
+      parent: null,
+      index: -1,
+      depth: 0,
+    })?.node ?? null
   }
 
   /**
@@ -662,7 +668,13 @@ export class SparkNodeTree {
         return { node, parent, index: lastIndex, depth: path.length }
       }
     }
-    return findLocationRecursive(this._root, next.componentId, null, -1, 0)
+    return findLocationRecursive({
+      current: this._root,
+      targetNodeId: next.componentId,
+      parent: null,
+      index: -1,
+      depth: 0,
+    })
   }
 
   /**
@@ -753,7 +765,14 @@ export class SparkNodeTree {
       ? requireLocation(this._root, next.startComponentId).node
       : this._root
     const allMatches: SparkNodeFindByTypeMatch[] = []
-    findByTypeRecursive(startNode, next.type, null, 0, allMatches, next.limit)
+    findByTypeRecursive({
+      current: startNode,
+      targetType: next.type,
+      parentId: null,
+      depth: 0,
+      out: allMatches,
+      limit: next.limit,
+    })
     return { matches: allMatches, total: allMatches.length }
   }
 
@@ -1381,13 +1400,15 @@ function copySparkNode(
 /**
  * 递归查找 nodeId 对应的位置信息。
  */
-function findLocationRecursive(
-  current: SparkNode,
-  targetNodeId: string,
-  parent: SparkNode | null,
-  index: number,
-  depth: number,
-): SparkNodeLocation | null {
+type FindLocationRecursiveState = {
+  current: SparkNode
+  targetNodeId: string
+  parent: SparkNode | null
+  index: number
+  depth: number}
+
+function findLocationRecursive(state: FindLocationRecursiveState): SparkNodeLocation | null {
+  const { current, targetNodeId, parent, index, depth } = state
   if (readNodeId(current) === targetNodeId) {
     return { node: current, parent, index, depth }
   }
@@ -1397,7 +1418,13 @@ function findLocationRecursive(
   for (let childIndex = 0; childIndex < current.children.length; childIndex += 1) {
     const child = current.children[childIndex]
     if (!isSparkNode(child)) continue
-    const found = findLocationRecursive(child, targetNodeId, current, childIndex, depth + 1)
+    const found = findLocationRecursive({
+      current: child,
+      targetNodeId,
+      parent: current,
+      index: childIndex,
+      depth: depth + 1,
+    })
     if (found !== null) return found
   }
 
@@ -1428,7 +1455,13 @@ function buildPathIndexRecursive(
  * 强制要求某个节点存在；不存在时立即 fail-fast。
  */
 function requireLocation(root: SparkNode, targetNodeId: string): SparkNodeLocation {
-  const location = findLocationRecursive(root, targetNodeId, null, -1, 0)
+  const location = findLocationRecursive({
+    current: root,
+    targetNodeId,
+    parent: null,
+    index: -1,
+    depth: 0,
+  })
   if (location === null) {
     throw new Error(`Node "${targetNodeId}" not found`)
   }
@@ -1447,14 +1480,16 @@ function resolveParentNode(root: SparkNode, parentId: string | null | undefined)
  * 递归收集类型匹配的节点，结果按深度优先顺序追加到 out 数组。
  * 当提供 limit 且已收集足够结果时提前终止遍历。
  */
-function findByTypeRecursive(
-  current: SparkNode,
-  targetType: string,
-  parentId: string | null | undefined,
-  depth: number,
-  out: SparkNodeFindByTypeMatch[],
-  limit: number | undefined,
-): boolean {
+type FindByTypeRecursiveState = {
+  current: SparkNode
+  targetType: string
+  parentId: string | null | undefined
+  depth: number
+  out: SparkNodeFindByTypeMatch[]
+  limit: number | undefined}
+
+function findByTypeRecursive(state: FindByTypeRecursiveState): boolean {
+  const { current, targetType, parentId, depth, out, limit } = state
   if (current.type === targetType) {
     out.push({
       id: readNodeId(current),
@@ -1470,7 +1505,14 @@ function findByTypeRecursive(
   const currentId = readNodeId(current)
   for (const child of current.children) {
     if (!isSparkNode(child)) continue
-    if (findByTypeRecursive(child, targetType, currentId, depth + 1, out, limit)) return true
+    if (findByTypeRecursive({
+      current: child,
+      targetType,
+      parentId: currentId,
+      depth: depth + 1,
+      out,
+      limit,
+    })) return true
   }
   return false
 }
@@ -1645,13 +1687,17 @@ function applyAddNode(
     }
   }
 
-  const rewritten = rewriteNodeById(root, params.parentComponentId, (location) => ({
-    nextNode: copySparkNode(location.node, KEEP, KEEP, nextChildren),
-    result: {
-      node: params.node,
-      index,
-    },
-  }))
+  const rewritten = rewriteNodeById({
+    current: root,
+    targetNodeId: params.parentComponentId,
+    updater: (location) => ({
+      nextNode: copySparkNode(location.node, KEEP, KEEP, nextChildren),
+      result: {
+        node: params.node,
+        index,
+      },
+    }),
+  })
   const { next, result } = assertRewriteSucceeded(rewritten, 'addNode')
   return {
     nextRoot: next,
@@ -1672,7 +1718,13 @@ function applyMoveNode(
   }
 
   if (params.parentComponentId !== null && params.parentComponentId !== undefined) {
-    if (findLocationRecursive(location.node, params.parentComponentId, null, -1, 0) !== null) {
+    if (findLocationRecursive({
+      current: location.node,
+      targetNodeId: params.parentComponentId,
+      parent: null,
+      index: -1,
+      depth: 0,
+    }) !== null) {
       throw new Error('Cannot move node into itself or descendant')
     }
     requireLocation(root, params.parentComponentId)
@@ -1709,14 +1761,18 @@ function applySetProps(
     ? { ...params.props }
     : { ...(location.node.props ?? {}), ...params.props }
 
-  const rewritten = rewriteNodeById(root, params.componentId, (currentLocation) => {
-    const nextNode = copySparkNode(currentLocation.node, KEEP, nextProps)
-    return {
-      nextNode,
-      result: {
-        node: nextNode,
-      },
-    }
+  const rewritten = rewriteNodeById({
+    current: root,
+    targetNodeId: params.componentId,
+    updater: (currentLocation) => {
+      const nextNode = copySparkNode(currentLocation.node, KEEP, nextProps)
+      return {
+        nextNode,
+        result: {
+          node: nextNode,
+        },
+      }
+    },
   })
 
   const { next, result } = assertRewriteSucceeded(rewritten, 'setProps')
@@ -1735,13 +1791,17 @@ function applyReplaceNode(
 ): { nextRoot: SparkNode; result: SparkNodeReplaceResult } {
   const previous = requireLocation(root, params.componentId).node
 
-  const rewritten = rewriteNodeById(root, params.componentId, () => ({
-    nextNode: params.node,
-    result: {
-      node: params.node,
-      previous,
-    },
-  }))
+  const rewritten = rewriteNodeById({
+    current: root,
+    targetNodeId: params.componentId,
+    updater: () => ({
+      nextNode: params.node,
+      result: {
+        node: params.node,
+        previous,
+      },
+    }),
+  })
 
   const { next, result } = assertRewriteSucceeded(rewritten, 'replaceNode')
   return {
@@ -1762,13 +1822,17 @@ function applyRemoveNode(
     throw new Error('Cannot remove root node')
   }
 
-  const rewritten = rewriteNodeById(root, params.componentId, (currentLocation) => ({
-    nextNode: null,
-    result: {
-      removed: currentLocation.node,
-      index: location.index,
-    },
-  }))
+  const rewritten = rewriteNodeById({
+    current: root,
+    targetNodeId: params.componentId,
+    updater: (currentLocation) => ({
+      nextNode: null,
+      result: {
+        removed: currentLocation.node,
+        index: location.index,
+      },
+    }),
+  })
 
   const { next, result } = assertRewriteSucceeded(rewritten, 'removeNode')
   return {
@@ -1780,14 +1844,23 @@ function applyRemoveNode(
 /**
  * 按 nodeId 对树做路径级不可变重写。
  */
-function rewriteNodeById<TResult>(
+type RewriteNodeByIdRequest<TResult> = {
   current: SparkNode,
-  targetNodeId: string,
-  updater: (location: SparkNodeLocation) => { nextNode: SparkNode | null; result: TResult },
-  parent: SparkNode | null = null,
-  index = -1,
-  depth = 0,
-): NodeRewriteResult<TResult> {
+  targetNodeId: string
+  updater: (location: SparkNodeLocation) => { nextNode: SparkNode | null; result: TResult }
+  parent?: SparkNode | null
+  index?: number
+  depth?: number}
+
+function rewriteNodeById<TResult>(request: RewriteNodeByIdRequest<TResult>): NodeRewriteResult<TResult> {
+  const {
+    current,
+    targetNodeId,
+    updater,
+    parent = null,
+    index = -1,
+    depth = 0,
+  } = request
   if (readNodeId(current) === targetNodeId) {
     const updated = updater({ node: current, parent, index, depth })
     return {
@@ -1813,7 +1886,14 @@ function rewriteNodeById<TResult>(
       continue
     }
 
-    const childResult = rewriteNodeById(child, targetNodeId, updater, current, childIndex, depth + 1)
+    const childResult = rewriteNodeById({
+      current: child,
+      targetNodeId,
+      updater,
+      parent: current,
+      index: childIndex,
+      depth: depth + 1,
+    })
     if (!childResult.changed) {
       nextChildren.push(child)
       continue

@@ -3,14 +3,27 @@ import path from 'path'
 import { describe, it, expect } from 'vitest'
 
 // Fail if any file outside packages/spark-component imports the singletons `componentManager` or `componentRegistry` from the core package.
+const SKIPPED_DIRS = new Set(['node_modules', 'dist', '.git'])
+
+function isMissingFileError(error: unknown): boolean {
+  return error instanceof Error
+    && 'code' in error
+    && error.code === 'ENOENT'
+}
+
 function walk(dir: string, files: string[] = []) {
-  const entries = fs.readdirSync(dir)
+  let entries: fs.Dirent[]
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true })
+  } catch (error) {
+    if (isMissingFileError(error)) return files
+    throw error
+  }
   for (const entry of entries) {
-    if (entry === 'node_modules' || entry === 'dist') continue
-    const full = path.join(dir, entry)
-    const stat = fs.statSync(full)
-    if (stat.isDirectory()) walk(full, files)
-    else files.push(full)
+    if (entry.isDirectory() && SKIPPED_DIRS.has(entry.name)) continue
+    const full = path.join(dir, entry.name)
+    if (entry.isDirectory()) walk(full, files)
+    else if (entry.isFile()) files.push(full)
   }
   return files
 }

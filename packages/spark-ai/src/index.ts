@@ -16,13 +16,16 @@ export {
   arraySchema,
   booleanSchema,
   enumSchema,
-  LlmSchemaValidator,
-  noParamsSchema,
   numberSchema,
   objectSchema,
-  paramsSchema,
   stringSchema,
-} from './schema'
+} from './schema/schema-builders-api'
+
+export {
+  LlmSchemaValidator,
+  noParamsSchema,
+  paramsSchema,
+} from './schema/schema-params-api'
 
 export type {
   LlmJsonObject,
@@ -30,102 +33,183 @@ export type {
   LlmJsonSchemaObject,
   LlmJsonSchemaType,
   LlmJsonValue,
+} from './schema/schema-core-api'
+
+export type {
   LlmParamValidationIssue,
   LlmParamValidationResult,
-} from './schema'
+} from './schema/schema-params-api'
 
 export {
   ModuleCheckEntry,
   ModuleKind,
-  ModuleKindConflictError,
-  ModuleKindNotFoundError,
   ModuleOperationResult,
   ModulePath,
   ModulePathParseError,
   ModulePathSegment,
-  ModuleSemanticRuntime,
-  ModuleSemanticToolCodec,
-  PROTOCOL_TOOL_NAMES,
-} from './module-semantic'
+} from './module-semantic/protocol-core-api'
+
+export type {
+  ModuleCheckEntryLevel,
+} from './module-semantic/protocol-core-api'
 
 export type {
   ModuleActionFailureMode,
   ModuleActionMetadata,
   ModuleActionResultSchema,
+  ModuleKindOperation,
+  ModuleKindRunner,
+  ModuleOperationResultOptions,
+} from './module-semantic/protocol-action-api'
+
+export type {
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
-  ModuleCheckEntryLevel,
   ModuleChildrenLister,
   ModuleHostContext,
   ModuleInstanceFinder,
   ModuleInstanceQuery,
   ModuleInstanceRef,
-  ModuleKindDescription,
-  ModuleKindOperation,
   ModuleKindOptions,
-  ModuleKindRunner,
-  ModuleOperationResultOptions,
+} from './module-semantic/protocol-instance-api'
+
+export type {
   ModulePathContext,
   ModulePathParseErrorCode,
+} from './module-semantic/protocol-path-api'
+
+export {
+  ModuleSemanticRuntime,
+} from './module-semantic/runtime/module-semantic-runtime'
+
+export {
+  ModuleSemanticToolCodec,
+} from './module-semantic/host/index'
+
+export {
+  PROTOCOL_TOOL_NAMES,
+} from './module-semantic/internal/protocol-tool-generator'
+
+export type {
   ModuleSemanticToolSpec,
-  ProtocolToolArgs,
   ProtocolToolName,
-} from './module-semantic'
+} from './module-semantic/internal/protocol-tool-generator'
+
+export type {
+  ModuleKindDescription,
+} from './module-semantic/internal/navigator'
+
+export {
+  ModuleKindConflictError,
+  ModuleKindNotFoundError,
+} from './module-semantic/internal/module-kind-registry'
+
+export type {
+  ProtocolToolArgs,
+} from './module-semantic/runtime/module-semantic-runtime'
 
 export {
   AiHostBusinessRegistration,
-  AiHostBusinessRegistry,
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
-  AiHostBusinessSession,
   AiHostBusinessTarget,
-  AiHostFetchTransport,
-  AiHostSessionStore,
-  AiHostToolLoopRunner,
-  AiHostTransport,
-  createAiHostBusinessScope,
+} from './host/business/business-registration-api'
+
+export {
+  AiHostBusinessRegistry,
+} from './host/business/business-registry'
+
+export {
+  AiHostBusinessSession,
   createAiHostBusinessSession,
-  parseAiHostSseBlocks,
   startRegistrationSession,
+} from './host/business/business-session'
+
+export {
+  createAiHostBusinessScope,
   toAiHostRuntimeScope,
+} from './host/business/business-scope'
+
+export {
+  AiHostSessionStore,
+} from './host/session/session-record-api'
+
+export {
+  AiHostTransport,
+} from './host/transport/transport-core-api'
+
+export {
+  AiHostFetchTransport,
+  parseAiHostSseBlocks,
+} from './host/transport/fetch-transport'
+
+export {
   uploadAiHostAttachment,
-} from './host'
+} from './host/transport/attachment-upload'
+
+export {
+  AiHostToolLoopRunner,
+} from './host/tool-loop/tool-loop-runner'
 
 export type {
-  AiHostAppendMessagesInput,
-  AiHostBusinessAfterFunctionCallOptions,
-  AiHostBusinessAppendMessageOptions,
   AiHostBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus,
   AiHostBusinessRegistrationOptions,
+} from './host/business/business-registration-api'
+
+export type {
+  AiHostBusinessAfterFunctionCallOptions,
+  AiHostBusinessAppendMessageOptions,
+  AiHostOptions,
+  AiHostSender,
+} from './host/business/business-host-api'
+
+export type {
   AiHostChatMessage,
   AiHostChatRequest,
   AiHostFcCallRecord,
-  AiHostFetch,
-  AiHostFetchTransportOptions,
-  AiHostFunctionCallFailure,
-  AiHostFunctionCallHistoryEntry,
-  AiHostFunctionCallHistoryStatus,
-  AiHostFunctionCallResult,
-  AiHostHeadersProvider,
+  AiHostSseEvent,
+  AiHostTurnMeta,
+} from './host/chat/chat-types'
+
+export type {
   AiHostHistoryEntry,
   AiHostHistoryEntryBase,
   AiHostMessageHistoryEntry,
   AiHostMessageRole,
-  AiHostMessageSource,
-  AiHostOptions,
-  AiHostParsedSseEvent,
-  AiHostSender,
   AiHostSessionRecord,
   AiHostSessionStatus,
-  AiHostSseEvent,
   AiHostStartSessionResult,
+} from './host/session/session-record-api'
+
+export type {
+  AiHostFunctionCallFailure,
+  AiHostFunctionCallHistoryEntry,
+  AiHostFunctionCallHistoryStatus,
+  AiHostFunctionCallResult,
+  AiHostMessageSource,
+} from './host/session/session-function-call-api'
+
+export type {
+  DefaultAiHostSessionStoreOptions,
+} from './host/session/default-session-store'
+
+export type {
   AiHostStreamTurnInput,
   AiHostStreamTurnResult,
   AiHostTransportMessage,
   AiHostTransportToolCall,
   AiHostTransportToolSpec,
-  AiHostTurnMeta,
   AiHostUploadedAttachment,
-  DefaultAiHostSessionStoreOptions,
-} from './host'
+} from './host/transport/transport-core-api'
+
+export type {
+  AiHostAppendMessagesInput,
+  AiHostFetch,
+  AiHostFetchTransportOptions,
+  AiHostHeadersProvider,
+} from './host/transport/transport-fetch-api'
+
+export type {
+  AiHostParsedSseEvent,
+} from './host/transport/sse-parser'
