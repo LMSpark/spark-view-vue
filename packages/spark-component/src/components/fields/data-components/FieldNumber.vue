@@ -37,7 +37,7 @@
 /**
  * @skill r-number
  * @description 数字输入字段，绑定 number 值，筛选模式下支持范围（最小-最大）双输入。
- * @api filterMode - 'range' 启用范围过滤模式
+ * @notes filterMode - 'range' 启用范围过滤模式
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'

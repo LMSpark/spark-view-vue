@@ -81,8 +81,8 @@
 /**
  * @skill r-column-group
  * @description 语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。
- * @api displayLabel - 分组标题（用于多级表头）
- * @api children - 子字段组件数组（SparkNode[]）
+ * @notes displayLabel - 分组标题（用于多级表头）
+ * @notes children - 子字段组件数组（SparkNode[]）
  */
 // FieldContextRenderer 渲染为 fragment（多分支 <template>），无法自动透传 attrs。
 // 声明 inheritAttrs: false 以避免 Vue 的 "Extraneous non-props attributes" 告警。

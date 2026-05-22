@@ -30,7 +30,7 @@
 /**
  * @skill r-file-browser
  * @description 文件浏览器字段，绑定文件路径字符串，弹窗式文件选择，支持 MIME 类型过滤和目录浏览。
- * @api 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验
+ * @notes 与 r-file-path 基本一致，差异在于内置的浏览器 UI 体验
  */
 import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'

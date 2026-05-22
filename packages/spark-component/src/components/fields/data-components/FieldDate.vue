@@ -22,9 +22,9 @@
 /**
  * @skill r-date
  * @description 日期选择字段，绑定日期/字符串值。
- * @api type - 选择器类型（'date'|'datetime'|'daterange' 等）
- * @api format - 显示格式
- * @api valueFormat - 绑定值格式
+ * @notes type - 选择器类型（'date'|'datetime'|'daterange' 等）
+ * @notes format - 显示格式
+ * @notes valueFormat - 绑定值格式
  */
 import { computed } from 'vue'
 import { useBasicFieldState } from './composables/useBasicFieldState'

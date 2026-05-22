@@ -30,10 +30,10 @@
 /**
  * @skill r-upload
  * @description 文件上传字段，绑定文件路径字符串。
- * @api autoUpload - 自动上传（默认 true）
- * @api showFileList - 显示文件列表（默认 true）
- * @api limit - 最大上传数量（默认 1）
- * @api listType - 文件展示模式（'text'|'picture'|'picture-card'）
+ * @notes autoUpload - 自动上传（默认 true）
+ * @notes showFileList - 显示文件列表（默认 true）
+ * @notes limit - 最大上传数量（默认 1）
+ * @notes listType - 文件展示模式（'text'|'picture'|'picture-card'）
  */
 import { computed } from 'vue'
 import { useFileFieldActions } from '../actions/useFileFieldActions'

@@ -278,7 +278,7 @@ UserServiceImpl
 - DataSet、DataViewKey、能力注入、脚本沙箱、页面配置解析等隐含约束，说明为什么必须按当前路径接线。
 - 非显然的不变量、顺序要求、缓存策略、并发限制、资源释放约定和安全边界。
 - VCM/catalog 元数据相关注释，描述组件、props、emits、slots 的业务语义、默认值、优先级和配置限制；不要把这些语义藏在生成器逻辑里。
-- 面向 LLM 的组件约束必须写在首次声明处：组件首个 JSDoc、Props 字段、emits 事件、枚举值 tag。首次出现时先写自然语言夹注释，再用 `@skill`、`@description`、`@binding`、`@notes`、`@default`、`@example`、`@enumValue`、`@param` 等结构化 tag 固化可提取约束。
+- 面向 LLM 的组件约束必须写在首次声明处：组件首个 JSDoc、Props 字段、emits 事件、枚举值 tag。首次出现时必须包含自然语言语义和 `@skill`、`@description`、`@binding`、`@notes`、`@default`、`@example`、`@enumValue`、`@param` 等结构化 tag；禁止广告化文案和占位说明。
 
 避免这些注释：
 
@@ -291,7 +291,7 @@ UserServiceImpl
 
 - 行为变更后，更新或删除过时注释。
 - 新增公共导出时，只有当名称和类型无法完整表达契约时才补 JSDoc。
-- 新增或修改 VCM 组件能力时，遵守 `packages/vite-plugin-spark-catalog/README.md` 的 VCM JSDoc 标识规范；tag 一行一个，值保持单行，默认值和示例必须是 JSON literal。
+- 新增或修改 VCM 组件能力时，遵守 `packages/vite-plugin-spark-catalog/README.md` 的 VCM JSDoc 标识规范；tag 一行一个，值保持单行，默认值和示例必须是 JSON literal，并通过 `pnpm run verify:vcm-comments` 检测。
 - 项目/领域说明默认使用中文；对外 API、第三方协议或已有英文文件沿用英文。
 - 示例代码中的注释不得展示被脚本沙箱禁止的用法，例如 `$data`、ESM `import`、`window.xxx`、直接 UI 框架 API 或路由导入。
 

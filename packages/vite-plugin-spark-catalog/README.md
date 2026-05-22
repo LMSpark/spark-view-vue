@@ -30,8 +30,9 @@
 组件 catalog 的语义 SSOT 写在源码 JSDoc，生成器只搬运这些标识并补通用兜底。新增组件或 props 时遵循下面的最小规范：
 
 - VCM 注释首先服务 LLM 和配置后台，不是普通代码说明。新增组件、公开 props、emits、枚举值或结构化子节点时，必须在“首次声明处”写 JSDoc：SFC 的 `<script setup>` 后首个 JSDoc 块、Props 类型字段声明、`defineEmits` 对应事件声明。不要在第二次引用、注册表、生成器或文档旁路里补语义。
-- 首次出现的 JSDoc 必须先写一段自然语言夹注释，再写结构化 tag。自然语言写“用途 + 绑定来源 + 关键约束/优先级”，让 LLM 即使只读 summary 也能生成正确配置；tag 写机器可提取的过滤、默认值、示例和枚举约束。
+- 首次出现的 JSDoc 必须包含自然语言语义和结构化 tag。组件级语义写入 `@description`；prop、emit、枚举等字段级语义先写一段 summary，再写 tag。自然语言写“用途 + 绑定来源 + 关键约束/优先级”，禁止强大、极致、一站式等广告化文案；tag 写机器可提取的过滤、默认值、示例和枚举约束。
 - tag 一行一个，值保持单行；不要发明未被生成器识别的新 tag 来承载约束。复杂说明用 summary 或 `@notes`，可校验值用 `@default`、`@example`、`@enumValue`、`@param` 等既有 tag。
+- 检测入口：`pnpm run verify:vcm-comments` 会检查首个 JSDoc 位置、必需 `@skill/@description`、未识别 tag、广告化/待补充文案、`@default/@example` JSON literal、`@enumValue` 格式；根级 `pnpm run verify:rules` 已包含该检测。
 - 组件级 JSDoc 放在 `<script setup>` 后的首个 JSDoc 块，至少包含 `@skill <type>` 和 `@description <text>`。
 - 组件 Props 类型是强约束，不是约定俗成：统一命名为 `R{ComponentPascalName}Props`，并与组件 type 一一对应：`r-table -> RTableProps`、`r-filter -> RFilterProps`。生成器只根据已注册组件建立 `RFilterProps -> r-filter` 索引；如果使用 `RendererXxxProps` 指向已注册组件会 fail-fast。
 - `@description`：组件级说明写“用途 + 适用场景 + 核心能力”；prop 级 summary 写“用途 + 绑定语义 + 何时使用”。

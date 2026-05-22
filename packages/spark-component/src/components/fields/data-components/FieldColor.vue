@@ -35,9 +35,9 @@
 /**
  * @skill r-color
  * @description 颜色选择字段，绑定十六进制颜色字符串，表格/详情模式显示色块预览。
- * @api showAlpha - 是否支持透明度
- * @api colorFormat - 颜色格式（'hex'|'rgb'|'hsl'|'hsv'）
- * @api predefine - 预置颜色列表（string[]）
+ * @notes showAlpha - 是否支持透明度
+ * @notes colorFormat - 颜色格式（'hex'|'rgb'|'hsl'|'hsv'）
+ * @notes predefine - 预置颜色列表（string[]）
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'
 import { emitFieldValueUpdate, type FieldValueUpdateEmits } from './composables/useControlledFieldChange'
