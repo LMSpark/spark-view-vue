@@ -65,13 +65,16 @@ export type {
 export type {
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
+  ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
+} from './module-semantic/protocol-metadata-api'
+
+export type {
   ModuleChildrenLister,
   ModuleHostContext,
   ModuleInstanceFinder,
   ModuleInstanceQuery,
   ModuleInstanceRef,
-  ModuleKindOptions,
-  ModuleParameterPayloadMetadata,
 } from './module-semantic/protocol-instance-api'
 
 export type {

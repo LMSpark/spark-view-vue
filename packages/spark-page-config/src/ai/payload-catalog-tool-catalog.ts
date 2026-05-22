@@ -12,12 +12,14 @@ import {
   type ModuleActionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
-  type ModuleParameterPayloadGuide,
-  type ModuleParameterPayloadProvider,
-  type ModuleParameterPayloadQueryFilter,
-  type ModuleParameterPayloadSummary,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
+import type {
+  ModuleParameterPayloadGuide,
+  ModuleParameterPayloadProvider,
+  ModuleParameterPayloadQueryFilter,
+  ModuleParameterPayloadSummary,
+} from '@spark-view/spark-ai'
 import type { LlmJsonSchema, LlmJsonValue, LlmJsonSchemaObject } from '@spark-view/spark-ai/schema'
 import type { PageDesignServiceResult } from '../design'
 import { PageDesignService } from '../design'
@@ -506,12 +508,28 @@ function readPageDesignPayloadCatalog(value: unknown): PageDesignPayloadCatalog 
     }
     components[key] = entry
   }
+  const defs = readPayloadDefs(value['$defs'])
   return {
     version: value['version'],
     componentCount: value['componentCount'],
     components,
-    ...(isRecord(value['$defs']) ? { $defs: value['$defs'] as Readonly<Record<string, LlmJsonSchema>> } : {}),
+    ...(defs === undefined ? {} : { $defs: defs }),
   }
+}
+
+function readPayloadDefs(value: unknown): Readonly<Record<string, LlmJsonSchema>> | undefined {
+  if (value === undefined) return undefined
+  if (!isRecord(value)) {
+    throw new Error('PageDesign component payload catalog $defs must be an object')
+  }
+  const defs: Record<string, LlmJsonSchema> = {}
+  for (const [key, schema] of Object.entries(value)) {
+    if (!isLlmJsonSchema(schema)) {
+      throw new Error(`PageDesign component payload catalog $defs entry is invalid: ${key}`)
+    }
+    defs[key] = schema
+  }
+  return defs
 }
 
 function isPageDesignPayloadEntry(value: unknown): value is PageDesignPayloadEntry {
