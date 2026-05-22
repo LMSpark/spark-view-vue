@@ -16,12 +16,11 @@ import { isRecord } from './internal/guards.js'
 export type LogLevel = 'debug' | 'info' | 'warn' | 'error'
 
 /** Logger API */
-export interface LoggerApi {
+export type LoggerApi = {
   debug(...args: unknown[]): void
   info(...args: unknown[]): void
   warn(...args: unknown[]): void
-  error(...args: unknown[]): void
-}
+  error(...args: unknown[]): void}
 
 // ─── 全局传输器（结构化，APP 层贯穿） ────────────────────────────────────────
 
@@ -32,17 +31,15 @@ export interface LoggerApi {
  * spark-app 的 LogTransport 扩展了 `flush?()` / `destroy?()`，但 send 签名一致，
  * 因此同一个 transport 实例可同时注册到两个系统。
  */
-export interface LogTransport {
-  send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>
-}
+export type LogTransport = {
+  send(level: LogLevel, message: string, meta?: Record<string, unknown>): void | Promise<void>}
 
 /** 全局传输器列表 */
 const _transports: LogTransport[] = []
 
-interface LogCaller {
+type LogCaller = {
   frame: string
-  stack: string
-}
+  stack: string}
 
 const LOGGER_INTERNAL_FRAME_RE = /(packages[\\/]+spark-utils[\\/]+src[\\/]+logger\.(ts|js)|spark-utils[\\/]+dist[\\/]+logger\.js)/i
 

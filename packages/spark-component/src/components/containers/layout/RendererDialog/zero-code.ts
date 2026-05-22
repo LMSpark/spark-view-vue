@@ -1,14 +1,13 @@
 import type { RendererDialogApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface RendererDialogZeroCodeOptions {
+type RendererDialogZeroCodeOptions = {
   visibleValue: ValueRef<boolean>
   commitVisibleValue: (value: boolean) => void
   onOpen: (() => void) | undefined
   onClose: (() => void) | undefined
   onOpened: (() => void) | undefined
-  onClosed: (() => void) | undefined
-}
+  onClosed: (() => void) | undefined}
 
 export function createRendererDialogZeroCode(options: RendererDialogZeroCodeOptions) {
   const dialogApi: RendererDialogApi = {

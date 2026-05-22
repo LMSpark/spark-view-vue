@@ -2,7 +2,7 @@ import { ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import type { RouteLocationNormalizedGeneric } from 'vue-router'
 
-export interface TabPage {
+export type TabPage = {
   /** 路由完整路径（唯一标识） */
   path: string
   /** 显示标题 */
@@ -14,14 +14,12 @@ export interface TabPage {
   /** 可否关闭（首页默认不可关闭） */
   closable: boolean
   /** 完整路由信息快照 */
-  fullPath: string
-}
+  fullPath: string}
 
 export type PageMode = 'single' | 'multi'
 
-export interface UseTabPagesOptions {
-  navigate?: (fullPath: string) => Promise<void> | void
-}
+export type UseTabPagesOptions = {
+  navigate?: (fullPath: string) => Promise<void> | void}
 
 const _tabs = ref<TabPage[]>([])
 const _activeTab = ref('')

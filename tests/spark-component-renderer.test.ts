@@ -1,7 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
 import { defineComponent, h } from 'vue'
 import SparkComponentRendererSource from '../packages/spark-component/src/components/SparkComponentRenderer.vue'
 
@@ -132,12 +131,14 @@ test('SparkComponentRenderer only forwards config.props to registered components
 })
 
 test('SparkComponentRenderer rejects root-level business fields', () => {
+  const invalidRootFieldConfig = {
+    type: 'root-field-reader',
+    label: 'root label',
+  }
+
   expect(() => mount(SparkComponentRenderer, {
     props: {
-      config: {
-        type: 'root-field-reader',
-        label: 'root label',
-      } as SparkNode,
+      config: invalidRootFieldConfig,
       parentContext: rootContext,
     },
     global: {

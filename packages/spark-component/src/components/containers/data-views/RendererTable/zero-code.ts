@@ -8,21 +8,19 @@ import type { ValueRef } from '../../../shared-types.js'
 
 /* eslint-disable @typescript-eslint/no-unsafe-return, @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unnecessary-condition */
 
-export interface NativeTableLike {
+export type NativeTableLike = {
   clearSelection?: () => void
   toggleRowSelection?: (row: DataRow, selected?: boolean) => void
   setCurrentRow?: (row: DataRow | null) => void
-  doLayout?: () => void
-}
+  doLayout?: () => void}
 
-interface RendererTableZeroCodeOptions {
+type RendererTableZeroCodeOptions = {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
   nativeTableRef: ValueRef<NativeTableLike | null>
   currentRowOriginatorId?: string
   selectedRowsOriginatorId?: string
-  logger: LoggerApi
-}
+  logger: LoggerApi}
 
 function isDataRow(value: unknown): value is DataRow {
   return isDataRecord(value)

@@ -1,6 +1,6 @@
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RBadgeProps extends SparkNodeProps, SparkDataDisplayProps<string | number> {
+export type RBadgeProps = SparkNodeProps & SparkDataDisplayProps<string | number> & {
   /** 徽标显示值（优先使用该字段渲染角标）。 */
     badgeValue?: string | number
     /** 徽标的最大显示阈值；超出后按 `99+` 这类形式展示。 */
@@ -20,5 +20,4 @@ export interface RBadgeProps extends SparkNodeProps, SparkDataDisplayProps<strin
     /** 徽标内联样式对象。 */
     badgeStyle?: object
     /** 徽标附加 class。 */
-    badgeClass?: string
-}
+    badgeClass?: string}

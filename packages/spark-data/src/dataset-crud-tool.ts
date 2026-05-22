@@ -35,7 +35,7 @@ function isCrudResult(value: unknown): value is CrudResult {
 /**
  * 创建数据表时的输入参数。
  */
-interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
+type DataSetCrudToolCreateTableOptions = TableSemanticMetadata & {
   /**
      * 表名。
      * 在同一个 DataSet 内必须唯一，后续所有表级 CRUD 都以它为入口。
@@ -58,13 +58,12 @@ interface DataSetCrudToolCreateTableOptions extends TableSemanticMetadata {
      * 需要一起创建或初始化的视图配置。
      * 其中 default 视图不会新建，只会复用建表时自动创建的实例并应用配置。
      */
-    views?: Record<string, ViewMetadata>
-}
+    views?: Record<string, ViewMetadata>}
 
 /**
  * 更新数据表时的输入参数。
  */
-interface DataSetCrudToolUpdateTableOptions {
+type DataSetCrudToolUpdateTableOptions = {
   /**
    * 需要新增的列。
    * 内部统一走 DataTable.addColumns，保证 validator 与 DataView 列缓存同步刷新。
@@ -105,8 +104,7 @@ interface DataSetCrudToolUpdateTableOptions {
   /**
    * default 视图需要替换的整批行数据。
    */
-  defaultRows?: DataRow[]
-}
+  defaultRows?: DataRow[]}
 
 /**
  * 关系选择器。
@@ -114,12 +112,11 @@ interface DataSetCrudToolUpdateTableOptions {
  * 默认可用 parentTable + childTable 定位；当同一父子表之间存在多条关系时，
  * 需要继续提供 parentField / childField 做字段级消歧。
  */
-interface RelationSelector {
+type RelationSelector = {
   parentTable: string
   childTable: string
   parentField?: string
-  childField?: string
-}
+  childField?: string}
 
 /**
  * DataSet 级统一 CRUD facade。

@@ -15,12 +15,11 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-export interface FieldPermissionProps<TValue> extends OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> {
+export type FieldPermissionProps<TValue> = OptionalWithUndefined<Omit<Pick<SparkFieldSemanticProps, 'field' | 'label' | 'modelValue' | 'value'>, 'modelValue' | 'value'>> & {
   modelValue?: TValue | undefined
-    value?: TValue | undefined
-}
+    value?: TValue | undefined}
 
-interface UseFieldPermissionOptions<TValue> {
+type UseFieldPermissionOptions<TValue> = {
   props: FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue
@@ -34,8 +33,7 @@ interface UseFieldPermissionOptions<TValue> {
    *
    * 注意：仅对来自行数据的值应用；`props.modelValue` 显式传入时直接使用（调用方负责类型正确性）。
    */
-  coerce: (rawValue: unknown) => TValue
-}
+  coerce: (rawValue: unknown) => TValue}
 
 export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TValue>) {
   const { props, fallbackValue, formatDisplay } = options

@@ -8,9 +8,8 @@ import type { FlatTreeNode } from '../types'
 const NAV_BASE = '/api/tenants/tenant-test/projects/homepage/navigation/nodes'
 const RELATIVE_NAV_BASE = '/navigation/nodes'
 
-interface TreeHttpMethod {
-  (url: string, dataOrParams?: unknown, config?: Partial<RequestConfig>): Promise<unknown>
-}
+type TreeHttpMethod = {
+  (url: string, dataOrParams?: unknown, config?: Partial<RequestConfig>): Promise<unknown>}
 
 class TreeHttpClient extends HttpClientBase {
   constructor(private readonly methods: Partial<Record<'get' | 'post' | 'put', TreeHttpMethod>>) {

@@ -39,9 +39,9 @@ let _checker: ComponentMetaChecker | null = null
 let _tsconfigPath: string | null = null
 let _checkerOptionsKey: string | null = null
 
-interface SupportedCheckerOptions extends Pick<MetaCheckerOptions, 'rawType' | 'schema' | 'noDeclarations'> {}
+type SupportedCheckerOptions = Pick<MetaCheckerOptions, 'rawType' | 'schema' | 'noDeclarations'>
 
-export interface VcmCheckerOptions extends Partial<SupportedCheckerOptions> {}
+export type VcmCheckerOptions = Partial<SupportedCheckerOptions>
 
 const DEFAULT_CHECKER_OPTIONS: SupportedCheckerOptions = {
   // 默认同时启用 rawType + schema：
@@ -110,34 +110,30 @@ export function resetChecker(): void {
  * 2) 提取结果结构
  * ========================================================================== */
 
-export interface VcmApiDescriptor {
+export type VcmApiDescriptor = {
   /** kebab-case 注册名 */
   type: string
   /** 相对于项目 root 的文件路径 */
   filePath: string
   props: PropEntry[]
-  emits: EmitEntry[]
-}
+  emits: EmitEntry[]}
 
-export interface ExtractComponentApiVcmOptions {
+export type ExtractComponentApiVcmOptions = {
   /** 是否保留 VCM 注入的全局 props（class/style/key/ref 等） */
-  includeGlobalProps?: boolean
-}
+  includeGlobalProps?: boolean}
 
 type SchemaOwner = 'workspace' | 'external'
 
-interface RawTypeDeclarationLike {
+type RawTypeDeclarationLike = {
   getSourceFile?: () => { fileName?: string }
   getFullText?: () => string
   jsDoc?: Array<{
     comment?: unknown
     getFullText?: () => string
-  }>
-}
+  }>}
 
-interface RawTypeSymbolLike {
-  declarations?: RawTypeDeclarationLike[]
-}
+type RawTypeSymbolLike = {
+  declarations?: RawTypeDeclarationLike[]}
 
 function isRawTypeSymbolLike(value: unknown): value is RawTypeSymbolLike {
   if (value === null || typeof value !== 'object') return false
@@ -145,24 +141,21 @@ function isRawTypeSymbolLike(value: unknown): value is RawTypeSymbolLike {
   return declarations === undefined || Array.isArray(declarations)
 }
 
-interface PropEntryWithIdentity extends PropEntry {
+type PropEntryWithIdentity = PropEntry & {
   __schemaIdentityKey?: string
     __schemaOwner?: SchemaOwner
     /** 自动从 rawType 中提取的字符串字面量枚举 variants（引号包裹，如 `"\"start\""`） */
     __enumVariants?: string[]
     /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
-    __enumValueDocs?: Record<string, EnumValueDoc>
-}
+    __enumValueDocs?: Record<string, EnumValueDoc>}
 
-interface EnumValueDoc {
+type EnumValueDoc = {
   title?: string
-  description?: string
-}
+  description?: string}
 
-interface EmitDoc {
+type EmitDoc = {
   description?: string
-  params: EmitPayloadParamDoc[]
-}
+  params: EmitPayloadParamDoc[]}
 
 const normalizedWorkspaceRoot = `${process.cwd().replace(/\\/g, '/').toLowerCase()}/`
 

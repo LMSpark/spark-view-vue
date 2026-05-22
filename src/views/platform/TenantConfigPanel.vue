@@ -144,7 +144,7 @@ import { DocumentCopy, Refresh } from '@element-plus/icons-vue'
 import { http } from '@/services/http'
 import { getPlatformTenantApi, getTenantConfigApi } from '@/services/api-paths'
 
-interface TenantInfo {
+type TenantInfo = {
   tenantId: string
   tenantName?: string
   tenantCode?: string
@@ -155,10 +155,9 @@ interface TenantInfo {
     primaryColor?: string
     borderRadius?: string
     [key: string]: unknown
-  }
-}
+  }}
 
-interface TenantFullConfig {
+type TenantFullConfig = {
   tenant?: TenantInfo
   config?: {
     apiBaseUrl?: string
@@ -171,8 +170,7 @@ interface TenantFullConfig {
     apiBaseUrl?: string
     homePath?: string
   }
-  [key: string]: unknown
-}
+  [key: string]: unknown}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)

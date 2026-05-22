@@ -96,7 +96,7 @@ import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from '../context/useResolvedFieldContext'
 import { TABLE_COLUMN_RESIZABLE_KEY } from '../context/tableColumnContext'
 
-interface Props extends SparkNodeProps {
+type Props = SparkNodeProps & {
   /** 显示标签 */
   displayLabel?: string | undefined
   /** 字段绑定名 */
@@ -142,8 +142,7 @@ interface Props extends SparkNodeProps {
   /** 标题 class（detail） */
   titleClassName?: string | undefined
   /** 值 class（detail/table value） */
-  valueClassName?: string | undefined
-}
+  valueClassName?: string | undefined}
 
 const props = defineProps<Props>()
 

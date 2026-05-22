@@ -92,14 +92,13 @@ import { buildTenantPath, stripTenantScope } from '@/services/tenant-scope'
 import NavIcon from '@/components/NavIcon.vue'
 import { getNavHomePath } from '@spark-view/spark-app'
 
-interface ProjectItem {
+type ProjectItem = {
   projectId: string
   name: string
   projectType: string
   icon: string
   description: string
-  sortOrder: number
-}
+  sortOrder: number}
 
 const router = useRouter()
 const route = useRoute()

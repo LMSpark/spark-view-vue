@@ -7,8 +7,7 @@ declare module '*.vue' {
 }
 
 declare module 'virtual:spark-components' {
-  interface RegisterFn {
-  (app: import('vue').App): { total: number; sync: number; async: number }
-}
+  type RegisterFn = {
+  (app: import('vue').App): { total: number; sync: number; async: number }}
   export const registerComponents: RegisterFn
 }

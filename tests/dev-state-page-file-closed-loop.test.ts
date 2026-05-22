@@ -23,8 +23,8 @@ vi.mock('@/services/http', () => ({
   http: httpFns,
 }))
 
-vi.mock('@spark-view/spark-page-config/page/loading', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/page/loading')>()
+vi.mock('@spark-view/spark-page-config/config', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/config')>()
   const readObjectProp = (value: unknown, key: string): unknown => {
     if (value === null || typeof value !== 'object') return undefined
     return Object.getOwnPropertyDescriptor(value, key)?.value
@@ -156,3 +156,4 @@ describe('DevState 页面文件闭环', () => {
     expect(state.pageFilesRevision.value).toBeGreaterThan(0)
   })
 })
+

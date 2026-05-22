@@ -10,7 +10,7 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
-interface UseEntityPickerStateOptions {
+type UseEntityPickerStateOptions = {
   buttonText: ValueRef<NonNullable<SparkPrimaryActionTextProps['buttonText']>>
   readonlyButtonText: ValueRef<NonNullable<SparkReadonlyActionTextProps['readonlyButtonText']>>
   clearable: ValueRef<NonNullable<SparkFieldSemanticProps['clearable']>>
@@ -35,8 +35,7 @@ interface UseEntityPickerStateOptions {
     currentValue: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string
     options: Array<{ label: string; value: PageSelectorOption['value']; disabled?: boolean }>
   }) => Promise<Array<{ label: string; value: PageSelectorOption['value'] }>>
-  updateValue: (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>
-}
+  updateValue: (value: PageSelectorOption['value'] | Array<PageSelectorOption['value']> | string) => void | Promise<void>}
 
 export function useEntityPickerState(options: UseEntityPickerStateOptions) {
   const primaryActionText = computed(() => (options.primaryAction.value === 'select' ? options.buttonText.value : options.readonlyButtonText.value))

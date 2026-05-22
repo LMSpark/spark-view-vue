@@ -17,7 +17,7 @@
  */
 
 import type { LlmJsonValue } from '../../schema'
-import type { ModuleKind } from '../protocol/module-kind'
+import type { ModuleHostContext, ModuleOperationResult, ModulePath } from '../protocol'
 
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
@@ -37,10 +37,10 @@ export class AttributeAccessor {
    *   - (其它): 由 navigator 或 ModuleKind.getAttribute 抛出
    */
   public async get(
-    path: ModuleKind.Path,
+    path: ModulePath,
     attrName: string,
-    host?: ModuleKind.HostContext,
-  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
+    host?: ModuleHostContext,
+  ): Promise<ModuleOperationResult<LlmJsonValue>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
@@ -56,11 +56,11 @@ export class AttributeAccessor {
    *   - ATTRIBUTE_NOT_WRITABLE
    */
   public async set(
-    path: ModuleKind.Path,
+    path: ModulePath,
     attrName: string,
     value: LlmJsonValue,
-    host?: ModuleKind.HostContext,
-  ): Promise<ModuleKind.OperationResult<void>> {
+    host?: ModuleHostContext,
+  ): Promise<ModuleOperationResult<void>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult

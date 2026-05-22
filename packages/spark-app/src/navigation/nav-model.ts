@@ -12,4 +12,5 @@ export type {
   NavPermissionMode,
   RegionItems,
   RegionVisibility,
-} from '@spark-view/spark-page-config/page/navigation'
+} from '@spark-view/spark-page-config/navigation'
+

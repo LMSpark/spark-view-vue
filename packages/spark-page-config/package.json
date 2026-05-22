@@ -15,49 +15,37 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./page/model": {
-      "types": "./dist/page/model.d.ts",
-      "import": "./dist/page/model.js"
+    "./config": {
+      "types": "./dist/config/index.d.ts",
+      "import": "./dist/config/index.js"
     },
-    "./page/loading": {
-      "types": "./dist/page/loading.d.ts",
-      "import": "./dist/page/loading.js"
+    "./node-tree": {
+      "types": "./dist/node-tree/index.d.ts",
+      "import": "./dist/node-tree/index.js"
     },
-    "./page/spark-node": {
-      "types": "./dist/page/spark-node.d.ts",
-      "import": "./dist/page/spark-node.js"
+    "./navigation": {
+      "types": "./dist/navigation/index.d.ts",
+      "import": "./dist/navigation/index.js"
     },
-    "./page/spark-node-tree": {
-      "types": "./dist/page/spark-node-tree.d.ts",
-      "import": "./dist/page/spark-node-tree.js"
+    "./runtime": {
+      "types": "./dist/runtime/index.d.ts",
+      "import": "./dist/runtime/index.js"
     },
-    "./page/script-context-types": {
-      "types": "./dist/page/script-context-types.d.ts",
-      "import": "./dist/page/script-context-types.js"
+    "./json-document": {
+      "types": "./dist/json-document/index.d.ts",
+      "import": "./dist/json-document/index.js"
     },
-    "./page/app-services": {
-      "types": "./dist/page/app-services.d.ts",
-      "import": "./dist/page/app-services.js"
+    "./design": {
+      "types": "./dist/design/index.d.ts",
+      "import": "./dist/design/index.js"
     },
-    "./capabilities": {
-      "types": "./dist/capabilities/index.d.ts",
-      "import": "./dist/capabilities/index.js"
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "import": "./dist/ai/index.js"
     },
-    "./capabilities/*": {
-      "types": "./dist/capabilities/*.d.ts",
-      "import": "./dist/capabilities/*.js"
-    },
-    "./page/navigation": {
-      "types": "./dist/page/navigation.d.ts",
-      "import": "./dist/page/navigation.js"
-    },
-    "./registrations": {
-      "types": "./dist/registrations/index.d.ts",
-      "import": "./dist/registrations/index.js"
-    },
-    "./registrations/payloads/component-catalog.json": {
-      "types": "./dist/registrations/payloads/component-catalog.json",
-      "import": "./dist/registrations/payloads/component-catalog.json"
+    "./ai/payloads/component-catalog.json": {
+      "types": "./dist/ai/payloads/component-catalog.json",
+      "import": "./dist/ai/payloads/component-catalog.json"
     }
   },
   "main": "./dist/index.js",

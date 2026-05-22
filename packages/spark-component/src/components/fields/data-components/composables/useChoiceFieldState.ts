@@ -1,13 +1,12 @@
 import { useOptionFieldState } from './useOptionFieldState'
 import type { OptionFieldStateProps } from './useOptionFieldState'
 
-interface UseChoiceFieldStateOptions<TValue> {
+type UseChoiceFieldStateOptions<TValue> = {
   props: OptionFieldStateProps<TValue>
   fieldType: string
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void
-  coerce: (rawValue: unknown) => TValue
-}
+  coerce: (rawValue: unknown) => TValue}
 
 export function useChoiceFieldState<TValue>(
   options: UseChoiceFieldStateOptions<TValue>,

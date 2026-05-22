@@ -15,7 +15,7 @@ const TOKEN_KEY = 'spark_token'
 const USER_KEY = 'spark_user'
 const LOGOUT_PENDING_KEY = 'spark_logout_pending'
 
-export interface AuthUser {
+export type AuthUser = {
   userId: string
   username: string
   displayName: string
@@ -23,8 +23,7 @@ export interface AuthUser {
   avatar: string
   roles: string[]
   tenantId: string
-  defaultProjectId: string
-}
+  defaultProjectId: string}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -146,11 +145,10 @@ async function authFetch(url: string, body: Record<string, string>): Promise<Rec
   }
 }
 
-export interface LoginParams {
+export type LoginParams = {
   tenantId: string
   username: string
-  password: string
-}
+  password: string}
 
 export async function login(params: LoginParams): Promise<AuthUser> {
   const data = await authFetch('/api/auth/login', { ...params })
@@ -162,13 +160,12 @@ export async function login(params: LoginParams): Promise<AuthUser> {
   return authUser
 }
 
-export interface RegisterParams {
+export type RegisterParams = {
   tenantId: string
   username: string
   password: string
   displayName?: string
-  email?: string
-}
+  email?: string}
 
 export async function register(params: RegisterParams): Promise<AuthUser> {
   const body: Record<string, string> = {
@@ -188,12 +185,11 @@ export async function register(params: RegisterParams): Promise<AuthUser> {
   return authUser
 }
 
-export interface RegisterTenantParams {
+export type RegisterTenantParams = {
   tenantId: string
   tenantName: string
   username: string
-  password: string
-}
+  password: string}
 
 export async function registerTenant(params: RegisterTenantParams): Promise<AuthUser> {
   const data = await authFetch('/api/auth/register-tenant', { ...params })

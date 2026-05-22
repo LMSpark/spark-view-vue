@@ -15,11 +15,10 @@ import {
 
 export type { FieldOption } from './option-normalization.js'
 
-export interface FieldTransferOption {
+export type FieldTransferOption = {
   key: string | number
   label: string
-  disabled?: boolean
-}
+  disabled?: boolean}
 
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
@@ -38,7 +37,7 @@ type FieldOptionProps = OptionalWithUndefined<Pick<
   | 'valueSeparator'
 >>
 
-interface UseFieldOptionsReturn {
+type UseFieldOptionsReturn = {
   options: ComputedRef<FieldOption[]>
   flatOptions: ComputedRef<FieldOption[]>
   normalizeOptionValues: (value: unknown) => Array<string | number | boolean>
@@ -46,16 +45,14 @@ interface UseFieldOptionsReturn {
   findOptionLabels: (value: unknown) => string[]
   formatOptionValue: (value: unknown) => string
   formatCascaderValue: (value: unknown) => string
-  transferData: ComputedRef<FieldTransferOption[]>
-}
+  transferData: ComputedRef<FieldTransferOption[]>}
 
-interface UseOptionFieldOptions<TValue> {
+type UseOptionFieldOptions<TValue> = {
   props: FieldOptionProps & FieldPermissionProps<TValue>
   type: string
   fallbackValue: TValue
   coerce: (rawValue: unknown) => TValue
-  formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string
-}
+  formatDisplay?: (value: unknown, helpers: UseFieldOptionsReturn) => string}
 
 export function useFieldOptions(props: FieldOptionProps): UseFieldOptionsReturn {
   const resolvedOptionDataViewKey = computed(() => props.optionDataViewKey)

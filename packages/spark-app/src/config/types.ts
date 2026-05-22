@@ -11,7 +11,7 @@ import type { PluginConfigItem } from '../plugins'
 /**
  * 配置源类型
  */
-export interface ConfigSourceOptions {
+export type ConfigSourceOptions = {
   /** 配置源类型 */
   type: 'local' | 'remote'
 
@@ -27,14 +27,12 @@ export interface ConfigSourceOptions {
   local?: {
     defaultConfigPath: string
     tenantConfigTemplate: string
-  }
-
-}
+  }}
 
 /**
  * 租户信息（完整版，含 logo/theme 等展示字段）
  */
-export interface FullTenantInfo {
+export type FullTenantInfo = {
   tenantId: string
   tenantName: string
   tenantCode?: string
@@ -42,13 +40,12 @@ export interface FullTenantInfo {
   theme?: {
     primaryColor?: string
     [key: string]: unknown
-  }
-}
+  }}
 
 /**
  * 完整的应用配置
  */
-export interface AppFullConfig {
+export type AppFullConfig = {
   /** 配置源设置 */
   configSource?: ConfigSourceOptions
 
@@ -90,12 +87,10 @@ export interface AppFullConfig {
   }
 
   /** Logger 配置 */
-  logger: AppLoggerConfig
-}
+  logger: AppLoggerConfig}
 
 /**
  * 租户配置（可覆盖默认配置的部分）
  */
-export interface TenantConfig extends Partial<AppFullConfig> {
-  tenant: FullTenantInfo
-}
+export type TenantConfig = Partial<AppFullConfig> & {
+  tenant: FullTenantInfo}

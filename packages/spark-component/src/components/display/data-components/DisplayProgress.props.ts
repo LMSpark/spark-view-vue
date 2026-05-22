@@ -2,7 +2,7 @@ import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
 // 这里不再为 JS 基础类型保留导出别名，进度色直接内联到属性上。
 
-export interface RProgressProps extends SparkNodeProps, SparkDataDisplayProps<number> {
+export type RProgressProps = SparkNodeProps & SparkDataDisplayProps<number> & {
   /** 百分比值（优先级高于 value/field） */
     percentage?: number
     /** 进度条类型 */
@@ -26,5 +26,4 @@ export interface RProgressProps extends SparkNodeProps, SparkDataDisplayProps<nu
     /** 线帽样式 */
     strokeLinecap?: 'butt' | 'round' | 'square'
     /** 文本模板 */
-    formatText?: string
-}
+    formatText?: string}

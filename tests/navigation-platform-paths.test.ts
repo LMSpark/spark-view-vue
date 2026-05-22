@@ -3,7 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -11,14 +11,13 @@ import type {
   PageConfigFileName,
   PageDataConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config/page/loading'
+} from '@spark-view/spark-page-config/config'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { useNavigation } from '../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
 
-interface NavigateToPath {
-  (path: string): void
-}
+type NavigateToPath = {
+  (path: string): void}
 
 const refreshRoutesMock = vi.hoisted(() => vi.fn<() => Promise<AppNavRoot | null>>())
 
@@ -26,11 +25,10 @@ vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
   refreshRoutes: refreshRoutesMock,
 }))
 
-interface MountedNavigationProbe {
+type MountedNavigationProbe = {
   router: Router
   navigateToPath: NavigateToPath
-  navigateTo: ReturnType<typeof useNavigation>['navigateTo']
-}
+  navigateTo: ReturnType<typeof useNavigation>['navigateTo']}
 
 const DummyPage = defineComponent({
   name: 'DummyPage',
@@ -224,3 +222,4 @@ describe('useNavigation platform paths', () => {
     expect(router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)).toBe(true)
   })
 })
+

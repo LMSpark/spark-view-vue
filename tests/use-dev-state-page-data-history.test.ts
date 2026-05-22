@@ -12,8 +12,8 @@ vi.mock('@/services/http', () => ({
   http: { get: httpGet, post: httpPost, put: httpPut },
 }))
 
-vi.mock('@spark-view/spark-page-config/page/loading', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/page/loading')>()
+vi.mock('@spark-view/spark-page-config/config', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/config')>()
   const readObjectProp = (value: unknown, key: string): unknown => {
     if (value === null || typeof value !== 'object') return undefined
     return Object.getOwnPropertyDescriptor(value, key)?.value
@@ -62,8 +62,8 @@ vi.mock('@/services/api-paths', () => ({
   getNavApi: () => '/api/navigation',
 }))
 
-import { canonicalizePageDataJson } from '@spark-view/spark-page-config/capabilities/page-file-document'
-import { PAGE_FILE_NAMES, useDevState, type PageFileName } from '../src/views/app/dev-system/useDevState'
+import { canonicalizePageDataJson } from '@spark-view/spark-page-config/design'
+import { PAGE_CONFIG_FILE_NAMES, useDevState, type PageFileName } from '../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
 function requireValue<T>(value: T | null | undefined, message: string): T {
@@ -119,7 +119,7 @@ describe('useDevState documents SSOT', () => {
     const initial = createPageDataText('Alpha', true)
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/pagedata.json')) return { content: initial }
-      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
@@ -142,7 +142,7 @@ describe('useDevState documents SSOT', () => {
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/pagedata.json')) return { content: initial }
-      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
@@ -169,7 +169,7 @@ describe('useDevState documents SSOT', () => {
   it('ensureActivePageFilesLoaded loads each file exactly once', async () => {
     const fetchCount: Record<string, number> = {}
     httpGet.mockImplementation(async (url: string) => {
-      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (!name) throw new Error(`unexpected GET ${url}`)
       fetchCount[name] = (fetchCount[name] ?? 0) + 1
       if (name === 'pagedata.json') return { content: createPageDataText('Shared', true) }
@@ -188,14 +188,14 @@ describe('useDevState documents SSOT', () => {
       'script.js': 1,
       'style.css': 1,
     })
-    for (const name of PAGE_FILE_NAMES) {
+    for (const name of PAGE_CONFIG_FILE_NAMES) {
       expect(state.documents[name].loadState.value).toBe('loaded')
     }
   })
 
   it('ensureActivePageFilesLoaded fails fast and preserves existing documents when remote fetch fails', async () => {
     httpGet.mockImplementation(async (url: string) => {
-      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (!name) throw new Error(`unexpected GET ${url}`)
       if (name === 'pagedata.json') return { content: createPageDataText('Stable', true) }
       if (name === 'rule.json') return { content: '[]\n' }
@@ -213,7 +213,7 @@ describe('useDevState documents SSOT', () => {
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) throw new Error('network-down')
-      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (!name) throw new Error(`unexpected GET ${url}`)
       if (name === 'pagedata.json') return { content: createPageDataText('Mutated', true) }
       return { content: '' }
@@ -365,7 +365,7 @@ describe('useDevState documents SSOT', () => {
     state.selectPage('orders-page-v2')
 
     expect(state.activePageId.value).toBe('orders-page-v2')
-    for (const name of PAGE_FILE_NAMES) {
+    for (const name of PAGE_CONFIG_FILE_NAMES) {
       const doc = state.documents[name]
       expect(doc.model.value).toBeNull()
       expect(isDocumentDirty(doc)).toBe(false)
@@ -378,7 +378,7 @@ describe('useDevState documents SSOT', () => {
     const initial = '[]\n'
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) return { content: initial }
-      const name = PAGE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
@@ -414,3 +414,4 @@ describe('useDevState documents SSOT', () => {
 function isDocumentDirty(doc: { text: { value: string }; savedText: { value: string } }): boolean {
   return doc.text.value !== doc.savedText.value
 }
+

@@ -12,7 +12,7 @@ import type {
   PageDialogResult,
 } from '@spark-view/spark-component'
 
-interface DialogState {
+type DialogState = {
   visible: boolean
   title: string
   content: string
@@ -20,10 +20,9 @@ interface DialogState {
   cancelText: string
   showCancelButton: boolean
   dangerouslyUseHTMLString: boolean
-  width: string
-}
+  width: string}
 
-interface SelectorState {
+type SelectorState = {
   visible: boolean
   title: string
   placeholder: string
@@ -34,8 +33,7 @@ interface SelectorState {
   emptyText: string
   searchKeyword: string
   options: PageSelectedEntity[]
-  selectedValues: string[]
-}
+  selectedValues: string[]}
 
 const dialogState = reactive<DialogState>({
   visible: false,

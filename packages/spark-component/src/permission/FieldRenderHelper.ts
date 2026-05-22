@@ -10,22 +10,20 @@ import { FieldVisibility } from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
 
-export interface FieldRenderConfig {
+export type FieldRenderConfig = {
   field: string
   visible?: boolean
   editable?: boolean
   label?: string
-  width?: number | string
-}
+  width?: number | string}
 
-export interface FieldRenderState {
+export type FieldRenderState = {
   field: string
   visibility: FieldVisibility
   readable: boolean
   editable: boolean
   displayValue: string | undefined
-  shouldRender: boolean
-}
+  shouldRender: boolean}
 
 /**
  * 计算单个字段的渲染状态（可见性 + 可编辑性 + 展示值）。

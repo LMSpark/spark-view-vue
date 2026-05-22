@@ -2,11 +2,10 @@ import { afterEach, describe, expect, it, vi } from 'vitest'
 import { addLogTransport, removeLogTransport, type LogTransport } from '../packages/spark-utils/src/logger'
 import { FetchClient } from '../packages/spark-utils/src/http/FetchClient'
 
-interface Captured {
+type Captured = {
   level: string
   message: string
-  meta?: Record<string, unknown> | undefined
-}
+  meta?: Record<string, unknown> | undefined}
 
 describe('API error capture', () => {
   const captured: Captured[] = []

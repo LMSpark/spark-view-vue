@@ -78,19 +78,17 @@ import { http } from '@/services/http'
 import { getPlatformTenantApi } from '@/services/api-paths'
 import { buildTenantPath } from '@/services/tenant-scope'
 
-interface PlatformTenant {
+type PlatformTenant = {
   tenantId: string
   tenantName: string
-  status: string
-}
+  status: string}
 
-interface ProjectItem {
+type ProjectItem = {
   projectId: string
   name: string
   projectType: string
   icon: string
-  description: string
-}
+  description: string}
 
 const router = useRouter()
 const tenants = ref<PlatformTenant[]>([])

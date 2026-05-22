@@ -48,11 +48,10 @@ const { optionResult, handleControlledChange } = useOptionFieldState<string | nu
 
 const { options: fieldOptions, fieldValue, isCurrentFieldEditable } = optionResult
 
-interface ResolvedSegmentedOption {
+type ResolvedSegmentedOption = {
   label: string
   value: string | number
-  disabled?: boolean
-}
+  disabled?: boolean}
 
 function toSegmentedValue(value: string | number | boolean): string | number {
   return typeof value === 'boolean' ? String(value) : value

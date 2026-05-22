@@ -12,7 +12,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/app-services'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import {
   Spark,
   useSparkComponent,
@@ -239,7 +239,7 @@ describe('Capability system integration', () => {
 
     it('custom capability key with defineCapability', () => {
       const { createContext, rootContext } = Spark.createSystem()
-      interface CustomCapability { getValue(): string }
+      type CustomCapability = { getValue(): string}
       const CUSTOM = defineCapability<CustomCapability>(
         'test:custom-cap-sys',
         (value): value is CustomCapability => isRecord(value) && hasCallable(value, 'getValue'),
@@ -325,3 +325,4 @@ describe('Capability system integration', () => {
     })
   })
 })
+

@@ -11,7 +11,7 @@ import type { RFilterProps } from '../../zones/RendererFilter.types'
  *
  * 命名规范：组件 type `r-table` → 接口名 `RTableProps`。
  */
-export interface RTableProps extends SparkNodeProps, SparkInteractiveDataContainerProps {
+export type RTableProps = SparkNodeProps & SparkInteractiveDataContainerProps & {
   /** 显式收窄为表格容器使用的 DataView 数据线。 */
     dataSource?: DataView
     /** 是否显示纵向边框。默认 true（resizable 启用时强制开启）。 */
@@ -42,5 +42,4 @@ export interface RTableProps extends SparkNodeProps, SparkInteractiveDataContain
      * 结构化行动作
      * 提示词模板：默认动作 message-row / delete-row。
      */
-    actions?: RToolbarProps
-}
+    actions?: RToolbarProps}

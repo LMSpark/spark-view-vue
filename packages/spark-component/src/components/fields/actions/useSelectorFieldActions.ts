@@ -7,10 +7,9 @@ import type {
 } from '../../internal'
 import { useFieldActionMode } from './useFieldActionMode'
 
-interface UseSelectorFieldActionsOptions {
+type UseSelectorFieldActionsOptions = {
   pageService: PageServiceCapability | null
-  isEditable: ComputedRef<boolean>
-}
+  isEditable: ComputedRef<boolean>}
 
 export function useSelectorFieldActions(options: UseSelectorFieldActionsOptions) {
   const { pageService, isEditable } = options

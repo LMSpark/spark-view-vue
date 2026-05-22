@@ -11,32 +11,29 @@ import type { CrudResult, DataView, DataRow } from '@spark-view/spark-data'
  *
  * 该接口用于抽取 Table/Form/Detail/List/Tree 的共有 CRUD 能力。
  */
-export interface BaseCrudContainerApi {
+export type BaseCrudContainerApi = {
   getDataSource(): DataView | null
   addRow(row: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow> | null>
   editRowById(id: string | number, patch: Partial<DataRow>): Promise<boolean | CrudResult<DataRow>>
-  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>
-}
+  removeRow(id: string | number): Promise<boolean | CrudResult<boolean>>}
 
 /**
  * 表单/表格类容器 API（CRUD + 当前行 + 本地行操作）。
  */
-export interface BaseContainerApi extends BaseCrudContainerApi {
+export type BaseContainerApi = BaseCrudContainerApi & {
   getCurrentRow(): DataRow | null
     refresh(): Promise<void>
     appendRow(row: DataRow): void
     updateRowById(id: string | number, patch: Partial<DataRow>): boolean
     deleteRowById(id: string | number): boolean
     setCurrentRow(row: DataRow | null): void
-    setCurrentRowById(id: string | number | null): boolean
-}
+    setCurrentRowById(id: string | number | null): boolean}
 
 /**
  * 可见性容器 API（Dialog/Drawer 等）。
  */
-export interface VisibilityContainerApi {
+export type VisibilityContainerApi = {
   open(): void
   close(): void
   isVisible(): boolean
-  toggle(): void
-}
+  toggle(): void}

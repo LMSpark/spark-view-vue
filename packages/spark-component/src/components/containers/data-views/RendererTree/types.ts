@@ -1,7 +1,7 @@
 import type { DataRow } from '@spark-view/spark-data'
 import type { BaseCrudContainerApi } from '../../support/base-container-api.js'
 
-export interface RendererTreeApi extends BaseCrudContainerApi {
+export type RendererTreeApi = BaseCrudContainerApi & {
   getTreeData(): DataRow[]
     getNativeTree(): unknown
     getCurrentNode(): DataRow | null
@@ -16,5 +16,4 @@ export interface RendererTreeApi extends BaseCrudContainerApi {
     insertBefore(refKey: string | number, nodeData: DataRow): void
     insertAfter(refKey: string | number, nodeData: DataRow): void
     updateNode(key: string | number, patch: Partial<DataRow>): boolean
-    removeNode(key: string | number): boolean
-}
+    removeNode(key: string | number): boolean}

@@ -1,4 +1,4 @@
-export interface RendererStepsApi {
+export type RendererStepsApi = {
   getActiveStep(): string | number | undefined
   getActiveStepIndex(): number
   setActiveStep(index: number): void
@@ -7,5 +7,4 @@ export interface RendererStepsApi {
   getStepCount(): number
   getStepNames(): Array<string | number>
   isFirstStep(): boolean
-  isLastStep(): boolean
-}
+  isLastStep(): boolean}

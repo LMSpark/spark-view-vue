@@ -1,10 +1,9 @@
 import type { RendererSectionApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface RendererSectionZeroCodeOptions {
+type RendererSectionZeroCodeOptions = {
   collapsed: ValueRef<boolean>
-  collapsible: ValueRef<boolean>
-}
+  collapsible: ValueRef<boolean>}
 
 export function createRendererSectionZeroCode(options: RendererSectionZeroCodeOptions) {
   function toggleCollapsed(): void {

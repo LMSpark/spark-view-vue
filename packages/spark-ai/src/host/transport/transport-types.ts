@@ -16,7 +16,7 @@
  *
  * 【与 module-semantic 的关系】
  *   本层的 ToolSpec 是 transport 专用形状（parameters 为 Record<string, unknown>），
- *   而 module-semantic 的 ModuleSemanticToolSpec 使用 LlmParameterSchemaRoot。
+ *   而 module-semantic 的 ModuleSemanticToolSpec 使用 LlmJsonSchemaObject。
  *   ModuleSemanticToolCodec 负责二者之间的转换。
  *
  * 【消费方】fetch-transport、business-session、tool-loop-runner

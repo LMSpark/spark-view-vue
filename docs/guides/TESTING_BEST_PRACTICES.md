@@ -67,7 +67,7 @@ describe('Component Registration', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { Spark } from '@spark-view/spark-component'
 import { sparkProvide, sparkConsume, defineCapability } from '@spark-view/spark-utils'
 
@@ -324,3 +324,4 @@ pnpm run test -- -t "capability-late-binding"
 # 类型检查
 pnpm run typecheck
 ```
+

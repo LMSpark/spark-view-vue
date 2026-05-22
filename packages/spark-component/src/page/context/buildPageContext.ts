@@ -8,7 +8,7 @@
 import { h, type Ref } from 'vue'
 import type { PageServiceCapability } from '../../core/capability-keys.js'
 import type { ModuleContext, PageComponentRegistry } from '../../core/capability-keys.js'
-import type { PageRoute } from '@spark-view/spark-page-config/page/script-context-types'
+import type { PageRoute } from '@spark-view/spark-page-config/runtime'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'
@@ -76,7 +76,7 @@ function createScriptConsole(): Pick<Console, 'log' | 'info' | 'warn' | 'error' 
 // ─── 共享基础上下文（两条渲染线共用）────────────────────────────────────
 
 /** buildPageContext 所需的依赖引用 */
-interface PageContextDeps {
+type PageContextDeps = {
   /** DataSet getter（闭包引用，每次调用返回最新值） */
   getDataSet: () => DataSet | null
   pageRoute: PageRoute
@@ -85,8 +85,7 @@ interface PageContextDeps {
   /** 页面级组件注册中心 getter（可选） */
   getComponentRegistry?: () => PageComponentRegistry | null
   /** 模块上下文 getter（可选，每次调用返回最新快照） */
-  getModuleContext?: () => ModuleContext | null
-}
+  getModuleContext?: () => ModuleContext | null}
 
 function createComponentAccess(getRegistry?: () => PageComponentRegistry | null): PageContext['$components'] {
   return {
@@ -151,5 +150,6 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
     clearInterval: (id?: number) => { window.clearInterval(id) },
   }
 }
+
 
 

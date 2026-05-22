@@ -33,11 +33,10 @@ import { computed, ref } from 'vue'
 import { Search } from '@element-plus/icons-vue'
 import * as Icons from '@element-plus/icons-vue'
 
-interface Props {
+type Props = {
   modelValue?: string
   placeholder?: string
-  width?: number | string
-}
+  width?: number | string}
 
 const props = withDefaults(defineProps<Props>(), {
   modelValue: '',

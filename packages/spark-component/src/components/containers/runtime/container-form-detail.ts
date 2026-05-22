@@ -62,7 +62,7 @@ const DEFAULT_GRID_GAP = 0
 // ============================================================
 
 /** 容器内部完整属性形状（包括私有布局字段）。 */
-interface FormDetailContainerProps extends SparkNode {
+type FormDetailContainerProps = SparkNode & {
   dataViewKey: string | undefined
     contextDataMember: DataMember | `${DataMember}` | undefined
     contextDataField: string | undefined
@@ -71,15 +71,14 @@ interface FormDetailContainerProps extends SparkNode {
     autoColumns: boolean | undefined
     gridColumns: number | undefined
     gridGap: number | string | undefined
-    gridAutoRows: string | undefined
-}
+    gridAutoRows: string | undefined}
 
 /**
  * r-form / r-detail 消费 `useFormDetailContainer` 时的最小输入形状。
  *
  * 目的：统一两侧组件的入参组装，避免在消费端重复展开同一批可选字段。
  */
-export interface FormDetailContainerConsumerProps {
+export type FormDetailContainerConsumerProps = {
   type: SparkNode['type']
   id?: SparkNode['id']
   toolbar?: RToolbarProps
@@ -91,8 +90,7 @@ export interface FormDetailContainerConsumerProps {
   autoColumns: boolean | undefined
   gridColumns: number | undefined
   gridGap: number | string | undefined
-  gridAutoRows: string | undefined
-}
+  gridAutoRows: string | undefined}
 
 /**
  * 构建 `useFormDetailContainer` 规范入参。

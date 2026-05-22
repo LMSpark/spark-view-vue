@@ -1,11 +1,10 @@
 // 这里不再为 JS 基础类型保留导出别名，选项值直接使用原生联合类型。
 
-export interface FieldOption {
+export type FieldOption = {
   label: string
   value: string | number | boolean
   disabled?: boolean
-  children?: FieldOption[]
-}
+  children?: FieldOption[]}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)

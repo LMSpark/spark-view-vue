@@ -2,16 +2,14 @@
  * 页面配置缓存管理（spark-app 内聚）
  */
 
-interface PageCacheLoader {
+type PageCacheLoader = {
   clearCache(key?: string): void
-  getCacheStats?(): { size: number; keys: string[] }
-}
+  getCacheStats?(): { size: number; keys: string[] }}
 
-export interface PageCacheHandle {
+export type PageCacheHandle = {
   clearPageCache(pageId: string): void
   clearAllCache(): { size: number; keys: string[] }
-  getCacheStats(): { size: number; keys: string[] }
-}
+  getCacheStats(): { size: number; keys: string[] }}
 
 export function createPageCache(loader: PageCacheLoader): PageCacheHandle {
   return {

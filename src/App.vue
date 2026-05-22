@@ -143,8 +143,8 @@ import {
   useTabPages,
   useTheme,
 } from '@spark-view/spark-app'
-import type { AppNavRoot } from '@spark-view/spark-page-config/page/navigation'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/app-services'
+import type { AppNavRoot } from '@spark-view/spark-page-config/navigation'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import {
   MODULE_CONTEXT,
   useSparkComponent,
@@ -276,12 +276,11 @@ function persistCurrentProjectUiSettings(): void {
 
 watch([headerFirst, sidebarCollapsed, showFooter, mode], persistCurrentProjectUiSettings, { flush: 'sync' })
 
-interface AppContextGuardState {
+type AppContextGuardState = {
   title: string
   message: string
   primaryActionLabel: string
-  expectedPath?: string | undefined
-}
+  expectedPath?: string | undefined}
 
 const contextGuard = computed<AppContextGuardState | null>(() => {
   if (isLoginPage.value) return null
@@ -449,9 +448,8 @@ const pageModuleContext = computed<ModuleContext | null>(() => {
     nodeId: state.nodeId,
   }
 })
-interface ModuleContextChangeHandler {
-  (next: ModuleContext | null, prev: ModuleContext | null): void
-}
+type ModuleContextChangeHandler = {
+  (next: ModuleContext | null, prev: ModuleContext | null): void}
 const moduleContextListeners = new Set<ModuleContextChangeHandler>()
 
 function cloneModuleContext(value: ModuleContext | null | undefined): ModuleContext | null {
@@ -750,3 +748,4 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 }
 
 </style>
+

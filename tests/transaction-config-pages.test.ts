@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { compileRule, parsePageData } from '@spark-view/spark-page-config/page/loading'
+import { compileRule, parsePageData } from '@spark-view/spark-page-config/config'
 import { HttpClientBase } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-component'
@@ -13,10 +13,9 @@ const pageRoot = join(process.cwd(), 'spark-ai-server/data/pages-config/lmspark/
 
 const pages: readonly string[] = ['tx-editing-rows', 'tx-transaction-commit', 'tx-transaction-retry']
 
-interface CapturedPost {
+type CapturedPost = {
   url: string
-  data: unknown
-}
+  data: unknown}
 
 function readPageFile(pageId: string, fileName: string): string {
   return readFileSync(join(pageRoot, pageId, fileName), 'utf8')
@@ -299,3 +298,4 @@ describe('transaction validation page configs', () => {
     expect(requireValue(requestId, 'Expected auto requestId').length).toBeGreaterThan(10)
   })
 })
+

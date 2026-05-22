@@ -10,7 +10,7 @@ import type { DataColumn } from '@spark-view/spark-data'
 import { extractColumnRules } from '@spark-view/spark-data'
 
 /** 渲染层 FormItemRule 最小子集（避免引入具体实现类型依赖） */
-export interface FormItemRule {
+export type FormItemRule = {
   required?: boolean
   message?: string
   trigger?: string | string[]
@@ -18,8 +18,7 @@ export interface FormItemRule {
   min?: number
   max?: number
   pattern?: RegExp
-  validator?: (rule: unknown, value: unknown, callback: (error?: Error) => void) => void
-}
+  validator?: (rule: unknown, value: unknown, callback: (error?: Error) => void) => void}
 
 /**
  * 将框架无关的 ColumnValidationRule 数组转为渲染层 FormItemRule 数组。

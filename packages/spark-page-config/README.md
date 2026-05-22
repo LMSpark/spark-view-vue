@@ -28,7 +28,7 @@ spark-ai-server/data/pages-config/
 ## 基本使用
 
 ```typescript
-import { createConfigLoader } from '@spark-view/spark-page-config/page/loading'
+import { createConfigLoader } from '@spark-view/spark-page-config/config'
 
 const loader = createConfigLoader({
   fileStorage: 'memory',
@@ -37,13 +37,28 @@ const loader = createConfigLoader({
 const pageConfig = await loader.loadPageConfig('homepage')
 ```
 
+## 公开入口
+
+- `config`：四文件协议、`PageConfigLoader`、compiler、`PageConfigFileApi`
+- `node-tree`：`SparkNode`、`SparkNodeTree`、节点归一化与访问函数
+- `navigation`：导航模型、编辑会话、导航 API client
+- `runtime`：`PAGE_RUNTIME_SERVICES`、运行时服务类型、`ScriptContext`
+- `json-document`：通用 JSON tree editor 模型、mutation、flat roundtrip、schema helpers
+- `design`：页面文件文档、编辑工作区、设计服务、设计器 artifacts
+- `ai`：pageDesign / manualLeave 业务注册、ModuleKind classes、AI prompts
+
+根入口 `@spark-view/spark-page-config` 只保留最小运行时 config loader API。功能调用方应使用上面的显式 subpath。
+
 ## 相关文件
 
-- `src/page/loading/`：四文件加载、缓存、编译与加载契约
-- `src/capabilities/`：页面文件编辑、设计期文档与生命周期
-- `src/page/sandbox/`：脚本沙箱上下文类型
-- `src/registrations/`：智能编排相关业务注册
-- `tests/`：配置加载与类型相关测试
+- `src/config/`：四文件加载、缓存、编译与加载契约
+- `src/node-tree/`：SparkNode 与 SparkNodeTree 编辑模型
+- `src/navigation/`：导航 DTO、归一化、编辑会话与 API client
+- `src/runtime/`：脚本上下文和运行时服务 capability
+- `src/json-document/`：通用 JSON 文档树能力
+- `src/design/`：页面文件编辑、设计期文档、工作区、生命周期与 artifacts
+- `src/ai/`：智能编排相关业务注册
+- `tests/`：配置加载、文档、节点树、AI 注册和公共入口测试
 
 ## 与其他包的关系
 
@@ -62,5 +77,7 @@ pnpm --filter @spark-view/spark-page-config run test:run
 ## 进一步阅读
 
 - [../../docs/guides/CONFIG_SYSTEM.md](../../docs/guides/CONFIG_SYSTEM.md)
+- [../../docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md](../../docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
 - [../../docs/architecture/DATAFLOW_ARCHITECTURE.md](../../docs/architecture/DATAFLOW_ARCHITECTURE.md)
 - [../../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](../../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)
+

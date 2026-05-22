@@ -21,7 +21,7 @@ declare module 'virtual:spark-components' {
   /**
    * 组件统计信息
    */
-  export interface ComponentStats {
+  export type ComponentStats = {
     /** 组件总数 */
     total: number
     /** 同步加载组件数量 */
@@ -29,13 +29,12 @@ declare module 'virtual:spark-components' {
     /** 异步加载组件数量 */
     async: number
     /** 所有组件的 Map */
-    components: Map<string, Component>
-  }
+    components: Map<string, Component>}
 
   /**
    * 组件元数据
    */
-  export interface ComponentMetadata {
+  export type ComponentMetadata = {
     /** 组件名称 */
     name: string
     /** 文件路径 */
@@ -43,8 +42,7 @@ declare module 'virtual:spark-components' {
     /** 文件大小 (KB) */
     size: number
     /** 加载策略 */
-    strategy: 'sync' | 'async'
-  }
+    strategy: 'sync' | 'async'}
 
   /**
    * 注册所有组件到 SPARK Registry

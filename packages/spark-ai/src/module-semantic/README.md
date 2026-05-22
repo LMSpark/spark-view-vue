@@ -1,47 +1,41 @@
 # module-semantic
 
-`@spark-view/spark-ai/module-semantic` 是 Host 与业务系统之间的语义协议层。它只做三件事：
+`@spark-view/spark-ai/module-semantic` is the protocol layer between Host and business modules. It owns semantic discovery and execution routing, but it does not own business live state or Host session history.
 
-- 描述业务模块：`ModuleKind`、`AttributeSchema`、`ActionSchema`。
-- 固定 6 个 LLM 协议工具：`getAttribute`、`setAttribute`、`invokeAction`、`listChildren`、`findInstance`、`describeKind`。
-- 在调用时完成路径解析、action 参数校验和运行入口委托。
+## Public Concepts
 
-它不保存业务 live state，不管理 Host 会话历史，不导入业务包。
+- `ModuleKind`: core class for kind metadata plus runner/list/find delegates.
+- `ModuleActionMetadata` and `ModuleAttributeMetadata`: action and attribute declarations.
+- `ModulePath`, `ModulePathSegment`, `ModulePathParseError`: path parsing.
+- `ModulePathContext`, `ModuleHostContext`, `ModuleInstanceRef`, `ModuleInstanceQuery`: execution context and instance references.
+- `ModuleOperationResult` and `ModuleCheckEntry`: protocol result envelope and diagnostics.
+- `ModuleSemanticRuntime`: composition root and tool-call router.
 
-## 核心模型
+## Protocol Tools
 
-`ModuleKind` 是协议层标准 class，不再拆出额外基类、业务能力协议或独立 options 类型。运行时只接收标准 `ModuleKind` 对象；业务迁移期可以直接 `new ModuleKind({...})` 或继承它，但目标形态是由 VCM 提取属性、动作、子模块和构造装配边界，生成 factory 来替代手写 `ModuleKind`。
+The LLM-facing tool set is fixed:
 
-`ActionSchema` 是纯声明 DTO，只用于 `describeKind`、工具描述和参数校验。动作函数不写进 `ActionSchema`，统一放在 `ModuleKind.runner(ctx, actionName, args)`。
+1. `listChildren(path, childKind?)`
+2. `findInstance(path, childKind, query)`
+3. `describeKind(kind)`
+4. `invokeAction(path, actionName, args)`
+5. `getAttribute(path, attrName)`
+6. `setAttribute(path, attrName, value)`
 
-`ModuleKind` 的运行侧委托：
+Recommended discovery order:
 
-| 协议工具 | 参数 | 委托 |
-| --- | --- | --- |
-| `getAttribute` | `path, attrName` | 基类先查询 `attributes` 元数据,再读取 `ModuleKind.runner` 函数对象上的同名属性 |
-| `setAttribute` | `path, attrName, value` | 基类先查询 `attributes` 元数据,再写入 `ModuleKind.runner` 函数对象上的同名属性 |
-| `invokeAction` | `path, actionName, args` | `ModuleKind.runner(ctx, actionName, args)` |
-| `listChildren` | `path, childKind?` | 根路径列出所有 kind；非根路径调用 `ModuleKind.list(ctx, childKind)` |
-| `findInstance` | `path, childKind, query` | 根路径调用目标 kind 的 `ModuleKind.find(ctx, childKind, query)`；非根路径调用末段 kind 的 `find` |
-| `describeKind` | `kind` | 返回 `ModuleKind` 元数据，不调用业务 runner |
+1. `listChildren("/")`
+2. `findInstance("/", kind, {})`
+3. `describeKind(kind)`
+4. `invokeAction("/kind[id]", actionName, args)`
 
-`listChildren`、`findInstance`、`resolveChild` 都是基类统一实现的协议方法。业务层不要重写这些方法，也不要提供单独的 resolve 委托；路径校验由基类先调用 `find(ctx, childKind, { id })`，未命中时再调用 `list(ctx, childKind)` 推导。
-
-属性语义只来自 `ModuleKind.attributes`，由 `describeKind` 暴露给 LLM；`runner` 函数对象属性只是运行时值存储，不参与语义发现。最终能力元数据应来自 VCM 或其它构建期生成链路，注册到 runtime 前必须投影成标准 `ModuleKind` 构造参数并创建 `ModuleKind`。
-
-VCM 生成能力模块元数据的 JSDoc 标识和范围见 [DM-VCM-MODULE-METADATA-SCOPE.md](DM-VCM-MODULE-METADATA-SCOPE.md)。
-
-`ModuleKind<TListRef, TFindRef>` 允许业务收窄 `list` / `find` 返回的实例引用类型；两个泛型都必须满足 `extends ModuleInstanceRef`，协议对外仍按 `ModuleInstanceRef[]` 处理。
-
-## 注册方式
-
-`runtime.registerKind` 只接受一个 `ModuleKind` 对象。推荐生成链路产出 factory，业务只注入 runner/list/find 运行委托。
+## Registration Example
 
 ```ts
 import {
   ModuleKind,
+  ModuleOperationResult,
   ModuleSemanticRuntime,
-  OperationResult,
   type ModuleKindRunner,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
@@ -49,44 +43,37 @@ import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
 
 const runtime = new ModuleSemanticRuntime()
 
-// VCM 最终生成这一段；手写仅作为迁移期示意。
-const SCHOOL_KIND_METADATA = {
+const runner: ModuleKindRunner = (ctx, actionName, args) => runSchoolAction(ctx, actionName, args)
+
+runtime.registerKind(new ModuleKind({
   kind: 'school',
-  name: '学校',
-  description: '学校业务语义模块',
+  name: 'School',
+  description: 'School business module',
   actions: [
     {
       name: 'archive',
-      description: '归档学校',
+      description: 'Archive the current school',
       paramsSchema: {
         type: 'object',
-        properties: {
-          reason: { type: 'string', description: '归档原因' },
-        },
         required: ['reason'],
+        properties: {
+          reason: { type: 'string', description: 'Archive reason' },
+        },
         additionalProperties: false,
       },
       resultSchema: { type: 'object' },
-      usageRules: ['归档前确认当前学校不再编辑。'],
+      usageRules: ['Call findInstance first to get the current school id.'],
       failureModes: [
-        { code: 'NOT_FOUND', when: '学校不存在', fix: '先调用 findInstance 获取真实 id。' },
+        { code: 'NOT_FOUND', when: 'School does not exist', fix: 'Call findInstance again.' },
       ],
-      example: { reason: '测试归档' },
+      example: { reason: 'test archive' },
     },
   ],
-}
-
-function createSchoolModuleKind(): ModuleKind {
-  const runner: ModuleKindRunner = (ctx, actionName, args) => runSchoolAction(ctx, actionName, args)
-
-  return new ModuleKind({
-    ...SCHOOL_KIND_METADATA,
-    runner,
-    find: (ctx) => OperationResult.ok([
-      { id: ctx.host?.moduleInstanceId ?? 'school-1', label: '当前学校' },
-    ]),
-  })
-}
+  runner,
+  find: (ctx) => ModuleOperationResult.ok([
+    { id: ctx.host?.moduleInstanceId ?? 'school-1', label: 'Current school' },
+  ]),
+}))
 
 function runSchoolAction(
   ctx: ModulePathContext,
@@ -94,93 +81,45 @@ function runSchoolAction(
   args: Readonly<Record<string, LlmJsonValue>>,
 ) {
   if (actionName !== 'archive') {
-    return OperationResult.failCode('UNKNOWN_ACTION', `${actionName} 未实现`)
+    return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${actionName} is not implemented`)
   }
-  return OperationResult.ok<LlmJsonValue>({
+  return ModuleOperationResult.ok<LlmJsonValue>({
     schoolId: ctx.segment.id,
     reason: args['reason'],
   })
 }
-
-runtime.registerKind(createSchoolModuleKind())
 ```
 
-## 生成边界
+## Runtime Split
 
-VCM 生成的代码只负责描述元数据和装配标准 `ModuleKind`：
+`ModuleSemanticRuntime` is intentionally small. It composes:
 
-- 生成 `kind / name / description / attributes / actions / children`。
-- 生成可直接传入 `new ModuleKind(...)` 的 metadata，并由 TypeScript 在 factory 调用处校验。
-- 提取构造函数和注册工厂的依赖边界，生成 `createXxxModuleKind(delegates)` factory。
-- 按 `@moduleRunner`、`@moduleListDelegate`、`@moduleFindDelegate` 标识提取 runner/list/find 委托绑定。
-- 只从领域能力 class 源码按 `@moduleAbility`、`@moduleAttackSurface`、`@moduleTrustBoundary`、`@moduleGuard`、`@moduleMutation` 标识提取能力语义和攻击面元数据，例如 `SparkNodeTree`、`DataSetCrudTool`。
-- 注册层只作为协议装配源，不声明实体、动作语义或攻击面。
-- 不生成业务 runner 函数体，不保存 live state，不新增 runtime 注册入口。
+- `ModuleKindRegistry`
+- `Navigator`
+- `AttributeAccessor`
+- `ActionInvoker`
+- `ProtocolToolGenerator`
+- `ProtocolToolRouter`
+- `ProtocolToolArgsParser`
+- `ProtocolResultProjector`
 
-业务代码只提供：
+Parameter parsing and JSON result projection do not live in the runtime class.
 
-- `runner(ctx, actionName, args)`：执行动作。
-- `list(ctx, childKind?)`：必要时列出子实例。
-- `find(ctx, childKind, query)`：必要时查找实例。
-
-最终仍调用：
-
-```ts
-runtime.registerKind(createSchoolModuleKind())
-```
-
-## 默认行为
-
-`ModuleKind` 自带保守默认实现：
-
-- `runner` 返回 `ACTION_NOT_IMPLEMENTED`。
-- `list` 返回空数组。
-- `find` 在根路径下返回当前 Host 业务实例，实例 id 来自 `ctx.host.moduleInstanceId`。
-- `getAttribute` 先按 `attributes` 校验声明和 readable，再读取 `runner` 函数对象属性；未设置时返回 `ATTRIBUTE_VALUE_NOT_FOUND`。
-- `setAttribute` 先按 `attributes` 校验声明和 writable，再写入 `runner` 函数对象属性；写入失败时返回 `ATTRIBUTE_WRITE_FAILED`。
-
-这让简单业务只需要声明 action schema 并提供 `runner`；复杂业务再按需挂接 `list`、`find`，属性状态直接存在 `runner` 函数对象上。
-
-## LLM 调用顺序
-
-推荐发现链路固定为：
-
-1. `listChildren("/")` 发现可用 kind。
-2. `findInstance("/", kind, {})` 获取当前业务实例。
-3. `describeKind(kind)` 获取完整 action 元数据。
-4. `invokeAction(path, actionName, args)` 执行业务动作。
-
-`describeKind` 必须完整返回：
-
-- `paramsSchema`
-- `resultSchema`
-- `usageRules`
-- `failureModes`
-- `example`
-
-公共工具参数由协议层校验；`invokeAction.args` 由对应 action 的 `paramsSchema` 校验；业务只处理已经过协议预校验的动作参数。
-
-## 文件结构
+## File Structure
 
 ```text
 module-semantic/
 ├── protocol/
-│   ├── module-kind.ts       # ModuleKind / AttributeSchema / ActionSchema / 运行侧委托类型
-│   ├── module-path.ts       # /kind[id]/child[id] 路径解析
-│   └── operation-result.ts  # OperationResult / checks
+│   ├── module-kind.ts
+│   ├── module-context.ts
+│   ├── module-operation.ts
+│   └── module-path.ts
 ├── internal/
-│   ├── module-kind-registry.ts
-│   ├── navigator.ts           # 路径遍历 + list/find/describeKind
-│   ├── attribute-accessor.ts
-│   ├── action-invoker.ts
-│   └── protocol-tool-generator.ts
 ├── runtime/
-│   └── module-semantic-runtime.ts
 └── host/
-    └── module-semantic-tool-codec.ts
 ```
 
-参考实现：
+Reference business registrations live in:
 
-- `packages/spark-page-config/src/registrations/page-design-module.ts`
-- `packages/spark-page-config/src/registrations/leave-request.ts`
+- `packages/spark-page-config/src/ai/page-design-module.ts`
+- `packages/spark-page-config/src/ai/leave-request.ts`

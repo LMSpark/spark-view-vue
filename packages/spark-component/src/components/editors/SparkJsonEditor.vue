@@ -40,12 +40,11 @@ type SparkJsonEditorRenderValue = NonNullable<JSONEditorPropsOptional['onRenderV
 type SparkJsonEditorRenderValueProps = Parameters<SparkJsonEditorRenderValue>[0]
 type SparkJsonEditorRenderValueResult = ReturnType<SparkJsonEditorRenderValue>
 
-interface SparkJsonEditorInstance {
+type SparkJsonEditorInstance = {
   updateProps: (props: JSONEditorPropsOptional) => void
-  destroy: () => Promise<void>
-}
+  destroy: () => Promise<void>}
 
-interface SparkJsonEditorModule {
+type SparkJsonEditorModule = {
   createJSONEditor: (options: {
     target: HTMLDivElement
     props: JSONEditorPropsOptional
@@ -57,10 +56,9 @@ interface SparkJsonEditorModule {
     schema: SparkJsonSchema,
     schemaDefinitions?: JSONSchemaDefinitions,
   ) => SparkJsonEditorRenderValueResult | undefined
-  renderValue?: SparkJsonEditorRenderValue
-}
+  renderValue?: SparkJsonEditorRenderValue}
 
-interface Props {
+type Props = {
   /** JSON 字符串内容 */
   modelValue?: string
   /** 是否只读 */
@@ -88,8 +86,7 @@ interface Props {
   /** 是否启用 Schema 校验 */
   enableSchemaValidation?: boolean
   /** 是否启用 Schema 枚举渲染 */
-  enableSchemaEnumRenderer?: boolean
-}
+  enableSchemaEnumRenderer?: boolean}
 
 const props = withDefaults(defineProps<Props>(), {
   value: '',

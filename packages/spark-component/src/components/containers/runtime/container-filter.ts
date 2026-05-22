@@ -65,11 +65,10 @@ const FILTER_OPERATORS: ReadonlySet<string> = new Set([
 // ============================================================
 
 /** 极简日志接口（最小化依赖）。 */
-interface ErrorLoggerLike {
-  error(message: string, error?: unknown): void
-}
+type ErrorLoggerLike = {
+  error(message: string, error?: unknown): void}
 
-interface FilterPanelDataView {
+type FilterPanelDataView = {
   readonly rows: ReadonlyArray<Record<string, unknown>>
   readonly columns?: readonly unknown[]
   readonly filterExpression?: FilterExpression | undefined
@@ -80,8 +79,7 @@ interface FilterPanelDataView {
   getColumn?: (field: string) => unknown
   setFilter(expr: FilterExpression | undefined): Promise<void>
   executeFilter(expr: FilterExpression | undefined): Promise<void>
-  refresh(): Promise<void>
-}
+  refresh(): Promise<void>}
 
 /** 判断过滤值是否为空（空字符串、空数组、null、undefined 均视为空）。 */
 function isEmptyFilterValue(value: unknown): boolean {
@@ -225,18 +223,16 @@ function inferFilterOperator(config: SparkNode, value: unknown): FilterOperator 
 // § 过滤描述符类型
 // ============================================================
 
-interface InputFilterDescriptor {
+type InputFilterDescriptor = {
   kind: 'input'
   config: SparkNode
-  field: string | undefined
-}
+  field: string | undefined}
 
-interface ResidentFieldRefFilterDescriptor {
+type ResidentFieldRefFilterDescriptor = {
   kind: 'field-ref'
   field: string
   op: FilterOperator
-  refField: string
-}
+  refField: string}
 
 /**
  * 尝试从节点创建常驻字段引用描述符（filterValueRefField 存在时）。
@@ -445,17 +441,16 @@ async function applyFilterSafely(params: {
 // § useFilterPanel
 // ============================================================
 
-interface UseFilterPanelOptions {
+type UseFilterPanelOptions = {
   /** 过滤器子节点列表（响应式）。 */
   filterChildren: MaybeRefOrGetter<SparkNode[]>
   /** 目标 DataView（响应式）。 */
   dataView: MaybeRefOrGetter<FilterPanelDataView | null>
   /** 错误日志接口。 */
-  logger: ErrorLoggerLike
-}
+  logger: ErrorLoggerLike}
 
 /** `useFilterPanel` 返回状态。 */
-export interface FilterPanelState {
+export type FilterPanelState = {
   /** 双向绑定的过滤模型（field → 用户输入值）。 */
   filterModel: Record<string, unknown>
   /** 当前可渲染的过滤器配置列表（input 类型）。 */
@@ -467,8 +462,7 @@ export interface FilterPanelState {
   /** 应用过滤（executeFilter 模式，用于搜索按钮）。 */
   searchFilters: () => Promise<void>
   /** 重置所有过滤值。 */
-  resetFilters: () => Promise<void>
-}
+  resetFilters: () => Promise<void>}
 
 /**
  * 过滤面板完整状态管理。

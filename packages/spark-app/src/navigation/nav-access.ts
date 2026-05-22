@@ -11,16 +11,14 @@
 import type { AppNavRoot } from './nav-model'
 
 /** DynamicRouter 公共 API 子集（仅导航相关） */
-interface DynamicRouterAccess {
+type DynamicRouterAccess = {
   refreshRoutes(): Promise<AppNavRoot | null>
-  getNavTree(): AppNavRoot | null
-}
+  getNavTree(): AppNavRoot | null}
 
 /** 初始化选项 */
-interface NavAccessOptions {
+type NavAccessOptions = {
   /** 导航树未加载时的回退首页路径（默认 '/dashboard'） */
-  defaultHomePath?: string
-}
+  defaultHomePath?: string}
 
 /** DynamicRouter 实例引用，由 start.ts 通过 setDynamicRouter 注入 */
 let _dynamicRouter: DynamicRouterAccess | null = null

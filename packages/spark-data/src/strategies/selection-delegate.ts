@@ -20,12 +20,10 @@ import { pruneInvalidSelections } from '../core/utils'
 
 const logger = Logger('DataView:Selection')
 
-interface EmitCurrentRowChangedFn {
-  (originatorId?: string): void
-}
-interface EmitSelectedRowsChangedFn {
-  (originatorId?: string): void
-}
+type EmitCurrentRowChangedFn = {
+  (originatorId?: string): void}
+type EmitSelectedRowsChangedFn = {
+  (originatorId?: string): void}
 
 function isDataRow(value: unknown): value is DataRow {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)

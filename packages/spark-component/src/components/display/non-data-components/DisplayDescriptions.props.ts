@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDescriptionsProps extends SparkNodeProps {
+export type RDescriptionsProps = SparkNodeProps & {
   /** 描述列表标题 */
     title?: string
     /** 操作区附加内容 */
@@ -12,5 +12,4 @@ export interface RDescriptionsProps extends SparkNodeProps {
     /** 排列方向 */
     direction?: 'horizontal' | 'vertical'
     /** 尺寸 */
-    descriptionsSize?: 'large' | 'default' | 'small'
-}
+    descriptionsSize?: 'large' | 'default' | 'small'}

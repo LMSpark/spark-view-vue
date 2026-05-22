@@ -14,12 +14,11 @@ import { createLogger } from './logger'
 
 const logger = createLogger('AutoRegister')
 
-export interface AutoRegisterOptions {
+export type AutoRegisterOptions = {
   /**
    * 排除规则（glob 模式）
    */
-  exclude?: string[]
-}
+  exclude?: string[]}
 
 const DEFAULT_EXCLUDE = [
   'App.vue',

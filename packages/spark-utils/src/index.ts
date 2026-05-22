@@ -33,7 +33,42 @@ export type {
 
 // ==================== HTTP 模块 ====================
 
-export * from './http/index.js'
+export {
+  createFetchClient,
+  createFileLoader,
+  createHttpClient,
+  createRequest,
+  FetchClient,
+  FileLoader,
+  HttpClientBase,
+  isRequestError,
+  Request,
+  TransformedFileLoader,
+} from './http/index.js'
+
+export type {
+  ApiResponse,
+  CacheEntry,
+  CacheExpirationTier,
+  FileLoaderEventMap,
+  FileLoadOptions,
+  FileLoadResult,
+  HttpClientAdapter,
+  HttpClientFactoryOptions,
+  HttpResponse,
+  JsonLoadOptions,
+  LoadOptions,
+  Method,
+  RequestConfig,
+  RequestError,
+  RequestInterceptor,
+  ResponseInterceptor,
+  SSEEvent,
+  StreamResponse,
+  TextLoadOptions,
+  TransformLoadOptions,
+  TransformedFileLoadOptions,
+} from './http/index.js'
 
 // ==================== 错误工具 ====================
 

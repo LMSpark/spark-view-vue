@@ -148,22 +148,19 @@ const MODEL_VALUE_PROP_COMPONENT_TYPES = new Set([
 ])
 
 type RenderableChild = SparkNode | string | number
-interface NodeRuntimeProps {
-  [key: string]: unknown
-}
+type NodeRuntimeProps = {
+  [key: string]: unknown}
 type RenderBranch = 'hidden' | 'registry' | 'global-el' | 'native' | 'fallback'
 
 type ParentCapabilityContext = CapabilityContext | null
-interface HostTypeConstraintState {
+type HostTypeConstraintState = {
   matched: boolean
   expectedTypes: string[]
-  actualTypes: string[]
-}
-interface ScopedRuntimeInput {
+  actualTypes: string[]}
+type ScopedRuntimeInput = {
   rawProps: NodeRuntimeProps
-  parentContext: ParentCapabilityContext
-}
-interface ResolvedBeforeRenderContext extends Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'> {}
+  parentContext: ParentCapabilityContext}
+type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'props' | 'children'>
 
 // 复用空对象常量，避免多个 computed 在“无 props”场景反复制造新引用。
 const EMPTY_RUNTIME_PROPS: NodeRuntimeProps = {}
@@ -183,7 +180,7 @@ const NATIVE_HTML_TAGS = new Set([
 
 // ── 渲染器输入：外部只传节点本体与可选父上下文 ───────────────────────────────
 
-interface RendererProps {
+type RendererProps = {
   /**
    * 被渲染的节点本体。
    *
@@ -197,8 +194,7 @@ interface RendererProps {
    * 仅用于根节点 / 测试场景：将其挂到当前 renderer 实例，子业务组件沿父实例链自动发现。
    * 普通递归渲染无需传递，子组件继承已有的 SparkContext 结构树。
    */
-  parentContext?: CapabilityContext
-}
+  parentContext?: CapabilityContext}
 
 const rendererProps = defineProps<RendererProps>()
 const currentInstance = getCurrentInstance()

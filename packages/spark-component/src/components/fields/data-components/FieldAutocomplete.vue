@@ -28,9 +28,8 @@ import { coerceStringValue } from './composables/fieldValueCoercion'
 import FieldContextRenderer from '../non-data-components/FieldContextRenderer.vue'
 import type { RAutocompleteProps } from './FieldAutocomplete.props'
 
-interface SuggestionItem {
-  [key: string]: unknown
-}
+type SuggestionItem = {
+  [key: string]: unknown}
 
 const props = withDefaults(defineProps<RAutocompleteProps>(), {
   type: 'r-autocomplete',

@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RLinkProps extends SparkNodeProps {
+export type RLinkProps = SparkNodeProps & {
   /** 链接文本 */
     label?: string
     /** 链接类型 */
@@ -10,5 +10,4 @@ export interface RLinkProps extends SparkNodeProps {
     /** 跳转地址 */
     href?: string
     /** 跳转目标 */
-    target?: '_blank' | '_self' | '_parent' | '_top'
-}
+    target?: '_blank' | '_self' | '_parent' | '_top'}

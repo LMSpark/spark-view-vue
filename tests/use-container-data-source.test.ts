@@ -4,15 +4,14 @@ import type { CrudApi, TableResourceType } from '@spark-view/spark-data'
 import { useContainerDataSourceEffects } from '../packages/spark-component/src/components/containers/data-views/view-data-source'
 import type { DataViewMemberDiagnostic } from '@spark-view/spark-data'
 
-interface AutoLoadViewLike {
+type AutoLoadViewLike = {
   autoLoad?: boolean
   autoLoadConfigured?: boolean
   requestData: () => Promise<void>
   dataTable?: {
     api?: CrudApi
     resourceType?: TableResourceType
-  }
-}
+  }}
 
 function createSource(options?: {
   autoLoad?: boolean

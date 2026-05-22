@@ -31,18 +31,16 @@ export function useDefaultedSelection<TItem, TValue>(options: {
   return state
 }
 
-export interface UnifiedValueBridgeOptions<TValue> {
+export type UnifiedValueBridgeOptions<TValue> = {
   value: ValueRef<TValue | undefined>
   fallbackValue: TValue
   debounceMs?: number
   normalize?: (value: TValue | undefined) => TValue
   equals?: (a: TValue, b: TValue) => boolean
-  emitValue?: (value: TValue) => void
-}
+  emitValue?: (value: TValue) => void}
 
-interface CommitValueOptions {
-  emit?: boolean
-}
+type CommitValueOptions = {
+  emit?: boolean}
 
 export function useUnifiedValueBridge<TValue>(options: UnifiedValueBridgeOptions<TValue>): {
   state: ShallowRef<TValue>

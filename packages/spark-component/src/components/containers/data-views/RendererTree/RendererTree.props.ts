@@ -12,7 +12,7 @@ import type { TreeEventHandler } from './zero-code'
  *
  * 命名规范：组件 type `r-tree` → 接口名 `RTreeProps`。
  */
-export interface RTreeProps extends SparkNodeProps, SparkCrudDataContainerProps {
+export type RTreeProps = SparkNodeProps & SparkCrudDataContainerProps & {
   /** 显式收窄为树容器使用的 DataView 数据线。 */
     dataSource?: DataView
     /** 结构化工具栏 */
@@ -36,5 +36,4 @@ export interface RTreeProps extends SparkNodeProps, SparkCrudDataContainerProps 
     /** 节点折叠回调 */
     onNodeCollapse?: TreeEventHandler
     /** 透传给 el-tree 的显式属性 */
-    treeProps?: Record<string, unknown>
-}
+    treeProps?: Record<string, unknown>}

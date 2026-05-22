@@ -14,11 +14,10 @@ import type {
   SparkNode,
 } from '@spark-view/spark-component'
 
-interface Props {
+type Props = {
   config?: SparkNode
   label?: string
-  emptyText?: string
-}
+  emptyText?: string}
 
 const props = withDefaults(defineProps<Props>(), {
   label: '上下文',

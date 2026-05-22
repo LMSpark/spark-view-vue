@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】协议层的"空间感知"中枢。统一负责三类操作：
- *   1. 路径遍历（navigate）  — 把 ModuleKind.Path 翻译成末段 ModuleKind + PathContext
+ *   1. 路径遍历（navigate）  — 把 ModulePath 翻译成末段 ModuleKind + PathContext
  *   2. 子实例发现（listChildren / findInstance）
  *   3. Kind 元数据查询（describeKind）
  *
@@ -27,7 +27,19 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import { ModuleKind, type ActionSchema, type AttributeSchema } from '../protocol/module-kind'
+import {
+  ModuleCheckEntry,
+  ModuleOperationResult,
+  ModulePathSegment,
+  type ModuleActionMetadata,
+  type ModuleAttributeMetadata,
+  type ModuleHostContext,
+  type ModuleInstanceQuery,
+  type ModuleInstanceRef,
+  type ModuleKind,
+  type ModulePath,
+  type ModulePathContext,
+} from '../protocol'
 import type { ModuleKindRegistry } from './module-kind-registry'
 
 // ═══════════════════════════════════════════════════════════════
@@ -45,8 +57,8 @@ export type ModuleKindDescription = Readonly<{
   kind: string
   name: string
   description: string
-  attributes: readonly AttributeSchema[]
-  actions: readonly ActionSchema[]
+  attributes: readonly ModuleAttributeMetadata[]
+  actions: readonly ModuleActionMetadata[]
   children: readonly string[]
 }>
 
@@ -58,12 +70,12 @@ export type ModuleKindDescription = Readonly<{
 export class ModuleNavigationSuccess {
   public constructor(
     public readonly moduleKind: ModuleKind,
-    public readonly segmentCtx: ModuleKind.PathContext,
+    public readonly segmentCtx: ModulePathContext,
   ) {}
 }
 
 /** 路径遍历失败结果（OperationResult<never> 的别名，方便类型标注） */
-export type ModuleNavigationFailure = ModuleKind.OperationResult<never>
+export type ModuleNavigationFailure = ModuleOperationResult<never>
 
 // ═══════════════════════════════════════════════════════════════
 // 第 2 节 · Navigator class
@@ -88,11 +100,11 @@ export class Navigator {
    *      - 返回 ok=false → RESOLVE_ERROR（透传 checks）
    */
   public async navigate(
-    path: ModuleKind.Path,
-    host?: ModuleKind.HostContext,
+    path: ModulePath,
+    host?: ModuleHostContext,
   ): Promise<ModuleNavigationSuccess | ModuleNavigationFailure> {
     if (path.isRoot) {
-      return ModuleKind.OperationResult.failCode('PATH_EMPTY', '路径不能为根 "/",请指定至少一段 <kind>[<id>]')
+      return ModuleOperationResult.failCode('PATH_EMPTY', '路径不能为根 "/",请指定至少一段 <kind>[<id>]')
     }
 
     const segments = path.segments
@@ -101,7 +113,7 @@ export class Navigator {
     for (let i = 0; i < segments.length; i++) {
       const segment = requirePathSegment(segments, i)
       if (!this.kinds.has(segment.kind)) {
-        return ModuleKind.OperationResult.failCode(
+        return ModuleOperationResult.failCode(
           'KIND_NOT_REGISTERED',
           `路径段 ${formatSegment(segment, i)} 的 kind "${segment.kind}" 未注册`,
           '可通过 listChildren 查看当前路径下可用的子 kind',
@@ -114,7 +126,7 @@ export class Navigator {
       const parentSegment = requirePathSegment(segments, i - 1)
       const childSegment = requirePathSegment(segments, i)
       const parentKind = this.kinds.require(parentSegment.kind)
-      const parentCtx: ModuleKind.PathContext = {
+      const parentCtx: ModulePathContext = {
         segments: segments.slice(0, i),
         segment: parentSegment,
         ...(host === undefined ? {} : { host }),
@@ -122,14 +134,14 @@ export class Navigator {
       const resolveResult = await parentKind.resolveChild(parentCtx, childSegment.kind, childSegment.id)
       if (!resolveResult.ok) {
         const original = resolveResult.checks ?? []
-        const wrapper: ModuleKind.CheckEntry = ModuleKind.CheckEntry.error(
+        const wrapper: ModuleCheckEntry = ModuleCheckEntry.error(
           'RESOLVE_ERROR',
           `验证路径段 ${formatSegment(childSegment, i)} 时 ModuleKind 出错`,
         )
-        return ModuleKind.OperationResult.fail([wrapper, ...original])
+        return ModuleOperationResult.fail([wrapper, ...original])
       }
       if (resolveResult.data !== true) {
-        return ModuleKind.OperationResult.failCode(
+        return ModuleOperationResult.failCode(
           'PATH_INVALID',
           `路径段 ${formatSegment(childSegment, i)} 在父段 ${formatSegment(parentSegment, i - 1)} 下不存在`,
           `可调用 listChildren 查询父段下可用的 ${childSegment.kind} 列表`,
@@ -161,20 +173,20 @@ export class Navigator {
    *   - 非根路径 → 委托末段 ModuleKind.listChildren
    */
   public async listChildren(
-    path: ModuleKind.Path,
+    path: ModulePath,
     childKind?: string,
-    host?: ModuleKind.HostContext,
-  ): Promise<ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>> {
+    host?: ModuleHostContext,
+  ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
     if (path.isRoot) {
       if (childKind === undefined) {
-        const refs: readonly ModuleKind.InstanceRef[] = this.kinds.list().map((moduleKind) => ({
+        const refs: readonly ModuleInstanceRef[] = this.kinds.list().map((moduleKind) => ({
           id: moduleKind.kind,
           label: moduleKind.name,
           summary: moduleKind.description,
         }))
-        return ModuleKind.OperationResult.ok(refs)
+        return ModuleOperationResult.ok(refs)
       }
-      return ModuleKind.OperationResult.failCode(
+      return ModuleOperationResult.failCode(
         'ROOT_LIST_REQUIRES_FIND',
         `根路径下无法直接列出 kind "${childKind}" 的实例`,
         `请调用 findInstance("/", "${childKind}", {...}) 按业务条件查询`,
@@ -202,13 +214,13 @@ export class Navigator {
    *   - KIND_NOT_REGISTERED
    */
   public async findInstance(
-    path: ModuleKind.Path,
+    path: ModulePath,
     childKind: string,
-    query: ModuleKind.InstanceQuery,
-    host?: ModuleKind.HostContext,
-  ): Promise<ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>> {
+    query: ModuleInstanceQuery,
+    host?: ModuleHostContext,
+  ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
     if (!this.kinds.has(childKind)) {
-      return ModuleKind.OperationResult.failCode(
+      return ModuleOperationResult.failCode(
         'KIND_NOT_REGISTERED',
         `目标 kind "${childKind}" 未注册`,
         '可调用 listChildren("/") 查看已注册 kind',
@@ -216,7 +228,7 @@ export class Navigator {
     }
     if (path.isRoot) {
       const moduleKind = this.kinds.require(childKind)
-      const rootCtx: ModuleKind.PathContext = {
+      const rootCtx: ModulePathContext = {
         segments: [],
         segment: ROOT_SEGMENT_SENTINEL,
         ...(host === undefined ? {} : { host }),
@@ -229,7 +241,7 @@ export class Navigator {
     }
     const tailKind = this.kinds.require(navResult.segmentCtx.segment.kind)
     if (!tailKind.children.includes(childKind)) {
-      return ModuleKind.OperationResult.failCode(
+      return ModuleOperationResult.failCode(
         'CHILD_KIND_NOT_DECLARED',
         `kind "${tailKind.kind}" 未声明子 kind "${childKind}"`,
         `可调用 describeKind("${tailKind.kind}") 查看允许的子 kind`,
@@ -246,16 +258,16 @@ export class Navigator {
    *
    * 失败码: KIND_NOT_REGISTERED
    */
-  public describeKind(kind: string): ModuleKind.OperationResult<ModuleKindDescription> {
+  public describeKind(kind: string): ModuleOperationResult<ModuleKindDescription> {
     const moduleKind = this.kinds.get(kind)
     if (moduleKind === undefined) {
-      return ModuleKind.OperationResult.failCode(
+      return ModuleOperationResult.failCode(
         'KIND_NOT_REGISTERED',
         `kind "${kind}" 未注册`,
         '可调用 listChildren("/") 查看已注册 kind',
       )
     }
-    return ModuleKind.OperationResult.ok(describeKindMeta(moduleKind))
+    return ModuleOperationResult.ok(describeKindMeta(moduleKind))
   }
 }
 
@@ -267,7 +279,7 @@ export class Navigator {
  * 根级 findInstance 调用 ModuleKind 时使用的占位 segment。
  * kind 和 id 都为空字符串，表示"不来自具体路径段"。
  */
-const ROOT_SEGMENT_SENTINEL = new ModuleKind.PathSegment('', '')
+const ROOT_SEGMENT_SENTINEL = new ModulePathSegment('', '')
 
 /** 从 ModuleKind 实例提取元数据摘要 */
 function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
@@ -286,18 +298,18 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
  * 使用 instanceof 而非属性检测，确保准确区分 ModuleNavigationSuccess 和 OperationResult。
  */
 export function isNavigationSuccess(
-  result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
+  result: ModuleNavigationSuccess | ModuleOperationResult<never>,
 ): result is ModuleNavigationSuccess {
   return result instanceof ModuleNavigationSuccess
 }
 
 /** 格式化路径段为诊断字符串："[i] kind[id]" */
-function formatSegment(segment: ModuleKind.PathSegment, index: number): string {
+function formatSegment(segment: ModulePathSegment, index: number): string {
   return `"[${String(index)}] ${segment.kind}[${segment.id}]"`
 }
 
 /** 安全取路径段（越界抛错） */
-function requirePathSegment(segments: readonly ModuleKind.PathSegment[], index: number): ModuleKind.PathSegment {
+function requirePathSegment(segments: readonly ModulePathSegment[], index: number): ModulePathSegment {
   const segment = segments[index]
   if (segment === undefined) {
     throw new Error(`[Navigator] missing path segment at index ${String(index)}`)

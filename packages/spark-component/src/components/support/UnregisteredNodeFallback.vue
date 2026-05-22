@@ -36,14 +36,13 @@
 import { computed, ref, useSlots } from 'vue'
 import type { SparkNode } from '../../core/types.js'
 
-interface Props {
+type Props = {
   /** 未注册的源节点 */
   node: SparkNode
   /** 提示标题 */
   title?: string
   /** 说明文本 */
-  description?: string
-}
+  description?: string}
 
 const props = withDefaults(defineProps<Props>(), {
   title: '未注册的组件类型',

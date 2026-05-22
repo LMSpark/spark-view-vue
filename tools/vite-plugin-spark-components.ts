@@ -77,7 +77,7 @@ export type LoadStrategy = 'sync' | 'async'
 /**
  * 组件元数据
  */
-export interface ComponentMetadata {
+export type ComponentMetadata = {
   /** 组件名称（kebab-case） */
   name: string
   /** 文件路径（相对于 root） */
@@ -93,13 +93,12 @@ export interface ComponentMetadata {
   /** 导入语句 */
   importStatement: string
   /** 注册语句 */
-  registerStatement: string
-}
+  registerStatement: string}
 
 /**
  * 插件配置
  */
-export interface SparkComponentsPluginOptions {
+export type SparkComponentsPluginOptions = {
   /**
    * 组件扫描模式（glob 模式）
    * @default ['./features/**\/*.vue', './src/components/**\/*.vue']
@@ -146,8 +145,7 @@ export interface SparkComponentsPluginOptions {
    * 是否在控制台输出详细日志
    * @default false
    */
-  verbose?: boolean
-}
+  verbose?: boolean}
 
 /* -----------------------------------------------------------------------------
  * 默认配置

@@ -227,7 +227,7 @@ r-row 或 r-cell context
 
 | 键 | 定义包 | 类型 | 提供者 | 消费者 |
 |---|---|---|---|---|
-| `PAGE_RUNTIME_SERVICES` | `spark-page-config/page` | `PageRuntimeServicesCapability` | PageRenderer | 任意业务组件 |
+| `PAGE_RUNTIME_SERVICES` | `spark-page-config/runtime` | `PageRuntimeServicesCapability` | PageRenderer | 任意业务组件 |
 | `PAGE_SERVICE` | `spark-component` | `PageServiceCapability` | — | — |
 | `PAGE_DATASET` | `spark-component` | `DataSetContract` | PageRenderer | 表容器 |
 | `DATA_SOURCE` | `spark-component` | `DataView` | 表容器 | 行/单元格 |
@@ -239,7 +239,7 @@ r-row 或 r-cell context
 ## 8. Logger 体系
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 
 // 应用层统一 logger（PageRenderer 已自动注入）
 sparkProvide(PAGE_RUNTIME_SERVICES, { logger: appLogger, router })
@@ -283,3 +283,4 @@ sequenceDiagram
   DV->>DV: emit rowsChanged/requestStateChanged
   Note over DV: 级联子视图自动更新
 ```
+

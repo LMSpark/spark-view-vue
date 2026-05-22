@@ -1,6 +1,6 @@
 import type { SparkDataDisplayProps, SparkNodeProps } from '../../shared-types'
 
-export interface RTextDisplayProps extends SparkNodeProps, SparkDataDisplayProps<unknown> {
+export type RTextDisplayProps = SparkNodeProps & SparkDataDisplayProps<unknown> & {
   /** 包裹标签名，如 span/div */
     tag?: string
     /** 前缀 */
@@ -16,5 +16,4 @@ export interface RTextDisplayProps extends SparkNodeProps, SparkDataDisplayProps
     /** 文本 class */
     textClass?: string
     /** 文本样式 */
-    textStyle?: Record<string, unknown> | string
-}
+    textStyle?: Record<string, unknown> | string}

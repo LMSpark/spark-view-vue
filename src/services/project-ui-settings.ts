@@ -1,11 +1,10 @@
 import type { PageMode } from '@spark-view/spark-app'
 
-export interface ProjectUiSettings {
+export type ProjectUiSettings = {
   headerFirst: boolean
   sidebarCollapsed: boolean
   showFooter: boolean
-  pageMode: PageMode
-}
+  pageMode: PageMode}
 
 export const PROJECT_UI_SETTINGS_STORAGE_PREFIX = 'spark-ui-settings'
 

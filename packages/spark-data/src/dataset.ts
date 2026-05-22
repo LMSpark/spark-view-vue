@@ -112,24 +112,21 @@ function resolveRouteTemplateParams(routeLike: unknown): {
   return result
 }
 
-interface DataSetSaveChangesTarget {
+type DataSetSaveChangesTarget = {
   view: DataView
-  ids?: Array<string | number>
-}
+  ids?: Array<string | number>}
 
-interface DataSetTransactionOperationPlan {
+type DataSetTransactionOperationPlan = {
   operation: DataSetTransactionOperation
   view: DataView
   id: string | number
-  kind: DataSetTransactionOperation['op']
-}
+  kind: DataSetTransactionOperation['op']}
 
-interface DataSetTransactionViewPlan {
+type DataSetTransactionViewPlan = {
   viewResult: DataSetSaveChangesViewResult
-  operations: DataSetTransactionOperationPlan[]
-}
+  operations: DataSetTransactionOperationPlan[]}
 
-interface DataSetConfig {
+type DataSetConfig = {
   dataSetName: string
   tables: Record<string, TableMetadata>
   schemaVersion?: number | undefined
@@ -138,8 +135,7 @@ interface DataSetConfig {
   version?: number | undefined
   pageId?: string | undefined
   saveChanges?: DataSetSaveChangesConfig | undefined
-  layout?: DataSetMetadata['layout'] | undefined
-}
+  layout?: DataSetMetadata['layout'] | undefined}
 
 function emptyDataSetSaveChangesResult(viewCount: number): DataSetSaveChangesResult {
   return {

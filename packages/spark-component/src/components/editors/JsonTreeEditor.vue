@@ -220,11 +220,11 @@ import {
   type MutationResult,
   type TreeModel,
   type TreeDisplayNode,
-} from '@spark-view/spark-page-config/capabilities/json-document'
+} from '@spark-view/spark-page-config/json-document'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 
-interface DisplayRow extends TreeDisplayNode {
+type DisplayRow = TreeDisplayNode & {
   displayKey: string
     valuePreview: string
     stringValue: string
@@ -235,8 +235,7 @@ interface DisplayRow extends TreeDisplayNode {
     _schemaDescription: string
     _schemaRequired: boolean
     _schemaEnumValues: string[]
-    _schemaEnumLabels: Record<string, string>
-}
+    _schemaEnumLabels: Record<string, string>}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
@@ -262,7 +261,7 @@ function isDisplayRow(value: unknown): value is DisplayRow {
 
 // ── Props ─────────────────────────────────────────────────────
 
-interface JsonTreeEditorProps {
+type JsonTreeEditorProps = {
   type?: 'json-tree-editor'
   /** 字段绑定名，映射到 DataView 行字段 */
   field?: string
@@ -297,8 +296,7 @@ interface JsonTreeEditorProps {
   /** 创建数组默认子项 */
   createDefaultArrayItem?: (parentPath: JsonPath) => JsonValue
   /** 创建对象默认子值 */
-  createDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue
-}
+  createDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue}
 
 const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
   value: '',
@@ -951,3 +949,4 @@ function collapseAll(): void {
   color: var(--el-text-color-secondary);
 }
 </style>
+

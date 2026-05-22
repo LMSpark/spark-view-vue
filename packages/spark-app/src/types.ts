@@ -21,36 +21,33 @@ export type AppEnvironment = 'development' | 'production' | 'test'
 /**
  * 用户信息
  */
-export interface UserInfo {
+export type UserInfo = {
   userId: string
   username: string
   displayName?: string
   email?: string
   avatar?: string
   readonly roles: string[]        // ['admin', 'sales', 'manager']
-  readonly permissions: string[]  // ['order:create', 'user:read', 'report:export']
-}
+  readonly permissions: string[]}
 
 /**
  * 租户信息
  */
-export interface TenantInfo {
+export type TenantInfo = {
   tenantId: string
   tenantName: string
   tenantCode?: string
   config?: Record<string, unknown>
-  features?: string[]  // 租户启用的功能特性
-}
+  features?: string[]}
 
 /**
  * 环境信息
  */
-export interface EnvironmentInfo {
+export type EnvironmentInfo = {
   mode: AppEnvironment
   apiBaseUrl: string
   version: string
-  buildTime?: string
-}
+  buildTime?: string}
 
 /**
  * 应用全局上下文接口
@@ -73,7 +70,7 @@ export interface EnvironmentInfo {
  * - 环境判断（SSR vs CSR）
  * - 全局配置读取
  */
-export interface AppContext {
+export type AppContext = {
   /** 用户信息 */
   user: UserInfo
   /** 租户信息 */
@@ -83,13 +80,12 @@ export interface AppContext {
   /** 全局配置 */
   config: Record<string, unknown>
   /** 初始化时间 */
-  initializedAt: string
-}
+  initializedAt: string}
 
 /**
  * 应用配置
  */
-export interface AppConfig {
+export type AppConfig = {
   /** API 基础地址 */
   apiBaseUrl: string
   /** 日志级别 */
@@ -104,25 +100,23 @@ export interface AppConfig {
   features?: {
     enableExport?: boolean
     enableOffline?: boolean
-  }
-}
+  }}
 
 /**
  * Bootstrap Context - 扩展 AppContext，包含 Vue 应用实例和路由
  */
-export interface BootstrapContext extends AppContext {
+export type BootstrapContext = AppContext & {
   /** Vue 应用实例 */
     app: App
     /** Vue Router 实例 */
     router: Router
     /** 主题服务（仅在启用 theme 选项时存在） */
-    theme?: ThemeCapability
-}
+    theme?: ThemeCapability}
 
 /**
  * 初始化选项
  */
-export interface BootstrapOptions {
+export type BootstrapOptions = {
   /** Vue 应用实例 */
   app: App
   /** Vue Router 实例 */
@@ -138,28 +132,25 @@ export interface BootstrapOptions {
   /** 挂载前钩子 */
   beforeMount?: (context: BootstrapContext) => void | Promise<void>
   /** 挂载后钩子 */
-  afterMount?: (context: BootstrapContext) => void | Promise<void>
-}
+  afterMount?: (context: BootstrapContext) => void | Promise<void>}
 
 /**
  * 路由守卫选项
  */
-export interface RouterGuardOptions {
+export type RouterGuardOptions = {
   /** 自定义权限检查 */
-  checkPermission?: (permissions: string[], required: string[]) => boolean
-}
+  checkPermission?: (permissions: string[], required: string[]) => boolean}
 
 /**
  * 错误处理选项
  */
-export interface ErrorHandlerOptions {
+export type ErrorHandlerOptions = {
   /** 错误回调 */
   onError?: (error: Error, context: ErrorContext) => void
   /** 自定义错误分类 */
   errorClassifier?: (error: Error) => ErrorType
   /** 错误类型处理回调（消费层实现 UI 交互） */
-  onErrorByType?: (type: ErrorType, error: Error) => void
-}
+  onErrorByType?: (type: ErrorType, error: Error) => void}
 
 /**
  * 错误上下文接口
@@ -177,7 +168,7 @@ export interface ErrorHandlerOptions {
  * - API 请求错误时记录 info 和 timestamp
  * - 用户操作异常时进行错误上报
  */
-export interface ErrorContext {
+export type ErrorContext = {
   /** 错误来源（组件名） */
   source?: string
   /** 组件文件路径（Vue SFC __file） */
@@ -185,8 +176,7 @@ export interface ErrorContext {
   /** 错误信息 */
   info: string
   /** 时间戳 */
-  timestamp: number
-}
+  timestamp: number}
 
 /**
  * 错误类型

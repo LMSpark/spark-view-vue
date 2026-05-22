@@ -41,7 +41,7 @@ const DEFAULT_BATCH_CONCURRENCY = 5
  * 仍然通过 WRAPPED_RESULT_KEYS 保持统一顺序，保证同一个响应里出现多个字段时
  * 选择行为稳定可预期。
  */
-interface WrappedEndpointResult<T> {
+type WrappedEndpointResult<T> = {
   success?: boolean
   message?: string
   data?: T
@@ -50,8 +50,7 @@ interface WrappedEndpointResult<T> {
   item?: T
   result?: T
   rows?: T
-  deleted?: T
-}
+  deleted?: T}
 
 const WRAPPED_RESULT_KEYS = ['data', 'node', 'record', 'item', 'result', 'rows', 'deleted'] as const
 

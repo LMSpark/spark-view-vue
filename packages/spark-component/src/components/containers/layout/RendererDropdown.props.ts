@@ -1,6 +1,6 @@
 import type { SparkFloatingLayerProps, SparkNodeProps } from '../../shared-types'
 
-export interface DropdownItem {
+export type DropdownItem = {
   /** 菜单项文本 */
   label: string
   /** 菜单命令值 */
@@ -10,10 +10,9 @@ export interface DropdownItem {
   /** 是否显示分割线 */
   divided?: boolean
   /** 图标名称 */
-  icon?: string
-}
+  icon?: string}
 
-export interface RDropdownProps extends SparkNodeProps, SparkFloatingLayerProps {
+export type RDropdownProps = SparkNodeProps & SparkFloatingLayerProps & {
   /** 菜单项列表 */
     items?: DropdownItem[]
     /** 触发方式 */
@@ -27,5 +26,4 @@ export interface RDropdownProps extends SparkNodeProps, SparkFloatingLayerProps 
     /** 是否使用分裂按钮 */
     splitButton?: boolean
     /** 菜单最大高度 */
-    maxHeight?: number | string
-}
+    maxHeight?: number | string}

@@ -1,15 +1,13 @@
 import { useEventDefaults } from '../../../containers/support/index.js'
 import type { CancellableControl } from '../../../internal'
 
-export interface FieldChangeControl extends CancellableControl {}
+export type FieldChangeControl = CancellableControl
 
-export interface FieldValueUpdateEmitter<TValue> {
-  (event: 'update:modelValue', value: TValue): void
-}
+export type FieldValueUpdateEmitter<TValue> = {
+  (event: 'update:modelValue', value: TValue): void}
 
-export interface FieldValueUpdateEmits<TValue> {
-  'update:modelValue': [value: TValue]
-}
+export type FieldValueUpdateEmits<TValue> = {
+  'update:modelValue': [value: TValue]}
 
 export function emitFieldValueUpdate<TValue>(
   emit: FieldValueUpdateEmitter<TValue>,
@@ -18,13 +16,12 @@ export function emitFieldValueUpdate<TValue>(
   emit('update:modelValue', value)
 }
 
-interface UseControlledFieldChangeOptions<TValue> {
+type UseControlledFieldChangeOptions<TValue> = {
   getValue: () => TValue
   emitUpdate: (value: TValue) => void
   syncValue: (value: TValue) => void
   afterDefault?: (nextValue: TValue, previousValue: TValue) => void | Promise<void>
-  handlerSource?: Readonly<Record<string, unknown>>
-}
+  handlerSource?: Readonly<Record<string, unknown>>}
 
 /**
  * 字段变更的统一 A/B/C 包装层。

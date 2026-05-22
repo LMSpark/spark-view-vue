@@ -2,23 +2,17 @@ import { defineConfig } from 'vite'
 import { resolve, isAbsolute } from 'path'
 
 export default defineConfig({
-  resolve: {
-    alias: [
-      { find: /^@spark-view\/spark-page-config\/capabilities\/(.+)$/, replacement: resolve(__dirname, 'src/capabilities/$1') },
-    ],
-  },
   build: {
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'page/model/index': resolve(__dirname, 'src/page/model.ts'),
-        'page/loading/index': resolve(__dirname, 'src/page/loading.ts'),
-        'page/spark-node/index': resolve(__dirname, 'src/page/spark-node.ts'),
-        'page/spark-node-tree/index': resolve(__dirname, 'src/page/spark-node-tree.ts'),
-        'page/script-context-types/index': resolve(__dirname, 'src/page/script-context-types.ts'),
-        'page/app-services/index': resolve(__dirname, 'src/page/app-services.ts'),
-        'page/navigation/index': resolve(__dirname, 'src/page/navigation.ts'),
-        'registrations/index': resolve(__dirname, 'src/registrations/index.ts'),
+        'config/index': resolve(__dirname, 'src/config/index.ts'),
+        'node-tree/index': resolve(__dirname, 'src/node-tree/index.ts'),
+        'navigation/index': resolve(__dirname, 'src/navigation/index.ts'),
+        'runtime/index': resolve(__dirname, 'src/runtime/index.ts'),
+        'json-document/index': resolve(__dirname, 'src/json-document/index.ts'),
+        'design/index': resolve(__dirname, 'src/design/index.ts'),
+        'ai/index': resolve(__dirname, 'src/ai/index.ts'),
       },
       formats: ['es'],
     },

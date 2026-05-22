@@ -1,17 +1,16 @@
 /**
  * @spark-view/spark-page-config
  *
- * Package root keeps only the minimal config-loader runtime API. Feature
- * consumers use explicit subpaths including page/loading, page/model,
- * capabilities, page/navigation, page/sandbox, page/services, and
- * registrations.
+ * Package root keeps only the minimal runtime config-loader API. Feature
+ * consumers use explicit subpaths: config, node-tree, navigation, runtime,
+ * json-document, design, and ai.
  */
 
 export {
   BasePageConfigLoader,
   PageConfigLoader,
   createConfigLoader,
-} from './page/loading'
+} from './config'
 
 export type {
   ConfigLoaderOptions,
@@ -20,4 +19,4 @@ export type {
   PageConfigFileLoadOptions,
   PageConfigFileName,
   PageConfigFiles,
-} from './page/loading'
+} from './config'

@@ -1,12 +1,11 @@
 import type { CrudResult, DataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-view/spark-data'
 import type { BaseContainerApi } from '../../support/base-container-api.js'
 
-export interface RendererTreePath {
+export type RendererTreePath = {
   pathIds: Array<string | number>
-  pathNodes?: DataRow[]
-}
+  pathNodes?: DataRow[]}
 
-export interface RendererTableApi extends BaseContainerApi {
+export type RendererTableApi = BaseContainerApi & {
   getRows(): DataRow[]
     getSelectedRows(): DataRow[]
     query(): Promise<void>
@@ -22,5 +21,4 @@ export interface RendererTableApi extends BaseContainerApi {
     clearUiSelection(): void
     toggleUiRowSelection(row: DataRow, selected?: boolean): void
     doLayout(): void
-    getNativeTable(): unknown
-}
+    getNativeTable(): unknown}

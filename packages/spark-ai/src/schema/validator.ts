@@ -26,7 +26,7 @@
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
-import type { LlmParameterSchemaRoot } from './types'
+import type { LlmJsonSchemaObject } from './types'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型 — 校验结果
@@ -64,7 +64,7 @@ function isPlainRecord(value: unknown): value is Record<string, unknown> {
 }
 
 /** 是否为 type=object 的标准 JSON Schema 根 */
-function isObjectSchemaRoot(value: unknown): value is LlmParameterSchemaRoot & { readonly type: 'object' } {
+function isObjectSchemaRoot(value: unknown): value is LlmJsonSchemaObject & { readonly type: 'object' } {
   return isPlainRecord(value) && value['type'] === 'object'
 }
 

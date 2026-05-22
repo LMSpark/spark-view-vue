@@ -289,9 +289,9 @@ await SparkApp.start({
 
 ## 8. `spark-page-config`：配置加载与编译边界
 
-`spark-page-config` 的核心类是 [packages/spark-page-config/src/files/runtime/page-config-loader.ts](../packages/spark-page-config/src/files/runtime/page-config-loader.ts) 中的 `PageConfigLoader`。它负责从本地或远程读取页面四文件，再交给编译器变成运行时对象。
+`spark-page-config` 的核心类是 [packages/spark-page-config/src/config/page-config-loader.ts](../packages/spark-page-config/src/config/page-config-loader.ts) 中的 `PageConfigLoader`。它负责从后端页面配置文件 API 读取页面四文件，再交给编译器变成运行时对象。
 
-页面文件域已经收敛到 [packages/spark-page-config/src/files](../packages/spark-page-config/src/files)：`runtime` 负责远程 API、加载和编译；`documents` 负责内存文档与 JSON 文档编辑核心；`editing` 负责编辑工作区和 live edit host；`design` 放 schema、设计器投影、规则策略和页面设计 100 步流程；`services` 暴露 PageDesign 可调用的受控服务；`lifecycle` 负责页面文件创建、导航挂载、移动、卸载、删除和缓存清理。
+页面配置域已经收敛到 [packages/spark-page-config/src/config](../packages/spark-page-config/src/config)、[node-tree](../packages/spark-page-config/src/node-tree)、[navigation](../packages/spark-page-config/src/navigation)、[runtime](../packages/spark-page-config/src/runtime)、[json-document](../packages/spark-page-config/src/json-document)、[design](../packages/spark-page-config/src/design) 和 [ai](../packages/spark-page-config/src/ai)：`config` 负责四文件协议、加载和编译；`json-document` 负责通用 JSON 文档编辑核心；`design` 负责页面文档、工作区、生命周期、设计服务和 artifacts；`ai` 只做业务注册和 ModuleKind 投影。
 
 ```mermaid
 flowchart LR
@@ -320,7 +320,7 @@ flowchart LR
 
 `page-data-json-schema.ts` 也已经跟随数据层扩展，`CrudApi` 新增 `transaction` 端点，DataSet 顶层新增 `saveChanges` 配置，用于声明 `perView` 或 `transaction` 保存策略。
 
-[PageConfigFileLifecycle](../packages/spark-page-config/src/files/lifecycle/page-config-file-lifecycle.ts) 把页面文件生命周期和导航生命周期放在同一个包内协调：创建页面文件后挂载导航节点；删除页面时先解析并移除导航节点，再删除四文件并清理 loader 缓存。它不是 UI 层能力，也不依赖 Vue，而是 `spark-page-config` 对“页面资产完整生命周期”的框架无关编排。
+[PageConfigFileLifecycle](../packages/spark-page-config/src/design/page-edit-workspace.ts) 把页面文件生命周期和导航生命周期放在同一个包内协调：创建页面文件后挂载导航节点；删除页面时先解析并移除导航节点，再删除四文件并清理 loader 缓存。它不是 UI 层能力，也不依赖 Vue，而是 `spark-page-config` 对“页面资产完整生命周期”的框架无关编排。
 
 这个包是配置资产和运行时之间的契约边界。后续优化应优先增强这里，而不是让渲染器在下游反复兜底。
 
@@ -957,7 +957,7 @@ flowchart LR
 2. [src/main.ts](../src/main.ts)：理解前端启动、插件、租户路由和页面配置接入。
 3. [packages/spark-app/src/start.ts](../packages/spark-app/src/start.ts)：理解应用启动抽象。
 4. [packages/spark-app/src/router/dynamic.ts](../packages/spark-app/src/router/dynamic.ts)：理解导航树如何派生路由。
-5. [packages/spark-page-config/src/files/runtime/page-config-loader.ts](../packages/spark-page-config/src/files/runtime/page-config-loader.ts)：理解页面四文件加载。
+5. [packages/spark-page-config/src/config/page-config-loader.ts](../packages/spark-page-config/src/config/page-config-loader.ts)：理解页面四文件加载。
 6. [packages/spark-component/src/page/renderer/SparkPageRenderer.vue](../packages/spark-component/src/page/renderer/SparkPageRenderer.vue)：理解页面运行时流水线。
 7. [packages/spark-component/src/components/SparkComponentRenderer.vue](../packages/spark-component/src/components/SparkComponentRenderer.vue)：理解递归渲染器。
 8. [packages/spark-component/src/core/spark-node-tree.ts](../packages/spark-component/src/core/spark-node-tree.ts)：理解节点树模型。

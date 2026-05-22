@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RAnchorProps extends SparkNodeProps {
+export type RAnchorProps = SparkNodeProps & {
   /** 滚动容器选择器 */
     container?: string
     /** 偏移量 */
@@ -14,5 +14,4 @@ export interface RAnchorProps extends SparkNodeProps {
     /** 排列方向 */
     direction?: 'vertical' | 'horizontal'
     /** 锚点类型（避免与 SparkNode.type 冲突） */
-    anchorType?: 'default' | 'underline'
-}
+    anchorType?: 'default' | 'underline'}

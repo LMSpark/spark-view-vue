@@ -33,41 +33,40 @@ import {
   type NavNode,
   type NavNodeKind,
   type NavigationNodeDraft,
-} from '@spark-view/spark-page-config/page/navigation'
+} from '@spark-view/spark-page-config/navigation'
 import {
   PageConfigFileApi,
+  PAGE_CONFIG_FILE_NAMES,
   createConfigLoader,
   type BasePageConfigLoader,
+  type PageConfigFileName,
   type PageConfigPageSummary,
   type PageConfigFileVersionSummary,
-} from '@spark-view/spark-page-config/page/loading'
+} from '@spark-view/spark-page-config/config'
 import {
   PageConfigEditWorkspace,
   PageConfigFileLifecycle,
-} from '@spark-view/spark-page-config/capabilities/page-edit-workspace'
+} from '@spark-view/spark-page-config/design'
 import {
-  PAGE_FILE_NAMES,
   forEachDocument,
-  type PageFileName,
-} from '@spark-view/spark-page-config/capabilities/page-file-document'
+} from '@spark-view/spark-page-config/design'
 import { demoNavRoot } from '@/layout/demo-nav'
 
-export { PAGE_FILE_NAMES }
-export type { PageFileName }
+export { PAGE_CONFIG_FILE_NAMES }
+export type PageFileName = PageConfigFileName
 export type { PageConfigFileVersionSummary }
-export type { PageFileDocument } from '@spark-view/spark-page-config/capabilities/page-file-document'
+export type { PageFileDocument } from '@spark-view/spark-page-config/design'
 
 // ═══════════════════════════════════════════════════════════
 // 类型
 // ═══════════════════════════════════════════════════════════
 
-export interface StatusMessage {
+export type StatusMessage = {
   text: string
   type: 'success' | 'warning' | 'error' | 'info'
-  time: string
-}
+  time: string}
 
-export interface DevEditForm {
+export type DevEditForm = {
   id: string
   title: string
   icon: string
@@ -83,14 +82,12 @@ export interface DevEditForm {
   hidden: boolean
   disabled: boolean
   refId: string
-  permissionMode: 'none' | 'masked' | 'invisible'
-}
+  permissionMode: 'none' | 'masked' | 'invisible'}
 
-export interface DevContextConfig {
+export type DevContextConfig = {
   placeholder: string
   defaultValue: string
-  paramName: string
-}
+  paramName: string}
 
 export type DevWorkspaceTab = 'props' | 'preview' | PageFileName
 
@@ -218,7 +215,7 @@ export function useDevState() {
   // 计算属性
   // ═══════════════════════════════════════════════════════════
 
-  const hasAnyFileDirty = computed(() => PAGE_FILE_NAMES.some((n) => isDocumentDirty(n)))
+  const hasAnyFileDirty = computed(() => PAGE_CONFIG_FILE_NAMES.some((n) => isDocumentDirty(n)))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
   const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
@@ -671,7 +668,7 @@ export function useDevState() {
   }
 
   async function saveAllDirtyPageFiles(): Promise<void> {
-    for (const name of PAGE_FILE_NAMES) {
+    for (const name of PAGE_CONFIG_FILE_NAMES) {
       if (isDocumentDirty(name)) await savePageFile(name)
     }
   }
@@ -1034,4 +1031,5 @@ export function useDevState() {
   }
 }
 
-export interface DevState extends ReturnType<typeof useDevState> {}
+export type DevState = ReturnType<typeof useDevState>
+

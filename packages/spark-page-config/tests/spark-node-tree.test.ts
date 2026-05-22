@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SPARK_PAGE_NODE_TYPE, SPARK_PAGE_ROOT_ID, SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
-import type { SparkNode } from '@spark-view/spark-page-config/page/spark-node'
+import { SPARK_PAGE_NODE_TYPE, SPARK_PAGE_ROOT_ID, SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
+import type { SparkNode } from '@spark-view/spark-page-config/node-tree'
 
 function createSparkNodeTree(): SparkNode {
   return {
@@ -575,3 +575,4 @@ describe('SparkNodeTree — undo / redo', () => {
     expect(tree.canUndo).toBe(true)
   })
 })
+

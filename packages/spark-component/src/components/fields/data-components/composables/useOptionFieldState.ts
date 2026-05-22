@@ -7,20 +7,18 @@ type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-export interface OptionFieldStateProps<TValue> extends OptionalWithUndefined<Omit<SparkOptionFieldProps<TValue>, 'modelValue' | 'value' | 'options'>> {
+export type OptionFieldStateProps<TValue> = OptionalWithUndefined<Omit<SparkOptionFieldProps<TValue>, 'modelValue' | 'value' | 'options'>> & {
   modelValue?: TValue | undefined
     value?: TValue | undefined
-    options?: unknown[] | undefined
-}
+    options?: unknown[] | undefined}
 
-interface UseOptionFieldStateOptions<TValue> {
+type UseOptionFieldStateOptions<TValue> = {
   props: OptionFieldStateProps<TValue>
   fieldType: string
   fallbackValue: TValue
   emitUpdate: (value: TValue) => void
   coerce: (rawValue: unknown) => TValue
-  formatDisplay?: (value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string
-}
+  formatDisplay?: (value: unknown, helpers: ReturnType<typeof useFieldOptions>) => string}
 
 export function useOptionFieldState<TValue>(options: UseOptionFieldStateOptions<TValue>) {
   const optionResult = useOptionField<TValue>({

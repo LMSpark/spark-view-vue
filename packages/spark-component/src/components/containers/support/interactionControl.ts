@@ -2,9 +2,8 @@ import type { CrudResult, DataRow } from '@spark-view/spark-data'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 
-export interface CancellableControl {
-  cancel: boolean
-}
+export type CancellableControl = {
+  cancel: boolean}
 
 export function createCancellableControl(): CancellableControl {
   return { cancel: false }
@@ -20,11 +19,10 @@ export function isCancellableControl(value: unknown): value is CancellableContro
     && typeof value['cancel'] === 'boolean'
 }
 
-export interface InteractionControl extends CancellableControl {}
+export type InteractionControl = CancellableControl
 
-export interface CancelableHandler<TArgs extends unknown[]> {
-  (...args: [...TArgs, InteractionControl]): void | Promise<void>
-}
+export type CancelableHandler<TArgs extends unknown[]> = {
+  (...args: [...TArgs, InteractionControl]): void | Promise<void>}
 
 export async function runControlledInteraction<TArgs extends unknown[]>(
   handler: CancelableHandler<TArgs> | undefined,
@@ -48,9 +46,9 @@ export function createCancelledCrudResult<T>(message: string): CrudResult<T> {
   }
 }
 
-export interface RowClickHandler extends CancelableHandler<[DataRow, unknown, Event | undefined]> {}
-export interface RowSelectionHandler extends CancelableHandler<[DataRow[]]> {}
-export interface CurrentRowChangeHandler extends CancelableHandler<[DataRow | null, DataRow | null | undefined]> {}
-export interface AddRowHandler extends CancelableHandler<[Partial<DataRow>]> {}
-export interface EditRowHandler extends CancelableHandler<[string | number, Partial<DataRow>]> {}
-export interface RemoveRowHandler extends CancelableHandler<[string | number]> {}
+export type RowClickHandler = CancelableHandler<[DataRow, unknown, Event | undefined]>
+export type RowSelectionHandler = CancelableHandler<[DataRow[]]>
+export type CurrentRowChangeHandler = CancelableHandler<[DataRow | null, DataRow | null | undefined]>
+export type AddRowHandler = CancelableHandler<[Partial<DataRow>]>
+export type EditRowHandler = CancelableHandler<[string | number, Partial<DataRow>]>
+export type RemoveRowHandler = CancelableHandler<[string | number]>

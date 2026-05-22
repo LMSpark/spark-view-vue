@@ -35,19 +35,17 @@ import type { LoggerApi } from '@spark-view/spark-utils'
 
 /** 事件发射器：DataSet/DataView 内部使用的最小事件接口 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export interface SparkEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> {
+export type SparkEventEmitter<TEventMap extends Record<string, any[]> = Record<string, any[]>> = {
   on<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   off<K extends string & keyof TEventMap>(event: K, handler: (...args: TEventMap[K]) => void): void
   emit<K extends string & keyof TEventMap>(event: K, ...args: TEventMap[K]): void
   removeAllListeners<K extends string & keyof TEventMap>(event?: K): void
-  listenerCount<K extends string & keyof TEventMap>(event?: K): number
-}
+  listenerCount<K extends string & keyof TEventMap>(event?: K): number}
 
 /** 数据行：所有数据容器的基本行形状，可选携带实例级权限 */
-export interface DataRow extends Record<string, unknown> {
+export type DataRow = Record<string, unknown> & {
   /** 实例级权限快照，由服务端计算后注入 */
-  _perm?: InstancePermission
-}
+  _perm?: InstancePermission}
 
 // ═══════════════════════════════════════════════════════
 // 2. 列类型系统
@@ -78,7 +76,7 @@ export type ColumnType =
   | (string & {})
 
 /** ColumnType → TypeScript 类型映射表，用于泛型推断和类型匹配 */
-export interface ColumnTypeMap {
+export type ColumnTypeMap = {
   // 数字类
   number: number; int: number; integer: number
   decimal: number; float: number; double: number
@@ -91,8 +89,7 @@ export interface ColumnTypeMap {
   // 复合
   object: Record<string, unknown>; array: unknown[]
   // 枚举
-  enum: string | number
-}
+  enum: string | number}
 
 /**
  * 根据 ColumnType 字符串推断对应的 TypeScript 值类型。
@@ -108,9 +105,8 @@ export type InferColumnValue<T extends ColumnType> =
   T extends keyof ColumnTypeMap ? ColumnTypeMap[T] : unknown
 
 /** 计算列函数签名：接收当前行，返回计算值 */
-export interface ComputedColumnFn {
-  (row: DataRow): unknown
-}
+export type ComputedColumnFn = {
+  (row: DataRow): unknown}
 
 /**
  * 数据列定义
@@ -122,7 +118,7 @@ export interface ComputedColumnFn {
  * 渲染属性均为可选，不影响纯数据层使用。
  * UI 组件通过 `DataSource.columns` 或 `DataView.columns` 读取列元数据。
  */
-export interface DataColumn {
+export type DataColumn = {
   /** 列名称 */
   name: string
   /**
@@ -196,8 +192,7 @@ export interface DataColumn {
    * `"$count('OrderItems')"`
    * `"$join('Tags', 'name', ' | ')"`
    */
-  computeExpression?: string
-}
+  computeExpression?: string}
 
 // ═══════════════════════════════════════════════════════
 // 3. 表语义元数据
@@ -260,14 +255,13 @@ export const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES: readonly TableBusinessC
 ]
 
 /** 表级语义元数据接口，组合资源类型、资源 ID 和业务分类 */
-export interface TableSemanticMetadata {
+export type TableSemanticMetadata = {
   /** 资源类型：决定该表是否允许直接声明静态 rows */
   resourceType?: TableResourceType
   /** 资源 ID：对应外部系统中的稳定标识，如库表名、字典编码、第三方资源编码或静态资源标识 */
   resourceId?: string
   /** 业务分类：标记当前表在业务模型中的角色 */
-  businessCategory?: TableBusinessCategory
-}
+  businessCategory?: TableBusinessCategory}
 
 // ═══════════════════════════════════════════════════════
 // 4. 权限快照
@@ -281,7 +275,7 @@ export interface TableSemanticMetadata {
  *
  * 附加在 DataRow._perm 上，描述单行数据的操作权限。
  */
-export interface InstancePermission {
+export type InstancePermission = {
   /** 是否允许创建子节点 */
   allowCreateChild?: boolean
   /** 是否允许删除当前行 */
@@ -293,8 +287,7 @@ export interface InstancePermission {
   /** 脱敏的字段列表 */
   maskedFields?: string[]
   /** 权限令牌（后端验证有效性） */
-  permissionToken?: string
-}
+  permissionToken?: string}
 
 /**
  * 模型级权限（表级）- 服务端权限快照
@@ -302,7 +295,7 @@ export interface InstancePermission {
  * 附加在 DataSource._modelPerm 上，描述整张表的操作权限。
  * 权限信息在首次数据加载时由服务端计算并缓存，前端负责维护和传递权限状态。
  */
-export interface ModelPermission {
+export type ModelPermission = {
   /** 是否允许新增记录 */
   allowCreate?: boolean
   /** 是否允许导入记录 */
@@ -310,8 +303,7 @@ export interface ModelPermission {
   /** 是否允许导出记录 */
   allowExport?: boolean
   /** 权限令牌，后端可用它校验当前权限快照是否有效 */
-  permissionToken?: string
-}
+  permissionToken?: string}
 
 /** 实例权限字段名 */
 const INSTANCE_PERMISSION_FIELD_VALUE = '_perm'
@@ -342,7 +334,7 @@ export enum ComponentLevel {
 // ═══════════════════════════════════════════════════════
 
 /** HTTP 端点定义，描述一个 API 请求的完整元数据 */
-export interface HttpEndpoint {
+export type HttpEndpoint = {
   /** 请求 URL */
   url: string
   /** HTTP 方法 */
@@ -354,8 +346,7 @@ export interface HttpEndpoint {
   /** URL 路径参数模板字段列表 */
   pathParams?: string[]
   /** API 基础地址 */
-  baseURL?: string
-}
+  baseURL?: string}
 
 /**
  * 树操作端点配置——flat/nested 双模式成套接口族。
@@ -363,7 +354,7 @@ export interface HttpEndpoint {
  * 每个端点均继承 `HttpEndpoint`，`url` 中可使用 `{id}`、`{parentId}` 等路径占位符。
  * flat 模式（node/children/path/subtree/move/search）与 nested 模式（nested/nestedSearch）可按需配置，互不依赖。
  */
-export interface TreeApi {
+export type TreeApi = {
   /** /tree/node — 获取单节点详情，params: id */
   node?: HttpEndpoint
   /** /tree/children — 获取直接子节点列表，params: parentId, limit? */
@@ -392,8 +383,7 @@ export interface TreeApi {
   /** /tree/nested/search — 层次模式搜索（返回匹配节点 + 嵌套祖先链），params: keyword, limit? */
   nestedSearch?: HttpEndpoint & {
     limit?: number
-  }
-}
+  }}
 
 // ═══════════════════════════════════════════════════════
 // 6. 表级元数据 & CRUD API
@@ -407,7 +397,7 @@ export interface TreeApi {
  * 语义：描述"每个操作对应哪个接口"。
  * 这里只定义各 CRUD / Tree 操作对应的 URL、HTTP 方法和端点级参数，不包含重试、校验、转换等运行策略。
  */
-export interface CrudApi extends TreeApi {
+export type CrudApi = TreeApi & {
   /** 创建单条记录 */
   create?: HttpEndpoint
   /** 拉取单条记录 */
@@ -445,16 +435,14 @@ export interface CrudApi extends TreeApi {
   /** 导入端点 */
   import?: HttpEndpoint
   /** 导出端点 */
-  export?: HttpEndpoint
-}
+  export?: HttpEndpoint}
 
 /** 单条记录拉取选项 */
-export interface RetrieveRecordOptions {
+export type RetrieveRecordOptions = {
   /** 是否将拉取结果同步回本地 rows。默认 true */
   syncToRows?: boolean
   /** 是否将拉取结果设为当前行。默认 false */
-  setCurrentRow?: boolean
-}
+  setCurrentRow?: boolean}
 
 /**
  * 表级元数据（对应 DataTable 核）
@@ -464,7 +452,7 @@ export interface RetrieveRecordOptions {
  * - 所有默认视图字段均必须进入 `views.default`
  * - 表级不再承载 `rows / autoCurrentFirst / autoSelectFirst / page / pageSize` 等视图字段
  */
-export interface TableMetadata extends TableSemanticMetadata {
+export type TableMetadata = TableSemanticMetadata & {
   /** 表名 */
   tableName: string
   /** 列定义数组 */
@@ -482,8 +470,7 @@ export interface TableMetadata extends TableSemanticMetadata {
    * 视图集合；canonical 结构中必须包含 `default` 视图。
    * 视图级字段（rows, page, pageSize, filter, sort 等）全部下沉到 ViewMetadata。
    */
-  views: { default: ViewMetadata } & Record<string, ViewMetadata>
-}
+  views: { default: ViewMetadata } & Record<string, ViewMetadata>}
 
 // ═══════════════════════════════════════════════════════
 // 7. 过滤 & 排序
@@ -544,12 +531,11 @@ export type FilterExpression =
 export type SortDirection = 'asc' | 'desc'
 
 /** 排序规则项（direction 默认 'asc'） */
-export interface SortField {
+export type SortField = {
   /** 排序字段名 */
   field: string
   /** 排序方向，默认升序 */
-  direction?: SortDirection
-}
+  direction?: SortDirection}
 
 /**
  * 排序表达式——统一数组格式，UI 和服务端提交共用。
@@ -562,7 +548,7 @@ export interface SortField {
  * [{ field: 'age', direction: 'desc' }, { field: 'name' }]
  * ```
  */
-export interface SortExpression extends Array<SortField> {}
+export type SortExpression = SortField[]
 
 // ═══════════════════════════════════════════════════════
 // 8. 视图级元数据 & 聚合
@@ -587,9 +573,8 @@ export interface SortExpression extends Array<SortField> {}
 export type AggregateType = 'sum' | 'count' | 'avg' | 'min' | 'max' | 'join'
 
 /** 视图聚合输出行（key 来自 aggregates 的输出字段名） */
-export interface AggregateResultRow {
-  [field: string]: number | string | undefined
-}
+export type AggregateResultRow = {
+  [field: string]: number | string | undefined}
 
 /**
  * 单个聚合列配置。
@@ -606,7 +591,7 @@ export interface AggregateResultRow {
  * }
  * ```
  */
-export interface AggregateColumnConfig {
+export type AggregateColumnConfig = {
   /** 聚合函数类型 */
   type: AggregateType
   /**
@@ -616,8 +601,7 @@ export interface AggregateColumnConfig {
    */
   field?: string
   /** join 聚合分隔符（默认 ', '），仅 type='join' 时有效 */
-  separator?: string
-}
+  separator?: string}
 
 /**
  * 数据视图元数据
@@ -626,7 +610,7 @@ export interface AggregateColumnConfig {
  * 当表的 resourceType = 'static-data' 时，才应在配置中直接声明 rows；
  * 其他资源类型应把数据视为远端来源，通过 requestData/loadFromServer 等机制获取。
  */
-export interface ViewMetadata {
+export type ViewMetadata = {
   /** 所属表名 */
   tableName?: string
   /** 视图 ID */
@@ -699,8 +683,7 @@ export interface ViewMetadata {
    * 聚合配置与列定义（`DataColumn.computeExpression`）完全独立：
    * 列负责逐行求值，聚合负责对已求值的行集合做整列汇总。
    */
-  aggregates?: Record<string, AggregateColumnConfig>
-}
+  aggregates?: Record<string, AggregateColumnConfig>}
 
 // ═══════════════════════════════════════════════════════
 // 9. 树结构配置 & 树节点类型
@@ -713,7 +696,7 @@ export interface ViewMetadata {
  *
  * 树操作 HTTP 接口族配置在 `CrudApi`；模型层始终存储平铺数据，树形态由视图层组织。
  */
-export interface TreeConfig {
+export type TreeConfig = {
   /** 节点 ID 字段名 */
   idField?: string
   /** 父节点 ID 字段名 */
@@ -733,11 +716,10 @@ export interface TreeConfig {
    */
   serverPaginationMode?: 'root' | 'flat'
   /** 服务端过滤树时是否保留祖先链，默认 include-ancestors */
-  filterMode?: 'include-ancestors' | 'node-only'
-}
+  filterMode?: 'include-ancestors' | 'node-only'}
 
 /** 平面树节点——服务端 flat 模式返回的基本行形状 */
-export interface FlatTreeNode {
+export type FlatTreeNode = {
   /** 节点 ID */
   id: string | number
   /** 父节点 ID */
@@ -751,33 +733,29 @@ export interface FlatTreeNode {
   /** 子节点是否已加载 */
   isLoaded?: boolean
   /** 扩展字段 */
-  [key: string]: unknown
-}
+  [key: string]: unknown}
 
 /** 嵌套树节点——在 FlatTreeNode 基础上增加 children 数组 */
-export interface NestedTreeNode extends FlatTreeNode {
+export type NestedTreeNode = FlatTreeNode & {
   /** 子节点列表 */
-  children: NestedTreeNode[]
-}
+  children: NestedTreeNode[]}
 
 /** 树路径——祖先链 ID 列表和可选的节点详情 */
-export interface TreePath {
+export type TreePath = {
   /** 从根到当前节点的 ID 路径 */
   pathIds: Array<string | number>
   /** 从根到当前节点的节点详情（可选） */
-  pathNodes?: FlatTreeNode[]
-}
+  pathNodes?: FlatTreeNode[]}
 
 /**
  * 嵌套树搜索结果——对应 /tree/nested/search 接口返回格式。
  * 匹配节点 + 从根到该节点的祖先链（含自身），前端可直接展开定位。
  */
-export interface NestedTreeSearchResult {
+export type NestedTreeSearchResult = {
   /** 匹配的节点 */
   node: FlatTreeNode
   /** 从根到该节点的祖先链（含自身，顺序为根→叶） */
-  path: FlatTreeNode[]
-}
+  path: FlatTreeNode[]}
 
 // ═══════════════════════════════════════════════════════
 // 10. 表关系 & 视图联动
@@ -804,7 +782,7 @@ export interface NestedTreeSearchResult {
  * { "parentTable": "Users", "childTable": "Orders", "childField": "userId" }
  * ```
  */
-export interface TableRelation {
+export type TableRelation = {
   /** 关系名称（可选，用于日志和调试） */
   relationName?: string
   /** 父表名 */
@@ -832,8 +810,7 @@ export interface TableRelation {
   /** 父表记录更新时是否级联更新子表 */
   cascadeUpdate?: boolean
   /** 父表记录删除时是否级联删除子表 */
-  cascadeDelete?: boolean
-}
+  cascadeDelete?: boolean}
 
 /**
  * 子表 default 视图响应父表 default 视图的数据变化触发源。
@@ -866,7 +843,7 @@ export type DependencyType =
  * }
  * ```
  */
-export interface ViewDependency {
+export type ViewDependency = {
   /** 与 TableRelation 对齐的父表名 */
   parentTable: string
   /** 与 TableRelation 对齐的子表名 */
@@ -874,8 +851,7 @@ export interface ViewDependency {
   /** 响应父表 default 视图的哪种数据变化（默认 'currentRow'） */
   dependencyType?: DependencyType
   /** 父表 default 视图变化时是否自动级联加载子表 default 视图（默认 true） */
-  autoLoad?: boolean
-}
+  autoLoad?: boolean}
 
 /**
  * 展开后的内部关系格式 — TableRelation + ViewDependency 合并后的字段绑定结果。
@@ -883,7 +859,7 @@ export interface ViewDependency {
  * @internal 仅供 spark-data 内部消费（CascadeDelegate / DataView）。
  * 外部配置使用 `TableRelation` + `ViewDependency`。
  */
-export interface DataRelation {
+export type DataRelation = {
   /** 父表名 */
   parentTable: string
   /** 父视图 ID */
@@ -905,8 +881,7 @@ export interface DataRelation {
   /** 父变化时是否自动级联加载子视图（默认 true——仅 `false` 时跳过） */
   autoLoad?: boolean
   /** 关系名称（可选，用于日志和调试） */
-  relationName?: string
-}
+  relationName?: string}
 
 // ═══════════════════════════════════════════════════════
 // 11. 请求状态 & 提交模式
@@ -957,17 +932,16 @@ export type CommitMode = 'immediate' | 'staged'
  *
  * 该结构不参与运行时数据计算，仅用于设计器/编辑器恢复画布布局。
  */
-export interface DataSetLayoutMetadata {
+export type DataSetLayoutMetadata = {
   /** 表名 -> 画布位置 */
-  tablePositions?: Record<string, { x: number; y: number }>
-}
+  tablePositions?: Record<string, { x: number; y: number }>}
 
 /**
  * 数据集元数据（对应 DataSet.toJson() 输出）
  *
  * 顶层只承载数据集自身字段；表的默认视图数据必须继续下沉到 `tables.*.views.default`。
  */
-export interface DataSetMetadata {
+export type DataSetMetadata = {
   /**
    * Schema 格式版本（用于未来迁移兼容）。
    * 当前 canonical 结构为 2：`tables -> views -> default`。
@@ -989,8 +963,7 @@ export interface DataSetMetadata {
   /** DataSet.saveChanges 的默认提交策略 */
   saveChanges?: DataSetSaveChangesConfig
   /** 可选的设计器布局信息（如画布坐标） */
-  layout?: DataSetLayoutMetadata
-}
+  layout?: DataSetLayoutMetadata}
 
 // ═══════════════════════════════════════════════════════
 // 13. 数据源契约 & 视图变更事件
@@ -1002,7 +975,7 @@ export interface DataSetMetadata {
 /**
  * DataSet 用到的应用服务最小形状（避免依赖上层能力体系类型）。
  */
-export interface DataSetAppServices {
+export type DataSetAppServices = {
   /** 路由快照 */
   router?: {
     currentRoute: unknown
@@ -1010,8 +983,7 @@ export interface DataSetAppServices {
   /** 租户信息 */
   tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
   /** 日志服务 */
-  logger?: LoggerApi
-}
+  logger?: LoggerApi}
 
 /**
  * 完整数据源全量接口，包含分页、聚合结果、权限、值序列化。
@@ -1035,7 +1007,7 @@ export interface DataSetAppServices {
  * 5. 序列化边界：`DataView.toJson()` 只持久化 `aggregates` 配置；`aggregateResult`、
  *    `selectionAggregateResult` 和计算列写回 rows 的派生值都是运行时结果，不写入配置 JSON。
  */
-export interface DataSource {
+export type DataSource = {
   /** 当前视图行集合，表格/列表/树等数据容器的主要渲染输入 */
   rows?: readonly DataRow[]
   /** 列定义数组（只读，来自 DataTable.columns）。UI 组件据此渲染表头 / 表单标签 */
@@ -1082,11 +1054,10 @@ export interface DataSource {
   /** 当前行显示标签（按 labelField 或主键回退） */
   label?: string | null
   /** 选中行标签数组 */
-  labels?: readonly string[]
-}
+  labels?: readonly string[]}
 
 /** DataView 编辑态字段变更事件 */
-export interface DataViewEditingFieldChangeEvent {
+export type DataViewEditingFieldChangeEvent = {
   /** 表名 */
   tableName: string
   /** 视图 ID */
@@ -1102,11 +1073,10 @@ export interface DataViewEditingFieldChangeEvent {
   /** 编辑中的行数据 */
   editingRow: DataRow
   /** 变更补丁 */
-  patch: Partial<DataRow>
-}
+  patch: Partial<DataRow>}
 
 /** DataView 编辑态应用结果 */
-export interface DataViewApplyEditingRowsResult {
+export type DataViewApplyEditingRowsResult = {
   /** 成功应用的行数 */
   appliedCount: number
   /** 失败的行数 */
@@ -1114,8 +1084,7 @@ export interface DataViewApplyEditingRowsResult {
   /** 失败的行 ID 列表 */
   failedIds: Array<string | number>
   /** 失败的行 ID -> 错误消息映射 */
-  failedErrors: Record<string, string>
-}
+  failedErrors: Record<string, string>}
 
 /**
  * DataSet 级视图变更处理器映射
@@ -1135,7 +1104,7 @@ export interface DataViewApplyEditingRowsResult {
  * })
  * ```
  */
-export interface ViewChangeHandlers {
+export type ViewChangeHandlers = {
   /** 当前行变化 */
   currentRowChanged?: (tableName: string, viewId: string, currentRow: DataRow | null, originatorId?: string) => void
   /** 选中行集合变化 */
@@ -1157,8 +1126,7 @@ export interface ViewChangeHandlers {
   /** 聚合结果变化 */
   summaryChanged?: (tableName: string, viewId: string) => void
   /** 选中聚合结果变化 */
-  selectionSummaryChanged?: (tableName: string, viewId: string) => void
-}
+  selectionSummaryChanged?: (tableName: string, viewId: string) => void}
 
 // ═══════════════════════════════════════════════════════
 // 14. 数据集合同
@@ -1173,7 +1141,7 @@ export interface ViewChangeHandlers {
  * 消费者（渲染层、能力系统）应依赖此接口而非具体 DataSet 类，
  * 便于测试 mock 与未来扩展。
  */
-export interface DataSetContract {
+export type DataSetContract = {
   /** 数据集名称 */
   readonly dataSetName: string
   /** 数据表集合 */
@@ -1280,8 +1248,7 @@ export interface DataSetContract {
    */
   destroy(): void
   /** 数据集是否已被销毁 */
-  readonly destroyed: boolean
-}
+  readonly destroyed: boolean}
 
 // ═══════════════════════════════════════════════════════
 // 15. 保存 & 事务类型
@@ -1290,20 +1257,19 @@ export interface DataSetContract {
 // ═══════════════════════════════════════════════════════
 
 /** DataSet 级保存目标：用于一次提交一个主从编辑范围 */
-export interface DataSetSaveChangesViewSelector {
+export type DataSetSaveChangesViewSelector = {
   /** 表名 */
   tableName: string
   /** 视图 ID（省略则提交该表所有有变更的视图） */
   viewId?: string
   /** 行 ID 列表（省略则提交该视图所有有变更的行） */
-  ids?: Array<string | number>
-}
+  ids?: Array<string | number>}
 
 /** DataSet 级保存模式 */
 export type DataSetSaveChangesMode = 'perView' | 'transaction'
 
 /** 事务中的单个 CRUD 操作 */
-export interface DataSetTransactionOperation {
+export type DataSetTransactionOperation = {
   /** 操作 ID（可选，用于追踪） */
   operationId?: string
   /** 表名 */
@@ -1313,19 +1279,17 @@ export interface DataSetTransactionOperation {
   /** 操作数据（create/update 时有效） */
   data?: Record<string, unknown>
   /** 主键（delete/update 时有效） */
-  pk?: Record<string, unknown>
-}
+  pk?: Record<string, unknown>}
 
 /** 事务请求：包含一组事务操作 */
-export interface DataSetTransactionRequest {
+export type DataSetTransactionRequest = {
   /** 请求 ID（可选，用于追踪） */
   requestId?: string
   /** 操作列表 */
-  operations: DataSetTransactionOperation[]
-}
+  operations: DataSetTransactionOperation[]}
 
 /** 事务中单个操作的结果 */
-export interface DataSetTransactionOperationResult {
+export type DataSetTransactionOperationResult = {
   /** 对应的操作 ID */
   operationId?: string
   /** 操作状态 */
@@ -1333,11 +1297,10 @@ export interface DataSetTransactionOperationResult {
   /** 操作结果数据 */
   result?: unknown
   /** 错误消息（失败时有效） */
-  error?: string
-}
+  error?: string}
 
 /** 事务响应：服务端返回的完整事务结果 */
-export interface DataSetTransactionResponse {
+export type DataSetTransactionResponse = {
   /** 事务是否全部成功 */
   success?: boolean
   /** 事务 ID */
@@ -1349,35 +1312,31 @@ export interface DataSetTransactionResponse {
   /** 各操作结果列表 */
   results?: DataSetTransactionOperationResult[]
   /** 是否为重放结果 */
-  replayed?: boolean
-}
+  replayed?: boolean}
 
 /** DataSet.saveChanges 事务配置（ViewMetadata 中持久化用） */
-export interface DataSetSaveChangesTransactionConfig {
+export type DataSetSaveChangesTransactionConfig = {
   /** 事务端点 */
   endpoint: HttpEndpoint
   /** 请求 ID（可选） */
-  requestId?: string
-}
+  requestId?: string}
 
 /** DataSet.saveChanges 事务选项（运行时传递用） */
-export interface DataSetSaveChangesTransactionOptions {
+export type DataSetSaveChangesTransactionOptions = {
   /** 事务端点（可选） */
   endpoint?: HttpEndpoint
   /** 请求 ID（可选） */
-  requestId?: string
-}
+  requestId?: string}
 
 /** DataSet.saveChanges 配置（ViewMetadata 中持久化用） */
-export interface DataSetSaveChangesConfig {
+export type DataSetSaveChangesConfig = {
   /** 提交模式（默认 'perView'） */
   mode?: DataSetSaveChangesMode
   /** 事务配置（mode='transaction' 时有效） */
-  transaction?: DataSetSaveChangesTransactionConfig
-}
+  transaction?: DataSetSaveChangesTransactionConfig}
 
 /** DataSet 级保存选项（运行时传递给 saveChanges） */
-export interface DataSetSaveChangesOptions {
+export type DataSetSaveChangesOptions = {
   /** 指定要提交的视图选择器列表（省略则提交所有有变更的视图） */
   views?: DataSetSaveChangesViewSelector[]
   /** 是否先应用编辑态行再提交 */
@@ -1385,11 +1344,10 @@ export interface DataSetSaveChangesOptions {
   /** 提交模式（覆盖 ViewMetadata 中的默认值） */
   mode?: DataSetSaveChangesMode
   /** 事务选项 */
-  transaction?: DataSetSaveChangesTransactionOptions
-}
+  transaction?: DataSetSaveChangesTransactionOptions}
 
 /** DataSet 级单视图保存结果 */
-export interface DataSetSaveChangesViewResult {
+export type DataSetSaveChangesViewResult = {
   /** 表名 */
   tableName: string
   /** 视图 ID */
@@ -1409,11 +1367,10 @@ export interface DataSetSaveChangesViewResult {
   /** 失败的行 ID 列表 */
   failedIds: Array<string | number>
   /** 失败的行 ID -> 错误消息映射 */
-  failedErrors: Record<string, string>
-}
+  failedErrors: Record<string, string>}
 
 /** DataSet 级跨视图保存结果 */
-export interface DataSetSaveChangesResult {
+export type DataSetSaveChangesResult = {
   /** 涉及的视图总数 */
   viewCount: number
   /** 成功应用的编辑态行数 */
@@ -1433,8 +1390,7 @@ export interface DataSetSaveChangesResult {
   /** 各视图的保存结果详情 */
   viewResults: DataSetSaveChangesViewResult[]
   /** 事务响应（mode='transaction' 时有效） */
-  transaction?: DataSetTransactionResponse
-}
+  transaction?: DataSetTransactionResponse}
 
 // ═══════════════════════════════════════════════════════
 // 16. CRUD 服务类型
@@ -1443,7 +1399,7 @@ export interface DataSetSaveChangesResult {
 // ═══════════════════════════════════════════════════════
 
 /** CRUD 操作结果 */
-export interface CrudResult<T = unknown> {
+export type CrudResult<T = unknown> = {
   /** 是否成功 */
   success: boolean
   /** 成功时的返回数据 */
@@ -1455,13 +1411,12 @@ export interface CrudResult<T = unknown> {
   /** 错误码 */
   code?: string
   /** 时间戳 */
-  timestamp?: number
-}
+  timestamp?: number}
 
 /**
  * 分页查询参数 - 支持权限快照传递
  */
-export interface QueryParams {
+export type QueryParams = {
   /** 页码 */
   page?: number
   /** 每页大小 */
@@ -1498,11 +1453,10 @@ export interface QueryParams {
   instancePermission?: InstancePermission
 
   /** 扩展参数 */
-  [key: string]: unknown
-}
+  [key: string]: unknown}
 
 /** 批量操作结果 */
-export interface BatchResult {
+export type BatchResult = {
   /** 成功数量 */
   successCount: number
   /** 失败数量 */
@@ -1512,8 +1466,7 @@ export interface BatchResult {
   /** 错误列表 */
   errors: Error[]
   /** 总耗时（毫秒） */
-  totalTime?: number
-}
+  totalTime?: number}
 
 /**
  * CRUD 通用运行策略配置。
@@ -1521,7 +1474,7 @@ export interface BatchResult {
  * 语义：描述"调用端点时应用什么策略"。
  * 这里定义超时、重试、权限校验、数据校验，以及请求/响应转换等运行期策略，不负责声明端点映射。
  */
-export interface CrudOperationConfig {
+export type CrudOperationConfig = {
   /** 请求超时（毫秒） */
   timeout?: number
   /** 重试次数 */
@@ -1541,5 +1494,4 @@ export interface CrudOperationConfig {
   /** 请求数据转换函数 */
   transformRequest?: (data: unknown) => unknown
   /** 响应数据转换函数 */
-  transformResponse?: (data: unknown) => unknown
-}
+  transformResponse?: (data: unknown) => unknown}

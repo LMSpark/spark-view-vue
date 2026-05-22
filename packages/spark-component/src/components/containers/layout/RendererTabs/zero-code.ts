@@ -2,17 +2,15 @@ import type { SparkNode } from '../../../internal'
 import type { RendererTabsApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface TabsEmit {
-  (event: 'update:modelValue', value: string | number): void
-}
+type TabsEmit = {
+  (event: 'update:modelValue', value: string | number): void}
 
-interface RendererTabsZeroCodeOptions {
+type RendererTabsZeroCodeOptions = {
   emit: TabsEmit
   currentActiveName: ValueRef<string | number | undefined>
   paneConfigs: ValueRef<SparkNode[]>
   getPaneName: (pane: SparkNode, index: number) => string | number
-  onTabChange: ((name: string | number) => void) | undefined
-}
+  onTabChange: ((name: string | number) => void) | undefined}
 
 export function createRendererTabsZeroCode(options: RendererTabsZeroCodeOptions) {
   const tabsApi: RendererTabsApi = {

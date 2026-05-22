@@ -35,25 +35,22 @@ function mixColor(c1: string, c2: string, weight: number): string {
 
 // ── Preset definitions ──
 
-export interface PrimaryPreset {
+export type PrimaryPreset = {
   name: string
-  color: string
-}
+  color: string}
 
-export interface NavColorSet {
+export type NavColorSet = {
   headerBg: string
   sidebarBg: string
-  textColor: string
-}
+  textColor: string}
 
-export interface NavPreset {
+export type NavPreset = {
   name: string
   color: string
   light: NavColorSet
-  dark: NavColorSet
-}
+  dark: NavColorSet}
 
-export interface StyleColorSet {
+export type StyleColorSet = {
   bg: string
   page: string
   overlay: string
@@ -76,18 +73,16 @@ export interface StyleColorSet {
   shadowLight: string
   shadowPanel: string
   scrollbarThumb: string
-  scrollbarThumbHover: string
-}
+  scrollbarThumbHover: string}
 
-export interface StylePreset {
+export type StylePreset = {
   name: string
   description: string
   icon: string
   primaryColor: string
   navIndex: number
   light: StyleColorSet
-  dark: StyleColorSet
-}
+  dark: StyleColorSet}
 
 export const PRIMARY_PRESETS: readonly PrimaryPreset[] = [
   { name: '默认蓝', color: '#409eff' },
@@ -515,11 +510,10 @@ const FALLBACK_STYLE = getFallbackStylePreset()
 
 const STORAGE_KEY = 'spark-color-scheme'
 
-interface SchemeState {
+type SchemeState = {
   primaryColor: string
   navIndex: number
-  styleIndex: number
-}
+  styleIndex: number}
 
 function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
   if (typeof scopeKey !== 'string') return null

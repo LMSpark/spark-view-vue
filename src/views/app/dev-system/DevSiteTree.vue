@@ -90,7 +90,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
+import type { NavNode } from '@spark-view/spark-page-config/navigation'
 import type { DevState } from './useDevState'
 import { formatChildPlacementLabel } from './childPlacementLabels'
 import NavIcon from '@/components/NavIcon.vue'
@@ -258,3 +258,4 @@ defineExpose({ treeRef })
 
 :deep(.el-tree-node__content:hover) .node-actions { opacity: 1; }
 </style>
+

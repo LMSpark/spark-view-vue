@@ -11,17 +11,15 @@ import { useSparkConsume, DATA_ROW, DATA_SOURCE } from '../internal'
 import { PAGE_DATASET } from '../internal'
 import { diagnoseDataViewMember, resolveDataViewMember, type DataMember } from '@spark-view/spark-data'
 
-interface DisplayDataProps {
+type DisplayDataProps = {
   dataViewKey?: string | undefined
   dataMember?: DataMember | `${DataMember}` | undefined
   dataField?: string | undefined
   field?: string | undefined
-  value?: unknown
-}
+  value?: unknown}
 
-interface UseDisplayDataSourceReturn {
-  resolvedValue: ComputedRef<unknown>
-}
+type UseDisplayDataSourceReturn = {
+  resolvedValue: ComputedRef<unknown>}
 
 export function useDisplayDataSource(props: DisplayDataProps): UseDisplayDataSourceReturn {
   const { sparkConsume } = useSparkConsume()

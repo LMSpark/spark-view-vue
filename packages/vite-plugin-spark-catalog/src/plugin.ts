@@ -21,7 +21,7 @@ const logger = createLogger('spark-catalog')
  * 插件选项
  * ----------------------------------------------------------------------- */
 
-export interface SparkCatalogPluginOptions {
+export type SparkCatalogPluginOptions = {
   /** Feature 组件的 glob 扫描模式（相对于项目 root） */
   featurePatterns?: string[]
   /** 排除模式 */
@@ -31,8 +31,7 @@ export interface SparkCatalogPluginOptions {
   /** 是否保留 VCM 全局 props（class/style/key/ref 等） */
   includeGlobalProps?: boolean
   /** 透传给 vue-component-meta createChecker 的选项 */
-  vcmCheckerOptions?: VcmCheckerOptions
-}
+  vcmCheckerOptions?: VcmCheckerOptions}
 
 /* --------------------------------------------------------------------------
  * 插件工厂

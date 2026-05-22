@@ -11,7 +11,7 @@
  *   - 所有函数都是纯工厂，无副作用、无状态。
  *   - `paramsSchema()` 专门用于函数参数根节点，强制 type=object。
  *
- * 【消费方】module-semantic/protocol/module-kind.ts（ActionSchema.paramsSchema）、
+ * 【消费方】module-semantic/protocol/module-kind.ts（ModuleActionMetadata.paramsSchema）、
  *   所有业务 ModuleKind 子类的 action 注册。
  *
  * ═══════════════════════════════════════════════════════════════
@@ -30,17 +30,7 @@
 import type {
   LlmJsonSchema,
   LlmJsonSchemaObject,
-  LlmParameterSchemaRoot,
 } from './types'
-
-// ═══════════════════════════════════════════════════════════════
-// 第 1 节 · 内部类型
-// ═══════════════════════════════════════════════════════════════
-
-/** 对象属性映射：属性名 → Schema */
-export type JsonSchemaProperties = {
-  readonly [key: string]: LlmJsonSchema
-}
 
 // ═══════════════════════════════════════════════════════════════
 // 第 2 节 · 基础类型构造器 — 标量类型的快捷创建
@@ -110,7 +100,7 @@ export function arraySchema(items: LlmJsonSchema = anySchema(), description?: st
 
 /** 对象 schema，type=object + properties + required + additionalProperties */
 export function objectSchema(
-  properties: JsonSchemaProperties = {},
+  properties: Readonly<Record<string, LlmJsonSchema>> = {},
   options: {
     required?: readonly string[]
     description?: string
@@ -134,13 +124,13 @@ export function objectSchema(
  * 函数参数根 schema。
  * 调用 `paramsSchema({...}, ['requiredField1'])` 等效于
  * `objectSchema({...}, { required: ['requiredField1'] })`，
- * 但返回类型明确为 LlmParameterSchemaRoot。
+ * 但返回类型明确为 LlmJsonSchemaObject。
  */
 export function paramsSchema(
-  properties: JsonSchemaProperties = {},
+  properties: Readonly<Record<string, LlmJsonSchema>> = {},
   required: readonly string[] = [],
   description?: string,
-): LlmParameterSchemaRoot {
+): LlmJsonSchemaObject {
   return objectSchema(properties, {
     required,
     ...(description !== undefined ? { description } : {}),
@@ -151,7 +141,7 @@ export function paramsSchema(
  * 无参数动作的 schema。
  * additionalProperties: false 告诉 LLM 不要传任何参数。
  */
-export function noParamsSchema(description = '不接受参数，请传 {} 或留空。'): LlmParameterSchemaRoot {
+export function noParamsSchema(description = '不接受参数，请传 {} 或留空。'): LlmJsonSchemaObject {
   return objectSchema({}, {
     additionalProperties: false,
     description,

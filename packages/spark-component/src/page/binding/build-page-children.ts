@@ -12,7 +12,7 @@
  * - 顶层 id 去重
  */
 
-import type { RuleConfig } from '@spark-view/spark-page-config/page/loading'
+import type { RuleConfig } from '@spark-view/spark-page-config/config'
 import { normalizeSparkNode, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeOnProps } from './bind-normalize.js'
@@ -20,17 +20,15 @@ import { normalizeOnProps } from './bind-normalize.js'
 // ── 导出类型 ───────────────────────────────────────────────────────────────
 
 /** 页面脚本函数调用签名。 */
-export interface PageScriptCaller {
-  (functionName: string, ...args: unknown[]): unknown
-}
+export type PageScriptCaller = {
+  (functionName: string, ...args: unknown[]): unknown}
 
 /** buildPageChildren 运行时依赖。 */
-export interface BuildPageChildrenOptions {
+export type BuildPageChildrenOptions = {
   /** 脚本函数调用器，用于把字符串事件名绑定到真实脚本函数。 */
   callFunc: PageScriptCaller
   /** 动作执行上下文，用于把声明式 action descriptor 绑定成可执行闭包。 */
-  actionCtx: ActionExecutionContext
-}
+  actionCtx: ActionExecutionContext}
 
 // ── 公开入口 ───────────────────────────────────────────────────────────────
 
@@ -161,3 +159,4 @@ export function buildPageChildren(
   // 根级规则逐项绑定，保持输入顺序稳定。
   return rules.map(bindNode)
 }
+

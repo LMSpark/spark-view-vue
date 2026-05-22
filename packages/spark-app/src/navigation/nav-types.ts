@@ -8,7 +8,7 @@ import type { NavContextState, NavNode, RegionItems, RegionVisibility } from './
  * 此文件仅保留 Vue 特有的类型。
  * ══════════════════════════════════════════════════════════ */
 
-export interface NavigationContext {
+export type NavigationContext = {
   /** 从根到当前叶子的节点路径 */
   activePath: ComputedRef<NavNode[]>
   /** 各区域的导航项 */
@@ -28,8 +28,7 @@ export interface NavigationContext {
   /** 获取节点的角标（运行时动态设定） */
   getBadge: (nodeId: string) => string | number | undefined
   /** 设置节点的角标（运行时 API） */
-  setBadge: (nodeId: string, value: string | number | undefined) => void
-}
+  setBadge: (nodeId: string, value: string | number | undefined) => void}
 
 /** Vue 注入键 */
 export const NAV_KEY: InjectionKey<NavigationContext> = Symbol('spark-navigation')

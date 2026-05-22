@@ -20,35 +20,32 @@
 import { computed, getCurrentScope, inject, onScopeDispose, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
-export interface ThemeCapability {
+export type ThemeCapability = {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
   setStorageScope(scopeKey: string | null): void
   readonly isDark: boolean
-  toggle(): void
-}
+  toggle(): void}
 
 /** Vue DI 注入键（仅供 App.vue / Settings.vue 等非 SPARK 组件使用） */
 export const THEME_INJECTION_KEY: InjectionKey<ThemeCapability> = Symbol('spark-theme')
 
 /** 主题服务配置 */
-export interface ThemeServiceOptions {
+export type ThemeServiceOptions = {
   /** 初始模式（默认 'auto'） */
   initialMode?: ThemeMode
   /** localStorage 存储键名（默认 'spark-theme-mode'） */
   storageKey?: string
   /** localStorage 作用域；设置后存储键为 `${storageKey}:${storageScope}` */
-  storageScope?: string | null
-}
+  storageScope?: string | null}
 
 /** 响应式主题服务（内部使用，组件层可直接读 ref） */
-export interface ThemeServiceReactive extends ThemeCapability {
+export type ThemeServiceReactive = ThemeCapability & {
   /** 响应式当前模式 */
     readonly modeRef: Ref<ThemeMode>
     /** 响应式 isDark */
-    readonly isDarkRef: ComputedRef<boolean>
-}
+    readonly isDarkRef: ComputedRef<boolean>}
 
 function isThemeMode(value: unknown): value is ThemeMode {
   return value === 'light' || value === 'dark' || value === 'auto'

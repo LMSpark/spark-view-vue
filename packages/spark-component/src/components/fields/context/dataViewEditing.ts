@@ -8,18 +8,16 @@ export type DataViewEditingEventName =
   | 'selectedRowsChanged'
   | 'cleared'
 
-export interface DataViewEditingEvents {
+export type DataViewEditingEvents = {
   on(eventName: DataViewEditingEventName, handler: () => void): void
-  off(eventName: DataViewEditingEventName, handler: () => void): void
-}
+  off(eventName: DataViewEditingEventName, handler: () => void): void}
 
-export interface DataViewEditingSource {
+export type DataViewEditingSource = {
   getPkKey(row: DataRow): string | number | undefined
   hasEditingChanges(id?: string | number): boolean
   getEditingRow(id: string | number): DataRow | null
   updateEditingValue(id: string | number, field: string, value: unknown): DataRow
-  events?: DataViewEditingEvents
-}
+  events?: DataViewEditingEvents}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object'

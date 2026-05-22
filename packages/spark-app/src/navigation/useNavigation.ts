@@ -1,7 +1,7 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-view/spark-utils'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
 import type {
   ChildPlacement,
   NavContextConfig,
@@ -95,14 +95,13 @@ function resolveRemoteSource(source: string): { url: string } {
   return { url: source }
 }
 
-interface UseNavigationOptions {
+type UseNavigationOptions = {
   /** 跨应用导航回调：检测到 @app:projectId/path 格式时调用，由调用方实现项目切换逻辑 */
   onCrossAppNavigate?: (projectId: string, path: string) => Promise<void>
   /** 返回额外请求头（如 Authorization），用于远程上下文数据加载 */
   getHeaders?: () => Record<string, string>
   /** system-action 命令执行器 */
-  actionRegistry?: NavigationActionRegistry
-}
+  actionRegistry?: NavigationActionRegistry}
 
 export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptions): NavigationContext {
   const route = useRoute()
@@ -726,3 +725,4 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 export function useNav(): NavigationContext | null {
   return inject(NAV_KEY, null)
 }
+

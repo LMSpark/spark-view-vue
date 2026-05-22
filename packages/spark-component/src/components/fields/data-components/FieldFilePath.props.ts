@@ -1,3 +1,3 @@
 import type { SparkFilePickerFieldProps, SparkNodeProps } from '../../shared-types'
 
-export interface RFilePathProps extends SparkNodeProps, SparkFilePickerFieldProps {}
+export type RFilePathProps = SparkNodeProps & SparkFilePickerFieldProps

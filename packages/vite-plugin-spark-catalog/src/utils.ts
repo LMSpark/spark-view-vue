@@ -80,7 +80,7 @@ export function buildImplicitSkillDescription(absolutePath: string, skillType: s
  * Skill 元数据解析
  * ----------------------------------------------------------------------- */
 
-export interface SkillMeta {
+export type SkillMeta = {
   type: string
   description: string
   /** @catalogIgnore / @sparkCatalogIgnore：完全不进入组件 catalog。 */
@@ -98,13 +98,11 @@ export interface SkillMeta {
   /** @consumes 从父组件消费的能力键列表 */
   consumes?: string[]
   /** @notes 使用注意事项（可多条） */
-  notes?: string[]
-}
+  notes?: string[]}
 
-export interface ParseSkillMetaOptions {
+export type ParseSkillMetaOptions = {
   /** true 时要求存在 @skill 注解；缺失则返回 null（用于 feature opt-in）。 */
-  requireSkillTag?: boolean
-}
+  requireSkillTag?: boolean}
 
 /**
  * 从 .vue 文件 `<script>` 块首部 JSDoc 中提取 Skill 元数据。

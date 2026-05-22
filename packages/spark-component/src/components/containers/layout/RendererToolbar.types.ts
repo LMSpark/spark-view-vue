@@ -11,7 +11,7 @@ export type InlineJustify = 'start' | 'center' | 'end' | 'space-between'
 /**
  * `RendererToolbar` Vue 组件公开属性。
  */
-export interface RToolbarProps extends SparkNodeProps, SparkTableModelProps {
+export type RToolbarProps = SparkNodeProps & SparkTableModelProps & {
   /** 尾部动作区（通常放次要按钮） */
     tail?: RTailProps
     /** 工具栏停靠位置 */
@@ -25,5 +25,4 @@ export interface RToolbarProps extends SparkNodeProps, SparkTableModelProps {
     /** 交叉轴对齐 */
     align?: InlineAlign
     /** 主轴分布 */
-    justify?: InlineJustify
-}
+    justify?: InlineJustify}

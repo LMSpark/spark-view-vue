@@ -2,12 +2,11 @@ import type { DataView } from '@spark-view/spark-data'
 import { createBaseCrudMethods, createCrudDispatcher } from '../support/index.js'
 import type { ValueRef } from '../../shared-types.js'
 
-interface CreateContainerCrudContextOptions {
+type CreateContainerCrudContextOptions = {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
   /** CRUD 事件默认处理器；直接沿用 createCrudDispatcher 的第二个参数契约。 */
-  eventDefaults?: Parameters<typeof createCrudDispatcher>[1]
-}
+  eventDefaults?: Parameters<typeof createCrudDispatcher>[1]}
 
 /**
  * 容器零代码层公共上下文：支持按需注入事件默认处理（eventDefaults）。

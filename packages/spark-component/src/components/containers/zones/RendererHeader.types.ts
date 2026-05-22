@@ -4,7 +4,7 @@ import type { SparkNodeProps } from '../../shared-types'
 /**
  * `RendererHeader` 运行时公开属性。
  */
-export interface RHeaderProps extends SparkNodeProps {
+export type RHeaderProps = SparkNodeProps & {
   /** 组件类型固定为 `r-header`。 */
     type?: 'r-header'
     /** 节点标识。 */
@@ -14,5 +14,4 @@ export interface RHeaderProps extends SparkNodeProps {
     /** 头部区域附加 class */
     class?: string
     /** 头部区域宽度 */
-    width?: string | number
-}
+    width?: string | number}

@@ -9,21 +9,21 @@
  *    PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
  *
  * 注：PageServiceCapability 等运行时服务契约以
- * @spark-view/spark-page-config/page/app-services 为 SSOT。
+ * @spark-view/spark-page-config/runtime 为 SSOT。
  */
 
 import { defineCapability } from '@spark-view/spark-utils'
 import { DataView, type DataRow, type DataSetContract } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
-} from '@spark-view/spark-page-config/page/navigation'
+} from '@spark-view/spark-page-config/navigation'
 import type {
   PageServiceCapability,
-} from '@spark-view/spark-page-config/page/app-services'
+} from '@spark-view/spark-page-config/runtime'
 
 export type {
   NavPermissionMode,
-} from '@spark-view/spark-page-config/page/navigation'
+} from '@spark-view/spark-page-config/navigation'
 
 export type {
   PageMessageType,
@@ -37,7 +37,7 @@ export type {
   PageSelectEntitiesOptions,
   PageSelectedEntity,
   PageServiceCapability,
-} from '@spark-view/spark-page-config/page/app-services'
+} from '@spark-view/spark-page-config/runtime'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null
@@ -57,51 +57,45 @@ function hasCallable(record: Record<string, unknown>, key: string): boolean {
 export type ThemeMode = 'light' | 'dark' | 'auto'
 
 /** 主题服务能力接口（最小契约，不含 Vue 响应式） */
-export interface ThemeCapability {
+export type ThemeCapability = {
   readonly current: 'light' | 'dark'
   readonly mode: ThemeMode
   setMode(mode: ThemeMode): void
   readonly isDark: boolean
-  toggle(): void
-}
+  toggle(): void}
 
 // ── 模块上下文能力 ────────────────────────────────────────────────────────
 
 /** 模块列表项 */
-export interface ModuleContextItem {
+export type ModuleContextItem = {
   id: string | number
-  title: string
-}
+  title: string}
 
 /** 当前模块上下文快照 */
-export interface ModuleContext {
+export type ModuleContext = {
   selected: string | number | null
   items: readonly ModuleContextItem[]
-  nodeId: string
-}
+  nodeId: string}
 
 /** MODULE_CONTEXT 能力接口 */
-export interface ModuleContextCapability {
+export type ModuleContextCapability = {
   getCurrent(): ModuleContext | null
-  subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void
-}
+  subscribe(handler: (next: ModuleContext | null, prev: ModuleContext | null) => void): () => void}
 
 // ── 页面组件注册表能力 ─────────────────────────────────────────────────────
 
-export interface PageComponentInstanceEntry {
+export type PageComponentInstanceEntry = {
   id: string
   type: string
-  props?: Record<string, unknown>
-}
+  props?: Record<string, unknown>}
 
-export interface PageComponentApiEntry {
+export type PageComponentApiEntry = {
   id: string
   type: string
-  api: unknown
-}
+  api: unknown}
 
 /** 页面内组件实例/API 注册表能力接口 */
-export interface PageComponentRegistry {
+export type PageComponentRegistry = {
   registerInstance(entry: PageComponentInstanceEntry): void
   unregisterInstance(id: string): void
   listInstances(type?: string): PageComponentInstanceEntry[]
@@ -111,15 +105,13 @@ export interface PageComponentRegistry {
   unregisterApi(id: string): void
   listApis(type?: string): PageComponentApiEntry[]
   getApi<T = unknown>(id: string): T | null
-  getApisByType<T = unknown>(type: string): T[]
-}
+  getApisByType<T = unknown>(type: string): T[]}
 
 // ── CSS 作用域注入能力 ─────────────────────────────────────────────────────
 
 /** 页面作用域 CSS 注入能力（由 SparkPageRenderer 提供） */
-export interface PageCssScopeCapability {
-  inject(css: string): void
-}
+export type PageCssScopeCapability = {
+  inject(css: string): void}
 
 // ── CapabilityTypeMap 扩展（数据层键 + 渲染层键 + 页面 UI/权限键） ────────
 
@@ -219,3 +211,4 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
 
 export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service', isPageServiceCapability)
 export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode', isNavPermissionMode)
+

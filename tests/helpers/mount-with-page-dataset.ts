@@ -3,7 +3,7 @@ import type { ComponentMountingOptions } from '@vue/test-utils'
 import type { VueWrapper } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import type { Component } from 'vue'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/app-services'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { PAGE_COMPONENT_REGISTRY, PAGE_DATASET, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import type { DataSetContract, DataView } from '@spark-view/spark-data'
@@ -17,16 +17,14 @@ const TEST_APP_LOGGER = {
   error: (message: string, context?: unknown) => console.error(message, context),
 }
 
-interface MountedWithPageDataSetWrapper extends VueWrapper {
-  __pageComponentRegistry?: PageComponentRegistry
-}
+type MountedWithPageDataSetWrapper = VueWrapper & {
+  __pageComponentRegistry?: PageComponentRegistry}
 
-interface MountWithPageDataSetOptions {
+type MountWithPageDataSetOptions = {
   dataSet: DataSetContract
   props?: Record<string, unknown>
   global?: ComponentMountingOptions<unknown>['global']
-  slots?: Record<string, unknown>
-}
+  slots?: Record<string, unknown>}
 
 export function mountWithPageDataSet(
   component: Component,
@@ -78,13 +76,12 @@ export function getMountedComponentApi<T>(
   return api
 }
 
-interface MountWithDataViewOptions {
+type MountWithDataViewOptions = {
   view: DataView
   field?: 'rows' | 'currentRow'
   props?: Record<string, unknown>
   global?: ComponentMountingOptions<unknown>['global']
-  slots?: Record<string, unknown>
-}
+  slots?: Record<string, unknown>}
 
 export function mountWithDataView(
   component: Component,
@@ -115,3 +112,4 @@ export function mountWithDataView(
 
   return mountWithPageDataSet(component, mountOptions)
 }
+

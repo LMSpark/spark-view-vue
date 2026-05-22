@@ -15,10 +15,9 @@
 
 import type { CapabilityContext } from '@spark-view/spark-utils'
 
-export interface SparkRuntimeOwner {
+export type SparkRuntimeOwner = {
   parent?: SparkRuntimeOwner | null
-  pageRoot?: unknown
-}
+  pageRoot?: unknown}
 
 const OWNER_CONTEXTS = new WeakMap<object, CapabilityContext>()
 /** key = 页面根 DOM 元素（HTMLElement），DOM 天然防泄漏 */

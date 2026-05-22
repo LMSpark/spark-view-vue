@@ -1,4 +1,4 @@
-﻿/**
+/**
  * SparkApp.start() - 最高层级 API
  *
  * 完全声明式启动应用，无需手动创建 app/router
@@ -6,7 +6,7 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { createConfigLoader, type ConfigLoaderOptions } from '@spark-view/spark-page-config/page/loading'
+import { createConfigLoader, type ConfigLoaderOptions } from '@spark-view/spark-page-config/config'
 import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
@@ -34,11 +34,10 @@ function logStartDebug(message: string, meta?: Record<string, unknown>): void {
   }
 }
 
-interface RegisterStats {
+type RegisterStats = {
   total: number
   sync: number
-  async: number
-}
+  async: number}
 
 function normalizeRegisterStats(raw: unknown): RegisterStats | null {
   const total = readNumberProperty(raw, 'total')
@@ -48,9 +47,8 @@ function normalizeRegisterStats(raw: unknown): RegisterStats | null {
   return { total, sync, async }
 }
 
-interface RegisterComponentsFn {
-  (app: ReturnType<typeof createApp>): unknown
-}
+type RegisterComponentsFn = {
+  (app: ReturnType<typeof createApp>): unknown}
 
 function isRegisterComponentsFn(value: unknown): value is RegisterComponentsFn {
   return typeof value === 'function'
@@ -59,7 +57,7 @@ function isRegisterComponentsFn(value: unknown): value is RegisterComponentsFn {
 /**
  * SPARK 组件系统配置
  */
-export interface SparkOptions {
+export type SparkOptions = {
   /** 是否启用 SPARK 组件系统（默认 true） */
   enabled?: boolean
 
@@ -69,13 +67,12 @@ export interface SparkOptions {
    * SparkApp 会自动导入 virtual:spark-components 并执行注册函数。
    * 设置为 false 可禁用自动注册（用于自定义注册流程）。
    */
-  autoRegister?: boolean
-}
+  autoRegister?: boolean}
 
 /**
  * 页面配置系统配置
  */
-export interface PageConfigOptions {
+export type PageConfigOptions = {
   /** API 基础路径 */
   apiBaseUrl: string
   /**
@@ -121,13 +118,12 @@ export interface PageConfigOptions {
    * 当用户未登录时，`registerRoutes()` 使用此本地导航树注册路由（如 / 和 /login）。
    * 登录后 `refreshRoutes()` 会用远程导航树替换。
    */
-  preAuthNavTree?: AppNavRoot
-}
+  preAuthNavTree?: AppNavRoot}
 
 /**
  * 启动配置（扩展自 BootstrapOptions）
  */
-export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
+export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
   /** 根组件 */
     rootComponent: Component
   
@@ -159,8 +155,7 @@ export interface StartOptions extends Omit<BootstrapOptions, 'app' | 'router'> {
     onBeforeStart?: () => void | Promise<void>
   
     /** 启动失败钩子（如果提供，将完全接管错误处理） */
-    onStartError?: (error: Error) => void | Promise<void>
-}
+    onStartError?: (error: Error) => void | Promise<void>}
 
 /**
  * 启动 SPARK 应用
@@ -377,3 +372,4 @@ export async function start(options: StartOptions): Promise<void> {
     throw error
   }
 }
+

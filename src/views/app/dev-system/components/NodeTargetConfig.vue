@@ -149,7 +149,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { NavNode, NavNodeKind } from '@spark-view/spark-page-config/page/navigation'
+import type { NavNode, NavNodeKind } from '@spark-view/spark-page-config/navigation'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
@@ -163,10 +163,9 @@ const flags = useNodeKindFlags(props.state)
 
 // ── 目标选项 ──
 
-interface TargetOption {
+type TargetOption = {
   value: string
-  label: string
-}
+  label: string}
 
 const actionTargetOptions: TargetOption[] = [
   { value: 'action:search', label: '动作 · 搜索' },
@@ -175,12 +174,11 @@ const actionTargetOptions: TargetOption[] = [
   { value: 'action:theme-toggle', label: '动作 · 主题切换' },
 ]
 
-interface VuePathOption {
+type VuePathOption = {
   path: string
   title: string
   displayTitle: string
-  extra: string
-}
+  extra: string}
 
 function collectPathTitles(nodes: NavNode[], map: Map<string, string>) {
   for (const node of nodes) {
@@ -303,10 +301,9 @@ const targetValue = computed<string>({
 
 // ── 父页面选项（sub-page 用） ──
 
-interface ParentPageOption {
+type ParentPageOption = {
   id: string
-  label: string
-}
+  label: string}
 
 function inferNodeKind(node: NavNode): NavNodeKind {
   if (node.nodeKind !== undefined) return node.nodeKind
@@ -336,12 +333,11 @@ const parentPageOptions = computed(() => {
 
 // ── 路径有效性状态 ──
 
-interface NodeTargetStatus {
+type NodeTargetStatus = {
   /** Element Plus tag 类型：success=匹配，info=可接受提示，warning=配置缺失，danger=不可用。 */
   type: 'success' | 'info' | 'warning' | 'danger'
   icon: string
-  text: string
-}
+  text: string}
 
 /**
  * 根据当前节点类型检查 path 的业务含义。
@@ -413,10 +409,9 @@ const createPageCandidateId = computed(() => {
 
 // ── 跨工程引用：工程选择 → 页面选择 ──
 
-interface SelectOption {
+type SelectOption = {
   value: string
-  label: string
-}
+  label: string}
 
 const refProjectsLoading = ref(false)
 const refPagesLoading = ref(false)
@@ -640,3 +635,4 @@ async function createPageFromPath() {
   justify-content: flex-start;
 }
 </style>
+

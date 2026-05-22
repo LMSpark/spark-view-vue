@@ -8,7 +8,7 @@ import {
 } from '@spark-view/spark-data'
 import { requireArray, requireRecord } from './test-type-helpers'
 
-interface MemoryStorageMap extends Map<string, string> {}
+type MemoryStorageMap = Map<string, string>
 
 function createMemoryHistoryAdapter(backingStore: MemoryStorageMap) {
   return {

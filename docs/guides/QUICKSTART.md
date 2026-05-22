@@ -536,7 +536,7 @@ A: 使用动态导入进行代码分割，避免一次性加载所有组件。
 
 ```vue
 <script setup lang="ts">
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const { sparkProvide, logger } = useSparkComponent({
@@ -676,7 +676,7 @@ logger.error('出错了', error)
 ### PAGE_RUNTIME_SERVICES（组件内）
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { useSparkComponent } from '@spark-view/spark-component'
 
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
@@ -692,7 +692,7 @@ services?.auth?.isAuthenticated()
 ```vue
 <script setup lang="ts">
 import { createLogger } from '@spark-view/spark-app'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { useRouter } from 'vue-router'
 
@@ -759,3 +759,4 @@ registerCustomComponents()
 - 📖 查看 [文档中心](../README.md)
 - 🐛 报告 [GitHub Issues](https://github.com/your-org/spark-view/issues)
 - 💬 参与 [讨论](https://github.com/your-org/spark-view/discussions)
+

@@ -4,16 +4,14 @@ import type { REditorProps } from '../../zones/RendererEditor.types'
 import type { RToolbarProps } from '../../layout/RendererToolbar.types'
 import { useContainerToolbar } from '../../runtime/container-ui'
 
-interface RendererTreeInputProps {
+type RendererTreeInputProps = {
   children?: SparkNode['children'] | undefined
   toolbar?: RToolbarProps | undefined
   actions?: RToolbarProps | undefined
-  editor?: REditorProps | undefined
-}
+  editor?: REditorProps | undefined}
 
-interface RendererTreeInputOptions {
-  props: RendererTreeInputProps
-}
+type RendererTreeInputOptions = {
+  props: RendererTreeInputProps}
 
 export function useRendererTreeInput(options: RendererTreeInputOptions) {
   // 优先消费结构化 props.toolbar / props.actions / props.editor；children 不再做结构分流。

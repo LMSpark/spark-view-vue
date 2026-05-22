@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RAlertProps extends SparkNodeProps {
+export type RAlertProps = SparkNodeProps & {
   /** 标题 */
     title?: string
     /** 描述文本 */
@@ -16,5 +16,4 @@ export interface RAlertProps extends SparkNodeProps {
     /** 是否显示图标 */
     showIcon?: boolean
     /** 主题效果 */
-    effect?: 'light' | 'dark'
-}
+    effect?: 'light' | 'dark'}

@@ -25,7 +25,7 @@
 
 import { ref, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
-import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/app-services'
+import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/runtime'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { PAGE_COMPONENT_REGISTRY } from '../../core/capability-keys'
 import type { PageComponentRegistry } from '../../core/capability-keys'
@@ -35,7 +35,7 @@ import { createPageComponentRegistry } from '../context/page-component-registry'
 
 // ─── 公共接口 ────────────────────────────────────────────────────────────────
 
-interface RendererSetupReturn {
+type RendererSetupReturn = {
   /** 路由能力实例（消费方如 buildPageService / 页面动作可能需要） */
   router: Router
   /** SPARK 能力提供函数（含 CapabilityTypeMap 类型重载） */
@@ -62,8 +62,7 @@ interface RendererSetupReturn {
   runLoad: (
     fn: (isStale: () => boolean) => Promise<void>,
     onError?: (err: Error) => void,
-  ) => Promise<void>
-}
+  ) => Promise<void>}
 
 // ─── Composable 实现 ─────────────────────────────────────────────────────────
 
@@ -129,3 +128,4 @@ export function useRendererSetup(
 
   return { router, sparkProvide, sparkConsume, loading, error, componentRegistry, pageRuntimeServices, runLoad }
 }
+

@@ -79,9 +79,9 @@ import { Logger } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
-import type { BasePageConfigLoader, PageConfig } from '@spark-view/spark-page-config/page/loading'
-import type { PageRoute } from '@spark-view/spark-page-config/page/script-context-types'
+import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
+import type { BasePageConfigLoader, PageConfig } from '@spark-view/spark-page-config/config'
+import type { PageRoute } from '@spark-view/spark-page-config/runtime'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
 import {
@@ -113,29 +113,25 @@ const currentInstance = getCurrentInstance()
 
 type PageRuntimeErrorPhase = 'load' | 'script-compile' | 'init' | 'script-function' | 'render'
 
-interface PageRuntimeErrorPayload {
+type PageRuntimeErrorPayload = {
   phase: PageRuntimeErrorPhase
   message: string
   pageId: string
-  at: string
-}
+  at: string}
 
-interface RenderFunction {
-  (props?: Record<string, unknown>): unknown
-}
-interface RenderFunctionRef extends ReturnType<typeof shallowRef<RenderFunction | null>> {}
-interface RenderFunctionRevisionRef extends ReturnType<typeof shallowRef<number>> {}
-interface RenderFunctionRegistration {
+type RenderFunction = {
+  (props?: Record<string, unknown>): unknown}
+type RenderFunctionRef = ReturnType<typeof shallowRef<RenderFunction | null>>
+type RenderFunctionRevisionRef = ReturnType<typeof shallowRef<number>>
+type RenderFunctionRegistration = {
   fnRef: RenderFunctionRef
   revisionRef: RenderFunctionRevisionRef
-  invalidatePage?: () => void
-}
+  invalidatePage?: () => void}
 const renderFunctionRegistries = new WeakMap<object, Map<string, RenderFunctionRegistration>>()
 
-interface VueComponentRegistry {
+type VueComponentRegistry = {
   component(name: string): unknown
-  component(name: string, component: object): void
-}
+  component(name: string, component: object): void}
 
 function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegistration> {
   const existing = renderFunctionRegistries.get(app)
@@ -356,9 +352,8 @@ function createRenderFunction(fn: (...args: unknown[]) => unknown): RenderFuncti
 // ==================== Props — h(type, props, children) ====================
 
 /** 直传四文件输入（跳过 configLoader 异步加载，pageId 可选） */
-interface SparkPageNodePropsInput extends Omit<PageConfig, 'pageId'> {
-  pageId?: string
-}
+type SparkPageNodePropsInput = Omit<PageConfig, 'pageId'> & {
+  pageId?: string}
 
 /**
  * SparkPageRenderer props — 对齐 h(type, props, children) 三段式。
@@ -367,7 +362,7 @@ interface SparkPageNodePropsInput extends Omit<PageConfig, 'pageId'> {
  * - props    = configLoader / pageId / pageConfig / enable* / 钩子等（本接口所有字段）
  * - children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入
  */
-interface Props extends Omit<SparkNode, 'type'> {
+type Props = Omit<SparkNode, 'type'> & {
   /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */
     type?: string
     /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
@@ -391,8 +386,7 @@ interface Props extends Omit<SparkNode, 'type'> {
     /** 错误处理函数 */
     onError?: (error: Error) => void
     /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */
-    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void
-}
+    onRuntimeError?: (payload: PageRuntimeErrorPayload) => void}
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'spark-page',
@@ -819,3 +813,4 @@ defineExpose({
   width: 100%;
 }
 </style>
+

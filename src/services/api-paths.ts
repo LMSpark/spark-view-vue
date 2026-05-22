@@ -7,10 +7,9 @@
 
 import { getUser } from './auth'
 
-interface Scope {
+type Scope = {
   tenantId: string
-  projectId: string
-}
+  projectId: string}
 
 function parseTenantScopeFromPath(path: string): Scope | null {
   const match = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(path)

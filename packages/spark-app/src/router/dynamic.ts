@@ -7,7 +7,7 @@
 
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config/page/loading'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
 import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
@@ -39,7 +39,7 @@ function shouldLogDynamicRouteDetails(): boolean {
 /**
  * 动态路由注册选项
  */
-export interface DynamicRouterOptions {
+export type DynamicRouterOptions = {
   /** Vue Router 实例 */
   router: Router
 
@@ -109,14 +109,12 @@ export interface DynamicRouterOptions {
    * - 已登录 → 使用 `loadNavigation` 加载远程导航树
    * - 未登录 → 使用 `preAuthNavTree` 本地导航树
    */
-  isAuthenticated?: (() => boolean) | undefined
-}
+  isAuthenticated?: (() => boolean) | undefined}
 
-interface RouteRegistrationOptions {
+type RouteRegistrationOptions = {
   skipTenantPrefix?: boolean
   routePathPrefix?: string
-  routeNamePrefix?: string
-}
+  routeNamePrefix?: string}
 
 /**
  * 动态路由管理器
@@ -651,3 +649,4 @@ export class DynamicRouter {
 export function createDynamicRouter(options: DynamicRouterOptions): DynamicRouter {
   return new DynamicRouter(options)
 }
+

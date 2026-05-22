@@ -19,7 +19,7 @@ import {
   type LoggerApi,
   type SparkCapabilityConsumer,
 } from '@spark-view/spark-utils'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/app-services'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 import { DATA_ROW } from './capability-keys.js'
@@ -48,7 +48,7 @@ function toSparkRuntimeOwner(instance: ReturnType<typeof getCurrentInstance>): S
  * 容器可通过上下文 type 语义驱动子级渲染模式，子级按需消费并自决。
  * 子级独立自决：收到能力后，自己决定何时消费、如何使用，保持渲染自主权。
  */
-export interface UseSparkComponentReturn {
+export type UseSparkComponentReturn = {
   provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
@@ -61,44 +61,37 @@ export interface UseSparkComponentReturn {
   }
   sparkRemove: <T>(name: CapabilityKey<T>) => void
   sparkConsume: SparkCapabilityConsumer
-  logger: LoggerApi
-}
+  logger: LoggerApi}
 
-export interface UseSparkPageComponentReturn extends UseSparkComponentReturn {
-  registerApi: (api: unknown) => void
-}
+export type UseSparkPageComponentReturn = UseSparkComponentReturn & {
+  registerApi: (api: unknown) => void}
 
 /**
  * 轻量消费返回 — 仅消费能力、查询 provider，不创建自身上下文。
  * 由 `useSparkConsume()` 返回，供只需读取上下文的组件使用。
  */
-export interface UseSparkCapabilityReaderReturn {
+export type UseSparkCapabilityReaderReturn = {
   provider: {
     nearestCapabilityProvider<T>(name: CapabilityKey<T>): CapabilityContext | null
     nearestCapabilityProviderByKeys(keys: ReadonlyArray<CapabilityKey<unknown>>): CapabilityContext | null
   }
-  sparkConsume: SparkCapabilityConsumer
-}
+  sparkConsume: SparkCapabilityConsumer}
 
-export interface UseSparkComponentOptions {
-  parentContext?: CapabilityContext
-}
+export type UseSparkComponentOptions = {
+  parentContext?: CapabilityContext}
 
-interface HostTypeResolverOptions {
-  hostTypes?: readonly string[]
-}
+type HostTypeResolverOptions = {
+  hostTypes?: readonly string[]}
 
-interface ResolvedHostType {
+type ResolvedHostType = {
   hostType: string | null
-  parentContext: CapabilityContext | null
-}
+  parentContext: CapabilityContext | null}
 
-export interface SparkNodeInput {
+export type SparkNodeInput = {
   type: string
   props?: Record<string, unknown> | undefined
   children?: SparkNode['children'] | undefined
-  id?: string | undefined
-}
+  id?: string | undefined}
 
 function normalizeHostType(
   type: string,
@@ -469,3 +462,4 @@ export function useSparkPageComponent(
     registerApi,
   }
 }
+

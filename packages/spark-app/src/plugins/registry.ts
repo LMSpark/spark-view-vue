@@ -14,7 +14,7 @@ const pluginLogger = createLogger('plugins')
 /**
  * 插件配置项
  */
-export interface PluginConfigItem {
+export type PluginConfigItem = {
   /** 是否启用 */
   enabled: boolean
   /** 插件选项 */
@@ -22,8 +22,7 @@ export interface PluginConfigItem {
   /** 是否懒加载 */
   lazy?: boolean
   /** 优先级（数字越小越先加载） */
-  priority?: number
-}
+  priority?: number}
 
 /**
  * 插件配置类型（支持简单布尔值或详细配置）
@@ -33,7 +32,7 @@ export interface PluginConfigItem {
 /**
  * 插件加载器定义
  */
-export interface PluginLoader {
+export type PluginLoader = {
   /** 插件 ID */
   id: string
   /** 插件名称 */
@@ -47,20 +46,18 @@ export interface PluginLoader {
   /** 插件描述 */
   description?: string
   /** 插件版本 */
-  version?: string
-}
+  version?: string}
 
 /**
  * 插件实例（加载后的结果）
  */
-export interface PluginInstance {
+export type PluginInstance = {
   /** 插件对象 */
   plugin: Plugin
   /** 插件选项 */
   options?: Record<string, unknown>
   /** 加载器信息 */
-  loader: PluginLoader
-}
+  loader: PluginLoader}
 
 export class PluginRegistry {
   private readonly loaders = new Map<string, PluginLoader>()

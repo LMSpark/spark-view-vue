@@ -29,7 +29,7 @@ export type PrimaryKeyStrategy =
 /**
  * 主键生成器配置
  */
-export interface PrimaryKeyGeneratorConfig {
+export type PrimaryKeyGeneratorConfig = {
   /** 生成策略 */
   strategy: PrimaryKeyStrategy
   /** 主键字段名 */
@@ -37,8 +37,7 @@ export interface PrimaryKeyGeneratorConfig {
   /** 自定义生成函数（strategy='custom' 时必需） */
   generator?: (row: Partial<DataRow>, existingRows: DataRow[]) => string | number | Record<string, string | number>
   /** 自增起始值（strategy='auto-increment' 时，默认 1） */
-  startValue?: number
-}
+  startValue?: number}
 
 // ─────────────────────────────────────────────
 // UUID 生成器

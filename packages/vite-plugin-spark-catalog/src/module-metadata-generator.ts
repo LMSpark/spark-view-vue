@@ -8,53 +8,45 @@ import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, relative } from 'node:path'
 import ts from 'typescript'
 
-export interface ModuleAbilityMetadataGeneratorOptions {
+export type ModuleAbilityMetadataGeneratorOptions = {
   sources: readonly string[]
-  outFile: string
-}
+  outFile: string}
 
-interface ModuleDocTag {
+type ModuleDocTag = {
   name: string
   text: string
-  node: ts.JSDocTag
-}
+  node: ts.JSDocTag}
 
-interface ModuleSourceRef {
+type ModuleSourceRef = {
   file: string
-  line: number
-}
+  line: number}
 
-interface ModuleEntityMetadata {
+type ModuleEntityMetadata = {
   id: string
-  label: string
-}
+  label: string}
 
-interface ModuleAttackSurfaceMetadata {
+type ModuleAttackSurfaceMetadata = {
   id: string
   risk: string
-  description: string
-}
+  description: string}
 
-interface ModuleMutationMetadata {
+type ModuleMutationMetadata = {
   resource: string
   mode: string
-  description: string
-}
+  description: string}
 
-interface ModuleActionParameterMetadata {
+type ModuleActionParameterMetadata = {
   name: string
   type: string
   optional: boolean
-  description?: string
-}
+  description?: string}
 
-interface ModuleFailureModeMetadata {
+type ModuleFailureModeMetadata = {
   code: string
   when: string
-  fix: string
-}
+  fix: string}
 
-interface ModuleActionMetadata {
+type ModuleActionMetadata = {
   name: string
   methodName: string
   description?: string
@@ -66,10 +58,9 @@ interface ModuleActionMetadata {
   attackSurfaces: readonly ModuleAttackSurfaceMetadata[]
   guards: readonly string[]
   mutations: readonly ModuleMutationMetadata[]
-  source: ModuleSourceRef
-}
+  source: ModuleSourceRef}
 
-interface ModuleAbilityMetadata {
+type ModuleAbilityMetadata = {
   abilityId: string
   kind?: string
   name?: string
@@ -81,17 +72,17 @@ interface ModuleAbilityMetadata {
   guards: readonly string[]
   mutations: readonly ModuleMutationMetadata[]
   actions: readonly ModuleActionMetadata[]
-  source: ModuleSourceRef & { className: string }
-}
+  source: ModuleSourceRef & { className: string }}
 
-export interface ModuleMetadataGenerationResult {
+export type ModuleMetadataGenerationResult = {
   abilities: readonly ModuleAbilityMetadata[]
-  outFile: string
-}
+  outFile: string}
 
 const MODULE_METADATA_SCHEMA_VERSION = 1
 const MODULE_ATTACK_SURFACE_RISKS = ['low', 'medium', 'high', 'critical'] as const
 const MODULE_MUTATION_MODES = ['read', 'write', 'delete', 'execute', 'read-write'] as const
+const MODULE_ATTACK_SURFACE_RISK_VALUES: ReadonlySet<string> = new Set(MODULE_ATTACK_SURFACE_RISKS)
+const MODULE_MUTATION_MODE_VALUES: ReadonlySet<string> = new Set(MODULE_MUTATION_MODES)
 
 const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
   'packages/spark-page-config/src/page/model/spark-node-tree.ts',
@@ -273,8 +264,8 @@ function readSummary(node: ts.Node): string | undefined {
 }
 
 function readLastJsDoc(node: ts.Node): ts.JSDoc | undefined {
-  const docs = (node as ts.Node & { jsDoc?: readonly ts.JSDoc[] }).jsDoc
-  if (docs === undefined || docs.length === 0) return undefined
+  const docs = ts.getJSDocCommentsAndTags(node).filter(ts.isJSDoc)
+  if (docs.length === 0) return undefined
   return docs[docs.length - 1]
 }
 
@@ -438,11 +429,11 @@ function validateGeneratedActions(ability: ModuleAbilityMetadata): void {
 }
 
 function isModuleAttackSurfaceRisk(value: string): value is typeof MODULE_ATTACK_SURFACE_RISKS[number] {
-  return MODULE_ATTACK_SURFACE_RISKS.includes(value as typeof MODULE_ATTACK_SURFACE_RISKS[number])
+  return MODULE_ATTACK_SURFACE_RISK_VALUES.has(value)
 }
 
 function isModuleMutationMode(value: string): value is typeof MODULE_MUTATION_MODES[number] {
-  return MODULE_MUTATION_MODES.includes(value as typeof MODULE_MUTATION_MODES[number])
+  return MODULE_MUTATION_MODE_VALUES.has(value)
 }
 
 function formatGeneratedMetadata(abilities: readonly ModuleAbilityMetadata[]): string {

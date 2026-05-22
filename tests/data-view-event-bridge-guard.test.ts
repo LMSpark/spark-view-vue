@@ -30,12 +30,11 @@ function walkFiles(dir: string): string[] {
   return result
 }
 
-interface Violation {
+type Violation = {
   file: string
   pattern: string
   line: number
-  snippet: string
-}
+  snippet: string}
 
 describe('DataView event bridge guard', () => {
   it('keeps direct DataView events.on subscriptions only inside useDataViewEventBridge', () => {

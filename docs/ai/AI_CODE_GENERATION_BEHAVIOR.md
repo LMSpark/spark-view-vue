@@ -33,6 +33,20 @@
 7. 先寻找已有 class、registry、factory 和稳定领域对象，再决定是否新增结构。
 8. 公共 API 应少而稳定；内部实现可以具体、直接、可读。
 
+## 硬门禁
+
+`pnpm run verify:rules` 是本仓库的规则治理入口，根 `verify` 已接入。以下问题必须在提交前清零：
+
+- 非 allowlist `interface`。
+- 非 `as const` 类型断言和尖括号类型断言。
+- TypeScript `namespace`。
+- 公共 barrel 使用 `export * from ...`；公共入口必须使用显式 export 清单。
+- 旧 `@spark-view/spark-ai/core`、`/protocol`、`/runtime`、`/adapter` 等 subpath。
+- 旧 `ModuleKind.PathContext`、`ModuleKind.OperationResult` 等 namespace 类型。
+- 旧 schema/type 名，例如 `LlmParameterSchemaRoot`、`JsonSchemaProperties`、`ActionSchema`、`AttributeSchema`。
+- 框架无关包导入 Vue、Vue Router、Element Plus、VueUse 或 Pinia。
+- workspace 包之间绕过 `@spark-view/*` 的跨包相对导入。
+
 ## Interface 使用规则
 
 允许使用 `interface` 的场景：
@@ -234,7 +248,7 @@ export class PageDataLoader extends BaseDataLoader {
 - 新业务注册统一返回 `AiHostBusinessRegistration`，其中 `runtime` 直接持有 `ModuleSemanticRuntime`。
 - 业务能力进入协议层前必须投影成标准 `ModuleKind` / `ModuleSemanticRuntime`；手写 `ModuleKind` class 只作为迁移期形态，目标是由 VCM 从领域能力 class 源码提取属性、动作、子模块、构造函数、攻击面元数据以及 `runner/list/find` 委托标识，生成 JSON 能力元数据或 `ModuleKind` factory 后调用 `runtime.registerKind`。
 - `assistant/registrations/**` 是协议装配层，只允许承接 factory、依赖注入和 `runner/list/find` 委托，不承载实体语义或攻击面 JSDoc。
-- `ActionSchema` 只保存声明，运行侧统一挂在 `ModuleKind.runner(ctx, actionName, args)` 函数上。
+- `ModuleActionMetadata` 只保存声明，运行侧统一挂在 `ModuleKind.runner(ctx, actionName, args)` 函数上。
 - `ModuleKind` 可通过 `list` / `find` 函数委托适配任意业务系统；属性语义只来自 `attributes` 元数据并通过 `describeKind` 暴露给 LLM，最终能力元数据可由 VCM 等构建期链路生成，但进入协议层必须投影成标准 `ModuleKind` 或由 factory 创建 `ModuleKind`。
 - `getAttribute` / `setAttribute` 由基类按元数据校验后直接读写 `runner` 函数对象属性；`resolveChild` 和内部 resolve 逻辑由基类实现，不要求业务层实现额外适配协议。
 - LLM 可见工具固定为 `listChildren`、`findInstance`、`describeKind`、`invokeAction`、`getAttribute`、`setAttribute`。
@@ -243,6 +257,7 @@ export class PageDataLoader extends BaseDataLoader {
 - Host 只记录 `AiHostSessionRecord / AiHostHistoryEntry / AiHostFunctionCallResult`；业务 live state 由业务 service 自管。
 - 业务 release 只清 live state，不删除 Host 会话历史。
 - `spark-ai` 与消费层不得用 `as` 类型断言绕过 TypeScript 检查；需要收窄 unknown 时使用类型守卫、显式返回类型、`satisfies` 或运行时校验后构造 typed object。
+- `@spark-view/spark-ai` 的 package exports、TS paths、Vite/Vitest alias 必须严格保持根、`/schema`、`/module-semantic`、`/host` 四个入口。
 
 ## 错误处理风格
 

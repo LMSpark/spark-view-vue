@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RPaginationProps extends SparkNodeProps {
+export type RPaginationProps = SparkNodeProps & {
   /** 总条数 */
   total?: number
     /** 每页条数 */
@@ -18,5 +18,4 @@ export interface RPaginationProps extends SparkNodeProps {
     /** 是否小尺寸 */
     small?: boolean
     /** 单页时是否隐藏 */
-    hideOnSinglePage?: boolean
-}
+    hideOnSinglePage?: boolean}

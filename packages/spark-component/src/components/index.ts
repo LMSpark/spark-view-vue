@@ -6,15 +6,244 @@
 
 // ── 支持组件 ──────────────────────────────────────────────────────────────────
 export { default as SparkComponentRenderer } from './SparkComponentRenderer.vue'
-export * from './editors/index.js'
+export {
+  JsonTreeEditor,
+  SparkCodeEditor,
+  SparkJsonEditor,
+} from './editors/index.js'
 
 // ── 组件 re-exports（leaf barrel 统一导出）──────────────────────────────────
-export * from './containers/data-views/index.js'
-export * from './containers/layout/index.js'
-export * from './fields/data-components/index.js'
-export * from './fields/non-data-components/index.js'
-export * from './display/data-components/index.js'
-export * from './display/non-data-components/index.js'
+export {
+  RendererDetail,
+  RendererForm,
+  RendererList,
+  RendererTable,
+  RendererTree,
+} from './containers/data-views/index.js'
+
+export type {
+  RDetailProps,
+  RFormProps,
+  RListProps,
+  RendererDetailApi,
+  RendererFormApi,
+  RendererListApi,
+  RendererTableApi,
+  RendererTreeApi,
+  RendererTreePath,
+  RTableProps,
+  RTreeProps,
+} from './containers/data-views/index.js'
+
+export {
+  RendererAffix,
+  RendererAnchor,
+  RendererAnchorLink,
+  RendererAside,
+  RendererBacktop,
+  RendererButton,
+  RendererButtonGroup,
+  RendererCard,
+  RendererCarousel,
+  RendererCarouselItem,
+  RendererCol,
+  RendererCollapse,
+  RendererCollapseItem,
+  RendererContainer,
+  RendererDialog,
+  RendererDivider,
+  RendererDrawer,
+  RendererDropdown,
+  RendererLayoutFooter,
+  RendererLayoutHeader,
+  RendererLink,
+  RendererMain,
+  RendererPageHeader,
+  RendererPopconfirm,
+  RendererPopover,
+  RendererRow,
+  RendererScrollbar,
+  RendererSection,
+  RendererSpace,
+  RendererStepItem,
+  RendererSteps,
+  RendererTabPane,
+  RendererTabs,
+  RendererToolbar,
+  RendererTooltip,
+  RendererTour,
+  RendererWatermark,
+} from './containers/layout/index.js'
+
+export type {
+  DropdownItem,
+  RAnchorLinkProps,
+  RAnchorProps,
+  RButtonProps,
+  RCardProps,
+  RCollapseProps,
+  RDialogProps,
+  RDividerProps,
+  RDrawerProps,
+  RDropdownProps,
+  RLinkProps,
+  RPageHeaderProps,
+  RPopconfirmProps,
+  RPopoverProps,
+  RSectionProps,
+  RendererCollapseApi,
+  RendererDialogApi,
+  RendererDrawerApi,
+  RendererSectionApi,
+  RendererStepsApi,
+  RendererTabsApi,
+  RSpaceProps,
+  RStepsProps,
+  RTabsProps,
+  RToolbarProps,
+  RTooltipProps,
+  RTourProps,
+  TabsClickEvent,
+  TourStep,
+} from './containers/layout/index.js'
+
+export {
+  FieldAutocomplete,
+  FieldCascader,
+  FieldCheckTag,
+  FieldCheckbox,
+  FieldCheckboxGroup,
+  FieldColor,
+  FieldDate,
+  FieldDeptPicker,
+  FieldEntityPicker,
+  FieldFileBrowser,
+  FieldFilePath,
+  FieldHtmlEditor,
+  FieldIcon,
+  FieldImage,
+  FieldMention,
+  FieldMultiSelect,
+  FieldNumber,
+  FieldProductPicker,
+  FieldRadio,
+  FieldRate,
+  FieldSegmented,
+  FieldSelect,
+  FieldSlider,
+  FieldSwitch,
+  FieldText,
+  FieldTextarea,
+  FieldTimePicker,
+  FieldTimeSelect,
+  FieldTransfer,
+  FieldTreeSelect,
+  FieldUpload,
+  FieldUserPicker,
+} from './fields/data-components/index.js'
+
+export type {
+  CascaderPath,
+  CascaderValue,
+  CheckboxGroupMultiValue,
+  DatePickerType,
+  FetchSuggestionsCallback,
+  MultiValue,
+  RAutocompleteProps,
+  RCascaderProps,
+  RCheckTagProps,
+  RCheckboxGroupProps,
+  RCheckboxProps,
+  RColorProps,
+  RDateProps,
+  REntityPickerProps,
+  RFileBrowserProps,
+  RFilePathProps,
+  RHtmlEditorProps,
+  RIconProps,
+  RImageProps,
+  RMentionProps,
+  RMultiSelectProps,
+  RNumberProps,
+  RRadioProps,
+  RRateProps,
+  RSegmentedProps,
+  RSelectProps,
+  RSliderProps,
+  RSwitchProps,
+  RTextProps,
+  RTextareaProps,
+  RTimePickerProps,
+  RTimeSelectProps,
+  RTransferProps,
+  RTreeSelectProps,
+  RUploadProps,
+  TransferValue,
+} from './fields/data-components/index.js'
+
+export {
+  FieldContextRenderer,
+  FieldTreeNodeSummary,
+} from './fields/non-data-components/index.js'
+
+export type {
+  RTreeNodeSummaryProps,
+} from './fields/non-data-components/index.js'
+
+export {
+  DisplayAvatar,
+  DisplayBadge,
+  DisplayImage,
+  DisplayPagination,
+  DisplayProgress,
+  DisplayStatistic,
+  DisplayTag,
+  DisplayText,
+} from './display/data-components/index.js'
+
+export type {
+  RAvatarProps,
+  RBadgeProps,
+  RDisplayImageProps,
+  RPaginationProps,
+  RProgressProps,
+  RStatisticProps,
+  RTagProps,
+  RTextDisplayProps,
+  TagType,
+} from './display/data-components/index.js'
+
+export {
+  DisplayAlert,
+  DisplayBreadcrumb,
+  DisplayBreadcrumbItem,
+  DisplayCalendar,
+  DisplayCountdown,
+  DisplayDescriptions,
+  DisplayDescriptionsItem,
+  DisplayEmpty,
+  DisplayIcon,
+  DisplayResult,
+  DisplaySkeleton,
+  DisplayTimeline,
+  DisplayTimelineItem,
+} from './display/non-data-components/index.js'
+
+export type {
+  RAlertProps,
+  RBreadcrumbItemProps,
+  RBreadcrumbProps,
+  RDescriptionsItemProps,
+  RDescriptionsProps,
+  RDisplayCalendarProps,
+  RDisplayCountdownProps,
+  RDisplayIconProps,
+  REmptyProps,
+  RResultProps,
+  RSkeletonProps,
+  RTimelineItemProps,
+  RTimelineProps,
+} from './display/non-data-components/index.js'
 
 // ── 注册 & composable ────────────────────────────────────────────────────────
 export { registerAllRenderers } from './register-renderers.js'

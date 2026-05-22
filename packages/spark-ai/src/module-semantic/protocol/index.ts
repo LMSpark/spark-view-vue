@@ -3,25 +3,50 @@
  * module-semantic/protocol/index.ts — 协议层公共入口
  * ═══════════════════════════════════════════════════════════════
  *
- * 【导出策略】所有类型和值统一从 module-kind.ts 导出。
- *   ModuleKind 既是 class 也是 namespace，消费方用 ModuleKind 构造实例，
- *   用 ModuleKind.Path / ModuleKind.OperationResult 引用附属类型。
+ * 【导出策略】协议概念按文件拆分，统一从本入口导出。
  * ═══════════════════════════════════════════════════════════════
  */
 
-// ── ModuleKind class + namespace ──────────────────────────────
 export {
   ModuleKind,
 } from './module-kind'
 
 export type {
-  ActionFailureMode,
-  ActionSchema,
-  AttributeAccessFlags,
-  AttributeSchema,
+  ModuleActionFailureMode,
+  ModuleActionMetadata,
+  ModuleActionResultSchema,
+  ModuleAttributeAccess,
+  ModuleAttributeMetadata,
+  ModuleKindOptions,
 } from './module-kind'
 
-// ── ActionResultSchema ────────────────────────────────────────
+export {
+  ModuleCheckEntry,
+  ModuleOperationResult,
+} from './module-operation'
+
 export type {
-  ActionResultSchema,
-} from './module-kind'
+  ModuleCheckEntryLevel,
+  ModuleOperationResultOptions,
+} from './module-operation'
+
+export {
+  ModulePath,
+  ModulePathParseError,
+  ModulePathSegment,
+} from './module-path'
+
+export type {
+  ModulePathParseErrorCode,
+} from './module-path'
+
+export type {
+  ModuleChildrenLister,
+  ModuleHostContext,
+  ModuleInstanceFinder,
+  ModuleInstanceQuery,
+  ModuleInstanceRef,
+  ModuleKindOperation,
+  ModuleKindRunner,
+  ModulePathContext,
+} from './module-context'

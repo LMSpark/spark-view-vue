@@ -1,23 +1,20 @@
 import type { InjectionKey } from 'vue'
 import type { NavNode } from './nav-model'
 
-export interface NavigationActionContext {
+export type NavigationActionContext = {
   command: string
   node?: NavNode
-  source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell'
-}
+  source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell'}
 
-export interface NavigationActionHandler {
-  (context: NavigationActionContext): void | Promise<void>
-}
+export type NavigationActionHandler = {
+  (context: NavigationActionContext): void | Promise<void>}
 
-export interface NavigationActionRegistry {
+export type NavigationActionRegistry = {
   register(command: string, handler: NavigationActionHandler): () => void
   unregister(command: string): boolean
   has(command: string): boolean
   execute(command: string, context?: Omit<NavigationActionContext, 'command'>): Promise<boolean>
-  getCommands(): string[]
-}
+  getCommands(): string[]}
 
 function normalizeCommand(command: string): string {
   return command.trim()

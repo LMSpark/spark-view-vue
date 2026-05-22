@@ -23,8 +23,6 @@
  *
  *   LlmJsonSchema         — Schema 节点（boolean | LlmJsonSchemaObject）
  *     └─ LlmJsonSchemaObject — 完整 Schema 节点（type/properties/items 等）
- *
- *   LlmParameterSchemaRoot — 函数 paramsSchema 的根节点（必须是 type=object）
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -160,15 +158,3 @@ export type LlmJsonSchemaObject = {
   /** 最大值 */
   readonly maximum?: number
 }
-
-// ═══════════════════════════════════════════════════════════════
-// 第 4 节 · 参数根 — 函数 paramsSchema 的顶层约束
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * 函数 paramsSchema / 参数 payload guide 共用的根 schema。
- *
- * 约定：根节点 type 必须是 'object'，保证 LLM 传入的参数始终是一个对象。
- * 当前直接继承 LlmJsonSchemaObject，不添加额外字段。
- */
-export type LlmParameterSchemaRoot = LlmJsonSchemaObject

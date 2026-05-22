@@ -5,13 +5,12 @@
  */
 
 import type { RouteLocationRaw, Router } from 'vue-router'
-import type { PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/app-services'
+import type { PageRuntimeServicesCapability } from '@spark-view/spark-page-config/runtime'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
-interface AppRouteObjectTarget {
+type AppRouteObjectTarget = {
   path: string
-  query?: Record<string, unknown>
-}
+  query?: Record<string, unknown>}
 
 /**
  * 将业务侧传入的 query 值归一为 vue-router 可接受的字符串 query。
@@ -61,3 +60,4 @@ export function buildPageRuntimeServices(
     logger
   }
 }
+

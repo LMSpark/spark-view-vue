@@ -56,7 +56,7 @@ export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
   '**/src/components/IconPicker.vue',
   '**/src/components/ModuleContextBadge.vue',
   '**/src/components/NavIcon.vue',
-  '**/src/views/app/SkillCatalog.vue',
+
   '**/packages/spark-component/src/components/containers/support/**/*.vue',
 ] as const
 

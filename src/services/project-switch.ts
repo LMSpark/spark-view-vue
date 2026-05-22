@@ -5,9 +5,8 @@
  */
 import type { InjectionKey } from 'vue'
 
-export interface ProjectSwitchService {
+export type ProjectSwitchService = {
   /** 切换到指定项目并刷新导航 + 路由 */
-  switchAndReload(projectId: string): Promise<void>
-}
+  switchAndReload(projectId: string): Promise<void>}
 
 export const PROJECT_SWITCH_KEY: InjectionKey<ProjectSwitchService> = Symbol('project-switch')

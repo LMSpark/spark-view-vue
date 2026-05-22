@@ -40,7 +40,7 @@ export type AiHostFunctionCallFailure = Readonly<{
 /**
  * 工具调用结果（联合类型）。
  * ok:true  → 成功，携带 data（可选）和 summary（可选）
- * ok:false → 失败，携带 code / msg / fix（对齐 ModuleKind.OperationResult 的错误 check）
+ * ok:false → 失败，携带 code / msg / fix（对齐 ModuleOperationResult 的错误 check）
  */
 export type AiHostFunctionCallResult<TData> = Readonly<{
   ok: true

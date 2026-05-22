@@ -24,7 +24,7 @@ import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vu
 import type { Extension } from '@codemirror/state'
 import type { EditorView } from '@codemirror/view'
 
-interface Props {
+type Props = {
   /** 编辑器内容 */
   modelValue?: string
   /** 语言模式；当前只加载脚本与样式两类 CodeMirror language package。 */
@@ -36,8 +36,7 @@ interface Props {
   /** Tab 缩进空格数 */
   tabSize?: number
   /** 是否自动换行 */
-  lineWrapping?: boolean
-}
+  lineWrapping?: boolean}
 
 const props = withDefaults(defineProps<Props>(), {
   value: '',

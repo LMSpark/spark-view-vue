@@ -7,11 +7,10 @@ import {
 import type { RendererFormApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface NativeFormLike {
+type NativeFormLike = {
   validate?: () => Promise<boolean>
   resetFields?: () => void
-  clearValidate?: () => void
-}
+  clearValidate?: () => void}
 
 function isNativeFormLike(value: unknown): value is NativeFormLike {
   if (typeof value !== 'object' || value === null) return false
@@ -20,13 +19,12 @@ function isNativeFormLike(value: unknown): value is NativeFormLike {
     && (!('clearValidate' in value) || typeof value.clearValidate === 'function')
 }
 
-interface RendererFormZeroCodeOptions {
+type RendererFormZeroCodeOptions = {
   props: Readonly<Record<string, unknown>>
   resolvedView: ValueRef<DataView | null>
   formModel: Record<string, unknown>
   nativeFormRef: ValueRef<unknown>
-  logger: LoggerApi
-}
+  logger: LoggerApi}
 
 export function createRendererFormZeroCode(options: RendererFormZeroCodeOptions) {
   const { props, resolvedView, formModel, nativeFormRef } = options

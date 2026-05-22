@@ -15,11 +15,10 @@ import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 // ── 动作权限上下文 ──
 
-export interface PermissionActionContext {
+export type PermissionActionContext = {
   modelPermission?: ModelPermission
   row?: DataRow | null
-  permissionMode?: NavPermissionMode | undefined
-}
+  permissionMode?: NavPermissionMode | undefined}
 
 export type PermissionActionName =
   | 'create'
@@ -31,9 +30,8 @@ export type PermissionActionName =
 
 export type PermissionAction = PermissionActionName | (string & {})
 
-interface ResolvedPermAction {
-  action?: PermissionAction
-}
+type ResolvedPermAction = {
+  action?: PermissionAction}
 
 function resolveNodePermAction(node: SparkNode): ResolvedPermAction {
   const explicitPermAction = nodeInputProp(node, 'permAction')

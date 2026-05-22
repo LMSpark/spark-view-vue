@@ -13,7 +13,7 @@ import {
   normalizeNavRoot,
   type AppNavRoot,
   type NavNode,
-} from '@spark-view/spark-page-config/page/navigation'
+} from '@spark-view/spark-page-config/navigation'
 import {
   BasePageConfigLoader,
   PageConfigFileApi,
@@ -23,7 +23,7 @@ import {
   type PageConfigFileName,
   type PageDataConfig,
   type RuleConfig,
-} from '@spark-view/spark-page-config/page/loading'
+} from '@spark-view/spark-page-config/config'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
   buildDataSetMetadataFromDesignerProjection,
@@ -35,16 +35,16 @@ import {
   projectDesignerTables,
   reconcileDesignerTableUiState,
   summarizePageDesignFlowPhases,
-  type RuleEditorComponent,
-} from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
+  type RuleEditorComponentMetadata,
+} from '@spark-view/spark-page-config/design'
 import {
   PageConfigEditWorkspace,
   PageConfigFileLifecycle,
-} from '@spark-view/spark-page-config/capabilities/page-edit-workspace'
+} from '@spark-view/spark-page-config/design'
 import {
   PageDesignService,
-} from '@spark-view/spark-page-config/capabilities/page-design-service'
-import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
+} from '@spark-view/spark-page-config/design'
+import { isRecord } from '@spark-view/spark-page-config/json-document'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()
@@ -428,7 +428,7 @@ describe('Page design 100-step flow', () => {
 })
 
 describe('DevSystem rule and pagedata edit policy', () => {
-  const metadata: RuleEditorComponent.Metadata = {
+  const metadata: RuleEditorComponentMetadata = {
     types: ['r-table'],
     propNames: { 'r-table': ['dataViewKey', 'mode'] },
     propEnums: { 'r-table': { mode: ['compact', 'comfortable'] } },
@@ -482,3 +482,5 @@ describe('DevSystem rule and pagedata edit policy', () => {
     expect(rebuilt.layout?.tablePositions?.['orders']).toEqual({ x: 50, y: 50 })
   })
 })
+
+

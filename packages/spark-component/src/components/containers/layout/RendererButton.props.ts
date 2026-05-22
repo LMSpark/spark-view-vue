@@ -1,7 +1,7 @@
 import type { SparkNodeProps } from '../../shared-types'
 import type { BuiltinActionName } from '../../../page/actions'
 
-export interface RButtonProps extends SparkNodeProps {
+export type RButtonProps = SparkNodeProps & {
   /**
      * CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行。
      * @enumValue append-row 新增行：向当前数据视图追加一行。适合普通新增按钮；可配 appendPayload、inheritFields 或 prompt。
@@ -51,5 +51,4 @@ export interface RButtonProps extends SparkNodeProps {
     /** 自定义颜色 */
     color?: string
     /** 深色主题 */
-    dark?: boolean
-}
+    dark?: boolean}

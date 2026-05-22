@@ -36,9 +36,8 @@ import type { RMentionProps } from './FieldMention.props'
 
 type MentionResolvedOption = NonNullable<RMentionProps['options']>[number]
 type MentionTrigger = NonNullable<RMentionProps['mentionTriggers']>[number]
-interface MentionRuntimeOption extends MentionResolvedOption {
-  persistedValue?: string | number | boolean
-}
+type MentionRuntimeOption = MentionResolvedOption & {
+  persistedValue?: string | number | boolean}
 
 const props = withDefaults(defineProps<RMentionProps>(), {
   type: 'r-mention',

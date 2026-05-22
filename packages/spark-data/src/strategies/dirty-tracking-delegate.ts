@@ -41,22 +41,20 @@ import type { CrudDelegate } from './crud-delegate'
 // ─────────────────────────────────────────────
 
 /** 单字段变更记录（from → to） */
-export interface FieldChange {
+export type FieldChange = {
   /** 修改前的原始值 */
   from: unknown
   /** 修改后的当前值 */
-  to: unknown
-}
+  to: unknown}
 
 /** 行级字段变更映射（字段名 → 变更） */
-export interface RowDiff {
-  [field: string]: FieldChange
-}
+export type RowDiff = {
+  [field: string]: FieldChange}
 
 /**
  * saveChanges() 执行结果（三态统计）
  */
-export interface SaveChangesData {
+export type SaveChangesData = {
   /** 新增行成功提交数 */
   createdCount: number
   /** 编辑行成功保存数 */
@@ -68,8 +66,7 @@ export interface SaveChangesData {
   /** 失败的行主键列表（可用于精准重试或 UI 高亮） */
   failedIds: Array<string | number>
   /** 失败行的错误详情映射（主键 → 错误消息，用于诊断和 UI 提示） */
-  failedErrors: Record<string | number, string>
-}
+  failedErrors: Record<string | number, string>}
 
 // ─────────────────────────────────────────────
 // DirtyTrackingDelegate

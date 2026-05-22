@@ -16,38 +16,34 @@ import { useDataViewEventBridge } from '../runtime/useDataViewEventBridge.js'
 /**
  * DataView 标识态：来自 DataView 快照的静态元信息。
  */
-export interface DataViewIdentityState {
+export type DataViewIdentityState = {
   tableName: ComputedRef<string>
   viewId: ComputedRef<string | undefined>
   primaryKey: ComputedRef<string | undefined>
-  treeConfig: ComputedRef<TreeConfig | undefined>
-}
+  treeConfig: ComputedRef<TreeConfig | undefined>}
 
 /** DataView 行数据态：当前视图下的行级数据与选择状态。 */
-export interface DataViewRowsState {
+export type DataViewRowsState = {
   rows: ComputedRef<readonly DataRow[]>
   columns: ComputedRef<readonly DataColumn[]>
   currentRow: ComputedRef<DataRow | null>
   selectedRows: ComputedRef<readonly DataRow[]>
   editingRows: ComputedRef<readonly DataRow[]>
-  isMultiSelect: ComputedRef<boolean>
-}
+  isMultiSelect: ComputedRef<boolean>}
 
 /** DataView 显示态：用于下拉/选择器等展示场景的 value/label 信息。 */
-export interface DataViewDisplayState {
+export type DataViewDisplayState = {
   _modelPerm: ComputedRef<ModelPermission | undefined>
   value: ComputedRef<string>
   label: ComputedRef<string | null>
-  labels: ComputedRef<readonly string[]>
-}
+  labels: ComputedRef<readonly string[]>}
 
 /** DataView 权限投影：从 _modelPerm 解析后的统一模型权限结构。 */
-export interface DataViewPermissionState {
-  modelPermission: ComputedRef<ModelPermission | undefined>
-}
+export type DataViewPermissionState = {
+  modelPermission: ComputedRef<ModelPermission | undefined>}
 
 /** DataView 请求与聚合态：分页、加载状态、聚合结果等运行时动态信息。 */
-export interface DataViewRequestAndAggregateState {
+export type DataViewRequestAndAggregateState = {
   requestState: ComputedRef<RequestState>
   aggregateResult: ComputedRef<AggregateResultState>
   selectionAggregateResult: ComputedRef<AggregateResultState>
@@ -56,30 +52,26 @@ export interface DataViewRequestAndAggregateState {
   pageSize: ComputedRef<number>
   mutating: ComputedRef<boolean>
   mutatingError: ComputedRef<Error | null>
-  loadingError: ComputedRef<Error | null>
-}
+  loadingError: ComputedRef<Error | null>}
 
 /** DataView 完整运行时投影（不含容器级解析上下文）。 */
-export interface DataViewRuntimeState extends DataViewIdentityState, DataViewRowsState, DataViewPermissionState, DataViewDisplayState, DataViewRequestAndAggregateState {}
+export type DataViewRuntimeState = DataViewIdentityState & DataViewRowsState & DataViewPermissionState & DataViewDisplayState & DataViewRequestAndAggregateState
 
 /** 容器级数据解析上下文（不属于 DataView 原始字段）。 */
-export interface ContainerDataViewContextState {
+export type ContainerDataViewContextState = {
   resolvedView: ComputedRef<DataView | null>
-  resolvedDataRow: ComputedRef<DataRow | null>
-}
+  resolvedDataRow: ComputedRef<DataRow | null>}
 
 /** 五类容器共享顶层视图态。 */
-export interface DataViewState extends DataViewRuntimeState, ContainerDataViewContextState {}
+export type DataViewState = DataViewRuntimeState & ContainerDataViewContextState
 
 /** 聚合结果运行时类型（key -> 聚合值）。 */
-export interface AggregateResultState {
-  readonly [key: string]: unknown
-}
+export type AggregateResultState = {
+  readonly [key: string]: unknown}
 
 /** resolvedView 的标准只读 ref 形态。 */
-export interface ResolvedViewRef {
-  readonly value: DataView | null
-}
+export type ResolvedViewRef = {
+  readonly value: DataView | null}
 
 const EMPTY_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
 const EMPTY_SELECTION_AGGREGATE_RESULT: AggregateResultState = Object.freeze({})
@@ -87,15 +79,14 @@ const EMPTY_ROWS: readonly DataRow[] = Object.freeze([])
 const EMPTY_COLUMNS: readonly DataColumn[] = Object.freeze([])
 const EMPTY_LABELS: readonly string[] = Object.freeze([])
 
-interface DataViewRuntimeRevisions {
+type DataViewRuntimeRevisions = {
   rowsRevision: ValueRef<number>
   selectionRevision: ValueRef<number>
   requestRevision: ValueRef<number>
   aggregateRevision: ValueRef<number>
   mutationRevision: ValueRef<number>
   configRevision: ValueRef<number>
-  editingRevision: ValueRef<number>
-}
+  editingRevision: ValueRef<number>}
 
 function normalizeAggregateResult(value: unknown, emptyValue: AggregateResultState): AggregateResultState {
   return toDataRecord(value) ?? emptyValue

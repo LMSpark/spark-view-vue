@@ -23,16 +23,15 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
+import type { NavNode } from '@spark-view/spark-page-config/navigation'
 import { getNavHomePath, useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
-interface BreadcrumbItem {
+type BreadcrumbItem = {
   id?: string
   path: string
   title: string
-  icon?: string | undefined
-}
+  icon?: string | undefined}
 
 const route = useRoute()
 const router = useRouter()
@@ -140,3 +139,4 @@ function onCrumbClick(item: BreadcrumbItem) {
   margin-right: 2px;
 }
 </style>
+

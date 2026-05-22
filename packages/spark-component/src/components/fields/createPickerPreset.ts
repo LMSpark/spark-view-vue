@@ -12,12 +12,11 @@ import type { SparkOptionValueMode } from '../shared-types'
 import { emitFieldValueUpdate } from './data-components/composables/useControlledFieldChange'
 import FieldEntityPicker from './data-components/FieldEntityPicker.vue'
 
-interface PickerPresetDefaults {
+type PickerPresetDefaults = {
   placeholder: string
   buttonText: string
   readonlyButtonText: string
-  entityName: string
-}
+  entityName: string}
 
 function isSparkOptionValueMode(value: unknown): value is SparkOptionValueMode {
   return value === 'auto' || value === 'array' || value === 'separated-string'

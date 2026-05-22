@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RTreeNodeSummaryProps extends SparkNodeProps {
+export type RTreeNodeSummaryProps = SparkNodeProps & {
   /** 名称字段名 */
     nameField?: string
     /** 类型字段名 */
@@ -22,5 +22,4 @@ export interface RTreeNodeSummaryProps extends SparkNodeProps {
     /** 是否展示元信息 */
     showMeta?: boolean
     /** 是否展示扩展信息 */
-    showExtra?: boolean
-}
+    showExtra?: boolean}

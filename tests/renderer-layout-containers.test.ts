@@ -123,7 +123,7 @@ const SparkComponentRendererStub = defineComponent(
 
 import { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
 
-interface TestSystem { registry: ComponentRegistry; rootContext: SparkCapabilityContext }
+type TestSystem = { registry: ComponentRegistry; rootContext: SparkCapabilityContext}
 
 function createTestSystem(): TestSystem {
   return Spark.createSystem()

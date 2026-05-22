@@ -287,7 +287,7 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
+} from '@spark-view/spark-page-config/design'
 import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type {
@@ -303,17 +303,16 @@ import type {
  * 设计器列 — DataColumn + 画布唯一标识
  */
 type DesignerColumn = DesignerTableProjection['columns'][number]
-interface DesignerTable extends DesignerTableProjection {}
-interface DesignerRelation extends DesignerRelationProjection {}
+type DesignerTable = DesignerTableProjection
+type DesignerRelation = DesignerRelationProjection
 
 /** 为新表分配布局位置的回调。 */
 type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
 
-interface RelationDraftState {
+type RelationDraftState = {
   sourceIndex: number
   sourceSelector: ReturnType<typeof buildRelationSelector>
-  draft: DesignerRelation
-}
+  draft: DesignerRelation}
 
 const props = defineProps<{
   state: DevState
@@ -730,12 +729,11 @@ function applyHistoryMutationWithFeedback(
   }, failureTitle)
 }
 
-interface TableUpdatePayload {
+type TableUpdatePayload = {
   resourceType?: TableResourceType | null
   businessCategory?: TableBusinessCategory | null
   resourceId?: string | null
-  api?: CrudApi | string | boolean
-}
+  api?: CrudApi | string | boolean}
 
 function updateTableWithFeedback(
   table: DesignerTable,
@@ -1510,3 +1508,4 @@ onUnmounted(() => {
 }
 
 </style>
+

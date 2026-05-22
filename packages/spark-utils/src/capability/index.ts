@@ -8,5 +8,28 @@
  * 注：运行时上下文锚点（WeakMap owner / pageRoot）已迁移至 spark-component。
  */
 
-export * from './core.js'
-export * from './helpers.js'
+export {
+  CapabilityKey,
+  consumeSparkCapability,
+  createSparkCapabilityConsumer,
+  createSparkCapabilityContext,
+  defineCapability,
+  getSparkCapabilityProvider,
+  sparkConsume,
+  sparkProvide,
+  sparkRemove,
+} from './core.js'
+
+export type {
+  CapabilityContext,
+  CapabilityName,
+  CapabilityReader,
+  CapabilityTypeMap,
+  SparkCapabilityConsumer,
+} from './core.js'
+
+export {
+  sparkConsumeFromProvider,
+  sparkFindNearestProvider,
+  sparkFindNearestProviderByKeys,
+} from './helpers.js'

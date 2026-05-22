@@ -47,15 +47,14 @@ import { isCrudResult, isCrudSuccess, getCrudErrorMessage } from '../../componen
 // ── 目标行解析 ────────────────────────────────────────────────────────────
 
 /** 目标行解析结果：单行操作用 primary，批量操作用 rows。 */
-interface TargetRows {
+type TargetRows = {
   /** 操作目标行列表 */
   rows: DataRow[]
   /**
    * 单行场景（scope/current）的代表行；
    * selected 批量场景时为 null（直接迭代 rows）
    */
-  primary: DataRow | null
-}
+  primary: DataRow | null}
 
 /**
  * 按 target 语义从 DataView 和执行作用域中解析操作目标行。

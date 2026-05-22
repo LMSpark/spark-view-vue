@@ -11,7 +11,7 @@ import type { RToolbarProps } from '../../layout/RendererToolbar.types'
  *
  * 命名规范：组件 type `r-form` → 接口名 `RFormProps`。
  */
-export interface RFormProps extends SparkNodeProps, SparkCrudDataContainerProps, SparkGridLayoutProps {
+export type RFormProps = SparkNodeProps & SparkCrudDataContainerProps & SparkGridLayoutProps & {
   /** 显式收窄为表单容器使用的 DataView 数据线。 */
     dataSource?: DataView
     /** 结构化工具栏 */
@@ -25,5 +25,4 @@ export interface RFormProps extends SparkNodeProps, SparkCrudDataContainerProps,
     /** 表单标签宽度 */
     labelWidth?: string
     /** 透传给 el-form 的显式属性 */
-    formProps?: Record<string, unknown>
-}
+    formProps?: Record<string, unknown>}

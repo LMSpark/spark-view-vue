@@ -10,7 +10,7 @@ import type {
   ValueRef,
 } from '../../../shared-types.js'
 
-interface UploadBrowseFieldStateOptions {
+type UploadBrowseFieldStateOptions = {
   displayLabel: ValueRef<string>
   fieldName: ValueRef<string>
   currentRawStringValue: ValueRef<string>
@@ -41,10 +41,9 @@ interface UploadBrowseFieldStateOptions {
   updateValue: (value: string) => void | Promise<void>
   browseWritesValue?: boolean | undefined
   getBrowseValue?: ((file: PageSelectedFile) => string) | undefined
-  getUploadValue?: ((file: PageUploadedFile) => string) | undefined
-}
+  getUploadValue?: ((file: PageUploadedFile) => string) | undefined}
 
-interface FileBrowserFieldStateOptions {
+type FileBrowserFieldStateOptions = {
   displayLabel: ValueRef<string>
   currentRawStringValue: ValueRef<string>
   isCurrentFieldEditable: ValueRef<boolean>
@@ -59,8 +58,7 @@ interface FileBrowserFieldStateOptions {
     multiple: boolean
     currentValue: string
   }) => Promise<PageSelectedFile[]>
-  updateValue: (value: string) => void | Promise<void>
-}
+  updateValue: (value: string) => void | Promise<void>}
 
 export function useUploadBrowseFieldState(options: UploadBrowseFieldStateOptions) {
   const canUpload = computed(() => options.hasUploadCapability.value && options.action.value.trim().length > 0 && options.action.value !== '#')

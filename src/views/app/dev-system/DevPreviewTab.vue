@@ -56,7 +56,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import { BasePageConfigLoader, compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config/page/loading'
+import { BasePageConfigLoader, compileRule, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config/config'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -64,7 +64,7 @@ import type {
   PageConfigFileName,
   PageDataConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config/page/loading'
+} from '@spark-view/spark-page-config/config'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
@@ -290,3 +290,4 @@ onMounted(() => {
   gap: 12px;
 }
 </style>
+

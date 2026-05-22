@@ -48,7 +48,7 @@ function resolveActionNode(
 
 // ── 公共接口 ──────────────────────────────────────────────────────────────
 
-export interface ActionButtonRuntimeOptions {
+export type ActionButtonRuntimeOptions = {
   /** 当前节点（来自 resolvedProps） */
   currentNode: ComputedRef<SparkNode>
   /** 解析关联 DataView */
@@ -58,18 +58,16 @@ export interface ActionButtonRuntimeOptions {
   /** 构造执行上下文 */
   resolveContext: () => ActionExecutionContext
   /** 日志警告 */
-  warn: (msg: string) => void
-}
+  warn: (msg: string) => void}
 
-export interface ActionButtonRuntime {
+export type ActionButtonRuntime = {
   hasBuiltinAction: ComputedRef<boolean>
   /** 当前解析后的 ActionDescriptor（null 表示非内置或未识别） */
   actionDescriptor: ComputedRef<ActionDescriptor | null>
   /** 内置动作禁用态（含 beforeRender + disabled prop + 结构状态） */
   hostActionDisabled: ComputedRef<boolean>
   /** 执行内置动作 */
-  executeAction: () => Promise<void>
-}
+  executeAction: () => Promise<void>}
 
 export function useActionButtonRuntime(options: ActionButtonRuntimeOptions): ActionButtonRuntime {
   const { currentNode, resolveView, resolveScopedRow, resolveContext, warn } = options

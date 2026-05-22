@@ -1,13 +1,12 @@
-import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/app-services'
+import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/runtime'
 import type { CapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 
-interface LoggerRouter extends NonNullable<PageRuntimeServicesCapability['router']> {}
+type LoggerRouter = NonNullable<PageRuntimeServicesCapability['router']>
 
-export interface LoggerTestRuntimeServices extends Omit<PageRuntimeServicesCapability, 'logger' | 'router'> {
+export type LoggerTestRuntimeServices = Omit<PageRuntimeServicesCapability, 'logger' | 'router'> & {
   logger: LoggerApi
-    router: LoggerRouter
-}
+    router: LoggerRouter}
 
 export function createPageRuntimeServices(logger: LoggerApi): LoggerTestRuntimeServices {
   return {
@@ -30,3 +29,4 @@ export function readPageRuntimeServices(ctx: CapabilityContext): LoggerTestRunti
   if (hasLoggerAndRouter(value)) return value
   throw new TypeError('PAGE_RUNTIME_SERVICES payload missing logger/router')
 }
+

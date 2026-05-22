@@ -27,13 +27,12 @@ const ServerEventType = Object.freeze({
   DATA_CHANGE: 'data-change',
 })
 
-export interface FileChangeEvent {
+export type FileChangeEvent = {
   pageId: string
   file: string
-  timestamp: number
-}
+  timestamp: number}
 
-export interface DataBatchJobEvent {
+export type DataBatchJobEvent = {
   tenantId: string
   projectId: string
   jobId: string
@@ -42,17 +41,15 @@ export interface DataBatchJobEvent {
   total: number
   timestamp: number
   result?: unknown
-  error?: string
-}
+  error?: string}
 
-export interface DataChangeEvent {
+export type DataChangeEvent = {
   tenantId: string
   projectId: string
   tableName: string
   operation: string
   timestamp: number
-  jobId?: string
-}
+  jobId?: string}
 
 function normalizeFileChangeEvent(data: unknown): FileChangeEvent | null {
   if (!isRecord(data)) return null

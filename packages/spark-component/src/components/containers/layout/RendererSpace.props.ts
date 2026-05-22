@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RSpaceProps extends SparkNodeProps {
+export type RSpaceProps = SparkNodeProps & {
   /** 主轴方向 */
     direction?: 'horizontal' | 'vertical'
     /** 间距 */
@@ -10,5 +10,4 @@ export interface RSpaceProps extends SparkNodeProps {
     /** 是否填充父容器 */
     fill?: boolean
     /** 交叉轴对齐方式 */
-    alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline'
-}
+    alignment?: 'stretch' | 'center' | 'flex-start' | 'flex-end' | 'baseline'}

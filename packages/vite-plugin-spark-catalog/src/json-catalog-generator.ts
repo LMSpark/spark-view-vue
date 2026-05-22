@@ -61,7 +61,7 @@ const CANONICAL_CATALOG_FILE = 'component-catalog.json'
  * - 使用哪个 tsconfig 建立类型检查器；
  * - 是否执行目录质量审计。
  */
-export interface JsonCatalogOptions {
+export type JsonCatalogOptions = {
   featurePatterns?: string[] | undefined
   exclude?: string[] | undefined
   tsconfigPath?: string | undefined
@@ -69,8 +69,7 @@ export interface JsonCatalogOptions {
   includeGlobalProps?: boolean | undefined
   vcmCheckerOptions?: VcmCheckerOptions | undefined
   /** 质量审计选项（传入则自动运行审计） */
-  audit?: AuditOptions | boolean | undefined
-}
+  audit?: AuditOptions | boolean | undefined}
 
 /**
  * 计算标准目录输出路径。
@@ -88,24 +87,21 @@ type SchemaOwner = 'workspace' | 'external'
  *
  * 这些字段只在生成阶段使用，不应直接写入最终 JSON。
  */
-interface PropEntryWithMeta extends PropEntry {
+type PropEntryWithMeta = PropEntry & {
   __schemaIdentityKey?: string
     __schemaOwner?: SchemaOwner
     /** 自动提取的字符串字面量枚举 variants（已用引号包裹） */
     __enumVariants?: string[]
     /** 从 JSDoc @enumValue 标签提取的枚举值说明。 */
-    __enumValueDocs?: Record<string, EnumValueDoc>
-}
+    __enumValueDocs?: Record<string, EnumValueDoc>}
 
 /** 共享 schema 构建上下文，key 固定为 TypeScript 类型名。 */
-interface SchemaPoolContext {
-  pool: Record<string, PropSchema>
-}
+type SchemaPoolContext = {
+  pool: Record<string, PropSchema>}
 
-interface EnumValueDoc {
+type EnumValueDoc = {
   title?: string
-  description?: string
-}
+  description?: string}
 
 type SchemaRelation = 'root' | 'property' | 'items' | 'prefixItem' | 'oneOf' | 'anyOf'
 
@@ -1192,25 +1188,23 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): Emi
   return result
 }
 
-interface CatalogRuntimeModel {
+type CatalogRuntimeModel = {
   version: ComponentCatalog['version']
   buildTime: string
   componentCount: number
   components: Record<string, ComponentEntry>
   schemaPool?: Record<string, PropSchema>
   constraints: PlatformConstraints
-  bindingDescriptors: Record<string, CatalogBindingDescriptor>
-}
+  bindingDescriptors: Record<string, CatalogBindingDescriptor>}
 
-interface ExtractedComponentRecord {
+type ExtractedComponentRecord = {
   type: string
   normalizedFilePath: string
   category: ComponentEntry['category']
   rawProps: PropEntryWithMeta[]
   rawEmits: EmitEntry[]
   skillMeta: SkillMeta | null
-  explicitSkillMeta: SkillMeta | null
-}
+  explicitSkillMeta: SkillMeta | null}
 
 function sortRecord<T>(record: Record<string, T>): Record<string, T> {
   return recordFromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right)))

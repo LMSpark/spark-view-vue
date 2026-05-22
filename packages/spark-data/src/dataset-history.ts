@@ -5,25 +5,22 @@ import type { DataSetContract, DataSetMetadata } from './types'
 const DEFAULT_HISTORY_NAMESPACE = 'spark:data-history'
 const DEFAULT_HISTORY_LIMIT = 20
 
-export interface DataSetHistoryStorageAdapter {
+export type DataSetHistoryStorageAdapter = {
   getItem(key: string): string | null
   setItem(key: string, value: string): void
-  removeItem(key: string): void
-}
+  removeItem(key: string): void}
 
-export interface DataSetHistoryScope {
+export type DataSetHistoryScope = {
   dataSetName?: string
   pageId?: string
   scopeId?: string
-  namespace?: string
-}
+  namespace?: string}
 
-export interface DataSetSnapshotSelector {
+export type DataSetSnapshotSelector = {
   entryId?: string
-  version?: number
-}
+  version?: number}
 
-export interface DataSetHistorySnapshot {
+export type DataSetHistorySnapshot = {
   id: string
   version: number
   timestamp: number
@@ -32,31 +29,26 @@ export interface DataSetHistorySnapshot {
   label?: string
   summary?: string
   snapshot: DataSetMetadata
-  sourceData?: Record<string, unknown>
-}
+  sourceData?: Record<string, unknown>}
 
-export interface DataSetHistoryListOptions extends DataSetHistoryScope {
-  adapter?: DataSetHistoryStorageAdapter | null
-}
+export type DataSetHistoryListOptions = DataSetHistoryScope & {
+  adapter?: DataSetHistoryStorageAdapter | null}
 
-export interface DataSetSnapshotCommitOptions extends DataSetHistoryListOptions {
+export type DataSetSnapshotCommitOptions = DataSetHistoryListOptions & {
   maxEntries?: number
     label?: string
     summary?: string
     sourceData?: Record<string, unknown>
     version?: number
-    timestamp?: number
-}
+    timestamp?: number}
 
-export interface DataSetCommitSnapshotOptions extends Omit<DataSetSnapshotCommitOptions, 'version'> {
-  bumpVersion?: boolean
-}
+export type DataSetCommitSnapshotOptions = Omit<DataSetSnapshotCommitOptions, 'version'> & {
+  bumpVersion?: boolean}
 
-interface DataSetHistoryEnvelope {
+type DataSetHistoryEnvelope = {
   entries: DataSetHistorySnapshot[]
   nextSlot: number
-  capacity: number
-}
+  capacity: number}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)

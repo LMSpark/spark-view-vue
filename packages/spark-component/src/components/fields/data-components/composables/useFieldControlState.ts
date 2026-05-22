@@ -5,7 +5,7 @@ import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-ty
 import { useFieldContext } from '../../context/useFieldContext'
 import { useControlledFieldChange } from './useControlledFieldChange'
 
-interface FieldContextStateLike {
+type FieldContextStateLike = {
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
@@ -13,24 +13,22 @@ interface FieldContextStateLike {
   currentDisplayValue: ComputedRef<string>
   isTableCellHidden: (row: DataRow) => boolean
   getTableCellDisplayValue: (row: DataRow) => string
-  validationRules: ComputedRef<FormItemRule[]>
-}
+  validationRules: ComputedRef<FormItemRule[]>}
 
-interface ControlledFieldStateLike<TValue> extends FieldContextStateLike {
+type ControlledFieldStateLike<TValue> = FieldContextStateLike & {
   fieldValue: ComputedRef<TValue>
     contextData: DataRow | null
     dataSource: unknown
     currentRow: ComputedRef<DataRow | null>
-    syncValue: (value: TValue) => void
-}
+    syncValue: (value: TValue) => void}
 
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-interface FieldControlProps extends OptionalWithUndefined<Pick<SparkNodeProps,
+type FieldControlProps = OptionalWithUndefined<Pick<SparkNodeProps,
   | 'type' | 'children'
->>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
   | 'width'
   | 'resizable'
   | 'onChange'
@@ -38,14 +36,13 @@ interface FieldControlProps extends OptionalWithUndefined<Pick<SparkNodeProps,
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
   | 'sortable'
->> {}
+>>
 
-interface UseFieldControlStateOptions<TValue> {
+type UseFieldControlStateOptions<TValue> = {
   props: FieldControlProps
   fieldType: string
   state: ControlledFieldStateLike<TValue>
-  emitUpdate: (value: TValue) => void
-}
+  emitUpdate: (value: TValue) => void}
 
 export function useFieldControlState<TValue>(options: UseFieldControlStateOptions<TValue>) {
   const fieldCtx = useFieldContext({

@@ -5,7 +5,7 @@ import type { ToolbarPosition } from '../runtime/container-ui'
 /**
  * `RendererEditor` 运行时公开属性。
  */
-export interface REditorProps extends SparkNodeProps {
+export type REditorProps = SparkNodeProps & {
   /** 组件类型固定为 `r-editor`。 */
     type?: 'r-editor'
     /** 节点标识。 */
@@ -17,5 +17,4 @@ export interface REditorProps extends SparkNodeProps {
     /** 编辑区宽度 */
     width?: string | number
     /** 编辑区附加 class */
-    class?: string
-}
+    class?: string}

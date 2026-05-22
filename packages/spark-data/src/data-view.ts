@@ -20,10 +20,9 @@ import type {
 } from './types'
 
 /** 过滤值字段引用形状（与 types.ts 中 FilterValueExpression 的内联形状一致） */
-interface FilterFieldRefShape {
+type FilterFieldRefShape = {
   kind: 'field'
-  field: string
-}
+  field: string}
 import { RequestState } from './types'
 import { TreeManager } from './tree-manager'
 import type { DataTable } from './data-table'
@@ -52,7 +51,7 @@ import type { RowDiff, SaveChangesData } from './strategies/dirty-tracking-deleg
 
 /** DataView 事件映射 */
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-interface DataViewEventMap extends Record<string, any[]> {
+type DataViewEventMap = Record<string, any[]> & {
   /** 当前行变化 */
     currentRowChanged: [currentRow: DataRow | null, originatorId?: string]
     /** 选中行变化 */
@@ -78,8 +77,7 @@ interface DataViewEventMap extends Record<string, any[]> {
     /** CRUD 提交前事件——业务脚本可调用 event.cancel() 取消操作 */
     'crud:before': [CrudLifecycleEvent]
     /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
-    'crud:after': [CrudLifecycleEvent]
-}
+    'crud:after': [CrudLifecycleEvent]}
 
 /** rowsChanged 事件按微任务合并，保证同一同步批次只通知一次，同时让 Vue nextTick 可观测。 */
 const REQUEST_SUPERSEDED_MESSAGE = 'Request superseded'

@@ -17,7 +17,6 @@ export type {
   LlmJsonSchemaObject,
   LlmJsonSchemaType,
   LlmJsonValue,
-  LlmParameterSchemaRoot,
 } from './types'
 
 // ── 值：Schema 便捷构造器 ─────────────────────────────────────
@@ -31,10 +30,6 @@ export {
   objectSchema,
   paramsSchema,
   stringSchema,
-} from './helpers'
-
-export type {
-  JsonSchemaProperties,
 } from './helpers'
 
 // ── 值 + 类型：参数校验器 ─────────────────────────────────────

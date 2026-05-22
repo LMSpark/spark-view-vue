@@ -1,4 +1,4 @@
-import type { ChildPlacement } from '@spark-view/spark-page-config/page/navigation'
+import type { ChildPlacement } from '@spark-view/spark-page-config/navigation'
 
 type ChildPlacementValue = '' | ChildPlacement
 
@@ -23,8 +23,12 @@ export const CHILD_PLACEMENT_OPTIONS: ReadonlyArray<{ value: ChildPlacementValue
 
 export function formatChildPlacementLabel(value: string | null | undefined): string {
   if (!value) return ''
-  if (Object.prototype.hasOwnProperty.call(CHILD_PLACEMENT_LABELS, value)) {
-    return CHILD_PLACEMENT_LABELS[value as ChildPlacement]
+  if (isChildPlacement(value)) {
+    return CHILD_PLACEMENT_LABELS[value]
   }
   return value
+}
+
+function isChildPlacement(value: string): value is ChildPlacement {
+  return Object.prototype.hasOwnProperty.call(CHILD_PLACEMENT_LABELS, value)
 }

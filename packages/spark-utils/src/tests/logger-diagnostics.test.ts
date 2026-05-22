@@ -7,11 +7,10 @@ import {
   type LogTransport,
 } from '@spark-view/spark-utils'
 
-interface CapturedLog {
+type CapturedLog = {
   level: string
   message: string
-  meta?: Record<string, unknown> | undefined
-}
+  meta?: Record<string, unknown> | undefined}
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object'

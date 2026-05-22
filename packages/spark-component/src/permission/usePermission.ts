@@ -23,7 +23,7 @@ import {
 import type { PermissionAction, PermissionActionContext } from './PermissionResolver'
 import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
-export interface UsePermissionReturn {
+export type UsePermissionReturn = {
   /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */
   readonly permissionMode: NavPermissionMode | undefined
 
@@ -41,9 +41,7 @@ export interface UsePermissionReturn {
     field: string | undefined,
     row: DataRow | null | undefined,
     config?: Omit<FieldRenderConfig, 'field'>,
-  ): FieldRenderState | null
-
-}
+  ): FieldRenderState | null}
 
 /**
  * 权限 API composable — 在 Vue 组件 setup 中调用。

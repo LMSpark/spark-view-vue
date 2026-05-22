@@ -132,14 +132,13 @@ import {
 } from '@spark-view/spark-component'
 import { SparkData, type DataRow } from '@spark-view/spark-data'
 
-interface EmployeeRecord extends DataRow {
+type EmployeeRecord = DataRow & {
   id: number
   name: string
   department: string
   role: string
   age: number
-  score: number
-}
+  score: number}
 
 const employees: EmployeeRecord[] = [
   { id: 1, name: '陈岚', department: '产品', role: '产品经理', age: 28, score: 91 },

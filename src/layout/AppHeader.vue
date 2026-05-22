@@ -151,7 +151,7 @@ import {
   User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
-import type { NavNode } from '@spark-view/spark-page-config/page/navigation'
+import type { NavNode } from '@spark-view/spark-page-config/navigation'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -469,3 +469,4 @@ function handleUserCommand(command: string | number | object) {
   }
 }
 </style>
+

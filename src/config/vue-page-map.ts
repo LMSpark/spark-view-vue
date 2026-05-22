@@ -7,7 +7,7 @@
  * 新增 Vue 组件页面只需在此处添加一条记录，无需同步维护多处。
  */
 import type { Component } from 'vue'
-import type { AppNavRoot } from '@spark-view/spark-page-config/page/navigation'
+import type { AppNavRoot } from '@spark-view/spark-page-config/navigation'
 
 /**
  * 页面作用域级别
@@ -18,7 +18,7 @@ import type { AppNavRoot } from '@spark-view/spark-page-config/page/navigation'
 export type PageScope = 'public' | 'tenant' | 'app'
 
 /** 组件页面描述 */
-export interface VuePageEntry {
+export type VuePageEntry = {
   /** 显示标题（用于编辑器选择器） */
   title: string
   /** 图标 */
@@ -32,8 +32,7 @@ export interface VuePageEntry {
   /** 导航树中隐藏（可路由但不显示在菜单） */
   hidden?: boolean
   /** 组件懒加载函数 */
-  load: () => Promise<{ default: Component }>
-}
+  load: () => Promise<{ default: Component }>}
 
 /**
  * 路径 → 组件页面映射。
@@ -60,7 +59,7 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   '/dashboard':       { title: '仪表盘',      icon: 'DataBoard',    scope: 'app',      source: 'src/views/app/Dashboard.vue',                   load: () => import('../views/app/Dashboard.vue') },
   '/capability-demo': { title: '能力管理演示', icon: 'SetUp',        scope: 'app',      source: 'src/views/app/CapabilityDemo.vue',              load: () => import('../views/app/CapabilityDemo.vue') },
   '/dev':             { title: '开发工作台',    icon: 'Tools',        scope: 'app',      source: 'src/views/app/dev-system/DevSystem.vue',        load: () => import('../views/app/dev-system/DevSystem.vue') },
-  '/skill-catalog':   { title: '组件目录',    icon: 'Notebook',     scope: 'public',    source: 'src/views/app/SkillCatalog.vue',                 load: () => import('../views/app/SkillCatalog.vue'), description: 'SPARK 组件配置目录（Props / 能力 / 示例）', hidden: true },
+
   '/dbms':            { title: '数据库管理',  icon: 'DataBase',     scope: 'app',       source: 'src/views/app/DBMS.vue',                       load: () => import('../views/app/DBMS.vue'), description: '多层级数据源元数据管理（服务器→数据库→表→关系）' },
 }
 
@@ -131,3 +130,4 @@ export function getVuePageOptions(): Array<{ path: string; title: string; scope:
     ...(entry.description !== undefined && { description: entry.description }),
   }))
 }
+

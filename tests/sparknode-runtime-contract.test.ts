@@ -3,7 +3,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, registerAllRenderers, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import type { RuleConfig } from '@spark-view/spark-page-config/page/loading'
+import type { RuleConfig } from '@spark-view/spark-page-config/config'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { BuildPageChildrenOptions } from '../packages/spark-component/src/page/binding/build-page-children'
@@ -136,3 +136,4 @@ describe('SparkNode runtime contract', () => {
     expect(Spark.getRegistry().get('display-icon')).toBeDefined()
   })
 })
+

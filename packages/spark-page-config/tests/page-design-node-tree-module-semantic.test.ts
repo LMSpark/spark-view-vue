@@ -10,18 +10,16 @@ import {
   ModuleSemanticRuntime,
 } from '@spark-view/spark-ai/module-semantic'
 import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
-import {
-  PageDesignEditSession,
-} from '@spark-view/spark-page-config/capabilities/page-edit-session'
+import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
 import {
   PageDesignService,
-} from '@spark-view/spark-page-config/capabilities/page-design-service'
-import { SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
+} from '@spark-view/spark-page-config/design'
+import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { PageDesignNodeTreeModuleKind } from '../src/registrations/node-tree-tool-catalog'
-import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
+import { PageDesignNodeTreeModuleKind } from '../src/ai/node-tree-tool-catalog'
+import { isRecord } from '@spark-view/spark-page-config/json-document'
 
-function createHost(): { host: PageDesignEditSession.Host; nodeTree: SparkNodeTree } {
+function createHost(): { host: PageDesignEditHost; nodeTree: SparkNodeTree } {
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
   const dataSetTool = new DataSetCrudTool('page-design-test')
   let script = 'export default {}'
@@ -207,3 +205,5 @@ describe('NodeTree module-semantic 可发现链路', () => {
     expect(getDataRecord(invokeResult)['type']).toBe('page')
   })
 })
+
+

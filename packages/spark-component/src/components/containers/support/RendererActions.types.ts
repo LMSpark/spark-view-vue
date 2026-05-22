@@ -23,7 +23,7 @@ import type { SparkNodeProps } from '../../shared-types.js'
  *
  * 用于 `r-table` 的 `actions` 属性，描述行动作操作列的列元数据与子动作节点。
  */
-export interface RendererActionsProps extends SparkNodeProps {
+export type RendererActionsProps = SparkNodeProps & {
   /** 行动作列停靠位置（列在表格的左侧或右侧） */
     position?: ActionsPosition
     /** 操作列单元格文本对齐方式 */
@@ -35,5 +35,4 @@ export interface RendererActionsProps extends SparkNodeProps {
     /** 列宽度 */
     width?: number | string
     /** 列附加 CSS class */
-    class?: string
-}
+    class?: string}

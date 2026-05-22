@@ -6,7 +6,7 @@ import {
   restoreJsonDocumentFromFlat,
   type FlatJsonTreeDocument,
   type JsonDocument,
-} from '@spark-view/spark-page-config/capabilities/json-document'
+} from '@spark-view/spark-page-config/json-document'
 
 describe('jsonTreeEditor flat uuid pipeline', () => {
   it('should round-trip object root document', () => {
@@ -110,3 +110,4 @@ describe('jsonTreeEditor flat uuid pipeline', () => {
     expect(() => restoreJsonDocumentFromFlat(broken)).toThrow('missing parent')
   })
 })
+

@@ -4,7 +4,7 @@ import type { SparkNodeProps } from '../../shared-types'
 /**
  * `RendererFooter` 运行时公开属性。
  */
-export interface RFooterProps extends SparkNodeProps {
+export type RFooterProps = SparkNodeProps & {
   /** 组件类型固定为 `r-footer`。 */
     type?: 'r-footer'
     /** 节点标识。 */
@@ -14,5 +14,4 @@ export interface RFooterProps extends SparkNodeProps {
     /** 底部区域附加 class */
     class?: string
     /** 底部区域宽度 */
-    width?: string | number
-}
+    width?: string | number}

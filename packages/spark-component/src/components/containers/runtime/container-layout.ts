@@ -200,7 +200,7 @@ export function normalizeSpan(value: unknown, fallback: number): number {
 // ============================================================
 
 /** `useContainerGrid` 输入选项。 */
-export interface UseContainerGridOptions {
+export type UseContainerGridOptions = {
   /** 子节点数组（响应式 getter 或 ref）。 */
   children: MaybeRefOrGetter<SparkNode[]>
   /** 网格列数（默认 24）。 */
@@ -214,18 +214,16 @@ export interface UseContainerGridOptions {
   /** 默认列跨度（子节点未指定时使用）。 */
   defaultColSpan?: MaybeRefOrGetter<number>
   /** 最后一行不满时自动拉宽所有子元素以填满行宽。 */
-  autoFillLastRow?: boolean
-}
+  autoFillLastRow?: boolean}
 
 /** `useContainerGrid` 返回状态。 */
-export interface ContainerGridState {
+export type ContainerGridState = {
   /** 网格容器的 CSS 样式对象（display: grid + gridTemplateColumns 等）。 */
   gridStyle: ComputedRef<CSSProperties>
   /** 计算子元素的 CSS 样式（传入节点和索引）。 */
   getChildGridStyle: (child: SparkNode, index?: number) => CSSProperties
   /** 过滤后的子节点数组（供模板 v-for 遍历）。 */
-  gridChildren: ComputedRef<SparkNode[]>
-}
+  gridChildren: ComputedRef<SparkNode[]>}
 
 /**
  * 将容器 children + 布局配置投影为 CSS Grid 样式。
@@ -292,7 +290,7 @@ export function useContainerGrid(options: UseContainerGridOptions): ContainerGri
 // § useCompositeItemGrid
 // ============================================================
 
-interface UseCompositeItemGridOptions {
+type UseCompositeItemGridOptions = {
   children?: () => SparkNode['children'] | undefined
   /** 复合容器内容区 class；空值会被标准化为空字符串。 */
   bodyClass?: () => string | null | undefined
@@ -301,16 +299,14 @@ interface UseCompositeItemGridOptions {
   /** 复合容器内容区自动行高；仅接受有效字符串。 */
   gridAutoRows?: () => string | null | undefined
   /** 复合容器内容区间距；数字转 px，字符串按 CSS 原样透传。 */
-  gridGap?: () => string | number | null | undefined
-}
+  gridGap?: () => string | number | null | undefined}
 
 /** `useCompositeItemGrid` 返回状态。 */
-export interface CompositeItemGridState {
+export type CompositeItemGridState = {
   contentChildren: ComputedRef<SparkNode[]>
   contentBodyClass: ComputedRef<string>
   contentGridStyle: ComputedRef<CSSProperties>
-  getContentChildGridStyle: (child: SparkNode, index?: number) => CSSProperties
-}
+  getContentChildGridStyle: (child: SparkNode, index?: number) => CSSProperties}
 
 /**
  * 复合容器（Tabs / Collapse 等）内容区布局适配。

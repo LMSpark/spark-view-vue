@@ -8,21 +8,19 @@ import type { Component } from 'vue'
 /**
  * 登录凭证
  */
-export interface LoginCredentials {
+export type LoginCredentials = {
   username: string
   password: string
-  [key: string]: unknown
-}
+  [key: string]: unknown}
 
 /**
  * 认证结果
  */
-export interface AuthResult {
+export type AuthResult = {
   user: UserInfo
   tenant: TenantInfo
   env: EnvironmentInfo
-  token?: string
-}
+  token?: string}
 
 /**
  * Token 存储类型
@@ -32,7 +30,7 @@ export type TokenStorage = 'localStorage' | 'sessionStorage' | 'cookie' | 'memor
 /**
  * 认证配置
  */
-export interface AuthConfig {
+export type AuthConfig = {
   /**
    * API 端点配置
    */
@@ -103,6 +101,5 @@ export interface AuthConfig {
   onLoginSuccess: ((user: UserInfo) => void | Promise<void>) | undefined
   onLogoutSuccess: (() => void | Promise<void>) | undefined
   onAuthError: ((error: Error) => void) | undefined
-  onTokenRefresh: ((token: string) => void) | undefined
-}
+  onTokenRefresh: ((token: string) => void) | undefined}
 

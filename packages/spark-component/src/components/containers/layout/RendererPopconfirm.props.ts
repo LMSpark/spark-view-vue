@@ -1,6 +1,6 @@
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RPopconfirmProps extends SparkNodeProps {
+export type RPopconfirmProps = SparkNodeProps & {
   /** 确认框标题 */
     title?: string
     /** 确认按钮文案 */
@@ -20,5 +20,4 @@ export interface RPopconfirmProps extends SparkNodeProps {
     /** 自动隐藏延迟（毫秒） */
     hideAfter?: number
     /** 浮层宽度 */
-    width?: number | string
-}
+    width?: number | string}

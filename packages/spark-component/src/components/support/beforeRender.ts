@@ -3,7 +3,7 @@ import type { SparkNode, SparkNodeChildren } from '../../core/types.js'
 
 export const BEFORE_RENDER_RESOLVED_PROP = '$beforeRenderResolved'
 
-export interface BeforeRenderContext {
+export type BeforeRenderContext = {
   id?: string | undefined
   type: string
   props: Record<string, unknown>
@@ -15,22 +15,18 @@ export interface BeforeRenderContext {
   modelPermission?: ModelPermission | undefined
   host?: {
     type: string | null
-  } | undefined
-}
+  } | undefined}
 
-export interface BeforeRenderState {
+export type BeforeRenderState = {
   visible: boolean
-  propsPatch: Record<string, unknown>
-}
+  propsPatch: Record<string, unknown>}
 
-interface BeforeRenderHandler {
-  (context: BeforeRenderContext): unknown
-}
+type BeforeRenderHandler = {
+  (context: BeforeRenderContext): unknown}
 
-interface MergeBeforeRenderOptions {
+type MergeBeforeRenderOptions = {
 
-  markResolved?: boolean
-}
+  markResolved?: boolean}
 
 function isObjectRecord(value: unknown): value is Record<string, unknown> {
   return value !== null && typeof value === 'object' && !Array.isArray(value)

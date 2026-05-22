@@ -152,7 +152,7 @@ import { http } from '@/services/http'
 const activeTab = ref('frontend')
 const feLoading = ref(false)
 
-interface FeCacheRow {
+type FeCacheRow = {
   key: string
   sizeKB: number
   sourceTimestamp: string
@@ -160,8 +160,7 @@ interface FeCacheRow {
   sourceTimestampStr: string
   expirationLevel: number
   lastAccess: number
-  lastAccessStr: string
-}
+  lastAccessStr: string}
 
 const feEntries = ref<FeCacheRow[]>([])
 
@@ -304,7 +303,7 @@ async function handleClearAllFrontend() {
 // ── 后端缓存状态 ──────────────────────────────────────────
 const beLoading = ref(false)
 
-interface BackendStats {
+type BackendStats = {
   componentMetadata: {
     loaded: boolean
     buildTime: string | null
@@ -315,8 +314,7 @@ interface BackendStats {
   database: {
     pageCount: number
     fileCount: number
-  }
-}
+  }}
 
 const beStats = ref<BackendStats | null>(null)
 

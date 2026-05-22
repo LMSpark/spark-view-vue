@@ -13,7 +13,7 @@ import type { BuiltinActionName } from './index.js'
 
 // ── 模板属性类型 ──────────────────────────────────────────────────────────
 
-export interface ButtonTemplateProps {
+export type ButtonTemplateProps = {
   buttonType?: 'primary' | 'success' | 'warning' | 'danger' | 'info'
   plain?: boolean
   text?: boolean
@@ -21,8 +21,7 @@ export interface ButtonTemplateProps {
   round?: boolean
   circle?: boolean
   buttonSize?: 'large' | 'default' | 'small'
-  icon?: string
-}
+  icon?: string}
 
 // ── 通用模板 ──────────────────────────────────────────────────────────────
 
@@ -67,11 +66,10 @@ const BUTTON_TEMPLATES: Record<string, ButtonTemplateProps> = {
 
 // ── action → template 自动映射 ────────────────────────────────────────────
 
-interface ActionDefaults {
+type ActionDefaults = {
   template: string
   label: string
-  icon?: string
-}
+  icon?: string}
 
 /**
  * BuiltinActionName → 默认样式和文案映射表。
@@ -100,7 +98,7 @@ const ACTION_TEMPLATE_MAP: Record<BuiltinActionName, ActionDefaults> = {
 
 // ── 解析入口 ──────────────────────────────────────────────────────────────
 
-export interface ResolvedButtonStyle {
+export type ResolvedButtonStyle = {
   buttonType: string
   buttonSize: string
   plain: boolean
@@ -109,8 +107,7 @@ export interface ResolvedButtonStyle {
   round: boolean
   circle: boolean
   icon: string | undefined
-  label: string | undefined
-}
+  label: string | undefined}
 
 /**
  * 解析 r-button 最终样式：action 推导 → template 覆盖 → 显式 props 覆盖。

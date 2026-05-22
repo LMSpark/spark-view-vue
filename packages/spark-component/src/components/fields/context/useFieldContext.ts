@@ -5,7 +5,7 @@ import type { DataRow } from '@spark-view/spark-data'
 import type { FormItemRule } from '../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types.js'
 
-export interface FieldContextProps {
+export type FieldContextProps = {
   type: string
   displayLabel: string
   fieldName: string
@@ -24,10 +24,9 @@ export interface FieldContextProps {
   currentDisplayValue: string
   isTableCellHidden: (row: DataRow) => boolean
   getTableCellDisplayValue: (row: DataRow) => string
-  validationRules: FormItemRule[]
-}
+  validationRules: FormItemRule[]}
 
-interface FieldPermissionForContext {
+type FieldPermissionForContext = {
   fieldName: ComputedRef<string>
   displayLabel: ComputedRef<string>
   isCurrentFieldHidden: ComputedRef<boolean>
@@ -35,25 +34,23 @@ interface FieldPermissionForContext {
   currentDisplayValue: ComputedRef<string>
   isTableCellHidden: (row: DataRow) => boolean
   getTableCellDisplayValue: (row: DataRow) => string
-  validationRules: ComputedRef<FormItemRule[]>
-}
+  validationRules: ComputedRef<FormItemRule[]>}
 
 type OptionalWithUndefined<T> = {
   [K in keyof T]?: T[K] | undefined
 }
 
-interface FieldContextInputProps extends OptionalWithUndefined<Pick<SparkNodeProps,
+type FieldContextInputProps = OptionalWithUndefined<Pick<SparkNodeProps,
   | 'type' | 'children'
->>, OptionalWithUndefined<Pick<SparkFieldSemanticProps,
+>> & OptionalWithUndefined<Pick<SparkFieldSemanticProps,
   | 'width'
   | 'resizable'
   | 'titleAlign' | 'valueAlign'
   | 'headerCellClassName' | 'cellClassName'
   | 'titleClassName' | 'valueClassName'
   | 'sortable'
->> {
-  type: string
-}
+>> & {
+  type: string}
 
 export function useFieldContext(
   fieldProps: FieldContextInputProps,

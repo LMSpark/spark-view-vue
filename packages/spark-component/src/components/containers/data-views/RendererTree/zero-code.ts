@@ -13,28 +13,25 @@ import {
 import { isDataRecord } from '../data-row-utils.js'
 import type { RendererTreeApi } from './types'
 
-export interface TreeNode {
+export type TreeNode = {
   id?: string | number
   label?: string
   name?: string
   children?: TreeNode[]
   disabled?: boolean
-  [key: string]: unknown
-}
+  [key: string]: unknown}
 
-export interface ElTreeNode {
+export type ElTreeNode = {
   level: number
   expanded: boolean
   data?: DataRow
   parent?: ElTreeNode | null
-  [key: string]: unknown
-}
+  [key: string]: unknown}
 
-export interface ElTreeComponent {
-  [key: string]: unknown
-}
+export type ElTreeComponent = {
+  [key: string]: unknown}
 
-export interface NativeTreeLike {
+export type NativeTreeLike = {
   getCurrentNode?: () => unknown
   setCurrentKey?: (key: string | number | null) => void
   filter?: (value: string) => void
@@ -45,35 +42,30 @@ export interface NativeTreeLike {
   insertBefore?: (data: unknown, refNode: unknown) => void
   insertAfter?: (data: unknown, refNode: unknown) => void
   remove?: (nodeOrData: unknown) => void
-  getNode?: (key: string | number) => NativeTreeNodeLike | undefined
-}
+  getNode?: (key: string | number) => NativeTreeNodeLike | undefined}
 
-export interface NativeTreeNodeLike {
+export type NativeTreeNodeLike = {
   expand?: () => void
-  data?: DataRow
-}
+  data?: DataRow}
 
-export interface TreeEventControl extends CancellableControl {}
+export type TreeEventControl = CancellableControl
 
-export interface TreeEventHandler {
-  (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>
-}
+export type TreeEventHandler = {
+  (data: TreeNode, node: ElTreeNode, component: ElTreeComponent, control: TreeEventControl): void | Promise<void>}
 
-interface RendererTreeBehaviorProps extends Readonly<Record<string, unknown>> {
+type RendererTreeBehaviorProps = Readonly<Record<string, unknown>> & {
   onNodeClick?: TreeEventHandler | undefined
     onNodeExpand?: TreeEventHandler | undefined
-    onNodeCollapse?: TreeEventHandler | undefined
-}
+    onNodeCollapse?: TreeEventHandler | undefined}
 
-interface RendererTreeZeroCodeOptions {
+type RendererTreeZeroCodeOptions = {
   props: RendererTreeBehaviorProps
   resolvedView: ValueRef<DataView | null>
   treeData: ValueRef<DataRow[]>
   nativeTreeRef: ValueRef<unknown>
   logger: LoggerApi
   nodeKeyField: ValueRef<string>
-  treeIdField: ValueRef<string>
-}
+  treeIdField: ValueRef<string>}
 
 function isDataRow(value: unknown): value is DataRow {
   return isDataRecord(value)

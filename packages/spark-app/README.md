@@ -111,7 +111,7 @@ logger.debug('调试信息', { data: {...} })
 ### 服务访问（推荐使用 SPARK 能力系统）
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { useRouter } from 'vue-router'
 import { Logger } from '@spark-view/spark-utils'
@@ -274,7 +274,7 @@ import { Logger } from '@spark-view/spark-utils'
 const logger = Logger('MyComponent')
 
 // 使用 SPARK 能力系统
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { useSparkComponent } from '@spark-view/spark-component'
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
 const services = sparkConsume(PAGE_RUNTIME_SERVICES)
@@ -308,3 +308,4 @@ pnpm run build       # 构建包
 ## License
 
 MIT
+

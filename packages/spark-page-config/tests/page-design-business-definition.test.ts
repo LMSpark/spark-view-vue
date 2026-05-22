@@ -8,16 +8,14 @@ import {
 import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
-} from '@spark-view/spark-page-config/registrations'
-import {
-  PageDesignEditSession,
-} from '@spark-view/spark-page-config/capabilities/page-edit-session'
+} from '@spark-view/spark-page-config/ai'
+import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
 import {
   PageDesignService,
-} from '@spark-view/spark-page-config/capabilities/page-design-service'
-import { SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
+} from '@spark-view/spark-page-config/design'
+import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
+import { isRecord } from '@spark-view/spark-page-config/json-document'
 
 function resultItemCount(value: unknown): number {
   if (!isRecord(value) || !Array.isArray(value['items'])) return 0
@@ -30,7 +28,7 @@ function resultStepCount(value: unknown): number {
 }
 
 function createHost(options: { script?: string; style?: string } = {}): {
-  host: PageDesignEditSession.Host
+  host: PageDesignEditHost
   reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number }
 } {
   let script = options.script ?? 'export default {}'
@@ -275,3 +273,5 @@ describe('pageDesign host business registration', () => {
     })).toEqual(nestedContext)
   })
 })
+
+

@@ -31,7 +31,7 @@ import type {
 export const DEFAULT_TIMEOUT = 10_000
 
 /** 缓存条目：存储数据、写入时间戳和过期时长（ms） */
-interface CacheItem { data: unknown; timestamp: number; expiry: number }
+type CacheItem = { data: unknown; timestamp: number; expiry: number}
 
 /**
  * 缓存读取结果。
@@ -40,10 +40,9 @@ interface CacheItem { data: unknown; timestamp: number; expiry: number }
  * 避免为内部私有流程再定义联合 type alias，同时保留调用侧 `if (cached.hit)` 的
  * 时序表达：先判断命中，再消费缓存数据。
  */
-interface CacheLookupResult {
+type CacheLookupResult = {
   hit: boolean
-  data?: unknown
-}
+  data?: unknown}
 
 /** 缓存最大条目数——超出后淘汰最旧 20% 条目（LRU-like） */
 const MAX_CACHE_SIZE = 500

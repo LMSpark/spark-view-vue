@@ -26,7 +26,7 @@
 
 import type { ModuleKindRegistry } from './module-kind-registry'
 import type { ModuleKind } from '../protocol/module-kind'
-import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../schema'
+import type { LlmJsonSchema, LlmJsonSchemaObject } from '../../schema'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型
@@ -34,7 +34,7 @@ import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from 
 
 /**
  * 协议级工具规约（OpenAI 兼容形状）。
- * function.parameters 复用 LlmParameterSchemaRoot（标准 JSON Schema 子集），
+ * function.parameters 复用 LlmJsonSchemaObject（标准 JSON Schema 子集），
  * Host 可直接交给 transport，无需 as 断言。
  */
 export type ModuleSemanticToolSpec = Readonly<{
@@ -42,7 +42,7 @@ export type ModuleSemanticToolSpec = Readonly<{
   function: {
     readonly name: string
     readonly description: string
-    readonly parameters: LlmParameterSchemaRoot
+    readonly parameters: LlmJsonSchemaObject
   }
 }>
 
@@ -195,7 +195,7 @@ export class ProtocolToolGenerator {
             },
             args: {
               type: 'object',
-              description: '动作参数,符合 ActionSchema.paramsSchema',
+              description: '动作参数,符合 ModuleActionMetadata.paramsSchema',
               additionalProperties: true,
             },
           },
@@ -335,7 +335,7 @@ function pathProperty(allowRoot = false): LlmJsonSchemaObject {
 }
 
 /** 构建 { path, <propertyName> } 的参数根 schema */
-function pathPlusName(propertyName: string, description: string): LlmParameterSchemaRoot {
+function pathPlusName(propertyName: string, description: string): LlmJsonSchemaObject {
   const properties: Record<string, LlmJsonSchema> = {
     path: pathProperty(),
     [propertyName]: { type: 'string', description },

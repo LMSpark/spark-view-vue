@@ -6,7 +6,7 @@
  * - 能力系统通过 capabilities Map 实现（继承自 CapabilityContext）
  */
 
-export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config/page/spark-node'
+export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config/node-tree'
 export {
   SPARK_NODE_STRUCT_KEYS,
   normalizeSparkNode,
@@ -15,13 +15,13 @@ export {
   nodeId,
   nodeInputProp,
   nodeInputProps,
-} from '@spark-view/spark-page-config/page/spark-node'
+} from '@spark-view/spark-page-config/node-tree'
 
 import type { CapabilityContext } from '@spark-view/spark-utils'
 
 // 能力名称类型（从 spark-utils 重新导出）
 export type { CapabilityName, CapabilityContext } from '@spark-view/spark-utils'
-export interface SparkCapabilityContext extends CapabilityContext {}
+export type SparkCapabilityContext = CapabilityContext
 
 // ============================================================================
 // 组件定义（注册表使用）
@@ -30,14 +30,13 @@ export interface SparkCapabilityContext extends CapabilityContext {}
 /**
  * 组件定义 - Registry 中的条目
  */
-export interface ComponentDefinition {
+export type ComponentDefinition = {
   /** 组件类型（kebab-case，如 'r-table'） */
   type: string
   /** Vue 组件实现 */
   component: unknown
   /** 扩展元数据 */
-  meta?: Record<string, unknown>
-}
+  meta?: Record<string, unknown>}
 
 /**
  * 组件 children 传输策略（Registry meta.childrenMode）
@@ -62,7 +61,7 @@ export type ComponentChildrenMode = 'auto' | 'prop' | 'slot'
  *
  * 简写：直接写字段名字符串，等价于 `{ field: 'xxx', component: 'text' }`。
  */
-export interface FilterItemConfig {
+export type FilterItemConfig = {
   /** 字段名（映射到数据源字段） */
   field: string
   /** 显示标签（省略则用字段名） */
@@ -84,20 +83,19 @@ export interface FilterItemConfig {
   /** 跨列数（覆盖全局 filter.itemSpan） */
   span?: number
   /** 透传到筛选组件的原生 props（如 placeholder、clearable 等） */
-  componentProps?: Record<string, unknown>
-}
+  componentProps?: Record<string, unknown>}
 
 // ============================================================================
 // 注册表接口
 // ============================================================================
 
-export interface ComponentRegistry {
+export type ComponentRegistry = {
   register(type: string, component: unknown, meta?: Record<string, unknown>, options?: { silent?: boolean }): void
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean
   unregister(type: string): boolean
-  getAll(): ReadonlyMap<string, ComponentDefinition>
-}
+  getAll(): ReadonlyMap<string, ComponentDefinition>}
 
 // 日志类型 — 直接从 @spark-view/spark-utils 导入
 export type { LoggerApi } from '@spark-view/spark-utils'
+

@@ -164,7 +164,7 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 
 | 能力键 | 定义包 | 类型 | 典型提供者 |
 |---|---|---|---|
-| `PAGE_RUNTIME_SERVICES` | `spark-page-config/page` | `PageRuntimeServicesCapability` — router、logger、租户 | 页面根 |
+| `PAGE_RUNTIME_SERVICES` | `spark-page-config/runtime` | `PageRuntimeServicesCapability` — router、logger、租户 | 页面根 |
 | `PAGE_SERVICE` | `spark-component` | `PageServiceCapability` — 弹框、导航、消息 | PageRenderer |
 | `PAGE_DATASET` | `spark-component` | `DataSetContract` — 页面级 DataSet | PageRenderer |
 | `DATA_SOURCE` | `spark-component` | `DataView` — 组件级数据视图 | 容器组件 |
@@ -172,7 +172,7 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 ### 4.2 消费内置能力
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { PAGE_SERVICE, PAGE_DATASET } from '@spark-view/spark-component'
 
@@ -487,7 +487,7 @@ logger.error('请求失败', { error })
 ### 页面层 Logger（推荐）
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 
 // 由页面根节点统一提供，组件内只消费 logger，不再做子树级覆盖
 sparkProvide(PAGE_RUNTIME_SERVICES, { router, logger: pageLogger })
@@ -809,3 +809,4 @@ const rows = computed(() => ds?.rows ?? [])
 - [配置系统](CONFIG_SYSTEM.md) — 多租户与远程配置加载
 - [测试最佳实践](TESTING_BEST_PRACTICES.md) — Vitest + @vue/test-utils 完整规范
 - [快速开始](QUICKSTART.md) — 应用级初始化流程
+

@@ -62,7 +62,7 @@
       </div>
 
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
-        <el-tab-pane v-for="f in PAGE_FILE_NAMES" :key="f" :name="f">
+        <el-tab-pane v-for="f in PAGE_CONFIG_FILE_NAMES" :key="f" :name="f">
           <template #label>
             <span class="file-tab-label" :class="{ 'file-dirty': editor.isFileDirty(f) }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
@@ -151,16 +151,16 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy, type RuleEditorComponent } from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
+import { createRuleJsonSchema, createRuleTreePolicy, type RuleEditorComponentCatalog } from '@spark-view/spark-page-config/design'
 import { ElMessageBox } from 'element-plus'
-import componentCatalog from '@spark-view/spark-page-config/registrations/payloads/component-catalog.json'
+import componentCatalog from '@spark-view/spark-page-config/ai/payloads/component-catalog.json'
 import { useDevFileEditor } from './composables/useDevFileEditor'
-import { PAGE_FILE_NAMES } from './useDevState'
+import { PAGE_CONFIG_FILE_NAMES } from './useDevState'
 import type { DevState, PageConfigFileVersionSummary, PageFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
-const pageDesignComponentCatalog = componentCatalog as RuleEditorComponent.Catalog
+const pageDesignComponentCatalog: RuleEditorComponentCatalog = componentCatalog
 const rulePolicy = createRuleTreePolicy(pageDesignComponentCatalog)
 const RULE_JSON_SCHEMA = createRuleJsonSchema(pageDesignComponentCatalog)
 
@@ -567,3 +567,5 @@ function formatVersionTime(raw: string | null | undefined): string {
   justify-content: center;
 }
 </style>
+
+

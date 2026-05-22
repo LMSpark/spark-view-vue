@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'vue'
 import type { SparkNodeProps } from '../../shared-types'
 
-export interface RDisplayCountdownProps extends SparkNodeProps {
+export type RDisplayCountdownProps = SparkNodeProps & {
   /** 目标时间（时间戳或 Date） */
     value?: number | Date
     /** 格式化字符串，如 HH:mm:ss */
@@ -13,5 +13,4 @@ export interface RDisplayCountdownProps extends SparkNodeProps {
     /** 标题 */
     title?: string
     /** 值样式 */
-    valueStyle?: CSSProperties
-}
+    valueStyle?: CSSProperties}

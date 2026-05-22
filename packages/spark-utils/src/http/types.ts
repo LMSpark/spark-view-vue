@@ -10,7 +10,7 @@ export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
 /**
  * 请求配置
  */
-export interface RequestConfig {
+export type RequestConfig = {
   url: string
   method?: Method
   headers?: Record<string, string>
@@ -43,55 +43,49 @@ export interface RequestConfig {
   meta?: Record<string, unknown>
 
   /** fetch-only: 页面卸载时保持连接（日志传输场景） */
-  keepalive?: boolean
-}
+  keepalive?: boolean}
 
 // ==================== 响应 ====================
 
 /** HTTP 响应（不泄露 axios 实现） */
-export interface HttpResponse<T = unknown> {
+export type HttpResponse<T = unknown> = {
   data: T
   status: number
   statusText: string
-  headers: Record<string, string>
-}
+  headers: Record<string, string>}
 
 /** 旧版标准业务 API 响应（{ code, message, data } 格式） */
-export interface ApiResponse<T = unknown> {
+export type ApiResponse<T = unknown> = {
   code: number
   message: string
   data: T
   timestamp?: string
-  traceId?: string
-}
+  traceId?: string}
 
 /** SPARK AI Server 统一 API envelope */
-export interface ApiEnvelope<T = unknown> {
+export type ApiEnvelope<T = unknown> = {
   ok: boolean
   data: T | null
   error: ApiEnvelopeError | null
-  requestId: string
-}
+  requestId: string}
 
-export interface ApiEnvelopeError {
+export type ApiEnvelopeError = {
   code: string
   message: string
   category: string
-  details?: Record<string, unknown>
-}
+  details?: Record<string, unknown>}
 
 // ==================== 错误 ====================
 
-export interface RequestError extends Error {
+export type RequestError = Error & {
   config: RequestConfig
     code?: string
     status?: number
-    response?: unknown
-}
+    response?: unknown}
 
 // ==================== 拦截器 ====================
 
-export interface RequestInterceptor {
+export type RequestInterceptor = {
   name?: string
   onRequest?: (config: RequestConfig) => RequestConfig | Promise<RequestConfig>
   /**
@@ -100,36 +94,32 @@ export interface RequestInterceptor {
    * 当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，
    * 允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。
    */
-  onRequestError?: (error: RequestError) => void | Promise<void>
-}
+  onRequestError?: (error: RequestError) => void | Promise<void>}
 
-export interface ResponseInterceptor {
+export type ResponseInterceptor = {
   name?: string
   onResponse?: <T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>
-  onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>
-}
+  onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>}
 
 /** HttpClient 底层适配器类型 */
 export type HttpClientAdapter = 'axios' | 'fetch'
 
 /** createHttpClient 工厂参数 */
-export interface HttpClientFactoryOptions extends Partial<RequestConfig> {
-  adapter?: HttpClientAdapter
-}
+export type HttpClientFactoryOptions = Partial<RequestConfig> & {
+  adapter?: HttpClientAdapter}
 
 // ==================== 文件加载器 / 缓存层 ====================
 
 /** 缓存过期策略级别定义 */
-export interface CacheExpirationTier {
+export type CacheExpirationTier = {
   /** 级别编号 */
   level: number
   /** 最大闲置时间（毫秒），Infinity 表示永不过期 */
   maxAge: number
   /** 级别说明 */
-  description?: string
-}
+  description?: string}
 
-export interface FileLoadOptions {
+export type FileLoadOptions = {
   /** API 基础路径（文件 HTTP 加载使用） */
   baseUrl: string
   /** 缓存存储方式 */
@@ -152,15 +142,14 @@ export interface FileLoadOptions {
   /** 默认过期级别（默认 3 = 15天），对应 expirationTiers 中的 level */
   defaultExpirationLevel?: number
   /** 最大缓存条目数（默认 100），超过按 LRU 清理 */
-  maxCacheSize?: number
-}
+  maxCacheSize?: number}
 
 /**
  * 通用缓存条目（泛型）
  * - 文件内容：T = string
  * - DataSet、编译后脚本、编译后规则等计算结果：T = 具体类型
  */
-export interface CacheEntry<T = string> {
+export type CacheEntry<T = string> = {
   /** 缓存的数据（文件原始内容或任意计算结果） */
   data: T
   /**
@@ -173,10 +162,9 @@ export interface CacheEntry<T = string> {
   /** 最后访问时间（毫秒时间戳，用于滑动过期 + LRU 清理） */
   lastAccess: number
   /** 过期级别（0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天） */
-  expirationLevel: number
-}
+  expirationLevel: number}
 
-export interface FileLoadResult<T = unknown> {
+export type FileLoadResult<T = unknown> = {
   success: boolean
   data?: T
   /** 来源时间戳 */
@@ -187,11 +175,10 @@ export interface FileLoadResult<T = unknown> {
   /** 失败状态码（如 404） */
   status?: number
   /** 失败原因（用于上游订阅消费，不再依赖字符串匹配） */
-  reason?: 'not-found' | 'network' | 'invalid-response' | 'parse' | 'unknown'
-}
+  reason?: 'not-found' | 'network' | 'invalid-response' | 'parse' | 'unknown'}
 
 /** FileLoader 事件映射（用于全链路订阅消费） */
-export interface FileLoaderEventMap {
+export type FileLoaderEventMap = {
   'file-loaded': {
     fileName: string
     fromCache: boolean
@@ -208,25 +195,22 @@ export interface FileLoaderEventMap {
     status?: number
     error: string
     reason: 'network' | 'invalid-response' | 'parse' | 'unknown'
-  }
-}
+  }}
 
 // ==================== 流式响应（fetch-only） ====================
 
 /** 流式 HTTP 响应（fetch ReadableStream） */
-export interface StreamResponse {
+export type StreamResponse = {
   body: ReadableStream<Uint8Array>
   status: number
   statusText: string
-  headers: Record<string, string>
-}
+  headers: Record<string, string>}
 
 /** 解析后的 SSE 事件 */
-export interface SSEEvent {
+export type SSEEvent = {
   /** 事件类型（event: 字段） */
   event?: string
   /** 数据内容（data: 字段，多行拼接） */
   data: string
   /** 事件 ID（id: 字段） */
-  id?: string
-}
+  id?: string}

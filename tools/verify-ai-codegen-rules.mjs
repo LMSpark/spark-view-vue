@@ -1,9 +1,17 @@
-import fs from 'node:fs'
-import path from 'node:path'
+#!/usr/bin/env node
+
 import process from 'node:process'
 import ts from 'typescript'
-
-const root = process.cwd()
+import {
+  collectModuleReferences,
+  collectSourceFiles,
+  createDefaultExcluder,
+  forEachParsedSource,
+  isCliEntrypoint,
+  lineFor,
+  parseCliArgs,
+  printViolations,
+} from './verifier-common.mjs'
 
 const includeRoots = ['packages', 'src', 'tests', '.storybook', 'tools']
 const includeFiles = [
@@ -11,103 +19,99 @@ const includeFiles = [
   'vitest.config.ts',
   'vitest.spark-ai.config.ts',
 ]
-const sourceExtensions = new Set(['.ts', '.tsx', '.mts', '.cts', '.vue'])
 
 const interfaceAllowlist = new Set([
   'packages/spark-utils/src/capability/core.ts:CapabilityTypeMap',
   'packages/spark-page-config/src/page/services/app-services.ts:CapabilityTypeMap',
+  'packages/spark-page-config/src/runtime/app-services.ts:CapabilityTypeMap',
   'packages/spark-component/src/core/capability-keys.ts:CapabilityTypeMap',
 ])
 
-function relativePath(filePath) {
-  return path.relative(root, filePath).replaceAll(path.sep, '/')
-}
+const allowedSparkAiSpecifiers = new Set([
+  '@spark-view/spark-ai',
+  '@spark-view/spark-ai/schema',
+  '@spark-view/spark-ai/host',
+  '@spark-view/spark-ai/module-semantic',
+])
 
-function isExcluded(filePath) {
-  const rel = relativePath(filePath)
-  return rel.startsWith('packages/vxe-table/')
-    || rel === 'packages/vxe-table'
-    || rel.startsWith('spark-ai-server/')
-    || rel === 'spark-ai-server'
-    || rel.startsWith('vue-virtual-card-scroll-demo/')
-    || rel === 'vue-virtual-card-scroll-demo'
-    || rel.startsWith('dist/')
-    || rel.includes('/dist/')
-    || rel.includes('/node_modules/')
-    || rel.endsWith('/component-catalog.json')
-    || rel.endsWith('/component-metadata.json')
-}
+const forbiddenModuleKindMembers = new Set([
+  'ActionFailureMode',
+  'ActionMetadata',
+  'ActionResultSchema',
+  'ActionSchema',
+  'AttributeAccess',
+  'AttributeMetadata',
+  'AttributeSchema',
+  'CheckEntry',
+  'ChildrenLister',
+  'HostContext',
+  'InstanceFinder',
+  'InstanceQuery',
+  'InstanceRef',
+  'KindOperation',
+  'Options',
+  'OperationResult',
+  'OperationResultOptions',
+  'PathContext',
+  'Runner',
+])
 
-function* walk(dir) {
-  if (!fs.existsSync(dir)) return
+const forbiddenLegacyIdentifiers = new Set([
+  'ActionSchema',
+  'AttributeSchema',
+  'JsonSchemaProperties',
+  'LlmParameterSchemaRoot',
+  'ModuleModuleAction',
+])
 
-  for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
-    const fullPath = path.join(dir, entry.name)
-    if (isExcluded(fullPath)) continue
+export function scanAiCodegenRules(options = {}) {
+  const root = options.root ?? process.cwd()
+  const files = collectSourceFiles({
+    root,
+    includeRoots: options.includeRoots ?? includeRoots,
+    includeFiles: options.includeFiles ?? includeFiles,
+    exclude: createDefaultExcluder(root),
+  })
+  const violations = []
 
-    if (entry.isDirectory()) {
-      yield* walk(fullPath)
-      continue
-    }
-
-    if (sourceExtensions.has(path.extname(entry.name))) {
-      yield fullPath
-    }
-  }
-}
-
-function collectFiles() {
-  const files = []
-  const seen = new Set()
-
-  for (const includeRoot of includeRoots) {
-    for (const file of walk(path.join(root, includeRoot))) {
-      const rel = relativePath(file)
-      if (!seen.has(rel)) {
-        seen.add(rel)
-        files.push(file)
-      }
-    }
-  }
-
-  for (const file of includeFiles) {
-    const fullPath = path.join(root, file)
-    if (!fs.existsSync(fullPath) || isExcluded(fullPath)) continue
-    const rel = relativePath(fullPath)
-    if (!seen.has(rel)) {
-      seen.add(rel)
-      files.push(fullPath)
-    }
+  for (const filePath of files) {
+    forEachParsedSource(filePath, root, (parsed) => {
+      scanSource(parsed, violations)
+    })
   }
 
-  return files.sort((left, right) => relativePath(left).localeCompare(relativePath(right)))
+  return { files, violations }
 }
 
-function extractVueScripts(source) {
-  const scripts = []
-  const scriptPattern = /<script\b[^>]*>([\s\S]*?)<\/script>/giu
-  let match
-
-  while ((match = scriptPattern.exec(source)) !== null) {
-    const content = match[1] ?? ''
-    const start = match.index + (match[0].indexOf(content))
-    const lineOffset = source.slice(0, start).split(/\r?\n/u).length - 1
-    scripts.push({ content, lineOffset })
+export function runAiCodegenCli(argv = process.argv.slice(2)) {
+  const args = parseCliArgs(argv, { root: process.cwd(), includeRoots, includeFiles })
+  if (args.help) {
+    console.info('Usage: node tools/verify-ai-codegen-rules.mjs [--root DIR] [--include-root DIR] [--include-file FILE]')
+    return 0
   }
 
-  return scripts
+  const { files, violations } = scanAiCodegenRules(args)
+  if (violations.length > 0) {
+    printViolations('AI codegen rule scan failed', violations)
+    return 1
+  }
+
+  console.info(`AI codegen rule scan passed: ${files.length} file(s) checked.`)
+  return 0
 }
 
-function lineFor(sourceFile, node, lineOffset) {
-  return sourceFile.getLineAndCharacterOfPosition(node.getStart(sourceFile)).line + 1 + lineOffset
-}
+function scanSource(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
 
-function formatViolation(violation) {
-  return `${violation.file}:${violation.line} ${violation.message}`
-}
-
-function scanSource(source, file, scriptKind, lineOffset, violations) {
-  const sourceFile = ts.createSourceFile(file, source, ts.ScriptTarget.Latest, true, scriptKind)
+  for (const ref of collectModuleReferences(sourceFile)) {
+    if (isForbiddenSparkAiSpecifier(ref.specifier)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, ref.node, lineOffset),
+        message: `forbidden @spark-view/spark-ai subpath: ${ref.specifier}`,
+      })
+    }
+  }
 
   function visit(node) {
     if (ts.isAsExpression(node)) {
@@ -140,42 +144,70 @@ function scanSource(source, file, scriptKind, lineOffset, violations) {
       }
     }
 
+    if (isForbiddenNamespaceDeclaration(node)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `TypeScript namespace declaration is forbidden: ${node.name.getText(sourceFile)}`,
+      })
+    }
+
+    if (ts.isExportDeclaration(node) && node.moduleSpecifier !== undefined && node.exportClause === undefined) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: 'export * is forbidden; public surfaces must use explicit export lists',
+      })
+    }
+
+    if (isForbiddenModuleKindAccess(node)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `legacy ModuleKind namespace member is forbidden: ${node.getText(sourceFile)}`,
+      })
+    }
+
+    if (ts.isIdentifier(node) && forbiddenLegacyIdentifiers.has(node.text)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `legacy AI type name is forbidden: ${node.text}`,
+      })
+    }
+
     ts.forEachChild(node, visit)
   }
 
   visit(sourceFile)
 }
 
-function scanFile(filePath, violations) {
-  const rel = relativePath(filePath)
-  const source = fs.readFileSync(filePath, 'utf8')
-
-  if (filePath.endsWith('.vue')) {
-    for (const script of extractVueScripts(source)) {
-      scanSource(script.content, rel, ts.ScriptKind.TSX, script.lineOffset, violations)
-    }
-    return
-  }
-
-  const scriptKind = filePath.endsWith('.tsx') ? ts.ScriptKind.TSX : ts.ScriptKind.TS
-  scanSource(source, rel, scriptKind, 0, violations)
+function isForbiddenSparkAiSpecifier(specifier) {
+  return specifier.startsWith('@spark-view/spark-ai/')
+    && !allowedSparkAiSpecifiers.has(specifier)
 }
 
-const violations = []
-const files = collectFiles()
-for (const file of files) {
-  scanFile(file, violations)
+function isForbiddenNamespaceDeclaration(node) {
+  return ts.isModuleDeclaration(node)
+    && ts.isIdentifier(node.name)
+    && node.name.text !== 'global'
 }
 
-if (violations.length > 0) {
-  console.error(`AI codegen rule scan failed: ${violations.length} violation(s).`)
-  for (const violation of violations.slice(0, 200)) {
-    console.error(`  ${formatViolation(violation)}`)
+function isForbiddenModuleKindAccess(node) {
+  if (ts.isPropertyAccessExpression(node)) {
+    return node.expression.getText() === 'ModuleKind' && forbiddenModuleKindMembers.has(node.name.text)
   }
-  if (violations.length > 200) {
-    console.error(`  ... ${violations.length - 200} more violation(s)`)
+  if (ts.isQualifiedName(node)) {
+    return node.left.getText() === 'ModuleKind' && forbiddenModuleKindMembers.has(node.right.text)
   }
-  process.exit(1)
+  return false
 }
 
-console.info(`AI codegen rule scan passed: ${files.length} file(s) checked.`)
+if (isCliEntrypoint(import.meta.url)) {
+  try {
+    process.exit(runAiCodegenCli())
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error))
+    process.exit(1)
+  }
+}

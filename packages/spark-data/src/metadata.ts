@@ -1,8 +1,7 @@
 import type { DataSetMetadata, TableMetadata, ViewMetadata } from './types'
 
-interface TableMetadataLike extends Omit<TableMetadata, 'tableName'> {
-  tableName?: string
-}
+type TableMetadataLike = Omit<TableMetadata, 'tableName'> & {
+  tableName?: string}
 
 function normalizeViewMetadata(
   view: ViewMetadata,

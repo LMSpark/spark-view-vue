@@ -52,7 +52,7 @@ import {
 } from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/page/navigation'
+import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/navigation'
 
 import { consumePendingLogout, getUser, isAuthenticated, switchProject } from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
@@ -486,3 +486,4 @@ async function startApp() {
 
 // 启动应用
 void startApp()
+

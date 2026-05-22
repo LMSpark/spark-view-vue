@@ -31,15 +31,14 @@ const logger = createLogger('spark-catalog-audit')
 
 export type AuditSeverity = 'error' | 'warning' | 'info'
 
-export interface AuditIssue {
+export type AuditIssue = {
   severity: AuditSeverity
   rule: string
   component: string
   field?: string
-  message: string
-}
+  message: string}
 
-export interface AuditReport {
+export type AuditReport = {
   timestamp: string
   totalComponents: number
   issues: AuditIssue[]
@@ -50,26 +49,23 @@ export interface AuditReport {
     propDescriptionCoverage: number
     emitDescriptionCoverage: number
     avgPropsPerComponent: number
-  }
-}
+  }}
 
-export interface AuditOptions {
+export type AuditOptions = {
   /** 忽略的规则 ID 列表 */
   ignoreRules?: string[]
   /** 忽略的组件 type 列表 */
   ignoreComponents?: string[]
   /** 开启严格模式（warning 升级为 error） */
-  strict?: boolean
-}
+  strict?: boolean}
 
-interface AuditableComponentCatalog {
+type AuditableComponentCatalog = {
   componentCount: number
   components: Record<string, ComponentEntry>
   schemas?: Record<string, PropSchema>
   schemaPool?: Record<string, PropSchema>
   constraints: PlatformConstraints
-  bindingDescriptors: Record<string, CatalogBindingDescriptor>
-}
+  bindingDescriptors: Record<string, CatalogBindingDescriptor>}
 
 /* --------------------------------------------------------------------------
  * 结构性 prop 名称（不需要用户文档化的 prop）

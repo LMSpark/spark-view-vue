@@ -33,7 +33,7 @@ import { nodeId } from '../../internal'
 import { useCompositeItemGrid } from '../runtime/container-layout'
 import type { SparkNodeProps } from '../../shared-types'
 
-interface Props extends SparkNodeProps {
+type Props = SparkNodeProps & {
   /** 步骤标题 */
     title?: string
     /** 步骤描述文本 */
@@ -53,8 +53,7 @@ interface Props extends SparkNodeProps {
     /** 在父容器中的位置序号 */
     index: number
     /** 渲染模式：步骤头部或内容区 */
-    mode: 'header' | 'content'
-}
+    mode: 'header' | 'content'}
 
 const props = withDefaults(defineProps<Props>(), {
   type: 'r-step',

@@ -15,9 +15,9 @@ import {
   LEAVE_REQUEST_KIND,
   LEAVE_REQUEST_MODULE_ID,
   createLeaveRequestBusinessRegistration,
-} from '@spark-view/spark-page-config/registrations'
+} from '@spark-view/spark-page-config/ai'
 import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
-import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
+import { isRecord } from '@spark-view/spark-page-config/json-document'
 
 function createScope(leaveDraftId: string): AiHostBusinessScope {
   return createAiHostBusinessScope(LEAVE_REQUEST_MODULE_ID, leaveDraftId)
@@ -238,3 +238,4 @@ describe('leave-request host business registration', () => {
     ])
   })
 })
+

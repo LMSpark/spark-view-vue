@@ -8,15 +8,15 @@
  *    消费层不再持有 workTab / previewRefreshToken 等中间 ref。
  */
 import { computed, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
-import type { PageDesignEditSession } from '@spark-view/spark-page-config/capabilities/page-edit-session'
-import { registerPageDesignEditHost } from '@spark-view/spark-page-config/capabilities/page-design-service'
+import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
+import { registerPageDesignEditHost } from '@spark-view/spark-page-config/design'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
-import { PAGE_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
+import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
+import { PAGE_CONFIG_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
 
 function isPageFileName(value: string): value is PageFileName {
-  return PAGE_FILE_NAMES.some((name) => name === value)
+  return PAGE_CONFIG_FILE_NAMES.some((name) => name === value)
 }
 
 export function useDevSystem() {
@@ -127,9 +127,9 @@ export function useDevSystem() {
   }
 }
 
-export interface DevSystemCtx extends ReturnType<typeof useDevSystem> {}
+export type DevSystemCtx = ReturnType<typeof useDevSystem>
 
-function createPageDesignEditHost(state: DevState): PageDesignEditSession.Host {
+function createPageDesignEditHost(state: DevState): PageDesignEditHost {
   return {
     getNodeTree: () => state.documents['rule.json'].model.value,
     onNodeTreeChanged: (nodeTree) => {
@@ -152,3 +152,5 @@ function createPageDesignEditHost(state: DevState): PageDesignEditSession.Host {
     },
   }
 }
+
+

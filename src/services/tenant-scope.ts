@@ -1,7 +1,6 @@
-export interface TenantProjectScope {
+export type TenantProjectScope = {
   tenantId: string
-  projectId: string
-}
+  projectId: string}
 
 const TENANT_SCOPE_PREFIX_RE = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/
 const TENANT_SCOPE_STRIP_RE = /^\/t\/[^/]+\/[^/]+/

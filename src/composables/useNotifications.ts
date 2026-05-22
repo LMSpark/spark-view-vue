@@ -2,13 +2,12 @@ import { computed, reactive, onBeforeUnmount } from 'vue'
 import { onPageConfigChange } from '@/services/sse-events'
 import type { FileChangeEvent } from '@/services/sse-events'
 
-export interface NotificationItem {
+export type NotificationItem = {
   id: number
   title: string
   message: string
   time: number
-  read: boolean
-}
+  read: boolean}
 
 /** 模块级状态（单例共享） */
 const notifications = reactive<NotificationItem[]>([])

@@ -28,12 +28,10 @@ import { createCrudLifecycleEvent } from './types'
 
 const logger = Logger('DataView:CRUD')
 
-interface EmitCrudLifecycleFn {
-  (event: CrudLifecycleEvent): void
-}
-interface MutatingFn {
-  (delta: 1 | -1, error?: Error | null): void
-}
+type EmitCrudLifecycleFn = {
+  (event: CrudLifecycleEvent): void}
+type MutatingFn = {
+  (delta: 1 | -1, error?: Error | null): void}
 
 function isDataRow(value: unknown): value is DataRow {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)

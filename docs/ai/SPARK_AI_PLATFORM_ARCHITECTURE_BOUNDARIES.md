@@ -36,11 +36,11 @@
 | 模块 | 负责 | 不负责 |
 | --- | --- | --- |
 | App AI Center / AI 中心 | 打开 AI 面板；装配 transport；把用户输入送入 Host | 导入 page-config 业务实现；创建业务 service；管理业务 live state |
-| `spark-ai/schema` | LLM JSON 值、标准 JSON Schema helper、参数校验 | 业务语义、工具循环 |
-| `spark-ai/module-semantic` | kind/action 元数据、`listChildren/findInstance/describeKind/invokeAction` 协议、action 参数校验 | Host 会话历史、模型传输、业务状态 |
-| `spark-ai/host` | `AiHostBusinessRegistration` 注册表、会话历史、工具调用循环、transport 契约 | 具体业务动作、页面配置文件读写、业务生命周期判断 |
+| `spark-ai/schema` | LLM JSON 值、标准 JSON Schema helper、`LlmJsonSchemaObject` 参数校验 | 业务语义、工具循环 |
+| `spark-ai/module-semantic` | `ModuleKind`、顶层协议类型、`listChildren/findInstance/describeKind/invokeAction` 协议、action 参数校验 | Host 会话历史、模型传输、业务状态 |
+| `spark-ai/host` | `AiHostBusinessRegistration` 注册表、会话历史、工具调用循环、transport 契约、fetch/SSE 传输 | 具体业务动作、页面配置文件读写、业务生命周期判断 |
 | AI Backend | LLM 会话、模型调用、消息持久化、SSE stream | 前端业务函数执行；页面 live state；APP UI 状态 |
-| 业务服务 | 持有业务状态；声明 kind/action；通过 `ModuleKind.runner`、`list`、`find` 委托执行副作用和发现 | 管理 LLM 会话；重写 `spark-ai` 通用协议 |
+| 业务服务 | 持有业务状态；声明 `ModuleActionMetadata`；通过 `ModuleKind.runner`、`list`、`find` 委托执行副作用和发现 | 管理 LLM 会话；重写 `spark-ai` 通用协议 |
 
 ## 发现与调用协议
 
@@ -56,3 +56,10 @@
 - 不把业务 live state 放入 Host session store。
 - 不让 `spark-ai` 导入 `spark-page-config`。
 - 不使用私有参数 DSL，action 参数必须是标准 JSON Schema object root。
+- 不使用旧 namespace 类型；协议类型从 `module-semantic` 顶层导入。
+
+## 验证门禁
+
+- `pnpm run verify:arch` 强制校验 workspace 包依赖、跨包相对导入、框架无关包依赖和 `@spark-view/spark-ai` 四个公开 subpath。
+- `pnpm run verify:ai-codegen` 强制校验 AI 代码生成规则：禁止非 allowlist `interface`、非 `as const` 类型断言、TypeScript `namespace`、旧 AI 符号和公共 `export *`。
+- 根 `pnpm run verify` 已接入 `verify:rules`，架构边界不再只依赖文档约定。

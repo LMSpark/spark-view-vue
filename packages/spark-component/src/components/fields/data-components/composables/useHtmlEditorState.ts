@@ -3,14 +3,13 @@ import type { DataRow } from '@spark-view/spark-data'
 import type { Ref } from 'vue'
 import type { ValueRef } from '../../../shared-types.js'
 
-interface UseHtmlEditorStateOptions {
+type UseHtmlEditorStateOptions = {
   editorRef: Ref<HTMLElement | null>
   fieldValue: ValueRef<unknown>
   isCurrentFieldEditable: ValueRef<boolean>
   syncValue: (value: string) => void
   emitUpdate: (value: string) => void
-  getRowRawValue: (row: DataRow) => unknown
-}
+  getRowRawValue: (row: DataRow) => unknown}
 
 export function stripHtml(value: unknown): string {
   return String(value ?? '').replace(/<[^>]*>/g, ' ').replace(/\s+/g, ' ').trim()

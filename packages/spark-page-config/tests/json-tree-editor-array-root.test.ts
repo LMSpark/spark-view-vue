@@ -7,7 +7,7 @@ import {
   rootOf,
   toDisplayRows,
   type JsonDocument,
-} from '@spark-view/spark-page-config/capabilities/json-document'
+} from '@spark-view/spark-page-config/json-document'
 
 describe('jsonTreeEditor (array root)', () => {
   it('should flatten and restore when document root is an array', () => {
@@ -36,3 +36,4 @@ describe('jsonTreeEditor (array root)', () => {
     expect(exportJsonDocument(result.model)).toEqual([1, ''])
   })
 })
+

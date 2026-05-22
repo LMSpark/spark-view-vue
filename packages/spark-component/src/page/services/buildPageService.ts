@@ -32,7 +32,7 @@ function isElCancelAction(e: unknown): boolean {
 }
 
 /** 可选的外部 UI 服务注入（测试 / Storybook 用） */
-export interface PageServiceOverrides {
+export type PageServiceOverrides = {
   messageService?: {
     success: (msg: string) => void
     warning: (msg: string) => void
@@ -44,8 +44,7 @@ export interface PageServiceOverrides {
     alert: (msg: string, title?: string) => Promise<unknown>
     prompt?: (msg: string, title?: string) => Promise<string | null>
   } | undefined
-  pageService?: Partial<PageServiceCapability> | undefined
-}
+  pageService?: Partial<PageServiceCapability> | undefined}
 
 function mapFile(file: File): PageSelectedFile {
   return {

@@ -79,19 +79,6 @@
       </div>
     </section>
 
-    <section class="catalog-showcase">
-      <div class="catalog-showcase__intro">
-        <p class="catalog-showcase__eyebrow">Component Catalog</p>
-        <h2 class="section-title">首页直接查看组件配置目录</h2>
-        <p class="section-desc catalog-showcase__desc">
-          不再单独跳转页面，首页直接查看 SPARK 组件、Props、能力依赖和配置示例；需要独立入口时，仍可访问 /skill-catalog。
-        </p>
-      </div>
-      <div class="catalog-showcase__panel">
-        <SkillCatalog />
-      </div>
-    </section>
-
     <!-- ── 范式对比 ── -->
     <section class="paradigm">
       <h2 class="section-title">从代码堆叠，到配置驱动系统</h2>
@@ -525,7 +512,6 @@
  * @description 平台首页，展示系统介绍、功能亮点和快速开始入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。
  */
 import NavIcon from '@/components/NavIcon.vue'
-import SkillCatalog from '@/views/app/SkillCatalog.vue'
 
 const year = new Date().getFullYear()
 
@@ -550,17 +536,6 @@ const platformDemos = [
       '更贴近企业后台里的典型列表场景',
       '配置驱动的数据联动比手写 watch 更稳定',
       '适合说明为什么后续维护成本更低',
-    ],
-  },
-  {
-    path: '/skill-catalog',
-    badge: 'permission-render',
-    title: '权限渲染页面',
-    description: '用同一套页面结构演示不同权限快照下的渲染结果，突出改权限不改页面代码。',
-    points: [
-      '最适合解释企业级治理不是附属能力',
-      '权限、数据和页面模式走在同一条渲染链里',
-      '适合和多租户、多系统故事一起讲',
     ],
   },
 ] as const
@@ -591,46 +566,6 @@ function setRegisterTab() {
   font-size: 16px;
   color: #606266;
   margin: 0 0 60px;
-}
-
-/* ── 组件目录首页区 ── */
-.catalog-showcase {
-  padding: 96px 32px;
-  background:
-    radial-gradient(circle at top left, rgba(14, 165, 233, 0.10), transparent 26%),
-    linear-gradient(180deg, #ffffff 0%, #f6f8fb 100%);
-}
-
-.catalog-showcase__intro {
-  max-width: 860px;
-  margin: 0 auto 28px;
-}
-
-.catalog-showcase__eyebrow {
-  margin: 0 0 10px;
-  text-align: center;
-  color: #0f766e;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-}
-
-.catalog-showcase__desc {
-  max-width: 760px;
-  margin-left: auto;
-  margin-right: auto;
-}
-
-.catalog-showcase__panel {
-  max-width: 1480px;
-  margin: 0 auto;
-  padding: 18px;
-  border: 1px solid rgba(15, 23, 42, 0.08);
-  border-radius: 28px;
-  background: rgba(255, 255, 255, 0.92);
-  box-shadow: 0 26px 60px rgba(15, 23, 42, 0.08);
-  backdrop-filter: blur(10px);
 }
 
 /* ── Demo 展示 ── */

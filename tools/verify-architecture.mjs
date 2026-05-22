@@ -1,228 +1,264 @@
 #!/usr/bin/env node
-/**
- * 架构验证脚本 - 确保主项目采用 L3 层包实现
- * 
- * 验证规则：
- * 1. src/ 不应该包含渲染逻辑（由 L3 包提供）
- * 2. src/ 只能导入 L1-L3 包，不能有自己的实现
- * 3. features/ 只能在 tests/ 中使用
- */
 
-import { existsSync, readFileSync, readdirSync, statSync } from 'fs'
-import { join, relative } from 'path'
-import { fileURLToPath } from 'url'
+import fs from 'node:fs'
+import path from 'node:path'
+import process from 'node:process'
+import {
+  SCRIPT_EXTENSIONS,
+  collectModuleReferences,
+  collectSourceFiles,
+  createDefaultExcluder,
+  forEachParsedSource,
+  isCliEntrypoint,
+  lineFor,
+  packageNameFromSpecifier,
+  parseCliArgs,
+  printViolations,
+  readJsonFile,
+  relativePath,
+} from './verifier-common.mjs'
 
-const __filename = fileURLToPath(import.meta.url)
-const __dirname = join(__filename, '..')
-const rootDir = join(__dirname, '..')
+const frameworkFreePackages = new Set([
+  '@spark-view/spark-utils',
+  '@spark-view/spark-data',
+  '@spark-view/spark-page-config',
+])
 
-console.log('🔍 验证架构合规性...\n')
+const forbiddenFrameworkImports = [
+  'vue',
+  'vue-router',
+  'element-plus',
+  '@element-plus/',
+  '@vueuse/',
+  'pinia',
+]
 
-let errors = 0
+const allowedSparkAiSpecifiers = new Set([
+  '@spark-view/spark-ai',
+  '@spark-view/spark-ai/schema',
+  '@spark-view/spark-ai/host',
+  '@spark-view/spark-ai/module-semantic',
+])
 
-/**
- * 递归扫描目录
- */
-function* scanFiles(dir, extensions = ['.ts', '.vue', '.js']) {
-  const entries = readdirSync(dir)
-  
-  for (const entry of entries) {
-    const fullPath = join(dir, entry)
-    const stat = statSync(fullPath)
-    
-    if (stat.isDirectory()) {
-      if (!['node_modules', 'dist', '.git'].includes(entry)) {
-        yield* scanFiles(fullPath, extensions)
-      }
-    } else if (extensions.some(ext => entry.endsWith(ext))) {
-      yield fullPath
-    }
+const allowedSparkAiExportKeys = new Set(['.', './schema', './host', './module-semantic'])
+
+export function scanArchitectureRules(options = {}) {
+  const root = options.root ?? process.cwd()
+  const exclude = createDefaultExcluder(root)
+  const violations = []
+
+  checkSrcImplementationRules(root, exclude, violations)
+  checkWorkspacePackageImports(root, exclude, violations)
+  checkSparkAiPublicSurface(root, violations)
+
+  return { violations }
+}
+
+export function runArchitectureCli(argv = process.argv.slice(2)) {
+  const args = parseCliArgs(argv, { root: process.cwd() })
+  if (args.help) {
+    console.info('Usage: node tools/verify-architecture.mjs [--root DIR]')
+    return 0
   }
-}
 
-/**
- * 检查文件内容
- */
-function checkFile(filePath, rules) {
-  const content = readFileSync(filePath, 'utf-8')
-  const relativePath = relative(rootDir, filePath)
-  
-  for (const { pattern, message, severity = 'error' } of rules) {
-    const matches = content.match(pattern)
-    if (matches) {
-      if (severity === 'error') {
-        console.error(`❌ ${relativePath}`)
-        console.error(`   ${message}`)
-        console.error(`   匹配: ${matches[0].substring(0, 60)}...\n`)
-        errors++
-      } else {
-        console.warn(`⚠️  ${relativePath}`)
-        console.warn(`   ${message}`)
-        console.warn(`   匹配: ${matches[0].substring(0, 60)}...\n`)
-      }
-    }
+  console.log('Verifying architecture rules...\n')
+  const { violations } = scanArchitectureRules({ root: args.root })
+  if (violations.length > 0) {
+    printViolations('Architecture verification failed', violations)
+    return 1
   }
+
+  console.log('Architecture verification passed.')
+  return 0
 }
 
-function readJson(filePath) {
-  return JSON.parse(readFileSync(filePath, 'utf-8'))
-}
-
-function escapeRegExp(value) {
-  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-}
-
-function stripComments(content) {
-  return content
-    .replace(/\/\*[\s\S]*?\*\//g, '')
-    .replace(/^\s*\/\/.*$/gm, '')
-}
-
-function hasPackageImport(content, packageName) {
-  const sanitized = stripComments(content)
-  const escapedName = escapeRegExp(packageName)
-  const patterns = [
-    new RegExp(`^\\s*import(?:\\s+type)?(?:[^\\n]*\\n){0,12}?[^\\n]*from\\s+['"]${escapedName}['"]`, 'm'),
-    new RegExp(`^\\s*import\\s+['"]${escapedName}['"]`, 'm'),
-    new RegExp(`^\\s*export(?:\\s+type)?(?:[^\\n]*\\n){0,12}?[^\\n]*from\\s+['"]${escapedName}['"]`, 'm'),
-    new RegExp(`^\\s*(?![/*])[^\\n]*\\bimport\\s*\\(\\s*['"]${escapedName}['"]\\s*\\)`, 'm'),
-  ]
-
-  return patterns.some((pattern) => pattern.test(sanitized))
-}
-
-// ============================================================================
-// 规则 1: src/ 不应该有渲染逻辑实现
-// ============================================================================
-
-console.log('📋 规则 1: src/ 不应该实现渲染逻辑\n')
-
-const srcFiles = Array.from(scanFiles(join(rootDir, 'src')))
-
-for (const file of srcFiles) {
-  checkFile(file, [
-    {
-      pattern: /class\s+\w*Renderer/,
-      message: '不应该实现 Renderer 类（应使用 @spark-view/spark-component）'
-    },
-    {
-      pattern: /function\s+render[A-Z]\w*/,
-      message: '不应该实现 render* 函数（应使用 @spark-view/spark-component）'
-    },
-    {
-      pattern: /function\s+compileTemplate/,
-      message: '不应该实现模板编译（应使用 @spark-view/spark-component）'
-    },
-    {
-      pattern: /function\s+createSandbox/,
-      message: '不应该实现沙箱（应使用 @spark-view/spark-component）'
-    }
-  ])
-}
-
-// ============================================================================
-// 规则 2: src/ 应该只使用包，不导入 features（features 内部自引用除外）
-// ============================================================================
-
-console.log('📋 规则 2: src/ 不应该导入 features\n')
-
-for (const file of srcFiles) {
-  // features 目录内部的文件可以互相引用，跳过检查
-  const relativePath = relative(rootDir, file)
-  if (relativePath.includes('features')) continue
-  
-  checkFile(file, [
-    {
-      pattern: /from\s+['"]@\/features/,
-      message: '不应该从 features 导入（features 只用于测试）'
-    },
-    {
-      pattern: /from\s+['"]\.\.?\/features/,
-      message: '不应该从 features 导入（features 只用于测试）'
-    }
-  ])
-}
-
-// ============================================================================
-// 规则 3: (EJ2 已移除，此检查跳过)
-// ============================================================================
-
-// ============================================================================
-// 规则 4: 验证包之间的合理依赖
-// ============================================================================
-
-console.log('📋 规则 4: 验证包依赖合理性\n')
-
-const packagesDir = join(rootDir, 'packages')
-const workspacePackages = readdirSync(packagesDir)
-  .filter((dirName) => statSync(join(packagesDir, dirName)).isDirectory())
-  .map((dirName) => {
-    const packageDir = join(packagesDir, dirName)
-    const packageJsonPath = join(packageDir, 'package.json')
-    if (!existsSync(packageJsonPath)) return null
-
-    const packageJson = readJson(packageJsonPath)
-    if (typeof packageJson.name !== 'string' || !packageJson.name.startsWith('@spark-view/')) {
-      return null
-    }
-
-    return {
-      dirName,
-      packageName: packageJson.name,
-      srcDir: join(packageDir, 'src'),
-      allowedDeps: Object.keys(packageJson.dependencies ?? {}).filter((depName) => depName.startsWith('@spark-view/')),
-    }
+function checkSrcImplementationRules(root, exclude, violations) {
+  const files = collectSourceFiles({
+    root,
+    includeRoots: ['src'],
+    extensions: SCRIPT_EXTENSIONS,
+    exclude,
   })
-  .filter((pkg) => pkg !== null)
 
-for (const pkg of workspacePackages) {
-  if (!existsSync(pkg.srcDir) || !statSync(pkg.srcDir).isDirectory()) continue
+  for (const filePath of files) {
+    const rel = relativePath(root, filePath)
+    const content = fs.readFileSync(filePath, 'utf8')
+    checkPattern(content, rel, /class\s+\w*Renderer/u, 'src/ must not implement Renderer classes', violations)
+    checkPattern(content, rel, /function\s+render[A-Z]\w*/u, 'src/ must not implement render* functions', violations)
+    checkPattern(content, rel, /function\s+compileTemplate/u, 'src/ must not implement template compilation', violations)
+    checkPattern(content, rel, /function\s+createSandbox/u, 'src/ must not implement sandbox creation', violations)
 
-  const pkgFiles = Array.from(scanFiles(pkg.srcDir))
-  const allowed = new Set(pkg.allowedDeps)
-
-  for (const file of pkgFiles) {
-    const content = readFileSync(file, 'utf-8')
-    const relativePath = relative(rootDir, file)
-
-    for (const dep of workspacePackages) {
-      if (dep.packageName === pkg.packageName) continue
-      if (allowed.has(dep.packageName)) continue
-
-      if (hasPackageImport(content, dep.packageName)) {
-        console.error(`❌ ${relativePath}`)
-        console.error(`   ${pkg.dirName} 不应该依赖 ${dep.dirName}`)
-        console.error(`   允许的依赖: [${pkg.allowedDeps.map((name) => name.replace('@spark-view/', '')).join(', ') || '无'}]\n`)
-        errors++
+    if (rel.includes('/features/')) continue
+    forEachParsedSource(filePath, root, ({ file, sourceFile, lineOffset }) => {
+      for (const ref of collectModuleReferences(sourceFile)) {
+        if (ref.specifier === '@/features' || ref.specifier.startsWith('@/features/') || ref.specifier.includes('/features/')) {
+          violations.push({
+            file,
+            line: lineFor(sourceFile, ref.node, lineOffset),
+            message: 'src/ must not import features outside tests',
+          })
+        }
       }
+    })
+  }
+}
+
+function checkWorkspacePackageImports(root, exclude, violations) {
+  const packages = collectWorkspacePackages(root)
+
+  for (const pkg of packages) {
+    if (!fs.existsSync(pkg.srcDir)) continue
+    const files = collectSourceFiles({
+      root,
+      includeRoots: [path.relative(root, pkg.srcDir)],
+      extensions: SCRIPT_EXTENSIONS,
+      exclude,
+    })
+    const allowedDeps = new Set(pkg.allowedDeps)
+
+    for (const filePath of files) {
+      forEachParsedSource(filePath, root, ({ file, sourceFile, lineOffset }) => {
+        for (const ref of collectModuleReferences(sourceFile)) {
+          checkWorkspacePackageImport(pkg, packages, allowedDeps, ref, file, sourceFile, lineOffset, violations)
+          checkRelativeCrossPackageImport(root, pkg, filePath, ref, file, sourceFile, lineOffset, violations)
+          checkFrameworkFreeImport(pkg, ref, file, sourceFile, lineOffset, violations)
+          checkSparkAiSpecifier(ref, file, sourceFile, lineOffset, violations)
+        }
+      })
     }
   }
 }
 
-console.log('✅ 包依赖检查完成\n')
+function collectWorkspacePackages(root) {
+  const packagesDir = path.join(root, 'packages')
+  if (!fs.existsSync(packagesDir)) return []
 
-// ============================================================================
-// 总结
-// ============================================================================
+  return fs.readdirSync(packagesDir, { withFileTypes: true })
+    .filter((entry) => entry.isDirectory())
+    .map((entry) => {
+      const packageDir = path.join(packagesDir, entry.name)
+      const packageJsonPath = path.join(packageDir, 'package.json')
+      if (!fs.existsSync(packageJsonPath)) return null
 
-console.log('━'.repeat(60))
-if (errors === 0) {
-  console.log('✅ 架构验证通过！主项目正确采用包架构实现\n')
-  console.log('包依赖关系：')
-  console.log('  ┌─ spark-utils (工具层 - Logger, 常量, HTTP, Capability)')
-  console.log('  │')
-  console.log('  ├─ spark-data (数据管理)')
-  console.log('  ├─ spark-page-config (页面配置编译/加载)')
-  console.log('  ├─ spark-component (组件系统 + 页面渲染引擎)')
-  console.log('  ├─ spark-ai (AI 闭环 / stills / SSE)')
-  console.log('  └─ spark-app (应用层基础设施)')
-  console.log('')
-  console.log('主应用 (src/) 使用：')
-  console.log('  • PageRenderer from @spark-view/spark-component')
-  console.log('  • SparkApp from @spark-view/spark-app')
-  console.log('')
-  process.exit(0)
-} else {
-  console.error(`❌ 发现 ${errors} 个架构问题\n`)
-  process.exit(1)
+      const packageJson = readJsonFile(packageJsonPath)
+      if (typeof packageJson.name !== 'string' || !packageJson.name.startsWith('@spark-view/')) return null
+      return {
+        dirName: entry.name,
+        packageDir,
+        packageName: packageJson.name,
+        srcDir: path.join(packageDir, 'src'),
+        allowedDeps: Object.keys(packageJson.dependencies ?? {}).filter((depName) => depName.startsWith('@spark-view/')),
+      }
+    })
+    .filter((pkg) => pkg !== null)
+}
+
+function checkWorkspacePackageImport(pkg, packages, allowedDeps, ref, file, sourceFile, lineOffset, violations) {
+  if (!ref.specifier.startsWith('@spark-view/')) return
+  const dependencyName = packageNameFromSpecifier(ref.specifier)
+  if (dependencyName === pkg.packageName) return
+  if (!packages.some((candidate) => candidate.packageName === dependencyName)) return
+  if (allowedDeps.has(dependencyName)) return
+
+  violations.push({
+    file,
+    line: lineFor(sourceFile, ref.node, lineOffset),
+    message: `${pkg.dirName} must not depend on ${dependencyName.replace('@spark-view/', '')}; declare it in package.json dependencies first`,
+  })
+}
+
+function checkRelativeCrossPackageImport(root, pkg, filePath, ref, file, sourceFile, lineOffset, violations) {
+  if (!ref.specifier.startsWith('.')) return
+  const target = path.resolve(path.dirname(filePath), ref.specifier)
+  const packageRelative = path.relative(pkg.packageDir, target)
+  if (!packageRelative.startsWith('..') && !path.isAbsolute(packageRelative)) return
+
+  const rootRelative = relativePath(root, target)
+  if (!rootRelative.startsWith('packages/')) return
+  violations.push({
+    file,
+    line: lineFor(sourceFile, ref.node, lineOffset),
+    message: 'cross-package relative imports are forbidden; use @spark-view/* package imports',
+  })
+}
+
+function checkFrameworkFreeImport(pkg, ref, file, sourceFile, lineOffset, violations) {
+  if (!frameworkFreePackages.has(pkg.packageName)) return
+  if (!isForbiddenFrameworkImport(ref.specifier)) return
+  violations.push({
+    file,
+    line: lineFor(sourceFile, ref.node, lineOffset),
+    message: `${pkg.dirName} is framework-free and must not import ${ref.specifier}`,
+  })
+}
+
+function checkSparkAiSpecifier(ref, file, sourceFile, lineOffset, violations) {
+  if (!ref.specifier.startsWith('@spark-view/spark-ai/')) return
+  if (allowedSparkAiSpecifiers.has(ref.specifier)) return
+  violations.push({
+    file,
+    line: lineFor(sourceFile, ref.node, lineOffset),
+    message: `forbidden @spark-view/spark-ai public subpath: ${ref.specifier}`,
+  })
+}
+
+function checkSparkAiPublicSurface(root, violations) {
+  const packageJsonPath = path.join(root, 'packages/spark-ai/package.json')
+  if (fs.existsSync(packageJsonPath)) {
+    const packageJson = readJsonFile(packageJsonPath)
+    const exportKeys = Object.keys(packageJson.exports ?? {})
+    assertExactSet(exportKeys, allowedSparkAiExportKeys, 'packages/spark-ai/package.json', 1, 'spark-ai package exports', violations)
+  }
+
+  for (const file of ['tsconfig.json', 'tsconfig.typecheck.json', 'vite.config.ts', 'vitest.config.ts']) {
+    const filePath = path.join(root, file)
+    if (!fs.existsSync(filePath)) continue
+    const content = fs.readFileSync(filePath, 'utf8')
+    const keys = new Set()
+    const pattern = /['"](@spark-view\/spark-ai(?:\/[^'"]+)?)['"]\s*:/gu
+    let match
+    while ((match = pattern.exec(content)) !== null) {
+      keys.add(match[1])
+    }
+    assertExactSet([...keys], allowedSparkAiSpecifiers, file, 1, 'spark-ai aliases', violations)
+  }
+}
+
+function assertExactSet(actualItems, expectedSet, file, line, label, violations) {
+  const actualSet = new Set(actualItems)
+  const extra = [...actualSet].filter((item) => !expectedSet.has(item))
+  const missing = [...expectedSet].filter((item) => !actualSet.has(item))
+  if (extra.length === 0 && missing.length === 0) return
+  violations.push({
+    file,
+    line,
+    message: `${label} must be exactly [${[...expectedSet].join(', ')}]; extra=[${extra.join(', ')}] missing=[${missing.join(', ')}]`,
+  })
+}
+
+function isForbiddenFrameworkImport(specifier) {
+  return forbiddenFrameworkImports.some((forbidden) => (
+    forbidden.endsWith('/')
+      ? specifier.startsWith(forbidden)
+      : specifier === forbidden || specifier.startsWith(`${forbidden}/`)
+  ))
+}
+
+function checkPattern(content, file, pattern, message, violations) {
+  const match = pattern.exec(content)
+  if (match === null || match.index === undefined) return
+  violations.push({
+    file,
+    line: content.slice(0, match.index).split(/\r?\n/u).length,
+    message,
+  })
+}
+
+if (isCliEntrypoint(import.meta.url)) {
+  try {
+    process.exit(runArchitectureCli())
+  } catch (error) {
+    console.error(error instanceof Error ? error.message : String(error))
+    process.exit(1)
+  }
 }

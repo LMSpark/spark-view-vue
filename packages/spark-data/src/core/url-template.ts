@@ -11,12 +11,11 @@
 /** 匹配 `:param` 或 `{param}` 路径变量 */
 const URL_PARAM_RE = /:(\w+)|\{(\w+)\}/g
 
-export interface ResolvedUrl {
+export type ResolvedUrl = {
   /** 替换路径参数后的 URL */
   url: string
   /** 未被 URL 模板消费的剩余参数（可用于 query/body） */
-  rest: Record<string, unknown>
-}
+  rest: Record<string, unknown>}
 
 /**
  * 解析 URL 模板中的路径参数
