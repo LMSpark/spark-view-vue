@@ -1,37 +1,108 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  AI HOST · 业务作用域类型                                                     │
+ * │  Business Scope & Context Types                                              │
+ * │                                                                              │
+ * │  本文件定义业务实例的定位、作用域和运行时上下文的类型层次。                       │
+ * │  从"找到哪个业务"到"当前会话快照"再到"回调参数"，逐步细化。                     │
+ * │                                                                              │
+ * │  类型层次：                                                                   │
+ * │    AiHostBusinessTarget           — 业务定位（哪个注册的哪个实例）              │
+ * │      └─ AiHostBusinessScope       — 业务作用域（定位 + 会话/运行时 ID）        │
+ * │    AiHostBusinessRuntimeContext   — 运行时上下文（传递给生命周期回调）          │
+ * │    AiHostBusinessAppendMessageOptions — 追加消息参数（上下文 + 消息字段）      │
+ * │                                                                              │
+ * │  使用场景：                                                                   │
+ * │    · Target   → registry.createBusiness() 时定位                              │
+ * │    · Scope    → tool-loop-runner 全程持有，SSE 流键生成                        │
+ * │    · Context  → systemPrompt / afterFunctionCall / onStartSession 回调入参    │
+ * │    · Options  → session.appendMessage() 入参                                  │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ */
+
 import type {
   AiHostMessageRole,
   AiHostMessageSource,
 } from '../session/session-types'
 
+/* -------------------------------------------------------------------------------
+ * 一、业务定位基类
+ * -------------------------------------------------------------------------------
+ * 用两个 ID 精确定位一个业务实例：
+ *   - businessRegistrationId：在 BusinessRegistry 中注册时分配的唯一标识
+ *   - businessInstanceId：每次 createBusiness() 调用时创建的唯一实例标识
+ * ----------------------------------------------------------------------------- */
+
 export class AiHostBusinessTarget {
   public constructor(
+    /** 业务注册 ID——对应 BusinessRegistry 中的注册项 */
     public readonly businessRegistrationId: string,
+    /** 业务实例 ID——每次创建业务时生成，同一次会话内不变 */
     public readonly businessInstanceId: string,
   ) {}
 }
+
+/* -------------------------------------------------------------------------------
+ * 二、业务作用域（继承自定位基类）
+ * -------------------------------------------------------------------------------
+ * 在业务定位基础上追加会话层标识，构成完整的"当前上下文坐标"：
+ *   - instanceId：本次 AI 会话 ID（createSession 时生成）
+ *   - runtimeInstanceId：ModuleSemanticRuntime 内部实例 ID（模块能力树实例）
+ *
+ * Scope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期。
+ * 同时也是 SSE 流键（streamKey）的数据来源——流键由 Scope 字段编码生成。
+ * ----------------------------------------------------------------------------- */
 
 export class AiHostBusinessScope extends AiHostBusinessTarget {
   public constructor(
     businessRegistrationId: string,
     businessInstanceId: string,
+    /** AI 会话实例 ID——对应 createSession() 返回的 sessionId */
     public readonly instanceId: string,
+    /** 模块运行时实例 ID——ModuleSemanticRuntime 创建实例时的内部标识 */
     public readonly runtimeInstanceId: string,
   ) {
     super(businessRegistrationId, businessInstanceId)
   }
 }
 
+/* -------------------------------------------------------------------------------
+ * 三、运行时上下文
+ * -------------------------------------------------------------------------------
+ * 传递给生命周期回调的精简上下文，只包含模块层标识：
+ *   - moduleId：业务模块 ID（对应 registration.moduleId）
+ *   - moduleInstanceId：模块运行时实例 ID（对应 scope.runtimeInstanceId）
+ *   - instanceId：会话实例 ID（对应 scope.instanceId）
+ *
+ * 与 Scope 的区别：不含 businessRegistrationId / businessInstanceId，
+ * 因为生命周期回调已在具体业务实例内部执行，无需重复定位。
+ * ----------------------------------------------------------------------------- */
+
 export class AiHostBusinessRuntimeContext {
   public constructor(
+    /** 业务模块 ID */
     public readonly moduleId: string,
+    /** 模块运行时内部实例 ID */
     public readonly moduleInstanceId: string,
+    /** AI 会话实例 ID */
     public readonly instanceId: string,
   ) {}
 }
 
+/* -------------------------------------------------------------------------------
+ * 四、追加消息参数
+ * -------------------------------------------------------------------------------
+ * 向会话历史追加一条消息时所需的完整参数。
+ * 继承自 RuntimeContext（确定写入哪个会话），追加消息体字段。
+ * ----------------------------------------------------------------------------- */
+
 export type AiHostBusinessAppendMessageOptions = AiHostBusinessRuntimeContext & Readonly<{
+  /** 消息角色：user / assistant / system / tool */
   role: AiHostMessageRole
+  /** 消息正文 */
   content: string
+  /** 消息来源标注（用于区分用户输入 / LLM 输出 / 工具返回值） */
   source?: AiHostMessageSource | undefined
+  /** 附加元数据（如工具调用 ID、token 用量等） */
   metadata?: Record<string, unknown> | undefined
 }>
