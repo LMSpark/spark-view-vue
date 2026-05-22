@@ -47,6 +47,7 @@ export type {
   ModuleInstanceQuery,
   ModuleInstanceRef,
   ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
 } from './protocol-instance-api'
 
 export type {
@@ -98,3 +99,15 @@ export {
 export {
   ModuleSemanticToolCodec,
 } from './host/index'
+
+// ── 11. 模块参数荷载 provider 注册表 ────────────────────────
+export {
+  ModuleParameterPayloadRegistry,
+} from './payloads/module-parameter-payload-registry'
+
+export type {
+  ModuleParameterPayloadGuide,
+  ModuleParameterPayloadProvider,
+  ModuleParameterPayloadQueryFilter,
+  ModuleParameterPayloadSummary,
+} from './payloads/module-parameter-payload-registry'

@@ -20,6 +20,7 @@ import {
   type ModuleActionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
+  type ModuleParameterPayloadMetadata,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
 import type {
@@ -569,6 +570,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     readonly service: PageDesignService
     readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string | undefined
+    readonly payloads?: readonly ModuleParameterPayloadMetadata[] | undefined
   }) {
     super({
       kind: 'node-tree',
@@ -576,6 +578,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
       description: '当前页面 SparkNodeTree/rule.json 结构读写;通过 invokeAction 调用 19 个公开方法。',
       attributes: [],
       actions: NODE_TREE_ACTIONS,
+      payloads: options.payloads,
       parentKind: options.parentKind,
       children: [],
     })

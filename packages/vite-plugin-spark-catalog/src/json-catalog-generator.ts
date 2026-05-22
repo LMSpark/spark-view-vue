@@ -14,8 +14,8 @@
  */
 
 // ── 1. 依赖导入 (Imports) ─────────────────────────────────────────────────────────
-import { writeFileSync } from 'node:fs'
-import { resolve, basename } from 'node:path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { resolve, basename, dirname } from 'node:path'
 import { globSync } from 'glob'
 import { getOrCreateChecker, extractComponentApiVcm } from './extract-component-api-vcm'
 import type { VcmCheckerOptions } from './extract-component-api-vcm'
@@ -77,7 +77,7 @@ export type JsonCatalogOptions = {
  * component-catalog.json 是当前仓库组件目录的单一事实源，所有消费者都应从该路径读取。
  */
 export function getCanonicalCatalogOutputPath(root: string): string {
-  return resolve(root, 'packages/spark-page-config/src/registrations/payloads', CANONICAL_CATALOG_FILE)
+  return resolve(root, 'packages/spark-page-config/src/ai/payloads', CANONICAL_CATALOG_FILE)
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -1748,6 +1748,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   const catalog = buildComponentCatalog(runtimeCatalog)
 
   const outPath = getCanonicalCatalogOutputPath(root)
+  mkdirSync(dirname(outPath), { recursive: true })
   writeFileSync(outPath, JSON.stringify(catalog, null, 2), 'utf-8')
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)
 

@@ -77,6 +77,16 @@ export type ModuleActionMetadata = Readonly<{
   example?: LlmJsonValue | undefined
 }>
 
+/** 模块参数荷载元数据：描述某个 ModuleKind 依赖的外部参数指南 provider */
+export type ModuleParameterPayloadMetadata = Readonly<{
+  /** provider 唯一命名空间，例如 spark.component。 */
+  payloadRef: string
+  /** 该 payload 与当前模块的关系说明。 */
+  description: string
+  /** 该 payload 通常服务的 action 名；为空表示模块级通用。 */
+  requiredForActions?: readonly string[] | undefined
+}>
+
 /* -------------------------------------------------------------------------------
  * 二、构造选项
  * ----------------------------------------------------------------------------- */
@@ -88,6 +98,7 @@ export type ModuleKindOptions = Readonly<{
   parentKind?: string | undefined
   attributes?: readonly ModuleAttributeMetadata[] | undefined
   actions?: readonly ModuleActionMetadata[] | undefined
+  payloads?: readonly ModuleParameterPayloadMetadata[] | undefined
   children?: readonly string[] | undefined
   runner?: ModuleKindRunner | undefined
   list?: ModuleChildrenLister | undefined
@@ -121,6 +132,7 @@ export class ModuleKind {
   public readonly parentKind?: string | undefined
   public readonly attributes: readonly ModuleAttributeMetadata[]
   public readonly actions: readonly ModuleActionMetadata[]
+  public readonly payloads: readonly ModuleParameterPayloadMetadata[]
   public readonly children: readonly string[]
 
   /** 按名称索引的属性表（内部快速查找） */
@@ -148,6 +160,7 @@ export class ModuleKind {
     this.moduleAttributeByName = createNamedMap(this.attributes, 'attribute')
     this.actions = normalizeActionMetadata(options.actions ?? [])
     this.moduleActionByName = createNamedMap(this.actions, 'action')
+    this.payloads = normalizePayloadMetadata(options.payloads ?? [], options.kind)
     this.children = normalizeChildKinds(options.children ?? [], options.kind)
 
     // 默认委托：未提供时使用安全回退
@@ -444,6 +457,54 @@ function normalizeActionMetadata(actions: readonly ModuleActionMetadata[]): read
       : { failureModes: action.failureModes.map((mode) => ({ ...mode })) }),
     ...(action.example === undefined ? {} : { example: action.example }),
   }))
+}
+
+/** 规范化参数荷载元数据，复制数组并 fail-fast 拒绝空 ref、空描述和重复 ref。 */
+function normalizePayloadMetadata(payloads: readonly ModuleParameterPayloadMetadata[], ownKind: string): readonly ModuleParameterPayloadMetadata[] {
+  const seen = new Set<string>()
+  const out: ModuleParameterPayloadMetadata[] = []
+  for (const payload of payloads) {
+    const payloadRef = payload.payloadRef.trim()
+    if (payloadRef.length === 0) {
+      throw new Error(`payloadRef for "${ownKind}" must not be empty`)
+    }
+    if (seen.has(payloadRef)) {
+      throw new Error(`duplicate payloadRef "${payloadRef}" on "${ownKind}"`)
+    }
+    const description = payload.description.trim()
+    if (description.length === 0) {
+      throw new Error(`payloadRef "${payloadRef}" on "${ownKind}" must include description`)
+    }
+    const requiredForActions = normalizePayloadActionNames(payload.requiredForActions ?? [], ownKind, payloadRef)
+    seen.add(payloadRef)
+    out.push({
+      payloadRef,
+      description,
+      ...(requiredForActions.length === 0 ? {} : { requiredForActions }),
+    })
+  }
+  return out
+}
+
+function normalizePayloadActionNames(
+  actionNames: readonly string[],
+  ownKind: string,
+  payloadRef: string,
+): readonly string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const actionName of actionNames) {
+    const normalized = actionName.trim()
+    if (normalized.length === 0) {
+      throw new Error(`payloadRef "${payloadRef}" on "${ownKind}" must not include empty action name`)
+    }
+    if (seen.has(normalized)) {
+      throw new Error(`duplicate payload action "${normalized}" for "${payloadRef}" on "${ownKind}"`)
+    }
+    seen.add(normalized)
+    out.push(normalized)
+  }
+  return out
 }
 
 /** 规范化父模块声明，禁止空值和自引用。 */

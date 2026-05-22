@@ -60,6 +60,7 @@ export type ModuleKindDescription = Readonly<{
   parentKind?: string | undefined
   attributes: readonly ModuleAttributeMetadata[]
   actions: readonly ModuleActionMetadata[]
+  payloads: ModuleKind['payloads']
   children: readonly string[]
 }>
 
@@ -293,6 +294,7 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
     ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
     attributes: moduleKind.attributes,
     actions: moduleKind.actions,
+    payloads: moduleKind.payloads,
     children: moduleKind.children,
   }
 }

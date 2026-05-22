@@ -23,6 +23,8 @@ export type ModuleSemanticKnowledgeModuleSummary = Readonly<{
   parentKind?: string | undefined
   attributeCount: number
   actionCount: number
+  payloadCount: number
+  payloadRefs: readonly string[]
   childKindCount: number
   children: readonly string[]
 }>
@@ -94,6 +96,8 @@ export class ModuleSemanticKnowledgeProjector {
       ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
       attributeCount: moduleKind.attributes.length,
       actionCount: moduleKind.actions.length,
+      payloadCount: moduleKind.payloads.length,
+      payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
       childKindCount: moduleKind.children.length,
       children: [...moduleKind.children],
     }))
@@ -235,8 +239,9 @@ function requiredParamNames(schema: LlmJsonSchemaObject): readonly string[] {
 
 function formatModuleLine(module: ModuleSemanticKnowledgeModuleSummary): string {
   const children = module.children.length === 0 ? '[]' : `[${module.children.join(', ')}]`
+  const payloads = module.payloadRefs.length === 0 ? '[]' : `[${module.payloadRefs.join(', ')}]`
   const parent = module.parentKind === undefined ? 'root' : `parent=${module.parentKind}`
-  return `- ${module.kind}(${module.name}; ${parent}): ${module.description}; actions=${String(module.actionCount)} attrs=${String(module.attributeCount)} children=${children}`
+  return `- ${module.kind}(${module.name}; ${parent}): ${module.description}; actions=${String(module.actionCount)} attrs=${String(module.attributeCount)} payloads=${payloads} children=${children}`
 }
 
 function formatFunctionLine(summary: ModuleSemanticKnowledgeFunctionSummary): string {

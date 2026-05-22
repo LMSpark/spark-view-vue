@@ -7,4 +7,5 @@ export type {
   ModuleInstanceQuery,
   ModuleInstanceRef,
   ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
 } from './protocol/index'

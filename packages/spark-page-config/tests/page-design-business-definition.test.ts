@@ -1,9 +1,11 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  AiHostToolLoopRunner,
   startRegistrationSession,
   toAiHostRuntimeScope,
   type AiHostBusinessRuntimeContext,
+  type AiHostTransport,
 } from '@spark-view/spark-ai/host'
 import {
   PAGE_DESIGN_MODULE_ID,
@@ -60,6 +62,26 @@ function hostContext(pageId: string): AiHostBusinessRuntimeContext {
   }
 }
 
+function businessScope(pageId: string) {
+  return {
+    businessRegistrationId: PAGE_DESIGN_MODULE_ID,
+    businessInstanceId: pageId,
+    instanceId: `${PAGE_DESIGN_MODULE_ID}:${pageId}`,
+    runtimeInstanceId: `${PAGE_DESIGN_MODULE_ID}:${pageId}`,
+  }
+}
+
+function testTurn() {
+  return {
+    turnId: 'turn-page-design-submodule',
+    seq: 1,
+    baseRevision: 0,
+    queuedAt: '2026-05-21T00:00:00.000Z',
+    startedAt: '2026-05-21T00:00:00.000Z',
+    maxParallelTurns: 1,
+  }
+}
+
 function getRecord(result: { readonly ok: boolean; readonly data?: unknown }): Record<string, unknown> {
   if (!result.ok || !isRecord(result.data)) {
     throw new Error('expected ok record')
@@ -85,6 +107,12 @@ function expectActionMetadataComplete(describeData: Record<string, unknown>): vo
     expect(action).toHaveProperty('failureModes')
     expect(action).toHaveProperty('example')
   }
+}
+
+function actionNames(describeData: Record<string, unknown>): string[] {
+  const actions = describeData['actions']
+  if (!Array.isArray(actions)) throw new Error('actions not array')
+  return actions.map((action) => isRecord(action) && typeof action['name'] === 'string' ? action['name'] : '')
 }
 
 describe('pageDesign host business registration', () => {
@@ -164,6 +192,22 @@ describe('pageDesign host business registration', () => {
       expect(description['parentKind']).toBe(PAGE_DESIGN_MODULE_ID)
       expectActionMetadataComplete(description)
     }
+
+    const payloadDescription = getRecord(await registration.runtime.executeTool('describeKind', {
+      kind: 'payload-catalog',
+    }, context))
+    expect(actionNames(payloadDescription)).toEqual(['queryPayloads', 'guidePayload'])
+
+    const nodeTreeDescription = getRecord(await registration.runtime.executeTool('describeKind', {
+      kind: 'node-tree',
+    }, context))
+    expect(nodeTreeDescription['payloads']).toEqual([
+      {
+        payloadRef: 'spark.component',
+        description: 'SparkNode 组件 props 参数目录；构造 node-tree 写入动作的 node.props 前必须查询。',
+        requiredForActions: ['addNode', 'addNodes', 'replaceNode', 'replaceNodes', 'setProps', 'setPropsBatch'],
+      },
+    ])
   })
 
   it('executes lifecycle/text-model/payload-catalog/node-tree/dataset through protocol tools', async () => {
@@ -204,9 +248,42 @@ describe('pageDesign host business registration', () => {
     const payloads = await registration.runtime.executeTool('invokeAction', {
       path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
       actionName: 'queryPayloads',
-      args: { category: 'container', limit: 1 },
+      args: { key: 'r-button', limit: 1 },
     }, context)
-    expect(resultItemCount(getRecord(payloads))).toBeLessThanOrEqual(1)
+    const payloadCatalog = getRecord(payloads)
+    expect(payloadCatalog).toMatchObject({
+      moduleKind: 'node-tree',
+      payloadRef: 'spark.component',
+    })
+    expect(resultItemCount(payloadCatalog)).toBe(1)
+    const payloadItems = payloadCatalog['items']
+    if (!Array.isArray(payloadItems) || !isRecord(payloadItems[0])) throw new Error('expected payload item')
+    expect(payloadItems[0]['key']).toBe('r-button')
+    expect(payloadItems[0]['moduleKind']).toBe('node-tree')
+    expect(payloadItems[0]['payloadRef']).toBe('spark.component')
+
+    const payloadGuide = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
+      actionName: 'guidePayload',
+      args: { key: 'r-button' },
+    }, context)
+    const payloadGuideData = getRecord(payloadGuide)
+    expect(payloadGuideData).toMatchObject({
+      moduleKind: 'node-tree',
+      payloadRef: 'spark.component',
+    })
+    const guidedPayload = payloadGuideData['payload']
+    if (!isRecord(guidedPayload)) throw new Error('expected payload guide record')
+    expect(guidedPayload['key']).toBe('r-button')
+    expect(guidedPayload['moduleKind']).toBe('node-tree')
+    expect(guidedPayload['payloadRef']).toBe('spark.component')
+    const paramsSchema = guidedPayload['paramsSchema']
+    if (!isRecord(paramsSchema) || !isRecord(paramsSchema['properties'])) {
+      throw new Error('expected payload paramsSchema properties')
+    }
+    expect(paramsSchema['type']).toBe('object')
+    expect(paramsSchema['properties']).toHaveProperty('action')
+    expect(paramsSchema['properties']).toHaveProperty('label')
 
     const countNodes = await registration.runtime.executeTool('invokeAction', {
       path: '/pageDesign[page-designer]/node-tree[page-designer]',
@@ -221,6 +298,209 @@ describe('pageDesign host business registration', () => {
       args: {},
     }, context)
     expect(listTables).toMatchObject({ ok: true, data: [] })
+  })
+
+  it('AI tool loop can discover child modules and invoke payload guides through nested paths', async () => {
+    const pageId = 'page-designer'
+    const { host, reads } = createHost()
+    const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
+    const scope = businessScope(pageId)
+    const context = hostContext(pageId)
+    await startRegistrationSession(registration, context)
+
+    const statuses: string[] = []
+    const roundToolNames: string[][] = []
+    let streamRound = 0
+    const transport: AiHostTransport = {
+      streamTurn: (input) => {
+        roundToolNames.push(input.tools.map((tool) => tool.function.name))
+        streamRound += 1
+        if (streamRound === 1) {
+          return Promise.resolve({
+            text: '',
+            toolCalls: [
+              {
+                id: 'discover-root',
+                type: 'function',
+                function: {
+                  name: 'listChildren',
+                  arguments: JSON.stringify({ path: '/' }),
+                },
+              },
+              {
+                id: 'find-root',
+                type: 'function',
+                function: {
+                  name: 'findInstance',
+                  arguments: JSON.stringify({ path: '/', childKind: PAGE_DESIGN_MODULE_ID, query: {} }),
+                },
+              },
+            ],
+          })
+        }
+        if (streamRound === 2) {
+          return Promise.resolve({
+            text: '',
+            toolCalls: [
+              {
+                id: 'discover-child',
+                type: 'function',
+                function: {
+                  name: 'listChildren',
+                  arguments: JSON.stringify({ path: `/pageDesign[${pageId}]` }),
+                },
+              },
+              {
+                id: 'find-child',
+                type: 'function',
+                function: {
+                  name: 'findInstance',
+                  arguments: JSON.stringify({
+                    path: `/pageDesign[${pageId}]`,
+                    childKind: 'text-model',
+                    query: {},
+                  }),
+                },
+              },
+              {
+                id: 'find-payload-catalog',
+                type: 'function',
+                function: {
+                  name: 'findInstance',
+                  arguments: JSON.stringify({
+                    path: `/pageDesign[${pageId}]`,
+                    childKind: 'payload-catalog',
+                    query: {},
+                  }),
+                },
+              },
+              {
+                id: 'describe-child',
+                type: 'function',
+                function: {
+                  name: 'describeKind',
+                  arguments: JSON.stringify({ kind: 'text-model' }),
+                },
+              },
+              {
+                id: 'describe-payload-catalog',
+                type: 'function',
+                function: {
+                  name: 'describeKind',
+                  arguments: JSON.stringify({ kind: 'payload-catalog' }),
+                },
+              },
+            ],
+          })
+        }
+        if (streamRound === 3) {
+          return Promise.resolve({
+            text: '',
+            toolCalls: [
+              {
+                id: 'query-payloads',
+                type: 'function',
+                function: {
+                  name: 'invokeAction',
+                  arguments: JSON.stringify({
+                    path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
+                    actionName: 'queryPayloads',
+                    args: { key: 'r-button', limit: 1 },
+                  }),
+                },
+              },
+              {
+                id: 'guide-payload',
+                type: 'function',
+                function: {
+                  name: 'invokeAction',
+                  arguments: JSON.stringify({
+                    path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
+                    actionName: 'guidePayload',
+                    args: { key: 'r-button' },
+                  }),
+                },
+              },
+              {
+                id: 'invoke-child',
+                type: 'function',
+                function: {
+                  name: 'invokeAction',
+                  arguments: JSON.stringify({
+                    path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
+                    actionName: 'writeScript',
+                    args: { content: 'export default { aiSubmoduleAddressed: true }' },
+                  }),
+                },
+              },
+            ],
+          })
+        }
+        return Promise.resolve({ text: 'done', toolCalls: [] })
+      },
+      appendMessages: () => Promise.resolve(),
+    }
+    const runner = new AiHostToolLoopRunner({
+      registry: { get: () => registration, list: () => [registration] },
+      transport,
+      maxToolRounds: 4,
+    })
+
+    await runner.runToolLoop({
+      registration,
+      scope,
+      request: { historyMsgs: [], onFcCall: (record) => statuses.push(record.status) },
+      turn: testTurn(),
+      clearSelected: () => undefined,
+    })
+
+    expect(roundToolNames).toHaveLength(4)
+    expect(roundToolNames[0]).toContain('invokeAction')
+    expect(statuses).toEqual([
+      'success',
+      'success',
+      'success',
+      'success',
+      'success',
+      'success',
+      'success',
+      'success',
+      'success',
+      'success',
+    ])
+    expect(reads().script).toBe('export default { aiSubmoduleAddressed: true }')
+
+    const history = registration.sessionStore?.getSessionHistory(context) ?? []
+    const functionCalls = history.filter((entry) => entry.kind === 'functionCall')
+    expect(functionCalls).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        toolName: 'invokeAction',
+        status: 'completed',
+        args: {
+          path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
+          actionName: 'queryPayloads',
+          args: { key: 'r-button', limit: 1 },
+        },
+      }),
+      expect.objectContaining({
+        toolName: 'invokeAction',
+        status: 'completed',
+        args: {
+          path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
+          actionName: 'guidePayload',
+          args: { key: 'r-button' },
+        },
+      }),
+    ]))
+    expect(functionCalls.at(-1)).toMatchObject({
+      kind: 'functionCall',
+      toolName: 'invokeAction',
+      status: 'completed',
+      args: {
+        path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
+        actionName: 'writeScript',
+      },
+    })
   })
 
   it('fails fast when live adapter is missing', async () => {

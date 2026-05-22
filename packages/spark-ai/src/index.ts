@@ -71,6 +71,7 @@ export type {
   ModuleInstanceQuery,
   ModuleInstanceRef,
   ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
 } from './module-semantic/protocol-instance-api'
 
 export type {
@@ -103,6 +104,17 @@ export {
   ModuleKindConflictError,
   ModuleKindNotFoundError,
 } from './module-semantic/internal/module-kind-registry'
+
+export {
+  ModuleParameterPayloadRegistry,
+} from './module-semantic/payloads/module-parameter-payload-registry'
+
+export type {
+  ModuleParameterPayloadGuide,
+  ModuleParameterPayloadProvider,
+  ModuleParameterPayloadQueryFilter,
+  ModuleParameterPayloadSummary,
+} from './module-semantic/payloads/module-parameter-payload-registry'
 
 export type {
   ProtocolToolArgs,

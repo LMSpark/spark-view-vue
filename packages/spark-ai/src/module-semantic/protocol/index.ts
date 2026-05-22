@@ -18,6 +18,7 @@ export type {
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
   ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
 } from './module-kind'
 
 export {

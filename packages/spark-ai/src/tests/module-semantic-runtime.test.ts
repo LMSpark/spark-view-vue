@@ -16,10 +16,12 @@ import {
   ModuleKind,
   ModuleOperationResult,
   ModulePath,
+  ModuleParameterPayloadRegistry,
   ModuleSemanticRuntime,
   PROTOCOL_TOOL_NAMES,
   type ModuleInstanceRef,
   type ModuleActionMetadata,
+  type ModuleParameterPayloadProvider,
   type ModuleSemanticKnowledgeSnapshot,
   type ModulePathContext,
 } from '../module-semantic'
@@ -83,6 +85,13 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
         failureModes: [
           { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
         ],
+      },
+    ],
+    payloads: [
+      {
+        payloadRef: 'spark.component',
+        description: 'SparkNode props 参数目录',
+        requiredForActions: ['getNode'],
       },
     ],
     children: [],
@@ -328,13 +337,14 @@ describe('ModuleSemanticRuntime 直接调用入口', () => {
     expect(result.data).toBe('root-1')
   })
 
-  it('describeKind 直接调用返回 attributes / actions / children', () => {
+  it('describeKind 直接调用返回 attributes / actions / payloads / children', () => {
     const runtime = createRuntime()
     const result = runtime.describeKind('node-tree')
     expect(result.ok).toBe(true)
     expect(result.data?.kind).toBe('node-tree')
     expect(result.data?.attributes.map((attr) => attr.name)).toEqual(['rootId'])
     expect(result.data?.actions.map((action) => action.name)).toEqual(['getNode'])
+    expect(result.data?.payloads.map((payload) => payload.payloadRef)).toEqual(['spark.component'])
   })
 })
 
@@ -355,6 +365,8 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         description: '页面节点树',
         attributeCount: 1,
         actionCount: 1,
+        payloadCount: 1,
+        payloadRefs: ['spark.component'],
         childKindCount: 0,
         children: [],
       },
@@ -377,6 +389,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
     expect(snapshot.promptSnapshot).toContain('不假设、不猜测')
     expect(snapshot.promptSnapshot).toContain('listChildren("/") -> findInstance')
     expect(snapshot.promptSnapshot).toContain('node-tree.getNode')
+    expect(snapshot.promptSnapshot).toContain('payloads=[spark.component]')
   })
 
   it('支持按 kind / keyword 查询函数摘要', () => {
@@ -413,6 +426,52 @@ describe('ModuleSemanticRuntime 知识投影', () => {
     const missing = runtime.guideKnowledgeFunction({ action: 'node-tree.missing' })
     expect(missing.ok).toBe(false)
     expect(missing.checks?.[0]?.code).toBe('FUNCTION_NOT_FOUND')
+  })
+})
+
+describe('ModuleParameterPayloadRegistry', () => {
+  it('按 moduleKind + payloadRef 注册参数 provider，重复注册 fail-fast', () => {
+    const registry = new ModuleParameterPayloadRegistry()
+    const provider: ModuleParameterPayloadProvider = {
+      moduleKind: 'node-tree',
+      payloadRef: 'spark.component',
+      description: '组件参数',
+      queryPayloads: () => [
+        {
+          moduleKind: 'node-tree',
+          payloadRef: 'spark.component',
+          key: 'r-button',
+          description: '按钮',
+        },
+      ],
+      guidePayload: (key: string) => key === 'r-button'
+        ? {
+            moduleKind: 'node-tree',
+            payloadRef: 'spark.component',
+            key,
+            description: '按钮参数',
+            paramsSchema: {
+              type: 'object',
+              properties: {
+                label: { type: 'string' },
+              },
+              additionalProperties: true,
+            },
+          }
+        : null,
+    }
+
+    registry.register(provider)
+
+    expect(registry.queryPayloads({ moduleKind: 'node-tree', payloadRef: 'spark.component' })).toEqual([
+      expect.objectContaining({ key: 'r-button' }),
+    ])
+    expect(registry.guidePayload('node-tree', 'spark.component', 'r-button')).toMatchObject({
+      key: 'r-button',
+      paramsSchema: { type: 'object' },
+    })
+    expect(() => registry.register(provider)).toThrow('Duplicate module parameter payload provider')
+    expect(() => registry.queryPayloads({ moduleKind: 'dataset' })).toThrow('No parameter payload provider registered for moduleKind: dataset')
   })
 })
 
@@ -464,6 +523,16 @@ describe('ModuleKind 默认协议行为', () => {
       description: 'invalid',
       children: ['child', ' child '],
     })).toThrow('duplicate child kind "child" on "invalid-child"')
+
+    expect(() => new ModuleKind({
+      kind: 'invalid-payload',
+      name: 'Invalid Payload',
+      description: 'invalid',
+      payloads: [
+        { payloadRef: 'spark.component', description: '组件参数' },
+        { payloadRef: ' spark.component ', description: '重复组件参数' },
+      ],
+    })).toThrow('duplicate payloadRef "spark.component" on "invalid-payload"')
   })
 
   it('基类直接读写 runner 函数对象属性', async () => {

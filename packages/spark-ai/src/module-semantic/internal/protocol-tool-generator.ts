@@ -308,8 +308,11 @@ function formatKindLine(kind: ModuleKind): string {
   const children = kind.children.length === 0
     ? '[]'
     : `[${kind.children.join(', ')}]`
+  const payloads = kind.payloads.length === 0
+    ? '[]'
+    : `[${kind.payloads.map((payload) => payload.payloadRef).join(', ')}]`
   const parent = kind.parentKind === undefined ? 'root' : `parent=${kind.parentKind}`
-  return `- ${kind.kind}(${kind.name}; ${parent}): attrs=${attrs} actions=${actions} children=${children}`
+  return `- ${kind.kind}(${kind.name}; ${parent}): attrs=${attrs} actions=${actions} payloads=${payloads} children=${children}`
 }
 
 /** 格式化动作标签：name 或 name(rules=N,fails=N) */

@@ -67,6 +67,7 @@ export class ProtocolResultProjector {
       ...(result.data.parentKind === undefined ? {} : { parentKind: result.data.parentKind }),
       attributes: result.data.attributes.map((attr) => describeAttributeToJson(attr)),
       actions: result.data.actions.map((action) => describeActionToJson(action)),
+      payloads: result.data.payloads.map((payload) => describePayloadToJson(payload)),
       children: [...result.data.children],
     }, result.checks, result.state)
   }
@@ -101,6 +102,15 @@ function describeActionToJson(action: ModuleKindDescription['actions'][number]):
       ? []
       : action.failureModes.map((mode) => ({ code: mode.code, when: mode.when, fix: mode.fix })),
     example: action.example === undefined ? null : action.example,
+  }
+}
+
+/** 单个参数荷载元数据 → JSON */
+function describePayloadToJson(payload: ModuleKindDescription['payloads'][number]): Record<string, LlmJsonValue> {
+  return {
+    payloadRef: payload.payloadRef,
+    description: payload.description,
+    requiredForActions: payload.requiredForActions === undefined ? [] : [...payload.requiredForActions],
   }
 }
 

@@ -32,10 +32,14 @@ import { PageDesignService } from '../design'
 import { PageDesignDatasetModuleKind, DATA_FIRST_POLICY_PROMPT, DATA_FIRST_SEQUENCE_PROMPT } from './dataset-tool-catalog'
 import { PageDesignLifecycleModuleKind, PAGE_DESIGN_FLOW_PROMPT } from './lifecycle-tool-catalog'
 import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
-import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
+import { PageDesignPayloadCatalogModuleKind, createPageDesignPayloadRegistry } from './payload-catalog-tool-catalog'
 import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
 import { createLeaveRequestBusinessRegistration } from './leave-request'
-import { PAGE_DESIGN_CHILD_MODULES, PAGE_DESIGN_ROOT_KIND } from './page-design-kind-ids'
+import {
+  PAGE_DESIGN_CHILD_MODULES,
+  PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
+  PAGE_DESIGN_ROOT_KIND,
+} from './page-design-kind-ids'
 
 export const PAGE_DESIGN_MODULE_ID = PAGE_DESIGN_ROOT_KIND
 
@@ -75,6 +79,7 @@ export function createPageDesignBusinessRegistration(
     }),
   })
   const runtime = new ModuleSemanticRuntime()
+  const payloadRegistry = createPageDesignPayloadRegistry()
 
   runtime.registerKind(new PageDesignRootModuleKind())
   runtime.registerKind(new PageDesignLifecycleModuleKind({
@@ -89,11 +94,19 @@ export function createPageDesignBusinessRegistration(
   }))
   runtime.registerKind(new PageDesignPayloadCatalogModuleKind({
     parentKind: PAGE_DESIGN_ROOT_KIND,
+    registry: payloadRegistry,
   }))
   runtime.registerKind(new PageDesignNodeTreeModuleKind({
     service,
     contextFactory: toServiceContext,
     parentKind: PAGE_DESIGN_ROOT_KIND,
+    payloads: [
+      {
+        payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
+        description: 'SparkNode 组件 props 参数目录；构造 node-tree 写入动作的 node.props 前必须查询。',
+        requiredForActions: ['addNode', 'addNodes', 'replaceNode', 'replaceNodes', 'setProps', 'setPropsBatch'],
+      },
+    ],
   }))
   runtime.registerKind(new PageDesignDatasetModuleKind({
     service,
