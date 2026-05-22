@@ -367,6 +367,18 @@ export type SparkNodeTreeMethodKey =
  * 3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。
  * 4. 属性写入：setProps / setPropsBatch。
  *
+ * @moduleAbility pageDesign.nodeTree
+ * @moduleKind node-tree
+ * @moduleName Page Design Node Tree
+ * @moduleDescription 当前页面 SparkNodeTree/rule.json 结构读写能力。
+ * @moduleEntity pageNode 页面节点
+ * @moduleScope 当前 SparkNodeTree 实例代表一个页面 rule.json 根树。
+ * @moduleAttackSurface rule-tree-structure high 节点增删改移会改变 rule.json 渲染树、组件类型、props、数据绑定和事件入口。
+ * @moduleAttackSurface handler-reference medium collectHandlerNames 会暴露页面事件处理入口名称，后续写入必须避免伪造不可用 handler。
+ * @moduleTrustBoundary 调用方负责把当前页面 rule.json live model 映射为 SparkNodeTree 实例；本类只暴露节点树读写能力。
+ * @moduleGuard 写入节点前必须确认目标节点、父节点、组件 type 和 payload 合法。
+ * @moduleMutation rule.json read-write SparkNodeTree 公开写方法直接修改当前页面 rule.json live model。
+ *
  * 设计目标：
  * 1. 构造时绑定一个当前组件实例，后续所有方法都围绕该组件及其子树工作。
  * 2. 查询类方法不修改当前树状态。
@@ -610,6 +622,9 @@ export class SparkNodeTree {
 
   /**
    * 按 componentId 查找节点；未命中时返回 null。
+   *
+   * @moduleAction getNode
+   * @moduleMutation rule.json read 查询当前页面节点树中的单个节点。
    */
   getNode(params: SparkNodeTreeLookupParams): SparkNode | null {
     const next = normalizeLookupParams(params, 'getNode')
@@ -622,6 +637,9 @@ export class SparkNodeTree {
 
   /**
    * 获取节点在树中的完整位置信息；未命中时返回 null。
+   *
+   * @moduleAction getLocation
+   * @moduleMutation rule.json read 查询当前页面节点树中的节点位置。
    */
   getLocation(params: SparkNodeTreeLookupParams): SparkNodeLocation | null {
     const next = normalizeLookupParams(params, 'getLocation')
@@ -643,6 +661,9 @@ export class SparkNodeTree {
 
   /**
    * 判断指定 componentId 是否存在。
+   *
+   * @moduleAction hasNode
+   * @moduleMutation rule.json read 查询当前页面节点是否存在。
    */
   hasNode(params: SparkNodeTreeLookupParams): boolean {
     return this.getNode(normalizeLookupParams(params, 'hasNode')) !== null
@@ -650,6 +671,9 @@ export class SparkNodeTree {
 
   /**
     * 获取目标节点的直接父节点；当前绑定 root 或未命中时返回 null。
+   *
+   * @moduleAction getParent
+   * @moduleMutation rule.json read 查询当前页面节点父级。
    */
   getParent(params: SparkNodeTreeLookupParams): SparkNode | null {
     return this.getLocation(normalizeLookupParams(params, 'getParent'))?.parent ?? null
@@ -659,6 +683,9 @@ export class SparkNodeTree {
    * 读取当前组件实例或指定子组件的直接 children。
    *
    * 返回的是 children 的浅拷贝，避免调用方直接改写实例内部数组引用。
+   *
+   * @moduleAction listChildren
+   * @moduleMutation rule.json read 查询当前页面节点子级。
    */
   listChildren(params: SparkNodeTreeChildrenParams = {}): SparkNodeChildren {
     const next = normalizeChildrenParams(params, 'listChildren')
@@ -668,6 +695,9 @@ export class SparkNodeTree {
 
   /**
    * 统计当前组件实例子树中的结构节点数量。
+   *
+   * @moduleAction countNodes
+   * @moduleMutation rule.json read 统计当前页面节点数量。
    */
   countNodes(): number {
     return countRecursive(this._root)
@@ -677,6 +707,9 @@ export class SparkNodeTree {
   * 收集当前组件实例子树中出现过的全部唯一 DataView 定位键。
    *
   * 包括容器、展示、动作、选项等 props.dataViewKey / props.optionDataViewKey。
+   *
+   * @moduleAction collectDataViewKeys
+   * @moduleMutation rule.json read 提取当前页面节点树中的 DataView 绑定键。
    */
   collectDataViewKeys(): Set<string> {
     const keys = new Set<string>()
@@ -686,6 +719,10 @@ export class SparkNodeTree {
 
   /**
    * 收集当前组件实例子树中 props.on 里声明过的全部唯一处理器名。
+   *
+   * @moduleAction collectHandlerNames
+   * @moduleAttackSurface handler-reference medium 读取 props.on 中的处理器名会暴露页面事件入口。
+   * @moduleMutation rule.json read 提取当前页面节点树中的事件处理器引用。
    */
   collectHandlerNames(): Set<string> {
     const handlers = new Set<string>()
@@ -700,6 +737,9 @@ export class SparkNodeTree {
    *
    * 典型用法：当调用方知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，
    * 调用此方法可一步获取可直接用于 getNode / setProps / removeNode 的真实 id。
+   *
+   * @moduleAction findByType
+   * @moduleMutation rule.json read 按组件类型查询当前页面节点树。
    */
   findByType(params: SparkNodeFindByTypeParams): SparkNodeFindByTypeResult {
     const next = normalizeFindByTypeParams(params)
@@ -715,6 +755,11 @@ export class SparkNodeTree {
    * 向当前组件实例或指定子组件的 children 中添加一个新节点。
    *
    * 这是“先构造 SparkNode，再放入 SparkNodeTree”这条链路的最直接入口。
+   *
+   * @moduleAction addNode
+   * @moduleAttackSurface rule-tree-structure high 新增节点会改变页面渲染树和组件能力入口。
+   * @moduleGuard 必须先确认 parentComponentId、插入位置和 node payload 合法。
+   * @moduleMutation rule.json write 添加单个页面节点。
    */
   addNode(params: SparkNodeTreeAddParams): SparkNodeAddResult {
     const next = normalizeAddParams(params)
@@ -729,6 +774,11 @@ export class SparkNodeTree {
    * - nodes 按传入顺序依次插入
    * - index 省略时整体追加到末尾
    * - index 提供时，从该位置开始连续插入
+   *
+   * @moduleAction addNodes
+   * @moduleAttackSurface rule-tree-structure high 批量新增节点会改变页面渲染树和组件能力入口。
+   * @moduleGuard 必须先确认每个 node payload 合法，并确认批量插入顺序。
+   * @moduleMutation rule.json write 批量添加页面节点。
    */
   addNodes(params: SparkNodeTreeAddNodesParams): SparkNodeAddNodesResult {
     const next = normalizeAddNodesParams(params)
@@ -760,6 +810,11 @@ export class SparkNodeTree {
    * 把已有节点移动到当前组件实例或指定子组件的 children 中。
    *
    * 返回值只包含移动摘要，不回传完整节点子树，避免结果膨胀。
+   *
+   * @moduleAction moveNode
+   * @moduleAttackSurface rule-tree-structure high 移动节点会改变页面布局、容器归属和数据绑定上下文。
+   * @moduleGuard 必须确认 componentId、目标父级和目标 index，避免循环移动或破坏容器结构。
+   * @moduleMutation rule.json write 移动页面节点。
    */
   moveNode(params: SparkNodeTreeMoveParams): SparkNodeMoveResult {
     const next = normalizeMoveParams(params)
@@ -775,6 +830,11 @@ export class SparkNodeTree {
    * - merge === false 时，直接替换整个 props 对象
    *
    * 这类方法承载的是“修改属性值”能力，而不是组件选择能力。
+   *
+   * @moduleAction setProps
+   * @moduleAttackSurface rule-props high props 写入会改变组件数据绑定、事件绑定、显示状态和交互行为。
+   * @moduleGuard 必须先通过 payload-catalog guidePayload 确认组件 props schema。
+   * @moduleMutation rule.json write 修改单个页面节点 props。
    */
   setProps(params: SparkNodeTreeSetPropsParams): SparkNodeSetPropsResult {
     const next = normalizeSetPropsParams(params)
@@ -785,6 +845,11 @@ export class SparkNodeTree {
 
   /**
    * 批量设置多个节点的 props。
+   *
+   * @moduleAction setPropsBatch
+   * @moduleAttackSurface rule-props high 批量 props 写入会同时改变多个组件的数据绑定、事件绑定和交互行为。
+   * @moduleGuard 必须逐项确认 componentId 与 props schema，避免跨节点误写。
+   * @moduleMutation rule.json write 批量修改页面节点 props。
    */
   setPropsBatch(params: SparkNodeTreeSetPropsBatchParams): SparkNodeSetPropsBatchResult {
     const next = normalizeSetPropsBatchParams(params)
@@ -805,6 +870,11 @@ export class SparkNodeTree {
    * 用一个新的 SparkNode 完整替换目标节点。
    *
    * 这类方法承载的是“修改节点结构”能力：节点 type、props、children 都可以整体替换。
+   *
+   * @moduleAction replaceNode
+   * @moduleAttackSurface rule-tree-structure high 替换节点会改变组件类型、子树、props 和事件入口。
+   * @moduleGuard 必须确认目标 componentId 与新节点 payload，避免误替换容器或页面根。
+   * @moduleMutation rule.json write 替换单个页面节点。
    */
   replaceNode(params: SparkNodeTreeReplaceParams): SparkNodeReplaceResult {
     const next = normalizeReplaceParams(params)
@@ -815,6 +885,11 @@ export class SparkNodeTree {
 
   /**
    * 批量替换多个节点。
+   *
+   * @moduleAction replaceNodes
+   * @moduleAttackSurface rule-tree-structure high 批量替换节点会同时改变多个组件子树和数据绑定入口。
+   * @moduleGuard 必须逐项确认目标 componentId 与新节点 payload。
+   * @moduleMutation rule.json write 批量替换页面节点。
    */
   replaceNodes(params: SparkNodeTreeReplaceNodesParams): SparkNodeReplaceNodesResult {
     const next = normalizeReplaceNodesParams(params)
@@ -835,6 +910,11 @@ export class SparkNodeTree {
    * 删除当前组件实例子树内的指定节点。
    *
    * 当前绑定的 root 自身不允许删除；调用方如果要整体替换当前组件实例，应直接创建新的实例或重建 root。
+   *
+   * @moduleAction removeNode
+   * @moduleAttackSurface rule-tree-structure high 删除节点会移除组件、数据绑定和事件入口。
+   * @moduleGuard 必须确认 componentId、父级位置和删除影响，不能删除当前绑定 root。
+   * @moduleMutation rule.json write 删除单个页面节点。
    */
   removeNode(params: SparkNodeTreeRemoveParams): SparkNodeRemoveResult {
     const next = normalizeRemoveParams(params)
@@ -845,6 +925,11 @@ export class SparkNodeTree {
 
   /**
    * 批量删除多个节点。
+   *
+   * @moduleAction removeNodes
+   * @moduleAttackSurface rule-tree-structure high 批量删除节点会同时移除多个组件、数据绑定和事件入口。
+   * @moduleGuard 必须确认每个 componentId 的父级位置和删除影响，不能删除当前绑定 root。
+   * @moduleMutation rule.json write 批量删除页面节点。
    */
   removeNodes(params: SparkNodeTreeRemoveNodesParams): SparkNodeRemoveNodesResult {
     const next = normalizeRemoveNodesParams(params)

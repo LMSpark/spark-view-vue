@@ -125,6 +125,8 @@ VCM 生成的代码只负责描述元数据和装配标准 `ModuleKind`：
 - 生成 `ModuleKindOptions`，并用 `satisfies ModuleKindOptions` 校验。
 - 提取构造函数和注册工厂的依赖边界，生成 `createXxxModuleKind(delegates)` factory。
 - 按 `@moduleRunner`、`@moduleListDelegate`、`@moduleFindDelegate` 标识提取 runner/list/find 委托绑定。
+- 只从领域能力 class 源码按 `@moduleAbility`、`@moduleAttackSurface`、`@moduleTrustBoundary`、`@moduleGuard`、`@moduleMutation` 标识提取能力语义和攻击面元数据，例如 `SparkNodeTree`、`DataSetCrudTool`。
+- 注册层只作为协议装配源，不声明实体、动作语义或攻击面。
 - 不生成业务 runner 函数体，不保存 live state，不新增 runtime 注册入口。
 
 业务代码只提供：
