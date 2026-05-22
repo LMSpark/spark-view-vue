@@ -1,13 +1,30 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  MODULE-SEMANTIC · 协议工具参数解析器                                          │
+ * │  Protocol Tool Arguments Parser                                                │
+ * │                                                                              │
+ * │  本模块负责将 LLM 传入的原始 JSON 参数（ProtocolToolArgs）解析为类型安全的字段。 │
+ * │  每个 require* 方法在校验失败时抛出 ProtocolToolArgsError，                     │
+ * │  由 ProtocolToolRouter 统一捕获并转为 INVALID_TOOL_ARGS。                       │
+ * │                                                                              │
+ * │  调用方：ProtocolToolRouter（所有路由方法共用同一个 argsParser 实例）            │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ */
+
 import type { LlmJsonValue } from '../../schema'
 import { PROTOCOL_TOOL_NAMES, type ProtocolToolName } from '../internal/protocol-tool-generator'
 
+/* -------------------------------------------------------------------------------
+ * 一、公共类型
+ * ----------------------------------------------------------------------------- */
+
 /**
- * LLM 传入的原始 tool 参数（JSON 对象）。
- * 运行时不信任结构，由 ProtocolToolArgsParser 按工具语义解析。
+ * LLM 传入的原始工具参数（JSON 对象）。
+ * 运行时不信任其结构，由 ProtocolToolArgsParser 按工具语义逐字段解析和校验。
  */
 export type ProtocolToolArgs = Readonly<Record<string, LlmJsonValue>>
 
-/** 工具参数解析错误（由 ProtocolToolRouter 统一转为 OperationResult）。 */
+/** 参数解析错误（由 ProtocolToolRouter 统一转为 INVALID_TOOL_ARGS） */
 export class ProtocolToolArgsError extends Error {
   public constructor(message: string) {
     super(message)
@@ -15,12 +32,18 @@ export class ProtocolToolArgsError extends Error {
   }
 }
 
+/* -------------------------------------------------------------------------------
+ * 二、ProtocolToolArgsParser
+ * ----------------------------------------------------------------------------- */
+
 export class ProtocolToolArgsParser {
+  /** 类型守卫：判定 toolName 是否为已知的 6 个协议工具之一 */
   public isProtocolToolName(name: string): name is ProtocolToolName {
     const known: readonly ProtocolToolName[] = Object.values(PROTOCOL_TOOL_NAMES)
     return known.some((candidate) => candidate === name)
   }
 
+  /** 提取必填字符串参数（缺失或非字符串或空串抛错） */
   public requireString(args: ProtocolToolArgs, key: string): string {
     const value = args[key]
     if (typeof value !== 'string' || value.length === 0) {
@@ -29,6 +52,7 @@ export class ProtocolToolArgsParser {
     return value
   }
 
+  /** 提取可选字符串参数（null/undefined/空串 → undefined，非字符串抛错） */
   public optionalString(args: ProtocolToolArgs, key: string): string | undefined {
     if (!(key in args)) return undefined
     const value = args[key]
@@ -37,12 +61,14 @@ export class ProtocolToolArgsParser {
     return value.length === 0 ? undefined : value
   }
 
+  /** 提取必填对象参数（非纯对象抛错） */
   public requireObject(args: ProtocolToolArgs, key: string): Readonly<Record<string, LlmJsonValue>> {
     const value = args[key]
     if (!isJsonObject(value)) throw new ProtocolToolArgsError(`参数 "${key}" 缺失或不是 JSON 对象`)
     return value
   }
 
+  /** 提取必填任意值参数（key 不存在或值为 undefined 抛错） */
   public requireValue(args: ProtocolToolArgs, key: string): LlmJsonValue {
     if (!(key in args)) throw new ProtocolToolArgsError(`参数 "${key}" 缺失`)
     const value = args[key]
@@ -51,6 +77,11 @@ export class ProtocolToolArgsParser {
   }
 }
 
+/* -------------------------------------------------------------------------------
+ * 三、内部类型守卫
+ * ----------------------------------------------------------------------------- */
+
+/** 判定 LlmJsonValue 是否为纯对象（非 null、非数组） */
 function isJsonObject(value: LlmJsonValue | undefined): value is Readonly<Record<string, LlmJsonValue>> {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }

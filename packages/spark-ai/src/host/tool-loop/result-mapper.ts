@@ -1,3 +1,23 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  AI HOST · 操作结果映射器                                                     │
+ * │  Operation Result → Function Call Result Mapper                              │
+ * │                                                                              │
+ * │  本模块负责将 module-semantic 层的 ModuleOperationResult 转换为                │
+ * │  Host 层的 AiHostFunctionCallResult。两条链路的错误/成功结构不同，             │
+ * │  需要做语义投影。                                                             │
+ * │                                                                              │
+ * │  转换规则：                                                                   │
+ * │    ModuleOperationResult.ok=true  → AiHostFunctionCallResult.ok=true          │
+ * │      从 checks 中提取第一条 info/warn 作为 summary                             │
+ * │    ModuleOperationResult.ok=false → AiHostFunctionCallResult.ok=false         │
+ * │      从 checks 中提取第一条 error 的 code/message/hint 作为 code/msg/fix      │
+ * │      若没有 error 级 check → 回退到 PROTOCOL_FAILURE                          │
+ * │                                                                              │
+ * │  调用方：tool-call-executor.ts                                                │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ */
+
 import type { LlmJsonValue } from '../../schema'
 import type { ModuleCheckEntry, ModuleOperationResult } from '../../module-semantic'
 import type {
@@ -5,6 +25,16 @@ import type {
   AiHostFunctionCallResult,
 } from '../session/session-types'
 
+/* -------------------------------------------------------------------------------
+ * 一、主转换函数
+ * ----------------------------------------------------------------------------- */
+
+/**
+ * 将 ModuleOperationResult 投影为 AiHostFunctionCallResult。
+ *
+ * 成功路径：从 checks 提取 info/warn 级 check 作为人类可读的 summary。
+ * 失败路径：提取第一个 error 级 check 的 code/message/hint 填入 code/msg/fix。
+ */
 export function toFunctionCallResult(
   result: ModuleOperationResult<LlmJsonValue>,
 ): AiHostFunctionCallResult<unknown> {
@@ -16,8 +46,10 @@ export function toFunctionCallResult(
       ...(summary === undefined ? {} : { summary }),
     }
   }
+  // 失败路径：提取 error 级 check
   const failure = pickFirstErrorCheck(result.checks)
   if (failure === undefined) {
+    // 防御性回退：协议层返回失败但未携带 error check
     return {
       ok: false,
       code: 'PROTOCOL_FAILURE',
@@ -33,15 +65,29 @@ export function toFunctionCallResult(
   }
 }
 
+/* -------------------------------------------------------------------------------
+ * 二、失败结果提取
+ * ----------------------------------------------------------------------------- */
+
+/**
+ * 从已经确认 ok=false 的 AiHostFunctionCallResult 中提取失败载荷。
+ * 若传入成功结果则抛异常（调用方逻辑错误）。
+ */
 export function failureFromCallResult(result: AiHostFunctionCallResult<unknown>): AiHostFunctionCallFailure {
   if (result.ok) throw new Error('[AiHostToolLoopRunner] failureFromCallResult called with success result')
   return { ok: false, code: result.code, msg: result.msg, fix: result.fix }
 }
 
+/* -------------------------------------------------------------------------------
+ * 三、内部：checks 查询
+ * ----------------------------------------------------------------------------- */
+
+/** 从 checks 中提取第一条 info 或 warn 级别的消息作为成功摘要 */
 function firstInfoOrWarnSummary(checks: readonly ModuleCheckEntry[] | undefined): string | undefined {
   return checks?.find((check) => check.level === 'info' || check.level === 'warn')?.message
 }
 
+/** 从 checks 中提取第一条 error 级别 */
 function pickFirstErrorCheck(checks: readonly ModuleCheckEntry[] | undefined): ModuleCheckEntry | undefined {
   return checks?.find((check) => check.level === 'error')
 }

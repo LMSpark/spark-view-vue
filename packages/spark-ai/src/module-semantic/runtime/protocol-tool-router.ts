@@ -1,3 +1,26 @@
+/**
+ * ┌─────────────────────────────────────────────────────────────────────────────┐
+ * │  MODULE-SEMANTIC · 协议工具路由器                                             │
+ * │  Protocol Tool Router                                                         │
+ * │                                                                              │
+ * │  本模块将 LLM 发起的协议工具调用（toolName + rawArgs）路由到具体的内部组件。    │
+ * │                                                                              │
+ * │  路由表（6 对 1 映射）：                                                       │
+ * │    getAttribute  → AttributeAccessor.get(path, attrName)                     │
+ * │    setAttribute  → AttributeAccessor.set(path, attrName, value)              │
+ * │    invokeAction  → ActionInvoker.invoke(path, actionName, args)              │
+ * │    listChildren  → Navigator.listChildren(path, childKind)                   │
+ * │    findInstance  → Navigator.findInstance(path, childKind, query)            │
+ * │    describeKind  → Navigator.describeKind(kind)                              │
+ * │                                                                              │
+ * │  错误包装：                                                                   │
+ * │    · ModulePathParseError → INVALID_PATH_{code} (路径语法错误)                │
+ * │    · ProtocolToolArgsError → INVALID_TOOL_ARGS (参数缺失/类型错误)            │
+ * │                                                                              │
+ * │  调用方：ModuleSemanticRuntime.executeTool()                                  │
+ * └─────────────────────────────────────────────────────────────────────────────┘
+ */
+
 import type { LlmJsonValue } from '../../schema'
 import type { ActionInvoker } from '../internal/action-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
@@ -16,6 +39,10 @@ import {
 } from './protocol-tool-args'
 import { ProtocolResultProjector } from './protocol-result-projector'
 
+/* -------------------------------------------------------------------------------
+ * 一、ProtocolToolRouter
+ * ----------------------------------------------------------------------------- */
+
 export class ProtocolToolRouter {
   private readonly argsParser = new ProtocolToolArgsParser()
   private readonly resultProjector = new ProtocolResultProjector()
@@ -26,6 +53,18 @@ export class ProtocolToolRouter {
     private readonly navigator: Navigator,
   ) {}
 
+  /**
+   * 执行协议工具调用。
+   *
+   * 流程：
+   *   1. 校验 toolName 是否为已知的协议工具名（UNKNOWN_TOOL）
+   *   2. switch 路由到对应方法
+   *   3. 各方法内部解析 path（ModulePath.parse）、提取参数（argsParser）
+   *   4. 调用内部组件（attributes / actions / navigator）
+   *   5. 通过 resultProjector 统一投影返回值格式
+   *   6. 捕获 ModulePathParseError → INVALID_PATH_{code}
+   *   7. 捕获 ProtocolToolArgsError → INVALID_TOOL_ARGS
+   */
   public async execute(
     toolName: string,
     rawArgs: ProtocolToolArgs,
@@ -48,6 +87,7 @@ export class ProtocolToolRouter {
         case PROTOCOL_TOOL_NAMES.describeKind: return this.routeDescribeKind(rawArgs)
       }
     } catch (error) {
+      // 路径解析错误 → 友好错误码
       if (error instanceof ModulePathParseError) {
         return ModuleOperationResult.failCode(
           `INVALID_PATH_${error.code}`,
@@ -55,12 +95,15 @@ export class ProtocolToolRouter {
           '路径语法: / 或 /<kind>[<id>]/<kind>[<id>]/...',
         )
       }
+      // 参数错误 → 友好错误码
       if (error instanceof ProtocolToolArgsError) {
         return ModuleOperationResult.failCode('INVALID_TOOL_ARGS', error.message, '请按工具描述补齐参数后重试')
       }
       throw error
     }
   }
+
+  /* ── getAttribute ──────────────────────────────────────── */
 
   private async routeGetAttribute(
     args: ProtocolToolArgs,
@@ -70,6 +113,8 @@ export class ProtocolToolRouter {
     const attrName = this.argsParser.requireString(args, 'attrName')
     return this.attributes.get(path, attrName, host)
   }
+
+  /* ── setAttribute ──────────────────────────────────────── */
 
   private async routeSetAttribute(
     args: ProtocolToolArgs,
@@ -81,6 +126,8 @@ export class ProtocolToolRouter {
     return this.resultProjector.voidResult(result)
   }
 
+  /* ── invokeAction ──────────────────────────────────────── */
+
   private async routeInvokeAction(
     args: ProtocolToolArgs,
     host?: ModuleHostContext,
@@ -89,6 +136,8 @@ export class ProtocolToolRouter {
     const actionName = this.argsParser.requireString(args, 'actionName')
     return this.actions.invoke(path, actionName, this.argsParser.requireObject(args, 'args'), host)
   }
+
+  /* ── listChildren ──────────────────────────────────────── */
 
   private async routeListChildren(
     args: ProtocolToolArgs,
@@ -99,6 +148,8 @@ export class ProtocolToolRouter {
     const result = await this.navigator.listChildren(path, childKind, host)
     return this.resultProjector.instanceListResult(result)
   }
+
+  /* ── findInstance ──────────────────────────────────────── */
 
   private async routeFindInstance(
     args: ProtocolToolArgs,
@@ -114,6 +165,8 @@ export class ProtocolToolRouter {
     )
     return this.resultProjector.instanceListResult(result)
   }
+
+  /* ── describeKind ──────────────────────────────────────── */
 
   private routeDescribeKind(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
     return this.resultProjector.describeKindResult(

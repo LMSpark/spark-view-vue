@@ -157,13 +157,13 @@ class AiHostMessageSender {
     }
 
     // 启动工具循环（AI 推理 + 工具调用 + 生命周期判断）
-    await this.toolLoopRunner.runToolLoop(
-      selected.registration,
-      selected.scope,
+    await this.toolLoopRunner.runToolLoop({
+      registration: selected.registration,
+      scope: selected.scope,
       request,
       turn,
-      state.clearSelected,
-    )
+      clearSelected: state.clearSelected,
+    })
   }
 
   /**
