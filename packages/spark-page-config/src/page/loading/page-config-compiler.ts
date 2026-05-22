@@ -13,7 +13,7 @@
 import type {
   RuleConfig,
   PageDataConfig,
-} from '../model/types'
+} from './config-types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
 import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from '../model/spark-node'
 import { SparkNodeTree } from '../model/spark-node-tree'
@@ -21,9 +21,7 @@ import { SparkNodeTree } from '../model/spark-node-tree'
 // ═══ 工厂解析：模块加载时一次性探测 spark-data 暴露的 DataSet 构建入口 ═══
 
 /** PageData 对象工厂签名：接收已解析的 JSON 对象，返回 PageDataConfig。 */
-interface ObjectFactory {
-  (input: Record<string, unknown>): PageDataConfig
-}
+type ObjectFactory = (input: Record<string, unknown>) => PageDataConfig
 
 /** 安全探测对象是否有指定自有属性。 */
 function hasOwn(obj: Record<string, unknown>, key: string): boolean {

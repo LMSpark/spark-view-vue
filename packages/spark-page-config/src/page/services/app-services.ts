@@ -43,7 +43,7 @@ export type PageDialogResult = 'confirm' | 'cancel' | 'close'
 // ═══════════════════════════════════════════════════════
 
 /** 对话框配置选项 */
-export interface PageDialogOptions {
+export type PageDialogOptions = {
   /** 对话框标题 */
   title?: string
   /** 对话框正文内容（纯文本） */
@@ -71,7 +71,7 @@ export interface PageDialogOptions {
 // ═══════════════════════════════════════════════════════
 
 /** 文件浏览配置 */
-export interface PageBrowseFilesOptions {
+export type PageBrowseFilesOptions = {
   /** 浏览对话框标题 */
   title?: string
   /** 接受的文件类型（如 '.jpg,.png' 或 'image/*'） */
@@ -83,7 +83,7 @@ export interface PageBrowseFilesOptions {
 }
 
 /** 已选择的文件信息 */
-export interface PageSelectedFile {
+export type PageSelectedFile = {
   /** 文件名 */
   name: string
   /** 文件大小（字节） */
@@ -97,7 +97,7 @@ export interface PageSelectedFile {
 }
 
 /** 文件上传配置（在浏览选项基础上增加上传端点信息） */
-export interface PageUploadFilesOptions extends PageBrowseFilesOptions {
+export type PageUploadFilesOptions = PageBrowseFilesOptions & {
   /** 上传目标 URL */
   action: string
   /** HTTP 方法 */
@@ -115,7 +115,7 @@ export interface PageUploadFilesOptions extends PageBrowseFilesOptions {
 }
 
 /** 已上传的文件：在选择文件基础上增加服务端响应 */
-export interface PageUploadedFile extends PageSelectedFile {
+export type PageUploadedFile = PageSelectedFile & {
   /** 服务端返回的响应体 */
   response: unknown
   /** 上传后可访问的文件 URL */
@@ -129,7 +129,7 @@ export interface PageUploadedFile extends PageSelectedFile {
 // ═══════════════════════════════════════════════════════
 
 /** 选择器候选项 */
-export interface PageSelectorOption {
+export type PageSelectorOption = {
   /** 展示文本 */
   label: string
   /** 选中值 */
@@ -143,7 +143,7 @@ export interface PageSelectorOption {
 }
 
 /** 实体选择器配置 */
-export interface PageSelectEntitiesOptions {
+export type PageSelectEntitiesOptions = {
   /** 选择器标题 */
   title?: string
   /** 实体名称（用于空状态提示等） */
@@ -167,7 +167,7 @@ export interface PageSelectEntitiesOptions {
 }
 
 /** 已选中的实体项，复用候选项结构 */
-export interface PageSelectedEntity extends PageSelectorOption {}
+export type PageSelectedEntity = PageSelectorOption
 
 // ═══════════════════════════════════════════════════════
 // 5. 服务契约
@@ -181,7 +181,7 @@ export interface PageSelectedEntity extends PageSelectorOption {}
  * 所有方法由宿主（如 Vue Router、Element Plus 等）实现，
  * 页面通过 ScriptContext 调用。
  */
-export interface PageServiceCapability {
+export type PageServiceCapability = {
   /** 显示提示消息 */
   showMessage(message: string, type?: PageMessageType): void
   /** 显示确认对话框，返回用户操作结果 */
@@ -205,7 +205,7 @@ export interface PageServiceCapability {
 }
 
 /** 路由服务：SPA 内的 push / replace / back 操作 */
-export interface PageRouterService {
+export type PageRouterService = {
   /** 导航到目标（字符串路径或路由对象） */
   push(to: string | { path: string; query?: Record<string, unknown> }): Promise<unknown>
   /** 替换当前路由 */
@@ -222,7 +222,7 @@ export interface PageRouterService {
  * 由宿主环境提供，ScriptContext 中通过 capability 查询获取。
  * 各字段均为可选，由消费方在使用前判断是否存在。
  */
-export interface PageRuntimeServicesCapability {
+export type PageRuntimeServicesCapability = {
   /** 路由服务 */
   router?: PageRouterService
   /** 日志 API */

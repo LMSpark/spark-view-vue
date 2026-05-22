@@ -21,7 +21,7 @@
  */
 
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { PageConfigFileName } from '../model/types'
+import type { PageConfigFileName } from './config-types'
 
 // ═══════════════════════════════════════════════════════
 // 1. 摘要类型
@@ -30,7 +30,7 @@ import type { PageConfigFileName } from '../model/types'
 // ═══════════════════════════════════════════════════════
 
 /** 页面配置版本摘要：用于版本列表展示 */
-export interface PageConfigFileVersionSummary {
+export type PageConfigFileVersionSummary = {
   /** 版本号（正整数） */
   version: number
   /** 创建时间（ISO 8601 字符串） */
@@ -42,7 +42,7 @@ export interface PageConfigFileVersionSummary {
 }
 
 /** 页面配置摘要：用于页面列表展示 */
-export interface PageConfigPageSummary extends Record<string, unknown> {
+export type PageConfigPageSummary = Record<string, unknown> & {
   /** 页面 ID */
   pageId: string
   /** 页面类型（可选） */
@@ -56,7 +56,7 @@ export interface PageConfigPageSummary extends Record<string, unknown> {
 // ═══════════════════════════════════════════════════════
 
 /** 创建页面时的输入参数 */
-export interface PageConfigCreatePageParams {
+export type PageConfigCreatePageParams = {
   /** 页面 ID */
   pageId: string
   /** 页面标题（可选） */
@@ -66,7 +66,7 @@ export interface PageConfigCreatePageParams {
 }
 
 /** PageConfigFileApi 构造选项 */
-export interface PageConfigFileApiOptions {
+export type PageConfigFileApiOptions = {
   /** 获取页面配置 API 基础地址的函数（支持动态解析当前项目作用域） */
   getPageConfigApi: () => string
   /** HTTP 客户端实例 */

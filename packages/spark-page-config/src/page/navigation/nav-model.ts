@@ -59,7 +59,7 @@ export type NavPermissionMode = 'none' | 'masked' | 'invisible'
 // ═══════════════════════════════════════════════════════
 
 /** 模块基础信息：ID、标题、描述、版本号 */
-export interface AppModuleBase {
+export type AppModuleBase = {
   id?: string
   /** 模块标题 */
   title: string
@@ -76,7 +76,7 @@ export interface AppModuleBase {
 // ═══════════════════════════════════════════════════════
 
 /** 导航行为配置：图标、排序、可见性、权限模式、子节点布局等 */
-export interface AppNavigation {
+export type AppNavigation = {
   /** 图标标识符 */
   icon?: string
   /** 节点类型 */
@@ -108,7 +108,7 @@ export interface AppNavigation {
  *
  * 继承 AppModuleBase + AppNavigation，扩展路径、跳转、引用等业务字段。
  */
-export interface NavNode extends AppModuleBase, AppNavigation {
+export type NavNode = AppModuleBase & AppNavigation & {
   /** 节点唯一标识符 */
   id: string
   /** 子节点列表 */
@@ -136,7 +136,7 @@ export interface NavNode extends AppModuleBase, AppNavigation {
  *
  * 定义整个应用的导航结构：子节点布局 + 首页路径 + 顶层节点列表。
  */
-export interface AppNavRoot extends AppModuleBase {
+export type AppNavRoot = AppModuleBase & {
   /** 根节点子节点的布局位置（仅 header 或 sidebar） */
   childPlacement: 'header' | 'sidebar'
   /** 根节点下的顶层导航节点列表 */
@@ -152,7 +152,7 @@ export interface AppNavRoot extends AppModuleBase {
 // ═══════════════════════════════════════════════════════
 
 /** 按区域分组的导航节点列表 */
-export interface RegionItems {
+export type RegionItems = {
   header: NavNode[]
   sidebar: NavNode[]
   toolbar: NavNode[]
@@ -160,7 +160,7 @@ export interface RegionItems {
 }
 
 /** 各区域是否可见 */
-export interface RegionVisibility {
+export type RegionVisibility = {
   header: boolean
   sidebar: boolean
   toolbar: boolean
@@ -175,7 +175,7 @@ export interface RegionVisibility {
 // ═══════════════════════════════════════════════════════
 
 /** 上下文下拉选项项 */
-export interface NavContextItem {
+export type NavContextItem = {
   /** 选项值 */
   id: string | number
   /** 选项展示文本 */
@@ -183,7 +183,7 @@ export interface NavContextItem {
 }
 
 /** 动态上下文配置：描述上下文的来源和交互行为 */
-export interface NavContextConfig {
+export type NavContextConfig = {
   /** 上下文来源：API 端点字符串 或 静态选项列表 */
   source: string | NavContextItem[]
   /** 占位提示文本 */
@@ -195,7 +195,7 @@ export interface NavContextConfig {
 }
 
 /** 导航上下文运行时状态：记录当前选中值和加载状态 */
-export interface NavContextState {
+export type NavContextState = {
   /** 上下文配置 */
   config: NavContextConfig
   /** 所属节点 ID */

@@ -50,7 +50,7 @@ import type {
 // ═══════════════════════════════════════════════════════
 
 /** 导航节点草稿：编辑器表单中每个字段的中间态 */
-export interface NavigationNodeDraft {
+export type NavigationNodeDraft = {
   /** 节点 ID */
   id: string
   /** 节点标题 */
@@ -86,7 +86,7 @@ export interface NavigationNodeDraft {
 }
 
 /** 导航上下文草稿配置 */
-export interface NavigationContextDraftConfig {
+export type NavigationContextDraftConfig = {
   /** 占位提示 */
   placeholder: string
   /** 默认值 */
@@ -96,7 +96,7 @@ export interface NavigationContextDraftConfig {
 }
 
 /** 导航上下文草稿：包含是否有上下文、选项列表和配置 */
-export interface NavigationContextDraft {
+export type NavigationContextDraft = {
   /** 是否启用了动态上下文 */
   hasContext: boolean
   /** 上下文选项列表 */
@@ -106,7 +106,7 @@ export interface NavigationContextDraft {
 }
 
 /** 完整的节点草稿输入：节点草稿 + 上下文草稿 */
-export interface NavigationNodeDraftInput {
+export type NavigationNodeDraftInput = {
   /** 节点表单草稿 */
   draft: NavigationNodeDraft
   /** 动态上下文草稿 */
@@ -114,7 +114,7 @@ export interface NavigationNodeDraftInput {
 }
 
 /** 应用节点草稿后的结果：生成的补丁 + 警告列表 */
-export interface NavigationNodeDraftApplyResult {
+export type NavigationNodeDraftApplyResult = {
   /** 应用到 NavNode 的补丁 */
   patch: Partial<NavNode> & Pick<NavNode, 'id' | 'title' | 'nodeKind'>
   /** 应用过程中产生的警告（如自引用警告） */
@@ -126,7 +126,7 @@ export interface NavigationNodeDraftApplyResult {
 // ═══════════════════════════════════════════════════════
 
 /** 节点在树中的位置：节点自身、父节点、父 ID、在兄弟中的索引 */
-export interface NavNodeLocation {
+export type NavNodeLocation = {
   /** 目标节点 */
   node: NavNode
   /** 父节点（顶层节点时为 null） */

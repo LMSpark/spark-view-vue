@@ -39,10 +39,10 @@ const pageConfig = await loader.loadPageConfig('homepage')
 
 ## 相关文件
 
-- `src/page/loading/`：四文件加载、缓存与编译
-- `src/page/workspace/`：页面文件编辑、设计期文档与生命周期
+- `src/page/loading/`：四文件加载、缓存、编译与加载契约
+- `src/capabilities/`：页面文件编辑、设计期文档与生命周期
 - `src/page/sandbox/`：脚本沙箱上下文类型
-- `src/assistant/registrations/`：智能编排相关业务注册
+- `src/registrations/`：智能编排相关业务注册
 - `tests/`：配置加载与类型相关测试
 
 ## 与其他包的关系

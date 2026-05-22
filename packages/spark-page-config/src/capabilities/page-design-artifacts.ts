@@ -10,7 +10,7 @@
 
 import type { JsonObject, JsonValue } from './json-document'
 
-export interface RuleEditorComponentMetadata {
+export type RuleEditorComponentMetadata = {
   types: string[]
   propNames: Record<string, string[]>
   propEnums: Record<string, Record<string, string[]>>
@@ -18,7 +18,7 @@ export interface RuleEditorComponentMetadata {
   requiredProps: Record<string, JsonObject>
 }
 
-export interface RuleEditorComponentCatalogProp {
+export type RuleEditorComponentCatalogProp = {
   name: string
   type?: string
   required?: boolean
@@ -26,7 +26,7 @@ export interface RuleEditorComponentCatalogProp {
   description?: string
 }
 
-export interface RuleEditorComponentCatalogEntry {
+export type RuleEditorComponentCatalogEntry = {
   type: string
   category?: string
   description?: string
@@ -38,7 +38,7 @@ export interface RuleEditorComponentCatalogEntry {
   props?: readonly RuleEditorComponentCatalogProp[]
 }
 
-export interface RuleEditorComponentCatalog {
+export type RuleEditorComponentCatalog = {
   version: string
   componentCount: number
   components: Readonly<Record<string, RuleEditorComponentCatalogEntry>>
@@ -398,7 +398,7 @@ export function createRuleTreePolicy(
 
 // ── SECTION 3: 规则 JSON Schema（原 rule-json-schema.ts）─────────────
 
-interface JsonSchemaNode {
+type JsonSchemaNode = {
   [key: string]: unknown
 }
 
@@ -744,14 +744,14 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
 
 // ── SECTION 5: 100 步页面设计流程（原 page-design-100-step-flow.ts）─
 
-export interface PageDesignFlowStep {
+export type PageDesignFlowStep = {
   step: number
   phase: string
   action: string
   checkpoint: string
 }
 
-export interface PageDesignFlowPhaseSummary {
+export type PageDesignFlowPhaseSummary = {
   phase: string
   firstStep: number
   lastStep: number
@@ -906,22 +906,22 @@ export function getNextPageDesignFlowStep(completedStep: number): PageDesignFlow
 
 import type { DataColumn, DataSetMetadata, TableMetadata, TableRelation } from '@spark-view/spark-data'
 
-export interface DesignerColumnProjection extends DataColumn {
+export type DesignerColumnProjection = DataColumn & {
   id: string
 }
 
-export interface DesignerTableProjection extends Omit<TableMetadata, 'columns'> {
+export type DesignerTableProjection = Omit<TableMetadata, 'columns'> & {
   id: string
   x: number
   y: number
   columns: DesignerColumnProjection[]
 }
 
-export interface DesignerRelationProjection extends TableRelation {
+export type DesignerRelationProjection = TableRelation & {
   relationType?: 'one-to-many' | 'one-to-one' | 'many-to-many'
 }
 
-export interface DesignerTableUiState {
+export type DesignerTableUiState = {
   id: string
   x: number
   y: number

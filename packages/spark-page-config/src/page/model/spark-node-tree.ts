@@ -83,7 +83,7 @@ export type SparkNodeTreeRuleJsonInput =
 // ═══════════════════════════════════════════════════════
 
 /** 创建 SparkNodeTree 实例的输入参数 */
-export interface SparkNodeTreeRootParams {
+export type SparkNodeTreeRootParams = {
   /** 当前被编辑的组件实例节点，可以是任意 SparkNode */
   root: SparkNode
   /** 历史记录最大条目数，默认 50；设为 0 时禁用 undo/redo */
@@ -91,7 +91,7 @@ export interface SparkNodeTreeRootParams {
 }
 
 /** SparkNodeTree.fromJson 的可选参数 */
-export interface SparkNodeTreeFromJsonOptions {
+export type SparkNodeTreeFromJsonOptions = {
   /** 历史记录最大条目数 */
   historyLimit?: number
   /** 是否在反序列化时为缺失 id 的节点自动补齐组件 id，默认 true */
@@ -105,19 +105,19 @@ export interface SparkNodeTreeFromJsonOptions {
 // ═══════════════════════════════════════════════════════
 
 /** 按 componentId 查找节点的参数 */
-export interface SparkNodeTreeLookupParams {
+export type SparkNodeTreeLookupParams = {
   /** 组件节点 ID */
   componentId: string
 }
 
 /** 定位父节点 children 的参数 */
-export interface SparkNodeTreeChildrenParams {
+export type SparkNodeTreeChildrenParams = {
   /** 父节点 ID，省略时表示当前根节点 */
   parentComponentId?: string | null
 }
 
 /** findByType 的查询参数 */
-export interface SparkNodeFindByTypeParams {
+export type SparkNodeFindByTypeParams = {
   /** 要搜索的组件类型名，精确匹配 */
   type: string
   /** 可选，从哪个节点开始向下递归搜索，省略时从根节点开始 */
@@ -133,7 +133,7 @@ export interface SparkNodeFindByTypeParams {
 // ═══════════════════════════════════════════════════════
 
 /** 添加单个节点的参数 */
-export interface SparkNodeTreeAddParams extends SparkNodeTreeChildrenParams {
+export type SparkNodeTreeAddParams = SparkNodeTreeChildrenParams & {
   /** 待添加的节点 */
   node: SparkNode
   /** 插入位置索引，省略时追加到末尾 */
@@ -141,7 +141,7 @@ export interface SparkNodeTreeAddParams extends SparkNodeTreeChildrenParams {
 }
 
 /** 批量添加节点的参数 */
-export interface SparkNodeTreeAddNodesParams extends SparkNodeTreeChildrenParams {
+export type SparkNodeTreeAddNodesParams = SparkNodeTreeChildrenParams & {
   /** 待添加的节点列表 */
   nodes: SparkNode[]
   /** 起始插入位置索引 */
@@ -149,7 +149,7 @@ export interface SparkNodeTreeAddNodesParams extends SparkNodeTreeChildrenParams
 }
 
 /** 移动已有节点的参数 */
-export interface SparkNodeTreeMoveParams extends SparkNodeTreeChildrenParams {
+export type SparkNodeTreeMoveParams = SparkNodeTreeChildrenParams & {
   /** 待移动节点的 ID */
   componentId: string
   /** 目标插入位置索引 */
@@ -157,7 +157,7 @@ export interface SparkNodeTreeMoveParams extends SparkNodeTreeChildrenParams {
 }
 
 /** 设置单个节点 props 的参数 */
-export interface SparkNodeTreeSetPropsParams extends SparkNodeTreeLookupParams {
+export type SparkNodeTreeSetPropsParams = SparkNodeTreeLookupParams & {
   /** 待设置的属性键值对 */
   props: Record<string, unknown>
   /** 是否浅合并，false 时表示直接替换 */
@@ -165,7 +165,7 @@ export interface SparkNodeTreeSetPropsParams extends SparkNodeTreeLookupParams {
 }
 
 /** 批量设置节点 props 的单项参数 */
-export interface SparkNodeTreeSetPropsBatchItem extends SparkNodeTreeLookupParams {
+export type SparkNodeTreeSetPropsBatchItem = SparkNodeTreeLookupParams & {
   /** 待设置的属性键值对 */
   props: Record<string, unknown>
   /** 是否浅合并 */
@@ -173,34 +173,34 @@ export interface SparkNodeTreeSetPropsBatchItem extends SparkNodeTreeLookupParam
 }
 
 /** 批量设置节点 props 的参数 */
-export interface SparkNodeTreeSetPropsBatchParams {
+export type SparkNodeTreeSetPropsBatchParams = {
   /** 批量设置项列表 */
   items: SparkNodeTreeSetPropsBatchItem[]
 }
 
 /** 替换单个节点的参数 */
-export interface SparkNodeTreeReplaceParams extends SparkNodeTreeLookupParams {
+export type SparkNodeTreeReplaceParams = SparkNodeTreeLookupParams & {
   /** 用于替换的新节点 */
   node: SparkNode
 }
 
 /** 批量替换节点的单项参数 */
-export interface SparkNodeTreeReplaceNodesItem extends SparkNodeTreeLookupParams {
+export type SparkNodeTreeReplaceNodesItem = SparkNodeTreeLookupParams & {
   /** 用于替换的新节点 */
   node: SparkNode
 }
 
 /** 批量替换节点的参数 */
-export interface SparkNodeTreeReplaceNodesParams {
+export type SparkNodeTreeReplaceNodesParams = {
   /** 批量替换项列表 */
   items: SparkNodeTreeReplaceNodesItem[]
 }
 
 /** 删除单个节点的参数 */
-export interface SparkNodeTreeRemoveParams extends SparkNodeTreeLookupParams {}
+export type SparkNodeTreeRemoveParams = SparkNodeTreeLookupParams
 
 /** 批量删除节点的参数 */
-export interface SparkNodeTreeRemoveNodesParams {
+export type SparkNodeTreeRemoveNodesParams = {
   /** 待删除的节点 ID 列表 */
   componentIds: string[]
 }
@@ -212,7 +212,7 @@ export interface SparkNodeTreeRemoveNodesParams {
 // ═══════════════════════════════════════════════════════
 
 /** 节点在树中的位置信息 */
-export interface SparkNodeLocation {
+export type SparkNodeLocation = {
   /** 命中的节点本身 */
   node: SparkNode
   /** 直接父节点，根节点时为 null */
@@ -224,7 +224,7 @@ export interface SparkNodeLocation {
 }
 
 /** addNode 的返回结果 */
-export interface SparkNodeAddResult {
+export type SparkNodeAddResult = {
   /** 已添加的节点 */
   node: SparkNode
   /** 插入位置索引 */
@@ -232,7 +232,7 @@ export interface SparkNodeAddResult {
 }
 
 /** addNodes 的返回结果 */
-export interface SparkNodeAddNodesResult {
+export type SparkNodeAddNodesResult = {
   /** 已添加的节点列表 */
   nodes: SparkNode[]
   /** 各节点的插入位置索引 */
@@ -240,7 +240,7 @@ export interface SparkNodeAddNodesResult {
 }
 
 /** moveNode 的返回结果 */
-export interface SparkNodeMoveResult {
+export type SparkNodeMoveResult = {
   /** 被移动的节点 ID */
   componentId: string
   /** 原父节点 ID */
@@ -254,19 +254,19 @@ export interface SparkNodeMoveResult {
 }
 
 /** setProps 的返回结果 */
-export interface SparkNodeSetPropsResult {
+export type SparkNodeSetPropsResult = {
   /** 设置属性后的节点 */
   node: SparkNode
 }
 
 /** setPropsBatch 的返回结果 */
-export interface SparkNodeSetPropsBatchResult {
+export type SparkNodeSetPropsBatchResult = {
   /** 设置属性后的节点列表 */
   nodes: SparkNode[]
 }
 
 /** replaceNode 的返回结果 */
-export interface SparkNodeReplaceResult {
+export type SparkNodeReplaceResult = {
   /** 替换后的新节点 */
   node: SparkNode
   /** 被替换的旧节点 */
@@ -274,13 +274,13 @@ export interface SparkNodeReplaceResult {
 }
 
 /** replaceNodes 的返回结果 */
-export interface SparkNodeReplaceNodesResult {
+export type SparkNodeReplaceNodesResult = {
   /** 各节点的替换结果 */
   items: SparkNodeReplaceResult[]
 }
 
 /** removeNode 的返回结果 */
-export interface SparkNodeRemoveResult {
+export type SparkNodeRemoveResult = {
   /** 被删除的节点 */
   removed: SparkNode
   /** 被删除时的位置索引 */
@@ -288,13 +288,13 @@ export interface SparkNodeRemoveResult {
 }
 
 /** removeNodes 的返回结果 */
-export interface SparkNodeRemoveNodesResult {
+export type SparkNodeRemoveNodesResult = {
   /** 各节点的删除结果 */
   items: SparkNodeRemoveResult[]
 }
 
 /** findByType 单条匹配结果 */
-export interface SparkNodeFindByTypeMatch {
+export type SparkNodeFindByTypeMatch = {
   /** 节点的真实 id，未设置 id 时为 undefined */
   id: string | undefined
   /** 组件类型名 */
@@ -306,7 +306,7 @@ export interface SparkNodeFindByTypeMatch {
 }
 
 /** findByType 的返回结果 */
-export interface SparkNodeFindByTypeResult {
+export type SparkNodeFindByTypeResult = {
   /** 按深度优先顺序排列的匹配结果 */
   matches: SparkNodeFindByTypeMatch[]
   /** 命中数；提供 limit 且提前终止时等于 matches.length */
@@ -958,7 +958,7 @@ export class SparkNodeTree {
 /**
  * 路径重写的内部返回结构。
  */
-interface NodeRewriteResult<TResult> {
+type NodeRewriteResult<TResult> = {
   next: SparkNode | null
   changed: boolean
   result: TResult | null

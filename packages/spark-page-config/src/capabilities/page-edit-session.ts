@@ -25,9 +25,9 @@ export type { SparkNodeTreeMethodKey } from '../page/model/spark-node-tree'
 
 export type PageDesignEditPhase = 'idle' | 'editing' | 'saved'
 
-export interface PageDesignNodeTree extends Pick<SparkNodeTree, SparkNodeTreeMethodKey | 'toJSON'> {}
+export type PageDesignNodeTree = Pick<SparkNodeTree, SparkNodeTreeMethodKey | 'toJSON'>
 
-export interface PageDesignEditHost {
+export type PageDesignEditHost = {
   getNodeTree?: () => PageDesignNodeTree | null
   onNodeTreeChanged?: (nodeTree: PageDesignNodeTree) => void
   getDataSetTool?: () => DataSetCrudTool | null
@@ -66,67 +66,81 @@ export class PageDesignEditSession {
 
 // ── SECTION 2: 编辑宿主注册（原 page-design-edit-host-registry.ts）──
 
-export interface PageDesignEditHostSnapshot {
+export type PageDesignEditHostSnapshot = {
   readonly pageId: string
   readonly host: PageDesignEditHost
 }
 
-interface PageDesignEditHostResolver {
-  (): PageDesignEditHostSnapshot | null
-}
-
-const resolvers = new Set<PageDesignEditHostResolver>()
+type PageDesignEditHostResolver = () => PageDesignEditHostSnapshot | null
 
 function normalizePageId(pageId: string | null | undefined): string {
   return typeof pageId === 'string' ? pageId.trim() : ''
 }
 
-function readSnapshots(): PageDesignEditHostSnapshot[] {
-  const snapshots: PageDesignEditHostSnapshot[] = []
-  for (const resolver of resolvers) {
-    const snapshot = resolver()
-    const pageId = normalizePageId(snapshot?.pageId)
-    if (snapshot === null || pageId === '') continue
-    snapshots.push({ pageId, host: snapshot.host })
+class PageDesignEditHostRegistry {
+  private readonly resolvers = new Set<PageDesignEditHostResolver>()
+
+  register(resolver: PageDesignEditHostResolver): () => void {
+    this.resolvers.add(resolver)
+    return () => {
+      this.resolvers.delete(resolver)
+    }
   }
-  return snapshots
+
+  resolveHost(pageId?: string | null): PageDesignEditHost | null {
+    const requestedPageId = normalizePageId(pageId)
+    const snapshots = this.readSnapshots().reverse()
+    if (requestedPageId !== '') {
+      const exact = snapshots.find((snapshot) => snapshot.pageId === requestedPageId)
+      if (exact !== undefined) return exact.host
+    }
+    return snapshots[0]?.host ?? null
+  }
+
+  resolvePageId(pageId?: string | null): string | null {
+    const requestedPageId = normalizePageId(pageId)
+    const snapshots = this.readSnapshots().reverse()
+    if (requestedPageId !== '') {
+      const exact = snapshots.find((snapshot) => snapshot.pageId === requestedPageId)
+      if (exact !== undefined) return exact.pageId
+    }
+    return snapshots[0]?.pageId ?? null
+  }
+
+  private readSnapshots(): PageDesignEditHostSnapshot[] {
+    const snapshots: PageDesignEditHostSnapshot[] = []
+    for (const resolver of this.resolvers) {
+      const snapshot = resolver()
+      const pageId = normalizePageId(snapshot?.pageId)
+      if (snapshot === null || pageId === '') continue
+      snapshots.push({ pageId, host: snapshot.host })
+    }
+    return snapshots
+  }
 }
 
+const editHostRegistry = new PageDesignEditHostRegistry()
+
 export function registerPageDesignEditHost(resolver: PageDesignEditHostResolver): () => void {
-  resolvers.add(resolver)
-  return () => {
-    resolvers.delete(resolver)
-  }
+  return editHostRegistry.register(resolver)
 }
 
 export function resolvePageDesignEditHost(pageId?: string | null): PageDesignEditHost | null {
-  const requestedPageId = normalizePageId(pageId)
-  const snapshots = readSnapshots().reverse()
-  if (requestedPageId !== '') {
-    const exact = snapshots.find((snapshot) => snapshot.pageId === requestedPageId)
-    if (exact !== undefined) return exact.host
-  }
-  return snapshots[0]?.host ?? null
+  return editHostRegistry.resolveHost(pageId)
 }
 
 export function resolvePageDesignEditPageId(pageId?: string | null): string | null {
-  const requestedPageId = normalizePageId(pageId)
-  const snapshots = readSnapshots().reverse()
-  if (requestedPageId !== '') {
-    const exact = snapshots.find((snapshot) => snapshot.pageId === requestedPageId)
-    if (exact !== undefined) return exact.pageId
-  }
-  return snapshots[0]?.pageId ?? null
+  return editHostRegistry.resolvePageId(pageId)
 }
 
 // ── SECTION 3: 服务契约类型（原 page-design-service-contract.ts）──
 
-export interface PageDesignServiceContext {
+export type PageDesignServiceContext = {
   requestId: string
   pageId: string
 }
 
-export interface PageDesignServiceOptions {
+export type PageDesignServiceOptions = {
   getEditHost: (context: PageDesignServiceContext) => PageDesignEditHost
 }
 
@@ -136,7 +150,7 @@ export type PageDesignServiceResult<TResult> =
 
 export type PageDesignTextFileKey = 'script' | 'style'
 
-export interface PageDesignServiceActionBinding<TTarget> {
+export type PageDesignServiceActionBinding<TTarget> = {
   serviceLabel: string
   run: (target: TTarget, args: unknown) => unknown
   mutates: boolean
@@ -179,7 +193,7 @@ export function isPageDesignServiceResult(value: unknown): value is PageDesignSe
 
 // ── SECTION 4: 脚本契约校验（原 page-design-script-contract.ts）──
 
-interface ScriptApiViolationRule {
+type ScriptApiViolationRule = {
   pattern: RegExp
   api: string
   fix: string
@@ -291,20 +305,20 @@ async function runRegisteredActionTarget<TTarget>(
 
 // ── SECTION 6: PageDesignService（原 page-design-service.ts 主体）──
 
-export interface PageDesignFlowQuery {
+export type PageDesignFlowQuery = {
   phase?: string
   step?: number
   afterStep?: number
 }
 
-export interface PageDesignFlowDescription {
+export type PageDesignFlowDescription = {
   phases: PageDesignFlowPhaseSummary[]
   steps: readonly PageDesignFlowStep[]
   selectedStep: PageDesignFlowStep | null
   nextStep: PageDesignFlowStep | null
 }
 
-interface PageDesignTextFileBinding {
+type PageDesignTextFileBinding = {
   label: string
   readName: 'readScript' | 'readStyle'
   writeName: 'writeScript' | 'writeStyle'
@@ -524,7 +538,7 @@ export class PageDesignService {
 
 // ── SECTION 7: PageConfigEditWorkspace（原 page-config-edit-workspace.ts）──
 
-import type { BasePageConfigLoader } from '../page/model/types'
+import type { BasePageConfigLoader } from '../page/loading/config-types'
 import {
   PAGE_FILE_NAMES,
   createPageDocuments,
@@ -540,8 +554,12 @@ import type {
   PageConfigFileVersionSummary,
   PageConfigPageSummary,
 } from '../page/loading/page-config-file-api'
+import {
+  PAGE_CONFIG_FILE_NAMES,
+  type PageConfigFileName,
+} from '../page/loading/config-types'
 
-export interface PageConfigEditWorkspaceOptions {
+export type PageConfigEditWorkspaceOptions = {
   fileApi: PageConfigFileApi
   getConfigLoader: () => BasePageConfigLoader
 }
@@ -788,39 +806,35 @@ import {
   normalizeNavNode,
 } from '../page/navigation/nav-editing'
 import type { NavigationConfigClient } from '../page/navigation/client'
-import {
-  PAGE_CONFIG_FILE_NAMES,
-  type PageConfigFileName,
-} from '../page/model/types'
 
-export interface PageConfigFileLifecycleOptions {
+export type PageConfigFileLifecycleOptions = {
   fileApi: PageConfigFileApi
   navigationClient: NavigationConfigClient
   getConfigLoader?: () => Pick<BasePageConfigLoader, 'clearCache'>
 }
 
-export interface PageNavigationMountParams extends PageConfigCreatePageParams {
+export type PageNavigationMountParams = PageConfigCreatePageParams & {
   node?: NavNode
   parentId?: string | null
   index?: number
 }
 
-export interface CreateMountedPageParams extends PageNavigationMountParams {
+export type CreateMountedPageParams = PageNavigationMountParams & {
   rollbackPageOnNavigationFailure?: boolean
 }
 
-export interface CreateMountedPageResult {
+export type CreateMountedPageResult = {
   page: Record<string, unknown>
   node: NavNode
 }
 
-export interface RemoveMountedPageParams {
+export type RemoveMountedPageParams = {
   pageId: string
   nodeId?: string
   deleteFiles?: boolean
 }
 
-export interface RemoveMountedPageResult {
+export type RemoveMountedPageResult = {
   deletedNode: NavNode | null
   deletedFiles: boolean
 }

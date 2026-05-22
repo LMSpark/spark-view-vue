@@ -511,16 +511,16 @@ const NODE_TREE_ACTIONS: readonly ActionSchema[] = [
   },
 ]
 
-interface GeneratedPageDesignAbilityMetadataDocument {
+type GeneratedPageDesignAbilityMetadataDocument = {
   readonly abilities: readonly GeneratedPageDesignAbilityMetadata[]
 }
 
-interface GeneratedPageDesignAbilityMetadata {
+type GeneratedPageDesignAbilityMetadata = {
   readonly abilityId: string
   readonly actions: readonly GeneratedPageDesignAbilityActionMetadata[]
 }
 
-interface GeneratedPageDesignAbilityActionMetadata {
+type GeneratedPageDesignAbilityActionMetadata = {
   readonly name: string
 }
 

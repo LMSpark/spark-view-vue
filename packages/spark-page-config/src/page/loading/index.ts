@@ -2,19 +2,21 @@ export type {
   ConfigLoaderOptions,
   ConfigLoadResult,
   PageConfig,
+  PageConfigFileDescriptor,
   PageConfigFileLoadOptions,
   PageConfigFileName,
   PageConfigFiles,
   PageDataConfig,
   PageFileRegistry,
   RuleConfig,
-} from '../model/types'
+} from './config-types'
 
 export {
   BasePageConfigLoader,
   PAGE_CONFIG_FILE_NAMES,
+  PageConfigFileRegistry,
   createDefaultFileRegistry,
-} from '../model/types'
+} from './config-types'
 
 export {
   PageConfigFileApi,

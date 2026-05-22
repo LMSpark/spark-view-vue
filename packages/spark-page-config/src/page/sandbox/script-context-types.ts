@@ -39,7 +39,7 @@ import type {
  * const tab = $route.query.tab
  * ```
  */
-export interface PageRoute {
+export type PageRoute = {
   /** 当前路径，如 `/users/123` */
   path: string
   /** 含 search/hash 的完整 URL，如 `/users/123?tab=info#detail` */
@@ -88,7 +88,7 @@ export interface PageRoute {
  * $page.navigate('/orders')
  * ```
  */
-export interface ScriptContext {
+export type ScriptContext = {
   /**
    * 页面级组件访问 API。
    *
@@ -161,12 +161,12 @@ export interface ScriptContext {
   $moduleContext: ModuleContextInScript | null
 }
 
-export interface PermissionActionContextInScript {
+export type PermissionActionContextInScript = {
   modelPermission?: ModelPermission
   row?: DataRow | null
 }
 
-export interface FieldRenderConfigInScript {
+export type FieldRenderConfigInScript = {
   field: string
   visible?: boolean
   editable?: boolean
@@ -174,7 +174,7 @@ export interface FieldRenderConfigInScript {
   width?: number | string
 }
 
-export interface FieldRenderStateInScript {
+export type FieldRenderStateInScript = {
   field: string
   visibility: FieldVisibility
   readable: boolean
@@ -189,7 +189,7 @@ export interface FieldRenderStateInScript {
  * 所有函数可选接受 `permissionMode` 参数（脚本通常省略）。
  * 函数直接来自组件层 `permission/` 模块导出。
  */
-export interface PermissionApiInScript {
+export type PermissionApiInScript = {
   // ── 动作权限 ──
   isPermittedAction(action: string | undefined, context: PermissionActionContextInScript): boolean
   isModelScopedPermAction(action: string | undefined): boolean
@@ -231,14 +231,14 @@ export interface PermissionApiInScript {
 }
 
 /** 页面内组件实例快照（脚本可读） */
-export interface PageComponentInstanceInScript {
+export type PageComponentInstanceInScript = {
   id: string
   type: string
   props?: Record<string, unknown>
 }
 
 /** 页面级组件访问 API（脚本可用） */
-export interface PageComponentAccessInScript {
+export type PageComponentAccessInScript = {
   /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
   get(id: string): PageComponentInstanceInScript | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
@@ -252,7 +252,7 @@ export interface PageComponentAccessInScript {
 // ==================== 模块上下文（内联类型）====================
 
 /** 模块上下文选项（结构与 `ModuleContextItem` 等价） */
-export interface ModuleContextItemInScript {
+export type ModuleContextItemInScript = {
   id: string | number
   title: string
 }
@@ -263,7 +263,7 @@ export interface ModuleContextItemInScript {
  * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
  * 渲染层以 `ModuleContext` 作为实现类型；两者通过结构化类型兼容。
  */
-export interface ModuleContextInScript {
+export type ModuleContextInScript = {
   /** 当前选中值 */
   selected: string | number | null
   /** 可选项列表 */

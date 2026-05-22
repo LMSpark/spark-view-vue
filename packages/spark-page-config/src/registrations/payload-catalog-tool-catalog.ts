@@ -18,7 +18,7 @@ import { createCurrentPageRef } from './page-design-helpers'
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
 type PayloadCatalogActionRunner = (args: Readonly<Record<string, LlmJsonValue>>) => PageDesignServiceResult<unknown>
 
-interface PageDesignPayloadProp {
+type PageDesignPayloadProp = {
   readonly name: string
   readonly type?: string | undefined
   readonly required?: boolean | undefined
@@ -26,7 +26,7 @@ interface PageDesignPayloadProp {
   readonly schema?: LlmJsonSchema | undefined
 }
 
-interface PageDesignPayloadEntry {
+type PageDesignPayloadEntry = {
   readonly type: string
   readonly filePath?: string | undefined
   readonly category?: string | undefined
@@ -38,7 +38,7 @@ interface PageDesignPayloadEntry {
   readonly source?: string | undefined
 }
 
-interface PageDesignPayloadCatalog {
+type PageDesignPayloadCatalog = {
   readonly version: string
   readonly componentCount: number
   readonly components: Readonly<Record<string, PageDesignPayloadEntry>>

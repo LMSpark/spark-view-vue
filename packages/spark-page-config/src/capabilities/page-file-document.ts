@@ -7,9 +7,7 @@
 
 // ── SECTION 1: 响应式基础原语（原 document-ref.ts）────────────────
 
-export interface PageFileDocumentListener {
-  (): void
-}
+export type PageFileDocumentListener = () => void
 
 export class PageConfigValueRef<T> {
   private current: T
@@ -120,7 +118,7 @@ export function canonicalizeDataSetMetadata(metadata: DataSetMetadata): string {
 // ── SECTION 3: 页面文件文档（原 page-file-documents.ts）────────────
 
 import { SnapshotHistory } from '@spark-view/spark-utils'
-import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../page/model/types'
+import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../page/loading/config-types'
 import { SparkNodeTree } from '../page/model/spark-node-tree'
 import { getSparkNodeChildren, type SparkNode } from '../page/model/spark-node'
 
@@ -129,7 +127,7 @@ export type PageFileName = PageConfigFileName
 
 export type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 
-export interface LoadFromTextOptions {
+export type LoadFromTextOptions = {
   markSaved?: boolean
 }
 
@@ -185,7 +183,7 @@ export function isPageFileDocumentDirty(
   return doc.text.value !== doc.savedText.value
 }
 
-interface PageDocumentModelMap {
+type PageDocumentModelMap = {
   'rule.json': SparkNodeTree
   'pagedata.json': DataSetCrudTool
   'script.js': string
@@ -200,12 +198,12 @@ export type DynamicPageFileDocument =
   | PageFileDocument<DataSetCrudTool>
   | PageFileDocument<string>
 
-interface ModelParseResult<TModel> {
+type ModelParseResult<TModel> = {
   model: TModel | null
   touchModelRef: boolean
 }
 
-interface ModelDocumentFactoryOptions<TModel> {
+type ModelDocumentFactoryOptions<TModel> = {
   toText: (model: TModel) => string
   parseFromText: (rawText: string, current: TModel | null, preserveHistory: boolean) => ModelParseResult<TModel>
   canUndo: (model: TModel) => boolean
@@ -214,7 +212,7 @@ interface ModelDocumentFactoryOptions<TModel> {
   redo: (model: TModel) => boolean
 }
 
-interface IngestTextOptions {
+type IngestTextOptions = {
   preserveHistory: boolean
   onErrorResetModel: boolean
   markSaved: boolean

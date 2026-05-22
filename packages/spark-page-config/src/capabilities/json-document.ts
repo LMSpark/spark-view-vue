@@ -17,7 +17,7 @@ type JsonPrimitive = string | number | boolean | null
 
 export type JsonValue = JsonPrimitive | JsonObject | JsonValue[]
 
-export interface JsonObject {
+export type JsonObject = {
   [key: string]: JsonValue
 }
 
@@ -65,7 +65,7 @@ function objectKeyFromSegment(segment: string | number): string {
 // ── 路径类型 ────────────────────────────────────────────────
 
 // 这里不再为 JS 基础类型保留导出别名，路径段直接使用 string | number。
-export interface JsonPath extends Array<string | number> {}
+export type JsonPath = Array<string | number>
 
 // ── 节点类型 ────────────────────────────────────────────────
 
@@ -73,7 +73,7 @@ export type JsonNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' 
 
 // ── Schema 信息 ──────────────────────────────────────────────
 
-export interface JsonSchemaInfo {
+export type JsonSchemaInfo = {
   title: string
   description: string
   required: boolean
@@ -82,7 +82,7 @@ export interface JsonSchemaInfo {
 
 // ── Mutation 结果（模型 + 焦点/展开 UID）────────────────────
 
-export interface MutationResult {
+export type MutationResult = {
   /** 变更后的新树模型 */
   readonly model: TreeModel
   /** 操作后应聚焦的节点 ID */
@@ -93,7 +93,7 @@ export interface MutationResult {
 
 // ── 树节点（纯模型，6 字段）─────────────────────────────────
 
-export interface TreeNode {
+export type TreeNode = {
   /** 节点 UUID */
   readonly id: string
   /** 父节点 ID；根节点为 null */
@@ -110,22 +110,22 @@ export interface TreeNode {
 
 // ── 显示行（toDisplayRows 输出，附加遍历上下文 + 策略字段）──
 
-export interface TreeDisplayNode extends TreeNode {
+export type TreeDisplayNode = TreeNode & {
   /** 嵌套深度（根 = 0） */
-    readonly depth: number
-    /** 从根到此节点的路径 */
-    readonly path: JsonPath
-    /** 直接子节点数量 */
-    readonly childCount: number
-    /** 键是否可重命名 */
-    readonly keyEditable: boolean
-    /** 类型是否可切换 */
-    readonly typeEditable: boolean
-    /** 是否可删除 */
-    readonly deletable: boolean
+  readonly depth: number
+  /** 从根到此节点的路径 */
+  readonly path: JsonPath
+  /** 直接子节点数量 */
+  readonly childCount: number
+  /** 键是否可重命名 */
+  readonly keyEditable: boolean
+  /** 类型是否可切换 */
+  readonly typeEditable: boolean
+  /** 是否可删除 */
+  readonly deletable: boolean
 }
 
-export interface TreeModel extends ReadonlyMap<string, TreeNode> {}
+export type TreeModel = ReadonlyMap<string, TreeNode>
 
 /** 查找根节点 ID（parentId === null 的唯一节点） */
 export function rootOf(model: TreeModel): string {
@@ -152,7 +152,7 @@ function getChildIds(model: ReadonlyMap<string, TreeNode>, parentId: string): st
 
 // ── 策略接口（领域特化注入点）────────────────────────────────
 
-export interface JsonTreePolicy {
+export type JsonTreePolicy = {
   /** 根节点显示标签。默认 '$' */
   rootLabel?: string
   /** 该路径是否受保护（不可删除）。默认全部可删除 */
@@ -181,7 +181,7 @@ export interface JsonTreePolicy {
  * - 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）
  * - 若某 key 已存在且不都是 object，跳过（不覆盖）
  */
-export interface AutoPopulateEntry {
+export type AutoPopulateEntry = {
   targetPath: JsonPath
   entries: Record<string, JsonValue>
 }
@@ -709,7 +709,7 @@ export function applyAutoPopulatePatches(
 // ════════════════════════════════════════════════════════════
 
 /** 平铺文档（保留根类型，便于还原） */
-export interface FlatJsonTreeDocument {
+export type FlatJsonTreeDocument = {
   readonly rootType: 'object' | 'array'
   readonly rows: TreeNode[]
 }
@@ -819,7 +819,7 @@ export function restoreJsonDocumentByOriginalType(
 
 // ── JSON Schema 路径解析（原 json-schema-info.ts）────────────────
 
-interface JsonSchemaRecord {
+type JsonSchemaRecord = {
   [key: string]: unknown
 }
 

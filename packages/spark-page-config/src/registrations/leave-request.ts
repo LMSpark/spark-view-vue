@@ -8,7 +8,7 @@
 
 type LeaveRequestDraftStatus = 'draft' | 'submitted' | 'cancelled'
 
-interface LeaveRequestDraftFields {
+type LeaveRequestDraftFields = {
   readonly applicantName?: string | undefined
   readonly leaveType?: string | undefined
   readonly startDate?: string | undefined
@@ -18,7 +18,7 @@ interface LeaveRequestDraftFields {
   readonly approver?: string | undefined
 }
 
-interface LeaveRequestDraftState {
+type LeaveRequestDraftState = {
   readonly leaveDraftId: string
   readonly status: LeaveRequestDraftStatus
   readonly fields: LeaveRequestDraftFields
@@ -29,7 +29,7 @@ interface LeaveRequestDraftState {
   readonly cancelReason?: string | undefined
 }
 
-interface LeaveRequestServiceContext {
+type LeaveRequestServiceContext = {
   readonly requestId: string
   readonly leaveDraftId: string
 }

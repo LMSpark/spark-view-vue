@@ -25,8 +25,8 @@ import type {
   RuleConfig,
   PageDataConfig,
   PageFileRegistry,
-} from '../model/types'
-import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from '../model/types'
+} from './config-types'
+import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from './config-types'
 import {
   Logger,
   createFileLoader,
@@ -56,7 +56,9 @@ const DEFAULT_OPTIONS = {
 } satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
 /** 已解析的加载器选项：所有必填字段均有值，可选字段保持可选。 */
-interface ResolvedConfigLoaderOptions extends Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>, Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'> {}
+type ResolvedConfigLoaderOptions =
+  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
+  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
 /** 安全判断未知值是否为数组。 */
 function isUnknownArray(value: unknown): value is readonly unknown[] {
