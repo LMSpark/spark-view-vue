@@ -480,6 +480,9 @@ export class SparkNodeTree {
   /**
    * 获取当前绑定子树的完整数据快照。
    * 语义上等价于 toJSON()。
+   *
+   * @moduleAction getAllData
+   * @moduleMutation rule.json read 导出当前页面节点树完整快照。
    */
   getAllData(): SparkNode {
     return this.toJSON()

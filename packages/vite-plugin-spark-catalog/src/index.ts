@@ -24,6 +24,16 @@ export type { VcmApiDescriptor, ExtractComponentApiVcmOptions, VcmCheckerOptions
 export { generateJsonCatalog } from './json-catalog-generator'
 export type { JsonCatalogOptions } from './json-catalog-generator'
 
+// ── AI 能力模块元数据生成器 ──
+export {
+  generateModuleAbilityMetadata,
+  generatePageDesignModuleMetadata,
+} from './module-metadata-generator'
+export type {
+  ModuleAbilityMetadataGeneratorOptions,
+  ModuleMetadataGenerationResult,
+} from './module-metadata-generator'
+
 // ── 质量审计 ──
 export { auditCatalog, logAuditReport, generateFixGuide } from './catalog-quality-audit'
 export type { AuditReport, AuditIssue, AuditSeverity, AuditOptions } from './catalog-quality-audit'

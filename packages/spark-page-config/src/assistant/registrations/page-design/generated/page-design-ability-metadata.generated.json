@@ -1,0 +1,2332 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts",
+  "note": "Do not edit by hand; update domain ability class JSDoc and rerun pnpm run generate:module-metadata.",
+  "abilities": [
+    {
+      "abilityId": "pageDesign.nodeTree",
+      "kind": "node-tree",
+      "name": "Page Design Node Tree",
+      "description": "当前页面 SparkNodeTree/rule.json 结构读写能力。",
+      "entity": {
+        "id": "pageNode",
+        "label": "页面节点"
+      },
+      "scope": "当前 SparkNodeTree 实例代表一个页面 rule.json 根树。",
+      "attackSurfaces": [
+        {
+          "id": "rule-tree-structure",
+          "risk": "high",
+          "description": "节点增删改移会改变 rule.json 渲染树、组件类型、props、数据绑定和事件入口。"
+        },
+        {
+          "id": "handler-reference",
+          "risk": "medium",
+          "description": "collectHandlerNames 会暴露页面事件处理入口名称，后续写入必须避免伪造不可用 handler。"
+        }
+      ],
+      "trustBoundaries": [
+        "调用方负责把当前页面 rule.json live model 映射为 SparkNodeTree 实例；本类只暴露节点树读写能力。"
+      ],
+      "guards": [
+        "写入节点前必须确认目标节点、父节点、组件 type 和 payload 合法。"
+      ],
+      "mutations": [
+        {
+          "resource": "rule.json",
+          "mode": "read-write",
+          "description": "SparkNodeTree 公开写方法直接修改当前页面 rule.json live model。"
+        }
+      ],
+      "actions": [
+        {
+          "name": "getAllData",
+          "methodName": "getAllData",
+          "description": "获取当前绑定子树的完整数据快照。\n语义上等价于 toJSON()。",
+          "params": [],
+          "returnType": "SparkNode",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "导出当前页面节点树完整快照。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 487
+          }
+        },
+        {
+          "name": "getNode",
+          "methodName": "getNode",
+          "description": "按 componentId 查找节点；未命中时返回 null。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeLookupParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNode | null",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "查询当前页面节点树中的单个节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 632
+          }
+        },
+        {
+          "name": "getLocation",
+          "methodName": "getLocation",
+          "description": "获取节点在树中的完整位置信息；未命中时返回 null。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeLookupParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeLocation | null",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "查询当前页面节点树中的节点位置。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 647
+          }
+        },
+        {
+          "name": "hasNode",
+          "methodName": "hasNode",
+          "description": "判断指定 componentId 是否存在。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeLookupParams",
+              "optional": false
+            }
+          ],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "查询当前页面节点是否存在。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 671
+          }
+        },
+        {
+          "name": "getParent",
+          "methodName": "getParent",
+          "description": "获取目标节点的直接父节点；当前绑定 root 或未命中时返回 null。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeLookupParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNode | null",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "查询当前页面节点父级。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 681
+          }
+        },
+        {
+          "name": "listChildren",
+          "methodName": "listChildren",
+          "description": "读取当前组件实例或指定子组件的直接 children。\n\n返回的是 children 的浅拷贝，避免调用方直接改写实例内部数组引用。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeChildrenParams",
+              "optional": true
+            }
+          ],
+          "returnType": "SparkNodeChildren",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "查询当前页面节点子级。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 693
+          }
+        },
+        {
+          "name": "countNodes",
+          "methodName": "countNodes",
+          "description": "统计当前组件实例子树中的结构节点数量。",
+          "params": [],
+          "returnType": "number",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "统计当前页面节点数量。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 705
+          }
+        },
+        {
+          "name": "collectDataViewKeys",
+          "methodName": "collectDataViewKeys",
+          "description": "收集当前组件实例子树中出现过的全部唯一 DataView 定位键。\n\n包括容器、展示、动作、选项等 props.dataViewKey / props.optionDataViewKey。",
+          "params": [],
+          "returnType": "Set<string>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "提取当前页面节点树中的 DataView 绑定键。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 717
+          }
+        },
+        {
+          "name": "collectHandlerNames",
+          "methodName": "collectHandlerNames",
+          "description": "收集当前组件实例子树中 props.on 里声明过的全部唯一处理器名。",
+          "params": [],
+          "returnType": "Set<string>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "handler-reference",
+              "risk": "medium",
+              "description": "读取 props.on 中的处理器名会暴露页面事件入口。"
+            }
+          ],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "提取当前页面节点树中的事件处理器引用。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 730
+          }
+        },
+        {
+          "name": "findByType",
+          "methodName": "findByType",
+          "description": "按组件类型名递归搜索子树，返回所有匹配节点的真实 id、深度和父 id。\n\n典型用法：当调用方知道目标组件类型（如 'r-tabs'）但不知道其节点 id 时，\n调用此方法可一步获取可直接用于 getNode / setProps / removeNode 的真实 id。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeFindByTypeParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeFindByTypeResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "read",
+              "description": "按组件类型查询当前页面节点树。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 747
+          }
+        },
+        {
+          "name": "addNode",
+          "methodName": "addNode",
+          "description": "向当前组件实例或指定子组件的 children 中添加一个新节点。\n\n这是“先构造 SparkNode，再放入 SparkNodeTree”这条链路的最直接入口。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeAddParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeAddResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "新增节点会改变页面渲染树和组件能力入口。"
+            }
+          ],
+          "guards": [
+            "必须先确认 parentComponentId、插入位置和 node payload 合法。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "添加单个页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 767
+          }
+        },
+        {
+          "name": "addNodes",
+          "methodName": "addNodes",
+          "description": "向同一个子组件容器批量插入多个新节点。\n\n- nodes 按传入顺序依次插入\n- index 省略时整体追加到末尾\n- index 提供时，从该位置开始连续插入",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeAddNodesParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeAddNodesResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "批量新增节点会改变页面渲染树和组件能力入口。"
+            }
+          ],
+          "guards": [
+            "必须先确认每个 node payload 合法，并确认批量插入顺序。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "批量添加页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 786
+          }
+        },
+        {
+          "name": "moveNode",
+          "methodName": "moveNode",
+          "description": "把已有节点移动到当前组件实例或指定子组件的 children 中。\n\n返回值只包含移动摘要，不回传完整节点子树，避免结果膨胀。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeMoveParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeMoveResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "移动节点会改变页面布局、容器归属和数据绑定上下文。"
+            }
+          ],
+          "guards": [
+            "必须确认 componentId、目标父级和目标 index，避免循环移动或破坏容器结构。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "移动页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 822
+          }
+        },
+        {
+          "name": "setProps",
+          "methodName": "setProps",
+          "description": "设置目标节点的 props。\n\n- merge !== false 时，采用浅合并语义\n- merge === false 时，直接替换整个 props 对象\n\n这类方法承载的是“修改属性值”能力，而不是组件选择能力。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeSetPropsParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeSetPropsResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-props",
+              "risk": "high",
+              "description": "props 写入会改变组件数据绑定、事件绑定、显示状态和交互行为。"
+            }
+          ],
+          "guards": [
+            "必须先通过 payload-catalog guidePayload 确认组件 props schema。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "修改单个页面节点 props。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 842
+          }
+        },
+        {
+          "name": "setPropsBatch",
+          "methodName": "setPropsBatch",
+          "description": "批量设置多个节点的 props。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeSetPropsBatchParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeSetPropsBatchResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-props",
+              "risk": "high",
+              "description": "批量 props 写入会同时改变多个组件的数据绑定、事件绑定和交互行为。"
+            }
+          ],
+          "guards": [
+            "必须逐项确认 componentId 与 props schema，避免跨节点误写。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "批量修改页面节点 props。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 857
+          }
+        },
+        {
+          "name": "replaceNode",
+          "methodName": "replaceNode",
+          "description": "用一个新的 SparkNode 完整替换目标节点。\n\n这类方法承载的是“修改节点结构”能力：节点 type、props、children 都可以整体替换。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeReplaceParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeReplaceResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "替换节点会改变组件类型、子树、props 和事件入口。"
+            }
+          ],
+          "guards": [
+            "必须确认目标 componentId 与新节点 payload，避免误替换容器或页面根。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "替换单个页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 882
+          }
+        },
+        {
+          "name": "replaceNodes",
+          "methodName": "replaceNodes",
+          "description": "批量替换多个节点。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeReplaceNodesParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeReplaceNodesResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "批量替换节点会同时改变多个组件子树和数据绑定入口。"
+            }
+          ],
+          "guards": [
+            "必须逐项确认目标 componentId 与新节点 payload。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "批量替换页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 897
+          }
+        },
+        {
+          "name": "removeNode",
+          "methodName": "removeNode",
+          "description": "删除当前组件实例子树内的指定节点。\n\n当前绑定的 root 自身不允许删除；调用方如果要整体替换当前组件实例，应直接创建新的实例或重建 root。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeRemoveParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeRemoveResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "删除节点会移除组件、数据绑定和事件入口。"
+            }
+          ],
+          "guards": [
+            "必须确认 componentId、父级位置和删除影响，不能删除当前绑定 root。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "删除单个页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 922
+          }
+        },
+        {
+          "name": "removeNodes",
+          "methodName": "removeNodes",
+          "description": "批量删除多个节点。",
+          "params": [
+            {
+              "name": "params",
+              "type": "SparkNodeTreeRemoveNodesParams",
+              "optional": false
+            }
+          ],
+          "returnType": "SparkNodeRemoveNodesResult",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "rule-tree-structure",
+              "risk": "high",
+              "description": "批量删除节点会同时移除多个组件、数据绑定和事件入口。"
+            }
+          ],
+          "guards": [
+            "必须确认每个 componentId 的父级位置和删除影响，不能删除当前绑定 root。"
+          ],
+          "mutations": [
+            {
+              "resource": "rule.json",
+              "mode": "write",
+              "description": "批量删除页面节点。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+            "line": 937
+          }
+        }
+      ],
+      "source": {
+        "file": "packages/spark-page-config/src/page/model/spark-node-tree.ts",
+        "line": 388,
+        "className": "SparkNodeTree"
+      }
+    },
+    {
+      "abilityId": "pageDesign.dataset",
+      "kind": "dataset",
+      "name": "Page Design DataSet",
+      "description": "当前页面 DataSetCrudTool/pagedata.json 数据空间读写能力。",
+      "entity": {
+        "id": "dataSet",
+        "label": "页面数据集"
+      },
+      "scope": "当前 DataSetCrudTool 实例代表一个页面 pagedata.json 模型。",
+      "attackSurfaces": [
+        {
+          "id": "dataset-schema",
+          "risk": "high",
+          "description": "表、列、视图、聚合、计算表达式、关系和依赖写入会改变页面 dataViewKey/dataMember/dataField 绑定语义。"
+        },
+        {
+          "id": "dataset-row-data",
+          "risk": "medium",
+          "description": "行数据和默认值会进入页面预览或静态数据源，必须保持 JSON 可序列化。"
+        },
+        {
+          "id": "remote-crud-config",
+          "risk": "high",
+          "description": "api/crudConfig 写入会改变页面运行时远端 CRUD 访问目标。"
+        }
+      ],
+      "trustBoundaries": [
+        "调用方负责把当前页面 pagedata.json live model 映射为 DataSetCrudTool 实例；本类只暴露数据集读写能力。"
+      ],
+      "guards": [
+        "修改结构前必须确认表、字段、视图和绑定链仍能解析；远端 CRUD 配置不得伪造未知接口。"
+      ],
+      "mutations": [
+        {
+          "resource": "pagedata.json",
+          "mode": "read-write",
+          "description": "DataSetCrudTool 公开写方法直接修改当前页面 pagedata.json live model。"
+        }
+      ],
+      "actions": [
+        {
+          "name": "export",
+          "methodName": "toJson",
+          "description": "将当前 DataSet 序列化为元数据对象。",
+          "params": [],
+          "returnType": "DataSetMetadata",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "导出当前页面数据集元数据快照。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 246
+          }
+        },
+        {
+          "name": "canUndo",
+          "methodName": "getCanUndo",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "查询当前页面数据集是否可撤销。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 270
+          }
+        },
+        {
+          "name": "canRedo",
+          "methodName": "getCanRedo",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "查询当前页面数据集是否可重做。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 278
+          }
+        },
+        {
+          "name": "historyCursor",
+          "methodName": "getHistoryCursor",
+          "params": [],
+          "returnType": "number",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "查询当前页面数据集历史游标。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 286
+          }
+        },
+        {
+          "name": "undo",
+          "methodName": "undo",
+          "description": "撤销最近一次结构写操作。\n成功时替换内部 DataSet 并返回 true；无可撤销时返回 false。",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "撤销当前页面数据集最近一次结构写操作。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 297
+          }
+        },
+        {
+          "name": "redo",
+          "methodName": "redo",
+          "description": "重做最近一次被撤销的操作。\n成功时替换内部 DataSet 并返回 true；无可重做时返回 false。",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "重做当前页面数据集最近一次被撤销的结构写操作。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 311
+          }
+        },
+        {
+          "name": "clearHistory",
+          "methodName": "clearHistory",
+          "params": [],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "清空当前页面数据集的 undo/redo 历史。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 322
+          }
+        },
+        {
+          "name": "listTables",
+          "methodName": "listTables",
+          "description": "列出当前 DataSet 中的全部数据表。",
+          "params": [],
+          "returnType": "DataTable[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出当前页面数据集中的全部表。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 371
+          }
+        },
+        {
+          "name": "getTable",
+          "methodName": "getTable",
+          "description": "获取指定数据表。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取当前页面数据集中的单个表。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 383
+          }
+        },
+        {
+          "name": "listColumns",
+          "methodName": "listColumns",
+          "description": "列出指定数据表的全部列定义。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataColumn[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出指定表的全部字段。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 396
+          }
+        },
+        {
+          "name": "getColumn",
+          "methodName": "getColumn",
+          "description": "获取指定数据表中的单个列定义。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataColumn | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取指定表的单个字段定义。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 410
+          }
+        },
+        {
+          "name": "createColumn",
+          "methodName": "createColumn",
+          "description": "向指定数据表追加一列。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; column: DataColumn }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "新增字段会改变数据绑定字段、校验器和视图列缓存。"
+            }
+          ],
+          "guards": [
+            "新字段名必须在表内唯一，并与现有 dataField 绑定策略一致。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "向指定表追加字段。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 428
+          }
+        },
+        {
+          "name": "updateColumn",
+          "methodName": "updateColumn",
+          "description": "更新指定列定义。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string; updates: Partial<DataColumn> }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "字段定义更新会改变数据类型、校验、显示和计算语义。"
+            }
+          ],
+          "guards": [
+            "更新前必须确认列存在，且变更不会破坏既有 dataField 绑定。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新指定字段定义。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 451
+          }
+        },
+        {
+          "name": "renameColumn",
+          "methodName": "renameColumn",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string; newColumnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "字段重命名会影响视图行数据、关系、依赖和组件 dataField 绑定。"
+            }
+          ],
+          "guards": [
+            "必须确认 newColumnName 在表内唯一，并同步检查页面绑定。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "重命名指定字段并迁移内部引用。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 468
+          }
+        },
+        {
+          "name": "deleteColumn",
+          "methodName": "deleteColumn",
+          "description": "删除指定列。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "删除字段会破坏依赖该字段的数据绑定、关系和视图配置。"
+            }
+          ],
+          "guards": [
+            "删除前必须确认字段没有被组件、视图、关系或依赖引用。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除指定字段。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 562
+          }
+        },
+        {
+          "name": "createTable",
+          "methodName": "createTable",
+          "description": "创建数据表并按需初始化资源语义、API、CRUD 配置和视图。",
+          "params": [
+            {
+              "name": "options",
+              "type": "DataSetCrudToolCreateTableOptions",
+              "optional": false,
+              "description": "建表参数。"
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "新建表会新增可被页面组件绑定的数据空间。"
+            },
+            {
+              "id": "remote-crud-config",
+              "risk": "high",
+              "description": "建表时写入 api/crudConfig 会改变远端访问目标。"
+            }
+          ],
+          "guards": [
+            "tableName 必须唯一，columns 必须包含合法字段定义。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "创建页面数据表。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 581
+          }
+        },
+        {
+          "name": "updateTable",
+          "methodName": "updateTable",
+          "description": "更新数据表结构、资源语义及运行配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string } & DataSetCrudToolUpdateTableOptions",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "表结构更新会影响字段、默认行、视图、资源语义和绑定链。"
+            },
+            {
+              "id": "remote-crud-config",
+              "risk": "high",
+              "description": "api/crudConfig 更新会改变页面运行时远端 CRUD 行为。"
+            }
+          ],
+          "guards": [
+            "修改前必须确认表存在，并检查 columnsToRemove/defaultRows 对现有绑定的影响。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新页面数据表结构和语义。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 619
+          }
+        },
+        {
+          "name": "renameTable",
+          "methodName": "renameTable",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; newTableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "表重命名会影响 dataViewKey、关系、依赖、布局和组件绑定。"
+            }
+          ],
+          "guards": [
+            "必须确认 newTableName 唯一，并同步检查页面 dataViewKey 引用。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "重命名页面数据表并迁移内部引用。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 663
+          }
+        },
+        {
+          "name": "deleteTable",
+          "methodName": "deleteTable",
+          "description": "删除指定数据表。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-schema",
+              "risk": "high",
+              "description": "删除表会移除所有字段、视图、行数据和组件绑定入口。"
+            }
+          ],
+          "guards": [
+            "删除前必须确认表未被 relation/dependency 和页面组件引用。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除页面数据表。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 742
+          }
+        },
+        {
+          "name": "listViews",
+          "methodName": "listViews",
+          "description": "列出某个数据表下的全部视图。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出指定表下的全部视图。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 760
+          }
+        },
+        {
+          "name": "getView",
+          "methodName": "getView",
+          "description": "获取指定视图。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取指定数据视图。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 773
+          }
+        },
+        {
+          "name": "createView",
+          "methodName": "createView",
+          "description": "创建一个非 default 视图。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId: string; config?: ViewMetadata }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-view",
+              "risk": "high",
+              "description": "新建视图会新增可被页面组件绑定的 DataView。"
+            }
+          ],
+          "guards": [
+            "不能创建 default 视图，viewId 必须在表内唯一。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "创建页面数据视图。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 791
+          }
+        },
+        {
+          "name": "updateView",
+          "methodName": "updateView",
+          "description": "更新指定视图的元数据配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; updates: Partial<ViewMetadata> }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-view",
+              "risk": "high",
+              "description": "视图配置更新会改变过滤、排序、分页、主键和绑定输出。"
+            }
+          ],
+          "guards": [
+            "更新前必须确认 tableName/viewId 存在，并保持 DataViewKey 可解析。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新页面数据视图。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 820
+          }
+        },
+        {
+          "name": "deleteView",
+          "methodName": "deleteView",
+          "description": "删除指定视图。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-view",
+              "risk": "high",
+              "description": "删除视图会破坏引用该 viewId 的组件 dataViewKey。"
+            }
+          ],
+          "guards": [
+            "不能删除 default 视图，删除前必须确认页面没有引用该视图。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除页面数据视图。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 842
+          }
+        },
+        {
+          "name": "listAggregates",
+          "methodName": "listAggregates",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Record<string, AggregateColumnConfig>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出指定视图聚合配置。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 857
+          }
+        },
+        {
+          "name": "getAggregate",
+          "methodName": "getAggregate",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "AggregateColumnConfig | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取指定聚合配置。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 867
+          }
+        },
+        {
+          "name": "addAggregate",
+          "methodName": "addAggregate",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string; config: AggregateColumnConfig }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-aggregate",
+              "risk": "medium",
+              "description": "聚合配置会改变 aggregateResult 输出。"
+            }
+          ],
+          "guards": [
+            "key 必须唯一，config 必须引用存在字段。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "新增指定视图聚合配置。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 880
+          }
+        },
+        {
+          "name": "updateAggregate",
+          "methodName": "updateAggregate",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string; updates: Partial<AggregateColumnConfig> }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-aggregate",
+              "risk": "medium",
+              "description": "聚合配置更新会改变 aggregateResult 输出。"
+            }
+          ],
+          "guards": [
+            "更新前必须确认聚合 key 存在，且引用字段有效。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新指定视图聚合配置。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 898
+          }
+        },
+        {
+          "name": "removeAggregate",
+          "methodName": "removeAggregate",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-aggregate",
+              "risk": "medium",
+              "description": "删除聚合配置会影响依赖 aggregateResult 的页面组件。"
+            }
+          ],
+          "guards": [
+            "删除前必须确认页面没有依赖该聚合 key。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除指定视图聚合配置。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 925
+          }
+        },
+        {
+          "name": "getComputeExpression",
+          "methodName": "getComputeExpression",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "string | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取字段计算表达式。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 941
+          }
+        },
+        {
+          "name": "setComputeExpression",
+          "methodName": "setComputeExpression",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string; expression: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-compute",
+              "risk": "high",
+              "description": "计算表达式会改变字段值生成逻辑。"
+            }
+          ],
+          "guards": [
+            "expression 必须只使用受支持的 DataSet 计算表达式语法和现有字段。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "设置字段计算表达式。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 951
+          }
+        },
+        {
+          "name": "clearComputeExpression",
+          "methodName": "clearComputeExpression",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-compute",
+              "risk": "medium",
+              "description": "清除计算表达式会改变字段值来源。"
+            }
+          ],
+          "guards": [
+            "清除前必须确认页面不依赖该计算字段。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "清除字段计算表达式。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 966
+          }
+        },
+        {
+          "name": "listRows",
+          "methodName": "listRows",
+          "description": "列出指定视图当前持有的全部行。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataRow[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出指定视图行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 995
+          }
+        },
+        {
+          "name": "getRow",
+          "methodName": "getRow",
+          "description": "通过主键查找一条行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; id: string | number; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataRow | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取指定行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1011
+          }
+        },
+        {
+          "name": "createRow",
+          "methodName": "createRow",
+          "description": "在指定视图中创建一条新行。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; data: Partial<DataRow>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<DataRow | CrudResult<DataRow>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-row-data",
+              "risk": "medium",
+              "description": "新增行会改变页面预览或静态数据源。"
+            }
+          ],
+          "guards": [
+            "data 必须匹配目标表字段和主键约束。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "新增指定视图行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1032
+          }
+        },
+        {
+          "name": "createRows",
+          "methodName": "createRows",
+          "description": "在指定视图中批量创建多条新行。\n\n- immediate + API 模式：优先走 view.crud.batchCreateRecords\n- 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; items: Array<Partial<DataRow>>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<CrudResult<BatchResult>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-row-data",
+              "risk": "medium",
+              "description": "批量新增行会改变页面预览或静态数据源。"
+            }
+          ],
+          "guards": [
+            "items 必须逐项匹配目标表字段和主键约束。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "批量新增指定视图行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1055
+          }
+        },
+        {
+          "name": "updateRow",
+          "methodName": "updateRow",
+          "description": "更新指定主键的行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; id: string | number; data: Partial<DataRow>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<boolean | CrudResult<DataRow>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-row-data",
+              "risk": "medium",
+              "description": "更新行会改变页面预览或静态数据源。"
+            }
+          ],
+          "guards": [
+            "data 必须只包含目标表允许字段。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新指定行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1082
+          }
+        },
+        {
+          "name": "updateRows",
+          "methodName": "updateRows",
+          "description": "批量更新多条行数据。\n\n对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; items: Array<{ id: string | number; data: Partial<DataRow> }>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<CrudResult<BatchResult>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-row-data",
+              "risk": "medium",
+              "description": "批量更新行会改变页面预览或静态数据源。"
+            }
+          ],
+          "guards": [
+            "items 必须逐项匹配目标表字段和主键约束。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "批量更新指定视图行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1104
+          }
+        },
+        {
+          "name": "deleteRow",
+          "methodName": "deleteRow",
+          "description": "删除指定主键的行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; id: string | number; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<boolean | CrudResult<boolean>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-row-data",
+              "risk": "medium",
+              "description": "删除行会改变页面预览或静态数据源。"
+            }
+          ],
+          "guards": [
+            "删除前必须确认目标 id 对应的行不是页面示例或默认选项依赖。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除指定行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1133
+          }
+        },
+        {
+          "name": "deleteRows",
+          "methodName": "deleteRows",
+          "description": "批量删除多条行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; ids: Array<string | number>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<CrudResult<BatchResult>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-row-data",
+              "risk": "medium",
+              "description": "批量删除行会改变页面预览或静态数据源。"
+            }
+          ],
+          "guards": [
+            "ids 必须逐项确认，避免误删示例或默认选项数据。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "批量删除指定视图行数据。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1151
+          }
+        },
+        {
+          "name": "listRelations",
+          "methodName": "listRelations",
+          "description": "列出 DataSet 中的表关系。",
+          "params": [
+            {
+              "name": "filter",
+              "type": "Partial<Pick<TableRelation, 'parentTable' | 'childTable'>>",
+              "optional": true,
+              "description": "可选过滤条件，仅支持按 parentTable / childTable 过滤。"
+            }
+          ],
+          "returnType": "TableRelation[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出数据表关系。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1176
+          }
+        },
+        {
+          "name": "getRelation",
+          "methodName": "getRelation",
+          "description": "获取单条表关系。",
+          "params": [
+            {
+              "name": "selector",
+              "type": "RelationSelector",
+              "optional": false,
+              "description": "关系选择器。"
+            }
+          ],
+          "returnType": "TableRelation | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取指定数据表关系。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1193
+          }
+        },
+        {
+          "name": "createRelation",
+          "methodName": "createRelation",
+          "description": "创建一条表关系。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string; parentField: string; childField: string; relationName?: string }",
+              "optional": false,
+              "description": "关系参数。"
+            }
+          ],
+          "returnType": "TableRelation",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-relation",
+              "risk": "high",
+              "description": "新建关系会改变主从表联动、筛选和组件级数据依赖。"
+            }
+          ],
+          "guards": [
+            "父子表与字段必须存在，且不能创建重复或歧义关系。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "创建数据表关系。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1217
+          }
+        },
+        {
+          "name": "updateRelation",
+          "methodName": "updateRelation",
+          "description": "更新一条表关系。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ selector: RelationSelector; updates: Partial<TableRelation> }",
+              "optional": false
+            }
+          ],
+          "returnType": "TableRelation",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-relation",
+              "risk": "high",
+              "description": "更新关系会改变主从表联动和组件数据依赖。"
+            }
+          ],
+          "guards": [
+            "selector 必须唯一命中，updates 不得指向不存在的表或字段。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新数据表关系。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1239
+          }
+        },
+        {
+          "name": "deleteRelation",
+          "methodName": "deleteRelation",
+          "description": "删除一条表关系。",
+          "params": [
+            {
+              "name": "selector",
+              "type": "RelationSelector",
+              "optional": false,
+              "description": "关系选择器。"
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-relation",
+              "risk": "high",
+              "description": "删除关系会破坏依赖主从联动的数据视图。"
+            }
+          ],
+          "guards": [
+            "删除前必须确认没有视图或组件依赖该关系。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除数据表关系。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1256
+          }
+        },
+        {
+          "name": "listDependencies",
+          "methodName": "listDependencies",
+          "description": "列出 DataSet 中的视图依赖。",
+          "params": [
+            {
+              "name": "filter",
+              "type": "Partial<Pick<ViewDependency, 'parentTable' | 'childTable'>>",
+              "optional": true,
+              "description": "可选过滤条件，支持按 parentTable / childTable 过滤。"
+            }
+          ],
+          "returnType": "ViewDependency[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "列出数据视图依赖。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1273
+          }
+        },
+        {
+          "name": "getDependency",
+          "methodName": "getDependency",
+          "description": "获取一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "ViewDependency | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "read",
+              "description": "读取指定数据视图依赖。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1290
+          }
+        },
+        {
+          "name": "createDependency",
+          "methodName": "createDependency",
+          "description": "创建一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ dependency: ViewDependency }",
+              "optional": false,
+              "description": "依赖参数。"
+            }
+          ],
+          "returnType": "ViewDependency",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-dependency",
+              "risk": "high",
+              "description": "新建依赖会改变父子视图刷新和过滤链路。"
+            }
+          ],
+          "guards": [
+            "dependency 必须引用存在表和字段，并避免循环依赖。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "创建数据视图依赖。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1309
+          }
+        },
+        {
+          "name": "updateDependency",
+          "methodName": "updateDependency",
+          "description": "更新一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string; updates: Partial<ViewDependency> }",
+              "optional": false
+            }
+          ],
+          "returnType": "ViewDependency",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-dependency",
+              "risk": "high",
+              "description": "更新依赖会改变父子视图刷新和过滤链路。"
+            }
+          ],
+          "guards": [
+            "更新后仍必须引用存在表和字段，并避免循环依赖。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "更新数据视图依赖。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1333
+          }
+        },
+        {
+          "name": "deleteDependency",
+          "methodName": "deleteDependency",
+          "description": "删除一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [
+            {
+              "id": "dataset-dependency",
+              "risk": "high",
+              "description": "删除依赖会改变依赖视图的联动刷新行为。"
+            }
+          ],
+          "guards": [
+            "删除前必须确认页面没有依赖该父子视图联动。"
+          ],
+          "mutations": [
+            {
+              "resource": "pagedata.json",
+              "mode": "write",
+              "description": "删除数据视图依赖。"
+            }
+          ],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1353
+          }
+        }
+      ],
+      "source": {
+        "file": "packages/spark-data/src/dataset-crud-tool.ts",
+        "line": 146,
+        "className": "DataSetCrudTool"
+      }
+    }
+  ]
+}
