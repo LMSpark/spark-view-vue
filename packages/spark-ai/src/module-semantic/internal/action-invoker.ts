@@ -16,7 +16,8 @@
 import type { LlmJsonValue } from '../../schema'
 import { LlmSchemaValidator } from '../../schema'
 import { ModuleKind } from '../protocol/module-kind'
-import type { ModuleNavigationSuccess, Navigator } from './navigator'
+import type { Navigator } from './navigator'
+import { isNavigationSuccess } from './navigator'
 
 export class ActionInvoker {
   public constructor(
@@ -66,10 +67,4 @@ export class ActionInvoker {
 
     return navResult.moduleKind.invokeAction(navResult.segmentCtx, actionName, args)
   }
-}
-
-function isNavigationSuccess(
-  result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
-): result is ModuleNavigationSuccess {
-  return 'moduleKind' in result
 }

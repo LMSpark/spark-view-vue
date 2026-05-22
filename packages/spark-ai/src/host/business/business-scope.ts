@@ -7,6 +7,7 @@ import {
   AiHostBusinessScope,
   AiHostBusinessTarget,
 } from './business-types'
+import type { AiHostChatRequest } from '../chat/chat-types'
 
 function normalizeRequiredText(value: unknown, fieldName: string): string {
   if (typeof value !== 'string') {
@@ -61,4 +62,12 @@ export function toAiHostRuntimeScope(scope: AiHostBusinessScope): AiHostBusiness
     scope.businessInstanceId,
     scope.instanceId,
   )
+}
+
+export function latestUserInput(request: AiHostChatRequest): string {
+  for (let index = request.historyMsgs.length - 1; index >= 0; index -= 1) {
+    const item = request.historyMsgs[index]
+    if (item?.role === 'user') return item.content.trim()
+  }
+  return ''
 }

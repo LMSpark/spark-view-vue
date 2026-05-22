@@ -15,7 +15,8 @@
 import type { LlmJsonValue } from '../../schema'
 import type { ModuleKind } from '../protocol/module-kind'
 
-import type { ModuleNavigationSuccess, Navigator } from './navigator'
+import type { Navigator } from './navigator'
+import { isNavigationSuccess } from './navigator'
 
 
 export class AttributeAccessor {
@@ -53,10 +54,4 @@ export class AttributeAccessor {
     }
     return navResult.moduleKind.setAttribute(navResult.segmentCtx, attrName, value)
   }
-}
-
-function isNavigationSuccess(
-  result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
-): result is ModuleNavigationSuccess {
-  return 'moduleKind' in result
 }

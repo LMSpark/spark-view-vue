@@ -99,7 +99,7 @@ export class Navigator {
     for (let i = 0; i < segments.length; i++) {
       const segment = requirePathSegment(segments, i)
       if (!this.kinds.has(segment.kind)) {
-        return failWithCheck(
+        return ModuleKind.OperationResult.failCode(
           'KIND_NOT_REGISTERED',
           `路径段 ${formatSegment(segment, i)} 的 kind "${segment.kind}" 未注册`,
           '可通过 listChildren 查看当前路径下可用的子 kind',
@@ -126,7 +126,7 @@ export class Navigator {
         return ModuleKind.OperationResult.fail([wrapper, ...original])
       }
       if (resolveResult.data !== true) {
-        return failWithCheck(
+        return ModuleKind.OperationResult.failCode(
           'PATH_INVALID',
           `路径段 ${formatSegment(childSegment, i)} 在父段 ${formatSegment(parentSegment, i - 1)} 下不存在`,
           `可调用 listChildren 查询父段下可用的 ${childSegment.kind} 列表`,
@@ -250,10 +250,6 @@ export class Navigator {
 /** 根级 findInstance 调用 ModuleKind 时占位的 segment。kind 为空表示"非具体段"。 */
 const ROOT_SEGMENT_SENTINEL = new ModuleKind.PathSegment('', '')
 
-function failWithCheck(code: string, message: string, hint?: string): ModuleNavigationFailure {
-  return ModuleKind.OperationResult.failCode(code, message, hint)
-}
-
 function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
   return {
     kind: moduleKind.kind,
@@ -265,7 +261,7 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
   }
 }
 
-function isNavigationSuccess(
+export function isNavigationSuccess(
   result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
 ): result is ModuleNavigationSuccess {
   return result instanceof ModuleNavigationSuccess

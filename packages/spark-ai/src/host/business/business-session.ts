@@ -7,6 +7,7 @@ import { AiHostToolLoopRunner } from '../tool-loop/tool-loop-runner'
 import {
   createAiHostBusinessScope,
   createAiHostBusinessStorageKey,
+  latestUserInput,
   normalizeAiHostBusinessTarget,
   toAiHostRuntimeScope,
 } from './business-scope'
@@ -63,14 +64,6 @@ function isSameScope(left: AiHostBusinessScope, right: AiHostBusinessScope): boo
   return left.businessRegistrationId === right.businessRegistrationId
     && left.businessInstanceId === right.businessInstanceId
     && left.instanceId === right.instanceId
-}
-
-function latestUserInput(request: AiHostChatRequest): string {
-  for (let index = request.historyMsgs.length - 1; index >= 0; index -= 1) {
-    const item = request.historyMsgs[index]
-    if (item?.role === 'user') return item.content.trim()
-  }
-  return ''
 }
 
 function normalizeTurn(request: AiHostChatRequest): AiHostTurnMeta {

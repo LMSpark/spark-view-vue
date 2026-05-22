@@ -16,6 +16,7 @@ import {
   type AiHostMessageSource,
   type AiHostSessionRecord,
 } from './session-types'
+import { isRecord } from '../transport/http-utils'
 
 export type DefaultAiHostSessionStoreOptions = Readonly<{
   now?: (() => number) | undefined
@@ -243,8 +244,4 @@ function cloneUnknown(value: unknown): unknown {
   } catch {
     return value
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

@@ -104,7 +104,7 @@ export class ModuleSemanticRuntime {
     host?: ModuleKind.HostContext,
   ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     if (!isProtocolToolName(toolName)) {
-      return failWith('UNKNOWN_TOOL', `工具 "${toolName}" 未在协议中定义`, '可调用的工具列表见 getLlmTools()')
+      return ModuleKind.OperationResult.failCode('UNKNOWN_TOOL', `工具 "${toolName}" 未在协议中定义`, '可调用的工具列表见 getLlmTools()')
     }
     try {
       switch (toolName) {
@@ -123,14 +123,14 @@ export class ModuleSemanticRuntime {
       }
     } catch (error) {
       if (error instanceof ModuleKind.PathParseError) {
-        return failWith(
+        return ModuleKind.OperationResult.failCode(
           `INVALID_PATH_${error.code}`,
           `路径解析失败: ${error.message}`,
           '路径语法: / 或 /<kind>[<id>]/<kind>[<id>]/...',
         )
       }
       if (error instanceof ToolArgsError) {
-        return failWith('INVALID_TOOL_ARGS', error.message, '请按工具描述补齐参数后重试')
+        return ModuleKind.OperationResult.failCode('INVALID_TOOL_ARGS', error.message, '请按工具描述补齐参数后重试')
       }
       throw error
     }
@@ -298,17 +298,9 @@ function isProtocolToolName(name: string): name is ProtocolToolName {
   return known.some((candidate) => candidate === name)
 }
 
-function failWith(code: string, message: string, hint?: string): ModuleKind.OperationResult<never> {
-  return ModuleKind.OperationResult.failCode(code, message, hint)
-}
-
-function passthroughFailure(result: ModuleKind.OperationResult<unknown>): ModuleKind.OperationResult<never> {
-  return ModuleKind.OperationResult.passthroughFailure(result)
-}
-
 function castVoidResult(result: ModuleKind.OperationResult<void>): ModuleKind.OperationResult<LlmJsonValue> {
   if (!result.ok) {
-    return passthroughFailure(result)
+    return ModuleKind.OperationResult.passthroughFailure(result)
   }
   return ModuleKind.OperationResult.ok<LlmJsonValue>(undefined, result.checks, result.state)
 }
@@ -317,7 +309,7 @@ function castInstanceListResult(
   result: ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>,
 ): ModuleKind.OperationResult<LlmJsonValue> {
   if (!result.ok) {
-    return passthroughFailure(result)
+    return ModuleKind.OperationResult.passthroughFailure(result)
   }
   const data = result.data ?? []
   const payload: LlmJsonValue = data.map((ref) => instanceRefToJson(ref))
@@ -328,7 +320,7 @@ function castDescribeKindResult(
   result: ModuleKind.OperationResult<ModuleKindDescription>,
 ): ModuleKind.OperationResult<LlmJsonValue> {
   if (!result.ok) {
-    return passthroughFailure(result)
+    return ModuleKind.OperationResult.passthroughFailure(result)
   }
   if (result.data === undefined) {
     return ModuleKind.OperationResult.ok<LlmJsonValue>(undefined, result.checks, result.state)

@@ -5,7 +5,7 @@
 import type { LlmJsonValue } from '../../schema'
 import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
 import { ModuleKind } from '../../module-semantic/protocol/module-kind'
-import { createAiHostStreamKey, toAiHostRuntimeScope } from '../business/business-scope'
+import { createAiHostStreamKey, latestUserInput, toAiHostRuntimeScope } from '../business/business-scope'
 import type {
   AiHostBusinessLifecycleDirective,
   AiHostBusinessRegistration,
@@ -40,14 +40,6 @@ function toCurrentTurnMessages(request: AiHostChatRequest): AiHostTransportMessa
   return latestUser === ''
     ? []
     : [{ role: 'user', content: latestUser }]
-}
-
-function latestUserInput(request: AiHostChatRequest): string {
-  for (let index = request.historyMsgs.length - 1; index >= 0; index -= 1) {
-    const item = request.historyMsgs[index]
-    if (item?.role === 'user') return item.content.trim()
-  }
-  return ''
 }
 
 function eventModuleIdFromProtocolCall(
