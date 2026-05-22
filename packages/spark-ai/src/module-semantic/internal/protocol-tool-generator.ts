@@ -1,37 +1,41 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * module-semantic/internal/protocol-tool-generator.ts — 协议工具规约生成器
+ * ═══════════════════════════════════════════════════════════════
  *
- * 协议工具规约生成器。
+ * 【架构定位】协议层内部组件，由 ModuleSemanticRuntime 组合。
+ *   从所有已注册的 ModuleKind 派生 6 个固定的 LLM 可见协议工具。
  *
- * 从所有已注册的 ModuleKind 派生 LLM 可见的协议级工具集。
- * 协议层固定派生 6 个通用工具,实际可用 kind / attribute / action 写入
- * 每个工具的 description,LLM 通过 describeKind / listChildren 二次探索:
+ * 【设计原则】
+ *   - LLM 看到的工具数固定为 6，不随业务 kind 数量膨胀。
+ *   - 工具规约对齐 OpenAI function tool spec：{ type: 'function', function: { name, description, parameters } }。
+ *   - 每个工具的 description 内嵌当前注册的 kind 摘要，LLM 据此决定下一步调哪个工具。
+ *   - 调用路由由 ModuleSemanticRuntime.executeTool() 负责，本生成器只产规约。
  *
- * - getAttribute(path, attrName)
- * - setAttribute(path, attrName, value)
- * - invokeAction(path, actionName, args)
- * - listChildren(path, childKind?)
- * - findInstance(path, childKind, query)
- * - describeKind(kind)
+ * 【6 个协议工具】
+ *   - getAttribute(path, attrName)         — 读属性
+ *   - setAttribute(path, attrName, value)  — 写属性
+ *   - invokeAction(path, actionName, args) — 调用动作
+ *   - listChildren(path, childKind?)       — 列出子实例
+ *   - findInstance(path, childKind, query) — 查询子实例
+ *   - describeKind(kind)                   — 查询 kind 元数据
  *
- * 工具规约形状对齐 OpenAI tool spec:
- * ```
- * { type: 'function', function: { name, description, parameters } }
- * ```
- * 调用路由由 ModuleSemanticRuntime 负责,本生成器只产规约。
+ * 【消费方】ModuleSemanticRuntime.getLlmTools() → ModuleSemanticToolCodec → Host transport
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { ModuleKindRegistry } from './module-kind-registry'
 import type { ModuleKind } from '../protocol/module-kind'
 import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from '../../schema'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 公共类型
+// ═══════════════════════════════════════════════════════════════
+
 /**
- * 协议级工具规约(OpenAI 兼容形状)。
- *
- * 与 Host transport tool spec 的结构对齐,让 module-semantic 协议自成体系。
- *
- * `function.parameters` 复用 `LlmParameterSchemaRoot`(标准 JSON Schema 子集),
- * 这样 Host 可以把同一份 schema 直接交给 transport,无需 `as` 断言绕过 TS。
+ * 协议级工具规约（OpenAI 兼容形状）。
+ * function.parameters 复用 LlmParameterSchemaRoot（标准 JSON Schema 子集），
+ * Host 可直接交给 transport，无需 as 断言。
  */
 export type ModuleSemanticToolSpec = Readonly<{
   type: 'function'
@@ -42,12 +46,7 @@ export type ModuleSemanticToolSpec = Readonly<{
   }
 }>
 
-/**
- * 协议固定工具名集合。
- *
- * 工具名稳定,LLM 看到的工具集大小只与协议有关,
- * 不随业务方注册的 kind 数量膨胀。
- */
+/** 6 个固定协议工具名 */
 export type ProtocolToolName =
   | 'getAttribute'
   | 'setAttribute'
@@ -56,6 +55,7 @@ export type ProtocolToolName =
   | 'findInstance'
   | 'describeKind'
 
+/** 协议固定工具名常量集合（Object.freeze 防篡改） */
 export const PROTOCOL_TOOL_NAMES: Readonly<{
   getAttribute: 'getAttribute'
   setAttribute: 'setAttribute'
@@ -72,24 +72,26 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   describeKind: 'describeKind',
 })
 
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · ProtocolToolGenerator class
+// ═══════════════════════════════════════════════════════════════
+
 /**
  * 协议工具规约生成器。
  *
  * 用法:
  * ```ts
  * const generator = new ProtocolToolGenerator(kindRegistry)
- * const specs = generator.generate()  // 6 条 ModuleSemanticToolSpec
+ * const specs = generator.generate()  // 返回 6 条 ModuleSemanticToolSpec
  * ```
  *
- * 每次调用 generate() 都基于当前注册表快照,描述里嵌入 kind 摘要。
- * 注册表变化后需重新生成。
+ * 每次 generate() 基于当前注册表快照生成规约。
+ * 注册表变化后需重新调用。
  */
 export class ProtocolToolGenerator {
   public constructor(private readonly kinds: ModuleKindRegistry) {}
 
-  /**
-   * 生成所有 6 个协议工具规约。
-   */
+  /** 生成所有 6 个协议工具规约 */
   public generate(): readonly ModuleSemanticToolSpec[] {
     const digest = this.buildKindDigest()
     return [
@@ -102,13 +104,15 @@ export class ProtocolToolGenerator {
     ]
   }
 
+  // ── Kind 摘要生成 ────────────────────────────────────────
+
   /**
-   * 生成所有已注册 kind 的摘要字符串,嵌入每个工具的 description。
+   * 生成所有已注册 kind 的摘要字符串，嵌入每个工具的 description。
    *
    * 形式:
    * ```
-   * - school(学校): attrs=[name, address] actions=[archive] children=[grade, teacher]
-   * - grade(年级): attrs=[name, level]    actions=[]         children=[class]
+   * - school(学校): attrs=[name(rw), address(r-)] actions=[archive(rules=1)] children=[grade, teacher]
+   * - grade(年级): attrs=[name(rw), level(rw)]    actions=[]                    children=[class]
    * ```
    */
   private buildKindDigest(): string {
@@ -118,6 +122,8 @@ export class ProtocolToolGenerator {
     }
     return lines.join('\n')
   }
+
+  // ── 6 个工具构建器 ───────────────────────────────────────
 
   private buildGetAttribute(digest: string): ModuleSemanticToolSpec {
     return {
@@ -238,7 +244,7 @@ export class ProtocolToolGenerator {
           'query 由对应 ModuleKind.find 委托解释,通常包含 label 关键字、过滤条件或 hint。',
           '当前注册的 kind 及其可挂子 kind:',
           digest,
-          '失败码: KIND_NOT_REGISTERED / CHILD_KIND_NOT_DECLARED / CAPABILITY_NOT_REGISTERED',
+          '失败码: KIND_NOT_REGISTERED / CHILD_KIND_NOT_DECLARED',
         ].join('\n'),
         parameters: {
           type: 'object',
@@ -287,6 +293,11 @@ export class ProtocolToolGenerator {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 格式化 helper（不导出）
+// ═══════════════════════════════════════════════════════════════
+
+/** 格式化单条 kind 摘要行 */
 function formatKindLine(kind: ModuleKind): string {
   const attrs = kind.attributes.length === 0
     ? '[]'
@@ -300,6 +311,7 @@ function formatKindLine(kind: ModuleKind): string {
   return `- ${kind.kind}(${kind.name}): attrs=${attrs} actions=${actions} children=${children}`
 }
 
+/** 格式化动作标签：name 或 name(rules=N,fails=N) */
 function formatActionLabel(name: string, rulesCount: number, failsCount: number): string {
   if (rulesCount === 0 && failsCount === 0) return name
   const parts: string[] = []
@@ -308,32 +320,25 @@ function formatActionLabel(name: string, rulesCount: number, failsCount: number)
   return `${name}(${parts.join(',')})`
 }
 
+/** 格式化属性标签：name(rw)、name(r-)、name(-w) */
 function formatAttrFlag(name: string, readable: boolean, writable: boolean): string {
   const flag = `${readable ? 'r' : '-'}${writable ? 'w' : '-'}`
   return `${name}(${flag})`
 }
 
+/** path 参数 schema（可选 allowRoot） */
 function pathProperty(allowRoot = false): LlmJsonSchemaObject {
   const description = allowRoot
     ? '模块路径,根路径用 "/" 表示;具体路径形如 /<kind>[<id>]/<kind>[<id>]/...'
     : '模块路径,必须指向具体实例,形如 /<kind>[<id>]/<kind>[<id>]/...'
-  return {
-    type: 'string',
-    description,
-  }
+  return { type: 'string', description }
 }
 
+/** 构建 { path, <propertyName> } 的参数根 schema */
 function pathPlusName(propertyName: string, description: string): LlmParameterSchemaRoot {
   const properties: Record<string, LlmJsonSchema> = {
     path: pathProperty(),
-    [propertyName]: {
-      type: 'string',
-      description,
-    },
+    [propertyName]: { type: 'string', description },
   }
-  return {
-    type: 'object',
-    properties,
-    required: ['path', propertyName],
-  }
+  return { type: 'object', properties, required: ['path', propertyName] }
 }

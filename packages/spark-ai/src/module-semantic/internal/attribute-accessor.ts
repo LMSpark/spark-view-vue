@@ -1,15 +1,19 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * module-semantic/internal/attribute-accessor.ts — 属性访问器
+ * ═══════════════════════════════════════════════════════════════
  *
- * 属性访问器。
+ * 【架构定位】协议层内部组件，由 ModuleSemanticRuntime 组合。
+ *   负责将 LLM 的 getAttribute / setAttribute 工具调用路由到具体 ModuleKind。
  *
- * 协议从 ModuleKind.attributes 派生出 LLM 工具 getAttribute / setAttribute,
- * 调用时路由到这里。本类负责:
+ * 【调用时序】
+ *   1. Navigator.navigate(path) → 定位末段 ModuleKind + PathContext
+ *   2. 末段 ModuleKind.getAttribute(ctx, attrName) / setAttribute(ctx, attrName, value)
+ *   3. ModuleKind 内部按 attributes 元数据验证声明、readable/writable 权限
+ *   4. 透传 OperationResult 给 LLM
  *
- * 1. 调用 Navigator 把路径翻译成末段 ModuleKind + PathContext
- * 2. 委托末段 ModuleKind 按 attributes 元数据验证是否声明、是否 readable/writable
- * 3. 委托末段 ModuleKind.getAttribute / setAttribute 执行业务读写
- * 4. 透传业务返回的 ModuleKind.OperationResult 给 LLM
+ * 【消费方】ModuleSemanticRuntime（工具路由 → getAttribute / setAttribute case）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { LlmJsonValue } from '../../schema'
@@ -28,11 +32,15 @@ export class AttributeAccessor {
    * 读属性。
    *
    * 失败码:
-   * - ATTRIBUTE_NOT_DECLARED: 末段 ModuleKind 未声明此属性
-   * - ATTRIBUTE_NOT_READABLE: 属性声明为不可读
-   * - (其它):由 navigator 或 ModuleKind 抛
+   *   - ATTRIBUTE_NOT_DECLARED: 末段 ModuleKind 未声明此属性
+   *   - ATTRIBUTE_NOT_READABLE: 属性声明为不可读
+   *   - (其它): 由 navigator 或 ModuleKind.getAttribute 抛出
    */
-  public async get(path: ModuleKind.Path, attrName: string, host?: ModuleKind.HostContext): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
+  public async get(
+    path: ModuleKind.Path,
+    attrName: string,
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
@@ -44,10 +52,15 @@ export class AttributeAccessor {
    * 写属性。
    *
    * 失败码:
-   * - ATTRIBUTE_NOT_DECLARED
-   * - ATTRIBUTE_NOT_WRITABLE
+   *   - ATTRIBUTE_NOT_DECLARED
+   *   - ATTRIBUTE_NOT_WRITABLE
    */
-  public async set(path: ModuleKind.Path, attrName: string, value: LlmJsonValue, host?: ModuleKind.HostContext): Promise<ModuleKind.OperationResult<void>> {
+  public async set(
+    path: ModuleKind.Path,
+    attrName: string,
+    value: LlmJsonValue,
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<void>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult

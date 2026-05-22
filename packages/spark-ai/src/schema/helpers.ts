@@ -1,17 +1,30 @@
 /**
- * JSON Schema 便捷构造器。
+ * ═══════════════════════════════════════════════════════════════
+ * schema/helpers.ts — JSON Schema 便捷构造器
+ * ═══════════════════════════════════════════════════════════════
  *
- * 为函数注册的 paramsSchema 提供类型安全的快捷创建函数，避免手写标准 JSON Schema 对象时遗漏 type/properties。
+ * 【架构定位】schema 层中间件，依赖 types.ts，被 validator.ts 和业务层消费。
+ *   为函数注册的 paramsSchema 提供类型安全的快捷创建函数。
  *
- * ┌──────────────────────────────────────────────────────┐
- * │            json-schema-helpers 函数清单               │
- * │                                                      │
- * │  基础类型：stringSchema() / numberSchema()           │
- * │            booleanSchema() / anySchema()             │
- * │  枚举/数组：enumSchema() / arraySchema()             │
- * │  对象：objectSchema() / noParamsSchema()             │
- * │  根节点：paramsSchema() → LlmParameterSchemaRoot     │
- * └──────────────────────────────────────────────────────┘
+ * 【设计决策】
+ *   - 每个构造器返回标准 LlmJsonSchemaObject，避免手写时遗漏 type/properties。
+ *   - 所有函数都是纯工厂，无副作用、无状态。
+ *   - `paramsSchema()` 专门用于函数参数根节点，强制 type=object。
+ *
+ * 【消费方】module-semantic/protocol/module-kind.ts（ActionSchema.paramsSchema）、
+ *   所有业务 ModuleKind 子类的 action 注册。
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * 函数层级（自底向上）：
+ *
+ *   基础类型构造器          复合构造器            根节点构造器
+ *   ┌──────────────┐     ┌──────────────┐     ┌──────────────────┐
+ *   │ stringSchema │     │ enumSchema   │     │ paramsSchema     │
+ *   │ numberSchema │     │ arraySchema  │     │ noParamsSchema   │
+ *   │ booleanSchema│     │ objectSchema │     └──────────────────┘
+ *   │ anySchema    │     └──────────────┘
+ *   └──────────────┘
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type {
@@ -20,20 +33,27 @@ import type {
   LlmParameterSchemaRoot,
 } from './types'
 
-// ── 内部类型 ──
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 内部类型
+// ═══════════════════════════════════════════════════════════════
 
+/** 对象属性映射：属性名 → Schema */
 export type JsonSchemaProperties = {
   readonly [key: string]: LlmJsonSchema
 }
 
-// ── 基础类型 ──
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · 基础类型构造器 — 标量类型的快捷创建
+// ═══════════════════════════════════════════════════════════════
 
+/** 任意类型 schema（无 type 约束，仅带可选描述） */
 export function anySchema(description?: string): LlmJsonSchemaObject {
   return {
     ...(description !== undefined ? { description } : {}),
   }
 }
 
+/** 字符串 schema，可选 nullable / minLength */
 export function stringSchema(
   description: string,
   options: { nullable?: boolean; minLength?: number } = {},
@@ -45,6 +65,7 @@ export function stringSchema(
   }
 }
 
+/** 数字 schema，可选 nullable */
 export function numberSchema(description: string, options: { nullable?: boolean } = {}): LlmJsonSchemaObject {
   return {
     type: options.nullable === true ? ['number', 'null'] : 'number',
@@ -52,6 +73,7 @@ export function numberSchema(description: string, options: { nullable?: boolean 
   }
 }
 
+/** 布尔 schema，可选 nullable */
 export function booleanSchema(description: string, options: { nullable?: boolean } = {}): LlmJsonSchemaObject {
   return {
     type: options.nullable === true ? ['boolean', 'null'] : 'boolean',
@@ -59,8 +81,11 @@ export function booleanSchema(description: string, options: { nullable?: boolean
   }
 }
 
-// ── 枚举 / 数组 ──
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 复合构造器 — 枚举 / 数组 / 对象
+// ═══════════════════════════════════════════════════════════════
 
+/** 枚举 schema，自动推断 type（string/number），可选 nullable */
 export function enumSchema(
   values: ReadonlyArray<string | number | boolean | null>,
   description: string,
@@ -74,6 +99,7 @@ export function enumSchema(
   }
 }
 
+/** 数组 schema，items 默认为 anySchema() */
 export function arraySchema(items: LlmJsonSchema = anySchema(), description?: string): LlmJsonSchemaObject {
   return {
     type: 'array',
@@ -82,8 +108,7 @@ export function arraySchema(items: LlmJsonSchema = anySchema(), description?: st
   }
 }
 
-// ── 对象 / 根节点 ──
-
+/** 对象 schema，type=object + properties + required + additionalProperties */
 export function objectSchema(
   properties: JsonSchemaProperties = {},
   options: {
@@ -101,6 +126,16 @@ export function objectSchema(
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 根节点构造器 — 函数 paramsSchema 入口
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 函数参数根 schema。
+ * 调用 `paramsSchema({...}, ['requiredField1'])` 等效于
+ * `objectSchema({...}, { required: ['requiredField1'] })`，
+ * 但返回类型明确为 LlmParameterSchemaRoot。
+ */
 export function paramsSchema(
   properties: JsonSchemaProperties = {},
   required: readonly string[] = [],
@@ -112,6 +147,10 @@ export function paramsSchema(
   })
 }
 
+/**
+ * 无参数动作的 schema。
+ * additionalProperties: false 告诉 LLM 不要传任何参数。
+ */
 export function noParamsSchema(description = '不接受参数，请传 {} 或留空。'): LlmParameterSchemaRoot {
   return objectSchema({}, {
     additionalProperties: false,

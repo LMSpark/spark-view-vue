@@ -1,14 +1,52 @@
 /**
- * User turn and stream callback DTOs.
+ * ═══════════════════════════════════════════════════════════════
+ * host/chat/chat-types.ts — 聊天请求/响应 DTO
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】Host 层的聊天消息类型定义。这些 DTO 在 UI 层、transport 层、
+ *   和工具循环之间传递，不依赖任何框架（React/Vue 无关）。
+ *
+ * 【核心类型】
+ *   AiHostChatMessage  — 单条聊天消息（role + content）
+ *   AiHostChatRequest  — 聊天请求（历史消息 + 回调）
+ *   AiHostSseEvent     — SSE 事件（流式传输中的事件单元）
+ *   AiHostFcCallRecord — 工具调用记录（用于前端展示/调试）
+ *   AiHostTurnMeta     — 轮次元数据（turnId、时间戳等）
+ *
+ * 【消费方】business-session、tool-loop-runner、fetch-transport、UI 层
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiHostFunctionCallResult } from '../session/session-types'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 聊天消息与请求
+// ═══════════════════════════════════════════════════════════════
+
+/** 单条聊天消息（对齐 OpenAI message 格式） */
 export type AiHostChatMessage = Readonly<{
   role: 'user' | 'assistant' | 'system'
   content: string
 }>
 
+/**
+ * 聊天请求。
+ *
+ * 必填：
+ *   historyMsgs — 历史消息列表（包含当前用户输入）
+ *
+ * 可选回调（流式传输）：
+ *   onReasoning — 推理过程增量回调
+ *   onDelta     — 文本增量回调
+ *   onUsage     — token 用量回调
+ *   onSseEvent  — 原始 SSE 事件回调
+ *   onFcCall    — 工具调用记录回调
+ *
+ * 可选控制：
+ *   turn        — 轮次元数据（未提供时自动生成）
+ *   systemPrompt — 额外的系统提示词
+ *   signal      — AbortSignal（取消请求）
+ */
 export type AiHostChatRequest = Readonly<{
   historyMsgs: readonly AiHostChatMessage[]
   turn?: AiHostTurnMeta
@@ -21,6 +59,17 @@ export type AiHostChatRequest = Readonly<{
   onFcCall?: (record: AiHostFcCallRecord) => void
 }>
 
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · SSE 事件
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * SSE 事件（服务端推送的流式事件单元）。
+ * type      — 事件类型（delta / reasoning / usage / result / error / tool-result 等）
+ * data      — 事件数据（字符串）
+ * streamKey — 流键（用于前端路由到正确的组件）
+ * scope     — 事件作用域（含 registrationId / instanceId / moduleId / turnId）
+ */
 export type AiHostSseEvent = Readonly<{
   type: string
   data: unknown
@@ -33,6 +82,15 @@ export type AiHostSseEvent = Readonly<{
   }
 }>
 
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 工具调用记录
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 工具调用记录（用于前端展示和调试）。
+ * 每次协议工具调用完成后，tool-loop-runner 通过 onFcCall 回调
+ * 将本记录传给业务方。
+ */
 export type AiHostFcCallRecord = Readonly<{
   toolName: string
   args: unknown
@@ -44,6 +102,19 @@ export type AiHostFcCallRecord = Readonly<{
   durationMs: number
 }>
 
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 轮次元数据
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 轮次元数据。
+ * turnId          — 轮次 ID（UUID）
+ * seq             — 序号
+ * baseRevision    — 基础版本号（历史消息数 - 1）
+ * queuedAt        — 排队时间（ISO 字符串）
+ * startedAt       — 开始时间（ISO 字符串）
+ * maxParallelTurns — 最大并行轮次（当前固定为 1）
+ */
 export type AiHostTurnMeta = Readonly<{
   turnId: string
   seq: number

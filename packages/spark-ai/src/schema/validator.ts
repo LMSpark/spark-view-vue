@@ -1,57 +1,76 @@
 /**
- * 通用 LLM 参数校验器（llm-params-validator）
+ * ═══════════════════════════════════════════════════════════════
+ * schema/validator.ts — 通用 LLM 参数校验器
+ * ═══════════════════════════════════════════════════════════════
  *
- * `paramsSchema` 只接受标准 JSON Schema object。校验由 AJV 执行，本模块只负责：
- * - 根参数必须是 JSON 对象；
- * - 将 AJV error 转成现有中文诊断。
+ * 【架构定位】schema 层顶部，依赖 types.ts 和 AJV 2020。
+ *   负责将 LLM 传入的 JSON 参数按 paramsSchema 校验，输出中文诊断。
  *
- * ┌──────────────────────────────────────────────────────────┐
- * │                  LlmSchemaValidator                        │
- * │                                                           │
- * │  validateLlmDeserializedParams()                          │
- * │    ├─ ① params 必须是 JSON 对象                           │
- * │    ├─ ② schema 根必须是 type=object                       │
- * │    ├─ ③ ajv.compile(schema) → 编译校验器                  │
- * │    └─ ④ validate(params) → 收集 issues                    │
- * │                                                           │
- * │  formatLlmParamValidationIssues()                         │
- * │    └─ 格式化 issues 为中文诊断字符串（默认最多 5 条）       │
- * │                                                           │
- * │  AJV → 中文转换：                                          │
- * │    pathFromAjvError()  → JSON Pointer → $.a.b[0]          │
- * │    messageFromAjvError() → required/type/enum/const 等    │
- * │                      → "缺少必填字段" 等中文消息           │
- * └──────────────────────────────────────────────────────────┘
+ * 【设计决策】
+ *   - 基于 AJV 2020（标准 JSON Schema 校验引擎），不自己实现校验逻辑。
+ *   - 所有方法为 static，类不持有状态，全局复用单一 Ajv2020 实例。
+ *   - AJV error keyword → 中文消息映射集中在一处，便于统一调整措辞。
+ *   - JSON Pointer 路径转 $.a.b[0] 格式，方便 LLM 理解错误位置。
+ *
+ * 【消费方】module-semantic/internal/action-invoker.ts（参数校验）
+ *
+ * ═══════════════════════════════════════════════════════════════
+ * 校验流程（validateLlmDeserializedParams）：
+ *
+ *   ① params 必须是 JSON 对象（非 null/非数组）
+ *   ② schema 根必须是 type=object 的标准 JSON Schema
+ *   ③ ajv.compile(schema) → 编译校验器
+ *   ④ validate(params) → 收集 issues
+ *   ⑤ ok=false 时用 formatLlmParamValidationIssues 生成中文诊断
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
 import type { LlmParameterSchemaRoot } from './types'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 公共类型 — 校验结果
+// ═══════════════════════════════════════════════════════════════
+
+/** 单条校验问题 */
 export type LlmParamValidationIssue = {
   path: string
   message: string
 }
 
+/** 校验结果：ok + issues 列表 */
 export type LlmParamValidationResult = Readonly<{
   ok: boolean
   issues: readonly LlmParamValidationIssue[]
 }>
 
-/** AJV 2020 实例：全局复用，允许所有错误收集 */
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · AJV 实例 — 全局复用，全量错误收集
+// ═══════════════════════════════════════════════════════════════
+
 const ajv = new Ajv2020({
-  allErrors: true,
-  strict: false,
-  validateSchema: true,
+  allErrors: true,        // 收集所有错误，不只是第一个
+  strict: false,          // 放宽严格模式，允许非标准关键字
+  validateSchema: true,   // 编译时校验 schema 自身合法性
 })
 
-/** 类型守卫：检查是否为普通对象（非数组/null） */
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 内部类型守卫 — 运行时结构判断
+// ═══════════════════════════════════════════════════════════════
+
+/** 是否为普通对象（非 null、非数组） */
 function isPlainRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
+/** 是否为 type=object 的标准 JSON Schema 根 */
 function isObjectSchemaRoot(value: unknown): value is LlmParameterSchemaRoot & { readonly type: 'object' } {
   return isPlainRecord(value) && value['type'] === 'object'
 }
+
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · AJV error 参数安全访问器
+// ═══════════════════════════════════════════════════════════════
 
 function errorParam(error: ErrorObject, key: string): unknown {
   return isPlainRecord(error.params) ? error.params[key] : undefined
@@ -72,18 +91,30 @@ function unknownArrayParam(error: ErrorObject, key: string): readonly unknown[] 
   return Array.isArray(value) ? value : undefined
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 5 节 · LlmSchemaValidator — 核心校验器（全 static）
+// ═══════════════════════════════════════════════════════════════
+
 export class LlmSchemaValidator {
   private constructor() {}
 
+  // ── 公共 API ──
+
   /**
    * 校验反序列化后的 LLM 参数。
-   * 流程：检查 params 是对象 → 检查 schema 是 type=object → ajv.compile → validate。
+   *
+   * 调用时序：
+   *   1. LLM 返回 function call arguments（JSON 字符串）
+   *   2. Host 层 JSON.parse → params
+   *   3. ActionInvoker 调用本方法校验 params 是否符合 action.paramsSchema
    */
   static validateLlmDeserializedParams(
     params: unknown,
     schema: unknown,
   ): LlmParamValidationResult {
     const issues: LlmParamValidationIssue[] = []
+
+    // 步骤 ①：params 必须是普通 JSON 对象
     if (!isPlainRecord(params)) {
       return {
         ok: false,
@@ -91,6 +122,7 @@ export class LlmSchemaValidator {
       }
     }
 
+    // 步骤 ②：schema 根必须是 type=object
     if (!isObjectSchemaRoot(schema)) {
       return {
         ok: false,
@@ -98,6 +130,7 @@ export class LlmSchemaValidator {
       }
     }
 
+    // 步骤 ③④：AJV 编译并校验
     const validate = ajv.compile(schema)
     if (!validate(params)) {
       issues.push(...(validate.errors ?? []).map(LlmSchemaValidator.issueFromAjvError))
@@ -109,7 +142,10 @@ export class LlmSchemaValidator {
     }
   }
 
-  /** 将校验问题格式化为中文诊断字符串，默认最多显示 5 条 */
+  /**
+   * 将校验问题格式化为中文诊断字符串。
+   * 默认最多显示 5 条，超出时追加 "另有 N 个问题"。
+   */
   static formatLlmParamValidationIssues(
     issues: readonly LlmParamValidationIssue[],
     maxCount = 5,
@@ -120,6 +156,8 @@ export class LlmSchemaValidator {
     return `参数校验失败：${head.join('；')}${suffix}`
   }
 
+  // ── 私有：AJV error → LlmParamValidationIssue ──
+
   /** 将 AJV error 对象转换为 LlmParamValidationIssue */
   private static issueFromAjvError(error: ErrorObject): LlmParamValidationIssue {
     const path = LlmSchemaValidator.pathFromAjvError(error)
@@ -129,7 +167,14 @@ export class LlmSchemaValidator {
     }
   }
 
-  /** 将 AJV JSON Pointer 转换为 $.a.b[0] 格式路径 */
+  // ── 私有：JSON Pointer → $.a.b[0] 路径格式 ──
+
+  /**
+   * 从 AJV error 中提取最佳路径表达。
+   * - required 错误：在父路径后追加缺失属性名
+   * - additionalProperties 错误：在父路径后追加多余属性名
+   * - 其他错误：直接转换 instancePath
+   */
   private static pathFromAjvError(error: ErrorObject): string {
     if (error.keyword === 'required') {
       const missingProperty = stringParam(error, 'missingProperty')
@@ -146,7 +191,16 @@ export class LlmSchemaValidator {
     return LlmSchemaValidator.jsonPointerToPath(error.instancePath)
   }
 
-  /** JSON Pointer → $.a.b[0]：处理 ~1 → /、~0 → ~ 转义 */
+  /**
+   * JSON Pointer (RFC 6901) → $.a.b[0] 格式。
+   * 处理 ~1 → /、~0 → ~ 转义，数字段用 [N] 表达。
+   *
+   * 示例：
+   *   ""           → "$"
+   *   "/name"      → "$.name"
+   *   "/items/0"   → "$.items[0]"
+   *   "/a~1b"      → "$.a/b"
+   */
   private static jsonPointerToPath(pointer: string): string {
     if (pointer.length === 0) return '$'
     return `$${pointer
@@ -157,9 +211,17 @@ export class LlmSchemaValidator {
       .join('')}`
   }
 
-  /** 将 AJV error keyword 映射为中文诊断消息 */
+  // ── 私有：AJV error keyword → 中文诊断消息 ──
+
+  /**
+   * 将 AJV error keyword 映射为 LLM 可理解的中文消息。
+   * 这是唯一的中文诊断映射点，便于统一调整措辞。
+   */
   private static messageFromAjvError(error: ErrorObject): string {
+    // schema: false 表示该字段被显式禁止
     if (error.schema === false || error.message === 'boolean schema is false') return '该字段在 LLM 参数中应省略'
+
+    // 逐 keyword 映射
     if (error.keyword === 'required') return '缺少必填字段'
     if (error.keyword === 'additionalProperties') return '未声明的字段'
     if (error.keyword === 'type') {
@@ -185,7 +247,8 @@ export class LlmSchemaValidator {
     if (error.keyword === 'minLength') return `长度不能少于 ${numberParam(error, 'limit')}`
     if (error.keyword === 'minimum') return `数值不能小于 ${numberParam(error, 'limit')}`
     if (error.keyword === 'maximum') return `数值不能大于 ${numberParam(error, 'limit')}`
+
+    // 兜底：使用 AJV 原始消息
     return error.message ?? '不满足 JSON Schema'
   }
-
 }

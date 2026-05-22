@@ -1,27 +1,40 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * module-semantic/protocol/module-kind.ts — 模块语义协议核心
+ * ═══════════════════════════════════════════════════════════════
  *
- * 模块语义协议 — ModuleKind 核心类型。
+ * 【架构定位】整个 spark-ai 协议栈的核心。ModuleKind 是唯一核心 class，
+ *   描述一种业务模块的完整形状（属性 + 动作 + 子模块），也是通用语义运行入口。
+ *   进程内每种 kind 一份，启动后冻结。
  *
- * ModuleKind 是协议唯一核心 class，描述一种业务模块的形状，也是通用语义运行入口。
- * 进程内每种 kind 一份,启动后冻结。
+ * 【设计决策】
+ *   - ModuleKind 同时是"元数据描述"和"运行入口"，业务无需额外注册第二套对象。
+ *   - 通过 runner/list/find 函数属性实现依赖注入，不绑定具体业务系统。
+ *   - namespace 收敛所有附属类型（Path、OperationResult、上下文等），避免零散导出。
+ *   - 属性读写直接操作 runner 函数对象的属性，利用 JS 函数即对象的特性。
+ *   - 路径格式固定为 /<kind>[<id>]/<kind>[<id>]/...，以 / 开头。
  *
- * 所有附属类型收敛到 ModuleKind namespace 下：
- * - ModuleKind.Path / PathSegment / PathParseError — 路径值对象
- * - ModuleKind.OperationResult / CheckEntry — 操作结果
- * - ModuleKind.Runner / ChildrenLister / InstanceFinder — 运行委托类型
- * - ModuleKind.HostContext / PathContext / InstanceRef — 上下文类型
+ * 【消费方】module-semantic/internal/*（全部 internal 组件）、
+ *   module-semantic/runtime/*（运行时组合根）、
+ *   所有业务 ModuleKind 子类（protocol-tool-catalog 等）
  *
- * VCM 生成能力模块元数据的 JSDoc 标识和范围见:
- * ../DM-VCM-MODULE-METADATA-SCOPE.md
+ * ═══════════════════════════════════════════════════════════════
+ * 文件结构：
+ *
+ *   第 1 节 · Attribute / Action schema 类型（顶层，class 构造参数）
+ *   第 2 节 · ModuleKind class（协议核心，约 250 行）
+ *   第 3 节 · ModuleKind namespace（附属类型：结果 / 路径 / 上下文 / 委托）
+ *   第 4 节 · 内部 helper（不导出）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { LlmJsonObject, LlmJsonSchema, LlmJsonValue, LlmParameterSchemaRoot } from '../../schema'
 
-// ═══════════════════════════════════════════════════════
-// 1. 属性 / 动作 schema（顶层，与 ModuleKind 并列）
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · Attribute / Action schema — 元数据描述类型
+// ═══════════════════════════════════════════════════════════════
 
+/** 属性元数据：名称、描述、JSON Schema 类型、读写权限、示例 */
 export type AttributeSchema = Readonly<{
   name: string
   description: string
@@ -31,16 +44,23 @@ export type AttributeSchema = Readonly<{
   example?: LlmJsonValue | undefined
 }>
 
+/** 属性访问权限标记（从 AttributeSchema 中提取） */
 export type AttributeAccessFlags = Pick<AttributeSchema, 'readable' | 'writable'>
 
+/** 动作失败模式：code（错误码）、when（触发条件）、fix（修复建议） */
 export type ActionFailureMode = Readonly<{
   code: string
   when: string
   fix: string
 }>
 
+/** 动作结果 schema（可简化为 boolean 或完整 JSON Schema） */
 export type ActionResultSchema = LlmJsonSchema | LlmJsonObject
 
+/**
+ * 动作元数据：名称、描述、参数/结果 schema、使用规则、失败模式、示例。
+ * paramsSchema 必须为 type=object 的 LlmParameterSchemaRoot。
+ */
 export type ActionSchema = Readonly<{
   name: string
   description: string
@@ -51,38 +71,39 @@ export type ActionSchema = Readonly<{
   example?: LlmJsonValue | undefined
 }>
 
-// ═══════════════════════════════════════════════════════
-// 2. ModuleKind class — 协议核心（必须在 namespace 之前）
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · ModuleKind class — 协议核心（class 必须在 namespace 之前）
+// ═══════════════════════════════════════════════════════════════
 
+/** runner 函数对象的属性存储载体类型 */
 type ModuleKindRunnerProperties = Record<string, unknown>
 
 const EMPTY_RUNNER_PROPERTIES: ModuleKindRunnerProperties = {}
 
+/**
+ * 业务 service 的动作返回值约定。
+ * ok=true 时携带 data 和可选 summary；ok=false 时携带 code/msg/fix。
+ */
 type ModuleActionServiceResult =
-  | {
-    readonly ok: true
-    readonly data?: unknown
-    readonly summary?: string | undefined
-  }
-  | {
-    readonly ok: false
-    readonly code: string
-    readonly msg: string
-    readonly fix?: string | undefined
-  }
+  | { readonly ok: true; readonly data?: unknown; readonly summary?: string | undefined }
+  | { readonly ok: false; readonly code: string; readonly msg: string; readonly fix?: string | undefined }
 
 /**
- * 模块类型标准 class。
+ * 模块类型标准 class — 协议层唯一核心。
  *
- * 协议层标准模块类型。
+ * 【职责】
+ *   1. 持有 kind 的元数据（attributes / actions / children）
+ *   2. 提供属性读写（getAttribute / setAttribute）
+ *   3. 提供动作调用（invokeAction → runner 委托）
+ *   4. 提供子实例发现（listChildren / findInstance / resolveChild → list/find 委托）
  *
- * 迁移期业务方可以直接 `new ModuleKind({...})` 注册语义描述,
- * 也可以继承本类把旧业务系统适配到通用语义入口。目标形态是由 VCM
- * 生成 `ModuleKind` factory,业务代码只提供 runner/list/find 委托。
+ * 【委托模式】
+ *   - runner: 业务注入的动作执行函数，签名 (ctx, actionName, args) → OperationResult
+ *   - list:   业务注入的子实例列表函数
+ *   - find:   业务注入的子实例查找函数
+ *   - 基类提供默认实现（actionNotImplemented / 空列表 / 自引用）
  *
- * `listChildren` / `findInstance` / `resolveChild` 是协议入口,统一由本基类实现;
- * 业务只挂 `list` / `find` 函数属性作为发现委托。
+ * 【使用示例】
  * ```ts
  * const schoolKind = new ModuleKind({
  *   kind: 'school',
@@ -97,6 +118,8 @@ type ModuleActionServiceResult =
  * ```
  */
 export class ModuleKind {
+  // ── 元数据（构造时冻结）──────────────────────────────────
+
   public readonly kind: string
   public readonly name: string
   public readonly description: string
@@ -104,12 +127,21 @@ export class ModuleKind {
   public readonly actions: readonly ActionSchema[]
   public readonly children: readonly string[]
 
+  /** 按 name 索引的 attribute 速查表 */
   private readonly moduleAttributeByName: ReadonlyMap<string, AttributeSchema>
+  /** 按 name 索引的 action 速查表 */
   private readonly moduleActionByName: ReadonlyMap<string, ActionSchema>
 
+  // ── 委托函数（业务注入）──────────────────────────────────
+
+  /** 动作执行委托：由业务方注入，接收 ctx + actionName + args */
   public runner: ModuleKind.Runner
+  /** 子实例列表委托：由业务方注入 */
   public list: ModuleKind.ChildrenLister
+  /** 子实例查找委托：由业务方注入 */
   public find: ModuleKind.InstanceFinder
+
+  // ── 构造器 ──────────────────────────────────────────────
 
   public constructor(options: {
     readonly kind: string
@@ -130,6 +162,8 @@ export class ModuleKind {
     this.actions = normalizeActionSchemas(options.actions ?? [])
     this.moduleActionByName = createNamedMap(this.actions, 'action')
     this.children = options.children ?? []
+
+    // 委托注入：未提供的使用默认实现
     this.runner = options.runner ?? ((_ctx, actionName) => actionNotImplemented(this.kind, actionName))
     this.list = options.list ?? (() => ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([]))
     this.find = options.find ?? ((ctx, childKind) => {
@@ -141,18 +175,27 @@ export class ModuleKind {
     })
   }
 
-  // ── 查询 schema ──
+  // ── 查询方法 ────────────────────────────────────────────
 
+  /** 按名称查找属性元数据 */
   public findAttribute(attrName: string): AttributeSchema | undefined {
     return this.moduleAttributeByName.get(attrName)
   }
 
+  /** 按名称查找动作元数据 */
   public findAction(actionName: string): ActionSchema | undefined {
     return this.moduleActionByName.get(actionName)
   }
 
-  // ── 属性读写 ──
+  // ── 属性读写（协议工具 getAttribute / setAttribute 的最终执行点）──
 
+  /**
+   * 读取属性。
+   * 流程：查元数据 → 校验 readable → 从 runner 函数对象取值 → 投影为 LlmJsonValue。
+   *
+   * 失败码：ATTRIBUTE_NOT_DECLARED / ATTRIBUTE_NOT_READABLE /
+   *         ATTRIBUTE_VALUE_NOT_FOUND / ATTRIBUTE_VALUE_NOT_JSON
+   */
   public getAttribute(
     _ctx: ModuleKind.PathContext,
     attrName: string,
@@ -185,6 +228,12 @@ export class ModuleKind {
     return Promise.resolve(ModuleKind.OperationResult.ok(value))
   }
 
+  /**
+   * 写入属性。
+   * 流程：查元数据 → 校验 writable → 写入 runner 函数对象属性。
+   *
+   * 失败码：ATTRIBUTE_NOT_DECLARED / ATTRIBUTE_NOT_WRITABLE / ATTRIBUTE_WRITE_FAILED
+   */
   public setAttribute(
     _ctx: ModuleKind.PathContext,
     attrName: string,
@@ -210,8 +259,12 @@ export class ModuleKind {
     return Promise.resolve(ModuleKind.OperationResult.ok<void>())
   }
 
-  // ── 动作调用 ──
+  // ── 动作调用（协议工具 invokeAction 的最终执行点）───────
 
+  /**
+   * 调用动作。
+   * 委托 runner(ctx, actionName, args)，异常自动包装为 ACTION_EXECUTE_ERROR。
+   */
   public async invokeAction(
     ctx: ModuleKind.PathContext,
     actionName: string,
@@ -224,8 +277,9 @@ export class ModuleKind {
     }
   }
 
-  // ── 子实例发现 ──
+  // ── 子实例发现（协议工具 listChildren / findInstance 的最终执行点）──
 
+  /** 列出子实例。委托 list(ctx, childKind)。 */
   public listChildren(
     ctx: ModuleKind.PathContext,
     childKind?: string,
@@ -233,6 +287,7 @@ export class ModuleKind {
     return Promise.resolve(this.list(ctx, childKind))
   }
 
+  /** 查询子实例。委托 find(ctx, childKind, query)。 */
   public findInstance(
     ctx: ModuleKind.PathContext,
     childKind: string,
@@ -241,6 +296,10 @@ export class ModuleKind {
     return Promise.resolve(this.find(ctx, childKind, query))
   }
 
+  /**
+   * 验证子实例存在性。
+   * 先 find、后 list，任一命中即返回 true；两者都失败时透传失败原因。
+   */
   public resolveChild(
     ctx: ModuleKind.PathContext,
     childKind: string,
@@ -249,8 +308,9 @@ export class ModuleKind {
     return this.resolve(ctx, childKind, childId)
   }
 
-  // ── protected 辅助 ──
+  // ── protected 辅助方法（供子类使用）─────────────────────
 
+  /** 从 HostContext 创建当前实例引用 */
   protected createCurrentInstanceRef(ctx: ModuleKind.PathContext): ModuleKind.InstanceRef | null {
     const instanceId = ctx.host?.moduleInstanceId
     if (instanceId === undefined || instanceId.length === 0) {
@@ -263,15 +323,18 @@ export class ModuleKind {
     }
   }
 
+  /** 快捷构造成功的 OperationResult<LlmJsonValue> */
   protected okJson(data?: unknown, checks?: readonly ModuleKind.CheckEntry[]): ModuleKind.OperationResult<LlmJsonValue> {
     const json = ModuleKind.coerceJsonValue(data)
     return ModuleKind.OperationResult.ok(json, checks)
   }
 
+  /** 快捷构造失败的 OperationResult<LlmJsonValue> */
   protected failJson(code: string, message: string, hint?: string): ModuleKind.OperationResult<LlmJsonValue> {
     return ModuleKind.OperationResult.failCode(code, message, hint)
   }
 
+  /** 将业务 service 的 ModuleActionServiceResult 转为 OperationResult */
   protected serviceResultToOperationResult(result: ModuleActionServiceResult): ModuleKind.OperationResult<LlmJsonValue> {
     if (result.ok) {
       return this.okJson(
@@ -282,13 +345,14 @@ export class ModuleKind {
     return this.failJson(result.code, result.msg, result.fix)
   }
 
-  // ── 公开工具方法 ──
+  // ── 公开静态工具 ───────────────────────────────────────
 
   /**
-   * 把任意值安全投影为 LlmJsonValue。
+   * 将任意值安全投影为 LlmJsonValue。
    *
-   * 处理 string / number / boolean / null / Array / Set / Map / 普通 object，
-   * 不可序列化值返回 undefined。
+   * 支持 string / number / boolean / null / Array / Set / Map / 普通 object。
+   * 不可序列化值（function、symbol、undefined 等）返回 undefined。
+   * 递归处理嵌套结构，Set 展开为数组，Map 展开为普通对象。
    */
   public static coerceJsonValue(value: unknown): LlmJsonValue | undefined {
     if (value === null) return null
@@ -326,8 +390,12 @@ export class ModuleKind {
     return undefined
   }
 
-  // ── 私有方法 ──
+  // ── 私有方法 ────────────────────────────────────────────
 
+  /**
+   * 子实例解析核心逻辑。
+   * 先 find（精确匹配），再 list（遍历匹配）。
+   */
   private async resolve(
     ctx: ModuleKind.PathContext,
     childKind: string,
@@ -353,15 +421,23 @@ export class ModuleKind {
   }
 }
 
-// ═══════════════════════════════════════════════════════
-// 3. ModuleKind namespace — 附属类型（在 class 之后，与 class 合并）
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · ModuleKind namespace — 所有附属类型
+//
+// 使用 namespace 与 class 合并声明，消费方既可用 ModuleKind 构造实例，
+// 也可用 ModuleKind.Path / ModuleKind.OperationResult 引用附属类型。
+// ═══════════════════════════════════════════════════════════════
 
 export namespace ModuleKind {
-  // ── 3.1 操作结果 ──
+  // ── 3.1 操作结果 ────────────────────────────────────────
 
+  /** CheckEntry 级别：error（阻断）/ warn（警告）/ info（信息） */
   export type CheckEntryLevel = 'error' | 'warn' | 'info'
 
+  /**
+   * 操作检查项。
+   * 一次操作可产生多条 CheckEntry，按 level 区分严重程度。
+   */
   export class CheckEntry {
     public constructor(
       public readonly level: CheckEntryLevel,
@@ -383,6 +459,14 @@ export namespace ModuleKind {
     }
   }
 
+  /**
+   * 操作结果 — 协议层统一的返回值类型。
+   *
+   * 成功：ok=true, data 携带业务数据, checks 可含 warn/info
+   * 失败：ok=false, checks 至少含一条 error
+   *
+   * 约定：fail() 要求至少一条 CheckEntry，防止无信息失败。
+   */
   export class OperationResult<TData = unknown> {
     public readonly ok: boolean
     public readonly data?: TData | undefined
@@ -396,6 +480,7 @@ export namespace ModuleKind {
       this.state = options.state
     }
 
+    /** 构造成功结果 */
     public static ok<TData>(
       data?: TData,
       checks?: readonly CheckEntry[],
@@ -404,6 +489,7 @@ export namespace ModuleKind {
       return new OperationResult({ ok: true, data, checks, state })
     }
 
+    /** 构造失败结果（要求至少一条 error check） */
     public static fail(
       checks: readonly CheckEntry[],
       state?: Record<string, unknown>,
@@ -414,16 +500,18 @@ export namespace ModuleKind {
       return new OperationResult({ ok: false, checks, state })
     }
 
+    /** 快捷构造单 error 失败结果 */
     public static failCode(code: string, message: string, hint?: string): OperationResult<never> {
       return OperationResult.fail([CheckEntry.error(code, message, hint)])
     }
 
+    /** 透传另一个失败结果的 checks/state，保持失败链可追溯 */
     public static passthroughFailure(result: OperationResult<unknown>): OperationResult<never> {
       return new OperationResult({ ok: false, checks: result.checks, state: result.state })
     }
   }
 
-  // ── 3.2 模块路径 ──
+  // ── 3.2 模块路径 — 不可变值对象 ─────────────────────────
 
   export type PathParseErrorCode =
     | 'EMPTY'
@@ -432,6 +520,7 @@ export namespace ModuleKind {
     | 'EMPTY_KIND'
     | 'EMPTY_ID'
 
+  /** 路径解析错误，携带错误码、原始输入、位置信息 */
   export class PathParseError extends Error {
     public constructor(
       public readonly code: PathParseErrorCode,
@@ -444,12 +533,17 @@ export namespace ModuleKind {
     }
   }
 
+  /**
+   * 路径段：kind[id]。
+   * kind 是模块类型名，id 是实例标识。
+   */
   export class PathSegment {
     public constructor(
       public readonly kind: string,
       public readonly id: string,
     ) {}
 
+    /** 校验并创建路径段（kind 和 id 均不可为空） */
     public static from(segment: PathSegment, raw = '', index = 0): PathSegment {
       if (segment.kind.length === 0) {
         throw new PathParseError('EMPTY_KIND', raw, `segment[${String(index)}] has empty kind`)
@@ -462,16 +556,14 @@ export namespace ModuleKind {
   }
 
   /**
-   * 模块路径。
+   * 模块路径 — 不可变值对象。
    *
-   * 不可变值对象。
+   * 路径永远以 / 开头。根路径序列化为 "/"。
    *
-   * 构造方式:
-   * - ModuleKind.Path.parse('/school[jianguo]/grade[g3]')  显式字符串解析
-   * - ModuleKind.Path.of([{kind:'school', id:'jianguo'}, ...])  按段构造
-   * - ModuleKind.Path.root()  根路径(无段)
-   *
-   * 路径**永远以 `/` 开头**。根路径序列化为 `/`。
+   * 构造方式：
+   *   - ModuleKind.Path.parse('/school[jianguo]/grade[g3]')  显式解析
+   *   - ModuleKind.Path.of([{kind:'school', id:'jianguo'}, ...])  按段构造
+   *   - ModuleKind.Path.root()  根路径（无段）
    */
   export class Path {
     public readonly segments: readonly PathSegment[]
@@ -488,17 +580,13 @@ export namespace ModuleKind {
       return new Path(segments.map((seg, index) => PathSegment.from(seg, '', index)))
     }
 
+    /** 解析路径字符串。格式：/ 或 /<kind>[<id>]/<kind>[<id>]/... */
     public static parse(raw: string): Path {
       if (raw.length === 0) {
         throw new PathParseError('EMPTY', raw, 'path is empty')
       }
       if (!raw.startsWith('/')) {
-        throw new PathParseError(
-          'MISSING_LEADING_SLASH',
-          raw,
-          'path must start with "/"',
-          0,
-        )
+        throw new PathParseError('MISSING_LEADING_SLASH', raw, 'path must start with "/"', 0)
       }
       if (raw === '/') {
         return Path.root()
@@ -514,25 +602,28 @@ export namespace ModuleKind {
       return new Path(segments)
     }
 
+    /** 是否为根路径（无段） */
     public get isRoot(): boolean {
       return this.segments.length === 0
     }
 
+    /** 路径深度（段数） */
     public get depth(): number {
       return this.segments.length
     }
 
+    /** 末尾段，根路径时返回 undefined */
     public get tail(): PathSegment | undefined {
       return this.segments.length === 0 ? undefined : this.segments[this.segments.length - 1]
     }
 
+    /** 返回父路径（去掉末尾段），根路径返回自身 */
     public parent(): Path {
-      if (this.segments.length === 0) {
-        return this
-      }
+      if (this.segments.length === 0) return this
       return new Path(this.segments.slice(0, -1))
     }
 
+    /** 追加一段，返回新 Path（不可变） */
     public append(segment: PathSegment): Path {
       if (segment.kind.length === 0) {
         throw new PathParseError('EMPTY_KIND', this.toString(), 'cannot append segment with empty kind')
@@ -543,17 +634,15 @@ export namespace ModuleKind {
       return new Path([...this.segments, PathSegment.from(segment, this.toString(), this.segments.length)])
     }
 
+    /** 序列化为 /<kind>[<id>]/<kind>[<id>]/... */
     public toString(): string {
-      if (this.segments.length === 0) {
-        return '/'
-      }
+      if (this.segments.length === 0) return '/'
       return this.segments.map((seg) => `/${seg.kind}[${seg.id}]`).join('')
     }
 
+    /** 值相等比较（逐段比较 kind 和 id） */
     public equals(other: Path): boolean {
-      if (this.segments.length !== other.segments.length) {
-        return false
-      }
+      if (this.segments.length !== other.segments.length) return false
       return this.segments.every((seg, index) => {
         const otherSeg = other.segments[index]
         return seg.kind === otherSeg?.kind && seg.id === otherSeg.id
@@ -561,41 +650,59 @@ export namespace ModuleKind {
     }
   }
 
-  // ── 3.3 上下文 / 实例引用 / 委托类型 ──
+  // ── 3.3 上下文 / 实例引用 / 委托类型 ────────────────────
 
+  /**
+   * Host 注入的上下文。
+   * moduleId: 业务注册 ID（如 'pageDesign'）
+   * moduleInstanceId: 业务实例 ID（如当前页面 ID）
+   * instanceId: 会话隔离 key
+   */
   export type HostContext = Readonly<{
     moduleId: string
     moduleInstanceId: string
     instanceId: string
   }>
 
+  /**
+   * 路径上下文。
+   * segments: 完整路径段列表
+   * segment:  当前（末段）路径段
+   * host:     Host 注入的上下文（可选）
+   */
   export type PathContext = Readonly<{
     segments: readonly PathSegment[]
     segment: PathSegment
     host?: HostContext | undefined
   }>
 
+  /** 实例引用：id + 展示标签 + 可选摘要 */
   export type InstanceRef = Readonly<{
     id: string
     label: string
     summary?: string | undefined
   }>
 
+  /** 实例查询条件（由业务 find 委托自行解释） */
   export type InstanceQuery = Readonly<Record<string, LlmJsonValue>>
 
+  /** 操作：同步或异步返回 OperationResult */
   export type Operation<TData> = OperationResult<TData> | Promise<OperationResult<TData>>
 
+  /** 动作执行委托签名 */
   export type Runner = (
     ctx: PathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ) => Operation<LlmJsonValue>
 
+  /** 子实例列表委托签名 */
   export type ChildrenLister = (
     ctx: PathContext,
     childKind?: string,
   ) => Operation<readonly InstanceRef[]>
 
+  /** 子实例查找委托签名 */
   export type InstanceFinder = (
     ctx: PathContext,
     childKind: string,
@@ -603,21 +710,22 @@ export namespace ModuleKind {
   ) => Operation<readonly InstanceRef[]>
 }
 
-// ═══════════════════════════════════════════════════════
-// 4. 内部 helper（不导出）
-// ═══════════════════════════════════════════════════════
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 内部 helper（不导出）
+// ═══════════════════════════════════════════════════════════════
 
+/** 过滤空 checks 数组：null/undefined/[] → undefined */
 function nonEmptyChecks(checks: readonly ModuleKind.CheckEntry[] | undefined): readonly ModuleKind.CheckEntry[] | undefined {
   return checks === undefined || checks.length === 0 ? undefined : checks
 }
 
+/** 解析单段路径字符串 "kind[id]" → PathSegment */
 function parseSegment(part: string, raw: string, position: number): ModuleKind.PathSegment {
   const openIndex = part.indexOf('[')
   const closeIndex = part.lastIndexOf(']')
   if (openIndex <= 0 || closeIndex !== part.length - 1 || closeIndex <= openIndex) {
     throw new ModuleKind.PathParseError(
-      'INVALID_SEGMENT',
-      raw,
+      'INVALID_SEGMENT', raw,
       `invalid segment syntax "${part}": expected "<kind>[<id>]"`,
       position,
     )
@@ -633,6 +741,10 @@ function parseSegment(part: string, raw: string, position: number): ModuleKind.P
   return new ModuleKind.PathSegment(kind, id)
 }
 
+/**
+ * 将路径 body（去掉首 /）按 / 分割为段字符串。
+ * 正确处理方括号嵌套（如 kind[a/b] 不被中间的 / 分割）。
+ */
 function splitRawSegments(raw: string): string[] {
   const body = raw.slice(1)
   const segments: string[] = []
@@ -662,6 +774,9 @@ function splitRawSegments(raw: string): string[] {
   return segments
 }
 
+// ── schema 规范化 ────────────────────────────────────────────
+
+/** 规范化 AttributeSchema 数组：确保每个元素是不可变副本 */
 function normalizeAttributeSchemas(attributes: readonly AttributeSchema[]): readonly AttributeSchema[] {
   return attributes.map((attribute) => ({
     name: attribute.name,
@@ -673,6 +788,7 @@ function normalizeAttributeSchemas(attributes: readonly AttributeSchema[]): read
   }))
 }
 
+/** 规范化 ActionSchema 数组：复制数组字段防止外部修改 */
 function normalizeActionSchemas(actions: readonly ActionSchema[]): readonly ActionSchema[] {
   return actions.map((action) => ({
     name: action.name,
@@ -687,6 +803,7 @@ function normalizeActionSchemas(actions: readonly ActionSchema[]): readonly Acti
   }))
 }
 
+/** 按 name 创建索引 Map，重复 name 抛错 */
 function createNamedMap<TSchema extends { readonly name: string }>(
   schemas: readonly TSchema[],
   schemaType: string,
@@ -701,9 +818,17 @@ function createNamedMap<TSchema extends { readonly name: string }>(
   return out
 }
 
+// ── runner 属性存取 ──────────────────────────────────────────
+
+/**
+ * 把 runner 函数对象视为普通对象，用于存取属性。
+ * 利用 JS 函数即对象的特性，无需额外创建存储容器。
+ */
 function runnerProperties(runner: ModuleKind.Runner): ModuleKindRunnerProperties {
   return Object.assign(runner, EMPTY_RUNNER_PROPERTIES)
 }
+
+// ── 默认实现 / 错误消息 ──────────────────────────────────────
 
 function actionNotImplemented(kind: string, actionName: string): ModuleKind.OperationResult<LlmJsonValue> {
   return ModuleKind.OperationResult.failCode(

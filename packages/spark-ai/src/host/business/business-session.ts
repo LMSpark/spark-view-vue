@@ -1,5 +1,32 @@
 /**
- * Framework-agnostic AI Host sending and business-session runtime.
+ * ═══════════════════════════════════════════════════════════════
+ * host/business/business-session.ts — 业务会话管理
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】Host 层的会话编排核心。连接业务注册、会话存储、工具循环
+ *   和 AI 传输层，形成完整的"用户发消息→AI 推理→工具调用→结果返回"闭环。
+ *
+ * 【核心类】
+ *   AiHostBusinessSession  — 业务会话（对外 API）
+ *     ├─ 持有 AiHostMessageSender（消息发送编排）
+ *     │    └─ 持有 AiHostToolLoopRunner（工具循环执行）
+ *     └─ 持有 AiHostMessageSendState（选中业务缓存）
+ *
+ * 【数据流】
+ *   1. new AiHostBusinessSession(options, target)
+ *   2. session.start()  → startRegistrationSession() → 创建 sessionStore 记录 + 生成工具规约
+ *   3. session.send(req) → senderCore.send()
+ *      ├─ resolveSelectedBusiness() → 查找/复用 registration
+ *      ├─ latestUserInput() → 提取用户消息 → appendMessage('user')
+ *      └─ toolLoopRunner.runToolLoop() → AI 推理 → 工具调用 → 生命周期判断
+ *   4. 会话结束 → stopSession() → onEndBusinessInstance() → releaseModuleInstance()
+ *
+ * 【独立函数】
+ *   createAiHostBusinessSession — 工厂函数
+ *   startRegistrationSession    — 启动注册会话（创建 sessionStore 记录 + 编解码器）
+ *
+ * 【消费方】Host 初始化代码、页面级 AI 助手入口
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
@@ -22,12 +49,18 @@ import type {
   AiHostSender,
 } from './business-types'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 内部类型
+// ═══════════════════════════════════════════════════════════════
+
+/** 消息发送的输入参数 */
 type AiHostSendInput = Readonly<{
   request: AiHostChatRequest
   turn: AiHostTurnMeta
   scope: AiHostBusinessScope
 }>
 
+/** 选中的业务（registration + scope 对） */
 class SelectedAiHostBusiness {
   public constructor(
     public readonly registration: AiHostBusinessRegistration,
@@ -35,6 +68,15 @@ class SelectedAiHostBusiness {
   ) {}
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · 消息发送状态管理
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 消息发送状态。
+ * 缓存当前选中的业务，避免每次 send 都重新查找 registration。
+ * 场景切换时（scope 变化）自动清除缓存并重新选择。
+ */
 class AiHostMessageSendState {
   private selectedBusiness: SelectedAiHostBusiness | null = null
 
@@ -42,14 +84,17 @@ class AiHostMessageSendState {
     return this.selectedBusiness
   }
 
+  /** 清除选中状态（业务切换时调用） */
   public clearSelected = (): void => {
     this.selectedBusiness = null
   }
 
+  /** 设置选中业务 */
   public setSelected(registration: AiHostBusinessRegistration, scope: AiHostBusinessScope): void {
     this.selectedBusiness = new SelectedAiHostBusiness(registration, scope)
   }
 
+  /** 向当前选中业务的 sessionStore 追加用户消息 */
   public appendUserMessage(scope: AiHostBusinessRuntimeContext, content: string): void {
     this.selectedBusiness?.registration.sessionStore?.appendMessage({
       ...scope,
@@ -60,12 +105,18 @@ class AiHostMessageSendState {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 辅助函数
+// ═══════════════════════════════════════════════════════════════
+
+/** 判定两个 scope 是否指向同一个业务实例 */
 function isSameScope(left: AiHostBusinessScope, right: AiHostBusinessScope): boolean {
   return left.businessRegistrationId === right.businessRegistrationId
     && left.businessInstanceId === right.businessInstanceId
     && left.instanceId === right.instanceId
 }
 
+/** 规范化 turn 元数据：生成 turnId、记录时间戳 */
 function normalizeTurn(request: AiHostChatRequest): AiHostTurnMeta {
   const now = new Date().toISOString()
   return {
@@ -78,6 +129,14 @@ function normalizeTurn(request: AiHostChatRequest): AiHostTurnMeta {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 消息发送编排
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 消息发送编排器。
+ * 负责：解析 scope → 查找 registration → 提取用户消息 → 启动工具循环。
+ */
 class AiHostMessageSender {
   private readonly toolLoopRunner: AiHostToolLoopRunner
 
@@ -85,16 +144,19 @@ class AiHostMessageSender {
     this.toolLoopRunner = new AiHostToolLoopRunner(options)
   }
 
+  /** 发送消息的主入口 */
   public async send(input: AiHostSendInput, state: AiHostMessageSendState): Promise<void> {
     const { request, turn, scope } = input
     const selected = await this.resolveSelectedBusiness(scope, state)
     state.setSelected(selected.registration, selected.scope)
 
+    // 提取最新用户消息并写入 sessionStore
     const latestUser = latestUserInput(request)
     if (latestUser !== '') {
       state.appendUserMessage(toAiHostRuntimeScope(selected.scope), latestUser)
     }
 
+    // 启动工具循环（AI 推理 + 工具调用 + 生命周期判断）
     await this.toolLoopRunner.runToolLoop(
       selected.registration,
       selected.scope,
@@ -104,6 +166,11 @@ class AiHostMessageSender {
     )
   }
 
+  /**
+   * 解析选中的业务。
+   * 若当前缓存的 scope 匹配 → 复用；
+   * 否则清除缓存 → 从 registry 重新查找 → 启动注册会话。
+   */
   private async resolveSelectedBusiness(
     scope: AiHostBusinessScope,
     state: AiHostMessageSendState,
@@ -121,6 +188,28 @@ class AiHostMessageSender {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 5 节 · 业务会话（对外 API）
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 业务会话。
+ *
+ * 用法：
+ * ```ts
+ * const session = createAiHostBusinessSession(options, target)
+ * await session.start()
+ * await session.send({ historyMsgs: [...] })
+ * ```
+ *
+ * 属性：
+ *   target     — 业务定位
+ *   scope      — 业务作用域
+ *   storageKey — 存储键（用于持久化）
+ *   sessionId  — 会话 ID
+ *   pageId     — 页面 ID（= businessInstanceId）
+ *   sender     — 消息发送器（可直接传给 UI 层）
+ */
 export class AiHostBusinessSession {
   public readonly target: AiHostBusinessTarget
   public readonly scope: AiHostBusinessScope
@@ -145,6 +234,7 @@ export class AiHostBusinessSession {
     this.sender = (request) => this.send(request)
   }
 
+  /** 启动会话：创建 sessionStore 记录 + 生成工具规约 */
   public async start(): Promise<void> {
     if (this.state.selected !== null && isSameScope(this.state.selected.scope, this.scope)) return
     const registration = this.resolveRegistration()
@@ -152,11 +242,13 @@ export class AiHostBusinessSession {
     this.state.setSelected(registration, this.scope)
   }
 
+  /** 获取当前会话记录（从 sessionStore 读取） */
   public getSessionRecord(): AiHostSessionRecord | null {
     const registration = this.state.selected?.registration ?? this.options.registry.get(this.scope.businessRegistrationId)
     return registration?.sessionStore?.getSession(toAiHostRuntimeScope(this.scope)) ?? null
   }
 
+  /** 发送消息：提取用户输入 → AI 推理 → 工具调用 */
   public async send(request: AiHostChatRequest): Promise<void> {
     await this.senderCore.send({
       request,
@@ -165,6 +257,7 @@ export class AiHostBusinessSession {
     }, this.state)
   }
 
+  /** 从 registry 查找当前 scope 对应的 registration */
   private resolveRegistration(): AiHostBusinessRegistration {
     const registration = this.options.registry.get(this.scope.businessRegistrationId)
     if (registration === undefined) {
@@ -174,6 +267,11 @@ export class AiHostBusinessSession {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 6 节 · 工厂函数与会话启动
+// ═══════════════════════════════════════════════════════════════
+
+/** 工厂函数：创建业务会话 */
 export function createAiHostBusinessSession(
   options: AiHostOptions,
   targetInput: AiHostBusinessTarget,
@@ -181,6 +279,15 @@ export function createAiHostBusinessSession(
   return new AiHostBusinessSession(options, targetInput)
 }
 
+/**
+ * 启动注册会话。
+ *
+ * 执行步骤：
+ * 1. 调用 registration.onStartSession() 生命周期回调
+ * 2. 调用 sessionStore.startSession() 创建会话记录
+ * 3. 通过 ModuleSemanticToolCodec 编解码器将协议工具转为 transport 工具规约
+ * 4. 返回 AiHostStartSessionResult（含 session + tools）
+ */
 export async function startRegistrationSession(
   registration: AiHostBusinessRegistration,
   context: AiHostBusinessRuntimeContext,

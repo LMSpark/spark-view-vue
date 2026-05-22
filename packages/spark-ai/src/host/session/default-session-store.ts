@@ -1,8 +1,21 @@
 /**
- * In-memory Host session store.
+ * ═══════════════════════════════════════════════════════════════
+ * host/session/default-session-store.ts — 内存会话存储实现
+ * ═══════════════════════════════════════════════════════════════
  *
- * Host records UI/LLM messages, protocol tool calls, and lifecycle state.
- * Business release clears live state only; it does not delete this history.
+ * 【架构定位】AiHostSessionStore 的默认实现。纯内存存储，不持久化。
+ *   适合单页应用内的会话管理。业务方可通过继承 AiHostSessionStore
+ *   替换为 localStorage / IndexedDB / 服务端存储。
+ *
+ * 【设计要点】
+ *   - 内部 MutableSession 可变，对外暴露的 AiHostSessionRecord 只读（clone 返回）
+ *   - sessionKey = "moduleId\0moduleInstanceId"（用 null 字符分隔，避免碰撞）
+ *   - 每条历史记录都有全局递增 seq 和基于 instanceId 的唯一 id
+ *   - cloneUnknown 通过 JSON 序列化/反序列化实现深拷贝（不可序列化的值保留引用）
+ *   - 若 sessionStore 被复用（同一 key 再次 startSession），复用已有 session 并重置为 Started
+ *
+ * 【消费方】business-registry（默认注入）、业务方自定义存储
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiHostBusinessAppendMessageOptions, AiHostBusinessRuntimeContext } from '../business/business-types'
@@ -18,10 +31,16 @@ import {
 } from './session-types'
 import { isRecord } from '../transport/http-utils'
 
+/** 存储选项：允许注入自定义时间源（便于测试） */
 export type DefaultAiHostSessionStoreOptions = Readonly<{
   now?: (() => number) | undefined
 }>
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 内部可变会话类型
+// ═══════════════════════════════════════════════════════════════
+
+/** 内部可变会话（对外通过 cloneSession 暴露只读版本） */
 type MutableSession = {
   readonly moduleId: string
   readonly moduleInstanceId: string
@@ -35,11 +54,18 @@ type MutableSession = {
   history: AiHostHistoryEntry[]
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · DefaultAiHostSessionStore class
+// ═══════════════════════════════════════════════════════════════
+
 export class DefaultAiHostSessionStore extends AiHostSessionStore {
+  /** key → MutableSession */
   private readonly sessions = new Map<string, MutableSession>()
 
+  /** 全局历史条目序号（递增） */
   private nextHistorySeq = 1
 
+  /** 时间源（默认 Date.now，可注入用于测试） */
   private readonly now: () => number
 
   public constructor(options: DefaultAiHostSessionStoreOptions = {}) {
@@ -47,16 +73,21 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
     this.now = options.now ?? Date.now
   }
 
+  // ── 生命周期 ──────────────────────────────────────────────
+
+  /** 启动会话：创建新记录或复用已有记录 */
   public startSession(context: AiHostBusinessRuntimeContext): AiHostSessionRecord {
     const key = sessionKey(context)
     const ts = this.now()
     const existing = this.sessions.get(key)
+    // 复用已有 session：重置为 Started 状态
     if (existing !== undefined) {
       existing.status = 'Started'
       existing.updatedAt = ts
       delete existing.stoppedAt
       return cloneSession(existing)
     }
+    // 新建 session
     const session: MutableSession = {
       moduleId: context.moduleId,
       moduleInstanceId: context.moduleInstanceId,
@@ -71,6 +102,7 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
     return cloneSession(session)
   }
 
+  /** 停止会话 */
   public stopSession(context: AiHostBusinessRuntimeContext, reason?: string): AiHostSessionRecord | null {
     const session = this.sessions.get(sessionKey(context))
     if (session === undefined) return null
@@ -82,22 +114,30 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
     return cloneSession(session)
   }
 
+  /** 获取会话记录 */
   public getSession(context: AiHostBusinessRuntimeContext): AiHostSessionRecord | null {
     const session = this.sessions.get(sessionKey(context))
     return session === undefined ? null : cloneSession(session)
   }
 
+  /** 列出所有会话（按 startedAt 升序） */
   public listSessions(): readonly AiHostSessionRecord[] {
     return [...this.sessions.values()]
       .sort((a, b) => a.startedAt - b.startedAt)
       .map((session) => cloneSession(session))
   }
 
+  // ── 历史查询 ──────────────────────────────────────────────
+
+  /** 获取会话历史（返回深拷贝） */
   public getSessionHistory(context: AiHostBusinessRuntimeContext): readonly AiHostHistoryEntry[] {
     const session = this.sessions.get(sessionKey(context))
     return session === undefined ? [] : session.history.map((entry) => cloneHistoryEntry(entry))
   }
 
+  // ── 追加记录 ──────────────────────────────────────────────
+
+  /** 追加消息条目 */
   public appendMessage(options: AiHostBusinessAppendMessageOptions): AiHostMessageHistoryEntry {
     const session = this.requireSession(options)
     const ts = this.now()
@@ -120,9 +160,11 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
     return cloneMessageEntry(entry)
   }
 
+  /** 追加工具调用条目 */
   public appendFunctionCall(options: AiHostAppendFunctionCallOptions): AiHostFunctionCallHistoryEntry {
     const session = this.requireSession(options)
     const ts = this.now()
+    // 状态推导：未指定时根据 error 是否存在判定 completed/failed
     const status = options.status ?? (options.error === undefined ? 'completed' : 'failed')
     const entry: AiHostFunctionCallHistoryEntry = {
       moduleId: options.moduleId,
@@ -146,6 +188,9 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
     return cloneFunctionCallEntry(entry)
   }
 
+  // ── 内部辅助 ──────────────────────────────────────────────
+
+  /** 获取 session，若不存在则抛异常 */
   private requireSession(context: AiHostBusinessRuntimeContext): MutableSession {
     const session = this.sessions.get(sessionKey(context))
     if (session === undefined) {
@@ -156,6 +201,7 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
     return session
   }
 
+  /** 生成历史条目 ID："{instanceId}:history:{seq}" */
   private nextHistoryId(instanceId: string): string {
     const seq = this.nextHistorySeq
     this.nextHistorySeq += 1
@@ -163,10 +209,16 @@ export class DefaultAiHostSessionStore extends AiHostSessionStore {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 内部辅助函数
+// ═══════════════════════════════════════════════════════════════
+
+/** 生成会话键：moduleId\0moduleInstanceId（null 字符分隔防止碰撞） */
 function sessionKey(context: Pick<AiHostBusinessRuntimeContext, 'moduleId' | 'moduleInstanceId'>): string {
-  return `${context.moduleId}\u0000${context.moduleInstanceId}`
+  return `${context.moduleId} ${context.moduleInstanceId}`
 }
 
+/** 根据 role 推导默认 source */
 function defaultSource(role: AiHostMessageRole): AiHostMessageSource {
   switch (role) {
     case 'user': return 'ui'
@@ -175,6 +227,11 @@ function defaultSource(role: AiHostMessageRole): AiHostMessageSource {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 深拷贝工具函数
+// ═══════════════════════════════════════════════════════════════
+
+/** 深拷贝会话（可变 → 只读） */
 function cloneSession(session: MutableSession): AiHostSessionRecord {
   return {
     moduleId: session.moduleId,
@@ -190,10 +247,12 @@ function cloneSession(session: MutableSession): AiHostSessionRecord {
   }
 }
 
+/** 深拷贝历史条目 */
 function cloneHistoryEntry(entry: AiHostHistoryEntry): AiHostHistoryEntry {
   return entry.kind === 'message' ? cloneMessageEntry(entry) : cloneFunctionCallEntry(entry)
 }
 
+/** 深拷贝消息条目 */
 function cloneMessageEntry(entry: AiHostMessageHistoryEntry): AiHostMessageHistoryEntry {
   return {
     moduleId: entry.moduleId,
@@ -211,6 +270,7 @@ function cloneMessageEntry(entry: AiHostMessageHistoryEntry): AiHostMessageHisto
   }
 }
 
+/** 深拷贝工具调用条目 */
 function cloneFunctionCallEntry(entry: AiHostFunctionCallHistoryEntry): AiHostFunctionCallHistoryEntry {
   return {
     moduleId: entry.moduleId,
@@ -231,11 +291,17 @@ function cloneFunctionCallEntry(entry: AiHostFunctionCallHistoryEntry): AiHostFu
   }
 }
 
+/** 深拷贝 metadata（确保返回 Record 类型） */
 function cloneMetadata(value: Record<string, unknown>): Record<string, unknown> {
   const cloned = cloneUnknown(value)
   return isRecord(cloned) ? cloned : { ...value }
 }
 
+/**
+ * 通用深拷贝：通过 JSON 序列化/反序列化实现。
+ * 不可序列化的值（函数、Symbol、BigInt 等）保留原引用。
+ * BigInt 会被转为字符串。
+ */
 function cloneUnknown(value: unknown): unknown {
   if (value === null || value === undefined || typeof value !== 'object') return value
   try {

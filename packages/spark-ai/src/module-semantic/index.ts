@@ -1,39 +1,23 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * module-semantic/index.ts — 模块语义协议公共入口
+ * ═══════════════════════════════════════════════════════════════
  *
- * 模块语义协议公共入口。
- *
- * 暴露 5 大块:
- * 1. 操作结果对象(check / result)
- * 2. 模块类型协议(ModuleKind / AttributeSchema / ActionSchema)
- * 3. 模块路径(ModulePath / 段类型)
- * 4. 路径上下文 + 实例引用类型
- * 5. 运行时(ModuleSemanticRuntime + 工具规约类型)
- *
- * 业务方典型使用:
- * ```ts
- * import {
- *   ModuleSemanticRuntime,
- *   ModuleKind,
- *   ModulePath,
- * } from '@spark-view/spark-ai/module-semantic'
- *
- * const runtime = new ModuleSemanticRuntime()
- * runtime.registerKind(createSchoolModuleKind())
- * const tools = runtime.getLlmTools()
- * ```
+ * 【导出策略】按功能分块：
+ *   1. 操作结果 / 模块路径 / 上下文 / 实例引用（从 protocol 层）
+ *   2. ModuleKind class + namespace（协议核心）
+ *   3. AttributeSchema / ActionSchema（元数据类型）
+ *   4. ModuleSemanticRuntime（运行时组合根）
+ *   5. 协议工具规约（类型 + 常量）
+ *   6. 错误类型（便于业务方 instanceof 判断）
+ *   7. ModuleSemanticToolCodec（适配 Host transport）
+ * ═══════════════════════════════════════════════════════════════
  */
 
-// ═══════════════════════════════════════════════════════
-// 1-4. 协议层(re-export from ./protocol)
-// ═══════════════════════════════════════════════════════
-
+// ── 1-4. 协议层（re-export from ./protocol）───────────────────
 export * from './protocol/index'
 
-// ═══════════════════════════════════════════════════════
-// 5. 运行时
-// ═══════════════════════════════════════════════════════
-
+// ── 5. 运行时 ─────────────────────────────────────────────────
 export {
   ModuleSemanticRuntime,
 } from './runtime/module-semantic-runtime'
@@ -42,6 +26,7 @@ export type {
   ProtocolToolArgs,
 } from './runtime/module-semantic-runtime'
 
+// ── 6. 协议工具规约（类型 + 常量）─────────────────────────────
 export {
   PROTOCOL_TOOL_NAMES,
 } from './internal/protocol-tool-generator'
@@ -51,23 +36,16 @@ export type {
   ProtocolToolName,
 } from './internal/protocol-tool-generator'
 
+// ── 7. describeKind 返回类型 ──────────────────────────────────
 export type {
   ModuleKindDescription,
 } from './internal/navigator'
 
-// ═══════════════════════════════════════════════════════
-// 注册错误类型(便于业务方 instanceof 判断)
-// ═══════════════════════════════════════════════════════
-
+// ── 8. 注册错误类型（便于业务方 instanceof 判断）─────────────
 export {
   ModuleKindConflictError,
   ModuleKindNotFoundError,
 } from './internal/module-kind-registry'
 
-// ═══════════════════════════════════════════════════════
-// 6. host 工具编解码器(re-export from ./host)
-//
-// Host 直接消费 ModuleSemanticRuntime.getLlmTools() 产生的协议工具。
-// ═══════════════════════════════════════════════════════
-
+// ── 9. Host 工具编解码器 ─────────────────────────────────────
 export * from './host/index'

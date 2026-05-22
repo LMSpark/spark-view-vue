@@ -1,12 +1,16 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * schema/index.ts — SPARK AI schema 公共入口
+ * ═══════════════════════════════════════════════════════════════
  *
- * SPARK AI schema 公共入口。
+ * 【架构定位】最底层，被 module-semantic 和 host 共同依赖。
+ *   这是 LLM 参数 / JSON Schema / 参数校验的单一事实源。
  *
- * 这里是 LLM 参数 / JSON Schema / 参数校验的单一事实源。module-semantic、
- * host 和业务注册都只依赖这一层,不再从旧 runtime protocol 取类型。
+ * 【导出策略】类型和值分列导出，便于消费方按需导入 type-only。
+ * ═══════════════════════════════════════════════════════════════
  */
 
+// ── 类型：JSON Schema 核心类型（SSOT）─────────────────────────
 export type {
   LlmJsonObject,
   LlmJsonSchema,
@@ -16,6 +20,7 @@ export type {
   LlmParameterSchemaRoot,
 } from './types'
 
+// ── 值：Schema 便捷构造器 ─────────────────────────────────────
 export {
   anySchema,
   arraySchema,
@@ -32,6 +37,7 @@ export type {
   JsonSchemaProperties,
 } from './helpers'
 
+// ── 值 + 类型：参数校验器 ─────────────────────────────────────
 export {
   LlmSchemaValidator,
 } from './validator'

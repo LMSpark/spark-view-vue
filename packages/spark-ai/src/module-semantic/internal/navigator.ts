@@ -1,41 +1,45 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * module-semantic/internal/navigator.ts — 路径导航器 + 发现工具
+ * ═══════════════════════════════════════════════════════════════
  *
- * 导航器。
+ * 【架构定位】协议层的"空间感知"中枢。统一负责三类操作：
+ *   1. 路径遍历（navigate）  — 把 ModuleKind.Path 翻译成末段 ModuleKind + PathContext
+ *   2. 子实例发现（listChildren / findInstance）
+ *   3. Kind 元数据查询（describeKind）
  *
- * 统一负责两类导航:
- * - 路径遍历:把 ModuleKind.Path 翻译成末段 ModuleKind + PathContext
- * - 发现工具:listChildren / findInstance / describeKind
+ * 【设计决策】
+ *   - 根路径 "/" listChildren 返回所有已注册 kind 名单（LLM 发现入口的第一跳）。
+ *   - 路径第一段不验证父子关系（没有父），由业务方在 root ModuleKind 的 action 中自行校验。
+ *   - 第二段起通过父 ModuleKind.resolveChild 验证父子存在性。
+ *   - 根级 findInstance 使用 ROOT_SEGMENT_SENTINEL 作为占位 context。
+ *   - describeKind 全量返回 attributes/actions/children，不剥离任何字段。
  *
- * 协议固定提供的"看到周围"工具,LLM 必经路径:语义查询 → 拿 id → 拼路径。
+ * 【消费方】ModuleSemanticRuntime（直接调用）、ActionInvoker、AttributeAccessor
  *
- * - listChildren(path, childKind?)
- *     根路径下:返回已注册 kind 名单(LLM 用来发现入口)
- *     非根路径:路由到末段 ModuleKind.listChildren
+ * ═══════════════════════════════════════════════════════════════
+ * LLM 发现流程（典型时序）：
  *
- * - findInstance(path, childKind, query)
- *     根路径下:需指定 childKind,委托到该 kind 自身 ModuleKind.findInstance(null parent)
- *     非根路径:路由到末段 ModuleKind.findInstance
- *     注:为统一接口,根级查询时父段 ctx 用一个 null-parent context(segment 为查询目标 kind 占位 id 为空串)
- *
- * - describeKind(kind)
- *     返回 ModuleKind 的 attributes / actions / children 元数据,不调用业务执行入口
+ *   1. LLM 调用 listChildren("/") → 得到已注册 kind 名单
+ *   2. LLM 调用 findInstance("/", "school", { label: "建国" }) → 拿到具体实例 id
+ *   3. LLM 拼接路径 /school[jianguo]/...
+ *   4. 后续操作（invokeAction / getAttribute）由 Navigator.navigate 校验路径有效性
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import { ModuleKind, type ActionSchema, type AttributeSchema } from '../protocol/module-kind'
-
-
 import type { ModuleKindRegistry } from './module-kind-registry'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 公共类型
+// ═══════════════════════════════════════════════════════════════
+
 /**
- * describeKind 返回的元数据(仅用于 LLM 阅读)。
+ * describeKind 返回的完整元数据（仅用于 LLM 阅读，JSON 兼容）。
  *
- * 字段是 JSON 兼容,可直接作为工具返回值。
- *
- * 注:attributes 与 actions 直接复用 ModuleKind 的 schema 类型,保证
+ * 设计原则：attributes 与 actions 全量复用 ModuleKind 的 schema 类型，
  * paramsSchema / resultSchema / schema / example / usageRules / failureModes
- * 全量传递给 LLM。任何剥离都让 LLM 在写参数时盲注,违反 describeKind 工具描述
- * "complete schema" 的承诺。
+ * 全部传递给 LLM。任何剥离都让 LLM 在写参数时盲注。
  */
 export type ModuleKindDescription = Readonly<{
   kind: string
@@ -48,9 +52,8 @@ export type ModuleKindDescription = Readonly<{
 
 /**
  * 路径遍历的成功结果。
- *
- * - moduleKind: 末段 kind 对应的 ModuleKind(用于后续属性/动作调用)
- * - segmentCtx: 末段 PathContext(传给末段 ModuleKind)
+ * - moduleKind: 末段 kind 对应的 ModuleKind（用于后续属性/动作操作）
+ * - segmentCtx: 末段 PathContext（传给末段 ModuleKind 的方法）
  */
 export class ModuleNavigationSuccess {
   public constructor(
@@ -59,32 +62,30 @@ export class ModuleNavigationSuccess {
   ) {}
 }
 
-/**
- * 路径遍历的失败结果。
- *
- * checks 至少含一条 error。常见 code:
- * - PATH_EMPTY: 路径为根,无法定位末段
- * - KIND_NOT_REGISTERED: 路径中出现未注册的 kind
- * - PATH_INVALID: 父 ModuleKind resolveChild 返回 false
- * - RESOLVE_ERROR: resolveChild 自身返回 ok=false(透传其 checks)
- */
+/** 路径遍历失败结果（OperationResult<never> 的别名，方便类型标注） */
 export type ModuleNavigationFailure = ModuleKind.OperationResult<never>
+
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · Navigator class
+// ═══════════════════════════════════════════════════════════════
 
 export class Navigator {
   public constructor(
     private readonly kinds: ModuleKindRegistry,
   ) {}
 
+  // ── 2.1 路径遍历：Path → ModuleKind + PathContext ──────────
+
   /**
-   * 遍历路径,逐段验证父子存在性,最终返回末段 ModuleKind + PathContext。
+   * 遍历路径，逐段验证，最终返回末段 ModuleKind + PathContext。
    *
-   * 协议规则:
-   * 1. 根路径不可用于属性/动作调用,返回 PATH_EMPTY
-   * 2. 路径上任何 kind 未注册,返回 KIND_NOT_REGISTERED
-   * 3. 第一段(根级)不验证父子关系(没有父),直接相信 LLM 给的 root id
-   *    业务方可在 root ModuleKind 的 attribute/action 中通过 ctx.segment.id 自行校验
-   * 4. 第二段及之后,调用父 ModuleKind.resolveChild 验证
-   *    返回 false → PATH_INVALID;返回 ok=false → RESOLVE_ERROR
+   * 验证规则：
+   *   1. 根路径不可用于属性/动作调用 → PATH_EMPTY
+   *   2. 路径上任何 kind 未注册 → KIND_NOT_REGISTERED
+   *   3. 第一段（根级）不验证父子关系 — 没有父，LLM 给的 root id 由业务自行校验
+   *   4. 第二段及之后 → 调用父 ModuleKind.resolveChild
+   *      - 返回 false → PATH_INVALID
+   *      - 返回 ok=false → RESOLVE_ERROR（透传 checks）
    */
   public async navigate(
     path: ModuleKind.Path,
@@ -96,6 +97,7 @@ export class Navigator {
 
     const segments = path.segments
 
+    // 第 1 遍：验证所有段的 kind 都已注册
     for (let i = 0; i < segments.length; i++) {
       const segment = requirePathSegment(segments, i)
       if (!this.kinds.has(segment.kind)) {
@@ -107,6 +109,7 @@ export class Navigator {
       }
     }
 
+    // 第 2 遍：验证父子存在性（第一段跳过，没有父）
     for (let i = 1; i < segments.length; i++) {
       const parentSegment = requirePathSegment(segments, i - 1)
       const childSegment = requirePathSegment(segments, i)
@@ -134,6 +137,7 @@ export class Navigator {
       }
     }
 
+    // 成功：返回末段 ModuleKind + PathContext
     const tail = requirePathSegment(segments, segments.length - 1)
     const tailKind = this.kinds.require(tail.kind)
     return new ModuleNavigationSuccess(
@@ -146,13 +150,15 @@ export class Navigator {
     )
   }
 
+  // ── 2.2 listChildren：列出子实例 ───────────────────────────
+
   /**
    * 列出子实例。
    *
-   * - 根路径 + 未指定 childKind:返回已注册的所有 kind 名单
-   * - 根路径 + 指定 childKind:暂不支持(根级"列出所有学校"应由业务自行设计 find/list)
-   *   返回 ROOT_LIST_REQUIRES_FIND check 引导 LLM 改用 findInstance
-   * - 非根路径:委托末段 ModuleKind.listChildren
+   * 行为分三种情况：
+   *   - 根路径 + 无 childKind → 返回所有已注册 kind 名单（LLM 发现入口）
+   *   - 根路径 + 有 childKind → ROOT_LIST_REQUIRES_FIND，引导 LLM 用 findInstance
+   *   - 非根路径 → 委托末段 ModuleKind.listChildren
    */
   public async listChildren(
     path: ModuleKind.Path,
@@ -181,15 +187,19 @@ export class Navigator {
     return navResult.moduleKind.listChildren(navResult.segmentCtx, childKind)
   }
 
+  // ── 2.3 findInstance：按条件查询子实例 ─────────────────────
+
   /**
    * 查询子实例。
    *
-   * - 根路径:查询目标 kind 的 ModuleKind,使用空 parent ctx(由 ModuleKind 自行解释)
-   * - 非根路径:路由到末段 ModuleKind.findInstance,目标 kind 必须是末段 ModuleKind.children 之一
+   * 行为分两种情况：
+   *   - 根路径 → 查询目标 kind 的 ModuleKind，使用 ROOT_SEGMENT_SENTINEL 占位
+   *   - 非根路径 → 路由到末段 ModuleKind.findInstance，
+   *     目标 kind 必须是末段 children 之一
    *
    * 失败码:
-   * - CHILD_KIND_NOT_DECLARED: 非根路径下,目标 kind 不在末段 children 中
-   * - KIND_NOT_REGISTERED:     目标 kind 未注册
+   *   - CHILD_KIND_NOT_DECLARED
+   *   - KIND_NOT_REGISTERED
    */
   public async findInstance(
     path: ModuleKind.Path,
@@ -228,11 +238,13 @@ export class Navigator {
     return navResult.moduleKind.findInstance(navResult.segmentCtx, childKind, query)
   }
 
+  // ── 2.4 describeKind：查询 kind 元数据（纯协议操作，不调用业务 runner）──
+
   /**
-   * 描述某个 kind 的元数据(给 LLM 看)。
+   * 描述某个 kind 的完整元数据（给 LLM 看）。
+   * 纯协议层操作，不触发任何业务逻辑。
    *
-   * 失败码:
-   * - KIND_NOT_REGISTERED
+   * 失败码: KIND_NOT_REGISTERED
    */
   public describeKind(kind: string): ModuleKind.OperationResult<ModuleKindDescription> {
     const moduleKind = this.kinds.get(kind)
@@ -247,9 +259,17 @@ export class Navigator {
   }
 }
 
-/** 根级 findInstance 调用 ModuleKind 时占位的 segment。kind 为空表示"非具体段"。 */
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 内部 helper
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 根级 findInstance 调用 ModuleKind 时使用的占位 segment。
+ * kind 和 id 都为空字符串，表示"不来自具体路径段"。
+ */
 const ROOT_SEGMENT_SENTINEL = new ModuleKind.PathSegment('', '')
 
+/** 从 ModuleKind 实例提取元数据摘要 */
 function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
   return {
     kind: moduleKind.kind,
@@ -261,16 +281,22 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
   }
 }
 
+/**
+ * 类型守卫：判断 navigate 结果是否为成功。
+ * 使用 instanceof 而非属性检测，确保准确区分 ModuleNavigationSuccess 和 OperationResult。
+ */
 export function isNavigationSuccess(
   result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
 ): result is ModuleNavigationSuccess {
   return result instanceof ModuleNavigationSuccess
 }
 
+/** 格式化路径段为诊断字符串："[i] kind[id]" */
 function formatSegment(segment: ModuleKind.PathSegment, index: number): string {
   return `"[${String(index)}] ${segment.kind}[${segment.id}]"`
 }
 
+/** 安全取路径段（越界抛错） */
 function requirePathSegment(segments: readonly ModuleKind.PathSegment[], index: number): ModuleKind.PathSegment {
   const segment = segments[index]
   if (segment === undefined) {

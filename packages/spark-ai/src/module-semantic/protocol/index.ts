@@ -1,19 +1,15 @@
 /**
- * @packageDocumentation
+ * ═══════════════════════════════════════════════════════════════
+ * module-semantic/protocol/index.ts — 协议层公共入口
+ * ═══════════════════════════════════════════════════════════════
  *
- * 模块语义协议公共入口。
- *
- * 协议层导出:
- * - ModuleKind class + namespace（操作结果、模块路径、上下文类型、委托类型）
- * - 属性/动作 schema（AttributeSchema / ActionSchema / ActionFailureMode）
- *
- * 所有类型统一从 module-kind.ts 导出。
+ * 【导出策略】所有类型和值统一从 module-kind.ts 导出。
+ *   ModuleKind 既是 class 也是 namespace，消费方用 ModuleKind 构造实例，
+ *   用 ModuleKind.Path / ModuleKind.OperationResult 引用附属类型。
+ * ═══════════════════════════════════════════════════════════════
  */
 
-// ═══════════════════════════════════════════════════════
-// 1. ModuleKind class + namespace
-// ═══════════════════════════════════════════════════════
-
+// ── ModuleKind class + namespace ──────────────────────────────
 export {
   ModuleKind,
 } from './module-kind'
@@ -25,10 +21,7 @@ export type {
   AttributeSchema,
 } from './module-kind'
 
-// ═══════════════════════════════════════════════════════
-// 2. ActionResultSchema
-// ═══════════════════════════════════════════════════════
-
+// ── ActionResultSchema ────────────────────────────────────────
 export type {
   ActionResultSchema,
 } from './module-kind'
