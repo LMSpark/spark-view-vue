@@ -12,11 +12,11 @@ VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源�
 - `ModuleKind.attributes`
 - `ModuleKind.actions`
 - `ModuleKind.children`
-- `ModuleKind.list / find / runner` 的运行入口声明边界
+- 构造期运行委托：`runner / list / find` 输入，只能通过 `ModuleKind` 协议方法访问
 
 LLM 只通过 `describeKind` 理解语义；不得从 runner 函数属性、函数体、服务实例或组件树反推业务语义。
 
-手写 `ModuleKind` class 只作为迁移期兼容形态存在；新增能力模块不应把元数据硬编码在自定义 `ModuleKind` 子类里。业务代码只保留 runner/list/find 运行委托、构造依赖和服务实现，语义元数据从能力模块本体提取，注册层只承接装配边界。
+手写 `ModuleKind` class 只作为迁移期兼容形态存在；新增能力模块不应把元数据硬编码在自定义 `ModuleKind` 子类里。业务代码只保留构造期运行委托、构造依赖和服务实现，语义元数据从能力模块本体提取，注册层只承接装配边界。
 
 ## 生成形态
 
@@ -61,7 +61,7 @@ VCM 应完整提取六类结构：
 - **动作**：生成 `ModuleActionMetadata[]`，包括 `paramsSchema / resultSchema / usageRules / failureModes / example`。
 - **子模块**：生成 `children`，并校验 `list/find/resolve` 发现语义与子 kind 声明一致。
 - **构造装配**：从能力模块构造函数、factory 参数和注册工厂中提取依赖边界，例如 `service`、`contextFactory`、`runner`、`list`、`find`；只生成装配签名，不生成业务实现体。
-- **运行委托**：按 JSDoc 标识提取 `runner/list/find` 委托函数，把它们接到 `ModuleKind.runner / list / find`。VCM 只识别委托签名和绑定关系，不解析委托函数体来推导业务语义。
+- **运行委托**：按 JSDoc 标识提取 `runner/list/find` 委托函数，把它们作为 `ModuleKind` 构造参数接入；运行期只能通过 `invokeAction/listChildren/findInstance` 协议方法访问。VCM 只识别委托签名和绑定关系，不解析委托函数体来推导业务语义。
 - **攻击面**：按 JSDoc 标识提取能力模块能触达的资源、信任边界、写入/删除/执行风险和防护规则。VCM 只提取声明，不从业务实现反推安全语义。
 
 ## JSDoc 标识

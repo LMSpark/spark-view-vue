@@ -241,7 +241,7 @@ export class ProtocolToolGenerator {
           '在指定路径下按业务条件查询子实例。',
           'path="/" 表示在全局查询某个 kind(由目标 ModuleKind 自行决定根级搜索范围)。',
           '非根路径下,childKind 必须是末段 kind 在 children 中声明的子 kind。',
-          'query 由对应 ModuleKind.find 委托解释,通常包含 label 关键字、过滤条件或 hint。',
+          'query 由对应 ModuleKind 构造期 find 委托解释,通常包含 label 关键字、过滤条件或 hint。',
           '当前注册的 kind 及其可挂子 kind:',
           digest,
           '失败码: KIND_NOT_REGISTERED / CHILD_KIND_NOT_DECLARED',
@@ -256,7 +256,7 @@ export class ProtocolToolGenerator {
             },
             query: {
               type: 'object',
-              description: '查询条件,具体字段由对应 ModuleKind.find 委托约定',
+              description: '查询条件,具体字段由对应 ModuleKind 构造期 find 委托约定',
               additionalProperties: true,
             },
           },

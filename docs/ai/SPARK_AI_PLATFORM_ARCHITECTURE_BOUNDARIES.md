@@ -40,7 +40,7 @@
 | `spark-ai/module-semantic` | `ModuleKind`、顶层协议类型、`listChildren/findInstance/describeKind/invokeAction` 协议、action 参数校验 | Host 会话历史、模型传输、业务状态 |
 | `spark-ai/host` | `AiHostBusinessRegistration` 注册表、会话历史、工具调用循环、transport 契约、fetch/SSE 传输 | 具体业务动作、页面配置文件读写、业务生命周期判断 |
 | AI Backend | LLM 会话、模型调用、消息持久化、SSE stream | 前端业务函数执行；页面 live state；APP UI 状态 |
-| 业务服务 | 持有业务状态；声明 `ModuleActionMetadata`；通过 `ModuleKind.runner`、`list`、`find` 委托执行副作用和发现 | 管理 LLM 会话；重写 `spark-ai` 通用协议 |
+| 业务服务 | 持有业务状态；声明 `ModuleActionMetadata`；通过 `ModuleKind` 构造期委托接入副作用和发现，运行期只走协议方法 | 管理 LLM 会话；重写 `spark-ai` 通用协议 |
 
 ## 发现与调用协议
 

@@ -4,17 +4,17 @@
  * │  Module Kind — Protocol Core                                                  │
  * │                                                                              │
  * │  ModuleKind 是 module-semantic 协议的中心抽象。每个 ModuleKind 实例描述一个    │
- * │  业务能力模块的元数据（属性、动作、子模块）和运行时行为（runner/list/find）。    │
+ * │  业务能力模块的元数据（属性、动作、子模块）和运行时行为委托。                 │
  * │                                                                              │
  * │  三大职责：                                                                   │
  * │    1. 元数据声明 — attributes（属性表）、actions（动作表）、children（子模块） │
- * │    2. 运行时委托 — runner（动作执行）、list（子实例发现）、find（按条件查询）   │
+ * │    2. 运行时委托 — actionRunner、childLister、instanceFinder                 │
  * │    3. 属性访问   — getAttribute / setAttribute（按 attributes 元数据校验）     │
  * │                                                                              │
  * │  委托模式：                                                                   │
- * │    · runner(ctx, actionName, args)  — 动作执行，业务方在函数对象上挂载属性     │
- * │    · list(ctx, childKind?)           — 列出子实例                              │
- * │    · find(ctx, childKind, query)    — 按条件查询子实例                         │
+ * │    · actionRunner(ctx, actionName, args)  — 动作执行，可在函数对象上挂载属性   │
+ * │    · childLister(ctx, childKind?)         — 列出子实例                         │
+ * │    · instanceFinder(ctx, childKind, query) — 按条件查询子实例                  │
  * │    · 未提供时使用默认实现（空列表 / 自引用 / 未实现错误）                        │
  * │                                                                              │
  * │  子实例解析：resolveChild() 先查 find 再查 list，用于验证路径段的父子关系。     │
@@ -109,7 +109,7 @@ export type ModuleKindOptions = Readonly<{
  * 三、内部类型与常量
  * ----------------------------------------------------------------------------- */
 
-/** runner 函数对象上挂载的属性存储（业务方通过 runner 对象暴露属性值） */
+/** action 委托函数对象上挂载的属性存储（业务方通过 action 委托对象暴露属性值） */
 type ModuleKindRunnerProperties = Record<string, unknown>
 
 const EMPTY_RUNNER_PROPERTIES: ModuleKindRunnerProperties = {}
@@ -140,14 +140,11 @@ export class ModuleKind {
   /** 按名称索引的动作表（内部快速查找） */
   private readonly moduleActionByName: ReadonlyMap<string, ModuleActionMetadata>
 
-  /* ── 运行时委托（可替换）────────────────────────────────── */
+  /* ── 运行时委托（构造后不可变，只通过协议方法访问）────────── */
 
-  /** 动作执行委托 */
-  public runner: ModuleKindRunner
-  /** 子实例列表委托 */
-  public list: ModuleChildrenLister
-  /** 子实例查询委托 */
-  public find: ModuleInstanceFinder
+  private readonly actionRunner: ModuleKindRunner
+  private readonly childLister: ModuleChildrenLister
+  private readonly instanceFinder: ModuleInstanceFinder
 
   /* ── 构造函数 ──────────────────────────────────────────── */
 
@@ -163,10 +160,9 @@ export class ModuleKind {
     this.payloads = normalizePayloadMetadata(options.payloads ?? [], options.kind)
     this.children = normalizeChildKinds(options.children ?? [], options.kind)
 
-    // 默认委托：未提供时使用安全回退
-    this.runner = options.runner ?? ((_ctx, actionName) => actionNotImplemented(this.kind, actionName))
-    this.list = options.list ?? (() => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]))
-    this.find = options.find ?? ((ctx, childKind) => {
+    this.actionRunner = options.runner ?? ((_ctx, actionName) => actionNotImplemented(this.kind, actionName))
+    this.childLister = options.list ?? (() => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]))
+    this.instanceFinder = options.find ?? ((ctx, childKind) => {
       // 默认 find：仅当 childKind 等于自身 kind 且非路径查询时返回当前实例
       if (childKind !== this.kind || ctx.segments.length !== 0) {
         return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
@@ -207,12 +203,12 @@ export class ModuleKind {
       return Promise.resolve(attributeNotReadable(this.kind, attrName))
     }
 
-    const rawValue = runnerProperties(this.runner)[attrName]
+    const rawValue = runnerProperties(this.actionRunner)[attrName]
     if (rawValue === undefined) {
       return Promise.resolve(ModuleOperationResult.failCode(
         'ATTRIBUTE_VALUE_NOT_FOUND',
-        `${this.kind}.runner 未设置属性 "${attrName}"`,
-        '请确认 ModuleKind.runner 函数对象上已设置该属性。',
+        `${this.kind} action 委托未设置属性 "${attrName}"`,
+        '请确认 ModuleKind 构造期 action 委托函数对象上已设置该属性。',
       ))
     }
 
@@ -220,7 +216,7 @@ export class ModuleKind {
     if (value === undefined) {
       return Promise.resolve(ModuleOperationResult.failCode(
         'ATTRIBUTE_VALUE_NOT_JSON',
-        `${this.kind}.runner 属性 "${attrName}" 不是可序列化 JSON 值`,
+        `${this.kind} action 委托属性 "${attrName}" 不是可序列化 JSON 值`,
         '请把 runner 属性值保持为字符串、数字、布尔、null、数组或普通对象。',
       ))
     }
@@ -246,12 +242,12 @@ export class ModuleKind {
     }
 
     try {
-      runnerProperties(this.runner)[attrName] = value
+      runnerProperties(this.actionRunner)[attrName] = value
     } catch {
       return Promise.resolve(ModuleOperationResult.failCode(
         'ATTRIBUTE_WRITE_FAILED',
-        `${this.kind}.runner 属性 "${attrName}" 写入失败`,
-        '请确认 runner 函数对象允许写入该属性。',
+        `${this.kind} action 委托属性 "${attrName}" 写入失败`,
+        '请确认 ModuleKind 构造期 action 委托函数对象允许写入该属性。',
       ))
     }
     return Promise.resolve(ModuleOperationResult.ok<void>())
@@ -266,7 +262,7 @@ export class ModuleKind {
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
     try {
-      return await this.runner(ctx, actionName, args)
+      return await this.actionRunner(ctx, actionName, args)
     } catch (error) {
       return actionExecuteError(error)
     }
@@ -279,7 +275,7 @@ export class ModuleKind {
     ctx: ModulePathContext,
     childKind?: string,
   ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
-    return Promise.resolve(this.list(ctx, childKind))
+    return Promise.resolve(this.childLister(ctx, childKind))
   }
 
   /** 查询子实例（委托 find） */
@@ -288,7 +284,7 @@ export class ModuleKind {
     childKind: string,
     query: ModuleInstanceQuery,
   ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
-    return Promise.resolve(this.find(ctx, childKind, query))
+    return Promise.resolve(this.instanceFinder(ctx, childKind, query))
   }
 
   /* ── 子实例解析 ────────────────────────────────────────── */
@@ -412,7 +408,7 @@ export class ModuleKind {
       return ModuleOperationResult.ok(false)
     }
 
-    const found = await this.find(ctx, childKind, { id: childId })
+    const found = await this.findInstance(ctx, childKind, { id: childId })
     if (!found.ok) {
       return ModuleOperationResult.passthroughFailure(found)
     }
@@ -420,7 +416,7 @@ export class ModuleKind {
       return ModuleOperationResult.ok(true)
     }
 
-    const listed = await this.list(ctx, childKind)
+    const listed = await this.listChildren(ctx, childKind)
     if (!listed.ok) {
       return ModuleOperationResult.passthroughFailure(listed)
     }
@@ -556,7 +552,7 @@ function createNamedMap<TSchema extends { readonly name: string }>(
   return out
 }
 
-/** 获取 runner 函数对象上的属性存储（通过 Object.assign 确保是普通对象） */
+/** 获取 action 委托函数对象上的属性存储（通过 Object.assign 确保是普通对象） */
 function runnerProperties(runner: ModuleKindRunner): ModuleKindRunnerProperties {
   return Object.assign(runner, EMPTY_RUNNER_PROPERTIES)
 }
@@ -569,7 +565,7 @@ function actionNotImplemented(kind: string, actionName: string): ModuleOperation
   return ModuleOperationResult.failCode(
     'ACTION_NOT_IMPLEMENTED',
     `${kind} 未注册动作 "${actionName}"`,
-    '请检查该 ModuleKind.runner 是否实现了该 actionName。',
+    '请检查该 ModuleKind 构造期 action 委托是否实现了该 actionName。',
   )
 }
 

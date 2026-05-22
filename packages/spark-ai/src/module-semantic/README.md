@@ -4,7 +4,7 @@
 
 ## Public Concepts
 
-- `ModuleKind`: core class for kind metadata plus runner/list/find delegates.
+- `ModuleKind`: core class for kind metadata plus constructor delegates exposed only through protocol methods.
 - `ModuleActionMetadata` and `ModuleAttributeMetadata`: action and attribute declarations.
 - `ModulePath`, `ModulePathSegment`, `ModulePathParseError`: path parsing.
 - `ModulePathContext`, `ModuleHostContext`, `ModuleInstanceRef`, `ModuleInstanceQuery`: execution context and instance references.

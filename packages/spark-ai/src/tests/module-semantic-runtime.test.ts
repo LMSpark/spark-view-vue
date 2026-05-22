@@ -211,7 +211,7 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     }
   })
 
-  it('通过 ModuleKind.runner 执行函数引用并投影 JSON', async () => {
+  it('通过 ModuleKind 构造期 action 委托执行并投影 JSON', async () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createRegisteredActionKind())
 
@@ -535,7 +535,7 @@ describe('ModuleKind 默认协议行为', () => {
     })).toThrow('duplicate payloadRef "spark.component" on "invalid-payload"')
   })
 
-  it('基类直接读写 runner 函数对象属性', async () => {
+  it('基类通过协议方法读写 action 委托函数对象属性', async () => {
     const moduleKind = new ModuleKind({
       kind: 'runner-attrs',
       name: 'Runner 属性',
@@ -562,7 +562,7 @@ describe('ModuleKind 默认协议行为', () => {
     })
   })
 
-  it('list/find ref 保持 ModuleInstanceRef 协议约束', async () => {
+  it('listChildren/findInstance ref 保持 ModuleInstanceRef 协议约束', async () => {
     const moduleKind = new ModuleKind({
       kind: 'typed',
       name: '强类型实例',
@@ -589,7 +589,7 @@ describe('ModuleKind 默认协议行为', () => {
     })
   })
 
-  it('基类统一实现 listChildren/findInstance/resolveChild, resolve 由 find/list 推导', async () => {
+  it('基类统一实现 listChildren/findInstance/resolveChild, resolve 只走协议方法', async () => {
     const calls: string[] = []
     const moduleKind = new ModuleKind({
       kind: 'delegated',
@@ -636,6 +636,13 @@ describe('ModuleKind 默认协议行为', () => {
       data: true,
     })
     expect(calls).toEqual(['list:child', 'find:child:demo', 'find:child:child-1', 'find:child:listed-1', 'list:child'])
+  })
+
+  it('构造期委托不作为 runner/list/find 公共字段暴露', () => {
+    const moduleKind = createRegisteredActionKind()
+    expect(Reflect.get(moduleKind, 'runner')).toBeUndefined()
+    expect(Reflect.get(moduleKind, 'list')).toBeUndefined()
+    expect(Reflect.get(moduleKind, 'find')).toBeUndefined()
   })
 
   it('默认完成无属性、无子节点、当前实例发现和未实现 action 响应', async () => {

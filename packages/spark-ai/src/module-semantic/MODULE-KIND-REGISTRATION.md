@@ -15,6 +15,59 @@ flowchart LR
   ProtocolTools --> LLM["LLM"]
 ```
 
+## Cleanup Mind Map
+
+```mermaid
+mindmap
+  root((ModuleKind 深度清理))
+    目标
+      简单即美
+      语义统一
+      单一真源
+      不猜不兜底
+    保留
+      ModuleKind
+        元数据
+        动作入口
+        子模块寻址
+      ModuleSemanticRuntime
+        registerKind
+        六个协议工具
+        只做路由
+      HostBusiness
+        会话
+        提示词
+        生命周期
+    收敛
+      注册
+        只用 registerKind
+        不恢复旧 adapter
+        不新增旁路 factory
+      寻址
+        一套 path 规则
+        根发现
+        describe before invoke
+      参数
+        标准 JSON Schema
+        payload registry
+        query 和 guide 递归完整
+      知识
+        从注册表投影
+        snapshot 只读
+        不手写第二套知识
+    删除
+      重复 namespace
+      重复 public api
+      action 专用工具
+      runtime 业务状态
+      Vue 元数据冒充 kind 元数据
+    验证
+      子模块寻址
+      payload guide
+      JSON Schema
+      verify rules
+```
+
 ## Structured Registration
 
 ```dm
@@ -126,17 +179,17 @@ section ProtocolRegistrationSurface {
       "children"
     ]
 
-    owns_runtime_delegates: [
-      "runner",
-      "list",
-      "find"
-    ]
+        owns_runtime_delegates: [
+          "actionRunner",
+          "childLister",
+          "instanceFinder"
+        ]
 
     default_behaviors: [
       "runner 缺失时返回 ACTION_NOT_IMPLEMENTED",
       "list 缺失时返回空数组",
       "find 缺失时仅在根级查询自身 kind 时返回当前实例引用",
-      "getAttribute/setAttribute 按 attributes 元数据读写 runner 函数对象属性",
+      "getAttribute/setAttribute 按 attributes 元数据读写 action 委托函数对象属性",
       "resolveChild 先 find 精确查询，再 list 全量扫描"
     ]
 

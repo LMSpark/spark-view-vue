@@ -14,8 +14,8 @@
  * │    · ModuleChildrenLister  — 子实例列表委托                                   │
  * │    · ModuleInstanceFinder  — 子实例查询委托                                   │
  * │                                                                              │
- * │  设计决策：runner/list/find 均返回 ModuleKindOperation<T>（同步或 Promise），  │
- * │  允许业务方按需选择同步返回或异步返回，不强制 Promise 包装。                    │
+ * │  设计决策：构造期委托均返回 ModuleKindOperation<T>（同步或 Promise），          │
+ * │  对外只暴露 ModuleKind 协议方法，不暴露可变委托字段。                          │
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
@@ -52,7 +52,7 @@ export type ModuleInstanceRef = Readonly<{
   summary?: string | undefined
 }>
 
-/** 实例查询条件（键值对，具体语义由 ModuleKind.find 解释） */
+/** 实例查询条件（键值对，具体语义由 ModuleKind 构造期 find 委托解释） */
 export type ModuleInstanceQuery = Readonly<Record<string, LlmJsonValue>>
 
 /* -------------------------------------------------------------------------------

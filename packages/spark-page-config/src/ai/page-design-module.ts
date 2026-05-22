@@ -52,7 +52,7 @@ const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Host: module-semantic boundar
   - 调用业务动作统一使用 invokeAction(path, actionName, args)，推荐路径形如 /pageDesign[<当前页面ID>]/<childKind>[<当前页面ID>]。
   - AI 会话宿主负责模型通讯、tool schema 投影、函数选择、重试、追问、暂停与恢复。
   - Host 负责 AI 会话记录、协议工具调用记录和执行结果回传给 LLM。
-  - 调用链路是：pageDesign 业务注册 -> Host 会话 -> LLM 编排协议工具 -> ModuleSemanticRuntime 路由 -> pageDesign ModuleKind.runner 执行。
+  - 调用链路是：pageDesign 业务注册 -> Host 会话 -> LLM 编排协议工具 -> ModuleSemanticRuntime 路由 -> pageDesign ModuleKind 协议方法执行。
   - AI 会话按 pageDesign 注册 ID + 当前根页面实体 ID 隔离；instanceId 只是技术 envelope。
   - ModuleSemanticRuntime 不保存 active path 业务状态，也不依据函数结果做下一步编排。
   - 模块服务自管生命周期与 live state；业务 release 只清 live state，不删除会话历史。
@@ -227,25 +227,29 @@ class PageDesignRootModuleKind extends ModuleKind {
       name: 'Page Design',
       description: '单页面四文件编辑根模块，子模块负责 lifecycle、文本模型、组件荷载、节点树和数据集。',
       children: PAGE_DESIGN_CHILD_MODULES.map((item) => item.kind),
+      list: (ctx, childKind) => ModuleOperationResult.ok(childModuleRefs(ctx, childKind)),
+      find: (ctx, childKind) => {
+        if (childKind === PAGE_DESIGN_ROOT_KIND && ctx.segments.length === 0) {
+          const ref = createCurrentPageDesignRef(ctx)
+          return ModuleOperationResult.ok(ref === null ? [] : [ref])
+        }
+        return ModuleOperationResult.ok(childModuleRefs(ctx, childKind))
+      },
     })
-    this.list = (ctx, childKind) => ModuleOperationResult.ok(childModuleRefs(ctx, childKind))
-    this.find = (ctx, childKind) => {
-      if (childKind === PAGE_DESIGN_ROOT_KIND && ctx.segments.length === 0) {
-        const ref = this.createCurrentInstanceRef(ctx)
-        return ModuleOperationResult.ok(ref === null ? [] : [ref])
-      }
-      return ModuleOperationResult.ok(childModuleRefs(ctx, childKind))
-    }
   }
 
   protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
-    const pageId = pageDesignPageId(ctx)
-    if (pageId === null) return null
-    return {
-      id: pageId,
-      label: '当前页面设计业务',
-      summary: 'PageDesign 根模块实例。',
-    }
+    return createCurrentPageDesignRef(ctx)
+  }
+}
+
+function createCurrentPageDesignRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  const pageId = pageDesignPageId(ctx)
+  if (pageId === null) return null
+  return {
+    id: pageId,
+    label: '当前页面设计业务',
+    summary: 'PageDesign 根模块实例。',
   }
 }
 
