@@ -60,6 +60,7 @@ const legacyMarkdownAllowlist = new Set([
   'docs/video-series/RENDERING.md',
   'docs/video-series/SERIES_BIBLE.md',
   'packages/spark-ai/src/module-semantic/DM-VCM-MODULE-METADATA-SCOPE.md',
+  'packages/spark-ai/src/module-semantic/MODULE-KIND-REGISTRATION.md',
   'packages/spark-utils/REQUEST_GUIDE.md',
   'packages/vxe-table/.gitee/ISSUE_TEMPLATE.en.md',
   'packages/vxe-table/.gitee/ISSUE_TEMPLATE.md',

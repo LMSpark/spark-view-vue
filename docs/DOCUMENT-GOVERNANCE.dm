@@ -77,7 +77,8 @@ section DocumentKinds {
     examples: [
       "quickstart.md",
       "testing-best-practices.md",
-      "01-spark-view-not-json-form-generator.md"
+      "01-spark-view-not-json-form-generator.md",
+      "packages/spark-ai/src/module-semantic/MODULE-KIND-REGISTRATION.md"
     ]
   }
 
@@ -86,8 +87,7 @@ section DocumentKinds {
     purpose: "领域模型、决策模型、注册面、治理规则、闭环模型；用于表达结构化事实和约束。"
     naming: "UPPER-KEBAB.dm；文件名只放主题词，类型由 .dm 承担，不重复写 DM。"
     examples: [
-      "DOCUMENT-GOVERNANCE.dm",
-      "MODULE-KIND-REGISTRATION.dm"
+      "DOCUMENT-GOVERNANCE.dm"
     ]
   }
 
@@ -196,7 +196,7 @@ section MarkdownFilenameRules {
   rule MD05_no_new_dm_markdown {
     applies_to: "新增 DM 文档"
     rule:
-      "领域模型/注册面/闭环模型必须使用 .dm，不再新增 DM-*.md。历史 DM-*.md 保留在 allowlist，后续迁移时单独处理链接。"
+      "结构化约束模型默认使用 .dm，不再新增 DM-*.md；源码邻近、面向阅读的注册面说明可以用明确登记的 .md，例如 MODULE-KIND-REGISTRATION.md。"
   }
 }
 
@@ -272,11 +272,11 @@ section DirectoryRules {
   }
 
   decision_models {
-    path: "docs/*.dm 或 packages/<package>/src/**/*.dm"
+    path: "docs/*.dm、packages/<package>/src/**/*.dm，或明确登记的源码邻近注册面 .md"
     owns:
       "结构化约束、注册面、闭环检查、领域模型。"
     rule:
-      "靠近真实消费代码优先；全仓通用规则放 docs/。"
+      "靠近真实消费代码优先；全仓通用规则放 docs/；面向人阅读的注册面可用 .md，但必须单独登记和检测。"
   }
 
   forbidden_locations {
@@ -408,7 +408,7 @@ section DirectoryRegistry {
     owner: "package-owners"
     purpose: "workspace 包索引和包内文档。"
     index: "packages/README.md"
-    allowed_files: ["README.md", "<package>/README.md", "<package>/API.md", "<package>/ARCHITECTURE.md", "<package>/CHANGELOG.md", "<package>/src/**/README.md", "<package>/src/**/*.dm"]
+    allowed_files: ["README.md", "<package>/README.md", "<package>/API.md", "<package>/ARCHITECTURE.md", "<package>/CHANGELOG.md", "<package>/src/**/README.md", "<package>/src/**/*.dm", "registered source-local UPPER-KEBAB.md"]
   }
 
   entry scripts {
@@ -548,7 +548,8 @@ section NamingExamples {
     "docs/blog-series/01-spark-view-not-json-form-generator.md",
     "packages/spark-ai/ARCHITECTURE.md",
     "packages/spark-data/API.md",
-    "packages/vxe-table/README.zh-TW.md"
+    "packages/vxe-table/README.zh-TW.md",
+    "packages/spark-ai/src/module-semantic/MODULE-KIND-REGISTRATION.md"
   ]
 
   markdown_bad_for_new_files: [
@@ -559,8 +560,7 @@ section NamingExamples {
   ]
 
   domain_model_good: [
-    "docs/DOCUMENT-GOVERNANCE.dm",
-    "packages/spark-ai/src/module-semantic/MODULE-KIND-REGISTRATION.dm"
+    "docs/DOCUMENT-GOVERNANCE.dm"
   ]
 
   domain_model_bad: [
