@@ -10,7 +10,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createFileLoader, createRequest, type FileLoadResult } from '@spark-view/spark-utils'
 import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config/page/loading'
 import type { RuleConfig } from '@spark-view/spark-page-config/page/loading'
-import type { SparkNode } from '@spark-view/spark-page-config/page/model'
+import type { SparkNode } from '@spark-view/spark-page-config/page/spark-node'
 import { DataSet } from '@spark-view/spark-data'
 
 // ── Mock FileLoader ──────────────────────────────────────────────────────────

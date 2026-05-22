@@ -19,7 +19,7 @@
       "@spark-view/spark-page-config/capabilities/*": ["./src/capabilities/*"],
       "@spark-view/spark-page-config/page/*": ["./src/page/*"],
       "@spark-view/spark-page-config/page/navigation": ["./src/page/navigation.ts"],
-      "@spark-view/spark-page-config/page/sandbox": ["./src/page/sandbox.ts"],
+      "@spark-view/spark-page-config/page/script-context-types": ["./src/page/script-context-types.ts"],
       "@spark-view/spark-page-config/page/app-services": ["./src/page/app-services.ts"],
       "@spark-view/spark-page-config/registrations": ["./src/registrations/index.ts"],
       "@spark-view/spark-page-config/registrations/payloads/component-catalog.json": ["./src/registrations/payloads/component-catalog.json"],

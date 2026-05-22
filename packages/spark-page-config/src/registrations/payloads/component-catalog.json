@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-22T02:17:40.493Z",
+  "buildTime": "2026-05-22T14:35:20.523Z",
   "componentCount": 106,
   "components": {
     "about": {
@@ -13005,7 +13005,17 @@
           "required": true,
           "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
           "schema": {
-            "$ref": "#/$defs/SparkNode"
+            "type": "array",
+            "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
+            "examples": [
+              [],
+              {
+                "type": "r-text",
+                "props": {
+                  "value": "text"
+                }
+              }
+            ]
           }
         },
         {
@@ -13290,7 +13300,17 @@
           "required": true,
           "description": "未注册的源节点",
           "schema": {
-            "$ref": "#/$defs/SparkNode"
+            "type": "array",
+            "description": "未注册的源节点",
+            "examples": [
+              [],
+              {
+                "type": "r-text",
+                "props": {
+                  "value": "text"
+                }
+              }
+            ]
           }
         },
         {
@@ -13520,7 +13540,7 @@
           "type": "string",
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@62001": {
+        "__@toPrimitive@13099": {
           "type": "string",
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
         }
@@ -13569,7 +13589,7 @@
         "toUTCString",
         "toISOString",
         "toJSON",
-        "__@toPrimitive@62001"
+        "__@toPrimitive@13099"
       ],
       "description": "当前日期"
     },
@@ -14054,34 +14074,26 @@
     "SparkNode": {
       "title": "SparkNode",
       "type": "object",
+      "description": "Spark h-function 节点：通过 type 选择组件，props 配置属性，children 描述子节点。",
       "properties": {
         "type": {
           "type": "string",
-          "description": "组件类型（对应 ComponentDefinition.type）"
-        },
-        "id": {
-          "type": "string",
-          "description": "节点定位 id（SparkNodeTree / renderer key / capability context 等运行时定位统一以此为准）"
+          "description": "组件 type，例如 r-table 或 r-text。"
         },
         "props": {
-          "type": "string",
-          "description": "组件属性（业务输入通过 props 传递，如 dataViewKey / class / 组件自有配置项）"
+          "type": "object",
+          "description": "组件 props 配置对象。"
         },
         "children": {
-          "description": "子组件配置（递归）；结构子节点必须是已注册组件 type，也可混入字符串/数字文本节点"
+          "type": "array",
+          "description": "子节点列表。",
+          "items": {
+            "$ref": "#/$defs/SparkNode"
+          }
         }
       },
       "required": [
         "type"
-      ],
-      "description": "被渲染的节点本体。\n\n这里保留为整体 SparkNode，而不是把 type/props/children 平铺成渲染器自己的 props，\n 目的是让“节点 AST”和“渲染器控制参数”分层，避免再次引入根级字段合并。",
-      "examples": [
-        {
-          "type": "r-text",
-          "props": {
-            "value": "text"
-          }
-        }
       ]
     },
     "TransferValue": {

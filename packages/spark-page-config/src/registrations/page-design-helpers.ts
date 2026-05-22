@@ -15,6 +15,6 @@ export function createCurrentPageRef(
   return { id: pageId, label, summary: '当前 PageDesign 业务实例' }
 }
 
-export function currentPageId(ctx: ModuleKind.PathContext): string {
+function currentPageId(ctx: ModuleKind.PathContext): string {
   return ctx.host?.moduleInstanceId ?? ctx.segment.id
 }

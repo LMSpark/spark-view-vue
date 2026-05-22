@@ -11,7 +11,7 @@ import { computed, onActivated, onDeactivated, onScopeDispose, ref, watch } from
 import type { PageDesignEditSession } from '@spark-view/spark-page-config/capabilities/page-edit-session'
 import { registerPageDesignEditHost } from '@spark-view/spark-page-config/capabilities/page-design-service'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
+import { SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
 import { PAGE_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
 

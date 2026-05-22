@@ -44,6 +44,7 @@ import {
 import {
   PageDesignService,
 } from '@spark-view/spark-page-config/capabilities/page-design-service'
+import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()
@@ -61,10 +62,6 @@ function createHttpMock(): HttpClientBase {
 function requireValue<T>(value: T | null | undefined, message: string): T {
   if (value !== null && value !== undefined) return value
   throw new Error(message)
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function requireRecord(value: unknown, message: string): Record<string, unknown> {

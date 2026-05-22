@@ -23,6 +23,22 @@
       "types": "./dist/page/loading.d.ts",
       "import": "./dist/page/loading.js"
     },
+    "./page/spark-node": {
+      "types": "./dist/page/spark-node.d.ts",
+      "import": "./dist/page/spark-node.js"
+    },
+    "./page/spark-node-tree": {
+      "types": "./dist/page/spark-node-tree.d.ts",
+      "import": "./dist/page/spark-node-tree.js"
+    },
+    "./page/script-context-types": {
+      "types": "./dist/page/script-context-types.d.ts",
+      "import": "./dist/page/script-context-types.js"
+    },
+    "./page/app-services": {
+      "types": "./dist/page/app-services.d.ts",
+      "import": "./dist/page/app-services.js"
+    },
     "./capabilities": {
       "types": "./dist/capabilities/index.d.ts",
       "import": "./dist/capabilities/index.js"
@@ -34,14 +50,6 @@
     "./page/navigation": {
       "types": "./dist/page/navigation.d.ts",
       "import": "./dist/page/navigation.js"
-    },
-    "./page/sandbox": {
-      "types": "./dist/page/sandbox.d.ts",
-      "import": "./dist/page/sandbox.js"
-    },
-    "./page/services": {
-      "types": "./dist/page/services.d.ts",
-      "import": "./dist/page/services.js"
     },
     "./registrations": {
       "types": "./dist/registrations/index.d.ts",

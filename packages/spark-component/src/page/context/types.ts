@@ -6,7 +6,7 @@
 
 import type { DataSetContract, SparkData } from '@spark-view/spark-data'
 import type { PageConfig } from '@spark-view/spark-page-config/page/loading'
-import type { PageRoute, ScriptContext } from '@spark-view/spark-page-config/page/sandbox'
+import type { PageRoute, ScriptContext } from '@spark-view/spark-page-config/page/script-context-types'
 import type { h } from 'vue'
 import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'
 
@@ -51,11 +51,10 @@ export interface PageContext extends ScriptContext {
     SparkData: typeof SparkData
     /** 渲染函数（运行时由渲染层注入，Render* 函数专用） */
     h: typeof h
-  
+
     // Timer API（沙箱白名单）
     setTimeout: (handler: (...args: unknown[]) => void, timeout?: number) => number
     clearTimeout: (id?: number) => void
     setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
     clearInterval: (id?: number) => void
 }
-

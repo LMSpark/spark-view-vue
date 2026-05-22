@@ -17,10 +17,7 @@ import {
   createLeaveRequestBusinessRegistration,
 } from '@spark-view/spark-page-config/registrations'
 import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
 
 function createScope(leaveDraftId: string): AiHostBusinessScope {
   return createAiHostBusinessScope(LEAVE_REQUEST_MODULE_ID, leaveDraftId)

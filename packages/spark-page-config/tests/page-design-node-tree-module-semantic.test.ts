@@ -16,13 +16,10 @@ import {
 import {
   PageDesignService,
 } from '@spark-view/spark-page-config/capabilities/page-design-service'
-import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
+import { SparkNodeTree } from '@spark-view/spark-page-config/page/spark-node-tree'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignNodeTreeModuleKind } from '../src/registrations/node-tree-tool-catalog'
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+import { isRecord } from '@spark-view/spark-page-config/capabilities/json-document'
 
 function createHost(): { host: PageDesignEditSession.Host; nodeTree: SparkNodeTree } {
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })

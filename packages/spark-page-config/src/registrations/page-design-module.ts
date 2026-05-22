@@ -18,8 +18,8 @@ import {
 } from '@spark-view/spark-ai/host'
 import {
   ModuleSemanticRuntime,
-  type ModuleKind,
 } from '@spark-view/spark-ai/module-semantic'
+import type { ModuleKind } from '@spark-view/spark-ai/module-semantic'
 import type {
   PageDesignEditSession,
   PageDesignServiceContext,
@@ -31,7 +31,6 @@ import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
 import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
 import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
 import { createLeaveRequestBusinessRegistration } from './leave-request'
-import { currentPageId } from './page-design-helpers'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -200,7 +199,7 @@ function toServiceContext(ctx: ModuleKind.PathContext | AiHostBusinessRuntimeCon
     const pathCtx = ctx
     return {
       requestId: pathCtx.host?.instanceId ?? pathCtx.segment.id,
-      pageId: currentPageId(pathCtx),
+      pageId: pathCtx.host?.moduleInstanceId ?? pathCtx.segment.id,
     }
   }
   return {

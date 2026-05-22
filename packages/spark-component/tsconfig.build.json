@@ -11,7 +11,7 @@
       "@spark-view/spark-page-config/page/loading": ["../spark-page-config/dist/page/loading.d.ts"],
       "@spark-view/spark-page-config/capabilities/*": ["../spark-page-config/dist/capabilities/*"],
       "@spark-view/spark-page-config/page/navigation": ["../spark-page-config/dist/page/navigation.d.ts"],
-      "@spark-view/spark-page-config/page/sandbox": ["../spark-page-config/dist/page/sandbox.d.ts"],
+      "@spark-view/spark-page-config/page/script-context-types": ["../spark-page-config/dist/page/script-context-types.d.ts"],
       "@spark-view/spark-page-config/page/app-services": ["../spark-page-config/dist/page/app-services.d.ts"],
       "@spark-view/spark-page-config/registrations": ["../spark-page-config/dist/registrations/index.d.ts"]
     },

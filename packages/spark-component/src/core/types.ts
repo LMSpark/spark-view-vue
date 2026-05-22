@@ -6,7 +6,7 @@
  * - 能力系统通过 capabilities Map 实现（继承自 CapabilityContext）
  */
 
-export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config/page/model'
+export type { SparkNode, SparkNodeChildren } from '@spark-view/spark-page-config/page/spark-node'
 export {
   SPARK_NODE_STRUCT_KEYS,
   normalizeSparkNode,
@@ -15,7 +15,7 @@ export {
   nodeId,
   nodeInputProp,
   nodeInputProps,
-} from '@spark-view/spark-page-config/page/model'
+} from '@spark-view/spark-page-config/page/spark-node'
 
 import type { CapabilityContext } from '@spark-view/spark-utils'
 

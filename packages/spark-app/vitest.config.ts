@@ -20,7 +20,7 @@ export default defineConfig({
       { find: /^@spark-view\/spark-page-config\/page\/loading$/, replacement: resolve(__dirname, '../spark-page-config/src/page/loading.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/workspace$/, replacement: resolve(__dirname, '../spark-page-config/src/capabilities/index.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/navigation$/, replacement: resolve(__dirname, '../spark-page-config/src/page/navigation.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/sandbox$/, replacement: resolve(__dirname, '../spark-page-config/src/page/sandbox.ts') },
+      { find: /^@spark-view\/spark-page-config\/page\/sandbox$/, replacement: resolve(__dirname, '../spark-page-config/src/page/script-context-types.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/services$/, replacement: resolve(__dirname, '../spark-page-config/src/page/app-services.ts') },
       { find: /^@spark-view\/spark-page-config\/assistant\/registrations$/, replacement: resolve(__dirname, '../spark-page-config/src/registrations/index.ts') },
       { find: /^@spark-view\/spark-app$/, replacement: resolve(__dirname, './src/index.ts') },
