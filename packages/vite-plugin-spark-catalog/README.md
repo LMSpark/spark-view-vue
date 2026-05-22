@@ -29,6 +29,9 @@
 
 组件 catalog 的语义 SSOT 写在源码 JSDoc，生成器只搬运这些标识并补通用兜底。新增组件或 props 时遵循下面的最小规范：
 
+- VCM 注释首先服务 LLM 和配置后台，不是普通代码说明。新增组件、公开 props、emits、枚举值或结构化子节点时，必须在“首次声明处”写 JSDoc：SFC 的 `<script setup>` 后首个 JSDoc 块、Props 类型字段声明、`defineEmits` 对应事件声明。不要在第二次引用、注册表、生成器或文档旁路里补语义。
+- 首次出现的 JSDoc 必须先写一段自然语言夹注释，再写结构化 tag。自然语言写“用途 + 绑定来源 + 关键约束/优先级”，让 LLM 即使只读 summary 也能生成正确配置；tag 写机器可提取的过滤、默认值、示例和枚举约束。
+- tag 一行一个，值保持单行；不要发明未被生成器识别的新 tag 来承载约束。复杂说明用 summary 或 `@notes`，可校验值用 `@default`、`@example`、`@enumValue`、`@param` 等既有 tag。
 - 组件级 JSDoc 放在 `<script setup>` 后的首个 JSDoc 块，至少包含 `@skill <type>` 和 `@description <text>`。
 - 组件 Props 类型是强约束，不是约定俗成：统一命名为 `R{ComponentPascalName}Props`，并与组件 type 一一对应：`r-table -> RTableProps`、`r-filter -> RFilterProps`。生成器只根据已注册组件建立 `RFilterProps -> r-filter` 索引；如果使用 `RendererXxxProps` 指向已注册组件会 fail-fast。
 - `@description`：组件级说明写“用途 + 适用场景 + 核心能力”；prop 级 summary 写“用途 + 绑定语义 + 何时使用”。
@@ -36,6 +39,9 @@
 - `@catalogIgnore`：完全忽略该 SFC，不写入 `component-catalog.json`；用于 demo、路由占位、开发工具和不应被 catalog 看到的桥接组件。
 - `@catalogInternal`：写入技术目录，但生成 `internal: true`、`configurable: false`；用于运行时内部组件、应用壳层组件、只能被代码组合而不能由 LLM 生成到页面配置的组件。
 - `@configurable false`：保留在目录中但标记不可配置；适合不是 internal、但暂时不允许页面配置直接使用的组件。
+- `@binding <text>`：声明组件绑定模式，例如 `DataView: dataViewKey + dataMember + dataField`；用于让 LLM 区分自治绑定、容器透传和纯展示组件。
+- `@provides <key> - <text>` / `@consumes <key> - <text>`：声明能力提供/消费关系，key 使用项目中的 capability 名称，不写 Vue provide/inject 概念。
+- `@notes <text>`：补充 LLM 必须遵守但不适合放入默认值或示例的约束；可多条，优先写前置条件、互斥关系、危险操作提示和优先级。
 - 第一段 summary：一句话说明用途、绑定语义、何时使用；中英混合短句即可。
 - 共享 `type` 的 JSDoc 会成为 `schemaNodes.root.description`；复杂 props 请优先给类型本身写说明，再给字段写 property JSDoc。
 - `@default <json>`：配置默认值 annotation。必须写 JSON literal，例如 `true`、`0`、`"small"`、`[]`、`{}`；真实运行默认值优先写在 `withDefaults`。
@@ -44,12 +50,24 @@
 - `@enumValue <value> <title>: <text>`：业务枚举值说明。只用于需要解释业务动作的枚举；普通 UI 枚举由生成器自动补通用说明。
 - `@internal`：不进入 catalog 的 props 或内部实现字段。
 
+LLM 约束必须尽量落到最小可生成单位：
+
+- 组件是否可被生成：写在组件级 `@catalogInternal`、`@configurable false` 或 `@catalogIgnore`。
+- 绑定链路和数据来源：写在组件级 summary、`@binding`，以及相关 prop 的 summary/`@example`。
+- prop 默认行为：写 `@default`，不要只在运行时代码里让 LLM 猜。
+- prop 合法示例：写 `@example`，特别是 `dataViewKey`、结构化子节点、action 配置、options 数据源。
+- 枚举业务含义：写 `@enumValue`，说明会不会修改数据、作用于 currentRow/selectedRows/scope row 还是静态展示。
+- 事件 payload：写事件 summary 和 `@param`，参数名必须和 tuple/call signature 中的名字一致。
+
 推荐写法：
 
 ```ts
 /**
+ * 声明式动作按钮；绑定 DataView 动作时由 action 决定 mutation 目标，template 只决定视觉预设。
  * @skill r-button
  * @description 声明式动作按钮，支持 action CRUD 动作、template 样式预设和显式 props 合并；适合 toolbar、table 操作列和表单提交区。
+ * @binding DataView action: dataViewKey + currentRow/selectedRows/scope row
+ * @notes mutation 类 action 必须能定位目标 DataView；展示类 action 不修改数据。
  */
 type RButtonProps = {
   /**

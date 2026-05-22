@@ -542,7 +542,7 @@ function deleteVoucher() {
 
 // 打印凭证
 function printVoucher() {
-  window.print()
+  $page.showMessage('当前脚本沙箱不允许直接调用浏览器打印 API，请使用浏览器打印菜单。', 'info')
 }
 
 // 导出凭证

@@ -74,6 +74,7 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/AI_CODE_GENERATION_BEHAVI
 - 只有稳定契约、跨模块能力、DTO/config/payload 或多个实现共享协议才使用 `interface`。
 - 如果只有一个实现，默认使用具体 class 或普通函数，不机械创建 `XxxInterface` / `XxxImpl`。
 - 泛型、工具类型和公共导出必须收敛；新增抽象前必须有真实重复、稳定扩展点或跨模块契约。
+- 注释只解释契约、约束、优先级和风险；VCM/LLM 可见语义必须在首次声明处用自然语言夹注释 + 结构化 tag 标注。
 
 ## DataViewKey 绑定格式
 
