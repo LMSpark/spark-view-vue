@@ -19,7 +19,7 @@ import {
 } from '../module-semantic'
 import type { LlmJsonValue } from '../schema'
 
-interface ModuleKindSpy {
+type ModuleKindSpy = {
   lastHost?: ModuleKind.PathContext['host'] | undefined
 }
 

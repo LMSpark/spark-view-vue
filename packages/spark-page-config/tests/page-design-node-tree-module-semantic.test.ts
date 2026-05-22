@@ -11,9 +11,11 @@ import {
 } from '@spark-view/spark-ai/module-semantic'
 import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
 import {
+  PageDesignEditSession,
+} from '@spark-view/spark-page-config/capabilities/page-edit-session'
+import {
   PageDesignService,
-  type PageDesignEditHost,
-} from '@spark-view/spark-page-config/capabilities'
+} from '@spark-view/spark-page-config/capabilities/page-design-service'
 import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignNodeTreeModuleKind } from '../src/registrations/node-tree-tool-catalog'
@@ -22,7 +24,7 @@ function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
-function createHost(): { host: PageDesignEditHost; nodeTree: SparkNodeTree } {
+function createHost(): { host: PageDesignEditSession.Host; nodeTree: SparkNodeTree } {
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
   const dataSetTool = new DataSetCrudTool('page-design-test')
   let script = 'export default {}'

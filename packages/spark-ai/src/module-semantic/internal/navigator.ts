@@ -37,14 +37,14 @@ import type { ModuleKindRegistry } from './module-kind-registry'
  * 全量传递给 LLM。任何剥离都让 LLM 在写参数时盲注,违反 describeKind 工具描述
  * "complete schema" 的承诺。
  */
-export interface ModuleKindDescription {
-  readonly kind: string
-  readonly name: string
-  readonly description: string
-  readonly attributes: readonly AttributeSchema[]
-  readonly actions: readonly ActionSchema[]
-  readonly children: readonly string[]
-}
+export type ModuleKindDescription = Readonly<{
+  kind: string
+  name: string
+  description: string
+  attributes: readonly AttributeSchema[]
+  actions: readonly ActionSchema[]
+  children: readonly string[]
+}>
 
 /**
  * 路径遍历的成功结果。
@@ -52,9 +52,11 @@ export interface ModuleKindDescription {
  * - moduleKind: 末段 kind 对应的 ModuleKind(用于后续属性/动作调用)
  * - segmentCtx: 末段 PathContext(传给末段 ModuleKind)
  */
-export interface ModuleNavigationSuccess {
-  readonly moduleKind: ModuleKind
-  readonly segmentCtx: ModuleKind.PathContext
+export class ModuleNavigationSuccess {
+  public constructor(
+    public readonly moduleKind: ModuleKind,
+    public readonly segmentCtx: ModuleKind.PathContext,
+  ) {}
 }
 
 /**
@@ -95,7 +97,7 @@ export class Navigator {
     const segments = path.segments
 
     for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i] as ModuleKind.PathSegment
+      const segment = requirePathSegment(segments, i)
       if (!this.kinds.has(segment.kind)) {
         return failWithCheck(
           'KIND_NOT_REGISTERED',
@@ -106,8 +108,8 @@ export class Navigator {
     }
 
     for (let i = 1; i < segments.length; i++) {
-      const parentSegment = segments[i - 1] as ModuleKind.PathSegment
-      const childSegment = segments[i] as ModuleKind.PathSegment
+      const parentSegment = requirePathSegment(segments, i - 1)
+      const childSegment = requirePathSegment(segments, i)
       const parentKind = this.kinds.require(parentSegment.kind)
       const parentCtx: ModuleKind.PathContext = {
         segments: segments.slice(0, i),
@@ -132,16 +134,16 @@ export class Navigator {
       }
     }
 
-    const tail = segments[segments.length - 1] as ModuleKind.PathSegment
+    const tail = requirePathSegment(segments, segments.length - 1)
     const tailKind = this.kinds.require(tail.kind)
-    return {
-      moduleKind: tailKind,
-      segmentCtx: {
+    return new ModuleNavigationSuccess(
+      tailKind,
+      {
         segments,
         segment: tail,
         ...(host === undefined ? {} : { host }),
       },
-    }
+    )
   }
 
   /**
@@ -266,9 +268,17 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
 function isNavigationSuccess(
   result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
 ): result is ModuleNavigationSuccess {
-  return 'moduleKind' in result
+  return result instanceof ModuleNavigationSuccess
 }
 
 function formatSegment(segment: ModuleKind.PathSegment, index: number): string {
   return `"[${String(index)}] ${segment.kind}[${segment.id}]"`
+}
+
+function requirePathSegment(segments: readonly ModuleKind.PathSegment[], index: number): ModuleKind.PathSegment {
+  const segment = segments[index]
+  if (segment === undefined) {
+    throw new Error(`[Navigator] missing path segment at index ${String(index)}`)
+  }
+  return segment
 }

@@ -1,3 +1,5 @@
+// page/loading barrel — re-exports from flattened page/ files
+
 export type {
   ConfigLoaderOptions,
   ConfigLoadResult,

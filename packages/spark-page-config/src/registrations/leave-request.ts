@@ -73,10 +73,6 @@ function readNumberField(record: Record<string, unknown>, key: keyof LeaveReques
   return typeof value === 'number' && Number.isFinite(value) ? value : undefined
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
 function parseDateOnly(value: string | undefined): number | null {
   if (value === undefined || !/^\d{4}-\d{2}-\d{2}$/.test(value)) return null
   const timestamp = Date.parse(`${value}T00:00:00.000Z`)
@@ -282,6 +278,7 @@ import type {
   LlmJsonValue,
   LlmParameterSchemaRoot,
 } from '@spark-view/spark-ai/schema'
+import { isRecord } from '../capabilities/json-document'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 export const LEAVE_REQUEST_KIND = 'manual-leave'
@@ -408,7 +405,6 @@ const LEAVE_REQUEST_ACTIONS: readonly ActionSchema[] = [
 
 class LeaveRequestModuleKind extends ModuleKind {
   private readonly service: LeaveRequestService
-  private readonly actionByName: ReadonlyMap<string, ActionSchema>
 
   public constructor(service: LeaveRequestService) {
     super({
@@ -419,7 +415,6 @@ class LeaveRequestModuleKind extends ModuleKind {
       children: [],
     })
     this.service = service
-    this.actionByName = new Map(LEAVE_REQUEST_ACTIONS.map((action) => [action.name, action]))
   }
 
   public override invokeAction(
@@ -427,7 +422,9 @@ class LeaveRequestModuleKind extends ModuleKind {
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
-    this.requireAction(actionName)
+    if (this.findAction(actionName) === undefined) {
+      throw new Error(`${this.kind} action is not declared: ${actionName}`)
+    }
     switch (actionName) {
       case 'describeDraft':
         return Promise.resolve(this.serviceResultToOperationResult(this.service.describeDraft(toServiceContext(ctx))))
@@ -446,14 +443,6 @@ class LeaveRequestModuleKind extends ModuleKind {
 
   protected override createCurrentInstanceRef(ctx: ModuleKind.PathContext): ModuleKind.InstanceRef | null {
     return createCurrentLeaveRequestRef(ctx)
-  }
-
-  private requireAction(actionName: string): ActionSchema {
-    const action = this.actionByName.get(actionName)
-    if (action === undefined) {
-      throw new Error(`${this.kind} action is not declared: ${actionName}`)
-    }
-    return action
   }
 }
 

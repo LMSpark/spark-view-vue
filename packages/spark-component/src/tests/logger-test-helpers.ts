@@ -1,4 +1,4 @@
-import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/services'
+import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/app-services'
 import type { CapabilityContext } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 

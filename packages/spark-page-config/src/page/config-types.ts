@@ -6,7 +6,7 @@
 
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { SparkNode } from '../model/spark-node'
+import type { SparkNode } from './spark-node'
 
 /**
  * 页面规则配置（rule.json）。

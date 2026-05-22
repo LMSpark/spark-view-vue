@@ -44,16 +44,18 @@ import {
 import {
   PageConfigEditWorkspace,
   PageConfigFileLifecycle,
+} from '@spark-view/spark-page-config/capabilities/page-edit-workspace'
+import {
   PAGE_FILE_NAMES,
   forEachDocument,
   type PageFileName,
-} from '@spark-view/spark-page-config/capabilities'
+} from '@spark-view/spark-page-config/capabilities/page-file-document'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
 export type { PageConfigFileVersionSummary }
-export type { PageFileDocument } from '@spark-view/spark-page-config/capabilities'
+export type { PageFileDocument } from '@spark-view/spark-page-config/capabilities/page-file-document'
 
 // ═══════════════════════════════════════════════════════════
 // 类型

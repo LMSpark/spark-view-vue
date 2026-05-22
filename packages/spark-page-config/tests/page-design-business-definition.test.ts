@@ -10,9 +10,11 @@ import {
   createPageDesignBusinessRegistration,
 } from '@spark-view/spark-page-config/registrations'
 import {
+  PageDesignEditSession,
+} from '@spark-view/spark-page-config/capabilities/page-edit-session'
+import {
   PageDesignService,
-  type PageDesignEditHost,
-} from '@spark-view/spark-page-config/capabilities'
+} from '@spark-view/spark-page-config/capabilities/page-design-service'
 import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 
@@ -31,7 +33,7 @@ function resultStepCount(value: unknown): number {
 }
 
 function createHost(options: { script?: string; style?: string } = {}): {
-  host: PageDesignEditHost
+  host: PageDesignEditSession.Host
   reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number }
 } {
   let script = options.script ?? 'export default {}'

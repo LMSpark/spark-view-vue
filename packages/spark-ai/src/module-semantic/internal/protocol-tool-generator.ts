@@ -33,14 +33,14 @@ import type { LlmJsonSchema, LlmJsonSchemaObject, LlmParameterSchemaRoot } from 
  * `function.parameters` 复用 `LlmParameterSchemaRoot`(标准 JSON Schema 子集),
  * 这样 Host 可以把同一份 schema 直接交给 transport,无需 `as` 断言绕过 TS。
  */
-export interface ModuleSemanticToolSpec {
-  readonly type: 'function'
-  readonly function: {
+export type ModuleSemanticToolSpec = Readonly<{
+  type: 'function'
+  function: {
     readonly name: string
     readonly description: string
     readonly parameters: LlmParameterSchemaRoot
   }
-}
+}>
 
 /**
  * 协议固定工具名集合。
@@ -48,16 +48,29 @@ export interface ModuleSemanticToolSpec {
  * 工具名稳定,LLM 看到的工具集大小只与协议有关,
  * 不随业务方注册的 kind 数量膨胀。
  */
-export const PROTOCOL_TOOL_NAMES = Object.freeze({
+export type ProtocolToolName =
+  | 'getAttribute'
+  | 'setAttribute'
+  | 'invokeAction'
+  | 'listChildren'
+  | 'findInstance'
+  | 'describeKind'
+
+export const PROTOCOL_TOOL_NAMES: Readonly<{
+  getAttribute: 'getAttribute'
+  setAttribute: 'setAttribute'
+  invokeAction: 'invokeAction'
+  listChildren: 'listChildren'
+  findInstance: 'findInstance'
+  describeKind: 'describeKind'
+}> = Object.freeze({
   getAttribute: 'getAttribute',
   setAttribute: 'setAttribute',
   invokeAction: 'invokeAction',
   listChildren: 'listChildren',
   findInstance: 'findInstance',
   describeKind: 'describeKind',
-} as const)
-
-export type ProtocolToolName = (typeof PROTOCOL_TOOL_NAMES)[keyof typeof PROTOCOL_TOOL_NAMES]
+})
 
 /**
  * 协议工具规约生成器。

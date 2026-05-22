@@ -26,9 +26,6 @@ import {
 } from '@spark-view/spark-page-config/page/loading'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
-  PageConfigEditWorkspace,
-  PageConfigFileLifecycle,
-  PageDesignService,
   buildDataSetMetadataFromDesignerProjection,
   canUseStructuredPageDataEditor,
   createRuleJsonSchema,
@@ -38,8 +35,15 @@ import {
   projectDesignerTables,
   reconcileDesignerTableUiState,
   summarizePageDesignFlowPhases,
-  type RuleEditorComponentMetadata,
-} from '@spark-view/spark-page-config/capabilities'
+  type RuleEditorComponent,
+} from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
+import {
+  PageConfigEditWorkspace,
+  PageConfigFileLifecycle,
+} from '@spark-view/spark-page-config/capabilities/page-edit-workspace'
+import {
+  PageDesignService,
+} from '@spark-view/spark-page-config/capabilities/page-design-service'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()
@@ -427,7 +431,7 @@ describe('Page design 100-step flow', () => {
 })
 
 describe('DevSystem rule and pagedata edit policy', () => {
-  const metadata: RuleEditorComponentMetadata = {
+  const metadata: RuleEditorComponent.Metadata = {
     types: ['r-table'],
     propNames: { 'r-table': ['dataViewKey', 'mode'] },
     propEnums: { 'r-table': { mode: ['compact', 'comfortable'] } },

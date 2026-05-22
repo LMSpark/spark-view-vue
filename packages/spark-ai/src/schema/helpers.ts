@@ -22,7 +22,7 @@ import type {
 
 // ── 内部类型 ──
 
-export interface JsonSchemaProperties {
+export type JsonSchemaProperties = {
   readonly [key: string]: LlmJsonSchema
 }
 

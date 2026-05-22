@@ -22,7 +22,7 @@
 import type { FieldVisibility, DataRow, ModelPermission } from '@spark-view/spark-data'
 import type {
   PageServiceCapability,
-} from '../services'
+} from './app-services'
 
 // ==================== 路由快照 ====================
 

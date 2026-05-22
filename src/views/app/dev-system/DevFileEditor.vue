@@ -151,7 +151,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy, type RuleEditorComponentCatalog } from '@spark-view/spark-page-config/capabilities'
+import { createRuleJsonSchema, createRuleTreePolicy, type RuleEditorComponent } from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
 import { ElMessageBox } from 'element-plus'
 import componentCatalog from '@spark-view/spark-page-config/registrations/payloads/component-catalog.json'
 import { useDevFileEditor } from './composables/useDevFileEditor'
@@ -160,7 +160,7 @@ import type { DevState, PageConfigFileVersionSummary, PageFileName } from './use
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
-const pageDesignComponentCatalog = componentCatalog as RuleEditorComponentCatalog
+const pageDesignComponentCatalog = componentCatalog as RuleEditorComponent.Catalog
 const rulePolicy = createRuleTreePolicy(pageDesignComponentCatalog)
 const RULE_JSON_SCHEMA = createRuleJsonSchema(pageDesignComponentCatalog)
 

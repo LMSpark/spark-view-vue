@@ -16,13 +16,14 @@ export default defineConfig({
       { find: /^@spark-view\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
       { find: /^@spark-view\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
       { find: /^@spark-view\/spark-page-config$/, replacement: resolve(__dirname, './src/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/model$/, replacement: resolve(__dirname, './src/page/model/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/loading$/, replacement: resolve(__dirname, './src/page/loading/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/capabilities$/, replacement: resolve(__dirname, './src/capabilities/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/navigation$/, replacement: resolve(__dirname, './src/page/navigation/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/sandbox$/, replacement: resolve(__dirname, './src/page/sandbox/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/services$/, replacement: resolve(__dirname, './src/page/services/index.ts') },
+      { find: /^@spark-view\/spark-page-config\/page\/model$/, replacement: resolve(__dirname, './src/page/model.ts') },
+      { find: /^@spark-view\/spark-page-config\/page\/loading$/, replacement: resolve(__dirname, './src/page/loading.ts') },
+      { find: /^@spark-view\/spark-page-config\/capabilities\/(.+)$/, replacement: resolve(__dirname, './src/capabilities/$1') },
+      { find: /^@spark-view\/spark-page-config\/page\/navigation$/, replacement: resolve(__dirname, './src/page/navigation.ts') },
+      { find: /^@spark-view\/spark-page-config\/page\/sandbox$/, replacement: resolve(__dirname, './src/page/sandbox.ts') },
+      { find: /^@spark-view\/spark-page-config\/page\/services$/, replacement: resolve(__dirname, './src/page/app-services.ts') },
       { find: /^@spark-view\/spark-page-config\/registrations$/, replacement: resolve(__dirname, './src/registrations/index.ts') },
+      { find: /^@spark-view\/spark-page-config\/page\/(.+)$/, replacement: resolve(__dirname, './src/page/$1') },
     ]
   }
 })

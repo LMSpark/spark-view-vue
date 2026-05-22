@@ -22,34 +22,34 @@ import type { LlmJsonObject, LlmJsonSchema, LlmJsonValue, LlmParameterSchemaRoot
 // 1. 属性 / 动作 schema（顶层，与 ModuleKind 并列）
 // ═══════════════════════════════════════════════════════
 
-export interface AttributeSchema {
-  readonly name: string
-  readonly description: string
-  readonly schema: LlmJsonSchema
-  readonly readable: boolean
-  readonly writable: boolean
-  readonly example?: LlmJsonValue | undefined
-}
+export type AttributeSchema = Readonly<{
+  name: string
+  description: string
+  schema: LlmJsonSchema
+  readable: boolean
+  writable: boolean
+  example?: LlmJsonValue | undefined
+}>
 
 export type AttributeAccessFlags = Pick<AttributeSchema, 'readable' | 'writable'>
 
-export interface ActionFailureMode {
-  readonly code: string
-  readonly when: string
-  readonly fix: string
-}
+export type ActionFailureMode = Readonly<{
+  code: string
+  when: string
+  fix: string
+}>
 
 export type ActionResultSchema = LlmJsonSchema | LlmJsonObject
 
-export interface ActionSchema {
-  readonly name: string
-  readonly description: string
-  readonly paramsSchema: LlmParameterSchemaRoot
-  readonly resultSchema?: ActionResultSchema | undefined
-  readonly usageRules?: readonly string[] | undefined
-  readonly failureModes?: readonly ActionFailureMode[] | undefined
-  readonly example?: LlmJsonValue | undefined
-}
+export type ActionSchema = Readonly<{
+  name: string
+  description: string
+  paramsSchema: LlmParameterSchemaRoot
+  resultSchema?: ActionResultSchema | undefined
+  usageRules?: readonly string[] | undefined
+  failureModes?: readonly ActionFailureMode[] | undefined
+  example?: LlmJsonValue | undefined
+}>
 
 // ═══════════════════════════════════════════════════════
 // 2. ModuleKind class — 协议核心（必须在 namespace 之前）
@@ -563,23 +563,23 @@ export namespace ModuleKind {
 
   // ── 3.3 上下文 / 实例引用 / 委托类型 ──
 
-  export interface HostContext {
-    readonly moduleId: string
-    readonly moduleInstanceId: string
-    readonly instanceId: string
-  }
+  export type HostContext = Readonly<{
+    moduleId: string
+    moduleInstanceId: string
+    instanceId: string
+  }>
 
-  export interface PathContext {
-    readonly segments: readonly PathSegment[]
-    readonly segment: PathSegment
-    readonly host?: HostContext | undefined
-  }
+  export type PathContext = Readonly<{
+    segments: readonly PathSegment[]
+    segment: PathSegment
+    host?: HostContext | undefined
+  }>
 
-  export interface InstanceRef {
-    readonly id: string
-    readonly label: string
-    readonly summary?: string | undefined
-  }
+  export type InstanceRef = Readonly<{
+    id: string
+    label: string
+    summary?: string | undefined
+  }>
 
   export type InstanceQuery = Readonly<Record<string, LlmJsonValue>>
 

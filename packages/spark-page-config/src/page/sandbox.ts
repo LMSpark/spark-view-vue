@@ -1,3 +1,5 @@
+// page/sandbox barrel — re-exports from flattened page/ files
+
 export type {
   FieldRenderConfigInScript,
   FieldRenderStateInScript,
@@ -22,4 +24,4 @@ export type {
   PageServiceCapability,
   PageUploadFilesOptions,
   PageUploadedFile,
-} from '../services'
+} from './app-services'

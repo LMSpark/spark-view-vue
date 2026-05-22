@@ -15,9 +15,9 @@ import {
 } from '@spark-view/spark-ai/schema'
 import { ModuleKind, type ActionSchema } from '@spark-view/spark-ai/module-semantic'
 import type {
-  PageDesignService,
   PageDesignServiceContext,
 } from '../capabilities/page-edit-session'
+import type { PageDesignService } from '../capabilities/page-design-service'
 import { createCurrentPageRef } from './page-design-helpers'
 
 const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')

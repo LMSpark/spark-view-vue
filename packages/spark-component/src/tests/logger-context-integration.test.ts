@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
 import { mount } from '@vue/test-utils'
-import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/services'
+import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '@spark-view/spark-page-config/page/app-services'
 import { Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { LoggerApi } from '@spark-view/spark-utils'
 

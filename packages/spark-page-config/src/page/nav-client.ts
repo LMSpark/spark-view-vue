@@ -1,6 +1,7 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from './nav-model'
 import { normalizeNavRoot } from './nav-editing'
+import { isRecord } from '../capabilities/json-document'
 
 export type NavigationConfigClientOptions = {
   getNavigationApi: () => string
@@ -10,10 +11,6 @@ export type NavigationConfigClientOptions = {
 export type LinkProbeResult = {
   embeddable: boolean
   reason: string
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function isNavNode(value: unknown): value is NavNode {

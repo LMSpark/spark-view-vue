@@ -1,29 +1,27 @@
 /**
- * Host 会话仓储。
+ * In-memory Host session store.
  *
- * Host 负责记录 UI/LLM 消息、协议工具调用和生命周期状态。业务 release 只
- * 清理 live state,不删除这里的历史。
+ * Host records UI/LLM messages, protocol tool calls, and lifecycle state.
+ * Business release clears live state only; it does not delete this history.
  */
 
-import type {
-  AiHostBusinessAppendMessageOptions,
-  AiHostBusinessRuntimeContext,
-  AiHostFunctionCallFailure,
-  AiHostFunctionCallHistoryStatus,
-  AiHostFunctionCallHistoryEntry,
-  AiHostHistoryEntry,
-  AiHostMessageHistoryEntry,
-  AiHostMessageRole,
-  AiHostMessageSource,
-  AiHostSessionRecord,
+import type { AiHostBusinessAppendMessageOptions, AiHostBusinessRuntimeContext } from '../business/business-types'
+import {
   AiHostSessionStore,
-} from './types'
+  type AiHostAppendFunctionCallOptions,
+  type AiHostFunctionCallHistoryEntry,
+  type AiHostHistoryEntry,
+  type AiHostMessageHistoryEntry,
+  type AiHostMessageRole,
+  type AiHostMessageSource,
+  type AiHostSessionRecord,
+} from './session-types'
 
-export interface DefaultAiHostSessionStoreOptions {
-  readonly now?: (() => number) | undefined
-}
+export type DefaultAiHostSessionStoreOptions = Readonly<{
+  now?: (() => number) | undefined
+}>
 
-interface MutableSession {
+type MutableSession = {
   readonly moduleId: string
   readonly moduleInstanceId: string
   readonly instanceId: string
@@ -36,7 +34,7 @@ interface MutableSession {
   history: AiHostHistoryEntry[]
 }
 
-export class DefaultAiHostSessionStore implements AiHostSessionStore {
+export class DefaultAiHostSessionStore extends AiHostSessionStore {
   private readonly sessions = new Map<string, MutableSession>()
 
   private nextHistorySeq = 1
@@ -44,6 +42,7 @@ export class DefaultAiHostSessionStore implements AiHostSessionStore {
   private readonly now: () => number
 
   public constructor(options: DefaultAiHostSessionStoreOptions = {}) {
+    super()
     this.now = options.now ?? Date.now
   }
 
@@ -113,25 +112,14 @@ export class DefaultAiHostSessionStore implements AiHostSessionStore {
       role: options.role,
       source: options.source ?? defaultSource(options.role),
       content: options.content,
-      ...(options.metadata === undefined ? {} : { metadata: cloneJson(options.metadata) }),
+      ...(options.metadata === undefined ? {} : { metadata: cloneMetadata(options.metadata) }),
     }
     session.history.push(entry)
     session.updatedAt = ts
     return cloneMessageEntry(entry)
   }
 
-  public appendFunctionCall(options: {
-    readonly moduleId: string
-    readonly moduleInstanceId: string
-    readonly instanceId: string
-    readonly runtimeInstanceId: string
-    readonly toolName: string
-    readonly args: unknown
-    readonly status?: AiHostFunctionCallHistoryStatus | undefined
-    readonly result?: unknown
-    readonly error?: AiHostFunctionCallFailure | undefined
-    readonly metadata?: Record<string, unknown> | undefined
-  }): AiHostFunctionCallHistoryEntry {
+  public appendFunctionCall(options: AiHostAppendFunctionCallOptions): AiHostFunctionCallHistoryEntry {
     const session = this.requireSession(options)
     const ts = this.now()
     const status = options.status ?? (options.error === undefined ? 'completed' : 'failed')
@@ -150,7 +138,7 @@ export class DefaultAiHostSessionStore implements AiHostSessionStore {
       ...(status === 'requested' ? {} : { completedAt: ts }),
       ...(options.result === undefined ? {} : { result: cloneUnknown(options.result) }),
       ...(options.error === undefined ? {} : { error: { ...options.error } }),
-      ...(options.metadata === undefined ? {} : { metadata: cloneJson(options.metadata) }),
+      ...(options.metadata === undefined ? {} : { metadata: cloneMetadata(options.metadata) }),
     }
     session.history.push(entry)
     session.updatedAt = ts
@@ -218,7 +206,7 @@ function cloneMessageEntry(entry: AiHostMessageHistoryEntry): AiHostMessageHisto
     role: entry.role,
     source: entry.source,
     content: entry.content,
-    ...(entry.metadata === undefined ? {} : { metadata: cloneJson(entry.metadata) }),
+    ...(entry.metadata === undefined ? {} : { metadata: cloneMetadata(entry.metadata) }),
   }
 }
 
@@ -238,20 +226,25 @@ function cloneFunctionCallEntry(entry: AiHostFunctionCallHistoryEntry): AiHostFu
     ...(entry.completedAt === undefined ? {} : { completedAt: entry.completedAt }),
     ...(entry.result === undefined ? {} : { result: cloneUnknown(entry.result) }),
     ...(entry.error === undefined ? {} : { error: { ...entry.error } }),
-    ...(entry.metadata === undefined ? {} : { metadata: cloneJson(entry.metadata) }),
+    ...(entry.metadata === undefined ? {} : { metadata: cloneMetadata(entry.metadata) }),
   }
 }
 
-function cloneJson<T>(value: T): T {
-  if (value === null || typeof value !== 'object') return value
-  return JSON.parse(JSON.stringify(value)) as T
+function cloneMetadata(value: Record<string, unknown>): Record<string, unknown> {
+  const cloned = cloneUnknown(value)
+  return isRecord(cloned) ? cloned : { ...value }
 }
 
 function cloneUnknown(value: unknown): unknown {
   if (value === null || value === undefined || typeof value !== 'object') return value
   try {
-    return JSON.parse(JSON.stringify(value))
+    const text = JSON.stringify(value)
+    return JSON.parse(text)
   } catch {
     return value
   }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

@@ -1,12 +1,9 @@
 /**
- * 语义业务注册表。
- *
- * 以 moduleId 为 key 管理 AiHostBusinessRegistration。注册时补齐默认
- * sessionStore,调用方不需要再包一层 runtime adapter。
+ * AI business registry.
  */
 
-import type { AiHostBusinessRegistration } from './types'
-import { DefaultAiHostSessionStore } from './session-store'
+import { DefaultAiHostSessionStore } from '../session/default-session-store'
+import { AiHostBusinessRegistration } from './business-types'
 
 export class AiHostBusinessRegistry {
   private readonly registrations = new Map<string, AiHostBusinessRegistration>()
@@ -29,8 +26,8 @@ export class AiHostBusinessRegistry {
 
 function withDefaultSessionStore(registration: AiHostBusinessRegistration): AiHostBusinessRegistration {
   if (registration.sessionStore !== undefined) return registration
-  return {
+  return new AiHostBusinessRegistration({
     ...registration,
     sessionStore: new DefaultAiHostSessionStore(),
-  }
+  })
 }

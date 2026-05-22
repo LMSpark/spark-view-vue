@@ -1,3 +1,5 @@
+// page/model barrel — re-exports from flattened page/ files
+
 export type {
   SparkNode,
   SparkNodeChildren,

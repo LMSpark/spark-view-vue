@@ -20,18 +20,18 @@ import {
   ModuleSemanticRuntime,
   type ModuleKind,
 } from '@spark-view/spark-ai/module-semantic'
-import {
-  PageDesignService,
-  type PageDesignEditHost,
-  type PageDesignServiceContext,
+import type {
+  PageDesignEditSession,
+  PageDesignServiceContext,
 } from '../capabilities/page-edit-session'
-import { summarizePageDesignFlowPhases } from '../capabilities/page-design-artifacts'
-import { PageDesignDatasetModuleKind } from './dataset-tool-catalog'
-import { PageDesignLifecycleModuleKind } from './lifecycle-tool-catalog'
+import { PageDesignService } from '../capabilities/page-design-service'
+import { PageDesignDatasetModuleKind, DATA_FIRST_POLICY_PROMPT, DATA_FIRST_SEQUENCE_PROMPT } from './dataset-tool-catalog'
+import { PageDesignLifecycleModuleKind, PAGE_DESIGN_FLOW_PROMPT } from './lifecycle-tool-catalog'
 import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
 import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
 import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
 import { createLeaveRequestBusinessRegistration } from './leave-request'
+import { currentPageId } from './page-design-helpers'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -49,36 +49,6 @@ const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Host: module-semantic boundar
   - 模块服务自管生命周期与 live state；业务 release 只清 live state，不删除会话历史。
   - instanceId 只是宿主技术 envelope，不进入函数 args，也不由 LLM 自行拼接。`
 
-const PAGE_DESIGN_FLOW_PHASES = summarizePageDesignFlowPhases()
-
-function formatPageDesignFlowPhases(): string {
-  return PAGE_DESIGN_FLOW_PHASES
-    .map((phase) => `${phase.phase}(${phase.firstStep}-${phase.lastStep})`)
-    .join(' -> ')
-}
-
-const PAGE_DESIGN_FLOW_PROMPT = `【页面设计 100 步流程】
-- 页面设计流程真源来自 spark-page-config/capabilities/design/page-design-100-step-flow。
-- 阶段顺序：${formatPageDesignFlowPhases()}。
-- 复杂修改开始前先调用 lifecycle.describeDesignFlow({}) 或按 phase / step / afterStep 查询当前位置。
-- 不要在 prompt 中重新发明流程；以 lifecycle.describeDesignFlow 返回的 phases / steps / nextStep 为准。`
-
-const DATA_FIRST_POLICY_PROMPT = `【数据优先（模型级）】
-- 数据优先是硬约束：先完成 DataSet 模型，再考虑 UI/脚本。
-- 在数据阶段完成前，不得调用 node-tree 写 action、text-model.writeScript 或 text-model.writeStyle。
-- 数据阶段收敛后，直接进入页面结构与脚本阶段。`
-
-const DATA_FIRST_SEQUENCE_PROMPT = `【最小执行序列】
-1) dataset 函数（可多次）
-2) node-tree action / text-model.write*`
-
-export type PageDesignModuleKindId =
-  | 'lifecycle'
-  | 'text-model'
-  | 'payload-catalog'
-  | 'node-tree'
-  | 'dataset'
-
 export type PageDesignRuntimeContext = {
   readonly instanceId: string
   readonly moduleId: typeof PAGE_DESIGN_MODULE_ID
@@ -86,7 +56,7 @@ export type PageDesignRuntimeContext = {
 }
 
 export type PageDesignModuleOptions = {
-  readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
+  readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditSession.Host
 }
 
 export function createPageDesignBusinessRegistration(
@@ -239,10 +209,6 @@ function toServiceContext(ctx: ModuleKind.PathContext | AiHostBusinessRuntimeCon
   }
 }
 
-function currentPageId(ctx: ModuleKind.PathContext): string {
-  return ctx.host?.moduleInstanceId ?? ctx.segment.id
-}
-
 function pageDesignEditHostUnavailableMessage(result: AiHostFunctionCallResult<unknown>): string | null {
   if (result.ok || (result.code !== 'EXECUTE_ERROR' && result.code !== 'ACTION_EXECUTE_ERROR')) return null
   const message = result.msg.trim()
@@ -257,7 +223,7 @@ function pageDesignEditHostUnavailableMessage(result: AiHostFunctionCallResult<u
 
 export type RegisterAssistantBusinessesOptions = {
   readonly registry: AiHostBusinessRegistry
-  readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
+  readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditSession.Host
 }
 
 export function registerAssistantBusinesses(options: RegisterAssistantBusinessesOptions): void {

@@ -8,12 +8,11 @@
 
 import { ModuleKind, type ActionSchema } from '@spark-view/spark-ai/module-semantic'
 import type { LlmJsonSchema, LlmJsonValue, LlmParameterSchemaRoot } from '@spark-view/spark-ai/schema'
-import {
-  pageDesignServiceFailure,
-  type PageDesignServiceResult,
-} from '../capabilities/page-edit-session'
+import type { PageDesignServiceResult } from '../capabilities/page-edit-session'
+import { PageDesignService } from '../capabilities/page-design-service'
 import componentCatalogPayload from './payloads/component-catalog.json'
 import { createCurrentPageRef } from './page-design-helpers'
+import { isRecord } from '../capabilities/json-document'
 
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
 type PayloadCatalogActionRunner = (args: Readonly<Record<string, LlmJsonValue>>) => PageDesignServiceResult<unknown>
@@ -141,7 +140,7 @@ function runPayloadCatalogAction(
   if (isPayloadCatalogFunctionId(actionName)) {
     return PAYLOAD_CATALOG_ACTION_RUNNERS[actionName](args)
   }
-  return pageDesignServiceFailure(
+  return PageDesignService.failure(
     'UNKNOWN_ACTION',
     `payload-catalog 不支持动作 "${actionName}"`,
     '请先调用 describeKind("payload-catalog") 查看动作表。',
@@ -188,11 +187,11 @@ function queryPageDesignPayloads(args: Readonly<Record<string, LlmJsonValue>>): 
 function guidePageDesignPayload(args: Readonly<Record<string, LlmJsonValue>>): PageDesignServiceResult<unknown> {
   const key = typeof args['key'] === 'string' ? args['key'].trim() : ''
   if (key.length === 0) {
-    return pageDesignServiceFailure('INVALID_PAYLOAD_KEY', 'guidePayload requires a non-empty key', '传入 { key: "component-type" }。')
+    return PageDesignService.failure('INVALID_PAYLOAD_KEY', 'guidePayload requires a non-empty key', '传入 { key: "component-type" }。')
   }
   const entry = findPayloadEntry(key)
   if (entry === null) {
-    return pageDesignServiceFailure('PAYLOAD_NOT_FOUND', `组件荷载 "${key}" 不存在`, '先调用 queryPayloads 按 category 或 keyword 选择可用组件。')
+    return PageDesignService.failure('PAYLOAD_NOT_FOUND', `组件荷载 "${key}" 不存在`, '先调用 queryPayloads 按 category 或 keyword 选择可用组件。')
   }
   return {
     ok: true,
@@ -322,8 +321,4 @@ function isOptionalString(value: unknown): boolean {
 
 function isOptionalBoolean(value: unknown): boolean {
   return value === undefined || typeof value === 'boolean'
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

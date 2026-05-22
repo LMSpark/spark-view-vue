@@ -15,8 +15,8 @@ import type {
   PageDataConfig,
 } from './config-types'
 import { DataSet, SparkData } from '@spark-view/spark-data'
-import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from '../model/spark-node'
-import { SparkNodeTree } from '../model/spark-node-tree'
+import { isSparkNode, normalizeSparkNode, getSparkNodeChildren } from './spark-node'
+import { SparkNodeTree } from './spark-node-tree'
 
 // ═══ 工厂解析：模块加载时一次性探测 spark-data 暴露的 DataSet 构建入口 ═══
 

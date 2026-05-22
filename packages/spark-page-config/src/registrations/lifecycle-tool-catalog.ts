@@ -16,10 +16,25 @@ import {
 } from '@spark-view/spark-ai/schema'
 import { ModuleKind, type ActionSchema } from '@spark-view/spark-ai/module-semantic'
 import type {
-  PageDesignService,
   PageDesignServiceContext,
 } from '../capabilities/page-edit-session'
+import type { PageDesignService } from '../capabilities/page-design-service'
 import { createCurrentPageRef } from './page-design-helpers'
+import { summarizePageDesignFlowPhases } from '../capabilities/page-design-artifacts'
+
+const PAGE_DESIGN_FLOW_PHASES = summarizePageDesignFlowPhases()
+
+function formatPageDesignFlowPhases(): string {
+  return PAGE_DESIGN_FLOW_PHASES
+    .map((phase) => `${phase.phase}(${phase.firstStep}-${phase.lastStep})`)
+    .join(' -> ')
+}
+
+export const PAGE_DESIGN_FLOW_PROMPT = `【页面设计 100 步流程】
+- 页面设计流程真源来自 spark-page-config/capabilities/design/page-design-100-step-flow。
+- 阶段顺序：${formatPageDesignFlowPhases()}。
+- 复杂修改开始前先调用 lifecycle.describeDesignFlow({}) 或按 phase / step / afterStep 查询当前位置。
+- 不要在 prompt 中重新发明流程；以 lifecycle.describeDesignFlow 返回的 phases / steps / nextStep 为准。`
 
 const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')
 const DESIGN_FLOW_PARAMS = paramsSchema({

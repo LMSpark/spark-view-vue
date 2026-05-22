@@ -50,7 +50,7 @@ export type LlmJsonValue =
   | LlmJsonObject
 
 /** 参数协议中的 JSON 对象：key-value 映射，value 为 LlmJsonValue */
-export interface LlmJsonObject { readonly [key: string]: LlmJsonValue }
+export type LlmJsonObject = { readonly [key: string]: LlmJsonValue }
 
 // ═══════════════════════════════════════════════════════
 // 2. Schema 类型（JSON Schema type 字段允许的值）
@@ -86,7 +86,7 @@ export type LlmJsonSchema = boolean | LlmJsonSchemaObject
  *
  * 保留有限扩展字段，但不允许旧 DSL 的 'kind' 字段。
  */
-export interface LlmJsonSchemaObject {
+export type LlmJsonSchemaObject = {
   /** 保留标准 JSON Schema 扩展关键字与 resultSchema 文档型字段。 */
   readonly [keyword: string]: unknown
 
@@ -166,4 +166,4 @@ export interface LlmJsonSchemaObject {
  * 约定：函数 paramsSchema 的根节点 type 必须是 'object'，
  * 这保证了 LLM 传入的参数始终是一个对象。
  */
-export interface LlmParameterSchemaRoot extends LlmJsonSchemaObject {}
+export type LlmParameterSchemaRoot = LlmJsonSchemaObject

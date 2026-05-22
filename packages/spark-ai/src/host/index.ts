@@ -1,23 +1,54 @@
 /**
  * @packageDocumentation
  *
- * 跨框架 AI Host 协议与运行时。
+ * Cross-framework AI Host session, transport, and tool-loop runtime.
  */
 
-export type {
-  AiHostAppendMessagesInput,
-  AiHostBusinessAfterFunctionCallOptions,
-  AiHostBusinessAppendMessageOptions,
-  AiHostBusinessExecuteFunctionCallOptions,
-  AiHostBusinessLifecycleDirective,
-  AiHostBusinessLifecycleStatus,
+export {
   AiHostBusinessRegistration,
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
-  AiHostBusinessSession,
   AiHostBusinessTarget,
+} from './business/business-types'
+
+export type {
+  AiHostBusinessAfterFunctionCallOptions,
+  AiHostBusinessAppendMessageOptions,
+  AiHostBusinessLifecycleDirective,
+  AiHostBusinessLifecycleStatus,
+  AiHostBusinessRegistrationOptions,
+  AiHostOptions,
+  AiHostSender,
+} from './business/business-types'
+
+export {
+  createAiHostBusinessScope,
+  toAiHostRuntimeScope,
+} from './business/business-scope'
+
+export {
+  AiHostBusinessRegistry,
+} from './business/business-registry'
+
+export {
+  AiHostBusinessSession,
+  createAiHostBusinessSession,
+  startRegistrationSession,
+} from './business/business-session'
+
+export type {
+  AiHostChatMessage,
   AiHostChatRequest,
   AiHostFcCallRecord,
+  AiHostSseEvent,
+  AiHostTurnMeta,
+} from './chat/chat-types'
+
+export {
+  AiHostSessionStore,
+} from './session/session-types'
+
+export type {
   AiHostFunctionCallFailure,
   AiHostFunctionCallHistoryEntry,
   AiHostFunctionCallHistoryStatus,
@@ -27,82 +58,49 @@ export type {
   AiHostMessageHistoryEntry,
   AiHostMessageRole,
   AiHostMessageSource,
-  AiHostOptions,
-  AiHostSelectedBusiness,
-  AiHostSender,
   AiHostSessionRecord,
   AiHostSessionStatus,
-  AiHostSessionStore,
-  AiHostSseEvent,
   AiHostStartSessionResult,
-  AiHostStreamTurnInput,
-  AiHostStreamTurnResult,
-  AiHostTransport,
-  AiHostTransportMessage,
-  AiHostTransportToolCall,
-  AiHostTransportToolSpec,
-  AiHostTurnMeta,
-} from './types'
-
-export {
-  createAiHostBusinessScope,
-  createAiHostBusinessSessionId,
-  createAiHostBusinessStorageKey,
-  createAiHostStreamKey,
-  normalizeAiHostBusinessTarget,
-  toAiHostRuntimeScope,
-} from './scope'
-
-export {
-  latestUserInput,
-  normalizeTurn,
-  toCurrentTurnMessages,
-} from './turn-utils'
-
-export {
-  AiHostBusinessRegistry,
-} from './business-registry'
+} from './session/session-types'
 
 export {
   DefaultAiHostSessionStore,
-} from './session-store'
+} from './session/default-session-store'
 
 export type {
   DefaultAiHostSessionStoreOptions,
-} from './session-store'
+} from './session/default-session-store'
 
 export {
-  AiHostToolLoopRunner,
-} from './tool-loop'
-
-export {
-  actionModuleId,
-  emitLlmDiagnosticEvent,
-  eventModuleIdFromProtocolCall,
-  stringifyAiHostPayload,
-} from './diagnostics'
-
-export {
-  AiHostMessageSender,
-  createAiHostBusinessSession,
-  startRegistrationSession,
-} from './sending'
+  AiHostTransport,
+} from './transport/transport-types'
 
 export type {
-  AiHostSendContext,
-  AiHostSendInput,
-} from './sending'
+  AiHostAppendMessagesInput,
+  AiHostFetch,
+  AiHostFetchTransportOptions,
+  AiHostHeadersProvider,
+  AiHostStreamTurnInput,
+  AiHostStreamTurnResult,
+  AiHostTransportMessage,
+  AiHostTransportToolCall,
+  AiHostTransportToolSpec,
+  AiHostUploadedAttachment,
+} from './transport/transport-types'
 
 export {
   AiHostFetchTransport,
   parseAiHostSseBlocks,
-  uploadAiHostAttachment,
-} from './fetch-transport'
+} from './transport/fetch-transport'
 
 export type {
-  AiHostFetch,
-  AiHostFetchTransportOptions,
-  AiHostHeadersProvider,
   AiHostParsedSseEvent,
-  AiHostUploadedAttachment,
-} from './fetch-transport'
+} from './transport/sse-parser'
+
+export {
+  uploadAiHostAttachment,
+} from './transport/attachment-upload'
+
+export {
+  AiHostToolLoopRunner,
+} from './tool-loop/tool-loop-runner'

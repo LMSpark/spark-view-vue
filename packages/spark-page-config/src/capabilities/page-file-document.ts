@@ -118,9 +118,9 @@ export function canonicalizeDataSetMetadata(metadata: DataSetMetadata): string {
 // ── SECTION 3: 页面文件文档（原 page-file-documents.ts）────────────
 
 import { SnapshotHistory } from '@spark-view/spark-utils'
-import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../page/loading/config-types'
-import { SparkNodeTree } from '../page/model/spark-node-tree'
-import { getSparkNodeChildren, type SparkNode } from '../page/model/spark-node'
+import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../page/config-types'
+import { SparkNodeTree } from '../page/spark-node-tree'
+import { getSparkNodeChildren, type SparkNode } from '../page/spark-node'
 
 export const PAGE_FILE_NAMES = PAGE_CONFIG_FILE_NAMES
 export type PageFileName = PageConfigFileName

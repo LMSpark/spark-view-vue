@@ -27,15 +27,15 @@
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
 import type { LlmParameterSchemaRoot } from './types'
 
-export interface LlmParamValidationIssue {
+export type LlmParamValidationIssue = {
   path: string
   message: string
 }
 
-export interface LlmParamValidationResult {
-  readonly ok: boolean
-  readonly issues: readonly LlmParamValidationIssue[]
-}
+export type LlmParamValidationResult = Readonly<{
+  ok: boolean
+  issues: readonly LlmParamValidationIssue[]
+}>
 
 /** AJV 2020 实例：全局复用，允许所有错误收集 */
 const ajv = new Ajv2020({

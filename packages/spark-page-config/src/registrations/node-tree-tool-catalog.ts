@@ -24,12 +24,11 @@ import {
 } from '@spark-view/spark-ai/schema'
 import { ModuleKind, type ActionSchema } from '@spark-view/spark-ai/module-semantic'
 import type {
-  PageDesignNodeTree,
-  PageDesignService,
+  PageDesignEditSession,
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
 } from '../capabilities/page-edit-session'
-import pageDesignAbilityMetadata from './page-design-ability-metadata.generated.json'
+import type { PageDesignService } from '../capabilities/page-design-service'
 
 const NO_PARAMS = noParamsSchema('该 nodeTree 读取函数不接受参数，请传 {} 或留空。')
 const EMPTY_EXAMPLE: LlmJsonObject = {}
@@ -511,53 +510,29 @@ const NODE_TREE_ACTIONS: readonly ActionSchema[] = [
   },
 ]
 
-type GeneratedPageDesignAbilityMetadataDocument = {
-  readonly abilities: readonly GeneratedPageDesignAbilityMetadata[]
-}
-
-type GeneratedPageDesignAbilityMetadata = {
-  readonly abilityId: string
-  readonly actions: readonly GeneratedPageDesignAbilityActionMetadata[]
-}
-
-type GeneratedPageDesignAbilityActionMetadata = {
-  readonly name: string
-}
-
-type NodeTreeActionBinding = PageDesignServiceActionBinding<PageDesignNodeTree>
-
-const PAGE_DESIGN_ABILITY_METADATA = pageDesignAbilityMetadata as GeneratedPageDesignAbilityMetadataDocument
-const NODE_TREE_METHOD_NAMES = generatedAbilityActionNames('pageDesign.nodeTree')
-const NODE_TREE_ACTION_SCHEMA_BY_NAME: ReadonlyMap<string, ActionSchema> = new Map(
-  NODE_TREE_ACTIONS.map((action) => [action.name, action]),
-)
-const NODE_TREE_LEGACY_FUNCTION_ID_BY_ACTION: ReadonlyMap<string, string> = new Map([
-  ['collectDataViewKeys', 'collectDataKeys'],
-])
+type NodeTreeActionBinding = PageDesignServiceActionBinding<PageDesignEditSession.NodeTree>
 
 const NODE_TREE_ACTION_BINDINGS: Readonly<Record<string, NodeTreeActionBinding>> = {
-  getNode: nodeTreeAction('getNode', false, (tree, args) => tree.getNode(args as Parameters<PageDesignNodeTree['getNode']>[0])),
-  getLocation: nodeTreeAction('getLocation', false, (tree, args) => tree.getLocation(args as Parameters<PageDesignNodeTree['getLocation']>[0])),
-  hasNode: nodeTreeAction('hasNode', false, (tree, args) => tree.hasNode(args as Parameters<PageDesignNodeTree['hasNode']>[0])),
-  getParent: nodeTreeAction('getParent', false, (tree, args) => tree.getParent(args as Parameters<PageDesignNodeTree['getParent']>[0])),
-  listChildren: nodeTreeAction('listChildren', false, (tree, args) => tree.listChildren(args as Parameters<PageDesignNodeTree['listChildren']>[0])),
+  getNode: nodeTreeAction('getNode', false, (tree, args) => tree.getNode(args as Parameters<PageDesignEditSession.NodeTree['getNode']>[0])),
+  getLocation: nodeTreeAction('getLocation', false, (tree, args) => tree.getLocation(args as Parameters<PageDesignEditSession.NodeTree['getLocation']>[0])),
+  hasNode: nodeTreeAction('hasNode', false, (tree, args) => tree.hasNode(args as Parameters<PageDesignEditSession.NodeTree['hasNode']>[0])),
+  getParent: nodeTreeAction('getParent', false, (tree, args) => tree.getParent(args as Parameters<PageDesignEditSession.NodeTree['getParent']>[0])),
+  listChildren: nodeTreeAction('listChildren', false, (tree, args) => tree.listChildren(args as Parameters<PageDesignEditSession.NodeTree['listChildren']>[0])),
   countNodes: nodeTreeAction('countNodes', false, (tree) => tree.countNodes()),
   getAllData: nodeTreeAction('getAllData', false, (tree) => tree.getAllData()),
   collectDataViewKeys: nodeTreeAction('collectDataViewKeys', false, (tree) => tree.collectDataViewKeys()),
   collectHandlerNames: nodeTreeAction('collectHandlerNames', false, (tree) => tree.collectHandlerNames()),
-  findByType: nodeTreeAction('findByType', false, (tree, args) => tree.findByType(args as Parameters<PageDesignNodeTree['findByType']>[0])),
-  addNode: nodeTreeAction('addNode', true, (tree, args) => tree.addNode(args as Parameters<PageDesignNodeTree['addNode']>[0])),
-  addNodes: nodeTreeAction('addNodes', true, (tree, args) => tree.addNodes(args as Parameters<PageDesignNodeTree['addNodes']>[0])),
-  moveNode: nodeTreeAction('moveNode', true, (tree, args) => tree.moveNode(args as Parameters<PageDesignNodeTree['moveNode']>[0])),
-  setProps: nodeTreeAction('setProps', true, (tree, args) => tree.setProps(args as Parameters<PageDesignNodeTree['setProps']>[0])),
-  setPropsBatch: nodeTreeAction('setPropsBatch', true, (tree, args) => tree.setPropsBatch(args as Parameters<PageDesignNodeTree['setPropsBatch']>[0])),
-  replaceNode: nodeTreeAction('replaceNode', true, (tree, args) => tree.replaceNode(args as Parameters<PageDesignNodeTree['replaceNode']>[0])),
-  replaceNodes: nodeTreeAction('replaceNodes', true, (tree, args) => tree.replaceNodes(args as Parameters<PageDesignNodeTree['replaceNodes']>[0])),
-  removeNode: nodeTreeAction('removeNode', true, (tree, args) => tree.removeNode(args as Parameters<PageDesignNodeTree['removeNode']>[0])),
-  removeNodes: nodeTreeAction('removeNodes', true, (tree, args) => tree.removeNodes(args as Parameters<PageDesignNodeTree['removeNodes']>[0])),
+  findByType: nodeTreeAction('findByType', false, (tree, args) => tree.findByType(args as Parameters<PageDesignEditSession.NodeTree['findByType']>[0])),
+  addNode: nodeTreeAction('addNode', true, (tree, args) => tree.addNode(args as Parameters<PageDesignEditSession.NodeTree['addNode']>[0])),
+  addNodes: nodeTreeAction('addNodes', true, (tree, args) => tree.addNodes(args as Parameters<PageDesignEditSession.NodeTree['addNodes']>[0])),
+  moveNode: nodeTreeAction('moveNode', true, (tree, args) => tree.moveNode(args as Parameters<PageDesignEditSession.NodeTree['moveNode']>[0])),
+  setProps: nodeTreeAction('setProps', true, (tree, args) => tree.setProps(args as Parameters<PageDesignEditSession.NodeTree['setProps']>[0])),
+  setPropsBatch: nodeTreeAction('setPropsBatch', true, (tree, args) => tree.setPropsBatch(args as Parameters<PageDesignEditSession.NodeTree['setPropsBatch']>[0])),
+  replaceNode: nodeTreeAction('replaceNode', true, (tree, args) => tree.replaceNode(args as Parameters<PageDesignEditSession.NodeTree['replaceNode']>[0])),
+  replaceNodes: nodeTreeAction('replaceNodes', true, (tree, args) => tree.replaceNodes(args as Parameters<PageDesignEditSession.NodeTree['replaceNodes']>[0])),
+  removeNode: nodeTreeAction('removeNode', true, (tree, args) => tree.removeNode(args as Parameters<PageDesignEditSession.NodeTree['removeNode']>[0])),
+  removeNodes: nodeTreeAction('removeNodes', true, (tree, args) => tree.removeNodes(args as Parameters<PageDesignEditSession.NodeTree['removeNodes']>[0])),
 }
-
-const NODE_TREE_MODULE_ACTIONS: readonly ActionSchema[] = NODE_TREE_METHOD_NAMES.map((methodName) => nodeTreeActionSchemaFor(methodName))
 
 export class PageDesignNodeTreeModuleKind extends ModuleKind {
   private readonly service: PageDesignService
@@ -572,7 +547,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
       name: 'Page Design Node Tree',
       description: '当前页面 SparkNodeTree/rule.json 结构读写;通过 invokeAction 调用 19 个公开方法。',
       attributes: [],
-      actions: NODE_TREE_MODULE_ACTIONS,
+      actions: NODE_TREE_ACTIONS,
       children: [],
     })
     this.service = options.service
@@ -603,37 +578,6 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
       return null
     }
     return { id: pageId, label: '当前页面节点树' }
-  }
-}
-
-function generatedAbilityActionNames(abilityId: string): readonly string[] {
-  const ability = PAGE_DESIGN_ABILITY_METADATA.abilities.find(item => item.abilityId === abilityId)
-  if (ability === undefined) {
-    throw new Error(`PageDesign VCM ability metadata is missing: ${abilityId}`)
-  }
-  return ability.actions.map(action => action.name)
-}
-
-function nodeTreeActionSchemaFor(methodName: string): ActionSchema {
-  const legacyFunctionId = NODE_TREE_LEGACY_FUNCTION_ID_BY_ACTION.get(methodName) ?? methodName
-  const action = NODE_TREE_ACTION_SCHEMA_BY_NAME.get(legacyFunctionId)
-  if (action === undefined) {
-    throw new Error(
-      `node-tree generated metadata missing legacy registration for ${methodName}/${legacyFunctionId}`,
-    )
-  }
-  return {
-    name: methodName,
-    description: action.description,
-    paramsSchema: action.paramsSchema,
-    ...(action.resultSchema !== undefined ? { resultSchema: action.resultSchema } : {}),
-    ...(action.usageRules !== undefined && action.usageRules.length > 0
-      ? { usageRules: action.usageRules }
-      : {}),
-    ...(action.failureModes !== undefined && action.failureModes.length > 0
-      ? { failureModes: action.failureModes }
-      : {}),
-    ...(action.example !== undefined ? { example: action.example } : {}),
   }
 }
 

@@ -220,7 +220,7 @@ import {
   type MutationResult,
   type TreeModel,
   type TreeDisplayNode,
-} from '@spark-view/spark-page-config/capabilities'
+} from '@spark-view/spark-page-config/capabilities/json-document'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 

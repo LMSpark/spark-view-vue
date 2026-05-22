@@ -1,36 +1,112 @@
 /**
- * AI Host 工具调用循环。
- *
- * Host 直接调度 module-semantic 的 6 个协议工具。
+ * AI Host protocol tool loop.
  */
 
-import type { LlmJsonValue } from '../schema'
-import { ModuleSemanticToolCodec } from '../module-semantic/host/module-semantic-tool-codec'
-import { ModuleKind } from '../module-semantic/protocol/module-kind'
-import { createAiHostStreamKey, toAiHostRuntimeScope } from './scope'
-import { emitLlmDiagnosticEvent, eventModuleIdFromProtocolCall, stringifyAiHostPayload } from './diagnostics'
-import { toCurrentTurnMessages } from './turn-utils'
+import type { LlmJsonValue } from '../../schema'
+import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
+import { ModuleKind } from '../../module-semantic/protocol/module-kind'
+import { createAiHostStreamKey, toAiHostRuntimeScope } from '../business/business-scope'
 import type {
   AiHostBusinessLifecycleDirective,
   AiHostBusinessRegistration,
   AiHostBusinessScope,
-  AiHostChatRequest,
+  AiHostOptions,
+} from '../business/business-types'
+import type { AiHostChatRequest, AiHostTurnMeta } from '../chat/chat-types'
+import type {
   AiHostFunctionCallFailure,
   AiHostFunctionCallResult,
-  AiHostOptions,
+  AiHostSessionStore,
+} from '../session/session-types'
+import type {
   AiHostTransportMessage,
   AiHostTransportToolCall,
-  AiHostTurnMeta,
-} from './types'
+} from '../transport/transport-types'
+
+const CONTINUE_DIRECTIVE: AiHostBusinessLifecycleDirective = { status: 'continue' }
 
 function parseToolArgs(raw: string | undefined): Readonly<Record<string, LlmJsonValue>> {
   if (raw === undefined || raw.trim() === '') return {}
   try {
-    const parsed = JSON.parse(raw) as unknown
+    const parsed: unknown = JSON.parse(raw)
     return toProtocolArgs(parsed)
   } catch {
     return {}
   }
+}
+
+function toCurrentTurnMessages(request: AiHostChatRequest): AiHostTransportMessage[] {
+  const latestUser = latestUserInput(request)
+  return latestUser === ''
+    ? []
+    : [{ role: 'user', content: latestUser }]
+}
+
+function latestUserInput(request: AiHostChatRequest): string {
+  for (let index = request.historyMsgs.length - 1; index >= 0; index -= 1) {
+    const item = request.historyMsgs[index]
+    if (item?.role === 'user') return item.content.trim()
+  }
+  return ''
+}
+
+function eventModuleIdFromProtocolCall(
+  toolName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): string {
+  if (toolName === 'describeKind' && typeof args['kind'] === 'string' && args['kind'].trim().length > 0) {
+    return args['kind']
+  }
+  const path = typeof args['path'] === 'string' ? args['path'] : ''
+  const tailKind = kindFromPathTail(path)
+  return tailKind ?? toolName
+}
+
+function emitLlmDiagnosticEvent(
+  request: AiHostChatRequest,
+  scope: AiHostBusinessScope,
+  turn: AiHostTurnMeta,
+  type: 'llm-request' | 'llm-append',
+  data: unknown,
+): void {
+  request.onSseEvent?.({
+    type,
+    data: stringifyAiHostPayload(data),
+    streamKey: createAiHostStreamKey(scope, 'llm', turn.turnId),
+    scope: {
+      businessRegistrationId: scope.businessRegistrationId,
+      businessInstanceId: scope.businessInstanceId,
+      eventModuleId: 'llm',
+      turnId: turn.turnId,
+    },
+  })
+}
+
+function stringifyAiHostPayload(data: unknown): string {
+  return safeJsonStringify(data)
+}
+
+function kindFromPathTail(path: string): string | null {
+  const trimmed = path.trim()
+  if (trimmed === '' || trimmed === '/') return null
+  const tail = trimmed.split('/').filter(Boolean).at(-1)
+  if (tail === undefined) return null
+  const bracketIndex = tail.indexOf('[')
+  const kind = bracketIndex < 0 ? tail : tail.slice(0, bracketIndex)
+  return kind.trim().length > 0 ? kind : null
+}
+
+function safeJsonStringify(value: unknown): string {
+  const seen = new WeakSet<object>()
+  const text = JSON.stringify(value, (_key, item: unknown) => {
+    if (typeof item === 'bigint') return item.toString()
+    if (typeof item === 'object' && item !== null) {
+      if (seen.has(item)) return '[Circular]'
+      seen.add(item)
+    }
+    return item
+  })
+  return text
 }
 
 export class AiHostToolLoopRunner {
@@ -210,7 +286,7 @@ export class AiHostToolLoopRunner {
       toolName: protocolToolName,
       args,
       result: callResult,
-    }) ?? { status: 'continue' as const }
+    }) ?? CONTINUE_DIRECTIVE
 
     const durationMs = Date.now() - started
     const eventModuleId = eventModuleIdFromProtocolCall(protocolToolName, args)
@@ -249,7 +325,7 @@ export class AiHostToolLoopRunner {
   }
 }
 
-function requireSessionStore(registration: AiHostBusinessRegistration) {
+function requireSessionStore(registration: AiHostBusinessRegistration): AiHostSessionStore {
   if (registration.sessionStore === undefined) {
     throw new Error(`AI host business registration missing sessionStore: ${registration.moduleId}`)
   }

@@ -102,7 +102,7 @@
       border
       highlight-current-row
       row-key="type"
-      @current-change="(row: RuleEditorComponentCatalogEntry | null) => selectedType = row?.type ?? ''"
+      @current-change="(row: RuleEditorComponent.CatalogEntry | null) => selectedType = row?.type ?? ''"
       style="width: 100%"
     >
       <el-table-column prop="type" label="组件" width="180" sortable>
@@ -136,7 +136,7 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, defineComponent, h, type ObjectEmitsOptions } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import type { RuleEditorComponentCatalog, RuleEditorComponentCatalogEntry, RuleEditorComponentCatalogProp } from '@spark-view/spark-page-config/capabilities'
+import type { RuleEditorComponent } from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
 import componentCatalog from '@spark-view/spark-page-config/registrations/payloads/component-catalog.json'
 
 // ── 类型字典 ──────────────────────────────────────────────────────────────
@@ -148,7 +148,7 @@ interface TypeDictEntry {
 }
 
 interface PropsTableProps {
-  readonly props: readonly RuleEditorComponentCatalogProp[]
+  readonly props: readonly RuleEditorComponent.CatalogProp[]
 }
 
 interface PropsTableEmits extends ObjectEmitsOptions {
@@ -414,7 +414,7 @@ const searchText = ref('')
 const categoryFilter = ref('')
 const selectedType = ref('')
 const viewMode = ref<'card' | 'table'>('card')
-const pageDesignComponentCatalog = componentCatalog as RuleEditorComponentCatalog
+const pageDesignComponentCatalog = componentCatalog as RuleEditorComponent.Catalog
 
 const skills = computed(() => Object.values(pageDesignComponentCatalog.components)
   .filter(s => s.type.trim().length > 0 && s.internal !== true && s.configurable !== false)
@@ -444,7 +444,7 @@ const selectedSkill = computed(() =>
   selectedType.value ? skills.value.find(s => s.type === selectedType.value) : undefined,
 )
 
-function sortByProps(a: RuleEditorComponentCatalogEntry, b: RuleEditorComponentCatalogEntry): number {
+function sortByProps(a: RuleEditorComponent.CatalogEntry, b: RuleEditorComponent.CatalogEntry): number {
   return (a.props?.length ?? 0) - (b.props?.length ?? 0)
 }
 </script>

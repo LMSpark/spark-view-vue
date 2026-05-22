@@ -16,28 +16,32 @@
       "import": "./dist/index.js"
     },
     "./page/model": {
-      "types": "./dist/page/model/index.d.ts",
-      "import": "./dist/page/model/index.js"
+      "types": "./dist/page/model.d.ts",
+      "import": "./dist/page/model.js"
     },
     "./page/loading": {
-      "types": "./dist/page/loading/index.d.ts",
-      "import": "./dist/page/loading/index.js"
+      "types": "./dist/page/loading.d.ts",
+      "import": "./dist/page/loading.js"
     },
     "./capabilities": {
       "types": "./dist/capabilities/index.d.ts",
       "import": "./dist/capabilities/index.js"
     },
+    "./capabilities/*": {
+      "types": "./dist/capabilities/*.d.ts",
+      "import": "./dist/capabilities/*.js"
+    },
     "./page/navigation": {
-      "types": "./dist/page/navigation/index.d.ts",
-      "import": "./dist/page/navigation/index.js"
+      "types": "./dist/page/navigation.d.ts",
+      "import": "./dist/page/navigation.js"
     },
     "./page/sandbox": {
-      "types": "./dist/page/sandbox/index.d.ts",
-      "import": "./dist/page/sandbox/index.js"
+      "types": "./dist/page/sandbox.d.ts",
+      "import": "./dist/page/sandbox.js"
     },
     "./page/services": {
-      "types": "./dist/page/services/index.d.ts",
-      "import": "./dist/page/services/index.js"
+      "types": "./dist/page/services.d.ts",
+      "import": "./dist/page/services.js"
     },
     "./registrations": {
       "types": "./dist/registrations/index.d.ts",

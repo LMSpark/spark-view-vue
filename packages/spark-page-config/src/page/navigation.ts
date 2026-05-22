@@ -1,3 +1,5 @@
+// page/navigation barrel — re-exports from flattened page/ files
+
 export type {
   AppModuleBase,
   AppNavRoot,
@@ -52,9 +54,9 @@ export type {
 
 export {
   NavigationConfigClient,
-} from './client'
+} from './nav-client'
 
 export type {
   LinkProbeResult,
   NavigationConfigClientOptions,
-} from './client'
+} from './nav-client'

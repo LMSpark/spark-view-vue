@@ -15,7 +15,7 @@
  * - 反向映射只用于校验:LLM 调用未知工具时,actionOf() 返回 null。
  */
 
-import type { AiHostTransportToolSpec } from '../../host/types'
+import type { AiHostTransportToolSpec } from '../../host/transport/transport-types'
 import type { ModuleSemanticToolSpec } from '../internal/protocol-tool-generator'
 import type { ProtocolToolName } from '../internal/protocol-tool-generator'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'

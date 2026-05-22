@@ -4,11 +4,11 @@ import {
   createRuleEditorComponentMetadata,
   createRuleJsonSchema,
   createRuleTreePolicy,
-  type RuleEditorComponentCatalog,
-} from '@spark-view/spark-page-config/capabilities'
+  type RuleEditorComponent,
+} from '@spark-view/spark-page-config/capabilities/page-design-artifacts'
 import componentCatalog from '@spark-view/spark-page-config/registrations/payloads/component-catalog.json'
 
-const pageDesignComponentCatalog = componentCatalog as RuleEditorComponentCatalog
+const pageDesignComponentCatalog = componentCatalog as RuleEditorComponent.Catalog
 const DEV_COMPONENT_METADATA = createRuleEditorComponentMetadata(pageDesignComponentCatalog)
 const DEV_PROP_ENUMS = DEV_COMPONENT_METADATA.propEnums
 const DEV_REQUIRED_PROPS = DEV_COMPONENT_METADATA.requiredProps

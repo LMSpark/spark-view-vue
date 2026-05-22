@@ -24,6 +24,7 @@
  */
 
 import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
+import { isRecord } from '../capabilities/json-document'
 
 // ═══════════════════════════════════════════════════════
 // 1. 枚举联合
@@ -247,10 +248,6 @@ declare module '@spark-view/spark-utils' {
   interface CapabilityTypeMap {
     'spark:capability:page-runtime-services': PageRuntimeServicesCapability
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 function isPageRuntimeServicesCapability(value: unknown): value is PageRuntimeServicesCapability {

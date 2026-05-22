@@ -1,6 +1,6 @@
 /**
  * 能力系统集成测试
- * 
+ *
  * 验证 SPARK 能力系统的核心功能：
  * - Symbol-based CapabilityKey 的 sparkProvide/sparkConsume 流程
  * - 能力符号与契约的配对使用
@@ -12,7 +12,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/services'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page/app-services'
 import {
   Spark,
   useSparkComponent,

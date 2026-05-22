@@ -19,7 +19,7 @@ import {
 } from '../module-semantic'
 import type { LlmJsonValue } from '../schema'
 
-interface ModuleKindSpy {
+type ModuleKindSpy = {
   lastHost?: ModuleKind.PathContext['host'] | undefined
 }
 
@@ -74,14 +74,14 @@ const CONTEXT = {
   moduleId: 'pageDesign',
   moduleInstanceId: 'page-1',
   instanceId: 'pageDesign:page-1',
-} as const
+}
 
 const SCOPE = {
   businessRegistrationId: 'pageDesign',
   businessInstanceId: 'page-1',
   instanceId: 'pageDesign:page-1',
   runtimeInstanceId: 'pageDesign:page-1',
-} as const
+}
 
 const TURN = {
   turnId: 'turn-1',
@@ -90,7 +90,7 @@ const TURN = {
   queuedAt: '2026-05-21T00:00:00.000Z',
   startedAt: '2026-05-21T00:00:00.000Z',
   maxParallelTurns: 1,
-} as const
+}
 
 function createRegistration(): { registration: AiHostBusinessRegistration; spy: ModuleKindSpy; released: string[] } {
   const runtime = new ModuleSemanticRuntime()

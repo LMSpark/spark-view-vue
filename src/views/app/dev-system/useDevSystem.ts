@@ -8,9 +8,9 @@
  *    消费层不再持有 workTab / previewRefreshToken 等中间 ref。
  */
 import { computed, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
-import type { PageDesignEditHost } from '@spark-view/spark-page-config/capabilities'
+import type { PageDesignEditSession } from '@spark-view/spark-page-config/capabilities/page-edit-session'
+import { registerPageDesignEditHost } from '@spark-view/spark-page-config/capabilities/page-design-service'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { registerPageDesignEditHost } from '@spark-view/spark-page-config/capabilities'
 import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
 import { PAGE_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
@@ -129,7 +129,7 @@ export function useDevSystem() {
 
 export interface DevSystemCtx extends ReturnType<typeof useDevSystem> {}
 
-function createPageDesignEditHost(state: DevState): PageDesignEditHost {
+function createPageDesignEditHost(state: DevState): PageDesignEditSession.Host {
   return {
     getNodeTree: () => state.documents['rule.json'].model.value,
     onNodeTreeChanged: (nodeTree) => {

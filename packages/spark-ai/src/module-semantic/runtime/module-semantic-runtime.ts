@@ -390,10 +390,8 @@ function jsonSchemaToJson(schema: unknown): LlmJsonValue {
     return schema.map((item) => jsonSchemaToJson(item))
   }
   if (typeof schema === 'object') {
-    const obj = schema as Record<string, unknown>
     const out: Record<string, LlmJsonValue> = {}
-    for (const key of Object.keys(obj)) {
-      const value = obj[key]
+    for (const [key, value] of Object.entries(schema)) {
       if (value === undefined) continue
       out[key] = jsonSchemaToJson(value)
     }
