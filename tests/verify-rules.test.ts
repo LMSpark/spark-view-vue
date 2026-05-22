@@ -99,6 +99,35 @@ describe('verification rules', () => {
     expect(output).toContain('mechanical Interface/Impl name is forbidden')
   })
 
+  it('rejects public method drift on critical facade classes', () => {
+    const root = createTempRoot()
+    writeFile(root, 'packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts', [
+      'export class ModuleSemanticRuntime {',
+      '  public registerKind(): void {}',
+      '  public getLlmTools(): void {}',
+      '  public executeTool(): void {}',
+      '  public getAttribute(): void {}',
+      '  public setAttribute(): void {}',
+      '  public invokeAction(): void {}',
+      '  public listChildren(): void {}',
+      '  public findInstance(): void {}',
+      '  public describeKind(): void {}',
+      '  public projectKnowledge(): void {}',
+      '  public queryKnowledgeModules(): void {}',
+      '  public queryKnowledgeFunctions(): void {}',
+      '  public guideKnowledgeFunction(): void {}',
+      '  public buildKnowledgePromptSnapshot(): string { return "" }',
+      '}',
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'packages'])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('public method surface drift for ModuleSemanticRuntime')
+    expect(output).toContain('extra=[buildKnowledgePromptSnapshot]')
+  })
+
   it('rejects framework imports inside framework-free packages', () => {
     const root = createTempRoot()
     writeJson(root, 'packages/spark-data/package.json', {

@@ -57,6 +57,7 @@ export type ModuleKindDescription = Readonly<{
   kind: string
   name: string
   description: string
+  parentKind?: string | undefined
   attributes: readonly ModuleAttributeMetadata[]
   actions: readonly ModuleActionMetadata[]
   children: readonly string[]
@@ -179,11 +180,13 @@ export class Navigator {
   ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
     if (path.isRoot) {
       if (childKind === undefined) {
-        const refs: readonly ModuleInstanceRef[] = this.kinds.list().map((moduleKind) => ({
-          id: moduleKind.kind,
-          label: moduleKind.name,
-          summary: moduleKind.description,
-        }))
+        const refs: readonly ModuleInstanceRef[] = this.kinds.list()
+          .filter((moduleKind) => moduleKind.parentKind === undefined)
+          .map((moduleKind) => ({
+            id: moduleKind.kind,
+            label: moduleKind.name,
+            summary: moduleKind.description,
+          }))
         return ModuleOperationResult.ok(refs)
       }
       return ModuleOperationResult.failCode(
@@ -287,6 +290,7 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
     kind: moduleKind.kind,
     name: moduleKind.name,
     description: moduleKind.description,
+    ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
     attributes: moduleKind.attributes,
     actions: moduleKind.actions,
     children: moduleKind.children,

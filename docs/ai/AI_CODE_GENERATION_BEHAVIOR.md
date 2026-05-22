@@ -91,6 +91,7 @@ module-semantic/
 - `Interface` / `Impl` 机械命名的类型、class 或导入导出。
 - 超过阈值的 workspace 包 named import；历史热点只能减少，不能继续增加。
 - `spark-ai` / `spark-page-config` 公共入口中过宽的平铺导出；历史热点只能减少，不能继续增加。
+- 核心门面 class 的公共方法面漂移；新增或删除 `ModuleSemanticRuntime` 等稳定入口方法必须同步调整签名白名单与测试。
 - 非 `as const` 类型断言和尖括号类型断言。
 - TypeScript `namespace`。
 - 公共 barrel 使用 `export * from ...`；公共入口必须使用显式 export 清单。

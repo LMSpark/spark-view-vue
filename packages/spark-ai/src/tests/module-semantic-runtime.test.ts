@@ -20,8 +20,10 @@ import {
   PROTOCOL_TOOL_NAMES,
   type ModuleInstanceRef,
   type ModuleActionMetadata,
+  type ModuleSemanticKnowledgeSnapshot,
   type ModulePathContext,
 } from '../module-semantic'
+import type { ModuleSemanticKnowledgeSnapshot as RootModuleSemanticKnowledgeSnapshot } from '../index'
 import type { LlmJsonValue } from '../schema'
 
 type ModuleKindSpy = {
@@ -336,7 +338,134 @@ describe('ModuleSemanticRuntime 直接调用入口', () => {
   })
 })
 
+describe('ModuleSemanticRuntime 知识投影', () => {
+  it('不暴露 prompt 构造 helper 作为 Runtime 公共方法', () => {
+    expect(Reflect.get(ModuleSemanticRuntime.prototype, 'buildKnowledgePromptSnapshot')).toBeUndefined()
+  })
+
+  it('投影模块目录、函数目录和系统提示词快照', () => {
+    const runtime = createRuntime()
+    const snapshot: ModuleSemanticKnowledgeSnapshot = runtime.projectKnowledge()
+    const rootSnapshot: RootModuleSemanticKnowledgeSnapshot = runtime.projectKnowledge()
+
+    expect(snapshot.modules).toEqual([
+      {
+        kind: 'node-tree',
+        name: '节点树',
+        description: '页面节点树',
+        attributeCount: 1,
+        actionCount: 1,
+        childKindCount: 0,
+        children: [],
+      },
+    ])
+    expect(snapshot.functions).toEqual([
+      {
+        action: 'node-tree.getNode',
+        kind: 'node-tree',
+        actionName: 'getNode',
+        description: '按 id 取节点',
+        paramNames: ['id'],
+        requiredParamNames: ['id'],
+        failureCodes: ['NODE_NOT_FOUND'],
+        usageRuleCount: 2,
+        failureModeCount: 1,
+      },
+    ])
+    expect(rootSnapshot.functions[0]?.action).toBe('node-tree.getNode')
+    expect(snapshot.promptSnapshot).toContain('【AI Knowledge Snapshot】')
+    expect(snapshot.promptSnapshot).toContain('不假设、不猜测')
+    expect(snapshot.promptSnapshot).toContain('listChildren("/") -> findInstance')
+    expect(snapshot.promptSnapshot).toContain('node-tree.getNode')
+  })
+
+  it('支持按 kind / keyword 查询函数摘要', () => {
+    const runtime = createRuntime()
+
+    expect(runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toHaveLength(1)
+    expect(runtime.queryKnowledgeFunctions({ keyword: 'getnode' })).toEqual([
+      expect.objectContaining({ action: 'node-tree.getNode' }),
+    ])
+    expect(runtime.queryKnowledgeFunctions({ kind: 'missing' })).toEqual([])
+  })
+
+  it('guideKnowledgeFunction 返回完整动作指南,失败时显式诊断', () => {
+    const runtime = createRuntime()
+
+    const guide = runtime.guideKnowledgeFunction({ action: 'node-tree.getNode' })
+    expect(guide.ok).toBe(true)
+    expect(guide.data).toMatchObject({
+      action: 'node-tree.getNode',
+      kind: 'node-tree',
+      actionName: 'getNode',
+      description: '按 id 取节点',
+      paramsSchema: {
+        type: 'object',
+        required: ['id'],
+        additionalProperties: false,
+      },
+      usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
+      failureModes: [
+        { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
+      ],
+    })
+
+    const missing = runtime.guideKnowledgeFunction({ action: 'node-tree.missing' })
+    expect(missing.ok).toBe(false)
+    expect(missing.checks?.[0]?.code).toBe('FUNCTION_NOT_FOUND')
+  })
+})
+
 describe('ModuleKind 默认协议行为', () => {
+  it('parentKind 让根发现只返回根模块,describeKind 保留父子拓扑', async () => {
+    const runtime = new ModuleSemanticRuntime()
+    runtime.registerKind(new ModuleKind({
+      kind: 'root-kind',
+      name: '根模块',
+      description: '根模块描述',
+      children: ['child-kind'],
+    }))
+    runtime.registerKind(new ModuleKind({
+      kind: 'child-kind',
+      name: '子模块',
+      description: '子模块描述',
+      parentKind: 'root-kind',
+    }))
+
+    const listed = await runtime.executeTool('listChildren', { path: '/' })
+    expect(listed).toMatchObject({
+      ok: true,
+      data: [{ id: 'root-kind', label: '根模块', summary: '根模块描述' }],
+    })
+
+    const root = await runtime.executeTool('describeKind', { kind: 'root-kind' })
+    expect(root).toMatchObject({
+      ok: true,
+      data: expect.objectContaining({ children: ['child-kind'] }),
+    })
+    const child = await runtime.executeTool('describeKind', { kind: 'child-kind' })
+    expect(child).toMatchObject({
+      ok: true,
+      data: expect.objectContaining({ parentKind: 'root-kind' }),
+    })
+  })
+
+  it('children 和 parentKind 声明错误时 fail-fast', () => {
+    expect(() => new ModuleKind({
+      kind: 'invalid-parent',
+      name: 'Invalid Parent',
+      description: 'invalid',
+      parentKind: 'invalid-parent',
+    })).toThrow('parentKind for "invalid-parent" must not point to itself')
+
+    expect(() => new ModuleKind({
+      kind: 'invalid-child',
+      name: 'Invalid Child',
+      description: 'invalid',
+      children: ['child', ' child '],
+    })).toThrow('duplicate child kind "child" on "invalid-child"')
+  })
+
   it('基类直接读写 runner 函数对象属性', async () => {
     const moduleKind = new ModuleKind({
       kind: 'runner-attrs',

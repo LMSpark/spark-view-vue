@@ -308,7 +308,8 @@ function formatKindLine(kind: ModuleKind): string {
   const children = kind.children.length === 0
     ? '[]'
     : `[${kind.children.join(', ')}]`
-  return `- ${kind.kind}(${kind.name}): attrs=${attrs} actions=${actions} children=${children}`
+  const parent = kind.parentKind === undefined ? 'root' : `parent=${kind.parentKind}`
+  return `- ${kind.kind}(${kind.name}; ${parent}): attrs=${attrs} actions=${actions} children=${children}`
 }
 
 /** 格式化动作标签：name 或 name(rules=N,fails=N) */

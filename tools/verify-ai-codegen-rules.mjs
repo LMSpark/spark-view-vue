@@ -69,6 +69,24 @@ const maxPublicSurfaceExportsPerModule = 8
 const maxLayeringExportsPerModule = 3
 const maxPositionalSignatureParams = 4
 
+const publicClassMethodSurfaces = new Map([
+  ['packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts:ModuleSemanticRuntime', new Set([
+    'registerKind',
+    'getLlmTools',
+    'executeTool',
+    'getAttribute',
+    'setAttribute',
+    'invokeAction',
+    'listChildren',
+    'findInstance',
+    'describeKind',
+    'projectKnowledge',
+    'queryKnowledgeModules',
+    'queryKnowledgeFunctions',
+    'guideKnowledgeFunction',
+  ])],
+])
+
 const layeringExportSuffixPattern = /(?:Provider|Resolver|Adapter|Factory|Context|Options|Interface|Impl)$/u
 const mechanicalNameSuffixPattern = /(?:Interface|Impl)$/u
 const repeatedRoleTypeSuffixPattern = /(?:Context|Options|Provider|Resolver|Adapter|Factory|Interface|Impl)$/u
@@ -115,6 +133,7 @@ function scanSource(parsed, violations) {
 
   scanNamedImportConvergence(parsed, violations)
   scanPublicSurfaceConvergence(parsed, violations)
+  scanPublicClassMethodSurfaces(parsed, violations)
   scanSignatureConventions(parsed, violations)
 
   for (const ref of collectModuleReferences(sourceFile)) {
@@ -295,6 +314,38 @@ function scanPublicSurfaceConvergence(parsed, violations) {
   }
 }
 
+function scanPublicClassMethodSurfaces(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
+
+  function visit(node) {
+    if (ts.isClassDeclaration(node) && node.name !== undefined) {
+      const key = `${file}:${node.name.text}`
+      const allowed = publicClassMethodSurfaces.get(key)
+      if (allowed !== undefined) {
+        const actual = new Set()
+        for (const member of node.members) {
+          const methodName = publicCallableMemberName(member)
+          if (methodName !== null) actual.add(methodName)
+        }
+
+        const extra = [...actual].filter((name) => !allowed.has(name)).sort()
+        const missing = [...allowed].filter((name) => !actual.has(name)).sort()
+        if (extra.length > 0 || missing.length > 0) {
+          violations.push({
+            file,
+            line: lineFor(sourceFile, node, lineOffset),
+            message: `public method surface drift for ${node.name.text}; extra=[${extra.join(', ')}] missing=[${missing.join(', ')}]`,
+          })
+        }
+      }
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+}
+
 function scanSignatureConventions(parsed, violations) {
   const { file, sourceFile, lineOffset } = parsed
   if (isTestFile(file)) return
@@ -372,6 +423,25 @@ function functionLikeName(node, sourceFile) {
   }
 
   return null
+}
+
+function publicCallableMemberName(member) {
+  if (
+    !ts.isMethodDeclaration(member)
+    && !ts.isGetAccessorDeclaration(member)
+    && !ts.isSetAccessorDeclaration(member)
+  ) {
+    return null
+  }
+  if (!ts.isIdentifier(member.name) || hasNonPublicModifier(member)) return null
+  return member.name.text
+}
+
+function hasNonPublicModifier(node) {
+  return (node.modifiers ?? []).some((modifier) =>
+    modifier.kind === ts.SyntaxKind.PrivateKeyword
+    || modifier.kind === ts.SyntaxKind.ProtectedKeyword,
+  )
 }
 
 function repeatedTypeRoleName(node) {

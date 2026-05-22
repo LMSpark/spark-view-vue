@@ -112,11 +112,12 @@ const PAYLOAD_CATALOG_ACTION_RUNNERS: Readonly<Record<PayloadCatalogFunctionId, 
 
 export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
 
-  public constructor() {
+  public constructor(options: { readonly parentKind?: string | undefined } = {}) {
     super({
       kind: 'payload-catalog',
       name: 'Page Design Payload Catalog',
       description: '当前页面设计组件参数荷载知识查询。',
+      parentKind: options.parentKind,
       actions: PAYLOAD_CATALOG_ACTIONS,
       children: [],
     })

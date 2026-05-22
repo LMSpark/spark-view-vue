@@ -85,6 +85,7 @@ export type ModuleKindOptions = Readonly<{
   kind: string
   name: string
   description: string
+  parentKind?: string | undefined
   attributes?: readonly ModuleAttributeMetadata[] | undefined
   actions?: readonly ModuleActionMetadata[] | undefined
   children?: readonly string[] | undefined
@@ -117,6 +118,7 @@ export class ModuleKind {
   public readonly kind: string
   public readonly name: string
   public readonly description: string
+  public readonly parentKind?: string | undefined
   public readonly attributes: readonly ModuleAttributeMetadata[]
   public readonly actions: readonly ModuleActionMetadata[]
   public readonly children: readonly string[]
@@ -141,11 +143,12 @@ export class ModuleKind {
     this.kind = options.kind
     this.name = options.name
     this.description = options.description
+    this.parentKind = normalizeParentKind(options.parentKind, options.kind)
     this.attributes = normalizeAttributeMetadata(options.attributes ?? [])
     this.moduleAttributeByName = createNamedMap(this.attributes, 'attribute')
     this.actions = normalizeActionMetadata(options.actions ?? [])
     this.moduleActionByName = createNamedMap(this.actions, 'action')
-    this.children = options.children ?? []
+    this.children = normalizeChildKinds(options.children ?? [], options.kind)
 
     // 默认委托：未提供时使用安全回退
     this.runner = options.runner ?? ((_ctx, actionName) => actionNotImplemented(this.kind, actionName))
@@ -441,6 +444,40 @@ function normalizeActionMetadata(actions: readonly ModuleActionMetadata[]): read
       : { failureModes: action.failureModes.map((mode) => ({ ...mode })) }),
     ...(action.example === undefined ? {} : { example: action.example }),
   }))
+}
+
+/** 规范化父模块声明，禁止空值和自引用。 */
+function normalizeParentKind(parentKind: string | undefined, ownKind: string): string | undefined {
+  if (parentKind === undefined) return undefined
+  const normalized = parentKind.trim()
+  if (normalized.length === 0) {
+    throw new Error(`parentKind for "${ownKind}" must not be empty`)
+  }
+  if (normalized === ownKind) {
+    throw new Error(`parentKind for "${ownKind}" must not point to itself`)
+  }
+  return normalized
+}
+
+/** 规范化子模块声明，复制数组并 fail-fast 拒绝空 kind、重复 kind 和自引用。 */
+function normalizeChildKinds(children: readonly string[], ownKind: string): readonly string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const child of children) {
+    const normalized = child.trim()
+    if (normalized.length === 0) {
+      throw new Error(`child kind for "${ownKind}" must not be empty`)
+    }
+    if (normalized === ownKind) {
+      throw new Error(`child kind for "${ownKind}" must not point to itself`)
+    }
+    if (seen.has(normalized)) {
+      throw new Error(`duplicate child kind "${normalized}" on "${ownKind}"`)
+    }
+    seen.add(normalized)
+    out.push(normalized)
+  }
+  return out
 }
 
 /** 按 name 字段构建索引 Map（重复 name 直接抛错） */

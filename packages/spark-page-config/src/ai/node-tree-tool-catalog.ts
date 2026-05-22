@@ -568,6 +568,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
   public constructor(options: {
     readonly service: PageDesignService
     readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly parentKind?: string | undefined
   }) {
     super({
       kind: 'node-tree',
@@ -575,6 +576,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
       description: '当前页面 SparkNodeTree/rule.json 结构读写;通过 invokeAction 调用 19 个公开方法。',
       attributes: [],
       actions: NODE_TREE_ACTIONS,
+      parentKind: options.parentKind,
       children: [],
     })
     this.service = options.service

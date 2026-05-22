@@ -9,8 +9,9 @@
  *   3. ModuleAttributeMetadata / ModuleActionMetadata（元数据类型）
  *   4. ModuleSemanticRuntime（运行时组合根）
  *   5. 协议工具规约（类型 + 常量）
- *   6. 错误类型（便于业务方 instanceof 判断）
- *   7. ModuleSemanticToolCodec（适配 Host transport）
+ *   6. 知识投影类型（旧 knowledge 体系在 6 工具协议上的当前映射）
+ *   7. 错误类型（便于业务方 instanceof 判断）
+ *   8. ModuleSemanticToolCodec（适配 Host transport）
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -62,7 +63,17 @@ export type {
   ProtocolToolArgs,
 } from './runtime/module-semantic-runtime'
 
-// ── 6. 协议工具规约（类型 + 常量）─────────────────────────────
+// ── 6. 知识投影类型 ─────────────────────────────────────────
+export type {
+  ModuleSemanticKnowledgeFunctionFilter,
+  ModuleSemanticKnowledgeFunctionGuide,
+  ModuleSemanticKnowledgeFunctionGuideInput,
+  ModuleSemanticKnowledgeFunctionSummary,
+  ModuleSemanticKnowledgeModuleSummary,
+  ModuleSemanticKnowledgeSnapshot,
+} from './knowledge/module-semantic-knowledge'
+
+// ── 7. 协议工具规约（类型 + 常量）─────────────────────────────
 export {
   PROTOCOL_TOOL_NAMES,
 } from './internal/protocol-tool-generator'
@@ -72,18 +83,18 @@ export type {
   ProtocolToolName,
 } from './internal/protocol-tool-generator'
 
-// ── 7. describeKind 返回类型 ──────────────────────────────────
+// ── 8. describeKind 返回类型 ──────────────────────────────────
 export type {
   ModuleKindDescription,
 } from './internal/navigator'
 
-// ── 8. 注册错误类型（便于业务方 instanceof 判断）─────────────
+// ── 9. 注册错误类型（便于业务方 instanceof 判断）─────────────
 export {
   ModuleKindConflictError,
   ModuleKindNotFoundError,
 } from './internal/module-kind-registry'
 
-// ── 9. Host 工具编解码器 ─────────────────────────────────────
+// ── 10. Host 工具编解码器 ────────────────────────────────────
 export {
   ModuleSemanticToolCodec,
 } from './host/index'

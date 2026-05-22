@@ -10,7 +10,7 @@
  * │    · 达到 maxToolRounds 上限（安全阀）                                         │
  * │                                                                              │
  * │  单轮执行流程：                                                               │
- * │    1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 描述）           │
+ * │    1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 描述 + 知识快照）│
  * │    2. 提取最新用户消息 → 发送给 LLM（transport.streamTurn）                    │
  * │    3. LLM 返回文本 + 工具调用列表                                              │
  * │    4. 依次执行工具调用（toolCallExecutor.execute）                             │
@@ -82,11 +82,12 @@ export class AiHostToolLoopRunner {
     const maxRounds = this.options.maxToolRounds
     const sessionStore = requireSessionStore(registration)
 
-    // 拼接系统提示词：业务自定义 + 请求携带 + 业务描述
+    // 拼接系统提示词：业务自定义 + 请求携带 + 业务描述 + ModuleKind 知识快照
     const systemPrompt = [
       registration.systemPrompt?.(runtimeContext),
       request.systemPrompt,
       registration.description,
+      registration.runtime.projectKnowledge().promptSnapshot,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
 
     // 首轮消息：仅包含最新用户输入

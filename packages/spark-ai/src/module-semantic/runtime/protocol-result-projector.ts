@@ -64,6 +64,7 @@ export class ProtocolResultProjector {
       kind: result.data.kind,
       name: result.data.name,
       description: result.data.description,
+      ...(result.data.parentKind === undefined ? {} : { parentKind: result.data.parentKind }),
       attributes: result.data.attributes.map((attr) => describeAttributeToJson(attr)),
       actions: result.data.actions.map((action) => describeActionToJson(action)),
       children: [...result.data.children],

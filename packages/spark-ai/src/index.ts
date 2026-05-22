@@ -108,6 +108,15 @@ export type {
   ProtocolToolArgs,
 } from './module-semantic/runtime/module-semantic-runtime'
 
+export type {
+  ModuleSemanticKnowledgeFunctionFilter,
+  ModuleSemanticKnowledgeFunctionGuide,
+  ModuleSemanticKnowledgeFunctionGuideInput,
+  ModuleSemanticKnowledgeFunctionSummary,
+  ModuleSemanticKnowledgeModuleSummary,
+  ModuleSemanticKnowledgeSnapshot,
+} from './module-semantic/knowledge/module-semantic-knowledge'
+
 export {
   AiHostBusinessRegistration,
   AiHostBusinessRuntimeContext,

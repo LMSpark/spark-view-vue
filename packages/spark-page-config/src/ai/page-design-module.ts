@@ -1,12 +1,13 @@
 /**
  * PageDesign module-semantic 业务注册。
  *
- * PageDesign 只注册到 Host 一次(moduleId=pageDesign),内部暴露 5 个扁平 kind:
- * lifecycle / text-model / payload-catalog / node-tree / dataset。
+ * PageDesign 只注册到 Host 一次(moduleId=pageDesign),内部暴露 1 个根 kind 和 5 个子 kind:
+ * pageDesign -> lifecycle / text-model / payload-catalog / node-tree / dataset。
  *
  * LLM 固定走 6 个协议工具:
- * listChildren("/") → findInstance("/", kind, {}) → describeKind(kind) →
- * invokeAction("/<kind>[<pageId>]", actionName, args)。
+ * listChildren("/") → findInstance("/", "pageDesign", {}) →
+ * listChildren("/pageDesign[<pageId>]") → describeKind(childKind) →
+ * invokeAction("/pageDesign[<pageId>]/<childKind>[<pageId>]", actionName, args)。
  */
 
 import {
@@ -17,7 +18,10 @@ import {
   type AiHostFunctionCallResult,
 } from '@spark-view/spark-ai/host'
 import {
+  ModuleKind,
+  ModuleOperationResult,
   ModuleSemanticRuntime,
+  type ModuleInstanceRef,
 } from '@spark-view/spark-ai/module-semantic'
 import type { ModulePathContext } from '@spark-view/spark-ai/module-semantic'
 import type {
@@ -31,15 +35,17 @@ import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
 import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
 import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
 import { createLeaveRequestBusinessRegistration } from './leave-request'
+import { PAGE_DESIGN_CHILD_MODULES, PAGE_DESIGN_ROOT_KIND } from './page-design-kind-ids'
 
-export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
+export const PAGE_DESIGN_MODULE_ID = PAGE_DESIGN_ROOT_KIND
 
 const AI_FUNCTION_ARCHITECTURE_PROMPT = `══ AI Host: module-semantic boundary ══
 
   - Host 只暴露 6 个稳定协议工具：listChildren、findInstance、describeKind、invokeAction、getAttribute、setAttribute。
-  - 当前业务使用扁平 kind：lifecycle / text-model / payload-catalog / node-tree / dataset。
-  - 先用 listChildren("/") 发现 kind，再用 findInstance("/", kind, {}) 取得当前业务实例，再用 describeKind(kind) 查看 action 细节。
-  - 调用业务动作统一使用 invokeAction(path, actionName, args)，path 形如 /<kind>[<当前页面ID>]。
+  - 当前业务根 kind 是 pageDesign，子 kind 是 lifecycle / text-model / payload-catalog / node-tree / dataset。
+  - 先用 listChildren("/") 发现 pageDesign，再用 findInstance("/", "pageDesign", {}) 取得当前业务实例。
+  - 子模块发现使用 listChildren("/pageDesign[<当前页面ID>]") 或 findInstance("/pageDesign[<当前页面ID>]", childKind, {})。
+  - 调用业务动作统一使用 invokeAction(path, actionName, args)，推荐路径形如 /pageDesign[<当前页面ID>]/<childKind>[<当前页面ID>]。
   - AI 会话宿主负责模型通讯、tool schema 投影、函数选择、重试、追问、暂停与恢复。
   - Host 负责 AI 会话记录、协议工具调用记录和执行结果回传给 LLM。
   - 调用链路是：pageDesign 业务注册 -> Host 会话 -> LLM 编排协议工具 -> ModuleSemanticRuntime 路由 -> pageDesign ModuleKind.runner 执行。
@@ -70,22 +76,29 @@ export function createPageDesignBusinessRegistration(
   })
   const runtime = new ModuleSemanticRuntime()
 
+  runtime.registerKind(new PageDesignRootModuleKind())
   runtime.registerKind(new PageDesignLifecycleModuleKind({
     service,
     contextFactory: toServiceContext,
+    parentKind: PAGE_DESIGN_ROOT_KIND,
   }))
   runtime.registerKind(new PageDesignTextModelModuleKind({
     service,
     contextFactory: toServiceContext,
+    parentKind: PAGE_DESIGN_ROOT_KIND,
   }))
-  runtime.registerKind(new PageDesignPayloadCatalogModuleKind())
+  runtime.registerKind(new PageDesignPayloadCatalogModuleKind({
+    parentKind: PAGE_DESIGN_ROOT_KIND,
+  }))
   runtime.registerKind(new PageDesignNodeTreeModuleKind({
     service,
     contextFactory: toServiceContext,
+    parentKind: PAGE_DESIGN_ROOT_KIND,
   }))
   runtime.registerKind(new PageDesignDatasetModuleKind({
     service,
     contextFactory: toServiceContext,
+    parentKind: PAGE_DESIGN_ROOT_KIND,
   }))
 
   return {
@@ -138,7 +151,7 @@ function createPageDesignSystemPrompt(): string {
 ══ pageDesign: 函数纪律 ══
 
   - 只使用当前 tool schema 中的协议工具；业务动作必须通过 invokeAction 调用
-  - 当前会话仅允许 pageDesign kind：lifecycle / text-model / dataset / node-tree / payload-catalog
+  - 当前会话仅允许 pageDesign 根 kind 及其子 kind：lifecycle / text-model / dataset / node-tree / payload-catalog
   - 禁止调用生成模式动作：datatable.* / dataview.* / relation.* / schema.*
   - 在本会话中，如遇 NO_DATASET_EDIT / NO_NODE_TREE，请基于当前会话状态继续修复
   - 首轮可调用 lifecycle.describeProgress 了解当前状态；复杂页面设计先调用 lifecycle.describeDesignFlow 查询 100 步流程；函数参数以当前投影的 tool schema 和 description 为准，之后不要重复能力探测
@@ -192,6 +205,52 @@ ${PAGE_DESIGN_FLOW_PROMPT}
 
 ${DATA_FIRST_SEQUENCE_PROMPT}
 `
+}
+
+class PageDesignRootModuleKind extends ModuleKind {
+  public constructor() {
+    super({
+      kind: PAGE_DESIGN_ROOT_KIND,
+      name: 'Page Design',
+      description: '单页面四文件编辑根模块，子模块负责 lifecycle、文本模型、组件荷载、节点树和数据集。',
+      children: PAGE_DESIGN_CHILD_MODULES.map((item) => item.kind),
+    })
+    this.list = (ctx, childKind) => ModuleOperationResult.ok(childModuleRefs(ctx, childKind))
+    this.find = (ctx, childKind) => {
+      if (childKind === PAGE_DESIGN_ROOT_KIND && ctx.segments.length === 0) {
+        const ref = this.createCurrentInstanceRef(ctx)
+        return ModuleOperationResult.ok(ref === null ? [] : [ref])
+      }
+      return ModuleOperationResult.ok(childModuleRefs(ctx, childKind))
+    }
+  }
+
+  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+    const pageId = pageDesignPageId(ctx)
+    if (pageId === null) return null
+    return {
+      id: pageId,
+      label: '当前页面设计业务',
+      summary: 'PageDesign 根模块实例。',
+    }
+  }
+}
+
+function childModuleRefs(ctx: ModulePathContext, childKind?: string): readonly ModuleInstanceRef[] {
+  const pageId = pageDesignPageId(ctx)
+  if (pageId === null) return []
+  return PAGE_DESIGN_CHILD_MODULES
+    .filter((item) => childKind === undefined || item.kind === childKind)
+    .map((item) => ({
+      id: pageId,
+      label: item.label,
+      summary: `${item.kind}: ${item.summary}`,
+    }))
+}
+
+function pageDesignPageId(ctx: ModulePathContext): string | null {
+  const pageId = ctx.host?.moduleInstanceId ?? ctx.segment.id
+  return pageId.length === 0 ? null : pageId
 }
 
 function toServiceContext(ctx: ModulePathContext | AiHostBusinessRuntimeContext): PageDesignServiceContext {

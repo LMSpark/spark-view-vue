@@ -233,6 +233,46 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       },
     })
   })
+
+  it('tool loop systemPrompt 自动拼入 ModuleKind 知识快照和不猜测规则', async () => {
+    const { registration: baseRegistration } = createRegistration()
+    const registration: AiHostBusinessRegistration = {
+      ...baseRegistration,
+      systemPrompt: () => '运行时提示',
+    }
+    await startRegistrationSession(registration, CONTEXT)
+    let systemPrompt = ''
+    const transport: AiHostTransport = {
+      streamTurn: (input) => {
+        systemPrompt = input.systemPrompt
+        return Promise.resolve({
+          text: 'ok',
+          toolCalls: [],
+        })
+      },
+      appendMessages: () => Promise.resolve(),
+    }
+    const runner = new AiHostToolLoopRunner({
+      registry: { get: () => registration, list: () => [registration] },
+      transport,
+      maxToolRounds: 1,
+    })
+
+    await runner.runToolLoop({
+      registration,
+      scope: SCOPE,
+      request: { historyMsgs: [], systemPrompt: '请求提示' },
+      turn: TURN,
+      clearSelected: () => undefined,
+    })
+
+    expect(systemPrompt).toContain('运行时提示')
+    expect(systemPrompt).toContain('请求提示')
+    expect(systemPrompt).toContain('页面设计')
+    expect(systemPrompt).toContain('【AI Knowledge Snapshot】')
+    expect(systemPrompt).toContain('不假设、不猜测')
+    expect(systemPrompt).toContain('node-tree.getNode')
+  })
 })
 
 describe('ModuleSemanticToolCodec', () => {

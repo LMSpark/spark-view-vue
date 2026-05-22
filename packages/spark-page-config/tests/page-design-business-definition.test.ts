@@ -110,7 +110,7 @@ describe('pageDesign host business registration', () => {
     expect(service.getState(context).phase).toBe('editing')
   })
 
-  it('registers pageDesign as five flat module-semantic kinds', async () => {
+  it('registers pageDesign as root kind with five child module-semantic kinds', async () => {
     const { host } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext('page-designer')
@@ -129,12 +129,30 @@ describe('pageDesign host business registration', () => {
 
     const listed = await registration.runtime.executeTool('listChildren', { path: '/' }, context)
     const ids = getArray(listed).map((entry) => isRecord(entry) ? entry['id'] : null)
-    expect(ids).toEqual(['lifecycle', 'text-model', 'payload-catalog', 'node-tree', 'dataset'])
+    expect(ids).toEqual([PAGE_DESIGN_MODULE_ID])
 
-    for (const kind of ids) {
-      if (typeof kind !== 'string') throw new Error('kind id missing')
+    const rootFound = await registration.runtime.executeTool('findInstance', {
+      path: '/',
+      childKind: PAGE_DESIGN_MODULE_ID,
+      query: {},
+    }, context)
+    const rootInstances = getArray(rootFound)
+    const rootInstance = rootInstances[0]
+    expect(isRecord(rootInstance) ? rootInstance['id'] : null).toBe('page-designer')
+
+    const rootDescription = getRecord(await registration.runtime.executeTool('describeKind', {
+      kind: PAGE_DESIGN_MODULE_ID,
+    }, context))
+    expect(rootDescription['children']).toEqual(['lifecycle', 'text-model', 'payload-catalog', 'node-tree', 'dataset'])
+
+    const childRefs = getArray(await registration.runtime.executeTool('listChildren', {
+      path: '/pageDesign[page-designer]',
+    }, context))
+    expect(childRefs).toHaveLength(5)
+
+    for (const kind of ['lifecycle', 'text-model', 'payload-catalog', 'node-tree', 'dataset']) {
       const found = await registration.runtime.executeTool('findInstance', {
-        path: '/',
+        path: '/pageDesign[page-designer]',
         childKind: kind,
         query: {},
       }, context)
@@ -142,7 +160,9 @@ describe('pageDesign host business registration', () => {
       expect(isRecord(instances[0]) ? instances[0]['id'] : null).toBe('page-designer')
 
       const described = await registration.runtime.executeTool('describeKind', { kind }, context)
-      expectActionMetadataComplete(getRecord(described))
+      const description = getRecord(described)
+      expect(description['parentKind']).toBe(PAGE_DESIGN_MODULE_ID)
+      expectActionMetadataComplete(description)
     }
   })
 
@@ -153,21 +173,21 @@ describe('pageDesign host business registration', () => {
     await startRegistrationSession(registration, context)
 
     const bootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: '/lifecycle[page-designer]',
+      path: '/pageDesign[page-designer]/lifecycle[page-designer]',
       actionName: 'bootstrap',
       args: {},
     }, context)
     expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
 
     const designFlow = await registration.runtime.executeTool('invokeAction', {
-      path: '/lifecycle[page-designer]',
+      path: '/pageDesign[page-designer]/lifecycle[page-designer]',
       actionName: 'describeDesignFlow',
       args: { phase: '入口', afterStep: 10 },
     }, context)
     expect(resultStepCount(getRecord(designFlow))).toBe(10)
 
     const writeScript = await registration.runtime.executeTool('invokeAction', {
-      path: '/text-model[page-designer]',
+      path: '/pageDesign[page-designer]/text-model[page-designer]',
       actionName: 'writeScript',
       args: { content: 'export default { mounted() {} }' },
     }, context)
@@ -175,28 +195,28 @@ describe('pageDesign host business registration', () => {
     expect(reads().script).toBe('export default { mounted() {} }')
 
     const readScript = await registration.runtime.executeTool('invokeAction', {
-      path: '/text-model[page-designer]',
+      path: '/pageDesign[page-designer]/text-model[page-designer]',
       actionName: 'readScript',
       args: {},
     }, context)
     expect(readScript).toMatchObject({ ok: true, data: { content: 'export default { mounted() {} }' } })
 
     const payloads = await registration.runtime.executeTool('invokeAction', {
-      path: '/payload-catalog[page-designer]',
+      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
       actionName: 'queryPayloads',
       args: { category: 'container', limit: 1 },
     }, context)
     expect(resultItemCount(getRecord(payloads))).toBeLessThanOrEqual(1)
 
     const countNodes = await registration.runtime.executeTool('invokeAction', {
-      path: '/node-tree[page-designer]',
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
       actionName: 'countNodes',
       args: {},
     }, context)
     expect(countNodes).toMatchObject({ ok: true, data: 1 })
 
     const listTables = await registration.runtime.executeTool('invokeAction', {
-      path: '/dataset[page-designer]',
+      path: '/pageDesign[page-designer]/dataset[page-designer]',
       actionName: 'listTables',
       args: {},
     }, context)
@@ -214,7 +234,7 @@ describe('pageDesign host business registration', () => {
     await startRegistrationSession(registration, context)
 
     const bootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: '/lifecycle[page-designer]',
+      path: '/pageDesign[page-designer]/lifecycle[page-designer]',
       actionName: 'bootstrap',
       args: {},
     }, context)
@@ -238,17 +258,17 @@ describe('pageDesign host business registration', () => {
     await startRegistrationSession(registration, contextB)
 
     await registration.runtime.executeTool('invokeAction', {
-      path: '/lifecycle[page-a]',
+      path: '/pageDesign[page-a]/lifecycle[page-a]',
       actionName: 'bootstrap',
       args: {},
     }, contextA)
     await registration.runtime.executeTool('invokeAction', {
-      path: '/lifecycle[page-b]',
+      path: '/pageDesign[page-b]/lifecycle[page-b]',
       actionName: 'bootstrap',
       args: {},
     }, contextB)
     await registration.runtime.executeTool('invokeAction', {
-      path: '/text-model[page-a]',
+      path: '/pageDesign[page-a]/text-model[page-a]',
       actionName: 'writeScript',
       args: { content: 'export default { page: "A", changed: true }' },
     }, contextA)
@@ -259,7 +279,7 @@ describe('pageDesign host business registration', () => {
     const nestedContext = hostContext('lmspark/homepage')
     await startRegistrationSession(registration, nestedContext)
     const nestedBootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: '/lifecycle[lmspark/homepage]',
+      path: '/pageDesign[lmspark/homepage]/lifecycle[lmspark/homepage]',
       actionName: 'bootstrap',
       args: {},
     }, nestedContext)

@@ -29,6 +29,15 @@ import {
   ProtocolToolGenerator,
   type ModuleSemanticToolSpec,
 } from '../internal/protocol-tool-generator'
+import {
+  ModuleSemanticKnowledgeProjector,
+  type ModuleSemanticKnowledgeFunctionFilter,
+  type ModuleSemanticKnowledgeFunctionGuide,
+  type ModuleSemanticKnowledgeFunctionGuideInput,
+  type ModuleSemanticKnowledgeFunctionSummary,
+  type ModuleSemanticKnowledgeModuleSummary,
+  type ModuleSemanticKnowledgeSnapshot,
+} from '../knowledge/module-semantic-knowledge'
 import type {
   ModuleHostContext,
   ModuleInstanceQuery,
@@ -53,6 +62,7 @@ export class ModuleSemanticRuntime {
   private readonly navigator: Navigator
   private readonly toolGenerator: ProtocolToolGenerator
   private readonly toolRouter: ProtocolToolRouter
+  private readonly knowledge: ModuleSemanticKnowledgeProjector
 
   public constructor() {
     this.kinds = new ModuleKindRegistry()
@@ -61,6 +71,7 @@ export class ModuleSemanticRuntime {
     this.actions = new ActionInvoker(this.navigator)
     this.toolGenerator = new ProtocolToolGenerator(this.kinds)
     this.toolRouter = new ProtocolToolRouter(this.attributes, this.actions, this.navigator)
+    this.knowledge = new ModuleSemanticKnowledgeProjector(this.kinds)
   }
 
   /* ── 注册 ──────────────────────────────────────────────── */
@@ -139,5 +150,31 @@ export class ModuleSemanticRuntime {
   /** 直接查询 kind 元数据 */
   public describeKind(kind: string): ModuleOperationResult<ModuleKindDescription> {
     return this.navigator.describeKind(kind)
+  }
+
+  /* ── 知识投影（旧 knowledge 体系在固定 6 工具协议上的映射）──────── */
+
+  /** 投影当前注册表为 LLM 可读的知识快照。 */
+  public projectKnowledge(): ModuleSemanticKnowledgeSnapshot {
+    return this.knowledge.project()
+  }
+
+  /** 查询模块目录摘要，等价于旧 knowledge.queryModules 的当前协议映射。 */
+  public queryKnowledgeModules(): readonly ModuleSemanticKnowledgeModuleSummary[] {
+    return this.knowledge.queryModules()
+  }
+
+  /** 查询函数目录摘要，等价于旧 knowledge.queryFunctions 的当前协议映射。 */
+  public queryKnowledgeFunctions(
+    filter: ModuleSemanticKnowledgeFunctionFilter = {},
+  ): readonly ModuleSemanticKnowledgeFunctionSummary[] {
+    return this.knowledge.queryFunctions(filter)
+  }
+
+  /** 查询单个函数完整指南，等价于旧 knowledge.guideFunction 的当前协议映射。 */
+  public guideKnowledgeFunction(
+    input: ModuleSemanticKnowledgeFunctionGuideInput,
+  ): ModuleOperationResult<ModuleSemanticKnowledgeFunctionGuide> {
+    return this.knowledge.guideFunction(input)
   }
 }

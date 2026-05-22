@@ -1876,11 +1876,13 @@ export class PageDesignDatasetModuleKind extends ModuleKind {
   public constructor(options: {
     readonly service: PageDesignService
     readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly parentKind?: string | undefined
   }) {
     super({
       kind: 'dataset',
       name: 'Page Design DataSet',
       description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
+      parentKind: options.parentKind,
       actions: DATASET_ACTIONS,
       children: [],
     })
