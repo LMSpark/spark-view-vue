@@ -3,8 +3,8 @@
  *
  * Package root keeps only the minimal config-loader runtime API. Feature
  * consumers use explicit subpaths including page/loading, page/model,
- * page/workspace, page/navigation, page/sandbox, page/services, and
- * assistant/registrations.
+ * capabilities, page/navigation, page/sandbox, page/services, and
+ * registrations.
  */
 
 export {

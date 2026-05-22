@@ -287,7 +287,7 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-view/spark-page-config/page/workspace'
+} from '@spark-view/spark-page-config/capabilities'
 import type { DevState } from './useDevState'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type {

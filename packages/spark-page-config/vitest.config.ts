@@ -18,11 +18,11 @@ export default defineConfig({
       { find: /^@spark-view\/spark-page-config$/, replacement: resolve(__dirname, './src/index.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/model$/, replacement: resolve(__dirname, './src/page/model/index.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/loading$/, replacement: resolve(__dirname, './src/page/loading/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/page\/workspace$/, replacement: resolve(__dirname, './src/page/workspace/index.ts') },
+      { find: /^@spark-view\/spark-page-config\/capabilities$/, replacement: resolve(__dirname, './src/capabilities/index.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/navigation$/, replacement: resolve(__dirname, './src/page/navigation/index.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/sandbox$/, replacement: resolve(__dirname, './src/page/sandbox/index.ts') },
       { find: /^@spark-view\/spark-page-config\/page\/services$/, replacement: resolve(__dirname, './src/page/services/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/assistant\/registrations$/, replacement: resolve(__dirname, './src/assistant/registrations/index.ts') },
+      { find: /^@spark-view\/spark-page-config\/registrations$/, replacement: resolve(__dirname, './src/registrations/index.ts') },
     ]
   }
 })

@@ -24,9 +24,9 @@
         <el-select v-model="categoryFilter" clearable placeholder="分类筛选" style="width: 140px">
           <el-option label="容器" value="container" />
           <el-option label="字段" value="field" />
-          <el-option label="显示" value="display" />
-          <el-option label="布局" value="layout" />
-          <el-option label="其他" value="other" />
+          <el-option label="分组" value="group" />
+          <el-option label="元概念" value="meta" />
+          <el-option label="功能" value="feature" />
         </el-select>
         <el-radio-group v-model="viewMode" size="small">
           <el-radio-button value="card">卡片</el-radio-button>
@@ -81,19 +81,15 @@
           <el-tag v-if="skill.props?.length" size="small" type="info">{{ skill.props.length }} props</el-tag>
         </div>
         <p v-if="skill.description" class="skill-card__desc">{{ skill.description }}</p>
-        <div v-if="skill.provides.length || skill.consumes.length" class="skill-card__caps">
-          <el-tag v-for="p in skill.provides" :key="'p-'+p" size="small" type="success" effect="plain">↑ {{ p }}</el-tag>
-          <el-tag v-for="c in skill.consumes" :key="'c-'+c" size="small" type="warning" effect="plain">↓ {{ c }}</el-tag>
+        <div v-if="skill.provides?.length || skill.consumes?.length" class="skill-card__caps">
+          <el-tag v-for="p in skill.provides ?? []" :key="'p-'+p" size="small" type="success" effect="plain">↑ {{ p }}</el-tag>
+          <el-tag v-for="c in skill.consumes ?? []" :key="'c-'+c" size="small" type="warning" effect="plain">↓ {{ c }}</el-tag>
         </div>
 
         <!-- 展开的 Props 详情 -->
         <div v-if="selectedType === skill.type && skill.props?.length" class="skill-card__props">
           <PropsTable :props="skill.props" @type-click="handleTypeClick" />
 
-          <div v-if="skill.example" class="skill-card__example">
-            <strong>配置示例：</strong>
-            <pre><code>{{ formatJson(skill.example) }}</code></pre>
-          </div>
         </div>
       </div>
     </div>
@@ -106,7 +102,7 @@
       border
       highlight-current-row
       row-key="type"
-      @current-change="(row: SkillMeta | null) => selectedType = row?.type ?? ''"
+      @current-change="(row: RuleEditorComponentCatalogEntry | null) => selectedType = row?.type ?? ''"
       style="width: 100%"
     >
       <el-table-column prop="type" label="组件" width="180" sortable>
@@ -123,8 +119,8 @@
       </el-table-column>
       <el-table-column label="能力" width="240">
         <template #default="{ row }">
-          <el-tag v-for="p in row.provides" :key="'p-'+p" size="small" type="success" effect="plain" style="margin: 1px 2px">↑{{ p }}</el-tag>
-          <el-tag v-for="c in row.consumes" :key="'c-'+c" size="small" type="warning" effect="plain" style="margin: 1px 2px">↓{{ c }}</el-tag>
+          <el-tag v-for="p in row.provides ?? []" :key="'p-'+p" size="small" type="success" effect="plain" style="margin: 1px 2px">↑{{ p }}</el-tag>
+          <el-tag v-for="c in row.consumes ?? []" :key="'c-'+c" size="small" type="warning" effect="plain" style="margin: 1px 2px">↓{{ c }}</el-tag>
         </template>
       </el-table-column>
     </el-table>
@@ -133,10 +129,6 @@
     <div v-if="viewMode === 'table' && selectedSkill?.props?.length" class="skill-catalog__detail">
       <h3><code>{{ selectedSkill.type }}</code> Props</h3>
       <PropsTable :props="selectedSkill.props" @type-click="handleTypeClick" />
-      <div v-if="selectedSkill.example" class="skill-card__example">
-        <strong>配置示例：</strong>
-        <pre><code>{{ formatJson(selectedSkill.example) }}</code></pre>
-      </div>
     </div>
   </div>
 </template>
@@ -144,7 +136,8 @@
 <script setup lang="ts">
 import { ref, computed, nextTick, defineComponent, h, type ObjectEmitsOptions } from 'vue'
 import { Search } from '@element-plus/icons-vue'
-import { skillCatalog, type SkillMeta, type PropMeta } from 'virtual:spark-skill-catalog'
+import type { RuleEditorComponentCatalog, RuleEditorComponentCatalogEntry, RuleEditorComponentCatalogProp } from '@spark-view/spark-page-config/capabilities'
+import componentCatalog from '@spark-view/spark-page-config/registrations/payloads/component-catalog.json'
 
 // ── 类型字典 ──────────────────────────────────────────────────────────────
 
@@ -155,7 +148,7 @@ interface TypeDictEntry {
 }
 
 interface PropsTableProps {
-  readonly props: PropMeta[]
+  readonly props: readonly RuleEditorComponentCatalogProp[]
 }
 
 interface PropsTableEmits extends ObjectEmitsOptions {
@@ -381,7 +374,7 @@ const PropsTable = defineComponent<PropsTableProps, PropsTableEmits>(
           class: { 'props-table__event': /^on[A-Z]/.test(prop.name) },
         }, [
           h('td', [h('code', prop.name)]),
-          h('td', createTypeCells(prop.type, emit)),
+          h('td', createTypeCells(prop.type ?? 'unknown', emit)),
           h('td', prop.required ? '✓' : ''),
           h('td', prop.default ? [h('code', prop.default)] : []),
           h('td', prop.description ?? ''),
@@ -421,22 +414,17 @@ const searchText = ref('')
 const categoryFilter = ref('')
 const selectedType = ref('')
 const viewMode = ref<'card' | 'table'>('card')
+const pageDesignComponentCatalog = componentCatalog as RuleEditorComponentCatalog
 
-const skills = computed(() => [...skillCatalog].sort((a, b) => a.type.localeCompare(b.type)))
+const skills = computed(() => Object.values(pageDesignComponentCatalog.components)
+  .filter(s => s.type.trim().length > 0 && s.internal !== true && s.configurable !== false)
+  .sort((a, b) => a.type.localeCompare(b.type)))
 
 const skillsWithProps = computed(() => skills.value.filter(s => s.props?.length))
 
 const totalProps = computed(() =>
   skills.value.reduce((sum, s) => sum + (s.props?.length ?? 0), 0),
 )
-
-function categorize(type: string): string {
-  if (/^r-(table|form|detail|tree|dialog|drawer)/.test(type)) return 'container'
-  if (/^r-(text|number|select|date|switch|checkbox|radio|upload|cascader)/.test(type)) return 'field'
-  if (/^(display-|el-statistic|el-progress|el-tag)/.test(type)) return 'display'
-  if (/^r-(tabs|tab-pane|collapse|steps|section|grid|toolbar|filter|actions|footer|header|sidebar)/.test(type)) return 'layout'
-  return 'other'
-}
 
 const filteredSkills = computed(() => {
   let list = skills.value
@@ -447,7 +435,7 @@ const filteredSkills = computed(() => {
     )
   }
   if (categoryFilter.value) {
-    list = list.filter(s => categorize(s.type) === categoryFilter.value)
+    list = list.filter(s => s.category === categoryFilter.value)
   }
   return list
 })
@@ -456,16 +444,8 @@ const selectedSkill = computed(() =>
   selectedType.value ? skills.value.find(s => s.type === selectedType.value) : undefined,
 )
 
-function sortByProps(a: SkillMeta, b: SkillMeta): number {
+function sortByProps(a: RuleEditorComponentCatalogEntry, b: RuleEditorComponentCatalogEntry): number {
   return (a.props?.length ?? 0) - (b.props?.length ?? 0)
-}
-
-function formatJson(str: string): string {
-  try {
-    return JSON.stringify(JSON.parse(str), null, 2)
-  } catch {
-    return str
-  }
 }
 </script>
 

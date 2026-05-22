@@ -39,7 +39,7 @@ import {
   reconcileDesignerTableUiState,
   summarizePageDesignFlowPhases,
   type RuleEditorComponentMetadata,
-} from '@spark-view/spark-page-config/page/workspace'
+} from '@spark-view/spark-page-config/capabilities'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()

@@ -1,6 +1,6 @@
 /**
  * Vite Plugin: SPARK 组件自动注册代码生成器
- * 
+ *
  * ## 核心功能
  * - **编译时扫描**: 在构建时扫描所有 Vue 组件
  * - **智能分析**: 分析文件大小、命名规则、依赖关系
@@ -8,12 +8,12 @@
  * - **零运行时开销**: 所有逻辑在构建时完成
  * - **类型安全**: 生成的代码包含完整的 TypeScript 类型
  * - **HMR 支持**: 开发时自动重新生成
- * 
+ *
  * ## 使用方式
  * ```typescript
  * // vite.config.ts
  * import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
- * 
+ *
  * export default defineConfig({
  *   plugins: [
  *     sparkComponentsPlugin({
@@ -25,33 +25,29 @@
  *   ]
  * })
  * ```
- * 
+ *
  * ## 生成的代码
  * ```typescript
  * // virtual:spark-components
  * import { Spark } from '@spark-view/spark-component'
  * import PageRenderer from './components/PageRenderer.vue'
- * 
+ *
  * export function registerComponents() {
  *   const registry = Spark.getRegistry()
  *   registry.register('page-renderer', PageRenderer)
  * }
  * ```
- * 
+ *
  * @module vite-plugin-spark-components
  * @author SPARK Team
  * @since 1.1.0
  */
 
 import type { Plugin, ResolvedConfig } from 'vite'
-import { readFileSync, existsSync, statSync } from 'node:fs'
+import { existsSync, statSync } from 'node:fs'
 import { resolve, basename } from 'node:path'
 import { globSync } from 'glob'
-import {
-  toKebabCase,
-  inferSkillType,
-  buildImplicitSkillDescription,
-} from '../packages/vite-plugin-spark-catalog/src/index'
+import { toKebabCase } from '../packages/vite-plugin-spark-catalog/src/utils'
 
 /* -----------------------------------------------------------------------------
  * 简单日志工具
@@ -79,58 +75,6 @@ const logger = createLogger('SparkComponentsPlugin')
 export type LoadStrategy = 'sync' | 'async'
 
 /**
- * Skill 元数据（从 .vue 文件顶部 JSDoc 注释自动提取）
- *
- * 在 .vue 文件顶部添加如下注释即可被插件识别：
- * ```
- * /**
- *  * @skill dept-tree
- *  * @description 部门组织树，支持懒加载、拖拽、节点点击联动子表
- *  * @provides spark:capability:data-source
- *  * @provides spark:capability:field-context
- *  * @consumes spark:capability:page-dataset
- *  * @input { dataViewKey: string, nodeKey?: string, defaultExpandAll?: boolean }
- *  * /
- * ```
- */
-/**
- * 组件 Props 属性元数据（从 defineProps<Props> 类型自动提取）
- */
-export interface PropMeta {
-  /** 属性名 */
-  name: string
-  /** TypeScript 类型字符串 */
-  type: string
-  /** 是否必填 */
-  required: boolean
-  /** JSDoc 描述 */
-  description?: string
-  /** withDefaults 默认值（字符串形式） */
-  default?: string
-}
-
-export interface SkillMeta {
-  /** Skill 注册名（默认取 kebab-case 文件名，@skill 标签可覆盖） */
-  type: string
-  /** Skill 功能描述（@description 标签） */
-  description?: string
-  /** 该组件 provide 的能力键列表（@provides 标签，可多行） */
-  provides: string[]
-  /** 该组件 consume 的能力键列表（@consumes 标签，可多行） */
-  consumes: string[]
-  /** 输入参数 Schema 描述（@input 标签，JSON-like 格式字符串） */
-  inputSchema?: string
-  /** 调用示例（@example 标签，JSON 格式字符串） */
-  example?: string
-  /** 组件 Props 定义（从 defineProps<Props> 类型自动提取） */
-  props?: PropMeta[]
-}
-
-
-
-/* REMOVED: PROP_TYPE_GLOSSARY — 已迁移到 vite-plugin-spark-catalog (SHARED_TYPE_DEFINITIONS) */
-
-/**
  * 组件元数据
  */
 export interface ComponentMetadata {
@@ -150,8 +94,6 @@ export interface ComponentMetadata {
   importStatement: string
   /** 注册语句 */
   registerStatement: string
-  /** Skill 元数据（显式 JSDoc 注释优先，缺失时按组件路径自动补全） */
-  skillMeta: SkillMeta | null
 }
 
 /**
@@ -163,43 +105,43 @@ export interface SparkComponentsPluginOptions {
    * @default ['./features/**\/*.vue', './src/components/**\/*.vue']
    */
   patterns?: string[]
-  
+
   /**
    * 同步加载的组件列表（支持通配符）
    * @default ['PageRenderer', 'SparkComponentRenderer', 'ErrorFallback']
    */
   syncComponents?: string[]
-  
+
   /**
    * 异步加载的组件列表（支持通配符）
    * @default ['*Demo', 'Capability*']
    */
   asyncComponents?: string[]
-  
+
   /**
    * 文件大小阈值（KB），超过此大小自动异步加载
    * @default 50
    */
   sizeThreshold?: number
-  
+
   /**
    * 排除的组件（支持通配符）
    * @default `['App.vue', '**​/node_modules/**']`
    */
   exclude?: string[]
-  
+
   /**
    * 生成的虚拟模块 ID
    * @default 'virtual:spark-components'
    */
   virtualModuleId?: string
-  
+
   /**
    * 是否生成 TypeScript 类型定义
    * @default true
    */
   generateTypes?: boolean
-  
+
   /**
    * 是否在控制台输出详细日志
    * @default false
@@ -274,7 +216,7 @@ function generateImportStatement(
     .split('-')
     .map((part, i) => i === 0 ? part : part.charAt(0).toUpperCase() + part.slice(1))
     .join('')
-  
+
   if (strategy === 'sync') {
     return `import ${varName} from '${path}'`
   } else {
@@ -283,67 +225,6 @@ function generateImportStatement(
 }
 
 
-
-/**
- * 从 .vue 文件顶部的 JSDoc 注释中提取 Skill 元数据
- *
- * 只读取文件前 60 行，避免全量读取大文件。
- * 未显式标注时按组件路径自动生成默认 Skill 元数据。
- */
-function parseSkillMeta(absolutePath: string, fallbackType: string): SkillMeta | null {
-  let content: string
-  try {
-    // 只读前 60 行即可覆盖文件头部注释
-    const raw = readFileSync(absolutePath, 'utf-8')
-    content = raw.split('\n').slice(0, 60).join('\n')
-  } catch {
-    return null
-  }
-
-  const inferredType = inferSkillType(absolutePath, fallbackType)
-  if (inferredType === null) return null
-
-  // 提取第一个块注释（/** ... */）
-  const blockMatch = content.match(/\/\*\*([\s\S]*?)\*\//)
-  const block = blockMatch?.[1]
-
-  // 辅助：提取单值标签
-  const getTag = (tag: string): string | undefined => {
-    if (!block) return undefined
-    const m = block.match(new RegExp(`@${tag}\\s+(.+)`))
-    return m?.[1]?.trim()
-  }
-
-  // 辅助：提取多值标签（可出现多次）
-  const getTagAll = (tag: string): string[] => {
-    if (!block) return []
-    const re = new RegExp(`@${tag}\\s+(.+)`, 'g')
-    const results: string[] = []
-    let m: RegExpExecArray | null
-    while ((m = re.exec(block)) !== null) {
-      const val = m[1]
-      if (val) results.push(val.trim())
-    }
-    return results
-  }
-
-  const explicitDescription = getTag('description')
-  const skillType  = getTag('skill') ?? inferredType
-  const provides   = getTagAll('provides')
-  const consumes   = getTagAll('consumes')
-  const inputSchema = getTag('input')
-  const example    = getTag('example')
-
-  const meta: SkillMeta = {
-    type: skillType,
-    description: explicitDescription ?? buildImplicitSkillDescription(absolutePath, skillType),
-    provides,
-    consumes,
-  }
-  if (inputSchema !== undefined) meta.inputSchema = inputSchema
-  if (example !== undefined) meta.example = example
-  return meta
-}
 
 /* REMOVED: Props 提取（extractInterfaceBody, parseInterfaceProperties, applyDefaultsFromWithDefaults, parseComponentProps）
  * —— Props 结构化提取已迁移到 vite-plugin-spark-catalog（基于 vue-component-meta）
@@ -412,7 +293,7 @@ class ComponentAnalyzer {
 
       for (const file of files) {
         const absolutePath = resolve(root, file)
-        
+
         // 检查文件是否存在
         if (!existsSync(absolutePath)) {
           continue
@@ -421,7 +302,7 @@ class ComponentAnalyzer {
         // 提取组件信息
         const fileName = basename(file, '.vue')
         const componentName = toKebabCase(fileName)
-        
+
         // 检查是否排除
         if (matchAnyPattern(fileName, this.config.exclude)) {
           continue
@@ -441,9 +322,6 @@ class ComponentAnalyzer {
         const importStatement = generateImportStatement(componentName, importPath, strategy)
         const registerStatement = generateRegisterStatement(componentName, strategy)
 
-        // 提取 Skill 元数据（同一次 I/O 顺带完成，无额外磁盘开销）
-        const skillMeta = parseSkillMeta(absolutePath, componentName)
-
         components.push({
           name: componentName,
           path: file,
@@ -453,7 +331,6 @@ class ComponentAnalyzer {
           strategy,
           importStatement,
           registerStatement,
-          skillMeta,
         })
       }
     }
@@ -471,9 +348,8 @@ class ComponentAnalyzer {
     // 统计信息
     const syncCount  = components.filter(c => c.strategy === 'sync').length
     const asyncCount = components.filter(c => c.strategy === 'async').length
-    const skillCount = components.filter(c => c.skillMeta !== null).length
 
-    logger.info(`✅ 扫描完成: ${components.length} 个组件 (同步: ${syncCount}, 异步: ${asyncCount}, Skill: ${skillCount})`)
+    logger.info(`✅ 扫描完成: ${components.length} 个组件 (同步: ${syncCount}, 异步: ${asyncCount})`)
 
     if (this.config.verbose) {
       components.forEach(c => {
@@ -520,10 +396,10 @@ class ComponentAnalyzer {
 
     const code = `/**
  * SPARK 组件自动注册代码
- * 
+ *
  * ⚠️ 此文件由 vite-plugin-spark-components 自动生成
  * ⚠️ 请勿手动修改，所有更改将在下次构建时被覆盖
- * 
+ *
  * 生成时间: ${new Date().toISOString()}
  * 组件总数: ${this.components.length} (同步: ${syncComponents.length}, 异步: ${asyncComponents.length})
  */
@@ -551,19 +427,19 @@ ${asyncComponents.map(c => c.importStatement).join('\n')}
 
 /**
  * 注册所有组件到 SPARK Registry
- * 
+ *
  * @param {import('vue').App} [app] - Vue 应用实例（可选）
  * @returns {{ total: number, sync: number, async: number, components: Map }} 组件统计信息
  */
 export function registerComponents(app) {
   const registry = Spark.getRegistry()
-  
+
   // 注册同步组件
 ${syncComponents.map(c => c.registerStatement).join('\n')}
-  
+
   // 注册异步组件
 ${asyncComponents.map(c => c.registerStatement).join('\n')}
-  
+
   return {
     total: ${this.components.length},
     sync: ${syncComponents.length},
@@ -591,41 +467,6 @@ export default registerComponents
 `
 
     return code
-  }
-
-  /**
-   * 生成 Skill 目录虚拟模块代码
-   *
-   * 输出：virtual:spark-skill-catalog
-   * 包含所有可生成 Skill 元数据的组件；JSDoc 注释用于覆盖默认 type/description/能力声明。
-   */
-  generateSkillCatalog(): string {
-    // 确保数据最新
-    this.scan()
-
-    const skills = this.components
-      .filter(c => c.skillMeta !== null)
-      .map(c => c.skillMeta!)
-
-    const skillsJson = JSON.stringify(skills, null, 2)
-
-    return `/**
- * SPARK Skill 目录
- *
- * ⚠️ 此文件由 vite-plugin-spark-components 自动生成，请勿手动修改
- * 生成时间: ${new Date().toISOString()}
- * Skill 总数: ${skills.length}
- *
- * 用法：
- *   import { skillCatalog } from 'virtual:spark-skill-catalog'
- *   // skillCatalog  — 完整 Skill 描述数组，可序列化为 JSON 发给 AI
- */
-
-/** @type {import('./tools/vite-plugin-spark-components').SkillMeta[]} */
-export const skillCatalog = ${skillsJson}
-
-export default skillCatalog
-`
   }
 
   /**
@@ -674,10 +515,6 @@ export function sparkComponentsPlugin(
   const resolvedVirtualModuleId = '\0' + virtualModuleId
   const resolvedVirtualTypeModuleId = '\0' + virtualModuleId + '.d.ts'
 
-  // Skill 目录虚拟模块（与组件注册模块同插件，同次扫描）
-  const skillCatalogModuleId = 'virtual:spark-skill-catalog'
-  const resolvedSkillCatalogModuleId = '\0' + skillCatalogModuleId
-
   return {
     name: 'vite-plugin-spark-components',
 
@@ -686,7 +523,7 @@ export function sparkComponentsPlugin(
      */
     configResolved(resolvedConfig) {
       analyzer.setViteConfig(resolvedConfig)
-      
+
       // 初始扫描
       analyzer.scan()
     },
@@ -701,9 +538,6 @@ export function sparkComponentsPlugin(
       if (id === virtualModuleId + '.d.ts') {
         return resolvedVirtualTypeModuleId
       }
-      if (id === skillCatalogModuleId) {
-        return resolvedSkillCatalogModuleId
-      }
       return null
     },
 
@@ -716,9 +550,6 @@ export function sparkComponentsPlugin(
       }
       if (id === resolvedVirtualTypeModuleId && config.generateTypes) {
         return analyzer.generateTypes()
-      }
-      if (id === resolvedSkillCatalogModuleId) {
-        return analyzer.generateSkillCatalog()
       }
       return null
     },
@@ -734,11 +565,7 @@ export function sparkComponentsPlugin(
         logger.debug('🔄 检测到组件变更或删除，重新扫描...')
         analyzer.scan()
 
-        // 同时失效两个虚拟模块
-        const modules = [
-          server.moduleGraph.getModuleById(resolvedVirtualModuleId),
-          server.moduleGraph.getModuleById(resolvedSkillCatalogModuleId),
-        ].filter(Boolean)
+        const modules = [server.moduleGraph.getModuleById(resolvedVirtualModuleId)].filter(Boolean)
 
         for (const mod of modules) {
           if (mod) server.moduleGraph.invalidateModule(mod)

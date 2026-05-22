@@ -4,7 +4,7 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
-import { sparkCatalogPlugin } from './packages/vite-plugin-spark-catalog/src/index'
+import { sparkCatalogPlugin } from './packages/vite-plugin-spark-catalog/src/plugin'
 import {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
@@ -12,7 +12,7 @@ import {
   SYNC_COMPONENTS,
   ASYNC_COMPONENTS,
   SIZE_THRESHOLD
-} from './packages/vite-plugin-spark-catalog/src/index'
+} from './packages/vite-plugin-spark-catalog/src/scan-config'
 
 const root = fileURLToPath(new URL('.', import.meta.url))
 const viteCacheDir = process.env['VITE_CACHE_DIR'] ?? path.resolve(root, 'node_modules', '.vite')
@@ -29,11 +29,12 @@ export default defineConfig({
       '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
       '@spark-view/spark-page-config/page/model': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'model', 'index.ts'),
       '@spark-view/spark-page-config/page/loading': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'loading', 'index.ts'),
-      '@spark-view/spark-page-config/page/workspace': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'workspace', 'index.ts'),
+      '@spark-view/spark-page-config/capabilities': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'workspace', 'index.ts'),
       '@spark-view/spark-page-config/page/navigation': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'navigation', 'index.ts'),
       '@spark-view/spark-page-config/page/sandbox': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'sandbox', 'index.ts'),
       '@spark-view/spark-page-config/page/services': path.resolve(root, 'packages', 'spark-page-config', 'src', 'page', 'services', 'index.ts'),
-      '@spark-view/spark-page-config/assistant/registrations': path.resolve(root, 'packages', 'spark-page-config', 'src', 'assistant', 'registrations', 'index.ts'),
+      '@spark-view/spark-page-config/registrations/page-design/payloads/component-catalog.json': path.resolve(root, 'packages', 'spark-page-config', 'src', 'assistant', 'registrations', 'page-design', 'payloads', 'component-catalog.json'),
+      '@spark-view/spark-page-config/registrations': path.resolve(root, 'packages', 'spark-page-config', 'src', 'assistant', 'registrations', 'index.ts'),
       '@spark-view/spark-page-config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'index.ts'),
       '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),
       '@spark-view/spark-ai/schema': path.resolve(root, 'packages', 'spark-ai', 'src', 'schema', 'index.ts'),
@@ -85,14 +86,14 @@ export default defineConfig({
     // ==================== pages-config: 始终由 Java 后端提供 ====================
     // 页面配置（routes.json, rule.json, pagedata.json 等）全部由 Java 后端管理，
     // 种子数据打包在 JAR 内（classpath:seed-pages-config/），服务端完全自包含。
-    // 
+    //
     // 开发流程：先启动 Java 后端（mvn spring-boot:run），再启动 Vite dev server。
     // Vite proxy 将 /api/* 全部转发到 Java 后端。
 
     vue({
       include: /\.(vue)$/,
     }),
-    
+
     sparkComponentsPlugin({
       // 使用统一配置源
       patterns: [...COMPONENT_SCAN_PATTERNS],
@@ -108,7 +109,7 @@ export default defineConfig({
       featurePatterns: [...COMPONENT_SCAN_PATTERNS],
       exclude: [...COMPONENT_EXCLUDE_PATTERNS, ...CATALOG_FEATURE_EXCLUDE_PATTERNS],
     }),
-    
+
     ...(process.env['ANALYZE'] ? [visualizer({
       open: true,
       filename: 'dist/stats.html',

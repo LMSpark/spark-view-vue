@@ -28,17 +28,8 @@ import {
   type ModuleSemanticToolSpec,
   type ProtocolToolName,
 } from '../internal/protocol-tool-generator'
-import type {
-  ModuleHostContext,
-  ModuleInstanceQuery,
-  ModuleInstanceRef,
-  ModuleKind,
-} from '../protocol/module-kind'
-import { ModulePath, ModulePathParseError } from '../protocol/module-path'
-import {
-  errorCheck,
-  type OperationResult,
-} from '../protocol/operation-result'
+import { ModuleKind } from '../protocol/module-kind'
+
 
 /**
  * LLM 传入的原始 tool 参数(JSON 对象)。
@@ -57,7 +48,7 @@ export type ProtocolToolArgs = Readonly<Record<string, LlmJsonValue>>
  * 4. LLM 调 tool → `executeTool(toolName, args)` 路由
  *
  * 注册阶段允许冲突抛错(由 registry 抛 ConflictError),
- * 调用阶段所有失败统一走 OperationResult.checks 反馈。
+ * 调用阶段所有失败统一走 ModuleKind.OperationResult.checks 反馈。
  */
 export class ModuleSemanticRuntime {
   private readonly kinds: ModuleKindRegistry
@@ -101,7 +92,7 @@ export class ModuleSemanticRuntime {
    * 失败码:
    * - UNKNOWN_TOOL:    未识别的工具名
    * - INVALID_TOOL_ARGS: 缺字段或类型错
-   * - INVALID_PATH:    path 字符串解析失败(透传 ModulePathParseError code)
+   * - INVALID_PATH:    path 字符串解析失败(透传 ModuleKind.PathParseError code)
    * - (其它):           由下层路由返回
    *
    * @param host host 适配层注入的当前业务实例作用域。直接 new ModuleSemanticRuntime()
@@ -110,8 +101,8 @@ export class ModuleSemanticRuntime {
   public async executeTool(
     toolName: string,
     rawArgs: ProtocolToolArgs,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     if (!isProtocolToolName(toolName)) {
       return failWith('UNKNOWN_TOOL', `工具 "${toolName}" 未在协议中定义`, '可调用的工具列表见 getLlmTools()')
     }
@@ -131,7 +122,7 @@ export class ModuleSemanticRuntime {
           return this.routeDescribeKind(rawArgs)
       }
     } catch (error) {
-      if (error instanceof ModulePathParseError) {
+      if (error instanceof ModuleKind.PathParseError) {
         return failWith(
           `INVALID_PATH_${error.code}`,
           `路径解析失败: ${error.message}`,
@@ -148,49 +139,49 @@ export class ModuleSemanticRuntime {
   // ───────── 直接调用入口(测试 / 程序化) ─────────
 
   public async getAttribute(
-    path: ModulePath,
+    path: ModuleKind.Path,
     attrName: string,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     return this.attributes.get(path, attrName, host)
   }
 
   public async setAttribute(
-    path: ModulePath,
+    path: ModuleKind.Path,
     attrName: string,
     value: LlmJsonValue,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<void>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<void>> {
     return this.attributes.set(path, attrName, value, host)
   }
 
   public async invokeAction(
-    path: ModulePath,
+    path: ModuleKind.Path,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     return this.actions.invoke(path, actionName, args, host)
   }
 
   public async listChildren(
-    path: ModulePath,
+    path: ModuleKind.Path,
     childKind?: string,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>> {
     return this.navigator.listChildren(path, childKind, host)
   }
 
   public async findInstance(
-    path: ModulePath,
+    path: ModuleKind.Path,
     childKind: string,
-    query: ModuleInstanceQuery,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    query: ModuleKind.InstanceQuery,
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>> {
     return this.navigator.findInstance(path, childKind, query, host)
   }
 
-  public describeKind(kind: string): OperationResult<ModuleKindDescription> {
+  public describeKind(kind: string): ModuleKind.OperationResult<ModuleKindDescription> {
     return this.navigator.describeKind(kind)
   }
 
@@ -198,59 +189,59 @@ export class ModuleSemanticRuntime {
 
   private async routeGetAttribute(
     args: ProtocolToolArgs,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const attrName = requireString(args, 'attrName')
-    return this.attributes.get(ModulePath.parse(pathStr), attrName, host)
+    return this.attributes.get(ModuleKind.Path.parse(pathStr), attrName, host)
   }
 
   private async routeSetAttribute(
     args: ProtocolToolArgs,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const attrName = requireString(args, 'attrName')
     if (!('value' in args)) {
       throw new ToolArgsError(`参数 "value" 缺失`)
     }
     const value = args['value']
-    const result = await this.attributes.set(ModulePath.parse(pathStr), attrName, value, host)
+    const result = await this.attributes.set(ModuleKind.Path.parse(pathStr), attrName, value, host)
     return castVoidResult(result)
   }
 
   private async routeInvokeAction(
     args: ProtocolToolArgs,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const actionName = requireString(args, 'actionName')
     const actionArgs = requireObject(args, 'args')
-    return this.actions.invoke(ModulePath.parse(pathStr), actionName, actionArgs, host)
+    return this.actions.invoke(ModuleKind.Path.parse(pathStr), actionName, actionArgs, host)
   }
 
   private async routeListChildren(
     args: ProtocolToolArgs,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const childKind = optionalString(args, 'childKind')
-    const result = await this.navigator.listChildren(ModulePath.parse(pathStr), childKind, host)
+    const result = await this.navigator.listChildren(ModuleKind.Path.parse(pathStr), childKind, host)
     return castInstanceListResult(result)
   }
 
   private async routeFindInstance(
     args: ProtocolToolArgs,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const pathStr = requireString(args, 'path')
     const childKind = requireString(args, 'childKind')
     const query = requireObject(args, 'query')
-    const result = await this.navigator.findInstance(ModulePath.parse(pathStr), childKind, query, host)
+    const result = await this.navigator.findInstance(ModuleKind.Path.parse(pathStr), childKind, query, host)
     return castInstanceListResult(result)
   }
 
-  private routeDescribeKind(args: ProtocolToolArgs): OperationResult<LlmJsonValue> {
+  private routeDescribeKind(args: ProtocolToolArgs): ModuleKind.OperationResult<LlmJsonValue> {
     const kind = requireString(args, 'kind')
     const result = this.navigator.describeKind(kind)
     return castDescribeKindResult(result)
@@ -307,57 +298,40 @@ function isProtocolToolName(name: string): name is ProtocolToolName {
   return known.some((candidate) => candidate === name)
 }
 
-function failWith(code: string, message: string, hint?: string): OperationResult<never> {
-  return { ok: false, checks: [errorCheck(code, message, hint)] }
+function failWith(code: string, message: string, hint?: string): ModuleKind.OperationResult<never> {
+  return ModuleKind.OperationResult.failCode(code, message, hint)
 }
 
-function passthroughFailure(result: OperationResult<unknown>): OperationResult<never> {
-  return {
-    ok: false,
-    ...(result.checks ? { checks: result.checks } : {}),
-    ...(result.state ? { state: result.state } : {}),
-  }
+function passthroughFailure(result: ModuleKind.OperationResult<unknown>): ModuleKind.OperationResult<never> {
+  return ModuleKind.OperationResult.passthroughFailure(result)
 }
 
-function castVoidResult(result: OperationResult<void>): OperationResult<LlmJsonValue> {
+function castVoidResult(result: ModuleKind.OperationResult<void>): ModuleKind.OperationResult<LlmJsonValue> {
   if (!result.ok) {
     return passthroughFailure(result)
   }
-  return {
-    ok: true,
-    ...(result.checks ? { checks: result.checks } : {}),
-    ...(result.state ? { state: result.state } : {}),
-  }
+  return ModuleKind.OperationResult.ok<LlmJsonValue>(undefined, result.checks, result.state)
 }
 
 function castInstanceListResult(
-  result: OperationResult<readonly ModuleInstanceRef[]>,
-): OperationResult<LlmJsonValue> {
+  result: ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>,
+): ModuleKind.OperationResult<LlmJsonValue> {
   if (!result.ok) {
     return passthroughFailure(result)
   }
   const data = result.data ?? []
   const payload: LlmJsonValue = data.map((ref) => instanceRefToJson(ref))
-  return {
-    ok: true,
-    data: payload,
-    ...(result.checks ? { checks: result.checks } : {}),
-    ...(result.state ? { state: result.state } : {}),
-  }
+  return ModuleKind.OperationResult.ok(payload, result.checks, result.state)
 }
 
 function castDescribeKindResult(
-  result: OperationResult<ModuleKindDescription>,
-): OperationResult<LlmJsonValue> {
+  result: ModuleKind.OperationResult<ModuleKindDescription>,
+): ModuleKind.OperationResult<LlmJsonValue> {
   if (!result.ok) {
     return passthroughFailure(result)
   }
   if (result.data === undefined) {
-    return {
-      ok: true,
-      ...(result.checks ? { checks: result.checks } : {}),
-      ...(result.state ? { state: result.state } : {}),
-    }
+    return ModuleKind.OperationResult.ok<LlmJsonValue>(undefined, result.checks, result.state)
   }
   const payload: LlmJsonValue = {
     kind: result.data.kind,
@@ -367,12 +341,7 @@ function castDescribeKindResult(
     actions: result.data.actions.map((action) => describeActionToJson(action)),
     children: [...result.data.children],
   }
-  return {
-    ok: true,
-    data: payload,
-    ...(result.checks ? { checks: result.checks } : {}),
-    ...(result.state ? { state: result.state } : {}),
-  }
+  return ModuleKind.OperationResult.ok(payload, result.checks, result.state)
 }
 
 function describeAttributeToJson(attr: ModuleKindDescription['attributes'][number]): Record<string, LlmJsonValue> {
@@ -433,7 +402,7 @@ function jsonSchemaToJson(schema: unknown): LlmJsonValue {
   return null
 }
 
-function instanceRefToJson(ref: ModuleInstanceRef): LlmJsonValue {
+function instanceRefToJson(ref: ModuleKind.InstanceRef): LlmJsonValue {
   const base: Record<string, LlmJsonValue> = {
     id: ref.id,
     label: ref.label,

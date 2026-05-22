@@ -11,14 +11,12 @@ import {
 } from '@spark-view/spark-ai/module-semantic'
 import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
 import {
-  createNodeTreeModuleKind,
-} from '@spark-view/spark-page-config/assistant/registrations'
-import {
   PageDesignService,
   type PageDesignEditHost,
-} from '@spark-view/spark-page-config/page/workspace'
+} from '@spark-view/spark-page-config/capabilities'
 import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
 import { DataSetCrudTool } from '@spark-view/spark-data'
+import { PageDesignNodeTreeModuleKind } from '../src/registrations/node-tree-tool-catalog'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -54,7 +52,7 @@ function buildRuntime(pageId = 'demo-page'): {
   service.bootstrap({ pageId, requestId: 'e2e-run' })
 
   const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(createNodeTreeModuleKind({
+  runtime.registerKind(new PageDesignNodeTreeModuleKind({
     service,
     contextFactory: (ctx) => ({
       pageId: ctx.host?.moduleInstanceId ?? ctx.segment.id,

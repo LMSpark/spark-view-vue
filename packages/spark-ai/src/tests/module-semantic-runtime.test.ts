@@ -14,18 +14,13 @@ import { describe, expect, it } from 'vitest'
 import {
   ModuleKind,
   ModuleSemanticRuntime,
-  ModulePath,
   PROTOCOL_TOOL_NAMES,
-  ok as okResult,
-  errorCheck,
-  type ModuleInstanceRef,
-  type ModulePathContext,
   type ActionSchema,
 } from '../module-semantic'
 import type { LlmJsonValue } from '../schema'
 
 interface ModuleKindSpy {
-  lastHost?: ModulePathContext['host'] | undefined
+  lastHost?: ModuleKind.PathContext['host'] | undefined
 }
 
 const ECHO_ACTION_SCHEMA: ActionSchema = {
@@ -42,19 +37,16 @@ const ECHO_ACTION_SCHEMA: ActionSchema = {
 }
 
 function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
-  const runner = (ctx: ModulePathContext, actionName: string, args: Readonly<Record<string, LlmJsonValue>>) => {
+  const runner = (ctx: ModuleKind.PathContext, actionName: string, args: Readonly<Record<string, LlmJsonValue>>) => {
     spy.lastHost = ctx.host
     if (actionName === 'getNode') {
       const id = args['id']
       if (typeof id !== 'string' || id.length === 0) {
-        return {
-          ok: false,
-          checks: [errorCheck('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')],
-        }
+        return ModuleKind.OperationResult.failCode('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')
       }
-      return okResult<LlmJsonValue>({ id, label: `node-${id}` })
+      return ModuleKind.OperationResult.ok<LlmJsonValue>({ id, label: `node-${id}` })
     }
-    return { ok: false, checks: [errorCheck('UNKNOWN_ACTION', `${actionName} 未实现`)] }
+    return ModuleKind.OperationResult.failCode('UNKNOWN_ACTION', `${actionName} 未实现`)
   }
   Object.assign(runner, { rootId: 'root-1' })
   return new ModuleKind({
@@ -90,17 +82,17 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
     runner,
     list: (ctx) => {
       spy.lastHost = ctx.host
-      return okResult<readonly ModuleInstanceRef[]>([])
+      return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([])
     },
     find: (ctx) => {
       spy.lastHost = ctx.host
       const hostInstanceId = ctx.host?.moduleInstanceId
       if (hostInstanceId !== undefined && hostInstanceId.length > 0) {
-        return okResult<readonly ModuleInstanceRef[]>([
+        return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
           { id: hostInstanceId, label: '当前实例' },
         ])
       }
-      return okResult<readonly ModuleInstanceRef[]>([
+      return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
         { id: 'node-tree-1', label: '主页节点树' },
       ])
     },
@@ -144,10 +136,10 @@ function createRegisteredActionKind(): ModuleKind {
     actions: [ECHO_ACTION_SCHEMA],
     runner: (_ctx, actionName, args) => {
       if (actionName !== ECHO_ACTION_SCHEMA.name) {
-        return { ok: false, checks: [errorCheck('UNKNOWN_ACTION', `${actionName} 未实现`)] }
+        return ModuleKind.OperationResult.fail([ModuleKind.CheckEntry.error('UNKNOWN_ACTION', `${actionName} 未实现`)])
       }
       const value = args['value'] ?? null
-      return okResult<LlmJsonValue>({
+      return ModuleKind.OperationResult.ok<LlmJsonValue>({
         value,
         tags: ['base-runner'],
       })
@@ -285,7 +277,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     expect(first['code']).toBe('NODE_NOT_FOUND')
   })
 
-  it('INVALID_PATH 时透传 ModulePathParseError code', async () => {
+  it('INVALID_PATH 时透传 ModuleKind.PathParseError code', async () => {
     const runtime = createRuntime()
     const result = await runtime.executeTool('getAttribute', {
       path: 'no-leading-slash',
@@ -324,7 +316,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
 describe('ModuleSemanticRuntime 直接调用入口', () => {
   it('getAttribute 直接调用与 executeTool 等价', async () => {
     const runtime = createRuntime()
-    const result = await runtime.getAttribute(ModulePath.parse('/node-tree[t1]'), 'rootId')
+    const result = await runtime.getAttribute(ModuleKind.Path.parse('/node-tree[t1]'), 'rootId')
     expect(result.ok).toBe(true)
     expect(result.data).toBe('root-1')
   })
@@ -355,7 +347,7 @@ describe('ModuleKind 默认协议行为', () => {
         },
       ],
     })
-    const ctx: ModulePathContext = {
+    const ctx: ModuleKind.PathContext = {
       segments: [{ kind: 'runner-attrs', id: 'root-1' }],
       segment: { kind: 'runner-attrs', id: 'root-1' },
     }
@@ -367,34 +359,30 @@ describe('ModuleKind 默认协议行为', () => {
     })
   })
 
-  it('list/find ref 支持泛型收窄并保持 ModuleInstanceRef 协议约束', async () => {
-    interface TypedRef extends ModuleInstanceRef {
-      readonly source: 'typed'
-    }
-
-    const moduleKind = new ModuleKind<TypedRef>({
+  it('list/find ref 保持 ModuleKind.InstanceRef 协议约束', async () => {
+    const moduleKind = new ModuleKind({
       kind: 'typed',
       name: '强类型实例',
-      description: '验证 list/find 泛型约束',
-      list: () => okResult<readonly TypedRef[]>([
-        { id: 'typed-1', label: '强类型实例', source: 'typed' },
+      description: '验证 list/find 协议约束',
+      list: () => ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
+        { id: 'typed-1', label: '强类型实例' },
       ]),
-      find: () => okResult<readonly TypedRef[]>([
-        { id: 'typed-2', label: '强类型查询实例', source: 'typed' },
+      find: () => ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
+        { id: 'typed-2', label: '强类型查询实例' },
       ]),
     })
-    const ctx: ModulePathContext = {
+    const ctx: ModuleKind.PathContext = {
       segments: [{ kind: 'typed', id: 'root-1' }],
       segment: { kind: 'typed', id: 'root-1' },
     }
 
     await expect(moduleKind.listChildren(ctx)).resolves.toMatchObject({
       ok: true,
-      data: [{ id: 'typed-1', label: '强类型实例', source: 'typed' }],
+      data: [{ id: 'typed-1', label: '强类型实例' }],
     })
     await expect(moduleKind.findInstance(ctx, 'typed', {})).resolves.toMatchObject({
       ok: true,
-      data: [{ id: 'typed-2', label: '强类型查询实例', source: 'typed' }],
+      data: [{ id: 'typed-2', label: '强类型查询实例' }],
     })
   })
 
@@ -407,23 +395,23 @@ describe('ModuleKind 默认协议行为', () => {
       children: ['child'],
       list: (_ctx, childKind) => {
         calls.push(`list:${childKind ?? '*'}`)
-        return okResult<readonly ModuleInstanceRef[]>([
+        return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
           { id: 'listed-1', label: '子实例' },
         ])
       },
       find: (_ctx, childKind, query) => {
         calls.push(`find:${childKind}:${String(query['id'] ?? query['name'])}`)
         if (query['id'] === 'child-1') {
-          return okResult<readonly ModuleInstanceRef[]>([
+          return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
             { id: 'child-1', label: '路径子实例' },
           ])
         }
-        return okResult<readonly ModuleInstanceRef[]>([
+        return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
           { id: 'found-1', label: '查询实例' },
         ])
       },
     })
-    const ctx: ModulePathContext = {
+    const ctx: ModuleKind.PathContext = {
       segments: [{ kind: 'delegated', id: 'root-1' }],
       segment: { kind: 'delegated', id: 'root-1' },
     }
@@ -562,7 +550,7 @@ describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
   it('直接调用 findInstance 接受 host 形参并透传', async () => {
     const { runtime, spy } = createRuntimeWithSpy()
     const host = { moduleId: 'm', moduleInstanceId: 'i', instanceId: 's' }
-    await runtime.findInstance(ModulePath.parse('/'), 'node-tree', {}, host)
+    await runtime.findInstance(ModuleKind.Path.parse('/'), 'node-tree', {}, host)
     expect(spy.lastHost).toEqual(host)
   })
 

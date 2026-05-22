@@ -23,9 +23,9 @@
       "types": "./dist/page/loading/index.d.ts",
       "import": "./dist/page/loading/index.js"
     },
-    "./page/workspace": {
-      "types": "./dist/page/workspace/index.d.ts",
-      "import": "./dist/page/workspace/index.js"
+    "./capabilities": {
+      "types": "./dist/capabilities/index.d.ts",
+      "import": "./dist/capabilities/index.js"
     },
     "./page/navigation": {
       "types": "./dist/page/navigation/index.d.ts",
@@ -39,9 +39,13 @@
       "types": "./dist/page/services/index.d.ts",
       "import": "./dist/page/services/index.js"
     },
-    "./assistant/registrations": {
-      "types": "./dist/assistant/registrations/index.d.ts",
-      "import": "./dist/assistant/registrations/index.js"
+    "./registrations": {
+      "types": "./dist/registrations/index.d.ts",
+      "import": "./dist/registrations/index.js"
+    },
+    "./registrations/payloads/component-catalog.json": {
+      "types": "./dist/registrations/payloads/component-catalog.json",
+      "import": "./dist/registrations/payloads/component-catalog.json"
     }
   },
   "main": "./dist/index.js",

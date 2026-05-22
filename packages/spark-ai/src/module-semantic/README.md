@@ -10,7 +10,7 @@
 
 ## 核心模型
 
-`ModuleKind` 是协议层标准 class，不再拆出额外基类或业务能力协议。运行时只接收标准 `ModuleKind` 对象；业务迁移期可以直接 `new ModuleKind({...})` 或继承它，但目标形态是由 VCM 提取属性、动作、子模块和构造装配边界，生成 `ModuleKindOptions` / factory 来替代手写 `ModuleKind`。
+`ModuleKind` 是协议层标准 class，不再拆出额外基类、业务能力协议或独立 options 类型。运行时只接收标准 `ModuleKind` 对象；业务迁移期可以直接 `new ModuleKind({...})` 或继承它，但目标形态是由 VCM 提取属性、动作、子模块和构造装配边界，生成 factory 来替代手写 `ModuleKind`。
 
 `ActionSchema` 是纯声明 DTO，只用于 `describeKind`、工具描述和参数校验。动作函数不写进 `ActionSchema`，统一放在 `ModuleKind.runner(ctx, actionName, args)`。
 
@@ -27,7 +27,7 @@
 
 `listChildren`、`findInstance`、`resolveChild` 都是基类统一实现的协议方法。业务层不要重写这些方法，也不要提供单独的 resolve 委托；路径校验由基类先调用 `find(ctx, childKind, { id })`，未命中时再调用 `list(ctx, childKind)` 推导。
 
-属性语义只来自 `ModuleKind.attributes`，由 `describeKind` 暴露给 LLM；`runner` 函数对象属性只是运行时值存储，不参与语义发现。最终能力元数据应来自 VCM 或其它构建期生成链路，注册到 runtime 前必须投影成标准 `ModuleKindOptions` 并创建 `ModuleKind`。
+属性语义只来自 `ModuleKind.attributes`，由 `describeKind` 暴露给 LLM；`runner` 函数对象属性只是运行时值存储，不参与语义发现。最终能力元数据应来自 VCM 或其它构建期生成链路，注册到 runtime 前必须投影成标准 `ModuleKind` 构造参数并创建 `ModuleKind`。
 
 VCM 生成能力模块元数据的 JSDoc 标识和范围见 [DM-VCM-MODULE-METADATA-SCOPE.md](DM-VCM-MODULE-METADATA-SCOPE.md)。
 
@@ -35,22 +35,22 @@ VCM 生成能力模块元数据的 JSDoc 标识和范围见 [DM-VCM-MODULE-METAD
 
 ## 注册方式
 
-`runtime.registerKind` 只接受一个 `ModuleKind` 对象。推荐生成链路产出 `ModuleKindOptions` / factory，业务只注入 runner/list/find 运行委托。
+`runtime.registerKind` 只接受一个 `ModuleKind` 对象。推荐生成链路产出 factory，业务只注入 runner/list/find 运行委托。
 
 ```ts
 import {
   ModuleKind,
   ModuleSemanticRuntime,
-  ok,
-  type ModuleKindOptions,
+  OperationResult,
   type ModuleKindRunner,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
+import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
 
 const runtime = new ModuleSemanticRuntime()
 
 // VCM 最终生成这一段；手写仅作为迁移期示意。
-const SCHOOL_KIND_OPTIONS = {
+const SCHOOL_KIND_METADATA = {
   kind: 'school',
   name: '学校',
   description: '学校业务语义模块',
@@ -74,15 +74,15 @@ const SCHOOL_KIND_OPTIONS = {
       example: { reason: '测试归档' },
     },
   ],
-} satisfies ModuleKindOptions
+}
 
 function createSchoolModuleKind(): ModuleKind {
   const runner: ModuleKindRunner = (ctx, actionName, args) => runSchoolAction(ctx, actionName, args)
 
   return new ModuleKind({
-    ...SCHOOL_KIND_OPTIONS,
+    ...SCHOOL_KIND_METADATA,
     runner,
-    find: (ctx) => ok([
+    find: (ctx) => OperationResult.ok([
       { id: ctx.host?.moduleInstanceId ?? 'school-1', label: '当前学校' },
     ]),
   })
@@ -91,27 +91,15 @@ function createSchoolModuleKind(): ModuleKind {
 function runSchoolAction(
   ctx: ModulePathContext,
   actionName: string,
-  args: Readonly<Record<string, unknown>>,
+  args: Readonly<Record<string, LlmJsonValue>>,
 ) {
   if (actionName !== 'archive') {
-    return {
-      ok: false,
-      checks: [
-        {
-          level: 'error',
-          code: 'UNKNOWN_ACTION',
-          message: `${actionName} 未实现`,
-        },
-      ],
-    }
+    return OperationResult.failCode('UNKNOWN_ACTION', `${actionName} 未实现`)
   }
-  return {
-    ok: true,
-    data: {
-      schoolId: ctx.segment.id,
-      reason: args['reason'],
-    },
-  }
+  return OperationResult.ok<LlmJsonValue>({
+    schoolId: ctx.segment.id,
+    reason: args['reason'],
+  })
 }
 
 runtime.registerKind(createSchoolModuleKind())
@@ -122,7 +110,7 @@ runtime.registerKind(createSchoolModuleKind())
 VCM 生成的代码只负责描述元数据和装配标准 `ModuleKind`：
 
 - 生成 `kind / name / description / attributes / actions / children`。
-- 生成 `ModuleKindOptions`，并用 `satisfies ModuleKindOptions` 校验。
+- 生成可直接传入 `new ModuleKind(...)` 的 metadata，并由 TypeScript 在 factory 调用处校验。
 - 提取构造函数和注册工厂的依赖边界，生成 `createXxxModuleKind(delegates)` factory。
 - 按 `@moduleRunner`、`@moduleListDelegate`、`@moduleFindDelegate` 标识提取 runner/list/find 委托绑定。
 - 只从领域能力 class 源码按 `@moduleAbility`、`@moduleAttackSurface`、`@moduleTrustBoundary`、`@moduleGuard`、`@moduleMutation` 标识提取能力语义和攻击面元数据，例如 `SparkNodeTree`、`DataSetCrudTool`。
@@ -194,6 +182,5 @@ module-semantic/
 
 参考实现：
 
-- `packages/spark-page-config/src/assistant/registrations/page-design/page-design-module.ts`
-- `packages/spark-page-config/src/assistant/registrations/page-design/module-semantic/node-tree-module-kind.ts`
-- `packages/spark-page-config/src/assistant/registrations/leave-request/leave-request-module.ts`
+- `packages/spark-page-config/src/registrations/page-design-module.ts`
+- `packages/spark-page-config/src/registrations/leave-request.ts`

@@ -19,5 +19,9 @@
     "useUnknownInCatchVariables": true,
     "forceConsistentCasingInFileNames": true
   },
-  "include": ["vite.config.ts"]
+  "include": [
+    "vite.config.ts",
+    "tools/vite-plugin-spark-components.ts",
+    "packages/vite-plugin-spark-catalog/src/**/*.ts"
+  ]
 }

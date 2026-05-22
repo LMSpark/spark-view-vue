@@ -16,15 +16,11 @@ import {
   ModuleSemanticRuntime,
   ModuleSemanticToolCodec,
   PROTOCOL_TOOL_NAMES,
-  errorCheck,
-  ok as okResult,
-  type ModuleInstanceRef,
-  type ModulePathContext,
 } from '../module-semantic'
 import type { LlmJsonValue } from '../schema'
 
 interface ModuleKindSpy {
-  lastHost?: ModulePathContext['host'] | undefined
+  lastHost?: ModuleKind.PathContext['host'] | undefined
 }
 
 function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
@@ -56,21 +52,18 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
     runner: (ctx, actionName, args) => {
       spy.lastHost = ctx.host
       if (actionName !== 'getNode') {
-        return { ok: false, checks: [errorCheck('UNKNOWN_ACTION', actionName)] }
+        return ModuleKind.OperationResult.fail([ModuleKind.CheckEntry.error('UNKNOWN_ACTION', actionName)])
       }
       const id = args['id']
       if (typeof id !== 'string' || id.length === 0) {
-        return {
-          ok: false,
-          checks: [errorCheck('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')],
-        }
+        return ModuleKind.OperationResult.failCode('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')
       }
-      return okResult<LlmJsonValue>({ id, label: `node-${id}` })
+      return ModuleKind.OperationResult.ok<LlmJsonValue>({ id, label: `node-${id}` })
     },
-    list: () => okResult<readonly ModuleInstanceRef[]>([]),
+    list: () => ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([]),
     find: (ctx) => {
       spy.lastHost = ctx.host
-      return okResult<readonly ModuleInstanceRef[]>([
+      return ModuleKind.OperationResult.ok<readonly ModuleKind.InstanceRef[]>([
         { id: ctx.host?.moduleInstanceId ?? 'node-tree-1', label: '当前节点树' },
       ])
     },

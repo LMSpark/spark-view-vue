@@ -16,7 +16,6 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': resolve(root, './src'),
-      'virtual:spark-skill-catalog': resolve(root, './tests/mocks/virtual-spark-skill-catalog.ts'),
       'virtual:spark-components': resolve(root, './tests/mocks/virtual-spark-components.ts'),
       // 所有包 → 源码解析（测试不应依赖构建产物）
       '@spark-view/spark-component': resolve(root, './packages/spark-component/src/index.ts'),
@@ -24,11 +23,12 @@ export default defineConfig({
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-page-config/page/model': resolve(root, './packages/spark-page-config/src/page/model/index.ts'),
       '@spark-view/spark-page-config/page/loading': resolve(root, './packages/spark-page-config/src/page/loading/index.ts'),
-      '@spark-view/spark-page-config/page/workspace': resolve(root, './packages/spark-page-config/src/page/workspace/index.ts'),
+      '@spark-view/spark-page-config/capabilities': resolve(root, './packages/spark-page-config/src/capabilities/index.ts'),
       '@spark-view/spark-page-config/page/navigation': resolve(root, './packages/spark-page-config/src/page/navigation/index.ts'),
       '@spark-view/spark-page-config/page/sandbox': resolve(root, './packages/spark-page-config/src/page/sandbox/index.ts'),
       '@spark-view/spark-page-config/page/services': resolve(root, './packages/spark-page-config/src/page/services/index.ts'),
-      '@spark-view/spark-page-config/assistant/registrations': resolve(root, './packages/spark-page-config/src/assistant/registrations/index.ts'),
+      '@spark-view/spark-page-config/registrations/payloads/component-catalog.json': resolve(root, './packages/spark-page-config/src/registrations/payloads/component-catalog.json'),
+      '@spark-view/spark-page-config/registrations': resolve(root, './packages/spark-page-config/src/registrations/index.ts'),
       '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
       '@spark-view/spark-ai/schema': resolve(root, './packages/spark-ai/src/schema/index.ts'),

@@ -47,13 +47,13 @@ import {
   PAGE_FILE_NAMES,
   forEachDocument,
   type PageFileName,
-} from '@spark-view/spark-page-config/page/workspace'
+} from '@spark-view/spark-page-config/capabilities'
 import { demoNavRoot } from '@/layout/demo-nav'
 
 export { PAGE_FILE_NAMES }
 export type { PageFileName }
 export type { PageConfigFileVersionSummary }
-export type { PageFileDocument } from '@spark-view/spark-page-config/page/workspace'
+export type { PageFileDocument } from '@spark-view/spark-page-config/capabilities'
 
 // ═══════════════════════════════════════════════════════════
 // 类型

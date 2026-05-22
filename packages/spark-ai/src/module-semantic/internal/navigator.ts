@@ -4,7 +4,7 @@
  * 导航器。
  *
  * 统一负责两类导航:
- * - 路径遍历:把 ModulePath 翻译成末段 ModuleKind + PathContext
+ * - 路径遍历:把 ModuleKind.Path 翻译成末段 ModuleKind + PathContext
  * - 发现工具:listChildren / findInstance / describeKind
  *
  * 协议固定提供的"看到周围"工具,LLM 必经路径:语义查询 → 拿 id → 拼路径。
@@ -22,20 +22,9 @@
  *     返回 ModuleKind 的 attributes / actions / children 元数据,不调用业务执行入口
  */
 
-import type {
-  ModuleHostContext,
-  ModuleInstanceQuery,
-  ModuleInstanceRef,
-  ModulePathContext,
-} from '../protocol/module-kind'
-import type { ActionSchema, AttributeSchema, ModuleKind } from '../protocol/module-kind'
-import type { ModulePath, ModulePathSegment } from '../protocol/module-path'
-import {
-  type CheckEntry,
-  errorCheck,
-  ok as okResult,
-  type OperationResult,
-} from '../protocol/operation-result'
+import { ModuleKind, type ActionSchema, type AttributeSchema } from '../protocol/module-kind'
+
+
 import type { ModuleKindRegistry } from './module-kind-registry'
 
 /**
@@ -65,7 +54,7 @@ export interface ModuleKindDescription {
  */
 export interface ModuleNavigationSuccess {
   readonly moduleKind: ModuleKind
-  readonly segmentCtx: ModulePathContext
+  readonly segmentCtx: ModuleKind.PathContext
 }
 
 /**
@@ -77,7 +66,7 @@ export interface ModuleNavigationSuccess {
  * - PATH_INVALID: 父 ModuleKind resolveChild 返回 false
  * - RESOLVE_ERROR: resolveChild 自身返回 ok=false(透传其 checks)
  */
-export type ModuleNavigationFailure = OperationResult<never>
+export type ModuleNavigationFailure = ModuleKind.OperationResult<never>
 
 export class Navigator {
   public constructor(
@@ -96,22 +85,17 @@ export class Navigator {
    *    返回 false → PATH_INVALID;返回 ok=false → RESOLVE_ERROR
    */
   public async navigate(
-    path: ModulePath,
-    host?: ModuleHostContext,
+    path: ModuleKind.Path,
+    host?: ModuleKind.HostContext,
   ): Promise<ModuleNavigationSuccess | ModuleNavigationFailure> {
     if (path.isRoot) {
-      return {
-        ok: false,
-        checks: [
-          errorCheck('PATH_EMPTY', '路径不能为根 "/",请指定至少一段 <kind>[<id>]'),
-        ],
-      }
+      return ModuleKind.OperationResult.failCode('PATH_EMPTY', '路径不能为根 "/",请指定至少一段 <kind>[<id>]')
     }
 
     const segments = path.segments
 
     for (let i = 0; i < segments.length; i++) {
-      const segment = segments[i] as ModulePathSegment
+      const segment = segments[i] as ModuleKind.PathSegment
       if (!this.kinds.has(segment.kind)) {
         return failWithCheck(
           'KIND_NOT_REGISTERED',
@@ -122,10 +106,10 @@ export class Navigator {
     }
 
     for (let i = 1; i < segments.length; i++) {
-      const parentSegment = segments[i - 1] as ModulePathSegment
-      const childSegment = segments[i] as ModulePathSegment
+      const parentSegment = segments[i - 1] as ModuleKind.PathSegment
+      const childSegment = segments[i] as ModuleKind.PathSegment
       const parentKind = this.kinds.require(parentSegment.kind)
-      const parentCtx: ModulePathContext = {
+      const parentCtx: ModuleKind.PathContext = {
         segments: segments.slice(0, i),
         segment: parentSegment,
         ...(host === undefined ? {} : { host }),
@@ -133,11 +117,11 @@ export class Navigator {
       const resolveResult = await parentKind.resolveChild(parentCtx, childSegment.kind, childSegment.id)
       if (!resolveResult.ok) {
         const original = resolveResult.checks ?? []
-        const wrapper: CheckEntry = errorCheck(
+        const wrapper: ModuleKind.CheckEntry = ModuleKind.CheckEntry.error(
           'RESOLVE_ERROR',
           `验证路径段 ${formatSegment(childSegment, i)} 时 ModuleKind 出错`,
         )
-        return { ok: false, checks: [wrapper, ...original] }
+        return ModuleKind.OperationResult.fail([wrapper, ...original])
       }
       if (resolveResult.data !== true) {
         return failWithCheck(
@@ -148,7 +132,7 @@ export class Navigator {
       }
     }
 
-    const tail = segments[segments.length - 1] as ModulePathSegment
+    const tail = segments[segments.length - 1] as ModuleKind.PathSegment
     const tailKind = this.kinds.require(tail.kind)
     return {
       moduleKind: tailKind,
@@ -169,29 +153,24 @@ export class Navigator {
    * - 非根路径:委托末段 ModuleKind.listChildren
    */
   public async listChildren(
-    path: ModulePath,
+    path: ModuleKind.Path,
     childKind?: string,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>> {
     if (path.isRoot) {
       if (childKind === undefined) {
-        const refs: readonly ModuleInstanceRef[] = this.kinds.list().map((moduleKind) => ({
+        const refs: readonly ModuleKind.InstanceRef[] = this.kinds.list().map((moduleKind) => ({
           id: moduleKind.kind,
           label: moduleKind.name,
           summary: moduleKind.description,
         }))
-        return okResult(refs)
+        return ModuleKind.OperationResult.ok(refs)
       }
-      return {
-        ok: false,
-        checks: [
-          errorCheck(
-            'ROOT_LIST_REQUIRES_FIND',
-            `根路径下无法直接列出 kind "${childKind}" 的实例`,
-            `请调用 findInstance("/", "${childKind}", {...}) 按业务条件查询`,
-          ),
-        ],
-      }
+      return ModuleKind.OperationResult.failCode(
+        'ROOT_LIST_REQUIRES_FIND',
+        `根路径下无法直接列出 kind "${childKind}" 的实例`,
+        `请调用 findInstance("/", "${childKind}", {...}) 按业务条件查询`,
+      )
     }
     const navResult = await this.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
@@ -211,26 +190,21 @@ export class Navigator {
    * - KIND_NOT_REGISTERED:     目标 kind 未注册
    */
   public async findInstance(
-    path: ModulePath,
+    path: ModuleKind.Path,
     childKind: string,
-    query: ModuleInstanceQuery,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<readonly ModuleInstanceRef[]>> {
+    query: ModuleKind.InstanceQuery,
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<readonly ModuleKind.InstanceRef[]>> {
     if (!this.kinds.has(childKind)) {
-      return {
-        ok: false,
-        checks: [
-          errorCheck(
-            'KIND_NOT_REGISTERED',
-            `目标 kind "${childKind}" 未注册`,
-            '可调用 listChildren("/") 查看已注册 kind',
-          ),
-        ],
-      }
+      return ModuleKind.OperationResult.failCode(
+        'KIND_NOT_REGISTERED',
+        `目标 kind "${childKind}" 未注册`,
+        '可调用 listChildren("/") 查看已注册 kind',
+      )
     }
     if (path.isRoot) {
       const moduleKind = this.kinds.require(childKind)
-      const rootCtx: ModulePathContext = {
+      const rootCtx: ModuleKind.PathContext = {
         segments: [],
         segment: ROOT_SEGMENT_SENTINEL,
         ...(host === undefined ? {} : { host }),
@@ -243,16 +217,11 @@ export class Navigator {
     }
     const tailKind = this.kinds.require(navResult.segmentCtx.segment.kind)
     if (!tailKind.children.includes(childKind)) {
-      return {
-        ok: false,
-        checks: [
-          errorCheck(
-            'CHILD_KIND_NOT_DECLARED',
-            `kind "${tailKind.kind}" 未声明子 kind "${childKind}"`,
-            `可调用 describeKind("${tailKind.kind}") 查看允许的子 kind`,
-          ),
-        ],
-      }
+      return ModuleKind.OperationResult.failCode(
+        'CHILD_KIND_NOT_DECLARED',
+        `kind "${tailKind.kind}" 未声明子 kind "${childKind}"`,
+        `可调用 describeKind("${tailKind.kind}") 查看允许的子 kind`,
+      )
     }
     return navResult.moduleKind.findInstance(navResult.segmentCtx, childKind, query)
   }
@@ -263,29 +232,24 @@ export class Navigator {
    * 失败码:
    * - KIND_NOT_REGISTERED
    */
-  public describeKind(kind: string): OperationResult<ModuleKindDescription> {
+  public describeKind(kind: string): ModuleKind.OperationResult<ModuleKindDescription> {
     const moduleKind = this.kinds.get(kind)
     if (moduleKind === undefined) {
-      return {
-        ok: false,
-        checks: [
-          errorCheck(
-            'KIND_NOT_REGISTERED',
-            `kind "${kind}" 未注册`,
-            '可调用 listChildren("/") 查看已注册 kind',
-          ),
-        ],
-      }
+      return ModuleKind.OperationResult.failCode(
+        'KIND_NOT_REGISTERED',
+        `kind "${kind}" 未注册`,
+        '可调用 listChildren("/") 查看已注册 kind',
+      )
     }
-    return okResult(describeKindMeta(moduleKind))
+    return ModuleKind.OperationResult.ok(describeKindMeta(moduleKind))
   }
 }
 
 /** 根级 findInstance 调用 ModuleKind 时占位的 segment。kind 为空表示"非具体段"。 */
-const ROOT_SEGMENT_SENTINEL: ModulePathSegment = Object.freeze({ kind: '', id: '' })
+const ROOT_SEGMENT_SENTINEL = new ModuleKind.PathSegment('', '')
 
 function failWithCheck(code: string, message: string, hint?: string): ModuleNavigationFailure {
-  return { ok: false, checks: [errorCheck(code, message, hint)] }
+  return ModuleKind.OperationResult.failCode(code, message, hint)
 }
 
 function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
@@ -300,11 +264,11 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
 }
 
 function isNavigationSuccess(
-  result: ModuleNavigationSuccess | OperationResult<never>,
+  result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
 ): result is ModuleNavigationSuccess {
   return 'moduleKind' in result
 }
 
-function formatSegment(segment: ModulePathSegment, index: number): string {
+function formatSegment(segment: ModuleKind.PathSegment, index: number): string {
   return `"[${String(index)}] ${segment.kind}[${segment.id}]"`
 }

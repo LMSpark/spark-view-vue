@@ -78,7 +78,7 @@ export interface JsonCatalogOptions {
  * component-catalog.json 是当前仓库组件目录的单一事实源，所有消费者都应从该路径读取。
  */
 export function getCanonicalCatalogOutputPath(root: string): string {
-  return resolve(root, 'packages/spark-page-config/src/assistant/registrations/page-design/payloads', CANONICAL_CATALOG_FILE)
+  return resolve(root, 'packages/spark-page-config/src/registrations/payloads', CANONICAL_CATALOG_FILE)
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -1488,6 +1488,13 @@ function buildComponentCatalog(model: CatalogRuntimeModel): ComponentCatalog {
   }
 }
 
+function formatSkillMetaNotes(skillMeta: SkillMeta | null): string | undefined {
+  const parts: string[] = []
+  if (skillMeta?.binding !== undefined) parts.push(`binding: ${skillMeta.binding}`)
+  if (skillMeta?.notes !== undefined) parts.push(...skillMeta.notes)
+  return parts.length > 0 ? parts.join('\n') : undefined
+}
+
 function collectSchemaRefs(schema: PropSchema | undefined, refs: Set<string>): void {
   if (schema === undefined) return
   if (schema.$ref !== undefined) refs.add(schema.$ref)
@@ -1613,6 +1620,7 @@ function buildSortedComponents(
     const emits = compactEmits(rawEmits, schemaPool)
     const inferredBinding = inferBinding(props)
     const binding = inferredBinding !== undefined ? annotateBindingDescriptor(type, inferredBinding) : undefined
+    const notes = formatSkillMetaNotes(skillMeta)
     const description = buildComponentDescription({
       type,
       baseDescription: skillMeta?.description ?? `SPARK 组件：${type}`,
@@ -1632,6 +1640,9 @@ function buildSortedComponents(
       ...(skillMeta?.internal !== true && skillMeta?.configurable !== undefined ? { configurable: skillMeta.configurable } : {}),
       props,
       emits,
+      ...(notes !== undefined ? { notes } : {}),
+      ...(skillMeta?.provides !== undefined ? { provides: skillMeta.provides } : {}),
+      ...(skillMeta?.consumes !== undefined ? { consumes: skillMeta.consumes } : {}),
       source: explicitSkillMeta === null ? 'vcm' : 'vcm+meta',
       ...(binding !== undefined ? { binding } : {}),
     }

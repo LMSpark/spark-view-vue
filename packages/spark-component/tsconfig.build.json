@@ -9,11 +9,11 @@
       "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"],
       "@spark-view/spark-page-config/page/model": ["../spark-page-config/dist/page/model/index.d.ts"],
       "@spark-view/spark-page-config/page/loading": ["../spark-page-config/dist/page/loading/index.d.ts"],
-      "@spark-view/spark-page-config/page/workspace": ["../spark-page-config/dist/page/workspace/index.d.ts"],
+      "@spark-view/spark-page-config/capabilities": ["../spark-page-config/dist/capabilities/index.d.ts"],
       "@spark-view/spark-page-config/page/navigation": ["../spark-page-config/dist/page/navigation/index.d.ts"],
       "@spark-view/spark-page-config/page/sandbox": ["../spark-page-config/dist/page/sandbox/index.d.ts"],
       "@spark-view/spark-page-config/page/services": ["../spark-page-config/dist/page/services/index.d.ts"],
-      "@spark-view/spark-page-config/assistant/registrations": ["../spark-page-config/dist/assistant/registrations/index.d.ts"]
+      "@spark-view/spark-page-config/registrations": ["../spark-page-config/dist/registrations/index.d.ts"]
     },
     "declaration": true,
     "declarationMap": true,

@@ -9,14 +9,14 @@
  * 1. 调用 Navigator 把路径翻译成末段 ModuleKind + PathContext
  * 2. 委托末段 ModuleKind 按 attributes 元数据验证是否声明、是否 readable/writable
  * 3. 委托末段 ModuleKind.getAttribute / setAttribute 执行业务读写
- * 4. 透传业务返回的 OperationResult 给 LLM
+ * 4. 透传业务返回的 ModuleKind.OperationResult 给 LLM
  */
 
 import type { LlmJsonValue } from '../../schema'
-import type { ModuleHostContext } from '../protocol/module-kind'
-import type { OperationResult } from '../protocol/operation-result'
+import type { ModuleKind } from '../protocol/module-kind'
+
 import type { ModuleNavigationSuccess, Navigator } from './navigator'
-import type { ModulePath } from '../protocol/module-path'
+
 
 export class AttributeAccessor {
   public constructor(
@@ -31,7 +31,7 @@ export class AttributeAccessor {
    * - ATTRIBUTE_NOT_READABLE: 属性声明为不可读
    * - (其它):由 navigator 或 ModuleKind 抛
    */
-  public async get(path: ModulePath, attrName: string, host?: ModuleHostContext): Promise<OperationResult<LlmJsonValue>> {
+  public async get(path: ModuleKind.Path, attrName: string, host?: ModuleKind.HostContext): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
@@ -46,7 +46,7 @@ export class AttributeAccessor {
    * - ATTRIBUTE_NOT_DECLARED
    * - ATTRIBUTE_NOT_WRITABLE
    */
-  public async set(path: ModulePath, attrName: string, value: LlmJsonValue, host?: ModuleHostContext): Promise<OperationResult<void>> {
+  public async set(path: ModuleKind.Path, attrName: string, value: LlmJsonValue, host?: ModuleKind.HostContext): Promise<ModuleKind.OperationResult<void>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
@@ -56,7 +56,7 @@ export class AttributeAccessor {
 }
 
 function isNavigationSuccess(
-  result: ModuleNavigationSuccess | OperationResult<never>,
+  result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
 ): result is ModuleNavigationSuccess {
   return 'moduleKind' in result
 }

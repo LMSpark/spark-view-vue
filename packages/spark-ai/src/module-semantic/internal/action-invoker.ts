@@ -15,14 +15,8 @@
 
 import type { LlmJsonValue } from '../../schema'
 import { LlmSchemaValidator } from '../../schema'
-import type { ModuleHostContext } from '../protocol/module-kind'
-import {
-  type CheckEntry,
-  errorCheck,
-  type OperationResult,
-} from '../protocol/operation-result'
+import { ModuleKind } from '../protocol/module-kind'
 import type { ModuleNavigationSuccess, Navigator } from './navigator'
-import type { ModulePath } from '../protocol/module-path'
 
 export class ActionInvoker {
   public constructor(
@@ -38,11 +32,11 @@ export class ActionInvoker {
    * - (其它):              由 navigator 或 ModuleKind 抛
    */
   public async invoke(
-    path: ModulePath,
+    path: ModuleKind.Path,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
-    host?: ModuleHostContext,
-  ): Promise<OperationResult<LlmJsonValue>> {
+    host?: ModuleKind.HostContext,
+  ): Promise<ModuleKind.OperationResult<LlmJsonValue>> {
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
@@ -50,29 +44,24 @@ export class ActionInvoker {
 
     const action = navResult.moduleKind.findAction(actionName)
     if (action === undefined) {
-      return {
-        ok: false,
-        checks: [
-          errorCheck(
-            'ACTION_NOT_DECLARED',
-            `kind "${navResult.segmentCtx.segment.kind}" 未声明动作 "${actionName}"`,
-            '可调用 describeKind 查看该 kind 的动作表',
-          ),
-        ],
-      }
+      return ModuleKind.OperationResult.failCode(
+        'ACTION_NOT_DECLARED',
+        `kind "${navResult.segmentCtx.segment.kind}" 未声明动作 "${actionName}"`,
+        '可调用 describeKind 查看该 kind 的动作表',
+      )
     }
 
     const validation = LlmSchemaValidator.validateLlmDeserializedParams(args, action.paramsSchema)
     if (!validation.ok) {
-      const checks: CheckEntry[] = validation.issues.map((issue) =>
-        errorCheck('INVALID_ARGS', `${issue.path} ${issue.message}`),
+      const checks: ModuleKind.CheckEntry[] = validation.issues.map((issue) =>
+        ModuleKind.CheckEntry.error('INVALID_ARGS', `${issue.path} ${issue.message}`),
       )
-      const summary: CheckEntry = errorCheck(
+      const summary: ModuleKind.CheckEntry = ModuleKind.CheckEntry.error(
         'INVALID_ARGS',
         LlmSchemaValidator.formatLlmParamValidationIssues(validation.issues),
         '请按 ModuleKind 上声明的 paramsSchema 调整参数后重试',
       )
-      return { ok: false, checks: [summary, ...checks] }
+      return ModuleKind.OperationResult.fail([summary, ...checks])
     }
 
     return navResult.moduleKind.invokeAction(navResult.segmentCtx, actionName, args)
@@ -80,7 +69,7 @@ export class ActionInvoker {
 }
 
 function isNavigationSuccess(
-  result: ModuleNavigationSuccess | OperationResult<never>,
+  result: ModuleNavigationSuccess | ModuleKind.OperationResult<never>,
 ): result is ModuleNavigationSuccess {
   return 'moduleKind' in result
 }

@@ -10,7 +10,7 @@ import {
   getOrCreateChecker,
   extractComponentApiVcm,
   extractAllComponentApisVcm,
-} from '../packages/vite-plugin-spark-catalog/src/index'
+} from '../packages/vite-plugin-spark-catalog/src/extract-component-api-vcm'
 
 const ROOT = resolve('.')
 const FIELD_DIR = 'packages/spark-component/src/components/fields/data-components'

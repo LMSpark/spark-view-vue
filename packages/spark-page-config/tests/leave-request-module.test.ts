@@ -15,7 +15,8 @@ import {
   LEAVE_REQUEST_KIND,
   LEAVE_REQUEST_MODULE_ID,
   createLeaveRequestBusinessRegistration,
-} from '@spark-view/spark-page-config/assistant/registrations'
+} from '@spark-view/spark-page-config/registrations'
+import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
 
 function isRecord(value: unknown): value is Record<string, unknown> {
   return typeof value === 'object' && value !== null && !Array.isArray(value)
@@ -39,7 +40,7 @@ function turn(seq: number): AiHostTurnMeta {
 async function runToolCall(
   registration: AiHostBusinessRegistration,
   scope: AiHostBusinessScope,
-  args: Record<string, unknown>,
+  args: Readonly<Record<string, LlmJsonValue>>,
   seq: number,
 ): Promise<{ record: AiHostFcCallRecord; cleared: boolean; deltas: string[] }> {
   await startRegistrationSession(registration, toAiHostRuntimeScope(scope))
@@ -85,7 +86,7 @@ async function invokeDirect(
   registration: AiHostBusinessRegistration,
   scope: AiHostBusinessScope,
   actionName: string,
-  args: Record<string, unknown> = {},
+  args: Readonly<Record<string, LlmJsonValue>> = {},
 ) {
   return registration.runtime.executeTool('invokeAction', {
     path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]`,

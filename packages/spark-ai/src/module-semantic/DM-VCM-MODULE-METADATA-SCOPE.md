@@ -4,7 +4,7 @@
 
 ## 目标
 
-VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源码、JSDoc、构造函数和能力模块边界中提取语义元数据，生成标准 `ModuleKindOptions` / `ActionSchema` / `AttributeSchema` 输入，再由生成代码创建 `ModuleKind` 并调用 `runtime.registerKind`。
+VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源码、JSDoc、构造函数和能力模块边界中提取语义元数据，生成标准 `ActionSchema` / `AttributeSchema` 输入和 `ModuleKind` factory，再由生成代码创建 `ModuleKind` 并调用 `runtime.registerKind`。
 
 进入协议层后的标准形态仍然只有：
 
@@ -23,24 +23,29 @@ LLM 只通过 `describeKind` 理解语义；不得从 runner 函数属性、函�
 VCM 生成物应投影成协议层已有类型，不新增第二套注册协议：
 
 ```ts
-import { ModuleKind, type ModuleKindOptions } from '@spark-view/spark-ai/module-semantic'
+import {
+  ModuleKind,
+  type ModuleChildrenLister,
+  type ModuleInstanceFinder,
+  type ModuleKindRunner,
+} from '@spark-view/spark-ai/module-semantic'
 
-export const NODE_TREE_KIND_OPTIONS = {
+export const NODE_TREE_KIND_METADATA = {
   kind: 'node-tree',
   name: 'Page Design Node Tree',
   description: '当前页面 SparkNodeTree/rule.json 结构读写能力。',
   attributes: [],
   actions: NODE_TREE_ACTIONS,
   children: [],
-} satisfies ModuleKindOptions
+}
 
 export function createNodeTreeModuleKind(delegates: {
-  readonly runner: ModuleKindOptions['runner']
-  readonly find?: ModuleKindOptions['find']
-  readonly list?: ModuleKindOptions['list']
+  readonly runner: ModuleKindRunner
+  readonly find?: ModuleInstanceFinder
+  readonly list?: ModuleChildrenLister
 }): ModuleKind {
   return new ModuleKind({
-    ...NODE_TREE_KIND_OPTIONS,
+    ...NODE_TREE_KIND_METADATA,
     runner: delegates.runner,
     find: delegates.find,
     list: delegates.list,
@@ -198,7 +203,7 @@ export function createNodeTreeModuleKind(): ModuleKind {
 - `@moduleChild` 与 `children` 不一致时 fail-fast。
 - JSDoc 与 `ActionSchema` / `AttributeSchema` 冲突时，以标准 schema 为准并报诊断，不做静默覆盖。
 - `assistant/registrations/**` 出现 `@moduleAbility`、`@moduleEntity`、`@moduleAttackSurface`、`@moduleTrustBoundary`、`@moduleGuard`、`@moduleMutation` 时 fail-fast；这些属于能力模块本体。
-- VCM 生成的 `ModuleKindOptions` 必须通过 TypeScript `satisfies ModuleKindOptions` 校验。
+- VCM 生成的 metadata 必须在 `new ModuleKind(...)` factory 调用处通过 TypeScript 校验。
 - 生成代码不得包含业务 runner/list/find 函数体；runner/list/find 只能由被 JSDoc 标记的业务运行委托注入或包裹。
 - 构造依赖必须显式出现在生成 factory 参数中，不允许从闭包或全局变量隐式捕获。
 - `@moduleRunner` / `@moduleListDelegate` / `@moduleFindDelegate` 指向不存在的函数、签名不匹配或 kind 绑定冲突时 fail-fast。

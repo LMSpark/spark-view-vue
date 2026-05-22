@@ -6,7 +6,7 @@
 
 import type { LlmJsonValue } from '../schema'
 import { ModuleSemanticToolCodec } from '../module-semantic/host/module-semantic-tool-codec'
-import type { CheckEntry, OperationResult } from '../module-semantic/protocol/operation-result'
+import { ModuleKind } from '../module-semantic/protocol/module-kind'
 import { createAiHostStreamKey, toAiHostRuntimeScope } from './scope'
 import { emitLlmDiagnosticEvent, eventModuleIdFromProtocolCall, stringifyAiHostPayload } from './diagnostics'
 import { toCurrentTurnMessages } from './turn-utils'
@@ -260,35 +260,13 @@ function toProtocolArgs(value: unknown): Readonly<Record<string, LlmJsonValue>> 
   if (value === null || value === undefined || typeof value !== 'object' || Array.isArray(value)) return {}
   const out: Record<string, LlmJsonValue> = {}
   for (const [key, raw] of Object.entries(value)) {
-    const coerced = coerceLlmJsonValue(raw)
+    const coerced = ModuleKind.coerceJsonValue(raw)
     if (coerced !== undefined) out[key] = coerced
   }
   return out
 }
 
-function coerceLlmJsonValue(value: unknown): LlmJsonValue | undefined {
-  if (value === null) return null
-  if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean') return value
-  if (Array.isArray(value)) {
-    const out: LlmJsonValue[] = []
-    for (const item of value) {
-      const coerced = coerceLlmJsonValue(item)
-      if (coerced !== undefined) out.push(coerced)
-    }
-    return out
-  }
-  if (typeof value === 'object') {
-    const out: Record<string, LlmJsonValue> = {}
-    for (const [key, raw] of Object.entries(value)) {
-      const coerced = coerceLlmJsonValue(raw)
-      if (coerced !== undefined) out[key] = coerced
-    }
-    return out
-  }
-  return undefined
-}
-
-function toFunctionCallResult(result: OperationResult<LlmJsonValue>): AiHostFunctionCallResult<unknown> {
+function toFunctionCallResult(result: ModuleKind.OperationResult<LlmJsonValue>): AiHostFunctionCallResult<unknown> {
   if (result.ok) {
     const summary = firstInfoOrWarnSummary(result.checks)
     return {
@@ -303,7 +281,7 @@ function toFunctionCallResult(result: OperationResult<LlmJsonValue>): AiHostFunc
       ok: false,
       code: 'PROTOCOL_FAILURE',
       msg: '协议层返回失败但未携带 error 级 check',
-      fix: '请检查 OperationResult.checks 是否正确填充',
+      fix: '请检查 ModuleKind.OperationResult.checks 是否正确填充',
     }
   }
   return {
@@ -314,11 +292,11 @@ function toFunctionCallResult(result: OperationResult<LlmJsonValue>): AiHostFunc
   }
 }
 
-function firstInfoOrWarnSummary(checks: readonly CheckEntry[] | undefined): string | undefined {
+function firstInfoOrWarnSummary(checks: readonly ModuleKind.CheckEntry[] | undefined): string | undefined {
   return checks?.find((check) => check.level === 'info' || check.level === 'warn')?.message
 }
 
-function pickFirstErrorCheck(checks: readonly CheckEntry[] | undefined): CheckEntry | undefined {
+function pickFirstErrorCheck(checks: readonly ModuleKind.CheckEntry[] | undefined): ModuleKind.CheckEntry | undefined {
   return checks?.find((check) => check.level === 'error')
 }
 

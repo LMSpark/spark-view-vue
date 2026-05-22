@@ -90,6 +90,8 @@ export interface ModuleMetadataGenerationResult {
 }
 
 const MODULE_METADATA_SCHEMA_VERSION = 1
+const MODULE_ATTACK_SURFACE_RISKS = ['low', 'medium', 'high', 'critical'] as const
+const MODULE_MUTATION_MODES = ['read', 'write', 'delete', 'execute', 'read-write'] as const
 
 const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
   'packages/spark-page-config/src/page/model/spark-node-tree.ts',
@@ -97,7 +99,7 @@ const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
 ] as const
 
 const PAGE_DESIGN_MODULE_METADATA_OUT_FILE =
-  'packages/spark-page-config/src/assistant/registrations/page-design/generated/page-design-ability-metadata.generated.json'
+  'packages/spark-page-config/src/registrations/page-design-ability-metadata.generated.json'
 
 export function generatePageDesignModuleMetadata(root: string): ModuleMetadataGenerationResult {
   return generateModuleAbilityMetadata(root, {
@@ -126,6 +128,7 @@ export function generateModuleAbilityMetadata(
     }
     return extractAbilityMetadata(root, sourceFile, checker)
   })
+  validateGeneratedAbilities(abilities)
 
   const outFile = resolve(root, options.outFile)
   mkdirSync(dirname(outFile), { recursive: true })
@@ -170,7 +173,7 @@ function createAbilityMetadata(
   const entity = parseEntity(firstTag(tags, 'moduleEntity'))
   const scope = firstTagText(tags, 'moduleScope')
 
-  return {
+  const ability: ModuleAbilityMetadata = {
     abilityId,
     ...(kind !== undefined ? { kind } : {}),
     ...(name !== undefined ? { name } : {}),
@@ -190,6 +193,8 @@ function createAbilityMetadata(
       className: node.name?.text ?? '(anonymous)',
     },
   }
+  validateGeneratedActions(ability)
+  return ability
 }
 
 function createActionMetadata(
@@ -327,8 +332,8 @@ function parseAttackSurfaces(tags: readonly ModuleDocTag[]): ModuleAttackSurface
     if (id === undefined || risk === undefined || descriptionParts.length === 0) {
       throw invalidTag(tag, 'expected "<id> <risk> <description>"')
     }
-    if (!['low', 'medium', 'high'].includes(risk)) {
-      throw invalidTag(tag, 'risk must be one of: low, medium, high')
+    if (!isModuleAttackSurfaceRisk(risk)) {
+      throw invalidTag(tag, `risk must be one of: ${MODULE_ATTACK_SURFACE_RISKS.join(', ')}`)
     }
     return {
       id,
@@ -344,8 +349,8 @@ function parseMutations(tags: readonly ModuleDocTag[]): ModuleMutationMetadata[]
     if (resource === undefined || mode === undefined || descriptionParts.length === 0) {
       throw invalidTag(tag, 'expected "<resource> <mode> <description>"')
     }
-    if (!['read', 'write', 'read-write'].includes(mode)) {
-      throw invalidTag(tag, 'mode must be one of: read, write, read-write')
+    if (!isModuleMutationMode(mode)) {
+      throw invalidTag(tag, `mode must be one of: ${MODULE_MUTATION_MODES.join(', ')}`)
     }
     return {
       resource,
@@ -410,6 +415,34 @@ function invalidTag(tag: ModuleDocTag, message: string): Error {
   return new Error(
     `Invalid @${tag.name} at ${normalizePath(sourceFile.fileName)}:${position.line + 1}:${position.character + 1}: ${message}`,
   )
+}
+
+function validateGeneratedAbilities(abilities: readonly ModuleAbilityMetadata[]): void {
+  const seen = new Set<string>()
+  for (const ability of abilities) {
+    if (seen.has(ability.abilityId)) {
+      throw new Error(`Duplicate @moduleAbility generated: ${ability.abilityId}`)
+    }
+    seen.add(ability.abilityId)
+  }
+}
+
+function validateGeneratedActions(ability: ModuleAbilityMetadata): void {
+  const seen = new Set<string>()
+  for (const action of ability.actions) {
+    if (seen.has(action.name)) {
+      throw new Error(`Duplicate @moduleAction generated in ${ability.abilityId}: ${action.name}`)
+    }
+    seen.add(action.name)
+  }
+}
+
+function isModuleAttackSurfaceRisk(value: string): value is typeof MODULE_ATTACK_SURFACE_RISKS[number] {
+  return MODULE_ATTACK_SURFACE_RISKS.includes(value as typeof MODULE_ATTACK_SURFACE_RISKS[number])
+}
+
+function isModuleMutationMode(value: string): value is typeof MODULE_MUTATION_MODES[number] {
+  return MODULE_MUTATION_MODES.includes(value as typeof MODULE_MUTATION_MODES[number])
 }
 
 function formatGeneratedMetadata(abilities: readonly ModuleAbilityMetadata[]): string {

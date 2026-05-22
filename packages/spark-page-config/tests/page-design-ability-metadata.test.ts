@@ -1,11 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
-import {
-  DATASET_ACTIONS,
-} from '@spark-view/spark-page-config/assistant/registrations'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import moduleMetadataDocument from '../src/assistant/registrations/page-design/generated/page-design-ability-metadata.generated.json'
-import { NODE_TREE_MODULE_ACTIONS } from '../src/assistant/registrations/page-design/module-semantic/node-tree-module-kind'
+import moduleMetadataDocument from '../src/registrations/page-design-ability-metadata.generated.json'
+import { PageDesignNodeTreeModuleKind } from '../src/registrations/node-tree-tool-catalog'
+import { PageDesignDatasetModuleKind } from '../src/registrations/dataset-tool-catalog'
 
 interface GeneratedAbilityMetadataDocument {
   readonly schemaVersion: number
@@ -89,7 +87,9 @@ describe('page-design ability metadata generation', () => {
       mode: 'read-write',
       description: 'SparkNodeTree 公开写方法直接修改当前页面 rule.json live model。',
     })
-    expect(sortedActionNames(nodeTree.actions)).toEqual(sortedActionNames(NODE_TREE_MODULE_ACTIONS))
+    expect(sortedActionNames(nodeTree.actions)).toEqual(
+      sortedActionNames(new PageDesignNodeTreeModuleKind({ service: undefined as any, contextFactory: undefined as any }).actions),
+    )
 
     const dataset = requireAbility(document.abilities, 'pageDesign.dataset')
     expect(dataset.kind).toBe('dataset')
@@ -107,7 +107,9 @@ describe('page-design ability metadata generation', () => {
       mode: 'read-write',
       description: 'DataSetCrudTool 公开写方法直接修改当前页面 pagedata.json live model。',
     })
-    expect(sortedActionNames(dataset.actions)).toEqual(sortedActionNames(DATASET_ACTIONS))
+    expect(sortedActionNames(dataset.actions)).toEqual(
+      sortedActionNames(new PageDesignDatasetModuleKind({ service: undefined as any, contextFactory: undefined as any }).actions),
+    )
     expect(actionMethodNames(dataset.actions).every(methodName => methodName in DataSetCrudTool.prototype)).toBe(true)
   })
 })

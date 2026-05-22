@@ -1,16 +1,21 @@
 import { mount } from '@vue/test-utils'
 import { describe, expect, it } from 'vitest'
-import { createRuleJsonSchema, createRuleTreePolicy } from '@spark-view/spark-page-config/page/workspace'
-
 import {
-  DEV_COMPONENT_METADATA,
-  DEV_PROP_ENUMS,
-  DEV_REQUIRED_PROPS,
-  DEV_TYPES,
-} from '@/views/app/dev-system/policies/devComponentMetadata'
+  createRuleEditorComponentMetadata,
+  createRuleJsonSchema,
+  createRuleTreePolicy,
+  type RuleEditorComponentCatalog,
+} from '@spark-view/spark-page-config/capabilities'
+import componentCatalog from '@spark-view/spark-page-config/registrations/payloads/component-catalog.json'
 
-const rulePolicy = createRuleTreePolicy(DEV_COMPONENT_METADATA)
-const RULE_JSON_SCHEMA = createRuleJsonSchema(DEV_COMPONENT_METADATA)
+const pageDesignComponentCatalog = componentCatalog as RuleEditorComponentCatalog
+const DEV_COMPONENT_METADATA = createRuleEditorComponentMetadata(pageDesignComponentCatalog)
+const DEV_PROP_ENUMS = DEV_COMPONENT_METADATA.propEnums
+const DEV_REQUIRED_PROPS = DEV_COMPONENT_METADATA.requiredProps
+const DEV_TYPES = DEV_COMPONENT_METADATA.types
+
+const rulePolicy = createRuleTreePolicy(pageDesignComponentCatalog)
+const RULE_JSON_SCHEMA = createRuleJsonSchema(pageDesignComponentCatalog)
 
 function requireValue<T>(value: T | null | undefined, message: string): T {
   if (value !== null && value !== undefined) return value
@@ -47,13 +52,13 @@ describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
     })
 
     // 列表可见
-    expect(wrapper.text()).toContain('2 个组件')
+    expect(wrapper.text()).toContain(`${DEV_TYPES.length} 个组件`)
     expect(wrapper.text()).toContain('r-table')
     expect(wrapper.text()).toContain('r-text')
 
     // 点击卡片展开 props
     const cards = wrapper.findAll('.skill-card')
-    expect(cards.length).toBe(2)
+    expect(cards.length).toBe(DEV_TYPES.length)
     await cards[0]!.trigger('click')
     expect(wrapper.find('.props-table').exists()).toBe(true)
 
@@ -115,5 +120,14 @@ describe('Ring5 验收闭环（SkillCatalog + DevSystem）', () => {
     expect(enums).toEqual(DEV_TYPES)
     expect(enums.length).toBeGreaterThan(0)
     expect(properties['id']).toBeDefined()
+  })
+
+  it('component-catalog 保留 LLM 语料字段', () => {
+    const table = requireValue(pageDesignComponentCatalog.components['r-table'], 'component-catalog 缺少 r-table')
+
+    expect(table.notes).toContain('toolbar/filter/actions')
+    expect(table.notes).toContain('dataViewKey')
+    expect(table.provides).toEqual(expect.arrayContaining(['DATA_SOURCE']))
+    expect(table.consumes).toEqual(expect.arrayContaining(['PAGE_DATASET', 'PAGE_SERVICE']))
   })
 })

@@ -8,11 +8,11 @@ import {
 import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
-} from '@spark-view/spark-page-config/assistant/registrations'
+} from '@spark-view/spark-page-config/registrations'
 import {
   PageDesignService,
   type PageDesignEditHost,
-} from '@spark-view/spark-page-config/page/workspace'
+} from '@spark-view/spark-page-config/capabilities'
 import { SparkNodeTree } from '@spark-view/spark-page-config/page/model'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 

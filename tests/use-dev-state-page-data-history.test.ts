@@ -62,7 +62,7 @@ vi.mock('@/services/api-paths', () => ({
   getNavApi: () => '/api/navigation',
 }))
 
-import { canonicalizePageDataJson } from '@spark-view/spark-page-config/page/workspace'
+import { canonicalizePageDataJson } from '@spark-view/spark-page-config/capabilities'
 import { PAGE_FILE_NAMES, useDevState, type PageFileName } from '../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
