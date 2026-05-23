@@ -1,6 +1,10 @@
 #!/usr/bin/env node
 
 import { randomUUID } from 'node:crypto'
+import {
+  createAiHostAppSseEventHub,
+  subscribeAiHostAppSseEvents,
+} from '../packages/spark-ai/src/host/transport/app-sse-events.ts'
 
 const AUTH_TENANT_ID = process.env.AI_TENANT_ID || 'lmspark'
 const AUTH_USERNAME = process.env.AI_USERNAME || 'admin'
@@ -124,98 +128,44 @@ async function postJson(url, payload) {
   return await response.json()
 }
 
-function parseSseBuffer(state, chunk, onEvent) {
-  state.buffer += chunk
-  const lines = state.buffer.split(/\r?\n/)
-  state.buffer = lines.pop() ?? ''
-
-  for (const line of lines) {
-    if (line.startsWith('event:')) {
-      state.eventType = line.slice(6).trim()
-      continue
-    }
-    if (line.startsWith('data:')) {
-      state.dataLines.push(line.slice(5).trim())
-      continue
-    }
-    if (line === '') {
-      const eventType = state.eventType
-      const dataText = state.dataLines.join('\n').trim()
-      state.eventType = ''
-      state.dataLines = []
-
-      if (!eventType || !dataText) continue
-      onEvent(eventType, dataText)
-    }
-  }
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 async function waitEventWithTrigger({
-  eventsUrl,
+  eventHub,
   targetEvent,
   requestId,
   timeoutMs,
   trigger,
 }) {
-  const controller = new AbortController()
-  const timeout = setTimeout(() => controller.abort(), timeoutMs)
+  return await new Promise((resolve, reject) => {
+    const timeout = setTimeout(() => {
+      stop()
+      reject(new Error(`等待 ${targetEvent} 超时（${timeoutMs}ms）`))
+    }, timeoutMs)
+    const stop = eventHub.on(targetEvent, (event) => {
+      const data = event.data
+      if (!isRecord(data) || data.requestId !== requestId) return
+      clearTimeout(timeout)
+      stop()
+      resolve(data)
+    })
 
-  const response = await fetch(eventsUrl, {
-    method: 'GET',
-    headers: { Accept: 'text/event-stream', ...createAuthHeaders() },
-    signal: controller.signal,
-  })
-
-  if (!response.ok || !response.body) {
-    clearTimeout(timeout)
-    throw new Error(`SSE 连接失败: ${response.status} ${response.statusText}`)
-  }
-
-  const reader = response.body.getReader()
-  const decoder = new TextDecoder()
-  const state = { buffer: '', eventType: '', dataLines: [] }
-  let matched = null
-
-  try {
-    await trigger()
-
-    while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
-
-      const text = decoder.decode(value, { stream: true })
-      parseSseBuffer(state, text, (eventType, dataText) => {
-        if (eventType !== targetEvent) return
-        try {
-          const parsed = JSON.parse(dataText)
-          if (parsed?.requestId === requestId) {
-            matched = parsed
-          }
-        } catch {
-          // ignore malformed payload
-        }
+    Promise.resolve()
+      .then(trigger)
+      .catch((error) => {
+        clearTimeout(timeout)
+        stop()
+        reject(error)
       })
-
-      if (matched) return matched
-    }
-  } catch (error) {
-    if (controller.signal.aborted) {
-      throw new Error(`等待 ${targetEvent} 超时（${timeoutMs}ms）`) 
-    }
-    throw error
-  } finally {
-    clearTimeout(timeout)
-    controller.abort()
-    reader.releaseLock()
-  }
-
-  throw new Error(`未收到匹配 requestId=${requestId} 的 ${targetEvent}`)
+  })
 }
 
 async function runIteration({
   index,
   options,
-  eventsUrl,
+  eventHub,
   routeUrl,
   screenshotUrl,
 }) {
@@ -224,7 +174,7 @@ async function runIteration({
   const screenshotRequestId = randomUUID()
 
   const routeResult = await waitEventWithTrigger({
-    eventsUrl,
+    eventHub,
     targetEvent: 'debug-route-result',
     requestId: routeRequestId,
     timeoutMs: options.timeoutMs,
@@ -244,7 +194,7 @@ async function runIteration({
   }
 
   const screenshotResult = await waitEventWithTrigger({
-    eventsUrl,
+    eventHub,
     targetEvent: 'debug-screenshot-result',
     requestId: screenshotRequestId,
     timeoutMs: options.timeoutMs,
@@ -294,12 +244,26 @@ async function main() {
   console.log('[sse-loop] 健康检查中...')
   await ensureOk(healthUrl, '后端 health')
 
+  const eventHub = createAiHostAppSseEventHub()
+  const subscription = subscribeAiHostAppSseEvents({
+    url: eventsUrl,
+    headers: createAuthHeaders(),
+    events: ['debug-route-result', 'debug-screenshot-result'],
+    onEvent: eventHub.emit,
+  })
+  await subscription.opened
+
   const records = []
-  for (let index = 1; index <= options.iterations; index++) {
-    console.log(`[sse-loop] 第 ${index}/${options.iterations} 轮：刷新并截图...`)
-    const record = await runIteration({ index, options, eventsUrl, routeUrl, screenshotUrl })
-    records.push(record)
-    console.log(`[sse-loop] 第 ${index} 轮成功 fileId=${record.fileId ?? 'N/A'}`)
+  try {
+    for (let index = 1; index <= options.iterations; index++) {
+      console.log(`[sse-loop] 第 ${index}/${options.iterations} 轮：刷新并截图...`)
+      const record = await runIteration({ index, options, eventHub, routeUrl, screenshotUrl })
+      records.push(record)
+      console.log(`[sse-loop] 第 ${index} 轮成功 fileId=${record.fileId ?? 'N/A'}`)
+    }
+  } finally {
+    subscription.close()
+    await subscription.closed
   }
 
   console.log('[sse-loop] ✅ 闭环验证完成')

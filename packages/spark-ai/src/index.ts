@@ -168,6 +168,11 @@ export {
 } from './host/transport/fetch-transport'
 
 export {
+  createAiHostAppSseEventHub,
+  subscribeAiHostAppSseEvents,
+} from './host/transport/app-sse-events'
+
+export {
   uploadAiHostAttachment,
 } from './host/transport/attachment-upload'
 
@@ -237,3 +242,12 @@ export type {
 export type {
   AiHostParsedSseEvent,
 } from './host/transport/sse-parser'
+
+export type {
+  AiHostAppSseEvent,
+  AiHostAppSseEventName,
+  AiHostAppSseEventHub,
+  AiHostAppSseListener,
+  AiHostAppSseSubscribeOptions,
+  AiHostAppSseSubscription,
+} from './host/transport/app-sse-events'

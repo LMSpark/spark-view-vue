@@ -137,9 +137,23 @@ export {
   parseAiHostSseBlocks,
 } from './transport/fetch-transport'
 
+export {
+  createAiHostAppSseEventHub,
+  subscribeAiHostAppSseEvents,
+} from './transport/app-sse-events'
+
 export type {
   AiHostParsedSseEvent,
 } from './transport/sse-parser'
+
+export type {
+  AiHostAppSseEvent,
+  AiHostAppSseEventName,
+  AiHostAppSseEventHub,
+  AiHostAppSseListener,
+  AiHostAppSseSubscribeOptions,
+  AiHostAppSseSubscription,
+} from './transport/app-sse-events'
 
 // ── 10. 附件上传 ────────────────────────────────────────────
 

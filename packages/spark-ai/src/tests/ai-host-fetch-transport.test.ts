@@ -2,7 +2,9 @@ import { describe, expect, it, vi } from 'vitest'
 
 import {
   AiHostFetchTransport,
+  createAiHostAppSseEventHub,
   parseAiHostSseBlocks,
+  subscribeAiHostAppSseEvents,
   type AiHostFetch,
   type AiHostSseEvent,
 } from '../host/index'
@@ -91,6 +93,28 @@ function createV4SseEvent(event: string, data: unknown, terminal = false): strin
   ].join('\n')
 }
 
+function createV4AppSseEvent(event: string, data: unknown): string {
+  return [
+    `event: ${event}`,
+    `data: ${JSON.stringify({
+      protocolVersion: 4,
+      ok: true,
+      data,
+      error: null,
+      context: {
+        requestId: 'app-request-1',
+      },
+      event: {
+        transport: 'sse',
+        name: event,
+        terminal: false,
+      },
+    })}`,
+    '',
+    '',
+  ].join('\n')
+}
+
 function createV4SseError(code: string, message: string): string {
   return [
     'event: error',
@@ -122,12 +146,74 @@ function createV4SseError(code: string, message: string): string {
   ].join('\n')
 }
 
+function createOpenAiSseChunk(data: unknown): string {
+  return [
+    `data: ${JSON.stringify(data)}`,
+    '',
+    '',
+  ].join('\n')
+}
+
 describe('AiHostFetchTransport', () => {
   it('parses complete SSE blocks and leaves partial data buffered', () => {
     const parsed = parseAiHostSseBlocks('event: delta\r\ndata: hello\r\n\r\nevent: result\r\ndata: {"ok":true}')
 
     expect(parsed.events).toEqual([{ event: 'delta', data: 'hello' }])
     expect(parsed.rest).toBe('event: result\ndata: {"ok":true}')
+  })
+
+  it('subscribes to APP common SSE events through the AI event API', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      createV4AppSseEvent('page-config', { pageId: 'home' }),
+      createV4AppSseEvent('notification', { title: 'Done', message: 'Build complete' }),
+      createV4AppSseEvent('debug-route-result', { requestId: 'debug-1', status: 'success' }),
+    ]))
+    const events: Array<{ name: string, data: unknown, requestId?: string | undefined }> = []
+    const hub = createAiHostAppSseEventHub()
+    const stopNotification = hub.on('notification', (event) => {
+      events.push({
+        name: event.name,
+        data: event.data,
+        requestId: event.context?.requestId,
+      })
+    })
+    const stopDebugRoute = hub.on('debug-route-result', (event) => {
+      events.push({
+        name: event.name,
+        data: event.data,
+        requestId: event.context?.requestId,
+      })
+    })
+
+    const subscription = subscribeAiHostAppSseEvents({
+      url: '/api/events',
+      fetch: fetchClient,
+      events: ['notification', 'debug-route-result'],
+      headers: { Authorization: 'Bearer token' },
+      onEvent: hub.emit,
+    })
+
+    await subscription.closed
+    stopNotification()
+    stopDebugRoute()
+
+    expect(fetchClient).toHaveBeenCalledTimes(1)
+    const init = fetchClient.mock.calls[0]?.[1]
+    const headers = new Headers(init?.headers)
+    expect(headers.get('Accept')).toBe('text/event-stream')
+    expect(headers.get('Authorization')).toBe('Bearer token')
+    expect(events).toEqual([
+      {
+        name: 'notification',
+        data: { title: 'Done', message: 'Build complete' },
+        requestId: 'app-request-1',
+      },
+      {
+        name: 'debug-route-result',
+        data: { requestId: 'debug-1', status: 'success' },
+        requestId: 'app-request-1',
+      },
+    ])
   })
 
   it('streams an AI turn through package-owned SSE transport', async () => {
@@ -185,6 +271,9 @@ describe('AiHostFetchTransport', () => {
     expect(fetchClient).toHaveBeenCalledOnce()
     const [, init] = fetchClient.mock.calls[0] ?? []
     expect(init?.method).toBe('POST')
+    const headers = init?.headers as Headers
+    expect(headers.get('Accept')).toBe('text/event-stream')
+    expect(headers.get('Content-Type')).toBe('application/json')
     expect(init?.body).toContain('"protocolVersion":4')
     expect(init?.body).toContain('"moduleId":"demoRuntime"')
     const body = JSON.parse(String(init?.body))
@@ -194,6 +283,83 @@ describe('AiHostFetchTransport', () => {
       turnKey,
       streamKey,
     })
+  })
+
+  it('accepts snake_case tool_calls in V4 result events', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      createV4SseEvent('result', {
+        text: '',
+        tool_calls: [{ id: 'call-1', type: 'function', function: { name: 'invokeAction', arguments: '{}' } }],
+      }),
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+
+    const result = await transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+    })
+
+    expect(result.toolCalls).toEqual([
+      { id: 'call-1', type: 'function', function: { name: 'invokeAction', arguments: '{}' } },
+    ])
+  })
+
+  it('assembles raw OpenAI SSE tool_calls when the backend only relays chunks', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      createOpenAiSseChunk({
+        choices: [{
+          delta: {
+            tool_calls: [{
+              index: 0,
+              id: 'call-1',
+              type: 'function',
+              function: { name: 'invokeAction', arguments: '{"path":' },
+            }],
+          },
+        }],
+      }),
+      createOpenAiSseChunk({
+        choices: [{
+          delta: {
+            tool_calls: [{
+              index: 0,
+              function: { arguments: '"/pageDesign[page-1]","actionName":"countNodes","args":{}}' },
+            }],
+          },
+        }],
+      }),
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+
+    const result = await transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+    })
+
+    expect(result.toolCalls).toEqual([
+      {
+        id: 'call-1',
+        type: 'function',
+        function: {
+          name: 'invokeAction',
+          arguments: '{"path":"/pageDesign[page-1]","actionName":"countNodes","args":{}}',
+        },
+      },
+    ])
   })
 
   it('allows callers to override backend window size for long tool loops', async () => {
@@ -272,11 +438,46 @@ describe('AiHostFetchTransport', () => {
     })).resolves.toBeUndefined()
 
     const [, init] = fetchClient.mock.calls[0] ?? []
+    const headers = init?.headers as Headers
+    expect(headers.get('Accept')).toBe('application/json')
+    expect(headers.get('Content-Type')).toBe('application/json')
     const body = JSON.parse(String(init?.body))
     expect(body.turn).toEqual({
       turnId: 'turn-1',
       turnKey,
     })
     expect(body.turn).not.toHaveProperty('streamKey')
+  })
+
+  it('accepts V4 append-message identity from envelope context', async () => {
+    const fetchClient = createFetch(async () => createJsonResponse({
+      protocolVersion: 4,
+      ok: true,
+      data: {
+        appended: 2,
+      },
+      error: null,
+      context: {
+        requestId: 'request-1',
+        session: { sessionId: 'session-1' },
+        turn: {
+          turnId: 'turn-1',
+          turnKey,
+        },
+      },
+      event: {
+        transport: 'http',
+        name: 'response',
+        terminal: true,
+      },
+    }))
+    const transport = new AiHostFetchTransport({ fetch: fetchClient })
+
+    await expect(transport.appendMessages({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      messages: [{ role: 'assistant', content: 'done' }],
+    })).resolves.toBeUndefined()
   })
 })

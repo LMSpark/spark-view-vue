@@ -1,43 +1,75 @@
 import { computed, reactive, onBeforeUnmount } from 'vue'
-import { onPageConfigChange } from '@/services/sse-events'
-import type { FileChangeEvent } from '@/services/sse-events'
+import { onNotificationEvent, onPageConfigChange } from '@/services/sse-events'
+import type { FileChangeEvent, ServerNotificationEvent } from '@/services/sse-events'
 
 export type NotificationItem = {
   id: number
   title: string
   message: string
   time: number
-  read: boolean}
+  read: boolean
+  remoteId?: string
+  level?: string
+  category?: string
+  source?: string
+  actionUrl?: string}
 
 /** 模块级状态（单例共享） */
 const notifications = reactive<NotificationItem[]>([])
 let _nextId = 1
-let _unsubscribe: (() => void) | null = null
+let _unsubscribers: Array<() => void> = []
 let _refCount = 0
 
 const MAX_NOTIFICATIONS = 50
 
+function pushNotification(item: NotificationItem): void {
+  notifications.unshift(item)
+  if (notifications.length > MAX_NOTIFICATIONS) {
+    notifications.splice(MAX_NOTIFICATIONS)
+  }
+}
+
+function createNotificationItem(event: ServerNotificationEvent): NotificationItem {
+  const item: NotificationItem = {
+    id: _nextId++,
+    title: event.title,
+    message: event.message,
+    time: event.timestamp,
+    read: false,
+  }
+  if (event.notificationId !== undefined) item.remoteId = event.notificationId
+  if (event.level !== undefined) item.level = event.level
+  if (event.category !== undefined) item.category = event.category
+  if (event.source !== undefined) item.source = event.source
+  if (event.actionUrl !== undefined) item.actionUrl = event.actionUrl
+  return item
+}
+
 function connect(): void {
-  if (_unsubscribe) return
-  _unsubscribe = onPageConfigChange((event: FileChangeEvent) => {
-    const item: NotificationItem = {
-      id: _nextId++,
-      title: `页面配置变更`,
-      message: `${event.pageId} / ${event.file}`,
-      time: event.timestamp,
-      read: false,
-    }
-    notifications.unshift(item)
-    // 超限裁剪
-    if (notifications.length > MAX_NOTIFICATIONS) {
-      notifications.splice(MAX_NOTIFICATIONS)
-    }
-  })
+  if (_unsubscribers.length > 0) return
+  _unsubscribers = [
+    onNotificationEvent((event) => {
+      pushNotification(createNotificationItem(event))
+    }),
+    onPageConfigChange((event: FileChangeEvent) => {
+      pushNotification({
+        id: _nextId++,
+        title: '页面配置变更',
+        message: `${event.pageId} / ${event.file}`,
+        time: event.timestamp,
+        read: false,
+        category: 'page-config',
+        source: 'sse',
+      })
+    }),
+  ]
 }
 
 function disconnect(): void {
-  _unsubscribe?.()
-  _unsubscribe = null
+  for (const unsubscribe of _unsubscribers) {
+    unsubscribe()
+  }
+  _unsubscribers = []
 }
 
 export function useNotifications() {

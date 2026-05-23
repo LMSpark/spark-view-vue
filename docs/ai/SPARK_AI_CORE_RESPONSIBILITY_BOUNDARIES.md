@@ -4,7 +4,7 @@
 
 ## 一句话结论
 
-`@spark-view/spark-ai` 是框架无关的 AI Host 与 module-semantic 协议包。它负责 LLM JSON Schema、模块语义协议、Host 会话记录、工具循环和传输契约；它不拥有 page-design、leave-request 等业务 live state，也不导入 Vue、Element Plus、Router 或 `spark-page-config`。
+`@spark-view/spark-ai` 是框架无关的 AI Host 与 module-semantic 协议包。它负责 LLM JSON Schema、模块语义协议、Host 会话记录、工具循环、传输契约和 APP SSE 事件桥接；它不拥有 page-design、leave-request 等业务 live state，也不导入 Vue、Element Plus、Router 或 `spark-page-config`。
 
 ## 物理分层
 
@@ -35,6 +35,7 @@ packages/spark-ai/src/
 | `host/session` | 会话历史和函数调用历史 | 业务 live state |
 | `host/tool-loop` | LLM round loop、tool-call executor、result mapper、payload codec、diagnostic event | 具体业务动作 |
 | `host/transport` | transport 抽象、fetch/SSE、HTTP envelope、SSE stream reader | 模型策略、业务函数执行 |
+| `host/transport/app-sse-events.ts` | 订阅 APP 公共 `/api/events`、解 v4 envelope、校验 SSE event、发射规范化事件 | 路由跳转、截图上传、通知 UI、页面诊断面板 |
 | 业务包 | 注册 `ModuleKind`、提供业务 service 和 live state | 改写通用 AI 协议 |
 
 ## 调用链路
@@ -52,6 +53,7 @@ packages/spark-ai/src/
 
 - 不要让 `spark-ai` 直接或间接导入 `spark-page-config`。
 - 不要让 `spark-ai` 直接导入 Vue、Element Plus、Router 或页面组件。
+- 不要把 route、screenshot、notification 的业务处理下沉到 `spark-ai`；`spark-ai` 只提供 APP SSE 订阅和事件发射。
 - 不要恢复旧 `core/protocol/adapter` 公共 subpath。
 - 不要把业务 live state 放进 Host session store。
 - 不要用私有参数 DSL；action 参数必须是标准 JSON Schema object root。

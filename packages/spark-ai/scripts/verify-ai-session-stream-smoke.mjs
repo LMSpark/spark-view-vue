@@ -1,10 +1,13 @@
 #!/usr/bin/env node
 
+import { randomUUID } from 'node:crypto'
+
 const baseUrl = process.env.AI_BACKEND_URL?.replace(/\/+$/, '') || 'http://localhost:8080'
 const tenantId = process.env.AI_TENANT_ID || 'lmspark'
 const projectId = process.env.AI_PROJECT_ID || ''
 const username = process.env.AI_USERNAME || 'admin'
 const password = process.env.AI_PASSWORD || 'admin123'
+const smokeModuleId = 'spark-ai-smoke'
 
 function unwrapEnvelope(payload) {
   if (!payload || typeof payload !== 'object' || typeof payload.ok !== 'boolean') return payload
@@ -57,15 +60,24 @@ function flushEvent(state, records) {
 }
 
 async function createSession(token) {
+  const requestedSessionId = `smoke-session-${randomUUID()}`
+  const scope = {
+    moduleId: smokeModuleId,
+    moduleInstanceId: requestedSessionId,
+    instanceId: requestedSessionId,
+  }
   const response = await fetch(`${baseUrl}/api/ai/sessions`, {
     method: 'POST',
     headers: buildScopedHeaders(token),
     body: JSON.stringify({
       protocolVersion: 4,
+      sessionId: requestedSessionId,
+      reuseScopeSession: false,
       systemPrompt: 'You are a concise assistant.',
       userPrompt: 'Reply with ok only, no tools.',
       windowSize: 8,
       mode: 'stills',
+      scope,
       tools: null,
     }),
   })
@@ -78,9 +90,13 @@ async function createSession(token) {
   if (typeof payload?.sessionId !== 'string' || payload.sessionId === '') {
     throw new Error('create session failed: missing sessionId')
   }
+  if (payload.sessionId !== requestedSessionId) {
+    throw new Error(`create session returned unexpected sessionId: ${payload.sessionId}`)
+  }
   return {
     sessionId: payload.sessionId,
     protocolVersion: payload.protocolVersion,
+    scope,
   }
 }
 
@@ -95,7 +111,60 @@ async function destroySession(token, sessionId) {
   }).catch(() => undefined)
 }
 
-async function streamTurn(token, sessionId) {
+function parseSseRecordData(record) {
+  try {
+    return JSON.parse(record.data)
+  } catch (error) {
+    throw new Error(`SSE ${record.event} data is not JSON: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+function assertV4SseEnvelope(record, expected) {
+  const payload = parseSseRecordData(record)
+  if (!payload || typeof payload !== 'object') {
+    throw new Error(`SSE ${record.event} data is not an object`)
+  }
+  if (payload.protocolVersion !== 4) {
+    throw new Error(`SSE ${record.event} protocolVersion expected 4, got ${payload.protocolVersion}`)
+  }
+  if (payload.event?.transport !== 'sse') {
+    throw new Error(`SSE ${record.event} envelope event.transport mismatch`)
+  }
+  if (payload.event?.name !== record.event) {
+    throw new Error(`SSE event name mismatch: frame=${record.event}, envelope=${payload.event?.name}`)
+  }
+  if (typeof payload.ok !== 'boolean') {
+    throw new Error(`SSE ${record.event} envelope missing ok boolean`)
+  }
+  if (!payload.context || typeof payload.context !== 'object') {
+    throw new Error(`SSE ${record.event} envelope missing context`)
+  }
+  if (typeof payload.context.requestId !== 'string' || payload.context.requestId === '') {
+    throw new Error(`SSE ${record.event} envelope missing context.requestId`)
+  }
+  if (payload.context.session?.sessionId !== expected.sessionId) {
+    throw new Error(`SSE ${record.event} sessionId mismatch`)
+  }
+  if (payload.context.turn?.turnId !== expected.turnId) {
+    throw new Error(`SSE ${record.event} turnId mismatch`)
+  }
+  if (payload.context.stream?.streamKey !== expected.streamKey) {
+    throw new Error(`SSE ${record.event} streamKey mismatch`)
+  }
+  if (record.event === 'done' && payload.event?.terminal !== true) {
+    throw new Error('SSE done envelope must be terminal')
+  }
+  if (record.event !== 'done' && record.event !== 'error' && payload.event?.terminal !== false) {
+    throw new Error(`SSE ${record.event} envelope must be non-terminal`)
+  }
+  return payload
+}
+
+async function streamTurn(token, created) {
+  const { sessionId, scope } = created
+  const turnId = `smoke-turn-${randomUUID()}`
+  const turnKey = `${scope.moduleId}::${scope.moduleInstanceId}::${turnId}`
+  const streamKey = `${turnKey}::llm-stream`
   const response = await fetch(`${baseUrl}/api/ai/sessions/${sessionId}/turn/stream`, {
     method: 'POST',
     headers: {
@@ -107,10 +176,11 @@ async function streamTurn(token, sessionId) {
     },
     body: JSON.stringify({
       protocolVersion: 4,
+      scope,
       turn: {
-        turnId: 'smoke-turn',
-        turnKey: 'smoke::session::smoke-turn',
-        streamKey: 'smoke::session::smoke-turn::llm-stream',
+        turnId,
+        turnKey,
+        streamKey,
       },
       messages: [],
     }),
@@ -132,6 +202,8 @@ async function streamTurn(token, sessionId) {
   let resultPayload = null
   let errorPayload = ''
   const eventOrder = []
+  const envelopeChecks = []
+  const expectedContext = { sessionId, turnId, streamKey }
 
   outer: for (;;) {
     const { done, value } = await reader.read()
@@ -146,19 +218,22 @@ async function streamTurn(token, sessionId) {
         const record = flushEvent(state, records)
         if (!record) continue
         eventOrder.push(record.event)
+        const envelope = assertV4SseEnvelope(record, expectedContext)
+        envelopeChecks.push({
+          event: record.event,
+          ok: envelope.ok,
+          terminal: envelope.event.terminal,
+          requestId: envelope.context.requestId,
+        })
 
         if (record.event === 'result') {
           sawResult = true
-          try {
-            resultPayload = unwrapEnvelope(JSON.parse(record.data))
-          } catch {
-            resultPayload = { text: record.data }
-          }
+          resultPayload = unwrapEnvelope(envelope)
         }
 
         if (record.event === 'error') {
           sawError = true
-          errorPayload = record.data
+          errorPayload = envelope.error?.message || envelope.error?.code || record.data
         }
 
         if (record.event === 'done') {
@@ -182,6 +257,8 @@ async function streamTurn(token, sessionId) {
   flushEvent(state, records)
 
   return {
+    turnId,
+    streamKey,
     protocolChecks: {
       sawResult,
       sawDone,
@@ -205,6 +282,7 @@ async function streamTurn(token, sessionId) {
     errorPayload,
     resultPayload,
     eventOrder,
+    envelopeChecks,
     records: records.slice(0, 12),
   }
 }
@@ -215,7 +293,7 @@ async function main() {
   const { sessionId } = created
 
   try {
-    const result = await streamTurn(token, sessionId)
+    const result = await streamTurn(token, created)
     const output = {
       sessionId,
       createProtocolVersion: created.protocolVersion,

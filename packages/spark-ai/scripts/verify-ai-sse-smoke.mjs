@@ -45,6 +45,37 @@ function flushEvent(state, records) {
   return record
 }
 
+function parseSseRecordData(record) {
+  try {
+    return JSON.parse(record.data)
+  } catch (error) {
+    throw new Error(`SSE ${record.event} data is not JSON: ${error instanceof Error ? error.message : String(error)}`)
+  }
+}
+
+function assertV4SseEnvelope(record) {
+  const payload = parseSseRecordData(record)
+  if (!payload || typeof payload !== 'object') {
+    throw new Error(`SSE ${record.event} data is not an object`)
+  }
+  if (payload.protocolVersion !== 4) {
+    throw new Error(`SSE ${record.event} protocolVersion expected 4, got ${payload.protocolVersion}`)
+  }
+  if (payload.event?.transport !== 'sse') {
+    throw new Error(`SSE ${record.event} envelope event.transport mismatch`)
+  }
+  if (payload.event?.name !== record.event) {
+    throw new Error(`SSE event name mismatch: frame=${record.event}, envelope=${payload.event?.name}`)
+  }
+  if (typeof payload.ok !== 'boolean') {
+    throw new Error(`SSE ${record.event} envelope missing ok boolean`)
+  }
+  if (record.event === 'done' && payload.event?.terminal !== true) {
+    throw new Error('SSE done envelope must be terminal')
+  }
+  return payload
+}
+
 async function main() {
   const token = await login()
   const response = await fetch(`${baseUrl}/api/ai/chat/stream`, {
@@ -53,6 +84,7 @@ async function main() {
       'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
       'X-Tenant-Id': tenantId,
+      'Accept': 'text/event-stream',
     },
     body: JSON.stringify({
       messages: [{ role: 'user', content: 'Reply with ok only.' }],
@@ -71,6 +103,7 @@ async function main() {
   const records = []
   let sawDelta = false
   let sawDone = false
+  const envelopeChecks = []
 
   outer: for (;;) {
     const { done, value } = await reader.read()
@@ -84,6 +117,12 @@ async function main() {
       if (line === '') {
         const record = flushEvent(state, records)
         if (!record) continue
+        const envelope = assertV4SseEnvelope(record)
+        envelopeChecks.push({
+          event: record.event,
+          ok: envelope.ok,
+          terminal: envelope.event.terminal,
+        })
         if (record.event === 'delta') sawDelta = true
         if (record.event === 'done') {
           sawDone = true
@@ -105,6 +144,7 @@ async function main() {
     ok: sawDelta || sawDone,
     sawDelta,
     sawDone,
+    envelopeChecks,
     records: records.slice(0, 8),
   }, null, 2))
 

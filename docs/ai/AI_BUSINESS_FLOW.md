@@ -14,11 +14,11 @@ schema/ (底层) → module-semantic/ (协议层) → host/ (宿主层) → 业�
 
 ### 1.1 三层结构
 
-| 层 | 目录 | 职责 | 文件数 |
-|----|------|------|--------|
-| Schema | `schema/` | JSON Schema 类型、构建器、校验器 | 3 |
-| 协议 | `module-semantic/` | ModuleKind 协议、运行时、工具生成 | 13 |
-| 宿主 | `host/` | 业务注册、会话、传输、工具循环 | 25 |
+| 层 | 目录 | 职责 |
+|----|------|------|
+| Schema | `schema/` | JSON Schema 类型、构建器、校验器 |
+| 协议 | `module-semantic/` | ModuleKind 协议、运行时、工具生成 |
+| 宿主 | `host/` | 业务注册、会话、传输、工具循环、APP SSE 事件桥接 |
 
 ### 1.2 Schema 层
 
@@ -106,6 +106,11 @@ onStartSession? / onEndBusinessInstance? / releaseModuleInstance?
 - POST `/api/ai/sessions/{id}/turn/stream` → SSE 流
 - POST `/api/ai/sessions/{id}/turn/append`
 - 默认 base URL：`/api/ai`
+
+**APP 公共 SSE 事件 API**（`transport/app-sse-events.ts`）— `/api/events` 订阅和发射：
+- `subscribeAiHostAppSseEvents(options)` — 使用 `fetch()` + `ReadableStream` 订阅 APP 公共 SSE，解 v4 envelope，校验 `event.transport='sse'` 和 `event.name`
+- `createAiHostAppSseEventHub()` — 提供 `on(name, listener)` / `onAny(listener)` / `emit(event)`，供 APP 壳层和 MJS live 脚本接入
+- 只做事件订阅、规范化和发射；不执行 route、screenshot、notification 的业务处理
 
 #### 工具循环（核心编排引擎）
 
@@ -350,7 +355,7 @@ flowchart TD
 | `module-semantic/runtime/protocol-result-projector.ts` | 结果投影 |
 | `schema/validator.ts` | 参数校验 |
 
-**宿主层 11 文件：**
+**宿主层核心文件：**
 
 | 文件 | 核心内容 |
 |------|---------|
@@ -364,6 +369,7 @@ flowchart TD
 | `host/session/default-session-store.ts` | 默认内存存储 |
 | `host/transport/transport-types.ts` | 传输契约 |
 | `host/transport/fetch-transport.ts` | HTTP+SSE 实现 |
+| `host/transport/app-sse-events.ts` | APP 公共 SSE 订阅、v4 envelope 校验和事件发射 |
 | `host/tool-loop/tool-loop-runner.ts` | 多回合循环引擎 |
 | `host/tool-loop/tool-call-executor.ts` | 单工具执行 |
 

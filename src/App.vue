@@ -145,6 +145,7 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
+import { createAiDebugBridge } from '@/services/ai-debug-bridge'
 import { createAuthHeaders } from '@/services/http'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
@@ -215,6 +216,7 @@ useColorScheme()
 const activeSettingsScope = ref<string | null>(null)
 let isApplyingProjectUiSettings = false
 let _stopPageConfigChange: (() => void) | null = null
+let _stopAiDebugBridge: (() => void) | null = null
 const pageConfigRefreshRevision = ref(0)
 const sparkRendererRouteKey = computed(() => {
   const base = mode.value === 'multi' ? route.path : route.fullPath
@@ -561,6 +563,15 @@ onMounted(() => {
   if (_stopPageConfigChange === null) {
     _stopPageConfigChange = onPageConfigChange(handlePageConfigChange)
   }
+  if (_stopAiDebugBridge === null) {
+    _stopAiDebugBridge = createAiDebugBridge({
+      router,
+      route,
+      publicPaths,
+      platformPathPrefix: PLATFORM_PATH_PREFIX,
+    })
+      .start()
+  }
 
   // start.ts 已在 mount 前调用 registerRoutes() 注册路由 + 加载导航树
   // 此处同步读取已加载的导航树并写入 _navRoot，不发起重复 HTTP 请求
@@ -581,6 +592,8 @@ onUnmounted(() => {
   moduleContextListeners.clear()
   _stopPageConfigChange?.()
   _stopPageConfigChange = null
+  _stopAiDebugBridge?.()
+  _stopAiDebugBridge = null
 })
 
 // ── 登录后自动同步导航 UI ──
