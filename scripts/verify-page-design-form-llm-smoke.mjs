@@ -12,6 +12,11 @@
  * Use --publish after a successful run to write the generated page files to
  * the Java backend and register a navigation node for direct viewing:
  *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --publish --request=帮我设计请假条界面 --tenant-id=lmspark --app-id=homepage
+ *
+ * Authentication boundary:
+ * - This script talks to the SPARK backend with a system login JWT from
+ *   --backend-token / SPARK_AUTH_TOKEN, or logs in with username/password.
+ * - LLM provider keys are owned by the Java backend and are not read here.
  */
 
 import { randomUUID } from 'node:crypto'
@@ -47,7 +52,7 @@ function parseArgs(argv) {
     backendUrl: normalizeBackendUrl(process.env.AI_BACKEND_URL),
     username: process.env.AI_USERNAME ?? 'admin',
     password: process.env.AI_PASSWORD ?? 'admin123',
-    authToken: process.env.AI_AUTH_TOKEN ?? '',
+    backendToken: process.env.SPARK_AUTH_TOKEN ?? process.env.SPARK_BACKEND_TOKEN ?? '',
     navParentId: null,
     navIndex: -1,
   }
@@ -65,6 +70,8 @@ function parseArgs(argv) {
     if (arg.startsWith('--project-id=')) out.projectId = arg.slice('--project-id='.length)
     if (arg.startsWith('--app-id=')) out.projectId = arg.slice('--app-id='.length)
     if (arg.startsWith('--backend-url=')) out.backendUrl = normalizeBackendUrl(arg.slice('--backend-url='.length))
+    if (arg.startsWith('--backend-token=')) out.backendToken = arg.slice('--backend-token='.length)
+    if (arg.startsWith('--spark-token=')) out.backendToken = arg.slice('--spark-token='.length)
     if (arg.startsWith('--nav-parent-id=')) {
       const value = arg.slice('--nav-parent-id='.length).trim()
       out.navParentId = value.length === 0 ? null : value
@@ -185,7 +192,7 @@ function buildSystemPrompt() {
 }
 
 async function createJavaSseTransport(config) {
-  const auth = await resolveJavaBackendAuth(config)
+  const auth = await resolveBackendAuth(config)
   const headers = {
     Authorization: `Bearer ${auth.token}`,
     'X-Tenant-Id': config.tenantId,
@@ -198,10 +205,10 @@ async function createJavaSseTransport(config) {
   })
 }
 
-async function resolveJavaBackendAuth(config) {
-  if (config.authToken.trim().length > 0) {
+async function resolveBackendAuth(config) {
+  if (config.backendToken.trim().length > 0) {
     return {
-      token: config.authToken,
+      token: config.backendToken,
       projectId: config.projectId,
     }
   }
@@ -411,7 +418,7 @@ async function upsertNavigationNode(config, auth, options) {
 }
 
 async function publishArtifacts(config, artifacts, textModels, options) {
-  const auth = await resolveJavaBackendAuth(config)
+  const auth = await resolveBackendAuth(config)
   const pageId = options.pageId.trim()
   if (pageId.length === 0) throw new Error('pageId must be a non-empty string')
   const files = buildPublishFiles(artifacts, textModels)
@@ -692,7 +699,7 @@ async function runSmoke(options) {
     projectId: options.projectId,
     username: options.username,
     password: options.password,
-    authToken: options.authToken,
+    backendToken: options.backendToken,
   }
   const { host, nodeTree, dataSetTool, textModels } = createHost(ctx.pageId)
   const registration = createPageDesignBusinessRegistration({
