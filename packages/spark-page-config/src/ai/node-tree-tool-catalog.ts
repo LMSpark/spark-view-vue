@@ -23,12 +23,13 @@ import {
   type ModuleParameterPayloadMetadata,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
-import type {
-  PageDesignNodeTree,
-  PageDesignServiceActionBinding,
-  PageDesignServiceContext,
+import {
+  PageDesignService,
+  type PageDesignNodePayloadValidationTarget,
+  type PageDesignNodeTree,
+  type PageDesignServiceActionBinding,
+  type PageDesignServiceContext,
 } from '../design'
-import type { PageDesignService } from '../design'
 import {
   isSparkNode,
   type SparkNode,
@@ -47,6 +48,10 @@ import {
 } from '../node-tree'
 import { isRecord } from '../json-document'
 import { createCurrentPageRef } from './page-design-helpers'
+import {
+  getPageDesignComponentPayloadGuide,
+  isPageDesignWritableComponentPayloadKey,
+} from './payload-catalog-tool-catalog'
 
 const {
   anySchema,
@@ -76,12 +81,12 @@ const PROPS_SCHEMA = objectSchema({}, {
 const COMPONENT_IDS_SCHEMA = arraySchema(stringSchema('目标组件 id'), '目标组件 id 列表')
 const NODE_PARAM = objectSchema({
   type: stringSchema('组件类型'),
-  id: stringSchema('节点顶层 id'),
+  id: stringSchema('节点顶层 id；AI 写入时必填，必须是稳定业务语义 id，后续 componentId 必须使用这个值'),
   props: objectSchema({}, { additionalProperties: true, description: '节点属性' }),
   children: arraySchema(anySchema(), 'SparkNodeChildren；子节点数组，可混合 SparkNode / string / number'),
 }, {
-  required: ['type'],
-  description: 'node 必须是完整 SparkNode 对象，不要只传类型名字符串。',
+  required: ['type', 'id'],
+  description: 'node 必须是完整 SparkNode 对象，不要只传类型名字符串；AI 新增/替换的每个结构节点都必须带顶层 id。',
 })
 const NODES_SCHEMA = arraySchema(NODE_PARAM, '按顺序插入的多个节点')
 const SET_PROPS_BATCH_ITEM_SCHEMA = objectSchema({
@@ -108,6 +113,19 @@ const NAMED_PARAM_RULE = '运行时应优先使用命名参数对象，而不是
 const DIRECT_CHILDREN_RULE = 'children 相关动作只作用于直接子节点，不递归跨层修改。'
 const SCALAR_PARENT_COMPONENT_RULE = 'parentComponentId 仅接受 string 或 null 原子值，禁止对象嵌套（例如 { componentId: "root-table" }）。'
 const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实例对应的 root；如需最新子树快照，请读取 tree.root 或 toJSON()。'
+const PAYLOAD_GUIDE_RULE = 'LLM 写目录组件前应先显式调用 payload-catalog.guidePayload；node-tree 写动作仍会按 SparkNode.type 自动提取指南并校验 node.props，若返回 PAYLOAD_GUIDE_NOT_FOUND / NODE_PAYLOAD_SCHEMA_INVALID，必须把参数校验结果读完后修正重试。'
+const MERGE_FALSE_REPLACE_RULE = 'merge=false 会整体替换目标节点 props；除非你已把原有 dataViewKey/contextDataMember/field/options 等关键绑定完整带回，否则必须使用 merge=true 或省略 merge。'
+const EMPTY_CONTAINER_TYPES = new Set(['div', 'r-section', 'r-card', 'r-form', 'r-detail'])
+const NATIVE_HTML_TAGS = new Set([
+  'a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'button',
+  'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details',
+  'dfn', 'dialog', 'div', 'dl', 'dt', 'em', 'fieldset', 'figcaption', 'figure', 'footer', 'form', 'h1',
+  'h2', 'h3', 'h4', 'h5', 'h6', 'header', 'hr', 'i', 'iframe', 'img', 'input', 'ins', 'kbd', 'label',
+  'legend', 'li', 'main', 'mark', 'menu', 'meter', 'nav', 'ol', 'optgroup', 'option', 'output', 'p',
+  'picture', 'pre', 'progress', 'q', 'rp', 'rt', 'ruby', 's', 'samp', 'section', 'select', 'small',
+  'source', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot',
+  'th', 'thead', 'time', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr',
+])
 
 const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
   {
@@ -264,7 +282,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
   },
   {
     name: 'addNode',
-    description: '向指定层级插入一个新节点。警告：入参 node 必须是完整合法的 SparkNode 实例。在构造之前，必须先用 guidePayload 查阅过该 type 的 props schema。绝对禁止凭空猜测 props。',
+    description: '向指定层级插入一个新节点。入参 node 必须是完整合法的 SparkNode 实例；工具会按 node 及其子树中每个组件 type 自动提取 payload 指南并校验 props。',
     paramsSchema: paramsSchema({
       node: NODE_PARAM,
       parentComponentId: PARENT_COMPONENT_ID_SCHEMA,
@@ -278,7 +296,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
       parentComponentId: 'toolbar',
       node: { type: 'r-button', id: 'refresh-action', props: { action: 'refresh' } },
     },
-    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
+    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, PAYLOAD_GUIDE_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
@@ -294,7 +312,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
   },
   {
     name: 'addNodes',
-    description: '向同一个子组件容器批量插入多个新节点。警告：入参 nodes 必须是由指定 type 的 props schema 组装而成的合法 SparkNode 数组。构造前必须查阅组件规格，绝对禁止凭空猜测 props。',
+    description: '向同一个子组件容器批量插入多个新节点。入参 nodes 必须是合法 SparkNode 数组；简单页面优先用本动作一次写入 r-section/r-form/字段/r-table 等常用组件。',
     paramsSchema: paramsSchema({
       nodes: NODES_SCHEMA,
       parentComponentId: PARENT_COMPONENT_ID_SCHEMA,
@@ -311,7 +329,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
         { type: 'r-button', id: 'export-action', props: { action: 'export' } },
       ],
     },
-    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
+    usageRules: [INSTANCE_RULE, SCALAR_PARENT_COMPONENT_RULE, NAMED_PARAM_RULE, PAYLOAD_GUIDE_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'PARENT_NOT_FOUND',
@@ -394,7 +412,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
       props: { stripe: true },
       merge: true,
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, PAYLOAD_GUIDE_RULE, MERGE_FALSE_REPLACE_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -416,7 +434,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
         { componentId: 'toolbar', props: { class: 'toolbar-wide' }, merge: true },
       ],
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, PAYLOAD_GUIDE_RULE, MERGE_FALSE_REPLACE_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -432,7 +450,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
   },
   {
     name: 'replaceNode',
-    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须由合法 type 并依据 specs 构建，查阅 guidePayload 确认配置结构后再替换，避免配置污染。返回新节点和被替换的旧节点。',
+    description: '用新的 SparkNode 替换目标节点。警告：新的 node 必须使用合法 type 并携带稳定 id；工具会自动提取 payload 指南并校验 props，避免配置污染。返回新节点和被替换的旧节点。',
     paramsSchema: paramsSchema({ componentId: COMPONENT_ID_SCHEMA, node: NODE_PARAM }, ['componentId', 'node']),
     resultSchema: {
       node: 'SparkNode — 替换后的新节点',
@@ -442,7 +460,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
       componentId: 'name-column',
       node: { type: 'r-column-group', id: 'name-column', props: { field: 'displayName' } },
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, PAYLOAD_GUIDE_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -469,7 +487,7 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
         { componentId: 'toolbar', node: { type: 'r-toolbar', id: 'toolbar', props: { dense: true } } },
       ],
     },
-    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
+    usageRules: [INSTANCE_RULE, NAMED_PARAM_RULE, PAYLOAD_GUIDE_RULE, INSTANCE_WRITE_RULE, RUNTIME_WIRED_RULE],
     failureModes: [
       {
         code: 'NODE_NOT_FOUND',
@@ -563,6 +581,7 @@ const NODE_TREE_ACTION_BINDINGS: Readonly<Record<string, NodeTreeActionBinding>>
   removeNodes: nodeTreeAction('removeNodes', true, (tree, args) => tree.removeNodes(readRemoveNodesParams(args))),
 }
 
+// PAGE_DESIGN_AI_TRACE[page-design-node-tree-tool]: pageDesign AI 修改 rule.json 的 ModuleKind 出处；组件 type、id、payload props 校验也集中在这条 AI 写入边界。
 export class PageDesignNodeTreeModuleKind extends ModuleKind {
   private readonly service: PageDesignService
   private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
@@ -596,9 +615,47 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     if (binding === undefined) {
       throw new Error(`node-tree action runner is not registered: ${actionName}`)
     }
+    const context = this.contextFactory(ctx)
+    const nodeIdError = validateWrittenNodeIds(actionName, args)
+    if (nodeIdError !== null) {
+      return this.serviceResultToOperationResult(nodeIdError)
+    }
+    const nodeTypeError = validateWritableNodeTypes(actionName, args)
+    if (nodeTypeError !== null) {
+      return this.serviceResultToOperationResult(nodeTypeError)
+    }
+    const setPropsTypeError = await this.validateSetPropsWritableTargets(context, actionName, args)
+    if (setPropsTypeError !== null) {
+      return this.serviceResultToOperationResult(setPropsTypeError)
+    }
+    const dataFirstError = this.validateDataFirst(context, actionName, args)
+    if (dataFirstError !== null) {
+      return this.serviceResultToOperationResult(dataFirstError)
+    }
+    const emptyContainerError = validateCompleteContainerWrite(actionName, args)
+    if (emptyContainerError !== null) {
+      return this.serviceResultToOperationResult(emptyContainerError)
+    }
+    const payloadTargets = await this.collectPayloadTargetsForAction(context, actionName, args)
+    const payloadGuideError = this.ensurePayloadGuides(context, payloadTargets, actionName)
+    if (payloadGuideError !== null) {
+      return this.serviceResultToOperationResult(payloadGuideError)
+    }
+    const payloadPropsError = this.service.validateNodePayloadProps(
+      context,
+      payloadTargets,
+      actionName,
+    )
+    if (payloadPropsError !== null) {
+      return this.serviceResultToOperationResult(payloadPropsError)
+    }
+    const requiredDataBindingsError = validateRequiredDataBindings(actionName, args)
+    if (requiredDataBindingsError !== null) {
+      return this.serviceResultToOperationResult(requiredDataBindingsError)
+    }
     return this.serviceResultToOperationResult(
       await this.service.runNodeTreeAction(
-        this.contextFactory(ctx),
+        context,
         args,
         binding,
       ),
@@ -607,6 +664,137 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
 
   protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面节点树')
+  }
+
+  private ensurePayloadGuides(
+    context: PageDesignServiceContext,
+    targets: readonly PageDesignNodePayloadValidationTarget[],
+    actionName: string,
+  ) {
+    const missing: string[] = []
+    for (const type of [...new Set(targets.map((target) => target.type))].sort()) {
+      const guide = getPageDesignComponentPayloadGuide(type)
+      if (guide === null) {
+        missing.push(type)
+        continue
+      }
+      this.service.recordNodePayloadGuide(context, type, guide)
+    }
+    if (missing.length === 0) return null
+    return PageDesignService.failure(
+      'PAYLOAD_GUIDE_NOT_FOUND',
+      `node-tree.${actionName} 无法根据组件 type 提取参数荷载指南: ${missing.join(', ')}`,
+      '先通过 payload-catalog.queryPayloads 选择存在于组件荷载目录的组件；不要向 rule.json 写入目录外组件或 SparkComponentRenderer 会落 fallback 的未知业务类型。',
+    )
+  }
+
+  private async collectPayloadTargetsForAction(
+    context: PageDesignServiceContext,
+    actionName: string,
+    args: Readonly<Record<string, LlmJsonValue>>,
+  ): Promise<readonly PageDesignNodePayloadValidationTarget[]> {
+    const writtenTargets = componentPayloadTargetsWrittenByAction(actionName, args)
+    if (writtenTargets.length > 0) return writtenTargets
+    if (actionName === 'setProps') {
+      const target = await this.collectSetPropsPayloadTarget(context, args, 'setProps')
+      return target === null ? [] : [target]
+    }
+    if (actionName !== 'setPropsBatch' || !Array.isArray(args['items'])) return []
+    const targets: PageDesignNodePayloadValidationTarget[] = []
+    for (const [index, item] of args['items'].entries()) {
+      if (!isRecord(item)) continue
+      const target = await this.collectSetPropsPayloadTarget(context, item, `setPropsBatch.items[${index}]`)
+      if (target !== null) targets.push(target)
+    }
+    return targets
+  }
+
+  private async collectSetPropsPayloadTarget(
+    context: PageDesignServiceContext,
+    args: Readonly<Record<string, unknown>>,
+    path: string,
+  ): Promise<PageDesignNodePayloadValidationTarget | null> {
+    const componentId = typeof args['componentId'] === 'string' ? args['componentId'].trim() : ''
+    const props = args['props']
+    if (componentId.length === 0 || !isRecord(props)) return null
+    const getNodeBinding = NODE_TREE_ACTION_BINDINGS['getNode']
+    if (getNodeBinding === undefined) return null
+    const nodeResult = await this.service.runNodeTreeAction(
+      context,
+      { componentId },
+      getNodeBinding,
+    )
+    if (!nodeResult.ok || !isRecord(nodeResult.data)) return null
+    const type = typeof nodeResult.data['type'] === 'string' ? nodeResult.data['type'].trim() : ''
+    if (!isPageDesignWritableComponentPayloadKey(type)) return null
+    return {
+      type,
+      id: typeof nodeResult.data['id'] === 'string' ? nodeResult.data['id'].trim() : componentId,
+      path,
+      props,
+    }
+  }
+
+  private validateDataFirst(
+    context: PageDesignServiceContext,
+    actionName: string,
+    args: Readonly<Record<string, LlmJsonValue>>,
+  ) {
+    if (!isNodeWriteAction(actionName)) return null
+    const componentTypes = componentTypesWrittenByAction(actionName, args)
+    if (!componentTypes.some(isPageDesignWritableComponentPayloadKey)) return null
+    if (this.service.hasDataTables(context)) return null
+    return PageDesignService.failure(
+      'DATASET_FIRST_REQUIRED',
+      `node-tree.${actionName} 不能在 pagedata.json 尚无业务表时写页面组件`,
+      '先通过 dataset.createTable 建立主业务表和字典/选项表；随后再用 node-tree.addNodes 一次写入带稳定 id 的完整表单、统计和列表节点。',
+    )
+  }
+
+  private async validateSetPropsWritableTargets(
+    context: PageDesignServiceContext,
+    actionName: string,
+    args: Readonly<Record<string, LlmJsonValue>>,
+  ) {
+    if (actionName !== 'setProps' && actionName !== 'setPropsBatch') return null
+    const targets = await this.collectSetPropsNodeTypes(context, actionName, args)
+    const blocked = targets
+      .filter((target) => target.type.length > 0 && !isPageDesignAllowedNodeType(target.type))
+      .map((target) => `${target.path}<${target.type}${target.id.length > 0 ? `#${target.id}` : ''}>`)
+    if (blocked.length === 0) return null
+    return PageDesignService.failure(
+      'UNKNOWN_NODE_TYPE',
+      `node-tree.${actionName} 目标组件 type 为空或无法执行 props 写入: ${blocked.join(', ')}`,
+      '只能修改 payload-catalog 可查询到的业务组件或标准 HTML 节点；目录外未知业务组件会进入渲染 fallback，必须替换为目录组件或标准 HTML。',
+    )
+  }
+
+  private async collectSetPropsNodeTypes(
+    context: PageDesignServiceContext,
+    actionName: string,
+    args: Readonly<Record<string, unknown>>,
+  ): Promise<ReadonlyArray<{ readonly type: string; readonly id: string; readonly path: string }>> {
+    const items = Array.isArray(args['items']) ? args['items'] as readonly unknown[] : []
+    const inputs = actionName === 'setProps'
+      ? [{ value: args, path: 'setProps' }]
+      : items.map((item, index) => ({ value: item, path: `setPropsBatch.items[${index}]` }))
+    const getNodeBinding = NODE_TREE_ACTION_BINDINGS['getNode']
+    if (getNodeBinding === undefined) return []
+    const out: Array<{ readonly type: string; readonly id: string; readonly path: string }> = []
+    for (const input of inputs) {
+      if (!isRecord(input.value)) continue
+      const componentId = typeof input.value['componentId'] === 'string' ? input.value['componentId'].trim() : ''
+      if (componentId.length === 0) continue
+      const nodeResult = await this.service.runNodeTreeAction(context, { componentId }, getNodeBinding)
+      if (!nodeResult.ok || !isRecord(nodeResult.data)) continue
+      const type = typeof nodeResult.data['type'] === 'string' ? nodeResult.data['type'].trim() : ''
+      out.push({
+        type,
+        id: typeof nodeResult.data['id'] === 'string' ? nodeResult.data['id'].trim() : componentId,
+        path: input.path,
+      })
+    }
+    return out
   }
 }
 
@@ -620,6 +808,255 @@ function nodeTreeAction(
     mutates,
     run,
   }
+}
+
+function isNodeWriteAction(actionName: string): boolean {
+  return actionName === 'addNode'
+    || actionName === 'addNodes'
+    || actionName === 'replaceNode'
+    || actionName === 'replaceNodes'
+}
+
+function validateWrittenNodeIds(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+) {
+  if (!isNodeWriteAction(actionName)) return null
+  const missing = collectWrittenNodeIdIssues(actionName, args)
+  if (missing.length === 0) return null
+  return PageDesignService.failure(
+    'NODE_ID_REQUIRED',
+    `node-tree.${actionName} 写入的 SparkNode 缺少顶层 id: ${missing.join(', ')}`,
+    '每个新增或替换的结构节点都必须带稳定业务语义 id，例如 leave-form-section、leave-application-form、field-leave-type、pending-leave-table；后续 componentId 必须使用这些真实 id。',
+  )
+}
+
+function validateWritableNodeTypes(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+) {
+  if (!isNodeWriteAction(actionName)) return null
+  const unknown = collectUnknownNodeTypes(actionName, args)
+  if (unknown.length === 0) return null
+  return PageDesignService.failure(
+    'UNKNOWN_NODE_TYPE',
+    `node-tree.${actionName} 写入了未知组件 type: ${unknown.join(', ')}`,
+    '组件 type 必须是 payload-catalog 中存在的组件，或 SparkComponentRenderer native 分支允许的标准 HTML 标签；目录外未知业务组件禁止写入。',
+  )
+}
+
+function validateCompleteContainerWrite(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+) {
+  if (actionName !== 'addNode' && actionName !== 'addNodes') return null
+  const roots = writtenRootNodes(actionName, args)
+  if (roots.length === 0) return null
+  if (!roots.every(isEmptyContainerShell)) return null
+  return PageDesignService.failure(
+    'INCOMPLETE_NODE_TREE_WRITE',
+    `node-tree.${actionName} 只写入了空容器，未形成可验收页面结构`,
+    '不要只添加空 r-section/r-form 容器；在同一次 addNodes 中写入完整子树，至少包含统计组件、绑定字段的 r-form、提交按钮和绑定待审批 DataView 的 r-table/r-list。',
+  )
+}
+
+function validateRequiredDataBindings(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+) {
+  if (!isNodeWriteAction(actionName)) return null
+  const issues: string[] = []
+  for (const [index, node] of writtenRootNodes(actionName, args).entries()) {
+    collectRequiredDataBindingIssues(node, `${actionName}.node[${index}]`, issues)
+  }
+  if (issues.length === 0) return null
+  return PageDesignService.failure(
+    'CONTEXT_DATA_MEMBER_REQUIRED',
+    `node-tree.${actionName} 表单/详情上下文绑定缺少 contextDataMember: ${issues.join(', ')}`,
+    'r-form/r-detail 使用 dataViewKey 绑定 DataView 时，必须在 props 中显式写 contextDataMember: "currentRow"；不要只写 dataMember。',
+  )
+}
+
+function componentTypesWrittenByAction(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): readonly string[] {
+  switch (actionName) {
+    case 'addNode':
+      return collectGuidedComponentTypes(args['node'])
+    case 'addNodes':
+      return collectGuidedComponentTypes(args['nodes'])
+    case 'replaceNode':
+      return collectGuidedComponentTypes(args['node'])
+    case 'replaceNodes':
+      return collectGuidedComponentTypes(args['items'])
+    default:
+      return []
+  }
+}
+
+function componentPayloadTargetsWrittenByAction(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): readonly PageDesignNodePayloadValidationTarget[] {
+  return writtenRootNodes(actionName, args).flatMap((node, index) =>
+    collectNodePayloadTargets(node, `${actionName}.node[${index}]`),
+  )
+}
+
+function writtenRootNodes(actionName: string, args: Readonly<Record<string, LlmJsonValue>>): ReadonlyArray<Record<string, unknown>> {
+  switch (actionName) {
+    case 'addNode':
+    case 'replaceNode':
+      return isRecord(args['node']) ? [args['node']] : []
+    case 'addNodes':
+      return Array.isArray(args['nodes']) ? args['nodes'].filter(isRecord) : []
+    case 'replaceNodes':
+      return Array.isArray(args['items'])
+        ? args['items'].flatMap((item) => isRecord(item) && isRecord(item['node']) ? [item['node']] : [])
+        : []
+    default:
+      return []
+  }
+}
+
+function collectNodePayloadTargets(node: Record<string, unknown>, path: string): PageDesignNodePayloadValidationTarget[] {
+  const type = typeof node['type'] === 'string' ? node['type'].trim() : ''
+  const out: PageDesignNodePayloadValidationTarget[] = []
+  if (type.length > 0 && isPageDesignWritableComponentPayloadKey(type)) {
+    out.push({
+      type,
+      id: typeof node['id'] === 'string' ? node['id'].trim() : '',
+      path,
+      props: isRecord(node['props']) ? node['props'] : {},
+    })
+  }
+  const children = node['children']
+  if (!Array.isArray(children)) return out
+  children.forEach((child, index) => {
+    if (isRecord(child)) out.push(...collectNodePayloadTargets(child, `${path}.children[${index}]`))
+  })
+  return out
+}
+
+function collectUnknownNodeTypes(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): string[] {
+  const out = new Set<string>()
+  for (const [index, node] of writtenRootNodes(actionName, args).entries()) {
+    collectUnknownNodeTypesInto(node, `${actionName}.node[${index}]`, out)
+  }
+  return [...out].sort()
+}
+
+function collectUnknownNodeTypesInto(node: Record<string, unknown>, path: string, out: Set<string>): void {
+  const type = typeof node['type'] === 'string' ? node['type'].trim() : ''
+  if (type.length > 0 && !isPageDesignAllowedNodeType(type)) {
+    const id = typeof node['id'] === 'string' && node['id'].trim().length > 0 ? `#${node['id'].trim()}` : ''
+    out.add(`${path}<${type}${id}>`)
+  }
+  const children = node['children']
+  if (!Array.isArray(children)) return
+  children.forEach((child, index) => {
+    if (isRecord(child)) collectUnknownNodeTypesInto(child, `${path}.children[${index}]`, out)
+  })
+}
+
+function collectWrittenNodeIdIssues(
+  actionName: string,
+  args: Readonly<Record<string, LlmJsonValue>>,
+): string[] {
+  const issues: string[] = []
+  for (const [index, node] of writtenRootNodes(actionName, args).entries()) {
+    collectMissingNodeIds(node, `${actionName}.node[${index}]`, issues)
+  }
+  return issues
+}
+
+function collectMissingNodeIds(node: Record<string, unknown>, path: string, issues: string[]): void {
+  const type = typeof node['type'] === 'string' ? node['type'].trim() : ''
+  if (type.length > 0 && (typeof node['id'] !== 'string' || node['id'].trim().length === 0)) {
+    issues.push(`${path}<${type}>`)
+  }
+  const children = node['children']
+  if (!Array.isArray(children)) return
+  children.forEach((child, index) => {
+    if (isRecord(child)) collectMissingNodeIds(child, `${path}.children[${index}]`, issues)
+  })
+}
+
+function collectRequiredDataBindingIssues(node: Record<string, unknown>, path: string, issues: string[]): void {
+  const type = typeof node['type'] === 'string' ? node['type'].trim() : ''
+  const id = typeof node['id'] === 'string' ? node['id'].trim() : ''
+  const props = isRecord(node['props']) ? node['props'] : {}
+  const dataViewKey = typeof props['dataViewKey'] === 'string' ? props['dataViewKey'].trim() : ''
+  const contextDataMember = typeof props['contextDataMember'] === 'string' ? props['contextDataMember'].trim() : ''
+  if ((type === 'r-form' || type === 'r-detail') && dataViewKey.length > 0 && contextDataMember.length === 0) {
+    issues.push(`${path}<${type}${id.length > 0 ? `#${id}` : ''}>`)
+  }
+  const children = node['children']
+  if (!Array.isArray(children)) return
+  children.forEach((child, index) => {
+    if (isRecord(child)) collectRequiredDataBindingIssues(child, `${path}.children[${index}]`, issues)
+  })
+}
+
+function isEmptyContainerShell(node: Record<string, unknown>): boolean {
+  const type = typeof node['type'] === 'string' ? node['type'].trim() : ''
+  if (!EMPTY_CONTAINER_TYPES.has(type)) return false
+  const children = node['children']
+  if (Array.isArray(children) && children.length > 0) return false
+  const props = isRecord(node['props']) ? node['props'] : {}
+  return !hasMeaningfulBindingOrAction(props)
+}
+
+function hasMeaningfulBindingOrAction(props: Record<string, unknown>): boolean {
+  return [
+    'dataViewKey',
+    'optionDataViewKey',
+    'dataMember',
+    'field',
+    'action',
+    'toolbar',
+    'actions',
+  ].some((key) => props[key] !== undefined)
+}
+
+function collectGuidedComponentTypes(value: unknown): string[] {
+  const out = new Set<string>()
+  const seen = new WeakSet<object>()
+  collectGuidedComponentTypesInto(value, out, seen)
+  return [...out].sort()
+}
+
+function collectGuidedComponentTypesInto(value: unknown, out: Set<string>, seen: WeakSet<object>): void {
+  if (value === null || typeof value !== 'object') return
+  if (seen.has(value)) return
+  seen.add(value)
+  if (Array.isArray(value)) {
+    for (const item of value) collectGuidedComponentTypesInto(item, out, seen)
+    return
+  }
+  if (!isRecord(value)) return
+  if (isPayloadGuideCandidate(value)) {
+    out.add(value['type'])
+  }
+  for (const child of Object.values(value)) {
+    collectGuidedComponentTypesInto(child, out, seen)
+  }
+}
+
+function isPayloadGuideCandidate(value: Record<string, unknown>): value is Record<string, unknown> & { type: string } {
+  if (typeof value['type'] !== 'string') return false
+  const type = value['type'].trim()
+  if (type.length === 0) return false
+  return isPageDesignWritableComponentPayloadKey(type)
+}
+
+function isPageDesignAllowedNodeType(type: string): boolean {
+  const normalized = type.trim()
+  return isPageDesignWritableComponentPayloadKey(normalized) || NATIVE_HTML_TAGS.has(normalized)
 }
 
 function readLookupParams(args: unknown, actionName: string): SparkNodeTreeLookupParams {

@@ -83,6 +83,32 @@ describe('FileLoader', () => {
       )
     })
 
+    it('应该能够加载 V4 信封包装的文件响应', async () => {
+      mockAxiosRequest.mockResolvedValue({
+        data: {
+          protocolVersion: 4,
+          ok: true,
+          data: {
+            content: '{"test":"v4"}',
+            timestamp: '2026-05-24T02:00:00Z',
+          },
+          error: null,
+          context: { requestId: 'request-1' },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: { url: 'v4.json', method: 'GET' },
+      })
+
+      const result = await loader.load('v4.json')
+
+      expect(result.success).toBe(true)
+      expect(result.data).toEqual({ test: 'v4' })
+      expect(result.timestamp).toBe('2026-05-24T02:00:00Z')
+      expect(result.fromCache).toBe(false)
+    })
+
     it('应该解析 JSON 文件', async () => {
       mockAxiosRequest.mockResolvedValue({
         data: {

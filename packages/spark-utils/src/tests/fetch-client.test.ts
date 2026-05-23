@@ -67,7 +67,6 @@ describe('FetchClient error handling', () => {
       protocolVersion: 4,
       ok: true,
       data: { value: 42 },
-      error: null,
       context: { requestId: 'request-1' },
       event: { transport: 'http', name: 'response', terminal: true },
     }
@@ -94,7 +93,6 @@ describe('FetchClient error handling', () => {
     const fetchMock = vi.fn<typeof fetch>(async () => new Response(JSON.stringify({
       protocolVersion: 4,
       ok: false,
-      data: null,
       error: {
         code: 'SESSION_SCOPE_MISMATCH',
         message: '后端 AI 会话与当前模块实例不匹配',

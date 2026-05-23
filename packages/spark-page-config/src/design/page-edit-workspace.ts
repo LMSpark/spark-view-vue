@@ -22,6 +22,8 @@ import {
   PAGE_CONFIG_FILE_NAMES,
   type PageConfigFileName,
 } from '../config'
+import type { SparkNodeTree } from '../node-tree'
+import type { PageDesignEditHost } from './page-edit-session'
 
 // ── SECTION 7: PageConfigEditWorkspace ──
 
@@ -80,6 +82,28 @@ export class PageConfigEditWorkspace {
     return PAGE_CONFIG_FILE_NAMES.some(name => this.isDocumentDirty(name))
   }
 
+  createPageDesignEditHost(): PageDesignEditHost {
+    const documents = this.documents
+    return {
+      getNodeTree: () => documents['rule.json'].model.value,
+      onNodeTreeChanged: (nodeTree) => {
+        documents['rule.json'].replaceModel(nodeTree as SparkNodeTree)
+      },
+      getDataSetTool: () => documents['pagedata.json'].model.value,
+      onDataSetChanged: (tool) => {
+        documents['pagedata.json'].replaceModel(tool)
+      },
+      readScript: () => documents['script.js'].text.value,
+      writeScript: (content) => {
+        documents['script.js'].setText(content)
+      },
+      readStyle: () => documents['style.css'].text.value,
+      writeStyle: (content) => {
+        documents['style.css'].setText(content)
+      },
+    }
+  }
+
   notifyPageFileChanged(pageId: string, filename: PageConfigFileName | '__created' | '__deleted' | '__bulk'): void {
     if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
       this.clearPageConfigCache(pageId)
@@ -100,6 +124,7 @@ export class PageConfigEditWorkspace {
     }
   }
 
+  // PAGE_DESIGN_AI_TRACE[page-design-workspace-load]: live edit host 加载 rule/pagedata/script/style 的前端 workspace 入口；不是 AI 后端会话历史。
   async ensureActivePageFilesLoaded(options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
     const pageId = this.activePageId
     if (!pageId) return
@@ -176,6 +201,7 @@ export class PageConfigEditWorkspace {
     await this.ensureActivePageFilesLoaded(options)
   }
 
+  // PAGE_DESIGN_AI_TRACE[page-design-workspace-save]: AI 工具改完四文件后经这里保存到 pages-config；和 appendMessages 的 AI 会话持久化分属两条线。
   async savePageFile(name: PageConfigFileName): Promise<void> {
     if (!this.activePageId) return
     const doc = this.documents[name]

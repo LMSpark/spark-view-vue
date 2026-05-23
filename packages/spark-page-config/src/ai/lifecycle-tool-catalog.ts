@@ -2,7 +2,7 @@
  * 页面设计生命周期工具模块。
  *
  * 提供三个函数：
- * - bootstrap — 引导编辑会话，校验 live binding 能力并进入 editing phase
+ * - bootstrap — Host 启动会话时自动执行，校验 live binding 能力并进入 editing phase
  * - describeProgress — 查询当前编辑运行状态、可用性和下一步建议
  * - describeDesignFlow — 查询页面设计 100 步流程，支持阶段/步骤过滤
  */
@@ -42,6 +42,7 @@ export const PAGE_DESIGN_FLOW_PROMPT = `【页面设计 100 步流程】
 - 复杂修改开始前先调用 lifecycle.describeDesignFlow({}) 或按 phase / step / afterStep 查询当前位置。
 - 不要在 prompt 中重新发明流程；以 lifecycle.describeDesignFlow 返回的 phases / steps / nextStep 为准。`
 
+// PAGE_DESIGN_AI_TRACE[page-design-lifecycle]: pageDesign AI 的 bootstrap/progress/100-step 流程出处；只负责编辑态与流程事实，不直接写四文件。
 const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')
 const DESIGN_FLOW_PARAMS = paramsSchema({
   phase: stringSchema('可选。按阶段名筛选页面设计 100 步，例如 数据规划、数据利用、结构、行为。'),
@@ -49,14 +50,14 @@ const DESIGN_FLOW_PARAMS = paramsSchema({
   afterStep: numberSchema('可选。返回指定已完成步骤之后的下一步。'),
 })
 
-const BOOTSTRAP_RULE = 'bootstrap 仅做 live binding 可用性校验，不接收文件快照参数。'
+const BOOTSTRAP_RULE = 'Host 会话启动时已自动执行 bootstrap；LLM 常规页面设计流程不得主动调用，除非工具结果明确要求重新校验 live binding。'
 const PHASE_RULE = '执行成功后进入 editing phase。'
 const DESIGN_FLOW_READONLY_RULE = '只返回页面设计 100 步流程事实，不修改页面内容。'
 
 const LIFECYCLE_ACTIONS: readonly ModuleActionMetadata[] = [
   {
     name: 'bootstrap',
-    description: '引导编辑会话：校验 live binding 能力并进入 editing phase。',
+    description: 'Host 启动会话时自动执行的引导动作：校验 live binding 能力并进入 editing phase。',
     paramsSchema: NO_PARAMS,
     resultSchema: {
       phase: '"editing" — 会话阶段切换结果',
@@ -92,7 +93,7 @@ const LIFECYCLE_ACTIONS: readonly ModuleActionMetadata[] = [
     },
     example: {},
     usageRules: [
-      '当不确定当前编辑是否已完成 bootstrap，或需要确认可读写能力时调用。',
+      '当不确定当前编辑状态或需要确认可读写能力时调用本只读动作；不要为了启动会话去调用 bootstrap。',
       '本函数只读业务运行状态，不修改页面内容。',
     ],
     failureModes: [],

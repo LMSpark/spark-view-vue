@@ -33,6 +33,7 @@ import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-seman
 import { AiHostToolLoopRunner } from '../tool-loop/tool-loop-runner'
 import {
   createAiHostBusinessScope,
+  createAiHostBusinessSessionId,
   createAiHostBusinessStorageKey,
   latestUserInput,
   normalizeAiHostBusinessTarget,
@@ -206,10 +207,11 @@ class AiHostMessageSender {
  *   target     — 业务定位
  *   scope      — 业务作用域
  *   storageKey — 存储键（用于持久化）
- *   sessionId  — 会话 ID
+ *   sessionId  — 后端会话 ID（kind + 顶层实例 ID）
  *   pageId     — 页面 ID（= businessInstanceId）
  *   sender     — 消息发送器（可直接传给 UI 层）
  */
+// PAGE_DESIGN_AI_TRACE[host-session-entry]: pageDesign live LLM 评测从 createAiHostBusinessSession/start/send 进入 AI Host 会话线；清理冗余时保留这一处作为前端 AI 会话入口。
 export class AiHostBusinessSession {
   public readonly target: AiHostBusinessTarget
   public readonly scope: AiHostBusinessScope
@@ -228,7 +230,7 @@ export class AiHostBusinessSession {
     this.target = normalizeAiHostBusinessTarget(targetInput)
     this.scope = createAiHostBusinessScope(this.target.businessRegistrationId, this.target.businessInstanceId)
     this.storageKey = createAiHostBusinessStorageKey(this.scope)
-    this.sessionId = this.scope.instanceId
+    this.sessionId = createAiHostBusinessSessionId(this.target.businessRegistrationId, this.target.businessInstanceId)
     this.pageId = this.target.businessInstanceId
     this.senderCore = new AiHostMessageSender(options)
     this.sender = (request) => this.send(request)
@@ -288,6 +290,7 @@ export function createAiHostBusinessSession(
  * 3. 通过 ModuleSemanticToolCodec 编解码器将协议工具转为 transport 工具规约
  * 4. 返回 AiHostStartSessionResult（含 session + tools）
  */
+// PAGE_DESIGN_AI_TRACE[host-session-start]: startRegistrationSession 负责调用业务 onStartSession 并投影 module-semantic 工具；pageDesign 的工具列表从这里进入 LLM。
 export async function startRegistrationSession(
   registration: AiHostBusinessRegistration,
   context: AiHostBusinessRuntimeContext,

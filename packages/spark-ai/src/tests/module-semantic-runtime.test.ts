@@ -196,6 +196,17 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     if (invokeAction === undefined) throw new Error('not found')
     expect(invokeAction.function.description).toContain('rules=')
     expect(invokeAction.function.description).toContain('fails=')
+    expect(invokeAction.function.description).toContain('payloads')
+    expect(invokeAction.function.description).toContain('spark.component(actions=getNode)')
+  })
+
+  it('describeKind 工具说明显式暴露 payload 指南语义', () => {
+    const tools = createRuntime().getLlmTools()
+    const describeKind = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.describeKind)
+    expect(describeKind).toBeDefined()
+    if (describeKind === undefined) throw new Error('not found')
+    expect(describeKind.function.description).toContain('payloads(外部参数指南引用)')
+    expect(describeKind.function.description).toContain('requiredForActions')
   })
 
   it('parameters 字段是 JSON Schema object(收紧后)', () => {
@@ -384,6 +395,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
     expect(snapshot.promptSnapshot).toContain('listChildren("/") -> findInstance')
     expect(snapshot.promptSnapshot).toContain('node-tree.getNode')
     expect(snapshot.promptSnapshot).toContain('payloads=[spark.component]')
+    expect(snapshot.promptSnapshot).toContain('payload 指南')
   })
 
   it('支持按 kind / keyword 查询函数摘要', () => {

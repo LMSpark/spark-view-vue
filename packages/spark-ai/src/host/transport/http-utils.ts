@@ -34,8 +34,8 @@ export const DEFAULT_BASE_URL = '/api/ai'
 type ApiEnvelope = Readonly<{
   protocolVersion?: number
   ok: boolean
-  data: unknown
-  error: {
+  data?: unknown
+  error?: {
     readonly code?: unknown
     readonly message?: unknown
     readonly category?: unknown
@@ -189,8 +189,10 @@ export function isApiEnvelope(value: unknown): value is ApiEnvelope {
   const context = value['context']
   const hasV4RequestId = isRecord(context) && typeof context['requestId'] === 'string'
   const hasLegacyRequestId = typeof value['requestId'] === 'string'
-  return typeof value['ok'] === 'boolean'
-    && Object.prototype.hasOwnProperty.call(value, 'data')
-    && Object.prototype.hasOwnProperty.call(value, 'error')
+  const ok = value['ok']
+  const hasError = Object.prototype.hasOwnProperty.call(value, 'error')
+  const hasData = Object.prototype.hasOwnProperty.call(value, 'data')
+  return typeof ok === 'boolean'
+    && (ok ? hasData : hasError)
     && (hasV4RequestId || hasLegacyRequestId)
 }

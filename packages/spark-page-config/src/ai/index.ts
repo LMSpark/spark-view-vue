@@ -2,6 +2,7 @@ export {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
   registerAssistantBusinesses,
+  registerPageDesignBusiness,
 } from './page-design-module'
 
 export {
@@ -17,12 +18,15 @@ export {
 export {
   createPageDesignComponentPayloadProvider,
   createPageDesignPayloadRegistry,
+  hasPageDesignComponentPayloadKey,
+  isPageDesignWritableComponentPayloadKey,
 } from './payload-catalog-tool-catalog'
 
 export type {
   PageDesignModuleOptions,
   PageDesignRuntimeContext,
   RegisterAssistantBusinessesOptions,
+  RegisterPageDesignBusinessOptions,
 } from './page-design-module'
 
 export {

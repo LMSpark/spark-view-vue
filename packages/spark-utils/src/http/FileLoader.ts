@@ -477,7 +477,7 @@ export class FileLoader {
           silentHttpErrorStatusCodes: [404],
         },
       })
-      const result = response.data
+      const result = this.unwrapFileResponse(response.data)
       if (!this.isFileResponse(result)) {
         this.emit('file-error', { fileName, error: '响应格式错误：响应体不是文件响应对象', reason: 'invalid-response' })
         return { success: false, error: '响应格式错误：响应体不是文件响应对象', fromCache: false, reason: 'invalid-response' }
@@ -609,6 +609,21 @@ export class FileLoader {
     return (value['content'] === undefined || typeof value['content'] === 'string')
       && (value['timestamp'] === undefined || typeof value['timestamp'] === 'string')
       && (value['notModified'] === undefined || typeof value['notModified'] === 'boolean')
+  }
+
+  // PAGE_DESIGN_AI_TRACE[file-loader-v4-envelope]: pages-config 文件读取的 V4 HTTP envelope 解包点；修复旧 loader 只认 content/timestamp 的路径。
+  private unwrapFileResponse(value: unknown): unknown {
+    if (!isRecord(value)) return value
+    const ok = value['ok']
+    const hasData = Object.prototype.hasOwnProperty.call(value, 'data')
+    const hasError = Object.prototype.hasOwnProperty.call(value, 'error')
+    if (typeof ok !== 'boolean' || (ok ? !hasData : !hasError)) return value
+    if (ok === true) return value['data']
+    const error = isRecord(value['error']) ? value['error'] : null
+    const message = typeof error?.['message'] === 'string' && error['message'].trim().length > 0
+      ? error['message']
+      : '文件响应失败'
+    throw new Error(message)
   }
 
   private writeEntry(key: string, data: unknown, sourceTimestamp: string, expirationLevel: number): void {

@@ -12,8 +12,8 @@
  * │    · tool-result  — 工具调用完成，携带执行结果                                 │
  * │                                                                              │
  * │  路由机制：                                                                   │
- * │    每个事件携带 streamKey（由 scope + moduleId + turnId 编码），               │
- * │    前端根据 streamKey 将事件分发到对应 UI 面板。                                │
+ * │    每个事件携带 turnKey（kind + instanceId + turnId）和 streamKey。             │
+ * │    前端根据 turnKey 聚合同一回合，再按 streamKey 分发细粒度流。                 │
  * │    eventModuleId 决定事件归属哪个模块（kind 级别），                             │
  * │    由 eventModuleIdFromProtocolCall() 从协议调用参数中提取。                    │
  * │                                                                              │
@@ -21,7 +21,7 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import { createAiHostStreamKey } from '../business/business-scope'
+import { createAiHostStreamKey, createAiHostTurnKey } from '../business/business-scope'
 import type { AiHostBusinessScope } from '../business/business-types'
 import type { AiHostChatRequest, AiHostSseEvent, AiHostTurnMeta } from '../chat/chat-types'
 import { stringifyAiHostPayload } from './payload-codec'
@@ -124,7 +124,8 @@ export function eventModuleIdFromProtocolCall(
  * 构造带作用域信息的 SSE 事件。
  *
  * 每个事件携带两个关键字段：
- *   · streamKey — 前端用于路由到对应 SSE 流（scope + module + turn 组合键）
+ *   · turnKey   — 前端用于定位同一对话 turn
+ *   · streamKey — 前端用于路由到 turn 内的细粒度流
  *   · scope     — 事件归属元数据（业务 ID、模块 ID、轮次 ID），便于前端分组展示
  */
 function createScopedSseEvent(input: ScopedSseEventInput): AiHostSseEvent {
@@ -132,7 +133,8 @@ function createScopedSseEvent(input: ScopedSseEventInput): AiHostSseEvent {
   return {
     type,
     data,
-    streamKey: createAiHostStreamKey(scope, eventModuleId, turnId),
+    turnKey: createAiHostTurnKey(scope, turnId),
+    streamKey: createAiHostStreamKey(scope, turnId, eventModuleId),
     scope: {
       businessRegistrationId: scope.businessRegistrationId,
       businessInstanceId: scope.businessInstanceId,

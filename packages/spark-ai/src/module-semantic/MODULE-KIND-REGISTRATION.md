@@ -384,7 +384,7 @@ section HostBusinessRegistrationSurface {
       "业务实例 ID；pageDesign 中是 pageId，manualLeave 中是 leaveDraftId。"
 
     AiHostBusinessRuntimeContext.instanceId:
-      "Host 会话 envelope ID。"
+      "顶层业务实例 ID；后端 sessionId 由 kind + instanceId 派生。"
   }
 }
 

@@ -6,6 +6,8 @@
  */
 
 import type { DataSetCrudTool } from '@spark-view/spark-data'
+import { LlmSchemaValidator } from '@spark-view/spark-ai/schema'
+import type { ModuleParameterPayloadGuide } from '@spark-view/spark-ai/module-semantic'
 import {
   getNextPageDesignFlowStep,
   getPageDesignFlowStep,
@@ -138,6 +140,10 @@ function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 async function runRegisteredActionTarget<TTarget>(
   options: PageDesignServiceActionBinding<TTarget>,
   target: TTarget,
@@ -168,6 +174,13 @@ export type PageDesignFlowDescription = {
   steps: readonly PageDesignFlowStep[]
   selectedStep: PageDesignFlowStep | null
   nextStep: PageDesignFlowStep | null
+}
+
+export type PageDesignNodePayloadValidationTarget = {
+  readonly type: string
+  readonly id: string
+  readonly path: string
+  readonly props: Readonly<Record<string, unknown>>
 }
 
 type PageDesignTextFileBinding = {
@@ -276,6 +289,7 @@ function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTe
   writer(content)
 }
 
+// PAGE_DESIGN_AI_TRACE[page-design-live-service]: pageDesign AI 工具共享的 live edit bridge；负责把 ModuleKind action 落到 PageDesignEditHost，而不是 Java 后端直接写页面文件。
 export class PageDesignService {
   private readonly states = new Map<string, PageDesignEditSession>()
 
@@ -326,12 +340,76 @@ export class PageDesignService {
     )
   }
 
+  // PAGE_DESIGN_AI_TRACE[page-design-payload-guide-state]: 当前 pageDesign 会话已获取的组件 payload guide 记录在这里；用于区分“知识已喂给模型”和“props 实际校验”。
+  recordNodePayloadGuide(context: PageDesignServiceContext, key: string, guide: ModuleParameterPayloadGuide): PageDesignServiceResult<{ key: string; guidedKeys: readonly string[] }> {
+    const normalized = key.trim()
+    if (normalized.length === 0) {
+      return PageDesignService.failure('INVALID_PAYLOAD_KEY', '组件参数荷载 key 不能为空', '调用 guidePayload 时传入非空组件 type/key。')
+    }
+    const state = this.getState(context)
+    state.markNodePayloadGuided(normalized, guide)
+    return PageDesignService.success({
+      key: normalized,
+      guidedKeys: state.listGuidedNodePayloads(),
+    }, `${normalized} 参数荷载指南已记录到当前 pageDesign 会话`)
+  }
+
+  validateNodePayloadGuides(
+    context: PageDesignServiceContext,
+    componentTypes: readonly string[],
+    actionName: string,
+  ): PageDesignServiceResult<undefined> | null {
+    const state = this.getState(context)
+    const missing = [...new Set(componentTypes.map((item) => item.trim()).filter((item) => item.length > 0))]
+      .filter((type) => !state.hasGuidedNodePayload(type))
+      .sort()
+    if (missing.length === 0) return null
+    return PageDesignService.failure(
+      'PAYLOAD_GUIDE_REQUIRED',
+      `node-tree.${actionName} 缺少组件参数荷载指南: ${missing.join(', ')}`,
+      `写入这些 SparkNode 前，必须先逐个调用 payload-catalog.guidePayload，例如 ${missing.map((type) => `{ key: "${type}" }`).join(', ')}。`,
+    )
+  }
+
+  // PAGE_DESIGN_AI_TRACE[page-design-payload-props-validator]: node-tree 写入前的 props 参数校验真源；参数错就返回 code/msg/fix 给 LLM 修正重试。
+  validateNodePayloadProps(
+    context: PageDesignServiceContext,
+    targets: readonly PageDesignNodePayloadValidationTarget[],
+    actionName: string,
+  ): PageDesignServiceResult<undefined> | null {
+    const state = this.getState(context)
+    const issues: string[] = []
+    for (const target of targets) {
+      const guide = state.getGuidedNodePayload(target.type)
+      if (guide === null) continue
+      const validation = LlmSchemaValidator.validateLlmDeserializedParams(target.props, guide.paramsSchema)
+      if (validation.ok) continue
+      const formatted = LlmSchemaValidator.formatLlmParamValidationIssues(validation.issues)
+      issues.push(`${target.path}<${target.type}${target.id.length > 0 ? `#${target.id}` : ''}> props ${formatted}`)
+    }
+    if (issues.length === 0) return null
+    return PageDesignService.failure(
+      'NODE_PAYLOAD_SCHEMA_INVALID',
+      `node-tree.${actionName} 组件 props 不符合参数荷载指南: ${issues.join('；')}`,
+      '根据对应 type 的 payload-catalog.guidePayload 返回的 paramsSchema 修正 node.props；字段类型、枚举值和必填字段必须与指南一致。',
+    )
+  }
+
+  hasDataTables(context: PageDesignServiceContext): boolean {
+    const tool = this.getState(context).getActiveDataSetTool()
+    if (tool === null) return false
+    const data = tool.toJson()
+    if (!isRecord(data)) return false
+    const tables = data['tables']
+    return isRecord(tables) && Object.keys(tables).length > 0
+  }
+
   readTextModel(context: PageDesignServiceContext, fileKey: PageDesignTextFileKey): PageDesignServiceResult<{ content: string }> {
     const state = this.getState(context)
     const binding = TEXT_FILE_BINDING_BY_KEY[fileKey]
     const accessError = ensureTextModelAccess(state, fileKey, 'read')
     if (accessError !== null) {
-      return PageDesignService.failure('NO_TEXT_MODEL', accessError, '请先调用 PageDesignService.bootstrap 初始化编辑会话，并确保宿主绑定 PageDesignEditSession.Host.read*/write*。')
+      return PageDesignService.failure('NO_TEXT_MODEL', accessError, '检查 Host 启动和宿主绑定；pageDesign 会话启动时应已自动 bootstrap，并提供 PageDesignEditSession.Host.read*/write*。')
     }
     return PageDesignService.success({ content: readBoundTextModel(state, binding) }, `${binding.label} 内容已返回`)
   }
@@ -341,7 +419,7 @@ export class PageDesignService {
     const binding = TEXT_FILE_BINDING_BY_KEY[fileKey]
     const accessError = ensureTextModelAccess(state, fileKey, 'write')
     if (accessError !== null) {
-      return PageDesignService.failure('NO_TEXT_MODEL', accessError, '请先调用 PageDesignService.bootstrap 初始化编辑会话，并确保宿主绑定 PageDesignEditSession.Host.read*/write*。')
+      return PageDesignService.failure('NO_TEXT_MODEL', accessError, '检查 Host 启动和宿主绑定；pageDesign 会话启动时应已自动 bootstrap，并提供 PageDesignEditSession.Host.read*/write*。')
     }
     const scriptContractError = binding.validateWrite?.(content) ?? null
     if (scriptContractError !== null) return scriptContractError

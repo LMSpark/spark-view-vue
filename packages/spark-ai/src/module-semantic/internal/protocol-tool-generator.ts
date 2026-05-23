@@ -181,6 +181,7 @@ export class ProtocolToolGenerator {
           '调用指定路径末段模块声明的某个动作。',
           'args 必须符合该动作的 paramsSchema,协议层会按 schema 预校验。',
           '调用前若不确定参数形状/注意事项/失败模式,先调 describeKind(kind) 获取完整动作元数据(含 usageRules / failureModes / paramsSchema)。',
+          '若目标 kind 声明 payloads,它们是复杂参数的外部指南引用;调用相关写动作前必须先通过业务提供的 payload 查询/指南动作取得参数 schema,不要凭记忆组装复杂 args。',
           '当前注册的 kind 及其动作列表(rules=N 表示该动作声明了 N 条 usageRules,fails=N 表示声明了 N 条 failureModes):',
           digest,
           '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ACTION_NOT_DECLARED / SCHEMA_VALIDATION_FAILED',
@@ -272,8 +273,9 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.describeKind,
         description: [
-          '查询某个 kind 的元数据:attributes(含 readable / writable)、actions(含 usageRules、failureModes)、children。',
+          '查询某个 kind 的元数据:attributes(含 readable / writable)、actions(含 usageRules、failureModes)、payloads(外部参数指南引用)、children。',
           '纯协议层操作,不调用业务 runner。LLM 用它精确了解模块开放的属性表与动作表。',
+          'payloads[].requiredForActions 表示哪些 action 在构造复杂参数前需要先读取对应 payload 指南。',
           '当前注册的 kind:',
           digest,
           '失败码: KIND_NOT_REGISTERED',
@@ -310,9 +312,16 @@ function formatKindLine(kind: ModuleKind): string {
     : `[${kind.children.join(', ')}]`
   const payloads = kind.payloads.length === 0
     ? '[]'
-    : `[${kind.payloads.map((payload) => payload.payloadRef).join(', ')}]`
+    : `[${kind.payloads.map(formatPayloadLabel).join(', ')}]`
   const parent = kind.parentKind === undefined ? 'root' : `parent=${kind.parentKind}`
   return `- ${kind.kind}(${kind.name}; ${parent}): attrs=${attrs} actions=${actions} payloads=${payloads} children=${children}`
+}
+
+/** 格式化参数荷载标签：payloadRef 或 payloadRef(actions=a|b) */
+function formatPayloadLabel(payload: ModuleKind['payloads'][number]): string {
+  const actions = payload.requiredForActions ?? []
+  if (actions.length === 0) return payload.payloadRef
+  return `${payload.payloadRef}(actions=${actions.join('|')})`
 }
 
 /** 格式化动作标签：name 或 name(rules=N,fails=N) */

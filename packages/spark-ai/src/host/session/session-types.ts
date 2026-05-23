@@ -14,7 +14,7 @@
  *               └─ AiHostFunctionCallHistoryEntry — 工具调用条目
  *
  * 【关键设计】
- *   - AiHostFunctionCallResult<T> 使用联合类型：ok:true 带 data/summary，ok:false 带 code/msg/fix
+ *   - AiHostFunctionCallResult<T> 使用联合类型：ok:true 带 data/summary，ok:false 带 code/msg/fix/checks
  *   - AiHostSessionStore 为抽象类（非 interface），允许子类继承默认行为
  *   - 历史条目按时间戳排序，id 由 store 实现分配
  *
@@ -30,17 +30,25 @@ import type { AiHostTransportToolSpec } from '../transport/transport-types'
 // ═══════════════════════════════════════════════════════════════
 
 /** 工具调用失败结果 */
+export type AiHostFunctionCallCheck = Readonly<{
+  level: 'error' | 'warn' | 'info'
+  code: string
+  message: string
+  hint?: string | undefined
+}>
+
 export type AiHostFunctionCallFailure = Readonly<{
   ok: false
   code: string
   msg: string
   fix: string
+  checks?: readonly AiHostFunctionCallCheck[] | undefined
 }>
 
 /**
  * 工具调用结果（联合类型）。
  * ok:true  → 成功，携带 data（可选）和 summary（可选）
- * ok:false → 失败，携带 code / msg / fix（对齐 ModuleOperationResult 的错误 check）
+ * ok:false → 失败，携带 code / msg / fix / checks（对齐 ModuleOperationResult 的错误 check，完整回传给 LLM）
  */
 export type AiHostFunctionCallResult<TData> = Readonly<{
   ok: true

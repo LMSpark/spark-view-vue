@@ -77,6 +77,15 @@ export type AiHostStreamTurnInput = Readonly<{
   onUsage?: ((usage: Record<string, unknown>) => void) | undefined
 }>
 
+/** 后端 V4 会话准备输入；用于在 SSE turn 前显式确保 session 存在且 scope 正确。 */
+export type AiHostPrepareSessionInput = Readonly<{
+  sessionId: string
+  scope: AiHostBusinessScope
+  systemPrompt: string
+  tools: readonly AiHostTransportToolSpec[]
+  signal?: AbortSignal | undefined
+}>
+
 /** 流式请求结果 */
 export type AiHostStreamTurnResult = Readonly<{
   text: string
@@ -106,6 +115,7 @@ export type AiHostAppendMessagesInput = Readonly<{
  * 当前唯一实现：AiHostFetchTransport（基于 fetch + SSE）
  */
 export abstract class AiHostTransport {
+  public prepareSession?(input: AiHostPrepareSessionInput): Promise<void>
   public abstract streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult>
   public abstract appendMessages(input: AiHostAppendMessagesInput): Promise<void>
 }
@@ -126,6 +136,8 @@ export type AiHostFetchTransportOptions = Readonly<{
   fetch?: AiHostFetch | undefined
   getHeaders?: AiHostHeadersProvider | undefined
   protocolVersion?: number | undefined
+  /** Backend conversation window for client-side tool loops. */
+  windowSize?: number | undefined
 }>
 
 // ═══════════════════════════════════════════════════════════════

@@ -21,6 +21,7 @@
 import type { LlmJsonValue } from '../../schema'
 import type { ModuleCheckEntry, ModuleOperationResult } from '../../module-semantic'
 import type {
+  AiHostFunctionCallCheck,
   AiHostFunctionCallFailure,
   AiHostFunctionCallResult,
 } from '../session/session-types'
@@ -33,7 +34,8 @@ import type {
  * 将 ModuleOperationResult 投影为 AiHostFunctionCallResult。
  *
  * 成功路径：从 checks 提取 info/warn 级 check 作为人类可读的 summary。
- * 失败路径：提取第一个 error 级 check 的 code/message/hint 填入 code/msg/fix。
+ * 失败路径：提取第一个 error 级 check 的 code/message/hint 填入 code/msg/fix，
+ * 同时保留完整 checks，确保参数校验等 FC 失败细节会作为 tool result 回传给 LLM。
  */
 export function toFunctionCallResult(
   result: ModuleOperationResult<LlmJsonValue>,
@@ -55,6 +57,7 @@ export function toFunctionCallResult(
       code: 'PROTOCOL_FAILURE',
       msg: '协议层返回失败但未携带 error 级 check',
       fix: '请检查 ModuleOperationResult.checks 是否正确填充',
+      ...(result.checks === undefined ? {} : { checks: toFunctionCallChecks(result.checks) }),
     }
   }
   return {
@@ -62,6 +65,7 @@ export function toFunctionCallResult(
     code: failure.code,
     msg: failure.message,
     fix: failure.hint ?? '请根据 message 调整调用方式或参数',
+    ...(result.checks === undefined ? {} : { checks: toFunctionCallChecks(result.checks) }),
   }
 }
 
@@ -75,7 +79,13 @@ export function toFunctionCallResult(
  */
 export function failureFromCallResult(result: AiHostFunctionCallResult<unknown>): AiHostFunctionCallFailure {
   if (result.ok) throw new Error('[AiHostToolLoopRunner] failureFromCallResult called with success result')
-  return { ok: false, code: result.code, msg: result.msg, fix: result.fix }
+  return {
+    ok: false,
+    code: result.code,
+    msg: result.msg,
+    fix: result.fix,
+    ...(result.checks === undefined ? {} : { checks: result.checks }),
+  }
 }
 
 /* -------------------------------------------------------------------------------
@@ -90,4 +100,13 @@ function firstInfoOrWarnSummary(checks: readonly ModuleCheckEntry[] | undefined)
 /** 从 checks 中提取第一条 error 级别 */
 function pickFirstErrorCheck(checks: readonly ModuleCheckEntry[] | undefined): ModuleCheckEntry | undefined {
   return checks?.find((check) => check.level === 'error')
+}
+
+function toFunctionCallChecks(checks: readonly ModuleCheckEntry[]): readonly AiHostFunctionCallCheck[] {
+  return checks.map((check) => ({
+    level: check.level,
+    code: check.code,
+    message: check.message,
+    ...(check.hint === undefined ? {} : { hint: check.hint }),
+  }))
 }

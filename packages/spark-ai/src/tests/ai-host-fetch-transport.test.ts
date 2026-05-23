@@ -62,7 +62,6 @@ function createV4SseEvent(event: string, data: unknown, terminal = false): strin
       protocolVersion: 4,
       ok: true,
       data,
-      error: null,
       context: {
         requestId: 'request-1',
         session: { sessionId: 'session-1' },
@@ -100,7 +99,6 @@ function createV4AppSseEvent(event: string, data: unknown): string {
       protocolVersion: 4,
       ok: true,
       data,
-      error: null,
       context: {
         requestId: 'app-request-1',
       },
@@ -309,6 +307,148 @@ describe('AiHostFetchTransport', () => {
     expect(result.toolCalls).toEqual([
       { id: 'call-1', type: 'function', function: { name: 'invokeAction', arguments: '{}' } },
     ])
+  })
+
+  it('accepts V4 success SSE envelopes that omit error:null', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      [
+        'event: result',
+        `data: ${JSON.stringify({
+          protocolVersion: 4,
+          ok: true,
+          data: { text: 'hello' },
+          context: {
+            requestId: 'request-1',
+            session: { sessionId: 'session-1' },
+            turn: { turnId: 'turn-1', turnKey },
+            stream: { streamId: 'llm-stream', streamKey },
+          },
+          event: {
+            transport: 'sse',
+            name: 'result',
+            terminal: false,
+          },
+        })}`,
+        '',
+        '',
+      ].join('\n'),
+    ]))
+    const events: AiHostSseEvent[] = []
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+
+    const result = await transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+      onSseEvent: (event) => events.push(event),
+    })
+
+    expect(result.text).toBe('hello')
+    expect(events.map((event) => event.type)).toEqual(['result'])
+  })
+
+  it('accepts V4 error SSE envelopes that omit data', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      [
+        'event: error',
+        `data: ${JSON.stringify({
+          protocolVersion: 4,
+          ok: false,
+          error: {
+            code: 'LLM_UPSTREAM_ERROR',
+            message: 'upstream failed',
+            category: 'stream',
+            severity: 'error',
+          },
+          context: {
+            requestId: 'request-err',
+            session: { sessionId: 'session-1' },
+            turn: { turnId: 'turn-1', turnKey },
+            stream: { streamId: 'llm-stream', streamKey },
+          },
+          event: {
+            transport: 'sse',
+            name: 'error',
+            terminal: true,
+          },
+        })}`,
+        '',
+        '',
+      ].join('\n'),
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+
+    await expect(transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+    })).rejects.toThrow('upstream failed')
+  })
+
+  it('rejects V4 SSE events when the frame name and envelope name differ', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      createV4SseEvent('result', { text: 'hello' }).replace('"name":"result"', '"name":"delta"'),
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+
+    await expect(transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+    })).rejects.toThrow('AI SSE v4 envelope event name mismatch')
+  })
+
+  it('rejects malformed V4 SSE envelopes instead of treating them as legacy payloads', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      [
+        'event: result',
+        `data: ${JSON.stringify({
+          protocolVersion: 4,
+          ok: true,
+          data: { text: 'hello' },
+          error: null,
+          context: {},
+          event: {
+            transport: 'sse',
+            name: 'result',
+            terminal: false,
+          },
+        })}`,
+        '',
+        '',
+      ].join('\n'),
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+
+    await expect(transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+    })).rejects.toThrow('AI SSE v4 envelope is malformed')
   })
 
   it('assembles raw OpenAI SSE tool_calls when the backend only relays chunks', async () => {

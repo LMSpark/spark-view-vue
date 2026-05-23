@@ -168,6 +168,7 @@ export class ModuleSemanticKnowledgeProjector {
       '当前 AI 能力由 ModuleKind 元数据投影而来；不要猜测动作参数。',
       '硬规则：不假设、不猜测、不脑补 kind、path、actionName、args；缺少依据时先查询知识与实例。',
       '调用前必须确认真实实例路径与动作 schema；参数只按 paramsSchema.required/properties 填写。',
+      '若模块目录显示 payloads=[...],这些只是外部参数指南引用；构造相关复杂参数前必须先读取业务提供的 payload 指南。',
       '发现流程：listChildren("/") -> findInstance("/", kind, query) -> describeKind(kind) -> invokeAction(path, actionName, args)。',
       '模块目录：',
       ...modules.map(formatModuleLine),

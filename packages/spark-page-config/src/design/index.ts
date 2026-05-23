@@ -57,6 +57,7 @@ export type {
   PageDesignEditHostSnapshot,
   PageDesignFlowDescription,
   PageDesignFlowQuery,
+  PageDesignNodePayloadValidationTarget,
 } from './page-design-service'
 
 export {

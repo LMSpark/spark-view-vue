@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { LlmSchemaValidator, type LlmJsonSchemaObject, type LlmJsonValue } from '@spark-view/spark-ai/schema'
-import { createPageDesignBusinessRegistration, PAGE_DESIGN_MODULE_ID } from '@spark-view/spark-page-config/ai'
+import { createPageDesignPayloadRegistry } from '@spark-view/spark-page-config/ai'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
   '$id',
@@ -256,47 +256,23 @@ function getRecord(value: unknown, label: string): JsonRecord {
 }
 
 async function guidePayloadParamsSchema(key: string): Promise<JsonRecord> {
-  const registration = createPageDesignBusinessRegistration({
-    getEditToolHost: () => {
-      throw new Error('payload-catalog guide should not require edit host')
-    },
-  })
-  const context = {
-    moduleId: PAGE_DESIGN_MODULE_ID,
-    moduleInstanceId: 'schema-page',
-    instanceId: `${PAGE_DESIGN_MODULE_ID}:schema-page`,
-  }
-
-  const result = await registration.runtime.executeTool('invokeAction', {
-    path: '/pageDesign[schema-page]/payload-catalog[schema-page]',
-    actionName: 'guidePayload',
-    args: { key },
-  }, context)
-  expect(result.ok).toBe(true)
-  const data = getRecord(result.data, 'guidePayload.data')
-  const payload = getRecord(data['payload'], 'guidePayload.data.payload')
-  return getRecord(payload['paramsSchema'], 'guidePayload.data.payload.paramsSchema')
+  const provider = createPageDesignPayloadRegistry().getProvider('node-tree', 'spark.component')
+  if (provider === undefined) throw new Error('spark.component payload provider should be registered')
+  const payload = provider.guidePayload(key)
+  expect(payload).not.toBeNull()
+  return getRecord(payload?.paramsSchema, 'guidePayload.paramsSchema')
 }
 
 async function queryPayloads(args: Record<string, LlmJsonValue>): Promise<JsonRecord> {
-  const registration = createPageDesignBusinessRegistration({
-    getEditToolHost: () => {
-      throw new Error('payload-catalog query should not require edit host')
-    },
-  })
-  const context = {
-    moduleId: PAGE_DESIGN_MODULE_ID,
-    moduleInstanceId: 'schema-page',
-    instanceId: `${PAGE_DESIGN_MODULE_ID}:schema-page`,
+  const provider = createPageDesignPayloadRegistry().getProvider('node-tree', 'spark.component')
+  if (provider === undefined) throw new Error('spark.component payload provider should be registered')
+  const items = provider.queryPayloads(args)
+  return {
+    moduleKind: 'node-tree',
+    payloadRef: 'spark.component',
+    total: items.length,
+    items,
   }
-
-  const result = await registration.runtime.executeTool('invokeAction', {
-    path: '/pageDesign[schema-page]/payload-catalog[schema-page]',
-    actionName: 'queryPayloads',
-    args,
-  }, context)
-  expect(result.ok).toBe(true)
-  return getRecord(result.data, 'queryPayloads.data')
 }
 
 describe('Vue component metadata JSON Schema', () => {
@@ -357,7 +333,7 @@ describe('Vue component metadata JSON Schema', () => {
       key: 'r-table',
       type: 'r-table',
       category: 'container',
-      configurable: false,
+      configurable: true,
       internal: false,
     })
     expect(typeof item['description']).toBe('string')

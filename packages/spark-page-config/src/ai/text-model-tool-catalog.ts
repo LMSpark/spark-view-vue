@@ -3,7 +3,7 @@
  *
  * 提供四个函数：readScript / writeScript / readStyle / writeStyle
  * 用于读写当前页面的 script.js 和 style.css 文本模型内容。
- * 调用前必须先完成 lifecycle.bootstrap，确保宿主已绑定 readScript/readStyle/writeScript/writeStyle 能力。
+ * Host 启动 pageDesign 会话时会自动完成 lifecycle.bootstrap，确保宿主已绑定 readScript/readStyle/writeScript/writeStyle 能力。
  * 写入为全量覆盖，不支持 patch。
  */
 
@@ -31,10 +31,11 @@ import { createCurrentPageRef } from './page-design-helpers'
 const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')
 const CONTENT_SCHEMA = stringSchema('完整文本内容（全量覆盖写入，不支持 patch）')
 
-const BOOTSTRAP_RULE = `调用 text-model action 前必须先完成 lifecycle.bootstrap，确保宿主绑定 read*/write*。`
+const BOOTSTRAP_RULE = 'Host 会话启动已自动完成 lifecycle.bootstrap；text-model action 可直接使用当前 live binding，不要把 bootstrap 当成常规前置步骤重复调用。'
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
+// PAGE_DESIGN_AI_TRACE[page-design-text-model]: pageDesign AI 写 script.js/style.css 的唯一工具目录；清理冗余时不要和 workspace 保存逻辑混在一起。
 const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
   {
     name: 'readScript',
@@ -49,7 +50,7 @@ const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 PageDesignEditHost.readScript',
-        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 readScript。',
+        fix: '检查 Host 启动和宿主绑定，确保当前 pageDesign 会话提供 readScript。',
       },
     ],
   },
@@ -68,7 +69,7 @@ const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 PageDesignEditHost.writeScript',
-        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 writeScript。',
+        fix: '检查 Host 启动和宿主绑定，确保当前 pageDesign 会话提供 writeScript。',
       },
       {
         code: 'INVALID_SCRIPT_RUNTIME_API',
@@ -90,7 +91,7 @@ const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 PageDesignEditHost.readStyle',
-        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 readStyle。',
+        fix: '检查 Host 启动和宿主绑定，确保当前 pageDesign 会话提供 readStyle。',
       },
     ],
   },
@@ -109,7 +110,7 @@ const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
       {
         code: 'NO_TEXT_MODEL',
         when: '宿主未绑定 PageDesignEditHost.writeStyle',
-        fix: '先执行 lifecycle.bootstrap 并确保宿主提供 writeStyle。',
+        fix: '检查 Host 启动和宿主绑定，确保当前 pageDesign 会话提供 writeStyle。',
       },
     ],
   },

@@ -14,15 +14,16 @@
  * │    2. 提取最新用户消息 → 发送给 LLM（transport.streamTurn）                    │
  * │    3. LLM 返回文本 + 工具调用列表                                              │
  * │    4. 依次执行工具调用（toolCallExecutor.execute）                             │
- * │    5. 检查生命周期指令：continue → 下一轮；complete/abort → 结束              │
- * │    6. 结束时：发送最终消息 → appendMessages → stopSession → 释放实例           │
+ * │    5. 将 assistant(tool_calls) + tool 结果 append 到后端 V4 会话                │
+ * │    6. 检查生命周期指令：continue → 下一轮；complete/abort → 结束              │
+ * │    7. 结束时：发送最终消息 → appendMessages → stopSession → 释放实例           │
  * │                                                                              │
  * │  调用方：business-session.ts（AiHostMessageSender.send）                       │
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
 import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
-import { toAiHostRuntimeScope } from '../business/business-scope'
+import { createAiHostBusinessSessionId, toAiHostRuntimeScope } from '../business/business-scope'
 import type {
   AiHostBusinessLifecycleDirective,
   AiHostBusinessRegistration,
@@ -73,12 +74,13 @@ export class AiHostToolLoopRunner {
    *   5. 若无工具调用 → 自然结束
    *   6. 依次执行每个工具调用，收集 toolMessage 和 lifecycleDirective
    *   7. 若 lifecycleDirective ≠ 'continue' → 进入生命周期终止流程
-   *   8. 否则将本轮的 assistantMessage + toolMessages 作为下一轮的 pendingMessages
+   *   8. 否则把本轮消息 append 到 V4 后端会话，下一轮用空 messages 续写 session 历史
    */
+  // PAGE_DESIGN_AI_TRACE[host-tool-loop]: pageDesign 的 LLM round、toolCalls、工具结果回填都在这里闭环；冗余清理时用它区分 AI 编排和具体业务工具实现。
   public async runToolLoop(input: AiHostToolLoopInput): Promise<void> {
     const { registration, scope, request, turn, clearSelected } = input
     const runtimeContext = toAiHostRuntimeScope(scope)
-    const sessionId = scope.instanceId
+    const sessionId = createAiHostBusinessSessionId(scope.businessRegistrationId, scope.businessInstanceId)
     const maxRounds = this.options.maxToolRounds
     const sessionStore = requireSessionStore(registration)
 
@@ -90,6 +92,15 @@ export class AiHostToolLoopRunner {
       registration.runtime.projectKnowledge().promptSnapshot,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
 
+    const initialCodec = new ModuleSemanticToolCodec(registration.runtime.getLlmTools())
+    await this.options.transport.prepareSession?.({
+      sessionId,
+      scope,
+      systemPrompt,
+      tools: initialCodec.tools,
+      ...(request.signal === undefined ? {} : { signal: request.signal }),
+    })
+
     // 首轮消息：仅包含最新用户输入
     let pendingMessages = toCurrentTurnMessages(request)
 
@@ -99,7 +110,9 @@ export class AiHostToolLoopRunner {
 
       const currentRound = round + 1
       // 每轮重新构建 codec（protocol tools → transport tools）
-      const codec = new ModuleSemanticToolCodec(registration.runtime.getLlmTools())
+      const codec = round === 0
+        ? initialCodec
+        : new ModuleSemanticToolCodec(registration.runtime.getLlmTools())
 
       // 发送 LLM 请求诊断事件（前端可据此展示"AI 正在思考"）
       emitLlmDiagnosticEvent({
@@ -181,6 +194,14 @@ export class AiHostToolLoopRunner {
       }
       const messagesToAppend: AiHostTransportMessage[] = [assistantMessage, ...toolMessages]
 
+      await this.appendMessagesToTransport({
+        scope,
+        request,
+        turn,
+        sessionId,
+        messages: messagesToAppend,
+      })
+
       // 生命周期终止：发送最终消息、停止会话、释放资源
       if (lifecycleDirective !== null) {
         await this.completeLifecycleDirective({
@@ -191,15 +212,16 @@ export class AiHostToolLoopRunner {
           request,
           turn,
           sessionId,
-          messagesToAppend,
+          messagesToAppend: [],
           sessionStore,
           clearSelected,
         })
         return
       }
 
-      // 继续下一轮：本轮消息作为下一轮的 pendingMessages
-      pendingMessages = messagesToAppend
+      // V4 后端已通过 appendMessages 持久化本轮 assistant(tool_calls)+tool 结果；
+      // 下一轮只需让后端基于 session.conversation 继续，避免重复发送同一批消息。
+      pendingMessages = []
     }
 
     // 达到 maxToolRounds 上限：通知前端并退出
@@ -253,23 +275,12 @@ export class AiHostToolLoopRunner {
       })
     }
 
-    // 发送诊断事件 + 同步消息到服务端
-    emitLlmDiagnosticEvent({
+    // 发送诊断事件 + 同步消息到服务端；若没有最终消息则只做本地生命周期收尾。
+    await this.appendMessagesToTransport({
+      scope,
       request,
-      scope,
       turn,
-      type: 'llm-append',
-      data: {
-        kind: 'appendMessages',
-        sessionId,
-        turnId: turn.turnId,
-        messages: messagesToAppend,
-      },
-    })
-    await this.options.transport.appendMessages({
       sessionId,
-      scope,
-      turn,
       messages: messagesToAppend,
     })
 
@@ -284,6 +295,28 @@ export class AiHostToolLoopRunner {
 
     // 清除 session 层缓存
     clearSelected()
+  }
+
+  private async appendMessagesToTransport(input: AppendMessagesToTransportInput): Promise<void> {
+    if (input.messages.length === 0) return
+    emitLlmDiagnosticEvent({
+      request: input.request,
+      scope: input.scope,
+      turn: input.turn,
+      type: 'llm-append',
+      data: {
+        kind: 'appendMessages',
+        sessionId: input.sessionId,
+        turnId: input.turn.turnId,
+        messages: input.messages,
+      },
+    })
+    await this.options.transport.appendMessages({
+      sessionId: input.sessionId,
+      scope: input.scope,
+      turn: input.turn,
+      messages: input.messages,
+    })
   }
 }
 
@@ -303,6 +336,14 @@ type CompleteLifecycleDirectiveInput = Readonly<{
   messagesToAppend: AiHostTransportMessage[]
   sessionStore: AiHostSessionStore
   clearSelected: () => void
+}>
+
+type AppendMessagesToTransportInput = Readonly<{
+  scope: AiHostBusinessScope
+  request: AiHostChatRequest
+  turn: AiHostTurnMeta
+  sessionId: string
+  messages: readonly AiHostTransportMessage[]
 }>
 
 /** 获取 sessionStore，若未配置则抛异常 */

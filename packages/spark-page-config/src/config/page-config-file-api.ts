@@ -113,6 +113,28 @@ function normalizeVersionSummary(item: Record<string, unknown>): PageConfigFileV
   }
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value)
+}
+
+function readEnvelopeData(value: unknown): unknown {
+  if (!isRecord(value)) return value
+  if (value['ok'] === true && Object.prototype.hasOwnProperty.call(value, 'data')) {
+    return value['data']
+  }
+  return value
+}
+
+function normalizeRecordRows(value: unknown): Array<Record<string, unknown>> {
+  const data = readEnvelopeData(value)
+  return Array.isArray(data) ? data.filter(isRecord) : []
+}
+
+function normalizeRecordResult(value: unknown): Record<string, unknown> {
+  const data = readEnvelopeData(value)
+  return isRecord(data) ? data : {}
+}
+
 // ═══════════════════════════════════════════════════════
 // 4. 参数断言
 //
@@ -172,7 +194,7 @@ export class PageConfigFileApi {
 
   /** 获取所有页面的摘要列表 */
   async listPages(): Promise<PageConfigPageSummary[]> {
-    const rows = await this.http.get<Array<Record<string, unknown>>>(`${this.baseUrl()}/__list`)
+    const rows = normalizeRecordRows(await this.http.get<unknown>(`${this.baseUrl()}/__list`))
     return rows
       .map((row): PageConfigPageSummary | null => {
         const pageId = row['pageId']
@@ -196,7 +218,7 @@ export class PageConfigFileApi {
   /** 创建新页面（四文件骨架） */
   async createPage(params: PageConfigCreatePageParams): Promise<Record<string, unknown>> {
     const pageId = assertNonEmptyPageId(params.pageId)
-    return this.http.post<Record<string, unknown>>(`${this.baseUrl()}/__create`, { ...params, pageId })
+    return normalizeRecordResult(await this.http.post<unknown>(`${this.baseUrl()}/__create`, { ...params, pageId }))
   }
 
   /** 删除页面及其所有文件 */
@@ -210,9 +232,9 @@ export class PageConfigFileApi {
   /** 获取某个页面文件的全部版本列表 */
   async listVersions(pageId: string, filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
-    const result = await this.http.get<Array<Record<string, unknown>>>(
+    const result = normalizeRecordRows(await this.http.get<unknown>(
       `${this.fileUrl(normalizedPageId, filename)}/__versions`,
-    )
+    ))
     return result
       .map(normalizeVersionSummary)
       .filter((item): item is PageConfigFileVersionSummary => item !== null)

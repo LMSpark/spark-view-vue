@@ -67,12 +67,14 @@ export type AiHostChatRequest = Readonly<{
  * SSE 事件（服务端推送的流式事件单元）。
  * type      — 事件类型（delta / reasoning / usage / result / error / tool-result 等）
  * data      — 事件数据（字符串）
- * streamKey — 流键（用于前端路由到正确的组件）
- * scope     — 事件作用域（含 registrationId / instanceId / moduleId / turnId）
+ * turnKey   — turn 隔离键（kind + 顶层 instanceId + turnId）
+ * streamKey — turn 内流键（turnKey + streamId）
+ * scope     — 事件作用域（含 kind / 顶层 instanceId / eventModuleId / turnId）
  */
 export type AiHostSseEvent = Readonly<{
   type: string
   data: unknown
+  turnKey: string
   streamKey: string
   scope: {
     readonly businessRegistrationId: string

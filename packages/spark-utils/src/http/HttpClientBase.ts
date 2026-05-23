@@ -381,9 +381,11 @@ export abstract class HttpClientBase {
     const context = record['context']
     const hasV4RequestId = isRecord(context) && typeof context['requestId'] === 'string'
     const hasLegacyRequestId = typeof record['requestId'] === 'string'
-    return typeof record['ok'] === 'boolean'
-      && Object.prototype.hasOwnProperty.call(record, 'data')
-      && Object.prototype.hasOwnProperty.call(record, 'error')
+    const ok = record['ok']
+    const hasError = Object.prototype.hasOwnProperty.call(record, 'error')
+    const hasData = Object.prototype.hasOwnProperty.call(record, 'data')
+    return typeof ok === 'boolean'
+      && (ok ? hasData : hasError)
       && (hasV4RequestId || hasLegacyRequestId)
   }
 

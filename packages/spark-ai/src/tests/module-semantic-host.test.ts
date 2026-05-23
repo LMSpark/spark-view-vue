@@ -5,8 +5,10 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  AiHostBusinessTarget,
   DefaultAiHostSessionStore,
   AiHostToolLoopRunner,
+  createAiHostBusinessSession,
   startRegistrationSession,
   type AiHostBusinessRegistration,
   type AiHostTransport,
@@ -77,14 +79,14 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
 const CONTEXT = {
   moduleId: 'pageDesign',
   moduleInstanceId: 'page-1',
-  instanceId: 'pageDesign:page-1',
+  instanceId: 'page-1',
 }
 
 const SCOPE = {
   businessRegistrationId: 'pageDesign',
   businessInstanceId: 'page-1',
-  instanceId: 'pageDesign:page-1',
-  runtimeInstanceId: 'pageDesign:page-1',
+  instanceId: 'page-1',
+  runtimeInstanceId: 'page-1',
 }
 
 const TURN = {
@@ -141,7 +143,10 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     const { registration, spy, released } = createRegistration()
     await startRegistrationSession(registration, CONTEXT)
     const transport: AiHostTransport = {
-      streamTurn: () => Promise.resolve({
+      streamTurn: (input) => {
+        expect(input.sessionId).toBe('pageDesign:page-1')
+        expect(input.scope.instanceId).toBe('page-1')
+        return Promise.resolve({
         text: '',
         toolCalls: [{
           id: 'call-1',
@@ -155,7 +160,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
             }),
           },
         }],
-      }),
+        })
+      },
       appendMessages: () => Promise.resolve(),
     }
     const runner = new AiHostToolLoopRunner({
@@ -191,28 +197,42 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
   it('协议失败映射为 AiHostFunctionCallResult failure 并记录 failed', async () => {
     const { registration } = createRegistration()
     await startRegistrationSession(registration, CONTEXT)
+    let round = 0
+    let secondRoundMessages: readonly unknown[] = []
+    let appendedMessages: readonly unknown[] = []
     const transport: AiHostTransport = {
-      streamTurn: () => Promise.resolve({
-        text: '',
-        toolCalls: [{
-          type: 'function',
-          function: {
-            name: 'invokeAction',
-            arguments: JSON.stringify({
-              path: '/node-tree[page-1]',
-              actionName: 'getNode',
-              args: { id: '' },
-            }),
-          },
-        }],
-      }),
-      appendMessages: () => Promise.resolve(),
+      streamTurn: (input) => {
+        round += 1
+        if (round === 1) {
+          return Promise.resolve({
+            text: '',
+            toolCalls: [{
+              type: 'function',
+              id: 'call-node-empty',
+              function: {
+                name: 'invokeAction',
+                arguments: JSON.stringify({
+                  path: '/node-tree[page-1]',
+                  actionName: 'getNode',
+                  args: { id: '' },
+                }),
+              },
+            }],
+          })
+        }
+        secondRoundMessages = input.messages
+        return Promise.resolve({ text: '已收到错误并停止', toolCalls: [] })
+      },
+      appendMessages: (input) => {
+        appendedMessages = input.messages
+        return Promise.resolve()
+      },
     }
     const calls: string[] = []
     const runner = new AiHostToolLoopRunner({
       registry: { get: () => registration, list: () => [registration] },
       transport,
-      maxToolRounds: 1,
+      maxToolRounds: 2,
     })
 
     await runner.runToolLoop({
@@ -224,12 +244,37 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     })
 
     expect(calls).toEqual(['error'])
+    expect(secondRoundMessages).toEqual([])
+    const toolMessage = appendedMessages.find((message) =>
+      typeof message === 'object' && message !== null && 'role' in message && message.role === 'tool'
+    )
+    expect(toolMessage).toMatchObject({ role: 'tool', tool_call_id: 'call-node-empty' })
+    const toolPayload = JSON.parse(String((toolMessage as { content?: unknown } | undefined)?.content ?? '{}'))
+    expect(toolPayload).toMatchObject({
+      ok: false,
+      code: 'NODE_NOT_FOUND',
+      checks: [
+        {
+          level: 'error',
+          code: 'NODE_NOT_FOUND',
+          message: 'id 为空',
+          hint: '先调 listChildren 取真实 id',
+        },
+      ],
+    })
     const history = registration.sessionStore?.getSessionHistory(CONTEXT) ?? []
-    expect(history.at(-1)).toMatchObject({
+    const failedCall = [...history].reverse().find((entry) => entry.kind === 'functionCall')
+    expect(failedCall).toMatchObject({
       kind: 'functionCall',
       status: 'failed',
       error: {
         code: 'NODE_NOT_FOUND',
+        checks: [
+          {
+            code: 'NODE_NOT_FOUND',
+            message: 'id 为空',
+          },
+        ],
       },
     })
   })
@@ -272,6 +317,44 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     expect(systemPrompt).toContain('【AI Knowledge Snapshot】')
     expect(systemPrompt).toContain('不假设、不猜测')
     expect(systemPrompt).toContain('node-tree.getNode')
+  })
+
+  it('同一业务会话下多个 turn 共享 sessionId 但保持 turnId 隔离', async () => {
+    const { registration } = createRegistration()
+    const streamInputs: Array<{ sessionId: string; turnId: string; instanceId: string; content: string }> = []
+    const transport: AiHostTransport = {
+      streamTurn: (input) => {
+        streamInputs.push({
+          sessionId: input.sessionId,
+          turnId: input.turn.turnId,
+          instanceId: input.scope.instanceId,
+          content: input.messages.map((message) => message.content).join('\n'),
+        })
+        return Promise.resolve({ text: 'ok', toolCalls: [] })
+      },
+      appendMessages: () => Promise.resolve(),
+    }
+    const session = createAiHostBusinessSession({
+      registry: { get: () => registration, list: () => [registration] },
+      transport,
+      maxToolRounds: 1,
+    }, new AiHostBusinessTarget('pageDesign', 'page-1'))
+
+    await session.start()
+    await session.send({
+      historyMsgs: [{ role: 'user', content: '第一轮' }],
+      turn: { ...TURN, turnId: 'turn-a', seq: 1 },
+    })
+    await session.send({
+      historyMsgs: [{ role: 'user', content: '第二轮' }],
+      turn: { ...TURN, turnId: 'turn-b', seq: 2 },
+    })
+
+    expect(session.sessionId).toBe('pageDesign:page-1')
+    expect(streamInputs).toEqual([
+      { sessionId: 'pageDesign:page-1', turnId: 'turn-a', instanceId: 'page-1', content: '第一轮' },
+      { sessionId: 'pageDesign:page-1', turnId: 'turn-b', instanceId: 'page-1', content: '第二轮' },
+    ])
   })
 })
 

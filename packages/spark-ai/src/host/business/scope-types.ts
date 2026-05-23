@@ -28,16 +28,16 @@ import type {
 /* -------------------------------------------------------------------------------
  * 一、业务定位基类
  * -------------------------------------------------------------------------------
- * 用两个 ID 精确定位一个业务实例：
- *   - businessRegistrationId：在 BusinessRegistry 中注册时分配的唯一标识
- *   - businessInstanceId：每次 createBusiness() 调用时创建的唯一实例标识
+ * 用两个 ID 精确定位一个顶层业务实例：
+ *   - businessRegistrationId：顶层 kind（兼容旧字段名）
+ *   - businessInstanceId：顶层实例 ID（兼容旧字段名）
  * ----------------------------------------------------------------------------- */
 
 export class AiHostBusinessTarget {
   public constructor(
-    /** 业务注册 ID——对应 BusinessRegistry 中的注册项 */
+    /** 顶层 kind——对应 BusinessRegistry 中的注册项 */
     public readonly businessRegistrationId: string,
-    /** 业务实例 ID——每次创建业务时生成，同一次会话内不变 */
+    /** 顶层实例 ID——同一次会话内不变 */
     public readonly businessInstanceId: string,
   ) {}
 }
@@ -45,19 +45,19 @@ export class AiHostBusinessTarget {
 /* -------------------------------------------------------------------------------
  * 二、业务作用域（继承自定位基类）
  * -------------------------------------------------------------------------------
- * 在业务定位基础上追加会话层标识，构成完整的"当前上下文坐标"：
- *   - instanceId：本次 AI 会话 ID（createSession 时生成）
- *   - runtimeInstanceId：ModuleSemanticRuntime 内部实例 ID（模块能力树实例）
+ * 在业务定位基础上追加运行时标识，构成完整的"当前上下文坐标"：
+ *   - instanceId：顶层实例 ID，参与 kind + instanceId 生成后端 sessionId
+ *   - runtimeInstanceId：ModuleSemanticRuntime 内部实例 ID（当前同顶层实例 ID）
  *
  * Scope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期。
- * 同时也是 SSE 流键（streamKey）的数据来源——流键由 Scope 字段编码生成。
+ * 同时也是 turnKey / streamKey 的数据来源——键由 Scope 字段编码生成。
  * ----------------------------------------------------------------------------- */
 
 export class AiHostBusinessScope extends AiHostBusinessTarget {
   public constructor(
     businessRegistrationId: string,
     businessInstanceId: string,
-    /** AI 会话实例 ID——对应 createSession() 返回的 sessionId */
+    /** 顶层实例 ID */
     public readonly instanceId: string,
     /** 模块运行时实例 ID——ModuleSemanticRuntime 创建实例时的内部标识 */
     public readonly runtimeInstanceId: string,
@@ -71,8 +71,8 @@ export class AiHostBusinessScope extends AiHostBusinessTarget {
  * -------------------------------------------------------------------------------
  * 传递给生命周期回调的精简上下文，只包含模块层标识：
  *   - moduleId：业务模块 ID（对应 registration.moduleId）
- *   - moduleInstanceId：模块运行时实例 ID（对应 scope.runtimeInstanceId）
- *   - instanceId：会话实例 ID（对应 scope.instanceId）
+ *   - moduleInstanceId：顶层模块实例 ID（pageId、leaveDraftId 等）
+ *   - instanceId：顶层实例 ID；后端 sessionId 由 moduleId + instanceId 生成
  *
  * 与 Scope 的区别：不含 businessRegistrationId / businessInstanceId，
  * 因为生命周期回调已在具体业务实例内部执行，无需重复定位。
@@ -84,7 +84,7 @@ export class AiHostBusinessRuntimeContext {
     public readonly moduleId: string,
     /** 模块运行时内部实例 ID */
     public readonly moduleInstanceId: string,
-    /** AI 会话实例 ID */
+    /** 顶层实例 ID */
     public readonly instanceId: string,
   ) {}
 }

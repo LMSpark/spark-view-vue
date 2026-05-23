@@ -8,16 +8,18 @@
  *
  * 【设计原则】
  *   - 所有输入字符串都经过 normalizeRequiredText 校验（非空、去空白）
- *   - sessionId = "registrationId:instanceId"（冒号拼接，全局唯一）
+ *   - sessionId = "kind:instanceId"（冒号拼接，全局唯一）
  *   - storageKey 用于 localStorage / Map 等存储后端的键名
- *   - streamKey 用于 SSE 事件流的键名（多段 URI 编码拼接）
+ *   - turnKey 用于一次对话 turn 的隔离（kind + instanceId + turnId）
+ *   - streamKey 用于 turn 内更细的 SSE/诊断流（turnKey + streamId）
  *
  * 【函数清单】
  *   normalizeAiHostBusinessTarget     — 规范化业务定位（校验 + 去空白）
  *   createAiHostBusinessSessionId     — 生成会话 ID
  *   createAiHostBusinessScope         — 构造业务作用域
  *   createAiHostBusinessStorageKey    — 生成存储键
- *   createAiHostStreamKey             — 生成 SSE 流键
+ *   createAiHostTurnKey               — 生成 turn 隔离键
+ *   createAiHostStreamKey             — 生成 turn 内 stream 键
  *   toAiHostRuntimeScope              — Scope → RuntimeContext 投影
  *   latestUserInput                   — 从请求历史中提取最新用户消息
  *
@@ -52,7 +54,7 @@ function normalizeRequiredText(value: unknown, fieldName: string): string {
 // 第 2 节 · 作用域工厂
 // ═══════════════════════════════════════════════════════════════
 
-/** 规范化业务定位：校验 registrationId 和 instanceId 均非空 */
+/** 规范化业务定位：校验 kind 和顶层 instanceId 均非空 */
 export function normalizeAiHostBusinessTarget(target: AiHostBusinessTarget): AiHostBusinessTarget {
   return new AiHostBusinessTarget(
     normalizeRequiredText(target.businessRegistrationId, 'businessRegistrationId'),
@@ -60,7 +62,7 @@ export function normalizeAiHostBusinessTarget(target: AiHostBusinessTarget): AiH
   )
 }
 
-/** 生成会话 ID：格式为 "registrationId:instanceId" */
+/** 生成会话 ID：格式为 "kind:instanceId" */
 export function createAiHostBusinessSessionId(businessRegistrationId: string, businessInstanceId: string): string {
   return `${businessRegistrationId}:${businessInstanceId}`
 }
@@ -68,12 +70,11 @@ export function createAiHostBusinessSessionId(businessRegistrationId: string, bu
 /** 构造业务作用域（含输入校验） */
 export function createAiHostBusinessScope(businessRegistrationId: string, businessInstanceId: string): AiHostBusinessScope {
   const target = normalizeAiHostBusinessTarget(new AiHostBusinessTarget(businessRegistrationId, businessInstanceId))
-  const instanceId = createAiHostBusinessSessionId(target.businessRegistrationId, target.businessInstanceId)
   return new AiHostBusinessScope(
     target.businessRegistrationId,
     target.businessInstanceId,
-    instanceId,
-    instanceId,
+    target.businessInstanceId,
+    target.businessInstanceId,
   )
 }
 
@@ -81,31 +82,38 @@ export function createAiHostBusinessScope(businessRegistrationId: string, busine
 // 第 3 节 · 键名生成
 // ═══════════════════════════════════════════════════════════════
 
-/** 生成存储键：格式为 "spark-ai:registrationId:instanceId" */
+/** 生成存储键：格式为 "spark-ai:kind:instanceId" */
 export function createAiHostBusinessStorageKey(scope: AiHostBusinessScope | AiHostBusinessTarget): string {
   const target = normalizeAiHostBusinessTarget(scope)
   return `spark-ai:${target.businessRegistrationId}:${target.businessInstanceId}`
 }
 
 /**
- * 生成 SSE 事件流键。
- * 格式：encodeURIComponent(registrationId)::encodeURIComponent(instanceId)::encodeURIComponent(moduleId)::encodeURIComponent(turnId)
+ * 生成对话 turn 隔离键。
+ * 格式：encodeURIComponent(kind)::encodeURIComponent(instanceId)::encodeURIComponent(turnId)
  * 使用 :: 双冒号分隔以避免与 URI 编码后的字符冲突。
  */
-export function createAiHostStreamKey(scope: AiHostBusinessScope, eventModuleId: string, turnId: string): string {
+export function createAiHostTurnKey(scope: AiHostBusinessScope, turnId: string): string {
   return [
     scope.businessRegistrationId,
     scope.businessInstanceId,
-    eventModuleId,
     turnId,
   ].map(encodeURIComponent).join('::')
+}
+
+/** 生成 turn 内 stream 键：turnKey::encodeURIComponent(streamId) */
+export function createAiHostStreamKey(scope: AiHostBusinessScope, turnId: string, streamId: string): string {
+  return [
+    createAiHostTurnKey(scope, turnId),
+    encodeURIComponent(normalizeRequiredText(streamId, 'streamId')),
+  ].join('::')
 }
 
 // ═══════════════════════════════════════════════════════════════
 // 第 4 节 · 类型投影
 // ═══════════════════════════════════════════════════════════════
 
-/** Scope → RuntimeContext 投影：摘取 moduleId / moduleInstanceId / instanceId */
+/** Scope → RuntimeContext 投影：摘取 moduleId / 顶层 moduleInstanceId / 顶层 instanceId */
 export function toAiHostRuntimeScope(scope: AiHostBusinessScope): AiHostBusinessRuntimeContext {
   return new AiHostBusinessRuntimeContext(
     scope.businessRegistrationId,

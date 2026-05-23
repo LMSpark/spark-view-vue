@@ -22,6 +22,16 @@ import { isRecord } from '@spark-view/spark-page-config/json-document'
 function createHost(): { host: PageDesignEditHost; nodeTree: SparkNodeTree } {
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
   const dataSetTool = new DataSetCrudTool('page-design-test')
+  dataSetTool.createTable({
+    tableName: 'LeaveRequest',
+    columns: [
+      { name: 'id', type: 'string', isPrimaryKey: true },
+      { name: 'applicantName', type: 'string' },
+    ],
+    resourceType: 'database-table',
+    resourceId: 'hr.leave_request',
+    views: { default: {} },
+  })
   let script = 'export default {}'
   let style = '.page { color: red; }'
   return {
@@ -63,7 +73,7 @@ function buildRuntime(pageId = 'demo-page'): {
     hostContext: {
       moduleId: 'pageDesign',
       moduleInstanceId: pageId,
-      instanceId: `pageDesign:${pageId}`,
+      instanceId: pageId,
     },
   }
 }
@@ -135,7 +145,7 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
       actionName: 'addNode',
       args: {
         parentComponentId: 'page__0',
-        node: { type: 'text', props: { value: 'hello' } },
+        node: { type: 'r-text', id: 'applicant-name-field', props: { field: 'applicantName', label: '申请人' } },
       },
     }, hostContext)
     expect(added.ok).toBe(true)

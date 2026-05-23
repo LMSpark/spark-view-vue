@@ -320,7 +320,7 @@ const VIEWS_SCHEMA = objectSchema({
   default: VIEW_METADATA_SCHEMA,
 }, {
   additionalProperties: VIEW_METADATA_SCHEMA,
-  description: '对象键就是 viewId；default 可配置但不会新建，非 default 键会创建对应视图。',
+  description: '必须是 JSON 对象，不能是数组；对象键就是 viewId，例如 {"pending": {"filter": {"status": "pending"}}}。default 可配置但不会新建，非 default 键会创建对应视图。',
 })
 
 const RELATION_SELECTOR_SCHEMA = objectSchema({
@@ -771,11 +771,17 @@ const DATASET_ACTIONS: readonly ModuleActionMetadata[] = [
       resourceType: 'database-table',
       resourceId: 'crm.users',
       businessCategory: 'master',
+      views: {
+        pending: {
+          filter: { status: 'pending' },
+        },
+      },
     },
     usageRules: [
       JSON_OBJECT_RULE,
       STATIC_ROWS_ONLY_RULE,
       'LLM 场景下 crudConfig 中的 transformRequest/transformResponse 应省略，不要尝试传函数。',
+      'views 必须是对象映射而不是数组：正确 {"pending": {...}}，错误 [{ "viewId": "pending", ... }]。',
       'views.default 不会新建，只会复用建表时自动创建的 default 视图。',
       RUNTIME_WIRED_RULE,
     ],
@@ -1870,6 +1876,7 @@ const DATASET_ACTIONS: readonly ModuleActionMetadata[] = [
   },
 ]
 
+// PAGE_DESIGN_AI_TRACE[page-design-dataset-tool]: pageDesign AI 修改 pagedata.json 的 ModuleKind 出处；DataSetCrudTool 的具体数据语义在 spark-data。
 export class PageDesignDatasetModuleKind extends ModuleKind {
   private readonly service: PageDesignService
   private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext

@@ -66,8 +66,8 @@ export type ApiResponse<T = unknown> = {
 export type ApiEnvelope<T = unknown> = {
   protocolVersion?: number
   ok: boolean
-  data: T | null
-  error: ApiEnvelopeError | null
+  data?: T | null
+  error?: ApiEnvelopeError | null
   /** v3 legacy field; v4 uses context.requestId. */
   requestId?: string
   context?: ApiEnvelopeContext

@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import {
+  AiHostBusinessRegistry,
   AiHostToolLoopRunner,
   startRegistrationSession,
   toAiHostRuntimeScope,
@@ -10,6 +11,7 @@ import {
 import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
+  registerPageDesignBusiness,
 } from '@spark-view/spark-page-config/ai'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
 import {
@@ -58,7 +60,7 @@ function hostContext(pageId: string): AiHostBusinessRuntimeContext {
   return {
     moduleId: PAGE_DESIGN_MODULE_ID,
     moduleInstanceId: pageId,
-    instanceId: `${PAGE_DESIGN_MODULE_ID}:${pageId}`,
+    instanceId: pageId,
   }
 }
 
@@ -66,8 +68,8 @@ function businessScope(pageId: string) {
   return {
     businessRegistrationId: PAGE_DESIGN_MODULE_ID,
     businessInstanceId: pageId,
-    instanceId: `${PAGE_DESIGN_MODULE_ID}:${pageId}`,
-    runtimeInstanceId: `${PAGE_DESIGN_MODULE_ID}:${pageId}`,
+    instanceId: pageId,
+    runtimeInstanceId: pageId,
   }
 }
 
@@ -204,10 +206,25 @@ describe('pageDesign host business registration', () => {
     expect(nodeTreeDescription['payloads']).toEqual([
       {
         payloadRef: 'spark.component',
-        description: 'SparkNode 组件 props 参数目录；构造 node-tree 写入动作的 node.props 前必须查询。',
+        description: 'SparkNode 组件 props 参数目录；LLM 写目录组件前必须显式 guidePayload，node-tree 写入时也会按 type 自动提取指南并兜底校验 props。',
         requiredForActions: ['addNode', 'addNodes', 'replaceNode', 'replaceNodes', 'setProps', 'setPropsBatch'],
       },
     ])
+  })
+
+  it('exposes a page-config owned pageDesign business registration helper', () => {
+    const { host } = createHost()
+    const registry = new AiHostBusinessRegistry()
+
+    registerPageDesignBusiness({
+      registry,
+      getPageDesignEditHost: () => host,
+    })
+
+    const registration = registry.get(PAGE_DESIGN_MODULE_ID)
+    expect(registration?.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
+    expect(registration?.runtime.describeKind(PAGE_DESIGN_MODULE_ID).ok).toBe(true)
+    expect(registry.list()).toHaveLength(1)
   })
 
   it('executes lifecycle/text-model/payload-catalog/node-tree/dataset through protocol tools', async () => {
@@ -285,6 +302,37 @@ describe('pageDesign host business registration', () => {
     expect(paramsSchema['properties']).toHaveProperty('action')
     expect(paramsSchema['properties']).toHaveProperty('label')
 
+    const displayPayloads = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
+      actionName: 'queryPayloads',
+      args: { key: 'display-statistic', limit: 1 },
+    }, context)
+    expect(resultItemCount(getRecord(displayPayloads))).toBe(1)
+
+    const displayGuide = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
+      actionName: 'guidePayload',
+      args: { key: 'display-statistic' },
+    }, context)
+    expect(displayGuide.ok).toBe(true)
+
+    const recommendedFields = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
+      actionName: 'queryPayloads',
+      args: { category: 'field', configurableOnly: true, limit: 5 },
+    }, context)
+    const recommendedFieldCatalog = getRecord(recommendedFields)
+    const fieldItems = recommendedFieldCatalog['items']
+    if (!Array.isArray(fieldItems)) throw new Error('expected recommended field items')
+    expect(fieldItems.map((item) => isRecord(item) ? item['key'] : null)).toEqual([
+      'r-text',
+      'r-select',
+      'r-date',
+      'r-number',
+      'r-textarea',
+    ])
+    expect(fieldItems.every((item) => isRecord(item) && item['configurable'] === true)).toBe(true)
+
     const countNodes = await registration.runtime.executeTool('invokeAction', {
       path: '/pageDesign[page-designer]/node-tree[page-designer]',
       actionName: 'countNodes',
@@ -298,6 +346,183 @@ describe('pageDesign host business registration', () => {
       args: {},
     }, context)
     expect(listTables).toMatchObject({ ok: true, data: [] })
+  })
+
+  it('enforces data-first node writes and requires guides for every written component', async () => {
+    const { host } = createHost()
+    const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
+    const context = hostContext('page-designer')
+    await startRegistrationSession(registration, context)
+
+    const addBeforeDataset = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'r-form',
+          id: 'guided-form',
+          props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow' },
+          children: [
+            { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
+          ],
+        },
+      },
+    }, context)
+    expect(addBeforeDataset.ok).toBe(false)
+    if (addBeforeDataset.ok) throw new Error('expected data-first failure')
+    expect(JSON.stringify(addBeforeDataset.checks ?? [])).toContain('DATASET_FIRST_REQUIRED')
+
+    const createDataset = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/dataset[page-designer]',
+      actionName: 'createTable',
+      args: {
+        tableName: 'LeaveRequest',
+        columns: [
+          { name: 'id', type: 'string', isPrimaryKey: true },
+          { name: 'applicantName', type: 'string' },
+        ],
+        resourceType: 'database-table',
+        resourceId: 'hr.leave_request',
+        views: { default: {} },
+      },
+    }, context)
+    expect(createDataset.ok).toBe(true)
+
+    const addInvalidProps = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'r-form',
+          id: 'guided-form',
+          props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow', gridColumns: 'two' },
+          children: [
+            { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
+          ],
+        },
+      },
+    }, context)
+    expect(addInvalidProps.ok).toBe(false)
+    if (addInvalidProps.ok) throw new Error('expected payload schema failure')
+    const invalidPropsChecks = JSON.stringify(addInvalidProps.checks ?? [])
+    expect(invalidPropsChecks).toContain('NODE_PAYLOAD_SCHEMA_INVALID')
+    expect(invalidPropsChecks).toContain('gridColumns')
+
+    const addWithAutoGuides = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'r-form',
+          id: 'guided-form',
+          props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow' },
+          children: [
+            { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
+          ],
+        },
+      },
+    }, context)
+    expect(addWithAutoGuides.ok).toBe(true)
+
+    const addNativeType = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'div',
+          id: 'native-wrapper',
+          props: {},
+          children: ['原生说明文案'],
+        },
+      },
+    }, context)
+    expect(addNativeType.ok).toBe(true)
+
+    const addDisplayCatalogType = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'display-statistic',
+          id: 'display-statistic-node',
+          props: { title: '待审批申请' },
+        },
+      },
+    }, context)
+    expect(addDisplayCatalogType.ok).toBe(true)
+
+    const addUnknownType = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'mystery-widget',
+          id: 'unknown-widget',
+          props: {},
+        },
+      },
+    }, context)
+    expect(addUnknownType).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'UNKNOWN_NODE_TYPE' })],
+    })
+  })
+
+  it('requires contextDataMember when form nodes bind a DataView', async () => {
+    const { host } = createHost()
+    const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
+    const context = hostContext('page-designer')
+    await startRegistrationSession(registration, context)
+
+    const createDataset = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/dataset[page-designer]',
+      actionName: 'createTable',
+      args: {
+        tableName: 'LeaveRequest',
+        columns: [
+          { name: 'id', type: 'string', isPrimaryKey: true },
+          { name: 'applicantName', type: 'string' },
+        ],
+        resourceType: 'database-table',
+        resourceId: 'hr.leave_request',
+        views: { default: {} },
+      },
+    }, context)
+    expect(createDataset.ok).toBe(true)
+
+    for (const key of ['r-form', 'r-text']) {
+      const guide = await registration.runtime.executeTool('invokeAction', {
+        path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
+        actionName: 'guidePayload',
+        args: { key },
+      }, context)
+      expect(guide.ok).toBe(true)
+    }
+
+    const missingContext = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/node-tree[page-designer]',
+      actionName: 'addNode',
+      args: {
+        parentComponentId: 'page__0',
+        node: {
+          type: 'r-form',
+          id: 'form-without-context',
+          props: { dataViewKey: 'LeaveRequest@default' },
+          children: [
+            { type: 'r-text', id: 'field-name', props: { field: 'applicantName' } },
+          ],
+        },
+      },
+    }, context)
+    expect(missingContext.ok).toBe(false)
+    if (missingContext.ok) throw new Error('expected contextDataMember failure')
+    expect(JSON.stringify(missingContext.checks ?? [])).toContain('CONTEXT_DATA_MEMBER_REQUIRED')
   })
 
   it('AI tool loop can discover child modules and invoke payload guides through nested paths', async () => {
@@ -511,18 +736,7 @@ describe('pageDesign host business registration', () => {
       }),
     })
     const context = hostContext('page-designer')
-    await startRegistrationSession(registration, context)
-
-    const bootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/lifecycle[page-designer]',
-      actionName: 'bootstrap',
-      args: {},
-    }, context)
-
-    expect(bootstrap).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'NO_NODE_TREE' })],
-    })
+    await expect(startRegistrationSession(registration, context)).rejects.toThrow('PageDesignService.bootstrap')
   })
 
   it('isolates parallel page-design instances and accepts route-like page ids', async () => {
@@ -568,8 +782,8 @@ describe('pageDesign host business registration', () => {
     expect(toAiHostRuntimeScope({
       businessRegistrationId: PAGE_DESIGN_MODULE_ID,
       businessInstanceId: 'lmspark/homepage',
-      instanceId: 'pageDesign:lmspark/homepage',
-      runtimeInstanceId: 'pageDesign:lmspark/homepage',
+      instanceId: 'lmspark/homepage',
+      runtimeInstanceId: 'lmspark/homepage',
     })).toEqual(nestedContext)
   })
 })

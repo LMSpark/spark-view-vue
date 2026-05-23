@@ -21,7 +21,7 @@ import type {
   ModuleParameterPayloadSummary,
 } from '@spark-view/spark-ai'
 import type { LlmJsonSchema, LlmJsonValue, LlmJsonSchemaObject } from '@spark-view/spark-ai/schema'
-import type { PageDesignServiceResult } from '../design'
+import type { PageDesignServiceContext, PageDesignServiceResult } from '../design'
 import { PageDesignService } from '../design'
 import componentCatalogPayload from './payloads/component-catalog.json'
 import { createCurrentPageRef } from './page-design-helpers'
@@ -66,6 +66,23 @@ type PageDesignPayloadCatalog = {
 }
 
 const PAGE_DESIGN_COMPONENT_CATALOG: PageDesignPayloadCatalog = readPageDesignPayloadCatalog(componentCatalogPayload)
+const RECOMMENDED_PAYLOAD_ORDER = [
+  'r-section',
+  'r-form',
+  'r-table',
+  'r-list',
+  'r-button',
+  'r-card',
+  'r-text',
+  'r-select',
+  'r-date',
+  'r-number',
+  'r-textarea',
+  'r-radio',
+  'r-checkbox',
+  'r-switch',
+]
+const RECOMMENDED_PAYLOAD_RANK = new Map(RECOMMENDED_PAYLOAD_ORDER.map((key, index) => [key, index]))
 
 const PAYLOAD_CATALOG_ACTIONS: readonly ModuleActionMetadata[] = [
   {
@@ -138,6 +155,7 @@ export function createPageDesignPayloadRegistry(): ModuleParameterPayloadRegistr
   return registry
 }
 
+// PAGE_DESIGN_AI_TRACE[page-design-payload-provider]: pageDesign AI 的组件参数荷载指南出处；node-tree 写 props 前应以这里的 guidePayload/paramsSchema 为准。
 export function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvider {
   return {
     moduleKind: PAGE_DESIGN_NODE_TREE_KIND,
@@ -150,11 +168,15 @@ export function createPageDesignComponentPayloadProvider(): ModuleParameterPaylo
 
 export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
   private readonly registry: ModuleParameterPayloadRegistry
+  private readonly service: PageDesignService
+  private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
 
   public constructor(options: {
+    readonly service: PageDesignService
+    readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string | undefined
     readonly registry?: ModuleParameterPayloadRegistry | undefined
-  } = {}) {
+  }) {
     super({
       kind: PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
       name: 'Page Design Payload Catalog',
@@ -164,6 +186,8 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
       children: [],
     })
     this.registry = options.registry ?? createPageDesignPayloadRegistry()
+    this.service = options.service
+    this.contextFactory = options.contextFactory
   }
 
   protected override runAction(
@@ -171,16 +195,42 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    void ctx
     if (this.findAction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
-    return Promise.resolve(this.serviceResultToOperationResult(runPayloadCatalogAction(this.registry, actionName, args)))
+    const result = runPayloadCatalogAction(this.registry, actionName, args)
+    if (result.ok && actionName === 'guidePayload') {
+      this.recordGuidedPayload(ctx, args, result.data)
+    }
+    return Promise.resolve(this.serviceResultToOperationResult(result))
   }
 
   protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面组件荷载目录')
   }
+
+  private recordGuidedPayload(
+    ctx: ModulePathContext,
+    args: Readonly<Record<string, LlmJsonValue>>,
+    data: unknown,
+  ): void {
+    if (!isRecord(data)) return
+    const moduleKind = typeof data['moduleKind'] === 'string' ? data['moduleKind'] : ''
+    const payloadRef = typeof data['payloadRef'] === 'string' ? data['payloadRef'] : ''
+    const key = typeof args['key'] === 'string' ? args['key'].trim() : ''
+    if (moduleKind !== PAGE_DESIGN_NODE_TREE_KIND || payloadRef !== PAGE_DESIGN_COMPONENT_PAYLOAD_REF || key.length === 0) return
+    const payload = data['payload']
+    if (!isModuleParameterPayloadGuide(payload)) return
+    this.service.recordNodePayloadGuide(this.contextFactory(ctx), key, payload)
+  }
+}
+
+function isModuleParameterPayloadGuide(value: unknown): value is ModuleParameterPayloadGuide {
+  return isRecord(value)
+    && typeof value['moduleKind'] === 'string'
+    && typeof value['payloadRef'] === 'string'
+    && typeof value['key'] === 'string'
+    && isRecord(value['paramsSchema'])
 }
 
 function runPayloadCatalogAction(
@@ -270,10 +320,13 @@ function queryPageDesignComponentPayloads(filter: ModuleParameterPayloadQueryFil
     rows = rows.filter((entry) => payloadKey(entry) === key || entry.type === key)
   }
   if (configurableOnly) {
-    rows = rows.filter((entry) => entry.configurable === true && entry.internal !== true)
+    rows = rows.filter(isConfigurablePayload)
   }
 
-  const items = rows.slice(0, limit).map((entry) => summarizePayload(entry))
+  const items = [...rows]
+    .sort(comparePayloadEntries)
+    .slice(0, limit)
+    .map((entry) => summarizePayload(entry))
   return items
 }
 
@@ -328,7 +381,7 @@ function resolvePayloadProvider(
 
 function guidePageDesignComponentPayload(key: string): ModuleParameterPayloadGuide | null {
   const entry = findPayloadEntry(key)
-  if (entry === null) {
+  if (entry === null || !isWritablePageDesignComponentPayload(entry)) {
     return null
   }
   return {
@@ -382,6 +435,19 @@ function findPayloadEntry(key: string): PageDesignPayloadEntry | null {
   return payloadRows().find((entry) => entry.type === key) ?? null
 }
 
+export function hasPageDesignComponentPayloadKey(key: string): boolean {
+  return findPayloadEntry(key.trim()) !== null
+}
+
+export function isPageDesignWritableComponentPayloadKey(key: string): boolean {
+  const entry = findPayloadEntry(key.trim())
+  return entry !== null && isWritablePageDesignComponentPayload(entry)
+}
+
+export function getPageDesignComponentPayloadGuide(key: string): ModuleParameterPayloadGuide | null {
+  return guidePageDesignComponentPayload(key.trim())
+}
+
 function summarizePayload(entry: PageDesignPayloadEntry): ModuleParameterPayloadSummary {
   const props = entry.props ?? []
   const requiredProps = props.filter((prop) => prop.required === true).map((prop) => prop.name)
@@ -393,21 +459,44 @@ function summarizePayload(entry: PageDesignPayloadEntry): ModuleParameterPayload
     ...(entry.category === undefined ? {} : { category: entry.category }),
     ...(entry.description === undefined ? {} : { description: entry.description }),
     ...(entry.filePath === undefined ? {} : { filePath: entry.filePath }),
-    configurable: entry.configurable === true,
+    configurable: isConfigurablePayload(entry),
     internal: entry.internal === true,
     propCount: props.length,
     ...(requiredProps.length === 0 ? {} : { requiredProps }),
+    ...(isRecommendedPayload(entry) ? { tags: ['recommended'] } : {}),
   }
+}
+
+function comparePayloadEntries(left: PageDesignPayloadEntry, right: PageDesignPayloadEntry): number {
+  const leftRank = payloadRank(left)
+  const rightRank = payloadRank(right)
+  if (leftRank !== rightRank) return leftRank - rightRank
+  return left.type.localeCompare(right.type)
+}
+
+function payloadRank(entry: PageDesignPayloadEntry): number {
+  const recommendedRank = RECOMMENDED_PAYLOAD_RANK.get(entry.type)
+  if (recommendedRank !== undefined) return recommendedRank
+  return RECOMMENDED_PAYLOAD_ORDER.length
+}
+
+function isRecommendedPayload(entry: PageDesignPayloadEntry): boolean {
+  return RECOMMENDED_PAYLOAD_RANK.has(entry.type)
+}
+
+function isConfigurablePayload(entry: PageDesignPayloadEntry): boolean {
+  return entry.internal !== true && entry.configurable !== false
+}
+
+function isWritablePageDesignComponentPayload(entry: PageDesignPayloadEntry): boolean {
+  return entry.type.trim().length > 0
 }
 
 function createPayloadParamsSchema(entry: PageDesignPayloadEntry): LlmJsonSchemaObject {
   const properties: Record<string, LlmJsonSchema> = {}
   const required: string[] = []
   for (const prop of entry.props ?? []) {
-    properties[prop.name] = prop.schema ?? {
-      type: 'string',
-      ...(prop.description === undefined ? {} : { description: prop.description }),
-    }
+    properties[prop.name] = createPayloadPropSchema(prop)
     if (prop.required === true) required.push(prop.name)
   }
   const reachableDefs = collectReachableDefs(Object.values(properties), PAGE_DESIGN_COMPONENT_CATALOG.$defs ?? {})
@@ -418,6 +507,53 @@ function createPayloadParamsSchema(entry: PageDesignPayloadEntry): LlmJsonSchema
     ...(Object.keys(reachableDefs).length === 0 ? {} : { $defs: reachableDefs }),
     additionalProperties: true,
   }
+}
+
+function createPayloadPropSchema(prop: PageDesignPayloadProp): LlmJsonSchema {
+  if (prop.schema !== undefined) return prop.schema
+  return {
+    ...inferPayloadPropTypeSchema(prop.type),
+    ...(prop.description === undefined ? {} : { description: prop.description }),
+  }
+}
+
+function inferPayloadPropTypeSchema(typeText: string | undefined): LlmJsonSchemaObject {
+  if (typeText === undefined || typeText.trim().length === 0) return {}
+  const rawParts = typeText
+    .split('|')
+    .map((item) => item.trim())
+    .filter((item) => item.length > 0 && item !== 'undefined')
+  const literalValues = rawParts.flatMap(readLiteralTypeValue)
+  if (literalValues.length > 0 && literalValues.length === rawParts.length) {
+    return { enum: literalValues }
+  }
+  const types = new Set(rawParts.flatMap((part) => inferJsonSchemaTypes(part)))
+  if (types.size === 0) return {}
+  const type = [...types].sort()
+  if (type.length === 1) return { type: type[0] ?? 'string' }
+  return { type }
+}
+
+function readLiteralTypeValue(typePart: string): ReadonlyArray<string | number | boolean | null> {
+  if ((typePart.startsWith("'") && typePart.endsWith("'")) || (typePart.startsWith('"') && typePart.endsWith('"'))) {
+    return [typePart.slice(1, -1)]
+  }
+  if (typePart === 'true') return [true]
+  if (typePart === 'false') return [false]
+  if (typePart === 'null') return [null]
+  const numeric = Number(typePart)
+  return Number.isFinite(numeric) && typePart.trim() !== '' ? [numeric] : []
+}
+
+function inferJsonSchemaTypes(typePart: string): ReadonlyArray<'array' | 'boolean' | 'null' | 'number' | 'object' | 'string'> {
+  const normalized = typePart.trim().toLowerCase()
+  if (normalized === 'string') return ['string']
+  if (normalized === 'number') return ['number']
+  if (normalized === 'boolean') return ['boolean']
+  if (normalized === 'null') return ['null']
+  if (normalized === 'object' || normalized.startsWith('record<') || normalized.includes('object>')) return ['object']
+  if (normalized === 'array' || normalized.endsWith('[]') || normalized.startsWith('array<') || normalized.startsWith('readonlyarray<')) return ['array']
+  return []
 }
 
 function collectReachableDefs(

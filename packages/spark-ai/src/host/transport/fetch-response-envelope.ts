@@ -4,7 +4,7 @@
  * │  Response Envelope Helpers                                                    │
  * │                                                                              │
  * │  本模块提供 fetch-transport 请求/响应周期的辅助函数：                           │
- * │    · toTransportTurn         — 提取 turnId 用于传输层请求体                   │
+ * │    · toTransportTurn         — 提取 turnId / turnKey 用于传输层请求体          │
  * │    · requireSseResponseBody  — 校验 response.body 非 null                     │
  * │    · readAppendMessagesEnvelope — 校验 append 接口的响应信封                   │
  * │                                                                              │
@@ -14,9 +14,11 @@
 
 import {
   isRecord,
+  readApiEnvelopeContext,
   readResponseJson,
   unwrapApiEnvelope,
 } from './http-utils'
+import { createAiHostStreamKey, createAiHostTurnKey } from '../business/business-scope'
 import type {
   AiHostAppendMessagesInput,
   AiHostStreamTurnInput,
@@ -26,9 +28,19 @@ import type {
  * 一、Turn 元数据投影
  * ----------------------------------------------------------------------------- */
 
-/** 从 turn 元数据中提取传输层需要的 turnId */
-export function toTransportTurn(input: AiHostStreamTurnInput['turn']): { turnId: string } {
-  return { turnId: input.turnId }
+type TransportTurnEnvelope = Readonly<{
+  turnId: string
+  turnKey: string
+  streamKey?: string | undefined
+}>
+
+/** 从 turn 元数据中提取传输层需要的 turnId + turnKey；只有真实流式请求才携带 streamKey */
+export function toTransportTurn(input: Pick<AiHostStreamTurnInput, 'scope' | 'turn'>, streamId?: string): TransportTurnEnvelope {
+  return {
+    turnId: input.turn.turnId,
+    turnKey: createAiHostTurnKey(input.scope, input.turn.turnId),
+    ...(streamId === undefined ? {} : { streamKey: createAiHostStreamKey(input.scope, input.turn.turnId, streamId) }),
+  }
 }
 
 /* -------------------------------------------------------------------------------
@@ -62,18 +74,27 @@ export function requireSseResponseBody(
  *   3. sessionId 必须与请求一致
  *   4. turnId 必须与请求一致
  */
+// PAGE_DESIGN_AI_TRACE[host-append-envelope]: V4 appendMessages 响应解包和身份校验入口；只保证后端会话历史同步成功，不代表页面四文件已保存。
 export async function readAppendMessagesEnvelope(
   response: Response,
   input: AiHostAppendMessagesInput,
 ): Promise<void> {
-  const body = unwrapApiEnvelope(await readResponseJson(response))
+  const rawBody = await readResponseJson(response)
+  const context = readApiEnvelopeContext(rawBody)
+  const body = unwrapApiEnvelope(rawBody)
   if (!isRecord(body)) {
     throw new Error('AI append response missing body')
   }
-  if (body['sessionId'] !== input.sessionId) {
+  const sessionId = typeof body['sessionId'] === 'string'
+    ? body['sessionId']
+    : context?.session?.sessionId
+  const turnId = typeof body['turnId'] === 'string'
+    ? body['turnId']
+    : context?.turn?.turnId
+  if (sessionId !== input.sessionId) {
     throw new Error('AI append response sessionId mismatch')
   }
-  if (body['turnId'] !== input.turn.turnId) {
+  if (turnId !== input.turn.turnId) {
     throw new Error('AI append response turnId mismatch')
   }
 }
