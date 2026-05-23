@@ -6,20 +6,14 @@
  * Default mode calls the Java backend SSE endpoint. The backend owns the real
  * LLM provider config, while this script executes pageDesign tools locally.
  *
- * Direct OpenAI/Anthropic-compatible providers remain available for transport
- * debugging via --provider=openai or --provider=anthropic.
- *
  * Use --mock to validate the pageDesign tool chain without making an LLM call:
  *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --mock
  *
  * Use --publish after a successful run to write the generated page files to
  * the Java backend and register a navigation node for direct viewing:
- *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --provider=java-sse --publish
+ *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --publish --request=帮我设计请假条界面 --tenant-id=lmspark --app-id=homepage
  */
 
-import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
-import { spawnSync } from 'node:child_process'
 import { randomUUID } from 'node:crypto'
 import {
   AiHostFetchTransport,
@@ -37,23 +31,23 @@ import { DataSetCrudTool } from '@spark-view/spark-data'
 
 const FORM_PAGE_ID = 'employee-leave-form-smoke'
 const FORM_PAGE_TITLE = 'AI 员工请假申请'
-const FORM_SESSION_ID = `${PAGE_DESIGN_MODULE_ID}:${FORM_PAGE_ID}:${randomUUID()}`
-const ROOT_PATH = `/pageDesign[${FORM_PAGE_ID}]`
-const LIFECYCLE_PATH = `${ROOT_PATH}/lifecycle[${FORM_PAGE_ID}]`
-const DATASET_PATH = `${ROOT_PATH}/dataset[${FORM_PAGE_ID}]`
-const NODE_TREE_PATH = `${ROOT_PATH}/node-tree[${FORM_PAGE_ID}]`
-const PAYLOAD_PATH = `${ROOT_PATH}/payload-catalog[${FORM_PAGE_ID}]`
+const DEFAULT_REQUEST_TEXT = '帮我设计请假条界面'
 
 function parseArgs(argv) {
   const out = {
     mock: false,
     maxRounds: 14,
     repairAttempts: 4,
-    provider: 'java-sse',
-    toolChoice: 'auto',
     publish: false,
-    publishPageId: FORM_PAGE_ID,
-    publishTitle: FORM_PAGE_TITLE,
+    requestText: process.env.AI_PAGE_REQUEST ?? DEFAULT_REQUEST_TEXT,
+    pageId: process.env.AI_PAGE_ID ?? FORM_PAGE_ID,
+    title: process.env.AI_PAGE_TITLE ?? FORM_PAGE_TITLE,
+    tenantId: process.env.AI_TENANT_ID ?? 'lmspark',
+    projectId: process.env.AI_PROJECT_ID ?? '',
+    backendUrl: normalizeBackendUrl(process.env.AI_BACKEND_URL),
+    username: process.env.AI_USERNAME ?? 'admin',
+    password: process.env.AI_PASSWORD ?? 'admin123',
+    authToken: process.env.AI_AUTH_TOKEN ?? '',
     navParentId: null,
     navIndex: -1,
   }
@@ -62,10 +56,15 @@ function parseArgs(argv) {
     if (arg === '--publish') out.publish = true
     if (arg.startsWith('--max-rounds=')) out.maxRounds = Number(arg.slice('--max-rounds='.length))
     if (arg.startsWith('--repair-attempts=')) out.repairAttempts = Number(arg.slice('--repair-attempts='.length))
-    if (arg.startsWith('--provider=')) out.provider = arg.slice('--provider='.length)
-    if (arg.startsWith('--tool-choice=')) out.toolChoice = arg.slice('--tool-choice='.length)
-    if (arg.startsWith('--publish-page-id=')) out.publishPageId = arg.slice('--publish-page-id='.length)
-    if (arg.startsWith('--publish-title=')) out.publishTitle = arg.slice('--publish-title='.length)
+    if (arg.startsWith('--request=')) out.requestText = arg.slice('--request='.length)
+    if (arg.startsWith('--page-id=')) out.pageId = arg.slice('--page-id='.length)
+    if (arg.startsWith('--publish-page-id=')) out.pageId = arg.slice('--publish-page-id='.length)
+    if (arg.startsWith('--title=')) out.title = arg.slice('--title='.length)
+    if (arg.startsWith('--publish-title=')) out.title = arg.slice('--publish-title='.length)
+    if (arg.startsWith('--tenant-id=')) out.tenantId = arg.slice('--tenant-id='.length)
+    if (arg.startsWith('--project-id=')) out.projectId = arg.slice('--project-id='.length)
+    if (arg.startsWith('--app-id=')) out.projectId = arg.slice('--app-id='.length)
+    if (arg.startsWith('--backend-url=')) out.backendUrl = normalizeBackendUrl(arg.slice('--backend-url='.length))
     if (arg.startsWith('--nav-parent-id=')) {
       const value = arg.slice('--nav-parent-id='.length).trim()
       out.navParentId = value.length === 0 ? null : value
@@ -75,99 +74,32 @@ function parseArgs(argv) {
   return out
 }
 
-function parseEnvText(text) {
-  const env = {}
-  for (const rawLine of text.split(/\r?\n/)) {
-    const line = rawLine.trim()
-    if (line.length === 0 || line.startsWith('#')) continue
-    const index = line.indexOf('=')
-    if (index <= 0) continue
-    const key = line.slice(0, index).trim()
-    let value = line.slice(index + 1).trim()
-    if (
-      (value.startsWith('"') && value.endsWith('"'))
-      || (value.startsWith("'") && value.endsWith("'"))
-    ) {
-      value = value.slice(1, -1)
-    }
-    env[key] = value
-  }
-  return env
-}
-
-function loadEnv(rootDir) {
-  const env = {}
-  for (const file of [
-    resolve(rootDir, '.env.java'),
-    resolve(rootDir, 'spark-ai-server', '.env.java'),
-  ]) {
-    if (existsSync(file)) Object.assign(env, parseEnvText(readFileSync(file, 'utf8')))
-  }
-  Object.assign(env, loadWindowsUserEnv([
-    'ANTHROPIC_BASE_URL',
-    'ANTHROPIC_MODEL',
-    'ANTHROPIC_DEFAULT_OPUS_MODEL',
-    'ANTHROPIC_DEFAULT_SONNET_MODEL',
-    'ANTHROPIC_DEFAULT_HAIKU_MODEL',
-    'CLAUDE_CODE_SUBAGENT_MODEL',
-    'CLAUDE_CODE_EFFORT_LEVEL',
-    'ANTHROPIC_AUTH_TOKEN',
-    'ANTHROPIC_API_KEY',
-  ]))
-  for (const [key, value] of Object.entries(process.env)) {
-    if (value !== undefined) env[key] = value
-  }
-  return env
-}
-
 function normalizeBackendUrl(value) {
   return (value ?? 'http://localhost:8080').replace(/\/+$/, '')
 }
 
-function normalizeAiBackendBaseUrl(value) {
-  const raw = (value ?? '').replace(/\/+$/, '')
-  if (raw.endsWith('/api/ai')) return raw
-  if (raw.endsWith('/api')) return `${raw}/ai`
-  return `${normalizeBackendUrl(raw || undefined)}/api/ai`
-}
-
-function loadWindowsUserEnv(names) {
-  if (process.platform !== 'win32') return {}
-  const quotedNames = names.map(name => `'${name.replace(/'/g, "''")}'`).join(', ')
-  const script = [
-    `$names = @(${quotedNames})`,
-    '$result = @{}',
-    'foreach ($name in $names) {',
-    '  $value = [Environment]::GetEnvironmentVariable($name, "User")',
-    '  if ($null -ne $value -and $value -ne "") { $result[$name] = $value }',
-    '}',
-    '$result | ConvertTo-Json -Compress',
-  ].join('; ')
-  const output = spawnSync('powershell', [
-    '-NoProfile',
-    '-ExecutionPolicy',
-    'Bypass',
-    '-Command',
-    script,
-  ], {
-    encoding: 'utf8',
-    windowsHide: true,
-  })
-  if (output.status !== 0 || output.stdout.trim().length === 0) return {}
-  try {
-    return JSON.parse(output.stdout)
-  } catch {
-    return {}
+function createPageContext(pageId) {
+  const normalizedPageId = pageId.trim()
+  if (normalizedPageId.length === 0) throw new Error('pageId must be a non-empty string')
+  const rootPath = `/pageDesign[${normalizedPageId}]`
+  return {
+    pageId: normalizedPageId,
+    sessionId: `${PAGE_DESIGN_MODULE_ID}:${normalizedPageId}:${randomUUID()}`,
+    rootPath,
+    lifecyclePath: `${rootPath}/lifecycle[${normalizedPageId}]`,
+    datasetPath: `${rootPath}/dataset[${normalizedPageId}]`,
+    nodeTreePath: `${rootPath}/node-tree[${normalizedPageId}]`,
+    payloadPath: `${rootPath}/payload-catalog[${normalizedPageId}]`,
   }
 }
 
-function createHost() {
+function createHost(pageId) {
   let script = '/* AI employee leave form smoke page script */'
   let style = ''
   let nodeChanged = 0
   let dataChanged = 0
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
-  const dataSetTool = new DataSetCrudTool('employee-leave-form-smoke')
+  const dataSetTool = new DataSetCrudTool(pageId)
   return {
     nodeTree,
     dataSetTool,
@@ -185,27 +117,27 @@ function createHost() {
   }
 }
 
-function runtimeContext() {
+function runtimeContext(ctx) {
   return {
     moduleId: PAGE_DESIGN_MODULE_ID,
-    moduleInstanceId: FORM_PAGE_ID,
-    instanceId: `${PAGE_DESIGN_MODULE_ID}:${FORM_PAGE_ID}`,
+    moduleInstanceId: ctx.pageId,
+    instanceId: `${PAGE_DESIGN_MODULE_ID}:${ctx.pageId}`,
   }
 }
 
-function businessScope() {
+function businessScope(ctx) {
   return {
     businessRegistrationId: PAGE_DESIGN_MODULE_ID,
-    businessInstanceId: FORM_PAGE_ID,
-    instanceId: FORM_SESSION_ID,
-    runtimeInstanceId: FORM_SESSION_ID,
+    businessInstanceId: ctx.pageId,
+    instanceId: ctx.sessionId,
+    runtimeInstanceId: ctx.sessionId,
   }
 }
 
-function turnMeta(seq = 1) {
+function turnMeta(ctx, seq = 1) {
   const now = new Date().toISOString()
   return {
-    turnId: `turn-employee-leave-form-smoke-${seq}`,
+    turnId: `turn-${ctx.pageId}-${seq}`,
     seq,
     baseRevision: 0,
     queuedAt: now,
@@ -214,50 +146,22 @@ function turnMeta(seq = 1) {
   }
 }
 
-function buildUserPrompt(previousChecks) {
-  const createTableArgs = {
-    tableName: 'EmployeeLeaveRequest',
-    columns: employeeLeaveColumns(),
-    resourceType: 'static-data',
-    resourceId: 'employee.leave.request',
-    businessCategory: 'transaction',
-    views: {
-      default: {
-        rows: [{
-          id: 'leave-draft-1',
-          employeeName: '',
-          employeeNo: '',
-          department: '',
-          leaveType: 'annual',
-          startDate: '',
-          endDate: '',
-          totalDays: 1,
-          reason: '',
-          approver: '',
-          status: 'draft',
-        }],
-      },
-    },
-  }
-  const addNodeArgs = {
-    parentComponentId: null,
-    node: employeeLeaveFormNode(),
-  }
+function buildUserPrompt(ctx, options, previousChecks) {
   const base = [
-    '用真实 pageDesign 工具直接创建一个员工请假申请表单页面。',
+    `用户原话：${options.requestText}`,
+    `目标位置：tenantId=${options.tenantId}，appId/projectId=${options.projectId || '登录默认项目'}，pageId=${ctx.pageId}。`,
+    '请像真实页面设计助手一样理解需求，并用 pageDesign 工具直接创建一个员工请假申请表单页面。',
     '必须修改 pagedata.json 和 rule.json，不要只输出方案。',
-    `当前 pageDesign 实例路径已确认：${ROOT_PATH}`,
-    `只能使用这些子模块路径：lifecycle=${LIFECYCLE_PATH}，payload-catalog=${PAYLOAD_PATH}，dataset=${DATASET_PATH}，node-tree=${NODE_TREE_PATH}。`,
-    '不要省略方括号实例段，例如不要写 /pageDesign[employee-leave-form-smoke]/dataset。',
+    `当前 pageDesign 实例路径已确认：${ctx.rootPath}`,
+    `只能使用这些子模块路径：lifecycle=${ctx.lifecyclePath}，payload-catalog=${ctx.payloadPath}，dataset=${ctx.datasetPath}，node-tree=${ctx.nodeTreePath}。`,
+    `不要省略方括号实例段，例如不要写 /pageDesign[${ctx.pageId}]/dataset。`,
     '每次回复最多发起一个 tool_call；收到工具结果后再继续下一个。严禁发起空参数工具调用，尤其禁止 invokeAction 参数为 {}。',
-    '严格按这个顺序执行，禁止做额外探索：describeProgress -> describeDesignFlow -> guidePayload x6 -> createTable -> addNode -> 最终一句话。',
+    '建议流程：describeProgress -> describeDesignFlow -> guidePayload -> createTable -> addNode -> 最终一句话。',
     '不要调用 export、getAllData、readScript、readStyle、listTables、countNodes、listChildren、findInstance。',
-    '必须创建表 EmployeeLeaveRequest，字段名必须完全使用 camelCase：id、employeeName、employeeNo、department、leaveType、startDate、endDate、totalDays、reason、approver、status。',
-    '不要创建 leave_requests、employee_name、leave_type 这类 snake_case 表或字段。',
+    '最小数据模型必须创建 EmployeeLeaveRequest 表，字段使用 camelCase：id、employeeName、employeeNo、department、leaveType、startDate、endDate、totalDays、reason、approver、status。',
+    '不要创建 leave_requests、employee_name、leave_type 这类 snake_case 表或字段；不要臆造后端 API。',
     'rule.json 必须有 r-form，dataViewKey 必须是 EmployeeLeaveRequest@default，字段组件放在表单 children 中并用 field 绑定上面的 camelCase 字段。',
-    '构造任何组件节点前必须直接调用 payload-catalog 的 guidePayload，key 依次为 r-form、r-text、r-select、r-date、r-number、r-textarea。',
-    `createTable 的 args 必须完全按这个目标规格组织：${JSON.stringify(createTableArgs)}`,
-    `addNode 的 args 必须完全按这个目标规格组织：${JSON.stringify(addNodeArgs)}`,
+    '构造组件节点前必须通过 payload-catalog 的 guidePayload 获取组件参数指南，至少覆盖 r-form、r-text、r-select、r-date、r-number、r-textarea。',
     '完成后用一句话总结你实际改了哪些文件。',
   ]
 
@@ -280,348 +184,6 @@ function buildSystemPrompt() {
   ].join('\n')
 }
 
-function toOpenAiMessage(message) {
-  const out = {
-    role: message.role,
-    content: message.content,
-  }
-  if (message.tool_call_id !== undefined) out.tool_call_id = message.tool_call_id
-  if (message.tool_calls !== undefined) out.tool_calls = message.tool_calls
-  return out
-}
-
-function sameTransportMessage(left, right) {
-  return left.role === right.role
-    && left.content === right.content
-    && left.tool_call_id === right.tool_call_id
-    && JSON.stringify(left.tool_calls ?? null) === JSON.stringify(right.tool_calls ?? null)
-}
-
-function mergeSessionMessages(history, messages) {
-  const merged = [...history]
-  for (const message of messages) {
-    const last = merged.at(-1)
-    if (last !== undefined && sameTransportMessage(last, message)) continue
-    merged.push(message)
-  }
-  return merged
-}
-
-function toAnthropicTools(tools) {
-  return tools.map(tool => ({
-    name: tool.function.name,
-    description: tool.function.description,
-    input_schema: tool.function.parameters,
-  }))
-}
-
-function toAnthropicMessages(messages, assistantContentByToolCallId) {
-  const out = []
-  let pendingToolResults = []
-  const flushToolResults = () => {
-    if (pendingToolResults.length === 0) return
-    out.push({ role: 'user', content: pendingToolResults })
-    pendingToolResults = []
-  }
-
-  for (const message of messages) {
-    if (message.role === 'tool') {
-      pendingToolResults.push({
-        type: 'tool_result',
-        tool_use_id: message.tool_call_id ?? 'tool-call',
-        content: message.content,
-      })
-      continue
-    }
-
-    flushToolResults()
-    if (message.role === 'assistant' && Array.isArray(message.tool_calls) && message.tool_calls.length > 0) {
-      const restoredContent = message.tool_calls
-        .map(call => call.id === undefined ? undefined : assistantContentByToolCallId.get(call.id))
-        .find(content => Array.isArray(content))
-      if (restoredContent !== undefined) {
-        out.push({ role: 'assistant', content: restoredContent })
-        continue
-      }
-
-      const content = []
-      if (message.content.trim().length > 0) content.push({ type: 'text', text: message.content })
-      for (const call of message.tool_calls) {
-        content.push({
-          type: 'tool_use',
-          id: call.id ?? randomUUID(),
-          name: call.function?.name ?? '',
-          input: parseToolArguments(call.function?.arguments),
-        })
-      }
-      out.push({ role: 'assistant', content })
-      continue
-    }
-
-    out.push({
-      role: message.role === 'assistant' ? 'assistant' : 'user',
-      content: message.content,
-    })
-  }
-
-  flushToolResults()
-  return out
-}
-
-function parseToolArguments(args) {
-  if (typeof args !== 'string' || args.trim().length === 0) return {}
-  try {
-    return JSON.parse(args)
-  } catch {
-    return {}
-  }
-}
-
-class OpenAiCompatibleTransport {
-  constructor(options) {
-    this.options = options
-    this.messagesBySessionId = new Map()
-  }
-
-  async streamTurn(input) {
-    const history = mergeSessionMessages(
-      this.messagesBySessionId.get(input.sessionId) ?? [],
-      input.messages,
-    )
-    const response = await fetch(`${this.options.baseUrl.replace(/\/+$/, '')}/v1/chat/completions`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${this.options.apiKey}`,
-      },
-      body: JSON.stringify({
-        model: this.options.model,
-        messages: [
-          { role: 'system', content: input.systemPrompt },
-          ...history.map(toOpenAiMessage),
-        ],
-        tools: input.tools,
-        tool_choice: this.options.toolChoice ?? 'auto',
-        temperature: 0.1,
-        max_tokens: 2200,
-      }),
-      signal: input.signal,
-    })
-    if (!response.ok) {
-      throw new Error(`LLM request failed: ${response.status} ${await response.text()}`)
-    }
-    const payload = await response.json()
-    const message = payload?.choices?.[0]?.message ?? {}
-    const text = typeof message.content === 'string' ? message.content : ''
-    const toolCalls = Array.isArray(message.tool_calls) ? message.tool_calls : []
-    this.messagesBySessionId.set(input.sessionId, [
-      ...history,
-      {
-        role: 'assistant',
-        content: text,
-        ...(toolCalls.length === 0 ? {} : { tool_calls: toolCalls }),
-      },
-    ])
-    if (text.length > 0) input.onDelta?.(text)
-    if (payload?.usage !== undefined) input.onUsage?.(payload.usage)
-    return {
-      text,
-      toolCalls,
-    }
-  }
-
-  appendMessages(input) {
-    this.messagesBySessionId.set(input.sessionId, mergeSessionMessages(
-      this.messagesBySessionId.get(input.sessionId) ?? [],
-      input.messages,
-    ))
-    return Promise.resolve()
-  }
-}
-
-class AnthropicCompatibleTransport {
-  constructor(options) {
-    this.options = options
-    this.assistantContentByToolCallId = new Map()
-    this.messagesBySessionId = new Map()
-  }
-
-  async streamTurn(input) {
-    const history = mergeSessionMessages(
-      this.messagesBySessionId.get(input.sessionId) ?? [],
-      input.messages,
-    )
-    const headers = {
-      'Content-Type': 'application/json',
-      'anthropic-version': '2023-06-01',
-    }
-    if (this.options.authToken.trim().length > 0) {
-      headers.Authorization = `Bearer ${this.options.authToken}`
-    } else {
-      headers['x-api-key'] = this.options.apiKey
-    }
-
-    const body = {
-      model: this.options.model,
-      system: input.systemPrompt,
-      messages: toAnthropicMessages(history, this.assistantContentByToolCallId),
-      tools: toAnthropicTools(input.tools),
-      temperature: 0.1,
-      max_tokens: 2200,
-    }
-    const effort = normalizeDeepSeekEffort(this.options.effort)
-    if (this.options.baseUrl.includes('deepseek')) {
-      body.thinking = { type: 'enabled' }
-      if (effort !== undefined) body.output_config = { effort }
-    }
-    if (this.options.toolChoice === 'required') {
-      body.tool_choice = { type: 'any' }
-    }
-
-    const response = await fetch(`${this.options.baseUrl.replace(/\/+$/, '')}/v1/messages`, {
-      method: 'POST',
-      headers,
-      body: JSON.stringify(body),
-      signal: input.signal,
-    })
-    if (!response.ok) {
-      throw new Error(`LLM request failed: ${response.status} ${await response.text()}`)
-    }
-    const payload = await response.json()
-    const textParts = []
-    const toolCalls = []
-    const content = Array.isArray(payload.content) ? payload.content : []
-    for (const part of content) {
-      if (part?.type === 'text' && typeof part.text === 'string') {
-        textParts.push(part.text)
-      }
-      if (part?.type === 'tool_use' && typeof part.name === 'string') {
-        toolCalls.push({
-          id: typeof part.id === 'string' ? part.id : undefined,
-          type: 'function',
-          function: {
-            name: part.name,
-            arguments: JSON.stringify(part.input ?? {}),
-          },
-        })
-      }
-    }
-    for (const call of toolCalls) {
-      if (call.id !== undefined) this.assistantContentByToolCallId.set(call.id, cloneJson(content))
-    }
-    const text = textParts.join('')
-    this.messagesBySessionId.set(input.sessionId, [
-      ...history,
-      {
-        role: 'assistant',
-        content: text,
-        ...(toolCalls.length === 0 ? {} : { tool_calls: toolCalls }),
-      },
-    ])
-    if (text.length > 0) input.onDelta?.(text)
-    if (payload?.usage !== undefined) input.onUsage?.(payload.usage)
-    return { text, toolCalls }
-  }
-
-  appendMessages(input) {
-    this.messagesBySessionId.set(input.sessionId, mergeSessionMessages(
-      this.messagesBySessionId.get(input.sessionId) ?? [],
-      input.messages,
-    ))
-    return Promise.resolve()
-  }
-}
-
-function cloneJson(value) {
-  return JSON.parse(JSON.stringify(value))
-}
-
-function normalizeDeepSeekEffort(effort) {
-  const value = typeof effort === 'string' ? effort.toLowerCase() : ''
-  if (value === 'max' || value === 'xhigh') return 'max'
-  if (value === 'high' || value === 'medium' || value === 'low') return 'high'
-  return undefined
-}
-
-function selectLlmConfig(env, requestedProvider) {
-  const providerAliases = {
-    auto: 'java-sse',
-    backend: 'java-sse',
-    sse: 'java-sse',
-    java: 'java-sse',
-    claude: 'anthropic',
-  }
-  const provider = providerAliases[requestedProvider] ?? requestedProvider
-  if (provider === 'java-sse') {
-    const backendUrl = normalizeBackendUrl(env.AI_BACKEND_URL)
-    return {
-      provider: 'java-sse',
-      backendUrl,
-      baseUrl: normalizeAiBackendBaseUrl(env.AI_HOST_BASE_URL ?? env.AI_BACKEND_URL),
-      tenantId: env.AI_TENANT_ID ?? 'lmspark',
-      projectId: env.AI_PROJECT_ID ?? '',
-      username: env.AI_USERNAME ?? 'admin',
-      password: env.AI_PASSWORD ?? 'admin123',
-      authToken: env.AI_AUTH_TOKEN ?? '',
-    }
-  }
-
-  const anthropicAuthToken = env.ANTHROPIC_AUTH_TOKEN ?? ''
-  const anthropicApiKey = env.ANTHROPIC_API_KEY ?? ''
-  const anthropicBaseUrl = env.ANTHROPIC_BASE_URL ?? ''
-  const anthropicModel =
-    env.ANTHROPIC_MODEL
-    ?? env.CLAUDE_CODE_SUBAGENT_MODEL
-    ?? env.ANTHROPIC_DEFAULT_SONNET_MODEL
-    ?? ''
-
-  if (provider === 'anthropic' || (
-    provider === 'auto'
-    && anthropicBaseUrl.trim().length > 0
-    && anthropicModel.trim().length > 0
-    && (anthropicAuthToken.trim().length > 0 || anthropicApiKey.trim().length > 0)
-  )) {
-    return {
-      provider: 'anthropic',
-      baseUrl: anthropicBaseUrl,
-      model: anthropicModel,
-      authToken: anthropicAuthToken,
-      apiKey: anthropicApiKey,
-      effort: env.CLAUDE_CODE_EFFORT_LEVEL,
-    }
-  }
-
-  if (provider !== 'auto' && provider !== 'openai') {
-    throw new Error(`Unknown provider: ${requestedProvider}. Use java-sse, auto, anthropic, claude, openai, or --mock.`)
-  }
-
-  return {
-    provider: 'openai',
-    baseUrl: env.OPENAI_BASE_URL ?? 'https://api.openai.com',
-    model: env.AI_MODEL ?? env.OPENAI_MODEL ?? 'gpt-4o-mini',
-    apiKey: env.OPENAI_API_KEY ?? '',
-  }
-}
-
-async function createRealTransport(config) {
-  if (config.provider === 'java-sse') {
-    return createJavaSseTransport(config)
-  }
-  if (config.provider === 'anthropic') {
-    if (config.baseUrl.trim().length === 0) throw new Error('ANTHROPIC_BASE_URL is missing.')
-    if (config.model.trim().length === 0) throw new Error('ANTHROPIC_MODEL is missing.')
-    if (config.authToken.trim().length === 0 && config.apiKey.trim().length === 0) {
-      throw new Error('ANTHROPIC_AUTH_TOKEN or ANTHROPIC_API_KEY is missing.')
-    }
-    return new AnthropicCompatibleTransport(config)
-  }
-
-  if (config.apiKey.trim().length === 0) {
-    throw new Error('OPENAI_API_KEY is missing. Set it in process env or .env.java.')
-  }
-  return new OpenAiCompatibleTransport(config)
-}
-
 async function createJavaSseTransport(config) {
   const auth = await resolveJavaBackendAuth(config)
   const headers = {
@@ -631,7 +193,7 @@ async function createJavaSseTransport(config) {
     ...(auth.projectId.trim().length === 0 ? {} : { 'X-Project-Id': auth.projectId }),
   }
   return new AiHostFetchTransport({
-    baseUrl: config.baseUrl,
+    baseUrl: `${config.backendUrl}/api/ai`,
     getHeaders: () => headers,
   })
 }
@@ -812,10 +374,10 @@ async function addNavigationNode(config, auth, node, parentId, index) {
 }
 
 async function upsertNavigationNode(config, auth, options) {
-  const pageId = options.publishPageId.trim()
-  if (pageId.length === 0) throw new Error('publishPageId must be a non-empty string')
+  const pageId = options.pageId.trim()
+  if (pageId.length === 0) throw new Error('pageId must be a non-empty string')
   const routePath = `/${pageId}`
-  const title = options.publishTitle.trim().length > 0 ? options.publishTitle.trim() : pageId
+  const title = options.title.trim().length > 0 ? options.title.trim() : pageId
   const node = {
     id: pageId,
     title,
@@ -848,11 +410,10 @@ async function upsertNavigationNode(config, auth, options) {
   }
 }
 
-async function publishArtifacts(env, artifacts, textModels, options) {
-  const config = selectLlmConfig(env, 'java-sse')
+async function publishArtifacts(config, artifacts, textModels, options) {
   const auth = await resolveJavaBackendAuth(config)
-  const pageId = options.publishPageId.trim()
-  if (pageId.length === 0) throw new Error('publishPageId must be a non-empty string')
+  const pageId = options.pageId.trim()
+  if (pageId.length === 0) throw new Error('pageId must be a non-empty string')
   const files = buildPublishFiles(artifacts, textModels)
   const written = []
   for (const [filename, content] of Object.entries(files)) {
@@ -868,7 +429,7 @@ async function publishArtifacts(env, artifacts, textModels, options) {
     tenantId: config.tenantId,
     projectId: requireProjectId(config, auth),
     pageId,
-    title: options.publishTitle,
+    title: options.title,
     routePath: `/${pageId}`,
     files: written,
     navigation,
@@ -973,21 +534,21 @@ function employeeLeaveFormNode() {
   }
 }
 
-function mockCallPlan() {
+function mockCallPlan(ctx) {
   return [
     toolCall('mock-1', 'listChildren', { path: '/' }),
     toolCall('mock-2', 'findInstance', { path: '/', childKind: PAGE_DESIGN_MODULE_ID, query: {} }),
-    toolCall('mock-3', 'invokeAction', { path: LIFECYCLE_PATH, actionName: 'describeProgress', args: {} }),
-    toolCall('mock-4', 'invokeAction', { path: LIFECYCLE_PATH, actionName: 'describeDesignFlow', args: { phase: '数据规划' } }),
-    toolCall('mock-5', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'queryPayloads', args: { category: 'container', keyword: 'form', limit: 10 } }),
-    toolCall('mock-6', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'guidePayload', args: { key: 'r-form' } }),
-    toolCall('mock-7', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'guidePayload', args: { key: 'r-text' } }),
-    toolCall('mock-8', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'guidePayload', args: { key: 'r-select' } }),
-    toolCall('mock-9', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'guidePayload', args: { key: 'r-date' } }),
-    toolCall('mock-10', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'guidePayload', args: { key: 'r-number' } }),
-    toolCall('mock-11', 'invokeAction', { path: PAYLOAD_PATH, actionName: 'guidePayload', args: { key: 'r-textarea' } }),
+    toolCall('mock-3', 'invokeAction', { path: ctx.lifecyclePath, actionName: 'describeProgress', args: {} }),
+    toolCall('mock-4', 'invokeAction', { path: ctx.lifecyclePath, actionName: 'describeDesignFlow', args: { phase: '数据规划' } }),
+    toolCall('mock-5', 'invokeAction', { path: ctx.payloadPath, actionName: 'queryPayloads', args: { category: 'container', keyword: 'form', limit: 10 } }),
+    toolCall('mock-6', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-form' } }),
+    toolCall('mock-7', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-text' } }),
+    toolCall('mock-8', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-select' } }),
+    toolCall('mock-9', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-date' } }),
+    toolCall('mock-10', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-number' } }),
+    toolCall('mock-11', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-textarea' } }),
     toolCall('mock-12', 'invokeAction', {
-      path: DATASET_PATH,
+      path: ctx.datasetPath,
       actionName: 'createTable',
       args: {
         tableName: 'EmployeeLeaveRequest',
@@ -1015,7 +576,7 @@ function mockCallPlan() {
       },
     }),
     toolCall('mock-13', 'invokeAction', {
-      path: NODE_TREE_PATH,
+      path: ctx.nodeTreePath,
       actionName: 'addNode',
       args: {
         parentComponentId: null,
@@ -1026,9 +587,9 @@ function mockCallPlan() {
 }
 
 class MockPageDesignTransport {
-  constructor() {
+  constructor(ctx) {
     this.index = 0
-    this.calls = mockCallPlan()
+    this.calls = mockCallPlan(ctx)
   }
 
   streamTurn() {
@@ -1124,25 +685,31 @@ function validateArtifacts(nodeTree, dataSetTool, toolCalls) {
 }
 
 async function runSmoke(options) {
-  const { host, nodeTree, dataSetTool, textModels } = createHost()
+  const ctx = createPageContext(options.pageId)
+  const backendConfig = {
+    backendUrl: options.backendUrl,
+    tenantId: options.tenantId,
+    projectId: options.projectId,
+    username: options.username,
+    password: options.password,
+    authToken: options.authToken,
+  }
+  const { host, nodeTree, dataSetTool, textModels } = createHost(ctx.pageId)
   const registration = createPageDesignBusinessRegistration({
     getEditToolHost: () => host,
   })
-  const scope = businessScope()
-  await startRegistrationSession(registration, runtimeContext())
+  const scope = businessScope(ctx)
+  await startRegistrationSession(registration, runtimeContext(ctx))
   const boot = await registration.runtime.executeTool('invokeAction', {
-    path: LIFECYCLE_PATH,
+    path: ctx.lifecyclePath,
     actionName: 'bootstrap',
     args: {},
   }, toAiHostRuntimeScope(scope))
   if (!boot.ok) throw new Error(`pageDesign bootstrap failed: ${boot.msg}`)
 
-  const env = loadEnv(process.cwd())
-  const llmConfig = selectLlmConfig(env, options.provider)
-  const transportConfig = { ...llmConfig, toolChoice: options.toolChoice }
   const transport = options.mock
-    ? new MockPageDesignTransport()
-    : await createRealTransport(transportConfig)
+    ? new MockPageDesignTransport(ctx)
+    : await createJavaSseTransport(backendConfig)
 
   const fcCalls = []
   const deltas = []
@@ -1165,7 +732,7 @@ async function runSmoke(options) {
       request: {
         historyMsgs: [{
           role: 'user',
-          content: buildUserPrompt(previousChecks),
+          content: buildUserPrompt(ctx, options, previousChecks),
         }],
         systemPrompt: buildSystemPrompt(),
         onDelta: delta => deltas.push(delta),
@@ -1185,7 +752,7 @@ async function runSmoke(options) {
           })
         },
       },
-      turn: turnMeta(attempt),
+      turn: turnMeta(ctx, attempt),
       clearSelected: () => undefined,
     })
 
@@ -1195,7 +762,7 @@ async function runSmoke(options) {
   }
   const finalTextModels = textModels()
   const published = artifacts.ok && options.publish
-    ? await publishArtifacts(env, artifacts, finalTextModels, options)
+    ? await publishArtifacts(backendConfig, artifacts, finalTextModels, options)
     : null
   return {
     ok: artifacts.ok,
@@ -1203,10 +770,9 @@ async function runSmoke(options) {
     attempts,
     sessionId: scope.instanceId,
     llm: {
-      provider: options.mock ? 'mock' : llmConfig.provider,
-      baseUrl: options.mock ? '' : llmConfig.baseUrl,
-      model: options.mock ? '' : llmConfig.model ?? '',
-      toolChoice: options.mock ? 'mock' : options.toolChoice,
+      provider: options.mock ? 'mock' : 'java-sse',
+      baseUrl: options.mock ? '' : `${backendConfig.backendUrl}/api/ai`,
+      model: '',
       credential: options.mock ? 'mock' : 'present',
       toolCallCount: fcCalls.length,
       usages,
