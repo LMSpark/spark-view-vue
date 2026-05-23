@@ -43,6 +43,7 @@ const legacyMarkdownAllowlist = new Set([
   'docs/architecture/DM-SINGLE-CATALOG-CLOSED-LOOP-CHECK-2026-04-12.md',
   'docs/architecture/PERMISSION_SYSTEM.md',
   'docs/architecture/PLATFORM_TENANT_ROUTING.md',
+  'docs/architecture/SPARK_COMPONENT_SEMANTIC_REFACTOR.md',
   'docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md',
   'docs/architecture/VERSION_MANAGEMENT.md',
   'docs/guides/CACHE_EXPIRATION_TIERS.md',
