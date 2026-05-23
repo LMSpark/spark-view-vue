@@ -11,6 +11,10 @@
  *
  * Use --mock to validate the pageDesign tool chain without making an LLM call:
  *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --mock
+ *
+ * Use --publish after a successful run to write the generated page files to
+ * the Java backend and register a navigation node for direct viewing:
+ *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --provider=java-sse --publish
  */
 
 import { existsSync, readFileSync } from 'node:fs'
@@ -27,10 +31,12 @@ import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
 } from '@spark-view/spark-page-config/ai'
+import { compileRule, parsePageData } from '@spark-view/spark-page-config/config'
 import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 
 const FORM_PAGE_ID = 'employee-leave-form-smoke'
+const FORM_PAGE_TITLE = 'AI 员工请假申请'
 const FORM_SESSION_ID = `${PAGE_DESIGN_MODULE_ID}:${FORM_PAGE_ID}:${randomUUID()}`
 const ROOT_PATH = `/pageDesign[${FORM_PAGE_ID}]`
 const LIFECYCLE_PATH = `${ROOT_PATH}/lifecycle[${FORM_PAGE_ID}]`
@@ -45,13 +51,26 @@ function parseArgs(argv) {
     repairAttempts: 4,
     provider: 'java-sse',
     toolChoice: 'auto',
+    publish: false,
+    publishPageId: FORM_PAGE_ID,
+    publishTitle: FORM_PAGE_TITLE,
+    navParentId: null,
+    navIndex: -1,
   }
   for (const arg of argv) {
     if (arg === '--mock') out.mock = true
+    if (arg === '--publish') out.publish = true
     if (arg.startsWith('--max-rounds=')) out.maxRounds = Number(arg.slice('--max-rounds='.length))
     if (arg.startsWith('--repair-attempts=')) out.repairAttempts = Number(arg.slice('--repair-attempts='.length))
     if (arg.startsWith('--provider=')) out.provider = arg.slice('--provider='.length)
     if (arg.startsWith('--tool-choice=')) out.toolChoice = arg.slice('--tool-choice='.length)
+    if (arg.startsWith('--publish-page-id=')) out.publishPageId = arg.slice('--publish-page-id='.length)
+    if (arg.startsWith('--publish-title=')) out.publishTitle = arg.slice('--publish-title='.length)
+    if (arg.startsWith('--nav-parent-id=')) {
+      const value = arg.slice('--nav-parent-id='.length).trim()
+      out.navParentId = value.length === 0 ? null : value
+    }
+    if (arg.startsWith('--nav-index=')) out.navIndex = Number(arg.slice('--nav-index='.length))
   }
   return out
 }
@@ -143,7 +162,7 @@ function loadWindowsUserEnv(names) {
 }
 
 function createHost() {
-  let script = 'export default {}'
+  let script = '/* AI employee leave form smoke page script */'
   let style = ''
   let nodeChanged = 0
   let dataChanged = 0
@@ -656,6 +675,206 @@ async function resolveJavaBackendAuth(config) {
   }
 }
 
+function ensureTrailingNewline(value) {
+  return value.endsWith('\n') ? value : `${value}\n`
+}
+
+function publishRuleNodes(rule) {
+  if (rule === null || typeof rule !== 'object') {
+    throw new Error('Cannot publish rule.json: generated rule is not an object')
+  }
+  if (Array.isArray(rule.children)) return rule.children
+  if (typeof rule.type === 'string') return [rule]
+  throw new Error('Cannot publish rule.json: generated rule has no SparkNode root or children')
+}
+
+function buildPublishFiles(artifacts, textModels) {
+  const ruleJson = ensureTrailingNewline(JSON.stringify(publishRuleNodes(artifacts.rule), null, 2))
+  const pageDataJson = ensureTrailingNewline(JSON.stringify(artifacts.pagedata, null, 2))
+  compileRule(ruleJson)
+  parsePageData(pageDataJson)
+  return {
+    'rule.json': ruleJson,
+    'pagedata.json': pageDataJson,
+    'script.js': ensureTrailingNewline(textModels.script.trim().length > 0
+      ? textModels.script
+      : '/* AI employee leave form smoke page script */'),
+    'style.css': ensureTrailingNewline(textModels.style.trim().length > 0
+      ? textModels.style
+      : '/* AI employee leave form smoke page */'),
+  }
+}
+
+function requireProjectId(config, auth) {
+  const projectId = (auth.projectId ?? config.projectId ?? '').trim()
+  if (projectId.length === 0) {
+    throw new Error('Java backend projectId is missing. Set AI_PROJECT_ID or login with a user that has defaultProjectId.')
+  }
+  return projectId
+}
+
+function backendApiBase(config, auth) {
+  const tenantId = encodeURIComponent(config.tenantId)
+  const projectId = encodeURIComponent(requireProjectId(config, auth))
+  return `${config.backendUrl}/api/tenants/${tenantId}/projects/${projectId}`
+}
+
+function javaJsonHeaders(config, auth) {
+  const projectId = requireProjectId(config, auth)
+  return {
+    Authorization: `Bearer ${auth.token}`,
+    'Content-Type': 'application/json',
+    'X-Tenant-Id': config.tenantId,
+    'X-Project-Id': projectId,
+  }
+}
+
+function javaTextHeaders(config, auth) {
+  const projectId = requireProjectId(config, auth)
+  return {
+    Authorization: `Bearer ${auth.token}`,
+    'Content-Type': 'text/plain; charset=utf-8',
+    'X-Tenant-Id': config.tenantId,
+    'X-Project-Id': projectId,
+  }
+}
+
+async function readJsonResponse(response, label) {
+  const text = await response.text()
+  let payload = null
+  if (text.trim().length > 0) {
+    try {
+      payload = JSON.parse(text)
+    } catch {
+      payload = text
+    }
+  }
+  if (!response.ok) {
+    const suffix = typeof payload === 'string' ? payload : JSON.stringify(payload)
+    throw new Error(`${label} failed: ${response.status} ${suffix}`)
+  }
+  if (payload !== null && typeof payload === 'object' && !Array.isArray(payload)) {
+    if (payload.ok === false) {
+      throw new Error(`${label} failed: ${JSON.stringify(payload.error ?? payload)}`)
+    }
+    if (payload.ok === true && Object.prototype.hasOwnProperty.call(payload, 'data')) {
+      return payload.data
+    }
+  }
+  return payload
+}
+
+async function fetchJson(url, init, label) {
+  return readJsonResponse(await fetch(url, init), label)
+}
+
+async function putPageFile(config, auth, pageId, filename, content) {
+  const url = `${backendApiBase(config, auth)}/pages-config/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
+  return fetchJson(url, {
+    method: 'PUT',
+    headers: javaTextHeaders(config, auth),
+    body: content,
+  }, `Publish ${pageId}/${filename}`)
+}
+
+async function listNavigationNodes(config, auth) {
+  const url = `${backendApiBase(config, auth)}/navigation/nodes?limit=5000`
+  const payload = await fetchJson(url, {
+    method: 'GET',
+    headers: javaJsonHeaders(config, auth),
+  }, 'List navigation nodes')
+  return Array.isArray(payload) ? payload : []
+}
+
+async function updateNavigationNode(config, auth, nodeId, patch) {
+  const url = `${backendApiBase(config, auth)}/navigation/nodes/${encodeURIComponent(nodeId)}`
+  const payload = await fetchJson(url, {
+    method: 'PUT',
+    headers: javaJsonHeaders(config, auth),
+    body: JSON.stringify(patch),
+  }, `Update navigation node ${nodeId}`)
+  return payload?.node ?? patch
+}
+
+async function addNavigationNode(config, auth, node, parentId, index) {
+  const url = `${backendApiBase(config, auth)}/navigation/nodes`
+  const body = {
+    ...(parentId === null ? {} : { parentId }),
+    node,
+    ...(Number.isFinite(index) ? { index } : {}),
+  }
+  const payload = await fetchJson(url, {
+    method: 'POST',
+    headers: javaJsonHeaders(config, auth),
+    body: JSON.stringify(body),
+  }, `Add navigation node ${node.id}`)
+  return payload?.node ?? node
+}
+
+async function upsertNavigationNode(config, auth, options) {
+  const pageId = options.publishPageId.trim()
+  if (pageId.length === 0) throw new Error('publishPageId must be a non-empty string')
+  const routePath = `/${pageId}`
+  const title = options.publishTitle.trim().length > 0 ? options.publishTitle.trim() : pageId
+  const node = {
+    id: pageId,
+    title,
+    description: 'AI 生成的员工请假申请表单 smoke 页面',
+    nodeKind: 'page',
+    path: routePath,
+    icon: 'Document',
+    permissionMode: 'masked',
+  }
+  const nodes = await listNavigationNodes(config, auth)
+  const existing = nodes.find(item => item?.id === pageId)
+    ?? nodes.find(item => item?.path === routePath)
+    ?? null
+  if (existing !== null && typeof existing.id === 'string') {
+    const updated = await updateNavigationNode(config, auth, existing.id, {
+      ...node,
+      id: existing.id,
+    })
+    return {
+      mode: 'updated',
+      nodeId: existing.id,
+      node: updated,
+    }
+  }
+  const created = await addNavigationNode(config, auth, node, options.navParentId, options.navIndex)
+  return {
+    mode: 'created',
+    nodeId: typeof created?.id === 'string' ? created.id : pageId,
+    node: created,
+  }
+}
+
+async function publishArtifacts(env, artifacts, textModels, options) {
+  const config = selectLlmConfig(env, 'java-sse')
+  const auth = await resolveJavaBackendAuth(config)
+  const pageId = options.publishPageId.trim()
+  if (pageId.length === 0) throw new Error('publishPageId must be a non-empty string')
+  const files = buildPublishFiles(artifacts, textModels)
+  const written = []
+  for (const [filename, content] of Object.entries(files)) {
+    const result = await putPageFile(config, auth, pageId, filename, content)
+    written.push({
+      filename,
+      unchanged: Boolean(result?.unchanged),
+      timestamp: typeof result?.timestamp === 'string' ? result.timestamp : '',
+    })
+  }
+  const navigation = await upsertNavigationNode(config, auth, options)
+  return {
+    tenantId: config.tenantId,
+    projectId: requireProjectId(config, auth),
+    pageId,
+    title: options.publishTitle,
+    routePath: `/${pageId}`,
+    files: written,
+    navigation,
+  }
+}
+
 function toolCall(id, name, args) {
   return {
     id,
@@ -974,6 +1193,10 @@ async function runSmoke(options) {
     if (artifacts.ok) break
     deltas.push(`\n[smoke] 第 ${attempt} 轮未通过，将按校验结果继续修正。\n`)
   }
+  const finalTextModels = textModels()
+  const published = artifacts.ok && options.publish
+    ? await publishArtifacts(env, artifacts, finalTextModels, options)
+    : null
   return {
     ok: artifacts.ok,
     mode: options.mock ? 'mock' : 'real',
@@ -990,8 +1213,9 @@ async function runSmoke(options) {
     },
     toolCalls: fcCalls,
     summaryText: deltas.join('').slice(0, 1200),
-    textModels: textModels(),
+    textModels: finalTextModels,
     validation: artifacts.checks,
+    published,
     pagedata: artifacts.pagedata,
     rule: artifacts.rule,
   }

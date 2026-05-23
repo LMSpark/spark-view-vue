@@ -1,0 +1,162 @@
+[
+  {
+    "type": "r-form",
+    "id": "employee-leave-form",
+    "props": {
+      "dataViewKey": "EmployeeLeaveRequest@default",
+      "contextDataMember": "currentRow",
+      "autoColumns": false,
+      "labelWidth": "120px",
+      "gridColumns": 24,
+      "gridGap": 12
+    },
+    "children": [
+      {
+        "type": "r-text",
+        "id": "leave-employee-name",
+        "props": {
+          "field": "employeeName",
+          "label": "员工姓名"
+        },
+        "children": []
+      },
+      {
+        "type": "r-text",
+        "id": "leave-employee-no",
+        "props": {
+          "field": "employeeNo",
+          "label": "员工编号"
+        },
+        "children": []
+      },
+      {
+        "type": "r-select",
+        "id": "leave-department",
+        "props": {
+          "field": "department",
+          "label": "部门",
+          "options": [
+            {
+              "label": "研发部",
+              "value": "rd"
+            },
+            {
+              "label": "产品部",
+              "value": "product"
+            },
+            {
+              "label": "运营部",
+              "value": "ops"
+            }
+          ],
+          "optionLabelField": "label",
+          "optionValueField": "value"
+        },
+        "children": []
+      },
+      {
+        "type": "r-select",
+        "id": "leave-type",
+        "props": {
+          "field": "leaveType",
+          "label": "请假类型",
+          "options": [
+            {
+              "label": "年假",
+              "value": "annual"
+            },
+            {
+              "label": "病假",
+              "value": "sick"
+            },
+            {
+              "label": "事假",
+              "value": "personal"
+            },
+            {
+              "label": "其他",
+              "value": "other"
+            }
+          ],
+          "optionLabelField": "label",
+          "optionValueField": "value"
+        },
+        "children": []
+      },
+      {
+        "type": "r-date",
+        "id": "leave-start-date",
+        "props": {
+          "field": "startDate",
+          "label": "开始日期"
+        },
+        "children": []
+      },
+      {
+        "type": "r-date",
+        "id": "leave-end-date",
+        "props": {
+          "field": "endDate",
+          "label": "结束日期"
+        },
+        "children": []
+      },
+      {
+        "type": "r-number",
+        "id": "leave-total-days",
+        "props": {
+          "field": "totalDays",
+          "label": "请假天数"
+        },
+        "children": []
+      },
+      {
+        "type": "r-textarea",
+        "id": "leave-reason",
+        "props": {
+          "field": "reason",
+          "label": "请假原因"
+        },
+        "children": []
+      },
+      {
+        "type": "r-text",
+        "id": "leave-approver",
+        "props": {
+          "field": "approver",
+          "label": "审批人"
+        },
+        "children": []
+      },
+      {
+        "type": "r-select",
+        "id": "leave-status",
+        "props": {
+          "field": "status",
+          "label": "状态",
+          "options": [
+            {
+              "label": "草稿",
+              "value": "draft"
+            },
+            {
+              "label": "审批中",
+              "value": "pending"
+            },
+            {
+              "label": "已通过",
+              "value": "approved"
+            },
+            {
+              "label": "已驳回",
+              "value": "rejected"
+            }
+          ],
+          "optionLabelField": "label",
+          "optionValueField": "value"
+        },
+        "children": []
+      }
+    ]
+  }
+]

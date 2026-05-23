@@ -1,0 +1,93 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "employee-leave-form-smoke",
+  "tables": {
+    "EmployeeLeaveRequest": {
+      "tableName": "EmployeeLeaveRequest",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimaryKey": true,
+          "required": true
+        },
+        {
+          "name": "employeeName",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "employeeNo",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "leaveType",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "totalDays",
+          "type": "number",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "approver",
+          "type": "string"
+        },
+        {
+          "name": "status",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "EmployeeLeaveRequest",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "leave-draft-1",
+              "employeeName": "",
+              "employeeNo": "",
+              "department": "",
+              "leaveType": "annual",
+              "startDate": "",
+              "endDate": "",
+              "totalDays": 1,
+              "reason": "",
+              "approver": "",
+              "status": "draft"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "static-data",
+      "resourceId": "employee.leave.request",
+      "businessCategory": "transaction"
+    }
+  }
+}
