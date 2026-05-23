@@ -48,6 +48,8 @@
         "verify:vcm-comments": "node tools/verify-vcm-llm-comments.mjs",
         "verify:docs": "node tools/verify-docs.mjs",
         "verify:rules": "pnpm run verify:arch && pnpm run verify:ai-codegen && pnpm run verify:vcm-comments && pnpm run verify:docs",
+        "verify:ai:page-design-form:mock": "node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --mock",
+        "verify:ai:page-design-form:llm": "node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --provider=java-sse",
         "migrate:nav:nodekind": "node scripts/migrate-nav-nodekind.mjs",
         "verify": "pnpm run build:packages && pnpm run typecheck && pnpm run lint && pnpm run verify:rules",
         "commitlint": "commitlint --edit",

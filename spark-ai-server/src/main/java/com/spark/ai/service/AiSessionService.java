@@ -741,6 +741,7 @@ public class AiSessionService {
         }
         try {
             AiSessionEntity entity = aiSessionRepository.findById(sessionId).orElseGet(AiSessionEntity::new);
+            normalizePersistenceIdentity(session);
             entity.setSessionId(sessionId);
             entity.setTenantId(session.tenantId);
             entity.setProjectId(session.projectId);
@@ -766,6 +767,7 @@ public class AiSessionService {
             return;
         }
         try {
+            Session session = sessions.get(sessionId);
             int nextSeq = aiMessageRepository.findTopBySessionIdOrderBySeqNoDesc(sessionId)
                     .map(AiMessageEntity::getSeqNo)
                     .orElse(0) + 1;
@@ -773,6 +775,7 @@ public class AiSessionService {
             for (Message message : messages) {
                 AiMessageEntity entity = new AiMessageEntity();
                 entity.setSessionId(sessionId);
+                applyPersistenceIdentity(entity, session);
                 entity.setSeqNo(nextSeq++);
                 entity.setRole(message.role);
                 entity.setContent(message.content);
@@ -801,6 +804,7 @@ public class AiSessionService {
             return;
         }
         try {
+            Session session = sessions.get(sessionId);
             String runtimeMetaJson = writeJson(runtimeMeta);
             List<AiToolCallEntity> rows = new ArrayList<>();
             for (Map<String, Object> call : toolCalls) {
@@ -810,6 +814,7 @@ public class AiSessionService {
                         : Map.of();
                 AiToolCallEntity entity = new AiToolCallEntity();
                 entity.setSessionId(sessionId);
+                applyPersistenceIdentity(entity, session);
                 entity.setTurnId(turnId);
                 entity.setCallId(stringValue(call.get("id")));
                 entity.setName(stringValue(function.get("name")));
@@ -829,13 +834,43 @@ public class AiSessionService {
             return;
         }
         try {
+            Session session = sessions.get(sessionId);
             AiContextSnapshotEntity entity = new AiContextSnapshotEntity();
             entity.setSessionId(sessionId);
+            applyPersistenceIdentity(entity, session);
             entity.setTurnId(turnId);
             entity.setScopeJson(writeJson(scope));
             aiContextSnapshotRepository.save(entity);
         } catch (Exception error) {
             log.warn("[SESSION] persist context snapshot failed sessionId={}: {}", sessionId, error.getMessage());
+        }
+    }
+
+    private void applyPersistenceIdentity(AiMessageEntity entity, Session session) {
+        if (session == null) return;
+        normalizePersistenceIdentity(session);
+        entity.setTenantId(session.tenantId);
+        entity.setProjectId(session.projectId);
+    }
+
+    private void applyPersistenceIdentity(AiToolCallEntity entity, Session session) {
+        if (session == null) return;
+        normalizePersistenceIdentity(session);
+        entity.setTenantId(session.tenantId);
+        entity.setProjectId(session.projectId);
+    }
+
+    private void applyPersistenceIdentity(AiContextSnapshotEntity entity, Session session) {
+        if (session == null) return;
+        normalizePersistenceIdentity(session);
+        entity.setTenantId(session.tenantId);
+        entity.setProjectId(session.projectId);
+    }
+
+    private void normalizePersistenceIdentity(Session session) {
+        if (session == null) return;
+        if (session.projectId == null || session.projectId.isBlank()) {
+            session.projectId = ProjectService.HOMEPAGE_PROJECT_ID;
         }
     }
 
@@ -862,6 +897,8 @@ public class AiSessionService {
         }
         if (scopedProjectId != null) {
             accessGuardService.requireProjectAccess(tenantId, scopedProjectId);
+        } else if (ctx != null && ctx.projectId() != null) {
+            accessGuardService.requireProjectAccess(tenantId, ctx.projectId());
         } else {
             accessGuardService.requireTenantUser(tenantId);
         }
@@ -878,7 +915,10 @@ public class AiSessionService {
         }
         if (scopedProjectId != null) {
             session.projectId = scopedProjectId;
+        } else if (ctx != null && ctx.projectId() != null) {
+            session.projectId = ctx.projectId();
         }
+        normalizePersistenceIdentity(session);
         if (ctx != null) {
             session.username = ctx.username();
         }
@@ -1048,9 +1088,9 @@ public class AiSessionService {
             Map<String, Object> body = new LinkedHashMap<>();
             body.put("model", props.getModel());
             body.put("messages", messages);
-            body.put("max_tokens", props.getEffectiveMaxTokens());
+            body.put("max_tokens", effectiveMaxTokens(tools));
 
-            Double temp = props.getEffectiveTemperature();
+            Double temp = effectiveTemperature(tools);
             if (temp != null) body.put("temperature", temp);
 
             if (tools != null && !tools.isEmpty()) {
@@ -1070,7 +1110,7 @@ public class AiSessionService {
                 return null;
             }
 
-            return parseLlmResponse(responseJson);
+            return filterInvalidToolCalls(parseLlmResponse(responseJson), tools);
 
         } catch (Exception e) {
             log.error("[SESSION] LLM call failed: {}", e.getMessage(), e);
@@ -1119,10 +1159,10 @@ public class AiSessionService {
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("model", props.getModel());
         body.put("messages", messages);
-        body.put("max_tokens", props.getEffectiveMaxTokens());
+        body.put("max_tokens", effectiveMaxTokens(tools));
         body.put("stream", true);
 
-        Double temp = props.getEffectiveTemperature();
+        Double temp = effectiveTemperature(tools);
         if (temp != null) body.put("temperature", temp);
 
         if (!props.isReasonerModel() && props.getTopP() != null) {
@@ -1143,6 +1183,19 @@ public class AiSessionService {
 
         if (tools != null && !tools.isEmpty()) {
             body.put("tools", tools);
+        }
+
+        // OpenAI-compatible providers vary a lot in streaming tool_calls deltas.
+        // For function-calling turns, request one complete assistant message from
+        // the provider, then deliver it through this Java SSE endpoint as a
+        // stable result event. Text-only turns still use provider streaming below.
+        if (tools != null && !tools.isEmpty()) {
+            LlmResult result = callLlm(messages, tools);
+            if (result == null) {
+                throw new RuntimeException("LLM tool-call request failed");
+            }
+            emitFinalResult(emitter, session, result.text, result.reasoning, result.toolCalls, streamMeta);
+            return;
         }
 
         String bodyJson = objectMapper.writeValueAsString(body);
@@ -1278,6 +1331,79 @@ public class AiSessionService {
         emitFinalResult(emitter, session, text, reasoning, toolCalls, streamMeta);
     }
 
+    private LlmResult filterInvalidToolCalls(LlmResult result, List<Map<String, Object>> tools) {
+        if (result == null || result.toolCalls == null || result.toolCalls.isEmpty() || tools == null || tools.isEmpty()) {
+            return result;
+        }
+        Map<String, Set<String>> requiredByToolName = requiredToolArguments(tools);
+        if (requiredByToolName.isEmpty()) {
+            return result;
+        }
+        List<Map<String, Object>> validCalls = new ArrayList<>();
+        for (Map<String, Object> call : result.toolCalls) {
+            if (isValidToolCall(call, requiredByToolName)) {
+                validCalls.add(call);
+                continue;
+            }
+            Map<String, Object> function = asMap(call.get("function"));
+            log.warn("[SESSION] dropped invalid tool_call name={} id={} arguments={}",
+                    stringValue(function.get("name")),
+                    stringValue(call.get("id")),
+                    stringValue(function.get("arguments")));
+        }
+        return new LlmResult(
+                result.text,
+                result.reasoning,
+                validCalls.isEmpty() ? null : validCalls);
+    }
+
+    private Map<String, Set<String>> requiredToolArguments(List<Map<String, Object>> tools) {
+        Map<String, Set<String>> requiredByToolName = new HashMap<>();
+        for (Map<String, Object> tool : tools) {
+            Map<String, Object> function = asMap(tool.get("function"));
+            String name = stringValue(function.get("name"));
+            if (name == null) {
+                continue;
+            }
+            Map<String, Object> parameters = asMap(function.get("parameters"));
+            Set<String> required = stringSet(parameters.get("required"));
+            requiredByToolName.put(name, required);
+        }
+        return requiredByToolName;
+    }
+
+    private boolean isValidToolCall(Map<String, Object> call, Map<String, Set<String>> requiredByToolName) {
+        Map<String, Object> function = asMap(call.get("function"));
+        String name = stringValue(function.get("name"));
+        if (name == null) {
+            return false;
+        }
+        Set<String> required = requiredByToolName.get(name);
+        if (required == null || required.isEmpty()) {
+            return true;
+        }
+        Map<String, Object> args = readMap(stringValue(function.get("arguments")));
+        return args.keySet().containsAll(required);
+    }
+
+    @SuppressWarnings("unchecked")
+    private Map<String, Object> asMap(Object value) {
+        return value instanceof Map<?, ?> map ? (Map<String, Object>) map : Map.of();
+    }
+
+    private Set<String> stringSet(Object value) {
+        if (!(value instanceof List<?> items) || items.isEmpty()) {
+            return Set.of();
+        }
+        Set<String> out = new HashSet<>();
+        for (Object item : items) {
+            if (item instanceof String text && !text.isBlank()) {
+                out.add(text);
+            }
+        }
+        return out;
+    }
+
     private String readBodyAsString(InputStream inputStream) throws IOException {
         if (inputStream == null) {
             return "";
@@ -1291,6 +1417,23 @@ public class AiSessionService {
             }
             return sb.toString();
         }
+    }
+
+    private int effectiveMaxTokens(List<Map<String, Object>> tools) {
+        int configured = props.getEffectiveMaxTokens();
+        return hasTools(tools) ? Math.min(configured, 2200) : configured;
+    }
+
+    private Double effectiveTemperature(List<Map<String, Object>> tools) {
+        Double configured = props.getEffectiveTemperature();
+        if (configured == null || !hasTools(tools)) {
+            return configured;
+        }
+        return Math.min(configured, 0.1);
+    }
+
+    private boolean hasTools(List<Map<String, Object>> tools) {
+        return tools != null && !tools.isEmpty();
     }
 
         private void emitFinalResult(SseEmitter emitter,

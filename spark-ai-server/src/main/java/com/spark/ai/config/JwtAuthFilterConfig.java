@@ -120,9 +120,13 @@ public class JwtAuthFilterConfig {
                     "X-Tenant-Id 头与 Token 中的租户不匹配");
                 return;
             }
+            String headerProjectId = request.getHeader("X-Project-Id");
 
             // 5. 将认证信息写入 request attribute（供 Controller 读取）
             request.setAttribute("tenantId", tokenTenantId);
+            if (headerProjectId != null && !headerProjectId.isBlank()) {
+                request.setAttribute("projectId", headerProjectId.trim());
+            }
             request.setAttribute("username", username);
             request.setAttribute("roles", roles);
             request.setAttribute(ApiResponseFactory.REQUEST_ID_ATTRIBUTE, ApiResponseFactory.requestId(request));

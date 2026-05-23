@@ -13,6 +13,7 @@ import java.util.stream.Collectors;
 public record AuthenticatedRequestContext(
         String requestId,
         String tenantId,
+        String projectId,
         String username,
         Set<String> roles
 ) {
@@ -31,14 +32,16 @@ public record AuthenticatedRequestContext(
         }
         HttpServletRequest request = servletAttrs.getRequest();
         Object tenant = request.getAttribute("tenantId");
+        Object project = request.getAttribute("projectId");
         Object username = request.getAttribute("username");
         Object roles = request.getAttribute("roles");
         if (!(tenant instanceof String tenantId) || !(username instanceof String user)) {
             return null;
         }
+        String projectId = project instanceof String text && !text.isBlank() ? text : null;
         Set<String> roleSet = roles instanceof String text && !text.isBlank()
                 ? Arrays.stream(text.split(",")).map(String::trim).filter(s -> !s.isBlank()).collect(Collectors.toSet())
                 : Set.of();
-        return new AuthenticatedRequestContext(ApiResponseFactory.requestId(request), tenantId, user, roleSet);
+        return new AuthenticatedRequestContext(ApiResponseFactory.requestId(request), tenantId, projectId, user, roleSet);
     }
 }

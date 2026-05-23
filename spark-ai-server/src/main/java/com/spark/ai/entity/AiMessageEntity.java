@@ -25,6 +25,12 @@ public class AiMessageEntity {
     @Column(name = "session_id", nullable = false, length = 128)
     private String sessionId;
 
+    @Column(name = "tenant_id", nullable = false, length = 64)
+    private String tenantId;
+
+    @Column(name = "project_id", nullable = false, length = 64)
+    private String projectId;
+
     @Column(name = "seq_no", nullable = false)
     private int seqNo;
 
@@ -55,6 +61,12 @@ public class AiMessageEntity {
 
     public String getSessionId() { return sessionId; }
     public void setSessionId(String sessionId) { this.sessionId = sessionId; }
+
+    public String getTenantId() { return tenantId; }
+    public void setTenantId(String tenantId) { this.tenantId = tenantId; }
+
+    public String getProjectId() { return projectId; }
+    public void setProjectId(String projectId) { this.projectId = projectId; }
 
     public int getSeqNo() { return seqNo; }
     public void setSeqNo(int seqNo) { this.seqNo = seqNo; }

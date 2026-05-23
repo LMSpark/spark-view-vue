@@ -125,6 +125,8 @@ CREATE TABLE IF NOT EXISTS ai_session (
 CREATE TABLE IF NOT EXISTS ai_message (
   id BIGINT NOT NULL AUTO_INCREMENT,
   session_id VARCHAR(128) NOT NULL,
+  tenant_id VARCHAR(64) NOT NULL,
+  project_id VARCHAR(64) NOT NULL,
   seq_no INT NOT NULL,
   role VARCHAR(64) NOT NULL,
   content LONGTEXT,
@@ -133,12 +135,15 @@ CREATE TABLE IF NOT EXISTS ai_message (
   created_at DATETIME(6) NOT NULL,
   PRIMARY KEY (id),
   UNIQUE KEY uk_ai_message_seq (session_id, seq_no),
-  KEY idx_ai_message_session (session_id)
+  KEY idx_ai_message_session (session_id),
+  KEY idx_ai_message_scope (tenant_id, project_id, session_id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS ai_tool_call (
   id BIGINT NOT NULL AUTO_INCREMENT,
   session_id VARCHAR(128) NOT NULL,
+  tenant_id VARCHAR(64) NOT NULL,
+  project_id VARCHAR(64) NOT NULL,
   turn_id VARCHAR(128),
   call_id VARCHAR(255),
   name VARCHAR(255),
@@ -148,17 +153,21 @@ CREATE TABLE IF NOT EXISTS ai_tool_call (
   created_at DATETIME(6) NOT NULL,
   PRIMARY KEY (id),
   KEY idx_ai_tool_call_session (session_id),
+  KEY idx_ai_tool_call_scope (tenant_id, project_id, session_id),
   KEY idx_ai_tool_call_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
 CREATE TABLE IF NOT EXISTS ai_context_snapshot (
   id BIGINT NOT NULL AUTO_INCREMENT,
   session_id VARCHAR(128) NOT NULL,
+  tenant_id VARCHAR(64) NOT NULL,
+  project_id VARCHAR(64) NOT NULL,
   turn_id VARCHAR(128),
   scope_json LONGTEXT,
   created_at DATETIME(6) NOT NULL,
   PRIMARY KEY (id),
   KEY idx_ai_context_session (session_id),
+  KEY idx_ai_context_scope (tenant_id, project_id, session_id),
   KEY idx_ai_context_created_at (created_at)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
