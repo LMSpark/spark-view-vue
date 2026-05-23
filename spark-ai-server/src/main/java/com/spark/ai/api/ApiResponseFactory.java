@@ -19,6 +19,7 @@ import java.util.UUID;
  */
 public final class ApiResponseFactory {
 
+    public static final int PROTOCOL_VERSION = 4;
     public static final String REQUEST_ID_ATTRIBUTE = "requestId";
     public static final String REQUEST_ID_HEADER = "X-Request-Id";
 
@@ -26,7 +27,30 @@ public final class ApiResponseFactory {
     }
 
     public static <T> ApiEnvelope<T> ok(T data, String requestId) {
-        return new ApiEnvelope<>(true, data, null, normalizeRequestId(requestId));
+        String normalizedRequestId = normalizeRequestId(requestId);
+        return new ApiEnvelope<>(
+                PROTOCOL_VERSION,
+                true,
+                data,
+                null,
+                context(normalizedRequestId),
+                event("http", "response", true, null));
+    }
+
+    public static <T> ApiEnvelope<T> sseOk(
+            String eventName,
+            T data,
+            String requestId,
+            Map<String, Object> context,
+            boolean terminal) {
+        String normalizedRequestId = normalizeRequestId(requestId);
+        return new ApiEnvelope<>(
+                PROTOCOL_VERSION,
+                true,
+                data,
+                null,
+                context(normalizedRequestId, context),
+                event("sse", normalizeEventName(eventName), terminal, null));
     }
 
     public static ApiEnvelope<Object> error(HttpStatusCode status, String code, String message, String requestId) {
@@ -49,13 +73,65 @@ public final class ApiResponseFactory {
             String category,
             Map<String, Object> details,
             String requestId) {
+        return error(status, code, message, category, null, details, requestId);
+    }
+
+    public static ApiEnvelope<Object> error(
+            HttpStatusCode status,
+            String code,
+            String message,
+            String category,
+            String retryPolicy,
+            Map<String, Object> details,
+            String requestId) {
         HttpStatus httpStatus = HttpStatus.resolve(status.value());
         String resolvedCategory = category != null && !category.isBlank()
                 ? category
                 : httpStatus != null ? httpStatus.series().name().toLowerCase() : "error";
-        return new ApiEnvelope<>(false, null,
-                new ApiError(normalizeCode(code, status), normalizeMessage(message, status), resolvedCategory, details),
-                normalizeRequestId(requestId));
+        String normalizedRequestId = normalizeRequestId(requestId);
+        return new ApiEnvelope<>(
+                PROTOCOL_VERSION,
+                false,
+                null,
+                new ApiError(
+                        normalizeCode(code, status),
+                        normalizeMessage(message, status),
+                        resolvedCategory,
+                        "error",
+                        blankToNull(retryPolicy),
+                        details),
+                context(normalizedRequestId),
+                event("http", "response", true, null));
+    }
+
+    public static ApiEnvelope<Object> sseError(
+            String eventName,
+            HttpStatusCode status,
+            String code,
+            String message,
+            String category,
+            String retryPolicy,
+            Map<String, Object> details,
+            String requestId,
+            Map<String, Object> context) {
+        HttpStatus httpStatus = HttpStatus.resolve(status.value());
+        String resolvedCategory = category != null && !category.isBlank()
+                ? category
+                : httpStatus != null ? httpStatus.series().name().toLowerCase() : "error";
+        String normalizedRequestId = normalizeRequestId(requestId);
+        return new ApiEnvelope<>(
+                PROTOCOL_VERSION,
+                false,
+                null,
+                new ApiError(
+                        normalizeCode(code, status),
+                        normalizeMessage(message, status),
+                        resolvedCategory,
+                        "error",
+                        blankToNull(retryPolicy),
+                        details),
+                context(normalizedRequestId, context),
+                event("sse", normalizeEventName(eventName), true, null));
     }
 
     public static String currentRequestId() {
@@ -106,6 +182,7 @@ public final class ApiResponseFactory {
         String code = null;
         String message = null;
         String category = null;
+        String retryPolicy = null;
 
         if (body instanceof Map<?, ?> raw) {
             details = new LinkedHashMap<>();
@@ -117,9 +194,11 @@ public final class ApiResponseFactory {
                 Object nestedCode = errorMap.get("code");
                 Object nestedMessage = errorMap.get("message");
                 Object nestedCategory = errorMap.get("category");
+                Object nestedRetryPolicy = errorMap.get("retryPolicy");
                 if (nestedCode instanceof String text && !text.isBlank()) code = text;
                 if (nestedMessage instanceof String text && !text.isBlank()) message = text;
                 if (nestedCategory instanceof String text && !text.isBlank()) category = text;
+                if (nestedRetryPolicy instanceof String text && !text.isBlank()) retryPolicy = text;
             } else if (error instanceof String text && !text.isBlank()) {
                 code = text;
                 message = text;
@@ -130,7 +209,58 @@ public final class ApiResponseFactory {
             }
         }
 
-        return error(status, code, message, category, details, requestId);
+        return error(status, code, message, category, retryPolicy, details, requestId);
+    }
+
+    public static Map<String, Object> context(String requestId) {
+        return context(requestId, null);
+    }
+
+    public static Map<String, Object> context(String requestId, Map<String, Object> extra) {
+        Map<String, Object> result = currentRequestContext(normalizeRequestId(requestId));
+        mergeNested(result, extra);
+        return result;
+    }
+
+    public static Map<String, Object> aiStreamContext(
+            String sessionId,
+            String turnId,
+            String turnKey,
+            Integer seq,
+            Integer baseRevision,
+            String streamId,
+            String streamKey,
+            Map<String, Object> scope) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        putNestedText(result, "session", "sessionId", sessionId);
+        putNestedText(result, "turn", "turnId", turnId);
+        putNestedText(result, "turn", "turnKey", turnKey);
+        putNestedNumber(result, "turn", "seq", seq);
+        putNestedNumber(result, "turn", "baseRevision", baseRevision);
+        putNestedText(result, "stream", "streamId", streamId);
+        putNestedText(result, "stream", "streamKey", streamKey);
+
+        Map<String, Object> wireScope = wireScope(scope);
+        if (!wireScope.isEmpty()) {
+            result.put("scope", wireScope);
+        }
+        return result;
+    }
+
+    /**
+     * Project Host keeps businessRegistrationId/businessInstanceId internally;
+     * the wire envelope always exposes moduleId/moduleInstanceId under context.scope.
+     */
+    public static Map<String, Object> wireScope(Map<String, Object> scope) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        if (scope == null || scope.isEmpty()) {
+            return result;
+        }
+        putText(result, "moduleId", firstText(scope.get("moduleId"), scope.get("businessRegistrationId")));
+        putText(result, "moduleInstanceId", firstText(scope.get("moduleInstanceId"), scope.get("businessInstanceId")));
+        putText(result, "instanceId", scope.get("instanceId"));
+        putText(result, "runtimeInstanceId", scope.get("runtimeInstanceId"));
+        return result;
     }
 
     private static String normalizeRequestId(String requestId) {
@@ -151,5 +281,96 @@ public final class ApiResponseFactory {
         }
         HttpStatus httpStatus = HttpStatus.resolve(status.value());
         return httpStatus != null ? httpStatus.getReasonPhrase() : "HTTP " + status.value();
+    }
+
+    private static Map<String, Object> currentRequestContext(String requestId) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("requestId", requestId);
+        RequestAttributes attrs = RequestContextHolder.getRequestAttributes();
+        if (attrs instanceof ServletRequestAttributes servletAttrs) {
+            HttpServletRequest request = servletAttrs.getRequest();
+            putText(result, "tenantId", firstText(request.getAttribute("tenantId"), request.getHeader("X-Tenant-Id")));
+            putText(result, "projectId", firstText(request.getAttribute("projectId"), request.getHeader("X-Project-Id")));
+            putText(result, "username", request.getAttribute("username"));
+        }
+        return result;
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void mergeNested(Map<String, Object> target, Map<String, Object> source) {
+        if (source == null || source.isEmpty()) {
+            return;
+        }
+        for (Map.Entry<String, Object> entry : source.entrySet()) {
+            Object existing = target.get(entry.getKey());
+            Object value = entry.getValue();
+            if (existing instanceof Map<?, ?> existingMap && value instanceof Map<?, ?> valueMap) {
+                Map<String, Object> merged = new LinkedHashMap<>((Map<String, Object>) existingMap);
+                Map<String, Object> normalizedValue = new LinkedHashMap<>();
+                for (Map.Entry<?, ?> nested : valueMap.entrySet()) {
+                    normalizedValue.put(String.valueOf(nested.getKey()), nested.getValue());
+                }
+                mergeNested(merged, normalizedValue);
+                target.put(entry.getKey(), merged);
+            } else if (value != null) {
+                target.put(entry.getKey(), value);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static Map<String, Object> nestedMap(Map<String, Object> root, String key) {
+        Object existing = root.get(key);
+        if (existing instanceof Map<?, ?> map) {
+            return (Map<String, Object>) map;
+        }
+        Map<String, Object> created = new LinkedHashMap<>();
+        root.put(key, created);
+        return created;
+    }
+
+    private static void putNestedText(Map<String, Object> root, String group, String key, Object value) {
+        putText(nestedMap(root, group), key, value);
+        if (nestedMap(root, group).isEmpty()) {
+            root.remove(group);
+        }
+    }
+
+    private static void putNestedNumber(Map<String, Object> root, String group, String key, Number value) {
+        if (value != null) {
+            nestedMap(root, group).put(key, value);
+        }
+    }
+
+    private static void putText(Map<String, Object> target, String key, Object value) {
+        if (value instanceof String text && !text.isBlank()) {
+            target.put(key, text.trim());
+        }
+    }
+
+    private static Object firstText(Object first, Object fallback) {
+        if (first instanceof String text && !text.isBlank()) {
+            return text;
+        }
+        return fallback;
+    }
+
+    private static String blankToNull(String value) {
+        return value != null && !value.isBlank() ? value : null;
+    }
+
+    private static String normalizeEventName(String eventName) {
+        return eventName != null && !eventName.isBlank() ? eventName : "message";
+    }
+
+    private static Map<String, Object> event(String transport, String name, boolean terminal, Integer sequence) {
+        Map<String, Object> result = new LinkedHashMap<>();
+        result.put("transport", transport);
+        result.put("name", name);
+        result.put("terminal", terminal);
+        if (sequence != null) {
+            result.put("sequence", sequence);
+        }
+        return result;
     }
 }

@@ -1,5 +1,6 @@
 package com.spark.ai.controller;
 
+import com.spark.ai.api.ApiResponseFactory;
 import com.spark.ai.service.ScenarioFunctionExecutionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -24,6 +25,7 @@ import java.util.Map;
 public class ScenarioFunctionController {
 
     private static final int PROTOCOL_VERSION_V3 = 3;
+    private static final int PROTOCOL_VERSION_V4 = ApiResponseFactory.PROTOCOL_VERSION;
 
     private final ScenarioFunctionExecutionService executionService;
 
@@ -47,8 +49,8 @@ public class ScenarioFunctionController {
             @RequestHeader(value = "X-Project-Id", required = false) String projectIdHeader,
             @RequestBody(required = false) Map<String, Object> request
     ) {
-        if (!isProtocolV3(request)) {
-            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        if (!isSupportedProtocol(request)) {
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
         }
 
         String callId = getRequiredString(request, "callId");
@@ -87,13 +89,14 @@ public class ScenarioFunctionController {
     // 功能分区：请求解析
     // ─────────────────────────────────────────────────────────
 
-    private static boolean isProtocolV3(Map<String, Object> request) {
+    private static boolean isSupportedProtocol(Map<String, Object> request) {
         if (request == null) {
             return false;
         }
         Object protocolVersion = request.get("protocolVersion");
         if (protocolVersion instanceof Number n) {
-            return n.intValue() == PROTOCOL_VERSION_V3;
+            int value = n.intValue();
+            return value == PROTOCOL_VERSION_V3 || value == PROTOCOL_VERSION_V4;
         }
         return false;
     }
@@ -169,7 +172,7 @@ public class ScenarioFunctionController {
         if (functionName != null && !functionName.isBlank()) {
             body.put("functionName", functionName);
         }
-        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        body.put("protocolVersion", PROTOCOL_VERSION_V4);
         return ResponseEntity.status(status).body(body);
     }
 }

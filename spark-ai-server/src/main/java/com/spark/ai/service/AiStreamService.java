@@ -2,6 +2,7 @@ package com.spark.ai.service;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.api.ApiResponseFactory;
 import com.spark.ai.config.OpenAiProperties;
 import com.spark.ai.model.GeneralChatRequest;
 import org.slf4j.Logger;
@@ -90,7 +91,8 @@ public class AiStreamService {
         // DeepSeek-reasoner 思考时间更长，SSE 超时延长到 5 分钟
         long timeout = props.isReasonerModel() ? 300_000L : 180_000L;
         SseEmitter emitter = new SseEmitter(timeout);
-        executor.execute(() -> doStream(request, emitter));
+        String requestId = ApiResponseFactory.currentRequestId();
+        executor.execute(() -> doStream(request, emitter, requestId));
         return emitter;
     }
 
@@ -98,7 +100,7 @@ public class AiStreamService {
     // 核心流式处理
     // ─────────────────────────────────────────────────────────────────────────
 
-    private void doStream(GeneralChatRequest request, SseEmitter emitter) {
+    private void doStream(GeneralChatRequest request, SseEmitter emitter, String requestId) {
         try {
             List<Map<String, String>> messages = buildMessages(request);
 
@@ -113,9 +115,12 @@ public class AiStreamService {
                     .exchange((httpRequest, response) -> {
                         try (BufferedReader reader = new BufferedReader(
                                 new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
-                            processStreamLines(reader, emitter);
+                            processStreamLines(reader, emitter, requestId);
                         } catch (IOException e) {
                             log.error("[SPARK-AI][STREAM] read error: {}", e.getMessage());
+                            try {
+                                sendSseError(emitter, requestId, "AI_STREAM_READ_ERROR", e.getMessage());
+                            } catch (IOException ignored) { /* ignore */ }
                             emitter.completeWithError(e);
                         }
                         return null;
@@ -124,9 +129,7 @@ public class AiStreamService {
         } catch (Exception e) {
             log.error("[SPARK-AI][STREAM] error: {}", e.getMessage(), e);
             try {
-                emitter.send(SseEmitter.event()
-                        .name("error")
-                        .data("{\"error\":\"" + escapeJson(e.getMessage()) + "\"}"));
+                sendSseError(emitter, requestId, "AI_STREAM_ERROR", e.getMessage());
             } catch (IOException ignored) { /* ignore */ }
             emitter.completeWithError(e);
         }
@@ -203,14 +206,14 @@ public class AiStreamService {
      *   <li><b>error</b>：错误 {"error":"..."}</li>
      * </ul>
      */
-    private void processStreamLines(BufferedReader reader, SseEmitter emitter) throws IOException {
+    private void processStreamLines(BufferedReader reader, SseEmitter emitter, String requestId) throws IOException {
         String line;
         while ((line = reader.readLine()) != null) {
             if (!line.startsWith("data: ")) continue;
 
             String data = line.substring("data: ".length()).trim();
             if ("[DONE]".equals(data)) {
-                emitter.send(SseEmitter.event().name("done").data("{\"done\":true}"));
+                sendSseOk(emitter, "done", Map.of("done", true), requestId, true);
                 emitter.complete();
                 return;
             }
@@ -221,22 +224,19 @@ public class AiStreamService {
                 // ── DeepSeek-reasoner: reasoning_content（思考过程） ──
                 String reasoning = extractReasoningContent(parsed);
                 if (reasoning != null && !reasoning.isEmpty()) {
-                    String payload = "{\"reasoning\":" + objectMapper.writeValueAsString(reasoning) + "}";
-                    emitter.send(SseEmitter.event().name("reasoning").data(payload));
+                    sendSseOk(emitter, "reasoning", Map.of("reasoning", reasoning), requestId, false);
                 }
 
                 // ── 正文内容：delta.content ──
                 String delta = extractDelta(parsed);
                 if (delta != null && !delta.isEmpty()) {
-                    String payload = "{\"delta\":" + objectMapper.writeValueAsString(delta) + "}";
-                    emitter.send(SseEmitter.event().name("delta").data(payload));
+                    sendSseOk(emitter, "delta", Map.of("delta", delta), requestId, false);
                 }
 
                 // ── DeepSeek: usage 统计（最后一个 chunk，含缓存命中） ──
                 Map<String, Object> usage = extractUsage(parsed);
                 if (usage != null) {
-                    String usageJson = objectMapper.writeValueAsString(Map.of("usage", usage));
-                    emitter.send(SseEmitter.event().name("usage").data(usageJson));
+                    sendSseOk(emitter, "usage", Map.of("usage", usage), requestId, false);
                     logUsageStats(usage);
                 }
             } catch (Exception ignored) {
@@ -244,13 +244,46 @@ public class AiStreamService {
             }
         }
         // 流结束（无 [DONE]）
-        emitter.send(SseEmitter.event().name("done").data("{\"done\":true}"));
+        sendSseOk(emitter, "done", Map.of("done", true), requestId, true);
         emitter.complete();
     }
 
     // ─────────────────────────────────────────────────────────────────────────
     // 辅助方法
     // ─────────────────────────────────────────────────────────────────────────
+
+    private void sendSseOk(
+            SseEmitter emitter,
+            String eventName,
+            Object data,
+            String requestId,
+            boolean terminal) throws IOException {
+        emitter.send(SseEmitter.event().name(eventName)
+                .data(objectMapper.writeValueAsString(ApiResponseFactory.sseOk(
+                        eventName,
+                        data,
+                        requestId,
+                        null,
+                        terminal))));
+    }
+
+    private void sendSseError(
+            SseEmitter emitter,
+            String requestId,
+            String code,
+            String message) throws IOException {
+        emitter.send(SseEmitter.event().name("error")
+                .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
+                        "error",
+                        org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                        code,
+                        message,
+                        "stream",
+                        "safe-retry",
+                        null,
+                        requestId,
+                        null))));
+    }
 
     private List<Map<String, String>> buildMessages(GeneralChatRequest request) {
         List<Map<String, String>> messages = new ArrayList<>();
@@ -330,8 +363,4 @@ public class AiStreamService {
         }
     }
 
-    private static String escapeJson(String s) {
-        if (s == null) return "unknown error";
-        return s.replace("\\", "\\\\").replace("\"", "\\\"").replace("\n", "\\n");
-    }
 }

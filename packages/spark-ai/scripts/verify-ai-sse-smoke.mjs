@@ -5,6 +5,13 @@ const tenantId = process.env.AI_TENANT_ID || 'lmspark'
 const username = process.env.AI_USERNAME || 'admin'
 const password = process.env.AI_PASSWORD || 'admin123'
 
+function unwrapEnvelope(payload) {
+  if (!payload || typeof payload !== 'object' || typeof payload.ok !== 'boolean') return payload
+  if (payload.ok) return payload.data
+  const message = payload.error?.message || payload.error?.code || 'API request failed'
+  throw new Error(message)
+}
+
 async function login() {
   const response = await fetch(`${baseUrl}/api/auth/login`, {
     method: 'POST',
@@ -19,7 +26,7 @@ async function login() {
     throw new Error(`login failed: ${response.status} ${await response.text()}`)
   }
 
-  const payload = await response.json()
+  const payload = unwrapEnvelope(await response.json())
   if (!payload?.success || typeof payload.token !== 'string' || payload.token === '') {
     throw new Error('login failed: missing token')
   }

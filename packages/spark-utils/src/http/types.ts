@@ -64,16 +64,53 @@ export type ApiResponse<T = unknown> = {
 
 /** SPARK AI Server 统一 API envelope */
 export type ApiEnvelope<T = unknown> = {
+  protocolVersion?: number
   ok: boolean
   data: T | null
   error: ApiEnvelopeError | null
-  requestId: string}
+  /** v3 legacy field; v4 uses context.requestId. */
+  requestId?: string
+  context?: ApiEnvelopeContext
+  event?: ApiEnvelopeEvent}
 
 export type ApiEnvelopeError = {
   code: string
   message: string
   category: string
+  severity?: string
+  retryPolicy?: string
   details?: Record<string, unknown>}
+
+export type ApiEnvelopeContext = {
+  requestId: string
+  tenantId?: string
+  projectId?: string
+  username?: string
+  scope?: {
+    moduleId?: string
+    moduleInstanceId?: string
+    instanceId?: string
+    runtimeInstanceId?: string
+  }
+  session?: { sessionId?: string }
+  turn?: {
+    turnId?: string
+    turnKey?: string
+    seq?: number
+    baseRevision?: number
+  }
+  stream?: {
+    streamId?: string
+    streamKey?: string
+  }
+}
+
+export type ApiEnvelopeEvent = {
+  transport: 'http' | 'sse'
+  name: string
+  terminal: boolean
+  sequence?: number
+}
 
 // ==================== 错误 ====================
 

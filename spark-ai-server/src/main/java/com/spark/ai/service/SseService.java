@@ -1,5 +1,6 @@
 package com.spark.ai.service;
 
+import com.spark.ai.api.ApiResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
@@ -81,12 +82,18 @@ public class SseService {
      */
     public void emit(String eventType, Object payload) {
         List<SseEmitter> dead = new ArrayList<>();
+        Object envelope = ApiResponseFactory.sseOk(
+                eventType,
+                payload,
+                ApiResponseFactory.currentRequestId(),
+                null,
+                false);
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(
                         SseEmitter.event()
                                 .name(eventType)
-                                .data(payload, MediaType.APPLICATION_JSON)
+                                .data(envelope, MediaType.APPLICATION_JSON)
                 );
             } catch (Exception e) {
                 dead.add(emitter);

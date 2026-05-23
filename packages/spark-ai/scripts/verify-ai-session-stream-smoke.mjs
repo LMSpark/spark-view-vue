@@ -6,6 +6,13 @@ const projectId = process.env.AI_PROJECT_ID || ''
 const username = process.env.AI_USERNAME || 'admin'
 const password = process.env.AI_PASSWORD || 'admin123'
 
+function unwrapEnvelope(payload) {
+  if (!payload || typeof payload !== 'object' || typeof payload.ok !== 'boolean') return payload
+  if (payload.ok) return payload.data
+  const message = payload.error?.message || payload.error?.code || 'API request failed'
+  throw new Error(message)
+}
+
 function buildScopedHeaders(token) {
   return {
     'Content-Type': 'application/json',
@@ -30,7 +37,7 @@ async function login() {
     throw new Error(`login failed: ${response.status} ${await response.text()}`)
   }
 
-  const payload = await response.json()
+  const payload = unwrapEnvelope(await response.json())
   if (!payload?.success || typeof payload.token !== 'string' || payload.token === '') {
     throw new Error('login failed: missing token')
   }
@@ -54,7 +61,7 @@ async function createSession(token) {
     method: 'POST',
     headers: buildScopedHeaders(token),
     body: JSON.stringify({
-      protocolVersion: 3,
+      protocolVersion: 4,
       systemPrompt: 'You are a concise assistant.',
       userPrompt: 'Reply with ok only, no tools.',
       windowSize: 8,
@@ -67,7 +74,7 @@ async function createSession(token) {
     throw new Error(`create session failed: ${response.status} ${await response.text()}`)
   }
 
-  const payload = await response.json()
+  const payload = unwrapEnvelope(await response.json())
   if (typeof payload?.sessionId !== 'string' || payload.sessionId === '') {
     throw new Error('create session failed: missing sessionId')
   }
@@ -92,11 +99,21 @@ async function streamTurn(token, sessionId) {
   const response = await fetch(`${baseUrl}/api/ai/sessions/${sessionId}/turn/stream`, {
     method: 'POST',
     headers: {
+      'Content-Type': 'application/json',
       'Authorization': `Bearer ${token}`,
       'X-Tenant-Id': tenantId,
       'Accept': 'text/event-stream',
       ...(projectId ? { 'X-Project-Id': projectId } : {}),
     },
+    body: JSON.stringify({
+      protocolVersion: 4,
+      turn: {
+        turnId: 'smoke-turn',
+        turnKey: 'smoke::session::smoke-turn',
+        streamKey: 'smoke::session::smoke-turn::llm-stream',
+      },
+      messages: [],
+    }),
   })
 
   if (!response.ok || !response.body) {
@@ -133,7 +150,7 @@ async function streamTurn(token, sessionId) {
         if (record.event === 'result') {
           sawResult = true
           try {
-            resultPayload = JSON.parse(record.data)
+            resultPayload = unwrapEnvelope(JSON.parse(record.data))
           } catch {
             resultPayload = { text: record.data }
           }
@@ -202,9 +219,9 @@ async function main() {
     const output = {
       sessionId,
       createProtocolVersion: created.protocolVersion,
-      createProtocolOk: created.protocolVersion === 3,
+      createProtocolOk: created.protocolVersion === 4,
       ...result,
-      ok: created.protocolVersion === 3 && result.protocolOk && result.semanticOk,
+      ok: created.protocolVersion === 4 && result.protocolOk && result.semanticOk,
     }
     console.log(JSON.stringify(output, null, 2))
 

@@ -344,8 +344,16 @@ export abstract class HttpClientBase {
     if (typeof message === 'string' && message.trim() !== '') {
       return message.trim()
     }
+    const retryPolicy = body.error?.retryPolicy
+    const nextAction = this.extractEnvelopeNextAction(body)
     const code = body.error?.code
-    return typeof code === 'string' && code.trim() !== '' ? code.trim() : undefined
+    if (typeof code === 'string' && code.trim() !== '') {
+      const base = code.trim()
+      return typeof nextAction === 'string' && nextAction.trim() !== ''
+        ? `${base}：${nextAction.trim()}`
+        : (typeof retryPolicy === 'string' && retryPolicy.trim() !== '' ? `${base} (${retryPolicy.trim()})` : base)
+    }
+    return undefined
   }
 
   private unwrapApiEnvelopeResponse(response: HttpResponse<unknown>, config: RequestConfig): HttpResponse<unknown> {
@@ -370,10 +378,25 @@ export abstract class HttpClientBase {
   private isApiEnvelope(value: unknown): value is ApiEnvelope {
     if (!isRecord(value)) return false
     const record = value
+    const context = record['context']
+    const hasV4RequestId = isRecord(context) && typeof context['requestId'] === 'string'
+    const hasLegacyRequestId = typeof record['requestId'] === 'string'
     return typeof record['ok'] === 'boolean'
       && Object.prototype.hasOwnProperty.call(record, 'data')
       && Object.prototype.hasOwnProperty.call(record, 'error')
-      && typeof record['requestId'] === 'string'
+      && (hasV4RequestId || hasLegacyRequestId)
+  }
+
+  private extractEnvelopeNextAction(body: ApiEnvelope): string | undefined {
+    const details = body.error?.details
+    if (!isRecord(details)) return undefined
+    const direct = details['nextAction']
+    if (typeof direct === 'string' && direct.trim() !== '') return direct
+    const handoff = details['handoff']
+    if (isRecord(handoff) && typeof handoff['nextAction'] === 'string' && handoff['nextAction'].trim() !== '') {
+      return handoff['nextAction']
+    }
+    return undefined
   }
 
   private safePreview(value: unknown): string {

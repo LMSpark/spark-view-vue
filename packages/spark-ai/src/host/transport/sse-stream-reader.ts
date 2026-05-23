@@ -20,13 +20,18 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import { createAiHostStreamKey } from '../business/business-scope'
+import { createAiHostStreamKey, createAiHostTurnKey } from '../business/business-scope'
 import type { AiHostBusinessScope } from '../business/business-types'
 import type { AiHostSseEvent } from '../chat/chat-types'
 import {
   isRecord,
+  isApiEnvelope,
+  isProtocolV4Envelope,
+  readApiEnvelopeContext,
+  readApiEnvelopeRequestId,
   tryParseJson,
   unwrapApiEnvelope,
+  type ApiEnvelopeContext,
 } from './http-utils'
 import {
   parseAiHostFinalSseBlock,
@@ -96,6 +101,8 @@ class AiHostSseTurnState {
   private finalReasoning: string | undefined
   /** 工具调用列表（仅从 result 事件提取） */
   private finalToolCalls: readonly AiHostTransportToolCall[] = []
+  /** v3/plain 兼容警告每条流只报一次，避免诊断事件刷屏。 */
+  private compatibilityWarningSent = false
 
   public constructor(private readonly input: AiHostStreamTurnInput) {}
 
@@ -103,13 +110,24 @@ class AiHostSseTurnState {
   public handle(parsedEvent: AiHostParsedSseEvent): void {
     // 解析 JSON payload 并解包 API 信封
     const rawPayload = tryParseJson(parsedEvent.data)
-    const payload = unwrapApiEnvelope(rawPayload)
+    const envelopeContext = readApiEnvelopeContext(rawPayload)
+    this.emitCompatibilityWarning(parsedEvent, rawPayload)
+    let payload: unknown
+    try {
+      payload = unwrapApiEnvelope(rawPayload)
+    } catch (error) {
+      this.input.onSseEvent?.(createSseEvent(parsedEvent, rawPayload, this.input.scope, this.input.turn.turnId))
+      if (parsedEvent.event === 'error') {
+        throw new Error(formatSseErrorPayload(rawPayload, error))
+      }
+      throw error
+    }
 
     // 通知前端原始 SSE 事件（诊断/调试用）
     this.input.onSseEvent?.(createSseEvent(parsedEvent, payload, this.input.scope, this.input.turn.turnId))
 
     if (parsedEvent.event === 'error') {
-      throw new Error(typeof payload === 'string' ? payload : 'AI stream failed')
+      throw new Error(formatSseErrorPayload(payload))
     }
     if (parsedEvent.event === 'delta') {
       this.appendDelta(payload)
@@ -124,7 +142,7 @@ class AiHostSseTurnState {
       return
     }
     if (parsedEvent.event === 'result' && isRecord(payload)) {
-      this.applyResult(payload)
+      this.applyResult(payload, envelopeContext)
     }
   }
 
@@ -161,21 +179,78 @@ class AiHostSseTurnState {
 
   /* ── result 事件：覆盖最终值 + 提取 toolCalls ──────────── */
 
-  private applyResult(payload: Readonly<Record<string, unknown>>): void {
+  private applyResult(payload: Readonly<Record<string, unknown>>, context: ApiEnvelopeContext | undefined): void {
     // 校验 sessionId 和 turnId 一致性（防止跨会话数据污染）
-    const responseSessionId = typeof payload['sessionId'] === 'string' ? payload['sessionId'] : ''
-    const responseTurnId = typeof payload['turnId'] === 'string' ? payload['turnId'] : ''
+    const responseSessionId = context?.session?.sessionId
+      ?? (typeof payload['sessionId'] === 'string' ? payload['sessionId'] : '')
+    const responseTurnId = context?.turn?.turnId
+      ?? (typeof payload['turnId'] === 'string' ? payload['turnId'] : '')
+    const responseStreamKey = context?.stream?.streamKey
+      ?? (typeof payload['streamKey'] === 'string' ? payload['streamKey'] : '')
+    const expectedStreamKey = createAiHostStreamKey(this.input.scope, this.input.turn.turnId, 'llm-stream')
     if (responseSessionId !== this.input.sessionId) {
       throw new Error('AI stream result sessionId mismatch')
     }
     if (responseTurnId !== this.input.turn.turnId) {
       throw new Error('AI stream result turnId mismatch')
     }
+    if (responseStreamKey !== '' && responseStreamKey !== expectedStreamKey) {
+      throw new Error('AI stream result streamKey mismatch')
+    }
     // result 中的 text/reasoning 覆盖 delta 累积值
     if (typeof payload['text'] === 'string') this.finalText = payload['text']
     if (typeof payload['reasoning'] === 'string') this.finalReasoning = payload['reasoning']
     this.finalToolCalls = readToolCalls(payload['toolCalls'])
   }
+
+  private emitCompatibilityWarning(parsedEvent: AiHostParsedSseEvent, rawPayload: unknown): void {
+    if (this.compatibilityWarningSent || isProtocolV4Envelope(rawPayload)) return
+    this.compatibilityWarningSent = true
+    const protocol = isApiEnvelope(rawPayload)
+      ? `v${String(rawPayload.protocolVersion ?? 3)}`
+      : 'plain'
+    this.input.onSseEvent?.(createSseEvent(
+      { event: 'protocol-warning', data: parsedEvent.data },
+      {
+        message: 'Received legacy AI SSE payload; parsed through compatibility path.',
+        event: parsedEvent.event,
+        protocol,
+      },
+      this.input.scope,
+      this.input.turn.turnId,
+    ))
+  }
+}
+
+function formatSseErrorPayload(payload: unknown, fallback?: unknown): string {
+  const fallbackMessage = fallback instanceof Error ? fallback.message : 'AI stream failed'
+  if (typeof payload === 'string') return payload
+  if (!isRecord(payload)) return fallbackMessage
+
+  const error = isRecord(payload['error']) ? payload['error'] : null
+  const data = isRecord(payload['data']) ? payload['data'] : null
+  const context = readApiEnvelopeContext(payload)
+  const requestId = readApiEnvelopeRequestId(payload)
+  const message = typeof error?.['message'] === 'string' && error['message'].trim().length > 0
+    ? error['message']
+    : fallbackMessage
+  const code = typeof error?.['code'] === 'string' && error['code'].trim().length > 0
+    ? error['code']
+    : ''
+  const details = [
+    code.length > 0 ? `code=${code}` : '',
+    requestId !== undefined ? `requestId=${requestId}` : '',
+    context?.session?.sessionId !== undefined ? `sessionId=${context.session.sessionId}` : (
+      data !== null && typeof data['sessionId'] === 'string' ? `sessionId=${data['sessionId']}` : ''
+    ),
+    context?.turn?.turnId !== undefined ? `turnId=${context.turn.turnId}` : (
+      data !== null && typeof data['turnId'] === 'string' ? `turnId=${data['turnId']}` : ''
+    ),
+    context?.stream?.streamKey !== undefined ? `streamKey=${context.stream.streamKey}` : (
+      data !== null && typeof data['streamKey'] === 'string' ? `streamKey=${data['streamKey']}` : ''
+    ),
+  ].filter((part) => part.length > 0)
+  return details.length === 0 ? message : `${message} (${details.join(', ')})`
 }
 
 /* -------------------------------------------------------------------------------
@@ -209,7 +284,8 @@ function createSseEvent(
   return {
     type: parsedEvent.event,
     data: typeof payload === 'string' ? payload : JSON.stringify(payload),
-    streamKey: createAiHostStreamKey(scope, 'llm', turnId),
+    turnKey: createAiHostTurnKey(scope, turnId),
+    streamKey: createAiHostStreamKey(scope, turnId, 'llm-stream'),
     scope: {
       businessRegistrationId: scope.businessRegistrationId,
       businessInstanceId: scope.businessInstanceId,

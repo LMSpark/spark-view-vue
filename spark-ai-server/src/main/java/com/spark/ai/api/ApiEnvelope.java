@@ -1,12 +1,19 @@
 package com.spark.ai.api;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+
+import java.util.Map;
+
 /**
- * Standard JSON REST envelope.
+ * Standard v4 envelope for JSON REST responses and SSE data payloads.
  */
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public record ApiEnvelope<T>(
+        int protocolVersion,
         boolean ok,
         T data,
         ApiError error,
-        String requestId
+        Map<String, Object> context,
+        Map<String, Object> event
 ) {
 }

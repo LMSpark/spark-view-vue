@@ -140,6 +140,7 @@ let _sharedEs: EventSource | null = null
 let _retryCount = 0
 const _MAX_RETRIES = 5
 const SSE_URL = '/api/events'
+const _legacyProtocolWarnings = new Set<string>()
 
 /** 累计收到的畸形 SSE 事件数（作为可观测性计数器，由诊断工具读取）。 */
 let _malformedEventCount = 0
@@ -179,7 +180,8 @@ function _addEsListener(es: EventSource, eventType: string): void {
       if (!(event instanceof MessageEvent) || typeof event.data !== 'string') {
         throw new Error('SSE event payload must be a string')
       }
-      const data: unknown = JSON.parse(event.data)
+      const parsed: unknown = JSON.parse(event.data)
+      const data = unwrapServerEventPayload(eventType, parsed)
       const subs = _eventSubscribers.get(eventType)
       if (subs) {
         for (const cb of subs) {
@@ -197,6 +199,44 @@ function _addEsListener(es: EventSource, eventType: string): void {
   }
 
   es.addEventListener(eventType, listener)
+}
+
+function unwrapServerEventPayload(eventType: string, payload: unknown): unknown {
+  if (!isRecord(payload)) {
+    warnLegacyProtocolOnce(eventType, 'plain')
+    return payload
+  }
+
+  const isEnvelope = typeof payload['ok'] === 'boolean'
+    && Object.prototype.hasOwnProperty.call(payload, 'data')
+    && Object.prototype.hasOwnProperty.call(payload, 'error')
+
+  if (!isEnvelope) {
+    warnLegacyProtocolOnce(eventType, 'plain')
+    return payload
+  }
+
+  const protocolVersion = payload['protocolVersion']
+  if (protocolVersion !== 4) {
+    warnLegacyProtocolOnce(eventType, typeof protocolVersion === 'number' ? `v${protocolVersion}` : 'legacy')
+  }
+
+  if (payload['ok'] === true) {
+    return payload['data']
+  }
+
+  const error = isRecord(payload['error']) ? payload['error'] : null
+  const message = typeof error?.['message'] === 'string' && error['message'].trim() !== ''
+    ? error['message']
+    : 'SSE server event failed'
+  throw new Error(message)
+}
+
+function warnLegacyProtocolOnce(eventType: string, protocol: string): void {
+  const key = `${eventType}:${protocol}`
+  if (_legacyProtocolWarnings.has(key)) return
+  _legacyProtocolWarnings.add(key)
+  logger.warn('收到旧版 SSE 事件载荷，已走兼容解包路径', { eventType, protocol })
 }
 
 function _teardown(): void {

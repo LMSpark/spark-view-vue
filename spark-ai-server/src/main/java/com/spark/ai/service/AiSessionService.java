@@ -53,6 +53,7 @@ public class AiSessionService {
     private static final Logger log = LoggerFactory.getLogger(AiSessionService.class);
 
     private static final int DEFAULT_WINDOW_SIZE = 30;
+    private static final String LLM_STREAM_ID = "llm-stream";
     private static final long SESSION_TIMEOUT_MS = 30 * 60 * 1000L;
     private static final int HANDOFF_FAILURE_THRESHOLD = 2;
     private static final int STAGE1_MAX_WRITE_CALLS_PER_ROUND = 8;
@@ -479,7 +480,7 @@ public class AiSessionService {
             Map<String, Object> scope,
             String turnId,
             String streamKey) {
-        executeTurnStream(sessionId, emitter, scope, turnId, streamKey, List.of());
+        executeTurnStream(sessionId, emitter, scope, turnId, null, null, null, streamKey, List.of(), null, DEFAULT_WINDOW_SIZE, null, null);
     }
 
     /**
@@ -492,7 +493,7 @@ public class AiSessionService {
             String turnId,
             String streamKey,
             List<Map<String, Object>> turnMessages) {
-        executeTurnStream(sessionId, emitter, scope, turnId, streamKey, turnMessages, null, DEFAULT_WINDOW_SIZE, null, null);
+        executeTurnStream(sessionId, emitter, scope, turnId, null, null, null, streamKey, turnMessages, null, DEFAULT_WINDOW_SIZE, null, null);
     }
 
     /**
@@ -503,6 +504,9 @@ public class AiSessionService {
             SseEmitter emitter,
             Map<String, Object> scope,
             String turnId,
+            String turnKey,
+            Integer seq,
+            Integer baseRevision,
             String streamKey,
             List<Map<String, Object>> turnMessages,
             String systemPrompt,
@@ -516,11 +520,16 @@ public class AiSessionService {
             if (prompt == null) {
                 try {
                     emitter.send(SseEmitter.event().name("error")
-                            .data(objectMapper.writeValueAsString(ApiResponseFactory.error(
+                            .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
+                                    "error",
                                     org.springframework.http.HttpStatus.NOT_FOUND,
                                     "SESSION_NOT_FOUND",
                                     "会话不存在",
-                                    ApiResponseFactory.currentRequestId()))));
+                                    "session",
+                                    "recreate-session",
+                                    null,
+                                    ApiResponseFactory.currentRequestId(),
+                                    streamContext(sessionId, turnId, turnKey, seq, baseRevision, streamKey, scope)))));
                     emitter.complete();
                 } catch (IOException ignored) {}
                 return;
@@ -532,15 +541,19 @@ public class AiSessionService {
         if (!matchesScope(session, scope)) {
             try {
                 emitter.send(SseEmitter.event().name("error")
-                        .data(objectMapper.writeValueAsString(ApiResponseFactory.error(
+                        .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
+                                "error",
                                 org.springframework.http.HttpStatus.CONFLICT,
                                 "SESSION_SCOPE_MISMATCH",
                                 "会话 scope 不匹配",
+                                "session-scope",
+                                "recreate-session",
                                 Map.of("sessionId", sessionId,
                                         "turnId", turnId != null ? turnId : "",
                                         "streamKey", streamKey != null ? streamKey : "",
                                         "scope", session.scope != null ? session.scope : Map.of()),
-                                ApiResponseFactory.currentRequestId()))));
+                                ApiResponseFactory.currentRequestId(),
+                                streamContext(sessionId, turnId, turnKey, seq, baseRevision, streamKey, session.scope)))));
                 emitter.complete();
             } catch (IOException ignored) {}
             return;
@@ -556,7 +569,7 @@ public class AiSessionService {
             List<Message> llmConversation = new ArrayList<>(session.conversation);
             llmConversation.addAll(parsedTurnMessages);
             messages = buildWindowedMessages(session, llmConversation);
-            streamMeta = new StreamMeta(sessionId, turnId, streamKey, session.scope, parsedTurnMessages,
+            streamMeta = new StreamMeta(sessionId, turnId, turnKey, seq, baseRevision, streamKey, session.scope, parsedTurnMessages,
                     ApiResponseFactory.currentRequestId());
         }
         persistSession(sessionId, session);
@@ -571,11 +584,16 @@ public class AiSessionService {
                 log.error("[SESSION] stream error sessionId={}: {}", sessionId, e.getMessage());
                 try {
                     emitter.send(SseEmitter.event().name("error")
-                            .data(objectMapper.writeValueAsString(ApiResponseFactory.error(
+                            .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
+                                    "error",
                                     org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
                                     "AI_STREAM_ERROR",
                                     e.getMessage(),
-                                    ApiResponseFactory.currentRequestId()))));
+                                    "stream",
+                                    "safe-retry",
+                                    null,
+                                    streamMeta.requestId,
+                                    streamContext(streamMeta)))));
                     emitter.complete();
                 } catch (IOException ignored) {}
             }
@@ -1245,13 +1263,13 @@ public class AiSessionService {
                             // 文本增量
                             if (delta.get("content") instanceof String s && !s.isEmpty()) {
                                 contentBuilder.append(s);
-                                emitter.send(SseEmitter.event().name("delta").data(s));
+                                sendStreamOk(emitter, "delta", Map.of("delta", s), streamMeta, false);
                             }
 
                             // reasoning 增量
                             if (delta.get("reasoning_content") instanceof String s && !s.isEmpty()) {
                                 reasoningBuilder.append(s);
-                                emitter.send(SseEmitter.event().name("reasoning").data(s));
+                                sendStreamOk(emitter, "reasoning", Map.of("reasoning", s), streamMeta, false);
                             }
 
                             // tool_calls 增量
@@ -1458,40 +1476,63 @@ public class AiSessionService {
         persistToolCalls(streamMeta.sessionId, streamMeta.turnId, toolCalls, null, "planned");
         persistSession(streamMeta.sessionId, session);
 
-        // 发送最终结果
+        // 发送最终结果。v4 wire 元数据放入 context，业务 data 只保留模型输出本身。
         Map<String, Object> resultMap = new LinkedHashMap<>();
         resultMap.put("text", text);
-        resultMap.put("sessionId", streamMeta.sessionId);
         if (reasoning != null) resultMap.put("reasoning", reasoning);
         if (toolCalls != null) resultMap.put("toolCalls", toolCalls);
-        resultMap.put("protocolVersion", 3);
-        if (streamMeta.turnId != null && !streamMeta.turnId.isBlank()) {
-            resultMap.put("turnId", streamMeta.turnId);
-        }
-        if (streamMeta.streamKey != null && !streamMeta.streamKey.isBlank()) {
-            resultMap.put("streamKey", streamMeta.streamKey);
-        }
-        if (streamMeta.scope != null && !streamMeta.scope.isEmpty()) {
-            resultMap.put("scope", streamMeta.scope);
-        }
 
-        emitter.send(SseEmitter.event().name("result")
-            .data(objectMapper.writeValueAsString(ApiResponseFactory.ok(resultMap, streamMeta.requestId))));
+        sendStreamOk(emitter, "result", resultMap, streamMeta, false);
         Map<String, Object> doneMap = new LinkedHashMap<>();
-        doneMap.put("protocolVersion", 3);
-        doneMap.put("sessionId", streamMeta.sessionId);
-        if (streamMeta.turnId != null && !streamMeta.turnId.isBlank()) {
-            doneMap.put("turnId", streamMeta.turnId);
-        }
-        if (streamMeta.streamKey != null && !streamMeta.streamKey.isBlank()) {
-            doneMap.put("streamKey", streamMeta.streamKey);
-        }
-        if (streamMeta.scope != null && !streamMeta.scope.isEmpty()) {
-            doneMap.put("scope", streamMeta.scope);
-        }
-        emitter.send(SseEmitter.event().name("done").data(objectMapper.writeValueAsString(doneMap)));
+        doneMap.put("done", true);
+        sendStreamOk(emitter, "done", doneMap, streamMeta, true);
         emitter.complete();
         }
+
+    private void sendStreamOk(
+            SseEmitter emitter,
+            String eventName,
+            Object data,
+            StreamMeta streamMeta,
+            boolean terminal) throws IOException {
+        emitter.send(SseEmitter.event().name(eventName)
+                .data(objectMapper.writeValueAsString(ApiResponseFactory.sseOk(
+                        eventName,
+                        data,
+                        streamMeta.requestId,
+                        streamContext(streamMeta),
+                        terminal))));
+    }
+
+    private Map<String, Object> streamContext(StreamMeta streamMeta) {
+        return streamContext(
+                streamMeta.sessionId,
+                streamMeta.turnId,
+                streamMeta.turnKey,
+                streamMeta.seq,
+                streamMeta.baseRevision,
+                streamMeta.streamKey,
+                streamMeta.scope);
+    }
+
+    private Map<String, Object> streamContext(
+            String sessionId,
+            String turnId,
+            String turnKey,
+            Integer seq,
+            Integer baseRevision,
+            String streamKey,
+            Map<String, Object> scope) {
+        return ApiResponseFactory.aiStreamContext(
+                sessionId,
+                turnId,
+                turnKey,
+                seq,
+                baseRevision,
+                LLM_STREAM_ID,
+                streamKey,
+                scope);
+    }
 
     // ═════════════════════════════════════════════════════════════════════════
     // 内部类型
@@ -1522,6 +1563,9 @@ public class AiSessionService {
     private record StreamMeta(
             String sessionId,
             String turnId,
+            String turnKey,
+            Integer seq,
+            Integer baseRevision,
             String streamKey,
             Map<String, Object> scope,
             List<Message> turnMessages,

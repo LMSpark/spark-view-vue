@@ -36,6 +36,7 @@ public class AiSessionController {
 
     private static final Logger log = LoggerFactory.getLogger(AiSessionController.class);
     private static final int PROTOCOL_VERSION_V3 = 3;
+    private static final int PROTOCOL_VERSION_V4 = ApiResponseFactory.PROTOCOL_VERSION;
 
     private final AiSessionService sessionService;
 
@@ -62,8 +63,8 @@ public class AiSessionController {
     @PostMapping
     public ResponseEntity<Map<String, Object>> createSession(
             @RequestBody Map<String, Object> request) {
-        if (!isProtocolV3(request)) {
-            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        if (!isSupportedProtocol(request)) {
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
         }
         String systemPrompt = getRequiredString(request, "systemPrompt");
         if (systemPrompt == null) {
@@ -88,7 +89,7 @@ public class AiSessionController {
 
         Map<String, Object> body = new LinkedHashMap<>();
         body.put("sessionId", sessionId);
-        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        body.put("protocolVersion", PROTOCOL_VERSION_V4);
         if (scope != null && !scope.isEmpty()) {
             body.put("scope", scope);
         }
@@ -107,8 +108,8 @@ public class AiSessionController {
             @PathVariable String sessionId,
             @RequestBody(required = false) Map<String, Object> request) {
 
-        if (!isProtocolV3(request)) {
-            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        if (!isSupportedProtocol(request)) {
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
         }
 
         boolean stream = request != null
@@ -151,7 +152,7 @@ public class AiSessionController {
         if (result.getRuntimeMeta() != null) {
             body.put("runtime", result.getRuntimeMeta());
         }
-        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        body.put("protocolVersion", PROTOCOL_VERSION_V4);
         return ResponseEntity.ok(body);
     }
 
@@ -165,8 +166,8 @@ public class AiSessionController {
             @RequestBody(required = false) Map<String, Object> request) {
         SseEmitter emitter = new SseEmitter(300_000L); // 5 min timeout
 
-        if (!isProtocolV3(request)) {
-            sendSseErrorAndComplete(emitter, "INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        if (!isSupportedProtocol(request)) {
+            sendSseErrorAndComplete(emitter, "INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
             return emitter;
         }
 
@@ -178,6 +179,9 @@ public class AiSessionController {
                 emitter,
                 extractScope(request),
                 getOptionalString(turn, "turnId"),
+                getOptionalString(turn, "turnKey"),
+                getOptionalInteger(turn, "seq"),
+                getOptionalInteger(turn, "baseRevision"),
                 getOptionalString(turn, "streamKey"),
                 extractMessages(request),
                 getOptionalString(request, "systemPrompt"),
@@ -192,8 +196,8 @@ public class AiSessionController {
     public ResponseEntity<Map<String, Object>> appendTurnMessages(
             @PathVariable String sessionId,
             @RequestBody Map<String, Object> request) {
-        if (!isProtocolV3(request)) {
-            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        if (!isSupportedProtocol(request)) {
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
         }
 
         List<Map<String, Object>> messages = extractMessages(request);
@@ -226,7 +230,7 @@ public class AiSessionController {
         body.put("sessionId", sessionId);
         String turnId = getOptionalString(turn, "turnId");
         if (turnId != null) body.put("turnId", turnId);
-        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        body.put("protocolVersion", PROTOCOL_VERSION_V4);
         return ResponseEntity.ok(body);
     }
 
@@ -250,8 +254,8 @@ public class AiSessionController {
             @PathVariable String sessionId,
             @RequestBody Map<String, Object> request) {
 
-        if (!isProtocolV3(request)) {
-            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3");
+        if (!isSupportedProtocol(request)) {
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
         }
 
         @SuppressWarnings("unchecked")
@@ -284,7 +288,7 @@ public class AiSessionController {
         return ResponseEntity.ok(Map.of(
             "ok", true,
             "sessionId", sessionId,
-            "protocolVersion", PROTOCOL_VERSION_V3));
+            "protocolVersion", PROTOCOL_VERSION_V4));
     }
 
     // ─────────────────────────────────────────────────────────
@@ -351,6 +355,15 @@ public class AiSessionController {
         return null;
     }
 
+    private static Integer getOptionalInteger(Map<String, Object> map, String key) {
+        if (map == null) return null;
+        Object val = map.get(key);
+        if (val instanceof Number n) {
+            return n.intValue();
+        }
+        return null;
+    }
+
     @SuppressWarnings("unchecked")
     private static List<Map<String, Object>> extractMessages(Map<String, Object> request) {
         if (request == null) return null;
@@ -378,13 +391,14 @@ public class AiSessionController {
         return Map.of();
     }
 
-    private static boolean isProtocolV3(Map<String, Object> request) {
+    private static boolean isSupportedProtocol(Map<String, Object> request) {
         if (request == null) {
             return false;
         }
         Object protocolVersion = request.get("protocolVersion");
         if (protocolVersion instanceof Number n) {
-            return n.intValue() == PROTOCOL_VERSION_V3;
+            int value = n.intValue();
+            return value == PROTOCOL_VERSION_V3 || value == PROTOCOL_VERSION_V4;
         }
         return false;
     }
@@ -408,12 +422,16 @@ public class AiSessionController {
 
     private static void sendSseErrorAndComplete(SseEmitter emitter, String code, String message) {
         try {
-            emitter.send(SseEmitter.event().name("error").data(ApiResponseFactory.error(
+            emitter.send(SseEmitter.event().name("error").data(ApiResponseFactory.sseError(
+                    "error",
                     HttpStatus.BAD_REQUEST,
                     code,
                     message,
-                    Map.of("protocolVersion", PROTOCOL_VERSION_V3),
-                    ApiResponseFactory.currentRequestId())));
+                    "request-validation",
+                    "fix-request",
+                    null,
+                    ApiResponseFactory.currentRequestId(),
+                    null), MediaType.APPLICATION_JSON));
             emitter.complete();
         } catch (IOException ignored) {}
     }
@@ -547,7 +565,7 @@ public class AiSessionController {
         if (stateTransition != null) {
             body.put("stateTransition", stateTransition);
         }
-        body.put("protocolVersion", PROTOCOL_VERSION_V3);
+        body.put("protocolVersion", PROTOCOL_VERSION_V4);
         if (handoff != null) {
             body.put("handoff", handoff);
         }

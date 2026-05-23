@@ -346,7 +346,13 @@ export class FetchClient extends HttpClientBase {
     }
 
     const base = this.describeErrorCode(code)
-    const handoff = body['handoff']
+    const data = body['data']
+    const details = error['details']
+    const handoff = body['handoff'] ?? (
+      isRecord(data) ? data['handoff'] : undefined
+    ) ?? (
+      isRecord(details) ? details['handoff'] : undefined
+    )
     const nextAction = isRecord(handoff)
       ? handoff['nextAction']
       : undefined

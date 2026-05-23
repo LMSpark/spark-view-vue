@@ -37,8 +37,8 @@ function createFetch(fn: AiHostFetch) {
 const scope = {
   businessRegistrationId: 'demoRuntime',
   businessInstanceId: 'business-a',
-  instanceId: 'demoRuntime:business-a',
-  runtimeInstanceId: 'demoRuntime:business-a',
+  instanceId: 'business-a',
+  runtimeInstanceId: 'business-a',
 }
 
 const turn = {
@@ -48,6 +48,78 @@ const turn = {
   queuedAt: '2026-05-20T00:00:00.000Z',
   startedAt: '2026-05-20T00:00:00.000Z',
   maxParallelTurns: 1,
+}
+
+const turnKey = 'demoRuntime::business-a::turn-1'
+const streamKey = 'demoRuntime::business-a::turn-1::llm-stream'
+
+function createV4SseEvent(event: string, data: unknown, terminal = false): string {
+  return [
+    `event: ${event}`,
+    `data: ${JSON.stringify({
+      protocolVersion: 4,
+      ok: true,
+      data,
+      error: null,
+      context: {
+        requestId: 'request-1',
+        session: { sessionId: 'session-1' },
+        turn: {
+          turnId: 'turn-1',
+          turnKey,
+          seq: 1,
+          baseRevision: 0,
+        },
+        stream: {
+          streamId: 'llm-stream',
+          streamKey,
+        },
+        scope: {
+          moduleId: 'demoRuntime',
+          moduleInstanceId: 'business-a',
+          instanceId: 'business-a',
+        },
+      },
+      event: {
+        transport: 'sse',
+        name: event,
+        terminal,
+      },
+    })}`,
+    '',
+    '',
+  ].join('\n')
+}
+
+function createV4SseError(code: string, message: string): string {
+  return [
+    'event: error',
+    `data: ${JSON.stringify({
+      protocolVersion: 4,
+      ok: false,
+      data: null,
+      error: {
+        code,
+        message,
+        category: 'stream',
+        severity: 'error',
+        retryPolicy: 'safe-retry',
+      },
+      context: {
+        requestId: 'request-err',
+        session: { sessionId: 'session-1' },
+        turn: { turnId: 'turn-1', turnKey },
+        stream: { streamId: 'llm-stream', streamKey },
+      },
+      event: {
+        transport: 'sse',
+        name: 'error',
+        terminal: true,
+      },
+    })}`,
+    '',
+    '',
+  ].join('\n')
 }
 
 describe('AiHostFetchTransport', () => {
@@ -60,10 +132,13 @@ describe('AiHostFetchTransport', () => {
 
   it('streams an AI turn through package-owned SSE transport', async () => {
     const fetchClient = createFetch(async () => createStreamResponse([
-      'event: delta\ndata: {"delta":"he"}\n\n',
-      'event: reasoning\ndata: {"reasoning":"thinking"}\n\n',
-      'event: usage\ndata: {"usage":{"totalTokens":3}}\n\n',
-      'event: result\ndata: {"sessionId":"session-1","turnId":"turn-1","text":"hello","toolCalls":[{"id":"call-1","type":"function","function":{"name":"setReason","arguments":"{}"}}]}\n\n',
+      createV4SseEvent('delta', { delta: 'he' }),
+      createV4SseEvent('reasoning', { reasoning: 'thinking' }),
+      createV4SseEvent('usage', { usage: { totalTokens: 3 } }),
+      createV4SseEvent('result', {
+        text: 'hello',
+        toolCalls: [{ id: 'call-1', type: 'function', function: { name: 'setReason', arguments: '{}' } }],
+      }),
     ]))
     const transport = new AiHostFetchTransport({
       baseUrl: '/api/ai',
@@ -104,24 +179,88 @@ describe('AiHostFetchTransport', () => {
     expect(reasoning).toEqual(['thinking'])
     expect(usage).toEqual([{ totalTokens: 3 }])
     expect(events.map((event) => event.type)).toEqual(['delta', 'reasoning', 'usage', 'result'])
-    expect(events[0]?.streamKey).toBe('demoRuntime::business-a::llm::turn-1')
+    expect(events[0]?.turnKey).toBe('demoRuntime::business-a::turn-1')
+    expect(events[0]?.streamKey).toBe('demoRuntime::business-a::turn-1::llm-stream')
 
     expect(fetchClient).toHaveBeenCalledOnce()
     const [, init] = fetchClient.mock.calls[0] ?? []
     expect(init?.method).toBe('POST')
-    expect(init?.body).toContain('"protocolVersion":3')
+    expect(init?.body).toContain('"protocolVersion":4')
     expect(init?.body).toContain('"moduleId":"demoRuntime"')
+    const body = JSON.parse(String(init?.body))
+    expect(body).not.toHaveProperty('windowSize')
+    expect(body.turn).toEqual({
+      turnId: 'turn-1',
+      turnKey,
+      streamKey,
+    })
+  })
+
+  it('allows callers to override backend window size for long tool loops', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      'event: result\ndata: {"sessionId":"session-1","turnId":"turn-1","text":"ok"}\n\n',
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+      windowSize: 80,
+    })
+
+    await transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+    })
+
+    const [, init] = fetchClient.mock.calls[0] ?? []
+    expect(JSON.parse(String(init?.body))['windowSize']).toBe(80)
+  })
+
+  it('reports SSE error envelopes through diagnostics before throwing', async () => {
+    const fetchClient = createFetch(async () => createStreamResponse([
+      createV4SseError('LLM_TOOL_CALL_FAILED', 'LLM tool-call request failed'),
+    ]))
+    const transport = new AiHostFetchTransport({
+      baseUrl: '/api/ai',
+      fetch: fetchClient,
+    })
+    const events: AiHostSseEvent[] = []
+
+    await expect(transport.streamTurn({
+      sessionId: 'session-1',
+      scope,
+      turn,
+      systemPrompt: 'system',
+      tools: [],
+      messages: [{ role: 'user', content: 'hello' }],
+      onSseEvent: (event) => events.push(event),
+    })).rejects.toThrow('LLM tool-call request failed (code=LLM_TOOL_CALL_FAILED, requestId=request-err')
+
+    expect(events).toHaveLength(1)
+    expect(events[0]?.type).toBe('error')
+    expect(events[0]?.data).toContain('LLM_TOOL_CALL_FAILED')
   })
 
   it('unwraps append-message API envelopes and validates session identity', async () => {
     const fetchClient = createFetch(async () => createJsonResponse({
+      protocolVersion: 4,
       ok: true,
       data: {
         sessionId: 'session-1',
         turnId: 'turn-1',
       },
       error: null,
-      requestId: 'request-1',
+      context: {
+        requestId: 'request-1',
+      },
+      event: {
+        transport: 'http',
+        name: 'response',
+        terminal: true,
+      },
     }))
     const transport = new AiHostFetchTransport({ fetch: fetchClient })
 
@@ -131,5 +270,13 @@ describe('AiHostFetchTransport', () => {
       turn,
       messages: [{ role: 'assistant', content: 'done' }],
     })).resolves.toBeUndefined()
+
+    const [, init] = fetchClient.mock.calls[0] ?? []
+    const body = JSON.parse(String(init?.body))
+    expect(body.turn).toEqual({
+      turnId: 'turn-1',
+      turnKey,
+    })
+    expect(body.turn).not.toHaveProperty('streamKey')
   })
 })

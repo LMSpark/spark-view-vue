@@ -9,7 +9,7 @@
  * 【函数清单】
  *   isRecord           — 类型守卫：判定值是否为 Record<string, unknown>
  *   tryParseJson       — 安全 JSON.parse（解析失败返回原值）
- *   unwrapApiEnvelope  — 解包 API 响应信封 { ok, data, error, requestId }
+ *   unwrapApiEnvelope  — 解包 API 响应信封（v4 context/requestId，兼容 v3 requestId）
  *   resolveFetch       — 解析 fetch 实现（优先自定义，回退 globalThis.fetch）
  *   normalizeBaseUrl   — 规范化 baseUrl（去尾部斜杠）
  *   readResponseJson   — 读取 Response body 并解析 JSON
@@ -22,7 +22,7 @@
 import type { AiHostFetch } from './transport-types'
 
 /** 默认协议版本号 */
-export const DEFAULT_PROTOCOL_VERSION = 3
+export const DEFAULT_PROTOCOL_VERSION = 4
 /** 默认 API 前缀 */
 export const DEFAULT_BASE_URL = '/api/ai'
 
@@ -32,10 +32,52 @@ export const DEFAULT_BASE_URL = '/api/ai'
 
 /** AI 后端 API 响应信封 */
 type ApiEnvelope = Readonly<{
+  protocolVersion?: number
   ok: boolean
   data: unknown
-  error: { readonly code?: unknown; readonly message?: unknown } | null
-  requestId: string
+  error: {
+    readonly code?: unknown
+    readonly message?: unknown
+    readonly category?: unknown
+    readonly severity?: unknown
+    readonly retryPolicy?: unknown
+    readonly details?: unknown
+  } | null
+  /** v3 legacy field; v4 uses context.requestId. */
+  requestId?: string
+  context?: ApiEnvelopeContext
+  event?: ApiEnvelopeEvent
+}>
+
+export type ApiEnvelopeContext = Readonly<{
+  requestId?: string
+  tenantId?: string
+  projectId?: string
+  username?: string
+  scope?: Readonly<{
+    moduleId?: string
+    moduleInstanceId?: string
+    instanceId?: string
+    runtimeInstanceId?: string
+  }>
+  session?: Readonly<{ sessionId?: string }>
+  turn?: Readonly<{
+    turnId?: string
+    turnKey?: string
+    seq?: number
+    baseRevision?: number
+  }>
+  stream?: Readonly<{
+    streamId?: string
+    streamKey?: string
+  }>
+}>
+
+export type ApiEnvelopeEvent = Readonly<{
+  transport?: 'http' | 'sse'
+  name?: string
+  terminal?: boolean
+  sequence?: number
 }>
 
 // ═══════════════════════════════════════════════════════════════
@@ -85,6 +127,23 @@ export function unwrapApiEnvelope(value: unknown): unknown {
   throw new Error(message)
 }
 
+export function readApiEnvelopeContext(value: unknown): ApiEnvelopeContext | undefined {
+  return isApiEnvelope(value) ? value.context : undefined
+}
+
+export function readApiEnvelopeEvent(value: unknown): ApiEnvelopeEvent | undefined {
+  return isApiEnvelope(value) ? value.event : undefined
+}
+
+export function readApiEnvelopeRequestId(value: unknown): string | undefined {
+  if (!isApiEnvelope(value)) return undefined
+  return value.context?.requestId ?? value.requestId
+}
+
+export function isProtocolV4Envelope(value: unknown): boolean {
+  return isApiEnvelope(value) && value.protocolVersion === DEFAULT_PROTOCOL_VERSION
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 第 5 节 · Fetch 工具
 // ═══════════════════════════════════════════════════════════════
@@ -124,11 +183,14 @@ export async function assertOkResponse(response: Response, action: string): Prom
 // 第 6 节 · 内部：信封格式判定
 // ═══════════════════════════════════════════════════════════════
 
-/** 判定值是否符合 ApiEnvelope 形状 */
-function isApiEnvelope(value: unknown): value is ApiEnvelope {
-  return isRecord(value)
-    && typeof value['ok'] === 'boolean'
+/** 判定值是否符合 ApiEnvelope 形状（v4 + legacy v3） */
+export function isApiEnvelope(value: unknown): value is ApiEnvelope {
+  if (!isRecord(value)) return false
+  const context = value['context']
+  const hasV4RequestId = isRecord(context) && typeof context['requestId'] === 'string'
+  const hasLegacyRequestId = typeof value['requestId'] === 'string'
+  return typeof value['ok'] === 'boolean'
     && Object.prototype.hasOwnProperty.call(value, 'data')
     && Object.prototype.hasOwnProperty.call(value, 'error')
-    && typeof value['requestId'] === 'string'
+    && (hasV4RequestId || hasLegacyRequestId)
 }
