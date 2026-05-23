@@ -420,7 +420,7 @@ class LeaveRequestModuleKind extends ModuleKind {
     this.service = service
   }
 
-  public override invokeAction(
+  protected override runAction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,

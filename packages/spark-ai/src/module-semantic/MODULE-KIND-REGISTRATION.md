@@ -189,7 +189,7 @@ section ProtocolRegistrationSurface {
       "runner 缺失时返回 ACTION_NOT_IMPLEMENTED",
       "list 缺失时返回空数组",
       "find 缺失时仅在根级查询自身 kind 时返回当前实例引用",
-      "getAttribute/setAttribute 按 attributes 元数据读写 action 委托函数对象属性",
+      "getAttribute/setAttribute 按 attributes 元数据和 JSON Schema 调用独立 attributeAccessor",
       "resolveChild 先 find 精确查询，再 list 全量扫描"
     ]
 
@@ -278,7 +278,7 @@ section RuntimeRegistrationSurface {
     invariant: [
       "ModuleSemanticRuntime 不持有业务 live state",
       "ModuleSemanticRuntime 不依据 action 返回值做下一步业务编排",
-      "业务状态只能在业务 service、runner 对象属性或外部 host 中"
+      "业务状态只能在业务 service、attributeAccessor 或外部 host 中"
     ]
   }
 }

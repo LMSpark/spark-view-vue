@@ -183,7 +183,7 @@ export class ProtocolToolGenerator {
           '调用前若不确定参数形状/注意事项/失败模式,先调 describeKind(kind) 获取完整动作元数据(含 usageRules / failureModes / paramsSchema)。',
           '当前注册的 kind 及其动作列表(rules=N 表示该动作声明了 N 条 usageRules,fails=N 表示声明了 N 条 failureModes):',
           digest,
-          '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ACTION_NOT_DECLARED / INVALID_ARGS',
+          '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ACTION_NOT_DECLARED / SCHEMA_VALIDATION_FAILED',
         ].join('\n'),
         parameters: {
           type: 'object',

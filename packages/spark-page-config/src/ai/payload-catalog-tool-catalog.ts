@@ -166,7 +166,7 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
     this.registry = options.registry ?? createPageDesignPayloadRegistry()
   }
 
-  public override invokeAction(
+  protected override runAction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,

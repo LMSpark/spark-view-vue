@@ -14,7 +14,7 @@ VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源�
 - `ModuleKind.children`
 - 构造期运行委托：`runner / list / find` 输入，只能通过 `ModuleKind` 协议方法访问
 
-LLM 只通过 `describeKind` 理解语义；不得从 runner 函数属性、函数体、服务实例或组件树反推业务语义。
+LLM 只通过 `describeKind` 理解语义；不得从 attributeAccessor/runner 函数体、服务实例或组件树反推业务语义。
 
 手写 `ModuleKind` class 只作为迁移期兼容形态存在；新增能力模块不应把元数据硬编码在自定义 `ModuleKind` 子类里。业务代码只保留构造期运行委托、构造依赖和服务实现，语义元数据从能力模块本体提取，注册层只承接装配边界。
 
@@ -61,12 +61,12 @@ VCM 应完整提取六类结构：
 - **动作**：生成 `ModuleActionMetadata[]`，包括 `paramsSchema / resultSchema / usageRules / failureModes / example`。
 - **子模块**：生成 `children`，并校验 `list/find/resolve` 发现语义与子 kind 声明一致。
 - **构造装配**：从能力模块构造函数、factory 参数和注册工厂中提取依赖边界，例如 `service`、`contextFactory`、`runner`、`list`、`find`；只生成装配签名，不生成业务实现体。
-- **运行委托**：按 JSDoc 标识提取 `runner/list/find` 委托函数，把它们作为 `ModuleKind` 构造参数接入；运行期只能通过 `invokeAction/listChildren/findInstance` 协议方法访问。VCM 只识别委托签名和绑定关系，不解析委托函数体来推导业务语义。
+- **运行委托**：按 JSDoc 标识提取 `attributeAccessor/runner/list/find` 委托函数，把它们作为 `ModuleKind` 构造参数接入；运行期只能通过 `getAttribute/setAttribute/invokeAction/listChildren/findInstance` 协议方法访问。VCM 只识别委托签名和绑定关系，不解析委托函数体来推导业务语义。
 - **攻击面**：按 JSDoc 标识提取能力模块能触达的资源、信任边界、写入/删除/执行风险和防护规则。VCM 只提取声明，不从业务实现反推安全语义。
 
 ## JSDoc 标识
 
-VCM 提取能力模块元数据时，能力语义只识别写在领域能力 class 源码附近的 JSDoc，例如 `SparkNodeTree`、`DataSetCrudTool` 这类真正承载动作和状态不变量的 class。`assistant/registrations/**` 这类注册源只允许声明 factory、runner/list/find 委托和依赖装配；不得承载实体、攻击面、业务动作语义。迁移期可以读取已有 `ModuleKind` class 上的装配注释用于回填；目标形态不要求业务继续手写 `ModuleKind` class。
+VCM 提取能力模块元数据时，能力语义只识别写在领域能力 class 源码附近的 JSDoc，例如 `SparkNodeTree`、`DataSetCrudTool` 这类真正承载动作和状态不变量的 class。`assistant/registrations/**` 这类注册源只允许声明 factory、attributeAccessor/runner/list/find 委托和依赖装配；不得承载实体、攻击面、业务动作语义。迁移期可以读取已有 `ModuleKind` class 上的装配注释用于回填；目标形态不要求业务继续手写 `ModuleKind` class。
 
 这些 JSDoc tag 的定位类似 Java 注解：源码里写声明，构建期由 VCM 扫描并生成注册代码；运行时不通过反射扫描注解，也不从函数体猜业务语义。
 
@@ -195,7 +195,7 @@ export function createNodeTreeModuleKind(): ModuleKind {
 - `runner` 函数体、service 私有方法实现、业务 live state、会话历史。
 - 真实业务数据行、页面配置文件、后端接口返回样本。
 - 旧 `Capability`、旧 runtime、旧 adapter 相关类型。
-- 从 runner/list/find 函数体静态推断出的隐式攻击面；攻击面必须显式用 JSDoc 声明。
+- 从 attributeAccessor/runner/list/find 函数体静态推断出的隐式攻击面；攻击面必须显式用 JSDoc 声明。
 
 ## 一致性规则
 
@@ -204,7 +204,7 @@ export function createNodeTreeModuleKind(): ModuleKind {
 - JSDoc 与 `ModuleActionMetadata` / `ModuleAttributeMetadata` 冲突时，以标准 schema 为准并报诊断，不做静默覆盖。
 - `assistant/registrations/**` 出现 `@moduleAbility`、`@moduleEntity`、`@moduleAttackSurface`、`@moduleTrustBoundary`、`@moduleGuard`、`@moduleMutation` 时 fail-fast；这些属于能力模块本体。
 - VCM 生成的 metadata 必须在 `new ModuleKind(...)` factory 调用处通过 TypeScript 校验。
-- 生成代码不得包含业务 runner/list/find 函数体；runner/list/find 只能由被 JSDoc 标记的业务运行委托注入或包裹。
+- 生成代码不得包含业务 attributeAccessor/runner/list/find 函数体；attributeAccessor/runner/list/find 只能由被 JSDoc 标记的业务运行委托注入或包裹。
 - 构造依赖必须显式出现在生成 factory 参数中，不允许从闭包或全局变量隐式捕获。
 - `@moduleRunner` / `@moduleListDelegate` / `@moduleFindDelegate` 指向不存在的函数、签名不匹配或 kind 绑定冲突时 fail-fast。
 - `@moduleMutation` 的 resource/mode 必须与 `@moduleAttackSurface` 覆盖的资源一致；写入、删除、执行类资源缺少 `@moduleGuard` 时 fail-fast。

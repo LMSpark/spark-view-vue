@@ -587,7 +587,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     this.contextFactory = options.contextFactory
   }
 
-  public override async invokeAction(
+  protected override async runAction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,

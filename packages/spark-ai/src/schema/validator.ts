@@ -26,7 +26,7 @@
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
-import type { LlmJsonSchemaObject } from './types'
+import type { LlmJsonSchema, LlmJsonSchemaObject } from './types'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型 — 校验结果
@@ -139,6 +139,21 @@ export class LlmSchemaValidator {
     return {
       ok: issues.length === 0,
       issues,
+    }
+  }
+
+  /** 校验任意 JSON 值是否符合 JSON Schema。用于属性值与直调 action 参数兜底校验。 */
+  static validateJsonValue(
+    value: unknown,
+    schema: LlmJsonSchema,
+  ): LlmParamValidationResult {
+    const validate = ajv.compile(schema)
+    if (validate(value)) {
+      return { ok: true, issues: [] }
+    }
+    return {
+      ok: false,
+      issues: (validate.errors ?? []).map(LlmSchemaValidator.issueFromAjvError),
     }
   }
 

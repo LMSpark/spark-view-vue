@@ -136,7 +136,7 @@ export class PageDesignTextModelModuleKind extends ModuleKind {
     this.contextFactory = options.contextFactory
   }
 
-  public override invokeAction(
+  protected override runAction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,

@@ -39,6 +39,7 @@ export type {
 } from './protocol-action-api'
 
 export type {
+  ModuleAttributeAccessor,
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
   ModuleKindOptions,

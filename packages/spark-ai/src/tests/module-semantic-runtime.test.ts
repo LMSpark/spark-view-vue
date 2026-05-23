@@ -57,7 +57,6 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
     }
     return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${actionName} 未实现`)
   }
-  Object.assign(runner, { rootId: 'root-1' })
   return new ModuleKind({
     kind: 'node-tree',
     name: '节点树',
@@ -71,6 +70,10 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
         writable: false,
       },
     ],
+    attributeAccessor: {
+      get: () => ModuleOperationResult.ok<unknown>('root-1'),
+      set: () => ModuleOperationResult.failCode('ATTRIBUTE_NOT_WRITABLE', 'rootId is readonly'),
+    },
     actions: [
       {
         name: 'getNode',
@@ -120,15 +123,6 @@ function createDefaultOnlyKind(): ModuleKind {
     kind: 'default-only',
     name: '默认能力',
     description: '用于验证 ModuleKind 默认协议行为',
-    attributes: [
-      {
-        name: 'title',
-        description: '标题',
-        schema: { type: 'string' },
-        readable: true,
-        writable: false,
-      },
-    ],
     actions: [
       {
         name: 'ping',
@@ -259,7 +253,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     expect(result.data).toEqual({ id: 'n1', label: 'node-n1' })
   })
 
-  it('invokeAction 参数校验失败时透传 INVALID_ARGS', async () => {
+  it('invokeAction 参数校验失败时由 ModuleKind 返回 SCHEMA_VALIDATION_FAILED', async () => {
     const runtime = createRuntime()
     const result = await runtime.executeTool('invokeAction', {
       path: '/node-tree[t1]',
@@ -267,7 +261,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
       args: {},
     })
     expect(result.ok).toBe(false)
-    expect(result.checks?.[0]?.code).toMatch(/INVALID_ARGS|MISSING/i)
+    expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
   })
 
   it('describeKind 输出 usageRules / failureModes(G1)', async () => {
@@ -509,7 +503,28 @@ describe('ModuleKind 默认协议行为', () => {
     })
   })
 
-  it('children 和 parentKind 声明错误时 fail-fast', () => {
+  it('主字段、属性委托、children 和 parentKind 声明错误时 fail-fast', () => {
+    expect(() => new ModuleKind({
+      kind: ' ',
+      name: 'Invalid Kind',
+      description: 'invalid',
+    })).toThrow('kind must not be empty')
+
+    expect(() => new ModuleKind({
+      kind: 'missing-attr-accessor',
+      name: 'Missing Attr Accessor',
+      description: 'invalid',
+      attributes: [
+        {
+          name: 'title',
+          description: '标题',
+          schema: { type: 'string' },
+          readable: true,
+          writable: true,
+        },
+      ],
+    })).toThrow('attributeAccessor for "missing-attr-accessor" is required when attributes are declared')
+
     expect(() => new ModuleKind({
       kind: 'invalid-parent',
       name: 'Invalid Parent',
@@ -535,10 +550,11 @@ describe('ModuleKind 默认协议行为', () => {
     })).toThrow('duplicate payloadRef "spark.component" on "invalid-payload"')
   })
 
-  it('基类通过协议方法读写 action 委托函数对象属性', async () => {
+  it('基类通过独立 attributeAccessor 读写属性并按 schema 校验', async () => {
+    let title: unknown
     const moduleKind = new ModuleKind({
-      kind: 'runner-attrs',
-      name: 'Runner 属性',
+      kind: 'accessor-attrs',
+      name: 'Accessor 属性',
       description: '验证 getAttribute/setAttribute 基类实现',
       attributes: [
         {
@@ -549,10 +565,17 @@ describe('ModuleKind 默认协议行为', () => {
           writable: true,
         },
       ],
+      attributeAccessor: {
+        get: () => ModuleOperationResult.ok<unknown>(title),
+        set: (_ctx, _attrName, value) => {
+          title = value
+          return ModuleOperationResult.ok<void>()
+        },
+      },
     })
     const ctx: ModulePathContext = {
-      segments: [{ kind: 'runner-attrs', id: 'root-1' }],
-      segment: { kind: 'runner-attrs', id: 'root-1' },
+      segments: [{ kind: 'accessor-attrs', id: 'root-1' }],
+      segment: { kind: 'accessor-attrs', id: 'root-1' },
     }
 
     await expect(moduleKind.setAttribute(ctx, 'title', '新标题')).resolves.toMatchObject({ ok: true })
@@ -560,6 +583,9 @@ describe('ModuleKind 默认协议行为', () => {
       ok: true,
       data: '新标题',
     })
+    const invalid = await moduleKind.setAttribute(ctx, 'title', 123)
+    expect(invalid.ok).toBe(false)
+    expect(invalid.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
   })
 
   it('listChildren/findInstance ref 保持 ModuleInstanceRef 协议约束', async () => {
@@ -589,7 +615,7 @@ describe('ModuleKind 默认协议行为', () => {
     })
   })
 
-  it('基类统一实现 listChildren/findInstance/resolveChild, resolve 只走协议方法', async () => {
+  it('基类统一实现 listChildren/findInstance/resolveChild, resolveChild 以 find 结果为准', async () => {
     const calls: string[] = []
     const moduleKind = new ModuleKind({
       kind: 'delegated',
@@ -633,9 +659,9 @@ describe('ModuleKind 默认协议行为', () => {
     })
     await expect(moduleKind.resolveChild(ctx, 'child', 'listed-1')).resolves.toMatchObject({
       ok: true,
-      data: true,
+      data: false,
     })
-    expect(calls).toEqual(['list:child', 'find:child:demo', 'find:child:child-1', 'find:child:listed-1', 'list:child'])
+    expect(calls).toEqual(['list:child', 'find:child:demo', 'find:child:child-1', 'find:child:listed-1'])
   })
 
   it('构造期委托不作为 runner/list/find 公共字段暴露', () => {
@@ -643,6 +669,46 @@ describe('ModuleKind 默认协议行为', () => {
     expect(Reflect.get(moduleKind, 'runner')).toBeUndefined()
     expect(Reflect.get(moduleKind, 'list')).toBeUndefined()
     expect(Reflect.get(moduleKind, 'find')).toBeUndefined()
+  })
+
+  it('直接调用 invokeAction 也执行 paramsSchema 校验', async () => {
+    const moduleKind = createRegisteredActionKind()
+    const ctx: ModulePathContext = {
+      segments: [{ kind: 'registered-action', id: 'current' }],
+      segment: { kind: 'registered-action', id: 'current' },
+    }
+
+    const result = await moduleKind.invokeAction(ctx, 'echo', { value: 123 })
+    expect(result.ok).toBe(false)
+    expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
+  })
+
+  it('coerceJsonValue 处理循环引用、特殊数值和常见运行时对象', () => {
+    const circular: {
+      self?: unknown
+      date?: unknown
+      badNumber?: unknown
+      big?: unknown
+      symbolValue?: unknown
+      bytes?: unknown
+    } = {
+      date: new Date('2026-05-23T00:00:00.000Z'),
+      badNumber: Number.NaN,
+      big: 123n,
+      symbolValue: Symbol('demo'),
+      bytes: new Uint8Array([1, 2, 3]),
+    }
+    circular.self = circular
+
+    const coerced = ModuleKind.coerceJsonValue(circular)
+    if (!isRecord(coerced)) throw new Error('expected record')
+
+    expect(coerced['date']).toBe('2026-05-23T00:00:00.000Z')
+    expect(coerced['badNumber']).toBeUndefined()
+    expect(coerced['big']).toBe('123')
+    expect(coerced['symbolValue']).toBe('Symbol(demo)')
+    expect(coerced['bytes']).toEqual([1, 2, 3])
+    expect(coerced['self']).toBeUndefined()
   })
 
   it('默认完成无属性、无子节点、当前实例发现和未实现 action 响应', async () => {
@@ -675,7 +741,7 @@ describe('ModuleKind 默认协议行为', () => {
     }, host)
     expect(attr).toMatchObject({
       ok: false,
-      checks: [expect.objectContaining({ code: 'ATTRIBUTE_VALUE_NOT_FOUND' })],
+      checks: [expect.objectContaining({ code: 'ATTRIBUTE_NOT_DECLARED' })],
     })
 
     const action = await runtime.executeTool('invokeAction', {

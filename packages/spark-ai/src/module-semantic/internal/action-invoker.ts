@@ -8,19 +8,15 @@
  *
  * 【调用时序】
  *   1. Navigator.navigate(path) → 定位末段 ModuleKind + PathContext
- *   2. 末段 ModuleKind.findAction(actionName) → 查询动作元数据
- *   3. LlmSchemaValidator.validateLlmDeserializedParams(args, action.paramsSchema) → 参数校验
- *   4. 末段 ModuleKind.invokeAction(ctx, actionName, args) → 执行业务
- *   5. 透传 OperationResult 给 LLM
+ *   2. 末段 ModuleKind.invokeAction(ctx, actionName, args) → 校验参数并执行业务
+ *   3. 透传 OperationResult 给 LLM
  *
  * 【消费方】ModuleSemanticRuntime（工具路由 → invokeAction case）
  * ═══════════════════════════════════════════════════════════════
  */
 
 import type { LlmJsonValue } from '../../schema'
-import { LlmSchemaValidator } from '../../schema'
-import { ModuleCheckEntry, ModuleOperationResult } from '../protocol'
-import type { ModuleHostContext, ModulePath } from '../protocol'
+import type { ModuleHostContext, ModuleOperationResult, ModulePath } from '../protocol'
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
 
@@ -34,7 +30,7 @@ export class ActionInvoker {
    *
    * 失败码:
    *   - ACTION_NOT_DECLARED: 末段 ModuleKind 未声明此动作
-   *   - INVALID_ARGS:        参数 schema 校验失败，checks 包含具体路径和原因
+   *   - SCHEMA_VALIDATION_FAILED: 参数 schema 校验失败，checks 包含具体路径和原因
    *   - (其它):              由 navigator 或 ModuleKind.invokeAction 抛出
    */
   public async invoke(
@@ -49,31 +45,7 @@ export class ActionInvoker {
       return navResult
     }
 
-    // 步骤 2：查询动作元数据
-    const action = navResult.moduleKind.findAction(actionName)
-    if (action === undefined) {
-      return ModuleOperationResult.failCode(
-        'ACTION_NOT_DECLARED',
-        `kind "${navResult.segmentCtx.segment.kind}" 未声明动作 "${actionName}"`,
-        '可调用 describeKind 查看该 kind 的动作表',
-      )
-    }
-
-    // 步骤 3：按 paramsSchema 校验参数
-    const validation = LlmSchemaValidator.validateLlmDeserializedParams(args, action.paramsSchema)
-    if (!validation.ok) {
-      const checks: ModuleCheckEntry[] = validation.issues.map((issue) =>
-        ModuleCheckEntry.error('INVALID_ARGS', `${issue.path} ${issue.message}`),
-      )
-      const summary: ModuleCheckEntry = ModuleCheckEntry.error(
-        'INVALID_ARGS',
-        LlmSchemaValidator.formatLlmParamValidationIssues(validation.issues),
-        '请按 ModuleKind 上声明的 paramsSchema 调整参数后重试',
-      )
-      return ModuleOperationResult.fail([summary, ...checks])
-    }
-
-    // 步骤 4 + 5：委托执行 + 透传结果
+    // 步骤 2 + 3：ModuleKind 统一负责动作声明、参数校验、委托执行和错误投影
     return navResult.moduleKind.invokeAction(navResult.segmentCtx, actionName, args)
   }
 }

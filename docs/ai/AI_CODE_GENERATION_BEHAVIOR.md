@@ -334,11 +334,11 @@ export class PageDataLoader extends BaseDataLoader {
 - 公共入口只允许 `@spark-view/spark-ai`、`@spark-view/spark-ai/schema`、`@spark-view/spark-ai/module-semantic`、`@spark-view/spark-ai/host`。
 - 不得恢复旧 core/protocol 公共 subpath 或旧 adapter 过渡层。
 - 新业务注册统一返回 `AiHostBusinessRegistration`，其中 `runtime` 直接持有 `ModuleSemanticRuntime`。
-- 业务能力进入协议层前必须投影成标准 `ModuleKind` / `ModuleSemanticRuntime`；手写 `ModuleKind` class 只作为迁移期形态，目标是由 VCM 从领域能力 class 源码提取属性、动作、子模块、构造函数、攻击面元数据以及 `runner/list/find` 委托标识，生成 JSON 能力元数据或 `ModuleKind` factory 后调用 `runtime.registerKind`。
-- `packages/spark-page-config/src/ai/**` 是业务协议装配层，只允许承接 factory、依赖注入和 `runner/list/find` 构造期委托，不承载通用 AI Host 语义。
+- 业务能力进入协议层前必须投影成标准 `ModuleKind` / `ModuleSemanticRuntime`；手写 `ModuleKind` class 只作为迁移期形态，目标是由 VCM 从领域能力 class 源码提取属性、动作、子模块、构造函数、攻击面元数据以及 `attributeAccessor/runner/list/find` 委托标识，生成 JSON 能力元数据或 `ModuleKind` factory 后调用 `runtime.registerKind`。
+- `packages/spark-page-config/src/ai/**` 是业务协议装配层，只允许承接 factory、依赖注入和 `attributeAccessor/runner/list/find` 构造期委托，不承载通用 AI Host 语义。
 - `ModuleActionMetadata` 只保存声明，运行侧通过 `ModuleKind` 构造期 action 委托接入，并统一由 `invokeAction` 协议方法调用。
 - `ModuleKind` 可通过 `list` / `find` 函数委托适配任意业务系统；属性语义只来自 `attributes` 元数据并通过 `describeKind` 暴露给 LLM，最终能力元数据可由 VCM 等构建期链路生成，但进入协议层必须投影成标准 `ModuleKind` 或由 factory 创建 `ModuleKind`。
-- `getAttribute` / `setAttribute` 由基类按元数据校验后直接读写 `runner` 函数对象属性；`resolveChild` 和内部 resolve 逻辑由基类实现，不要求业务层实现额外适配协议。
+- `getAttribute` / `setAttribute` 由基类按元数据和 JSON Schema 校验后调用独立 `attributeAccessor`；`invokeAction` 由基类统一校验 action 声明和 `paramsSchema` 后调用业务 `runAction` / 构造期 runner；`resolveChild` 由基类按 `findInstance({ id })` 权威查询实现，不做全量 list fallback。
 - LLM 可见工具固定为 `listChildren`、`findInstance`、`describeKind`、`invokeAction`、`getAttribute`、`setAttribute`。
 - `describeKind` 必须完整暴露 action 的 `paramsSchema`、`resultSchema`、`usageRules`、`failureModes`、`example`。
 - 参数 schema 使用标准 JSON Schema object root，并由 `LlmSchemaValidator` 校验；不得恢复私有参数 DSL。

@@ -161,7 +161,7 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
     }, hostContext)
     expect(invalidArgs.ok).toBe(false)
     if (invalidArgs.ok) throw new Error('expected invalid args')
-    expect(invalidArgs.checks?.some((check) => check.code === 'INVALID_ARGS')).toBe(true)
+    expect(invalidArgs.checks?.some((check) => check.code === 'SCHEMA_VALIDATION_FAILED')).toBe(true)
   })
 })
 
