@@ -109,11 +109,6 @@ export type ModuleKindOptions = Readonly<{
  * 三、内部类型与常量
  * ----------------------------------------------------------------------------- */
 
-/** action 委托函数对象上挂载的属性存储（业务方通过 action 委托对象暴露属性值） */
-type ModuleKindRunnerProperties = Record<string, unknown>
-
-const EMPTY_RUNNER_PROPERTIES: ModuleKindRunnerProperties = {}
-
 /** 业务动作的返回值（serviceResultToOperationResult 的输入格式） */
 type ModuleActionServiceResult =
   | { readonly ok: true; readonly data?: unknown; readonly summary?: string | undefined }
@@ -203,7 +198,7 @@ export class ModuleKind {
       return Promise.resolve(attributeNotReadable(this.kind, attrName))
     }
 
-    const rawValue = runnerProperties(this.actionRunner)[attrName]
+    const rawValue: unknown = Reflect.get(this.actionRunner, attrName)
     if (rawValue === undefined) {
       return Promise.resolve(ModuleOperationResult.failCode(
         'ATTRIBUTE_VALUE_NOT_FOUND',
@@ -242,7 +237,10 @@ export class ModuleKind {
     }
 
     try {
-      runnerProperties(this.actionRunner)[attrName] = value
+      const written = Reflect.set(this.actionRunner, attrName, value)
+      if (!written) {
+        throw new Error('Reflect.set returned false')
+      }
     } catch {
       return Promise.resolve(ModuleOperationResult.failCode(
         'ATTRIBUTE_WRITE_FAILED',
@@ -293,12 +291,28 @@ export class ModuleKind {
    * 验证子实例是否存在。
    * 先调用 find（精确查询），失败或未找到再回退到 list（全量列表）。
    */
-  public resolveChild(
+  public async resolveChild(
     ctx: ModulePathContext,
     childKind: string,
     childId: string,
   ): Promise<ModuleOperationResult<boolean>> {
-    return this.resolve(ctx, childKind, childId)
+    if (!this.children.includes(childKind)) {
+      return ModuleOperationResult.ok(false)
+    }
+
+    const found = await this.findInstance(ctx, childKind, { id: childId })
+    if (!found.ok) {
+      return ModuleOperationResult.passthroughFailure(found)
+    }
+    if ((found.data ?? []).some((ref) => ref.id === childId)) {
+      return ModuleOperationResult.ok(true)
+    }
+
+    const listed = await this.listChildren(ctx, childKind)
+    if (!listed.ok) {
+      return ModuleOperationResult.passthroughFailure(listed)
+    }
+    return ModuleOperationResult.ok((listed.data ?? []).some((ref) => ref.id === childId))
   }
 
   /* ── 受保护的辅助方法 ──────────────────────────────────── */
@@ -388,40 +402,6 @@ export class ModuleKind {
     return undefined
   }
 
-  /* ── 内部：resolve 实现 ────────────────────────────────── */
-
-  /**
-   * 解析子实例是否存在。
-   *
-   * 逻辑：childKind 不在 children 声明中 → false；
-   *       调用 find 按 id 精确查询 → 找到返回 true；
-   *       find 失败 → 透传错误；
-   *       find 未找到 → 回退到 list 全量扫描；
-   *       list 失败 → 透传错误。
-   */
-  private async resolve(
-    ctx: ModulePathContext,
-    childKind: string,
-    childId: string,
-  ): Promise<ModuleOperationResult<boolean>> {
-    if (!this.children.includes(childKind)) {
-      return ModuleOperationResult.ok(false)
-    }
-
-    const found = await this.findInstance(ctx, childKind, { id: childId })
-    if (!found.ok) {
-      return ModuleOperationResult.passthroughFailure(found)
-    }
-    if ((found.data ?? []).some((ref) => ref.id === childId)) {
-      return ModuleOperationResult.ok(true)
-    }
-
-    const listed = await this.listChildren(ctx, childKind)
-    if (!listed.ok) {
-      return ModuleOperationResult.passthroughFailure(listed)
-    }
-    return ModuleOperationResult.ok((listed.data ?? []).some((ref) => ref.id === childId))
-  }
 }
 
 /* -------------------------------------------------------------------------------
@@ -550,11 +530,6 @@ function createNamedMap<TSchema extends { readonly name: string }>(
     out.set(schema.name, schema)
   }
   return out
-}
-
-/** 获取 action 委托函数对象上的属性存储（通过 Object.assign 确保是普通对象） */
-function runnerProperties(runner: ModuleKindRunner): ModuleKindRunnerProperties {
-  return Object.assign(runner, EMPTY_RUNNER_PROPERTIES)
 }
 
 /* -------------------------------------------------------------------------------

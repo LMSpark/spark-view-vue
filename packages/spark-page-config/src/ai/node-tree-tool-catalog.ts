@@ -46,6 +46,7 @@ import {
   type SparkNodeTreeSetPropsParams,
 } from '../node-tree'
 import { isRecord } from '../json-document'
+import { createCurrentPageRef } from './page-design-helpers'
 
 const {
   anySchema,
@@ -605,11 +606,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
   }
 
   protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
-    const pageId = ctx.host?.moduleInstanceId
-    if (pageId === undefined || pageId.length === 0) {
-      return null
-    }
-    return { id: pageId, label: '当前页面节点树' }
+    return createCurrentPageRef(ctx, '当前页面节点树')
   }
 }
 

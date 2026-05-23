@@ -237,10 +237,6 @@ class PageDesignRootModuleKind extends ModuleKind {
       },
     })
   }
-
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
-    return createCurrentPageDesignRef(ctx)
-  }
 }
 
 function createCurrentPageDesignRef(ctx: ModulePathContext): ModuleInstanceRef | null {

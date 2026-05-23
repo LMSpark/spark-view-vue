@@ -35,6 +35,7 @@ import type {
 } from '../design'
 import type { PageDesignService } from '../design'
 import { isRecord } from '../json-document'
+import { createCurrentPageRef } from './page-design-helpers'
 
 type DatasetActionRunner = PageDesignServiceActionBinding<DataSetCrudTool>['run']
 type DataSetCrudToolMethodName = Extract<{
@@ -1909,11 +1910,7 @@ export class PageDesignDatasetModuleKind extends ModuleKind {
   }
 
   protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
-    const pageId = ctx.host?.moduleInstanceId
-    if (pageId === undefined || pageId.length === 0) {
-      return null
-    }
-    return { id: pageId, label: '当前页面数据集', summary: '当前 PageDesign 业务实例' }
+    return createCurrentPageRef(ctx, '当前页面数据集')
   }
 }
 

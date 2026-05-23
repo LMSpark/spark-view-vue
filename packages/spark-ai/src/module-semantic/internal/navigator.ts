@@ -243,7 +243,7 @@ export class Navigator {
     if (!isNavigationSuccess(navResult)) {
       return navResult
     }
-    const tailKind = this.kinds.require(navResult.segmentCtx.segment.kind)
+    const tailKind = navResult.moduleKind
     if (!tailKind.children.includes(childKind)) {
       return ModuleOperationResult.failCode(
         'CHILD_KIND_NOT_DECLARED',
