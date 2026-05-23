@@ -8,56 +8,57 @@
         {
           "name": "id",
           "type": "string",
-          "isPrimaryKey": true,
-          "required": true
+          "label": "申请编号"
         },
         {
           "name": "employeeName",
           "type": "string",
-          "required": true
+          "label": "员工姓名"
         },
         {
           "name": "employeeNo",
           "type": "string",
-          "required": true
+          "label": "工号"
         },
         {
           "name": "department",
           "type": "string",
-          "required": true
+          "label": "部门"
         },
         {
           "name": "leaveType",
           "type": "string",
-          "required": true
+          "label": "请假类型"
         },
         {
           "name": "startDate",
           "type": "string",
-          "required": true
+          "label": "开始日期"
         },
         {
           "name": "endDate",
           "type": "string",
-          "required": true
+          "label": "结束日期"
         },
         {
           "name": "totalDays",
           "type": "number",
-          "required": true
+          "label": "合计天数"
         },
         {
           "name": "reason",
           "type": "string",
-          "required": true
+          "label": "请假原因"
         },
         {
           "name": "approver",
-          "type": "string"
+          "type": "string",
+          "label": "审批人"
         },
         {
           "name": "status",
-          "type": "string"
+          "type": "string",
+          "label": "状态"
         }
       ],
       "views": {
@@ -66,28 +67,12 @@
           "viewId": "default",
           "page": 1,
           "pageSize": 20,
-          "rows": [
-            {
-              "id": "leave-draft-1",
-              "employeeName": "",
-              "employeeNo": "",
-              "department": "",
-              "leaveType": "annual",
-              "startDate": "",
-              "endDate": "",
-              "totalDays": 1,
-              "reason": "",
-              "approver": "",
-              "status": "draft"
-            }
-          ],
+          "rows": [],
           "autoCurrentFirst": true,
           "autoSelectFirst": true
         }
       },
-      "resourceType": "static-data",
-      "resourceId": "employee.leave.request",
-      "businessCategory": "transaction"
+      "resourceType": "static-data"
     }
   }
 }
