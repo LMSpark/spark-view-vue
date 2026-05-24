@@ -74,6 +74,9 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/spark-ai-complete-guide.m
 - 只有稳定契约、跨模块能力、DTO/config/payload 或多个实现共享协议才使用 `interface`。
 - 如果只有一个实现，默认使用具体 class 或普通函数，不机械创建 `XxxInterface` / `XxxImpl`。
 - 泛型、工具类型和公共导出必须收敛；新增抽象前必须有真实重复、稳定扩展点或跨模块契约。
+- 函数/方法签名必须短：默认最多 3 个位置参数；4 个及以上改成具名 options/command 对象。
+- 参数类型不要内联大对象或深层泛型；提取具名 type/class，让签名读起来像业务动作而不是类型展览。
+- 参数列表里不要写 JSDoc；说明放到 options type、class 字段或函数上方。
 - 注释只解释契约、约束、优先级和风险；VCM/LLM 可见语义必须在首次声明处用自然语言夹注释 + 结构化 tag 标注。
 
 ## DataViewKey 绑定格式

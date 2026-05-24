@@ -28,16 +28,19 @@
 
 export type ModuleCheckEntryLevel = 'error' | 'warn' | 'info'
 
+/**
+ * 操作结果的最小诊断单元。
+ * level   — 严重级别：error（导致失败）/ warn（成功但有风险）/ info（纯信息）
+ * code    — 错误码（机器可读）
+ * message — 人类可读描述
+ * hint    — 修复建议（可选）
+ */
 export class ModuleCheckEntry {
   public constructor(
-    /** 严重级别 */
     public readonly level: ModuleCheckEntryLevel,
-    /** 错误码（机器可读） */
     public readonly code: string,
-    /** 人类可读描述 */
     public readonly message: string,
-    /** 修复建议（可选） */
-    public readonly hint?: string | undefined,
+    public readonly hint?: string,
   ) {}
 
   /** 工厂：error 级（导致操作失败） */

@@ -23,6 +23,14 @@ export {
   stringSchema,
 } from './schema/schema-builders-api'
 
+export type {
+  BooleanSchemaOptions,
+  EnumSchemaOptions,
+  NumberSchemaOptions,
+  ObjectSchemaOptions,
+  StringSchemaOptions,
+} from './schema/schema-builders-api'
+
 export {
   LlmSchemaValidator,
   noParamsSchema,

@@ -36,6 +36,7 @@ const CONTENT_SCHEMA = stringSchema('完整文本内容（全量覆盖写入，�
 const BOOTSTRAP_RULE = 'Host 会话启动已自动完成 lifecycle.bootstrap；text-model action 可直接使用当前 live binding，不要把 bootstrap 当成常规前置步骤重复调用。'
 const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容，调用后覆盖原内容。'
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
+const SCRIPT_SHORT_SIGNATURE_RULE = 'writeScript 中的函数/handler 默认最多 3 个位置参数；4 个及以上必须改为 options 对象，或在函数体内通过 $dataSet/$query/$components 读取上下文。'
 
 // PAGE_DESIGN_AI_TRACE[page-design-text-model]: pageDesign AI 写 script.js/style.css 的唯一工具目录；清理冗余时不要和 workspace 保存逻辑混在一起。
 // PAGE_DESIGN_REFACTOR_SOURCE[text-model-write-gate]: script/style AI 写入入口；不要把文本覆盖、脚本 API 校验和 workspace 持久化混成一层。
@@ -67,7 +68,7 @@ const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
     example: {
       content: 'export default {}',
     },
-    usageRules: [BOOTSTRAP_RULE, FULL_WRITE_RULE, SCRIPT_RUNTIME_RULE],
+    usageRules: [BOOTSTRAP_RULE, FULL_WRITE_RULE, SCRIPT_RUNTIME_RULE, SCRIPT_SHORT_SIGNATURE_RULE],
     failureModes: [
       {
         code: 'NO_TEXT_MODEL',
@@ -179,12 +180,18 @@ function readRequiredStringArg(args: Readonly<Record<string, LlmJsonValue>>, key
 // ── 脚本运行时契约校验 ──
 
 type ScriptApiViolationRule = {
-  pattern: RegExp
+  pattern?: RegExp
+  detect?: (content: string) => boolean
   api: string
   fix: string
 }
 
 const FORBIDDEN_SCRIPT_API_RULES: readonly ScriptApiViolationRule[] = [
+  {
+    detect: hasLongScriptFunctionSignature,
+    api: 'script.js 长位置参数函数签名',
+    fix: '函数/handler 默认最多 3 个位置参数；4 个及以上改为 options 对象，或在函数体内通过 $dataSet/$query/$components 读取上下文。',
+  },
   {
     pattern: /\$page\.(?:getDataSet|getTableRows|getTableData|getViewData)\s*\(/,
     api: '$page 数据读取伪 API',
@@ -220,11 +227,77 @@ const FORBIDDEN_SCRIPT_API_RULES: readonly ScriptApiViolationRule[] = [
 export function validateScriptServiceContract(
   content: string,
 ): PageDesignServiceResult<undefined> | null {
-  const violation = FORBIDDEN_SCRIPT_API_RULES.find((rule) => rule.pattern.test(content))
+  const violation = FORBIDDEN_SCRIPT_API_RULES.find((rule) =>
+    rule.pattern?.test(content) === true || rule.detect?.(content) === true,
+  )
   if (violation === undefined) return null
   return pageDesignServiceFailure(
     'INVALID_SCRIPT_RUNTIME_API',
     `script.js 使用了不可用的运行时 API：${violation.api}`,
     `${violation.fix} $page 仅用于 showMessage/showConfirm/showPrompt/showAlert/showLoading/navigate 等页面服务；数据入口是 $dataSet，组件入口是 $components.getApi。`,
   )
+}
+
+function hasLongScriptFunctionSignature(content: string): boolean {
+  return findLongFunctionSignature(content, /\bfunction\s+[A-Za-z_$][\w$]*\s*\(/gu)
+    || findLongFunctionSignature(content, /\b(?:const|let|var)\s+[A-Za-z_$][\w$]*\s*=\s*(?:async\s*)?\(/gu)
+}
+
+function findLongFunctionSignature(content: string, pattern: RegExp): boolean {
+  pattern.lastIndex = 0
+  while (pattern.exec(content) !== null) {
+    const openParenIndex = pattern.lastIndex - 1
+    const closeParenIndex = findMatchingParen(content, openParenIndex)
+    if (closeParenIndex === -1) continue
+    const paramsText = content.slice(openParenIndex + 1, closeParenIndex)
+    if (countTopLevelParams(paramsText) > 3) return true
+    pattern.lastIndex = closeParenIndex + 1
+  }
+  return false
+}
+
+function findMatchingParen(content: string, openParenIndex: number): number {
+  let depth = 0
+  let quote: string | null = null
+  for (let index = openParenIndex; index < content.length; index += 1) {
+    const char = content[index]
+    const previous = content[index - 1]
+    if (quote !== null) {
+      if (char === quote && previous !== '\\') quote = null
+      continue
+    }
+    if (char === '"' || char === '\'' || char === '`') {
+      quote = char
+      continue
+    }
+    if (char === '(') depth += 1
+    if (char === ')') {
+      depth -= 1
+      if (depth === 0) return index
+    }
+  }
+  return -1
+}
+
+function countTopLevelParams(paramsText: string): number {
+  if (paramsText.trim().length === 0) return 0
+  let count = 1
+  let depth = 0
+  let quote: string | null = null
+  for (let index = 0; index < paramsText.length; index += 1) {
+    const char = paramsText[index]
+    const previous = paramsText[index - 1]
+    if (quote !== null) {
+      if (char === quote && previous !== '\\') quote = null
+      continue
+    }
+    if (char === '"' || char === '\'' || char === '`') {
+      quote = char
+      continue
+    }
+    if (char === '(' || char === '[' || char === '{') depth += 1
+    if (char === ')' || char === ']' || char === '}') depth -= 1
+    if (char === ',' && depth === 0) count += 1
+  }
+  return count
 }

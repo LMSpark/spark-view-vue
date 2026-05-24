@@ -301,6 +301,16 @@ describe('pageDesign host business registration', () => {
     expect(writeScript.ok).toBe(true)
     expect(reads().script).toBe('export default { mounted() {} }')
 
+    const longSignatureScript = await registration.runtime.executeTool('invokeAction', {
+      path: '/pageDesign[page-designer]/text-model[page-designer]',
+      actionName: 'writeScript',
+      args: { content: 'function handleSubmit(form, row, table, page) { return form }' },
+    }, context)
+    expect(longSignatureScript.ok).toBe(false)
+    expect(longSignatureScript.checks?.[0]?.code).toBe('INVALID_SCRIPT_RUNTIME_API')
+    expect(longSignatureScript.checks?.[0]?.message).toContain('长位置参数函数签名')
+    expect(reads().script).toBe('export default { mounted() {} }')
+
     const readScript = await registration.runtime.executeTool('invokeAction', {
       path: '/pageDesign[page-designer]/text-model[page-designer]',
       actionName: 'readScript',

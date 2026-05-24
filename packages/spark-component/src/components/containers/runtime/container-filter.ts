@@ -82,6 +82,16 @@ type FilterPanelDataView = {
   executeFilter(expr: FilterExpression | undefined): Promise<void>
   refresh(): Promise<void>}
 
+type ApplyFilterSafelyOptions = {
+  readonly view: FilterPanelDataView | null | undefined
+  readonly expr: FilterExpression | undefined
+  readonly hasFilters: boolean
+  readonly logger: ErrorLoggerLike
+  readonly message: string
+  /** set=同步表达式；execute=立即执行过滤查询。 */
+  readonly mode?: 'set' | 'execute'
+}
+
 /** 判断过滤值是否为空（空字符串、空数组、null、undefined 均视为空）。 */
 function isEmptyFilterValue(value: unknown): boolean {
   if (value === undefined || value === null) return true
@@ -403,15 +413,7 @@ function clearFilterModel(model: Record<string, unknown>): void {
  * - `set` 模式：调用 `view.setFilter(expr)`
  * - 捕获所有异常并通过 logger 记录（不向外抛出）
  */
-async function applyFilterSafely(params: {
-  view: FilterPanelDataView | null | undefined
-  expr: FilterExpression | undefined
-  hasFilters: boolean
-  logger: ErrorLoggerLike
-  message: string
-  /** set=同步表达式；execute=立即执行过滤查询。 */
-  mode?: 'set' | 'execute'
-}): Promise<boolean> {
+async function applyFilterSafely(params: ApplyFilterSafelyOptions): Promise<boolean> {
   const { view, expr, hasFilters, logger, message, mode = 'set' } = params
   if (!view || !hasFilters) return false
 

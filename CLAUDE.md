@@ -1,7 +1,7 @@
 # SPARK View Claude Code Instructions
 
 @docs/ai/AI_CODE_CHANGE_PROTOCOL.md
-@docs/ai/AI_CODE_GENERATION_BEHAVIOR.md
+@docs/ai/ai-code-generation-behavior.md
 
 ## Language
 
@@ -27,7 +27,8 @@
 ## Project Rules
 
 - 代码修改必须遵守 `docs/ai/AI_CODE_CHANGE_PROTOCOL.md`。该协议通过上方 `@docs/ai/AI_CODE_CHANGE_PROTOCOL.md` 导入，是本项目代码修改的强制流程。
-- 生成或修改代码必须遵守 `docs/ai/AI_CODE_GENERATION_BEHAVIOR.md`：不要默认用 `interface`、泛型和零散导出扁平化一切，优先按“接口契约 -> class 实现 -> 子类”的层次组织。
+- 生成或修改代码必须遵守 `docs/ai/ai-code-generation-behavior.md`：不要默认用 `interface`、泛型和零散导出扁平化一切，优先按”接口契约 → class 实现 → 子类”的层次组织。
+- 函数签名最多 3 个参数（构造函数参数属性最多 4 个）；禁止参数内嵌 JSDoc；禁止匿名内联对象类型作为参数类型；可选参数用 `?` 不用 `| undefined`。
 - 遇到用户要求修改生产代码、测试代码或结构性配置时，必须先读取并执行该协议；若协议与其它项目建议冲突，采用更严格的规则。
 - 遵循 `AGENTS.md` 中的仓库规则、包边界、验证命令和提交约束。
 - 对生产代码改动保持最小范围；不做顺手重构。

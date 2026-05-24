@@ -69,6 +69,13 @@ const maxPublicSurfaceExportsPerModule = 8
 const maxLayeringExportsPerModule = 3
 const maxPositionalSignatureParams = 4
 
+const publicSurfaceAllowlist = new Set([
+  // Schema builders intentionally expose paired value builders and Options types:
+  // the Options names keep public function signatures short without hiding contracts.
+  'packages/spark-ai/src/index.ts:./schema/schema-builders-api',
+  'packages/spark-ai/src/schema/index.ts:./schema-builders-api',
+])
+
 const publicClassMethodSurfaces = new Map([
   ['packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts:ModuleSemanticRuntime', new Set([
     'registerKind',
@@ -299,6 +306,8 @@ function scanPublicSurfaceConvergence(parsed, violations) {
   }
 
   for (const [key, entry] of exportsByModule) {
+    if (publicSurfaceAllowlist.has(key)) continue
+
     const nameCount = entry.names.size
     const layeringCount = entry.layeringNames.size
     const exceedsThreshold = nameCount > maxPublicSurfaceExportsPerModule
@@ -360,6 +369,14 @@ function scanSignatureConventions(parsed, violations) {
       })
     }
 
+    if (ts.isParameter(node) && hasParameterJSDoc(node, sourceFile)) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: 'parameter JSDoc is forbidden; move the comment to the options type, class field, or function JSDoc',
+      })
+    }
+
     if (ts.isParameter(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node)) {
       const repeatedRoleName = repeatedTypeRoleName(node)
       if (repeatedRoleName !== null) {
@@ -386,6 +403,10 @@ function scanSignatureConventions(parsed, violations) {
   }
 
   visit(sourceFile)
+}
+
+function hasParameterJSDoc(node, sourceFile) {
+  return /\/\*\*[\s\S]*?\*\//u.test(node.getFullText(sourceFile))
 }
 
 function functionLikeName(node, sourceFile) {

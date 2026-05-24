@@ -36,7 +36,7 @@ const DESIGN_FLOW_PARAMS = paramsSchema({
   step: numberSchema('可选。查询指定步骤编号，范围 1-100。'),
   afterStep: numberSchema('可选。返回指定已完成步骤之后的下一步。'),
   intent: stringSchema('可选。用户原始意图；用于返回匹配的任务知识 guide，例如申请表单闭环。'),
-})
+}, [], '页面设计 100 步流程查询参数。所有字段均为可选。')
 
 const BOOTSTRAP_RULE = 'Host 会话启动时已自动执行 bootstrap；LLM 常规页面设计流程不得主动调用，除非工具结果明确要求重新校验 live binding。'
 const PHASE_RULE = '执行成功后进入 editing phase。'

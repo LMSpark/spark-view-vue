@@ -20,6 +20,11 @@ import type {
   ModuleParameterPayloadSummary,
 } from '@spark-view/spark-ai'
 import type { LlmJsonSchema, LlmJsonValue, LlmJsonSchemaObject } from '@spark-view/spark-ai/schema'
+import {
+  booleanSchema,
+  paramsSchema,
+  stringSchema,
+} from '@spark-view/spark-ai/schema'
 import { isRecord } from '../json-document'
 import type { PageDesignServiceContext } from '../design/page-design-host-api'
 import type { PageDesignServiceResult } from '../design/page-design-session-api'
@@ -93,19 +98,15 @@ const PAYLOAD_CATALOG_ACTIONS: readonly ModuleActionMetadata[] = [
   {
     name: 'queryPayloads',
     description: '查询可用于当前页面设计的组件参数荷载目录，支持 category/keyword/key 过滤。',
-    paramsSchema: {
-      type: 'object',
-      properties: {
-        category: { type: 'string', description: '按组件 category 精确过滤，例如 container、field、display。' },
-        keyword: { type: 'string', description: '按 type、category、description 或 filePath 模糊搜索。' },
-        key: { type: 'string', description: '按组件 type/key 精确查询。' },
-        moduleKind: { type: 'string', description: '参数所属 ModuleKind。默认 node-tree，因为组件 props 用于构造 node-tree 写入动作的 SparkNode 参数。' },
-        payloadRef: { type: 'string', description: '参数 provider 命名空间。默认 spark.component。' },
-        configurableOnly: { type: 'boolean', description: '为 true 时仅返回 configurable=true 且 internal=false 的组件。' },
-        limit: { type: 'integer', minimum: 1, maximum: 50, description: '最多返回条数，默认 20。' },
-      },
-      additionalProperties: false,
-    },
+    paramsSchema: paramsSchema({
+      category: stringSchema('按组件 category 精确过滤，例如 container、field、display。'),
+      keyword: stringSchema('按 type、category、description 或 filePath 模糊搜索。'),
+      key: stringSchema('按组件 type/key 精确查询。'),
+      moduleKind: stringSchema('参数所属 ModuleKind。默认 node-tree，因为组件 props 用于构造 node-tree 写入动作的 SparkNode 参数。'),
+      payloadRef: stringSchema('参数 provider 命名空间。默认 spark.component。'),
+      configurableOnly: booleanSchema('为 true 时仅返回 configurable=true 且 internal=false 的组件。'),
+      limit: { type: 'integer', minimum: 1, maximum: 50, description: '最多返回条数，默认 20。' },
+    }),
     resultSchema: {
       items: 'PageDesignPayloadSummary[] — 组件荷载摘要，包含 key/type/category/description/requiredProps。',
     },
@@ -120,16 +121,11 @@ const PAYLOAD_CATALOG_ACTIONS: readonly ModuleActionMetadata[] = [
   {
     name: 'guidePayload',
     description: '查询单个组件 type/key 的参数荷载指南，用于构造合法 SparkNode props。',
-    paramsSchema: {
-      type: 'object',
-      required: ['key'],
-      properties: {
-        key: { type: 'string', minLength: 1, description: '组件 type/key，例如 renderer-button。' },
-        moduleKind: { type: 'string', description: '参数所属 ModuleKind。默认 node-tree。' },
-        payloadRef: { type: 'string', description: '参数 provider 命名空间。默认 spark.component。' },
-      },
-      additionalProperties: false,
-    },
+    paramsSchema: paramsSchema({
+      key: stringSchema('组件 type/key，例如 renderer-button。', { minLength: 1 }),
+      moduleKind: stringSchema('参数所属 ModuleKind。默认 node-tree。'),
+      payloadRef: stringSchema('参数 provider 命名空间。默认 spark.component。'),
+    }, ['key']),
     resultSchema: {
       payload: 'PageDesignPayloadGuide — 组件完整荷载指南，包含 props 与 paramsSchema。',
     },

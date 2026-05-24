@@ -7,3 +7,11 @@ export {
   objectSchema,
   stringSchema,
 } from './helpers'
+
+export type {
+  BooleanSchemaOptions,
+  EnumSchemaOptions,
+  NumberSchemaOptions,
+  ObjectSchemaOptions,
+  StringSchemaOptions,
+} from './helpers'

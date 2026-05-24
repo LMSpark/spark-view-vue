@@ -1018,11 +1018,11 @@ export class DataView implements DataSource {
 
   /** 获取聚合委托（懒初始化） */
   private get aggregateDelegate(): AggregateDelegate {
-    this._aggregateDelegate ??= new AggregateDelegate(
-      () => this.aggregates,
-      () => this.emitSummaryChanged(),
-      () => this.emitSelectionSummaryChanged(),
-    )
+    this._aggregateDelegate ??= new AggregateDelegate({
+      getAggregates: () => this.aggregates,
+      emitSummaryChanged: () => this.emitSummaryChanged(),
+      emitSelectionSummaryChanged: () => this.emitSelectionSummaryChanged(),
+    })
     return this._aggregateDelegate
   }
 

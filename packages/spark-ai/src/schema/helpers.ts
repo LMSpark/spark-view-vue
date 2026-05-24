@@ -36,6 +36,19 @@ import type {
 // 第 2 节 · 基础类型构造器 — 标量类型的快捷创建
 // ═══════════════════════════════════════════════════════════════
 
+export type StringSchemaOptions = Readonly<{
+  nullable?: boolean
+  minLength?: number
+}>
+
+export type NumberSchemaOptions = Readonly<{
+  nullable?: boolean
+}>
+
+export type BooleanSchemaOptions = Readonly<{
+  nullable?: boolean
+}>
+
 /** 任意类型 schema（无 type 约束，仅带可选描述） */
 export function anySchema(description?: string): LlmJsonSchemaObject {
   return {
@@ -46,7 +59,7 @@ export function anySchema(description?: string): LlmJsonSchemaObject {
 /** 字符串 schema，可选 nullable / minLength */
 export function stringSchema(
   description: string,
-  options: { nullable?: boolean; minLength?: number } = {},
+  options: StringSchemaOptions = {},
 ): LlmJsonSchemaObject {
   return {
     type: options.nullable === true ? ['string', 'null'] : 'string',
@@ -56,7 +69,7 @@ export function stringSchema(
 }
 
 /** 数字 schema，可选 nullable */
-export function numberSchema(description: string, options: { nullable?: boolean } = {}): LlmJsonSchemaObject {
+export function numberSchema(description: string, options: NumberSchemaOptions = {}): LlmJsonSchemaObject {
   return {
     type: options.nullable === true ? ['number', 'null'] : 'number',
     description,
@@ -64,7 +77,7 @@ export function numberSchema(description: string, options: { nullable?: boolean 
 }
 
 /** 布尔 schema，可选 nullable */
-export function booleanSchema(description: string, options: { nullable?: boolean } = {}): LlmJsonSchemaObject {
+export function booleanSchema(description: string, options: BooleanSchemaOptions = {}): LlmJsonSchemaObject {
   return {
     type: options.nullable === true ? ['boolean', 'null'] : 'boolean',
     description,
@@ -75,11 +88,16 @@ export function booleanSchema(description: string, options: { nullable?: boolean
 // 第 3 节 · 复合构造器 — 枚举 / 数组 / 对象
 // ═══════════════════════════════════════════════════════════════
 
+export type EnumSchemaOptions = Readonly<{
+  type?: 'string' | 'number'
+  nullable?: boolean
+}>
+
 /** 枚举 schema，自动推断 type（string/number），可选 nullable */
 export function enumSchema(
   values: ReadonlyArray<string | number | boolean | null>,
   description: string,
-  options: { type?: 'string' | 'number'; nullable?: boolean } = {},
+  options: EnumSchemaOptions = {},
 ): LlmJsonSchemaObject {
   const type = options.type ?? (values.some(value => typeof value === 'number') ? 'number' : 'string')
   return {
@@ -98,14 +116,16 @@ export function arraySchema(items: LlmJsonSchema = anySchema(), description?: st
   }
 }
 
+export type ObjectSchemaOptions = Readonly<{
+  required?: readonly string[]
+  description?: string
+  additionalProperties?: LlmJsonSchema
+}>
+
 /** 对象 schema，type=object + properties + required + additionalProperties */
 export function objectSchema(
   properties: Readonly<Record<string, LlmJsonSchema>> = {},
-  options: {
-    required?: readonly string[]
-    description?: string
-    additionalProperties?: LlmJsonSchema
-  } = {},
+  options: ObjectSchemaOptions = {},
 ): LlmJsonSchemaObject {
   return {
     type: 'object',

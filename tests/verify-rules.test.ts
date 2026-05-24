@@ -99,6 +99,28 @@ describe('verification rules', () => {
     expect(output).toContain('mechanical Interface/Impl name is forbidden')
   })
 
+  it('rejects signature patterns that make generated code hard to read', () => {
+    const root = createTempRoot()
+    writeFile(root, 'src/bad-signature.ts', [
+      'export class BadSignature {',
+      '  public constructor(',
+      '    /** dependency hidden inside the signature */',
+      '    private readonly getValue: () => string,',
+      '  ) {}',
+      '}',
+      'export function tooWide(a: string, b: string, c: string, d: string, e: string): string {',
+      '  return a + b + c + d + e',
+      '}',
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'src'])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('parameter JSDoc is forbidden')
+    expect(output).toContain('signature has too many positional parameters')
+  })
+
   it('rejects public method drift on critical facade classes', () => {
     const root = createTempRoot()
     writeFile(root, 'packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts', [

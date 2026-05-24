@@ -9,6 +9,19 @@
 
 import type { DataRow, AggregateColumnConfig, AggregateType, AggregateResultRow } from '../types'
 
+type AggregateDelegateOptions = {
+  /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置）。 */
+  readonly getAggregates: () => Record<string, AggregateColumnConfig>
+  /** 通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult）。 */
+  readonly emitSummaryChanged: () => void
+  /** 通知订阅方仅选中行聚合已更新（selectionAggregateResult）。 */
+  readonly emitSelectionSummaryChanged: () => void
+}
+
+type AggregateRecomputeOptions = {
+  readonly emit?: boolean
+}
+
 // ─────────────────────────────────────────────
 // 聚合行计算（纯函数）
 // ─────────────────────────────────────────────
@@ -106,14 +119,15 @@ export class AggregateDelegate {
   private _summaryRow: AggregateResultRow = {}
   private _selectionSummaryRow: AggregateResultRow = {}
 
-  constructor(
-    /** 返回当前视图聚合配置（每次调用时读取，支持运行时动态配置） */
-    private readonly getAggregates: () => Record<string, AggregateColumnConfig>,
-    /** 通知订阅方全部聚合行已更新（aggregateResult + selectionAggregateResult） */
-    private readonly emitSummaryChanged: () => void,
-    /** 通知订阅方仅选中行聚合已更新（selectionAggregateResult） */
-    private readonly emitSelectionSummaryChanged: () => void,
-  ) {}
+  private readonly getAggregates: () => Record<string, AggregateColumnConfig>
+  private readonly emitSummaryChanged: () => void
+  private readonly emitSelectionSummaryChanged: () => void
+
+  constructor(options: AggregateDelegateOptions) {
+    this.getAggregates = options.getAggregates
+    this.emitSummaryChanged = options.emitSummaryChanged
+    this.emitSelectionSummaryChanged = options.emitSelectionSummaryChanged
+  }
 
   get aggregateResult(): Readonly<AggregateResultRow> { return this._summaryRow }
   get selectionAggregateResult(): Readonly<AggregateResultRow> { return this._selectionSummaryRow }
@@ -124,7 +138,7 @@ export class AggregateDelegate {
    * @param rows         全部行（已含计算列求值结果）
    * @param selectedRows 当前选中行（无选中时传空数组）
    */
-  recompute(rows: DataRow[], selectedRows: DataRow[], options?: { emit?: boolean }): void {
+  recompute(rows: DataRow[], selectedRows: DataRow[], options?: AggregateRecomputeOptions): void {
     const aggs = this.getAggregates()
     if (Object.keys(aggs).length === 0) return
     this._summaryRow = computeAggregateRow(aggs, rows)
@@ -141,7 +155,7 @@ export class AggregateDelegate {
    *
    * @param selectedRows 当前选中行
    */
-  recomputeSelection(selectedRows: DataRow[], options?: { emit?: boolean }): void {
+  recomputeSelection(selectedRows: DataRow[], options?: AggregateRecomputeOptions): void {
     const aggs = this.getAggregates()
     if (Object.keys(aggs).length === 0) return
     this._selectionSummaryRow = selectedRows.length > 0

@@ -36,7 +36,7 @@ export class ModulePathParseError extends Error {
     public readonly code: ModulePathParseErrorCode,
     public readonly raw: string,
     message: string,
-    public readonly position?: number | undefined,
+    public readonly position?: number,
   ) {
     super(message)
     this.name = 'ModulePathParseError'
@@ -47,11 +47,12 @@ export class ModulePathParseError extends Error {
  * 二、路径段（kind + id）
  * ----------------------------------------------------------------------------- */
 
+/**
+ * 模块路径段，kind 为模块类型名（如 "Table"、"Form"），id 为实例标识（如 "0"、"main-form"）。
+ */
 export class ModulePathSegment {
   public constructor(
-    /** 模块类型名（如 "Table", "Form"） */
     public readonly kind: string,
-    /** 实例标识（如 "0", "main-form"） */
     public readonly id: string,
   ) {}
 

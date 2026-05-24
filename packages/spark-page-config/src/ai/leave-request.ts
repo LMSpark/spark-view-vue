@@ -279,7 +279,11 @@ import {
 import type {
   LlmJsonSchema,
   LlmJsonValue,
-  LlmJsonSchemaObject,
+} from '@spark-view/spark-ai/schema'
+import {
+  noParamsSchema,
+  objectSchema,
+  stringSchema,
 } from '@spark-view/spark-ai/schema'
 import { isRecord } from '../json-document'
 
@@ -290,12 +294,7 @@ export type LeaveRequestBusinessRegistrationOptions = {
   readonly now?: (() => number) | undefined
 }
 
-const NO_PARAMS: LlmJsonSchemaObject = {
-  type: 'object',
-  properties: {},
-  additionalProperties: false,
-  description: '不接受参数，请传 {} 或留空。',
-}
+const NO_PARAMS = noParamsSchema('不接受参数，请传 {} 或留空。')
 
 const DRAFT_FIELDS_SCHEMA: Record<string, LlmJsonSchema> = {
   applicantName: { type: 'string', description: '请假人姓名。' },
@@ -307,30 +306,15 @@ const DRAFT_FIELDS_SCHEMA: Record<string, LlmJsonSchema> = {
   approver: { type: 'string', description: '审批人姓名或 ID。' },
 }
 
-const SET_DRAFT_FIELDS_SCHEMA: LlmJsonSchemaObject = {
-  type: 'object',
-  properties: {
-    fields: {
-      type: 'object',
-      description: '要写入请假草稿的字段。只传用户明确给出的字段。',
-      properties: DRAFT_FIELDS_SCHEMA,
-      additionalProperties: false,
-    },
-  },
-  required: ['fields'],
-  additionalProperties: false,
-}
+const SET_DRAFT_FIELDS_SCHEMA = objectSchema({
+  fields: objectSchema(DRAFT_FIELDS_SCHEMA, {
+    description: '要写入请假草稿的字段。只传用户明确给出的字段。',
+  }),
+}, { required: ['fields'] })
 
-const CANCEL_DRAFT_SCHEMA: LlmJsonSchemaObject = {
-  type: 'object',
-  properties: {
-    reason: {
-      type: 'string',
-      description: '取消原因。用户未说明时可省略。',
-    },
-  },
-  additionalProperties: false,
-}
+const CANCEL_DRAFT_SCHEMA = objectSchema({
+  reason: stringSchema('取消原因。用户未说明时可省略。'),
+})
 
 const LEAVE_REQUEST_ACTIONS: readonly ModuleActionMetadata[] = [
   {

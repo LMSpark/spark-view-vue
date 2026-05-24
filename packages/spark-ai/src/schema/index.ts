@@ -30,6 +30,14 @@ export {
   stringSchema,
 } from './schema-builders-api'
 
+export type {
+  BooleanSchemaOptions,
+  EnumSchemaOptions,
+  NumberSchemaOptions,
+  ObjectSchemaOptions,
+  StringSchemaOptions,
+} from './schema-builders-api'
+
 // ── 值 + 类型：参数校验器 ─────────────────────────────────────
 export {
   LlmSchemaValidator,

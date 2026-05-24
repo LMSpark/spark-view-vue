@@ -6,7 +6,7 @@
 
 - `vite-plugin-spark-components.ts`：构建期组件元数据提取工具。
 - `verify-architecture.mjs`：结构约束校验工具。
-- `verify-ai-codegen-rules.mjs`：AI 代码生成硬门禁，禁止游离 interface、机械 `Interface/Impl` 命名、非 `as const` 类型断言、旧 AI API、TypeScript namespace、公共 `export *`，并限制 named import 与公共入口平铺导出继续膨胀。
+- `verify-ai-codegen-rules.mjs`：AI 代码生成硬门禁，禁止游离 interface、机械 `Interface/Impl` 命名、非 `as const` 类型断言、旧 AI API、TypeScript namespace、公共 `export *`、参数列表内嵌 JSDoc，并限制 named import、公共入口平铺导出和过长位置参数继续膨胀。
 - `verifier-common.mjs`：校验器共享扫描层，统一处理 TS/Vue script、导入解析、排除目录和错误输出。
 - `mock-config-api.mjs`：本地调试用的配置 API mock。
 
