@@ -31,8 +31,6 @@ export type {
 	RequestInterceptor,
 	ResponseInterceptor,
 	HttpResponse,
-	StreamResponse,
-	SSEEvent,
 	HttpClientAdapter,
 	HttpClientFactoryOptions,
 	ApiEnvelopeContext,

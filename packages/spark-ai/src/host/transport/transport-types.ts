@@ -3,28 +3,32 @@
  * host/transport/transport-types.ts — 传输层类型契约
  * ═══════════════════════════════════════════════════════════════
  *
- * 【架构定位】Host 层与 AI 后端的通信契约。定义了工具规约形状、
- *   消息格式、流式请求/响应类型、以及 AiHostTransport 抽象类。
+ * 【架构定位】Host 层与 APP 层的 AI turn 契约。定义工具规约形状、
+ *   消息格式、AI turn 命令/事件类型，以及 APP 层注入的 I/O 回调。
  *
  * 【核心类型】
  *   AiHostTransportToolSpec   — 工具规约（对齐 OpenAI function tool spec）
  *   AiHostTransportMessage    — 传输层消息（含 tool_calls / tool_call_id）
  *   AiHostTransportToolCall   — 传输层工具调用
- *   AiHostStreamTurnInput     — 流式请求输入
- *   AiHostStreamTurnResult    — 流式请求结果
- *   AiHostTransport (abstract) — 传输层抽象（streamTurn + appendMessages）
+ *   AiHostStreamTurnInput     — AI turn 启动输入
+ *   AiHostStreamTurnResult    — AI turn 汇总结果
+ *   AiHostTurnCallbacks       — APP 层实现的 turn I/O 回调
  *
  * 【与 module-semantic 的关系】
  *   本层的 ToolSpec 是 transport 专用形状（parameters 为 Record<string, unknown>），
  *   而 module-semantic 的 ModuleSemanticToolSpec 使用 LlmJsonSchemaObject。
  *   ModuleSemanticToolCodec 负责二者之间的转换。
  *
- * 【消费方】fetch-transport、business-session、tool-loop-runner
+ * 【消费方】business-session、tool-loop-runner、APP 层 ai-turn bridge
  * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiHostBusinessScope } from '../business/business-types'
-import type { AiHostSseEvent, AiHostTurnMeta } from '../chat/chat-types'
+import type { AiHostStreamEvent, AiHostTurnMeta } from '../chat/chat-types'
+import type {
+  AiHostAppSseEvent,
+  AiHostAppSseEventName,
+} from './app-sse-events'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 工具规约与消息格式
@@ -44,25 +48,25 @@ export type AiHostTransportToolSpec = Readonly<{
 export type AiHostTransportMessage = Readonly<{
   role: string
   content: string
-  tool_call_id?: string | undefined
-  tool_calls?: readonly AiHostTransportToolCall[] | undefined
+  tool_call_id?: string
+  tool_calls?: readonly AiHostTransportToolCall[]
 }>
 
 /** 传输层工具调用 */
 export type AiHostTransportToolCall = Readonly<{
-  id?: string | undefined
-  type?: string | undefined
+  id?: string
+  type?: string
   function?: {
-    readonly name?: string | undefined
-    readonly arguments?: string | undefined
-  } | undefined
+    readonly name?: string
+    readonly arguments?: string
+  }
 }>
 
 // ═══════════════════════════════════════════════════════════════
-// 第 2 节 · 流式请求/响应
+// 第 2 节 · AI turn 命令与事件
 // ═══════════════════════════════════════════════════════════════
 
-/** 流式请求输入（一次 AI turn 的完整输入） */
+/** AI turn 启动输入（模型事件通过 APP 公共 SSE 返回） */
 export type AiHostStreamTurnInput = Readonly<{
   sessionId: string
   scope: AiHostBusinessScope
@@ -70,26 +74,26 @@ export type AiHostStreamTurnInput = Readonly<{
   systemPrompt: string
   tools: readonly AiHostTransportToolSpec[]
   messages: readonly AiHostTransportMessage[]
-  signal?: AbortSignal | undefined
-  onSseEvent?: ((event: AiHostSseEvent) => void) | undefined
-  onDelta?: ((delta: string) => void) | undefined
-  onReasoning?: ((reasoning: string) => void) | undefined
-  onUsage?: ((usage: Record<string, unknown>) => void) | undefined
+  signal?: AbortSignal
+  onStreamEvent?: (event: AiHostStreamEvent) => void
+  onDelta?: (delta: string) => void
+  onReasoning?: (reasoning: string) => void
+  onUsage?: (usage: Record<string, unknown>) => void
 }>
 
-/** 后端 V4 会话准备输入；用于在 SSE turn 前显式确保 session 存在且 scope 正确。 */
+/** 后端 V4 会话准备输入；用于在 executeTurn 前显式确保 session 存在且 scope 正确。 */
 export type AiHostPrepareSessionInput = Readonly<{
   sessionId: string
   scope: AiHostBusinessScope
   systemPrompt: string
   tools: readonly AiHostTransportToolSpec[]
-  signal?: AbortSignal | undefined
+  signal?: AbortSignal
 }>
 
-/** 流式请求结果 */
+/** AI turn 汇总结果 */
 export type AiHostStreamTurnResult = Readonly<{
   text: string
-  reasoning?: string | undefined
+  reasoning?: string
   toolCalls: readonly AiHostTransportToolCall[]
 }>
 
@@ -101,53 +105,20 @@ export type AiHostAppendMessagesInput = Readonly<{
   messages: readonly AiHostTransportMessage[]
 }>
 
-// ═══════════════════════════════════════════════════════════════
-// 第 3 节 · 传输层抽象
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * 传输层抽象类。
- *
- * 定义了两个核心操作：
- *   streamTurn    — 发送流式请求，返回 AI 文本 + 工具调用
- *   appendMessages — 追加消息到服务端会话（工具调用完成后）
- *
- * 当前唯一实现：AiHostFetchTransport（基于 fetch + SSE）
- */
-export abstract class AiHostTransport {
-  public prepareSession?(input: AiHostPrepareSessionInput): Promise<void>
-  public abstract streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult>
-  public abstract appendMessages(input: AiHostAppendMessagesInput): Promise<void>
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 第 4 节 · Fetch Transport 配置
-// ═══════════════════════════════════════════════════════════════
-
-/** 请求头提供器（支持同步/异步） */
-export type AiHostHeadersProvider = () => HeadersInit | Promise<HeadersInit>
-
-/** fetch 函数签名（兼容原生 fetch 和自定义实现） */
-export type AiHostFetch = (input: RequestInfo | URL, init?: RequestInit) => Promise<Response>
-
-/** Fetch Transport 构造选项 */
-export type AiHostFetchTransportOptions = Readonly<{
-  baseUrl?: string | undefined
-  fetch?: AiHostFetch | undefined
-  getHeaders?: AiHostHeadersProvider | undefined
-  protocolVersion?: number | undefined
-  /** Backend conversation window for client-side tool loops. */
-  windowSize?: number | undefined
+export type AiHostAppSseEventSource = Readonly<{
+  on(name: AiHostAppSseEventName, listener: (event: AiHostAppSseEvent) => void): () => void
 }>
 
 // ═══════════════════════════════════════════════════════════════
-// 第 5 节 · 附件上传
+// 第 3 节 · APP 层 I/O 回调
 // ═══════════════════════════════════════════════════════════════
 
-/** 上传后的附件元数据 */
-export type AiHostUploadedAttachment = Readonly<{
-  fileId: string
-  name: string
-  size: number
-  mimeType: string
+/** APP 层实现的三个 I/O 操作；spark-ai 只调用，不实现网络请求。 */
+export type AiHostTurnCallbacks = Readonly<{
+  /** 可选：在 turn 前显式准备后端 session。 */
+  prepareSession?: (input: AiHostPrepareSessionInput) => Promise<void>
+  /** 启动一次模型 turn，聚合 APP SSE 事件后返回结果。 */
+  executeTurn: (input: AiHostStreamTurnInput) => Promise<AiHostStreamTurnResult>
+  /** 将工具调用结果同步到后端会话。 */
+  appendMessages: (input: AiHostAppendMessagesInput) => Promise<void>
 }>

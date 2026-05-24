@@ -1,5 +1,5 @@
 import type { AiHostChatRequest } from '../chat/chat-types'
-import type { AiHostTransport } from '../transport/transport-types'
+import type { AiHostTurnCallbacks } from '../transport/transport-types'
 import type { AiHostBusinessRegistration } from './registration-types'
 
 export type AiHostOptions = Readonly<{
@@ -7,8 +7,8 @@ export type AiHostOptions = Readonly<{
     get(moduleId: string): AiHostBusinessRegistration | undefined
     list(): readonly AiHostBusinessRegistration[]
   }
-  transport: AiHostTransport
-  maxToolRounds?: number | undefined
+  turnCallbacks: AiHostTurnCallbacks
+  maxToolRounds?: number
 }>
 
 export type AiHostSender = (request: AiHostChatRequest) => Promise<void>

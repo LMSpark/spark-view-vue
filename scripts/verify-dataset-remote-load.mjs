@@ -2,9 +2,9 @@
 
 import { randomUUID } from 'node:crypto'
 import {
-  createAiHostAppSseEventHub,
-  subscribeAiHostAppSseEvents,
-} from '../packages/spark-ai/src/host/transport/app-sse-events.ts'
+  createAppSseEventHub,
+  subscribeAppSseEvents,
+} from './app-sse-client.mjs'
 
 // CLI options ---------------------------------------------------------------
 
@@ -142,8 +142,8 @@ async function main() {
   await ensureOk(makeUrl(options.backendBase, '/health'), '后端 health')
   await ensureOk(makeUrl(options.frontendBase, '/'), '前端首页')
 
-  const eventHub = createAiHostAppSseEventHub()
-  const subscription = subscribeAiHostAppSseEvents({
+  const eventHub = createAppSseEventHub()
+  const subscription = subscribeAppSseEvents({
     url: eventsUrl,
     events: ['debug-route-result', 'debug-screenshot-result'],
     onEvent: eventHub.emit,

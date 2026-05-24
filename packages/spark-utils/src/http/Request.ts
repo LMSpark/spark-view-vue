@@ -74,7 +74,7 @@ export class Request extends HttpClientBase {
       headers,
       data: c.data,
       timeout: c.timeout ?? DEFAULT_TIMEOUT,
-      responseType: c.responseType ?? 'json',
+      responseType: this.toResponseType(c.responseType),
       baseURL: c.baseURL ?? '',
     }
     if (isRecord(c.params)) {
@@ -95,6 +95,24 @@ export class Request extends HttpClientBase {
       case undefined:
       default:
         return 'GET'
+    }
+  }
+
+  private toResponseType(
+    responseType: AxiosRequestConfig['responseType'] | undefined,
+  ): NonNullable<RequestConfig['responseType']> {
+    switch (responseType) {
+      case 'arraybuffer':
+      case 'blob':
+      case 'document':
+      case 'json':
+      case 'text':
+      case 'formdata':
+        return responseType
+      case 'stream':
+      case undefined:
+      default:
+        return 'json'
     }
   }
 

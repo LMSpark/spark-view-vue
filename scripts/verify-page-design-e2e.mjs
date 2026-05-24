@@ -14,12 +14,18 @@
 
 import {
   AiHostBusinessRegistry,
-  AiHostFetchTransport,
+  createAiHostTransportTurn,
   createAiHostBusinessSession,
   createAiHostBusinessTask,
+  createTurnEventCollector,
   previewAiHostDiagnosticValue,
   summarizeAiHostSessionRecord,
+  toAiHostRuntimeScope,
 } from '@spark-view/spark-ai/host'
+import {
+  createAppSseEventHub,
+  subscribeAppSseEvents,
+} from './app-sse-client.mjs'
 import {
   PAGE_DESIGN_MODULE_ID,
   registerPageDesignBusiness,
@@ -506,14 +512,130 @@ function summarizeFiles(files) {
 }
 
 // ============================================================================
-// 第 6 层：AI Transport
+// 第 6 层：AI turn callbacks（脚本层拥有 HTTP + SSE I/O）
 // ============================================================================
 
-function createTransport(options, auth) {
-  return new AiHostFetchTransport({
-    baseUrl: `${options.backendUrl}/api/ai`,
-    getHeaders: () => ({ ...createAuthHeaders(options, auth) }),
+const AI_TURN_PROTOCOL_VERSION = 4
+const AI_TURN_EVENTS = [
+  'ai-turn-delta',
+  'ai-turn-reasoning',
+  'ai-turn-usage',
+  'ai-turn-result',
+  'ai-turn-error',
+  'ai-turn-done',
+]
+
+function createTurnCallbacks(options, auth) {
+  const preparedSessionIds = new Set()
+  return {
+    prepareSession: async (input) => {
+      if (preparedSessionIds.has(input.sessionId)) return
+      const body = await postBackendJson(options, auth, '/api/ai/sessions', {
+        protocolVersion: AI_TURN_PROTOCOL_VERSION,
+        sessionId: input.sessionId,
+        systemPrompt: input.systemPrompt,
+        messages: [],
+        tools: input.tools,
+        mode: 'function',
+        scope: toAiHostRuntimeScope(input.scope),
+        reuseScopeSession: false,
+      }, input.signal)
+      const sessionId = readString(body, 'sessionId') || input.sessionId
+      if (sessionId !== input.sessionId) {
+        throw new Error(`AI prepare sessionId mismatch: expected=${input.sessionId}, actual=${sessionId}`)
+      }
+      preparedSessionIds.add(input.sessionId)
+    },
+    executeTurn: async (input) => {
+      const eventHub = createAppSseEventHub()
+      const subscription = subscribeAppSseEvents({
+        url: `${options.backendUrl}/api/events`,
+        headers: createAuthHeaders(options, auth),
+        events: AI_TURN_EVENTS,
+        onEvent: eventHub.emit,
+      })
+      await subscription.opened
+
+      const collector = createTurnEventCollector({
+        input,
+        source: eventHub,
+        timeoutMs: options.turnTimeoutMs,
+      })
+      try {
+        const body = await postBackendJson(options, auth, `/api/ai/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`, {
+          protocolVersion: AI_TURN_PROTOCOL_VERSION,
+          systemPrompt: input.systemPrompt,
+          tools: input.tools,
+          mode: 'function',
+          scope: toAiHostRuntimeScope(input.scope),
+          turn: createAiHostTransportTurn(input, 'llm-stream'),
+          messages: input.messages,
+        }, input.signal)
+        assertTurnStart(body, input)
+        return await collector.result
+      } catch (error) {
+        collector.close()
+        throw error
+      } finally {
+        subscription.close()
+        await subscription.closed
+      }
+    },
+    appendMessages: async (input) => {
+      const body = await postBackendJson(options, auth, `/api/ai/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
+        protocolVersion: AI_TURN_PROTOCOL_VERSION,
+        scope: toAiHostRuntimeScope(input.scope),
+        turn: createAiHostTransportTurn(input),
+        messages: input.messages,
+      })
+      assertAppendMessages(body, input)
+    },
+  }
+}
+
+async function postBackendJson(options, auth, path, payload, signal) {
+  const response = await fetch(`${options.backendUrl}${path}`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      ...createAuthHeaders(options, auth),
+    },
+    body: JSON.stringify(payload),
+    ...(signal === undefined ? {} : { signal }),
   })
+  const text = await response.text()
+  const body = text.trim().length === 0 ? null : unwrapApiEnvelopeData(parseJsonMaybe(text))
+  if (!response.ok) {
+    throw new Error(`POST ${path} failed: ${response.status} ${text}`)
+  }
+  return body
+}
+
+function assertTurnStart(body, input) {
+  if (!isRecord(body)) {
+    throw new Error('AI turn start response missing body')
+  }
+  if (body.accepted !== true) {
+    throw new Error('AI turn start response was not accepted')
+  }
+  if (readString(body, 'sessionId') !== input.sessionId) {
+    throw new Error('AI turn start response sessionId mismatch')
+  }
+  if (readString(body, 'turnId') !== input.turn.turnId) {
+    throw new Error('AI turn start response turnId mismatch')
+  }
+}
+
+function assertAppendMessages(body, input) {
+  if (!isRecord(body)) {
+    throw new Error('AI append response missing body')
+  }
+  if (readString(body, 'sessionId') !== input.sessionId) {
+    throw new Error('AI append response sessionId mismatch')
+  }
+  if (readString(body, 'turnId') !== input.turn.turnId) {
+    throw new Error('AI append response turnId mismatch')
+  }
 }
 
 // ============================================================================
@@ -566,7 +688,7 @@ function createSession(options, auth, registry) {
   })
   const session = createAiHostBusinessSession({
     registry,
-    transport: createTransport(options, auth),
+    turnCallbacks: createTurnCallbacks(options, auth),
     maxToolRounds: options.maxRounds,
   }, task.target)
   return { session, task }

@@ -143,7 +143,7 @@ class AiHostMessageSender {
   private readonly toolLoopRunner: AiHostToolLoopRunner
 
   public constructor(private readonly options: AiHostOptions) {
-    this.toolLoopRunner = new AiHostToolLoopRunner(options)
+    this.toolLoopRunner = new AiHostToolLoopRunner(options.turnCallbacks, options.maxToolRounds)
   }
 
   /** 发送消息的主入口 */

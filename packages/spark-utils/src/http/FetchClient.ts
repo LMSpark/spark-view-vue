@@ -2,7 +2,7 @@
  * FetchClient — 基于原生 fetch 的 HTTP 客户端
  *
  * 继承 HttpClientBase（重试/缓存/拦截器/快捷方法），
- * 仅实现 fetch 特有的：请求执行 + 错误归一化 + stream/SSE/beacon。
+ * 仅实现 fetch 特有的：请求执行 + 错误归一化 + beacon。
  */
 
 import { HttpClientBase, DEFAULT_TIMEOUT } from './HttpClientBase'
@@ -10,7 +10,6 @@ import { isRecord, readStringProperty } from '../internal/guards.js'
 import type {
   RequestConfig, HttpResponse,
   RequestError,
-  StreamResponse, SSEEvent,
 } from './types'
 
 export class FetchClient extends HttpClientBase {
@@ -43,55 +42,6 @@ export class FetchClient extends HttpClientBase {
                : base.name === 'TimeoutError' ? 'ETIMEDOUT'
                : 'ERR_NETWORK'
     return this.buildRequestError(base.message, config ?? { url: '' }, { code })
-  }
-
-  // ==================== Fetch-Only: 流式响应 ====================
-
-  /**
-   * 流式请求公共前置步骤：合并配置 → 请求拦截器 → fetchRaw → 校验响应
-   *
-   * ⚠️ **不走重试循环**：流式连接建立后重试无意义（数据已开始传输）。
-   * 如需重试，请在调用方捕获错误并重新调用。
-   */
-  private async fetchStreamResponse(config: RequestConfig): Promise<StreamResponse> {
-    const merged = this.mergeConfig(config)
-    const cfg = await this.applyRequestInterceptors(merged)
-    const response = await this.fetchRaw(cfg)
-    if (!response.ok) throw await this.buildHttpError(response, cfg)
-    if (response.body === null) throw new Error('Response body is null, streaming not supported')
-    return {
-      body: response.body,
-      status: response.status,
-      statusText: response.statusText,
-      headers: this.extractHeaders(response.headers),
-    }
-  }
-
-  /** 发起请求并返回原始 ReadableStream（超时仅作用于连接阶段，不限流读取时长）
-   *
-   * ⚠️ **不走重试循环**——详见 `fetchStreamResponse`。
-   */
-  async stream(config: RequestConfig): Promise<StreamResponse> {
-    return this.fetchStreamResponse(config)
-  }
-
-  /**
-   * 发起请求并返回 SSE 事件异步迭代器
-   *
-   * ⚠️ **不走重试循环**——SSE 连接一旦建立即开始接收事件，重试会导致事件重复或乱序。
-   *
-   * @example
-   * ```ts
-   * const events = await client.streamSSE({ url: '/sse', method: 'POST', data: { ... } })
-   * for await (const event of events) {
-   *   if (event.data === '[DONE]') break
-   *   console.log(JSON.parse(event.data))
-   * }
-   * ```
-   */
-  async streamSSE(config: RequestConfig): Promise<AsyncGenerator<SSEEvent>> {
-    const { body } = await this.fetchStreamResponse(config)
-    return this.parseSSEStream(body)
   }
 
   // ==================== Fetch-Only: Beacon ====================
@@ -206,77 +156,8 @@ export class FetchClient extends HttpClientBase {
       case 'blob': return await response.blob()
       case 'arraybuffer': return await response.arrayBuffer()
       case 'formdata': return await response.formData()
-      case 'stream': {
-        if (response.body === null) throw new Error('Response body is null, streaming not supported')
-        return response.body
-      }
       case 'document': return await response.text()
       default: return await response.json()
-    }
-  }
-
-  // ==================== SSE 解析器 ====================
-
-  /** 标准 SSE 解析——按空行分隔事件，支持多行 data 拼接 */
-  private async *parseSSEStream(body: ReadableStream<Uint8Array>): AsyncGenerator<SSEEvent> {
-    const reader = body.getReader()
-    const decoder = new TextDecoder()
-    let buffer = ''
-    let eventType: string | undefined
-    let dataLines: string[] = []
-    let eventId: string | undefined
-
-    try {
-      for (;;) {
-        const { done, value } = await reader.read()
-        if (done) {
-          // flush 剩余字节——防止 UTF-8 多字节字符在最后一个 chunk 被截断丢弃
-          buffer += decoder.decode()
-          break
-        }
-
-        buffer += decoder.decode(value, { stream: true })
-        const lines = buffer.split(/\r\n|\r|\n/)
-        buffer = lines.pop() ?? ''
-
-        for (const line of lines) {
-          if (line === '') {
-            if (dataLines.length > 0) {
-              yield this.buildSSEEvent(dataLines, eventType, eventId)
-            }
-            eventType = undefined
-            dataLines = []
-            eventId = undefined
-            continue
-          }
-
-          if (line.startsWith(':')) continue
-
-          const colonIdx = line.indexOf(':')
-          let field: string
-          let val: string
-          if (colonIdx < 0) {
-            field = line
-            val = ''
-          } else {
-            field = line.slice(0, colonIdx)
-            val = line.slice(colonIdx + 1)
-            if (val.startsWith(' ')) val = val.slice(1)
-          }
-
-          switch (field) {
-            case 'data':  dataLines.push(val); break
-            case 'event': eventType = val;     break
-            case 'id':    eventId = val;       break
-          }
-        }
-      }
-
-      if (dataLines.length > 0) {
-        yield this.buildSSEEvent(dataLines, eventType, eventId)
-      }
-    } finally {
-      reader.releaseLock()
     }
   }
 
@@ -392,19 +273,11 @@ export class FetchClient extends HttpClientBase {
     return result
   }
 
-  /** 构造 SSEEvent 对象（避免 exactOptionalPropertyTypes 赋 undefined） */
-  private buildSSEEvent(dataLines: string[], eventType: string | undefined, eventId: string | undefined): SSEEvent {
-    return {
-      ...(eventType !== undefined ? { event: eventType } : {}),
-      data: dataLines.join('\n'),
-      ...(eventId !== undefined ? { id: eventId } : {}),
-    }
-  }
 }
 
 // ==================== 工厂函数 ====================
 
-/** 创建 Fetch 扩展客户端（支持 stream / streamSSE / beacon）。 */
+/** 创建 Fetch 客户端（支持 beacon）。 */
 export function createFetchClient(config?: Partial<RequestConfig>): FetchClient {
   return new FetchClient(config)
 }

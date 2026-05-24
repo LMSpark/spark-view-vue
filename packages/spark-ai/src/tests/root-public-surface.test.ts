@@ -11,7 +11,8 @@ describe('@spark-view/spark-ai root public surface', () => {
     expect(rootModule.AiHostBusinessSession).toBeTypeOf('function')
     expect(rootModule.AiHostBusinessTask).toBeTypeOf('function')
     expect(rootModule.createAiHostBusinessTask).toBeTypeOf('function')
-    expect(rootModule.AiHostFetchTransport).toBeTypeOf('function')
+    expect(rootModule.createAiHostTransportTurn).toBeTypeOf('function')
+    expect(rootModule.createTurnEventCollector).toBeTypeOf('function')
   })
 
   it('keeps implementation helpers and business modules out of the package root', async () => {
@@ -22,9 +23,8 @@ describe('@spark-view/spark-ai root public surface', () => {
     expect(exposed.has('normalizeTurn')).toBe(false)
     expect(exposed.has('AiHostMessageSender')).toBe(false)
     expect(exposed.has('toTransportTurn')).toBe(false)
-    expect(exposed.has('requireSseResponseBody')).toBe(false)
     expect(exposed.has('readAppendMessagesEnvelope')).toBe(false)
-    expect(exposed.has('readAiHostSseStream')).toBe(false)
+    expect(exposed.has('parseAiHostStreamFrames')).toBe(false)
     expect(exposed.has('createAiHostSessionTranscript')).toBe(false)
     expect(exposed.has('PageDesignService')).toBe(false)
     expect(exposed.has('PageDesignNodeTreeModuleKind')).toBe(false)

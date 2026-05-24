@@ -18,7 +18,7 @@ export type RequestConfig = {
   data?: unknown
   timeout?: number
   /** 响应类型（默认 json） */
-  responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'stream' | 'formdata'
+  responseType?: 'arraybuffer' | 'blob' | 'document' | 'json' | 'text' | 'formdata'
   baseURL?: string
 
   // 缓存（仅 GET）
@@ -233,21 +233,3 @@ export type FileLoaderEventMap = {
     error: string
     reason: 'network' | 'invalid-response' | 'parse' | 'unknown'
   }}
-
-// ==================== 流式响应（fetch-only） ====================
-
-/** 流式 HTTP 响应（fetch ReadableStream） */
-export type StreamResponse = {
-  body: ReadableStream<Uint8Array>
-  status: number
-  statusText: string
-  headers: Record<string, string>}
-
-/** 解析后的 SSE 事件 */
-export type SSEEvent = {
-  /** 事件类型（event: 字段） */
-  event?: string
-  /** 数据内容（data: 字段，多行拼接） */
-  data: string
-  /** 事件 ID（id: 字段） */
-  id?: string}

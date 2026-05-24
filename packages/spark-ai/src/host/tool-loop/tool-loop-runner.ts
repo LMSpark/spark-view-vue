@@ -11,7 +11,7 @@
  * │                                                                              │
  * │  单轮执行流程：                                                               │
  * │    1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 描述 + 知识快照）│
- * │    2. 提取最新用户消息 → 发送给 LLM（transport.streamTurn）                    │
+ * │    2. 提取最新用户消息 → 发送给 LLM（turnCallbacks.executeTurn）              │
  * │    3. LLM 返回文本 + 工具调用列表                                              │
  * │    4. 依次执行工具调用（toolCallExecutor.execute）                             │
  * │    5. 将 assistant(tool_calls) + tool 结果 append 到后端 V4 会话                │
@@ -28,11 +28,11 @@ import type {
   AiHostBusinessLifecycleDirective,
   AiHostBusinessRegistration,
   AiHostBusinessScope,
-  AiHostOptions,
 } from '../business/business-types'
 import type { AiHostChatRequest, AiHostTurnMeta } from '../chat/chat-types'
 import type { AiHostSessionStore } from '../session/session-types'
 import type {
+  AiHostTurnCallbacks,
   AiHostTransportMessage,
   AiHostTransportToolCall,
 } from '../transport/transport-types'
@@ -61,7 +61,10 @@ type AiHostToolLoopInput = Readonly<{
 export class AiHostToolLoopRunner {
   private readonly toolCallExecutor = new AiHostToolCallExecutor()
 
-  public constructor(private readonly options: AiHostOptions) {}
+  public constructor(
+    private readonly callbacks: AiHostTurnCallbacks,
+    private readonly maxToolRounds: number | undefined,
+  ) {}
 
   /**
    * 执行工具循环主流程。
@@ -69,7 +72,7 @@ export class AiHostToolLoopRunner {
    * 每轮（round）：
    *   1. 通过 codec 将协议工具转为 transport 工具规约
    *   2. 发送 LLM 诊断事件（llm-request）
-   *   3. 调用 transport.streamTurn 获取 AI 响应
+   *   3. 调用 turnCallbacks.executeTurn 获取 AI 响应
    *   4. 将 AI 文本回复写入 sessionStore
    *   5. 若无工具调用 → 自然结束
    *   6. 依次执行每个工具调用，收集 toolMessage 和 lifecycleDirective
@@ -82,7 +85,7 @@ export class AiHostToolLoopRunner {
     const { registration, scope, request, turn, clearSelected } = input
     const runtimeContext = toAiHostRuntimeScope(scope)
     const sessionId = createAiHostBusinessSessionId(scope.businessRegistrationId, scope.businessInstanceId)
-    const maxRounds = this.options.maxToolRounds
+    const maxRounds = this.maxToolRounds
     const sessionStore = requireSessionStore(registration)
 
     // 拼接系统提示词：业务自定义 + 请求携带 + 业务描述 + ModuleKind 知识快照
@@ -94,7 +97,7 @@ export class AiHostToolLoopRunner {
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
 
     const initialCodec = new ModuleSemanticToolCodec(registration.runtime.getLlmTools())
-    await this.options.transport.prepareSession?.({
+    await this.callbacks.prepareSession?.({
       sessionId,
       scope,
       systemPrompt,
@@ -133,7 +136,7 @@ export class AiHostToolLoopRunner {
       })
 
       // 调用 AI 后端流式接口
-      const result = await this.options.transport.streamTurn({
+      const result = await this.callbacks.executeTurn({
         sessionId,
         scope,
         turn,
@@ -141,10 +144,10 @@ export class AiHostToolLoopRunner {
         tools: codec.tools,
         messages: pendingMessages,
         ...(request.signal === undefined ? {} : { signal: request.signal }),
-        onDelta: request.onDelta,
-        onReasoning: request.onReasoning,
-        onUsage: request.onUsage,
-        onSseEvent: request.onSseEvent,
+        ...(request.onDelta === undefined ? {} : { onDelta: request.onDelta }),
+        ...(request.onReasoning === undefined ? {} : { onReasoning: request.onReasoning }),
+        ...(request.onUsage === undefined ? {} : { onUsage: request.onUsage }),
+        ...(request.onStreamEvent === undefined ? {} : { onStreamEvent: request.onStreamEvent }),
       })
 
       // 将 AI 文本回复写入会话历史
@@ -237,7 +240,7 @@ export class AiHostToolLoopRunner {
    * 执行顺序：
    *   1. 若有 finalAssistantMessage → 写入 sessionStore + 追加到消息列表
    *   2. 发送 llm-append 诊断事件
-   *   3. 调用 transport.appendMessages 同步消息到服务端
+   *   3. 调用 turnCallbacks.appendMessages 同步消息到服务端
    *   4. sessionStore.stopSession 标记会话结束
    *   5. 调用业务方 onEndBusinessInstance 回调
    *   6. 若 releaseInstance=true → 调用 releaseModuleInstance 释放外部资源
@@ -312,7 +315,7 @@ export class AiHostToolLoopRunner {
         messages: input.messages,
       },
     })
-    await this.options.transport.appendMessages({
+    await this.callbacks.appendMessages({
       sessionId: input.sessionId,
       scope: input.scope,
       turn: input.turn,

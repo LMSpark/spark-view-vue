@@ -21,7 +21,7 @@ schema
   -> module-semantic/runtime
   -> host/session
   -> host/tool-loop
-  -> host/transport
+  -> host/transport contracts
 ```
 
 Business packages sit outside this package. They create `ModuleKind` classes, register them in `ModuleSemanticRuntime`, and pass the runtime to `AiHostBusinessRegistration`.
@@ -67,13 +67,12 @@ packages/spark-ai/src/
     │   ├── result-mapper.ts
     │   ├── diagnostic-events.ts
     │   ├── tool-call-executor.ts
+    │   ├── turn-event-collector.ts
     │   └── tool-loop-runner.ts
     └── transport/
         ├── transport-types.ts
-        ├── fetch-transport.ts
-        ├── fetch-response-envelope.ts
-        ├── sse-stream-reader.ts
-        ├── sse-parser.ts
+        ├── transport-turn.ts
+        ├── app-sse-events.ts
         └── http-utils.ts
 ```
 
@@ -83,8 +82,8 @@ packages/spark-ai/src/
 - `module-semantic/protocol`: stable protocol concepts: `ModuleKind`, `ModulePath`, `ModuleOperationResult`, `ModuleCheckEntry`, `ModulePathContext`, `ModuleInstanceRef`, runner/list/find delegate types, and metadata types.
 - `module-semantic/runtime`: composition root and protocol tool routing. `ModuleSemanticRuntime` wires registry, navigation, action invocation, attribute access, tool generation, argument parsing, and result projection.
 - `host/session`: framework-free session history and function call history.
-- `host/tool-loop`: LLM round loop, tool-call execution, payload serialization, result mapping, and diagnostic events.
-- `host/transport`: transport contracts plus fetch/SSE implementation.
+- `host/tool-loop`: LLM round loop, tool-call execution, APP SSE turn event aggregation, payload serialization, result mapping, and diagnostic events.
+- `host/transport`: pure callback contracts, turn identity projection, APP SSE event types, and envelope helpers. Network I/O belongs to the APP/script layer.
 
 ## Boundary Rules
 

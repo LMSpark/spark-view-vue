@@ -9,11 +9,11 @@
  * 【核心类型】
  *   AiHostChatMessage  — 单条聊天消息（role + content）
  *   AiHostChatRequest  — 聊天请求（历史消息 + 回调）
- *   AiHostSseEvent     — SSE 事件（流式传输中的事件单元）
+ *   AiHostStreamEvent  — AI turn 事件（来自 APP 公共 SSE 的事件单元）
  *   AiHostFcCallRecord — 工具调用记录（用于前端展示/调试）
  *   AiHostTurnMeta     — 轮次元数据（turnId、时间戳等）
  *
- * 【消费方】business-session、tool-loop-runner、fetch-transport、UI 层
+ * 【消费方】business-session、tool-loop-runner、turn-event-collector、UI 层
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -39,7 +39,7 @@ export type AiHostChatMessage = Readonly<{
  *   onReasoning — 推理过程增量回调
  *   onDelta     — 文本增量回调
  *   onUsage     — token 用量回调
- *   onSseEvent  — 原始 SSE 事件回调
+ *   onStreamEvent — 原始 AI turn 事件回调
  *   onFcCall    — 工具调用记录回调
  *
  * 可选控制：
@@ -55,23 +55,23 @@ export type AiHostChatRequest = Readonly<{
   onReasoning?: (reasoning: string) => void
   onDelta?: (delta: string) => void
   onUsage?: (usageRaw: Record<string, unknown>) => void
-  onSseEvent?: (event: AiHostSseEvent) => void
+  onStreamEvent?: (event: AiHostStreamEvent) => void
   onFcCall?: (record: AiHostFcCallRecord) => void
 }>
 
 // ═══════════════════════════════════════════════════════════════
-// 第 2 节 · SSE 事件
+// 第 2 节 · turn stream 事件
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * SSE 事件（服务端推送的流式事件单元）。
+ * AI turn 事件（一次模型 turn 在 APP 公共 SSE 中的事件单元）。
  * type      — 事件类型（delta / reasoning / usage / result / error / tool-result 等）
  * data      — 事件数据（字符串）
  * turnKey   — turn 隔离键（kind + 顶层 instanceId + turnId）
  * streamKey — turn 内流键（turnKey + streamId）
  * scope     — 事件作用域（含 kind / 顶层 instanceId / eventModuleId / turnId）
  */
-export type AiHostSseEvent = Readonly<{
+export type AiHostStreamEvent = Readonly<{
   type: string
   data: unknown
   turnKey: string
@@ -98,7 +98,7 @@ export type AiHostFcCallRecord = Readonly<{
   args: unknown
   turnId: string
   round: number
-  callId?: string | undefined
+  callId?: string
   status: 'success' | 'error'
   result: AiHostFunctionCallResult<unknown>
   durationMs: number

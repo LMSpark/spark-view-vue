@@ -75,8 +75,6 @@ export type {
   RequestError,
   RequestInterceptor,
   ResponseInterceptor,
-  SSEEvent,
-  StreamResponse,
   TextLoadOptions,
   TransformLoadOptions,
   TransformedFileLoadOptions,

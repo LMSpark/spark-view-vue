@@ -9,7 +9,7 @@
 - `upload-component-metadata.mjs`：将 `packages/spark-page-config/src/ai/payloads/component-catalog.json` 上传到 AI 后端。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`：根应用链路验证脚本。
-- AI 包专属的 smoke 脚本放在 `packages/spark-ai/scripts/`。
+- AI live 验证脚本放在根 `scripts/`，由脚本层自行持有 HTTP 与 APP SSE I/O。
 - `claude-model.ps1`：Claude Code 后端模型环境切换、备份和冒烟验证脚本；默认只影响当前进程，显式传入 `-Persist` 才写入用户环境变量。
 - `setup-claude-deepseek.ps1`：历史 DeepSeek 接入脚本；新配置优先使用 `claude-model.ps1`。
 - `migrate-*.mjs`：结构迁移或批量修复脚本。

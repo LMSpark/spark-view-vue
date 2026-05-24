@@ -14,7 +14,7 @@ import {
   createAiHostBusinessTask,
   startRegistrationSession,
   type AiHostBusinessRegistration,
-  type AiHostTransport,
+  type AiHostTurnCallbacks,
 } from '../host'
 import {
   ModuleCheckEntry,
@@ -29,7 +29,7 @@ import {
 import { paramsSchema, stringSchema, type LlmJsonValue } from '../schema'
 
 type ModuleKindSpy = {
-  lastHost?: ModulePathContext['host'] | undefined
+  lastHost?: ModulePathContext['host']
 }
 
 function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
@@ -184,7 +184,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       .toThrow('AI host business kindID is not registered: missingKind')
     expect(() => createAiHostBusinessTask({ get: () => registration }, 'pageDesign', { pageId: 'page-1' }))
       .toThrow('failed schema validation')
-    expect(() => createAiHostBusinessTask({ get: () => ({ ...registration, inputContract: undefined }) }, 'pageDesign', {
+    const { inputContract: _missingInputContract, ...registrationWithoutInputContract } = registration
+    expect(() => createAiHostBusinessTask({ get: () => registrationWithoutInputContract }, 'pageDesign', {
       pageId: 'page-1',
       userRequirement: 'x',
     })).toThrow('missing inputContract')
@@ -212,8 +213,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
   it('tool loop 直接执行协议工具,记录 Host 命名历史并透传 host scope', async () => {
     const { registration, spy, released } = createRegistration()
     await startRegistrationSession(registration, CONTEXT)
-    const transport: AiHostTransport = {
-      streamTurn: (input) => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
         expect(input.sessionId).toBe('pageDesign:page-1')
         expect(input.scope.instanceId).toBe('page-1')
         return Promise.resolve({
@@ -234,11 +235,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       },
       appendMessages: () => Promise.resolve(),
     }
-    const runner = new AiHostToolLoopRunner({
-      registry: { get: () => registration, list: () => [registration] },
-      transport,
-      maxToolRounds: 1,
-    })
+    const runner = new AiHostToolLoopRunner(turnCallbacks, 1)
     let cleared = false
 
     await runner.runToolLoop({
@@ -270,8 +267,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     let round = 0
     let secondRoundMessages: readonly unknown[] = []
     let appendedMessages: readonly unknown[] = []
-    const transport: AiHostTransport = {
-      streamTurn: (input) => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
         round += 1
         if (round === 1) {
           return Promise.resolve({
@@ -299,11 +296,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       },
     }
     const calls: string[] = []
-    const runner = new AiHostToolLoopRunner({
-      registry: { get: () => registration, list: () => [registration] },
-      transport,
-      maxToolRounds: 2,
-    })
+    const runner = new AiHostToolLoopRunner(turnCallbacks, 2)
 
     await runner.runToolLoop({
       registration,
@@ -357,8 +350,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     }
     await startRegistrationSession(registration, CONTEXT)
     let systemPrompt = ''
-    const transport: AiHostTransport = {
-      streamTurn: (input) => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
         systemPrompt = input.systemPrompt
         return Promise.resolve({
           text: 'ok',
@@ -367,11 +360,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       },
       appendMessages: () => Promise.resolve(),
     }
-    const runner = new AiHostToolLoopRunner({
-      registry: { get: () => registration, list: () => [registration] },
-      transport,
-      maxToolRounds: 1,
-    })
+    const runner = new AiHostToolLoopRunner(turnCallbacks, 1)
 
     await runner.runToolLoop({
       registration,
@@ -392,8 +381,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
   it('同一业务会话下多个 turn 共享 sessionId 但保持 turnId 隔离', async () => {
     const { registration } = createRegistration()
     const streamInputs: Array<{ sessionId: string; turnId: string; instanceId: string; content: string }> = []
-    const transport: AiHostTransport = {
-      streamTurn: (input) => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
         streamInputs.push({
           sessionId: input.sessionId,
           turnId: input.turn.turnId,
@@ -406,7 +395,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     }
     const session = createAiHostBusinessSession({
       registry: { get: () => registration, list: () => [registration] },
-      transport,
+      turnCallbacks,
       maxToolRounds: 1,
     }, new AiHostBusinessTarget('pageDesign', 'page-1'))
 

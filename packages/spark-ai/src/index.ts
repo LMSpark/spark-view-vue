@@ -183,33 +183,21 @@ export {
 
 export {
   AiHostSessionStore,
-} from './host/session/session-record-api'
+} from './host/session/session-types'
 
 export {
-  AiHostTransport,
-} from './host/transport/transport-core-api'
-
-// Host transport ------------------------------------------------------------
-
-export {
-  AiHostFetchTransport,
-  parseAiHostSseBlocks,
-} from './host/transport/fetch-transport'
-
-export {
-  createAiHostAppSseEventHub,
-  subscribeAiHostAppSseEvents,
-} from './host/transport/app-sse-events'
-
-export {
-  uploadAiHostAttachment,
-} from './host/transport/attachment-upload'
+  createAiHostTransportTurn,
+} from './host/transport/transport-turn'
 
 // Host tool loop ------------------------------------------------------------
 
 export {
   AiHostToolLoopRunner,
 } from './host/tool-loop/tool-loop-runner'
+
+export {
+  createTurnEventCollector,
+} from './host/tool-loop/turn-event-collector'
 
 export type {
   AiHostBusinessInputContract,
@@ -233,13 +221,13 @@ export type {
   AiHostBusinessAppendMessageOptions,
   AiHostOptions,
   AiHostSender,
-} from './host/business/business-host-api'
+} from './host/business/business-types'
 
 export type {
   AiHostChatMessage,
   AiHostChatRequest,
   AiHostFcCallRecord,
-  AiHostSseEvent,
+  AiHostStreamEvent,
   AiHostTurnMeta,
 } from './host/chat/chat-types'
 
@@ -251,7 +239,7 @@ export type {
   AiHostSessionRecord,
   AiHostSessionStatus,
   AiHostStartSessionResult,
-} from './host/session/session-record-api'
+} from './host/session/session-types'
 
 export type {
   AiHostFunctionCallFailure,
@@ -259,7 +247,7 @@ export type {
   AiHostFunctionCallHistoryStatus,
   AiHostFunctionCallResult,
   AiHostMessageSource,
-} from './host/session/session-function-call-api'
+} from './host/session/session-types'
 
 export type {
   DefaultAiHostSessionStoreOptions,
@@ -268,30 +256,26 @@ export type {
 // Host transport types ------------------------------------------------------
 
 export type {
+  AiHostAppendMessagesInput,
+  AiHostAppSseEventSource,
+  AiHostPrepareSessionInput,
   AiHostStreamTurnInput,
   AiHostStreamTurnResult,
+  AiHostTurnCallbacks,
   AiHostTransportMessage,
   AiHostTransportToolCall,
   AiHostTransportToolSpec,
-  AiHostUploadedAttachment,
-} from './host/transport/transport-core-api'
+} from './host/transport/transport-types'
 
 export type {
-  AiHostAppendMessagesInput,
-  AiHostFetch,
-  AiHostFetchTransportOptions,
-  AiHostHeadersProvider,
-} from './host/transport/transport-fetch-api'
-
-export type {
-  AiHostParsedSseEvent,
-} from './host/transport/sse-parser'
+  AiHostTransportTurn,
+} from './host/transport/transport-turn'
 
 export type {
   AiHostAppSseEvent,
   AiHostAppSseEventName,
-  AiHostAppSseEventHub,
-  AiHostAppSseListener,
-  AiHostAppSseSubscribeOptions,
-  AiHostAppSseSubscription,
 } from './host/transport/app-sse-events'
+
+export type {
+  TurnEventCollector,
+} from './host/tool-loop/turn-event-collector'

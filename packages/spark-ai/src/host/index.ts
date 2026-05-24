@@ -9,8 +9,8 @@
  *   3. 业务会话（business-session）
  *   4. 聊天 DTO（chat-types）
  *   5. 会话存储（session-types / default-session-store）
- *   6. 传输层（transport-types / fetch-transport / sse-parser / attachment-upload）
- *   7. 工具循环（tool-loop-runner）
+ *   6. APP turn 回调契约与事件类型（transport-types / app-sse-events）
+ *   7. 工具循环（tool-loop-runner / turn-event-collector）
  *
  * 【设计原则】
  *   - class 用 export，type 用 export type（遵循 verbatimModuleSyntax）
@@ -61,7 +61,7 @@ export type {
   AiHostBusinessAppendMessageOptions,
   AiHostOptions,
   AiHostSender,
-} from './business/business-host-api'
+} from './business/business-types'
 
 // ── 2. 业务作用域工厂 ───────────────────────────────────────
 
@@ -90,7 +90,7 @@ export type {
   AiHostChatMessage,
   AiHostChatRequest,
   AiHostFcCallRecord,
-  AiHostSseEvent,
+  AiHostStreamEvent,
   AiHostTurnMeta,
 } from './chat/chat-types'
 
@@ -98,7 +98,7 @@ export type {
 
 export {
   AiHostSessionStore,
-} from './session/session-record-api'
+} from './session/session-types'
 
 export type {
   AiHostHistoryEntry,
@@ -108,7 +108,7 @@ export type {
   AiHostSessionRecord,
   AiHostSessionStatus,
   AiHostStartSessionResult,
-} from './session/session-record-api'
+} from './session/session-types'
 
 export type {
   AiHostFunctionCallFailure,
@@ -116,7 +116,7 @@ export type {
   AiHostFunctionCallHistoryStatus,
   AiHostFunctionCallResult,
   AiHostMessageSource,
-} from './session/session-function-call-api'
+} from './session/session-types'
 
 // ── 7. 内存会话存储实现 ─────────────────────────────────────
 
@@ -140,61 +140,43 @@ export type {
   AiHostSessionTranscriptOptions,
 } from './session/session-diagnostics'
 
-// ── 8. 传输层抽象与类型 ─────────────────────────────────────
+// ── 8. APP turn 回调契约与类型 ──────────────────────────────
 
 export {
-  AiHostTransport,
-} from './transport/transport-core-api'
-
-export type {
-  AiHostStreamTurnInput,
-  AiHostStreamTurnResult,
-  AiHostTransportMessage,
-  AiHostTransportToolCall,
-  AiHostTransportToolSpec,
-  AiHostUploadedAttachment,
-} from './transport/transport-core-api'
+  createAiHostTransportTurn,
+} from './transport/transport-turn'
 
 export type {
   AiHostAppendMessagesInput,
-  AiHostFetch,
-  AiHostFetchTransportOptions,
-  AiHostHeadersProvider,
-} from './transport/transport-fetch-api'
-
-// ── 9. Fetch + SSE 传输实现 ─────────────────────────────────
-
-export {
-  AiHostFetchTransport,
-  parseAiHostSseBlocks,
-} from './transport/fetch-transport'
-
-export {
-  createAiHostAppSseEventHub,
-  subscribeAiHostAppSseEvents,
-} from './transport/app-sse-events'
+  AiHostAppSseEventSource,
+  AiHostPrepareSessionInput,
+  AiHostStreamTurnInput,
+  AiHostStreamTurnResult,
+  AiHostTurnCallbacks,
+  AiHostTransportMessage,
+  AiHostTransportToolCall,
+  AiHostTransportToolSpec,
+} from './transport/transport-types'
 
 export type {
-  AiHostParsedSseEvent,
-} from './transport/sse-parser'
+  AiHostTransportTurn,
+} from './transport/transport-turn'
 
 export type {
   AiHostAppSseEvent,
   AiHostAppSseEventName,
-  AiHostAppSseEventHub,
-  AiHostAppSseListener,
-  AiHostAppSseSubscribeOptions,
-  AiHostAppSseSubscription,
 } from './transport/app-sse-events'
 
-// ── 10. 附件上传 ────────────────────────────────────────────
-
-export {
-  uploadAiHostAttachment,
-} from './transport/attachment-upload'
-
-// ── 11. 工具循环执行器 ──────────────────────────────────────
+// ── 9. 工具循环执行器 ───────────────────────────────────────
 
 export {
   AiHostToolLoopRunner,
 } from './tool-loop/tool-loop-runner'
+
+export {
+  createTurnEventCollector,
+} from './tool-loop/turn-event-collector'
+
+export type {
+  TurnEventCollector,
+} from './tool-loop/turn-event-collector'

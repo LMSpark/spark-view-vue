@@ -2,9 +2,9 @@
 
 import { randomUUID } from 'node:crypto'
 import {
-  createAiHostAppSseEventHub,
-  subscribeAiHostAppSseEvents,
-} from '../packages/spark-ai/src/host/transport/app-sse-events.ts'
+  createAppSseEventHub,
+  subscribeAppSseEvents,
+} from './app-sse-client.mjs'
 
 const AUTH_TENANT_ID = process.env.AI_TENANT_ID || 'lmspark'
 const AUTH_USERNAME = process.env.AI_USERNAME || 'admin'
@@ -253,8 +253,8 @@ async function main() {
   console.log('[sse-loop] 健康检查中...')
   await ensureOk(healthUrl, '后端 health')
 
-  const eventHub = createAiHostAppSseEventHub()
-  const subscription = subscribeAiHostAppSseEvents({
+  const eventHub = createAppSseEventHub()
+  const subscription = subscribeAppSseEvents({
     url: eventsUrl,
     headers: createAuthHeaders(),
     events: ['debug-route-result', 'debug-screenshot-result'],

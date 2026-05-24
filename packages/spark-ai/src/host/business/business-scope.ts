@@ -11,7 +11,7 @@
  *   - sessionId = "kind:instanceId"（冒号拼接，全局唯一）
  *   - storageKey 用于 localStorage / Map 等存储后端的键名
  *   - turnKey 用于一次对话 turn 的隔离（kind + instanceId + turnId）
- *   - streamKey 用于 turn 内更细的 SSE/诊断流（turnKey + streamId）
+ *   - streamKey 用于 turn 内更细的 stream/诊断流（turnKey + streamId）
  *
  * 【函数清单】
  *   normalizeAiHostBusinessTarget     — 规范化业务定位（校验 + 去空白）
@@ -23,7 +23,7 @@
  *   toAiHostRuntimeScope              — Scope → RuntimeContext 投影
  *   latestUserInput                   — 从请求历史中提取最新用户消息
  *
- * 【消费方】business-session、fetch-transport、tool-loop-runner
+ * 【消费方】business-session、turn-event-collector、tool-loop-runner、APP turn bridge
  * ═══════════════════════════════════════════════════════════════
  */
 

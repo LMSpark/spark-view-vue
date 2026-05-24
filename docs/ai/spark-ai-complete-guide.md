@@ -28,8 +28,8 @@ SPARK AI 不让 LLM 直接面对一堆散乱小工具。业务先注册稳定的
 | --- | --- | --- |
 | `spark-ai/schema` | LLM JSON Schema、参数校验 | 业务含义 |
 | `spark-ai/module-semantic` | ModuleKind、固定知识入口、执行协议工具、工具 schema 投影 | Host 会话、页面状态、业务持久化 |
-| `spark-ai/host` | 业务注册表、输入任务、session、transport、tool loop、会话历史 | pageDesign 四文件、业务 live state |
-| `spark-page-config/ai` | pageDesign / leaveRequest 等业务注册真源 | 通用 AI 传输和模型通讯 |
+| `spark-ai/host` | 业务注册表、输入任务、session、turn callback 契约、tool loop、会话历史、纯事件聚合 | HTTP、SSE、pageDesign 四文件、业务 live state |
+| `spark-page-config/ai` | pageDesign / leaveRequest 等业务注册真源 | 模型通讯和 APP SSE 订阅 |
 | `spark-page-config/design` | pageDesign live edit workspace、四文件读写、语义校验 | LLM session 历史 |
 | `spark-ai-server` | Java AI 后端、SSE、模型调用、会话 API | 前端 pageDesign 业务工具实现 |
 
@@ -49,7 +49,6 @@ import {
 } from '@spark-view/spark-ai/module-semantic'
 import {
   AiHostBusinessRegistry,
-  AiHostFetchTransport,
   createAiHostBusinessSession,
   createAiHostBusinessTask,
 } from '@spark-view/spark-ai/host'
@@ -139,7 +138,7 @@ session 只接收 registered task 生成的 target：
 ```ts
 const session = createAiHostBusinessSession({
   registry,
-  transport: new AiHostFetchTransport({ baseUrl: '/api/ai' }),
+  turnCallbacks: createAiHostTurnCallbacks(),
   maxToolRounds: 16,
 }, task.target)
 
@@ -160,7 +159,7 @@ await session.send(task.toChatRequest())
 1. 提取最新用户消息。
 2. 追加用户消息到 Host session store。
 3. 启动 `AiHostToolLoopRunner`。
-4. 调 transport stream。
+4. 调 `turnCallbacks.executeTurn()`。
 5. 执行 LLM tool calls。
 6. 追加工具结果和助手结果。
 7. 根据 lifecycle directive 决定继续、结束或释放业务实例。
@@ -358,22 +357,23 @@ pageDesign 写入顺序：
 - direct `ElMessage` / `ElMessageBox`
 - direct Vue Router imports
 
-## Transport 与后端
+## APP Turn Bridge 与后端
 
-前端 Host transport 负责和 Java AI 后端通信：
+`spark-ai` 不执行网络 I/O。APP 层通过 `AiHostTurnCallbacks` 负责和 Java AI 后端通信：
 
 ```text
-AiHostFetchTransport.prepareSession()
+turnCallbacks.prepareSession()
   -> POST /api/ai/sessions
 
-AiHostFetchTransport.streamTurn()
-  -> SSE /api/ai/sessions/{sessionId}/turns/{turnId}/stream
+turnCallbacks.executeTurn()
+  -> POST /api/ai/sessions/{sessionId}/turn/stream
+  -> wait APP SSE /api/events ai-turn-*
 
-AiHostFetchTransport.appendMessages()
-  -> POST /api/ai/sessions/{sessionId}/messages
+turnCallbacks.appendMessages()
+  -> POST /api/ai/sessions/{sessionId}/turn/append
 ```
 
-SSE reader 只做 wire envelope 校验、delta/result/toolCalls 聚合，不解释 pageDesign 业务载荷。工具真正执行在 `AiHostToolLoopRunner`，再路由到 `ModuleSemanticRuntime.executeTool()`。
+`/turn/stream` 只是启动命令，不是 SSE 通道。APP 层维护唯一的 `/api/events` EventSource，并把 `ai-turn-*` envelope 事件提供给 `createTurnEventCollector()` 聚合；`spark-ai` 只做 delta/result/toolCalls 聚合，不解释 pageDesign 业务载荷。工具真正执行在 `AiHostToolLoopRunner`，再路由到 `ModuleSemanticRuntime.executeTool()`。
 
 append AI 会话历史成功，不代表 pageDesign 四文件保存成功。四文件保存仍由 page-config workspace 完成。
 
@@ -386,7 +386,8 @@ append AI 会话历史成功，不代表 pageDesign 四文件保存成功。四�
 | task 输入注册化 | `packages/spark-ai/src/host/business/business-task.ts` |
 | session/start/send | `packages/spark-ai/src/host/business/business-session.ts` |
 | tool loop | `packages/spark-ai/src/host/tool-loop/tool-loop-runner.ts` |
-| fetch transport | `packages/spark-ai/src/host/transport/fetch-transport.ts` |
+| APP turn bridge | `src/services/ai-turn-bridge.ts` |
+| turn event collector | `packages/spark-ai/src/host/tool-loop/turn-event-collector.ts` |
 | module-semantic runtime | `packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts` |
 | pageDesign 注册 | `packages/spark-page-config/src/ai/page-design-module.ts` |
 | pageDesign lifecycle | `packages/spark-page-config/src/ai/lifecycle-tool-catalog.ts` |

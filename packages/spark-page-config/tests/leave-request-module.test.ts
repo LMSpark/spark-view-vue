@@ -8,7 +8,7 @@ import {
   type AiHostBusinessRegistration,
   type AiHostBusinessScope,
   type AiHostFcCallRecord,
-  type AiHostTransport,
+  type AiHostTurnCallbacks,
   type AiHostTurnMeta,
 } from '@spark-view/spark-ai/host'
 import {
@@ -45,8 +45,8 @@ async function runToolCall(
   let record: AiHostFcCallRecord | null = null
   let cleared = false
   const deltas: string[] = []
-  const transport: AiHostTransport = {
-    streamTurn: () => {
+  const turnCallbacks: AiHostTurnCallbacks = {
+    executeTurn: () => {
       streamCount += 1
       if (streamCount > 1) return Promise.resolve({ text: '', toolCalls: [] })
       return Promise.resolve({
@@ -63,11 +63,7 @@ async function runToolCall(
     },
     appendMessages: () => Promise.resolve(),
   }
-  const runner = new AiHostToolLoopRunner({
-    registry: { get: () => registration, list: () => [registration] },
-    transport,
-    maxToolRounds: 2,
-  })
+  const runner = new AiHostToolLoopRunner(turnCallbacks, 2)
   await runner.runToolLoop({
     registration,
     scope,

@@ -7,7 +7,7 @@ import {
   startRegistrationSession,
   toAiHostRuntimeScope,
   type AiHostBusinessRuntimeContext,
-  type AiHostTransport,
+  type AiHostTurnCallbacks,
 } from '@spark-view/spark-ai/host'
 import {
   PAGE_DESIGN_MODULE_ID,
@@ -592,8 +592,8 @@ describe('pageDesign host business registration', () => {
     const statuses: string[] = []
     const roundToolNames: string[][] = []
     let streamRound = 0
-    const transport: AiHostTransport = {
-      streamTurn: (input) => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
         roundToolNames.push(input.tools.map((tool) => tool.function.name))
         streamRound += 1
         if (streamRound === 1) {
@@ -721,11 +721,7 @@ describe('pageDesign host business registration', () => {
       },
       appendMessages: () => Promise.resolve(),
     }
-    const runner = new AiHostToolLoopRunner({
-      registry: { get: () => registration, list: () => [registration] },
-      transport,
-      maxToolRounds: 4,
-    })
+    const runner = new AiHostToolLoopRunner(turnCallbacks, 4)
 
     await runner.runToolLoop({
       registration,

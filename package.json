@@ -14,8 +14,6 @@
         "dev:api": "node tools/mock-config-api.mjs",
         "dev:full": "concurrently \"pnpm run dev\" \"pnpm run dev:api\"",
         "debug:dataset:remote": "node --import tsx scripts/verify-dataset-remote-load.mjs --pageId dynamic-columns --expectText DataView",
-        "debug:ai:sessions:stream:smoke": "pnpm --filter @spark-view/spark-ai run smoke:sessions:stream",
-        "debug:ai:sse:smoke": "pnpm --filter @spark-view/spark-ai run smoke:sse",
         "debug:sse:loop": "node --import tsx scripts/verify-sse-debug-loop.mjs --pageId section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expectText 姓名",
         "debug:sse:loop:py": "python scripts/verify-sse-debug-loop.py --page-id section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expect-text 姓名",
         "debug:sse:loop:py:visual": "python scripts/verify-sse-debug-loop.py --page-id section-grid-demo --path /t/lmspark/homepage/section-grid-demo --selector .section-grid-demo .el-table --iterations 2 --expect-text 姓名 --assert-visual-change --min-diff-ratio 0.0001",
