@@ -7,12 +7,9 @@ import com.spark.ai.service.AiSessionService.TurnResult;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
-import java.io.IOException;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -22,7 +19,7 @@ import java.util.Map;
  *
  * <ul>
  *   <li>POST   /api/ai/sessions           — 创建会话</li>
- *   <li>POST   /api/ai/sessions/{id}/turn  — 执行一轮 LLM（支持 SSE 流式）</li>
+ *   <li>POST   /api/ai/sessions/{id}/turn  — 执行一轮 LLM（同步 JSON 响应）</li>
  *   <li>POST   /api/ai/sessions/{id}/turn/append — 按 turn 追加前端已完成消息</li>
  *   <li>POST   /api/ai/sessions/{id}/append — 追加消息</li>
  *   <li>GET    /api/ai/sessions/{id}/conversation — 获取完整对话</li>
@@ -116,8 +113,8 @@ public class AiSessionController {
                 && request.get("stream") instanceof Boolean b && b;
 
         if (stream) {
-            // 不应该走这里；流式走 SSE 端点
-            return requestError("INVALID_STREAM_ENDPOINT", "流式请求请使用 SSE 端点");
+            // 不应该走这里；流式走 turn stream 端点。
+            return requestError("INVALID_STREAM_ENDPOINT", "流式请求请使用 turn stream 端点");
         }
 
         TurnResult result = sessionService.executeTurn(sessionId, extractScope(request), extractMessages(request));
@@ -157,18 +154,14 @@ public class AiSessionController {
     }
 
     /**
-     * 流式 turn — SSE 推送。
+     * AI turn 启动命令 — 返回 HTTP ACK，模型事件通过 /api/events 广播。
      */
-    @PostMapping(value = "/{sessionId}/turn/stream",
-            produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter executeTurnStream(
+    @PostMapping("/{sessionId}/turn/stream")
+    public ResponseEntity<Map<String, Object>> executeTurnStream(
             @PathVariable String sessionId,
             @RequestBody(required = false) Map<String, Object> request) {
-        SseEmitter emitter = new SseEmitter(300_000L); // 5 min timeout
-
         if (!isSupportedProtocol(request)) {
-            sendSseErrorAndComplete(emitter, "INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
-            return emitter;
+            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
         }
 
         Map<String, Object> turn = extractTurn(request);
@@ -176,7 +169,6 @@ public class AiSessionController {
         String mode = request != null && request.get("mode") instanceof String s ? s : "function";
         sessionService.executeTurnStream(
                 sessionId,
-                emitter,
                 extractScope(request),
                 getOptionalString(turn, "turnId"),
                 getOptionalString(turn, "turnKey"),
@@ -189,7 +181,15 @@ public class AiSessionController {
                 extractTools(request),
                 mode);
 
-        return emitter;
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("accepted", true);
+        body.put("sessionId", sessionId);
+        String turnId = getOptionalString(turn, "turnId");
+        if (turnId != null) body.put("turnId", turnId);
+        String streamKey = getOptionalString(turn, "streamKey");
+        if (streamKey != null) body.put("streamKey", streamKey);
+        body.put("protocolVersion", PROTOCOL_VERSION_V4);
+        return ResponseEntity.accepted().body(body);
     }
 
     @PostMapping("/{sessionId}/turn/append")
@@ -418,22 +418,6 @@ public class AiSessionController {
             }
         }
         return null;
-    }
-
-    private static void sendSseErrorAndComplete(SseEmitter emitter, String code, String message) {
-        try {
-            emitter.send(SseEmitter.event().name("error").data(ApiResponseFactory.sseError(
-                    "error",
-                    HttpStatus.BAD_REQUEST,
-                    code,
-                    message,
-                    "request-validation",
-                    "fix-request",
-                    null,
-                    ApiResponseFactory.currentRequestId(),
-                    null), MediaType.APPLICATION_JSON));
-            emitter.complete();
-        } catch (IOException ignored) {}
     }
 
     private static ResponseEntity<Map<String, Object>> requestError(

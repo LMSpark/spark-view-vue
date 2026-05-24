@@ -9,13 +9,13 @@
 type LeaveRequestDraftStatus = 'draft' | 'submitted' | 'cancelled'
 
 type LeaveRequestDraftFields = {
-  readonly applicantName?: string | undefined
-  readonly leaveType?: string | undefined
-  readonly startDate?: string | undefined
-  readonly endDate?: string | undefined
-  readonly totalDays?: number | undefined
-  readonly reason?: string | undefined
-  readonly approver?: string | undefined
+  readonly applicantName?: string
+  readonly leaveType?: string
+  readonly startDate?: string
+  readonly endDate?: string
+  readonly totalDays?: number
+  readonly reason?: string
+  readonly approver?: string
 }
 
 type LeaveRequestDraftState = {
@@ -24,9 +24,9 @@ type LeaveRequestDraftState = {
   readonly fields: LeaveRequestDraftFields
   readonly createdAt: number
   readonly updatedAt: number
-  readonly submittedAt?: number | undefined
-  readonly cancelledAt?: number | undefined
-  readonly cancelReason?: string | undefined
+  readonly submittedAt?: number
+  readonly cancelledAt?: number
+  readonly cancelReason?: string
 }
 
 type LeaveRequestServiceContext = {
@@ -291,7 +291,7 @@ export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 export const LEAVE_REQUEST_KIND = 'manual-leave'
 
 export type LeaveRequestBusinessRegistrationOptions = {
-  readonly now?: (() => number) | undefined
+  readonly now?: () => number
 }
 
 const NO_PARAMS = noParamsSchema('不接受参数，请传 {} 或留空。')

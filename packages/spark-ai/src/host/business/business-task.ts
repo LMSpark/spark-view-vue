@@ -18,8 +18,8 @@ export type AiHostBusinessTaskInput = Readonly<Record<string, LlmJsonValue>>
 export type AiHostBusinessOrchestrationPlan = Readonly<{
   userMessage: string
   systemPrompt: string
-  title?: string | undefined
-  readonlySteps?: readonly string[] | undefined
+  title?: string
+  readonlySteps?: readonly string[]
 }>
 
 export type AiHostBusinessInputContract = Readonly<{
@@ -36,8 +36,8 @@ export type AiHostBusinessKindDefinition = Readonly<{
   description: string
   runtime: ModuleSemanticRuntime
   inputContract: AiHostBusinessInputContract
-  sessionStore?: AiHostSessionStore | undefined
-  systemPrompt?: ((context: AiHostBusinessRuntimeContext) => string | undefined) | undefined
+  sessionStore?: AiHostSessionStore
+  systemPrompt?: (context: AiHostBusinessRuntimeContext) => string | undefined
   afterFunctionCall?: (
     options: AiHostBusinessAfterFunctionCallOptions,
   ) => AiHostBusinessLifecycleDirective | Promise<AiHostBusinessLifecycleDirective>
@@ -50,7 +50,7 @@ export type AiHostBusinessKindDefinition = Readonly<{
 }>
 
 export type AiHostBusinessTaskChatOptions = Omit<AiHostChatRequest, 'historyMsgs' | 'systemPrompt'> & Readonly<{
-  systemPrompt?: string | undefined
+  systemPrompt?: string
 }>
 
 export type AiHostBusinessTaskRegistry = Readonly<{

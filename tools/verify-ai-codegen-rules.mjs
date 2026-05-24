@@ -25,6 +25,12 @@ const interfaceAllowlist = new Set([
   'packages/spark-page-config/src/page/services/app-services.ts:CapabilityTypeMap',
   'packages/spark-page-config/src/runtime/app-services.ts:CapabilityTypeMap',
   'packages/spark-component/src/core/capability-keys.ts:CapabilityTypeMap',
+  // Host session-types and transport-types are complete type-contract modules;
+  // topic-based re-export files add artificial indirection.
+  'packages/spark-ai/src/host/index.ts:./session/session-types',
+  'packages/spark-ai/src/index.ts:./host/session/session-types',
+  'packages/spark-ai/src/host/index.ts:./transport/transport-types',
+  'packages/spark-ai/src/index.ts:./host/transport/transport-types',
 ])
 
 const allowedSparkAiSpecifiers = new Set([
@@ -75,6 +81,12 @@ const publicSurfaceAllowlist = new Set([
   // the Options names keep public function signatures short without hiding contracts.
   'packages/spark-ai/src/index.ts:./schema/schema-builders-api',
   'packages/spark-ai/src/schema/index.ts:./schema-builders-api',
+  // Host session-types and transport-types are complete type-contract modules;
+  // topic-based re-export files add artificial indirection.
+  'packages/spark-ai/src/host/index.ts:./session/session-types',
+  'packages/spark-ai/src/index.ts:./host/session/session-types',
+  'packages/spark-ai/src/host/index.ts:./transport/transport-types',
+  'packages/spark-ai/src/index.ts:./host/transport/transport-types',
 ])
 
 const publicClassMethodSurfaces = new Map([
@@ -380,6 +392,14 @@ function scanSignatureConventions(parsed, violations) {
     }
 
     if (ts.isParameter(node) || ts.isPropertySignature(node) || ts.isPropertyDeclaration(node)) {
+      if (enforcesOptionalUndefinedConvention(file) && hasOptionalUndefinedUnion(node)) {
+        violations.push({
+          file,
+          line: lineFor(sourceFile, node, lineOffset),
+          message: 'optional field should not include an outer | undefined; omit the property when no value is present',
+        })
+      }
+
       const repeatedRoleName = repeatedTypeRoleName(node)
       if (repeatedRoleName !== null) {
         violations.push({
@@ -427,6 +447,25 @@ function hasConstructorParameterProperty(node) {
 
 function hasParameterJSDoc(node, sourceFile) {
   return /\/\*\*[\s\S]*?\*\//u.test(node.getFullText(sourceFile))
+}
+
+function hasOptionalUndefinedUnion(node) {
+  return node.questionToken !== undefined
+    && node.type !== undefined
+    && unionContainsUndefined(unwrapParenthesizedType(node.type))
+}
+
+function unionContainsUndefined(typeNode) {
+  return ts.isUnionTypeNode(typeNode)
+    && typeNode.types.some((part) => unwrapParenthesizedType(part).kind === ts.SyntaxKind.UndefinedKeyword)
+}
+
+function unwrapParenthesizedType(typeNode) {
+  let current = typeNode
+  while (ts.isParenthesizedTypeNode(current)) {
+    current = current.type
+  }
+  return current
 }
 
 function functionLikeName(node, sourceFile) {
@@ -577,6 +616,11 @@ function isTestFile(file) {
     || file.endsWith('.test.tsx')
     || file.endsWith('.spec.ts')
     || file.endsWith('.spec.tsx')
+}
+
+function enforcesOptionalUndefinedConvention(file) {
+  return file.startsWith('packages/spark-ai/src/')
+    || file.startsWith('packages/spark-page-config/src/ai/')
 }
 
 if (isCliEntrypoint(import.meta.url)) {

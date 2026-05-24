@@ -148,7 +148,7 @@ export class AiHostToolCallExecutor {
       durationMs,
     })
 
-    // 步骤 8b：发送诊断 SSE 事件
+    // 步骤 8b：发送诊断 stream 事件
     emitToolResultEvent({
       request: input.request,
       scope: input.scope,

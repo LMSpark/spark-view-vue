@@ -10,21 +10,21 @@ import type { ModuleActionFailureMode } from '../protocol'
 
 export type ModuleParameterPayloadQueryFilter = Readonly<{
   /** 关联模块 kind。注册表级查询可用；provider 内部通常忽略。 */
-  moduleKind?: string | undefined
+  moduleKind?: string
   /** 参数 provider 命名空间。注册表级查询可用；provider 内部通常忽略。 */
-  payloadRef?: string | undefined
+  payloadRef?: string
   /** provider 内部条目 key。 */
-  key?: string | undefined
+  key?: string
   /** 参数分类，例如 component/container/field。 */
-  category?: string | undefined
+  category?: string
   /** 关键词过滤，具体匹配策略由 provider 自行决定。 */
-  keyword?: string | undefined
+  keyword?: string
   /** 可选投影表达式；具体语法由 provider 定义。 */
-  expression?: string | undefined
+  expression?: string
   /** 仅返回可配置条目；provider 可按自身语义解释。 */
-  configurableOnly?: boolean | undefined
+  configurableOnly?: boolean
   /** 最多返回多少条目录摘要。 */
-  limit?: number | undefined
+  limit?: number
 }>
 
 export type ModuleParameterPayloadSummary = Readonly<{
@@ -35,13 +35,13 @@ export type ModuleParameterPayloadSummary = Readonly<{
   /** provider 内部条目 key。 */
   key: string
   /** 面向 LLM 或 UI 的简短描述。 */
-  description?: string | undefined
+  description?: string
   /** 可选分类，便于调用方分组展示或过滤。 */
-  category?: string | undefined
+  category?: string
   /** 可选标签，补充检索和提示词上下文。 */
-  tags?: readonly string[] | undefined
+  tags?: readonly string[]
   /** provider 自定义摘要字段，调用方可原样展示。 */
-  metadata?: Readonly<Record<string, LlmJsonValue>> | undefined
+  metadata?: Readonly<Record<string, LlmJsonValue>>
 }> & Readonly<Record<string, unknown>>
 
 export type ModuleParameterPayloadGuide = Readonly<{
@@ -56,15 +56,15 @@ export type ModuleParameterPayloadGuide = Readonly<{
   /** LLM 提交该参数 payload 时应遵守的标准 JSON Schema object root。 */
   paramsSchema: LlmJsonSchemaObject
   /** 最小可用参数示例，帮助 LLM 减少结构猜测。 */
-  minimalParams?: LlmJsonValue | undefined
+  minimalParams?: LlmJsonValue
   /** provider 原始语义指南；保留业务 catalog 的说明、分组、绑定、事件等信息。 */
-  sourceGuide?: LlmJsonValue | undefined
+  sourceGuide?: LlmJsonValue
   /** 使用规则、前置条件或调用顺序提示。 */
-  usageRules?: readonly string[] | undefined
+  usageRules?: readonly string[]
   /** 已知失败模式，供 LLM 规划修复动作。 */
-  failureModes?: readonly ModuleActionFailureMode[] | undefined
+  failureModes?: readonly ModuleActionFailureMode[]
   /** provider 自定义指南字段，调用方可原样展示。 */
-  metadata?: Readonly<Record<string, LlmJsonValue>> | undefined
+  metadata?: Readonly<Record<string, LlmJsonValue>>
 }> & Readonly<Record<string, unknown>>
 
 export type ModuleParameterPayloadProvider = Readonly<{

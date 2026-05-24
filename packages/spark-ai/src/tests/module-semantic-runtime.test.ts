@@ -30,7 +30,7 @@ import type { ModuleSemanticKnowledgeSnapshot as RootModuleSemanticKnowledgeSnap
 import type { LlmJsonValue } from '../schema'
 
 type ModuleKindSpy = {
-  lastHost?: ModulePathContext['host'] | undefined
+  lastHost?: ModulePathContext['host']
 }
 
 const ECHO_ACTION_SCHEMA: ModuleActionMetadata = {

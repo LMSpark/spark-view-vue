@@ -23,7 +23,6 @@ import org.springframework.http.MediaType;
 import org.springframework.http.client.SimpleClientHttpRequestFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
@@ -44,7 +43,7 @@ import java.util.concurrent.Executors;
  *   <li>LLM 调用前自动应用滑动窗口裁剪，控制 token 消耗</li>
  *   <li>会话创建/销毁/超时自动清理</li>
  *   <li>支持 Function Calling（tools 定义 + tool_calls 解析）</li>
- *   <li>支持 SSE 流式推送</li>
+ *   <li>支持 turn 启动命令，并通过 APP 公共 SSE 广播模型事件</li>
  * </ul>
  */
 @Service
@@ -115,9 +114,10 @@ public class AiSessionService {
     private final AiContextSnapshotRepository aiContextSnapshotRepository;
     private final AiSessionProperties aiSessionProperties;
     private final AccessGuardService accessGuardService;
+    private final SseService sseService;
 
     public AiSessionService(OpenAiProperties props, ObjectMapper objectMapper) {
-        this(props, objectMapper, null, null, null, null, null, null);
+        this(props, objectMapper, null, null, null, null, null, null, null);
     }
 
     @Autowired
@@ -129,7 +129,8 @@ public class AiSessionService {
             AiToolCallRepository aiToolCallRepository,
             AiContextSnapshotRepository aiContextSnapshotRepository,
             AiSessionProperties aiSessionProperties,
-            AccessGuardService accessGuardService) {
+            AccessGuardService accessGuardService,
+            SseService sseService) {
         this.props = props;
         this.objectMapper = objectMapper;
         this.aiSessionRepository = aiSessionRepository;
@@ -138,6 +139,7 @@ public class AiSessionService {
         this.aiContextSnapshotRepository = aiContextSnapshotRepository;
         this.aiSessionProperties = aiSessionProperties != null ? aiSessionProperties : new AiSessionProperties();
         this.accessGuardService = accessGuardService;
+        this.sseService = sseService != null ? sseService : new SseService();
 
         SimpleClientHttpRequestFactory factory = new SimpleClientHttpRequestFactory();
         factory.setConnectTimeout(15_000);
@@ -465,43 +467,40 @@ public class AiSessionService {
     }
 
     /**
-     * 执行一轮对话（SSE 流式）。
+     * 启动一轮模型 turn。
      */
-    public void executeTurnStream(String sessionId, SseEmitter emitter) {
-        executeTurnStream(sessionId, emitter, null, null, null);
+    public void executeTurnStream(String sessionId) {
+        executeTurnStream(sessionId, null, null, null);
     }
 
     /**
-     * 执行一轮对话（SSE 流式），并在最终事件上附带 turn/scope 元数据。
+     * 启动一轮模型 turn，并在 APP SSE 事件上附带 turn/scope 元数据。
      */
     public void executeTurnStream(
             String sessionId,
-            SseEmitter emitter,
             Map<String, Object> scope,
             String turnId,
             String streamKey) {
-        executeTurnStream(sessionId, emitter, scope, turnId, null, null, null, streamKey, List.of(), null, DEFAULT_WINDOW_SIZE, null, null);
+        executeTurnStream(sessionId, scope, turnId, null, null, null, streamKey, List.of(), null, DEFAULT_WINDOW_SIZE, null, null);
     }
 
     /**
-     * 执行一轮对话（SSE 流式），用已提交历史 + 本轮消息构造 LLM 输入。
+     * 启动一轮模型 turn，用已提交历史 + 本轮消息构造 LLM 输入。
      */
     public void executeTurnStream(
             String sessionId,
-            SseEmitter emitter,
             Map<String, Object> scope,
             String turnId,
             String streamKey,
             List<Map<String, Object>> turnMessages) {
-        executeTurnStream(sessionId, emitter, scope, turnId, null, null, null, streamKey, turnMessages, null, DEFAULT_WINDOW_SIZE, null, null);
+        executeTurnStream(sessionId, scope, turnId, null, null, null, streamKey, turnMessages, null, DEFAULT_WINDOW_SIZE, null, null);
     }
 
     /**
-     * 执行一轮对话（SSE 流式）；前端用 sessionId/turnId 驱动协议，缺失 session 时按 sessionId 初始化。
+     * 启动一轮模型 turn；前端用 sessionId/turnId 驱动协议，缺失 session 时按 sessionId 初始化。
      */
     public void executeTurnStream(
             String sessionId,
-            SseEmitter emitter,
             Map<String, Object> scope,
             String turnId,
             String turnKey,
@@ -518,20 +517,15 @@ public class AiSessionService {
         if (session == null) {
             String prompt = stringValue(systemPrompt);
             if (prompt == null) {
-                try {
-                    emitter.send(SseEmitter.event().name("error")
-                            .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
-                                    "error",
-                                    org.springframework.http.HttpStatus.NOT_FOUND,
-                                    "SESSION_NOT_FOUND",
-                                    "会话不存在",
-                                    "session",
-                                    "recreate-session",
-                                    null,
-                                    ApiResponseFactory.currentRequestId(),
-                                    streamContext(sessionId, turnId, turnKey, seq, baseRevision, streamKey, scope)))));
-                    emitter.complete();
-                } catch (IOException ignored) {}
+                emitTurnError(
+                        org.springframework.http.HttpStatus.NOT_FOUND,
+                        "SESSION_NOT_FOUND",
+                        "会话不存在",
+                        "session",
+                        "recreate-session",
+                        null,
+                        ApiResponseFactory.currentRequestId(),
+                        streamContext(sessionId, turnId, turnKey, seq, baseRevision, streamKey, scope));
                 return;
             }
             createSessionFromMessages(prompt, List.of(), windowSize, tools, mode, scope, false, sessionId);
@@ -539,23 +533,18 @@ public class AiSessionService {
         }
 
         if (!matchesScope(session, scope)) {
-            try {
-                emitter.send(SseEmitter.event().name("error")
-                        .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
-                                "error",
-                                org.springframework.http.HttpStatus.CONFLICT,
-                                "SESSION_SCOPE_MISMATCH",
-                                "会话 scope 不匹配",
-                                "session-scope",
-                                "recreate-session",
-                                Map.of("sessionId", sessionId,
-                                        "turnId", turnId != null ? turnId : "",
-                                        "streamKey", streamKey != null ? streamKey : "",
-                                        "scope", session.scope != null ? session.scope : Map.of()),
-                                ApiResponseFactory.currentRequestId(),
-                                streamContext(sessionId, turnId, turnKey, seq, baseRevision, streamKey, session.scope)))));
-                emitter.complete();
-            } catch (IOException ignored) {}
+            emitTurnError(
+                    org.springframework.http.HttpStatus.CONFLICT,
+                    "SESSION_SCOPE_MISMATCH",
+                    "会话 scope 不匹配",
+                    "session-scope",
+                    "recreate-session",
+                    Map.of("sessionId", sessionId,
+                            "turnId", turnId != null ? turnId : "",
+                            "streamKey", streamKey != null ? streamKey : "",
+                            "scope", session.scope != null ? session.scope : Map.of()),
+                    ApiResponseFactory.currentRequestId(),
+                    streamContext(sessionId, turnId, turnKey, seq, baseRevision, streamKey, session.scope));
             return;
         }
 
@@ -579,23 +568,18 @@ public class AiSessionService {
 
         streamExecutor.submit(() -> {
             try {
-                callLlmStream(streamMessages, streamSession.tools, emitter, streamSession, streamMeta);
+                callLlmStream(streamMessages, streamSession.tools, streamSession, streamMeta);
             } catch (Exception e) {
                 log.error("[SESSION] stream error sessionId={}: {}", sessionId, e.getMessage());
-                try {
-                    emitter.send(SseEmitter.event().name("error")
-                            .data(objectMapper.writeValueAsString(ApiResponseFactory.sseError(
-                                    "error",
-                                    org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
-                                    "AI_STREAM_ERROR",
-                                    e.getMessage(),
-                                    "stream",
-                                    "safe-retry",
-                                    null,
-                                    streamMeta.requestId,
-                                    streamContext(streamMeta)))));
-                    emitter.complete();
-                } catch (IOException ignored) {}
+                emitTurnError(
+                        org.springframework.http.HttpStatus.INTERNAL_SERVER_ERROR,
+                        "AI_STREAM_ERROR",
+                        e.getMessage(),
+                        "stream",
+                        "safe-retry",
+                        null,
+                        streamMeta.requestId,
+                        streamContext(streamMeta));
             }
         });
     }
@@ -1165,13 +1149,12 @@ public class AiSessionService {
     }
 
     // ═════════════════════════════════════════════════════════════════════════
-    // 内部方法 — LLM 调用（SSE 流式）
+    // 内部方法 — LLM 调用（provider stream 内部消费，APP SSE 广播结果）
     // ═════════════════════════════════════════════════════════════════════════
 
     @SuppressWarnings("unchecked")
     private void callLlmStream(List<Map<String, Object>> messages,
                                 List<Map<String, Object>> tools,
-                                SseEmitter emitter,
                                 Session session,
                                 StreamMeta streamMeta) throws Exception {
         Map<String, Object> body = new LinkedHashMap<>();
@@ -1205,14 +1188,14 @@ public class AiSessionService {
 
         // OpenAI-compatible providers vary a lot in streaming tool_calls deltas.
         // For function-calling turns, request one complete assistant message from
-        // the provider, then deliver it through this Java SSE endpoint as a
+        // the provider, then deliver it through the APP SSE channel as a
         // stable result event. Text-only turns still use provider streaming below.
         if (tools != null && !tools.isEmpty()) {
             LlmResult result = callLlm(messages, tools);
             if (result == null) {
                 throw new RuntimeException("LLM tool-call request failed");
             }
-            emitFinalResult(emitter, session, result.text, result.reasoning, result.toolCalls, streamMeta);
+            emitFinalResult(session, result.text, result.reasoning, result.toolCalls, streamMeta);
             return;
         }
 
@@ -1263,13 +1246,13 @@ public class AiSessionService {
                             // 文本增量
                             if (delta.get("content") instanceof String s && !s.isEmpty()) {
                                 contentBuilder.append(s);
-                                sendStreamOk(emitter, "delta", Map.of("delta", s), streamMeta, false);
+                                sendTurnOk("delta", Map.of("delta", s), streamMeta, false);
                             }
 
                             // reasoning 增量
                             if (delta.get("reasoning_content") instanceof String s && !s.isEmpty()) {
                                 reasoningBuilder.append(s);
-                                sendStreamOk(emitter, "reasoning", Map.of("reasoning", s), streamMeta, false);
+                                sendTurnOk("reasoning", Map.of("reasoning", s), streamMeta, false);
                             }
 
                             // tool_calls 增量
@@ -1336,7 +1319,7 @@ public class AiSessionService {
             if (fallback == null) {
                 throw new RuntimeException("SSE provider error 且 fallback 失败: " + providerErrorDetail[0]);
             }
-            emitFinalResult(emitter, session, fallback.text, fallback.reasoning, fallback.toolCalls, streamMeta);
+            emitFinalResult(session, fallback.text, fallback.reasoning, fallback.toolCalls, streamMeta);
             return;
         }
 
@@ -1346,7 +1329,7 @@ public class AiSessionService {
         List<Map<String, Object>> toolCalls = toolCallsMap.isEmpty()
             ? null : new ArrayList<>(toolCallsMap.values());
 
-        emitFinalResult(emitter, session, text, reasoning, toolCalls, streamMeta);
+        emitFinalResult(session, text, reasoning, toolCalls, streamMeta);
     }
 
     private LlmResult filterInvalidToolCalls(LlmResult result, List<Map<String, Object>> tools) {
@@ -1454,12 +1437,12 @@ public class AiSessionService {
         return tools != null && !tools.isEmpty();
     }
 
-        private void emitFinalResult(SseEmitter emitter,
-                     Session session,
-                     String text,
-                     String reasoning,
-                     List<Map<String, Object>> toolCalls,
-                     StreamMeta streamMeta) throws Exception {
+    private void emitFinalResult(
+            Session session,
+            String text,
+            String reasoning,
+            List<Map<String, Object>> toolCalls,
+            StreamMeta streamMeta) {
         // 记录到对话历史。
         // 当有 tool_calls 时，前端 FC 循环会通过 appendMessages 追加 assistant + tool results，
         // 因此后端不再自动写入，避免出现两条相邻的 assistant(tool_calls) 导致 DeepSeek 400。
@@ -1482,26 +1465,50 @@ public class AiSessionService {
         if (reasoning != null) resultMap.put("reasoning", reasoning);
         if (toolCalls != null) resultMap.put("toolCalls", toolCalls);
 
-        sendStreamOk(emitter, "result", resultMap, streamMeta, false);
+        sendTurnOk("result", resultMap, streamMeta, false);
         Map<String, Object> doneMap = new LinkedHashMap<>();
         doneMap.put("done", true);
-        sendStreamOk(emitter, "done", doneMap, streamMeta, true);
-        emitter.complete();
-        }
+        sendTurnOk("done", doneMap, streamMeta, true);
+    }
 
-    private void sendStreamOk(
-            SseEmitter emitter,
+    private void sendTurnOk(
             String eventName,
             Object data,
             StreamMeta streamMeta,
-            boolean terminal) throws IOException {
-        emitter.send(SseEmitter.event().name(eventName)
-                .data(objectMapper.writeValueAsString(ApiResponseFactory.sseOk(
-                        eventName,
-                        data,
-                        streamMeta.requestId,
-                        streamContext(streamMeta),
-                        terminal))));
+            boolean terminal) {
+        sseService.emit(toAiTurnEventName(eventName), data, streamContext(streamMeta), terminal);
+    }
+
+    private void emitTurnError(
+            org.springframework.http.HttpStatus status,
+            String code,
+            String message,
+            String category,
+            String retryPolicy,
+            Map<String, Object> details,
+            String requestId,
+            Map<String, Object> context) {
+        sseService.emitError(
+                SseService.EVENT_AI_TURN_ERROR,
+                status,
+                code,
+                message,
+                category,
+                retryPolicy,
+                details,
+                requestId,
+                context);
+    }
+
+    private String toAiTurnEventName(String eventName) {
+        return switch (eventName) {
+            case "delta" -> SseService.EVENT_AI_TURN_DELTA;
+            case "reasoning" -> SseService.EVENT_AI_TURN_REASONING;
+            case "usage" -> SseService.EVENT_AI_TURN_USAGE;
+            case "result" -> SseService.EVENT_AI_TURN_RESULT;
+            case "done" -> SseService.EVENT_AI_TURN_DONE;
+            default -> "ai-turn-" + eventName;
+        };
     }
 
     private Map<String, Object> streamContext(StreamMeta streamMeta) {

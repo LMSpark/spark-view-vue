@@ -3,6 +3,7 @@ package com.spark.ai.service;
 import com.spark.ai.api.ApiResponseFactory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
@@ -36,6 +37,12 @@ public class SseService {
     public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
     public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
     public static final String EVENT_DEBUG_FC_ERROR_REPORT = "debug-fc-error-report";
+    public static final String EVENT_AI_TURN_DELTA = "ai-turn-delta";
+    public static final String EVENT_AI_TURN_REASONING = "ai-turn-reasoning";
+    public static final String EVENT_AI_TURN_USAGE = "ai-turn-usage";
+    public static final String EVENT_AI_TURN_RESULT = "ai-turn-result";
+    public static final String EVENT_AI_TURN_ERROR = "ai-turn-error";
+    public static final String EVENT_AI_TURN_DONE = "ai-turn-done";
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
@@ -86,12 +93,41 @@ public class SseService {
      * @param payload   业务载荷，只放入 envelope.data
      */
     public void emit(String eventType, Object payload) {
+        emit(eventType, payload, null, false);
+    }
+
+    public void emit(String eventType, Object payload, Map<String, Object> context, boolean terminal) {
         Object envelope = ApiResponseFactory.sseOk(
                 eventType,
                 payload,
                 ApiResponseFactory.currentRequestId(),
-                null,
-                false);
+                context,
+                terminal);
+        List<SseEmitter> deadEmitters = sendEnvelope(eventType, envelope);
+        removeDeadEmitters(deadEmitters);
+        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());
+    }
+
+    public void emitError(
+            String eventType,
+            HttpStatusCode status,
+            String code,
+            String message,
+            String category,
+            String retryPolicy,
+            Map<String, Object> details,
+            String requestId,
+            Map<String, Object> context) {
+        Object envelope = ApiResponseFactory.sseError(
+                eventType,
+                status,
+                code,
+                message,
+                category,
+                retryPolicy,
+                details,
+                requestId,
+                context);
         List<SseEmitter> deadEmitters = sendEnvelope(eventType, envelope);
         removeDeadEmitters(deadEmitters);
         log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());

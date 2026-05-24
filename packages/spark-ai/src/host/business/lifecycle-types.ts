@@ -6,9 +6,9 @@ export type AiHostBusinessLifecycleStatus = 'continue' | 'complete' | 'abort'
 
 export type AiHostBusinessLifecycleDirective = Readonly<{
   status: AiHostBusinessLifecycleStatus
-  reason?: string | undefined
-  finalAssistantMessage?: string | undefined
-  releaseInstance?: boolean | undefined
+  reason?: string
+  finalAssistantMessage?: string
+  releaseInstance?: boolean
 }>
 
 export type AiHostBusinessAfterFunctionCallOptions = AiHostBusinessRuntimeContext & Readonly<{

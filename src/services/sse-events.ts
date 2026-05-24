@@ -5,8 +5,13 @@
  * 页面配置、数据任务、通知、AI 调试等业务动作在各自订阅方处理。
  */
 
-import { Logger, isRecord } from '@spark-view/spark-utils'
+import { Logger, isRecord, type ApiEnvelopeContext, type ApiEnvelopeEvent } from '@spark-view/spark-utils'
 import { readNonEmptyStringProperty } from '@spark-view/spark-utils/internal'
+import type {
+  AiHostAppSseEvent,
+  AiHostAppSseEventName,
+  AiHostAppSseEventSource,
+} from '@spark-view/spark-ai'
 
 const logger = Logger('SSE')
 
@@ -117,6 +122,7 @@ const SSE_URL = '/api/events'
 const MAX_RETRIES = 5
 
 const eventSubscribers = new Map<string, Set<(data: unknown) => void>>()
+const envelopeEventSubscribers = new Map<string, Set<(event: AiHostAppSseEvent) => void>>()
 const eventListeners = new Map<string, EventListener>()
 const legacyProtocolWarnings = new Set<string>()
 
@@ -152,6 +158,40 @@ export function onServerEvent(
     if (totalSubscribers() === 0) {
       teardownConnection()
     }
+  }
+}
+
+export function onServerEnvelopeEvent(
+  eventType: AiHostAppSseEventName,
+  callback: (event: AiHostAppSseEvent) => void,
+): () => void {
+  const eventKey = String(eventType)
+  let subscribers = envelopeEventSubscribers.get(eventKey)
+  if (subscribers === undefined) {
+    subscribers = new Set()
+    envelopeEventSubscribers.set(eventKey, subscribers)
+  }
+  subscribers.add(callback)
+
+  ensureConnection()
+  if (sharedEventSource !== null) {
+    addEventSourceListener(sharedEventSource, eventKey)
+  }
+
+  return () => {
+    subscribers.delete(callback)
+    if (subscribers.size === 0) {
+      envelopeEventSubscribers.delete(eventKey)
+    }
+    if (totalSubscribers() === 0) {
+      teardownConnection()
+    }
+  }
+}
+
+export function createAppSseEventSource(): AiHostAppSseEventSource {
+  return {
+    on: onServerEnvelopeEvent,
   }
 }
 
@@ -302,6 +342,10 @@ function dispatchMessageEvent(eventType: string, event: Event): void {
   }
 
   const parsed: unknown = JSON.parse(event.data)
+  const envelopeEvent = normalizeServerEnvelopeEvent(eventType, event.data, parsed)
+  dispatchEnvelopeEvent(eventType, envelopeEvent)
+
+  if (!eventSubscribers.has(eventType)) return
   const data = unwrapServerEventPayload(eventType, parsed)
   const subscribers = eventSubscribers.get(eventType)
   if (subscribers === undefined) return
@@ -320,6 +364,9 @@ function teardownConnection(): void {
 function totalSubscribers(): number {
   let count = 0
   for (const subscribers of eventSubscribers.values()) {
+    count += subscribers.size
+  }
+  for (const subscribers of envelopeEventSubscribers.values()) {
     count += subscribers.size
   }
   return count
@@ -350,6 +397,49 @@ function unwrapServerEventPayload(eventType: string, payload: unknown): unknown 
   }
 
   throw new Error(readEnvelopeErrorMessage(payload))
+}
+
+function dispatchEnvelopeEvent(eventType: string, event: AiHostAppSseEvent): void {
+  const subscribers = envelopeEventSubscribers.get(eventType)
+  if (subscribers === undefined) return
+
+  for (const callback of subscribers) {
+    callback(event)
+  }
+}
+
+function normalizeServerEnvelopeEvent(
+  eventType: string,
+  rawData: string,
+  payload: unknown,
+): AiHostAppSseEvent {
+  if (!isRecord(payload) || !isEnvelopeLike(payload)) {
+    return {
+      name: eventType,
+      ok: true,
+      data: payload,
+      rawData,
+      rawPayload: payload,
+      legacy: true,
+    }
+  }
+
+  validateEnvelopeEventName(eventType, payload)
+  const protocolVersion = payload['protocolVersion']
+  const ok = payload['ok'] === true
+  const context: ApiEnvelopeContext | undefined = isRecord(payload['context']) ? payload['context'] : undefined
+  const envelopeEvent: ApiEnvelopeEvent | undefined = isRecord(payload['event']) ? payload['event'] : undefined
+  return {
+    name: eventType,
+    ok,
+    data: ok ? payload['data'] : (payload['error'] ?? payload),
+    rawData,
+    rawPayload: payload,
+    ...(typeof protocolVersion === 'number' ? { protocolVersion } : {}),
+    ...(context !== undefined ? { context } : {}),
+    ...(envelopeEvent !== undefined ? { event: envelopeEvent } : {}),
+    legacy: protocolVersion !== 4,
+  }
 }
 
 function isEnvelopeLike(payload: Record<string, unknown>): boolean {

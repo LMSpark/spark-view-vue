@@ -1,9 +1,9 @@
 /**
  * APP 层 AI 调试桥接器。
  *
- * 后端通过 APP 公共 SSE 下发 route/screenshot 请求，本桥接器在浏览器壳层
- * 执行业务动作，再用 HTTP 回传结果。`spark-ai` 包只提供订阅/发射 API，
- * 不持有 Router、DOM、截图和通知 UI 这些浏览器应用能力。
+ * 后端通过 APP 公共 SSE 下发 route/screenshot 请求，本桥接器订阅 APP 壳层
+ * 的单例 SSE 总线并执行业务动作，再用 HTTP 回传结果。`spark-ai` 只提供
+ * 框架无关的 APP SSE 订阅适配器，不持有 Router、DOM、截图和通知 UI。
  */
 
 import { nextTick } from 'vue'

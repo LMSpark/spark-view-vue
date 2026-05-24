@@ -43,7 +43,7 @@ export type PageDesignEditHost = {
  * 单个 pageId 的 live edit 会话状态。
  *
  * 该对象只保存编辑态和已显式查询过的组件 payload guide；AI Host 会话历史、
- * SSE turn 状态和后端 session 持久化均不在这里维护。
+ * turn stream 状态和后端 session 持久化均不在这里维护。
  */
 export class PageDesignEditSession {
   phase: PageDesignEditPhase = 'idle'

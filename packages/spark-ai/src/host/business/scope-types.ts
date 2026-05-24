@@ -14,7 +14,7 @@
  * │                                                                              │
  * │  使用场景：                                                                   │
  * │    · Target   → registry.createBusiness() 时定位                              │
- * │    · Scope    → tool-loop-runner 全程持有，SSE 流键生成                        │
+ * │    · Scope    → tool-loop-runner 全程持有，turn stream 流键生成               │
  * │    · Context  → systemPrompt / afterFunctionCall / onStartSession 回调入参    │
  * │    · Options  → session.appendMessage() 入参                                  │
  * └─────────────────────────────────────────────────────────────────────────────┘
@@ -117,7 +117,7 @@ export type AiHostBusinessAppendMessageOptions = AiHostBusinessRuntimeContext & 
   /** 消息正文 */
   content: string
   /** 消息来源标注（用于区分用户输入 / LLM 输出 / 工具返回值） */
-  source?: AiHostMessageSource | undefined
+  source?: AiHostMessageSource
   /** 附加元数据（如工具调用 ID、token 用量等） */
-  metadata?: Record<string, unknown> | undefined
+  metadata?: Record<string, unknown>
 }>

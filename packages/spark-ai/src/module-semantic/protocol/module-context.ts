@@ -38,7 +38,7 @@ export type ModuleHostContext = Readonly<{
 export type ModulePathContext = Readonly<{
   segments: readonly ModulePathSegment[]
   segment: ModulePathSegment
-  host?: ModuleHostContext | undefined
+  host?: ModuleHostContext
 }>
 
 /* -------------------------------------------------------------------------------
@@ -49,7 +49,7 @@ export type ModulePathContext = Readonly<{
 export type ModuleInstanceRef = Readonly<{
   id: string
   label: string
-  summary?: string | undefined
+  summary?: string
 }>
 
 /** 实例查询条件（键值对，具体语义由 ModuleKind 构造期 find 委托解释） */
@@ -63,21 +63,21 @@ export type ModuleSetAttributeRequest = Readonly<{
   path: ModulePath
   attrName: string
   value: LlmJsonValue
-  host?: ModuleHostContext | undefined
+  host?: ModuleHostContext
 }>
 
 export type ModuleInvokeActionRequest = Readonly<{
   path: ModulePath
   actionName: string
   args: Readonly<Record<string, LlmJsonValue>>
-  host?: ModuleHostContext | undefined
+  host?: ModuleHostContext
 }>
 
 export type ModuleFindInstanceRequest = Readonly<{
   path: ModulePath
   childKind: string
   query: ModuleInstanceQuery
-  host?: ModuleHostContext | undefined
+  host?: ModuleHostContext
 }>
 
 /* -------------------------------------------------------------------------------

@@ -116,40 +116,50 @@ export class ProtocolToolRouter {
   /* ── queryModules ─────────────────────────────────────── */
 
   private routeQueryModules(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    const kind = this.argsParser.optionalString(args, 'kind')
+    const parentKind = this.argsParser.optionalString(args, 'parentKind')
+    const keyword = this.argsParser.optionalString(args, 'keyword')
     return this.resultProjector.jsonResult(ModuleOperationResult.ok(this.knowledge.queryModules({
-      kind: this.argsParser.optionalString(args, 'kind'),
-      parentKind: this.argsParser.optionalString(args, 'parentKind'),
-      keyword: this.argsParser.optionalString(args, 'keyword'),
+      ...(kind === undefined ? {} : { kind }),
+      ...(parentKind === undefined ? {} : { parentKind }),
+      ...(keyword === undefined ? {} : { keyword }),
     })))
   }
 
   /* ── queryFunctions ───────────────────────────────────── */
 
   private routeQueryFunctions(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    const kind = this.argsParser.optionalString(args, 'kind')
+    const keyword = this.argsParser.optionalString(args, 'keyword')
     return this.resultProjector.jsonResult(ModuleOperationResult.ok(this.knowledge.queryFunctions({
-      kind: this.argsParser.optionalString(args, 'kind'),
-      keyword: this.argsParser.optionalString(args, 'keyword'),
+      ...(kind === undefined ? {} : { kind }),
+      ...(keyword === undefined ? {} : { keyword }),
     })))
   }
 
   /* ── guideFunction ────────────────────────────────────── */
 
   private routeGuideFunction(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    const action = this.argsParser.optionalString(args, 'action')
+    const kind = this.argsParser.optionalString(args, 'kind')
+    const actionName = this.argsParser.optionalString(args, 'actionName')
     return this.resultProjector.jsonResult(this.knowledge.guideFunction({
-      action: this.argsParser.optionalString(args, 'action'),
-      kind: this.argsParser.optionalString(args, 'kind'),
-      actionName: this.argsParser.optionalString(args, 'actionName'),
+      ...(action === undefined ? {} : { action }),
+      ...(kind === undefined ? {} : { kind }),
+      ...(actionName === undefined ? {} : { actionName }),
     }))
   }
 
   /* ── guideHumanQuestion ───────────────────────────────── */
 
   private routeGuideHumanQuestion(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    const missingFacts = this.argsParser.optionalStringArray(args, 'missingFacts')
+    const candidateOptions = this.argsParser.optionalStringArray(args, 'candidateOptions')
     return this.resultProjector.jsonResult(this.knowledge.guideHumanQuestion({
       context: this.argsParser.requireString(args, 'context'),
       reason: this.argsParser.requireString(args, 'reason'),
-      missingFacts: this.argsParser.optionalStringArray(args, 'missingFacts'),
-      candidateOptions: this.argsParser.optionalStringArray(args, 'candidateOptions'),
+      ...(missingFacts === undefined ? {} : { missingFacts }),
+      ...(candidateOptions === undefined ? {} : { candidateOptions }),
     }))
   }
 
@@ -176,7 +186,7 @@ export class ProtocolToolRouter {
       path,
       attrName,
       value: this.argsParser.requireValue(args, 'value'),
-      host,
+      ...(host === undefined ? {} : { host }),
     })
     return this.resultProjector.voidResult(result)
   }
@@ -193,7 +203,7 @@ export class ProtocolToolRouter {
       path,
       actionName,
       args: this.argsParser.requireObject(args, 'args'),
-      host,
+      ...(host === undefined ? {} : { host }),
     })
   }
 
@@ -221,7 +231,7 @@ export class ProtocolToolRouter {
       path,
       childKind,
       query: this.argsParser.requireObject(args, 'query'),
-      host,
+      ...(host === undefined ? {} : { host }),
     })
     return this.resultProjector.instanceListResult(result)
   }

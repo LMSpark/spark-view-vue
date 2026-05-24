@@ -1,6 +1,6 @@
 # SPARK AI Server
 
-Java Spring Boot 后端，当前主要承载三类能力：通用聊天流式接口 `POST /api/ai/chat/stream`、统一会话接口 `/api/ai/sessions/*`、以及页面配置/导航/SSE 调试等平台后端能力。
+Java Spring Boot 后端，当前主要承载三类能力：统一 AI 会话接口 `/api/ai/sessions/*`、APP 公共 SSE 通道 `/api/events`、以及页面配置/导航/调试等平台后端能力。
 
 ## 数据目录约定
 
@@ -65,7 +65,7 @@ mvn spring-boot:run
 AI_BACKEND_URL=http://localhost:8080
 ```
 
-然后重启 Vite 开发服务器（`pnpm run dev`）。此后前端的 `AiChatWidget` 与基于 stills 的编辑会话会走真实后端。
+然后重启 Vite 开发服务器（`pnpm run dev`）。此后基于 stills 的编辑会话会走真实后端；模型事件通过 APP 公共 `/api/events` SSE 通道返回。
 
 ---
 
@@ -115,34 +115,15 @@ $env:AI_MODEL        = "qwen-plus"
 
 ## API 接口
 
-### `POST /api/ai/chat/stream`
-
-通用对话流式 SSE 端点，供 `AiChatWidget` 等聊天入口使用。
-
-**请求体：**
-```json
-{
-  "messages": [
-    { "role": "user", "content": "你好，帮我解释当前 DataSet 结构" }
-  ],
-  "mode": "multi",
-  "systemPrompt": "(可选) 覆盖默认 system prompt"
-}
-```
-
-**响应：**
-
-SSE 事件流，典型事件包括 `delta`、`reasoning`、`usage`、`done`。
-
 ### `/api/ai/sessions/*`
 
-统一会话接口，供 stills / FC 会话编排使用。
+统一会话接口，供 stills / FC 会话编排使用。`/turn/stream` 只是 HTTP 启动命令，返回 accepted ACK；`ai-turn-*` 模型事件统一通过 `/api/events` 下发。
 
 | Method | Path | 说明 |
 |---|---|---|
 | `POST` | `/api/ai/sessions` | 创建会话 |
 | `POST` | `/api/ai/sessions/{sessionId}/turn` | 非流式执行一轮 |
-| `POST` | `/api/ai/sessions/{sessionId}/turn/stream` | 流式执行一轮 |
+| `POST` | `/api/ai/sessions/{sessionId}/turn/stream` | 启动一轮模型调用，返回 HTTP ACK |
 | `POST` | `/api/ai/sessions/{sessionId}/append` | 追加消息 |
 | `GET` | `/api/ai/sessions/{sessionId}/conversation` | 获取完整会话历史 |
 | `DELETE` | `/api/ai/sessions/{sessionId}` | 销毁单个会话 |
@@ -159,6 +140,10 @@ SSE 事件流，典型事件包括 `delta`、`reasoning`、`usage`、`done`。
 | `POST` | `/api/ai/debug/screenshot-result` | 回传截图调试结果 |
 | `POST` | `/api/ai/debug/route-request` | 触发路由调试请求 |
 | `POST` | `/api/ai/debug/route-result` | 回传路由调试结果 |
+
+### `GET /api/events`
+
+APP 唯一 SSE 通道。页面配置、数据任务、通知、AI 调试事件和 AI turn 模型事件都通过这里广播；AI turn 事件名为 `ai-turn-delta`、`ai-turn-reasoning`、`ai-turn-usage`、`ai-turn-result`、`ai-turn-error`、`ai-turn-done`。
 
 ---
 

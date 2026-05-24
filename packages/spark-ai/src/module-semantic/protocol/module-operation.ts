@@ -75,22 +75,29 @@ export class ModuleCheckEntry {
 
 export type ModuleOperationResultOptions<TData> = Readonly<{
   ok: boolean
-  data?: TData | undefined
-  checks?: readonly ModuleCheckEntry[] | undefined
-  state?: Record<string, unknown> | undefined
+  data?: TData
+  checks?: readonly ModuleCheckEntry[]
+  state?: Record<string, unknown>
 }>
 
 export class ModuleOperationResult<TData = unknown> {
   public readonly ok: boolean
-  public readonly data?: TData | undefined
-  public readonly checks?: readonly ModuleCheckEntry[] | undefined
-  public readonly state?: Record<string, unknown> | undefined
+  public readonly data?: TData
+  public readonly checks?: readonly ModuleCheckEntry[]
+  public readonly state?: Record<string, unknown>
 
   public constructor(options: ModuleOperationResultOptions<TData>) {
     this.ok = options.ok
-    this.data = options.data
-    this.checks = nonEmptyChecks(options.checks)
-    this.state = options.state
+    if ('data' in options) {
+      this.data = options.data
+    }
+    const checks = nonEmptyChecks(options.checks)
+    if (checks !== undefined) {
+      this.checks = checks
+    }
+    if (options.state !== undefined) {
+      this.state = options.state
+    }
   }
 
   /** 成功结果（可选 data + checks + state） */
@@ -99,7 +106,12 @@ export class ModuleOperationResult<TData = unknown> {
     checks?: readonly ModuleCheckEntry[],
     state?: Record<string, unknown>,
   ): ModuleOperationResult<TData> {
-    return new ModuleOperationResult({ ok: true, data, checks, state })
+    return new ModuleOperationResult({
+      ok: true,
+      ...(data === undefined ? {} : { data }),
+      ...(checks === undefined ? {} : { checks }),
+      ...(state === undefined ? {} : { state }),
+    })
   }
 
   /** 失败结果（至少一条 check） */
@@ -110,7 +122,11 @@ export class ModuleOperationResult<TData = unknown> {
     if (checks.length === 0) {
       throw new Error('ModuleOperationResult.fail requires at least one ModuleCheckEntry')
     }
-    return new ModuleOperationResult({ ok: false, checks, state })
+    return new ModuleOperationResult({
+      ok: false,
+      checks,
+      ...(state === undefined ? {} : { state }),
+    })
   }
 
   /** 失败结果简写：单条 error 级 check */
@@ -120,7 +136,11 @@ export class ModuleOperationResult<TData = unknown> {
 
   /** 透传上游失败（保留原始 checks + state） */
   public static passthroughFailure(result: ModuleOperationResult<unknown>): ModuleOperationResult<never> {
-    return new ModuleOperationResult({ ok: false, checks: result.checks, state: result.state })
+    return new ModuleOperationResult({
+      ok: false,
+      ...(result.checks === undefined ? {} : { checks: result.checks }),
+      ...(result.state === undefined ? {} : { state: result.state }),
+    })
   }
 }
 

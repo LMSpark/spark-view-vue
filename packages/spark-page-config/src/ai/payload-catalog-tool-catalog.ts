@@ -45,29 +45,29 @@ type PayloadCatalogActionRunner = (
 
 type PageDesignPayloadProp = {
   readonly name: string
-  readonly type?: string | undefined
-  readonly required?: boolean | undefined
-  readonly description?: string | undefined
-  readonly schema?: LlmJsonSchema | undefined
+  readonly type?: string
+  readonly required?: boolean
+  readonly description?: string
+  readonly schema?: LlmJsonSchema
 }
 
 type PageDesignPayloadEntry = {
   readonly type: string
-  readonly filePath?: string | undefined
-  readonly category?: string | undefined
-  readonly description?: string | undefined
-  readonly internal?: boolean | undefined
-  readonly configurable?: boolean | undefined
-  readonly props?: readonly PageDesignPayloadProp[] | undefined
-  readonly emits?: readonly unknown[] | undefined
-  readonly source?: string | undefined
+  readonly filePath?: string
+  readonly category?: string
+  readonly description?: string
+  readonly internal?: boolean
+  readonly configurable?: boolean
+  readonly props?: readonly PageDesignPayloadProp[]
+  readonly emits?: readonly unknown[]
+  readonly source?: string
 }
 
 type PageDesignPayloadCatalog = {
   readonly version: string
   readonly componentCount: number
   readonly components: Readonly<Record<string, PageDesignPayloadEntry>>
-  readonly $defs?: Readonly<Record<string, LlmJsonSchema>> | undefined
+  readonly $defs?: Readonly<Record<string, LlmJsonSchema>>
 }
 
 // ── 构建产物读取与推荐排序 ─────────────────────────────────
@@ -198,14 +198,14 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
   public constructor(options: {
     readonly service: PageDesignService
     readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
-    readonly parentKind?: string | undefined
-    readonly registry?: ModuleParameterPayloadRegistry | undefined
+    readonly parentKind?: string
+    readonly registry?: ModuleParameterPayloadRegistry
   }) {
     super({
       kind: PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
       name: 'Page Design Payload Catalog',
       description: '当前页面设计参数荷载知识查询，按 moduleKind + payloadRef 路由到已注册 provider。',
-      parentKind: options.parentKind,
+      ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       actions: PAYLOAD_CATALOG_ACTIONS,
       children: [],
     })

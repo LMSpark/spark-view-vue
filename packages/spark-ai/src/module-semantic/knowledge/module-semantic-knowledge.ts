@@ -20,7 +20,7 @@ export type ModuleSemanticKnowledgeModuleSummary = Readonly<{
   kind: string
   name: string
   description: string
-  parentKind?: string | undefined
+  parentKind?: string
   attributeCount: number
   actionCount: number
   payloadCount: number
@@ -30,9 +30,9 @@ export type ModuleSemanticKnowledgeModuleSummary = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeModuleFilter = Readonly<{
-  kind?: string | undefined
-  parentKind?: string | undefined
-  keyword?: string | undefined
+  kind?: string
+  parentKind?: string
+  keyword?: string
 }>
 
 export type ModuleSemanticKnowledgeFunctionSummary = Readonly<{
@@ -53,10 +53,10 @@ export type ModuleSemanticKnowledgeFunctionGuide = Readonly<{
   actionName: string
   description: string
   paramsSchema: LlmJsonSchemaObject
-  resultSchema?: ModuleActionResultSchema | undefined
+  resultSchema?: ModuleActionResultSchema
   usageRules: readonly string[]
   failureModes: readonly ModuleActionFailureMode[]
-  example?: LlmJsonValue | undefined
+  example?: LlmJsonValue
 }>
 
 export type ModuleSemanticKnowledgeSnapshot = Readonly<{
@@ -66,21 +66,21 @@ export type ModuleSemanticKnowledgeSnapshot = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeFunctionFilter = Readonly<{
-  kind?: string | undefined
-  keyword?: string | undefined
+  kind?: string
+  keyword?: string
 }>
 
 export type ModuleSemanticKnowledgeFunctionGuideInput = Readonly<{
-  action?: string | undefined
-  kind?: string | undefined
-  actionName?: string | undefined
+  action?: string
+  kind?: string
+  actionName?: string
 }>
 
 export type ModuleSemanticHumanQuestionGuideInput = Readonly<{
   context: string
   reason: string
-  missingFacts?: readonly string[] | undefined
-  candidateOptions?: readonly string[] | undefined
+  missingFacts?: readonly string[]
+  candidateOptions?: readonly string[]
 }>
 
 export type ModuleSemanticHumanQuestionGuide = Readonly<{

@@ -41,14 +41,14 @@ export type AiHostBusinessRegistrationOptions = Readonly<{
   /** 语义模块运行时——承载 moduleKinds、childKinds 等能力树 */
   runtime: ModuleSemanticRuntime
   /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */
-  inputContract?: AiHostBusinessInputContract | undefined
+  inputContract?: AiHostBusinessInputContract
   /** 可选的自定义会话存储；不传则使用 DefaultAiHostSessionStore */
-  sessionStore?: AiHostSessionStore | undefined
+  sessionStore?: AiHostSessionStore
   /**
    * 动态系统提示生成器——每次会话轮次开始前调用，返回值拼接到 LLM 系统消息末尾。
    * 可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。
    */
-  systemPrompt?: ((context: AiHostBusinessRuntimeContext) => string | undefined) | undefined
+  systemPrompt?: (context: AiHostBusinessRuntimeContext) => string | undefined
   /**
    * 工具调用后置处理器——LLM 每次完成工具调用后触发。
    * 接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。
@@ -94,17 +94,17 @@ export class AiHostBusinessRegistration {
   /** 模块语义运行时——工具调用时从中查找 kind、执行 action */
   public readonly runtime: ModuleSemanticRuntime
   /** kindID 的注册化输入契约；由 createAiHostBusinessTask 使用 */
-  public readonly inputContract?: AiHostBusinessInputContract | undefined
+  public readonly inputContract?: AiHostBusinessInputContract
 
   /* ── 持久化 ───────────────────────────────────────────── */
 
   /** 会话历史持久化存储 */
-  public readonly sessionStore?: AiHostSessionStore | undefined
+  public readonly sessionStore?: AiHostSessionStore
 
   /* ── 生命周期钩子 ─────────────────────────────────────── */
 
   /** 系统提示注入 */
-  public readonly systemPrompt?: ((context: AiHostBusinessRuntimeContext) => string | undefined) | undefined
+  public readonly systemPrompt?: (context: AiHostBusinessRuntimeContext) => string | undefined
   /** 工具调用后处理 */
   public readonly afterFunctionCall?: (
     options: AiHostBusinessAfterFunctionCallOptions,

@@ -243,7 +243,7 @@ function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTe
  *
  * 服务按 pageId 缓存 `PageDesignEditSession`，负责 bootstrap、文本模型读写、
  * DataSet/node-tree action 落地、payload guide 状态记录和 props 校验。它不保存
- * AI Host 会话历史，也不直接处理后端 SSE；这些属于 spark-ai Host。
+ * AI Host 会话历史，也不直接订阅 APP 公共 SSE；订阅适配留在 AI Host/APP 边界。
  */
 export class PageDesignService {
   private readonly states = new Map<string, PageDesignEditSession>()

@@ -34,17 +34,17 @@ export type AiHostSessionTranscriptEntry = Readonly<{
   timestamp: string | null
   kind: 'message' | 'functionCall' | 'unknown'
   direction: string
-  role?: string | undefined
-  source?: string | undefined
-  toolName?: string | undefined
-  status?: string | undefined
-  content?: string | undefined
-  args?: string | undefined
-  result?: string | undefined
+  role?: string
+  source?: string
+  toolName?: string
+  status?: string
+  content?: string
+  args?: string
+  result?: string
 }>
 
 export type AiHostSessionTranscriptOptions = Readonly<{
-  contentLimit?: number | undefined
+  contentLimit?: number
 }>
 
 // ── 公共诊断入口 ────────────────────────────────────────────

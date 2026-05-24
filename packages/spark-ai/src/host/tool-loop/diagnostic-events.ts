@@ -1,9 +1,9 @@
 /**
  * ┌─────────────────────────────────────────────────────────────────────────────┐
  * │  AI HOST · 诊断事件发射器                                                     │
- * │  Diagnostic SSE Event Emitters                                               │
+ * │  Diagnostic Stream Event Emitters                                            │
  * │                                                                              │
- * │  本模块负责在 Tool Loop 执行期间向外推送诊断性质的 SSE 事件，                    │
+ * │  本模块负责在 Tool Loop 执行期间向外推送诊断性质的 stream 事件，                 │
  * │  用于前端实时展示 LLM 请求/响应、工具调用结果等调试信息。                         │
  * │                                                                              │
  * │  事件类型：                                                                   │
@@ -23,7 +23,7 @@
 
 import { createAiHostStreamKey, createAiHostTurnKey } from '../business/business-scope'
 import type { AiHostBusinessScope } from '../business/business-types'
-import type { AiHostChatRequest, AiHostSseEvent, AiHostTurnMeta } from '../chat/chat-types'
+import type { AiHostChatRequest, AiHostStreamEvent, AiHostTurnMeta } from '../chat/chat-types'
 import { stringifyAiHostPayload } from './payload-codec'
 
 type LlmDiagnosticEventInput = Readonly<{
@@ -42,11 +42,11 @@ type ToolResultEventInput = Readonly<{
   data: unknown
 }>
 
-type ScopedSseEventInput = Readonly<{
+type ScopedStreamEventInput = Readonly<{
   scope: AiHostBusinessScope
   turnId: string
   eventModuleId: string
-  type: AiHostSseEvent['type']
+  type: AiHostStreamEvent['type']
   data: string
 }>
 
@@ -59,8 +59,8 @@ type ScopedSseEventInput = Readonly<{
 
 export function emitLlmDiagnosticEvent(input: LlmDiagnosticEventInput): void {
   const { request, scope, turn, type, data } = input
-  // 将任意数据序列化为 JSON 字符串后包装为 SSE 事件
-  request.onSseEvent?.(createScopedSseEvent({
+  // 将任意数据序列化为 JSON 字符串后包装为 turn stream 事件。
+  request.onStreamEvent?.(createScopedStreamEvent({
     scope,
     turnId: turn.turnId,
     eventModuleId: 'llm',
@@ -78,7 +78,7 @@ export function emitLlmDiagnosticEvent(input: LlmDiagnosticEventInput): void {
 
 export function emitToolResultEvent(input: ToolResultEventInput): void {
   const { request, scope, turn, eventModuleId, data } = input
-  request.onSseEvent?.(createScopedSseEvent({
+  request.onStreamEvent?.(createScopedStreamEvent({
     scope,
     turnId: turn.turnId,
     eventModuleId,
@@ -121,14 +121,14 @@ export function eventModuleIdFromProtocolCall(
  * ----------------------------------------------------------------------------- */
 
 /**
- * 构造带作用域信息的 SSE 事件。
+ * 构造带作用域信息的 turn stream 事件。
  *
  * 每个事件携带两个关键字段：
  *   · turnKey   — 前端用于定位同一对话 turn
  *   · streamKey — 前端用于路由到 turn 内的细粒度流
  *   · scope     — 事件归属元数据（业务 ID、模块 ID、轮次 ID），便于前端分组展示
  */
-function createScopedSseEvent(input: ScopedSseEventInput): AiHostSseEvent {
+function createScopedStreamEvent(input: ScopedStreamEventInput): AiHostStreamEvent {
   const { scope, turnId, eventModuleId, type, data } = input
   return {
     type,

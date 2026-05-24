@@ -679,15 +679,15 @@ DevSystem 应该被视为 SPARK View 的一等产品，而不是附属调试页�
 
 ## 14. Java 后端：`spark-ai-server`
 
-[spark-ai-server](../spark-ai-server) 是 Spring Boot 后端。虽然名字里带 AI，但当前职责已经覆盖平台后端能力：聊天流、AI 会话、页面配置、导航、认证、租户项目、SSE 调试、日志和版本管理。
+[spark-ai-server](../spark-ai-server) 是 Spring Boot 后端。虽然名字里带 AI，但当前职责已经覆盖平台后端能力：AI 会话、APP 公共 SSE、页面配置、导航、认证、租户项目、调试、日志和版本管理。
 
 根据当前控制器、service、entity 和配置，可以概括为：
 
 | 能力 | 说明 |
 |---|---|
 | API envelope | JSON REST 统一返回 `{ ok, data, error, requestId }`，非 JSON/SSE 保留原协议，SSE result/error data 使用同一 envelope |
-| AI chat | `POST /api/ai/chat/stream` 通用对话流 |
-| AI sessions | `/api/ai/sessions/*` 会话创建、执行、追加、查询和销毁，DB 持久化 session/message/tool/context |
+| APP SSE | `GET /api/events` 是唯一 SSE 通道，承载页面配置、调试和 `ai-turn-*` 模型事件 |
+| AI sessions | `/api/ai/sessions/*` 会话创建、执行、追加、查询和销毁，DB 持久化 session/message/tool/context；`/turn/stream` 是 HTTP 启动命令，不是 SSE 通道 |
 | 页面配置 | 读取、创建、删除、版本、恢复和健康检查页面四文件，依赖 `PageConfigStorage` SPI |
 | 导航树 | 多租户项目下的导航节点查询、CRUD、搜索和链接探测，service 层校验访问上下文 |
 | 认证与租户 | 登录、注册、当前用户、租户、项目和 `ProjectMember` 成员关系 |

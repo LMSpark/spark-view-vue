@@ -61,11 +61,10 @@ export default defineConfig({
         target: process.env['AI_BACKEND_URL'] ?? 'http://127.0.0.1:8080',
         changeOrigin: true,
         secure: false,
-        // SSE 端点（/chat/stream、/events）需禁用响应缓冲，否则代理会
-        // 把整个流缓冲到连接关闭后才一次性转发，导致前端无法逐 token 接收。
+        // APP 只有 /api/events 这一条 SSE 通道；AI turn 由 HTTP 命令启动，
+        // 模型事件同样从 /api/events 回来，代理层只为这条通道关闭缓冲。
         configure: (proxy) => {
-          const isSSE = (url?: string) =>
-            url?.includes('/chat/stream') || url?.includes('/turn/stream') || url === '/api/events'
+          const isSSE = (url?: string) => url === '/api/events'
           // 移除 Accept-Encoding 防止后端压缩 SSE（压缩会触发代理缓冲）
           proxy.on('proxyReq', (proxyReq, req) => {
             if (isSSE(req.url)) {

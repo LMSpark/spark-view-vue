@@ -127,13 +127,13 @@ export class PageDesignTextModelModuleKind extends ModuleKind {
   public constructor(options: {
     readonly service: PageDesignService
     readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
-    readonly parentKind?: string | undefined
+    readonly parentKind?: string
   }) {
     super({
       kind: 'text-model',
       name: 'Page Design Text Model',
       description: '当前页面 script.js/style.css live 文本模型读写。',
-      parentKind: options.parentKind,
+      ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       actions: TEXT_MODEL_ACTIONS,
       children: [],
     })

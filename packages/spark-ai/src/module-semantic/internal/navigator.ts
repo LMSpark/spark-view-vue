@@ -57,7 +57,7 @@ export type ModuleKindDescription = Readonly<{
   kind: string
   name: string
   description: string
-  parentKind?: string | undefined
+  parentKind?: string
   attributes: readonly ModuleAttributeMetadata[]
   actions: readonly ModuleActionMetadata[]
   payloads: ModuleKind['payloads']

@@ -1,7 +1,5 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.model.GeneralChatRequest;
-import com.spark.ai.service.AiStreamService;
 import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.SseService;
 import org.slf4j.Logger;
@@ -16,7 +14,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -30,7 +27,6 @@ import java.util.UUID;
  * AI 端点控制器。
  *
  * <ul>
- *   <li>POST /api/ai/chat/stream       — 通用对话流式 SSE（AiChatWidget 使用）</li>
  *   <li>POST /api/ai/upload            — 文件上传（聊天附件）</li>
  *   <li>POST /api/ai/component-metadata — 组件元数据上传（构建时自动调用）</li>
  *   <li>GET  /api/ai/component-metadata — 元数据状态查询</li>
@@ -42,17 +38,14 @@ public class AiChatController {
 
     private static final Logger log = LoggerFactory.getLogger(AiChatController.class);
 
-    private final AiStreamService aiStreamService;
     private final ComponentMetadataService metadataService;
     private final SseService sseService;
 
     @Value("${spark.pages.config-dir:./data/pages-config}")
     private String pagesConfigDir;
 
-    public AiChatController(AiStreamService aiStreamService,
-                            ComponentMetadataService metadataService,
+    public AiChatController(ComponentMetadataService metadataService,
                             SseService sseService) {
-        this.aiStreamService = aiStreamService;
         this.metadataService = metadataService;
         this.sseService = sseService;
     }
@@ -86,28 +79,6 @@ public class AiChatController {
                 "skillPromptLength", metadataService.getSkillPromptCompact() != null
                         ? metadataService.getSkillPromptCompact().length() : 0
         ));
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // 通用流式对话
-    // ─────────────────────────────────────────────────────────────────────────
-
-    /**
-     * POST /api/ai/chat/stream
-     * 通用多轮/单轮对话，以 SSE 流形式逐 token 返回 AI 回复。
-     *
-     * <p>前端通过 fetch + ReadableStream 消费：
-     * <pre>
-     * event: delta
-     * data: {"delta":"你好"}
-     *
-     * event: done
-     * data: {"done":true}
-     * </pre>
-     */
-    @PostMapping(value = "/chat/stream", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter chatStream(@RequestBody GeneralChatRequest request) {
-        return aiStreamService.streamChat(request);
     }
 
     // ─────────────────────────────────────────────────────────────────────────

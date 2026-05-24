@@ -129,13 +129,13 @@ export class PageDesignLifecycleModuleKind extends ModuleKind {
   public constructor(options: {
     readonly service: PageDesignService
     readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
-    readonly parentKind?: string | undefined
+    readonly parentKind?: string
   }) {
     super({
       kind: 'lifecycle',
       name: 'Page Design Lifecycle',
       description: '页面设计编辑运行态引导与进度查询。',
-      parentKind: options.parentKind,
+      ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       actions: LIFECYCLE_ACTIONS,
       children: [],
     })

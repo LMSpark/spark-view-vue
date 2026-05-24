@@ -35,7 +35,7 @@ export type AiHostFunctionCallCheck = Readonly<{
   level: 'error' | 'warn' | 'info'
   code: string
   message: string
-  hint?: string | undefined
+  hint?: string
 }>
 
 export type AiHostFunctionCallFailure = Readonly<{
@@ -43,7 +43,7 @@ export type AiHostFunctionCallFailure = Readonly<{
   code: string
   msg: string
   fix: string
-  checks?: readonly AiHostFunctionCallCheck[] | undefined
+  checks?: readonly AiHostFunctionCallCheck[]
 }>
 
 /**
@@ -53,8 +53,8 @@ export type AiHostFunctionCallFailure = Readonly<{
  */
 export type AiHostFunctionCallResult<TData> = Readonly<{
   ok: true
-  data?: TData | undefined
-  summary?: string | undefined
+  data?: TData
+  summary?: string
 }> | AiHostFunctionCallFailure
 
 // ═══════════════════════════════════════════════════════════════
@@ -87,7 +87,7 @@ export type AiHostMessageHistoryEntry = AiHostHistoryEntryBase & Readonly<{
   role: AiHostMessageRole
   source: AiHostMessageSource
   content: string
-  metadata?: Record<string, unknown> | undefined
+  metadata?: Record<string, unknown>
 }>
 
 /** 工具调用历史条目（协议工具调用记录） */
@@ -96,10 +96,10 @@ export type AiHostFunctionCallHistoryEntry = AiHostHistoryEntryBase & Readonly<{
   toolName: string
   args: unknown
   status: AiHostFunctionCallHistoryStatus
-  completedAt?: number | undefined
+  completedAt?: number
   result?: unknown
-  error?: AiHostFunctionCallFailure | undefined
-  metadata?: Record<string, unknown> | undefined
+  error?: AiHostFunctionCallFailure
+  metadata?: Record<string, unknown>
 }>
 
 /** 历史条目联合类型 */
@@ -118,8 +118,8 @@ export type AiHostSessionRecord = Readonly<{
   status: AiHostSessionStatus
   startedAt: number
   updatedAt: number
-  stoppedAt?: number | undefined
-  reason?: string | undefined
+  stoppedAt?: number
+  reason?: string
   history: readonly AiHostHistoryEntry[]
 }>
 
@@ -142,10 +142,10 @@ export type AiHostAppendFunctionCallOptions = AiHostBusinessRuntimeContext & Rea
   runtimeInstanceId: string
   toolName: string
   args: unknown
-  status?: AiHostFunctionCallHistoryStatus | undefined
+  status?: AiHostFunctionCallHistoryStatus
   result?: unknown
-  error?: AiHostFunctionCallFailure | undefined
-  metadata?: Record<string, unknown> | undefined
+  error?: AiHostFunctionCallFailure
+  metadata?: Record<string, unknown>
 }>
 
 // ═══════════════════════════════════════════════════════════════

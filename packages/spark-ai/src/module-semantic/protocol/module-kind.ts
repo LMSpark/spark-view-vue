@@ -71,7 +71,7 @@ export type ModuleAttributeMetadata = Readonly<{
   /** 是否可写 */
   writable: boolean
   /** 示例值（可选，帮助 LLM 理解属性形状） */
-  example?: LlmJsonValue | undefined
+  example?: LlmJsonValue
 }>
 
 /** 属性访问权限（从 ModuleAttributeMetadata 中提取的可读/可写标记） */
@@ -101,13 +101,13 @@ export type ModuleActionMetadata = Readonly<{
   /** 参数 schema（JSON Schema object root，用于 LLM 参数校验） */
   paramsSchema: LlmJsonSchemaObject
   /** 返回值 schema（可选，帮助 LLM 理解返回值结构） */
-  resultSchema?: ModuleActionResultSchema | undefined
+  resultSchema?: ModuleActionResultSchema
   /** 使用规则（多条，LLM 在调用前阅读） */
-  usageRules?: readonly string[] | undefined
+  usageRules?: readonly string[]
   /** 失败模式（多条，LLM 在调用失败后参考修复） */
-  failureModes?: readonly ModuleActionFailureMode[] | undefined
+  failureModes?: readonly ModuleActionFailureMode[]
   /** 调用示例（帮助 LLM 理解参数形状） */
-  example?: LlmJsonValue | undefined
+  example?: LlmJsonValue
 }>
 
 // ── 1.3 参数荷载元数据 ──
@@ -120,7 +120,7 @@ export type ModuleParameterPayloadMetadata = Readonly<{
   /** 该 payload 与当前模块的关系说明 */
   description: string
   /** 该 payload 通常服务的 action 名；为空表示模块级通用 */
-  requiredForActions?: readonly string[] | undefined
+  requiredForActions?: readonly string[]
 }>
 
 // ── 1.4 属性访问委托 ──
@@ -143,23 +143,23 @@ export type ModuleKindOptions = Readonly<{
   /** 模块说明（LLM 可见，描述该模块的业务能力） */
   description: string
   /** 父模块 kind（可选，用于表达模块层级关系） */
-  parentKind?: string | undefined
+  parentKind?: string
   /** 属性表（可选，声明 LLM 可读写的一组属性） */
-  attributes?: readonly ModuleAttributeMetadata[] | undefined
+  attributes?: readonly ModuleAttributeMetadata[]
   /** 动作表（可选，声明 LLM 可调用的一组动作） */
-  actions?: readonly ModuleActionMetadata[] | undefined
+  actions?: readonly ModuleActionMetadata[]
   /** 参数荷载引用（可选，声明模块依赖的外部参数指南） */
-  payloads?: readonly ModuleParameterPayloadMetadata[] | undefined
+  payloads?: readonly ModuleParameterPayloadMetadata[]
   /** 子模块 kind 列表（可选，声明该模块允许包含的子模块类型） */
-  children?: readonly string[] | undefined
+  children?: readonly string[]
   /** 属性读写委托（声明了 attributes 时必填） */
-  attributeAccessor?: ModuleAttributeAccessor | undefined
+  attributeAccessor?: ModuleAttributeAccessor
   /** 动作执行委托（未提供时默认返回 ACTION_NOT_IMPLEMENTED） */
-  runner?: ModuleKindRunner | undefined
+  runner?: ModuleKindRunner
   /** 子实例列表委托（未提供时默认返回空列表） */
-  list?: ModuleChildrenLister | undefined
+  list?: ModuleChildrenLister
   /** 子实例查询委托（未提供时默认返回仅含当前实例的列表） */
-  find?: ModuleInstanceFinder | undefined
+  find?: ModuleInstanceFinder
 }>
 
 // ── 1.6 内部辅助类型 ──
@@ -167,8 +167,8 @@ export type ModuleKindOptions = Readonly<{
 
 /** 业务动作的返回值（serviceResultToOperationResult 的输入格式） */
 type ModuleActionServiceResult =
-  | { readonly ok: true; readonly data?: unknown; readonly summary?: string | undefined }
-  | { readonly ok: false; readonly code: string; readonly msg: string; readonly fix?: string | undefined }
+  | { readonly ok: true; readonly data?: unknown; readonly summary?: string }
+  | { readonly ok: false; readonly code: string; readonly msg: string; readonly fix?: string }
 
 // ── 1.7 默认属性访问委托 ──
 // 当 ModuleKind 未声明 attributes 时使用。不抛错（无属性时 getAttribute/setAttribute
@@ -210,7 +210,7 @@ export class ModuleKind {
   public readonly kind: string
   public readonly name: string
   public readonly description: string
-  public readonly parentKind?: string | undefined
+  public readonly parentKind?: string
   public readonly attributes: readonly ModuleAttributeMetadata[]
   public readonly actions: readonly ModuleActionMetadata[]
   public readonly payloads: readonly ModuleParameterPayloadMetadata[]
@@ -234,7 +234,10 @@ export class ModuleKind {
     this.kind = kind
     this.name = normalizeRequiredText(options.name, `name for "${kind}"`)
     this.description = normalizeRequiredText(options.description, `description for "${kind}"`)
-    this.parentKind = normalizeParentKind(options.parentKind, kind)
+    const parentKind = normalizeParentKind(options.parentKind, kind)
+    if (parentKind !== undefined) {
+      this.parentKind = parentKind
+    }
     this.attributes = normalizeAttributeMetadata(options.attributes ?? [], kind)
     this.moduleAttributeByName = createNamedMap(this.attributes, 'attribute')
     this.actions = normalizeActionMetadata(options.actions ?? [], kind)

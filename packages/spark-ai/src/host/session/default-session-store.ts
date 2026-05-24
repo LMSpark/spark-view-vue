@@ -29,11 +29,11 @@ import {
   type AiHostMessageSource,
   type AiHostSessionRecord,
 } from './session-types'
-import { isRecord } from '../transport/http-utils'
+import { isRecord } from '@spark-view/spark-utils'
 
 /** 存储选项：允许注入自定义时间源（便于测试） */
 export type DefaultAiHostSessionStoreOptions = Readonly<{
-  now?: (() => number) | undefined
+  now?: () => number
 }>
 
 // ═══════════════════════════════════════════════════════════════
