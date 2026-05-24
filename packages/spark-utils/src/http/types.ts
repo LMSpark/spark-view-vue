@@ -138,12 +138,8 @@ export type ResponseInterceptor = {
   onResponse?: <T>(response: HttpResponse<T>) => HttpResponse<T> | Promise<HttpResponse<T>>
   onResponseError?: (error: RequestError) => RequestError | Promise<RequestError>}
 
-/** HttpClient 底层适配器类型 */
-export type HttpClientAdapter = 'axios' | 'fetch'
-
 /** createHttpClient 工厂参数 */
-export type HttpClientFactoryOptions = Partial<RequestConfig> & {
-  adapter?: HttpClientAdapter}
+export type HttpClientFactoryOptions = Partial<RequestConfig>
 
 // ==================== 文件加载器 / 缓存层 ====================
 

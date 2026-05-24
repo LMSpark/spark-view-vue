@@ -42,15 +42,14 @@ export type {
 // ==================== HTTP 模块 ====================
 
 export {
-  createFetchClient,
   createFileLoader,
   createHttpClient,
   createRequest,
-  FetchClient,
   FileLoader,
   HttpClientBase,
   isRequestError,
   Request,
+  sendBeacon,
   TransformedFileLoader,
 } from './http/index.js'
 
@@ -65,7 +64,6 @@ export type {
   FileLoaderEventMap,
   FileLoadOptions,
   FileLoadResult,
-  HttpClientAdapter,
   HttpClientFactoryOptions,
   HttpResponse,
   JsonLoadOptions,

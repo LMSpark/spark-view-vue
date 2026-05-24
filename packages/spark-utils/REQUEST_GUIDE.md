@@ -229,15 +229,13 @@ const blob = await request.get<Blob>('/file.pdf', {}, {
 })
 ```
 
-### Fetch 专属能力（beacon）
+### 页面卸载期上报
 
 ```typescript
-import { createFetchClient } from '@spark-view/spark-utils'
-
-const fetchClient = createFetchClient({ baseURL: '/api' })
+import { sendBeacon } from '@spark-view/spark-utils'
 
 // 页面卸载期日志上报
-fetchClient.beacon('/logs/batch', { logs: [] })
+sendBeacon('/logs/batch', { logs: [] }, '/api')
 ```
 
 ### 文件上传

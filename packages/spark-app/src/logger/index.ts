@@ -19,7 +19,7 @@
  */
 export type { LogLevel } from '@spark-view/spark-utils'
 import type { LogLevel, LogTransport as BaseLogTransport } from '@spark-view/spark-utils'
-import { createFetchClient } from '@spark-view/spark-utils'
+import { sendBeacon } from '@spark-view/spark-utils'
 
 /**
  * 应用层 Logger API 接口
@@ -297,13 +297,12 @@ export function createBatchHttpTransport(options: BatchTransportOptions): LogTra
 
   let queue: LogEntry[] = []
   let timer: ReturnType<typeof setInterval> | null = null
-  const beaconClient = createFetchClient()
 
   function flush(): void {
     if (queue.length === 0) return
     const batch = queue
     queue = []
-    beaconClient.beacon(endpoint, { logs: batch })
+    sendBeacon(endpoint, { logs: batch })
   }
 
   // 定时刷新

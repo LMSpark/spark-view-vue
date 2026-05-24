@@ -7,7 +7,7 @@
  * 所有 API 调用自动附带 X-Tenant-Id 头。
  */
 
-import { createFetchClient, isRequestError, isRecord } from '@spark-view/spark-utils'
+import { createRequest, isRequestError, isRecord } from '@spark-view/spark-utils'
 import { isStringArray, readStringProperty } from '@spark-view/spark-utils/internal'
 
 // ── Token 管理 ──────────────────────────────────────────────────────────────
@@ -127,7 +127,7 @@ export function switchProject(projectId: string): void {
 
 // ── API 调用 ────────────────────────────────────────────────────────────────
 
-const authHttp = createFetchClient()
+const authHttp = createRequest()
 
 async function authFetch(url: string, body: Record<string, string>): Promise<Record<string, unknown>> {
   try {

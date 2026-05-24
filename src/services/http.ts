@@ -25,8 +25,8 @@
  * ```
  */
 
-import { HttpClientBase, createHttpClient, createRequest } from '@spark-view/spark-utils'
-import type { FetchClient, HttpResponse, RequestConfig } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest } from '@spark-view/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import { getToken, getUser, clearAuth } from './auth'
 
 export function createAuthHeaders(): Record<string, string> {
@@ -40,7 +40,6 @@ export function createAuthHeaders(): Record<string, string> {
 }
 
 let _instance: HttpClientBase | null = null
-let _fetchInstance: FetchClient | null = null
 
 class LazyHttpClient extends HttpClientBase {
   constructor() {
@@ -87,31 +86,6 @@ export function getHttpClient(): HttpClientBase {
   })
 
   return _instance
-}
-
-export function getFetchHttpClient(): FetchClient {
-  if (_fetchInstance) return _fetchInstance
-
-  _fetchInstance = createHttpClient({ adapter: 'fetch', timeout: 30_000 })
-  _fetchInstance.interceptors.request.use({
-    onRequest: (config) => {
-      const authHeaders = createAuthHeaders()
-      config.headers = { ...config.headers, ...authHeaders }
-      return config
-    },
-  })
-  _fetchInstance.interceptors.response.use({
-    onResponseError: (error) => {
-      if (error.status === 401 && !error.config.url.includes('/api/auth/')) {
-        clearAuth()
-        if (window.location.pathname !== '/') {
-          window.location.href = '/'
-        }
-      }
-      throw error
-    },
-  })
-  return _fetchInstance
 }
 
 /** 全局 HTTP 客户端（带认证拦截器） */
