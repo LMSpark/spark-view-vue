@@ -1,6 +1,7 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-view/spark-utils'
+import { readPrototypeProperty } from '@spark-view/spark-utils/internal'
 import type { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
 import type {
   ChildPlacement,
@@ -52,22 +53,10 @@ function isSameContextConfig(a: NavContextConfig, b: NavContextConfig): boolean 
   return contextConfigSignature(a) === contextConfigSignature(b)
 }
 
-function readObjectProp(value: unknown, key: string): unknown {
-  if (value === null || typeof value !== 'object') return undefined
-  let current: object | null = value
-  while (current !== null) {
-    const descriptor: { value?: unknown } | undefined = Object.getOwnPropertyDescriptor(current, key)
-    if (descriptor !== undefined) return descriptor.value
-    const prototype: unknown = Object.getPrototypeOf(current)
-    current = prototype !== null && typeof prototype === 'object' ? prototype : null
-  }
-  return undefined
-}
-
 function isNavContextItem(value: unknown): value is NavContextItem {
   if (value === null || typeof value !== 'object') return false
-  const id = readObjectProp(value, 'id')
-  const title = readObjectProp(value, 'title')
+  const id = readPrototypeProperty(value, 'id')
+  const title = readPrototypeProperty(value, 'title')
   return (typeof id === 'string' || typeof id === 'number') && typeof title === 'string'
 }
 
@@ -446,19 +435,19 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   function isConfigLoader(value: unknown): value is BasePageConfigLoader {
     return value !== null &&
       typeof value === 'object' &&
-      typeof readObjectProp(value, 'loadPageConfig') === 'function'
+      typeof readPrototypeProperty(value, 'loadPageConfig') === 'function'
   }
 
   function readRouteRecordConfigLoader(routeRecord: { props?: unknown }): BasePageConfigLoader | null {
     const propsByView = routeRecord.props
     if (propsByView === null || typeof propsByView !== 'object') return null
 
-    const defaultProps = readObjectProp(propsByView, 'default')
+    const defaultProps = readPrototypeProperty(propsByView, 'default')
     const propsObject = defaultProps !== null && typeof defaultProps === 'object'
       ? defaultProps
       : propsByView
 
-    const configLoader = readObjectProp(propsObject, 'configLoader')
+    const configLoader = readPrototypeProperty(propsObject, 'configLoader')
     return isConfigLoader(configLoader) ? configLoader : null
   }
 
@@ -472,7 +461,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
   function ensureCrossProjectRefHostRoute(): boolean {
     const existing = router.getRoutes().find(routeRecord => routeRecord.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
-    const defaultProps = readObjectProp(existing?.props, 'default')
+    const defaultProps = readPrototypeProperty(existing?.props, 'default')
     if (existing?.meta['crossProjectRefHost'] === true && typeof defaultProps === 'function') return true
 
     const configLoader = findRegisteredConfigLoader()

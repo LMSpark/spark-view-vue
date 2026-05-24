@@ -2,9 +2,9 @@
  * Module-semantic knowledge projection.
  *
  * This layer restores the old "knowledge" contract on top of the current
- * fixed six-tool protocol: it exposes module summaries, action summaries,
- * action guides, and a compact prompt snapshot without adding new LLM-visible
- * tools.
+ * module-semantic protocol: it exposes module summaries, action summaries,
+ * action guides, and a compact prompt snapshot. ProtocolToolRouter also
+ * exposes the three query/guide operations as direct LLM-visible tools.
  */
 
 import type { LlmJsonSchemaObject, LlmJsonValue } from '../../schema'
@@ -27,6 +27,12 @@ export type ModuleSemanticKnowledgeModuleSummary = Readonly<{
   payloadRefs: readonly string[]
   childKindCount: number
   children: readonly string[]
+}>
+
+export type ModuleSemanticKnowledgeModuleFilter = Readonly<{
+  kind?: string | undefined
+  parentKind?: string | undefined
+  keyword?: string | undefined
 }>
 
 export type ModuleSemanticKnowledgeFunctionSummary = Readonly<{
@@ -70,6 +76,26 @@ export type ModuleSemanticKnowledgeFunctionGuideInput = Readonly<{
   actionName?: string | undefined
 }>
 
+export type ModuleSemanticHumanQuestionGuideInput = Readonly<{
+  context: string
+  reason: string
+  missingFacts?: readonly string[] | undefined
+  candidateOptions?: readonly string[] | undefined
+}>
+
+export type ModuleSemanticHumanQuestionGuide = Readonly<{
+  kind: 'human-question-guide'
+  shouldAskHuman: true
+  stopToolCalls: true
+  context: string
+  reason: string
+  missingFacts: readonly string[]
+  candidateOptions: readonly string[]
+  question: string
+  usageRules: readonly string[]
+  resumeFlow: readonly string[]
+}>
+
 type ParsedKnowledgeAction = Readonly<{
   kind: string
   actionName: string
@@ -88,7 +114,12 @@ export class ModuleSemanticKnowledgeProjector {
     }
   }
 
-  public queryModules(): readonly ModuleSemanticKnowledgeModuleSummary[] {
+  public queryModules(
+    filter: ModuleSemanticKnowledgeModuleFilter = {},
+  ): readonly ModuleSemanticKnowledgeModuleSummary[] {
+    const kindFilter = normalizeOptionalText(filter.kind)
+    const parentKindFilter = normalizeOptionalText(filter.parentKind)
+    const keyword = normalizeOptionalText(filter.keyword)?.toLowerCase()
     return this.kinds.list().map((moduleKind) => ({
       kind: moduleKind.kind,
       name: moduleKind.name,
@@ -100,7 +131,19 @@ export class ModuleSemanticKnowledgeProjector {
       payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
       childKindCount: moduleKind.children.length,
       children: [...moduleKind.children],
-    }))
+    })).filter((summary) => {
+      if (kindFilter !== undefined && summary.kind !== kindFilter) return false
+      if (parentKindFilter !== undefined) {
+        if (parentKindFilter === 'root' && summary.parentKind !== undefined) return false
+        if (parentKindFilter !== 'root' && summary.parentKind !== parentKindFilter) return false
+      }
+      if (keyword === undefined) return true
+      return summary.kind.toLowerCase().includes(keyword)
+        || summary.name.toLowerCase().includes(keyword)
+        || summary.description.toLowerCase().includes(keyword)
+        || summary.payloadRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
+        || summary.children.some((childKind) => childKind.toLowerCase().includes(keyword))
+    })
   }
 
   public queryFunctions(
@@ -152,6 +195,46 @@ export class ModuleSemanticKnowledgeProjector {
     return ModuleOperationResult.ok(createGuide(parsed.kind, action))
   }
 
+  public guideHumanQuestion(
+    input: ModuleSemanticHumanQuestionGuideInput,
+  ): ModuleOperationResult<ModuleSemanticHumanQuestionGuide> {
+    const context = input.context.trim()
+    const reason = input.reason.trim()
+    if (context.length === 0 || reason.length === 0) {
+      return ModuleOperationResult.failCode(
+        'INVALID_HUMAN_QUESTION_REQUEST',
+        'guideHumanQuestion requires non-empty context and reason.',
+        'Pass context describing the current task and reason explaining why guessing is unsafe.',
+      )
+    }
+
+    const missingFacts = normalizeTextList(input.missingFacts)
+    const candidateOptions = normalizeTextList(input.candidateOptions)
+    const facts = missingFacts.length === 0 ? ['完成下一步所必需的用户事实'] : missingFacts
+    return ModuleOperationResult.ok({
+      kind: 'human-question-guide',
+      shouldAskHuman: true,
+      stopToolCalls: true,
+      context,
+      reason,
+      missingFacts: facts,
+      candidateOptions,
+      question: buildHumanQuestion(facts, candidateOptions),
+      usageRules: [
+        '只问完成下一步所需的最少问题；优先 1 个，最多 3 个。',
+        '问题必须可由用户直接回答，不要夹带实现细节、工具名或 schema 字段名。',
+        '当缺少用户意图、业务范围、日期含义、审批/提交确认或破坏性操作确认时，不要猜默认值。',
+        '拿到本指南后停止继续调用写工具，把 question 改写为自然语言发给用户并等待下一轮。',
+      ],
+      resumeFlow: [
+        '用户回答后，把回答并入当前任务事实。',
+        '如仍不确定模块或动作，先 queryModules / queryFunctions。',
+        '执行前用 guideFunction 或 describeKind 确认 action schema。',
+        '具备足够事实后再 invokeAction。',
+      ],
+    })
+  }
+
   private buildPromptSnapshot(
     modules: readonly ModuleSemanticKnowledgeModuleSummary[],
     functions: readonly ModuleSemanticKnowledgeFunctionSummary[],
@@ -169,7 +252,9 @@ export class ModuleSemanticKnowledgeProjector {
       '硬规则：不假设、不猜测、不脑补 kind、path、actionName、args；缺少依据时先查询知识与实例。',
       '调用前必须确认真实实例路径与动作 schema；参数只按 paramsSchema.required/properties 填写。',
       '若模块目录显示 payloads=[...],这些只是外部参数指南引用；构造相关复杂参数前必须先读取业务提供的 payload 指南。',
-      '发现流程：listChildren("/") -> findInstance("/", kind, query) -> describeKind(kind) -> invokeAction(path, actionName, args)。',
+      '知识流程：queryModules() -> queryFunctions({ kind/keyword }) -> guideFunction({ action })。',
+      '反问流程：guideHumanQuestion({ context, reason, missingFacts }) -> 用自然语言向用户提问 -> 等待用户下一轮答复。',
+      '执行流程：listChildren("/") -> findInstance("/", kind, query) -> describeKind(kind) -> invokeAction(path, actionName, args)。',
       '模块目录：',
       ...modules.map(formatModuleLine),
       '函数目录摘要：',
@@ -200,6 +285,36 @@ function parseGuideInput(input: ModuleSemanticKnowledgeFunctionGuideInput): Pars
   const actionName = input.actionName?.trim()
   if (kind === undefined || kind.length === 0 || actionName === undefined || actionName.length === 0) return null
   return { kind, actionName }
+}
+
+function normalizeOptionalText(value: string | undefined): string | undefined {
+  if (value === undefined) return undefined
+  const normalized = value.trim()
+  return normalized.length === 0 ? undefined : normalized
+}
+
+function normalizeTextList(values: readonly string[] | undefined): readonly string[] {
+  if (values === undefined) return []
+  const out: string[] = []
+  const seen = new Set<string>()
+  for (const value of values) {
+    const normalized = value.trim()
+    if (normalized.length === 0 || seen.has(normalized)) continue
+    seen.add(normalized)
+    out.push(normalized)
+  }
+  return out
+}
+
+function buildHumanQuestion(
+  missingFacts: readonly string[],
+  candidateOptions: readonly string[],
+): string {
+  const factText = missingFacts.length === 1
+    ? missingFacts[0]
+    : missingFacts.map((fact, index) => `${String(index + 1)}. ${fact}`).join('；')
+  const options = candidateOptions.length === 0 ? '' : ` 可选项：${candidateOptions.join(' / ')}。`
+  return `为了继续处理，我需要你确认：${factText}。${options}`
 }
 
 function summarizeAction(kind: string, action: ModuleActionMetadata): ModuleSemanticKnowledgeFunctionSummary {

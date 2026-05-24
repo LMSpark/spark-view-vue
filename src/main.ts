@@ -128,7 +128,10 @@ function isNavNode(value: unknown): value is NavNode {
 }
 
 function requireNavNodes(value: unknown, context: string): NavNode[] {
-  if (Array.isArray(value) && value.every(isNavNode)) return value
+  if (Array.isArray(value)) {
+    const nodes: unknown[] = value
+    if (nodes.every(isNavNode)) return nodes
+  }
   throw new Error(`${context} 必须是 NavNode[]`)
 }
 

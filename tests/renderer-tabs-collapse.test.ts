@@ -2,16 +2,12 @@ import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { isRecord } from '@spark-view/spark-utils'
-import { RendererTabs, RendererCollapse } from '@spark-view/spark-component'
+import { RendererTabs, RendererCollapse, isSparkNode } from '@spark-view/spark-component'
 import type { SparkNode, SparkNodeChildren } from '@spark-view/spark-component'
 import RendererTabPane from '../packages/spark-component/src/components/containers/layout/RendererTabPane.vue'
 import RendererCollapseItem from '../packages/spark-component/src/components/containers/layout/RendererCollapseItem.vue'
 import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
 
-
-function isSparkNode(value: unknown): value is SparkNode {
-  return isRecord(value) && typeof Reflect.get(value, 'type') === 'string'
-}
 
 function readSparkNodeChildren(value: unknown): SparkNodeChildren | undefined {
   return Array.isArray(value) && value.every(isSparkNode) ? value : undefined

@@ -254,7 +254,7 @@ section RuntimeRegistrationSurface {
       "registerKind(moduleKind)"
 
     llm_tools:
-      "getLlmTools() 固定生成 6 个协议工具，不随业务 action 数量增加。"
+      "getLlmTools() 固定生成知识入口和执行协议工具，不随业务 action 数量增加。"
 
     tool_execution:
       "executeTool(toolName, rawArgs, host?) 由 ProtocolToolRouter 分派。"
@@ -270,7 +270,7 @@ section RuntimeRegistrationSurface {
 
     knowledge_api: [
       "projectKnowledge()",
-      "queryKnowledgeModules()",
+      "queryKnowledgeModules(filter?)",
       "queryKnowledgeFunctions(filter?)",
       "guideKnowledgeFunction(input)"
     ]
@@ -327,6 +327,10 @@ section NavigationAndDiscoverySurface {
 
 section LlmVisibleProtocolSurface {
   fixed_tools: [
+    "queryModules",
+    "queryFunctions",
+    "guideFunction",
+    "guideHumanQuestion",
     "getAttribute",
     "setAttribute",
     "invokeAction",
@@ -619,7 +623,7 @@ section RegisterSurfaceRules {
     "第二段起必须通过父 ModuleKind.resolveChild 验证存在性。"
 
   rule R07_describe_before_invoke:
-    "LLM 调用业务 action 前必须先通过 describeKind 或 knowledge guide 获得 paramsSchema。"
+    "LLM 调用业务 action 前必须先通过 guideFunction 或 describeKind 获得 paramsSchema；缺少用户事实时先 guideHumanQuestion。"
 
   rule R08_standard_json_schema:
     "action.paramsSchema 和 payload guide paramsSchema 必须是标准 JSON Schema object root。"

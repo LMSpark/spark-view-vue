@@ -3,7 +3,9 @@ import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { compileRule, parsePageData } from '@spark-view/spark-page-config/config'
 import { HttpClientBase, isRecord } from '@spark-view/spark-utils'
+import { copyOwnEnumerableProperties, readProperty } from '@spark-view/spark-utils/internal'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
+import { isSparkNode } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
 import { executeSaveDataSet } from '../packages/spark-component/src/page/actions/action-data'
@@ -21,23 +23,13 @@ function readPageFile(pageId: string, fileName: string): string {
   return readFileSync(join(pageRoot, pageId, fileName), 'utf8')
 }
 
-function readObjectProp(value: unknown, key: string): unknown {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
-  return Object.getOwnPropertyDescriptor(value, key)?.value
-}
-
-
-function isSparkNodeLike(value: unknown): value is SparkNode {
-  return typeof readObjectProp(value, 'type') === 'string'
-}
-
 function readProps(value: unknown): Record<string, unknown> | null {
-  const props = readObjectProp(value, 'props')
-  return isRecord(props) ? Object.fromEntries(Object.entries(props)) : null
+  const props = readProperty(value, 'props')
+  return copyOwnEnumerableProperties(props)
 }
 
 function readChildren(value: unknown): unknown[] {
-  const children = readObjectProp(value, 'children')
+  const children = readProperty(value, 'children')
   return Array.isArray(children) ? children : []
 }
 
@@ -52,14 +44,14 @@ function requireSaveDataSetAction(descriptor: ActionDescriptor | null, message: 
 }
 
 function readRequestId(data: unknown): string | undefined {
-  const requestId = readObjectProp(data, 'requestId')
+  const requestId = readProperty(data, 'requestId')
   return typeof requestId === 'string' ? requestId : undefined
 }
 
 function collectActions(nodes: unknown[]): string[] {
   const actions: string[] = []
   const visit = (node: unknown): void => {
-    if (!isSparkNodeLike(node)) return
+    if (!isSparkNode(node)) return
     const action = readProps(node)?.['action']
     if (typeof action === 'string') actions.push(action)
     for (const child of readChildren(node)) visit(child)
@@ -70,8 +62,8 @@ function collectActions(nodes: unknown[]): string[] {
 
 function findNodeById(nodes: unknown[], id: string): SparkNode | undefined {
   for (const node of nodes) {
-    if (!isSparkNodeLike(node)) continue
-    if (readObjectProp(node, 'id') === id) return node
+    if (!isSparkNode(node)) continue
+    if (readProperty(node, 'id') === id) return node
     const found = findNodeById(readChildren(node), id)
     if (found) return found
   }
@@ -79,9 +71,9 @@ function findNodeById(nodes: unknown[], id: string): SparkNode | undefined {
 }
 
 function readOperations(data: unknown): Array<Record<string, unknown>> {
-  const operations = readObjectProp(data, 'operations')
+  const operations = readProperty(data, 'operations')
   if (!Array.isArray(operations)) return []
-  return operations.filter(isRecord).map((item) => Object.fromEntries(Object.entries(item)))
+  return operations.map(copyOwnEnumerableProperties).filter((item): item is Record<string, unknown> => item !== null)
 }
 
 class TransactionMockHttpClient extends HttpClientBase {
@@ -295,4 +287,3 @@ describe('transaction validation page configs', () => {
     expect(requireValue(requestId, 'Expected auto requestId').length).toBeGreaterThan(10)
   })
 })
-

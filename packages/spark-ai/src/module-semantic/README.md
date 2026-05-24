@@ -21,13 +21,20 @@ The LLM-facing tool set is fixed:
 4. `invokeAction(path, actionName, args)`
 5. `getAttribute(path, attrName)`
 6. `setAttribute(path, attrName, value)`
+7. `queryModules(kind?, parentKind?, keyword?)`
+8. `queryFunctions(kind?, keyword?)`
+9. `guideFunction(action | kind+actionName)`
+10. `guideHumanQuestion(context, reason, missingFacts?)`
 
 Recommended discovery order:
 
-1. `listChildren("/")`
-2. `findInstance("/", kind, {})`
-3. `describeKind(kind)`
-4. `invokeAction("/kind[id]", actionName, args)`
+1. `queryModules()` / `queryFunctions({ kind })`
+2. `guideFunction({ action })`
+3. `guideHumanQuestion(...)` when user facts are missing
+4. `listChildren("/")`
+5. `findInstance("/", kind, {})`
+6. `describeKind(kind)`
+7. `invokeAction("/kind[id]", actionName, args)`
 
 ## Registration Example
 

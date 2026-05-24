@@ -1,7 +1,14 @@
 import { describe, expect, it, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
-import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
+import {
+  RendererDialog,
+  RendererDrawer,
+  RendererSteps,
+  Spark,
+  isSparkNode,
+  useSparkComponent,
+} from '@spark-view/spark-component'
 import type { SparkNode, SparkNodeChildren } from '@spark-view/spark-component'
 import { defineCapability, isRecord } from '@spark-view/spark-utils'
 import RendererStepItem from '../packages/spark-component/src/components/containers/layout/RendererStepItem.vue'
@@ -9,10 +16,6 @@ import RendererToolbar from '../packages/spark-component/src/components/containe
 import { createRendererDialogZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDialog/zero-code'
 import { createRendererDrawerZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDrawer/zero-code'
 
-
-function isSparkNode(value: unknown): value is SparkNode {
-  return isRecord(value) && typeof Reflect.get(value, 'type') === 'string'
-}
 
 function readSparkNodeChildren(value: unknown): SparkNodeChildren | undefined {
   return Array.isArray(value) && value.every(isSparkNode) ? value : undefined

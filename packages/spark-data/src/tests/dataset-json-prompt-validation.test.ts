@@ -1,7 +1,7 @@
 /**
  * 根测试层 DataSet JSON 提示词验证测试
  *
- * 将 docs/ai/prompts/data/DATASET_JSON_PROMPT.md 指向的可执行案例
+ * 将 docs/ai/spark-ai-complete-guide.md 中约束的数据案例语义
  * 用 DataSet.fromJson() 实例化，自动验证：
  *  1. 能成功实例化（不抛出错误）
  *  2. 视图（DataView）行数据正确

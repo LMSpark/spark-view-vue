@@ -1,7 +1,8 @@
+import { copyOwnEnumerableProperties, isStringArray } from '@spark-view/spark-utils/internal'
+
 export function requireRecord(value: unknown, context: string): Record<string, unknown> {
-  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-    return Object.fromEntries(Object.entries(value))
-  }
+  const record = copyOwnEnumerableProperties(value)
+  if (record !== null) return record
   throw new TypeError(`${context} must be a record`)
 }
 
@@ -35,7 +36,7 @@ export function requireString(value: unknown, context: string): string {
 }
 
 export function requireStringArray(value: unknown, context: string): string[] {
-  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) return value
+  if (isStringArray(value)) return value
   throw new TypeError(`${context} must be a string array`)
 }
 

@@ -35,6 +35,29 @@ export function readProperty(value: unknown, key: string): unknown {
   return Object.getOwnPropertyDescriptor(value, key)?.value
 }
 
+/** 沿原型链读取属性值；用于必须接受 class 实例或框架对象的边界。 */
+export function readPrototypeProperty(value: unknown, key: string): unknown {
+  if (value === null || typeof value !== 'object') return undefined
+  let current: object | null = value
+  while (current !== null) {
+    const descriptor: PropertyDescriptor | undefined = Object.getOwnPropertyDescriptor(current, key)
+    if (descriptor !== undefined) return descriptor.value
+    const prototype: unknown = Object.getPrototypeOf(current)
+    current = prototype !== null && typeof prototype === 'object' ? prototype : null
+  }
+  return undefined
+}
+
+/** 拷贝对象自有可枚举属性到普通 Record，排除 null、数组和基础类型。 */
+export function copyOwnEnumerableProperties(value: unknown): Record<string, unknown> | null {
+  if (!isRecord(value)) return null
+  const record: Record<string, unknown> = {}
+  for (const [key, item] of Object.entries(value)) {
+    record[key] = item
+  }
+  return record
+}
+
 /** 读取 string 类型自有属性。 */
 export function readStringProperty(value: unknown, key: string): string | undefined {
   const property = readProperty(value, key)

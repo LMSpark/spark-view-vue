@@ -20,7 +20,8 @@ import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
 import type { ActionDescriptor, ActionExecutionContext, ActionExecutionScope, ActionUiDecorator } from './action-types'
-import { isRecord, Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-view/spark-utils'
+import { copyOwnEnumerableProperties } from '@spark-view/spark-utils/internal'
 
 const _notifierLogger = Logger('action-executor')
 
@@ -31,12 +32,7 @@ const _notifierLogger = Logger('action-executor')
  * 适用于从 SparkNode props 中读取配置对象（appendPayload、patch 等）。
  */
 export function asRecord(value: unknown): Record<string, unknown> | null {
-  if (!isRecord(value)) return null
-  const record: Record<string, unknown> = {}
-  for (const [key, entryValue] of Object.entries(value)) {
-    record[key] = entryValue
-  }
-  return record
+  return copyOwnEnumerableProperties(value)
 }
 
 /**

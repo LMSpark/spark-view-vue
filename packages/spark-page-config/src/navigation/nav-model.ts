@@ -18,6 +18,8 @@
  * └──────────────────────────────────────────────────────┘
  */
 
+import { isRecord } from '@spark-view/spark-utils'
+
 // ═══════════════════════════════════════════════════════
 // 1. 枚举联合
 //
@@ -129,6 +131,14 @@ export type NavNode = AppModuleBase & AppNavigation & {
   refProjectId?: string
   /** 引用是否失效（指向不存在的节点） */
   refBroken?: boolean
+}
+
+export function isNavNode(value: unknown): value is NavNode {
+  if (!isRecord(value)) return false
+  if (typeof value['id'] !== 'string') return false
+  if (typeof value['title'] !== 'string') return false
+  const children = value['children']
+  return children === undefined || (Array.isArray(children) && children.every(isNavNode))
 }
 
 /**

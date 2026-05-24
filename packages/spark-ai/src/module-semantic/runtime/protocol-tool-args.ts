@@ -37,7 +37,7 @@ export class ProtocolToolArgsError extends Error {
  * ----------------------------------------------------------------------------- */
 
 export class ProtocolToolArgsParser {
-  /** 类型守卫：判定 toolName 是否为已知的 6 个协议工具之一 */
+  /** 类型守卫：判定 toolName 是否为已知的固定协议工具之一 */
   public isProtocolToolName(name: string): name is ProtocolToolName {
     const known: readonly ProtocolToolName[] = Object.values(PROTOCOL_TOOL_NAMES)
     return known.some((candidate) => candidate === name)
@@ -59,6 +59,21 @@ export class ProtocolToolArgsParser {
     if (value === null || value === undefined) return undefined
     if (typeof value !== 'string') throw new ProtocolToolArgsError(`参数 "${key}" 类型错误,应为字符串`)
     return value.length === 0 ? undefined : value
+  }
+
+  /** 提取可选字符串数组参数（空数组或全空串 → undefined，元素非字符串抛错） */
+  public optionalStringArray(args: ProtocolToolArgs, key: string): readonly string[] | undefined {
+    if (!(key in args)) return undefined
+    const value = args[key]
+    if (value === null || value === undefined) return undefined
+    if (!Array.isArray(value)) throw new ProtocolToolArgsError(`参数 "${key}" 类型错误,应为字符串数组`)
+    const out: string[] = []
+    for (const item of value) {
+      if (typeof item !== 'string') throw new ProtocolToolArgsError(`参数 "${key}" 类型错误,数组元素应为字符串`)
+      const normalized = item.trim()
+      if (normalized.length > 0) out.push(normalized)
+    }
+    return out.length === 0 ? undefined : out
   }
 
   /** 提取必填对象参数（非纯对象抛错） */

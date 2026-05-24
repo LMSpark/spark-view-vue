@@ -563,7 +563,8 @@ function createLeaveRequestSystemPrompt(now: Date): string {
     `- 当前日期：${currentDate}`,
     `- 当前 UTC 时间：${now.toISOString()}`,
     `- 当前时区：${timeZone}`,
-    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先追问，不要假设或使用训练样本中的日期。',
+    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 guideHumanQuestion，再追问用户，不要假设或使用训练样本中的日期。',
+    '缺少请假人、类型、起止日期、天数、事由或提交确认时，先用 guideHumanQuestion 生成反问指南，再用自然语言向用户补问。',
   ].join('\n')
 }
 

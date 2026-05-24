@@ -25,19 +25,15 @@ vi.mock('@/services/http', () => ({
 
 vi.mock('@spark-view/spark-page-config/config', async (importOriginal) => {
   const actual = await importOriginal<typeof import('@spark-view/spark-page-config/config')>()
-  const readObjectProp = (value: unknown, key: string): unknown => {
-    if (value === null || typeof value !== 'object') return undefined
-    return Object.getOwnPropertyDescriptor(value, key)?.value
-  }
+  const { copyOwnEnumerableProperties, readProperty } = await import('@spark-view/spark-utils/internal')
   const requireRecord = (value: unknown, message: string): Record<string, unknown> => {
-    if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-      return Object.fromEntries(Object.entries(value))
-    }
+    const record = copyOwnEnumerableProperties(value)
+    if (record !== null) return record
     throw new Error(message)
   }
   const isStatus = (error: unknown, status: number): boolean => {
-    const directStatus = readObjectProp(error, 'status')
-    const responseStatus = readObjectProp(readObjectProp(error, 'response'), 'status')
+    const directStatus = readProperty(error, 'status')
+    const responseStatus = readProperty(readProperty(error, 'response'), 'status')
     return directStatus === status || responseStatus === status
   }
   return {

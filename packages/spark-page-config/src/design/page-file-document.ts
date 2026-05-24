@@ -65,27 +65,19 @@ export class PageConfigDocumentChangeNotifier {
 // ── SECTION 2: 数据规范化（原 page-data-canonicalize.ts）───────────
 
 import { DataSetCrudTool, type DataSetMetadata } from '@spark-view/spark-data'
+import { copyOwnEnumerableProperties } from '@spark-view/spark-utils/internal'
 
 function parsePageDataText(rawText: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(rawText)
-  if (typeof parsed !== 'object' || parsed === null || Array.isArray(parsed)) {
+  const record = copyOwnEnumerableProperties(parsed)
+  if (record === null) {
     throw new Error('pagedata.json 顶层必须是 JSON 对象')
   }
-  const result: Record<string, unknown> = {}
-  for (const key of Object.keys(parsed)) {
-    const desc = Object.getOwnPropertyDescriptor(parsed, key)
-    if (desc) result[key] = desc.value
-  }
-  return result
+  return record
 }
 
 function metadataToRecord(meta: DataSetMetadata): Record<string, unknown> {
-  const result: Record<string, unknown> = {}
-  for (const key of Object.keys(meta)) {
-    const desc = Object.getOwnPropertyDescriptor(meta, key)
-    if (desc) result[key] = desc.value
-  }
-  return result
+  return copyOwnEnumerableProperties(meta) ?? {}
 }
 
 export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {

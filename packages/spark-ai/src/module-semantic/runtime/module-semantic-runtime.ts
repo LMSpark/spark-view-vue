@@ -8,11 +8,11 @@
  * │    · Navigator             — 路径导航 + 发现工具（listChildren/findInstance）   │
  * │    · AttributeAccessor     — 属性读写（getAttribute/setAttribute）            │
  * │    · ActionInvoker         — 动作调用（invokeAction + 参数校验）               │
- * │    · ProtocolToolGenerator — 6 协议工具规约生成（LLM 可见工具）                │
+ * │    · ProtocolToolGenerator — 知识工具 + 执行协议工具规约生成（LLM 可见）      │
  * │    · ProtocolToolRouter    — 工具调用路由（toolName → 具体操作）               │
  * │                                                                              │
  * │  对外暴露两个核心能力：                                                        │
- * │    · getLlmTools()     — 返回 6 个协议工具规约（由 Host 层转发给 AI 后端）     │
+ * │    · getLlmTools()     — 返回固定协议工具规约（由 Host 层转发给 AI 后端）      │
  * │    · executeTool()     — 执行协议工具调用（由 Host 层 tool-call-executor 调用）│
  * │                                                                              │
  * │  设计原则：不持有业务状态，只做协议层编排和路由。                                │
@@ -35,6 +35,7 @@ import {
   type ModuleSemanticKnowledgeFunctionGuide,
   type ModuleSemanticKnowledgeFunctionGuideInput,
   type ModuleSemanticKnowledgeFunctionSummary,
+  type ModuleSemanticKnowledgeModuleFilter,
   type ModuleSemanticKnowledgeModuleSummary,
   type ModuleSemanticKnowledgeSnapshot,
 } from '../knowledge/module-semantic-knowledge'
@@ -69,9 +70,9 @@ export class ModuleSemanticRuntime {
     this.navigator = new Navigator(this.kinds)
     this.attributes = new AttributeAccessor(this.navigator)
     this.actions = new ActionInvoker(this.navigator)
-    this.toolGenerator = new ProtocolToolGenerator(this.kinds)
-    this.toolRouter = new ProtocolToolRouter(this.attributes, this.actions, this.navigator)
     this.knowledge = new ModuleSemanticKnowledgeProjector(this.kinds)
+    this.toolGenerator = new ProtocolToolGenerator(this.kinds)
+    this.toolRouter = new ProtocolToolRouter(this.attributes, this.actions, this.navigator, this.knowledge)
   }
 
   /* ── 注册 ──────────────────────────────────────────────── */
@@ -83,7 +84,7 @@ export class ModuleSemanticRuntime {
 
   /* ── LLM 工具 ──────────────────────────────────────────── */
 
-  /** 获取所有 LLM 可见的协议工具规约（固定 6 个） */
+  /** 获取所有 LLM 可见的协议工具规约（固定知识工具 + 执行协议工具） */
   public getLlmTools(): readonly ModuleSemanticToolSpec[] {
     return this.toolGenerator.generate()
   }
@@ -152,7 +153,7 @@ export class ModuleSemanticRuntime {
     return this.navigator.describeKind(kind)
   }
 
-  /* ── 知识投影（旧 knowledge 体系在固定 6 工具协议上的映射）──────── */
+  /* ── 知识投影（旧 knowledge 体系的编程式入口）──────── */
 
   /** 投影当前注册表为 LLM 可读的知识快照。 */
   public projectKnowledge(): ModuleSemanticKnowledgeSnapshot {
@@ -160,8 +161,10 @@ export class ModuleSemanticRuntime {
   }
 
   /** 查询模块目录摘要，等价于旧 knowledge.queryModules 的当前协议映射。 */
-  public queryKnowledgeModules(): readonly ModuleSemanticKnowledgeModuleSummary[] {
-    return this.knowledge.queryModules()
+  public queryKnowledgeModules(
+    filter: ModuleSemanticKnowledgeModuleFilter = {},
+  ): readonly ModuleSemanticKnowledgeModuleSummary[] {
+    return this.knowledge.queryModules(filter)
   }
 
   /** 查询函数目录摘要，等价于旧 knowledge.queryFunctions 的当前协议映射。 */

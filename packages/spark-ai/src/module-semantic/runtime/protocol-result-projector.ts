@@ -7,10 +7,11 @@
  * │  核心职责是将类型安全的 ModuleOperationResult<T> 映射到                         │
  * │  ModuleOperationResult<LlmJsonValue>（LLM 只能消费 JSON）。                    │
  * │                                                                              │
- * │  三种投影策略：                                                               │
+ * │  投影策略：                                                                   │
  * │    · voidResult        — setAttribute 等（T=void → LlmJsonValue）            │
  * │    · instanceListResult — listChildren/findInstance（T=InstanceRef[] → JSON）│
  * │    · describeKindResult — describeKind（T=ModuleKindDescription → JSON）      │
+ * │    · jsonResult         — knowledge 工具等结构化结果 → JSON                  │
  * │                                                                              │
  * │  调用方：ProtocolToolRouter（各路由方法的结果出口统一经过本投影器）             │
  * └─────────────────────────────────────────────────────────────────────────────┘
@@ -28,6 +29,18 @@ import {
  * ----------------------------------------------------------------------------- */
 
 export class ProtocolResultProjector {
+  /**
+   * 通用 JSON 结果投影：用于 knowledge 工具等已经是结构化对象的返回值。
+   * 递归丢弃 undefined，并把无法 JSON 表达的运行时值转为 null。
+   */
+  public jsonResult(result: ModuleOperationResult<unknown>): ModuleOperationResult<LlmJsonValue> {
+    if (!result.ok) return ModuleOperationResult.passthroughFailure(result)
+    if (result.data === undefined) {
+      return ModuleOperationResult.ok<LlmJsonValue>(undefined, result.checks, result.state)
+    }
+    return ModuleOperationResult.ok(unknownToJson(result.data), result.checks, result.state)
+  }
+
   /**
    * void 结果投影：setAttribute 等无返回值操作。
    * 成功时返回 undefined 作为 data（LLM 看到的是 null/空）。
@@ -116,16 +129,22 @@ function describePayloadToJson(payload: ModuleKindDescription['payloads'][number
 
 /** 递归将任意 schema 值投影为 LlmJsonValue（处理嵌套 object/array/boolean schema） */
 function jsonSchemaToJson(schema: unknown): LlmJsonValue {
-  if (schema === null) return null
-  if (typeof schema === 'boolean') return schema
-  if (typeof schema === 'number') return schema
-  if (typeof schema === 'string') return schema
-  if (Array.isArray(schema)) return schema.map((item) => jsonSchemaToJson(item))
-  if (typeof schema === 'object') {
+  return unknownToJson(schema)
+}
+
+/** 递归将任意运行时值投影为 LlmJsonValue。 */
+function unknownToJson(value: unknown): LlmJsonValue {
+  if (value === undefined) return null
+  if (value === null) return null
+  if (typeof value === 'boolean') return value
+  if (typeof value === 'number') return Number.isFinite(value) ? value : null
+  if (typeof value === 'string') return value
+  if (Array.isArray(value)) return value.map((item) => unknownToJson(item))
+  if (typeof value === 'object') {
     const out: Record<string, LlmJsonValue> = {}
-    for (const [key, value] of Object.entries(schema)) {
-      if (value === undefined) continue
-      out[key] = jsonSchemaToJson(value)
+    for (const [key, nested] of Object.entries(value)) {
+      if (nested === undefined) continue
+      out[key] = unknownToJson(nested)
     }
     return out
   }

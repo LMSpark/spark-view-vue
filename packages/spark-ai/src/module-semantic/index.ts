@@ -9,7 +9,7 @@
  *   3. ModuleAttributeMetadata / ModuleActionMetadata（元数据类型）
  *   4. ModuleSemanticRuntime（运行时组合根）
  *   5. 协议工具规约（类型 + 常量）
- *   6. 知识投影类型（旧 knowledge 体系在 6 工具协议上的当前映射）
+ *   6. 知识投影类型（旧 knowledge 体系在固定 LLM 工具上的当前映射）
  *   7. 错误类型（便于业务方 instanceof 判断）
  *   8. ModuleSemanticToolCodec（适配 Host transport）
  * ═══════════════════════════════════════════════════════════════
@@ -74,6 +74,7 @@ export type {
   ModuleSemanticKnowledgeFunctionGuide,
   ModuleSemanticKnowledgeFunctionGuideInput,
   ModuleSemanticKnowledgeFunctionSummary,
+  ModuleSemanticKnowledgeModuleFilter,
   ModuleSemanticKnowledgeModuleSummary,
   ModuleSemanticKnowledgeSnapshot,
 } from './knowledge/module-semantic-knowledge'

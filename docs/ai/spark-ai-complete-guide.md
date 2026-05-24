@@ -1,6 +1,6 @@
 # SPARK AI 完整指南
 
-> 本文是 SPARK AI 业务、Host、LLM 工具协议、pageDesign 页面设计 AI 和验证入口的唯一说明文档。代码生成约束仍保留在 `AI_CODE_GENERATION_BEHAVIOR.md`，因为 `AGENTS.md` 会直接引用它。
+> 本文是 SPARK AI 业务、Host、LLM 工具协议、pageDesign 页面设计 AI、AI 代码生成行为和验证入口的唯一说明文档。
 
 ## 一句话结论
 
@@ -225,6 +225,42 @@ queryModules / queryFunctions
 12. 补 host/task、business definition、public import 和业务 action 测试。
 13. 更新本文，不再新增分散 AI 流程文档。
 
+## AI 代码生成行为
+
+Codex 或其它 AI 编码助手修改本仓库时，必须按“稳定契约 -> class 基础/默认实现 -> 具体 class -> 必要子类”的层次组织代码。不要把系统扁平化成大量平级 `interface`、泛型、工具类型和随处导出的符号。
+
+强制规则：
+
+- 先复用已有 class、registry、factory、capability key 和领域对象，再新增结构。
+- 不要默认为每个 class 创建同名 `interface`。
+- 不要使用 `Ixxx`、`XxxInterface`、`XxxImpl` 这类机械命名。
+- 只有稳定契约、跨模块能力、DTO/config/payload 或多个实现共享协议才使用 `interface`。
+- 如果只有一个实现，默认使用具体 class 或普通函数。
+- class 用于承载状态、生命周期、缓存、不变量和默认行为。
+- 子类只表达明确的“是一种”关系，不为复用几个方法而继承。
+- 泛型只在调用方能获得真实类型收益时使用；超过两个泛型参数时优先改成具名业务类型或 class。
+- 公共导出必须有明确消费者；内部 helper、context、options、provider、resolver 不要为了测试或未来扩展导出。
+- 常规业务流程最好只需要 1-3 个公共导入；如果调用方要导入一串内部零件，先收敛门面。
+- 不要新增静默兜底掩盖缺失 API、无效配置或状态不一致；错误应 fail-fast 或返回给 LLM 修正。
+- 修改公共入口时，同步更新 package exports、TS paths、Vite/Vitest alias 和 import smoke test。
+
+硬门禁：
+
+- `pnpm run verify:rules` 必须通过。
+- 禁止非 allowlist `interface`、`Interface/Impl` 机械命名、TypeScript `namespace`。
+- 禁止非 `as const` 类型断言和尖括号类型断言。
+- 公共 barrel 禁止 `export *`，必须显式 export。
+- 禁止旧 `@spark-view/spark-ai/core`、`/protocol`、`/runtime`、`/adapter` 等 subpath。
+- 禁止旧 `ModuleKind.PathContext`、`ModuleKind.OperationResult` 等 namespace 类型。
+- 框架无关包禁止导入 Vue、Vue Router、Element Plus、VueUse 或 Pinia。
+- workspace 包之间禁止绕过 `@spark-view/*` 的跨包相对导入。
+
+注释规范：
+
+- 注释只解释契约、约束、优先级和风险，不逐行解释显而易见的代码。
+- VCM/LLM 可见语义必须在首次声明处用自然语言注释和结构化 tag 标注。
+- 不用注释合理化静默兜底；缺失能力、非法配置和状态冲突要显式失败。
+
 最小骨架：
 
 ```ts
@@ -391,6 +427,6 @@ pnpm run verify:ai:page-design-leave:llm
 
 - AI 业务流程、边界、pageDesign、工具协议、验证入口统一维护在本文。
 - 不再新增 UPPER_SNAKE 风格的分散 AI 流程、trace 或边界文档。
-- 代码生成行为规则继续维护在 `AI_CODE_GENERATION_BEHAVIOR.md`。
+- 代码生成行为规则也维护在本文，不再拆成单独 AI 文档。
 - 新业务只更新本文的“如何新增一个 AI 业务”和对应业务小节。
 - 源码 trace 可以保留在代码首次职责边界处，但不再为 trace 生成单独 Markdown 台账。

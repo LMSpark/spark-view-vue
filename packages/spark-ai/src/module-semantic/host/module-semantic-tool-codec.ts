@@ -4,11 +4,11 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】module-semantic → host 适配层。
- *   把 ModuleSemanticRuntime.getLlmTools() 返回的 6 个协议工具规约
+ *   把 ModuleSemanticRuntime.getLlmTools() 返回的固定协议工具规约
  *   转成 Host transport 可用的 AiHostTransportToolSpec[]。
  *
  * 【设计原则】
- *   - LLM 看到的工具数固定为 6，不随业务 kind 数量膨胀。
+ *   - LLM 看到的工具集固定，不随业务 kind 数量膨胀。
  *   - toolName 直接复用协议工具名，便于 LLM 跨会话稳定记忆。
  *   - 反向映射 actionOf(toolName) 用于校验：LLM 调用未知工具时返回 null。
  *

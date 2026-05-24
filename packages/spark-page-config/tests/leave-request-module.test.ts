@@ -107,6 +107,10 @@ describe('leave-request host business registration', () => {
 
     expect(registration.moduleId).toBe(LEAVE_REQUEST_MODULE_ID)
     expect(started.tools.map((tool) => tool.function.name)).toEqual([
+      'queryModules',
+      'queryFunctions',
+      'guideFunction',
+      'guideHumanQuestion',
       'getAttribute',
       'setAttribute',
       'invokeAction',
@@ -238,4 +242,3 @@ describe('leave-request host business registration', () => {
     ])
   })
 })
-

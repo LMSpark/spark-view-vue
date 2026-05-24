@@ -12,7 +12,7 @@
  * │                      instanceFinder                                          │
  * │    3. 协议级校验   — fail-fast / JSON Schema 校验 / JSON 值规整               │
  * │                                                                              │
- * │  LLM 交互流程（按调用顺序）：                                                   │
+ * │  LLM 执行流程（知识工具完成模块/动作/反问判断后）：                              │
  * │    describeKind  → 查看属性/动作/子模块/失败模式/使用规则                       │
  * │    listChildren  → 浏览子实例                                                  │
  * │    findInstance  → 按条件精确查找实例                                           │

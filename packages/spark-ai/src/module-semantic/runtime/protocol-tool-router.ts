@@ -5,7 +5,11 @@
  * │                                                                              │
  * │  本模块将 LLM 发起的协议工具调用（toolName + rawArgs）路由到具体的内部组件。    │
  * │                                                                              │
- * │  路由表（6 对 1 映射）：                                                       │
+ * │  路由表：                                                                      │
+ * │    queryModules  → KnowledgeProjector.queryModules()                         │
+ * │    queryFunctions→ KnowledgeProjector.queryFunctions(filter)                  │
+ * │    guideFunction → KnowledgeProjector.guideFunction(input)                    │
+ * │    guideHumanQuestion → KnowledgeProjector.guideHumanQuestion(input)          │
  * │    getAttribute  → AttributeAccessor.get(path, attrName)                     │
  * │    setAttribute  → AttributeAccessor.set(path, attrName, value)              │
  * │    invokeAction  → ActionInvoker.invoke(path, actionName, args)              │
@@ -26,6 +30,7 @@ import type { ActionInvoker } from '../internal/action-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
 import type { Navigator } from '../internal/navigator'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
+import type { ModuleSemanticKnowledgeProjector } from '../knowledge/module-semantic-knowledge'
 import {
   ModuleOperationResult,
   ModulePath,
@@ -51,6 +56,7 @@ export class ProtocolToolRouter {
     private readonly attributes: AttributeAccessor,
     private readonly actions: ActionInvoker,
     private readonly navigator: Navigator,
+    private readonly knowledge: ModuleSemanticKnowledgeProjector,
   ) {}
 
   /**
@@ -79,6 +85,10 @@ export class ProtocolToolRouter {
     }
     try {
       switch (toolName) {
+        case PROTOCOL_TOOL_NAMES.queryModules: return this.routeQueryModules(rawArgs)
+        case PROTOCOL_TOOL_NAMES.queryFunctions: return this.routeQueryFunctions(rawArgs)
+        case PROTOCOL_TOOL_NAMES.guideFunction: return this.routeGuideFunction(rawArgs)
+        case PROTOCOL_TOOL_NAMES.guideHumanQuestion: return this.routeGuideHumanQuestion(rawArgs)
         case PROTOCOL_TOOL_NAMES.getAttribute: return await this.routeGetAttribute(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.setAttribute: return await this.routeSetAttribute(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.invokeAction: return await this.routeInvokeAction(rawArgs, host)
@@ -101,6 +111,46 @@ export class ProtocolToolRouter {
       }
       throw error
     }
+  }
+
+  /* ── queryModules ─────────────────────────────────────── */
+
+  private routeQueryModules(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    return this.resultProjector.jsonResult(ModuleOperationResult.ok(this.knowledge.queryModules({
+      kind: this.argsParser.optionalString(args, 'kind'),
+      parentKind: this.argsParser.optionalString(args, 'parentKind'),
+      keyword: this.argsParser.optionalString(args, 'keyword'),
+    })))
+  }
+
+  /* ── queryFunctions ───────────────────────────────────── */
+
+  private routeQueryFunctions(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    return this.resultProjector.jsonResult(ModuleOperationResult.ok(this.knowledge.queryFunctions({
+      kind: this.argsParser.optionalString(args, 'kind'),
+      keyword: this.argsParser.optionalString(args, 'keyword'),
+    })))
+  }
+
+  /* ── guideFunction ────────────────────────────────────── */
+
+  private routeGuideFunction(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    return this.resultProjector.jsonResult(this.knowledge.guideFunction({
+      action: this.argsParser.optionalString(args, 'action'),
+      kind: this.argsParser.optionalString(args, 'kind'),
+      actionName: this.argsParser.optionalString(args, 'actionName'),
+    }))
+  }
+
+  /* ── guideHumanQuestion ───────────────────────────────── */
+
+  private routeGuideHumanQuestion(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
+    return this.resultProjector.jsonResult(this.knowledge.guideHumanQuestion({
+      context: this.argsParser.requireString(args, 'context'),
+      reason: this.argsParser.requireString(args, 'reason'),
+      missingFacts: this.argsParser.optionalStringArray(args, 'missingFacts'),
+      candidateOptions: this.argsParser.optionalStringArray(args, 'candidateOptions'),
+    }))
   }
 
   /* ── getAttribute ──────────────────────────────────────── */

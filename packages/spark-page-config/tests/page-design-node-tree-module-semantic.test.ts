@@ -91,9 +91,13 @@ function getDataArray(result: { readonly ok: boolean; readonly data?: unknown })
 }
 
 describe('NodeTree module-semantic 接入(E2E)', () => {
-  it('暴露固定 6 个协议工具', () => {
+  it('暴露固定知识工具和执行协议工具', () => {
     const { runtime } = buildRuntime()
     expect(runtime.getLlmTools().map((tool) => tool.function.name)).toEqual([
+      'queryModules',
+      'queryFunctions',
+      'guideFunction',
+      'guideHumanQuestion',
       'getAttribute',
       'setAttribute',
       'invokeAction',

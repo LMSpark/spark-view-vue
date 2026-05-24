@@ -14,7 +14,7 @@ VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源�
 - `ModuleKind.children`
 - 构造期运行委托：`runner / list / find` 输入，只能通过 `ModuleKind` 协议方法访问
 
-LLM 只通过 `describeKind` 理解语义；不得从 attributeAccessor/runner 函数体、服务实例或组件树反推业务语义。
+LLM 只通过 `queryModules`、`queryFunctions`、`guideFunction`、`guideHumanQuestion` 和 `describeKind` 理解语义；不得从 attributeAccessor/runner 函数体、服务实例或组件树反推业务语义。
 
 手写 `ModuleKind` class 只作为迁移期兼容形态存在；新增能力模块不应把元数据硬编码在自定义 `ModuleKind` 子类里。业务代码只保留构造期运行委托、构造依赖和服务实现，语义元数据从能力模块本体提取，注册层只承接装配边界。
 

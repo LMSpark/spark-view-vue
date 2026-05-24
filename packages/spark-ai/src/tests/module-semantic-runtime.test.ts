@@ -2,8 +2,8 @@
  * 模块语义协议运行时测试。
  *
  * 覆盖范围:
- * - 工具规约固定 6 个、含 usageRules / failureModes / parameters 收紧后的类型
- * - executeTool 路由到 6 个工具(getAttribute / setAttribute / invokeAction /
+ * - 工具规约固定包含 4 个知识入口与 6 个执行协议工具、含 usageRules / failureModes / parameters 收紧后的类型
+ * - executeTool 路由到知识工具和 6 个执行协议工具(getAttribute / setAttribute / invokeAction /
  *   listChildren / findInstance / describeKind)
  * - 错误码:UNKNOWN_TOOL / INVALID_PATH_* / ACTION_NOT_DECLARED
  * - describeKind 返回 usageRules / failureModes(G1+G3 验证)
@@ -177,10 +177,14 @@ function createRuntimeWithSpy(): { runtime: ModuleSemanticRuntime; spy: ModuleKi
 // ═══════════════════════════════════════════════════════
 
 describe('ModuleSemanticRuntime.getLlmTools', () => {
-  it('返回固定 6 个协议工具,名字稳定', () => {
+  it('返回固定知识工具和执行协议工具,名字稳定', () => {
     const tools = createRuntime().getLlmTools()
     const names = tools.map((spec) => spec.function.name)
     expect(names).toEqual([
+      PROTOCOL_TOOL_NAMES.queryModules,
+      PROTOCOL_TOOL_NAMES.queryFunctions,
+      PROTOCOL_TOOL_NAMES.guideFunction,
+      PROTOCOL_TOOL_NAMES.guideHumanQuestion,
       PROTOCOL_TOOL_NAMES.getAttribute,
       PROTOCOL_TOOL_NAMES.setAttribute,
       PROTOCOL_TOOL_NAMES.invokeAction,
@@ -208,6 +212,22 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     if (describeKind === undefined) throw new Error('not found')
     expect(describeKind.function.description).toContain('payloads(外部参数指南引用)')
     expect(describeKind.function.description).toContain('requiredForActions')
+  })
+
+  it('knowledge 工具说明直面 LLM 并指向旧知识契约', () => {
+    const tools = createRuntime().getLlmTools()
+    const queryFunctions = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryFunctions)
+    const guideFunction = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.guideFunction)
+    const guideHumanQuestion = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.guideHumanQuestion)
+    expect(queryFunctions?.function.description).toContain('旧 knowledge.queryFunctions')
+    expect(guideFunction?.function.description).toContain('旧 knowledge.guideFunction')
+    expect(guideFunction?.function.description).toContain('paramsSchema')
+    expect(guideFunction?.function.parameters.oneOf).toEqual([
+      { type: 'object', required: ['action'] },
+      { type: 'object', required: ['kind', 'actionName'] },
+    ])
+    expect(guideHumanQuestion?.function.description).toContain('人工反问指南')
+    expect(guideHumanQuestion?.function.parameters.required).toEqual(['context', 'reason'])
   })
 
   it('parameters 字段是 JSON Schema object(收紧后)', () => {
@@ -242,6 +262,82 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     const result = await createRuntime().executeTool('non-existent', {})
     expect(result.ok).toBe(false)
     expect(result.checks?.[0]?.code).toBe('UNKNOWN_TOOL')
+  })
+
+  it('queryModules / queryFunctions 作为 LLM 直面工具返回知识摘要', async () => {
+    const runtime = createRuntime()
+
+    const modules = await runtime.executeTool('queryModules', {})
+    expect(modules.ok).toBe(true)
+    expect(modules.data).toEqual([
+      expect.objectContaining({
+        kind: 'node-tree',
+        actionCount: 1,
+        payloadRefs: ['spark.component'],
+      }),
+    ])
+
+    const filteredModules = await runtime.executeTool('queryModules', { keyword: 'spark', parentKind: 'root' })
+    expect(filteredModules.ok).toBe(true)
+    expect(filteredModules.data).toEqual([
+      expect.objectContaining({ kind: 'node-tree' }),
+    ])
+
+    const functions = await runtime.executeTool('queryFunctions', { keyword: 'getnode' })
+    expect(functions.ok).toBe(true)
+    expect(functions.data).toEqual([
+      expect.objectContaining({
+        action: 'node-tree.getNode',
+        requiredParamNames: ['id'],
+        failureCodes: ['NODE_NOT_FOUND'],
+      }),
+    ])
+  })
+
+  it('guideFunction 作为 LLM 直面工具返回完整调用指南和显式失败', async () => {
+    const runtime = createRuntime()
+
+    const guide = await runtime.executeTool('guideFunction', { action: 'node-tree.getNode' })
+    expect(guide.ok).toBe(true)
+    expect(guide.data).toMatchObject({
+      action: 'node-tree.getNode',
+      paramsSchema: {
+        type: 'object',
+        required: ['id'],
+        additionalProperties: false,
+      },
+      usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
+    })
+
+    const invalid = await runtime.executeTool('guideFunction', { action: 'node-tree' })
+    expect(invalid.ok).toBe(false)
+    expect(invalid.checks?.[0]?.code).toBe('INVALID_GUIDE_REQUEST')
+  })
+
+  it('guideHumanQuestion 作为知识工具返回人工反问指南', async () => {
+    const runtime = createRuntime()
+
+    const guide = await runtime.executeTool('guideHumanQuestion', {
+      context: '准备提交请假申请',
+      reason: '缺少开始日期和结束日期,不能替用户猜测',
+      missingFacts: ['请假开始日期', '请假结束日期'],
+      candidateOptions: ['今天', '明天'],
+    })
+
+    expect(guide.ok).toBe(true)
+    const data = guide.data
+    if (!isRecord(data)) throw new Error('expected guide object')
+    expect(data['shouldAskHuman']).toBe(true)
+    expect(data['stopToolCalls']).toBe(true)
+    expect(data['question']).toContain('请假开始日期')
+    expect(data['question']).toContain('今天 / 明天')
+
+    const invalid = await runtime.executeTool('guideHumanQuestion', {
+      context: '',
+      reason: '缺少确认',
+    })
+    expect(invalid.ok).toBe(false)
+    expect(invalid.checks?.[0]?.code).toBe('INVALID_TOOL_ARGS')
   })
 
   it('getAttribute 走通(rootId)', async () => {
@@ -393,6 +489,8 @@ describe('ModuleSemanticRuntime 知识投影', () => {
     expect(rootSnapshot.functions[0]?.action).toBe('node-tree.getNode')
     expect(snapshot.promptSnapshot).toContain('【AI Knowledge Snapshot】')
     expect(snapshot.promptSnapshot).toContain('不假设、不猜测')
+    expect(snapshot.promptSnapshot).toContain('queryModules() -> queryFunctions')
+    expect(snapshot.promptSnapshot).toContain('反问流程')
     expect(snapshot.promptSnapshot).toContain('listChildren("/") -> findInstance')
     expect(snapshot.promptSnapshot).toContain('node-tree.getNode')
     expect(snapshot.promptSnapshot).toContain('payloads=[spark.component]')
