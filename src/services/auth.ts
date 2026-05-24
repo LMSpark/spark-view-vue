@@ -8,7 +8,7 @@
  */
 
 import { createFetchClient, isRequestError, isRecord } from '@spark-view/spark-utils'
-import { isStringArray } from '@spark-view/spark-utils/internal'
+import { isStringArray, readStringProperty } from '@spark-view/spark-utils/internal'
 
 // ── Token 管理 ──────────────────────────────────────────────────────────────
 
@@ -26,6 +26,10 @@ export type AuthUser = {
   tenantId: string
   defaultProjectId: string}
 
+type PlatformAdminUserLike = {
+  tenantId?: string | undefined
+  roles?: readonly string[] | undefined}
+
 
 function isAuthUser(value: unknown): value is AuthUser {
   return isRecord(value)
@@ -39,27 +43,22 @@ function isAuthUser(value: unknown): value is AuthUser {
     && typeof value['defaultProjectId'] === 'string'
 }
 
-function readOptionalString(record: Record<string, unknown>, key: string): string | undefined {
-  const value = record[key]
-  return typeof value === 'string' ? value : undefined
-}
-
 function normalizeAuthUser(value: unknown, defaultProjectId: unknown, context: string): AuthUser {
   if (!isRecord(value) || typeof value['userId'] !== 'string') {
     throw new Error(`${context}缺少有效 user 对象`)
   }
-  const username = readOptionalString(value, 'username') ?? value['userId']
+  const username = readStringProperty(value, 'username') ?? value['userId']
   return {
     userId: value['userId'],
     username,
-    displayName: readOptionalString(value, 'displayName') ?? username,
-    email: readOptionalString(value, 'email') ?? '',
-    avatar: readOptionalString(value, 'avatar') ?? '',
+    displayName: readStringProperty(value, 'displayName') ?? username,
+    email: readStringProperty(value, 'email') ?? '',
+    avatar: readStringProperty(value, 'avatar') ?? '',
     roles: isStringArray(value['roles']) ? value['roles'] : [],
-    tenantId: readOptionalString(value, 'tenantId') ?? '',
+    tenantId: readStringProperty(value, 'tenantId') ?? '',
     defaultProjectId: typeof defaultProjectId === 'string' && defaultProjectId.length > 0
       ? defaultProjectId
-      : readOptionalString(value, 'defaultProjectId') ?? 'homepage',
+      : readStringProperty(value, 'defaultProjectId') ?? 'homepage',
   }
 }
 
@@ -86,6 +85,10 @@ export function isAuthenticated(): boolean {
   if (typeof user.tenantId !== 'string' || user.tenantId.trim().length === 0) return false
   if (typeof user.defaultProjectId !== 'string' || user.defaultProjectId.trim().length === 0) return false
   return true
+}
+
+export function isPlatformAdminUser(user: PlatformAdminUserLike | null = getUser()): boolean {
+  return user?.tenantId === 'platform' && isStringArray(user.roles) && user.roles.includes('platform_admin')
 }
 
 function saveAuth(token: string, user: AuthUser): void {

@@ -41,6 +41,12 @@ export function readStringProperty(value: unknown, key: string): string | undefi
   return typeof property === 'string' ? property : undefined
 }
 
+/** 读取非空 string 类型自有属性；只校验 trim 后非空，返回原始字符串。 */
+export function readNonEmptyStringProperty(value: unknown, key: string): string | undefined {
+  const property = readStringProperty(value, key)
+  return property !== undefined && property.trim() !== '' ? property : undefined
+}
+
 /** 读取 number 类型自有属性。 */
 export function readNumberProperty(value: unknown, key: string): number | undefined {
   const property = readProperty(value, key)

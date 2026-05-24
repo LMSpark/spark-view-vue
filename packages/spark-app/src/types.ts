@@ -18,6 +18,10 @@ export type { LogLevel }
  */
 export type AppEnvironment = 'development' | 'production' | 'test'
 
+export function isAppEnvironment(value: unknown): value is AppEnvironment {
+  return value === 'development' || value === 'production' || value === 'test'
+}
+
 /**
  * 用户信息
  */

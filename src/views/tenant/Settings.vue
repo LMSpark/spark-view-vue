@@ -205,15 +205,10 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { useTheme } from '@spark-view/spark-app'
-import type { ThemeMode } from '@spark-view/spark-app'
+import { isThemeMode, useTheme } from '@spark-view/spark-app'
 
 const router = useRouter()
 const theme = useTheme()
-
-function isThemeMode(value: unknown): value is ThemeMode {
-  return value === 'light' || value === 'dark' || value === 'auto'
-}
 
 // 设置数据
 const settings = ref({

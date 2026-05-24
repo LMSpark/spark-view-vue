@@ -16,6 +16,7 @@ import type {
 import type { DataSet } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-page-config/node-tree'
 import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
+import { readProperty } from '@spark-view/spark-utils/internal'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
@@ -82,17 +83,12 @@ function isUnauthorizedError(error: unknown): boolean {
   return readHttpStatus(error) === 401 || readHttpResponseStatus(error) === 401
 }
 
-function readObjectProp(value: unknown, key: string): unknown {
-  if (value === null || typeof value !== 'object') return undefined
-  return Object.getOwnPropertyDescriptor(value, key)?.value
-}
-
 function readHttpStatus(error: unknown): unknown {
-  return readObjectProp(error, 'status')
+  return readProperty(error, 'status')
 }
 
 function readHttpResponseStatus(error: unknown): unknown {
-  return readObjectProp(readObjectProp(error, 'response'), 'status')
+  return readProperty(readProperty(error, 'response'), 'status')
 }
 
 function stripQueryAndHash(path: string): string {
@@ -582,4 +578,3 @@ export const CrossProjectRefPage = defineComponent({
     }
   },
 })
-

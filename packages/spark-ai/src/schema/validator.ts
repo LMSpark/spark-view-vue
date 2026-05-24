@@ -26,6 +26,7 @@
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
+import { isRecord } from '@spark-view/spark-utils'
 import type { LlmJsonSchema, LlmJsonSchemaObject } from './types'
 
 // ═══════════════════════════════════════════════════════════════
@@ -58,14 +59,9 @@ const ajv = new Ajv2020({
 // 第 3 节 · 内部类型守卫 — 运行时结构判断
 // ═══════════════════════════════════════════════════════════════
 
-/** 是否为普通对象（非 null、非数组） */
-function isPlainRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
 /** 是否为 type=object 的标准 JSON Schema 根 */
 function isObjectSchemaRoot(value: unknown): value is LlmJsonSchemaObject & { readonly type: 'object' } {
-  return isPlainRecord(value) && value['type'] === 'object'
+  return isRecord(value) && value['type'] === 'object'
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -73,7 +69,7 @@ function isObjectSchemaRoot(value: unknown): value is LlmJsonSchemaObject & { re
 // ═══════════════════════════════════════════════════════════════
 
 function errorParam(error: ErrorObject, key: string): unknown {
-  return isPlainRecord(error.params) ? error.params[key] : undefined
+  return isRecord(error.params) ? error.params[key] : undefined
 }
 
 function stringParam(error: ErrorObject, key: string): string | undefined {
@@ -115,7 +111,7 @@ export class LlmSchemaValidator {
     const issues: LlmParamValidationIssue[] = []
 
     // 步骤 ①：params 必须是普通 JSON 对象
-    if (!isPlainRecord(params)) {
+    if (!isRecord(params)) {
       return {
         ok: false,
         issues: [{ path: '$', message: '参数必须是 JSON 对象' }],

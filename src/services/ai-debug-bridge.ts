@@ -16,15 +16,10 @@ import {
   type DebugRouteRequestEvent,
   type DebugScreenshotRequestEvent,
 } from '@/services/sse-events'
-import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
+import { buildTenantPath, parseTenantScope, type TenantProjectScope } from '@/services/tenant-scope'
 import { isRecord } from '@spark-view/spark-utils'
 
 // Public contract -----------------------------------------------------------
-
-type TenantProjectScope = {
-  tenantId: string
-  projectId: string
-}
 
 type AiDebugBridgeOptions = {
   router: Router

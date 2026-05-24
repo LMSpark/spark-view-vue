@@ -44,7 +44,13 @@ import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport, isRecord } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/navigation'
 
-import { consumePendingLogout, getUser, isAuthenticated, switchProject } from './services/auth'
+import {
+  consumePendingLogout,
+  getUser,
+  isAuthenticated,
+  isPlatformAdminUser,
+  switchProject,
+} from './services/auth'
 import { createAuthHeaders, http as appHttpClient } from './services/http'
 import {
   buildTenantPath,
@@ -105,10 +111,6 @@ function normalizeRoutePath(path: string): string {
 function isPlatformWorkspacePath(path: string): boolean {
   const normalized = normalizeRoutePath(path)
   return normalized === PLATFORM_PATH_PREFIX || normalized.startsWith(`${PLATFORM_PATH_PREFIX}/`)
-}
-
-function isPlatformAdminUser(user = getUser()): boolean {
-  return user?.tenantId === 'platform' && Array.isArray(user.roles) && user.roles.includes('platform_admin')
 }
 
 function normalizeChildPlacement(value: string | undefined): 'header' | 'sidebar' {
@@ -479,4 +481,3 @@ async function startApp() {
 
 // 启动应用
 void startApp()
-

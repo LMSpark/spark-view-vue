@@ -10,6 +10,7 @@ import type { Component } from 'vue'
 import type { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
 import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
+import { readProperty } from '@spark-view/spark-utils/internal'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 import { ExternalLinkFramePage } from './external-link-frame-page'
@@ -18,13 +19,8 @@ import { resolveNavNodeRuntimeTarget } from '../navigation/runtime-target'
 import { resolveCrossProjectRefPageId, resolveNavRoutePageId } from './route-helpers'
 
 function isUnauthorizedError(error: unknown): boolean {
-  return readObjectProp(error, 'status') === 401
-    || readObjectProp(readObjectProp(error, 'response'), 'status') === 401
-}
-
-function readObjectProp(value: unknown, key: string): unknown {
-  if (value === null || typeof value !== 'object') return undefined
-  return Object.getOwnPropertyDescriptor(value, key)?.value
+  return readProperty(error, 'status') === 401
+    || readProperty(readProperty(error, 'response'), 'status') === 401
 }
 
 const routerLogger = createLogger('DynamicRouter')
@@ -32,7 +28,7 @@ export { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 
 function shouldLogDynamicRouteDetails(): boolean {
   if (typeof globalThis === 'undefined') return false
-  const flag = readObjectProp(globalThis, '__SPARK_DEBUG_DYNAMIC_ROUTER__')
+  const flag = readProperty(globalThis, '__SPARK_DEBUG_DYNAMIC_ROUTER__')
   return flag === true
 }
 
@@ -244,7 +240,7 @@ export class DynamicRouter {
 
     const routePath = this.addTenantPrefix('/__ref/:refNodeId')
     const existing = this.router.getRoutes().find(route => route.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
-    const existingDefaultProps = readObjectProp(existing?.props, 'default')
+    const existingDefaultProps = readProperty(existing?.props, 'default')
     if (existing?.meta['crossProjectRefHost'] === true && typeof existingDefaultProps === 'function') {
       return
     }

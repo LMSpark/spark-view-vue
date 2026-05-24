@@ -5,21 +5,8 @@
  * 生成作用域路径 `/api/tenants/{tenantId}/projects/{projectId}/...`。
  */
 
-import { getUser } from './auth'
-
-type Scope = {
-  tenantId: string
-  projectId: string}
-
-function parseTenantScopeFromPath(path: string): Scope | null {
-  const match = /^\/t\/([^/]+)\/([^/]+)(?:\/|$)/.exec(path)
-  if (!match?.[1] || !match[2]) return null
-  return { tenantId: match[1], projectId: match[2] }
-}
-
-function isPlatformAdminUser(user: ReturnType<typeof getUser>): boolean {
-  return user?.tenantId === 'platform' && Array.isArray(user.roles) && user.roles.includes('platform_admin')
-}
+import { getUser, isPlatformAdminUser } from './auth'
+import { parseTenantScope, type TenantProjectScope } from './tenant-scope'
 
 /** 获取当前用户的租户作用域路径前缀 */
 function getScopePath(): string {
@@ -27,7 +14,7 @@ function getScopePath(): string {
   if (!user) {
     throw new Error('缺少登录用户，无法构造租户作用域 API 路径')
   }
-  const urlScope = typeof window !== 'undefined' ? parseTenantScopeFromPath(window.location.pathname) : null
+  const urlScope: TenantProjectScope | null = typeof window !== 'undefined' ? parseTenantScope(window.location.pathname) : null
   const activeScope = isPlatformAdminUser(user) && urlScope !== null
     ? urlScope
     : { tenantId: user.tenantId, projectId: user.defaultProjectId }
@@ -57,7 +44,7 @@ export function getProjectApi(): string {
   if (!user) {
     throw new Error('缺少登录用户，无法构造项目 API 路径')
   }
-  const urlScope = typeof window !== 'undefined' ? parseTenantScopeFromPath(window.location.pathname) : null
+  const urlScope = typeof window !== 'undefined' ? parseTenantScope(window.location.pathname) : null
   const tenantId = isPlatformAdminUser(user) && urlScope !== null ? urlScope.tenantId : user.tenantId
   return `/api/tenants/${tenantId}/projects`
 }

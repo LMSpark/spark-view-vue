@@ -6,6 +6,7 @@
  */
 
 import { Logger, isRecord } from '@spark-view/spark-utils'
+import { readNonEmptyStringProperty } from '@spark-view/spark-utils/internal'
 
 const logger = Logger('SSE')
 
@@ -491,15 +492,15 @@ function normalizeNotificationEvent(data: unknown): ServerNotificationEvent | nu
   if (message === null) return null
 
   const event: ServerNotificationEvent = {
-    title: readOptionalString(data, 'title') ?? '通知',
+    title: readNonEmptyStringProperty(data, 'title') ?? '通知',
     message,
     timestamp: normalizeTimestamp(data['timestamp']),
   }
-  const notificationId = readOptionalString(data, 'notificationId') ?? readOptionalString(data, 'id')
-  const level = readOptionalString(data, 'level')
-  const category = readOptionalString(data, 'category')
-  const source = readOptionalString(data, 'source')
-  const actionUrl = readOptionalString(data, 'actionUrl') ?? readOptionalString(data, 'url')
+  const notificationId = readNonEmptyStringProperty(data, 'notificationId') ?? readNonEmptyStringProperty(data, 'id')
+  const level = readNonEmptyStringProperty(data, 'level')
+  const category = readNonEmptyStringProperty(data, 'category')
+  const source = readNonEmptyStringProperty(data, 'source')
+  const actionUrl = readNonEmptyStringProperty(data, 'actionUrl') ?? readNonEmptyStringProperty(data, 'url')
 
   if (notificationId !== undefined) event.notificationId = notificationId
   if (level !== undefined) event.level = level
@@ -519,11 +520,11 @@ function normalizeDebugRouteRequestEvent(data: unknown): DebugRouteRequestEvent 
     requestId,
     timestamp: normalizeTimestamp(data['timestamp']),
   }
-  const path = readOptionalString(data, 'path')
-  const pageId = readOptionalString(data, 'pageId')
-  const tenantId = readOptionalString(data, 'tenantId')
-  const projectId = readOptionalString(data, 'projectId')
-  const reason = readOptionalString(data, 'reason')
+  const path = readNonEmptyStringProperty(data, 'path')
+  const pageId = readNonEmptyStringProperty(data, 'pageId')
+  const tenantId = readNonEmptyStringProperty(data, 'tenantId')
+  const projectId = readNonEmptyStringProperty(data, 'projectId')
+  const reason = readNonEmptyStringProperty(data, 'reason')
 
   if (path !== undefined) event.path = path
   if (pageId !== undefined) event.pageId = pageId
@@ -542,9 +543,9 @@ function normalizeDebugRouteResultEvent(data: unknown): DebugRouteResultEvent | 
   if (requestId === null || status === null) return null
 
   const event: DebugRouteResultEvent = { requestId, status }
-  const targetPath = readOptionalString(data, 'targetPath')
-  const currentPath = readOptionalString(data, 'currentPath')
-  const message = readOptionalString(data, 'message')
+  const targetPath = readNonEmptyStringProperty(data, 'targetPath')
+  const currentPath = readNonEmptyStringProperty(data, 'currentPath')
+  const message = readNonEmptyStringProperty(data, 'message')
 
   if (typeof data['serverTimestamp'] === 'number') event.serverTimestamp = data['serverTimestamp']
   if (targetPath !== undefined) event.targetPath = targetPath
@@ -563,9 +564,9 @@ function normalizeDebugScreenshotRequestEvent(data: unknown): DebugScreenshotReq
     requestId,
     timestamp: normalizeTimestamp(data['timestamp']),
   }
-  const selector = readOptionalString(data, 'selector')
-  const pageId = readOptionalString(data, 'pageId')
-  const reason = readOptionalString(data, 'reason')
+  const selector = readNonEmptyStringProperty(data, 'selector')
+  const pageId = readNonEmptyStringProperty(data, 'pageId')
+  const reason = readNonEmptyStringProperty(data, 'reason')
 
   if (selector !== undefined) event.selector = selector
   if (pageId !== undefined) event.pageId = pageId
@@ -581,11 +582,11 @@ function normalizeDebugScreenshotResultEvent(data: unknown): DebugScreenshotResu
   if (requestId === null || status === null) return null
 
   const event: DebugScreenshotResultEvent = { requestId, status }
-  const fileId = readOptionalString(data, 'fileId')
-  const name = readOptionalString(data, 'name')
-  const url = readOptionalString(data, 'url')
-  const message = readOptionalString(data, 'message')
-  const textDigest = readOptionalString(data, 'textDigest')
+  const fileId = readNonEmptyStringProperty(data, 'fileId')
+  const name = readNonEmptyStringProperty(data, 'name')
+  const url = readNonEmptyStringProperty(data, 'url')
+  const message = readNonEmptyStringProperty(data, 'message')
+  const textDigest = readNonEmptyStringProperty(data, 'textDigest')
 
   if (typeof data['serverTimestamp'] === 'number') event.serverTimestamp = data['serverTimestamp']
   if (fileId !== undefined) event.fileId = fileId
@@ -630,13 +631,9 @@ function normalizeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
-function readOptionalString(data: Record<string, unknown>, key: string): string | undefined {
-  const value = data[key]
-  return typeof value === 'string' && value.trim() !== '' ? value : undefined
-}
 
 function readRequiredString(data: Record<string, unknown>, key: string): string | null {
-  return readOptionalString(data, key) ?? null
+  return readNonEmptyStringProperty(data, key) ?? null
 }
 
 function errorMessage(error: unknown): string {

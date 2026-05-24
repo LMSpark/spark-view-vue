@@ -7,6 +7,7 @@
  */
 
 import type { Router } from 'vue-router'
+import { isStringArray } from '@spark-view/spark-utils/internal'
 import type { RouterGuardOptions, AppContext } from '../types'
 import { createLogger } from '../logger'
 
@@ -20,8 +21,7 @@ function hasAnyPermission(context: AppContext, permissions: string[]): boolean {
 }
 
 function readStringArray(value: unknown): string[] | undefined {
-  if (!Array.isArray(value)) return undefined
-  return value.every((item): item is string => typeof item === 'string') ? value : undefined
+  return isStringArray(value) ? value : undefined
 }
 
 /**

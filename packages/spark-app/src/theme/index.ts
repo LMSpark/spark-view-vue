@@ -44,7 +44,7 @@ export type ThemeServiceReactive = ThemeCapability & {
     /** 响应式 isDark */
     readonly isDarkRef: ComputedRef<boolean>}
 
-function isThemeMode(value: unknown): value is ThemeMode {
+export function isThemeMode(value: unknown): value is ThemeMode {
   return value === 'light' || value === 'dark' || value === 'auto'
 }
 

@@ -10,7 +10,9 @@
  * aggregateResult.
  */
 
+import { isRecord } from '@spark-view/spark-utils'
 import type { DataView } from '../data-view'
+import { isDataRow } from './data-row-guards'
 import type {
   AggregateResultRow,
   DataColumn,
@@ -109,20 +111,12 @@ function isDataMember(value: string): value is DataMember {
   return DATA_MEMBER_VALUES.has(value)
 }
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
-function isRowLike(value: unknown): value is DataRow {
-  return isObjectRecord(value)
-}
-
 function extractDataField(value: unknown, dataField: string): unknown {
   const pathParts = dataField.split('.')
   let current: unknown = value
 
   for (const part of pathParts) {
-    if (isObjectRecord(current) && Object.prototype.hasOwnProperty.call(current, part)) {
+    if (isRecord(current) && Object.prototype.hasOwnProperty.call(current, part)) {
       current = current[part]
     } else {
       return undefined
@@ -135,7 +129,7 @@ function extractDataField(value: unknown, dataField: string): unknown {
 function normalizeDataViewMemberValue(value: unknown): DataViewMemberValue {
   if (value instanceof Error) return value
   if (Array.isArray(value)) return value.map((item: unknown) => item)
-  if (isObjectRecord(value)) return value
+  if (isRecord(value)) return value
   if (value === null || value === undefined) return value
 
   switch (typeof value) {
@@ -179,7 +173,7 @@ function resolveValueWithField(
 ): DataViewMemberValue {
   if (dataField === undefined) return value
   if (!FIELD_ADDRESSABLE_MEMBERS.has(dataMember)) return undefined
-  if (!isObjectRecord(value)) return undefined
+  if (!isRecord(value)) return undefined
   return normalizeDataViewMemberValue(extractDataField(value, dataField))
 }
 
@@ -413,7 +407,7 @@ export function diagnoseDataViewMember(
     if (!FIELD_ADDRESSABLE_MEMBERS.has(descriptor.dataMember)) {
       return dataViewMemberDiagnostic('unsupported-data-field', rawKey, descriptor, `dataField 不适用于当前 DataMember: ${descriptor.dataMember}`)
     }
-    if (!isObjectRecord(value)) {
+    if (!isRecord(value)) {
       return dataViewMemberDiagnostic('unsupported-data-field', rawKey, descriptor, `dataField 不适用于当前值: ${rawKey}`)
     }
     if (extractDataField(value, descriptor.dataField) === undefined) {
@@ -447,7 +441,7 @@ export function resolveDataViewCapabilities(
   if (input.dataMember === undefined) {
     return {
       dataSource: view,
-      dataRow: isRowLike(view.currentRow) ? view.currentRow : null,
+      dataRow: isDataRow(view.currentRow) ? view.currentRow : null,
     }
   }
 
@@ -459,6 +453,6 @@ export function resolveDataViewCapabilities(
 
   return {
     dataSource: view,
-    dataRow: isRowLike(value) ? value : null,
+    dataRow: isDataRow(value) ? value : null,
   }
 }

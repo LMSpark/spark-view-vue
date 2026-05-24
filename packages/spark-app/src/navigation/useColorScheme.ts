@@ -1,4 +1,6 @@
 import { ref, computed, watch } from 'vue'
+import { isRecord } from '@spark-view/spark-utils'
+import { readProperty } from '@spark-view/spark-utils/internal'
 
 // ── Color utilities ──
 
@@ -529,16 +531,11 @@ function getDefaultState(): SchemeState {
   return { primaryColor: '#409eff', navIndex: 0, styleIndex: 0 }
 }
 
-function readOwnProperty(value: object, key: string): unknown {
-  const descriptor: { value?: unknown } | undefined = Object.getOwnPropertyDescriptor(value, key)
-  return descriptor?.value
-}
-
 function normalizeState(raw: unknown): SchemeState | null {
-  if (raw === null || typeof raw !== 'object') return null
-  const primaryColor = readOwnProperty(raw, 'primaryColor')
-  const navIndex = readOwnProperty(raw, 'navIndex')
-  const styleIndex = readOwnProperty(raw, 'styleIndex')
+  if (!isRecord(raw)) return null
+  const primaryColor = readProperty(raw, 'primaryColor')
+  const navIndex = readProperty(raw, 'navIndex')
+  const styleIndex = readProperty(raw, 'styleIndex')
   return {
     primaryColor: typeof primaryColor === 'string' ? primaryColor : '#409eff',
     navIndex: typeof navIndex === 'number' && Number.isFinite(navIndex) ? navIndex : 0,

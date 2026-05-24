@@ -644,7 +644,7 @@ import { useRoute } from 'vue-router'
 import { Plus, Loading, Delete, Connection, Coin, FolderOpened, Grid, Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { isRecord } from '@spark-view/spark-utils'
-import { getUser } from '@/services/auth'
+import { getUser, isPlatformAdminUser } from '@/services/auth'
 import { http } from '@/services/http'
 import { parseTenantScope } from '@/services/tenant-scope'
 
@@ -865,10 +865,7 @@ const tableIsolationOptions = computed(() => childIsolationOptions(selectedDatab
 // ── 当前上下文 ──
 const route = useRoute()
 const user = computed(() => getUser())
-const isPlatformAdmin = computed(() => {
-  const roles = user.value?.roles
-  return user.value?.tenantId === 'platform' && (roles?.includes('platform_admin') ?? false)
-})
+const isPlatformAdmin = computed(() => isPlatformAdminUser(user.value))
 const currentTenant = computed(() => {
   const scoped = parseTenantScope(route.path)
   if (isPlatformAdmin.value && scoped) return scoped.tenantId

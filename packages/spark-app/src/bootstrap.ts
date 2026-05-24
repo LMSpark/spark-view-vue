@@ -43,6 +43,7 @@
  */
 
 import type { BootstrapOptions, AppContext, AppConfig } from './types'
+import { isAppEnvironment } from './types'
 import { THEME_INJECTION_KEY } from './theme'
 import { setupRouterGuards } from './router/guards'
 import { setupErrorHandler } from './error-handler'
@@ -51,7 +52,12 @@ import { loadConfig } from './config'
 import { AuthService } from './auth'
 import type { AuthConfig } from './auth/types'
 import { toErrorMessage, toError, createRequest, isRecord } from '@spark-view/spark-utils'
-import { readProperty, readStringArrayProperty, readStringProperty } from '@spark-view/spark-utils/internal'
+import {
+  isStringArray,
+  readProperty,
+  readStringArrayProperty,
+  readStringProperty,
+} from '@spark-view/spark-utils/internal'
 
 /**
  * =============================================================================
@@ -68,10 +74,6 @@ const bootstrapLogger = createLogger('bootstrap')
 /** 默认认证请求超时（毫秒） */
 const DEFAULT_AUTH_TIMEOUT_MS = 10_000
 
-function isAppEnvironment(value: unknown): value is AppContext['env']['mode'] {
-  return value === 'development' || value === 'production' || value === 'test'
-}
-
 function appConfigToRecord(config: AppConfig): Record<string, unknown> {
   return Object.fromEntries(Object.entries(config))
 }
@@ -87,10 +89,7 @@ function requireString(value: unknown, context: string): string {
 }
 
 function requireStringArray(value: unknown, context: string): string[] {
-  const values = Array.isArray(value) && value.every((item) => typeof item === 'string')
-    ? value
-    : null
-  if (values !== null) return values
+  if (isStringArray(value)) return value
   throw new Error(`${context} 必须是字符串数组`)
 }
 

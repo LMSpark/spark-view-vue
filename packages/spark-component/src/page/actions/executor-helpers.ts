@@ -15,12 +15,12 @@
  * 10. ActionDescriptor 禁用判断 — isActionDescriptorDisabled
  */
 
-import { resolveDataViewKey, type DataView, type DataRow } from '@spark-view/spark-data'
+import { isDataRow, resolveDataViewKey, type DataView, type DataRow } from '@spark-view/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
 import type { ActionDescriptor, ActionExecutionContext, ActionExecutionScope, ActionUiDecorator } from './action-types'
-import { Logger } from '@spark-view/spark-utils'
+import { isRecord, Logger } from '@spark-view/spark-utils'
 
 const _notifierLogger = Logger('action-executor')
 
@@ -31,7 +31,7 @@ const _notifierLogger = Logger('action-executor')
  * 适用于从 SparkNode props 中读取配置对象（appendPayload、patch 等）。
  */
 export function asRecord(value: unknown): Record<string, unknown> | null {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return null
+  if (!isRecord(value)) return null
   const record: Record<string, unknown> = {}
   for (const [key, entryValue] of Object.entries(value)) {
     record[key] = entryValue
@@ -109,7 +109,7 @@ export function pickText(input: PickActionTextInput): string {
  * 用于从 eventArgs 中安全识别行数据，避免误判基础类型或数组。
  */
 export function isRowLike(value: unknown): value is DataRow {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+  return isDataRow(value)
 }
 
 /**
@@ -513,4 +513,3 @@ export function isActionDescriptorDisabled(
       return false
   }
 }
-

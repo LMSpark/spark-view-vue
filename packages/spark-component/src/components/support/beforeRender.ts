@@ -1,4 +1,5 @@
 import type { DataRow, DataView, ModelPermission } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import type { SparkNode, SparkNodeChildren } from '../../core/types.js'
 
 export const BEFORE_RENDER_RESOLVED_PROP = '$beforeRenderResolved'
@@ -28,12 +29,8 @@ type MergeBeforeRenderOptions = {
 
   markResolved?: boolean}
 
-function isObjectRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  return isObjectRecord(value) && typeof value['then'] === 'function'
+  return isRecord(value) && typeof value['then'] === 'function'
 }
 
 function isBeforeRenderHandler(value: unknown): value is BeforeRenderHandler {
@@ -46,9 +43,9 @@ function sanitizeContextProps(props: Record<string, unknown>): Record<string, un
 }
 
 function sanitizePatch(value: unknown): Record<string, unknown> {
-  if (!isObjectRecord(value)) return {}
+  if (!isRecord(value)) return {}
 
-  const nestedProps = isObjectRecord(value['props']) ? value['props'] : undefined
+  const nestedProps = isRecord(value['props']) ? value['props'] : undefined
   const source = nestedProps ? { ...nestedProps, ...value } : { ...value }
   const {
     props: _props,
@@ -96,7 +93,7 @@ export function resolveNodeBeforeRender(
       return { visible: result, propsPatch: { visible: result } }
     }
 
-    const visible = isObjectRecord(result)
+    const visible = isRecord(result)
       ? (typeof result['visible'] === 'boolean'
           ? result['visible']
           : (typeof result['display'] === 'boolean' ? result['display'] : baseVisible))

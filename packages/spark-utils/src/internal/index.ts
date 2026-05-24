@@ -4,6 +4,7 @@ export {
   isCallable,
   readProperty,
   readStringProperty,
+  readNonEmptyStringProperty,
   readNumberProperty,
   readBooleanProperty,
   isStringArray,

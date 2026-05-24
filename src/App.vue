@@ -132,7 +132,14 @@ import {
   type ModuleContext,
   type ModuleContextCapability,
 } from '@spark-view/spark-component'
-import { getToken, getUser, isAuthenticated, markLogoutPending, switchProject } from '@/services/auth'
+import {
+  getToken,
+  getUser,
+  isAuthenticated,
+  isPlatformAdminUser,
+  markLogoutPending,
+  switchProject,
+} from '@/services/auth'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -184,10 +191,6 @@ const currentUsername = computed(() => {
 
 function isPlatformWorkspacePath(path: string): boolean {
   return path === PLATFORM_PATH_PREFIX || path.startsWith(`${PLATFORM_PATH_PREFIX}/`)
-}
-
-function isPlatformAdminUser(user = getUser()): boolean {
-  return user?.tenantId === 'platform' && Array.isArray(user.roles) && user.roles.includes('platform_admin')
 }
 
 function resolveActiveProjectId(): string {

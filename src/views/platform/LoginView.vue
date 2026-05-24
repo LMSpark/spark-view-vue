@@ -150,7 +150,7 @@
  */
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { login, register, registerTenant } from '@/services/auth'
+import { isPlatformAdminUser, login, register, registerTenant } from '@/services/auth'
 import { refreshRoutes, getNavHomePath } from '@spark-view/spark-app'
 import { buildTenantPath } from '@/services/tenant-scope'
 import type { FormInstance, FormRules } from 'element-plus'
@@ -168,8 +168,7 @@ function goHome() {
 }
 
 function getUserHomePath(user: { tenantId: string; defaultProjectId: string; roles?: readonly string[] }): string {
-  const roles = user.roles ?? []
-  if (user.tenantId === 'platform' && roles.includes('platform_admin')) {
+  if (isPlatformAdminUser(user)) {
     return '/platform/dashboard'
   }
   return buildTenantPath({ tenantId: user.tenantId, projectId: user.defaultProjectId }, getNavHomePath())

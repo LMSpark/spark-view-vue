@@ -18,6 +18,7 @@
 // ==================== 类型定义 ====================
 import type { AuthConfig, LoginCredentials, AuthResult } from './types'
 import type { AppEnvironment, EnvironmentInfo, TenantInfo, UserInfo } from '../types'
+import { isAppEnvironment } from '../types'
 
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
@@ -28,6 +29,7 @@ import { envAdapter } from '../env'
 import { isRecord } from '@spark-view/spark-utils'
 import {
   readProperty,
+  isStringArray,
   readStringArrayProperty,
   readStringProperty,
 } from '@spark-view/spark-utils/internal'
@@ -41,10 +43,6 @@ const MOCK_DELAY_MS = 500
 
 /** 认证服务日志器 */
 const authLogger = createLogger('auth')
-
-function isAppEnvironment(value: unknown): value is AppEnvironment {
-  return value === 'development' || value === 'production' || value === 'test'
-}
 
 function requiredRecord(value: unknown, context: string): Record<string, unknown> {
   if (isRecord(value)) return value
@@ -61,7 +59,7 @@ function optionalString(value: unknown): string | undefined {
 }
 
 function requiredStringArray(value: unknown, context: string): string[] {
-  if (Array.isArray(value) && value.every((item) => typeof item === 'string')) return value
+  if (isStringArray(value)) return value
   throw new Error(`${context} 必须是字符串数组`)
 }
 
@@ -813,4 +811,3 @@ export class AuthService {
 export function createAuthService(): AuthService {
   return new AuthService()
 }
-
