@@ -12,10 +12,12 @@ import {
   getNextPageDesignFlowStep,
   getPageDesignFlowStep,
   listPageDesignFlowSteps,
+  matchPageDesignTaskGuides,
   summarizePageDesignFlowPhases,
   type PageDesignFlowPhaseSummary,
   type PageDesignFlowStep,
-} from './artifacts'
+  type PageDesignTaskGuide,
+} from './artifacts/design-flow'
 
 import {
   PageDesignEditSession,
@@ -29,7 +31,7 @@ import {
 } from './page-edit-session'
 import { validateScriptServiceContract } from '../ai/text-model-tool-catalog'
 
-// ── SECTION 2: 编辑宿主注册 ──
+// ── 编辑宿主注册 ───────────────────────────────────────────
 
 export type PageDesignEditHostSnapshot = {
   readonly pageId: string
@@ -86,6 +88,12 @@ class PageDesignEditHostRegistry {
 
 const editHostRegistry = new PageDesignEditHostRegistry()
 
+/**
+ * 注册 live PageDesign 编辑宿主解析器。
+ *
+ * 解析器按注册顺序保留，读取时优先使用最近注册且 pageId 匹配的宿主；返回的注销函数
+ * 必须在页面卸载时调用，避免旧页面继续接收 AI 写入。
+ */
 export function registerPageDesignEditHost(resolver: PageDesignEditHostResolver): () => void {
   return editHostRegistry.register(resolver)
 }
@@ -98,7 +106,7 @@ export function resolvePageDesignEditPageId(pageId?: string | null): string | nu
   return editHostRegistry.resolvePageId(pageId)
 }
 
-// ── SECTION 5: 序列化与 Action 执行 ──
+// ── Action 结果序列化与错误映射 ───────────────────────────
 
 function hasToJson(value: object): value is { toJson: () => unknown } {
   return 'toJson' in value && typeof value.toJson === 'function'
@@ -161,19 +169,33 @@ async function runRegisteredActionTarget<TTarget>(
   }
 }
 
-// ── SECTION 6: PageDesignService ──
+// ── PageDesignService 公共契约 ────────────────────────────
 
+/**
+ * lifecycle.describeDesignFlow 的查询参数。
+ *
+ * `intent` 用于匹配任务型知识；`phase/step/afterStep` 用于精确读取 100 步流程，
+ * 二者都只影响返回给 LLM 的知识范围，不会修改 workspace。
+ */
 export type PageDesignFlowQuery = {
   phase?: string
   step?: number
   afterStep?: number
+  intent?: string
 }
 
+/**
+ * 页面设计流程查询结果。
+ *
+ * `taskGuides` 是 intent 命中的任务知识，`steps` 是当前查询范围内的流程步骤；
+ * 调用方应把二者作为下一轮函数调用依据，而不是把整份 100 步流程常驻 prompt。
+ */
 export type PageDesignFlowDescription = {
   phases: PageDesignFlowPhaseSummary[]
   steps: readonly PageDesignFlowStep[]
   selectedStep: PageDesignFlowStep | null
   nextStep: PageDesignFlowStep | null
+  taskGuides: readonly PageDesignTaskGuide[]
 }
 
 export type PageDesignNodePayloadValidationTarget = {
@@ -191,6 +213,8 @@ type PageDesignTextFileBinding = {
   write: (host: PageDesignEditHost) => ((content: string) => void) | undefined
   validateWrite?: (content: string) => PageDesignServiceResult<undefined> | null
 }
+
+// ── 文本模型绑定与 bootstrap 校验 ────────────────────────
 
 const TEXT_FILE_BINDING_BY_KEY: Record<PageDesignTextFileKey, PageDesignTextFileBinding> = {
   script: {
@@ -289,7 +313,16 @@ function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTe
   writer(content)
 }
 
+// ── PageDesignService 主体 ────────────────────────────────
+
 // PAGE_DESIGN_AI_TRACE[page-design-live-service]: pageDesign AI 工具共享的 live edit bridge；负责把 ModuleKind action 落到 PageDesignEditHost，而不是 Java 后端直接写页面文件。
+/**
+ * pageDesign AI 工具的 live edit 服务门面。
+ *
+ * 服务按 pageId 缓存 `PageDesignEditSession`，负责 bootstrap、文本模型读写、
+ * DataSet/node-tree action 落地、payload guide 状态记录和 props 校验。它不保存
+ * AI Host 会话历史，也不直接处理后端 SSE；这些属于 spark-ai Host。
+ */
 export class PageDesignService {
   private readonly states = new Map<string, PageDesignEditSession>()
 
@@ -317,6 +350,7 @@ export class PageDesignService {
     return PageDesignService.success(describeProgress(state), `pageDesign 编辑状态：${state.phase}`)
   }
 
+  // PAGE_DESIGN_REFACTOR_SOURCE[knowledge-query-gate]: lifecycle.describeDesignFlow 的服务端语义；默认不倾倒 100 步正文，按 intent/phase/step 返回可执行知识。
   describeDesignFlow(
     _context: PageDesignServiceContext,
     query: PageDesignFlowQuery = {},
@@ -325,8 +359,9 @@ export class PageDesignService {
     const nextStep = query.afterStep === undefined
       ? (selectedStep === null ? null : getNextPageDesignFlowStep(selectedStep.step))
       : getNextPageDesignFlowStep(query.afterStep)
+    const taskGuides = matchPageDesignTaskGuides(query.intent)
     const steps = selectedStep === null
-      ? listPageDesignFlowSteps(query.phase)
+      ? listPageDesignFlowStepsForQuery(query.phase, taskGuides)
       : [selectedStep]
 
     return PageDesignService.success(
@@ -335,6 +370,7 @@ export class PageDesignService {
         steps,
         selectedStep,
         nextStep,
+        taskGuides,
       },
       '页面设计 100 步流程已返回',
     )
@@ -472,4 +508,17 @@ export class PageDesignService {
   static failure(code: string, msg: string, fix: string): PageDesignServiceResult<never> {
     return { ok: false, code, msg, fix }
   }
+}
+
+// ── 流程查询裁剪 ───────────────────────────────────────────
+
+function listPageDesignFlowStepsForQuery(
+  phase: string | undefined,
+  taskGuides: readonly PageDesignTaskGuide[],
+): readonly PageDesignFlowStep[] {
+  // PAGE_DESIGN_REFACTOR_SOURCE[flow-detail-filter]: 控制 LLM 看到的流程细节范围；清理冗余时保留按需查询，不要回到全量灌入。
+  if (phase !== undefined && phase.trim() !== '') return listPageDesignFlowSteps(phase)
+  if (taskGuides.length === 0) return []
+  const relevantSteps = new Set(taskGuides.flatMap((guide) => guide.relevantSteps))
+  return listPageDesignFlowSteps().filter((step) => relevantSteps.has(step.step))
 }

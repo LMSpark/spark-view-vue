@@ -1,4 +1,4 @@
-import { computed, reactive, onBeforeUnmount } from 'vue'
+import { computed, onBeforeUnmount, reactive } from 'vue'
 import { onNotificationEvent, onPageConfigChange } from '@/services/sse-events'
 import type { FileChangeEvent, ServerNotificationEvent } from '@/services/sse-events'
 
@@ -12,26 +12,24 @@ export type NotificationItem = {
   level?: string
   category?: string
   source?: string
-  actionUrl?: string}
-
-/** 模块级状态（单例共享） */
-const notifications = reactive<NotificationItem[]>([])
-let _nextId = 1
-let _unsubscribers: Array<() => void> = []
-let _refCount = 0
+  actionUrl?: string
+}
 
 const MAX_NOTIFICATIONS = 50
 
-function pushNotification(item: NotificationItem): void {
-  notifications.unshift(item)
-  if (notifications.length > MAX_NOTIFICATIONS) {
-    notifications.splice(MAX_NOTIFICATIONS)
-  }
-}
+// Shared notification state -------------------------------------------------
 
-function createNotificationItem(event: ServerNotificationEvent): NotificationItem {
+const notifications = reactive<NotificationItem[]>([])
+
+let nextId = 1
+let refCount = 0
+let unsubscribers: Array<() => void> = []
+
+// Event adapters ------------------------------------------------------------
+
+function createServerNotificationItem(event: ServerNotificationEvent): NotificationItem {
   const item: NotificationItem = {
-    id: _nextId++,
+    id: nextId++,
     title: event.title,
     message: event.message,
     time: event.timestamp,
@@ -45,49 +43,64 @@ function createNotificationItem(event: ServerNotificationEvent): NotificationIte
   return item
 }
 
+function createPageConfigNotificationItem(event: FileChangeEvent): NotificationItem {
+  return {
+    id: nextId++,
+    title: '页面配置变更',
+    message: `${event.pageId} / ${event.file}`,
+    time: event.timestamp,
+    read: false,
+    category: 'page-config',
+    source: 'sse',
+  }
+}
+
+function pushNotification(item: NotificationItem): void {
+  notifications.unshift(item)
+  if (notifications.length > MAX_NOTIFICATIONS) {
+    notifications.splice(MAX_NOTIFICATIONS)
+  }
+}
+
+// SSE lifecycle -------------------------------------------------------------
+
 function connect(): void {
-  if (_unsubscribers.length > 0) return
-  _unsubscribers = [
+  if (unsubscribers.length > 0) return
+  unsubscribers = [
     onNotificationEvent((event) => {
-      pushNotification(createNotificationItem(event))
+      pushNotification(createServerNotificationItem(event))
     }),
-    onPageConfigChange((event: FileChangeEvent) => {
-      pushNotification({
-        id: _nextId++,
-        title: '页面配置变更',
-        message: `${event.pageId} / ${event.file}`,
-        time: event.timestamp,
-        read: false,
-        category: 'page-config',
-        source: 'sse',
-      })
+    onPageConfigChange((event) => {
+      pushNotification(createPageConfigNotificationItem(event))
     }),
   ]
 }
 
 function disconnect(): void {
-  for (const unsubscribe of _unsubscribers) {
+  for (const unsubscribe of unsubscribers) {
     unsubscribe()
   }
-  _unsubscribers = []
+  unsubscribers = []
 }
 
+// Public composable ---------------------------------------------------------
+
 export function useNotifications() {
-  _refCount++
+  refCount += 1
   connect()
 
   onBeforeUnmount(() => {
-    _refCount--
-    if (_refCount <= 0) {
-      _refCount = 0
+    refCount -= 1
+    if (refCount <= 0) {
+      refCount = 0
       disconnect()
     }
   })
 
-  const unreadCount = computed(() => notifications.filter(n => !n.read).length)
+  const unreadCount = computed(() => notifications.filter(item => !item.read).length)
 
   function markRead(id: number): void {
-    const item = notifications.find(n => n.id === id)
+    const item = notifications.find(candidate => candidate.id === id)
     if (item) item.read = true
   }
 
@@ -102,8 +115,8 @@ export function useNotifications() {
   }
 
   function removeItem(id: number): void {
-    const idx = notifications.findIndex(n => n.id === id)
-    if (idx >= 0) notifications.splice(idx, 1)
+    const index = notifications.findIndex(item => item.id === id)
+    if (index >= 0) notifications.splice(index, 1)
   }
 
   return {

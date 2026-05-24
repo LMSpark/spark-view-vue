@@ -166,7 +166,7 @@ describe('请假申请页面设计测试程序', () => {
         actionName: 'createTable',
         args: {
           tableName: LEAVE_REQUESTS_TABLE,
-          resourceType: 'database-table',
+          resourceType: 'page-data',
           resourceId: 'hr.leave_requests',
           businessCategory: 'master',
           columns: [
@@ -179,26 +179,27 @@ describe('请假申请页面设计测试程序', () => {
             { name: 'reason', type: 'string', label: '请假事由', required: true, maxLength: 300 },
             { name: 'status', type: 'string', label: '状态', defaultValue: 'pending' },
           ],
-          api: {
-            list: { url: '/api/hr/leave-requests', method: 'GET' },
-            create: { url: '/api/hr/leave-requests', method: 'POST' },
-            update: { url: '/api/hr/leave-requests/{id}', method: 'PATCH', pathParams: ['id'] },
-            delete: { url: '/api/hr/leave-requests/{id}', method: 'DELETE', pathParams: ['id'] },
-          },
-          crudConfig: {
-            validateData: true,
-            timeout: 10000,
-          },
           views: {
             default: {
               pageSize: 20,
-              autoLoad: true,
+              rows: [
+                {
+                  id: 0,
+                  applicantName: '',
+                  leaveType: '',
+                  startDate: '',
+                  endDate: '',
+                  days: 1,
+                  reason: '',
+                  status: 'draft',
+                },
+              ],
               autoCurrentFirst: true,
               commitMode: 'staged',
             },
             pending: {
               pageSize: 10,
-              autoLoad: true,
+              rows: [],
               filterExpression: { field: 'status', op: '==', value: 'pending' },
               sortExpression: [{ field: 'startDate', direction: 'desc' }],
               aggregates: {
@@ -275,7 +276,7 @@ describe('请假申请页面设计测试程序', () => {
               id: 'leave-form-section',
               props: {
                 title: '提交请假申请',
-                description: '填写必要字段后提交，表单字段直接来自 LeaveRequests 的 currentRow。',
+                description: '填写 default 视图草稿行后提交，按钮将表单字段追加到 pending 视图。',
                 useCard: true,
                 gridGap: '16px',
               },
@@ -313,10 +314,29 @@ describe('请假申请页面设计测试程序', () => {
                       type: 'r-button',
                       id: 'submit-leave-request',
                       props: {
-                        action: 'submit-current-form',
+                        action: 'append-row',
+                        dataViewKey: leavePendingKey,
+                        inheritFields: ['applicantName', 'leaveType', 'startDate', 'endDate', 'days', 'reason'],
+                        appendPayload: { status: 'pending' },
+                        setCurrentRowOnSuccess: true,
+                        then: {
+                          action: 'patch-current',
+                          dataViewKey: leaveDefaultKey,
+                          patch: {
+                            applicantName: '',
+                            leaveType: '',
+                            startDate: '',
+                            endDate: '',
+                            days: 1,
+                            reason: '',
+                            status: 'draft',
+                          },
+                          silent: true,
+                        },
                         label: '提交申请',
                         buttonType: 'primary',
                         icon: 'Send',
+                        successMessage: '请假申请已进入待审批列表',
                       },
                     },
                   ],
@@ -369,6 +389,10 @@ describe('请假申请页面设计测试程序', () => {
 
     const exportedPageData = dataSetTool.toJson()
     expect(Object.keys(exportedPageData.tables)).toEqual([LEAVE_REQUESTS_TABLE, LEAVE_TYPES_TABLE])
+    expect(exportedPageData.tables[LEAVE_REQUESTS_TABLE]?.resourceType).toBe('page-data')
+    expect(exportedPageData.tables[LEAVE_REQUESTS_TABLE]?.views.default.rows).toEqual([
+      expect.objectContaining({ id: 0, status: 'draft', days: 1 }),
+    ])
     expect(exportedPageData.tables[LEAVE_REQUESTS_TABLE]?.views['pending']?.aggregates?.['pendingCount']).toEqual({
       type: 'count',
       field: 'id',
@@ -388,6 +412,20 @@ describe('请假申请页面设计测试程序', () => {
     expect(compiledRule[0]).toMatchObject({ id: 'leave-summary-section', type: 'r-section' })
     expect(compiledRule[1]).toMatchObject({ id: 'leave-form-section', type: 'r-section' })
     expect(compiledRule[2]).toMatchObject({ id: 'pending-list-section', type: 'r-section' })
+    const submitButton = pageChildren
+      .flatMap(node => getSparkNodeChildren(node.children))
+      .flatMap(node => [node, ...getSparkNodeChildren(node.children)])
+      .flatMap(node => [node, ...getSparkNodeChildren(node.children)])
+      .find(node => node.id === 'submit-leave-request')
+    expect(submitButton).toMatchObject({
+      type: 'r-button',
+      props: {
+        action: 'append-row',
+        dataViewKey: leavePendingKey,
+        appendPayload: { status: 'pending' },
+        inheritFields: expect.arrayContaining(['applicantName', 'leaveType', 'startDate', 'endDate', 'days', 'reason']),
+      },
+    })
 
     const parsedDataSet = parsePageData(JSON.stringify(exportedPageData))
     expect(parsedDataSet.getTable(LEAVE_REQUESTS_TABLE)?.columns

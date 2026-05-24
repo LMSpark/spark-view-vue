@@ -1,804 +1,897 @@
 #!/usr/bin/env node
 /**
- * Smoke test: drive the pageDesign module-semantic tool loop to create an
- * employee leave application form.
+ * Thin smoke: log in to the Java AI backend, run one pageDesign business
+ * session, and ask the real LLM to design a leave-request page.
  *
- * Default mode calls the Java backend SSE endpoint. The backend owns the real
- * LLM provider config, while this script executes pageDesign tools locally.
+ * The pageDesign prompt, module-semantic tools, bootstrap lifecycle, payload
+ * rules, DataSet editing, and node-tree editing all live in spark-page-config
+ * and spark-ai. This script only wires the runtime boundary.
  *
- * Use --mock to validate the pageDesign tool chain without making an LLM call:
- *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --mock
- *
- * Use --publish after a successful run to write the generated page files to
- * the Java backend and register a navigation node for direct viewing:
- *   node --import tsx scripts/verify-page-design-form-llm-smoke.mjs --publish --request=帮我设计请假条界面 --tenant-id=lmspark --app-id=homepage
- *
- * Authentication boundary:
- * - This script talks to the SPARK backend with a system login JWT from
- *   --backend-token / SPARK_AUTH_TOKEN, or logs in with username/password.
- * - LLM provider keys are owned by the Java backend and are not read here.
+ * PAGE_DESIGN_REFACTOR_SOURCE[smoke-boundary]: smoke 只负责登录、注册、发起会话、保存与验收；若出现页面生成/组件选择/参数修复业务逻辑，应回收到 spark-page-config 或 spark-ai。
  */
 
-import { randomUUID } from 'node:crypto'
 import {
+  AiHostBusinessRegistry,
+  AiHostBusinessTarget,
   AiHostFetchTransport,
-  AiHostToolLoopRunner,
-  startRegistrationSession,
-  toAiHostRuntimeScope,
+  createAiHostSessionTranscript,
+  createAiHostBusinessSession,
+  previewAiHostDiagnosticValue,
+  summarizeAiHostSessionRecord,
 } from '@spark-view/spark-ai/host'
 import {
   PAGE_DESIGN_MODULE_ID,
-  createPageDesignBusinessRegistration,
+  flattenPageDesignSparkNodes,
+  parsePageDesignJsonFile,
+  registerPageDesignBusiness,
+  validatePageDesignPayloadGuidesFromSession,
 } from '@spark-view/spark-page-config/ai'
-import { compileRule, parsePageData } from '@spark-view/spark-page-config/config'
-import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
-import { DataSetCrudTool } from '@spark-view/spark-data'
+import { parseDataViewKey } from '@spark-view/spark-data'
+import {
+  PAGE_CONFIG_FILE_NAMES,
+  PageConfigFileApi,
+  PageConfigLoader,
+} from '@spark-view/spark-page-config/config'
+import { PageConfigEditWorkspace } from '@spark-view/spark-page-config/design'
 
-const FORM_PAGE_ID = 'employee-leave-form-smoke'
-const FORM_PAGE_TITLE = 'AI 员工请假申请'
-const DEFAULT_REQUEST_TEXT = '帮我设计请假条界面'
+const DEFAULT_REQUEST_TEXT = '实现请假申请页面设计'
+const DEFAULT_PAGE_ID = 'ai-leave-request-form'
+const DEFAULT_PAGE_TITLE = '请假单'
+const DEFAULT_PAGE_ICON = 'Document'
+const REQUEST_TIMEOUT = 30_000
+
+// ── CLI 与运行参数 ─────────────────────────────────────────
 
 function parseArgs(argv) {
-  const out = {
-    mock: false,
-    maxRounds: 14,
-    repairAttempts: 4,
-    publish: false,
-    requestText: process.env.AI_PAGE_REQUEST ?? DEFAULT_REQUEST_TEXT,
-    pageId: process.env.AI_PAGE_ID ?? FORM_PAGE_ID,
-    title: process.env.AI_PAGE_TITLE ?? FORM_PAGE_TITLE,
-    tenantId: process.env.AI_TENANT_ID ?? 'lmspark',
-    projectId: process.env.AI_PROJECT_ID ?? '',
+  const options = {
     backendUrl: normalizeBackendUrl(process.env.AI_BACKEND_URL),
+    tenantId: process.env.AI_TENANT_ID ?? 'lmspark',
+    projectId: process.env.AI_PROJECT_ID ?? process.env.AI_APP_ID ?? 'homepage',
     username: process.env.AI_USERNAME ?? 'admin',
     password: process.env.AI_PASSWORD ?? 'admin123',
     backendToken: process.env.SPARK_AUTH_TOKEN ?? process.env.SPARK_BACKEND_TOKEN ?? '',
-    navParentId: null,
-    navIndex: -1,
+    requestText: process.env.AI_PAGE_REQUEST ?? DEFAULT_REQUEST_TEXT,
+    pageId: process.env.AI_PAGE_ID ?? DEFAULT_PAGE_ID,
+    basePageId: process.env.AI_PAGE_ID ?? DEFAULT_PAGE_ID,
+    isolateSession: process.env.AI_ISOLATE_SESSION === undefined ? true : process.env.AI_ISOLATE_SESSION !== '0',
+    runId: process.env.AI_RUN_ID ?? '',
+    pageTitle: process.env.AI_PAGE_TITLE ?? DEFAULT_PAGE_TITLE,
+    pageIcon: process.env.AI_PAGE_ICON ?? DEFAULT_PAGE_ICON,
+    replacePage: process.env.AI_REPLACE_PAGE === '1',
+    maxRounds: numberFromEnv(process.env.AI_MAX_TOOL_ROUNDS, 28),
+    printFiles: process.env.AI_PRINT_FILES === '1',
+    printSseEvents: process.env.AI_PRINT_SSE_EVENTS === '1',
+    traceConversation: process.env.AI_TRACE_CONVERSATION === '1',
+    traceContentLimit: numberFromEnv(process.env.AI_TRACE_LIMIT, 12_000),
+    traceFullPrompt: process.env.AI_TRACE_FULL_PROMPT === '1',
   }
-  for (const arg of argv) {
-    if (arg === '--mock') out.mock = true
-    if (arg === '--publish') out.publish = true
-    if (arg.startsWith('--max-rounds=')) out.maxRounds = Number(arg.slice('--max-rounds='.length))
-    if (arg.startsWith('--repair-attempts=')) out.repairAttempts = Number(arg.slice('--repair-attempts='.length))
-    if (arg.startsWith('--request=')) out.requestText = arg.slice('--request='.length)
-    if (arg.startsWith('--page-id=')) out.pageId = arg.slice('--page-id='.length)
-    if (arg.startsWith('--publish-page-id=')) out.pageId = arg.slice('--publish-page-id='.length)
-    if (arg.startsWith('--title=')) out.title = arg.slice('--title='.length)
-    if (arg.startsWith('--publish-title=')) out.title = arg.slice('--publish-title='.length)
-    if (arg.startsWith('--tenant-id=')) out.tenantId = arg.slice('--tenant-id='.length)
-    if (arg.startsWith('--project-id=')) out.projectId = arg.slice('--project-id='.length)
-    if (arg.startsWith('--app-id=')) out.projectId = arg.slice('--app-id='.length)
-    if (arg.startsWith('--backend-url=')) out.backendUrl = normalizeBackendUrl(arg.slice('--backend-url='.length))
-    if (arg.startsWith('--backend-token=')) out.backendToken = arg.slice('--backend-token='.length)
-    if (arg.startsWith('--spark-token=')) out.backendToken = arg.slice('--spark-token='.length)
-    if (arg.startsWith('--nav-parent-id=')) {
-      const value = arg.slice('--nav-parent-id='.length).trim()
-      out.navParentId = value.length === 0 ? null : value
+
+  for (let index = 0; index < argv.length; index += 1) {
+    const parsed = parseOption(argv, index)
+    if (parsed === null) continue
+    const { key, value, consumedNext } = parsed
+    if (consumedNext) index += 1
+
+    switch (key) {
+      case 'backend-url':
+        options.backendUrl = normalizeBackendUrl(value)
+        break
+      case 'tenant-id':
+        options.tenantId = value
+        break
+      case 'project-id':
+      case 'app-id':
+        options.projectId = value
+        break
+      case 'username':
+        options.username = value
+        break
+      case 'password':
+        options.password = value
+        break
+      case 'backend-token':
+      case 'spark-token':
+        options.backendToken = value
+        break
+      case 'request':
+        options.requestText = value
+        break
+      case 'page-id':
+        options.pageId = value
+        break
+      case 'isolate-session':
+        options.isolateSession = booleanFlag(value)
+        break
+      case 'no-isolate-session':
+        options.isolateSession = false
+        break
+      case 'run-id':
+      case 'session-run-id':
+        options.runId = value
+        break
+      case 'page-title':
+      case 'title':
+        options.pageTitle = value
+        break
+      case 'page-icon':
+      case 'icon':
+        options.pageIcon = value
+        break
+      case 'replace-page':
+        options.replacePage = booleanFlag(value)
+        break
+      case 'no-replace-page':
+        options.replacePage = false
+        break
+      case 'max-rounds':
+        options.maxRounds = Number(value)
+        break
+      case 'print-files':
+        options.printFiles = booleanFlag(value)
+        break
+      case 'print-sse-events':
+        options.printSseEvents = booleanFlag(value)
+        break
+      case 'trace-conversation':
+        options.traceConversation = booleanFlag(value)
+        break
+      case 'no-trace-conversation':
+        options.traceConversation = false
+        break
+      case 'trace-limit':
+        options.traceContentLimit = Number(value)
+        break
+      case 'trace-full-prompt':
+        options.traceFullPrompt = booleanFlag(value)
+        break
+      case 'mock':
+        throw new Error('--mock has been removed from this smoke; use package tests for local tool-chain coverage.')
+      case 'publish':
+        break
+      case 'dry-run':
+        throw new Error('--dry-run is not supported; this smoke verifies real page-config persistence.')
+        break
+      default:
+        throw new Error(`Unknown option: --${key}`)
     }
-    if (arg.startsWith('--nav-index=')) out.navIndex = Number(arg.slice('--nav-index='.length))
   }
-  return out
+
+  options.backendUrl = requireNonEmpty(options.backendUrl, 'backendUrl')
+  options.tenantId = requireNonEmpty(options.tenantId, 'tenantId')
+  options.projectId = options.projectId.trim()
+  options.requestText = requireNonEmpty(options.requestText, 'requestText')
+  options.pageId = requireNonEmpty(options.pageId, 'pageId')
+  options.basePageId = options.pageId
+  options.runId = normalizeOptionalRunId(options.runId)
+  if (options.isolateSession) {
+    options.runId = options.runId || createDefaultRunId()
+    options.pageId = buildIsolatedPageId(options.basePageId, options.runId)
+  }
+  options.pageTitle = requireNonEmpty(options.pageTitle, 'pageTitle')
+  options.pageIcon = options.pageIcon.trim()
+  if (!Number.isFinite(options.maxRounds) || options.maxRounds <= 0) {
+    throw new Error('maxRounds must be a positive number')
+  }
+  if (!Number.isFinite(options.traceContentLimit) || options.traceContentLimit <= 0) {
+    throw new Error('traceContentLimit must be a positive number')
+  }
+  return options
+}
+
+function parseOption(argv, index) {
+  const arg = argv[index]
+  if (arg === '--') return null
+  if (typeof arg !== 'string' || !arg.startsWith('--')) return null
+  const body = arg.slice(2)
+  const eq = body.indexOf('=')
+  if (eq >= 0) {
+    return {
+      key: body.slice(0, eq),
+      value: body.slice(eq + 1),
+      consumedNext: false,
+    }
+  }
+  const next = argv[index + 1]
+  const hasValue = typeof next === 'string' && !next.startsWith('--')
+  return {
+    key: body,
+    value: hasValue ? next : 'true',
+    consumedNext: hasValue,
+  }
 }
 
 function normalizeBackendUrl(value) {
   return (value ?? 'http://localhost:8080').replace(/\/+$/, '')
 }
 
-function createPageContext(pageId) {
-  const normalizedPageId = pageId.trim()
-  if (normalizedPageId.length === 0) throw new Error('pageId must be a non-empty string')
-  const rootPath = `/pageDesign[${normalizedPageId}]`
-  return {
-    pageId: normalizedPageId,
-    sessionId: `${PAGE_DESIGN_MODULE_ID}:${normalizedPageId}:${randomUUID()}`,
-    rootPath,
-    lifecyclePath: `${rootPath}/lifecycle[${normalizedPageId}]`,
-    datasetPath: `${rootPath}/dataset[${normalizedPageId}]`,
-    nodeTreePath: `${rootPath}/node-tree[${normalizedPageId}]`,
-    payloadPath: `${rootPath}/payload-catalog[${normalizedPageId}]`,
+function numberFromEnv(value, fallback) {
+  const parsed = Number(value)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
+function booleanFlag(value) {
+  return value !== 'false' && value !== '0'
+}
+
+function createDefaultRunId() {
+  const stamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14)
+  const random = Math.random().toString(36).slice(2, 8)
+  return `${stamp}-${random}`
+}
+
+function normalizeOptionalRunId(value) {
+  const text = String(value ?? '').trim()
+  if (text.length === 0) return ''
+  const normalized = text
+    .toLowerCase()
+    .replace(/[^a-z0-9_-]+/g, '-')
+    .replace(/^-+|-+$/g, '')
+    .slice(0, 64)
+  if (normalized.length === 0) {
+    throw new Error('runId must contain at least one ascii letter, digit, "_" or "-"')
   }
+  return normalized
 }
 
-function createHost(pageId) {
-  let script = '/* AI employee leave form smoke page script */'
-  let style = ''
-  let nodeChanged = 0
-  let dataChanged = 0
-  const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
-  const dataSetTool = new DataSetCrudTool(pageId)
-  return {
-    nodeTree,
-    dataSetTool,
-    host: {
-      getNodeTree: () => nodeTree,
-      onNodeTreeChanged: () => { nodeChanged += 1 },
-      getDataSetTool: () => dataSetTool,
-      onDataSetChanged: () => { dataChanged += 1 },
-      readScript: () => script,
-      writeScript: (content) => { script = content },
-      readStyle: () => style,
-      writeStyle: (content) => { style = content },
-    },
-    textModels: () => ({ script, style, nodeChanged, dataChanged }),
+function buildIsolatedPageId(basePageId, runId) {
+  return `${basePageId}-${runId}`
+}
+
+function requireNonEmpty(value, label) {
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`${label} must be a non-empty string`)
   }
+  return value.trim()
 }
 
-function runtimeContext(ctx) {
-  return {
-    moduleId: PAGE_DESIGN_MODULE_ID,
-    moduleInstanceId: ctx.pageId,
-    instanceId: `${PAGE_DESIGN_MODULE_ID}:${ctx.pageId}`,
-  }
+// ── 后端鉴权与 AI transport ────────────────────────────────
+
+function readString(value, key) {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && typeof value[key] === 'string'
+    ? value[key]
+    : ''
 }
 
-function businessScope(ctx) {
-  return {
-    businessRegistrationId: PAGE_DESIGN_MODULE_ID,
-    businessInstanceId: ctx.pageId,
-    instanceId: ctx.sessionId,
-    runtimeInstanceId: ctx.sessionId,
-  }
-}
-
-function turnMeta(ctx, seq = 1) {
-  const now = new Date().toISOString()
-  return {
-    turnId: `turn-${ctx.pageId}-${seq}`,
-    seq,
-    baseRevision: 0,
-    queuedAt: now,
-    startedAt: now,
-    maxParallelTurns: 1,
-  }
-}
-
-function buildUserPrompt(ctx, options, previousChecks) {
-  const base = [
-    `用户原话：${options.requestText}`,
-    `目标位置：tenantId=${options.tenantId}，appId/projectId=${options.projectId || '登录默认项目'}，pageId=${ctx.pageId}。`,
-    '请像真实页面设计助手一样理解需求，并用 pageDesign 工具直接创建一个员工请假申请表单页面。',
-    '必须修改 pagedata.json 和 rule.json，不要只输出方案。',
-    `当前 pageDesign 实例路径已确认：${ctx.rootPath}`,
-    `只能使用这些子模块路径：lifecycle=${ctx.lifecyclePath}，payload-catalog=${ctx.payloadPath}，dataset=${ctx.datasetPath}，node-tree=${ctx.nodeTreePath}。`,
-    `不要省略方括号实例段，例如不要写 /pageDesign[${ctx.pageId}]/dataset。`,
-    '每次回复最多发起一个 tool_call；收到工具结果后再继续下一个。严禁发起空参数工具调用，尤其禁止 invokeAction 参数为 {}。',
-    '建议流程：describeProgress -> describeDesignFlow -> guidePayload -> createTable -> addNode -> 最终一句话。',
-    '不要调用 export、getAllData、readScript、readStyle、listTables、countNodes、listChildren、findInstance。',
-    '最小数据模型必须创建 EmployeeLeaveRequest 表，字段使用 camelCase：id、employeeName、employeeNo、department、leaveType、startDate、endDate、totalDays、reason、approver、status。',
-    '不要创建 leave_requests、employee_name、leave_type 这类 snake_case 表或字段；不要臆造后端 API。',
-    'rule.json 必须有 r-form，dataViewKey 必须是 EmployeeLeaveRequest@default，字段组件放在表单 children 中并用 field 绑定上面的 camelCase 字段。',
-    '构造组件节点前必须通过 payload-catalog 的 guidePayload 获取组件参数指南，至少覆盖 r-form、r-text、r-select、r-date、r-number、r-textarea。',
-    '完成后用一句话总结你实际改了哪些文件。',
-  ]
-
-  if (previousChecks === undefined) return base.join('\n')
-
-  return [
-    '上一轮没有通过 smoke 校验。不要重新解释，继续调用工具修正当前页面。',
-    `当前校验失败项：${JSON.stringify(previousChecks)}`,
-    '必须补齐缺失项：EmployeeLeaveRequest 表、10 个字段绑定、r-form 节点、标准 dataViewKey、每类组件 guidePayload、createTable 和 addNode。',
-    ...base,
-  ].join('\n')
-}
-
-function buildSystemPrompt() {
-  return [
-    '这是一次 pageDesign 表单生成 smoke。目标是验证 AI 能否通过 ModuleKind 子模块寻址完成最小表单生成。',
-    '路径是宿主传入的确定上下文，不需要重新猜测。若工具返回 schema 或参数指南，必须按返回的 schema 组织参数。',
-    '每次只调用一个工具；所有工具调用必须携带完整 JSON 参数，禁止空对象 {}，禁止缺少 path/actionName/args 的 invokeAction。',
-    '优先创建最小可运行表单；字段、DataViewKey、组件 props 必须来自工具结果，不要猜测。',
-  ].join('\n')
-}
-
-async function createJavaSseTransport(config) {
-  const auth = await resolveBackendAuth(config)
-  const headers = {
-    Authorization: `Bearer ${auth.token}`,
-    'X-Tenant-Id': config.tenantId,
-    Accept: 'text/event-stream',
-    ...(auth.projectId.trim().length === 0 ? {} : { 'X-Project-Id': auth.projectId }),
-  }
-  return new AiHostFetchTransport({
-    baseUrl: `${config.backendUrl}/api/ai`,
-    getHeaders: () => headers,
-  })
-}
-
-async function resolveBackendAuth(config) {
-  if (config.backendToken.trim().length > 0) {
+async function resolveBackendAuth(options) {
+  if (options.backendToken.trim().length > 0) {
     return {
-      token: config.backendToken,
-      projectId: config.projectId,
+      token: options.backendToken.trim(),
+      projectId: options.projectId,
     }
   }
-  const response = await fetch(`${config.backendUrl}/api/auth/login`, {
+
+  const response = await fetch(`${options.backendUrl}/api/auth/login`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Tenant-Id': config.tenantId,
-      ...(config.projectId.trim().length === 0 ? {} : { 'X-Project-Id': config.projectId }),
+      'X-Tenant-Id': options.tenantId,
+      ...(options.projectId.length === 0 ? {} : { 'X-Project-Id': options.projectId }),
     },
     body: JSON.stringify({
-      tenantId: config.tenantId,
-      username: config.username,
-      password: config.password,
+      tenantId: options.tenantId,
+      username: options.username,
+      password: options.password,
     }),
   })
+
+  const text = await response.text()
   if (!response.ok) {
-    throw new Error(`Java backend login failed: ${response.status} ${await response.text()}`)
+    throw new Error(`Java backend login failed: ${response.status} ${text}`)
   }
-  const payload = await response.json()
-  const token = typeof payload?.token === 'string'
-    ? payload.token
-    : (typeof payload?.data?.token === 'string' ? payload.data.token : '')
+
+  const payload = text.trim().length === 0 ? {} : JSON.parse(text)
+  const data = payload !== null && typeof payload === 'object' && !Array.isArray(payload)
+    ? payload.data
+    : undefined
+  const token = readString(payload, 'token') || readString(data, 'token')
   if (token.trim().length === 0) {
-    throw new Error('Java backend login failed: missing token')
+    throw new Error(`Java backend login failed: missing token in ${text}`)
   }
-  const loginDefaultProjectId = typeof payload?.defaultProjectId === 'string'
-    ? payload.defaultProjectId
-    : (typeof payload?.data?.defaultProjectId === 'string' ? payload.data.defaultProjectId : '')
+
+  const defaultProjectId = readString(payload, 'defaultProjectId') || readString(data, 'defaultProjectId')
   return {
     token,
-    projectId: config.projectId.trim().length === 0 ? loginDefaultProjectId : config.projectId,
+    projectId: options.projectId.length > 0 ? options.projectId : defaultProjectId,
   }
 }
 
-function ensureTrailingNewline(value) {
-  return value.endsWith('\n') ? value : `${value}\n`
-}
-
-function publishRuleNodes(rule) {
-  if (rule === null || typeof rule !== 'object') {
-    throw new Error('Cannot publish rule.json: generated rule is not an object')
-  }
-  if (Array.isArray(rule.children)) return rule.children
-  if (typeof rule.type === 'string') return [rule]
-  throw new Error('Cannot publish rule.json: generated rule has no SparkNode root or children')
-}
-
-function buildPublishFiles(artifacts, textModels) {
-  const ruleJson = ensureTrailingNewline(JSON.stringify(publishRuleNodes(artifacts.rule), null, 2))
-  const pageDataJson = ensureTrailingNewline(JSON.stringify(artifacts.pagedata, null, 2))
-  compileRule(ruleJson)
-  parsePageData(pageDataJson)
-  return {
-    'rule.json': ruleJson,
-    'pagedata.json': pageDataJson,
-    'script.js': ensureTrailingNewline(textModels.script.trim().length > 0
-      ? textModels.script
-      : '/* AI employee leave form smoke page script */'),
-    'style.css': ensureTrailingNewline(textModels.style.trim().length > 0
-      ? textModels.style
-      : '/* AI employee leave form smoke page */'),
-  }
-}
-
-function requireProjectId(config, auth) {
-  const projectId = (auth.projectId ?? config.projectId ?? '').trim()
-  if (projectId.length === 0) {
-    throw new Error('Java backend projectId is missing. Set AI_PROJECT_ID or login with a user that has defaultProjectId.')
-  }
-  return projectId
-}
-
-function backendApiBase(config, auth) {
-  const tenantId = encodeURIComponent(config.tenantId)
-  const projectId = encodeURIComponent(requireProjectId(config, auth))
-  return `${config.backendUrl}/api/tenants/${tenantId}/projects/${projectId}`
-}
-
-function javaJsonHeaders(config, auth) {
-  const projectId = requireProjectId(config, auth)
+function createAuthHeaders(options, auth) {
+  const projectId = auth.projectId.trim()
   return {
     Authorization: `Bearer ${auth.token}`,
-    'Content-Type': 'application/json',
-    'X-Tenant-Id': config.tenantId,
-    'X-Project-Id': projectId,
+    'X-Tenant-Id': options.tenantId,
+    ...(projectId.length === 0 ? {} : { 'X-Project-Id': projectId }),
   }
 }
 
-function javaTextHeaders(config, auth) {
-  const projectId = requireProjectId(config, auth)
-  return {
-    Authorization: `Bearer ${auth.token}`,
-    'Content-Type': 'text/plain; charset=utf-8',
-    'X-Tenant-Id': config.tenantId,
-    'X-Project-Id': projectId,
+function createTransport(options, auth) {
+  return new AiHostFetchTransport({
+    baseUrl: `${options.backendUrl}/api/ai`,
+    getHeaders: () => ({
+      ...createAuthHeaders(options, auth),
+    }),
+  })
+}
+
+// ── PageConfig 工作区生命周期 ───────────────────────────────
+
+async function deleteBackendAiSession(options, auth, sessionId) {
+  const response = await fetch(`${options.backendUrl}/api/ai/sessions/${encodeURIComponent(sessionId)}`, {
+    method: 'DELETE',
+    headers: createAuthHeaders(options, auth),
+  })
+  if (!response.ok && response.status !== 404) {
+    throw new Error(`Delete AI session failed: ${response.status} ${await response.text()}`)
   }
 }
 
-async function readJsonResponse(response, label) {
-  const text = await response.text()
-  let payload = null
-  if (text.trim().length > 0) {
-    try {
-      payload = JSON.parse(text)
-    } catch {
-      payload = text
-    }
+function createPageConfigRuntime(options, auth) {
+  const apiBaseUrl = `${options.backendUrl}/api`
+  const loader = new PageConfigLoader({
+    apiBaseUrl,
+    pagesConfigBaseUrl: `${apiBaseUrl}/pages-config`,
+    fileStorage: 'memory',
+    timeout: REQUEST_TIMEOUT,
+    getHeaders: () => createAuthHeaders(options, auth),
+  })
+  const fileApi = new PageConfigFileApi({
+    getPageConfigApi: () => '/pages-config',
+    http: loader.getHttpClient(),
+  })
+  const workspace = new PageConfigEditWorkspace({
+    fileApi,
+    getConfigLoader: () => loader,
+  })
+  return { loader, workspace }
+}
+
+async function prepareTargetPage(workspace, options) {
+  const existingPages = await workspace.listPages()
+  let exists = existingPages.some((page) => page.pageId === options.pageId)
+  if (exists && options.replacePage) {
+    await workspace.deletePage(options.pageId)
+    exists = false
   }
-  if (!response.ok) {
-    const suffix = typeof payload === 'string' ? payload : JSON.stringify(payload)
-    throw new Error(`${label} failed: ${response.status} ${suffix}`)
-  }
-  if (payload !== null && typeof payload === 'object' && !Array.isArray(payload)) {
-    if (payload.ok === false) {
-      throw new Error(`${label} failed: ${JSON.stringify(payload.error ?? payload)}`)
-    }
-    if (payload.ok === true && Object.prototype.hasOwnProperty.call(payload, 'data')) {
-      return payload.data
-    }
-  }
-  return payload
-}
-
-async function fetchJson(url, init, label) {
-  return readJsonResponse(await fetch(url, init), label)
-}
-
-async function putPageFile(config, auth, pageId, filename, content) {
-  const url = `${backendApiBase(config, auth)}/pages-config/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
-  return fetchJson(url, {
-    method: 'PUT',
-    headers: javaTextHeaders(config, auth),
-    body: content,
-  }, `Publish ${pageId}/${filename}`)
-}
-
-async function listNavigationNodes(config, auth) {
-  const url = `${backendApiBase(config, auth)}/navigation/nodes?limit=5000`
-  const payload = await fetchJson(url, {
-    method: 'GET',
-    headers: javaJsonHeaders(config, auth),
-  }, 'List navigation nodes')
-  return Array.isArray(payload) ? payload : []
-}
-
-async function updateNavigationNode(config, auth, nodeId, patch) {
-  const url = `${backendApiBase(config, auth)}/navigation/nodes/${encodeURIComponent(nodeId)}`
-  const payload = await fetchJson(url, {
-    method: 'PUT',
-    headers: javaJsonHeaders(config, auth),
-    body: JSON.stringify(patch),
-  }, `Update navigation node ${nodeId}`)
-  return payload?.node ?? patch
-}
-
-async function addNavigationNode(config, auth, node, parentId, index) {
-  const url = `${backendApiBase(config, auth)}/navigation/nodes`
-  const body = {
-    ...(parentId === null ? {} : { parentId }),
-    node,
-    ...(Number.isFinite(index) ? { index } : {}),
-  }
-  const payload = await fetchJson(url, {
-    method: 'POST',
-    headers: javaJsonHeaders(config, auth),
-    body: JSON.stringify(body),
-  }, `Add navigation node ${node.id}`)
-  return payload?.node ?? node
-}
-
-async function upsertNavigationNode(config, auth, options) {
-  const pageId = options.pageId.trim()
-  if (pageId.length === 0) throw new Error('pageId must be a non-empty string')
-  const routePath = `/${pageId}`
-  const title = options.title.trim().length > 0 ? options.title.trim() : pageId
-  const node = {
-    id: pageId,
-    title,
-    description: 'AI 生成的员工请假申请表单 smoke 页面',
-    nodeKind: 'page',
-    path: routePath,
-    icon: 'Document',
-    permissionMode: 'masked',
-  }
-  const nodes = await listNavigationNodes(config, auth)
-  const existing = nodes.find(item => item?.id === pageId)
-    ?? nodes.find(item => item?.path === routePath)
-    ?? null
-  if (existing !== null && typeof existing.id === 'string') {
-    const updated = await updateNavigationNode(config, auth, existing.id, {
-      ...node,
-      id: existing.id,
+  if (!exists) {
+    await workspace.createPage({
+      pageId: options.pageId,
+      title: options.pageTitle,
+      ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
     })
+    return 'created'
+  }
+  return 'reused'
+}
+
+async function loadTargetPage(workspace, pageId) {
+  workspace.setActivePage(pageId, true)
+  await workspace.ensureActivePageFilesLoaded({
+    forceReload: true,
+    allowMissingAsEmpty: false,
+  })
+}
+
+function readWorkspaceFiles(documents) {
+  return Object.fromEntries(PAGE_CONFIG_FILE_NAMES.map((name) => [name, documents[name].text.value]))
+}
+
+function changedFiles(before, after) {
+  return Object.keys(after).filter((name) => before[name] !== after[name])
+}
+
+async function saveDirtyFiles(workspace) {
+  const savedFiles = []
+  for (const name of PAGE_CONFIG_FILE_NAMES) {
+    if (!workspace.isDocumentDirty(name)) continue
+    await workspace.savePageFile(name)
+    savedFiles.push(name)
+  }
+  return savedFiles
+}
+
+// ── 文件快照与持久化验收 ───────────────────────────────────
+
+async function readRemoteFiles(loader, pageId) {
+  const entries = []
+  for (const name of PAGE_CONFIG_FILE_NAMES) {
+    const result = await loader.loadPageFileContent(pageId, name, { forceReload: true })
+    if (!result.success) {
+      throw new Error(`Remote page file verification failed: ${pageId}/${name} (${result.error ?? result.reason ?? 'unknown'})`)
+    }
+    entries.push([name, result.data ?? ''])
+  }
+  return Object.fromEntries(entries)
+}
+
+function summarizeFiles(files) {
+  return Object.fromEntries(Object.entries(files).map(([name, content]) => [name, {
+    bytes: Buffer.byteLength(content, 'utf8'),
+    lines: content.length === 0 ? 0 : content.split(/\r?\n/).length,
+  }]))
+}
+
+// ── 请假申请页面 smoke 语义断言 ────────────────────────────
+
+function isRecord(value) {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function dataViewKeysFromNodes(nodes) {
+  const keys = []
+  for (const node of nodes) {
+    const props = isRecord(node.props) ? node.props : {}
+    for (const key of ['dataViewKey', 'optionDataViewKey']) {
+      if (typeof props[key] === 'string' && props[key].trim().length > 0) {
+        keys.push(props[key])
+      }
+    }
+  }
+  return keys
+}
+
+function tableColumnNames(table) {
+  return Array.isArray(table?.columns)
+    ? table.columns.filter(isRecord).map((column) => String(column.name ?? ''))
+    : []
+}
+
+function findLeaveRequestTable(tables, requiredFields) {
+  for (const name of ['LeaveRequest', 'LeaveRequests']) {
+    if (isRecord(tables[name])) return { name, table: tables[name] }
+  }
+  for (const [name, table] of Object.entries(tables)) {
+    const columns = tableColumnNames(table)
+    if (requiredFields.every((field) => columns.includes(field))) {
+      return { name, table }
+    }
+  }
+  return null
+}
+
+function readDataViewKey(value) {
+  if (typeof value !== 'string') return null
+  return parseDataViewKey(value.trim())
+}
+
+function readTableView(table, viewId) {
+  const views = isRecord(table?.views) ? table.views : {}
+  return isRecord(views[viewId]) ? views[viewId] : null
+}
+
+function readTableViewRows(table, viewId) {
+  const view = readTableView(table, viewId)
+  if (Array.isArray(view?.rows)) return view.rows
+  if (viewId === 'default' && Array.isArray(table?.rows)) return table.rows
+  return []
+}
+
+function readNodeProps(node) {
+  return isRecord(node?.props) ? node.props : {}
+}
+
+function statusFilterValue(view) {
+  const filter = isRecord(view?.filterExpression) ? view.filterExpression : {}
+  const field = typeof filter.field === 'string' ? filter.field : ''
+  if (field !== 'status') return ''
+  return typeof filter.value === 'string' ? filter.value : ''
+}
+
+function isPendingLikeView(viewId, view) {
+  const normalized = String(viewId).toLowerCase()
+  if (normalized.includes('pending') || normalized.includes('approval') || normalized.includes('approve')) return true
+  return statusFilterValue(view) === 'pending'
+}
+
+function isPendingStatusPayload(value) {
+  return isRecord(value) && value.status === 'pending'
+}
+
+function arrayIncludesString(value, item) {
+  return Array.isArray(value) && value.includes(item)
+}
+
+function copiesFieldFromScope(props, field) {
+  if (arrayIncludesString(props.inheritFields, field)) return true
+  const map = isRecord(props.inheritFieldMap) ? props.inheritFieldMap : {}
+  if (typeof map[field] === 'string' && map[field].trim().length > 0) return true
+  return Object.values(map).includes(field)
+}
+
+function validateSubmitClosure(nodes, tables, leaveTableName, leaveTable, requiredFields) {
+  const formNodes = nodes.filter((node) => node.type === 'r-form')
+  const primaryForm = formNodes.find((node) => typeof readNodeProps(node).dataViewKey === 'string') ?? formNodes[0] ?? null
+  const formProps = readNodeProps(primaryForm)
+  const formKey = readDataViewKey(formProps.dataViewKey)
+  const formBindsDraftView = formKey !== null && formKey.tableName === leaveTableName && formKey.viewId === 'default'
+  const draftRows = readTableViewRows(leaveTable, 'default')
+  const draftRowsUsable = draftRows.length > 0
+
+  const submitButtons = nodes.filter((node) => {
+    if (node.type !== 'r-button') return false
+    const props = readNodeProps(node)
+    const label = typeof props.label === 'string' ? props.label : ''
+    return label.includes('提交') || props.action === 'append-row' || props.action === 'submit-current-form'
+  })
+
+  const candidateClosures = submitButtons.map((node) => {
+    const props = readNodeProps(node)
+    const target = readDataViewKey(props.dataViewKey)
+    const targetTable = target === null ? null : tables[target.tableName]
+    const targetView = targetTable === undefined || target === null ? null : readTableView(targetTable, target.viewId)
+    const missingInheritedFields = requiredFields.filter((field) => !copiesFieldFromScope(props, field))
     return {
-      mode: 'updated',
-      nodeId: existing.id,
-      node: updated,
+      id: typeof node.id === 'string' ? node.id : null,
+      action: typeof props.action === 'string' ? props.action : null,
+      label: typeof props.label === 'string' ? props.label : null,
+      dataViewKey: typeof props.dataViewKey === 'string' ? props.dataViewKey : null,
+      targetTableName: target?.tableName ?? null,
+      targetViewId: target?.viewId ?? null,
+      targetViewExists: targetView !== null,
+      targetIsPending: target !== null && target.tableName === leaveTableName && targetView !== null && isPendingLikeView(target.viewId, targetView),
+      copiesAllRequiredFields: missingInheritedFields.length === 0,
+      missingInheritedFields,
+      appendPayloadHasPendingStatus: isPendingStatusPayload(props.appendPayload),
+      hasThenResetDraft: isRecord(props.then)
+        && props.then.action === 'patch-current'
+        && props.then.dataViewKey === `${leaveTableName}@default`
+        && isRecord(props.then.patch),
     }
-  }
-  const created = await addNavigationNode(config, auth, node, options.navParentId, options.navIndex)
+  })
+
+  const appendClosure = candidateClosures.find((item) =>
+    item.action === 'append-row'
+    && formBindsDraftView
+    && draftRowsUsable
+    && item.targetIsPending
+    && item.copiesAllRequiredFields
+    && item.appendPayloadHasPendingStatus,
+  ) ?? null
+
   return {
-    mode: 'created',
-    nodeId: typeof created?.id === 'string' ? created.id : pageId,
-    node: created,
+    ok: appendClosure !== null,
+    formBindsDraftView,
+    draftRowsUsable,
+    draftRowCount: draftRows.length,
+    submitButtonCount: submitButtons.length,
+    appendClosure,
+    candidateClosures,
   }
 }
 
-async function publishArtifacts(config, artifacts, textModels, options) {
-  const auth = await resolveBackendAuth(config)
-  const pageId = options.pageId.trim()
-  if (pageId.length === 0) throw new Error('pageId must be a non-empty string')
-  const files = buildPublishFiles(artifacts, textModels)
-  const written = []
-  for (const [filename, content] of Object.entries(files)) {
-    const result = await putPageFile(config, auth, pageId, filename, content)
-    written.push({
-      filename,
-      unchanged: Boolean(result?.unchanged),
-      timestamp: typeof result?.timestamp === 'string' ? result.timestamp : '',
+function validateLeaveTypeOptions(nodes, tables) {
+  const selectNodes = nodes.filter((node) => {
+    if (node.type !== 'r-select' || !isRecord(node.props)) return false
+    const field = typeof node.props.field === 'string' ? node.props.field : ''
+    return ['leaveType', 'leaveTypeId', 'type'].includes(field)
+  })
+  const bindings = []
+  let hasStaticOptions = false
+  for (const node of selectNodes) {
+    const props = isRecord(node.props) ? node.props : {}
+    if (Array.isArray(props.options) && props.options.length > 0) {
+      hasStaticOptions = true
+    }
+    const parsed = readDataViewKey(props.optionDataViewKey)
+    if (parsed === null) continue
+    const table = isRecord(tables[parsed.tableName]) ? tables[parsed.tableName] : null
+    const view = table === null ? null : readTableView(table, parsed.viewId)
+    const staticTableNeedsRows = table !== null && table.resourceType === 'static-data'
+    const rowCount = Array.isArray(view?.rows) ? view.rows.length : 0
+    bindings.push({
+      nodeId: typeof node.id === 'string' ? node.id : null,
+      optionDataViewKey: props.optionDataViewKey,
+      tableName: parsed.tableName,
+      viewId: parsed.viewId,
+      tableExists: table !== null,
+      viewExists: view !== null,
+      rowCount,
+      usable: table !== null && view !== null && (!staticTableNeedsRows || rowCount > 0),
     })
   }
-  const navigation = await upsertNavigationNode(config, auth, options)
   return {
-    tenantId: config.tenantId,
-    projectId: requireProjectId(config, auth),
-    pageId,
-    title: options.title,
-    routePath: `/${pageId}`,
-    files: written,
-    navigation,
+    ok: selectNodes.length > 0 && (hasStaticOptions || bindings.some((binding) => binding.usable)),
+    selectCount: selectNodes.length,
+    hasStaticOptions,
+    bindings,
   }
 }
 
-function toolCall(id, name, args) {
-  return {
-    id,
-    type: 'function',
-    function: {
-      name,
-      arguments: JSON.stringify(args),
-    },
-  }
-}
-
-function employeeLeaveColumns() {
-  return [
-    { name: 'id', type: 'string', isPrimaryKey: true, required: true },
-    { name: 'employeeName', type: 'string', required: true },
-    { name: 'employeeNo', type: 'string', required: true },
-    { name: 'department', type: 'string', required: true },
-    { name: 'leaveType', type: 'string', required: true },
-    { name: 'startDate', type: 'string', required: true },
-    { name: 'endDate', type: 'string', required: true },
-    { name: 'totalDays', type: 'number', required: true },
-    { name: 'reason', type: 'string', required: true },
-    { name: 'approver', type: 'string' },
-    { name: 'status', type: 'string' },
-  ]
-}
-
-function employeeLeaveFormNode() {
-  return {
-    type: 'r-form',
-    id: 'employee-leave-form',
-    props: {
-      dataViewKey: 'EmployeeLeaveRequest@default',
-      contextDataMember: 'currentRow',
-      autoColumns: false,
-      labelWidth: '120px',
-      gridColumns: 24,
-      gridGap: 12,
-    },
-    children: [
-      { type: 'r-text', id: 'leave-employee-name', props: { field: 'employeeName', label: '员工姓名' } },
-      { type: 'r-text', id: 'leave-employee-no', props: { field: 'employeeNo', label: '员工编号' } },
-      {
-        type: 'r-select',
-        id: 'leave-department',
-        props: {
-          field: 'department',
-          label: '部门',
-          options: [
-            { label: '研发部', value: 'rd' },
-            { label: '产品部', value: 'product' },
-            { label: '运营部', value: 'ops' },
-          ],
-          optionLabelField: 'label',
-          optionValueField: 'value',
-        },
-      },
-      {
-        type: 'r-select',
-        id: 'leave-type',
-        props: {
-          field: 'leaveType',
-          label: '请假类型',
-          options: [
-            { label: '年假', value: 'annual' },
-            { label: '病假', value: 'sick' },
-            { label: '事假', value: 'personal' },
-            { label: '其他', value: 'other' },
-          ],
-          optionLabelField: 'label',
-          optionValueField: 'value',
-        },
-      },
-      { type: 'r-date', id: 'leave-start-date', props: { field: 'startDate', label: '开始日期' } },
-      { type: 'r-date', id: 'leave-end-date', props: { field: 'endDate', label: '结束日期' } },
-      { type: 'r-number', id: 'leave-total-days', props: { field: 'totalDays', label: '请假天数' } },
-      { type: 'r-textarea', id: 'leave-reason', props: { field: 'reason', label: '请假原因' } },
-      { type: 'r-text', id: 'leave-approver', props: { field: 'approver', label: '审批人' } },
-      {
-        type: 'r-select',
-        id: 'leave-status',
-        props: {
-          field: 'status',
-          label: '状态',
-          options: [
-            { label: '草稿', value: 'draft' },
-            { label: '审批中', value: 'pending' },
-            { label: '已通过', value: 'approved' },
-            { label: '已驳回', value: 'rejected' },
-          ],
-          optionLabelField: 'label',
-          optionValueField: 'value',
-        },
-      },
-    ],
-  }
-}
-
-function mockCallPlan(ctx) {
-  return [
-    toolCall('mock-1', 'listChildren', { path: '/' }),
-    toolCall('mock-2', 'findInstance', { path: '/', childKind: PAGE_DESIGN_MODULE_ID, query: {} }),
-    toolCall('mock-3', 'invokeAction', { path: ctx.lifecyclePath, actionName: 'describeProgress', args: {} }),
-    toolCall('mock-4', 'invokeAction', { path: ctx.lifecyclePath, actionName: 'describeDesignFlow', args: { phase: '数据规划' } }),
-    toolCall('mock-5', 'invokeAction', { path: ctx.payloadPath, actionName: 'queryPayloads', args: { category: 'container', keyword: 'form', limit: 10 } }),
-    toolCall('mock-6', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-form' } }),
-    toolCall('mock-7', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-text' } }),
-    toolCall('mock-8', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-select' } }),
-    toolCall('mock-9', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-date' } }),
-    toolCall('mock-10', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-number' } }),
-    toolCall('mock-11', 'invokeAction', { path: ctx.payloadPath, actionName: 'guidePayload', args: { key: 'r-textarea' } }),
-    toolCall('mock-12', 'invokeAction', {
-      path: ctx.datasetPath,
-      actionName: 'createTable',
-      args: {
-        tableName: 'EmployeeLeaveRequest',
-        columns: employeeLeaveColumns(),
-        resourceType: 'static-data',
-        resourceId: 'employee.leave.request',
-        businessCategory: 'transaction',
-        views: {
-          default: {
-            rows: [{
-              id: 'leave-draft-1',
-              employeeName: '',
-              employeeNo: '',
-              department: '',
-              leaveType: 'annual',
-              startDate: '',
-              endDate: '',
-              totalDays: 1,
-              reason: '',
-              approver: '',
-              status: 'draft',
-            }],
-          },
-        },
-      },
-    }),
-    toolCall('mock-13', 'invokeAction', {
-      path: ctx.nodeTreePath,
-      actionName: 'addNode',
-      args: {
-        parentComponentId: null,
-        node: employeeLeaveFormNode(),
-      },
-    }),
-  ]
-}
-
-class MockPageDesignTransport {
-  constructor(ctx) {
-    this.index = 0
-    this.calls = mockCallPlan(ctx)
+function validateGeneratedLeaveRequestPage(files) {
+  const issues = []
+  const rule = parsePageDesignJsonFile(files, 'rule.json')
+  const pagedata = parsePageDesignJsonFile(files, 'pagedata.json')
+  if (!rule.ok) issues.push(`rule.json is not valid JSON: ${rule.error}`)
+  if (!pagedata.ok) issues.push(`pagedata.json is not valid JSON: ${pagedata.error}`)
+  if (!rule.ok || !pagedata.ok) {
+    return { ok: false, issues }
   }
 
-  streamTurn() {
-    if (this.index >= this.calls.length) {
-      return Promise.resolve({
-        text: '已创建员工请假申请表单页面，包含 EmployeeLeaveRequest 数据表和 r-form 字段绑定。',
-        toolCalls: [],
-      })
-    }
-    const call = this.calls[this.index]
-    this.index += 1
-    return Promise.resolve({
-      text: '',
-      toolCalls: [call],
-    })
-  }
-
-  appendMessages() {
-    return Promise.resolve()
-  }
-}
-
-function flattenNodes(node) {
-  const children = Array.isArray(node.children) ? node.children : []
-  return [node, ...children.flatMap(flattenNodes)]
-}
-
-function readActionName(record) {
-  const args = record.args
-  return args && typeof args === 'object' && typeof args.actionName === 'string' ? args.actionName : null
-}
-
-function readPath(record) {
-  const args = record.args
-  return args && typeof args === 'object' && typeof args.path === 'string' ? args.path : null
-}
-
-function validateArtifacts(nodeTree, dataSetTool, toolCalls) {
-  const rule = nodeTree.toJSON()
-  const nodes = flattenNodes(rule)
-  const formNodes = nodes.filter(node => node.type === 'r-form')
-  const fieldNodes = nodes.filter(node => node.props && typeof node.props.field === 'string')
-  const pagedata = dataSetTool.toJson()
-  const tables = pagedata.tables ?? {}
+  const nodes = flattenPageDesignSparkNodes(rule.data)
+  const tables = isRecord(pagedata.data.tables) ? pagedata.data.tables : {}
   const tableNames = Object.keys(tables)
-  const dataViewKeys = nodes
-    .map(node => node.props && typeof node.props.dataViewKey === 'string' ? node.props.dataViewKey : null)
-    .filter(Boolean)
-  const schemaFields = new Set(employeeLeaveColumns().map(column => column.name))
-  const boundFields = fieldNodes.map(node => node.props.field)
-  const missingBindings = [...schemaFields].filter(field => field !== 'id' && !boundFields.includes(field))
-  const invalidDataViewKeys = dataViewKeys.filter(key =>
-    !(/^[^@]+@[^@]+$/.test(key) || /^#[^@]+@[^@]+@[^@]+$/.test(key)),
-  )
-  const failedToolCalls = toolCalls.filter(call => call.ok !== true)
-  const actionNames = toolCalls
-    .map(call => call.actionName)
-    .filter(actionName => typeof actionName === 'string')
-  const forbiddenActionNames = actionNames.filter(actionName => [
-    'export',
-    'getAllData',
-    'readScript',
-    'readStyle',
-    'listTables',
-    'countNodes',
-  ].includes(actionName))
+  const requiredFields = ['applicantName', 'leaveType', 'startDate', 'endDate', 'days', 'reason']
+  const leaveTableEntry = findLeaveRequestTable(tables, requiredFields)
+  const leaveTableName = leaveTableEntry?.name ?? 'LeaveRequest'
+  const leaveTable = leaveTableEntry?.table ?? null
+  const leaveColumns = tableColumnNames(leaveTable)
+  const boundFields = nodes
+    .map((node) => isRecord(node.props) && typeof node.props.field === 'string' ? node.props.field : '')
+    .filter((field) => field.length > 0)
+  const formNodes = nodes.filter((node) => node.type === 'r-form')
+  const primaryForm = formNodes.find((node) => isRecord(node.props) && typeof node.props.dataViewKey === 'string') ?? formNodes[0] ?? null
+  const primaryFormProps = isRecord(primaryForm?.props) ? primaryForm.props : {}
+  const dataViewKeys = dataViewKeysFromNodes(nodes)
+  const invalidDataViewKeys = dataViewKeys.filter((key) => readDataViewKey(key) === null)
+  const leaveTypeOptions = validateLeaveTypeOptions(nodes, tables)
+  const submitClosure = leaveTable === null
+    ? { ok: false, formBindsDraftView: false, draftRowsUsable: false, draftRowCount: 0, submitButtonCount: 0, appendClosure: null, candidateClosures: [] }
+    : validateSubmitClosure(nodes, tables, leaveTableName, leaveTable, requiredFields)
+
+  if (leaveTable === null) issues.push('pagedata.json missing LeaveRequest/LeaveRequests table')
+  for (const field of requiredFields) {
+    if (!leaveColumns.includes(field)) issues.push(`${leaveTableName} missing column: ${field}`)
+    if (!boundFields.includes(field)) issues.push(`rule.json missing field binding: ${field}`)
+  }
+  if (formNodes.length === 0) issues.push('rule.json missing r-form node')
+  if (primaryForm !== null && primaryFormProps.dataViewKey !== `${leaveTableName}@default`) {
+    issues.push(`r-form dataViewKey must be ${leaveTableName}@default, got ${String(primaryFormProps.dataViewKey ?? '<missing>')}`)
+  }
+  if (primaryForm !== null && primaryFormProps.contextDataMember !== 'currentRow') {
+    issues.push(`r-form contextDataMember must be currentRow, got ${String(primaryFormProps.contextDataMember ?? '<missing>')}`)
+  }
+  if (!leaveTypeOptions.ok) {
+    issues.push('rule.json missing usable leave type options: bind r-select to an existing optionDataViewKey table/view or provide static options')
+  }
+  if (!submitClosure.formBindsDraftView) {
+    issues.push(`r-form must bind the editable draft view ${leaveTableName}@default`)
+  }
+  if (!submitClosure.draftRowsUsable) {
+    issues.push(`${leaveTableName}@default must include one editable draft currentRow before UI generation`)
+  }
+  if (!submitClosure.ok) {
+    issues.push('submit button does not close the application flow: use r-button action=append-row inside the form, copy form fields with inheritFields/inheritFieldMap, append status=pending, and target the pending/approval view')
+  }
+  for (const key of invalidDataViewKeys) issues.push(`invalid dataViewKey format: ${key}`)
+
   return {
-    ok:
-      tableNames.includes('EmployeeLeaveRequest')
-      && formNodes.length > 0
-      && fieldNodes.length >= 9
-      && missingBindings.length === 0
-      && invalidDataViewKeys.length === 0
-      && failedToolCalls.length === 0
-      && actionNames.includes('createTable')
-      && actionNames.includes('addNode')
-      && actionNames.filter(actionName => actionName === 'guidePayload').length >= 4,
-    rule,
-    pagedata,
-    checks: {
-      tableNames,
-      formCount: formNodes.length,
-      fieldCount: fieldNodes.length,
-      boundFields,
-      missingBindings,
-      dataViewKeys,
-      invalidDataViewKeys,
-      failedToolCalls,
-      forbiddenActionNames,
-      actionNames,
+    ok: issues.length === 0,
+    issues,
+    tableNames,
+    leaveTableName,
+    formCount: formNodes.length,
+    formId: typeof primaryForm?.id === 'string' ? primaryForm.id : null,
+    formDataViewKey: typeof primaryFormProps.dataViewKey === 'string' ? primaryFormProps.dataViewKey : null,
+    formContextDataMember: typeof primaryFormProps.contextDataMember === 'string' ? primaryFormProps.contextDataMember : null,
+    boundFields,
+    requiredFields,
+    dataViewKeys,
+    invalidDataViewKeys,
+    leaveTypeOptions,
+    submitClosure,
+  }
+}
+
+// ── Agent ⇄ LLM 对话诊断输出 ───────────────────────────────
+
+function parseJsonMaybe(value) {
+  if (typeof value !== 'string') return value
+  try {
+    return JSON.parse(value)
+  } catch {
+    return value
+  }
+}
+
+function formatMessageForTrace(message, limit) {
+  const toolCalls = Array.isArray(message.tool_calls)
+    ? ` tool_calls=${message.tool_calls.map((call) => call.function?.name ?? 'unknown').join(',')}`
+    : ''
+  const toolCallId = typeof message.tool_call_id === 'string' ? ` tool_call_id=${message.tool_call_id}` : ''
+  return `${message.role}${toolCalls}${toolCallId}:\n${previewAiHostDiagnosticValue(message.content ?? '', limit)}`
+}
+
+function createConversationTracer(options) {
+  if (!options.traceConversation) {
+    return {
+      onSseEvent: () => undefined,
+      onDelta: () => undefined,
+      onReasoning: () => undefined,
+    }
+  }
+  const limit = Math.floor(options.traceContentLimit)
+  let firstPromptLogged = false
+
+  function write(title, body) {
+    console.error(`\n[page-design-smoke trace] ${title}\n${body}`)
+  }
+
+  return {
+    onDelta: (delta) => {
+      if (delta.trim().length === 0) return
+      write('LLM => AGENT delta', previewAiHostDiagnosticValue(delta, limit))
+    },
+    onReasoning: (reasoning) => {
+      if (reasoning.trim().length === 0) return
+      write('LLM => AGENT reasoning', previewAiHostDiagnosticValue(reasoning, limit))
+    },
+    onSseEvent: (event) => {
+      const data = parseJsonMaybe(event.data)
+      if (event.type === 'llm-request' && data !== null && typeof data === 'object') {
+        const tools = Array.isArray(data.tools)
+          ? data.tools.map((tool) => tool.function?.name ?? 'unknown').join(', ')
+          : ''
+        const messages = Array.isArray(data.messages)
+          ? data.messages.map((message, index) => `#${index + 1} ${formatMessageForTrace(message, limit)}`).join('\n\n')
+          : ''
+        const prompt = typeof data.systemPrompt === 'string'
+          ? (options.traceFullPrompt || !firstPromptLogged ? previewAiHostDiagnosticValue(data.systemPrompt, limit) : `<same session prompt, ${data.systemPrompt.length} chars>`)
+          : ''
+        firstPromptLogged = true
+        write(
+          `AGENT => LLM request round=${data.round ?? '?'} session=${data.sessionId ?? ''}`,
+          [
+            `tools: ${tools}`,
+            `systemPrompt:\n${prompt}`,
+            `messages:\n${messages}`,
+          ].join('\n\n'),
+        )
+        return
+      }
+
+      if (event.type === 'result' && data !== null && typeof data === 'object') {
+        const toolCalls = Array.isArray(data.toolCalls)
+          ? data.toolCalls.map((call, index) => {
+              const name = call.function?.name ?? 'unknown'
+              const args = parseJsonMaybe(call.function?.arguments ?? '')
+              return `#${index + 1} ${name}\n${previewAiHostDiagnosticValue(args, limit)}`
+            }).join('\n\n')
+          : ''
+        write(
+          'LLM => AGENT result',
+          [
+            typeof data.text === 'string' && data.text.trim().length > 0 ? `text:\n${previewAiHostDiagnosticValue(data.text, limit)}` : 'text: <empty>',
+            toolCalls.trim().length > 0 ? `tool_calls:\n${toolCalls}` : 'tool_calls: <none>',
+          ].join('\n\n'),
+        )
+        return
+      }
+
+      if (event.type === 'tool-result') {
+        write(
+          `AGENT TOOL => LLM module=${event.scope?.eventModuleId ?? ''}`,
+          previewAiHostDiagnosticValue(data, limit),
+        )
+      }
     },
   }
 }
+
+// ── Smoke 主流程 ────────────────────────────────────────────
 
 async function runSmoke(options) {
-  const ctx = createPageContext(options.pageId)
-  const backendConfig = {
-    backendUrl: options.backendUrl,
-    tenantId: options.tenantId,
-    projectId: options.projectId,
-    username: options.username,
-    password: options.password,
-    backendToken: options.backendToken,
+  // 1. 登录 Java 后端，拿到 SPARK 业务 token。
+  const auth = await resolveBackendAuth(options)
+
+  // 2. 准备目标租户/应用/页面配置工作区，注册 pageDesign 模块。
+  const pageConfig = createPageConfigRuntime(options, auth)
+  const pageStatus = await prepareTargetPage(pageConfig.workspace, options)
+  await loadTargetPage(pageConfig.workspace, options.pageId)
+  const workspace = pageConfig.workspace
+  const before = readWorkspaceFiles(workspace.documents)
+  const host = workspace.createPageDesignEditHost()
+  const sessionId = `${PAGE_DESIGN_MODULE_ID}:${options.pageId}`
+
+  if (options.replacePage) {
+    await deleteBackendAiSession(options, auth, sessionId)
   }
-  const { host, nodeTree, dataSetTool, textModels } = createHost(ctx.pageId)
-  const registration = createPageDesignBusinessRegistration({
-    getEditToolHost: () => host,
+
+  const registry = new AiHostBusinessRegistry()
+  registerPageDesignBusiness({
+    registry,
+    getPageDesignEditHost: () => host,
   })
-  const scope = businessScope(ctx)
-  await startRegistrationSession(registration, runtimeContext(ctx))
-  const boot = await registration.runtime.executeTool('invokeAction', {
-    path: ctx.lifecyclePath,
-    actionName: 'bootstrap',
-    args: {},
-  }, toAiHostRuntimeScope(scope))
-  if (!boot.ok) throw new Error(`pageDesign bootstrap failed: ${boot.msg}`)
 
-  const transport = options.mock
-    ? new MockPageDesignTransport(ctx)
-    : await createJavaSseTransport(backendConfig)
-
-  const fcCalls = []
-  const deltas = []
-  const usages = []
-  const runner = new AiHostToolLoopRunner({
-    registry: { get: () => registration, list: () => [registration] },
+  // 3. 启动 Spark AI Host 会话；bootstrap / SSE / tool loop 都归 spark-ai 接管。
+  const transport = createTransport(options, auth)
+  const session = createAiHostBusinessSession({
+    registry,
     transport,
     maxToolRounds: options.maxRounds,
+  }, new AiHostBusinessTarget(PAGE_DESIGN_MODULE_ID, options.pageId))
+
+  const textDeltas = []
+  const reasoningDeltas = []
+  let latestResultText = ''
+  const usages = []
+  const sseEvents = []
+  let sseEventCount = 0
+  const tracer = createConversationTracer(options)
+
+  await session.start()
+
+  // 4. 输入真实用户需求；后续由 pageDesign + module-semantic 工具链完成。
+  await session.send({
+    historyMsgs: [{ role: 'user', content: options.requestText }],
+    onDelta: (delta) => {
+      textDeltas.push(delta)
+      tracer.onDelta(delta)
+    },
+    onReasoning: (reasoning) => {
+      reasoningDeltas.push(reasoning)
+      tracer.onReasoning(reasoning)
+    },
+    onUsage: (usage) => usages.push(usage),
+    onSseEvent: (event) => {
+      sseEventCount += 1
+      if (options.printSseEvents) sseEvents.push(event)
+      tracer.onSseEvent(event)
+      const data = parseJsonMaybe(event.data)
+      if (event.type === 'result' && data !== null && typeof data === 'object' && typeof data.text === 'string') {
+        latestResultText = data.text
+      }
+    },
   })
 
-  const maxAttempts = options.mock ? 1 : Math.max(1, options.repairAttempts + 1)
-  let artifacts = validateArtifacts(nodeTree, dataSetTool, fcCalls)
-  let attempts = 0
-  for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
-    attempts = attempt
-    const previousChecks = attempt === 1 ? undefined : artifacts.checks
-    await runner.runToolLoop({
-      registration,
-      scope,
-      request: {
-        historyMsgs: [{
-          role: 'user',
-          content: buildUserPrompt(ctx, options, previousChecks),
-        }],
-        systemPrompt: buildSystemPrompt(),
-        onDelta: delta => deltas.push(delta),
-        onUsage: usage => usages.push(usage),
-        onFcCall: record => {
-          fcCalls.push({
-            ...(record.callId === undefined ? {} : { callId: record.callId }),
-            toolName: record.toolName,
-            actionName: readActionName(record),
-            path: readPath(record),
-            status: record.status,
-            ok: record.result.ok,
-            errorCode: record.result.ok ? null : record.result.code ?? null,
-            errorMessage: record.result.ok ? null : record.result.msg ?? null,
-            fix: record.result.ok ? null : record.result.fix ?? null,
-            ...(record.result.ok ? {} : { args: record.args }),
-          })
-        },
-      },
-      turn: turnMeta(ctx, attempt),
-      clearSelected: () => undefined,
-    })
-
-    artifacts = validateArtifacts(nodeTree, dataSetTool, fcCalls)
-    if (artifacts.ok) break
-    deltas.push(`\n[smoke] 第 ${attempt} 轮未通过，将按校验结果继续修正。\n`)
+  // 5. 只做成果验收：保存脏文件、校验远端持久化、读取 spark-ai 会话历史。
+  const after = readWorkspaceFiles(workspace.documents)
+  const touchedFiles = changedFiles(before, after)
+  const savedFiles = await saveDirtyFiles(workspace)
+  const remoteFiles = await readRemoteFiles(pageConfig.loader, options.pageId)
+  const verifiedFiles = PAGE_CONFIG_FILE_NAMES.map((name) => ({
+    name,
+    saved: savedFiles.includes(name),
+    changed: touchedFiles.includes(name),
+    matchesRemote: after[name] === remoteFiles[name],
+  }))
+  const sessionRecord = session.getSessionRecord()
+  const sessionSummary = summarizeAiHostSessionRecord(sessionRecord)
+  const assistantText = sessionSummary.lastAssistantText || textDeltas.join('').trim() || latestResultText.trim()
+  const hitRoundLimit = assistantText.includes('工具调用轮次已达上限')
+  const filesPersisted = verifiedFiles.every((item) => item.matchesRemote)
+  const artifactValidation = validateGeneratedLeaveRequestPage(after)
+  const payloadGuideValidation = validatePageDesignPayloadGuidesFromSession(after, sessionRecord)
+  const result = {
+    ok: !hitRoundLimit && filesPersisted && savedFiles.length > 0 && artifactValidation.ok && payloadGuideValidation.ok,
+    tenantId: options.tenantId,
+    projectId: auth.projectId,
+    basePageId: options.basePageId,
+    pageId: options.pageId,
+    isolateSession: options.isolateSession,
+    runId: options.runId,
+    pageTitle: options.pageTitle,
+    pageStatus,
+    requestText: options.requestText,
+    sessionId: session.sessionId,
+    pageConfigApi: `${options.backendUrl}/api/pages-config/${encodeURIComponent(options.pageId)}`,
+    pageConfigDir: `spark-ai-server/data/pages-config/${options.tenantId}/${auth.projectId}/${options.pageId}`,
+    sessionRecord,
+    sessionSummary,
+    sessionTranscript: createAiHostSessionTranscript(sessionRecord, { contentLimit: options.traceContentLimit }),
+    changedFiles: touchedFiles,
+    savedFiles,
+    verifiedFiles,
+    fileSummary: summarizeFiles(after),
+    artifactValidation,
+    payloadGuideValidation,
+    hitRoundLimit,
+    filesPersisted,
+    assistantText,
+    reasoningText: reasoningDeltas.join('').trim(),
+    usages,
+    sseEventCount,
+    ...(options.printSseEvents ? { sseEvents } : {}),
+    ...(options.printFiles ? { files: after } : {}),
   }
-  const finalTextModels = textModels()
-  const published = artifacts.ok && options.publish
-    ? await publishArtifacts(backendConfig, artifacts, finalTextModels, options)
-    : null
-  return {
-    ok: artifacts.ok,
-    mode: options.mock ? 'mock' : 'real',
-    attempts,
-    sessionId: scope.instanceId,
-    llm: {
-      provider: options.mock ? 'mock' : 'java-sse',
-      baseUrl: options.mock ? '' : `${backendConfig.backendUrl}/api/ai`,
-      model: '',
-      credential: options.mock ? 'mock' : 'present',
-      toolCallCount: fcCalls.length,
-      usages,
-    },
-    toolCalls: fcCalls,
-    summaryText: deltas.join('').slice(0, 1200),
-    textModels: finalTextModels,
-    validation: artifacts.checks,
-    published,
-    pagedata: artifacts.pagedata,
-    rule: artifacts.rule,
-  }
+  return result
 }
 
-const options = parseArgs(process.argv.slice(2))
-runSmoke(options).then((result) => {
+runSmoke(parseArgs(process.argv.slice(2))).then((result) => {
   console.log(JSON.stringify(result, null, 2))
   if (!result.ok) process.exit(2)
 }).catch((error) => {
-  console.error(error instanceof Error ? error.message : String(error))
+  console.error(error instanceof Error ? (error.stack ?? error.message) : String(error))
   process.exit(1)
 })

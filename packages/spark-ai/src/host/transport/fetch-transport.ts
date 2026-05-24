@@ -126,6 +126,7 @@ export class AiHostFetchTransport extends AiHostTransport {
    *   5. 返回 AiHostStreamTurnResult { text, reasoning, toolCalls }
    */
   // PAGE_DESIGN_AI_TRACE[host-transport-stream]: 真实 Java AI 后端 /api/ai/sessions/* SSE 入口；pageDesign live LLM 不在这里写页面文件，只拿模型回复和工具调用。
+  // PAGE_DESIGN_REFACTOR_SOURCE[v4-sse-transport]: V4 通讯协议边界；只负责 stream/turn/session 传输，不识别 pageDesign 函数语义。
   public async streamTurn(input: AiHostStreamTurnInput): Promise<AiHostStreamTurnResult> {
     const response = await this.fetchClient(
       `${this.baseUrl}/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`,

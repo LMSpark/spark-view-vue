@@ -22,12 +22,18 @@ export {
   isPageDesignWritableComponentPayloadKey,
 } from './payload-catalog-tool-catalog'
 
+export {
+  componentTypesFromPageDesignRule,
+  flattenPageDesignSparkNodes,
+  guidedPageDesignPayloadKeysFromSession,
+  parsePageDesignJsonFile,
+  validatePageDesignPayloadGuidesFromSession,
+} from './page-design-session-diagnostics'
+
 export type {
-  PageDesignModuleOptions,
-  PageDesignRuntimeContext,
-  RegisterAssistantBusinessesOptions,
-  RegisterPageDesignBusinessOptions,
-} from './page-design-module'
+  PageDesignFileSnapshot,
+  PageDesignPayloadGuideValidation,
+} from './page-design-session-diagnostics'
 
 export {
   LEAVE_REQUEST_KIND,

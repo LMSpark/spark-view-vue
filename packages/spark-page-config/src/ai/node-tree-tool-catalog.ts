@@ -53,6 +53,8 @@ import {
   isPageDesignWritableComponentPayloadKey,
 } from './payload-catalog-tool-catalog'
 
+// ── schema 原语与通用约束 ─────────────────────────────────
+
 const {
   anySchema,
   arraySchema,
@@ -116,6 +118,7 @@ const INSTANCE_WRITE_RULE = 'SparkNodeTree 的写操作会更新当前组件实�
 const PAYLOAD_GUIDE_RULE = 'LLM 写目录组件前应先显式调用 payload-catalog.guidePayload；node-tree 写动作仍会按 SparkNode.type 自动提取指南并校验 node.props，若返回 PAYLOAD_GUIDE_NOT_FOUND / NODE_PAYLOAD_SCHEMA_INVALID，必须把参数校验结果读完后修正重试。'
 const MERGE_FALSE_REPLACE_RULE = 'merge=false 会整体替换目标节点 props；除非你已把原有 dataViewKey/contextDataMember/field/options 等关键绑定完整带回，否则必须使用 merge=true 或省略 merge。'
 const EMPTY_CONTAINER_TYPES = new Set(['div', 'r-section', 'r-card', 'r-form', 'r-detail'])
+// PAGE_DESIGN_REFACTOR_SOURCE[node-type-allowlist]: rule.json 写入允许 catalog 内组件和渲染器 native HTML；目录外未知业务 type 在进入 fallback 前拦截。
 const NATIVE_HTML_TAGS = new Set([
   'a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'button',
   'canvas', 'caption', 'cite', 'code', 'col', 'colgroup', 'data', 'datalist', 'dd', 'del', 'details',
@@ -126,6 +129,8 @@ const NATIVE_HTML_TAGS = new Set([
   'source', 'span', 'strong', 'sub', 'summary', 'sup', 'table', 'tbody', 'td', 'textarea', 'tfoot',
   'th', 'thead', 'time', 'tr', 'track', 'u', 'ul', 'var', 'video', 'wbr',
 ])
+
+// ── node-tree 动作声明 ────────────────────────────────────
 
 const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
   {
@@ -557,6 +562,8 @@ const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
   },
 ]
 
+// ── SparkNodeTree action 绑定 ─────────────────────────────
+
 type NodeTreeActionBinding = PageDesignServiceActionBinding<PageDesignNodeTree>
 
 const NODE_TREE_ACTION_BINDINGS: Readonly<Record<string, NodeTreeActionBinding>> = {
@@ -582,6 +589,13 @@ const NODE_TREE_ACTION_BINDINGS: Readonly<Record<string, NodeTreeActionBinding>>
 }
 
 // PAGE_DESIGN_AI_TRACE[page-design-node-tree-tool]: pageDesign AI 修改 rule.json 的 ModuleKind 出处；组件 type、id、payload props 校验也集中在这条 AI 写入边界。
+// PAGE_DESIGN_REFACTOR_SOURCE[node-tree-write-gate]: rule.json AI 写入、组件类型拦截、guide 要求和 props 错误回传都集中在这里，smoke 不应重复实现。
+/**
+ * pageDesign 节点树子模块。
+ *
+ * 所有 rule.json 结构写入都先经过本 ModuleKind：稳定 id、组件 type 白名单、
+ * 数据优先、payload guide、props schema 和 DataView 上下文约束在这里统一失败回传给 LLM。
+ */
 export class PageDesignNodeTreeModuleKind extends ModuleKind {
   private readonly service: PageDesignService
   private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
@@ -774,7 +788,10 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     actionName: string,
     args: Readonly<Record<string, unknown>>,
   ): Promise<ReadonlyArray<{ readonly type: string; readonly id: string; readonly path: string }>> {
-    const items = Array.isArray(args['items']) ? args['items'] as readonly unknown[] : []
+    const rawItems = args['items']
+    const items: readonly unknown[] = Array.isArray(rawItems)
+      ? rawItems.map((item: unknown) => item)
+      : []
     const inputs = actionName === 'setProps'
       ? [{ value: args, path: 'setProps' }]
       : items.map((item, index) => ({ value: item, path: `setPropsBatch.items[${index}]` }))
@@ -797,6 +814,8 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     return out
   }
 }
+
+// ── 写入前校验流水线 ──────────────────────────────────────
 
 function nodeTreeAction(
   serviceLabel: string,
@@ -827,7 +846,7 @@ function validateWrittenNodeIds(
   return PageDesignService.failure(
     'NODE_ID_REQUIRED',
     `node-tree.${actionName} 写入的 SparkNode 缺少顶层 id: ${missing.join(', ')}`,
-    '每个新增或替换的结构节点都必须带稳定业务语义 id，例如 leave-form-section、leave-application-form、field-leave-type、pending-leave-table；后续 componentId 必须使用这些真实 id。',
+    '每个新增或替换的结构节点都必须带稳定业务语义 id，例如 business-form-section、primary-form、field-start-date、result-list；后续 componentId 必须使用这些真实 id。',
   )
 }
 
@@ -856,7 +875,7 @@ function validateCompleteContainerWrite(
   return PageDesignService.failure(
     'INCOMPLETE_NODE_TREE_WRITE',
     `node-tree.${actionName} 只写入了空容器，未形成可验收页面结构`,
-    '不要只添加空 r-section/r-form 容器；在同一次 addNodes 中写入完整子树，至少包含统计组件、绑定字段的 r-form、提交按钮和绑定待审批 DataView 的 r-table/r-list。',
+    '不要只添加空 r-section/r-form 容器；在同一次 addNodes 中写入具备数据绑定、字段、动作或列表/详情区域的完整子树，具体结构以 lifecycle 返回的任务知识为准。',
   )
 }
 
@@ -876,6 +895,8 @@ function validateRequiredDataBindings(
     'r-form/r-detail 使用 dataViewKey 绑定 DataView 时，必须在 props 中显式写 contextDataMember: "currentRow"；不要只写 dataMember。',
   )
 }
+
+// ── 写入参数结构提取 ──────────────────────────────────────
 
 function componentTypesWrittenByAction(
   actionName: string,
@@ -1058,6 +1079,8 @@ function isPageDesignAllowedNodeType(type: string): boolean {
   const normalized = type.trim()
   return isPageDesignWritableComponentPayloadKey(normalized) || NATIVE_HTML_TAGS.has(normalized)
 }
+
+// ── LLM 参数读取与运行时校验 ──────────────────────────────
 
 function readLookupParams(args: unknown, actionName: string): SparkNodeTreeLookupParams {
   const record = requireArgRecord(args, `${actionName}.params`)

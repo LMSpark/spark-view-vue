@@ -9,6 +9,8 @@ const username = process.env.AI_USERNAME || 'admin'
 const password = process.env.AI_PASSWORD || 'admin123'
 const smokeModuleId = 'spark-ai-smoke'
 
+// HTTP envelope helpers -----------------------------------------------------
+
 function unwrapEnvelope(payload) {
   if (!payload || typeof payload !== 'object' || typeof payload.ok !== 'boolean') return payload
   if (payload.ok) return payload.data
@@ -24,6 +26,8 @@ function buildScopedHeaders(token) {
     ...(projectId ? { 'X-Project-Id': projectId } : {}),
   }
 }
+
+// Session setup -------------------------------------------------------------
 
 async function login() {
   const response = await fetch(`${baseUrl}/api/auth/login`, {
@@ -47,19 +51,8 @@ async function login() {
   return payload.token
 }
 
-function flushEvent(state, records) {
-  if (!state.event || state.data.length === 0) return null
-  const record = {
-    event: state.event,
-    data: state.data.join('\n'),
-  }
-  records.push(record)
-  state.event = 'message'
-  state.data = []
-  return record
-}
-
 async function createSession(token) {
+  // Live smoke 使用一次性 session，避免复用历史工具调用导致 provider 上下文污染。
   const requestedSessionId = `smoke-session-${randomUUID()}`
   const scope = {
     moduleId: smokeModuleId,
@@ -111,6 +104,20 @@ async function destroySession(token, sessionId) {
   }).catch(() => undefined)
 }
 
+// SSE envelope assertions ---------------------------------------------------
+
+function flushEvent(state, records) {
+  if (!state.event || state.data.length === 0) return null
+  const record = {
+    event: state.event,
+    data: state.data.join('\n'),
+  }
+  records.push(record)
+  state.event = 'message'
+  state.data = []
+  return record
+}
+
 function parseSseRecordData(record) {
   try {
     return JSON.parse(record.data)
@@ -159,6 +166,8 @@ function assertV4SseEnvelope(record, expected) {
   }
   return payload
 }
+
+// Stream verification -------------------------------------------------------
 
 async function streamTurn(token, created) {
   const { sessionId, scope } = created
@@ -286,6 +295,8 @@ async function streamTurn(token, created) {
     records: records.slice(0, 12),
   }
 }
+
+// Entrypoint ----------------------------------------------------------------
 
 async function main() {
   const token = await login()

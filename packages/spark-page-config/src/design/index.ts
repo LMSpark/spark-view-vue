@@ -122,8 +122,6 @@ export type {
 
 export {
   getNextPageDesignFlowStep,
-  getPageDesignFlowStep,
-  listPageDesignFlowSteps,
   PAGE_DESIGN_100_STEP_FLOW,
   summarizePageDesignFlowPhases,
 } from './artifacts'
@@ -131,4 +129,5 @@ export {
 export type {
   PageDesignFlowPhaseSummary,
   PageDesignFlowStep,
+  PageDesignTaskGuide,
 } from './artifacts'

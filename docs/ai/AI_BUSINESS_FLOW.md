@@ -1,5 +1,7 @@
 # SPARK AI 业务流程文档
 
+> 新增 AI 业务的详细创建流程和下一版优化计划见：`docs/ai/SPARK_AI_BUSINESS_CREATION_FLOW.md`
+
 ## 架构总览
 
 ```

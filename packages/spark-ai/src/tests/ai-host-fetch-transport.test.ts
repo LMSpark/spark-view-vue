@@ -11,6 +11,8 @@ import {
 
 const encoder = new TextEncoder()
 
+// Response fixtures ---------------------------------------------------------
+
 function createStreamResponse(chunks: readonly string[]): Response {
   return new Response(new ReadableStream<Uint8Array>({
     start(controller) {
@@ -35,6 +37,8 @@ function createJsonResponse(value: unknown): Response {
 function createFetch(fn: AiHostFetch) {
   return vi.fn<AiHostFetch>(fn)
 }
+
+// Shared AI stream identity -------------------------------------------------
 
 const scope = {
   businessRegistrationId: 'demoRuntime',
@@ -92,6 +96,8 @@ function createV4SseEvent(event: string, data: unknown, terminal = false): strin
   ].join('\n')
 }
 
+// APP SSE fixtures ----------------------------------------------------------
+
 function createV4AppSseEvent(event: string, data: unknown): string {
   return [
     `event: ${event}`,
@@ -112,6 +118,8 @@ function createV4AppSseEvent(event: string, data: unknown): string {
     '',
   ].join('\n')
 }
+
+// AI stream compatibility fixtures -----------------------------------------
 
 function createV4SseError(code: string, message: string): string {
   return [

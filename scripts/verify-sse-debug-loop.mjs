@@ -12,6 +12,8 @@ const AUTH_PASSWORD = process.env.AI_PASSWORD || 'admin123'
 
 let authToken = ''
 
+// Auth and CLI setup --------------------------------------------------------
+
 function createAuthHeaders() {
   const headers = {}
   if (authToken) headers.Authorization = `Bearer ${authToken}`
@@ -104,6 +106,8 @@ function parseArgs(argv) {
   return options
 }
 
+// HTTP helpers --------------------------------------------------------------
+
 function makeUrl(base, path) {
   return `${base}${path.startsWith('/') ? path : `/${path}`}`
 }
@@ -132,6 +136,8 @@ function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
+// SSE wait helpers ----------------------------------------------------------
+
 async function waitEventWithTrigger({
   eventHub,
   targetEvent,
@@ -139,6 +145,7 @@ async function waitEventWithTrigger({
   timeoutMs,
   trigger,
 }) {
+  // 先挂起 SSE 等待，再发起 HTTP 指令，保证快回执不会跑在订阅之前。
   return await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       stop()
@@ -161,6 +168,8 @@ async function waitEventWithTrigger({
       })
   })
 }
+
+// Verification flow ---------------------------------------------------------
 
 async function runIteration({
   index,

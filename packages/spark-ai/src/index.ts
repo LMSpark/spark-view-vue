@@ -11,6 +11,8 @@
  * 旧 runtime / protocol / core 入口已删除，不再提供兼容导出。
  */
 
+// Schema --------------------------------------------------------------------
+
 export {
   anySchema,
   arraySchema,
@@ -39,6 +41,8 @@ export type {
   LlmParamValidationIssue,
   LlmParamValidationResult,
 } from './schema/schema-params-api'
+
+// Module semantic protocol --------------------------------------------------
 
 export {
   ModuleCheckEntry,
@@ -132,6 +136,8 @@ export type {
   ModuleSemanticKnowledgeSnapshot,
 } from './module-semantic/knowledge/module-semantic-knowledge'
 
+// Host business/session -----------------------------------------------------
+
 export {
   AiHostBusinessRegistration,
   AiHostBusinessRuntimeContext,
@@ -162,6 +168,8 @@ export {
   AiHostTransport,
 } from './host/transport/transport-core-api'
 
+// Host transport ------------------------------------------------------------
+
 export {
   AiHostFetchTransport,
   parseAiHostSseBlocks,
@@ -175,6 +183,8 @@ export {
 export {
   uploadAiHostAttachment,
 } from './host/transport/attachment-upload'
+
+// Host tool loop ------------------------------------------------------------
 
 export {
   AiHostToolLoopRunner,
@@ -222,6 +232,8 @@ export type {
 export type {
   DefaultAiHostSessionStoreOptions,
 } from './host/session/default-session-store'
+
+// Host transport types ------------------------------------------------------
 
 export type {
   AiHostStreamTurnInput,

@@ -26,21 +26,8 @@ import type {
 } from '../design'
 import type { PageDesignService } from '../design'
 import { createCurrentPageRef } from './page-design-helpers'
-import { summarizePageDesignFlowPhases } from '../design'
 
-const PAGE_DESIGN_FLOW_PHASES = summarizePageDesignFlowPhases()
-
-function formatPageDesignFlowPhases(): string {
-  return PAGE_DESIGN_FLOW_PHASES
-    .map((phase) => `${phase.phase}(${phase.firstStep}-${phase.lastStep})`)
-    .join(' -> ')
-}
-
-export const PAGE_DESIGN_FLOW_PROMPT = `【页面设计 100 步流程】
-- 页面设计流程真源来自 spark-page-config/capabilities/design/page-design-100-step-flow。
-- 阶段顺序：${formatPageDesignFlowPhases()}。
-- 复杂修改开始前先调用 lifecycle.describeDesignFlow({}) 或按 phase / step / afterStep 查询当前位置。
-- 不要在 prompt 中重新发明流程；以 lifecycle.describeDesignFlow 返回的 phases / steps / nextStep 为准。`
+// ── 参数 schema 与使用规则 ────────────────────────────────
 
 // PAGE_DESIGN_AI_TRACE[page-design-lifecycle]: pageDesign AI 的 bootstrap/progress/100-step 流程出处；只负责编辑态与流程事实，不直接写四文件。
 const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')
@@ -48,11 +35,14 @@ const DESIGN_FLOW_PARAMS = paramsSchema({
   phase: stringSchema('可选。按阶段名筛选页面设计 100 步，例如 数据规划、数据利用、结构、行为。'),
   step: numberSchema('可选。查询指定步骤编号，范围 1-100。'),
   afterStep: numberSchema('可选。返回指定已完成步骤之后的下一步。'),
+  intent: stringSchema('可选。用户原始意图；用于返回匹配的任务知识 guide，例如申请表单闭环。'),
 })
 
 const BOOTSTRAP_RULE = 'Host 会话启动时已自动执行 bootstrap；LLM 常规页面设计流程不得主动调用，除非工具结果明确要求重新校验 live binding。'
 const PHASE_RULE = '执行成功后进入 editing phase。'
 const DESIGN_FLOW_READONLY_RULE = '只返回页面设计 100 步流程事实，不修改页面内容。'
+
+// ── lifecycle 动作声明 ────────────────────────────────────
 
 const LIFECYCLE_ACTIONS: readonly ModuleActionMetadata[] = [
   {
@@ -107,13 +97,15 @@ const LIFECYCLE_ACTIONS: readonly ModuleActionMetadata[] = [
       steps: 'PageDesignFlowStep[] — 按 phase 或 step 过滤后的步骤列表',
       selectedStep: 'PageDesignFlowStep | null — step 命中的单个步骤',
       nextStep: 'PageDesignFlowStep | null — afterStep 或 selectedStep 之后的下一步',
+      taskGuides: 'PageDesignTaskGuide[] — 按 intent 匹配的任务知识；LLM 应先查询再按该知识发 FC，不要从 system prompt 猜模板',
     },
     example: {
-      phase: '数据利用',
-      afterStep: 70,
+      intent: '实现申请表单页面设计',
+      phase: '数据规划',
     },
     usageRules: [
-      '开始复杂页面设计前调用一次，明确当前应按哪一阶段推进。',
+      '开始复杂页面设计前调用一次，明确当前应按哪一阶段推进；传 intent 时只返回命中任务 guide 和相关步骤，不返回全量 100 步。',
+      '不传 phase/step/intent 时只用于查看阶段摘要；需要细节时按 phase、step 或 intent 继续查询。',
       '需要恢复上下文时传 step 或 afterStep 查询精确下一步。',
       DESIGN_FLOW_READONLY_RULE,
     ],
@@ -121,6 +113,15 @@ const LIFECYCLE_ACTIONS: readonly ModuleActionMetadata[] = [
   },
 ]
 
+// ── lifecycle ModuleKind ──────────────────────────────────
+
+/**
+ * pageDesign 生命周期与流程知识子模块。
+ *
+ * `bootstrap` 只做 live binding 校验，`describeProgress` 只读编辑态，
+ * `describeDesignFlow` 只返回流程/任务知识；四文件写入必须经 dataset、
+ * node-tree 或 text-model 子模块。
+ */
 export class PageDesignLifecycleModuleKind extends ModuleKind {
   private readonly service: PageDesignService
   private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
@@ -167,10 +168,13 @@ export class PageDesignLifecycleModuleKind extends ModuleKind {
   }
 }
 
-function toDesignFlowQuery(args: Readonly<Record<string, LlmJsonValue>>): { phase?: string; step?: number; afterStep?: number } {
+// ── 参数归一化 ────────────────────────────────────────────
+
+function toDesignFlowQuery(args: Readonly<Record<string, LlmJsonValue>>): { phase?: string; step?: number; afterStep?: number; intent?: string } {
   return {
     ...(typeof args['phase'] === 'string' ? { phase: args['phase'] } : {}),
     ...(typeof args['step'] === 'number' ? { step: args['step'] } : {}),
     ...(typeof args['afterStep'] === 'number' ? { afterStep: args['afterStep'] } : {}),
+    ...(typeof args['intent'] === 'string' ? { intent: args['intent'] } : {}),
   }
 }

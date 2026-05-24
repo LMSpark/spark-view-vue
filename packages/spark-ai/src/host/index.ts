@@ -108,6 +108,18 @@ export type {
   DefaultAiHostSessionStoreOptions,
 } from './session/default-session-store'
 
+export {
+  createAiHostSessionTranscript,
+  previewAiHostDiagnosticValue,
+  summarizeAiHostSessionRecord,
+} from './session/session-diagnostics'
+
+export type {
+  AiHostSessionSummary,
+  AiHostSessionTranscriptEntry,
+  AiHostSessionTranscriptOptions,
+} from './session/session-diagnostics'
+
 // ── 8. 传输层抽象与类型 ─────────────────────────────────────
 
 export {

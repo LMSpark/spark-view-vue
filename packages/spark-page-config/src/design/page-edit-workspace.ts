@@ -22,16 +22,29 @@ import {
   PAGE_CONFIG_FILE_NAMES,
   type PageConfigFileName,
 } from '../config'
-import type { SparkNodeTree } from '../node-tree'
+import type { NavNode } from '../navigation'
+import {
+  defaultNavIconByKind,
+  findConfigNodeByPageId,
+  normalizeNavNode,
+} from '../navigation'
+import type { NavigationConfigClient } from '../navigation'
+import { SparkNodeTree } from '../node-tree'
 import type { PageDesignEditHost } from './page-edit-session'
 
-// ── SECTION 7: PageConfigEditWorkspace ──
+// ── PageConfigEditWorkspace 契约 ───────────────────────────
 
 export type PageConfigEditWorkspaceOptions = {
   fileApi: PageConfigFileApi
   getConfigLoader: () => BasePageConfigLoader
 }
 
+/**
+ * 页面配置编辑工作区。
+ *
+ * 工作区只维护当前页面四文件的内存文档、dirty 状态和远端加载/保存；
+ * AI Host 会话历史由 spark-ai 保存，二者不要用同一套状态判断是否完成。
+ */
 export class PageConfigEditWorkspace {
   readonly documents: PageDocumentRegistry = createPageDocuments()
 
@@ -87,7 +100,10 @@ export class PageConfigEditWorkspace {
     return {
       getNodeTree: () => documents['rule.json'].model.value,
       onNodeTreeChanged: (nodeTree) => {
-        documents['rule.json'].replaceModel(nodeTree as SparkNodeTree)
+        const nextTree = nodeTree instanceof SparkNodeTree
+          ? nodeTree
+          : SparkNodeTree.fromJson(nodeTree.toJSON())
+        documents['rule.json'].replaceModel(nextTree)
       },
       getDataSetTool: () => documents['pagedata.json'].model.value,
       onDataSetChanged: (tool) => {
@@ -125,6 +141,7 @@ export class PageConfigEditWorkspace {
   }
 
   // PAGE_DESIGN_AI_TRACE[page-design-workspace-load]: live edit host 加载 rule/pagedata/script/style 的前端 workspace 入口；不是 AI 后端会话历史。
+  // PAGE_DESIGN_REFACTOR_SOURCE[workspace-load-boundary]: page-config 四文件加载入口；不要和 AI 后端会话 prepare/append 混淆。
   async ensureActivePageFilesLoaded(options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
     const pageId = this.activePageId
     if (!pageId) return
@@ -202,6 +219,7 @@ export class PageConfigEditWorkspace {
   }
 
   // PAGE_DESIGN_AI_TRACE[page-design-workspace-save]: AI 工具改完四文件后经这里保存到 pages-config；和 appendMessages 的 AI 会话持久化分属两条线。
+  // PAGE_DESIGN_REFACTOR_SOURCE[workspace-save-boundary]: 页面成果持久化入口；AI 会话历史同步成功不等于 rule/pagedata/script/style 已保存。
   async savePageFile(name: PageConfigFileName): Promise<void> {
     if (!this.activePageId) return
     const doc = this.documents[name]
@@ -289,15 +307,7 @@ export class PageConfigEditWorkspace {
   }
 }
 
-// ── SECTION 8: PageConfigFileLifecycle ──
-
-import type { NavNode } from '../navigation'
-import {
-  defaultNavIconByKind,
-  findConfigNodeByPageId,
-  normalizeNavNode,
-} from '../navigation'
-import type { NavigationConfigClient } from '../navigation'
+// ── PageConfigFileLifecycle 契约 ───────────────────────────
 
 export type PageConfigFileLifecycleOptions = {
   fileApi: PageConfigFileApi
@@ -353,6 +363,12 @@ function defaultPageNavigationNode(params: PageNavigationMountParams): NavNode {
   return normalizeNavNode(node)
 }
 
+/**
+ * 页面文件和导航节点的生命周期服务。
+ *
+ * create/delete 只处理 pages-config 文件；mount/unmount 只处理导航树；
+ * createMounted/removeMounted 组合两者并在失败时按参数决定是否回滚。
+ */
 export class PageConfigFileLifecycle {
   private readonly fileApi: PageConfigFileApi
   private readonly navigationClient: NavigationConfigClient

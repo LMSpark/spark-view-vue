@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-22T22:31:07.110Z",
+  "buildTime": "2026-05-24T02:13:30.949Z",
   "componentCount": 106,
   "components": {
     "about": {
@@ -2665,7 +2665,7 @@
       "type": "r-button",
       "filePath": "packages/spark-component/src/components/containers/layout/RendererButton.vue",
       "category": "container",
-      "description": "声明式动作按钮，支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。 配置入口：type=\"r-button\"，category=container（容器组件）。 关键 props：action, label。",
+      "description": "声明式动作按钮，支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。 配置入口：type=\"r-button\"，category=container（容器组件）。 绑定语义：self-resolving DataView member，通过 field 绑定行字段，bindingDelegate=form-element。 关键 props：dataViewKey, field, value, action, label。",
       "props": [
         {
           "name": "permissionDeniedMode",
@@ -2685,7 +2685,7 @@
           "name": "action",
           "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | \"save-dataset\"",
           "required": false,
-          "description": "CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行。",
+          "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。",
           "schema": {
             "enum": [
               "append-row",
@@ -2707,12 +2707,12 @@
               "save-dataset"
             ],
             "type": "string",
-            "description": "CRUD 动作名（如 'refresh', 'delete-row'），由宿主能力决定是否接管执行。",
+            "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。",
             "oneOf": [
               {
                 "const": "append-row",
-                "title": "新增行",
-                "description": "向当前数据视图追加一行。适合普通新增按钮；可配 appendPayload、inheritFields 或 prompt。"
+                "title": "新增/提交一条新记录",
+                "description": "向目标数据视图追加一行。表单内“提交申请/提交新单据”应优先使用它，并通过 dataViewKey 指向目标列表视图、appendPayload 写固定字段、inheritFields 从表单 currentRow 复制字段。"
               },
               {
                 "const": "prompt-append",
@@ -2726,8 +2726,8 @@
               },
               {
                 "const": "submit-current-form",
-                "title": "保存当前表单",
-                "description": "提交当前表单容器的数据，通常用于表单页保存按钮。"
+                "title": "保存已有表单行",
+                "description": "只把当前表单数据写回同一个已有 currentRow/id，不会创建新行，也不会追加到待审批/列表视图；不适合“新建申请提交到列表”。"
               },
               {
                 "const": "clear-rows",
@@ -2797,98 +2797,241 @@
           }
         },
         {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "目标 DataViewKey；不写时使用按钮所在容器提供的数据视图。"
+        },
+        {
+          "name": "idField",
+          "type": "string",
+          "required": false,
+          "default": "\"id\"",
+          "description": "目标行主键字段名。"
+        },
+        {
+          "name": "appendPayload",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "default": "{}",
+          "description": "append-row/prompt-append 新行初始字段值。"
+        },
+        {
+          "name": "inheritFields",
+          "type": "string[]",
+          "required": false,
+          "default": "[]",
+          "description": "append-row/prompt-append 从当前作用域行复制到新行的字段名。"
+        },
+        {
+          "name": "inheritFieldMap",
+          "type": "Record<string, string>",
+          "required": false,
+          "default": "{}",
+          "description": "append-row/prompt-append 从当前作用域行复制并重命名的字段映射。"
+        },
+        {
+          "name": "setCurrentRowOnSuccess",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "新增成功后是否将新行设为目标视图 currentRow。"
+        },
+        {
+          "name": "patch",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "default": "{}",
+          "description": "patch-row/patch-current/patch-selected 的静态更新字段。"
+        },
+        {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "prompt/patch/set-field 使用的单字段名。"
+        },
+        {
+          "name": "value",
+          "type": "unknown",
+          "required": false,
+          "description": "patch/set-field 使用的单字段值。"
+        },
+        {
+          "name": "then",
+          "type": "ActionDescriptor",
+          "required": false,
+          "description": "当前内置动作成功后的链式动作。"
+        },
+        {
+          "name": "successMessage",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "操作成功后的提示文案。"
+        },
+        {
+          "name": "failureMessage",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "操作失败后的提示文案。"
+        },
+        {
+          "name": "emptyMessage",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "数据源为空或目标行不存在时的提示文案。"
+        },
+        {
+          "name": "errorMessage",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "运行时异常时的提示文案。"
+        },
+        {
+          "name": "validateMessage",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "表单校验失败时的提示文案。"
+        },
+        {
+          "name": "confirmMessage",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "操作前确认文案；空字符串表示跳过确认。"
+        },
+        {
+          "name": "confirmTitle",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "操作前确认标题。"
+        },
+        {
+          "name": "confirmType",
+          "type": "string",
+          "required": false,
+          "default": "\"warning\"",
+          "description": "操作前确认类型。"
+        },
+        {
+          "name": "silent",
+          "type": "boolean",
+          "required": false,
+          "default": "false",
+          "description": "静默模式；成功/失败提示不展示。"
+        },
+        {
+          "name": "disabledWhenRow",
+          "type": "Record<string, unknown>",
+          "required": false,
+          "default": "{}",
+          "description": "当前行字段值匹配此对象时禁用按钮。"
+        },
+        {
           "name": "template",
           "type": "string",
           "required": false,
-          "description": "样式模板名（如 'primary', 'toolbar-danger', 'icon-add'）"
+          "description": "样式模板名。"
         },
         {
           "name": "label",
           "type": "string",
           "required": false,
-          "description": "按钮文本"
+          "default": "\"\"",
+          "description": "按钮文本。"
         },
         {
           "name": "buttonType",
           "type": "string",
           "required": false,
-          "description": "按钮类型"
+          "description": "按钮类型。"
         },
         {
           "name": "buttonSize",
           "type": "string",
           "required": false,
-          "description": "按钮尺寸"
+          "default": "\"default\"",
+          "description": "按钮尺寸。"
         },
         {
           "name": "plain",
           "type": "boolean",
           "required": false,
-          "description": "是否朴素按钮"
+          "default": "false",
+          "description": "是否朴素按钮。"
         },
         {
           "name": "text",
           "type": "boolean",
           "required": false,
-          "description": "是否文本按钮"
+          "default": "false",
+          "description": "是否文本按钮。"
         },
         {
           "name": "bg",
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "文本按钮是否显示背景"
+          "description": "文本按钮是否显示背景。"
         },
         {
           "name": "link",
           "type": "boolean",
           "required": false,
-          "description": "是否链接风格"
+          "default": "false",
+          "description": "是否链接风格。"
         },
         {
           "name": "round",
           "type": "boolean",
           "required": false,
-          "description": "是否圆角"
+          "default": "false",
+          "description": "是否圆角。"
         },
         {
           "name": "circle",
           "type": "boolean",
           "required": false,
-          "description": "是否圆形按钮"
+          "default": "false",
+          "description": "是否圆形按钮。"
         },
         {
           "name": "loading",
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "是否加载中"
+          "description": "是否加载中。"
         },
         {
           "name": "icon",
           "type": "string",
           "required": false,
-          "description": "图标名称"
+          "description": "图标名称。"
         },
         {
           "name": "autoInsertSpace",
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "中文按钮文案是否自动插空格"
+          "description": "中文按钮文案是否自动插空格。"
         },
         {
           "name": "color",
           "type": "string",
           "required": false,
-          "description": "自定义颜色"
+          "description": "自定义颜色。"
         },
         {
           "name": "dark",
           "type": "boolean",
           "required": false,
           "default": "false",
-          "description": "深色主题"
+          "description": "是否使用深色主题。"
         }
       ],
       "emits": [],
@@ -4507,6 +4650,12 @@
           "description": "是否启用多选"
         },
         {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
           "name": "modelValue",
           "type": "string | number | boolean | unknown[]",
           "required": false,
@@ -4523,12 +4672,6 @@
           "type": "number",
           "required": false,
           "description": "字段宽度"
-        },
-        {
-          "name": "field",
-          "type": "string",
-          "required": false,
-          "description": "字段绑定名"
         },
         {
           "name": "placeholder",
@@ -8427,6 +8570,12 @@
           "description": "是否启用多选"
         },
         {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
           "name": "modelValue",
           "type": "string | number | boolean | unknown[]",
           "required": false,
@@ -8443,12 +8592,6 @@
           "type": "number",
           "required": false,
           "description": "字段宽度"
-        },
-        {
-          "name": "field",
-          "type": "string",
-          "required": false,
-          "description": "字段绑定名"
         },
         {
           "name": "placeholder",
@@ -12803,6 +12946,12 @@
           "description": "是否启用多选"
         },
         {
+          "name": "field",
+          "type": "string",
+          "required": false,
+          "description": "字段绑定名"
+        },
+        {
           "name": "modelValue",
           "type": "string | number | boolean | unknown[]",
           "required": false,
@@ -12819,12 +12968,6 @@
           "type": "number",
           "required": false,
           "description": "字段宽度"
-        },
-        {
-          "name": "field",
-          "type": "string",
-          "required": false,
-          "description": "字段绑定名"
         },
         {
           "name": "placeholder",

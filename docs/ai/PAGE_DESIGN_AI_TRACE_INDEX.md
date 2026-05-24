@@ -5,6 +5,10 @@
 > 目的：给“页面设计 AI 一条线”做源码出处索引，方便后续清理重构冗余时快速定位真实入口、职责边界和不应混淆的相邻代码。
 >
 > 完整工程流程见：`docs/ai/PAGE_DESIGN_AI_ENGINEERING_FLOW.md`
+>
+> 文件全文组织和注释边界见：`docs/ai/PAGE_DESIGN_AI_FILE_ORGANIZATION.md`
+>
+> 28 个源码标识台账见：`docs/ai/PAGE_DESIGN_AI_TRACE_FILES.md`
 
 ## 快速定位
 

@@ -166,6 +166,7 @@ type ResolvedBeforeRenderContext = Omit<BeforeRenderContext, 'id' | 'type' | 'pr
 const EMPTY_RUNTIME_PROPS: NodeRuntimeProps = {}
 let _rendererScopedContextId = 0
 
+// PAGE_DESIGN_REFACTOR_SOURCE[renderer-type-boundary]: 运行时真实分支是 registry/global-el/native/fallback；pageDesign 写入层应提前拦截目录外未知业务 type。
 // 仅放行标准 HTML 标签；未知业务类型仍保留 fail-fast 告警分支。
 const NATIVE_HTML_TAGS = new Set([
   'a', 'abbr', 'address', 'article', 'aside', 'audio', 'b', 'bdi', 'bdo', 'blockquote', 'br', 'button',

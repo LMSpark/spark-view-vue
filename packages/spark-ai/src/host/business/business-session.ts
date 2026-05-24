@@ -212,6 +212,7 @@ class AiHostMessageSender {
  *   sender     — 消息发送器（可直接传给 UI 层）
  */
 // PAGE_DESIGN_AI_TRACE[host-session-entry]: pageDesign live LLM 评测从 createAiHostBusinessSession/start/send 进入 AI Host 会话线；清理冗余时保留这一处作为前端 AI 会话入口。
+// PAGE_DESIGN_REFACTOR_SOURCE[host-session-entry]: 前端 Agent 会话入口；sessionId 来自 kind + instanceId，turn 隔离在 send/transport 层继续传递。
 export class AiHostBusinessSession {
   public readonly target: AiHostBusinessTarget
   public readonly scope: AiHostBusinessScope
@@ -291,6 +292,7 @@ export function createAiHostBusinessSession(
  * 4. 返回 AiHostStartSessionResult（含 session + tools）
  */
 // PAGE_DESIGN_AI_TRACE[host-session-start]: startRegistrationSession 负责调用业务 onStartSession 并投影 module-semantic 工具；pageDesign 的工具列表从这里进入 LLM。
+// PAGE_DESIGN_REFACTOR_SOURCE[tool-schema-projection]: module-semantic 工具投影成 LLM function schema 的源头；不要在业务 mjs 中手写工具 schema。
 export async function startRegistrationSession(
   registration: AiHostBusinessRegistration,
   context: AiHostBusinessRuntimeContext,

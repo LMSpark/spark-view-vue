@@ -4,7 +4,7 @@
 >
 > 范围：本文梳理当前“页面设计 AI 一条线”的工程全过程，覆盖 live LLM 评测、前端 AI Host、V4 通信、pageDesign 业务注册、工具执行、四文件保存和验收闭环。
 >
-> 定位：这是当前实现的工程流程文档；源码出处用 `PAGE_DESIGN_AI_TRACE[...]` 标识，完整索引见 `docs/ai/PAGE_DESIGN_AI_TRACE_INDEX.md`。
+> 定位：这是当前实现的工程流程文档；源码出处用 `PAGE_DESIGN_AI_TRACE[...]` 标识，完整索引见 `docs/ai/PAGE_DESIGN_AI_TRACE_INDEX.md`，文件全文组织和注释边界见 `docs/ai/PAGE_DESIGN_AI_FILE_ORGANIZATION.md`。
 
 ## 一句话总览
 

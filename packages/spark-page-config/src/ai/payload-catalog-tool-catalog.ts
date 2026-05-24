@@ -32,6 +32,8 @@ import {
   PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
 } from './page-design-kind-ids'
 
+// ── 公共目录模型 ───────────────────────────────────────────
+
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
 type PayloadCatalogActionRunner = (
   registry: ModuleParameterPayloadRegistry,
@@ -65,6 +67,9 @@ type PageDesignPayloadCatalog = {
   readonly $defs?: Readonly<Record<string, LlmJsonSchema>> | undefined
 }
 
+// ── 构建产物读取与推荐排序 ─────────────────────────────────
+
+// PAGE_DESIGN_REFACTOR_SOURCE[payload-catalog-data]: VCM 构建产物只在工具内部做按需查询；不要把完整 catalog 拼进 LLM prompt。
 const PAGE_DESIGN_COMPONENT_CATALOG: PageDesignPayloadCatalog = readPageDesignPayloadCatalog(componentCatalogPayload)
 const RECOMMENDED_PAYLOAD_ORDER = [
   'r-section',
@@ -83,6 +88,8 @@ const RECOMMENDED_PAYLOAD_ORDER = [
   'r-switch',
 ]
 const RECOMMENDED_PAYLOAD_RANK = new Map(RECOMMENDED_PAYLOAD_ORDER.map((key, index) => [key, index]))
+
+// ── payload-catalog 动作声明 ──────────────────────────────
 
 const PAYLOAD_CATALOG_ACTIONS: readonly ModuleActionMetadata[] = [
   {
@@ -149,6 +156,14 @@ const PAYLOAD_CATALOG_ACTION_RUNNERS: Readonly<Record<PayloadCatalogFunctionId, 
   guidePayload: guidePageDesignPayload,
 }
 
+// ── Provider 注册入口 ─────────────────────────────────────
+
+/**
+ * 创建 pageDesign 的参数荷载 provider registry。
+ *
+ * registry 只注册 node-tree/spark.component 这一类组件 props 知识；其它业务知识应通过
+ * 对应 ModuleKind 暴露，不要塞进组件目录。
+ */
 export function createPageDesignPayloadRegistry(): ModuleParameterPayloadRegistry {
   const registry = new ModuleParameterPayloadRegistry()
   registry.register(createPageDesignComponentPayloadProvider())
@@ -156,6 +171,13 @@ export function createPageDesignPayloadRegistry(): ModuleParameterPayloadRegistr
 }
 
 // PAGE_DESIGN_AI_TRACE[page-design-payload-provider]: pageDesign AI 的组件参数荷载指南出处；node-tree 写 props 前应以这里的 guidePayload/paramsSchema 为准。
+// PAGE_DESIGN_REFACTOR_SOURCE[payload-guide-gate]: 组件 props 知识进入 LLM 的唯一业务工具门；queryPayloads/guidePayload 返回多少，LLM 才知道多少。
+/**
+ * 创建组件 props 参数荷载 provider。
+ *
+ * query 只返回摘要，guide 才返回完整 paramsSchema；这个分层保证 LLM 按需建立知识，
+ * 也避免把 VCM 构建产物整体灌入上下文。
+ */
 export function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvider {
   return {
     moduleKind: PAGE_DESIGN_NODE_TREE_KIND,
@@ -166,6 +188,14 @@ export function createPageDesignComponentPayloadProvider(): ModuleParameterPaylo
   }
 }
 
+// ── payload-catalog ModuleKind ────────────────────────────
+
+/**
+ * 参数荷载目录子模块。
+ *
+ * 本模块负责把 `queryPayloads/guidePayload` 暴露给 LLM，并在 guide 成功后通知
+ * `PageDesignService` 记录当前会话已显式获取的组件指南。
+ */
 export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
   private readonly registry: ModuleParameterPayloadRegistry
   private readonly service: PageDesignService
@@ -225,6 +255,8 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
   }
 }
 
+// ── Action 路由与 provider 解析 ───────────────────────────
+
 function isModuleParameterPayloadGuide(value: unknown): value is ModuleParameterPayloadGuide {
   return isRecord(value)
     && typeof value['moduleKind'] === 'string'
@@ -251,6 +283,8 @@ function runPayloadCatalogAction(
 function isPayloadCatalogFunctionId(value: string): value is PayloadCatalogFunctionId {
   return value === 'queryPayloads' || value === 'guidePayload'
 }
+
+// ── 查询与 guide 执行 ─────────────────────────────────────
 
 function queryPageDesignPayloads(
   registry: ModuleParameterPayloadRegistry,
@@ -302,6 +336,8 @@ function guidePageDesignPayload(
   }
 }
 
+// ── 组件目录查询与 guide 投影 ─────────────────────────────
+
 function queryPageDesignComponentPayloads(filter: ModuleParameterPayloadQueryFilter = {}): ModuleParameterPayloadSummary[] {
   const category = typeof filter.category === 'string' ? filter.category.trim() : ''
   const keyword = typeof filter.keyword === 'string' ? filter.keyword.trim() : ''
@@ -329,6 +365,8 @@ function queryPageDesignComponentPayloads(filter: ModuleParameterPayloadQueryFil
     .map((entry) => summarizePayload(entry))
   return items
 }
+
+// ── Action 参数归一化与 provider 定位 ─────────────────────
 
 function createPayloadQueryFilter(
   args: Readonly<Record<string, LlmJsonValue>>,
@@ -448,6 +486,8 @@ export function getPageDesignComponentPayloadGuide(key: string): ModuleParameter
   return guidePageDesignComponentPayload(key.trim())
 }
 
+// ── paramsSchema 生成 ─────────────────────────────────────
+
 function summarizePayload(entry: PageDesignPayloadEntry): ModuleParameterPayloadSummary {
   const props = entry.props ?? []
   const requiredProps = props.filter((prop) => prop.required === true).map((prop) => prop.name)
@@ -556,6 +596,8 @@ function inferJsonSchemaTypes(typePart: string): ReadonlyArray<'array' | 'boolea
   return []
 }
 
+// ── $defs 裁剪 ────────────────────────────────────────────
+
 function collectReachableDefs(
   roots: readonly LlmJsonSchema[],
   defs: Readonly<Record<string, LlmJsonSchema>>,
@@ -632,6 +674,8 @@ function collectSchemaArrayRefs(
     collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, defs, out, visiting)
   }
 }
+
+// ── 目录 JSON 运行时校验 ──────────────────────────────────
 
 function readPageDesignPayloadCatalog(value: unknown): PageDesignPayloadCatalog {
   if (!isRecord(value) || typeof value['version'] !== 'string' || typeof value['componentCount'] !== 'number' || !isRecord(value['components'])) {

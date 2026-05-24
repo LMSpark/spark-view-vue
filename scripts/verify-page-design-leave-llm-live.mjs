@@ -31,6 +31,10 @@ import {
 import { PageConfigEditWorkspace } from '@spark-view/spark-page-config/design'
 import { parseDataViewKey } from '@spark-view/spark-data'
 
+// 文件按 live 执行时序组织：输入契约 -> 鉴权 -> 页面 workspace -> AI 会话 -> 诊断摘要 -> 语义验收 -> 主编排。
+// 这些分段是 AI 线清理冗余时的边界标识；不要把 pageDesign 业务生成逻辑塞回这个脚本。
+
+// 1. 输入契约：环境变量、CLI 参数和默认测试目标。
 const DEFAULT_BACKEND_URL = 'http://localhost:8080'
 const DEFAULT_TENANT_ID = 'lmspark'
 const DEFAULT_PROJECT_ID = 'homepage'
@@ -268,6 +272,7 @@ function readString(value, key) {
   return isRecord(value) && typeof value[key] === 'string' ? value[key] : ''
 }
 
+// 2. 鉴权边界：这里负责拿到 Java 后端 token，后续 transport/page-config 只复用 header。
 // PAGE_DESIGN_AI_TRACE[live-auth]: live LLM 评测只在这里登录/接收外部 token；后续所有 AI/page-config 请求复用同一组前端鉴权头。
 async function resolveBackendAuth(options) {
   if (options.backendToken.length > 0) {
@@ -325,6 +330,7 @@ function createAuthHeaders(options, auth) {
   }
 }
 
+// 3. 页面配置边界：真实 pages-config API 被包装成前端 live edit workspace。
 // PAGE_DESIGN_AI_TRACE[live-page-workspace]: live 评测把真实 pages-config API 包装成 PageConfigEditWorkspace，pageDesign 工具只改这个前端 workspace。
 function createPageConfigRuntime(options, auth) {
   const apiBaseUrl = `${options.backendUrl}/api`
@@ -444,6 +450,7 @@ async function readRemoteFiles(loader, pageId) {
   return Object.fromEntries(entries)
 }
 
+// 4. AI 后端会话边界：只处理 V4 session 历史，不代表页面四文件已经持久化。
 async function readBackendConversation(options, auth, sessionId) {
   const response = await fetch(`${options.backendUrl}/api/ai/sessions/${encodeURIComponent(sessionId)}/conversation`, {
     method: 'GET',
@@ -512,6 +519,7 @@ async function createBackendSession(options, auth, sessionId, scope) {
   }
 }
 
+// 5. LLM turn 边界：发送真实需求并把超时、SSE 回调和失败模式归一化给主编排。
 async function sendDemand(session, requestText, timeoutMs, callbacks) {
   const controller = new AbortController()
   const startedAt = Date.now()
@@ -539,6 +547,7 @@ function samePersistedText(left, right) {
   return String(left ?? '').replace(/\r\n/g, '\n') === String(right ?? '').replace(/\r\n/g, '\n')
 }
 
+// 6. 诊断摘要：这些 helper 只压缩报告体积，不能参与通过/失败判定。
 function summarizeFiles(files) {
   return Object.fromEntries(Object.entries(files).map(([name, content]) => [name, {
     bytes: Buffer.byteLength(content, 'utf8'),
@@ -669,6 +678,7 @@ function summarizeText(value, maxLength) {
   return text.length <= maxLength ? text : `${text.slice(0, maxLength)}...<truncated ${text.length - maxLength} chars>`
 }
 
+// 7. 语义验收：按“请假申请页面设计”的业务语义判断产物，不做 LLM 快照断言。
 function flattenSparkNodes(value) {
   if (Array.isArray(value)) return value.flatMap(flattenSparkNodes)
   if (!isRecord(value)) return []
@@ -870,6 +880,7 @@ function validateArtifacts(files) {
   }
 }
 
+// 8. 主编排：串起登录、页面准备、pageDesign 注册、真实 LLM、保存和远端回读。
 // PAGE_DESIGN_AI_TRACE[live-orchestrator]: live 主流程编排登录、页面替换、注册 pageDesign、启动 AI 会话、保存脏文件和远端回读。
 async function runLiveTest(options) {
   const auth = await resolveBackendAuth(options)
@@ -985,6 +996,7 @@ async function runLiveTest(options) {
   }
 }
 
+// 9. CLI 出口：脚本对外只输出 JSON 报告，便于人工复现和后续自动评测读取。
 const options = parseArgs(process.argv.slice(2))
 if (options.help) {
   printHelp()

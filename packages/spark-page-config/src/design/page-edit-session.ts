@@ -16,12 +16,18 @@ import type {
 
 export type { SparkNodeTreeMethodKey } from '../node-tree'
 
-// ── SECTION 1: 编辑会话核心 ──
+// ── 编辑会话核心契约 ───────────────────────────────────────
 
 export type PageDesignEditPhase = 'idle' | 'editing' | 'saved'
 
 export type PageDesignNodeTree = Pick<SparkNodeTree, SparkNodeTreeMethodKey | 'toJSON'>
 
+/**
+ * PageDesign live edit 宿主能力。
+ *
+ * AI 工具只通过这些函数访问四文件模型；宿主负责把 node-tree、dataset、
+ * script.js、style.css 映射到当前页面，并在变更回调里更新工作区 dirty 状态。
+ */
 export type PageDesignEditHost = {
   getNodeTree?: () => PageDesignNodeTree | null
   onNodeTreeChanged?: (nodeTree: PageDesignNodeTree) => void
@@ -33,6 +39,12 @@ export type PageDesignEditHost = {
   writeStyle?: (content: string) => void
 }
 
+/**
+ * 单个 pageId 的 live edit 会话状态。
+ *
+ * 该对象只保存编辑态和已显式查询过的组件 payload guide；AI Host 会话历史、
+ * SSE turn 状态和后端 session 持久化均不在这里维护。
+ */
 export class PageDesignEditSession {
   phase: PageDesignEditPhase = 'idle'
 
@@ -78,7 +90,7 @@ export class PageDesignEditSession {
   }
 }
 
-// ── SECTION 3: 服务契约类型 ──
+// ── 服务层契约与结果类型 ─────────────────────────────────
 
 export type PageDesignServiceContext = {
   requestId: string
@@ -101,6 +113,8 @@ export type PageDesignServiceActionBinding<TTarget> = {
   mutates: boolean
   fixHint?: string
 }
+
+// ── Service Result 守卫 ───────────────────────────────────
 
 export function pageDesignServiceSuccess<TResult>(
   data: TResult,

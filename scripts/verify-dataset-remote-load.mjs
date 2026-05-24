@@ -6,6 +6,8 @@ import {
   subscribeAiHostAppSseEvents,
 } from '../packages/spark-ai/src/host/transport/app-sse-events.ts'
 
+// CLI options ---------------------------------------------------------------
+
 function parseArgs(argv) {
   const options = {
     pageId: 'dynamic-columns',
@@ -65,6 +67,8 @@ function parseArgs(argv) {
   return options
 }
 
+// HTTP helpers --------------------------------------------------------------
+
 function makeUrl(base, path) {
   return `${base}${path.startsWith('/') ? path : `/${path}`}`
 }
@@ -93,6 +97,8 @@ function isRecord(value) {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
+// SSE wait helpers ----------------------------------------------------------
+
 async function waitEventWithTrigger({
   eventHub,
   targetEvent,
@@ -100,6 +106,7 @@ async function waitEventWithTrigger({
   timeoutMs,
   trigger,
 }) {
+  // 先注册 listener 再触发 HTTP 请求，避免后端立即 emit 时丢失回执事件。
   return await new Promise((resolve, reject) => {
     const timeout = setTimeout(() => {
       stop()
@@ -122,6 +129,8 @@ async function waitEventWithTrigger({
       })
   })
 }
+
+// Verification flow ---------------------------------------------------------
 
 async function main() {
   const options = parseArgs(process.argv.slice(2))

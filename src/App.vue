@@ -4,122 +4,119 @@
 
   <!-- 业务页：完整布局 -->
   <template v-else>
-  <AppLayout
-    :header-first="headerFirst"
-    :show-header="true"
-    :show-breadcrumb="mode === 'single'"
-    :show-tab-bar="mode === 'multi'"
-    :show-footer="showFooter"
-    :show-sidebar="nav.regionVisibility.value.sidebar"
-    :show-right-sidebar="false"
-    :collapsed="sidebarCollapsed"
-  >
-    <!-- 左侧边栏 -->
-    <template #sidebar>
-      <AppSidebar
-        :title="'SPARK'"
-        :collapsed="sidebarCollapsed"
-        :items="nav.regionItems.value.sidebar"
-      />
-    </template>
+    <AppLayout
+      :header-first="headerFirst"
+      :show-header="true"
+      :show-breadcrumb="mode === 'single'"
+      :show-tab-bar="mode === 'multi'"
+      :show-footer="showFooter"
+      :show-sidebar="nav.regionVisibility.value.sidebar"
+      :show-right-sidebar="false"
+      :collapsed="sidebarCollapsed"
+    >
+      <template #sidebar>
+        <AppSidebar
+          :title="'SPARK'"
+          :collapsed="sidebarCollapsed"
+          :items="nav.regionItems.value.sidebar"
+        />
+      </template>
 
-    <!-- 顶部首 -->
-    <template #header>
-      <AppHeader
-        :title="headerTitle"
-        :is-dark="isDark"
-        :collapsed="sidebarCollapsed"
-        :collapsible="nav.regionVisibility.value.sidebar"
-        :username="currentUsername"
-        :toolbar-items="nav.regionItems.value.toolbar"
-        :user-menu-items="nav.regionItems.value.userMenu"
-        @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
-        @toggle-theme="toggleTheme"
-        @user-command="handleUserCommand"
-      >
-        <template #nav>
-          <NavHeaderBar
-            v-if="nav.regionVisibility.value.header"
-            :items="nav.regionItems.value.header"
+      <template #header>
+        <AppHeader
+          :title="headerTitle"
+          :is-dark="isDark"
+          :collapsed="sidebarCollapsed"
+          :collapsible="nav.regionVisibility.value.sidebar"
+          :username="currentUsername"
+          :toolbar-items="nav.regionItems.value.toolbar"
+          :user-menu-items="nav.regionItems.value.userMenu"
+          @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
+          @toggle-theme="toggleTheme"
+          @user-command="handleUserCommand"
+        >
+          <template #nav>
+            <NavHeaderBar
+              v-if="nav.regionVisibility.value.header"
+              :items="nav.regionItems.value.header"
+            />
+          </template>
+        </AppHeader>
+      </template>
+
+      <template #breadcrumb>
+        <AppBreadcrumb>
+          <template v-if="nav.moduleContext.value" #trailing>
+            <NavContextSelector :state="nav.moduleContext.value" />
+          </template>
+        </AppBreadcrumb>
+      </template>
+
+      <template #tab-bar>
+        <AppTabBar>
+          <template v-if="nav.moduleContext.value" #trailing>
+            <NavContextSelector :state="nav.moduleContext.value" />
+          </template>
+        </AppTabBar>
+      </template>
+
+      <router-view v-slot="{ Component }">
+        <div v-if="contextGuard" class="app-context-guard">
+          <div class="app-context-guard__badge">Context Required</div>
+          <h2>{{ contextGuard.title }}</h2>
+          <p>{{ contextGuard.message }}</p>
+          <div class="app-context-guard__meta">
+            <span>当前路径：{{ route.path }}</span>
+            <span v-if="contextGuard.expectedPath">建议路径：{{ contextGuard.expectedPath }}</span>
+          </div>
+          <div class="app-context-guard__actions">
+            <button type="button" class="app-context-guard__primary" @click="handleContextGuardPrimary">
+              {{ contextGuard.primaryActionLabel }}
+            </button>
+            <button
+              v-if="contextGuard.expectedPath"
+              type="button"
+              class="app-context-guard__secondary"
+              @click="jumpToExpectedContext"
+            >
+              跳转到作用域路径
+            </button>
+          </div>
+        </div>
+        <keep-alive v-else-if="mode === 'multi'" :max="10">
+          <component
+            v-if="isSparkRendererRoute"
+            :is="Component"
+            :key="sparkRendererRouteKey"
           />
-        </template>
-      </AppHeader>
-    </template>
+          <component v-else :is="Component" :key="route.path" />
+        </keep-alive>
+        <transition v-else name="fade" mode="out-in">
+          <component
+            v-if="!contextGuard && isSparkRendererRoute"
+            :is="Component"
+            :key="sparkRendererRouteKey"
+          />
+          <component v-else-if="!contextGuard" :is="Component" :key="route.fullPath" />
+        </transition>
+      </router-view>
 
-    <!-- 面包屑（单页模式） -->
-    <template #breadcrumb>
-      <AppBreadcrumb>
-        <template v-if="nav.moduleContext.value" #trailing>
-          <NavContextSelector :state="nav.moduleContext.value" />
-        </template>
-      </AppBreadcrumb>
-    </template>
+      <template #footer>
+        <AppFooter />
+      </template>
+    </AppLayout>
 
-    <!-- 标签栏（多页模式） -->
-    <template #tab-bar>
-      <AppTabBar>
-        <template v-if="nav.moduleContext.value" #trailing>
-          <NavContextSelector :state="nav.moduleContext.value" />
-        </template>
-      </AppTabBar>
-    </template>
+    <ThemeConfigurator
+      v-model="showConfigurator"
+      v-model:header-first="headerFirst"
+      v-model:collapsed="sidebarCollapsed"
+      v-model:show-footer="showFooter"
+      :mode="mode"
+      @update:mode="setMode"
+    />
 
-    <!-- 主内容区 -->
-    <router-view v-slot="{ Component }">
-      <div v-if="contextGuard" class="app-context-guard">
-        <div class="app-context-guard__badge">Context Required</div>
-        <h2>{{ contextGuard.title }}</h2>
-        <p>{{ contextGuard.message }}</p>
-        <div class="app-context-guard__meta">
-          <span>当前路径：{{ route.path }}</span>
-          <span v-if="contextGuard.expectedPath">建议路径：{{ contextGuard.expectedPath }}</span>
-        </div>
-        <div class="app-context-guard__actions">
-          <button type="button" class="app-context-guard__primary" @click="handleContextGuardPrimary">
-            {{ contextGuard.primaryActionLabel }}
-          </button>
-          <button v-if="contextGuard.expectedPath" type="button" class="app-context-guard__secondary" @click="jumpToExpectedContext">
-            跳转到作用域路径
-          </button>
-        </div>
-      </div>
-      <keep-alive v-else-if="mode === 'multi'" :max="10">
-        <component
-          v-if="isSparkRendererRoute"
-          :is="Component"
-          :key="sparkRendererRouteKey"
-        />
-        <component v-else :is="Component" :key="route.path" />
-      </keep-alive>
-      <transition v-else name="fade" mode="out-in">
-        <component
-          v-if="!contextGuard && isSparkRendererRoute"
-          :is="Component"
-          :key="sparkRendererRouteKey"
-        />
-        <component v-else-if="!contextGuard" :is="Component" :key="route.fullPath" />
-      </transition>
-    </router-view>
-
-    <!-- 底部脚 -->
-    <template #footer>
-      <AppFooter />
-    </template>
-  </AppLayout>
-
-  <!-- 主题配置抽屉 -->
-  <ThemeConfigurator
-    v-model="showConfigurator"
-    v-model:header-first="headerFirst"
-    v-model:collapsed="sidebarCollapsed"
-    v-model:show-footer="showFooter"
-    :mode="mode"
-    @update:mode="setMode"
-  />
-
-  <!-- APP 层 page-ui host：统一承载弹层、文件浏览、文件上传等交互 -->
-  <AppPageUiHost />
-
+    <!-- page-ui host 是 APP 壳层能力，承载弹层、文件浏览和文件上传。 -->
+    <AppPageUiHost />
   </template>
 </template>
 
@@ -560,6 +557,7 @@ async function reloadNavigation(): Promise<void> {
 }
 
 onMounted(() => {
+  // APP 公共 SSE 在壳层接入：页面配置刷新和 AI 调试桥接都依赖同一条 /api/events。
   if (_stopPageConfigChange === null) {
     _stopPageConfigChange = onPageConfigChange(handlePageConfigChange)
   }

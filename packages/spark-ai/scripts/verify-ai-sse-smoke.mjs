@@ -5,12 +5,16 @@ const tenantId = process.env.AI_TENANT_ID || 'lmspark'
 const username = process.env.AI_USERNAME || 'admin'
 const password = process.env.AI_PASSWORD || 'admin123'
 
+// HTTP envelope helpers -----------------------------------------------------
+
 function unwrapEnvelope(payload) {
   if (!payload || typeof payload !== 'object' || typeof payload.ok !== 'boolean') return payload
   if (payload.ok) return payload.data
   const message = payload.error?.message || payload.error?.code || 'API request failed'
   throw new Error(message)
 }
+
+// Auth ----------------------------------------------------------------------
 
 async function login() {
   const response = await fetch(`${baseUrl}/api/auth/login`, {
@@ -32,6 +36,8 @@ async function login() {
   }
   return payload.token
 }
+
+// SSE envelope assertions ---------------------------------------------------
 
 function flushEvent(state, records) {
   if (!state.event || state.data.length === 0) return null
@@ -75,6 +81,8 @@ function assertV4SseEnvelope(record) {
   }
   return payload
 }
+
+// Verification flow ---------------------------------------------------------
 
 async function main() {
   const token = await login()

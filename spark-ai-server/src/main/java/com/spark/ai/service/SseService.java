@@ -15,47 +15,38 @@ import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 /**
- * 统一 Server-Sent Events 广播服务。
- * <p>
- * 管理所有活跃的 SSE 连接，通过 {@code event:} 字段区分事件类型，
- * 前端单个 EventSource 即可监听所有服务端推送。
- * <p>
- * 事件类型约定：
- * <ul>
- *   <li>{@code page-config} — 页面配置文件变更（pageId, file, timestamp）</li>
- *   <li>{@code notification} — APP 通知消息（title, message, level, timestamp）</li>
- *   <li>{@code debug-screenshot-request} — 请求前端截图并上传（requestId, reason, selector, pageId）</li>
- *   <li>{@code debug-screenshot-result} — 前端截图上传回执（requestId, status, fileId, message）</li>
- *   <li>{@code debug-route-request} — 请求前端执行路由跳转（requestId, path/pageId, tenantId, projectId）</li>
- *   <li>{@code debug-route-result} — 前端路由跳转回执（requestId, status, targetPath, currentPath）</li>
- *   <li>{@code debug-fc-error-report} — 前端 FC 调用错误回传（reportId, fcCall, context）</li>
- *   <li>后续可扩展：更多业务域事件</li>
- * </ul>
+ * APP 公共 Server-Sent Events 广播服务。
+ *
+ * <p>该服务只负责维护 {@code /api/events} 连接和发送 v4 envelope。
+ * 事件的业务执行由前端 APP 壳层、诊断面板或 MJS 脚本按 {@code event:}
+ * 名称订阅后完成。</p>
  */
 @Service
 public class SseService {
 
     private static final Logger log = LoggerFactory.getLogger(SseService.class);
+    private static final long EMITTER_TIMEOUT_MS = 30 * 60 * 1000L;
 
-    /** 事件类型常量 */
     public static final String EVENT_PAGE_FILE_CHANGE = "page-config";
-    public static final String EVENT_NOTIFICATION = "notification";
-    public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
-    public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
-    public static final String EVENT_DEBUG_ROUTE_REQUEST = "debug-route-request";
-    public static final String EVENT_DEBUG_ROUTE_RESULT = "debug-route-result";
-    public static final String EVENT_DEBUG_FC_ERROR_REPORT = "debug-fc-error-report";
     public static final String EVENT_DATA_BATCH_JOB = "data-batch-job";
     public static final String EVENT_DATA_CHANGE = "data-change";
+    public static final String EVENT_NOTIFICATION = "notification";
+    public static final String EVENT_DEBUG_ROUTE_REQUEST = "debug-route-request";
+    public static final String EVENT_DEBUG_ROUTE_RESULT = "debug-route-result";
+    public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
+    public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
+    public static final String EVENT_DEBUG_FC_ERROR_REPORT = "debug-fc-error-report";
 
     private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
 
     /**
-     * 创建并注册新的 SSE 连接（超时 30 分钟，防止断网后 emitter 泄漏）。
-     * 客户端断开或超时后自动从列表移除；前端 EventSource 会自动重连。
+     * 注册 APP 公共 SSE 连接。
+     *
+     * <p>前端 EventSource 会自动重连，服务端只保留活跃 emitter，避免断网或
+     * 页面关闭后继续持有无效连接。</p>
      */
     public SseEmitter subscribe() {
-        SseEmitter emitter = new SseEmitter(30 * 60 * 1000L);
+        SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT_MS);
         emitters.add(emitter);
         emitter.onCompletion(() -> emitters.remove(emitter));
         emitter.onTimeout(() -> emitters.remove(emitter));
@@ -65,8 +56,7 @@ public class SseService {
     }
 
     /**
-     * 广播页面配置变更事件（语义快捷方法）。
-     * 与 Vite 插件的 broadcastChange 格式保持一致：{ pageId, file, timestamp }
+     * 广播页面配置变更事件。
      */
     public void broadcast(String pageId, String file) {
         Map<String, Object> payload = Map.of(
@@ -78,7 +68,7 @@ public class SseService {
     }
 
     /**
-     * 广播 APP 通知事件。通知本身仍然走统一 SSE v4 信封，由前端通知面板消费。
+     * 广播 APP 通知事件。通知面板只消费业务 payload，wire 层仍由 {@link #emit(String, Object)} 统一包装。
      */
     public void emitNotification(String title, String message, String level) {
         Map<String, Object> payload = new LinkedHashMap<>();
@@ -90,19 +80,25 @@ public class SseService {
     }
 
     /**
-     * 向所有客户端发送带类型的 SSE 事件。
+     * 向所有客户端广播指定类型的 APP SSE 事件。
      *
-     * @param eventType SSE event 名称（前端通过 addEventListener(eventType) 监听）
-     * @param payload   JSON 序列化的数据载荷
+     * @param eventType SSE {@code event:} 名称，必须与 v4 envelope 的 {@code event.name} 保持一致
+     * @param payload   业务载荷，只放入 envelope.data
      */
     public void emit(String eventType, Object payload) {
-        List<SseEmitter> dead = new ArrayList<>();
         Object envelope = ApiResponseFactory.sseOk(
                 eventType,
                 payload,
                 ApiResponseFactory.currentRequestId(),
                 null,
                 false);
+        List<SseEmitter> deadEmitters = sendEnvelope(eventType, envelope);
+        removeDeadEmitters(deadEmitters);
+        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());
+    }
+
+    private List<SseEmitter> sendEnvelope(String eventType, Object envelope) {
+        List<SseEmitter> deadEmitters = new ArrayList<>();
         for (SseEmitter emitter : emitters) {
             try {
                 emitter.send(
@@ -111,13 +107,17 @@ public class SseService {
                                 .data(envelope, MediaType.APPLICATION_JSON)
                 );
             } catch (Exception e) {
-                dead.add(emitter);
+                deadEmitters.add(emitter);
             }
         }
-        if (!dead.isEmpty()) {
-            emitters.removeAll(dead);
-            log.debug("[SSE] 移除断开连接: {}", dead.size());
+        return deadEmitters;
+    }
+
+    private void removeDeadEmitters(List<SseEmitter> deadEmitters) {
+        if (deadEmitters.isEmpty()) {
+            return;
         }
-        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());
+        emitters.removeAll(deadEmitters);
+        log.debug("[SSE] 移除断开连接: {}", deadEmitters.size());
     }
 }

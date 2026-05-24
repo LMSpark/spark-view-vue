@@ -124,6 +124,7 @@ const PARENT_TABLE_PARAM = stringSchema('父表名')
 const CHILD_TABLE_PARAM = stringSchema('子表名')
 const RESOURCE_ID_PARAM = stringSchema('资源 ID')
 const TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES: readonly string[] = [
+  'page-data',
   'database-table',
   'database-view',
   'third-party-api',
@@ -228,7 +229,7 @@ const AGGREGATES_SCHEMA = objectSchema({}, {
 })
 
 const VIEW_METADATA_SCHEMA = objectSchema({
-  rows: arraySchema(ROW_DATA_SCHEMA, '仅 resourceType = static-data 时才应直接提供'),
+  rows: arraySchema(ROW_DATA_SCHEMA, '仅页面内联数据才应直接提供，例如 resourceType = page-data/static-data 且未配置 api 的草稿行、选项行或示例行。'),
   autoCurrentFirst: booleanSchema('请求成功后是否自动聚焦第一行'),
   autoSelectFirst: booleanSchema('请求成功后是否自动选中第一行'),
   page: numberSchema('当前页'),
@@ -374,7 +375,7 @@ const VIEW_DEPENDENCY_UPDATE_SCHEMA = objectSchema({
   autoLoad: booleanSchema('父表 default 视图变化时是否自动级联加载子表 default 视图'),
 })
 
-const STATIC_ROWS_ONLY_RULE = '只有 resourceType = static-data 时，才应直接通过 rows 或 defaultRows 传静态数据。'
+const STATIC_ROWS_ONLY_RULE = '只有页面内联数据才应直接通过 rows/defaultRows 传行数据：resourceType = page-data/static-data 或未配置 api 的本地原型；真实远端 CRUD 表不要臆造 rows。'
 const DEFAULT_VIEW_RULE = '省略 viewId 时默认作用于 default 视图。'
 const DEFAULT_VIEW_LIFECYCLE_RULE = 'default 视图不能通过 createView 创建，也不能通过 deleteView 删除。'
 const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可能返回 CrudResult，本地模式返回本地对象或布尔值。'
@@ -1877,6 +1878,7 @@ const DATASET_ACTIONS: readonly ModuleActionMetadata[] = [
 ]
 
 // PAGE_DESIGN_AI_TRACE[page-design-dataset-tool]: pageDesign AI 修改 pagedata.json 的 ModuleKind 出处；DataSetCrudTool 的具体数据语义在 spark-data。
+// PAGE_DESIGN_REFACTOR_SOURCE[dataset-write-gate]: 数据策划与 pagedata.json AI 写入入口；表/列/view 参数错误应从这里返回给 LLM 修正。
 export class PageDesignDatasetModuleKind extends ModuleKind {
   private readonly service: PageDesignService
   private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext

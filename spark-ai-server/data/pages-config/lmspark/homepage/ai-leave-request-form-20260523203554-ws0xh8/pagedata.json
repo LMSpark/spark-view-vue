@@ -1,0 +1,206 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "leave_requests": {
+      "tableName": "leave_requests",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "primaryKey": true
+        },
+        {
+          "name": "applicantName",
+          "type": "string",
+          "label": "申请人",
+          "required": true
+        },
+        {
+          "name": "leaveType",
+          "type": "string",
+          "label": "请假类型",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "label": "开始日期",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "label": "结束日期",
+          "required": true
+        },
+        {
+          "name": "days",
+          "type": "number",
+          "label": "天数",
+          "required": true
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "label": "请假原因",
+          "required": true
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "required": true
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "leave_requests",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 0,
+              "applicantName": "",
+              "leaveType": "annual",
+              "startDate": "",
+              "endDate": "",
+              "days": 1,
+              "reason": "",
+              "status": "draft"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        },
+        "pending": {
+          "tableName": "leave_requests",
+          "viewId": "pending",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "applicantName": "张三",
+              "leaveType": "annual",
+              "startDate": "2026-05-25",
+              "endDate": "2026-05-26",
+              "days": 2,
+              "reason": "个人事务处理",
+              "status": "pending"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "aggregates": {
+            "pendingCount": {
+              "type": "count",
+              "field": "id"
+            }
+          }
+        }
+      },
+      "resourceType": "page-data",
+      "businessCategory": "leave"
+    },
+    "leave_types": {
+      "tableName": "leave_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "label": "ID",
+          "primaryKey": true
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "label": "类型名称",
+          "required": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "label": "类型值",
+          "required": true
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "leave_types",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "label": "年假",
+              "value": "annual"
+            },
+            {
+              "id": 2,
+              "label": "事假",
+              "value": "personal"
+            },
+            {
+              "id": 3,
+              "label": "病假",
+              "value": "sick"
+            },
+            {
+              "id": 4,
+              "label": "婚假",
+              "value": "marriage"
+            },
+            {
+              "id": 5,
+              "label": "产假",
+              "value": "maternity"
+            },
+            {
+              "id": 6,
+              "label": "调休",
+              "value": "compensatory"
+            },
+            {
+              "id": 1,
+              "label": "年假",
+              "value": "annual"
+            },
+            {
+              "id": 2,
+              "label": "事假",
+              "value": "personal"
+            },
+            {
+              "id": 3,
+              "label": "病假",
+              "value": "sick"
+            },
+            {
+              "id": 4,
+              "label": "婚假",
+              "value": "marriage"
+            },
+            {
+              "id": 5,
+              "label": "产假",
+              "value": "maternity"
+            },
+            {
+              "id": 6,
+              "label": "调休",
+              "value": "compensatory"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "dictionary"
+    }
+  }
+}

@@ -1,0 +1,143 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "LeaveRequest": {
+      "tableName": "LeaveRequest",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimaryKey": true,
+          "label": "ID"
+        },
+        {
+          "name": "applicant",
+          "type": "string",
+          "label": "申请人ID"
+        },
+        {
+          "name": "applicantName",
+          "type": "string",
+          "label": "申请人姓名"
+        },
+        {
+          "name": "leaveType",
+          "type": "string",
+          "label": "请假类型"
+        },
+        {
+          "name": "startDate",
+          "type": "string",
+          "label": "开始日期"
+        },
+        {
+          "name": "endDate",
+          "type": "string",
+          "label": "结束日期"
+        },
+        {
+          "name": "days",
+          "type": "number",
+          "label": "请假天数"
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "label": "请假事由"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "LeaveRequest",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        },
+        "pending": {
+          "tableName": "LeaveRequest",
+          "viewId": "pending",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "filterExpression": {
+            "field": "status",
+            "operator": "eq",
+            "value": "pending"
+          },
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "aggregates": {
+            "pendingCount": {
+              "type": "count",
+              "field": "id"
+            }
+          }
+        }
+      },
+      "resourceType": "page-data"
+    },
+    "LeaveType": {
+      "tableName": "LeaveType",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "isPrimaryKey": true,
+          "label": "ID"
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "label": "类型名称"
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "label": "类型值"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "LeaveType",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "1",
+              "label": "年假",
+              "value": "annual"
+            },
+            {
+              "id": "2",
+              "label": "病假",
+              "value": "sick"
+            },
+            {
+              "id": "3",
+              "label": "事假",
+              "value": "personal"
+            },
+            {
+              "id": "4",
+              "label": "调休",
+              "value": "compensatory"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "static-data"
+    }
+  }
+}

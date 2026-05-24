@@ -1,10 +1,3 @@
-/**
- * APP 公共 SSE 事件订阅器。
- *
- * 这是 AI 侧接入 `/api/events` 的框架无关 API：浏览器和 Node MJS
- * 都可以通过 fetch 读取 APP 公共 SSE，并统一解包 v4 envelope。
- */
-
 import {
   isApiEnvelope,
   isRecord,
@@ -25,6 +18,18 @@ import type {
   AiHostHeadersProvider,
 } from './transport-types'
 
+/**
+ * APP 公共 SSE 事件订阅器。
+ *
+ * 这是 AI 包接入 `/api/events` 的框架无关 API。它只负责读取 SSE、
+ * 解包 v4 envelope 并发射规范化事件；route、screenshot、notification
+ * 等业务处理必须留在 APP 壳层或 MJS 调用层。
+ */
+
+const DEFAULT_APP_EVENTS_URL = '/api/events'
+
+// Public protocol types -----------------------------------------------------
+
 export type AiHostAppSseEventName =
   | 'page-config'
   | 'data-batch-job'
@@ -37,6 +42,12 @@ export type AiHostAppSseEventName =
   | 'debug-fc-error-report'
   | (string & {})
 
+/**
+ * APP 公共 SSE 的规范化事件。
+ *
+ * `data` 是业务载荷，`context/event` 保留 v4 envelope 的 wire 元信息；
+ * `legacy` 用于诊断兼容路径，不代表调用方应继续生产旧格式。
+ */
 export type AiHostAppSseEvent<T = unknown> = Readonly<{
   name: AiHostAppSseEventName
   data: T
@@ -50,6 +61,9 @@ export type AiHostAppSseEvent<T = unknown> = Readonly<{
 
 export type AiHostAppSseListener<T = unknown> = (event: AiHostAppSseEvent<T>) => void
 
+/**
+ * 轻量事件 hub，用于 MJS 和 APP 层把 `/api/events` 订阅与业务等待逻辑解耦。
+ */
 export type AiHostAppSseEventHub = Readonly<{
   on<T = unknown>(name: AiHostAppSseEventName, listener: AiHostAppSseListener<T>): () => void
   onAny(listener: AiHostAppSseListener): () => void
@@ -73,7 +87,7 @@ export type AiHostAppSseSubscription = Readonly<{
   closed: Promise<void>
 }>
 
-const DEFAULT_APP_EVENTS_URL = '/api/events'
+// Public API ----------------------------------------------------------------
 
 export function createAiHostAppSseEventHub(): AiHostAppSseEventHub {
   const listeners = new Map<string, Set<AiHostAppSseListener>>()
@@ -111,6 +125,12 @@ export function createAiHostAppSseEventHub(): AiHostAppSseEventHub {
   }
 }
 
+/**
+ * 订阅 APP 公共 SSE。
+ *
+ * 该 API 使用 `fetch()` 而不是浏览器 `EventSource`，让 Node MJS live
+ * 脚本和浏览器侧代码共享同一个解析逻辑。
+ */
 export function subscribeAiHostAppSseEvents<T = unknown>(
   options: AiHostAppSseSubscribeOptions<T>,
 ): AiHostAppSseSubscription {
@@ -155,6 +175,8 @@ export function subscribeAiHostAppSseEvents<T = unknown>(
   }
 }
 
+// Subscription flow ---------------------------------------------------------
+
 async function runAppSseSubscription<T>(
   options: AiHostAppSseSubscribeOptions<T>,
   signal: AbortSignal,
@@ -178,23 +200,41 @@ async function runAppSseSubscription<T>(
   const decoder = new TextDecoder()
   let buffer = ''
 
-  await readStreamBody(response.body, (chunk) => {
+  await readStreamBody(response.body, (chunk: Uint8Array) => {
     buffer += decoder.decode(chunk, { stream: true })
-    const parsed = parseAiHostSseBlocks(buffer)
-    buffer = parsed.rest
-    for (const event of parsed.events) {
-      if (allowedEvents !== null && !allowedEvents.has(event.event)) continue
-      options.onEvent(normalizeAppSseEvent<T>(event.event, event.data))
-    }
+    buffer = dispatchCompleteSseBlocks(buffer, allowedEvents, options.onEvent)
   })
 
   if (isClosedByCaller()) return
   buffer += decoder.decode()
+  dispatchFinalSseBlock(buffer, allowedEvents, options.onEvent)
+}
+
+function dispatchCompleteSseBlocks<T>(
+  buffer: string,
+  allowedEvents: ReadonlySet<string> | null,
+  onEvent: (event: AiHostAppSseEvent<T>) => void,
+): string {
+  const parsed = parseAiHostSseBlocks(buffer)
+  for (const event of parsed.events) {
+    if (allowedEvents !== null && !allowedEvents.has(event.event)) continue
+    onEvent(normalizeAppSseEvent<T>(event.event, event.data))
+  }
+  return parsed.rest
+}
+
+function dispatchFinalSseBlock<T>(
+  buffer: string,
+  allowedEvents: ReadonlySet<string> | null,
+  onEvent: (event: AiHostAppSseEvent<T>) => void,
+): void {
   for (const event of parseAiHostFinalSseBlock(buffer)) {
     if (allowedEvents !== null && !allowedEvents.has(event.event)) continue
-    options.onEvent(normalizeAppSseEvent<T>(event.event, event.data))
+    onEvent(normalizeAppSseEvent<T>(event.event, event.data))
   }
 }
+
+// Request setup -------------------------------------------------------------
 
 async function buildHeaders(options: Readonly<{
   headers?: HeadersInit | undefined
@@ -215,6 +255,8 @@ function copyHeaders(target: Headers, source: HeadersInit | undefined): void {
     target.set(key, value)
   })
 }
+
+// Envelope normalization ----------------------------------------------------
 
 function normalizeAppSseEvent<T>(name: string, rawData: string): AiHostAppSseEvent<T> {
   const rawPayload = tryParseJson(rawData)
@@ -246,6 +288,8 @@ function validateEnvelopeName(name: string, envelopeEvent: ApiEnvelopeEvent | un
   }
 }
 
+// Stream helpers ------------------------------------------------------------
+
 async function readStreamBody(
   body: ReadableStream<Uint8Array>,
   onChunk: (chunk: Uint8Array) => void,
@@ -263,5 +307,8 @@ async function readStreamBody(
 }
 
 function isAbortError(error: unknown): boolean {
-  return error instanceof DOMException && error.name === 'AbortError'
+  return (
+    (error instanceof DOMException && error.name === 'AbortError')
+    || (error instanceof Error && error.name === 'AbortError')
+  )
 }

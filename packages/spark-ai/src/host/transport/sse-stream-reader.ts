@@ -69,6 +69,7 @@ type MutableTransportToolCall = {
  *   6. 返回 state.result()（聚合后的最终结果）
  */
 // PAGE_DESIGN_AI_TRACE[host-sse-reader]: AI stream POST 返回后统一在这里按 SSE frame 聚合 delta/result/toolCalls；pageDesign 业务工具不应下沉到这个通用 reader。
+// PAGE_DESIGN_REFACTOR_SOURCE[sse-tool-call-assembly]: 后端不识别函数时，前端只在这里装配 tool_calls；业务函数识别仍由 tool-loop/module-semantic 执行。
 export async function readAiHostSseStream(
   input: AiHostStreamTurnInput,
   body: ReadableStream<Uint8Array>,

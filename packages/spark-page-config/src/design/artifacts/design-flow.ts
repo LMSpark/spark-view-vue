@@ -1,6 +1,12 @@
 /**
  * 页面设计 100 步流程定义与查询函数。
+ *
+ * 这里是 pageDesign 可查询知识的真源，不直接拼进 system prompt。
+ * LLM 应通过 lifecycle.describeDesignFlow 按 intent、phase 或 step 查询，
+ * 避免一次性灌入全量流程和具体组件目录。
  */
+
+// ── 公共流程 DTO ───────────────────────────────────────────
 
 export type PageDesignFlowStep = {
   step: number
@@ -16,6 +22,26 @@ export type PageDesignFlowPhaseSummary = {
   stepCount: number
 }
 
+/**
+ * 面向 pageDesign LLM 的任务型知识片段。
+ *
+ * 它只描述“某类页面需求应如何查询和调用工具”，不直接修改页面四文件；
+ * 运行时由 lifecycle.describeDesignFlow 按用户 intent 返回给模型，避免把任务模板塞进 system prompt。
+ */
+export type PageDesignTaskGuide = {
+  id: string
+  title: string
+  when: string
+  relevantSteps: readonly number[]
+  dataPlanning: readonly string[]
+  dataViewPlanning: readonly string[]
+  payloadPlanning: readonly string[]
+  functionCallPlan: readonly string[]
+  validation: readonly string[]
+}
+
+// ── 流程定义 DSL ───────────────────────────────────────────
+
 function step(
   stepNumber: number,
   phase: string,
@@ -25,6 +51,11 @@ function step(
   return { step: stepNumber, phase, action, checkpoint }
 }
 
+/**
+ * 页面设计完整流程。
+ *
+ * 这是可查询事实源；默认查询只返回阶段摘要，只有按 phase/step/intent 需要时才返回细节。
+ */
 export const PAGE_DESIGN_100_STEP_FLOW: readonly PageDesignFlowStep[] = [
   step(1, '入口', '明确用户要的是新页面、局部改造、修 bug、补数据还是调样式', '得到任务类型'),
   step(2, '入口', '定位当前页面 pageId', 'DevSystem 中有 activePageId'),
@@ -128,15 +159,26 @@ export const PAGE_DESIGN_100_STEP_FLOW: readonly PageDesignFlowStep[] = [
   step(100, '收尾', '总结修改与剩余风险', '用户知道改了哪些文件、如何验证'),
 ]
 
+// ── 流程查询入口 ───────────────────────────────────────────
+
+/**
+ * 按编号查询单个流程步骤；未命中返回 null，调用方负责决定是否提示 LLM 修正参数。
+ */
 export function getPageDesignFlowStep(stepNumber: number): PageDesignFlowStep | null {
   return PAGE_DESIGN_100_STEP_FLOW.find((item) => item.step === stepNumber) ?? null
 }
 
+/**
+ * 按阶段列出流程步骤；phase 为空时返回完整流程，服务层会在默认场景继续裁剪。
+ */
 export function listPageDesignFlowSteps(phase?: string): readonly PageDesignFlowStep[] {
   if (phase === undefined || phase.trim() === '') return PAGE_DESIGN_100_STEP_FLOW
   return PAGE_DESIGN_100_STEP_FLOW.filter((item) => item.phase === phase)
 }
 
+/**
+ * 返回阶段边界摘要，供 LLM 先选择查询范围，而不是直接读取 100 步正文。
+ */
 export function summarizePageDesignFlowPhases(): PageDesignFlowPhaseSummary[] {
   const summaries = new Map<string, PageDesignFlowPhaseSummary>()
   for (const item of PAGE_DESIGN_100_STEP_FLOW) {
@@ -156,6 +198,69 @@ export function summarizePageDesignFlowPhases(): PageDesignFlowPhaseSummary[] {
   return [...summaries.values()]
 }
 
+/**
+ * 按已完成步骤返回下一步；流程外编号返回 null。
+ */
 export function getNextPageDesignFlowStep(completedStep: number): PageDesignFlowStep | null {
   return getPageDesignFlowStep(completedStep + 1)
+}
+
+// ── intent 任务知识匹配 ────────────────────────────────────
+
+/**
+ * 根据用户原始意图匹配任务知识。
+ *
+ * guide 是“申请类表单”这样的模式知识，不是具体页面验收；具体业务断言仍属于 smoke/test。
+ */
+export function matchPageDesignTaskGuides(intent?: string): readonly PageDesignTaskGuide[] {
+  const text = intent?.trim().toLowerCase() ?? ''
+  if (text.length === 0) return []
+  const guides: PageDesignTaskGuide[] = []
+  if (/(请假|休假|leave|申请|application|表单|form)/iu.test(text)) {
+    guides.push(APPLICATION_FORM_TASK_GUIDE)
+  }
+  return guides
+}
+
+// PAGE_DESIGN_REFACTOR_SOURCE[task-knowledge-catalog]: intent 命中的任务知识放在这里；不要复制到 system prompt、smoke 脚本或通讯层。
+// 该 guide 只表达申请类表单的通用闭环，不能替代某个业务页面的测试验收。
+const APPLICATION_FORM_TASK_GUIDE: PageDesignTaskGuide = {
+  id: 'application-form-create-submit-list',
+  title: '申请类表单页：草稿填写 -> 提交 -> 待处理列表',
+  when: '用户要求实现申请、请假、报销、审批提交类页面，且没有明确给出真实后端接口。',
+  relevantSteps: [21, 22, 23, 25, 28, 31, 33, 34, 61, 63, 65, 68, 69, 71, 78, 89, 90, 91, 97],
+  dataPlanning: [
+    '先规划主业务表和引用/字典表；表名和字段名稳定后再写 UI。',
+    '没有真实后端接口时主业务表使用 resourceType=page-data，不臆造 api/crudConfig。',
+    '主表字段至少覆盖 id、applicantName 或 applicant、申请类型、startDate、endDate、days、reason、status。',
+    'default 视图表示可编辑草稿 currentRow，需要一条本地草稿行，例如 id=0、status=draft、days=1。',
+    'pending/approval 视图表示提交后的待处理列表，status=pending，rows 初始可为空，并配置 count 聚合用于统计。',
+    '类型/字典表使用 resourceType=static-data，default.rows 提供可选项。',
+  ],
+  dataViewPlanning: [
+    '表单容器绑定主表 default 视图，contextDataMember=currentRow。',
+    '待处理列表绑定主表 pending/approval 视图的 rows。',
+    '统计区从 pending/approval 视图 aggregateResult 读取 count 结果。',
+    '选择组件从类型/字典表 default 视图读取 rows，或提供静态 options。',
+  ],
+  payloadPlanning: [
+    '常用组件 type 可先按关键词 queryPayloads 确认；申请表单常见目录组件为 r-section、r-form、r-text、r-select、r-date、r-number、r-textarea、r-button、r-table 或可替代列表组件。',
+    '写每个目录组件 type 前先调用 payload-catalog.guidePayload({key:type})。',
+    '按钮参数以 r-button guidePayload 返回的 props/schema 为准，尤其是 dataViewKey、appendPayload、inheritFields、then。',
+  ],
+  functionCallPlan: [
+    'FC: dataset.createTable 创建主业务表，含 default 草稿视图和 pending/approval 视图。',
+    'FC: dataset.createTable 创建类型/字典表。',
+    'FC: payload-catalog.guidePayload 覆盖将写入 rule.json 的目录组件 type。',
+    'FC: node-tree 删除默认占位节点后 addNodes 写统计区、表单区、待处理列表区。',
+    '提交按钮放在 r-form 子树内，使用 action=append-row，dataViewKey 指向 pending/approval 视图，inheritFields 复制表单字段，appendPayload.status=pending；禁止用 submit-current-form 作为新申请提交动作。',
+    '如果需要提交后清空表单，用 then: { action: "patch-current", dataViewKey: "主表@default", patch: {...draft defaults...}, silent: true }。',
+  ],
+  validation: [
+    '主表 default 视图有草稿 currentRow。',
+    '表单字段 field 与主表 columns 对齐。',
+    '提交按钮不是仅 submit-current-form；append-row 目标必须是待处理视图。',
+    '待处理列表与统计读取同一个 pending/approval 视图。',
+    'rule.json 中目录组件 type 都能在会话历史看到显式 guidePayload。',
+  ],
 }

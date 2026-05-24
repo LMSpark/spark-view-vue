@@ -36,6 +36,7 @@ const FULL_WRITE_RULE = 'write 动作要求 content 为完整文本模型内容�
 const SCRIPT_RUNTIME_RULE = 'writeScript 需遵守 script 运行时 API 合同，禁止使用不可用伪 API。'
 
 // PAGE_DESIGN_AI_TRACE[page-design-text-model]: pageDesign AI 写 script.js/style.css 的唯一工具目录；清理冗余时不要和 workspace 保存逻辑混在一起。
+// PAGE_DESIGN_REFACTOR_SOURCE[text-model-write-gate]: script/style AI 写入入口；不要把文本覆盖、脚本 API 校验和 workspace 持久化混成一层。
 const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
   {
     name: 'readScript',
