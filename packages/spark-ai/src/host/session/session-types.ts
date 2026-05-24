@@ -17,6 +17,7 @@
  *   - AiHostFunctionCallResult<T> 使用联合类型：ok:true 带 data/summary，ok:false 带 code/msg/fix/checks
  *   - AiHostSessionStore 为抽象类（非 interface），允许子类继承默认行为
  *   - 历史条目按时间戳排序，id 由 store 实现分配
+ *   - 历史会话是 Agent 能力诊断和再次接入同一会话的起点，业务 smoke 不另存完整历史副本
  *
  * 【消费方】default-session-store、business-session、tool-loop-runner
  * ═══════════════════════════════════════════════════════════════
@@ -108,7 +109,7 @@ export type AiHostHistoryEntry = AiHostMessageHistoryEntry | AiHostFunctionCallH
 // 第 4 节 · 会话记录
 // ═══════════════════════════════════════════════════════════════
 
-/** 会话记录：包含完整的生命周期状态和历史条目列表 */
+/** 会话记录：包含生命周期状态和历史条目，是 Agent 诊断与再次接入会话的根数据 */
 export type AiHostSessionRecord = Readonly<{
   moduleId: string
   moduleInstanceId: string
@@ -157,6 +158,9 @@ export type AiHostAppendFunctionCallOptions = AiHostBusinessRuntimeContext & Rea
  * 定义了 Host 层所需的全部持久化操作。业务方可继承此类实现自定义存储
  * （如 localStorage、IndexedDB、服务端持久化），也可直接使用默认的
  * DefaultAiHostSessionStore（纯内存实现）。
+ *
+ * 历史会话只属于 spark-ai：它支撑 Agent 能力诊断、失败回看和后续再次接入
+ * 同一业务会话；业务包和 smoke 只能读取它，不应复制或维护第二份历史。
  *
  * 方法分类：
  *   生命周期 — startSession / stopSession / getSession / listSessions

@@ -16,13 +16,6 @@ export {
 } from './page-design-kind-ids'
 
 export {
-  createPageDesignComponentPayloadProvider,
-  createPageDesignPayloadRegistry,
-  hasPageDesignComponentPayloadKey,
-  isPageDesignWritableComponentPayloadKey,
-} from './payload-catalog-tool-catalog'
-
-export {
   componentTypesFromPageDesignRule,
   flattenPageDesignSparkNodes,
   guidedPageDesignPayloadKeysFromSession,

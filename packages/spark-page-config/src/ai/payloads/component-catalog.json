@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-24T02:13:30.949Z",
+  "buildTime": "2026-05-24T02:37:43.595Z",
   "componentCount": 106,
   "components": {
     "about": {
@@ -2685,7 +2685,7 @@
           "name": "action",
           "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | \"save-dataset\"",
           "required": false,
-          "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。",
+          "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\nappend-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。",
           "schema": {
             "enum": [
               "append-row",
@@ -2707,7 +2707,7 @@
               "save-dataset"
             ],
             "type": "string",
-            "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。",
+            "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\nappend-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。",
             "oneOf": [
               {
                 "const": "append-row",
@@ -2800,7 +2800,7 @@
           "name": "dataViewKey",
           "type": "string",
           "required": false,
-          "description": "目标 DataViewKey；不写时使用按钮所在容器提供的数据视图。"
+          "description": "目标 DataViewKey；不写时使用按钮所在容器提供的数据视图。\nappend-row/patch/delete/refresh 等动作会优先作用于这个 DataView。\n格式示例：table@viewId。"
         },
         {
           "name": "idField",
@@ -2814,21 +2814,21 @@
           "type": "Record<string, unknown>",
           "required": false,
           "default": "{}",
-          "description": "append-row/prompt-append 新行初始字段值。"
+          "description": "append-row/prompt-append 新行初始字段值。\n适合写入固定状态，例如 {\"status\":\"pending\"}。"
         },
         {
           "name": "inheritFields",
           "type": "string[]",
           "required": false,
           "default": "[]",
-          "description": "append-row/prompt-append 从当前作用域行复制到新行的字段名。"
+          "description": "append-row/prompt-append 从当前作用域行复制到新行的字段名。\n表单提交到待处理列表时，用它把 currentRow 中的申请人、日期、事由等字段复制到目标视图。"
         },
         {
           "name": "inheritFieldMap",
           "type": "Record<string, string>",
           "required": false,
           "default": "{}",
-          "description": "append-row/prompt-append 从当前作用域行复制并重命名的字段映射。"
+          "description": "append-row/prompt-append 从当前作用域行复制并重命名的字段映射。\nkey 是源字段，value 是新行目标字段。"
         },
         {
           "name": "setCurrentRowOnSuccess",
@@ -2842,25 +2842,25 @@
           "type": "Record<string, unknown>",
           "required": false,
           "default": "{}",
-          "description": "patch-row/patch-current/patch-selected 的静态更新字段。"
+          "description": "patch-row/patch-current/patch-selected 的静态更新字段。\n用于批量写入固定值，例如 {\"status\":\"approved\"}。"
         },
         {
           "name": "field",
           "type": "string",
           "required": false,
-          "description": "prompt/patch/set-field 使用的单字段名。"
+          "description": "prompt/patch/set-field 使用的单字段名。\nfield/value 成对出现时，只更新一个字段。"
         },
         {
           "name": "value",
           "type": "unknown",
           "required": false,
-          "description": "patch/set-field 使用的单字段值。"
+          "description": "patch/set-field 使用的单字段值。\n与 field 配合使用。"
         },
         {
           "name": "then",
           "type": "ActionDescriptor",
           "required": false,
-          "description": "当前内置动作成功后的链式动作。"
+          "description": "当前内置动作成功后的链式动作。\n例如 append-row 成功后再 patch-current 清空草稿表单。"
         },
         {
           "name": "successMessage",
@@ -2916,7 +2916,7 @@
           "type": "string",
           "required": false,
           "default": "\"warning\"",
-          "description": "操作前确认类型。"
+          "description": "操作前确认类型。\n由 UI 消息组件解释，常见值为 warning、info、success、error。"
         },
         {
           "name": "silent",
@@ -2930,13 +2930,13 @@
           "type": "Record<string, unknown>",
           "required": false,
           "default": "{}",
-          "description": "当前行字段值匹配此对象时禁用按钮。"
+          "description": "当前行字段值匹配此对象时禁用按钮。\n常用于 status 等字段控制操作可用性。"
         },
         {
           "name": "template",
           "type": "string",
           "required": false,
-          "description": "样式模板名。"
+          "description": "样式模板名。\n常见值如 primary、toolbar-danger、icon-add。"
         },
         {
           "name": "label",
@@ -2949,14 +2949,14 @@
           "name": "buttonType",
           "type": "string",
           "required": false,
-          "description": "按钮类型。"
+          "description": "按钮类型。\n传给底层按钮组件的视觉类型。"
         },
         {
           "name": "buttonSize",
           "type": "string",
           "required": false,
           "default": "\"default\"",
-          "description": "按钮尺寸。"
+          "description": "按钮尺寸。\nElement Plus 按钮尺寸只允许 default、small、large。"
         },
         {
           "name": "plain",
@@ -3011,7 +3011,7 @@
           "name": "icon",
           "type": "string",
           "required": false,
-          "description": "图标名称。"
+          "description": "图标名称。\n使用当前图标注册表中的图标名。"
         },
         {
           "name": "autoInsertSpace",
@@ -3024,7 +3024,7 @@
           "name": "color",
           "type": "string",
           "required": false,
-          "description": "自定义颜色。"
+          "description": "自定义颜色。\n传给底层按钮组件的颜色值。"
         },
         {
           "name": "dark",

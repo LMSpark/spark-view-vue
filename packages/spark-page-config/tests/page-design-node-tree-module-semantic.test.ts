@@ -11,11 +11,9 @@ import {
 } from '@spark-view/spark-ai/module-semantic'
 import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
-import {
-  PageDesignService,
-} from '@spark-view/spark-page-config/design'
 import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
 import { DataSetCrudTool } from '@spark-view/spark-data'
+import { PageDesignService } from '../src/design/page-design-service'
 import { PageDesignNodeTreeModuleKind } from '../src/ai/node-tree-tool-catalog'
 import { isRecord } from '@spark-view/spark-page-config/json-document'
 

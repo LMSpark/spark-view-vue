@@ -14,11 +14,9 @@ import {
   registerPageDesignBusiness,
 } from '@spark-view/spark-page-config/ai'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
-import {
-  PageDesignService,
-} from '@spark-view/spark-page-config/design'
 import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
 import { DataSetCrudTool } from '@spark-view/spark-data'
+import { PageDesignService } from '../src/design/page-design-service'
 import { isRecord } from '@spark-view/spark-page-config/json-document'
 
 function resultItemCount(value: unknown): number {

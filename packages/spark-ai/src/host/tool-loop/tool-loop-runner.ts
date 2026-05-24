@@ -45,7 +45,7 @@ import { AiHostToolCallExecutor } from './tool-call-executor'
  * ----------------------------------------------------------------------------- */
 
 /** 工具循环的输入参数 */
-export type AiHostToolLoopInput = Readonly<{
+type AiHostToolLoopInput = Readonly<{
   registration: AiHostBusinessRegistration
   scope: AiHostBusinessScope
   request: AiHostChatRequest

@@ -59,25 +59,25 @@ export type AiHostAppSseEvent<T = unknown> = Readonly<{
   legacy: boolean
 }>
 
-export type AiHostAppSseListener<T = unknown> = (event: AiHostAppSseEvent<T>) => void
+export type AiHostAppSseListener = (event: AiHostAppSseEvent) => void
 
 /**
  * 轻量事件 hub，用于 MJS 和 APP 层把 `/api/events` 订阅与业务等待逻辑解耦。
  */
 export type AiHostAppSseEventHub = Readonly<{
-  on<T = unknown>(name: AiHostAppSseEventName, listener: AiHostAppSseListener<T>): () => void
+  on(name: AiHostAppSseEventName, listener: AiHostAppSseListener): () => void
   onAny(listener: AiHostAppSseListener): () => void
   emit(event: AiHostAppSseEvent): void
 }>
 
-export type AiHostAppSseSubscribeOptions<T = unknown> = Readonly<{
+export type AiHostAppSseSubscribeOptions = Readonly<{
   url?: string | undefined
   fetch?: AiHostFetch | undefined
   headers?: HeadersInit | undefined
   getHeaders?: AiHostHeadersProvider | undefined
   events?: readonly AiHostAppSseEventName[] | undefined
   signal?: AbortSignal | undefined
-  onEvent: (event: AiHostAppSseEvent<T>) => void
+  onEvent: (event: AiHostAppSseEvent) => void
   onError?: ((error: unknown) => void) | undefined
 }>
 
@@ -94,15 +94,15 @@ export function createAiHostAppSseEventHub(): AiHostAppSseEventHub {
   const anyListeners = new Set<AiHostAppSseListener>()
 
   return {
-    on<T = unknown>(name: AiHostAppSseEventName, listener: AiHostAppSseListener<T>) {
+    on(name: AiHostAppSseEventName, listener: AiHostAppSseListener) {
       let set = listeners.get(name)
       if (set === undefined) {
         set = new Set()
         listeners.set(name, set)
       }
-      set.add(listener as AiHostAppSseListener)
+      set.add(listener)
       return () => {
-        set.delete(listener as AiHostAppSseListener)
+        set.delete(listener)
         if (set.size === 0) listeners.delete(name)
       }
     },
@@ -131,8 +131,8 @@ export function createAiHostAppSseEventHub(): AiHostAppSseEventHub {
  * 该 API 使用 `fetch()` 而不是浏览器 `EventSource`，让 Node MJS live
  * 脚本和浏览器侧代码共享同一个解析逻辑。
  */
-export function subscribeAiHostAppSseEvents<T = unknown>(
-  options: AiHostAppSseSubscribeOptions<T>,
+export function subscribeAiHostAppSseEvents(
+  options: AiHostAppSseSubscribeOptions,
 ): AiHostAppSseSubscription {
   const controller = new AbortController()
   const externalSignal = options.signal
@@ -177,8 +177,8 @@ export function subscribeAiHostAppSseEvents<T = unknown>(
 
 // Subscription flow ---------------------------------------------------------
 
-async function runAppSseSubscription<T>(
-  options: AiHostAppSseSubscribeOptions<T>,
+async function runAppSseSubscription(
+  options: AiHostAppSseSubscribeOptions,
   signal: AbortSignal,
   isClosedByCaller: () => boolean,
   markOpened: () => void,
@@ -210,27 +210,27 @@ async function runAppSseSubscription<T>(
   dispatchFinalSseBlock(buffer, allowedEvents, options.onEvent)
 }
 
-function dispatchCompleteSseBlocks<T>(
+function dispatchCompleteSseBlocks(
   buffer: string,
   allowedEvents: ReadonlySet<string> | null,
-  onEvent: (event: AiHostAppSseEvent<T>) => void,
+  onEvent: (event: AiHostAppSseEvent) => void,
 ): string {
   const parsed = parseAiHostSseBlocks(buffer)
   for (const event of parsed.events) {
     if (allowedEvents !== null && !allowedEvents.has(event.event)) continue
-    onEvent(normalizeAppSseEvent<T>(event.event, event.data))
+    onEvent(normalizeAppSseEvent(event.event, event.data))
   }
   return parsed.rest
 }
 
-function dispatchFinalSseBlock<T>(
+function dispatchFinalSseBlock(
   buffer: string,
   allowedEvents: ReadonlySet<string> | null,
-  onEvent: (event: AiHostAppSseEvent<T>) => void,
+  onEvent: (event: AiHostAppSseEvent) => void,
 ): void {
   for (const event of parseAiHostFinalSseBlock(buffer)) {
     if (allowedEvents !== null && !allowedEvents.has(event.event)) continue
-    onEvent(normalizeAppSseEvent<T>(event.event, event.data))
+    onEvent(normalizeAppSseEvent(event.event, event.data))
   }
 }
 
@@ -258,7 +258,7 @@ function copyHeaders(target: Headers, source: HeadersInit | undefined): void {
 
 // Envelope normalization ----------------------------------------------------
 
-function normalizeAppSseEvent<T>(name: string, rawData: string): AiHostAppSseEvent<T> {
+function normalizeAppSseEvent(name: string, rawData: string): AiHostAppSseEvent {
   const rawPayload = tryParseJson(rawData)
   const context = readApiEnvelopeContext(rawPayload)
   const envelopeEvent = readApiEnvelopeEvent(rawPayload)
@@ -266,7 +266,7 @@ function normalizeAppSseEvent<T>(name: string, rawData: string): AiHostAppSseEve
     ? rawPayload['protocolVersion']
     : undefined
   validateEnvelopeName(name, envelopeEvent)
-  const data = unwrapApiEnvelope(rawPayload) as T
+  const data = unwrapApiEnvelope(rawPayload)
   return {
     name,
     data,

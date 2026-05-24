@@ -46,4 +46,28 @@ describe('spark-page-config public subpath imports', () => {
     expect(LEAVE_REQUEST_KIND).toBe('manual-leave')
     expect(typeof componentCatalog).toBe('object')
   })
+
+  it('keeps pageDesign implementation details out of public import barrels', async () => {
+    const designModule = await import('@spark-view/spark-page-config/design')
+    const aiModule = await import('@spark-view/spark-page-config/ai')
+    const designExports = new Set(Object.keys(designModule))
+    const aiExports = new Set(Object.keys(aiModule))
+
+    for (const name of ['PageDesignService', 'PageDesignEditSession', 'pageDesignServiceFailure', 'registerPageDesignEditHost']) {
+      expect(designExports.has(name)).toBe(false)
+    }
+    for (const name of [
+      'PageDesignDatasetModuleKind',
+      'PageDesignLifecycleModuleKind',
+      'PageDesignNodeTreeModuleKind',
+      'PageDesignPayloadCatalogModuleKind',
+      'PageDesignTextModelModuleKind',
+      'createPageDesignComponentPayloadProvider',
+      'createPageDesignPayloadRegistry',
+      'hasPageDesignComponentPayloadKey',
+      'isPageDesignWritableComponentPayloadKey',
+    ]) {
+      expect(aiExports.has(name)).toBe(false)
+    }
+  })
 })

@@ -12,7 +12,7 @@
 
 - 源码标识：28 个
 - 文档索引：28 个
-- 唯一源码文件：14 个
+- 唯一源码文件：15 个
 
 推荐复核命令：
 
@@ -44,7 +44,7 @@ rg -n "PAGE_DESIGN_AI_TRACE\[[^\]]+\]" scripts packages/spark-ai/src packages/sp
 | 18 | `page-design-lifecycle` | `packages/spark-page-config/src/ai/lifecycle-tool-catalog.ts` | 32 | lifecycle 工具目录 | bootstrap/progress/流程知识出处，只读编辑态和流程事实。 |
 | 19 | `page-design-dataset-tool` | `packages/spark-page-config/src/ai/dataset-tool-catalog.ts` | 1880 | dataset 工具目录 | pageDesign AI 修改 `pagedata.json` 的 ModuleKind 出处。 |
 | 20 | `page-design-node-tree-tool` | `packages/spark-page-config/src/ai/node-tree-tool-catalog.ts` | 591 | node-tree 工具目录 | pageDesign AI 修改 `rule.json` 的 ModuleKind 出处，集中做 type/id/payload props 校验。 |
-| 21 | `page-design-payload-provider` | `packages/spark-page-config/src/ai/payload-catalog-tool-catalog.ts` | 173 | payload-catalog 工具目录 | 组件参数荷载指南出处，`guidePayload/paramsSchema` 真源。 |
+| 21 | `page-design-payload-provider` | `packages/spark-page-config/src/ai/payload-catalog-tool-catalog.ts` | 203 | payload-catalog 工具目录 | 组件参数荷载指南出处，`guidePayload/paramsSchema` 真源。 |
 | 22 | `page-design-text-model` | `packages/spark-page-config/src/ai/text-model-tool-catalog.ts` | 38 | text-model 工具目录 | pageDesign AI 写 `script.js` / `style.css` 的工具目录。 |
 | 23 | `page-design-live-service` | `packages/spark-page-config/src/design/page-design-service.ts` | 318 | live edit bridge | 把 ModuleKind action 落到 `PageDesignEditHost`，不保存 AI 会话历史。 |
 | 24 | `page-design-payload-guide-state` | `packages/spark-page-config/src/design/page-design-service.ts` | 379 | payload guide 状态 | 记录当前 pageDesign 会话已显式获取的组件 payload guide。 |

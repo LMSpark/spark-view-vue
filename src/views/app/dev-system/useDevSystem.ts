@@ -7,12 +7,9 @@
  *  - UI 相关 watch（选中节点/页面切换联动 workTab）内聚在这里，
  *    消费层不再持有 workTab / previewRefreshToken 等中间 ref。
  */
-import { computed, onActivated, onDeactivated, onScopeDispose, ref, watch } from 'vue'
-import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
-import { registerPageDesignEditHost } from '@spark-view/spark-page-config/design'
+import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
-import { PAGE_CONFIG_FILE_NAMES, useDevState, type DevState, type DevWorkspaceTab, type PageConfigFileName } from './useDevState'
+import { PAGE_CONFIG_FILE_NAMES, useDevState, type DevWorkspaceTab, type PageConfigFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
 
 function isPageFileName(value: string): value is PageConfigFileName {
@@ -22,21 +19,6 @@ function isPageFileName(value: string): value is PageConfigFileName {
 export function useDevSystem() {
   const { router, tenantPath } = useTenantRouter()
   const state = useDevState()
-  const pageDesignHostEnabled = ref(true)
-  const pageDesignEditHost = createPageDesignEditHost(state)
-  const unregisterPageDesignHost = registerPageDesignEditHost(() => {
-    if (!pageDesignHostEnabled.value) return null
-    const pageId = state.activePageId.value.trim()
-    if (pageId === '') return null
-    return { pageId, host: pageDesignEditHost }
-  })
-  onActivated(() => {
-    pageDesignHostEnabled.value = true
-  })
-  onDeactivated(() => {
-    pageDesignHostEnabled.value = false
-  })
-  onScopeDispose(unregisterPageDesignHost)
 
   // ─── 工作区 Tab 状态 ───────────────────────────────────
   const workTab = ref<DevWorkspaceTab>('props')
@@ -128,29 +110,4 @@ export function useDevSystem() {
 }
 
 export type DevSystemCtx = ReturnType<typeof useDevSystem>
-
-function createPageDesignEditHost(state: DevState): PageDesignEditHost {
-  return {
-    getNodeTree: () => state.documents['rule.json'].model.value,
-    onNodeTreeChanged: (nodeTree) => {
-      if (!(nodeTree instanceof SparkNodeTree)) {
-        throw new Error('PageDesignEditHost.onNodeTreeChanged expected a SparkNodeTree instance')
-      }
-      state.documents['rule.json'].replaceModel(nodeTree)
-    },
-    getDataSetTool: () => state.documents['pagedata.json'].model.value,
-    onDataSetChanged: (tool) => {
-      state.documents['pagedata.json'].replaceModel(tool)
-    },
-    readScript: () => state.documents['script.js'].text.value,
-    writeScript: (content) => {
-      state.documents['script.js'].setText(content)
-    },
-    readStyle: () => state.documents['style.css'].text.value,
-    writeStyle: (content) => {
-      state.documents['style.css'].setText(content)
-    },
-  }
-}
-
 

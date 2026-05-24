@@ -38,6 +38,15 @@ function createFetch(fn: AiHostFetch) {
   return vi.fn<AiHostFetch>(fn)
 }
 
+function readRequestHeaders(init: RequestInit | undefined): Headers {
+  const headers = init?.headers
+  expect(headers).toBeInstanceOf(Headers)
+  if (!(headers instanceof Headers)) {
+    throw new Error('expected fetch init headers to be Headers')
+  }
+  return headers
+}
+
 // Shared AI stream identity -------------------------------------------------
 
 const scope = {
@@ -277,7 +286,7 @@ describe('AiHostFetchTransport', () => {
     expect(fetchClient).toHaveBeenCalledOnce()
     const [, init] = fetchClient.mock.calls[0] ?? []
     expect(init?.method).toBe('POST')
-    const headers = init?.headers as Headers
+    const headers = readRequestHeaders(init)
     expect(headers.get('Accept')).toBe('text/event-stream')
     expect(headers.get('Content-Type')).toBe('application/json')
     expect(init?.body).toContain('"protocolVersion":4')
@@ -586,7 +595,7 @@ describe('AiHostFetchTransport', () => {
     })).resolves.toBeUndefined()
 
     const [, init] = fetchClient.mock.calls[0] ?? []
-    const headers = init?.headers as Headers
+    const headers = readRequestHeaders(init)
     expect(headers.get('Accept')).toBe('application/json')
     expect(headers.get('Content-Type')).toBe('application/json')
     const body = JSON.parse(String(init?.body))

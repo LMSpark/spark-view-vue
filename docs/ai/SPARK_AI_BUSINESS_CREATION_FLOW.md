@@ -348,6 +348,7 @@ smoke 不应该做：
 - LLM 返回的 toolCalls。
 - 每个 toolCall 的 args、result、error。
 - Host session history。
+- spark-ai 历史会话是 Agent 能力诊断和再次接入同一会话的起点；业务 smoke 只读取摘要，不维护第二份完整历史。
 - 业务产物快照。
 - 业务验收失败原因。
 
@@ -500,7 +501,7 @@ export class AiBusinessDefinition {
 
 改进项：
 
-- 将 `createAiHostSessionTranscript` 作为所有 smoke 默认输出。
+- 历史会话只保留在 `spark-ai` 的 `sessionStore` / diagnostics 能力中；它用于 Agent 能力诊断和再次接入同一会话，smoke 默认只输出摘要和当前运行验收结果，不再另存完整历史副本。
 - 增加统一 `tool-result` 摘要格式。
 - 支持从 smoke JSON replay 某个 tool call 参数到业务 service。
 - 文档化常见失败：
@@ -512,7 +513,7 @@ export class AiBusinessDefinition {
 
 验收标准：
 
-- 任意 live smoke 失败后，JSON 内能定位最后一个失败 tool call。
+- 任意 live smoke 失败后，可通过 `spark-ai` 会话历史定位最后一个失败 tool call。
 - 能区分 AI 会话持久化失败和业务成果保存失败。
 
 ### P5：源码 trace 自动一致性检查

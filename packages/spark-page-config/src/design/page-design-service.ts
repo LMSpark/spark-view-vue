@@ -31,81 +31,6 @@ import {
 } from './page-edit-session'
 import { validateScriptServiceContract } from '../ai/text-model-tool-catalog'
 
-// ── 编辑宿主注册 ───────────────────────────────────────────
-
-export type PageDesignEditHostSnapshot = {
-  readonly pageId: string
-  readonly host: PageDesignEditHost
-}
-
-type PageDesignEditHostResolver = () => PageDesignEditHostSnapshot | null
-
-function normalizePageId(pageId: string | null | undefined): string {
-  return typeof pageId === 'string' ? pageId.trim() : ''
-}
-
-class PageDesignEditHostRegistry {
-  private readonly resolvers = new Set<PageDesignEditHostResolver>()
-
-  register(resolver: PageDesignEditHostResolver): () => void {
-    this.resolvers.add(resolver)
-    return () => {
-      this.resolvers.delete(resolver)
-    }
-  }
-
-  resolveHost(pageId?: string | null): PageDesignEditHost | null {
-    const requestedPageId = normalizePageId(pageId)
-    const snapshots = this.readSnapshots().reverse()
-    if (requestedPageId !== '') {
-      const exact = snapshots.find((snapshot) => snapshot.pageId === requestedPageId)
-      if (exact !== undefined) return exact.host
-    }
-    return snapshots[0]?.host ?? null
-  }
-
-  resolvePageId(pageId?: string | null): string | null {
-    const requestedPageId = normalizePageId(pageId)
-    const snapshots = this.readSnapshots().reverse()
-    if (requestedPageId !== '') {
-      const exact = snapshots.find((snapshot) => snapshot.pageId === requestedPageId)
-      if (exact !== undefined) return exact.pageId
-    }
-    return snapshots[0]?.pageId ?? null
-  }
-
-  private readSnapshots(): PageDesignEditHostSnapshot[] {
-    const snapshots: PageDesignEditHostSnapshot[] = []
-    for (const resolver of this.resolvers) {
-      const snapshot = resolver()
-      const pageId = normalizePageId(snapshot?.pageId)
-      if (snapshot === null || pageId === '') continue
-      snapshots.push({ pageId, host: snapshot.host })
-    }
-    return snapshots
-  }
-}
-
-const editHostRegistry = new PageDesignEditHostRegistry()
-
-/**
- * 注册 live PageDesign 编辑宿主解析器。
- *
- * 解析器按注册顺序保留，读取时优先使用最近注册且 pageId 匹配的宿主；返回的注销函数
- * 必须在页面卸载时调用，避免旧页面继续接收 AI 写入。
- */
-export function registerPageDesignEditHost(resolver: PageDesignEditHostResolver): () => void {
-  return editHostRegistry.register(resolver)
-}
-
-export function resolvePageDesignEditHost(pageId?: string | null): PageDesignEditHost | null {
-  return editHostRegistry.resolveHost(pageId)
-}
-
-export function resolvePageDesignEditPageId(pageId?: string | null): string | null {
-  return editHostRegistry.resolvePageId(pageId)
-}
-
 // ── Action 结果序列化与错误映射 ───────────────────────────
 
 function hasToJson(value: object): value is { toJson: () => unknown } {
@@ -177,7 +102,7 @@ async function runRegisteredActionTarget<TTarget>(
  * `intent` 用于匹配任务型知识；`phase/step/afterStep` 用于精确读取 100 步流程，
  * 二者都只影响返回给 LLM 的知识范围，不会修改 workspace。
  */
-export type PageDesignFlowQuery = {
+type PageDesignFlowQuery = {
   phase?: string
   step?: number
   afterStep?: number
@@ -190,7 +115,7 @@ export type PageDesignFlowQuery = {
  * `taskGuides` 是 intent 命中的任务知识，`steps` 是当前查询范围内的流程步骤；
  * 调用方应把二者作为下一轮函数调用依据，而不是把整份 100 步流程常驻 prompt。
  */
-export type PageDesignFlowDescription = {
+type PageDesignFlowDescription = {
   phases: PageDesignFlowPhaseSummary[]
   steps: readonly PageDesignFlowStep[]
   selectedStep: PageDesignFlowStep | null

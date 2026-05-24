@@ -24,41 +24,9 @@ export type {
   PageFileLoadState,
 } from './page-document-types-api'
 
-export {
-  isPageDesignServiceResult,
-  pageDesignServiceFailure,
-  pageDesignServiceSuccess,
-  PageDesignEditSession,
-} from './page-design-session-api'
-
-export type {
-  PageDesignEditPhase,
-  PageDesignServiceResult,
-  PageDesignTextFileKey,
-} from './page-design-session-api'
-
 export type {
   PageDesignEditHost,
-  PageDesignNodeTree,
-  PageDesignServiceActionBinding,
-  PageDesignServiceContext,
-  PageDesignServiceOptions,
-  SparkNodeTreeMethodKey,
 } from './page-design-host-api'
-
-export {
-  PageDesignService,
-  registerPageDesignEditHost,
-  resolvePageDesignEditHost,
-  resolvePageDesignEditPageId,
-} from './page-design-service'
-
-export type {
-  PageDesignEditHostSnapshot,
-  PageDesignFlowDescription,
-  PageDesignFlowQuery,
-  PageDesignNodePayloadValidationTarget,
-} from './page-design-service'
 
 export {
   PageConfigEditWorkspace,

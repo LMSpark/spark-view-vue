@@ -23,8 +23,8 @@ import {
 } from '@spark-view/spark-ai/module-semantic'
 import type {
   PageDesignServiceContext,
-} from '../design'
-import type { PageDesignService } from '../design'
+} from '../design/page-design-host-api'
+import type { PageDesignService } from '../design/page-design-service'
 import { createCurrentPageRef } from './page-design-helpers'
 
 // ── 参数 schema 与使用规则 ────────────────────────────────

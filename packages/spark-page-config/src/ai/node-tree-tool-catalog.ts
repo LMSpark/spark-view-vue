@@ -23,13 +23,15 @@ import {
   type ModuleParameterPayloadMetadata,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
-import {
-  PageDesignService,
-  type PageDesignNodePayloadValidationTarget,
-  type PageDesignNodeTree,
-  type PageDesignServiceActionBinding,
-  type PageDesignServiceContext,
-} from '../design'
+import { PageDesignService } from '../design/page-design-service'
+import type {
+  PageDesignNodePayloadValidationTarget,
+} from '../design/page-design-service'
+import type {
+  PageDesignNodeTree,
+  PageDesignServiceActionBinding,
+  PageDesignServiceContext,
+} from '../design/page-design-host-api'
 import {
   isSparkNode,
   type SparkNode,

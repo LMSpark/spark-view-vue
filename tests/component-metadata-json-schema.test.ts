@@ -3,7 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { LlmSchemaValidator, type LlmJsonSchemaObject, type LlmJsonValue } from '@spark-view/spark-ai/schema'
-import { createPageDesignPayloadRegistry } from '@spark-view/spark-page-config/ai'
+import { createPageDesignPayloadRegistry } from '../packages/spark-page-config/src/ai/payload-catalog-tool-catalog'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
   '$id',

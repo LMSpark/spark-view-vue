@@ -526,12 +526,11 @@ export class ModuleKind {
     if (ArrayBuffer.isView(value)) {
       return Array.from(new Uint8Array(value.buffer, value.byteOffset, value.byteLength))
     }
-    if (Array.isArray(value)) {
+    if (isUnknownArray(value)) {
       if (seen.has(value)) return undefined
       seen.add(value)
       const out: LlmJsonValue[] = []
-      const items = value as readonly unknown[]
-      for (const item of items) {
+      for (const item of value) {
         const coerced = ModuleKind.coerceJsonValueInternal(item, seen)
         if (coerced !== undefined) out.push(coerced)
       }
@@ -585,6 +584,10 @@ export class ModuleKind {
  *
  * 所有规范化函数均接收 ownKind 参数，用于生成可定位的错误消息。
  * ═════════════════════════════════════════════════════════════════════════════ */
+
+function isUnknownArray(value: unknown): value is readonly unknown[] {
+  return Array.isArray(value)
+}
 
 /** 通用必填文本校验：trim 后不得为空 */
 function normalizeRequiredText(value: string, field: string): string {

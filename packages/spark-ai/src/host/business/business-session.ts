@@ -14,7 +14,7 @@
  *
  * 【数据流】
  *   1. new AiHostBusinessSession(options, target)
- *   2. session.start()  → startRegistrationSession() → 创建 sessionStore 记录 + 生成工具规约
+ *   2. session.start()  → startRegistrationSession() → 创建/接入 sessionStore 记录 + 生成工具规约
  *   3. session.send(req) → senderCore.send()
  *      ├─ resolveSelectedBusiness() → 查找/复用 registration
  *      ├─ latestUserInput() → 提取用户消息 → appendMessage('user')
@@ -23,7 +23,7 @@
  *
  * 【独立函数】
  *   createAiHostBusinessSession — 工厂函数
- *   startRegistrationSession    — 启动注册会话（创建 sessionStore 记录 + 编解码器）
+ *   startRegistrationSession    — 启动注册会话（创建/接入 sessionStore 记录 + 编解码器）
  *
  * 【消费方】Host 初始化代码、页面级 AI 助手入口
  * ═══════════════════════════════════════════════════════════════
@@ -206,7 +206,7 @@ class AiHostMessageSender {
  * 属性：
  *   target     — 业务定位
  *   scope      — 业务作用域
- *   storageKey — 存储键（用于持久化）
+ *   storageKey — 存储键（用于持久化和再次接入）
  *   sessionId  — 后端会话 ID（kind + 顶层实例 ID）
  *   pageId     — 页面 ID（= businessInstanceId）
  *   sender     — 消息发送器（可直接传给 UI 层）
@@ -237,7 +237,7 @@ export class AiHostBusinessSession {
     this.sender = (request) => this.send(request)
   }
 
-  /** 启动会话：创建 sessionStore 记录 + 生成工具规约 */
+  /** 启动会话：创建/接入 sessionStore 记录 + 生成工具规约 */
   public async start(): Promise<void> {
     if (this.state.selected !== null && isSameScope(this.state.selected.scope, this.scope)) return
     const registration = this.resolveRegistration()
@@ -245,7 +245,7 @@ export class AiHostBusinessSession {
     this.state.setSelected(registration, this.scope)
   }
 
-  /** 获取当前会话记录（从 sessionStore 读取） */
+  /** 获取当前会话记录：Agent 能力诊断和再次接入会话的读取起点 */
   public getSessionRecord(): AiHostSessionRecord | null {
     const registration = this.state.selected?.registration ?? this.options.registry.get(this.scope.businessRegistrationId)
     return registration?.sessionStore?.getSession(toAiHostRuntimeScope(this.scope)) ?? null

@@ -432,10 +432,10 @@ section ParameterPayloadRegistrationSurface {
   current_provider pageDesign_nodeTree_sparkComponent {
     moduleKind: "node-tree"
     payloadRef: "spark.component"
-    provider_factory:
-      "createPageDesignComponentPayloadProvider"
     registry_factory:
       "createPageDesignPayloadRegistry"
+    provider_scope:
+      "component provider 是 registry 内部实现，不作为 page-config/ai 公共导出。"
     routed_by:
       "PageDesignPayloadCatalogModuleKind"
     source_catalog:

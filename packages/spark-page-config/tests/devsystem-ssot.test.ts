@@ -41,10 +41,8 @@ import {
   PageConfigEditWorkspace,
   PageConfigFileLifecycle,
 } from '@spark-view/spark-page-config/design'
-import {
-  PageDesignService,
-} from '@spark-view/spark-page-config/design'
 import { isRecord } from '@spark-view/spark-page-config/json-document'
+import { PageDesignService } from '../src/design/page-design-service'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()

@@ -32,8 +32,8 @@ import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type {
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
-} from '../design'
-import type { PageDesignService } from '../design'
+} from '../design/page-design-host-api'
+import type { PageDesignService } from '../design/page-design-service'
 import { isRecord } from '../json-document'
 import { createCurrentPageRef } from './page-design-helpers'
 
@@ -383,15 +383,6 @@ const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条
 const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool/pagedata.json 模型。'
 const JSON_OBJECT_RULE = '对 column/updates/views/api/crudConfig/config/selector 等复杂参数，必须传 JSON 对象，不要传 TypeScript 类型名字符串。'
 const VIEW_DEPENDENCY_RULE = 'viewDependencies 使用当前 parentTable / childTable / dependencyType 协议；必须与 tableRelations 中的父子表关系对齐。'
-
-export const DATA_FIRST_POLICY_PROMPT = `【数据优先（模型级）】
-- 数据优先是硬约束：先完成 DataSet 模型，再考虑 UI/脚本。
-- 在数据阶段完成前，不得调用 node-tree 写 action、text-model.writeScript 或 text-model.writeStyle。
-- 数据阶段收敛后，直接进入页面结构与脚本阶段。`
-
-export const DATA_FIRST_SEQUENCE_PROMPT = `【最小执行序列】
-1) dataset 函数（可多次）
-2) node-tree action / text-model.write*`
 
 const DATASET_MUTATING_ACTION_NAMES: ReadonlySet<string> = new Set([
   'undo',

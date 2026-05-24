@@ -27,13 +27,13 @@ import type { ModulePathContext } from '@spark-view/spark-ai/module-semantic'
 import type {
   PageDesignEditHost,
   PageDesignServiceContext,
-} from '../design'
-import { PageDesignService } from '../design'
+} from '../design/page-design-host-api'
+import { PageDesignService } from '../design/page-design-service'
 import { PageDesignDatasetModuleKind } from './dataset-tool-catalog'
 import { PageDesignLifecycleModuleKind } from './lifecycle-tool-catalog'
 import { createLeaveRequestBusinessRegistration } from './leave-request'
 import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
-import { PageDesignPayloadCatalogModuleKind, createPageDesignPayloadRegistry } from './payload-catalog-tool-catalog'
+import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
 import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
 import {
   PAGE_DESIGN_CHILD_MODULES,
@@ -77,13 +77,13 @@ const PAGE_DESIGN_KNOWLEDGE_DISCOVERY_PROMPT = `══ pageDesign: 知识查询�
 
 // ── 公共注册契约 ───────────────────────────────────────────
 
-export type PageDesignRuntimeContext = {
+type PageDesignRuntimeContext = {
   readonly instanceId: string
   readonly moduleId: typeof PAGE_DESIGN_MODULE_ID
   readonly moduleInstanceId: string
 }
 
-export type PageDesignModuleOptions = {
+type PageDesignModuleOptions = {
   readonly getEditToolHost: (context: PageDesignRuntimeContext) => PageDesignEditHost
 }
 
@@ -109,7 +109,6 @@ export function createPageDesignBusinessRegistration(
     }),
   })
   const runtime = new ModuleSemanticRuntime()
-  const payloadRegistry = createPageDesignPayloadRegistry()
 
   runtime.registerKind(new PageDesignRootModuleKind())
   runtime.registerKind(new PageDesignLifecycleModuleKind({
@@ -124,7 +123,6 @@ export function createPageDesignBusinessRegistration(
   }))
   runtime.registerKind(new PageDesignPayloadCatalogModuleKind({
     parentKind: PAGE_DESIGN_ROOT_KIND,
-    registry: payloadRegistry,
     service,
     contextFactory: toServiceContext,
   }))
@@ -274,12 +272,12 @@ function pageDesignEditHostUnavailableMessage(result: AiHostFunctionCallResult<u
 
 // ── 公共注册门面 ───────────────────────────────────────────
 
-export type RegisterAssistantBusinessesOptions = {
+type RegisterAssistantBusinessesOptions = {
   readonly registry: AiHostBusinessRegistry
   readonly getPageDesignEditHost?: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
 }
 
-export type RegisterPageDesignBusinessOptions = {
+type RegisterPageDesignBusinessOptions = {
   readonly registry: AiHostBusinessRegistry
   readonly getPageDesignEditHost: (context: AiHostBusinessRuntimeContext) => PageDesignEditHost
 }

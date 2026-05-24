@@ -29,6 +29,11 @@ type ModuleKindSpy = {
   lastHost?: ModulePathContext['host'] | undefined
 }
 
+function readObjectProperty(value: unknown, key: string): unknown {
+  if (typeof value !== 'object' || value === null) return undefined
+  return Object.getOwnPropertyDescriptor(value, key)?.value
+}
+
 function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
   return new ModuleKind({
     kind: 'node-tree',
@@ -249,7 +254,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       typeof message === 'object' && message !== null && 'role' in message && message.role === 'tool'
     )
     expect(toolMessage).toMatchObject({ role: 'tool', tool_call_id: 'call-node-empty' })
-    const toolPayload = JSON.parse(String((toolMessage as { content?: unknown } | undefined)?.content ?? '{}'))
+    const toolPayload = JSON.parse(String(readObjectProperty(toolMessage, 'content') ?? '{}'))
     expect(toolPayload).toMatchObject({
       ok: false,
       code: 'NODE_NOT_FOUND',

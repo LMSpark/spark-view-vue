@@ -1,9 +1,8 @@
 /**
- * 页面设计组件荷载目录工具模块。
+ * 页面设计参数荷载目录工具模块。
  *
- * 提供 payload-catalog 的两个动作：
- * - queryPayloads — 查询组件荷载摘要
- * - guidePayload — 查询单个组件的完整 props paramsSchema
+ * 本文件按功能顺序承载组件 payload 目录：构建产物读取、
+ * provider registry、LLM 工具动作、guide 记录和 paramsSchema 投影。
  */
 
 import {
@@ -21,18 +20,17 @@ import type {
   ModuleParameterPayloadSummary,
 } from '@spark-view/spark-ai'
 import type { LlmJsonSchema, LlmJsonValue, LlmJsonSchemaObject } from '@spark-view/spark-ai/schema'
-import type { PageDesignServiceContext, PageDesignServiceResult } from '../design'
-import { PageDesignService } from '../design'
+import { isRecord } from '../json-document'
+import type { PageDesignServiceContext } from '../design/page-design-host-api'
+import type { PageDesignServiceResult } from '../design/page-design-session-api'
+import { PageDesignService } from '../design/page-design-service'
 import componentCatalogPayload from './payloads/component-catalog.json'
 import { createCurrentPageRef } from './page-design-helpers'
-import { isRecord } from '../json-document'
 import {
   PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
   PAGE_DESIGN_NODE_TREE_KIND,
   PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
 } from './page-design-kind-ids'
-
-// ── 公共目录模型 ───────────────────────────────────────────
 
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
 type PayloadCatalogActionRunner = (
@@ -89,7 +87,7 @@ const RECOMMENDED_PAYLOAD_ORDER = [
 ]
 const RECOMMENDED_PAYLOAD_RANK = new Map(RECOMMENDED_PAYLOAD_ORDER.map((key, index) => [key, index]))
 
-// ── payload-catalog 动作声明 ──────────────────────────────
+// ── LLM 动作声明 ──────────────────────────────────────────
 
 const PAYLOAD_CATALOG_ACTIONS: readonly ModuleActionMetadata[] = [
   {
@@ -178,7 +176,7 @@ export function createPageDesignPayloadRegistry(): ModuleParameterPayloadRegistr
  * query 只返回摘要，guide 才返回完整 paramsSchema；这个分层保证 LLM 按需建立知识，
  * 也避免把 VCM 构建产物整体灌入上下文。
  */
-export function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvider {
+function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvider {
   return {
     moduleKind: PAGE_DESIGN_NODE_TREE_KIND,
     payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
@@ -248,14 +246,16 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
     const moduleKind = typeof data['moduleKind'] === 'string' ? data['moduleKind'] : ''
     const payloadRef = typeof data['payloadRef'] === 'string' ? data['payloadRef'] : ''
     const key = typeof args['key'] === 'string' ? args['key'].trim() : ''
-    if (moduleKind !== PAGE_DESIGN_NODE_TREE_KIND || payloadRef !== PAGE_DESIGN_COMPONENT_PAYLOAD_REF || key.length === 0) return
+    if (moduleKind !== PAGE_DESIGN_NODE_TREE_KIND || payloadRef !== PAGE_DESIGN_COMPONENT_PAYLOAD_REF || key.length === 0) {
+      return
+    }
     const payload = data['payload']
     if (!isModuleParameterPayloadGuide(payload)) return
     this.service.recordNodePayloadGuide(this.contextFactory(ctx), key, payload)
   }
 }
 
-// ── Action 路由与 provider 解析 ───────────────────────────
+// ── Action 路由 ───────────────────────────────────────────
 
 function isModuleParameterPayloadGuide(value: unknown): value is ModuleParameterPayloadGuide {
   return isRecord(value)
@@ -359,11 +359,10 @@ function queryPageDesignComponentPayloads(filter: ModuleParameterPayloadQueryFil
     rows = rows.filter(isConfigurablePayload)
   }
 
-  const items = [...rows]
+  return [...rows]
     .sort(comparePayloadEntries)
     .slice(0, limit)
     .map((entry) => summarizePayload(entry))
-  return items
 }
 
 // ── Action 参数归一化与 provider 定位 ─────────────────────
@@ -372,7 +371,7 @@ function createPayloadQueryFilter(
   args: Readonly<Record<string, LlmJsonValue>>,
   moduleKind: string,
   payloadRef: string,
-): ModuleParameterPayloadQueryFilter {
+): Parameters<ModuleParameterPayloadProvider['queryPayloads']>[0] {
   const category = typeof args['category'] === 'string' ? args['category'].trim() : undefined
   const keyword = typeof args['keyword'] === 'string' ? args['keyword'].trim() : undefined
   const key = typeof args['key'] === 'string' ? args['key'].trim() : undefined
