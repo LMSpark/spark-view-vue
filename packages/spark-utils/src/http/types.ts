@@ -82,7 +82,7 @@ export type ApiEnvelopeError = {
   details?: Record<string, unknown>}
 
 export type ApiEnvelopeContext = {
-  requestId: string
+  requestId?: string
   tenantId?: string
   projectId?: string
   username?: string
@@ -106,9 +106,9 @@ export type ApiEnvelopeContext = {
 }
 
 export type ApiEnvelopeEvent = {
-  transport: 'http' | 'sse'
-  name: string
-  terminal: boolean
+  transport?: 'http' | 'sse'
+  name?: string
+  terminal?: boolean
   sequence?: number
 }
 
@@ -171,7 +171,7 @@ export type FileLoadOptions = {
   getHeaders?: () => Record<string, string>
   /** 网络失败时降级到缓存 */
   fallbackToCache?: boolean
-  /** 
+  /**
    * 过期策略级别定义（默认：0=永不过期, 1=3天, 2=7天, 3=15天, 4=30天）
    * 可自定义级别定义
    */

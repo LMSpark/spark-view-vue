@@ -5,25 +5,14 @@
  * 内部直接调用 checker 纯函数，调用方无需传入 checker 依赖。
  */
 
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow, FieldRenderState } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
+import type { FieldRenderConfig } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canEdit, isFieldEditable, getFieldVisibility } from './PermissionChecker'
 
-export type FieldRenderConfig = {
-  field: string
-  visible?: boolean
-  editable?: boolean
-  label?: string
-  width?: number | string}
-
-export type FieldRenderState = {
-  field: string
-  visibility: FieldVisibility
-  readable: boolean
-  editable: boolean
-  displayValue: string | undefined
-  shouldRender: boolean}
+export type { FieldRenderConfig } from '@spark-view/spark-utils'
+export type { FieldRenderState } from '@spark-view/spark-data'
 
 /**
  * 计算单个字段的渲染状态（可见性 + 可编辑性 + 展示值）。

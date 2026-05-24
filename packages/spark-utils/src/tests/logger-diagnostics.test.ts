@@ -4,6 +4,7 @@ import {
   addLogTransport,
   removeLogTransport,
   parseLogArgs,
+  isRecord,
   type LogTransport,
 } from '@spark-view/spark-utils'
 
@@ -12,9 +13,6 @@ type CapturedLog = {
   message: string
   meta?: Record<string, unknown> | undefined}
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object'
-}
 
 describe('Logger diagnostics', () => {
   const captured: CapturedLog[] = []

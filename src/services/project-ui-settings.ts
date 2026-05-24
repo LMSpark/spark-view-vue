@@ -1,4 +1,5 @@
 import type { PageMode } from '@spark-view/spark-app'
+import { isRecord } from '@spark-view/spark-utils'
 
 export type ProjectUiSettings = {
   headerFirst: boolean
@@ -21,9 +22,6 @@ function normalizeScopeKey(scopeKey: string | null | undefined): string | null {
   return trimmed.length > 0 ? trimmed : null
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 export function getProjectUiSettingsStorageKey(scopeKey: string | null): string {
   const normalized = normalizeScopeKey(scopeKey)

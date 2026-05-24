@@ -1,4 +1,4 @@
-import { deepClone } from '@spark-view/spark-utils'
+import { deepClone, isRecord } from '@spark-view/spark-utils'
 
 import type { DataSetContract, DataSetMetadata } from './types'
 
@@ -49,10 +49,6 @@ type DataSetHistoryEnvelope = {
   entries: DataSetHistorySnapshot[]
   nextSlot: number
   capacity: number}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function isNonEmptyString(value: unknown): value is string {
   return typeof value === 'string' && value.trim().length > 0

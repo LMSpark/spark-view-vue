@@ -17,6 +17,7 @@ import {
   type DebugScreenshotRequestEvent,
 } from '@/services/sse-events'
 import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
+import { isRecord } from '@spark-view/spark-utils'
 
 // Public contract -----------------------------------------------------------
 
@@ -315,9 +316,6 @@ function readRoutePageId(route: RouteLocationNormalizedLoaded): string | null {
 
 // Scalar helpers ------------------------------------------------------------
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)

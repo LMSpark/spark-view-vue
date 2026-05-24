@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
+import { defineCapability, sparkProvide, sparkConsume, isRecord } from '@spark-view/spark-utils'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import {
   Spark,
@@ -27,10 +27,6 @@ import { createPageComponentRegistry } from '../page/context/page-component-regi
 
 function isStringCapability(value: unknown): value is string {
   return typeof value === 'string'
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
 }
 
 function hasCallable(record: Record<string, unknown>, key: string): boolean {

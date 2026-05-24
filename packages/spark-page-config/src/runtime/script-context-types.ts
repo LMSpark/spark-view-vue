@@ -20,6 +20,12 @@
  */
 
 import type { FieldVisibility, DataRow, ModelPermission } from '@spark-view/spark-data'
+import type { FieldRenderState, PermissionActionContext } from '@spark-view/spark-data'
+import type {
+  FieldRenderConfig,
+  ComponentInstanceSnapshot,
+  ContextSnapshot,
+} from '@spark-view/spark-utils'
 import type {
   PageServiceCapability,
 } from './app-services'
@@ -158,40 +164,17 @@ export type ScriptContext = {
    * }
    * ```
    */
-  $moduleContext: ModuleContextInScript | null
+  $moduleContext: ContextSnapshot | null
 }
 
-export type PermissionActionContextInScript = {
-  modelPermission?: ModelPermission
-  row?: DataRow | null
-}
-
-export type FieldRenderConfigInScript = {
-  field: string
-  visible?: boolean
-  editable?: boolean
-  label?: string
-  width?: number | string
-}
-
-export type FieldRenderStateInScript = {
-  field: string
-  visibility: FieldVisibility
-  readable: boolean
-  editable: boolean
-  displayValue: string | undefined
-  shouldRender: boolean
-}
-
-/**
- * 沙箱权限 API — 纯函数集，无类/工厂/单例。
+/** 沙箱权限 API — 纯函数集，无类/工厂/单例。
  *
  * 所有函数可选接受 `permissionMode` 参数（脚本通常省略）。
  * 函数直接来自组件层 `permission/` 模块导出。
  */
 export type PermissionApiInScript = {
   // ── 动作权限 ──
-  isPermittedAction(action: string | undefined, context: PermissionActionContextInScript): boolean
+  isPermittedAction(action: string | undefined, context: PermissionActionContext): boolean
   isModelScopedPermAction(action: string | undefined): boolean
   isRowScopedPermAction(action: string | undefined): boolean
 
@@ -214,9 +197,9 @@ export type PermissionApiInScript = {
   resolveFieldPermissionState(
     field: string | undefined,
     row: DataRow | null | undefined,
-    config?: Omit<FieldRenderConfigInScript, 'field'>,
-  ): FieldRenderStateInScript | null
-  computeFieldState(config: FieldRenderConfigInScript, row: DataRow): FieldRenderStateInScript
+    config?: Omit<FieldRenderConfig, 'field'>,
+  ): FieldRenderState | null
+  computeFieldState(config: FieldRenderConfig, row: DataRow): FieldRenderState
 
   // ── 行过滤 ──
   filterDeletableRows(rows: DataRow[]): DataRow[]
@@ -230,19 +213,12 @@ export type PermissionApiInScript = {
   extractModelPermission(dataSource: { _modelPerm?: ModelPermission } | null | undefined): ModelPermission | undefined
 }
 
-/** 页面内组件实例快照（脚本可读） */
-export type PageComponentInstanceInScript = {
-  id: string
-  type: string
-  props?: Record<string, unknown>
-}
-
 /** 页面级组件访问 API（脚本可用） */
 export type PageComponentAccessInScript = {
   /** 按组件 id 获取实例快照（只读元数据，不返回组件 API 对象） */
-  get(id: string): PageComponentInstanceInScript | null
+  get(id: string): ComponentInstanceSnapshot | null
   /** 列出页面组件实例（可按 type 过滤，只读元数据） */
-  list(type?: string): PageComponentInstanceInScript[]
+  list(type?: string): ComponentInstanceSnapshot[]
   /** 按组件 id 获取组件暴露 API（运行时实现可返回任意结构） */
   getApi<T = unknown>(id: string): T | null
   /** 按 type 获取同类组件 API 列表 */
@@ -250,24 +226,9 @@ export type PageComponentAccessInScript = {
 }
 
 // ==================== 模块上下文（内联类型）====================
-
-/** 模块上下文选项（结构与 `ModuleContextItem` 等价） */
-export type ModuleContextItemInScript = {
-  id: string | number
-  title: string
-}
-
-/**
- * `$moduleContext` 的内联类型（结构与 `ModuleContext` 完全等价）。
- *
- * 定义在此文件内，避免对 `capability/index.ts` 产生导入依赖。
- * 渲染层以 `ModuleContext` 作为实现类型；两者通过结构化类型兼容。
- */
-export type ModuleContextInScript = {
-  /** 当前选中值 */
-  selected: string | number | null
-  /** 可选项列表 */
-  items: readonly ModuleContextItemInScript[]
-  /** 上下文所属导航节点 ID */
-  nodeId: string
-}
+//
+// 以下类型现已统一管理在 @spark-view/spark-utils:
+//   ContextItem (= 原 ModuleContextItemInScript)
+//   ContextSnapshot (= 原 ModuleContextInScript)
+//
+// 渲染层以 ModuleContext 作为实现类型；两者通过结构化类型兼容。

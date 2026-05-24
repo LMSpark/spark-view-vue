@@ -82,7 +82,7 @@ import {
   onUnmounted,
   watchEffect,
 } from 'vue'
-import { DataView, type DataRow } from '@spark-view/spark-data'
+import { DataView, isDataRow, type DataRow } from '@spark-view/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
 import {
@@ -91,7 +91,7 @@ import {
   normalizeSparkNode,
 } from '../core/types.js'
 import type { SparkNode, SparkNodeChildren, CapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
-import { consumeSparkCapability, createSparkCapabilityContext, sparkProvide, sparkRemove } from '@spark-view/spark-utils'
+import { consumeSparkCapability, createSparkCapabilityContext, isRecord, sparkProvide, sparkRemove } from '@spark-view/spark-utils'
 import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE } from '../core/capability-keys.js'
 import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from '../core/capability-context.js'
@@ -357,11 +357,6 @@ function resolveHostTypeConstraintState(
 
 // ── 基础工具：渲染时作用域数据解析 ─────────────────────────────────────────
 
-// 从 unknown 中识别非数组对象；供行数据等运行时作用域复用。
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
 function isObjectLike(value: unknown): value is object {
   return (typeof value === 'object' && value !== null) || typeof value === 'function'
 }
@@ -372,10 +367,6 @@ function isSparkRuntimeOwner(value: unknown): value is SparkRuntimeOwner {
 
 function isDataView(value: unknown): value is DataView {
   return value instanceof DataView
-}
-
-function isDataRow(value: unknown): value is DataRow {
-  return isRecord(value)
 }
 
 function resolveScopedRowIndex(rawProps: NodeRuntimeProps): number | undefined {

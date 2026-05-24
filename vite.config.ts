@@ -26,6 +26,7 @@ export default defineConfig({
       // dist 仅包含 .d.ts 类型声明，供外部 npm 消费者使用
       '@spark-view/spark-component': path.resolve(root, 'packages', 'spark-component', 'src', 'index.ts'),
       '@spark-view/spark-data': path.resolve(root, 'packages', 'spark-data', 'src', 'index.ts'),
+      '@spark-view/spark-utils/internal': path.resolve(root, 'packages', 'spark-utils', 'src', 'internal', 'index.ts'),
       '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
       '@spark-view/spark-page-config/config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'config', 'index.ts'),
       '@spark-view/spark-page-config/node-tree': path.resolve(root, 'packages', 'spark-page-config', 'src', 'node-tree', 'index.ts'),

@@ -141,6 +141,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { DocumentCopy, Refresh } from '@element-plus/icons-vue'
+import { isRecord } from '@spark-view/spark-utils'
 import { http } from '@/services/http'
 import { getPlatformTenantApi, getTenantConfigApi } from '@/services/api-paths'
 
@@ -171,10 +172,6 @@ type TenantFullConfig = {
     homePath?: string
   }
   [key: string]: unknown}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isOptionalRecord(value: unknown): boolean {
   return value === undefined || isRecord(value)

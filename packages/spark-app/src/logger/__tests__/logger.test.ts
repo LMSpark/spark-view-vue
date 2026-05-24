@@ -18,14 +18,11 @@ import {
   createBatchHttpTransport,
 } from '../index'
 import type { LogTransport } from '../index'
+import { isRecord } from '@spark-view/spark-utils'
 
 /** 安全取 mock.calls 第 N 次调用 */
 function callArgs(spy: ReturnType<typeof vi.spyOn>, n = 0): unknown[] {
   return spy.mock.calls[n] ?? []
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function readFetchBody(options: unknown): string {

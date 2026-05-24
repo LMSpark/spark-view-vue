@@ -3,11 +3,10 @@
  * host/transport/http-utils.ts — HTTP 通用工具函数
  * ═══════════════════════════════════════════════════════════════
  *
- * 【架构定位】Fetch Transport 的共享工具集。提供 fetch 解析、API 信封解包、
- *   类型守卫等通用能力，被 fetch-transport 和 attachment-upload 共用。
+ * 【架构定位】Fetch Transport 的共享工具集。提供 fetch 解析、API 信封解包等
+ *   AI 传输协议能力，被 fetch-transport 和 attachment-upload 共用。
  *
  * 【函数清单】
- *   isRecord           — 类型守卫：判定值是否为 Record<string, unknown>
  *   tryParseJson       — 安全 JSON.parse（解析失败返回原值）
  *   unwrapApiEnvelope  — 解包 API 响应信封（v4 context/requestId，兼容 v3 requestId）
  *   resolveFetch       — 解析 fetch 实现（优先自定义，回退 globalThis.fetch）
@@ -19,6 +18,12 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
+import { isRecord } from '@spark-view/spark-utils'
+import type {
+  ApiEnvelope as SharedApiEnvelope,
+  ApiEnvelopeContext,
+  ApiEnvelopeEvent,
+} from '@spark-view/spark-utils'
 import type { AiHostFetch } from './transport-types'
 
 /** 默认协议版本号 */
@@ -27,75 +32,17 @@ export const DEFAULT_PROTOCOL_VERSION = 4
 export const DEFAULT_BASE_URL = '/api/ai'
 
 // ═══════════════════════════════════════════════════════════════
-// 第 1 节 · API 信封类型
+// 第 1 节 · API 信封类型（从 spark-utils 导入，本模块仅做再导出）
 // ═══════════════════════════════════════════════════════════════
 
-/** AI 后端 API 响应信封 */
-type ApiEnvelope = Readonly<{
-  protocolVersion?: number
-  ok: boolean
-  data?: unknown
-  error?: {
-    readonly code?: unknown
-    readonly message?: unknown
-    readonly category?: unknown
-    readonly severity?: unknown
-    readonly retryPolicy?: unknown
-    readonly details?: unknown
-  } | null
-  /** v3 legacy field; v4 uses context.requestId. */
-  requestId?: string
-  context?: ApiEnvelopeContext
-  event?: ApiEnvelopeEvent
-}>
+export type { ApiEnvelopeContext, ApiEnvelopeEvent }
+export { isRecord }
 
-export type ApiEnvelopeContext = Readonly<{
-  requestId?: string
-  tenantId?: string
-  projectId?: string
-  username?: string
-  scope?: Readonly<{
-    moduleId?: string
-    moduleInstanceId?: string
-    instanceId?: string
-    runtimeInstanceId?: string
-  }>
-  session?: Readonly<{ sessionId?: string }>
-  turn?: Readonly<{
-    turnId?: string
-    turnKey?: string
-    seq?: number
-    baseRevision?: number
-  }>
-  stream?: Readonly<{
-    streamId?: string
-    streamKey?: string
-  }>
-}>
-
-export type ApiEnvelopeEvent = Readonly<{
-  transport?: 'http' | 'sse'
-  name?: string
-  terminal?: boolean
-  sequence?: number
-}>
+/** AI 后端 API 响应信封（内部类型守卫用）。 */
+type ApiEnvelope = Readonly<SharedApiEnvelope<unknown>>
 
 // ═══════════════════════════════════════════════════════════════
-// 第 2 节 · 类型守卫
-// ═══════════════════════════════════════════════════════════════
-
-/**
- * 判定值是否为 Record<string, unknown>（非数组的对象）。
- *
- * SSOT：isRecord 的唯一定义点。default-session-store、fetch-transport、
- * 以及 spark-page-config 中的多个文件都从此处导入。
- */
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 第 3 节 · JSON 解析
+// 第 2 节 · JSON 解析
 // ═══════════════════════════════════════════════════════════════
 
 /** 安全 JSON.parse：解析失败时返回原值 */
@@ -108,7 +55,7 @@ export function tryParseJson(value: string): unknown {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 第 4 节 · API 信封解包
+// 第 3 节 · API 信封解包
 // ═══════════════════════════════════════════════════════════════
 
 /**
@@ -145,7 +92,7 @@ export function isProtocolV4Envelope(value: unknown): boolean {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 第 5 节 · Fetch 工具
+// 第 4 节 · Fetch 工具
 // ═══════════════════════════════════════════════════════════════
 
 /**
@@ -180,7 +127,7 @@ export async function assertOkResponse(response: Response, action: string): Prom
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 第 6 节 · 内部：信封格式判定
+// 第 5 节 · 内部：信封格式判定
 // ═══════════════════════════════════════════════════════════════
 
 /** 判定值是否符合 ApiEnvelope 形状（v4 + legacy v3） */

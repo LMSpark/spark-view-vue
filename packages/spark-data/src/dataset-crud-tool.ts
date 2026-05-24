@@ -1,5 +1,6 @@
 import { DataSet } from './dataset'
-import { SnapshotHistory, deepClone } from '@spark-view/spark-utils'
+import { SnapshotHistory, deepClone, isRecord } from '@spark-view/spark-utils'
+import { isDataRow } from './core/data-row-guards'
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'
 import type {
@@ -19,14 +20,6 @@ import type {
   TableResourceType,
   TableBusinessCategory,
 } from './types'
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
-function isDataRow(value: unknown): value is DataRow {
-  return isRecord(value)
-}
 
 function isCrudResult(value: unknown): value is CrudResult {
   return isRecord(value) && typeof value['success'] === 'boolean'

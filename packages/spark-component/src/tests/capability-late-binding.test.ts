@@ -1,10 +1,7 @@
 import { describe, it, expect } from 'vitest'
-import { defineCapability, sparkProvide, sparkConsume } from '@spark-view/spark-utils'
+import { defineCapability, sparkProvide, sparkConsume, isRecord } from '@spark-view/spark-utils'
 import { Spark } from '@spark-view/spark-component'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
 
 describe('Capability late-binding', () => {
   it('capability provided on parent should be discoverable from child via sparkConsume', () => {

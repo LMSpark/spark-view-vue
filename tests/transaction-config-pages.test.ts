@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
 import { compileRule, parsePageData } from '@spark-view/spark-page-config/config'
-import { HttpClientBase } from '@spark-view/spark-utils'
+import { HttpClientBase, isRecord } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-component'
 import { nodeToActionDescriptor } from '../packages/spark-component/src/page/actions/node-to-descriptor'
@@ -26,9 +26,6 @@ function readObjectProp(value: unknown, key: string): unknown {
   return Object.getOwnPropertyDescriptor(value, key)?.value
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isSparkNodeLike(value: unknown): value is SparkNode {
   return typeof readObjectProp(value, 'type') === 'string'

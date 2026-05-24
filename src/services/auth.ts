@@ -7,7 +7,8 @@
  * 所有 API 调用自动附带 X-Tenant-Id 头。
  */
 
-import { createFetchClient, isRequestError } from '@spark-view/spark-utils'
+import { createFetchClient, isRequestError, isRecord } from '@spark-view/spark-utils'
+import { isStringArray } from '@spark-view/spark-utils/internal'
 
 // ── Token 管理 ──────────────────────────────────────────────────────────────
 
@@ -25,13 +26,6 @@ export type AuthUser = {
   tenantId: string
   defaultProjectId: string}
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
-function isStringArray(value: unknown): value is string[] {
-  return Array.isArray(value) && value.every(item => typeof item === 'string')
-}
 
 function isAuthUser(value: unknown): value is AuthUser {
   return isRecord(value)

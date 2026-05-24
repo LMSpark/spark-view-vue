@@ -4,10 +4,7 @@
  * builtin-action-handler.ts 和 page/actions/action-executor.ts 共享。
  */
 import type { CrudResult, DataRow } from '@spark-view/spark-data'
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
+import { isRecord } from '@spark-view/spark-utils'
 
 export function isCrudResult<T>(value: unknown): value is CrudResult<T> {
   return isRecord(value)

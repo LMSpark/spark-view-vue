@@ -16,11 +16,7 @@ import type {
 import { resolveUrlTemplate } from './core/url-template'
 import { applyPlatformProjectScope } from './core/platform-scoped-url'
 
-import { Logger, createRequest, type HttpClientBase } from '@spark-view/spark-utils'
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
+import { Logger, createRequest, isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 
 function isFlatTreeNode(value: unknown): value is FlatTreeNode {
   const record = isRecord(value) ? value : null

@@ -5,6 +5,7 @@
  * 以及 PageDesignService 主体。
  */
 
+import { isRecord } from '@spark-view/spark-utils'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import { LlmSchemaValidator } from '@spark-view/spark-ai/schema'
 import type { ModuleParameterPayloadGuide } from '@spark-view/spark-ai/module-semantic'
@@ -71,10 +72,6 @@ function toSerializableServiceData(value: unknown): unknown {
 
 function toErrorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 async function runRegisteredActionTarget<TTarget>(

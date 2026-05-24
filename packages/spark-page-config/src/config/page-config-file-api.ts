@@ -20,7 +20,7 @@
  * └──────────────────────────────────────────────────────┘
  */
 
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import type { PageConfigFileName } from './config-types'
 
 // ═══════════════════════════════════════════════════════
@@ -111,10 +111,6 @@ function normalizeVersionSummary(item: Record<string, unknown>): PageConfigFileV
     isCurrent: item['isCurrent'] === true,
     modifiedBy: typeof item['modifiedBy'] === 'string' ? item['modifiedBy'] : null,
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }
 
 function readEnvelopeData(value: unknown): unknown {

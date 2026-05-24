@@ -1,22 +1,22 @@
 /**
  * SPARK 主应用入口
- * 
+ *
  * 🎯 设计理念：
  * - 100% 声明式配置，0 实现逻辑
  * - 配置即文档，所有配置都有类型约束
  * - SparkApp.start() 自动处理所有初始化流程
- * 
+ *
  * 🔧 技术栈：
  * - Vue 3.5 + TypeScript
  * - Element Plus + VXE Table
  * - SPARK 组件系统 + 动态路由系统
- * 
+ *
  * 📦 架构层次（由 SparkApp.start 自动完成）：
  * - L1: @spark-view/spark-app - 应用基础设施层
  * - L2: @spark-view/spark-page-config - 页面配置编排层
  * - L4-L6: @spark-view/spark-component - 组件核心层
- * 
- * 
+ *
+ *
  * 💾 缓存分级过期策略：
  * - 默认级别定义：0=永不过期, 1=3天, 2=7天, 3=15天(默认), 4=30天
  * - 可在 createFileLoader 配置 expirationTiers 自定义级别
@@ -24,14 +24,14 @@
  * - 示例：
  *   ```ts
  *   // 全局配置
- *   createFileLoader({ 
+ *   createFileLoader({
  *     defaultExpirationLevel: 3,  // 默认15天
  *     expirationTiers: [
  *       { level: 0, maxAge: Infinity, description: '永不过期' },
  *       { level: 1, maxAge: 3 * 24 * 60 * 60 * 1000 }
  *     ]
  *   })
- *   
+ *
  *   // 单文件配置
  *   loader.load('/home/pagedata.json', { expirationLevel: 0 })  // 永不过期
  *   loader.load('/admin/rule.json', { expirationLevel: 1 })     // 3天过期
@@ -41,7 +41,7 @@
 // SPARK 架构包
 import * as SparkAppRuntime from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
-import { addLogTransport } from '@spark-view/spark-utils'
+import { addLogTransport, isRecord } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/navigation'
 
 import { consumePendingLogout, getUser, isAuthenticated, switchProject } from './services/auth'
@@ -67,18 +67,10 @@ const startupLogger = createLogger('main')
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
-
 consumePendingLogout()
 
 // late-binding pageId（路由就绪后由 afterMount 注入）
 let _currentPageId: string | undefined
-
-function isRecordObject(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 // 浏览器会话级 ID（页面刷新后重新生成，用于追踪一次启动周期）
 const _sessionId = `s-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
@@ -197,7 +189,7 @@ function mountStartupError(error: unknown, fallbackMessage: string): void {
 
 /**
  * 启动应用
- * 
+ *
  * 流程：
  * 1. 识别租户（URL 参数、子域名、localStorage）
  * 2. 加载配置（默认配置 + 租户配置）
@@ -221,7 +213,7 @@ async function startApp() {
         } catch { return true /* JSON.parse 失败 → 强制清除 */ }
         return false
       })
-      
+
       if (badKeys.length > 0) {
         startupLogger.warn(`🔧 检测到 ${badKeys.length} 个损坏的缓存项，正在清除...`)
         badKeys.forEach(k => {
@@ -231,17 +223,17 @@ async function startApp() {
         startupLogger.info('✅ 缓存已清除')
       }
     }
-    
+
     startupLogger.info('⏳ 正在加载应用配置...')
-    
+
     // 1. 加载配置（支持多租户）
     const appConfig = await loadAppConfig()
-    
+
     startupLogger.info('✅ 配置加载完成', {
       tenant: appConfig.tenant?.tenantName ?? '默认',
       version: appConfig.config.version
     })
-    
+
     // ━━ 1.5 全链路 Logger 贯穿（APP 层唯一注册点） ━━━━━━━━━━━━━━━━━━━━━━━
     //
     // 三条日志链路统一汇入同一组 transport：
@@ -275,16 +267,16 @@ async function startApp() {
         auditFlag: auditRemoteLogsEnabled,
       })
     }
-    
+
     // 2. 注册内置插件加载器
     registerBuiltinPlugins()
-    
+
     // 3. 动态加载插件（根据配置）
     startupLogger.info('🔌 正在加载 UI 插件...')
-    const pluginConfigs = isRecordObject(appConfig.plugins) ? appConfig.plugins : {}
+    const pluginConfigs = isRecord(appConfig.plugins) ? appConfig.plugins : {}
     const pluginInstances = await PluginManager.loadPlugins(pluginConfigs)
     const plugins = pluginInstances.map(p => p.plugin)
-    
+
     // 加载插件样式
     const epConfig = pluginConfigs['element-plus']
     if (epConfig === true || (typeof epConfig === 'object' && epConfig.enabled === true)) {
@@ -296,9 +288,9 @@ async function startApp() {
     if (vxeConfig === true || (typeof vxeConfig === 'object' && vxeConfig.enabled === true)) {
       await import('vxe-table/lib/style.css')
     }
-    
+
     startupLogger.info(`✅ 已加载 ${plugins.length} 个插件`)
-    
+
     // 4. 构建 Vue 组件页面映射（统一定义在 vue-page-map.ts，单一维护点）
     startupLogger.info('📄 构建 Vue 组件页面映射...')
     const { buildComponentMap, buildPreAuthNavTree, getPublicPaths } = await import('./config/vue-page-map')
@@ -332,24 +324,24 @@ async function startApp() {
     await SparkApp.start({
       // === 应用根组件 ===
       rootComponent: App,
-      
+
       // === 路由配置（从 JSON 加载）===
       routerMode: appConfig.router.mode,
       mountTarget: appConfig.mountTarget,
-      
+
       // === UI 插件（动态加载）===
       plugins,
 
       // === CSS 主题（light / dark / auto 三模式） ===
       theme: true,
-      
+
       // === SPARK 组件系统配置（从 JSON 加载）===
       spark: {
         ...appConfig.spark
         // SparkApp 会自动导入 virtual:spark-components
         // 不需要手动传递 registerComponents
       },
-      
+
       // === 页面配置系统（路由从 DB 动态加载）===
       pageConfig: {
         ...appConfig.pageConfig,
@@ -373,17 +365,17 @@ async function startApp() {
         isPlatformNavigationEnabled: () => isPlatformAdminUser(),
         platformPathPrefix: PLATFORM_PATH_PREFIX,
       },
-      
+
       // === 应用基础配置（从 JSON 加载）===
       config: appConfig.config,
-      
+
       // === 生命周期钩子 ===
-      
+
       // 启动前钩子
       onBeforeStart: () => {
         startupLogger.info('🚀 SPARK 应用启动中...')
       },
-      
+
       // 挂载前钩子
       beforeMount: async (context) => {
         const { router } = context
@@ -441,7 +433,7 @@ async function startApp() {
         await ensureCurrentScopedRouteIsNavigable(router)
 
         startupLogger.info('✅ 应用准备挂载')
-        
+
         // 🎨 注册主项目本地组件。内置 renderer 与扫描组件由 SparkApp.start() 负责。
         const ModuleContextBadge = (await import('./components/ModuleContextBadge.vue')).default
         Spark.register('r-module-context-badge', ModuleContextBadge)
@@ -449,27 +441,27 @@ async function startApp() {
         startupLogger.info('✅ SPARK 组件注册完成（内置 renderer + virtual:spark-components + 本地扩展）')
 
       },
-      
+
       // 挂载后钩子
       afterMount: (context) => {
         startupLogger.info('✅ 应用启动完成')
-        
+
         // 统计路由信息
         const allRoutes = context.router.getRoutes()
         const vueRoutes = allRoutes.filter(r => r.meta['type'] === 'system-page')
         const configRoutes = allRoutes.filter(r => r.meta['type'] !== 'system-page')
-        
+
         startupLogger.info('📊 路由统计', {
           总路由数: allRoutes.length,
-          Vue组件页面: vueRoutes.length, 
+          Vue组件页面: vueRoutes.length,
           配置页面: configRoutes.length
         })
-        
+
         startupLogger.info('🎉 混合渲染系统启动完成!')
         startupLogger.info('📄 Vue 组件页面:', { paths: vueRoutes.map(r => r.path) })
         startupLogger.info('⚙️ 配置页面:', { paths: configRoutes.map(r => r.path) })
       },
-      
+
       // === 错误处理 ===
       onStartError: (error) => {
         startupLogger.error('❌ 应用启动失败', error instanceof Error ? error : { error })

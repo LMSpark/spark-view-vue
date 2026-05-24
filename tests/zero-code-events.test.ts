@@ -16,6 +16,7 @@ import { flushPromises } from '@vue/test-utils'
 import { defineComponent, h, nextTick } from 'vue'
 import { SparkData } from '@spark-view/spark-data'
 import type { DataRow } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import { RendererTable } from '@spark-view/spark-component'
 import { normalizeRuleEvents, normalizeOnProps } from '../packages/spark-component/src/page/binding/bind-normalize'
 import { executeActionDescriptor } from '../packages/spark-component/src/page/actions/action-executor'
@@ -48,9 +49,6 @@ function requireHandler(value: unknown): (...args: unknown[]) => unknown {
   throw new Error('Expected normalized event handler')
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function readRecordRows(value: unknown): Array<Record<string, unknown>> {
   if (!Array.isArray(value)) return []

@@ -59,7 +59,7 @@ import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDialogProps } from './RendererDialog.props'
 import { useContainerGrid } from '../../runtime/container-layout'
 import type { RendererDialogApi } from './types'
-import { createRendererDialogZeroCode } from './zero-code'
+import { createVisibilityContainerZeroCode } from '../../support/visibility-container-zero-code'
 import { useUnifiedValueBridge } from '../state'
 
 const props = withDefaults(defineProps<RDialogProps>(), {
@@ -128,20 +128,20 @@ function hasExplicitModelValue(): boolean {
 // ── r-dialog 包装 API ────────────────────────────────────────────────────
 
 const {
-  dialogApi,
+  api: dialogApi,
   handleModelUpdate,
   handleOpen,
   handleClose,
   handleOpened,
   handleClosed,
 }: {
-  dialogApi: RendererDialogApi
+  api: RendererDialogApi
   handleModelUpdate: (value: boolean) => void
   handleOpen: () => void
   handleClose: () => void
   handleOpened: () => void
   handleClosed: () => void
-} = createRendererDialogZeroCode({
+} = createVisibilityContainerZeroCode({
   visibleValue,
   commitVisibleValue,
   onOpen: props.onOpen,

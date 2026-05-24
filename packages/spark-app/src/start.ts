@@ -18,7 +18,7 @@ import { setPageCacheHandle } from './navigation/page-cache-access'
 import type { AppNavRoot } from './navigation/nav-model'
 import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
 import { toError } from '@spark-view/spark-utils'
-import { readNumberProperty, readProperty } from './internal/guards'
+import { readNumberProperty, readProperty } from '@spark-view/spark-utils/internal'
 
 const startLogger = createLogger('start')
 
@@ -126,22 +126,22 @@ export type PageConfigOptions = {
 export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
   /** 根组件 */
     rootComponent: Component
-  
+
     /** 路由模式（默认 'history'） */
     routerMode?: 'history' | 'hash'
-  
+
     /** 挂载点（默认 '#app'） */
     mountTarget?: string
-  
+
     /** SPARK 组件系统配置 */
     spark?: SparkOptions
-  
+
     /** 页面配置系统配置 */
     pageConfig?: PageConfigOptions
-  
+
     /** UI 插件列表 */
     plugins?: Plugin[]
-  
+
     /**
      * CSS 主题配置
      *
@@ -150,10 +150,10 @@ export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
      * - `false` / 不传 — 不启用主题服务
      */
     theme?: boolean | ThemeServiceOptions
-  
+
     /** 启动前钩子 */
     onBeforeStart?: () => void | Promise<void>
-  
+
     /** 启动失败钩子（如果提供，将完全接管错误处理） */
     onStartError?: (error: Error) => void | Promise<void>}
 

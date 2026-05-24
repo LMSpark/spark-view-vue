@@ -21,6 +21,7 @@ import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwn
 const {
   createSparkCapabilityConsumer,
   createSparkCapabilityContext,
+  isRecord,
   sparkFindNearestProvider,
   sparkFindNearestProviderByKeys,
   sparkProvide,
@@ -31,10 +32,6 @@ type CapabilityKey<T> = SparkUtils.CapabilityKey<T>
 type CapabilityContext = SparkUtils.CapabilityContext
 type LoggerApi = SparkUtils.LoggerApi
 type SparkCapabilityConsumer = SparkUtils.SparkCapabilityConsumer
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
 
 function toSparkRuntimeOwner(instance: ReturnType<typeof getCurrentInstance>): SparkRuntimeOwner | null {
   if (instance === null) return null

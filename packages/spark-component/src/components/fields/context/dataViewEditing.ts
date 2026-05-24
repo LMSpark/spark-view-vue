@@ -1,4 +1,5 @@
 import type { DataRow } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 
 export type DataViewEditingEventName =
   | 'editingFieldChanged'
@@ -18,10 +19,6 @@ export type DataViewEditingSource = {
   getEditingRow(id: string | number): DataRow | null
   updateEditingValue(id: string | number, field: string, value: unknown): DataRow
   events?: DataViewEditingEvents}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object'
-}
 
 export function isDataViewEditingSource(value: unknown): value is DataViewEditingSource {
   if (!isRecord(value)) return false

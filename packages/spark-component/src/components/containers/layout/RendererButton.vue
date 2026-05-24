@@ -51,6 +51,7 @@ import { resolveButtonStyle } from '../../../page/actions/index'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
 import type { DataView, DataRow } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import { useActionButtonRuntime } from './useActionButtonRuntime'
 
 type ClickHandler = {
@@ -63,10 +64,6 @@ const props = withDefaults(defineProps<RButtonProps>(), {
   autoInsertSpace: false,
   dark: false,
 })
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isClickHandler(value: unknown): value is ClickHandler {
   return typeof value === 'function'

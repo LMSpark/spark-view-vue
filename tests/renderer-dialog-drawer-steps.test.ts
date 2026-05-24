@@ -3,15 +3,12 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, ref } from 'vue'
 import { RendererDialog, RendererDrawer, RendererSteps, Spark, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode, SparkNodeChildren } from '@spark-view/spark-component'
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability, isRecord } from '@spark-view/spark-utils'
 import RendererStepItem from '../packages/spark-component/src/components/containers/layout/RendererStepItem.vue'
 import RendererToolbar from '../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
 import { createRendererDialogZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDialog/zero-code'
 import { createRendererDrawerZeroCode } from '../packages/spark-component/src/components/containers/layout/RendererDrawer/zero-code'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isSparkNode(value: unknown): value is SparkNode {
   return isRecord(value) && typeof Reflect.get(value, 'type') === 'string'

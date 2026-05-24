@@ -146,6 +146,7 @@ import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
 import { clearAllPageCache, refreshRoutes } from '@spark-view/spark-app'
+import { isRecord } from '@spark-view/spark-utils'
 import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────
@@ -163,10 +164,6 @@ type FeCacheRow = {
   lastAccessStr: string}
 
 const feEntries = ref<FeCacheRow[]>([])
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 const feTotalSizeKB = computed(() => {
   const total = feEntries.value.reduce((sum, e) => sum + e.sizeKB, 0)

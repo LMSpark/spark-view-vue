@@ -12,8 +12,8 @@
  * @spark-view/spark-page-config/runtime 为 SSOT。
  */
 
-import { defineCapability } from '@spark-view/spark-utils'
-import { DataView, type DataRow, type DataSetContract } from '@spark-view/spark-data'
+import { defineCapability, isCallable, isRecord } from '@spark-view/spark-utils'
+import { DataView, isDataRow, type DataRow, type DataSetContract } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
 } from '@spark-view/spark-page-config/navigation'
@@ -39,19 +39,11 @@ export type {
   PageServiceCapability,
 } from '@spark-view/spark-page-config/runtime'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null
-}
-
-function isCallable(value: unknown): value is (...args: never[]) => unknown {
-  return typeof value === 'function'
-}
-
 function hasCallable(record: Record<string, unknown>, key: string): boolean {
   return isCallable(record[key])
 }
 
-// ── 主题类型（spark-component 层自有定义，spark-app 用自己本地的副本） ──────
+// ── 主题类型（spark-component 为 SSOT；spark-app 通过 extends 扩展）──────
 
 /** 主题模式 */
 export type ThemeMode = 'light' | 'dark' | 'auto'
@@ -155,10 +147,6 @@ function isDataView(value: unknown): value is DataView {
   return value instanceof DataView
 }
 
-function isDataRow(value: unknown): value is DataRow {
-  return isRecord(value)
-}
-
 function isModuleContextCapability(value: unknown): value is ModuleContextCapability {
   if (!isRecord(value)) return false
   return hasCallable(value, 'getCurrent') && hasCallable(value, 'subscribe')
@@ -211,4 +199,3 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
 
 export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service', isPageServiceCapability)
 export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode', isNavPermissionMode)
-

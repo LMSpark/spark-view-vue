@@ -17,7 +17,7 @@ import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView } from './data-view'
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import { deepClone, Logger } from '@spark-view/spark-utils'
+import { deepClone, Logger, isRecord } from '@spark-view/spark-utils'
 
 const dsLogger = Logger('DataSet')
 import {
@@ -61,10 +61,6 @@ function normalizePageDataTableMetadata(
       ? table.tableName
       : tableName,
   }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
 function asRecord(value: unknown): Record<string, unknown> | null {

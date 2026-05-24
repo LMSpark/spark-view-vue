@@ -50,8 +50,8 @@ import { createLogger } from './logger'
 import { loadConfig } from './config'
 import { AuthService } from './auth'
 import type { AuthConfig } from './auth/types'
-import { toErrorMessage, toError, createRequest } from '@spark-view/spark-utils'
-import { isRecord, readProperty, readStringArrayProperty, readStringProperty } from './internal/guards'
+import { toErrorMessage, toError, createRequest, isRecord } from '@spark-view/spark-utils'
+import { readProperty, readStringArrayProperty, readStringProperty } from '@spark-view/spark-utils/internal'
 
 /**
  * =============================================================================
@@ -209,7 +209,7 @@ export async function bootstrap(options: BootstrapOptions): Promise<void> {
         onAuthError: auth.onAuthError,
         onTokenRefresh: auth.onTokenRefresh
       }
-      
+
       authService = new AuthService(authConfig)
 
       // 注册登录路由（如果提供了 loginComponent）

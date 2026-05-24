@@ -1,6 +1,1 @@
-export type RendererDialogApi = {
-  open(): void
-  close(): void
-  isVisible(): boolean
-  toggle(): void
-}
+export type { VisibilityContainerApi as RendererDialogApi } from '../../support/base-container-api.js'

@@ -29,8 +29,9 @@ import type { DataTable } from './data-table'
 import type { DataSet } from './dataset'
 import type { CrudService } from './crud-service'
 import type { DataValidator } from './validation'
-import { Logger, toErrorMessage, toError } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage, toError, isRecord } from '@spark-view/spark-utils'
 import { createEventEmitter } from './core/event-emitter'
+import { isDataRow } from './core/data-row-guards'
 import { assertNoSeparator } from './core/utils'
 import { CrudDelegate } from './strategies/crud-delegate'
 import { CascadeDelegate } from './strategies/cascade-delegate'
@@ -84,14 +85,6 @@ const REQUEST_SUPERSEDED_MESSAGE = 'Request superseded'
 
 const LEGACY_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$\[/
 const LEGACY_PARENT_FILTER_PLACEHOLDER_TOKEN_RE = /\\?\$parent\[/
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
-
-function isDataRow(value: unknown): value is DataRow {
-  return isRecord(value)
-}
 
 function dataRowFromRecord(record: Record<string, unknown>): DataRow {
   return { ...record }

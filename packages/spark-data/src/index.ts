@@ -21,6 +21,10 @@ export { SparkData } from './spark-data'
 export { DataSet } from './dataset'
 export { DataTable } from './data-table'
 export { DataView } from './data-view'
+export { isDataRow } from './core/data-row-guards'
+
+export type { FieldRenderState, PermissionActionContext } from './script-types'
+
 export { TreeManager } from './tree-manager'
 export { DataSetCrudTool } from './dataset-crud-tool'
 export {

@@ -10,6 +10,7 @@
 //   - 不可变变更：所有 mutation 返回新 TreeModel，不修改原模型
 // ══════════════════════════════════════════════════════════════
 
+import { isRecord } from '@spark-view/spark-utils'
 
 // ── 基础 JSON 类型 ──────────────────────────────────────────
 
@@ -24,9 +25,7 @@ export type JsonObject = {
 /** 文档顶层：对象或数组 */
 export type JsonDocument = JsonObject | JsonValue[]
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+export { isRecord }
 
 /** 将未知值安全收窄为 JsonValue；不符合时返回 null */
 function asJsonValue(value: unknown): JsonValue | null {
@@ -660,7 +659,7 @@ export function ensureUniqueObjectKey(
 }
 
 export function isJsonObject(value: unknown): value is JsonObject {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
+  return isRecord(value)
 }
 
 // ── 导出通用路径工具（供外部策略实现使用）────────────────────

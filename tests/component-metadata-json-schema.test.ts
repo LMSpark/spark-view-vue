@@ -3,6 +3,7 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import { LlmSchemaValidator, type LlmJsonSchemaObject, type LlmJsonValue } from '@spark-view/spark-ai/schema'
+import { isRecord } from '@spark-view/spark-utils'
 import { createPageDesignPayloadRegistry } from '../packages/spark-page-config/src/ai/payload-catalog-tool-catalog'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
@@ -76,9 +77,6 @@ function readJsonFile(path: string): unknown {
   return JSON.parse(readFileSync(path, 'utf-8'))
 }
 
-function isRecord(value: unknown): value is JsonRecord {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function recordEntries(value: unknown): Array<[string, unknown]> {
   return isRecord(value) ? Object.entries(value) : []

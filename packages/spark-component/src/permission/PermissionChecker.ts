@@ -12,6 +12,7 @@
 
 import type { DataRow, ModelPermission } from '@spark-view/spark-data'
 import { FieldVisibility } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 
 // ── 模型级检查 ──
@@ -123,10 +124,6 @@ function defaultMaskRule(field: string, value: unknown): string {
 }
 
 // ── 工具函数 ──
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isModelPermission(value: unknown): value is ModelPermission {
   if (!isRecord(value)) return false

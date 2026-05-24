@@ -190,7 +190,7 @@
  * @category internal
  */
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
-import { deepClone } from '@spark-view/spark-utils'
+import { deepClone, isRecord } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
@@ -239,10 +239,6 @@ type DisplayRow = TreeDisplayNode & {
     _schemaRequired: boolean
     _schemaEnumValues: string[]
     _schemaEnumLabels: Record<string, string>}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isJsonValue(value: unknown): value is JsonValue {
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) return true

@@ -4,6 +4,14 @@
  * 提供日志、HTTP 客户端、能力系统等核心工具
  */
 
+// ==================== 类型守卫 ====================
+
+export { isRecord, isObject, isCallable } from './internal/guards'
+
+// ==================== 页面脚本共享类型 ====================
+
+export type { FieldRenderConfig, ComponentInstanceSnapshot, ContextItem, ContextSnapshot } from './script-types'
+
 // ==================== 日志系统 ====================
 
 export { Logger, addLogTransport, removeLogTransport, clearLogTransports, parseLogArgs } from './logger'
@@ -47,7 +55,11 @@ export {
 } from './http/index.js'
 
 export type {
+  ApiEnvelope,
   ApiResponse,
+  ApiEnvelopeContext,
+  ApiEnvelopeError,
+  ApiEnvelopeEvent,
   CacheEntry,
   CacheExpirationTier,
   FileLoaderEventMap,

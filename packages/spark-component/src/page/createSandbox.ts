@@ -2,7 +2,7 @@
  * 脚本沙箱工具
  */
 
-import { toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
+import { toErrorMessage, createSafeProxy, isCallable, isRecord } from '@spark-view/spark-utils'
 import type { PageContext } from './context/types'
 import { pageLogger } from './services/pageLogger'
 
@@ -30,14 +30,6 @@ function extractNamesFromScript(scriptText: string): string[] {
   names.add('__init__')
 
   return Array.from(names)
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isCallable(value: unknown): value is (...args: unknown[]) => unknown {
-  return typeof value === 'function'
 }
 
 /**

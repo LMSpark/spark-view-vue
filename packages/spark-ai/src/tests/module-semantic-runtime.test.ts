@@ -11,6 +11,7 @@
 
 import { describe, expect, it } from 'vitest'
 
+import { isRecord } from '@spark-view/spark-utils'
 import {
   ModuleCheckEntry,
   ModuleKind,
@@ -854,7 +855,3 @@ describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
     expect(spy.lastHost).toEqual(host)
   })
 })
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}

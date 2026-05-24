@@ -5,7 +5,11 @@
  * 合并了动作权限相关的模型/行级判断。
  */
 
-import type { DataRow, ModelPermission } from '@spark-view/spark-data'
+import type {
+  DataRow,
+  ModelPermission,
+  PermissionActionContext as ScriptPermissionActionContext,
+} from '@spark-view/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { nodeInputProp } from '../core/types'
@@ -15,10 +19,9 @@ import type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 
 // ── 动作权限上下文 ──
 
-export type PermissionActionContext = {
-  modelPermission?: ModelPermission
-  row?: DataRow | null
-  permissionMode?: NavPermissionMode | undefined}
+export type PermissionActionContext = ScriptPermissionActionContext & {
+  permissionMode?: NavPermissionMode | undefined
+}
 
 export type PermissionActionName =
   | 'create'

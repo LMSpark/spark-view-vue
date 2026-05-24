@@ -1,12 +1,13 @@
 /**
  * 内置插件预设
- * 
+ *
  * 提供常用 UI 框架的插件加载器
  */
 
 import type { Plugin } from 'vue'
 import { getGlobalPluginRegistry } from './registry'
-import { isRecord, readProperty } from '../internal/guards'
+import { isRecord } from '@spark-view/spark-utils'
+import { readProperty } from '@spark-view/spark-utils/internal'
 
 function isVuePlugin(value: unknown): value is Plugin {
   return typeof value === 'function'
@@ -30,7 +31,7 @@ async function loadVxeTablePlugin(): Promise<{ default: Plugin }> {
 
 /**
  * 注册内置插件
- * 
+ *
  * 包括：
  * - element-plus: Vue 3 UI 组件库
  * - vxe-table: 强大的表格组件
@@ -48,7 +49,7 @@ export function registerBuiltinPlugins(): void {
         zIndex: 2000
       }
     },
-    
+
     'vxe-table': {
       name: 'VXE Table',
       module: 'vxe-table',
@@ -62,7 +63,7 @@ export function registerBuiltinPlugins(): void {
 
 /**
  * 注册所有预设插件
- * 
+ *
  * 目前等同于 registerBuiltinPlugins
  */
 export function registerAllPresetPlugins(): void {
@@ -71,7 +72,7 @@ export function registerAllPresetPlugins(): void {
 
 /**
  * 未来扩展：注册状态管理插件（需要先安装依赖）
- * 
+ *
  * @example
  * ```typescript
  * // 安装依赖后取消注释
@@ -91,7 +92,7 @@ export function registerAllPresetPlugins(): void {
 
 /**
  * 未来扩展：注册国际化插件（需要先安装依赖）
- * 
+ *
  * @example
  * ```typescript
  * // 安装依赖后取消注释

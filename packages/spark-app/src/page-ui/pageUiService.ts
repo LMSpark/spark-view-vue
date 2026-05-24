@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { createRequest } from '@spark-view/spark-utils'
+import { createRequest, isRecord } from '@spark-view/spark-utils'
 import type {
   PageBrowseFilesOptions,
   PageDialogOptions,
@@ -74,9 +74,6 @@ function mapFile(file: File): PageSelectedFile {
   }
 }
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
 
 function getErrorResponse(value: unknown): unknown {
   if (!isRecord(value)) return value

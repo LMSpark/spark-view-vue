@@ -1,5 +1,7 @@
 // 这里不再为 JS 基础类型保留导出别名，选项值直接使用原生联合类型。
 
+import { isRecord } from '@spark-view/spark-utils'
+
 export type FieldOption = {
   label: string
   value: string | number | boolean
@@ -11,10 +13,6 @@ export type NormalizeOptionFields = {
   valueField: string
   childrenField: string
   disabledField: string}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isFieldOptionValue(value: unknown): value is string | number | boolean {
   return typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean'

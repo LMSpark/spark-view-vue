@@ -6,6 +6,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
 import {
   compileRule,
@@ -21,9 +22,6 @@ import type {
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function requireRecord(value: unknown, message: string): Record<string, unknown> {
   if (isRecord(value)) return value

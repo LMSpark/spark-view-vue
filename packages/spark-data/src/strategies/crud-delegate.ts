@@ -16,6 +16,7 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
+import { isDataRow } from '../core/data-row-guards'
 import type { CrudService } from '../crud-service'
 import type {
   DataRow, CrudResult, BatchResult,
@@ -32,10 +33,6 @@ type EmitCrudLifecycleFn = {
   (event: CrudLifecycleEvent): void}
 type MutatingFn = {
   (delta: 1 | -1, error?: Error | null): void}
-
-function isDataRow(value: unknown): value is DataRow {
-  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
-}
 
 function dataRowFromPartial(row: Partial<DataRow>): DataRow {
   return { ...row }

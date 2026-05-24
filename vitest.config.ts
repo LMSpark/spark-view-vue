@@ -19,6 +19,7 @@ export default defineConfig({
       'virtual:spark-components': resolve(root, './tests/mocks/virtual-spark-components.ts'),
       // 所有包 → 源码解析（测试不应依赖构建产物）
       '@spark-view/spark-component': resolve(root, './packages/spark-component/src/index.ts'),
+      '@spark-view/spark-utils/internal': resolve(root, './packages/spark-utils/src/internal/index.ts'),
       '@spark-view/spark-utils': resolve(root, './packages/spark-utils/src/index.ts'),
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-page-config/config': resolve(root, './packages/spark-page-config/src/config/index.ts'),

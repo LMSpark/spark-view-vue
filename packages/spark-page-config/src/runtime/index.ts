@@ -25,17 +25,11 @@ export type {
 } from './page-selector-api'
 
 export type {
-  FieldRenderConfigInScript,
-  FieldRenderStateInScript,
-  ModuleContextInScript,
-  ModuleContextItemInScript,
   PageComponentAccessInScript,
-  PageComponentInstanceInScript,
   PageRoute,
   ScriptContext,
-} from './script-context-api'
+} from './script-context-types'
 
 export type {
-  PermissionActionContextInScript,
   PermissionApiInScript,
-} from './script-permission-api'
+} from './script-context-types'

@@ -20,6 +20,8 @@ export type {
 	RequestConfig,
 	Method,
 	ApiResponse,
+	ApiEnvelope,
+	ApiEnvelopeError,
 	FileLoadOptions,
 	FileLoadResult,
 	FileLoaderEventMap,
@@ -33,4 +35,6 @@ export type {
 	SSEEvent,
 	HttpClientAdapter,
 	HttpClientFactoryOptions,
+	ApiEnvelopeContext,
+	ApiEnvelopeEvent,
 } from './types'

@@ -5,7 +5,7 @@
  * 与 DataSet/DataTable 深度集成，支持权限和数据转换
  */
 
-import { HttpClientBase, createRequest, Logger, toError } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest, Logger, toError, isRecord } from '@spark-view/spark-utils'
 import type {
   RequestConfig
 } from '@spark-view/spark-utils'
@@ -60,10 +60,6 @@ type BatchExecutionOptions<T> = {
   config?: Partial<RequestConfig>
   concurrency?: number
   onProgress?: (completed: number, total: number) => void}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isHttpClient(value: unknown): value is HttpClientBase {
   return value instanceof HttpClientBase

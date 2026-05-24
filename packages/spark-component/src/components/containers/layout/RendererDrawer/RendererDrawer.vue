@@ -59,7 +59,7 @@ import { getSparkNodeChildren, nodeId } from '../../../internal'
 import type { RDrawerProps } from './RendererDrawer.props'
 import { useContainerGrid } from '../../runtime/container-layout'
 import type { RendererDrawerApi } from './types'
-import { createRendererDrawerZeroCode } from './zero-code'
+import { createVisibilityContainerZeroCode } from '../../support/visibility-container-zero-code'
 import { useUnifiedValueBridge } from '../state'
 
 const props = withDefaults(defineProps<RDrawerProps>(), {
@@ -128,20 +128,20 @@ function hasExplicitModelValue(): boolean {
 // ── r-drawer 包装 API ────────────────────────────────────────────────────
 
 const {
-  drawerApi,
+  api: drawerApi,
   handleModelUpdate,
   handleOpen,
   handleClose,
   handleOpened,
   handleClosed,
 }: {
-  drawerApi: RendererDrawerApi
+  api: RendererDrawerApi
   handleModelUpdate: (value: boolean) => void
   handleOpen: () => void
   handleClose: () => void
   handleOpened: () => void
   handleClosed: () => void
-} = createRendererDrawerZeroCode({
+} = createVisibilityContainerZeroCode({
   visibleValue,
   commitVisibleValue,
   onOpen: props.onOpen,

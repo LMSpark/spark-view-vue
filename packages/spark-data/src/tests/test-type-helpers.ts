@@ -8,9 +8,8 @@ export function rows(value: DataRow[]): DataRow[] {
   return value
 }
 
-export function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
+import { isRecord } from '@spark-view/spark-utils'
+export { isRecord }
 
 export function requireRecord(value: unknown, message: string): Record<string, unknown> {
   if (isRecord(value)) return value

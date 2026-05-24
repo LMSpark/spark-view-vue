@@ -1,5 +1,5 @@
 import { nextTick } from 'vue'
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataView, type DataRow } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import {
   createCancellableControl,
@@ -10,7 +10,6 @@ import {
   createContainerCrudContext,
   getNativeRefValue,
 } from '../zero-code-shared.js'
-import { isDataRecord } from '../data-row-utils.js'
 import type { RendererTreeApi } from './types'
 
 export type TreeNode = {
@@ -74,10 +73,6 @@ type TreeEventRunOptions = {
   node: ElTreeNode
   component: ElTreeComponent
   autoHandle?: () => void}
-
-function isDataRow(value: unknown): value is DataRow {
-  return isDataRecord(value)
-}
 
 function isNativeTreeLike(value: unknown): value is NativeTreeLike {
   if (typeof value !== 'object' || value === null) return false

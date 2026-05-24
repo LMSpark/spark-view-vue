@@ -643,6 +643,7 @@ import { ref, reactive, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { Plus, Loading, Delete, Connection, Coin, FolderOpened, Grid, Refresh } from '@element-plus/icons-vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
+import { isRecord } from '@spark-view/spark-utils'
 import { getUser } from '@/services/auth'
 import { http } from '@/services/http'
 import { parseTenantScope } from '@/services/tenant-scope'
@@ -685,10 +686,6 @@ type PhysicalObjectKey = {
   objectType: DbmsObjectType
   schemaName: string | null
   physicalName: string}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isDbmsObjectType(value: unknown): value is DbmsObjectType {
   return value === 'TABLE' || value === 'VIEW'

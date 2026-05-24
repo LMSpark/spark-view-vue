@@ -28,18 +28,11 @@
 import { isActionDescriptor, executeActionDescriptor } from '../actions'
 import type { ActionExecutionContext, ActionDescriptor, ActionExecutionOptions } from '../actions'
 import { extractActionExecutionControl } from '../actions'
+import { isCallable, isRecord } from '@spark-view/spark-utils'
 
 /** 沙箱函数调用签名 */
 type CallFunc = {
   (functionName: string, ...args: unknown[]): unknown}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
-}
-
-function isCallable(value: unknown): value is (...args: unknown[]) => unknown {
-  return typeof value === 'function'
-}
 
 // ── 单项包装 ───────────────────────────────────────────────────────────────
 

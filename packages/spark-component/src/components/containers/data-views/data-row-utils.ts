@@ -1,10 +1,9 @@
-import type { DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataRow } from '@spark-view/spark-data'
 
 const TREE_LABEL_FALLBACK_FIELDS: readonly ['label', 'name', 'title'] = ['label', 'name', 'title']
 
 export function isDataRecord(value: unknown): value is Record<string, unknown> {
-  if (value === null || value === undefined || typeof value !== 'object' || Array.isArray(value)) return false
-  return true
+  return isDataRow(value)
 }
 
 export function toDataRecord(value: unknown): Record<string, unknown> | null {

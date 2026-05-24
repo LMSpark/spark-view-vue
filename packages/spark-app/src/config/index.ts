@@ -5,8 +5,8 @@
 
 import type { AppConfig } from '../types'
 import { createLogger } from '../logger'
-import { toErrorMessage, createRequest } from '@spark-view/spark-utils'
-import { isRecord, readProperty } from '../internal/guards'
+import { toErrorMessage, createRequest, isRecord } from '@spark-view/spark-utils'
+import { readProperty } from '@spark-view/spark-utils/internal'
 
 // ── 多租户配置系统（从 loader.ts 导出） ──
 export { ConfigLoader, TenantResolver, loadAppConfig } from './loader'

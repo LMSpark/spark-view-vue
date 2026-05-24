@@ -23,6 +23,7 @@ import type {
   FilterOperator,
   FilterValueExpression,
 } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import { nodeInputProp, type SparkNode } from '../../internal.js'
 
 // ============================================================
@@ -87,10 +88,6 @@ function isEmptyFilterValue(value: unknown): boolean {
   if (typeof value === 'string') return value.trim().length === 0
   if (Array.isArray(value)) return value.length === 0
   return false
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function hasNamedColumn(columns: unknown, field: string): boolean | undefined {

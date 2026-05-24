@@ -1,8 +1,8 @@
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataView, type DataRow } from '@spark-view/spark-data'
 import type { LoggerApi } from '@spark-view/spark-utils'
 import { getSelectedRows } from '../../../../page/actions/index.js'
 import { createContainerCrudContext, getNativeRefValue } from '../zero-code-shared.js'
-import { isDataRecord, toDataRecord } from '../data-row-utils.js'
+import { toDataRecord } from '../data-row-utils.js'
 import type { RendererTableApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -21,10 +21,6 @@ type RendererTableZeroCodeOptions = {
   currentRowOriginatorId?: string
   selectedRowsOriginatorId?: string
   logger: LoggerApi}
-
-function isDataRow(value: unknown): value is DataRow {
-  return isDataRecord(value)
-}
 
 function toDataRows(value: unknown): DataRow[] {
   return Array.isArray(value) ? value.filter(isDataRow) : []

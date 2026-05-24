@@ -1,9 +1,7 @@
 import { useRoute, useRouter } from 'vue-router'
 import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
+import { isRecord } from '@spark-view/spark-utils'
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function isConfigLoader(value: unknown): value is { clearCache(key?: string): void } {
   return isRecord(value) && typeof value['clearCache'] === 'function'

@@ -35,6 +35,7 @@
     "paths": {
       "@/*": ["src/*"],
       "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],
+      "@spark-view/spark-utils/internal": ["./packages/spark-utils/src/internal/index.ts"],
       "@spark-view/spark-component": ["./packages/spark-component/src/index.ts"],
       "@spark-view/spark-data": ["./packages/spark-data/src/index.ts"],
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],

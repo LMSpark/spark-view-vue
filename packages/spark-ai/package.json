@@ -43,6 +43,7 @@
     }
   },
   "dependencies": {
+    "@spark-view/spark-utils": "workspace:*",
     "ajv": "^8.18.0"
   },
   "scripts": {

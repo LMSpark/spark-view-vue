@@ -38,7 +38,7 @@
 import { computed, shallowReactive, watch } from 'vue'
 import { DATA_ROW, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import type { DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataRow } from '@spark-view/spark-data'
 import { useContainerGrid } from '../runtime/container-layout'
 import { syncReactiveRow } from './row-mirror-sync'
 
@@ -92,10 +92,6 @@ const { sparkProvide } = useSparkComponent({
 
 const rowMirror = shallowReactive<DataRow>({})
 sparkProvide(DATA_ROW, rowMirror)
-
-function isDataRow(value: unknown): value is DataRow {
-  return value !== null && typeof value === 'object'
-}
 
 const formModel = computed<DataRow>(() =>
   isDataRow(props.model) ? props.model : rowMirror,

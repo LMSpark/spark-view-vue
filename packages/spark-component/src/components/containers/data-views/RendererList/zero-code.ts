@@ -1,6 +1,5 @@
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataView, type DataRow } from '@spark-view/spark-data'
 import { createContainerCrudContext } from '../zero-code-shared.js'
-import { isDataRecord } from '../data-row-utils.js'
 import type { RendererListApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'
 
@@ -40,8 +39,4 @@ export function createRendererListZeroCode(options: RendererListZeroCodeOptions)
     dispatch,
     listApi,
   }
-}
-
-function isDataRow(value: unknown): value is DataRow {
-  return isDataRecord(value)
 }

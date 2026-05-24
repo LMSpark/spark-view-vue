@@ -5,7 +5,7 @@
  * 页面配置、数据任务、通知、AI 调试等业务动作在各自订阅方处理。
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, isRecord } from '@spark-view/spark-utils'
 
 const logger = Logger('SSE')
 
@@ -611,9 +611,6 @@ function normalizeDebugFcErrorReportEvent(data: unknown): DebugFcErrorReportEven
 
 // Scalar readers ------------------------------------------------------------
 
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
-}
 
 function normalizeTimestamp(value: unknown): number {
   if (typeof value === 'number' && Number.isFinite(value)) return value

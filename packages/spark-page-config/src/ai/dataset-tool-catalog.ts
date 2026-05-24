@@ -16,6 +16,7 @@
  */
 
 import * as SparkAiSchema from '@spark-view/spark-ai/schema'
+import { isCallable } from '@spark-view/spark-utils'
 import type {
   LlmJsonSchema,
   LlmJsonSchemaObject,
@@ -1959,10 +1960,4 @@ function createDatasetActionFixHint(action: ModuleActionMetadata): string {
     parts.push(`关键规则: ${action.usageRules.join('；')}`)
   }
   return parts.join('；')
-}
-
-type UnknownFunction = (this: DataSetCrudTool, ...args: unknown[]) => unknown
-
-function isCallable(value: unknown): value is UnknownFunction {
-  return typeof value === 'function'
 }

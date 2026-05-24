@@ -1,4 +1,5 @@
 import type { CrudResult, DataRow } from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 
@@ -7,10 +8,6 @@ export type CancellableControl = {
 
 export function createCancellableControl(): CancellableControl {
   return { cancel: false }
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 export function isCancellableControl(value: unknown): value is CancellableControl {

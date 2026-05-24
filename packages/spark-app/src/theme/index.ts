@@ -17,16 +17,13 @@
  * ```
  */
 
+import type { ThemeCapability as ComponentThemeCapability, ThemeMode } from '@spark-view/spark-component'
 import { computed, getCurrentScope, inject, onScopeDispose, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
-export type ThemeMode = 'light' | 'dark' | 'auto'
+export type { ThemeMode }
 
-export type ThemeCapability = {
-  readonly current: 'light' | 'dark'
-  readonly mode: ThemeMode
-  setMode(mode: ThemeMode): void
+export type ThemeCapability = ComponentThemeCapability & {
   setStorageScope(scopeKey: string | null): void
-  readonly isDark: boolean
-  toggle(): void}
+}
 
 /** Vue DI 注入键（仅供 App.vue / Settings.vue 等非 SPARK 组件使用） */
 export const THEME_INJECTION_KEY: InjectionKey<ThemeCapability> = Symbol('spark-theme')

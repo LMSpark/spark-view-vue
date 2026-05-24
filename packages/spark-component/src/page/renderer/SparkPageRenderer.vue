@@ -75,7 +75,7 @@ import {
   type VNodeArrayChildren,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger, isCallable } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
@@ -150,10 +150,6 @@ function isRenderEventProp(key: string, value: unknown): boolean {
   if (key.startsWith('onVnode')) return false
   if (isCallable(value)) return true
   return Array.isArray(value) && value.some(isCallable)
-}
-
-function isCallable(value: unknown): value is (...args: unknown[]) => unknown {
-  return typeof value === 'function'
 }
 
 function wrapRenderEventHandler(
