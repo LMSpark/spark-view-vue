@@ -1,5 +1,6 @@
 export {
   PAGE_DESIGN_MODULE_ID,
+  createPageDesignBusinessKindDefinition,
   createPageDesignBusinessRegistration,
   registerAssistantBusinesses,
   registerPageDesignBusiness,

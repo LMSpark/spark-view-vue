@@ -25,16 +25,36 @@
 
 export {
   AiHostBusinessRegistration,
+} from './business/registration-types'
+
+export {
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
   AiHostBusinessTarget,
-} from './business/business-registration-api'
+} from './business/scope-types'
+
+export {
+  AiHostBusinessTask,
+  createAiHostBusinessTask,
+  projectAiHostBusinessRegistration,
+} from './business/business-task'
+
+export type {
+  AiHostBusinessRegistrationOptions,
+} from './business/registration-types'
+
+export type {
+  AiHostBusinessInputContract,
+  AiHostBusinessKindDefinition,
+  AiHostBusinessOrchestrationPlan,
+  AiHostBusinessTaskChatOptions,
+  AiHostBusinessTaskInput,
+} from './business/business-task'
 
 export type {
   AiHostBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus,
-  AiHostBusinessRegistrationOptions,
-} from './business/business-registration-api'
+} from './business/lifecycle-types'
 
 export type {
   AiHostBusinessAfterFunctionCallOptions,

@@ -132,6 +132,7 @@ export type {
   ModuleSemanticKnowledgeFunctionGuide,
   ModuleSemanticKnowledgeFunctionGuideInput,
   ModuleSemanticKnowledgeFunctionSummary,
+  ModuleSemanticKnowledgeModuleFilter,
   ModuleSemanticKnowledgeModuleSummary,
   ModuleSemanticKnowledgeSnapshot,
 } from './module-semantic/knowledge/module-semantic-knowledge'
@@ -140,10 +141,19 @@ export type {
 
 export {
   AiHostBusinessRegistration,
+} from './host/business/registration-types'
+
+export {
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
   AiHostBusinessTarget,
-} from './host/business/business-registration-api'
+} from './host/business/scope-types'
+
+export {
+  AiHostBusinessTask,
+  createAiHostBusinessTask,
+  projectAiHostBusinessRegistration,
+} from './host/business/business-task'
 
 export {
   AiHostBusinessRegistry,
@@ -191,10 +201,21 @@ export {
 } from './host/tool-loop/tool-loop-runner'
 
 export type {
+  AiHostBusinessInputContract,
+  AiHostBusinessKindDefinition,
+  AiHostBusinessOrchestrationPlan,
+  AiHostBusinessTaskChatOptions,
+  AiHostBusinessTaskInput,
+} from './host/business/business-task'
+
+export type {
+  AiHostBusinessRegistrationOptions,
+} from './host/business/registration-types'
+
+export type {
   AiHostBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus,
-  AiHostBusinessRegistrationOptions,
-} from './host/business/business-registration-api'
+} from './host/business/lifecycle-types'
 
 export type {
   AiHostBusinessAfterFunctionCallOptions,

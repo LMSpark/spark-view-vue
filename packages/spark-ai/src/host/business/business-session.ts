@@ -13,13 +13,14 @@
  *     └─ 持有 AiHostMessageSendState（选中业务缓存）
  *
  * 【数据流】
- *   1. new AiHostBusinessSession(options, target)
- *   2. session.start()  → startRegistrationSession() → 创建/接入 sessionStore 记录 + 生成工具规约
- *   3. session.send(req) → senderCore.send()
+ *   1. createAiHostBusinessTask(registry, kindID, input) → inputContract 校验并生成 target/request
+ *   2. new AiHostBusinessSession(options, task.target)
+ *   3. session.start()  → startRegistrationSession() → 创建/接入 sessionStore 记录 + 生成工具规约
+ *   4. session.send(task.toChatRequest()) → senderCore.send()
  *      ├─ resolveSelectedBusiness() → 查找/复用 registration
  *      ├─ latestUserInput() → 提取用户消息 → appendMessage('user')
  *      └─ toolLoopRunner.runToolLoop() → AI 推理 → 工具调用 → 生命周期判断
- *   4. 会话结束 → stopSession() → onEndBusinessInstance() → releaseModuleInstance()
+ *   5. 会话结束 → stopSession() → onEndBusinessInstance() → releaseModuleInstance()
  *
  * 【独立函数】
  *   createAiHostBusinessSession — 工厂函数
@@ -198,9 +199,10 @@ class AiHostMessageSender {
  *
  * 用法：
  * ```ts
- * const session = createAiHostBusinessSession(options, target)
+ * const task = createAiHostBusinessTask(registry, 'pageDesign', { pageId, userRequirement })
+ * const session = createAiHostBusinessSession(options, task.target)
  * await session.start()
- * await session.send({ historyMsgs: [...] })
+ * await session.send(task.toChatRequest())
  * ```
  *
  * 属性：

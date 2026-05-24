@@ -17,6 +17,7 @@
 
 import type { ModuleSemanticRuntime } from '../../module-semantic/runtime/module-semantic-runtime'
 import type { AiHostSessionStore } from '../session/session-types'
+import type { AiHostBusinessInputContract } from './business-task'
 import type {
   AiHostBusinessAfterFunctionCallOptions,
   AiHostBusinessLifecycleDirective,
@@ -39,6 +40,8 @@ export type AiHostBusinessRegistrationOptions = Readonly<{
   description: string
   /** 语义模块运行时——承载 moduleKinds、childKinds 等能力树 */
   runtime: ModuleSemanticRuntime
+  /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */
+  inputContract?: AiHostBusinessInputContract | undefined
   /** 可选的自定义会话存储；不传则使用 DefaultAiHostSessionStore */
   sessionStore?: AiHostSessionStore | undefined
   /**
@@ -90,6 +93,8 @@ export class AiHostBusinessRegistration {
 
   /** 模块语义运行时——工具调用时从中查找 kind、执行 action */
   public readonly runtime: ModuleSemanticRuntime
+  /** kindID 的注册化输入契约；由 createAiHostBusinessTask 使用 */
+  public readonly inputContract?: AiHostBusinessInputContract | undefined
 
   /* ── 持久化 ───────────────────────────────────────────── */
 
@@ -122,6 +127,7 @@ export class AiHostBusinessRegistration {
     this.description = options.description
     this.runtime = options.runtime
     // 可选字段仅在传入时才挂载——保持 undefined 语义一致
+    if (options.inputContract !== undefined) this.inputContract = options.inputContract
     if (options.sessionStore !== undefined) this.sessionStore = options.sessionStore
     if (options.systemPrompt !== undefined) this.systemPrompt = options.systemPrompt
     if (options.afterFunctionCall !== undefined) this.afterFunctionCall = options.afterFunctionCall

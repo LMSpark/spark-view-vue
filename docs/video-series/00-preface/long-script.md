@@ -33,4 +33,4 @@ SPARK_VIEW 的答案不是某一个组件，也不是某个可视化编辑器。
 - `docs/blog-series/README.md`
 - `SPARK_VIEW_16_BLOG_SERIES_PLAN.md`
 - `docs/blog-series/01-spark-view-not-json-form-generator.md`
-- `docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md`
+- `docs/ai/spark-ai-complete-guide.md`

@@ -11,7 +11,7 @@ import { NavigationEditSession, buildNavRoot } from '@spark-view/spark-page-conf
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
 import { buildTreeModel, exportJsonDocument } from '@spark-view/spark-page-config/json-document'
 import { PAGE_DESIGN_100_STEP_FLOW, createPageDocuments } from '@spark-view/spark-page-config/design'
-import { LEAVE_REQUEST_KIND, PAGE_DESIGN_MODULE_ID } from '@spark-view/spark-page-config/ai'
+import { LEAVE_REQUEST_KIND, PAGE_DESIGN_MODULE_ID, createPageDesignBusinessKindDefinition } from '@spark-view/spark-page-config/ai'
 import componentCatalog from '@spark-view/spark-page-config/ai/payloads/component-catalog.json'
 import { PageConfigLoader as RootPageConfigLoader } from '@spark-view/spark-page-config'
 
@@ -43,6 +43,7 @@ describe('spark-page-config public subpath imports', () => {
     expect(PAGE_DESIGN_100_STEP_FLOW.length).toBeGreaterThan(0)
 
     expect(PAGE_DESIGN_MODULE_ID).toBe('pageDesign')
+    expect(createPageDesignBusinessKindDefinition).toBeTypeOf('function')
     expect(LEAVE_REQUEST_KIND).toBe('manual-leave')
     expect(typeof componentCatalog).toBe('object')
   })

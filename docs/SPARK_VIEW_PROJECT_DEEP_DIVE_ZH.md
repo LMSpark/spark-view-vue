@@ -535,7 +535,7 @@ flowchart TD
 
 ## 12. SPARK AI Platform 与 `spark-ai` Runtime
 
-SPARK AI Platform 是产品与架构总称，覆盖 App AI Center、`spark-ai` Runtime、AI Backend 和业务能力注册。`spark-ai` 本身仍是克制的运行时内核：AI 不直接拥有整个仓库的修改权，而是在协议、SSE、业务注册契约、函数调用和知识投影定义的范围内工作。平台命名和边界以 [SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md](./ai/SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md) 为 SSOT。
+SPARK AI Platform 是产品与架构总称，覆盖 App AI Center、`spark-ai` Runtime、AI Backend 和业务能力注册。`spark-ai` 本身仍是克制的运行时内核：AI 不直接拥有整个仓库的修改权，而是在协议、SSE、业务注册契约、函数调用和知识投影定义的范围内工作。平台命名、输入注册和运行边界以 [spark-ai-complete-guide.md](./ai/spark-ai-complete-guide.md) 为 SSOT。
 
 ### 12.1 AI runtime
 
@@ -965,7 +965,7 @@ flowchart LR
 10. [packages/spark-data/src/core/data-view-key.ts](../packages/spark-data/src/core/data-view-key.ts)：理解组件到 DataView 的绑定协议。
 11. [packages/spark-component/src/components/containers/data-views/view-data-source.ts](../packages/spark-component/src/components/containers/data-views/view-data-source.ts)：理解容器如何通过 `dataViewKey` 解析 DataView。
 12. [packages/spark-component/src/components/containers/data-views/view-runtime-state.ts](../packages/spark-component/src/components/containers/data-views/view-runtime-state.ts)：理解 DataView 领域事件如何映射到 UI 状态。
-13. [docs/ai/SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md](ai/SPARK_AI_PLATFORM_ARCHITECTURE_BOUNDARIES.md)：理解 AI Platform、AI Center、Runtime、AI Backend 和业务注册的 SSOT。
+13. [docs/ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：理解 AI Platform、AI Center、Runtime、AI Backend、业务注册和输入契约的 SSOT。
 14. [packages/spark-ai/src/core/internal/runtime/ai-runtime.ts](../packages/spark-ai/src/core/internal/runtime/ai-runtime.ts)：理解前端 AI Runtime 组合根和函数调用边界。
 15. [packages/spark-ai/src/core/host/tool-loop.ts](../packages/spark-ai/src/core/host/tool-loop.ts)：理解 LLM tool call 如何由 `spark-ai` 执行契约并 append 回后端。
 16. [packages/spark-app/src/ai/app-ai-host.ts](../packages/spark-app/src/ai/app-ai-host.ts)：理解 App AI Center host 只负责 SSE 服务启动和 AI 包传输的边界。
@@ -975,7 +975,7 @@ flowchart LR
 20. [spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java](../spark-ai-server/src/main/java/com/spark/ai/storage/PageConfigStorage.java)：理解页面配置存储 SPI。
 21. [spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java](../spark-ai-server/src/main/java/com/spark/ai/service/AiSessionService.java)：理解后端 LLM 会话持久化和 SSE envelope。
 22. [spark-ai-server/README.md](../spark-ai-server/README.md)：理解后端能力和 API。
-23. [docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)：理解 SPARK AI Platform 使用边界与禁用入口。
+23. [docs/ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：理解 SPARK AI Platform 使用边界与禁用入口。
 
 ## 21. 结语
 

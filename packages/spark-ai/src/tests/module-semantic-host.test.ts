@@ -3,12 +3,15 @@
  */
 
 import { describe, expect, it } from 'vitest'
+import { readProperty } from '@spark-view/spark-utils/internal'
 
 import {
   AiHostBusinessTarget,
   DefaultAiHostSessionStore,
   AiHostToolLoopRunner,
+  createAiHostBusinessScope,
   createAiHostBusinessSession,
+  createAiHostBusinessTask,
   startRegistrationSession,
   type AiHostBusinessRegistration,
   type AiHostTransport,
@@ -23,15 +26,10 @@ import {
   type ModuleInstanceRef,
   type ModulePathContext,
 } from '../module-semantic'
-import type { LlmJsonValue } from '../schema'
+import { paramsSchema, stringSchema, type LlmJsonValue } from '../schema'
 
 type ModuleKindSpy = {
   lastHost?: ModulePathContext['host'] | undefined
-}
-
-function readObjectProperty(value: unknown, key: string): unknown {
-  if (typeof value !== 'object' || value === null) return undefined
-  return Object.getOwnPropertyDescriptor(value, key)?.value
 }
 
 function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
@@ -128,13 +126,80 @@ function createRegistration(): { registration: AiHostBusinessRegistration; spy: 
   }
 }
 
+function createTaskRegistration(): AiHostBusinessRegistration {
+  const { registration } = createRegistration()
+  return {
+    ...registration,
+    inputContract: {
+      paramsSchema: paramsSchema({
+        pageId: stringSchema('页面 ID', { minLength: 1 }),
+        userRequirement: stringSchema('用户需求', { minLength: 1 }),
+      }, ['pageId', 'userRequirement']),
+      identityField: 'pageId',
+      normalize: (input) => {
+        const pageId = input['pageId']
+        const userRequirement = input['userRequirement']
+        return {
+          ...input,
+          pageId: typeof pageId === 'string' ? pageId.trim() : '',
+          userRequirement: typeof userRequirement === 'string' ? userRequirement.trim() : '',
+        }
+      },
+      toScope: (input) => createAiHostBusinessScope('pageDesign', String(input['pageId'])),
+      toOrchestration: (input) => ({
+        userMessage: String(input['userRequirement']),
+        systemPrompt: `registered task for ${String(input['pageId'])}`,
+      }),
+    },
+  }
+}
+
 describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
-  it('startRegistrationSession 返回 6 个协议工具', async () => {
+  it('createAiHostBusinessTask 通过注册化输入契约创建任务并映射实例身份', () => {
+    const registration = createTaskRegistration()
+    const task = createAiHostBusinessTask({ get: () => registration }, 'pageDesign', {
+      pageId: ' page-1 ',
+      userRequirement: '  设计一个客户页面  ',
+    })
+    const request = task.toChatRequest({ systemPrompt: 'extra task prompt' })
+
+    expect(task.target).toBeInstanceOf(AiHostBusinessTarget)
+    expect(task.target.businessInstanceId).toBe('page-1')
+    expect(task.scope).toMatchObject({ businessRegistrationId: 'pageDesign', businessInstanceId: 'page-1' })
+    expect(task.normalizedInput).toMatchObject({ pageId: 'page-1', userRequirement: '设计一个客户页面' })
+    expect(request.historyMsgs).toEqual([{ role: 'user', content: '设计一个客户页面' }])
+    expect(request.systemPrompt).toContain('AI Host: registered business task')
+    expect(request.systemPrompt).toContain('kindID: pageDesign')
+    expect(request.systemPrompt).toContain('businessInstanceId: page-1')
+    expect(request.systemPrompt).toContain('"pageId":"page-1"')
+    expect(request.systemPrompt).toContain('"userRequirement":"设计一个客户页面"')
+    expect(request.systemPrompt).toContain('registered task for page-1')
+    expect(request.systemPrompt).toContain('extra task prompt')
+  })
+
+  it('createAiHostBusinessTask 对未注册 kindID 和非法输入 fail-fast', () => {
+    const registration = createTaskRegistration()
+
+    expect(() => createAiHostBusinessTask({ get: () => undefined }, 'missingKind', {}))
+      .toThrow('AI host business kindID is not registered: missingKind')
+    expect(() => createAiHostBusinessTask({ get: () => registration }, 'pageDesign', { pageId: 'page-1' }))
+      .toThrow('failed schema validation')
+    expect(() => createAiHostBusinessTask({ get: () => ({ ...registration, inputContract: undefined }) }, 'pageDesign', {
+      pageId: 'page-1',
+      userRequirement: 'x',
+    })).toThrow('missing inputContract')
+  })
+
+  it('startRegistrationSession 返回固定知识工具和执行协议工具', async () => {
     const { registration } = createRegistration()
     const started = await startRegistrationSession(registration, CONTEXT)
     expect(started.status).toBe('Started')
     expect(started.moduleId).toBe('pageDesign')
     expect(started.tools.map((tool) => tool.function.name)).toEqual([
+      PROTOCOL_TOOL_NAMES.queryModules,
+      PROTOCOL_TOOL_NAMES.queryFunctions,
+      PROTOCOL_TOOL_NAMES.guideFunction,
+      PROTOCOL_TOOL_NAMES.guideHumanQuestion,
       PROTOCOL_TOOL_NAMES.getAttribute,
       PROTOCOL_TOOL_NAMES.setAttribute,
       PROTOCOL_TOOL_NAMES.invokeAction,
@@ -254,7 +319,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       typeof message === 'object' && message !== null && 'role' in message && message.role === 'tool'
     )
     expect(toolMessage).toMatchObject({ role: 'tool', tool_call_id: 'call-node-empty' })
-    const toolPayload = JSON.parse(String(readObjectProperty(toolMessage, 'content') ?? '{}'))
+    const toolPayload = JSON.parse(String(readProperty(toolMessage, 'content') ?? '{}'))
     expect(toolPayload).toMatchObject({
       ok: false,
       code: 'NODE_NOT_FOUND',
@@ -373,11 +438,11 @@ describe('ModuleSemanticToolCodec', () => {
     expect(codec.actionOf('unknown-tool')).toBeNull()
   })
 
-  it('tools 暴露 6 个 transport spec,parameters.type=object', () => {
+  it('tools 暴露固定 transport spec,parameters.type=object', () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
-    expect(codec.tools).toHaveLength(6)
+    expect(codec.tools).toHaveLength(10)
     for (const tool of codec.tools) {
       expect(tool.type).toBe('function')
       expect(tool.function.parameters['type']).toBe('object')

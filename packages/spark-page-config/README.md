@@ -79,5 +79,5 @@ pnpm --filter @spark-view/spark-page-config run test:run
 - [../../docs/guides/CONFIG_SYSTEM.md](../../docs/guides/CONFIG_SYSTEM.md)
 - [../../docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md](../../docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
 - [../../docs/architecture/DATAFLOW_ARCHITECTURE.md](../../docs/architecture/DATAFLOW_ARCHITECTURE.md)
-- [../../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](../../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)
+- [../../docs/ai/spark-ai-complete-guide.md](../../docs/ai/spark-ai-complete-guide.md)
 

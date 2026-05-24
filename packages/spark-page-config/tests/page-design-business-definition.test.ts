@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest'
 import {
   AiHostBusinessRegistry,
   AiHostToolLoopRunner,
+  createAiHostBusinessTask,
   startRegistrationSession,
   toAiHostRuntimeScope,
   type AiHostBusinessRuntimeContext,
@@ -10,6 +11,7 @@ import {
 } from '@spark-view/spark-ai/host'
 import {
   PAGE_DESIGN_MODULE_ID,
+  createPageDesignBusinessKindDefinition,
   createPageDesignBusinessRegistration,
   registerPageDesignBusiness,
 } from '@spark-view/spark-page-config/ai'
@@ -147,6 +149,10 @@ describe('pageDesign host business registration', () => {
     expect(registration.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
     expect(registration.description).toBe('单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。')
     expect(started.tools.map((tool) => tool.function.name)).toEqual([
+      'queryModules',
+      'queryFunctions',
+      'guideFunction',
+      'guideHumanQuestion',
       'getAttribute',
       'setAttribute',
       'invokeAction',
@@ -222,7 +228,49 @@ describe('pageDesign host business registration', () => {
     const registration = registry.get(PAGE_DESIGN_MODULE_ID)
     expect(registration?.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
     expect(registration?.runtime.describeKind(PAGE_DESIGN_MODULE_ID).ok).toBe(true)
+    expect(registration?.inputContract?.identityField).toBe('pageId')
     expect(registry.list()).toHaveLength(1)
+  })
+
+  it('creates pageDesign task through registered inputContract instead of a bare target', () => {
+    const { host } = createHost()
+    const definition = createPageDesignBusinessKindDefinition({ getEditToolHost: () => host })
+    const registry = new AiHostBusinessRegistry()
+    registry.register(createPageDesignBusinessRegistration({ getEditToolHost: () => host }))
+
+    expect(definition.kindID).toBe(PAGE_DESIGN_MODULE_ID)
+    expect(definition.inputContract.identityField).toBe('pageId')
+
+    const task = createAiHostBusinessTask(registry, PAGE_DESIGN_MODULE_ID, {
+      pageId: ' page-designer ',
+      userRequirement: '  实现请假申请页面  ',
+    })
+    const request = task.toChatRequest()
+
+    expect(task.target.businessRegistrationId).toBe(PAGE_DESIGN_MODULE_ID)
+    expect(task.target.businessInstanceId).toBe('page-designer')
+    expect(task.normalizedInput).toMatchObject({
+      pageId: 'page-designer',
+      userRequirement: '实现请假申请页面',
+    })
+    expect(request.historyMsgs).toEqual([{ role: 'user', content: '实现请假申请页面' }])
+    expect(request.systemPrompt).toContain('AI Host: registered business task')
+    expect(request.systemPrompt).toContain('kindID: pageDesign')
+    expect(request.systemPrompt).toContain('"pageId":"page-designer"')
+    expect(request.systemPrompt).toContain('inputContract 已校验输入')
+    expect(request.systemPrompt).toContain('describeProgress')
+    expect(request.systemPrompt).toContain('describeDesignFlow')
+    expect(request.systemPrompt).toContain('不要主动调用 bootstrap')
+  })
+
+  it('rejects pageDesign task inputs that do not satisfy the registered schema', () => {
+    const { host } = createHost()
+    const registry = new AiHostBusinessRegistry()
+    registry.register(createPageDesignBusinessRegistration({ getEditToolHost: () => host }))
+
+    expect(() => createAiHostBusinessTask(registry, PAGE_DESIGN_MODULE_ID, {
+      pageId: 'page-designer',
+    })).toThrow('failed schema validation')
   })
 
   it('executes lifecycle/text-model/payload-catalog/node-tree/dataset through protocol tools', async () => {

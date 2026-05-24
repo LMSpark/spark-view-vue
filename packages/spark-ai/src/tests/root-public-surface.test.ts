@@ -9,6 +9,8 @@ describe('@spark-view/spark-ai root public surface', () => {
     expect(rootModule.ModuleSemanticRuntime).toBeTypeOf('function')
     expect(rootModule.ModuleParameterPayloadRegistry).toBeTypeOf('function')
     expect(rootModule.AiHostBusinessSession).toBeTypeOf('function')
+    expect(rootModule.AiHostBusinessTask).toBeTypeOf('function')
+    expect(rootModule.createAiHostBusinessTask).toBeTypeOf('function')
     expect(rootModule.AiHostFetchTransport).toBeTypeOf('function')
   })
 

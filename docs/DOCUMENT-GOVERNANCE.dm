@@ -190,7 +190,7 @@ section MarkdownFilenameRules {
   rule MD04_no_new_upper_snake {
     applies_to: "新增 .md"
     rule:
-      "不再新增 AI_BUSINESS_FLOW.md、SPARK_PAGE_CONFIG_ARCHITECTURE.md 这类 UPPER_SNAKE .md；历史文件通过 allowlist 兼容。"
+      "不再新增 UPPER_SNAKE .md；必须优先使用 kebab-case，并把同主题文档收敛到现有 SSOT。"
   }
 
   rule MD05_no_new_dm_markdown {
@@ -553,7 +553,7 @@ section NamingExamples {
   ]
 
   markdown_bad_for_new_files: [
-    "docs/ai/AI_BUSINESS_FLOW.md",
+    "docs/ai/SPARK_AI_NEW_TOPIC.md",
     "docs/architecture/DM-SINGLE-CATALOG-CLOSED-LOOP-CHECK-2026-04-12.md",
     "docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md",
     "packages/spark-utils/REQUEST_GUIDE.md"

@@ -246,4 +246,4 @@ ORDER BY root_id, parent_id NULLS FIRST, relation, index NULLS FIRST, name NULLS
 
 ## 相关文档
 
-- [../../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md](../../docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md)
+- [../../docs/ai/spark-ai-complete-guide.md](../../docs/ai/spark-ai-complete-guide.md)
