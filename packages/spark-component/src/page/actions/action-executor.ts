@@ -113,12 +113,15 @@ function resolveNavigateRow(
   return null
 }
 
-function executeNavigate(
+type NavigateExecutionInput = Readonly<{
   desc: NavigateAction,
   ctx: ActionExecutionContext,
   scope: ActionExecutionScope | undefined,
-  eventArgs?: unknown[],
-): void {
+  eventArgs?: unknown[] | undefined
+}>
+
+function executeNavigate(input: NavigateExecutionInput): void {
+  const { desc, ctx, scope, eventArgs } = input
   const router = ctx.getRouter()
   if (!router) return
 
@@ -308,7 +311,7 @@ async function dispatchAction(input: DispatchActionInput): Promise<void> {
       await executeAlert(descriptor, ctx)
       return
     case 'navigate':
-      executeNavigate(descriptor, ctx, scope, eventArgs)
+      executeNavigate({ desc: descriptor, ctx, scope, eventArgs })
       return
     case 'open':
       executeOpen(descriptor)
@@ -367,4 +370,3 @@ export function extractActionExecutionControl(
   if (isCancellableControl(last)) return last
   return undefined
 }
-

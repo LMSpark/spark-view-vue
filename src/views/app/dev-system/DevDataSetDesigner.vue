@@ -635,7 +635,12 @@ function projectDesignerFromMetadata(
   metadata: DataSetMetadata,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
-  tableUiState.value = reconcileDesignerTableUiState(metadata, tables.value, generateId, layoutForNewTable)
+  tableUiState.value = reconcileDesignerTableUiState({
+    metadata,
+    currentTables: tables.value,
+    createId: generateId,
+    layoutForNewTable,
+  })
 }
 
 function snapshotRelations(): DesignerRelationProjection[] {
@@ -748,23 +753,29 @@ function updateTableWithFeedback(
   }, failureTitle)
 }
 
-function updateColumnWithFeedback(
-  table: DesignerTableProjection,
-  columnName: string,
-  updates: Partial<DataColumn>,
-  failureTitle: string,
-): void {
+type ColumnUpdateFeedbackInput = Readonly<{
+  table: DesignerTableProjection
+  columnName: string
+  updates: Partial<DataColumn>
+  failureTitle: string
+}>
+
+function updateColumnWithFeedback(input: ColumnUpdateFeedbackInput): void {
+  const { table, columnName, updates, failureTitle } = input
   applyHistoryMutationWithFeedback((tool) => {
     tool.updateColumn({ tableName: table.tableName, columnName, updates })
   }, failureTitle)
 }
 
-function renameColumnWithFeedback(
-  table: DesignerTableProjection,
-  columnName: string,
-  newColumnName: string,
-  failureTitle: string,
-): void {
+type ColumnRenameFeedbackInput = Readonly<{
+  table: DesignerTableProjection
+  columnName: string
+  newColumnName: string
+  failureTitle: string
+}>
+
+function renameColumnWithFeedback(input: ColumnRenameFeedbackInput): void {
+  const { table, columnName, newColumnName, failureTitle } = input
   applyHistoryMutationWithFeedback((tool) => {
     tool.renameColumn({ tableName: table.tableName, columnName, newColumnName })
   }, failureTitle)
@@ -806,13 +817,18 @@ function handleTableApiInputChange(table: DesignerTableProjection, event: Event)
 }
 
 function handleColumnFieldChange(table: DesignerTableProjection, column: DesignerColumn, updates: Partial<DataColumn>): void {
-  updateColumnWithFeedback(table, column.name, updates, '字段更新失败')
+  updateColumnWithFeedback({ table, columnName: column.name, updates, failureTitle: '字段更新失败' })
 }
 
 function handleColumnNameInputChange(table: DesignerTableProjection, column: DesignerColumn, event: Event): void {
   const nextName = readInputValue(event).trim()
   if (!nextName || nextName === column.name) return
-  renameColumnWithFeedback(table, column.name, nextName, '字段名更新失败')
+  renameColumnWithFeedback({
+    table,
+    columnName: column.name,
+    newColumnName: nextName,
+    failureTitle: '字段名更新失败',
+  })
 }
 
 function handleColumnLabelInputChange(table: DesignerTableProjection, column: DesignerColumn, event: Event): void {

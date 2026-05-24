@@ -1378,12 +1378,18 @@ function buildSparkNode(params: {
 /**
  * 基于旧节点复制出一个新节点，并允许对部分字段做定点替换。
  */
-function copySparkNode(
-  node: SparkNode,
-  nextType: string | KeepValue = KEEP,
-  nextProps: Record<string, unknown> | undefined | KeepValue = KEEP,
-  nextChildren: SparkNodeChildren | undefined | KeepValue = KEEP,
-): SparkNode {
+type CopySparkNodeInput = Readonly<{
+  node: SparkNode
+  nextType?: string | KeepValue | undefined
+  nextProps?: Record<string, unknown> | undefined | KeepValue
+  nextChildren?: SparkNodeChildren | undefined | KeepValue
+}>
+
+function copySparkNode(input: CopySparkNodeInput): SparkNode {
+  const { node } = input
+  const nextType = Object.prototype.hasOwnProperty.call(input, 'nextType') ? input.nextType ?? KEEP : KEEP
+  const nextProps = Object.prototype.hasOwnProperty.call(input, 'nextProps') ? input.nextProps : KEEP
+  const nextChildren = Object.prototype.hasOwnProperty.call(input, 'nextChildren') ? input.nextChildren : KEEP
   const type = nextType === KEEP ? node.type : nextType
   const props = nextProps === KEEP ? node.props : nextProps
   const children = nextChildren === KEEP ? node.children : nextChildren
@@ -1616,21 +1622,34 @@ function parseSparkNodeJsonInput(json: SparkNodeTreeJsonInput | SparkNodeTreeRul
  */
 function normalizeSparkNodeWithComponentIds(root: SparkNode, fillMissingComponentId: boolean): SparkNode {
   const usedIds = new Set<string>()
-  return normalizeSparkNodeWithComponentIdsRecursive(root, fillMissingComponentId, usedIds, [0])
+  return normalizeSparkNodeWithComponentIdsRecursive({
+    node: root,
+    fillMissingComponentId,
+    usedIds,
+    path: [0],
+  })
 }
 
-function normalizeSparkNodeWithComponentIdsRecursive(
-  node: SparkNode,
-  fillMissingComponentId: boolean,
-  usedIds: Set<string>,
-  path: number[],
-): SparkNode {
+type NormalizeSparkNodeRecursiveInput = Readonly<{
+  node: SparkNode
+  fillMissingComponentId: boolean
+  usedIds: Set<string>
+  path: number[]
+}>
+
+function normalizeSparkNodeWithComponentIdsRecursive(input: NormalizeSparkNodeRecursiveInput): SparkNode {
+  const { node, fillMissingComponentId, usedIds, path } = input
   const normalized = normalizeSparkNode(node)
 
   const sourceChildren = normalized.children ?? []
   const children = sourceChildren.map((child, index) => {
     if (!isSparkNode(child)) return child
-    return normalizeSparkNodeWithComponentIdsRecursive(child, fillMissingComponentId, usedIds, [...path, index])
+    return normalizeSparkNodeWithComponentIdsRecursive({
+      node: child,
+      fillMissingComponentId,
+      usedIds,
+      path: [...path, index],
+    })
   })
 
   let componentId = readNodeId(normalized)
@@ -1679,7 +1698,7 @@ function applyAddNode(
 
   if (params.parentComponentId === null || params.parentComponentId === undefined) {
     return {
-      nextRoot: copySparkNode(root, KEEP, KEEP, nextChildren),
+      nextRoot: copySparkNode({ node: root, nextChildren }),
       result: {
         node: params.node,
         index,
@@ -1691,7 +1710,7 @@ function applyAddNode(
     current: root,
     targetNodeId: params.parentComponentId,
     updater: (location) => ({
-      nextNode: copySparkNode(location.node, KEEP, KEEP, nextChildren),
+      nextNode: copySparkNode({ node: location.node, nextChildren }),
       result: {
         node: params.node,
         index,
@@ -1765,7 +1784,7 @@ function applySetProps(
     current: root,
     targetNodeId: params.componentId,
     updater: (currentLocation) => {
-      const nextNode = copySparkNode(currentLocation.node, KEEP, nextProps)
+      const nextNode = copySparkNode({ node: currentLocation.node, nextProps })
       return {
         nextNode,
         result: {
@@ -1911,7 +1930,7 @@ function rewriteNodeById<TResult>(request: RewriteNodeByIdRequest<TResult>): Nod
   }
 
   return {
-    next: copySparkNode(current, KEEP, KEEP, nextChildren),
+    next: copySparkNode({ node: current, nextChildren }),
     changed: true,
     result,
   }

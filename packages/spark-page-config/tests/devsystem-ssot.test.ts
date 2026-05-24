@@ -465,7 +465,11 @@ describe('DevSystem rule and pagedata edit policy', () => {
       },
       tableRelations: [],
     }
-    const uiState = reconcileDesignerTableUiState(metadataModel, [], () => 'generated-id')
+    const uiState = reconcileDesignerTableUiState({
+      metadata: metadataModel,
+      currentTables: [],
+      createId: () => 'generated-id',
+    })
     const tables = projectDesignerTables(metadataModel, uiState, () => 'unexpected')
     const relations = projectDesignerRelations(metadataModel)
     const rebuilt = buildDataSetMetadataFromDesignerProjection({

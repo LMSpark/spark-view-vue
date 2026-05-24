@@ -937,7 +937,12 @@ describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
   it('直接调用 findInstance 接受 host 形参并透传', async () => {
     const { runtime, spy } = createRuntimeWithSpy()
     const host = { moduleId: 'm', moduleInstanceId: 'i', instanceId: 's' }
-    await runtime.findInstance(ModulePath.parse('/'), 'node-tree', {}, host)
+    await runtime.findInstance({
+      path: ModulePath.parse('/'),
+      childKind: 'node-tree',
+      query: {},
+      host,
+    })
     expect(spy.lastHost).toEqual(host)
   })
 

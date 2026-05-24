@@ -1298,7 +1298,7 @@ export class DataView implements DataSource {
 
     try {
       const treeManager: TreeManager = this._ensureTreeManager()
-      const rows = await treeManager.fetchNested(rootId, limit, depthLimit, 'nested')
+      const rows = await treeManager.fetchNested({ rootId, limit, depthLimit, treeMode: 'nested' })
 
       if (requestId !== this.currentLoadRequestId) {
         this.logger.debug(`loadTreeNested 请求 ${requestId} 被更新的请求 ${this.currentLoadRequestId} 替代，忽略响应`)

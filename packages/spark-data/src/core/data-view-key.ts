@@ -305,12 +305,22 @@ export type DataViewMemberDiagnostic = {
   descriptor: DataViewMemberDescriptor | null
   message: string}
 
-function dataViewKeyDiagnostic(
-  status: DataViewKeyDiagnosticStatus,
-  rawKey: string,
-  descriptor: DataViewKeyDescriptor | null,
-  message: string,
-): DataViewKeyDiagnostic {
+type DataViewKeyDiagnosticInput = Readonly<{
+  status: DataViewKeyDiagnosticStatus
+  rawKey: string
+  descriptor: DataViewKeyDescriptor | null
+  message: string
+}>
+
+type DataViewMemberDiagnosticInput = Readonly<{
+  status: DataViewMemberDiagnosticStatus
+  rawKey: string
+  descriptor: DataViewMemberDescriptor | null
+  message: string
+}>
+
+function dataViewKeyDiagnostic(input: DataViewKeyDiagnosticInput): DataViewKeyDiagnostic {
+  const { status, rawKey, descriptor, message } = input
   return {
     ok: status === 'ok',
     status,
@@ -320,12 +330,8 @@ function dataViewKeyDiagnostic(
   }
 }
 
-function dataViewMemberDiagnostic(
-  status: DataViewMemberDiagnosticStatus,
-  rawKey: string,
-  descriptor: DataViewMemberDescriptor | null,
-  message: string,
-): DataViewMemberDiagnostic {
+function dataViewMemberDiagnostic(input: DataViewMemberDiagnosticInput): DataViewMemberDiagnostic {
+  const { status, rawKey, descriptor, message } = input
   return {
     ok: status === 'ok',
     status,
@@ -342,20 +348,20 @@ export function diagnoseDataViewKey(
   const normalizedKey = typeof rawKey === 'string' ? rawKey.trim() : ''
   const descriptor = normalizedKey ? parseDataViewKey(normalizedKey) : null
   if (!descriptor) {
-    return dataViewKeyDiagnostic('invalid-key', rawKey, null, `无效 DataViewKey: ${rawKey}`)
+    return dataViewKeyDiagnostic({ status: 'invalid-key', rawKey, descriptor: null, message: `无效 DataViewKey: ${rawKey}` })
   }
   if (!dataSet) {
-    return dataViewKeyDiagnostic('missing-dataset', rawKey, descriptor, `DataSet 未就绪: ${rawKey}`)
+    return dataViewKeyDiagnostic({ status: 'missing-dataset', rawKey, descriptor, message: `DataSet 未就绪: ${rawKey}` })
   }
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) {
-    return dataViewKeyDiagnostic('missing-table', rawKey, descriptor, `DataViewKey 表不存在: ${descriptor.tableName}`)
+    return dataViewKeyDiagnostic({ status: 'missing-table', rawKey, descriptor, message: `DataViewKey 表不存在: ${descriptor.tableName}` })
   }
   const view = table.getView(descriptor.viewId)
   if (!view) {
-    return dataViewKeyDiagnostic('missing-view', rawKey, descriptor, `DataViewKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}`)
+    return dataViewKeyDiagnostic({ status: 'missing-view', rawKey, descriptor, message: `DataViewKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}` })
   }
-  return dataViewKeyDiagnostic('ok', rawKey, descriptor, `DataViewKey 可解析: ${rawKey}`)
+  return dataViewKeyDiagnostic({ status: 'ok', rawKey, descriptor, message: `DataViewKey 可解析: ${rawKey}` })
 }
 
 export function diagnoseDataViewMember(
@@ -366,12 +372,12 @@ export function diagnoseDataViewMember(
   const normalizedKey = rawKey.trim()
   const keyDescriptor = normalizedKey ? parseDataViewKey(normalizedKey) : null
   if (!keyDescriptor) {
-    return dataViewMemberDiagnostic('invalid-key', rawKey, null, `无效 DataViewKey: ${rawKey}`)
+    return dataViewMemberDiagnostic({ status: 'invalid-key', rawKey, descriptor: null, message: `无效 DataViewKey: ${rawKey}` })
   }
 
   const dataMember = parseDataMember(input.dataMember)
   if (dataMember === null) {
-    return dataViewMemberDiagnostic('invalid-member', rawKey, null, `无效 DataMember: ${String(input.dataMember)}`)
+    return dataViewMemberDiagnostic({ status: 'invalid-member', rawKey, descriptor: null, message: `无效 DataMember: ${String(input.dataMember)}` })
   }
 
   const dataField = normalizeDataField(input.dataField)
@@ -382,40 +388,40 @@ export function diagnoseDataViewMember(
   }
 
   if (!dataSet) {
-    return dataViewMemberDiagnostic('missing-dataset', rawKey, descriptor, `DataSet 未就绪: ${rawKey}`)
+    return dataViewMemberDiagnostic({ status: 'missing-dataset', rawKey, descriptor, message: `DataSet 未就绪: ${rawKey}` })
   }
 
   const table = dataSet.getTable(descriptor.tableName)
   if (!table) {
-    return dataViewMemberDiagnostic('missing-table', rawKey, descriptor, `DataViewKey 表不存在: ${descriptor.tableName}`)
+    return dataViewMemberDiagnostic({ status: 'missing-table', rawKey, descriptor, message: `DataViewKey 表不存在: ${descriptor.tableName}` })
   }
 
   const view = table.getView(descriptor.viewId)
   if (!view) {
-    return dataViewMemberDiagnostic('missing-view', rawKey, descriptor, `DataViewKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}`)
+    return dataViewMemberDiagnostic({ status: 'missing-view', rawKey, descriptor, message: `DataViewKey 视图不存在: ${descriptor.tableName}@${descriptor.viewId}` })
   }
 
   const value = getDataViewMemberValue(view, descriptor.dataMember)
   if (descriptor.dataMember === DataMember.CurrentRow && value === null) {
-    return dataViewMemberDiagnostic('empty-current-row', rawKey, descriptor, `DataMember 当前行为空: ${rawKey}`)
+    return dataViewMemberDiagnostic({ status: 'empty-current-row', rawKey, descriptor, message: `DataMember 当前行为空: ${rawKey}` })
   }
   if (descriptor.dataMember === DataMember.SelectedRows && Array.isArray(value) && value.length === 0) {
-    return dataViewMemberDiagnostic('empty-selection', rawKey, descriptor, `DataMember 选中行为空: ${rawKey}`)
+    return dataViewMemberDiagnostic({ status: 'empty-selection', rawKey, descriptor, message: `DataMember 选中行为空: ${rawKey}` })
   }
 
   if (descriptor.dataField !== undefined) {
     if (!FIELD_ADDRESSABLE_MEMBERS.has(descriptor.dataMember)) {
-      return dataViewMemberDiagnostic('unsupported-data-field', rawKey, descriptor, `dataField 不适用于当前 DataMember: ${descriptor.dataMember}`)
+      return dataViewMemberDiagnostic({ status: 'unsupported-data-field', rawKey, descriptor, message: `dataField 不适用于当前 DataMember: ${descriptor.dataMember}` })
     }
     if (!isRecord(value)) {
-      return dataViewMemberDiagnostic('unsupported-data-field', rawKey, descriptor, `dataField 不适用于当前值: ${rawKey}`)
+      return dataViewMemberDiagnostic({ status: 'unsupported-data-field', rawKey, descriptor, message: `dataField 不适用于当前值: ${rawKey}` })
     }
     if (extractDataField(value, descriptor.dataField) === undefined) {
-      return dataViewMemberDiagnostic('missing-field', rawKey, descriptor, `dataField 字段不存在: ${descriptor.dataField}`)
+      return dataViewMemberDiagnostic({ status: 'missing-field', rawKey, descriptor, message: `dataField 字段不存在: ${descriptor.dataField}` })
     }
   }
 
-  return dataViewMemberDiagnostic('ok', rawKey, descriptor, `DataView 成员可解析: ${rawKey}`)
+  return dataViewMemberDiagnostic({ status: 'ok', rawKey, descriptor, message: `DataView 成员可解析: ${rawKey}` })
 }
 
 export function getDataViewIdentity(descriptor: DataViewKeyDescriptor): string {

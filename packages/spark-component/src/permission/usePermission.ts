@@ -68,7 +68,12 @@ export function usePermission(): UsePermissionReturn {
     },
 
     resolveFieldState(field, row, config) {
-      return resolveFieldPermissionState(field, row, config ?? {}, mode)
+      return resolveFieldPermissionState({
+        field,
+        row,
+        config: config ?? {},
+        permissionMode: mode,
+      })
     },
   }
 }

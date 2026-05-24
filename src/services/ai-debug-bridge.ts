@@ -122,7 +122,12 @@ async function reportDebugRouteResult(
   event: DebugRouteRequestEvent,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  await postDebugResult('/api/ai/debug/route-result', event.requestId, payload, '路由')
+  await postDebugResult({
+    path: '/api/ai/debug/route-result',
+    requestId: event.requestId,
+    payload,
+    label: '路由',
+  })
 }
 
 // Screenshot request flow ---------------------------------------------------
@@ -226,17 +231,25 @@ async function reportDebugScreenshotResult(
   event: DebugScreenshotRequestEvent,
   payload: Record<string, unknown>,
 ): Promise<void> {
-  await postDebugResult('/api/ai/debug/screenshot-result', event.requestId, payload, '截图')
+  await postDebugResult({
+    path: '/api/ai/debug/screenshot-result',
+    requestId: event.requestId,
+    payload,
+    label: '截图',
+  })
 }
 
 // HTTP result reporting -----------------------------------------------------
 
-async function postDebugResult(
-  path: string,
-  requestId: string,
-  payload: Record<string, unknown>,
-  label: string,
-): Promise<void> {
+type DebugResultPostInput = Readonly<{
+  path: string
+  requestId: string
+  payload: Record<string, unknown>
+  label: string
+}>
+
+async function postDebugResult(input: DebugResultPostInput): Promise<void> {
+  const { path, requestId, payload, label } = input
   try {
     await postDebugJson(path, { requestId, ...payload })
   } catch (error: unknown) {

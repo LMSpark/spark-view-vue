@@ -53,6 +53,20 @@ type ScopedHttpClientOptions = {
   hostProjectId: string | null
   targetProjectId: string}
 
+type RefTargetResolutionInput = Readonly<{
+  navTree: AppNavRoot | null
+  routePath: string
+  routeMeta: Record<string, unknown>
+  hostProjectId: string | null
+}>
+
+type ScopedUrlRewriteInput = Readonly<{
+  url: string
+  tenantId: string
+  hostProjectId: string | null
+  targetProjectId: string
+}>
+
 const logger = Logger('CrossProjectRefPage')
 
 function asNonEmptyString(value: unknown): string | null {
@@ -196,12 +210,8 @@ function findRouteRefNode(navTree: AppNavRoot | null, routePath: string, hostRef
   return findRefNodeByHostPath(navTree.children, routePath)
 }
 
-function resolveRefTarget(
-  navTree: AppNavRoot | null,
-  routePath: string,
-  routeMeta: Record<string, unknown>,
-  hostProjectId: string | null,
-): ResolvedRefTarget {
+function resolveRefTarget(input: RefTargetResolutionInput): ResolvedRefTarget {
+  const { navTree, routePath, routeMeta, hostProjectId } = input
   const hostRefNodeId = resolveHostRefNodeId(routePath)
   const refNode = findRouteRefNode(navTree, routePath, hostRefNodeId)
   const refPath = asNonEmptyString(refNode?.refPath) ?? asNonEmptyString(routeMeta['refPath'])
@@ -234,12 +244,8 @@ function mergeHeaders(
   return { ...(headers ?? {}), ...scopedHeaders }
 }
 
-function rewriteScopedUrl(
-  url: string,
-  tenantId: string,
-  hostProjectId: string | null,
-  targetProjectId: string,
-): string {
+function rewriteScopedUrl(input: ScopedUrlRewriteInput): string {
+  const { url, tenantId, hostProjectId, targetProjectId } = input
   let nextUrl = url.replace('{tenantId}', encodeURIComponent(tenantId))
   nextUrl = nextUrl.replace('{projectId}', encodeURIComponent(targetProjectId))
 
@@ -289,7 +295,12 @@ class ScopedHttpClient extends HttpClientBase {
   }
 
   private rewriteUrl(url: string): string {
-    return rewriteScopedUrl(url, this.tenantId, this.hostProjectId, this.targetProjectId)
+    return rewriteScopedUrl({
+      url,
+      tenantId: this.tenantId,
+      hostProjectId: this.hostProjectId,
+      targetProjectId: this.targetProjectId,
+    })
   }
 }
 
@@ -503,7 +514,12 @@ export const CrossProjectRefPage = defineComponent({
     })
     const routeMeta = computed(() => props.routeMeta ?? {})
     const refTarget = computed(() =>
-      resolveRefTarget(getNavTree(), routePath.value, routeMeta.value, hostProjectId.value)
+      resolveRefTarget({
+        navTree: getNavTree(),
+        routePath: routePath.value,
+        routeMeta: routeMeta.value,
+        hostProjectId: hostProjectId.value,
+      })
     )
     const targetProjectId = computed(() => refTarget.value.targetProjectId)
     const targetPageId = computed(() => refTarget.value.pageId)

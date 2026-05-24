@@ -128,7 +128,10 @@ export function buildPageContext(deps: PageContextDeps): PageContext {
 
     $page: pageService,
     permission: {
-      isPermittedAction, resolveFieldPermissionState,
+      isPermittedAction,
+      resolveFieldPermissionState(field, row, config) {
+        return resolveFieldPermissionState({ field, row, config })
+      },
       canCreate, canImport, canExport,
       canDelete, canCreateChild, canEdit,
       isFieldVisible, isFieldEditable, getFieldVisibility,

@@ -158,100 +158,100 @@ export function onServerEvent(
 export function onPageConfigChange(
   callback: (event: FileChangeEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.PAGE_CONFIG,
-    normalizeFileChangeEvent,
-    '页面配置',
+  return onTypedServerEvent({
+    eventType: ServerEventType.PAGE_CONFIG,
+    normalize: normalizeFileChangeEvent,
+    label: '页面配置',
     callback,
-  )
+  })
 }
 
 export function onDataBatchJob(
   callback: (event: DataBatchJobEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DATA_BATCH_JOB,
-    normalizeDataBatchJobEvent,
-    '数据任务',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DATA_BATCH_JOB,
+    normalize: normalizeDataBatchJobEvent,
+    label: '数据任务',
     callback,
-  )
+  })
 }
 
 export function onDataChange(
   callback: (event: DataChangeEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DATA_CHANGE,
-    normalizeDataChangeEvent,
-    '数据变更',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DATA_CHANGE,
+    normalize: normalizeDataChangeEvent,
+    label: '数据变更',
     callback,
-  )
+  })
 }
 
 export function onNotificationEvent(
   callback: (event: ServerNotificationEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.NOTIFICATION,
-    normalizeNotificationEvent,
-    '通知',
+  return onTypedServerEvent({
+    eventType: ServerEventType.NOTIFICATION,
+    normalize: normalizeNotificationEvent,
+    label: '通知',
     callback,
-  )
+  })
 }
 
 export function onDebugRouteRequest(
   callback: (event: DebugRouteRequestEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DEBUG_ROUTE_REQUEST,
-    normalizeDebugRouteRequestEvent,
-    'AI 调试路由请求',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DEBUG_ROUTE_REQUEST,
+    normalize: normalizeDebugRouteRequestEvent,
+    label: 'AI 调试路由请求',
     callback,
-  )
+  })
 }
 
 export function onDebugRouteResult(
   callback: (event: DebugRouteResultEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DEBUG_ROUTE_RESULT,
-    normalizeDebugRouteResultEvent,
-    'AI 调试路由回执',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DEBUG_ROUTE_RESULT,
+    normalize: normalizeDebugRouteResultEvent,
+    label: 'AI 调试路由回执',
     callback,
-  )
+  })
 }
 
 export function onDebugScreenshotRequest(
   callback: (event: DebugScreenshotRequestEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DEBUG_SCREENSHOT_REQUEST,
-    normalizeDebugScreenshotRequestEvent,
-    'AI 调试截图请求',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DEBUG_SCREENSHOT_REQUEST,
+    normalize: normalizeDebugScreenshotRequestEvent,
+    label: 'AI 调试截图请求',
     callback,
-  )
+  })
 }
 
 export function onDebugScreenshotResult(
   callback: (event: DebugScreenshotResultEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DEBUG_SCREENSHOT_RESULT,
-    normalizeDebugScreenshotResultEvent,
-    'AI 调试截图回执',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DEBUG_SCREENSHOT_RESULT,
+    normalize: normalizeDebugScreenshotResultEvent,
+    label: 'AI 调试截图回执',
     callback,
-  )
+  })
 }
 
 export function onDebugFcErrorReport(
   callback: (event: DebugFcErrorReportEvent) => void,
 ): () => void {
-  return onTypedServerEvent(
-    ServerEventType.DEBUG_FC_ERROR_REPORT,
-    normalizeDebugFcErrorReportEvent,
-    'AI 调试 FC 错误',
+  return onTypedServerEvent({
+    eventType: ServerEventType.DEBUG_FC_ERROR_REPORT,
+    normalize: normalizeDebugFcErrorReportEvent,
+    label: 'AI 调试 FC 错误',
     callback,
-  )
+  })
 }
 
 // Connection lifecycle ------------------------------------------------------
@@ -391,12 +391,15 @@ function warnLegacyProtocolOnce(eventType: string, protocol: string): void {
 
 // Typed event normalization -------------------------------------------------
 
-function onTypedServerEvent<T>(
-  eventType: string,
-  normalize: EventNormalizer<T>,
-  label: string,
-  callback: (event: T) => void,
-): () => void {
+type TypedServerEventSubscription<T> = Readonly<{
+  eventType: string
+  normalize: EventNormalizer<T>
+  label: string
+  callback: (event: T) => void
+}>
+
+function onTypedServerEvent<T>(subscription: TypedServerEventSubscription<T>): () => void {
+  const { eventType, normalize, label, callback } = subscription
   return onServerEvent(eventType, (data) => {
     const event = normalize(data)
     if (event === null) {

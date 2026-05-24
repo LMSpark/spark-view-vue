@@ -182,10 +182,13 @@ describe('createSandbox — compileFunctions', () => {
       }
 
       function canEditField() {
-        var state = permission.resolveFieldPermissionState('name', {
-          id: 1,
-          name: 'Alice',
-          _perm: { editableFields: ['name'] }
+        var state = permission.resolveFieldPermissionState({
+          field: 'name',
+          row: {
+            id: 1,
+            name: 'Alice',
+            _perm: { editableFields: ['name'] }
+          }
         })
         return state ? state.editable : false
       }

@@ -151,7 +151,11 @@ export function subscribeAiHostAppSseEvents(
     externalSignal?.addEventListener('abort', abortFromExternal, { once: true })
   }
 
-  const closed = runAppSseSubscription(options, controller.signal, () => closedByCaller, resolveOpened)
+  const closed = runAppSseSubscription(options, {
+    signal: controller.signal,
+    isClosedByCaller: () => closedByCaller,
+    markOpened: resolveOpened,
+  })
     .catch((error: unknown) => {
       if (closedByCaller || isAbortError(error)) return
       rejectOpened(error)
@@ -177,12 +181,17 @@ export function subscribeAiHostAppSseEvents(
 
 // Subscription flow ---------------------------------------------------------
 
+type AppSseSubscriptionRuntime = Readonly<{
+  signal: AbortSignal
+  isClosedByCaller: () => boolean
+  markOpened: () => void
+}>
+
 async function runAppSseSubscription(
   options: AiHostAppSseSubscribeOptions,
-  signal: AbortSignal,
-  isClosedByCaller: () => boolean,
-  markOpened: () => void,
+  runtime: AppSseSubscriptionRuntime,
 ): Promise<void> {
+  const { signal, isClosedByCaller, markOpened } = runtime
   const fetchClient = resolveFetch(options.fetch)
   const response = await fetchClient(options.url ?? DEFAULT_APP_EVENTS_URL, {
     method: 'GET',

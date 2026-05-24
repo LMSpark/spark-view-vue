@@ -251,7 +251,11 @@ watch(
   [() => treeData.value, () => props.expandLevel],
   async ([nextTreeRows, expandLevel]) => {
     if (nextTreeRows.length === 0 || expandLevel === undefined) return
-    await applyExpandLevel(treeData.value, nativeTreeRef, getNodeKey, expandLevel)
+    await applyExpandLevel(treeData.value, {
+      treeRef: nativeTreeRef,
+      resolveNodeKey: getNodeKey,
+      level: expandLevel,
+    })
   },
   { immediate: true },
 )
@@ -275,27 +279,38 @@ watch(
   { immediate: true },
 )
 
+type ApplyExpandLevelOptions = Readonly<{
+  treeRef: { value: NativeTreeLike | null },
+  resolveNodeKey: (data: unknown) => string | number | null
+  level: number
+}>
+
 async function applyExpandLevel(
   nextTreeData: TreeNode[],
-  treeRef: { value: NativeTreeLike | null },
-  resolveNodeKey: (data: unknown) => string | number | null,
-  level: number,
+  options: ApplyExpandLevelOptions,
 ): Promise<void> {
+  const { treeRef, resolveNodeKey, level } = options
   if (!Number.isFinite(level) || level < 2) return
   await nextTick()
   const tree = treeRef.value
-  for (const key of collectExpandKeysByLevel(nextTreeData, resolveNodeKey, level)) {
+  for (const key of collectExpandKeysByLevel(nextTreeData, { resolveNodeKey, targetLevel: level })) {
     const nativeNode = tree?.getNode?.(key)
     nativeNode?.expand?.()
   }
 }
 
+type CollectExpandKeysOptions = Readonly<{
+  resolveNodeKey: (data: unknown) => string | number | null
+  targetLevel: number
+  currentLevel?: number | undefined
+}>
+
 function collectExpandKeysByLevel(
   nodes: TreeNode[],
-  resolveNodeKey: (data: unknown) => string | number | null,
-  targetLevel: number,
-  currentLevel = 1,
+  options: CollectExpandKeysOptions,
 ): Array<string | number> {
+  const { resolveNodeKey, targetLevel } = options
+  const currentLevel = options.currentLevel ?? 1
   const result: Array<string | number> = []
   if (targetLevel <= 1) return result
 
@@ -306,7 +321,11 @@ function collectExpandKeysByLevel(
     }
     const children = Array.isArray(node.children) ? node.children : []
     if (children.length > 0 && currentLevel < targetLevel) {
-      result.push(...collectExpandKeysByLevel(children, resolveNodeKey, targetLevel, currentLevel + 1))
+      result.push(...collectExpandKeysByLevel(children, {
+        resolveNodeKey,
+        targetLevel,
+        currentLevel: currentLevel + 1,
+      }))
     }
   }
 

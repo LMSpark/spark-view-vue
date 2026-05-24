@@ -59,6 +59,13 @@ type ResolvedConfigLoaderOptions =
   Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
   & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
 
+type OptionalPageFileLoadInput<T> = Readonly<{
+  pageId: string
+  filename: PageConfigFileName
+  localLoader: TransformedFileLoader<T>
+  knownFiles: Set<PageConfigFileName> | null
+}>
+
 /** 安全判断未知值是否为数组。 */
 function isUnknownArray(value: unknown): value is readonly unknown[] {
   return Array.isArray(value)
@@ -238,10 +245,20 @@ export class PageConfigLoader extends BasePageConfigLoader {
       throw new Error(`Page data loader returned no data: ${pageId}/pagedata.json`)
     }
 
-    const scriptResult = await this.loadOptionalPageFile(pageId, 'script.js', this.scriptLoader, knownFiles)
+    const scriptResult = await this.loadOptionalPageFile({
+      pageId,
+      filename: 'script.js',
+      localLoader: this.scriptLoader,
+      knownFiles,
+    })
     if (!scriptResult.success) return this.failFrom(scriptResult.error, scriptResult.reason)
 
-    const cssResult = await this.loadOptionalPageFile(pageId, 'style.css', this.cssLoader, knownFiles)
+    const cssResult = await this.loadOptionalPageFile({
+      pageId,
+      filename: 'style.css',
+      localLoader: this.cssLoader,
+      knownFiles,
+    })
     if (!cssResult.success) return this.failFrom(cssResult.error, cssResult.reason)
 
     pageLogger.debug('页面附加资源加载完成', {
@@ -410,12 +427,8 @@ export class PageConfigLoader extends BasePageConfigLoader {
     return this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
   }
 
-  private async loadOptionalPageFile<T>(
-    pageId: string,
-    filename: PageConfigFileName,
-    localLoader: TransformedFileLoader<T>,
-    knownFiles: Set<PageConfigFileName> | null,
-  ): Promise<ConfigLoadResult<T | undefined>> {
+  private async loadOptionalPageFile<T>(input: OptionalPageFileLoadInput<T>): Promise<ConfigLoadResult<T | undefined>> {
+    const { pageId, filename, localLoader, knownFiles } = input
     if (this.isKnownMissing(knownFiles, filename)) {
       return { success: true, source: 'remote' }
     }

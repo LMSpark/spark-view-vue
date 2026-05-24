@@ -28,13 +28,16 @@ export type CrudLifecycleEvent = {
   /** 取消操作（仅 before 阶段调用） */
   cancel(): void}
 
+export type CrudLifecycleEventInput = Readonly<{
+  operation: CrudOperation
+  phase: 'before' | 'after'
+  data: unknown
+  result?: CrudResult | undefined
+}>
+
 /** 创建 CRUD 生命周期事件实例 */
-export function createCrudLifecycleEvent(
-  operation: CrudOperation,
-  phase: 'before' | 'after',
-  data: unknown,
-  result?: CrudResult,
-): CrudLifecycleEvent {
+export function createCrudLifecycleEvent(input: CrudLifecycleEventInput): CrudLifecycleEvent {
+  const { operation, phase, data, result } = input
   const event: CrudLifecycleEvent = {
     operation,
     phase,

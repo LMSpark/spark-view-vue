@@ -8,7 +8,12 @@
  */
 
 import { Logger } from '@spark-view/spark-utils'
-import type { ComponentRegistry, ComponentDefinition } from '../core/types.js'
+import type {
+  ComponentRegistry,
+  ComponentDefinition,
+  ComponentRegistrationArgs,
+  ComponentRegistrationInput,
+} from '../core/types.js'
 
 const logger = Logger('Spark:Registry')
 
@@ -56,6 +61,14 @@ function assertResolvedComponent(type: string, component: unknown): void {
   }
 }
 
+function normalizeRegistration(args: ComponentRegistrationArgs): ComponentRegistrationInput {
+  if (typeof args[0] === 'string') {
+    const [type, component, meta, options] = args
+    return { type, component, meta, options }
+  }
+  return args[0]
+}
+
 /**
  * 创建隔离的组件注册表实例。
  * 需要全局注册表请用 `getGlobalRegistry()`。
@@ -68,12 +81,8 @@ export function createComponentRegistry(): ComponentRegistry {
      * 注册组件，若 type 已存在则覆盖并打 warn。
      * `options.silent = true` 时静默覆盖（HMR 场景）。
      */
-    register(
-      type: string,
-      component: unknown,
-      meta?: Record<string, unknown>,
-      options?: { silent?: boolean }
-    ): void {
+    register(...args: ComponentRegistrationArgs): void {
+      const { type, component, meta, options } = normalizeRegistration(args)
       if (!type) throw new Error('Component type is required')
       assertResolvedComponent(type, component)
       if (components.has(type) && !options?.silent) logger.warn(`Overwriting component: ${type}`)

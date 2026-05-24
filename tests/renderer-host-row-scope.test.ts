@@ -24,7 +24,7 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
     })
 
     const registry = Spark.createRegistry()
-    registry.register('row-probe', Probe)
+    registry.register({ type: 'row-probe', component: Probe })
     const plugin = Spark.createPlugin({ registry })
 
     const rowRef = ref<DataRow>({ id: 1, name: 'Alice' })
@@ -102,7 +102,7 @@ describe('RendererHostScope DATA_ROW reactivity', () => {
     })
 
     const registry = Spark.createRegistry()
-    registry.register('field-probe', Probe)
+    registry.register({ type: 'field-probe', component: Probe })
     const plugin = Spark.createPlugin({ registry })
 
     const Harness = defineComponent({

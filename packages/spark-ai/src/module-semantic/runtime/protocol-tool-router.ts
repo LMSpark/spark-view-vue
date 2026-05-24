@@ -11,10 +11,10 @@
  * │    guideFunction → KnowledgeProjector.guideFunction(input)                    │
  * │    guideHumanQuestion → KnowledgeProjector.guideHumanQuestion(input)          │
  * │    getAttribute  → AttributeAccessor.get(path, attrName)                     │
- * │    setAttribute  → AttributeAccessor.set(path, attrName, value)              │
- * │    invokeAction  → ActionInvoker.invoke(path, actionName, args)              │
+ * │    setAttribute  → AttributeAccessor.set(request)                           │
+ * │    invokeAction  → ActionInvoker.invoke(request)                            │
  * │    listChildren  → Navigator.listChildren(path, childKind)                   │
- * │    findInstance  → Navigator.findInstance(path, childKind, query)            │
+ * │    findInstance  → Navigator.findInstance(request)                          │
  * │    describeKind  → Navigator.describeKind(kind)                              │
  * │                                                                              │
  * │  错误包装：                                                                   │
@@ -172,7 +172,12 @@ export class ProtocolToolRouter {
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
     const path = ModulePath.parse(this.argsParser.requireString(args, 'path'))
     const attrName = this.argsParser.requireString(args, 'attrName')
-    const result = await this.attributes.set(path, attrName, this.argsParser.requireValue(args, 'value'), host)
+    const result = await this.attributes.set({
+      path,
+      attrName,
+      value: this.argsParser.requireValue(args, 'value'),
+      host,
+    })
     return this.resultProjector.voidResult(result)
   }
 
@@ -184,7 +189,12 @@ export class ProtocolToolRouter {
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
     const path = ModulePath.parse(this.argsParser.requireString(args, 'path'))
     const actionName = this.argsParser.requireString(args, 'actionName')
-    return this.actions.invoke(path, actionName, this.argsParser.requireObject(args, 'args'), host)
+    return this.actions.invoke({
+      path,
+      actionName,
+      args: this.argsParser.requireObject(args, 'args'),
+      host,
+    })
   }
 
   /* ── listChildren ──────────────────────────────────────── */
@@ -207,12 +217,12 @@ export class ProtocolToolRouter {
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
     const path = ModulePath.parse(this.argsParser.requireString(args, 'path'))
     const childKind = this.argsParser.requireString(args, 'childKind')
-    const result = await this.navigator.findInstance(
+    const result = await this.navigator.findInstance({
       path,
       childKind,
-      this.argsParser.requireObject(args, 'query'),
+      query: this.argsParser.requireObject(args, 'query'),
       host,
-    )
+    })
     return this.resultProjector.instanceListResult(result)
   }
 

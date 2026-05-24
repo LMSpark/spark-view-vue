@@ -510,8 +510,16 @@ export function deleteNode(model: TreeModel, uid: string, policy?: Partial<JsonT
   return makeResult(nodes, parent.id, parent.id)
 }
 
+export type RenameNodeKeyInput = Readonly<{
+  model: TreeModel
+  uid: string
+  nextKeyInput: string
+  policy?: Partial<JsonTreePolicy> | undefined
+}>
+
 /** 重命名对象键 */
-export function renameNodeKey(model: TreeModel, uid: string, nextKeyInput: string, policy?: Partial<JsonTreePolicy>): MutationResult {
+export function renameNodeKey(input: RenameNodeKeyInput): MutationResult {
+  const { model, uid, nextKeyInput, policy } = input
   const target = model.get(uid)
   if (!target) return unchanged(model, uid)
   if (!resolvePolicy(policy).canEditKey(getNodePath(model, uid))) return unchanged(model, uid)
@@ -531,8 +539,16 @@ export function renameNodeKey(model: TreeModel, uid: string, nextKeyInput: strin
   return makeResult(nodes, uid, parent?.id ?? null)
 }
 
+export type UpdateNodeTypeInput = Readonly<{
+  model: TreeModel
+  uid: string
+  nextType: JsonNodeType
+  policy?: Partial<JsonTreePolicy> | undefined
+}>
+
 /** 切换节点类型 */
-export function updateNodeType(model: TreeModel, uid: string, nextType: JsonNodeType, policy?: Partial<JsonTreePolicy>): MutationResult {
+export function updateNodeType(input: UpdateNodeTypeInput): MutationResult {
+  const { model, uid, nextType, policy } = input
   const target = model.get(uid)
   if (!target) return unchanged(model, uid)
   if (!resolvePolicy(policy).canEditType(getNodePath(model, uid))) return unchanged(model, uid)
@@ -754,7 +770,15 @@ export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocum
   const rootType: FlatJsonTreeDocument['rootType'] = Array.isArray(doc) ? 'array' : 'object'
   const rows: TreeNode[] = []
 
-  function walk(value: JsonValue, parentId: string | null, segment: string | number, order: number): void {
+  type JsonDocumentWalkInput = Readonly<{
+    value: JsonValue
+    parentId: string | null
+    segment: string | number
+    order: number
+  }>
+
+  function walk(input: JsonDocumentWalkInput): void {
+    const { value, parentId, segment, order } = input
     const id = generateUid()
     const type = inferNodeType(value)
     const isContainer = type === 'object' || type === 'array'
@@ -766,18 +790,18 @@ export function flattenJsonDocumentForEdit(doc: JsonDocument): FlatJsonTreeDocum
     })
 
     if (Array.isArray(value)) {
-      value.forEach((item, i) => walk(item, id, i, i))
+      value.forEach((item, i) => walk({ value: item, parentId: id, segment: i, order: i }))
     } else if (isJsonObject(value)) {
       let idx = 0
-      for (const [k, v] of Object.entries(value)) walk(v, id, k, idx++)
+      for (const [k, v] of Object.entries(value)) walk({ value: v, parentId: id, segment: k, order: idx++ })
     }
   }
 
   if (Array.isArray(doc)) {
-    doc.forEach((item, i) => walk(item, null, i, i))
+    doc.forEach((item, i) => walk({ value: item, parentId: null, segment: i, order: i }))
   } else {
     let idx = 0
-    for (const [k, v] of Object.entries(doc)) walk(v, null, k, idx++)
+    for (const [k, v] of Object.entries(doc)) walk({ value: v, parentId: null, segment: k, order: idx++ })
   }
 
   return { rootType, rows }

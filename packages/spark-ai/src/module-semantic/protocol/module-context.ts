@@ -21,7 +21,7 @@
 
 import type { LlmJsonValue } from '../../schema'
 import type { ModuleOperationResult } from './module-operation'
-import type { ModulePathSegment } from './module-path'
+import type { ModulePath, ModulePathSegment } from './module-path'
 
 /* -------------------------------------------------------------------------------
  * 一、上下文字段
@@ -56,7 +56,32 @@ export type ModuleInstanceRef = Readonly<{
 export type ModuleInstanceQuery = Readonly<Record<string, LlmJsonValue>>
 
 /* -------------------------------------------------------------------------------
- * 三、委托函数签名
+ * 三、运行时请求对象
+ * ----------------------------------------------------------------------------- */
+
+export type ModuleSetAttributeRequest = Readonly<{
+  path: ModulePath
+  attrName: string
+  value: LlmJsonValue
+  host?: ModuleHostContext | undefined
+}>
+
+export type ModuleInvokeActionRequest = Readonly<{
+  path: ModulePath
+  actionName: string
+  args: Readonly<Record<string, LlmJsonValue>>
+  host?: ModuleHostContext | undefined
+}>
+
+export type ModuleFindInstanceRequest = Readonly<{
+  path: ModulePath
+  childKind: string
+  query: ModuleInstanceQuery
+  host?: ModuleHostContext | undefined
+}>
+
+/* -------------------------------------------------------------------------------
+ * 四、委托函数签名
  * ----------------------------------------------------------------------------- */
 
 /** 可同步或异步返回的操作结果（避免不必要的 Promise 包装） */

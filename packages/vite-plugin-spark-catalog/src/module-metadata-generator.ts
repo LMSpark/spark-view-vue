@@ -193,7 +193,7 @@ function createAbilityMetadata(request: CreateAbilityMetadataRequest): ModuleAbi
     mutations: parseMutations(tags),
     actions: node.members
       .filter(ts.isMethodDeclaration)
-      .map(member => createActionMetadata(root, sourceFile, checker, member))
+      .map(member => createActionMetadata({ root, sourceFile, checker, node: member }))
       .filter(isNotUndefined),
     source: {
       ...source,
@@ -204,12 +204,15 @@ function createAbilityMetadata(request: CreateAbilityMetadataRequest): ModuleAbi
   return ability
 }
 
-function createActionMetadata(
-  root: string,
-  sourceFile: ts.SourceFile,
-  checker: ts.TypeChecker,
-  node: ts.MethodDeclaration,
-): ModuleActionMetadata | undefined {
+type ActionMetadataCreateInput = Readonly<{
+  root: string
+  sourceFile: ts.SourceFile
+  checker: ts.TypeChecker
+  node: ts.MethodDeclaration
+}>
+
+function createActionMetadata(input: ActionMetadataCreateInput): ModuleActionMetadata | undefined {
+  const { root, sourceFile, checker, node } = input
   const tags = readDocTags(node, sourceFile)
   const actionName = firstTagText(tags, 'moduleAction')
   if (actionName === undefined) return undefined

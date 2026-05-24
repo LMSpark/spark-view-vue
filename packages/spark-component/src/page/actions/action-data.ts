@@ -138,12 +138,15 @@ function ensureView(
  *
  * 若 scope.row 不存在（非行内动作触发）则直接返回原 payload，不修改。
  */
-function applyInheritFields(
+type InheritFieldInput = Readonly<{
   payload: Record<string, unknown>,
   scope: ActionExecutionScope | undefined,
   inheritFields: string[] | undefined,
-  inheritFieldMap: Record<string, string> | undefined,
-): Record<string, unknown> {
+  inheritFieldMap: Record<string, string> | undefined
+}>
+
+function applyInheritFields(input: InheritFieldInput): Record<string, unknown> {
+  const { payload, scope, inheritFields, inheritFieldMap } = input
   const scopeRow = scope?.row
   if (!scopeRow) return payload
   if (inheritFields) {
@@ -209,13 +212,23 @@ export async function executeAppendRow(
     )
     if (result === null) return
 
-    const payload = applyInheritFields({ ...(desc.appendPayload ?? {}) }, scope, desc.inheritFields, desc.inheritFieldMap)
+    const payload = applyInheritFields({
+      payload: { ...(desc.appendPayload ?? {}) },
+      scope,
+      inheritFields: desc.inheritFields,
+      inheritFieldMap: desc.inheritFieldMap,
+    })
     payload[desc.prompt.field] = result
     await doAppend({ view, payload, idField, desc, notifier })
     return
   }
 
-  const payload = applyInheritFields({ ...(desc.appendPayload ?? {}) }, scope, desc.inheritFields, desc.inheritFieldMap)
+  const payload = applyInheritFields({
+    payload: { ...(desc.appendPayload ?? {}) },
+    scope,
+    inheritFields: desc.inheritFields,
+    inheritFieldMap: desc.inheritFieldMap,
+  })
   await doAppend({ view, payload, idField, desc, notifier })
 }
 
@@ -277,12 +290,10 @@ export async function executeDelete(
     if (desc.confirmMessage !== undefined) {
       decoratorOverride.confirmMessage = interpolate(desc.confirmMessage, { count }, null)
     }
-    const allowed = await confirmIfNeeded(
-      ctx,
-      decoratorOverride,
-      `确认删除已选择的 ${count} 条记录吗？`,
-      desc.confirmTitle ?? '批量删除确认',
-    )
+    const allowed = await confirmIfNeeded(ctx, decoratorOverride, {
+      fallbackMessage: `确认删除已选择的 ${count} 条记录吗？`,
+      fallbackTitle: desc.confirmTitle ?? '批量删除确认',
+    })
     if (!allowed) return
 
     let removed = 0
@@ -309,7 +320,10 @@ export async function executeDelete(
   const row = primary
   if (!row) return
   const label = resolveRowLabel(row, idField)
-  const allowed = await confirmIfNeeded(ctx, desc, `确认删除 ${label} 吗？`, desc.confirmTitle ?? '删除确认')
+  const allowed = await confirmIfNeeded(ctx, desc, {
+    fallbackMessage: `确认删除 ${label} 吗？`,
+    fallbackTitle: desc.confirmTitle ?? '删除确认',
+  })
   if (!allowed) return
 
   const id = resolveRowId(row, idField)
@@ -475,12 +489,15 @@ async function doUpdate(operation: UpdateOperation): Promise<void> {
  * 3. `targetParentSource='scope'`：使用 scope.row 的主键作为目标父 ID
  * 4. 默认：使用 view.currentRow 的主键
  */
-function resolveMoveTargetParentId(
+type MoveTargetParentInput = Readonly<{
   view: DataView,
   desc: MoveAction,
   scope: ActionExecutionScope | undefined,
-  idField: string,
-): string | number | null {
+  idField: string
+}>
+
+function resolveMoveTargetParentId(input: MoveTargetParentInput): string | number | null {
+  const { view, desc, scope, idField } = input
   if (Object.prototype.hasOwnProperty.call(desc, 'newParentId')) {
     const literal = desc.newParentId
     return typeof literal === 'string' || typeof literal === 'number' ? literal : null
@@ -527,7 +544,7 @@ export async function executeMove(
     return
   }
 
-  const newParentId = resolveMoveTargetParentId(view, desc, scope, idField)
+  const newParentId = resolveMoveTargetParentId({ view, desc, scope, idField })
   await view.moveTreeNode(id, newParentId, desc.index)
   notifier.notify('success', desc.successMessage ?? '移动成功')
 }
@@ -607,7 +624,10 @@ export async function executeClearRows(
   const view = ensureView(desc, ctx, notifier)
   if (!view) return
 
-  const allowed = await confirmIfNeeded(ctx, desc, '确认清空当前列表吗？', desc.confirmTitle ?? '清空确认')
+  const allowed = await confirmIfNeeded(ctx, desc, {
+    fallbackMessage: '确认清空当前列表吗？',
+    fallbackTitle: desc.confirmTitle ?? '清空确认',
+  })
   if (!allowed) return
 
   view.replaceRows([])
@@ -737,4 +757,3 @@ export async function executeSaveDataSet(
   }
   notifier.notify('warning', desc.failureMessage ?? result.message ?? '保存失败')
 }
-

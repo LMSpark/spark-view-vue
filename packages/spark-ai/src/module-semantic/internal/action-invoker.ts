@@ -16,7 +16,8 @@
  */
 
 import type { LlmJsonValue } from '../../schema'
-import type { ModuleHostContext, ModuleOperationResult, ModulePath } from '../protocol'
+import type { ModuleOperationResult } from '../protocol'
+import type { ModuleInvokeActionRequest } from '../protocol/module-context'
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
 
@@ -33,12 +34,8 @@ export class ActionInvoker {
    *   - SCHEMA_VALIDATION_FAILED: 参数 schema 校验失败，checks 包含具体路径和原因
    *   - (其它):              由 navigator 或 ModuleKind.invokeAction 抛出
    */
-  public async invoke(
-    path: ModulePath,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-    host?: ModuleHostContext,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+  public async invoke(request: ModuleInvokeActionRequest): Promise<ModuleOperationResult<LlmJsonValue>> {
+    const { path, actionName, args, host } = request
     // 步骤 1：路径导航 → 末段 ModuleKind + PathContext
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {

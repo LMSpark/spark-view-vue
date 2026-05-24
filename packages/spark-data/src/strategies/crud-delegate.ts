@@ -116,14 +116,14 @@ export class CrudDelegate {
    * @returns `true` = 继续执行，`false` = 已取消
    */
   private fireBefore(operation: CrudOperation, data: unknown): boolean {
-    const event = createCrudLifecycleEvent(operation, 'before', data)
+    const event = createCrudLifecycleEvent({ operation, phase: 'before', data })
     this.emitCrudLifecycle(event)
     return !event.cancelled
   }
 
   /** 发射 after 事件（通知性质，不可取消） */
   private fireAfter(operation: CrudOperation, data: unknown, result: CrudResult): void {
-    const event = createCrudLifecycleEvent(operation, 'after', data, result)
+    const event = createCrudLifecycleEvent({ operation, phase: 'after', data, result })
     this.emitCrudLifecycle(event)
   }
 

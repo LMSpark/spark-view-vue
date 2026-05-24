@@ -146,7 +146,12 @@ export function useFieldPermission<TValue>(options: UseFieldPermissionOptions<TV
   function syncValue(value: TValue): void {
     const row = activeRow.value
     if (row !== null && fieldName.value) {
-      if (writeDataViewEditingValue(dataSource, row, fieldName.value, value)) return
+      if (writeDataViewEditingValue({
+        source: dataSource,
+        row,
+        field: fieldName.value,
+        value,
+      })) return
       row[fieldName.value] = value
     }
   }

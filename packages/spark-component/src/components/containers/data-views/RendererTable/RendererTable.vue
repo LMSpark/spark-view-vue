@@ -355,12 +355,12 @@ const {
 })
 
 // ── 筛选区透传：r-filter 自治 DataView 同步与 filterModel ─────────────────────────────
-const rows = computed(() => buildTreeTableRows(
-  dataState.resolvedView.value,
-  dataState.rows.value,
-  dataState.treeConfig.value,
-  dataState.primaryKey.value,
-))
+const rows = computed(() => buildTreeTableRows({
+  view: dataState.resolvedView.value,
+  rows: dataState.rows.value,
+  treeConfig: dataState.treeConfig.value,
+  primaryKey: dataState.primaryKey.value,
+}))
 const isLoading = computed(() => dataState.requestState.value === RequestState.Loading)
 const showPagination = computed(() => props.showPagination !== false && dataState.total.value > 0)
 

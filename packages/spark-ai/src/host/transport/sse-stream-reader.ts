@@ -142,7 +142,11 @@ class AiHostSseTurnState {
     try {
       payload = unwrapApiEnvelope(payloadEnvelope)
     } catch (error) {
-      this.input.onSseEvent?.(createSseEvent(parsedEvent, payloadEnvelope, this.input.scope, this.input.turn.turnId))
+      this.input.onSseEvent?.(createSseEvent(parsedEvent, {
+        payload: payloadEnvelope,
+        scope: this.input.scope,
+        turnId: this.input.turn.turnId,
+      }))
       if (parsedEvent.event === 'error') {
         throw new Error(formatSseErrorPayload(payloadEnvelope, error))
       }
@@ -150,7 +154,11 @@ class AiHostSseTurnState {
     }
 
     // 通知前端原始 SSE 事件（诊断/调试用）
-    this.input.onSseEvent?.(createSseEvent(parsedEvent, payload, this.input.scope, this.input.turn.turnId))
+    this.input.onSseEvent?.(createSseEvent(parsedEvent, {
+      payload,
+      scope: this.input.scope,
+      turnId: this.input.turn.turnId,
+    }))
 
     if (parsedEvent.event === 'error') {
       throw new Error(formatSseErrorPayload(payload))
@@ -320,9 +328,11 @@ class AiHostSseTurnState {
     this.compatibilityWarningSent = true
     this.input.onSseEvent?.(createSseEvent(
       { event: 'protocol-warning', data: parsedEvent.data },
-      warning,
-      this.input.scope,
-      this.input.turn.turnId,
+      {
+        payload: warning,
+        scope: this.input.scope,
+        turnId: this.input.turn.turnId,
+      },
     ))
   }
 
@@ -433,12 +443,17 @@ async function readStreamBody(
 }
 
 /** 构造 SSE 事件对象（供前端路由） */
+type SseEventCreateInput = Readonly<{
+  payload: unknown
+  scope: AiHostBusinessScope
+  turnId: string
+}>
+
 function createSseEvent(
   parsedEvent: AiHostParsedSseEvent,
-  payload: unknown,
-  scope: AiHostBusinessScope,
-  turnId: string,
+  input: SseEventCreateInput,
 ): AiHostSseEvent {
+  const { payload, scope, turnId } = input
   return {
     type: parsedEvent.event,
     data: typeof payload === 'string' ? payload : JSON.stringify(payload),

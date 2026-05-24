@@ -313,6 +313,13 @@ export type DesignerTableUiState = {
 
 type LayoutForNewTable = (tableName: string, newIndex: number) => { x: number; y: number }
 
+export type DesignerTableUiStateReconcileInput = Readonly<{
+  metadata: DataSetMetadata
+  currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>
+  createId: () => string
+  layoutForNewTable?: LayoutForNewTable | undefined
+}>
+
 function getDefaultTablePosition(index: number): { x: number; y: number } {
   return {
     x: 50 + (index % 3) * 220,
@@ -320,12 +327,8 @@ function getDefaultTablePosition(index: number): { x: number; y: number } {
   }
 }
 
-export function reconcileDesignerTableUiState(
-  metadata: DataSetMetadata,
-  currentTables: ReadonlyArray<Pick<DesignerTableProjection, 'tableName' | 'id' | 'x' | 'y' | 'columns'>>,
-  createId: () => string,
-  layoutForNewTable?: LayoutForNewTable,
-): Record<string, DesignerTableUiState> {
+export function reconcileDesignerTableUiState(input: DesignerTableUiStateReconcileInput): Record<string, DesignerTableUiState> {
+  const { metadata, currentTables, createId, layoutForNewTable } = input
   const oldByName = new Map(currentTables.map(table => [table.tableName, table]))
   const persistedPositions = metadata.layout?.tablePositions
   const nextUiState: Record<string, DesignerTableUiState> = {}

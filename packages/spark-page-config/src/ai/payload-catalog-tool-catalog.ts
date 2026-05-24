@@ -599,19 +599,25 @@ function collectReachableDefs(
 ): Record<string, LlmJsonSchema> {
   const out: Record<string, LlmJsonSchema> = {}
   const visiting = new Set<string>()
+  const collector: SchemaRefCollector = { defs, out, visiting }
 
   for (const root of roots) {
-    collectSchemaRefs(root, defs, out, visiting)
+    collectSchemaRefs(root, collector)
   }
   return out
 }
 
+type SchemaRefCollector = Readonly<{
+  defs: Readonly<Record<string, LlmJsonSchema>>
+  out: Record<string, LlmJsonSchema>
+  visiting: Set<string>
+}>
+
 function collectSchemaRefs(
   schema: LlmJsonSchema | undefined,
-  defs: Readonly<Record<string, LlmJsonSchema>>,
-  out: Record<string, LlmJsonSchema>,
-  visiting: Set<string>,
+  collector: SchemaRefCollector,
 ): void {
+  const { defs, out, visiting } = collector
   if (schema === undefined || typeof schema !== 'object') return
   const ref = schema['$ref']
   if (typeof ref === 'string' && ref.startsWith('#/$defs/')) {
@@ -625,48 +631,44 @@ function collectSchemaRefs(
     }
     if (!visiting.has(defKey)) {
       visiting.add(defKey)
-      collectSchemaRefs(defs[defKey], defs, out, visiting)
+      collectSchemaRefs(defs[defKey], collector)
       visiting.delete(defKey)
     }
   }
 
-  collectSchemaMapRefs(schema['properties'], defs, out, visiting)
-  collectSchemaMapRefs(schema['patternProperties'], defs, out, visiting)
-  collectSchemaMapRefs(schema['$defs'], defs, out, visiting)
-  collectSchemaArrayRefs(schema['oneOf'], defs, out, visiting)
-  collectSchemaArrayRefs(schema['anyOf'], defs, out, visiting)
-  collectSchemaArrayRefs(schema['allOf'], defs, out, visiting)
-  collectSchemaArrayRefs(schema['prefixItems'], defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['items']) ? schema['items'] : undefined, defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['additionalProperties']) ? schema['additionalProperties'] : undefined, defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['contains']) ? schema['contains'] : undefined, defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['not']) ? schema['not'] : undefined, defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['if']) ? schema['if'] : undefined, defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['then']) ? schema['then'] : undefined, defs, out, visiting)
-  collectSchemaRefs(isLlmJsonSchema(schema['else']) ? schema['else'] : undefined, defs, out, visiting)
+  collectSchemaMapRefs(schema['properties'], collector)
+  collectSchemaMapRefs(schema['patternProperties'], collector)
+  collectSchemaMapRefs(schema['$defs'], collector)
+  collectSchemaArrayRefs(schema['oneOf'], collector)
+  collectSchemaArrayRefs(schema['anyOf'], collector)
+  collectSchemaArrayRefs(schema['allOf'], collector)
+  collectSchemaArrayRefs(schema['prefixItems'], collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['items']) ? schema['items'] : undefined, collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['additionalProperties']) ? schema['additionalProperties'] : undefined, collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['contains']) ? schema['contains'] : undefined, collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['not']) ? schema['not'] : undefined, collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['if']) ? schema['if'] : undefined, collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['then']) ? schema['then'] : undefined, collector)
+  collectSchemaRefs(isLlmJsonSchema(schema['else']) ? schema['else'] : undefined, collector)
 }
 
 function collectSchemaMapRefs(
   value: unknown,
-  defs: Readonly<Record<string, LlmJsonSchema>>,
-  out: Record<string, LlmJsonSchema>,
-  visiting: Set<string>,
+  collector: SchemaRefCollector,
 ): void {
   if (!isRecord(value)) return
   for (const child of Object.values(value)) {
-    collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, defs, out, visiting)
+    collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, collector)
   }
 }
 
 function collectSchemaArrayRefs(
   value: unknown,
-  defs: Readonly<Record<string, LlmJsonSchema>>,
-  out: Record<string, LlmJsonSchema>,
-  visiting: Set<string>,
+  collector: SchemaRefCollector,
 ): void {
   if (!Array.isArray(value)) return
   for (const child of value) {
-    collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, defs, out, visiting)
+    collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, collector)
   }
 }
 

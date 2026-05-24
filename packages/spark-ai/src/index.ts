@@ -69,6 +69,7 @@ export type {
   ModuleActionFailureMode,
   ModuleActionMetadata,
   ModuleActionResultSchema,
+  ModuleInvokeActionRequest,
   ModuleKindOperation,
   ModuleKindRunner,
   ModuleOperationResultOptions,
@@ -79,10 +80,12 @@ export type {
   ModuleAttributeMetadata,
   ModuleKindOptions,
   ModuleParameterPayloadMetadata,
+  ModuleSetAttributeRequest,
 } from './module-semantic/protocol-metadata-api'
 
 export type {
   ModuleChildrenLister,
+  ModuleFindInstanceRequest,
   ModuleHostContext,
   ModuleInstanceFinder,
   ModuleInstanceQuery,

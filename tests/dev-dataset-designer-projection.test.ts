@@ -70,12 +70,12 @@ describe('DevDataSetDesigner projection helpers', () => {
     let nextId = 0
     const createId = () => `generated-${++nextId}`
 
-    const nextUiState = reconcileDesignerTableUiState(
+    const nextUiState = reconcileDesignerTableUiState({
       metadata,
-      existingTables,
+      currentTables: existingTables,
       createId,
-      (tableName, newIndex) => ({ x: 500 + newIndex * 100, y: tableName.length * 10 }),
-    )
+      layoutForNewTable: (tableName: string, newIndex: number) => ({ x: 500 + newIndex * 100, y: tableName.length * 10 }),
+    })
     const projectedTables = projectDesignerTables(metadata, nextUiState, createId)
 
     expect(nextUiState['users']).toEqual({

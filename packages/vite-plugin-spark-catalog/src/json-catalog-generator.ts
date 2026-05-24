@@ -944,12 +944,15 @@ function createGenericSchemaExamples(schema: PropSchema, relation: SchemaRelatio
   return []
 }
 
-function annotateSchemaExamples(
-  schema: PropSchema,
-  name: string,
-  type: string,
-  defaultValue: unknown,
-): PropSchema {
+type SchemaExampleAnnotationInput = Readonly<{
+  schema: PropSchema
+  name: string
+  type: string
+  defaultValue: unknown
+}>
+
+function annotateSchemaExamples(input: SchemaExampleAnnotationInput): PropSchema {
+  const { schema, name, type, defaultValue } = input
   const examples = createPropExamples({
     name,
     type,
@@ -1059,12 +1062,15 @@ function buildComponentDescription(options: {
  * - 复杂 schema 提升为 schema type 引用，落盘时转成 JSON Schema `$ref`；
  * - 若存在组件引用，则转成标准 JSON Schema `$ref`。
  */
-function compactProps(
-  rawProps: PropEntryWithMeta[],
-  schemaPool: SchemaPoolContext,
-  registeredComponentTypes: ReadonlySet<string>,
-  propsInterfaceTypeIndex: ReadonlyMap<string, string>,
-): PropEntry[] {
+type CompactPropsInput = Readonly<{
+  rawProps: PropEntryWithMeta[]
+  schemaPool: SchemaPoolContext
+  registeredComponentTypes: ReadonlySet<string>
+  propsInterfaceTypeIndex: ReadonlyMap<string, string>
+}>
+
+function compactProps(input: CompactPropsInput): PropEntry[] {
+  const { rawProps, schemaPool, registeredComponentTypes, propsInterfaceTypeIndex } = input
   const result: PropEntry[] = []
 
   for (const prop of rawProps) {
@@ -1094,7 +1100,12 @@ function compactProps(
     // 2) 匿名字面量 enum 直接内联，避免把 `"a" | "b"` 伪装成共享业务 type；
     let schemaResolved = false
     if (prop.schema !== undefined) {
-      const schemaWithExamples = annotateSchemaExamples(prop.schema, prop.name, type, defaultValue)
+      const schemaWithExamples = annotateSchemaExamples({
+        schema: prop.schema,
+        name: prop.name,
+        type,
+        defaultValue,
+      })
       const normalizedSchema = normalizeNestedSchema(schemaPool, schemaWithExamples)
       if (schemaWithExamples.type === 'array') {
         compacted.schema = normalizeInlineSchema(schemaPool, schemaWithExamples)
@@ -1638,7 +1649,12 @@ function buildSortedComponents(request: BuildSortedComponentsRequest) {
       explicitSkillMeta,
     } = record
 
-    const props = compactProps(rawProps, schemaPool, actualComponentTypes, propsInterfaceTypeIndex)
+    const props = compactProps({
+      rawProps,
+      schemaPool,
+      registeredComponentTypes: actualComponentTypes,
+      propsInterfaceTypeIndex,
+    })
     const emits = compactEmits(rawEmits, schemaPool)
     const inferredBinding = inferBinding(props)
     const binding = inferredBinding !== undefined ? annotateBindingDescriptor(type, inferredBinding) : undefined

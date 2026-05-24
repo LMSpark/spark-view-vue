@@ -34,12 +34,12 @@ import {
   type ModuleActionMetadata,
   type ModuleAttributeMetadata,
   type ModuleHostContext,
-  type ModuleInstanceQuery,
   type ModuleInstanceRef,
   type ModuleKind,
   type ModulePath,
   type ModulePathContext,
 } from '../protocol'
+import type { ModuleFindInstanceRequest } from '../protocol/module-context'
 import type { ModuleKindRegistry } from './module-kind-registry'
 
 // ═══════════════════════════════════════════════════════════════
@@ -218,11 +218,9 @@ export class Navigator {
    *   - KIND_NOT_REGISTERED
    */
   public async findInstance(
-    path: ModulePath,
-    childKind: string,
-    query: ModuleInstanceQuery,
-    host?: ModuleHostContext,
+    request: ModuleFindInstanceRequest,
   ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
+    const { path, childKind, query, host } = request
     if (!this.kinds.has(childKind)) {
       return ModuleOperationResult.failCode(
         'KIND_NOT_REGISTERED',

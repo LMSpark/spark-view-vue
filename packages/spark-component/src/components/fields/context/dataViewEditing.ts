@@ -35,7 +35,15 @@ export function resolveDataViewEditingRow(source: unknown, row: DataRow | null):
   return source.getEditingRow(rowId)
 }
 
-export function writeDataViewEditingValue(source: unknown, row: DataRow | null, field: string, value: unknown): boolean {
+export type DataViewEditingWriteInput = Readonly<{
+  source: unknown
+  row: DataRow | null
+  field: string
+  value: unknown
+}>
+
+export function writeDataViewEditingValue(input: DataViewEditingWriteInput): boolean {
+  const { source, row, field, value } = input
   if (!row || !isDataViewEditingSource(source)) return false
   const rowId = source.getPkKey(row)
   if (rowId === undefined) {

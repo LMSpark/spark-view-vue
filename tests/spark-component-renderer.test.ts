@@ -13,7 +13,7 @@ test('SparkComponentRenderer forwards config.on listeners to rendered components
       return () => h('button', { class: 'click-emitter', onClick: () => emit('click', 'payload') }, 'emit')
     }
   })
-  registry.register('test-click-emitter', ClickEmitter)
+  registry.register({ type: 'test-click-emitter', component: ClickEmitter })
 
   const clickSpy = vi.fn()
   const wrapper = mount(SparkComponentRenderer, {
@@ -103,7 +103,7 @@ test('SparkComponentRenderer only forwards config.props to registered components
     }
   })
 
-  registry.register('root-field-reader', RootFieldReader)
+  registry.register({ type: 'root-field-reader', component: RootFieldReader })
 
   const wrapper = mount(SparkComponentRenderer, {
     props: {
@@ -165,7 +165,7 @@ test('SparkComponentRenderer maps cross-framework config value to Vue modelValue
       }, 'model')
     },
   })
-  system.registry.register('r-text', ModelValueReader)
+  system.registry.register({ type: 'r-text', component: ModelValueReader })
 
   const wrapper = mount(SparkComponentRendererSource, {
     props: {
@@ -206,7 +206,7 @@ test('SparkComponentRenderer drops config value when Vue modelValue is already p
       }, 'model')
     },
   })
-  system.registry.register('r-text', ModelValueReader)
+  system.registry.register({ type: 'r-text', component: ModelValueReader })
 
   const wrapper = mount(SparkComponentRendererSource, {
     props: {
@@ -243,7 +243,7 @@ test('SparkComponentRenderer does not forward empty children prop to registered 
     }
   })
 
-  registry.register('registered-attr-reader', AttrReader)
+  registry.register({ type: 'registered-attr-reader', component: AttrReader })
 
   const wrapper = mount(SparkComponentRenderer, {
     props: {
@@ -278,7 +278,7 @@ test('SparkComponentRenderer auto mode forwards children prop to registered comp
     }
   })
 
-  registry.register('registered-prop-reader', PropReader)
+  registry.register({ type: 'registered-prop-reader', component: PropReader })
 
   const wrapper = mount(SparkComponentRendererSource, {
     props: {
@@ -308,7 +308,7 @@ test('SparkComponentRenderer renders registered components without children prop
     }
   })
 
-  registry.register('registered-slot-reader', SlotReader)
+  registry.register({ type: 'registered-slot-reader', component: SlotReader })
 
   const wrapper = mount(SparkComponentRendererSource, {
     props: {
@@ -345,7 +345,11 @@ test('SparkComponentRenderer allows registry meta.childrenMode to force slot ren
     }
   })
 
-  registry.register('registered-hybrid-reader', HybridReader, { childrenMode: 'slot' })
+  registry.register({
+    type: 'registered-hybrid-reader',
+    component: HybridReader,
+    meta: { childrenMode: 'slot' },
+  })
 
   const wrapper = mount(SparkComponentRendererSource, {
     props: {
@@ -563,7 +567,11 @@ test('SparkComponentRenderer falls back when registry component hostTypes do not
     }
   })
 
-  registry.register('host-locked-card', HostLockedCard, { hostTypes: ['r-table'] })
+  registry.register({
+    type: 'host-locked-card',
+    component: HostLockedCard,
+    meta: { hostTypes: ['r-table'] },
+  })
 
   const wrapper = mount(SparkComponentRendererSource, {
     props: {
@@ -591,7 +599,11 @@ test('SparkComponentRenderer renders registry component when hostTypes match cur
     }
   })
 
-  registry.register('host-locked-card-matched', HostLockedCard, { hostTypes: ['r-table'] })
+  registry.register({
+    type: 'host-locked-card-matched',
+    component: HostLockedCard,
+    meta: { hostTypes: ['r-table'] },
+  })
 
   const tableContext = {
     id: 'spark-table-provider',

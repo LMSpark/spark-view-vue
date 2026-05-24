@@ -78,12 +78,15 @@ export function getFieldVisibility(field: string, row: DataRow, permissionMode?:
   return FieldVisibility.Visible
 }
 
-export function maskFieldValue(
+export type FieldMaskInput = Readonly<{
   field: string,
   value: unknown,
   row: DataRow,
-  permissionMode?: NavPermissionMode,
-): string {
+  permissionMode?: NavPermissionMode | undefined
+}>
+
+export function maskFieldValue(input: FieldMaskInput): string {
+  const { field, value, row, permissionMode } = input
   if (permissionMode === 'none') {
     return String(value ?? '')
   }

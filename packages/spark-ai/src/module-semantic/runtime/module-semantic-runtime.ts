@@ -41,12 +41,16 @@ import {
 } from '../knowledge/module-semantic-knowledge'
 import type {
   ModuleHostContext,
-  ModuleInstanceQuery,
   ModuleInstanceRef,
   ModuleKind,
   ModuleOperationResult,
   ModulePath,
 } from '../protocol'
+import type {
+  ModuleFindInstanceRequest,
+  ModuleInvokeActionRequest,
+  ModuleSetAttributeRequest,
+} from '../protocol/module-context'
 import { ProtocolToolRouter } from './protocol-tool-router'
 import type { ProtocolToolArgs } from './protocol-tool-args'
 
@@ -110,23 +114,15 @@ export class ModuleSemanticRuntime {
   }
 
   /** 直接写入属性 */
-  public async setAttribute(
-    path: ModulePath,
-    attrName: string,
-    value: LlmJsonValue,
-    host?: ModuleHostContext,
-  ): Promise<ModuleOperationResult<void>> {
-    return this.attributes.set(path, attrName, value, host)
+  public async setAttribute(request: ModuleSetAttributeRequest): Promise<ModuleOperationResult<void>> {
+    return this.attributes.set(request)
   }
 
   /** 直接调用动作 */
   public async invokeAction(
-    path: ModulePath,
-    actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-    host?: ModuleHostContext,
+    request: ModuleInvokeActionRequest,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    return this.actions.invoke(path, actionName, args, host)
+    return this.actions.invoke(request)
   }
 
   /** 直接列出子实例 */
@@ -140,12 +136,9 @@ export class ModuleSemanticRuntime {
 
   /** 直接查询子实例 */
   public async findInstance(
-    path: ModulePath,
-    childKind: string,
-    query: ModuleInstanceQuery,
-    host?: ModuleHostContext,
+    request: ModuleFindInstanceRequest,
   ): Promise<ModuleOperationResult<readonly ModuleInstanceRef[]>> {
-    return this.navigator.findInstance(path, childKind, query, host)
+    return this.navigator.findInstance(request)
   }
 
   /** 直接查询 kind 元数据 */

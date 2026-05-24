@@ -91,11 +91,27 @@ export type FilterItemConfig = {
 // ============================================================================
 
 export type ComponentRegistry = {
-  register(type: string, component: unknown, meta?: Record<string, unknown>, options?: { silent?: boolean }): void
+  register(...args: ComponentRegistrationArgs): void
   get(type: string): ComponentDefinition | undefined
   has(type: string): boolean
   unregister(type: string): boolean
   getAll(): ReadonlyMap<string, ComponentDefinition>}
+
+export type ComponentRegistrationInput = Readonly<{
+  type: string
+  component: unknown
+  meta?: Record<string, unknown> | undefined
+  options?: { silent?: boolean } | undefined
+}>
+
+export type ComponentRegistrationArgs =
+  | readonly [input: ComponentRegistrationInput]
+  | readonly [
+    type: string,
+    component: unknown,
+    meta?: Record<string, unknown>,
+    options?: { silent?: boolean },
+  ]
 
 // 日志类型 — 直接从 @spark-view/spark-utils 导入
 export type { LoggerApi } from '@spark-view/spark-utils'

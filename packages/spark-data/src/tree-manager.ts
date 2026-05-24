@@ -38,6 +38,13 @@ export type TreeManagerOptions = {
   httpClient?: HttpClientBase
   endpointContextProvider?: () => Record<string, unknown>}
 
+export type FetchNestedInput = Readonly<{
+  rootId?: string | number | null | undefined
+  limit?: number | undefined
+  depthLimit?: number | undefined
+  treeMode?: 'flat' | 'nested' | undefined
+}>
+
 /**
  * 树管理器类
  * 管理 DataView 中的树形数据视图
@@ -332,7 +339,8 @@ export class TreeManager {
   /**
    * 拉取完整嵌套树（对应 /tree/nested）
    */
-  async fetchNested(rootId?: string | number | null, limit?: number, depthLimit?: number, treeMode?: 'flat' | 'nested'): Promise<NestedTreeNode[]> {
+  async fetchNested(input: FetchNestedInput = {}): Promise<NestedTreeNode[]> {
+    const { rootId, limit, depthLimit, treeMode } = input
     const endpoint = this.api?.nested
     if (!endpoint) throw new Error('[TreeManager] api.nested 未配置')
     const params: Record<string, unknown> = {

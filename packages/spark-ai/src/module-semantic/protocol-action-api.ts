@@ -6,3 +6,7 @@ export type {
   ModuleKindRunner,
   ModuleOperationResultOptions,
 } from './protocol/index'
+
+export type {
+  ModuleInvokeActionRequest,
+} from './protocol/module-context'

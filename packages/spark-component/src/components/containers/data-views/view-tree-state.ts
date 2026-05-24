@@ -129,12 +129,15 @@ function buildNestedTreeRows(fields: TreeFieldNames, seedNodes: TreeManagerSeedN
   return toDataRows(nestedRows)
 }
 
-export function buildTreeTableRows(
+export type TreeTableRowsInput = Readonly<{
   view: DataView | null | undefined,
   rows: readonly DataRow[],
   treeConfig: TreeConfig | undefined,
-  primaryKey: string | undefined,
-): DataRow[] {
+  primaryKey: string | undefined
+}>
+
+export function buildTreeTableRows(input: TreeTableRowsInput): DataRow[] {
+  const { view, rows, treeConfig, primaryKey } = input
   if (rows.length === 0) return []
   if (isAlreadyNested(rows)) return toMutableRows(rows)
   if (!treeConfig) return toMutableRows(rows)

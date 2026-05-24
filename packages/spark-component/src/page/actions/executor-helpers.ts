@@ -278,12 +278,17 @@ export function createActionNotifier(
  *
  * `fallbackMessage` 为内置默认确认语（如"确认删除 XX 吗？"），由调用方构造。
  */
+export type ConfirmationInput = Readonly<{
+  fallbackMessage: string
+  fallbackTitle: string
+}>
+
 export async function confirmIfNeeded(
   ctx: ActionExecutionContext,
   decorator: ActionUiDecorator | undefined,
-  fallbackMessage: string,
-  fallbackTitle: string,
+  input: ConfirmationInput,
 ): Promise<boolean> {
+  const { fallbackMessage, fallbackTitle } = input
   const ps = ctx.getPageService()
   if (!ps) return true
 

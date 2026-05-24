@@ -434,7 +434,7 @@ const allRows = computed<DisplayRow[]>(() => {
   const schemaCache = new Map<string, ReturnType<typeof resolveSchemaInfoForPath>>()
   const rootLabel = mergedPolicy.value.rootLabel ?? '$'
   const policy = mergedPolicy.value
-  return rawRows.map(row => enrichRow(row, schemaCache, rootLabel, policy))
+  return rawRows.map(row => enrichRow(row, { schemaCache, rootLabel, policy }))
 })
 
 const filteredRows = computed<DisplayRow[]>(() => {
@@ -541,12 +541,17 @@ function syncDocumentValue(value: JsonDocument): void {
 
 // ── 行增强（schema + 搜索文本）──────────────────────────────
 
-function enrichRow(
-  row: TreeDisplayNode,
+type EnrichRowContext = Readonly<{
   schemaCache: Map<string, ReturnType<typeof resolveSchemaInfoForPath>>,
   rootLabel: string,
-  policy: Partial<JsonTreePolicy>,
+  policy: Partial<JsonTreePolicy>
+}>
+
+function enrichRow(
+  row: TreeDisplayNode,
+  context: EnrichRowContext,
 ): DisplayRow {
+  const { schemaCache, rootLabel, policy } = context
   const isContainer = row.type === 'object' || row.type === 'array'
   const displayKey = row.depth === 0 ? rootLabel
     : (typeof row.segment === 'number' ? `[${row.segment}]` : row.segment)
@@ -679,12 +684,22 @@ function handleKeyChange(row: DisplayRow, value: string | number): void {
   const nextValue = typeof value === 'string' ? value : getKeyInputValue(row)
   delete keyInputDrafts.value[row.id]
   if (nextValue === row.displayKey || nextValue.trim().length === 0) return
-  mutateModel((current) => renameNodeKey(current, row.id, nextValue, mergedPolicy.value))
+  mutateModel((current) => renameNodeKey({
+    model: current,
+    uid: row.id,
+    nextKeyInput: nextValue,
+    policy: mergedPolicy.value,
+  }))
 }
 
 function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
   if (value === undefined || value === null) return
-  mutateModel((current) => updateNodeType(current, row.id, value, mergedPolicy.value))
+  mutateModel((current) => updateNodeType({
+    model: current,
+    uid: row.id,
+    nextType: value,
+    policy: mergedPolicy.value,
+  }))
 }
 
 function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
@@ -948,4 +963,3 @@ function collapseAll(): void {
   color: var(--el-text-color-secondary);
 }
 </style>
-

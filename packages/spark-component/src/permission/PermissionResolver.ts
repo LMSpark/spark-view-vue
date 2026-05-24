@@ -107,12 +107,15 @@ export function isPermittedAction(
 
 // ── 字段权限状态解析 ──
 
-export function resolveFieldPermissionState(
-  field: string | undefined,
-  row: DataRow | null | undefined,
-  config: Omit<FieldRenderConfig, 'field'> = {},
-  permissionMode?: NavPermissionMode,
-): FieldRenderState | null {
+export type ResolveFieldPermissionStateInput = Readonly<{
+  field: string | undefined
+  row: DataRow | null | undefined
+  config?: Omit<FieldRenderConfig, 'field'> | undefined
+  permissionMode?: NavPermissionMode | undefined
+}>
+
+export function resolveFieldPermissionState(input: ResolveFieldPermissionStateInput): FieldRenderState | null {
+  const { field, row, config = {}, permissionMode } = input
   if (!field || !row) return null
   return computeFieldState({ field, ...config }, row, permissionMode)
 }

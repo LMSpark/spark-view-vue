@@ -67,7 +67,8 @@ const forbiddenLegacyIdentifiers = new Set([
 const maxNamedImportsPerWorkspaceModule = 8
 const maxPublicSurfaceExportsPerModule = 8
 const maxLayeringExportsPerModule = 3
-const maxPositionalSignatureParams = 4
+const maxDefaultPositionalSignatureParams = 3
+const maxConstructorParameterPropertyParams = 4
 
 const publicSurfaceAllowlist = new Set([
   // Schema builders intentionally expose paired value builders and Options types:
@@ -361,11 +362,12 @@ function scanSignatureConventions(parsed, violations) {
 
   function visit(node) {
     const signatureName = functionLikeName(node, sourceFile)
-    if (signatureName !== null && node.parameters.length > maxPositionalSignatureParams) {
+    const parameterLimit = positionalParameterLimit(node)
+    if (signatureName !== null && node.parameters.length > parameterLimit) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `signature has too many positional parameters: ${signatureName} has ${node.parameters.length}; use a named options object or domain command object`,
+        message: `signature has too many positional parameters: ${signatureName} has ${node.parameters.length}, limit is ${parameterLimit}; use a named options object or domain command object`,
       })
     }
 
@@ -403,6 +405,24 @@ function scanSignatureConventions(parsed, violations) {
   }
 
   visit(sourceFile)
+}
+
+function positionalParameterLimit(node) {
+  if (ts.isConstructorDeclaration(node) && hasConstructorParameterProperty(node)) {
+    return maxConstructorParameterPropertyParams
+  }
+  return maxDefaultPositionalSignatureParams
+}
+
+function hasConstructorParameterProperty(node) {
+  return node.parameters.some((parameter) => {
+    return parameter.modifiers?.some((modifier) => {
+      return modifier.kind === ts.SyntaxKind.PublicKeyword
+        || modifier.kind === ts.SyntaxKind.PrivateKeyword
+        || modifier.kind === ts.SyntaxKind.ProtectedKeyword
+        || modifier.kind === ts.SyntaxKind.ReadonlyKeyword
+    }) === true
+  })
 }
 
 function hasParameterJSDoc(node, sourceFile) {

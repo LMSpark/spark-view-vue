@@ -32,7 +32,7 @@ describe('PermissionResolver', () => {
   it('defaults missing permission data to baseline allow for actions; field editable still requires grant', () => {
     const row: DataRow = { id: 1, name: 'Alice' }
 
-    const state = resolveFieldPermissionState('name', row)
+    const state = resolveFieldPermissionState({ field: 'name', row })
 
     // 缺省快照 → 基线允许（max(true, undefined) = true）
     expect(isPermittedAction('create', {})).toBe(true)
@@ -52,7 +52,7 @@ describe('PermissionResolver', () => {
   it('does not treat empty values as hidden without an explicit hidden permission', () => {
     const row: DataRow = { id: 1, name: '', _perm: { editableFields: [] } }
 
-    const state = resolveFieldPermissionState('name', row)
+    const state = resolveFieldPermissionState({ field: 'name', row })
 
     expect(state?.visibility).toBe(FieldVisibility.Visible)
     expect(state?.readable).toBe(true)
@@ -63,7 +63,7 @@ describe('PermissionResolver', () => {
   it('treats empty or missing values as hidden only when hiddenFields explicitly marks the field', () => {
     const row: DataRow = { id: 1, _perm: { hiddenFields: ['name'], editableFields: [] } }
 
-    const state = resolveFieldPermissionState('name', row)
+    const state = resolveFieldPermissionState({ field: 'name', row })
 
     expect(state?.visibility).toBe(FieldVisibility.Hidden)
     expect(state?.readable).toBe(false)
@@ -92,8 +92,8 @@ describe('PermissionResolver', () => {
       },
     }
 
-    const hiddenState = resolveFieldPermissionState('secret', row)
-    const maskedState = resolveFieldPermissionState('phone', row)
+    const hiddenState = resolveFieldPermissionState({ field: 'secret', row })
+    const maskedState = resolveFieldPermissionState({ field: 'phone', row })
 
     expect(hiddenState?.visibility).toBe(FieldVisibility.Hidden)
     expect(hiddenState?.readable).toBe(false)
@@ -114,7 +114,7 @@ describe('PermissionResolver', () => {
       },
     }
 
-    const state = resolveFieldPermissionState('password', row)
+    const state = resolveFieldPermissionState({ field: 'password', row })
 
     expect(state?.visibility).toBe(FieldVisibility.Hidden)
     expect(state?.readable).toBe(false)

@@ -18,6 +18,7 @@
 
 import type { LlmJsonValue } from '../../schema'
 import type { ModuleHostContext, ModuleOperationResult, ModulePath } from '../protocol'
+import type { ModuleSetAttributeRequest } from '../protocol/module-context'
 
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
@@ -55,12 +56,8 @@ export class AttributeAccessor {
    *   - ATTRIBUTE_NOT_DECLARED
    *   - ATTRIBUTE_NOT_WRITABLE
    */
-  public async set(
-    path: ModulePath,
-    attrName: string,
-    value: LlmJsonValue,
-    host?: ModuleHostContext,
-  ): Promise<ModuleOperationResult<void>> {
+  public async set(request: ModuleSetAttributeRequest): Promise<ModuleOperationResult<void>> {
+    const { path, attrName, value, host } = request
     const navResult = await this.navigator.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult

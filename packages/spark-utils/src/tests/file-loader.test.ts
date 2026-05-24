@@ -483,7 +483,7 @@ describe('FileLoader', () => {
         cachePrefix: 'spark_page_',
       })
 
-      localLoader.store('new.json', 'new-content', 'ts-new')
+      localLoader.store({ key: 'new.json', data: 'new-content', sourceTimestamp: 'ts-new' })
 
       expect(fakeStorage.getItem(quotaTarget)).not.toBeNull()
       // old-a 的 sourceTimestamp 更新，但本地访问更旧；清理顺序必须仍然优先驱逐 old-a。
@@ -788,13 +788,13 @@ describe('FileLoader', () => {
 
   describe('store() / retrieve() 高级 API', () => {
     it('store 后 retrieve 命中（timestamp 匹配）', () => {
-      loader.store('my-key', { computed: true }, 'ts-store')
+      loader.store({ key: 'my-key', data: { computed: true }, sourceTimestamp: 'ts-store' })
       const result = loader.retrieve('my-key', 'ts-store')
       expect(result).toEqual({ computed: true })
     })
 
     it('timestamp 不匹配时 retrieve 返回 null', () => {
-      loader.store('stale-key', { old: true }, 'ts-old')
+      loader.store({ key: 'stale-key', data: { old: true }, sourceTimestamp: 'ts-old' })
       const result = loader.retrieve('stale-key', 'ts-new')
       expect(result).toBeNull()
     })

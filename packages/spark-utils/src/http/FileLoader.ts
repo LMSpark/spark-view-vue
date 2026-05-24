@@ -70,6 +70,20 @@ type LoadOptionBase = {
   /** 过期级别（覆盖全局默认值），对应 expirationTiers 中的 level */
   expirationLevel?: number}
 
+export type FileLoaderStoreInput = Readonly<{
+  key: string
+  data: unknown
+  sourceTimestamp: string
+  expirationLevel?: number | undefined
+}>
+
+type FileLoaderWriteInput = Readonly<{
+  key: string
+  data: unknown
+  sourceTimestamp: string
+  expirationLevel: number
+}>
+
 export type JsonLoadOptions = LoadOptionBase & {
   parseJSON?: true}
 
@@ -399,8 +413,14 @@ export class FileLoader {
    * 手动缓存任意计算结果。
    * 通常不需要在业务代码中调用；优先使用 withTransform() 或 load({ transform })。
    */
-  store(key: string, data: unknown, sourceTimestamp: string, expirationLevel?: number): void {
-    this.writeEntry(key, data, sourceTimestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
+  store(input: FileLoaderStoreInput): void {
+    const { key, data, sourceTimestamp, expirationLevel } = input
+    this.writeEntry({
+      key,
+      data,
+      sourceTimestamp,
+      expirationLevel: expirationLevel ?? this.opts.defaultExpirationLevel,
+    })
   }
 
   /**
@@ -498,7 +518,12 @@ export class FileLoader {
         return { success: false, error: '响应格式错误：缺少 content 或 timestamp', fromCache: false, reason: 'invalid-response' }
       }
 
-      this.writeEntry(fileName, result.content, result.timestamp, expirationLevel ?? this.opts.defaultExpirationLevel)
+      this.writeEntry({
+        key: fileName,
+        data: result.content,
+        sourceTimestamp: result.timestamp,
+        expirationLevel: expirationLevel ?? this.opts.defaultExpirationLevel,
+      })
       this.emit('file-loaded', { fileName, fromCache: false, timestamp: result.timestamp })
       return { success: true, data: result.content, timestamp: result.timestamp, fromCache: false }
 
@@ -626,7 +651,8 @@ export class FileLoader {
     throw new Error(message)
   }
 
-  private writeEntry(key: string, data: unknown, sourceTimestamp: string, expirationLevel: number): void {
+  private writeEntry(input: FileLoaderWriteInput): void {
+    const { key, data, sourceTimestamp, expirationLevel } = input
     const now = Date.now()
     const entry: CacheEntry<unknown> = {
       data,

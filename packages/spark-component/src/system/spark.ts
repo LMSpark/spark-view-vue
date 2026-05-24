@@ -37,7 +37,7 @@ export const Spark = {
    * Spark.register('user-grid', UserGrid)
    */
   register(type: string, component: unknown, meta?: Record<string, unknown>): void {
-    getGlobalRegistry().register(type, component, meta)
+    getGlobalRegistry().register({ type, component, meta })
   },
 
   /**
@@ -52,7 +52,7 @@ export const Spark = {
   registerAll(components: Record<string, unknown>): void {
     const reg = getGlobalRegistry()
     for (const [type, component] of Object.entries(components)) {
-      reg.register(type, component)
+      reg.register({ type, component })
     }
   },
 

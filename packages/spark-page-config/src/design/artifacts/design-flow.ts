@@ -42,12 +42,15 @@ export type PageDesignTaskGuide = {
 
 // ── 流程定义 DSL ───────────────────────────────────────────
 
-function step(
+type PageDesignFlowStepParts = readonly [
   stepNumber: number,
   phase: string,
   action: string,
   checkpoint: string,
-): PageDesignFlowStep {
+]
+
+function step(...definition: PageDesignFlowStepParts): PageDesignFlowStep {
+  const [stepNumber, phase, action, checkpoint] = definition
   return { step: stepNumber, phase, action, checkpoint }
 }
 

@@ -30,7 +30,10 @@ describe('Vue plugin integration', () => {
 
   it('registry rejects removed function registration', () => {
     const registry = Spark.createRegistry()
-    expect(() => registry.register('legacy-loader', () => Promise.resolve({ default: {} }))).toThrow(/Function registration has been removed/)
+    expect(() => registry.register({
+      type: 'legacy-loader',
+      component: () => Promise.resolve({ default: {} }),
+    })).toThrow(/Function registration has been removed/)
     expect(() => Spark.register('legacy-loader', () => null)).toThrow(/Function registration has been removed/)
   })
 

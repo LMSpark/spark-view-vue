@@ -8,3 +8,7 @@ export type {
   ModuleKindOptions,
   ModuleParameterPayloadMetadata,
 } from './protocol/index'
+
+export type {
+  ModuleSetAttributeRequest,
+} from './protocol/module-context'

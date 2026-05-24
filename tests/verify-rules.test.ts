@@ -108,8 +108,8 @@ describe('verification rules', () => {
       '    private readonly getValue: () => string,',
       '  ) {}',
       '}',
-      'export function tooWide(a: string, b: string, c: string, d: string, e: string): string {',
-      '  return a + b + c + d + e',
+      'export function tooWide(a: string, b: string, c: string, d: string): string {',
+      '  return a + b + c + d',
       '}',
     ].join('\n'))
 
