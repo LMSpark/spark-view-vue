@@ -10,13 +10,22 @@ type LeaveRequestDraftStatus = 'draft' | 'submitted' | 'cancelled'
 
 type LeaveRequestDraftFields = {
   readonly applicantName?: string
+  readonly applicantCode?: string
   readonly leaveType?: string
   readonly startDate?: string
   readonly endDate?: string
   readonly totalDays?: number
   readonly reason?: string
   readonly approver?: string
+  readonly approverCode?: string
 }
+
+type LeaveRequestPersonRecord = Readonly<{
+  code: string
+  name: string
+  department: string
+  role: string
+}>
 
 type LeaveRequestDraftState = {
   readonly leaveDraftId: string
@@ -84,14 +93,25 @@ function normalizeDraftFields(input: unknown): LeaveRequestDraftFields | LeaveRe
     return leaveRequestServiceFailure('INVALID_FIELDS', 'fields 必须是对象。', '把要更新的请假字段放在 fields 对象中。')
   }
 
+  const applicantName = readStringField(input, 'applicantName')
+  const applicantCode = readStringField(input, 'applicantCode')
+  const leaveType = readStringField(input, 'leaveType')
+  const startDate = readStringField(input, 'startDate')
+  const endDate = readStringField(input, 'endDate')
+  const totalDays = readNumberField(input, 'totalDays')
+  const reason = readStringField(input, 'reason')
+  const approver = readStringField(input, 'approver')
+  const approverCode = readStringField(input, 'approverCode')
   const fields: LeaveRequestDraftFields = {
-    ...(readStringField(input, 'applicantName') !== undefined ? { applicantName: readStringField(input, 'applicantName') } : {}),
-    ...(readStringField(input, 'leaveType') !== undefined ? { leaveType: readStringField(input, 'leaveType') } : {}),
-    ...(readStringField(input, 'startDate') !== undefined ? { startDate: readStringField(input, 'startDate') } : {}),
-    ...(readStringField(input, 'endDate') !== undefined ? { endDate: readStringField(input, 'endDate') } : {}),
-    ...(readNumberField(input, 'totalDays') !== undefined ? { totalDays: readNumberField(input, 'totalDays') } : {}),
-    ...(readStringField(input, 'reason') !== undefined ? { reason: readStringField(input, 'reason') } : {}),
-    ...(readStringField(input, 'approver') !== undefined ? { approver: readStringField(input, 'approver') } : {}),
+    ...(applicantName === undefined ? {} : { applicantName }),
+    ...(applicantCode === undefined ? {} : { applicantCode }),
+    ...(leaveType === undefined ? {} : { leaveType }),
+    ...(startDate === undefined ? {} : { startDate }),
+    ...(endDate === undefined ? {} : { endDate }),
+    ...(totalDays === undefined ? {} : { totalDays }),
+    ...(reason === undefined ? {} : { reason }),
+    ...(approver === undefined ? {} : { approver }),
+    ...(approverCode === undefined ? {} : { approverCode }),
   }
 
   if (Object.keys(fields).length === 0) {
@@ -204,7 +224,7 @@ class LeaveRequestService {
   }> {
     const draft = this.getDraft(context.leaveDraftId)
     if (draft.status === 'submitted') {
-      return leaveRequestServiceFailure('DRAFT_ALREADY_SUBMITTED', '当前请假草稿已提交。', '不要重复提交；如需修改请创建新草稿。')
+      return leaveRequestServiceFailure('DRAFT_ALREADY_SUBMITTED', '当前请假草稿已提交。', '提示用户当前草稿已提交；如需修改请创建新草稿。')
     }
     if (draft.status === 'cancelled') {
       return leaveRequestServiceFailure('DRAFT_CANCELLED', '当前请假草稿已取消。', '创建新的请假草稿后再提交。')
@@ -270,10 +290,10 @@ import {
 } from '@spark-view/spark-ai/host'
 import {
   ModuleKind,
+  ModuleOperationResult,
   ModuleSemanticRuntime,
   type ModuleActionMetadata,
   type ModuleInstanceRef,
-  type ModuleOperationResult,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
 import type {
@@ -289,21 +309,30 @@ import { isRecord } from '../json-document'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 export const LEAVE_REQUEST_KIND = 'manual-leave'
+export const LEAVE_REQUEST_PERSON_KIND = 'leave-person'
 
 export type LeaveRequestBusinessRegistrationOptions = {
   readonly now?: () => number
+  readonly persons?: readonly LeaveRequestPersonRecord[]
 }
 
 const NO_PARAMS = noParamsSchema('不接受参数，请传 {} 或留空。')
+const DEFAULT_LEAVE_REQUEST_PERSONS: readonly LeaveRequestPersonRecord[] = [
+  { code: 'E1001', name: 'Ada', department: '研发部', role: 'employee' },
+  { code: 'E1002', name: 'Lin', department: '人事部', role: 'approver' },
+  { code: 'E1003', name: 'Grace', department: '财务部', role: 'approver' },
+]
 
 const DRAFT_FIELDS_SCHEMA: Record<string, LlmJsonSchema> = {
   applicantName: { type: 'string', description: '请假人姓名。' },
+  applicantCode: { type: 'string', description: '请假人人员编码；通过 leave-person 实例查询得到，对应 ModuleInstanceRef.id。' },
   leaveType: { type: 'string', description: '请假类型，例如 annual、sick、personal、other。' },
-  startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。用户给"今天/明天/后天"等相对日期时，必须基于系统提示中的当前日期换算；不能使用假设日期。' },
+  startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。用户给"今天/明天/后天"等相对日期时，必须基于系统提示中的当前日期换算；日期来源以当前运行时上下文和用户确认为准。' },
   endDate: { type: 'string', description: '结束日期，格式 YYYY-MM-DD。按自然日包含起止日计算；例如请假 2 天时，endDate = startDate + 1 天。' },
   totalDays: { type: 'number', description: '请假天数，必须大于 0。用户说"请假两天"时填 2。' },
   reason: { type: 'string', description: '请假事由。' },
-  approver: { type: 'string', description: '审批人姓名或 ID。' },
+  approver: { type: 'string', description: '审批人姓名。' },
+  approverCode: { type: 'string', description: '审批人人员编码；通过 leave-person 实例查询得到，对应 ModuleInstanceRef.id。' },
 }
 
 const SET_DRAFT_FIELDS_SCHEMA = objectSchema({
@@ -340,6 +369,7 @@ const LEAVE_REQUEST_ACTIONS: readonly ModuleActionMetadata[] = [
     example: {
       fields: {
         applicantName: 'Ada',
+        applicantCode: 'E1001',
         leaveType: 'annual',
         startDate: '2026-05-14',
         endDate: '2026-05-15',
@@ -348,7 +378,8 @@ const LEAVE_REQUEST_ACTIONS: readonly ModuleActionMetadata[] = [
       },
     },
     usageRules: [
-      '只写入用户明确表达的字段；不要虚构请假人、日期、原因或审批人。',
+      '只写入用户明确表达的字段；缺少请假人、日期、原因或审批人时先追问确认。',
+      '填写 applicantCode 或 approverCode 前，先在当前 manual-leave 实例下 findInstance(childKind="leave-person", query) 查询人员实例；人员编码取 ModuleInstanceRef.id。',
       '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算，无法唯一确定时先追问。',
       '写入 startDate/endDate/totalDays 前，必须保证三者一致；请假 N 天按自然日包含起止日计算。',
       '只有调用 setDraftFields 成功后，才能说字段已记录或草稿已更新。',
@@ -371,7 +402,7 @@ const LEAVE_REQUEST_ACTIONS: readonly ModuleActionMetadata[] = [
     usageRules: ['只有用户明确表示提交或确认信息完整时调用。', '如果返回 MISSING_REQUIRED_FIELDS，继续追问缺失字段。'],
     failureModes: [
       { code: 'MISSING_REQUIRED_FIELDS', when: '提交前缺少必填字段', fix: '追问缺失字段后再提交。' },
-      { code: 'DRAFT_ALREADY_SUBMITTED', when: '草稿已提交', fix: '不要重复提交。' },
+      { code: 'DRAFT_ALREADY_SUBMITTED', when: '草稿已提交', fix: '提示用户当前草稿已提交。' },
       { code: 'DRAFT_CANCELLED', when: '草稿已取消', fix: '创建新的请假草稿。' },
     ],
   },
@@ -385,21 +416,74 @@ const LEAVE_REQUEST_ACTIONS: readonly ModuleActionMetadata[] = [
     example: { reason: '用户取消申请' },
     usageRules: ['只有用户明确表示取消当前请假流程时调用。'],
     failureModes: [
-      { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '不要取消草稿，提示用户走审批撤回流程。' },
+      { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '提示用户当前申请已提交，引导用户走审批撤回流程。' },
     ],
   },
 ]
 
+class LeaveRequestPersonDirectory {
+  private readonly people: readonly LeaveRequestPersonRecord[]
+
+  public constructor(people: readonly LeaveRequestPersonRecord[]) {
+    this.people = people.map((person) => ({
+      code: person.code.trim(),
+      name: person.name.trim(),
+      department: person.department.trim(),
+      role: person.role.trim(),
+    }))
+  }
+
+  public listRefs(): readonly ModuleInstanceRef[] {
+    return this.people.map((person) => this.toRef(person))
+  }
+
+  public findRefs(query: Readonly<Record<string, LlmJsonValue>>): readonly ModuleInstanceRef[] {
+    return this.people.filter((person) => personMatchesQuery(person, query)).map((person) => this.toRef(person))
+  }
+
+  public findByCode(code: string): LeaveRequestPersonRecord | undefined {
+    const normalized = code.trim().toLowerCase()
+    return this.people.find((person) => person.code.toLowerCase() === normalized)
+  }
+
+  private toRef(person: LeaveRequestPersonRecord): ModuleInstanceRef {
+    return {
+      id: person.code,
+      label: person.name,
+      summary: `人员编码 ${person.code}；部门 ${person.department}；角色 ${person.role}`,
+    }
+  }
+}
+
 class LeaveRequestModuleKind extends ModuleKind {
   private readonly service: LeaveRequestService
 
-  public constructor(service: LeaveRequestService) {
+  public constructor(
+    service: LeaveRequestService,
+    people: LeaveRequestPersonDirectory,
+  ) {
     super({
       kind: LEAVE_REQUEST_KIND,
       name: '人工请假',
       description: '帮助员工收集、确认并提交人工请假申请。',
       actions: LEAVE_REQUEST_ACTIONS,
-      children: [],
+      children: [LEAVE_REQUEST_PERSON_KIND],
+      list: (_ctx, childKind) => {
+        if (childKind !== undefined && childKind !== LEAVE_REQUEST_PERSON_KIND) {
+          return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
+        }
+        return ModuleOperationResult.ok(people.listRefs())
+      },
+      find: (ctx, childKind, query) => {
+        if (childKind === LEAVE_REQUEST_KIND && ctx.segments.length === 0) {
+          const ref = createCurrentLeaveRequestRef(ctx)
+          return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>(ref === null ? [] : [ref])
+        }
+        if (childKind === LEAVE_REQUEST_PERSON_KIND) {
+          return ModuleOperationResult.ok(people.findRefs(query))
+        }
+        return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
+      },
     })
     this.service = service
   }
@@ -433,8 +517,43 @@ class LeaveRequestModuleKind extends ModuleKind {
   }
 }
 
-function createLeaveRequestModuleKind(service: LeaveRequestService): ModuleKind {
-  return new LeaveRequestModuleKind(service)
+class LeaveRequestPersonModuleKind extends ModuleKind {
+  public constructor(people: LeaveRequestPersonDirectory) {
+    super({
+      kind: LEAVE_REQUEST_PERSON_KIND,
+      name: '请假人员',
+      description: '可用于填写请假人和审批人的人员实例目录，实例 id 即人员编码。',
+      parentKind: LEAVE_REQUEST_KIND,
+      attributes: [
+        { name: 'code', description: '人员编码。', schema: { type: 'string' }, readable: true, writable: false },
+        { name: 'name', description: '人员姓名。', schema: { type: 'string' }, readable: true, writable: false },
+        { name: 'department', description: '人员所属部门。', schema: { type: 'string' }, readable: true, writable: false },
+        { name: 'role', description: '人员角色，例如 employee 或 approver。', schema: { type: 'string' }, readable: true, writable: false },
+      ],
+      attributeAccessor: {
+        get: (ctx, attrName) => {
+          const person = people.findByCode(ctx.segment.id)
+          if (person === undefined) {
+            return ModuleOperationResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment.id}`, '先通过 findInstance 查询可用 leave-person 实例。')
+          }
+          return ModuleOperationResult.ok(personAttribute(person, attrName))
+        },
+        set: () => ModuleOperationResult.failCode('PERSON_ATTRIBUTE_READONLY', '人员目录属性只读。', '请读取人员实例属性后，把编码写入请假草稿字段。'),
+      },
+      actions: [],
+      children: [],
+      list: () => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]),
+      find: (_ctx, childKind, query) =>
+        ModuleOperationResult.ok(childKind === LEAVE_REQUEST_PERSON_KIND ? people.findRefs(query) : []),
+    })
+  }
+}
+
+function createLeaveRequestModuleKind(
+  service: LeaveRequestService,
+  people: LeaveRequestPersonDirectory,
+): ModuleKind {
+  return new LeaveRequestModuleKind(service, people)
 }
 
 function createCurrentLeaveRequestRef(ctx: ModulePathContext): ModuleInstanceRef | null {
@@ -445,12 +564,61 @@ function createCurrentLeaveRequestRef(ctx: ModulePathContext): ModuleInstanceRef
   return { id: leaveDraftId, label: '当前请假草稿', summary: '当前人工请假业务实例' }
 }
 
+function personMatchesQuery(
+  person: LeaveRequestPersonRecord,
+  query: Readonly<Record<string, LlmJsonValue>>,
+): boolean {
+  const id = readQueryText(query, 'id')
+  const code = readQueryText(query, 'code')
+  const name = readQueryText(query, 'name')
+  const label = readQueryText(query, 'label')
+  const keyword = readQueryText(query, 'keyword')
+  const role = readQueryText(query, 'role')
+  const department = readQueryText(query, 'department')
+  if (id !== undefined && !sameText(person.code, id)) return false
+  if (code !== undefined && !sameText(person.code, code)) return false
+  if (name !== undefined && !includesText(person.name, name)) return false
+  if (label !== undefined && !includesText(person.name, label)) return false
+  if (role !== undefined && !sameText(person.role, role)) return false
+  if (department !== undefined && !includesText(person.department, department)) return false
+  if (keyword !== undefined) {
+    return [person.code, person.name, person.department, person.role]
+      .some((value) => includesText(value, keyword))
+  }
+  return true
+}
+
+function personAttribute(person: LeaveRequestPersonRecord, attrName: string): string {
+  switch (attrName) {
+    case 'code': return person.code
+    case 'name': return person.name
+    case 'department': return person.department
+    case 'role': return person.role
+    default: return ''
+  }
+}
+
+function readQueryText(query: Readonly<Record<string, LlmJsonValue>>, key: string): string | undefined {
+  const value = query[key]
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
+}
+
+function sameText(value: string, query: string): boolean {
+  return value.trim().toLowerCase() === query.trim().toLowerCase()
+}
+
+function includesText(value: string, query: string): boolean {
+  return value.trim().toLowerCase().includes(query.trim().toLowerCase())
+}
+
 export function createLeaveRequestBusinessRegistration(
   options: LeaveRequestBusinessRegistrationOptions = {},
 ): AiHostBusinessRegistration {
   const service = new LeaveRequestService(options.now)
+  const people = new LeaveRequestPersonDirectory(options.persons ?? DEFAULT_LEAVE_REQUEST_PERSONS)
   const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(createLeaveRequestModuleKind(service))
+  runtime.registerKind(createLeaveRequestModuleKind(service, people))
+  runtime.registerKind(new LeaveRequestPersonModuleKind(people))
 
   return {
     moduleId: LEAVE_REQUEST_MODULE_ID,
@@ -547,7 +715,9 @@ function createLeaveRequestSystemPrompt(now: Date): string {
     `- 当前日期：${currentDate}`,
     `- 当前 UTC 时间：${now.toISOString()}`,
     `- 当前时区：${timeZone}`,
-    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 guideHumanQuestion，再追问用户，不要假设或使用训练样本中的日期。',
+    '- 人员编码来源：在当前 manual-leave 实例下使用 findInstance(path, "leave-person", { name/keyword/role }) 查询人员实例；返回的 ModuleInstanceRef.id 即人员编码。',
+    '- 填写 applicantCode 或 approverCode 时，先查询 leave-person 实例，再把人员实例 id 写入草稿字段。',
+    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 guideHumanQuestion，再追问用户；日期来源只使用当前运行时上下文和用户确认。',
     '缺少请假人、类型、起止日期、天数、事由或提交确认时，先用 guideHumanQuestion 生成反问指南，再用自然语言向用户补问。',
   ].join('\n')
 }

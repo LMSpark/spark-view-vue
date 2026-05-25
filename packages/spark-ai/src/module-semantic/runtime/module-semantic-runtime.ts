@@ -40,17 +40,15 @@ import {
   type ModuleSemanticKnowledgeSnapshot,
 } from '../knowledge/module-semantic-knowledge'
 import type {
+  ModuleFindInstanceRequest,
   ModuleHostContext,
   ModuleInstanceRef,
+  ModuleInvokeActionRequest,
   ModuleKind,
   ModuleOperationResult,
   ModulePath,
-} from '../protocol'
-import type {
-  ModuleFindInstanceRequest,
-  ModuleInvokeActionRequest,
   ModuleSetAttributeRequest,
-} from '../protocol/module-context'
+} from '../protocol'
 import { ProtocolToolRouter } from './protocol-tool-router'
 import type { ProtocolToolArgs } from './protocol-tool-args'
 
@@ -75,7 +73,7 @@ export class ModuleSemanticRuntime {
     this.attributes = new AttributeAccessor(this.navigator)
     this.actions = new ActionInvoker(this.navigator)
     this.knowledge = new ModuleSemanticKnowledgeProjector(this.kinds)
-    this.toolGenerator = new ProtocolToolGenerator(this.kinds)
+    this.toolGenerator = new ProtocolToolGenerator()
     this.toolRouter = new ProtocolToolRouter(this.attributes, this.actions, this.navigator, this.knowledge)
   }
 

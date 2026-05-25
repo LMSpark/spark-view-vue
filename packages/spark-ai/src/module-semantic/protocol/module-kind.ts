@@ -1,43 +1,33 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  MODULE-SEMANTIC · 模块类型核心                                               │
- * │  Module Kind — Protocol Core                                                  │
- * │                                                                              │
- * │  ModuleKind 是 module-semantic 协议的中心抽象。每个 ModuleKind 实例描述一个    │
- * │  业务能力模块的元数据（属性、动作、子模块）和运行时行为委托。                 │
- * │                                                                              │
- * │  三大职责：                                                                   │
- * │    1. 元数据声明   — attributes / actions / payloads / children              │
- * │    2. 运行时委托   — attributeAccessor / actionRunner / childLister /        │
- * │                      instanceFinder                                          │
- * │    3. 协议级校验   — fail-fast / JSON Schema 校验 / JSON 值规整               │
- * │                                                                              │
- * │  LLM 执行流程（知识工具完成模块/动作/反问判断后）：                              │
- * │    describeKind  → 查看属性/动作/子模块/失败模式/使用规则                       │
- * │    listChildren  → 浏览子实例                                                  │
- * │    findInstance  → 按条件精确查找实例                                           │
- * │    getAttribute  → 读取属性值                                                  │
- * │    setAttribute  → 写入属性值                                                  │
- * │    invokeAction  → 执行业务动作                                                │
- * │                                                                              │
- * │  阅读顺序（按功能流程排列）：                                                   │
- * │    一、元数据类型与构造选项 → 类型定义 + 默认常量                                │
- * │    二、ModuleKind class    → 协议核心实现                                      │
- * │    三、规范化函数         → 构造期校验与标准化                                  │
- * │    四、错误结果工厂       → 失败路径统一出口                                    │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * module-semantic · 模块类型核心
+ *
+ * ModuleKind 是协议的中心抽象，每个实例描述一个业务能力模块的元数据和运行时行为。
+ *
+ * 三大职责：
+ *   1. 元数据声明 — attributes / actions / payloads / children
+ *   2. 运行时委托 — attributeAccessor / actionRunner / childLister / instanceFinder
+ *   3. 协议级校验 — fail-fast 构造 / JSON Schema 校验 / JSON 值规整
+ *
+ * LLM 执行流程：
+ *   describeKind → listChildren / findInstance → getAttribute / setAttribute / invokeAction
+ *
+ * 文件结构：内部辅助 → ModuleKind class → 规范化函数 → 错误工厂
  */
 
 import {
   LlmSchemaValidator,
-  type LlmJsonObject,
-  type LlmJsonSchema,
-  type LlmJsonSchemaObject,
   type LlmJsonValue,
   type LlmParamValidationIssue,
   type LlmParamValidationResult,
 } from '../../schema'
 import type {
+  ModuleActionMetadata,
+  ModuleAttributeMetadata,
+  ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
+} from './module-metadata'
+import type {
+  ModuleAttributeAccessor,
   ModuleChildrenLister,
   ModuleInstanceFinder,
   ModuleInstanceQuery,
@@ -48,132 +38,27 @@ import type {
 } from './module-context'
 import { ModuleCheckEntry, ModuleOperationResult } from './module-operation'
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * 一、元数据类型与构造选项
- *
- * 本段从属性 → 动作 → 荷载 → 委托 → 构造选项，按「声明什么 → 如何委托
- * → 如何装配」依次定义。所有元数据类型均为 Readonly，构造后不可变。
- * ═════════════════════════════════════════════════════════════════════════════ */
+// ============================================================================
+// 一、内部辅助（仅 class 内部使用）
+// ============================================================================
 
-// ── 1.1 属性元数据 ──
-// 描述 ModuleKind 暴露给 LLM 的一个可读写属性。
-// 属性的实际读写由 attributeAccessor 委托完成，元数据只管声明。
-
-export type ModuleAttributeMetadata = Readonly<{
-  /** 属性名（在同一 kind 的 attributes 数组中唯一） */
-  name: string
-  /** 属性说明（LLM 可见） */
-  description: string
-  /** 属性值的 JSON Schema（用于 LLM 校验和序列化约束） */
-  schema: LlmJsonSchema
-  /** 是否可读 */
-  readable: boolean
-  /** 是否可写 */
-  writable: boolean
-  /** 示例值（可选，帮助 LLM 理解属性形状） */
-  example?: LlmJsonValue
-}>
-
-/** 属性访问权限（从 ModuleAttributeMetadata 中提取的可读/可写标记） */
-export type ModuleAttributeAccess = Pick<ModuleAttributeMetadata, 'readable' | 'writable'>
-
-// ── 1.2 动作元数据 ──
-// 描述 ModuleKind 暴露给 LLM 的一个可调用动作。
-// 动作的实际执行由 actionRunner 委托完成。
-
-export type ModuleActionFailureMode = Readonly<{
-  /** 错误码（LLM 可见，用于识别失败类型） */
-  code: string
-  /** 发生条件（自然语言描述什么时候会出现这个错误） */
-  when: string
-  /** 修复建议（LLM 在失败后可参考的恢复步骤） */
-  fix: string
-}>
-
-/** 动作结果 schema（支持简单类型或完整 JSON Schema） */
-export type ModuleActionResultSchema = LlmJsonSchema | LlmJsonObject
-
-export type ModuleActionMetadata = Readonly<{
-  /** 动作名（在同一 kind 的 actions 数组中唯一） */
-  name: string
-  /** 动作说明（LLM 可见） */
-  description: string
-  /** 参数 schema（JSON Schema object root，用于 LLM 参数校验） */
-  paramsSchema: LlmJsonSchemaObject
-  /** 返回值 schema（可选，帮助 LLM 理解返回值结构） */
-  resultSchema?: ModuleActionResultSchema
-  /** 使用规则（多条，LLM 在调用前阅读） */
-  usageRules?: readonly string[]
-  /** 失败模式（多条，LLM 在调用失败后参考修复） */
-  failureModes?: readonly ModuleActionFailureMode[]
-  /** 调用示例（帮助 LLM 理解参数形状） */
-  example?: LlmJsonValue
-}>
-
-// ── 1.3 参数荷载元数据 ──
-// 描述某个 ModuleKind 依赖的外部参数指南 provider。
-// 例如 spark.component 的组件目录清单。
-
-export type ModuleParameterPayloadMetadata = Readonly<{
-  /** provider 唯一命名空间，例如 "spark.component" */
-  payloadRef: string
-  /** 该 payload 与当前模块的关系说明 */
-  description: string
-  /** 该 payload 通常服务的 action 名；为空表示模块级通用 */
-  requiredForActions?: readonly string[]
-}>
-
-// ── 1.4 属性访问委托 ──
-// 属性的读写不再直接操作 runner 对象，而是通过该委托完成。
-// 业务方在构造 ModuleKind 时注入，支持异步、校验、权限控制等自定义逻辑。
-
-export type ModuleAttributeAccessor = Readonly<{
-  get: (ctx: ModulePathContext, attrName: string) => ModuleKindOperation<unknown>
-  set: (ctx: ModulePathContext, attrName: string, value: LlmJsonValue) => ModuleKindOperation<void>
-}>
-
-// ── 1.5 构造选项 ──
-// ModuleKind 构造函数的唯一入参，汇集元数据声明和运行时委托。
-
-export type ModuleKindOptions = Readonly<{
-  /** 模块类型标识（全小写，如 "school"、"page-design"），在注册表中唯一 */
-  kind: string
-  /** 模块显示名（LLM 可见） */
-  name: string
-  /** 模块说明（LLM 可见，描述该模块的业务能力） */
-  description: string
-  /** 父模块 kind（可选，用于表达模块层级关系） */
-  parentKind?: string
-  /** 属性表（可选，声明 LLM 可读写的一组属性） */
-  attributes?: readonly ModuleAttributeMetadata[]
-  /** 动作表（可选，声明 LLM 可调用的一组动作） */
-  actions?: readonly ModuleActionMetadata[]
-  /** 参数荷载引用（可选，声明模块依赖的外部参数指南） */
-  payloads?: readonly ModuleParameterPayloadMetadata[]
-  /** 子模块 kind 列表（可选，声明该模块允许包含的子模块类型） */
-  children?: readonly string[]
-  /** 属性读写委托（声明了 attributes 时必填） */
-  attributeAccessor?: ModuleAttributeAccessor
-  /** 动作执行委托（未提供时默认返回 ACTION_NOT_IMPLEMENTED） */
-  runner?: ModuleKindRunner
-  /** 子实例列表委托（未提供时默认返回空列表） */
-  list?: ModuleChildrenLister
-  /** 子实例查询委托（未提供时默认返回仅含当前实例的列表） */
-  find?: ModuleInstanceFinder
-}>
-
-// ── 1.6 内部辅助类型 ──
-// 仅供 class 内部使用，不导出。
-
-/** 业务动作的返回值（serviceResultToOperationResult 的输入格式） */
+/**
+ * 业务方 runner 可返回的原始格式。
+ * 由 serviceResultToOperationResult 投影为标准 ModuleOperationResult。
+ */
 type ModuleActionServiceResult =
   | { readonly ok: true; readonly data?: unknown; readonly summary?: string }
   | { readonly ok: false; readonly code: string; readonly msg: string; readonly fix?: string }
 
-// ── 1.7 默认属性访问委托 ──
-// 当 ModuleKind 未声明 attributes 时使用。不抛错（无属性时 getAttribute/setAttribute
-// 不会到达委托），仅作为安全兜底。
+/** 非空字符串列表的通用规范化入参，集中处理 trim、去重和业务约束。 */
+type RequiredTextListOptions = Readonly<{
+  values: readonly string[]
+  field: string
+  duplicate: (value: string) => string
+  validate?: (value: string) => void
+}>
 
+/** 默认属性访问委托。未声明 attributes 时使用，安全兜底。 */
 const EMPTY_ATTRIBUTE_ACCESSOR: ModuleAttributeAccessor = {
   get: () => ModuleOperationResult.failCode(
     'ATTRIBUTE_ACCESSOR_NOT_REGISTERED',
@@ -187,26 +72,18 @@ const EMPTY_ATTRIBUTE_ACCESSOR: ModuleAttributeAccessor = {
   ),
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * 二、ModuleKind class — 协议核心实现
- *
- * 实例化流程：
- *   1. 调用方传入 ModuleKindOptions
- *   2. 构造函数规范化所有字段（fail-fast 拒绝空值、重复、自引用）
- *   3. 声明 attributes 时必须提供 attributeAccessor，否则抛错
- *   4. 构建 name → metadata 的 Map 索引
- *   5. 未提供的委托填充默认实现
- *
- * 设计原则：
- *   - 元数据仅声明"有什么"，委托决定"怎么做"
- *   - 所有协议方法返回 Promise<ModuleOperationResult<T>>，支持同步和异步委托
- *   - JSON Schema 校验统一由 LlmSchemaValidator 完成，不引入私有 DSL
- * ═════════════════════════════════════════════════════════════════════════════ */
+// ============================================================================
+// 二、ModuleKind class
+//
+// 实例化采用三阶段构造：规范化元数据 → 必填校验 → 填充默认委托
+// 所有协议方法返回 Promise<ModuleOperationResult<T>>，兼容同步和异步委托
+// JSON Schema 校验统一由 LlmSchemaValidator 完成，错误结果由第四节工厂统一构造
+// ============================================================================
 
 export class ModuleKind {
-  // ── 2.1 字段声明 ──
+  // ── 字段 ──
 
-  // 元数据字段（公开只读，构造后不可变）
+  // 元数据（公开只读，构造后不可变）
   public readonly kind: string
   public readonly name: string
   public readonly description: string
@@ -216,20 +93,20 @@ export class ModuleKind {
   public readonly payloads: readonly ModuleParameterPayloadMetadata[]
   public readonly children: readonly string[]
 
-  // 按 name 建索引的 Map（内部快速查找，不走数组遍历）
+  // name → metadata 索引（O(1) Map 查找，避免数组遍历）
   private readonly moduleAttributeByName: ReadonlyMap<string, ModuleAttributeMetadata>
   private readonly moduleActionByName: ReadonlyMap<string, ModuleActionMetadata>
 
-  // 运行时委托（构造后不可变，只通过协议方法访问）
-  private readonly actionRunner: ModuleKindRunner
+  // 运行时委托（构造后不可变）
   private readonly attributeAccessor: ModuleAttributeAccessor
+  private readonly actionRunner: ModuleKindRunner
   private readonly childLister: ModuleChildrenLister
   private readonly instanceFinder: ModuleInstanceFinder
 
-  // ── 2.2 构造函数 ──
+  // ── 构造函数（三阶段：规范化 → 必填校验 → 默认委托）──
 
   public constructor(options: ModuleKindOptions) {
-    // 第一阶段：规范化元数据（trim + fail-fast 校验）
+    // 第一阶段：规范化元数据（trim + fail-fast）
     const kind = normalizeRequiredText(options.kind, 'kind')
     this.kind = kind
     this.name = normalizeRequiredText(options.name, `name for "${kind}"`)
@@ -255,7 +132,6 @@ export class ModuleKind {
     this.actionRunner = options.runner ?? ((_ctx, actionName) => actionNotImplemented(this.kind, actionName))
     this.childLister = options.list ?? (() => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]))
     this.instanceFinder = options.find ?? ((ctx, childKind) => {
-      // 默认 find：仅当 childKind 等于自身 kind 且非路径查询时返回当前实例
       if (childKind !== this.kind || ctx.segments.length !== 0) {
         return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
       }
@@ -264,37 +140,33 @@ export class ModuleKind {
     })
   }
 
-  // ── 2.3 元数据查询 ──
-  // O(1) Map 查找。供 Navigator、describeKind 和内部校验使用。
+  // ── 元数据查询（O(1) Map 查找）──
 
+  /** 按 name 查找属性元数据。供 Navigator 和内部校验使用。 */
   public findAttribute(attrName: string): ModuleAttributeMetadata | undefined {
     return this.moduleAttributeByName.get(attrName)
   }
 
+  /** 按 name 查找动作元数据。供 Navigator、describeKind 和内部校验使用。 */
   public findAction(actionName: string): ModuleActionMetadata | undefined {
     return this.moduleActionByName.get(actionName)
   }
 
-  // ── 2.4 属性读 ──
-  // 校验链：属性声明 → readable 权限 → attributeAccessor.get → JSON 序列化 → schema 校验
-  // 对应 LLM 工具 getAttribute(path, attrName)。
+  // ── 属性读取（5 步校验链：声明 → 可读 → 委托读取 → JSON 序列化 → schema 校验）──
 
   public async getAttribute(
     ctx: ModulePathContext,
     attrName: string,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    // 1. 属性是否已声明
     const attr = this.findAttribute(attrName)
     if (attr === undefined) {
       return attributeNotDeclared(this.kind, attrName)
     }
-    // 2. 是否可读
     if (!attr.readable) {
       return attributeNotReadable(this.kind, attrName)
     }
 
     try {
-      // 3. 委托 attributeAccessor 读取原始值
       const result = await this.attributeAccessor.get(ctx, attrName)
       if (!result.ok) {
         return ModuleOperationResult.passthroughFailure(result)
@@ -307,7 +179,6 @@ export class ModuleKind {
         )
       }
 
-      // 4. JSON 序列化校验
       const value = ModuleKind.coerceJsonValue(result.data)
       if (value === undefined) {
         return ModuleOperationResult.failCode(
@@ -317,7 +188,6 @@ export class ModuleKind {
         )
       }
 
-      // 5. 业务 schema 校验
       const validation: LlmParamValidationResult = LlmSchemaValidator.validateJsonValue(value, attr.schema)
       if (!validation.ok) {
         return schemaValidationFailed(
@@ -332,26 +202,21 @@ export class ModuleKind {
     }
   }
 
-  // ── 2.5 属性写 ──
-  // 校验链：属性声明 → writable 权限 → schema 校验 → attributeAccessor.set
-  // 对应 LLM 工具 setAttribute(path, attrName, value)。
+  // ── 属性写入（4 步校验链：声明 → 可写 → schema 校验 → 委托写入）──
 
   public async setAttribute(
     ctx: ModulePathContext,
     attrName: string,
     value: LlmJsonValue,
   ): Promise<ModuleOperationResult<void>> {
-    // 1. 属性是否已声明
     const attr = this.findAttribute(attrName)
     if (attr === undefined) {
       return attributeNotDeclared(this.kind, attrName)
     }
-    // 2. 是否可写
     if (!attr.writable) {
       return attributeNotWritable(this.kind, attrName)
     }
 
-    // 3. 写入前 schema 校验
     const validation = LlmSchemaValidator.validateJsonValue(value, attr.schema)
     if (!validation.ok) {
       return schemaValidationFailed(
@@ -362,7 +227,6 @@ export class ModuleKind {
     }
 
     try {
-      // 4. 委托 attributeAccessor 写入
       const result = await this.attributeAccessor.set(ctx, attrName, value)
       if (!result.ok) {
         return ModuleOperationResult.passthroughFailure(result)
@@ -370,26 +234,21 @@ export class ModuleKind {
       return ModuleOperationResult.ok<void>()
     } catch (error: unknown) {
       return attributeWriteFailed(this.kind, attrName, error)
-
     }
   }
 
-  // ── 2.6 动作调用 ──
-  // 校验链：action 声明 → paramsSchema 校验 → runAction（委托 runner）
-  // 对应 LLM 工具 invokeAction(path, actionName, args)。
+  // ── 动作调用（3 步校验链：声明 → 参数 schema 校验 → 委托执行）──
 
   public async invokeAction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    // 1. 动作是否已声明
     const action = this.findAction(actionName)
     if (action === undefined) {
       return actionNotDeclared(this.kind, actionName)
     }
 
-    // 2. 参数 schema 校验
     const validation = LlmSchemaValidator.validateLlmDeserializedParams(args, action.paramsSchema)
     if (!validation.ok) {
       return schemaValidationFailed(
@@ -399,7 +258,6 @@ export class ModuleKind {
       )
     }
 
-    // 3. 委托 runner 执行
     try {
       return await this.runAction(ctx, actionName, args)
     } catch (error: unknown) {
@@ -407,7 +265,7 @@ export class ModuleKind {
     }
   }
 
-  /** 受保护的 actionRunner 调用入口，子类可覆盖以添加拦截逻辑。 */
+  /** 受保护的 runner 入口。子类可覆盖以添加拦截/日志/审计逻辑。 */
   protected runAction(
     ctx: ModulePathContext,
     actionName: string,
@@ -416,9 +274,9 @@ export class ModuleKind {
     return this.actionRunner(ctx, actionName, args)
   }
 
-  // ── 2.7 子实例列表 ──
+  // ── 子实例操作 ──
 
-  /** 列出子实例，委托 childLister。对应 LLM 工具 listChildren(path, childKind?)。 */
+  /** 列出子实例（委托 childLister） */
   public listChildren(
     ctx: ModulePathContext,
     childKind?: string,
@@ -426,9 +284,7 @@ export class ModuleKind {
     return Promise.resolve(this.childLister(ctx, childKind))
   }
 
-  // ── 2.8 子实例查询 ──
-
-  /** 按条件查询子实例，委托 instanceFinder。对应 LLM 工具 findInstance(path, childKind, query)。 */
+  /** 按条件查询子实例（委托 instanceFinder） */
   public findInstance(
     ctx: ModulePathContext,
     childKind: string,
@@ -437,10 +293,10 @@ export class ModuleKind {
     return Promise.resolve(this.instanceFinder(ctx, childKind, query))
   }
 
-  // ── 2.9 子实例解析 ──
-  // 验证子实例是否存在。策略：先调 findInstance（精确查询），失败则向上透传错误，
-  // 成功则检查结果中是否包含目标 id。用于 Navigator 验证路径段的父子关系。
-
+  /**
+   * 验证子实例是否存在于当前 children 声明中。
+   * 先查 children 表 → findInstance 精确查询 → 检查结果中是否含目标 id。
+   */
   public async resolveChild(
     ctx: ModulePathContext,
     childKind: string,
@@ -457,9 +313,9 @@ export class ModuleKind {
     return ModuleOperationResult.ok((found.data ?? []).some((ref) => ref.id === childId))
   }
 
-  // ── 2.10 受保护的辅助方法 ──
+  // ── 受保护辅助 ──
 
-  /** 从 host 上下文中提取当前实例引用（供默认 find 实现使用）。 */
+  /** 从 host 上下文提取当前实例引用（供默认 find 实现使用） */
   protected createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
     const instanceId = ctx.host?.moduleInstanceId
     if (instanceId === undefined || instanceId.length === 0) {
@@ -472,20 +328,20 @@ export class ModuleKind {
     }
   }
 
-  /** 将业务数据包装为成功的 ModuleOperationResult<LlmJsonValue> */
+  /** 将任意数据规整后包装为成功的 ModuleOperationResult<LlmJsonValue> */
   protected okJson(data?: unknown, checks?: readonly ModuleCheckEntry[]): ModuleOperationResult<LlmJsonValue> {
     const json = ModuleKind.coerceJsonValue(data)
     return ModuleOperationResult.ok(json, checks)
   }
 
-  /** 错误码 + 提示 → 失败的 ModuleOperationResult<LlmJsonValue> */
+  /** 错误码 + 描述 + 修复建议 → 失败的 ModuleOperationResult<LlmJsonValue> */
   protected failJson(code: string, message: string, hint?: string): ModuleOperationResult<LlmJsonValue> {
     return ModuleOperationResult.failCode(code, message, hint)
   }
 
   /**
-   * 将业务方的 { ok, data/code/msg/fix } 格式投影为标准 ModuleOperationResult。
-   * 成功时从 summary 创建 info 级 check；失败时 code/msg/fix 映射到 error check。
+   * 将业务方 { ok, data/code/msg/fix } 格式投影为标准 ModuleOperationResult。
+   * 成功时 summary → info 级 check；失败时 code/msg/fix → error 级 check。
    */
   protected serviceResultToOperationResult(result: ModuleActionServiceResult): ModuleOperationResult<LlmJsonValue> {
     if (result.ok) {
@@ -497,19 +353,24 @@ export class ModuleKind {
     return this.failJson(result.code, result.msg, result.fix)
   }
 
-  // ── 2.11 静态工具方法 ──
+  // ── 静态工具 ──
 
   /**
-   * 将任意 JS 值递归规整为 LlmJsonValue（公共入口）。
-   * 使用内部 WeakSet 防循环引用，支持 null/string/number/bigint/symbol/boolean
-   * /Date/URL/ArrayBuffer/TypedArray/Array/Set/Map/普通 object。
+   * 将任意 JS 值递归规整为 LlmJsonValue。
+   * 支持 null / string / number / bigint / symbol / boolean / Date / URL /
+   * ArrayBuffer / TypedArray / Array / Set / Map / 普通 object。
+   * 使用内部 WeakSet 防止循环引用导致无限递归。
    */
   public static coerceJsonValue(value: unknown): LlmJsonValue | undefined {
     return ModuleKind.coerceJsonValueInternal(value, new WeakSet<object>())
   }
 
-  /** 内部递归实现：通过 seen 跟踪已访问对象，防止无限递归。 */
+  /**
+   * 内部递归实现。
+   * 处理顺序：基础类型 → Date/URL → 二进制 → Array/Set → Map → 普通 object
+   */
   private static coerceJsonValueInternal(value: unknown, seen: WeakSet<object>): LlmJsonValue | undefined {
+    // 基础类型
     if (value === null) return null
     if (value === undefined) return undefined
     if (typeof value === 'string') return value
@@ -517,192 +378,103 @@ export class ModuleKind {
     if (typeof value === 'boolean') return value
     if (typeof value === 'bigint') return value.toString()
     if (typeof value === 'symbol') return value.toString()
+
+    // 日期与 URL（转为字符串）
     if (value instanceof Date) {
       return Number.isFinite(value.getTime()) ? value.toISOString() : undefined
     }
     if (value instanceof URL) {
       return value.toString()
     }
+
+    // 二进制数据（转为 number[]）
     if (value instanceof ArrayBuffer) {
       return Array.from(new Uint8Array(value))
     }
     if (ArrayBuffer.isView(value)) {
       return Array.from(new Uint8Array(value.buffer, value.byteOffset, value.byteLength))
     }
-    if (isUnknownArray(value)) {
-      if (seen.has(value)) return undefined
-      seen.add(value)
-      const out: LlmJsonValue[] = []
-      for (const item of value) {
-        const coerced = ModuleKind.coerceJsonValueInternal(item, seen)
-        if (coerced !== undefined) out.push(coerced)
-      }
-      seen.delete(value)
-      return out
+
+    // Array 和 Set：共享迭代逻辑（可迭代值 → LlmJsonValue[]）
+    if (isUnknownArray(value) || value instanceof Set) {
+      return ModuleKind.withJsonCycleGuard(value, seen, () => ModuleKind.coerceJsonIterable(value, seen))
     }
-    if (value instanceof Set) {
-      if (seen.has(value)) return undefined
-      seen.add(value)
-      const out: LlmJsonValue[] = []
-      for (const item of value) {
-        const coerced = ModuleKind.coerceJsonValueInternal(item, seen)
-        if (coerced !== undefined) out.push(coerced)
-      }
-      seen.delete(value)
-      return out
-    }
+
+    // Map：entries 迭代（key 转为 string → Record<string, LlmJsonValue>）
     if (value instanceof Map) {
-      if (seen.has(value)) return undefined
-      seen.add(value)
-      const out: Record<string, LlmJsonValue> = {}
-      for (const [key, item] of value.entries()) {
-        const coerced = ModuleKind.coerceJsonValueInternal(item, seen)
-        if (coerced !== undefined) out[String(key)] = coerced
-      }
-      seen.delete(value)
-      return out
+      return ModuleKind.withJsonCycleGuard(value, seen, () => ModuleKind.coerceJsonRecord(value.entries(), seen))
     }
+
+    // 普通 object：Object.entries 迭代
     if (typeof value === 'object') {
-      if (seen.has(value)) return undefined
-      seen.add(value)
-      const obj: Record<string, LlmJsonValue> = {}
-      for (const [key, raw] of Object.entries(value)) {
-        const coerced = ModuleKind.coerceJsonValueInternal(raw, seen)
-        if (coerced !== undefined) obj[key] = coerced
-      }
-      seen.delete(value)
-      return obj
+      return ModuleKind.withJsonCycleGuard(value, seen, () => ModuleKind.coerceJsonRecord(Object.entries(value), seen))
     }
+
     return undefined
+  }
+
+  /**
+   * 循环引用保护。进入集合/对象前登记引用，退出时无论成功失败都释放，
+   * 避免同级后续字段被误判为循环。
+   */
+  private static withJsonCycleGuard<TValue extends LlmJsonValue>(
+    value: object,
+    seen: WeakSet<object>,
+    createValue: () => TValue,
+  ): TValue | undefined {
+    if (seen.has(value)) return undefined
+    seen.add(value)
+    try {
+      return createValue()
+    } finally {
+      seen.delete(value)
+    }
+  }
+
+  /** 将 Array / Set 等可迭代值递归规整为 JSON 数组；无法规整的元素会被跳过。 */
+  private static coerceJsonIterable(items: Iterable<unknown>, seen: WeakSet<object>): LlmJsonValue[] {
+    const out: LlmJsonValue[] = []
+    for (const item of items) {
+      const coerced = ModuleKind.coerceJsonValueInternal(item, seen)
+      if (coerced !== undefined) out.push(coerced)
+    }
+    return out
+  }
+
+  /** 将 Map / 普通 object entries 递归规整为 JSON object；key 统一转成 string。 */
+  private static coerceJsonRecord(
+    entries: Iterable<readonly [unknown, unknown]>,
+    seen: WeakSet<object>,
+  ): Record<string, LlmJsonValue> {
+    const out: Record<string, LlmJsonValue> = {}
+    for (const [key, raw] of entries) {
+      const coerced = ModuleKind.coerceJsonValueInternal(raw, seen)
+      if (coerced !== undefined) out[String(key)] = coerced
+    }
+    return out
   }
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * 三、规范化函数
- *
- * 以下函数仅在 ModuleKind 构造函数中被调用。职责：
- *   1. trim 空白 + fail-fast 拒绝空字符串
- *   2. 浅拷贝 / 深拷贝数组字段，防止外部后续修改污染内部状态
- *   3. 校验重复 name、自引用 parentKind/children
- *
- * 所有规范化函数均接收 ownKind 参数，用于生成可定位的错误消息。
- * ═════════════════════════════════════════════════════════════════════════════ */
+// ============================================================================
+// 三、规范化函数（构造期调用，fail-fast 策略）
+//
+// 职责：trim 空白 + 浅/深拷贝防外部污染 + 校验重复 name、自引用
+// 每个函数接收 ownKind 参数，用于生成可定位的错误消息。
+// ============================================================================
+
+// ── 基础校验原语 ──
 
 function isUnknownArray(value: unknown): value is readonly unknown[] {
   return Array.isArray(value)
 }
 
-/** 通用必填文本校验：trim 后不得为空 */
+/** trim 后不得为空，否则抛错 */
 function normalizeRequiredText(value: string, field: string): string {
   const normalized = value.trim()
   if (normalized.length === 0) {
     throw new Error(`${field} must not be empty`)
   }
   return normalized
-}
-
-/** 规范化属性元数据：trim name/description，浅拷贝可选字段 */
-function normalizeAttributeMetadata(
-  attributes: readonly ModuleAttributeMetadata[],
-  ownKind: string,
-): readonly ModuleAttributeMetadata[] {
-  return attributes.map((attribute) => ({
-    name: normalizeRequiredText(attribute.name, `attribute name for "${ownKind}"`),
-    description: normalizeRequiredText(attribute.description, `attribute "${attribute.name}" description for "${ownKind}"`),
-    schema: attribute.schema,
-    readable: attribute.readable,
-    writable: attribute.writable,
-    ...(attribute.example === undefined ? {} : { example: attribute.example }),
-  }))
-}
-
-/** 规范化动作元数据：trim name/description，深拷贝 usageRules/failureModes 防外部修改 */
-function normalizeActionMetadata(
-  actions: readonly ModuleActionMetadata[],
-  ownKind: string,
-): readonly ModuleActionMetadata[] {
-  return actions.map((action) => ({
-    name: normalizeRequiredText(action.name, `action name for "${ownKind}"`),
-    description: normalizeRequiredText(action.description, `action "${action.name}" description for "${ownKind}"`),
-    paramsSchema: action.paramsSchema,
-    ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
-    ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
-    ...(action.failureModes === undefined
-      ? {}
-      : { failureModes: action.failureModes.map((mode) => ({ ...mode })) }),
-    ...(action.example === undefined ? {} : { example: action.example }),
-  }))
-}
-
-/** 规范化参数荷载元数据：去重，fail-fast 拒绝空 ref / 空描述 / 重复 ref */
-function normalizePayloadMetadata(
-  payloads: readonly ModuleParameterPayloadMetadata[],
-  ownKind: string,
-): readonly ModuleParameterPayloadMetadata[] {
-  const seen = new Set<string>()
-  const out: ModuleParameterPayloadMetadata[] = []
-  for (const payload of payloads) {
-    const payloadRef = normalizeRequiredText(payload.payloadRef, `payloadRef for "${ownKind}"`)
-    if (seen.has(payloadRef)) {
-      throw new Error(`duplicate payloadRef "${payloadRef}" on "${ownKind}"`)
-    }
-    const description = normalizeRequiredText(payload.description, `payloadRef "${payloadRef}" description for "${ownKind}"`)
-    const requiredForActions = normalizePayloadActionNames(payload.requiredForActions ?? [], ownKind, payloadRef)
-    seen.add(payloadRef)
-    out.push({
-      payloadRef,
-      description,
-      ...(requiredForActions.length === 0 ? {} : { requiredForActions }),
-    })
-  }
-  return out
-}
-
-/** 规范化荷载关联的动作名列表：去重，fail-fast 拒绝空名 / 重复名 */
-function normalizePayloadActionNames(
-  actionNames: readonly string[],
-  ownKind: string,
-  payloadRef: string,
-): readonly string[] {
-  const seen = new Set<string>()
-  const out: string[] = []
-  for (const actionName of actionNames) {
-    const normalized = normalizeRequiredText(actionName, `payload action for "${payloadRef}" on "${ownKind}"`)
-    if (seen.has(normalized)) {
-      throw new Error(`duplicate payload action "${normalized}" for "${payloadRef}" on "${ownKind}"`)
-    }
-    seen.add(normalized)
-    out.push(normalized)
-  }
-  return out
-}
-
-/** 规范化父模块声明：拒绝空值和自引用 */
-function normalizeParentKind(parentKind: string | undefined, ownKind: string): string | undefined {
-  if (parentKind === undefined) return undefined
-  const normalized = normalizeRequiredText(parentKind, `parentKind for "${ownKind}"`)
-  if (normalized === ownKind) {
-    throw new Error(`parentKind for "${ownKind}" must not point to itself`)
-  }
-  return normalized
-}
-
-/** 规范化子模块声明：去重，fail-fast 拒绝空 kind / 重复 kind / 自引用 */
-function normalizeChildKinds(children: readonly string[], ownKind: string): readonly string[] {
-  const seen = new Set<string>()
-  const out: string[] = []
-  for (const child of children) {
-    const normalized = normalizeRequiredText(child, `child kind for "${ownKind}"`)
-    if (normalized === ownKind) {
-      throw new Error(`child kind for "${ownKind}" must not point to itself`)
-    }
-    if (seen.has(normalized)) {
-      throw new Error(`duplicate child kind "${normalized}" on "${ownKind}"`)
-    }
-    seen.add(normalized)
-    out.push(normalized)
-  }
-  return out
 }
 
 /** 按 name 字段构建索引 Map（重复 name 直接抛错） */
@@ -720,14 +492,149 @@ function createNamedMap<TSchema extends { readonly name: string }>(
   return out
 }
 
-/* ═══════════════════════════════════════════════════════════════════════════════
- * 四、错误结果工厂
- *
- * 以下函数统一返回标准 ModuleOperationResult 失败值，被 class 的各类校验失败
- * 路径和默认委托使用。集中放在文件末尾，便于维护错误文案和错误码。
- * ═════════════════════════════════════════════════════════════════════════════ */
+// ── 属性元数据规范化 ──
 
-/** JSON Schema 校验失败：汇总 issues 为 check entries */
+function normalizeAttributeMetadata(
+  attributes: readonly ModuleAttributeMetadata[],
+  ownKind: string,
+): readonly ModuleAttributeMetadata[] {
+  return attributes.map((attribute) => ({
+    name: normalizeRequiredText(attribute.name, `attribute name for "${ownKind}"`),
+    description: normalizeRequiredText(
+      attribute.description,
+      `attribute "${attribute.name}" description for "${ownKind}"`,
+    ),
+    schema: attribute.schema,
+    readable: attribute.readable,
+    writable: attribute.writable,
+    ...(attribute.example === undefined ? {} : { example: attribute.example }),
+  }))
+}
+
+// ── 动作元数据规范化 ──
+
+function normalizeActionMetadata(
+  actions: readonly ModuleActionMetadata[],
+  ownKind: string,
+): readonly ModuleActionMetadata[] {
+  return actions.map((action) => ({
+    name: normalizeRequiredText(action.name, `action name for "${ownKind}"`),
+    description: normalizeRequiredText(
+      action.description,
+      `action "${action.name}" description for "${ownKind}"`,
+    ),
+    paramsSchema: action.paramsSchema,
+    ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
+    ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
+    ...(action.failureModes === undefined
+      ? {}
+      : { failureModes: action.failureModes.map((mode) => ({ ...mode })) }),
+    ...(action.example === undefined ? {} : { example: action.example }),
+  }))
+}
+
+// ── 参数荷载规范化 ──
+
+function normalizePayloadMetadata(
+  payloads: readonly ModuleParameterPayloadMetadata[],
+  ownKind: string,
+): readonly ModuleParameterPayloadMetadata[] {
+  const seen = new Set<string>()
+  const out: ModuleParameterPayloadMetadata[] = []
+  for (const payload of payloads) {
+    const payloadRef = normalizeRequiredText(payload.payloadRef, `payloadRef for "${ownKind}"`)
+    if (seen.has(payloadRef)) {
+      throw new Error(`duplicate payloadRef "${payloadRef}" on "${ownKind}"`)
+    }
+    const description = normalizeRequiredText(
+      payload.description,
+      `payloadRef "${payloadRef}" description for "${ownKind}"`,
+    )
+    const requiredForActions = normalizePayloadActionNames(
+      payload.requiredForActions ?? [],
+      ownKind,
+      payloadRef,
+    )
+    seen.add(payloadRef)
+    out.push({
+      payloadRef,
+      description,
+      ...(requiredForActions.length === 0 ? {} : { requiredForActions }),
+    })
+  }
+  return out
+}
+
+/** 荷载关联动作名去重，fail-fast 拒绝空名/重复名 */
+function normalizePayloadActionNames(
+  actionNames: readonly string[],
+  ownKind: string,
+  payloadRef: string,
+): readonly string[] {
+  return normalizeRequiredUniqueTexts({
+    values: actionNames,
+    field: `payload action for "${payloadRef}" on "${ownKind}"`,
+    duplicate: (actionName) => `duplicate payload action "${actionName}" for "${payloadRef}" on "${ownKind}"`,
+  })
+}
+
+// ── 父子关系规范化 ──
+
+/** 拒绝空值 + 自引用 */
+function normalizeParentKind(parentKind: string | undefined, ownKind: string): string | undefined {
+  if (parentKind === undefined) return undefined
+  const normalized = normalizeRequiredText(parentKind, `parentKind for "${ownKind}"`)
+  if (normalized === ownKind) {
+    throw new Error(`parentKind for "${ownKind}" must not point to itself`)
+  }
+  return normalized
+}
+
+/** 子模块声明去重，fail-fast 拒绝空 kind / 重复 kind / 自引用 */
+function normalizeChildKinds(children: readonly string[], ownKind: string): readonly string[] {
+  return normalizeRequiredUniqueTexts({
+    values: children,
+    field: `child kind for "${ownKind}"`,
+    duplicate: (childKind) => `duplicate child kind "${childKind}" on "${ownKind}"`,
+    validate: (childKind) => {
+      if (childKind === ownKind) {
+        throw new Error(`child kind for "${ownKind}" must not point to itself`)
+      }
+    },
+  })
+}
+
+/**
+ * 规范化非空字符串列表。
+ * 约束顺序固定为 trim → 自定义校验 → 去重，保证错误信息可定位且无静默回退。
+ */
+function normalizeRequiredUniqueTexts(options: RequiredTextListOptions): readonly string[] {
+  const seen = new Set<string>()
+  const out: string[] = []
+  for (const value of options.values) {
+    const normalized = normalizeRequiredText(value, options.field)
+    options.validate?.(normalized)
+    if (seen.has(normalized)) {
+      throw new Error(options.duplicate(normalized))
+    }
+    seen.add(normalized)
+    out.push(normalized)
+  }
+  return out
+}
+
+// ============================================================================
+// 四、错误结果工厂（按协议方法分组）
+//
+// 统一返回标准 ModuleOperationResult 失败值。每个函数对应一个明确的协议错误码，
+// LLM 可据此分支处理。
+//
+// 分组：Schema 校验 / 动作相关 / 属性相关 / 执行异常
+// ============================================================================
+
+// ── Schema 校验错误 ──
+
+/** JSON Schema 校验失败：汇总所有 issues 为 summary + details 两级 check */
 function schemaValidationFailed(
   subject: string,
   issues: readonly LlmParamValidationIssue[],
@@ -739,12 +646,18 @@ function schemaValidationFailed(
     hint,
   )
   const details = issues.map((issue) =>
-    ModuleCheckEntry.error('SCHEMA_VALIDATION_FAILED', `${issue.path} ${issue.message}`, hint),
+    ModuleCheckEntry.error(
+      'SCHEMA_VALIDATION_FAILED',
+      `${issue.path} ${issue.message}`,
+      hint,
+    ),
   )
   return ModuleOperationResult.fail([summary, ...details])
 }
 
-/** 动作未实现：未提供 runner 或 runner 不识别该 actionName */
+// ── 动作相关错误 ──
+
+/** 动作未实现：runner 未提供或不识别该 actionName */
 function actionNotImplemented(kind: string, actionName: string): ModuleOperationResult<LlmJsonValue> {
   return ModuleOperationResult.failCode(
     'ACTION_NOT_IMPLEMENTED',
@@ -762,6 +675,8 @@ function actionNotDeclared(kind: string, actionName: string): ModuleOperationRes
   )
 }
 
+// ── 属性相关错误 ──
+
 /** 属性未声明：kind 的 attributes 表中找不到该 attrName */
 function attributeNotDeclared(kind: string, attrName: string): ModuleOperationResult<never> {
   return ModuleOperationResult.failCode(
@@ -771,7 +686,7 @@ function attributeNotDeclared(kind: string, attrName: string): ModuleOperationRe
   )
 }
 
-/** 属性不可读：已声明但 readable 为 false */
+/** 属性不可读：已声明但 readable=false */
 function attributeNotReadable(kind: string, attrName: string): ModuleOperationResult<never> {
   return ModuleOperationResult.failCode(
     'ATTRIBUTE_NOT_READABLE',
@@ -780,7 +695,7 @@ function attributeNotReadable(kind: string, attrName: string): ModuleOperationRe
   )
 }
 
-/** 属性不可写：已声明但 writable 为 false */
+/** 属性不可写：已声明但 writable=false */
 function attributeNotWritable(kind: string, attrName: string): ModuleOperationResult<never> {
   return ModuleOperationResult.failCode(
     'ATTRIBUTE_NOT_WRITABLE',
@@ -788,6 +703,8 @@ function attributeNotWritable(kind: string, attrName: string): ModuleOperationRe
     '请只写入 writable=true 的属性；可调用 describeKind 查看属性权限。',
   )
 }
+
+// ── 执行异常错误 ──
 
 /** 属性读取异常：attributeAccessor.get 抛出未捕获异常 */
 function attributeReadFailed(kind: string, attrName: string, error: unknown): ModuleOperationResult<never> {

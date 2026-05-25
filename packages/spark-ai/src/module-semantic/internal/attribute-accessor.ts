@@ -17,12 +17,10 @@
  */
 
 import type { LlmJsonValue } from '../../schema'
-import type { ModuleHostContext, ModuleOperationResult, ModulePath } from '../protocol'
-import type { ModuleSetAttributeRequest } from '../protocol/module-context'
+import type { ModuleHostContext, ModuleOperationResult, ModulePath, ModuleSetAttributeRequest } from '../protocol'
 
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
-
 
 export class AttributeAccessor {
   public constructor(

@@ -54,48 +54,55 @@ export type {
 
 export {
   ModuleCheckEntry,
-  ModuleKind,
   ModuleOperationResult,
+} from './module-semantic/protocol/module-operation'
+
+export {
   ModulePath,
   ModulePathParseError,
   ModulePathSegment,
-} from './module-semantic/protocol-core-api'
+} from './module-semantic/protocol/module-path'
+
+export {
+  ModuleKind,
+} from './module-semantic/protocol/module-kind'
 
 export type {
   ModuleCheckEntryLevel,
-} from './module-semantic/protocol-core-api'
+  ModuleOperationResultOptions,
+} from './module-semantic/protocol/module-operation'
 
 export type {
   ModuleActionFailureMode,
   ModuleActionMetadata,
   ModuleActionResultSchema,
-  ModuleInvokeActionRequest,
-  ModuleKindOperation,
-  ModuleKindRunner,
-  ModuleOperationResultOptions,
-} from './module-semantic/protocol-action-api'
-
-export type {
+  ModuleAttributeAccessor,
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
   ModuleKindOptions,
   ModuleParameterPayloadMetadata,
-  ModuleSetAttributeRequest,
-} from './module-semantic/protocol-metadata-api'
+} from './module-semantic/protocol/module-metadata'
 
 export type {
   ModuleChildrenLister,
-  ModuleFindInstanceRequest,
   ModuleHostContext,
   ModuleInstanceFinder,
   ModuleInstanceQuery,
   ModuleInstanceRef,
-} from './module-semantic/protocol-instance-api'
+  ModuleKindOperation,
+  ModuleKindRunner,
+  ModulePathContext,
+} from './module-semantic/protocol/module-context'
 
 export type {
-  ModulePathContext,
   ModulePathParseErrorCode,
-} from './module-semantic/protocol-path-api'
+} from './module-semantic/protocol/module-path'
+
+export type {
+  ModuleFindInstanceRequest,
+  ModuleInvokeActionRequest,
+  ModuleSetAttributeRequest,
+} from './module-semantic/protocol/module-request'
 
 export {
   ModuleSemanticRuntime,

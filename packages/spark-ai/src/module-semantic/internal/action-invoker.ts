@@ -16,8 +16,7 @@
  */
 
 import type { LlmJsonValue } from '../../schema'
-import type { ModuleOperationResult } from '../protocol'
-import type { ModuleInvokeActionRequest } from '../protocol/module-context'
+import type { ModuleInvokeActionRequest, ModuleOperationResult } from '../protocol'
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
 

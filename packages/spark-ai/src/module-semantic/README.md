@@ -6,6 +6,8 @@
 
 - `ModuleKind`: core class for kind metadata plus constructor delegates exposed only through protocol methods.
 - `ModuleActionMetadata` and `ModuleAttributeMetadata`: action and attribute declarations.
+- `ModuleKindOptions`: constructor contract that combines declarative metadata with runtime delegates.
+- `ModuleSetAttributeRequest`, `ModuleInvokeActionRequest`, `ModuleFindInstanceRequest`: API boundary DTOs.
 - `ModulePath`, `ModulePathSegment`, `ModulePathParseError`: path parsing.
 - `ModulePathContext`, `ModuleHostContext`, `ModuleInstanceRef`, `ModuleInstanceQuery`: execution context and instance references.
 - `ModuleOperationResult` and `ModuleCheckEntry`: protocol result envelope and diagnostics.
@@ -117,10 +119,13 @@ Parameter parsing and JSON result projection do not live in the runtime class.
 ```text
 module-semantic/
 ├── protocol/
-│   ├── module-kind.ts
+│   ├── index.ts
 │   ├── module-context.ts
+│   ├── module-kind.ts
+│   ├── module-metadata.ts
 │   ├── module-operation.ts
-│   └── module-path.ts
+│   ├── module-path.ts
+│   └── module-request.ts
 ├── internal/
 ├── runtime/
 └── host/

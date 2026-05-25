@@ -1,4 +1,12 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, expectTypeOf, it } from 'vitest'
+import type {
+  ModuleAttributeAccess as RootModuleAttributeAccess,
+  ModuleOperationResultOptions as RootModuleOperationResultOptions,
+} from '../index'
+import type {
+  ModuleAttributeAccess as SemanticModuleAttributeAccess,
+  ModuleOperationResultOptions as SemanticModuleOperationResultOptions,
+} from '../module-semantic'
 
 describe('@spark-view/spark-ai root public surface', () => {
   it('exposes stable schema, module-semantic, and host entry symbols', async () => {
@@ -28,5 +36,11 @@ describe('@spark-view/spark-ai root public surface', () => {
     expect(exposed.has('createAiHostSessionTranscript')).toBe(false)
     expect(exposed.has('PageDesignService')).toBe(false)
     expect(exposed.has('PageDesignNodeTreeModuleKind')).toBe(false)
+  })
+
+  it('keeps stable protocol type exports available from public entries', () => {
+    expectTypeOf<RootModuleAttributeAccess>().toEqualTypeOf<SemanticModuleAttributeAccess>()
+    expectTypeOf<RootModuleOperationResultOptions<string>>()
+      .toEqualTypeOf<SemanticModuleOperationResultOptions<string>>()
   })
 })

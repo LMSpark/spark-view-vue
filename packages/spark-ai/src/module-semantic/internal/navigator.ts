@@ -33,13 +33,13 @@ import {
   ModulePathSegment,
   type ModuleActionMetadata,
   type ModuleAttributeMetadata,
+  type ModuleFindInstanceRequest,
   type ModuleHostContext,
   type ModuleInstanceRef,
   type ModuleKind,
   type ModulePath,
   type ModulePathContext,
 } from '../protocol'
-import type { ModuleFindInstanceRequest } from '../protocol/module-context'
 import type { ModuleKindRegistry } from './module-kind-registry'
 
 // ═══════════════════════════════════════════════════════════════

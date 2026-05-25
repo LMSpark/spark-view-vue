@@ -3,66 +3,69 @@
  * module-semantic/index.ts — 模块语义协议公共入口
  * ═══════════════════════════════════════════════════════════════
  *
- * 【导出策略】按功能分块：
- *   1. 操作结果 / 模块路径 / 上下文 / 实例引用（从 protocol 层）
- *   2. ModuleKind class + namespace（协议核心）
- *   3. ModuleAttributeMetadata / ModuleActionMetadata（元数据类型）
- *   4. ModuleSemanticRuntime（运行时组合根）
- *   5. 协议工具规约（类型 + 常量）
- *   6. 知识投影类型（旧 knowledge 体系在固定 LLM 工具上的当前映射）
- *   7. 错误类型（便于业务方 instanceof 判断）
- *   8. ModuleSemanticToolCodec（适配 Host transport）
+ * 【导出策略】按调用流程分块：
+ *   1. 协议层值对象、运行上下文、元数据与请求 DTO
+ *   2. ModuleSemanticRuntime（运行时组合根）
+ *   3. 知识投影与固定协议工具规约
+ *   4. 注册错误类型与 Host 工具编解码器
+ *   5. 模块参数荷载 provider 注册表
  * ═══════════════════════════════════════════════════════════════
  */
 
-// ── 1-4. 协议层（re-export from ./protocol）───────────────────
+// ── 1. 协议层（值对象 / 上下文 / 元数据 / 请求 DTO）──────────────
 export {
   ModuleCheckEntry,
-  ModuleKind,
   ModuleOperationResult,
+} from './protocol/module-operation'
+
+export {
   ModulePath,
   ModulePathParseError,
   ModulePathSegment,
-} from './protocol-core-api'
+} from './protocol/module-path'
+
+export {
+  ModuleKind,
+} from './protocol/module-kind'
 
 export type {
   ModuleCheckEntryLevel,
-} from './protocol-core-api'
+  ModuleOperationResultOptions,
+} from './protocol/module-operation'
 
 export type {
   ModuleActionFailureMode,
   ModuleActionMetadata,
   ModuleActionResultSchema,
-  ModuleInvokeActionRequest,
-  ModuleKindOperation,
-  ModuleKindRunner,
-  ModuleOperationResultOptions,
-} from './protocol-action-api'
-
-export type {
   ModuleAttributeAccessor,
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
   ModuleKindOptions,
   ModuleParameterPayloadMetadata,
-  ModuleSetAttributeRequest,
-} from './protocol-metadata-api'
+} from './protocol/module-metadata'
 
 export type {
   ModuleChildrenLister,
-  ModuleFindInstanceRequest,
   ModuleHostContext,
   ModuleInstanceFinder,
   ModuleInstanceQuery,
   ModuleInstanceRef,
-} from './protocol-instance-api'
+  ModuleKindOperation,
+  ModuleKindRunner,
+  ModulePathContext,
+} from './protocol/module-context'
 
 export type {
-  ModulePathContext,
   ModulePathParseErrorCode,
-} from './protocol-path-api'
+} from './protocol/module-path'
 
-// ── 5. 运行时 ─────────────────────────────────────────────────
+export type {
+  ModuleFindInstanceRequest,
+  ModuleInvokeActionRequest,
+  ModuleSetAttributeRequest,
+} from './protocol/module-request'
+
+// ── 2. 运行时 ─────────────────────────────────────────────────
 export {
   ModuleSemanticRuntime,
 } from './runtime/module-semantic-runtime'
@@ -71,7 +74,7 @@ export type {
   ProtocolToolArgs,
 } from './runtime/module-semantic-runtime'
 
-// ── 6. 知识投影类型 ─────────────────────────────────────────
+// ── 3. 知识投影类型 ─────────────────────────────────────────
 export type {
   ModuleSemanticKnowledgeFunctionFilter,
   ModuleSemanticKnowledgeFunctionGuide,
@@ -82,7 +85,7 @@ export type {
   ModuleSemanticKnowledgeSnapshot,
 } from './knowledge/module-semantic-knowledge'
 
-// ── 7. 协议工具规约（类型 + 常量）─────────────────────────────
+// ── 4. 协议工具规约（类型 + 常量）─────────────────────────────
 export {
   PROTOCOL_TOOL_NAMES,
 } from './internal/protocol-tool-generator'
@@ -92,23 +95,23 @@ export type {
   ProtocolToolName,
 } from './internal/protocol-tool-generator'
 
-// ── 8. describeKind 返回类型 ──────────────────────────────────
+// ── 5. describeKind 返回类型 ──────────────────────────────────
 export type {
   ModuleKindDescription,
 } from './internal/navigator'
 
-// ── 9. 注册错误类型（便于业务方 instanceof 判断）─────────────
+// ── 6. 注册错误类型（便于业务方 instanceof 判断）─────────────
 export {
   ModuleKindConflictError,
   ModuleKindNotFoundError,
 } from './internal/module-kind-registry'
 
-// ── 10. Host 工具编解码器 ────────────────────────────────────
+// ── 7. Host 工具编解码器 ────────────────────────────────────
 export {
   ModuleSemanticToolCodec,
 } from './host/index'
 
-// ── 11. 模块参数荷载 provider 注册表 ────────────────────────
+// ── 8. 模块参数荷载 provider 注册表 ────────────────────────
 export {
   ModuleParameterPayloadRegistry,
 } from './payloads/module-parameter-payload-registry'

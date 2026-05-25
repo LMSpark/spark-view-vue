@@ -109,8 +109,8 @@ section SourceFiles {
   protocol_core:
     "packages/spark-ai/src/module-semantic/protocol/module-kind.ts"
 
-  protocol_metadata_api:
-    "packages/spark-ai/src/module-semantic/protocol-metadata-api.ts"
+  protocol_metadata:
+    "packages/spark-ai/src/module-semantic/protocol/module-metadata.ts"
 
   module_registry:
     "packages/spark-ai/src/module-semantic/internal/module-kind-registry.ts"

@@ -260,7 +260,7 @@ describe('pageDesign host business registration', () => {
     expect(request.systemPrompt).toContain('inputContract 已校验输入')
     expect(request.systemPrompt).toContain('describeProgress')
     expect(request.systemPrompt).toContain('describeDesignFlow')
-    expect(request.systemPrompt).toContain('不要主动调用 bootstrap')
+    expect(request.systemPrompt).toContain('常规流程从 describeProgress 开始')
   })
 
   it('rejects pageDesign task inputs that do not satisfy the registered schema', () => {

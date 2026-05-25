@@ -14,6 +14,7 @@ import {
 import {
   LEAVE_REQUEST_KIND,
   LEAVE_REQUEST_MODULE_ID,
+  LEAVE_REQUEST_PERSON_KIND,
   createLeaveRequestBusinessRegistration,
 } from '@spark-view/spark-page-config/ai'
 import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
@@ -96,7 +97,7 @@ function draftFields(result: { readonly ok: boolean; readonly data?: unknown }):
 }
 
 describe('leave-request host business registration', () => {
-  it('注册 manualLeave 为单 kind module-semantic 业务', async () => {
+  it('注册 manualLeave 草稿 kind 和人员实例子 kind', async () => {
     const registration = createLeaveRequestBusinessRegistration({ now: () => 1778030000000 })
     const scope = createScope('leaveDraft:a')
     const started = await startRegistrationSession(registration, toAiHostRuntimeScope(scope))
@@ -127,6 +128,38 @@ describe('leave-request host business registration', () => {
       'submitDraft',
       'cancelDraft',
     ])
+    expect(described.data['children']).toEqual([LEAVE_REQUEST_PERSON_KIND])
+    const knowledge = await registration.runtime.executeTool('queryModules', { keyword: '人员编码' }, toAiHostRuntimeScope(scope))
+    expect(knowledge.ok).toBe(true)
+    expect(knowledge.data).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: LEAVE_REQUEST_KIND,
+        childKindSummaries: [
+          expect.objectContaining({
+            kind: LEAVE_REQUEST_PERSON_KIND,
+            description: expect.stringContaining('人员编码'),
+            attributeSummaries: expect.arrayContaining([
+              expect.objectContaining({ name: 'code', description: expect.stringContaining('人员编码') }),
+            ]),
+            detailLookupSteps: expect.arrayContaining([
+              expect.stringContaining(`queryModules({ kind: "${LEAVE_REQUEST_PERSON_KIND}" })`),
+            ]),
+          }),
+        ],
+      }),
+      expect.objectContaining({
+        kind: LEAVE_REQUEST_PERSON_KIND,
+        instanceGuide: expect.objectContaining({
+          queryFields: expect.arrayContaining(['code', 'name', 'department', 'role']),
+        }),
+        attributeGuides: expect.arrayContaining([
+          expect.objectContaining({
+            name: 'code',
+            description: expect.stringContaining('人员编码'),
+          }),
+        ]),
+      }),
+    ]))
     for (const action of described.data['actions']) {
       if (!isRecord(action)) throw new Error('action not record')
       expect(action).toHaveProperty('paramsSchema')
@@ -135,6 +168,46 @@ describe('leave-request host business registration', () => {
       expect(action).toHaveProperty('failureModes')
       expect(action).toHaveProperty('example')
     }
+  })
+
+  it('填写假条前可通过 leave-person 实例查询人员编码并写入草稿', async () => {
+    const registration = createLeaveRequestBusinessRegistration({ now: () => 1778030000000 })
+    const scope = createScope('leaveDraft:person')
+    await startRegistrationSession(registration, toAiHostRuntimeScope(scope))
+
+    const found = await registration.runtime.executeTool('findInstance', {
+      path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]`,
+      childKind: LEAVE_REQUEST_PERSON_KIND,
+      query: { name: 'Ada' },
+    }, toAiHostRuntimeScope(scope))
+    expect(found.ok).toBe(true)
+    expect(found.data).toEqual([
+      expect.objectContaining({
+        id: 'E1001',
+        label: 'Ada',
+      }),
+    ])
+
+    const code = await registration.runtime.executeTool('getAttribute', {
+      path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]/${LEAVE_REQUEST_PERSON_KIND}[E1001]`,
+      attrName: 'code',
+    }, toAiHostRuntimeScope(scope))
+    expect(code).toMatchObject({ ok: true, data: 'E1001' })
+
+    const updated = await invokeDirect(registration, scope, 'setDraftFields', {
+      fields: {
+        applicantName: 'Ada',
+        applicantCode: 'E1001',
+        approver: 'Lin',
+        approverCode: 'E1002',
+      },
+    })
+    expect(draftFields(updated)).toMatchObject({
+      applicantName: 'Ada',
+      applicantCode: 'E1001',
+      approver: 'Lin',
+      approverCode: 'E1002',
+    })
   })
 
   it('隔离不同 leaveDraftId 的草稿和 Host 历史', async () => {

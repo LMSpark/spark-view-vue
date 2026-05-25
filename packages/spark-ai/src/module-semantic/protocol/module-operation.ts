@@ -1,40 +1,28 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  MODULE-SEMANTIC · 操作结果原语                                               │
- * │  Operation Result Primitives                                                  │
- * │                                                                              │
- * │  本文件定义 module-semantic 层的统一操作结果类型。                              │
- * │  所有协议层操作（属性读写、动作调用、子实例查询等）都通过                        │
- * │  ModuleOperationResult<T> 返回，提供统一的 ok/checks 模式。                    │
- * │                                                                              │
- * │  设计理念（与 Rust Result 对比）：                                             │
- * │    · ok=true  → 操作成功，可选携带 data + info/warn 级 checks                 │
- * │    · ok=false → 操作失败，携带至少一条 error 级 check（code + message + hint） │
- * │    · checks 支持多级别级联（error 终止 / warn 提醒 / info 告知）              │
- * │                                                                              │
- * │  与 Host 层的映射：result-mapper.ts 将 ModuleOperationResult 投影为            │
- * │  AiHostFunctionCallResult（ok + summary / code + msg + fix）。                │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * module-semantic · 操作结果原语
+ *
+ * 统一的操作结果类型。所有协议操作（属性读写、动作调用、子实例查询等）
+ * 都通过 ModuleOperationResult<T> 返回，提供统一的 ok/checks 诊断模式。
+ *
+ * 借鉴 Rust Result 模式，保留多级诊断：
+ *   ok=true  → 操作成功，可选 data + info/warn 级 checks
+ *   ok=false → 操作失败，至少一条 error 级 check（code + message + hint）
+ *   checks 支持三级：error（终止）/ warn（提醒）/ info（告知）
+ *
+ * 依赖顺序：ModuleCheckEntry → ModuleOperationResult<T> → 内部辅助
  */
 
-/* -------------------------------------------------------------------------------
- * 一、检查条目
- * -------------------------------------------------------------------------------
- * ModuleCheckEntry 是操作结果的最小诊断单元，三个级别：
- *   · error — 导致操作失败的根本原因
- *   · warn  — 操作成功但存在值得关注的问题
- *   · info  — 纯信息性提示
- * ----------------------------------------------------------------------------- */
+// ============================================================================
+// 一、诊断条目 — ModuleCheckEntry
+//
+// 操作结果的最小诊断单元。
+//   error — 导致操作失败的根本原因（必须附带修复建议 hint）
+//   warn  — 操作成功但存在值得关注的问题
+//   info  — 纯信息性提示
+// ============================================================================
 
 export type ModuleCheckEntryLevel = 'error' | 'warn' | 'info'
 
-/**
- * 操作结果的最小诊断单元。
- * level   — 严重级别：error（导致失败）/ warn（成功但有风险）/ info（纯信息）
- * code    — 错误码（机器可读）
- * message — 人类可读描述
- * hint    — 修复建议（可选）
- */
 export class ModuleCheckEntry {
   public constructor(
     public readonly level: ModuleCheckEntryLevel,
@@ -43,35 +31,35 @@ export class ModuleCheckEntry {
     public readonly hint?: string,
   ) {}
 
-  /** 工厂：error 级（导致操作失败） */
+  /** error 级：导致操作失败的根本原因 */
   public static error(code: string, message: string, hint?: string): ModuleCheckEntry {
     return new ModuleCheckEntry('error', code, message, hint)
   }
 
-  /** 工厂：warn 级（成功但有风险） */
+  /** warn 级：操作成功但存在值得关注的问题 */
   public static warn(code: string, message: string, hint?: string): ModuleCheckEntry {
     return new ModuleCheckEntry('warn', code, message, hint)
   }
 
-  /** 工厂：info 级（纯信息） */
+  /** info 级：纯信息性提示 */
   public static info(code: string, message: string, hint?: string): ModuleCheckEntry {
     return new ModuleCheckEntry('info', code, message, hint)
   }
 }
 
-/* -------------------------------------------------------------------------------
- * 二、操作结果
- * -------------------------------------------------------------------------------
- * ModuleOperationResult<TData> 是泛型结果容器：
- *   - TData=void   → setAttribute 等无数据返回的操作
- *   - TData=LlmJsonValue → getAttribute / invokeAction 等
- *   - TData=readonly ModuleInstanceRef[] → listChildren / findInstance
- *
- * 关键约束：
- *   · fail() 要求至少一条 check（保证失败有诊断信息）
- *   · failCode() 是 fail([error(code, msg, hint)]) 的简写
- *   · passthroughFailure() 透传上游 result 的 checks + state
- * ----------------------------------------------------------------------------- */
+// ============================================================================
+// 二、操作结果 — ModuleOperationResult<TData>
+//
+// 泛型结果容器，所有协议操作的统一返回类型。
+//   TData=void                          → setAttribute
+//   TData=LlmJsonValue                  → getAttribute / invokeAction
+//   TData=readonly ModuleInstanceRef[]  → listChildren / findInstance
+//
+// 关键约束：
+//   fail() 要求至少一条 check，杜绝"沉默失败"
+//   failCode() 是 fail([error(code, msg, hint)]) 的简写
+//   passthroughFailure() 透传上游 checks + state，保留完整错误链
+// ============================================================================
 
 export type ModuleOperationResultOptions<TData> = Readonly<{
   ok: boolean
@@ -100,7 +88,7 @@ export class ModuleOperationResult<TData = unknown> {
     }
   }
 
-  /** 成功结果（可选 data + checks + state） */
+  /** 成功结果，可选 data + checks + state */
   public static ok<TData>(
     data?: TData,
     checks?: readonly ModuleCheckEntry[],
@@ -114,7 +102,7 @@ export class ModuleOperationResult<TData = unknown> {
     })
   }
 
-  /** 失败结果（至少一条 check） */
+  /** 失败结果，至少一条 check */
   public static fail(
     checks: readonly ModuleCheckEntry[],
     state?: Record<string, unknown>,
@@ -129,12 +117,12 @@ export class ModuleOperationResult<TData = unknown> {
     })
   }
 
-  /** 失败结果简写：单条 error 级 check */
+  /** 失败简写：自动包装单条 error 级 check */
   public static failCode(code: string, message: string, hint?: string): ModuleOperationResult<never> {
     return ModuleOperationResult.fail([ModuleCheckEntry.error(code, message, hint)])
   }
 
-  /** 透传上游失败（保留原始 checks + state） */
+  /** 透传上游失败结果，保留原始 checks + state，不丢失错误链信息 */
   public static passthroughFailure(result: ModuleOperationResult<unknown>): ModuleOperationResult<never> {
     return new ModuleOperationResult({
       ok: false,
@@ -144,11 +132,11 @@ export class ModuleOperationResult<TData = unknown> {
   }
 }
 
-/* -------------------------------------------------------------------------------
- * 三、内部辅助
- * ----------------------------------------------------------------------------- */
+// ============================================================================
+// 三、内部辅助
+// ============================================================================
 
-/** 空数组视为 undefined（避免返回 [] 语义混淆） */
+/** 空数组视为 undefined，避免"有 checks 但全空"的语义混淆 */
 function nonEmptyChecks(checks: readonly ModuleCheckEntry[] | undefined): readonly ModuleCheckEntry[] | undefined {
   return checks === undefined || checks.length === 0 ? undefined : checks
 }

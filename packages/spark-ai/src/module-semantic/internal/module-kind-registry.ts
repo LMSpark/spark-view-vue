@@ -15,7 +15,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { ModuleKind } from '../protocol/module-kind'
+import type { ModuleKind } from '../protocol'
 
 /**
  * 同名 kind 重复注册时抛此错误。

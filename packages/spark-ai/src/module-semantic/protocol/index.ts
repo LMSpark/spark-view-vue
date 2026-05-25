@@ -1,35 +1,18 @@
 /**
- * ═══════════════════════════════════════════════════════════════
- * module-semantic/protocol/index.ts — 协议层公共入口
- * ═══════════════════════════════════════════════════════════════
+ * module-semantic · 协议层公共入口
  *
- * 【导出策略】协议概念按文件拆分，统一从本入口导出。
- * ═══════════════════════════════════════════════════════════════
+ * 本目录的稳定门面，按协议栈从底层到上层排列。
+ *
+ * 文件与依赖关系：
+ *   1. module-path      — 路径值对象与解析错误
+ *   2. module-operation — 操作结果与诊断条目
+ *   3. module-context   — Host 上下文、实例引用与运行委托
+ *   4. module-metadata  — ModuleKind 声明式元数据与构造选项
+ *   5. module-request   — Runtime/API 边界请求 DTO
+ *   6. module-kind      — 协议核心 class
+ *
+ * 公共 barrel 禁止 export *，新增协议符号必须在此显式登记。
  */
-
-export {
-  ModuleKind,
-} from './module-kind'
-
-export type {
-  ModuleActionFailureMode,
-  ModuleActionMetadata,
-  ModuleActionResultSchema,
-  ModuleAttributeAccess,
-  ModuleAttributeMetadata,
-  ModuleKindOptions,
-  ModuleParameterPayloadMetadata,
-} from './module-kind'
-
-export {
-  ModuleCheckEntry,
-  ModuleOperationResult,
-} from './module-operation'
-
-export type {
-  ModuleCheckEntryLevel,
-  ModuleOperationResultOptions,
-} from './module-operation'
 
 export {
   ModulePath,
@@ -41,6 +24,16 @@ export type {
   ModulePathParseErrorCode,
 } from './module-path'
 
+export {
+  ModuleCheckEntry,
+  ModuleOperationResult,
+} from './module-operation'
+
+export type {
+  ModuleCheckEntryLevel,
+  ModuleOperationResultOptions,
+} from './module-operation'
+
 export type {
   ModuleChildrenLister,
   ModuleHostContext,
@@ -51,3 +44,24 @@ export type {
   ModuleKindRunner,
   ModulePathContext,
 } from './module-context'
+
+export type {
+  ModuleActionFailureMode,
+  ModuleActionMetadata,
+  ModuleActionResultSchema,
+  ModuleAttributeAccessor,
+  ModuleAttributeAccess,
+  ModuleAttributeMetadata,
+  ModuleKindOptions,
+  ModuleParameterPayloadMetadata,
+} from './module-metadata'
+
+export type {
+  ModuleFindInstanceRequest,
+  ModuleInvokeActionRequest,
+  ModuleSetAttributeRequest,
+} from './module-request'
+
+export {
+  ModuleKind,
+} from './module-kind'

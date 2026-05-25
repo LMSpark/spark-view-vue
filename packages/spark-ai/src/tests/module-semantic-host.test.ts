@@ -342,7 +342,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     })
   })
 
-  it('tool loop systemPrompt 自动拼入 ModuleKind 知识快照和不猜测规则', async () => {
+  it('tool loop systemPrompt 自动拼入 ModuleKind 分层知识快照', async () => {
     const { registration: baseRegistration } = createRegistration()
     const registration: AiHostBusinessRegistration = {
       ...baseRegistration,
@@ -374,7 +374,8 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     expect(systemPrompt).toContain('请求提示')
     expect(systemPrompt).toContain('页面设计')
     expect(systemPrompt).toContain('【AI Knowledge Snapshot】')
-    expect(systemPrompt).toContain('不假设、不猜测')
+    expect(systemPrompt).toContain('知识分层来源')
+    expect(systemPrompt).toContain('属性流程')
     expect(systemPrompt).toContain('node-tree.getNode')
   })
 
