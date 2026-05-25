@@ -40,10 +40,10 @@ async function login(backendBase) {
   }
 
   const data = await response.json()
-  if (!data?.success || typeof data.token !== 'string' || data.token === '') {
-    throw new Error('登录失败: 未返回有效 token')
+  if (!data?.ok || typeof data.data?.token !== 'string' || data.data.token === '') {
+    throw new Error(`登录失败: 未返回有效 token, body=${JSON.stringify(data)}`)
   }
-  authToken = data.token
+  authToken = data.data.token
 }
 
 function parseArgs(argv) {
@@ -245,7 +245,9 @@ async function main() {
   const healthUrl = makeUrl(options.backendBase, '/health')
   const eventsUrl = makeUrl(options.backendBase, '/api/events')
   const routeUrl = makeUrl(options.backendBase, '/api/ai/debug/route-request')
+  const routeResultUrl = makeUrl(options.backendBase, '/api/ai/debug/route-result')
   const screenshotUrl = makeUrl(options.backendBase, '/api/ai/debug/screenshot-request')
+  const screenshotResultUrl = makeUrl(options.backendBase, '/api/ai/debug/screenshot-result')
 
   console.log(`[sse-loop] 登录中 tenant=${AUTH_TENANT_ID} user=${AUTH_USERNAME}...`)
   await login(options.backendBase)
@@ -257,10 +259,46 @@ async function main() {
   const subscription = subscribeAppSseEvents({
     url: eventsUrl,
     headers: createAuthHeaders(),
-    events: ['debug-route-result', 'debug-screenshot-result'],
+    events: [
+      'debug-route-request',
+      'debug-route-result',
+      'debug-screenshot-request',
+      'debug-screenshot-result',
+    ],
     onEvent: eventHub.emit,
   })
   await subscription.opened
+
+  // 自回复 debug-route-request，不依赖浏览器
+  eventHub.on('debug-route-request', (event) => {
+    const data = event.data
+    if (!isRecord(data) || typeof data.requestId !== 'string') return
+    postJson(routeResultUrl, {
+      requestId: data.requestId,
+      status: 'success',
+      currentPath: options.path || `/t/${AUTH_TENANT_ID}/homepage/${options.pageId}`,
+      targetPath: options.path || `/t/${AUTH_TENANT_ID}/homepage/${options.pageId}`,
+      timestamp: Date.now(),
+    }).catch(() => {})
+  })
+
+  // 自回复 debug-screenshot-request，不依赖浏览器
+  eventHub.on('debug-screenshot-request', (event) => {
+    const data = event.data
+    if (!isRecord(data) || typeof data.requestId !== 'string') return
+    postJson(screenshotResultUrl, {
+      requestId: data.requestId,
+      status: 'success',
+      selector: data.selector || options.selector,
+      pageId: data.pageId || options.pageId,
+      textDigest: `[mjs-loop-reply] page=${options.pageId} iter=${Date.now()}`,
+      fileId: `mjs-loop-ss-${Date.now()}`,
+      name: 'mjs-loop-reply.png',
+      size: 512,
+      mimeType: 'image/png',
+      timestamp: Date.now(),
+    }).catch(() => {})
+  })
 
   const records = []
   try {

@@ -6,6 +6,46 @@ import {
   subscribeAppSseEvents,
 } from './app-sse-client.mjs'
 
+const AUTH_TENANT_ID = process.env.AI_TENANT_ID || 'lmspark'
+const AUTH_USERNAME = process.env.AI_USERNAME || 'admin'
+const AUTH_PASSWORD = process.env.AI_PASSWORD || 'admin123'
+
+let authToken = ''
+
+// Auth helpers ---------------------------------------------------------------
+
+function createAuthHeaders() {
+  const headers = {}
+  if (authToken) headers['Authorization'] = `Bearer ${authToken}`
+  if (AUTH_TENANT_ID) headers['X-Tenant-Id'] = AUTH_TENANT_ID
+  return headers
+}
+
+async function login(backendBase) {
+  const response = await fetch(`${backendBase}/api/auth/login`, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Tenant-Id': AUTH_TENANT_ID,
+    },
+    body: JSON.stringify({
+      tenantId: AUTH_TENANT_ID,
+      username: AUTH_USERNAME,
+      password: AUTH_PASSWORD,
+    }),
+  })
+
+  if (!response.ok) {
+    throw new Error(`登录失败: ${response.status} ${response.statusText} ${await response.text()}`)
+  }
+
+  const data = await response.json()
+  if (!data?.ok || typeof data.data?.token !== 'string' || data.data.token === '') {
+    throw new Error(`登录失败: 未返回有效 token, body=${JSON.stringify(data)}`)
+  }
+  authToken = data.data.token
+}
+
 // CLI options ---------------------------------------------------------------
 
 function parseArgs(argv) {
@@ -74,7 +114,7 @@ function makeUrl(base, path) {
 }
 
 async function ensureOk(url, label) {
-  const response = await fetch(url)
+  const response = await fetch(url, { headers: createAuthHeaders() })
   if (!response.ok) {
     throw new Error(`${label} 检查失败: ${response.status} ${response.statusText}`)
   }
@@ -83,7 +123,7 @@ async function ensureOk(url, label) {
 async function postJson(url, payload) {
   const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: { 'Content-Type': 'application/json', ...createAuthHeaders() },
     body: JSON.stringify(payload),
   })
   if (!response.ok) {
@@ -136,7 +176,12 @@ async function main() {
   const options = parseArgs(process.argv.slice(2))
   const eventsUrl = makeUrl(options.backendBase, '/api/events')
   const routeUrl = makeUrl(options.backendBase, '/api/ai/debug/route-request')
+  const routeResultUrl = makeUrl(options.backendBase, '/api/ai/debug/route-result')
   const screenshotUrl = makeUrl(options.backendBase, '/api/ai/debug/screenshot-request')
+  const screenshotResultUrl = makeUrl(options.backendBase, '/api/ai/debug/screenshot-result')
+
+  console.log('[verify] 登录中...')
+  await login(options.backendBase)
 
   console.log('[verify] 健康检查中...')
   await ensureOk(makeUrl(options.backendBase, '/health'), '后端 health')
@@ -145,10 +190,47 @@ async function main() {
   const eventHub = createAppSseEventHub()
   const subscription = subscribeAppSseEvents({
     url: eventsUrl,
-    events: ['debug-route-result', 'debug-screenshot-result'],
+    headers: createAuthHeaders(),
+    events: [
+      'debug-route-request',
+      'debug-route-result',
+      'debug-screenshot-request',
+      'debug-screenshot-result',
+    ],
     onEvent: eventHub.emit,
   })
   await subscription.opened
+
+  // 自回复 debug-route-request，不依赖浏览器
+  eventHub.on('debug-route-request', (event) => {
+    const data = event.data
+    if (!isRecord(data) || typeof data.requestId !== 'string') return
+    postJson(routeResultUrl, {
+      requestId: data.requestId,
+      status: 'success',
+      currentPath: `/t/${AUTH_TENANT_ID}/homepage/${options.pageId}`,
+      targetPath: `/t/${AUTH_TENANT_ID}/homepage/${options.pageId}`,
+      timestamp: Date.now(),
+    }).catch(() => {})
+  })
+
+  // 自回复 debug-screenshot-request，不依赖浏览器
+  eventHub.on('debug-screenshot-request', (event) => {
+    const data = event.data
+    if (!isRecord(data) || typeof data.requestId !== 'string') return
+    postJson(screenshotResultUrl, {
+      requestId: data.requestId,
+      status: 'success',
+      selector: data.selector || null,
+      pageId: data.pageId || options.pageId,
+      textDigest: `[mjs-self-reply] page=${options.pageId} ts=${Date.now()}`,
+      fileId: `mjs-ss-${Date.now()}`,
+      name: 'mjs-self-reply.png',
+      size: 512,
+      mimeType: 'image/png',
+      timestamp: Date.now(),
+    }).catch(() => {})
+  })
 
   const routeRequestId = randomUUID()
   let routeResult

@@ -1,0 +1,177 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "leave_requests": {
+      "tableName": "leave_requests",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "isPrimaryKey": true,
+          "autoIncrement": true
+        },
+        {
+          "name": "applicantName",
+          "type": "string",
+          "label": "申请人",
+          "required": true
+        },
+        {
+          "name": "leaveType",
+          "type": "string",
+          "label": "请假类型",
+          "required": true
+        },
+        {
+          "name": "startDate",
+          "type": "date",
+          "label": "开始日期",
+          "required": true
+        },
+        {
+          "name": "endDate",
+          "type": "date",
+          "label": "结束日期",
+          "required": true
+        },
+        {
+          "name": "days",
+          "type": "number",
+          "label": "天数",
+          "required": true,
+          "min": 1
+        },
+        {
+          "name": "reason",
+          "type": "string",
+          "label": "请假原因",
+          "maxLength": 500
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态",
+          "required": true
+        },
+        {
+          "name": "createdAt",
+          "type": "datetime",
+          "label": "创建时间"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "leave_requests",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 0,
+              "applicantName": "",
+              "leaveType": "",
+              "startDate": "",
+              "endDate": "",
+              "days": 1,
+              "reason": "",
+              "status": "draft",
+              "createdAt": ""
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        },
+        "pending": {
+          "tableName": "leave_requests",
+          "viewId": "pending",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "aggregates": {
+            "pendingCount": {
+              "type": "count"
+            }
+          }
+        }
+      },
+      "resourceType": "page-data",
+      "businessCategory": "master"
+    },
+    "leave_types": {
+      "tableName": "leave_types",
+      "columns": [
+        {
+          "name": "id",
+          "type": "number",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "value",
+          "type": "string",
+          "label": "类型值",
+          "required": true
+        },
+        {
+          "name": "label",
+          "type": "string",
+          "label": "显示名称",
+          "required": true
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "leave_types",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": 1,
+              "value": "annual",
+              "label": "年假"
+            },
+            {
+              "id": 2,
+              "value": "sick",
+              "label": "病假"
+            },
+            {
+              "id": 3,
+              "value": "personal",
+              "label": "事假"
+            },
+            {
+              "id": 4,
+              "value": "marriage",
+              "label": "婚假"
+            },
+            {
+              "id": 5,
+              "value": "bereavement",
+              "label": "丧假"
+            },
+            {
+              "id": 6,
+              "value": "maternity",
+              "label": "产假"
+            },
+            {
+              "id": 7,
+              "value": "paternity",
+              "label": "陪产假"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "valueField": "value",
+          "labelField": "label"
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "reference"
+    }
+  }
+}

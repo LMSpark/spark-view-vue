@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><meta charset="UTF-8"><title>SSE Debug Test</title></head>
+<body>
+<h1>SSE 调试诊断</h1>
+<div id="status">连接中...</div>
+<ul id="log"></ul>
+<script>
+const log = document.getElementById('log');
+const status = document.getElementById('status');
+
+function addLog(msg, color) {
+  const li = document.createElement('li');
+  li.textContent = new Date().toLocaleTimeString() + ' ' + msg;
+  li.style.color = color || 'black';
+  log.appendChild(li);
+}
+
+// 先登录
+const params = new URLSearchParams(window.location.search);
+const token = params.get('token');
+if (token) {
+  localStorage.setItem('spark_token', token);
+  localStorage.setItem('spark_user', JSON.stringify({
+    userId: '1', username: 'admin', displayName: '管理员',
+    email: '', avatar: '', roles: ['admin'],
+    tenantId: 'lmspark', defaultProjectId: 'homepage'
+  }));
+  addLog('已设置登录态', 'green');
+}
+
+const es = new EventSource('/api/events');
+addLog('EventSource 已创建', 'blue');
+
+es.onopen = () => {
+  status.textContent = '已连接';
+  status.style.color = 'green';
+  addLog('EventSource: onopen', 'green');
+};
+
+es.onerror = (e) => {
+  status.textContent = '错误: ' + es.readyState;
+  status.style.color = 'red';
+  addLog('EventSource error, readyState=' + es.readyState, 'red');
+};
+
+// 监听调试事件
+es.addEventListener('connected', (e) => {
+  addLog('收到 connected: ' + e.data, 'gray');
+});
+
+es.addEventListener('debug-route-request', (e) => {
+  addLog('收到 debug-route-request: ' + e.data.slice(0, 200), 'orange');
+
+  // 模拟 debug bridge：自动回执 route-result
+  try {
+    const data = JSON.parse(e.data);
+    // v4 envelope 解包
+    const payload = data.ok === true ? data.data : data;
+    const requestId = payload.requestId;
+    if (requestId) {
+      addLog('→ 回执 route-result, requestId=' + requestId, 'blue');
+      fetch('/api/ai/debug/route-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId,
+          status: 'success',
+          currentPath: '/t/lmspark/homepage/dynamic-columns',
+          targetPath: '/t/lmspark/homepage/dynamic-columns',
+          timestamp: Date.now(),
+        }),
+      }).then(r => r.json()).then(d => {
+        addLog('✓ 回执成功: ' + JSON.stringify(d).slice(0, 150), 'green');
+      }).catch(err => {
+        addLog('✗ 回执失败: ' + err.message, 'red');
+      });
+    }
+  } catch (err) {
+    addLog('✗ 解析事件失败: ' + err.message, 'red');
+  }
+});
+
+es.addEventListener('debug-route-result', (e) => {
+  addLog('收到 debug-route-result: ' + e.data.slice(0, 200), 'green');
+});
+
+es.addEventListener('debug-screenshot-request', (e) => {
+  addLog('收到 debug-screenshot-request: ' + e.data.slice(0, 200), 'orange');
+
+  // 模拟 debug bridge：自动回执 screenshot-result
+  try {
+    const data = JSON.parse(e.data);
+    const payload = data.ok === true ? data.data : data;
+    const requestId = payload.requestId;
+    if (requestId) {
+      addLog('→ 回执 screenshot-result, requestId=' + requestId, 'blue');
+      // 取页面文本内容作为 textDigest（诊断页没有 DataSet 内容，但能满足回路测试）
+      const textDigest = document.body.textContent.replace(/\s+/g, ' ').trim().slice(0, 4000);
+      fetch('/api/ai/debug/screenshot-result', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          requestId,
+          status: 'success',
+          selector: payload.selector || null,
+          pageId: payload.pageId || null,
+          textDigest,
+          fileId: 'diag-screenshot-' + Date.now(),
+          name: 'diag.png',
+          size: 1024,
+          mimeType: 'image/png',
+          timestamp: Date.now(),
+        }),
+      }).then(r => r.json()).then(d => {
+        addLog('✓ 截图回执成功: ' + JSON.stringify(d).slice(0, 150), 'green');
+      }).catch(err => {
+        addLog('✗ 截图回执失败: ' + err.message, 'red');
+      });
+    }
+  } catch (err) {
+    addLog('✗ 解析截图事件失败: ' + err.message, 'red');
+  }
+});
+
+es.addEventListener('debug-screenshot-result', (e) => {
+  addLog('收到 debug-screenshot-result: ' + e.data.slice(0, 200), 'green');
+});
+
+// 2秒后自动发送测试请求
+setTimeout(() => {
+  addLog('发送 test route request...', 'blue');
+  fetch('/api/ai/debug/route-request', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ requestId: 'diag-' + Date.now(), pageId: 'dynamic-columns', reason: 'sse-diag' }),
+  }).then(r => r.json()).then(d => {
+    addLog('HTTP response: ' + JSON.stringify(d).slice(0, 200), 'purple');
+  }).catch(e => {
+    addLog('HTTP error: ' + e.message, 'red');
+  });
+}, 2000);
+</script>
+</body>
+</html>
