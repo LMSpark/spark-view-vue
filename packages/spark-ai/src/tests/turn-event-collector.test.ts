@@ -4,13 +4,12 @@ import {
   createAiHostTransportTurn,
   createTurnEventCollector,
   type AiHostAppSseEvent,
-  type AiHostAppSseEventName,
   type AiHostAppSseEventSource,
   type AiHostStreamEvent,
   type AiHostStreamTurnInput,
 } from '../host'
 
-type TurnEventKind = 'delta' | 'reasoning' | 'usage' | 'result' | 'error' | 'done'
+type TurnEventKind = 'delta' | 'reasoning' | 'result' | 'error' | 'done'
 
 type TestEventHub = AiHostAppSseEventSource & Readonly<{
   emit(event: AiHostAppSseEvent): void
@@ -35,15 +34,6 @@ const turn = {
 
 const turnKey = 'demoRuntime::business-a::turn-1'
 const streamKey = 'demoRuntime::business-a::turn-1::llm-stream'
-
-const eventNames: Record<TurnEventKind, AiHostAppSseEventName> = {
-  delta: 'ai-turn-delta',
-  reasoning: 'ai-turn-reasoning',
-  usage: 'ai-turn-usage',
-  result: 'ai-turn-result',
-  error: 'ai-turn-error',
-  done: 'ai-turn-done',
-}
 
 function createTestEventHub(): TestEventHub {
   const listeners = new Map<string, Set<(event: AiHostAppSseEvent) => void>>()
@@ -93,13 +83,27 @@ function createTurnAppEvent(
   data: unknown,
   overrides: Partial<AiHostAppSseEvent> = {},
 ): AiHostAppSseEvent {
-  const name = eventNames[kind]
+  const name = 'llm-frame'
+  const frameType = kind === 'delta' || kind === 'reasoning'
+    ? 'message.delta'
+    : (kind === 'result' ? 'message.completed' : kind)
+  const frameData = kind === 'delta'
+    ? { part: 'content', delta: data }
+    : (kind === 'reasoning' ? { part: 'reasoning', delta: data } : data)
+  const payload = {
+    sessionId: 'session-1',
+    turnId: 'turn-1',
+    frame: {
+      type: frameType,
+      data: frameData,
+    },
+  }
   return {
     name,
     ok: kind !== 'error',
-    data,
-    rawData: JSON.stringify(data),
-    rawPayload: data,
+    data: payload,
+    rawData: JSON.stringify(payload),
+    rawPayload: payload,
     protocolVersion: 4,
     context: {
       requestId: 'request-1',
@@ -123,22 +127,19 @@ describe('createTurnEventCollector', () => {
     const hub = createTestEventHub()
     const deltas: string[] = []
     const reasoning: string[] = []
-    const usages: Record<string, unknown>[] = []
     const streamEvents: AiHostStreamEvent[] = []
     const collector = createTurnEventCollector({
       input: createTurnInput({
         onDelta: (value) => deltas.push(value),
         onReasoning: (value) => reasoning.push(value),
-        onUsage: (value) => usages.push(value),
         onStreamEvent: (event) => streamEvents.push(event),
       }),
       source: hub,
       timeoutMs: 1_000,
     })
 
-    hub.emit(createTurnAppEvent('delta', { delta: 'he' }))
-    hub.emit(createTurnAppEvent('reasoning', { reasoning: 'thinking' }))
-    hub.emit(createTurnAppEvent('usage', { usage: { totalTokens: 3 } }))
+    hub.emit(createTurnAppEvent('delta', 'he'))
+    hub.emit(createTurnAppEvent('reasoning', 'thinking'))
     hub.emit(createTurnAppEvent('result', {
       text: 'hello',
       toolCalls: [{ id: 'call-1', type: 'function', function: { name: 'setReason', arguments: '{}' } }],
@@ -155,9 +156,8 @@ describe('createTurnEventCollector', () => {
     })
     expect(deltas).toEqual(['he'])
     expect(reasoning).toEqual(['thinking'])
-    expect(usages).toEqual([{ totalTokens: 3 }])
-    expect(streamEvents.map((event) => event.type)).toEqual(['delta', 'reasoning', 'usage', 'result'])
-    expect(streamEvents[0]?.streamKey).toBe(streamKey)
+    expect(streamEvents.map((event) => event.type)).toEqual(['delta', 'reasoning', 'result'])
+    expect(streamEvents[0]?.streamKey).toBe('')
     expect(hub.listenerCount()).toBe(0)
   })
 
@@ -170,11 +170,10 @@ describe('createTurnEventCollector', () => {
     })
 
     hub.emit(createTurnAppEvent('result', { text: 'wrong' }, {
-      context: {
-        requestId: 'request-2',
-        session: { sessionId: 'other-session' },
-        turn: { turnId: 'turn-1' },
-        stream: { streamKey },
+      data: {
+        sessionId: 'other-session',
+        turnId: 'turn-1',
+        frame: { type: 'message.completed', data: { text: 'wrong' } },
       },
     }))
     hub.emit(createTurnAppEvent('result', { text: 'right' }))

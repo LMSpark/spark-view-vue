@@ -85,6 +85,9 @@ async function runAppSseSubscription(options, runtime) {
   if (!response.ok || !response.body) {
     throw new Error(`APP SSE subscribe failed: HTTP ${response.status}`)
   }
+  if (typeof options.onOpen === 'function') {
+    options.onOpen(response)
+  }
   runtime.markOpened()
 
   const allowedEvents = options.events === undefined

@@ -21,6 +21,7 @@ import { createAppSseEventSource } from '@/services/sse-events'
 const AI_TURN_PROTOCOL_VERSION = 4
 const AI_TURN_EVENT_TIMEOUT_MS = 300_000
 const AI_SESSION_API_BASE = '/api/ai/sessions'
+const AI_TURN_API = '/api/ai/turns'
 
 export type AiHostTurnBridgeOptions = Readonly<{
   timeoutMs?: number
@@ -56,14 +57,11 @@ export function createAiHostTurnCallbacks(options: AiHostTurnBridgeOptions = {})
         timeoutMs,
       })
       try {
-        const body = await http.post(`${AI_SESSION_API_BASE}/${encodeURIComponent(input.sessionId)}/turn/stream`, {
-          protocolVersion: AI_TURN_PROTOCOL_VERSION,
-          systemPrompt: input.systemPrompt,
-          tools: input.tools,
-          mode: 'function',
-          scope: toAiHostRuntimeScope(input.scope),
-          turn: createAiHostTransportTurn(input, 'llm-stream'),
+        const body = await http.post(AI_TURN_API, {
+          sessionId: input.sessionId,
+          turnId: input.turn.turnId,
           messages: input.messages,
+          systemPrompt: input.systemPrompt,
           ...(windowSize === undefined ? {} : { windowSize }),
         }, signalConfig(input.signal))
         assertTurnStart(body, input)

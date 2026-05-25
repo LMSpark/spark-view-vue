@@ -2,10 +2,9 @@
  * AI turn APP SSE event collector.
  *
  * This module is pure orchestration: callers provide an APP SSE source and this
- * collector aggregates ai-turn-* events into one turn result.
+ * collector aggregates neutral llm-frame events into one turn result.
  */
 
-import { createAiHostStreamKey } from '../business/business-scope'
 import type { AiHostStreamEvent } from '../chat/chat-types'
 import type { AiHostAppSseEvent } from '../transport/app-sse-events'
 import { isRecord } from '../transport/http-utils'
@@ -16,28 +15,22 @@ import type {
   AiHostTransportToolCall,
 } from '../transport/transport-types'
 
-const AI_TURN_EVENT_NAMES = [
-  'ai-turn-delta',
-  'ai-turn-reasoning',
-  'ai-turn-usage',
-  'ai-turn-result',
-  'ai-turn-error',
-  'ai-turn-done',
-] as const
+const LLM_FRAME_EVENT_NAME = 'llm-frame'
 
 const AI_TURN_EVENT_TIMEOUT_MS = 300_000
 
-type AiTurnEventName = typeof AI_TURN_EVENT_NAMES[number]
-type AiTurnEventKind = 'delta' | 'reasoning' | 'usage' | 'result' | 'error' | 'done'
+type AiTurnEventKind = 'delta' | 'reasoning' | 'result' | 'error' | 'done'
 
-const AI_TURN_EVENT_KIND_MAP: Record<AiTurnEventName, AiTurnEventKind> = {
-  'ai-turn-delta': 'delta',
-  'ai-turn-reasoning': 'reasoning',
-  'ai-turn-usage': 'usage',
-  'ai-turn-result': 'result',
-  'ai-turn-error': 'error',
-  'ai-turn-done': 'done',
-}
+type LlmFramePayload = Readonly<{
+  sessionId: string
+  turnId: string
+  frame: LlmFrame
+}>
+
+type LlmFrame = Readonly<{
+  type: string
+  data?: unknown
+}>
 
 type TurnEventCollectorInput = Readonly<{
   input: AiHostStreamTurnInput
@@ -53,12 +46,12 @@ export type TurnEventCollector = Readonly<{
 export function createTurnEventCollector(options: TurnEventCollectorInput): TurnEventCollector {
   const { input, source } = options
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
-  const expectedStreamKey = createAiHostStreamKey(input.scope, input.turn.turnId, 'llm-stream')
   const state = new TurnEventState(input)
-  const disposers = AI_TURN_EVENT_NAMES.map((name) => source.on(name, (event) => {
-    if (!matchesTurnEvent(event, input, expectedStreamKey)) return
-    state.handle(toTurnEventKind(name), event)
-  }))
+  const disposers = [source.on(LLM_FRAME_EVENT_NAME, (event) => {
+    const payload = readMatchingLlmFrame(event, input)
+    if (payload === null) return
+    state.handle(toTurnEventKind(payload.frame), event, payload.frame)
+  })]
 
   let timeoutId: ReturnType<typeof setTimeout> | null = null
   let cleaned = false
@@ -115,27 +108,23 @@ export class TurnEventState {
     this.sink = sink
   }
 
-  public handle(kind: AiTurnEventKind, event: AiHostAppSseEvent): void {
+  public handle(kind: AiTurnEventKind, event: AiHostAppSseEvent, frame: LlmFrame): void {
     if (this.settled) return
-    this.input.onStreamEvent?.(toStreamEvent(this.input, kind, event))
+    this.input.onStreamEvent?.(toStreamEvent(this.input, kind, frame))
     if (!event.ok || kind === 'error') {
-      this.fail(new Error(formatTurnEventError(event.data)))
+      this.fail(new Error(formatTurnEventError(frame.data ?? event.data)))
       return
     }
     if (kind === 'delta') {
-      this.appendDelta(event.data)
+      this.appendDelta(frame.data)
       return
     }
     if (kind === 'reasoning') {
-      this.appendReasoning(event.data)
+      this.appendReasoning(frame.data)
       return
     }
-    if (kind === 'usage' && isRecord(event.data) && isRecord(event.data['usage'])) {
-      this.input.onUsage?.(event.data['usage'])
-      return
-    }
-    if (kind === 'result' && isRecord(event.data)) {
-      this.applyResult(event.data)
+    if (kind === 'result' && isRecord(frame.data)) {
+      this.applyResult(frame.data)
       this.complete()
       return
     }
@@ -155,18 +144,14 @@ export class TurnEventState {
   }
 
   private appendDelta(data: unknown): void {
-    const delta = isRecord(data) && typeof data['delta'] === 'string'
-      ? data['delta']
-      : (typeof data === 'string' ? data : '')
+    const delta = readFrameText(data, 'delta')
     if (delta === '') return
     this.text += delta
     this.input.onDelta?.(delta)
   }
 
   private appendReasoning(data: unknown): void {
-    const reasoning = isRecord(data) && typeof data['reasoning'] === 'string'
-      ? data['reasoning']
-      : (typeof data === 'string' ? data : '')
+    const reasoning = readFrameText(data, 'reasoning') || readFrameText(data, 'delta')
     if (reasoning === '') return
     this.reasoning = `${this.reasoning ?? ''}${reasoning}`
     this.input.onReasoning?.(reasoning)
@@ -190,31 +175,49 @@ export class TurnEventState {
   }
 }
 
-function matchesTurnEvent(
+function readMatchingLlmFrame(
   event: AiHostAppSseEvent,
   input: AiHostStreamTurnInput,
-  expectedStreamKey: string,
-): boolean {
-  const context = event.context
-  return context?.session?.sessionId === input.sessionId
-    && context.turn?.turnId === input.turn.turnId
-    && (context.stream?.streamKey === undefined || context.stream.streamKey === expectedStreamKey)
+): LlmFramePayload | null {
+  if (event.name !== LLM_FRAME_EVENT_NAME || !isRecord(event.data)) return null
+  const sessionId = event.data['sessionId']
+  const turnId = event.data['turnId']
+  const frame = event.data['frame']
+  if (sessionId !== input.sessionId || turnId !== input.turn.turnId || !isRecord(frame)) {
+    return null
+  }
+  const type = frame['type']
+  if (typeof type !== 'string') return null
+  return {
+    sessionId,
+    turnId,
+    frame: {
+      type,
+      data: frame['data'],
+    },
+  }
 }
 
-function toTurnEventKind(name: AiTurnEventName): AiTurnEventKind {
-  return AI_TURN_EVENT_KIND_MAP[name]
+function toTurnEventKind(frame: LlmFrame): AiTurnEventKind {
+  if (frame.type === 'error') return 'error'
+  if (frame.type === 'done') return 'done'
+  if (frame.type === 'message.completed') return 'result'
+  if (frame.type === 'message.delta' && isRecord(frame.data) && frame.data['part'] === 'reasoning') {
+    return 'reasoning'
+  }
+  return 'delta'
 }
 
 function toStreamEvent(
   input: AiHostStreamTurnInput,
   kind: AiTurnEventKind,
-  event: AiHostAppSseEvent,
+  frame: LlmFrame,
 ): AiHostStreamEvent {
   return {
     type: kind,
-    data: event.data,
-    turnKey: event.context?.turn?.turnKey ?? '',
-    streamKey: event.context?.stream?.streamKey ?? createAiHostStreamKey(input.scope, input.turn.turnId, 'llm-stream'),
+    data: frame.data,
+    turnKey: '',
+    streamKey: '',
     scope: {
       businessRegistrationId: input.scope.businessRegistrationId,
       businessInstanceId: input.scope.businessInstanceId,
@@ -234,6 +237,11 @@ function formatTurnEventError(data: unknown): string {
     ? data['code']
     : ''
   return code === '' ? message : `${message} (code=${code})`
+}
+
+function readFrameText(data: unknown, key: string): string {
+  if (isRecord(data) && typeof data[key] === 'string') return data[key]
+  return typeof data === 'string' ? data : ''
 }
 
 function readToolCalls(value: unknown): readonly AiHostTransportToolCall[] | null {

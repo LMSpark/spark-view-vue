@@ -89,7 +89,7 @@ function parseArgs(argv) {
     hostMode: process.env.AI_HOST_MODE === 'inline' ? 'inline' : 'builtin',
     // ── 输出控制 ──
     printFiles: process.env.AI_PRINT_FILES === '1',
-    printSseEvents: process.env.AI_PRINT_SSE_EVENTS === '1',
+    printStreamEvents: process.env.AI_PRINT_STREAM_EVENTS === '1' || process.env.AI_PRINT_SSE_EVENTS === '1',
     printConversation: process.env.AI_PRINT_CONVERSATION === '1',
     traceConversation: process.env.AI_TRACE_CONVERSATION === '1',
     traceContentLimit: numberFromEnv(process.env.AI_TRACE_LIMIT, 12_000),
@@ -172,7 +172,8 @@ function parseArgs(argv) {
         options.printFiles = booleanFlag(value)
         break
       case 'print-sse-events':
-        options.printSseEvents = booleanFlag(value)
+      case 'print-stream-events':
+        options.printStreamEvents = booleanFlag(value)
         break
       case 'print-conversation':
         options.printConversation = booleanFlag(value)
@@ -270,7 +271,8 @@ function printHelp() {
     '',
     '输出控制:',
     '  --print-files              输出中附带四文件完整内容',
-    '  --print-sse-events         输出中附带原始 SSE 事件',
+    '  --print-stream-events      输出中附带 AI Host stream 事件',
+    '  --print-sse-events         兼容旧参数；等同 --print-stream-events',
     '  --print-conversation       输出中附带 Host 会话记录',
     '  --trace-conversation       实时追踪每次 LLM 交互到 stderr',
     '  --no-trace-conversation    关闭对话追踪',
@@ -517,12 +519,7 @@ function summarizeFiles(files) {
 
 const AI_TURN_PROTOCOL_VERSION = 4
 const AI_TURN_EVENTS = [
-  'ai-turn-delta',
-  'ai-turn-reasoning',
-  'ai-turn-usage',
-  'ai-turn-result',
-  'ai-turn-error',
-  'ai-turn-done',
+  'llm-frame',
 ]
 
 function createTurnCallbacks(options, auth) {
@@ -548,10 +545,14 @@ function createTurnCallbacks(options, auth) {
     },
     executeTurn: async (input) => {
       const eventHub = createAppSseEventHub()
+      let appSseCookie = ''
       const subscription = subscribeAppSseEvents({
         url: `${options.backendUrl}/api/events`,
         headers: createAuthHeaders(options, auth),
         events: AI_TURN_EVENTS,
+        onOpen: (response) => {
+          appSseCookie = appClientCookieFromResponse(response)
+        },
         onEvent: eventHub.emit,
       })
       await subscription.opened
@@ -562,15 +563,12 @@ function createTurnCallbacks(options, auth) {
         timeoutMs: options.turnTimeoutMs,
       })
       try {
-        const body = await postBackendJson(options, auth, `/api/ai/sessions/${encodeURIComponent(input.sessionId)}/turn/stream`, {
-          protocolVersion: AI_TURN_PROTOCOL_VERSION,
-          systemPrompt: input.systemPrompt,
-          tools: input.tools,
-          mode: 'function',
-          scope: toAiHostRuntimeScope(input.scope),
-          turn: createAiHostTransportTurn(input, 'llm-stream'),
+        const body = await postBackendJson(options, auth, '/api/ai/turns', {
+          sessionId: input.sessionId,
+          turnId: input.turn.turnId,
           messages: input.messages,
-        }, input.signal)
+          systemPrompt: input.systemPrompt,
+        }, input.signal, appSseCookie.length === 0 ? {} : { Cookie: appSseCookie })
         assertTurnStart(body, input)
         return await collector.result
       } catch (error) {
@@ -593,12 +591,13 @@ function createTurnCallbacks(options, auth) {
   }
 }
 
-async function postBackendJson(options, auth, path, payload, signal) {
+async function postBackendJson(options, auth, path, payload, signal, extraHeaders = {}) {
   const response = await fetch(`${options.backendUrl}${path}`, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
       ...createAuthHeaders(options, auth),
+      ...extraHeaders,
     },
     body: JSON.stringify(payload),
     ...(signal === undefined ? {} : { signal }),
@@ -609,6 +608,17 @@ async function postBackendJson(options, auth, path, payload, signal) {
     throw new Error(`POST ${path} failed: ${response.status} ${text}`)
   }
   return body
+}
+
+function appClientCookieFromResponse(response) {
+  const setCookieValues = typeof response.headers.getSetCookie === 'function'
+    ? response.headers.getSetCookie()
+    : [response.headers.get('set-cookie')].filter(Boolean)
+  for (const value of setCookieValues) {
+    const match = String(value).match(/(?:^|,\s*)SPARK_APP_CLIENT_ID=([^;,]+)/)
+    if (match) return `SPARK_APP_CLIENT_ID=${match[1]}`
+  }
+  return ''
 }
 
 function assertTurnStart(body, input) {
@@ -736,7 +746,7 @@ function createConversationTracer(options) {
     return {
       onDelta: () => undefined,
       onReasoning: () => undefined,
-      onSseEvent: () => undefined,
+      onStreamEvent: () => undefined,
     }
   }
   const limit = Math.floor(options.traceContentLimit)
@@ -755,7 +765,7 @@ function createConversationTracer(options) {
       if (reasoning.trim().length === 0) return
       write('LLM => AGENT reasoning', previewAiHostDiagnosticValue(reasoning, limit))
     },
-    onSseEvent: (event) => {
+    onStreamEvent: (event) => {
       const data = parseJsonMaybe(event.data)
       if (event.type === 'llm-request' && data !== null && typeof data === 'object') {
         const tools = Array.isArray(data.tools)
@@ -809,7 +819,7 @@ function createConversationTracer(options) {
 
 // ── 9.2 结构化诊断摘要（JSON 输出，用于 CI 报告） ──
 
-function summarizeSseEvents(events) {
+function summarizeStreamEvents(events) {
   const interesting = events
     .filter((event) => event.type === 'result' || event.type === 'error' || event.type === 'done')
     .map((event) => ({
@@ -1383,8 +1393,8 @@ async function run(options) {
   const textDeltas = []
   const reasoningDeltas = []
   const usages = []
-  const sseEvents = []
-  let sseEventCount = 0
+  const streamEvents = []
+  let streamEventCount = 0
   let latestResultText = ''
   const toolCalls = []
   const tracer = createConversationTracer(options)
@@ -1400,10 +1410,10 @@ async function run(options) {
       tracer.onReasoning(reasoning)
     },
     onUsage: (usage) => usages.push(usage),
-    onSseEvent: (event) => {
-      sseEventCount += 1
-      if (options.printSseEvents) sseEvents.push(event)
-      tracer.onSseEvent(event)
+    onStreamEvent: (event) => {
+      streamEventCount += 1
+      if (options.printStreamEvents) streamEvents.push(event)
+      tracer.onStreamEvent(event)
       const data = parseJsonMaybe(event.data)
       if (event.type === 'result' && data !== null && typeof data === 'object' && typeof data.text === 'string') {
         latestResultText = data.text
@@ -1436,7 +1446,7 @@ async function run(options) {
   // 8. 验收
   const artifactValidation = validateArtifacts(after, sessionRecord)
 
-  const sseDiagnosticEvents = options.printSseEvents ? sseEvents : []
+  const diagnosticStreamEvents = options.printStreamEvents ? streamEvents : []
   return {
     ok: sendResult.ok
       && !sendResult.aborted
@@ -1481,12 +1491,12 @@ async function run(options) {
     assistantText,
     reasoningText: reasoningDeltas.join('').trim(),
     usages,
-    sseEventCount,
-    sseEventSummary: summarizeSseEvents(sseDiagnosticEvents),
-    diagnosticSummary: summarizeDiagnosticEvents(sseDiagnosticEvents),
+    streamEventCount,
+    streamEventSummary: summarizeStreamEvents(diagnosticStreamEvents),
+    diagnosticSummary: summarizeDiagnosticEvents(diagnosticStreamEvents),
     toolCalls,
     ...(options.printConversation ? { sessionRecord } : {}),
-    ...(options.printSseEvents ? { sseEvents } : {}),
+    ...(options.printStreamEvents ? { streamEvents } : {}),
     ...(options.printFiles ? { files: after } : {}),
   }
 }

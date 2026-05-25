@@ -1,32 +1,52 @@
 package com.spark.ai.service;
 
 import com.spark.ai.api.ApiResponseFactory;
+import jakarta.annotation.PreDestroy;
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
 import org.springframework.stereotype.Service;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CopyOnWriteArrayList;
+import java.util.UUID;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CopyOnWriteArraySet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 /**
- * APP 公共 Server-Sent Events 广播服务。
+ * APP 公共 Server-Sent Events 连接服务。
  *
- * <p>该服务只负责维护 {@code /api/events} 连接和发送 v4 envelope。
- * 事件的业务执行由前端 APP 壳层、诊断面板或 MJS 脚本按 {@code event:}
- * 名称订阅后完成。</p>
+ * <p>该服务维护 {@code /api/events} 连接、浏览器 app client 标识、连接级
+ * outbound queue 和 v4 envelope 写入。业务事件解释留在调用方或前端适配层。</p>
  */
 @Service
 public class SseService {
 
     private static final Logger log = LoggerFactory.getLogger(SseService.class);
     private static final long EMITTER_TIMEOUT_MS = 30 * 60 * 1000L;
+    private static final long HEARTBEAT_INTERVAL_MS = 25_000L;
+    private static final int OUTBOUND_QUEUE_CAPACITY = 512;
+    public static final String APP_CLIENT_COOKIE = "SPARK_APP_CLIENT_ID";
 
     public static final String EVENT_PAGE_FILE_CHANGE = "page-config";
     public static final String EVENT_DATA_BATCH_JOB = "data-batch-job";
@@ -43,8 +63,21 @@ public class SseService {
     public static final String EVENT_AI_TURN_RESULT = "ai-turn-result";
     public static final String EVENT_AI_TURN_ERROR = "ai-turn-error";
     public static final String EVENT_AI_TURN_DONE = "ai-turn-done";
+    public static final String EVENT_LLM_FRAME = "llm-frame";
 
-    private final List<SseEmitter> emitters = new CopyOnWriteArrayList<>();
+    private final ConcurrentHashMap<String, CopyOnWriteArraySet<SseConnection>> connectionsByAppClient =
+            new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, SseConnection> connectionsById = new ConcurrentHashMap<>();
+    private final ExecutorService writerExecutor = Executors.newCachedThreadPool();
+    private final ScheduledExecutorService heartbeatExecutor = Executors.newSingleThreadScheduledExecutor();
+
+    public SseService() {
+        heartbeatExecutor.scheduleAtFixedRate(
+                this::heartbeat,
+                HEARTBEAT_INTERVAL_MS,
+                HEARTBEAT_INTERVAL_MS,
+                TimeUnit.MILLISECONDS);
+    }
 
     /**
      * 注册 APP 公共 SSE 连接。
@@ -53,13 +86,42 @@ public class SseService {
      * 页面关闭后继续持有无效连接。</p>
      */
     public SseEmitter subscribe() {
+        return subscribe(UUID.randomUUID().toString());
+    }
+
+    public SseEmitter subscribe(HttpServletRequest request, HttpServletResponse response) {
+        return subscribe(ensureAppClientId(request, response));
+    }
+
+    private SseEmitter subscribe(String appClientId) {
         SseEmitter emitter = new SseEmitter(EMITTER_TIMEOUT_MS);
-        emitters.add(emitter);
-        emitter.onCompletion(() -> emitters.remove(emitter));
-        emitter.onTimeout(() -> emitters.remove(emitter));
-        emitter.onError(ex -> emitters.remove(emitter));
-        log.debug("[SSE] 新连接，当前活跃: {}", emitters.size());
+        SseConnection connection = new SseConnection(appClientId, UUID.randomUUID().toString(), emitter);
+        connectionsById.put(connection.connectionId, connection);
+        connectionsByAppClient
+                .computeIfAbsent(appClientId, ignored -> new CopyOnWriteArraySet<>())
+                .add(connection);
+
+        emitter.onCompletion(() -> removeConnection(connection));
+        emitter.onTimeout(() -> removeConnection(connection));
+        emitter.onError(ex -> removeConnection(connection));
+
+        writerExecutor.submit(() -> writeLoop(connection));
+        connection.enqueue(OutboundMessage.comment("open"));
+        log.debug("[SSE] 新连接 appClientId={} connectionId={} 活跃连接={}",
+                appClientId, connection.connectionId, connectionsById.size());
         return emitter;
+    }
+
+    public String currentAppClientId(HttpServletRequest request) {
+        return readCookie(request, APP_CLIENT_COOKIE);
+    }
+
+    public boolean hasActiveConnection(String appClientId) {
+        if (appClientId == null || appClientId.isBlank()) {
+            return false;
+        }
+        CopyOnWriteArraySet<SseConnection> connections = connectionsByAppClient.get(appClientId);
+        return connections != null && connections.stream().anyMatch(connection -> !connection.closed.get());
     }
 
     /**
@@ -97,15 +159,41 @@ public class SseService {
     }
 
     public void emit(String eventType, Object payload, Map<String, Object> context, boolean terminal) {
-        Object envelope = ApiResponseFactory.sseOk(
+        Object envelope = okEnvelope(eventType, payload, ApiResponseFactory.currentRequestId(), context, terminal);
+        int delivered = enqueueEnvelope(activeConnections(), eventType, envelope);
+        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}, delivered={}",
+                eventType, connectionsById.size(), delivered);
+    }
+
+    public boolean emitToAppClient(
+            String appClientId,
+            String eventType,
+            Object payload,
+            String requestId,
+            Map<String, Object> context,
+            boolean terminal) {
+        if (!hasActiveConnection(appClientId)) {
+            return false;
+        }
+        Object envelope = okEnvelope(eventType, payload, requestId, context, terminal);
+        int delivered = enqueueEnvelope(connectionsFor(appClientId), eventType, envelope);
+        log.debug("[SSE] 已定向发送事件: appClientId={} type={} delivered={}",
+                appClientId, eventType, delivered);
+        return delivered > 0;
+    }
+
+    private Object okEnvelope(
+            String eventType,
+            Object payload,
+            String requestId,
+            Map<String, Object> context,
+            boolean terminal) {
+        return ApiResponseFactory.sseOk(
                 eventType,
                 payload,
-                ApiResponseFactory.currentRequestId(),
+                requestId,
                 context,
                 terminal);
-        List<SseEmitter> deadEmitters = sendEnvelope(eventType, envelope);
-        removeDeadEmitters(deadEmitters);
-        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());
     }
 
     public void emitError(
@@ -128,32 +216,164 @@ public class SseService {
                 details,
                 requestId,
                 context);
-        List<SseEmitter> deadEmitters = sendEnvelope(eventType, envelope);
-        removeDeadEmitters(deadEmitters);
-        log.debug("[SSE] 已广播事件: type={}, 活跃连接={}", eventType, emitters.size());
+        int delivered = enqueueEnvelope(activeConnections(), eventType, envelope);
+        log.debug("[SSE] 已广播错误事件: type={}, 活跃连接={}, delivered={}",
+                eventType, connectionsById.size(), delivered);
     }
 
-    private List<SseEmitter> sendEnvelope(String eventType, Object envelope) {
-        List<SseEmitter> deadEmitters = new ArrayList<>();
-        for (SseEmitter emitter : emitters) {
-            try {
-                emitter.send(
-                        SseEmitter.event()
-                                .name(eventType)
-                                .data(envelope, MediaType.APPLICATION_JSON)
-                );
-            } catch (Exception e) {
-                deadEmitters.add(emitter);
+    private int enqueueEnvelope(Collection<SseConnection> connections, String eventType, Object envelope) {
+        int delivered = 0;
+        for (SseConnection connection : connections) {
+            if (connection.closed.get()) {
+                continue;
+            }
+            boolean accepted = connection.enqueue(OutboundMessage.event(eventType, envelope));
+            if (accepted) {
+                delivered++;
+            } else {
+                log.warn("[SSE] outbound queue overflow appClientId={} connectionId={}",
+                        connection.appClientId, connection.connectionId);
+                removeConnection(connection);
             }
         }
-        return deadEmitters;
+        return delivered;
     }
 
-    private void removeDeadEmitters(List<SseEmitter> deadEmitters) {
-        if (deadEmitters.isEmpty()) {
+    private Collection<SseConnection> activeConnections() {
+        return new ArrayList<>(connectionsById.values());
+    }
+
+    private Collection<SseConnection> connectionsFor(String appClientId) {
+        CopyOnWriteArraySet<SseConnection> connections = connectionsByAppClient.get(appClientId);
+        return connections == null ? List.of() : new ArrayList<>(connections);
+    }
+
+    private void heartbeat() {
+        for (SseConnection connection : activeConnections()) {
+            if (!connection.enqueue(OutboundMessage.comment("heartbeat"))) {
+                removeConnection(connection);
+            }
+        }
+    }
+
+    private void writeLoop(SseConnection connection) {
+        try {
+            while (!connection.closed.get()) {
+                OutboundMessage message = connection.queue.take();
+                if (message == OutboundMessage.CLOSE) {
+                    break;
+                }
+                try {
+                    if (message.comment != null) {
+                        connection.emitter.send(SseEmitter.event().comment(message.comment));
+                    } else {
+                        connection.emitter.send(
+                                SseEmitter.event()
+                                        .name(message.eventType)
+                                        .data(message.payload, MediaType.APPLICATION_JSON));
+                    }
+                } catch (IOException error) {
+                    log.debug("[SSE] 连接写入失败 connectionId={}: {}", connection.connectionId, error.getMessage());
+                    break;
+                }
+            }
+        } catch (InterruptedException error) {
+            Thread.currentThread().interrupt();
+        } finally {
+            removeConnection(connection);
+        }
+    }
+
+    private void removeConnection(SseConnection connection) {
+        if (!connection.closed.compareAndSet(false, true)) {
             return;
         }
-        emitters.removeAll(deadEmitters);
-        log.debug("[SSE] 移除断开连接: {}", deadEmitters.size());
+        connectionsById.remove(connection.connectionId);
+        CopyOnWriteArraySet<SseConnection> connections = connectionsByAppClient.get(connection.appClientId);
+        if (connections != null) {
+            connections.remove(connection);
+            if (connections.isEmpty()) {
+                connectionsByAppClient.remove(connection.appClientId, connections);
+            }
+        }
+        connection.queue.offer(OutboundMessage.CLOSE);
+        connection.emitter.complete();
+        log.debug("[SSE] 移除连接 appClientId={} connectionId={} 活跃连接={}",
+                connection.appClientId, connection.connectionId, connectionsById.size());
+    }
+
+    private String ensureAppClientId(HttpServletRequest request, HttpServletResponse response) {
+        String existing = readCookie(request, APP_CLIENT_COOKIE);
+        if (existing != null) {
+            return existing;
+        }
+        String created = UUID.randomUUID().toString();
+        ResponseCookie cookie = ResponseCookie.from(APP_CLIENT_COOKIE, created)
+                .httpOnly(true)
+                .sameSite("Lax")
+                .path("/api")
+                .maxAge(Duration.ofDays(30))
+                .build();
+        response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
+        return created;
+    }
+
+    private static String readCookie(HttpServletRequest request, String name) {
+        if (request == null || request.getCookies() == null) {
+            return null;
+        }
+        for (Cookie cookie : request.getCookies()) {
+            if (name.equals(cookie.getName())) {
+                String value = cookie.getValue();
+                return value == null || value.isBlank() ? null : value;
+            }
+        }
+        return null;
+    }
+
+    @PreDestroy
+    public void shutdown() {
+        heartbeatExecutor.shutdownNow();
+        writerExecutor.shutdownNow();
+    }
+
+    private static final class SseConnection {
+        private final String appClientId;
+        private final String connectionId;
+        private final SseEmitter emitter;
+        private final BlockingQueue<OutboundMessage> queue = new ArrayBlockingQueue<>(OUTBOUND_QUEUE_CAPACITY);
+        private final AtomicBoolean closed = new AtomicBoolean(false);
+
+        private SseConnection(String appClientId, String connectionId, SseEmitter emitter) {
+            this.appClientId = appClientId;
+            this.connectionId = connectionId;
+            this.emitter = emitter;
+        }
+
+        private boolean enqueue(OutboundMessage message) {
+            return !closed.get() && queue.offer(message);
+        }
+    }
+
+    private static final class OutboundMessage {
+        private static final OutboundMessage CLOSE = new OutboundMessage(null, null, null);
+
+        private final String eventType;
+        private final Object payload;
+        private final String comment;
+
+        private OutboundMessage(String eventType, Object payload, String comment) {
+            this.eventType = eventType;
+            this.payload = payload;
+            this.comment = comment;
+        }
+
+        private static OutboundMessage event(String eventType, Object payload) {
+            return new OutboundMessage(eventType, payload, null);
+        }
+
+        private static OutboundMessage comment(String comment) {
+            return new OutboundMessage(null, null, comment);
+        }
     }
 }

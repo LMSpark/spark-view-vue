@@ -10,6 +10,7 @@ export type AiHostAppSseEventName =
   | 'debug-screenshot-request'
   | 'debug-screenshot-result'
   | 'debug-fc-error-report'
+  | 'llm-frame'
   | 'ai-turn-delta'
   | 'ai-turn-reasoning'
   | 'ai-turn-usage'

@@ -153,45 +153,6 @@ public class AiSessionController {
         return ResponseEntity.ok(body);
     }
 
-    /**
-     * AI turn 启动命令 — 返回 HTTP ACK，模型事件通过 /api/events 广播。
-     */
-    @PostMapping("/{sessionId}/turn/stream")
-    public ResponseEntity<Map<String, Object>> executeTurnStream(
-            @PathVariable String sessionId,
-            @RequestBody(required = false) Map<String, Object> request) {
-        if (!isSupportedProtocol(request)) {
-            return requestError("INVALID_PROTOCOL_VERSION", "仅支持 protocolVersion=3/4");
-        }
-
-        Map<String, Object> turn = extractTurn(request);
-        int windowSize = request != null && request.get("windowSize") instanceof Number n ? n.intValue() : 30;
-        String mode = request != null && request.get("mode") instanceof String s ? s : "function";
-        sessionService.executeTurnStream(
-                sessionId,
-                extractScope(request),
-                getOptionalString(turn, "turnId"),
-                getOptionalString(turn, "turnKey"),
-                getOptionalInteger(turn, "seq"),
-                getOptionalInteger(turn, "baseRevision"),
-                getOptionalString(turn, "streamKey"),
-                extractMessages(request),
-                getOptionalString(request, "systemPrompt"),
-                windowSize,
-                extractTools(request),
-                mode);
-
-        Map<String, Object> body = new LinkedHashMap<>();
-        body.put("accepted", true);
-        body.put("sessionId", sessionId);
-        String turnId = getOptionalString(turn, "turnId");
-        if (turnId != null) body.put("turnId", turnId);
-        String streamKey = getOptionalString(turn, "streamKey");
-        if (streamKey != null) body.put("streamKey", streamKey);
-        body.put("protocolVersion", PROTOCOL_VERSION_V4);
-        return ResponseEntity.accepted().body(body);
-    }
-
     @PostMapping("/{sessionId}/turn/append")
     public ResponseEntity<Map<String, Object>> appendTurnMessages(
             @PathVariable String sessionId,

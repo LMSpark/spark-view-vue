@@ -103,6 +103,7 @@ public class AiSessionService {
 
     private final ConcurrentHashMap<String, Session> sessions = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, String> sessionIdsByScopeKey = new ConcurrentHashMap<>();
+    private final ConcurrentHashMap<String, PostedTurnRecord> postedTurnRecords = new ConcurrentHashMap<>();
     private final ExecutorService streamExecutor = Executors.newCachedThreadPool();
 
     private final OpenAiProperties props;
@@ -582,6 +583,87 @@ public class AiSessionService {
                         streamContext(streamMeta));
             }
         });
+    }
+
+    /**
+     * 新 AI turn 命令：一次 HTTP POST 启动一次后端 turn task，并通过当前
+     * app client 的 APP SSE 连接投递中性 LLM frame。
+     */
+    public PostedTurnStartResult executePostedTurn(
+            String appClientId,
+            String sessionId,
+            String turnId,
+            List<Map<String, Object>> turnMessages,
+            String systemPrompt,
+            Integer windowSize) {
+        AuthenticatedRequestContext requestContext = guardAiScope(null);
+        Session session = getOrLoadSession(sessionId);
+        if (session == null) {
+            return PostedTurnStartResult.rejected(PostedTurnStatus.SESSION_NOT_FOUND, "会话不存在");
+        }
+
+        String prompt = stringValue(systemPrompt);
+        String effectivePrompt = prompt != null ? prompt : stringValue(session.systemPrompt);
+        if (effectivePrompt == null) {
+            return PostedTurnStartResult.rejected(PostedTurnStatus.MISSING_SYSTEM_PROMPT, "systemPrompt 不能为空");
+        }
+        int effectiveWindowSize = windowSize != null && windowSize > 0
+                ? windowSize
+                : (session.windowSize > 0 ? session.windowSize : DEFAULT_WINDOW_SIZE);
+        String inputHash = postedTurnInputHash(sessionId, turnId, turnMessages, effectivePrompt, effectiveWindowSize);
+        String turnKey = postedTurnKey(sessionId, turnId);
+        PostedTurnRecord record = new PostedTurnRecord(inputHash);
+        PostedTurnRecord existing = postedTurnRecords.putIfAbsent(turnKey, record);
+        if (existing != null) {
+            if (existing.inputHash.equals(inputHash)) {
+                return PostedTurnStartResult.accepted(false);
+            }
+            return PostedTurnStartResult.rejected(PostedTurnStatus.TURN_ID_REUSED, "turnId 已被不同输入使用");
+        }
+
+        List<Map<String, Object>> messages;
+        PostedTurnMeta turnMeta;
+        synchronized (session) {
+            session.systemPrompt = effectivePrompt;
+            session.windowSize = effectiveWindowSize;
+            applyRequestIdentity(session, null, requestContext);
+            session.lastActiveTime = System.currentTimeMillis();
+            List<Message> parsedTurnMessages = messagesFromMaps(turnMessages);
+            List<Message> llmConversation = new ArrayList<>(session.conversation);
+            llmConversation.addAll(parsedTurnMessages);
+            messages = buildWindowedMessages(session, llmConversation);
+            turnMeta = new PostedTurnMeta(
+                    appClientId,
+                    sessionId,
+                    turnId,
+                    session.scope,
+                    parsedTurnMessages,
+                    ApiResponseFactory.currentRequestId());
+        }
+
+        persistSession(sessionId, session);
+        persistContextSnapshot(sessionId, turnId, session.scope);
+        Session streamSession = session;
+        List<Map<String, Object>> streamMessages = messages;
+        PostedTurnMeta streamMeta = turnMeta;
+        streamExecutor.submit(() -> {
+            try {
+                callLlmNeutralStream(streamMessages, streamSession, streamMeta);
+                record.markCompleted();
+            } catch (Exception error) {
+                record.markFailed();
+                log.error("[SESSION] posted turn error sessionId={} turnId={}: {}",
+                        sessionId, turnId, error.getMessage());
+                sendLlmFrame(
+                        streamMeta,
+                        "error",
+                        Map.of(
+                                "code", "AI_STREAM_ERROR",
+                                "message", error.getMessage() != null ? error.getMessage() : "AI stream failed"),
+                        true);
+            }
+        });
+        return PostedTurnStartResult.accepted(true);
     }
 
     /**
@@ -1332,6 +1414,181 @@ public class AiSessionService {
         emitFinalResult(session, text, reasoning, toolCalls, streamMeta);
     }
 
+    @SuppressWarnings("unchecked")
+    private void callLlmNeutralStream(
+            List<Map<String, Object>> messages,
+            Session session,
+            PostedTurnMeta turnMeta) throws Exception {
+        Map<String, Object> body = new LinkedHashMap<>();
+        body.put("model", props.getModel());
+        body.put("messages", messages);
+        body.put("max_tokens", effectiveMaxTokens(null));
+        body.put("stream", true);
+
+        Double temp = effectiveTemperature(null);
+        if (temp != null) body.put("temperature", temp);
+        if (!props.isReasonerModel() && props.getTopP() != null) {
+            body.put("top_p", props.getTopP());
+        }
+        if (!props.isReasonerModel()) {
+            if (props.getFrequencyPenalty() != null) {
+                body.put("frequency_penalty", props.getFrequencyPenalty());
+            }
+            if (props.getPresencePenalty() != null) {
+                body.put("presence_penalty", props.getPresencePenalty());
+            }
+        }
+        if (props.isDeepSeek()) {
+            body.put("stream_options", Map.of("include_usage", true));
+        }
+
+        String bodyJson = objectMapper.writeValueAsString(body);
+        StringBuilder contentBuilder = new StringBuilder();
+        StringBuilder reasoningBuilder = new StringBuilder();
+        final String[] providerErrorDetail = new String[1];
+        final LlmResult[] fallbackHolder = new LlmResult[1];
+
+        try {
+            restClient.post()
+                    .uri("/v1/chat/completions")
+                    .body(bodyJson)
+                    .exchange((httpRequest, response) -> {
+                        int statusCode = response.getStatusCode().value();
+                        if (statusCode >= 400) {
+                            String errorBody = readBodyAsString(response.getBody());
+                            String detail = "HTTP " + statusCode + (errorBody.isBlank() ? "" : ": " + errorBody);
+                            providerErrorDetail[0] = detail;
+                            log.warn("[SESSION] neutral stream provider failed, fallback to non-stream. detail={}", detail);
+                            fallbackHolder[0] = callLlm(messages, null);
+                            return null;
+                        }
+
+                        try (BufferedReader reader = new BufferedReader(
+                                new InputStreamReader(response.getBody(), StandardCharsets.UTF_8))) {
+                            String line;
+                            while ((line = reader.readLine()) != null) {
+                                if (!line.startsWith("data: ")) continue;
+                                String data = line.substring(6).trim();
+                                if ("[DONE]".equals(data)) break;
+
+                                Map<String, Object> chunk = objectMapper.readValue(
+                                        data, new TypeReference<>() {});
+                                List<Map<String, Object>> choices =
+                                        (List<Map<String, Object>>) chunk.get("choices");
+                                if (choices == null || choices.isEmpty()) continue;
+
+                                Map<String, Object> delta =
+                                        (Map<String, Object>) choices.get(0).get("delta");
+                                if (delta == null) continue;
+
+                                if (delta.get("content") instanceof String s && !s.isEmpty()) {
+                                    contentBuilder.append(s);
+                                    sendLlmFrame(
+                                            turnMeta,
+                                            "message.delta",
+                                            Map.of("part", "content", "delta", s),
+                                            false);
+                                }
+
+                                if (delta.get("reasoning_content") instanceof String s && !s.isEmpty()) {
+                                    reasoningBuilder.append(s);
+                                    sendLlmFrame(
+                                            turnMeta,
+                                            "message.delta",
+                                            Map.of("part", "reasoning", "delta", s),
+                                            false);
+                                }
+                            }
+                        }
+                        return null;
+                    }, false);
+        } catch (Exception streamEx) {
+            String message = streamEx.getMessage() != null ? streamEx.getMessage() : "";
+            boolean isProvider4xx = message.contains("HTTP response code: 400")
+                    || message.contains("HTTP response code: 401")
+                    || message.contains("HTTP response code: 403")
+                    || message.contains("HTTP response code: 404")
+                    || message.contains("/v1/chat/completions");
+
+            if (isProvider4xx) {
+                String detail = message.isBlank() ? streamEx.toString() : message;
+                providerErrorDetail[0] = detail;
+                log.warn("[SESSION] neutral stream provider exception, fallback to non-stream. detail={}", detail);
+                fallbackHolder[0] = callLlm(messages, null);
+            } else {
+                throw streamEx;
+            }
+        }
+
+        if (providerErrorDetail[0] != null) {
+            LlmResult fallback = fallbackHolder[0];
+            if (fallback == null) {
+                throw new RuntimeException("SSE provider error 且 fallback 失败: " + providerErrorDetail[0]);
+            }
+            emitNeutralFinalResult(session, fallback.text, fallback.reasoning, fallback.toolCalls, turnMeta);
+            return;
+        }
+
+        String text = contentBuilder.toString();
+        String reasoning = !reasoningBuilder.isEmpty() ? reasoningBuilder.toString() : null;
+        emitNeutralFinalResult(session, text, reasoning, null, turnMeta);
+    }
+
+    private void emitNeutralFinalResult(
+            Session session,
+            String text,
+            String reasoning,
+            List<Map<String, Object>> toolCalls,
+            PostedTurnMeta turnMeta) {
+        synchronized (session) {
+            session.conversation.addAll(turnMeta.turnMessages);
+            persistMessages(turnMeta.sessionId, turnMeta.turnMessages);
+            Message assistantMsg = new Message("assistant");
+            assistantMsg.content = text != null ? text : "";
+            session.conversation.add(assistantMsg);
+            persistMessage(turnMeta.sessionId, assistantMsg);
+        }
+        persistSession(turnMeta.sessionId, session);
+
+        Map<String, Object> resultMap = new LinkedHashMap<>();
+        resultMap.put("text", text != null ? text : "");
+        if (reasoning != null) resultMap.put("reasoning", reasoning);
+        if (toolCalls != null && !toolCalls.isEmpty()) resultMap.put("toolCalls", toolCalls);
+        sendLlmFrame(turnMeta, "message.completed", resultMap, false);
+        sendLlmFrame(turnMeta, "done", Map.of("done", true), true);
+    }
+
+    private void sendLlmFrame(
+            PostedTurnMeta turnMeta,
+            String frameType,
+            Object frameData,
+            boolean terminal) {
+        Map<String, Object> frame = new LinkedHashMap<>();
+        frame.put("type", frameType);
+        frame.put("data", frameData);
+        Map<String, Object> payload = new LinkedHashMap<>();
+        payload.put("sessionId", turnMeta.sessionId);
+        payload.put("turnId", turnMeta.turnId);
+        payload.put("frame", frame);
+        sseService.emitToAppClient(
+                turnMeta.appClientId,
+                SseService.EVENT_LLM_FRAME,
+                payload,
+                turnMeta.requestId,
+                llmFrameContext(turnMeta),
+                terminal);
+    }
+
+    private Map<String, Object> llmFrameContext(PostedTurnMeta turnMeta) {
+        Map<String, Object> context = new LinkedHashMap<>();
+        context.put("session", Map.of("sessionId", turnMeta.sessionId));
+        context.put("turn", Map.of("turnId", turnMeta.turnId));
+        if (turnMeta.scope != null && !turnMeta.scope.isEmpty()) {
+            context.put("scope", ApiResponseFactory.wireScope(turnMeta.scope));
+        }
+        return context;
+    }
+
     private LlmResult filterInvalidToolCalls(LlmResult result, List<Map<String, Object>> tools) {
         if (result == null || result.toolCalls == null || result.toolCalls.isEmpty() || tools == null || tools.isEmpty()) {
             return result;
@@ -1541,9 +1798,71 @@ public class AiSessionService {
                 scope);
     }
 
+    private String postedTurnInputHash(
+            String sessionId,
+            String turnId,
+            List<Map<String, Object>> messages,
+            String systemPrompt,
+            int windowSize) {
+        Map<String, Object> input = new LinkedHashMap<>();
+        input.put("sessionId", sessionId);
+        input.put("turnId", turnId);
+        input.put("messages", messages != null ? messages : List.of());
+        input.put("systemPrompt", systemPrompt);
+        input.put("windowSize", windowSize);
+        try {
+            return shortSha256(objectMapper.writeValueAsString(input));
+        } catch (Exception error) {
+            return shortSha256(String.valueOf(input));
+        }
+    }
+
+    private static String postedTurnKey(String sessionId, String turnId) {
+        return sessionId + "\u0000" + turnId;
+    }
+
     // ═════════════════════════════════════════════════════════════════════════
     // 内部类型
     // ═════════════════════════════════════════════════════════════════════════
+
+    public enum PostedTurnStatus {
+        ACCEPTED,
+        SESSION_NOT_FOUND,
+        MISSING_SYSTEM_PROMPT,
+        TURN_ID_REUSED
+    }
+
+    public static final class PostedTurnStartResult {
+        private final PostedTurnStatus status;
+        private final boolean started;
+        private final String message;
+
+        private PostedTurnStartResult(PostedTurnStatus status, boolean started, String message) {
+            this.status = status;
+            this.started = started;
+            this.message = message;
+        }
+
+        public static PostedTurnStartResult accepted(boolean started) {
+            return new PostedTurnStartResult(PostedTurnStatus.ACCEPTED, started, null);
+        }
+
+        public static PostedTurnStartResult rejected(PostedTurnStatus status, String message) {
+            return new PostedTurnStartResult(status, false, message);
+        }
+
+        public PostedTurnStatus getStatus() {
+            return status;
+        }
+
+        public boolean isStarted() {
+            return started;
+        }
+
+        public String getMessage() {
+            return message;
+        }
+    }
 
     private static class Session {
         String systemPrompt;
@@ -1577,6 +1896,31 @@ public class AiSessionService {
             Map<String, Object> scope,
             List<Message> turnMessages,
             String requestId) {}
+
+    private record PostedTurnMeta(
+            String appClientId,
+            String sessionId,
+            String turnId,
+            Map<String, Object> scope,
+            List<Message> turnMessages,
+            String requestId) {}
+
+    private static final class PostedTurnRecord {
+        private final String inputHash;
+        private volatile String status = "started";
+
+        private PostedTurnRecord(String inputHash) {
+            this.inputHash = inputHash;
+        }
+
+        private void markCompleted() {
+            status = "completed";
+        }
+
+        private void markFailed() {
+            status = "failed";
+        }
+    }
 
     private enum SessionState {
         READY,
