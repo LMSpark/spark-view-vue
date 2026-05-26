@@ -73,8 +73,8 @@ export type ModuleKindOperation<TData> = ModuleOperationResult<TData> | Promise<
 export type ModulePathContext = Readonly<{
   /** 完整路径段列表（从根到当前节点） */
   segments: readonly ModulePathSegment[]
-  /** 当前段（Navigator 解析路径后的当前节点） */
-  segment: ModulePathSegment
+  /** 当前段（Navigator 解析路径后的当前节点；根级查询时为 undefined） */
+  segment?: ModulePathSegment
   /** Host 层注入的运行时标识（可选，根导航或纯协议测试可不提供） */
   host?: ModuleHostContext
 }>

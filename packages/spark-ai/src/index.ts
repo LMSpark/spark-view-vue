@@ -17,11 +17,13 @@ export {
   anySchema,
   arraySchema,
   booleanSchema,
+  coerceJsonValue,
   enumSchema,
   numberSchema,
   objectSchema,
+  coerceStrictJsonValue,
   stringSchema,
-} from './schema/schema-builders-api'
+} from './schema'
 
 export type {
   BooleanSchemaOptions,
@@ -29,13 +31,13 @@ export type {
   NumberSchemaOptions,
   ObjectSchemaOptions,
   StringSchemaOptions,
-} from './schema/schema-builders-api'
+} from './schema'
 
 export {
   LlmSchemaValidator,
   noParamsSchema,
   paramsSchema,
-} from './schema/schema-params-api'
+} from './schema'
 
 export type {
   LlmJsonObject,
@@ -43,12 +45,12 @@ export type {
   LlmJsonSchemaObject,
   LlmJsonSchemaType,
   LlmJsonValue,
-} from './schema/schema-core-api'
+} from './schema'
 
 export type {
   LlmParamValidationIssue,
   LlmParamValidationResult,
-} from './schema/schema-params-api'
+} from './schema'
 
 // Module semantic protocol --------------------------------------------------
 

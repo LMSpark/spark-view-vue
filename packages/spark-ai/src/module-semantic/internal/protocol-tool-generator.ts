@@ -15,7 +15,7 @@
  * 【知识工具】
  *   - queryModules()                       — 查询模块目录摘要
  *   - queryFunctions(kind?, keyword?)       — 查询函数目录摘要
- *   - guideFunction(functionId | kind+functionName) — 查询单个函数完整指南
+ *   - guideFunction(toolName | kind+functionName) — 查询单个函数完整指南
  *   - guideHumanQuestion(context, reason)   — 查询人工反问指南
  *
  * 【6 个执行协议工具】
@@ -35,7 +35,6 @@ import type { ModuleFunctionMetadata, ModuleKind } from '../protocol'
 import type { ModuleKindRegistry } from './module-kind-registry'
 import {
   createBusinessFunctionToolName,
-  formatBusinessFunctionId,
 } from './business-function-tool-name'
 
 // ═══════════════════════════════════════════════════════════════
@@ -169,10 +168,10 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.queryFunctions,
         description: [
-          '职责：查询业务函数目录，帮助 LLM 从业务意图定位到 functionId。',
+          '职责：查询业务函数目录，帮助 LLM 从业务意图定位到 toolName。',
           '何时使用：已知道或大致知道 kind/关键词，需要选择可调用函数、必填参数、失败码或 payload 引用时调用。',
-          '返回：函数摘要，包含 functionId、toolName、kindPath、functionName、paramNames、requiredParamNames、failureCodes、payloadLookupSteps。',
-          '下一步：选定 functionId 后调用 guideFunction 读取完整 paramsSchema、usageRules、failureModes，再调用对应标准 function tool。',
+          '返回：函数摘要，包含 toolName、kindPath、functionName、paramNames、requiredParamNames、failureCodes、payloadLookupSteps。',
+          '下一步：选定 toolName 后调用 guideFunction 读取完整 paramsSchema、usageRules、failureModes，再调用对应标准 function tool。',
         ].join('\n'),
         parameters: {
           type: 'object',
@@ -183,7 +182,7 @@ export class ProtocolToolGenerator {
             },
             keyword: {
               type: 'string',
-              description: '可选关键字,匹配 functionId、kind、functionName 或 description',
+              description: '可选关键字,匹配 toolName、kind、functionName 或 description',
             },
           },
           additionalProperties: false,
@@ -202,29 +201,29 @@ export class ProtocolToolGenerator {
           '何时使用：已选定 action，准备构造 args 或需要读取 usageRules、failureModes、example、resultSchema 时调用。',
           '返回：ModuleSemanticKnowledgeFunctionGuide，包含完整 paramsSchema、resultSchema、usageRules、failureModes、requiresPayloadGuide、payloadLookupSteps。',
           '下一步：requiresPayloadGuide=true 时按 payloadLookupSteps 查询 payload 目录；参数齐备后调用对应标准 function tool。',
-          '输入：functionId 使用 "<kind>.<childKind>.<functionName>"，也可传 kind + functionName。',
-          '失败码: INVALID_GUIDE_REQUEST / KIND_NOT_REGISTERED / FUNCTION_NOT_FOUND',
+          '输入：toolName 使用 "<kind>_<childKind>_<functionName>"，也可传 kind + functionName。',
+          '失败码: INVALID_GUIDE_REQUEST / KIND_NOT_REGISTERED / KIND_PATH_MISMATCH / FUNCTION_NOT_FOUND',
         ].join('\n'),
         parameters: {
           type: 'object',
           properties: {
-            functionId: {
+            toolName: {
               type: 'string',
-              description: '业务函数 ID,格式 "<kind>.<childKind>.<functionName>",例如 "pageDesign.lifecycle.describeProgress"',
+              description: '业务函数工具名,格式 "<kind>_<childKind>_<functionName>",例如 "pageDesign_lifecycle_describeProgress"',
             },
             kind: {
               type: 'string',
-              description: '模块 kind;未传 functionId 时必填',
+              description: '模块 kind;未传 toolName 时必填',
             },
             functionName: {
               type: 'string',
-              description: '函数名;未传 functionId 时必填',
+              description: '函数名;未传 toolName 时必填',
             },
           },
           oneOf: [
             {
               type: 'object',
-              required: ['functionId'],
+              required: ['toolName'],
             },
             {
               type: 'object',
@@ -501,23 +500,23 @@ function buildBusinessFunctionTool(
 ): ModuleSemanticToolSpec {
   if (fn.paramsSchema.properties !== undefined && '$paths' in fn.paramsSchema.properties) {
     throw new Error(
-      `Business function "${formatBusinessFunctionId(kindPath, fn.name)}" declares reserved field "$paths" in paramsSchema.properties. ` +
+      `Business function "${createBusinessFunctionToolName(kindPath, fn.name)}" declares reserved field "$paths" in paramsSchema.properties. ` +
       '"$paths" is a protocol-reserved field managed by the runtime. Remove it from the business paramsSchema.',
     )
   }
   if (fn.paramsSchema.required?.includes('$paths')) {
     throw new Error(
-      `Business function "${formatBusinessFunctionId(kindPath, fn.name)}" declares reserved field "$paths" in paramsSchema.required. ` +
+      `Business function "${createBusinessFunctionToolName(kindPath, fn.name)}" declares reserved field "$paths" in paramsSchema.required. ` +
       '"$paths" is a protocol-reserved field managed by the runtime. Remove it from the business paramsSchema.',
     )
   }
-  const functionId = formatBusinessFunctionId(kindPath, fn.name)
+  const toolName = createBusinessFunctionToolName(kindPath, fn.name)
   return {
     type: 'function',
     function: {
-      name: createBusinessFunctionToolName(kindPath, fn.name),
+      name: toolName,
       description: [
-        `职责：执行业务函数 ${functionId}。`,
+        `职责：执行业务函数 ${toolName}。`,
         '何时使用：已通过 queryFunctions/guideFunction/describeKind 确认函数契约、$paths 和参数后调用。',
         `$paths 为 ${kindPath.length} 个实例 ID，顺序对应 kindPath: ${kindPath.join(' -> ')}。`,
         '复杂参数：guideFunction 返回 requiresPayloadGuide=true 时，先按 payloadLookupSteps 查询参数目录，再组装参数。',

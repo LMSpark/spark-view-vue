@@ -60,7 +60,7 @@ function buildRuntime(pageId = 'demo-page'): {
   runtime.registerKind(new PageDesignNodeTreeModuleKind({
     service,
     contextFactory: (ctx) => ({
-      pageId: ctx.host?.moduleInstanceId ?? ctx.segment.id,
+      pageId: ctx.host?.moduleInstanceId ?? ctx.segment?.id ?? '',
       requestId: ctx.host?.instanceId ?? 'e2e-run',
     }),
   }))

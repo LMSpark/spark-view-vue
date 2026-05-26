@@ -16,6 +16,7 @@
 
 import {
   LlmSchemaValidator,
+  coerceJsonValue,
   type LlmJsonValue,
   type LlmParamValidationIssue,
   type LlmParamValidationResult,
@@ -179,7 +180,7 @@ export class ModuleKind {
         )
       }
 
-      const value = ModuleKind.coerceJsonValue(result.data)
+      const value = coerceJsonValue(result.data)
       if (value === undefined) {
         return ModuleOperationResult.failCode(
           'ATTRIBUTE_VALUE_NOT_JSON',
@@ -330,7 +331,7 @@ export class ModuleKind {
 
   /** 将任意数据规整后包装为成功的 ModuleOperationResult<LlmJsonValue> */
   protected okJson(data?: unknown, checks?: readonly ModuleCheckEntry[]): ModuleOperationResult<LlmJsonValue> {
-    const json = ModuleKind.coerceJsonValue(data)
+    const json = coerceJsonValue(data)
     return ModuleOperationResult.ok(json, checks)
   }
 
@@ -355,103 +356,9 @@ export class ModuleKind {
 
   // ── 静态工具 ──
 
-  /**
-   * 将任意 JS 值递归规整为 LlmJsonValue。
-   * 支持 null / string / number / bigint / symbol / boolean / Date / URL /
-   * ArrayBuffer / TypedArray / Array / Set / Map / 普通 object。
-   * 使用内部 WeakSet 防止循环引用导致无限递归。
-   */
+  /** 将任意 JS 值递归规整为 LlmJsonValue。委托到 schema/coercion。 */
   public static coerceJsonValue(value: unknown): LlmJsonValue | undefined {
-    return ModuleKind.coerceJsonValueInternal(value, new WeakSet<object>())
-  }
-
-  /**
-   * 内部递归实现。
-   * 处理顺序：基础类型 → Date/URL → 二进制 → Array/Set → Map → 普通 object
-   */
-  private static coerceJsonValueInternal(value: unknown, seen: WeakSet<object>): LlmJsonValue | undefined {
-    // 基础类型
-    if (value === null) return null
-    if (value === undefined) return undefined
-    if (typeof value === 'string') return value
-    if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
-    if (typeof value === 'boolean') return value
-    if (typeof value === 'bigint') return value.toString()
-    if (typeof value === 'symbol') return value.toString()
-
-    // 日期与 URL（转为字符串）
-    if (value instanceof Date) {
-      return Number.isFinite(value.getTime()) ? value.toISOString() : undefined
-    }
-    if (value instanceof URL) {
-      return value.toString()
-    }
-
-    // 二进制数据（转为 number[]）
-    if (value instanceof ArrayBuffer) {
-      return Array.from(new Uint8Array(value))
-    }
-    if (ArrayBuffer.isView(value)) {
-      return Array.from(new Uint8Array(value.buffer, value.byteOffset, value.byteLength))
-    }
-
-    // Array 和 Set：共享迭代逻辑（可迭代值 → LlmJsonValue[]）
-    if (isUnknownArray(value) || value instanceof Set) {
-      return ModuleKind.withJsonCycleGuard(value, seen, () => ModuleKind.coerceJsonIterable(value, seen))
-    }
-
-    // Map：entries 迭代（key 转为 string → Record<string, LlmJsonValue>）
-    if (value instanceof Map) {
-      return ModuleKind.withJsonCycleGuard(value, seen, () => ModuleKind.coerceJsonRecord(value.entries(), seen))
-    }
-
-    // 普通 object：Object.entries 迭代
-    if (typeof value === 'object') {
-      return ModuleKind.withJsonCycleGuard(value, seen, () => ModuleKind.coerceJsonRecord(Object.entries(value), seen))
-    }
-
-    return undefined
-  }
-
-  /**
-   * 循环引用保护。进入集合/对象前登记引用，退出时无论成功失败都释放，
-   * 避免同级后续字段被误判为循环。
-   */
-  private static withJsonCycleGuard<TValue extends LlmJsonValue>(
-    value: object,
-    seen: WeakSet<object>,
-    createValue: () => TValue,
-  ): TValue | undefined {
-    if (seen.has(value)) return undefined
-    seen.add(value)
-    try {
-      return createValue()
-    } finally {
-      seen.delete(value)
-    }
-  }
-
-  /** 将 Array / Set 等可迭代值递归规整为 JSON 数组；无法规整的元素会被跳过。 */
-  private static coerceJsonIterable(items: Iterable<unknown>, seen: WeakSet<object>): LlmJsonValue[] {
-    const out: LlmJsonValue[] = []
-    for (const item of items) {
-      const coerced = ModuleKind.coerceJsonValueInternal(item, seen)
-      if (coerced !== undefined) out.push(coerced)
-    }
-    return out
-  }
-
-  /** 将 Map / 普通 object entries 递归规整为 JSON object；key 统一转成 string。 */
-  private static coerceJsonRecord(
-    entries: Iterable<readonly [unknown, unknown]>,
-    seen: WeakSet<object>,
-  ): Record<string, LlmJsonValue> {
-    const out: Record<string, LlmJsonValue> = {}
-    for (const [key, raw] of entries) {
-      const coerced = ModuleKind.coerceJsonValueInternal(raw, seen)
-      if (coerced !== undefined) out[String(key)] = coerced
-    }
-    return out
+    return coerceJsonValue(value)
   }
 }
 
@@ -461,12 +368,6 @@ export class ModuleKind {
 // 职责：trim 空白 + 浅/深拷贝防外部污染 + 校验重复 name、自引用
 // 每个函数接收 ownKind 参数，用于生成可定位的错误消息。
 // ============================================================================
-
-// ── 基础校验原语 ──
-
-function isUnknownArray(value: unknown): value is readonly unknown[] {
-  return Array.isArray(value)
-}
 
 /** trim 后不得为空，否则抛错 */
 function normalizeRequiredText(value: string, field: string): string {

@@ -12,7 +12,7 @@
  *   - 根路径 "/" listChildren 返回所有已注册 kind 名单（LLM 发现入口的第一跳）。
  *   - 路径第一段不验证父子关系（没有父），由业务方在 root ModuleKind 的 action 中自行校验。
  *   - 第二段起通过父 ModuleKind.resolveChild 验证父子存在性。
- *   - 根级 findInstance 使用 ROOT_SEGMENT_SENTINEL 作为占位 context。
+ *   - 根级 findInstance 的 ModulePathContext 不设置 segment。
  *   - describeKind 全量返回 attributes/actions/children，不剥离任何字段。
  *
  * 【消费方】ModuleSemanticRuntime（直接调用）、FunctionInvoker、AttributeAccessor
@@ -30,7 +30,6 @@
 import {
   ModuleCheckEntry,
   ModuleOperationResult,
-  ModulePathSegment,
   type ModuleFunctionMetadata,
   type ModuleAttributeMetadata,
   type ModuleFindInstanceRequest,
@@ -39,6 +38,7 @@ import {
   type ModuleKind,
   type ModulePath,
   type ModulePathContext,
+  type ModulePathSegment,
 } from '../protocol'
 import type { ModuleKindRegistry } from './module-kind-registry'
 
@@ -209,7 +209,7 @@ export class Navigator {
    * 查询子实例。
    *
    * 行为分两种情况：
-   *   - 根路径 → 查询目标 kind 的 ModuleKind，使用 ROOT_SEGMENT_SENTINEL 占位
+   *   - 根路径 → 查询目标 kind 的 ModuleKind，ctx 不设置 segment
    *   - 非根路径 → 路由到末段 ModuleKind.findInstance，
    *     目标 kind 必须是末段 children 之一
    *
@@ -232,7 +232,6 @@ export class Navigator {
       const moduleKind = this.kinds.require(childKind)
       const rootCtx: ModulePathContext = {
         segments: [],
-        segment: ROOT_SEGMENT_SENTINEL,
         ...(host === undefined ? {} : { host }),
       }
       return moduleKind.findInstance(rootCtx, childKind, query)
@@ -276,12 +275,6 @@ export class Navigator {
 // ═══════════════════════════════════════════════════════════════
 // 第 3 节 · 内部 helper
 // ═══════════════════════════════════════════════════════════════
-
-/**
- * 根级 findInstance 调用 ModuleKind 时使用的占位 segment。
- * kind 和 id 都为空字符串，表示"不来自具体路径段"。
- */
-const ROOT_SEGMENT_SENTINEL = new ModulePathSegment('', '')
 
 /** 从 ModuleKind 实例提取元数据摘要 */
 function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {

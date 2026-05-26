@@ -79,8 +79,8 @@ const maxConstructorParameterPropertyParams = 4
 const publicSurfaceAllowlist = new Set([
   // Schema builders intentionally expose paired value builders and Options types:
   // the Options names keep public function signatures short without hiding contracts.
-  'packages/spark-ai/src/index.ts:./schema/schema-builders-api',
-  'packages/spark-ai/src/schema/index.ts:./schema-builders-api',
+  'packages/spark-ai/src/index.ts:./schema',
+  'packages/spark-ai/src/schema/index.ts:./helpers',
   // Host session-types and transport-types are complete type-contract modules;
   // topic-based re-export files add artificial indirection.
   'packages/spark-ai/src/host/index.ts:./session/session-types',

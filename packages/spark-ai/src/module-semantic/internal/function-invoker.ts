@@ -9,7 +9,7 @@ import type { LlmJsonValue } from '../../schema'
 import type { ModuleFunctionInvokeRequest, ModuleOperationResult } from '../protocol'
 import type { Navigator } from './navigator'
 import { isNavigationSuccess } from './navigator'
-import { formatBusinessFunctionId } from './business-function-tool-name'
+import { createBusinessFunctionToolName } from './business-function-tool-name'
 
 export class FunctionInvoker {
   public constructor(
@@ -46,7 +46,7 @@ function functionPathMismatch(
     checks: [{
       level: 'error',
       code: 'FUNCTION_PATH_MISMATCH',
-      message: `函数 ${formatBusinessFunctionId(expectedKindPath, functionName)} 不能用于路径 ${actualKindPath.join('.')}`,
+      message: `函数 ${createBusinessFunctionToolName(expectedKindPath, functionName)} 不能用于路径 ${actualKindPath.join('.')}`,
       hint: '请使用与函数 kind path 匹配的实例 path。',
     }],
   }

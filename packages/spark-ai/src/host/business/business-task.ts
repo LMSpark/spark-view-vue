@@ -1,5 +1,6 @@
 import {
   LlmSchemaValidator,
+  coerceStrictJsonValue,
   type LlmJsonSchemaObject,
   type LlmJsonValue,
 } from '../../schema'
@@ -197,37 +198,12 @@ function coerceInputRecord(input: unknown, label: string): AiHostBusinessTaskInp
   }
   const out: Record<string, LlmJsonValue> = {}
   for (const [key, value] of Object.entries(input)) {
-    const coerced = coerceJsonValue(value, new WeakSet<object>())
+    const coerced = coerceStrictJsonValue(value)
     if (coerced === undefined) {
       throw new Error(`AI host business task ${label}.${key} must be JSON-serializable.`)
     }
     out[key] = coerced
   }
-  return out
-}
-
-function coerceJsonValue(value: unknown, seen: WeakSet<object>): LlmJsonValue | undefined {
-  if (value === null || typeof value === 'string' || typeof value === 'boolean') return value
-  if (typeof value === 'number') return Number.isFinite(value) ? value : undefined
-  if (Array.isArray(value)) {
-    const items: LlmJsonValue[] = []
-    for (const item of value) {
-      const coerced = coerceJsonValue(item, seen)
-      if (coerced === undefined) return undefined
-      items.push(coerced)
-    }
-    return items
-  }
-  if (!isPlainRecord(value)) return undefined
-  if (seen.has(value)) return undefined
-  seen.add(value)
-  const out: Record<string, LlmJsonValue> = {}
-  for (const [key, item] of Object.entries(value)) {
-    const coerced = coerceJsonValue(item, seen)
-    if (coerced === undefined) return undefined
-    out[key] = coerced
-  }
-  seen.delete(value)
   return out
 }
 

@@ -150,11 +150,11 @@ export class ProtocolToolRouter {
   /* ── guideFunction ────────────────────────────────────── */
 
   private routeGuideFunction(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
-    const functionId = this.argsParser.optionalString(args, 'functionId')
+    const toolName = this.argsParser.optionalString(args, 'toolName')
     const kind = this.argsParser.optionalString(args, 'kind')
     const functionName = this.argsParser.optionalString(args, 'functionName')
     return this.resultProjector.jsonResult(this.knowledge.guideFunction({
-      ...(functionId === undefined ? {} : { functionId }),
+      ...(toolName === undefined ? {} : { toolName }),
       ...(kind === undefined ? {} : { kind }),
       ...(functionName === undefined ? {} : { functionName }),
     }))

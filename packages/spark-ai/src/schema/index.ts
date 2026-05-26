@@ -17,7 +17,7 @@ export type {
   LlmJsonSchemaObject,
   LlmJsonSchemaType,
   LlmJsonValue,
-} from './schema-core-api'
+} from './types'
 
 // ── 值：Schema 便捷构造器 ─────────────────────────────────────
 export {
@@ -25,10 +25,12 @@ export {
   arraySchema,
   booleanSchema,
   enumSchema,
+  noParamsSchema,
   numberSchema,
   objectSchema,
+  paramsSchema,
   stringSchema,
-} from './schema-builders-api'
+} from './helpers'
 
 export type {
   BooleanSchemaOptions,
@@ -36,16 +38,20 @@ export type {
   NumberSchemaOptions,
   ObjectSchemaOptions,
   StringSchemaOptions,
-} from './schema-builders-api'
+} from './helpers'
 
 // ── 值 + 类型：参数校验器 ─────────────────────────────────────
 export {
   LlmSchemaValidator,
-  noParamsSchema,
-  paramsSchema,
-} from './schema-params-api'
+} from './validator'
 
 export type {
   LlmParamValidationIssue,
   LlmParamValidationResult,
-} from './schema-params-api'
+} from './validator'
+
+// ── 值：JSON 值规整 ──────────────────────────────────────────
+export {
+  coerceJsonValue,
+  coerceStrictJsonValue,
+} from './coercion'

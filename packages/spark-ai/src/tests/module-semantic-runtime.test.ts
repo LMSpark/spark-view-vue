@@ -168,18 +168,18 @@ const NODE_TREE_PAYLOAD_LOOKUP_STEPS = [
   '先定位 payload 目录模块 payload-catalog(业务目录模块); 没有实例路径时用 listChildren/findInstance 获取目录实例。',
   '先调用 payload-catalog_queryPayloads({ $paths: [<catalogInstanceId>], moduleKind: "node-tree", payloadRef: "spark.component", keyword/category/key, limit }) 查询目录并选择真实 key。',
   '再调用 payload-catalog_guidePayload({ $paths: [<catalogInstanceId>], moduleKind: "node-tree", payloadRef: "spark.component", key }) 读取 paramsSchema、usageRules 和 failureModes。',
-  '最后才调用 node-tree.getNode; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
+  '最后才调用 node-tree_getNode; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
 ] as const
 
 const NODE_TREE_FUNCTION_LOOKUP_STEPS = [
   '先调用 queryFunctions({ kind: "node-tree", keyword: "getNode" }) 查函数目录，确认 functionName、必填参数和 failureCodes。',
-  '再调用 guideFunction({ functionId: "node-tree.getNode" }) 读取完整 paramsSchema、usageRules 和 failureModes。',
+  '再调用 guideFunction({ toolName: "node-tree_getNode" }) 读取完整 paramsSchema、usageRules 和 failureModes。',
   '随后调用 node-tree_getNode({ $paths: [...] }) 执行业务函数。',
 ] as const
 
 const NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS = [
   ...NODE_TREE_PAYLOAD_LOOKUP_STEPS.slice(0, 3),
-  '最后才调用 node-tree.<functionName>; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
+  '最后才调用 <toolName>; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
 ] as const
 
 const NODE_TREE_INSTANCE_GUIDE = {
@@ -282,7 +282,7 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     expect(guideFunction?.function.description).toContain('paramsSchema')
     expect(guideFunction?.function.description).toContain('payloadLookupSteps')
     expect(guideFunction?.function.parameters.oneOf).toEqual([
-      { type: 'object', required: ['functionId'] },
+      { type: 'object', required: ['toolName'] },
       { type: 'object', required: ['kind', 'functionName'] },
     ])
     expect(guideHumanQuestion?.function.description).toContain('缺失用户事实')
@@ -340,7 +340,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
           expect.objectContaining({ name: 'rootId', access: 'read' }),
         ],
         functionGuides: [
-          expect.objectContaining({ functionId: 'node-tree.getNode' }),
+          expect.objectContaining({ toolName: 'node-tree_getNode' }),
         ],
       }),
     ])
@@ -355,7 +355,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     expect(functions.ok).toBe(true)
     expect(functions.data).toEqual([
       expect.objectContaining({
-        functionId: 'node-tree.getNode',
+        toolName: 'node-tree_getNode',
         requiredParamNames: ['id'],
         failureCodes: ['NODE_NOT_FOUND'],
       }),
@@ -365,10 +365,10 @@ describe('ModuleSemanticRuntime.executeTool', () => {
   it('guideFunction 作为 LLM 直面工具返回完整调用指南和显式失败', async () => {
     const runtime = createRuntime()
 
-    const guide = await runtime.executeTool('guideFunction', { functionId: 'node-tree.getNode' })
+    const guide = await runtime.executeTool('guideFunction', { toolName: 'node-tree_getNode' })
     expect(guide.ok).toBe(true)
     expect(guide.data).toMatchObject({
-      functionId: 'node-tree.getNode',
+      toolName: 'node-tree_getNode',
       paramsSchema: {
         type: 'object',
         required: ['id'],
@@ -377,7 +377,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
       usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
     })
 
-    const invalid = await runtime.executeTool('guideFunction', { functionId: 'node-tree' })
+    const invalid = await runtime.executeTool('guideFunction', { toolName: 'node-tree' })
     expect(invalid.ok).toBe(false)
     expect(invalid.checks?.[0]?.code).toBe('INVALID_GUIDE_REQUEST')
   })
@@ -557,7 +557,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functionLookupSteps: [
           'queryFunctions({ kind: "node-tree" }) 查看 node-tree 函数目录。',
-          'guideFunction({ functionId: "node-tree.<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
+          'guideFunction({ toolName: "node-tree_<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
           '<toolName>({ $paths: [<node-treeId>] }) 执行业务函数。',
         ],
         attributeGuides: [
@@ -573,7 +573,6 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functionGuides: [
           expect.objectContaining({
-            functionId: 'node-tree.getNode',
             toolName: 'node-tree_getNode',
             kindPath: ['node-tree'],
             functionName: 'getNode',
@@ -587,7 +586,6 @@ describe('ModuleSemanticRuntime 知识投影', () => {
     ])
     expect(snapshot.functions).toEqual([
       {
-        functionId: 'node-tree.getNode',
         toolName: 'node-tree_getNode',
         kindPath: ['node-tree'],
         kind: 'node-tree',
@@ -604,7 +602,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
       },
     ])
-    expect(rootSnapshot.functions[0]?.functionId).toBe('node-tree.getNode')
+    expect(rootSnapshot.functions[0]?.toolName).toBe('node-tree_getNode')
     expect(snapshot.kindLayers).toEqual([
       expect.objectContaining({
         kind: 'node-tree',
@@ -624,7 +622,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functionLookupSteps: [
           'queryFunctions({ kind: "node-tree" }) 查看 node-tree 函数目录。',
-          'guideFunction({ functionId: "node-tree.<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
+          'guideFunction({ toolName: "node-tree_<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
           '<toolName>({ $paths: [<node-treeId>] }) 执行业务函数。',
         ],
         payloadLookupSteps: NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS,
@@ -641,7 +639,6 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functions: [
           expect.objectContaining({
-            functionId: 'node-tree.getNode',
             toolName: 'node-tree_getNode',
             kindPath: ['node-tree'],
             functionName: 'getNode',
@@ -696,7 +693,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         },
       ],
       attributeAccessor: {
-        get: (ctx, attrName) => ModuleOperationResult.ok(attrName === 'code' ? ctx.segment.id : 'Ada'),
+        get: (ctx, attrName) => ModuleOperationResult.ok(attrName === 'code' ? (ctx.segment?.id ?? '') : 'Ada'),
         set: () => ModuleOperationResult.failCode('READONLY', '人员目录只读。'),
       },
       functions: [
@@ -765,7 +762,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
 
     expect(runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toHaveLength(1)
     expect(runtime.queryKnowledgeFunctions({ keyword: 'getnode' })).toEqual([
-      expect.objectContaining({ functionId: 'node-tree.getNode' }),
+      expect.objectContaining({ toolName: 'node-tree_getNode' }),
     ])
     expect(runtime.queryKnowledgeFunctions({ kind: 'missing' })).toEqual([])
   })
@@ -773,10 +770,10 @@ describe('ModuleSemanticRuntime 知识投影', () => {
   it('guideKnowledgeFunction 返回完整动作指南,失败时显式诊断', () => {
     const runtime = createRuntime()
 
-    const guide = runtime.guideKnowledgeFunction({ functionId: 'node-tree.getNode' })
+    const guide = runtime.guideKnowledgeFunction({ toolName: 'node-tree_getNode' })
     expect(guide.ok).toBe(true)
     expect(guide.data).toMatchObject({
-      functionId: 'node-tree.getNode',
+      toolName: 'node-tree_getNode',
       kind: 'node-tree',
       functionName: 'getNode',
       description: '按 id 取节点',
@@ -795,7 +792,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
       payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
     })
 
-    const missing = runtime.guideKnowledgeFunction({ functionId: 'node-tree.missing' })
+    const missing = runtime.guideKnowledgeFunction({ toolName: 'node-tree_missing' })
     expect(missing.ok).toBe(false)
     expect(missing.checks?.[0]?.code).toBe('FUNCTION_NOT_FOUND')
   })

@@ -19,5 +19,5 @@ export function createCurrentPageRef(
 }
 
 function currentPageId(ctx: ModulePathContext): string {
-  return ctx.host?.moduleInstanceId ?? ctx.segment.id
+  return ctx.host?.moduleInstanceId ?? ctx.segment?.id ?? ''
 }

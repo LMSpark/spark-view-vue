@@ -25,13 +25,13 @@ The LLM-facing tool set:
 6. `setAttribute(path, attrName, value)`
 7. `queryModules(kind?, parentKind?, keyword?)`
 8. `queryFunctions(kind?, keyword?)`
-9. `guideFunction(functionId | kind+functionName)`
+9. `guideFunction(toolName | kind+functionName)`
 10. `guideHumanQuestion(context, reason, missingFacts?)`
 
 Recommended discovery order:
 
 1. `queryModules()` / `queryFunctions({ kind })`
-2. `guideFunction({ functionId })`
+2. `guideFunction({ toolName })`
 3. `guideHumanQuestion(...)` when user facts are missing
 4. `listChildren("/")`
 5. `findInstance("/", kind, {})`

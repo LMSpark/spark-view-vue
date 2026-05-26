@@ -532,9 +532,9 @@ class LeaveRequestPersonModuleKind extends ModuleKind {
       ],
       attributeAccessor: {
         get: (ctx, attrName) => {
-          const person = people.findByCode(ctx.segment.id)
+          const person = people.findByCode(ctx.segment?.id ?? '')
           if (person === undefined) {
-            return ModuleOperationResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment.id}`, '先通过 findInstance 查询可用 leave-person 实例。')
+            return ModuleOperationResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment?.id ?? ''}`, '先通过 findInstance 查询可用 leave-person 实例。')
           }
           return ModuleOperationResult.ok(personAttribute(person, attrName))
         },
@@ -664,11 +664,11 @@ export function createLeaveRequestDraftId(now = Date.now): string {
 }
 
 function toServiceContext(ctx: ModulePathContext | AiHostBusinessRuntimeContext): LeaveRequestServiceContext {
-  if ('host' in ctx || 'segment' in ctx) {
+  if ('host' in ctx || 'segments' in ctx) {
     const pathCtx = ctx
     return {
-      requestId: pathCtx.host?.instanceId ?? pathCtx.segment.id,
-      leaveDraftId: pathCtx.host?.moduleInstanceId ?? pathCtx.segment.id,
+      requestId: pathCtx.host?.instanceId ?? pathCtx.segment?.id ?? '',
+      leaveDraftId: pathCtx.host?.moduleInstanceId ?? pathCtx.segment?.id ?? '',
     }
   }
   return {

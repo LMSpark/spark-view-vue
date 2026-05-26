@@ -12,7 +12,6 @@ const TOOL_NAME_SEGMENT_PATTERN = /^[A-Za-z0-9-]+$/u
 export type BusinessFunctionToolRef = Readonly<{
   kindPath: readonly string[]
   functionName: string
-  functionId: string
   toolName: string
 }>
 
@@ -20,7 +19,7 @@ export function createBusinessFunctionToolName(kindPath: readonly string[], func
   validateFunctionPath(kindPath, functionName)
   const toolName = [...kindPath, functionName].join(TOOL_NAME_SEPARATOR)
   if (toolName.length > TOOL_NAME_MAX_LENGTH) {
-    throw new Error(`Business function tool name is too long: ${formatBusinessFunctionId(kindPath, functionName)}`)
+    throw new Error(`Business function tool name is too long: ${toolName}`)
   }
   return toolName
 }
@@ -37,20 +36,14 @@ export function parseBusinessFunctionToolName(toolName: string): BusinessFunctio
   return {
     kindPath,
     functionName,
-    functionId: formatBusinessFunctionId(kindPath, functionName),
     toolName,
   }
-}
-
-export function formatBusinessFunctionId(kindPath: readonly string[], functionName: string): string {
-  validateFunctionPath(kindPath, functionName)
-  return [...kindPath, functionName].join('.')
 }
 
 function validateFunctionPath(kindPath: readonly string[], functionName: string): void {
   if (!isValidFunctionPath(kindPath, functionName)) {
     throw new Error(
-      `Invalid business function id: ${[...kindPath, functionName].join('.')}`,
+      `Invalid business function tool name: ${[...kindPath, functionName].join('_')}`,
     )
   }
 }

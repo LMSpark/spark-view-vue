@@ -5,7 +5,7 @@
  * pageDesign -> lifecycle / text-model / payload-catalog / node-tree / dataset。
  *
  * LLM 固定走知识入口和执行协议工具:
- * queryModules() → queryFunctions({ kind }) → guideFunction({ functionId }) →
+ * queryModules() → queryFunctions({ kind }) → guideFunction({ toolName }) →
  * guideHumanQuestion({ context, reason, missingFacts }) when user facts are missing →
  * listChildren("/") → findInstance("/", "pageDesign", {}) →
  * listChildren("/pageDesign[<pageId>]") → describeKind(childKind) →
@@ -283,18 +283,18 @@ function childModuleRefs(ctx: ModulePathContext, childKind?: string): readonly M
 }
 
 function pageDesignPageId(ctx: ModulePathContext): string | null {
-  const pageId = ctx.host?.moduleInstanceId ?? ctx.segment.id
-  return pageId.length === 0 ? null : pageId
+  const pageId = ctx.host?.moduleInstanceId ?? ctx.segment?.id
+  return pageId === undefined || pageId.length === 0 ? null : pageId
 }
 
 // ── Host 上下文转换与生命周期错误映射 ─────────────────────
 
 function toServiceContext(ctx: ModulePathContext | SparkAiHost.AiHostBusinessRuntimeContext): PageDesignServiceContext {
-  if ('host' in ctx || 'segment' in ctx) {
+  if ('host' in ctx || 'segments' in ctx) {
     const pathCtx = ctx
     return {
-      requestId: pathCtx.host?.instanceId ?? pathCtx.segment.id,
-      pageId: pathCtx.host?.moduleInstanceId ?? pathCtx.segment.id,
+      requestId: pathCtx.host?.instanceId ?? pathCtx.segment?.id ?? '',
+      pageId: pathCtx.host?.moduleInstanceId ?? pathCtx.segment?.id ?? '',
     }
   }
   return {
