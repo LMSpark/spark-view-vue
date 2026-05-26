@@ -64,7 +64,7 @@ export class ProtocolResultProjector {
 
   /**
    * describeKind 结果投影：将类型安全的 ModuleKindDescription 转为 JSON 对象。
-   * attributes 和 actions 的 schema 字段通过 jsonSchemaToJson 递归序列化。
+   * attributes 和 functions 的 schema 字段通过 jsonSchemaToJson 递归序列化。
    */
   public describeKindResult(
     result: ModuleOperationResult<ModuleKindDescription>,
@@ -79,7 +79,7 @@ export class ProtocolResultProjector {
       description: result.data.description,
       ...(result.data.parentKind === undefined ? {} : { parentKind: result.data.parentKind }),
       attributes: result.data.attributes.map((attr) => describeAttributeToJson(attr)),
-      actions: result.data.actions.map((action) => describeActionToJson(action)),
+      functions: result.data.functions.map((fn) => describeFunctionToJson(fn)),
       payloads: result.data.payloads.map((payload) => describePayloadToJson(payload)),
       children: [...result.data.children],
     }, result.checks, result.state)
@@ -103,18 +103,18 @@ function describeAttributeToJson(attr: ModuleKindDescription['attributes'][numbe
   return out
 }
 
-/** 单个动作元数据 → JSON（含 paramsSchema/resultSchema/usageRules/failureModes） */
-function describeActionToJson(action: ModuleKindDescription['actions'][number]): Record<string, LlmJsonValue> {
+/** 单个函数元数据 → JSON（含 paramsSchema/resultSchema/usageRules/failureModes） */
+function describeFunctionToJson(fn: ModuleKindDescription['functions'][number]): Record<string, LlmJsonValue> {
   return {
-    name: action.name,
-    description: action.description,
-    paramsSchema: jsonSchemaToJson(action.paramsSchema),
-    resultSchema: action.resultSchema === undefined ? null : jsonSchemaToJson(action.resultSchema),
-    usageRules: action.usageRules === undefined ? [] : [...action.usageRules],
-    failureModes: action.failureModes === undefined
+    name: fn.name,
+    description: fn.description,
+    paramsSchema: jsonSchemaToJson(fn.paramsSchema),
+    resultSchema: fn.resultSchema === undefined ? null : jsonSchemaToJson(fn.resultSchema),
+    usageRules: fn.usageRules === undefined ? [] : [...fn.usageRules],
+    failureModes: fn.failureModes === undefined
       ? []
-      : action.failureModes.map((mode) => ({ code: mode.code, when: mode.when, fix: mode.fix })),
-    example: action.example === undefined ? null : action.example,
+      : fn.failureModes.map((mode) => ({ code: mode.code, when: mode.when, fix: mode.fix })),
+    example: fn.example === undefined ? null : fn.example,
   }
 }
 
@@ -123,7 +123,7 @@ function describePayloadToJson(payload: ModuleKindDescription['payloads'][number
   return {
     payloadRef: payload.payloadRef,
     description: payload.description,
-    requiredForActions: payload.requiredForActions === undefined ? [] : [...payload.requiredForActions],
+    requiredForFunctions: payload.requiredForFunctions === undefined ? [] : [...payload.requiredForFunctions],
   }
 }
 

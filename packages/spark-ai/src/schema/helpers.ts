@@ -11,7 +11,7 @@
  *   - 所有函数都是纯工厂，无副作用、无状态。
  *   - `paramsSchema()` 专门用于函数参数根节点，强制 type=object。
  *
- * 【消费方】module-semantic/protocol/module-kind.ts（ModuleActionMetadata.paramsSchema）、
+ * 【消费方】module-semantic/protocol/module-kind.ts（ModuleFunctionMetadata.paramsSchema）、
  *   所有业务 ModuleKind 子类的 action 注册。
  *
  * ═══════════════════════════════════════════════════════════════

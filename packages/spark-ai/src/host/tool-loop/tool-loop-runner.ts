@@ -88,11 +88,10 @@ export class AiHostToolLoopRunner {
     const maxRounds = this.maxToolRounds
     const sessionStore = requireSessionStore(registration)
 
-    // 拼接系统提示词：业务自定义 + 请求携带 + 业务描述 + ModuleKind 知识快照
+    // 拼接系统提示词：业务自定义 + 请求编排 + ModuleKind 知识快照
     const systemPrompt = [
       registration.systemPrompt?.(runtimeContext),
       request.systemPrompt,
-      registration.description,
       registration.runtime.projectKnowledge().promptSnapshot,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
 

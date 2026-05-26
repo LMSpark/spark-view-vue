@@ -16,7 +16,7 @@ import {
 } from '@spark-view/spark-ai/schema'
 import {
   ModuleKind,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
   type ModulePathContext,
@@ -44,7 +44,7 @@ const DESIGN_FLOW_READONLY_RULE = '只返回页面设计 100 步流程事实，�
 
 // ── lifecycle 动作声明 ────────────────────────────────────
 
-const LIFECYCLE_ACTIONS: readonly ModuleActionMetadata[] = [
+const LIFECYCLE_ACTIONS: readonly ModuleFunctionMetadata[] = [
   {
     name: 'bootstrap',
     description: 'Host 启动会话时自动执行的引导动作：校验 live binding 能力并进入 editing phase。',
@@ -136,19 +136,19 @@ export class PageDesignLifecycleModuleKind extends ModuleKind {
       name: 'Page Design Lifecycle',
       description: '页面设计编辑运行态引导与进度查询。',
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
-      actions: LIFECYCLE_ACTIONS,
+      functions: LIFECYCLE_ACTIONS,
       children: [],
     })
     this.service = options.service
     this.contextFactory = options.contextFactory
   }
 
-  protected override runAction(
+  protected override runFunction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    if (this.findAction(actionName) === undefined) {
+    if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
     switch (actionName) {

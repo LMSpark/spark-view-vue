@@ -66,7 +66,7 @@ export type ModuleKindOperation<TData> = ModuleOperationResult<TData> | Promise<
 // ============================================================================
 // 三、导航上下文
 //
-// ModulePathContext 是协议方法（getAttribute / setAttribute / invokeAction 等）
+// ModulePathContext 是协议方法（getAttribute / setAttribute / invokeFunction 等）
 // 的第一个参数。由 Navigator 将 ModulePath 解析后传入 ModuleKind 的协议方法。
 // ============================================================================
 
@@ -84,7 +84,7 @@ export type ModulePathContext = Readonly<{
 //
 // 以下 4 个委托是 ModuleKind 构造期注入的行为入口，每个覆盖一类运行时操作：
 //   ModuleAttributeAccessor  — 属性读写（get / set）
-//   ModuleKindRunner         — 动作执行
+//   ModuleKindRunner         — 函数执行
 //   ModuleChildrenLister     — 子实例列表
 //   ModuleInstanceFinder     — 子实例查询
 //
@@ -105,13 +105,13 @@ export type ModuleAttributeAccessor = Readonly<{
 }>
 
 /**
- * 动作执行委托。
- * 接收 ctx + actionName + args，返回操作结果。
- * 未提供时 ModuleKind 构造函数默认返回 ACTION_NOT_IMPLEMENTED。
+ * 函数执行委托。
+ * 接收 ctx + functionName + args，返回操作结果。
+ * 未提供时 ModuleKind 构造函数默认返回 FUNCTION_NOT_IMPLEMENTED。
  */
 export type ModuleKindRunner = (
   ctx: ModulePathContext,
-  actionName: string,
+  functionName: string,
   args: Readonly<Record<string, LlmJsonValue>>,
 ) => ModuleKindOperation<LlmJsonValue>
 

@@ -159,7 +159,7 @@ section ProtocolRegistrationSurface {
     description: "必填。LLM 可读模块能力说明。"
     parentKind: "可选。声明父 kind；根 kind 不设置。"
     attributes: "可选。ModuleAttributeMetadata[]，通过 getAttribute/setAttribute 访问。"
-    actions: "可选。ModuleActionMetadata[]，通过 invokeAction 访问。"
+    functions: "可选。ModuleFunctionMetadata[]，通过标准 function tool 访问。"
     payloads: "可选。ModuleParameterPayloadMetadata[]，声明本 kind 依赖的参数荷载 provider。"
     children: "可选。允许的子 kind 列表，用于路径导航和子实例发现。"
     runner: "可选。ModuleKindRunner，执行业务动作。"
@@ -186,7 +186,7 @@ section ProtocolRegistrationSurface {
         ]
 
     default_behaviors: [
-      "runner 缺失时返回 ACTION_NOT_IMPLEMENTED",
+      "runner 缺失时返回 FUNCTION_NOT_IMPLEMENTED",
       "list 缺失时返回空数组",
       "find 缺失时仅在根级查询自身 kind 时返回当前实例引用",
       "getAttribute/setAttribute 按 attributes 元数据和 JSON Schema 调用独立 attributeAccessor",
@@ -208,7 +208,7 @@ section ProtocolRegistrationSurface {
     ]
   }
 
-  entity ModuleActionMetadata {
+  entity ModuleFunctionMetadata {
     name: "动作名，同一 kind 内唯一。"
     description: "动作语义说明。"
     paramsSchema: "标准 JSON Schema object root。"
@@ -262,7 +262,7 @@ section RuntimeRegistrationSurface {
     direct_programmatic_api: [
       "getAttribute(path, attrName, host?)",
       "setAttribute(path, attrName, value, host?)",
-      "invokeAction(path, actionName, args, host?)",
+      "invokeFunction(path, functionName, args, host?)",
       "listChildren(path, childKind?, host?)",
       "findInstance(path, childKind, query, host?)",
       "describeKind(kind)"
@@ -297,11 +297,11 @@ section NavigationAndDiscoverySurface {
       "/<kind>[<id>]/<childKind>[<childId>]"
 
     validation_steps: [
-      "根路径不能用于 getAttribute/setAttribute/invokeAction",
+      "根路径不能用于 getAttribute/setAttribute/业务函数调用",
       "每个 path segment 的 kind 必须已注册",
       "第一段不验证父子关系",
       "第二段起通过父 ModuleKind.resolveChild 验证 child kind 和 child id",
-      "尾段 kind 定位为实际执行 getAttribute/setAttribute/invokeAction 的 ModuleKind"
+      "尾段 kind 定位为实际执行 getAttribute/setAttribute/标准 function tool 的 ModuleKind"
     ]
   }
 
@@ -333,27 +333,29 @@ section LlmVisibleProtocolSurface {
     "guideHumanQuestion",
     "getAttribute",
     "setAttribute",
-    "invokeAction",
     "listChildren",
     "findInstance",
     "describeKind"
   ]
 
+  business_function_tools:
+    "按已注册 ModuleKind.functions 动态生成，格式 <kindPath>_<functionName>，如 pageDesign_lifecycle_describeProgress。"
+
   tool_generation_source:
     "ProtocolToolGenerator 从 ModuleKindRegistry 的注册表摘要生成固定工具说明。"
 
   kind_summary_in_tool_description:
-    "attrs=[...] actions=[...] payloads=[...] children=[...]"
+    "attrs=[...] functions=[...] payloads=[...] children=[...]"
 
-  action_call_contract {
-    action_lookup:
-      "invokeAction 先由 Navigator 定位尾段 kind，再用 tailKind.findAction(actionName) 检查声明。"
+  function_call_contract {
+    function_lookup:
+      "标准 function tool 由 ProtocolToolRouter 从 toolName 解析 kindPath + functionName，再用 Navigator 定位尾段 kind，最后调用 ModuleKind.invokeFunction(ctx, functionName, args)。"
 
     params_validation:
-      "ActionInvoker 使用 action.paramsSchema 通过 LlmSchemaValidator 校验 args。"
+      "FunctionInvoker 使用 function.paramsSchema 通过 LlmSchemaValidator 校验 businessArgs。"
 
     execution:
-      "参数校验通过后调用 tailKind.invokeAction(ctx, actionName, args)。"
+      "参数校验通过后调用 tailKind.invokeFunction(ctx, functionName, businessArgs)。"
   }
 
   projection_rule:
@@ -476,7 +478,7 @@ section CurrentBusinessRegistrationInventory {
         kind: "lifecycle"
         name: "Page Design Lifecycle"
         parentKind: "pageDesign"
-        actions: 3
+        functions: 3
         payloads: []
         children: []
       },
@@ -484,7 +486,7 @@ section CurrentBusinessRegistrationInventory {
         kind: "text-model"
         name: "Page Design Text Model"
         parentKind: "pageDesign"
-        actions: 4
+        functions: 4
         payloads: []
         children: []
       },
@@ -492,8 +494,8 @@ section CurrentBusinessRegistrationInventory {
         kind: "payload-catalog"
         name: "Page Design Payload Catalog"
         parentKind: "pageDesign"
-        actions: 2
-        action_names: ["queryPayloads", "guidePayload"]
+        functions: 2
+        function_names: ["queryPayloads", "guidePayload"]
         payloads: []
         children: []
       },
@@ -501,11 +503,11 @@ section CurrentBusinessRegistrationInventory {
         kind: "node-tree"
         name: "Page Design Node Tree"
         parentKind: "pageDesign"
-        actions: 19
+        functions: 19
         payloads: [
           {
             payloadRef: "spark.component"
-            requiredForActions: ["addNode", "addNodes", "replaceNode", "replaceNodes", "setProps", "setPropsBatch"]
+            requiredForFunctions: ["addNode", "addNodes", "replaceNode", "replaceNodes", "setProps", "setPropsBatch"]
           }
         ]
         children: []
@@ -514,14 +516,14 @@ section CurrentBusinessRegistrationInventory {
         kind: "dataset"
         name: "Page Design DataSet"
         parentKind: "pageDesign"
-        actions: 50
+        functions: 50
         payloads: []
         children: []
       }
     ]
 
     discovery_path:
-      "listChildren('/') -> findInstance('/', 'pageDesign', {}) -> listChildren('/pageDesign[pageId]') -> describeKind(childKind) -> invokeAction('/pageDesign[pageId]/childKind[pageId]', actionName, args)"
+      "listChildren('/') -> findInstance('/', 'pageDesign', {}) -> listChildren('/pageDesign[pageId]') -> describeKind(childKind) -> pageDesign_<childKind>_<functionName>({ $paths: [pageId, pageId], ...args })"
   }
 
   business manualLeave {
@@ -542,15 +544,15 @@ section CurrentBusinessRegistrationInventory {
         kind: "manual-leave"
         name: "人工请假"
         parentKind: null
-        actions: 4
-        action_names: ["describeDraft", "setDraftFields", "submitDraft", "cancelDraft"]
+        functions: 4
+        function_names: ["describeDraft", "setDraftFields", "submitDraft", "cancelDraft"]
         payloads: []
         children: []
       }
     ]
 
     discovery_path:
-      "listChildren('/') -> findInstance('/', 'manual-leave', {}) -> describeKind('manual-leave') -> invokeAction('/manual-leave[leaveDraftId]', actionName, args)"
+      "listChildren('/') -> findInstance('/', 'manual-leave', {}) -> describeKind('manual-leave') -> manual-leave_<functionName>({ $paths: [leaveDraftId], ...args })"
   }
 }
 
@@ -596,10 +598,10 @@ section KnowledgeProjectionSurface {
   ]
 
   prompt_snapshot_rules: [
-    "必须包含 AI Knowledge Snapshot 标题",
-    "必须强调不假设、不猜测、不脑补 kind/path/actionName/args",
-    "必须列出发现流程",
-    "模块行必须包含 payloads=[...]"
+    "不使用审阅型大标题，只保留工具、Kind、流程短标签",
+    "每轮只给根 kind 索引，不内嵌完整函数目录",
+    "函数、属性和复杂参数按 queryModules/queryFunctions/guideFunction/describeKind/payloadLookupSteps 查询",
+    "模块行按需标记 payload=payload-catalog"
   ]
 }
 

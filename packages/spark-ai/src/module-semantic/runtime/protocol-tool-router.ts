@@ -12,7 +12,7 @@
  * │    guideHumanQuestion → KnowledgeProjector.guideHumanQuestion(input)          │
  * │    getAttribute  → AttributeAccessor.get(path, attrName)                     │
  * │    setAttribute  → AttributeAccessor.set(request)                           │
- * │    invokeAction  → ActionInvoker.invoke(request)                            │
+ * │    invokeFunction  → FunctionInvoker.invoke(request)                           │
  * │    listChildren  → Navigator.listChildren(path, childKind)                   │
  * │    findInstance  → Navigator.findInstance(request)                          │
  * │    describeKind  → Navigator.describeKind(kind)                              │
@@ -26,10 +26,14 @@
  */
 
 import type { LlmJsonValue } from '../../schema'
-import type { ActionInvoker } from '../internal/action-invoker'
+import type { FunctionInvoker } from '../internal/function-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
 import type { Navigator } from '../internal/navigator'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
+import {
+  parseBusinessFunctionToolName,
+  type BusinessFunctionToolRef,
+} from '../internal/business-function-tool-name'
 import type { ModuleSemanticKnowledgeProjector } from '../knowledge/module-semantic-knowledge'
 import {
   ModuleOperationResult,
@@ -54,36 +58,43 @@ export class ProtocolToolRouter {
 
   public constructor(
     private readonly attributes: AttributeAccessor,
-    private readonly actions: ActionInvoker,
+    private readonly functions: FunctionInvoker,
     private readonly navigator: Navigator,
     private readonly knowledge: ModuleSemanticKnowledgeProjector,
   ) {}
 
   /**
-   * 执行协议工具调用。
+   * 执行协议工具调用或业务函数调用。
    *
    * 流程：
-   *   1. 校验 toolName 是否为已知的协议工具名（UNKNOWN_TOOL）
-   *   2. switch 路由到对应方法
-   *   3. 各方法内部解析 path（ModulePath.parse）、提取参数（argsParser）
-   *   4. 调用内部组件（attributes / actions / navigator）
-   *   5. 通过 resultProjector 统一投影返回值格式
-   *   6. 捕获 ModulePathParseError → INVALID_PATH_{code}
-   *   7. 捕获 ProtocolToolArgsError → INVALID_TOOL_ARGS
+   *   1. 先检查 toolName 是否为业务函数 tool（parseBusinessFunctionToolName）
+   *   2. 再校验 toolName 是否为已知的协议工具名（UNKNOWN_TOOL）
+   *   3. switch 路由到对应方法
+   *   4. 各方法内部解析 path（ModulePath.parse）、提取参数（argsParser）
+   *   5. 调用内部组件（attributes / functions / navigator）
+   *   6. 通过 resultProjector 统一投影返回值格式
+   *   7. 捕获 ModulePathParseError → INVALID_PATH_{code}
+   *   8. 捕获 ProtocolToolArgsError → INVALID_TOOL_ARGS
    */
   public async execute(
     toolName: string,
     rawArgs: ProtocolToolArgs,
     host?: ModuleHostContext,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    if (!this.argsParser.isProtocolToolName(toolName)) {
-      return ModuleOperationResult.failCode(
-        'UNKNOWN_TOOL',
-        `工具 "${toolName}" 未在协议中定义`,
-        '可调用的工具列表见 getLlmTools()',
-      )
-    }
     try {
+      // 先检查是否为业务函数 tool
+      const businessFn = parseBusinessFunctionToolName(toolName)
+      if (businessFn !== null) {
+        return await this.routeBusinessFunction(businessFn, rawArgs, host)
+      }
+
+      if (!this.argsParser.isProtocolToolName(toolName)) {
+        return ModuleOperationResult.failCode(
+          'UNKNOWN_TOOL',
+          `工具 "${toolName}" 未在协议中定义`,
+          '可调用的工具列表见 getLlmTools()',
+        )
+      }
       switch (toolName) {
         case PROTOCOL_TOOL_NAMES.queryModules: return this.routeQueryModules(rawArgs)
         case PROTOCOL_TOOL_NAMES.queryFunctions: return this.routeQueryFunctions(rawArgs)
@@ -91,7 +102,6 @@ export class ProtocolToolRouter {
         case PROTOCOL_TOOL_NAMES.guideHumanQuestion: return this.routeGuideHumanQuestion(rawArgs)
         case PROTOCOL_TOOL_NAMES.getAttribute: return await this.routeGetAttribute(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.setAttribute: return await this.routeSetAttribute(rawArgs, host)
-        case PROTOCOL_TOOL_NAMES.invokeAction: return await this.routeInvokeAction(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.listChildren: return await this.routeListChildren(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.findInstance: return await this.routeFindInstance(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.describeKind: return this.routeDescribeKind(rawArgs)
@@ -140,13 +150,13 @@ export class ProtocolToolRouter {
   /* ── guideFunction ────────────────────────────────────── */
 
   private routeGuideFunction(args: ProtocolToolArgs): ModuleOperationResult<LlmJsonValue> {
-    const action = this.argsParser.optionalString(args, 'action')
+    const functionId = this.argsParser.optionalString(args, 'functionId')
     const kind = this.argsParser.optionalString(args, 'kind')
-    const actionName = this.argsParser.optionalString(args, 'actionName')
+    const functionName = this.argsParser.optionalString(args, 'functionName')
     return this.resultProjector.jsonResult(this.knowledge.guideFunction({
-      ...(action === undefined ? {} : { action }),
+      ...(functionId === undefined ? {} : { functionId }),
       ...(kind === undefined ? {} : { kind }),
-      ...(actionName === undefined ? {} : { actionName }),
+      ...(functionName === undefined ? {} : { functionName }),
     }))
   }
 
@@ -191,18 +201,50 @@ export class ProtocolToolRouter {
     return this.resultProjector.voidResult(result)
   }
 
-  /* ── invokeAction ──────────────────────────────────────── */
+  /* ── business function ──────────────────────────────────── */
 
-  private async routeInvokeAction(
-    args: ProtocolToolArgs,
+  private async routeBusinessFunction(
+    businessFn: BusinessFunctionToolRef,
+    rawArgs: ProtocolToolArgs,
     host?: ModuleHostContext,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    const path = ModulePath.parse(this.argsParser.requireString(args, 'path'))
-    const actionName = this.argsParser.requireString(args, 'actionName')
-    return this.actions.invoke({
+    const { kindPath, functionName } = businessFn
+    // 1. Extract $paths and validate length matches kindPath
+    const dollarPaths = this.argsParser.requireStringArray(rawArgs, '$paths')
+    if (dollarPaths.length !== kindPath.length) {
+      return ModuleOperationResult.failCode(
+        'INVALID_TOOL_ARGS',
+        `$paths 长度 (${String(dollarPaths.length)}) 与 kindPath 长度 (${String(kindPath.length)}) 不匹配`,
+        `kindPath: ${kindPath.join(' -> ')}`,
+      )
+    }
+
+    // 2. Build instance path string
+    const pathSegments = kindPath.map((kind, index) => {
+      const id = dollarPaths[index]
+      if (id === undefined) {
+        throw new ProtocolToolArgsError(`$paths[${String(index)}] 缺失`)
+      }
+      return `/${kind}[${id}]`
+    })
+    const path = ModulePath.parse(pathSegments.join(''))
+
+    // 3. Extract business args (everything except $paths)
+    const businessArgs: Record<string, LlmJsonValue> = {}
+    for (const key of Object.keys(rawArgs)) {
+      if (key === '$paths') continue
+      const value = rawArgs[key]
+      if (value !== undefined) {
+        businessArgs[key] = value
+      }
+    }
+
+    // 4. Delegate to FunctionInvoker
+    return this.functions.invoke({
       path,
-      actionName,
-      args: this.argsParser.requireObject(args, 'args'),
+      kindPath,
+      functionName,
+      args: businessArgs,
       ...(host === undefined ? {} : { host }),
     })
   }

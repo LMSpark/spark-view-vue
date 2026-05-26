@@ -14,14 +14,14 @@
  *
  * 【知识工具】
  *   - queryModules()                       — 查询模块目录摘要
- *   - queryFunctions(kind?, keyword?)       — 查询动作目录摘要
- *   - guideFunction(action | kind+action)   — 查询单个动作完整指南
+ *   - queryFunctions(kind?, keyword?)       — 查询函数目录摘要
+ *   - guideFunction(functionId | kind+functionName) — 查询单个函数完整指南
  *   - guideHumanQuestion(context, reason)   — 查询人工反问指南
  *
  * 【6 个执行协议工具】
  *   - getAttribute(path, attrName)         — 读属性
  *   - setAttribute(path, attrName, value)  — 写属性
- *   - invokeAction(path, actionName, args) — 调用动作
+ *   - <kind>_<functionName>($paths, ...args) — 标准业务函数调用
  *   - listChildren(path, childKind?)       — 列出子实例
  *   - findInstance(path, childKind, query) — 查询子实例
  *   - describeKind(kind)                   — 查询 kind 元数据
@@ -31,6 +31,12 @@
  */
 
 import type { LlmJsonSchema, LlmJsonSchemaObject } from '../../schema'
+import type { ModuleFunctionMetadata, ModuleKind } from '../protocol'
+import type { ModuleKindRegistry } from './module-kind-registry'
+import {
+  createBusinessFunctionToolName,
+  formatBusinessFunctionId,
+} from './business-function-tool-name'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型
@@ -58,7 +64,6 @@ export type ProtocolToolName =
   | 'guideHumanQuestion'
   | 'getAttribute'
   | 'setAttribute'
-  | 'invokeAction'
   | 'listChildren'
   | 'findInstance'
   | 'describeKind'
@@ -71,7 +76,6 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   guideHumanQuestion: 'guideHumanQuestion'
   getAttribute: 'getAttribute'
   setAttribute: 'setAttribute'
-  invokeAction: 'invokeAction'
   listChildren: 'listChildren'
   findInstance: 'findInstance'
   describeKind: 'describeKind'
@@ -82,7 +86,6 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   guideHumanQuestion: 'guideHumanQuestion',
   getAttribute: 'getAttribute',
   setAttribute: 'setAttribute',
-  invokeAction: 'invokeAction',
   listChildren: 'listChildren',
   findInstance: 'findInstance',
   describeKind: 'describeKind',
@@ -105,7 +108,11 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
  * 注册表变化后需重新调用。
  */
 export class ProtocolToolGenerator {
-  /** 生成所有固定协议工具规约 */
+  public constructor(
+    private readonly kinds: ModuleKindRegistry,
+  ) {}
+
+  /** 生成所有 LLM 可见工具规约 */
   public generate(): readonly ModuleSemanticToolSpec[] {
     return [
       this.buildQueryModules(),
@@ -114,10 +121,10 @@ export class ProtocolToolGenerator {
       this.buildGuideHumanQuestion(),
       this.buildGetAttribute(),
       this.buildSetAttribute(),
-      this.buildInvokeAction(),
       this.buildListChildren(),
       this.buildFindInstance(),
       this.buildDescribeKind(),
+      ...this.buildBusinessFunctionTools(),
     ]
   }
 
@@ -162,10 +169,10 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.queryFunctions,
         description: [
-          '职责：查询动作目录，帮助 LLM 从业务意图定位到 kind.actionName。',
+          '职责：查询业务函数目录，帮助 LLM 从业务意图定位到 functionId。',
           '何时使用：已知道或大致知道 kind/关键词，需要选择可调用函数、必填参数、失败码或 payload 引用时调用。',
-          '返回：ModuleSemanticKnowledgeFunctionSummary[]，包含 action、kind、actionName、paramNames、requiredParamNames、failureCodes、payloadLookupSteps。',
-          '下一步：选定 action 后调用 guideFunction 读取完整 paramsSchema、usageRules、failureModes，再进入 invokeAction。',
+          '返回：函数摘要，包含 functionId、toolName、kindPath、functionName、paramNames、requiredParamNames、failureCodes、payloadLookupSteps。',
+          '下一步：选定 functionId 后调用 guideFunction 读取完整 paramsSchema、usageRules、failureModes，再调用对应标准 function tool。',
         ].join('\n'),
         parameters: {
           type: 'object',
@@ -176,7 +183,7 @@ export class ProtocolToolGenerator {
             },
             keyword: {
               type: 'string',
-              description: '可选关键字,匹配 action、kind、actionName 或 description',
+              description: '可选关键字,匹配 functionId、kind、functionName 或 description',
             },
           },
           additionalProperties: false,
@@ -191,37 +198,37 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.guideFunction,
         description: [
-          '职责：查询单个业务函数的完整调用契约，是 invokeAction 前的函数级指南。',
+          '职责：查询单个业务函数的完整调用契约，是标准 function tool 调用前的函数级指南。',
           '何时使用：已选定 action，准备构造 args 或需要读取 usageRules、failureModes、example、resultSchema 时调用。',
           '返回：ModuleSemanticKnowledgeFunctionGuide，包含完整 paramsSchema、resultSchema、usageRules、failureModes、requiresPayloadGuide、payloadLookupSteps。',
-          '下一步：requiresPayloadGuide=true 时按 payloadLookupSteps 查询 payload 目录；参数齐备后调用 invokeAction。',
-          '输入：action 使用 "<kind>.<actionName>"，也可传 kind + actionName。',
+          '下一步：requiresPayloadGuide=true 时按 payloadLookupSteps 查询 payload 目录；参数齐备后调用对应标准 function tool。',
+          '输入：functionId 使用 "<kind>.<childKind>.<functionName>"，也可传 kind + functionName。',
           '失败码: INVALID_GUIDE_REQUEST / KIND_NOT_REGISTERED / FUNCTION_NOT_FOUND',
         ].join('\n'),
         parameters: {
           type: 'object',
           properties: {
-            action: {
+            functionId: {
               type: 'string',
-              description: '动作全名,格式 "<kind>.<actionName>",例如 "node-tree.getNode"',
+              description: '业务函数 ID,格式 "<kind>.<childKind>.<functionName>",例如 "pageDesign.lifecycle.describeProgress"',
             },
             kind: {
               type: 'string',
-              description: '模块 kind;未传 action 时必填',
+              description: '模块 kind;未传 functionId 时必填',
             },
-            actionName: {
+            functionName: {
               type: 'string',
-              description: '动作名;未传 action 时必填',
+              description: '函数名;未传 functionId 时必填',
             },
           },
           oneOf: [
             {
               type: 'object',
-              required: ['action'],
+              required: ['functionId'],
             },
             {
               type: 'object',
-              required: ['kind', 'actionName'],
+              required: ['kind', 'functionName'],
             },
           ],
           additionalProperties: false,
@@ -239,7 +246,7 @@ export class ProtocolToolGenerator {
           '职责：把缺失用户事实整理成可追问的问题，帮助 LLM 暂停工具链并收集必要事实。',
           '何时使用：缺少用户意图、业务范围、日期含义、审批/提交确认、破坏性操作确认或必填业务字段时调用。',
           '返回：human-question-guide，包含 shouldAskHuman、stopToolCalls、question、usageRules、resumeFlow。',
-          '下一步：把 question 改写为自然语言询问用户，用户回复后按 resumeFlow 继续 queryModules/queryFunctions/guideFunction 或执行工具。',
+          '下一步：把 question 改写为自然语言询问用户，用户回复后按 resumeFlow 继续 queryModules/queryFunctions/guideFunction 或调用业务函数工具。',
           '失败码: INVALID_HUMAN_QUESTION_REQUEST / INVALID_TOOL_ARGS',
         ].join('\n'),
         parameters: {
@@ -322,39 +329,6 @@ export class ProtocolToolGenerator {
     }
   }
 
-  private buildInvokeAction(): ModuleSemanticToolSpec {
-    return {
-      type: 'function',
-      function: {
-        name: PROTOCOL_TOOL_NAMES.invokeAction,
-        description: [
-          '职责：执行具体实例 path 末段 kind 声明的业务 action。',
-          '何时使用：已经通过 queryFunctions 选定 action，并通过 guideFunction/describeKind 读取完整 paramsSchema、usageRules、failureModes 后调用。',
-          '输入：path 为具体实例路径；actionName 为末段 kind 的 action 名；args 必须符合该 action.paramsSchema。',
-          '复杂参数：guideFunction 返回 requiresPayloadGuide=true 时，先按 payloadLookupSteps 调 payload-catalog 的 queryPayloads/guidePayload，再组装 args。',
-          '返回：业务 action 的 JSON 结果；失败时读取 code/msg/fix/checks 并按指南修正。',
-          '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ACTION_NOT_DECLARED / SCHEMA_VALIDATION_FAILED',
-        ].join('\n'),
-        parameters: {
-          type: 'object',
-          properties: {
-            path: pathProperty(),
-            actionName: {
-              type: 'string',
-              description: '动作名,需为路径末段 kind 上已声明的 action',
-            },
-            args: {
-              type: 'object',
-              description: '动作参数,符合 ModuleActionMetadata.paramsSchema',
-              additionalProperties: true,
-            },
-          },
-          required: ['path', 'actionName', 'args'],
-        },
-      },
-    }
-  }
-
   private buildListChildren(): ModuleSemanticToolSpec {
     return {
       type: 'function',
@@ -392,7 +366,7 @@ export class ProtocolToolGenerator {
           '何时使用：已从 queryModules.instanceGuide 或 childKindSummaries 知道 childKind，需要拿真实 ModuleInstanceRef.id 时调用。',
           '输入：path="/" 查询根级 childKind；非根 path 查询末段 kind.children 中声明的 childKind；query 字段来自目标 kind 的 instanceGuide.queryFields。',
           '返回：ModuleInstanceRef[]，每项 id 是实例路径段中的 id。',
-          '下一步：按目标 pathPattern 或 parentPath/<childKind>[ref.id] 拼接 path，再调用 describeKind/getAttribute/setAttribute/invokeAction。',
+          '下一步：按目标 pathPattern 或 parentPath/<childKind>[ref.id] 拼接 path，再调用 describeKind/getAttribute/setAttribute 或业务函数工具。',
           '失败码: KIND_NOT_REGISTERED / CHILD_KIND_NOT_DECLARED',
         ].join('\n'),
         parameters: {
@@ -418,10 +392,10 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.describeKind,
         description: [
           '职责：查询单个 kind 的原始元数据。',
-          '何时使用：已知道 kind，需要精确查看 attributes、actions、payloads、children，或校对 queryModules 摘要时调用。',
-          '返回：kind/name/description/parentKind、attributes(readable/writable/schema)、actions(paramsSchema/usageRules/failureModes/resultSchema/example)、payloads、children。',
+          '何时使用：已知道 kind，需要精确查看 attributes、functions、payloads、children，或校对 queryModules 摘要时调用。',
+          '返回：kind/name/description/parentKind、attributes(readable/writable/schema)、functions(paramsSchema/usageRules/failureModes/resultSchema/example)、payloads、children。',
           '下一步：读写属性走 getAttribute/setAttribute；执行业务函数优先再用 guideFunction 获取函数级流程。',
-          'payloads[].requiredForActions 表示对应 action 构造复杂参数前应按 payloadLookupSteps 查询 payload 目录。',
+          'payloads[].requiredForFunctions 表示对应函数构造复杂参数前应按 payloadLookupSteps 查询 payload 目录。',
           '失败码: KIND_NOT_REGISTERED',
         ].join('\n'),
         parameters: {
@@ -436,6 +410,24 @@ export class ProtocolToolGenerator {
         },
       },
     }
+  }
+
+  private buildBusinessFunctionTools(): readonly ModuleSemanticToolSpec[] {
+    const moduleKinds = this.kinds.list()
+    const seen = new Set<string>()
+    const tools: ModuleSemanticToolSpec[] = []
+    for (const moduleKind of moduleKinds) {
+      const kindPath = kindPathFor(moduleKind, moduleKinds)
+      for (const fn of moduleKind.functions) {
+        const tool = buildBusinessFunctionTool(kindPath, fn)
+        if (seen.has(tool.function.name)) {
+          throw new Error(`Duplicate LLM business function tool name: ${tool.function.name}`)
+        }
+        seen.add(tool.function.name)
+        tools.push(tool)
+      }
+    }
+    return tools
   }
 }
 
@@ -490,4 +482,75 @@ function pathPlusName(propertyName: string, description: string): LlmJsonSchemaO
     [propertyName]: { type: 'string', description },
   }
   return { type: 'object', properties, required: ['path', propertyName] }
+}
+
+/** $paths 参数 schema：固定长度字符串数组，顺序与 kindPath 一致 */
+function buildDollarPathsSchema(kindPath: readonly string[]): LlmJsonSchemaObject {
+  return {
+    type: 'array',
+    items: { type: 'string' },
+    minItems: kindPath.length,
+    maxItems: kindPath.length,
+    description: `实例 ID 数组，顺序对应 kindPath: ${kindPath.join(' -> ')}`,
+  }
+}
+
+function buildBusinessFunctionTool(
+  kindPath: readonly string[],
+  fn: ModuleFunctionMetadata,
+): ModuleSemanticToolSpec {
+  if (fn.paramsSchema.properties !== undefined && '$paths' in fn.paramsSchema.properties) {
+    throw new Error(
+      `Business function "${formatBusinessFunctionId(kindPath, fn.name)}" declares reserved field "$paths" in paramsSchema.properties. ` +
+      '"$paths" is a protocol-reserved field managed by the runtime. Remove it from the business paramsSchema.',
+    )
+  }
+  if (fn.paramsSchema.required?.includes('$paths')) {
+    throw new Error(
+      `Business function "${formatBusinessFunctionId(kindPath, fn.name)}" declares reserved field "$paths" in paramsSchema.required. ` +
+      '"$paths" is a protocol-reserved field managed by the runtime. Remove it from the business paramsSchema.',
+    )
+  }
+  const functionId = formatBusinessFunctionId(kindPath, fn.name)
+  return {
+    type: 'function',
+    function: {
+      name: createBusinessFunctionToolName(kindPath, fn.name),
+      description: [
+        `职责：执行业务函数 ${functionId}。`,
+        '何时使用：已通过 queryFunctions/guideFunction/describeKind 确认函数契约、$paths 和参数后调用。',
+        `$paths 为 ${kindPath.length} 个实例 ID，顺序对应 kindPath: ${kindPath.join(' -> ')}。`,
+        '复杂参数：guideFunction 返回 requiresPayloadGuide=true 时，先按 payloadLookupSteps 查询参数目录，再组装参数。',
+        `业务说明：${fn.description}`,
+      ].join('\n'),
+      parameters: {
+        type: 'object',
+        properties: {
+          $paths: buildDollarPathsSchema(kindPath),
+          ...fn.paramsSchema.properties,
+        },
+        required: ['$paths', ...(fn.paramsSchema.required ?? [])],
+        additionalProperties: false,
+      },
+    },
+  }
+}
+
+function kindPathFor(moduleKind: ModuleKind, allKinds: readonly ModuleKind[]): readonly string[] {
+  const path = [moduleKind.kind]
+  const seen = new Set<string>(path)
+  let parentKind = moduleKind.parentKind
+  while (parentKind !== undefined) {
+    if (seen.has(parentKind)) {
+      throw new Error(`ModuleKind parent cycle detected at "${parentKind}"`)
+    }
+    const parent = allKinds.find((candidate) => candidate.kind === parentKind)
+    if (parent === undefined) {
+      throw new Error(`ModuleKind "${moduleKind.kind}" references missing parentKind "${parentKind}"`)
+    }
+    path.unshift(parent.kind)
+    seen.add(parent.kind)
+    parentKind = parent.parentKind
+  }
+  return path
 }

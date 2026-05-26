@@ -4,13 +4,13 @@
 
 ## 目标
 
-VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源码、JSDoc、构造函数和能力模块边界中提取语义元数据，生成标准 `ModuleActionMetadata` / `ModuleAttributeMetadata` 输入和 `ModuleKind` factory，再由生成代码创建 `ModuleKind` 并调用 `runtime.registerKind`。
+VCM 的目标是替代手写 `ModuleKind`：构建期从领域能力 class 源码、JSDoc、构造函数和能力模块边界中提取语义元数据，生成标准 `ModuleFunctionMetadata` / `ModuleAttributeMetadata` 输入和 `ModuleKind` factory，再由生成代码创建 `ModuleKind` 并调用 `runtime.registerKind`。
 
 进入协议层后的标准形态仍然只有：
 
 - `ModuleKind.kind / name / description`
 - `ModuleKind.attributes`
-- `ModuleKind.actions`
+- `ModuleKind.functions`
 - `ModuleKind.children`
 - 构造期运行委托：`runner / list / find` 输入，只能通过 `ModuleKind` 协议方法访问
 
@@ -35,7 +35,7 @@ export const NODE_TREE_KIND_METADATA = {
   name: 'Page Design Node Tree',
   description: '当前页面 SparkNodeTree/rule.json 结构读写能力。',
   attributes: [],
-  actions: NODE_TREE_ACTIONS,
+  functions: NODE_TREE_FUNCTIONS,
   children: [],
 }
 
@@ -58,10 +58,10 @@ export function createNodeTreeModuleKind(delegates: {
 VCM 应完整提取六类结构：
 
 - **属性**：生成 `ModuleAttributeMetadata[]`，包括读写能力、值 schema、示例和属性语义。
-- **动作**：生成 `ModuleActionMetadata[]`，包括 `paramsSchema / resultSchema / usageRules / failureModes / example`。
+- **动作**：生成 `ModuleFunctionMetadata[]`，包括 `paramsSchema / resultSchema / usageRules / failureModes / example`。
 - **子模块**：生成 `children`，并校验 `list/find/resolve` 发现语义与子 kind 声明一致。
 - **构造装配**：从能力模块构造函数、factory 参数和注册工厂中提取依赖边界，例如 `service`、`contextFactory`、`runner`、`list`、`find`；只生成装配签名，不生成业务实现体。
-- **运行委托**：按 JSDoc 标识提取 `attributeAccessor/runner/list/find` 委托函数，把它们作为 `ModuleKind` 构造参数接入；运行期只能通过 `getAttribute/setAttribute/invokeAction/listChildren/findInstance` 协议方法访问。VCM 只识别委托签名和绑定关系，不解析委托函数体来推导业务语义。
+- **运行委托**：按 JSDoc 标识提取 `attributeAccessor/runner/list/find` 委托函数，把它们作为 `ModuleKind` 构造参数接入；运行期只能通过 `getAttribute/setAttribute/标准 function tool/listChildren/findInstance` 协议方法访问。VCM 只识别委托签名和绑定关系，不解析委托函数体来推导业务语义。
 - **攻击面**：按 JSDoc 标识提取能力模块能触达的资源、信任边界、写入/删除/执行风险和防护规则。VCM 只提取声明，不从业务实现反推安全语义。
 
 ## JSDoc 标识
@@ -95,7 +95,7 @@ VCM 提取能力模块元数据时，能力语义只识别写在领域能力 cla
 - `@failureMode <code> <when> => <fix>`：声明 action 失败模式，可多条。
 - `@example <json>`：声明 action 示例参数，必须是 JSON 兼容值。
 
-动作与属性仍以现有 `ModuleActionMetadata` / `ModuleAttributeMetadata` 为最终协议形态：
+动作与属性仍以现有 `ModuleFunctionMetadata` / `ModuleAttributeMetadata` 为最终协议形态：
 
 - action 的参数、返回、规则、失败模式只进入 `paramsSchema / resultSchema / usageRules / failureModes / example`。
 - attribute 的读写语义只进入 `ModuleAttributeMetadata`。
@@ -181,7 +181,7 @@ export function createNodeTreeModuleKind(): ModuleKind {
 纳入生成：
 
 - 领域能力 class 源码中的能力声明、领域实体、属性、动作和攻击面，例如 `packages/spark-page-config/src/page/model/spark-node-tree.ts`、`packages/spark-data/src/dataset-crud-tool.ts`，以及后续同类能力 class。
-- `ModuleActionMetadata` / `ModuleAttributeMetadata` 常量，以及它们被传入 `ModuleKind` 的标准 metadata。
+- `ModuleFunctionMetadata` / `ModuleAttributeMetadata` 常量，以及它们被传入 `ModuleKind` 的标准 metadata。
 - 与 `ModuleKind` 发现链路直接相关的 `children`、`list`、`find` 语义说明。
 - 构造函数、factory 参数、注册工厂中的依赖注入边界；提取名称、类型、必填性和用途，不提取实现，不提取业务语义。
 - 被 `@moduleRunner`、`@moduleListDelegate`、`@moduleFindDelegate` 标记的运行委托声明；提取签名、依赖参数和目标 kind 绑定，不提取函数体。
@@ -201,7 +201,7 @@ export function createNodeTreeModuleKind(): ModuleKind {
 
 - `@moduleKind` 与 `ModuleKind.kind` 不一致时 fail-fast。
 - `@moduleChild` 与 `children` 不一致时 fail-fast。
-- JSDoc 与 `ModuleActionMetadata` / `ModuleAttributeMetadata` 冲突时，以标准 schema 为准并报诊断，不做静默覆盖。
+- JSDoc 与 `ModuleFunctionMetadata` / `ModuleAttributeMetadata` 冲突时，以标准 schema 为准并报诊断，不做静默覆盖。
 - `assistant/registrations/**` 出现 `@moduleAbility`、`@moduleEntity`、`@moduleAttackSurface`、`@moduleTrustBoundary`、`@moduleGuard`、`@moduleMutation` 时 fail-fast；这些属于能力模块本体。
 - VCM 生成的 metadata 必须在 `new ModuleKind(...)` factory 调用处通过 TypeScript 校验。
 - 生成代码不得包含业务 attributeAccessor/runner/list/find 函数体；attributeAccessor/runner/list/find 只能由被 JSDoc 标记的业务运行委托注入或包裹。

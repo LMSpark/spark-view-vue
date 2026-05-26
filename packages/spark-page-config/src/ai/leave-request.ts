@@ -292,7 +292,7 @@ import {
   ModuleKind,
   ModuleOperationResult,
   ModuleSemanticRuntime,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleInstanceRef,
   type ModulePathContext,
 } from '@spark-view/spark-ai/module-semantic'
@@ -345,7 +345,7 @@ const CANCEL_DRAFT_SCHEMA = objectSchema({
   reason: stringSchema('取消原因。用户未说明时可省略。'),
 })
 
-const LEAVE_REQUEST_ACTIONS: readonly ModuleActionMetadata[] = [
+const LEAVE_REQUEST_ACTIONS: readonly ModuleFunctionMetadata[] = [
   {
     name: 'describeDraft',
     description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
@@ -466,7 +466,7 @@ class LeaveRequestModuleKind extends ModuleKind {
       kind: LEAVE_REQUEST_KIND,
       name: '人工请假',
       description: '帮助员工收集、确认并提交人工请假申请。',
-      actions: LEAVE_REQUEST_ACTIONS,
+      functions: LEAVE_REQUEST_ACTIONS,
       children: [LEAVE_REQUEST_PERSON_KIND],
       list: (_ctx, childKind) => {
         if (childKind !== undefined && childKind !== LEAVE_REQUEST_PERSON_KIND) {
@@ -488,12 +488,12 @@ class LeaveRequestModuleKind extends ModuleKind {
     this.service = service
   }
 
-  protected override runAction(
+  protected override runFunction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    if (this.findAction(actionName) === undefined) {
+    if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
     switch (actionName) {
@@ -540,7 +540,7 @@ class LeaveRequestPersonModuleKind extends ModuleKind {
         },
         set: () => ModuleOperationResult.failCode('PERSON_ATTRIBUTE_READONLY', '人员目录属性只读。', '请读取人员实例属性后，把编码写入请假草稿字段。'),
       },
-      actions: [],
+      functions: [],
       children: [],
       list: () => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]),
       find: (_ctx, childKind, query) =>
@@ -631,7 +631,7 @@ export function createLeaveRequestBusinessRegistration(
       service.getDraft(context.moduleInstanceId)
     },
     afterFunctionCall: (call) => {
-      const actionName = readInvokeActionName(call.toolName, call.args)
+      const actionName = readBusinessFunctionName(call.toolName)
       if (actionName === 'submitDraft' && call.result.ok) {
         return {
           status: 'complete',
@@ -677,9 +677,10 @@ function toServiceContext(ctx: ModulePathContext | AiHostBusinessRuntimeContext)
   }
 }
 
-function readInvokeActionName(toolName: string, args: Readonly<Record<string, LlmJsonValue>>): string | null {
-  if (toolName !== 'invokeAction') return null
-  return typeof args['actionName'] === 'string' ? args['actionName'] : null
+function readBusinessFunctionName(toolName: string): string | null {
+  const sep = toolName.lastIndexOf('_')
+  if (sep <= 0 || sep === toolName.length - 1) return null
+  return toolName.slice(sep + 1)
 }
 
 function submittedLeaveMessage(result: AiHostFunctionCallResult<unknown>): string {

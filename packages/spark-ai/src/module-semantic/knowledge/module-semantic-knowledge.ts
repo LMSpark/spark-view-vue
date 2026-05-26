@@ -2,37 +2,31 @@
  * Module-semantic knowledge projection.
  *
  * This layer restores the old "knowledge" contract on top of the current
- * module-semantic protocol: it exposes module summaries, action summaries,
- * action guides, and a compact prompt snapshot. ProtocolToolRouter also
+ * module-semantic protocol: it exposes module summaries, function summaries,
+ * function guides, and a compact prompt snapshot. ProtocolToolRouter also
  * exposes the three query/guide operations as direct LLM-visible tools.
  */
 
 import type { LlmJsonSchemaObject, LlmJsonValue } from '../../schema'
 import type { ModuleKindRegistry } from '../internal/module-kind-registry'
 import {
+  createBusinessFunctionToolName,
+} from '../internal/business-function-tool-name'
+import {
   ModuleOperationResult,
-  type ModuleActionFailureMode,
-  type ModuleActionMetadata,
-  type ModuleActionResultSchema,
+  type ModuleFunctionFailureMode,
+  type ModuleFunctionMetadata,
+  type ModuleFunctionResultSchema,
   type ModuleKind,
   type ModuleParameterPayloadMetadata,
 } from '../protocol'
 
 const PAYLOAD_QUERY_ACTION_NAME = 'queryPayloads'
 const PAYLOAD_GUIDE_ACTION_NAME = 'guidePayload'
-const FIXED_PROTOCOL_TOOL_USAGE_LINES: readonly string[] = [
-  '固定协议工具用法：',
-  '1. queryModules：查 ModuleKind 分层知识目录；先看入口 kind、子 kind 摘要、实例指南、属性指南、函数指南和 payload 查找步骤。',
-  '2. listChildren：浏览根入口或父实例下的子实例，拿候选 ModuleInstanceRef。',
-  '3. findInstance：按目标 kind 的 instanceGuide.queryFields 查询实例，返回 ref.id/ref.label/ref.summary。',
-  '4. describeKind：查单个 kind 的原始元数据，确认 attributes/actions/payloads/children。',
-  '5. getAttribute：读取具体实例 path 末段 kind 的 readable 属性。',
-  '6. setAttribute：写入具体实例 path 末段 kind 的 writable 属性，value 按属性 schema 构造。',
-  '7. queryFunctions：按 kind/keyword 查动作目录，确认 action、actionName、必填参数、失败码和 payloadRefs。',
-  '8. guideFunction：查单个 action 的完整 paramsSchema、usageRules、failureModes、resultSchema 和 payloadLookupSteps。',
-  '9. invokeAction：在具体实例 path 上执行 action；args 按 guideFunction/describeKind schema 组装。',
-  '10. guideHumanQuestion：缺少用户事实或需要确认时生成反问，拿到用户回复后继续工具流程。',
+const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
+  '工具：知识=queryModules/queryFunctions/guideFunction；实例=listChildren/findInstance；元数据=describeKind；执行=get/set/invoke；反问=guideHumanQuestion。',
 ]
+const PROMPT_KIND_INDEX_LIMIT = 12
 
 export type ModuleSemanticKnowledgeAttributeAccessMode = 'read' | 'write' | 'read-write' | 'none'
 
@@ -48,8 +42,10 @@ export type ModuleSemanticKnowledgeAttributeGuide = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeLayerFunction = Readonly<{
-  action: string
-  actionName: string
+  functionId: string
+  toolName: string
+  kindPath: readonly string[]
+  functionName: string
   description: string
   paramNames: readonly string[]
   requiredParamNames: readonly string[]
@@ -65,7 +61,7 @@ export type ModuleSemanticKnowledgeChildAttributeSummary = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeChildFunctionSummary = Readonly<{
-  actionName: string
+  functionName: string
   description: string
   requiredParamNames: readonly string[]
   payloadRefs: readonly string[]
@@ -75,7 +71,7 @@ export type ModuleSemanticKnowledgeChildKindSummary = Readonly<{
   kind: string
   name: string
   description: string
-  actionNames: readonly string[]
+  functionNames: readonly string[]
   attributeNames: readonly string[]
   payloadRefs: readonly string[]
   childKindNames: readonly string[]
@@ -122,11 +118,11 @@ export type ModuleSemanticKnowledgeModuleSummary = Readonly<{
   attributeNames: readonly string[]
   readableAttributeNames: readonly string[]
   writableAttributeNames: readonly string[]
-  actionCount: number
-  actionNames: readonly string[]
+  functionCount: number
+  functionNames: readonly string[]
   payloadCount: number
   payloadRefs: readonly string[]
-  payloadActionRefs: readonly string[]
+  payloadFunctionRefs: readonly string[]
   payloadLookupSteps: readonly string[]
   childKindCount: number
   children: readonly string[]
@@ -149,9 +145,11 @@ export type ModuleSemanticKnowledgeModuleFilter = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeFunctionSummary = Readonly<{
-  action: string
+  functionId: string
+  toolName: string
+  kindPath: readonly string[]
   kind: string
-  actionName: string
+  functionName: string
   description: string
   paramNames: readonly string[]
   requiredParamNames: readonly string[]
@@ -165,14 +163,16 @@ export type ModuleSemanticKnowledgeFunctionSummary = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeFunctionGuide = Readonly<{
-  action: string
+  functionId: string
+  toolName: string
+  kindPath: readonly string[]
   kind: string
-  actionName: string
+  functionName: string
   description: string
   paramsSchema: LlmJsonSchemaObject
-  resultSchema?: ModuleActionResultSchema
+  resultSchema?: ModuleFunctionResultSchema
   usageRules: readonly string[]
-  failureModes: readonly ModuleActionFailureMode[]
+  failureModes: readonly ModuleFunctionFailureMode[]
   functionLookupSteps: readonly string[]
   payloadRefs: readonly string[]
   requiresPayloadGuide: boolean
@@ -193,9 +193,9 @@ export type ModuleSemanticKnowledgeFunctionFilter = Readonly<{
 }>
 
 export type ModuleSemanticKnowledgeFunctionGuideInput = Readonly<{
-  action?: string
+  functionId?: string
   kind?: string
-  actionName?: string
+  functionName?: string
 }>
 
 export type ModuleSemanticHumanQuestionGuideInput = Readonly<{
@@ -218,19 +218,22 @@ export type ModuleSemanticHumanQuestionGuide = Readonly<{
   resumeFlow: readonly string[]
 }>
 
-type ParsedKnowledgeAction = Readonly<{
+type ParsedKnowledgeFunction = Readonly<{
   kind: string
-  actionName: string
+  functionName: string
+  kindPathFromId?: readonly string[]
 }>
 
 type PayloadCatalogDescriptor = Readonly<{
   kind: string
+  kindPath: readonly string[]
   parentKind?: string
 }>
 
-type ActionKnowledgeProjectionOptions = Readonly<{
+type FunctionKnowledgeProjectionOptions = Readonly<{
   kind: string
-  action: ModuleActionMetadata
+  kindPath: readonly string[]
+  fn: ModuleFunctionMetadata
   payloads: readonly ModuleParameterPayloadMetadata[]
   payloadCatalogs: readonly PayloadCatalogDescriptor[]
 }>
@@ -246,7 +249,7 @@ export class ModuleSemanticKnowledgeProjector {
       modules,
       functions,
       kindLayers,
-      promptSnapshot: this.buildPromptSnapshot(kindLayers, functions),
+      promptSnapshot: this.buildPromptSnapshot(kindLayers),
     }
   }
 
@@ -275,7 +278,7 @@ export class ModuleSemanticKnowledgeProjector {
         payloadCatalogs,
       })
       const attributeNames = moduleKind.attributes.map((attribute) => attribute.name)
-      const actionNames = moduleKind.actions.map((action) => action.name)
+      const functionNames = moduleKind.functions.map((fn) => fn.name)
       return {
         kind: moduleKind.kind,
         name: moduleKind.name,
@@ -289,13 +292,14 @@ export class ModuleSemanticKnowledgeProjector {
         writableAttributeNames: moduleKind.attributes
           .filter((attribute) => attribute.writable)
           .map((attribute) => attribute.name),
-        actionCount: moduleKind.actions.length,
-        actionNames,
+        functionCount: moduleKind.functions.length,
+        functionNames,
         payloadCount: moduleKind.payloads.length,
         payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
-        payloadActionRefs: moduleKind.payloads.map(formatPayloadBinding),
+        payloadFunctionRefs: moduleKind.payloads.map(formatPayloadBinding),
         payloadLookupSteps: createPayloadLookupSteps({
           kind: moduleKind.kind,
+          kindPath: layer.functionLookupSteps.length > 0 ? kindPathFor(moduleKind, moduleKinds) : [moduleKind.kind],
           payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
           payloadCatalogs,
         }),
@@ -323,9 +327,9 @@ export class ModuleSemanticKnowledgeProjector {
         || summary.name.toLowerCase().includes(keyword)
         || summary.description.toLowerCase().includes(keyword)
         || summary.attributeNames.some((attrName) => attrName.toLowerCase().includes(keyword))
-        || summary.actionNames.some((actionName) => actionName.toLowerCase().includes(keyword))
+        || summary.functionNames.some((functionName) => functionName.toLowerCase().includes(keyword))
         || summary.payloadRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
-        || summary.payloadActionRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
+        || summary.payloadFunctionRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
         || summary.payloadLookupSteps.some((step) => step.toLowerCase().includes(keyword))
         || summary.children.some((childKind) => childKind.toLowerCase().includes(keyword))
         || moduleSummaryGuidesMatchKeyword(summary, keyword)
@@ -337,21 +341,24 @@ export class ModuleSemanticKnowledgeProjector {
   ): readonly ModuleSemanticKnowledgeFunctionSummary[] {
     const kindFilter = filter.kind?.trim()
     const keyword = filter.keyword?.trim().toLowerCase()
-    const payloadCatalogs = discoverPayloadCatalogs(this.kinds.list())
-    const summaries = this.kinds.list().flatMap((moduleKind) =>
-      moduleKind.actions.map((action) => summarizeAction({
+    const allKinds = this.kinds.list()
+    const payloadCatalogs = discoverPayloadCatalogs(allKinds)
+    const summaries = allKinds.flatMap((moduleKind) => {
+      const kindPath = kindPathFor(moduleKind, allKinds)
+      return moduleKind.functions.map((fn) => summarizeFunction({
         kind: moduleKind.kind,
-        action,
+        kindPath,
+        fn,
         payloads: moduleKind.payloads,
         payloadCatalogs,
-      })),
-    )
+      }))
+    })
     return summaries.filter((summary) => {
       if (kindFilter !== undefined && kindFilter.length > 0 && summary.kind !== kindFilter) return false
       if (keyword === undefined || keyword.length === 0) return true
-      return summary.action.toLowerCase().includes(keyword)
+      return summary.functionId.toLowerCase().includes(keyword)
         || summary.kind.toLowerCase().includes(keyword)
-        || summary.actionName.toLowerCase().includes(keyword)
+        || summary.functionName.toLowerCase().includes(keyword)
         || summary.description.toLowerCase().includes(keyword)
         || summary.functionLookupSteps.some((step) => step.toLowerCase().includes(keyword))
         || summary.payloadRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
@@ -366,8 +373,8 @@ export class ModuleSemanticKnowledgeProjector {
     if (parsed === null) {
       return ModuleOperationResult.failCode(
         'INVALID_GUIDE_REQUEST',
-        'guideFunction requires either action or kind + actionName.',
-        'Use action format "<kind>.<actionName>", or pass kind and actionName separately.',
+        'guideFunction requires either functionId or kind + functionName.',
+        'Use functionId format "<kind>.<functionName>", or pass kind and functionName separately.',
       )
     }
 
@@ -379,19 +386,32 @@ export class ModuleSemanticKnowledgeProjector {
         'Call queryModules() or listChildren("/") to inspect available kinds.',
       )
     }
-    const action = moduleKind.findAction(parsed.actionName)
-    if (action === undefined) {
+    const allKinds = this.kinds.list()
+    const actualKindPath = kindPathFor(moduleKind, allKinds)
+    if (parsed.kindPathFromId !== undefined) {
+      if (parsed.kindPathFromId.length !== actualKindPath.length
+        || parsed.kindPathFromId.some((segment, i) => segment !== actualKindPath[i])) {
+        return ModuleOperationResult.failCode(
+          'KIND_PATH_MISMATCH',
+          `functionId prefix "${parsed.kindPathFromId.join('.')}" does not match registered kind path "${actualKindPath.join('.')}".`,
+          'Call queryModules() or describeKind(kind) to verify the correct kindPath.',
+        )
+      }
+    }
+    const fn = moduleKind.findFunction(parsed.functionName)
+    if (fn === undefined) {
       return ModuleOperationResult.failCode(
         'FUNCTION_NOT_FOUND',
-        `action "${parsed.actionName}" is not declared on kind "${parsed.kind}".`,
+        `function "${parsed.functionName}" is not declared on kind "${parsed.kind}".`,
         'Call queryFunctions({ kind }) or describeKind(kind) before retrying.',
       )
     }
     return ModuleOperationResult.ok(createGuide({
       kind: parsed.kind,
-      action,
+      kindPath: actualKindPath,
+      fn,
       payloads: moduleKind.payloads,
-      payloadCatalogs: discoverPayloadCatalogs(this.kinds.list()),
+      payloadCatalogs: discoverPayloadCatalogs(allKinds),
     }))
   }
 
@@ -428,66 +448,89 @@ export class ModuleSemanticKnowledgeProjector {
       ],
       resumeFlow: [
         '用户回答后，把回答并入当前任务事实。',
-        '如仍不确定模块或动作，先 queryModules / queryFunctions。',
-        '执行前用 guideFunction 或 describeKind 确认 action schema。',
-        '具备足够事实后再 invokeAction。',
+        '如仍不确定模块或函数，先 queryModules / queryFunctions。',
+        '执行前用 guideFunction 或 describeKind 确认 function schema。',
+        '具备足够事实后再调用对应标准 function tool。',
       ],
     })
   }
 
   private buildPromptSnapshot(
     kindLayers: readonly ModuleSemanticKnowledgeKindLayer[],
-    functions: readonly ModuleSemanticKnowledgeFunctionSummary[],
   ): string {
     if (kindLayers.length === 0) {
       return [
-        '【AI Knowledge Snapshot】',
-        ...FIXED_PROTOCOL_TOOL_USAGE_LINES,
+        ...FIXED_PROTOCOL_TOOL_ROUTING_LINES,
         '当前没有注册 ModuleKind。业务方需要先注册能力模块。',
       ].join('\n')
     }
 
+    const roots = kindLayers.filter((layer) => layer.parentKind === undefined)
+    const promptKinds = (roots.length === 0 ? kindLayers : roots).slice(0, PROMPT_KIND_INDEX_LIMIT)
+    const hiddenKindCount = (roots.length === 0 ? kindLayers : roots).length - promptKinds.length
     const lines = [
-      '【AI Knowledge Snapshot】',
-      '知识分层来源：ModuleKind 元数据、实例发现协议、属性协议、函数协议和参数目录协议。',
-      ...FIXED_PROTOCOL_TOOL_USAGE_LINES,
-      '总流程：queryModules -> listChildren/findInstance -> describeKind -> getAttribute/setAttribute 或 queryFunctions -> guideFunction -> invokeAction。',
-      '实例流程：queryModules(kind/keyword).instanceGuide 查看 queryFields -> listChildren/findInstance 获取 ModuleInstanceRef -> 用 ref.id 拼接 path。',
-      '子 kind 流程：queryModules(kind).childKindSummaries 查看子 kind 功能摘要 -> queryModules({ kind: childKind }) 读取子层完整指南 -> 以当前实例 path 查询子实例。',
-      '属性流程：describeKind(kind).attributes -> getAttribute(path, attrName) 或 setAttribute(path, attrName, value)。',
-      '函数流程：queryFunctions({ kind/keyword }) -> guideFunction({ action }) -> invokeAction(path, actionName, args)。',
-      '复杂参数流程：payload-catalog.queryPayloads -> payload-catalog.guidePayload -> invokeAction(目标动作)。',
-      '反问流程：guideHumanQuestion({ context, reason, missingFacts }) -> 用自然语言向用户提问 -> 等待用户下一轮答复。',
-      '分层 kind 目录：',
-      ...kindLayers.map(formatKindLayerLine),
-      '函数目录摘要：',
-      ...functions.map(formatFunctionLine),
+      ...FIXED_PROTOCOL_TOOL_ROUTING_LINES,
+      ...promptKinds.map(formatPromptKindIndexLine),
+      ...(hiddenKindCount > 0 ? [`...还有 ${String(hiddenKindCount)} 个 kind，使用 queryModules({ keyword }) 查询。`] : []),
+      '流程：实例->schema/元数据->执行；复杂参数按 payloadLookupSteps 查 payload-catalog。',
     ]
     return lines.join('\n')
   }
 }
 
-function knowledgeAction(kind: string, actionName: string): string {
-  return `${kind}.${actionName}`
+function knowledgeFunctionId(kindPath: readonly string[], functionName: string): string {
+  return `${kindPath.join('.')}.${functionName}`
 }
 
-function parseGuideInput(input: ModuleSemanticKnowledgeFunctionGuideInput): ParsedKnowledgeAction | null {
-  const action = input.action?.trim()
-  if (action !== undefined && action.length > 0) {
-    const splitAt = action.indexOf('.')
-    if (splitAt > 0 && splitAt < action.length - 1) {
+function kindPathFor(moduleKind: ModuleKind, allKinds: readonly ModuleKind[]): readonly string[] {
+  const path = [moduleKind.kind]
+  const seen = new Set<string>(path)
+  let parentKind = moduleKind.parentKind
+  while (parentKind !== undefined) {
+    if (seen.has(parentKind)) {
+      throw new Error(`ModuleKind parent cycle detected at "${parentKind}"`)
+    }
+    const parent = allKinds.find((candidate) => candidate.kind === parentKind)
+    if (parent === undefined) break
+    path.unshift(parent.kind)
+    seen.add(parent.kind)
+    parentKind = parent.parentKind
+  }
+  return path
+}
+
+function functionToolName(kindPath: readonly string[], functionName: string): string {
+  return createBusinessFunctionToolName(kindPath, functionName)
+}
+
+function formatInvokeStep(kindPath: readonly string[], functionName: string): string {
+  const toolName = functionToolName(kindPath, functionName)
+  const pathPlaceholders = kindPath.map((kind) => `<${kind}Id>`).join(', ')
+  return `${toolName}({ $paths: [${pathPlaceholders}] })`
+}
+
+function parseGuideInput(input: ModuleSemanticKnowledgeFunctionGuideInput): ParsedKnowledgeFunction | null {
+  const functionId = input.functionId?.trim()
+  if (functionId !== undefined && functionId.length > 0) {
+    const lastDot = functionId.lastIndexOf('.')
+    if (lastDot > 0 && lastDot < functionId.length - 1) {
+      const prefix = functionId.slice(0, lastDot)
+      const kindPathFromId = prefix.split('.')
+      const kind = kindPathFromId[kindPathFromId.length - 1]
+      if (kind === undefined) return null
       return {
-        kind: action.slice(0, splitAt),
-        actionName: action.slice(splitAt + 1),
+        kind,
+        functionName: functionId.slice(lastDot + 1),
+        kindPathFromId,
       }
     }
     return null
   }
 
   const kind = input.kind?.trim()
-  const actionName = input.actionName?.trim()
-  if (kind === undefined || kind.length === 0 || actionName === undefined || actionName.length === 0) return null
-  return { kind, actionName }
+  const functionName = input.functionName?.trim()
+  if (kind === undefined || kind.length === 0 || functionName === undefined || functionName.length === 0) return null
+  return { kind, functionName }
 }
 
 function normalizeOptionalText(value: string | undefined): string | undefined {
@@ -520,53 +563,61 @@ function buildHumanQuestion(
   return `为了继续处理，我需要你确认：${factText}。${options}`
 }
 
-function summarizeAction(options: ActionKnowledgeProjectionOptions): ModuleSemanticKnowledgeFunctionSummary {
-  const { kind, action, payloads, payloadCatalogs } = options
-  const payloadRefs = payloadRefsForAction(payloads, action.name)
+function summarizeFunction(options: FunctionKnowledgeProjectionOptions): ModuleSemanticKnowledgeFunctionSummary {
+  const { kind, kindPath, fn, payloads, payloadCatalogs } = options
+  const payloadRefs = payloadRefsForFunction(payloads, fn.name)
+  const toolName = functionToolName(kindPath, fn.name)
   return {
-    action: knowledgeAction(kind, action.name),
+    functionId: knowledgeFunctionId(kindPath, fn.name),
+    toolName,
+    kindPath,
     kind,
-    actionName: action.name,
-    description: action.description,
-    paramNames: paramNames(action.paramsSchema),
-    requiredParamNames: requiredParamNames(action.paramsSchema),
-    failureCodes: action.failureModes?.map((mode) => mode.code) ?? [],
-    usageRuleCount: action.usageRules?.length ?? 0,
-    failureModeCount: action.failureModes?.length ?? 0,
-    functionLookupSteps: createFunctionLookupSteps({ kind, actionName: action.name }),
+    functionName: fn.name,
+    description: fn.description,
+    paramNames: paramNames(fn.paramsSchema),
+    requiredParamNames: requiredParamNames(fn.paramsSchema),
+    failureCodes: fn.failureModes?.map((mode) => mode.code) ?? [],
+    usageRuleCount: fn.usageRules?.length ?? 0,
+    failureModeCount: fn.failureModes?.length ?? 0,
+    functionLookupSteps: createFunctionLookupSteps({ kind, kindPath, functionName: fn.name }),
     payloadRefs,
     requiresPayloadGuide: payloadRefs.length > 0,
     payloadLookupSteps: createPayloadLookupSteps({
       kind,
-      actionName: action.name,
+      kindPath,
+      functionName: fn.name,
       payloadRefs,
       payloadCatalogs,
     }),
   }
 }
 
-function createGuide(options: ActionKnowledgeProjectionOptions): ModuleSemanticKnowledgeFunctionGuide {
-  const { kind, action, payloads, payloadCatalogs } = options
-  const payloadRefs = payloadRefsForAction(payloads, action.name)
+function createGuide(options: FunctionKnowledgeProjectionOptions): ModuleSemanticKnowledgeFunctionGuide {
+  const { kind, kindPath, fn, payloads, payloadCatalogs } = options
+  const payloadRefs = payloadRefsForFunction(payloads, fn.name)
+  const toolName = functionToolName(kindPath, fn.name)
   return {
-    action: knowledgeAction(kind, action.name),
+    functionId: knowledgeFunctionId(kindPath, fn.name),
+    toolName,
+    kindPath,
     kind,
-    actionName: action.name,
-    description: action.description,
-    paramsSchema: action.paramsSchema,
-    ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
-    usageRules: action.usageRules ?? [],
-    failureModes: action.failureModes ?? [],
-    functionLookupSteps: createFunctionLookupSteps({ kind, actionName: action.name }),
+    functionName: fn.name,
+    description: fn.description,
+    paramsSchema: fn.paramsSchema,
+    ...(fn.resultSchema === undefined ? {} : { resultSchema: fn.resultSchema }),
+    usageRules: fn.usageRules ?? [],
+    failureModes: fn.failureModes ?? [],
+    functionLookupSteps: createFunctionLookupSteps({ kind, kindPath, functionName: fn.name }),
     payloadRefs,
     requiresPayloadGuide: payloadRefs.length > 0,
     payloadLookupSteps: createPayloadLookupSteps({
       kind,
-      actionName: action.name,
+      kindPath,
+      functionName: fn.name,
       payloadRefs,
       payloadCatalogs,
     }),
-    ...(action.example === undefined ? {} : { example: action.example }),
+    ...(fn.example === undefined ? {} : { example: fn.example }),
   }
 }
 
@@ -578,6 +629,7 @@ type KindLayerOptions = Readonly<{
 
 function createKindLayer(options: KindLayerOptions): ModuleSemanticKnowledgeKindLayer {
   const { moduleKind, allKinds, payloadCatalogs } = options
+  const kindPath = kindPathFor(moduleKind, allKinds)
   return {
     kind: moduleKind.kind,
     name: moduleKind.name,
@@ -589,14 +641,15 @@ function createKindLayer(options: KindLayerOptions): ModuleSemanticKnowledgeKind
     instanceLookupSteps: createInstanceLookupSteps(moduleKind),
     childLookupSteps: createChildLookupSteps(moduleKind, allKinds),
     attributeLookupSteps: createAttributeLookupSteps(moduleKind),
-    functionLookupSteps: createModuleFunctionLookupSteps(moduleKind),
+    functionLookupSteps: createModuleFunctionLookupSteps(moduleKind, kindPath),
     payloadLookupSteps: createPayloadLookupSteps({
       kind: moduleKind.kind,
+      kindPath,
       payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
       payloadCatalogs,
     }),
     attributes: createAttributeGuides(moduleKind),
-    functions: createLayerFunctions(moduleKind),
+    functions: createLayerFunctions(moduleKind, kindPath),
     childKinds: moduleKind.children.map((childKind) => summarizeChildKind(childKind, allKinds)),
   }
 }
@@ -614,17 +667,20 @@ function createAttributeGuides(moduleKind: ModuleKind): readonly ModuleSemanticK
   }))
 }
 
-function createLayerFunctions(moduleKind: ModuleKind): readonly ModuleSemanticKnowledgeLayerFunction[] {
-  return moduleKind.actions.map((action) => {
-    const payloadRefs = payloadRefsForAction(moduleKind.payloads, action.name)
+function createLayerFunctions(moduleKind: ModuleKind, kindPath: readonly string[]): readonly ModuleSemanticKnowledgeLayerFunction[] {
+  return moduleKind.functions.map((fn) => {
+    const payloadRefs = payloadRefsForFunction(moduleKind.payloads, fn.name)
+    const toolName = functionToolName(kindPath, fn.name)
     return {
-      action: knowledgeAction(moduleKind.kind, action.name),
-      actionName: action.name,
-      description: action.description,
-      paramNames: paramNames(action.paramsSchema),
-      requiredParamNames: requiredParamNames(action.paramsSchema),
-      lookupSteps: createFunctionLookupSteps({ kind: moduleKind.kind, actionName: action.name }),
-      invokeStep: `invokeAction({ path, actionName: "${action.name}", args })`,
+      functionId: knowledgeFunctionId(kindPath, fn.name),
+      toolName,
+      kindPath,
+      functionName: fn.name,
+      description: fn.description,
+      paramNames: paramNames(fn.paramsSchema),
+      requiredParamNames: requiredParamNames(fn.paramsSchema),
+      lookupSteps: createFunctionLookupSteps({ kind: moduleKind.kind, kindPath, functionName: fn.name }),
+      invokeStep: formatInvokeStep(kindPath, fn.name),
       payloadRefs,
     }
   })
@@ -663,7 +719,7 @@ function createInstanceGuide(moduleKind: ModuleKind): ModuleSemanticKnowledgeIns
     operationSteps: [
       `用实例 path 调用 describeKind("${moduleKind.kind}") 读取元数据。`,
       `属性读写复用同一个实例 path：getAttribute/setAttribute。`,
-      `函数调用复用同一个实例 path：invokeAction。`,
+      `函数调用复用同一个实例 path：标准 function tool。`,
       `进入子 kind 时，以当前实例 path 作为 parentPath 调用 listChildren/findInstance。`,
     ],
   }
@@ -748,12 +804,12 @@ function createAttributeLookupSteps(moduleKind: ModuleKind): readonly string[] {
   ]
 }
 
-function createModuleFunctionLookupSteps(moduleKind: ModuleKind): readonly string[] {
-  if (moduleKind.actions.length === 0) return []
+function createModuleFunctionLookupSteps(moduleKind: ModuleKind, kindPath: readonly string[]): readonly string[] {
+  if (moduleKind.functions.length === 0) return []
   return [
     `queryFunctions({ kind: "${moduleKind.kind}" }) 查看 ${moduleKind.kind} 函数目录。`,
-    `guideFunction({ action: "${moduleKind.kind}.<actionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
-    `invokeAction({ path, actionName, args }) 执行业务函数。`,
+    `guideFunction({ functionId: "${kindPath.join('.')}.<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
+    `<toolName>({ $paths: [${kindPath.map((k) => `<${k}Id>`).join(', ')}] }) 执行业务函数。`,
   ]
 }
 
@@ -767,7 +823,7 @@ function summarizeChildKind(
       kind: childKind,
       name: childKind,
       description: '子 kind 已声明，当前注册表未提供详细元数据。',
-      actionNames: [],
+      functionNames: [],
       attributeNames: [],
       payloadRefs: [],
       childKindNames: [],
@@ -782,7 +838,7 @@ function summarizeChildKind(
     kind: child.kind,
     name: child.name,
     description: child.description,
-    actionNames: child.actions.map((action) => action.name),
+    functionNames: child.functions.map((fn) => fn.name),
     attributeNames: child.attributes.map((attribute) => attribute.name),
     payloadRefs: child.payloads.map((payload) => payload.payloadRef),
     childKindNames: [...child.children],
@@ -791,15 +847,15 @@ function summarizeChildKind(
       description: attribute.description,
       access: attributeAccessMode(attribute.readable, attribute.writable),
     })),
-    functionSummaries: child.actions.map((action) => ({
-      actionName: action.name,
-      description: action.description,
-      requiredParamNames: requiredParamNames(action.paramsSchema),
-      payloadRefs: payloadRefsForAction(child.payloads, action.name),
+    functionSummaries: child.functions.map((fn) => ({
+      functionName: fn.name,
+      description: fn.description,
+      requiredParamNames: requiredParamNames(fn.paramsSchema),
+      payloadRefs: payloadRefsForFunction(child.payloads, fn.name),
     })),
     detailLookupSteps: [
       `queryModules({ kind: "${child.kind}" }) 读取 ${child.kind} 自己的 instanceGuide、attributeGuides 和 functionGuides。`,
-      `describeKind("${child.kind}") 查看 ${child.kind} 的 attributes/actions/payloads/children 元数据。`,
+      `describeKind("${child.kind}") 查看 ${child.kind} 的 attributes/functions/payloads/children 元数据。`,
       `在父实例 path 下 listChildren/findInstance(path, "${child.kind}", query) 定位子实例。`,
     ],
   }
@@ -815,48 +871,67 @@ function attributeAccessMode(
   return 'none'
 }
 
-function payloadRefsForAction(
+function payloadRefsForFunction(
   payloads: readonly ModuleParameterPayloadMetadata[],
-  actionName: string,
+  functionName: string,
 ): readonly string[] {
   return payloads
     .filter((payload) => {
-      const requiredForActions = payload.requiredForActions ?? []
-      return requiredForActions.length === 0 || requiredForActions.includes(actionName)
+      const requiredForFunctions = payload.requiredForFunctions ?? []
+      return requiredForFunctions.length === 0 || requiredForFunctions.includes(functionName)
     })
     .map((payload) => payload.payloadRef)
 }
 
 type FunctionLookupStepsOptions = Readonly<{
   kind: string
-  actionName?: string
+  kindPath: readonly string[]
+  functionName?: string
 }>
 
 function createFunctionLookupSteps(options: FunctionLookupStepsOptions): readonly string[] {
-  const keyword = options.actionName ?? '<actionName 或业务关键词>'
-  const action = options.actionName === undefined ? `${options.kind}.<actionName>` : knowledgeAction(options.kind, options.actionName)
+  const keyword = options.functionName ?? '<functionName 或业务关键词>'
+  const functionId = options.functionName === undefined
+    ? `${options.kindPath.join('.')}.<functionName>`
+    : knowledgeFunctionId(options.kindPath, options.functionName)
+  const toolRef = options.functionName === undefined
+    ? '<toolName>'
+    : functionToolName(options.kindPath, options.functionName)
   return [
-    `先调用 queryFunctions({ kind: "${options.kind}", keyword: "${keyword}" }) 查函数目录，确认 actionName、必填参数和 failureCodes。`,
-    `再调用 guideFunction({ action: "${action}" }) 读取完整 paramsSchema、usageRules 和 failureModes。`,
-    `随后调用 invokeAction({ path, actionName: "${options.actionName ?? '<actionName>'}", args })。`,
+    `先调用 queryFunctions({ kind: "${options.kind}", keyword: "${keyword}" }) 查函数目录，确认 functionName、必填参数和 failureCodes。`,
+    `再调用 guideFunction({ functionId: "${functionId}" }) 读取完整 paramsSchema、usageRules 和 failureModes。`,
+    `随后调用 ${toolRef}({ $paths: [...] }) 执行业务函数。`,
   ]
 }
 
 function discoverPayloadCatalogs(kinds: readonly ModuleKind[]): readonly PayloadCatalogDescriptor[] {
+  const kindMap = new Map(kinds.map((k) => [k.kind, k]))
   return kinds
     .filter((moduleKind) =>
-      moduleKind.actions.some((action) => action.name === PAYLOAD_QUERY_ACTION_NAME)
-      && moduleKind.actions.some((action) => action.name === PAYLOAD_GUIDE_ACTION_NAME)
+      moduleKind.functions.some((fn) => fn.name === PAYLOAD_QUERY_ACTION_NAME)
+      && moduleKind.functions.some((fn) => fn.name === PAYLOAD_GUIDE_ACTION_NAME)
     )
     .map((moduleKind) => ({
       kind: moduleKind.kind,
+      kindPath: computeKindPath(moduleKind, kindMap),
       ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
     }))
 }
 
+function computeKindPath(moduleKind: ModuleKind, kindMap: Map<string, ModuleKind>): readonly string[] {
+  const segments: string[] = []
+  let current: ModuleKind | undefined = moduleKind
+  while (current !== undefined) {
+    segments.push(current.kind)
+    current = current.parentKind !== undefined ? kindMap.get(current.parentKind) : undefined
+  }
+  return segments.reverse()
+}
+
 type PayloadLookupStepsOptions = Readonly<{
   kind: string
-  actionName?: string
+  kindPath: readonly string[]
+  functionName?: string
   payloadRefs: readonly string[]
   payloadCatalogs: readonly PayloadCatalogDescriptor[]
 }>
@@ -864,14 +939,34 @@ type PayloadLookupStepsOptions = Readonly<{
 function createPayloadLookupSteps(options: PayloadLookupStepsOptions): readonly string[] {
   if (options.payloadRefs.length === 0) return []
   const catalogLocator = formatPayloadCatalogLocator(options.payloadCatalogs)
-  const catalogActionTarget = formatPayloadCatalogActionTarget(options.payloadCatalogs)
-  const action = options.actionName === undefined ? `${options.kind}.<actionName>` : knowledgeAction(options.kind, options.actionName)
+  const catalogToolNames = formatPayloadCatalogToolNames(options.payloadCatalogs)
+  const catalogPathPlaceholders = formatPayloadCatalogPathPlaceholders(options.payloadCatalogs)
+  const functionId = options.functionName === undefined
+    ? `${options.kindPath.join('.')}.<functionName>`
+    : knowledgeFunctionId(options.kindPath, options.functionName)
   return options.payloadRefs.flatMap((payloadRef) => [
     `先定位 payload 目录模块 ${catalogLocator}; 没有实例路径时用 listChildren/findInstance 获取目录实例。`,
-    `先调用 ${catalogActionTarget}.${PAYLOAD_QUERY_ACTION_NAME}({ moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit }) 查询目录并选择真实 key。`,
-    `再调用 ${catalogActionTarget}.${PAYLOAD_GUIDE_ACTION_NAME}({ moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key }) 读取 paramsSchema、usageRules 和 failureModes。`,
-    `最后才调用 ${action}; 复杂参数只能按 guidePayload 返回的 schema 字段构造。`,
+    `先调用 ${catalogToolNames.queryPayloads}({ $paths: [${catalogPathPlaceholders}], moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit }) 查询目录并选择真实 key。`,
+    `再调用 ${catalogToolNames.guidePayload}({ $paths: [${catalogPathPlaceholders}], moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key }) 读取 paramsSchema、usageRules 和 failureModes。`,
+    `最后才调用 ${functionId}; 复杂参数只能按 guidePayload 返回的 schema 字段构造。`,
   ])
+}
+
+function formatPayloadCatalogToolNames(catalogs: readonly PayloadCatalogDescriptor[]): { queryPayloads: string, guidePayload: string } {
+  const [catalog] = catalogs
+  if (catalog === undefined) {
+    const fallback = 'payload-catalog'
+    return { queryPayloads: `${fallback}_${PAYLOAD_QUERY_ACTION_NAME}`, guidePayload: `${fallback}_${PAYLOAD_GUIDE_ACTION_NAME}` }
+  }
+  const queryTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_QUERY_ACTION_NAME)
+  const guideTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_GUIDE_ACTION_NAME)
+  return { queryPayloads: queryTool, guidePayload: guideTool }
+}
+
+function formatPayloadCatalogPathPlaceholders(catalogs: readonly PayloadCatalogDescriptor[]): string {
+  const [catalog] = catalogs
+  if (catalog === undefined) return '<catalogInstanceId>'
+  return catalog.kindPath.map((kind) => `<${kind}Id>`).join(', ')
 }
 
 function formatPayloadCatalogLocator(catalogs: readonly PayloadCatalogDescriptor[]): string {
@@ -879,11 +974,6 @@ function formatPayloadCatalogLocator(catalogs: readonly PayloadCatalogDescriptor
   return catalogs.map((catalog) =>
     catalog.parentKind === undefined ? catalog.kind : `${catalog.parentKind}/${catalog.kind}`
   ).join('|')
-}
-
-function formatPayloadCatalogActionTarget(catalogs: readonly PayloadCatalogDescriptor[]): string {
-  if (catalogs.length === 0) return 'payload-catalog(业务目录模块)'
-  return catalogs.map((catalog) => catalog.kind).join('|')
 }
 
 function paramNames(schema: LlmJsonSchemaObject): readonly string[] {
@@ -894,35 +984,12 @@ function requiredParamNames(schema: LlmJsonSchemaObject): readonly string[] {
   return schema.required ?? []
 }
 
-function formatFunctionLine(summary: ModuleSemanticKnowledgeFunctionSummary): string {
-  const params = summary.paramNames.length === 0 ? '[]' : `[${summary.paramNames.join(', ')}]`
-  const required = summary.requiredParamNames.length === 0 ? '[]' : `[${summary.requiredParamNames.join(', ')}]`
-  const failures = summary.failureCodes.length === 0 ? '[]' : `[${summary.failureCodes.join(', ')}]`
-  const functionFlow = summary.functionLookupSteps.length === 0 ? '[]' : '[queryFunctions -> guideFunction -> invokeAction]'
-  const payloads = summary.payloadRefs.length === 0 ? '[]' : `[${summary.payloadRefs.join(', ')}]`
-  const payloadFlow = summary.payloadLookupSteps.length === 0 ? '[]' : '[queryPayloads -> guidePayload -> invokeAction]'
-  return `- ${summary.action}: ${summary.description}; params=${params} required=${required} usageRules=${String(summary.usageRuleCount)} failureCodes=${failures} functionFlow=${functionFlow} payloads=${payloads} payloadFlow=${payloadFlow}`
-}
-
-function formatKindLayerLine(layer: ModuleSemanticKnowledgeKindLayer): string {
-  const indent = '  '.repeat(layer.level)
-  const parent = layer.parentKind === undefined ? 'root' : `parent=${layer.parentKind}`
-  const instance = `instance=[${layer.instanceGuide.discoveryScope}; ref=${layer.instanceGuide.refShape}; path=${layer.instanceGuide.pathPattern}; query=${formatList(layer.instanceGuide.queryFields)}]`
-  const attrs = layer.attributes.length === 0
-    ? '[]'
-    : `[${layer.attributes.map((attribute) => `${attribute.name}(${attribute.access})`).join(', ')}]`
-  const functions = layer.functions.length === 0
-    ? '[]'
-    : `[${layer.functions.map((fn) => `${fn.actionName}(required=${formatList(fn.requiredParamNames)})`).join(', ')}]`
-  const children = layer.childKinds.length === 0
-    ? '[]'
-    : `[${layer.childKinds.map((child) => `${child.kind}(${child.name}; attrs=${formatList(child.attributeNames)}; actions=${formatList(child.actionNames)}; children=${formatList(child.childKindNames)})`).join(', ')}]`
-  const payloads = layer.payloadLookupSteps.length === 0 ? '[]' : '[queryPayloads -> guidePayload -> invokeAction]'
-  return `${indent}- ${layer.kind}(${layer.name}; ${parent}): ${layer.description}; ${instance}; children=${children}; attrs=${attrs}; functions=${functions}; instanceFlow=[listChildren/findInstance -> path]; attrFlow=[describeKind -> getAttribute/setAttribute]; functionFlow=[queryFunctions -> guideFunction -> invokeAction]; payloadFlow=${payloads}`
-}
-
-function formatList(values: readonly string[]): string {
-  return values.length === 0 ? '[]' : `[${values.join('|')}]`
+function formatPromptKindIndexLine(layer: ModuleSemanticKnowledgeKindLayer): string {
+  const prefix = layer.parentKind === undefined ? `root ${layer.kind}` : `${layer.parentKind}/${layer.kind}`
+  const childKinds = layer.childKinds.map((child) => child.kind)
+  const children = childKinds.length === 0 ? '' : ` -> [${childKinds.join('|')}]`
+  const payload = layer.payloadLookupSteps.length === 0 ? '' : '; payload=payload-catalog'
+  return `${prefix}${children}${payload}`
 }
 
 function uniqueTexts(values: readonly string[]): readonly string[] {
@@ -961,8 +1028,8 @@ function moduleSummaryGuidesMatchKeyword(
       attribute.writeStep ?? '',
     ], keyword))
     || summary.functionGuides.some((fn) => containsKeyword([
-      fn.action,
-      fn.actionName,
+      fn.functionId,
+      fn.functionName,
       fn.description,
       fn.invokeStep,
       ...fn.paramNames,
@@ -991,7 +1058,7 @@ function childSummaryMatchesKeyword(
     child.kind,
     child.name,
     child.description,
-    ...child.actionNames,
+    ...child.functionNames,
     ...child.attributeNames,
     ...child.payloadRefs,
     ...child.childKindNames,
@@ -1002,7 +1069,7 @@ function childSummaryMatchesKeyword(
       attribute.access,
     ], keyword))
     || child.functionSummaries.some((fn) => containsKeyword([
-      fn.actionName,
+      fn.functionName,
       fn.description,
       ...fn.requiredParamNames,
       ...fn.payloadRefs,
@@ -1011,7 +1078,7 @@ function childSummaryMatchesKeyword(
 }
 
 function formatPayloadBinding(payload: ModuleParameterPayloadMetadata): string {
-  const actions = payload.requiredForActions ?? []
-  if (actions.length === 0) return payload.payloadRef
-  return `${payload.payloadRef}(actions=${actions.join('|')})`
+  const functions = payload.requiredForFunctions ?? []
+  if (functions.length === 0) return payload.payloadRef
+  return `${payload.payloadRef}(functions=${functions.join('|')})`
 }

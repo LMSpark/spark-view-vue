@@ -52,7 +52,7 @@ export class ModuleCheckEntry {
 //
 // 泛型结果容器，所有协议操作的统一返回类型。
 //   TData=void                          → setAttribute
-//   TData=LlmJsonValue                  → getAttribute / invokeAction
+//   TData=LlmJsonValue                  → getAttribute / 业务函数调用
 //   TData=readonly ModuleInstanceRef[]  → listChildren / findInstance
 //
 // 关键约束：

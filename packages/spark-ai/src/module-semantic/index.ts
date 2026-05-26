@@ -34,9 +34,9 @@ export type {
 } from './protocol/module-operation'
 
 export type {
-  ModuleActionFailureMode,
-  ModuleActionMetadata,
-  ModuleActionResultSchema,
+  ModuleFunctionFailureMode,
+  ModuleFunctionMetadata,
+  ModuleFunctionResultSchema,
   ModuleAttributeAccessor,
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
@@ -61,7 +61,7 @@ export type {
 
 export type {
   ModuleFindInstanceRequest,
-  ModuleInvokeActionRequest,
+  ModuleFunctionInvokeRequest,
   ModuleSetAttributeRequest,
 } from './protocol/module-request'
 

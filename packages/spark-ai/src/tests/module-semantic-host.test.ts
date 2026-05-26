@@ -37,7 +37,7 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
     kind: 'node-tree',
     name: '节点树',
     description: '页面节点树',
-    actions: [
+    functions: [
       {
         name: 'getNode',
         description: '按 id 取节点',
@@ -168,11 +168,11 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     expect(task.scope).toMatchObject({ businessRegistrationId: 'pageDesign', businessInstanceId: 'page-1' })
     expect(task.normalizedInput).toMatchObject({ pageId: 'page-1', userRequirement: '设计一个客户页面' })
     expect(request.historyMsgs).toEqual([{ role: 'user', content: '设计一个客户页面' }])
-    expect(request.systemPrompt).toContain('AI Host: registered business task')
-    expect(request.systemPrompt).toContain('kindID: pageDesign')
-    expect(request.systemPrompt).toContain('businessInstanceId: page-1')
+    expect(request.systemPrompt).not.toContain('AI Host 任务输入')
+    expect(request.systemPrompt).toContain('kindID=pageDesign')
+    expect(request.systemPrompt).toContain('businessInstanceId=page-1')
     expect(request.systemPrompt).toContain('"pageId":"page-1"')
-    expect(request.systemPrompt).toContain('"userRequirement":"设计一个客户页面"')
+    expect(request.systemPrompt).not.toContain('"userRequirement":"设计一个客户页面"')
     expect(request.systemPrompt).toContain('registered task for page-1')
     expect(request.systemPrompt).toContain('extra task prompt')
   })
@@ -203,10 +203,10 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       PROTOCOL_TOOL_NAMES.guideHumanQuestion,
       PROTOCOL_TOOL_NAMES.getAttribute,
       PROTOCOL_TOOL_NAMES.setAttribute,
-      PROTOCOL_TOOL_NAMES.invokeAction,
       PROTOCOL_TOOL_NAMES.listChildren,
       PROTOCOL_TOOL_NAMES.findInstance,
       PROTOCOL_TOOL_NAMES.describeKind,
+      'node-tree_getNode',
     ])
   })
 
@@ -223,11 +223,10 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
           id: 'call-1',
           type: 'function',
           function: {
-            name: 'invokeAction',
+            name: 'node-tree_getNode',
             arguments: JSON.stringify({
-              path: '/node-tree[page-1]',
-              actionName: 'getNode',
-              args: { id: 'n1' },
+              $paths: ['page-1'],
+              id: 'n1',
             }),
           },
         }],
@@ -253,7 +252,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     expect(history).toHaveLength(1)
     expect(history[0]).toMatchObject({
       kind: 'functionCall',
-      toolName: 'invokeAction',
+      toolName: 'node-tree_getNode',
       status: 'completed',
     })
     expect(registration.sessionStore?.getSession(CONTEXT)?.status).toBe('Stopped')
@@ -277,11 +276,10 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
               type: 'function',
               id: 'call-node-empty',
               function: {
-                name: 'invokeAction',
+                name: 'node-tree_getNode',
                 arguments: JSON.stringify({
-                  path: '/node-tree[page-1]',
-                  actionName: 'getNode',
-                  args: { id: '' },
+                  $paths: ['page-1'],
+                  id: '',
                 }),
               },
             }],
@@ -372,11 +370,10 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
 
     expect(systemPrompt).toContain('运行时提示')
     expect(systemPrompt).toContain('请求提示')
-    expect(systemPrompt).toContain('页面设计')
-    expect(systemPrompt).toContain('【AI Knowledge Snapshot】')
-    expect(systemPrompt).toContain('知识分层来源')
-    expect(systemPrompt).toContain('属性流程')
-    expect(systemPrompt).toContain('node-tree.getNode')
+    expect(systemPrompt).not.toContain('【AI Knowledge Snapshot】')
+    expect(systemPrompt).toContain('工具：')
+    expect(systemPrompt).toContain('流程：')
+    expect(systemPrompt).not.toContain('函数目录摘要')
   })
 
   it('同一业务会话下多个 turn 共享 sessionId 但保持 turnId 隔离', async () => {
@@ -423,7 +420,7 @@ describe('ModuleSemanticToolCodec', () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
-    expect(codec.actionOf('invokeAction')).toBe('invokeAction')
+    expect(codec.actionOf('node-tree_getNode')).toBe('node-tree_getNode')
     expect(codec.actionOf('describeKind')).toBe('describeKind')
     expect(codec.actionOf('unknown-tool')).toBeNull()
   })

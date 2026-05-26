@@ -96,7 +96,7 @@ const publicClassMethodSurfaces = new Map([
     'executeTool',
     'getAttribute',
     'setAttribute',
-    'invokeAction',
+    'invokeFunction',
     'listChildren',
     'findInstance',
     'describeKind',

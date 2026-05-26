@@ -27,10 +27,10 @@ function sessionRecord(): AiHostSessionRecord {
         id: 'f1',
         seq: 1,
         timestamp: 1000,
-        toolName: 'invokeAction',
+        toolName: 'pageDesign_payload-catalog_guidePayload',
         args: {
-          actionName: 'guidePayload',
-          args: { key: 'r-form' },
+          $paths: ['page-a', 'page-a'],
+          key: 'r-form',
         },
         status: 'completed',
         result: { ok: true },

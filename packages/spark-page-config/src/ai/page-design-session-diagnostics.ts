@@ -76,9 +76,9 @@ export function guidedPageDesignPayloadKeysFromSession(
 ): readonly string[] {
   return [...new Set((sessionRecord?.history ?? []).flatMap((entry) => {
     if (entry.kind !== 'functionCall') return []
-    if (!isRecord(entry.args) || entry.args['actionName'] !== 'guidePayload') return []
-    const nestedArgs = isRecord(entry.args['args']) ? entry.args['args'] : {}
-    const key = typeof nestedArgs['key'] === 'string' ? nestedArgs['key'].trim() : ''
+    if (!entry.toolName.endsWith('_guidePayload')) return []
+    if (!isRecord(entry.args)) return []
+    const key = typeof entry.args['key'] === 'string' ? entry.args['key'].trim() : ''
     return key.length > 0 ? [key] : []
   }))].sort()
 }

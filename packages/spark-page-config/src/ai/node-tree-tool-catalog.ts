@@ -17,7 +17,7 @@ import type {
 } from '@spark-view/spark-ai/schema'
 import {
   ModuleKind,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
   type ModuleParameterPayloadMetadata,
@@ -134,7 +134,7 @@ const NATIVE_HTML_TAGS = new Set([
 
 // ── node-tree 动作声明 ────────────────────────────────────
 
-const NODE_TREE_ACTIONS: readonly ModuleActionMetadata[] = [
+const NODE_TREE_ACTIONS: readonly ModuleFunctionMetadata[] = [
   {
     name: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
@@ -611,9 +611,9 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     super({
       kind: 'node-tree',
       name: 'Page Design Node Tree',
-      description: '当前页面 SparkNodeTree/rule.json 结构读写;通过 invokeAction 调用 19 个公开方法。',
+      description: '当前页面 SparkNodeTree/rule.json 结构读写;通过标准 function calling 调用 19 个公开方法。',
       attributes: [],
-      actions: NODE_TREE_ACTIONS,
+      functions: NODE_TREE_ACTIONS,
       ...(options.payloads === undefined ? {} : { payloads: options.payloads }),
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       children: [],
@@ -622,7 +622,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     this.contextFactory = options.contextFactory
   }
 
-  protected override async runAction(
+  protected override async runFunction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,

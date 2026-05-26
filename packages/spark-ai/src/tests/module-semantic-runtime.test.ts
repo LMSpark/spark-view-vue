@@ -3,9 +3,9 @@
  *
  * 覆盖范围:
  * - 工具规约固定包含 4 个知识入口与 6 个执行协议工具、含 usageRules / failureModes / parameters 收紧后的类型
- * - executeTool 路由到知识工具和 6 个执行协议工具(getAttribute / setAttribute / invokeAction /
+ * - executeTool 路由到知识工具和 6 个执行协议工具(getAttribute / setAttribute / invokeFunction /
  *   listChildren / findInstance / describeKind)
- * - 错误码:UNKNOWN_TOOL / INVALID_PATH_* / ACTION_NOT_DECLARED
+ * - 错误码:UNKNOWN_TOOL / INVALID_PATH_* / FUNCTION_NOT_DECLARED
  * - describeKind 返回 usageRules / failureModes(G1+G3 验证)
  */
 
@@ -21,7 +21,7 @@ import {
   ModuleSemanticRuntime,
   PROTOCOL_TOOL_NAMES,
   type ModuleInstanceRef,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleParameterPayloadProvider,
   type ModuleSemanticKnowledgeSnapshot,
   type ModulePathContext,
@@ -33,7 +33,7 @@ type ModuleKindSpy = {
   lastHost?: ModulePathContext['host']
 }
 
-const ECHO_ACTION_SCHEMA: ModuleActionMetadata = {
+const ECHO_FUNCTION_SCHEMA: ModuleFunctionMetadata = {
   name: 'echo',
   description: '回显参数',
   paramsSchema: {
@@ -75,7 +75,7 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
       get: () => ModuleOperationResult.ok<unknown>('root-1'),
       set: () => ModuleOperationResult.failCode('ATTRIBUTE_NOT_WRITABLE', 'rootId is readonly'),
     },
-    actions: [
+    functions: [
       {
         name: 'getNode',
         description: '按 id 取节点',
@@ -95,7 +95,7 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
       {
         payloadRef: 'spark.component',
         description: 'SparkNode props 参数目录',
-        requiredForActions: ['getNode'],
+        requiredForFunctions: ['getNode'],
       },
     ],
     children: [],
@@ -124,7 +124,7 @@ function createDefaultOnlyKind(): ModuleKind {
     kind: 'default-only',
     name: '默认能力',
     description: '用于验证 ModuleKind 默认协议行为',
-    actions: [
+    functions: [
       {
         name: 'ping',
         description: '测试默认 action 未实现',
@@ -144,9 +144,9 @@ function createRegisteredActionKind(): ModuleKind {
     kind: 'registered-action',
     name: '注册动作',
     description: '用于验证 ModuleKind runner 函数',
-    actions: [ECHO_ACTION_SCHEMA],
+    functions: [ECHO_FUNCTION_SCHEMA],
     runner: (_ctx, actionName, args) => {
-      if (actionName !== ECHO_ACTION_SCHEMA.name) {
+      if (actionName !== ECHO_FUNCTION_SCHEMA.name) {
         return ModuleOperationResult.fail([ModuleCheckEntry.error('UNKNOWN_ACTION', `${actionName} 未实现`)])
       }
       const value = args['value'] ?? null
@@ -166,20 +166,20 @@ function createRuntime(): ModuleSemanticRuntime {
 
 const NODE_TREE_PAYLOAD_LOOKUP_STEPS = [
   '先定位 payload 目录模块 payload-catalog(业务目录模块); 没有实例路径时用 listChildren/findInstance 获取目录实例。',
-  '先调用 payload-catalog(业务目录模块).queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component", keyword/category/key, limit }) 查询目录并选择真实 key。',
-  '再调用 payload-catalog(业务目录模块).guidePayload({ moduleKind: "node-tree", payloadRef: "spark.component", key }) 读取 paramsSchema、usageRules 和 failureModes。',
+  '先调用 payload-catalog_queryPayloads({ $paths: [<catalogInstanceId>], moduleKind: "node-tree", payloadRef: "spark.component", keyword/category/key, limit }) 查询目录并选择真实 key。',
+  '再调用 payload-catalog_guidePayload({ $paths: [<catalogInstanceId>], moduleKind: "node-tree", payloadRef: "spark.component", key }) 读取 paramsSchema、usageRules 和 failureModes。',
   '最后才调用 node-tree.getNode; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
 ] as const
 
 const NODE_TREE_FUNCTION_LOOKUP_STEPS = [
-  '先调用 queryFunctions({ kind: "node-tree", keyword: "getNode" }) 查函数目录，确认 actionName、必填参数和 failureCodes。',
-  '再调用 guideFunction({ action: "node-tree.getNode" }) 读取完整 paramsSchema、usageRules 和 failureModes。',
-  '随后调用 invokeAction({ path, actionName: "getNode", args })。',
+  '先调用 queryFunctions({ kind: "node-tree", keyword: "getNode" }) 查函数目录，确认 functionName、必填参数和 failureCodes。',
+  '再调用 guideFunction({ functionId: "node-tree.getNode" }) 读取完整 paramsSchema、usageRules 和 failureModes。',
+  '随后调用 node-tree_getNode({ $paths: [...] }) 执行业务函数。',
 ] as const
 
 const NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS = [
   ...NODE_TREE_PAYLOAD_LOOKUP_STEPS.slice(0, 3),
-  '最后才调用 node-tree.<actionName>; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
+  '最后才调用 node-tree.<functionName>; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
 ] as const
 
 const NODE_TREE_INSTANCE_GUIDE = {
@@ -204,7 +204,7 @@ const NODE_TREE_INSTANCE_GUIDE = {
   operationSteps: [
     '用实例 path 调用 describeKind("node-tree") 读取元数据。',
     '属性读写复用同一个实例 path：getAttribute/setAttribute。',
-    '函数调用复用同一个实例 path：invokeAction。',
+    '函数调用复用同一个实例 path：标准 function tool。',
     '进入子 kind 时，以当前实例 path 作为 parentPath 调用 listChildren/findInstance。',
   ],
 } as const
@@ -232,10 +232,10 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
       PROTOCOL_TOOL_NAMES.guideHumanQuestion,
       PROTOCOL_TOOL_NAMES.getAttribute,
       PROTOCOL_TOOL_NAMES.setAttribute,
-      PROTOCOL_TOOL_NAMES.invokeAction,
       PROTOCOL_TOOL_NAMES.listChildren,
       PROTOCOL_TOOL_NAMES.findInstance,
       PROTOCOL_TOOL_NAMES.describeKind,
+      'node-tree_getNode',
     ])
   })
 
@@ -249,12 +249,12 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
       expect(tool.function.description).not.toContain('fails=')
     }
 
-    const invokeAction = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.invokeAction)
-    expect(invokeAction).toBeDefined()
-    if (invokeAction === undefined) throw new Error('not found')
-    expect(invokeAction.function.description).toContain('guideFunction/describeKind')
-    expect(invokeAction.function.description).toContain('payloadLookupSteps')
-    expect(invokeAction.function.description).not.toContain('spark.component(actions=getNode)')
+    const businessFn = tools.find((spec) => spec.function.name === 'node-tree_getNode')
+    expect(businessFn).toBeDefined()
+    if (businessFn === undefined) throw new Error('not found')
+    expect(businessFn.function.description).toContain('queryFunctions/guideFunction/describeKind')
+    expect(businessFn.function.description).toContain('payloadLookupSteps')
+    expect(businessFn.function.description).not.toContain('spark.component(functions=getNode)')
   })
 
   it('describeKind 工具说明显式暴露 payload 指南语义', () => {
@@ -263,7 +263,7 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     expect(describeKind).toBeDefined()
     if (describeKind === undefined) throw new Error('not found')
     expect(describeKind.function.description).toContain('attributes(readable/writable/schema)')
-    expect(describeKind.function.description).toContain('requiredForActions')
+    expect(describeKind.function.description).toContain('requiredForFunctions')
   })
 
   it('知识工具说明清楚区分目录、函数指南和人工反问', () => {
@@ -276,14 +276,14 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     expect(queryModules?.function.description).toContain('instanceGuide.queryFields')
     expect(queryModules?.function.description).toContain('childKindSummaries')
     expect(queryModules?.function.description).toContain('detailLookupSteps')
-    expect(queryFunctions?.function.description).toContain('动作目录')
+    expect(queryFunctions?.function.description).toContain('函数目录')
     expect(queryFunctions?.function.description).toContain('guideFunction')
     expect(guideFunction?.function.description).toContain('完整调用契约')
     expect(guideFunction?.function.description).toContain('paramsSchema')
     expect(guideFunction?.function.description).toContain('payloadLookupSteps')
     expect(guideFunction?.function.parameters.oneOf).toEqual([
-      { type: 'object', required: ['action'] },
-      { type: 'object', required: ['kind', 'actionName'] },
+      { type: 'object', required: ['functionId'] },
+      { type: 'object', required: ['kind', 'functionName'] },
     ])
     expect(guideHumanQuestion?.function.description).toContain('缺失用户事实')
     expect(guideHumanQuestion?.function.parameters.required).toEqual(['context', 'reason'])
@@ -296,14 +296,13 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     }
   })
 
-  it('通过 ModuleKind 构造期 action 委托执行并投影 JSON', async () => {
+  it('通过 ModuleKind 构造期 function 委托执行并投影 JSON', async () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createRegisteredActionKind())
 
-    const result = await runtime.executeTool('invokeAction', {
-      path: '/registered-action[current]',
-      actionName: 'echo',
-      args: { value: 'hello' },
+    const result = await runtime.executeTool('registered-action_echo', {
+      $paths: ['current'],
+      value: 'hello',
     })
 
     expect(result).toMatchObject({
@@ -331,7 +330,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     expect(modules.data).toEqual([
       expect.objectContaining({
         kind: 'node-tree',
-        actionCount: 1,
+        functionCount: 1,
         payloadRefs: ['spark.component'],
         pathPattern: '/node-tree[<node-treeId>]',
         instanceGuide: expect.objectContaining({
@@ -341,7 +340,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
           expect.objectContaining({ name: 'rootId', access: 'read' }),
         ],
         functionGuides: [
-          expect.objectContaining({ action: 'node-tree.getNode' }),
+          expect.objectContaining({ functionId: 'node-tree.getNode' }),
         ],
       }),
     ])
@@ -356,7 +355,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     expect(functions.ok).toBe(true)
     expect(functions.data).toEqual([
       expect.objectContaining({
-        action: 'node-tree.getNode',
+        functionId: 'node-tree.getNode',
         requiredParamNames: ['id'],
         failureCodes: ['NODE_NOT_FOUND'],
       }),
@@ -366,10 +365,10 @@ describe('ModuleSemanticRuntime.executeTool', () => {
   it('guideFunction 作为 LLM 直面工具返回完整调用指南和显式失败', async () => {
     const runtime = createRuntime()
 
-    const guide = await runtime.executeTool('guideFunction', { action: 'node-tree.getNode' })
+    const guide = await runtime.executeTool('guideFunction', { functionId: 'node-tree.getNode' })
     expect(guide.ok).toBe(true)
     expect(guide.data).toMatchObject({
-      action: 'node-tree.getNode',
+      functionId: 'node-tree.getNode',
       paramsSchema: {
         type: 'object',
         required: ['id'],
@@ -378,7 +377,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
       usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
     })
 
-    const invalid = await runtime.executeTool('guideFunction', { action: 'node-tree' })
+    const invalid = await runtime.executeTool('guideFunction', { functionId: 'node-tree' })
     expect(invalid.ok).toBe(false)
     expect(invalid.checks?.[0]?.code).toBe('INVALID_GUIDE_REQUEST')
   })
@@ -419,23 +418,20 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     expect(result.data).toBe('root-1')
   })
 
-  it('invokeAction 透传 args 并返回 ok=true', async () => {
+  it('node-tree_getNode 透传参数并返回 ok=true', async () => {
     const runtime = createRuntime()
-    const result = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[t1]',
-      actionName: 'getNode',
-      args: { id: 'n1' },
+    const result = await runtime.executeTool('node-tree_getNode', {
+      $paths: ['t1'],
+      id: 'n1',
     })
     expect(result.ok).toBe(true)
     expect(result.data).toEqual({ id: 'n1', label: 'node-n1' })
   })
 
-  it('invokeAction 参数校验失败时由 ModuleKind 返回 SCHEMA_VALIDATION_FAILED', async () => {
+  it('node-tree_getNode 参数校验失败时由 ModuleKind 返回 SCHEMA_VALIDATION_FAILED', async () => {
     const runtime = createRuntime()
-    const result = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[t1]',
-      actionName: 'getNode',
-      args: {},
+    const result = await runtime.executeTool('node-tree_getNode', {
+      $paths: ['t1'],
     })
     expect(result.ok).toBe(false)
     expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
@@ -448,11 +444,11 @@ describe('ModuleSemanticRuntime.executeTool', () => {
     const data = result.data
     if (!isRecord(data)) throw new Error('expected object payload')
     expect(data['kind']).toBe('node-tree')
-    const actions = data['actions']
-    if (!Array.isArray(actions) || actions.length === 0) {
-      throw new Error('expected non-empty actions array')
+    const functions = data['functions']
+    if (!Array.isArray(functions) || functions.length === 0) {
+      throw new Error('expected non-empty functions array')
     }
-    const getNode = actions.find((a) => isRecord(a) && a['name'] === 'getNode')
+    const getNode = functions.find((a) => isRecord(a) && a['name'] === 'getNode')
     if (!isRecord(getNode)) throw new Error('getNode action missing')
     expect(getNode['usageRules']).toEqual(['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'])
     const failureModes = getNode['failureModes']
@@ -508,13 +504,13 @@ describe('ModuleSemanticRuntime 直接调用入口', () => {
     expect(result.data).toBe('root-1')
   })
 
-  it('describeKind 直接调用返回 attributes / actions / payloads / children', () => {
+  it('describeKind 直接调用返回 attributes / functions / payloads / children', () => {
     const runtime = createRuntime()
     const result = runtime.describeKind('node-tree')
     expect(result.ok).toBe(true)
     expect(result.data?.kind).toBe('node-tree')
     expect(result.data?.attributes.map((attr) => attr.name)).toEqual(['rootId'])
-    expect(result.data?.actions.map((action) => action.name)).toEqual(['getNode'])
+    expect(result.data?.functions.map((fn) => fn.name)).toEqual(['getNode'])
     expect(result.data?.payloads.map((payload) => payload.payloadRef)).toEqual(['spark.component'])
   })
 })
@@ -538,11 +534,11 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         attributeNames: ['rootId'],
         readableAttributeNames: ['rootId'],
         writableAttributeNames: [],
-        actionCount: 1,
-        actionNames: ['getNode'],
+        functionCount: 1,
+        functionNames: ['getNode'],
         payloadCount: 1,
         payloadRefs: ['spark.component'],
-        payloadActionRefs: ['spark.component(actions=getNode)'],
+        payloadFunctionRefs: ['spark.component(functions=getNode)'],
         payloadLookupSteps: NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS,
         childKindCount: 0,
         children: [],
@@ -561,8 +557,8 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functionLookupSteps: [
           'queryFunctions({ kind: "node-tree" }) 查看 node-tree 函数目录。',
-          'guideFunction({ action: "node-tree.<actionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
-          'invokeAction({ path, actionName, args }) 执行业务函数。',
+          'guideFunction({ functionId: "node-tree.<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
+          '<toolName>({ $paths: [<node-treeId>] }) 执行业务函数。',
         ],
         attributeGuides: [
           {
@@ -577,10 +573,12 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functionGuides: [
           expect.objectContaining({
-            action: 'node-tree.getNode',
-            actionName: 'getNode',
+            functionId: 'node-tree.getNode',
+            toolName: 'node-tree_getNode',
+            kindPath: ['node-tree'],
+            functionName: 'getNode',
             lookupSteps: NODE_TREE_FUNCTION_LOOKUP_STEPS,
-            invokeStep: 'invokeAction({ path, actionName: "getNode", args })',
+            invokeStep: 'node-tree_getNode({ $paths: [<node-treeId>] })',
             payloadRefs: ['spark.component'],
           }),
         ],
@@ -589,9 +587,11 @@ describe('ModuleSemanticRuntime 知识投影', () => {
     ])
     expect(snapshot.functions).toEqual([
       {
-        action: 'node-tree.getNode',
+        functionId: 'node-tree.getNode',
+        toolName: 'node-tree_getNode',
+        kindPath: ['node-tree'],
         kind: 'node-tree',
-        actionName: 'getNode',
+        functionName: 'getNode',
         description: '按 id 取节点',
         paramNames: ['id'],
         requiredParamNames: ['id'],
@@ -604,7 +604,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
       },
     ])
-    expect(rootSnapshot.functions[0]?.action).toBe('node-tree.getNode')
+    expect(rootSnapshot.functions[0]?.functionId).toBe('node-tree.getNode')
     expect(snapshot.kindLayers).toEqual([
       expect.objectContaining({
         kind: 'node-tree',
@@ -624,8 +624,8 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functionLookupSteps: [
           'queryFunctions({ kind: "node-tree" }) 查看 node-tree 函数目录。',
-          'guideFunction({ action: "node-tree.<actionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
-          'invokeAction({ path, actionName, args }) 执行业务函数。',
+          'guideFunction({ functionId: "node-tree.<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
+          '<toolName>({ $paths: [<node-treeId>] }) 执行业务函数。',
         ],
         payloadLookupSteps: NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS,
         attributes: [
@@ -641,44 +641,29 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         functions: [
           expect.objectContaining({
-            action: 'node-tree.getNode',
-            actionName: 'getNode',
+            functionId: 'node-tree.getNode',
+            toolName: 'node-tree_getNode',
+            kindPath: ['node-tree'],
+            functionName: 'getNode',
             lookupSteps: NODE_TREE_FUNCTION_LOOKUP_STEPS,
-            invokeStep: 'invokeAction({ path, actionName: "getNode", args })',
+            invokeStep: 'node-tree_getNode({ $paths: [<node-treeId>] })',
             payloadRefs: ['spark.component'],
           }),
         ],
         childKinds: [],
       }),
     ])
-    expect(snapshot.promptSnapshot).toContain('【AI Knowledge Snapshot】')
-    expect(snapshot.promptSnapshot).toContain('知识分层来源')
-    expect(snapshot.promptSnapshot).toContain('固定协议工具用法')
-    expect(snapshot.promptSnapshot).toContain('1. queryModules：查 ModuleKind 分层知识目录')
-    expect(snapshot.promptSnapshot).toContain('2. listChildren：浏览根入口或父实例下的子实例')
-    expect(snapshot.promptSnapshot).toContain('3. findInstance：按目标 kind 的 instanceGuide.queryFields 查询实例')
-    expect(snapshot.promptSnapshot).toContain('4. describeKind：查单个 kind 的原始元数据')
-    expect(snapshot.promptSnapshot).toContain('5. getAttribute：读取具体实例 path 末段 kind 的 readable 属性')
-    expect(snapshot.promptSnapshot).toContain('6. setAttribute：写入具体实例 path 末段 kind 的 writable 属性')
-    expect(snapshot.promptSnapshot).toContain('7. queryFunctions：按 kind/keyword 查动作目录')
-    expect(snapshot.promptSnapshot).toContain('8. guideFunction：查单个 action 的完整 paramsSchema')
-    expect(snapshot.promptSnapshot).toContain('9. invokeAction：在具体实例 path 上执行 action')
-    expect(snapshot.promptSnapshot).toContain('10. guideHumanQuestion：缺少用户事实或需要确认时生成反问')
-    expect(snapshot.promptSnapshot).toContain('总流程：queryModules -> listChildren/findInstance -> describeKind -> getAttribute/setAttribute 或 queryFunctions -> guideFunction -> invokeAction')
-    expect(snapshot.promptSnapshot).toContain('实例流程')
-    expect(snapshot.promptSnapshot).toContain('子 kind 流程')
-    expect(snapshot.promptSnapshot).toContain('属性流程')
-    expect(snapshot.promptSnapshot).toContain('反问流程')
-    expect(snapshot.promptSnapshot).toContain('listChildren/findInstance')
-    expect(snapshot.promptSnapshot).toContain('instance=[root; ref={ id: string, label: string, summary?: string }; path=/node-tree[<node-treeId>]; query=[id|label|keyword|hint|rootId]]')
-    expect(snapshot.promptSnapshot).toContain('instanceFlow=[listChildren/findInstance -> path]')
-    expect(snapshot.promptSnapshot).toContain('node-tree.getNode')
-    expect(snapshot.promptSnapshot).toContain('attrs=[rootId(read)]')
-    expect(snapshot.promptSnapshot).toContain('attrFlow=[describeKind -> getAttribute/setAttribute]')
-    expect(snapshot.promptSnapshot).toContain('functionFlow=[queryFunctions -> guideFunction -> invokeAction]')
-    expect(snapshot.promptSnapshot).toContain('payloads=[spark.component]')
-    expect(snapshot.promptSnapshot).toContain('queryPayloads -> guidePayload -> invokeAction')
-    expect(snapshot.promptSnapshot).toContain('参数目录协议')
+    expect(snapshot.promptSnapshot).not.toContain('【AI Knowledge Snapshot】')
+    expect(snapshot.promptSnapshot).toContain('工具：')
+    expect(snapshot.promptSnapshot).toContain('知识=queryModules/queryFunctions/guideFunction')
+    expect(snapshot.promptSnapshot).toContain('实例=listChildren/findInstance')
+    expect(snapshot.promptSnapshot).not.toContain('1. queryModules({ kind?: string')
+    expect(snapshot.promptSnapshot).not.toContain('10. guideHumanQuestion({ context: string')
+    expect(snapshot.promptSnapshot).toContain('root node-tree; payload=payload-catalog')
+    expect(snapshot.promptSnapshot).toContain('流程：实例->schema/元数据->执行')
+    expect(snapshot.promptSnapshot).not.toContain('函数目录摘要')
+    expect(snapshot.promptSnapshot).not.toContain('node-tree.getNode:')
+    expect(snapshot.promptSnapshot).not.toContain('required=[componentId]')
   })
 
   it('父层 queryModules 摘要包含子 kind 的功能摘要和下一跳', () => {
@@ -714,7 +699,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         get: (ctx, attrName) => ModuleOperationResult.ok(attrName === 'code' ? ctx.segment.id : 'Ada'),
         set: () => ModuleOperationResult.failCode('READONLY', '人员目录只读。'),
       },
-      actions: [
+      functions: [
         {
           name: 'selectPerson',
           description: '按人员编码选择人员。',
@@ -738,7 +723,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
       expect.objectContaining({
         kind: 'leave-person',
         attributeNames: ['code', 'name'],
-        actionNames: ['selectPerson'],
+        functionNames: ['selectPerson'],
         attributeSummaries: expect.arrayContaining([
           expect.objectContaining({
             name: 'code',
@@ -748,14 +733,14 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ]),
         functionSummaries: expect.arrayContaining([
           expect.objectContaining({
-            actionName: 'selectPerson',
+            functionName: 'selectPerson',
             description: '按人员编码选择人员。',
             requiredParamNames: ['code'],
           }),
         ]),
         detailLookupSteps: [
           'queryModules({ kind: "leave-person" }) 读取 leave-person 自己的 instanceGuide、attributeGuides 和 functionGuides。',
-          'describeKind("leave-person") 查看 leave-person 的 attributes/actions/payloads/children 元数据。',
+          'describeKind("leave-person") 查看 leave-person 的 attributes/functions/payloads/children 元数据。',
           '在父实例 path 下 listChildren/findInstance(path, "leave-person", query) 定位子实例。',
         ],
       }),
@@ -780,7 +765,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
 
     expect(runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toHaveLength(1)
     expect(runtime.queryKnowledgeFunctions({ keyword: 'getnode' })).toEqual([
-      expect.objectContaining({ action: 'node-tree.getNode' }),
+      expect.objectContaining({ functionId: 'node-tree.getNode' }),
     ])
     expect(runtime.queryKnowledgeFunctions({ kind: 'missing' })).toEqual([])
   })
@@ -788,12 +773,12 @@ describe('ModuleSemanticRuntime 知识投影', () => {
   it('guideKnowledgeFunction 返回完整动作指南,失败时显式诊断', () => {
     const runtime = createRuntime()
 
-    const guide = runtime.guideKnowledgeFunction({ action: 'node-tree.getNode' })
+    const guide = runtime.guideKnowledgeFunction({ functionId: 'node-tree.getNode' })
     expect(guide.ok).toBe(true)
     expect(guide.data).toMatchObject({
-      action: 'node-tree.getNode',
+      functionId: 'node-tree.getNode',
       kind: 'node-tree',
-      actionName: 'getNode',
+      functionName: 'getNode',
       description: '按 id 取节点',
       paramsSchema: {
         type: 'object',
@@ -810,7 +795,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
       payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
     })
 
-    const missing = runtime.guideKnowledgeFunction({ action: 'node-tree.missing' })
+    const missing = runtime.guideKnowledgeFunction({ functionId: 'node-tree.missing' })
     expect(missing.ok).toBe(false)
     expect(missing.checks?.[0]?.code).toBe('FUNCTION_NOT_FOUND')
   })
@@ -1064,14 +1049,14 @@ describe('ModuleKind 默认协议行为', () => {
     expect(Reflect.get(moduleKind, 'find')).toBeUndefined()
   })
 
-  it('直接调用 invokeAction 也执行 paramsSchema 校验', async () => {
+  it('直接调用 invokeFunction 也执行 paramsSchema 校验', async () => {
     const moduleKind = createRegisteredActionKind()
     const ctx: ModulePathContext = {
       segments: [{ kind: 'registered-action', id: 'current' }],
       segment: { kind: 'registered-action', id: 'current' },
     }
 
-    const result = await moduleKind.invokeAction(ctx, 'echo', { value: 123 })
+    const result = await moduleKind.invokeFunction(ctx, 'echo', { value: 123 })
     expect(result.ok).toBe(false)
     expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
   })
@@ -1137,14 +1122,12 @@ describe('ModuleKind 默认协议行为', () => {
       checks: [expect.objectContaining({ code: 'ATTRIBUTE_NOT_DECLARED' })],
     })
 
-    const action = await runtime.executeTool('invokeAction', {
-      path: '/default-only[instance-1]',
-      actionName: 'ping',
-      args: {},
+    const action = await runtime.executeTool('default-only_ping', {
+      $paths: ['instance-1'],
     }, host)
     expect(action).toMatchObject({
       ok: false,
-      checks: [expect.objectContaining({ code: 'ACTION_NOT_IMPLEMENTED' })],
+      checks: [expect.objectContaining({ code: 'FUNCTION_NOT_IMPLEMENTED' })],
     })
   })
 })
@@ -1155,11 +1138,11 @@ describe('ModuleSemanticRuntime describeKind 完整 schema(plan 闭环 2)', () =
     const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
     expect(result.ok).toBe(true)
     if (!isRecord(result.data)) throw new Error('expected object payload')
-    const actions = result.data['actions']
-    if (!Array.isArray(actions) || actions.length === 0) {
-      throw new Error('expected non-empty actions array')
+    const functions = result.data['functions']
+    if (!Array.isArray(functions) || functions.length === 0) {
+      throw new Error('expected non-empty functions array')
     }
-    const getNode = actions.find((a) => isRecord(a) && a['name'] === 'getNode')
+    const getNode = functions.find((a) => isRecord(a) && a['name'] === 'getNode')
     if (!isRecord(getNode)) throw new Error('getNode action missing')
     const paramsSchema = getNode['paramsSchema']
     if (!isRecord(paramsSchema)) throw new Error('paramsSchema must be object payload')
@@ -1228,12 +1211,12 @@ describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
     expect(spy.lastHost).toEqual(host)
   })
 
-  it('非根路径 invokeAction 也透传 host', async () => {
+  it('非根路径 business function tool 也透传 host', async () => {
     const { runtime, spy } = createRuntimeWithSpy()
     const host = { moduleId: 'm', moduleInstanceId: 'page-42', instanceId: 's' }
     const result = await runtime.executeTool(
-      'invokeAction',
-      { path: '/node-tree[page-42]', actionName: 'getNode', args: { id: 'n1' } },
+      'node-tree_getNode',
+      { $paths: ['page-42'], id: 'n1' },
       host,
     )
     expect(result.ok).toBe(true)

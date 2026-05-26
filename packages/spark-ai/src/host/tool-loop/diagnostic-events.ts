@@ -98,7 +98,7 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
- *   invokeAction(path="/root/Table[0]", ...)  →   eventModuleId = "Table"
+ *   node-tree_getNode({ $paths: ["/root/Table[0]"], id: "n1" })  →   eventModuleId = "Table"
  *   describeKind(kind="Table")                →   eventModuleId = "Table"
  *   listChildren(path="/root")                →   eventModuleId = "root"
  * ----------------------------------------------------------------------------- */

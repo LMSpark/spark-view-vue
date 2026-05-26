@@ -4,7 +4,7 @@
  * API 边界的请求入参，是协议类型（ModulePath / ModuleHostContext / ModuleInstanceQuery）
  * 在 API 边界上的组合包装。由 ModuleSemanticRuntime 解析后委托给 Navigator → ModuleKind。
  *
- * 三个请求对应三个核心操作：setAttribute / invokeAction / findInstance
+ * 三个请求对应三个核心操作：setAttribute / invokeFunction / findInstance
  *
  * 这些 DTO 会通过 protocol/index.ts 统一导出；运行时内部也只依赖该门面。
  */
@@ -25,13 +25,15 @@ export type ModuleSetAttributeRequest = Readonly<{
   host?: ModuleHostContext
 }>
 
-/** 动作调用请求 */
-export type ModuleInvokeActionRequest = Readonly<{
+/** 函数调用请求 */
+export type ModuleFunctionInvokeRequest = Readonly<{
   /** 目标模块路径 */
   path: ModulePath
-  /** 动作名（必须在目标 kind 的 actions 表中已声明） */
-  actionName: string
-  /** 动作参数 */
+  /** 函数所在 kind 路径，必须与目标 path 的 kind 序列一致 */
+  kindPath: readonly string[]
+  /** 函数名（必须在目标 kind 的 functions 表中已声明） */
+  functionName: string
+  /** 函数参数 */
   args: Readonly<Record<string, LlmJsonValue>>
   /** Host 上下文（可选） */
   host?: ModuleHostContext

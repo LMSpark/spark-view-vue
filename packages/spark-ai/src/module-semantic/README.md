@@ -5,9 +5,9 @@
 ## Public Concepts
 
 - `ModuleKind`: core class for kind metadata plus constructor delegates exposed only through protocol methods.
-- `ModuleActionMetadata` and `ModuleAttributeMetadata`: action and attribute declarations.
+- `ModuleFunctionMetadata` and `ModuleAttributeMetadata`: function and attribute declarations.
 - `ModuleKindOptions`: constructor contract that combines declarative metadata with runtime delegates.
-- `ModuleSetAttributeRequest`, `ModuleInvokeActionRequest`, `ModuleFindInstanceRequest`: API boundary DTOs.
+- `ModuleSetAttributeRequest`, `ModuleFindInstanceRequest`: API boundary DTOs.
 - `ModulePath`, `ModulePathSegment`, `ModulePathParseError`: path parsing.
 - `ModulePathContext`, `ModuleHostContext`, `ModuleInstanceRef`, `ModuleInstanceQuery`: execution context and instance references.
 - `ModuleOperationResult` and `ModuleCheckEntry`: protocol result envelope and diagnostics.
@@ -15,28 +15,28 @@
 
 ## Protocol Tools
 
-The LLM-facing tool set is fixed:
+The LLM-facing tool set:
 
 1. `listChildren(path, childKind?)`
 2. `findInstance(path, childKind, query)`
 3. `describeKind(kind)`
-4. `invokeAction(path, actionName, args)`
+4. `<kind>_<functionName>($paths, ...args)` — 标准业务函数 tool
 5. `getAttribute(path, attrName)`
 6. `setAttribute(path, attrName, value)`
 7. `queryModules(kind?, parentKind?, keyword?)`
 8. `queryFunctions(kind?, keyword?)`
-9. `guideFunction(action | kind+actionName)`
+9. `guideFunction(functionId | kind+functionName)`
 10. `guideHumanQuestion(context, reason, missingFacts?)`
 
 Recommended discovery order:
 
 1. `queryModules()` / `queryFunctions({ kind })`
-2. `guideFunction({ action })`
+2. `guideFunction({ functionId })`
 3. `guideHumanQuestion(...)` when user facts are missing
 4. `listChildren("/")`
 5. `findInstance("/", kind, {})`
 6. `describeKind(kind)`
-7. `invokeAction("/kind[id]", actionName, args)`
+7. `<kind>_<functionName>({ $paths: [...], ...args })`
 
 ## Registration Example
 
@@ -52,13 +52,13 @@ import type { LlmJsonValue } from '@spark-view/spark-ai/schema'
 
 const runtime = new ModuleSemanticRuntime()
 
-const runner: ModuleKindRunner = (ctx, actionName, args) => runSchoolAction(ctx, actionName, args)
+const runner: ModuleKindRunner = (ctx, functionName, args) => runSchoolFunction(ctx, functionName, args)
 
 runtime.registerKind(new ModuleKind({
   kind: 'school',
   name: 'School',
   description: 'School business module',
-  actions: [
+  functions: [
     {
       name: 'archive',
       description: 'Archive the current school',
@@ -84,13 +84,13 @@ runtime.registerKind(new ModuleKind({
   ]),
 }))
 
-function runSchoolAction(
+function runSchoolFunction(
   ctx: ModulePathContext,
-  actionName: string,
+  functionName: string,
   args: Readonly<Record<string, LlmJsonValue>>,
 ) {
-  if (actionName !== 'archive') {
-    return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${actionName} is not implemented`)
+  if (functionName !== 'archive') {
+    return ModuleOperationResult.failCode('FUNCTION_NOT_DECLARED', `${functionName} is not implemented`)
   }
   return ModuleOperationResult.ok<LlmJsonValue>({
     schoolId: ctx.segment.id,
@@ -106,7 +106,7 @@ function runSchoolAction(
 - `ModuleKindRegistry`
 - `Navigator`
 - `AttributeAccessor`
-- `ActionInvoker`
+- `FunctionInvoker`
 - `ProtocolToolGenerator`
 - `ProtocolToolRouter`
 - `ProtocolToolArgsParser`

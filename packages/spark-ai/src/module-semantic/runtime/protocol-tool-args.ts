@@ -61,6 +61,21 @@ export class ProtocolToolArgsParser {
     return value.length === 0 ? undefined : value
   }
 
+  /** 提取必填字符串数组参数（缺失或非数组或空数组抛错） */
+  public requireStringArray(args: ProtocolToolArgs, key: string): readonly string[] {
+    if (!(key in args)) throw new ProtocolToolArgsError(`参数 "${key}" 缺失`)
+    const value = args[key]
+    if (!Array.isArray(value)) throw new ProtocolToolArgsError(`参数 "${key}" 类型错误,应为字符串数组`)
+    if (value.length === 0) throw new ProtocolToolArgsError(`参数 "${key}" 不能为空数组`)
+    const out: string[] = []
+    for (let i = 0; i < value.length; i++) {
+      const item: unknown = value[i]
+      if (typeof item !== 'string') throw new ProtocolToolArgsError(`参数 "${key}" 类型错误,第 ${String(i + 1)} 个元素应为字符串`)
+      out.push(item)
+    }
+    return out
+  }
+
   /** 提取可选字符串数组参数（空数组或全空串 → undefined，元素非字符串抛错） */
   public optionalStringArray(args: ProtocolToolArgs, key: string): readonly string[] | undefined {
     if (!(key in args)) return undefined

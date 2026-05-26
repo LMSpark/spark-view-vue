@@ -40,8 +40,8 @@ function sessionRecord(): AiHostSessionRecord {
         id: 'f1',
         seq: 2,
         timestamp: 2000,
-        toolName: 'invokeAction',
-        args: { actionName: 'guidePayload' },
+        toolName: 'pageDesign_payload-catalog_guidePayload',
+        args: { $paths: ['page-a', 'page-a'] },
         status: 'failed',
         error: { ok: false, code: 'BAD', msg: 'bad args', fix: 'fix args' },
       },
@@ -72,7 +72,7 @@ describe('session diagnostics', () => {
       messageCount: 2,
       toolCallCount: 1,
       failedToolCallCount: 1,
-      actionNames: ['invokeAction'],
+      actionNames: ['pageDesign_payload-catalog_guidePayload'],
       lastAssistantText: '已完成',
     })
   })
@@ -82,7 +82,7 @@ describe('session diagnostics', () => {
 
     expect(transcript).toHaveLength(3)
     expect(transcript[0]).toMatchObject({ direction: 'USER => AGENT', content: expect.stringContaining('...<truncated') })
-    expect(transcript[1]).toMatchObject({ direction: 'AGENT TOOL => LLM', toolName: 'invokeAction' })
+    expect(transcript[1]).toMatchObject({ direction: 'AGENT TOOL => LLM', toolName: 'pageDesign_payload-catalog_guidePayload' })
     expect(transcript[2]).toMatchObject({ direction: 'LLM => AGENT', content: '已完成' })
   })
 })

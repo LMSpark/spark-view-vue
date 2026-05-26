@@ -93,25 +93,25 @@ function getDataArray(result: { readonly ok: boolean; readonly data?: unknown })
 describe('NodeTree module-semantic 接入(E2E)', () => {
   it('暴露固定知识工具和执行协议工具', () => {
     const { runtime } = buildRuntime()
-    expect(runtime.getLlmTools().map((tool) => tool.function.name)).toEqual([
+    expect(runtime.getLlmTools().map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'queryModules',
       'queryFunctions',
       'guideFunction',
       'guideHumanQuestion',
       'getAttribute',
       'setAttribute',
-      'invokeAction',
       'listChildren',
       'findInstance',
       'describeKind',
-    ])
+      'node-tree_getNode',
+    ]))
   })
 
   it('describeKind 列出 19 个 NodeTree 动作并完整返回 action 元数据', async () => {
     const { runtime, hostContext } = buildRuntime()
     const result = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
     const data = getDataRecord(result)
-    const actions = data['actions']
+    const actions = data['functions']
     expect(Array.isArray(actions)).toBe(true)
     if (!Array.isArray(actions)) throw new Error('actions not array')
     expect(actions).toHaveLength(19)
@@ -125,30 +125,24 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
     }
   })
 
-  it('invokeAction(getNode/countNodes/addNode) 落到真实 SparkNodeTree', async () => {
+  it('node-tree_getNode/countNodes/addNode 落到真实 SparkNodeTree', async () => {
     const { runtime, nodeTree, hostContext } = buildRuntime()
 
-    const getNode = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[demo-page]',
-      actionName: 'getNode',
-      args: { componentId: 'page__0' },
+    const getNode = await runtime.executeTool('node-tree_getNode', {
+      $paths: ['demo-page'],
+      componentId: 'page__0',
     }, hostContext)
     expect(getDataRecord(getNode)['id']).toBe('page__0')
 
-    const countBefore = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[demo-page]',
-      actionName: 'countNodes',
-      args: {},
+    const countBefore = await runtime.executeTool('node-tree_countNodes', {
+      $paths: ['demo-page'],
     }, hostContext)
     expect(countBefore).toMatchObject({ ok: true, data: 1 })
 
-    const added = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[demo-page]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: { type: 'r-text', id: 'applicant-name-field', props: { field: 'applicantName', label: '申请人' } },
-      },
+    const added = await runtime.executeTool('node-tree_addNode', {
+      $paths: ['demo-page'],
+      parentComponentId: 'page__0',
+      node: { type: 'r-text', id: 'applicant-name-field', props: { field: 'applicantName', label: '申请人' } },
     }, hostContext)
     expect(added.ok).toBe(true)
     expect(nodeTree.countNodes()).toBe(2)
@@ -156,20 +150,16 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
 
   it('协议层校验未知 action 与 action paramsSchema', async () => {
     const { runtime, hostContext } = buildRuntime()
-    const unknown = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[demo-page]',
-      actionName: 'noSuchMethod',
-      args: {},
+    const unknown = await runtime.executeTool('node-tree_noSuchMethod', {
+      $paths: ['demo-page'],
     }, hostContext)
     expect(unknown).toMatchObject({
       ok: false,
-      checks: [expect.objectContaining({ code: 'ACTION_NOT_DECLARED' })],
+      checks: [expect.objectContaining({ code: 'FUNCTION_NOT_DECLARED' })],
     })
 
-    const invalidArgs = await runtime.executeTool('invokeAction', {
-      path: '/node-tree[demo-page]',
-      actionName: 'getNode',
-      args: {},
+    const invalidArgs = await runtime.executeTool('node-tree_getNode', {
+      $paths: ['demo-page'],
     }, hostContext)
     expect(invalidArgs.ok).toBe(false)
     if (invalidArgs.ok) throw new Error('expected invalid args')
@@ -178,7 +168,7 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
 })
 
 describe('NodeTree module-semantic 可发现链路', () => {
-  it('listChildren → findInstance → describeKind → invokeAction 使用发现到的实例 id', async () => {
+  it('listChildren → findInstance → describeKind → node-tree_getNode 使用发现到的实例 id', async () => {
     const pageId = 'lmspark/homepage'
     const { runtime, hostContext } = buildRuntime(pageId)
 
@@ -201,18 +191,17 @@ describe('NodeTree module-semantic 可发现链路', () => {
 
     const describeResult = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
     const describeData = getDataRecord(describeResult)
-    const actions = describeData['actions']
-    if (!Array.isArray(actions)) throw new Error('actions not array')
-    const getNode = actions.find((action) => isRecord(action) && action['name'] === 'getNode')
+    const functions = describeData['functions']
+    if (!Array.isArray(functions)) throw new Error('functions not array')
+    const getNode = functions.find((action) => isRecord(action) && action['name'] === 'getNode')
     if (!isRecord(getNode) || !isRecord(getNode['paramsSchema'])) {
       throw new Error('getNode paramsSchema missing')
     }
     expect(getNode['paramsSchema']['additionalProperties']).not.toBe(true)
 
-    const invokeResult = await runtime.executeTool('invokeAction', {
-      path: `/node-tree[${first['id']}]`,
-      actionName: 'getNode',
-      args: { componentId: 'page__0' },
+    const invokeResult = await runtime.executeTool('node-tree_getNode', {
+      $paths: [first['id']],
+      componentId: 'page__0',
     }, hostContext)
     expect(getDataRecord(invokeResult)['type']).toBe('page')
   })

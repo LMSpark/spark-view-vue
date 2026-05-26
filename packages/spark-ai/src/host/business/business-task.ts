@@ -140,21 +140,20 @@ export function createAiHostBusinessTask(
 }
 
 function createRegisteredTaskSystemPrompt(task: AiHostBusinessTask): string {
-  const lines = [
-    '══ AI Host: registered business task ══',
-    `- kindID: ${task.kindID}`,
-    `- businessInstanceId: ${task.target.businessInstanceId}`,
-    `- input(JSON): ${JSON.stringify(task.normalizedInput)}`,
-  ]
-  if (task.orchestration.title !== undefined && task.orchestration.title.trim().length > 0) {
-    lines.push(`- orchestration: ${task.orchestration.title.trim()}`)
+  const promptInput = createRegisteredTaskPromptInput(task)
+  return [
+    `kindID=${task.kindID}; businessInstanceId=${task.target.businessInstanceId}; input=${JSON.stringify(promptInput)}。`,
+  ].join('\n')
+}
+
+function createRegisteredTaskPromptInput(task: AiHostBusinessTask): AiHostBusinessTaskInput {
+  const userMessage = task.orchestration.userMessage.trim()
+  const out: Record<string, LlmJsonValue> = {}
+  for (const [key, value] of Object.entries(task.normalizedInput)) {
+    if (typeof value === 'string' && value.trim() === userMessage) continue
+    out[key] = value
   }
-  if (task.orchestration.readonlySteps !== undefined && task.orchestration.readonlySteps.length > 0) {
-    lines.push(`- readonlySteps: ${task.orchestration.readonlySteps.join(' -> ')}`)
-  }
-  lines.push('- This input has already passed the registered paramsSchema and normalize() pipeline.')
-  lines.push('- Do not replace the registered business identity with a guessed value.')
-  return lines.join('\n')
+  return out
 }
 
 function validateTaskInput(

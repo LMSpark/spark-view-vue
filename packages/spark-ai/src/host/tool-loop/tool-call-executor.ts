@@ -8,7 +8,7 @@
  * │                                                                              │
  * │  执行流程：                                                                   │
  * │    1. 从 transport tool_call 中提取 function.name                            │
- * │    2. 通过 actionOf 回查对应的协议工具名（如 "invokeAction"）                   │
+ * │    2. 通过 actionOf 回查对应的协议工具名（如 "node-tree_getNode"）                │
  * │    3. 解析 JSON 参数字符串 → Record<string, LlmJsonValue>                     │
  * │    4. 调用 registration.runtime.executeTool 执行协议工具                       │
  * │    5. 将 ModuleOperationResult 转换为 AiHostFunctionCallResult                │

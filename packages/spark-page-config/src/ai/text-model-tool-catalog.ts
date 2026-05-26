@@ -15,7 +15,7 @@ import {
 } from '@spark-view/spark-ai/schema'
 import {
   ModuleKind,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
   type ModulePathContext,
@@ -40,7 +40,7 @@ const SCRIPT_SHORT_SIGNATURE_RULE = 'writeScript 中的函数/handler 默认最�
 
 // PAGE_DESIGN_AI_TRACE[page-design-text-model]: pageDesign AI 写 script.js/style.css 的唯一工具目录；清理冗余时不要和 workspace 保存逻辑混在一起。
 // PAGE_DESIGN_REFACTOR_SOURCE[text-model-write-gate]: script/style AI 写入入口；不要把文本覆盖、脚本 API 校验和 workspace 持久化混成一层。
-const TEXT_MODEL_ACTIONS: readonly ModuleActionMetadata[] = [
+const TEXT_MODEL_ACTIONS: readonly ModuleFunctionMetadata[] = [
   {
     name: 'readScript',
     description: '读取 script.js 当前完整文本模型内容。',
@@ -134,19 +134,19 @@ export class PageDesignTextModelModuleKind extends ModuleKind {
       name: 'Page Design Text Model',
       description: '当前页面 script.js/style.css live 文本模型读写。',
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
-      actions: TEXT_MODEL_ACTIONS,
+      functions: TEXT_MODEL_ACTIONS,
       children: [],
     })
     this.service = options.service
     this.contextFactory = options.contextFactory
   }
 
-  protected override runAction(
+  protected override runFunction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    if (this.findAction(actionName) === undefined) {
+    if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
     const context = this.contextFactory(ctx)

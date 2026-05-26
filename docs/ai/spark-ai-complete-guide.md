@@ -182,13 +182,13 @@ LLM 只看到固定知识入口和执行协议工具，不直接看到每个业�
 | 工具 | 用途 |
 | --- | --- |
 | `queryModules` | 查询当前注册的业务/模块知识 |
-| `queryFunctions` | 查询某个 kind 可用动作 |
-| `guideFunction` | 调复杂动作前读取参数、规则和失败模式 |
+| `queryFunctions` | 查询某个 kind 可用函数 |
+| `guideFunction` | 调复杂函数前读取参数、规则和失败模式 |
 | `guideHumanQuestion` | 缺少用户事实时生成反问指南 |
 | `listChildren` | 枚举子实例 |
 | `findInstance` | 按条件定位实例 |
-| `describeKind` | 读取 kind 元数据、action schema、usageRules |
-| `invokeAction` | 统一调用业务 action |
+| `describeKind` | 读取 kind 元数据、function schema、usageRules |
+| `<kind>_<functionName>` | 标准业务函数调用（如 `pageDesign_lifecycle_describeProgress`） |
 | `getAttribute` | 读取注册属性 |
 | `setAttribute` | 写入注册属性 |
 
@@ -199,7 +199,7 @@ queryModules / queryFunctions
   -> guideFunction or describeKind
   -> guideHumanQuestion if facts are missing
   -> listChildren("/") / findInstance("/", kind, query)
-  -> invokeAction(path, actionName, args)
+  -> <kind>_<functionName>({ $paths: [...], ...businessArgs })
   -> read result code/msg/fix
   -> retry with corrected args or ask human
 ```
@@ -213,7 +213,7 @@ queryModules / queryFunctions
 1. 定义稳定 `KIND_ID`。
 2. 写业务 service，service 自管 live state 和领域状态。
 3. 写 root `ModuleKind` 和必要 child `ModuleKind`。
-4. 每个 action 写清 `paramsSchema`、`usageRules`、`failureModes`。
+4. 每个 function 写清 `paramsSchema`、`usageRules`、`failureModes`。
 5. 创建 `ModuleSemanticRuntime` 并 `registerKind()`。
 6. 创建 `createXxxBusinessKindDefinition(options)`。
 7. 在 definition 中声明 `inputContract`。
@@ -319,8 +319,8 @@ Host session.start()
   -> PageDesignService.bootstrap()
   -> LLM receives registered task prompt
   -> findInstance("/", "pageDesign", { id: pageId })
-  -> invokeAction("/pageDesign[pageId]/lifecycle[pageId]", "describeProgress", {})
-  -> invokeAction("/pageDesign[pageId]/lifecycle[pageId]", "describeDesignFlow", { intent: userRequirement })
+  -> pageDesign_lifecycle_describeProgress({ $paths: [pageId, pageId] })
+  -> pageDesign_lifecycle_describeDesignFlow({ $paths: [pageId, pageId], intent: userRequirement })
   -> guideHumanQuestion if business facts are missing
 ```
 

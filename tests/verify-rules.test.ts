@@ -130,7 +130,7 @@ describe('verification rules', () => {
       '  public executeTool(): void {}',
       '  public getAttribute(): void {}',
       '  public setAttribute(): void {}',
-      '  public invokeAction(): void {}',
+      '  public invokeFunction(): void {}',
       '  public listChildren(): void {}',
       '  public findInstance(): void {}',
       '  public describeKind(): void {}',

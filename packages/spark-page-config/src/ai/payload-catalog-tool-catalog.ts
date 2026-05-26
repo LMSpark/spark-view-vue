@@ -8,7 +8,7 @@
 import {
   ModuleKind,
   ModuleParameterPayloadRegistry,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
   type ModulePathContext,
@@ -94,7 +94,7 @@ const RECOMMENDED_PAYLOAD_RANK = new Map(RECOMMENDED_PAYLOAD_ORDER.map((key, ind
 
 // ── LLM 动作声明 ──────────────────────────────────────────
 
-const PAYLOAD_CATALOG_ACTIONS: readonly ModuleActionMetadata[] = [
+const PAYLOAD_CATALOG_ACTIONS: readonly ModuleFunctionMetadata[] = [
   {
     name: 'queryPayloads',
     description: '查询可用于当前页面设计的组件参数荷载目录，支持 category/keyword/key 过滤。',
@@ -206,7 +206,7 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
       name: 'Page Design Payload Catalog',
       description: '当前页面设计参数荷载知识查询，按 moduleKind + payloadRef 路由到已注册 provider。',
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
-      actions: PAYLOAD_CATALOG_ACTIONS,
+      functions: PAYLOAD_CATALOG_ACTIONS,
       children: [],
     })
     this.registry = options.registry ?? createPageDesignPayloadRegistry()
@@ -214,12 +214,12 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
     this.contextFactory = options.contextFactory
   }
 
-  protected override runAction(
+  protected override runFunction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    if (this.findAction(actionName) === undefined) {
+    if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
     const result = runPayloadCatalogAction(this.registry, actionName, args)

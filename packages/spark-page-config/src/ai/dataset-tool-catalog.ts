@@ -24,7 +24,7 @@ import type {
 } from '@spark-view/spark-ai/schema'
 import {
   ModuleKind,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleInstanceRef,
   type ModuleOperationResult,
   type ModulePathContext,
@@ -419,7 +419,7 @@ const DATASET_MUTATING_ACTION_NAMES: ReadonlySet<string> = new Set([
   'clearComputeExpression',
 ])
 
-const DATASET_ACTIONS: readonly ModuleActionMetadata[] = [
+const DATASET_ACTIONS: readonly ModuleFunctionMetadata[] = [
   {
     name: 'export',
     description: '导出当前 DataSet 元数据快照',
@@ -1885,19 +1885,19 @@ export class PageDesignDatasetModuleKind extends ModuleKind {
       name: 'Page Design DataSet',
       description: '当前页面 DataSetCrudTool/pagedata.json 数据空间读写。',
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
-      actions: DATASET_ACTIONS,
+      functions: DATASET_ACTIONS,
       children: [],
     })
     this.service = options.service
     this.contextFactory = options.contextFactory
   }
 
-  protected override async runAction(
+  protected override async runFunction(
     ctx: ModulePathContext,
     actionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    const action = this.findAction(actionName)
+    const action = this.findFunction(actionName)
     if (action === undefined) {
       throw new Error(`dataset action is not declared: ${actionName}`)
     }
@@ -1916,7 +1916,7 @@ export class PageDesignDatasetModuleKind extends ModuleKind {
 }
 
 function createDatasetActionBinding(
-  action: ModuleActionMetadata,
+  action: ModuleFunctionMetadata,
 ): PageDesignServiceActionBinding<DataSetCrudTool> {
   return {
     serviceLabel: action.name,
@@ -1951,7 +1951,7 @@ function isDatasetDirectMethodName(actionName: string): actionName is DataSetCru
   return DATASET_DIRECT_METHOD_NAMES.has(actionName)
 }
 
-function createDatasetActionFixHint(action: ModuleActionMetadata): string {
+function createDatasetActionFixHint(action: ModuleFunctionMetadata): string {
   const parts = [`参数格式: ${JSON.stringify(action.paramsSchema)}`]
   if (action.example !== undefined && isRecord(action.example) && Object.keys(action.example).length > 0) {
     parts.push(`示例: ${JSON.stringify(action.example)}`)

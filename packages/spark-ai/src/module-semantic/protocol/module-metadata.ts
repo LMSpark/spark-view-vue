@@ -2,10 +2,10 @@
  * module-semantic · 模块元数据（声明契约）
  *
  * 定义 ModuleKind 的所有声明式元数据类型。它们是纯数据契约，描述一个业务能力模块
- * "有什么"（属性、动作、荷载、子模块），不包含任何运行时行为。
+ * "有什么"（属性、函数、荷载、子模块），不包含任何运行时行为。
  * 运行时行为由 module-context.ts 中的委托类型承载，通过 ModuleKindOptions 在构造时注入。
  *
- * 依赖顺序：基础标量 → 属性元数据 → 动作元数据 → 荷载元数据 → 构造选项
+ * 依赖顺序：基础标量 → 属性元数据 → 函数元数据 → 荷载元数据 → 构造选项
  */
 
 import type { LlmJsonObject, LlmJsonSchema, LlmJsonSchemaObject, LlmJsonValue } from '../../schema'
@@ -22,8 +22,8 @@ export type { ModuleAttributeAccessor } from './module-context'
 // 一、基础标量类型
 // ============================================================================
 
-/** 动作失败模式：告知 LLM 可能遇到的错误码、发生条件和修复建议 */
-export type ModuleActionFailureMode = Readonly<{
+/** 函数失败模式：告知 LLM 可能遇到的错误码、发生条件和修复建议 */
+export type ModuleFunctionFailureMode = Readonly<{
   /** 错误码（LLM 可见，用于识别失败类型） */
   code: string
   /** 发生条件（自然语言描述何时触发此错误） */
@@ -32,8 +32,8 @@ export type ModuleActionFailureMode = Readonly<{
   fix: string
 }>
 
-/** 动作结果 schema：简单类型名或完整 JSON Schema object */
-export type ModuleActionResultSchema = LlmJsonSchema | LlmJsonObject
+/** 函数结果 schema：简单类型名或完整 JSON Schema object */
+export type ModuleFunctionResultSchema = LlmJsonSchema | LlmJsonObject
 
 // ============================================================================
 // 二、属性元数据
@@ -61,25 +61,25 @@ export type ModuleAttributeMetadata = Readonly<{
 export type ModuleAttributeAccess = Pick<ModuleAttributeMetadata, 'readable' | 'writable'>
 
 // ============================================================================
-// 三、动作元数据
+// 三、函数元数据
 //
-// 描述 ModuleKind 暴露给 LLM 的一个可调用动作。
+// 描述 ModuleKind 暴露给 LLM 的一个可调用函数。
 // 实际执行由 ModuleKindRunner 委托完成。
 // ============================================================================
 
-export type ModuleActionMetadata = Readonly<{
-  /** 动作名（在同一 kind 的 actions 数组中唯一） */
+export type ModuleFunctionMetadata = Readonly<{
+  /** 函数名（在同一 kind 的 functions 数组中唯一） */
   name: string
-  /** 动作说明（LLM 可见） */
+  /** 函数说明（LLM 可见） */
   description: string
   /** 参数 schema（JSON Schema object root，用于 LLM 参数校验） */
   paramsSchema: LlmJsonSchemaObject
   /** 返回值 schema（可选，帮助 LLM 理解返回值结构） */
-  resultSchema?: ModuleActionResultSchema
+  resultSchema?: ModuleFunctionResultSchema
   /** 使用规则（多条，LLM 在调用前阅读） */
   usageRules?: readonly string[]
   /** 失败模式（多条，LLM 在调用失败后参考修复） */
-  failureModes?: readonly ModuleActionFailureMode[]
+  failureModes?: readonly ModuleFunctionFailureMode[]
   /** 调用示例（帮助 LLM 理解参数形状） */
   example?: LlmJsonValue
 }>
@@ -95,8 +95,8 @@ export type ModuleParameterPayloadMetadata = Readonly<{
   payloadRef: string
   /** 该 payload 与当前模块的关系说明 */
   description: string
-  /** 该 payload 服务的 action 名列表；空表示模块级通用 */
-  requiredForActions?: readonly string[]
+  /** 该 payload 服务的函数名列表；空表示模块级通用 */
+  requiredForFunctions?: readonly string[]
 }>
 
 // ============================================================================
@@ -116,15 +116,15 @@ export type ModuleKindOptions = Readonly<{
   parentKind?: string
   /** 属性表（可选，声明 LLM 可读写的一组属性） */
   attributes?: readonly ModuleAttributeMetadata[]
-  /** 动作表（可选，声明 LLM 可调用的一组动作） */
-  actions?: readonly ModuleActionMetadata[]
+  /** 函数表（可选，声明 LLM 可调用的一组函数） */
+  functions?: readonly ModuleFunctionMetadata[]
   /** 参数荷载引用（可选，声明依赖的外部参数指南 provider） */
   payloads?: readonly ModuleParameterPayloadMetadata[]
   /** 子模块 kind 列表（可选，声明允许包含的子模块类型） */
   children?: readonly string[]
   /** 属性读写委托（声明了 attributes 时必填） */
   attributeAccessor?: ModuleAttributeAccessor
-  /** 动作执行委托（未提供时默认返回 ACTION_NOT_IMPLEMENTED） */
+  /** 函数执行委托（未提供时默认返回 FUNCTION_NOT_IMPLEMENTED） */
   runner?: ModuleKindRunner
   /** 子实例列表委托（未提供时默认返回空列表） */
   list?: ModuleChildrenLister

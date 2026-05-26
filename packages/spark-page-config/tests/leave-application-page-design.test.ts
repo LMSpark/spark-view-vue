@@ -74,14 +74,6 @@ function hostContext(): AiHostBusinessRuntimeContext {
   }
 }
 
-function pagePath(): string {
-  return `/pageDesign[${PAGE_ID}]`
-}
-
-function childPath(kind: string): string {
-  return `${pagePath()}/${kind}[${PAGE_ID}]`
-}
-
 function assertOk(result: ToolResult, label: string): void {
   if (result.ok) return
   throw new Error(`${label} failed: ${JSON.stringify(result.checks ?? result)}`)
@@ -123,18 +115,15 @@ describe('请假申请页面设计测试程序', () => {
     )
     expect(pageInstances[0]).toMatchObject({ id: PAGE_ID })
 
-    const bootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: childPath('lifecycle'),
-      actionName: 'bootstrap',
-      args: {},
+    const bootstrap = await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
+      $paths: [PAGE_ID, PAGE_ID],
     }, context)
     expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
 
     const dataPlanningFlow = requireRecordResult(
-      await registration.runtime.executeTool('invokeAction', {
-        path: childPath('lifecycle'),
-        actionName: 'describeDesignFlow',
-        args: { phase: '数据规划' },
+      await registration.runtime.executeTool('pageDesign_lifecycle_describeDesignFlow', {
+        $paths: [PAGE_ID, PAGE_ID],
+        phase: '数据规划',
       }, context),
       'describe data planning flow',
     )
@@ -147,10 +136,9 @@ describe('请假申请页面设计测试程序', () => {
 
     for (const key of ['r-section', 'r-card', 'r-form', 'r-text', 'r-select', 'r-date', 'r-number', 'r-textarea', 'r-button', 'r-table']) {
       const guide = requireRecordResult(
-        await registration.runtime.executeTool('invokeAction', {
-          path: childPath('payload-catalog'),
-          actionName: 'guidePayload',
-          args: { key },
+        await registration.runtime.executeTool('pageDesign_payload-catalog_guidePayload', {
+          $paths: [PAGE_ID, PAGE_ID],
+          key,
         }, context),
         `guide payload ${key}`,
       )
@@ -161,50 +149,47 @@ describe('请假申请页面设计测试程序', () => {
     }
 
     assertOk(
-      await registration.runtime.executeTool('invokeAction', {
-        path: childPath('dataset'),
-        actionName: 'createTable',
-        args: {
-          tableName: LEAVE_REQUESTS_TABLE,
-          resourceType: 'page-data',
-          resourceId: 'hr.leave_requests',
-          businessCategory: 'master',
-          columns: [
-            { name: 'id', type: 'number', label: '申请单号', isPrimaryKey: true, autoIncrement: true },
-            { name: 'applicantName', type: 'string', label: '申请人', required: true, maxLength: 40 },
-            { name: 'leaveType', type: 'string', label: '请假类型', required: true },
-            { name: 'startDate', type: 'date', label: '开始日期', required: true },
-            { name: 'endDate', type: 'date', label: '结束日期', required: true },
-            { name: 'days', type: 'number', label: '请假天数', required: true, min: 0.5 },
-            { name: 'reason', type: 'string', label: '请假事由', required: true, maxLength: 300 },
-            { name: 'status', type: 'string', label: '状态', defaultValue: 'pending' },
-          ],
-          views: {
-            default: {
-              pageSize: 20,
-              rows: [
-                {
-                  id: 0,
-                  applicantName: '',
-                  leaveType: '',
-                  startDate: '',
-                  endDate: '',
-                  days: 1,
-                  reason: '',
-                  status: 'draft',
-                },
-              ],
-              autoCurrentFirst: true,
-              commitMode: 'staged',
-            },
-            pending: {
-              pageSize: 10,
-              rows: [],
-              filterExpression: { field: 'status', op: '==', value: 'pending' },
-              sortExpression: [{ field: 'startDate', direction: 'desc' }],
-              aggregates: {
-                pendingCount: { type: 'count', field: 'id' },
+      await registration.runtime.executeTool('pageDesign_dataset_createTable', {
+        $paths: [PAGE_ID, PAGE_ID],
+        tableName: LEAVE_REQUESTS_TABLE,
+        resourceType: 'page-data',
+        resourceId: 'hr.leave_requests',
+        businessCategory: 'master',
+        columns: [
+          { name: 'id', type: 'number', label: '申请单号', isPrimaryKey: true, autoIncrement: true },
+          { name: 'applicantName', type: 'string', label: '申请人', required: true, maxLength: 40 },
+          { name: 'leaveType', type: 'string', label: '请假类型', required: true },
+          { name: 'startDate', type: 'date', label: '开始日期', required: true },
+          { name: 'endDate', type: 'date', label: '结束日期', required: true },
+          { name: 'days', type: 'number', label: '请假天数', required: true, min: 0.5 },
+          { name: 'reason', type: 'string', label: '请假事由', required: true, maxLength: 300 },
+          { name: 'status', type: 'string', label: '状态', defaultValue: 'pending' },
+        ],
+        views: {
+          default: {
+            pageSize: 20,
+            rows: [
+              {
+                id: 0,
+                applicantName: '',
+                leaveType: '',
+                startDate: '',
+                endDate: '',
+                days: 1,
+                reason: '',
+                status: 'draft',
               },
+            ],
+            autoCurrentFirst: true,
+            commitMode: 'staged',
+          },
+          pending: {
+            pageSize: 10,
+            rows: [],
+            filterExpression: { field: 'status', op: '==', value: 'pending' },
+            sortExpression: [{ field: 'startDate', direction: 'desc' }],
+            aggregates: {
+              pendingCount: { type: 'count', field: 'id' },
             },
           },
         },
@@ -213,29 +198,26 @@ describe('请假申请页面设计测试程序', () => {
     )
 
     assertOk(
-      await registration.runtime.executeTool('invokeAction', {
-        path: childPath('dataset'),
-        actionName: 'createTable',
-        args: {
-          tableName: LEAVE_TYPES_TABLE,
-          resourceType: 'static-data',
-          resourceId: 'leave-type-options',
-          businessCategory: 'reference',
-          columns: [
-            { name: 'value', type: 'string', label: '类型编码', isPrimaryKey: true },
-            { name: 'label', type: 'string', label: '类型名称', required: true },
-          ],
-          views: {
-            default: {
-              rows: [
-                { value: 'annual', label: '年假' },
-                { value: 'sick', label: '病假' },
-                { value: 'personal', label: '事假' },
-                { value: 'compensatory', label: '调休' },
-              ],
-              valueField: 'value',
-              labelField: 'label',
-            },
+      await registration.runtime.executeTool('pageDesign_dataset_createTable', {
+        $paths: [PAGE_ID, PAGE_ID],
+        tableName: LEAVE_TYPES_TABLE,
+        resourceType: 'static-data',
+        resourceId: 'leave-type-options',
+        businessCategory: 'reference',
+        columns: [
+          { name: 'value', type: 'string', label: '类型编码', isPrimaryKey: true },
+          { name: 'label', type: 'string', label: '类型名称', required: true },
+        ],
+        views: {
+          default: {
+            rows: [
+              { value: 'annual', label: '年假' },
+              { value: 'sick', label: '病假' },
+              { value: 'personal', label: '事假' },
+              { value: 'compensatory', label: '调休' },
+            ],
+            valueField: 'value',
+            labelField: 'label',
           },
         },
       }, context),
@@ -243,12 +225,10 @@ describe('请假申请页面设计测试程序', () => {
     )
 
     assertOk(
-      await registration.runtime.executeTool('invokeAction', {
-        path: childPath('node-tree'),
-        actionName: 'addNodes',
-        args: {
-          parentComponentId: 'spark-page-root',
-          nodes: [
+      await registration.runtime.executeTool('pageDesign_node-tree_addNodes', {
+        $paths: [PAGE_ID, PAGE_ID],
+        parentComponentId: 'spark-page-root',
+        nodes: [
             {
               type: 'r-section',
               id: 'leave-summary-section',
@@ -367,22 +347,18 @@ describe('请假申请页面设计测试程序', () => {
               ],
             },
           ],
-        },
       }, context),
       'create leave request page nodes',
     )
 
     assertOk(
-      await registration.runtime.executeTool('invokeAction', {
-        path: childPath('text-model'),
-        actionName: 'writeStyle',
-        args: {
-          content: [
-            '.leave-summary-grid { display: grid; gap: 16px; }',
-            '.leave-summary-grid [data-component-id="pending-count-card"] { min-width: 0; }',
-            '.leave-form-section { max-width: 960px; }',
-          ].join('\n'),
-        },
+      await registration.runtime.executeTool('pageDesign_text-model_writeStyle', {
+        $paths: [PAGE_ID, PAGE_ID],
+        content: [
+          '.leave-summary-grid { display: grid; gap: 16px; }',
+          '.leave-summary-grid [data-component-id="pending-count-card"] { min-width: 0; }',
+          '.leave-form-section { max-width: 960px; }',
+        ].join('\n'),
       }, context),
       'write leave page style',
     )
@@ -444,10 +420,8 @@ describe('请假申请页面设计测试程序', () => {
     expect(parsedDataSet.getView(LEAVE_TYPES_TABLE, 'default')?.rows).toHaveLength(4)
 
     const style = requireRecordResult(
-      await registration.runtime.executeTool('invokeAction', {
-        path: childPath('text-model'),
-        actionName: 'readStyle',
-        args: {},
+      await registration.runtime.executeTool('pageDesign_text-model_readStyle', {
+        $paths: [PAGE_ID, PAGE_ID],
       }, context),
       'read leave page style',
     )

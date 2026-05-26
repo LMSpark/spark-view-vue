@@ -7,7 +7,7 @@
  * │    · ModuleKindRegistry    — kind 注册表（启动期注册，运行期只读）             │
  * │    · Navigator             — 路径导航 + 发现工具（listChildren/findInstance）   │
  * │    · AttributeAccessor     — 属性读写（getAttribute/setAttribute）            │
- * │    · ActionInvoker         — 动作调用（invokeAction + 参数校验）               │
+ * │    · FunctionInvoker         — 动作调用（invokeFunction + 参数校验）               │
  * │    · ProtocolToolGenerator — 知识工具 + 执行协议工具规约生成（LLM 可见）      │
  * │    · ProtocolToolRouter    — 工具调用路由（toolName → 具体操作）               │
  * │                                                                              │
@@ -21,7 +21,7 @@
  */
 
 import type { LlmJsonValue } from '../../schema'
-import { ActionInvoker } from '../internal/action-invoker'
+import { FunctionInvoker } from '../internal/function-invoker'
 import { AttributeAccessor } from '../internal/attribute-accessor'
 import { ModuleKindRegistry } from '../internal/module-kind-registry'
 import { Navigator, type ModuleKindDescription } from '../internal/navigator'
@@ -43,7 +43,7 @@ import type {
   ModuleFindInstanceRequest,
   ModuleHostContext,
   ModuleInstanceRef,
-  ModuleInvokeActionRequest,
+  ModuleFunctionInvokeRequest,
   ModuleKind,
   ModuleOperationResult,
   ModulePath,
@@ -61,7 +61,7 @@ export type { ProtocolToolArgs } from './protocol-tool-args'
 export class ModuleSemanticRuntime {
   private readonly kinds: ModuleKindRegistry
   private readonly attributes: AttributeAccessor
-  private readonly actions: ActionInvoker
+  private readonly functions: FunctionInvoker
   private readonly navigator: Navigator
   private readonly toolGenerator: ProtocolToolGenerator
   private readonly toolRouter: ProtocolToolRouter
@@ -71,10 +71,10 @@ export class ModuleSemanticRuntime {
     this.kinds = new ModuleKindRegistry()
     this.navigator = new Navigator(this.kinds)
     this.attributes = new AttributeAccessor(this.navigator)
-    this.actions = new ActionInvoker(this.navigator)
+    this.functions = new FunctionInvoker(this.navigator)
     this.knowledge = new ModuleSemanticKnowledgeProjector(this.kinds)
-    this.toolGenerator = new ProtocolToolGenerator()
-    this.toolRouter = new ProtocolToolRouter(this.attributes, this.actions, this.navigator, this.knowledge)
+    this.toolGenerator = new ProtocolToolGenerator(this.kinds)
+    this.toolRouter = new ProtocolToolRouter(this.attributes, this.functions, this.navigator, this.knowledge)
   }
 
   /* ── 注册 ──────────────────────────────────────────────── */
@@ -116,11 +116,11 @@ export class ModuleSemanticRuntime {
     return this.attributes.set(request)
   }
 
-  /** 直接调用动作 */
-  public async invokeAction(
-    request: ModuleInvokeActionRequest,
+  /** 直接调用函数 */
+  public async invokeFunction(
+    request: ModuleFunctionInvokeRequest,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    return this.actions.invoke(request)
+    return this.functions.invoke(request)
   }
 
   /** 直接列出子实例 */

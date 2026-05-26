@@ -6,7 +6,7 @@
  */
 
 import type { LlmJsonSchemaObject, LlmJsonValue } from '../../schema'
-import type { ModuleActionFailureMode } from '../protocol'
+import type { ModuleFunctionFailureMode } from '../protocol'
 
 export type ModuleParameterPayloadQueryFilter = Readonly<{
   /** 关联模块 kind。注册表级查询可用；provider 内部通常忽略。 */
@@ -62,7 +62,7 @@ export type ModuleParameterPayloadGuide = Readonly<{
   /** 使用规则、前置条件或调用顺序提示。 */
   usageRules?: readonly string[]
   /** 已知失败模式，供 LLM 规划修复动作。 */
-  failureModes?: readonly ModuleActionFailureMode[]
+  failureModes?: readonly ModuleFunctionFailureMode[]
   /** provider 自定义指南字段，调用方可原样展示。 */
   metadata?: Readonly<Record<string, LlmJsonValue>>
 }> & Readonly<Record<string, unknown>>

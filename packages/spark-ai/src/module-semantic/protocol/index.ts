@@ -46,9 +46,9 @@ export type {
 } from './module-context'
 
 export type {
-  ModuleActionFailureMode,
-  ModuleActionMetadata,
-  ModuleActionResultSchema,
+  ModuleFunctionFailureMode,
+  ModuleFunctionMetadata,
+  ModuleFunctionResultSchema,
   ModuleAttributeAccessor,
   ModuleAttributeAccess,
   ModuleAttributeMetadata,
@@ -58,7 +58,7 @@ export type {
 
 export type {
   ModuleFindInstanceRequest,
-  ModuleInvokeActionRequest,
+  ModuleFunctionInvokeRequest,
   ModuleSetAttributeRequest,
 } from './module-request'
 

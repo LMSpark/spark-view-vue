@@ -15,7 +15,7 @@
  *   - 根级 findInstance 使用 ROOT_SEGMENT_SENTINEL 作为占位 context。
  *   - describeKind 全量返回 attributes/actions/children，不剥离任何字段。
  *
- * 【消费方】ModuleSemanticRuntime（直接调用）、ActionInvoker、AttributeAccessor
+ * 【消费方】ModuleSemanticRuntime（直接调用）、FunctionInvoker、AttributeAccessor
  *
  * ═══════════════════════════════════════════════════════════════
  * LLM 发现流程（典型时序）：
@@ -23,7 +23,7 @@
  *   1. LLM 调用 listChildren("/") → 得到已注册 kind 名单
  *   2. LLM 调用 findInstance("/", "school", { label: "建国" }) → 拿到具体实例 id
  *   3. LLM 拼接路径 /school[jianguo]/...
- *   4. 后续操作（invokeAction / getAttribute）由 Navigator.navigate 校验路径有效性
+ *   4. 后续操作（getAttribute / 标准 function tool）由 Navigator.navigate 校验路径有效性
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -31,7 +31,7 @@ import {
   ModuleCheckEntry,
   ModuleOperationResult,
   ModulePathSegment,
-  type ModuleActionMetadata,
+  type ModuleFunctionMetadata,
   type ModuleAttributeMetadata,
   type ModuleFindInstanceRequest,
   type ModuleHostContext,
@@ -59,7 +59,7 @@ export type ModuleKindDescription = Readonly<{
   description: string
   parentKind?: string
   attributes: readonly ModuleAttributeMetadata[]
-  actions: readonly ModuleActionMetadata[]
+  functions: readonly ModuleFunctionMetadata[]
   payloads: ModuleKind['payloads']
   children: readonly string[]
 }>
@@ -291,7 +291,7 @@ function describeKindMeta(moduleKind: ModuleKind): ModuleKindDescription {
     description: moduleKind.description,
     ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
     attributes: moduleKind.attributes,
-    actions: moduleKind.actions,
+    functions: moduleKind.functions,
     payloads: moduleKind.payloads,
     children: moduleKind.children,
   }

@@ -4,12 +4,12 @@
  * ModuleKind 是协议的中心抽象，每个实例描述一个业务能力模块的元数据和运行时行为。
  *
  * 三大职责：
- *   1. 元数据声明 — attributes / actions / payloads / children
- *   2. 运行时委托 — attributeAccessor / actionRunner / childLister / instanceFinder
+ *   1. 元数据声明 — attributes / functions / payloads / children
+ *   2. 运行时委托 — attributeAccessor / functionRunner / childLister / instanceFinder
  *   3. 协议级校验 — fail-fast 构造 / JSON Schema 校验 / JSON 值规整
  *
  * LLM 执行流程：
- *   describeKind → listChildren / findInstance → getAttribute / setAttribute / invokeAction
+ *   describeKind → listChildren / findInstance → getAttribute / setAttribute / invokeFunction
  *
  * 文件结构：内部辅助 → ModuleKind class → 规范化函数 → 错误工厂
  */
@@ -21,7 +21,7 @@ import {
   type LlmParamValidationResult,
 } from '../../schema'
 import type {
-  ModuleActionMetadata,
+  ModuleFunctionMetadata,
   ModuleAttributeMetadata,
   ModuleKindOptions,
   ModuleParameterPayloadMetadata,
@@ -46,7 +46,7 @@ import { ModuleCheckEntry, ModuleOperationResult } from './module-operation'
  * 业务方 runner 可返回的原始格式。
  * 由 serviceResultToOperationResult 投影为标准 ModuleOperationResult。
  */
-type ModuleActionServiceResult =
+type ModuleFunctionServiceResult =
   | { readonly ok: true; readonly data?: unknown; readonly summary?: string }
   | { readonly ok: false; readonly code: string; readonly msg: string; readonly fix?: string }
 
@@ -89,17 +89,17 @@ export class ModuleKind {
   public readonly description: string
   public readonly parentKind?: string
   public readonly attributes: readonly ModuleAttributeMetadata[]
-  public readonly actions: readonly ModuleActionMetadata[]
+  public readonly functions: readonly ModuleFunctionMetadata[]
   public readonly payloads: readonly ModuleParameterPayloadMetadata[]
   public readonly children: readonly string[]
 
   // name → metadata 索引（O(1) Map 查找，避免数组遍历）
   private readonly moduleAttributeByName: ReadonlyMap<string, ModuleAttributeMetadata>
-  private readonly moduleActionByName: ReadonlyMap<string, ModuleActionMetadata>
+  private readonly moduleFunctionByName: ReadonlyMap<string, ModuleFunctionMetadata>
 
   // 运行时委托（构造后不可变）
   private readonly attributeAccessor: ModuleAttributeAccessor
-  private readonly actionRunner: ModuleKindRunner
+  private readonly functionRunner: ModuleKindRunner
   private readonly childLister: ModuleChildrenLister
   private readonly instanceFinder: ModuleInstanceFinder
 
@@ -117,8 +117,8 @@ export class ModuleKind {
     }
     this.attributes = normalizeAttributeMetadata(options.attributes ?? [], kind)
     this.moduleAttributeByName = createNamedMap(this.attributes, 'attribute')
-    this.actions = normalizeActionMetadata(options.actions ?? [], kind)
-    this.moduleActionByName = createNamedMap(this.actions, 'action')
+    this.functions = normalizeFunctionMetadata(options.functions ?? [], kind)
+    this.moduleFunctionByName = createNamedMap(this.functions, 'function')
     this.payloads = normalizePayloadMetadata(options.payloads ?? [], kind)
     this.children = normalizeChildKinds(options.children ?? [], kind)
 
@@ -129,7 +129,7 @@ export class ModuleKind {
 
     // 第三阶段：填充默认委托
     this.attributeAccessor = options.attributeAccessor ?? EMPTY_ATTRIBUTE_ACCESSOR
-    this.actionRunner = options.runner ?? ((_ctx, actionName) => actionNotImplemented(this.kind, actionName))
+    this.functionRunner = options.runner ?? ((_ctx, functionName) => functionNotImplemented(this.kind, functionName))
     this.childLister = options.list ?? (() => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]))
     this.instanceFinder = options.find ?? ((ctx, childKind) => {
       if (childKind !== this.kind || ctx.segments.length !== 0) {
@@ -147,9 +147,9 @@ export class ModuleKind {
     return this.moduleAttributeByName.get(attrName)
   }
 
-  /** 按 name 查找动作元数据。供 Navigator、describeKind 和内部校验使用。 */
-  public findAction(actionName: string): ModuleActionMetadata | undefined {
-    return this.moduleActionByName.get(actionName)
+  /** 按 name 查找函数元数据。供 Navigator、describeKind 和内部校验使用。 */
+  public findFunction(functionName: string): ModuleFunctionMetadata | undefined {
+    return this.moduleFunctionByName.get(functionName)
   }
 
   // ── 属性读取（5 步校验链：声明 → 可读 → 委托读取 → JSON 序列化 → schema 校验）──
@@ -237,41 +237,41 @@ export class ModuleKind {
     }
   }
 
-  // ── 动作调用（3 步校验链：声明 → 参数 schema 校验 → 委托执行）──
+  // ── 函数调用（3 步校验链：声明 → 参数 schema 校验 → 委托执行）──
 
-  public async invokeAction(
+  public async invokeFunction(
     ctx: ModulePathContext,
-    actionName: string,
+    functionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
-    const action = this.findAction(actionName)
-    if (action === undefined) {
-      return actionNotDeclared(this.kind, actionName)
+    const fn = this.findFunction(functionName)
+    if (fn === undefined) {
+      return functionNotDeclared(this.kind, functionName)
     }
 
-    const validation = LlmSchemaValidator.validateLlmDeserializedParams(args, action.paramsSchema)
+    const validation = LlmSchemaValidator.validateLlmDeserializedParams(args, fn.paramsSchema)
     if (!validation.ok) {
       return schemaValidationFailed(
-        `${this.kind}.${actionName} 参数`,
+        `${this.kind}.${functionName} 参数`,
         validation.issues,
-        '请按该 action 在 describeKind 中声明的 paramsSchema 调整参数后重试。',
+        '请按该函数在 describeKind 中声明的 paramsSchema 调整参数后重试。',
       )
     }
 
     try {
-      return await this.runAction(ctx, actionName, args)
+      return await this.runFunction(ctx, functionName, args)
     } catch (error: unknown) {
-      return actionExecuteError(error)
+      return functionExecuteError(error)
     }
   }
 
   /** 受保护的 runner 入口。子类可覆盖以添加拦截/日志/审计逻辑。 */
-  protected runAction(
+  protected runFunction(
     ctx: ModulePathContext,
-    actionName: string,
+    functionName: string,
     args: Readonly<Record<string, LlmJsonValue>>,
   ): ModuleKindOperation<LlmJsonValue> {
-    return this.actionRunner(ctx, actionName, args)
+    return this.functionRunner(ctx, functionName, args)
   }
 
   // ── 子实例操作 ──
@@ -343,7 +343,7 @@ export class ModuleKind {
    * 将业务方 { ok, data/code/msg/fix } 格式投影为标准 ModuleOperationResult。
    * 成功时 summary → info 级 check；失败时 code/msg/fix → error 级 check。
    */
-  protected serviceResultToOperationResult(result: ModuleActionServiceResult): ModuleOperationResult<LlmJsonValue> {
+  protected serviceResultToOperationResult(result: ModuleFunctionServiceResult): ModuleOperationResult<LlmJsonValue> {
     if (result.ok) {
       return this.okJson(
         result.data,
@@ -511,25 +511,25 @@ function normalizeAttributeMetadata(
   }))
 }
 
-// ── 动作元数据规范化 ──
+// ── 函数元数据规范化 ──
 
-function normalizeActionMetadata(
-  actions: readonly ModuleActionMetadata[],
+function normalizeFunctionMetadata(
+  functions: readonly ModuleFunctionMetadata[],
   ownKind: string,
-): readonly ModuleActionMetadata[] {
-  return actions.map((action) => ({
-    name: normalizeRequiredText(action.name, `action name for "${ownKind}"`),
+): readonly ModuleFunctionMetadata[] {
+  return functions.map((fn) => ({
+    name: normalizeRequiredText(fn.name, `function name for "${ownKind}"`),
     description: normalizeRequiredText(
-      action.description,
-      `action "${action.name}" description for "${ownKind}"`,
+      fn.description,
+      `function "${fn.name}" description for "${ownKind}"`,
     ),
-    paramsSchema: action.paramsSchema,
-    ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
-    ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
-    ...(action.failureModes === undefined
+    paramsSchema: fn.paramsSchema,
+    ...(fn.resultSchema === undefined ? {} : { resultSchema: fn.resultSchema }),
+    ...(fn.usageRules === undefined ? {} : { usageRules: [...fn.usageRules] }),
+    ...(fn.failureModes === undefined
       ? {}
-      : { failureModes: action.failureModes.map((mode) => ({ ...mode })) }),
-    ...(action.example === undefined ? {} : { example: action.example }),
+      : { failureModes: fn.failureModes.map((mode) => ({ ...mode })) }),
+    ...(fn.example === undefined ? {} : { example: fn.example }),
   }))
 }
 
@@ -550,8 +550,8 @@ function normalizePayloadMetadata(
       payload.description,
       `payloadRef "${payloadRef}" description for "${ownKind}"`,
     )
-    const requiredForActions = normalizePayloadActionNames(
-      payload.requiredForActions ?? [],
+    const requiredForFunctions = normalizePayloadFunctionNames(
+      payload.requiredForFunctions ?? [],
       ownKind,
       payloadRef,
     )
@@ -559,22 +559,22 @@ function normalizePayloadMetadata(
     out.push({
       payloadRef,
       description,
-      ...(requiredForActions.length === 0 ? {} : { requiredForActions }),
+      ...(requiredForFunctions.length === 0 ? {} : { requiredForFunctions }),
     })
   }
   return out
 }
 
-/** 荷载关联动作名去重，fail-fast 拒绝空名/重复名 */
-function normalizePayloadActionNames(
-  actionNames: readonly string[],
+/** 荷载关联函数名去重，fail-fast 拒绝空名/重复名 */
+function normalizePayloadFunctionNames(
+  functionNames: readonly string[],
   ownKind: string,
   payloadRef: string,
 ): readonly string[] {
   return normalizeRequiredUniqueTexts({
-    values: actionNames,
-    field: `payload action for "${payloadRef}" on "${ownKind}"`,
-    duplicate: (actionName) => `duplicate payload action "${actionName}" for "${payloadRef}" on "${ownKind}"`,
+    values: functionNames,
+    field: `payload function for "${payloadRef}" on "${ownKind}"`,
+    duplicate: (functionName) => `duplicate payload function "${functionName}" for "${payloadRef}" on "${ownKind}"`,
   })
 }
 
@@ -655,23 +655,23 @@ function schemaValidationFailed(
   return ModuleOperationResult.fail([summary, ...details])
 }
 
-// ── 动作相关错误 ──
+// ── 函数相关错误 ──
 
-/** 动作未实现：runner 未提供或不识别该 actionName */
-function actionNotImplemented(kind: string, actionName: string): ModuleOperationResult<LlmJsonValue> {
+/** 函数未实现：runner 未提供或不识别该 functionName */
+function functionNotImplemented(kind: string, functionName: string): ModuleOperationResult<LlmJsonValue> {
   return ModuleOperationResult.failCode(
-    'ACTION_NOT_IMPLEMENTED',
-    `${kind} 未注册动作 "${actionName}"`,
-    '请检查该 ModuleKind 构造期 action 委托是否实现了该 actionName。',
+    'FUNCTION_NOT_IMPLEMENTED',
+    `${kind} 未注册函数 "${functionName}"`,
+    '请检查该 ModuleKind 构造期 runner 委托是否实现了该 functionName。',
   )
 }
 
-/** 动作未声明：kind 的 actions 表中找不到该 actionName */
-function actionNotDeclared(kind: string, actionName: string): ModuleOperationResult<never> {
+/** 函数未声明：kind 的 functions 表中找不到该 functionName */
+function functionNotDeclared(kind: string, functionName: string): ModuleOperationResult<never> {
   return ModuleOperationResult.failCode(
-    'ACTION_NOT_DECLARED',
-    `kind "${kind}" 未声明动作 "${actionName}"`,
-    '可调用 describeKind 查看该 kind 的动作表。',
+    'FUNCTION_NOT_DECLARED',
+    `kind "${kind}" 未声明函数 "${functionName}"`,
+    '可调用 describeKind 查看该 kind 的函数表。',
   )
 }
 
@@ -724,11 +724,11 @@ function attributeWriteFailed(kind: string, attrName: string, error: unknown): M
   )
 }
 
-/** 动作执行异常：actionRunner 抛出未捕获异常时统一包装 */
-function actionExecuteError(error: unknown): ModuleOperationResult<LlmJsonValue> {
+/** 函数执行异常：functionRunner 抛出未捕获异常时统一包装 */
+function functionExecuteError(error: unknown): ModuleOperationResult<LlmJsonValue> {
   return ModuleOperationResult.failCode(
-    'ACTION_EXECUTE_ERROR',
+    'FUNCTION_EXECUTE_ERROR',
     error instanceof Error ? error.message : String(error),
-    '检查动作 runner 实现；业务可捕获异常后返回更具体的 OperationResult。',
+    '检查函数 runner 实现；业务可捕获异常后返回更具体的 OperationResult。',
   )
 }

@@ -39,6 +39,7 @@ spark-ai-server/.env.java
 data/sparkdb.mv.db
 /data/
 temp-*.json
+temp-*.txt
 temp-*.cjs
 temp-*.mts
 temp-catalog-per-comp/

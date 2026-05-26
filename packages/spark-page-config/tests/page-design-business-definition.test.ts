@@ -99,22 +99,22 @@ function getArray(result: { readonly ok: boolean; readonly data?: unknown }): un
 }
 
 function expectActionMetadataComplete(describeData: Record<string, unknown>): void {
-  const actions = describeData['actions']
-  if (!Array.isArray(actions)) throw new Error('actions not array')
-  for (const action of actions) {
-    if (!isRecord(action)) throw new Error('action not record')
-    expect(action).toHaveProperty('paramsSchema')
-    expect(action).toHaveProperty('resultSchema')
-    expect(action).toHaveProperty('usageRules')
-    expect(action).toHaveProperty('failureModes')
-    expect(action).toHaveProperty('example')
+  const functions = describeData['functions']
+  if (!Array.isArray(functions)) throw new Error('functions not array')
+  for (const fn of functions) {
+    if (!isRecord(fn)) throw new Error('function not record')
+    expect(fn).toHaveProperty('paramsSchema')
+    expect(fn).toHaveProperty('resultSchema')
+    expect(fn).toHaveProperty('usageRules')
+    expect(fn).toHaveProperty('failureModes')
+    expect(fn).toHaveProperty('example')
   }
 }
 
 function actionNames(describeData: Record<string, unknown>): string[] {
-  const actions = describeData['actions']
-  if (!Array.isArray(actions)) throw new Error('actions not array')
-  return actions.map((action) => isRecord(action) && typeof action['name'] === 'string' ? action['name'] : '')
+  const functions = describeData['functions']
+  if (!Array.isArray(functions)) throw new Error('functions not array')
+  return functions.map((fn) => isRecord(fn) && typeof fn['name'] === 'string' ? fn['name'] : '')
 }
 
 describe('pageDesign host business registration', () => {
@@ -147,19 +147,22 @@ describe('pageDesign host business registration', () => {
     const started = await startRegistrationSession(registration, context)
 
     expect(registration.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
-    expect(registration.description).toBe('单页面四文件编辑模块：rule.json、pagedata.json、script.js、style.css。')
-    expect(started.tools.map((tool) => tool.function.name)).toEqual([
+    expect(registration.description).toBe('页面四文件编辑。')
+    expect(started.tools.map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'queryModules',
       'queryFunctions',
       'guideFunction',
       'guideHumanQuestion',
       'getAttribute',
       'setAttribute',
-      'invokeAction',
       'listChildren',
       'findInstance',
       'describeKind',
-    ])
+      'pageDesign_lifecycle_bootstrap',
+      'pageDesign_text-model_writeScript',
+      'pageDesign_payload-catalog_queryPayloads',
+      'pageDesign_node-tree_countNodes',
+    ]))
 
     const listed = await registration.runtime.executeTool('listChildren', { path: '/' }, context)
     const ids = getArray(listed).map((entry) => isRecord(entry) ? entry['id'] : null)
@@ -211,7 +214,7 @@ describe('pageDesign host business registration', () => {
       {
         payloadRef: 'spark.component',
         description: 'SparkNode 组件 props 参数目录；LLM 写目录组件前必须显式 guidePayload，node-tree 写入时也会按 type 自动提取指南并兜底校验 props。',
-        requiredForActions: ['addNode', 'addNodes', 'replaceNode', 'replaceNodes', 'setProps', 'setPropsBatch'],
+        requiredForFunctions: ['addNode', 'addNodes', 'replaceNode', 'replaceNodes', 'setProps', 'setPropsBatch'],
       },
     ])
   })
@@ -254,13 +257,16 @@ describe('pageDesign host business registration', () => {
       userRequirement: '实现请假申请页面',
     })
     expect(request.historyMsgs).toEqual([{ role: 'user', content: '实现请假申请页面' }])
-    expect(request.systemPrompt).toContain('AI Host: registered business task')
-    expect(request.systemPrompt).toContain('kindID: pageDesign')
+    expect(request.systemPrompt).not.toContain('AI Host 任务输入')
+    expect(request.systemPrompt).toContain('kindID=pageDesign')
     expect(request.systemPrompt).toContain('"pageId":"page-designer"')
-    expect(request.systemPrompt).toContain('inputContract 已校验输入')
-    expect(request.systemPrompt).toContain('describeProgress')
-    expect(request.systemPrompt).toContain('describeDesignFlow')
-    expect(request.systemPrompt).toContain('常规流程从 describeProgress 开始')
+    expect(request.systemPrompt).toContain('首轮仅 tool_call')
+    expect(request.systemPrompt).toContain('findInstance({"path":"/","childKind":"pageDesign","query":{"id":"page-designer"}})')
+    expect(request.systemPrompt).toContain('无正文')
+    expect(request.systemPrompt).toContain('Host 返回 ref.id 后')
+    expect(request.systemPrompt).toContain('pageDesign_lifecycle_describeProgress')
+    expect(request.systemPrompt).toContain('pageDesign_lifecycle_describeDesignFlow')
+    expect(request.systemPrompt).toContain('intent: messages[0].content')
   })
 
   it('rejects pageDesign task inputs that do not satisfy the registered schema', () => {
@@ -279,49 +285,43 @@ describe('pageDesign host business registration', () => {
     const context = hostContext('page-designer')
     await startRegistrationSession(registration, context)
 
-    const bootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/lifecycle[page-designer]',
-      actionName: 'bootstrap',
-      args: {},
+    const bootstrap = await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
+      $paths: ['page-designer', 'page-designer'],
     }, context)
     expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
 
-    const designFlow = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/lifecycle[page-designer]',
-      actionName: 'describeDesignFlow',
-      args: { phase: '入口', afterStep: 10 },
+    const designFlow = await registration.runtime.executeTool('pageDesign_lifecycle_describeDesignFlow', {
+      $paths: ['page-designer', 'page-designer'],
+      phase: '入口',
+      afterStep: 10,
     }, context)
     expect(resultStepCount(getRecord(designFlow))).toBe(10)
 
-    const writeScript = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/text-model[page-designer]',
-      actionName: 'writeScript',
-      args: { content: 'export default { mounted() {} }' },
+    const writeScript = await registration.runtime.executeTool('pageDesign_text-model_writeScript', {
+      $paths: ['page-designer', 'page-designer'],
+      content: 'export default { mounted() {} }',
     }, context)
     expect(writeScript.ok).toBe(true)
     expect(reads().script).toBe('export default { mounted() {} }')
 
-    const longSignatureScript = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/text-model[page-designer]',
-      actionName: 'writeScript',
-      args: { content: 'function handleSubmit(form, row, table, page) { return form }' },
+    const longSignatureScript = await registration.runtime.executeTool('pageDesign_text-model_writeScript', {
+      $paths: ['page-designer', 'page-designer'],
+      content: 'function handleSubmit(form, row, table, page) { return form }',
     }, context)
     expect(longSignatureScript.ok).toBe(false)
     expect(longSignatureScript.checks?.[0]?.code).toBe('INVALID_SCRIPT_RUNTIME_API')
     expect(longSignatureScript.checks?.[0]?.message).toContain('长位置参数函数签名')
     expect(reads().script).toBe('export default { mounted() {} }')
 
-    const readScript = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/text-model[page-designer]',
-      actionName: 'readScript',
-      args: {},
+    const readScript = await registration.runtime.executeTool('pageDesign_text-model_readScript', {
+      $paths: ['page-designer', 'page-designer'],
     }, context)
     expect(readScript).toMatchObject({ ok: true, data: { content: 'export default { mounted() {} }' } })
 
-    const payloads = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
-      actionName: 'queryPayloads',
-      args: { key: 'r-button', limit: 1 },
+    const payloads = await registration.runtime.executeTool('pageDesign_payload-catalog_queryPayloads', {
+      $paths: ['page-designer', 'page-designer'],
+      key: 'r-button',
+      limit: 1,
     }, context)
     const payloadCatalog = getRecord(payloads)
     expect(payloadCatalog).toMatchObject({
@@ -335,10 +335,9 @@ describe('pageDesign host business registration', () => {
     expect(payloadItems[0]['moduleKind']).toBe('node-tree')
     expect(payloadItems[0]['payloadRef']).toBe('spark.component')
 
-    const payloadGuide = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
-      actionName: 'guidePayload',
-      args: { key: 'r-button' },
+    const payloadGuide = await registration.runtime.executeTool('pageDesign_payload-catalog_guidePayload', {
+      $paths: ['page-designer', 'page-designer'],
+      key: 'r-button',
     }, context)
     const payloadGuideData = getRecord(payloadGuide)
     expect(payloadGuideData).toMatchObject({
@@ -358,24 +357,24 @@ describe('pageDesign host business registration', () => {
     expect(paramsSchema['properties']).toHaveProperty('action')
     expect(paramsSchema['properties']).toHaveProperty('label')
 
-    const displayPayloads = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
-      actionName: 'queryPayloads',
-      args: { key: 'display-statistic', limit: 1 },
+    const displayPayloads = await registration.runtime.executeTool('pageDesign_payload-catalog_queryPayloads', {
+      $paths: ['page-designer', 'page-designer'],
+      key: 'display-statistic',
+      limit: 1,
     }, context)
     expect(resultItemCount(getRecord(displayPayloads))).toBe(1)
 
-    const displayGuide = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
-      actionName: 'guidePayload',
-      args: { key: 'display-statistic' },
+    const displayGuide = await registration.runtime.executeTool('pageDesign_payload-catalog_guidePayload', {
+      $paths: ['page-designer', 'page-designer'],
+      key: 'display-statistic',
     }, context)
     expect(displayGuide.ok).toBe(true)
 
-    const recommendedFields = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
-      actionName: 'queryPayloads',
-      args: { category: 'field', configurableOnly: true, limit: 5 },
+    const recommendedFields = await registration.runtime.executeTool('pageDesign_payload-catalog_queryPayloads', {
+      $paths: ['page-designer', 'page-designer'],
+      category: 'field',
+      configurableOnly: true,
+      limit: 5,
     }, context)
     const recommendedFieldCatalog = getRecord(recommendedFields)
     const fieldItems = recommendedFieldCatalog['items']
@@ -389,17 +388,13 @@ describe('pageDesign host business registration', () => {
     ])
     expect(fieldItems.every((item) => isRecord(item) && item['configurable'] === true)).toBe(true)
 
-    const countNodes = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'countNodes',
-      args: {},
+    const countNodes = await registration.runtime.executeTool('pageDesign_node-tree_countNodes', {
+      $paths: ['page-designer', 'page-designer'],
     }, context)
     expect(countNodes).toMatchObject({ ok: true, data: 1 })
 
-    const listTables = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/dataset[page-designer]',
-      actionName: 'listTables',
-      args: {},
+    const listTables = await registration.runtime.executeTool('pageDesign_dataset_listTables', {
+      $paths: ['page-designer', 'page-designer'],
     }, context)
     expect(listTables).toMatchObject({ ok: true, data: [] })
   })
@@ -410,54 +405,45 @@ describe('pageDesign host business registration', () => {
     const context = hostContext('page-designer')
     await startRegistrationSession(registration, context)
 
-    const addBeforeDataset = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'r-form',
-          id: 'guided-form',
-          props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow' },
-          children: [
-            { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
-          ],
-        },
+    const addBeforeDataset = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'r-form',
+        id: 'guided-form',
+        props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow' },
+        children: [
+          { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
+        ],
       },
     }, context)
     expect(addBeforeDataset.ok).toBe(false)
     if (addBeforeDataset.ok) throw new Error('expected data-first failure')
     expect(JSON.stringify(addBeforeDataset.checks ?? [])).toContain('DATASET_FIRST_REQUIRED')
 
-    const createDataset = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/dataset[page-designer]',
-      actionName: 'createTable',
-      args: {
-        tableName: 'LeaveRequest',
-        columns: [
-          { name: 'id', type: 'string', isPrimaryKey: true },
-          { name: 'applicantName', type: 'string' },
-        ],
-        resourceType: 'database-table',
-        resourceId: 'hr.leave_request',
-        views: { default: {} },
-      },
+    const createDataset = await registration.runtime.executeTool('pageDesign_dataset_createTable', {
+      $paths: ['page-designer', 'page-designer'],
+      tableName: 'LeaveRequest',
+      columns: [
+        { name: 'id', type: 'string', isPrimaryKey: true },
+        { name: 'applicantName', type: 'string' },
+      ],
+      resourceType: 'database-table',
+      resourceId: 'hr.leave_request',
+      views: { default: {} },
     }, context)
     expect(createDataset.ok).toBe(true)
 
-    const addInvalidProps = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'r-form',
-          id: 'guided-form',
-          props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow', gridColumns: 'two' },
-          children: [
-            { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
-          ],
-        },
+    const addInvalidProps = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'r-form',
+        id: 'guided-form',
+        props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow', gridColumns: 'two' },
+        children: [
+          { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
+        ],
       },
     }, context)
     expect(addInvalidProps.ok).toBe(false)
@@ -466,62 +452,50 @@ describe('pageDesign host business registration', () => {
     expect(invalidPropsChecks).toContain('NODE_PAYLOAD_SCHEMA_INVALID')
     expect(invalidPropsChecks).toContain('gridColumns')
 
-    const addWithAutoGuides = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'r-form',
-          id: 'guided-form',
-          props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow' },
-          children: [
-            { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
-          ],
-        },
+    const addWithAutoGuides = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'r-form',
+        id: 'guided-form',
+        props: { dataViewKey: 'LeaveRequest@default', contextDataMember: 'currentRow' },
+        children: [
+          { type: 'r-text', id: 'guided-name', props: { field: 'applicantName' } },
+        ],
       },
     }, context)
     expect(addWithAutoGuides.ok).toBe(true)
 
-    const addNativeType = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'div',
-          id: 'native-wrapper',
-          props: {},
-          children: ['原生说明文案'],
-        },
+    const addNativeType = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'div',
+        id: 'native-wrapper',
+        props: {},
+        children: ['原生说明文案'],
       },
     }, context)
     expect(addNativeType.ok).toBe(true)
 
-    const addDisplayCatalogType = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'display-statistic',
-          id: 'display-statistic-node',
-          props: { title: '待审批申请' },
-        },
+    const addDisplayCatalogType = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'display-statistic',
+        id: 'display-statistic-node',
+        props: { title: '待审批申请' },
       },
     }, context)
     expect(addDisplayCatalogType.ok).toBe(true)
 
-    const addUnknownType = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'mystery-widget',
-          id: 'unknown-widget',
-          props: {},
-        },
+    const addUnknownType = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'mystery-widget',
+        id: 'unknown-widget',
+        props: {},
       },
     }, context)
     expect(addUnknownType).toMatchObject({
@@ -536,44 +510,37 @@ describe('pageDesign host business registration', () => {
     const context = hostContext('page-designer')
     await startRegistrationSession(registration, context)
 
-    const createDataset = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/dataset[page-designer]',
-      actionName: 'createTable',
-      args: {
-        tableName: 'LeaveRequest',
-        columns: [
-          { name: 'id', type: 'string', isPrimaryKey: true },
-          { name: 'applicantName', type: 'string' },
-        ],
-        resourceType: 'database-table',
-        resourceId: 'hr.leave_request',
-        views: { default: {} },
-      },
+    const createDataset = await registration.runtime.executeTool('pageDesign_dataset_createTable', {
+      $paths: ['page-designer', 'page-designer'],
+      tableName: 'LeaveRequest',
+      columns: [
+        { name: 'id', type: 'string', isPrimaryKey: true },
+        { name: 'applicantName', type: 'string' },
+      ],
+      resourceType: 'database-table',
+      resourceId: 'hr.leave_request',
+      views: { default: {} },
     }, context)
     expect(createDataset.ok).toBe(true)
 
     for (const key of ['r-form', 'r-text']) {
-      const guide = await registration.runtime.executeTool('invokeAction', {
-        path: '/pageDesign[page-designer]/payload-catalog[page-designer]',
-        actionName: 'guidePayload',
-        args: { key },
+      const guide = await registration.runtime.executeTool('pageDesign_payload-catalog_guidePayload', {
+        $paths: ['page-designer', 'page-designer'],
+        key,
       }, context)
       expect(guide.ok).toBe(true)
     }
 
-    const missingContext = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-designer]/node-tree[page-designer]',
-      actionName: 'addNode',
-      args: {
-        parentComponentId: 'page__0',
-        node: {
-          type: 'r-form',
-          id: 'form-without-context',
-          props: { dataViewKey: 'LeaveRequest@default' },
-          children: [
-            { type: 'r-text', id: 'field-name', props: { field: 'applicantName' } },
-          ],
-        },
+    const missingContext = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
+      $paths: ['page-designer', 'page-designer'],
+      parentComponentId: 'page__0',
+      node: {
+        type: 'r-form',
+        id: 'form-without-context',
+        props: { dataViewKey: 'LeaveRequest@default' },
+        children: [
+          { type: 'r-text', id: 'field-name', props: { field: 'applicantName' } },
+        ],
       },
     }, context)
     expect(missingContext.ok).toBe(false)
@@ -682,11 +649,11 @@ describe('pageDesign host business registration', () => {
                 id: 'query-payloads',
                 type: 'function',
                 function: {
-                  name: 'invokeAction',
+                  name: 'pageDesign_payload-catalog_queryPayloads',
                   arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-                    actionName: 'queryPayloads',
-                    args: { key: 'r-button', limit: 1 },
+                    $paths: [pageId, pageId],
+                    key: 'r-button',
+                    limit: 1,
                   }),
                 },
               },
@@ -694,11 +661,10 @@ describe('pageDesign host business registration', () => {
                 id: 'guide-payload',
                 type: 'function',
                 function: {
-                  name: 'invokeAction',
+                  name: 'pageDesign_payload-catalog_guidePayload',
                   arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-                    actionName: 'guidePayload',
-                    args: { key: 'r-button' },
+                    $paths: [pageId, pageId],
+                    key: 'r-button',
                   }),
                 },
               },
@@ -706,11 +672,10 @@ describe('pageDesign host business registration', () => {
                 id: 'invoke-child',
                 type: 'function',
                 function: {
-                  name: 'invokeAction',
+                  name: 'pageDesign_text-model_writeScript',
                   arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
-                    actionName: 'writeScript',
-                    args: { content: 'export default { aiSubmoduleAddressed: true }' },
+                    $paths: [pageId, pageId],
+                    content: 'export default { aiSubmoduleAddressed: true }',
                   }),
                 },
               },
@@ -732,7 +697,8 @@ describe('pageDesign host business registration', () => {
     })
 
     expect(roundToolNames).toHaveLength(4)
-    expect(roundToolNames[0]).toContain('invokeAction')
+    expect(roundToolNames[0]).not.toContain('invokeAction')
+    expect(roundToolNames[0]).toEqual(expect.arrayContaining(['listChildren', 'findInstance']))
     expect(statuses).toEqual([
       'success',
       'success',
@@ -751,31 +717,30 @@ describe('pageDesign host business registration', () => {
     const functionCalls = history.filter((entry) => entry.kind === 'functionCall')
     expect(functionCalls).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        toolName: 'invokeAction',
+        toolName: 'pageDesign_payload-catalog_queryPayloads',
         status: 'completed',
         args: {
-          path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-          actionName: 'queryPayloads',
-          args: { key: 'r-button', limit: 1 },
+          $paths: [pageId, pageId],
+          key: 'r-button',
+          limit: 1,
         },
       }),
       expect.objectContaining({
-        toolName: 'invokeAction',
+        toolName: 'pageDesign_payload-catalog_guidePayload',
         status: 'completed',
         args: {
-          path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-          actionName: 'guidePayload',
-          args: { key: 'r-button' },
+          $paths: [pageId, pageId],
+          key: 'r-button',
         },
       }),
     ]))
     expect(functionCalls.at(-1)).toMatchObject({
       kind: 'functionCall',
-      toolName: 'invokeAction',
+      toolName: 'pageDesign_text-model_writeScript',
       status: 'completed',
       args: {
-        path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
-        actionName: 'writeScript',
+        $paths: [pageId, pageId],
+        content: 'export default { aiSubmoduleAddressed: true }',
       },
     })
   })
@@ -803,20 +768,15 @@ describe('pageDesign host business registration', () => {
     await startRegistrationSession(registration, contextA)
     await startRegistrationSession(registration, contextB)
 
-    await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-a]/lifecycle[page-a]',
-      actionName: 'bootstrap',
-      args: {},
+    await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
+      $paths: ['page-a', 'page-a'],
     }, contextA)
-    await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-b]/lifecycle[page-b]',
-      actionName: 'bootstrap',
-      args: {},
+    await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
+      $paths: ['page-b', 'page-b'],
     }, contextB)
-    await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[page-a]/text-model[page-a]',
-      actionName: 'writeScript',
-      args: { content: 'export default { page: "A", changed: true }' },
+    await registration.runtime.executeTool('pageDesign_text-model_writeScript', {
+      $paths: ['page-a', 'page-a'],
+      content: 'export default { page: "A", changed: true }',
     }, contextA)
 
     expect(pageA.reads().script).toBe('export default { page: "A", changed: true }')
@@ -824,10 +784,8 @@ describe('pageDesign host business registration', () => {
 
     const nestedContext = hostContext('lmspark/homepage')
     await startRegistrationSession(registration, nestedContext)
-    const nestedBootstrap = await registration.runtime.executeTool('invokeAction', {
-      path: '/pageDesign[lmspark/homepage]/lifecycle[lmspark/homepage]',
-      actionName: 'bootstrap',
-      args: {},
+    const nestedBootstrap = await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
+      $paths: ['lmspark/homepage', 'lmspark/homepage'],
     }, nestedContext)
 
     expect(nestedBootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
