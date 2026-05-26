@@ -1,4 +1,4 @@
-import type { LlmJsonValue } from '../../schema'
+import type { LlmJsonParams } from '../../schema'
 import type { AiHostFunctionCallResult } from '../session/session-types'
 import type { AiHostBusinessRuntimeContext } from './scope-types'
 
@@ -13,6 +13,6 @@ export type AiHostBusinessLifecycleDirective = Readonly<{
 
 export type AiHostBusinessAfterFunctionCallOptions = AiHostBusinessRuntimeContext & Readonly<{
   toolName: string
-  args: Readonly<Record<string, LlmJsonValue>>
+  args: LlmJsonParams
   result: AiHostFunctionCallResult<unknown>
 }>

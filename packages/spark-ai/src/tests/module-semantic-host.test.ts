@@ -4,14 +4,18 @@
 
 import { describe, expect, it } from 'vitest'
 import { readProperty } from '@spark-view/spark-utils/internal'
+import { createSparkCapabilityContext, sparkConsume, sparkProvide } from '@spark-view/spark-utils'
 
 import {
+  AI_HOST,
   AiHostBusinessTarget,
   DefaultAiHostSessionStore,
   AiHostToolLoopRunner,
+  createAiHost,
   createAiHostBusinessScope,
   createAiHostBusinessSession,
   createAiHostBusinessTask,
+  runAiHostBusiness,
   startRegistrationSession,
   type AiHostBusinessRegistration,
   type AiHostStreamEvent,
@@ -27,7 +31,12 @@ import {
   type ModuleInstanceRef,
   type ModulePathContext,
 } from '../module-semantic'
-import { paramsSchema, stringSchema, type LlmJsonValue } from '../schema'
+import { paramsSchema, stringSchema, type LlmJsonParamShape, type LlmJsonValue } from '../schema'
+
+type PageDesignTaskInput = LlmJsonParamShape<{
+  pageId: string
+  userRequirement: string
+}>
 
 type ModuleKindSpy = {
   lastHost?: ModulePathContext['host']
@@ -127,7 +136,7 @@ function createRegistration(): { registration: AiHostBusinessRegistration; spy: 
   }
 }
 
-function createTaskRegistration(): AiHostBusinessRegistration {
+function createTaskRegistration(): AiHostBusinessRegistration<PageDesignTaskInput> {
   const { registration } = createRegistration()
   return {
     ...registration,
@@ -141,19 +150,31 @@ function createTaskRegistration(): AiHostBusinessRegistration {
         const pageId = input['pageId']
         const userRequirement = input['userRequirement']
         return {
-          ...input,
           pageId: typeof pageId === 'string' ? pageId.trim() : '',
           userRequirement: typeof userRequirement === 'string' ? userRequirement.trim() : '',
         }
       },
-      toScope: (input) => createAiHostBusinessScope('pageDesign', String(input['pageId'])),
+      toScope: (input) => createAiHostBusinessScope('pageDesign', input.pageId),
       toOrchestration: (input) => ({
-        userMessage: String(input['userRequirement']),
-        systemPrompt: `registered task for ${String(input['pageId'])}`,
+        userMessage: input.userRequirement,
+        systemPrompt: `registered task for ${input.pageId}`,
       }),
     },
   }
 }
+
+function assertAiHostRunTypes(): void {
+  const turnCallbacks: AiHostTurnCallbacks = {
+    executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
+    appendMessages: () => Promise.resolve(),
+  }
+  const host = createAiHost({ turnCallbacks, maxToolRounds: 1 }).reg('pageDesign', createTaskRegistration())
+  void host.run.pageDesign({ pageId: 'page-1', userRequirement: 'make it nice' })
+  // @ts-expect-error pageDesign 业务启动输入必须包含 userRequirement。
+  void host.run.pageDesign({ pageId: 'page-1' })
+}
+
+void assertAiHostRunTypes
 
 describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
   it('createAiHostBusinessTask 通过注册化输入契约创建任务并映射实例身份', () => {
@@ -190,6 +211,127 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       pageId: 'page-1',
       userRequirement: 'x',
     })).toThrow('missing inputContract')
+  })
+
+  it('runAiHostBusiness 一站式创建 task、启动 session 并发送请求', async () => {
+    const registration = createTaskRegistration()
+    const streamInputs: Array<{ sessionId: string; content: string; systemPrompt: string }> = []
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
+        streamInputs.push({
+          sessionId: input.sessionId,
+          content: input.messages.map((message) => message.content).join('\n'),
+          systemPrompt: input.systemPrompt,
+        })
+        return Promise.resolve({ text: 'ok', toolCalls: [] })
+      },
+      appendMessages: () => Promise.resolve(),
+    }
+
+    const result = await runAiHostBusiness({
+      options: {
+        registry: { get: () => registration },
+        turnCallbacks,
+        maxToolRounds: 1,
+      },
+      kindID: 'pageDesign',
+      input: {
+        pageId: ' page-1 ',
+        userRequirement: '  设计一个客户页面  ',
+      },
+      chat: {
+        systemPrompt: '额外运行提示',
+        turn: TURN,
+      },
+    })
+
+    expect(result.task.target.businessInstanceId).toBe('page-1')
+    expect(result.session.sessionId).toBe('pageDesign:page-1')
+    expect(streamInputs).toHaveLength(1)
+    expect(streamInputs[0]).toMatchObject({
+      sessionId: 'pageDesign:page-1',
+      content: '设计一个客户页面',
+    })
+    expect(streamInputs[0]?.systemPrompt).toContain('registered task for page-1')
+    expect(streamInputs[0]?.systemPrompt).toContain('额外运行提示')
+  })
+
+  it('createAiHost 通过 alias 注册并运行具体业务', async () => {
+    const registration = createTaskRegistration()
+    const streamInputs: Array<{ sessionId: string; content: string }> = []
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: (input) => {
+        streamInputs.push({
+          sessionId: input.sessionId,
+          content: input.messages.map((message) => message.content).join('\n'),
+        })
+        return Promise.resolve({ text: 'ok', toolCalls: [] })
+      },
+      appendMessages: () => Promise.resolve(),
+    }
+
+    const host = createAiHost({ turnCallbacks, maxToolRounds: 1 }).reg('pageDesign', registration)
+    const result = await host.run.pageDesign({
+      pageId: ' page-1 ',
+      userRequirement: '  设计一个客户页面  ',
+    }, { turn: TURN })
+
+    expect(result.task.normalizedInput['pageId']).toBe('page-1')
+    expect(result.session.sessionId).toBe('pageDesign:page-1')
+    expect(streamInputs).toEqual([{ sessionId: 'pageDesign:page-1', content: '设计一个客户页面' }])
+    await expect(host.runByAlias('missing', {
+      pageId: 'page-1',
+      userRequirement: 'x',
+    })).rejects.toThrow('AI host run alias is not registered: missing')
+  })
+
+  it('createAiHost 对 alias/moduleId 冲突 fail-fast,ensureReg 可幂等复用', () => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
+      appendMessages: () => Promise.resolve(),
+    }
+    const host = createAiHost({ turnCallbacks, maxToolRounds: 1 })
+    let creates = 0
+    const ensured = host.ensureReg('pageDesign', {
+      moduleId: 'pageDesign',
+      create: () => {
+        creates += 1
+        return createTaskRegistration()
+      },
+    })
+    const ensuredAgain = ensured.ensureReg('pageDesign', {
+      moduleId: 'pageDesign',
+      create: () => {
+        creates += 1
+        return createTaskRegistration()
+      },
+    })
+
+    expect(ensuredAgain.has('pageDesign')).toBe(true)
+    expect(creates).toBe(1)
+    expect(() => ensuredAgain.reg('pageDesign', createTaskRegistration())).toThrow('Duplicate AI host run alias')
+    expect(() => ensuredAgain.reg('otherPageDesign', createTaskRegistration())).toThrow('Duplicate AI host business registration')
+    expect(() => ensuredAgain.ensureReg('pageDesign', {
+      moduleId: 'otherModule',
+      create: () => createTaskRegistration(),
+    })).toThrow('already bound to moduleId "pageDesign"')
+    expect(() => ensuredAgain.ensureReg('otherAlias', {
+      moduleId: 'pageDesign',
+      create: () => createTaskRegistration(),
+    })).toThrow('already bound to alias "pageDesign"')
+  })
+
+  it('AI_HOST 能力键通过结构校验传输 Host 单例', () => {
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
+      appendMessages: () => Promise.resolve(),
+    }
+    const host = createAiHost({ turnCallbacks, maxToolRounds: 1 })
+    const context = createSparkCapabilityContext({ id: 'ai-host-test', type: 'test' })
+
+    sparkProvide(context, AI_HOST, host)
+
+    expect(sparkConsume(context, AI_HOST)).toBe(host)
   })
 
   it('startRegistrationSession 返回 query/navigation tools 与 business function tools', async () => {
@@ -526,7 +668,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       appendMessages: () => Promise.resolve(),
     }
     const session = createAiHostBusinessSession({
-      registry: { get: () => registration, list: () => [registration] },
+      registry: { get: () => registration },
       turnCallbacks,
       maxToolRounds: 1,
     }, new AiHostBusinessTarget('pageDesign', 'page-1'))

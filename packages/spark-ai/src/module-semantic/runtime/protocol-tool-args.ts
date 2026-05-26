@@ -11,7 +11,7 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import type { LlmJsonValue } from '../../schema'
+import type { LlmJsonParams, LlmJsonValue } from '../../schema'
 import { PROTOCOL_TOOL_NAMES, type ProtocolToolName } from '../internal/protocol-tool-generator'
 
 /* -------------------------------------------------------------------------------
@@ -92,7 +92,7 @@ export class ProtocolToolArgsParser {
   }
 
   /** 提取必填对象参数（非纯对象抛错） */
-  public requireObject(args: ProtocolToolArgs, key: string): Readonly<Record<string, LlmJsonValue>> {
+  public requireObject(args: ProtocolToolArgs, key: string): LlmJsonParams {
     const value = args[key]
     if (!isJsonObject(value)) throw new ProtocolToolArgsError(`参数 "${key}" 缺失或不是 JSON 对象`)
     return value
@@ -112,6 +112,6 @@ export class ProtocolToolArgsParser {
  * ----------------------------------------------------------------------------- */
 
 /** 判定 LlmJsonValue 是否为纯对象（非 null、非数组） */
-function isJsonObject(value: LlmJsonValue | undefined): value is Readonly<Record<string, LlmJsonValue>> {
+function isJsonObject(value: LlmJsonValue | undefined): value is LlmJsonParams {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }

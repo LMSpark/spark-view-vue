@@ -7,13 +7,13 @@
  *   和 AI 传输层，形成完整的"用户发消息→AI 推理→工具调用→结果返回"闭环。
  *
  * 【核心类】
- *   AiHostBusinessSession  — 业务会话（对外 API）
+ *   AiHostBusinessSession  — Host 内部业务会话
  *     ├─ 持有 AiHostMessageSender（消息发送编排）
  *     │    └─ 持有 AiHostToolLoopRunner（工具循环执行）
  *     └─ 持有 AiHostMessageSendState（选中业务缓存）
  *
  * 【数据流】
- *   1. createAiHostBusinessTask(registry, kindID, input) → inputContract 校验并生成 target/request
+ *   1. host.run[alias](input) → 解析 alias 并创建内部 task
  *   2. new AiHostBusinessSession(options, task.target)
  *   3. session.start()  → startRegistrationSession() → 创建/接入 sessionStore 记录 + 生成工具规约
  *   4. session.send(task.toChatRequest()) → senderCore.send()
@@ -23,7 +23,8 @@
  *   5. 会话结束 → stopSession() → onEndBusinessInstance() → releaseModuleInstance()
  *
  * 【独立函数】
- *   createAiHostBusinessSession — 工厂函数
+ *   runAiHostBusiness           — AiHost 门面使用的一站式内部运行函数
+ *   createAiHostBusinessSession — 内部会话工厂函数
  *   startRegistrationSession    — 启动注册会话（创建/接入 sessionStore 记录 + 编解码器）
  *
  * 【消费方】Host 初始化代码、页面级 AI 助手入口
@@ -31,6 +32,7 @@
  */
 
 import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
+import type { LlmJsonParams } from '../../schema'
 import { AiHostToolLoopRunner } from '../tool-loop/tool-loop-runner'
 import {
   createAiHostBusinessScope,
@@ -42,6 +44,11 @@ import {
 } from './business-scope'
 import type { AiHostChatRequest, AiHostTurnMeta } from '../chat/chat-types'
 import type { AiHostSessionRecord, AiHostStartSessionResult } from '../session/session-types'
+import {
+  createAiHostBusinessTask,
+  type AiHostBusinessTask,
+  type AiHostBusinessTaskChatOptions,
+} from './business-task'
 import type {
   AiHostBusinessRegistration,
   AiHostBusinessRuntimeContext,
@@ -60,6 +67,18 @@ type AiHostSendInput = Readonly<{
   request: AiHostChatRequest
   turn: AiHostTurnMeta
   scope: AiHostBusinessScope
+}>
+
+export type AiHostBusinessRunCommand<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  options: AiHostOptions<TInput>
+  kindID: string
+  input: TInput
+  chat?: AiHostBusinessTaskChatOptions
+}>
+
+export type AiHostBusinessRunResult<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  task: AiHostBusinessTask<TInput>
+  session: AiHostBusinessSession
 }>
 
 /** 选中的业务（registration + scope 对） */
@@ -191,19 +210,13 @@ class AiHostMessageSender {
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 第 5 节 · 业务会话（对外 API）
+// 第 5 节 · 业务会话
 // ═══════════════════════════════════════════════════════════════
 
 /**
  * 业务会话。
  *
- * 用法：
- * ```ts
- * const task = createAiHostBusinessTask(registry, 'pageDesign', { pageId, userRequirement })
- * const session = createAiHostBusinessSession(options, task.target)
- * await session.start()
- * await session.send(task.toChatRequest())
- * ```
+ * 业务层推荐通过 AiHost.run[alias](input) 进入；本类承载 Host 内部 session 状态。
  *
  * 属性：
  *   target     — 业务定位
@@ -213,7 +226,7 @@ class AiHostMessageSender {
  *   pageId     — 页面 ID（= businessInstanceId）
  *   sender     — 消息发送器（可直接传给 UI 层）
  */
-// PAGE_DESIGN_AI_TRACE[host-session-entry]: pageDesign live LLM 评测从 createAiHostBusinessSession/start/send 进入 AI Host 会话线；清理冗余时保留这一处作为前端 AI 会话入口。
+// PAGE_DESIGN_AI_TRACE[host-session-entry]: pageDesign live LLM 评测经 AiHost.run 进入 AI Host 会话线；清理冗余时保留这一处作为前端 AI 会话入口。
 // PAGE_DESIGN_REFACTOR_SOURCE[host-session-entry]: 前端 Agent 会话入口；sessionId 来自 kind + instanceId，turn 隔离在 send/transport 层继续传递。
 export class AiHostBusinessSession {
   public readonly target: AiHostBusinessTarget
@@ -249,7 +262,8 @@ export class AiHostBusinessSession {
 
   /** 获取当前会话记录：Agent 能力诊断和再次接入会话的读取起点 */
   public getSessionRecord(): AiHostSessionRecord | null {
-    const registration = this.state.selected?.registration ?? this.options.registry.get(this.scope.businessRegistrationId)
+    const registration = this.state.selected?.registration
+      ?? this.options.registry.get(this.scope.businessRegistrationId)
     return registration?.sessionStore?.getSession(toAiHostRuntimeScope(this.scope)) ?? null
   }
 
@@ -285,6 +299,21 @@ export function createAiHostBusinessSession(
 }
 
 /**
+ * 一站式运行已注册业务。
+ *
+ * 用于 AiHost 门面按 alias 解析出 kindID 后，创建 task、启动 session 并发送首轮请求。
+ */
+export async function runAiHostBusiness<TInput extends LlmJsonParams = LlmJsonParams>(
+  command: AiHostBusinessRunCommand<TInput>,
+): Promise<AiHostBusinessRunResult<TInput>> {
+  const task = createAiHostBusinessTask(command.options.registry, command.kindID, command.input)
+  const session = createAiHostBusinessSession(command.options, task.target)
+  await session.start()
+  await session.send(task.toChatRequest(command.chat))
+  return { task, session }
+}
+
+/**
  * 启动注册会话。
  *
  * 执行步骤：
@@ -295,8 +324,8 @@ export function createAiHostBusinessSession(
  */
 // PAGE_DESIGN_AI_TRACE[host-session-start]: startRegistrationSession 负责调用业务 onStartSession 并投影 module-semantic 工具；pageDesign 的工具列表从这里进入 LLM。
 // PAGE_DESIGN_REFACTOR_SOURCE[tool-schema-projection]: module-semantic 工具投影成 LLM function schema 的源头；不要在业务 mjs 中手写工具 schema。
-export async function startRegistrationSession(
-  registration: AiHostBusinessRegistration,
+export async function startRegistrationSession<TInput extends LlmJsonParams>(
+  registration: AiHostBusinessRegistration<TInput>,
   context: AiHostBusinessRuntimeContext,
 ): Promise<AiHostStartSessionResult> {
   const sessionStore = registration.sessionStore

@@ -17,6 +17,7 @@
 import {
   LlmSchemaValidator,
   coerceJsonValue,
+  type LlmJsonParams,
   type LlmJsonValue,
   type LlmParamValidationIssue,
   type LlmParamValidationResult,
@@ -243,7 +244,7 @@ export class ModuleKind {
   public async invokeFunction(
     ctx: ModulePathContext,
     functionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
+    args: LlmJsonParams,
   ): Promise<ModuleOperationResult<LlmJsonValue>> {
     const fn = this.findFunction(functionName)
     if (fn === undefined) {
@@ -270,7 +271,7 @@ export class ModuleKind {
   protected runFunction(
     ctx: ModulePathContext,
     functionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
+    args: LlmJsonParams,
   ): ModuleKindOperation<LlmJsonValue> {
     return this.functionRunner(ctx, functionName, args)
   }

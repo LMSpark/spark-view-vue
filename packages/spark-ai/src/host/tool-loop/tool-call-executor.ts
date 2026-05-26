@@ -21,7 +21,7 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import type { LlmJsonValue } from '../../schema'
+import type { LlmJsonParams } from '../../schema'
 import { toAiHostRuntimeScope } from '../business/business-scope'
 import type {
   AiHostBusinessLifecycleDirective,
@@ -60,8 +60,8 @@ import {
 export type AiHostToolCallActionResolver = (toolName: string) => string | null
 
 /** 工具调用执行的输入参数 */
-export type AiHostToolCallExecutionInput = Readonly<{
-  registration: AiHostBusinessRegistration
+export type AiHostToolCallExecutionInput<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  registration: AiHostBusinessRegistration<TInput>
   scope: AiHostBusinessScope
   turn: AiHostTurnMeta
   round: number
@@ -83,18 +83,18 @@ export type AiHostToolCallExecutionOutput = Readonly<{
 
 type ParsedToolArgs = Readonly<{
   ok: true
-  args: Readonly<Record<string, LlmJsonValue>>
+  args: LlmJsonParams
 }> | Readonly<{
   ok: false
-  args: Readonly<Record<string, LlmJsonValue>>
+  args: LlmJsonParams
   result: AiHostFunctionCallResult<unknown>
 }>
 
-type CompleteToolCallExecutionInput = Readonly<{
-  source: AiHostToolCallExecutionInput
+type CompleteToolCallExecutionInput<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  source: AiHostToolCallExecutionInput<TInput>
   runtimeContext: ReturnType<typeof toAiHostRuntimeScope>
   protocolToolName: string
-  args: Readonly<Record<string, LlmJsonValue>>
+  args: LlmJsonParams
   callResult: AiHostFunctionCallResult<unknown>
   started: number
 }>
@@ -117,7 +117,9 @@ export class AiHostToolCallExecutor {
    * 返回 null 表示工具无法识别（actionOf 返回 null），
    * 此时错误信息已通过 onDelta 推送给前端，调用方应跳过该调用。
    */
-  public async execute(input: AiHostToolCallExecutionInput): Promise<AiHostToolCallExecutionOutput | null> {
+  public async execute<TInput extends LlmJsonParams>(
+    input: AiHostToolCallExecutionInput<TInput>,
+  ): Promise<AiHostToolCallExecutionOutput | null> {
     // 步骤 1-2：提取 toolName 并校验是否在当前 tools 集合中
     const toolName = input.call.function.name
     const protocolToolName = input.actionOf(toolName)
@@ -163,8 +165,8 @@ export class AiHostToolCallExecutor {
     })
   }
 
-  private async completeExecution(
-    input: CompleteToolCallExecutionInput,
+  private async completeExecution<TInput extends LlmJsonParams>(
+    input: CompleteToolCallExecutionInput<TInput>,
   ): Promise<AiHostToolCallExecutionOutput> {
     const { source, runtimeContext, protocolToolName, args, callResult, started } = input
 

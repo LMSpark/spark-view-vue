@@ -46,6 +46,17 @@ export type LlmJsonValue =
 /** 参数协议中的 JSON 对象：key → LlmJsonValue 映射 */
 export type LlmJsonObject = { readonly [key: string]: LlmJsonValue }
 
+/** LLM 函数/业务启动参数对象：运行时宽形态，key → LlmJsonValue。 */
+export type LlmJsonParams = Readonly<Record<string, LlmJsonValue>>
+
+/**
+ * LLM 参数对象的具名字段形态。
+ *
+ * 与 LlmJsonParams 不同，本类型不引入 string 索引签名，避免 keyof 退化为 string。
+ * 具体业务输入如 PageDesignRunInput 应使用它，以保留 identityField 的字段级约束。
+ */
+export type LlmJsonParamShape<TShape extends object> = Readonly<TShape>
+
 // ═══════════════════════════════════════════════════════════════
 // 第 2 节 · Schema 类型枚举 — JSON Schema type 字段的合法值
 // ═══════════════════════════════════════════════════════════════

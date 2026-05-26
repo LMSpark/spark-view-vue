@@ -9,8 +9,8 @@ flowchart LR
   BusinessService["BusinessService"] --> ModuleKind["ModuleKind"]
   ModuleKind --> RegisterKind["ModuleSemanticRuntime.registerKind"]
   RegisterKind --> BusinessRuntime["AiHostBusinessRegistration.runtime"]
-  BusinessRuntime --> BusinessRegistry["AiHostBusinessRegistry.register"]
-  BusinessRegistry --> ToolLoop["AiHostToolLoopRunner"]
+  BusinessRuntime --> Host["AiHost.reg / ensureReg"]
+  Host --> ToolLoop["AiHostToolLoopRunner"]
   ToolLoop --> ProtocolTools["OpenAI function tools"]
   ProtocolTools --> LLM["LLM"]
 ```
@@ -99,8 +99,8 @@ diagram RegistrationFlow {
   BusinessService -> ModuleKind
   ModuleKind -> ModuleSemanticRuntime.registerKind
   ModuleSemanticRuntime -> AiHostBusinessRegistration.runtime
-  AiHostBusinessRegistration -> AiHostBusinessRegistry.register
-  AiHostBusinessRegistry -> AiHostToolLoopRunner
+  AiHostBusinessRegistration -> "AiHost.reg / ensureReg"
+  AiHost -> AiHostToolLoopRunner
   AiHostToolLoopRunner -> "OpenAI function tools"
   "OpenAI function tools" -> LLM
 }
@@ -369,7 +369,7 @@ section HostBusinessRegistrationSurface {
     name: "业务名称。"
     description: "业务描述。"
     runtime: "承载该业务的 ModuleSemanticRuntime。"
-    sessionStore: "可选；未提供时由 AiHostBusinessRegistry 补 DefaultAiHostSessionStore。"
+    sessionStore: "可选；未提供时由 AiHost 内部注册表补 DefaultAiHostSessionStore。"
     systemPrompt: "可选；Host 每轮拼接业务提示词。"
     afterFunctionCall: "可选；工具调用后生命周期指令。"
     onStartSession: "可选；会话启动回调。"
@@ -377,7 +377,7 @@ section HostBusinessRegistrationSurface {
     releaseModuleInstance: "可选；释放业务 live state。"
   }
 
-  entity AiHostBusinessRegistry {
+  entity AiHostInternalBusinessRegistry {
     storage: "Map<moduleId, AiHostBusinessRegistration>"
     register_rule: "moduleId 重复直接抛错。"
     default_session_rule: "registration.sessionStore 缺失时注入 DefaultAiHostSessionStore。"
@@ -612,7 +612,7 @@ section RegisterSurfaceRules {
     "同一 ModuleSemanticRuntime 内 kind 不允许重复。"
 
   rule R03_no_duplicate_business_module:
-    "同一 AiHostBusinessRegistry 内 moduleId 不允许重复。"
+    "同一 AiHost 内 moduleId 不允许重复。"
 
   rule R04_root_visibility:
     "listChildren('/') 和 findInstance('/', kind, query) 只暴露/查询 parentKind 未设置的根 kind。"
@@ -687,7 +687,7 @@ section ChangeChecklist {
       "如 function 需要外部复杂参数指南，在目标 kind.payloads 声明 payloadRef",
       "如声明 payloadRef，注册对应 ModuleParameterPayloadProvider",
       "用 AiHostBusinessRegistration 包装 runtime",
-      "通过 AiHostBusinessRegistry.register 注册业务",
+      "通过 host.ensureReg(alias, { moduleId, create }) 注册业务入口",
       "补 describeKind、路径寻址、function 调用和 payload provider 测试"
     ]
   }

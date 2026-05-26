@@ -4,18 +4,19 @@
  * │  Business Registration Contract                                              │
  * │                                                                              │
  * │  本文件定义业务接入 AI Host 的注册入口——外部系统将自身能力封装为                │
- * │  ModuleSemanticRuntime 后，通过 AiHostBusinessRegistration 注册到              │
- * │  AiHostBusinessRegistry，由后者统一管理会话生命周期与工具调用调度。              │
+ * │  ModuleSemanticRuntime 后，投影成 AiHostBusinessRegistration，再交给            │
+ * │  AiHost.reg/ensureReg 按 alias 暴露给业务层运行。                               │
  * │                                                                              │
  * │  数据流向：                                                                   │
  * │    外部系统 ──(封装)──> ModuleSemanticRuntime                                  │
  * │                    ──(包装)──> AiHostBusinessRegistration                     │
- * │                    ──(注册)──> AiHostBusinessRegistry ──> AiHostBusiness      │
+ * │                    ──(注册)──> AiHost.reg/ensureReg ──> AiHostBusiness        │
  * │                    ──(驱动)──> AiHostToolLoopRunner ──> LLM                   │
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
 import type { ModuleSemanticRuntime } from '../../module-semantic/runtime/module-semantic-runtime'
+import type { LlmJsonParams } from '../../schema'
 import type { AiHostSessionStore } from '../session/session-types'
 import type { AiHostBusinessInputContract } from './business-task'
 import type {
@@ -31,7 +32,7 @@ import type { AiHostBusinessRuntimeContext } from './scope-types'
  * 所有回调函数均为可选——不传则跳过对应生命周期节点。
  * ----------------------------------------------------------------------------- */
 
-export type AiHostBusinessRegistrationOptions = Readonly<{
+export type AiHostBusinessRegistrationOptions<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
   /** 业务模块唯一标识，对应 ModuleSemanticRuntime.moduleId */
   moduleId: string
   /** 面向 LLM 的业务名称，出现在系统提示中 */
@@ -41,7 +42,7 @@ export type AiHostBusinessRegistrationOptions = Readonly<{
   /** 语义模块运行时——承载 moduleKinds、childKinds 等能力树 */
   runtime: ModuleSemanticRuntime
   /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */
-  inputContract?: AiHostBusinessInputContract
+  inputContract?: AiHostBusinessInputContract<TInput>
   /** 可选的自定义会话存储；不传则使用 DefaultAiHostSessionStore */
   sessionStore?: AiHostSessionStore
   /**
@@ -82,7 +83,7 @@ export type AiHostBusinessRegistrationOptions = Readonly<{
  * 可选回调仅在传入时才挂载（避免 undefined 属性干扰运行时判断）。
  * ----------------------------------------------------------------------------- */
 
-export class AiHostBusinessRegistration {
+export class AiHostBusinessRegistration<TInput extends LlmJsonParams = LlmJsonParams> {
   /* ── 基础标识 ─────────────────────────────────────────── */
 
   public readonly moduleId: string
@@ -93,8 +94,8 @@ export class AiHostBusinessRegistration {
 
   /** 模块语义运行时——工具调用时从中查找 kind、执行 action */
   public readonly runtime: ModuleSemanticRuntime
-  /** kindID 的注册化输入契约；由 createAiHostBusinessTask 使用 */
-  public readonly inputContract?: AiHostBusinessInputContract
+  /** kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用 */
+  public readonly inputContract?: AiHostBusinessInputContract<TInput>
 
   /* ── 持久化 ───────────────────────────────────────────── */
 
@@ -121,7 +122,7 @@ export class AiHostBusinessRegistration {
 
   /* ── 构造函数 ─────────────────────────────────────────── */
 
-  public constructor(options: AiHostBusinessRegistrationOptions) {
+  public constructor(options: AiHostBusinessRegistrationOptions<TInput>) {
     this.moduleId = options.moduleId
     this.name = options.name
     this.description = options.description

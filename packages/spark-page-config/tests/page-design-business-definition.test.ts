@@ -1,9 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  AiHostBusinessRegistry,
   AiHostToolLoopRunner,
-  createAiHostBusinessTask,
+  createAiHost,
   startRegistrationSession,
   toAiHostRuntimeScope,
   type AiHostBusinessRuntimeContext,
@@ -13,7 +12,8 @@ import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessKindDefinition,
   createPageDesignBusinessRegistration,
-  registerPageDesignBusiness,
+  ensurePageDesignBusiness,
+  type PageDesignRunInput,
 } from '@spark-view/spark-page-config/ai'
 import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
 import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
@@ -110,6 +110,27 @@ function expectActionMetadataComplete(describeData: Record<string, unknown>): vo
     expect(fn).toHaveProperty('example')
   }
 }
+
+function assertPageDesignRunInputTypes(): void {
+  const { host } = createHost()
+  const aiHost = createAiHost({
+    turnCallbacks: {
+      executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
+      appendMessages: () => Promise.resolve(),
+    },
+    maxToolRounds: 1,
+  })
+  const pageDesignHost = ensurePageDesignBusiness({
+    host: aiHost,
+    getPageDesignEditHost: () => host,
+  })
+
+  void pageDesignHost.run.pageDesign({ pageId: 'page-designer', userRequirement: '实现页面' })
+  // @ts-expect-error pageDesign 业务启动输入必须包含 userRequirement。
+  void pageDesignHost.run.pageDesign({ pageId: 'page-designer' })
+}
+
+void assertPageDesignRunInputTypes
 
 function actionNames(describeData: Record<string, unknown>): string[] {
   const functions = describeData['functions']
@@ -219,64 +240,99 @@ describe('pageDesign host business registration', () => {
     ])
   })
 
-  it('exposes a page-config owned pageDesign business registration helper', () => {
+  it('exposes a page-config owned pageDesign Host helper', async () => {
     const { host } = createHost()
-    const registry = new AiHostBusinessRegistry()
+    const streamInputs: string[] = []
+    const aiHost = createAiHost({
+      turnCallbacks: {
+        executeTurn: (input) => {
+          streamInputs.push(input.messages.map((message) => message.content).join('\n'))
+          return Promise.resolve({ text: 'ok', toolCalls: [] })
+        },
+        appendMessages: () => Promise.resolve(),
+      },
+      maxToolRounds: 1,
+    })
 
-    registerPageDesignBusiness({
-      registry,
+    const pageDesignHost = ensurePageDesignBusiness({
+      host: aiHost,
       getPageDesignEditHost: () => host,
     })
 
-    const registration = registry.get(PAGE_DESIGN_MODULE_ID)
-    expect(registration?.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
-    expect(registration?.runtime.describeKind(PAGE_DESIGN_MODULE_ID).ok).toBe(true)
-    expect(registration?.inputContract?.identityField).toBe('pageId')
-    expect(registry.list()).toHaveLength(1)
+    const input: PageDesignRunInput = {
+      pageId: 'page-designer',
+      userRequirement: '实现请假申请页面',
+    }
+    const result = await pageDesignHost.run.pageDesign(input)
+
+    expect(pageDesignHost.has(PAGE_DESIGN_MODULE_ID)).toBe(true)
+    expect(result.task.normalizedInput.pageId).toBe('page-designer')
+    expect(result.task.normalizedInput.userRequirement).toBe('实现请假申请页面')
+    expect(streamInputs).toEqual(['实现请假申请页面'])
   })
 
-  it('creates pageDesign task through registered inputContract instead of a bare target', () => {
+  it('creates pageDesign task through Host alias instead of a bare target', async () => {
     const { host } = createHost()
     const definition = createPageDesignBusinessKindDefinition({ getEditToolHost: () => host })
-    const registry = new AiHostBusinessRegistry()
-    registry.register(createPageDesignBusinessRegistration({ getEditToolHost: () => host }))
+    const prompts: string[] = []
+    const pageDesignHost = ensurePageDesignBusiness({
+      host: createAiHost({
+        turnCallbacks: {
+          executeTurn: (input) => {
+            prompts.push(input.systemPrompt)
+            return Promise.resolve({ text: 'ok', toolCalls: [] })
+          },
+          appendMessages: () => Promise.resolve(),
+        },
+        maxToolRounds: 1,
+      }),
+      getPageDesignEditHost: () => host,
+    })
 
     expect(definition.kindID).toBe(PAGE_DESIGN_MODULE_ID)
     expect(definition.inputContract.identityField).toBe('pageId')
 
-    const task = createAiHostBusinessTask(registry, PAGE_DESIGN_MODULE_ID, {
+    const result = await pageDesignHost.run.pageDesign({
       pageId: ' page-designer ',
       userRequirement: '  实现请假申请页面  ',
     })
-    const request = task.toChatRequest()
+    const prompt = prompts.join('\n')
 
+    const { task } = result
     expect(task.target.businessRegistrationId).toBe(PAGE_DESIGN_MODULE_ID)
     expect(task.target.businessInstanceId).toBe('page-designer')
     expect(task.normalizedInput).toMatchObject({
       pageId: 'page-designer',
       userRequirement: '实现请假申请页面',
     })
-    expect(request.historyMsgs).toEqual([{ role: 'user', content: '实现请假申请页面' }])
-    expect(request.systemPrompt).not.toContain('AI Host 任务输入')
-    expect(request.systemPrompt).toContain('kindID=pageDesign')
-    expect(request.systemPrompt).toContain('"pageId":"page-designer"')
-    expect(request.systemPrompt).toContain('首轮仅 tool_call')
-    expect(request.systemPrompt).toContain('findInstance({"path":"/","childKind":"pageDesign","query":{"id":"page-designer"}})')
-    expect(request.systemPrompt).toContain('无正文')
-    expect(request.systemPrompt).toContain('Host 返回 ref.id 后')
-    expect(request.systemPrompt).toContain('pageDesign_lifecycle_describeProgress')
-    expect(request.systemPrompt).toContain('pageDesign_lifecycle_describeDesignFlow')
-    expect(request.systemPrompt).toContain('intent: messages[0].content')
+    expect(prompt).not.toContain('AI Host 任务输入')
+    expect(prompt).toContain('kindID=pageDesign')
+    expect(prompt).toContain('"pageId":"page-designer"')
+    expect(prompt).toContain('首轮仅 tool_call')
+    expect(prompt).toContain('findInstance({"path":"/","childKind":"pageDesign","query":{"id":"page-designer"}})')
+    expect(prompt).toContain('无正文')
+    expect(prompt).toContain('Host 返回 ref.id 后')
+    expect(prompt).toContain('pageDesign_lifecycle_describeProgress')
+    expect(prompt).toContain('pageDesign_lifecycle_describeDesignFlow')
+    expect(prompt).toContain('intent: messages[0].content')
   })
 
-  it('rejects pageDesign task inputs that do not satisfy the registered schema', () => {
+  it('rejects pageDesign run inputs that do not satisfy the registered schema', async () => {
     const { host } = createHost()
-    const registry = new AiHostBusinessRegistry()
-    registry.register(createPageDesignBusinessRegistration({ getEditToolHost: () => host }))
+    const pageDesignHost = ensurePageDesignBusiness({
+      host: createAiHost({
+        turnCallbacks: {
+          executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
+          appendMessages: () => Promise.resolve(),
+        },
+        maxToolRounds: 1,
+      }),
+      getPageDesignEditHost: () => host,
+    })
 
-    expect(() => createAiHostBusinessTask(registry, PAGE_DESIGN_MODULE_ID, {
+    await expect(pageDesignHost.runByAlias(PAGE_DESIGN_MODULE_ID, {
       pageId: 'page-designer',
-    })).toThrow('failed schema validation')
+    })).rejects.toThrow('failed schema validation')
   })
 
   it('executes lifecycle/text-model/payload-catalog/node-tree/dataset through protocol tools', async () => {
@@ -797,5 +853,3 @@ describe('pageDesign host business registration', () => {
     })).toEqual(nestedContext)
   })
 })
-
-

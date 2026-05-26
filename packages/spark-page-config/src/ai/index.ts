@@ -1,9 +1,15 @@
 export {
   PAGE_DESIGN_MODULE_ID,
+  PAGE_DESIGN_AI_HOST_ALIAS,
   createPageDesignBusinessKindDefinition,
   createPageDesignBusinessRegistration,
-  registerAssistantBusinesses,
-  registerPageDesignBusiness,
+  ensurePageDesignBusiness,
+} from './page-design-module'
+
+export type {
+  PageDesignAllowedOperations,
+  PageDesignRunInput,
+  PageDesignRunMode,
 } from './page-design-module'
 
 export {

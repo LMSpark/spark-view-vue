@@ -13,6 +13,8 @@
 // ── 类型：JSON Schema 核心类型（SSOT）─────────────────────────
 export type {
   LlmJsonObject,
+  LlmJsonParamShape,
+  LlmJsonParams,
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmJsonSchemaType,

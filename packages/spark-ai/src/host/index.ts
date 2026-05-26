@@ -24,6 +24,19 @@
 // ── 1. 业务类型与注册 ───────────────────────────────────────
 
 export {
+  AI_HOST,
+  AiHost,
+  createAiHost,
+} from './business/ai-host'
+
+export type {
+  AiHostEnsureRegCommand,
+  AiHostEntryMap,
+  AiHostRunResult,
+  CreateAiHostOptions,
+} from './business/ai-host'
+
+export {
   AiHostBusinessRegistration,
 } from './business/registration-types'
 
@@ -81,7 +94,13 @@ export {
 export {
   AiHostBusinessSession,
   createAiHostBusinessSession,
+  runAiHostBusiness,
   startRegistrationSession,
+} from './business/business-session'
+
+export type {
+  AiHostBusinessRunCommand,
+  AiHostBusinessRunResult,
 } from './business/business-session'
 
 // ── 5. 聊天 DTO ─────────────────────────────────────────────

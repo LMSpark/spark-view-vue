@@ -13,10 +13,8 @@
 // ============================================================================
 
 import {
-  AiHostBusinessRegistry,
+  createAiHost,
   createAiHostTransportTurn,
-  createAiHostBusinessSession,
-  createAiHostBusinessTask,
   createTurnEventCollector,
   previewAiHostDiagnosticValue,
   summarizeAiHostSessionRecord,
@@ -27,8 +25,7 @@ import {
   subscribeAppSseEvents,
 } from './app-sse-client.mjs'
 import {
-  PAGE_DESIGN_MODULE_ID,
-  registerPageDesignBusiness,
+  ensurePageDesignBusiness,
   validatePageDesignPayloadGuidesFromSession,
 } from '@spark-view/spark-page-config/ai'
 import {
@@ -684,43 +681,39 @@ function createInlineHost(workspace) {
 // 第 8 层：AI 会话编排
 // ============================================================================
 
-function registerBusiness(registry, host) {
-  registerPageDesignBusiness({
-    registry,
-    getPageDesignEditHost: () => host,
-  })
-}
-
-function createSession(options, auth, registry) {
-  const task = createAiHostBusinessTask(registry, PAGE_DESIGN_MODULE_ID, {
-    pageId: options.pageId,
-    userRequirement: options.requestText,
-  })
-  const session = createAiHostBusinessSession({
-    registry,
+function createPageDesignAiHost(options, auth, editHost) {
+  const aiHost = createAiHost({
     turnCallbacks: createTurnCallbacks(options, auth),
     maxToolRounds: options.maxRounds,
-  }, task.target)
-  return { session, task }
+  })
+  return ensurePageDesignBusiness({
+    host: aiHost,
+    getPageDesignEditHost: () => editHost,
+  })
 }
 
 // PAGE_DESIGN_AI_TRACE[e2e-turn]: 发送 LLM 需求，含 AbortController 超时保护。
-async function sendDemand(session, task, timeoutMs, callbacks) {
+async function sendDemand(runPageDesign, input, timeoutMs, callbacks) {
   const controller = new AbortController()
   const startedAt = Date.now()
   const timer = setTimeout(() => controller.abort(), Math.floor(timeoutMs))
   try {
-    await session.send(task.toChatRequest({
+    const runResult = await runPageDesign(input, {
       signal: controller.signal,
       ...callbacks,
-    }))
-    return { ok: true, aborted: false, durationMs: Date.now() - startedAt }
+    })
+    return {
+      report: { ok: true, aborted: false, durationMs: Date.now() - startedAt },
+      runResult,
+    }
   } catch (error) {
     return {
-      ok: false,
-      aborted: controller.signal.aborted,
-      durationMs: Date.now() - startedAt,
-      error: error instanceof Error ? error.message : String(error),
+      report: {
+        ok: false,
+        aborted: controller.signal.aborted,
+        durationMs: Date.now() - startedAt,
+        error: error instanceof Error ? error.message : String(error),
+      },
     }
   } finally {
     clearTimeout(timer)
@@ -1384,10 +1377,8 @@ async function run(options) {
     ? createInlineHost(workspace)
     : createBuiltinHost(workspace)
 
-  // 4. 注册 pageDesign 业务，创建会话
-  const registry = new AiHostBusinessRegistry()
-  registerBusiness(registry, host)
-  const { session, task } = createSession(options, auth, registry)
+  // 4. 注册 pageDesign 业务入口
+  const pageDesignHost = createPageDesignAiHost(options, auth, host)
 
   // 5. 启动会话，发送 LLM 需求
   const textDeltas = []
@@ -1399,8 +1390,10 @@ async function run(options) {
   const toolCalls = []
   const tracer = createConversationTracer(options)
 
-  await session.start()
-  const sendResult = await sendDemand(session, task, options.turnTimeoutMs, {
+  const demand = await sendDemand(pageDesignHost.run.pageDesign, {
+    pageId: options.pageId,
+    userRequirement: options.requestText,
+  }, options.turnTimeoutMs, {
     onDelta: (delta) => {
       textDeltas.push(delta)
       tracer.onDelta(delta)
@@ -1421,6 +1414,11 @@ async function run(options) {
     },
     onFcCall: (record) => toolCalls.push(record),
   })
+  const sendResult = demand.report
+  if (demand.runResult === undefined) {
+    throw new Error(`AI pageDesign run failed before session result was available: ${sendResult.error ?? 'unknown error'}`)
+  }
+  const { session } = demand.runResult
 
   // 6. 保存脏文件 + 远端回读验证
   const after = readWorkspaceFiles(workspace.documents)

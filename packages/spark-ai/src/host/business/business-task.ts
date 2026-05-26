@@ -1,6 +1,7 @@
 import {
   LlmSchemaValidator,
   coerceStrictJsonValue,
+  type LlmJsonParams,
   type LlmJsonSchemaObject,
   type LlmJsonValue,
 } from '../../schema'
@@ -23,20 +24,20 @@ export type AiHostBusinessOrchestrationPlan = Readonly<{
   readonlySteps?: readonly string[]
 }>
 
-export type AiHostBusinessInputContract = Readonly<{
+export type AiHostBusinessInputContract<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
   paramsSchema: LlmJsonSchemaObject
-  identityField: string
-  normalize: (input: AiHostBusinessTaskInput) => AiHostBusinessTaskInput
-  toScope: (normalizedInput: AiHostBusinessTaskInput) => AiHostBusinessScope
-  toOrchestration: (normalizedInput: AiHostBusinessTaskInput) => AiHostBusinessOrchestrationPlan
+  identityField: keyof TInput & string
+  normalize(input: LlmJsonParams): TInput
+  toScope(normalizedInput: TInput): AiHostBusinessScope
+  toOrchestration(normalizedInput: TInput): AiHostBusinessOrchestrationPlan
 }>
 
-export type AiHostBusinessKindDefinition = Readonly<{
+export type AiHostBusinessKindDefinition<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
   kindID: string
   name: string
   description: string
   runtime: ModuleSemanticRuntime
-  inputContract: AiHostBusinessInputContract
+  inputContract: AiHostBusinessInputContract<TInput>
   sessionStore?: AiHostSessionStore
   systemPrompt?: (context: AiHostBusinessRuntimeContext) => string | undefined
   afterFunctionCall?: (
@@ -54,16 +55,16 @@ export type AiHostBusinessTaskChatOptions = Omit<AiHostChatRequest, 'historyMsgs
   systemPrompt?: string
 }>
 
-export type AiHostBusinessTaskRegistry = Readonly<{
-  get(kindID: string): AiHostBusinessRegistration | undefined
+export type AiHostBusinessTaskRegistry<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  get(kindID: string): AiHostBusinessRegistration<TInput> | undefined
 }>
 
-export class AiHostBusinessTask {
+export class AiHostBusinessTask<TInput extends LlmJsonParams = LlmJsonParams> {
   public readonly target: AiHostBusinessTarget
 
   public constructor(
     public readonly kindID: string,
-    public readonly normalizedInput: AiHostBusinessTaskInput,
+    public readonly normalizedInput: TInput,
     public readonly scope: AiHostBusinessScope,
     public readonly orchestration: AiHostBusinessOrchestrationPlan,
   ) {
@@ -88,9 +89,9 @@ export class AiHostBusinessTask {
   }
 }
 
-export function projectAiHostBusinessRegistration(
-  definition: AiHostBusinessKindDefinition,
-): AiHostBusinessRegistration {
+export function projectAiHostBusinessRegistration<TInput extends LlmJsonParams = LlmJsonParams>(
+  definition: AiHostBusinessKindDefinition<TInput>,
+): AiHostBusinessRegistration<TInput> {
   return new AiHostBusinessRegistration({
     moduleId: normalizeRequiredText(definition.kindID, 'kindID'),
     name: definition.name,
@@ -106,11 +107,11 @@ export function projectAiHostBusinessRegistration(
   })
 }
 
-export function createAiHostBusinessTask(
-  registry: AiHostBusinessTaskRegistry,
+export function createAiHostBusinessTask<TInput extends LlmJsonParams = LlmJsonParams>(
+  registry: AiHostBusinessTaskRegistry<TInput>,
   kindID: string,
   input: unknown,
-): AiHostBusinessTask {
+): AiHostBusinessTask<TInput> {
   const normalizedKindID = normalizeRequiredText(kindID, 'kindID')
   const registration = registry.get(normalizedKindID)
   if (registration === undefined) {
@@ -123,7 +124,7 @@ export function createAiHostBusinessTask(
 
   const rawInput = coerceInputRecord(input, `${normalizedKindID} input`)
   validateTaskInput(normalizedKindID, contract.paramsSchema, rawInput)
-  const normalizedInput = coerceInputRecord(contract.normalize(rawInput), `${normalizedKindID} normalized input`)
+  const normalizedInput = contract.normalize(rawInput)
   validateTaskInput(normalizedKindID, contract.paramsSchema, normalizedInput)
 
   const identity = readIdentityValue(normalizedKindID, contract, normalizedInput)

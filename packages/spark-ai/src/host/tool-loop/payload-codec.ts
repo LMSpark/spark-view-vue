@@ -16,7 +16,7 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import type { LlmJsonObject, LlmJsonValue } from '../../schema'
+import type { LlmJsonObject, LlmJsonParams, LlmJsonValue } from '../../schema'
 import { coerceStrictJsonValue } from '../../schema'
 import { latestUserInput } from '../business/business-scope'
 import type { AiHostChatRequest } from '../chat/chat-types'
@@ -45,7 +45,7 @@ export class ToolArgsParseError extends Error {
   }
 }
 
-export function parseToolArgs(raw: string | undefined): Readonly<Record<string, LlmJsonValue>> {
+export function parseToolArgs(raw: string | undefined): LlmJsonParams {
   if (raw === undefined || raw.trim() === '') return {}
   let parsed: unknown
   try {

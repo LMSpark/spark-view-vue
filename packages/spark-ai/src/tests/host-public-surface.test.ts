@@ -5,6 +5,8 @@ describe('@spark-view/spark-ai/host public surface', () => {
     const hostModule = await import('../host')
 
     expect(Object.keys(hostModule).sort()).toEqual([
+      'AI_HOST',
+      'AiHost',
       'AiHostBusinessRegistration',
       'AiHostBusinessRegistry',
       'AiHostBusinessRuntimeContext',
@@ -18,11 +20,13 @@ describe('@spark-view/spark-ai/host public surface', () => {
       'createAiHostBusinessScope',
       'createAiHostBusinessSession',
       'createAiHostBusinessTask',
+      'createAiHost',
       'createAiHostTransportTurn',
       'createAiHostSessionTranscript',
       'createTurnEventCollector',
       'previewAiHostDiagnosticValue',
       'projectAiHostBusinessRegistration',
+      'runAiHostBusiness',
       'startRegistrationSession',
       'summarizeAiHostSessionRecord',
       'toAiHostRuntimeScope',

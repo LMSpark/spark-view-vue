@@ -9,7 +9,7 @@
  * 这些 DTO 会通过 protocol/index.ts 统一导出；运行时内部也只依赖该门面。
  */
 
-import type { LlmJsonValue } from '../../schema'
+import type { LlmJsonParams, LlmJsonValue } from '../../schema'
 import type { ModuleHostContext, ModuleInstanceQuery } from './module-context'
 import type { ModulePath } from './module-path'
 
@@ -34,7 +34,7 @@ export type ModuleFunctionInvokeRequest = Readonly<{
   /** 函数名（必须在目标 kind 的 functions 表中已声明） */
   functionName: string
   /** 函数参数 */
-  args: Readonly<Record<string, LlmJsonValue>>
+  args: LlmJsonParams
   /** Host 上下文（可选） */
   host?: ModuleHostContext
 }>

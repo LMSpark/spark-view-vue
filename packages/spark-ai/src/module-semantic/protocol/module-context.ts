@@ -12,7 +12,7 @@
  *   四、委托契约         — 依赖基础标识 + 导航上下文 + 操作类型别名
  */
 
-import type { LlmJsonValue } from '../../schema'
+import type { LlmJsonParams, LlmJsonValue } from '../../schema'
 import type { ModuleOperationResult } from './module-operation'
 import type { ModulePathSegment } from './module-path'
 
@@ -112,7 +112,7 @@ export type ModuleAttributeAccessor = Readonly<{
 export type ModuleKindRunner = (
   ctx: ModulePathContext,
   functionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: LlmJsonParams,
 ) => ModuleKindOperation<LlmJsonValue>
 
 /**

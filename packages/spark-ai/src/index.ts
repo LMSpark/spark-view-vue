@@ -41,6 +41,8 @@ export {
 
 export type {
   LlmJsonObject,
+  LlmJsonParamShape,
+  LlmJsonParams,
   LlmJsonSchema,
   LlmJsonSchemaObject,
   LlmJsonSchemaType,
@@ -160,6 +162,19 @@ export type {
 // Host business/session -----------------------------------------------------
 
 export {
+  AI_HOST,
+  AiHost,
+  createAiHost,
+} from './host/business/ai-host'
+
+export type {
+  AiHostEnsureRegCommand,
+  AiHostEntryMap,
+  AiHostRunResult,
+  CreateAiHostOptions,
+} from './host/business/ai-host'
+
+export {
   AiHostBusinessRegistration,
 } from './host/business/registration-types'
 
@@ -182,6 +197,7 @@ export {
 export {
   AiHostBusinessSession,
   createAiHostBusinessSession,
+  runAiHostBusiness,
   startRegistrationSession,
 } from './host/business/business-session'
 
@@ -215,6 +231,11 @@ export type {
   AiHostBusinessTaskChatOptions,
   AiHostBusinessTaskInput,
 } from './host/business/business-task'
+
+export type {
+  AiHostBusinessRunCommand,
+  AiHostBusinessRunResult,
+} from './host/business/business-session'
 
 export type {
   AiHostBusinessRegistrationOptions,

@@ -23,6 +23,7 @@
  */
 
 import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
+import type { LlmJsonParams } from '../../schema'
 import { createAiHostBusinessSessionId, toAiHostRuntimeScope } from '../business/business-scope'
 import type {
   AiHostBusinessLifecycleDirective,
@@ -45,8 +46,8 @@ import { AiHostToolCallExecutor } from './tool-call-executor'
  * ----------------------------------------------------------------------------- */
 
 /** 工具循环的输入参数 */
-type AiHostToolLoopInput = Readonly<{
-  registration: AiHostBusinessRegistration
+type AiHostToolLoopInput<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  registration: AiHostBusinessRegistration<TInput>
   scope: AiHostBusinessScope
   request: AiHostChatRequest
   turn: AiHostTurnMeta
@@ -81,7 +82,7 @@ export class AiHostToolLoopRunner {
    */
   // PAGE_DESIGN_AI_TRACE[host-tool-loop]: pageDesign 的 LLM round、toolCalls、工具结果回填都在这里闭环；冗余清理时用它区分 AI 编排和具体业务工具实现。
   // PAGE_DESIGN_REFACTOR_SOURCE[tool-result-feedback]: FC 执行结果和 ok:false 参数校验回灌给 LLM 的通用闭环；业务工具只返回结构化结果。
-  public async runToolLoop(input: AiHostToolLoopInput): Promise<void> {
+  public async runToolLoop<TInput extends LlmJsonParams>(input: AiHostToolLoopInput<TInput>): Promise<void> {
     const { registration, scope, request, turn, clearSelected } = input
     const runtimeContext = toAiHostRuntimeScope(scope)
     const sessionId = createAiHostBusinessSessionId(scope.businessRegistrationId, scope.businessInstanceId)
@@ -245,7 +246,9 @@ export class AiHostToolLoopRunner {
    *   6. 若 releaseInstance=true → 调用 releaseModuleInstance 释放外部资源
    *   7. clearSelected 清除 session 缓存
    */
-  private async completeLifecycleDirective(input: CompleteLifecycleDirectiveInput): Promise<void> {
+  private async completeLifecycleDirective<TInput extends LlmJsonParams>(
+    input: CompleteLifecycleDirectiveInput<TInput>,
+  ): Promise<void> {
     const {
       registration,
       lifecycleDirective,
@@ -328,8 +331,8 @@ export class AiHostToolLoopRunner {
  * ----------------------------------------------------------------------------- */
 
 /** completeLifecycleDirective 方法的输入参数 */
-type CompleteLifecycleDirectiveInput = Readonly<{
-  registration: AiHostBusinessRegistration
+type CompleteLifecycleDirectiveInput<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+  registration: AiHostBusinessRegistration<TInput>
   lifecycleDirective: AiHostBusinessLifecycleDirective
   runtimeContext: ReturnType<typeof toAiHostRuntimeScope>
   scope: AiHostBusinessScope
@@ -350,7 +353,9 @@ type AppendMessagesToTransportInput = Readonly<{
 }>
 
 /** 获取 sessionStore，若未配置则抛异常 */
-function requireSessionStore(registration: AiHostBusinessRegistration): AiHostSessionStore {
+function requireSessionStore<TInput extends LlmJsonParams>(
+  registration: AiHostBusinessRegistration<TInput>,
+): AiHostSessionStore {
   if (registration.sessionStore === undefined) {
     throw new Error(`AI host business registration missing sessionStore: ${registration.moduleId}`)
   }

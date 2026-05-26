@@ -21,6 +21,9 @@ import type * as SparkAiHost from '@spark-view/spark-ai/host'
 import {
   booleanSchema,
   enumSchema,
+  type LlmJsonParamShape,
+  type LlmJsonParams,
+  type LlmJsonValue,
   objectSchema,
   paramsSchema,
   stringSchema,
@@ -39,7 +42,6 @@ import type {
 import { PageDesignService } from '../design/page-design-service'
 import { PageDesignDatasetModuleKind } from './dataset-tool-catalog'
 import { PageDesignLifecycleModuleKind } from './lifecycle-tool-catalog'
-import { createLeaveRequestBusinessRegistration } from './leave-request'
 import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
 import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
 import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
@@ -52,6 +54,27 @@ import {
 // ── 模块标识与系统提示词片段 ───────────────────────────────
 
 export const PAGE_DESIGN_MODULE_ID = PAGE_DESIGN_ROOT_KIND
+export const PAGE_DESIGN_AI_HOST_ALIAS = PAGE_DESIGN_MODULE_ID
+
+const PAGE_DESIGN_RUN_MODES = ['create', 'modify', 'fix', 'data', 'style'] as const
+const PAGE_DESIGN_RUN_MODE_SET: ReadonlySet<string> = new Set(PAGE_DESIGN_RUN_MODES)
+
+export type PageDesignRunMode = typeof PAGE_DESIGN_RUN_MODES[number]
+
+export type PageDesignAllowedOperations = LlmJsonParamShape<{
+  addTables?: boolean
+  addComponents?: boolean
+  editScript?: boolean
+  editStyle?: boolean
+}>
+
+export type PageDesignRunInput = LlmJsonParamShape<{
+  pageId: string
+  userRequirement: string
+  mode?: PageDesignRunMode
+  allowedOperations?: PageDesignAllowedOperations
+  preserveExistingInteractions?: boolean
+}>
 
 // PAGE_DESIGN_REFACTOR_SOURCE[prompt-root]: pageDesign 系统提示词唯一出处；保持小提示词，任务知识通过 lifecycle/payload-catalog 按需查询。
 const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/<childKind>[pageId]；参数看 tools schema；写入 dataset->node-tree->text-model；组件 props 查 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
@@ -71,7 +94,7 @@ type PageDesignModuleOptions = {
 const PAGE_DESIGN_INPUT_SCHEMA = paramsSchema({
   pageId: stringSchema('当前 pageDesign 业务实例身份。由宿主选中的页面 ID 提供，用于定位 PageDesignEditHost。', { minLength: 1 }),
   userRequirement: stringSchema('用户原始页面设计需求。作为 describeDesignFlow({ intent }) 的意图来源。', { minLength: 1 }),
-  mode: enumSchema(['create', 'modify', 'fix', 'data', 'style'], '可选。任务模式：新建、改造、修 bug、补数据或调样式。'),
+  mode: enumSchema(PAGE_DESIGN_RUN_MODES, '可选。任务模式：新建、改造、修 bug、补数据或调样式。'),
   allowedOperations: objectSchema({
     addTables: booleanSchema('是否允许新增 pagedata.json DataTable。'),
     addComponents: booleanSchema('是否允许新增 rule.json 节点。'),
@@ -97,7 +120,7 @@ const PAGE_DESIGN_INPUT_SCHEMA = paramsSchema({
  */
 export function createPageDesignBusinessRegistration(
   options: PageDesignModuleOptions,
-): SparkAiHost.AiHostBusinessRegistration {
+): SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput> {
   return projectAiHostBusinessRegistration(createPageDesignBusinessKindDefinition(options))
 }
 
@@ -109,7 +132,7 @@ export function createPageDesignBusinessRegistration(
  */
 export function createPageDesignBusinessKindDefinition(
   options: PageDesignModuleOptions,
-): SparkAiHost.AiHostBusinessKindDefinition {
+): SparkAiHost.AiHostBusinessKindDefinition<PageDesignRunInput> {
   const service = new PageDesignService({
     getEditHost: (context) => options.getEditToolHost({
       instanceId: context.requestId,
@@ -191,22 +214,33 @@ export function createPageDesignBusinessKindDefinition(
   }
 }
 
-function normalizePageDesignBusinessInput(
-  input: SparkAiHost.AiHostBusinessTaskInput,
-): SparkAiHost.AiHostBusinessTaskInput {
-  const normalized: Record<string, SparkAiHost.AiHostBusinessTaskInput[string]> = { ...input }
-  normalized['pageId'] = requirePageDesignInputText(input, 'pageId')
-  normalized['userRequirement'] = requirePageDesignInputText(input, 'userRequirement')
+function normalizePageDesignBusinessInput(input: LlmJsonParams): PageDesignRunInput {
+  const normalized: {
+    pageId: string
+    userRequirement: string
+    mode?: PageDesignRunMode
+    allowedOperations?: PageDesignAllowedOperations
+    preserveExistingInteractions?: boolean
+  } = {
+    pageId: requirePageDesignInputText(input, 'pageId'),
+    userRequirement: requirePageDesignInputText(input, 'userRequirement'),
+  }
   const mode = input['mode']
-  if (typeof mode === 'string') normalized['mode'] = mode.trim()
+  if (isPageDesignRunMode(mode)) normalized.mode = mode
+  const allowedOperations = normalizeAllowedOperations(input['allowedOperations'])
+  if (allowedOperations !== undefined) normalized.allowedOperations = allowedOperations
+  const preserveExistingInteractions = input['preserveExistingInteractions']
+  if (typeof preserveExistingInteractions === 'boolean') {
+    normalized.preserveExistingInteractions = preserveExistingInteractions
+  }
   return normalized
 }
 
 function createPageDesignOrchestration(
-  input: SparkAiHost.AiHostBusinessTaskInput,
+  input: PageDesignRunInput,
 ): SparkAiHost.AiHostBusinessOrchestrationPlan {
-  const pageId = requirePageDesignInputText(input, 'pageId')
-  const userRequirement = requirePageDesignInputText(input, 'userRequirement')
+  const pageId = input.pageId
+  const userRequirement = input.userRequirement
   return {
     title: 'pageDesign registered task orchestration',
     userMessage: userRequirement,
@@ -223,7 +257,7 @@ function createPageDesignOrchestration(
 }
 
 function requirePageDesignInputText(
-  input: SparkAiHost.AiHostBusinessTaskInput,
+  input: LlmJsonParams,
   fieldName: 'pageId' | 'userRequirement',
 ): string {
   const value = input[fieldName]
@@ -231,6 +265,33 @@ function requirePageDesignInputText(
     throw new Error(`pageDesign input.${fieldName} must be a non-empty string.`)
   }
   return value.trim()
+}
+
+function isPageDesignRunMode(value: LlmJsonValue | undefined): value is PageDesignRunMode {
+  return typeof value === 'string' && PAGE_DESIGN_RUN_MODE_SET.has(value)
+}
+
+function normalizeAllowedOperations(value: LlmJsonValue | undefined): PageDesignAllowedOperations | undefined {
+  if (!isJsonParams(value)) return undefined
+  const out: {
+    addTables?: boolean
+    addComponents?: boolean
+    editScript?: boolean
+    editStyle?: boolean
+  } = {}
+  const addTables = value['addTables']
+  if (typeof addTables === 'boolean') out.addTables = addTables
+  const addComponents = value['addComponents']
+  if (typeof addComponents === 'boolean') out.addComponents = addComponents
+  const editScript = value['editScript']
+  if (typeof editScript === 'boolean') out.editScript = editScript
+  const editStyle = value['editStyle']
+  if (typeof editStyle === 'boolean') out.editStyle = editStyle
+  return out
+}
+
+function isJsonParams(value: LlmJsonValue | undefined): value is LlmJsonParams {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
 // ── System Prompt 组装 ─────────────────────────────────────
@@ -313,42 +374,37 @@ function pageDesignEditHostUnavailableMessage(result: SparkAiHost.AiHostFunction
   return null
 }
 
-// ── 公共注册门面 ───────────────────────────────────────────
+// ── 公共 Host 门面 ─────────────────────────────────────────
 
-type RegisterAssistantBusinessesOptions = {
-  readonly registry: SparkAiHost.AiHostBusinessRegistry
-  readonly getPageDesignEditHost?: (context: SparkAiHost.AiHostBusinessRuntimeContext) => PageDesignEditHost
-}
-
-type RegisterPageDesignBusinessOptions = {
-  readonly registry: SparkAiHost.AiHostBusinessRegistry
+export type EnsurePageDesignBusinessOptions<TEntries extends SparkAiHost.AiHostEntryMap, TAlias extends string> = {
+  readonly host: SparkAiHost.AiHost<TEntries>
+  readonly alias?: TAlias
   readonly getPageDesignEditHost: (context: SparkAiHost.AiHostBusinessRuntimeContext) => PageDesignEditHost
 }
 
-/**
- * 将 pageDesign 注册到传入的 AI Host registry。
- *
- * 这是 smoke、前端壳和其它宿主应使用的窄入口；具体业务规则必须继续留在
- * pageDesign 的 ModuleKind / PageDesignService 内。
- */
-export function registerPageDesignBusiness(options: RegisterPageDesignBusinessOptions): void {
-  options.registry.register(createPageDesignBusinessRegistration({
-    getEditToolHost: (context) => options.getPageDesignEditHost(context),
-  }))
-}
+export type PageDesignAiHostEntry = Record<
+  typeof PAGE_DESIGN_AI_HOST_ALIAS,
+  SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput>
+>
 
 /**
- * 兼容旧 assistant business 注册入口。
- *
- * leave-request 仍按历史业务注册；pageDesign 只有在宿主提供 live edit host 时注册。
+ * 将 pageDesign 业务入口确保注册到 AI Host。
+ * 调用方拿到返回值后即可使用 `host.run.pageDesign({ pageId, userRequirement })`。
  */
-export function registerAssistantBusinesses(options: RegisterAssistantBusinessesOptions): void {
-  options.registry.register(createLeaveRequestBusinessRegistration())
-
-  if (options.getPageDesignEditHost === undefined) return
-
-  registerPageDesignBusiness({
-    registry: options.registry,
-    getPageDesignEditHost: options.getPageDesignEditHost,
+export function ensurePageDesignBusiness<TEntries extends SparkAiHost.AiHostEntryMap>(
+  options: EnsurePageDesignBusinessOptions<TEntries, typeof PAGE_DESIGN_AI_HOST_ALIAS>,
+): SparkAiHost.AiHost<TEntries & PageDesignAiHostEntry>
+export function ensurePageDesignBusiness<TEntries extends SparkAiHost.AiHostEntryMap, TAlias extends string>(
+  options: EnsurePageDesignBusinessOptions<TEntries, TAlias> & { readonly alias: TAlias },
+): SparkAiHost.AiHost<TEntries & Record<TAlias, SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput>>>
+export function ensurePageDesignBusiness<TEntries extends SparkAiHost.AiHostEntryMap, TAlias extends string>(
+  options: EnsurePageDesignBusinessOptions<TEntries, TAlias>,
+): SparkAiHost.AiHost<TEntries & Record<TAlias | typeof PAGE_DESIGN_AI_HOST_ALIAS, SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput>>> {
+  const alias = options.alias ?? PAGE_DESIGN_AI_HOST_ALIAS
+  return options.host.ensureReg(alias, {
+    moduleId: PAGE_DESIGN_MODULE_ID,
+    create: () => createPageDesignBusinessRegistration({
+      getEditToolHost: (context) => options.getPageDesignEditHost(context),
+    }),
   })
 }
