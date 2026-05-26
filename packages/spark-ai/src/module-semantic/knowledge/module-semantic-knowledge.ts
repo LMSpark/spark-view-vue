@@ -11,6 +11,7 @@
  */
 
 import type { ModuleKindRegistry } from '../internal/module-kind-registry'
+import { resolveModuleKindPath } from '../internal/module-kind-path'
 import {
   ModuleOperationResult,
 } from '../protocol'
@@ -37,7 +38,6 @@ import {
   FIXED_PROTOCOL_TOOL_ROUTING_LINES,
   formatPayloadBinding,
   formatPromptKindIndexLine,
-  kindPathFor,
   moduleSummaryGuidesMatchKeyword,
   normalizeOptionalText,
   normalizeTextList,
@@ -109,7 +109,7 @@ export class ModuleSemanticKnowledgeProjector {
         payloadFunctionRefs: moduleKind.payloads.map(formatPayloadBinding),
         payloadLookupSteps: createPayloadLookupSteps({
           kind: moduleKind.kind,
-          kindPath: layer.functionLookupSteps.length > 0 ? kindPathFor(moduleKind, moduleKinds) : [moduleKind.kind],
+          kindPath: resolveModuleKindPath(moduleKind, moduleKinds),
           payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
           payloadCatalogs,
         }),
@@ -154,7 +154,7 @@ export class ModuleSemanticKnowledgeProjector {
     const allKinds = this.kinds.list()
     const payloadCatalogs = discoverPayloadCatalogs(allKinds)
     const summaries = allKinds.flatMap((moduleKind) => {
-      const kindPath = kindPathFor(moduleKind, allKinds)
+      const kindPath = resolveModuleKindPath(moduleKind, allKinds)
       return moduleKind.functions.map((fn) => summarizeFunction({
         kind: moduleKind.kind,
         kindPath,
@@ -197,7 +197,7 @@ export class ModuleSemanticKnowledgeProjector {
       )
     }
     const allKinds = this.kinds.list()
-    const actualKindPath = kindPathFor(moduleKind, allKinds)
+    const actualKindPath = resolveModuleKindPath(moduleKind, allKinds)
     if (parsed.kindPathFromTool !== undefined) {
       if (parsed.kindPathFromTool.length !== actualKindPath.length
         || parsed.kindPathFromTool.some((segment, i) => segment !== actualKindPath[i])) {

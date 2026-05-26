@@ -599,7 +599,7 @@ section KnowledgeProjectionSurface {
     "不使用审阅型大标题，只保留工具、Kind、流程短标签",
     "每轮只给根 kind 索引，不内嵌完整函数目录",
     "函数、属性和复杂参数按 queryModules/queryFunctions/guideFunction/describeKind/payloadLookupSteps 查询",
-    "模块行按需标记 payload=payload-catalog"
+    "模块行按需标记 payload=payloadLookupSteps"
   ]
 }
 
@@ -629,10 +629,10 @@ section RegisterSurfaceRules {
     "function.paramsSchema 和 payload guide paramsSchema 必须是标准 JSON Schema object root。"
 
   rule R09_payload_binding:
-    "复杂参数目录必须通过 ModuleKind.payloads 声明归属，并通过 ModuleParameterPayloadRegistry 注册 provider。"
+    "复杂参数目录必须通过 ModuleKind.payloads 声明归属；声明 payloads 时必须注册带 queryPayloads/guidePayload 函数的 payload catalog ModuleKind。"
 
   rule R10_payload_provider_fail_fast:
-    "未知 moduleKind/payloadRef 不允许静默回退到默认 provider。"
+    "未知 moduleKind/payloadRef 或缺失 payload catalog 不允许静默回退到默认 provider 或想象中的工具名。"
 
   rule R11_business_state_ownership:
     "业务 live state 归业务 service 或 host，不归 ModuleSemanticRuntime。"

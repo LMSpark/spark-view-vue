@@ -32,11 +32,12 @@
  */
 
 import type { LlmJsonSchema, LlmJsonSchemaObject } from '../../schema'
-import type { ModuleFunctionMetadata, ModuleKind } from '../protocol'
+import type { ModuleFunctionMetadata } from '../protocol'
 import type { ModuleKindRegistry } from './module-kind-registry'
 import {
   createBusinessFunctionToolName,
 } from './business-function-tool-name'
+import { resolveModuleKindPath } from './module-kind-path'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型
@@ -421,7 +422,7 @@ export class ProtocolToolGenerator {
     const seen = new Set<string>()
     const tools: ModuleSemanticToolSpec[] = []
     for (const moduleKind of moduleKinds) {
-      const kindPath = kindPathFor(moduleKind, moduleKinds)
+      const kindPath = resolveModuleKindPath(moduleKind, moduleKinds)
       for (const fn of moduleKind.functions) {
         const tool = buildBusinessFunctionTool(kindPath, fn)
         if (seen.has(tool.function.name)) {
@@ -538,23 +539,4 @@ function buildBusinessFunctionTool(
       },
     },
   }
-}
-
-function kindPathFor(moduleKind: ModuleKind, allKinds: readonly ModuleKind[]): readonly string[] {
-  const path = [moduleKind.kind]
-  const seen = new Set<string>(path)
-  let parentKind = moduleKind.parentKind
-  while (parentKind !== undefined) {
-    if (seen.has(parentKind)) {
-      throw new Error(`ModuleKind parent cycle detected at "${parentKind}"`)
-    }
-    const parent = allKinds.find((candidate) => candidate.kind === parentKind)
-    if (parent === undefined) {
-      throw new Error(`ModuleKind "${moduleKind.kind}" references missing parentKind "${parentKind}"`)
-    }
-    path.unshift(parent.kind)
-    seen.add(parent.kind)
-    parentKind = parent.parentKind
-  }
-  return path
 }

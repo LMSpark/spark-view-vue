@@ -7,6 +7,7 @@ import {
   createBusinessFunctionToolName,
   parseBusinessFunctionToolName,
 } from '../internal/business-function-tool-name'
+import { resolveModuleKindPath } from '../internal/module-kind-path'
 import type { ModuleKind, ModuleParameterPayloadMetadata } from '../protocol'
 import type {
   FunctionKnowledgeProjectionOptions,
@@ -72,23 +73,6 @@ export function containsKeyword(values: readonly string[], keyword: string): boo
 }
 
 // ── kind 路径与工具名 ────────────────────────────────────────
-
-export function kindPathFor(moduleKind: ModuleKind, allKinds: readonly ModuleKind[]): readonly string[] {
-  const path = [moduleKind.kind]
-  const seen = new Set<string>(path)
-  let parentKind = moduleKind.parentKind
-  while (parentKind !== undefined) {
-    if (seen.has(parentKind)) {
-      throw new Error(`ModuleKind parent cycle detected at "${parentKind}"`)
-    }
-    const parent = allKinds.find((candidate) => candidate.kind === parentKind)
-    if (parent === undefined) break
-    path.unshift(parent.kind)
-    seen.add(parent.kind)
-    parentKind = parent.parentKind
-  }
-  return path
-}
 
 export function functionToolName(kindPath: readonly string[], functionName: string): string {
   return createBusinessFunctionToolName(kindPath, functionName)
@@ -160,7 +144,6 @@ export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): 
 // ── Payload catalog 发现与格式化 ──────────────────────────────
 
 export function discoverPayloadCatalogs(kinds: readonly ModuleKind[]): readonly PayloadCatalogDescriptor[] {
-  const kindMap = new Map(kinds.map((k) => [k.kind, k]))
   return kinds
     .filter((moduleKind) =>
       moduleKind.functions.some((fn) => fn.name === PAYLOAD_QUERY_ACTION_NAME)
@@ -168,26 +151,17 @@ export function discoverPayloadCatalogs(kinds: readonly ModuleKind[]): readonly 
     )
     .map((moduleKind) => ({
       kind: moduleKind.kind,
-      kindPath: computeKindPath(moduleKind, kindMap),
+      kindPath: resolveModuleKindPath(moduleKind, kinds),
       ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
     }))
 }
 
-function computeKindPath(moduleKind: ModuleKind, kindMap: Map<string, ModuleKind>): readonly string[] {
-  const segments: string[] = []
-  let current: ModuleKind | undefined = moduleKind
-  while (current !== undefined) {
-    segments.push(current.kind)
-    current = current.parentKind !== undefined ? kindMap.get(current.parentKind) : undefined
-  }
-  return segments.reverse()
-}
-
 export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): readonly string[] {
   if (options.payloadRefs.length === 0) return []
-  const catalogLocator = formatPayloadCatalogLocator(options.payloadCatalogs)
-  const catalogToolNames = formatPayloadCatalogToolNames(options.payloadCatalogs)
-  const catalogPathPlaceholders = formatPayloadCatalogPathPlaceholders(options.payloadCatalogs)
+  const payloadCatalogs = requirePayloadCatalogs(options)
+  const catalogLocator = formatPayloadCatalogLocator(payloadCatalogs)
+  const catalogToolNames = formatPayloadCatalogToolNames(payloadCatalogs)
+  const catalogPathPlaceholders = formatPayloadCatalogPathPlaceholders(payloadCatalogs)
   const finalToolRef = options.functionName === undefined
     ? '<toolName>'
     : functionToolName(options.kindPath, options.functionName)
@@ -199,12 +173,17 @@ export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): re
   ])
 }
 
+function requirePayloadCatalogs(options: PayloadLookupStepsOptions): readonly PayloadCatalogDescriptor[] {
+  if (options.payloadCatalogs.length > 0) return options.payloadCatalogs
+  throw new Error(
+    `ModuleKind "${options.kind}" declares payloadRef ${options.payloadRefs.join(', ')} but no payload catalog ModuleKind is registered. ` +
+    `Register a ModuleKind with functions "${PAYLOAD_QUERY_ACTION_NAME}" and "${PAYLOAD_GUIDE_ACTION_NAME}" before projecting knowledge.`,
+  )
+}
+
 function formatPayloadCatalogToolNames(catalogs: readonly PayloadCatalogDescriptor[]): { queryPayloads: string, guidePayload: string } {
   const [catalog] = catalogs
-  if (catalog === undefined) {
-    const fallback = 'payload-catalog'
-    return { queryPayloads: `${fallback}_${PAYLOAD_QUERY_ACTION_NAME}`, guidePayload: `${fallback}_${PAYLOAD_GUIDE_ACTION_NAME}` }
-  }
+  if (catalog === undefined) throw new Error('payload catalog descriptor is required')
   const queryTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_QUERY_ACTION_NAME)
   const guideTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_GUIDE_ACTION_NAME)
   return { queryPayloads: queryTool, guidePayload: guideTool }
@@ -212,12 +191,12 @@ function formatPayloadCatalogToolNames(catalogs: readonly PayloadCatalogDescript
 
 function formatPayloadCatalogPathPlaceholders(catalogs: readonly PayloadCatalogDescriptor[]): string {
   const [catalog] = catalogs
-  if (catalog === undefined) return '<catalogInstanceId>'
+  if (catalog === undefined) throw new Error('payload catalog descriptor is required')
   return catalog.kindPath.map((kind) => `<${kind}Id>`).join(', ')
 }
 
 function formatPayloadCatalogLocator(catalogs: readonly PayloadCatalogDescriptor[]): string {
-  if (catalogs.length === 0) return 'payload-catalog(业务目录模块)'
+  if (catalogs.length === 0) throw new Error('payload catalog descriptor is required')
   return catalogs.map((catalog) =>
     catalog.parentKind === undefined ? catalog.kind : `${catalog.parentKind}/${catalog.kind}`
   ).join('|')
@@ -389,7 +368,7 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): Module
 
 export function createKindLayer(options: KindLayerOptions): ModuleSemanticKnowledgeKindLayer {
   const { moduleKind, allKinds, payloadCatalogs } = options
-  const kindPath = kindPathFor(moduleKind, allKinds)
+  const kindPath = resolveModuleKindPath(moduleKind, allKinds)
   return {
     kind: moduleKind.kind,
     name: moduleKind.name,
@@ -446,17 +425,8 @@ export function createLayerFunctions(moduleKind: ModuleKind, kindPath: readonly 
 }
 
 export function kindLayerLevel(moduleKind: ModuleKind, allKinds: readonly ModuleKind[]): number {
-  let level = 0
-  let currentParent = moduleKind.parentKind
-  const seen = new Set<string>([moduleKind.kind])
-  while (currentParent !== undefined && !seen.has(currentParent)) {
-    seen.add(currentParent)
-    const parent = allKinds.find((candidate) => candidate.kind === currentParent)
-    if (parent === undefined) return level + 1
-    level += 1
-    currentParent = parent.parentKind
-  }
-  return level
+  const kindPath = resolveModuleKindPath(moduleKind, allKinds)
+  return kindPath.length - 1
 }
 
 export function createPathPattern(moduleKind: ModuleKind): string {
@@ -581,7 +551,7 @@ export function summarizeChildKind(
     return {
       kind: childKind,
       name: childKind,
-      description: '子 kind 已声明，当前注册表未提供详细元数据。',
+      description: '子 kind 已声明但未注册，当前仅保留声明名。',
       functionNames: [],
       attributeNames: [],
       payloadRefs: [],
@@ -589,7 +559,7 @@ export function summarizeChildKind(
       attributeSummaries: [],
       functionSummaries: [],
       detailLookupSteps: [
-        `注册 ${childKind} 后，queryModules({ kind: "${childKind}" }) 返回该子层完整指南。`,
+        `注册 ${childKind} 后，queryModules({ kind: "${childKind}" }) 才会返回该子层完整指南。`,
       ],
     }
   }
@@ -624,6 +594,6 @@ export function formatPromptKindIndexLine(layer: ModuleSemanticKnowledgeKindLaye
   const prefix = layer.parentKind === undefined ? `root ${layer.kind}` : `${layer.parentKind}/${layer.kind}`
   const childKinds = layer.childKinds.map((child) => child.kind)
   const children = childKinds.length === 0 ? '' : ` -> [${childKinds.join('|')}]`
-  const payload = layer.payloadLookupSteps.length === 0 ? '' : '; payload=payload-catalog'
+  const payload = layer.payloadLookupSteps.length === 0 ? '' : '; payload=payloadLookupSteps'
   return `${prefix}${children}${payload}`
 }

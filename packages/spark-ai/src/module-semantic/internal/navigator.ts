@@ -9,9 +9,9 @@
  *   3. Kind 元数据查询（describeKind）
  *
  * 【设计决策】
- *   - 根路径 "/" listChildren 返回所有已注册 kind 名单（LLM 发现入口的第一跳）。
- *   - 路径第一段不验证父子关系（没有父），由业务方在 root ModuleKind 的 function 中自行校验。
- *   - 第二段起通过父 ModuleKind.resolveChild 验证父子存在性。
+ *   - 根路径 "/" listChildren 只返回 parentKind 未设置的根 kind。
+ *   - 路径第一段必须是根 kind，不能把子 kind 当根路径访问。
+ *   - 第二段起先校验子 kind 的 parentKind，再通过父 ModuleKind.resolveChild 验证父子存在性。
  *   - 根级 findInstance 的 ModulePathContext 不设置 segment。
  *   - describeKind 全量返回 attributes/functions/children，不剥离任何字段。
  *
@@ -20,7 +20,7 @@
  * ═══════════════════════════════════════════════════════════════
  * LLM 发现流程（典型时序）：
  *
- *   1. LLM 调用 listChildren("/") → 得到已注册 kind 名单
+ *   1. LLM 调用 listChildren("/") → 得到根级 kind 名单
  *   2. LLM 调用 findInstance("/", "school", { label: "建国" }) → 拿到具体实例 id
  *   3. LLM 拼接路径 /school[jianguo]/...
  *   4. 后续操作（getAttribute / 标准 function tool）由 Navigator.navigate 校验路径有效性
@@ -96,8 +96,8 @@ export class Navigator {
    * 验证规则：
    *   1. 根路径不可用于属性/函数调用 → PATH_EMPTY
    *   2. 路径上任何 kind 未注册 → KIND_NOT_REGISTERED
-   *   3. 第一段（根级）不验证父子关系 — 没有父，LLM 给的 root id 由业务自行校验
-   *   4. 第二段及之后 → 调用父 ModuleKind.resolveChild
+   *   3. 第一段（根级）必须是 parentKind 未设置的 kind
+   *   4. 第二段及之后 → 先检查 child parentKind，再调用父 ModuleKind.resolveChild
    *      - 返回 false → PATH_INVALID
    *      - 返回 ok=false → RESOLVE_ERROR（透传 checks）
    */
@@ -123,11 +123,21 @@ export class Navigator {
       }
     }
 
-    // 第 2 遍：验证父子存在性（第一段跳过，没有父）
+    const rootSegment = requirePathSegment(segments, 0)
+    const rootKind = this.kinds.require(rootSegment.kind)
+    if (rootKind.parentKind !== undefined) {
+      return childKindCannotBeRoot(rootKind)
+    }
+
+    // 第 2 遍：验证父子拓扑与实例存在性（第一段是根 kind）
     for (let i = 1; i < segments.length; i++) {
       const parentSegment = requirePathSegment(segments, i - 1)
       const childSegment = requirePathSegment(segments, i)
       const parentKind = this.kinds.require(parentSegment.kind)
+      const childKind = this.kinds.require(childSegment.kind)
+      if (childKind.parentKind !== parentKind.kind) {
+        return parentKindMismatch(childKind, parentKind.kind)
+      }
       const parentCtx: ModulePathContext = {
         segments: segments.slice(0, i),
         segment: parentSegment,
@@ -170,7 +180,7 @@ export class Navigator {
    * 列出子实例。
    *
    * 行为分三种情况：
-   *   - 根路径 + 无 childKind → 返回所有已注册 kind 名单（LLM 发现入口）
+   *   - 根路径 + 无 childKind → 返回所有根级 kind 名单（LLM 发现入口）
    *   - 根路径 + 有 childKind → ROOT_LIST_REQUIRES_FIND，引导 LLM 用 findInstance
    *   - 非根路径 → 委托末段 ModuleKind.listChildren
    */
@@ -193,12 +203,16 @@ export class Navigator {
       return ModuleOperationResult.failCode(
         'ROOT_LIST_REQUIRES_FIND',
         `根路径下无法直接列出 kind "${childKind}" 的实例`,
-        `请调用 findInstance("/", "${childKind}", {...}) 按业务条件查询`,
+        `若 "${childKind}" 是根 kind，请调用 findInstance("/", "${childKind}", {...})；若是子 kind，请先定位父实例。`,
       )
     }
     const navResult = await this.navigate(path, host)
     if (!isNavigationSuccess(navResult)) {
       return navResult
+    }
+    if (childKind !== undefined) {
+      const childTargetError = validateChildTarget(navResult.moduleKind, childKind, this.kinds)
+      if (childTargetError !== null) return childTargetError
     }
     return navResult.moduleKind.listChildren(navResult.segmentCtx, childKind)
   }
@@ -209,7 +223,7 @@ export class Navigator {
    * 查询子实例。
    *
    * 行为分两种情况：
-   *   - 根路径 → 查询目标 kind 的 ModuleKind，ctx 不设置 segment
+   *   - 根路径 → 只查询根级目标 kind 的 ModuleKind，ctx 不设置 segment
    *   - 非根路径 → 路由到末段 ModuleKind.findInstance，
    *     目标 kind 必须是末段 children 之一
    *
@@ -230,6 +244,9 @@ export class Navigator {
     }
     if (path.isRoot) {
       const moduleKind = this.kinds.require(childKind)
+      if (moduleKind.parentKind !== undefined) {
+        return childKindCannotBeRoot(moduleKind)
+      }
       const rootCtx: ModulePathContext = {
         segments: [],
         ...(host === undefined ? {} : { host }),
@@ -241,13 +258,8 @@ export class Navigator {
       return navResult
     }
     const tailKind = navResult.moduleKind
-    if (!tailKind.children.includes(childKind)) {
-      return ModuleOperationResult.failCode(
-        'CHILD_KIND_NOT_DECLARED',
-        `kind "${tailKind.kind}" 未声明子 kind "${childKind}"`,
-        `可调用 describeKind("${tailKind.kind}") 查看允许的子 kind`,
-      )
-    }
+    const childTargetError = validateChildTarget(tailKind, childKind, this.kinds)
+    if (childTargetError !== null) return childTargetError
     return navResult.moduleKind.findInstance(navResult.segmentCtx, childKind, query)
   }
 
@@ -312,4 +324,49 @@ function requirePathSegment(segments: readonly ModulePathSegment[], index: numbe
     throw new Error(`[Navigator] missing path segment at index ${String(index)}`)
   }
   return segment
+}
+
+function validateChildTarget(
+  parentKind: ModuleKind,
+  childKind: string,
+  kinds: ModuleKindRegistry,
+): ModuleOperationResult<never> | null {
+  const child = kinds.get(childKind)
+  if (child === undefined) {
+    return ModuleOperationResult.failCode(
+      'KIND_NOT_REGISTERED',
+      `目标 kind "${childKind}" 未注册`,
+      '可调用 listChildren("/") 查看已注册 kind',
+    )
+  }
+  if (!parentKind.children.includes(childKind)) {
+    return ModuleOperationResult.failCode(
+      'CHILD_KIND_NOT_DECLARED',
+      `kind "${parentKind.kind}" 未声明子 kind "${childKind}"`,
+      `可调用 describeKind("${parentKind.kind}") 查看允许的子 kind`,
+    )
+  }
+  if (child.parentKind !== parentKind.kind) {
+    return parentKindMismatch(child, parentKind.kind)
+  }
+  return null
+}
+
+function childKindCannotBeRoot(moduleKind: ModuleKind): ModuleOperationResult<never> {
+  return ModuleOperationResult.failCode(
+    'ROOT_KIND_REQUIRED',
+    `kind "${moduleKind.kind}" 声明了 parentKind "${moduleKind.parentKind}"，不能从根路径直接访问`,
+    `先定位父 kind "${moduleKind.parentKind}" 的实例，再通过 listChildren/findInstance 进入 "${moduleKind.kind}"。`,
+  )
+}
+
+function parentKindMismatch(moduleKind: ModuleKind, actualParentKind: string): ModuleOperationResult<never> {
+  const expectedParentKind = moduleKind.parentKind
+  return ModuleOperationResult.failCode(
+    'PARENT_KIND_MISMATCH',
+    expectedParentKind === undefined
+      ? `kind "${moduleKind.kind}" 是根 kind，不能挂在父 kind "${actualParentKind}" 下`
+      : `kind "${moduleKind.kind}" 的 parentKind 是 "${expectedParentKind}"，不能挂在父 kind "${actualParentKind}" 下`,
+    '请按 queryModules/guideFunction 返回的 kindPath 构造实例路径和 $paths。',
+  )
 }

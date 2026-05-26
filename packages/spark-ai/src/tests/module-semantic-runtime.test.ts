@@ -119,6 +119,63 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
   })
 }
 
+function createPayloadCatalogKind(): ModuleKind {
+  return new ModuleKind({
+    kind: 'payload-catalog',
+    name: '参数目录',
+    description: '测试参数荷载目录',
+    functions: [
+      {
+        name: 'queryPayloads',
+        description: '查询参数荷载目录',
+        paramsSchema: {
+          type: 'object',
+          properties: {
+            moduleKind: { type: 'string' },
+            payloadRef: { type: 'string' },
+            keyword: { type: 'string' },
+            category: { type: 'string' },
+            key: { type: 'string' },
+            limit: { type: 'number' },
+          },
+          required: ['moduleKind', 'payloadRef'],
+          additionalProperties: false,
+        },
+      },
+      {
+        name: 'guidePayload',
+        description: '读取参数荷载指南',
+        paramsSchema: {
+          type: 'object',
+          properties: {
+            moduleKind: { type: 'string' },
+            payloadRef: { type: 'string' },
+            key: { type: 'string' },
+          },
+          required: ['moduleKind', 'payloadRef', 'key'],
+          additionalProperties: false,
+        },
+      },
+    ],
+    runner: (_ctx, functionName) => {
+      if (functionName === 'queryPayloads') return ModuleOperationResult.ok<LlmJsonValue>([])
+      if (functionName === 'guidePayload') {
+        return ModuleOperationResult.ok<LlmJsonValue>({
+          key: 'r-button',
+          paramsSchema: {
+            type: 'object',
+            properties: {
+              label: { type: 'string' },
+            },
+            additionalProperties: true,
+          },
+        })
+      }
+      return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${functionName} 未实现`)
+    },
+  })
+}
+
 function createDefaultOnlyKind(): ModuleKind {
   return new ModuleKind({
     kind: 'default-only',
@@ -164,10 +221,16 @@ function createRuntime(): ModuleSemanticRuntime {
   return runtime
 }
 
+function createRuntimeWithPayloadCatalog(): ModuleSemanticRuntime {
+  const runtime = createRuntime()
+  runtime.registerKind(createPayloadCatalogKind())
+  return runtime
+}
+
 const NODE_TREE_PAYLOAD_LOOKUP_STEPS = [
-  '先定位 payload 目录模块 payload-catalog(业务目录模块); 没有实例路径时用 listChildren/findInstance 获取目录实例。',
-  '先调用 payload-catalog_queryPayloads({ $paths: [<catalogInstanceId>], moduleKind: "node-tree", payloadRef: "spark.component", keyword/category/key, limit }) 查询目录并选择真实 key。',
-  '再调用 payload-catalog_guidePayload({ $paths: [<catalogInstanceId>], moduleKind: "node-tree", payloadRef: "spark.component", key }) 读取 paramsSchema、usageRules 和 failureModes。',
+  '先定位 payload 目录模块 payload-catalog; 没有实例路径时用 listChildren/findInstance 获取目录实例。',
+  '先调用 payload-catalog_queryPayloads({ $paths: [<payload-catalogId>], moduleKind: "node-tree", payloadRef: "spark.component", keyword/category/key, limit }) 查询目录并选择真实 key。',
+  '再调用 payload-catalog_guidePayload({ $paths: [<payload-catalogId>], moduleKind: "node-tree", payloadRef: "spark.component", key }) 读取 paramsSchema、usageRules 和 failureModes。',
   '最后才调用 node-tree_getNode; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
 ] as const
 
@@ -425,9 +488,9 @@ describe('ModuleSemanticRuntime.executeTool', () => {
   })
 
   it('queryModules / queryFunctions 作为 LLM 直面工具返回知识摘要', async () => {
-    const runtime = createRuntime()
+    const runtime = createRuntimeWithPayloadCatalog()
 
-    const modules = await runtime.executeTool('queryModules', {})
+    const modules = await runtime.executeTool('queryModules', { kind: 'node-tree' })
     expect(modules.ok).toBe(true)
     expect(modules.data).toEqual([
       expect.objectContaining({
@@ -465,7 +528,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
   })
 
   it('guideFunction 作为 LLM 直面工具返回完整调用指南和显式失败', async () => {
-    const runtime = createRuntime()
+    const runtime = createRuntimeWithPayloadCatalog()
 
     const guide = await runtime.executeTool('guideFunction', { toolName: 'node-tree_getNode' })
     expect(guide.ok).toBe(true)
@@ -623,11 +686,11 @@ describe('ModuleSemanticRuntime 知识投影', () => {
   })
 
   it('投影模块目录、函数目录和系统提示词快照', () => {
-    const runtime = createRuntime()
+    const runtime = createRuntimeWithPayloadCatalog()
     const snapshot: ModuleSemanticKnowledgeSnapshot = runtime.projectKnowledge()
     const rootSnapshot: RootModuleSemanticKnowledgeSnapshot = runtime.projectKnowledge()
 
-    expect(snapshot.modules).toEqual([
+    expect(snapshot.modules).toEqual(expect.arrayContaining([
       expect.objectContaining({
         kind: 'node-tree',
         name: '节点树',
@@ -685,9 +748,9 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         childKindSummaries: [],
       }),
-    ])
-    expect(snapshot.functions).toEqual([
-      {
+    ]))
+    expect(snapshot.functions).toEqual(expect.arrayContaining([
+      expect.objectContaining({
         toolName: 'node-tree_getNode',
         kindPath: ['node-tree'],
         kind: 'node-tree',
@@ -702,10 +765,10 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         payloadRefs: ['spark.component'],
         requiresPayloadGuide: true,
         payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
-      },
-    ])
-    expect(rootSnapshot.functions[0]?.toolName).toBe('node-tree_getNode')
-    expect(snapshot.kindLayers).toEqual([
+      }),
+    ]))
+    expect(rootSnapshot.functions.some((fn) => fn.toolName === 'node-tree_getNode')).toBe(true)
+    expect(snapshot.kindLayers).toEqual(expect.arrayContaining([
       expect.objectContaining({
         kind: 'node-tree',
         name: '节点树',
@@ -751,18 +814,65 @@ describe('ModuleSemanticRuntime 知识投影', () => {
         ],
         childKinds: [],
       }),
-    ])
+    ]))
     expect(snapshot.promptSnapshot).not.toContain('【AI Knowledge Snapshot】')
     expect(snapshot.promptSnapshot).toContain('工具：')
     expect(snapshot.promptSnapshot).toContain('知识=queryModules/queryFunctions/guideFunction')
     expect(snapshot.promptSnapshot).toContain('实例=listChildren/findInstance')
     expect(snapshot.promptSnapshot).not.toContain('1. queryModules({ kind?: string')
     expect(snapshot.promptSnapshot).not.toContain('10. guideHumanQuestion({ context: string')
-    expect(snapshot.promptSnapshot).toContain('root node-tree; payload=payload-catalog')
+    expect(snapshot.promptSnapshot).toContain('root node-tree; payload=payloadLookupSteps')
     expect(snapshot.promptSnapshot).toContain('流程：实例->schema/元数据->执行')
     expect(snapshot.promptSnapshot).not.toContain('函数目录摘要')
     expect(snapshot.promptSnapshot).not.toContain('node-tree.getNode:')
     expect(snapshot.promptSnapshot).not.toContain('required=[componentId]')
+  })
+
+  it('payloads 存在但未注册 payload catalog 时 fail-fast', () => {
+    const runtime = createRuntime()
+    const expectedMessage = 'no payload catalog ModuleKind is registered'
+
+    expect(() => runtime.projectKnowledge()).toThrow(expectedMessage)
+    expect(() => runtime.queryKnowledgeModules({ kind: 'node-tree' })).toThrow(expectedMessage)
+    expect(() => runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toThrow(expectedMessage)
+    expect(() => runtime.guideKnowledgeFunction({ toolName: 'node-tree_getNode' })).toThrow(expectedMessage)
+  })
+
+  it('parentKind 缺失或成环时 knowledge 与 tool generation 使用同一拓扑校验', () => {
+    const missingParentRuntime = new ModuleSemanticRuntime()
+    missingParentRuntime.registerKind(new ModuleKind({
+      kind: 'orphan-kind',
+      name: '孤儿模块',
+      description: 'parentKind 指向未注册 kind',
+      parentKind: 'missing-parent',
+      functions: [ECHO_FUNCTION_SCHEMA],
+    }))
+    const missingParentMessage = 'ModuleKind "orphan-kind" references missing parentKind "missing-parent"'
+
+    expect(() => missingParentRuntime.getLlmTools()).toThrow(missingParentMessage)
+    expect(() => missingParentRuntime.projectKnowledge()).toThrow(missingParentMessage)
+    expect(() => missingParentRuntime.queryKnowledgeModules()).toThrow(missingParentMessage)
+    expect(() => missingParentRuntime.queryKnowledgeFunctions()).toThrow(missingParentMessage)
+    expect(() => missingParentRuntime.guideKnowledgeFunction({ toolName: 'missing-parent_orphan-kind_echo' }))
+      .toThrow(missingParentMessage)
+
+    const cyclicRuntime = new ModuleSemanticRuntime()
+    cyclicRuntime.registerKind(new ModuleKind({
+      kind: 'cycle-a',
+      name: '循环 A',
+      description: '循环父级 A',
+      parentKind: 'cycle-b',
+      functions: [ECHO_FUNCTION_SCHEMA],
+    }))
+    cyclicRuntime.registerKind(new ModuleKind({
+      kind: 'cycle-b',
+      name: '循环 B',
+      description: '循环父级 B',
+      parentKind: 'cycle-a',
+    }))
+
+    expect(() => cyclicRuntime.getLlmTools()).toThrow('ModuleKind parent cycle detected')
+    expect(() => cyclicRuntime.projectKnowledge()).toThrow('ModuleKind parent cycle detected')
   })
 
   it('父层 queryModules 摘要包含子 kind 的功能摘要和下一跳', () => {
@@ -860,7 +970,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
   })
 
   it('支持按 kind / keyword 查询函数摘要', () => {
-    const runtime = createRuntime()
+    const runtime = createRuntimeWithPayloadCatalog()
 
     expect(runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toHaveLength(1)
     expect(runtime.queryKnowledgeFunctions({ keyword: 'getnode' })).toEqual([
@@ -870,7 +980,7 @@ describe('ModuleSemanticRuntime 知识投影', () => {
   })
 
   it('guideKnowledgeFunction 返回完整动作指南,失败时显式诊断', () => {
-    const runtime = createRuntime()
+    const runtime = createRuntimeWithPayloadCatalog()
 
     const guide = runtime.guideKnowledgeFunction({ toolName: 'node-tree_getNode' })
     expect(guide.ok).toBe(true)
