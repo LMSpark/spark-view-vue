@@ -30,7 +30,7 @@ import type {
 export const PAYLOAD_QUERY_ACTION_NAME = 'queryPayloads'
 export const PAYLOAD_GUIDE_ACTION_NAME = 'guidePayload'
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
-  '工具：知识=queryModules/queryFunctions/guideFunction；实例=listChildren/findInstance；元数据=describeKind；执行=get/set/invoke；反问=guideHumanQuestion。',
+  '工具：知识=queryModules/queryFunctions/guideFunction；实例=listChildren/findInstance；元数据=describeKind；属性=getAttribute/setAttribute；反问=guideHumanQuestion。',
 ]
 export const PROMPT_KIND_INDEX_LIMIT = 12
 

@@ -3,8 +3,8 @@
  *
  * 覆盖范围:
  * - 工具规约固定包含 4 个知识入口与 6 个执行协议工具、含 usageRules / failureModes / parameters 收紧后的类型
- * - executeTool 路由到知识工具和 6 个执行协议工具(getAttribute / setAttribute / invokeFunction /
- *   listChildren / findInstance / describeKind)
+ * - executeTool 路由到知识工具和固定协议工具(getAttribute / setAttribute / listChildren /
+ *   findInstance / describeKind)，以及动态业务函数工具(&lt;kind&gt;_&lt;fn&gt;)
  * - 错误码:UNKNOWN_TOOL / INVALID_PATH_* / FUNCTION_NOT_DECLARED
  * - describeKind 返回 usageRules / failureModes(G1+G3 验证)
  */
