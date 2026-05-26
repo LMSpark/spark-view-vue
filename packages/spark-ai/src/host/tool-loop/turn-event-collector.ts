@@ -255,15 +255,18 @@ function normalizeToolCall(value: unknown): AiHostTransportToolCall | null {
   if (!isRecord(value)) return null
   const fn = isRecord(value['function']) ? value['function'] : null
   if (fn === null || typeof fn['name'] !== 'string' || fn['name'].trim() === '') return null
+  // AiHostTransportToolCall.id is required per OpenAI tool_call spec.
+  // Backends that produce tool calls without ids are non-conformant;
+  // the collector treats these as malformed and discards them rather
+  // than silently fabricating ids.
+  if (typeof value['id'] !== 'string' || value['id'].trim().length === 0) return null
   const rawArguments = fn['arguments']
   return {
-    ...(typeof value['id'] === 'string' ? { id: value['id'] } : {}),
-    type: typeof value['type'] === 'string' ? value['type'] : 'function',
+    id: value['id'],
+    type: 'function',
     function: {
       name: fn['name'],
-      ...(rawArguments === undefined ? {} : {
-        arguments: typeof rawArguments === 'string' ? rawArguments : JSON.stringify(rawArguments),
-      }),
+      arguments: typeof rawArguments === 'string' ? rawArguments : JSON.stringify(rawArguments ?? {}),
     },
   }
 }

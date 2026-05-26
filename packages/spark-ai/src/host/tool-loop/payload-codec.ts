@@ -16,8 +16,8 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import type { LlmJsonValue } from '../../schema'
-import { ModuleKind } from '../../module-semantic'
+import type { LlmJsonObject, LlmJsonValue } from '../../schema'
+import { coerceStrictJsonValue } from '../../schema'
 import { latestUserInput } from '../business/business-scope'
 import type { AiHostChatRequest } from '../chat/chat-types'
 import type { AiHostTransportMessage } from '../transport/transport-types'
@@ -28,19 +28,45 @@ import type { AiHostTransportMessage } from '../transport/transport-types'
  * LLM 返回的工具调用参数是 JSON 字符串（function.arguments），
  * 本函数将其解析为 Record<string, LlmJsonValue> 以便后续校验和执行。
  *
- * 容错策略：
+ * 参数约束：
  *   · 空字符串 / undefined → 返回 {}（非异常，部分工具无参数）
- *   · JSON 解析失败       → 返回 {}（静默容错，由后续 schema 校验捕获）
+ *   · JSON 解析失败       → 抛 ToolArgsParseError，调用方回灌工具失败
+ *   · JSON 根节点非对象   → 抛 ToolArgsParseError，工具参数必须是 object
  * ----------------------------------------------------------------------------- */
+
+export class ToolArgsParseError extends Error {
+  public constructor(
+    public readonly code: 'TOOL_ARGS_INVALID_JSON' | 'TOOL_ARGS_NOT_OBJECT',
+    message: string,
+    public readonly raw: string,
+  ) {
+    super(message)
+    this.name = 'ToolArgsParseError'
+  }
+}
 
 export function parseToolArgs(raw: string | undefined): Readonly<Record<string, LlmJsonValue>> {
   if (raw === undefined || raw.trim() === '') return {}
+  let parsed: unknown
   try {
-    const parsed: unknown = JSON.parse(raw)
-    return toProtocolArgs(parsed)
-  } catch {
-    return {}
+    parsed = JSON.parse(raw)
+  } catch (error) {
+    throw new ToolArgsParseError(
+      'TOOL_ARGS_INVALID_JSON',
+      `工具调用参数不是有效 JSON: ${errorMessage(error)}`,
+      raw,
+    )
   }
+
+  const coerced = coerceStrictJsonValue(parsed)
+  if (!isJsonObject(coerced)) {
+    throw new ToolArgsParseError(
+      'TOOL_ARGS_NOT_OBJECT',
+      '工具调用参数必须是 JSON object 根节点',
+      raw,
+    )
+  }
+  return coerced
 }
 
 /* -------------------------------------------------------------------------------
@@ -88,21 +114,13 @@ export function stringifyAiHostPayload(data: unknown): string {
 /* -------------------------------------------------------------------------------
  * 四、内部辅助：值规整
  * -------------------------------------------------------------------------------
- * 将 JSON.parse 产出的 unknown 值规整为 LlmJsonValue 记录。
- *
- * 规整规则：
- *   · null / undefined / 非对象 / 数组 → 返回 {}（无效参数整体视为空）
- *   · 每个字段通过 ModuleKind.coerceJsonValue 逐项转换
- *   · 无法规整的字段（coerceJsonValue 返回 undefined）自动丢弃
+ * 将 JSON.parse 产出的 unknown 值确认为 LlmJsonValue 记录。
  * ----------------------------------------------------------------------------- */
 
-function toProtocolArgs(value: unknown): Readonly<Record<string, LlmJsonValue>> {
-  // 只接受纯对象（排除 null、数组、原始值）
-  if (value === null || value === undefined || typeof value !== 'object' || Array.isArray(value)) return {}
-  const out: Record<string, LlmJsonValue> = {}
-  for (const [key, raw] of Object.entries(value)) {
-    const coerced = ModuleKind.coerceJsonValue(raw)
-    if (coerced !== undefined) out[key] = coerced
-  }
-  return out
+function isJsonObject(value: LlmJsonValue | undefined): value is LlmJsonObject {
+  return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }

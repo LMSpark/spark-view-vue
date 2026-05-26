@@ -23,10 +23,14 @@ import type { AiHostFunctionCallResult } from '../session/session-types'
 // 第 1 节 · 聊天消息与请求
 // ═══════════════════════════════════════════════════════════════
 
-/** 单条聊天消息（对齐 OpenAI message 格式） */
+/** 单条聊天消息（对齐 OpenAI message 格式），判别联合：role='tool' 必须有 tool_call_id */
 export type AiHostChatMessage = Readonly<{
   role: 'user' | 'assistant' | 'system'
   content: string
+}> | Readonly<{
+  role: 'tool'
+  content: string
+  tool_call_id: string
 }>
 
 /**
@@ -90,7 +94,7 @@ export type AiHostStreamEvent = Readonly<{
 
 /**
  * 工具调用记录（用于前端展示和调试）。
- * 每次协议工具调用完成后，tool-loop-runner 通过 onFcCall 回调
+ * 每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onFcCall 回调
  * 将本记录传给业务方。
  */
 export type AiHostFcCallRecord = Readonly<{

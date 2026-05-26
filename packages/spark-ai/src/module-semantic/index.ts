@@ -6,7 +6,7 @@
  * 【导出策略】按调用流程分块：
  *   1. 协议层值对象、运行上下文、元数据与请求 DTO
  *   2. ModuleSemanticRuntime（运行时组合根）
- *   3. 知识投影与固定协议工具规约
+ *   3. 知识投影与 OpenAI function tool 规约
  *   4. 注册错误类型与 Host 工具编解码器
  *   5. 模块参数荷载 provider 注册表
  * ═══════════════════════════════════════════════════════════════
@@ -83,9 +83,9 @@ export type {
   ModuleSemanticKnowledgeModuleFilter,
   ModuleSemanticKnowledgeModuleSummary,
   ModuleSemanticKnowledgeSnapshot,
-} from './knowledge/module-semantic-knowledge'
+} from './knowledge/knowledge-types'
 
-// ── 4. 协议工具规约（类型 + 常量）─────────────────────────────
+// ── 4. OpenAI function tool 规约（类型 + 常量）───────────────
 export {
   PROTOCOL_TOOL_NAMES,
 } from './internal/protocol-tool-generator'

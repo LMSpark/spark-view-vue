@@ -37,7 +37,7 @@ export class ProtocolToolArgsError extends Error {
  * ----------------------------------------------------------------------------- */
 
 export class ProtocolToolArgsParser {
-  /** 类型守卫：判定 toolName 是否为已知的固定协议工具之一 */
+  /** 类型守卫：判定 toolName 是否为已知的固定 query/navigation tool 之一 */
   public isProtocolToolName(name: string): name is ProtocolToolName {
     const known: readonly ProtocolToolName[] = Object.values(PROTOCOL_TOOL_NAMES)
     return known.some((candidate) => candidate === name)

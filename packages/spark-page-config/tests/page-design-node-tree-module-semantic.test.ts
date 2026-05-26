@@ -1,7 +1,7 @@
 /**
  * NodeTree module-semantic 端到端测试。
  *
- * 覆盖固定协议工具、Host scope 透传、可发现链路和 19 个 NodeTree action。
+ * 覆盖 query/navigation tools、Host scope 透传、可发现链路和 NodeTree function tools。
  */
 
 import { describe, expect, it } from 'vitest'
@@ -91,7 +91,7 @@ function getDataArray(result: { readonly ok: boolean; readonly data?: unknown })
 }
 
 describe('NodeTree module-semantic 接入(E2E)', () => {
-  it('暴露固定知识工具和执行协议工具', () => {
+  it('暴露 query/navigation tools 与 NodeTree function tools', () => {
     const { runtime } = buildRuntime()
     expect(runtime.getLlmTools().map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'queryModules',
@@ -107,7 +107,7 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
     ]))
   })
 
-  it('describeKind 列出 19 个 NodeTree 动作并完整返回 action 元数据', async () => {
+  it('describeKind 列出 NodeTree functions 并完整返回 function 元数据', async () => {
     const { runtime, hostContext } = buildRuntime()
     const result = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
     const data = getDataRecord(result)
@@ -206,5 +206,4 @@ describe('NodeTree module-semantic 可发现链路', () => {
     expect(getDataRecord(invokeResult)['type']).toBe('page')
   })
 })
-
 

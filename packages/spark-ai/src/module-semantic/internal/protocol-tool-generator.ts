@@ -1,15 +1,16 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * module-semantic/internal/protocol-tool-generator.ts — 协议工具规约生成器
+ * module-semantic/internal/protocol-tool-generator.ts — OpenAI function tool 规约生成器
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】协议层内部组件，由 ModuleSemanticRuntime 组合。
- *   从所有已注册的 ModuleKind 派生 LLM 可见的知识工具与执行协议工具。
+ *   从所有已注册的 ModuleKind 派生 LLM 可见的 query tools 与 business function tools。
  *
  * 【设计原则】
- *   - LLM 看到的工具集固定，不随业务 kind 数量膨胀。
- *   - 工具规约对齐 OpenAI function tool spec：{ type: 'function', function: { name, description, parameters } }。
- *   - 每个工具的 description 只说明固定协议职责；业务知识由 queryModules / queryFunctions / guideFunction 按需返回。
+ *   - LLM 看到固定知识/导航工具，以及按已注册业务函数派生的执行工具。
+ *   - 工具规约对齐 OpenAI function tool spec：{ type: 'function', function: { name, description, parameters, strict } }。
+ *   - strict 由 Host codec 显式投影；schema 完成 OpenAI strict 归一化前默认 false。
+ *   - 固定工具的 description 只说明协议职责；业务细节由 queryModules / queryFunctions / guideFunction 按需返回。
  *   - 调用路由由 ModuleSemanticRuntime.executeTool() 负责，本生成器只产规约。
  *
  * 【知识工具】
@@ -18,13 +19,13 @@
  *   - guideFunction(toolName | kind+functionName) — 查询单个函数完整指南
  *   - guideHumanQuestion(context, reason)   — 查询人工反问指南
  *
- * 【6 个执行协议工具】
+ * 【协议/查询工具与 function tools】
  *   - getAttribute(path, attrName)         — 读属性
  *   - setAttribute(path, attrName, value)  — 写属性
- *   - <kind>_<functionName>($paths, ...args) — 标准业务函数调用
  *   - listChildren(path, childKind?)       — 列出子实例
  *   - findInstance(path, childKind, query) — 查询子实例
  *   - describeKind(kind)                   — 查询 kind 元数据
+ *   - <kindPath>_<functionName>($paths, ...args) — 按注册函数动态生成的 OpenAI function tool
  *
  * 【消费方】ModuleSemanticRuntime.getLlmTools() → ModuleSemanticToolCodec → Host transport
  * ═══════════════════════════════════════════════════════════════
@@ -52,10 +53,11 @@ export type ModuleSemanticToolSpec = Readonly<{
     readonly name: string
     readonly description: string
     readonly parameters: LlmJsonSchemaObject
+    readonly strict?: boolean
   }
 }>
 
-/** 固定协议工具名 */
+/** 固定 query/navigation tool 名 */
 export type ProtocolToolName =
   | 'queryModules'
   | 'queryFunctions'
@@ -67,7 +69,7 @@ export type ProtocolToolName =
   | 'findInstance'
   | 'describeKind'
 
-/** 协议固定工具名常量集合（Object.freeze 防篡改） */
+/** 固定 query/navigation toolName 常量集合（Object.freeze 防篡改） */
 export const PROTOCOL_TOOL_NAMES: Readonly<{
   queryModules: 'queryModules'
   queryFunctions: 'queryFunctions'
@@ -95,12 +97,12 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
 // ═══════════════════════════════════════════════════════════════
 
 /**
- * 协议工具规约生成器。
+ * OpenAI function tool 规约生成器。
  *
  * 用法:
  * ```ts
  * const generator = new ProtocolToolGenerator(kindRegistry)
- * const specs = generator.generate()  // 返回固定 ModuleSemanticToolSpec 列表
+ * const specs = generator.generate()  // 返回当前注册表快照对应的工具规约
  * ```
  *
  * 每次 generate() 基于当前注册表快照生成规约。
@@ -127,7 +129,7 @@ export class ProtocolToolGenerator {
     ]
   }
 
-  // ── 知识工具构建器 ───────────────────────────────────────
+  // ── Query tool 构建器 ─────────────────────────────────────
 
   private buildQueryModules(): ModuleSemanticToolSpec {
     return {
@@ -157,6 +159,7 @@ export class ProtocolToolGenerator {
             },
           },
           additionalProperties: false,
+          required: [],
         },
       },
     }
@@ -171,7 +174,7 @@ export class ProtocolToolGenerator {
           '职责：查询业务函数目录，帮助 LLM 从业务意图定位到 toolName。',
           '何时使用：已知道或大致知道 kind/关键词，需要选择可调用函数、必填参数、失败码或 payload 引用时调用。',
           '返回：函数摘要，包含 toolName、kindPath、functionName、paramNames、requiredParamNames、failureCodes、payloadLookupSteps。',
-          '下一步：选定 toolName 后调用 guideFunction 读取完整 paramsSchema、usageRules、failureModes，再调用对应标准 function tool。',
+          '下一步：选定 toolName 后调用 guideFunction 读取完整 paramsSchema、usageRules、failureModes，再调用对应 OpenAI function tool。',
         ].join('\n'),
         parameters: {
           type: 'object',
@@ -186,6 +189,7 @@ export class ProtocolToolGenerator {
             },
           },
           additionalProperties: false,
+          required: [],
         },
       },
     }
@@ -197,10 +201,10 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.guideFunction,
         description: [
-          '职责：查询单个业务函数的完整调用契约，是标准 function tool 调用前的函数级指南。',
-          '何时使用：已选定 action，准备构造 args 或需要读取 usageRules、failureModes、example、resultSchema 时调用。',
+          '职责：查询单个业务函数的完整调用契约，是 OpenAI function tool 调用前的函数级指南。',
+          '何时使用：已选定 toolName/functionName，准备构造 arguments 或需要读取 usageRules、failureModes、example、resultSchema 时调用。',
           '返回：ModuleSemanticKnowledgeFunctionGuide，包含完整 paramsSchema、resultSchema、usageRules、failureModes、requiresPayloadGuide、payloadLookupSteps。',
-          '下一步：requiresPayloadGuide=true 时按 payloadLookupSteps 查询 payload 目录；参数齐备后调用对应标准 function tool。',
+          '下一步：requiresPayloadGuide=true 时按 payloadLookupSteps 查询 payload 目录；参数齐备后调用对应 OpenAI function tool。',
           '输入：toolName 使用 "<kind>_<childKind>_<functionName>"，也可传 kind + functionName。',
           '失败码: INVALID_GUIDE_REQUEST / KIND_NOT_REGISTERED / KIND_PATH_MISMATCH / FUNCTION_NOT_FOUND',
         ].join('\n'),
@@ -209,7 +213,7 @@ export class ProtocolToolGenerator {
           properties: {
             toolName: {
               type: 'string',
-              description: '业务函数工具名,格式 "<kind>_<childKind>_<functionName>",例如 "pageDesign_lifecycle_describeProgress"',
+              description: '业务 function toolName,格式 "<kind>_<childKind>_<functionName>",例如 "pageDesign_lifecycle_describeProgress"',
             },
             kind: {
               type: 'string',
@@ -245,7 +249,7 @@ export class ProtocolToolGenerator {
           '职责：把缺失用户事实整理成可追问的问题，帮助 LLM 暂停工具链并收集必要事实。',
           '何时使用：缺少用户意图、业务范围、日期含义、审批/提交确认、破坏性操作确认或必填业务字段时调用。',
           '返回：human-question-guide，包含 shouldAskHuman、stopToolCalls、question、usageRules、resumeFlow。',
-          '下一步：把 question 改写为自然语言询问用户，用户回复后按 resumeFlow 继续 queryModules/queryFunctions/guideFunction 或调用业务函数工具。',
+          '下一步：把 question 改写为自然语言询问用户，用户回复后按 resumeFlow 继续 queryModules/queryFunctions/guideFunction 或调用 business function tool。',
           '失败码: INVALID_HUMAN_QUESTION_REQUEST / INVALID_TOOL_ARGS',
         ].join('\n'),
         parameters: {
@@ -277,7 +281,7 @@ export class ProtocolToolGenerator {
     }
   }
 
-  // ── 执行协议工具构建器 ─────────────────────────────────────
+  // ── Navigation / attribute tool 构建器 ─────────────────────
 
   private buildGetAttribute(): ModuleSemanticToolSpec {
     return {
@@ -307,7 +311,7 @@ export class ProtocolToolGenerator {
           '何时使用：queryModules/describeKind 显示该属性 writable=true，且 value 已按属性 schema 构造完成时调用。',
           '输入：path 为具体实例路径；attrName 为末段 kind 声明的属性名；value 为 JSON 值。',
           '返回：写入成功时 data 为空；失败时根据 checks/code/msg/fix 修正 value 或路径。',
-          '下一步：需要确认写入结果时调用 getAttribute 或对应只读 action。',
+          '下一步：需要确认写入结果时调用 getAttribute 或对应只读 function tool。',
           '失败码: PATH_EMPTY / KIND_NOT_REGISTERED / PATH_INVALID / ATTRIBUTE_NOT_DECLARED / ATTRIBUTE_NOT_WRITABLE',
         ].join('\n'),
         parameters: {
@@ -320,6 +324,7 @@ export class ProtocolToolGenerator {
             },
             value: {
               description: '写入值,需符合属性 schema(类型由 describeKind 查询)',
+              type: ['string', 'number', 'boolean', 'object', 'array', 'null'],
             },
           },
           required: ['path', 'attrName', 'value'],
@@ -365,7 +370,7 @@ export class ProtocolToolGenerator {
           '何时使用：已从 queryModules.instanceGuide 或 childKindSummaries 知道 childKind，需要拿真实 ModuleInstanceRef.id 时调用。',
           '输入：path="/" 查询根级 childKind；非根 path 查询末段 kind.children 中声明的 childKind；query 字段来自目标 kind 的 instanceGuide.queryFields。',
           '返回：ModuleInstanceRef[]，每项 id 是实例路径段中的 id。',
-          '下一步：按目标 pathPattern 或 parentPath/<childKind>[ref.id] 拼接 path，再调用 describeKind/getAttribute/setAttribute 或业务函数工具。',
+          '下一步：按目标 pathPattern 或 parentPath/<childKind>[ref.id] 拼接 path，再调用 describeKind/getAttribute/setAttribute 或 business function tool。',
           '失败码: KIND_NOT_REGISTERED / CHILD_KIND_NOT_DECLARED',
         ].join('\n'),
         parameters: {

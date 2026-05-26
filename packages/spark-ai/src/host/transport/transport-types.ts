@@ -41,12 +41,15 @@ export type AiHostTransportToolSpec = Readonly<{
     readonly name: string
     readonly description: string
     readonly parameters: Record<string, unknown>
+    /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */
+    readonly strict?: boolean
   }
 }>
 
 /** 传输层消息（对齐 OpenAI message 格式，支持 tool_calls） */
 export type AiHostTransportMessage = Readonly<{
-  role: string
+  /** system 对齐 OpenAI，但 SPARK 当前轮次 system prompt 走 AiHostStreamTurnInput.systemPrompt */
+  role: 'user' | 'assistant' | 'system' | 'tool'
   content: string
   tool_call_id?: string
   tool_calls?: readonly AiHostTransportToolCall[]
@@ -54,11 +57,11 @@ export type AiHostTransportMessage = Readonly<{
 
 /** 传输层工具调用 */
 export type AiHostTransportToolCall = Readonly<{
-  id?: string
-  type?: string
-  function?: {
-    readonly name?: string
-    readonly arguments?: string
+  id: string
+  type: 'function'
+  function: {
+    readonly name: string
+    readonly arguments: string
   }
 }>
 

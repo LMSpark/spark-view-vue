@@ -2,9 +2,9 @@
  * 模块语义协议运行时测试。
  *
  * 覆盖范围:
- * - 工具规约固定包含 4 个知识入口与 6 个执行协议工具、含 usageRules / failureModes / parameters 收紧后的类型
- * - executeTool 路由到知识工具和固定协议工具(getAttribute / setAttribute / listChildren /
- *   findInstance / describeKind)，以及动态业务函数工具(&lt;kind&gt;_&lt;fn&gt;)
+ * - 工具规约包含 query/navigation tools，以及动态 business function tools(&lt;kind&gt;_&lt;fn&gt;)
+ * - executeTool 路由到 query/navigation tools(getAttribute / setAttribute / listChildren /
+ *   findInstance / describeKind)，以及动态 OpenAI function tools
  * - 错误码:UNKNOWN_TOOL / INVALID_PATH_* / FUNCTION_NOT_DECLARED
  * - describeKind 返回 usageRules / failureModes(G1+G3 验证)
  */
@@ -47,16 +47,16 @@ const ECHO_FUNCTION_SCHEMA: ModuleFunctionMetadata = {
 }
 
 function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
-  const runner = (ctx: ModulePathContext, actionName: string, args: Readonly<Record<string, LlmJsonValue>>) => {
+  const runner = (ctx: ModulePathContext, functionName: string, args: Readonly<Record<string, LlmJsonValue>>) => {
     spy.lastHost = ctx.host
-    if (actionName === 'getNode') {
+    if (functionName === 'getNode') {
       const id = args['id']
       if (typeof id !== 'string' || id.length === 0) {
         return ModuleOperationResult.failCode('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')
       }
       return ModuleOperationResult.ok<LlmJsonValue>({ id, label: `node-${id}` })
     }
-    return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${actionName} 未实现`)
+    return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${functionName} 未实现`)
   }
   return new ModuleKind({
     kind: 'node-tree',
@@ -127,7 +127,7 @@ function createDefaultOnlyKind(): ModuleKind {
     functions: [
       {
         name: 'ping',
-        description: '测试默认 action 未实现',
+        description: '测试默认 function 未实现',
         paramsSchema: {
           type: 'object',
           properties: {},
@@ -145,9 +145,9 @@ function createRegisteredActionKind(): ModuleKind {
     name: '注册动作',
     description: '用于验证 ModuleKind runner 函数',
     functions: [ECHO_FUNCTION_SCHEMA],
-    runner: (_ctx, actionName, args) => {
-      if (actionName !== ECHO_FUNCTION_SCHEMA.name) {
-        return ModuleOperationResult.fail([ModuleCheckEntry.error('UNKNOWN_ACTION', `${actionName} 未实现`)])
+    runner: (_ctx, functionName, args) => {
+      if (functionName !== ECHO_FUNCTION_SCHEMA.name) {
+        return ModuleOperationResult.fail([ModuleCheckEntry.error('UNKNOWN_ACTION', `${functionName} 未实现`)])
       }
       const value = args['value'] ?? null
       return ModuleOperationResult.ok<LlmJsonValue>({
@@ -204,7 +204,7 @@ const NODE_TREE_INSTANCE_GUIDE = {
   operationSteps: [
     '用实例 path 调用 describeKind("node-tree") 读取元数据。',
     '属性读写复用同一个实例 path：getAttribute/setAttribute。',
-    '函数调用复用同一个实例 path：标准 function tool。',
+    '函数调用复用同一个实例 path：OpenAI function tool。',
     '进入子 kind 时，以当前实例 path 作为 parentPath 调用 listChildren/findInstance。',
   ],
 } as const
@@ -222,7 +222,7 @@ function createRuntimeWithSpy(): { runtime: ModuleSemanticRuntime; spy: ModuleKi
 // ═══════════════════════════════════════════════════════
 
 describe('ModuleSemanticRuntime.getLlmTools', () => {
-  it('返回固定知识工具和执行协议工具,名字稳定', () => {
+  it('返回 query/navigation tools 与 business function tools,名字稳定', () => {
     const tools = createRuntime().getLlmTools()
     const names = tools.map((spec) => spec.function.name)
     expect(names).toEqual([
@@ -239,7 +239,7 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
     ])
   })
 
-  it('固定工具说明只写协议职责,不内嵌业务 action 摘要', () => {
+  it('query/navigation tool 说明只写协议职责,不内嵌业务 function 摘要', () => {
     const tools = createRuntime().getLlmTools()
     for (const tool of tools) {
       expect(tool.function.description).toContain('职责：')
@@ -312,6 +312,108 @@ describe('ModuleSemanticRuntime.getLlmTools', () => {
         tags: ['base-runner'],
       },
     })
+  })
+
+  it('strict-blocker: guideFunction 参数 oneOf 至少包含 toolName 和 kind+functionName 两个分支', () => {
+    const tools = createRuntime().getLlmTools()
+    const guideFunction = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.guideFunction)
+    expect(guideFunction).toBeDefined()
+    if (guideFunction === undefined) throw new Error('not found')
+    const params = guideFunction.function.parameters
+    expect(params.oneOf).toBeDefined()
+    expect(params.oneOf).toHaveLength(2)
+    const [branch1, branch2] = params.oneOf!
+    expect(branch1).toMatchObject({ type: 'object', required: ['toolName'] })
+    expect(branch2).toMatchObject({ type: 'object', required: ['kind', 'functionName'] })
+  })
+
+  it('strict-readiness: setAttribute.value 声明 type 联合类型', () => {
+    const tools = createRuntime().getLlmTools()
+    const setAttribute = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.setAttribute)
+    expect(setAttribute).toBeDefined()
+    if (setAttribute === undefined) throw new Error('not found')
+    const valueSchema = setAttribute.function.parameters.properties?.['value']
+    expect(valueSchema).toBeDefined()
+    if (valueSchema === undefined || typeof valueSchema === 'boolean') throw new Error('value schema missing')
+    expect(valueSchema.type).toEqual(['string', 'number', 'boolean', 'object', 'array', 'null'])
+  })
+
+  it('strict-blocker: findInstance.query 声明 additionalProperties:true 以允许业务自定义字段', () => {
+    const tools = createRuntime().getLlmTools()
+    const findInstance = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.findInstance)
+    expect(findInstance).toBeDefined()
+    if (findInstance === undefined) throw new Error('not found')
+    const querySchema = findInstance.function.parameters.properties?.['query']
+    expect(querySchema).toBeDefined()
+    if (querySchema === undefined || typeof querySchema === 'boolean') throw new Error('query schema missing')
+    expect(querySchema.additionalProperties).toBe(true)
+  })
+
+  it('strict-readiness: business function tool $paths 声明 minItems/maxItems 与 kindPath 长度一致', () => {
+    const tools = createRuntime().getLlmTools()
+    const businessFn = tools.find((spec) => spec.function.name === 'node-tree_getNode')
+    expect(businessFn).toBeDefined()
+    if (businessFn === undefined) throw new Error('not found')
+    const dollarPathsSchema = businessFn.function.parameters.properties?.['$paths']
+    expect(dollarPathsSchema).toBeDefined()
+    if (dollarPathsSchema === undefined || typeof dollarPathsSchema === 'boolean') throw new Error('$paths schema missing')
+    expect(dollarPathsSchema['minItems']).toBe(1)
+    expect(dollarPathsSchema['maxItems']).toBe(1)
+    expect(dollarPathsSchema.type).toBe('array')
+  })
+
+  it('strict-readiness: 全可选参数工具显式声明 required:[]', () => {
+    const tools = createRuntime().getLlmTools()
+    const queryModules = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryModules)
+    expect(queryModules).toBeDefined()
+    if (queryModules === undefined) throw new Error('not found')
+    expect(queryModules.function.parameters.required).toEqual([])
+
+    const queryFunctions = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryFunctions)
+    expect(queryFunctions).toBeDefined()
+    if (queryFunctions === undefined) throw new Error('not found')
+    expect(queryFunctions.function.parameters.required).toEqual([])
+  })
+
+  it('strict-blocker: 业务 schema 可选字段未归一化到 required（OpenAI strict 要求所有 properties 必须在 required 中）', () => {
+    const runtime = new ModuleSemanticRuntime()
+    runtime.registerKind(new ModuleKind({
+      kind: 'opt-test',
+      name: '可选字段测试',
+      description: '测试业务 schema 含可选字段时 strict 归一化缺失',
+      functions: [{
+        name: 'doSomething',
+        description: '含可选字段的函数',
+        paramsSchema: {
+          type: 'object',
+          properties: {
+            requiredField: { type: 'string' },
+            optionalField: { type: 'string' },
+          },
+          required: ['requiredField'],
+          additionalProperties: false,
+        },
+      }],
+    }))
+    const tools = runtime.getLlmTools()
+    const businessFn = tools.find((spec) => spec.function.name === 'opt-test_doSomething')
+    expect(businessFn).toBeDefined()
+    if (businessFn === undefined) throw new Error('not found')
+    // strict 未开启 — 当前所有工具均为 strict:false
+    expect(businessFn.function.strict).toBeUndefined()
+    // optionalField 仍在 properties 中
+    const props = businessFn.function.parameters.properties
+    expect(props).toBeDefined()
+    if (props === undefined) throw new Error('properties missing')
+    expect(props['optionalField']).toBeDefined()
+    // wrapper 已收紧 additionalProperties:false
+    expect(businessFn.function.parameters.additionalProperties).toBe(false)
+    // BLOCKER: optionalField 在 properties 但不在 required
+    // OpenAI strict 要求所有 properties 都必须在 required 数组里
+    // 缺少 strict normalizer → optionalField 未归一化到 required
+    const req = businessFn.function.parameters.required
+    expect(req).toBeDefined()
+    expect(req).not.toContain('optionalField')
   })
 })
 
@@ -449,7 +551,7 @@ describe('ModuleSemanticRuntime.executeTool', () => {
       throw new Error('expected non-empty functions array')
     }
     const getNode = functions.find((a) => isRecord(a) && a['name'] === 'getNode')
-    if (!isRecord(getNode)) throw new Error('getNode action missing')
+    if (!isRecord(getNode)) throw new Error('getNode function missing')
     expect(getNode['usageRules']).toEqual(['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'])
     const failureModes = getNode['failureModes']
     if (!Array.isArray(failureModes) || failureModes.length === 0) {
@@ -1086,7 +1188,7 @@ describe('ModuleKind 默认协议行为', () => {
     expect(coerced['self']).toBeUndefined()
   })
 
-  it('默认完成无属性、无子节点、当前实例发现和未实现 action 响应', async () => {
+  it('默认完成无属性、无子节点、当前实例发现和未实现 function 响应', async () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createDefaultOnlyKind())
     const host = {
@@ -1119,10 +1221,10 @@ describe('ModuleKind 默认协议行为', () => {
       checks: [expect.objectContaining({ code: 'ATTRIBUTE_NOT_DECLARED' })],
     })
 
-    const action = await runtime.executeTool('default-only_ping', {
+    const fnResult = await runtime.executeTool('default-only_ping', {
       $paths: ['instance-1'],
     }, host)
-    expect(action).toMatchObject({
+    expect(fnResult).toMatchObject({
       ok: false,
       checks: [expect.objectContaining({ code: 'FUNCTION_NOT_IMPLEMENTED' })],
     })
@@ -1130,7 +1232,7 @@ describe('ModuleKind 默认协议行为', () => {
 })
 
 describe('ModuleSemanticRuntime describeKind 完整 schema(plan 闭环 2)', () => {
-  it('actions[].paramsSchema 透传(不为 additionalProperties:true)', async () => {
+  it('functions[].paramsSchema 透传(不为 additionalProperties:true)', async () => {
     const runtime = createRuntime()
     const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
     expect(result.ok).toBe(true)
@@ -1140,7 +1242,7 @@ describe('ModuleSemanticRuntime describeKind 完整 schema(plan 闭环 2)', () =
       throw new Error('expected non-empty functions array')
     }
     const getNode = functions.find((a) => isRecord(a) && a['name'] === 'getNode')
-    if (!isRecord(getNode)) throw new Error('getNode action missing')
+    if (!isRecord(getNode)) throw new Error('getNode function missing')
     const paramsSchema = getNode['paramsSchema']
     if (!isRecord(paramsSchema)) throw new Error('paramsSchema must be object payload')
     expect(paramsSchema['type']).toBe('object')

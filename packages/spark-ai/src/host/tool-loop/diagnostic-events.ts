@@ -24,6 +24,7 @@
 import { createAiHostStreamKey, createAiHostTurnKey } from '../business/business-scope'
 import type { AiHostBusinessScope } from '../business/business-types'
 import type { AiHostChatRequest, AiHostStreamEvent, AiHostTurnMeta } from '../chat/chat-types'
+import { parseBusinessFunctionToolName } from '../../module-semantic/internal/business-function-tool-name'
 import { stringifyAiHostPayload } from './payload-codec'
 
 type LlmDiagnosticEventInput = Readonly<{
@@ -94,11 +95,12 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  *
  * 规则：
  *   · describeKind → 直接取 args.kind（被描述的目标 kind）
- *   · 其他工具     → 从 args.path 尾部提取 kind 名称（去除 [...] 过滤器）
+ *   · path 工具    → 从 args.path 尾部提取 kind 名称（去除 [...] 过滤器）
+ *   · 业务函数工具 → 从 <kindPath>_<functionName> 提取叶子 kind
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
- *   node-tree_getNode({ $paths: ["/root/Table[0]"], id: "n1" })  →   eventModuleId = "Table"
+ *   node-tree_getNode({ $paths: ["tree-1"], id: "n1" })  →   eventModuleId = "node-tree"
  *   describeKind(kind="Table")                →   eventModuleId = "Table"
  *   listChildren(path="/root")                →   eventModuleId = "root"
  * ----------------------------------------------------------------------------- */
@@ -113,7 +115,11 @@ export function eventModuleIdFromProtocolCall(
   }
   // 其他工具尝试从 path 尾部提取 kind
   const path = typeof args['path'] === 'string' ? args['path'] : ''
-  return kindFromPathTail(path) ?? toolName
+  const pathKind = kindFromPathTail(path)
+  if (pathKind !== null) return pathKind
+
+  const functionTool = parseBusinessFunctionToolName(toolName)
+  return functionTool?.kindPath.at(-1) ?? toolName
 }
 
 /* -------------------------------------------------------------------------------

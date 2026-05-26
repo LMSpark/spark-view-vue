@@ -155,7 +155,7 @@ export type {
   ModuleSemanticKnowledgeModuleFilter,
   ModuleSemanticKnowledgeModuleSummary,
   ModuleSemanticKnowledgeSnapshot,
-} from './module-semantic/knowledge/module-semantic-knowledge'
+} from './module-semantic/knowledge/knowledge-types'
 
 // Host business/session -----------------------------------------------------
 

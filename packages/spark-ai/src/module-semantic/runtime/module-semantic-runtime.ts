@@ -7,16 +7,16 @@
  * │    · ModuleKindRegistry    — kind 注册表（启动期注册，运行期只读）             │
  * │    · Navigator             — 路径导航 + 发现工具（listChildren/findInstance）   │
  * │    · AttributeAccessor     — 属性读写（getAttribute/setAttribute）            │
- * │    · FunctionInvoker         — 动作调用（invokeFunction + 参数校验）               │
- * │    · ProtocolToolGenerator — 知识工具 + 执行协议工具规约生成（LLM 可见）      │
+ * │    · FunctionInvoker       — function tool 调用（invokeFunction + 参数校验）    │
+ * │    · ProtocolToolGenerator — query/navigation tools + function tools 规约生成  │
  * │    · ProtocolToolRouter    — 工具调用路由（toolName → 具体操作）               │
  * │                                                                              │
  * │  对外暴露两个核心能力：                                                        │
- * │    · getLlmTools()     — 返回固定协议工具规约（由 Host 层转发给 AI 后端）      │
- * │    · executeTool()     — 执行协议工具调用（由 Host 层 tool-call-executor 调用）│
+ * │    · getLlmTools()     — 返回 OpenAI function tool 规约（由 Host 层转发）      │
+ * │    · executeTool()     — 执行 tool_call（由 Host 层 tool-call-executor 调用）  │
  * │                                                                              │
  * │  设计原则：不持有业务状态，只做协议层编排和路由。                                │
- * │  业务状态由业务服务或构造期 action 委托承载。                                  │
+ * │  业务状态由业务服务或构造期 function runner 承载。                            │
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
@@ -31,14 +31,16 @@ import {
 } from '../internal/protocol-tool-generator'
 import {
   ModuleSemanticKnowledgeProjector,
-  type ModuleSemanticKnowledgeFunctionFilter,
-  type ModuleSemanticKnowledgeFunctionGuide,
-  type ModuleSemanticKnowledgeFunctionGuideInput,
-  type ModuleSemanticKnowledgeFunctionSummary,
-  type ModuleSemanticKnowledgeModuleFilter,
-  type ModuleSemanticKnowledgeModuleSummary,
-  type ModuleSemanticKnowledgeSnapshot,
 } from '../knowledge/module-semantic-knowledge'
+import type {
+  ModuleSemanticKnowledgeFunctionFilter,
+  ModuleSemanticKnowledgeFunctionGuide,
+  ModuleSemanticKnowledgeFunctionGuideInput,
+  ModuleSemanticKnowledgeFunctionSummary,
+  ModuleSemanticKnowledgeModuleFilter,
+  ModuleSemanticKnowledgeModuleSummary,
+  ModuleSemanticKnowledgeSnapshot,
+} from '../knowledge/knowledge-types'
 import type {
   ModuleFindInstanceRequest,
   ModuleHostContext,
@@ -86,12 +88,12 @@ export class ModuleSemanticRuntime {
 
   /* ── LLM 工具 ──────────────────────────────────────────── */
 
-  /** 获取所有 LLM 可见的协议工具规约（固定知识工具 + 执行协议工具） */
+  /** 获取所有 LLM 可见的 OpenAI function tool 规约（query/navigation + business function） */
   public getLlmTools(): readonly ModuleSemanticToolSpec[] {
     return this.toolGenerator.generate()
   }
 
-  /** 执行协议工具调用（Host 层 tool-call-executor 调用） */
+  /** 执行 tool_call（Host 层 tool-call-executor 调用） */
   public async executeTool(
     toolName: string,
     rawArgs: ProtocolToolArgs,
@@ -144,28 +146,28 @@ export class ModuleSemanticRuntime {
     return this.navigator.describeKind(kind)
   }
 
-  /* ── 知识投影（旧 knowledge 体系的编程式入口）──────── */
+  /* ── 知识投影（编程式入口）────────────────────────── */
 
   /** 投影当前注册表为 LLM 可读的知识快照。 */
   public projectKnowledge(): ModuleSemanticKnowledgeSnapshot {
     return this.knowledge.project()
   }
 
-  /** 查询模块目录摘要，等价于旧 knowledge.queryModules 的当前协议映射。 */
+  /** 查询模块目录摘要。 */
   public queryKnowledgeModules(
     filter: ModuleSemanticKnowledgeModuleFilter = {},
   ): readonly ModuleSemanticKnowledgeModuleSummary[] {
     return this.knowledge.queryModules(filter)
   }
 
-  /** 查询函数目录摘要，等价于旧 knowledge.queryFunctions 的当前协议映射。 */
+  /** 查询函数目录摘要。 */
   public queryKnowledgeFunctions(
     filter: ModuleSemanticKnowledgeFunctionFilter = {},
   ): readonly ModuleSemanticKnowledgeFunctionSummary[] {
     return this.knowledge.queryFunctions(filter)
   }
 
-  /** 查询单个函数完整指南，等价于旧 knowledge.guideFunction 的当前协议映射。 */
+  /** 查询单个函数完整指南。 */
   public guideKnowledgeFunction(
     input: ModuleSemanticKnowledgeFunctionGuideInput,
   ): ModuleOperationResult<ModuleSemanticKnowledgeFunctionGuide> {

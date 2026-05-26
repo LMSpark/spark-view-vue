@@ -478,7 +478,7 @@ export function createInstanceGuide(moduleKind: ModuleKind): ModuleSemanticKnowl
     operationSteps: [
       `用实例 path 调用 describeKind("${moduleKind.kind}") 读取元数据。`,
       `属性读写复用同一个实例 path：getAttribute/setAttribute。`,
-      `函数调用复用同一个实例 path：标准 function tool。`,
+      `函数调用复用同一个实例 path：OpenAI function tool。`,
       `进入子 kind 时，以当前实例 path 作为 parentPath 调用 listChildren/findInstance。`,
     ],
   }

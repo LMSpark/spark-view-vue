@@ -4,12 +4,12 @@
  * PageDesign 只注册到 Host 一次(moduleId=pageDesign),内部暴露 1 个根 kind 和 5 个子 kind:
  * pageDesign -> lifecycle / text-model / payload-catalog / node-tree / dataset。
  *
- * LLM 固定走知识入口和执行协议工具:
+ * LLM 通过 OpenAI function tools 工作:
  * queryModules() → queryFunctions({ kind }) → guideFunction({ toolName }) →
  * guideHumanQuestion({ context, reason, missingFacts }) when user facts are missing →
  * listChildren("/") → findInstance("/", "pageDesign", {}) →
  * listChildren("/pageDesign[<pageId>]") → describeKind(childKind) →
- * 业务函数 tool（如 pageDesign_lifecycle_describeProgress）直接调用。
+ * business function tool（如 pageDesign_lifecycle_describeProgress）直接调用。
  */
 
 import {

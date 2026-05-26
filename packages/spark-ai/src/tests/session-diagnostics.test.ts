@@ -72,7 +72,7 @@ describe('session diagnostics', () => {
       messageCount: 2,
       toolCallCount: 1,
       failedToolCallCount: 1,
-      actionNames: ['pageDesign_payload-catalog_guidePayload'],
+      functionNames: ['pageDesign_payload-catalog_guidePayload'],
       lastAssistantText: '已完成',
     })
   })

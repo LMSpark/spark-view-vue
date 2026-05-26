@@ -10,10 +10,10 @@
  *
  * 【设计决策】
  *   - 根路径 "/" listChildren 返回所有已注册 kind 名单（LLM 发现入口的第一跳）。
- *   - 路径第一段不验证父子关系（没有父），由业务方在 root ModuleKind 的 action 中自行校验。
+ *   - 路径第一段不验证父子关系（没有父），由业务方在 root ModuleKind 的 function 中自行校验。
  *   - 第二段起通过父 ModuleKind.resolveChild 验证父子存在性。
  *   - 根级 findInstance 的 ModulePathContext 不设置 segment。
- *   - describeKind 全量返回 attributes/actions/children，不剥离任何字段。
+ *   - describeKind 全量返回 attributes/functions/children，不剥离任何字段。
  *
  * 【消费方】ModuleSemanticRuntime（直接调用）、FunctionInvoker、AttributeAccessor
  *
@@ -49,7 +49,7 @@ import type { ModuleKindRegistry } from './module-kind-registry'
 /**
  * describeKind 返回的完整元数据（仅用于 LLM 阅读，JSON 兼容）。
  *
- * 设计原则：attributes 与 actions 全量复用 ModuleKind 的 schema 类型，
+ * 设计原则：attributes 与 functions 全量复用 ModuleKind 的 schema 类型，
  * paramsSchema / resultSchema / schema / example / usageRules / failureModes
  * 全部传递给 LLM。任何剥离都让 LLM 在写参数时盲注。
  */
@@ -66,7 +66,7 @@ export type ModuleKindDescription = Readonly<{
 
 /**
  * 路径遍历的成功结果。
- * - moduleKind: 末段 kind 对应的 ModuleKind（用于后续属性/动作操作）
+ * - moduleKind: 末段 kind 对应的 ModuleKind（用于后续属性/函数调用）
  * - segmentCtx: 末段 PathContext（传给末段 ModuleKind 的方法）
  */
 export class ModuleNavigationSuccess {
@@ -94,7 +94,7 @@ export class Navigator {
    * 遍历路径，逐段验证，最终返回末段 ModuleKind + PathContext。
    *
    * 验证规则：
-   *   1. 根路径不可用于属性/动作调用 → PATH_EMPTY
+   *   1. 根路径不可用于属性/函数调用 → PATH_EMPTY
    *   2. 路径上任何 kind 未注册 → KIND_NOT_REGISTERED
    *   3. 第一段（根级）不验证父子关系 — 没有父，LLM 给的 root id 由业务自行校验
    *   4. 第二段及之后 → 调用父 ModuleKind.resolveChild

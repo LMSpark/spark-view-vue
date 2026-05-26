@@ -90,7 +90,7 @@ export type AiHostMessageHistoryEntry = AiHostHistoryEntryBase & Readonly<{
   metadata?: Record<string, unknown>
 }>
 
-/** 工具调用历史条目（协议工具调用记录） */
+/** 工具调用历史条目（OpenAI function call 记录） */
 export type AiHostFunctionCallHistoryEntry = AiHostHistoryEntryBase & Readonly<{
   kind: 'functionCall'
   toolName: string

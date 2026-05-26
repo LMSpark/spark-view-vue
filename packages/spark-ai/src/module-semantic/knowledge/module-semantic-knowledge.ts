@@ -1,14 +1,13 @@
 /**
  * Module-semantic knowledge projection.
  *
- * This layer restores the old "knowledge" contract on top of the current
- * module-semantic protocol: it exposes module summaries, function summaries,
- * function guides, and a compact prompt snapshot. ProtocolToolRouter also
- * exposes the three query/guide operations as direct LLM-visible tools.
+ * The projector turns the registered ModuleKind graph into module summaries,
+ * function summaries, function guides, human-question guidance, and a compact
+ * prompt snapshot. ProtocolToolRouter exposes those projections through the
+ * query/guide tools that are visible to the LLM.
  *
- * Types are defined in knowledge-types.ts; helper functions live in
- * knowledge-support.ts. This file keeps only the projector class and
- * re-exports the public type surface for backward compatibility.
+ * Types live in knowledge-types.ts; helper functions live in
+ * knowledge-support.ts. This file owns only the projector class.
  */
 
 import type { ModuleKindRegistry } from '../internal/module-kind-registry'
@@ -46,23 +45,6 @@ import {
   PROMPT_KIND_INDEX_LIMIT,
   summarizeFunction,
 } from './knowledge-support'
-
-// ── 类型 re-export（保持 barrel 兼容）──────────────────────────
-
-export type {
-  ModuleSemanticKnowledgeFunctionFilter,
-  ModuleSemanticKnowledgeFunctionGuide,
-  ModuleSemanticKnowledgeFunctionGuideInput,
-  ModuleSemanticKnowledgeFunctionSummary,
-  ModuleSemanticKnowledgeModuleFilter,
-  ModuleSemanticKnowledgeModuleSummary,
-  ModuleSemanticKnowledgeSnapshot,
-} from './knowledge-types'
-
-export type {
-  ModuleSemanticHumanQuestionGuide,
-  ModuleSemanticHumanQuestionGuideInput,
-} from './knowledge-types'
 
 // ── 投影器 class ──────────────────────────────────────────────
 
@@ -278,7 +260,7 @@ export class ModuleSemanticKnowledgeProjector {
         '用户回答后，把回答并入当前任务事实。',
         '如仍不确定模块或函数，先 queryModules / queryFunctions。',
         '执行前用 guideFunction 或 describeKind 确认 function schema。',
-        '具备足够事实后再调用对应标准 function tool。',
+        '具备足够事实后再调用对应 OpenAI function tool。',
       ],
     })
   }

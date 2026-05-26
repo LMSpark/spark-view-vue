@@ -227,4 +227,36 @@ describe('createTurnEventCollector', () => {
       streamKey,
     })
   })
+
+  it('discards malformed tool calls missing id instead of fabricating one', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: 'ok',
+      toolCalls: [
+        // valid: has id
+        { id: 'call-1', type: 'function', function: { name: 'getNode', arguments: '{}' } },
+        // malformed: missing id → should be discarded
+        { type: 'function', function: { name: 'setProps', arguments: '{}' } },
+        // malformed: empty id string → should be discarded
+        { id: '', type: 'function', function: { name: 'listChildren', arguments: '{}' } },
+        // valid
+        { id: 'call-2', type: 'function', function: { name: 'describeKind', arguments: '{"kind":"x"}' } },
+      ],
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: 'ok',
+      toolCalls: [
+        { id: 'call-1', type: 'function', function: { name: 'getNode', arguments: '{}' } },
+        { id: 'call-2', type: 'function', function: { name: 'describeKind', arguments: '{"kind":"x"}' } },
+      ],
+    })
+    expect(hub.listenerCount()).toBe(0)
+  })
 })

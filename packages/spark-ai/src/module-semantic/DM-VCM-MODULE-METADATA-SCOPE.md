@@ -83,21 +83,21 @@ VCM 提取能力模块元数据时，能力语义只识别写在领域能力 cla
 - `@moduleChild <childKind>`：声明允许的子 kind；必须与 `children` 一致。
 - `@moduleDependency <name> <type>`：声明构造或 factory 依赖，只描述装配边界。
 - `@moduleFactory <factoryName>`：声明生成 factory 名称；返回值必须是标准 `ModuleKind`。
-- `@moduleRunner <functionName>`：声明 action runner 委托。目标函数必须满足 `ModuleKindRunner`，或由生成 factory 包一层后满足该签名。
+- `@moduleRunner <functionName>`：声明 function runner 委托。目标函数必须满足 `ModuleKindRunner`，或由生成 factory 包一层后满足该签名。
 - `@moduleListDelegate <functionName>`：声明 list 委托。目标函数必须满足 `ModuleChildrenLister`。
 - `@moduleFindDelegate <functionName>`：声明 find 委托。目标函数必须满足 `ModuleInstanceFinder`。
 - `@moduleAttackSurface <surfaceId> <risk> <text>`：声明攻击面。`risk` 推荐使用 `low | medium | high | critical`。
 - `@moduleTrustBoundary <text>`：声明该能力跨越的信任边界，例如 Host live binding、用户输入、页面源码。
 - `@moduleGuard <text>`：声明调用前或执行中必须保留的防护规则。
 - `@moduleMutation <resource> <mode> <text>`：声明资源访问模式。`mode` 推荐使用 `read | write | delete | execute | read-write`。
-- `@moduleAction <actionName>`：声明 action 名；说明文本优先来自 JSDoc summary / `@description`。
-- `@usageRule <text>`：声明 action 使用规则，可多条。
-- `@failureMode <code> <when> => <fix>`：声明 action 失败模式，可多条。
-- `@example <json>`：声明 action 示例参数，必须是 JSON 兼容值。
+- `@moduleFunction <functionName>`：声明 function 名；说明文本优先来自 JSDoc summary / `@description`。
+- `@usageRule <text>`：声明 function 使用规则，可多条。
+- `@failureMode <code> <when> => <fix>`：声明 function 失败模式，可多条。
+- `@example <json>`：声明 function 示例参数，必须是 JSON 兼容值。
 
-动作与属性仍以现有 `ModuleFunctionMetadata` / `ModuleAttributeMetadata` 为最终协议形态：
+函数与属性仍以现有 `ModuleFunctionMetadata` / `ModuleAttributeMetadata` 为最终协议形态：
 
-- action 的参数、返回、规则、失败模式只进入 `paramsSchema / resultSchema / usageRules / failureModes / example`。
+- function 的参数、返回、规则、失败模式只进入 `paramsSchema / resultSchema / usageRules / failureModes / example`。
 - attribute 的读写语义只进入 `ModuleAttributeMetadata`。
 - JSDoc 只用于 VCM 生成和一致性检查，不新增运行时协议字段。
 - 参数说明复用标准 JSDoc `@param`；返回说明复用 `@returns` / `@return`。JSON Schema 可以由类型系统、`.dm` 约束和显式 schema 常量共同生成，但最终必须落到 `LlmJsonSchemaObject`。
@@ -117,13 +117,13 @@ VCM 提取能力模块元数据时，能力语义只识别写在领域能力 cla
  * @moduleAttackSurface rule-tree-write high rule.json 结构写入会改变页面渲染树、数据绑定和行为入口。
  * @moduleTrustBoundary 调用方负责把当前页面 rule.json live model 映射为 SparkNodeTree 实例。
  * @moduleGuard 修改节点前必须确认目标节点、父节点和组件 payload 合法。
- * @moduleMutation rule.json read-write SparkNodeTree action 直接修改当前页面 rule.json live model。
+ * @moduleMutation rule.json read-write SparkNodeTree 操作直接修改当前页面 rule.json live model。
  */
 export class SparkNodeTree {
   /**
    * 添加一个 SparkNode。
    *
-   * @moduleAction addNode
+   * @moduleFunction addNode
    * @usageRule 修改 rule.json 前先确认目标父节点存在。
    * @failureMode NODE_NOT_FOUND 目标节点不存在 => 先调用 getNode 或 findInstance 确认节点 id。
    * @param args 添加节点参数。
@@ -146,13 +146,13 @@ export class SparkNodeTree {
  * @moduleAttackSurface dataset-schema high 表、列、视图、关系和依赖写入会改变页面数据绑定语义。
  * @moduleTrustBoundary 调用方负责把当前页面 pagedata.json live model 映射为 DataSetCrudTool 实例。
  * @moduleGuard 修改结构前必须确认表、字段、视图和绑定链仍能解析。
- * @moduleMutation pagedata.json read-write DataSetCrudTool action 直接修改当前页面 pagedata.json live model。
+ * @moduleMutation pagedata.json read-write DataSetCrudTool 操作直接修改当前页面 pagedata.json live model。
  */
 export class DataSetCrudTool {
   /**
    * 创建数据表。
    *
-   * @moduleAction createTable
+   * @moduleFunction createTable
    * @usageRule 建表前确认 tableName 在 DataSet 内唯一。
    * @failureMode TABLE_EXISTS 表已存在 => 先调用 listTables 或 getTable 确认表名。
    */
@@ -209,3 +209,17 @@ export function createNodeTreeModuleKind(): ModuleKind {
 - `@moduleRunner` / `@moduleListDelegate` / `@moduleFindDelegate` 指向不存在的函数、签名不匹配或 kind 绑定冲突时 fail-fast。
 - `@moduleMutation` 的 resource/mode 必须与 `@moduleAttackSurface` 覆盖的资源一致；写入、删除、执行类资源缺少 `@moduleGuard` 时 fail-fast。
 - 最终注册仍必须走 `runtime.registerKind(new ModuleKind(...))` 或等价的生成 factory 返回值；不得新增绕过 `ModuleKind` 的 runtime 注册入口。
+
+## 术语迁移延后边界（2026-05-27）
+
+**本轮实际范围**：`packages/spark-ai/src/module-semantic`（protocol 层）和 `packages/spark-ai/src/host`（transport/chat/session 层）已完成 `action`→`function` 术语统一。包括 protocol 源码、类型名、注释、工具描述和 spark-ai 测试文件。
+
+**延后区域**：以下属于业务层/VCM 实现层，不在本轮迁移范围：
+
+- `packages/spark-page-config/src/ai/*-tool-catalog.ts` — 内部 `actionName` 参数名和 `runAction` 方法名是 catalog class 的私有 API，与 ModuleKind 协议无耦合。
+- `packages/spark-page-config/src/node-tree/spark-node-tree.ts` — `@moduleAction` JSDoc tag 是 VCM 构建期扫描标识。VCM 生成器应同时识别 `@moduleAction`（旧）和 `@moduleFunction`（新），并在构建期 fail-fast 提示迁移。运行时协议不受影响。
+- `packages/spark-page-config/src/design/page-design-service.ts` — `actionName` 形参是 service 内部校验函数的本地名。
+
+延后条件：当 VCM 生成器落地到 spark-page-config 时，统一把 `@moduleAction`→`@moduleFunction`，`actionName`→`functionName`。届时连同生成代码一并更新，不分步迁移。
+
+`UNKNOWN_ACTION` 错误码保留不变——它是 `ModuleKind` 运行时的稳定契约字符串，已是现有业务方的错误匹配锚点，改名为 `UNKNOWN_FUNCTION` 属于不必要的 breaking change。

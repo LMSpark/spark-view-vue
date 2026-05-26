@@ -24,7 +24,7 @@ export type AiHostSessionSummary = Readonly<{
   messageCount: number
   toolCallCount: number
   failedToolCallCount: number
-  actionNames: readonly string[]
+  functionNames: readonly string[]
   lastAssistantText: string
 }>
 
@@ -61,7 +61,7 @@ export function summarizeAiHostSessionRecord(sessionRecord: AiHostSessionRecord 
   const messageEntries = history.filter(isMessageEntry)
   const functionCallEntries = history.filter(isFunctionCallEntry)
   const failedFunctionCalls = functionCallEntries.filter((entry) => entry.status === 'failed')
-  const actionNames = functionCallEntries
+  const functionNames = functionCallEntries
     .map((entry) => entry.toolName.trim())
     .filter((toolName) => toolName.length > 0)
   return {
@@ -70,7 +70,7 @@ export function summarizeAiHostSessionRecord(sessionRecord: AiHostSessionRecord 
     messageCount: messageEntries.length,
     toolCallCount: functionCallEntries.length,
     failedToolCallCount: failedFunctionCalls.length,
-    actionNames,
+    functionNames,
     lastAssistantText: latestAiHostAssistantText(sessionRecord),
   }
 }

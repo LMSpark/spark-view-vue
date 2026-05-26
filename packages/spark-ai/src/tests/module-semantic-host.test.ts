@@ -14,6 +14,7 @@ import {
   createAiHostBusinessTask,
   startRegistrationSession,
   type AiHostBusinessRegistration,
+  type AiHostStreamEvent,
   type AiHostTurnCallbacks,
 } from '../host'
 import {
@@ -58,10 +59,10 @@ function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
       },
     ],
     children: [],
-    runner: (ctx, actionName, args) => {
+    runner: (ctx, functionName, args) => {
       spy.lastHost = ctx.host
-      if (actionName !== 'getNode') {
-        return ModuleOperationResult.fail([ModuleCheckEntry.error('UNKNOWN_ACTION', actionName)])
+      if (functionName !== 'getNode') {
+        return ModuleOperationResult.fail([ModuleCheckEntry.error('UNKNOWN_ACTION', functionName)])
       }
       const id = args['id']
       if (typeof id !== 'string' || id.length === 0) {
@@ -191,7 +192,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     })).toThrow('missing inputContract')
   })
 
-  it('startRegistrationSession 返回固定知识工具和执行协议工具', async () => {
+  it('startRegistrationSession 返回 query/navigation tools 与 business function tools', async () => {
     const { registration } = createRegistration()
     const started = await startRegistrationSession(registration, CONTEXT)
     expect(started.status).toBe('Started')
@@ -210,7 +211,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     ])
   })
 
-  it('tool loop 直接执行协议工具,记录 Host 命名历史并透传 host scope', async () => {
+  it('tool loop 执行 OpenAI function tool,记录 Host 命名历史并透传 host scope', async () => {
     const { registration, spy, released } = createRegistration()
     await startRegistrationSession(registration, CONTEXT)
     const turnCallbacks: AiHostTurnCallbacks = {
@@ -236,11 +237,12 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     }
     const runner = new AiHostToolLoopRunner(turnCallbacks, 1)
     let cleared = false
+    const streamEvents: AiHostStreamEvent[] = []
 
     await runner.runToolLoop({
       registration,
       scope: SCOPE,
-      request: { historyMsgs: [] },
+      request: { historyMsgs: [], onStreamEvent: (event) => streamEvents.push(event) },
       turn: TURN,
       clearSelected: () => {
       cleared = true
@@ -258,6 +260,9 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     expect(registration.sessionStore?.getSession(CONTEXT)?.status).toBe('Stopped')
     expect(released).toEqual(['page-1'])
     expect(cleared).toBe(true)
+    const toolResultEvent = streamEvents.find((event) => event.type === 'tool-result')
+    expect(toolResultEvent?.scope.eventModuleId).toBe('node-tree')
+    expect(toolResultEvent?.streamKey).toContain('node-tree')
   })
 
   it('协议失败映射为 AiHostFunctionCallResult failure 并记录 failed', async () => {
@@ -340,6 +345,135 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     })
   })
 
+  it('工具调用参数不是 JSON object 时 fail-fast 并回灌给 LLM', async () => {
+    const { registration, spy } = createRegistration()
+    await startRegistrationSession(registration, CONTEXT)
+    let appendedMessages: readonly unknown[] = []
+    const records: Array<{ status: string; code?: string }> = []
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: () => Promise.resolve({
+        text: '',
+        toolCalls: [{
+          type: 'function',
+          id: 'call-invalid-json',
+          function: {
+            name: 'node-tree_getNode',
+            arguments: '{not-json',
+          },
+        }],
+      }),
+      appendMessages: (input) => {
+        appendedMessages = input.messages
+        return Promise.resolve()
+      },
+    }
+    const runner = new AiHostToolLoopRunner(turnCallbacks, 1)
+
+    await runner.runToolLoop({
+      registration,
+      scope: SCOPE,
+      request: {
+        historyMsgs: [],
+        onFcCall: (record) => {
+          if (record.result.ok) {
+            records.push({ status: record.status })
+            return
+          }
+          records.push({ status: record.status, code: record.result.code })
+        },
+      },
+      turn: TURN,
+      clearSelected: () => undefined,
+    })
+
+    expect(spy.lastHost).toBeUndefined()
+    expect(records).toEqual([{ status: 'error', code: 'TOOL_ARGS_INVALID_JSON' }])
+    const toolMessage = appendedMessages.find((message) =>
+      typeof message === 'object' && message !== null && 'role' in message && message.role === 'tool'
+    )
+    const toolPayload = JSON.parse(String(readProperty(toolMessage, 'content') ?? '{}'))
+    expect(toolPayload).toMatchObject({
+      ok: false,
+      code: 'TOOL_ARGS_INVALID_JSON',
+      checks: [
+        {
+          level: 'error',
+          code: 'TOOL_ARGS_INVALID_JSON',
+        },
+      ],
+    })
+    const history = registration.sessionStore?.getSessionHistory(CONTEXT) ?? []
+    const failedCall = [...history].reverse().find((entry) => entry.kind === 'functionCall')
+    expect(failedCall).toMatchObject({
+      kind: 'functionCall',
+      toolName: 'node-tree_getNode',
+      args: {},
+      status: 'failed',
+      error: {
+        code: 'TOOL_ARGS_INVALID_JSON',
+      },
+    })
+  })
+
+  it('工具调用参数是合法 JSON 但不是 object 时 fail-fast 并回灌 TOOL_ARGS_NOT_OBJECT', async () => {
+    const { registration, spy } = createRegistration()
+    await startRegistrationSession(registration, CONTEXT)
+    let appendedMessages: readonly unknown[] = []
+    const records: Array<{ status: string; code?: string }> = []
+    const turnCallbacks: AiHostTurnCallbacks = {
+      executeTurn: () => Promise.resolve({
+        text: '',
+        toolCalls: [{
+          type: 'function',
+          id: 'call-not-object',
+          function: {
+            name: 'node-tree_getNode',
+            arguments: '"this is a string, not an object"',
+          },
+        }],
+      }),
+      appendMessages: (input) => {
+        appendedMessages = input.messages
+        return Promise.resolve()
+      },
+    }
+    const runner = new AiHostToolLoopRunner(turnCallbacks, 1)
+
+    await runner.runToolLoop({
+      registration,
+      scope: SCOPE,
+      request: {
+        historyMsgs: [],
+        onFcCall: (record) => {
+          if (record.result.ok) {
+            records.push({ status: record.status })
+            return
+          }
+          records.push({ status: record.status, code: record.result.code })
+        },
+      },
+      turn: TURN,
+      clearSelected: () => undefined,
+    })
+
+    expect(spy.lastHost).toBeUndefined()
+    expect(records).toEqual([{ status: 'error', code: 'TOOL_ARGS_NOT_OBJECT' }])
+    const toolMessage = appendedMessages.find((message) =>
+      typeof message === 'object' && message !== null && 'role' in message && message.role === 'tool'
+    )
+    const toolPayload = JSON.parse(String(readProperty(toolMessage, 'content') ?? '{}'))
+    expect(toolPayload).toMatchObject({
+      ok: false,
+      code: 'TOOL_ARGS_NOT_OBJECT',
+      checks: [
+        {
+          level: 'error',
+          code: 'TOOL_ARGS_NOT_OBJECT',
+        },
+      ],
+    })
+  })
+
   it('tool loop systemPrompt 自动拼入 ModuleKind 分层知识快照', async () => {
     const { registration: baseRegistration } = createRegistration()
     const registration: AiHostBusinessRegistration = {
@@ -416,7 +550,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
 })
 
 describe('ModuleSemanticToolCodec', () => {
-  it('actionOf 协议工具名原样返回;未知工具返回 null', () => {
+  it('actionOf 对已知 OpenAI function toolName 原样返回;未知工具返回 null', () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
@@ -425,7 +559,7 @@ describe('ModuleSemanticToolCodec', () => {
     expect(codec.actionOf('unknown-tool')).toBeNull()
   })
 
-  it('tools 暴露固定 transport spec,parameters.type=object', () => {
+  it('tools 暴露 OpenAI function tool transport spec', () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
@@ -433,6 +567,7 @@ describe('ModuleSemanticToolCodec', () => {
     for (const tool of codec.tools) {
       expect(tool.type).toBe('function')
       expect(tool.function.parameters['type']).toBe('object')
+      expect(tool.function.strict).toBe(false)
     }
   })
 })

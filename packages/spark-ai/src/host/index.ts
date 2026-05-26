@@ -15,7 +15,7 @@
  * 【设计原则】
  *   - class 用 export，type 用 export type（遵循 verbatimModuleSyntax）
  *   - 仅导出公共 API，内部实现细节不导出
- *   - class 和同名 namespace 合并的类型由 class 导出自然覆盖
+ *   - 禁止 namespace 合并；公共类型从所属文件显式登记
  *
  * 【消费方】@spark-view/spark-ai（src/index.ts）、spark-page-config、spark-app
  * ═══════════════════════════════════════════════════════════════

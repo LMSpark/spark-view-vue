@@ -11,7 +11,7 @@ flowchart LR
   RegisterKind --> BusinessRuntime["AiHostBusinessRegistration.runtime"]
   BusinessRuntime --> BusinessRegistry["AiHostBusinessRegistry.register"]
   BusinessRegistry --> ToolLoop["AiHostToolLoopRunner"]
-  ToolLoop --> ProtocolTools["6 protocol tools"]
+  ToolLoop --> ProtocolTools["OpenAI function tools"]
   ProtocolTools --> LLM["LLM"]
 ```
 
@@ -28,11 +28,11 @@ mindmap
     保留
       ModuleKind
         元数据
-        动作入口
+        function 入口
         子模块寻址
       ModuleSemanticRuntime
         registerKind
-        六个协议工具
+        query/navigation tools + function tools
         只做路由
       HostBusiness
         会话
@@ -58,7 +58,7 @@ mindmap
     删除
       重复 namespace
       重复 public api
-      action 专用工具
+      function 专用工具旧口径
       runtime 业务状态
       Vue 元数据冒充 kind 元数据
     验证
@@ -101,8 +101,8 @@ diagram RegistrationFlow {
   ModuleSemanticRuntime -> AiHostBusinessRegistration.runtime
   AiHostBusinessRegistration -> AiHostBusinessRegistry.register
   AiHostBusinessRegistry -> AiHostToolLoopRunner
-  AiHostToolLoopRunner -> "6 protocol tools"
-  "6 protocol tools" -> LLM
+  AiHostToolLoopRunner -> "OpenAI function tools"
+  "OpenAI function tools" -> LLM
 }
 
 section SourceFiles {
@@ -174,13 +174,13 @@ section ProtocolRegistrationSurface {
       "description",
       "parentKind",
       "attributes",
-      "actions",
+      "functions",
       "payloads",
       "children"
     ]
 
         owns_runtime_delegates: [
-          "actionRunner",
+          "functionRunner",
           "childLister",
           "instanceFinder"
         ]
@@ -199,18 +199,18 @@ section ProtocolRegistrationSurface {
       "children 不允许空 kind",
       "children 不允许重复 kind",
       "children 不允许指向自身",
-      "actions 不允许重复 name",
+      "functions 不允许重复 name",
       "attributes 不允许重复 name",
       "payloads 不允许空 payloadRef",
       "payloads 不允许重复 payloadRef",
       "payloads.description 不允许为空",
-      "payloads.requiredForActions 不允许空 actionName 或重复 actionName"
+      "payloads.requiredForFunctions 不允许空 functionName 或重复 functionName"
     ]
   }
 
   entity ModuleFunctionMetadata {
-    name: "动作名，同一 kind 内唯一。"
-    description: "动作语义说明。"
+    name: "函数名，同一 kind 内唯一。"
+    description: "函数语义说明。"
     paramsSchema: "标准 JSON Schema object root。"
     resultSchema: "可选，描述返回值。"
     usageRules: "可选，LLM 调用前必须遵守的规则。"
@@ -230,7 +230,7 @@ section ProtocolRegistrationSurface {
   entity ModuleParameterPayloadMetadata {
     payloadRef: "参数 provider 命名空间，例如 spark.component。"
     description: "payload 与当前 kind 的关系说明。"
-    requiredForActions: "可选，通常需要该参数指南的 action 名列表。"
+    requiredForFunctions: "可选，需要该参数指南的 function 名列表。"
   }
 }
 
@@ -254,7 +254,7 @@ section RuntimeRegistrationSurface {
       "registerKind(moduleKind)"
 
     llm_tools:
-      "getLlmTools() 固定生成知识入口和执行协议工具，不随业务 action 数量增加。"
+      "getLlmTools() 生成固定知识/导航工具，并按已注册业务函数派生执行工具。"
 
     tool_execution:
       "executeTool(toolName, rawArgs, host?) 由 ProtocolToolRouter 分派。"
@@ -277,7 +277,7 @@ section RuntimeRegistrationSurface {
 
     invariant: [
       "ModuleSemanticRuntime 不持有业务 live state",
-      "ModuleSemanticRuntime 不依据 action 返回值做下一步业务编排",
+      "ModuleSemanticRuntime 不依据 function 返回值做下一步业务编排",
       "业务状态只能在业务 service、attributeAccessor 或外部 host 中"
     ]
   }
@@ -315,7 +315,7 @@ section NavigationAndDiscoverySurface {
       "description",
       "parentKind",
       "attributes",
-      "actions",
+      "functions",
       "payloads",
       "children"
     ]
@@ -342,7 +342,7 @@ section LlmVisibleProtocolSurface {
     "按已注册 ModuleKind.functions 动态生成，格式 <kindPath>_<functionName>，如 pageDesign_lifecycle_describeProgress。"
 
   tool_generation_source:
-    "ProtocolToolGenerator 从 ModuleKindRegistry 的注册表摘要生成固定工具说明。"
+    "ProtocolToolGenerator 从 ModuleKindRegistry 的注册表摘要生成知识/导航工具和业务函数工具说明。"
 
   kind_summary_in_tool_description:
     "attrs=[...] functions=[...] payloads=[...] children=[...]"
@@ -470,7 +470,7 @@ section CurrentBusinessRegistrationInventory {
         kind: "pageDesign"
         name: "Page Design"
         parentKind: null
-        actions: 0
+        functions: 0
         payloads: []
         children: ["lifecycle", "text-model", "payload-catalog", "node-tree", "dataset"]
       },
@@ -566,7 +566,7 @@ section KnowledgeProjectionSurface {
     "description",
     "parentKind",
     "attributeCount",
-    "actionCount",
+    "functionCount",
     "payloadCount",
     "payloadRefs",
     "childKindCount",
@@ -574,9 +574,9 @@ section KnowledgeProjectionSurface {
   ]
 
   function_summary_fields: [
-    "action",
+    "toolName",
     "kind",
-    "actionName",
+    "functionName",
     "description",
     "paramNames",
     "requiredParamNames",
@@ -586,9 +586,7 @@ section KnowledgeProjectionSurface {
   ]
 
   function_guide_fields: [
-    "action",
-    "kind",
-    "actionName",
+    "functionName",
     "description",
     "paramsSchema",
     "resultSchema",
@@ -625,10 +623,10 @@ section RegisterSurfaceRules {
     "第二段起必须通过父 ModuleKind.resolveChild 验证存在性。"
 
   rule R07_describe_before_invoke:
-    "LLM 调用业务 action 前必须先通过 guideFunction 或 describeKind 获得 paramsSchema；缺少用户事实时先 guideHumanQuestion。"
+    "LLM 调用业务 function 前必须先通过 guideFunction 或 describeKind 获得 paramsSchema；缺少用户事实时先 guideHumanQuestion。"
 
   rule R08_standard_json_schema:
-    "action.paramsSchema 和 payload guide paramsSchema 必须是标准 JSON Schema object root。"
+    "function.paramsSchema 和 payload guide paramsSchema 必须是标准 JSON Schema object root。"
 
   rule R09_payload_binding:
     "复杂参数目录必须通过 ModuleKind.payloads 声明归属，并通过 ModuleParameterPayloadRegistry 注册 provider。"
@@ -684,12 +682,12 @@ section ChangeChecklist {
       "创建一个或多个 ModuleKind",
       "为根 kind 保持 parentKind 未设置",
       "为子 kind 设置 parentKind 并在父 kind.children 中声明",
-      "为每个 action 提供标准 paramsSchema",
-      "如 action 需要外部复杂参数指南，在目标 kind.payloads 声明 payloadRef",
+      "为每个 function 提供标准 paramsSchema",
+      "如 function 需要外部复杂参数指南，在目标 kind.payloads 声明 payloadRef",
       "如声明 payloadRef，注册对应 ModuleParameterPayloadProvider",
       "用 AiHostBusinessRegistration 包装 runtime",
       "通过 AiHostBusinessRegistry.register 注册业务",
-      "补 describeKind、路径寻址、action 调用和 payload provider 测试"
+      "补 describeKind、路径寻址、function 调用和 payload provider 测试"
     ]
   }
 
@@ -697,10 +695,10 @@ section ChangeChecklist {
     steps: [
       "选择真实归属 ModuleKind.kind",
       "选择稳定 payloadRef",
-      "在目标 ModuleKind.payloads 中声明 payloadRef、description、requiredForActions",
+      "在目标 ModuleKind.payloads 中声明 payloadRef、description、requiredForFunctions",
       "实现 ModuleParameterPayloadProvider",
       "注册到 ModuleParameterPayloadRegistry",
-      "通过 payload-catalog 或业务 action 暴露 query/guide 路由",
+      "通过 payload-catalog 或业务 function 暴露 query/guide 路由",
       "测试 queryPayloads 摘要字段",
       "测试 guidePayload paramsSchema 是标准 JSON Schema",
       "测试未知 provider 和未知 key 的 fail-fast 行为"

@@ -1,9 +1,9 @@
 /**
  * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  MODULE-SEMANTIC · 协议工具路由器                                             │
+ * │  MODULE-SEMANTIC · Tool Call Router                                           │
  * │  Protocol Tool Router                                                         │
  * │                                                                              │
- * │  本模块将 LLM 发起的协议工具调用（toolName + rawArgs）路由到具体的内部组件。    │
+ * │  本模块将 LLM 发起的 tool_call（toolName + rawArgs）路由到具体的内部组件。      │
  * │                                                                              │
  * │  路由表：                                                                      │
  * │    queryModules  → KnowledgeProjector.queryModules()                         │
@@ -12,7 +12,7 @@
  * │    guideHumanQuestion → KnowledgeProjector.guideHumanQuestion(input)          │
  * │    getAttribute  → AttributeAccessor.get(path, attrName)                     │
  * │    setAttribute  → AttributeAccessor.set(request)                           │
- * │    invokeFunction  → FunctionInvoker.invoke(request)                           │
+ * │    <kindPath>_<functionName> → FunctionInvoker.invoke(request)                 │
  * │    listChildren  → Navigator.listChildren(path, childKind)                   │
  * │    findInstance  → Navigator.findInstance(request)                          │
  * │    describeKind  → Navigator.describeKind(kind)                              │
@@ -64,11 +64,11 @@ export class ProtocolToolRouter {
   ) {}
 
   /**
-   * 执行协议工具调用或业务函数调用。
+   * 执行 query/navigation tool 或 business function tool。
    *
    * 流程：
    *   1. 先检查 toolName 是否为业务函数 tool（parseBusinessFunctionToolName）
-   *   2. 再校验 toolName 是否为已知的协议工具名（UNKNOWN_TOOL）
+   *   2. 再校验 toolName 是否为已知的 query/navigation tool 名（UNKNOWN_TOOL）
    *   3. switch 路由到对应方法
    *   4. 各方法内部解析 path（ModulePath.parse）、提取参数（argsParser）
    *   5. 调用内部组件（attributes / functions / navigator）
