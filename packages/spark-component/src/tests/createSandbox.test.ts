@@ -18,6 +18,16 @@ import { SparkData } from '@spark-view/spark-data'
 import { h } from 'vue'
 import * as permissionApi from '../permission/index'
 
+const scriptPermissionApi: PageContext['permission'] = {
+  ...permissionApi,
+  resolveFieldPermissionState(input, row, config) {
+    if (input !== null && typeof input === 'object') {
+      return permissionApi.resolveFieldPermissionState(input)
+    }
+    return permissionApi.resolveFieldPermissionState({ field: input, row, config })
+  },
+}
+
 function createMockComponents(): PageContext['$components'] {
   return {
     get: vi.fn(() => null),
@@ -69,7 +79,7 @@ function createMockContext(overrides: Partial<PageContext> = {}): PageContext {
     $components: createMockComponents(),
     $refreshData: async () => {},
     $page: createMockPageService(),
-    permission: permissionApi,
+    permission: scriptPermissionApi,
     SparkData,
     h,
     setTimeout: pageSetTimeout,

@@ -15,6 +15,7 @@
 3. `RendererDetail`
 4. `RendererTree`
 5. `RendererList`
+6. `RendererVirtualCard`
 
 说明：
 

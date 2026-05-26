@@ -21,7 +21,7 @@ import { Spark } from '../system/spark.js'
 
 // ── 数据容器 ──
 import {
-  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList,
+  RendererTable, RendererForm, RendererDetail, RendererTree, RendererList, RendererVirtualCard,
 } from './containers/data-views/index.js'
 
 // ── 命名区域 ──
@@ -104,6 +104,7 @@ const CORE_COMPONENTS: Array<readonly [string, unknown]> = [
   ['r-detail', RendererDetail],
   ['r-tree', RendererTree],
   ['r-list', RendererList],
+  ['r-virtual-card', RendererVirtualCard],
   // 区域子组件
   ['r-field-scope', RendererFieldScope],
   ['r-filter', RendererFilter],

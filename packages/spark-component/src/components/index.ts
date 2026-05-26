@@ -19,17 +19,20 @@ export {
   RendererList,
   RendererTable,
   RendererTree,
+  RendererVirtualCard,
 } from './containers/data-views/index.js'
 
 export type {
   RDetailProps,
   RFormProps,
   RListProps,
+  RVirtualCardProps,
   RendererDetailApi,
   RendererFormApi,
   RendererListApi,
   RendererTableApi,
   RendererTreeApi,
+  RendererVirtualCardApi,
   RendererTreePath,
   RTableProps,
   RTreeProps,

@@ -14,6 +14,7 @@ export default defineConfig({
     alias: {
       '@spark-view/spark-component': resolve(__dirname, './src/index.ts'),
       '@spark-view/spark-component/*': resolve(__dirname, './src/*'),
+      '@spark-view/spark-utils/internal': resolve(__dirname, '../spark-utils/src/internal/index.ts'),
       '@spark-view/spark-utils': resolve(__dirname, '../spark-utils/src/index.ts'),
       '@spark-view/spark-utils/*': resolve(__dirname, '../spark-utils/src/*'),
       '@spark-view/spark-data': resolve(__dirname, '../spark-data/src/index.ts'),
