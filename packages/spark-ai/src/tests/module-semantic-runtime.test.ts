@@ -1070,6 +1070,8 @@ describe('ModuleKind 默认协议行为', () => {
       name: '子模块',
       description: '子模块描述',
       parentKind: 'root-kind',
+      functions: [ECHO_FUNCTION_SCHEMA],
+      runner: () => ModuleOperationResult.ok<LlmJsonValue>({ reached: true }),
     }))
 
     const listed = await runtime.executeTool('listChildren', { path: '/' })
@@ -1087,6 +1089,67 @@ describe('ModuleKind 默认协议行为', () => {
     expect(child).toMatchObject({
       ok: true,
       data: expect.objectContaining({ parentKind: 'root-kind' }),
+    })
+
+    const rootFindChild = await runtime.executeTool('findInstance', {
+      path: '/',
+      childKind: 'child-kind',
+      query: {},
+    })
+    expect(rootFindChild).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'ROOT_KIND_REQUIRED' })],
+    })
+
+    const directChildFunction = await runtime.executeTool('child-kind_echo', {
+      $paths: ['child-1'],
+      value: 'x',
+    })
+    expect(directChildFunction).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'ROOT_KIND_REQUIRED' })],
+    })
+  })
+
+  it('路径导航拒绝与 parentKind 不一致的伪 kindPath', async () => {
+    const runtime = new ModuleSemanticRuntime()
+    runtime.registerKind(new ModuleKind({
+      kind: 'root-a',
+      name: '根 A',
+      description: '根模块 A',
+      children: ['child-kind'],
+    }))
+    runtime.registerKind(new ModuleKind({
+      kind: 'root-b',
+      name: '根 B',
+      description: '根模块 B',
+      children: ['child-kind'],
+    }))
+    runtime.registerKind(new ModuleKind({
+      kind: 'child-kind',
+      name: '子模块',
+      description: '只允许挂在 root-a 下',
+      parentKind: 'root-a',
+      functions: [ECHO_FUNCTION_SCHEMA],
+      runner: () => ModuleOperationResult.ok<LlmJsonValue>({ reached: true }),
+    }))
+
+    const mismatchedPath = await runtime.executeTool('root-b_child-kind_echo', {
+      $paths: ['root-b-1', 'child-1'],
+      value: 'x',
+    })
+    expect(mismatchedPath).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'PARENT_KIND_MISMATCH' })],
+    })
+
+    const mismatchedList = await runtime.executeTool('listChildren', {
+      path: '/root-b[root-b-1]',
+      childKind: 'child-kind',
+    })
+    expect(mismatchedList).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'PARENT_KIND_MISMATCH' })],
     })
   })
 

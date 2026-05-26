@@ -20,7 +20,7 @@ The LLM-facing tool set:
 1. `listChildren(path, childKind?)`
 2. `findInstance(path, childKind, query)`
 3. `describeKind(kind)`
-4. `<kind>_<functionName>($paths, ...args)` — 标准业务函数 tool
+4. `<kindPath>_<functionName>($paths, ...args)` — 标准业务函数 tool
 5. `getAttribute(path, attrName)`
 6. `setAttribute(path, attrName, value)`
 7. `queryModules(kind?, parentKind?, keyword?)`
@@ -34,9 +34,10 @@ Recommended discovery order:
 2. `guideFunction({ toolName })`
 3. `guideHumanQuestion(...)` when user facts are missing
 4. `listChildren("/")`
-5. `findInstance("/", kind, {})`
-6. `describeKind(kind)`
-7. `<kind>_<functionName>({ $paths: [...], ...args })`
+5. `findInstance("/", rootKind, {})`
+6. for child kinds, `listChildren(parentPath)` / `findInstance(parentPath, childKind, {})`
+7. `describeKind(kind)`
+8. `<kindPath>_<functionName>({ $paths: [...], ...args })`
 
 ## Registration Example
 

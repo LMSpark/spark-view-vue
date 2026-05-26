@@ -184,7 +184,7 @@ export class ModuleSemanticKnowledgeProjector {
       return ModuleOperationResult.failCode(
         'INVALID_GUIDE_REQUEST',
         'guideFunction requires either toolName or kind + functionName.',
-        'Use toolName format "<kind>_<functionName>", or pass kind and functionName separately.',
+        'Use toolName format "<kindPath>_<functionName>", or pass kind and functionName separately.',
       )
     }
 

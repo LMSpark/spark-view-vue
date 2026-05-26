@@ -78,7 +78,7 @@ VCM 提取能力模块元数据时，能力语义只识别写在领域能力 cla
 - `@moduleDescription <text>`：声明能力模块描述。可省略；省略时以 `ModuleKind.description` 为准。
 - `@moduleEntity <entityId> <label>`：声明该能力模块代表的业务实体或实例族，例如 `page 页面`、`pageNode 页面节点`、`leaveRequest 请假申请`。
 - `@moduleScope <text>`：声明实例作用域，例如 `host.moduleInstanceId is pageId`。
-- `@moduleFind <text>`：声明 `findInstance("/", kind, query)` 的查询语义和允许 query 范围。
+- `@moduleFind <text>`：声明当前 kind 在合法父路径下的 `findInstance(path, kind, query)` 查询语义和允许 query 范围；根 kind 使用 `path="/"`，子 kind 必须先定位父实例路径。
 - `@moduleList <text>`：声明 `listChildren(path, childKind?)` 的列表语义。
 - `@moduleChild <childKind>`：声明允许的子 kind；必须与 `children` 一致。
 - `@moduleDependency <name> <type>`：声明构造或 factory 依赖，只描述装配边界。

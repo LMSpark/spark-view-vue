@@ -289,7 +289,7 @@ section NavigationAndDiscoverySurface {
       "listChildren('/') 只返回 parentKind 未设置的根 kind。"
 
     findInstance_root:
-      "findInstance('/', kind, query) 使用目标 kind 的 find 委托查询根级实例。"
+      "findInstance('/', kind, query) 只允许查询 parentKind 未设置的根 kind；子 kind 必须先定位父实例。"
   }
 
   path_navigation {
@@ -299,8 +299,9 @@ section NavigationAndDiscoverySurface {
     validation_steps: [
       "根路径不能用于 getAttribute/setAttribute/业务函数调用",
       "每个 path segment 的 kind 必须已注册",
-      "第一段不验证父子关系",
-      "第二段起通过父 ModuleKind.resolveChild 验证 child kind 和 child id",
+      "第一段必须是 parentKind 未设置的根 kind",
+      "第二段起必须先匹配 child kind 的 parentKind",
+      "parentKind 匹配后再通过父 ModuleKind.resolveChild 验证 child id",
       "尾段 kind 定位为实际执行 getAttribute/setAttribute/标准 function tool 的 ModuleKind"
     ]
   }
@@ -523,7 +524,7 @@ section CurrentBusinessRegistrationInventory {
     ]
 
     discovery_path:
-      "listChildren('/') -> findInstance('/', 'pageDesign', {}) -> listChildren('/pageDesign[pageId]') -> describeKind(childKind) -> pageDesign_<childKind>_<functionName>({ $paths: [pageId, pageId], ...args })"
+      "listChildren('/') -> findInstance('/', 'pageDesign', {}) -> listChildren('/pageDesign[pageId]') -> findInstance('/pageDesign[pageId]', childKind, {}) -> describeKind(childKind) -> pageDesign_<childKind>_<functionName>({ $paths: [pageId, childId], ...args })"
   }
 
   business manualLeave {
@@ -614,13 +615,13 @@ section RegisterSurfaceRules {
     "同一 AiHostBusinessRegistry 内 moduleId 不允许重复。"
 
   rule R04_root_visibility:
-    "listChildren('/') 只暴露 parentKind 未设置的根 kind。"
+    "listChildren('/') 和 findInstance('/', kind, query) 只暴露/查询 parentKind 未设置的根 kind。"
 
   rule R05_child_topology:
-    "非根 findInstance(path, childKind, query) 的 childKind 必须在尾段 kind.children 中声明。"
+    "非根 findInstance(path, childKind, query) 的 childKind 必须在尾段 kind.children 中声明，且目标 kind.parentKind 必须匹配尾段 kind。"
 
   rule R06_path_validation:
-    "第二段起必须通过父 ModuleKind.resolveChild 验证存在性。"
+    "路径第一段必须是根 kind；第二段起必须通过 parentKind 匹配和父 ModuleKind.resolveChild 验证存在性。"
 
   rule R07_describe_before_invoke:
     "LLM 调用业务 function 前必须先通过 guideFunction 或 describeKind 获得 paramsSchema；缺少用户事实时先 guideHumanQuestion。"
