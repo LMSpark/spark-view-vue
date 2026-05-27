@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import { nextTick, watchEffect } from 'vue'
 import { useDevState } from '@/views/app/dev-system/useDevState'
 import { http } from '@/services/http'
 import type { BasePageConfigLoader } from '@spark-view/spark-page-config/editor'
@@ -160,5 +161,36 @@ describe('DevState 页面文件闭环', () => {
     expect(state.getPageFileText('script.js')).toBe('console.log("restored")')
     expect(state.isDocumentDirty('script.js')).toBe(false)
     expect(state.pageFilesRevision.value).toBeGreaterThan(0)
+  })
+
+  it('切换左侧节点时触发右侧 navDraft 订阅刷新', async () => {
+    const state = useDevState()
+    httpMock.get.mockImplementation(async (url: string) => {
+      if (url === '/api/navigation') {
+        return {
+          title: 'root',
+          childPlacement: 'header',
+          children: [
+            { id: 'alpha-node', title: 'Alpha', nodeKind: 'page', path: '/alpha' },
+            { id: 'beta-node', title: 'Beta', nodeKind: 'page', path: '/beta' },
+          ],
+        }
+      }
+      return pageFileResponse(url)
+    })
+
+    await state.loadNavConfig()
+    const observedDraftIds: string[] = []
+    const stop = watchEffect(() => {
+      observedDraftIds.push(state.navDraft.id)
+    })
+
+    await state.selectNode(state.treeData.value[1]!)
+    await nextTick()
+    stop()
+
+    expect(state.selectedNode.value?.id).toBe('beta-node')
+    expect(state.activePageId.value).toBe('beta')
+    expect(observedDraftIds.at(-1)).toBe('beta-node')
   })
 })

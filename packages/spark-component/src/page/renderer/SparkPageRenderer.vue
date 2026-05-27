@@ -127,6 +127,7 @@ type RenderFunctionRegistration = {
   fnRef: RenderFunctionRef
   revisionRef: RenderFunctionRevisionRef
   invalidatePage?: () => void}
+const RENDER_FUNCTION_REGISTRY_KEY = Symbol.for('spark-view:render-function-registry')
 const renderFunctionRegistries = new WeakMap<object, Map<string, RenderFunctionRegistration>>()
 
 type VueComponentRegistry = {
@@ -134,11 +135,34 @@ type VueComponentRegistry = {
   component(name: string, component: object): void}
 
 function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegistration> {
+  const stored = readStoredRenderFunctionRegistry(app)
+  if (stored !== null) return stored
+
   const existing = renderFunctionRegistries.get(app)
   if (existing) return existing
   const created = new Map<string, RenderFunctionRegistration>()
   renderFunctionRegistries.set(app, created)
+  storeRenderFunctionRegistry(app, created)
   return created
+}
+
+function readStoredRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegistration> | null {
+  const value = (app as Record<symbol, unknown>)[RENDER_FUNCTION_REGISTRY_KEY]
+  return value instanceof Map ? value as Map<string, RenderFunctionRegistration> : null
+}
+
+function storeRenderFunctionRegistry(
+  app: object,
+  registry: Map<string, RenderFunctionRegistration>,
+): void {
+  const owner = app as Record<symbol, unknown>
+  if (owner[RENDER_FUNCTION_REGISTRY_KEY] === registry) return
+  Object.defineProperty(owner, RENDER_FUNCTION_REGISTRY_KEY, {
+    value: registry,
+    configurable: false,
+    enumerable: false,
+    writable: false,
+  })
 }
 
 function invalidateRenderFunctionRegistration(registration: RenderFunctionRegistration): void {
@@ -336,8 +360,8 @@ function registerRenderFunctionsForPage(
         return wrapScriptRenderOutput(registration.fnRef.value?.({ ...attrs }), invalidate)
       },
     }))
-    app.component(name, component)
-    app.component(camelName, component)
+    if (app.component(name) === undefined) app.component(name, component)
+    if (app.component(camelName) === undefined) app.component(camelName, component)
   }
 }
 
@@ -809,4 +833,3 @@ defineExpose({
   width: 100%;
 }
 </style>
-

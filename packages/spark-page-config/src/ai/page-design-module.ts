@@ -39,6 +39,7 @@ import type {
   PageDesignEditHost,
   PageDesignServiceContext,
 } from '../design/page-edit-session'
+import { summarizePageDesignFlowPhases } from '../design/artifacts'
 import { PageDesignService } from '../design/page-design-service'
 import { PageDesignDatasetAiModule } from './dataset-tool-catalog'
 import { PageDesignLifecycleAiModule } from './lifecycle-tool-catalog'
@@ -241,19 +242,114 @@ function createPageDesignOrchestration(
 ): SparkAiAgent.AiAgentOrchestrationPlan {
   const pageId = input.pageId
   const userRequirement = input.userRequirement
+  const initialFindCall = createPageDesignFindToolCallText(pageId)
+  const describeProgressCall = createPageDesignLifecycleToolCallText(pageId, 'describeProgress', {})
+  const describeDesignFlowCall = createPageDesignLifecycleIntentToolCallText(pageId)
   return {
     title: 'pageDesign registered task orchestration',
     userMessage: userRequirement,
     systemPrompt: [
-      `首轮仅 tool_call：module_find({"path":"/","childKind":"pageDesign","query":{"id":"${pageId}"}})。无正文；Host 返回 ref.id 后：调用 module_call({"path":"/pageDesign[${pageId}]/lifecycle[${pageId}]","functionName":"describeProgress","args":{}}) -> module_call({"path":"/pageDesign[${pageId}]/lifecycle[${pageId}]","functionName":"describeDesignFlow","args":{"intent":messages[0].content}})。`,
+      `首轮仅 tool_call：${initialFindCall}。无正文；Host 返回 ref.id 后：调用 ${describeProgressCall} -> ${describeDesignFlowCall}。`,
+      createPageDesign100StepOrchestrationPrompt(input),
     ].join('\n'),
-    readonlySteps: [
+    readonlySteps: createPageDesignReadonlySteps(input),
+  }
+}
+
+function createPageDesignFindToolCallText(pageId: string): string {
+  return `module_find(${JSON.stringify({
+    path: '/',
+    childKind: PAGE_DESIGN_ROOT_KIND,
+    query: { id: pageId },
+  })})`
+}
+
+function createPageDesignLifecycleToolCallText(
+  pageId: string,
+  functionName: 'describeProgress' | 'describeDesignFlow',
+  args: AiJsonParams,
+): string {
+  return `module_call(${JSON.stringify({
+    path: `/pageDesign[${pageId}]/lifecycle[${pageId}]`,
+    functionName,
+    args,
+  })})`
+}
+
+function createPageDesignLifecycleIntentToolCallText(pageId: string): string {
+  const path = `/pageDesign[${pageId}]/lifecycle[${pageId}]`
+  return `module_call({"path":${JSON.stringify(path)},"functionName":"describeDesignFlow","args":{"intent":messages[0].content}})`
+}
+
+function createPageDesign100StepOrchestrationPrompt(input: PageDesignRunInput): string {
+  return [
+    `100 步流程门禁：${createPageDesignFlowPhaseGateText()}。`,
+    '执行规则：先完成入口/盘点，再按数据规划到收尾推进；每次跨阶段前用 lifecycle.describeDesignFlow({ phase }) 或 { step, afterStep } 读取当前步骤事实。',
+    '写入规则：dataset 负责步骤 21-88 的数据事实；node-tree 负责步骤 89-92 的结构；text-model 只在步骤 93-96 补行为和样式；步骤 97-100 做交叉校验、预览修正和总结。',
+    describePageDesignModeBoundary(input.mode),
+    describePageDesignOperationBoundary(input.allowedOperations),
+    input.preserveExistingInteractions === true ? '保留边界：保留现有页面交互、handler、组件 id 和数据绑定；修改前先盘点旧 rule/script。' : undefined,
+    '缺业务事实时先 human_question；不要猜 API、字段、组件 props 或旧 DataViewKey。',
+  ].filter((part): part is string => typeof part === 'string' && part.length > 0).join('\n')
+}
+
+function createPageDesignFlowPhaseGateText(): string {
+  return summarizePageDesignFlowPhases()
+    .map((phase) => {
+      const range = phase.firstStep === phase.lastStep
+        ? String(phase.firstStep)
+        : `${phase.firstStep}-${phase.lastStep}`
+      return `${phase.phase}(${range})`
+    })
+    .join(' -> ')
+}
+
+function describePageDesignModeBoundary(mode: PageDesignRunMode | undefined): string | undefined {
+  if (mode === undefined) return undefined
+  const messages: Record<PageDesignRunMode, string> = {
+    create: '模式边界：mode=create，从步骤 1 开始建立新页面；仍需先盘点空白四文件，再数据优先。',
+    modify: '模式边界：mode=modify，先完成步骤 11-20 盘点旧配置，再按相关阶段小步修改。',
+    fix: '模式边界：mode=fix，先定位失败绑定或校验错误，再回到对应步骤修正并执行 97-100 复核。',
+    data: '模式边界：mode=data，优先处理步骤 21-88；除非用户要求，不新增 UI 结构、脚本或样式。',
+    style: '模式边界：mode=style，先读取 rule/style 事实，再聚焦步骤 96-100；不改数据模型。',
+  }
+  return messages[mode]
+}
+
+function describePageDesignOperationBoundary(allowedOperations: PageDesignAllowedOperations | undefined): string | undefined {
+  if (allowedOperations === undefined) return undefined
+  return [
+    '操作边界：',
+    `新增表=${formatAllowedOperation(allowedOperations.addTables)}`,
+    `新增组件=${formatAllowedOperation(allowedOperations.addComponents)}`,
+    `改脚本=${formatAllowedOperation(allowedOperations.editScript)}`,
+    `改样式=${formatAllowedOperation(allowedOperations.editStyle)}`,
+    '；禁止项必须通过 human_question 申请确认。',
+  ].join('')
+}
+
+function formatAllowedOperation(value: boolean | undefined): string {
+  if (value === true) return '允许'
+  if (value === false) return '禁止'
+  return '未声明'
+}
+
+function createPageDesignReadonlySteps(input: PageDesignRunInput): readonly string[] {
+  const steps = [
       'find current pageDesign instance',
       'describeProgress',
       'describeDesignFlow with userRequirement intent',
+      `follow 100-step phase gates: ${createPageDesignFlowPhaseGateText()}`,
       'human_question before guessing missing business facts',
-    ],
-  }
+  ]
+  const modeBoundary = describePageDesignModeBoundary(input.mode)
+  const operationBoundary = describePageDesignOperationBoundary(input.allowedOperations)
+  return [
+    ...steps,
+    ...(modeBoundary === undefined ? [] : [modeBoundary]),
+    ...(operationBoundary === undefined ? [] : [operationBoundary]),
+    ...(input.preserveExistingInteractions === true ? ['preserve existing interactions before editing rule/script'] : []),
+  ]
 }
 
 function requirePageDesignInputText(

@@ -1,7 +1,7 @@
 import { config as testUtilsConfig, flushPromises, mount } from '@vue/test-utils'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { defineComponent, h } from 'vue'
+import { defineComponent, h, type App } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
@@ -75,6 +75,20 @@ function disableSparkComponentRendererStub(): () => void {
     if (hadKebab && previousKebab !== undefined) stubs['spark-component-renderer'] = previousKebab
     else delete stubs['spark-component-renderer']
     testUtilsConfig.global.stubs = stubs
+  }
+}
+
+function createComponentRegistrationProbe(counts: Record<string, number>) {
+  return {
+    install(app: App) {
+      const original = app.component.bind(app)
+      app.component = ((name: string, component?: Parameters<App['component']>[1]) => {
+        if (component !== undefined && (name === 'RenderActions' || name === 'renderActions')) {
+          counts[name] = (counts[name] ?? 0) + 1
+        }
+        return component === undefined ? original(name) : original(name, component)
+      }) as App['component']
+    },
   }
 }
 
@@ -689,5 +703,66 @@ describe('SparkPageRenderer root props aggregation', () => {
       restoreSparkRendererStub()
     }
   })
-})
 
+  it('updates in-memory Render script components without duplicate app registration', async () => {
+    const router = createRouter({
+      history: createMemoryHistory(),
+      routes: [
+        {
+          path: '/pages/render-actions',
+          component: defineComponent({ name: 'RouteStub', render: () => h('div') }),
+        },
+      ],
+    })
+
+    await router.push('/pages/render-actions')
+    await router.isReady()
+
+    const registrationCounts: Record<string, number> = {}
+    const restoreSparkRendererStub = disableSparkComponentRendererStub()
+    try {
+      const baseConfig = createPageConfig('render-actions')
+      const wrapper = mount(SparkPageRenderer, {
+        props: {
+          pageId: 'render-actions',
+          pageConfig: {
+            ...baseConfig,
+            pageId: 'render-actions',
+            rule: [{ type: 'RenderActions' }],
+            script: `
+              function RenderActions() {
+                return h('div', { class: 'actions-probe' }, 'one')
+              }
+            `,
+          },
+        },
+        global: {
+          plugins: [Spark.createPlugin(), createComponentRegistrationProbe(registrationCounts), router],
+        },
+      })
+
+      await flushPromises()
+      expect(wrapper.find('.actions-probe').text()).toBe('one')
+
+      await wrapper.setProps({
+        pageConfig: {
+          ...baseConfig,
+          pageId: 'render-actions',
+          rule: [{ type: 'RenderActions' }],
+          script: `
+            function RenderActions() {
+              return h('div', { class: 'actions-probe' }, 'two')
+            }
+          `,
+        },
+      })
+      await flushPromises()
+
+      expect(wrapper.find('.actions-probe').text()).toBe('two')
+      expect(registrationCounts['RenderActions']).toBe(1)
+      expect(registrationCounts['renderActions']).toBe(1)
+    } finally {
+      restoreSparkRendererStub()
+    }
+  })
+})

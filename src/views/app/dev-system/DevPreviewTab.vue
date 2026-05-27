@@ -40,7 +40,6 @@
       </template>
       <template v-else-if="previewConfig">
         <SparkPageRenderer
-          :key="renderKey"
           :pageConfig="previewConfig"
           :pageId="props.state.activePageId.value || 'dev-preview'"
           :configLoader="previewConfigLoader"
@@ -80,23 +79,30 @@ const props = defineProps<{
 
 const autoRefresh = ref(true)
 const livePreview = ref(true)
-const renderKey = ref(0)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
 const previewConfig = shallowRef<PageEditorPreviewConfig | null>(null)
 
-/** 确保 4 个文件全部从服务器加载完成 */
-async function ensureAllFilesLoaded() {
-  await props.state.ensureActivePageFilesLoaded()
+function assertActivePageModelLoaded(): void {
+  const pageId = props.state.activePageId.value
+  const activePage = props.state.getActivePage()
+  if (!pageId || activePage === null) {
+    throw new Error('请先选择一个已加载的配置页面')
+  }
+  if (activePage.pageId !== pageId) {
+    throw new Error(`预览页面模型不一致: 当前页面 ${pageId}, 模型 ${activePage.pageId}`)
+  }
+  if (!activePage.isLoaded) {
+    throw new Error(`页面模型 ${pageId} 尚未加载完成，无法预览`)
+  }
 }
 
-async function refresh() {
+function refresh() {
   loading.value = true
   parseError.value = null
   try {
-    await ensureAllFilesLoaded()
+    assertActivePageModelLoaded()
     previewConfig.value = props.state.buildPreviewConfig()
-    renderKey.value++
   } catch (err) {
     parseError.value = err instanceof Error ? err.message : String(err)
     previewConfig.value = null
@@ -122,11 +128,11 @@ watch(_docTexts, () => {
     _liveTimer = null
     if (loading.value) return // 正在手动刷新中，跳过
     try {
+      assertActivePageModelLoaded()
       const cfg = props.state.buildPreviewConfig()
       if (cfg !== null) {
         parseError.value = null
         previewConfig.value = cfg
-        renderKey.value++
       }
     } catch (err) {
       parseError.value = err instanceof Error ? err.message : String(err)

@@ -321,6 +321,33 @@ describe('pageDesign host business registration', () => {
     expect(prompt).toContain('"functionName":"describeProgress"')
     expect(prompt).toContain('"functionName":"describeDesignFlow"')
     expect(prompt).toContain('"intent":messages[0].content')
+    expect(prompt).toContain('100 步流程门禁')
+    expect(prompt).toContain('入口(1-10) -> 盘点(11-20)')
+    expect(prompt).toContain('写入规则：dataset 负责步骤 21-88')
+  })
+
+  it('carries pageDesign mode and operation boundaries into the 100-step orchestration', () => {
+    const { host } = createHost()
+    const definition = createPageDesignBusinessKindDefinition({ getEditToolHost: () => host })
+    const plan = definition.inputContract.toOrchestration({
+      pageId: 'page-designer',
+      userRequirement: '只调整数据模型',
+      mode: 'data',
+      allowedOperations: {
+        addTables: true,
+        addComponents: false,
+        editScript: false,
+        editStyle: false,
+      },
+      preserveExistingInteractions: true,
+    })
+
+    expect(plan.systemPrompt).toContain('模式边界：mode=data')
+    expect(plan.systemPrompt).toContain('操作边界：新增表=允许新增组件=禁止改脚本=禁止改样式=禁止')
+    expect(plan.systemPrompt).toContain('保留边界：保留现有页面交互')
+    const readonlySteps = plan.readonlySteps ?? []
+    expect(readonlySteps).toContain('preserve existing interactions before editing rule/script')
+    expect(readonlySteps.some(step => step.includes('100-step phase gates'))).toBe(true)
   })
 
   it('rejects pageDesign run inputs that do not satisfy the registered schema', async () => {

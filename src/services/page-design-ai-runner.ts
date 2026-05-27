@@ -53,8 +53,7 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     throw new Error('AI Host 未注册，无法启动 pageDesign。')
   }
 
-  command.editor.setActivePage(pageId)
-  await command.editor.ensureActivePageFilesLoaded({ allowMissingAsEmpty: true })
+  assertActivePageModelLoaded(command.editor, pageId)
 
   const pageDesignHost = ensurePageDesignBusiness({
     host: aiAgentHost,
@@ -75,6 +74,19 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   })
 
   return { sawToolCall }
+}
+
+function assertActivePageModelLoaded(editor: PageEditor, pageId: string): void {
+  const activePage = editor.getActivePage()
+  if (activePage === null) {
+    throw new Error('pageDesign AI requires the current PageModel to be opened before editing.')
+  }
+  if (activePage.pageId !== pageId) {
+    throw new Error(`pageDesign AI active PageModel mismatch: expected "${pageId}", got "${activePage.pageId}".`)
+  }
+  if (!activePage.isLoaded) {
+    throw new Error(`pageDesign AI requires PageModel "${pageId}" to be loaded before editing.`)
+  }
 }
 
 function buildPageDesignRunInput(pageId: string, options: PageDesignAiRunOptions): PageDesignRunInput {

@@ -11,7 +11,7 @@
  * 后端由 PageEditor 统一聚合；adapter 保留 UI 响应式映射、localStorage、
  * autoSave、refreshRoutes、demoNavRoot fallback 和状态消息。
  */
-import { ref, reactive, computed, getCurrentInstance } from 'vue'
+import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
 import { refreshRoutes } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
 import {
@@ -98,9 +98,23 @@ export function useDevState() {
   const navSaving = ref(false)
   const navDirty = ref(false)
   const selectedNode = ref<NavNode | null>(null)
+  const navDraftRevision = ref(0)
+  const pageFilesRevision = ref(editor.revision)
+
+  editor.subscribe(() => {
+    pageFilesRevision.value = editor.revision
+  })
 
   function getEditorActivePage(): ReturnType<typeof editor.getActivePage> {
+    // navDraft proxies a framework-free PageEditor model. Track only explicit
+    // navigation draft switches here; tying it to every editor revision creates
+    // needless tab/render feedback in Vue.
+    void navDraftRevision.value
     return editor.getActivePage()
+  }
+
+  function refreshNavDraftBindings(): void {
+    navDraftRevision.value++
   }
 
   // ── 节点编辑表单（navDraft：直接代理到 activePage.navigation）──
@@ -149,11 +163,6 @@ export function useDevState() {
   // ── 页面文件状态（只经 PageEditor 访问）──
   const activePageId = ref('')
   const fileSaving = ref(false)
-  const pageFilesRevision = ref(editor.revision)
-
-  editor.subscribe(() => {
-    pageFilesRevision.value = editor.revision
-  })
 
   function notifyPageFileChanged(pageId: string, filename: PageConfigFileName | '__created' | '__deleted' | '__bulk'): void {
     editor.notifyPageFileChanged(pageId, filename)
@@ -177,6 +186,7 @@ export function useDevState() {
 
   // ── pageDesign AI ──
   const pageDesignAiRunning = ref(false)
+  let pageDesignAiInFlight = false
 
   // ── 编辑器状态同步 ───────────────────────────────────
 
@@ -258,6 +268,7 @@ export function useDevState() {
     editor.setActivePage(normalizedPageId, { forceReset: shouldReset })
     activePageId.value = editor.readSnapshot().pageId
     persistActivePageId(normalizedPageId)
+    refreshNavDraftBindings()
     return true
   }
 
@@ -265,6 +276,7 @@ export function useDevState() {
     editor.clearActivePage()
     activePageId.value = ''
     persistActivePageId('')
+    refreshNavDraftBindings()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -328,8 +340,10 @@ export function useDevState() {
       addStatus('请先输入 AI 编辑需求', 'warning')
       return
     }
-    if (pageDesignAiRunning.value) return
+    if (pageDesignAiInFlight) return
 
+    pageDesignAiInFlight = true
+    await nextTick()
     pageDesignAiRunning.value = true
     let lastStreamStatusAt = 0
 
@@ -379,6 +393,7 @@ export function useDevState() {
     } catch (error) {
       addStatus(`AI 编辑失败: ${String(error)}`, 'error')
     } finally {
+      pageDesignAiInFlight = false
       pageDesignAiRunning.value = false
     }
   }
@@ -562,6 +577,7 @@ export function useDevState() {
     }
     navDirty.value = false
     linkProbeInfo.value = null
+    refreshNavDraftBindings()
   }
 
   function applyNavChanges(): void {

@@ -51,7 +51,7 @@ export function useDevSystem() {
   const canSaveFromHeader = computed(() => state.hasAnyDirty.value || canSaveCleanNode.value)
   const headerSaveLabel = computed(() => state.hasAnyDirty.value ? '全部保存' : '保存')
   const canRunPageDesignAi = computed(() =>
-    Boolean(state.activePageId.value && pageDesignAiPrompt.value.trim() && !state.pageDesignAiRunning.value),
+    Boolean(state.activePageId.value),
   )
 
   // 选中节点时自动切到节点属性页签
@@ -70,12 +70,6 @@ export function useDevSystem() {
     }
     if (!nextPageId && hasSelectedNode) {
       workTab.value = 'props'
-    }
-  })
-
-  watch(() => state.pageFilesRevision.value, () => {
-    if (workTab.value === 'preview') {
-      previewRefreshToken.value++
     }
   })
 
