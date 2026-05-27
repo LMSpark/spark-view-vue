@@ -298,13 +298,11 @@ describe('useDevState documents SSOT', () => {
     expect((state.getActivePage()?.dataSet.canUndo ?? false)).toBe(canUndoBefore)
   })
 
-  it('dev file editor keeps JSON text in a draft until an explicit commit', () => {
+  it('dev file editor text is a read-only projection of the model (no drafts)', () => {
     const state = useDevState()
     state.activePageId.value = 'orders-page'
     const initial = createPageDataText('Alpha', true)
-    const next = createPageDataText('Draft', true)
 
-    // Provide empty content for all 4 files to avoid background load failures
     httpGet.mockImplementation(async (url: string) => {
       const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
@@ -318,21 +316,17 @@ describe('useDevState documents SSOT', () => {
         const editor = useDevFileEditor(state, ref<PageConfigFileName>('pagedata.json'))
         const initialCanonical = canonicalizePageDataJson(initial).text
 
-        editor.updateText('{"dataSetName":')
-
-        expect(editor.text.value).toBe('{"dataSetName":')
-        expect(state.getPageFileText('pagedata.json')).toBe(initialCanonical)
-        expect(editor.isDirty.value).toBe(true)
-
-        // V3.1: invalid JSON fails commit, draft preserved
-        expect(editor.commitText()).toBe(false)
-        expect(editor.text.value).toBe('{"dataSetName":')
+        // V3.1: text is a direct read-only projection of the model
+        expect(editor.text.value).toBe(initialCanonical)
         expect(state.getPageFileText('pagedata.json')).toBe(initialCanonical)
 
-        editor.updateText(next)
-        expect(editor.commitText()).toBe(true)
+        // V3.1: no draft APIs; text always equals model text
+        expect(editor.isFileDirty('pagedata.json')).toBe(true)
+
+        // Direct model mutation is reflected in the text projection
+        const next = createPageDataText('DirectSet', true)
+        state.getActivePage()!.dataSet.setText(next)
         expect(editor.text.value).toBe(canonicalizePageDataJson(next).text)
-        expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
       })
     } finally {
       scope.stop()

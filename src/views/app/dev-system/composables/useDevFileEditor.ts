@@ -1,27 +1,13 @@
-import { computed, onBeforeUnmount, ref, watch, type Ref } from 'vue'
+import { computed, watch, type Ref } from 'vue'
 import type { DevState, PageConfigFileName } from '../useDevState'
 
-const TEXT_DRAFT_COMMIT_DELAY = 600
-
-function getSubModel(page: ReturnType<DevState['getActivePage']>, name: PageConfigFileName) {
-  if (!page) return null
-  switch (name) {
-    case 'rule.json': return page.rule
-    case 'pagedata.json': return page.dataSet
-    case 'script.js': return page.script
-    case 'style.css': return page.style
-  }
-}
-
 /**
- * 手动编辑器绑定器 — 将任意 PageConfigFileName 接入 PageEditor adapter。
- * PageEditor 的文件历史栈只记录已提交编辑，用于 undo/redo；后端版本由版本面板手动管理。
- * 原始文本输入先进入本地草稿，避免 JSON 在每个按键都解析、归一化并压入历史栈。
+ * 文件编辑器绑定器 — 将任意 PageConfigFileName 接入 PageEditor adapter。
+ *
+ * 四文件文本页签只做只读投影展示；结构化编辑器（JsonTreeEditor / DevDataSetDesigner）
+ * 直接操作 page.rule / page.dataSet 子模型。
  */
 export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageConfigFileName>>) {
-  const drafts = ref<Partial<Record<PageConfigFileName, string>>>({})
-  let commitTimer: ReturnType<typeof setTimeout> | null = null
-
   const isReady = computed(() => {
     void state.pageFilesRevision.value
     return state.getActivePage()?.isLoaded === true
@@ -29,138 +15,31 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
   const isDirty = computed(() => isFileDirty(activeFile.value))
   const canUndo = computed(() => {
     void state.pageFilesRevision.value
-    if (hasDraft(activeFile.value)) return true
-    return getSubModel(state.getActivePage(), activeFile.value)?.canUndo ?? false
+    return state.getActivePage()?.[subModelKey(activeFile.value)]?.canUndo ?? false
   })
   const canRedo = computed(() => {
     void state.pageFilesRevision.value
-    if (hasDraft(activeFile.value)) return false
-    return getSubModel(state.getActivePage(), activeFile.value)?.canRedo ?? false
+    return state.getActivePage()?.[subModelKey(activeFile.value)]?.canRedo ?? false
   })
   const text = computed(() => {
     void state.pageFilesRevision.value
-    return getDisplayText(activeFile.value)
+    return state.getPageFileText(activeFile.value)
   })
-  const parseError = computed(() => null)
 
   async function ensureLoaded(options?: { forceReload?: boolean }) {
     if (!state.activePageId.value) return
     await state.ensureActivePageFilesLoaded(options)
   }
 
-  function hasDraft(name: PageConfigFileName): boolean {
-    return Object.prototype.hasOwnProperty.call(drafts.value, name)
-  }
-
-  function getDraft(name: PageConfigFileName): string {
-    return drafts.value[name] ?? ''
-  }
-
-  function setDraft(name: PageConfigFileName, value: string): void {
-    drafts.value = { ...drafts.value, [name]: value }
-  }
-
-  function clearDraft(name: PageConfigFileName = activeFile.value): void {
-    if (!hasDraft(name)) return
-    const { [name]: _removed, ...next } = drafts.value
-    drafts.value = next
-  }
-
-  function clearAllDrafts(): void {
-    drafts.value = {}
-  }
-
-  function getDisplayText(name: PageConfigFileName): string {
-    return hasDraft(name) ? getDraft(name) : state.getPageFileText(name)
-  }
-
-  function isJsonBackedFile(name: PageConfigFileName): boolean {
-    return name === 'rule.json' || name === 'pagedata.json'
-  }
-
   function isFileDirty(name: PageConfigFileName): boolean {
-    return state.isDocumentDirty(name) || hasDraft(name)
-  }
-
-  function clearCommitTimer(): void {
-    if (commitTimer === null) return
-    clearTimeout(commitTimer)
-    commitTimer = null
-  }
-
-  function scheduleDraftCommit(name: PageConfigFileName): void {
-    clearCommitTimer()
-    if (isJsonBackedFile(name)) return
-    commitTimer = setTimeout(() => {
-      commitTimer = null
-      void commitDraft(name)
-    }, TEXT_DRAFT_COMMIT_DELAY)
-  }
-
-  function updateText(value: string) {
-    const name = activeFile.value
-    if (value === state.getPageFileText(name)) {
-      clearDraft(name)
-      return
-    }
-    setDraft(name, value)
-    scheduleDraftCommit(name)
-  }
-
-  function commitDraft(name: PageConfigFileName = activeFile.value): boolean {
-    clearCommitTimer()
-    if (!hasDraft(name)) return true
-
-    const nextText = getDraft(name)
-    if (nextText === state.getPageFileText(name)) {
-      clearDraft(name)
-      return true
-    }
-
-    const model = getSubModel(state.getActivePage(), name)
-    if (!model) {
-      return false
-    }
-    try {
-      model.setText(nextText)
-    } catch {
-      setDraft(name, nextText)
-      return false
-    }
-
-    clearDraft(name)
-    return true
-  }
-
-  function commitText(value?: string | number): boolean {
-    if (value !== undefined) {
-      setDraft(activeFile.value, String(value))
-    }
-    return commitDraft(activeFile.value)
-  }
-
-  function undo() {
-    clearCommitTimer()
-    if (hasDraft(activeFile.value)) {
-      clearDraft(activeFile.value)
-      return
-    }
-    getSubModel(state.getActivePage(), activeFile.value)?.undo()
-  }
-
-  function redo() {
-    clearCommitTimer()
-    if (hasDraft(activeFile.value)) return
-    getSubModel(state.getActivePage(), activeFile.value)?.redo()
+    return state.isDocumentDirty(name)
   }
 
   async function save() {
-    if (!commitDraft(activeFile.value)) return
     await state.savePageFile(activeFile.value)
   }
 
   async function refresh() {
-    clearDraft(activeFile.value)
     await ensureLoaded({ forceReload: true })
   }
 
@@ -174,38 +53,24 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
     { immediate: true },
   )
 
-  watch(
-    () => state.activePageId.value,
-    () => {
-      clearCommitTimer()
-      clearAllDrafts()
-    },
-  )
-
-  watch(activeFile, (_nextFile, previousFile) => {
-    void commitDraft(previousFile)
-  })
-
-  onBeforeUnmount(() => {
-    clearCommitTimer()
-  })
-
   return {
     isReady,
     isDirty,
     canUndo,
     canRedo,
     text,
-    parseError,
     ensureLoaded,
-    updateText,
-    commitText,
-    commitDraft,
-    clearDraft,
     isFileDirty,
-    undo,
-    redo,
     save,
     refresh,
+  }
+}
+
+function subModelKey(name: PageConfigFileName): 'rule' | 'dataSet' | 'style' | 'script' {
+  switch (name) {
+    case 'rule.json': return 'rule'
+    case 'pagedata.json': return 'dataSet'
+    case 'script.js': return 'script'
+    case 'style.css': return 'style'
   }
 }

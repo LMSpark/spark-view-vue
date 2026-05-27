@@ -90,11 +90,11 @@ export class PageDataSetModel {
   ): Promise<void> {
     const result = await configLoader.loadPageFileContent(pageId, 'pagedata.json', {
       forceReload: options?.forceReload === true,
+      allowMissingAsEmpty: options?.allowMissingAsEmpty === true,
     })
     if (!result.success) {
       if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) {
-        this.tool = new DataSetCrudTool(pageId)
-        this.markClean()
+        this.resetToEmpty(pageId)
         return
       }
       throw new Error(result.error ?? result.reason ?? 'pagedata.json 加载失败')
@@ -105,6 +105,11 @@ export class PageDataSetModel {
     } else {
       this.tool = parsePageDataText(rawText)
     }
+    this.markClean()
+  }
+
+  resetToEmpty(pageId: string): void {
+    this.tool = new DataSetCrudTool(pageId)
     this.markClean()
   }
 

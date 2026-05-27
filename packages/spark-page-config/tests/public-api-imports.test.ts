@@ -16,10 +16,15 @@ import {
 } from '@spark-view/spark-page-config/editor'
 import { buildTreeModel, exportJsonDocument } from '@spark-view/spark-page-config/json-document'
 import { PageConfigLoader as RootPageConfigLoader } from '@spark-view/spark-page-config'
+import {
+  LEAVE_REQUEST_KIND,
+  PAGE_DESIGN_MODULE_ID,
+  createPageDesignBusinessKindDefinition,
+  ensurePageDesignBusiness,
+} from '@spark-view/spark-page-config/ai'
 
 // 内化模块的测试通过内部源路径导入
 import { PAGE_DESIGN_100_STEP_FLOW } from '../src/design/index'
-import { LEAVE_REQUEST_KIND, PAGE_DESIGN_MODULE_ID, createPageDesignBusinessKindDefinition } from '../src/ai/index'
 
 describe('spark-page-config public subpath imports', () => {
   it('exposes PageEditor from the ./editor subpath', () => {
@@ -52,13 +57,14 @@ describe('spark-page-config public subpath imports', () => {
 
     expect(PAGE_DESIGN_MODULE_ID).toBe('pageDesign')
     expect(createPageDesignBusinessKindDefinition).toBeTypeOf('function')
+    expect(ensurePageDesignBusiness).toBeTypeOf('function')
     expect(LEAVE_REQUEST_KIND).toBe('manual-leave')
     expect(typeof componentCatalog).toBe('object')
   })
 
   it('keeps pageDesign implementation details out of public import barrels', async () => {
     const designModule = await import('../src/design/index')
-    const aiModule = await import('../src/ai/index')
+    const aiModule = await import('@spark-view/spark-page-config/ai')
     const rootModule = await import('@spark-view/spark-page-config')
 
     // root 只导出 config 运行时 API

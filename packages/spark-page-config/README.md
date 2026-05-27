@@ -41,9 +41,10 @@ const pageConfig = await loader.loadPageConfig('homepage')
 
 - 根入口 `@spark-view/spark-page-config`：最小运行时 config loader / compiler API
 - `editor`：`PageEditor` 唯一编辑聚合入口，覆盖导航、四文件、节点树、数据集、生命周期、版本和预览配置构建
+- `ai`：pageDesign / leave-request 等 AI 业务注册入口，供 App 服务层注册到 `AI_AGENT_HOST`
 - `json-document`：通用 JSON tree editor 模型、mutation、flat roundtrip、schema helpers
 
-DevSystem 和编辑态调用方统一使用 `@spark-view/spark-page-config/editor`，不要直接依赖内部 design / ai / navigation / node-tree / runtime 子域。
+DevSystem 和编辑态调用方统一使用 `@spark-view/spark-page-config/editor`；AI 接入只使用 `@spark-view/spark-page-config/ai` 的注册 API。不要直接依赖内部 design / navigation / node-tree / runtime 子域。
 
 ## 相关文件
 

@@ -508,6 +508,19 @@ describe('PageConfigLoader', () => {
       expect(r.data).toBeUndefined()
     })
 
+    it('loadPageFileContent: 编辑态清单已知缺失时由 loader 短路，不发逐文件 404 请求', async () => {
+      mockRequestClient.get.mockResolvedValue([{ pageId: 'orders', files: ['rule.json'] }])
+
+      const r = await loader.loadPageFileContent('missing-page', 'rule.json', { allowMissingAsEmpty: true })
+
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockRequestClient.get).toHaveBeenCalledWith('/__list', undefined, {
+        meta: { silentHttpError: true },
+      })
+      expect(mockFileLoader.load).not.toHaveBeenCalled()
+    })
+
     it('loadPageFileContent: 远程 script/style 不存在时返回失败，不生成空文本', async () => {
       mockFileLoader.load.mockResolvedValue({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
@@ -819,4 +832,3 @@ describe('parseCss', () => {
     expect(parseCss('')).toBe('')
   })
 })
-

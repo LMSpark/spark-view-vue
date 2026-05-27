@@ -32,7 +32,6 @@
           :toolbar-items="nav.regionItems.value.toolbar"
           :user-menu-items="nav.regionItems.value.userMenu"
           @toggle-collapse="sidebarCollapsed = !sidebarCollapsed"
-          @toggle-theme="toggleTheme"
           @user-command="handleUserCommand"
         >
           <template #nav>
@@ -286,7 +285,7 @@ type AppContextGuardState = {
   title: string
   message: string
   primaryActionLabel: string
-  expectedPath?: string | undefined}
+  expectedPath?: string}
 
 const contextGuard = computed<AppContextGuardState | null>(() => {
   if (isLoginPage.value) return null

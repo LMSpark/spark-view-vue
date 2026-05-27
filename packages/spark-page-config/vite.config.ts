@@ -7,6 +7,7 @@ export default defineConfig({
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
         'editor/page-editor': resolve(__dirname, 'src/editor/page-editor.ts'),
+        'ai/index': resolve(__dirname, 'src/ai/index.ts'),
         'json-document-public': resolve(__dirname, 'src/json-document-public.ts'),
       },
       formats: ['es'],

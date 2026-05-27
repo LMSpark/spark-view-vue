@@ -244,6 +244,7 @@ describe('pageDesign host business registration', () => {
   it('exposes a page-config owned pageDesign Host helper', async () => {
     const { host } = createHost()
     const streamInputs: string[] = []
+    const requestedPageIds: string[] = []
     const aiHost = createAiAgentHost({
       turnCallbacks: {
         executeTurn: (input) => {
@@ -257,7 +258,10 @@ describe('pageDesign host business registration', () => {
 
     const pageDesignHost = ensurePageDesignBusiness({
       host: aiHost,
-      getPageDesignEditHost: () => host,
+      getPageDesignEditHost: (context) => {
+        requestedPageIds.push(context.moduleInstanceId)
+        return host
+      },
     })
 
     const input: PageDesignRunInput = {
@@ -270,6 +274,7 @@ describe('pageDesign host business registration', () => {
     expect(result.task.normalizedInput['pageId']).toBe('page-designer')
     expect(result.task.normalizedInput['userRequirement']).toBe('实现请假申请页面')
     expect(streamInputs).toEqual(['实现请假申请页面'])
+    expect(requestedPageIds).toContain('page-designer')
   })
 
   it('creates pageDesign task through Host alias instead of a bare target', async () => {
@@ -801,8 +806,12 @@ describe('pageDesign host business registration', () => {
   it('isolates parallel page-design instances and accepts route-like page ids', async () => {
     const pageA = createHost({ script: 'export default { page: "A" }' })
     const pageB = createHost({ script: 'export default { page: "B" }' })
+    const requestedPageIds: string[] = []
     const registration = createPageDesignBusinessRegistration({
-      getEditToolHost: (context) => context.moduleInstanceId === 'page-a' ? pageA.host : pageB.host,
+      getEditToolHost: (context) => {
+        requestedPageIds.push(context.moduleInstanceId)
+        return context.moduleInstanceId === 'page-a' ? pageA.host : pageB.host
+      },
     })
 
     const contextA = hostContext('page-a')
@@ -835,5 +844,6 @@ describe('pageDesign host business registration', () => {
       instanceId: 'lmspark/homepage',
       runtimeInstanceId: 'lmspark/homepage',
     })).toEqual(nestedContext)
+    expect(requestedPageIds).toEqual(expect.arrayContaining(['page-a', 'page-b', 'lmspark/homepage']))
   })
 })

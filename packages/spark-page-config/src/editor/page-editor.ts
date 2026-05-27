@@ -6,7 +6,7 @@
  * 节点属性、rule.json、pagedata.json、style.css、script.js、
  * 版本管理、保存、页面挂载/删除/移动聚合成统一编辑上下文。
  *
- * 首版不接 AI，不引入 Vue，不新造数据集或节点树工具。
+ * 不引入 Vue，不新造数据集或节点树工具；AI 编辑也只通过 PageModel live host 进入。
  *
  * ┌──────────────────────────────────────────────────────┐
  * │  类型分组                                            │
@@ -113,6 +113,10 @@ export type CreatePageEditorOptions = {
 export type PageEditorLoadOptions = {
   forceReload?: boolean
   allowMissingAsEmpty?: boolean
+}
+
+export type PageDesignEditHostOptions = {
+  pageId?: string
 }
 
 /** createPageForSelectedNode 参数 */
@@ -552,6 +556,7 @@ export class PageEditor {
     }
 
     const hasAnyFileDirty = dirtyFiles.size > 0
+    const navDirty = this.navigationDirty || (activePage?.navigation.isDirty ?? false)
 
     return {
       pageId,
@@ -571,8 +576,8 @@ export class PageEditor {
       parseErrors,
       isLoaded: activePage?.isLoaded === true,
       hasAnyFileDirty,
-      navigationDirty: this.navigationDirty,
-      hasAnyDirty: hasAnyFileDirty || this.navigationDirty,
+      navigationDirty: navDirty,
+      hasAnyDirty: hasAnyFileDirty || navDirty,
     }
   }
 
@@ -612,18 +617,28 @@ export class PageEditor {
 
   /**
    * 将当前页面导航节点的修改持久化到远端。
-   * patch 不包含 children 和 order，保持现有 DevSystem 保存语义。
+   * 优先使用 page.navigation 子模型 applyToNode() 生成的 patch；
+   * 回退到从选中树节点重新创建 draft（createPageForSelectedNode 等路径）。
    */
   async saveSelectedNavigationNode(): Promise<void> {
-    if (this.navigationDirtyScope === 'root') {
-      throw new Error('导航树存在结构变更，请保存完整导航 root')
-    }
-    const node = this.requireSelectedNode('未选中导航节点，无法保存导航属性')
-    const draft = createNavigationNodeDraft(node)
-    const { patch } = createNavigationNodePatch(draft)
+    const page = this.getActivePage()
+    let nodeId: string
+    let patch: Partial<NavNode> & Pick<NavNode, 'id' | 'title' | 'nodeKind'>
 
-    await this.navClient.updateNode(node.id, patch)
-    await this.reloadNavigation({ selectedNodeId: node.id })
+    if (page?.navigation.isDirty && page.navigation.navNode) {
+      const result = page.navigation.applyToNode()
+      nodeId = page.navigation.navNode.id
+      patch = result.patch
+    } else {
+      const node = this.requireSelectedNode('未选中导航节点，无法保存导航属性')
+      const draft = createNavigationNodeDraft(node)
+      const result = createNavigationNodePatch(draft)
+      nodeId = node.id
+      patch = result.patch
+    }
+
+    await this.navClient.updateNode(nodeId, patch)
+    await this.reloadNavigation({ selectedNodeId: nodeId })
   }
 
   /** 将完整导航 root 持久化到远端。 */
@@ -698,17 +713,16 @@ export class PageEditor {
     await this.saveDirtyPageFiles()
     const page = this.getActivePage()
     const navDirty = this.navigationDirty || page?.navigation.isDirty === true
-    if (navDirty) {
-      if (page?.navigation.isDirty === true) {
-        page.navigation.applyToNode()
-      }
-      if (this.navigationDirtyScope === 'node') {
-        await this.saveSelectedNavigationNode()
-      } else {
-        await this.saveNavigationRoot()
-      }
-      page?.navigation.markClean()
+    if (!navDirty || !page) return
+
+    if (this.navigationDirtyScope === 'root') {
+      await this.saveNavigationRoot()
+    } else {
+      await this.saveSelectedNavigationNode()
     }
+
+    page.navigation.markClean()
+    this.markNavigationClean()
   }
 
   /** 读取页面文件只读文本投影。 */
@@ -724,59 +738,89 @@ export class PageEditor {
   }
 
   /**
-   * 创建 PageDesign live edit host。只从 active PageModel 读写。
+   * 创建 PageDesign live edit host。
+   * AI 接入必须传 pageId；无 pageId 时仅保留 active-page 兼容路径。
    */
-  createPageDesignEditHost(): PageDesignEditHost {
+  createPageDesignEditHost(options: PageDesignEditHostOptions = {}): PageDesignEditHost {
     const editor = this
-    const page = (): PageModel | null => editor.getActivePage()
+    const targetPageId = options.pageId?.trim() ?? ''
+    const targetLabel = (): string => targetPageId || editor._activePageId || '<active-page>'
+    const page = (): PageModel | null => {
+      const resolved = targetPageId
+        ? (editor.openPages.get(targetPageId) ?? null)
+        : editor.getActivePage()
+      if (targetPageId && resolved?.isLoaded !== true) return null
+      return resolved
+    }
+    const requirePage = (operation: string): PageModel => {
+      const resolved = page()
+      if (resolved !== null) return resolved
+      throw new Error(`PageDesign edit host unavailable: page "${targetLabel()}" is not opened and loaded for ${operation}.`)
+    }
+    const requireMountedNavigation = (operation: string): PageModel => {
+      const resolved = requirePage(operation)
+      if (resolved.navigation.navNode !== null) return resolved
+      throw new Error(`PageDesign edit host unavailable: page "${resolved.pageId}" has no mounted navigation node for ${operation}.`)
+    }
+    const notifyChanged = (): void => {
+      editor.bumpRevision()
+    }
     return {
       getNodeTree: () => {
         const p = page()
         return p?.rule.tree ?? null
       },
       onNodeTreeChanged: (nodeTree) => {
-        const p = page()
-        if (!p) return
+        const p = requirePage('onNodeTreeChanged')
         p.rule.tree = nodeTree instanceof SparkNodeTree
           ? nodeTree
           : SparkNodeTree.fromJson(nodeTree.toJSON())
         p.rule.markDirty()
+        notifyChanged()
       },
       getDataSetTool: () => {
         const p = page()
         return p?.dataSet.tool ?? null
       },
       onDataSetChanged: (tool) => {
-        const p = page()
-        if (!p) return
+        const p = requirePage('onDataSetChanged')
         p.dataSet.tool = tool
         p.dataSet.markDirty()
+        notifyChanged()
       },
-      readScript: () => page()?.script.text ?? '',
+      readScript: () => {
+        return requirePage('readScript').script.text
+      },
       writeScript: (content) => {
-        const p = page()
-        if (!p) return
+        const p = requirePage('writeScript')
         p.script.setText(content)
+        notifyChanged()
       },
-      readStyle: () => page()?.style.text ?? '',
+      readStyle: () => {
+        return requirePage('readStyle').style.text
+      },
       writeStyle: (content) => {
-        const p = page()
-        if (!p) return
+        const p = requirePage('writeStyle')
         p.style.setText(content)
+        notifyChanged()
       },
-      getNavDraft: () => page()?.navigation.toDraft() ?? null,
+      getNavDraft: () => {
+        const p = page()
+        return p?.navigation.navNode === null ? null : p?.navigation.toDraft() ?? null
+      },
       onNavDraftChanged: (draft) => {
-        const p = page()
-        if (p) {
-          p.navigation.applyDraft(draft)
-        }
+        const p = requireMountedNavigation('onNavDraftChanged')
+        p.navigation.applyDraft(draft)
+        notifyChanged()
       },
-      getNavContext: () => page()?.navigation.toDraftInput().context ?? null,
-      onNavContextChanged: (context) => {
+      getNavContext: () => {
         const p = page()
-        if (p) {
-          p.navigation.applyContext(context)
-        }
+        return p?.navigation.navNode === null ? null : p?.navigation.toDraftInput().context ?? null
+      },
+      onNavContextChanged: (context) => {
+        const p = requireMountedNavigation('onNavContextChanged')
+        p.navigation.applyContext(context)
+        notifyChanged()
       },
     }
   }
@@ -1162,6 +1206,7 @@ export class PageEditor {
       ? selectedNodeId
       : null
     this.markNavigationClean()
+    this.refreshNavRefs()
     this.bumpRevision()
     return root
   }

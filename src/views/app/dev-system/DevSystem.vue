@@ -8,6 +8,24 @@
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
+        <el-input
+          v-if="state.activePageId.value"
+          v-model="pageDesignAiPrompt"
+          class="dev-ai-input"
+          size="small"
+          clearable
+          placeholder="描述 AI 编辑需求"
+        />
+        <el-button
+          v-if="state.activePageId.value"
+          size="small"
+          type="primary"
+          :loading="state.pageDesignAiRunning.value"
+          :disabled="!canRunPageDesignAi"
+          @click="runPageDesignAi"
+        >
+          <NavIcon name="MagicStick" :size="14" /> AI 编辑
+        </el-button>
         <el-button size="small" @click="switchToPreview" :disabled="!canPreviewCurrentPage">
           <NavIcon name="Search" :size="14" /> 预览页面
         </el-button>
@@ -60,8 +78,8 @@
           <div class="workspace-footer__left">
             <template v-if="state.selectedNode.value">
               <span class="footer-info">
-                <NavIcon name="Share" :size="13" /> {{ state.editForm.id }}
-                <template v-if="state.editForm.title"> · {{ state.editForm.title }}</template>
+                <NavIcon name="Share" :size="13" /> {{ state.navDraft.id }}
+                <template v-if="state.navDraft.title"> · {{ state.navDraft.title }}</template>
               </span>
               <el-tag v-if="state.navDirty.value" type="warning" size="small">属性已修改</el-tag>
             </template>
@@ -123,12 +141,15 @@ const {
   workTab,
   previewRefreshToken,
   currentWorkspaceFile,
+  pageDesignAiPrompt,
   canPreviewCurrentPage,
   canSaveFromHeader,
+  canRunPageDesignAi,
   headerSaveLabel,
   previewPage,
   switchToPreview,
   saveAll,
+  runPageDesignAi,
   isWorkspaceTabDirty,
 } = useDevSystem()
 
@@ -189,6 +210,10 @@ onMounted(() => {
   display: flex;
   align-items: center;
   gap: 8px;
+}
+
+.dev-ai-input {
+  width: min(360px, 34vw);
 }
 
 /* ═══ 主体三栏 ═══ */

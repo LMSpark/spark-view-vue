@@ -10,9 +10,9 @@
 
 它不是运行时之外的玩具，而是运行时的第一消费端。DevSystem 使用同一套 Compiler、同一套 `SparkPageRenderer` 和同一套 DataSet 工具，让设计时和运行时保持一致。
 
-## PageFileDocument 管四文件资产
+## PageModel 管四文件资产
 
-DevSystem 面向的是文件级页面资产。`rule.json`、`pagedata.json`、`script.js`、`style.css` 在编辑器里以 PageFileDocument 的方式存在，既能被文本编辑，也能被模型化工具更新。这个模型让“页面”从一次渲染结果变成一组可管理文档。
+DevSystem 面向的是文件级页面资产。`rule.json`、`pagedata.json`、`script.js`、`style.css` 在编辑器里由 PageEditor 持有为 PageModel 子模型，既能被文本投影查看，也能被模型化工具更新。这个模型让“页面”从一次渲染结果变成一组可管理文档。
 
 当用户修改文件或数据模型后，DevSystem 可以重新编译并触发预览。因为 Compiler 和 Renderer 是正式运行链路，预览不是另一套模拟器。这个一致性是调试和发布信心的来源。
 
@@ -24,7 +24,7 @@ DevPreviewTab 的价值在于把当前内存态配置送进正式 `SparkPageRend
 
 ## 数据设计是生产链路的一部分
 
-DevSystem 内置 DataSet Designer，让 `pagedata.json` 不只是源码文本，也能作为表、列、视图和关联关系的领域模型被维护。数据模型修改走同一套 PageFileDocument 与历史记录，保存、预览和版本状态不会分叉。
+DevSystem 内置 DataSet Designer，让 `pagedata.json` 不只是源码文本，也能作为表、列、视图和关联关系的领域模型被维护。数据模型修改走同一套 PageModel 与历史记录，保存、预览和版本状态不会分叉。
 
 这意味着 DevSystem 不需要额外的 AI session host 也能完成页面生产链路：人工编辑、数据设计、预览验证和版本管理都落在同一组四文件资产上。生产工具链的目标是让配置资产更容易被理解、维护和发布。
 

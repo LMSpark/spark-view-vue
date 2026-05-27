@@ -30,6 +30,7 @@ export default defineConfig({
       '@spark-view/spark-utils/internal': path.resolve(root, 'packages', 'spark-utils', 'src', 'internal', 'index.ts'),
       '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
       '@spark-view/spark-page-config/editor': path.resolve(root, 'packages', 'spark-page-config', 'src', 'editor', 'page-editor.ts'),
+      '@spark-view/spark-page-config/ai': path.resolve(root, 'packages', 'spark-page-config', 'src', 'ai', 'index.ts'),
       '@spark-view/spark-page-config/json-document': path.resolve(root, 'packages', 'spark-page-config', 'src', 'json-document-public.ts'),
       '@spark-view/spark-page-config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'index.ts'),
       '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),

@@ -50,7 +50,6 @@ export const VUE_PAGE_MAP: Record<string, VuePageEntry> = {
   '/demo/template-dsl': { title: 'Template DSL Demo', icon: 'SetUp', scope: 'app', source: 'src/views/app/TemplateDslDemo.vue', load: () => import('../views/app/TemplateDslDemo.vue'), description: '模板 DSL 演示页（system-page 路由占位）', hidden: true },
   // ── tenant: 租户级页面 ──
   '/settings':        { title: '设置',        icon: 'Setting',      scope: 'tenant',   source: 'src/views/tenant/Settings.vue',                load: () => import('../views/tenant/Settings.vue') },
-  '/tenant-config':   { title: '租户配置旧入口', icon: 'OfficeBuilding', scope: 'tenant', source: 'src/views/tenant/TenantConfig.vue', load: () => import('../views/tenant/TenantConfig.vue'), description: '旧入口，访问后重定向到平台租户管理', hidden: true },
   '/cache-manager':   { title: '缓存管理',    icon: 'Coin',         scope: 'app',      source: 'src/views/tenant/CacheManager.vue',             load: () => import('../views/tenant/CacheManager.vue') },
   '/app-list':        { title: '应用列表',    icon: 'Grid',         scope: 'tenant',   source: 'src/views/tenant/AppList.vue',                  load: () => import('../views/tenant/AppList.vue') },
   '/tenants':         { title: '租户管理',    icon: 'OfficeBuilding', scope: 'tenant', source: 'src/views/platform/PlatformTenantManagement.vue', load: () => import('../views/platform/PlatformTenantManagement.vue'), description: '平台租户管理工作台' },
@@ -90,9 +89,6 @@ export function getPublicPaths(): Set<string> {
       .map(([path]) => path),
   )
 }
-
-/** @deprecated use getPublicPaths(); platform is now the reserved admin tenant. */
-export const getPlatformPaths = getPublicPaths
 
 /**
  * 从 VUE_PAGE_MAP public 条目自动构建登录前导航树。

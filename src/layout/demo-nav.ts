@@ -107,7 +107,6 @@ export const demoNavRoot: AppNavRoot = {
         { id: 'vxe-demo', nodeKind: 'page', title: 'VXE 表格', icon: 'TrendCharts', path: '/vxe-demo' },
         { id: 'filter-demo', nodeKind: 'page', title: '过滤面板', icon: 'Search', path: '/filter-demo' },
         { id: 'capability-demo', nodeKind: 'system-page', title: '能力管理演示', icon: 'Aim', path: '/capability-demo' },
-        { id: 'tenant-config', nodeKind: 'system-page', title: '多租户配置', icon: 'OfficeBuilding', path: '/tenant-config' },
       ],
     },
 

@@ -256,7 +256,10 @@ export class PageDesignService {
 
   getState(context: PageDesignServiceContext): PageDesignEditSession {
     const existing = this.states.get(context.pageId)
-    if (existing !== undefined) return existing
+    if (existing !== undefined) {
+      existing.bindHost(this.getEditHost(context))
+      return existing
+    }
     const state = new PageDesignEditSession()
     state.bindHost(this.getEditHost(context))
     this.states.set(context.pageId, state)

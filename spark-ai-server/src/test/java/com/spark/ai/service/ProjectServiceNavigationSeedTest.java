@@ -30,7 +30,6 @@ class ProjectServiceNavigationSeedTest {
             "/dashboard",
             "/about",
             "/settings",
-            "/tenant-config",
             "/capability-demo",
             "/demo/template-dsl",
             "/demo/custom-r-table",
@@ -176,7 +175,6 @@ class ProjectServiceNavigationSeedTest {
         assertEquals("platform-vue-cleanup", cleanupModule.get("id"));
         assertEquals("module", cleanupModule.get("nodeKind"));
         assertEquals(EXPECTED_PLATFORM_VUE_CLEANUP_PATHS, childPaths(cleanupModule));
-        assertTrue(childHidden(cleanupModule, "/tenant-config"));
         assertAllCleanupChildrenAreSystemPages(cleanupModule);
     }
 
@@ -203,7 +201,6 @@ class ProjectServiceNavigationSeedTest {
         assertNotNull(cleanupModule);
         assertEquals(1, countModuleByTitle(nav, "Vue 清理候选"));
         assertEquals(EXPECTED_PLATFORM_VUE_CLEANUP_PATHS, childPaths(cleanupModule));
-        assertTrue(childHidden(cleanupModule, "/tenant-config"));
         assertAllCleanupChildrenAreSystemPages(cleanupModule);
         assertEquals("开发中心", parentTitleForPath(nav, "/dev"));
     }

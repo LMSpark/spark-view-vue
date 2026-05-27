@@ -19,6 +19,10 @@
       "types": "./dist/editor/page-editor.d.ts",
       "import": "./dist/editor/page-editor.js"
     },
+    "./ai": {
+      "types": "./dist/ai/index.d.ts",
+      "import": "./dist/ai/index.js"
+    },
     "./json-document": {
       "types": "./dist/json-document-public.d.ts",
       "import": "./dist/json-document-public.js"

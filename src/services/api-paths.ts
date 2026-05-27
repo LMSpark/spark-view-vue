@@ -49,31 +49,6 @@ export function getProjectApi(): string {
   return `/api/tenants/${tenantId}/projects`
 }
 
-/** 数据模型 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/data-model` */
-export function getDataModelApi(): string {
-  return `${getScopePath()}/data-model`
-}
-
-/** 数据库管理 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/databases` */
-export function getDatabaseApi(): string {
-  return `${getScopePath()}/databases`
-}
-
-/** 表关系 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/table-relations` */
-export function getTableRelationApi(): string {
-  return `${getScopePath()}/table-relations`
-}
-
-/** 动态数据 API 基础路径 — `/api/tenants/{tenantId}/projects/{projectId}/data` */
-export function getDataApi(): string {
-  return `${getScopePath()}/data`
-}
-
-/** 服务器管理 API 基础路径 — `/api/servers`（不受租户/项目作用域限制） */
-export function getServerApi(): string {
-  return '/api/servers'
-}
-
 export function getPlatformNavApi(): string {
   return '/api/platform/navigation'
 }

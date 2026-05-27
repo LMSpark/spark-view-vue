@@ -24,6 +24,7 @@ export default defineConfig({
       '@spark-view/spark-utils': resolve(root, './packages/spark-utils/src/index.ts'),
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-page-config/editor': resolve(root, './packages/spark-page-config/src/editor/page-editor.ts'),
+      '@spark-view/spark-page-config/ai': resolve(root, './packages/spark-page-config/src/ai/index.ts'),
       '@spark-view/spark-page-config/json-document': resolve(root, './packages/spark-page-config/src/json-document-public.ts'),
       '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),

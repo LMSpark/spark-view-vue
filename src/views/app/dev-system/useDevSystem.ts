@@ -23,6 +23,7 @@ export function useDevSystem() {
   // ─── 工作区 Tab 状态 ───────────────────────────────────
   const workTab = ref<DevWorkspaceTab>('props')
   const previewRefreshToken = ref(0)
+  const pageDesignAiPrompt = ref('')
 
   const currentWorkspaceFile = computed<PageConfigFileName | null>(() =>
     isPageFileName(workTab.value) ? workTab.value : null,
@@ -40,7 +41,7 @@ export function useDevSystem() {
 
   // ─── 派生能力 ──────────────────────────────────────────
   const canPreviewCurrentPage = computed(
-    () => Boolean(state.editForm.path || state.activePageId.value),
+    () => Boolean(state.navDraft.path || state.activePageId.value),
   )
   const canSaveCleanNode = computed(() => {
     if (workTab.value !== 'props') return false
@@ -49,6 +50,9 @@ export function useDevSystem() {
   })
   const canSaveFromHeader = computed(() => state.hasAnyDirty.value || canSaveCleanNode.value)
   const headerSaveLabel = computed(() => state.hasAnyDirty.value ? '全部保存' : '保存')
+  const canRunPageDesignAi = computed(() =>
+    Boolean(state.activePageId.value && pageDesignAiPrompt.value.trim() && !state.pageDesignAiRunning.value),
+  )
 
   // 选中节点时自动切到节点属性页签
   watch(() => state.selectedNode.value?.id ?? '', (nextId, prevId) => {
@@ -90,6 +94,12 @@ export function useDevSystem() {
     void state.saveAll()
   }
 
+  async function runPageDesignAi() {
+    if (!canRunPageDesignAi.value) return
+    const userRequirement = pageDesignAiPrompt.value.trim()
+    await state.runPageDesignAi({ userRequirement })
+  }
+
   function isWorkspaceTabDirty(name: PageConfigFileName): boolean {
     return state.isDocumentDirty(name)
   }
@@ -99,15 +109,17 @@ export function useDevSystem() {
     workTab,
     previewRefreshToken,
     currentWorkspaceFile,
+    pageDesignAiPrompt,
     canPreviewCurrentPage,
     canSaveFromHeader,
+    canRunPageDesignAi,
     headerSaveLabel,
     previewPage,
     switchToPreview,
     saveAll,
+    runPageDesignAi,
     isWorkspaceTabDirty,
   }
 }
 
 export type DevSystemCtx = ReturnType<typeof useDevSystem>
-

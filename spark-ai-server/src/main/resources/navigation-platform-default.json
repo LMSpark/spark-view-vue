@@ -91,15 +91,6 @@
                     "path": "/settings"
                 },
                 {
-                    "id": "platform-vue-cleanup-tenant-config",
-                    "nodeKind": "system-page",
-                    "title": "租户配置旧入口",
-                    "description": "旧多租户配置演示入口，访问会重定向到租户管理。",
-                    "icon": "OfficeBuilding",
-                    "path": "/tenant-config",
-                    "hidden": true
-                },
-                {
                     "id": "platform-vue-cleanup-capability-demo",
                     "nodeKind": "system-page",
                     "title": "能力演示候选",

@@ -2,7 +2,7 @@
   <div v-if="flags.isDirectoryNode.value">
     <el-divider content-position="left">布局配置</el-divider>
     <el-form-item label="子项布局" class="fi fi--wide">
-      <el-radio-group v-model="state.editForm.childPlacement" @change="state.markNavDirty">
+      <el-radio-group v-model="state.navDraft.childPlacement" @change="state.markNavDirty">
         <el-radio-button
           v-for="option in CHILD_PLACEMENT_OPTIONS"
           :key="option.value || '__default__'"

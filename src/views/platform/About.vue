@@ -13,12 +13,6 @@
           这是一个支持 <strong>配置页面</strong> 和 <strong>Vue 组件页面</strong> 混合渲染的系统演示。
         </p>
 
-        <!-- 渲染模式对比 -->
-        <!-- 渲染模式对比 -->
-        <!--
-          配置页面 vs Vue 组件页面特性对比
-          展示两种开发模式的优势和适用场景
-        -->
         <el-row :gutter="20" class="comparison-row">
           <el-col :span="12">
             <el-card header="📊 配置页面" class="mode-card config-mode">

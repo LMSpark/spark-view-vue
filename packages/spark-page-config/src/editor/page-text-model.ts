@@ -89,13 +89,11 @@ export class PageTextModel {
   ): Promise<void> {
     const result = await configLoader.loadPageFileContent(pageId, this._fileName, {
       forceReload: options?.forceReload === true,
+      allowMissingAsEmpty: options?.allowMissingAsEmpty === true,
     })
     if (!result.success) {
       if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) {
-        this._history.clear()
-        this._text = ''
-        this._savedText = ''
-        this._notify()
+        this.resetToEmpty()
         return
       }
       throw new Error(result.error ?? result.reason ?? `${this._fileName} 加载失败`)
@@ -104,6 +102,13 @@ export class PageTextModel {
     this._history.push(result.data ?? '')
     this._text = result.data ?? ''
     this._savedText = this._text
+    this._notify()
+  }
+
+  resetToEmpty(): void {
+    this._history.clear()
+    this._text = ''
+    this._savedText = ''
     this._notify()
   }
 

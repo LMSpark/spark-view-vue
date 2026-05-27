@@ -23,7 +23,8 @@
       "Bash(curl -s \"http://127.0.0.1:8080/api/auth/login\" -H \"Content-Type: application/json\" -H \"X-Tenant-Id: lmspark\" -d '{\"tenantId\":\"lmspark\",\"username\":\"admin\",\"password\":\"admin123\"}')",
       "Bash(node --import tsx -e ' *)",
       "Bash(timeout 10 curl -v -N \"http://127.0.0.1:8080/api/events\" -H \"Accept: text/event-stream\")",
-      "Bash(timeout 5 curl -v -N \"http://localhost:5173/api/events\" -H \"Accept: text/event-stream\")"
+      "Bash(timeout 5 curl -v -N \"http://localhost:5173/api/events\" -H \"Accept: text/event-stream\")",
+      "Bash(pnpm --filter @spark-view/spark-page-config run build)"
     ],
     "additionalDirectories": [
       "D:\\SPARK_VIEW\\.claude"

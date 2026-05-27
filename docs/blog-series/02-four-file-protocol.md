@@ -24,7 +24,7 @@
 
 `script.js` 和 `style.css` 保留了必要扩展能力，但它们不是无限自由区。脚本运行在页面上下文内，应该通过 `$dataSet`、`$components`、`$page` 等受支持入口操作运行时；样式则按页面作用域落地。Loader 负责文件从哪里来，Compiler 负责文件如何成为运行时模型，两者分离，预览和远程加载才能复用同一解释链路。
 
-DevSystem 中这四个文件也被注册成 PageFileDocument。手工编辑、模型化编辑和 AI 编辑读写的是同一组文档，这保证了 dirty 状态、版本和预览不会分叉。
+DevSystem 中这四个文件由 `PageEditor` 管理为同一个 `PageModel`：`rule.json` 和 `pagedata.json` 分别落到 `SparkNodeTree`、`DataSetCrudTool`，`script.js` 和 `style.css` 落到文本子模型。手工编辑、模型化编辑和 AI 编辑都通过这条 PageModel 链路读写，这保证了 dirty 状态、版本和预览不会分叉。
 
 ## 关键链路
 
@@ -42,7 +42,7 @@ flowchart TB
 - [../../packages/spark-page-config/src/config/page-config-loader.ts](../../packages/spark-page-config/src/config/page-config-loader.ts)
 - [../../packages/spark-page-config/src/config/page-config-compiler.ts](../../packages/spark-page-config/src/config/page-config-compiler.ts)
 - [../../spark-ai-server/src/main/java/com/spark/ai/controller/PageConfigController.java](../../spark-ai-server/src/main/java/com/spark/ai/controller/PageConfigController.java)
-- [../../packages/spark-page-config/src/design/page-file-document.ts](../../packages/spark-page-config/src/design/page-file-document.ts)
+- [../../packages/spark-page-config/src/editor/page-model.ts](../../packages/spark-page-config/src/editor/page-model.ts)
 
 ## 小结
 

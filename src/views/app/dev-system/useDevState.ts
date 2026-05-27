@@ -11,8 +11,9 @@
  * 后端由 PageEditor 统一聚合；adapter 保留 UI 响应式映射、localStorage、
  * autoSave、refreshRoutes、demoNavRoot fallback 和状态消息。
  */
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, getCurrentInstance } from 'vue'
 import { refreshRoutes } from '@spark-view/spark-app'
+import { useSparkComponent } from '@spark-view/spark-component'
 import {
   PAGE_CONFIG_FILE_NAMES,
   type PageConfigFileName,
@@ -21,7 +22,6 @@ import {
 } from '@spark-view/spark-page-config/editor'
 import {
   createPageEditor,
-  applyNodeKindPresetToDraft,
   canUseModuleNodeKind,
   createReservedRootGroup,
   findConfigNodeByPageId,
@@ -37,6 +37,10 @@ import {
   type NavigationNodeDraft,
 } from '@spark-view/spark-page-config/editor'
 import { demoNavRoot } from '@/layout/demo-nav'
+import {
+  runPageDesignAiSession,
+  type PageDesignAiRunOptions,
+} from '@/services/page-design-ai-runner'
 
 export { PAGE_CONFIG_FILE_NAMES }
 export type { PageConfigFileName, PageConfigFileVersionSummary }
@@ -50,30 +54,14 @@ export type StatusMessage = {
   type: 'success' | 'warning' | 'error' | 'info'
   time: string}
 
-export type DevEditForm = {
-  id: string
-  title: string
-  icon: string
-  nodeKind: NavNodeKind
-  dividerAfter: boolean
-  description: string
-  path: string
-  redirect: string
-  linkTarget: LinkTarget
-  parentPageId: string
-  childPlacement: string
-  order: number
-  hidden: boolean
-  disabled: boolean
-  refId: string
-  permissionMode: 'none' | 'masked' | 'invisible'}
-
 export type DevContextConfig = {
   placeholder: string
   defaultValue: string
   paramName: string}
 
 export type DevWorkspaceTab = 'props' | 'preview' | PageConfigFileName
+
+export type RunPageDesignAiOptions = PageDesignAiRunOptions
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { createAuthHeaders, http } from '@/services/http'
@@ -89,6 +77,9 @@ export function useDevState() {
     getNavigationApi: getNavApi,
     getHeaders: createAuthHeaders,
   })
+  const capabilityConsumer = getCurrentInstance() === null
+    ? null
+    : useSparkComponent({ type: 'dev-system-ai-runner' }).sparkConsume
 
   const DEMO_CONTEXT_ITEMS: Array<{ id: string; title: string }> = [
     { id: 'sales', title: '销售中心' },
@@ -108,41 +99,45 @@ export function useDevState() {
   const navDirty = ref(false)
   const selectedNode = ref<NavNode | null>(null)
 
+  function getEditorActivePage(): ReturnType<typeof editor.getActivePage> {
+    return editor.getActivePage()
+  }
+
   // ── 节点编辑表单（navDraft：直接代理到 activePage.navigation）──
   const navDraft = reactive({
-    get id(): string { return getActivePage()?.navigation.id ?? '' },
+    get id(): string { return getEditorActivePage()?.navigation.id ?? '' },
     set id(v: string) { const p = getActivePage(); if (p) { p.navigation.id = v; markNavDirty() } },
-    get title(): string { return getActivePage()?.navigation.title ?? '' },
+    get title(): string { return getEditorActivePage()?.navigation.title ?? '' },
     set title(v: string) { const p = getActivePage(); if (p) { p.navigation.title = v; markNavDirty() } },
-    get icon(): string { return getActivePage()?.navigation.icon ?? '' },
+    get icon(): string { return getEditorActivePage()?.navigation.icon ?? '' },
     set icon(v: string) { const p = getActivePage(); if (p) { p.navigation.icon = v; markNavDirty() } },
-    get nodeKind(): NavNodeKind { return getActivePage()?.navigation.nodeKind ?? 'page' },
+    get nodeKind(): NavNodeKind { return getEditorActivePage()?.navigation.nodeKind ?? 'page' },
     set nodeKind(v: NavNodeKind) { const p = getActivePage(); if (p) { p.navigation.nodeKind = v; markNavDirty() } },
-    get dividerAfter(): boolean { return getActivePage()?.navigation.dividerAfter ?? false },
+    get dividerAfter(): boolean { return getEditorActivePage()?.navigation.dividerAfter ?? false },
     set dividerAfter(v: boolean) { const p = getActivePage(); if (p) { p.navigation.dividerAfter = v; markNavDirty() } },
-    get description(): string { return getActivePage()?.navigation.description ?? '' },
+    get description(): string { return getEditorActivePage()?.navigation.description ?? '' },
     set description(v: string) { const p = getActivePage(); if (p) { p.navigation.description = v; markNavDirty() } },
-    get path(): string { return getActivePage()?.navigation.path ?? '' },
+    get path(): string { return getEditorActivePage()?.navigation.path ?? '' },
     set path(v: string) { const p = getActivePage(); if (p) { p.navigation.path = v; markNavDirty() } },
-    get redirect(): string { return getActivePage()?.navigation.redirect ?? '' },
+    get redirect(): string { return getEditorActivePage()?.navigation.redirect ?? '' },
     set redirect(v: string) { const p = getActivePage(); if (p) { p.navigation.redirect = v; markNavDirty() } },
-    get linkTarget(): LinkTarget { return getActivePage()?.navigation.linkTarget ?? 'iframe' },
+    get linkTarget(): LinkTarget { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
     set linkTarget(v: LinkTarget) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
-    get parentPageId(): string { return getActivePage()?.navigation.parentPageId ?? '' },
+    get parentPageId(): string { return getEditorActivePage()?.navigation.parentPageId ?? '' },
     set parentPageId(v: string) { const p = getActivePage(); if (p) { p.navigation.parentPageId = v; markNavDirty() } },
-    get childPlacement(): string { return getActivePage()?.navigation.childPlacement ?? '' },
+    get childPlacement(): string { return getEditorActivePage()?.navigation.childPlacement ?? '' },
     set childPlacement(v: string) { const p = getActivePage(); if (p) { p.navigation.childPlacement = v; markNavDirty() } },
-    get order(): number { return getActivePage()?.navigation.order ?? 0 },
+    get order(): number { return getEditorActivePage()?.navigation.order ?? 0 },
     set order(v: number) { const p = getActivePage(); if (p) { p.navigation.order = v; markNavDirty() } },
-    get hidden(): boolean { return getActivePage()?.navigation.hidden ?? false },
+    get hidden(): boolean { return getEditorActivePage()?.navigation.hidden ?? false },
     set hidden(v: boolean) { const p = getActivePage(); if (p) { p.navigation.hidden = v; markNavDirty() } },
-    get disabled(): boolean { return getActivePage()?.navigation.disabled ?? false },
+    get disabled(): boolean { return getEditorActivePage()?.navigation.disabled ?? false },
     set disabled(v: boolean) { const p = getActivePage(); if (p) { p.navigation.disabled = v; markNavDirty() } },
-    get refId(): string { return getActivePage()?.navigation.refId ?? '' },
+    get refId(): string { return getEditorActivePage()?.navigation.refId ?? '' },
     set refId(v: string) { const p = getActivePage(); if (p) { p.navigation.refId = v; markNavDirty() } },
-    get permissionMode(): 'none' | 'masked' | 'invisible' { return getActivePage()?.navigation.permissionMode ?? 'masked' },
+    get permissionMode(): 'none' | 'masked' | 'invisible' { return getEditorActivePage()?.navigation.permissionMode ?? 'masked' },
     set permissionMode(v: 'none' | 'masked' | 'invisible') { const p = getActivePage(); if (p) { p.navigation.permissionMode = v; markNavDirty() } },
-    get hasContext(): boolean { return getActivePage()?.navigation.hasContext ?? false },
+    get hasContext(): boolean { return getEditorActivePage()?.navigation.hasContext ?? false },
     set hasContext(v: boolean) { const p = getActivePage(); if (p) { p.navigation.hasContext = v; markNavDirty() } },
   })
   /** 可变的上下文选项列表（v-model 需要可变数组元素；通过 setContextItems 同步到子模型）。 */
@@ -180,12 +175,15 @@ export function useDevState() {
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
+  // ── pageDesign AI ──
+  const pageDesignAiRunning = ref(false)
+
   // ── 编辑器状态同步 ───────────────────────────────────
 
   function syncNavFromEditor(): void {
     const snap = editor.readSnapshot()
     treeData.value = [...snap.treeData]
-    navDirty.value = snap.navigationDirty || editor.getActivePage()?.navigation.isDirty === true
+    navDirty.value = snap.navigationDirty
     navEmpty.value = snap.treeData.length === 0
     if (snap.selectedNodeId && snap.selectedNode) {
       selectedNode.value = snap.selectedNode
@@ -287,7 +285,7 @@ export function useDevState() {
 
   function syncActivePageContextByPath(path: string): void {
     const pageId = normalizePageIdFromPath(path)
-    if (pageId && isConfigNodeKind(editForm.nodeKind)) {
+    if (pageId && isConfigNodeKind(navDraft.nodeKind)) {
       setActivePageContext(pageId, activePageId.value !== pageId)
       return
     }
@@ -311,6 +309,77 @@ export function useDevState() {
     statusMessages.value.unshift({ text, type, time })
     if (statusMessages.value.length > 80) {
       statusMessages.value = statusMessages.value.slice(0, 80)
+    }
+  }
+
+  function compactAiStatus(text: string): string {
+    const normalized = text.replace(/\s+/g, ' ').trim()
+    return normalized.length > 96 ? `${normalized.slice(0, 96)}...` : normalized
+  }
+
+  async function runPageDesignAi(options: RunPageDesignAiOptions): Promise<void> {
+    const pageId = activePageId.value.trim()
+    const userRequirement = options.userRequirement.trim()
+    if (!pageId) {
+      addStatus('请先选择一个配置页面', 'warning')
+      return
+    }
+    if (!userRequirement) {
+      addStatus('请先输入 AI 编辑需求', 'warning')
+      return
+    }
+    if (pageDesignAiRunning.value) return
+
+    pageDesignAiRunning.value = true
+    let lastStreamStatusAt = 0
+
+    try {
+      addStatus(`AI 开始编辑页面 ${pageId}`, 'info')
+      const result = await runPageDesignAiSession({
+        ...options,
+        pageId,
+        editor,
+        consumeCapability: capabilityConsumer,
+        events: {
+          onReasoning: (reasoning) => {
+            const message = compactAiStatus(reasoning)
+            if (!message) return
+            const now = Date.now()
+            if (now - lastStreamStatusAt < 1200) return
+            lastStreamStatusAt = now
+            addStatus(`AI 推理：${message}`, 'info')
+          },
+          onDelta: (delta) => {
+            const message = compactAiStatus(delta)
+            if (!message) return
+            const now = Date.now()
+            if (now - lastStreamStatusAt < 1200) return
+            lastStreamStatusAt = now
+            addStatus(`AI 回复：${message}`, 'info')
+          },
+          onToolCall: (record) => {
+            syncNavFromEditor()
+            const type: StatusMessage['type'] = record.status === 'success' ? 'info' : 'warning'
+            addStatus(`AI 工具 ${record.toolName} ${record.status === 'success' ? '完成' : '失败'}`, type)
+          },
+          onStreamEvent: () => {
+            pageFilesRevision.value = editor.revision
+          },
+        },
+      })
+
+      syncNavFromEditor()
+      pageFilesRevision.value = editor.revision
+      addStatus(
+        result.sawToolCall
+          ? `AI 已修改页面 ${pageId}，请保存`
+          : `AI 已完成页面 ${pageId} 的编辑会话`,
+        result.sawToolCall ? 'success' : 'info',
+      )
+    } catch (error) {
+      addStatus(`AI 编辑失败: ${String(error)}`, 'error')
+    } finally {
+      pageDesignAiRunning.value = false
     }
   }
 
@@ -397,11 +466,11 @@ export function useDevState() {
     } catch { /* ignore */ }
   }
 
-  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
+  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
     if (!activePageId.value) return
     editor.setActivePage(activePageId.value)
     const loadOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {
-      allowMissingAsEmpty: true,
+      allowMissingAsEmpty: options?.allowMissingAsEmpty ?? true,
     }
     if (options?.forceReload !== undefined) loadOptions.forceReload = options.forceReload
     await editor.ensureActivePageFilesLoaded(loadOptions)
@@ -488,8 +557,6 @@ export function useDevState() {
     const page = editor.getActivePage()
     if (page) {
       page.navigation.loadFromNode(node)
-      Object.assign(editForm, page.navigation.toDraft())
-      hasContext.value = page.navigation.hasContext
       contextItems.value = [...page.navigation.contextItems]
       Object.assign(contextConfig, page.navigation.contextConfig)
     }
@@ -507,15 +574,13 @@ export function useDevState() {
       return
     }
 
-    if (editForm.nodeKind === 'module' && !canUseModuleNodeKindInTree(node)) {
+    if (navDraft.nodeKind === 'module' && !canUseModuleNodeKindInTree(node)) {
       applyNodeKindPreset('page')
       addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
     }
 
     const page = getActivePage()
     if (page) {
-      page.navigation.applyDraft(createDraftFromEditForm())
-      page.navigation.hasContext = hasContext.value
       page.navigation.setContextItems(contextItems.value)
       page.navigation.setContextConfig({ ...contextConfig })
       const result = page.navigation.applyToNode()
@@ -646,9 +711,9 @@ export function useDevState() {
       })
       await loadPages()
 
-      editForm.path = `/${pageId}`
-      editForm.title = params.title
-      editForm.icon = params.icon
+      navDraft.path = `/${pageId}`
+      navDraft.title = params.title
+      navDraft.icon = params.icon
       handlePathChange(`/${pageId}`)
 
       notifyPageFileChanged(pageId, '__created')
@@ -735,7 +800,7 @@ export function useDevState() {
     }
     applyNodeKindPreset(kind)
     markNavDirty()
-    syncActivePageContextByPath(editForm.path)
+    syncActivePageContextByPath(navDraft.path)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -748,7 +813,7 @@ export function useDevState() {
   }
 
   async function probeLinkTarget(): Promise<void> {
-    const url = editForm.path.trim()
+    const url = navDraft.path.trim()
     if (!url) {
       addStatus('请先输入超链接地址', 'warning')
       return
@@ -760,7 +825,7 @@ export function useDevState() {
       const embeddable = result.embeddable
       const reason = result.reason
 
-      editForm.linkTarget = embeddable ? 'iframe' : 'new-tab'
+      navDraft.linkTarget = embeddable ? 'iframe' : 'new-tab'
       linkProbeInfo.value = { embeddable, reason }
       markNavDirty()
 
@@ -919,19 +984,51 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function toggleContext(val: boolean): void {
-    if (val && contextItems.value.length === 0) contextItems.value.push({ id: '', title: '' })
+    const page = getActivePage()
+    if (val && contextItems.value.length === 0) {
+      contextItems.value.push({ id: '', title: '' })
+    }
+    if (page) {
+      page.navigation.hasContext = val
+      page.navigation.setContextItems(contextItems.value)
+    }
     markNavDirty()
   }
-  function addContextItem(): void { contextItems.value.push({ id: '', title: '' }); markNavDirty() }
-  function removeContextItem(idx: number): void { contextItems.value.splice(idx, 1); markNavDirty() }
+  function addContextItem(): void {
+    contextItems.value.push({ id: '', title: '' })
+    const page = getActivePage()
+    if (page) page.navigation.setContextItems(contextItems.value)
+    markNavDirty()
+  }
+  function removeContextItem(idx: number): void {
+    contextItems.value.splice(idx, 1)
+    const page = getActivePage()
+    if (page) page.navigation.setContextItems(contextItems.value)
+    markNavDirty()
+  }
   function fillDemoContext(): void {
-    hasContext.value = true
+    navDraft.hasContext = true
     contextItems.value = DEMO_CONTEXT_ITEMS.map(item => ({ ...item }))
     contextConfig.placeholder = DEMO_CONTEXT_CONFIG.placeholder
     contextConfig.defaultValue = DEMO_CONTEXT_CONFIG.defaultValue
     contextConfig.paramName = DEMO_CONTEXT_CONFIG.paramName
+    const page = getActivePage()
+    if (page) {
+      page.navigation.setContextItems(contextItems.value)
+      page.navigation.setContextConfig({ ...contextConfig })
+    }
     markNavDirty()
     addStatus('已填充模块上下文演示数据', 'info')
+  }
+
+  /** context 字段变更时写穿到 page.navigation 并标记 dirty。 */
+  function syncContextToNav(): void {
+    const page = getActivePage()
+    if (page) {
+      page.navigation.setContextItems(contextItems.value)
+      page.navigation.setContextConfig({ ...contextConfig })
+    }
+    markNavDirty()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -985,9 +1082,8 @@ export function useDevState() {
     navDirty,
     selectedNode,
 
-    // 编辑表单
-    editForm,
-    hasContext,
+    // 编辑表单（navDraft 直接代理到 activePage.navigation）
+    navDraft,
     contextItems,
     contextConfig,
 
@@ -1009,6 +1105,7 @@ export function useDevState() {
     linkProbeLoading,
     linkProbeInfo,
     autoSaveStatus,
+    pageDesignAiRunning,
 
     // 计算属性
     hasAnyFileDirty,
@@ -1024,6 +1121,7 @@ export function useDevState() {
     loadPageFile,
     ensureActivePageFilesLoaded,
     getPageFileText,
+    getNavDraft,
     buildPreviewConfig,
     clearFiles,
     listRemotePageVersions,
@@ -1040,6 +1138,7 @@ export function useDevState() {
     saveNavConfig,
     saveNodeChanges,
     saveAll,
+    runPageDesignAi,
     selectNode,
     handlePathChange,
     handleNodeKindChange,
@@ -1056,6 +1155,7 @@ export function useDevState() {
     addContextItem,
     removeContextItem,
     fillDemoContext,
+    syncContextToNav,
     getDataSetTool,
     editDataSet,
     editNodeTree,

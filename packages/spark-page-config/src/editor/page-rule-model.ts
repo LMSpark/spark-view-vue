@@ -87,16 +87,21 @@ export class PageRuleModel {
   ): Promise<void> {
     const result = await configLoader.loadPageFileContent(pageId, 'rule.json', {
       forceReload: options?.forceReload === true,
+      allowMissingAsEmpty: options?.allowMissingAsEmpty === true,
     })
     if (!result.success) {
       if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) {
-        this.tree = SparkNodeTree.fromPageChildren([])
-        this.markClean()
+        this.resetToEmpty()
         return
       }
       throw new Error(result.error ?? result.reason ?? 'rule.json 加载失败')
     }
     this.tree = parseRuleText(result.data ?? '')
+    this.markClean()
+  }
+
+  resetToEmpty(): void {
+    this.tree = SparkNodeTree.fromPageChildren([])
     this.markClean()
   }
 

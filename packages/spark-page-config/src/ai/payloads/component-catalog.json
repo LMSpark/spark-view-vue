@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-05-24T05:14:29.624Z",
+  "buildTime": "2026-05-27T20:49:17.078Z",
   "componentCount": 106,
   "components": {
     "about": {
@@ -2683,11 +2683,12 @@
         },
         {
           "name": "action",
-          "type": "\"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"refresh\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | \"save-dataset\"",
+          "type": "\"refresh\" | \"append-row\" | \"prompt-append\" | \"prompt-edit\" | \"submit-current-form\" | \"clear-rows\" | \"move-row\" | \"move-current\" | \"delete-row\" | \"delete-current\" | \"delete-selected\" | \"patch-row\" | \"patch-current\" | \"patch-selected\" | \"message-row\" | \"message-current\" | \"save-dataset\"",
           "required": false,
           "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\nappend-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。",
           "schema": {
             "enum": [
+              "refresh",
               "append-row",
               "prompt-append",
               "prompt-edit",
@@ -2695,7 +2696,6 @@
               "clear-rows",
               "move-row",
               "move-current",
-              "refresh",
               "delete-row",
               "delete-current",
               "delete-selected",
@@ -2709,6 +2709,11 @@
             "type": "string",
             "description": "CRUD 或页面动作名，由宿主内置 action runner 接管执行。\n新建申请、提交新单据等“创建一条新记录”的按钮优先使用 append-row，并用 dataViewKey 指向目标列表/待处理视图。\nappend-row/prompt-append 会读取按钮当前作用域行、appendPayload、inheritFields 和 inheritFieldMap。",
             "oneOf": [
+              {
+                "const": "refresh",
+                "title": "刷新数据",
+                "description": "重新加载目标数据视图的数据。适合工具栏刷新按钮。"
+              },
               {
                 "const": "append-row",
                 "title": "新增/提交一条新记录",
@@ -2743,11 +2748,6 @@
                 "const": "move-current",
                 "title": "移动 currentRow",
                 "description": "移动数据视图当前选中的 currentRow，常用于外部工具栏按钮。"
-              },
-              {
-                "const": "refresh",
-                "title": "刷新数据",
-                "description": "重新加载目标数据视图的数据。适合工具栏刷新按钮。"
               },
               {
                 "const": "delete-row",
@@ -13066,6 +13066,282 @@
       ],
       "source": "vcm+meta"
     },
+    "r-virtual-card": {
+      "type": "r-virtual-card",
+      "filePath": "packages/spark-component/src/components/containers/data-views/RendererVirtualCard/RendererVirtualCard.vue",
+      "category": "container",
+      "description": "虚拟分页卡片容器，绑定 DataView.rows 并用滚动比例定位远端分页，拖动停稳后才请求目标页。 配置入口：type=\"r-virtual-card\"，category=container（容器组件）。 绑定语义：self-resolving DataView member。 关键 props：dataViewKey, dataMember, dataField, columns, toolbar。",
+      "props": [
+        {
+          "name": "permissionDeniedMode",
+          "type": "\"disable\" | \"hide\"",
+          "required": false,
+          "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件",
+          "schema": {
+            "enum": [
+              "disable",
+              "hide"
+            ],
+            "type": "string",
+            "description": "权限不足时的呈现策略。\n- `disable`：保留可见但禁用（默认）\n- `hide`：直接隐藏组件"
+          }
+        },
+        {
+          "name": "dataViewKey",
+          "type": "string",
+          "required": false,
+          "description": "DataView 定位键。\n固定格式为 `table@viewId` 或 `#scope@table@viewId`，用于把表级容器绑定到页面 DataSet 的某个视图。"
+        },
+        {
+          "name": "dataMember",
+          "type": "\"rows\" | \"columns\" | \"selectedRows\" | \"total\" | \"page\" | \"pageSize\" | \"requestState\" | \"mutating\" | \"loadingError\" | \"mutatingError\" | \"aggregateResult\" | \"selectionAggregateResult\" | DataMember | \"currentRow\"",
+          "required": false,
+          "description": "DataView 成员枚举值，用于读取 DataView 输出成员。",
+          "schema": {
+            "enum": [
+              "rows",
+              "columns",
+              "selectedRows",
+              "total",
+              "page",
+              "pageSize",
+              "requestState",
+              "mutating",
+              "loadingError",
+              "mutatingError",
+              "aggregateResult",
+              "selectionAggregateResult",
+              "currentRow"
+            ],
+            "type": "string",
+            "description": "DataView 成员枚举值，用于读取 DataView 输出成员。"
+          }
+        },
+        {
+          "name": "dataField",
+          "type": "string",
+          "required": false,
+          "description": "DataView 成员内部业务字段或点路径。"
+        },
+        {
+          "name": "showDataViewMeta",
+          "type": "boolean",
+          "required": false,
+          "description": "是否显示 DataView 元信息栏。"
+        },
+        {
+          "name": "showAggregateSummary",
+          "type": "boolean",
+          "required": false,
+          "description": "是否显示全量聚合摘要。"
+        },
+        {
+          "name": "showSelectionSummary",
+          "type": "boolean",
+          "required": false,
+          "description": "是否显示选区聚合摘要。"
+        },
+        {
+          "name": "onAddRow",
+          "type": "AddRowHandler",
+          "required": false,
+          "description": "新增动作回调。\n常由工具栏“新增”按钮、空态入口或快捷动作触发。"
+        },
+        {
+          "name": "onEditRow",
+          "type": "EditRowHandler",
+          "required": false,
+          "description": "编辑动作回调。\n通常用于编辑当前行、双击行编辑或弹出编辑表单。"
+        },
+        {
+          "name": "onRemoveRow",
+          "type": "RemoveRowHandler",
+          "required": false,
+          "description": "删除动作回调。\n常用于删除当前行、批量删除所选行，或触发删除确认流程。"
+        },
+        {
+          "name": "gridColumns",
+          "type": "number",
+          "required": false,
+          "default": "24",
+          "description": "CSS Grid 列数"
+        },
+        {
+          "name": "gridGap",
+          "type": "string | number",
+          "required": false,
+          "default": "12",
+          "description": "栅格间距"
+        },
+        {
+          "name": "gridAutoRows",
+          "type": "string",
+          "required": false,
+          "default": "\"minmax(32px, auto)\"",
+          "description": "栅格行高"
+        },
+        {
+          "name": "toolbar",
+          "type": "r-toolbar",
+          "required": false,
+          "description": "结构化工具栏。",
+          "schema": {
+            "$ref": "#/$defs/r-toolbar"
+          }
+        },
+        {
+          "name": "rowKey",
+          "type": "string",
+          "required": false,
+          "default": "\"id\"",
+          "description": "行唯一键字段。"
+        },
+        {
+          "name": "emptyText",
+          "type": "string",
+          "required": false,
+          "default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
+          "description": "空数据提示文案。"
+        },
+        {
+          "name": "pageHeight",
+          "type": "number",
+          "required": false,
+          "default": "540",
+          "description": "单个虚拟页块高度，单位 px。"
+        },
+        {
+          "name": "mobilePageHeight",
+          "type": "number",
+          "required": false,
+          "default": "850",
+          "description": "移动端单个虚拟页块高度，单位 px。"
+        },
+        {
+          "name": "mobileBreakpoint",
+          "type": "number",
+          "required": false,
+          "default": "700",
+          "description": "移动端断点，单位 px。"
+        },
+        {
+          "name": "viewportHeight",
+          "type": "string",
+          "required": false,
+          "default": "\"min(68vh, 660px)\"",
+          "description": "视口高度 CSS 值。"
+        },
+        {
+          "name": "minViewportHeight",
+          "type": "string",
+          "required": false,
+          "default": "\"420px\"",
+          "description": "视口最小高度 CSS 值。"
+        },
+        {
+          "name": "overscanPages",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "前后额外渲染的虚拟页数。"
+        },
+        {
+          "name": "maxCachedPages",
+          "type": "number",
+          "required": false,
+          "default": "24",
+          "description": "最多保留的页缓存数量。"
+        },
+        {
+          "name": "columns",
+          "type": "number",
+          "required": false,
+          "default": "2",
+          "description": "每页卡片网格列数。"
+        },
+        {
+          "name": "mobileColumns",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "移动端每页卡片网格列数。"
+        },
+        {
+          "name": "settleDelay",
+          "type": "number",
+          "required": false,
+          "default": "220",
+          "description": "停稳后触发 DataView 页加载的延迟，单位 ms。"
+        },
+        {
+          "name": "wheelStepPx",
+          "type": "number",
+          "required": false,
+          "default": "180",
+          "description": "滚轮距离换算为页数的基础像素值。"
+        },
+        {
+          "name": "maxWheelJumpPages",
+          "type": "number",
+          "required": false,
+          "default": "40",
+          "description": "单次滚轮最多跳转页数。"
+        },
+        {
+          "name": "itemClass",
+          "type": "string",
+          "required": false,
+          "default": "\"\"",
+          "description": "列表项 CSS 类名。"
+        },
+        {
+          "name": "itemStyle",
+          "type": "CSSProperties",
+          "required": false,
+          "default": "{}",
+          "description": "列表项行内样式。"
+        },
+        {
+          "name": "showHeader",
+          "type": "boolean",
+          "required": false,
+          "description": "是否显示顶部标题与进度。"
+        },
+        {
+          "name": "showHud",
+          "type": "boolean",
+          "required": false,
+          "description": "是否显示悬浮页码提示。"
+        },
+        {
+          "name": "showPageMeta",
+          "type": "boolean",
+          "required": false,
+          "description": "是否显示每个页块的页状态。"
+        },
+        {
+          "name": "onItemClick",
+          "type": "RowClickHandler",
+          "required": false,
+          "description": "卡片点击回调。"
+        },
+        {
+          "name": "onPageChange",
+          "type": "((page: number) => void | Promise<void>)",
+          "required": false,
+          "description": "页加载回调。"
+        }
+      ],
+      "emits": [],
+      "notes": "binding: dataViewKey-driven\ndataViewKey 使用 table@viewId；children 在每张卡片的 DATA_ROW 作用域下渲染。",
+      "provides": [
+        "DATA_SOURCE"
+      ],
+      "consumes": [
+        "PAGE_DATASET"
+      ],
+      "source": "vcm+meta"
+    },
     "settings": {
       "type": "settings",
       "filePath": "src/views/tenant/Settings.vue",
@@ -13292,17 +13568,6 @@
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
         }
       ],
-      "source": "vcm+meta"
-    },
-    "tenant-config": {
-      "type": "tenant-config",
-      "filePath": "src/views/tenant/TenantConfig.vue",
-      "category": "feature",
-      "description": "旧租户配置演示入口；已整合到平台租户管理页，仅保留兼容重定向。 配置入口：type=\"tenant-config\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
-      "props": [],
-      "emits": [],
       "source": "vcm+meta"
     },
     "tenant-config-panel": {
@@ -13677,7 +13942,7 @@
           "type": "string",
           "description": "Used by the JSON.stringify method to enable the transformation of an object's data for JavaScript Object Notation (JSON) serialization."
         },
-        "__@toPrimitive@13575": {
+        "__@toPrimitive@13709": {
           "type": "string",
           "description": "Converts a Date object to a string.\nConverts a Date object to a number.\nConverts a Date object to a string or number."
         }
@@ -13726,7 +13991,7 @@
         "toUTCString",
         "toISOString",
         "toJSON",
-        "__@toPrimitive@13575"
+        "__@toPrimitive@13709"
       ],
       "description": "当前日期"
     },

@@ -226,6 +226,30 @@ describe('PageEditor', () => {
     expect(snapshot.dataSetTool).not.toBeNull()
   })
 
+  it('lets PageModel open a missing page as empty through the loader boundary', async () => {
+    const { editor, loader } = createEditorHarness({
+      files: {},
+      root: buildNavRoot([]),
+    })
+
+    await editor.loadNavigation()
+    await editor.selectPage('employee-leave-form-smoke', { allowMissingAsEmpty: true })
+
+    const snapshot = editor.readSnapshot()
+    expect(snapshot.pageId).toBe('employee-leave-form-smoke')
+    expect(snapshot.isLoaded).toBe(true)
+    expect(snapshot.ruleJson).toBe('[]\n')
+    expect(snapshot.pageDataJson).toContain('"dataSetName": "employee-leave-form-smoke"')
+    expect(snapshot.script).toBe('')
+    expect(snapshot.style).toBe('')
+    expect(loader.loadPageFileContentSpy).toHaveBeenCalledTimes(4)
+    expect(loader.loadPageFileContentSpy).toHaveBeenCalledWith(
+      'employee-leave-form-smoke',
+      'rule.json',
+      { forceReload: false, allowMissingAsEmpty: true },
+    )
+  })
+
   it('builds renderer preview config through the editor', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
@@ -323,6 +347,89 @@ describe('PageEditor', () => {
     expect(snapshot.ruleJson).toContain('Host Updated')
     expect(snapshot.dirtyFiles.has('script.js')).toBe(true)
     expect(snapshot.dirtyFiles.has('rule.json')).toBe(true)
+  })
+
+  it('binds PageDesign edit host to the requested pageId instead of the active page', async () => {
+    const files = {
+      ...createPageFiles('page-a'),
+      ...createPageFiles('page-b'),
+      'page-a/script.js': 'console.log("A")\n',
+      'page-b/script.js': 'console.log("B")\n',
+    }
+    const { editor } = createEditorHarness({
+      files,
+      root: buildNavRoot([
+        { id: 'page-a-node', title: 'Page A', nodeKind: 'page', path: '/page-a' },
+        { id: 'page-b-node', title: 'Page B', nodeKind: 'page', path: '/page-b' },
+      ]),
+    })
+
+    await editor.loadNavigation()
+    await editor.selectPage('page-a', { allowMissingAsEmpty: true })
+    await editor.selectPage('page-b', { allowMissingAsEmpty: true })
+
+    const host = editor.createPageDesignEditHost({ pageId: 'page-a' })
+    host.writeScript?.('console.log("A AI")')
+
+    expect(editor.readSnapshot().pageId).toBe('page-b')
+    expect(editor.readSnapshot().script).toBe('console.log("B")\n')
+
+    await editor.selectPage('page-a')
+    const pageA = editor.readSnapshot()
+    expect(pageA.script).toBe('console.log("A AI")')
+    expect(pageA.dirtyFiles.has('script.js')).toBe(true)
+  })
+
+  it('fails fast for an unloaded PageDesign target without creating an empty PageModel', async () => {
+    const { editor } = createEditorHarness()
+    await editor.loadNavigation()
+    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+
+    const host = editor.createPageDesignEditHost({ pageId: 'missing-page' })
+
+    expect(host.getNodeTree?.()).toBeNull()
+    expect(host.getDataSetTool?.()).toBeNull()
+    expect(() => host.writeScript?.('console.log("missing")')).toThrow('PageDesign edit host unavailable')
+    expect(editor.readSnapshot().pageId).toBe('orders')
+  })
+
+  it('bumps revision for repeated PageDesign writes after the model is already dirty', async () => {
+    const { editor } = createEditorHarness()
+    await editor.loadNavigation()
+    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+
+    const host = editor.createPageDesignEditHost({ pageId: 'orders' })
+    host.writeScript?.('console.log("first")')
+    const afterFirstScript = editor.revision
+    host.writeScript?.('console.log("second")')
+    expect(editor.revision).toBeGreaterThan(afterFirstScript)
+    expect(editor.readSnapshot().script).toBe('console.log("second")')
+
+    const draft = host.getNavDraft?.()
+    expect(draft).not.toBeNull()
+    host.onNavDraftChanged?.({ title: 'Orders AI 1' })
+    const afterFirstNav = editor.revision
+    host.onNavDraftChanged?.({ title: 'Orders AI 2' })
+    expect(editor.revision).toBeGreaterThan(afterFirstNav)
+    expect(editor.getActivePage()?.navigation.title).toBe('Orders AI 2')
+    expect(editor.readSnapshot().navigationDirty).toBe(true)
+  })
+
+  it('only exposes PageDesign navigation writes for mounted pages', async () => {
+    const { editor } = createEditorHarness({
+      files: createPageFiles('draft-page'),
+      root: buildNavRoot([]),
+    })
+
+    await editor.loadNavigation()
+    await editor.selectPage('draft-page', { allowMissingAsEmpty: true })
+
+    const host = editor.createPageDesignEditHost({ pageId: 'draft-page' })
+
+    expect(host.getNavDraft?.()).toBeNull()
+    expect(host.getNavContext?.()).toBeNull()
+    expect(() => host.onNavDraftChanged?.({ title: 'Draft AI' })).toThrow('has no mounted navigation node')
+    expect(() => host.onNavContextChanged?.({ hasContext: true })).toThrow('has no mounted navigation node')
   })
 
   it('commits DataSetCrudTool edits through pagedata.json dirty and revision notifications', async () => {

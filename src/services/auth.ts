@@ -27,8 +27,8 @@ export type AuthUser = {
   defaultProjectId: string}
 
 type PlatformAdminUserLike = {
-  tenantId?: string | undefined
-  roles?: readonly string[] | undefined}
+  tenantId?: string
+  roles?: readonly string[]}
 
 
 function isAuthUser(value: unknown): value is AuthUser {

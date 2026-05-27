@@ -63,7 +63,7 @@ type OptionalPageFileLoadInput<T> = Readonly<{
   pageId: string
   filename: PageConfigFileName
   localLoader: TransformedFileLoader<T>
-  knownFiles: Set<PageConfigFileName> | null
+  knownFiles: ReadonlySet<PageConfigFileName> | null
 }>
 
 /** 安全判断未知值是否为数组。 */
@@ -290,6 +290,12 @@ export class PageConfigLoader extends BasePageConfigLoader {
   ): Promise<ConfigLoadResult<string>> {
     this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)
+    if (options?.allowMissingAsEmpty === true) {
+      const knownFiles = await this.getKnownPageFiles(pageId)
+      if (this.isKnownMissing(knownFiles, filename)) {
+        return this.knownMissingPageFileResult(path)
+      }
+    }
     const result = await this.fileLoader.load(path, {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
@@ -348,7 +354,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
 
   // ── 私有辅助 ──────────────────────────────────────────────────────
 
-  private async getKnownPageFiles(pageId: string): Promise<Set<PageConfigFileName> | null> {
+  private async getKnownPageFiles(pageId: string): Promise<ReadonlySet<PageConfigFileName> | null> {
     const manifest = await this.getPageFileManifest()
     return manifest?.get(pageId) ?? (manifest === null ? null : new Set<PageConfigFileName>())
   }
@@ -399,10 +405,21 @@ export class PageConfigLoader extends BasePageConfigLoader {
   }
 
   private isKnownMissing(
-    knownFiles: Set<PageConfigFileName> | null,
+    knownFiles: ReadonlySet<PageConfigFileName> | null,
     filename: PageConfigFileName,
   ): boolean {
     return knownFiles !== null && !knownFiles.has(filename)
+  }
+
+  private knownMissingPageFileResult(path: string): ConfigLoadResult<never> {
+    pageLogger.debug('远程页面配置文件清单已确认缺失，跳过逐文件请求', { path })
+    return {
+      success: false,
+      error: `${this.pagesConfigBase}${path}: not found`,
+      reason: 'not-found',
+      source: 'remote',
+      timestamp: Date.now(),
+    }
   }
 
   private invalidatePageFileManifest(key: string): void {

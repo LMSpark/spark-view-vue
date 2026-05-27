@@ -1339,28 +1339,6 @@ async function testServerConnection(srv: DbmsServer) {
   } finally { testingId.value = null }
 }
 
-async function _deleteServerConfirm(srv: DbmsServer) {
-  try {
-    await ElMessageBox.confirm(`确定删除服务器 "${srv.SERVER_NAME}"？`, '确认删除', { type: 'warning' })
-    await http.delete(`/api/servers/${srv.ID}`)
-    ElMessage.success('已删除')
-    if (selectedServer.value?.ID === srv.ID) {
-      selectedServer.value = null
-      selectedDatabase.value = null
-      selectedTable.value = null
-      databases.value = []
-      tables.value = []
-      relations.value = []
-      objectSql.value = null
-      objectData.value = null
-    }
-    void loadServers()
-  } catch (error) {
-    if (error instanceof Error && error.message === 'cancel') return
-    ElMessage.error(`删除失败: ${apiErrorMessage(error)}`)
-  }
-}
-
 // ── 数据库 Dialog ──
 type DatabaseForm = {
   databaseName: string

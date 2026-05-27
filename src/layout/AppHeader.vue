@@ -178,8 +178,6 @@ const props = withDefaults(defineProps<{
 
 const emit = defineEmits<{
   'toggle-collapse': []
-  'toggle-theme': []
-  'search': []
   'user-command': [command: string]
 }>()
 

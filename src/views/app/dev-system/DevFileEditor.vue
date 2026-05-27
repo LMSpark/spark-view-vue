@@ -7,19 +7,6 @@
           <el-tag v-if="resolvedActiveFile === 'pagedata.json' && state.pageDataError.value" size="small" type="danger" effect="dark">DataSet 解析失败</el-tag>
         </div>
         <div class="file-header__actions">
-          <el-button-group class="action-group">
-            <el-tooltip content="撤销 (Ctrl+Z)" placement="bottom" :show-after="600">
-              <el-button size="small" :disabled="!editor.canUndo.value" @click="editor.undo">
-                <NavIcon name="RefreshLeft" :size="14" />
-              </el-button>
-            </el-tooltip>
-            <el-tooltip content="重做 (Ctrl+Y)" placement="bottom" :show-after="600">
-              <el-button size="small" :disabled="!editor.canRedo.value" @click="editor.redo">
-                <NavIcon name="RefreshRight" :size="14" />
-              </el-button>
-            </el-tooltip>
-          </el-button-group>
-          <span class="action-divider" />
           <el-tooltip content="从服务端重新加载此文件" placement="bottom" :show-after="600">
             <el-button size="small" :disabled="!state.activePageId.value" @click="refreshFile">
               <NavIcon name="Refresh" :size="14" />
@@ -83,9 +70,8 @@
             :model-value="editor.text.value"
             type="textarea"
             resize="none"
+            readonly
             class="code-input code-input--pagedata-text"
-            @update:model-value="editor.updateText"
-            @change="editor.commitText"
           />
         </div>
 
@@ -98,24 +84,23 @@
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="editor.commitText"
+            @update:model-value="(val: unknown) => state.getActivePage()?.rule.setText(String(val))"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
             :model-value="editor.text.value"
             :language="resolveCodeLanguage(resolvedActiveFile)"
+            readonly
             class="code-input code-input--code"
             height="100%"
-            @update:model-value="editor.updateText"
           />
           <el-input
             v-else
             :model-value="editor.text.value"
             type="textarea"
             :autosize="{ minRows: 30, maxRows: 60 }"
+            readonly
             class="code-input"
-            @update:model-value="editor.updateText"
-            @change="editor.commitText"
           />
         </div>
 
@@ -241,7 +226,6 @@ function resetPageDataViewMode() {
 }
 
 function setPageDataViewMode(mode: 'visual' | 'text') {
-  if (mode === 'visual' && !editor.commitText()) return
   pageDataViewModePinned.value = true
   pageDataViewMode.value = mode
 }
@@ -273,9 +257,7 @@ function toggleVersionPanel() {
 async function restoreVersion(version: number) {
   restoringVersion.value = version
   try {
-    editor.clearDraft(resolvedActiveFile.value)
     if (await props.state.restoreRemotePageVersion(version, resolvedActiveFile.value)) {
-      editor.clearDraft(resolvedActiveFile.value)
       await loadVersions()
     }
   } finally {

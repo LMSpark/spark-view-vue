@@ -30,8 +30,6 @@ import {
   normalizeNavNode,
 } from '../navigation'
 import type { NavigationConfigClient } from '../navigation'
-import { SparkNodeTree } from '@spark-view/spark-data'
-import type { PageDesignEditHost } from './page-edit-session'
 
 // ── PageConfigEditWorkspace 契约 ───────────────────────────
 
@@ -94,31 +92,6 @@ export class PageConfigEditWorkspace {
 
   hasAnyFileDirty(): boolean {
     return PAGE_CONFIG_FILE_NAMES.some(name => this.isDocumentDirty(name))
-  }
-
-  createPageDesignEditHost(): PageDesignEditHost {
-    const documents = this.documents
-    return {
-      getNodeTree: () => documents['rule.json'].model.value,
-      onNodeTreeChanged: (nodeTree) => {
-        const nextTree = nodeTree instanceof SparkNodeTree
-          ? nodeTree
-          : SparkNodeTree.fromJson(nodeTree.toJSON())
-        documents['rule.json'].replaceModel(nextTree)
-      },
-      getDataSetTool: () => documents['pagedata.json'].model.value,
-      onDataSetChanged: (tool) => {
-        documents['pagedata.json'].replaceModel(tool)
-      },
-      readScript: () => documents['script.js'].text.value,
-      writeScript: (content) => {
-        documents['script.js'].setText(content)
-      },
-      readStyle: () => documents['style.css'].text.value,
-      writeStyle: (content) => {
-        documents['style.css'].setText(content)
-      },
-    }
   }
 
   notifyPageFileChanged(pageId: string, filename: PageConfigFileName | '__created' | '__deleted' | '__bulk'): void {
