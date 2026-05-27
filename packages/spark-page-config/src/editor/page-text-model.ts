@@ -92,6 +92,10 @@ export class PageTextModel {
     })
     if (!result.success) {
       if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) {
+        this._history.clear()
+        this._text = ''
+        this._savedText = ''
+        this._notify()
         return
       }
       throw new Error(result.error ?? result.reason ?? `${this._fileName} 加载失败`)

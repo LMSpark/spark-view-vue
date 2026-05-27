@@ -1,26 +1,10 @@
 export {
-  PageConfigComputedValue,
-  PageConfigDocumentChangeNotifier,
-  PageConfigValueRef,
-  PageFileDocument,
   canonicalizeDataSetMetadata,
   canonicalizePageDataJson,
   canonicalizePageDataValue,
 } from './page-file-document'
 
-export {
-  createPageDocuments,
-  createPageDocumentsFromRegistry,
-  forEachDocument,
-  forEachDynamicDocument,
-  isPageFileDocumentDirty,
-} from './page-file-document'
-
 export type {
-  DynamicPageFileDocument,
-  LoadFromTextOptions,
-  PageDocumentRegistry,
-  PageFileDocumentListener,
   PageFileLoadState,
 } from './page-file-document'
 

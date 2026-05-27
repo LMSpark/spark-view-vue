@@ -124,7 +124,7 @@
 import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import * as SparkAppRuntime from '@spark-view/spark-app'
-import { AI_HOST } from '@spark-view/spark-ai/host'
+import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
 import type { AppNavRoot } from '@spark-view/spark-data'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 import {
@@ -151,7 +151,7 @@ import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { createAiDebugBridge } from '@/services/ai-debug-bridge'
-import { appAiHost } from '@/services/ai-host'
+import { appAiAgent } from '@/services/ai-host'
 import { createAuthHeaders } from '@/services/http'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
@@ -440,7 +440,7 @@ const nav = useNavigation(_navRoot, {
   actionRegistry: navigationActionRegistry,
 })
 const pageUiService = appPageUiService
-sparkProvide(AI_HOST, appAiHost)
+sparkProvide(AI_AGENT_HOST, appAiAgent)
 sparkProvide(PAGE_RUNTIME_SERVICES, { pageService: pageUiService })
 const isSparkRendererRoute = computed(() => {
   const routeType = route.meta['type']

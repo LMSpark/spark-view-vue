@@ -7,9 +7,9 @@
 `package.json` exposes exactly four public entries:
 
 - `@spark-view/spark-ai`
-- `@spark-view/spark-ai/schema`
-- `@spark-view/spark-ai/module-semantic`
-- `@spark-view/spark-ai/host`
+- `@spark-view/spark-ai/json`
+- `@spark-view/spark-ai/modules`
+- `@spark-view/spark-ai/agent`
 
 Do not restore old `core`, `protocol`, or `adapter` public subpaths.
 
@@ -24,7 +24,7 @@ schema
   -> host/transport contracts
 ```
 
-Business packages sit outside this package. They create `ModuleKind` classes, register instances or constructors in `ModuleSemanticRuntime`, and pass the runtime to `AiHostBusinessRegistration`.
+Business packages sit outside this package. They create `AiModule` classes, register instances or constructors in `AiModuleRuntime`, and pass the runtime to `AiAgentRegistration`.
 
 ## Source Tree
 
@@ -79,9 +79,9 @@ packages/spark-ai/src/
 
 ## Layer Responsibilities
 
-- `schema`: JSON value types, JSON Schema helpers, and `LlmSchemaValidator`. `paramsSchema` uses `LlmJsonSchemaObject`.
-- `module-semantic/protocol`: stable protocol concepts: `ModuleKind`, `ModulePath`, `ModuleOperationResult`, `ModuleCheckEntry`, `ModulePathContext`, `ModuleInstanceRef`, runner/list/find delegate types, and metadata types.
-- `module-semantic/runtime`: composition root and protocol tool routing. `ModuleSemanticRuntime` wires registry, navigation, function invocation, attribute access, tool generation, argument parsing, and result projection.
+- `schema`: JSON value types, JSON Schema helpers, and `AiJsonSchemaValidator`. `paramsSchema` uses `AiJsonSchemaObject`.
+- `module-semantic/protocol`: stable protocol concepts: `AiModule`, `AiModulePath`, `AiModuleResult`, `AiModuleCheck`, `AiModulePathContext`, `AiModuleInstanceRef`, runner/list/find delegate types, and metadata types.
+- `module-semantic/runtime`: composition root and protocol tool routing. `AiModuleRuntime` wires registry, navigation, function invocation, attribute access, tool generation, argument parsing, and result projection.
 - `host/session`: framework-free session history and function call history.
 - `host/tool-loop`: LLM round loop, tool-call execution, APP SSE turn event aggregation, payload serialization, result mapping, and diagnostic events.
 - `host/transport`: pure callback contracts, turn identity projection, and APP SSE event types. Network I/O and envelope decoding belong to the APP/script layer.

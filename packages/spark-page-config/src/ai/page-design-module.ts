@@ -13,38 +13,38 @@
  */
 
 import {
-  createAiHostBusinessScope,
-  DefaultAiHostSessionStore,
-  projectAiHostBusinessRegistration,
-} from '@spark-view/spark-ai/host'
-import type * as SparkAiHost from '@spark-view/spark-ai/host'
+  createAiAgentScope,
+  DefaultAiAgentSessionStore,
+  createAiAgentRegistration,
+} from '@spark-view/spark-ai/agent'
+import type * as SparkAiAgent from '@spark-view/spark-ai/agent'
 import {
   booleanSchema,
   enumSchema,
-  type LlmJsonParamShape,
-  type LlmJsonParams,
-  type LlmJsonValue,
+  type AiJsonParamShape,
+  type AiJsonParams,
+  type AiJsonValue,
   objectSchema,
   paramsSchema,
   stringSchema,
-} from '@spark-view/spark-ai/schema'
+} from '@spark-view/spark-ai/json'
 import {
-  ModuleKind,
-  ModuleOperationResult,
-  ModuleSemanticRuntime,
-  type ModuleInstanceRef,
-} from '@spark-view/spark-ai/module-semantic'
-import type { ModulePathContext } from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  AiModuleResult,
+  AiModuleRuntime,
+  type AiModuleInstanceRef,
+} from '@spark-view/spark-ai/modules'
+import type { AiModulePathContext } from '@spark-view/spark-ai/modules'
 import type {
   PageDesignEditHost,
   PageDesignServiceContext,
 } from '../design/page-edit-session'
 import { PageDesignService } from '../design/page-design-service'
-import { PageDesignDatasetModuleKind } from './dataset-tool-catalog'
-import { PageDesignLifecycleModuleKind } from './lifecycle-tool-catalog'
-import { PageDesignNodeTreeModuleKind } from './node-tree-tool-catalog'
-import { PageDesignPayloadCatalogModuleKind } from './payload-catalog-tool-catalog'
-import { PageDesignTextModelModuleKind } from './text-model-tool-catalog'
+import { PageDesignDatasetAiModule } from './dataset-tool-catalog'
+import { PageDesignLifecycleAiModule } from './lifecycle-tool-catalog'
+import { PageDesignNodeTreeAiModule } from './node-tree-tool-catalog'
+import { PageDesignPayloadCatalogAiModule } from './payload-catalog-tool-catalog'
+import { PageDesignTextModelAiModule } from './text-model-tool-catalog'
 import {
   PAGE_DESIGN_CHILD_MODULES,
   PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
@@ -54,21 +54,21 @@ import {
 // ── 模块标识与系统提示词片段 ───────────────────────────────
 
 export const PAGE_DESIGN_MODULE_ID = PAGE_DESIGN_ROOT_KIND
-export const PAGE_DESIGN_AI_HOST_ALIAS = PAGE_DESIGN_MODULE_ID
+export const PAGE_DESIGN_AI_AGENT_HOST_ALIAS = PAGE_DESIGN_MODULE_ID
 
 const PAGE_DESIGN_RUN_MODES = ['create', 'modify', 'fix', 'data', 'style'] as const
 const PAGE_DESIGN_RUN_MODE_SET: ReadonlySet<string> = new Set(PAGE_DESIGN_RUN_MODES)
 
 export type PageDesignRunMode = typeof PAGE_DESIGN_RUN_MODES[number]
 
-export type PageDesignAllowedOperations = LlmJsonParamShape<{
+export type PageDesignAllowedOperations = AiJsonParamShape<{
   addTables?: boolean
   addComponents?: boolean
   editScript?: boolean
   editStyle?: boolean
 }>
 
-export type PageDesignRunInput = LlmJsonParamShape<{
+export type PageDesignRunInput = AiJsonParamShape<{
   pageId: string
   userRequirement: string
   mode?: PageDesignRunMode
@@ -114,14 +114,14 @@ const PAGE_DESIGN_INPUT_SCHEMA = paramsSchema({
 /**
  * 创建 pageDesign 的 AI Host 业务注册。
  *
- * 注册结果包含一个 `ModuleSemanticRuntime`，由它投影 lifecycle、text-model、
+ * 注册结果包含一个 `AiModuleRuntime`，由它投影 lifecycle、text-model、
  * payload-catalog、node-tree、dataset 五个子 kind。调用方只提供当前页面的
  * live edit host，不参与工具 schema、会话历史或业务写入规则。
  */
 export function createPageDesignBusinessRegistration(
   options: PageDesignModuleOptions,
-): SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput> {
-  return projectAiHostBusinessRegistration(createPageDesignBusinessKindDefinition(options))
+): SparkAiAgent.AiAgentRegistration<PageDesignRunInput> {
+  return createAiAgentRegistration(createPageDesignBusinessKindDefinition(options))
 }
 
 /**
@@ -132,7 +132,7 @@ export function createPageDesignBusinessRegistration(
  */
 export function createPageDesignBusinessKindDefinition(
   options: PageDesignModuleOptions,
-): SparkAiHost.AiHostBusinessKindDefinition<PageDesignRunInput> {
+): SparkAiAgent.AiAgentDefinition<PageDesignRunInput> {
   const service = new PageDesignService({
     getEditHost: (context) => options.getEditToolHost({
       instanceId: context.requestId,
@@ -140,25 +140,25 @@ export function createPageDesignBusinessKindDefinition(
       moduleInstanceId: context.pageId,
     }),
   })
-  const runtime = new ModuleSemanticRuntime()
+  const runtime = new AiModuleRuntime()
 
-  runtime.registerKind(new PageDesignRootModuleKind())
-  runtime.registerKind(new PageDesignLifecycleModuleKind({
+  runtime.register(new PageDesignRootAiModule())
+  runtime.register(new PageDesignLifecycleAiModule({
     service,
     contextFactory: toServiceContext,
     parentKind: PAGE_DESIGN_ROOT_KIND,
   }))
-  runtime.registerKind(new PageDesignTextModelModuleKind({
+  runtime.register(new PageDesignTextModelAiModule({
     service,
     contextFactory: toServiceContext,
     parentKind: PAGE_DESIGN_ROOT_KIND,
   }))
-  runtime.registerKind(new PageDesignPayloadCatalogModuleKind({
+  runtime.register(new PageDesignPayloadCatalogAiModule({
     parentKind: PAGE_DESIGN_ROOT_KIND,
     service,
     contextFactory: toServiceContext,
   }))
-  runtime.registerKind(new PageDesignNodeTreeModuleKind({
+  runtime.register(new PageDesignNodeTreeAiModule({
     service,
     contextFactory: toServiceContext,
     parentKind: PAGE_DESIGN_ROOT_KIND,
@@ -170,7 +170,7 @@ export function createPageDesignBusinessKindDefinition(
       },
     ],
   }))
-  runtime.registerKind(new PageDesignDatasetModuleKind({
+  runtime.register(new PageDesignDatasetAiModule({
     service,
     contextFactory: toServiceContext,
     parentKind: PAGE_DESIGN_ROOT_KIND,
@@ -185,10 +185,10 @@ export function createPageDesignBusinessKindDefinition(
       paramsSchema: PAGE_DESIGN_INPUT_SCHEMA,
       identityField: 'pageId',
       normalize: normalizePageDesignBusinessInput,
-      toScope: (normalizedInput) => createAiHostBusinessScope(PAGE_DESIGN_MODULE_ID, requirePageDesignInputText(normalizedInput, 'pageId')),
+      toScope: (normalizedInput) => createAiAgentScope(PAGE_DESIGN_MODULE_ID, requirePageDesignInputText(normalizedInput, 'pageId')),
       toOrchestration: createPageDesignOrchestration,
     },
-    sessionStore: new DefaultAiHostSessionStore(),
+    sessionStore: new DefaultAiAgentSessionStore(),
     systemPrompt: createPageDesignSystemPrompt,
     onStartSession: (context) => {
       const bootstrap = service.bootstrap(toServiceContext(context))
@@ -214,7 +214,7 @@ export function createPageDesignBusinessKindDefinition(
   }
 }
 
-function normalizePageDesignBusinessInput(input: LlmJsonParams): PageDesignRunInput {
+function normalizePageDesignBusinessInput(input: AiJsonParams): PageDesignRunInput {
   const normalized: {
     pageId: string
     userRequirement: string
@@ -238,7 +238,7 @@ function normalizePageDesignBusinessInput(input: LlmJsonParams): PageDesignRunIn
 
 function createPageDesignOrchestration(
   input: PageDesignRunInput,
-): SparkAiHost.AiHostBusinessOrchestrationPlan {
+): SparkAiAgent.AiAgentOrchestrationPlan {
   const pageId = input.pageId
   const userRequirement = input.userRequirement
   return {
@@ -257,7 +257,7 @@ function createPageDesignOrchestration(
 }
 
 function requirePageDesignInputText(
-  input: LlmJsonParams,
+  input: AiJsonParams,
   fieldName: 'pageId' | 'userRequirement',
 ): string {
   const value = input[fieldName]
@@ -267,11 +267,11 @@ function requirePageDesignInputText(
   return value.trim()
 }
 
-function isPageDesignRunMode(value: LlmJsonValue | undefined): value is PageDesignRunMode {
+function isPageDesignRunMode(value: AiJsonValue | undefined): value is PageDesignRunMode {
   return typeof value === 'string' && PAGE_DESIGN_RUN_MODE_SET.has(value)
 }
 
-function normalizeAllowedOperations(value: LlmJsonValue | undefined): PageDesignAllowedOperations | undefined {
+function normalizeAllowedOperations(value: AiJsonValue | undefined): PageDesignAllowedOperations | undefined {
   if (!isJsonParams(value)) return undefined
   const out: {
     addTables?: boolean
@@ -290,7 +290,7 @@ function normalizeAllowedOperations(value: LlmJsonValue | undefined): PageDesign
   return out
 }
 
-function isJsonParams(value: LlmJsonValue | undefined): value is LlmJsonParams {
+function isJsonParams(value: AiJsonValue | undefined): value is AiJsonParams {
   return value !== null && value !== undefined && typeof value === 'object' && !Array.isArray(value)
 }
 
@@ -300,28 +300,28 @@ function createPageDesignSystemPrompt(): string {
   return AI_FUNCTION_ARCHITECTURE_PROMPT
 }
 
-// ── 根 ModuleKind 与实例发现 ───────────────────────────────
+// ── 根 AiModule 与实例发现 ───────────────────────────────
 
-class PageDesignRootModuleKind extends ModuleKind {
+class PageDesignRootAiModule extends AiModule {
   public constructor() {
     super({
       kind: PAGE_DESIGN_ROOT_KIND,
       name: 'Page Design',
       description: '单页面四文件编辑根模块，子模块负责 lifecycle、文本模型、组件荷载、节点树和数据集。',
       children: PAGE_DESIGN_CHILD_MODULES.map((item) => item.kind),
-      list: (ctx, childKind) => ModuleOperationResult.ok(childModuleRefs(ctx, childKind)),
+      list: (ctx, childKind) => AiModuleResult.ok(childModuleRefs(ctx, childKind)),
       find: (ctx, childKind) => {
         if (childKind === PAGE_DESIGN_ROOT_KIND && ctx.segments.length === 0) {
           const ref = createCurrentPageDesignRef(ctx)
-          return ModuleOperationResult.ok(ref === null ? [] : [ref])
+          return AiModuleResult.ok(ref === null ? [] : [ref])
         }
-        return ModuleOperationResult.ok(childModuleRefs(ctx, childKind))
+        return AiModuleResult.ok(childModuleRefs(ctx, childKind))
       },
     })
   }
 }
 
-function createCurrentPageDesignRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+function createCurrentPageDesignRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
   const pageId = pageDesignPageId(ctx)
   if (pageId === null) return null
   return {
@@ -331,7 +331,7 @@ function createCurrentPageDesignRef(ctx: ModulePathContext): ModuleInstanceRef |
   }
 }
 
-function childModuleRefs(ctx: ModulePathContext, childKind?: string): readonly ModuleInstanceRef[] {
+function childModuleRefs(ctx: AiModulePathContext, childKind?: string): readonly AiModuleInstanceRef[] {
   const pageId = pageDesignPageId(ctx)
   if (pageId === null) return []
   return PAGE_DESIGN_CHILD_MODULES
@@ -343,14 +343,14 @@ function childModuleRefs(ctx: ModulePathContext, childKind?: string): readonly M
     }))
 }
 
-function pageDesignPageId(ctx: ModulePathContext): string | null {
+function pageDesignPageId(ctx: AiModulePathContext): string | null {
   const pageId = ctx.host?.moduleInstanceId ?? ctx.segment?.id
   return pageId === undefined || pageId.length === 0 ? null : pageId
 }
 
 // ── Host 上下文转换与生命周期错误映射 ─────────────────────
 
-function toServiceContext(ctx: ModulePathContext | SparkAiHost.AiHostBusinessRuntimeContext): PageDesignServiceContext {
+function toServiceContext(ctx: AiModulePathContext | SparkAiAgent.AiAgentRuntimeContext): PageDesignServiceContext {
   if ('host' in ctx || 'segments' in ctx) {
     const pathCtx = ctx
     return {
@@ -364,7 +364,7 @@ function toServiceContext(ctx: ModulePathContext | SparkAiHost.AiHostBusinessRun
   }
 }
 
-function pageDesignEditHostUnavailableMessage(result: SparkAiHost.AiHostFunctionCallResult<unknown>): string | null {
+function pageDesignEditHostUnavailableMessage(result: SparkAiAgent.AiAgentFunctionCallResult<unknown>): string | null {
   if (result.ok || (result.code !== 'EXECUTE_ERROR' && result.code !== 'ACTION_EXECUTE_ERROR')) return null
   const message = result.msg.trim()
   if (message === '') return null
@@ -376,32 +376,32 @@ function pageDesignEditHostUnavailableMessage(result: SparkAiHost.AiHostFunction
 
 // ── 公共 Host 门面 ─────────────────────────────────────────
 
-export type EnsurePageDesignBusinessOptions<TEntries extends SparkAiHost.AiHostEntryMap, TAlias extends string> = {
-  readonly host: SparkAiHost.AiHost<TEntries>
+export type EnsurePageDesignBusinessOptions<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string> = {
+  readonly host: SparkAiAgent.AiAgentHost<TEntries>
   readonly alias?: TAlias
-  readonly getPageDesignEditHost: (context: SparkAiHost.AiHostBusinessRuntimeContext) => PageDesignEditHost
+  readonly getPageDesignEditHost: (context: SparkAiAgent.AiAgentRuntimeContext) => PageDesignEditHost
 }
 
-export type PageDesignAiHostEntry = Record<
-  typeof PAGE_DESIGN_AI_HOST_ALIAS,
-  SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput>
+export type PageDesignAiAgentEntry = Record<
+  typeof PAGE_DESIGN_AI_AGENT_HOST_ALIAS,
+  SparkAiAgent.AiAgentRegistration<PageDesignRunInput>
 >
 
 /**
  * 将 pageDesign 业务入口确保注册到 AI Host。
  * 调用方拿到返回值后即可使用 `host.run.pageDesign({ pageId, userRequirement })`。
  */
-export function ensurePageDesignBusiness<TEntries extends SparkAiHost.AiHostEntryMap>(
-  options: EnsurePageDesignBusinessOptions<TEntries, typeof PAGE_DESIGN_AI_HOST_ALIAS>,
-): SparkAiHost.AiHost<TEntries & PageDesignAiHostEntry>
-export function ensurePageDesignBusiness<TEntries extends SparkAiHost.AiHostEntryMap, TAlias extends string>(
+export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap>(
+  options: EnsurePageDesignBusinessOptions<TEntries, typeof PAGE_DESIGN_AI_AGENT_HOST_ALIAS>,
+): SparkAiAgent.AiAgentHost<TEntries & PageDesignAiAgentEntry>
+export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string>(
   options: EnsurePageDesignBusinessOptions<TEntries, TAlias> & { readonly alias: TAlias },
-): SparkAiHost.AiHost<TEntries & Record<TAlias, SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput>>>
-export function ensurePageDesignBusiness<TEntries extends SparkAiHost.AiHostEntryMap, TAlias extends string>(
+): SparkAiAgent.AiAgentHost<TEntries & Record<TAlias, SparkAiAgent.AiAgentRegistration<PageDesignRunInput>>>
+export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string>(
   options: EnsurePageDesignBusinessOptions<TEntries, TAlias>,
-): SparkAiHost.AiHost<TEntries & Record<TAlias | typeof PAGE_DESIGN_AI_HOST_ALIAS, SparkAiHost.AiHostBusinessRegistration<PageDesignRunInput>>> {
-  const alias = options.alias ?? PAGE_DESIGN_AI_HOST_ALIAS
-  return options.host.ensureReg(alias, {
+): SparkAiAgent.AiAgentHost<TEntries & Record<TAlias | typeof PAGE_DESIGN_AI_AGENT_HOST_ALIAS, SparkAiAgent.AiAgentRegistration<PageDesignRunInput>>> {
+  const alias = options.alias ?? PAGE_DESIGN_AI_AGENT_HOST_ALIAS
+  return options.host.ensure(alias, {
     moduleId: PAGE_DESIGN_MODULE_ID,
     create: () => createPageDesignBusinessRegistration({
       getEditToolHost: (context) => options.getPageDesignEditHost(context),

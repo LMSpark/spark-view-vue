@@ -1,6 +1,6 @@
 export {
   PAGE_DESIGN_MODULE_ID,
-  PAGE_DESIGN_AI_HOST_ALIAS,
+  PAGE_DESIGN_AI_AGENT_HOST_ALIAS,
   createPageDesignBusinessKindDefinition,
   createPageDesignBusinessRegistration,
   ensurePageDesignBusiness,

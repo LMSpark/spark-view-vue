@@ -1,21 +1,21 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  LlmSchemaValidator,
+  AiJsonSchemaValidator,
   noParamsSchema,
   numberSchema,
   paramsSchema,
   stringSchema,
-} from '../schema'
+} from '../json'
 
-describe('LlmSchemaValidator', () => {
+describe('AiJsonSchemaValidator', () => {
   it('validates deserialized params with standard JSON Schema object roots', () => {
     const schema = paramsSchema({
       name: stringSchema('姓名', { minLength: 1 }),
       days: numberSchema('天数'),
     }, ['name', 'days'])
 
-    expect(LlmSchemaValidator.validateLlmDeserializedParams({ name: 'Ada', days: 2 }, schema)).toEqual({
+    expect(AiJsonSchemaValidator.validateDeserializedParams({ name: 'Ada', days: 2 }, schema)).toEqual({
       ok: true,
       issues: [],
     })
@@ -30,29 +30,29 @@ describe('LlmSchemaValidator', () => {
       additionalProperties: false,
     }
 
-    const result = LlmSchemaValidator.validateLlmDeserializedParams({ days: '2', extra: true }, schema)
+    const result = AiJsonSchemaValidator.validateDeserializedParams({ days: '2', extra: true }, schema)
     expect(result.ok).toBe(false)
     expect(result.issues).toEqual(expect.arrayContaining([
       { path: '$.name', message: '缺少必填字段' },
       { path: '$.days', message: '应为数字' },
       { path: '$.extra', message: '未声明的字段' },
     ]))
-    expect(LlmSchemaValidator.formatLlmParamValidationIssues(result.issues)).toContain('参数校验失败')
+    expect(AiJsonSchemaValidator.formatAiJsonValidationIssues(result.issues)).toContain('参数校验失败')
   })
 
   it('rejects non-object params and non-object schema roots fail-fast', () => {
-    expect(LlmSchemaValidator.validateLlmDeserializedParams([], noParamsSchema())).toEqual({
+    expect(AiJsonSchemaValidator.validateDeserializedParams([], noParamsSchema())).toEqual({
       ok: false,
       issues: [{ path: '$', message: '参数必须是 JSON 对象' }],
     })
-    expect(LlmSchemaValidator.validateLlmDeserializedParams({}, { type: 'string' })).toEqual({
+    expect(AiJsonSchemaValidator.validateDeserializedParams({}, { type: 'string' })).toEqual({
       ok: false,
       issues: [{ path: '$', message: 'schema 根节点必须是 type=object 的标准 JSON Schema' }],
     })
   })
 
   it('formats long issue lists with a bounded summary', () => {
-    const text = LlmSchemaValidator.formatLlmParamValidationIssues([
+    const text = AiJsonSchemaValidator.formatAiJsonValidationIssues([
       { path: '$.a', message: '缺少必填字段' },
       { path: '$.b', message: '缺少必填字段' },
       { path: '$.c', message: '缺少必填字段' },

@@ -106,10 +106,7 @@ describe('DevState 页面文件闭环', () => {
 
     await state.ensureActivePageFilesLoaded({ forceReload: true })
 
-    expect(state.getPageFileLoadState('rule.json')).toBe('loaded')
-    expect(state.getPageFileLoadState('pagedata.json')).toBe('loaded')
-    expect(state.getPageFileLoadState('script.js')).toBe('loaded')
-    expect(state.getPageFileLoadState('style.css')).toBe('loaded')
+    expect(state.getActivePage()?.isLoaded).toBe(true)
     expect(state.getPageFileText('script.js')).toBe('')
     expect(state.getPageFileText('style.css')).toBe('')
   })
@@ -125,8 +122,7 @@ describe('DevState 页面文件闭环', () => {
 
     await state.ensureActivePageFilesLoaded()
 
-    expect(state.getPageFileLoadState('rule.json')).toBe('loaded')
-    expect(state.getPageFileLoadState('pagedata.json')).toBe('loaded')
+    expect(state.getActivePage()?.isLoaded).toBe(true)
     // V3.1: empty rule tree serializes to '[]\n'; empty DataSet serializes to its default JSON
     expect(state.getPageFileText('rule.json')).toBe('[]\n')
     expect(state.getPageFileText('pagedata.json')).not.toBe('')
@@ -154,7 +150,7 @@ describe('DevState 页面文件闭环', () => {
   it('restore 后立即强制重读并回填文档模型', async () => {
     const state = useDevState()
     state.activePageId.value = 'demo'
-    state.setPageFileText('script.js', 'console.log("old")')
+    state.getActivePage()!.script.setText('console.log("old")')
     httpMock.post.mockResolvedValueOnce({ ok: true })
     httpMock.get.mockImplementation(async (url: string) => pageFileResponse(url))
 

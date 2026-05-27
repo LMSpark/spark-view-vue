@@ -27,20 +27,20 @@ const interfaceAllowlist = new Set([
   'packages/spark-component/src/core/capability-keys.ts:CapabilityTypeMap',
   // Host session-types and transport-types are complete type-contract modules;
   // topic-based re-export files add artificial indirection.
-  'packages/spark-ai/src/host/index.ts:./session/session-types',
-  'packages/spark-ai/src/index.ts:./host/session/session-types',
-  'packages/spark-ai/src/host/index.ts:./transport/transport-types',
-  'packages/spark-ai/src/index.ts:./host/transport/transport-types',
+  'packages/spark-ai/src/agent/index.ts:./session/session-types',
+  'packages/spark-ai/src/index.ts:./agent/session/session-types',
+  'packages/spark-ai/src/agent/index.ts:./transport/transport-types',
+  'packages/spark-ai/src/index.ts:./agent/transport/transport-types',
 ])
 
 const allowedSparkAiSpecifiers = new Set([
   '@spark-view/spark-ai',
-  '@spark-view/spark-ai/schema',
-  '@spark-view/spark-ai/host',
-  '@spark-view/spark-ai/module-semantic',
+  '@spark-view/spark-ai/json',
+  '@spark-view/spark-ai/agent',
+  '@spark-view/spark-ai/modules',
 ])
 
-const forbiddenModuleKindMembers = new Set([
+const forbiddenAiModuleMembers = new Set([
   'ActionFailureMode',
   'ActionMetadata',
   'ActionResultSchema',
@@ -79,20 +79,20 @@ const maxConstructorParameterPropertyParams = 4
 const publicSurfaceAllowlist = new Set([
   // Schema builders intentionally expose paired value builders and Options types:
   // the Options names keep public function signatures short without hiding contracts.
-  'packages/spark-ai/src/index.ts:./schema',
-  'packages/spark-ai/src/schema/index.ts:./helpers',
+  'packages/spark-ai/src/index.ts:./json',
+  'packages/spark-ai/src/json/index.ts:./helpers',
   // Host session-types and transport-types are complete type-contract modules;
   // topic-based re-export files add artificial indirection.
-  'packages/spark-ai/src/host/index.ts:./session/session-types',
-  'packages/spark-ai/src/index.ts:./host/session/session-types',
-  'packages/spark-ai/src/host/index.ts:./transport/transport-types',
-  'packages/spark-ai/src/index.ts:./host/transport/transport-types',
+  'packages/spark-ai/src/agent/index.ts:./session/session-types',
+  'packages/spark-ai/src/index.ts:./agent/session/session-types',
+  'packages/spark-ai/src/agent/index.ts:./transport/transport-types',
+  'packages/spark-ai/src/index.ts:./agent/transport/transport-types',
 ])
 
 const publicClassMethodSurfaces = new Map([
-  ['packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts:ModuleSemanticRuntime', new Set([
-    'registerKind',
-    'getLlmTools',
+  ['packages/spark-ai/src/modules/runtime/module-semantic-runtime.ts:AiModuleRuntime', new Set([
+    'register',
+    'getTools',
     'executeTool',
     'getAttribute',
     'setAttribute',
@@ -213,11 +213,11 @@ function scanSource(parsed, violations) {
       })
     }
 
-    if (isForbiddenModuleKindAccess(node)) {
+    if (isForbiddenAiModuleAccess(node)) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `legacy ModuleKind namespace member is forbidden: ${node.getText(sourceFile)}`,
+        message: `legacy AiModule namespace member is forbidden: ${node.getText(sourceFile)}`,
       })
     }
 
@@ -557,12 +557,12 @@ function isForbiddenNamespaceDeclaration(node) {
     && node.name.text !== 'global'
 }
 
-function isForbiddenModuleKindAccess(node) {
+function isForbiddenAiModuleAccess(node) {
   if (ts.isPropertyAccessExpression(node)) {
-    return node.expression.getText() === 'ModuleKind' && forbiddenModuleKindMembers.has(node.name.text)
+    return node.expression.getText() === 'AiModule' && forbiddenAiModuleMembers.has(node.name.text)
   }
   if (ts.isQualifiedName(node)) {
-    return node.left.getText() === 'ModuleKind' && forbiddenModuleKindMembers.has(node.right.text)
+    return node.left.getText() === 'AiModule' && forbiddenAiModuleMembers.has(node.right.text)
   }
   return false
 }

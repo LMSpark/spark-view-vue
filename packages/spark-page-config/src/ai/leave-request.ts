@@ -283,28 +283,28 @@ class LeaveRequestService {
 // ── SECTION 2: 请假模块注册（原 leave-request-module.ts）────────────
 
 import {
-  DefaultAiHostSessionStore,
-  type AiHostBusinessRegistration,
-  type AiHostBusinessRuntimeContext,
-  type AiHostFunctionCallResult,
-} from '@spark-view/spark-ai/host'
+  DefaultAiAgentSessionStore,
+  type AiAgentRegistration,
+  type AiAgentRuntimeContext,
+  type AiAgentFunctionCallResult,
+} from '@spark-view/spark-ai/agent'
 import {
-  ModuleKind,
-  ModuleOperationResult,
-  ModuleSemanticRuntime,
-  type ModuleFunctionMetadata,
-  type ModuleInstanceRef,
-  type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  AiModuleResult,
+  AiModuleRuntime,
+  type AiModuleFunctionMetadata,
+  type AiModuleInstanceRef,
+  type AiModulePathContext,
+} from '@spark-view/spark-ai/modules'
 import type {
-  LlmJsonSchema,
-  LlmJsonValue,
-} from '@spark-view/spark-ai/schema'
+  AiJsonSchema,
+  AiJsonValue,
+} from '@spark-view/spark-ai/json'
 import {
   noParamsSchema,
   objectSchema,
   stringSchema,
-} from '@spark-view/spark-ai/schema'
+} from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
@@ -323,16 +323,16 @@ const DEFAULT_LEAVE_REQUEST_PERSONS: readonly LeaveRequestPersonRecord[] = [
   { code: 'E1003', name: 'Grace', department: '财务部', role: 'approver' },
 ]
 
-const DRAFT_FIELDS_SCHEMA: Record<string, LlmJsonSchema> = {
+const DRAFT_FIELDS_SCHEMA: Record<string, AiJsonSchema> = {
   applicantName: { type: 'string', description: '请假人姓名。' },
-  applicantCode: { type: 'string', description: '请假人人员编码；通过 leave-person 实例查询得到，对应 ModuleInstanceRef.id。' },
+  applicantCode: { type: 'string', description: '请假人人员编码；通过 leave-person 实例查询得到，对应 AiModuleInstanceRef.id。' },
   leaveType: { type: 'string', description: '请假类型，例如 annual、sick、personal、other。' },
   startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。用户给"今天/明天/后天"等相对日期时，必须基于系统提示中的当前日期换算；日期来源以当前运行时上下文和用户确认为准。' },
   endDate: { type: 'string', description: '结束日期，格式 YYYY-MM-DD。按自然日包含起止日计算；例如请假 2 天时，endDate = startDate + 1 天。' },
   totalDays: { type: 'number', description: '请假天数，必须大于 0。用户说"请假两天"时填 2。' },
   reason: { type: 'string', description: '请假事由。' },
   approver: { type: 'string', description: '审批人姓名。' },
-  approverCode: { type: 'string', description: '审批人人员编码；通过 leave-person 实例查询得到，对应 ModuleInstanceRef.id。' },
+  approverCode: { type: 'string', description: '审批人人员编码；通过 leave-person 实例查询得到，对应 AiModuleInstanceRef.id。' },
 }
 
 const SET_DRAFT_FIELDS_SCHEMA = objectSchema({
@@ -345,7 +345,7 @@ const CANCEL_DRAFT_SCHEMA = objectSchema({
   reason: stringSchema('取消原因。用户未说明时可省略。'),
 })
 
-const LEAVE_REQUEST_ACTIONS: readonly ModuleFunctionMetadata[] = [
+const LEAVE_REQUEST_ACTIONS: readonly AiModuleFunctionMetadata[] = [
   {
     name: 'describeDraft',
     description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
@@ -379,7 +379,7 @@ const LEAVE_REQUEST_ACTIONS: readonly ModuleFunctionMetadata[] = [
     },
     usageRules: [
       '只写入用户明确表达的字段；缺少请假人、日期、原因或审批人时先追问确认。',
-      '填写 applicantCode 或 approverCode 前，先在当前 manual-leave 实例下 findInstance(childKind="leave-person", query) 查询人员实例；人员编码取 ModuleInstanceRef.id。',
+      '填写 applicantCode 或 approverCode 前，先在当前 manual-leave 实例下 findInstance(childKind="leave-person", query) 查询人员实例；人员编码取 AiModuleInstanceRef.id。',
       '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算，无法唯一确定时先追问。',
       '写入 startDate/endDate/totalDays 前，必须保证三者一致；请假 N 天按自然日包含起止日计算。',
       '只有调用 setDraftFields 成功后，才能说字段已记录或草稿已更新。',
@@ -433,11 +433,11 @@ class LeaveRequestPersonDirectory {
     }))
   }
 
-  public listRefs(): readonly ModuleInstanceRef[] {
+  public listRefs(): readonly AiModuleInstanceRef[] {
     return this.people.map((person) => this.toRef(person))
   }
 
-  public findRefs(query: Readonly<Record<string, LlmJsonValue>>): readonly ModuleInstanceRef[] {
+  public findRefs(query: Readonly<Record<string, AiJsonValue>>): readonly AiModuleInstanceRef[] {
     return this.people.filter((person) => personMatchesQuery(person, query)).map((person) => this.toRef(person))
   }
 
@@ -446,7 +446,7 @@ class LeaveRequestPersonDirectory {
     return this.people.find((person) => person.code.toLowerCase() === normalized)
   }
 
-  private toRef(person: LeaveRequestPersonRecord): ModuleInstanceRef {
+  private toRef(person: LeaveRequestPersonRecord): AiModuleInstanceRef {
     return {
       id: person.code,
       label: person.name,
@@ -455,7 +455,7 @@ class LeaveRequestPersonDirectory {
   }
 }
 
-class LeaveRequestModuleKind extends ModuleKind {
+class LeaveRequestAiModule extends AiModule {
   private readonly service: LeaveRequestService
 
   public constructor(
@@ -470,29 +470,29 @@ class LeaveRequestModuleKind extends ModuleKind {
       children: [LEAVE_REQUEST_PERSON_KIND],
       list: (_ctx, childKind) => {
         if (childKind !== undefined && childKind !== LEAVE_REQUEST_PERSON_KIND) {
-          return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
+          return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
         }
-        return ModuleOperationResult.ok(people.listRefs())
+        return AiModuleResult.ok(people.listRefs())
       },
       find: (ctx, childKind, query) => {
         if (childKind === LEAVE_REQUEST_KIND && ctx.segments.length === 0) {
           const ref = createCurrentLeaveRequestRef(ctx)
-          return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>(ref === null ? [] : [ref])
+          return AiModuleResult.ok<readonly AiModuleInstanceRef[]>(ref === null ? [] : [ref])
         }
         if (childKind === LEAVE_REQUEST_PERSON_KIND) {
-          return ModuleOperationResult.ok(people.findRefs(query))
+          return AiModuleResult.ok(people.findRefs(query))
         }
-        return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
+        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
       },
     })
     this.service = service
   }
 
   protected override runFunction(
-    ctx: ModulePathContext,
+    ctx: AiModulePathContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+    args: Readonly<Record<string, AiJsonValue>>,
+  ): Promise<AiModuleResult<AiJsonValue>> {
     if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
@@ -512,12 +512,12 @@ class LeaveRequestModuleKind extends ModuleKind {
     }
   }
 
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
     return createCurrentLeaveRequestRef(ctx)
   }
 }
 
-class LeaveRequestPersonModuleKind extends ModuleKind {
+class LeaveRequestPersonAiModule extends AiModule {
   public constructor(people: LeaveRequestPersonDirectory) {
     super({
       kind: LEAVE_REQUEST_PERSON_KIND,
@@ -534,29 +534,29 @@ class LeaveRequestPersonModuleKind extends ModuleKind {
         get: (ctx, attrName) => {
           const person = people.findByCode(ctx.segment?.id ?? '')
           if (person === undefined) {
-            return ModuleOperationResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment?.id ?? ''}`, '先通过 findInstance 查询可用 leave-person 实例。')
+            return AiModuleResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment?.id ?? ''}`, '先通过 findInstance 查询可用 leave-person 实例。')
           }
-          return ModuleOperationResult.ok(personAttribute(person, attrName))
+          return AiModuleResult.ok(personAttribute(person, attrName))
         },
-        set: () => ModuleOperationResult.failCode('PERSON_ATTRIBUTE_READONLY', '人员目录属性只读。', '请读取人员实例属性后，把编码写入请假草稿字段。'),
+        set: () => AiModuleResult.failCode('PERSON_ATTRIBUTE_READONLY', '人员目录属性只读。', '请读取人员实例属性后，把编码写入请假草稿字段。'),
       },
       functions: [],
       children: [],
-      list: () => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([]),
+      list: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([]),
       find: (_ctx, childKind, query) =>
-        ModuleOperationResult.ok(childKind === LEAVE_REQUEST_PERSON_KIND ? people.findRefs(query) : []),
+        AiModuleResult.ok(childKind === LEAVE_REQUEST_PERSON_KIND ? people.findRefs(query) : []),
     })
   }
 }
 
-function createLeaveRequestModuleKind(
+function createLeaveRequestAiModule(
   service: LeaveRequestService,
   people: LeaveRequestPersonDirectory,
-): ModuleKind {
-  return new LeaveRequestModuleKind(service, people)
+): AiModule {
+  return new LeaveRequestAiModule(service, people)
 }
 
-function createCurrentLeaveRequestRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+function createCurrentLeaveRequestRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
   const leaveDraftId = ctx.host?.moduleInstanceId
   if (leaveDraftId === undefined || leaveDraftId.length === 0) {
     return null
@@ -566,7 +566,7 @@ function createCurrentLeaveRequestRef(ctx: ModulePathContext): ModuleInstanceRef
 
 function personMatchesQuery(
   person: LeaveRequestPersonRecord,
-  query: Readonly<Record<string, LlmJsonValue>>,
+  query: Readonly<Record<string, AiJsonValue>>,
 ): boolean {
   const id = readQueryText(query, 'id')
   const code = readQueryText(query, 'code')
@@ -598,7 +598,7 @@ function personAttribute(person: LeaveRequestPersonRecord, attrName: string): st
   }
 }
 
-function readQueryText(query: Readonly<Record<string, LlmJsonValue>>, key: string): string | undefined {
+function readQueryText(query: Readonly<Record<string, AiJsonValue>>, key: string): string | undefined {
   const value = query[key]
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
 }
@@ -613,19 +613,19 @@ function includesText(value: string, query: string): boolean {
 
 export function createLeaveRequestBusinessRegistration(
   options: LeaveRequestBusinessRegistrationOptions = {},
-): AiHostBusinessRegistration {
+): AiAgentRegistration {
   const service = new LeaveRequestService(options.now)
   const people = new LeaveRequestPersonDirectory(options.persons ?? DEFAULT_LEAVE_REQUEST_PERSONS)
-  const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(createLeaveRequestModuleKind(service, people))
-  runtime.registerKind(new LeaveRequestPersonModuleKind(people))
+  const runtime = new AiModuleRuntime()
+  runtime.register(createLeaveRequestAiModule(service, people))
+  runtime.register(new LeaveRequestPersonAiModule(people))
 
   return {
     moduleId: LEAVE_REQUEST_MODULE_ID,
     name: '人工请假',
     description: '帮助员工收集、确认并提交人工请假申请。',
     runtime,
-    sessionStore: new DefaultAiHostSessionStore(options.now === undefined ? {} : { now: options.now }),
+    sessionStore: new DefaultAiAgentSessionStore(options.now === undefined ? {} : { now: options.now }),
     systemPrompt: () => createLeaveRequestSystemPrompt(new Date((options.now ?? Date.now)())),
     onStartSession: (context) => {
       service.getDraft(context.moduleInstanceId)
@@ -663,7 +663,7 @@ export function createLeaveRequestDraftId(now = Date.now): string {
   return `leaveDraft:${randomId}`
 }
 
-function toServiceContext(ctx: ModulePathContext | AiHostBusinessRuntimeContext): LeaveRequestServiceContext {
+function toServiceContext(ctx: AiModulePathContext | AiAgentRuntimeContext): LeaveRequestServiceContext {
   if ('host' in ctx || 'segments' in ctx) {
     const pathCtx = ctx
     return {
@@ -683,7 +683,7 @@ function readBusinessFunctionName(toolName: string): string | null {
   return toolName.slice(sep + 1)
 }
 
-function submittedLeaveMessage(result: AiHostFunctionCallResult<unknown>): string {
+function submittedLeaveMessage(result: AiAgentFunctionCallResult<unknown>): string {
   const data = result.ok && isRecord(result.data) ? result.data : {}
   const draft = isRecord(data['draft']) ? data['draft'] : {}
   const fields = isRecord(draft['fields']) ? draft['fields'] : {}
@@ -716,7 +716,7 @@ function createLeaveRequestSystemPrompt(now: Date): string {
     `- 当前日期：${currentDate}`,
     `- 当前 UTC 时间：${now.toISOString()}`,
     `- 当前时区：${timeZone}`,
-    '- 人员编码来源：在当前 manual-leave 实例下使用 findInstance(path, "leave-person", { name/keyword/role }) 查询人员实例；返回的 ModuleInstanceRef.id 即人员编码。',
+    '- 人员编码来源：在当前 manual-leave 实例下使用 findInstance(path, "leave-person", { name/keyword/role }) 查询人员实例；返回的 AiModuleInstanceRef.id 即人员编码。',
     '- 填写 applicantCode 或 approverCode 时，先查询 leave-person 实例，再把人员实例 id 写入草稿字段。',
     '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 guideHumanQuestion，再追问用户；日期来源只使用当前运行时上下文和用户确认。',
     '缺少请假人、类型、起止日期、天数、事由或提交确认时，先用 guideHumanQuestion 生成反问指南，再用自然语言向用户补问。',

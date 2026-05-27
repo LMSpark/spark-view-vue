@@ -13,13 +13,13 @@
 // ============================================================================
 
 import {
-  createAiHost,
-  createAiHostTransportTurn,
+  createAiAgent,
+  createAiAgentTransportTurn,
   createTurnEventCollector,
-  previewAiHostDiagnosticValue,
-  summarizeAiHostSessionRecord,
-  toAiHostRuntimeScope,
-} from '@spark-view/spark-ai/host'
+  previewAiAgentDiagnosticValue,
+  summarizeAiAgentSessionRecord,
+  toAiAgentRuntimeScope,
+} from '@spark-view/spark-ai/agent'
 import {
   createAppSseEventHub,
   subscribeAppSseEvents,
@@ -82,7 +82,7 @@ function parseArgs(argv) {
     maxRounds: numberFromEnv(process.env.AI_MAX_TOOL_ROUNDS, DEFAULT_MAX_ROUNDS),
     turnTimeoutMs: numberFromEnv(process.env.AI_TURN_TIMEOUT_MS, DEFAULT_TURN_TIMEOUT_MS),
     // ── PageEditor Host 模式 ──
-    hostMode: process.env.AI_HOST_MODE === 'inline' ? 'inline' : 'builtin',
+    hostMode: process.env.AI_AGENT_HOST_MODE === 'inline' ? 'inline' : 'builtin',
     // ── 输出控制 ──
     printFiles: process.env.AI_PRINT_FILES === '1',
     printStreamEvents: process.env.AI_PRINT_STREAM_EVENTS === '1' || process.env.AI_PRINT_SSE_EVENTS === '1',
@@ -527,7 +527,7 @@ function createTurnCallbacks(options, auth) {
         messages: [],
         tools: input.tools,
         mode: 'function',
-        scope: toAiHostRuntimeScope(input.scope),
+        scope: toAiAgentRuntimeScope(input.scope),
         reuseScopeSession: false,
       }, input.signal)
       const sessionId = readString(body, 'sessionId') || input.sessionId
@@ -575,8 +575,8 @@ function createTurnCallbacks(options, auth) {
     appendMessages: async (input) => {
       const body = await postBackendJson(options, auth, `/api/ai/sessions/${encodeURIComponent(input.sessionId)}/turn/append`, {
         protocolVersion: AI_TURN_PROTOCOL_VERSION,
-        scope: toAiHostRuntimeScope(input.scope),
-        turn: createAiHostTransportTurn(input),
+        scope: toAiAgentRuntimeScope(input.scope),
+        turn: createAiAgentTransportTurn(input),
         messages: input.messages,
       })
       assertAppendMessages(body, input)
@@ -659,8 +659,8 @@ function createInlineHost(editor) {
 // 第 8 层：AI 会话编排
 // ============================================================================
 
-function createPageDesignAiHost(options, auth, editHost) {
-  const aiHost = createAiHost({
+function createPageDesignAiAgent(options, auth, editHost) {
+  const aiHost = createAiAgentHost({
     turnCallbacks: createTurnCallbacks(options, auth),
     maxToolRounds: options.maxRounds,
   })
@@ -709,7 +709,7 @@ function formatMessageForTrace(message, limit) {
     ? ` tool_calls=${message.tool_calls.map((call) => call.function?.name ?? 'unknown').join(',')}`
     : ''
   const toolCallId = typeof message.tool_call_id === 'string' ? ` tool_call_id=${message.tool_call_id}` : ''
-  return `${message.role}${toolCalls}${toolCallId}:\n${previewAiHostDiagnosticValue(message.content ?? '', limit)}`
+  return `${message.role}${toolCalls}${toolCallId}:\n${previewAiAgentDiagnosticValue(message.content ?? '', limit)}`
 }
 
 function createConversationTracer(options) {
@@ -730,11 +730,11 @@ function createConversationTracer(options) {
   return {
     onDelta: (delta) => {
       if (delta.trim().length === 0) return
-      write('LLM => AGENT delta', previewAiHostDiagnosticValue(delta, limit))
+      write('LLM => AGENT delta', previewAiAgentDiagnosticValue(delta, limit))
     },
     onReasoning: (reasoning) => {
       if (reasoning.trim().length === 0) return
-      write('LLM => AGENT reasoning', previewAiHostDiagnosticValue(reasoning, limit))
+      write('LLM => AGENT reasoning', previewAiAgentDiagnosticValue(reasoning, limit))
     },
     onStreamEvent: (event) => {
       const data = parseJsonMaybe(event.data)
@@ -746,7 +746,7 @@ function createConversationTracer(options) {
           ? data.messages.map((message, index) => `#${index + 1} ${formatMessageForTrace(message, limit)}`).join('\n\n')
           : ''
         const prompt = typeof data.systemPrompt === 'string'
-          ? (options.traceFullPrompt || !firstPromptLogged ? previewAiHostDiagnosticValue(data.systemPrompt, limit) : `<same session prompt, ${data.systemPrompt.length} chars>`)
+          ? (options.traceFullPrompt || !firstPromptLogged ? previewAiAgentDiagnosticValue(data.systemPrompt, limit) : `<same session prompt, ${data.systemPrompt.length} chars>`)
           : ''
         firstPromptLogged = true
         write(
@@ -765,13 +765,13 @@ function createConversationTracer(options) {
           ? data.toolCalls.map((call, index) => {
               const name = call.function?.name ?? 'unknown'
               const args = parseJsonMaybe(call.function?.arguments ?? '')
-              return `#${index + 1} ${name}\n${previewAiHostDiagnosticValue(args, limit)}`
+              return `#${index + 1} ${name}\n${previewAiAgentDiagnosticValue(args, limit)}`
             }).join('\n\n')
           : ''
         write(
           'LLM => AGENT result',
           [
-            typeof data.text === 'string' && data.text.trim().length > 0 ? `text:\n${previewAiHostDiagnosticValue(data.text, limit)}` : 'text: <empty>',
+            typeof data.text === 'string' && data.text.trim().length > 0 ? `text:\n${previewAiAgentDiagnosticValue(data.text, limit)}` : 'text: <empty>',
             toolCalls.trim().length > 0 ? `tool_calls:\n${toolCalls}` : 'tool_calls: <none>',
           ].join('\n\n'),
         )
@@ -781,7 +781,7 @@ function createConversationTracer(options) {
       if (event.type === 'tool-result') {
         write(
           `AGENT TOOL => LLM module=${event.scope?.eventModuleId ?? ''}`,
-          previewAiHostDiagnosticValue(data, limit),
+          previewAiAgentDiagnosticValue(data, limit),
         )
       }
     },
@@ -867,7 +867,7 @@ function readMessageToolCallNames(message) {
 }
 
 function summarizeSessionRecord(sessionRecord) {
-  const summary = summarizeAiHostSessionRecord(sessionRecord)
+  const summary = summarizeAiAgentSessionRecord(sessionRecord)
   const roleCounts = {}
   const toolNames = []
 
@@ -1356,7 +1356,7 @@ async function run(options) {
     : createBuiltinHost(editor)
 
   // 4. 注册 pageDesign 业务入口
-  const pageDesignHost = createPageDesignAiHost(options, auth, host)
+  const pageDesignHost = createPageDesignAiAgent(options, auth, host)
 
   // 5. 启动会话，发送 LLM 需求
   const textDeltas = []

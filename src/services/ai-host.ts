@@ -1,7 +1,7 @@
-import { createAiHost } from '@spark-view/spark-ai/host'
-import { createAiHostTurnCallbacks } from './ai-turn-bridge'
+import { createAiAgentHost } from '@spark-view/spark-ai/agent'
+import { createAiAgentTurnCallbacks } from './ai-turn-bridge'
 
-export const appAiHost = createAiHost({
-  turnCallbacks: createAiHostTurnCallbacks(),
+export const appAiAgent = createAiAgentHost({
+  turnCallbacks: createAiAgentTurnCallbacks(),
   maxToolRounds: 16,
 })

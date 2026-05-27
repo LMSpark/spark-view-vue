@@ -7,14 +7,14 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  ModuleSemanticRuntime,
-} from '@spark-view/spark-ai/module-semantic'
-import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
+  AiModuleRuntime,
+} from '@spark-view/spark-ai/modules'
+import type { AiAgentRuntimeContext } from '@spark-view/spark-ai/agent'
 import type { PageDesignEditHost } from '../src/design/index'
 import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignService } from '../src/design/page-design-service'
-import { PageDesignNodeTreeModuleKind } from '../src/ai/node-tree-tool-catalog'
+import { PageDesignNodeTreeAiModule } from '../src/ai/node-tree-tool-catalog'
 import { isRecord } from '@spark-view/spark-utils'
 import { getArray, getRecord } from './helpers/test-utils'
 
@@ -49,16 +49,16 @@ function createHost(): { host: PageDesignEditHost; nodeTree: SparkNodeTree } {
 }
 
 function buildRuntime(pageId = 'demo-page'): {
-  runtime: ModuleSemanticRuntime
+  runtime: AiModuleRuntime
   nodeTree: SparkNodeTree
-  hostContext: AiHostBusinessRuntimeContext
+  hostContext: AiAgentRuntimeContext
 } {
   const { host, nodeTree } = createHost()
   const service = new PageDesignService({ getEditHost: () => host })
   service.bootstrap({ pageId, requestId: 'e2e-run' })
 
-  const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(new PageDesignNodeTreeModuleKind({
+  const runtime = new AiModuleRuntime()
+  runtime.register(new PageDesignNodeTreeAiModule({
     service,
     contextFactory: (ctx) => ({
       pageId: ctx.host?.moduleInstanceId ?? ctx.segment?.id ?? '',
@@ -80,7 +80,7 @@ function buildRuntime(pageId = 'demo-page'): {
 describe('NodeTree module-semantic 接入(E2E)', () => {
   it('暴露 query/navigation tools 与 NodeTree function tools', () => {
     const { runtime } = buildRuntime()
-    expect(runtime.getLlmTools().map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
+    expect(runtime.getTools().map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'queryModules',
       'queryFunctions',
       'guideFunction',

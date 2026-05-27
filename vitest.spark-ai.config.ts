@@ -13,9 +13,9 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@spark-view/spark-ai/schema': resolve(root, './packages/spark-ai/src/schema/index.ts'),
-      '@spark-view/spark-ai/host': resolve(root, './packages/spark-ai/src/host/index.ts'),
-      '@spark-view/spark-ai/module-semantic': resolve(root, './packages/spark-ai/src/module-semantic/index.ts'),
+      '@spark-view/spark-ai/json': resolve(root, './packages/spark-ai/src/json/index.ts'),
+      '@spark-view/spark-ai/agent': resolve(root, './packages/spark-ai/src/agent/index.ts'),
+      '@spark-view/spark-ai/modules': resolve(root, './packages/spark-ai/src/modules/index.ts'),
       '@spark-view/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-utils/internal': resolve(root, './packages/spark-utils/src/internal/index.ts'),

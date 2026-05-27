@@ -35,12 +35,12 @@ const forbiddenFrameworkImports = [
 
 const allowedSparkAiSpecifiers = new Set([
   '@spark-view/spark-ai',
-  '@spark-view/spark-ai/schema',
-  '@spark-view/spark-ai/host',
-  '@spark-view/spark-ai/module-semantic',
+  '@spark-view/spark-ai/json',
+  '@spark-view/spark-ai/agent',
+  '@spark-view/spark-ai/modules',
 ])
 
-const allowedSparkAiExportKeys = new Set(['.', './schema', './host', './module-semantic'])
+const allowedSparkAiExportKeys = new Set(['.', './json', './agent', './modules'])
 
 export function scanArchitectureRules(options = {}) {
   const root = options.root ?? process.cwd()

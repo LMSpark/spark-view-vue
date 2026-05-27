@@ -7,8 +7,8 @@
 
 import { isRecord } from '@spark-view/spark-utils'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import { LlmSchemaValidator } from '@spark-view/spark-ai/schema'
-import type { ModuleParameterPayloadGuide } from '@spark-view/spark-ai/module-semantic'
+import { AiJsonSchemaValidator } from '@spark-view/spark-ai/json'
+import type { AiModulePayloadGuide } from '@spark-view/spark-ai/modules'
 import {
   getNextPageDesignFlowStep,
   getPageDesignFlowStep,
@@ -237,7 +237,7 @@ function writeBoundTextModel(state: PageDesignEditSession, binding: PageDesignTe
 
 // ── PageDesignService 主体 ────────────────────────────────
 
-// PAGE_DESIGN_AI_TRACE[page-design-live-service]: pageDesign AI 工具共享的 live edit bridge；负责把 ModuleKind action 落到 PageDesignEditHost，而不是 Java 后端直接写页面文件。
+// PAGE_DESIGN_AI_TRACE[page-design-live-service]: pageDesign AI 工具共享的 live edit bridge；负责把 AiModule action 落到 PageDesignEditHost，而不是 Java 后端直接写页面文件。
 /**
  * pageDesign AI 工具的 live edit 服务门面。
  *
@@ -299,7 +299,7 @@ export class PageDesignService {
   }
 
   // PAGE_DESIGN_AI_TRACE[page-design-payload-guide-state]: 当前 pageDesign 会话已获取的组件 payload guide 记录在这里；用于区分“知识已喂给模型”和“props 实际校验”。
-  recordNodePayloadGuide(context: PageDesignServiceContext, key: string, guide: ModuleParameterPayloadGuide): PageDesignServiceResult<{ key: string; guidedKeys: readonly string[] }> {
+  recordNodePayloadGuide(context: PageDesignServiceContext, key: string, guide: AiModulePayloadGuide): PageDesignServiceResult<{ key: string; guidedKeys: readonly string[] }> {
     const normalized = key.trim()
     if (normalized.length === 0) {
       return PageDesignService.failure('INVALID_PAYLOAD_KEY', '组件参数荷载 key 不能为空', '调用 guidePayload 时传入非空组件 type/key。')
@@ -340,9 +340,9 @@ export class PageDesignService {
     for (const target of targets) {
       const guide = state.getGuidedNodePayload(target.type)
       if (guide === null) continue
-      const validation = LlmSchemaValidator.validateLlmDeserializedParams(target.props, guide.paramsSchema)
+      const validation = AiJsonSchemaValidator.validateDeserializedParams(target.props, guide.paramsSchema)
       if (validation.ok) continue
-      const formatted = LlmSchemaValidator.formatLlmParamValidationIssues(validation.issues)
+      const formatted = AiJsonSchemaValidator.formatAiJsonValidationIssues(validation.issues)
       issues.push(`${target.path}<${target.type}${target.id.length > 0 ? `#${target.id}` : ''}> props ${formatted}`)
     }
     if (issues.length === 0) return null

@@ -12,15 +12,15 @@ import {
   numberSchema,
   paramsSchema,
   stringSchema,
-  type LlmJsonValue,
-} from '@spark-view/spark-ai/schema'
+  type AiJsonValue,
+} from '@spark-view/spark-ai/json'
 import {
-  ModuleKind,
-  type ModuleFunctionMetadata,
-  type ModuleInstanceRef,
-  type ModuleOperationResult,
-  type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  type AiModuleFunctionMetadata,
+  type AiModuleInstanceRef,
+  type AiModuleResult,
+  type AiModulePathContext,
+} from '@spark-view/spark-ai/modules'
 import type {
   PageDesignServiceContext,
 } from '../design/page-edit-session'
@@ -44,7 +44,7 @@ const DESIGN_FLOW_READONLY_RULE = '只返回页面设计 100 步流程事实，�
 
 // ── lifecycle 动作声明 ────────────────────────────────────
 
-const LIFECYCLE_ACTIONS: readonly ModuleFunctionMetadata[] = [
+const LIFECYCLE_ACTIONS: readonly AiModuleFunctionMetadata[] = [
   {
     name: 'bootstrap',
     description: 'Host 启动会话时自动执行的引导动作：校验 live binding 能力并进入 editing phase。',
@@ -113,7 +113,7 @@ const LIFECYCLE_ACTIONS: readonly ModuleFunctionMetadata[] = [
   },
 ]
 
-// ── lifecycle ModuleKind ──────────────────────────────────
+// ── lifecycle AiModule ──────────────────────────────────
 
 /**
  * pageDesign 生命周期与流程知识子模块。
@@ -122,13 +122,13 @@ const LIFECYCLE_ACTIONS: readonly ModuleFunctionMetadata[] = [
  * `describeDesignFlow` 只返回流程/任务知识；四文件写入必须经 dataset、
  * node-tree 或 text-model 子模块。
  */
-export class PageDesignLifecycleModuleKind extends ModuleKind {
+export class PageDesignLifecycleAiModule extends AiModule {
   private readonly service: PageDesignService
-  private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+  private readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
 
   public constructor(options: {
     readonly service: PageDesignService
-    readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string
   }) {
     super({
@@ -144,10 +144,10 @@ export class PageDesignLifecycleModuleKind extends ModuleKind {
   }
 
   protected override runFunction(
-    ctx: ModulePathContext,
+    ctx: AiModulePathContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+    args: Readonly<Record<string, AiJsonValue>>,
+  ): Promise<AiModuleResult<AiJsonValue>> {
     if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
@@ -163,14 +163,14 @@ export class PageDesignLifecycleModuleKind extends ModuleKind {
     }
   }
 
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面生命周期')
   }
 }
 
 // ── 参数归一化 ────────────────────────────────────────────
 
-function toDesignFlowQuery(args: Readonly<Record<string, LlmJsonValue>>): { phase?: string; step?: number; afterStep?: number; intent?: string } {
+function toDesignFlowQuery(args: Readonly<Record<string, AiJsonValue>>): { phase?: string; step?: number; afterStep?: number; intent?: string } {
   return {
     ...(typeof args['phase'] === 'string' ? { phase: args['phase'] } : {}),
     ...(typeof args['step'] === 'number' ? { step: args['step'] } : {}),

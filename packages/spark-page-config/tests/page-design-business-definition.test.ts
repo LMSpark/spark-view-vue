@@ -1,13 +1,13 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  AiHostToolLoopRunner,
-  createAiHost,
-  startRegistrationSession,
-  toAiHostRuntimeScope,
-  type AiHostBusinessRuntimeContext,
-  type AiHostTurnCallbacks,
-} from '@spark-view/spark-ai/host'
+  AiAgentToolLoopRunner,
+  createAiAgent,
+  startAiAgentRegistrationSession,
+  toAiAgentRuntimeScope,
+  type AiAgentRuntimeContext,
+  type AiAgentTurnCallbacks,
+} from '@spark-view/spark-ai/agent'
 import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessKindDefinition,
@@ -57,7 +57,7 @@ function createHost(options: { script?: string; style?: string } = {}): {
   }
 }
 
-function hostContext(pageId: string): AiHostBusinessRuntimeContext {
+function hostContext(pageId: string): AiAgentRuntimeContext {
   return {
     moduleId: PAGE_DESIGN_MODULE_ID,
     moduleInstanceId: pageId,
@@ -100,7 +100,7 @@ function expectActionMetadataComplete(describeData: Record<string, unknown>): vo
 
 function assertPageDesignRunInputTypes(): void {
   const { host } = createHost()
-  const aiHost = createAiHost({
+  const aiHost = createAiAgentHost({
     turnCallbacks: {
       executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
       appendMessages: () => Promise.resolve(),
@@ -152,7 +152,7 @@ describe('pageDesign host business registration', () => {
     const { host } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext('page-designer')
-    const started = await startRegistrationSession(registration, context)
+    const started = await startAiAgentRegistrationSession(registration, context)
 
     expect(registration.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
     expect(registration.description).toBe('页面四文件编辑。')
@@ -230,7 +230,7 @@ describe('pageDesign host business registration', () => {
   it('exposes a page-config owned pageDesign Host helper', async () => {
     const { host } = createHost()
     const streamInputs: string[] = []
-    const aiHost = createAiHost({
+    const aiHost = createAiAgentHost({
       turnCallbacks: {
         executeTurn: (input) => {
           streamInputs.push(input.messages.map((message) => message.content).join('\n'))
@@ -263,7 +263,7 @@ describe('pageDesign host business registration', () => {
     const definition = createPageDesignBusinessKindDefinition({ getEditToolHost: () => host })
     const prompts: string[] = []
     const pageDesignHost = ensurePageDesignBusiness({
-      host: createAiHost({
+      host: createAiAgentHost({
         turnCallbacks: {
           executeTurn: (input) => {
             prompts.push(input.systemPrompt)
@@ -307,7 +307,7 @@ describe('pageDesign host business registration', () => {
   it('rejects pageDesign run inputs that do not satisfy the registered schema', async () => {
     const { host } = createHost()
     const pageDesignHost = ensurePageDesignBusiness({
-      host: createAiHost({
+      host: createAiAgentHost({
         turnCallbacks: {
           executeTurn: () => Promise.resolve({ text: 'ok', toolCalls: [] }),
           appendMessages: () => Promise.resolve(),
@@ -326,7 +326,7 @@ describe('pageDesign host business registration', () => {
     const { host, reads } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext('page-designer')
-    await startRegistrationSession(registration, context)
+    await startAiAgentRegistrationSession(registration, context)
 
     const bootstrap = await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
       $paths: ['page-designer', 'page-designer'],
@@ -446,7 +446,7 @@ describe('pageDesign host business registration', () => {
     const { host } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext('page-designer')
-    await startRegistrationSession(registration, context)
+    await startAiAgentRegistrationSession(registration, context)
 
     const addBeforeDataset = await registration.runtime.executeTool('pageDesign_node-tree_addNode', {
       $paths: ['page-designer', 'page-designer'],
@@ -551,7 +551,7 @@ describe('pageDesign host business registration', () => {
     const { host } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext('page-designer')
-    await startRegistrationSession(registration, context)
+    await startAiAgentRegistrationSession(registration, context)
 
     const createDataset = await registration.runtime.executeTool('pageDesign_dataset_createTable', {
       $paths: ['page-designer', 'page-designer'],
@@ -597,12 +597,12 @@ describe('pageDesign host business registration', () => {
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const scope = businessScope(pageId)
     const context = hostContext(pageId)
-    await startRegistrationSession(registration, context)
+    await startAiAgentRegistrationSession(registration, context)
 
     const statuses: string[] = []
     const roundToolNames: string[][] = []
     let streamRound = 0
-    const turnCallbacks: AiHostTurnCallbacks = {
+    const turnCallbacks: AiAgentTurnCallbacks = {
       executeTurn: (input) => {
         roundToolNames.push(input.tools.map((tool) => tool.function.name))
         streamRound += 1
@@ -729,7 +729,7 @@ describe('pageDesign host business registration', () => {
       },
       appendMessages: () => Promise.resolve(),
     }
-    const runner = new AiHostToolLoopRunner(turnCallbacks, 4)
+    const runner = new AiAgentToolLoopRunner(turnCallbacks, 4)
 
     await runner.runToolLoop({
       registration,
@@ -796,7 +796,7 @@ describe('pageDesign host business registration', () => {
       }),
     })
     const context = hostContext('page-designer')
-    await expect(startRegistrationSession(registration, context)).rejects.toThrow('PageDesignService.bootstrap')
+    await expect(startAiAgentRegistrationSession(registration, context)).rejects.toThrow('PageDesignService.bootstrap')
   })
 
   it('isolates parallel page-design instances and accepts route-like page ids', async () => {
@@ -808,8 +808,8 @@ describe('pageDesign host business registration', () => {
 
     const contextA = hostContext('page-a')
     const contextB = hostContext('page-b')
-    await startRegistrationSession(registration, contextA)
-    await startRegistrationSession(registration, contextB)
+    await startAiAgentRegistrationSession(registration, contextA)
+    await startAiAgentRegistrationSession(registration, contextB)
 
     await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
       $paths: ['page-a', 'page-a'],
@@ -826,13 +826,13 @@ describe('pageDesign host business registration', () => {
     expect(pageB.reads().script).toBe('export default { page: "B" }')
 
     const nestedContext = hostContext('lmspark/homepage')
-    await startRegistrationSession(registration, nestedContext)
+    await startAiAgentRegistrationSession(registration, nestedContext)
     const nestedBootstrap = await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
       $paths: ['lmspark/homepage', 'lmspark/homepage'],
     }, nestedContext)
 
     expect(nestedBootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
-    expect(toAiHostRuntimeScope({
+    expect(toAiAgentRuntimeScope({
       businessRegistrationId: PAGE_DESIGN_MODULE_ID,
       businessInstanceId: 'lmspark/homepage',
       instanceId: 'lmspark/homepage',

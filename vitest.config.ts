@@ -27,9 +27,9 @@ export default defineConfig({
       '@spark-view/spark-page-config/json-document': resolve(root, './packages/spark-page-config/src/json-document-public.ts'),
       '@spark-view/spark-page-config': resolve(root, './packages/spark-page-config/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
-      '@spark-view/spark-ai/schema': resolve(root, './packages/spark-ai/src/schema/index.ts'),
-      '@spark-view/spark-ai/host': resolve(root, './packages/spark-ai/src/host/index.ts'),
-      '@spark-view/spark-ai/module-semantic': resolve(root, './packages/spark-ai/src/module-semantic/index.ts'),
+      '@spark-view/spark-ai/json': resolve(root, './packages/spark-ai/src/json/index.ts'),
+      '@spark-view/spark-ai/agent': resolve(root, './packages/spark-ai/src/agent/index.ts'),
+      '@spark-view/spark-ai/modules': resolve(root, './packages/spark-ai/src/modules/index.ts'),
       '@spark-view/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
       '@spark-view/vite-plugin-spark-catalog': resolve(root, './packages/vite-plugin-spark-catalog/src/index.ts')
     }

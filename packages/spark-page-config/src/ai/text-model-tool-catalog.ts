@@ -11,15 +11,15 @@ import {
   noParamsSchema,
   paramsSchema,
   stringSchema,
-  type LlmJsonValue,
-} from '@spark-view/spark-ai/schema'
+  type AiJsonValue,
+} from '@spark-view/spark-ai/json'
 import {
-  ModuleKind,
-  type ModuleFunctionMetadata,
-  type ModuleInstanceRef,
-  type ModuleOperationResult,
-  type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  type AiModuleFunctionMetadata,
+  type AiModuleInstanceRef,
+  type AiModuleResult,
+  type AiModulePathContext,
+} from '@spark-view/spark-ai/modules'
 import type {
   PageDesignServiceContext,
 } from '../design/page-edit-session'
@@ -40,7 +40,7 @@ const SCRIPT_SHORT_SIGNATURE_RULE = 'writeScript 中的函数/handler 默认最�
 
 // PAGE_DESIGN_AI_TRACE[page-design-text-model]: pageDesign AI 写 script.js/style.css 的唯一工具目录；清理冗余时不要和 workspace 保存逻辑混在一起。
 // PAGE_DESIGN_REFACTOR_SOURCE[text-model-write-gate]: script/style AI 写入入口；不要把文本覆盖、脚本 API 校验和 workspace 持久化混成一层。
-const TEXT_MODEL_ACTIONS: readonly ModuleFunctionMetadata[] = [
+const TEXT_MODEL_ACTIONS: readonly AiModuleFunctionMetadata[] = [
   {
     name: 'readScript',
     description: '读取 script.js 当前完整文本模型内容。',
@@ -120,13 +120,13 @@ const TEXT_MODEL_ACTIONS: readonly ModuleFunctionMetadata[] = [
   },
 ]
 
-export class PageDesignTextModelModuleKind extends ModuleKind {
+export class PageDesignTextModelAiModule extends AiModule {
   private readonly service: PageDesignService
-  private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+  private readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
 
   public constructor(options: {
     readonly service: PageDesignService
-    readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string
   }) {
     super({
@@ -142,10 +142,10 @@ export class PageDesignTextModelModuleKind extends ModuleKind {
   }
 
   protected override runFunction(
-    ctx: ModulePathContext,
+    ctx: AiModulePathContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+    args: Readonly<Record<string, AiJsonValue>>,
+  ): Promise<AiModuleResult<AiJsonValue>> {
     if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
@@ -164,12 +164,12 @@ export class PageDesignTextModelModuleKind extends ModuleKind {
     }
   }
 
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面文本模型')
   }
 }
 
-function readRequiredStringArg(args: Readonly<Record<string, LlmJsonValue>>, key: string): string {
+function readRequiredStringArg(args: Readonly<Record<string, AiJsonValue>>, key: string): string {
   const value = args[key]
   if (typeof value !== 'string') {
     throw new Error(`Missing required string argument: ${key}`)

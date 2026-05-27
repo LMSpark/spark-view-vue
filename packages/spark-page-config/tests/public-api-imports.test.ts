@@ -72,11 +72,11 @@ describe('spark-page-config public subpath imports', () => {
     }
     const aiExports = new Set(Object.keys(aiModule))
     for (const name of [
-      'PageDesignDatasetModuleKind',
-      'PageDesignLifecycleModuleKind',
-      'PageDesignNodeTreeModuleKind',
-      'PageDesignPayloadCatalogModuleKind',
-      'PageDesignTextModelModuleKind',
+      'PageDesignDatasetAiModule',
+      'PageDesignLifecycleAiModule',
+      'PageDesignNodeTreeAiModule',
+      'PageDesignPayloadCatalogAiModule',
+      'PageDesignTextModelAiModule',
       'createPageDesignComponentPayloadProvider',
       'createPageDesignPayloadRegistry',
       'hasPageDesignComponentPayloadKey',

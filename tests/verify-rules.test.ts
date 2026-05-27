@@ -46,7 +46,7 @@ describe('verification rules', () => {
       "export * from './other'",
       "const value = {} as Record<string, unknown>",
       'type OldType = LlmParameterSchemaRoot',
-      'type OldMember = ModuleKind.PathContext',
+      'type OldMember = AiModule.PathContext',
     ].join('\n'))
     writeFile(root, 'src/bad.vue', [
       '<script setup lang="ts">',
@@ -64,7 +64,7 @@ describe('verification rules', () => {
     expect(output).toContain('export * is forbidden')
     expect(output).toContain('type assertion is forbidden')
     expect(output).toContain('legacy AI type name is forbidden')
-    expect(output).toContain('legacy ModuleKind namespace member is forbidden')
+    expect(output).toContain('legacy AiModule namespace member is forbidden')
     expect(output).toContain('bad.vue')
   })
 
@@ -79,7 +79,7 @@ describe('verification rules', () => {
       "} from './flat'",
     ].join('\n'))
     writeFile(root, 'packages/spark-ai/src/consumer.ts', [
-      "import { One, Two, Three, Four, Five, Six, Seven, Eight, Nine } from '@spark-view/spark-ai/host'",
+      "import { One, Two, Three, Four, Five, Six, Seven, Eight, Nine } from '@spark-view/spark-ai/agent'",
       'export const names = [One, Two, Three, Four, Five, Six, Seven, Eight, Nine]',
     ].join('\n'))
     writeFile(root, 'packages/spark-ai/src/flat.ts', [
@@ -123,10 +123,10 @@ describe('verification rules', () => {
 
   it('rejects public method drift on critical facade classes', () => {
     const root = createTempRoot()
-    writeFile(root, 'packages/spark-ai/src/module-semantic/runtime/module-semantic-runtime.ts', [
-      'export class ModuleSemanticRuntime {',
-      '  public registerKind(): void {}',
-      '  public getLlmTools(): void {}',
+    writeFile(root, 'packages/spark-ai/src/modules/runtime/module-semantic-runtime.ts', [
+      'export class AiModuleRuntime {',
+      '  public register(): void {}',
+      '  public getTools(): void {}',
       '  public executeTool(): void {}',
       '  public getAttribute(): void {}',
       '  public setAttribute(): void {}',
@@ -146,7 +146,7 @@ describe('verification rules', () => {
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
-    expect(output).toContain('public method surface drift for ModuleSemanticRuntime')
+    expect(output).toContain('public method surface drift for AiModuleRuntime')
     expect(output).toContain('extra=[buildKnowledgePromptSnapshot]')
   })
 
@@ -172,9 +172,9 @@ describe('verification rules', () => {
       name: '@spark-view/spark-ai',
       exports: {
         '.': './dist/index.js',
-        './schema': './dist/schema/index.js',
-        './host': './dist/host/index.js',
-        './module-semantic': './dist/module-semantic/index.js',
+        './json': './dist/json/index.js',
+        './agent': './dist/agent/index.js',
+        './modules': './dist/modules/index.js',
         './core': './dist/core/index.js',
       },
     })
@@ -183,9 +183,9 @@ describe('verification rules', () => {
       '  "compilerOptions": {',
       '    "paths": {',
       '      "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],',
-      '      "@spark-view/spark-ai/schema": ["./packages/spark-ai/src/schema/index.ts"],',
-      '      "@spark-view/spark-ai/host": ["./packages/spark-ai/src/host/index.ts"],',
-      '      "@spark-view/spark-ai/module-semantic": ["./packages/spark-ai/src/module-semantic/index.ts"],',
+      '      "@spark-view/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
+      '      "@spark-view/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
+      '      "@spark-view/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],',
       '      "@spark-view/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"]',
       '    }',
       '  }',

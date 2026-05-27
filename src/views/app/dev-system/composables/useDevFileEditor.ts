@@ -3,6 +3,16 @@ import type { DevState, PageConfigFileName } from '../useDevState'
 
 const TEXT_DRAFT_COMMIT_DELAY = 600
 
+function getSubModel(page: ReturnType<DevState['getActivePage']>, name: PageConfigFileName) {
+  if (!page) return null
+  switch (name) {
+    case 'rule.json': return page.rule
+    case 'pagedata.json': return page.dataSet
+    case 'script.js': return page.script
+    case 'style.css': return page.style
+  }
+}
+
 /**
  * 手动编辑器绑定器 — 将任意 PageConfigFileName 接入 PageEditor adapter。
  * PageEditor 的文件历史栈只记录已提交编辑，用于 undo/redo；后端版本由版本面板手动管理。
@@ -14,26 +24,24 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
 
   const isReady = computed(() => {
     void state.pageFilesRevision.value
-    return state.getPageFileLoadState(activeFile.value) === 'loaded'
+    return state.getActivePage()?.isLoaded === true
   })
   const isDirty = computed(() => isFileDirty(activeFile.value))
   const canUndo = computed(() => {
     void state.pageFilesRevision.value
-    return hasDraft(activeFile.value) || state.canUndoPageFile(activeFile.value)
+    if (hasDraft(activeFile.value)) return true
+    return getSubModel(state.getActivePage(), activeFile.value)?.canUndo ?? false
   })
   const canRedo = computed(() => {
     void state.pageFilesRevision.value
     if (hasDraft(activeFile.value)) return false
-    return state.canRedoPageFile(activeFile.value)
+    return getSubModel(state.getActivePage(), activeFile.value)?.canRedo ?? false
   })
   const text = computed(() => {
     void state.pageFilesRevision.value
     return getDisplayText(activeFile.value)
   })
-  const parseError = computed(() => {
-    void state.pageFilesRevision.value
-    return state.getPageFileParseError(activeFile.value)
-  })
+  const parseError = computed(() => null)
 
   async function ensureLoaded(options?: { forceReload?: boolean }) {
     if (!state.activePageId.value) return
@@ -106,11 +114,16 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
     const nextText = getDraft(name)
     if (nextText === state.getPageFileText(name)) {
       clearDraft(name)
-      return state.getPageFileParseError(name) === null
+      return true
     }
 
-    state.setPageFileText(name, nextText)
-    if (state.getPageFileParseError(name) !== null) {
+    const model = getSubModel(state.getActivePage(), name)
+    if (!model) {
+      return false
+    }
+    try {
+      model.setText(nextText)
+    } catch {
       setDraft(name, nextText)
       return false
     }
@@ -132,13 +145,13 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
       clearDraft(activeFile.value)
       return
     }
-    state.undoPageFile(activeFile.value)
+    getSubModel(state.getActivePage(), activeFile.value)?.undo()
   }
 
   function redo() {
     clearCommitTimer()
     if (hasDraft(activeFile.value)) return
-    state.redoPageFile(activeFile.value)
+    getSubModel(state.getActivePage(), activeFile.value)?.redo()
   }
 
   async function save() {
@@ -155,9 +168,6 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
     () => state.activePageId.value,
     (pageId, previousPageId) => {
       if (!pageId) return
-      // immediate=true 触发时 previousPageId 为 undefined：不能视作"页面变化"，
-      // 否则切换 tab 时（DevFileEditor 由 v-if 重新挂载）会强制 reload，
-      // 把内存中已编辑但未保存的 model（含拖拽布局）擦回远端原始内容。
       const isPageSwitch = previousPageId !== undefined && pageId !== previousPageId
       void ensureLoaded({ forceReload: isPageSwitch })
     },

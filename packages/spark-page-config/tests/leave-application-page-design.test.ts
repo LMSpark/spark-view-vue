@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  startRegistrationSession,
-  type AiHostBusinessRuntimeContext,
-} from '@spark-view/spark-ai/host'
+  startAiAgentRegistrationSession,
+  type AiAgentRuntimeContext,
+} from '@spark-view/spark-ai/agent'
 import { DataMember, DataSetCrudTool, buildDataViewKey } from '@spark-view/spark-data'
 import {
   PAGE_DESIGN_MODULE_ID,
@@ -66,7 +66,7 @@ function createHost(): {
   }
 }
 
-function hostContext(): AiHostBusinessRuntimeContext {
+function hostContext(): AiAgentRuntimeContext {
   return {
     moduleId: PAGE_DESIGN_MODULE_ID,
     moduleInstanceId: PAGE_ID,
@@ -97,7 +97,7 @@ describe('请假申请页面设计测试程序', () => {
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext()
 
-    await startRegistrationSession(registration, context)
+    await startAiAgentRegistrationSession(registration, context)
 
     const rootChildren = requireArrayResult(
       await registration.runtime.executeTool('listChildren', { path: '/' }, context),

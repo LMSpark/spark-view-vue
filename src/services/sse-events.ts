@@ -8,9 +8,9 @@
 import { Logger, isRecord, type ApiEnvelopeContext, type ApiEnvelopeEvent } from '@spark-view/spark-utils'
 import { readNonEmptyStringProperty } from '@spark-view/spark-utils/internal'
 import type {
-  AiHostAppSseEvent,
-  AiHostAppSseEventName,
-  AiHostAppSseEventSource,
+  AiAgentAppSseEvent,
+  AiAgentAppSseEventName,
+  AiAgentAppSseEventSource,
 } from '@spark-view/spark-ai'
 
 const logger = Logger('SSE')
@@ -122,7 +122,7 @@ const SSE_URL = '/api/events'
 const MAX_RETRIES = 5
 
 const eventSubscribers = new Map<string, Set<(data: unknown) => void>>()
-const envelopeEventSubscribers = new Map<string, Set<(event: AiHostAppSseEvent) => void>>()
+const envelopeEventSubscribers = new Map<string, Set<(event: AiAgentAppSseEvent) => void>>()
 const eventListeners = new Map<string, EventListener>()
 const legacyProtocolWarnings = new Set<string>()
 
@@ -162,8 +162,8 @@ export function onServerEvent(
 }
 
 export function onServerEnvelopeEvent(
-  eventType: AiHostAppSseEventName,
-  callback: (event: AiHostAppSseEvent) => void,
+  eventType: AiAgentAppSseEventName,
+  callback: (event: AiAgentAppSseEvent) => void,
 ): () => void {
   const eventKey = String(eventType)
   let subscribers = envelopeEventSubscribers.get(eventKey)
@@ -189,7 +189,7 @@ export function onServerEnvelopeEvent(
   }
 }
 
-export function createAppSseEventSource(): AiHostAppSseEventSource {
+export function createAppSseEventSource(): AiAgentAppSseEventSource {
   return {
     on: onServerEnvelopeEvent,
   }
@@ -399,7 +399,7 @@ function unwrapServerEventPayload(eventType: string, payload: unknown): unknown 
   throw new Error(readEnvelopeErrorMessage(payload))
 }
 
-function dispatchEnvelopeEvent(eventType: string, event: AiHostAppSseEvent): void {
+function dispatchEnvelopeEvent(eventType: string, event: AiAgentAppSseEvent): void {
   const subscribers = envelopeEventSubscribers.get(eventType)
   if (subscribers === undefined) return
 
@@ -412,7 +412,7 @@ function normalizeServerEnvelopeEvent(
   eventType: string,
   rawData: string,
   payload: unknown,
-): AiHostAppSseEvent {
+): AiAgentAppSseEvent {
   if (!isRecord(payload) || !isEnvelopeLike(payload)) {
     return {
       name: eventType,

@@ -1,14 +1,14 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  createAiHostSessionTranscript,
-  summarizeAiHostSessionRecord,
-  type AiHostSessionRecord,
-} from '../host'
+  createAiAgentSessionTranscript,
+  summarizeAiAgentSessionRecord,
+  type AiAgentSessionRecord,
+} from '../agent'
 
 // ── Fixture ─────────────────────────────────────────────────
 
-function sessionRecord(): AiHostSessionRecord {
+function sessionRecord(): AiAgentSessionRecord {
   return {
     moduleId: 'pageDesign',
     moduleInstanceId: 'page-a',
@@ -40,8 +40,8 @@ function sessionRecord(): AiHostSessionRecord {
         id: 'f1',
         seq: 2,
         timestamp: 2000,
-        toolName: 'pageDesign_payload-catalog_guidePayload',
-        args: { $paths: ['page-a', 'page-a'] },
+        toolName: 'module_call',
+        args: { path: '/pageDesign[page-a]/payload-catalog[page-a]', functionName: 'guidePayload', args: {} },
         status: 'failed',
         error: { ok: false, code: 'BAD', msg: 'bad args', fix: 'fix args' },
       },
@@ -66,23 +66,23 @@ function sessionRecord(): AiHostSessionRecord {
 
 describe('session diagnostics', () => {
   it('summarizes session history without business assumptions', () => {
-    expect(summarizeAiHostSessionRecord(sessionRecord())).toMatchObject({
+    expect(summarizeAiAgentSessionRecord(sessionRecord())).toMatchObject({
       status: 'Started',
       historyCount: 3,
       messageCount: 2,
       toolCallCount: 1,
       failedToolCallCount: 1,
-      functionNames: ['pageDesign_payload-catalog_guidePayload'],
+      functionNames: ['module_call'],
       lastAssistantText: '已完成',
     })
   })
 
   it('creates a bounded transcript', () => {
-    const transcript = createAiHostSessionTranscript(sessionRecord(), { contentLimit: 3 })
+    const transcript = createAiAgentSessionTranscript(sessionRecord(), { contentLimit: 3 })
 
     expect(transcript).toHaveLength(3)
     expect(transcript[0]).toMatchObject({ direction: 'USER => AGENT', content: expect.stringContaining('...<truncated') })
-    expect(transcript[1]).toMatchObject({ direction: 'AGENT TOOL => LLM', toolName: 'pageDesign_payload-catalog_guidePayload' })
+    expect(transcript[1]).toMatchObject({ direction: 'AGENT TOOL => LLM', toolName: 'module_call' })
     expect(transcript[2]).toMatchObject({ direction: 'LLM => AGENT', content: '已完成' })
   })
 })

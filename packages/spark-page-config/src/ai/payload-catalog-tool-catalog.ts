@@ -6,25 +6,25 @@
  */
 
 import {
-  ModuleKind,
-  ModuleParameterPayloadRegistry,
-  type ModuleFunctionMetadata,
-  type ModuleInstanceRef,
-  type ModuleOperationResult,
-  type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  AiModulePayloadRegistry,
+  type AiModuleFunctionMetadata,
+  type AiModuleInstanceRef,
+  type AiModuleResult,
+  type AiModulePathContext,
+} from '@spark-view/spark-ai/modules'
 import type {
-  ModuleParameterPayloadGuide,
-  ModuleParameterPayloadProvider,
-  ModuleParameterPayloadQueryFilter,
-  ModuleParameterPayloadSummary,
+  AiModulePayloadGuide,
+  AiModulePayloadProvider,
+  AiModulePayloadQueryFilter,
+  AiModulePayloadSummary,
 } from '@spark-view/spark-ai'
-import type { LlmJsonSchema, LlmJsonValue, LlmJsonSchemaObject } from '@spark-view/spark-ai/schema'
+import type { AiJsonSchema, AiJsonValue, AiJsonSchemaObject } from '@spark-view/spark-ai/json'
 import {
   booleanSchema,
   paramsSchema,
   stringSchema,
-} from '@spark-view/spark-ai/schema'
+} from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
 import type { PageDesignServiceContext } from '../design/page-edit-session'
 import type { PageDesignServiceResult } from '../design/page-edit-session'
@@ -39,8 +39,8 @@ import {
 
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
 type PayloadCatalogActionRunner = (
-  registry: ModuleParameterPayloadRegistry,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  registry: AiModulePayloadRegistry,
+  args: Readonly<Record<string, AiJsonValue>>,
 ) => PageDesignServiceResult<unknown>
 
 type PageDesignPayloadProp = {
@@ -48,7 +48,7 @@ type PageDesignPayloadProp = {
   readonly type?: string
   readonly required?: boolean
   readonly description?: string
-  readonly schema?: LlmJsonSchema
+  readonly schema?: AiJsonSchema
 }
 
 type PageDesignPayloadEntry = {
@@ -67,7 +67,7 @@ type PageDesignPayloadCatalog = {
   readonly version: string
   readonly componentCount: number
   readonly components: Readonly<Record<string, PageDesignPayloadEntry>>
-  readonly $defs?: Readonly<Record<string, LlmJsonSchema>>
+  readonly $defs?: Readonly<Record<string, AiJsonSchema>>
 }
 
 // ── 构建产物读取与推荐排序 ─────────────────────────────────
@@ -94,7 +94,7 @@ const RECOMMENDED_PAYLOAD_RANK = new Map(RECOMMENDED_PAYLOAD_ORDER.map((key, ind
 
 // ── LLM 动作声明 ──────────────────────────────────────────
 
-const PAYLOAD_CATALOG_ACTIONS: readonly ModuleFunctionMetadata[] = [
+const PAYLOAD_CATALOG_ACTIONS: readonly AiModuleFunctionMetadata[] = [
   {
     name: 'queryPayloads',
     description: '查询可用于当前页面设计的组件参数荷载目录，支持 category/keyword/key 过滤。',
@@ -102,7 +102,7 @@ const PAYLOAD_CATALOG_ACTIONS: readonly ModuleFunctionMetadata[] = [
       category: stringSchema('按组件 category 精确过滤，例如 container、field、display。'),
       keyword: stringSchema('按 type、category、description 或 filePath 模糊搜索。'),
       key: stringSchema('按组件 type/key 精确查询。'),
-      moduleKind: stringSchema('参数所属 ModuleKind。默认 node-tree，因为组件 props 用于构造 node-tree 写入动作的 SparkNode 参数。'),
+      moduleKind: stringSchema('参数所属 AiModule。默认 node-tree，因为组件 props 用于构造 node-tree 写入动作的 SparkNode 参数。'),
       payloadRef: stringSchema('参数 provider 命名空间。默认 spark.component。'),
       configurableOnly: booleanSchema('为 true 时仅返回 configurable=true 且 internal=false 的组件。'),
       limit: { type: 'integer', minimum: 1, maximum: 50, description: '最多返回条数，默认 20。' },
@@ -123,7 +123,7 @@ const PAYLOAD_CATALOG_ACTIONS: readonly ModuleFunctionMetadata[] = [
     description: '查询单个组件 type/key 的参数荷载指南，用于构造合法 SparkNode props。',
     paramsSchema: paramsSchema({
       key: stringSchema('组件 type/key，例如 renderer-button。', { minLength: 1 }),
-      moduleKind: stringSchema('参数所属 ModuleKind。默认 node-tree。'),
+      moduleKind: stringSchema('参数所属 AiModule。默认 node-tree。'),
       payloadRef: stringSchema('参数 provider 命名空间。默认 spark.component。'),
     }, ['key']),
     resultSchema: {
@@ -156,10 +156,10 @@ const PAYLOAD_CATALOG_ACTION_RUNNERS: Readonly<Record<PayloadCatalogFunctionId, 
  * 创建 pageDesign 的参数荷载 provider registry。
  *
  * registry 只注册 node-tree/spark.component 这一类组件 props 知识；其它业务知识应通过
- * 对应 ModuleKind 暴露，不要塞进组件目录。
+ * 对应 AiModule 暴露，不要塞进组件目录。
  */
-export function createPageDesignPayloadRegistry(): ModuleParameterPayloadRegistry {
-  const registry = new ModuleParameterPayloadRegistry()
+export function createPageDesignPayloadRegistry(): AiModulePayloadRegistry {
+  const registry = new AiModulePayloadRegistry()
   registry.register(createPageDesignComponentPayloadProvider())
   return registry
 }
@@ -172,7 +172,7 @@ export function createPageDesignPayloadRegistry(): ModuleParameterPayloadRegistr
  * query 只返回摘要，guide 才返回完整 paramsSchema；这个分层保证 LLM 按需建立知识，
  * 也避免把 VCM 构建产物整体灌入上下文。
  */
-function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvider {
+function createPageDesignComponentPayloadProvider(): AiModulePayloadProvider {
   return {
     moduleKind: PAGE_DESIGN_NODE_TREE_KIND,
     payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
@@ -182,7 +182,7 @@ function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvi
   }
 }
 
-// ── payload-catalog ModuleKind ────────────────────────────
+// ── payload-catalog AiModule ────────────────────────────
 
 /**
  * 参数荷载目录子模块。
@@ -190,16 +190,16 @@ function createPageDesignComponentPayloadProvider(): ModuleParameterPayloadProvi
  * 本模块负责把 `queryPayloads/guidePayload` 暴露给 LLM，并在 guide 成功后通知
  * `PageDesignService` 记录当前会话已显式获取的组件指南。
  */
-export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
-  private readonly registry: ModuleParameterPayloadRegistry
+export class PageDesignPayloadCatalogAiModule extends AiModule {
+  private readonly registry: AiModulePayloadRegistry
   private readonly service: PageDesignService
-  private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+  private readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
 
   public constructor(options: {
     readonly service: PageDesignService
-    readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string
-    readonly registry?: ModuleParameterPayloadRegistry
+    readonly registry?: AiModulePayloadRegistry
   }) {
     super({
       kind: PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
@@ -215,10 +215,10 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
   }
 
   protected override runFunction(
-    ctx: ModulePathContext,
+    ctx: AiModulePathContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+    args: Readonly<Record<string, AiJsonValue>>,
+  ): Promise<AiModuleResult<AiJsonValue>> {
     if (this.findFunction(actionName) === undefined) {
       throw new Error(`${this.kind} action is not declared: ${actionName}`)
     }
@@ -229,13 +229,13 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
     return Promise.resolve(this.serviceResultToOperationResult(result))
   }
 
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面组件荷载目录')
   }
 
   private recordGuidedPayload(
-    ctx: ModulePathContext,
-    args: Readonly<Record<string, LlmJsonValue>>,
+    ctx: AiModulePathContext,
+    args: Readonly<Record<string, AiJsonValue>>,
     data: unknown,
   ): void {
     if (!isRecord(data)) return
@@ -246,14 +246,14 @@ export class PageDesignPayloadCatalogModuleKind extends ModuleKind {
       return
     }
     const payload = data['payload']
-    if (!isModuleParameterPayloadGuide(payload)) return
+    if (!isAiModulePayloadGuide(payload)) return
     this.service.recordNodePayloadGuide(this.contextFactory(ctx), key, payload)
   }
 }
 
 // ── Action 路由 ───────────────────────────────────────────
 
-function isModuleParameterPayloadGuide(value: unknown): value is ModuleParameterPayloadGuide {
+function isAiModulePayloadGuide(value: unknown): value is AiModulePayloadGuide {
   return isRecord(value)
     && typeof value['moduleKind'] === 'string'
     && typeof value['payloadRef'] === 'string'
@@ -262,9 +262,9 @@ function isModuleParameterPayloadGuide(value: unknown): value is ModuleParameter
 }
 
 function runPayloadCatalogAction(
-  registry: ModuleParameterPayloadRegistry,
+  registry: AiModulePayloadRegistry,
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): PageDesignServiceResult<unknown> {
   if (isPayloadCatalogFunctionId(actionName)) {
     return PAYLOAD_CATALOG_ACTION_RUNNERS[actionName](registry, args)
@@ -283,8 +283,8 @@ function isPayloadCatalogFunctionId(value: string): value is PayloadCatalogFunct
 // ── 查询与 guide 执行 ─────────────────────────────────────
 
 function queryPageDesignPayloads(
-  registry: ModuleParameterPayloadRegistry,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  registry: AiModulePayloadRegistry,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): PageDesignServiceResult<unknown> {
   const provider = resolvePayloadProvider(registry, args)
   if (!provider.ok) return provider
@@ -308,8 +308,8 @@ function queryPageDesignPayloads(
 }
 
 function guidePageDesignPayload(
-  registry: ModuleParameterPayloadRegistry,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  registry: AiModulePayloadRegistry,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): PageDesignServiceResult<unknown> {
   const key = typeof args['key'] === 'string' ? args['key'].trim() : ''
   if (key.length === 0) {
@@ -334,7 +334,7 @@ function guidePageDesignPayload(
 
 // ── 组件目录查询与 guide 投影 ─────────────────────────────
 
-function queryPageDesignComponentPayloads(filter: ModuleParameterPayloadQueryFilter = {}): ModuleParameterPayloadSummary[] {
+function queryPageDesignComponentPayloads(filter: AiModulePayloadQueryFilter = {}): AiModulePayloadSummary[] {
   const category = typeof filter.category === 'string' ? filter.category.trim() : ''
   const keyword = typeof filter.keyword === 'string' ? filter.keyword.trim() : ''
   const key = typeof filter.key === 'string' ? filter.key.trim() : ''
@@ -364,10 +364,10 @@ function queryPageDesignComponentPayloads(filter: ModuleParameterPayloadQueryFil
 // ── Action 参数归一化与 provider 定位 ─────────────────────
 
 function createPayloadQueryFilter(
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
   moduleKind: string,
   payloadRef: string,
-): Parameters<ModuleParameterPayloadProvider['queryPayloads']>[0] {
+): Parameters<AiModulePayloadProvider['queryPayloads']>[0] {
   const category = typeof args['category'] === 'string' ? args['category'].trim() : undefined
   const keyword = typeof args['keyword'] === 'string' ? args['keyword'].trim() : undefined
   const key = typeof args['key'] === 'string' ? args['key'].trim() : undefined
@@ -384,12 +384,12 @@ function createPayloadQueryFilter(
 }
 
 function resolvePayloadProvider(
-  registry: ModuleParameterPayloadRegistry,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  registry: AiModulePayloadRegistry,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): PageDesignServiceResult<{
   readonly moduleKind: string
   readonly payloadRef: string
-  readonly provider: ModuleParameterPayloadProvider
+  readonly provider: AiModulePayloadProvider
 }> {
   const moduleKind = typeof args['moduleKind'] === 'string' && args['moduleKind'].trim().length > 0
     ? args['moduleKind'].trim()
@@ -413,7 +413,7 @@ function resolvePayloadProvider(
   }
 }
 
-function guidePageDesignComponentPayload(key: string): ModuleParameterPayloadGuide | null {
+function guidePageDesignComponentPayload(key: string): AiModulePayloadGuide | null {
   const entry = findPayloadEntry(key)
   if (entry === null || !isWritablePageDesignComponentPayload(entry)) {
     return null
@@ -457,7 +457,7 @@ function payloadMatchesKeyword(entry: PageDesignPayloadEntry, keyword: string): 
   return haystack.includes(keyword.toLowerCase())
 }
 
-function payloadLimit(input: ModuleParameterPayloadQueryFilter): number {
+function payloadLimit(input: AiModulePayloadQueryFilter): number {
   const rawLimit = input.limit
   if (typeof rawLimit !== 'number' || !Number.isInteger(rawLimit)) return 20
   return Math.min(Math.max(rawLimit, 1), 50)
@@ -478,13 +478,13 @@ export function isPageDesignWritableComponentPayloadKey(key: string): boolean {
   return entry !== null && isWritablePageDesignComponentPayload(entry)
 }
 
-export function getPageDesignComponentPayloadGuide(key: string): ModuleParameterPayloadGuide | null {
+export function getPageDesignComponentPayloadGuide(key: string): AiModulePayloadGuide | null {
   return guidePageDesignComponentPayload(key.trim())
 }
 
 // ── paramsSchema 生成 ─────────────────────────────────────
 
-function summarizePayload(entry: PageDesignPayloadEntry): ModuleParameterPayloadSummary {
+function summarizePayload(entry: PageDesignPayloadEntry): AiModulePayloadSummary {
   const props = entry.props ?? []
   const requiredProps = props.filter((prop) => prop.required === true).map((prop) => prop.name)
   return {
@@ -528,8 +528,8 @@ function isWritablePageDesignComponentPayload(entry: PageDesignPayloadEntry): bo
   return entry.type.trim().length > 0
 }
 
-function createPayloadParamsSchema(entry: PageDesignPayloadEntry): LlmJsonSchemaObject {
-  const properties: Record<string, LlmJsonSchema> = {}
+function createPayloadParamsSchema(entry: PageDesignPayloadEntry): AiJsonSchemaObject {
+  const properties: Record<string, AiJsonSchema> = {}
   const required: string[] = []
   for (const prop of entry.props ?? []) {
     properties[prop.name] = createPayloadPropSchema(prop)
@@ -545,7 +545,7 @@ function createPayloadParamsSchema(entry: PageDesignPayloadEntry): LlmJsonSchema
   }
 }
 
-function createPayloadPropSchema(prop: PageDesignPayloadProp): LlmJsonSchema {
+function createPayloadPropSchema(prop: PageDesignPayloadProp): AiJsonSchema {
   if (prop.schema !== undefined) return prop.schema
   return {
     ...inferPayloadPropTypeSchema(prop.type),
@@ -553,7 +553,7 @@ function createPayloadPropSchema(prop: PageDesignPayloadProp): LlmJsonSchema {
   }
 }
 
-function inferPayloadPropTypeSchema(typeText: string | undefined): LlmJsonSchemaObject {
+function inferPayloadPropTypeSchema(typeText: string | undefined): AiJsonSchemaObject {
   if (typeText === undefined || typeText.trim().length === 0) return {}
   const rawParts = typeText
     .split('|')
@@ -595,10 +595,10 @@ function inferJsonSchemaTypes(typePart: string): ReadonlyArray<'array' | 'boolea
 // ── $defs 裁剪 ────────────────────────────────────────────
 
 function collectReachableDefs(
-  roots: readonly LlmJsonSchema[],
-  defs: Readonly<Record<string, LlmJsonSchema>>,
-): Record<string, LlmJsonSchema> {
-  const out: Record<string, LlmJsonSchema> = {}
+  roots: readonly AiJsonSchema[],
+  defs: Readonly<Record<string, AiJsonSchema>>,
+): Record<string, AiJsonSchema> {
+  const out: Record<string, AiJsonSchema> = {}
   const visiting = new Set<string>()
   const collector: SchemaRefCollector = { defs, out, visiting }
 
@@ -609,13 +609,13 @@ function collectReachableDefs(
 }
 
 type SchemaRefCollector = Readonly<{
-  defs: Readonly<Record<string, LlmJsonSchema>>
-  out: Record<string, LlmJsonSchema>
+  defs: Readonly<Record<string, AiJsonSchema>>
+  out: Record<string, AiJsonSchema>
   visiting: Set<string>
 }>
 
 function collectSchemaRefs(
-  schema: LlmJsonSchema | undefined,
+  schema: AiJsonSchema | undefined,
   collector: SchemaRefCollector,
 ): void {
   const { defs, out, visiting } = collector
@@ -644,13 +644,13 @@ function collectSchemaRefs(
   collectSchemaArrayRefs(schema['anyOf'], collector)
   collectSchemaArrayRefs(schema['allOf'], collector)
   collectSchemaArrayRefs(schema['prefixItems'], collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['items']) ? schema['items'] : undefined, collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['additionalProperties']) ? schema['additionalProperties'] : undefined, collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['contains']) ? schema['contains'] : undefined, collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['not']) ? schema['not'] : undefined, collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['if']) ? schema['if'] : undefined, collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['then']) ? schema['then'] : undefined, collector)
-  collectSchemaRefs(isLlmJsonSchema(schema['else']) ? schema['else'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['items']) ? schema['items'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['additionalProperties']) ? schema['additionalProperties'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['contains']) ? schema['contains'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['not']) ? schema['not'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['if']) ? schema['if'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['then']) ? schema['then'] : undefined, collector)
+  collectSchemaRefs(isAiJsonSchema(schema['else']) ? schema['else'] : undefined, collector)
 }
 
 function collectSchemaMapRefs(
@@ -659,7 +659,7 @@ function collectSchemaMapRefs(
 ): void {
   if (!isRecord(value)) return
   for (const child of Object.values(value)) {
-    collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, collector)
+    collectSchemaRefs(isAiJsonSchema(child) ? child : undefined, collector)
   }
 }
 
@@ -669,7 +669,7 @@ function collectSchemaArrayRefs(
 ): void {
   if (!Array.isArray(value)) return
   for (const child of value) {
-    collectSchemaRefs(isLlmJsonSchema(child) ? child : undefined, collector)
+    collectSchemaRefs(isAiJsonSchema(child) ? child : undefined, collector)
   }
 }
 
@@ -695,14 +695,14 @@ function readPageDesignPayloadCatalog(value: unknown): PageDesignPayloadCatalog 
   }
 }
 
-function readPayloadDefs(value: unknown): Readonly<Record<string, LlmJsonSchema>> | undefined {
+function readPayloadDefs(value: unknown): Readonly<Record<string, AiJsonSchema>> | undefined {
   if (value === undefined) return undefined
   if (!isRecord(value)) {
     throw new Error('PageDesign component payload catalog $defs must be an object')
   }
-  const defs: Record<string, LlmJsonSchema> = {}
+  const defs: Record<string, AiJsonSchema> = {}
   for (const [key, schema] of Object.entries(value)) {
-    if (!isLlmJsonSchema(schema)) {
+    if (!isAiJsonSchema(schema)) {
       throw new Error(`PageDesign component payload catalog $defs entry is invalid: ${key}`)
     }
     defs[key] = schema
@@ -729,10 +729,10 @@ function isPageDesignPayloadProp(value: unknown): value is PageDesignPayloadProp
     && isOptionalString(value['type'])
     && isOptionalBoolean(value['required'])
     && isOptionalString(value['description'])
-    && (value['schema'] === undefined || isLlmJsonSchema(value['schema']))
+    && (value['schema'] === undefined || isAiJsonSchema(value['schema']))
 }
 
-function isLlmJsonSchema(value: unknown): value is LlmJsonSchema {
+function isAiJsonSchema(value: unknown): value is AiJsonSchema {
   return typeof value === 'boolean' || isRecord(value)
 }
 

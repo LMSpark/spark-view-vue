@@ -9,20 +9,20 @@
  * 绝对禁止将组件类型名（r-table / r-tabs 等）当作 componentId 使用。
  */
 
-import * as SparkAiSchema from '@spark-view/spark-ai/schema'
+import * as SparkAiSchema from '@spark-view/spark-ai/json'
 import type {
-  LlmJsonObject,
-  LlmJsonValue,
-  LlmJsonSchemaObject,
-} from '@spark-view/spark-ai/schema'
+  AiJsonObject,
+  AiJsonValue,
+  AiJsonSchemaObject,
+} from '@spark-view/spark-ai/json'
 import {
-  ModuleKind,
-  type ModuleFunctionMetadata,
-  type ModuleInstanceRef,
-  type ModuleOperationResult,
-  type ModuleParameterPayloadMetadata,
-  type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  type AiModuleFunctionMetadata,
+  type AiModuleInstanceRef,
+  type AiModuleResult,
+  type AiModulePayloadMetadata,
+  type AiModulePathContext,
+} from '@spark-view/spark-ai/modules'
 import { PageDesignService } from '../design/page-design-service'
 import type {
   PageDesignNodePayloadValidationTarget,
@@ -69,11 +69,11 @@ const {
 } = SparkAiSchema
 
 const NO_PARAMS = noParamsSchema('该 nodeTree 读取函数不接受参数，请传 {} 或留空。')
-const EMPTY_EXAMPLE: LlmJsonObject = {}
+const EMPTY_EXAMPLE: AiJsonObject = {}
 const COMPONENT_ID_SCHEMA = stringSchema(
   '节点的 id 值（来自 listChildren / getNode 返回结果中的顶层 id 字段）；绝对禁止使用组件类型名（r-table、r-tabs、r-text、r-select 等）作为 componentId，类型名不是 id',
 )
-const PARENT_COMPONENT_ID_SCHEMA: LlmJsonSchemaObject = {
+const PARENT_COMPONENT_ID_SCHEMA: AiJsonSchemaObject = {
   type: ['string', 'null'],
   description: '父节点的 id 值（同 COMPONENT_ID_PARAM 规则）；null/省略表示当前绑定组件实例',
 }
@@ -134,7 +134,7 @@ const NATIVE_HTML_TAGS = new Set([
 
 // ── node-tree 动作声明 ────────────────────────────────────
 
-const NODE_TREE_ACTIONS: readonly ModuleFunctionMetadata[] = [
+const NODE_TREE_ACTIONS: readonly AiModuleFunctionMetadata[] = [
   {
     name: 'getNode',
     description: '按 componentId 查找节点；未命中时返回 null。',
@@ -590,23 +590,23 @@ const NODE_TREE_ACTION_BINDINGS: Readonly<Record<string, NodeTreeActionBinding>>
   removeNodes: nodeTreeAction('removeNodes', true, (tree, args) => tree.removeNodes(readRemoveNodesParams(args))),
 }
 
-// PAGE_DESIGN_AI_TRACE[page-design-node-tree-tool]: pageDesign AI 修改 rule.json 的 ModuleKind 出处；组件 type、id、payload props 校验也集中在这条 AI 写入边界。
+// PAGE_DESIGN_AI_TRACE[page-design-node-tree-tool]: pageDesign AI 修改 rule.json 的 AiModule 出处；组件 type、id、payload props 校验也集中在这条 AI 写入边界。
 // PAGE_DESIGN_REFACTOR_SOURCE[node-tree-write-gate]: rule.json AI 写入、组件类型拦截、guide 要求和 props 错误回传都集中在这里，smoke 不应重复实现。
 /**
  * pageDesign 节点树子模块。
  *
- * 所有 rule.json 结构写入都先经过本 ModuleKind：稳定 id、组件 type 白名单、
+ * 所有 rule.json 结构写入都先经过本 AiModule：稳定 id、组件 type 白名单、
  * 数据优先、payload guide、props schema 和 DataView 上下文约束在这里统一失败回传给 LLM。
  */
-export class PageDesignNodeTreeModuleKind extends ModuleKind {
+export class PageDesignNodeTreeAiModule extends AiModule {
   private readonly service: PageDesignService
-  private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+  private readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
 
   public constructor(options: {
     readonly service: PageDesignService
-    readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string
-    readonly payloads?: readonly ModuleParameterPayloadMetadata[]
+    readonly payloads?: readonly AiModulePayloadMetadata[]
   }) {
     super({
       kind: 'node-tree',
@@ -623,10 +623,10 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
   }
 
   protected override async runFunction(
-    ctx: ModulePathContext,
+    ctx: AiModulePathContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+    args: Readonly<Record<string, AiJsonValue>>,
+  ): Promise<AiModuleResult<AiJsonValue>> {
     const binding = NODE_TREE_ACTION_BINDINGS[actionName]
     if (binding === undefined) {
       throw new Error(`node-tree action runner is not registered: ${actionName}`)
@@ -678,7 +678,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
     )
   }
 
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面节点树')
   }
 
@@ -707,7 +707,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
   private async collectPayloadTargetsForAction(
     context: PageDesignServiceContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
+    args: Readonly<Record<string, AiJsonValue>>,
   ): Promise<readonly PageDesignNodePayloadValidationTarget[]> {
     const writtenTargets = componentPayloadTargetsWrittenByAction(actionName, args)
     if (writtenTargets.length > 0) return writtenTargets
@@ -754,7 +754,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
   private validateDataFirst(
     context: PageDesignServiceContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
+    args: Readonly<Record<string, AiJsonValue>>,
   ) {
     if (!isNodeWriteAction(actionName)) return null
     const componentTypes = componentTypesWrittenByAction(actionName, args)
@@ -770,7 +770,7 @@ export class PageDesignNodeTreeModuleKind extends ModuleKind {
   private async validateSetPropsWritableTargets(
     context: PageDesignServiceContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
+    args: Readonly<Record<string, AiJsonValue>>,
   ) {
     if (actionName !== 'setProps' && actionName !== 'setPropsBatch') return null
     const targets = await this.collectSetPropsNodeTypes(context, actionName, args)
@@ -840,7 +840,7 @@ function isNodeWriteAction(actionName: string): boolean {
 
 function validateWrittenNodeIds(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ) {
   if (!isNodeWriteAction(actionName)) return null
   const missing = collectWrittenNodeIdIssues(actionName, args)
@@ -854,7 +854,7 @@ function validateWrittenNodeIds(
 
 function validateWritableNodeTypes(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ) {
   if (!isNodeWriteAction(actionName)) return null
   const unknown = collectUnknownNodeTypes(actionName, args)
@@ -868,7 +868,7 @@ function validateWritableNodeTypes(
 
 function validateCompleteContainerWrite(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ) {
   if (actionName !== 'addNode' && actionName !== 'addNodes') return null
   const roots = writtenRootNodes(actionName, args)
@@ -883,7 +883,7 @@ function validateCompleteContainerWrite(
 
 function validateRequiredDataBindings(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ) {
   if (!isNodeWriteAction(actionName)) return null
   const issues: string[] = []
@@ -902,7 +902,7 @@ function validateRequiredDataBindings(
 
 function componentTypesWrittenByAction(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): readonly string[] {
   switch (actionName) {
     case 'addNode':
@@ -920,14 +920,14 @@ function componentTypesWrittenByAction(
 
 function componentPayloadTargetsWrittenByAction(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): readonly PageDesignNodePayloadValidationTarget[] {
   return writtenRootNodes(actionName, args).flatMap((node, index) =>
     collectNodePayloadTargets(node, `${actionName}.node[${index}]`),
   )
 }
 
-function writtenRootNodes(actionName: string, args: Readonly<Record<string, LlmJsonValue>>): ReadonlyArray<Record<string, unknown>> {
+function writtenRootNodes(actionName: string, args: Readonly<Record<string, AiJsonValue>>): ReadonlyArray<Record<string, unknown>> {
   switch (actionName) {
     case 'addNode':
     case 'replaceNode':
@@ -964,7 +964,7 @@ function collectNodePayloadTargets(node: Record<string, unknown>, path: string):
 
 function collectUnknownNodeTypes(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): string[] {
   const out = new Set<string>()
   for (const [index, node] of writtenRootNodes(actionName, args).entries()) {
@@ -988,7 +988,7 @@ function collectUnknownNodeTypesInto(node: Record<string, unknown>, path: string
 
 function collectWrittenNodeIdIssues(
   actionName: string,
-  args: Readonly<Record<string, LlmJsonValue>>,
+  args: Readonly<Record<string, AiJsonValue>>,
 ): string[] {
   const issues: string[] = []
   for (const [index, node] of writtenRootNodes(actionName, args).entries()) {

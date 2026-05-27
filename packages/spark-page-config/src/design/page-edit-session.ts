@@ -7,7 +7,7 @@
  */
 
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import type { ModuleParameterPayloadGuide } from '@spark-view/spark-ai/module-semantic'
+import type { AiModulePayloadGuide } from '@spark-view/spark-ai/modules'
 
 import type {
   SparkNodeTree,
@@ -59,7 +59,7 @@ export class PageDesignEditSession {
 
   host: PageDesignEditHost | null = null
 
-  private readonly guidedNodePayloads = new Map<string, ModuleParameterPayloadGuide>()
+  private readonly guidedNodePayloads = new Map<string, AiModulePayloadGuide>()
 
   bindHost(host: PageDesignEditHost): void {
     this.host = host
@@ -81,7 +81,7 @@ export class PageDesignEditSession {
     this.host?.onDataSetChanged?.(tool)
   }
 
-  markNodePayloadGuided(key: string, guide: ModuleParameterPayloadGuide): void {
+  markNodePayloadGuided(key: string, guide: AiModulePayloadGuide): void {
     const normalized = key.trim()
     if (normalized.length > 0) this.guidedNodePayloads.set(normalized, guide)
   }
@@ -90,7 +90,7 @@ export class PageDesignEditSession {
     return this.guidedNodePayloads.has(key.trim())
   }
 
-  getGuidedNodePayload(key: string): ModuleParameterPayloadGuide | null {
+  getGuidedNodePayload(key: string): AiModulePayloadGuide | null {
     return this.guidedNodePayloads.get(key.trim()) ?? null
   }
 

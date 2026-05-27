@@ -87,33 +87,33 @@ flowchart TB
 
 ```text
 @spark-view/spark-ai
-@spark-view/spark-ai/schema
-@spark-view/spark-ai/module-semantic
-@spark-view/spark-ai/host
+@spark-view/spark-ai/json
+@spark-view/spark-ai/modules
+@spark-view/spark-ai/agent
 ```
 
 推荐导入方式：
 
 ```ts
-import { paramsSchema, stringSchema } from '@spark-view/spark-ai/schema'
+import { paramsSchema, stringSchema } from '@spark-view/spark-ai/json'
 import {
   ModuleKind,
   ModuleOperationResult,
   ModuleSemanticRuntime,
   type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+} from '@spark-view/spark-ai/modules'
 import {
   AI_HOST,
   createAiHost,
   type AiHostBusinessRegistration,
-} from '@spark-view/spark-ai/host'
+} from '@spark-view/spark-ai/agent'
 ```
 
 不要恢复旧 `core`、`protocol`、`runtime`、`adapter` subpath，也不要从包内深路径跨包导入。
 
 ## Schema 层
 
-Schema 层是 LLM 参数和工具结果的最底座，源码在 `packages/spark-ai/src/schema/`。
+Schema 层是 LLM 参数和工具结果的最底座，源码在 `packages/spark-ai/src/json/`。
 
 ```mermaid
 flowchart LR
@@ -433,7 +433,7 @@ App 壳 createAiHost({ turnCallbacks, maxToolRounds })
 import {
   AI_HOST,
   createAiHost,
-} from '@spark-view/spark-ai/host'
+} from '@spark-view/spark-ai/agent'
 import { ensurePageDesignBusiness } from '@/services/page-design-business'
 import { sparkConsume, sparkProvide } from '@spark-view/spark-utils'
 import { createAiHostTurnCallbacks } from '@/services/ai-turn-bridge'
@@ -842,17 +842,17 @@ Checklist：
 | 想查什么 | 入口文件 |
 | --- | --- |
 | 公共导出 | `packages/spark-ai/src/index.ts` |
-| schema 构造和校验 | `packages/spark-ai/src/schema/` |
-| ModuleKind 协议 | `packages/spark-ai/src/module-semantic/protocol/module-kind.ts` |
-| 路径导航 | `packages/spark-ai/src/module-semantic/internal/navigator.ts` |
-| 工具生成 | `packages/spark-ai/src/module-semantic/internal/protocol-tool-generator.ts` |
-| 工具路由 | `packages/spark-ai/src/module-semantic/runtime/protocol-tool-router.ts` |
-| 知识投影 | `packages/spark-ai/src/module-semantic/knowledge/module-semantic-knowledge.ts` |
-| Host task | `packages/spark-ai/src/host/business/business-task.ts` |
-| Host session | `packages/spark-ai/src/host/business/business-session.ts` |
-| 工具循环 | `packages/spark-ai/src/host/tool-loop/tool-loop-runner.ts` |
-| 单次工具执行 | `packages/spark-ai/src/host/tool-loop/tool-call-executor.ts` |
-| SSE turn 聚合 | `packages/spark-ai/src/host/tool-loop/turn-event-collector.ts` |
+| schema 构造和校验 | `packages/spark-ai/src/json/` |
+| ModuleKind 协议 | `packages/spark-ai/src/modules/protocol/module-kind.ts` |
+| 路径导航 | `packages/spark-ai/src/modules/internal/navigator.ts` |
+| 工具生成 | `packages/spark-ai/src/modules/internal/protocol-tool-generator.ts` |
+| 工具路由 | `packages/spark-ai/src/modules/runtime/protocol-tool-router.ts` |
+| 知识投影 | `packages/spark-ai/src/modules/knowledge/module-semantic-knowledge.ts` |
+| Host task | `packages/spark-ai/src/agent/business/business-task.ts` |
+| Host session | `packages/spark-ai/src/agent/business/business-session.ts` |
+| 工具循环 | `packages/spark-ai/src/agent/tool-loop/tool-loop-runner.ts` |
+| 单次工具执行 | `packages/spark-ai/src/agent/tool-loop/tool-call-executor.ts` |
+| SSE turn 聚合 | `packages/spark-ai/src/agent/tool-loop/turn-event-collector.ts` |
 | APP HTTP bridge | `src/services/ai-turn-bridge.ts` |
 | APP SSE 单例 | `src/services/sse-events.ts` |
 | Java turn API | `spark-ai-server/src/main/java/com/spark/ai/controller/AiTurnController.java` |

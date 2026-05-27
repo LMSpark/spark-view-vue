@@ -6,7 +6,7 @@
  * 由对应 smoke/test 自己判断，不放入 page-config 底层。
  */
 
-import type { AiHostSessionRecord } from '@spark-view/spark-ai/host'
+import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'
 import { isRecord } from '@spark-view/spark-utils'
 import { hasPageDesignComponentPayloadKey } from './payload-catalog-tool-catalog'
 
@@ -36,7 +36,7 @@ type PageDesignJsonParseResult = Readonly<
  */
 export function validatePageDesignPayloadGuidesFromSession(
   files: PageDesignFileSnapshot,
-  sessionRecord: AiHostSessionRecord | null | undefined,
+  sessionRecord: AiAgentSessionRecord | null | undefined,
 ): PageDesignPayloadGuideValidation {
   const componentTypes = componentTypesFromPageDesignRule(files)
   const guidedPayloadKeys = guidedPageDesignPayloadKeysFromSession(sessionRecord)
@@ -72,7 +72,7 @@ export function componentTypesFromPageDesignRule(files: PageDesignFileSnapshot):
  * 这里只读取 functionCall 参数，不依赖工具结果内容，方便保留失败重试前后的完整诊断。
  */
 export function guidedPageDesignPayloadKeysFromSession(
-  sessionRecord: AiHostSessionRecord | null | undefined,
+  sessionRecord: AiAgentSessionRecord | null | undefined,
 ): readonly string[] {
   return [...new Set((sessionRecord?.history ?? []).flatMap((entry) => {
     if (entry.kind !== 'functionCall') return []

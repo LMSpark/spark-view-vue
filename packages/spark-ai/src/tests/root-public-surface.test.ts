@@ -1,65 +1,43 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import type {
-  ModuleKindConstructor as RootModuleKindConstructor,
-  ModuleAttributeAccess as RootModuleAttributeAccess,
-  ModuleOperationResultOptions as RootModuleOperationResultOptions,
+  AiJsonParams as RootAiJsonParams,
+  AiModuleOptions as RootAiModuleOptions,
 } from '../index'
 import type {
-  ModuleKindConstructor as SemanticModuleKindConstructor,
-  ModuleAttributeAccess as SemanticModuleAttributeAccess,
-  ModuleOperationResultOptions as SemanticModuleOperationResultOptions,
-} from '../module-semantic'
+  AiModuleOptions as ModulesAiModuleOptions,
+} from '../modules'
+import type {
+  AiJsonParams as JsonAiJsonParams,
+} from '../json'
 
 describe('@spark-view/spark-ai root public surface', () => {
-  it('exposes stable schema, module-semantic, and host entry symbols', async () => {
+  it('keeps the package root as a small facade over json/modules/agent', async () => {
     const rootModule = await import('../index')
 
     expect(rootModule.paramsSchema).toBeTypeOf('function')
-    expect(rootModule.ModuleKind).toBeTypeOf('function')
-    expect(rootModule.ModuleSemanticRuntime).toBeTypeOf('function')
-    expect(rootModule.ModuleParameterPayloadRegistry).toBeTypeOf('function')
-    expect(rootModule.AI_HOST).toBeTypeOf('object')
-    expect(rootModule.AiHost).toBeTypeOf('function')
-    expect(rootModule.createAiHost).toBeTypeOf('function')
-    expect(rootModule.AiHostBusinessSession).toBeTypeOf('function')
-    expect(rootModule.AiHostBusinessTask).toBeTypeOf('function')
-    expect(rootModule.createAiHostBusinessTask).toBeTypeOf('function')
-    expect(rootModule.runAiHostBusiness).toBeTypeOf('function')
-    expect(rootModule.createAiHostTransportTurn).toBeTypeOf('function')
-    expect(rootModule.createTurnEventCollector).toBeTypeOf('function')
+    expect(rootModule.AiModule).toBeTypeOf('function')
+    expect(rootModule.AiModuleRuntime).toBeTypeOf('function')
+    expect(rootModule.AI_AGENT_HOST).toBeTypeOf('object')
+    expect(rootModule.AiAgentHost).toBeTypeOf('function')
+    expect(rootModule.createAiAgentHost).toBeTypeOf('function')
+    expect(rootModule.DefaultAiAgentSessionStore).toBeTypeOf('function')
   })
 
-  it('keeps implementation helpers and business modules out of the package root', async () => {
+  it('does not expose removed dynamic protocol and old host facade names', async () => {
     const rootModule = await import('../index')
-    const semanticModule = await import('../module-semantic')
     const exposed = new Set(Object.keys(rootModule))
-    const semanticExposed = new Set(Object.keys(semanticModule))
 
-    expect(exposed.has('latestUserInput')).toBe(false)
-    expect(exposed.has('normalizeTurn')).toBe(false)
-    expect(exposed.has('AiHostMessageSender')).toBe(false)
-    expect(exposed.has('toTransportTurn')).toBe(false)
-    expect(exposed.has('readAppendMessagesEnvelope')).toBe(false)
-    expect(exposed.has('parseAiHostStreamFrames')).toBe(false)
-    expect(exposed.has('createAiHostSessionTranscript')).toBe(false)
-    expect(exposed.has('AiHostBusinessRegistry')).toBe(false)
-    expect(exposed.has('ModuleSemanticToolCodec')).toBe(false)
+    expect(exposed.has('AiModuleConstructor')).toBe(false)
+    expect(exposed.has('AiModuleToolCodec')).toBe(false)
     expect(exposed.has('PROTOCOL_TOOL_NAMES')).toBe(false)
-    expect(exposed.has('ModuleKindConflictError')).toBe(false)
-    expect(exposed.has('ModuleKindNotFoundError')).toBe(false)
-    expect(exposed.has('PageDesignService')).toBe(false)
-    expect(exposed.has('PageDesignNodeTreeModuleKind')).toBe(false)
-
-    expect(semanticExposed.has('ModuleSemanticToolCodec')).toBe(false)
-    expect(semanticExposed.has('PROTOCOL_TOOL_NAMES')).toBe(false)
-    expect(semanticExposed.has('ModuleKindConflictError')).toBe(false)
-    expect(semanticExposed.has('ModuleKindNotFoundError')).toBe(false)
+    expect(exposed.has('AiAgent')).toBe(false)
+    expect(exposed.has('createAiAgent')).toBe(false)
+    expect(exposed.has('createAiAgentTask')).toBe(false)
+    expect(exposed.has('createTurnEventCollector')).toBe(false)
   })
 
-  it('keeps stable protocol type exports available from public entries', () => {
-    expectTypeOf<RootModuleKindConstructor>().toEqualTypeOf<SemanticModuleKindConstructor>()
-    expectTypeOf<RootModuleAttributeAccess>().toEqualTypeOf<SemanticModuleAttributeAccess>()
-    expectTypeOf<RootModuleOperationResultOptions<string>>()
-      .toEqualTypeOf<SemanticModuleOperationResultOptions<string>>()
+  it('keeps facade types aligned with focused entries', () => {
+    expectTypeOf<RootAiJsonParams>().toEqualTypeOf<JsonAiJsonParams>()
+    expectTypeOf<RootAiModuleOptions>().toEqualTypeOf<ModulesAiModuleOptions>()
   })
 })

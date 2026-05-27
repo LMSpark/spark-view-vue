@@ -23,7 +23,6 @@ import {
   createPageEditor,
   applyNodeKindPresetToDraft,
   canUseModuleNodeKind,
-  createNavigationNodeDraft,
   createReservedRootGroup,
   findConfigNodeByPageId,
   findNodeById,
@@ -109,18 +108,44 @@ export function useDevState() {
   const navDirty = ref(false)
   const selectedNode = ref<NavNode | null>(null)
 
-  // ── 节点编辑表单 ──
-  const editForm = reactive<DevEditForm>({
-    id: '', title: '', icon: '', nodeKind: 'page',
-    dividerAfter: false,
-    description: '',
-    path: '', redirect: '', linkTarget: 'iframe',
-    parentPageId: '', refId: '',
-    childPlacement: '', order: 0,
-    hidden: false, disabled: false,
-    permissionMode: 'masked',
+  // ── 节点编辑表单（navDraft：直接代理到 activePage.navigation）──
+  const navDraft = reactive({
+    get id(): string { return getActivePage()?.navigation.id ?? '' },
+    set id(v: string) { const p = getActivePage(); if (p) { p.navigation.id = v; markNavDirty() } },
+    get title(): string { return getActivePage()?.navigation.title ?? '' },
+    set title(v: string) { const p = getActivePage(); if (p) { p.navigation.title = v; markNavDirty() } },
+    get icon(): string { return getActivePage()?.navigation.icon ?? '' },
+    set icon(v: string) { const p = getActivePage(); if (p) { p.navigation.icon = v; markNavDirty() } },
+    get nodeKind(): NavNodeKind { return getActivePage()?.navigation.nodeKind ?? 'page' },
+    set nodeKind(v: NavNodeKind) { const p = getActivePage(); if (p) { p.navigation.nodeKind = v; markNavDirty() } },
+    get dividerAfter(): boolean { return getActivePage()?.navigation.dividerAfter ?? false },
+    set dividerAfter(v: boolean) { const p = getActivePage(); if (p) { p.navigation.dividerAfter = v; markNavDirty() } },
+    get description(): string { return getActivePage()?.navigation.description ?? '' },
+    set description(v: string) { const p = getActivePage(); if (p) { p.navigation.description = v; markNavDirty() } },
+    get path(): string { return getActivePage()?.navigation.path ?? '' },
+    set path(v: string) { const p = getActivePage(); if (p) { p.navigation.path = v; markNavDirty() } },
+    get redirect(): string { return getActivePage()?.navigation.redirect ?? '' },
+    set redirect(v: string) { const p = getActivePage(); if (p) { p.navigation.redirect = v; markNavDirty() } },
+    get linkTarget(): LinkTarget { return getActivePage()?.navigation.linkTarget ?? 'iframe' },
+    set linkTarget(v: LinkTarget) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
+    get parentPageId(): string { return getActivePage()?.navigation.parentPageId ?? '' },
+    set parentPageId(v: string) { const p = getActivePage(); if (p) { p.navigation.parentPageId = v; markNavDirty() } },
+    get childPlacement(): string { return getActivePage()?.navigation.childPlacement ?? '' },
+    set childPlacement(v: string) { const p = getActivePage(); if (p) { p.navigation.childPlacement = v; markNavDirty() } },
+    get order(): number { return getActivePage()?.navigation.order ?? 0 },
+    set order(v: number) { const p = getActivePage(); if (p) { p.navigation.order = v; markNavDirty() } },
+    get hidden(): boolean { return getActivePage()?.navigation.hidden ?? false },
+    set hidden(v: boolean) { const p = getActivePage(); if (p) { p.navigation.hidden = v; markNavDirty() } },
+    get disabled(): boolean { return getActivePage()?.navigation.disabled ?? false },
+    set disabled(v: boolean) { const p = getActivePage(); if (p) { p.navigation.disabled = v; markNavDirty() } },
+    get refId(): string { return getActivePage()?.navigation.refId ?? '' },
+    set refId(v: string) { const p = getActivePage(); if (p) { p.navigation.refId = v; markNavDirty() } },
+    get permissionMode(): 'none' | 'masked' | 'invisible' { return getActivePage()?.navigation.permissionMode ?? 'masked' },
+    set permissionMode(v: 'none' | 'masked' | 'invisible') { const p = getActivePage(); if (p) { p.navigation.permissionMode = v; markNavDirty() } },
+    get hasContext(): boolean { return getActivePage()?.navigation.hasContext ?? false },
+    set hasContext(v: boolean) { const p = getActivePage(); if (p) { p.navigation.hasContext = v; markNavDirty() } },
   })
-  const hasContext = ref(false)
+  /** 可变的上下文选项列表（v-model 需要可变数组元素；通过 setContextItems 同步到子模型）。 */
   const contextItems = ref<Array<{ id: string; title: string }>>([])
   const contextConfig = reactive<DevContextConfig>({
     placeholder: '', defaultValue: '', paramName: '',
@@ -160,7 +185,7 @@ export function useDevState() {
   function syncNavFromEditor(): void {
     const snap = editor.readSnapshot()
     treeData.value = [...snap.treeData]
-    navDirty.value = snap.navigationDirty
+    navDirty.value = snap.navigationDirty || editor.getActivePage()?.navigation.isDirty === true
     navEmpty.value = snap.treeData.length === 0
     if (snap.selectedNodeId && snap.selectedNode) {
       selectedNode.value = snap.selectedNode
@@ -183,10 +208,7 @@ export function useDevState() {
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
   const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
-  const pageDataError = computed(() => {
-    void pageFilesRevision.value
-    return getPageFileParseError('pagedata.json')
-  })
+  const pageDataError = computed(() => null)
 
   // ═══════════════════════════════════════════════════════════
   // 工具：地址 / 持久化 pageId
@@ -259,8 +281,8 @@ export function useDevState() {
     return canUseModuleNodeKind(node, treeData.value)
   }
 
-  function createDraftFromEditForm(): NavigationNodeDraft {
-    return { ...editForm }
+  function getNavDraft(): NavigationNodeDraft | null {
+    return getActivePage()?.navigation.toDraft() ?? null
   }
 
   function syncActivePageContextByPath(path: string): void {
@@ -273,7 +295,10 @@ export function useDevState() {
   }
 
   function applyNodeKindPreset(kind: NavNodeKind): void {
-    Object.assign(editForm, applyNodeKindPresetToDraft(createDraftFromEditForm(), kind))
+    const page = getActivePage()
+    if (page) {
+      page.navigation.applyKindPreset(kind)
+    }
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -393,81 +418,6 @@ export function useDevState() {
     return editor.getPageFileText(name)
   }
 
-  function getPageFileSavedText(name: PageConfigFileName): string {
-    void pageFilesRevision.value
-    return editor.getPageFileText(name)
-  }
-
-  function getPageFileParseError(_name: PageConfigFileName): string | null {
-    void pageFilesRevision.value
-    return null
-  }
-
-  function getPageFileLoadState(_name: PageConfigFileName): string {
-    void pageFilesRevision.value
-    return editor.readSnapshot().isLoaded ? 'loaded' : 'idle'
-  }
-
-  function canUndoPageFile(name: PageConfigFileName): boolean {
-    void pageFilesRevision.value
-    const page = editor.getActivePage()
-    if (!page) return false
-    switch (name) {
-      case 'rule.json': return page.rule.canUndo
-      case 'pagedata.json': return page.dataSet.canUndo
-      case 'script.js': return page.script.canUndo
-      case 'style.css': return page.style.canUndo
-    }
-  }
-
-  function canRedoPageFile(name: PageConfigFileName): boolean {
-    void pageFilesRevision.value
-    const page = editor.getActivePage()
-    if (!page) return false
-    switch (name) {
-      case 'rule.json': return page.rule.canRedo
-      case 'pagedata.json': return page.dataSet.canRedo
-      case 'script.js': return page.script.canRedo
-      case 'style.css': return page.style.canRedo
-    }
-  }
-
-  function setPageFileText(name: PageConfigFileName, content: string): void {
-    if (activePageId.value) editor.setActivePage(activePageId.value)
-    const page = editor.getActivePage()
-    if (!page) return
-    switch (name) {
-      case 'rule.json': page.rule.setText(content); break
-      case 'pagedata.json': page.dataSet.setText(content); break
-      case 'script.js': page.script.setText(content); break
-      case 'style.css': page.style.setText(content); break
-    }
-  }
-
-  function undoPageFile(name: PageConfigFileName): boolean {
-    if (activePageId.value) editor.setActivePage(activePageId.value)
-    const page = editor.getActivePage()
-    if (!page) return false
-    switch (name) {
-      case 'rule.json': return page.rule.undo()
-      case 'pagedata.json': return page.dataSet.undo()
-      case 'script.js': return page.script.undo()
-      case 'style.css': return page.style.undo()
-    }
-  }
-
-  function redoPageFile(name: PageConfigFileName): boolean {
-    if (activePageId.value) editor.setActivePage(activePageId.value)
-    const page = editor.getActivePage()
-    if (!page) return false
-    switch (name) {
-      case 'rule.json': return page.rule.redo()
-      case 'pagedata.json': return page.dataSet.redo()
-      case 'script.js': return page.script.redo()
-      case 'style.css': return page.style.redo()
-    }
-  }
-
   function buildPreviewConfig(): ReturnType<typeof editor.buildPreviewConfig> {
     void pageFilesRevision.value
     return editor.buildPreviewConfig()
@@ -533,11 +483,16 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function loadNodeToForm(node: NavNode): void {
-    const nodeDraft = createNavigationNodeDraft(node)
-    Object.assign(editForm, nodeDraft.draft)
-    hasContext.value = nodeDraft.context.hasContext
-    contextItems.value = nodeDraft.context.items
-    Object.assign(contextConfig, nodeDraft.context.config)
+    const pageId = normalizePageIdFromPath(node.path) || node.id || `nav-node-${node.id}`
+    editor.setActivePage(pageId)
+    const page = editor.getActivePage()
+    if (page) {
+      page.navigation.loadFromNode(node)
+      Object.assign(editForm, page.navigation.toDraft())
+      hasContext.value = page.navigation.hasContext
+      contextItems.value = [...page.navigation.contextItems]
+      Object.assign(contextConfig, page.navigation.contextConfig)
+    }
     navDirty.value = false
     linkProbeInfo.value = null
   }
@@ -557,23 +512,24 @@ export function useDevState() {
       addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
     }
 
-    editor.selectNode(node.id)
-    const result = editor.applyNavigationDraft({
-      draft: createDraftFromEditForm(),
-      context: {
-        hasContext: hasContext.value,
-        items: contextItems.value,
-        config: { ...contextConfig },
-      },
-    })
-    for (const warning of result.warnings) {
-      addStatus(warning, 'warning')
+    const page = getActivePage()
+    if (page) {
+      page.navigation.applyDraft(createDraftFromEditForm())
+      page.navigation.hasContext = hasContext.value
+      page.navigation.setContextItems(contextItems.value)
+      page.navigation.setContextConfig({ ...contextConfig })
+      const result = page.navigation.applyToNode()
+      for (const warning of result.warnings) {
+        addStatus(warning, 'warning')
+      }
     }
     navDirty.value = false
   }
 
   function markNavDirty(): void {
     navDirty.value = true
+    const page = getActivePage()
+    if (page) page.navigation.markDirty()
     scheduleAutoSave()
   }
 
@@ -745,16 +701,21 @@ export function useDevState() {
     cancelAutoSave()
     if (navDirty.value && selectedNode.value) void saveNodeChanges()
     selectedNode.value = node
-    loadNodeToForm(node)
+    editor.selectNode(node.id)
     try {
       const pageId = normalizePageIdFromPath(node.path)
       if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
-        editor.selectNode(node.id)
+        editor.setActivePage(pageId)
+        activePageId.value = pageId
+        persistActivePageId(pageId)
         await editor.selectPage({ forceReload: true, allowMissingAsEmpty: true })
       } else {
-        editor.selectNode(node.id)
         clearFiles()
+        // Still open a PageModel for navigation form binding
+        const navPageId = pageId || node.id || `nav-node-${node.id}`
+        editor.setActivePage(navPageId)
       }
+      loadNodeToForm(node)
     } catch (error) {
       addStatus(error instanceof Error ? error.message : String(error), 'error')
     }
@@ -999,6 +960,11 @@ export function useDevState() {
     return editor.getNodeTree()
   }
 
+  function getActivePage(): ReturnType<typeof editor.getActivePage> {
+    if (activePageId.value) editor.setActivePage(activePageId.value)
+    return editor.getActivePage()
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 初始化
   // ═══════════════════════════════════════════════════════════
@@ -1058,14 +1024,6 @@ export function useDevState() {
     loadPageFile,
     ensureActivePageFilesLoaded,
     getPageFileText,
-    getPageFileSavedText,
-    getPageFileParseError,
-    getPageFileLoadState,
-    canUndoPageFile,
-    canRedoPageFile,
-    setPageFileText,
-    undoPageFile,
-    redoPageFile,
     buildPreviewConfig,
     clearFiles,
     listRemotePageVersions,
@@ -1102,6 +1060,7 @@ export function useDevState() {
     editDataSet,
     editNodeTree,
     getNodeTree,
+    getActivePage,
     initialize,
   }
 }

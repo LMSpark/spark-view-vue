@@ -10,9 +10,9 @@
       "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"],
       "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"],
       "@spark-view/spark-ai": ["../spark-ai/dist/index.d.ts"],
-      "@spark-view/spark-ai/schema": ["../spark-ai/dist/schema/index.d.ts"],
-      "@spark-view/spark-ai/host": ["../spark-ai/dist/host/index.d.ts"],
-      "@spark-view/spark-ai/module-semantic": ["../spark-ai/dist/module-semantic/index.d.ts"]
+      "@spark-view/spark-ai/json": ["../spark-ai/dist/json/index.d.ts"],
+      "@spark-view/spark-ai/agent": ["../spark-ai/dist/agent/index.d.ts"],
+      "@spark-view/spark-ai/modules": ["../spark-ai/dist/modules/index.d.ts"]
     },
     "declarationDir": "./dist/types",
     "declaration": true,

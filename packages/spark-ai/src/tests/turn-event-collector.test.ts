@@ -1,18 +1,18 @@
 import { describe, expect, it } from 'vitest'
 
 import {
-  createAiHostTransportTurn,
+  createAiAgentTransportTurn,
   createTurnEventCollector,
-  type AiHostAppSseEvent,
-  type AiHostAppSseEventSource,
-  type AiHostStreamEvent,
-  type AiHostStreamTurnInput,
-} from '../host'
+  type AiAgentAppSseEvent,
+  type AiAgentAppSseEventSource,
+  type AiAgentStreamEvent,
+  type AiAgentStreamTurnInput,
+} from '../agent'
 
 type TurnEventKind = 'delta' | 'reasoning' | 'result' | 'error' | 'done'
 
-type TestEventHub = AiHostAppSseEventSource & Readonly<{
-  emit(event: AiHostAppSseEvent): void
+type TestEventHub = AiAgentAppSseEventSource & Readonly<{
+  emit(event: AiAgentAppSseEvent): void
   listenerCount(): number
 }>
 
@@ -36,7 +36,7 @@ const turnKey = 'demoRuntime::business-a::turn-1'
 const streamKey = 'demoRuntime::business-a::turn-1::llm-stream'
 
 function createTestEventHub(): TestEventHub {
-  const listeners = new Map<string, Set<(event: AiHostAppSseEvent) => void>>()
+  const listeners = new Map<string, Set<(event: AiAgentAppSseEvent) => void>>()
   return {
     on(name, listener) {
       let set = listeners.get(name)
@@ -64,9 +64,9 @@ function createTestEventHub(): TestEventHub {
 }
 
 function createTurnInput(callbacks: Partial<Pick<
-  AiHostStreamTurnInput,
+  AiAgentStreamTurnInput,
   'onDelta' | 'onReasoning' | 'onUsage' | 'onStreamEvent' | 'signal'
->> = {}): AiHostStreamTurnInput {
+>> = {}): AiAgentStreamTurnInput {
   return {
     sessionId: 'session-1',
     scope,
@@ -81,8 +81,8 @@ function createTurnInput(callbacks: Partial<Pick<
 function createTurnAppEvent(
   kind: TurnEventKind,
   data: unknown,
-  overrides: Partial<AiHostAppSseEvent> = {},
-): AiHostAppSseEvent {
+  overrides: Partial<AiAgentAppSseEvent> = {},
+): AiAgentAppSseEvent {
   const name = 'llm-frame'
   const frameType = kind === 'delta' || kind === 'reasoning'
     ? 'message.delta'
@@ -126,7 +126,7 @@ describe('createTurnEventCollector', () => {
     const hub = createTestEventHub()
     const deltas: string[] = []
     const reasoning: string[] = []
-    const streamEvents: AiHostStreamEvent[] = []
+    const streamEvents: AiAgentStreamEvent[] = []
     const collector = createTurnEventCollector({
       input: createTurnInput({
         onDelta: (value) => deltas.push(value),
@@ -183,7 +183,7 @@ describe('createTurnEventCollector', () => {
 
   it('rejects APP SSE turn errors', async () => {
     const hub = createTestEventHub()
-    const streamEvents: AiHostStreamEvent[] = []
+    const streamEvents: AiAgentStreamEvent[] = []
     const collector = createTurnEventCollector({
       input: createTurnInput({ onStreamEvent: (event) => streamEvents.push(event) }),
       source: hub,
@@ -216,11 +216,11 @@ describe('createTurnEventCollector', () => {
   it('builds stable turn payload identity for APP-owned HTTP commands', () => {
     const input = createTurnInput()
 
-    expect(createAiHostTransportTurn(input)).toEqual({
+    expect(createAiAgentTransportTurn(input)).toEqual({
       turnId: 'turn-1',
       turnKey,
     })
-    expect(createAiHostTransportTurn(input, 'llm-stream')).toEqual({
+    expect(createAiAgentTransportTurn(input, 'llm-stream')).toEqual({
       turnId: 'turn-1',
       turnKey,
       streamKey,
@@ -243,9 +243,9 @@ describe('createTurnEventCollector', () => {
         // malformed: missing id → should be discarded
         { type: 'function', function: { name: 'setProps', arguments: '{}' } },
         // malformed: empty id string → should be discarded
-        { id: '', type: 'function', function: { name: 'listChildren', arguments: '{}' } },
+        { id: '', type: 'function', function: { name: 'module_find', arguments: '{}' } },
         // valid
-        { id: 'call-2', type: 'function', function: { name: 'describeKind', arguments: '{"kind":"x"}' } },
+        { id: 'call-2', type: 'function', function: { name: 'module_guide', arguments: '{"kind":"x"}' } },
       ],
     }))
 
@@ -253,7 +253,7 @@ describe('createTurnEventCollector', () => {
       text: 'ok',
       toolCalls: [
         { id: 'call-1', type: 'function', function: { name: 'getNode', arguments: '{}' } },
-        { id: 'call-2', type: 'function', function: { name: 'describeKind', arguments: '{"kind":"x"}' } },
+        { id: 'call-2', type: 'function', function: { name: 'module_guide', arguments: '{"kind":"x"}' } },
       ],
     })
     expect(hub.listenerCount()).toBe(0)

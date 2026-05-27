@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { AiHostSessionRecord } from '@spark-view/spark-ai/host'
+import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'
 import {
   componentTypesFromPageDesignRule,
   validatePageDesignPayloadGuidesFromSession,
@@ -8,7 +8,7 @@ import {
 
 // ── Fixture ─────────────────────────────────────────────────
 
-function sessionRecord(): AiHostSessionRecord {
+function sessionRecord(): AiAgentSessionRecord {
   return {
     moduleId: 'pageDesign',
     moduleInstanceId: 'page-a',

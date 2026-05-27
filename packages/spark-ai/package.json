@@ -29,17 +29,17 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./schema": {
-      "types": "./dist/schema/index.d.ts",
-      "import": "./dist/schema/index.js"
+    "./json": {
+      "types": "./dist/json/index.d.ts",
+      "import": "./dist/json/index.js"
     },
-    "./host": {
-      "types": "./dist/host/index.d.ts",
-      "import": "./dist/host/index.js"
+    "./agent": {
+      "types": "./dist/agent/index.d.ts",
+      "import": "./dist/agent/index.js"
     },
-    "./module-semantic": {
-      "types": "./dist/module-semantic/index.d.ts",
-      "import": "./dist/module-semantic/index.js"
+    "./modules": {
+      "types": "./dist/modules/index.d.ts",
+      "import": "./dist/modules/index.js"
     }
   },
   "dependencies": {

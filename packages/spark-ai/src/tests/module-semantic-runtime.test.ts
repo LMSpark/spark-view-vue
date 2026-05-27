@@ -1,1525 +1,275 @@
-/**
- * 模块语义协议运行时测试。
- *
- * 覆盖范围:
- * - 工具规约包含 query/navigation tools，以及动态 business function tools(&lt;kind&gt;_&lt;fn&gt;)
- * - executeTool 路由到 query/navigation tools(getAttribute / setAttribute / listChildren /
- *   findInstance / describeKind)，以及动态 OpenAI function tools
- * - 错误码:UNKNOWN_TOOL / INVALID_PATH_* / FUNCTION_NOT_DECLARED
- * - describeKind 返回 usageRules / failureModes(G1+G3 验证)
- */
-
 import { describe, expect, it } from 'vitest'
 
 import { isRecord } from '@spark-view/spark-utils'
 import {
-  ModuleCheckEntry,
-  ModuleKind,
-  ModuleOperationResult,
-  ModulePath,
-  ModuleParameterPayloadRegistry,
-  ModuleSemanticRuntime,
-  type ModuleInstanceRef,
-  type ModuleFunctionMetadata,
-  type ModuleParameterPayloadProvider,
-  type ModuleSemanticKnowledgeSnapshot,
-  type ModulePathContext,
-} from '../module-semantic'
-import { PROTOCOL_TOOL_NAMES } from '../module-semantic/internal/protocol-tool-generator'
-import type { ModuleSemanticKnowledgeSnapshot as RootModuleSemanticKnowledgeSnapshot } from '../index'
-import { coerceJsonValue } from '../schema'
-import type { LlmJsonValue } from '../schema'
+  AiModule,
+  AiModulePath,
+  AiModuleResult,
+  AiModuleRuntime,
+  type AiModuleInstanceRef,
+  type AiModulePathContext,
+} from '../modules'
+import { PROTOCOL_TOOL_NAMES } from '../modules/internal/protocol-tool-generator'
+import type { AiJsonValue } from '../json'
 
-type ModuleKindSpy = {
-  lastHost?: ModulePathContext['host']
+function createRuntime(): AiModuleRuntime {
+  const runtime = new AiModuleRuntime()
+  runtime.register(createPageDesignModule())
+  runtime.register(createNodeTreeModule())
+  return runtime
 }
 
-const ECHO_FUNCTION_SCHEMA: ModuleFunctionMetadata = {
-  name: 'echo',
-  description: '回显参数',
-  paramsSchema: {
-    type: 'object',
-    properties: {
-      value: { type: 'string' },
+function createPageDesignModule(): AiModule {
+  let title = '初始页面'
+  return new AiModule({
+    kind: 'pageDesign',
+    name: '页面设计',
+    description: '页面设计根能力',
+    attributes: [
+      {
+        name: 'title',
+        description: '页面标题',
+        schema: { type: 'string' },
+        readable: true,
+        writable: true,
+      },
+    ],
+    children: ['node-tree'],
+    attributeAccessor: {
+      get: () => AiModuleResult.ok(title),
+      set: (_ctx, _attrName, value) => {
+        title = String(value)
+        return AiModuleResult.ok<void>()
+      },
     },
-    required: ['value'],
-    additionalProperties: false,
-  },
+    list: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([
+      { id: 'tree-1', label: '主节点树' },
+    ]),
+    find: (ctx, childKind, query) => {
+      if (ctx.segments.length === 0 && childKind === 'pageDesign') {
+        const id = typeof query['id'] === 'string' ? query['id'] : ctx.host?.moduleInstanceId ?? 'page-1'
+        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `页面 ${id}` }])
+      }
+      if (childKind === 'node-tree') {
+        const id = typeof query['id'] === 'string' ? query['id'] : 'tree-1'
+        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `节点树 ${id}` }])
+      }
+      return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
+    },
+  })
 }
 
-function createNodeTreeKind(spy: ModuleKindSpy = {}): ModuleKind {
-  const runner = (ctx: ModulePathContext, functionName: string, args: Readonly<Record<string, LlmJsonValue>>) => {
-    spy.lastHost = ctx.host
-    if (functionName === 'getNode') {
-      const id = args['id']
-      if (typeof id !== 'string' || id.length === 0) {
-        return ModuleOperationResult.failCode('NODE_NOT_FOUND', 'id 为空', '先调 listChildren 取真实 id')
-      }
-      return ModuleOperationResult.ok<LlmJsonValue>({ id, label: `node-${id}` })
-    }
-    return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${functionName} 未实现`)
-  }
-  return new ModuleKind({
+function createNodeTreeModule(spy: { host?: AiModulePathContext['host'] } = {}): AiModule {
+  return new AiModule({
     kind: 'node-tree',
     name: '节点树',
     description: '页面节点树',
-    attributes: [
-      {
-        name: 'rootId',
-        description: '根节点 id',
-        schema: { type: 'string' },
-        readable: true,
-        writable: false,
-      },
-    ],
-    attributeAccessor: {
-      get: () => ModuleOperationResult.ok<unknown>('root-1'),
-      set: () => ModuleOperationResult.failCode('ATTRIBUTE_NOT_WRITABLE', 'rootId is readonly'),
-    },
+    parentKind: 'pageDesign',
     functions: [
       {
         name: 'getNode',
-        description: '按 id 取节点',
+        description: '按节点 id 读取节点',
         paramsSchema: {
           type: 'object',
           properties: { id: { type: 'string' } },
           required: ['id'],
           additionalProperties: false,
         },
-        usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
+        usageRules: ['先通过 module_find 确认节点树实例路径'],
         failureModes: [
-          { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
+          { code: 'NODE_NOT_FOUND', when: '节点不存在', fix: '重新查询节点 id' },
         ],
       },
     ],
-    payloads: [
-      {
-        payloadRef: 'spark.component',
-        description: 'SparkNode props 参数目录',
-        requiredForFunctions: ['getNode'],
-      },
-    ],
-    children: [],
-    runner,
-    list: (ctx) => {
-      spy.lastHost = ctx.host
-      return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([])
-    },
-    find: (ctx) => {
-      spy.lastHost = ctx.host
-      const hostInstanceId = ctx.host?.moduleInstanceId
-      if (hostInstanceId !== undefined && hostInstanceId.length > 0) {
-        return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-          { id: hostInstanceId, label: '当前实例' },
-        ])
+    runner: (ctx, functionName, args) => {
+      spy.host = ctx.host
+      if (functionName !== 'getNode') {
+        return AiModuleResult.failCode('UNKNOWN_FUNCTION', functionName)
       }
-      return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-        { id: 'node-tree-1', label: '主页节点树' },
-      ])
-    },
-  })
-}
-
-function createPayloadCatalogKind(): ModuleKind {
-  return new ModuleKind({
-    kind: 'payload-catalog',
-    name: '参数目录',
-    description: '测试参数荷载目录',
-    functions: [
-      {
-        name: 'queryPayloads',
-        description: '查询参数荷载目录',
-        paramsSchema: {
-          type: 'object',
-          properties: {
-            moduleKind: { type: 'string' },
-            payloadRef: { type: 'string' },
-            keyword: { type: 'string' },
-            category: { type: 'string' },
-            key: { type: 'string' },
-            limit: { type: 'number' },
-          },
-          required: ['moduleKind', 'payloadRef'],
-          additionalProperties: false,
-        },
-      },
-      {
-        name: 'guidePayload',
-        description: '读取参数荷载指南',
-        paramsSchema: {
-          type: 'object',
-          properties: {
-            moduleKind: { type: 'string' },
-            payloadRef: { type: 'string' },
-            key: { type: 'string' },
-          },
-          required: ['moduleKind', 'payloadRef', 'key'],
-          additionalProperties: false,
-        },
-      },
-    ],
-    runner: (_ctx, functionName) => {
-      if (functionName === 'queryPayloads') return ModuleOperationResult.ok<LlmJsonValue>([])
-      if (functionName === 'guidePayload') {
-        return ModuleOperationResult.ok<LlmJsonValue>({
-          key: 'r-button',
-          paramsSchema: {
-            type: 'object',
-            properties: {
-              label: { type: 'string' },
-            },
-            additionalProperties: true,
-          },
-        })
-      }
-      return ModuleOperationResult.failCode('UNKNOWN_ACTION', `${functionName} 未实现`)
-    },
-  })
-}
-
-function createDefaultOnlyKind(): ModuleKind {
-  return new ModuleKind({
-    kind: 'default-only',
-    name: '默认能力',
-    description: '用于验证 ModuleKind 默认协议行为',
-    functions: [
-      {
-        name: 'ping',
-        description: '测试默认 function 未实现',
-        paramsSchema: {
-          type: 'object',
-          properties: {},
-          additionalProperties: false,
-        },
-      },
-    ],
-    children: [],
-  })
-}
-
-function createRegisteredActionKind(): ModuleKind {
-  return new ModuleKind({
-    kind: 'registered-action',
-    name: '注册动作',
-    description: '用于验证 ModuleKind runner 函数',
-    functions: [ECHO_FUNCTION_SCHEMA],
-    runner: (_ctx, functionName, args) => {
-      if (functionName !== ECHO_FUNCTION_SCHEMA.name) {
-        return ModuleOperationResult.fail([ModuleCheckEntry.error('UNKNOWN_ACTION', `${functionName} 未实现`)])
-      }
-      const value = args['value'] ?? null
-      return ModuleOperationResult.ok<LlmJsonValue>({
-        value,
-        tags: ['base-runner'],
+      return AiModuleResult.ok<AiJsonValue>({
+        id: args['id'] ?? null,
+        path: ctx.segments.map((segment) => `${segment.kind}:${segment.id}`),
       })
     },
   })
 }
 
-function createRuntime(): ModuleSemanticRuntime {
-  const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(createNodeTreeKind())
-  return runtime
-}
+describe('AiModuleRuntime fixed tool protocol', () => {
+  it('exposes only the six fixed module tools', () => {
+    const names = createRuntime().getTools().map((tool) => tool.function.name)
 
-function createRuntimeWithPayloadCatalog(): ModuleSemanticRuntime {
-  const runtime = createRuntime()
-  runtime.registerKind(createPayloadCatalogKind())
-  return runtime
-}
-
-const NODE_TREE_PAYLOAD_LOOKUP_STEPS = [
-  '先定位 payload 目录模块 payload-catalog; 没有实例路径时用 listChildren/findInstance 获取目录实例。',
-  '先调用 payload-catalog_queryPayloads({ $paths: [<payload-catalogId>], moduleKind: "node-tree", payloadRef: "spark.component", keyword/category/key, limit }) 查询目录并选择真实 key。',
-  '再调用 payload-catalog_guidePayload({ $paths: [<payload-catalogId>], moduleKind: "node-tree", payloadRef: "spark.component", key }) 读取 paramsSchema、usageRules 和 failureModes。',
-  '最后才调用 node-tree_getNode; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
-] as const
-
-const NODE_TREE_FUNCTION_LOOKUP_STEPS = [
-  '先调用 queryFunctions({ kind: "node-tree", keyword: "getNode" }) 查函数目录，确认 functionName、必填参数和 failureCodes。',
-  '再调用 guideFunction({ toolName: "node-tree_getNode" }) 读取完整 paramsSchema、usageRules 和 failureModes。',
-  '随后调用 node-tree_getNode({ $paths: [...] }) 执行业务函数。',
-] as const
-
-const NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS = [
-  ...NODE_TREE_PAYLOAD_LOOKUP_STEPS.slice(0, 3),
-  '最后才调用 <toolName>; 复杂参数只能按 guidePayload 返回的 schema 字段构造。',
-] as const
-
-const NODE_TREE_INSTANCE_GUIDE = {
-  refShape: '{ id: string, label: string, summary?: string }',
-  pathPattern: '/node-tree[<node-treeId>]',
-  discoveryScope: 'root',
-  queryFields: ['id', 'label', 'keyword', 'hint', 'rootId'],
-  queryExamples: [
-    { id: '<instanceId>' },
-    { label: '<显示名>' },
-    { keyword: '<关键词>' },
-    { rootId: '<rootId>' },
-  ],
-  discoverySteps: [
-    'listChildren("/") 查看根级 kind。',
-    'findInstance("/", "node-tree", query) 获取 node-tree 实例 id。',
-  ],
-  pathBuildSteps: [
-    '从 findInstance("/", "node-tree", query) 返回的 ModuleInstanceRef.id 取实例 id。',
-    '拼接实例路径 /node-tree[<instanceRef.id>]。',
-  ],
-  operationSteps: [
-    '用实例 path 调用 describeKind("node-tree") 读取元数据。',
-    '属性读写复用同一个实例 path：getAttribute/setAttribute。',
-    '函数调用复用同一个实例 path：OpenAI function tool。',
-    '进入子 kind 时，以当前实例 path 作为 parentPath 调用 listChildren/findInstance。',
-  ],
-} as const
-
-/** 测试用:取注册到 runtime 上的 spy,以观测 lastHost */
-function createRuntimeWithSpy(): { runtime: ModuleSemanticRuntime; spy: ModuleKindSpy } {
-  const runtime = new ModuleSemanticRuntime()
-  const spy: ModuleKindSpy = {}
-  runtime.registerKind(createNodeTreeKind(spy))
-  return { runtime, spy }
-}
-
-// ═══════════════════════════════════════════════════════
-// 测试用例
-// ═══════════════════════════════════════════════════════
-
-describe('ModuleSemanticRuntime.getLlmTools', () => {
-  it('registerKind() 支持直接注册 ModuleKind subclass 构造器', () => {
-    class RuntimeConstructorKind extends ModuleKind {
-      public constructor(options: { readonly kind: string; readonly label: string }) {
-        super({
-          kind: options.kind,
-          name: options.label,
-          description: 'Runtime constructor registration.',
-          functions: [ECHO_FUNCTION_SCHEMA],
-          runner: (_ctx, _functionName, args) => ModuleOperationResult.ok<LlmJsonValue>({
-            value: args['value'] ?? null,
-          }),
-        })
-      }
-    }
-
-    const runtime = new ModuleSemanticRuntime()
-    const registered = runtime.registerKind(RuntimeConstructorKind, {
-      kind: 'constructor-runtime',
-      label: 'Constructor Runtime',
-    })
-
-    expect(registered).toBeInstanceOf(RuntimeConstructorKind)
-    const description = runtime.describeKind('constructor-runtime')
-    expect(description.ok).toBe(true)
-    expect(runtime.getLlmTools().map((spec) => spec.function.name)).toContain('constructor-runtime_echo')
-  })
-
-  it('返回 query/navigation tools 与 business function tools,名字稳定', () => {
-    const tools = createRuntime().getLlmTools()
-    const names = tools.map((spec) => spec.function.name)
     expect(names).toEqual([
-      PROTOCOL_TOOL_NAMES.queryModules,
-      PROTOCOL_TOOL_NAMES.queryFunctions,
-      PROTOCOL_TOOL_NAMES.guideFunction,
-      PROTOCOL_TOOL_NAMES.guideHumanQuestion,
-      PROTOCOL_TOOL_NAMES.getAttribute,
-      PROTOCOL_TOOL_NAMES.setAttribute,
-      PROTOCOL_TOOL_NAMES.listChildren,
-      PROTOCOL_TOOL_NAMES.findInstance,
-      PROTOCOL_TOOL_NAMES.describeKind,
-      'node-tree_getNode',
+      PROTOCOL_TOOL_NAMES.moduleQuery,
+      PROTOCOL_TOOL_NAMES.moduleGuide,
+      PROTOCOL_TOOL_NAMES.moduleFind,
+      PROTOCOL_TOOL_NAMES.moduleAttr,
+      PROTOCOL_TOOL_NAMES.moduleCall,
+      PROTOCOL_TOOL_NAMES.humanQuestion,
     ])
+    expect(names).not.toContain('pageDesign_node-tree_getNode')
   })
 
-  it('query/navigation tool 说明只写协议职责,不内嵌业务 function 摘要', () => {
-    const tools = createRuntime().getLlmTools()
-    for (const tool of tools) {
-      expect(tool.function.description).toContain('职责：')
-      expect(tool.function.description).toContain('何时使用：')
-      expect(tool.function.description).not.toContain('当前注册的 kind')
-      expect(tool.function.description).not.toContain('rules=')
-      expect(tool.function.description).not.toContain('fails=')
-    }
-
-    const businessFn = tools.find((spec) => spec.function.name === 'node-tree_getNode')
-    expect(businessFn).toBeDefined()
-    if (businessFn === undefined) throw new Error('not found')
-    expect(businessFn.function.description).toContain('queryFunctions/guideFunction/describeKind')
-    expect(businessFn.function.description).toContain('payloadLookupSteps')
-    expect(businessFn.function.description).not.toContain('spark.component(functions=getNode)')
-  })
-
-  it('describeKind 工具说明显式暴露 payload 指南语义', () => {
-    const tools = createRuntime().getLlmTools()
-    const describeKind = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.describeKind)
-    expect(describeKind).toBeDefined()
-    if (describeKind === undefined) throw new Error('not found')
-    expect(describeKind.function.description).toContain('attributes(readable/writable/schema)')
-    expect(describeKind.function.description).toContain('requiredForFunctions')
-  })
-
-  it('知识工具说明清楚区分目录、函数指南和人工反问', () => {
-    const tools = createRuntime().getLlmTools()
-    const queryModules = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryModules)
-    const queryFunctions = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryFunctions)
-    const guideFunction = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.guideFunction)
-    const guideHumanQuestion = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.guideHumanQuestion)
-    expect(queryModules?.function.description).toContain('ModuleKind 分层知识目录')
-    expect(queryModules?.function.description).toContain('instanceGuide.queryFields')
-    expect(queryModules?.function.description).toContain('childKindSummaries')
-    expect(queryModules?.function.description).toContain('detailLookupSteps')
-    expect(queryFunctions?.function.description).toContain('函数目录')
-    expect(queryFunctions?.function.description).toContain('guideFunction')
-    expect(guideFunction?.function.description).toContain('完整调用契约')
-    expect(guideFunction?.function.description).toContain('paramsSchema')
-    expect(guideFunction?.function.description).toContain('payloadLookupSteps')
-    expect(guideFunction?.function.parameters.oneOf).toEqual([
-      { type: 'object', required: ['toolName'] },
-      { type: 'object', required: ['kind', 'functionName'] },
-    ])
-    expect(guideHumanQuestion?.function.description).toContain('缺失用户事实')
-    expect(guideHumanQuestion?.function.parameters.required).toEqual(['context', 'reason'])
-  })
-
-  it('parameters 字段是 JSON Schema object(收紧后)', () => {
-    const tools = createRuntime().getLlmTools()
-    for (const spec of tools) {
-      expect(spec.function.parameters.type).toBe('object')
-    }
-  })
-
-  it('通过 ModuleKind 构造期 function 委托执行并投影 JSON', async () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(createRegisteredActionKind())
-
-    const result = await runtime.executeTool('registered-action_echo', {
-      $paths: ['current'],
-      value: 'hello',
+  it('module_query returns module summaries and optional function summaries', async () => {
+    const result = await createRuntime().executeTool('module_query', {
+      keyword: '节点',
+      includeFunctions: true,
     })
+
+    expect(result.ok).toBe(true)
+    if (!isRecord(result.data)) throw new Error('module_query data should be object')
+    expect(result.data['modules']).toEqual(expect.arrayContaining([
+      expect.objectContaining({ kind: 'node-tree', functionNames: ['getNode'] }),
+    ]))
+    expect(result.data['functions']).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        toolName: 'module_call',
+        kind: 'node-tree',
+        functionName: 'getNode',
+      }),
+    ]))
+  })
+
+  it('module_guide reads kind metadata and function guide', async () => {
+    const runtime = createRuntime()
+
+    await expect(runtime.executeTool('module_guide', { kind: 'pageDesign' })).resolves.toMatchObject({
+      ok: true,
+      data: expect.objectContaining({
+        kind: 'pageDesign',
+        attributes: [expect.objectContaining({ name: 'title' })],
+      }),
+    })
+    await expect(runtime.executeTool('module_guide', {
+      kind: 'node-tree',
+      functionName: 'getNode',
+    })).resolves.toMatchObject({
+      ok: true,
+      data: expect.objectContaining({
+        toolName: 'module_call',
+        functionName: 'getNode',
+        requiredParamNames: ['id'],
+      }),
+    })
+  })
+
+  it('module_find supports root discovery, root lookup and child lookup', async () => {
+    const runtime = createRuntime()
+
+    await expect(runtime.executeTool('module_find', { path: '/' })).resolves.toMatchObject({
+      ok: true,
+      data: [expect.objectContaining({ id: 'pageDesign' })],
+    })
+    await expect(runtime.executeTool('module_find', {
+      path: '/',
+      childKind: 'pageDesign',
+      query: { id: 'page-a' },
+    })).resolves.toMatchObject({
+      ok: true,
+      data: [expect.objectContaining({ id: 'page-a' })],
+    })
+    await expect(runtime.executeTool('module_find', {
+      path: '/pageDesign[page-a]',
+      childKind: 'node-tree',
+      query: { id: 'tree-1' },
+    })).resolves.toMatchObject({
+      ok: true,
+      data: [expect.objectContaining({ id: 'tree-1' })],
+    })
+  })
+
+  it('module_attr reads and writes attributes through explicit accessor', async () => {
+    const runtime = createRuntime()
+    const path = '/pageDesign[page-a]'
+
+    await expect(runtime.executeTool('module_attr', {
+      op: 'set',
+      path,
+      attrName: 'title',
+      value: '请假页面',
+    })).resolves.toMatchObject({ ok: true })
+    await expect(runtime.executeTool('module_attr', {
+      op: 'get',
+      path,
+      attrName: 'title',
+    })).resolves.toMatchObject({
+      ok: true,
+      data: '请假页面',
+    })
+  })
+
+  it('module_call uses { path, functionName, args } and passes host context', async () => {
+    const spy: { host?: AiModulePathContext['host'] } = {}
+    const runtime = new AiModuleRuntime()
+    runtime.register(createPageDesignModule())
+    runtime.register(createNodeTreeModule(spy))
+
+    const host = { moduleId: 'pageDesign', moduleInstanceId: 'page-a', instanceId: 'turn-1' }
+    const result = await runtime.executeTool('module_call', {
+      path: '/pageDesign[page-a]/node-tree[tree-1]',
+      functionName: 'getNode',
+      args: { id: 'node-1' },
+    }, host)
 
     expect(result).toMatchObject({
       ok: true,
       data: {
-        value: 'hello',
-        tags: ['base-runner'],
+        id: 'node-1',
+        path: ['pageDesign:page-a', 'node-tree:tree-1'],
       },
     })
+    expect(spy.host).toEqual(host)
   })
 
-  it('strict-blocker: guideFunction 参数 oneOf 至少包含 toolName 和 kind+functionName 两个分支', () => {
-    const tools = createRuntime().getLlmTools()
-    const guideFunction = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.guideFunction)
-    expect(guideFunction).toBeDefined()
-    if (guideFunction === undefined) throw new Error('not found')
-    const params = guideFunction.function.parameters
-    expect(params.oneOf).toBeDefined()
-    expect(params.oneOf).toHaveLength(2)
-    const [branch1, branch2] = params.oneOf!
-    expect(branch1).toMatchObject({ type: 'object', required: ['toolName'] })
-    expect(branch2).toMatchObject({ type: 'object', required: ['kind', 'functionName'] })
+  it('rejects the deleted dynamic function tool protocol', async () => {
+    const result = await createRuntime().executeTool('pageDesign_node-tree_getNode', {
+      $paths: ['page-a', 'tree-1'],
+      id: 'node-1',
+    })
+
+    expect(result).toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'UNKNOWN_TOOL' })],
+    })
   })
+})
 
-  it('strict-readiness: setAttribute.value 声明 type 联合类型', () => {
-    const tools = createRuntime().getLlmTools()
-    const setAttribute = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.setAttribute)
-    expect(setAttribute).toBeDefined()
-    if (setAttribute === undefined) throw new Error('not found')
-    const valueSchema = setAttribute.function.parameters.properties?.['value']
-    expect(valueSchema).toBeDefined()
-    if (valueSchema === undefined || typeof valueSchema === 'boolean') throw new Error('value schema missing')
-    expect(valueSchema.type).toEqual(['string', 'number', 'boolean', 'object', 'array', 'null'])
-  })
-
-  it('strict-blocker: findInstance.query 声明 additionalProperties:true 以允许业务自定义字段', () => {
-    const tools = createRuntime().getLlmTools()
-    const findInstance = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.findInstance)
-    expect(findInstance).toBeDefined()
-    if (findInstance === undefined) throw new Error('not found')
-    const querySchema = findInstance.function.parameters.properties?.['query']
-    expect(querySchema).toBeDefined()
-    if (querySchema === undefined || typeof querySchema === 'boolean') throw new Error('query schema missing')
-    expect(querySchema.additionalProperties).toBe(true)
-  })
-
-  it('strict-readiness: business function tool $paths 声明 minItems/maxItems 与 kindPath 长度一致', () => {
-    const tools = createRuntime().getLlmTools()
-    const businessFn = tools.find((spec) => spec.function.name === 'node-tree_getNode')
-    expect(businessFn).toBeDefined()
-    if (businessFn === undefined) throw new Error('not found')
-    const dollarPathsSchema = businessFn.function.parameters.properties?.['$paths']
-    expect(dollarPathsSchema).toBeDefined()
-    if (dollarPathsSchema === undefined || typeof dollarPathsSchema === 'boolean') throw new Error('$paths schema missing')
-    expect(dollarPathsSchema['minItems']).toBe(1)
-    expect(dollarPathsSchema['maxItems']).toBe(1)
-    expect(dollarPathsSchema.type).toBe('array')
-  })
-
-  it('strict-readiness: 全可选参数工具显式声明 required:[]', () => {
-    const tools = createRuntime().getLlmTools()
-    const queryModules = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryModules)
-    expect(queryModules).toBeDefined()
-    if (queryModules === undefined) throw new Error('not found')
-    expect(queryModules.function.parameters.required).toEqual([])
-
-    const queryFunctions = tools.find((spec) => spec.function.name === PROTOCOL_TOOL_NAMES.queryFunctions)
-    expect(queryFunctions).toBeDefined()
-    if (queryFunctions === undefined) throw new Error('not found')
-    expect(queryFunctions.function.parameters.required).toEqual([])
-  })
-
-  it('strict-blocker: 业务 schema 可选字段未归一化到 required（OpenAI strict 要求所有 properties 必须在 required 中）', () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new ModuleKind({
-      kind: 'opt-test',
-      name: '可选字段测试',
-      description: '测试业务 schema 含可选字段时 strict 归一化缺失',
+describe('AiModule explicit delegate requirements', () => {
+  it('requires runner/list/find when metadata declares functions or children', () => {
+    expect(() => new AiModule({
+      kind: 'fn-root',
+      name: '函数根',
+      description: '缺少 runner',
       functions: [{
-        name: 'doSomething',
-        description: '含可选字段的函数',
-        paramsSchema: {
-          type: 'object',
-          properties: {
-            requiredField: { type: 'string' },
-            optionalField: { type: 'string' },
-          },
-          required: ['requiredField'],
-          additionalProperties: false,
-        },
+        name: 'run',
+        description: 'run',
+        paramsSchema: { type: 'object', properties: {}, additionalProperties: false },
       }],
-    }))
-    const tools = runtime.getLlmTools()
-    const businessFn = tools.find((spec) => spec.function.name === 'opt-test_doSomething')
-    expect(businessFn).toBeDefined()
-    if (businessFn === undefined) throw new Error('not found')
-    // strict 未开启 — 当前所有工具均为 strict:false
-    expect(businessFn.function.strict).toBeUndefined()
-    // optionalField 仍在 properties 中
-    const props = businessFn.function.parameters.properties
-    expect(props).toBeDefined()
-    if (props === undefined) throw new Error('properties missing')
-    expect(props['optionalField']).toBeDefined()
-    // wrapper 已收紧 additionalProperties:false
-    expect(businessFn.function.parameters.additionalProperties).toBe(false)
-    // BLOCKER: optionalField 在 properties 但不在 required
-    // OpenAI strict 要求所有 properties 都必须在 required 数组里
-    // 缺少 strict normalizer → optionalField 未归一化到 required
-    const req = businessFn.function.parameters.required
-    expect(req).toBeDefined()
-    expect(req).not.toContain('optionalField')
-  })
-})
+      find: () => AiModuleResult.ok([]),
+    })).toThrow('runner for "fn-root" is required')
 
-describe('ModuleSemanticRuntime.executeTool', () => {
-  it('UNKNOWN_TOOL 时返回 ok=false 且 code 提示', async () => {
-    const result = await createRuntime().executeTool('non-existent', {})
-    expect(result.ok).toBe(false)
-    expect(result.checks?.[0]?.code).toBe('UNKNOWN_TOOL')
-  })
-
-  it('queryModules / queryFunctions 作为 LLM 直面工具返回知识摘要', async () => {
-    const runtime = createRuntimeWithPayloadCatalog()
-
-    const modules = await runtime.executeTool('queryModules', { kind: 'node-tree' })
-    expect(modules.ok).toBe(true)
-    expect(modules.data).toEqual([
-      expect.objectContaining({
-        kind: 'node-tree',
-        functionCount: 1,
-        payloadRefs: ['spark.component'],
-        pathPattern: '/node-tree[<node-treeId>]',
-        instanceGuide: expect.objectContaining({
-          queryFields: ['id', 'label', 'keyword', 'hint', 'rootId'],
-        }),
-        attributeGuides: [
-          expect.objectContaining({ name: 'rootId', access: 'read' }),
-        ],
-        functionGuides: [
-          expect.objectContaining({ toolName: 'node-tree_getNode' }),
-        ],
-      }),
-    ])
-
-    const filteredModules = await runtime.executeTool('queryModules', { keyword: 'spark', parentKind: 'root' })
-    expect(filteredModules.ok).toBe(true)
-    expect(filteredModules.data).toEqual([
-      expect.objectContaining({ kind: 'node-tree' }),
-    ])
-
-    const functions = await runtime.executeTool('queryFunctions', { keyword: 'getnode' })
-    expect(functions.ok).toBe(true)
-    expect(functions.data).toEqual([
-      expect.objectContaining({
-        toolName: 'node-tree_getNode',
-        requiredParamNames: ['id'],
-        failureCodes: ['NODE_NOT_FOUND'],
-      }),
-    ])
-  })
-
-  it('guideFunction 作为 LLM 直面工具返回完整调用指南和显式失败', async () => {
-    const runtime = createRuntimeWithPayloadCatalog()
-
-    const guide = await runtime.executeTool('guideFunction', { toolName: 'node-tree_getNode' })
-    expect(guide.ok).toBe(true)
-    expect(guide.data).toMatchObject({
-      toolName: 'node-tree_getNode',
-      paramsSchema: {
-        type: 'object',
-        required: ['id'],
-        additionalProperties: false,
-      },
-      usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
-    })
-
-    const invalid = await runtime.executeTool('guideFunction', { toolName: 'node-tree' })
-    expect(invalid.ok).toBe(false)
-    expect(invalid.checks?.[0]?.code).toBe('INVALID_GUIDE_REQUEST')
-  })
-
-  it('guideHumanQuestion 作为知识工具返回人工反问指南', async () => {
-    const runtime = createRuntime()
-
-    const guide = await runtime.executeTool('guideHumanQuestion', {
-      context: '准备提交请假申请',
-      reason: '缺少开始日期和结束日期,不能替用户猜测',
-      missingFacts: ['请假开始日期', '请假结束日期'],
-      candidateOptions: ['今天', '明天'],
-    })
-
-    expect(guide.ok).toBe(true)
-    const data = guide.data
-    if (!isRecord(data)) throw new Error('expected guide object')
-    expect(data['shouldAskHuman']).toBe(true)
-    expect(data['stopToolCalls']).toBe(true)
-    expect(data['question']).toContain('请假开始日期')
-    expect(data['question']).toContain('今天 / 明天')
-
-    const invalid = await runtime.executeTool('guideHumanQuestion', {
-      context: '',
-      reason: '缺少确认',
-    })
-    expect(invalid.ok).toBe(false)
-    expect(invalid.checks?.[0]?.code).toBe('INVALID_TOOL_ARGS')
-  })
-
-  it('getAttribute 走通(rootId)', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('getAttribute', {
-      path: '/node-tree[t1]',
-      attrName: 'rootId',
-    })
-    expect(result.ok).toBe(true)
-    expect(result.data).toBe('root-1')
-  })
-
-  it('node-tree_getNode 透传参数并返回 ok=true', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('node-tree_getNode', {
-      $paths: ['t1'],
-      id: 'n1',
-    })
-    expect(result.ok).toBe(true)
-    expect(result.data).toEqual({ id: 'n1', label: 'node-n1' })
-  })
-
-  it('node-tree_getNode 参数校验失败时由 ModuleKind 返回 SCHEMA_VALIDATION_FAILED', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('node-tree_getNode', {
-      $paths: ['t1'],
-    })
-    expect(result.ok).toBe(false)
-    expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
-  })
-
-  it('describeKind 输出 usageRules / failureModes(G1)', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
-    expect(result.ok).toBe(true)
-    const data = result.data
-    if (!isRecord(data)) throw new Error('expected object payload')
-    expect(data['kind']).toBe('node-tree')
-    const functions = data['functions']
-    if (!Array.isArray(functions) || functions.length === 0) {
-      throw new Error('expected non-empty functions array')
-    }
-    const getNode = functions.find((a) => isRecord(a) && a['name'] === 'getNode')
-    if (!isRecord(getNode)) throw new Error('getNode function missing')
-    expect(getNode['usageRules']).toEqual(['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'])
-    const failureModes = getNode['failureModes']
-    if (!Array.isArray(failureModes) || failureModes.length === 0) {
-      throw new Error('expected failureModes')
-    }
-    const first = failureModes[0]
-    if (!isRecord(first)) throw new Error('failure mode shape')
-    expect(first['code']).toBe('NODE_NOT_FOUND')
-  })
-
-  it('INVALID_PATH 时透传 ModulePathParseError code', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('getAttribute', {
-      path: 'no-leading-slash',
-      attrName: 'rootId',
-    })
-    expect(result.ok).toBe(false)
-    expect(result.checks?.[0]?.code).toMatch(/^INVALID_PATH_/)
-  })
-
-  it('listChildren 根路径返回 kind 名单', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('listChildren', { path: '/' })
-    expect(result.ok).toBe(true)
-    const data = result.data
-    if (!Array.isArray(data)) throw new Error('expected array')
-    expect(data).toEqual([
-      { id: 'node-tree', label: '节点树', summary: '页面节点树' },
-    ])
-  })
-
-  it('findInstance 根路径下委托给目标 kind', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('findInstance', {
-      path: '/',
-      childKind: 'node-tree',
-      query: { label: '主页' },
-    })
-    expect(result.ok).toBe(true)
-    const data = result.data
-    if (!Array.isArray(data) || data.length === 0) throw new Error('expected non-empty')
-    if (!isRecord(data[0])) throw new Error('expected record')
-    expect(data[0]['id']).toBe('node-tree-1')
-  })
-})
-
-describe('ModuleSemanticRuntime 直接调用入口', () => {
-  it('getAttribute 直接调用与 executeTool 等价', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.getAttribute(ModulePath.parse('/node-tree[t1]'), 'rootId')
-    expect(result.ok).toBe(true)
-    expect(result.data).toBe('root-1')
-  })
-
-  it('describeKind 直接调用返回 attributes / functions / payloads / children', () => {
-    const runtime = createRuntime()
-    const result = runtime.describeKind('node-tree')
-    expect(result.ok).toBe(true)
-    expect(result.data?.kind).toBe('node-tree')
-    expect(result.data?.attributes.map((attr) => attr.name)).toEqual(['rootId'])
-    expect(result.data?.functions.map((fn) => fn.name)).toEqual(['getNode'])
-    expect(result.data?.payloads.map((payload) => payload.payloadRef)).toEqual(['spark.component'])
-  })
-})
-
-describe('ModuleSemanticRuntime 知识投影', () => {
-  it('不暴露 prompt 构造 helper 作为 Runtime 公共方法', () => {
-    expect(Reflect.get(ModuleSemanticRuntime.prototype, 'buildKnowledgePromptSnapshot')).toBeUndefined()
-  })
-
-  it('投影模块目录、函数目录和系统提示词快照', () => {
-    const runtime = createRuntimeWithPayloadCatalog()
-    const snapshot: ModuleSemanticKnowledgeSnapshot = runtime.projectKnowledge()
-    const rootSnapshot: RootModuleSemanticKnowledgeSnapshot = runtime.projectKnowledge()
-
-    expect(snapshot.modules).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        kind: 'node-tree',
-        name: '节点树',
-        description: '页面节点树',
-        attributeCount: 1,
-        attributeNames: ['rootId'],
-        readableAttributeNames: ['rootId'],
-        writableAttributeNames: [],
-        functionCount: 1,
-        functionNames: ['getNode'],
-        payloadCount: 1,
-        payloadRefs: ['spark.component'],
-        payloadFunctionRefs: ['spark.component(functions=getNode)'],
-        payloadLookupSteps: NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS,
-        childKindCount: 0,
-        children: [],
-        level: 0,
-        pathPattern: '/node-tree[<node-treeId>]',
-        instanceGuide: NODE_TREE_INSTANCE_GUIDE,
-        instanceLookupSteps: [
-          'listChildren("/") 查看根级 kind。',
-          'findInstance("/", "node-tree", query) 获取 node-tree 实例 id。',
-        ],
-        childLookupSteps: [],
-        attributeLookupSteps: [
-          'describeKind("node-tree") 查看 attributes 的 schema、readable 和 writable。',
-          '读取属性使用 getAttribute({ path, attrName })。',
-          '写入属性使用 setAttribute({ path, attrName, value })。',
-        ],
-        functionLookupSteps: [
-          'queryFunctions({ kind: "node-tree" }) 查看 node-tree 函数目录。',
-          'guideFunction({ toolName: "node-tree_<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
-          '<toolName>({ $paths: [<node-treeId>] }) 执行业务函数。',
-        ],
-        attributeGuides: [
-          {
-            name: 'rootId',
-            description: '根节点 id',
-            access: 'read',
-            readable: true,
-            writable: false,
-            schemaLookupStep: 'describeKind("node-tree").attributes["rootId"].schema',
-            readStep: 'getAttribute({ path, attrName: "rootId" })',
-          },
-        ],
-        functionGuides: [
-          expect.objectContaining({
-            toolName: 'node-tree_getNode',
-            kindPath: ['node-tree'],
-            functionName: 'getNode',
-            lookupSteps: NODE_TREE_FUNCTION_LOOKUP_STEPS,
-            invokeStep: 'node-tree_getNode({ $paths: [<node-treeId>] })',
-            payloadRefs: ['spark.component'],
-          }),
-        ],
-        childKindSummaries: [],
-      }),
-    ]))
-    expect(snapshot.functions).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        toolName: 'node-tree_getNode',
-        kindPath: ['node-tree'],
-        kind: 'node-tree',
-        functionName: 'getNode',
-        description: '按 id 取节点',
-        paramNames: ['id'],
-        requiredParamNames: ['id'],
-        failureCodes: ['NODE_NOT_FOUND'],
-        usageRuleCount: 2,
-        failureModeCount: 1,
-        functionLookupSteps: NODE_TREE_FUNCTION_LOOKUP_STEPS,
-        payloadRefs: ['spark.component'],
-        requiresPayloadGuide: true,
-        payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
-      }),
-    ]))
-    expect(rootSnapshot.functions.some((fn) => fn.toolName === 'node-tree_getNode')).toBe(true)
-    expect(snapshot.kindLayers).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        kind: 'node-tree',
-        name: '节点树',
-        level: 0,
-        pathPattern: '/node-tree[<node-treeId>]',
-        instanceGuide: NODE_TREE_INSTANCE_GUIDE,
-        instanceLookupSteps: [
-          'listChildren("/") 查看根级 kind。',
-          'findInstance("/", "node-tree", query) 获取 node-tree 实例 id。',
-        ],
-        childLookupSteps: [],
-        attributeLookupSteps: [
-          'describeKind("node-tree") 查看 attributes 的 schema、readable 和 writable。',
-          '读取属性使用 getAttribute({ path, attrName })。',
-          '写入属性使用 setAttribute({ path, attrName, value })。',
-        ],
-        functionLookupSteps: [
-          'queryFunctions({ kind: "node-tree" }) 查看 node-tree 函数目录。',
-          'guideFunction({ toolName: "node-tree_<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。',
-          '<toolName>({ $paths: [<node-treeId>] }) 执行业务函数。',
-        ],
-        payloadLookupSteps: NODE_TREE_MODULE_PAYLOAD_LOOKUP_STEPS,
-        attributes: [
-          {
-            name: 'rootId',
-            description: '根节点 id',
-            access: 'read',
-            readable: true,
-            writable: false,
-            schemaLookupStep: 'describeKind("node-tree").attributes["rootId"].schema',
-            readStep: 'getAttribute({ path, attrName: "rootId" })',
-          },
-        ],
-        functions: [
-          expect.objectContaining({
-            toolName: 'node-tree_getNode',
-            kindPath: ['node-tree'],
-            functionName: 'getNode',
-            lookupSteps: NODE_TREE_FUNCTION_LOOKUP_STEPS,
-            invokeStep: 'node-tree_getNode({ $paths: [<node-treeId>] })',
-            payloadRefs: ['spark.component'],
-          }),
-        ],
-        childKinds: [],
-      }),
-    ]))
-    expect(snapshot.promptSnapshot).not.toContain('【AI Knowledge Snapshot】')
-    expect(snapshot.promptSnapshot).toContain('工具：')
-    expect(snapshot.promptSnapshot).toContain('知识=queryModules/queryFunctions/guideFunction')
-    expect(snapshot.promptSnapshot).toContain('实例=listChildren/findInstance')
-    expect(snapshot.promptSnapshot).not.toContain('1. queryModules({ kind?: string')
-    expect(snapshot.promptSnapshot).not.toContain('10. guideHumanQuestion({ context: string')
-    expect(snapshot.promptSnapshot).toContain('root node-tree; payload=payloadLookupSteps')
-    expect(snapshot.promptSnapshot).toContain('流程：实例->schema/元数据->执行')
-    expect(snapshot.promptSnapshot).not.toContain('函数目录摘要')
-    expect(snapshot.promptSnapshot).not.toContain('node-tree.getNode:')
-    expect(snapshot.promptSnapshot).not.toContain('required=[componentId]')
-  })
-
-  it('payloads 存在但未注册 payload catalog 时 fail-fast', () => {
-    const runtime = createRuntime()
-    const expectedMessage = 'no payload catalog ModuleKind is registered'
-
-    expect(() => runtime.projectKnowledge()).toThrow(expectedMessage)
-    expect(() => runtime.queryKnowledgeModules({ kind: 'node-tree' })).toThrow(expectedMessage)
-    expect(() => runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toThrow(expectedMessage)
-    expect(() => runtime.guideKnowledgeFunction({ toolName: 'node-tree_getNode' })).toThrow(expectedMessage)
-  })
-
-  it('parentKind 缺失或成环时 knowledge 与 tool generation 使用同一拓扑校验', () => {
-    const missingParentRuntime = new ModuleSemanticRuntime()
-    missingParentRuntime.registerKind(new ModuleKind({
-      kind: 'orphan-kind',
-      name: '孤儿模块',
-      description: 'parentKind 指向未注册 kind',
-      parentKind: 'missing-parent',
-      functions: [ECHO_FUNCTION_SCHEMA],
-    }))
-    const missingParentMessage = 'ModuleKind "orphan-kind" references missing parentKind "missing-parent"'
-
-    expect(() => missingParentRuntime.getLlmTools()).toThrow(missingParentMessage)
-    expect(() => missingParentRuntime.projectKnowledge()).toThrow(missingParentMessage)
-    expect(() => missingParentRuntime.queryKnowledgeModules()).toThrow(missingParentMessage)
-    expect(() => missingParentRuntime.queryKnowledgeFunctions()).toThrow(missingParentMessage)
-    expect(() => missingParentRuntime.guideKnowledgeFunction({ toolName: 'missing-parent_orphan-kind_echo' }))
-      .toThrow(missingParentMessage)
-
-    const cyclicRuntime = new ModuleSemanticRuntime()
-    cyclicRuntime.registerKind(new ModuleKind({
-      kind: 'cycle-a',
-      name: '循环 A',
-      description: '循环父级 A',
-      parentKind: 'cycle-b',
-      functions: [ECHO_FUNCTION_SCHEMA],
-    }))
-    cyclicRuntime.registerKind(new ModuleKind({
-      kind: 'cycle-b',
-      name: '循环 B',
-      description: '循环父级 B',
-      parentKind: 'cycle-a',
-    }))
-
-    expect(() => cyclicRuntime.getLlmTools()).toThrow('ModuleKind parent cycle detected')
-    expect(() => cyclicRuntime.projectKnowledge()).toThrow('ModuleKind parent cycle detected')
-  })
-
-  it('父层 queryModules 摘要包含子 kind 的功能摘要和下一跳', () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new ModuleKind({
-      kind: 'leave-root',
-      name: '请假单据',
-      description: '请假单据根模块。',
-      children: ['leave-person'],
-    }))
-    runtime.registerKind(new ModuleKind({
-      kind: 'leave-person',
-      name: '人员目录',
-      description: '可选人员实例目录。',
-      parentKind: 'leave-root',
-      attributes: [
-        {
-          name: 'code',
-          description: '人员编码。',
-          schema: { type: 'string' },
-          readable: true,
-          writable: false,
-        },
-        {
-          name: 'name',
-          description: '人员姓名。',
-          schema: { type: 'string' },
-          readable: true,
-          writable: false,
-        },
-      ],
-      attributeAccessor: {
-        get: (ctx, attrName) => ModuleOperationResult.ok(attrName === 'code' ? (ctx.segment?.id ?? '') : 'Ada'),
-        set: () => ModuleOperationResult.failCode('READONLY', '人员目录只读。'),
-      },
-      functions: [
-        {
-          name: 'selectPerson',
-          description: '按人员编码选择人员。',
-          paramsSchema: {
-            type: 'object',
-            properties: {
-              code: { type: 'string' },
-            },
-            required: ['code'],
-            additionalProperties: false,
-          },
-        },
-      ],
-    }))
-
-    const summaries = runtime.queryKnowledgeModules({ keyword: '人员编码' })
-    expect(summaries.map((summary) => summary.kind)).toEqual(['leave-root', 'leave-person'])
-    const root = summaries[0]
-    const child = summaries[1]
-    expect(root?.childKindSummaries).toEqual([
-      expect.objectContaining({
-        kind: 'leave-person',
-        attributeNames: ['code', 'name'],
-        functionNames: ['selectPerson'],
-        attributeSummaries: expect.arrayContaining([
-          expect.objectContaining({
-            name: 'code',
-            description: '人员编码。',
-            access: 'read',
-          }),
-        ]),
-        functionSummaries: expect.arrayContaining([
-          expect.objectContaining({
-            functionName: 'selectPerson',
-            description: '按人员编码选择人员。',
-            requiredParamNames: ['code'],
-          }),
-        ]),
-        detailLookupSteps: [
-          'queryModules({ kind: "leave-person" }) 读取 leave-person 自己的 instanceGuide、attributeGuides 和 functionGuides。',
-          'describeKind("leave-person") 查看 leave-person 的 attributes/functions/payloads/children 元数据。',
-          '在父实例 path 下 listChildren/findInstance(path, "leave-person", query) 定位子实例。',
-        ],
-      }),
-    ])
-    expect(child).toMatchObject({
-      kind: 'leave-person',
-      level: 1,
-      instanceGuide: expect.objectContaining({
-        discoveryScope: 'parent',
-        queryFields: ['id', 'label', 'keyword', 'hint', 'code', 'name'],
-      }),
-      instanceLookupSteps: [
-        '先获得父路径 /leave-root[<parentId>]。',
-        'listChildren(parentPath, "leave-person") 查看 leave-person 子实例。',
-        'findInstance(parentPath, "leave-person", query) 获取 leave-person 实例 id。',
-      ],
-    })
-  })
-
-  it('支持按 kind / keyword 查询函数摘要', () => {
-    const runtime = createRuntimeWithPayloadCatalog()
-
-    expect(runtime.queryKnowledgeFunctions({ kind: 'node-tree' })).toHaveLength(1)
-    expect(runtime.queryKnowledgeFunctions({ keyword: 'getnode' })).toEqual([
-      expect.objectContaining({ toolName: 'node-tree_getNode' }),
-    ])
-    expect(runtime.queryKnowledgeFunctions({ kind: 'missing' })).toEqual([])
-  })
-
-  it('guideKnowledgeFunction 返回完整动作指南,失败时显式诊断', () => {
-    const runtime = createRuntimeWithPayloadCatalog()
-
-    const guide = runtime.guideKnowledgeFunction({ toolName: 'node-tree_getNode' })
-    expect(guide.ok).toBe(true)
-    expect(guide.data).toMatchObject({
-      toolName: 'node-tree_getNode',
-      kind: 'node-tree',
-      functionName: 'getNode',
-      description: '按 id 取节点',
-      paramsSchema: {
-        type: 'object',
-        required: ['id'],
-        additionalProperties: false,
-      },
-      usageRules: ['只能在已知节点 id 时调用', '空 id 会返回 NODE_NOT_FOUND'],
-      failureModes: [
-        { code: 'NODE_NOT_FOUND', when: '指定 id 不存在', fix: '先调用 listChildren 取得真实 id' },
-      ],
-      functionLookupSteps: NODE_TREE_FUNCTION_LOOKUP_STEPS,
-      payloadRefs: ['spark.component'],
-      requiresPayloadGuide: true,
-      payloadLookupSteps: NODE_TREE_PAYLOAD_LOOKUP_STEPS,
-    })
-
-    const missing = runtime.guideKnowledgeFunction({ toolName: 'node-tree_missing' })
-    expect(missing.ok).toBe(false)
-    expect(missing.checks?.[0]?.code).toBe('FUNCTION_NOT_FOUND')
-  })
-})
-
-describe('ModuleParameterPayloadRegistry', () => {
-  it('按 moduleKind + payloadRef 注册参数 provider，重复注册 fail-fast', () => {
-    const registry = new ModuleParameterPayloadRegistry()
-    const provider: ModuleParameterPayloadProvider = {
-      moduleKind: 'node-tree',
-      payloadRef: 'spark.component',
-      description: '组件参数',
-      queryPayloads: () => [
-        {
-          moduleKind: 'node-tree',
-          payloadRef: 'spark.component',
-          key: 'r-button',
-          description: '按钮',
-        },
-      ],
-      guidePayload: (key: string) => key === 'r-button'
-        ? {
-            moduleKind: 'node-tree',
-            payloadRef: 'spark.component',
-            key,
-            description: '按钮参数',
-            paramsSchema: {
-              type: 'object',
-              properties: {
-                label: { type: 'string' },
-              },
-              additionalProperties: true,
-            },
-          }
-        : null,
-    }
-
-    registry.register(provider)
-
-    expect(registry.queryPayloads({ moduleKind: 'node-tree', payloadRef: 'spark.component' })).toEqual([
-      expect.objectContaining({ key: 'r-button' }),
-    ])
-    expect(registry.guidePayload('node-tree', 'spark.component', 'r-button')).toMatchObject({
-      key: 'r-button',
-      paramsSchema: { type: 'object' },
-    })
-    expect(() => registry.register(provider)).toThrow('Duplicate module parameter payload provider')
-    expect(() => registry.queryPayloads({ moduleKind: 'dataset' })).toThrow('No parameter payload provider registered for moduleKind: dataset')
-  })
-})
-
-describe('ModuleKind 默认协议行为', () => {
-  it('parentKind 让根发现只返回根模块,describeKind 保留父子拓扑', async () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new ModuleKind({
-      kind: 'root-kind',
-      name: '根模块',
-      description: '根模块描述',
-      children: ['child-kind'],
-    }))
-    runtime.registerKind(new ModuleKind({
-      kind: 'child-kind',
-      name: '子模块',
-      description: '子模块描述',
-      parentKind: 'root-kind',
-      functions: [ECHO_FUNCTION_SCHEMA],
-      runner: () => ModuleOperationResult.ok<LlmJsonValue>({ reached: true }),
-    }))
-
-    const listed = await runtime.executeTool('listChildren', { path: '/' })
-    expect(listed).toMatchObject({
-      ok: true,
-      data: [{ id: 'root-kind', label: '根模块', summary: '根模块描述' }],
-    })
-
-    const root = await runtime.executeTool('describeKind', { kind: 'root-kind' })
-    expect(root).toMatchObject({
-      ok: true,
-      data: expect.objectContaining({ children: ['child-kind'] }),
-    })
-    const child = await runtime.executeTool('describeKind', { kind: 'child-kind' })
-    expect(child).toMatchObject({
-      ok: true,
-      data: expect.objectContaining({ parentKind: 'root-kind' }),
-    })
-
-    const rootFindChild = await runtime.executeTool('findInstance', {
-      path: '/',
-      childKind: 'child-kind',
-      query: {},
-    })
-    expect(rootFindChild).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'ROOT_KIND_REQUIRED' })],
-    })
-
-    const directChildFunction = await runtime.executeTool('child-kind_echo', {
-      $paths: ['child-1'],
-      value: 'x',
-    })
-    expect(directChildFunction).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'ROOT_KIND_REQUIRED' })],
-    })
-  })
-
-  it('路径导航拒绝与 parentKind 不一致的伪 kindPath', async () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(new ModuleKind({
-      kind: 'root-a',
-      name: '根 A',
-      description: '根模块 A',
-      children: ['child-kind'],
-    }))
-    runtime.registerKind(new ModuleKind({
-      kind: 'root-b',
-      name: '根 B',
-      description: '根模块 B',
-      children: ['child-kind'],
-    }))
-    runtime.registerKind(new ModuleKind({
-      kind: 'child-kind',
-      name: '子模块',
-      description: '只允许挂在 root-a 下',
-      parentKind: 'root-a',
-      functions: [ECHO_FUNCTION_SCHEMA],
-      runner: () => ModuleOperationResult.ok<LlmJsonValue>({ reached: true }),
-    }))
-
-    const mismatchedPath = await runtime.executeTool('root-b_child-kind_echo', {
-      $paths: ['root-b-1', 'child-1'],
-      value: 'x',
-    })
-    expect(mismatchedPath).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'PARENT_KIND_MISMATCH' })],
-    })
-
-    const mismatchedList = await runtime.executeTool('listChildren', {
-      path: '/root-b[root-b-1]',
-      childKind: 'child-kind',
-    })
-    expect(mismatchedList).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'PARENT_KIND_MISMATCH' })],
-    })
-  })
-
-  it('主字段、属性委托、children 和 parentKind 声明错误时 fail-fast', () => {
-    expect(() => new ModuleKind({
-      kind: ' ',
-      name: 'Invalid Kind',
-      description: 'invalid',
-    })).toThrow('kind must not be empty')
-
-    expect(() => new ModuleKind({
-      kind: 'missing-attr-accessor',
-      name: 'Missing Attr Accessor',
-      description: 'invalid',
-      attributes: [
-        {
-          name: 'title',
-          description: '标题',
-          schema: { type: 'string' },
-          readable: true,
-          writable: true,
-        },
-      ],
-    })).toThrow('attributeAccessor for "missing-attr-accessor" is required when attributes are declared')
-
-    expect(() => new ModuleKind({
-      kind: 'invalid-parent',
-      name: 'Invalid Parent',
-      description: 'invalid',
-      parentKind: 'invalid-parent',
-    })).toThrow('parentKind for "invalid-parent" must not point to itself')
-
-    expect(() => new ModuleKind({
-      kind: 'invalid-child',
-      name: 'Invalid Child',
-      description: 'invalid',
-      children: ['child', ' child '],
-    })).toThrow('duplicate child kind "child" on "invalid-child"')
-
-    expect(() => new ModuleKind({
-      kind: 'invalid-payload',
-      name: 'Invalid Payload',
-      description: 'invalid',
-      payloads: [
-        { payloadRef: 'spark.component', description: '组件参数' },
-        { payloadRef: ' spark.component ', description: '重复组件参数' },
-      ],
-    })).toThrow('duplicate payloadRef "spark.component" on "invalid-payload"')
-  })
-
-  it('基类通过独立 attributeAccessor 读写属性并按 schema 校验', async () => {
-    let title: unknown
-    const moduleKind = new ModuleKind({
-      kind: 'accessor-attrs',
-      name: 'Accessor 属性',
-      description: '验证 getAttribute/setAttribute 基类实现',
-      attributes: [
-        {
-          name: 'title',
-          description: '标题',
-          schema: { type: 'string' },
-          readable: true,
-          writable: true,
-        },
-      ],
-      attributeAccessor: {
-        get: () => ModuleOperationResult.ok<unknown>(title),
-        set: (_ctx, _attrName, value) => {
-          title = value
-          return ModuleOperationResult.ok<void>()
-        },
-      },
-    })
-    const ctx: ModulePathContext = {
-      segments: [{ kind: 'accessor-attrs', id: 'root-1' }],
-      segment: { kind: 'accessor-attrs', id: 'root-1' },
-    }
-
-    await expect(moduleKind.setAttribute(ctx, 'title', '新标题')).resolves.toMatchObject({ ok: true })
-    await expect(moduleKind.getAttribute(ctx, 'title')).resolves.toMatchObject({
-      ok: true,
-      data: '新标题',
-    })
-    const invalid = await moduleKind.setAttribute(ctx, 'title', 123)
-    expect(invalid.ok).toBe(false)
-    expect(invalid.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
-  })
-
-  it('listChildren/findInstance ref 保持 ModuleInstanceRef 协议约束', async () => {
-    const moduleKind = new ModuleKind({
-      kind: 'typed',
-      name: '强类型实例',
-      description: '验证 list/find 协议约束',
-      list: () => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-        { id: 'typed-1', label: '强类型实例' },
-      ]),
-      find: () => ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-        { id: 'typed-2', label: '强类型查询实例' },
-      ]),
-    })
-    const ctx: ModulePathContext = {
-      segments: [{ kind: 'typed', id: 'root-1' }],
-      segment: { kind: 'typed', id: 'root-1' },
-    }
-
-    await expect(moduleKind.listChildren(ctx)).resolves.toMatchObject({
-      ok: true,
-      data: [{ id: 'typed-1', label: '强类型实例' }],
-    })
-    await expect(moduleKind.findInstance(ctx, 'typed', {})).resolves.toMatchObject({
-      ok: true,
-      data: [{ id: 'typed-2', label: '强类型查询实例' }],
-    })
-  })
-
-  it('基类统一实现 listChildren/findInstance/resolveChild, resolveChild 以 find 结果为准', async () => {
-    const calls: string[] = []
-    const moduleKind = new ModuleKind({
-      kind: 'delegated',
-      name: '委托模块',
-      description: '验证基类协议入口',
+    expect(() => new AiModule({
+      kind: 'child-root',
+      name: '子模块根',
+      description: '缺少 list',
       children: ['child'],
-      list: (_ctx, childKind) => {
-        calls.push(`list:${childKind ?? '*'}`)
-        return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-          { id: 'listed-1', label: '子实例' },
-        ])
-      },
-      find: (_ctx, childKind, query) => {
-        calls.push(`find:${childKind}:${String(query['id'] ?? query['name'])}`)
-        if (query['id'] === 'child-1') {
-          return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-            { id: 'child-1', label: '路径子实例' },
-          ])
-        }
-        return ModuleOperationResult.ok<readonly ModuleInstanceRef[]>([
-          { id: 'found-1', label: '查询实例' },
-        ])
-      },
-    })
-    const ctx: ModulePathContext = {
-      segments: [{ kind: 'delegated', id: 'root-1' }],
-      segment: { kind: 'delegated', id: 'root-1' },
-    }
+      find: () => AiModuleResult.ok([]),
+    })).toThrow('list for "child-root" is required')
 
-    await expect(moduleKind.listChildren(ctx, 'child')).resolves.toMatchObject({
-      ok: true,
-      data: [{ id: 'listed-1', label: '子实例' }],
-    })
-    await expect(moduleKind.findInstance(ctx, 'child', { name: 'demo' })).resolves.toMatchObject({
-      ok: true,
-      data: [{ id: 'found-1', label: '查询实例' }],
-    })
-    await expect(moduleKind.resolveChild(ctx, 'child', 'child-1')).resolves.toMatchObject({
-      ok: true,
-      data: true,
-    })
-    await expect(moduleKind.resolveChild(ctx, 'child', 'listed-1')).resolves.toMatchObject({
-      ok: true,
-      data: false,
-    })
-    expect(calls).toEqual(['list:child', 'find:child:demo', 'find:child:child-1', 'find:child:listed-1'])
+    expect(() => new AiModule({
+      kind: 'root-without-find',
+      name: '根模块',
+      description: '缺少 find',
+    })).toThrow('find for "root-without-find" is required')
   })
 
-  it('构造期委托不作为 runner/list/find 公共字段暴露', () => {
-    const moduleKind = createRegisteredActionKind()
-    expect(Reflect.get(moduleKind, 'runner')).toBeUndefined()
-    expect(Reflect.get(moduleKind, 'list')).toBeUndefined()
-    expect(Reflect.get(moduleKind, 'find')).toBeUndefined()
-  })
-
-  it('直接调用 invokeFunction 也执行 paramsSchema 校验', async () => {
-    const moduleKind = createRegisteredActionKind()
-    const ctx: ModulePathContext = {
-      segments: [{ kind: 'registered-action', id: 'current' }],
-      segment: { kind: 'registered-action', id: 'current' },
-    }
-
-    const result = await moduleKind.invokeFunction(ctx, 'echo', { value: 123 })
-    expect(result.ok).toBe(false)
-    expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
-  })
-
-  it('schema coerceJsonValue 处理循环引用、特殊数值和常见运行时对象', () => {
-    const circular: {
-      self?: unknown
-      date?: unknown
-      badNumber?: unknown
-      big?: unknown
-      symbolValue?: unknown
-      bytes?: unknown
-    } = {
-      date: new Date('2026-05-23T00:00:00.000Z'),
-      badNumber: Number.NaN,
-      big: 123n,
-      symbolValue: Symbol('demo'),
-      bytes: new Uint8Array([1, 2, 3]),
-    }
-    circular.self = circular
-
-    const coerced = coerceJsonValue(circular)
-    if (!isRecord(coerced)) throw new Error('expected record')
-
-    expect(coerced['date']).toBe('2026-05-23T00:00:00.000Z')
-    expect(coerced['badNumber']).toBeUndefined()
-    expect(coerced['big']).toBe('123')
-    expect(coerced['symbolValue']).toBe('Symbol(demo)')
-    expect(coerced['bytes']).toEqual([1, 2, 3])
-    expect(coerced['self']).toBeUndefined()
-  })
-
-  it('默认完成无属性、无子节点、当前实例发现和未实现 function 响应', async () => {
-    const runtime = new ModuleSemanticRuntime()
-    runtime.registerKind(createDefaultOnlyKind())
-    const host = {
-      moduleId: 'demo',
-      moduleInstanceId: 'instance-1',
-      instanceId: 'demo:instance-1',
-    }
-
-    const found = await runtime.executeTool('findInstance', {
-      path: '/',
-      childKind: 'default-only',
-      query: {},
-    }, host)
-    expect(found).toMatchObject({
-      ok: true,
-      data: [{ id: 'instance-1', label: '当前 default-only 实例' }],
-    })
-
-    const listed = await runtime.executeTool('listChildren', {
-      path: '/default-only[instance-1]',
-    }, host)
-    expect(listed).toMatchObject({ ok: true, data: [] })
-
-    const attr = await runtime.executeTool('getAttribute', {
-      path: '/default-only[instance-1]',
-      attrName: 'title',
-    }, host)
-    expect(attr).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'ATTRIBUTE_NOT_DECLARED' })],
-    })
-
-    const fnResult = await runtime.executeTool('default-only_ping', {
-      $paths: ['instance-1'],
-    }, host)
-    expect(fnResult).toMatchObject({
-      ok: false,
-      checks: [expect.objectContaining({ code: 'FUNCTION_NOT_IMPLEMENTED' })],
-    })
-  })
-})
-
-describe('ModuleSemanticRuntime describeKind 完整 schema(plan 闭环 2)', () => {
-  it('functions[].paramsSchema 透传(不为 additionalProperties:true)', async () => {
+  it('keeps direct runtime APIs for internal callers', async () => {
     const runtime = createRuntime()
-    const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
-    expect(result.ok).toBe(true)
-    if (!isRecord(result.data)) throw new Error('expected object payload')
-    const functions = result.data['functions']
-    if (!Array.isArray(functions) || functions.length === 0) {
-      throw new Error('expected non-empty functions array')
-    }
-    const getNode = functions.find((a) => isRecord(a) && a['name'] === 'getNode')
-    if (!isRecord(getNode)) throw new Error('getNode function missing')
-    const paramsSchema = getNode['paramsSchema']
-    if (!isRecord(paramsSchema)) throw new Error('paramsSchema must be object payload')
-    expect(paramsSchema['type']).toBe('object')
-    expect(paramsSchema['additionalProperties']).toBe(false)
-    expect(paramsSchema['required']).toEqual(['id'])
-    const properties = paramsSchema['properties']
-    if (!isRecord(properties)) throw new Error('properties must be object')
-    expect(isRecord(properties['id']) && properties['id']['type']).toBe('string')
-  })
+    const path = AiModulePath.parse('/pageDesign[page-a]')
 
-  it('attributes[].schema 透传', async () => {
-    const runtime = createRuntime()
-    const result = await runtime.executeTool('describeKind', { kind: 'node-tree' })
-    expect(result.ok).toBe(true)
-    if (!isRecord(result.data)) throw new Error('expected object payload')
-    const attributes = result.data['attributes']
-    if (!Array.isArray(attributes) || attributes.length === 0) {
-      throw new Error('expected non-empty attributes array')
-    }
-    const rootId = attributes[0]
-    if (!isRecord(rootId)) throw new Error('attr shape')
-    const schema = rootId['schema']
-    if (!isRecord(schema)) throw new Error('schema must be object')
-    expect(schema['type']).toBe('string')
-  })
-})
-
-describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
-  it('executeTool 第三参数 host 透传到 ModuleKind ctx.host', async () => {
-    const { runtime, spy } = createRuntimeWithSpy()
-    const host = { moduleId: 'page-design', moduleInstanceId: 'page-42', instanceId: 'session-1' }
-    const result = await runtime.executeTool(
-      'findInstance',
-      { path: '/', childKind: 'node-tree', query: {} },
-      host,
-    )
-    expect(result.ok).toBe(true)
-    expect(spy.lastHost).toEqual(host)
-    if (!Array.isArray(result.data) || result.data.length === 0) throw new Error('expected non-empty')
-    const first = result.data[0]
-    if (!isRecord(first)) throw new Error('expected record')
-    expect(first['id']).toBe('page-42')
-  })
-
-  it('host 不传时 ctx.host === undefined,保持 host 参数可选', async () => {
-    const { runtime, spy } = createRuntimeWithSpy()
-    const result = await runtime.executeTool('findInstance', {
-      path: '/',
-      childKind: 'node-tree',
-      query: {},
+    await expect(runtime.getAttribute(path, 'title')).resolves.toMatchObject({
+      ok: true,
+      data: '初始页面',
     })
-    expect(result.ok).toBe(true)
-    expect(spy.lastHost).toBeUndefined()
-  })
-
-  it('直接调用 findInstance 接受 host 形参并透传', async () => {
-    const { runtime, spy } = createRuntimeWithSpy()
-    const host = { moduleId: 'm', moduleInstanceId: 'i', instanceId: 's' }
-    await runtime.findInstance({
-      path: ModulePath.parse('/'),
-      childKind: 'node-tree',
-      query: {},
-      host,
-    })
-    expect(spy.lastHost).toEqual(host)
-  })
-
-  it('非根路径 business function tool 也透传 host', async () => {
-    const { runtime, spy } = createRuntimeWithSpy()
-    const host = { moduleId: 'm', moduleInstanceId: 'page-42', instanceId: 's' }
-    const result = await runtime.executeTool(
-      'node-tree_getNode',
-      { $paths: ['page-42'], id: 'n1' },
-      host,
-    )
-    expect(result.ok).toBe(true)
-    expect(spy.lastHost).toEqual(host)
+    expect(runtime.queryKnowledgeModules({ kind: 'node-tree' })).toHaveLength(1)
   })
 })

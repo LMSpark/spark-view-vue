@@ -6,9 +6,9 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'schema/index': resolve(__dirname, 'src/schema/index.ts'),
-        'host/index': resolve(__dirname, 'src/host/index.ts'),
-        'module-semantic/index': resolve(__dirname, 'src/module-semantic/index.ts'),
+        'schema/index': resolve(__dirname, 'src/json/index.ts'),
+        'host/index': resolve(__dirname, 'src/agent/index.ts'),
+        'module-semantic/index': resolve(__dirname, 'src/modules/index.ts'),
       },
       formats: ['es'],
     },

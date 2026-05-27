@@ -6,13 +6,13 @@
  */
 
 import {
-  createAiHostTransportTurn,
+  createAiAgentTransportTurn,
   createTurnEventCollector,
-  toAiHostRuntimeScope,
-  type AiHostAppendMessagesInput,
-  type AiHostPrepareSessionInput,
-  type AiHostStreamTurnInput,
-  type AiHostTurnCallbacks,
+  toAiAgentRuntimeScope,
+  type AiAgentAppendMessagesInput,
+  type AiAgentPrepareSessionInput,
+  type AiAgentStreamTurnInput,
+  type AiAgentTurnCallbacks,
 } from '@spark-view/spark-ai'
 import { isRecord } from '@spark-view/spark-utils'
 import { http } from '@/services/http'
@@ -23,12 +23,12 @@ const AI_TURN_EVENT_TIMEOUT_MS = 300_000
 const AI_SESSION_API_BASE = '/api/ai/sessions'
 const AI_TURN_API = '/api/ai/turns'
 
-export type AiHostTurnBridgeOptions = Readonly<{
+export type AiAgentTurnBridgeOptions = Readonly<{
   timeoutMs?: number
   windowSize?: number
 }>
 
-export function createAiHostTurnCallbacks(options: AiHostTurnBridgeOptions = {}): AiHostTurnCallbacks {
+export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {}): AiAgentTurnCallbacks {
   const preparedSessionIds = new Set<string>()
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
   const windowSize = normalizeWindowSize(options.windowSize)
@@ -43,7 +43,7 @@ export function createAiHostTurnCallbacks(options: AiHostTurnBridgeOptions = {})
         messages: [],
         tools: input.tools,
         mode: 'function',
-        scope: toAiHostRuntimeScope(input.scope),
+        scope: toAiAgentRuntimeScope(input.scope),
         reuseScopeSession: false,
         ...(windowSize === undefined ? {} : { windowSize }),
       }, signalConfig(input.signal))
@@ -74,8 +74,8 @@ export function createAiHostTurnCallbacks(options: AiHostTurnBridgeOptions = {})
     appendMessages: async (input) => {
       const body = await http.post(`${AI_SESSION_API_BASE}/${encodeURIComponent(input.sessionId)}/turn/append`, {
         protocolVersion: AI_TURN_PROTOCOL_VERSION,
-        scope: toAiHostRuntimeScope(input.scope),
-        turn: createAiHostTransportTurn(input),
+        scope: toAiAgentRuntimeScope(input.scope),
+        turn: createAiAgentTransportTurn(input),
         messages: input.messages,
       })
       assertAppendMessages(body, input)
@@ -90,19 +90,19 @@ function signalConfig(signal: AbortSignal | undefined): { signal: AbortSignal } 
 function normalizeWindowSize(value: number | undefined): number | undefined {
   if (value === undefined) return undefined
   if (!Number.isFinite(value) || value <= 0) {
-    throw new Error('createAiHostTurnCallbacks.windowSize must be a positive number')
+    throw new Error('createAiAgentTurnCallbacks.windowSize must be a positive number')
   }
   return Math.floor(value)
 }
 
-function assertPreparedSession(body: unknown, input: AiHostPrepareSessionInput): void {
+function assertPreparedSession(body: unknown, input: AiAgentPrepareSessionInput): void {
   const sessionId = readString(body, 'sessionId') ?? input.sessionId
   if (sessionId !== input.sessionId) {
     throw new Error(`AI prepare sessionId mismatch: expected=${input.sessionId}, actual=${sessionId}`)
   }
 }
 
-function assertTurnStart(body: unknown, input: AiHostStreamTurnInput): void {
+function assertTurnStart(body: unknown, input: AiAgentStreamTurnInput): void {
   if (!isRecord(body)) {
     throw new Error('AI turn start response missing body')
   }
@@ -119,7 +119,7 @@ function assertTurnStart(body: unknown, input: AiHostStreamTurnInput): void {
   }
 }
 
-function assertAppendMessages(body: unknown, input: AiHostAppendMessagesInput): void {
+function assertAppendMessages(body: unknown, input: AiAgentAppendMessagesInput): void {
   if (!isRecord(body)) {
     throw new Error('AI append response missing body')
   }

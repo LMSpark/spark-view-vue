@@ -696,12 +696,18 @@ export class PageEditor {
   /** 保存所有变更：dirty 文件 + 导航节点。 */
   async saveAll(): Promise<void> {
     await this.saveDirtyPageFiles()
-    if (this.navigationDirty) {
+    const page = this.getActivePage()
+    const navDirty = this.navigationDirty || page?.navigation.isDirty === true
+    if (navDirty) {
+      if (page?.navigation.isDirty === true) {
+        page.navigation.applyToNode()
+      }
       if (this.navigationDirtyScope === 'node') {
         await this.saveSelectedNavigationNode()
       } else {
         await this.saveNavigationRoot()
       }
+      page?.navigation.markClean()
     }
   }
 
@@ -1138,6 +1144,10 @@ export class PageEditor {
   private markNavigationClean(): void {
     this.navigationDirty = false
     this.navigationDirtyScope = null
+    const page = this.getActivePage()
+    if (page?.navigation.isDirty === true) {
+      page.navigation.markClean()
+    }
   }
 
   private invalidatePageList(): void {
@@ -1208,10 +1218,6 @@ export {
   canonicalizeDataSetMetadata,
   canonicalizePageDataJson,
   canonicalizePageDataValue,
-} from '../design/page-file-document'
-
-export type {
-  PageFileLoadState,
 } from '../design/page-file-document'
 
 export type {

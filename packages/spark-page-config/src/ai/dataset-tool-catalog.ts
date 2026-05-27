@@ -15,20 +15,20 @@
  * 所有操作直接作用于 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool 实例。
  */
 
-import * as SparkAiSchema from '@spark-view/spark-ai/schema'
+import * as SparkAiSchema from '@spark-view/spark-ai/json'
 import { isCallable } from '@spark-view/spark-utils'
 import type {
-  LlmJsonSchema,
-  LlmJsonSchemaObject,
-  LlmJsonValue,
-} from '@spark-view/spark-ai/schema'
+  AiJsonSchema,
+  AiJsonSchemaObject,
+  AiJsonValue,
+} from '@spark-view/spark-ai/json'
 import {
-  ModuleKind,
-  type ModuleFunctionMetadata,
-  type ModuleInstanceRef,
-  type ModuleOperationResult,
-  type ModulePathContext,
-} from '@spark-view/spark-ai/module-semantic'
+  AiModule,
+  type AiModuleFunctionMetadata,
+  type AiModuleInstanceRef,
+  type AiModuleResult,
+  type AiModulePathContext,
+} from '@spark-view/spark-ai/modules'
 import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type {
   PageDesignServiceActionBinding,
@@ -117,7 +117,7 @@ const NO_PARAMS = noParamsSchema('该 dataset 读取函数不接受参数，请�
 const TABLE_NAME_PARAM = stringSchema('表名')
 const VIEW_ID_PARAM = stringSchema('视图 ID；省略时默认 default')
 const COLUMN_NAME_PARAM = stringSchema('列名')
-const ROW_ID_PARAM: LlmJsonSchemaObject = {
+const ROW_ID_PARAM: AiJsonSchemaObject = {
   type: ['string', 'number'],
   description: '主键值',
 }
@@ -140,31 +140,31 @@ const TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES: readonly string[] = [
   'reference',
 ]
 
-const RESOURCE_TYPE_SCHEMA: LlmJsonSchemaObject = {
+const RESOURCE_TYPE_SCHEMA: AiJsonSchemaObject = {
   type: 'string',
   examples: TABLE_RESOURCE_TYPE_RECOMMENDED_VALUES,
   description: '资源类型推荐值字典；优先使用内置资源类型，也允许业务侧自定义字符串。',
 }
 
-const NULLABLE_RESOURCE_TYPE_SCHEMA: LlmJsonSchemaObject = {
+const NULLABLE_RESOURCE_TYPE_SCHEMA: AiJsonSchemaObject = {
   ...RESOURCE_TYPE_SCHEMA,
   type: ['string', 'null'],
   description: '资源类型推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
 }
 
-const BUSINESS_CATEGORY_SCHEMA: LlmJsonSchemaObject = {
+const BUSINESS_CATEGORY_SCHEMA: AiJsonSchemaObject = {
   type: 'string',
   examples: TABLE_BUSINESS_CATEGORY_RECOMMENDED_VALUES,
   description: '业务分类推荐值字典；优先使用 master / child / reference，也允许业务侧自定义字符串。',
 }
 
-const NULLABLE_BUSINESS_CATEGORY_SCHEMA: LlmJsonSchemaObject = {
+const NULLABLE_BUSINESS_CATEGORY_SCHEMA: AiJsonSchemaObject = {
   ...BUSINESS_CATEGORY_SCHEMA,
   type: ['string', 'null'],
   description: '业务分类推荐值字典；传 null 表示显式清空，也允许业务侧自定义字符串。',
 }
 
-const DATA_COLUMN_FIELDS_SCHEMA: Readonly<Record<string, LlmJsonSchema>> = {
+const DATA_COLUMN_FIELDS_SCHEMA: Readonly<Record<string, AiJsonSchema>> = {
   name: stringSchema('列名，必填，表内唯一'),
   type: stringSchema('ColumnType，必填；常用 string/number/boolean/date/datetime'),
   label: stringSchema('UI 显示标题'),
@@ -265,7 +265,7 @@ const CRUD_HTTP_ENDPOINT_SCHEMA = objectSchema({
   required: ['url'],
 })
 
-const CRUD_LIST_ENDPOINT_SCHEMA: LlmJsonSchemaObject = {
+const CRUD_LIST_ENDPOINT_SCHEMA: AiJsonSchemaObject = {
   ...CRUD_HTTP_ENDPOINT_SCHEMA,
   properties: {
     ...CRUD_HTTP_ENDPOINT_SCHEMA.properties,
@@ -353,7 +353,7 @@ const DEPENDENCY_TYPE_RECOMMENDED_VALUES: readonly string[] = [
   'pagedRows',
 ]
 
-const DEPENDENCY_TYPE_PARAM: LlmJsonSchemaObject = {
+const DEPENDENCY_TYPE_PARAM: AiJsonSchemaObject = {
   type: 'string',
   examples: DEPENDENCY_TYPE_RECOMMENDED_VALUES,
   description: '父表 default 视图哪类数据变化触发子表 default 视图级联；常用 currentRow / selectedRows / allRows / pagedRows，默认 currentRow。',
@@ -419,7 +419,7 @@ const DATASET_MUTATING_ACTION_NAMES: ReadonlySet<string> = new Set([
   'clearComputeExpression',
 ])
 
-const DATASET_ACTIONS: readonly ModuleFunctionMetadata[] = [
+const DATASET_ACTIONS: readonly AiModuleFunctionMetadata[] = [
   {
     name: 'export',
     description: '导出当前 DataSet 元数据快照',
@@ -1869,15 +1869,15 @@ const DATASET_ACTIONS: readonly ModuleFunctionMetadata[] = [
   },
 ]
 
-// PAGE_DESIGN_AI_TRACE[page-design-dataset-tool]: pageDesign AI 修改 pagedata.json 的 ModuleKind 出处；DataSetCrudTool 的具体数据语义在 spark-data。
+// PAGE_DESIGN_AI_TRACE[page-design-dataset-tool]: pageDesign AI 修改 pagedata.json 的 AiModule 出处；DataSetCrudTool 的具体数据语义在 spark-data。
 // PAGE_DESIGN_REFACTOR_SOURCE[dataset-write-gate]: 数据策划与 pagedata.json AI 写入入口；表/列/view 参数错误应从这里返回给 LLM 修正。
-export class PageDesignDatasetModuleKind extends ModuleKind {
+export class PageDesignDatasetAiModule extends AiModule {
   private readonly service: PageDesignService
-  private readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+  private readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
 
   public constructor(options: {
     readonly service: PageDesignService
-    readonly contextFactory: (ctx: ModulePathContext) => PageDesignServiceContext
+    readonly contextFactory: (ctx: AiModulePathContext) => PageDesignServiceContext
     readonly parentKind?: string
   }) {
     super({
@@ -1893,10 +1893,10 @@ export class PageDesignDatasetModuleKind extends ModuleKind {
   }
 
   protected override async runFunction(
-    ctx: ModulePathContext,
+    ctx: AiModulePathContext,
     actionName: string,
-    args: Readonly<Record<string, LlmJsonValue>>,
-  ): Promise<ModuleOperationResult<LlmJsonValue>> {
+    args: Readonly<Record<string, AiJsonValue>>,
+  ): Promise<AiModuleResult<AiJsonValue>> {
     const action = this.findFunction(actionName)
     if (action === undefined) {
       throw new Error(`dataset action is not declared: ${actionName}`)
@@ -1910,13 +1910,13 @@ export class PageDesignDatasetModuleKind extends ModuleKind {
     )
   }
 
-  protected override createCurrentInstanceRef(ctx: ModulePathContext): ModuleInstanceRef | null {
+  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
     return createCurrentPageRef(ctx, '当前页面数据集')
   }
 }
 
 function createDatasetActionBinding(
-  action: ModuleFunctionMetadata,
+  action: AiModuleFunctionMetadata,
 ): PageDesignServiceActionBinding<DataSetCrudTool> {
   return {
     serviceLabel: action.name,
@@ -1951,7 +1951,7 @@ function isDatasetDirectMethodName(actionName: string): actionName is DataSetCru
   return DATASET_DIRECT_METHOD_NAMES.has(actionName)
 }
 
-function createDatasetActionFixHint(action: ModuleFunctionMetadata): string {
+function createDatasetActionFixHint(action: AiModuleFunctionMetadata): string {
   const parts = [`参数格式: ${JSON.stringify(action.paramsSchema)}`]
   if (action.example !== undefined && isRecord(action.example) && Object.keys(action.example).length > 0) {
     parts.push(`示例: ${JSON.stringify(action.example)}`)

@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { LlmSchemaValidator, type LlmJsonSchemaObject, type LlmJsonValue } from '@spark-view/spark-ai/schema'
+import { AiJsonSchemaValidator, type AiJsonSchemaObject, type AiJsonValue } from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
 import { createPageDesignPayloadRegistry } from '../packages/spark-page-config/src/ai/payload-catalog-tool-catalog'
 
@@ -140,14 +140,14 @@ function validateStandardSchemaNode(
   walkSchemaNode(label, schema, defs, issues)
 
   if (schema === true || schema === false || isRecord(schema)) {
-    const wrapper: LlmJsonSchemaObject = {
+    const wrapper: AiJsonSchemaObject = {
       type: 'object',
       properties: {
         value: schema,
       },
       $defs: defs,
     }
-    expect(() => LlmSchemaValidator.validateLlmDeserializedParams({}, wrapper), label).not.toThrow()
+    expect(() => AiJsonSchemaValidator.validateDeserializedParams({}, wrapper), label).not.toThrow()
   }
 }
 
@@ -260,7 +260,7 @@ async function guidePayloadParamsSchema(key: string): Promise<JsonRecord> {
   return getRecord(payload?.paramsSchema, 'guidePayload.paramsSchema')
 }
 
-async function queryPayloads(args: Record<string, LlmJsonValue>): Promise<JsonRecord> {
+async function queryPayloads(args: Record<string, AiJsonValue>): Promise<JsonRecord> {
   const provider = createPageDesignPayloadRegistry().requireProvider('node-tree', 'spark.component')
   const items = provider.queryPayloads(args)
   return {
