@@ -22,7 +22,7 @@
  */
 
 import { createAiHostStreamKey, createAiHostTurnKey } from '../business/business-scope'
-import type { AiHostBusinessScope } from '../business/business-types'
+import type { AiHostBusinessScope } from '../business/scope-types'
 import type { AiHostChatRequest, AiHostStreamEvent, AiHostTurnMeta } from '../chat/chat-types'
 import { parseBusinessFunctionToolName } from '../../module-semantic/internal/business-function-tool-name'
 import { stringifyAiHostPayload } from './payload-codec'

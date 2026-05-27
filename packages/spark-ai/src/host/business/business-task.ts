@@ -15,7 +15,7 @@ import type {
 import { AiHostBusinessRegistration } from './registration-types'
 import { AiHostBusinessTarget, type AiHostBusinessRuntimeContext, type AiHostBusinessScope } from './scope-types'
 
-export type AiHostBusinessTaskInput = Readonly<Record<string, LlmJsonValue>>
+type AiHostBusinessTaskInput = Readonly<Record<string, LlmJsonValue>>
 
 export type AiHostBusinessOrchestrationPlan = Readonly<{
   userMessage: string
@@ -55,7 +55,7 @@ export type AiHostBusinessTaskChatOptions = Omit<AiHostChatRequest, 'historyMsgs
   systemPrompt?: string
 }>
 
-export type AiHostBusinessTaskRegistry<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
+type AiHostBusinessTaskRegistry<TInput extends LlmJsonParams = LlmJsonParams> = Readonly<{
   get(kindID: string): AiHostBusinessRegistration<TInput> | undefined
 }>
 

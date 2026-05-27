@@ -5,6 +5,7 @@
 ## Public Concepts
 
 - `ModuleKind`: core class for kind metadata plus constructor delegates exposed only through protocol methods.
+- `ModuleKindConstructor`: constructor contract accepted by `ModuleSemanticRuntime.registerKind(Constructor, ...args)`.
 - `ModuleFunctionMetadata` and `ModuleAttributeMetadata`: function and attribute declarations.
 - `ModuleKindOptions`: constructor contract that combines declarative metadata with runtime delegates.
 - `ModuleSetAttributeRequest`, `ModuleFindInstanceRequest`: API boundary DTOs.
@@ -85,6 +86,9 @@ runtime.registerKind(new ModuleKind({
   ]),
 }))
 
+// Subclass constructors can be registered through the same entry.
+runtime.registerKind(SchoolModuleKind, { runner })
+
 function runSchoolFunction(
   ctx: ModulePathContext,
   functionName: string,
@@ -128,8 +132,7 @@ module-semantic/
 │   ├── module-path.ts
 │   └── module-request.ts
 ├── internal/
-├── runtime/
-└── host/
+└── runtime/
 ```
 
 Reference business registrations live in:

@@ -41,6 +41,7 @@ mindmap
     收敛
       注册
         只用 registerKind
+        支持实例或构造器
         不恢复旧 adapter
         不新增旁路 factory
       寻址
@@ -162,7 +163,7 @@ section ProtocolRegistrationSurface {
     functions: "可选。ModuleFunctionMetadata[]，通过标准 function tool 访问。"
     payloads: "可选。ModuleParameterPayloadMetadata[]，声明本 kind 依赖的参数荷载 provider。"
     children: "可选。允许的子 kind 列表，用于路径导航和子实例发现。"
-    runner: "可选。ModuleKindRunner，执行业务动作。"
+    runner: "可选。ModuleKindRunner，执行业务 function。"
     list: "可选。ModuleChildrenLister，列出当前实例下子实例。"
     find: "可选。ModuleInstanceFinder，按条件查询实例或子实例。"
   }
@@ -241,7 +242,7 @@ section RuntimeRegistrationSurface {
     lifecycle: "启动期注册，运行期只读"
 
     methods: [
-      "register(moduleKind): kind 冲突抛 ModuleKindConflictError",
+      "register(moduleKind | ModuleKindCtor, ...args): 构造并注册实例，kind 冲突抛 ModuleKindConflictError",
       "get(kind): 未注册返回 undefined",
       "require(kind): 未注册抛 ModuleKindNotFoundError",
       "has(kind): boolean",
@@ -251,7 +252,7 @@ section RuntimeRegistrationSurface {
 
   entity ModuleSemanticRuntime {
     registration_method:
-      "registerKind(moduleKind)"
+      "registerKind(moduleKind | ModuleKindCtor, ...args)"
 
     llm_tools:
       "getLlmTools() 生成固定知识/导航工具，并按已注册业务函数派生执行工具。"
@@ -402,9 +403,7 @@ section ParameterPayloadRegistrationSurface {
 
     methods: [
       "register(provider): moduleKind/payloadRef 重复抛错",
-      "getProvider(moduleKind, payloadRef)",
       "requireProvider(moduleKind, payloadRef): 未注册抛错",
-      "listProviders(filter?)",
       "queryPayloads(filter?)",
       "guidePayload(moduleKind, payloadRef, key)"
     ]
@@ -645,7 +644,7 @@ section RegisterSurfaceRules {
     "不得恢复旧 core/protocol 公共 subpath 或旧 adapter 注册层。"
 
   rule R14_vcm_target:
-    "手写 ModuleKind class 是迁移期形态；目标由 VCM 从领域能力 class 生成 ModuleKind factory，再调用 registerKind。"
+    "手写 ModuleKind class 是迁移期形态；目标由 VCM 从领域能力 class 生成 ModuleKind constructor 或 factory，再调用同一个 registerKind。"
 }
 
 section ValidationMatrix {

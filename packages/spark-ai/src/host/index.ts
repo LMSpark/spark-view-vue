@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【导出策略】按功能域分组：
- *   1. 业务类型与注册（business-types / business-registry）
+ *   1. 业务类型与注册（scope-types / registration-types）
  *   2. 业务作用域工厂（business-scope）
  *   3. 业务会话（business-session）
  *   4. 聊天 DTO（chat-types）
@@ -61,20 +61,21 @@ export type {
   AiHostBusinessKindDefinition,
   AiHostBusinessOrchestrationPlan,
   AiHostBusinessTaskChatOptions,
-  AiHostBusinessTaskInput,
 } from './business/business-task'
 
 export type {
+  AiHostBusinessAfterFunctionCallOptions,
   AiHostBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus,
 } from './business/lifecycle-types'
 
 export type {
-  AiHostBusinessAfterFunctionCallOptions,
   AiHostBusinessAppendMessageOptions,
+} from './business/scope-types'
+
+export type {
   AiHostOptions,
-  AiHostSender,
-} from './business/business-types'
+} from './business/host-options'
 
 // ── 2. 业务作用域工厂 ───────────────────────────────────────
 
@@ -83,13 +84,7 @@ export {
   toAiHostRuntimeScope,
 } from './business/business-scope'
 
-// ── 3. 业务注册表 ───────────────────────────────────────────
-
-export {
-  AiHostBusinessRegistry,
-} from './business/business-registry'
-
-// ── 4. 业务会话 ─────────────────────────────────────────────
+// ── 3. 业务会话 ─────────────────────────────────────────────
 
 export {
   AiHostBusinessSession,
@@ -103,17 +98,17 @@ export type {
   AiHostBusinessRunResult,
 } from './business/business-session'
 
-// ── 5. 聊天 DTO ─────────────────────────────────────────────
+// ── 4. 聊天 DTO ─────────────────────────────────────────────
 
 export type {
   AiHostChatMessage,
   AiHostChatRequest,
-  AiHostFcCallRecord,
   AiHostStreamEvent,
+  AiHostToolCallRecord,
   AiHostTurnMeta,
 } from './chat/chat-types'
 
-// ── 6. 会话存储契约 ─────────────────────────────────────────
+// ── 5. 会话存储契约 ─────────────────────────────────────────
 
 export {
   AiHostSessionStore,
@@ -137,7 +132,7 @@ export type {
   AiHostMessageSource,
 } from './session/session-types'
 
-// ── 7. 内存会话存储实现 ─────────────────────────────────────
+// ── 6. 内存会话存储实现 ─────────────────────────────────────
 
 export {
   DefaultAiHostSessionStore,
@@ -159,7 +154,7 @@ export type {
   AiHostSessionTranscriptOptions,
 } from './session/session-diagnostics'
 
-// ── 8. APP turn 回调契约与类型 ──────────────────────────────
+// ── 7. APP turn 回调契约与类型 ──────────────────────────────
 
 export {
   createAiHostTransportTurn,
@@ -186,7 +181,7 @@ export type {
   AiHostAppSseEventName,
 } from './transport/app-sse-events'
 
-// ── 9. 工具循环执行器 ───────────────────────────────────────
+// ── 8. 工具循环执行器 ───────────────────────────────────────
 
 export {
   AiHostToolLoopRunner,

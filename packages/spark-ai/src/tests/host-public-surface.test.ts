@@ -8,7 +8,6 @@ describe('@spark-view/spark-ai/host public surface', () => {
       'AI_HOST',
       'AiHost',
       'AiHostBusinessRegistration',
-      'AiHostBusinessRegistry',
       'AiHostBusinessRuntimeContext',
       'AiHostBusinessScope',
       'AiHostBusinessSession',
@@ -43,6 +42,8 @@ describe('@spark-view/spark-ai/host public surface', () => {
     expect(exposed.has('AiHostMessageSender')).toBe(false)
     expect(exposed.has('createAiHostBusinessSessionId')).toBe(false)
     expect(exposed.has('createAiHostBusinessStorageKey')).toBe(false)
+    expect(exposed.has('AiHostBusinessRegistry')).toBe(false)
+    expect(exposed.has('ModuleSemanticToolCodec')).toBe(false)
     expect(exposed.has('createAiHostStreamKey')).toBe(false)
     expect(exposed.has('normalizeAiHostBusinessTarget')).toBe(false)
     expect(exposed.has('emitLlmDiagnosticEvent')).toBe(false)

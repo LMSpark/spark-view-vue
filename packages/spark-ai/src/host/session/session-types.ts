@@ -23,7 +23,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { AiHostBusinessAppendMessageOptions, AiHostBusinessRuntimeContext } from '../business/business-types'
+import type { AiHostBusinessAppendMessageOptions, AiHostBusinessRuntimeContext } from '../business/scope-types'
 import type { AiHostTransportToolSpec } from '../transport/transport-types'
 
 // ═══════════════════════════════════════════════════════════════

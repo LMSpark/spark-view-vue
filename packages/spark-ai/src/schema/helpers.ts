@@ -12,7 +12,7 @@
  *   - `paramsSchema()` 专门用于函数参数根节点，强制 type=object。
  *
  * 【消费方】module-semantic/protocol/module-kind.ts（ModuleFunctionMetadata.paramsSchema）、
- *   所有业务 ModuleKind 子类的 action 注册。
+ *   所有业务 ModuleKind 子类的 function 注册。
  *
  * ═══════════════════════════════════════════════════════════════
  * 函数层级（自底向上）：
@@ -158,7 +158,7 @@ export function paramsSchema(
 }
 
 /**
- * 无参数动作的 schema。
+ * 无参数函数的 schema。
  * additionalProperties: false 告诉 LLM 不要传任何参数。
  */
 export function noParamsSchema(description = '不接受参数，请传 {} 或留空。'): LlmJsonSchemaObject {

@@ -9,13 +9,13 @@
  * 【设计决策】
  *   - 启动期注册，运行期只读。
  *   - 重复注册直接抛 ModuleKindConflictError，不允许静默覆盖。
- *   - ModuleKind 同时是元数据和运行入口，无需额外的注册适配层。
+ *   - 注册入口可接收已构造实例或 ModuleKind subclass 构造器，但最终只存实例。
  *
  * 【消费方】Navigator（路径验证 + 发现）、ModuleSemanticRuntime（注册入口）
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { ModuleKind } from '../protocol'
+import type { ModuleKind, ModuleKindConstructor } from '../protocol'
 
 /**
  * 同名 kind 重复注册时抛此错误。
@@ -52,7 +52,7 @@ export class ModuleKindNotFoundError extends Error {
  * ```ts
  * const registry = new ModuleKindRegistry()
  * registry.register(createSchoolModuleKind())
- * registry.register(createGradeModuleKind())
+ * registry.register(GradeModuleKind, { parentKind: 'school' })
  * const schoolKind = registry.require('school')  // 未注册会抛错
  * const maybe = registry.get('unknown')           // 返回 undefined
  * ```
@@ -60,12 +60,25 @@ export class ModuleKindNotFoundError extends Error {
 export class ModuleKindRegistry {
   private readonly kinds = new Map<string, ModuleKind>()
 
-  /** 注册一个模块类型。kind 冲突时抛 ModuleKindConflictError。 */
-  public register(moduleKind: ModuleKind): void {
+  /** 注册一个模块类型实例。kind 冲突时抛 ModuleKindConflictError。 */
+  public register<TKind extends ModuleKind>(moduleKind: TKind): TKind
+  /** 构造并注册一个 ModuleKind subclass。 */
+  public register<TArgs extends unknown[], TKind extends ModuleKind>(
+    ModuleKindCtor: ModuleKindConstructor<TArgs, TKind>,
+    ...args: TArgs
+  ): TKind
+  public register<TArgs extends unknown[], TKind extends ModuleKind>(
+    moduleKindOrCtor: TKind | ModuleKindConstructor<TArgs, TKind>,
+    ...args: TArgs
+  ): TKind {
+    const moduleKind = typeof moduleKindOrCtor === 'function'
+      ? new moduleKindOrCtor(...args)
+      : moduleKindOrCtor
     if (this.kinds.has(moduleKind.kind)) {
       throw new ModuleKindConflictError(moduleKind.kind)
     }
     this.kinds.set(moduleKind.kind, moduleKind)
+    return moduleKind
   }
 
   /** 按 kind 查询，未注册返回 undefined。安全查询，不抛错。 */

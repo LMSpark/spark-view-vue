@@ -17,13 +17,13 @@
  * 【与 module-semantic 的关系】
  *   本层的 ToolSpec 是 transport 专用形状（parameters 为 Record<string, unknown>），
  *   而 module-semantic 的 ModuleSemanticToolSpec 使用 LlmJsonSchemaObject。
- *   ModuleSemanticToolCodec 负责二者之间的转换。
+ *   host/transport/module-semantic-tool-codec.ts 负责二者之间的转换。
  *
  * 【消费方】business-session、tool-loop-runner、APP 层 ai-turn bridge
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { AiHostBusinessScope } from '../business/business-types'
+import type { AiHostBusinessScope } from '../business/scope-types'
 import type { AiHostStreamEvent, AiHostTurnMeta } from '../chat/chat-types'
 import type {
   AiHostAppSseEvent,

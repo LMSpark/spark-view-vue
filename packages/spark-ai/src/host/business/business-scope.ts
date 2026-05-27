@@ -9,7 +9,6 @@
  * 【设计原则】
  *   - 所有输入字符串都经过 normalizeRequiredText 校验（非空、去空白）
  *   - sessionId = "kind:instanceId"（冒号拼接，全局唯一）
- *   - storageKey 用于 localStorage / Map 等存储后端的键名
  *   - turnKey 用于一次对话 turn 的隔离（kind + instanceId + turnId）
  *   - streamKey 用于 turn 内更细的 stream/诊断流（turnKey + streamId）
  *
@@ -17,7 +16,6 @@
  *   normalizeAiHostBusinessTarget     — 规范化业务定位（校验 + 去空白）
  *   createAiHostBusinessSessionId     — 生成会话 ID
  *   createAiHostBusinessScope         — 构造业务作用域
- *   createAiHostBusinessStorageKey    — 生成存储键
  *   createAiHostTurnKey               — 生成 turn 隔离键
  *   createAiHostStreamKey             — 生成 turn 内 stream 键
  *   toAiHostRuntimeScope              — Scope → RuntimeContext 投影
@@ -31,7 +29,7 @@ import {
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
   AiHostBusinessTarget,
-} from './business-types'
+} from './scope-types'
 import type { AiHostChatRequest } from '../chat/chat-types'
 
 // ═══════════════════════════════════════════════════════════════
@@ -81,12 +79,6 @@ export function createAiHostBusinessScope(businessRegistrationId: string, busine
 // ═══════════════════════════════════════════════════════════════
 // 第 3 节 · 键名生成
 // ═══════════════════════════════════════════════════════════════
-
-/** 生成存储键：格式为 "spark-ai:kind:instanceId" */
-export function createAiHostBusinessStorageKey(scope: AiHostBusinessScope | AiHostBusinessTarget): string {
-  const target = normalizeAiHostBusinessTarget(scope)
-  return `spark-ai:${target.businessRegistrationId}:${target.businessInstanceId}`
-}
 
 /**
  * 生成对话 turn 隔离键。

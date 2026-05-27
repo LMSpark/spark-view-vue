@@ -22,14 +22,12 @@
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
+import { ModuleSemanticToolCodec } from '../transport/module-semantic-tool-codec'
 import type { LlmJsonParams } from '../../schema'
 import { createAiHostBusinessSessionId, toAiHostRuntimeScope } from '../business/business-scope'
-import type {
-  AiHostBusinessLifecycleDirective,
-  AiHostBusinessRegistration,
-  AiHostBusinessScope,
-} from '../business/business-types'
+import type { AiHostBusinessLifecycleDirective } from '../business/lifecycle-types'
+import type { AiHostBusinessRegistration } from '../business/registration-types'
+import type { AiHostBusinessScope } from '../business/scope-types'
 import type { AiHostChatRequest, AiHostTurnMeta } from '../chat/chat-types'
 import type { AiHostSessionStore } from '../session/session-types'
 import type {
@@ -81,7 +79,7 @@ export class AiHostToolLoopRunner {
    *   8. 否则把本轮消息 append 到 V4 后端会话，下一轮用空 messages 续写 session 历史
    */
   // PAGE_DESIGN_AI_TRACE[host-tool-loop]: pageDesign 的 LLM round、toolCalls、工具结果回填都在这里闭环；冗余清理时用它区分 AI 编排和具体业务工具实现。
-  // PAGE_DESIGN_REFACTOR_SOURCE[tool-result-feedback]: FC 执行结果和 ok:false 参数校验回灌给 LLM 的通用闭环；业务工具只返回结构化结果。
+  // PAGE_DESIGN_REFACTOR_SOURCE[tool-result-feedback]: 工具执行结果和 ok:false 参数校验回灌给 LLM 的通用闭环；业务工具只返回结构化结果。
   public async runToolLoop<TInput extends LlmJsonParams>(input: AiHostToolLoopInput<TInput>): Promise<void> {
     const { registration, scope, request, turn, clearSelected } = input
     const runtimeContext = toAiHostRuntimeScope(scope)
@@ -174,7 +172,7 @@ export class AiHostToolLoopRunner {
           scope,
           turn,
           round: currentRound,
-          actionOf: codec.actionOf.bind(codec),
+          resolveToolName: codec.resolveToolName.bind(codec),
           call,
           request,
           sessionStore,

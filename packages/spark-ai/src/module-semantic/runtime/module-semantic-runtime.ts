@@ -47,6 +47,7 @@ import type {
   ModuleInstanceRef,
   ModuleFunctionInvokeRequest,
   ModuleKind,
+  ModuleKindConstructor,
   ModuleOperationResult,
   ModulePath,
   ModuleSetAttributeRequest,
@@ -81,9 +82,20 @@ export class ModuleSemanticRuntime {
 
   /* ── 注册 ──────────────────────────────────────────────── */
 
-  /** 注册一个 ModuleKind（启动期操作，重复注册抛 ModuleKindConflictError） */
-  public registerKind(moduleKind: ModuleKind): void {
-    this.kinds.register(moduleKind)
+  /** 注册一个 ModuleKind 实例（启动期操作，重复注册抛 ModuleKindConflictError）。 */
+  public registerKind<TKind extends ModuleKind>(moduleKind: TKind): TKind
+  /** 构造并注册一个 ModuleKind subclass。 */
+  public registerKind<TArgs extends unknown[], TKind extends ModuleKind>(
+    ModuleKindCtor: ModuleKindConstructor<TArgs, TKind>,
+    ...args: TArgs
+  ): TKind
+  public registerKind<TArgs extends unknown[], TKind extends ModuleKind>(
+    moduleKindOrCtor: TKind | ModuleKindConstructor<TArgs, TKind>,
+    ...args: TArgs
+  ): TKind {
+    return typeof moduleKindOrCtor === 'function'
+      ? this.kinds.register(moduleKindOrCtor, ...args)
+      : this.kinds.register(moduleKindOrCtor)
   }
 
   /* ── LLM 工具 ──────────────────────────────────────────── */

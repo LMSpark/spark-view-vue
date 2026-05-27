@@ -397,18 +397,19 @@ function resolvePayloadProvider(
   const payloadRef = typeof args['payloadRef'] === 'string' && args['payloadRef'].trim().length > 0
     ? args['payloadRef'].trim()
     : PAGE_DESIGN_COMPONENT_PAYLOAD_REF
-  const provider = registry.getProvider(moduleKind, payloadRef)
-  if (provider === undefined) {
+  try {
+    const provider = registry.requireProvider(moduleKind, payloadRef)
+    return {
+      ok: true,
+      data: { moduleKind, payloadRef, provider },
+      summary: `已定位参数荷载 provider: ${moduleKind}/${payloadRef}`,
+    }
+  } catch {
     return PageDesignService.failure(
       'PAYLOAD_PROVIDER_NOT_REGISTERED',
       `参数荷载 provider 未注册: ${moduleKind}/${payloadRef}`,
       '先调用 queryPayloads 不带 moduleKind/payloadRef 使用默认 provider，或确认目标模块已注册对应参数目录。',
     )
-  }
-  return {
-    ok: true,
-    data: { moduleKind, payloadRef, provider },
-    summary: `已定位参数荷载 provider: ${moduleKind}/${payloadRef}`,
   }
 }
 

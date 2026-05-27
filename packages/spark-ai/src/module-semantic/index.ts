@@ -7,8 +7,7 @@
  *   1. 协议层值对象、运行上下文、元数据与请求 DTO
  *   2. ModuleSemanticRuntime（运行时组合根）
  *   3. 知识投影与 OpenAI function tool 规约
- *   4. 注册错误类型与 Host 工具编解码器
- *   5. 模块参数荷载 provider 注册表
+ *   4. 模块参数荷载 provider 注册表
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -26,6 +25,10 @@ export {
 
 export {
   ModuleKind,
+} from './protocol/module-kind'
+
+export type {
+  ModuleKindConstructor,
 } from './protocol/module-kind'
 
 export type {
@@ -85,14 +88,9 @@ export type {
   ModuleSemanticKnowledgeSnapshot,
 } from './knowledge/knowledge-types'
 
-// ── 4. OpenAI function tool 规约（类型 + 常量）───────────────
-export {
-  PROTOCOL_TOOL_NAMES,
-} from './internal/protocol-tool-generator'
-
+// ── 4. OpenAI function tool 规约类型 ───────────────────────
 export type {
   ModuleSemanticToolSpec,
-  ProtocolToolName,
 } from './internal/protocol-tool-generator'
 
 // ── 5. describeKind 返回类型 ──────────────────────────────────
@@ -100,18 +98,7 @@ export type {
   ModuleKindDescription,
 } from './internal/navigator'
 
-// ── 6. 注册错误类型（便于业务方 instanceof 判断）─────────────
-export {
-  ModuleKindConflictError,
-  ModuleKindNotFoundError,
-} from './internal/module-kind-registry'
-
-// ── 7. Host 工具编解码器 ────────────────────────────────────
-export {
-  ModuleSemanticToolCodec,
-} from './host/index'
-
-// ── 8. 模块参数荷载 provider 注册表 ────────────────────────
+// ── 6. 模块参数荷载 provider 注册表 ────────────────────────
 export {
   ModuleParameterPayloadRegistry,
 } from './payloads/module-parameter-payload-registry'

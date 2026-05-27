@@ -18,7 +18,6 @@ AI Host 已完成去 I/O 重构：`@spark-view/spark-ai` 只保留纯编排、�
 - `createTurnEventCollector`：聚合 APP SSE 事件为 turn 结果。
 - `createAiHostTransportTurn`：生成稳定的 turn payload、`turnKey` 与 `streamKey`。
 - `app-sse-events.ts`：只声明事件类型。
-- `http-utils.ts`：只保留 JSON 与 envelope 纯 helper。
 
 约束：
 
@@ -26,6 +25,7 @@ AI Host 已完成去 I/O 重构：`@spark-view/spark-ai` 只保留纯编排、�
 - 不持有 APP SSE 订阅生命周期。
 - 不内置后端 URL、认证或重试策略。
 - 不复制 APP/脚本层的网络协议细节。
+- 不保留 `http-utils.ts` 这类 Host 内部 HTTP helper；JSON/envelope 解析属于 APP/脚本 I/O 边界。
 
 ### APP 层
 

@@ -168,7 +168,6 @@ function normalizeAppSseEvent(name, rawData) {
       data: rawPayload,
       rawData,
       rawPayload,
-      legacy: true,
     }
   }
   validateEnvelopeName(name, rawPayload.event)
@@ -184,7 +183,6 @@ function normalizeAppSseEvent(name, rawData) {
     ...(protocolVersion === undefined ? {} : { protocolVersion }),
     ...(isRecord(rawPayload.context) ? { context: rawPayload.context } : {}),
     ...(isRecord(rawPayload.event) ? { event: rawPayload.event } : {}),
-    legacy: protocolVersion !== 4,
   }
 }
 

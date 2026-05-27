@@ -7,7 +7,7 @@ import {
   toAiHostRuntimeScope,
   type AiHostBusinessRegistration,
   type AiHostBusinessScope,
-  type AiHostFcCallRecord,
+  type AiHostToolCallRecord,
   type AiHostTurnCallbacks,
   type AiHostTurnMeta,
 } from '@spark-view/spark-ai/host'
@@ -41,10 +41,10 @@ async function runToolCall(
   toolName: string,
   toolArgs: Readonly<Record<string, LlmJsonValue>>,
   seq: number,
-): Promise<{ record: AiHostFcCallRecord; cleared: boolean; deltas: string[] }> {
+): Promise<{ record: AiHostToolCallRecord; cleared: boolean; deltas: string[] }> {
   await startRegistrationSession(registration, toAiHostRuntimeScope(scope))
   let streamCount = 0
-  let record: AiHostFcCallRecord | null = null
+  let record: AiHostToolCallRecord | null = null
   let cleared = false
   const deltas: string[] = []
   const turnCallbacks: AiHostTurnCallbacks = {
@@ -69,7 +69,7 @@ async function runToolCall(
   await runner.runToolLoop({
     registration,
     scope,
-    request: { historyMsgs: [], onDelta: (delta) => deltas.push(delta), onFcCall: (item) => { record = item } },
+    request: { historyMsgs: [], onDelta: (delta) => deltas.push(delta), onToolCall: (item) => { record = item } },
     turn: turn(seq),
     clearSelected: () => { cleared = true },
   })

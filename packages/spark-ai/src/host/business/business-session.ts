@@ -31,13 +31,12 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import { ModuleSemanticToolCodec } from '../../module-semantic/host/module-semantic-tool-codec'
+import { ModuleSemanticToolCodec } from '../transport/module-semantic-tool-codec'
 import type { LlmJsonParams } from '../../schema'
 import { AiHostToolLoopRunner } from '../tool-loop/tool-loop-runner'
 import {
   createAiHostBusinessScope,
   createAiHostBusinessSessionId,
-  createAiHostBusinessStorageKey,
   latestUserInput,
   normalizeAiHostBusinessTarget,
   toAiHostRuntimeScope,
@@ -49,14 +48,13 @@ import {
   type AiHostBusinessTask,
   type AiHostBusinessTaskChatOptions,
 } from './business-task'
+import type { AiHostOptions } from './host-options'
+import type { AiHostBusinessRegistration } from './registration-types'
 import type {
-  AiHostBusinessRegistration,
   AiHostBusinessRuntimeContext,
   AiHostBusinessScope,
   AiHostBusinessTarget,
-  AiHostOptions,
-  AiHostSender,
-} from './business-types'
+} from './scope-types'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 内部类型
@@ -221,20 +219,14 @@ class AiHostMessageSender {
  * 属性：
  *   target     — 业务定位
  *   scope      — 业务作用域
- *   storageKey — 存储键（用于持久化和再次接入）
  *   sessionId  — 后端会话 ID（kind + 顶层实例 ID）
- *   pageId     — 页面 ID（= businessInstanceId）
- *   sender     — 消息发送器（可直接传给 UI 层）
  */
 // PAGE_DESIGN_AI_TRACE[host-session-entry]: pageDesign live LLM 评测经 AiHost.run 进入 AI Host 会话线；清理冗余时保留这一处作为前端 AI 会话入口。
 // PAGE_DESIGN_REFACTOR_SOURCE[host-session-entry]: 前端 Agent 会话入口；sessionId 来自 kind + instanceId，turn 隔离在 send/transport 层继续传递。
 export class AiHostBusinessSession {
   public readonly target: AiHostBusinessTarget
   public readonly scope: AiHostBusinessScope
-  public readonly storageKey: string
   public readonly sessionId: string
-  public readonly pageId: string
-  public readonly sender: AiHostSender
 
   private readonly senderCore: AiHostMessageSender
   private readonly state = new AiHostMessageSendState()
@@ -245,11 +237,8 @@ export class AiHostBusinessSession {
   ) {
     this.target = normalizeAiHostBusinessTarget(targetInput)
     this.scope = createAiHostBusinessScope(this.target.businessRegistrationId, this.target.businessInstanceId)
-    this.storageKey = createAiHostBusinessStorageKey(this.scope)
     this.sessionId = createAiHostBusinessSessionId(this.target.businessRegistrationId, this.target.businessInstanceId)
-    this.pageId = this.target.businessInstanceId
     this.senderCore = new AiHostMessageSender(options)
-    this.sender = (request) => this.send(request)
   }
 
   /** 启动会话：创建/接入 sessionStore 记录 + 生成工具规约 */

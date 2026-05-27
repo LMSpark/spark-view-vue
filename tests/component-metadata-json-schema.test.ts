@@ -254,16 +254,14 @@ function getRecord(value: unknown, label: string): JsonRecord {
 }
 
 async function guidePayloadParamsSchema(key: string): Promise<JsonRecord> {
-  const provider = createPageDesignPayloadRegistry().getProvider('node-tree', 'spark.component')
-  if (provider === undefined) throw new Error('spark.component payload provider should be registered')
+  const provider = createPageDesignPayloadRegistry().requireProvider('node-tree', 'spark.component')
   const payload = provider.guidePayload(key)
   expect(payload).not.toBeNull()
   return getRecord(payload?.paramsSchema, 'guidePayload.paramsSchema')
 }
 
 async function queryPayloads(args: Record<string, LlmJsonValue>): Promise<JsonRecord> {
-  const provider = createPageDesignPayloadRegistry().getProvider('node-tree', 'spark.component')
-  if (provider === undefined) throw new Error('spark.component payload provider should be registered')
+  const provider = createPageDesignPayloadRegistry().requireProvider('node-tree', 'spark.component')
   const items = provider.queryPayloads(args)
   return {
     moduleKind: 'node-tree',

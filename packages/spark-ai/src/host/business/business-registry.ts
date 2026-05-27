@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】Host 层的业务注册中心。管理所有 AiHostBusinessRegistration，
- *   提供按 moduleId 查询和全量列举能力。注册时自动补全默认 sessionStore。
+ *   提供按 moduleId 查询能力。注册时自动补全默认 sessionStore。
  *
  * 【注册流程】
  *   1. 业务方构造 AiHostBusinessRegistration
@@ -39,11 +39,6 @@ export class AiHostBusinessRegistry<TInput extends LlmJsonParams = LlmJsonParams
   /** 按 moduleId 查询注册项 */
   public get(moduleId: string): AiHostBusinessRegistration<TInput> | undefined {
     return this.registrations.get(moduleId)
-  }
-
-  /** 列出所有已注册业务 */
-  public list(): ReadonlyArray<AiHostBusinessRegistration<TInput>> {
-    return Array.from(this.registrations.values())
   }
 }
 

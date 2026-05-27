@@ -10,7 +10,7 @@
  *   AiHostChatMessage  — 单条聊天消息（role + content）
  *   AiHostChatRequest  — 聊天请求（历史消息 + 回调）
  *   AiHostStreamEvent  — AI turn 事件（来自 APP 公共 SSE 的事件单元）
- *   AiHostFcCallRecord — 工具调用记录（用于前端展示/调试）
+ *   AiHostToolCallRecord — 工具调用记录（用于前端展示/调试）
  *   AiHostTurnMeta     — 轮次元数据（turnId、时间戳等）
  *
  * 【消费方】business-session、tool-loop-runner、turn-event-collector、UI 层
@@ -44,7 +44,7 @@ export type AiHostChatMessage = Readonly<{
  *   onDelta     — 文本增量回调
  *   onUsage     — token 用量回调
  *   onStreamEvent — 原始 AI turn 事件回调
- *   onFcCall    — 工具调用记录回调
+ *   onToolCall  — 工具调用记录回调
  *
  * 可选控制：
  *   turn        — 轮次元数据（未提供时自动生成）
@@ -60,7 +60,7 @@ export type AiHostChatRequest = Readonly<{
   onDelta?: (delta: string) => void
   onUsage?: (usageRaw: Record<string, unknown>) => void
   onStreamEvent?: (event: AiHostStreamEvent) => void
-  onFcCall?: (record: AiHostFcCallRecord) => void
+  onToolCall?: (record: AiHostToolCallRecord) => void
 }>
 
 // ═══════════════════════════════════════════════════════════════
@@ -94,10 +94,10 @@ export type AiHostStreamEvent = Readonly<{
 
 /**
  * 工具调用记录（用于前端展示和调试）。
- * 每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onFcCall 回调
+ * 每次 OpenAI function tool 调用完成后，tool-loop-runner 通过 onToolCall 回调
  * 将本记录传给业务方。
  */
-export type AiHostFcCallRecord = Readonly<{
+export type AiHostToolCallRecord = Readonly<{
   toolName: string
   args: unknown
   turnId: string

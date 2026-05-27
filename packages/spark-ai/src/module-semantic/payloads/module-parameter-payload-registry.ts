@@ -1,7 +1,7 @@
 /**
  * module-semantic/payloads/module-parameter-payload-registry.ts — 模块参数荷载注册表
  *
- * 参数 payload 是“某个模块动作在构造复杂参数前需要查阅的外部知识”。
+ * 参数 payload 是“某个模块 function 在构造复杂参数前需要查阅的外部知识”。
  * 例如 pageDesign.node-tree 的 SparkNode props 指南来自组件目录。
  */
 
@@ -61,7 +61,7 @@ export type ModuleParameterPayloadGuide = Readonly<{
   sourceGuide?: LlmJsonValue
   /** 使用规则、前置条件或调用顺序提示。 */
   usageRules?: readonly string[]
-  /** 已知失败模式，供 LLM 规划修复动作。 */
+  /** 已知失败模式，供 LLM 规划修复步骤。 */
   failureModes?: readonly ModuleFunctionFailureMode[]
   /** provider 自定义指南字段，调用方可原样展示。 */
   metadata?: Readonly<Record<string, LlmJsonValue>>
@@ -94,29 +94,13 @@ export class ModuleParameterPayloadRegistry {
     this.providers.set(key, { ...provider, moduleKind, payloadRef })
   }
 
-  /** 按 moduleKind + payloadRef 获取 provider；未知时返回 undefined。 */
-  public getProvider(moduleKind: string, payloadRef: string): ModuleParameterPayloadProvider | undefined {
-    return this.providers.get(providerKey(moduleKind, payloadRef))
-  }
-
   /** 强制获取 provider；未知时 fail-fast。 */
   public requireProvider(moduleKind: string, payloadRef: string): ModuleParameterPayloadProvider {
-    const provider = this.getProvider(moduleKind, payloadRef)
+    const provider = this.providers.get(providerKey(moduleKind, payloadRef))
     if (provider === undefined) {
       throw new Error(`Unknown module parameter payload provider: ${moduleKind}/${payloadRef}`)
     }
     return provider
-  }
-
-  /** 按注册时序列出 provider，便于调试或构建知识目录。 */
-  public listProviders(filter: Pick<ModuleParameterPayloadQueryFilter, 'moduleKind' | 'payloadRef'> = {}): readonly ModuleParameterPayloadProvider[] {
-    const moduleKind = filter.moduleKind?.trim()
-    const payloadRef = filter.payloadRef?.trim()
-    return [...this.providers.values()].filter((provider) => {
-      if (moduleKind !== undefined && moduleKind.length > 0 && provider.moduleKind !== moduleKind) return false
-      if (payloadRef !== undefined && payloadRef.length > 0 && provider.payloadRef !== payloadRef) return false
-      return true
-    })
   }
 
   /** 查询匹配 provider 暴露的参数摘要。未知 provider 不静默回退。 */
@@ -131,10 +115,14 @@ export class ModuleParameterPayloadRegistry {
   }
 
   private matchProviders(filter: ModuleParameterPayloadQueryFilter): readonly ModuleParameterPayloadProvider[] {
-    const providers = this.listProviders(filter)
+    const moduleKind = filter.moduleKind?.trim()
+    const payloadRef = filter.payloadRef?.trim()
+    const providers = [...this.providers.values()].filter((provider) => {
+      if (moduleKind !== undefined && moduleKind.length > 0 && provider.moduleKind !== moduleKind) return false
+      if (payloadRef !== undefined && payloadRef.length > 0 && provider.payloadRef !== payloadRef) return false
+      return true
+    })
     if (providers.length === 0) {
-      const moduleKind = filter.moduleKind?.trim()
-      const payloadRef = filter.payloadRef?.trim()
       if (moduleKind !== undefined && moduleKind.length > 0 && payloadRef !== undefined && payloadRef.length > 0) {
         throw new Error(`Unknown module parameter payload provider: ${moduleKind}/${payloadRef}`)
       }

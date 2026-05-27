@@ -72,6 +72,10 @@ export {
 } from './module-semantic/protocol/module-kind'
 
 export type {
+  ModuleKindConstructor,
+} from './module-semantic/protocol/module-kind'
+
+export type {
   ModuleCheckEntryLevel,
   ModuleOperationResultOptions,
 } from './module-semantic/protocol/module-operation'
@@ -112,27 +116,13 @@ export {
   ModuleSemanticRuntime,
 } from './module-semantic/runtime/module-semantic-runtime'
 
-export {
-  ModuleSemanticToolCodec,
-} from './module-semantic/host/index'
-
-export {
-  PROTOCOL_TOOL_NAMES,
-} from './module-semantic/internal/protocol-tool-generator'
-
 export type {
   ModuleSemanticToolSpec,
-  ProtocolToolName,
 } from './module-semantic/internal/protocol-tool-generator'
 
 export type {
   ModuleKindDescription,
 } from './module-semantic/internal/navigator'
-
-export {
-  ModuleKindConflictError,
-  ModuleKindNotFoundError,
-} from './module-semantic/internal/module-kind-registry'
 
 export {
   ModuleParameterPayloadRegistry,
@@ -191,10 +181,6 @@ export {
 } from './host/business/business-task'
 
 export {
-  AiHostBusinessRegistry,
-} from './host/business/business-registry'
-
-export {
   AiHostBusinessSession,
   createAiHostBusinessSession,
   runAiHostBusiness,
@@ -229,7 +215,6 @@ export type {
   AiHostBusinessKindDefinition,
   AiHostBusinessOrchestrationPlan,
   AiHostBusinessTaskChatOptions,
-  AiHostBusinessTaskInput,
 } from './host/business/business-task'
 
 export type {
@@ -242,22 +227,24 @@ export type {
 } from './host/business/registration-types'
 
 export type {
+  AiHostBusinessAfterFunctionCallOptions,
   AiHostBusinessLifecycleDirective,
   AiHostBusinessLifecycleStatus,
 } from './host/business/lifecycle-types'
 
 export type {
-  AiHostBusinessAfterFunctionCallOptions,
   AiHostBusinessAppendMessageOptions,
+} from './host/business/scope-types'
+
+export type {
   AiHostOptions,
-  AiHostSender,
-} from './host/business/business-types'
+} from './host/business/host-options'
 
 export type {
   AiHostChatMessage,
   AiHostChatRequest,
-  AiHostFcCallRecord,
   AiHostStreamEvent,
+  AiHostToolCallRecord,
   AiHostTurnMeta,
 } from './host/chat/chat-types'
 

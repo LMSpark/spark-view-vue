@@ -1,4 +1,4 @@
-import type { ApiEnvelopeContext, ApiEnvelopeEvent } from './http-utils'
+import type { ApiEnvelopeContext, ApiEnvelopeEvent } from '@spark-view/spark-utils'
 
 export type AiHostAppSseEventName =
   | 'page-config'
@@ -11,12 +11,6 @@ export type AiHostAppSseEventName =
   | 'debug-screenshot-result'
   | 'debug-fc-error-report'
   | 'llm-frame'
-  | 'ai-turn-delta'
-  | 'ai-turn-reasoning'
-  | 'ai-turn-usage'
-  | 'ai-turn-result'
-  | 'ai-turn-error'
-  | 'ai-turn-done'
   | (string & {})
 
 export type AiHostAppSseEvent<T = unknown> = Readonly<{
@@ -28,5 +22,4 @@ export type AiHostAppSseEvent<T = unknown> = Readonly<{
   protocolVersion?: number
   context?: ApiEnvelopeContext
   event?: ApiEnvelopeEvent
-  legacy: boolean
 }>

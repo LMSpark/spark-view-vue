@@ -92,7 +92,7 @@ export class AiHostBusinessRegistration<TInput extends LlmJsonParams = LlmJsonPa
 
   /* ── 能力运行时 ───────────────────────────────────────── */
 
-  /** 模块语义运行时——工具调用时从中查找 kind、执行 action */
+  /** 模块语义运行时——工具调用时从中查找 kind、执行 function */
   public readonly runtime: ModuleSemanticRuntime
   /** kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用 */
   public readonly inputContract?: AiHostBusinessInputContract<TInput>

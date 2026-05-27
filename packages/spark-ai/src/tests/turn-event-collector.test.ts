@@ -117,7 +117,6 @@ function createTurnAppEvent(
       },
     },
     event: { transport: 'sse', name, terminal: kind === 'done' || kind === 'error' },
-    legacy: false,
     ...overrides,
   }
 }

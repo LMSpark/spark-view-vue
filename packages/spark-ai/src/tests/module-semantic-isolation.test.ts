@@ -191,9 +191,32 @@ describe('ModuleKindRegistry', () => {
   it('register() 后 list/get 可查到', () => {
     const registry = new ModuleKindRegistry()
     const kind = new ModuleKind({ kind: 'test', name: 'Test', description: 'A test kind.' })
-    registry.register(kind)
+    const registered = registry.register(kind)
+    expect(registered).toBe(kind)
     expect(registry.list()).toHaveLength(1)
     expect(registry.get('test')).toBe(kind)
+  })
+
+  it('register() 支持 ModuleKind subclass 构造器并返回实例', () => {
+    class ConstructorRegisteredKind extends ModuleKind {
+      public constructor(options: { readonly kind: string; readonly name: string }) {
+        super({
+          kind: options.kind,
+          name: options.name,
+          description: 'Registered from constructor.',
+        })
+      }
+    }
+
+    const registry = new ModuleKindRegistry()
+    const registered = registry.register(ConstructorRegisteredKind, {
+      kind: 'constructor-kind',
+      name: 'Constructor Kind',
+    })
+
+    expect(registered).toBeInstanceOf(ConstructorRegisteredKind)
+    expect(registry.get('constructor-kind')).toBe(registered)
+    expect(registry.list()).toEqual([registered])
   })
 
   it('get() 返回 undefined 当 kind 未注册', () => {

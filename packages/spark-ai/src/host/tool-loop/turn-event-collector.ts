@@ -7,7 +7,7 @@
 
 import type { AiHostStreamEvent } from '../chat/chat-types'
 import type { AiHostAppSseEvent } from '../transport/app-sse-events'
-import { isRecord } from '../transport/http-utils'
+import { isRecord } from '@spark-view/spark-utils'
 import type {
   AiHostAppSseEventSource,
   AiHostStreamTurnInput,
@@ -95,7 +95,7 @@ type TurnEventStateSink = Readonly<{
   reject(error: unknown): void
 }>
 
-export class TurnEventState {
+class TurnEventState {
   private text = ''
   private reasoning: string | undefined
   private toolCalls: readonly AiHostTransportToolCall[] = []

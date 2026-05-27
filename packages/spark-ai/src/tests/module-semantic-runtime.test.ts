@@ -19,14 +19,15 @@ import {
   ModulePath,
   ModuleParameterPayloadRegistry,
   ModuleSemanticRuntime,
-  PROTOCOL_TOOL_NAMES,
   type ModuleInstanceRef,
   type ModuleFunctionMetadata,
   type ModuleParameterPayloadProvider,
   type ModuleSemanticKnowledgeSnapshot,
   type ModulePathContext,
 } from '../module-semantic'
+import { PROTOCOL_TOOL_NAMES } from '../module-semantic/internal/protocol-tool-generator'
 import type { ModuleSemanticKnowledgeSnapshot as RootModuleSemanticKnowledgeSnapshot } from '../index'
+import { coerceJsonValue } from '../schema'
 import type { LlmJsonValue } from '../schema'
 
 type ModuleKindSpy = {
@@ -285,6 +286,33 @@ function createRuntimeWithSpy(): { runtime: ModuleSemanticRuntime; spy: ModuleKi
 // ═══════════════════════════════════════════════════════
 
 describe('ModuleSemanticRuntime.getLlmTools', () => {
+  it('registerKind() 支持直接注册 ModuleKind subclass 构造器', () => {
+    class RuntimeConstructorKind extends ModuleKind {
+      public constructor(options: { readonly kind: string; readonly label: string }) {
+        super({
+          kind: options.kind,
+          name: options.label,
+          description: 'Runtime constructor registration.',
+          functions: [ECHO_FUNCTION_SCHEMA],
+          runner: (_ctx, _functionName, args) => ModuleOperationResult.ok<LlmJsonValue>({
+            value: args['value'] ?? null,
+          }),
+        })
+      }
+    }
+
+    const runtime = new ModuleSemanticRuntime()
+    const registered = runtime.registerKind(RuntimeConstructorKind, {
+      kind: 'constructor-runtime',
+      label: 'Constructor Runtime',
+    })
+
+    expect(registered).toBeInstanceOf(RuntimeConstructorKind)
+    const description = runtime.describeKind('constructor-runtime')
+    expect(description.ok).toBe(true)
+    expect(runtime.getLlmTools().map((spec) => spec.function.name)).toContain('constructor-runtime_echo')
+  })
+
   it('返回 query/navigation tools 与 business function tools,名字稳定', () => {
     const tools = createRuntime().getLlmTools()
     const names = tools.map((spec) => spec.function.name)
@@ -1333,7 +1361,7 @@ describe('ModuleKind 默认协议行为', () => {
     expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
   })
 
-  it('coerceJsonValue 处理循环引用、特殊数值和常见运行时对象', () => {
+  it('schema coerceJsonValue 处理循环引用、特殊数值和常见运行时对象', () => {
     const circular: {
       self?: unknown
       date?: unknown
@@ -1350,7 +1378,7 @@ describe('ModuleKind 默认协议行为', () => {
     }
     circular.self = circular
 
-    const coerced = ModuleKind.coerceJsonValue(circular)
+    const coerced = coerceJsonValue(circular)
     if (!isRecord(coerced)) throw new Error('expected record')
 
     expect(coerced['date']).toBe('2026-05-23T00:00:00.000Z')
@@ -1460,7 +1488,7 @@ describe('ModuleSemanticRuntime host 作用域透传(plan 闭环 2)', () => {
     expect(first['id']).toBe('page-42')
   })
 
-  it('host 不传时 ctx.host === undefined,保持向后兼容', async () => {
+  it('host 不传时 ctx.host === undefined,保持 host 参数可选', async () => {
     const { runtime, spy } = createRuntimeWithSpy()
     const result = await runtime.executeTool('findInstance', {
       path: '/',

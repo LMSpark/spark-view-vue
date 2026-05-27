@@ -28,8 +28,8 @@ import type {
   PayloadLookupStepsOptions,
 } from './knowledge-types'
 
-export const PAYLOAD_QUERY_ACTION_NAME = 'queryPayloads'
-export const PAYLOAD_GUIDE_ACTION_NAME = 'guidePayload'
+export const PAYLOAD_QUERY_FUNCTION_NAME = 'queryPayloads'
+export const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
   '工具：知识=queryModules/queryFunctions/guideFunction；实例=listChildren/findInstance；元数据=describeKind；属性=getAttribute/setAttribute；反问=guideHumanQuestion。',
 ]
@@ -146,8 +146,8 @@ export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): 
 export function discoverPayloadCatalogs(kinds: readonly ModuleKind[]): readonly PayloadCatalogDescriptor[] {
   return kinds
     .filter((moduleKind) =>
-      moduleKind.functions.some((fn) => fn.name === PAYLOAD_QUERY_ACTION_NAME)
-      && moduleKind.functions.some((fn) => fn.name === PAYLOAD_GUIDE_ACTION_NAME)
+      moduleKind.functions.some((fn) => fn.name === PAYLOAD_QUERY_FUNCTION_NAME)
+      && moduleKind.functions.some((fn) => fn.name === PAYLOAD_GUIDE_FUNCTION_NAME)
     )
     .map((moduleKind) => ({
       kind: moduleKind.kind,
@@ -177,15 +177,15 @@ function requirePayloadCatalogs(options: PayloadLookupStepsOptions): readonly Pa
   if (options.payloadCatalogs.length > 0) return options.payloadCatalogs
   throw new Error(
     `ModuleKind "${options.kind}" declares payloadRef ${options.payloadRefs.join(', ')} but no payload catalog ModuleKind is registered. ` +
-    `Register a ModuleKind with functions "${PAYLOAD_QUERY_ACTION_NAME}" and "${PAYLOAD_GUIDE_ACTION_NAME}" before projecting knowledge.`,
+    `Register a ModuleKind with functions "${PAYLOAD_QUERY_FUNCTION_NAME}" and "${PAYLOAD_GUIDE_FUNCTION_NAME}" before projecting knowledge.`,
   )
 }
 
 function formatPayloadCatalogToolNames(catalogs: readonly PayloadCatalogDescriptor[]): { queryPayloads: string, guidePayload: string } {
   const [catalog] = catalogs
   if (catalog === undefined) throw new Error('payload catalog descriptor is required')
-  const queryTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_QUERY_ACTION_NAME)
-  const guideTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_GUIDE_ACTION_NAME)
+  const queryTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_QUERY_FUNCTION_NAME)
+  const guideTool = createBusinessFunctionToolName(catalog.kindPath, PAYLOAD_GUIDE_FUNCTION_NAME)
   return { queryPayloads: queryTool, guidePayload: guideTool }
 }
 

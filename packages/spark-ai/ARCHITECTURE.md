@@ -24,7 +24,7 @@ schema
   -> host/transport contracts
 ```
 
-Business packages sit outside this package. They create `ModuleKind` classes, register them in `ModuleSemanticRuntime`, and pass the runtime to `AiHostBusinessRegistration`.
+Business packages sit outside this package. They create `ModuleKind` classes, register instances or constructors in `ModuleSemanticRuntime`, and pass the runtime to `AiHostBusinessRegistration`.
 
 ## Source Tree
 
@@ -44,7 +44,7 @@ packages/spark-ai/src/
 │   ├── internal/
 │   │   ├── module-kind-registry.ts
 │   │   ├── navigator.ts
-│   │   ├── action-invoker.ts
+│   │   ├── function-invoker.ts
 │   │   ├── attribute-accessor.ts
 │   │   └── protocol-tool-generator.ts
 │   ├── runtime/
@@ -52,15 +52,16 @@ packages/spark-ai/src/
 │   │   ├── protocol-tool-args.ts
 │   │   ├── protocol-tool-router.ts
 │   │   └── protocol-result-projector.ts
-│   └── host/
-│       └── module-semantic-tool-codec.ts
 └── host/
     ├── business/
     │   ├── scope-types.ts
     │   ├── lifecycle-types.ts
     │   ├── registration-types.ts
-    │   ├── host-options.ts
-    │   └── business-types.ts
+    │   ├── business-task.ts
+    │   ├── business-registry.ts
+    │   ├── business-session.ts
+    │   ├── ai-host.ts
+    │   └── host-options.ts
     ├── session/
     ├── tool-loop/
     │   ├── payload-codec.ts
@@ -70,20 +71,20 @@ packages/spark-ai/src/
     │   ├── turn-event-collector.ts
     │   └── tool-loop-runner.ts
     └── transport/
+        ├── module-semantic-tool-codec.ts
         ├── transport-types.ts
         ├── transport-turn.ts
-        ├── app-sse-events.ts
-        └── http-utils.ts
+        └── app-sse-events.ts
 ```
 
 ## Layer Responsibilities
 
 - `schema`: JSON value types, JSON Schema helpers, and `LlmSchemaValidator`. `paramsSchema` uses `LlmJsonSchemaObject`.
 - `module-semantic/protocol`: stable protocol concepts: `ModuleKind`, `ModulePath`, `ModuleOperationResult`, `ModuleCheckEntry`, `ModulePathContext`, `ModuleInstanceRef`, runner/list/find delegate types, and metadata types.
-- `module-semantic/runtime`: composition root and protocol tool routing. `ModuleSemanticRuntime` wires registry, navigation, action invocation, attribute access, tool generation, argument parsing, and result projection.
+- `module-semantic/runtime`: composition root and protocol tool routing. `ModuleSemanticRuntime` wires registry, navigation, function invocation, attribute access, tool generation, argument parsing, and result projection.
 - `host/session`: framework-free session history and function call history.
 - `host/tool-loop`: LLM round loop, tool-call execution, APP SSE turn event aggregation, payload serialization, result mapping, and diagnostic events.
-- `host/transport`: pure callback contracts, turn identity projection, APP SSE event types, and envelope helpers. Network I/O belongs to the APP/script layer.
+- `host/transport`: pure callback contracts, turn identity projection, and APP SSE event types. Network I/O and envelope decoding belong to the APP/script layer.
 
 ## Boundary Rules
 

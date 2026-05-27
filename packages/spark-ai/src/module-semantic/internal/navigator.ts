@@ -69,7 +69,7 @@ export type ModuleKindDescription = Readonly<{
  * - moduleKind: 末段 kind 对应的 ModuleKind（用于后续属性/函数调用）
  * - segmentCtx: 末段 PathContext（传给末段 ModuleKind 的方法）
  */
-export class ModuleNavigationSuccess {
+class ModuleNavigationSuccess {
   public constructor(
     public readonly moduleKind: ModuleKind,
     public readonly segmentCtx: ModulePathContext,
@@ -77,7 +77,7 @@ export class ModuleNavigationSuccess {
 }
 
 /** 路径遍历失败结果（OperationResult<never> 的别名，方便类型标注） */
-export type ModuleNavigationFailure = ModuleOperationResult<never>
+type ModuleNavigationFailure = ModuleOperationResult<never>
 
 // ═══════════════════════════════════════════════════════════════
 // 第 2 节 · Navigator class

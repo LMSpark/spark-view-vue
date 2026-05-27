@@ -8,7 +8,7 @@
 
 import type { ModuleKind } from '../protocol'
 
-export class ModuleKindTopologyError extends Error {
+class ModuleKindTopologyError extends Error {
   public constructor(message: string) {
     super(message)
     this.name = 'ModuleKindTopologyError'

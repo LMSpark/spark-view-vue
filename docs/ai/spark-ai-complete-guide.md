@@ -254,7 +254,7 @@ flowchart LR
   Router --> Execute["executeTool(toolName,args,host)"]
 ```
 
-`registerKind()` 只负责把 `ModuleKind` 放进注册表。运行时不持有业务状态，业务状态必须留在业务 service 或 workspace 里。
+`registerKind()` 是唯一 ModuleKind 注册入口，可接收已构造实例，也可接收 `ModuleKind` subclass 构造器和构造参数；运行时最终只保存实例，不持有业务状态，业务状态必须留在业务 service 或 workspace 里。
 
 直接调用入口：
 
@@ -277,7 +277,7 @@ flowchart TD
   KindRegistry["ModuleKindRegistry"] --> Generator["ProtocolToolGenerator.generate()"]
   Generator --> Fixed["固定知识/导航工具"]
   Generator --> Business["业务函数工具"]
-  Fixed --> Codec["ModuleSemanticToolCodec"]
+  Fixed --> Codec["Host transport codec"]
   Business --> Codec
   Codec --> TransportTools["AiHostTransportToolSpec[]"]
   TransportTools --> LLM["LLM"]
@@ -465,7 +465,7 @@ await pageDesignHost.run.pageDesign({
   onDelta: renderTextDelta,
   onReasoning: renderReasoningDelta,
   onStreamEvent: renderDiagnosticEvent,
-  onFcCall: renderToolCall,
+  onToolCall: renderToolCall,
 })
 ```
 
@@ -610,7 +610,7 @@ sequenceDiagram
 每轮 `runToolLoop()` 的真实流程：
 
 1. 拼接 system prompt：`registration.systemPrompt(context)`、`request.systemPrompt`、`runtime.projectKnowledge().promptSnapshot`。
-2. 用 `runtime.getLlmTools()` 取本轮工具，并通过 `ModuleSemanticToolCodec` 投影为 transport tool spec。
+2. 用 `runtime.getLlmTools()` 取本轮工具，并通过 Host transport codec 投影为 transport tool spec。
 3. `prepareSession()` 把后端 session、tools、systemPrompt 准备好。
 4. 首轮只发送最新用户消息，后续轮次依赖后端 conversation，不重复发送上一轮工具消息。
 5. `executeTurn()` 带上本轮 `tools`，返回文本和 toolCalls。
@@ -802,8 +802,8 @@ flowchart TD
 export function createTodoBusinessKindDefinition(options: TodoBusinessOptions) {
   const service = new TodoService(options)
   const runtime = new ModuleSemanticRuntime()
-  runtime.registerKind(new TodoRootKind())
-  runtime.registerKind(new TodoListKind({ service, parentKind: TODO_KIND_ID }))
+  runtime.registerKind(TodoRootKind)
+  runtime.registerKind(TodoListKind, { service, parentKind: TODO_KIND_ID })
 
   return {
     kindID: TODO_KIND_ID,

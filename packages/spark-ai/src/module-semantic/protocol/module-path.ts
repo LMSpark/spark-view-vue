@@ -1,22 +1,36 @@
 /**
  * module-semantic · 模块路径值对象
  *
- * 不可变值对象，提供模块树中的节点定位能力。
- * 所有操作方法返回新实例，不修改原对象。
+ * 协议层级：第 2 层（无协议内依赖，独立的值对象层）
+ * 核心职责：提供模块树中的节点定位能力，是不可变值对象。
+ * 上游依赖：无（仅依赖 TypeScript 标准库）
+ * 下游消费：module-context（ModulePathContext 引用 ModulePathSegment）、module-kind、
+ *          module-request、以及 Navigator / Runtime 等消费方
  *
  * 路径语法：
  *   /                              — 根路径（空 segments）
- *   /<kind>[<id>]                  — 单段路径
- *   /<kind1>[<id1>]/<kind2>[<id2>] — 多段路径（从根到目标）
+ *   /<kind>[<id>]                  — 单段路径（如 /Table[0]）
+ *   /<kind1>[<id1>]/<kind2>[<id2>] — 多段路径（从根到目标节点，如 /Page[main]/Table[0]）
  *
- * 文件结构：错误类型 → 路径段 → 模块路径 → 内部解析器
+ * 设计思路：
+ *   ModulePath 是不可变值对象，所有操作方法（parent / append）返回新实例。
+ *   路径解析采用 fail-fast 策略，非法输入直接抛出 ModulePathParseError。
+ *
+ * 文件结构（按解析流程：错误定义 → 路径段 → 完整路径 → 内部解析器）：
+ *   一、错误类型        — ModulePathParseErrorCode + ModulePathParseError
+ *   二、路径段          — ModulePathSegment（最小编址单元）
+ *   三、模块路径        — ModulePath（不可变值对象，含静态工厂 + 查询 + 操作方法）
+ *   四、内部解析器      — parseSegment / splitRawSegments（仅 parse() 调用）
  */
 
 // ============================================================================
 // 一、错误类型
 //
-// ModulePathParseError 携带 code（机器可读错误码）、raw（原始输入）、
-// message（人类可读描述）、position（错误字符偏移，可选）。
+// ModulePathParseError 携带完整诊断信息，方便调用方精确处理：
+//   code     — 机器可读错误码（EMPTY / MISSING_LEADING_SLASH / INVALID_SEGMENT 等）
+//   raw      — 原始输入字符串（保留现场，便于日志和调试）
+//   message  — 人类可读描述
+//   position — 错误字符偏移（可选，用于 IDE 高亮错误位置）
 // ============================================================================
 
 export type ModulePathParseErrorCode =
@@ -41,8 +55,13 @@ export class ModulePathParseError extends Error {
 // ============================================================================
 // 二、路径段 — ModulePathSegment
 //
-// 模块路径的最小编址单元。kind 为模块类型名（如 "Table"、"Form"），
-// id 为实例标识（如 "0"、"main-form"）。两者均不可为空。
+// 模块路径的最小编址单元，由 kind（模块类型名）和 id（实例标识）组成。
+// 例：/Table[0] 中 kind="Table", id="0"；/Form[main-form] 中 kind="Form", id="main-form"
+//
+// 校验规则：
+//   kind 不可为空字符串（空 kind 无法定位 ModuleKind）
+//   id 不可为空字符串（空 id 无法定位具体实例）
+//   ModulePathSegment.from 是带校验的工厂，在校验场景使用
 // ============================================================================
 
 export class ModulePathSegment {
@@ -66,11 +85,23 @@ export class ModulePathSegment {
 // ============================================================================
 // 三、模块路径 — ModulePath
 //
-// 不可变值对象，由有序的 ModulePathSegment 列表组成。
+// 不可变值对象，由有序的 ModulePathSegment 列表组成，从根到目标节点。
 //
-// 创建方式：root() / of([]) / parse("/a[1]/b[2]")
-// 操作方法：parent() / append() / equals() / toString()（均返回新实例）
-// 查询属性：isRoot / depth / tail
+// 创建方式（三种静态工厂）：
+//   ModulePath.root()              → 根路径 "/"
+//   ModulePath.of([seg1, seg2])    → 从已有 segments 构造（逐段校验）
+//   ModulePath.parse("/a[1]/b[2]") → 从字符串解析（完整语法校验）
+//
+// 查询属性：
+//   isRoot — 是否为根路径（segments 长度为 0）
+//   depth  — 路径深度（segments 数量）
+//   tail   — 末段 segment（根路径返回 undefined）
+//
+// 路径操作（均返回新实例，不修改原对象）：
+//   parent() — 返回父路径（去掉末段；根路径为自身）
+//   append() — 追加一段到末尾
+//   equals() — 深度比较两个路径
+//   toString() — 序列化为 "/kind[id]/kind[id]" 格式
 // ============================================================================
 
 export class ModulePath {
@@ -82,7 +113,7 @@ export class ModulePath {
 
   // ── 静态工厂 ──
 
-  /** 根路径 "/"（空 segments） */
+  /** 根路径 "/"（空 segments）。所有路径解析的起点。 */
   public static root(): ModulePath {
     return new ModulePath([])
   }
@@ -93,8 +124,10 @@ export class ModulePath {
   }
 
   /**
-   * 从字符串解析路径。
-   * 流程：校验非空 → 校验前导 '/' → 根路径快速返回 → 切分 + 逐段解析。
+   * 从字符串解析路径。解析流程：
+   *   1. 校验非空 → 2. 校验前导 '/' → 3. 根路径快速返回
+   *   → 4. 按 '/' 切分原始段 → 5. 逐段解析 kind[id]
+   * 任意步骤失败均抛出 ModulePathParseError。
    */
   public static parse(raw: string): ModulePath {
     if (raw.length === 0) {
@@ -124,19 +157,19 @@ export class ModulePath {
     return this.segments.length === 0
   }
 
-  /** 路径深度（segments 数量） */
+  /** 路径深度（segments 数量）。根路径 depth=0，/A[1]/B[2] depth=2 */
   public get depth(): number {
     return this.segments.length
   }
 
-  /** 末段 segment（根路径返回 undefined） */
+  /** 末段 segment（根路径返回 undefined）。用于定位当前节点。 */
   public get tail(): ModulePathSegment | undefined {
     return this.segments.length === 0 ? undefined : this.segments[this.segments.length - 1]
   }
 
-  // ── 路径操作（均返回新实例）──
+  // ── 路径操作（均返回新实例，保持不可变性）──
 
-  /** 返回父路径（去掉末段）。根路径的父路径为自身。 */
+  /** 返回父路径（去掉末段）。根路径的父路径为自身（幂等）。 */
   public parent(): ModulePath {
     if (this.segments.length === 0) return this
     return new ModulePath(this.segments.slice(0, -1))
@@ -155,13 +188,13 @@ export class ModulePath {
 
   // ── 序列化与比较 ──
 
-  /** 序列化为字符串：根路径返回 "/"，否则为 "/kind[id]/kind[id]" */
+  /** 序列化为字符串：根路径 → "/"，否则 → "/kind[id]/kind[id]" */
   public toString(): string {
     if (this.segments.length === 0) return '/'
     return this.segments.map((segment) => `/${segment.kind}[${segment.id}]`).join('')
   }
 
-  /** 深度比较两个路径是否相等（逐段比较 kind 和 id） */
+  /** 深度比较两个路径是否相等（逐段比较 kind 和 id）。顺序敏感。 */
   public equals(other: ModulePath): boolean {
     if (this.segments.length !== other.segments.length) return false
     return this.segments.every((segment, index) => {
@@ -175,11 +208,13 @@ export class ModulePath {
 // 四、内部解析器
 //
 // 以下函数仅被 ModulePath.parse() 调用，负责将原始字符串拆分为结构化数据。
+// 不对外暴露，保持 ModulePath 的封装性。
 // ============================================================================
 
 /**
  * 解析单段：将 "kind[id]" 拆为 { kind, id }。
- * 方括号必须成对且 id 位于最后一对 [] 之间。
+ * 语法约束：方括号必须成对，且 id 位于最后一对 [] 之间。
+ * 例："Table[0]" → { kind: "Table", id: "0" }
  */
 function parseSegment(part: string, raw: string, position: number): ModulePathSegment {
   const openIndex = part.indexOf('[')
@@ -206,7 +241,15 @@ function parseSegment(part: string, raw: string, position: number): ModulePathSe
 
 /**
  * 分割原始字符串为 segment 部分（去除前导 '/' 后按 '/' 切分）。
- * 关键：仅在外层 bracketDepth===0 时的 '/' 才作为分隔符，正确处理方括号嵌套。
+ *
+ * 核心算法：括号感知分割
+ *   遍历 body 中每个字符，维护 bracketDepth 计数器：
+ *     '[' → depth+1（进入方括号区域）
+ *     ']' → depth-1（退出方括号区域，depth<0 表示多余的右括号，抛错）
+ *     '/' → 仅当 depth===0 时才是段分隔符（在方括号内的 '/' 属于 id 的一部分）
+ *   遍历结束后 depth!==0 表示方括号未闭合，抛错。
+ *
+ * 例："Table[0]/Column[a/b]" → ["Table[0]", "Column[a/b]"]
  */
 function splitRawSegments(raw: string): string[] {
   const body = raw.slice(1) // 去除前导 '/'

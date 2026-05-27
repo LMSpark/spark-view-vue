@@ -35,7 +35,7 @@ import type {
  *
  * 成功路径：从 checks 提取 info/warn 级 check 作为人类可读的 summary。
  * 失败路径：提取第一个 error 级 check 的 code/message/hint 填入 code/msg/fix，
- * 同时保留完整 checks，确保参数校验等 FC 失败细节会作为 tool result 回传给 LLM。
+ * 同时保留完整 checks，确保参数校验等工具失败细节会作为 tool result 回传给 LLM。
  */
 export function toFunctionCallResult(
   result: ModuleOperationResult<LlmJsonValue>,

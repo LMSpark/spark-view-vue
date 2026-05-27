@@ -1,9 +1,11 @@
 import { describe, expect, expectTypeOf, it } from 'vitest'
 import type {
+  ModuleKindConstructor as RootModuleKindConstructor,
   ModuleAttributeAccess as RootModuleAttributeAccess,
   ModuleOperationResultOptions as RootModuleOperationResultOptions,
 } from '../index'
 import type {
+  ModuleKindConstructor as SemanticModuleKindConstructor,
   ModuleAttributeAccess as SemanticModuleAttributeAccess,
   ModuleOperationResultOptions as SemanticModuleOperationResultOptions,
 } from '../module-semantic'
@@ -29,7 +31,9 @@ describe('@spark-view/spark-ai root public surface', () => {
 
   it('keeps implementation helpers and business modules out of the package root', async () => {
     const rootModule = await import('../index')
+    const semanticModule = await import('../module-semantic')
     const exposed = new Set(Object.keys(rootModule))
+    const semanticExposed = new Set(Object.keys(semanticModule))
 
     expect(exposed.has('latestUserInput')).toBe(false)
     expect(exposed.has('normalizeTurn')).toBe(false)
@@ -38,11 +42,22 @@ describe('@spark-view/spark-ai root public surface', () => {
     expect(exposed.has('readAppendMessagesEnvelope')).toBe(false)
     expect(exposed.has('parseAiHostStreamFrames')).toBe(false)
     expect(exposed.has('createAiHostSessionTranscript')).toBe(false)
+    expect(exposed.has('AiHostBusinessRegistry')).toBe(false)
+    expect(exposed.has('ModuleSemanticToolCodec')).toBe(false)
+    expect(exposed.has('PROTOCOL_TOOL_NAMES')).toBe(false)
+    expect(exposed.has('ModuleKindConflictError')).toBe(false)
+    expect(exposed.has('ModuleKindNotFoundError')).toBe(false)
     expect(exposed.has('PageDesignService')).toBe(false)
     expect(exposed.has('PageDesignNodeTreeModuleKind')).toBe(false)
+
+    expect(semanticExposed.has('ModuleSemanticToolCodec')).toBe(false)
+    expect(semanticExposed.has('PROTOCOL_TOOL_NAMES')).toBe(false)
+    expect(semanticExposed.has('ModuleKindConflictError')).toBe(false)
+    expect(semanticExposed.has('ModuleKindNotFoundError')).toBe(false)
   })
 
   it('keeps stable protocol type exports available from public entries', () => {
+    expectTypeOf<RootModuleKindConstructor>().toEqualTypeOf<SemanticModuleKindConstructor>()
     expectTypeOf<RootModuleAttributeAccess>().toEqualTypeOf<SemanticModuleAttributeAccess>()
     expectTypeOf<RootModuleOperationResultOptions<string>>()
       .toEqualTypeOf<SemanticModuleOperationResultOptions<string>>()

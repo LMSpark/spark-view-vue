@@ -27,7 +27,7 @@
  *   - describeKind(kind)                   — 查询 kind 元数据
  *   - <kindPath>_<functionName>($paths, ...args) — 按注册函数动态生成的 OpenAI function tool
  *
- * 【消费方】ModuleSemanticRuntime.getLlmTools() → ModuleSemanticToolCodec → Host transport
+ * 【消费方】ModuleSemanticRuntime.getLlmTools() → Host transport codec
  * ═══════════════════════════════════════════════════════════════
  */
 

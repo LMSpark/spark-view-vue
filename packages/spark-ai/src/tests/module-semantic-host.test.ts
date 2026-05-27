@@ -26,11 +26,11 @@ import {
   ModuleKind,
   ModuleOperationResult,
   ModuleSemanticRuntime,
-  ModuleSemanticToolCodec,
-  PROTOCOL_TOOL_NAMES,
   type ModuleInstanceRef,
   type ModulePathContext,
 } from '../module-semantic'
+import { ModuleSemanticToolCodec } from '../host/transport/module-semantic-tool-codec'
+import { PROTOCOL_TOOL_NAMES } from '../module-semantic/internal/protocol-tool-generator'
 import { paramsSchema, stringSchema, type LlmJsonParamShape, type LlmJsonValue } from '../schema'
 
 type PageDesignTaskInput = LlmJsonParamShape<{
@@ -446,7 +446,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
     await runner.runToolLoop({
       registration,
       scope: SCOPE,
-      request: { historyMsgs: [], onFcCall: (record) => calls.push(record.status) },
+      request: { historyMsgs: [], onToolCall: (record) => calls.push(record.status) },
       turn: TURN,
       clearSelected: () => undefined,
     })
@@ -516,7 +516,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       scope: SCOPE,
       request: {
         historyMsgs: [],
-        onFcCall: (record) => {
+        onToolCall: (record) => {
           if (record.result.ok) {
             records.push({ status: record.status })
             return
@@ -586,7 +586,7 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
       scope: SCOPE,
       request: {
         historyMsgs: [],
-        onFcCall: (record) => {
+        onToolCall: (record) => {
           if (record.result.ok) {
             records.push({ status: record.status })
             return
@@ -692,13 +692,13 @@ describe('AiHostBusinessRegistration + ModuleSemanticRuntime', () => {
 })
 
 describe('ModuleSemanticToolCodec', () => {
-  it('actionOf 对已知 OpenAI function toolName 原样返回;未知工具返回 null', () => {
+  it('resolveToolName 对已知 OpenAI function toolName 原样返回;未知工具返回 null', () => {
     const runtime = new ModuleSemanticRuntime()
     runtime.registerKind(createNodeTreeKind())
     const codec = new ModuleSemanticToolCodec(runtime.getLlmTools())
-    expect(codec.actionOf('node-tree_getNode')).toBe('node-tree_getNode')
-    expect(codec.actionOf('describeKind')).toBe('describeKind')
-    expect(codec.actionOf('unknown-tool')).toBeNull()
+    expect(codec.resolveToolName('node-tree_getNode')).toBe('node-tree_getNode')
+    expect(codec.resolveToolName('describeKind')).toBe('describeKind')
+    expect(codec.resolveToolName('unknown-tool')).toBeNull()
   })
 
   it('tools 暴露 OpenAI function tool transport spec', () => {

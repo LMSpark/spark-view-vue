@@ -1412,7 +1412,7 @@ async function run(options) {
         latestResultText = data.text
       }
     },
-    onFcCall: (record) => toolCalls.push(record),
+    onToolCall: (record) => toolCalls.push(record),
   })
   const sendResult = demand.report
   if (demand.runResult === undefined) {

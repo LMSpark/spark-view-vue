@@ -420,7 +420,6 @@ function normalizeServerEnvelopeEvent(
       data: payload,
       rawData,
       rawPayload: payload,
-      legacy: true,
     }
   }
 
@@ -438,7 +437,6 @@ function normalizeServerEnvelopeEvent(
     ...(typeof protocolVersion === 'number' ? { protocolVersion } : {}),
     ...(context !== undefined ? { context } : {}),
     ...(envelopeEvent !== undefined ? { event: envelopeEvent } : {}),
-    legacy: protocolVersion !== 4,
   }
 }
 

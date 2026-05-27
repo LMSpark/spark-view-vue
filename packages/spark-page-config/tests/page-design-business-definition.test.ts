@@ -747,7 +747,7 @@ describe('pageDesign host business registration', () => {
     await runner.runToolLoop({
       registration,
       scope,
-      request: { historyMsgs: [], onFcCall: (record) => statuses.push(record.status) },
+      request: { historyMsgs: [], onToolCall: (record) => statuses.push(record.status) },
       turn: testTurn(),
       clearSelected: () => undefined,
     })

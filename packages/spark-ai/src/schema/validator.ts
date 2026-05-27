@@ -12,7 +12,7 @@
  *   - AJV error keyword → 中文消息映射集中在一处，便于统一调整措辞。
  *   - JSON Pointer 路径转 $.a.b[0] 格式，方便 LLM 理解错误位置。
  *
- * 【消费方】module-semantic/internal/action-invoker.ts（参数校验）
+ * 【消费方】module-semantic/internal/function-invoker.ts（参数校验）
  *
  * ═══════════════════════════════════════════════════════════════
  * 校验流程（validateLlmDeserializedParams）：
@@ -102,7 +102,7 @@ export class LlmSchemaValidator {
    * 调用时序：
    *   1. LLM 返回 function call arguments（JSON 字符串）
    *   2. Host 层 JSON.parse → params
-   *   3. ActionInvoker 调用本方法校验 params 是否符合 action.paramsSchema
+   *   3. FunctionInvoker 调用本方法校验 params 是否符合 function.paramsSchema
    */
   static validateLlmDeserializedParams(
     params: unknown,
@@ -138,7 +138,7 @@ export class LlmSchemaValidator {
     }
   }
 
-  /** 校验任意 JSON 值是否符合 JSON Schema。用于属性值与直调 action 参数兜底校验。 */
+  /** 校验任意 JSON 值是否符合 JSON Schema。用于属性值与直调 function 参数兜底校验。 */
   static validateJsonValue(
     value: unknown,
     schema: LlmJsonSchema,

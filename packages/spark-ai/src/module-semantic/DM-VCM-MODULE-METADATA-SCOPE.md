@@ -53,7 +53,7 @@ export function createNodeTreeModuleKind(delegates: {
 }
 ```
 
-运行时仍只认 `runtime.registerKind(moduleKind)` 这一个注册口。VCM 可以生成 factory 和构造依赖声明，但 factory 的返回值必须是标准 `ModuleKind`。
+运行时仍只认 `runtime.registerKind(...)` 这一个注册口。VCM 可以生成 `ModuleKind` subclass 构造器或 factory；构造器由 `registerKind(Constructor, ...args)` 创建实例，factory 的返回值必须是标准 `ModuleKind`。
 
 VCM 应完整提取六类结构：
 
@@ -208,7 +208,7 @@ export function createNodeTreeModuleKind(): ModuleKind {
 - 构造依赖必须显式出现在生成 factory 参数中，不允许从闭包或全局变量隐式捕获。
 - `@moduleRunner` / `@moduleListDelegate` / `@moduleFindDelegate` 指向不存在的函数、签名不匹配或 kind 绑定冲突时 fail-fast。
 - `@moduleMutation` 的 resource/mode 必须与 `@moduleAttackSurface` 覆盖的资源一致；写入、删除、执行类资源缺少 `@moduleGuard` 时 fail-fast。
-- 最终注册仍必须走 `runtime.registerKind(new ModuleKind(...))` 或等价的生成 factory 返回值；不得新增绕过 `ModuleKind` 的 runtime 注册入口。
+- 最终注册仍必须走 `runtime.registerKind(new ModuleKind(...))`、`runtime.registerKind(ModuleKindCtor, ...args)` 或等价的生成 factory 返回值；不得新增绕过 `ModuleKind` 的 runtime 注册入口。
 
 ## 术语迁移延后边界（2026-05-27）
 
