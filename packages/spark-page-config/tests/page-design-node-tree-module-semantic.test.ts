@@ -10,12 +10,13 @@ import {
   ModuleSemanticRuntime,
 } from '@spark-view/spark-ai/module-semantic'
 import type { AiHostBusinessRuntimeContext } from '@spark-view/spark-ai/host'
-import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
-import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
+import type { PageDesignEditHost } from '../src/design/index'
+import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignService } from '../src/design/page-design-service'
 import { PageDesignNodeTreeModuleKind } from '../src/ai/node-tree-tool-catalog'
-import { isRecord } from '@spark-view/spark-page-config/json-document'
+import { isRecord } from '@spark-view/spark-utils'
+import { getArray, getRecord } from './helpers/test-utils'
 
 function createHost(): { host: PageDesignEditHost; nodeTree: SparkNodeTree } {
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
@@ -76,20 +77,6 @@ function buildRuntime(pageId = 'demo-page'): {
   }
 }
 
-function getDataRecord(result: { readonly ok: boolean; readonly data?: unknown }): Record<string, unknown> {
-  if (!result.ok || !isRecord(result.data)) {
-    throw new Error('expected ok record result')
-  }
-  return result.data
-}
-
-function getDataArray(result: { readonly ok: boolean; readonly data?: unknown }): unknown[] {
-  if (!result.ok || !Array.isArray(result.data)) {
-    throw new Error('expected ok array result')
-  }
-  return result.data
-}
-
 describe('NodeTree module-semantic 接入(E2E)', () => {
   it('暴露 query/navigation tools 与 NodeTree function tools', () => {
     const { runtime } = buildRuntime()
@@ -110,7 +97,7 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
   it('describeKind 列出 NodeTree functions 并完整返回 function 元数据', async () => {
     const { runtime, hostContext } = buildRuntime()
     const result = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
-    const data = getDataRecord(result)
+    const data = getRecord(result)
     const actions = data['functions']
     expect(Array.isArray(actions)).toBe(true)
     if (!Array.isArray(actions)) throw new Error('actions not array')
@@ -132,7 +119,7 @@ describe('NodeTree module-semantic 接入(E2E)', () => {
       $paths: ['demo-page'],
       componentId: 'page__0',
     }, hostContext)
-    expect(getDataRecord(getNode)['id']).toBe('page__0')
+    expect(getRecord(getNode)['id']).toBe('page__0')
 
     const countBefore = await runtime.executeTool('node-tree_countNodes', {
       $paths: ['demo-page'],
@@ -173,7 +160,7 @@ describe('NodeTree module-semantic 可发现链路', () => {
     const { runtime, hostContext } = buildRuntime(pageId)
 
     const listResult = await runtime.executeTool('listChildren', { path: '/' }, hostContext)
-    const rootEntries = getDataArray(listResult)
+    const rootEntries = getArray(listResult)
     expect(rootEntries.some((entry) => isRecord(entry) && entry['id'] === 'node-tree')).toBe(true)
 
     const findResult = await runtime.executeTool('findInstance', {
@@ -181,7 +168,7 @@ describe('NodeTree module-semantic 可发现链路', () => {
       childKind: 'node-tree',
       query: {},
     }, hostContext)
-    const instances = getDataArray(findResult)
+    const instances = getArray(findResult)
     const first = instances[0]
     if (!isRecord(first) || typeof first['id'] !== 'string') {
       throw new Error('expected discovered node-tree id')
@@ -190,7 +177,7 @@ describe('NodeTree module-semantic 可发现链路', () => {
     expect(first['label']).toBe('当前页面节点树')
 
     const describeResult = await runtime.executeTool('describeKind', { kind: 'node-tree' }, hostContext)
-    const describeData = getDataRecord(describeResult)
+    const describeData = getRecord(describeResult)
     const functions = describeData['functions']
     if (!Array.isArray(functions)) throw new Error('functions not array')
     const getNode = functions.find((action) => isRecord(action) && action['name'] === 'getNode')
@@ -203,7 +190,7 @@ describe('NodeTree module-semantic 可发现链路', () => {
       $paths: [first['id']],
       componentId: 'page__0',
     }, hostContext)
-    expect(getDataRecord(invokeResult)['type']).toBe('page')
+    expect(getRecord(invokeResult)['type']).toBe('page')
   })
 })
 

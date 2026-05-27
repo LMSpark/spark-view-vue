@@ -6,13 +6,8 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'config/index': resolve(__dirname, 'src/config/index.ts'),
-        'node-tree/index': resolve(__dirname, 'src/node-tree/index.ts'),
-        'navigation/index': resolve(__dirname, 'src/navigation/index.ts'),
-        'runtime/index': resolve(__dirname, 'src/runtime/index.ts'),
-        'json-document/index': resolve(__dirname, 'src/json-document/index.ts'),
-        'design/index': resolve(__dirname, 'src/design/index.ts'),
-        'ai/index': resolve(__dirname, 'src/ai/index.ts'),
+        'editor/page-editor': resolve(__dirname, 'src/editor/page-editor.ts'),
+        'json-document-public': resolve(__dirname, 'src/json-document-public.ts'),
       },
       formats: ['es'],
     },

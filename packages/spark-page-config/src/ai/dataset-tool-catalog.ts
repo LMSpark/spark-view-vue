@@ -33,9 +33,9 @@ import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type {
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
-} from '../design/page-design-host-api'
+} from '../design/page-edit-session'
 import type { PageDesignService } from '../design/page-design-service'
-import { isRecord } from '../json-document'
+import { isRecord } from '@spark-view/spark-utils'
 import { createCurrentPageRef } from './page-design-helpers'
 
 type DatasetActionRunner = PageDesignServiceActionBinding<DataSetCrudTool>['run']

@@ -20,7 +20,10 @@ export default defineConfig({
   css: { postcss: {} },
   build: {
     lib: {
-      entry: resolve(__dirname, 'src/index.ts'),
+      entry: {
+        index: resolve(__dirname, 'src/index.ts'),
+        'runtime/index': resolve(__dirname, 'src/runtime/index.ts'),
+      },
       formats: ['es'],
     },
     // 清空旧产物（.d.ts 由后续 vue-tsc 步骤追加）

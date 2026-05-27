@@ -1,6 +1,6 @@
 import type { Preview } from '@storybook/vue3'
 import { setup } from '@storybook/vue3'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/page'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component/runtime'
 import { Spark } from '@spark-view/spark-component'
 import { createLogger } from '@spark-view/spark-app'
 import ElementPlus from 'element-plus'

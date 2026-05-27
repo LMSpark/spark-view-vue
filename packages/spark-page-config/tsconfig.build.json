@@ -16,14 +16,7 @@
       "@spark-view/spark-ai/host": ["../spark-ai/dist/host/index.d.ts"],
       "@spark-view/spark-ai/module-semantic": ["../spark-ai/dist/module-semantic/index.d.ts"],
       "@spark-view/spark-page-config": ["./src/index.ts"],
-      "@spark-view/spark-page-config/config": ["./src/config/index.ts"],
-      "@spark-view/spark-page-config/node-tree": ["./src/node-tree/index.ts"],
-      "@spark-view/spark-page-config/navigation": ["./src/navigation/index.ts"],
-      "@spark-view/spark-page-config/runtime": ["./src/runtime/index.ts"],
-      "@spark-view/spark-page-config/json-document": ["./src/json-document/index.ts"],
-      "@spark-view/spark-page-config/design": ["./src/design/index.ts"],
-      "@spark-view/spark-page-config/ai": ["./src/ai/index.ts"],
-      "@spark-view/spark-page-config/ai/payloads/component-catalog.json": ["./src/ai/payloads/component-catalog.json"],
+      "@spark-view/spark-page-config/editor": ["./src/editor/page-editor.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
     }

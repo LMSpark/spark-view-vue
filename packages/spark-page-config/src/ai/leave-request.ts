@@ -305,7 +305,7 @@ import {
   objectSchema,
   stringSchema,
 } from '@spark-view/spark-ai/schema'
-import { isRecord } from '../json-document'
+import { isRecord } from '@spark-view/spark-utils'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 export const LEAVE_REQUEST_KIND = 'manual-leave'

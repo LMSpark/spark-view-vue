@@ -53,6 +53,14 @@ export {
   getSparkNodeChildren,
 } from './core/index.js'
 
+// ── 5.5 页面运行时服务（能力键） ──
+export {
+  PAGE_RUNTIME_SERVICES,
+} from './runtime/index.js'
+export type {
+  PageRuntimeServicesCapability,
+} from './runtime/index.js'
+
 // ── 6. 数据 + Renderer 能力键 ──
 export {
   PAGE_SERVICE,

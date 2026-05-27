@@ -1,4 +1,4 @@
-import type { ChildPlacement } from '@spark-view/spark-page-config/navigation'
+import type { ChildPlacement } from '@spark-view/spark-data'
 
 type ChildPlacementValue = '' | ChildPlacement
 

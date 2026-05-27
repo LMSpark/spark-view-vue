@@ -434,9 +434,7 @@ import {
   AI_HOST,
   createAiHost,
 } from '@spark-view/spark-ai/host'
-import {
-  ensurePageDesignBusiness,
-} from '@spark-view/spark-page-config/ai'
+import { ensurePageDesignBusiness } from '@/services/page-design-business'
 import { sparkConsume, sparkProvide } from '@spark-view/spark-utils'
 import { createAiHostTurnCallbacks } from '@/services/ai-turn-bridge'
 
@@ -453,6 +451,8 @@ await workspace.ensureActivePageFilesLoaded({ allowMissingAsEmpty: true })
 const host = sparkConsume(businessContext, AI_HOST)
 if (host === null) throw new Error('AI_HOST capability is not provided')
 
+// pageDesign business registration is owned by the app integration layer.
+// DevSystem editing state should still enter spark-page-config through PageEditor.
 const pageDesignHost = ensurePageDesignBusiness({
   host,
   getPageDesignEditHost: () => workspace.createPageDesignEditHost(),

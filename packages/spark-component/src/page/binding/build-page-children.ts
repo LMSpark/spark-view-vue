@@ -12,7 +12,7 @@
  * - 顶层 id 去重
  */
 
-import type { RuleConfig } from '@spark-view/spark-page-config/config'
+import type { RuleConfig } from '@spark-view/spark-page-config'
 import { normalizeSparkNode, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeOnProps } from './bind-normalize.js'

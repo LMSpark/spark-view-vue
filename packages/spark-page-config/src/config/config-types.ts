@@ -6,9 +6,9 @@
 
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { SparkNode } from '../node-tree'
+import type { SparkNode } from '@spark-view/spark-data'
 
-export type { SparkNode as RuleConfig } from '../node-tree'
+export type { SparkNode as RuleConfig } from '@spark-view/spark-data'
 export type { DataSet as PageDataConfig } from '@spark-view/spark-data'
 
 /**

@@ -3,7 +3,7 @@ import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
 import type { AppNavRoot } from '../../navigation/nav-model'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -11,7 +11,7 @@ import type {
   PageConfigFileName,
   PageDataConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config/config'
+} from '@spark-view/spark-page-config'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',

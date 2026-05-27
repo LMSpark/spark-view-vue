@@ -12,9 +12,9 @@ import type { ModuleParameterPayloadGuide } from '@spark-view/spark-ai/module-se
 import type {
   SparkNodeTree,
   SparkNodeTreeMethodKey,
-} from '../node-tree'
+} from '@spark-view/spark-data'
 
-export type { SparkNodeTreeMethodKey } from '../node-tree'
+export type { SparkNodeTreeMethodKey } from '@spark-view/spark-data'
 
 // ── 编辑会话核心契约 ───────────────────────────────────────
 

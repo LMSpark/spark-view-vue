@@ -117,13 +117,14 @@ $env:AI_MODEL        = "qwen-plus"
 
 ### `/api/ai/sessions/*`
 
-统一会话接口，供 stills / FC 会话编排使用。`/turn/stream` 只是 HTTP 启动命令，返回 accepted ACK；`ai-turn-*` 模型事件统一通过 `/api/events` 下发。
+统一会话接口，供 stills / FC 会话编排使用。`POST /api/ai/turns` 是 HTTP 启动命令，返回 accepted ACK；`llm-frame` 模型事件统一通过 `/api/events` 下发。
 
 | Method | Path | 说明 |
 |---|---|---|
 | `POST` | `/api/ai/sessions` | 创建会话 |
 | `POST` | `/api/ai/sessions/{sessionId}/turn` | 非流式执行一轮 |
-| `POST` | `/api/ai/sessions/{sessionId}/turn/stream` | 启动一轮模型调用，返回 HTTP ACK |
+| `POST` | `/api/ai/turns` | 启动一轮模型调用，返回 HTTP ACK，结果走 APP SSE `llm-frame` |
+| `POST` | `/api/ai/sessions/{sessionId}/turn/append` | 按 turn 追加 assistant/tool 消息 |
 | `POST` | `/api/ai/sessions/{sessionId}/append` | 追加消息 |
 | `GET` | `/api/ai/sessions/{sessionId}/conversation` | 获取完整会话历史 |
 | `DELETE` | `/api/ai/sessions/{sessionId}` | 销毁单个会话 |
@@ -143,7 +144,7 @@ $env:AI_MODEL        = "qwen-plus"
 
 ### `GET /api/events`
 
-APP 唯一 SSE 通道。页面配置、数据任务、通知、AI 调试事件和 AI turn 模型事件都通过这里广播；AI turn 事件名为 `ai-turn-delta`、`ai-turn-reasoning`、`ai-turn-usage`、`ai-turn-result`、`ai-turn-error`、`ai-turn-done`。
+APP 唯一 SSE 通道。页面配置、数据任务、通知、AI 调试事件和 AI turn 模型事件都通过这里广播；当前 AI turn 主链路使用 `llm-frame` 中性帧事件，旧 `ai-turn-*` 名称仅保留在历史/兼容会话接口中。
 
 ---
 

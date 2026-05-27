@@ -9,21 +9,21 @@
  *    PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
  *
  * 注：PageServiceCapability 等运行时服务契约以
- * @spark-view/spark-page-config/runtime 为 SSOT。
+ * @spark-view/spark-component/runtime 为 SSOT。
  */
 
 import { defineCapability, isCallable, isRecord } from '@spark-view/spark-utils'
 import { DataView, isDataRow, type DataRow, type DataSetContract } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
-} from '@spark-view/spark-page-config/navigation'
+} from '@spark-view/spark-data'
 import type {
   PageServiceCapability,
-} from '@spark-view/spark-page-config/runtime'
+} from '../runtime'
 
 export type {
   NavPermissionMode,
-} from '@spark-view/spark-page-config/navigation'
+} from '@spark-view/spark-data'
 
 export type {
   PageMessageType,
@@ -37,7 +37,7 @@ export type {
   PageSelectEntitiesOptions,
   PageSelectedEntity,
   PageServiceCapability,
-} from '@spark-view/spark-page-config/runtime'
+} from '../runtime'
 
 function hasCallable(record: Record<string, unknown>, key: string): boolean {
   return isCallable(record[key])

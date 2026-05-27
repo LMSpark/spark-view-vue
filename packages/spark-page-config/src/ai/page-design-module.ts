@@ -38,7 +38,7 @@ import type { ModulePathContext } from '@spark-view/spark-ai/module-semantic'
 import type {
   PageDesignEditHost,
   PageDesignServiceContext,
-} from '../design/page-design-host-api'
+} from '../design/page-edit-session'
 import { PageDesignService } from '../design/page-design-service'
 import { PageDesignDatasetModuleKind } from './dataset-tool-catalog'
 import { PageDesignLifecycleModuleKind } from './lifecycle-tool-catalog'

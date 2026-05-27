@@ -7,14 +7,12 @@ import {
   parseCss,
   parsePageData,
   parseScript,
-} from '@spark-view/spark-page-config/config'
-import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileName,
-} from '@spark-view/spark-page-config/config'
+  type ConfigLoadResult,
+  type PageConfig,
+  type PageConfigFileName,
+} from '@spark-view/spark-page-config'
 import type { DataSet } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-page-config/node-tree'
+import type { SparkNode } from '@spark-view/spark-data'
 import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
 import { readProperty } from '@spark-view/spark-utils/internal'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'

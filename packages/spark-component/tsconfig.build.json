@@ -7,14 +7,7 @@
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-page-config": ["../spark-page-config/dist/index.d.ts"],
-      "@spark-view/spark-page-config/config": ["../spark-page-config/dist/config/index.d.ts"],
-      "@spark-view/spark-page-config/node-tree": ["../spark-page-config/dist/node-tree/index.d.ts"],
-      "@spark-view/spark-page-config/navigation": ["../spark-page-config/dist/navigation/index.d.ts"],
-      "@spark-view/spark-page-config/runtime": ["../spark-page-config/dist/runtime/index.d.ts"],
-      "@spark-view/spark-page-config/json-document": ["../spark-page-config/dist/json-document/index.d.ts"],
-      "@spark-view/spark-page-config/design": ["../spark-page-config/dist/design/index.d.ts"],
-      "@spark-view/spark-page-config/ai": ["../spark-page-config/dist/ai/index.d.ts"],
-      "@spark-view/spark-page-config/ai/payloads/component-catalog.json": ["../spark-page-config/dist/ai/payloads/component-catalog.json"]
+      "@spark-view/spark-page-config/json-document": ["../spark-page-config/dist/json-document-public.d.ts"]
     },
     "declaration": true,
     "declarationMap": true,
@@ -27,4 +20,3 @@
   "include": ["src/**/*.ts", "src/**/*.vue"],
   "exclude": ["**/*.test.ts", "**/*.spec.ts", "src/tests/**", "dist", "node_modules"]
 }
-

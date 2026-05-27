@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { getSparkNodeChildren } from '@spark-view/spark-page-config/node-tree'
-import { createPageDocuments, isPageFileDocumentDirty } from '@spark-view/spark-page-config/design'
+import { getSparkNodeChildren } from '@spark-view/spark-data'
+import { createPageDocuments, isPageFileDocumentDirty } from '../src/design/index'
 
 function makePageDataText(label: string): string {
   return JSON.stringify({

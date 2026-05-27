@@ -154,7 +154,8 @@ function extractShortLabel(description: string | undefined): string {
 // ── SECTION 2: 规则树编辑策略 ──
 
 import type { AutoPopulateEntry, JsonPath, JsonTreePolicy } from '../../json-document'
-import { ensureUniqueObjectKey, isRecord } from '../../json-document'
+import { isRecord } from '@spark-view/spark-utils'
+import { ensureUniqueObjectKey } from '../../json-document'
 
 const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children'])
 

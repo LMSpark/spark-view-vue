@@ -36,4 +36,3 @@ describe('jsonTreeEditor (array root)', () => {
     expect(exportJsonDocument(result.model)).toEqual([1, ''])
   })
 })
-

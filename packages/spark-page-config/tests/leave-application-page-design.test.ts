@@ -8,11 +8,11 @@ import { DataMember, DataSetCrudTool, buildDataViewKey } from '@spark-view/spark
 import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
-} from '@spark-view/spark-page-config/ai'
-import { compileRule, parsePageData } from '@spark-view/spark-page-config/config'
-import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
-import { isRecord } from '@spark-view/spark-page-config/json-document'
-import { SparkNodeTree, getSparkNodeChildren } from '@spark-view/spark-page-config/node-tree'
+} from '../src/ai/index'
+import { compileRule, parsePageData } from '@spark-view/spark-page-config'
+import type { PageDesignEditHost } from '../src/design/index'
+import { isRecord } from '@spark-view/spark-utils'
+import { SparkNodeTree, getSparkNodeChildren } from '@spark-view/spark-data'
 
 const PAGE_ID = 'hr/leave-request'
 const REQUEST_ID = 'leave-application-page-design-test'

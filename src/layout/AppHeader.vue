@@ -151,7 +151,7 @@ import {
   User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
-import type { NavNode } from '@spark-view/spark-page-config/navigation'
+import type { NavNode } from '@spark-view/spark-data'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{

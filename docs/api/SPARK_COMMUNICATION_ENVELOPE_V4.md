@@ -104,8 +104,8 @@ SSE 的 `event:` 名称保持原样用于 EventSource 路由，并同步写入 `
 
 v4 信封字段不区分业务域，事件归属由 endpoint 约定：
 
-- APP 公共事件总线：`GET /api/events`。只建立一个应用级 EventSource，用于页面配置、数据任务、数据变更、通知消息、AI 调试控制、诊断广播和 AI turn 模型事件。当前事件名包括 `page-config`、`data-batch-job`、`data-change`、`notification`、`debug-route-request`、`debug-route-result`、`debug-screenshot-request`、`debug-screenshot-result`、`debug-fc-error-report`、`ai-turn-delta`、`ai-turn-reasoning`、`ai-turn-usage`、`ai-turn-result`、`ai-turn-error`、`ai-turn-done`。
-- AI turn 启动命令：`POST /api/ai/sessions/{sessionId}/turn/stream`。这是 HTTP JSON 命令，不是客户端 SSE 通道；后端可以内部消费 provider stream，但对 APP 只通过 `/api/events` 广播 `ai-turn-*` 事件。
+- APP 公共事件总线：`GET /api/events`。只建立一个应用级 EventSource，用于页面配置、数据任务、数据变更、通知消息、AI 调试控制、诊断广播和 AI turn 模型事件。当前事件名包括 `page-config`、`data-batch-job`、`data-change`、`notification`、`debug-route-request`、`debug-route-result`、`debug-screenshot-request`、`debug-screenshot-result`、`debug-fc-error-report`、`llm-frame`。
+- AI turn 启动命令：`POST /api/ai/turns`。这是 HTTP JSON 命令，不是客户端 SSE 通道；后端可以内部消费 provider stream，但对 APP 只通过 `/api/events` 广播 `llm-frame` 中性帧。
 - 普通命令、状态查询、会话创建、消息追加、调试请求发起和调试结果回传全部走 HTTP JSON，不使用 SSE。前端只对 `/api/events` 发送 `Accept: text/event-stream`。
 
 ### 最终分层矩阵
@@ -114,8 +114,8 @@ v4 信封字段不区分业务域，事件归属由 endpoint 约定：
 | --- | --- | --- | --- | --- |
 | HTTP JSON | `/api/**` JSON REST | `http` | `response` | 命令、查询、会话创建、消息追加、AI turn 启动、调试请求发起、调试结果回传；响应统一 v4 envelope |
 | APP 公共 SSE | `GET /api/events` | `sse` | 原始业务事件名 | 应用级广播：页面配置、数据任务、数据变更、通知、AI 调试请求和结果、诊断事件、AI turn 模型事件 |
-| AI turn 启动 | `POST /api/ai/sessions/{sessionId}/turn/stream` | `http` | `response` | 启动单次模型调用并返回 accepted ACK；不作为客户端 SSE 通道 |
-| AI 包 turn collector | `createTurnEventCollector()` | 回调事件源 | `ai-turn-*` | 只聚合调用方提供的 APP SSE 事件，不订阅网络、不发 HTTP |
+| AI turn 启动 | `POST /api/ai/turns` | `http` | `response` | 启动单次模型调用并返回 accepted ACK；不作为客户端 SSE 通道 |
+| AI 包 turn collector | `createTurnEventCollector()` | 回调事件源 | `llm-frame` | 只聚合调用方提供的 APP SSE 事件，不订阅网络、不发 HTTP |
 | APP/MJS 业务处理层 | `src/services/sse-events.ts`、`src/services/ai-turn-bridge.ts`、`src/services/ai-debug-bridge.ts`、MJS live 脚本 | HTTP + APP SSE | 业务事件名 | 执行模型 turn 命令、路由跳转、截图上传、通知展示、脚本等待和断言；不改写 wire envelope |
 
 `@spark-view/spark-ai` 对 APP SSE 的职责只有“接收调用方已订阅到的事件并聚合 AI turn”。它不内置浏览器网络订阅、route、screenshot、notification 的业务处理 API；这些处理由 APP 壳层或 MJS 调用层基于事件自行实现。这样 MJS 测试可以接入同一个 APP SSE 事件源，又不会把网络 I/O、浏览器路由、截图和通知 UI 下沉到框架无关的 AI 包。
@@ -136,7 +136,7 @@ flowchart LR
   businessHandlers["APP / MJS 业务处理<br/>通知、调试、诊断"]
 
   aiBridge["APP ai-turn bridge<br/>turnCallbacks.executeTurn()"]
-  aiTurnCommand["AI turn command<br/>POST /api/ai/sessions/{id}/turn/stream"]
+  aiTurnCommand["AI turn command<br/>POST /api/ai/turns"]
   provider["LLM provider"]
   toolLoop["AI tool loop"]
 
@@ -152,7 +152,7 @@ flowchart LR
   aiBridge -->|"HTTP JSON 启动 turn"| aiTurnCommand
   aiTurnCommand --> provider
   provider -->|"后端内部 stream"| aiTurnCommand
-  aiTurnCommand -->|"emit ai-turn-*"| sseService
+  aiTurnCommand -->|"emit llm-frame"| sseService
   appEvents --> appSseReader --> turnCollector --> toolLoop
 ```
 
@@ -186,17 +186,17 @@ sequenceDiagram
 AI turn APP SSE 示例（经 `/api/events` 下发）：
 
 ```text
-event: ai-turn-delta
-data: {"protocolVersion":4,"ok":true,"data":{"delta":"你好"},"error":null,"context":{"requestId":"req-1","scope":{"moduleId":"demoRuntime","moduleInstanceId":"page-a","instanceId":"page-a"},"session":{"sessionId":"session-1"},"turn":{"turnId":"turn-1","turnKey":"demoRuntime::page-a::turn-1","seq":1,"baseRevision":0},"stream":{"streamId":"llm-stream","streamKey":"demoRuntime::page-a::turn-1::llm-stream"}},"event":{"transport":"sse","name":"ai-turn-delta","terminal":false}}
+event: llm-frame
+data: {"protocolVersion":4,"ok":true,"data":{"sessionId":"session-1","turnId":"turn-1","frame":{"type":"message.delta","data":{"part":"content","delta":"你好"}}},"error":null,"context":{"requestId":"req-1","scope":{"moduleId":"demoRuntime","moduleInstanceId":"page-a","instanceId":"page-a"},"session":{"sessionId":"session-1"},"turn":{"turnId":"turn-1"}},"event":{"transport":"sse","name":"llm-frame","terminal":false}}
 
-event: ai-turn-result
-data: {"protocolVersion":4,"ok":true,"data":{"text":"你好"},"error":null,"context":{"requestId":"req-1","session":{"sessionId":"session-1"},"turn":{"turnId":"turn-1"},"stream":{"streamId":"llm-stream","streamKey":"demoRuntime::page-a::turn-1::llm-stream"}},"event":{"transport":"sse","name":"ai-turn-result","terminal":false}}
+event: llm-frame
+data: {"protocolVersion":4,"ok":true,"data":{"sessionId":"session-1","turnId":"turn-1","frame":{"type":"message.completed","data":{"text":"你好"}}},"error":null,"context":{"requestId":"req-1","session":{"sessionId":"session-1"},"turn":{"turnId":"turn-1"}},"event":{"transport":"sse","name":"llm-frame","terminal":false}}
 
-event: ai-turn-done
-data: {"protocolVersion":4,"ok":true,"data":{"done":true},"error":null,"context":{"requestId":"req-1","session":{"sessionId":"session-1"},"turn":{"turnId":"turn-1"},"stream":{"streamId":"llm-stream","streamKey":"demoRuntime::page-a::turn-1::llm-stream"}},"event":{"transport":"sse","name":"ai-turn-done","terminal":true}}
+event: llm-frame
+data: {"protocolVersion":4,"ok":true,"data":{"sessionId":"session-1","turnId":"turn-1","frame":{"type":"done","data":{"done":true}}},"error":null,"context":{"requestId":"req-1","session":{"sessionId":"session-1"},"turn":{"turnId":"turn-1"}},"event":{"transport":"sse","name":"llm-frame","terminal":true}}
 ```
 
-SSE 业务载荷只放在 `data`。`sessionId`、`turnId`、`streamKey` 等定位信息统一放入 `context`，不再散落在业务 payload 中。旧 v3 payload 仍由前端兼容读取。
+SSE 业务载荷只放在 `data`。当前 AI turn 主链路的 `llm-frame` 在 `data.sessionId/data.turnId/data.frame` 中放模型帧，`context.session/turn/scope` 只保存 wire 元数据。旧 v3/plain payload 仍由前端兼容读取。
 
 平台事件总线 `/api/events` 示例：
 
@@ -232,14 +232,14 @@ wire 层统一投影到后端模块命名：
 - 新后端响应只生成 v4 envelope。
 - Java AI session 请求暂时接受 `protocolVersion: 3` 和 `protocolVersion: 4`，响应统一为 v4 envelope。
 - 前端 HTTP 层同时识别 v4 `context.requestId` 与旧 v3 顶层 `requestId`。
-- 前端 AI SSE reader 优先用 `context.session/turn/stream` 校验会话、轮次和流，旧 v3 `data.sessionId/data.turnId/data.streamKey` 继续兼容。
+- 前端 AI SSE reader 优先用 `data.sessionId/data.turnId` 校验 `llm-frame` 会话和轮次；v4 `context.session/turn/scope` 保留 wire 元数据。
 - 前端遇到 v3/plain SSE payload 时继续解析，并通过诊断事件或 logger 记录一次协议兼容警告。
 
 ## MJS SSE 验证
 
-Node MJS live 脚本测试 AI turn 时先由脚本层 HTTP 客户端订阅 `/api/events`，再用 HTTP JSON `POST /api/ai/sessions/{sessionId}/turn/stream` 启动 turn；`POST /turn/stream` 本身不返回 SSE。
+Node MJS live 脚本测试 AI turn 时先由脚本层 HTTP 客户端订阅 `/api/events`，再用 HTTP JSON `POST /api/ai/turns` 启动 turn；`POST /api/ai/turns` 本身不返回 SSE。
 
-APP 公共 SSE 测试在脚本层订阅 `/api/events`，再把 `ai-turn-*` 事件交给 `createTurnEventCollector()`；`spark-ai` 不提供网络订阅 API：
+APP 公共 SSE 测试在脚本层订阅 `/api/events`，再把 `llm-frame` 事件交给 `createTurnEventCollector()`；`spark-ai` 不提供网络订阅 API：
 
 ```ts
 import {
@@ -260,7 +260,7 @@ const collector = createTurnEventCollector({
 - 每次 live 测试使用一次性 `sessionId` 或 `reuseScopeSession=false`，避免复用旧模型历史。
 - SSE parser 按空行切帧，收集 `event:` 和多行 `data:`；每帧 `data` 必须解析为 v4 envelope。
 - 对每帧断言 `protocolVersion=4`、`event.transport='sse'`、`event.name` 等于 SSE `event:`、`context.requestId` 存在。
-- AI turn 事件额外断言 `context.session.sessionId`、`context.turn.turnId`、`context.stream.streamKey` 与本次请求一致。
+- AI turn 事件额外断言 `event.name='llm-frame'`、`data.sessionId`、`data.turnId`、`data.frame.type` 与本次请求一致。
 
 现有 live 验证入口：
 

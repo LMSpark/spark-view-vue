@@ -11,7 +11,7 @@
  */
 
 import { DataSet, SparkData } from '@spark-view/spark-data'
-import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree, type SparkNode } from '../node-tree'
+import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
 
 // ═══ 工厂解析：模块加载时一次性探测 spark-data 暴露的 DataSet 构建入口 ═══
 
@@ -222,32 +222,4 @@ export function parseScript(raw: string): string {
 /** style.css 原始字符串 → 样式文本（当前透传；后续可加 CSS 变量提取、作用域前缀）。 */
 export function parseCss(raw: string): string {
   return raw
-}
-
-/**
- * 页面配置编译器。
- *
- * Loader 负责取回四文件原文，本类负责把原文解释为运行时模型。
- * 函数导出仍保留给轻量调用方；需要注入完整编译能力时优先使用该 class。
- */
-export class PageConfigCompiler {
-  compileRule(raw: string): SparkNode[] {
-    return compileRule(raw)
-  }
-
-  normalizeRuleNode(node: unknown): SparkNode {
-    return normalizeRuleNode(node)
-  }
-
-  parsePageData(raw: string): DataSet {
-    return parsePageData(raw)
-  }
-
-  parseScript(raw: string): string {
-    return parseScript(raw)
-  }
-
-  parseCss(raw: string): string {
-    return parseCss(raw)
-  }
 }

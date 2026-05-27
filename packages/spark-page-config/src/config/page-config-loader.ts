@@ -26,7 +26,7 @@ import type {
 } from './config-types'
 import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from './config-types'
 import type { DataSet } from '@spark-view/spark-data'
-import type { SparkNode } from '../node-tree'
+import type { SparkNode } from '@spark-view/spark-data'
 import {
   Logger,
   createFileLoader,

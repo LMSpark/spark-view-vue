@@ -1,6 +1,6 @@
 export {
   PAGE_RUNTIME_SERVICES,
-} from './page-service-api'
+} from './app-services'
 
 export type {
   PageDialogOptions,
@@ -9,20 +9,20 @@ export type {
   PageRouterService,
   PageRuntimeServicesCapability,
   PageServiceCapability,
-} from './page-service-api'
+} from './app-services'
 
 export type {
   PageBrowseFilesOptions,
   PageSelectedFile,
   PageUploadFilesOptions,
   PageUploadedFile,
-} from './page-file-api'
+} from './app-services'
 
 export type {
   PageSelectedEntity,
   PageSelectEntitiesOptions,
   PageSelectorOption,
-} from './page-selector-api'
+} from './app-services'
 
 export type {
   PageComponentAccessInScript,

@@ -67,7 +67,7 @@ describe('Component Registration', () => {
 
 ```typescript
 import { describe, it, expect } from 'vitest'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 import { Spark } from '@spark-view/spark-component'
 import { sparkProvide, sparkConsume, defineCapability } from '@spark-view/spark-utils'
 

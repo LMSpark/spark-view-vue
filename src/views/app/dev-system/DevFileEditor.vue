@@ -151,9 +151,8 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy, type RuleEditorComponentCatalog } from '@spark-view/spark-page-config/design'
+import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@spark-view/spark-page-config/editor'
 import { ElMessageBox } from 'element-plus'
-import componentCatalog from '@spark-view/spark-page-config/ai/payloads/component-catalog.json'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import { PAGE_CONFIG_FILE_NAMES } from './useDevState'
 import type { DevState, PageConfigFileVersionSummary, PageConfigFileName } from './useDevState'

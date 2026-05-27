@@ -4,28 +4,27 @@ import type { DevState, PageConfigFileName } from '../useDevState'
 const TEXT_DRAFT_COMMIT_DELAY = 600
 
 /**
- * 手动编辑器绑定器 — 将任意 PageConfigFileName 接入 state.documents 注册表。
- * PageFileDocument 的历史栈只记录已提交编辑，用于 undo/redo；后端版本由版本面板手动管理。
+ * 手动编辑器绑定器 — 将任意 PageConfigFileName 接入 PageEditor adapter。
+ * PageEditor 的文件历史栈只记录已提交编辑，用于 undo/redo；后端版本由版本面板手动管理。
  * 原始文本输入先进入本地草稿，避免 JSON 在每个按键都解析、归一化并压入历史栈。
  */
 export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageConfigFileName>>) {
-  const doc = computed(() => state.documents[activeFile.value])
   const drafts = ref<Partial<Record<PageConfigFileName, string>>>({})
   let commitTimer: ReturnType<typeof setTimeout> | null = null
 
   const isReady = computed(() => {
     void state.pageFilesRevision.value
-    return doc.value.loadState.value === 'loaded'
+    return state.getPageFileLoadState(activeFile.value) === 'loaded'
   })
   const isDirty = computed(() => isFileDirty(activeFile.value))
   const canUndo = computed(() => {
     void state.pageFilesRevision.value
-    return hasDraft(activeFile.value) || doc.value.canUndo.value
+    return hasDraft(activeFile.value) || state.canUndoPageFile(activeFile.value)
   })
   const canRedo = computed(() => {
     void state.pageFilesRevision.value
     if (hasDraft(activeFile.value)) return false
-    return doc.value.canRedo.value
+    return state.canRedoPageFile(activeFile.value)
   })
   const text = computed(() => {
     void state.pageFilesRevision.value
@@ -33,7 +32,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
   })
   const parseError = computed(() => {
     void state.pageFilesRevision.value
-    return doc.value.parseError.value
+    return state.getPageFileParseError(activeFile.value)
   })
 
   async function ensureLoaded(options?: { forceReload?: boolean }) {
@@ -64,7 +63,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
   }
 
   function getDisplayText(name: PageConfigFileName): string {
-    return hasDraft(name) ? getDraft(name) : state.documents[name].text.value
+    return hasDraft(name) ? getDraft(name) : state.getPageFileText(name)
   }
 
   function isJsonBackedFile(name: PageConfigFileName): boolean {
@@ -72,8 +71,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
   }
 
   function isFileDirty(name: PageConfigFileName): boolean {
-    const targetDoc = state.documents[name]
-    return state.isDocumentDirty(name) || getDisplayText(name) !== targetDoc.savedText.value
+    return state.isDocumentDirty(name) || getDisplayText(name) !== state.getPageFileSavedText(name)
   }
 
   function clearCommitTimer(): void {
@@ -93,8 +91,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
 
   function updateText(value: string) {
     const name = activeFile.value
-    const targetDoc = state.documents[name]
-    if (value === targetDoc.text.value) {
+    if (value === state.getPageFileText(name)) {
       clearDraft(name)
       return
     }
@@ -106,15 +103,14 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
     clearCommitTimer()
     if (!hasDraft(name)) return true
 
-    const targetDoc = state.documents[name]
     const nextText = getDraft(name)
-    if (nextText === targetDoc.text.value) {
+    if (nextText === state.getPageFileText(name)) {
       clearDraft(name)
-      return targetDoc.parseError.value === null
+      return state.getPageFileParseError(name) === null
     }
 
-    targetDoc.setText(nextText)
-    if (targetDoc.parseError.value !== null) {
+    state.setPageFileText(name, nextText)
+    if (state.getPageFileParseError(name) !== null) {
       setDraft(name, nextText)
       return false
     }
@@ -136,13 +132,13 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
       clearDraft(activeFile.value)
       return
     }
-    doc.value.undo()
+    state.undoPageFile(activeFile.value)
   }
 
   function redo() {
     clearCommitTimer()
     if (hasDraft(activeFile.value)) return
-    doc.value.redo()
+    state.redoPageFile(activeFile.value)
   }
 
   async function save() {

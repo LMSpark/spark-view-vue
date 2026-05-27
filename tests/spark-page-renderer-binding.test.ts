@@ -7,10 +7,10 @@ import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
 import { SparkData } from '@spark-view/spark-data'
 import { isRecord } from '@spark-view/spark-utils'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
 import {
   compileRule,
-} from '@spark-view/spark-page-config/config'
+} from '@spark-view/spark-page-config'
 import type {
   ConfigLoadResult,
   PageConfig,
@@ -18,7 +18,7 @@ import type {
   PageConfigFileName,
   PageDataConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config/config'
+} from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 

@@ -687,23 +687,18 @@
         }
       }
     },
-    "/ai/sessions/{sessionId}/turn/stream": {
+    "/ai/turns": {
       "post": {
         "tags": [
           "AI Sessions"
         ],
-        "summary": "Stream one AI session turn",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/SessionId"
-          }
-        ],
+        "summary": "Start one AI session turn; model frames are delivered through /api/events as llm-frame",
         "requestBody": {
           "$ref": "#/components/requestBodies/GenericJson"
         },
         "responses": {
-          "200": {
-            "$ref": "#/components/responses/SseStream"
+          "202": {
+            "$ref": "#/components/responses/GenericJson"
           }
         }
       }

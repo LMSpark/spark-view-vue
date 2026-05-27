@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NavNode } from '@spark-view/spark-page-config/navigation'
+import type { NavNode } from '@spark-view/spark-data'
 import { getNavHomePath, useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 

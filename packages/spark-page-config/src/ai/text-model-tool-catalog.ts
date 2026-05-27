@@ -22,12 +22,12 @@ import {
 } from '@spark-view/spark-ai/module-semantic'
 import type {
   PageDesignServiceContext,
-} from '../design/page-design-host-api'
+} from '../design/page-edit-session'
 import type {
   PageDesignServiceResult,
-} from '../design/page-design-session-api'
+} from '../design/page-edit-session'
 import type { PageDesignService } from '../design/page-design-service'
-import { pageDesignServiceFailure } from '../design/page-design-session-api'
+import { pageDesignServiceFailure } from '../design/page-edit-session'
 import { createCurrentPageRef } from './page-design-helpers'
 
 const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')

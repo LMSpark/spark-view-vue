@@ -125,8 +125,8 @@ import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 
 import { useRoute, useRouter } from 'vue-router'
 import * as SparkAppRuntime from '@spark-view/spark-app'
 import { AI_HOST } from '@spark-view/spark-ai/host'
-import type { AppNavRoot } from '@spark-view/spark-page-config/navigation'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
+import type { AppNavRoot } from '@spark-view/spark-data'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 import {
   MODULE_CONTEXT,
   useSparkComponent,

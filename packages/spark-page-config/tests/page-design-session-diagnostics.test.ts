@@ -4,7 +4,7 @@ import type { AiHostSessionRecord } from '@spark-view/spark-ai/host'
 import {
   componentTypesFromPageDesignRule,
   validatePageDesignPayloadGuidesFromSession,
-} from '@spark-view/spark-page-config/ai'
+} from '../src/ai/index'
 
 // ── Fixture ─────────────────────────────────────────────────
 

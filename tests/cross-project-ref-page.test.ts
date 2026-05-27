@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config/config'
+import { BasePageConfigLoader } from '@spark-view/spark-page-config'
 import { HttpClientBase } from '@spark-view/spark-utils'
 import type {
   ConfigLoadResult,
@@ -10,7 +10,7 @@ import type {
   PageConfigFileName,
   PageDataConfig,
   RuleConfig,
-} from '@spark-view/spark-page-config/config'
+} from '@spark-view/spark-page-config'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'

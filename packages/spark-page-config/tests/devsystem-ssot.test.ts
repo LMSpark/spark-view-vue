@@ -3,45 +3,40 @@ import { createRequest } from '@spark-view/spark-utils'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { DataSetMetadata } from '@spark-view/spark-data'
 import {
-  NavigationConfigClient,
   applyNavigationNodeDraftToNode,
   buildNavRoot,
+  createPageEditor,
   createNavigationNodeDraft,
   createReservedRootGroup,
   findConfigNodeByPageId,
   findNodeLocation,
   normalizeNavRoot,
+  buildDataSetMetadataFromDesignerProjection,
+  canUseStructuredPageDataEditor,
+  createRuleJsonSchema,
+  createRuleTreePolicy,
+  projectDesignerRelations,
+  projectDesignerTables,
+  reconcileDesignerTableUiState,
   type AppNavRoot,
   type NavNode,
-} from '@spark-view/spark-page-config/navigation'
+  type RuleEditorComponentMetadata,
+} from '@spark-view/spark-page-config/editor'
 import {
   BasePageConfigLoader,
-  PageConfigFileApi,
   type ConfigLoadResult,
   type PageConfig,
   type PageConfigFileLoadOptions,
   type PageConfigFileName,
   type PageDataConfig,
   type RuleConfig,
-} from '@spark-view/spark-page-config/config'
+} from '@spark-view/spark-page-config/editor'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
-  buildDataSetMetadataFromDesignerProjection,
-  canUseStructuredPageDataEditor,
-  createRuleJsonSchema,
-  createRuleTreePolicy,
   getNextPageDesignFlowStep,
-  projectDesignerRelations,
-  projectDesignerTables,
-  reconcileDesignerTableUiState,
   summarizePageDesignFlowPhases,
-  type RuleEditorComponentMetadata,
-} from '@spark-view/spark-page-config/design'
-import {
-  PageConfigEditWorkspace,
-  PageConfigFileLifecycle,
-} from '@spark-view/spark-page-config/design'
-import { isRecord } from '@spark-view/spark-page-config/json-document'
+} from '../src/design/artifacts'
+import { isRecord } from '@spark-view/spark-utils'
 import { PageDesignService } from '../src/design/page-design-service'
 
 function createHttpMock(): HttpClientBase {
@@ -148,6 +143,18 @@ function createLoader(files: Partial<Record<string, string>>): TestPageConfigLoa
   return new TestPageConfigLoader(files)
 }
 
+function createEditorHarness(files: Partial<Record<string, string>>) {
+  const http = createHttpMock()
+  const loader = createLoader(files)
+  const editor = createPageEditor({
+    http,
+    getPageConfigApi: () => '/api/pages-config',
+    getNavigationApi: () => '/api/navigation',
+    createConfigLoader: () => loader,
+  })
+  return { editor, http, loader }
+}
+
 describe('DevSystem navigation SSOT', () => {
   it('normalizes nodes, locates config pages and applies node draft patches', () => {
     const root = normalizeNavRoot({
@@ -190,7 +197,7 @@ describe('DevSystem navigation SSOT', () => {
     })
   })
 
-  it('keeps reserved root group templates and node-first persistence endpoints in one client', async () => {
+  it('keeps reserved root group templates and node-first persistence behind PageEditor', async () => {
     const demo = normalizeNavRoot({
       title: 'Demo',
       childPlacement: 'header',
@@ -201,133 +208,113 @@ describe('DevSystem navigation SSOT', () => {
     const reserved = createReservedRootGroup('toolbar', { createId: () => 'new-toolbar', templateRoot: demo })
     expect(reserved).toMatchObject({ id: 'new-toolbar', title: 'Toolbar', childPlacement: 'toolbar' })
 
-    const http = createHttpMock()
-    const remoteRoot: AppNavRoot = { title: 'Remote', childPlacement: 'sidebar', children: [] }
-    const initialNode: NavNode = { id: 'n1', title: 'N1' }
+    const { editor, http } = createEditorHarness({})
+    const remoteRoot: AppNavRoot = { title: 'Remote', childPlacement: 'sidebar', children: [{ id: 'n1', title: 'N1' }] }
     const updatedNode: NavNode = { id: 'n1', title: 'N2' }
+    const updatedRoot: AppNavRoot = { title: 'Remote', childPlacement: 'sidebar', children: [updatedNode] }
 
-    vi.mocked(http.get).mockResolvedValueOnce(remoteRoot)
-    vi.mocked(http.post).mockResolvedValueOnce({ node: { id: 'n1', title: 'N1' } })
+    vi.mocked(http.get)
+      .mockResolvedValueOnce(remoteRoot)
+      .mockResolvedValueOnce(updatedRoot)
+      .mockResolvedValueOnce(updatedRoot)
+      .mockResolvedValueOnce(buildNavRoot([]))
     vi.mocked(http.put)
       .mockResolvedValueOnce({ node: updatedNode })
       .mockResolvedValueOnce({ node: updatedNode })
       .mockResolvedValueOnce({})
     vi.mocked(http.delete).mockResolvedValueOnce({ deleted: { id: 'n1' } })
-    const client = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation/', http })
 
-    await expect(client.loadRoot()).resolves.toMatchObject({ title: 'Remote', childPlacement: 'sidebar' })
-    await client.addNode({ parentId: 'parent', node: initialNode, index: 1 })
-    await client.updateNode('n1', { title: 'N2' })
-    await client.moveNode('n1', null, 0)
-    await client.deleteNode('n1')
-    await client.saveRoot(buildNavRoot([]))
+    await expect(editor.loadNavigation()).resolves.toMatchObject({ title: 'Remote', childPlacement: 'sidebar' })
+    editor.selectNode('n1')
+    const draft = createNavigationNodeDraft(requireValue(editor.readSnapshot().selectedNode, 'Expected selected node'))
+    draft.draft.title = 'N2'
+    editor.applyNavigationDraft(draft)
+    await editor.saveSelectedNavigationNode()
+    await editor.moveMountedPage('n1', null, 0)
+    await editor.deleteNode('n1')
+    editor.replaceNavigationRoot(buildNavRoot([]), { markDirty: true })
+    await editor.saveNavigationRoot()
 
-    expect(http.post).toHaveBeenCalledWith('/api/navigation/nodes', {
-      parentId: 'parent',
-      node: { id: 'n1', title: 'N1' },
-      index: 1,
-    })
-    expect(http.put).toHaveBeenCalledWith('/api/navigation/nodes/n1', { title: 'N2' })
+    expect(http.put).toHaveBeenCalledWith('/api/navigation/nodes/n1', expect.objectContaining({ title: 'N2' }))
     expect(http.put).toHaveBeenCalledWith('/api/navigation/nodes/n1/move', { newParentId: null, index: 0 })
     expect(http.delete).toHaveBeenCalledWith('/api/navigation/nodes/n1')
     expect(http.put).toHaveBeenCalledWith('/api/navigation', expect.objectContaining({ children: [] }))
   })
 })
 
-describe('PageConfigEditWorkspace', () => {
-  it('loads four files through the loader, saves dirty text and clears cache', async () => {
-    const http = createHttpMock()
-    vi.mocked(http.put).mockResolvedValue({})
-    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config/', http })
-    const loader = createLoader({
+describe('PageEditor page file and lifecycle SSOT', () => {
+  it('loads four files through PageEditor, saves dirty text and clears cache', async () => {
+    const { editor, http, loader } = createEditorHarness({
       'orders/rule.json': '[{"type":"div"}]',
       'orders/pagedata.json': '{"dataSetName":"Orders","tables":{}}',
       'orders/script.js': 'export default {}',
       'orders/style.css': '.page{}',
     })
-    const workspace = new PageConfigEditWorkspace({ fileApi: api, getConfigLoader: () => loader })
+    vi.mocked(http.put).mockResolvedValue({})
 
-    workspace.setActivePage('orders')
-    await workspace.ensureActivePageFilesLoaded()
+    editor.setActivePage('orders')
+    await editor.ensureActivePageFilesLoaded()
 
     expect(loader.loadPageFileContentSpy).toHaveBeenCalledTimes(4)
-    expect(workspace.documents['rule.json'].loadState.value).toBe('loaded')
-    expect(workspace.documents['script.js'].text.value).toBe('export default {}')
+    expect(editor.getPageFileLoadState('rule.json')).toBe('loaded')
+    expect(editor.getPageFileText('script.js')).toBe('export default {}')
 
-    workspace.documents['script.js'].setText('console.log("changed")')
-    expect(workspace.isDocumentDirty('script.js')).toBe(true)
-    await workspace.savePageFile('script.js')
+    editor.setPageFileText('script.js', 'console.log("changed")')
+    expect(editor.readSnapshot().dirtyFiles.has('script.js')).toBe(true)
+    await editor.savePageFile('script.js')
 
     expect(http.put).toHaveBeenCalledWith(
       '/api/pages-config/orders/script.js',
       'console.log("changed")',
       { headers: { 'Content-Type': 'text/plain' } },
     )
-    expect(workspace.isDocumentDirty('script.js')).toBe(false)
+    expect(editor.readSnapshot().dirtyFiles.has('script.js')).toBe(false)
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/script.js')
   })
 
-  it('fails active page file load when the loader reports a missing file', async () => {
-    const http = createHttpMock()
-    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config/', http })
-    const loader = createLoader({
+  it('surfaces missing active page files through PageEditor without exposing documents', async () => {
+    const { editor } = createEditorHarness({
       'orders/rule.json': '[{"type":"div"}]',
       'orders/pagedata.json': '{"dataSetName":"Orders","tables":{}}',
       'orders/style.css': '.page{}',
     })
-    const workspace = new PageConfigEditWorkspace({ fileApi: api, getConfigLoader: () => loader })
 
-    workspace.setActivePage('orders')
+    editor.setActivePage('orders')
 
-    await expect(workspace.ensureActivePageFilesLoaded()).rejects.toThrow('读取页面文件失败: orders/script.js')
-    expect(workspace.documents['script.js'].text.value).toBe('')
-    expect(workspace.documents['script.js'].loadState.value).toBe('idle')
+    await expect(editor.ensureActivePageFilesLoaded()).rejects.toThrow('读取页面文件失败: orders/script.js')
+    expect(editor.getPageFileText('script.js')).toBe('')
+    expect(editor.getPageFileLoadState('script.js')).toBe('idle')
   })
 
-  it('wraps page list/create/delete and version restore with cache invalidation', async () => {
-    const http = createHttpMock()
+  it('lists pages and restores remote versions through PageEditor cache boundaries', async () => {
+    const { editor, http, loader } = createEditorHarness({
+      'orders/script.js': 'console.log("restored")',
+    })
     vi.mocked(http.get).mockResolvedValueOnce([{ pageId: 'orders', pageType: 'config', files: ['rule.json'] }])
     vi.mocked(http.post).mockResolvedValue({})
-    vi.mocked(http.delete).mockResolvedValue({})
-    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
-    const loader = createLoader({ 'orders/script.js': 'console.log("restored")' })
-    const workspace = new PageConfigEditWorkspace({ fileApi: api, getConfigLoader: () => loader })
 
-    await expect(workspace.listPages()).resolves.toEqual([
+    await expect(editor.listPages()).resolves.toEqual([
       { pageId: 'orders', pageType: 'config', files: ['rule.json'] },
     ])
-    await workspace.createPage({ pageId: 'new-page', title: 'New Page' })
-    await workspace.deletePage('new-page')
 
-    workspace.setActivePage('orders')
-    await workspace.restoreRemotePageVersion(2, 'script.js')
+    editor.setActivePage('orders')
+    await editor.restoreRemotePageVersion(2, 'script.js')
 
     expect(http.get).toHaveBeenCalledWith('/api/pages-config/__list')
-    expect(http.post).toHaveBeenCalledWith('/api/pages-config/__create', { pageId: 'new-page', title: 'New Page' })
-    expect(http.delete).toHaveBeenCalledWith('/api/pages-config/new-page')
     expect(http.post).toHaveBeenCalledWith('/api/pages-config/orders/script.js/__versions/2/__restore', {})
     expect(loader.loadPageFileContentSpy).toHaveBeenCalledWith('orders', 'script.js', { forceReload: true })
-    expect(workspace.documents['script.js'].text.value).toBe('console.log("restored")')
+    expect(editor.getPageFileText('script.js')).toBe('console.log("restored")')
   })
-})
 
-describe('PageConfigFileLifecycle', () => {
-  it('creates page files, mounts navigation, and clears page cache', async () => {
-    const http = createHttpMock()
+  it('creates page files, mounts navigation, reloads editor navigation and clears page cache', async () => {
+    const { editor, http, loader } = createEditorHarness({})
     const mountedNode: NavNode = { id: 'new-page', title: 'New Page', nodeKind: 'page', path: '/new-page' }
     vi.mocked(http.post)
       .mockResolvedValueOnce({ created: true })
       .mockResolvedValueOnce({ node: mountedNode })
-    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
-    const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
-    const loader = createLoader({})
-    const lifecycle = new PageConfigFileLifecycle({
-      fileApi: api,
-      navigationClient,
-      getConfigLoader: () => loader,
-    })
+    vi.mocked(http.get).mockResolvedValueOnce(buildNavRoot([mountedNode]))
 
-    await expect(lifecycle.createMountedPage({
+    await expect(editor.createMountedPage({
       pageId: 'new-page',
       title: 'New Page',
       parentId: 'parent',
@@ -352,29 +339,34 @@ describe('PageConfigFileLifecycle', () => {
       },
       index: 2,
     })
+    expect(http.get).toHaveBeenCalledWith('/api/navigation')
+    expect(editor.readSnapshot().selectedNodeId).toBe('new-page')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/rule.json')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/pagedata.json')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/script.js')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/new-page/style.css')
   })
 
-  it('removes navigation mount, deletes page files, and clears page cache', async () => {
-    const http = createHttpMock()
+  it('removes navigation mount, deletes page files, clears active editor state and page cache', async () => {
     const node: NavNode = { id: 'node-1', title: 'Orders', nodeKind: 'page', path: '/orders' }
-    vi.mocked(http.get).mockResolvedValueOnce(buildNavRoot([node]))
+    const { editor, http, loader } = createEditorHarness({
+      'orders/rule.json': '[{"type":"div"}]',
+      'orders/pagedata.json': '{"dataSetName":"Orders","tables":{}}',
+      'orders/script.js': '',
+      'orders/style.css': '',
+    })
+    vi.mocked(http.get)
+      .mockResolvedValueOnce(buildNavRoot([node]))
+      .mockResolvedValueOnce(buildNavRoot([node]))
+      .mockResolvedValueOnce(buildNavRoot([]))
     vi.mocked(http.delete)
       .mockResolvedValueOnce({ deleted: node })
       .mockResolvedValueOnce({})
-    const api = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
-    const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
-    const loader = createLoader({})
-    const lifecycle = new PageConfigFileLifecycle({
-      fileApi: api,
-      navigationClient,
-      getConfigLoader: () => loader,
-    })
 
-    await expect(lifecycle.removeMountedPage({ pageId: 'orders' })).resolves.toEqual({
+    await editor.loadNavigation()
+    await editor.selectPage('orders')
+
+    await expect(editor.removeMountedPage({ pageId: 'orders' })).resolves.toEqual({
       deletedNode: node,
       deletedFiles: true,
     })
@@ -382,6 +374,7 @@ describe('PageConfigFileLifecycle', () => {
     expect(http.get).toHaveBeenCalledWith('/api/navigation')
     expect(http.delete).toHaveBeenCalledWith('/api/navigation/nodes/node-1')
     expect(http.delete).toHaveBeenCalledWith('/api/pages-config/orders')
+    expect(editor.readSnapshot().pageId).toBe('')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/rule.json')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/pagedata.json')
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/script.js')
@@ -484,5 +477,3 @@ describe('DevSystem rule and pagedata edit policy', () => {
     expect(rebuilt.layout?.tablePositions?.['orders']).toEqual({ x: 50, y: 50 })
   })
 })
-
-

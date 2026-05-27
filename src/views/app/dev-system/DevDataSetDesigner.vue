@@ -287,12 +287,12 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-view/spark-page-config/design'
+} from '@spark-view/spark-page-config/editor'
 import type { DevState } from './useDevState'
-import { DataSetCrudTool } from '@spark-view/spark-data'
 import type {
   CrudApi,
   DataColumn,
+  DataSetCrudTool,
   TableRelation,
   DataSetMetadata,
   TableBusinessCategory,
@@ -339,8 +339,8 @@ const relEditorPos = computed(() => {
 // ═══ Undo / Redo（DataSetCrudTool 历史栈）═══
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
-function getPageDataDocument() {
-  return props.state.documents['pagedata.json']
+function getPageDataTool(): DataSetCrudTool | null {
+  return props.state.getDataSetTool()
 }
 
 function buildColumnIdMap(table: DesignerTableProjection): Record<string, string> {
@@ -350,7 +350,7 @@ function buildColumnIdMap(table: DesignerTableProjection): Record<string, string
 const projectedMetadata = computed<DataSetMetadata | null>(() => {
   void props.state.pageFilesRevision.value
   // 以 DataSetCrudTool 为唯一数据源；pagedata 文档变更由 app 层 pageFilesRevision 接入 Vue 响应式。
-  return getPageDataDocument().model.value?.toJson() ?? null
+  return getPageDataTool()?.toJson() ?? null
 })
 
 const tables = computed<DesignerTableProjection[]>(() => {
@@ -377,13 +377,16 @@ function applyMutationWithHistory(
   mutator: (tool: DataSetCrudTool) => void,
   layoutForNewTable?: LayoutForNewTable,
 ): void {
-  const pageDataDoc = getPageDataDocument()
-  if (!pageDataDoc.model.value) return
+  const tool = getPageDataTool()
+  if (!tool) return
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
-    pageDataDoc.mutate((tool) => {
-      syncLayoutToTool(tool)
-      mutator(tool)
+    void props.state.editDataSet((t) => {
+      syncLayoutToTool(t)
+      mutator(t)
+    }).catch((error: unknown) => {
+      pendingProjectionLayout.value = null
+      throw error
     })
   } catch (error) {
     pendingProjectionLayout.value = null
@@ -399,13 +402,13 @@ function applyHistoryMutation(
 }
 
 function undo() {
-  const ok = getPageDataDocument().undo()
+  const ok = props.state.undoPageFile('pagedata.json')
   if (!ok) return
   resetSelectionState()
 }
 
 function redo() {
-  const ok = getPageDataDocument().redo()
+  const ok = props.state.redoPageFile('pagedata.json')
   if (!ok) return
   resetSelectionState()
 }
@@ -416,13 +419,12 @@ function resetSelectionState(): void {
 }
 
 function commitLayoutCheckpoint(): void {
-  const pageDataDoc = getPageDataDocument()
-  const tool = pageDataDoc.model.value
+  const tool = getPageDataTool()
   if (!tool) return
   const anchor = tables.value[0]
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
-  pageDataDoc.mutate((t) => {
+  void props.state.editDataSet((t) => {
     syncLayoutToTool(t)
     t.updateTable({ tableName: anchor.tableName })
   })
@@ -430,11 +432,11 @@ function commitLayoutCheckpoint(): void {
 
 const canUndo = computed(() => {
   projectedMetadata.value
-  return getPageDataDocument().canUndo.value
+  return props.state.canUndoPageFile('pagedata.json')
 })
 const canRedo = computed(() => {
   projectedMetadata.value
-  return getPageDataDocument().canRedo.value
+  return props.state.canRedoPageFile('pagedata.json')
 })
 
 watch(
@@ -556,7 +558,7 @@ function resetDesignerRuntimeState(): void {
 // ═══ 直接对接 DataSetCrudTool 页面模型 ═══
 
 function refreshFromLiveData(silent = false): void {
-  const tool = getPageDataDocument().model.value
+  const tool = getPageDataTool()
   if (!tool) {
     if (!silent) {
       ElMessage.warning('当前页面尚未初始化 DataSet 模型')
@@ -1522,4 +1524,3 @@ onUnmounted(() => {
 }
 
 </style>
-

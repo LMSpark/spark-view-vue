@@ -1,20 +1,20 @@
 export type {
   SparkNode,
   SparkNodeChildren,
-} from './spark-node-model-api'
+} from './spark-node'
 
 export {
   SPARK_NODE_STRUCT_KEYS,
   isSparkNode,
   normalizeSparkNode,
-} from './spark-node-model-api'
+} from './spark-node'
 
 export {
   getSparkNodeChildren,
   nodeId,
   nodeInputProp,
   nodeInputProps,
-} from './spark-node-access-api'
+} from './spark-node'
 
 export type {
   SparkNodeFindByTypeMatch,
@@ -23,7 +23,7 @@ export type {
   SparkNodeLocation,
   SparkNodeTreeChildrenParams,
   SparkNodeTreeLookupParams,
-} from './spark-node-tree-read-api'
+} from './spark-node-tree'
 
 export type {
   SparkNodeAddResult,
@@ -31,37 +31,37 @@ export type {
   SparkNodeRemoveResult,
   SparkNodeReplaceResult,
   SparkNodeSetPropsResult,
-} from './spark-node-tree-result-api'
+} from './spark-node-tree'
 
 export type {
   SparkNodeAddNodesResult,
   SparkNodeRemoveNodesResult,
   SparkNodeReplaceNodesResult,
   SparkNodeSetPropsBatchResult,
-} from './spark-node-tree-batch-result-api'
+} from './spark-node-tree'
 
 export type {
   SparkNodeTreeAddNodesParams,
   SparkNodeTreeAddParams,
   SparkNodeTreeMoveParams,
   SparkNodeTreeRemoveNodesParams,
+  SparkNodeTreeRemoveParams,
   SparkNodeTreeReplaceNodesParams,
   SparkNodeTreeReplaceParams,
-  SparkNodeTreeRemoveParams,
   SparkNodeTreeSetPropsParams,
-} from './spark-node-tree-command-api'
+} from './spark-node-tree'
 
 export type {
   SparkNodeTreeReplaceNodesItem,
   SparkNodeTreeSetPropsBatchItem,
   SparkNodeTreeSetPropsBatchParams,
-} from './spark-node-tree-batch-api'
+} from './spark-node-tree'
 
 export {
   SPARK_PAGE_NODE_TYPE,
   SPARK_PAGE_ROOT_ID,
   SparkNodeTree,
-} from './spark-node-tree-api'
+} from './spark-node-tree'
 
 export type {
   SparkNodeTreeFromJsonOptions,
@@ -69,4 +69,4 @@ export type {
   SparkNodeTreeMethodKey,
   SparkNodeTreeRootParams,
   SparkNodeTreeRuleJsonInput,
-} from './spark-node-tree-api'
+} from './spark-node-tree'

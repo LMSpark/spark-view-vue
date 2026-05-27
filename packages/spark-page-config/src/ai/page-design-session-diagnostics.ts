@@ -7,7 +7,7 @@
  */
 
 import type { AiHostSessionRecord } from '@spark-view/spark-ai/host'
-import { isRecord } from '../json-document'
+import { isRecord } from '@spark-view/spark-utils'
 import { hasPageDesignComponentPayloadKey } from './payload-catalog-tool-catalog'
 
 // ── 公共 DTO ────────────────────────────────────────────────

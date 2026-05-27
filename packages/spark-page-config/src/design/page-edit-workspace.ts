@@ -23,13 +23,14 @@ import {
   type PageConfigFileName,
 } from '../config'
 import type { NavNode } from '../navigation'
+import { assertNonEmptyPageId } from '../internal/assert-page-id'
 import {
   defaultNavIconByKind,
   findConfigNodeByPageId,
   normalizeNavNode,
 } from '../navigation'
 import type { NavigationConfigClient } from '../navigation'
-import { SparkNodeTree } from '../node-tree'
+import { SparkNodeTree } from '@spark-view/spark-data'
 import type { PageDesignEditHost } from './page-edit-session'
 
 // ── PageConfigEditWorkspace 契约 ───────────────────────────
@@ -339,14 +340,6 @@ export type RemoveMountedPageParams = {
 export type RemoveMountedPageResult = {
   deletedNode: NavNode | null
   deletedFiles: boolean
-}
-
-function assertNonEmptyPageId(pageId: string): string {
-  const normalized = pageId.trim()
-  if (normalized.length === 0) {
-    throw new Error('pageId must be a non-empty string')
-  }
-  return normalized
 }
 
 function defaultPageNavigationNode(params: PageNavigationMountParams): NavNode {

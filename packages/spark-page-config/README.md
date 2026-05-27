@@ -28,7 +28,7 @@ spark-ai-server/data/pages-config/
 ## 基本使用
 
 ```typescript
-import { createConfigLoader } from '@spark-view/spark-page-config/config'
+import { createConfigLoader } from '@spark-view/spark-page-config'
 
 const loader = createConfigLoader({
   fileStorage: 'memory',
@@ -39,15 +39,11 @@ const pageConfig = await loader.loadPageConfig('homepage')
 
 ## 公开入口
 
-- `config`：四文件协议、`PageConfigLoader`、compiler、`PageConfigFileApi`
-- `node-tree`：`SparkNode`、`SparkNodeTree`、节点归一化与访问函数
-- `navigation`：导航模型、编辑会话、导航 API client
-- `runtime`：`PAGE_RUNTIME_SERVICES`、运行时服务类型、`ScriptContext`
+- 根入口 `@spark-view/spark-page-config`：最小运行时 config loader / compiler API
+- `editor`：`PageEditor` 唯一编辑聚合入口，覆盖导航、四文件、节点树、数据集、生命周期、版本和预览配置构建
 - `json-document`：通用 JSON tree editor 模型、mutation、flat roundtrip、schema helpers
-- `design`：页面文件文档、编辑工作区、设计服务、设计器 artifacts
-- `ai`：pageDesign / manualLeave 业务注册、ModuleKind classes、AI prompts
 
-根入口 `@spark-view/spark-page-config` 只保留最小运行时 config loader API。功能调用方应使用上面的显式 subpath。
+DevSystem 和编辑态调用方统一使用 `@spark-view/spark-page-config/editor`，不要直接依赖内部 design / ai / navigation / node-tree / runtime 子域。
 
 ## 相关文件
 

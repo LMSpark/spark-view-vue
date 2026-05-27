@@ -172,7 +172,7 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 ### 4.2 消费内置能力
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 import { useSparkComponent } from '@spark-view/spark-component'
 import { PAGE_SERVICE, PAGE_DATASET } from '@spark-view/spark-component'
 
@@ -487,7 +487,7 @@ logger.error('请求失败', { error })
 ### 页面层 Logger（推荐）
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 
 // 由页面根节点统一提供，组件内只消费 logger，不再做子树级覆盖
 sparkProvide(PAGE_RUNTIME_SERVICES, { router, logger: pageLogger })

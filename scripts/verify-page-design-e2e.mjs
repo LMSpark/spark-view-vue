@@ -27,15 +27,14 @@ import {
 import {
   ensurePageDesignBusiness,
   validatePageDesignPayloadGuidesFromSession,
-} from '@spark-view/spark-page-config/ai'
+} from '../packages/spark-page-config/src/ai/index.js'
+import { createRequest } from '@spark-view/spark-utils'
 import {
   PAGE_CONFIG_FILE_NAMES,
-  PageConfigFileApi,
-  PageConfigLoader,
   compileRule,
+  createPageEditor,
   parsePageData,
-} from '@spark-view/spark-page-config/config'
-import { PageConfigEditWorkspace } from '@spark-view/spark-page-config/design'
+} from '@spark-view/spark-page-config/editor'
 import { parseDataViewKey } from '@spark-view/spark-data'
 
 // ============================================================================
@@ -426,36 +425,40 @@ function createAuthHeaders(options, auth) {
 // 第 5 层：PageConfig 工作区生命周期
 // ============================================================================
 
-// PAGE_DESIGN_AI_TRACE[e2e-page-workspace]: 把 pages-config API 包装成编辑工作区，pageDesign 工具只通过 workspace 修改四文件。
+// PAGE_DESIGN_AI_TRACE[e2e-page-editor]: 把 pages-config API 包装成 PageEditor，pageDesign 工具只通过 editor 修改四文件。
 function createPageConfigRuntime(options, auth) {
-  const apiBaseUrl = `${options.backendUrl}/api`
-  const loader = new PageConfigLoader({
-    apiBaseUrl,
-    pagesConfigBaseUrl: `${apiBaseUrl}/pages-config`,
-    fileStorage: 'memory',
+  const http = createRequest({
+    baseURL: options.backendUrl,
     timeout: REQUEST_TIMEOUT,
+  })
+  http.interceptors.request.use({
+    onRequest: (config) => {
+      config.headers = {
+        ...config.headers,
+        ...createAuthHeaders(options, auth),
+      }
+      return config
+    },
+  })
+  const editor = createPageEditor({
+    http,
+    getPageConfigApi: () => `${options.backendUrl}/api/pages-config`,
+    getNavigationApi: () => `${options.backendUrl}/api/navigation`,
     getHeaders: () => createAuthHeaders(options, auth),
+    fileStorage: 'memory',
   })
-  const fileApi = new PageConfigFileApi({
-    getPageConfigApi: () => '/pages-config',
-    http: loader.getHttpClient(),
-  })
-  const workspace = new PageConfigEditWorkspace({
-    fileApi,
-    getConfigLoader: () => loader,
-  })
-  return { loader, workspace }
+  return { editor }
 }
 
-async function prepareTargetPage(workspace, options) {
-  const pages = await workspace.listPages()
+async function prepareTargetPage(editor, options) {
+  const pages = await editor.listPages()
   let exists = pages.some((page) => page.pageId === options.pageId)
   if (exists && options.replacePage) {
-    await workspace.deletePage(options.pageId)
+    await editor.deletePageFiles(options.pageId)
     exists = false
   }
   if (!exists) {
-    await workspace.createPage({
+    await editor.createPageFiles({
       pageId: options.pageId,
       title: options.pageTitle,
       ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
@@ -465,42 +468,35 @@ async function prepareTargetPage(workspace, options) {
   return 'reused'
 }
 
-async function loadTargetPage(workspace, pageId) {
-  workspace.setActivePage(pageId, true)
-  await workspace.ensureActivePageFilesLoaded({
+async function loadTargetPage(editor, pageId) {
+  await editor.selectPage(pageId, {
     forceReload: true,
     allowMissingAsEmpty: false,
   })
 }
 
-function readWorkspaceFiles(documents) {
-  return Object.fromEntries(PAGE_CONFIG_FILE_NAMES.map((name) => [name, documents[name].text.value]))
+function readEditorFiles(editor) {
+  return Object.fromEntries(PAGE_CONFIG_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
 }
 
 function changedFiles(before, after) {
   return Object.keys(after).filter((name) => before[name] !== after[name])
 }
 
-async function saveDirtyFiles(workspace) {
+async function saveDirtyFiles(editor) {
   const saved = []
+  const dirtyFiles = editor.readSnapshot().dirtyFiles
   for (const name of PAGE_CONFIG_FILE_NAMES) {
-    if (!workspace.isDocumentDirty(name)) continue
-    await workspace.savePageFile(name)
+    if (!dirtyFiles.has(name)) continue
+    await editor.savePageFile(name)
     saved.push(name)
   }
   return saved
 }
 
-async function readRemoteFiles(loader, pageId) {
-  const entries = []
-  for (const name of PAGE_CONFIG_FILE_NAMES) {
-    const result = await loader.loadPageFileContent(pageId, name, { forceReload: true })
-    if (!result.success) {
-      throw new Error(`Remote page file verification failed: ${pageId}/${name} (${result.error ?? result.reason ?? 'unknown'})`)
-    }
-    entries.push([name, result.data ?? ''])
-  }
-  return Object.fromEntries(entries)
+async function readRemoteFiles(editor, pageId) {
+  await editor.selectPage(pageId, { forceReload: true, allowMissingAsEmpty: false })
+  return readEditorFiles(editor)
 }
 
 function summarizeFiles(files) {
@@ -649,32 +645,14 @@ function assertAppendMessages(body, input) {
 // 第 7 层：工作区 Host（两种模式，通过 --host-mode 切换）
 // ============================================================================
 
-// builtin 模式：使用 workspace 内置方法。
-function createBuiltinHost(workspace) {
-  return workspace.createPageDesignEditHost()
+// builtin 模式：使用 PageEditor 委托出的 live edit host。
+function createBuiltinHost(editor) {
+  return editor.createPageDesignEditHost()
 }
 
-// inline 模式：手动组装 host，可精确控制读写行为。
-function createInlineHost(workspace) {
-  const documents = workspace.documents
-  return {
-    getNodeTree: () => documents['rule.json'].model.value,
-    onNodeTreeChanged: (nodeTree) => {
-      documents['rule.json'].replaceModel(nodeTree)
-    },
-    getDataSetTool: () => documents['pagedata.json'].model.value,
-    onDataSetChanged: (tool) => {
-      documents['pagedata.json'].replaceModel(tool)
-    },
-    readScript: () => documents['script.js'].text.value,
-    writeScript: (content) => {
-      documents['script.js'].setText(content)
-    },
-    readStyle: () => documents['style.css'].text.value,
-    writeStyle: (content) => {
-      documents['style.css'].setText(content)
-    },
-  }
+// inline 模式保留 CLI 兼容性；四文件读写仍然必须从 PageEditor 出口进入。
+function createInlineHost(editor) {
+  return editor.createPageDesignEditHost()
 }
 
 // ============================================================================
@@ -1367,15 +1345,15 @@ async function run(options) {
 
   // 2. 准备页面工作区
   const pageConfig = createPageConfigRuntime(options, auth)
-  const pageStatus = await prepareTargetPage(pageConfig.workspace, options)
-  await loadTargetPage(pageConfig.workspace, options.pageId)
-  const workspace = pageConfig.workspace
-  const before = readWorkspaceFiles(workspace.documents)
+  const editor = pageConfig.editor
+  const pageStatus = await prepareTargetPage(editor, options)
+  await loadTargetPage(editor, options.pageId)
+  const before = readEditorFiles(editor)
 
   // 3. 创建 workspace host（根据 --host-mode 选择实现）
   const host = options.hostMode === 'inline'
-    ? createInlineHost(workspace)
-    : createBuiltinHost(workspace)
+    ? createInlineHost(editor)
+    : createBuiltinHost(editor)
 
   // 4. 注册 pageDesign 业务入口
   const pageDesignHost = createPageDesignAiHost(options, auth, host)
@@ -1421,10 +1399,10 @@ async function run(options) {
   const { session } = demand.runResult
 
   // 6. 保存脏文件 + 远端回读验证
-  const after = readWorkspaceFiles(workspace.documents)
+  const after = readEditorFiles(editor)
   const changed = changedFiles(before, after)
-  const savedFiles = await saveDirtyFiles(workspace)
-  const remoteFiles = await readRemoteFiles(pageConfig.loader, options.pageId)
+  const savedFiles = await saveDirtyFiles(editor)
+  const remoteFiles = await readRemoteFiles(editor, options.pageId)
   const verifiedFiles = PAGE_CONFIG_FILE_NAMES.map((name) => ({
     name,
     changed: changed.includes(name),

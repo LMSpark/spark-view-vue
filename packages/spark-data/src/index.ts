@@ -27,6 +27,79 @@ export type { FieldRenderState, PermissionActionContext } from './script-types'
 
 export { TreeManager } from './tree-manager'
 export { DataSetCrudTool } from './dataset-crud-tool'
+
+// ===== Navigation 类型（纯数据模型，从 spark-page-config 委托迁入）=====
+
+export {
+  isNavNode,
+} from './navigation'
+
+export type {
+  AppModuleBase,
+  AppNavRoot,
+  AppNavigation,
+  ChildPlacement,
+  LinkTarget,
+  NavContextConfig,
+  NavContextItem,
+  NavContextState,
+  NavNode,
+  NavNodeKind,
+  NavPermissionMode,
+  RegionItems,
+  RegionVisibility,
+} from './navigation'
+
+// ===== Node Tree（页面节点树模型，从 spark-page-config 迁入）=====
+
+export {
+  SPARK_NODE_STRUCT_KEYS,
+  SPARK_PAGE_NODE_TYPE,
+  SPARK_PAGE_ROOT_ID,
+  SparkNodeTree,
+  isSparkNode,
+  normalizeSparkNode,
+  getSparkNodeChildren,
+  nodeId,
+  nodeInputProp,
+  nodeInputProps,
+} from './node-tree'
+
+export type {
+  SparkNode,
+  SparkNodeChildren,
+  SparkNodeFindByTypeMatch,
+  SparkNodeFindByTypeParams,
+  SparkNodeFindByTypeResult,
+  SparkNodeLocation,
+  SparkNodeTreeChildrenParams,
+  SparkNodeTreeLookupParams,
+  SparkNodeAddResult,
+  SparkNodeMoveResult,
+  SparkNodeRemoveResult,
+  SparkNodeReplaceResult,
+  SparkNodeSetPropsResult,
+  SparkNodeAddNodesResult,
+  SparkNodeRemoveNodesResult,
+  SparkNodeReplaceNodesResult,
+  SparkNodeSetPropsBatchResult,
+  SparkNodeTreeAddNodesParams,
+  SparkNodeTreeAddParams,
+  SparkNodeTreeMoveParams,
+  SparkNodeTreeRemoveNodesParams,
+  SparkNodeTreeRemoveParams,
+  SparkNodeTreeReplaceNodesParams,
+  SparkNodeTreeReplaceParams,
+  SparkNodeTreeSetPropsParams,
+  SparkNodeTreeReplaceNodesItem,
+  SparkNodeTreeSetPropsBatchItem,
+  SparkNodeTreeSetPropsBatchParams,
+  SparkNodeTreeFromJsonOptions,
+  SparkNodeTreeJsonInput,
+  SparkNodeTreeMethodKey,
+  SparkNodeTreeRootParams,
+  SparkNodeTreeRuleJsonInput,
+} from './node-tree'
 export {
   clearDataSetSnapshots,
   commitDataSetSnapshot,

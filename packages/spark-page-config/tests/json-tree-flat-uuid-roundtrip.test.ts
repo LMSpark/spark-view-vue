@@ -110,4 +110,3 @@ describe('jsonTreeEditor flat uuid pipeline', () => {
     expect(() => restoreJsonDocumentFromFlat(broken)).toThrow('missing parent')
   })
 })
-

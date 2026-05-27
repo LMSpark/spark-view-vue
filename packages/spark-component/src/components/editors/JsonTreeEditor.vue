@@ -194,7 +194,7 @@ import { deepClone, isRecord } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
-import * as JsonDocumentRuntime from '@spark-view/spark-page-config/json-document'
+import { JsonDocumentRuntime } from '@spark-view/spark-page-config/json-document'
 
 // ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
 

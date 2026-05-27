@@ -8,7 +8,7 @@
 import { h, type Ref } from 'vue'
 import type { PageServiceCapability } from '../../core/capability-keys.js'
 import type { ModuleContext, PageComponentRegistry } from '../../core/capability-keys.js'
-import type { PageRoute } from '@spark-view/spark-page-config/runtime'
+import type { PageRoute } from '../../runtime'
 import type { DataSet } from '@spark-view/spark-data'
 import { SparkData } from '@spark-view/spark-data'
 import type { PageContext } from './types'

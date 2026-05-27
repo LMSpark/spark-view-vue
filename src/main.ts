@@ -42,7 +42,7 @@
 import * as SparkAppRuntime from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport, isRecord } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode } from '@spark-view/spark-page-config/navigation'
+import type { AppNavRoot, NavNode } from '@spark-view/spark-data'
 
 import {
   consumePendingLogout,

@@ -8,9 +8,9 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createFileLoader, createRequest, type FileLoadResult } from '@spark-view/spark-utils'
-import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config/config'
-import type { RuleConfig } from '@spark-view/spark-page-config/config'
-import type { SparkNode } from '@spark-view/spark-page-config/node-tree'
+import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
+import type { RuleConfig } from '@spark-view/spark-page-config'
+import type { SparkNode } from '@spark-view/spark-data'
 import { DataSet } from '@spark-view/spark-data'
 
 // ── Mock FileLoader ──────────────────────────────────────────────────────────

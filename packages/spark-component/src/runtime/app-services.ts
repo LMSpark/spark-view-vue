@@ -24,7 +24,7 @@
  */
 
 import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
-import { isRecord } from '../json-document'
+import { isRecord } from '@spark-view/spark-utils'
 
 // ═══════════════════════════════════════════════════════
 // 1. 枚举联合

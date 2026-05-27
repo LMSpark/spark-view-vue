@@ -111,7 +111,7 @@ export function canonicalizeDataSetMetadata(metadata: DataSetMetadata): string {
 
 import { SnapshotHistory } from '@spark-view/spark-utils'
 import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName, type PageFileRegistry, createDefaultFileRegistry } from '../config'
-import { getSparkNodeChildren, SparkNodeTree, type SparkNode } from '../node-tree'
+import { getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
 
 export type PageFileLoadState = 'idle' | 'loading' | 'loaded'
 

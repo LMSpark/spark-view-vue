@@ -8,7 +8,7 @@
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
 import * as SparkUtils from '@spark-view/spark-utils'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
+import { PAGE_RUNTIME_SERVICES } from '../runtime'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'
 import { DATA_ROW } from './capability-keys.js'

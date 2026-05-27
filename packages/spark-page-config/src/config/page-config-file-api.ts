@@ -22,6 +22,7 @@
 
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import type { PageConfigFileName } from './config-types'
+import { assertNonEmptyPageId } from '../internal/assert-page-id'
 
 // ═══════════════════════════════════════════════════════
 // 1. 摘要类型
@@ -136,15 +137,6 @@ function normalizeRecordResult(value: unknown): Record<string, unknown> {
 //
 // fail-fast 阻止无效输入到达 HTTP 层。
 // ═══════════════════════════════════════════════════════
-
-/** 断言 pageId 是非空字符串 */
-function assertNonEmptyPageId(pageId: string): string {
-  const normalized = pageId.trim()
-  if (normalized.length === 0) {
-    throw new Error('pageId must be a non-empty string')
-  }
-  return normalized
-}
 
 /** 断言 version 是正整数 */
 function assertPositiveVersion(version: number): void {

@@ -1,29 +1,40 @@
 import { describe, expect, it } from 'vitest'
 import {
   PAGE_CONFIG_FILE_NAMES,
-  PageConfigCompiler,
+  compileRule,
   PageConfigFileDescriptor,
   PageConfigFileApi,
   createConfigLoader,
-} from '@spark-view/spark-page-config/config'
-import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
-import { NavigationEditSession, buildNavRoot } from '@spark-view/spark-page-config/navigation'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-page-config/runtime'
+} from '@spark-view/spark-page-config'
+import { SparkNodeTree } from '@spark-view/spark-data'
+import { NavigationEditSession, buildNavRoot } from '@spark-view/spark-page-config/editor'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component/runtime'
+import {
+  PageEditor,
+  componentCatalog,
+  createRuleTreePolicy,
+} from '@spark-view/spark-page-config/editor'
 import { buildTreeModel, exportJsonDocument } from '@spark-view/spark-page-config/json-document'
-import { PAGE_DESIGN_100_STEP_FLOW, createPageDocuments } from '@spark-view/spark-page-config/design'
-import { LEAVE_REQUEST_KIND, PAGE_DESIGN_MODULE_ID, createPageDesignBusinessKindDefinition } from '@spark-view/spark-page-config/ai'
-import componentCatalog from '@spark-view/spark-page-config/ai/payloads/component-catalog.json'
 import { PageConfigLoader as RootPageConfigLoader } from '@spark-view/spark-page-config'
 
+// 内化模块的测试通过内部源路径导入
+import { PAGE_DESIGN_100_STEP_FLOW } from '../src/design/index'
+import { LEAVE_REQUEST_KIND, PAGE_DESIGN_MODULE_ID, createPageDesignBusinessKindDefinition } from '../src/ai/index'
+
 describe('spark-page-config public subpath imports', () => {
-  it('exposes the runtime config root and explicit semantic layers', () => {
+  it('exposes PageEditor from the ./editor subpath', () => {
+    expect(PageEditor).toBeTypeOf('function')
+    expect(componentCatalog).toBeTypeOf('object')
+    expect(createRuleTreePolicy).toBeTypeOf('function')
+  })
+
+  it('exposes the runtime config root', () => {
     expect(RootPageConfigLoader).toBeTypeOf('function')
     expect(createConfigLoader({ fileStorage: 'memory' })).toBeInstanceOf(RootPageConfigLoader)
     expect(PageConfigFileApi).toBeTypeOf('function')
     expect(new PageConfigFileDescriptor({ name: 'custom.json', required: false }).name).toBe('custom.json')
 
-    const compiler = new PageConfigCompiler()
-    expect(compiler.compileRule('[]')).toEqual([])
+    expect(compileRule('[]')).toEqual([])
     expect(PAGE_CONFIG_FILE_NAMES).toEqual(['rule.json', 'pagedata.json', 'script.js', 'style.css'])
 
     const tree = SparkNodeTree.fromPageChildren([{ type: 'div', id: 'root-child' }])
@@ -37,9 +48,6 @@ describe('spark-page-config public subpath imports', () => {
 
     const model = buildTreeModel({ hello: 'world' })
     expect(exportJsonDocument(model)).toEqual({ hello: 'world' })
-
-    const documents = createPageDocuments()
-    expect(Object.keys(documents)).toEqual([...PAGE_CONFIG_FILE_NAMES])
     expect(PAGE_DESIGN_100_STEP_FLOW.length).toBeGreaterThan(0)
 
     expect(PAGE_DESIGN_MODULE_ID).toBe('pageDesign')
@@ -49,14 +57,20 @@ describe('spark-page-config public subpath imports', () => {
   })
 
   it('keeps pageDesign implementation details out of public import barrels', async () => {
-    const designModule = await import('@spark-view/spark-page-config/design')
-    const aiModule = await import('@spark-view/spark-page-config/ai')
-    const designExports = new Set(Object.keys(designModule))
-    const aiExports = new Set(Object.keys(aiModule))
+    const designModule = await import('../src/design/index')
+    const aiModule = await import('../src/ai/index')
+    const rootModule = await import('@spark-view/spark-page-config')
 
+    // root 只导出 config 运行时 API
+    expect(typeof rootModule.BasePageConfigLoader).toBe('function')
+    expect(typeof rootModule.createConfigLoader).toBe('function')
+
+    // 实现细节不在公开 barrel 中
+    const designExports = new Set(Object.keys(designModule))
     for (const name of ['PageDesignService', 'PageDesignEditSession', 'pageDesignServiceFailure', 'registerPageDesignEditHost']) {
       expect(designExports.has(name)).toBe(false)
     }
+    const aiExports = new Set(Object.keys(aiModule))
     for (const name of [
       'PageDesignDatasetModuleKind',
       'PageDesignLifecycleModuleKind',

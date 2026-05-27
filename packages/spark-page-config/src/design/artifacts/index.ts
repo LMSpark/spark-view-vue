@@ -3,42 +3,42 @@ export {
   createRuleEditorComponentMetadata,
   createRuleJsonSchema,
   createRuleTreePolicy,
-} from './rule-editor-metadata-api'
+} from './rule-artifacts'
 
 export type {
   RuleEditorComponentCatalog,
   RuleEditorComponentCatalogEntry,
   RuleEditorComponentCatalogProp,
   RuleEditorComponentMetadata,
-} from './rule-editor-metadata-api'
+} from './rule-artifacts'
 
 export type {
   RuleEditorComponentMetadataSource,
-} from './rule-editor-source-api'
+} from './rule-artifacts'
 
 export {
   buildDataSetMetadataFromDesignerProjection,
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-} from './designer-projection-api'
+} from './data-artifacts'
 
 export type {
   DesignerColumnProjection,
   DesignerRelationProjection,
   DesignerTableProjection,
   DesignerTableUiState,
-} from './designer-projection-api'
+} from './data-artifacts'
 
 export {
   PAGE_DATA_JSON_SCHEMA,
   canUseStructuredPageDataEditor,
   hasDesignerProjectionChanges,
-} from './page-data-editor-api'
+} from './data-artifacts'
 
 export type {
   PageDataEditorMode,
-} from './page-data-editor-api'
+} from './data-artifacts'
 
 export {
   getNextPageDesignFlowStep,

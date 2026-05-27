@@ -14,12 +14,13 @@ import {
   createPageDesignBusinessRegistration,
   ensurePageDesignBusiness,
   type PageDesignRunInput,
-} from '@spark-view/spark-page-config/ai'
-import type { PageDesignEditHost } from '@spark-view/spark-page-config/design'
-import { SparkNodeTree } from '@spark-view/spark-page-config/node-tree'
+} from '../src/ai/index'
+import type { PageDesignEditHost } from '../src/design/index'
+import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignService } from '../src/design/page-design-service'
-import { isRecord } from '@spark-view/spark-page-config/json-document'
+import { isRecord } from '@spark-view/spark-utils'
+import { getArray, getRecord } from './helpers/test-utils'
 
 function resultItemCount(value: unknown): number {
   if (!isRecord(value) || !Array.isArray(value['items'])) return 0
@@ -82,20 +83,6 @@ function testTurn() {
     startedAt: '2026-05-21T00:00:00.000Z',
     maxParallelTurns: 1,
   }
-}
-
-function getRecord(result: { readonly ok: boolean; readonly data?: unknown }): Record<string, unknown> {
-  if (!result.ok || !isRecord(result.data)) {
-    throw new Error('expected ok record')
-  }
-  return result.data
-}
-
-function getArray(result: { readonly ok: boolean; readonly data?: unknown }): unknown[] {
-  if (!result.ok || !Array.isArray(result.data)) {
-    throw new Error('expected ok array')
-  }
-  return result.data
 }
 
 function expectActionMetadataComplete(describeData: Record<string, unknown>): void {
@@ -266,8 +253,8 @@ describe('pageDesign host business registration', () => {
     const result = await pageDesignHost.run.pageDesign(input)
 
     expect(pageDesignHost.has(PAGE_DESIGN_MODULE_ID)).toBe(true)
-    expect(result.task.normalizedInput.pageId).toBe('page-designer')
-    expect(result.task.normalizedInput.userRequirement).toBe('实现请假申请页面')
+    expect(result.task.normalizedInput['pageId']).toBe('page-designer')
+    expect(result.task.normalizedInput['userRequirement']).toBe('实现请假申请页面')
     expect(streamInputs).toEqual(['实现请假申请页面'])
   })
 

@@ -31,7 +31,7 @@ import type {
   PageDesignNodeTree,
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
-} from '../design/page-design-host-api'
+} from '../design/page-edit-session'
 import {
   isSparkNode,
   type SparkNode,
@@ -47,8 +47,8 @@ import {
   type SparkNodeTreeReplaceParams,
   type SparkNodeTreeSetPropsBatchParams,
   type SparkNodeTreeSetPropsParams,
-} from '../node-tree'
-import { isRecord } from '../json-document'
+} from '@spark-view/spark-data'
+import { isRecord } from '@spark-view/spark-utils'
 import { createCurrentPageRef } from './page-design-helpers'
 import {
   getPageDesignComponentPayloadGuide,

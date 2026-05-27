@@ -56,105 +56,21 @@
 <script setup lang="ts">
 import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import * as SparkPageConfig from '@spark-view/spark-page-config/config'
+import {
+  createPageEditorPreviewConfigLoader,
+  type PageEditorPreviewConfig,
+} from '@spark-view/spark-page-config/editor'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
-import { createRequest } from '@spark-view/spark-utils'
-import type { HttpClientBase } from '@spark-view/spark-utils'
 import { createAuthHeaders } from '@/services/http'
 
-const {
-  BasePageConfigLoader,
-  compileRule,
-  parsePageData,
-  parseScript,
-  parseCss,
-} = SparkPageConfig
-
-type ConfigLoadResult<T = unknown> = SparkPageConfig.ConfigLoadResult<T>
-type PageConfig = SparkPageConfig.PageConfig
-type PageConfigFileLoadOptions = SparkPageConfig.PageConfigFileLoadOptions
-type PageConfigFileName = SparkPageConfig.PageConfigFileName
-type PageDataConfig = SparkPageConfig.PageDataConfig
-type RuleConfig = SparkPageConfig.RuleConfig
-
-class PreviewPageConfigLoader extends BasePageConfigLoader {
-  constructor(private readonly client: HttpClientBase) {
-    super()
-  }
-
-  override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
-    return this.unsupported(pageId, 'page config')
-  }
-
-  override loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return this.unsupported(pageId, 'rule')
-  }
-
-  override loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
-    return this.unsupported(pageId, 'pagedata')
-  }
-
-  override loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
-    return this.unsupported(pageId, 'script')
-  }
-
-  override loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
-    return this.unsupported(pageId, 'style')
-  }
-
-  override loadPageFileContent(
-    pageId: string,
-    filename: PageConfigFileName,
-    _options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
-    return this.unsupported(pageId, filename)
-  }
-
-  override clearCache(): void {
-    this.client.clearCache()
-  }
-
-  override getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
-  }
-
-  override getHttpClient(): HttpClientBase {
-    return this.client
-  }
-
-  private unsupported<T>(pageId: string, label: string): Promise<ConfigLoadResult<T>> {
-    return Promise.resolve({
-      success: false,
-      error: `Preview loader only exposes HTTP client; ${label} is not loaded here: ${pageId}`,
-      timestamp: Date.now(),
-    })
-  }
-}
-
-// ── 为预览渲染器提供带 baseURL + auth 的 HttpClientBase ──
+// ── 为预览渲染器提供带 baseURL + auth 的请求加载器 ──
 // DevPreviewTab 直接传 pageConfig（跳过加载器），但 DataSet 仍需要 HTTP 客户端
 // 来执行 api.list 等远程请求。这里构造一个最小 configLoader 仅暴露 getHttpClient()。
-const previewConfigLoader = (() => {
-  const client = createRequest({ timeout: 30_000 })
-  client.interceptors.request.use({
-    onRequest: (config) => {
-      if (
-        typeof config.url === 'string'
-        && config.url.trim() !== ''
-        && !/^[a-z][a-z\d+\-.]*:/i.test(config.url)
-        && !config.url.startsWith('//')
-      ) {
-        const normalizedUrl = config.url.startsWith('/') ? config.url : `/${config.url}`
-        config.url = normalizedUrl.startsWith('/api/') ? normalizedUrl : `/api${normalizedUrl}`
-      }
-      config.headers = { ...config.headers, ...createAuthHeaders() }
-      return config
-    },
-  })
-  return new PreviewPageConfigLoader(client)
-})()
+const previewConfigLoader = createPageEditorPreviewConfigLoader({
+  getHeaders: createAuthHeaders,
+})
 
 const props = defineProps<{
   state: DevState
@@ -167,33 +83,11 @@ const livePreview = ref(true)
 const renderKey = ref(0)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
-const previewConfig = shallowRef<Omit<PageConfig, 'pageId'> | null>(null)
+const previewConfig = shallowRef<PageEditorPreviewConfig | null>(null)
 
 /** 确保 4 个文件全部从服务器加载完成 */
 async function ensureAllFilesLoaded() {
   await props.state.ensureActivePageFilesLoaded()
-}
-
-function buildPreviewConfig(): Omit<PageConfig, 'pageId'> | null {
-  const documentParseErrors = Object.values(props.state.documents)
-    .flatMap(doc => doc.parseError.value ? [`${doc.name}: ${doc.parseError.value}`] : [])
-  if (documentParseErrors.length > 0) {
-    throw new Error(documentParseErrors.join('\n'))
-  }
-
-  const ruleText = props.state.documents['rule.json'].text.value
-  const dataText = props.state.documents['pagedata.json'].text.value
-  const scriptText = props.state.documents['script.js'].text.value
-  const cssText = props.state.documents['style.css'].text.value
-
-  if (!ruleText.trim() && !dataText.trim()) return null
-
-  const rule = ruleText.trim() ? compileRule(ruleText) : []
-  const data = dataText.trim() ? parsePageData(dataText) : parsePageData('{}')
-  const script = scriptText.trim() ? parseScript(scriptText) : undefined
-  const css = cssText.trim() ? parseCss(cssText) : undefined
-
-  return { rule, data, script, css }
 }
 
 async function refresh() {
@@ -201,7 +95,7 @@ async function refresh() {
   parseError.value = null
   try {
     await ensureAllFilesLoaded()
-    previewConfig.value = buildPreviewConfig()
+    previewConfig.value = props.state.buildPreviewConfig()
     renderKey.value++
   } catch (err) {
     parseError.value = err instanceof Error ? err.message : String(err)
@@ -219,10 +113,6 @@ watch(() => props.refreshToken, () => {
 // 监听 4 个文档文本变化，debounce 500ms 实时重建预览（不需要重新拉服务器）
 const _docTexts = computed(() => [
   props.state.pageFilesRevision.value,
-  props.state.documents['rule.json'].text.value,
-  props.state.documents['pagedata.json'].text.value,
-  props.state.documents['script.js'].text.value,
-  props.state.documents['style.css'].text.value,
 ])
 let _liveTimer: ReturnType<typeof setTimeout> | null = null
 watch(_docTexts, () => {
@@ -232,7 +122,7 @@ watch(_docTexts, () => {
     _liveTimer = null
     if (loading.value) return // 正在手动刷新中，跳过
     try {
-      const cfg = buildPreviewConfig()
+      const cfg = props.state.buildPreviewConfig()
       if (cfg !== null) {
         parseError.value = null
         previewConfig.value = cfg
@@ -297,4 +187,3 @@ onMounted(() => {
   gap: 12px;
 }
 </style>
-

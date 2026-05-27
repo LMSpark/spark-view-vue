@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { useDevState } from '@/views/app/dev-system/useDevState'
 import { http } from '@/services/http'
+import type { BasePageConfigLoader } from '@spark-view/spark-page-config/editor'
 
 const httpFns = vi.hoisted(() => ({
   get: vi.fn(),
@@ -23,8 +24,8 @@ vi.mock('@/services/http', () => ({
   http: httpFns,
 }))
 
-vi.mock('@spark-view/spark-page-config/config', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/config')>()
+vi.mock('@spark-view/spark-page-config/editor', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/editor')>()
   const { copyOwnEnumerableProperties, readProperty } = await import('@spark-view/spark-utils/internal')
   const requireRecord = (value: unknown, message: string): Record<string, unknown> => {
     const record = copyOwnEnumerableProperties(value)
@@ -36,22 +37,27 @@ vi.mock('@spark-view/spark-page-config/config', async (importOriginal) => {
     const responseStatus = readProperty(readProperty(error, 'response'), 'status')
     return directStatus === status || responseStatus === status
   }
-  return {
-    ...actual,
-    createConfigLoader: vi.fn(() => ({
+  const unsupported = async () => ({ success: false as const, error: 'unsupported', timestamp: Date.now() })
+  const createTestConfigLoader = (): BasePageConfigLoader => ({
+      loadPageConfig: unsupported,
+      loadRule: unsupported,
+      loadPageData: unsupported,
+      loadScript: unsupported,
+      loadCss: unsupported,
+      loadPageFile: unsupported,
       loadPageFileContent: async (pageId: string, filename: string) => {
         try {
           const data = requireRecord(
             await httpFns.get(`/api/pages-config/${pageId}/${filename}`),
             `Invalid page file response: ${pageId}/${filename}`,
           )
-          return { success: true, data: String(data['content'] ?? ''), source: 'remote', timestamp: Date.now() }
+          return { success: true as const, data: String(data['content'] ?? ''), source: 'remote' as const, timestamp: Date.now() }
         } catch (error) {
           if ((filename === 'script.js' || filename === 'style.css') && isStatus(error, 404)) {
-            return { success: true, data: '', source: 'remote', timestamp: Date.now() }
+            return { success: true as const, data: '', source: 'remote' as const, timestamp: Date.now() }
           }
           return {
-            success: false,
+            success: false as const,
             error: error instanceof Error ? error.message : String(error),
             reason: isStatus(error, 404) ? 'not-found' : 'unknown',
             timestamp: Date.now(),
@@ -60,6 +66,13 @@ vi.mock('@spark-view/spark-page-config/config', async (importOriginal) => {
       },
       clearCache: vi.fn(),
       getCacheStats: () => ({ size: 0, keys: [] }),
+      getHttpClient: () => undefined,
+    }) as BasePageConfigLoader
+  return {
+    ...actual,
+    createPageEditor: vi.fn((options: Parameters<typeof actual.createPageEditor>[0]) => actual.createPageEditor({
+      ...options,
+      createConfigLoader: () => createTestConfigLoader(),
     })),
   }
 })
@@ -93,12 +106,12 @@ describe('DevState 页面文件闭环', () => {
 
     await state.ensureActivePageFilesLoaded({ forceReload: true })
 
-    expect(state.documents['rule.json'].loadState.value).toBe('loaded')
-    expect(state.documents['pagedata.json'].loadState.value).toBe('loaded')
-    expect(state.documents['script.js'].loadState.value).toBe('loaded')
-    expect(state.documents['style.css'].loadState.value).toBe('loaded')
-    expect(state.documents['script.js'].text.value).toBe('')
-    expect(state.documents['style.css'].text.value).toBe('')
+    expect(state.getPageFileLoadState('rule.json')).toBe('loaded')
+    expect(state.getPageFileLoadState('pagedata.json')).toBe('loaded')
+    expect(state.getPageFileLoadState('script.js')).toBe('loaded')
+    expect(state.getPageFileLoadState('style.css')).toBe('loaded')
+    expect(state.getPageFileText('script.js')).toBe('')
+    expect(state.getPageFileText('style.css')).toBe('')
   })
 
   it('缺失 rule/pagedata 以空文本进入编辑态，不写入占位内容', async () => {
@@ -112,10 +125,10 @@ describe('DevState 页面文件闭环', () => {
 
     await state.ensureActivePageFilesLoaded()
 
-    expect(state.documents['rule.json'].loadState.value).toBe('loaded')
-    expect(state.documents['pagedata.json'].loadState.value).toBe('loaded')
-    expect(state.documents['rule.json'].text.value).toBe('')
-    expect(state.documents['pagedata.json'].text.value).toBe('')
+    expect(state.getPageFileLoadState('rule.json')).toBe('loaded')
+    expect(state.getPageFileLoadState('pagedata.json')).toBe('loaded')
+    expect(state.getPageFileText('rule.json')).toBe('')
+    expect(state.getPageFileText('pagedata.json')).toBe('')
   })
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {
@@ -140,16 +153,15 @@ describe('DevState 页面文件闭环', () => {
   it('restore 后立即强制重读并回填文档模型', async () => {
     const state = useDevState()
     state.activePageId.value = 'demo'
-    state.documents['script.js'].loadFromText('console.log("old")', { markSaved: true })
+    state.setPageFileText('script.js', 'console.log("old")')
     httpMock.post.mockResolvedValueOnce({ ok: true })
     httpMock.get.mockImplementation(async (url: string) => pageFileResponse(url))
 
     const restored = await state.restoreRemotePageVersion(1, 'script.js')
 
     expect(restored).toBe(true)
-    expect(state.documents['script.js'].text.value).toBe('console.log("restored")')
+    expect(state.getPageFileText('script.js')).toBe('console.log("restored")')
     expect(state.isDocumentDirty('script.js')).toBe(false)
     expect(state.pageFilesRevision.value).toBeGreaterThan(0)
   })
 })
-

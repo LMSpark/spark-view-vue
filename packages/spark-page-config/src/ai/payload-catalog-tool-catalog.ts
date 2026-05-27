@@ -25,9 +25,9 @@ import {
   paramsSchema,
   stringSchema,
 } from '@spark-view/spark-ai/schema'
-import { isRecord } from '../json-document'
-import type { PageDesignServiceContext } from '../design/page-design-host-api'
-import type { PageDesignServiceResult } from '../design/page-design-session-api'
+import { isRecord } from '@spark-view/spark-utils'
+import type { PageDesignServiceContext } from '../design/page-edit-session'
+import type { PageDesignServiceResult } from '../design/page-edit-session'
 import { PageDesignService } from '../design/page-design-service'
 import componentCatalogPayload from './payloads/component-catalog.json'
 import { createCurrentPageRef } from './page-design-helpers'

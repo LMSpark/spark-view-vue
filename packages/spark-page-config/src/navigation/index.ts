@@ -7,7 +7,7 @@ export type {
   NavContextState,
   NavNode,
   NavNodeKind,
-} from './nav-model-core-api'
+} from './nav-model'
 
 export type {
   ChildPlacement,
@@ -15,7 +15,7 @@ export type {
   NavPermissionMode,
   RegionItems,
   RegionVisibility,
-} from './nav-model-placement-api'
+} from './nav-model'
 
 export {
   buildNavRoot,
@@ -26,7 +26,7 @@ export {
   createRootModuleNode,
   normalizeNavNode,
   normalizeNavRoot,
-} from './nav-builder-api'
+} from './nav-editing'
 
 export {
   DEFAULT_NAV_ICON_BY_KIND,
@@ -37,7 +37,7 @@ export {
   inferNavNodeKind,
   isConfigNodeKind,
   isPageLikeKind,
-} from './nav-kind-api'
+} from './nav-editing'
 
 export {
   findConfigNodeByPageId,
@@ -47,11 +47,11 @@ export {
   isSystemRootDirectory,
   normalizePageIdFromPath,
   normalizeRootChildPlacement,
-} from './nav-location-api'
+} from './nav-editing'
 
 export {
   NavigationEditSession,
-} from './nav-session-api'
+} from './nav-editing'
 
 export type {
   NavNodeLocation,
@@ -60,7 +60,7 @@ export type {
   NavigationNodeDraft,
   NavigationNodeDraftApplyResult,
   NavigationNodeDraftInput,
-} from './nav-session-api'
+} from './nav-editing'
 
 export {
   NavigationConfigClient,
