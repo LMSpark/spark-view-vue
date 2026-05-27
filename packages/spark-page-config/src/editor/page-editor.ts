@@ -44,7 +44,6 @@ import {
   BasePageConfigLoader,
   compileRule,
   createConfigLoader,
-  PAGE_CONFIG_FILE_NAMES,
   PageConfigFileApi,
   parseCss,
   parsePageData,
@@ -75,13 +74,11 @@ import {
   normalizePageIdFromPath,
 } from '../navigation'
 
-import type { SparkNodeTree } from '@spark-view/spark-data'
+import { SparkNodeTree } from '@spark-view/spark-data'
 
-import type { PageFileLoadState } from '../design/page-file-document'
-import { isPageFileDocumentDirty } from '../design/page-file-document'
+import { PageModel } from './page-model'
 import type { PageDesignEditHost } from '../design/page-edit-session'
 import {
-  PageConfigEditWorkspace,
   PageConfigFileLifecycle,
 } from '../design/page-edit-workspace'
 import type {
@@ -165,15 +162,7 @@ export type PageEditorPreviewConfigLoaderOptions = {
 // 2. PageEditor class
 // ═══════════════════════════════════════════════════════
 
-type EnsureLoadedOptions = { forceReload?: boolean; allowMissingAsEmpty?: boolean }
 type NavigationDirtyScope = 'node' | 'root'
-
-function toEnsureLoadedOptions(options: PageEditorLoadOptions): EnsureLoadedOptions {
-  const result: EnsureLoadedOptions = {}
-  if (options.forceReload !== undefined) result.forceReload = options.forceReload
-  if (options.allowMissingAsEmpty !== undefined) result.allowMissingAsEmpty = options.allowMissingAsEmpty
-  return result
-}
 
 function isPageEditorLoadOptions(value: unknown): value is PageEditorLoadOptions {
   return value !== null && typeof value === 'object'
@@ -322,11 +311,14 @@ function isHttpClientBase(value: HttpClientBase | PageEditorPreviewConfigLoaderO
  * 为 DevSystem 编辑器提供统一的中后端能力。
  */
 export class PageEditor {
-  private readonly workspace: PageConfigEditWorkspace
   private readonly lifecycle: PageConfigFileLifecycle
   private readonly navSession: NavigationEditSession
   private readonly navClient: NavigationConfigClient
+  private readonly fileApi: PageConfigFileApi
+  private readonly configLoaderFactory: () => BasePageConfigLoader
+  private readonly openPages = new Map<string, PageModel>()
 
+  private _activePageId = ''
   private selectedNodeId: string | null = null
   private navigationDirty = false
   private navigationDirtyScope: NavigationDirtyScope | null = null
@@ -338,21 +330,14 @@ export class PageEditor {
   constructor(options: PageEditorOptions) {
     this.navClient = options.navigationClient
     this.navSession = options.navigationSession ?? new NavigationEditSession()
-
-    this.workspace = new PageConfigEditWorkspace({
-      fileApi: options.fileApi,
-      getConfigLoader: options.getConfigLoader,
-    })
+    this.fileApi = options.fileApi
+    this.configLoaderFactory = options.getConfigLoader
 
     this.lifecycle = new PageConfigFileLifecycle({
       fileApi: options.fileApi,
       navigationClient: options.navigationClient,
       getConfigLoader: options.getConfigLoader,
     })
-
-    for (const name of PAGE_CONFIG_FILE_NAMES) {
-      this.workspace.documents[name].subscribe(() => this.bumpRevision())
-    }
   }
 
   // ── 变更通知 ─────────────────────────────────────────
@@ -367,6 +352,62 @@ export class PageEditor {
     this.listeners.add(listener)
     return () => {
       this.listeners.delete(listener)
+    }
+  }
+
+  // ── PageModel 管理 ────────────────────────────────────
+
+  /** 获取当前活动 PageModel（不存在时返回 null）。 */
+  getActivePage(): PageModel | null {
+    if (!this._activePageId) return null
+    return this.openPages.get(this._activePageId) ?? null
+  }
+
+  /**
+   * 打开或获取已缓存的 PageModel。
+   * 如果页面已挂载在导航树中，自动绑定 navNode 引用。
+   */
+  openPage(pageId: string): PageModel {
+    const normalized = pageId.trim()
+    if (!normalized) {
+      throw new Error('pageId 不能为空')
+    }
+    let page = this.openPages.get(normalized)
+    if (!page) {
+      page = new PageModel(normalized, this.fileApi, this.configLoaderFactory, this.navClient)
+      page.subscribe(() => this.bumpRevision())
+      this.openPages.set(normalized, page)
+    }
+    if (page.navigation.navNode === null) {
+      const node = findConfigNodeByPageId(this.navSession.root.children, normalized)
+      if (node) {
+        page.navigation.loadFromNode(node)
+      }
+    }
+    return page
+  }
+
+  /** 关闭 PageModel，从缓存中移除。 */
+  closePage(pageId: string): void {
+    this.openPages.delete(pageId.trim())
+  }
+
+  /**
+   * 导航树 reload 后重新绑定所有已打开 PageModel 的 navNode 引用。
+   * 页面已从树中移除时 navNode 置为 null。
+   */
+  refreshNavRefs(): void {
+    for (const page of this.openPages.values()) {
+      const fresh = findConfigNodeByPageId(this.navSession.root.children, page.pageId)
+      if (fresh) {
+        if (page.navigation.isDirty) {
+          page.navigation.navNode = fresh
+        } else {
+          page.navigation.loadFromNode(fresh)
+        }
+      } else {
+        page.navigation.navNode = null
+      }
     }
   }
 
@@ -417,18 +458,24 @@ export class PageEditor {
       throw new Error('pageId 不能为空，无法加载页面')
     }
 
-    this.workspace.setActivePage(pageId)
+    this._activePageId = pageId
     const mountedNode = findConfigNodeByPageId(this.navSession.root.children, pageId)
     this.selectedNodeId = mountedNode?.id ?? null
-    await this.workspace.ensureActivePageFilesLoaded(
-      toEnsureLoadedOptions(options ?? {}),
-    )
+    const page = this.openPage(pageId)
+    const pageModelOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {}
+    if (options?.forceReload === true) pageModelOptions.forceReload = true
+    if (options?.allowMissingAsEmpty === true) pageModelOptions.allowMissingAsEmpty = true
+    await page.load(pageModelOptions)
     this.bumpRevision()
   }
 
-  /** 清除当前活动页面，重置四文件文档。 */
+  /** 清除当前活动页面。 */
   clearActivePage(): void {
-    this.workspace.clear()
+    const activePageId = this._activePageId
+    this._activePageId = ''
+    if (activePageId) {
+      this.closePage(activePageId)
+    }
     this.bumpRevision()
   }
 
@@ -456,7 +503,11 @@ export class PageEditor {
       this.clearActivePage()
       return
     }
-    this.workspace.setActivePage(normalizedPageId, options?.forceReset === true)
+    if (options?.forceReset === true && this._activePageId === normalizedPageId) {
+      this.closePage(normalizedPageId)
+    }
+    this._activePageId = normalizedPageId
+    this.openPage(normalizedPageId)
     const mountedNode = findConfigNodeByPageId(this.navSession.root.children, normalizedPageId)
     if (mountedNode) {
       this.selectedNodeId = mountedNode.id
@@ -466,9 +517,9 @@ export class PageEditor {
 
   // ── 快照读取 ─────────────────────────────────────────
 
-  /** 返回当前编辑上下文的即时快照。 */
+  /** 返回当前编辑上下文的即时快照。全部从 active PageModel 读取。 */
   readSnapshot(): PageEditorSnapshot {
-    const pageId = this.workspace.activePageId
+    const pageId = this._activePageId
     const root = this.navSession.root
     const treeData = root.children
     const selectedNode = this.selectedNodeId
@@ -483,7 +534,8 @@ export class PageEditor {
       ? createNavigationNodeDraft(selectedNode)
       : null
 
-    const documents = this.workspace.documents
+    const activePage = this.getActivePage()
+
     const dirtyFiles = new Set<PageConfigFileName>()
     const parseErrors: Record<PageConfigFileName, string | null> = {
       'rule.json': null,
@@ -492,11 +544,11 @@ export class PageEditor {
       'style.css': null,
     }
 
-    for (const name of PAGE_CONFIG_FILE_NAMES) {
-      if (isPageFileDocumentDirty(documents[name])) {
-        dirtyFiles.add(name)
-      }
-      parseErrors[name] = documents[name].parseError.value
+    if (activePage) {
+      if (activePage.rule.isDirty) dirtyFiles.add('rule.json')
+      if (activePage.dataSet.isDirty) dirtyFiles.add('pagedata.json')
+      if (activePage.script.isDirty) dirtyFiles.add('script.js')
+      if (activePage.style.isDirty) dirtyFiles.add('style.css')
     }
 
     const hasAnyFileDirty = dirtyFiles.size > 0
@@ -509,17 +561,15 @@ export class PageEditor {
       selectedNodeId: this.selectedNodeId,
       navigationLocation: navLocation,
       navigationDraft: navDraft,
-      nodeTree: documents['rule.json'].model.value,
-      dataSetTool: documents['pagedata.json'].model.value,
-      ruleJson: documents['rule.json'].text.value,
-      pageDataJson: documents['pagedata.json'].text.value,
-      script: documents['script.js'].text.value,
-      style: documents['style.css'].text.value,
+      nodeTree: activePage?.rule.tree ?? null,
+      dataSetTool: activePage?.dataSet.tool ?? null,
+      ruleJson: activePage?.rule.getText() ?? '',
+      pageDataJson: activePage?.dataSet.getText() ?? '',
+      script: activePage?.script.text ?? '',
+      style: activePage?.style.text ?? '',
       dirtyFiles,
       parseErrors,
-      isLoaded: PAGE_CONFIG_FILE_NAMES.every(
-        name => documents[name].loadState.value === 'loaded',
-      ),
+      isLoaded: activePage?.isLoaded === true,
       hasAnyFileDirty,
       navigationDirty: this.navigationDirty,
       hasAnyDirty: hasAnyFileDirty || this.navigationDirty,
@@ -530,13 +580,14 @@ export class PageEditor {
 
   /**
    * 应用导航节点草稿到当前页面导航节点。
-   * 只改内存节点并标记 navigationDirty，不提交远端。
+   * 只改内存节点并标记 navigation dirty，不提交远端。
    */
   applyNavigationDraft(input: NavigationNodeDraftInput): NavigationNodeDraftApplyResult {
     const node = this.requireSelectedNode('未选中导航节点，无法编辑导航属性')
     const result = applyNavigationNodeDraftToNode(node, input)
     this.selectedNodeId = node.id
     this.markNavigationDirty('node')
+    this.getActivePage()?.navigation.markDirty()
     this.bumpRevision()
     return result
   }
@@ -586,47 +637,60 @@ export class PageEditor {
 
   /** 确保当前活动页面的四文件已加载。 */
   async ensureActivePageFilesLoaded(options?: PageEditorLoadOptions): Promise<void> {
-    await this.workspace.ensureActivePageFilesLoaded(
-      toEnsureLoadedOptions(options ?? {}),
-    )
+    const page = this.getActivePage()
+    if (!page) {
+      throw new Error('无活动页面，无法加载页面文件')
+    }
+    const loadOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {}
+    if (options?.forceReload === true) loadOptions.forceReload = true
+    if (options?.allowMissingAsEmpty === true) loadOptions.allowMissingAsEmpty = true
+    await page.load(loadOptions)
   }
 
-  /** 加载单个页面文件。 */
+  /** 加载单个页面文件到 active PageModel。 */
   async loadPageFile(name: PageConfigFileName, options?: PageEditorLoadOptions): Promise<void> {
-    await this.workspace.loadPageFile(name, options)
-  }
-
-  // ── 四文件编辑 ───────────────────────────────────────
-
-  /** 设置单个页面文件的文本内容。 */
-  setPageFileText(name: PageConfigFileName, content: string): void {
-    this.workspace.documents[name].setText(content)
-  }
-
-  /** 设置 script.js 内容。 */
-  setScript(content: string): void {
-    this.workspace.documents['script.js'].setText(content)
-  }
-
-  /** 设置 style.css 内容。 */
-  setStyle(content: string): void {
-    this.workspace.documents['style.css'].setText(content)
+    const page = this.getActivePage()
+    if (!page) {
+      throw new Error('无活动页面，无法加载页面文件')
+    }
+    const configLoader = this.configLoaderFactory()
+    const loadOpts = { forceReload: options?.forceReload === true, allowMissingAsEmpty: options?.allowMissingAsEmpty === true }
+    switch (name) {
+      case 'rule.json': await page.rule.load(page.pageId, configLoader, loadOpts); break
+      case 'pagedata.json': await page.dataSet.load(page.pageId, configLoader, loadOpts); break
+      case 'script.js': await page.script.load(page.pageId, configLoader, loadOpts); break
+      case 'style.css': await page.style.load(page.pageId, configLoader, loadOpts); break
+    }
   }
 
   // ── 四文件保存 ───────────────────────────────────────
 
-  /** 保存单个页面文件。 */
+  /** 保存单个页面文件。委托 active PageModel 子模型。 */
   async savePageFile(name: PageConfigFileName): Promise<void> {
-    await this.workspace.savePageFile(name)
+    const page = this.getActivePage()
+    if (!page) {
+      throw new Error('无活动页面，无法保存页面文件')
+    }
+    const pageId = page.pageId
+    switch (name) {
+      case 'rule.json': await page.rule.save(pageId, this.fileApi); break
+      case 'pagedata.json': await page.dataSet.save(pageId, this.fileApi); break
+      case 'script.js': await page.script.save(pageId, this.fileApi); break
+      case 'style.css': await page.style.save(pageId, this.fileApi); break
+    }
+    this.configLoaderFactory().clearCache(`/${encodeURIComponent(pageId)}/${encodeURIComponent(name)}`)
   }
 
-  /** 保存所有 dirty 的页面文件。 */
+  /** 保存所有 dirty 的页面文件。不包含导航。 */
   async saveDirtyPageFiles(): Promise<void> {
-    for (const name of PAGE_CONFIG_FILE_NAMES) {
-      if (isPageFileDocumentDirty(this.workspace.documents[name])) {
-        await this.workspace.savePageFile(name)
-      }
-    }
+    const page = this.getActivePage()
+    if (!page) return
+    const tasks: Array<Promise<void>> = []
+    if (page.rule.isDirty) tasks.push(page.rule.save(page.pageId, this.fileApi))
+    if (page.dataSet.isDirty) tasks.push(page.dataSet.save(page.pageId, this.fileApi))
+    if (page.script.isDirty) tasks.push(page.script.save(page.pageId, this.fileApi))
+    if (page.style.isDirty) tasks.push(page.style.save(page.pageId, this.fileApi))
+    await Promise.all(tasks)
   }
 
   /** 保存所有变更：dirty 文件 + 导航节点。 */
@@ -641,67 +705,80 @@ export class PageEditor {
     }
   }
 
-  /** 读取页面文件文本投影。 */
+  /** 读取页面文件只读文本投影。 */
   getPageFileText(name: PageConfigFileName): string {
-    return this.workspace.documents[name].text.value
-  }
-
-  /** 读取页面文件上次保存文本。 */
-  getPageFileSavedText(name: PageConfigFileName): string {
-    return this.workspace.documents[name].savedText.value
-  }
-
-  /** 读取页面文件解析错误。 */
-  getPageFileParseError(name: PageConfigFileName): string | null {
-    return this.workspace.documents[name].parseError.value
-  }
-
-  /** 读取页面文件加载状态。 */
-  getPageFileLoadState(name: PageConfigFileName): PageFileLoadState {
-    return this.workspace.documents[name].loadState.value
-  }
-
-  /** 判断页面文件是否可撤销。 */
-  canUndoPageFile(name: PageConfigFileName): boolean {
-    return this.workspace.documents[name].canUndo.value
-  }
-
-  /** 判断页面文件是否可重做。 */
-  canRedoPageFile(name: PageConfigFileName): boolean {
-    return this.workspace.documents[name].canRedo.value
-  }
-
-  /** 撤销页面文件编辑。 */
-  undoPageFile(name: PageConfigFileName): boolean {
-    return this.workspace.documents[name].undo()
-  }
-
-  /** 重做页面文件编辑。 */
-  redoPageFile(name: PageConfigFileName): boolean {
-    return this.workspace.documents[name].redo()
+    const page = this.getActivePage()
+    if (!page) return ''
+    switch (name) {
+      case 'rule.json': return page.rule.getText()
+      case 'pagedata.json': return page.dataSet.getText()
+      case 'script.js': return page.script.text
+      case 'style.css': return page.style.text
+    }
   }
 
   /**
-   * 创建 PageDesign live edit host。
-   * 这是 AI / 脚本验证等外层编排接入四文件编辑模型的委托出口；
-   * 具体读写仍由 workspace 的 PageFileDocument / SparkNodeTree / DataSetCrudTool 承担。
+   * 创建 PageDesign live edit host。只从 active PageModel 读写。
    */
   createPageDesignEditHost(): PageDesignEditHost {
-    return this.workspace.createPageDesignEditHost()
+    const editor = this
+    const page = (): PageModel | null => editor.getActivePage()
+    return {
+      getNodeTree: () => {
+        const p = page()
+        return p?.rule.tree ?? null
+      },
+      onNodeTreeChanged: (nodeTree) => {
+        const p = page()
+        if (!p) return
+        p.rule.tree = nodeTree instanceof SparkNodeTree
+          ? nodeTree
+          : SparkNodeTree.fromJson(nodeTree.toJSON())
+        p.rule.markDirty()
+      },
+      getDataSetTool: () => {
+        const p = page()
+        return p?.dataSet.tool ?? null
+      },
+      onDataSetChanged: (tool) => {
+        const p = page()
+        if (!p) return
+        p.dataSet.tool = tool
+        p.dataSet.markDirty()
+      },
+      readScript: () => page()?.script.text ?? '',
+      writeScript: (content) => {
+        const p = page()
+        if (!p) return
+        p.script.setText(content)
+      },
+      readStyle: () => page()?.style.text ?? '',
+      writeStyle: (content) => {
+        const p = page()
+        if (!p) return
+        p.style.setText(content)
+      },
+      getNavDraft: () => page()?.navigation.toDraft() ?? null,
+      onNavDraftChanged: (draft) => {
+        const p = page()
+        if (p) {
+          p.navigation.applyDraft(draft)
+        }
+      },
+      getNavContext: () => page()?.navigation.toDraftInput().context ?? null,
+      onNavContextChanged: (context) => {
+        const p = page()
+        if (p) {
+          p.navigation.applyContext(context)
+        }
+      },
+    }
   }
 
   // ── 预览配置构建 ─────────────────────────────────────
 
   /** 从当前四文件文档构建渲染预览配置。 */
   buildPreviewConfig(): PageEditorPreviewConfig | null {
-    const parseErrors = PAGE_CONFIG_FILE_NAMES.flatMap((name) => {
-      const error = this.getPageFileParseError(name)
-      return error ? [`${name}: ${error}`] : []
-    })
-    if (parseErrors.length > 0) {
-      throw new Error(parseErrors.join('\n'))
-    }
-
     const ruleText = this.getPageFileText('rule.json')
     const dataText = this.getPageFileText('pagedata.json')
     const scriptText = this.getPageFileText('script.js')
@@ -719,9 +796,10 @@ export class PageEditor {
 
   // ── 工具访问：节点树 ─────────────────────────────────
 
-  /** 获取当前 rule.json 的节点树编辑模型。 */
+  /** 获取当前 rule.json 的节点树编辑模型。始终返回已初始化的 tree。 */
   getNodeTree(): SparkNodeTree | null {
-    return this.workspace.documents['rule.json'].model.value
+    const page = this.getActivePage()
+    return page ? page.rule.tree : null
   }
 
   /** 获取当前 rule.json 的节点树，未加载时 fail-fast。 */
@@ -733,27 +811,23 @@ export class PageEditor {
     return tree
   }
 
-  /**
-   * 编辑节点树。
-   * run 回调中通过 SparkNodeTree 的 addNode / setProps / removeNode 等方法修改，
-   * 编辑器自动提交文档变更通知（dirty、revision、undo/redo）。
-   * 支持 sync / async run。
-   */
+  /** 编辑节点树。委托 active PageModel 子模型。 */
   async editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void> {
-    const doc = this.workspace.documents['rule.json']
-    const tree = doc.model.value
-    if (!tree) {
-      throw new Error('rule.json 未加载，无法编辑节点树')
+    const page = this.getActivePage()
+    if (!page) {
+      throw new Error('无活动页面，无法编辑节点树')
     }
-    await run(tree)
-    doc.mutate(() => { /* run 已直接修改 tree，此处仅触发文档变更通知 */ })
+    await run(page.rule.tree)
+    page.rule.markDirty()
+    this.bumpRevision()
   }
 
   // ── 工具访问：数据集 ─────────────────────────────────
 
-  /** 获取当前 pagedata.json 的数据集编辑工具。 */
+  /** 获取当前 pagedata.json 的数据集编辑工具。始终返回已初始化的 tool。 */
   getDataSetTool(): DataSetCrudTool | null {
-    return this.workspace.documents['pagedata.json'].model.value
+    const page = this.getActivePage()
+    return page ? page.dataSet.tool : null
   }
 
   /** 获取当前 pagedata.json 的数据集工具，未加载时 fail-fast。 */
@@ -765,20 +839,15 @@ export class PageEditor {
     return tool
   }
 
-  /**
-   * 编辑数据集。
-   * run 回调中通过 DataSetCrudTool 的 createTable / updateColumn 等方法修改，
-   * 编辑器自动提交文档变更通知（dirty、revision、undo/redo）。
-   * 支持 sync / async run。
-   */
+  /** 编辑数据集。委托 active PageModel 子模型。 */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
-    const doc = this.workspace.documents['pagedata.json']
-    const tool = doc.model.value
-    if (!tool) {
-      throw new Error('pagedata.json 未加载，无法编辑数据集')
+    const page = this.getActivePage()
+    if (!page) {
+      throw new Error('无活动页面，无法编辑数据集')
     }
-    await run(tool)
-    doc.mutate(() => { /* run 已直接修改 tool，此处仅触发文档变更通知 */ })
+    await run(page.dataSet.tool)
+    page.dataSet.markDirty()
+    this.bumpRevision()
   }
 
   // ── 生命周期：导航树节点 ──────────────────────────────
@@ -904,7 +973,7 @@ export class PageEditor {
       this.selectedNodeId = selected.id
       this.markNavigationDirty('node')
       await this.saveSelectedNavigationNode()
-      this.workspace.setActivePage(pageId, true)
+      this._activePageId = pageId
       this.invalidatePageList()
       this.bumpRevision()
       return { page, node: this.getSelectedNode() ?? selected }
@@ -939,8 +1008,8 @@ export class PageEditor {
   async deletePageFiles(pageId: string): Promise<void> {
     await this.lifecycle.deletePage(pageId)
     this.invalidatePageList()
-    if (this.workspace.activePageId === pageId) {
-      this.workspace.clear()
+    if (this._activePageId === pageId) {
+      this._activePageId = ''
     }
     this.bumpRevision()
   }
@@ -949,8 +1018,8 @@ export class PageEditor {
   async removeMountedPage(params: RemoveMountedPageParams): Promise<RemoveMountedPageResult> {
     const result = await this.lifecycle.removeMountedPage(params)
     this.invalidatePageList()
-    if (this.workspace.activePageId === params.pageId) {
-      this.workspace.clear()
+    if (this._activePageId === params.pageId) {
+      this._activePageId = ''
     }
     await this.reloadNavigation({ selectedNodeId: this.selectedNodeId })
     return result
@@ -967,22 +1036,35 @@ export class PageEditor {
 
   /** 获取指定文件的远端版本列表。 */
   async listRemotePageVersions(filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
-    return this.workspace.listRemotePageVersions(filename)
+    if (!this._activePageId) return []
+    return this.fileApi.listVersions(this._activePageId, filename)
   }
 
-  /** 恢复指定文件的远端历史版本。 */
+  /** 恢复指定文件的远端历史版本。主路径走子模型 restoreVersion。 */
   async restoreRemotePageVersion(version: number, filename: PageConfigFileName): Promise<void> {
-    await this.workspace.restoreRemotePageVersion(version, filename)
+    const page = this.getActivePage()
+    if (!page) {
+      throw new Error('无活动页面，无法恢复版本')
+    }
+    const configLoader = this.configLoaderFactory()
+    switch (filename) {
+      case 'rule.json': await page.rule.restoreVersion(page.pageId, version, this.fileApi, configLoader); break
+      case 'pagedata.json': await page.dataSet.restoreVersion(page.pageId, version, this.fileApi, configLoader); break
+      case 'script.js': await page.script.restoreVersion(page.pageId, version, this.fileApi, configLoader); break
+      case 'style.css': await page.style.restoreVersion(page.pageId, version, this.fileApi, configLoader); break
+    }
   }
 
   /** 为指定文件创建远端版本快照。 */
   async createRemotePageVersion(filename: PageConfigFileName): Promise<void> {
-    await this.workspace.createRemotePageVersion(filename)
+    if (!this._activePageId) return
+    await this.fileApi.createVersion(this._activePageId, filename)
   }
 
   /** 删除指定文件的远端版本。 */
   async deleteRemotePageVersion(version: number, filename: PageConfigFileName): Promise<void> {
-    await this.workspace.deleteRemotePageVersion(version, filename)
+    if (!this._activePageId) return
+    await this.fileApi.deleteVersion(this._activePageId, filename, version)
   }
 
   // ── 页面列表 ─────────────────────────────────────────
@@ -997,17 +1079,16 @@ export class PageEditor {
 
   /** 强制刷新页面列表并更新缓存。 */
   async refreshPages(): Promise<PageConfigPageSummary[]> {
-    this.pageListCache = await this.workspace.listPages()
+    this.pageListCache = await this.fileApi.listPages()
     this.bumpRevision()
     return this.pageListCache
   }
 
   /** 通知外部 SSE 事件导致页面文件变化，使缓存失效。 */
   notifyPageFileChanged(
-    pageId: string,
+    _pageId: string,
     filename: PageConfigFileName | '__created' | '__deleted' | '__bulk',
   ): void {
-    this.workspace.notifyPageFileChanged(pageId, filename)
     if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
       this.pageListCache = []
     }

@@ -14,6 +14,11 @@ import type {
   SparkNodeTreeMethodKey,
 } from '@spark-view/spark-data'
 
+import type {
+  NavigationNodeDraft,
+  NavigationContextDraft,
+} from '../navigation'
+
 export type { SparkNodeTreeMethodKey } from '@spark-view/spark-data'
 
 // ── 编辑会话核心契约 ───────────────────────────────────────
@@ -37,6 +42,10 @@ export type PageDesignEditHost = {
   writeScript?: (content: string) => void
   readStyle?: () => string
   writeStyle?: (content: string) => void
+  getNavDraft?: () => NavigationNodeDraft | null
+  onNavDraftChanged?: (patch: Partial<NavigationNodeDraft>) => void
+  getNavContext?: () => NavigationContextDraft | null
+  onNavContextChanged?: (patch: Partial<NavigationContextDraft>) => void
 }
 
 /**

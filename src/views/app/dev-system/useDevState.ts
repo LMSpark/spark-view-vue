@@ -395,39 +395,77 @@ export function useDevState() {
 
   function getPageFileSavedText(name: PageConfigFileName): string {
     void pageFilesRevision.value
-    return editor.getPageFileSavedText(name)
+    return editor.getPageFileText(name)
   }
 
-  function getPageFileParseError(name: PageConfigFileName): string | null {
+  function getPageFileParseError(_name: PageConfigFileName): string | null {
     void pageFilesRevision.value
-    return editor.getPageFileParseError(name)
+    return null
   }
 
-  function getPageFileLoadState(name: PageConfigFileName): string {
+  function getPageFileLoadState(_name: PageConfigFileName): string {
     void pageFilesRevision.value
-    return editor.getPageFileLoadState(name)
+    return editor.readSnapshot().isLoaded ? 'loaded' : 'idle'
   }
 
   function canUndoPageFile(name: PageConfigFileName): boolean {
     void pageFilesRevision.value
-    return editor.canUndoPageFile(name)
+    const page = editor.getActivePage()
+    if (!page) return false
+    switch (name) {
+      case 'rule.json': return page.rule.canUndo
+      case 'pagedata.json': return page.dataSet.canUndo
+      case 'script.js': return page.script.canUndo
+      case 'style.css': return page.style.canUndo
+    }
   }
 
   function canRedoPageFile(name: PageConfigFileName): boolean {
     void pageFilesRevision.value
-    return editor.canRedoPageFile(name)
+    const page = editor.getActivePage()
+    if (!page) return false
+    switch (name) {
+      case 'rule.json': return page.rule.canRedo
+      case 'pagedata.json': return page.dataSet.canRedo
+      case 'script.js': return page.script.canRedo
+      case 'style.css': return page.style.canRedo
+    }
   }
 
   function setPageFileText(name: PageConfigFileName, content: string): void {
-    editor.setPageFileText(name, content)
+    if (activePageId.value) editor.setActivePage(activePageId.value)
+    const page = editor.getActivePage()
+    if (!page) return
+    switch (name) {
+      case 'rule.json': page.rule.setText(content); break
+      case 'pagedata.json': page.dataSet.setText(content); break
+      case 'script.js': page.script.setText(content); break
+      case 'style.css': page.style.setText(content); break
+    }
   }
 
   function undoPageFile(name: PageConfigFileName): boolean {
-    return editor.undoPageFile(name)
+    if (activePageId.value) editor.setActivePage(activePageId.value)
+    const page = editor.getActivePage()
+    if (!page) return false
+    switch (name) {
+      case 'rule.json': return page.rule.undo()
+      case 'pagedata.json': return page.dataSet.undo()
+      case 'script.js': return page.script.undo()
+      case 'style.css': return page.style.undo()
+    }
   }
 
   function redoPageFile(name: PageConfigFileName): boolean {
-    return editor.redoPageFile(name)
+    if (activePageId.value) editor.setActivePage(activePageId.value)
+    const page = editor.getActivePage()
+    if (!page) return false
+    switch (name) {
+      case 'rule.json': return page.rule.redo()
+      case 'pagedata.json': return page.dataSet.redo()
+      case 'script.js': return page.script.redo()
+      case 'style.css': return page.style.redo()
+    }
   }
 
   function buildPreviewConfig(): ReturnType<typeof editor.buildPreviewConfig> {

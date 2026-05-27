@@ -71,7 +71,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
   }
 
   function isFileDirty(name: PageConfigFileName): boolean {
-    return state.isDocumentDirty(name) || getDisplayText(name) !== state.getPageFileSavedText(name)
+    return state.isDocumentDirty(name) || hasDraft(name)
   }
 
   function clearCommitTimer(): void {

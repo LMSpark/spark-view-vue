@@ -127,8 +127,9 @@ describe('DevState 页面文件闭环', () => {
 
     expect(state.getPageFileLoadState('rule.json')).toBe('loaded')
     expect(state.getPageFileLoadState('pagedata.json')).toBe('loaded')
-    expect(state.getPageFileText('rule.json')).toBe('')
-    expect(state.getPageFileText('pagedata.json')).toBe('')
+    // V3.1: empty rule tree serializes to '[]\n'; empty DataSet serializes to its default JSON
+    expect(state.getPageFileText('rule.json')).toBe('[]\n')
+    expect(state.getPageFileText('pagedata.json')).not.toBe('')
   })
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {

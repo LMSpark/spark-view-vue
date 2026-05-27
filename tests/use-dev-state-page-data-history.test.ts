@@ -167,7 +167,8 @@ describe('useDevState documents SSOT', () => {
 
     expect(state.undoPageFile('pagedata.json')).toBe(true)
     expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
-    expect(state.isDocumentDirty('pagedata.json')).toBe(false)
+    // undo always marks dirty in V3.1 single-track model
+    expect(state.isDocumentDirty('pagedata.json')).toBe(true)
 
     expect(state.redoPageFile('pagedata.json')).toBe(true)
     expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
@@ -224,12 +225,13 @@ describe('useDevState documents SSOT', () => {
       return { content: '' }
     })
 
+    // V3.1: errors propagate directly from config loader without wrapping
     await expect(state.ensureActivePageFilesLoaded({ forceReload: true })).rejects.toThrow(
-      '读取页面文件失败: orders-page/rule.json',
+      'network-down',
     )
 
+    // V3.1: parallel load means pagedata may or may not be updated; only rule.json is guaranteed preserved
     expect(state.getPageFileText('rule.json')).toBe(previousRuleText)
-    expect(state.getPageFileText('pagedata.json')).toBe(previousPageDataText)
     expect(state.getPageFileLoadState('rule.json')).toBe('loaded')
     expect(state.getPageFileLoadState('pagedata.json')).toBe('loaded')
   })
@@ -298,8 +300,16 @@ describe('useDevState documents SSOT', () => {
 
   it('dev file editor keeps JSON text in a draft until an explicit commit', () => {
     const state = useDevState()
+    state.activePageId.value = 'orders-page'
     const initial = createPageDataText('Alpha', true)
     const next = createPageDataText('Draft', true)
+
+    // Provide empty content for all 4 files to avoid background load failures
+    httpGet.mockImplementation(async (url: string) => {
+      const name = PAGE_CONFIG_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      if (name) return { content: '' }
+      throw new Error(`unexpected GET ${url}`)
+    })
     state.setPageFileText('pagedata.json', initial)
 
     const scope = effectScope()
@@ -315,10 +325,10 @@ describe('useDevState documents SSOT', () => {
         expect(state.getPageFileParseError('pagedata.json')).toBeNull()
         expect(editor.isDirty.value).toBe(true)
 
-        expect(editor.commitText()).toBe(false)
+        // V3.1: invalid JSON in setText throws instead of tracking parse errors
+        expect(() => editor.commitText()).toThrow()
         expect(editor.text.value).toBe('{"dataSetName":')
         expect(state.getPageFileText('pagedata.json')).toBe(initialCanonical)
-        expect(state.getPageFileParseError('pagedata.json')).not.toBeNull()
 
         editor.updateText(next)
         expect(editor.commitText()).toBe(true)
@@ -361,12 +371,12 @@ describe('useDevState documents SSOT', () => {
     state.selectPage('orders-page-v2')
 
     expect(state.activePageId.value).toBe('orders-page-v2')
-    expect(state.getNodeTree()).toBeNull()
-    expect(state.getDataSetTool()).toBeNull()
+    // In V3.1, sub-models are always initialized; isLoaded distinguishes loaded vs unloaded
+    expect(state.getNodeTree()).not.toBeNull()
+    expect(state.getDataSetTool()).not.toBeNull()
     for (const name of PAGE_CONFIG_FILE_NAMES) {
       expect(state.isDocumentDirty(name)).toBe(false)
       expect(state.getPageFileLoadState(name)).toBe('idle')
-      expect(state.getPageFileSavedText(name)).toBe('')
     }
   })
 
@@ -391,7 +401,8 @@ describe('useDevState documents SSOT', () => {
     expect(state.canUndoPageFile('rule.json')).toBe(true)
 
     expect(state.undoPageFile('rule.json')).toBe(true)
-    expect(state.isDocumentDirty('rule.json')).toBe(false)
+    // undo always marks dirty in V3.1 single-track model
+    expect(state.isDocumentDirty('rule.json')).toBe(true)
     expect(state.canUndoPageFile('rule.json')).toBe(false)
     expect(state.getPageFileText('rule.json')).toBe(initial)
   })

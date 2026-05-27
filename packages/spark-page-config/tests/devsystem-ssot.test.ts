@@ -256,10 +256,11 @@ describe('PageEditor page file and lifecycle SSOT', () => {
     await editor.ensureActivePageFilesLoaded()
 
     expect(loader.loadPageFileContentSpy).toHaveBeenCalledTimes(4)
-    expect(editor.getPageFileLoadState('rule.json')).toBe('loaded')
+    expect(editor.readSnapshot().isLoaded).toBe(true)
     expect(editor.getPageFileText('script.js')).toBe('export default {}')
 
-    editor.setPageFileText('script.js', 'console.log("changed")')
+    const page = editor.getActivePage()!
+    page.script.setText('console.log("changed")')
     expect(editor.readSnapshot().dirtyFiles.has('script.js')).toBe(true)
     await editor.savePageFile('script.js')
 
@@ -281,9 +282,10 @@ describe('PageEditor page file and lifecycle SSOT', () => {
 
     editor.setActivePage('orders')
 
-    await expect(editor.ensureActivePageFilesLoaded()).rejects.toThrow('读取页面文件失败: orders/script.js')
-    expect(editor.getPageFileText('script.js')).toBe('')
-    expect(editor.getPageFileLoadState('script.js')).toBe('idle')
+    // ensureActivePageFilesLoaded 委托给 PageModel.load，缺失文件时抛出子模型错误
+    await expect(editor.ensureActivePageFilesLoaded()).rejects.toThrow('orders/script.js')
+    // 加载失败时 PageModel 未标记为已加载
+    expect(editor.readSnapshot().isLoaded).toBe(false)
   })
 
   it('lists pages and restores remote versions through PageEditor cache boundaries', async () => {

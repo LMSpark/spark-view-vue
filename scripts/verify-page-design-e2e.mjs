@@ -81,7 +81,7 @@ function parseArgs(argv) {
     requestText: process.env.AI_PAGE_REQUEST ?? DEFAULT_REQUEST_TEXT,
     maxRounds: numberFromEnv(process.env.AI_MAX_TOOL_ROUNDS, DEFAULT_MAX_ROUNDS),
     turnTimeoutMs: numberFromEnv(process.env.AI_TURN_TIMEOUT_MS, DEFAULT_TURN_TIMEOUT_MS),
-    // ── 工作区 Host 模式 ──
+    // ── PageEditor Host 模式 ──
     hostMode: process.env.AI_HOST_MODE === 'inline' ? 'inline' : 'builtin',
     // ── 输出控制 ──
     printFiles: process.env.AI_PRINT_FILES === '1',
@@ -262,8 +262,8 @@ function printHelp() {
     '  --max-rounds <n>           最大工具调用轮次（默认 32）',
     '  --turn-timeout-ms <n>      LLM turn 超时毫秒（默认 240000）',
     '',
-    '工作区 Host 模式:',
-    '  --host-mode builtin|inline  builtin 使用 workspace 内置方法，inline 手动组装（默认 builtin）',
+    'PageEditor Host 模式:',
+    '  --host-mode builtin|inline  两种模式均通过 PageEditor live edit host 读写四文件（默认 builtin）',
     '',
     '输出控制:',
     '  --print-files              输出中附带四文件完整内容',
@@ -422,7 +422,7 @@ function createAuthHeaders(options, auth) {
 }
 
 // ============================================================================
-// 第 5 层：PageConfig 工作区生命周期
+// 第 5 层：PageEditor 页面生命周期
 // ============================================================================
 
 // PAGE_DESIGN_AI_TRACE[e2e-page-editor]: 把 pages-config API 包装成 PageEditor，pageDesign 工具只通过 editor 修改四文件。
@@ -642,7 +642,7 @@ function assertAppendMessages(body, input) {
 }
 
 // ============================================================================
-// 第 7 层：工作区 Host（两种模式，通过 --host-mode 切换）
+// 第 7 层：PageEditor Host（两种模式，通过 --host-mode 切换）
 // ============================================================================
 
 // builtin 模式：使用 PageEditor 委托出的 live edit host。
@@ -1350,7 +1350,7 @@ async function run(options) {
   await loadTargetPage(editor, options.pageId)
   const before = readEditorFiles(editor)
 
-  // 3. 创建 workspace host（根据 --host-mode 选择实现）
+  // 3. 创建 PageEditor host（根据 --host-mode 选择实现）
   const host = options.hostMode === 'inline'
     ? createInlineHost(editor)
     : createBuiltinHost(editor)

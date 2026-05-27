@@ -45,24 +45,6 @@ export type {
 } from './page-edit-session'
 
 export {
-  PageConfigEditWorkspace,
-  PageConfigFileLifecycle,
-} from './page-edit-workspace'
-
-export type {
-  CreateMountedPageParams,
-  CreateMountedPageResult,
-  PageConfigEditWorkspaceOptions,
-  PageConfigFileLifecycleOptions,
-} from './page-edit-workspace'
-
-export type {
-  PageNavigationMountParams,
-  RemoveMountedPageParams,
-  RemoveMountedPageResult,
-} from './page-edit-workspace'
-
-export {
   EMPTY_RULE_EDITOR_COMPONENT_METADATA,
   createRuleEditorComponentMetadata,
   createRuleJsonSchema,
