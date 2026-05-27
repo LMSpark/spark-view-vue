@@ -4,18 +4,18 @@
  * │  Business Registration Contract                                              │
  * │                                                                              │
  * │  本文件定义业务接入 AI Host 的注册入口——外部系统将自身能力封装为                │
- * │  AiModuleRuntime 后，投影成 AiAgentRegistration，再交给            │
- * │  AiAgent.reg/ensureReg 按 alias 暴露给业务层运行。                               │
+ * │  AiModuleRuntime 后，投影成 AiAgentRegistration，再交给 AiAgentHost              │
+ * │  register/ensure 按 alias 暴露给业务层运行。                                     │
  * │                                                                              │
  * │  数据流向：                                                                   │
  * │    外部系统 ──(封装)──> AiModuleRuntime                                  │
  * │                    ──(包装)──> AiAgentRegistration                     │
- * │                    ──(注册)──> AiAgent.reg/ensureReg ──> AiAgentBusiness        │
+ * │                    ──(注册)──> AiAgentHost.register/ensure ──> AiAgentBusiness  │
  * │                    ──(驱动)──> AiAgentToolLoopRunner ──> LLM                   │
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import type { AiModuleRuntime } from '../../modules/runtime/module-semantic-runtime'
+import type { AiModuleRuntime } from '../../modules/runtime/ai-module-runtime'
 import type { AiJsonParams } from '../../json'
 import type { AiAgentSessionStore } from '../session/session-types'
 import type { AiAgentInputContract } from './business-task'

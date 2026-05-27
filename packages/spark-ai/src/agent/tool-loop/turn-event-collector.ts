@@ -2,7 +2,7 @@
  * AI turn APP SSE event collector.
  *
  * This module is pure orchestration: callers provide an APP SSE source and this
- * collector aggregates neutral llm-frame events into one turn result.
+ * collector aggregates neutral ai-frame events into one turn result.
  */
 
 import type { AiAgentStreamEvent } from '../chat/chat-types'
@@ -15,19 +15,19 @@ import type {
   AiAgentTransportToolCall,
 } from '../transport/transport-types'
 
-const LLM_FRAME_EVENT_NAME = 'llm-frame'
+const AI_FRAME_EVENT_NAME = 'llm-frame'
 
 const AI_TURN_EVENT_TIMEOUT_MS = 300_000
 
 type AiTurnEventKind = 'delta' | 'reasoning' | 'result' | 'error' | 'done'
 
-type LlmFramePayload = Readonly<{
+type AiAgentFramePayload = Readonly<{
   sessionId: string
   turnId: string
-  frame: LlmFrame
+  frame: AiAgentFrame
 }>
 
-type LlmFrame = Readonly<{
+type AiAgentFrame = Readonly<{
   type: string
   data?: unknown
 }>
@@ -47,8 +47,8 @@ export function createTurnEventCollector(options: TurnEventCollectorInput): Turn
   const { input, source } = options
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
   const state = new TurnEventState(input)
-  const disposers = [source.on(LLM_FRAME_EVENT_NAME, (event) => {
-    const payload = readMatchingLlmFrame(event, input)
+  const disposers = [source.on(AI_FRAME_EVENT_NAME, (event) => {
+    const payload = readMatchingAiAgentFrame(event, input)
     if (payload === null) return
     state.handle(toTurnEventKind(payload.frame), event, payload.frame)
   })]
@@ -108,7 +108,7 @@ class TurnEventState {
     this.sink = sink
   }
 
-  public handle(kind: AiTurnEventKind, event: AiAgentAppSseEvent, frame: LlmFrame): void {
+  public handle(kind: AiTurnEventKind, event: AiAgentAppSseEvent, frame: AiAgentFrame): void {
     if (this.settled) return
     this.input.onStreamEvent?.(toStreamEvent(this.input, kind, frame))
     if (!event.ok || kind === 'error') {
@@ -175,11 +175,11 @@ class TurnEventState {
   }
 }
 
-function readMatchingLlmFrame(
+function readMatchingAiAgentFrame(
   event: AiAgentAppSseEvent,
   input: AiAgentStreamTurnInput,
-): LlmFramePayload | null {
-  if (event.name !== LLM_FRAME_EVENT_NAME || !isRecord(event.data)) return null
+): AiAgentFramePayload | null {
+  if (event.name !== AI_FRAME_EVENT_NAME || !isRecord(event.data)) return null
   const sessionId = event.data['sessionId']
   const turnId = event.data['turnId']
   const frame = event.data['frame']
@@ -198,7 +198,7 @@ function readMatchingLlmFrame(
   }
 }
 
-function toTurnEventKind(frame: LlmFrame): AiTurnEventKind {
+function toTurnEventKind(frame: AiAgentFrame): AiTurnEventKind {
   if (frame.type === 'error') return 'error'
   if (frame.type === 'done') return 'done'
   if (frame.type === 'message.completed') return 'result'
@@ -211,7 +211,7 @@ function toTurnEventKind(frame: LlmFrame): AiTurnEventKind {
 function toStreamEvent(
   input: AiAgentStreamTurnInput,
   kind: AiTurnEventKind,
-  frame: LlmFrame,
+  frame: AiAgentFrame,
 ): AiAgentStreamEvent {
   return {
     type: kind,

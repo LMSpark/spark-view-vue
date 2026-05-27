@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * host/business/business-registry.ts — 业务注册表
+ * agent/business/business-registry.ts — 业务注册表
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】Host 层的业务注册中心。管理所有 AiAgentRegistration，
@@ -8,7 +8,7 @@
  *
  * 【注册流程】
  *   1. 业务方构造 AiAgentRegistration
- *   2. AiAgent.reg/ensureReg 委托到内部 registry
+ *   2. AiAgentHost.register/ensure 委托到内部 registry
  *   3. 内部检查 moduleId 不重复 → 存入 Map
  *
  * 【消费方】business-session（resolveRegistration）、Host 初始化代码

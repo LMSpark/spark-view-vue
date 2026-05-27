@@ -13,7 +13,7 @@ import {
   type AiAgentPrepareSessionInput,
   type AiAgentStreamTurnInput,
   type AiAgentTurnCallbacks,
-} from '@spark-view/spark-ai'
+} from '@spark-view/spark-ai/agent'
 import { isRecord } from '@spark-view/spark-utils'
 import { http } from '@/services/http'
 import { createAppSseEventSource } from '@/services/sse-events'

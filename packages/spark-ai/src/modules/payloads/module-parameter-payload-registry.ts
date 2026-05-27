@@ -1,5 +1,5 @@
 /**
- * module-semantic/payloads/module-parameter-payload-registry.ts — 模块参数荷载注册表
+ * modules/payloads/module-parameter-payload-registry.ts — 模块参数荷载注册表
  *
  * 参数 payload 是“某个模块 function 在构造复杂参数前需要查阅的外部知识”。
  * 例如 pageDesign.node-tree 的 SparkNode props 指南来自组件目录。

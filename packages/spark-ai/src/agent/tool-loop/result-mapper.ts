@@ -3,8 +3,8 @@
  * │  AI HOST · 操作结果映射器                                                     │
  * │  Operation Result → Function Call Result Mapper                              │
  * │                                                                              │
- * │  本模块负责将 module-semantic 层的 AiModuleResult 转换为                │
- * │  Host 层的 AiAgentFunctionCallResult。两条链路的错误/成功结构不同，             │
+ * │  本模块负责将 modules 层的 AiModuleResult 转换为 agent 层的                    │
+ * │  AiAgentFunctionCallResult。两条链路的错误/成功结构不同，                      │
  * │  需要做语义投影。                                                             │
  * │                                                                              │
  * │  转换规则：                                                                   │

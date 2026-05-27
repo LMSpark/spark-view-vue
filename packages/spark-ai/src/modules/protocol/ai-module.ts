@@ -1,5 +1,5 @@
 /**
- * module-semantic · 模块类型核心
+ * modules · 模块类型核心
  *
  * 协议层级：第 6 层（核心层，依赖所有下层协议文件）
  * 核心职责：AiModule 是协议的中心抽象。每个实例描述一个业务能力模块的元数据和运行时行为，
@@ -185,7 +185,8 @@ export class AiModule {
     if (this.attributes.length > 0 && options.attributeAccessor === undefined) {
       throw new Error(`attributeAccessor for "${kind}" is required when attributes are declared`)
     }
-    if (this.functions.length > 0 && options.runner === undefined) {
+    const hasFunctionRunner = options.runner !== undefined || this.runFunction !== AiModule.prototype.runFunction
+    if (this.functions.length > 0 && !hasFunctionRunner) {
       throw new Error(`runner for "${kind}" is required when functions are declared`)
     }
     if (this.children.length > 0 && options.list === undefined) {

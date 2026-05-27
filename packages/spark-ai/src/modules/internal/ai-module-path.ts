@@ -1,5 +1,5 @@
 /**
- * module-semantic · AiModule parent topology helpers.
+ * modules · AiModule parent topology helpers.
  *
  * LLM-visible tool names and payload lookup steps must be derived from the
  * registered AiModule graph. Missing parents and parent cycles are startup

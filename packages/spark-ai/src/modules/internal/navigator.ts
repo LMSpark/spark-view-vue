@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * module-semantic/internal/navigator.ts — 路径导航器 + 发现工具
+ * modules/internal/navigator.ts — 路径导航器 + 发现工具
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】协议层的"空间感知"中枢。统一负责三类操作：
@@ -40,7 +40,7 @@ import {
   type AiModulePathContext,
   type AiModulePathSegment,
 } from '../protocol'
-import type { AiModuleRegistry } from './module-kind-registry'
+import type { AiModuleRegistry } from './ai-module-registry'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型
@@ -367,6 +367,6 @@ function parentKindMismatch(moduleKind: AiModule, actualParentKind: string): AiM
     expectedParentKind === undefined
       ? `kind "${moduleKind.kind}" 是根 kind，不能挂在父 kind "${actualParentKind}" 下`
       : `kind "${moduleKind.kind}" 的 parentKind 是 "${expectedParentKind}"，不能挂在父 kind "${actualParentKind}" 下`,
-    '请按 queryModules/guideFunction 返回的 kindPath 构造实例路径和 $paths。',
+    '请按 module_query/module_guide 返回的 kindPath 构造 module_call.path。',
   )
 }

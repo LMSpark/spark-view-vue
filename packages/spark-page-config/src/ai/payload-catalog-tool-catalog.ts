@@ -8,17 +8,8 @@
 import {
   AiModule,
   AiModulePayloadRegistry,
-  type AiModuleFunctionMetadata,
-  type AiModuleInstanceRef,
-  type AiModuleResult,
-  type AiModulePathContext,
 } from '@spark-view/spark-ai/modules'
-import type {
-  AiModulePayloadGuide,
-  AiModulePayloadProvider,
-  AiModulePayloadQueryFilter,
-  AiModulePayloadSummary,
-} from '@spark-view/spark-ai'
+import type * as SparkAiModules from '@spark-view/spark-ai/modules'
 import type { AiJsonSchema, AiJsonValue, AiJsonSchemaObject } from '@spark-view/spark-ai/json'
 import {
   booleanSchema,
@@ -30,7 +21,7 @@ import type { PageDesignServiceContext } from '../design/page-edit-session'
 import type { PageDesignServiceResult } from '../design/page-edit-session'
 import { PageDesignService } from '../design/page-design-service'
 import componentCatalogPayload from './payloads/component-catalog.json'
-import { createCurrentPageRef } from './page-design-helpers'
+import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
 import {
   PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
   PAGE_DESIGN_NODE_TREE_KIND,
@@ -38,6 +29,14 @@ import {
 } from './page-design-kind-ids'
 
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
+type AiModuleFunctionMetadata = SparkAiModules.AiModuleFunctionMetadata
+type AiModuleInstanceRef = SparkAiModules.AiModuleInstanceRef
+type AiModulePathContext = SparkAiModules.AiModulePathContext
+type AiModulePayloadGuide = SparkAiModules.AiModulePayloadGuide
+type AiModulePayloadProvider = SparkAiModules.AiModulePayloadProvider
+type AiModulePayloadQueryFilter = SparkAiModules.AiModulePayloadQueryFilter
+type AiModulePayloadSummary = SparkAiModules.AiModulePayloadSummary
+type AiModuleResult<T> = SparkAiModules.AiModuleResult<T>
 type PayloadCatalogActionRunner = (
   registry: AiModulePayloadRegistry,
   args: Readonly<Record<string, AiJsonValue>>,
@@ -208,6 +207,13 @@ export class PageDesignPayloadCatalogAiModule extends AiModule {
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       functions: PAYLOAD_CATALOG_ACTIONS,
       children: [],
+      find: (ctx, childKind, query) => findCurrentPageInstance({
+        ctx,
+        childKind,
+        query,
+        ownKind: PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
+        label: '当前页面组件荷载目录',
+      }),
     })
     this.registry = options.registry ?? createPageDesignPayloadRegistry()
     this.service = options.service
@@ -272,7 +278,7 @@ function runPayloadCatalogAction(
   return PageDesignService.failure(
     'UNKNOWN_ACTION',
     `payload-catalog 不支持动作 "${actionName}"`,
-    '请先调用 describeKind("payload-catalog") 查看动作表。',
+    '请先调用 module_guide({ kind: "payload-catalog" }) 查看动作表。',
   )
 }
 

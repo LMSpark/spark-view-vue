@@ -25,7 +25,7 @@ import type {
   PageDesignServiceContext,
 } from '../design/page-edit-session'
 import type { PageDesignService } from '../design/page-design-service'
-import { createCurrentPageRef } from './page-design-helpers'
+import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
 
 // ── 参数 schema 与使用规则 ────────────────────────────────
 
@@ -138,6 +138,7 @@ export class PageDesignLifecycleAiModule extends AiModule {
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       functions: LIFECYCLE_ACTIONS,
       children: [],
+      find: (ctx, childKind, query) => findCurrentPageInstance({ ctx, childKind, query, ownKind: 'lifecycle', label: '当前页面生命周期' }),
     })
     this.service = options.service
     this.contextFactory = options.contextFactory

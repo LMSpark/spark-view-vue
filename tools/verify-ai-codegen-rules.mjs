@@ -90,7 +90,7 @@ const publicSurfaceAllowlist = new Set([
 ])
 
 const publicClassMethodSurfaces = new Map([
-  ['packages/spark-ai/src/modules/runtime/module-semantic-runtime.ts:AiModuleRuntime', new Set([
+  ['packages/spark-ai/src/modules/runtime/ai-module-runtime.ts:AiModuleRuntime', new Set([
     'register',
     'getTools',
     'executeTool',

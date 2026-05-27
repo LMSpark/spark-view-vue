@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * host/business/business-session.ts — 业务会话管理
+ * agent/business/business-session.ts — 业务会话管理
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】Host 层的会话编排核心。连接业务注册、会话存储、工具循环
@@ -310,8 +310,8 @@ export async function runAiAgent<TInput extends AiJsonParams = AiJsonParams>(
  * 3. 直接使用 AiModuleRuntime 固定协议工具规约
  * 4. 返回 AiAgentStartSessionResult（含 session + tools）
  */
-// PAGE_DESIGN_AI_TRACE[host-session-start]: startAiAgentRegistrationSession 负责调用业务 onStartSession 并投影 module-semantic 工具；pageDesign 的工具列表从这里进入 LLM。
-// PAGE_DESIGN_REFACTOR_SOURCE[tool-schema-projection]: module-semantic 工具投影成 LLM function schema 的源头；不要在业务 mjs 中手写工具 schema。
+// PAGE_DESIGN_AI_TRACE[agent-session-start]: startAiAgentRegistrationSession 负责调用业务 onStartSession 并投影 modules 固定工具；pageDesign 的工具列表从这里进入 LLM。
+// PAGE_DESIGN_REFACTOR_SOURCE[tool-schema-projection]: modules 工具投影成 LLM function schema 的源头；不要在业务 mjs 中手写工具 schema。
 export async function startAiAgentRegistrationSession<TInput extends AiJsonParams>(
   registration: AiAgentRegistration<TInput>,
   context: AiAgentRuntimeContext,

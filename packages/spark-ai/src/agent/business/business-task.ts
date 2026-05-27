@@ -5,7 +5,7 @@ import {
   type AiJsonSchemaObject,
   type AiJsonValue,
 } from '../../json'
-import type { AiModuleRuntime } from '../../modules/runtime/module-semantic-runtime'
+import type { AiModuleRuntime } from '../../modules/runtime/ai-module-runtime'
 import type { AiAgentChatMessage, AiAgentChatRequest } from '../chat/chat-types'
 import type { AiAgentSessionStore } from '../session/session-types'
 import type {

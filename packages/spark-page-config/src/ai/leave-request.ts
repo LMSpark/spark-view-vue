@@ -1,5 +1,5 @@
 /**
- * 人工请假模块：草稿服务 + module-semantic 业务注册。
+ * 人工请假模块：草稿服务 + modules/agent 业务注册。
  *
  * 由 leave-request-service.ts + leave-request-module.ts 合并而成。
  */
@@ -379,7 +379,7 @@ const LEAVE_REQUEST_ACTIONS: readonly AiModuleFunctionMetadata[] = [
     },
     usageRules: [
       '只写入用户明确表达的字段；缺少请假人、日期、原因或审批人时先追问确认。',
-      '填写 applicantCode 或 approverCode 前，先在当前 manual-leave 实例下 findInstance(childKind="leave-person", query) 查询人员实例；人员编码取 AiModuleInstanceRef.id。',
+      '填写 applicantCode 或 approverCode 前，先在当前 manual-leave 实例下调用 module_find({ path, childKind: "leave-person", query }) 查询人员实例；人员编码取 AiModuleInstanceRef.id。',
       '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算，无法唯一确定时先追问。',
       '写入 startDate/endDate/totalDays 前，必须保证三者一致；请假 N 天按自然日包含起止日计算。',
       '只有调用 setDraftFields 成功后，才能说字段已记录或草稿已更新。',
@@ -534,7 +534,7 @@ class LeaveRequestPersonAiModule extends AiModule {
         get: (ctx, attrName) => {
           const person = people.findByCode(ctx.segment?.id ?? '')
           if (person === undefined) {
-            return AiModuleResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment?.id ?? ''}`, '先通过 findInstance 查询可用 leave-person 实例。')
+            return AiModuleResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment?.id ?? ''}`, '先通过 module_find 查询可用 leave-person 实例。')
           }
           return AiModuleResult.ok(personAttribute(person, attrName))
         },
@@ -631,7 +631,7 @@ export function createLeaveRequestBusinessRegistration(
       service.getDraft(context.moduleInstanceId)
     },
     afterFunctionCall: (call) => {
-      const actionName = readBusinessFunctionName(call.toolName)
+      const actionName = readBusinessFunctionName(call.toolName, call.args)
       if (actionName === 'submitDraft' && call.result.ok) {
         return {
           status: 'complete',
@@ -677,10 +677,14 @@ function toServiceContext(ctx: AiModulePathContext | AiAgentRuntimeContext): Lea
   }
 }
 
-function readBusinessFunctionName(toolName: string): string | null {
-  const sep = toolName.lastIndexOf('_')
-  if (sep <= 0 || sep === toolName.length - 1) return null
-  return toolName.slice(sep + 1)
+function readBusinessFunctionName(
+  toolName: string,
+  args: Readonly<Record<string, AiJsonValue>>,
+): string | null {
+  if (toolName === 'module_call' && typeof args['functionName'] === 'string') {
+    return args['functionName']
+  }
+  return null
 }
 
 function submittedLeaveMessage(result: AiAgentFunctionCallResult<unknown>): string {
@@ -716,10 +720,10 @@ function createLeaveRequestSystemPrompt(now: Date): string {
     `- 当前日期：${currentDate}`,
     `- 当前 UTC 时间：${now.toISOString()}`,
     `- 当前时区：${timeZone}`,
-    '- 人员编码来源：在当前 manual-leave 实例下使用 findInstance(path, "leave-person", { name/keyword/role }) 查询人员实例；返回的 AiModuleInstanceRef.id 即人员编码。',
+    '- 人员编码来源：在当前 manual-leave 实例下使用 module_find({ path, childKind: "leave-person", query: { name/keyword/role } }) 查询人员实例；返回的 AiModuleInstanceRef.id 即人员编码。',
     '- 填写 applicantCode 或 approverCode 时，先查询 leave-person 实例，再把人员实例 id 写入草稿字段。',
-    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 guideHumanQuestion，再追问用户；日期来源只使用当前运行时上下文和用户确认。',
-    '缺少请假人、类型、起止日期、天数、事由或提交确认时，先用 guideHumanQuestion 生成反问指南，再用自然语言向用户补问。',
+    '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 human_question，再追问用户；日期来源只使用当前运行时上下文和用户确认。',
+    '缺少请假人、类型、起止日期、天数、事由或提交确认时，先用 human_question 生成反问指南，再用自然语言向用户补问。',
   ].join('\n')
 }
 

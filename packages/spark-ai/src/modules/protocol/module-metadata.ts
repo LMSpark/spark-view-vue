@@ -1,5 +1,5 @@
 /**
- * module-semantic · 模块元数据（声明契约）
+ * modules · 模块元数据（声明契约）
  *
  * 协议层级：第 4 层（依赖 module-context + schema）
  * 核心职责：定义 AiModule 的所有声明式元数据类型。它们是纯数据契约，描述一个业务能力模块

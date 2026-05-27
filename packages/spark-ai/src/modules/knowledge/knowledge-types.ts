@@ -1,5 +1,5 @@
 /**
- * Module-semantic knowledge projection — type definitions.
+ * AiModule knowledge projection — type definitions.
  */
 
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
@@ -175,19 +175,18 @@ export type AiModuleKnowledgeFunctionFilter = Readonly<{
 }>
 
 export type AiModuleKnowledgeFunctionGuideInput = Readonly<{
-  toolName?: string
   kind?: string
   functionName?: string
 }>
 
-export type ModuleSemanticHumanQuestionGuideInput = Readonly<{
+export type AiModuleHumanQuestionGuideInput = Readonly<{
   context: string
   reason: string
   missingFacts?: readonly string[]
   candidateOptions?: readonly string[]
 }>
 
-export type ModuleSemanticHumanQuestionGuide = Readonly<{
+export type AiModuleHumanQuestionGuide = Readonly<{
   kind: string
   shouldAskHuman: boolean
   stopToolCalls: boolean
@@ -205,7 +204,6 @@ export type ModuleSemanticHumanQuestionGuide = Readonly<{
 export type ParsedKnowledgeFunction = Readonly<{
   kind: string
   functionName: string
-  kindPathFromTool?: readonly string[]
 }>
 
 export type PayloadCatalogDescriptor = Readonly<{

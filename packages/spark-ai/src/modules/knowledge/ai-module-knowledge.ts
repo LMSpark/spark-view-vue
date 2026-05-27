@@ -1,5 +1,5 @@
 /**
- * Module-semantic knowledge projection.
+ * AiModule knowledge projection.
  *
  * The projector turns the registered AiModule graph into module summaries,
  * function summaries, function guides, human-question guidance, and a compact
@@ -10,8 +10,8 @@
  * knowledge-support.ts. This file owns only the projector class.
  */
 
-import type { AiModuleRegistry } from '../internal/module-kind-registry'
-import { resolveAiModulePath } from '../internal/module-kind-path'
+import type { AiModuleRegistry } from '../internal/ai-module-registry'
+import { resolveAiModulePath } from '../internal/ai-module-path'
 import {
   AiModuleResult,
 } from '../protocol'
@@ -20,14 +20,12 @@ import type {
   AiModuleKnowledgeFunctionGuide,
   AiModuleKnowledgeFunctionGuideInput,
   AiModuleKnowledgeFunctionSummary,
+  AiModuleHumanQuestionGuide,
+  AiModuleHumanQuestionGuideInput,
   AiModuleKnowledgeKindLayer,
   AiModuleKnowledgeModuleFilter,
   AiModuleKnowledgeModuleSummary,
   AiModuleKnowledgeSnapshot,
-} from './knowledge-types'
-import type {
-  ModuleSemanticHumanQuestionGuide,
-  ModuleSemanticHumanQuestionGuideInput,
 } from './knowledge-types'
 import {
   buildHumanQuestion,
@@ -183,8 +181,8 @@ export class AiModuleKnowledgeProjector {
     if (parsed === null) {
       return AiModuleResult.failCode(
         'INVALID_GUIDE_REQUEST',
-        'guideFunction requires either toolName or kind + functionName.',
-        'Use toolName format "<kindPath>_<functionName>", or pass kind and functionName separately.',
+        'module_guide requires kind and functionName for function guidance.',
+        'Call module_guide({ kind, functionName }) after module_query({ includeFunctions: true }).',
       )
     }
 
@@ -198,22 +196,12 @@ export class AiModuleKnowledgeProjector {
     }
     const allKinds = this.kinds.list()
     const actualKindPath = resolveAiModulePath(moduleKind, allKinds)
-    if (parsed.kindPathFromTool !== undefined) {
-      if (parsed.kindPathFromTool.length !== actualKindPath.length
-        || parsed.kindPathFromTool.some((segment, i) => segment !== actualKindPath[i])) {
-        return AiModuleResult.failCode(
-          'KIND_PATH_MISMATCH',
-          `toolName kindPath "${parsed.kindPathFromTool.join('_')}" does not match registered kind path "${actualKindPath.join('_')}".`,
-          'Call queryModules() or describeKind(kind) to verify the correct kindPath.',
-        )
-      }
-    }
     const fn = moduleKind.findFunction(parsed.functionName)
     if (fn === undefined) {
       return AiModuleResult.failCode(
         'FUNCTION_NOT_FOUND',
         `function "${parsed.functionName}" is not declared on kind "${parsed.kind}".`,
-        'Call queryFunctions({ kind }) or describeKind(kind) before retrying.',
+        'Call module_query({ kind, includeFunctions: true }) or module_guide({ kind }) before retrying.',
       )
     }
     return AiModuleResult.ok(createGuide({
@@ -226,8 +214,8 @@ export class AiModuleKnowledgeProjector {
   }
 
   public guideHumanQuestion(
-    input: ModuleSemanticHumanQuestionGuideInput,
-  ): AiModuleResult<ModuleSemanticHumanQuestionGuide> {
+    input: AiModuleHumanQuestionGuideInput,
+  ): AiModuleResult<AiModuleHumanQuestionGuide> {
     const context = input.context.trim()
     const reason = input.reason.trim()
     if (context.length === 0 || reason.length === 0) {
@@ -282,7 +270,7 @@ export class AiModuleKnowledgeProjector {
       ...FIXED_PROTOCOL_TOOL_ROUTING_LINES,
       ...promptKinds.map(formatPromptKindIndexLine),
       ...(hiddenKindCount > 0 ? [`...还有 ${String(hiddenKindCount)} 个 kind，使用 queryModules({ keyword }) 查询。`] : []),
-      '流程：实例->schema/元数据->执行；复杂参数按 payloadLookupSteps 查 payload-catalog。',
+      '流程：实例->schema 与元数据->执行；复杂参数按 payloadLookupSteps 查 payload-catalog。',
     ]
     return lines.join('\n')
   }

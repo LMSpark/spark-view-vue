@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * module-semantic/index.ts — 模块语义协议公共入口
+ * modules/index.ts — 模块语义协议公共入口
  * ═══════════════════════════════════════════════════════════════
  *
  * 【导出策略】按调用流程分块：
@@ -25,7 +25,7 @@ export {
 
 export {
   AiModule,
-} from './protocol/module-kind'
+} from './protocol/ai-module'
 
 export type {
   AiModuleCheckLevel,
@@ -67,11 +67,11 @@ export type {
 // ── 2. 运行时 ─────────────────────────────────────────────────
 export {
   AiModuleRuntime,
-} from './runtime/module-semantic-runtime'
+} from './runtime/ai-module-runtime'
 
 export type {
   ProtocolToolArgs,
-} from './runtime/module-semantic-runtime'
+} from './runtime/ai-module-runtime'
 
 // ── 3. 知识投影类型 ─────────────────────────────────────────
 export type {

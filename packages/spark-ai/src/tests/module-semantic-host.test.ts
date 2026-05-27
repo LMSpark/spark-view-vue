@@ -14,7 +14,7 @@ import {
   AiModuleResult,
   AiModuleRuntime,
   type AiModuleInstanceRef,
-} from '../index'
+} from '../modules'
 import {
   noParamsSchema,
   paramsSchema,
@@ -141,7 +141,7 @@ describe('AiAgentHost public API', () => {
     }
     const host = createAiAgentHost({ turnCallbacks: createCallbacks().callbacks })
 
-    expect(() => host.register('broken', registrationWithoutStore as unknown as typeof registration)).toThrow(
+    expect(() => Reflect.apply(host.register, host, ['broken', registrationWithoutStore])).toThrow(
       'requires explicit sessionStore',
     )
   })

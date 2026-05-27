@@ -1,15 +1,15 @@
 /**
- * PageDesign module-semantic 业务注册。
+ * PageDesign modules/agent 业务注册。
  *
  * PageDesign 只注册到 Host 一次(moduleId=pageDesign),内部暴露 1 个根 kind 和 5 个子 kind:
  * pageDesign -> lifecycle / text-model / payload-catalog / node-tree / dataset。
  *
- * LLM 通过 OpenAI function tools 工作:
- * queryModules() → queryFunctions({ kind }) → guideFunction({ toolName }) →
- * guideHumanQuestion({ context, reason, missingFacts }) when user facts are missing →
- * listChildren("/") → findInstance("/", "pageDesign", {}) →
- * listChildren("/pageDesign[<pageId>]") → describeKind(childKind) →
- * business function tool（如 pageDesign_lifecycle_describeProgress）直接调用。
+ * Agent 只通过固定工具工作:
+ * module_query({ kind }) → module_guide({ kind, functionName? }) →
+ * human_question({ context, reason, missingFacts }) when user facts are missing →
+ * module_find({ path: "/", childKind: "pageDesign", query }) →
+ * module_find({ path: "/pageDesign[<pageId>]", childKind, query }) →
+ * module_call({ path, functionName, args })。
  */
 
 import {
@@ -77,7 +77,7 @@ export type PageDesignRunInput = AiJsonParamShape<{
 }>
 
 // PAGE_DESIGN_REFACTOR_SOURCE[prompt-root]: pageDesign 系统提示词唯一出处；保持小提示词，任务知识通过 lifecycle/payload-catalog 按需查询。
-const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/<childKind>[pageId]；参数看 tools schema；写入 dataset->node-tree->text-model；组件 props 查 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
+const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/<childKind>[pageId]；参数看 module_guide 和 tool schema；写入 dataset->node-tree->text-model；组件 props 用 module_call 调 payload-catalog 的 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
 
 // ── 公共注册契约 ───────────────────────────────────────────
 
@@ -245,13 +245,13 @@ function createPageDesignOrchestration(
     title: 'pageDesign registered task orchestration',
     userMessage: userRequirement,
     systemPrompt: [
-      `首轮仅 tool_call：findInstance({"path":"/","childKind":"pageDesign","query":{"id":"${pageId}"}})。无正文；Host 返回 ref.id 后：调用 pageDesign_lifecycle_describeProgress({ $paths: [ref.id, ref.id] }) -> pageDesign_lifecycle_describeDesignFlow({ $paths: [ref.id, ref.id], intent: messages[0].content })。`,
+      `首轮仅 tool_call：module_find({"path":"/","childKind":"pageDesign","query":{"id":"${pageId}"}})。无正文；Host 返回 ref.id 后：调用 module_call({"path":"/pageDesign[${pageId}]/lifecycle[${pageId}]","functionName":"describeProgress","args":{}}) -> module_call({"path":"/pageDesign[${pageId}]/lifecycle[${pageId}]","functionName":"describeDesignFlow","args":{"intent":messages[0].content}})。`,
     ].join('\n'),
     readonlySteps: [
       'find current pageDesign instance',
       'describeProgress',
       'describeDesignFlow with userRequirement intent',
-      'guideHumanQuestion before guessing missing business facts',
+      'human_question before guessing missing business facts',
     ],
   }
 }
@@ -389,7 +389,7 @@ export type PageDesignAiAgentEntry = Record<
 
 /**
  * 将 pageDesign 业务入口确保注册到 AI Host。
- * 调用方拿到返回值后即可使用 `host.run.pageDesign({ pageId, userRequirement })`。
+ * 调用方拿到返回值后即可使用 `host.run('pageDesign', { pageId, userRequirement })`。
  */
 export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap>(
   options: EnsurePageDesignBusinessOptions<TEntries, typeof PAGE_DESIGN_AI_AGENT_HOST_ALIAS>,

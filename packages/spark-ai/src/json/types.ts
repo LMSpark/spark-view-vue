@@ -1,9 +1,9 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * schema/types.ts — LLM JSON Schema 类型定义（单一事实源 SSOT）
+ * json/types.ts — AI JSON Schema 类型定义（单一事实源 SSOT）
  * ═══════════════════════════════════════════════════════════════
  *
- * 【架构定位】最底层基础类型，被 module-semantic 和 host 两层共同依赖。
+ * 【架构定位】最底层基础类型，被 modules 和 agent 两层共同依赖。
  *   本文件不依赖包内任何其他模块。
  *
  * 【设计决策】
@@ -11,7 +11,7 @@
  *   - 旧的 kind / 叶子描述字符串 / 简写对象根 已被废弃。
  *   - 函数 paramsSchema 和 payload guide 统一使用本文件定义的类型。
  *
- * 【消费方】schema/helpers.ts、schema/validator.ts、module-semantic/protocol/module-kind.ts
+ * 【消费方】json/helpers.ts、json/validator.ts、modules/protocol/ai-module.ts
  *
  * ═══════════════════════════════════════════════════════════════
  * 类型层级（自底向上）：

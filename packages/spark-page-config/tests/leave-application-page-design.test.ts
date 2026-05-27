@@ -4,6 +4,7 @@ import {
   startAiAgentRegistrationSession,
   type AiAgentRuntimeContext,
 } from '@spark-view/spark-ai/agent'
+import type { AiJsonValue } from '@spark-view/spark-ai/json'
 import { DataMember, DataSetCrudTool, buildDataViewKey } from '@spark-view/spark-data'
 import {
   PAGE_DESIGN_MODULE_ID,
@@ -74,6 +75,15 @@ function hostContext(): AiAgentRuntimeContext {
   }
 }
 
+function executeDesignTool(
+  registration: ReturnType<typeof createPageDesignBusinessRegistration>,
+  toolName: string,
+  args: Readonly<Record<string, AiJsonValue>>,
+  context: AiAgentRuntimeContext,
+): Promise<ToolResult> {
+  return registration.runtime.executeTool(toolName, args, context)
+}
+
 function assertOk(result: ToolResult, label: string): void {
   if (result.ok) return
   throw new Error(`${label} failed: ${JSON.stringify(result.checks ?? result)}`)
@@ -100,13 +110,13 @@ describe('请假申请页面设计测试程序', () => {
     await startAiAgentRegistrationSession(registration, context)
 
     const rootChildren = requireArrayResult(
-      await registration.runtime.executeTool('listChildren', { path: '/' }, context),
+      await executeDesignTool(registration, 'module_find', { path: '/' }, context),
       'list root children',
     )
     expect(rootChildren.some(entry => isRecord(entry) && entry['id'] === PAGE_DESIGN_MODULE_ID)).toBe(true)
 
     const pageInstances = requireArrayResult(
-      await registration.runtime.executeTool('findInstance', {
+      await executeDesignTool(registration, 'module_find', {
         path: '/',
         childKind: PAGE_DESIGN_MODULE_ID,
         query: {},
@@ -115,15 +125,18 @@ describe('请假申请页面设计测试程序', () => {
     )
     expect(pageInstances[0]).toMatchObject({ id: PAGE_ID })
 
-    const bootstrap = await registration.runtime.executeTool('pageDesign_lifecycle_bootstrap', {
-      $paths: [PAGE_ID, PAGE_ID],
+    const bootstrap = await executeDesignTool(registration, 'module_call', {
+      path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/lifecycle[${PAGE_ID}]`,
+      functionName: 'bootstrap',
+      args: {},
     }, context)
     expect(bootstrap).toMatchObject({ ok: true, data: { phase: 'editing' } })
 
     const dataPlanningFlow = requireRecordResult(
-      await registration.runtime.executeTool('pageDesign_lifecycle_describeDesignFlow', {
-        $paths: [PAGE_ID, PAGE_ID],
-        phase: '数据规划',
+        await executeDesignTool(registration, 'module_call', {
+        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/lifecycle[${PAGE_ID}]`,
+        functionName: 'describeDesignFlow',
+        args: { phase: '数据规划' },
       }, context),
       'describe data planning flow',
     )
@@ -136,9 +149,10 @@ describe('请假申请页面设计测试程序', () => {
 
     for (const key of ['r-section', 'r-card', 'r-form', 'r-text', 'r-select', 'r-date', 'r-number', 'r-textarea', 'r-button', 'r-table']) {
       const guide = requireRecordResult(
-        await registration.runtime.executeTool('pageDesign_payload-catalog_guidePayload', {
-          $paths: [PAGE_ID, PAGE_ID],
-          key,
+        await executeDesignTool(registration, 'module_call', {
+          path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/payload-catalog[${PAGE_ID}]`,
+          functionName: 'guidePayload',
+          args: { key },
         }, context),
         `guide payload ${key}`,
       )
@@ -149,13 +163,15 @@ describe('请假申请页面设计测试程序', () => {
     }
 
     assertOk(
-      await registration.runtime.executeTool('pageDesign_dataset_createTable', {
-        $paths: [PAGE_ID, PAGE_ID],
-        tableName: LEAVE_REQUESTS_TABLE,
-        resourceType: 'page-data',
-        resourceId: 'hr.leave_requests',
-        businessCategory: 'master',
-        columns: [
+      await executeDesignTool(registration, 'module_call', {
+        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/dataset[${PAGE_ID}]`,
+        functionName: 'createTable',
+        args: {
+          tableName: LEAVE_REQUESTS_TABLE,
+          resourceType: 'page-data',
+          resourceId: 'hr.leave_requests',
+          businessCategory: 'master',
+          columns: [
           { name: 'id', type: 'number', label: '申请单号', isPrimaryKey: true, autoIncrement: true },
           { name: 'applicantName', type: 'string', label: '申请人', required: true, maxLength: 40 },
           { name: 'leaveType', type: 'string', label: '请假类型', required: true },
@@ -164,8 +180,8 @@ describe('请假申请页面设计测试程序', () => {
           { name: 'days', type: 'number', label: '请假天数', required: true, min: 0.5 },
           { name: 'reason', type: 'string', label: '请假事由', required: true, maxLength: 300 },
           { name: 'status', type: 'string', label: '状态', defaultValue: 'pending' },
-        ],
-        views: {
+          ],
+          views: {
           default: {
             pageSize: 20,
             rows: [
@@ -192,23 +208,26 @@ describe('请假申请页面设计测试程序', () => {
               pendingCount: { type: 'count', field: 'id' },
             },
           },
+          },
         },
       }, context),
       'create leave requests table',
     )
 
     assertOk(
-      await registration.runtime.executeTool('pageDesign_dataset_createTable', {
-        $paths: [PAGE_ID, PAGE_ID],
-        tableName: LEAVE_TYPES_TABLE,
-        resourceType: 'static-data',
-        resourceId: 'leave-type-options',
-        businessCategory: 'reference',
-        columns: [
+      await executeDesignTool(registration, 'module_call', {
+        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/dataset[${PAGE_ID}]`,
+        functionName: 'createTable',
+        args: {
+          tableName: LEAVE_TYPES_TABLE,
+          resourceType: 'static-data',
+          resourceId: 'leave-type-options',
+          businessCategory: 'reference',
+          columns: [
           { name: 'value', type: 'string', label: '类型编码', isPrimaryKey: true },
           { name: 'label', type: 'string', label: '类型名称', required: true },
-        ],
-        views: {
+          ],
+          views: {
           default: {
             rows: [
               { value: 'annual', label: '年假' },
@@ -219,16 +238,19 @@ describe('请假申请页面设计测试程序', () => {
             valueField: 'value',
             labelField: 'label',
           },
+          },
         },
       }, context),
       'create leave type options table',
     )
 
     assertOk(
-      await registration.runtime.executeTool('pageDesign_node-tree_addNodes', {
-        $paths: [PAGE_ID, PAGE_ID],
-        parentComponentId: 'spark-page-root',
-        nodes: [
+      await executeDesignTool(registration, 'module_call', {
+        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/node-tree[${PAGE_ID}]`,
+        functionName: 'addNodes',
+        args: {
+          parentComponentId: 'spark-page-root',
+          nodes: [
             {
               type: 'r-section',
               id: 'leave-summary-section',
@@ -347,18 +369,22 @@ describe('请假申请页面设计测试程序', () => {
               ],
             },
           ],
+        },
       }, context),
       'create leave request page nodes',
     )
 
     assertOk(
-      await registration.runtime.executeTool('pageDesign_text-model_writeStyle', {
-        $paths: [PAGE_ID, PAGE_ID],
-        content: [
-          '.leave-summary-grid { display: grid; gap: 16px; }',
-          '.leave-summary-grid [data-component-id="pending-count-card"] { min-width: 0; }',
-          '.leave-form-section { max-width: 960px; }',
-        ].join('\n'),
+      await executeDesignTool(registration, 'module_call', {
+        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/text-model[${PAGE_ID}]`,
+        functionName: 'writeStyle',
+        args: {
+          content: [
+            '.leave-summary-grid { display: grid; gap: 16px; }',
+            '.leave-summary-grid [data-component-id="pending-count-card"] { min-width: 0; }',
+            '.leave-form-section { max-width: 960px; }',
+          ].join('\n'),
+        },
       }, context),
       'write leave page style',
     )
@@ -420,8 +446,10 @@ describe('请假申请页面设计测试程序', () => {
     expect(parsedDataSet.getView(LEAVE_TYPES_TABLE, 'default')?.rows).toHaveLength(4)
 
     const style = requireRecordResult(
-      await registration.runtime.executeTool('pageDesign_text-model_readStyle', {
-        $paths: [PAGE_ID, PAGE_ID],
+      await executeDesignTool(registration, 'module_call', {
+        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/text-model[${PAGE_ID}]`,
+        functionName: 'readStyle',
+        args: {},
       }, context),
       'read leave page style',
     )

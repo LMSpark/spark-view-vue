@@ -83,10 +83,23 @@ async function invokeDirect(
   actionName: string,
   args: Readonly<Record<string, AiJsonValue>> = {},
 ) {
-  return registration.runtime.executeTool(`${LEAVE_REQUEST_KIND}_${actionName}`, {
-    $paths: [scope.businessInstanceId],
-    ...args,
+  return registration.runtime.executeTool('module_call', {
+    path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]`,
+    functionName: actionName,
+    args,
   }, toAiAgentRuntimeScope(scope))
+}
+
+function leaveModuleCall(
+  scope: AiAgentScope,
+  functionName: string,
+  args: Readonly<Record<string, AiJsonValue>> = {},
+): Readonly<Record<string, AiJsonValue>> {
+  return {
+    path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]`,
+    functionName,
+    args,
+  }
 }
 
 function draftFields(result: { readonly ok: boolean; readonly data?: unknown }): Record<string, unknown> {
@@ -103,21 +116,17 @@ describe('leave-request host business registration', () => {
     const started = await startAiAgentRegistrationSession(registration, toAiAgentRuntimeScope(scope))
 
     expect(registration.moduleId).toBe(LEAVE_REQUEST_MODULE_ID)
-    expect(started.tools.map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
-      'queryModules',
-      'queryFunctions',
-      'guideFunction',
-      'guideHumanQuestion',
-      'getAttribute',
-      'setAttribute',
-      'listChildren',
-      'findInstance',
-      'describeKind',
-      'manual-leave_describeDraft',
-    ]))
+    expect(started.tools.map((tool) => tool.function.name)).toEqual([
+      'module_query',
+      'module_guide',
+      'module_find',
+      'module_attr',
+      'module_call',
+      'human_question',
+    ])
     expect(registration.systemPrompt?.(toAiAgentRuntimeScope(scope))).toContain('当前日期')
 
-    const described = await registration.runtime.executeTool('describeKind', { kind: LEAVE_REQUEST_KIND }, toAiAgentRuntimeScope(scope))
+    const described = await registration.runtime.executeTool('module_guide', { kind: LEAVE_REQUEST_KIND }, toAiAgentRuntimeScope(scope))
     expect(described.ok).toBe(true)
     if (!described.ok || !isRecord(described.data) || !Array.isArray(described.data['functions'])) {
       throw new Error('describeKind failed')
@@ -129,9 +138,14 @@ describe('leave-request host business registration', () => {
       'cancelDraft',
     ])
     expect(described.data['children']).toEqual([LEAVE_REQUEST_PERSON_KIND])
-    const knowledge = await registration.runtime.executeTool('queryModules', { keyword: '人员编码' }, toAiAgentRuntimeScope(scope))
+    const knowledge = await registration.runtime.executeTool('module_query', { keyword: '人员编码' }, toAiAgentRuntimeScope(scope))
     expect(knowledge.ok).toBe(true)
-    expect(knowledge.data).toEqual(expect.arrayContaining([
+    const knowledgeData = Array.isArray(knowledge.data)
+      ? knowledge.data
+      : isRecord(knowledge.data) && Array.isArray(knowledge.data['modules'])
+        ? knowledge.data['modules']
+        : []
+    expect(knowledgeData).toEqual(expect.arrayContaining([
       expect.objectContaining({
         kind: LEAVE_REQUEST_KIND,
         childKindSummaries: [
@@ -142,7 +156,7 @@ describe('leave-request host business registration', () => {
               expect.objectContaining({ name: 'code', description: expect.stringContaining('人员编码') }),
             ]),
             detailLookupSteps: expect.arrayContaining([
-              expect.stringContaining(`queryModules({ kind: "${LEAVE_REQUEST_PERSON_KIND}" })`),
+              expect.stringContaining(`module_query({ kind: "${LEAVE_REQUEST_PERSON_KIND}" })`),
             ]),
           }),
         ],
@@ -175,7 +189,7 @@ describe('leave-request host business registration', () => {
     const scope = createScope('leaveDraft:person')
     await startAiAgentRegistrationSession(registration, toAiAgentRuntimeScope(scope))
 
-    const found = await registration.runtime.executeTool('findInstance', {
+    const found = await registration.runtime.executeTool('module_find', {
       path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]`,
       childKind: LEAVE_REQUEST_PERSON_KIND,
       query: { name: 'Ada' },
@@ -188,7 +202,8 @@ describe('leave-request host business registration', () => {
       }),
     ])
 
-    const code = await registration.runtime.executeTool('getAttribute', {
+    const code = await registration.runtime.executeTool('module_attr', {
+      op: 'get',
       path: `/${LEAVE_REQUEST_KIND}[${scope.businessInstanceId}]/${LEAVE_REQUEST_PERSON_KIND}[E1001]`,
       attrName: 'code',
     }, toAiAgentRuntimeScope(scope))
@@ -215,14 +230,12 @@ describe('leave-request host business registration', () => {
     const draftA = createScope('leaveDraft:a')
     const draftB = createScope('leaveDraft:b')
 
-    await runToolCall(registration, draftA, 'manual-leave_setDraftFields', {
-      $paths: ['leaveDraft:a'],
+    await runToolCall(registration, draftA, 'module_call', leaveModuleCall(draftA, 'setDraftFields', {
       fields: { applicantName: 'Ada', leaveType: 'annual', startDate: '2026-05-14' },
-    }, 1)
-    await runToolCall(registration, draftB, 'manual-leave_setDraftFields', {
-      $paths: ['leaveDraft:b'],
+    }), 1)
+    await runToolCall(registration, draftB, 'module_call', leaveModuleCall(draftB, 'setDraftFields', {
       fields: { applicantName: 'Lin', leaveType: 'sick', startDate: '2026-05-15' },
-    }, 2)
+    }), 2)
 
     expect(draftFields(await invokeDirect(registration, draftA, 'describeDraft'))['applicantName']).toBe('Ada')
     expect(draftFields(await invokeDirect(registration, draftB, 'describeDraft'))['applicantName']).toBe('Lin')
@@ -234,13 +247,10 @@ describe('leave-request host business registration', () => {
     const registration = createLeaveRequestBusinessRegistration({ now: () => 1778030000000 })
     const scope = createScope('leaveDraft:restart')
 
-    await runToolCall(registration, scope, 'manual-leave_setDraftFields', {
-      $paths: ['leaveDraft:restart'],
+    await runToolCall(registration, scope, 'module_call', leaveModuleCall(scope, 'setDraftFields', {
       fields: { applicantName: 'Ada', leaveType: 'annual', startDate: '2026-05-14' },
-    }, 1)
-    const rejected = await runToolCall(registration, scope, 'manual-leave_submitDraft', {
-      $paths: ['leaveDraft:restart'],
-    }, 2)
+    }), 1)
+    const rejected = await runToolCall(registration, scope, 'module_call', leaveModuleCall(scope, 'submitDraft'), 2)
     expect(rejected.record.result).toMatchObject({ ok: false, code: 'MISSING_REQUIRED_FIELDS' })
 
     registration.sessionStore?.stopSession(toAiAgentRuntimeScope(scope), 'restart')
@@ -253,8 +263,7 @@ describe('leave-request host business registration', () => {
     const registration = createLeaveRequestBusinessRegistration({ now: () => 1778030000000 })
     const submitScope = createScope('leaveDraft:submit')
 
-    await runToolCall(registration, submitScope, 'manual-leave_setDraftFields', {
-      $paths: ['leaveDraft:submit'],
+    await runToolCall(registration, submitScope, 'module_call', leaveModuleCall(submitScope, 'setDraftFields', {
       fields: {
         applicantName: 'Ada',
         leaveType: 'annual',
@@ -263,10 +272,8 @@ describe('leave-request host business registration', () => {
         totalDays: 2,
         reason: 'family care',
       },
-    }, 1)
-    const submitted = await runToolCall(registration, submitScope, 'manual-leave_submitDraft', {
-      $paths: ['leaveDraft:submit'],
-    }, 2)
+    }), 1)
+    const submitted = await runToolCall(registration, submitScope, 'module_call', leaveModuleCall(submitScope, 'submitDraft'), 2)
     expect(submitted.record.result).toMatchObject({ ok: true })
     expect(submitted.cleared).toBe(true)
     expect(submitted.deltas.join('\n')).toContain('请假申请已提交成功')
@@ -281,14 +288,12 @@ describe('leave-request host business registration', () => {
     expect(draftFields(afterRelease)['applicantName']).toBeUndefined()
 
     const cancelScope = createScope('leaveDraft:cancel')
-    await runToolCall(registration, cancelScope, 'manual-leave_setDraftFields', {
-      $paths: ['leaveDraft:cancel'],
+    await runToolCall(registration, cancelScope, 'module_call', leaveModuleCall(cancelScope, 'setDraftFields', {
       fields: { applicantName: 'Ada' },
-    }, 3)
-    const cancelled = await runToolCall(registration, cancelScope, 'manual-leave_cancelDraft', {
-      $paths: ['leaveDraft:cancel'],
+    }), 3)
+    const cancelled = await runToolCall(registration, cancelScope, 'module_call', leaveModuleCall(cancelScope, 'cancelDraft', {
       reason: '用户取消申请',
-    }, 4)
+    }), 4)
     expect(cancelled.record.result).toMatchObject({ ok: true })
     expect(cancelled.cleared).toBe(true)
     expect(cancelled.deltas.join('\n')).toContain('当前请假草稿已取消')

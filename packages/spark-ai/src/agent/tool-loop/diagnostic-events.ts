@@ -26,7 +26,7 @@ import type { AiAgentScope } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentStreamEvent, AiAgentTurnMeta } from '../chat/chat-types'
 import { stringifyAiAgentPayload } from './payload-codec'
 
-type LlmDiagnosticEventInput = Readonly<{
+type AiAgentDiagnosticEventInput = Readonly<{
   request: AiAgentChatRequest
   scope: AiAgentScope
   turn: AiAgentTurnMeta
@@ -57,7 +57,7 @@ type ScopedStreamEventInput = Readonly<{
  * 前端可据此渲染"AI 正在思考"的实时状态。
  * ----------------------------------------------------------------------------- */
 
-export function emitLlmDiagnosticEvent(input: LlmDiagnosticEventInput): void {
+export function emitAiAgentDiagnosticEvent(input: AiAgentDiagnosticEventInput): void {
   const { request, scope, turn, type, data } = input
   // 将任意数据序列化为 JSON 字符串后包装为 turn stream 事件。
   request.onStreamEvent?.(createScopedStreamEvent({
@@ -98,9 +98,9 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
- *   node-tree_getNode({ $paths: ["tree-1"], id: "n1" })  →   eventModuleId = "node-tree"
- *   describeKind(kind="Table")                →   eventModuleId = "Table"
- *   listChildren(path="/root")                →   eventModuleId = "root"
+ *   module_call({ path: "/node-tree[tree-1]", functionName: "getNode" }) → "node-tree"
+ *   module_guide({ kind: "Table" })                                      → "Table"
+ *   module_find({ path: "/root" })                                        → "root"
  * ----------------------------------------------------------------------------- */
 
 export function eventModuleIdFromProtocolCall(

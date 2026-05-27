@@ -36,7 +36,7 @@ import type {
   AiAgentTransportToolCall,
   AiAgentTransportToolSpec,
 } from '../transport/transport-types'
-import { emitLlmDiagnosticEvent } from './diagnostic-events'
+import { emitAiAgentDiagnosticEvent } from './diagnostic-events'
 import { toCurrentTurnMessages } from './payload-codec'
 import { AiAgentToolCallExecutor } from './tool-call-executor'
 
@@ -48,7 +48,7 @@ function toAiAgentTransportTools(
     function: {
       name: tool.function.name,
       description: tool.function.description,
-      parameters: tool.function.parameters as unknown as Readonly<Record<string, unknown>>,
+      parameters: tool.function.parameters,
       ...(tool.function.strict === undefined ? {} : { strict: tool.function.strict }),
     },
   }))
@@ -132,7 +132,7 @@ export class AiAgentToolLoopRunner {
       const toolNames = round === 0 ? initialToolNames : new Set(tools.map((tool) => tool.function.name))
 
       // 发送 LLM 请求诊断事件（前端可据此展示"AI 正在思考"）
-      emitLlmDiagnosticEvent({
+      emitAiAgentDiagnosticEvent({
         request,
         scope,
         turn,
@@ -318,7 +318,7 @@ export class AiAgentToolLoopRunner {
 
   private async appendMessagesToTransport(input: AppendMessagesToTransportInput): Promise<void> {
     if (input.messages.length === 0) return
-    emitLlmDiagnosticEvent({
+    emitAiAgentDiagnosticEvent({
       request: input.request,
       scope: input.scope,
       turn: input.turn,

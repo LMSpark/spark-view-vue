@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * module-semantic/internal/module-kind-registry.ts — 模块类型注册表
+ * modules/internal/ai-module-registry.ts — 模块类型注册表
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】协议层内部组件，被 Navigator 和 AiModuleRuntime 消费。

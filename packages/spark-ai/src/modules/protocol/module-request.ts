@@ -1,5 +1,5 @@
 /**
- * module-semantic · API 请求 DTO
+ * modules · API 请求 DTO
  *
  * 协议层级：第 5 层（依赖 module-context + module-path + schema）
  * 核心职责：定义 API 边界的请求入参。是协议类型（AiModulePath / AiModuleHostContext /

@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 
 import { coerceJsonValue, coerceStrictJsonValue, paramsSchema, stringSchema } from '../json'
-import { AiModuleRegistry } from '../modules/internal/module-kind-registry'
-import { AiModuleKnowledgeProjector } from '../modules/knowledge/module-semantic-knowledge'
+import { AiModuleRegistry } from '../modules/internal/ai-module-registry'
+import { AiModuleKnowledgeProjector } from '../modules/knowledge/ai-module-knowledge'
 import { AiModule, AiModuleResult, type AiModuleInstanceRef } from '../modules'
 
 function createRootKind(kind: string, name = kind): AiModule {
@@ -110,7 +110,7 @@ describe('AiModuleKnowledgeProjector', () => {
         functionName: 'doWork',
       },
     })
-    expect(projector.guideFunction({ toolName: 'task_doWork' })).toMatchObject({
+    expect(projector.guideFunction({ kind: '', functionName: '' })).toMatchObject({
       ok: false,
       checks: [expect.objectContaining({ code: 'INVALID_GUIDE_REQUEST' })],
     })

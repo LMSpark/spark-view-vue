@@ -11,7 +11,7 @@ import type {
   AiAgentAppSseEvent,
   AiAgentAppSseEventName,
   AiAgentAppSseEventSource,
-} from '@spark-view/spark-ai'
+} from '@spark-view/spark-ai/agent'
 
 const logger = Logger('SSE')
 

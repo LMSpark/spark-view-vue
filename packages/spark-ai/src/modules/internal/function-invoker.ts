@@ -1,5 +1,5 @@
 /**
- * module-semantic/internal/function-invoker.ts — 业务函数调用器
+ * modules/internal/function-invoker.ts — 业务函数调用器
  *
  * LLM 层使用标准 function calling：函数名已经包含 kind path + functionName，
  * 参数只保留 { path, args }。本调用器负责把标准函数调用路由到目标 AiModule。

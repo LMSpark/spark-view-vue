@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * schema/validator.ts — 通用 LLM 参数校验器
+ * json/validator.ts — 通用 AI JSON 参数校验器
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】schema 层顶部，依赖 types.ts 和 AJV 2020。
@@ -12,7 +12,7 @@
  *   - AJV error keyword → 中文消息映射集中在一处，便于统一调整措辞。
  *   - JSON Pointer 路径转 $.a.b[0] 格式，方便 LLM 理解错误位置。
  *
- * 【消费方】module-semantic/internal/function-invoker.ts（参数校验）
+ * 【消费方】modules/internal/function-invoker.ts（参数校验）
  *
  * ═══════════════════════════════════════════════════════════════
  * 校验流程（validateDeserializedParams）：

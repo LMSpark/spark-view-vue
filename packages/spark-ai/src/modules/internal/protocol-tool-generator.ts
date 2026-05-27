@@ -1,5 +1,5 @@
 import type { AiJsonSchemaObject } from '../../json'
-import type { AiModuleRegistry } from './module-kind-registry'
+import type { AiModuleRegistry } from './ai-module-registry'
 
 export type AiModuleToolSpec = Readonly<{
   type: 'function'

@@ -1,6 +1,5 @@
 import { describe, expect, it } from 'vitest'
 
-import { isRecord } from '@spark-view/spark-utils'
 import {
   AiModule,
   AiModulePath,
@@ -116,17 +115,18 @@ describe('AiModuleRuntime fixed tool protocol', () => {
     })
 
     expect(result.ok).toBe(true)
-    if (!isRecord(result.data)) throw new Error('module_query data should be object')
-    expect(result.data['modules']).toEqual(expect.arrayContaining([
+    expect(result.data).toMatchObject({
+      modules: expect.arrayContaining([
       expect.objectContaining({ kind: 'node-tree', functionNames: ['getNode'] }),
-    ]))
-    expect(result.data['functions']).toEqual(expect.arrayContaining([
+    ]),
+      functions: expect.arrayContaining([
       expect.objectContaining({
         toolName: 'module_call',
         kind: 'node-tree',
         functionName: 'getNode',
       }),
-    ]))
+    ]),
+    })
   })
 
   it('module_guide reads kind metadata and function guide', async () => {
@@ -147,7 +147,7 @@ describe('AiModuleRuntime fixed tool protocol', () => {
       data: expect.objectContaining({
         toolName: 'module_call',
         functionName: 'getNode',
-        requiredParamNames: ['id'],
+        paramsSchema: expect.objectContaining({ required: ['id'] }),
       }),
     })
   })

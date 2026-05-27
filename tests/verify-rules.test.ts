@@ -123,7 +123,7 @@ describe('verification rules', () => {
 
   it('rejects public method drift on critical facade classes', () => {
     const root = createTempRoot()
-    writeFile(root, 'packages/spark-ai/src/modules/runtime/module-semantic-runtime.ts', [
+    writeFile(root, 'packages/spark-ai/src/modules/runtime/ai-module-runtime.ts', [
       'export class AiModuleRuntime {',
       '  public register(): void {}',
       '  public getTools(): void {}',

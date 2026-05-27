@@ -36,7 +36,7 @@ import type {
 } from '../design/page-edit-session'
 import type { PageDesignService } from '../design/page-design-service'
 import { isRecord } from '@spark-view/spark-utils'
-import { createCurrentPageRef } from './page-design-helpers'
+import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
 
 type DatasetActionRunner = PageDesignServiceActionBinding<DataSetCrudTool>['run']
 type DataSetCrudToolMethodName = Extract<{
@@ -1887,6 +1887,7 @@ export class PageDesignDatasetAiModule extends AiModule {
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       functions: DATASET_ACTIONS,
       children: [],
+      find: (ctx, childKind, query) => findCurrentPageInstance({ ctx, childKind, query, ownKind: 'dataset', label: '当前页面数据集' }),
     })
     this.service = options.service
     this.contextFactory = options.contextFactory

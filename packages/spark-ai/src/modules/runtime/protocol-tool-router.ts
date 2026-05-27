@@ -3,7 +3,7 @@ import type { FunctionInvoker } from '../internal/function-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
 import type { Navigator } from '../internal/navigator'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
-import type { AiModuleKnowledgeProjector } from '../knowledge/module-semantic-knowledge'
+import type { AiModuleKnowledgeProjector } from '../knowledge/ai-module-knowledge'
 import {
   AiModulePath,
   AiModulePathParseError,

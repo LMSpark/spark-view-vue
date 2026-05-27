@@ -3,7 +3,7 @@
  */
 
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
-import { resolveAiModulePath } from '../internal/module-kind-path'
+import { resolveAiModulePath } from '../internal/ai-module-path'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
 import type { AiModule, AiModulePayloadMetadata } from '../protocol'
 import type {
@@ -379,9 +379,9 @@ export function createAttributeGuides(moduleKind: AiModule): readonly AiModuleKn
     access: attributeAccessMode(attribute.readable, attribute.writable),
     readable: attribute.readable,
     writable: attribute.writable,
-    schemaLookupStep: `describeKind("${moduleKind.kind}").attributes["${attribute.name}"].schema`,
-    ...(attribute.readable ? { readStep: `getAttribute({ path, attrName: "${attribute.name}" })` } : {}),
-    ...(attribute.writable ? { writeStep: `setAttribute({ path, attrName: "${attribute.name}", value })` } : {}),
+    schemaLookupStep: `module_guide({ kind: "${moduleKind.kind}" }).attributes["${attribute.name}"].schema`,
+    ...(attribute.readable ? { readStep: `module_attr({ op: "get", path, attrName: "${attribute.name}" })` } : {}),
+    ...(attribute.writable ? { writeStep: `module_attr({ op: "set", path, attrName: "${attribute.name}", value })` } : {}),
   }))
 }
 
@@ -425,10 +425,10 @@ export function createInstanceGuide(moduleKind: AiModule): AiModuleKnowledgeInst
     discoverySteps: createInstanceLookupSteps(moduleKind),
     pathBuildSteps: createInstancePathBuildSteps(moduleKind),
     operationSteps: [
-      `用实例 path 调用 describeKind("${moduleKind.kind}") 读取元数据。`,
-      `属性读写复用同一个实例 path：getAttribute/setAttribute。`,
-      `函数调用复用同一个实例 path：OpenAI function tool。`,
-      `进入子 kind 时，以当前实例 path 作为 parentPath 调用 listChildren/findInstance。`,
+      `用 module_guide({ kind: "${moduleKind.kind}" }) 读取元数据。`,
+      `属性读写复用同一个实例 path：module_attr({ op, path, attrName, value })。`,
+      `函数调用复用同一个实例 path：module_call({ path, functionName, args })。`,
+      `进入子 kind 时，以当前实例 path 作为 parentPath 调用 module_find。`,
     ],
   }
 }
@@ -462,14 +462,14 @@ export function createInstanceQueryExamples(
 export function createInstanceLookupSteps(moduleKind: AiModule): readonly string[] {
   if (moduleKind.parentKind === undefined) {
     return [
-      `listChildren("/") 查看根级 kind。`,
-      `findInstance("/", "${moduleKind.kind}", query) 获取 ${moduleKind.kind} 实例 id。`,
+      `module_find({ path: "/" }) 查看根级 kind。`,
+      `module_find({ path: "/", childKind: "${moduleKind.kind}", query }) 获取 ${moduleKind.kind} 实例 id。`,
     ]
   }
   return [
     `先获得父路径 /${moduleKind.parentKind}[<parentId>]。`,
-    `listChildren(parentPath, "${moduleKind.kind}") 查看 ${moduleKind.kind} 子实例。`,
-    `findInstance(parentPath, "${moduleKind.kind}", query) 获取 ${moduleKind.kind} 实例 id。`,
+    `module_find({ path: parentPath, childKind: "${moduleKind.kind}" }) 查看 ${moduleKind.kind} 子实例。`,
+    `module_find({ path: parentPath, childKind: "${moduleKind.kind}", query }) 获取 ${moduleKind.kind} 实例 id。`,
   ]
 }
 
@@ -477,13 +477,13 @@ export function createInstancePathBuildSteps(moduleKind: AiModule): readonly str
   const segment = `${moduleKind.kind}[<instanceRef.id>]`
   if (moduleKind.parentKind === undefined) {
     return [
-      `从 findInstance("/", "${moduleKind.kind}", query) 返回的 AiModuleInstanceRef.id 取实例 id。`,
+      `从 module_find({ path: "/", childKind: "${moduleKind.kind}", query }) 返回的 AiModuleInstanceRef.id 取实例 id。`,
       `拼接实例路径 /${segment}。`,
     ]
   }
   return [
     `保留父实例路径 parentPath。`,
-    `从 findInstance(parentPath, "${moduleKind.kind}", query) 返回的 AiModuleInstanceRef.id 取子实例 id。`,
+    `从 module_find({ path: parentPath, childKind: "${moduleKind.kind}", query }) 返回的 AiModuleInstanceRef.id 取子实例 id。`,
     `拼接实例路径 parentPath/${segment}。`,
   ]
 }
@@ -494,11 +494,11 @@ export function createChildLookupSteps(
 ): readonly string[] {
   if (moduleKind.children.length === 0) return []
   return [
-    `listChildren(path) 查看 ${moduleKind.kind} 下可用子实例。`,
+    `module_find({ path }) 查看 ${moduleKind.kind} 下可用子实例。`,
     ...moduleKind.children.map((childKind) => {
       const child = allKinds.find((candidate) => candidate.kind === childKind)
       const childName = child === undefined ? childKind : `${child.kind}(${child.name})`
-      return `findInstance(path, "${childKind}", query) 定位子 kind ${childName}。`
+      return `module_find({ path, childKind: "${childKind}", query }) 定位子 kind ${childName}。`
     }),
   ]
 }
@@ -506,18 +506,19 @@ export function createChildLookupSteps(
 export function createAttributeLookupSteps(moduleKind: AiModule): readonly string[] {
   if (moduleKind.attributes.length === 0) return []
   return [
-    `describeKind("${moduleKind.kind}") 查看 attributes 的 schema、readable 和 writable。`,
-    `读取属性使用 getAttribute({ path, attrName })。`,
-    `写入属性使用 setAttribute({ path, attrName, value })。`,
+    `module_guide({ kind: "${moduleKind.kind}" }) 查看 attributes 的 schema、readable 和 writable。`,
+    `读取属性使用 module_attr({ op: "get", path, attrName })。`,
+    `写入属性使用 module_attr({ op: "set", path, attrName, value })。`,
   ]
 }
 
 export function createModuleFunctionLookupSteps(moduleKind: AiModule, kindPath: readonly string[]): readonly string[] {
   if (moduleKind.functions.length === 0) return []
+  const path = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
   return [
-    `queryFunctions({ kind: "${moduleKind.kind}" }) 查看 ${moduleKind.kind} 函数目录。`,
-    `guideFunction({ toolName: "${kindPath.join('_')}_<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
-    `<toolName>({ $paths: [${kindPath.map((k) => `<${k}Id>`).join(', ')}] }) 执行业务函数。`,
+    `module_query({ kind: "${moduleKind.kind}", includeFunctions: true }) 查看 ${moduleKind.kind} 函数目录。`,
+    `module_guide({ kind: "${moduleKind.kind}", functionName: "<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
+    `module_call({ path: "${path}", functionName: "<functionName>", args }) 执行业务函数。`,
   ]
 }
 
@@ -538,7 +539,7 @@ export function summarizeChildKind(
       attributeSummaries: [],
       functionSummaries: [],
       detailLookupSteps: [
-        `注册 ${childKind} 后，queryModules({ kind: "${childKind}" }) 才会返回该子层完整指南。`,
+        `注册 ${childKind} 后，module_query({ kind: "${childKind}" }) 才会返回该子层完整指南。`,
       ],
     }
   }
@@ -562,9 +563,9 @@ export function summarizeChildKind(
       payloadRefs: payloadRefsForFunction(child.payloads, fn.name),
     })),
     detailLookupSteps: [
-      `queryModules({ kind: "${child.kind}" }) 读取 ${child.kind} 自己的 instanceGuide、attributeGuides 和 functionGuides。`,
-      `describeKind("${child.kind}") 查看 ${child.kind} 的 attributes/functions/payloads/children 元数据。`,
-      `在父实例 path 下 listChildren/findInstance(path, "${child.kind}", query) 定位子实例。`,
+      `module_query({ kind: "${child.kind}" }) 读取 ${child.kind} 自己的 instanceGuide、attributeGuides 和 functionGuides。`,
+      `module_guide({ kind: "${child.kind}" }) 查看 ${child.kind} 的 attributes/functions/payloads/children 元数据。`,
+      `在父实例 path 下 module_find({ path, childKind: "${child.kind}", query }) 定位子实例。`,
     ],
   }
 }

@@ -1,8 +1,8 @@
 /**
- * module-semantic · 运行时上下文与委托契约
+ * modules · 运行时上下文与委托契约
  *
  * 协议层级：第 3 层（依赖 module-operation + module-path）
- * 核心职责：定义 module-semantic 协议层的上下文类型和委托函数签名。
+ * 核心职责：定义 modules 协议层的上下文类型和委托函数签名。
  *   所有 AiModule 构造期注入的行为委托均在此声明，与元数据声明（module-metadata.ts）
  *   形成"声明什么"（元数据）与"如何执行"（委托）的清晰边界。
  * 上游依赖：module-operation（AiModuleResult）、module-path（AiModulePathSegment）

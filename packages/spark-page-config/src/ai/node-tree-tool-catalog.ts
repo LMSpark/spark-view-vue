@@ -34,22 +34,10 @@ import type {
 } from '../design/page-edit-session'
 import {
   isSparkNode,
-  type SparkNode,
-  type SparkNodeFindByTypeParams,
-  type SparkNodeTreeAddNodesParams,
-  type SparkNodeTreeAddParams,
-  type SparkNodeTreeChildrenParams,
-  type SparkNodeTreeLookupParams,
-  type SparkNodeTreeMoveParams,
-  type SparkNodeTreeRemoveNodesParams,
-  type SparkNodeTreeRemoveParams,
-  type SparkNodeTreeReplaceNodesParams,
-  type SparkNodeTreeReplaceParams,
-  type SparkNodeTreeSetPropsBatchParams,
-  type SparkNodeTreeSetPropsParams,
 } from '@spark-view/spark-data'
+import type * as SparkData from '@spark-view/spark-data'
 import { isRecord } from '@spark-view/spark-utils'
-import { createCurrentPageRef } from './page-design-helpers'
+import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
 import {
   getPageDesignComponentPayloadGuide,
   isPageDesignWritableComponentPayloadKey,
@@ -617,6 +605,7 @@ export class PageDesignNodeTreeAiModule extends AiModule {
       ...(options.payloads === undefined ? {} : { payloads: options.payloads }),
       ...(options.parentKind === undefined ? {} : { parentKind: options.parentKind }),
       children: [],
+      find: (ctx, childKind, query) => findCurrentPageInstance({ ctx, childKind, query, ownKind: 'node-tree', label: '当前页面节点树' }),
     })
     this.service = options.service
     this.contextFactory = options.contextFactory
@@ -1084,18 +1073,18 @@ function isPageDesignAllowedNodeType(type: string): boolean {
 
 // ── LLM 参数读取与运行时校验 ──────────────────────────────
 
-function readLookupParams(args: unknown, actionName: string): SparkNodeTreeLookupParams {
+function readLookupParams(args: unknown, actionName: string): SparkData.SparkNodeTreeLookupParams {
   const record = requireArgRecord(args, `${actionName}.params`)
   return { componentId: requireStringField(record, 'componentId', `${actionName}.componentId`) }
 }
 
-function readChildrenParams(args: unknown): SparkNodeTreeChildrenParams {
+function readChildrenParams(args: unknown): SparkData.SparkNodeTreeChildrenParams {
   const record = requireArgRecord(args, 'listChildren.params')
   const parentComponentId = readOptionalParentComponentId(record)
   return parentComponentId === undefined ? {} : { parentComponentId }
 }
 
-function readFindByTypeParams(args: unknown): SparkNodeFindByTypeParams {
+function readFindByTypeParams(args: unknown): SparkData.SparkNodeFindByTypeParams {
   const record = requireArgRecord(args, 'findByType.params')
   const startComponentId = optionalStringField(record, 'startComponentId', 'findByType.startComponentId')
   const limit = optionalNumberField(record, 'limit', 'findByType.limit')
@@ -1106,7 +1095,7 @@ function readFindByTypeParams(args: unknown): SparkNodeFindByTypeParams {
   }
 }
 
-function readAddParams(args: unknown): SparkNodeTreeAddParams {
+function readAddParams(args: unknown): SparkData.SparkNodeTreeAddParams {
   const record = requireArgRecord(args, 'addNode.params')
   const parentComponentId = readOptionalParentComponentId(record)
   const index = optionalNumberField(record, 'index', 'addNode.index')
@@ -1117,7 +1106,7 @@ function readAddParams(args: unknown): SparkNodeTreeAddParams {
   }
 }
 
-function readAddNodesParams(args: unknown): SparkNodeTreeAddNodesParams {
+function readAddNodesParams(args: unknown): SparkData.SparkNodeTreeAddNodesParams {
   const record = requireArgRecord(args, 'addNodes.params')
   const parentComponentId = readOptionalParentComponentId(record)
   const index = optionalNumberField(record, 'index', 'addNodes.index')
@@ -1128,7 +1117,7 @@ function readAddNodesParams(args: unknown): SparkNodeTreeAddNodesParams {
   }
 }
 
-function readMoveParams(args: unknown): SparkNodeTreeMoveParams {
+function readMoveParams(args: unknown): SparkData.SparkNodeTreeMoveParams {
   const record = requireArgRecord(args, 'moveNode.params')
   const parentComponentId = readOptionalParentComponentId(record)
   const index = optionalNumberField(record, 'index', 'moveNode.index')
@@ -1139,7 +1128,7 @@ function readMoveParams(args: unknown): SparkNodeTreeMoveParams {
   }
 }
 
-function readSetPropsParams(args: unknown): SparkNodeTreeSetPropsParams {
+function readSetPropsParams(args: unknown): SparkData.SparkNodeTreeSetPropsParams {
   const record = requireArgRecord(args, 'setProps.params')
   const merge = optionalBooleanField(record, 'merge', 'setProps.merge')
   return {
@@ -1149,7 +1138,7 @@ function readSetPropsParams(args: unknown): SparkNodeTreeSetPropsParams {
   }
 }
 
-function readSetPropsBatchParams(args: unknown): SparkNodeTreeSetPropsBatchParams {
+function readSetPropsBatchParams(args: unknown): SparkData.SparkNodeTreeSetPropsBatchParams {
   const record = requireArgRecord(args, 'setPropsBatch.params')
   return {
     items: requireRecordArrayField(record, 'items', 'setPropsBatch.items').map((item, index) => {
@@ -1163,7 +1152,7 @@ function readSetPropsBatchParams(args: unknown): SparkNodeTreeSetPropsBatchParam
   }
 }
 
-function readReplaceParams(args: unknown): SparkNodeTreeReplaceParams {
+function readReplaceParams(args: unknown): SparkData.SparkNodeTreeReplaceParams {
   const record = requireArgRecord(args, 'replaceNode.params')
   return {
     componentId: requireStringField(record, 'componentId', 'replaceNode.componentId'),
@@ -1171,7 +1160,7 @@ function readReplaceParams(args: unknown): SparkNodeTreeReplaceParams {
   }
 }
 
-function readReplaceNodesParams(args: unknown): SparkNodeTreeReplaceNodesParams {
+function readReplaceNodesParams(args: unknown): SparkData.SparkNodeTreeReplaceNodesParams {
   const record = requireArgRecord(args, 'replaceNodes.params')
   return {
     items: requireRecordArrayField(record, 'items', 'replaceNodes.items').map((item, index) => ({
@@ -1181,11 +1170,11 @@ function readReplaceNodesParams(args: unknown): SparkNodeTreeReplaceNodesParams 
   }
 }
 
-function readRemoveParams(args: unknown): SparkNodeTreeRemoveParams {
+function readRemoveParams(args: unknown): SparkData.SparkNodeTreeRemoveParams {
   return readLookupParams(args, 'removeNode')
 }
 
-function readRemoveNodesParams(args: unknown): SparkNodeTreeRemoveNodesParams {
+function readRemoveNodesParams(args: unknown): SparkData.SparkNodeTreeRemoveNodesParams {
   const record = requireArgRecord(args, 'removeNodes.params')
   return {
     componentIds: requireStringArrayField(record, 'componentIds', 'removeNodes.componentIds'),
@@ -1251,13 +1240,13 @@ function requireRecordArrayField(
   return value
 }
 
-function requireSparkNodeField(record: Readonly<Record<string, unknown>>, key: string, label: string): SparkNode {
+function requireSparkNodeField(record: Readonly<Record<string, unknown>>, key: string, label: string): SparkData.SparkNode {
   const value = record[key]
   if (!isSparkNode(value)) throw new Error(`${label} must be a SparkNode`)
   return value
 }
 
-function requireSparkNodeArrayField(record: Readonly<Record<string, unknown>>, key: string, label: string): SparkNode[] {
+function requireSparkNodeArrayField(record: Readonly<Record<string, unknown>>, key: string, label: string): SparkData.SparkNode[] {
   const value = record[key]
   if (!Array.isArray(value) || !value.every(isSparkNode)) throw new Error(`${label} must be a SparkNode array`)
   return value

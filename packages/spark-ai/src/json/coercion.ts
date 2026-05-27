@@ -1,5 +1,5 @@
 /**
- * schema/coercion.ts — 将任意运行时值规整为 JSON 安全值。
+ * json/coercion.ts — 将任意运行时值规整为 JSON 安全值。
  *
  * 两个公开函数：
  * - coerceJsonValue(value) — 尽力转换（lossy）：跳过 NaN/undefined/循环引用，

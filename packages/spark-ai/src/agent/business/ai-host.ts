@@ -94,9 +94,19 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
     return this.state.aliasToModuleId.has(normalizeAlias(alias))
   }
 
+  public async run<K extends keyof TEntries & string>(
+    alias: K,
+    args: AiAgentHostRegistrationInput<TEntries[K]>,
+    chat?: AiAgentTaskChatOptions,
+  ): Promise<AiAgentHostRunResult>
   public async run<TInput extends AiJsonParams = AiJsonParams>(
     alias: string,
     args: TInput,
+    chat?: AiAgentTaskChatOptions,
+  ): Promise<AiAgentHostRunResult>
+  public async run(
+    alias: string,
+    args: AiJsonParams,
     chat?: AiAgentTaskChatOptions,
   ): Promise<AiAgentHostRunResult> {
     const normalizedAlias = normalizeAlias(alias)

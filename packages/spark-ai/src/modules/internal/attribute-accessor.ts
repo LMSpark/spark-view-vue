@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * module-semantic/internal/attribute-accessor.ts — 属性访问器
+ * modules/internal/attribute-accessor.ts — 属性访问器
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】协议层内部组件，由 AiModuleRuntime 组合。

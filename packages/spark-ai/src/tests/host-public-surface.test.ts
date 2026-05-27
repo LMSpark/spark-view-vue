@@ -48,7 +48,7 @@ describe('@spark-view/spark-ai/agent public surface', () => {
     expect(exposed.has('createAiAgent')).toBe(false)
     expect(exposed.has('createAiAgentStreamKey')).toBe(false)
     expect(exposed.has('normalizeAiAgentTarget')).toBe(false)
-    expect(exposed.has('emitLlmDiagnosticEvent')).toBe(false)
+    expect(exposed.has('emitAiAgentDiagnosticEvent')).toBe(false)
     expect(exposed.has('eventModuleIdFromProtocolCall')).toBe(false)
     expect(exposed.has('stringifyAiAgentPayload')).toBe(false)
   })

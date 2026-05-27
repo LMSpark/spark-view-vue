@@ -3,7 +3,7 @@
  * │  MODULE-SEMANTIC · 语义运行时组合根                                           │
  * │  AiModuleRuntime — Composition Root                                     │
  * │                                                                              │
- * │  本模块是 module-semantic 层的 top-level 入口，组合所有内部组件：               │
+ * │  本模块是 modules 层的 top-level 入口，组合所有内部组件：                       │
  * │    · AiModuleRegistry    — kind 注册表（启动期注册，运行期只读）             │
  * │    · Navigator             — 路径导航 + 发现工具（listChildren/findInstance）   │
  * │    · AttributeAccessor     — 属性读写（getAttribute/setAttribute）            │
@@ -23,7 +23,7 @@
 import type { AiJsonValue } from '../../json'
 import { FunctionInvoker } from '../internal/function-invoker'
 import { AttributeAccessor } from '../internal/attribute-accessor'
-import { AiModuleRegistry } from '../internal/module-kind-registry'
+import { AiModuleRegistry } from '../internal/ai-module-registry'
 import { Navigator, type AiModuleDescription } from '../internal/navigator'
 import {
   ProtocolToolGenerator,
@@ -31,7 +31,7 @@ import {
 } from '../internal/protocol-tool-generator'
 import {
   AiModuleKnowledgeProjector,
-} from '../knowledge/module-semantic-knowledge'
+} from '../knowledge/ai-module-knowledge'
 import type {
   AiModuleKnowledgeFunctionFilter,
   AiModuleKnowledgeFunctionGuide,

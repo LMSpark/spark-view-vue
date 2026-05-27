@@ -13,7 +13,7 @@
 // ============================================================================
 
 import {
-  createAiAgent,
+  createAiAgentHost,
   createAiAgentTransportTurn,
   createTurnEventCollector,
   previewAiAgentDiagnosticValue,
@@ -1368,7 +1368,7 @@ async function run(options) {
   const toolCalls = []
   const tracer = createConversationTracer(options)
 
-  const demand = await sendDemand(pageDesignHost.run.pageDesign, {
+  const demand = await sendDemand((input) => pageDesignHost.run('pageDesign', input), {
     pageId: options.pageId,
     userRequirement: options.requestText,
   }, options.turnTimeoutMs, {

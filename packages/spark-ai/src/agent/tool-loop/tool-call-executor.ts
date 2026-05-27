@@ -4,11 +4,11 @@
  * │  Tool Call Executor                                                          │
  * │                                                                              │
  * │  本模块负责执行单次 OpenAI-style tool_call：将 transport 层 function.name       │
- * │  与 function.arguments 路由到 module-semantic，执行后返回 tool output。          │
+ * │  与 function.arguments 路由到 modules runtime，执行后返回 tool output。          │
  * │                                                                              │
  * │  执行流程：                                                                   │
  * │    1. 从 transport tool_call 中提取 function.name                            │
- * │    2. 通过 resolveToolName 校验对应 toolName（如 "node-tree_getNode"）          │
+ * │    2. 校验固定 toolName（如 "module_call" / "module_find"）                    │
  * │    3. 解析 JSON 参数字符串 → Record<string, AiJsonValue>                     │
  * │    4. 调用 registration.runtime.executeTool 执行 query/navigation 或 function tool│
  * │    5. 将 AiModuleResult 转换为 AiAgentFunctionCallResult                │

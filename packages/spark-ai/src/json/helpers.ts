@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * schema/helpers.ts — JSON Schema 便捷构造器
+ * json/helpers.ts — JSON Schema 便捷构造器
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】schema 层中间件，依赖 types.ts，被 validator.ts 和业务层消费。
@@ -11,7 +11,7 @@
  *   - 所有函数都是纯工厂，无副作用、无状态。
  *   - `paramsSchema()` 专门用于函数参数根节点，强制 type=object。
  *
- * 【消费方】module-semantic/protocol/module-kind.ts（AiModuleFunctionMetadata.paramsSchema）、
+ * 【消费方】modules/protocol/ai-module.ts（AiModuleFunctionMetadata.paramsSchema）、
  *   所有业务 AiModule 子类的 function 注册。
  *
  * ═══════════════════════════════════════════════════════════════

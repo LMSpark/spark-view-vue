@@ -1,6 +1,6 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * host/transport/transport-types.ts — 传输层类型契约
+ * agent/transport/transport-types.ts — 传输层类型契约
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】Host 层与 APP 层的 AI turn 契约。定义工具规约形状、
@@ -14,10 +14,8 @@
  *   AiAgentStreamTurnResult    — AI turn 汇总结果
  *   AiAgentTurnCallbacks       — APP 层实现的 turn I/O 回调
  *
- * 【与 module-semantic 的关系】
- *   本层的 ToolSpec 是 transport 专用形状（parameters 为 Record<string, unknown>），
- *   而 module-semantic 的 AiModuleToolSpec 使用 AiJsonSchemaObject。
- *   host/transport/module-semantic-tool-codec.ts 负责二者之间的转换。
+ * 【与 modules 的关系】
+ *   本层的 ToolSpec 直接承载 runtime 输出的固定工具 JSON Schema。
  *
  * 【消费方】business-session、tool-loop-runner、APP 层 ai-turn bridge
  * ═══════════════════════════════════════════════════════════════
@@ -25,6 +23,7 @@
 
 import type { AiAgentScope } from '../business/scope-types'
 import type { AiAgentStreamEvent, AiAgentTurnMeta } from '../chat/chat-types'
+import type { AiJsonSchemaObject } from '../../json'
 import type {
   AiAgentAppSseEvent,
   AiAgentAppSseEventName,
@@ -40,7 +39,7 @@ export type AiAgentTransportToolSpec = Readonly<{
   function: {
     readonly name: string
     readonly description: string
-    readonly parameters: Readonly<Record<string, unknown>>
+    readonly parameters: AiJsonSchemaObject
     /** OpenAI strict function calling：要求模型参数严格匹配 JSON Schema。 */
     readonly strict?: boolean
   }
