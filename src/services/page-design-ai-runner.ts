@@ -5,7 +5,9 @@
  * UI passes a generic capability consumer and PageEditor, this adapter wires them
  * to the pageDesign business registration and live PageModel edit host.
  */
-import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
+import { createAiRunAdapter, noopTraceSink } from '@spark-view/spark-app'
+import type { AiRunAdapterState, AiRunTraceSink } from '@spark-view/spark-app'
+import type { AiAgentSessionRecord, AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
 import type { PageEditor } from '@spark-view/spark-page-config/editor'
@@ -36,10 +38,15 @@ export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
   editor: PageEditor
   consumeCapability: SparkCapabilityConsumer | null
   events?: PageDesignAiRunEvents
+  trace?: AiRunTraceSink
+  adapter?: AiRunAdapterState
+  onSessionRecord?: (record: AiAgentSessionRecord | null) => void
+  userMessage?: string
 }
 
 export type PageDesignAiRunResult = {
   sawToolCall: boolean
+  sessionRecord: AiAgentSessionRecord | null
 }
 
 export async function runPageDesignAiSession(command: PageDesignAiRunCommand): Promise<PageDesignAiRunResult> {
@@ -63,17 +70,65 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   })
 
   let sawToolCall = false
-  await pageDesignHost.run(PAGE_DESIGN_MODULE_ID, buildPageDesignRunInput(pageId, command), {
-    ...(command.events?.onReasoning === undefined ? {} : { onReasoning: command.events.onReasoning }),
-    ...(command.events?.onDelta === undefined ? {} : { onDelta: command.events.onDelta }),
-    ...(command.events?.onStreamEvent === undefined ? {} : { onStreamEvent: command.events.onStreamEvent }),
-    onToolCall: (record: AiAgentToolCallRecord) => {
-      sawToolCall = true
-      command.events?.onToolCall?.(record)
+  let sessionRecord: AiAgentSessionRecord | null = null
+  const adapter = command.adapter ?? createAiRunAdapter()
+  const result = await adapter.run({
+    host: pageDesignHost,
+    alias: PAGE_DESIGN_MODULE_ID,
+    input: buildPageDesignRunInput(pageId, command),
+    trace: createPageDesignTraceSink({
+      trace: command.trace,
+      events: command.events,
+      onToolCall: (record) => {
+        sawToolCall = true
+        command.events?.onToolCall?.(record)
+      },
+    }),
+    userMessage: command.userMessage ?? userRequirement,
+    onSessionRecord: (record) => {
+      sessionRecord = record
+      command.onSessionRecord?.(record)
     },
   })
+  if (result !== null) {
+    sessionRecord = result.session.getSessionRecord()
+  }
 
-  return { sawToolCall }
+  return { sawToolCall, sessionRecord }
+}
+
+type CreatePageDesignTraceSinkOptions = Readonly<{
+  trace: AiRunTraceSink | undefined
+  events: PageDesignAiRunEvents | undefined
+  onToolCall(record: AiAgentToolCallRecord): void
+}>
+
+function createPageDesignTraceSink(options: CreatePageDesignTraceSinkOptions): AiRunTraceSink {
+  const trace = options.trace ?? noopTraceSink
+
+  return {
+    appendUserMessage: (content) => trace.appendUserMessage(content),
+    appendEvent: (event) => {
+      trace.appendEvent(event)
+      options.events?.onStreamEvent?.(event)
+    },
+    appendDelta: (delta) => {
+      trace.appendDelta(delta)
+      options.events?.onDelta?.(delta)
+    },
+    appendReasoning: (reasoning) => {
+      trace.appendReasoning(reasoning)
+      options.events?.onReasoning?.(reasoning)
+    },
+    appendToolCall: (record) => {
+      trace.appendToolCall(record)
+      options.onToolCall(record)
+    },
+    appendError: (message) => trace.appendError(message),
+    markAborted: (message) => trace.markAborted(message),
+    finish: () => trace.finish(),
+    reset: () => trace.reset(),
+  }
 }
 
 function assertActivePageModelLoaded(editor: PageEditor, pageId: string): void {
