@@ -10,6 +10,7 @@ import {
   createSimpleInputContract,
   summarizeAiAgentSessionRecord,
   type AiAgentRegistrationOptions,
+  type AiAgentTaskChatOptions,
   type AiAgentTurnCallbacks,
 } from '../agent'
 import {
@@ -31,6 +32,7 @@ type TaskRegistrationHooks = Readonly<{
   afterFunctionCall?: NonNullable<AiAgentRegistrationOptions<TaskInput>['afterFunctionCall']>
   onEndBusinessInstance?: NonNullable<AiAgentRegistrationOptions<TaskInput>['onEndBusinessInstance']>
 }>
+type TaskRequestBeforeFunctionCall = NonNullable<AiAgentTaskChatOptions['beforeFunctionCall']>
 
 function createRuntime(): AiModuleRuntime {
   const runtime = new AiModuleRuntime()
@@ -304,6 +306,41 @@ describe('AiAgentHost public API', () => {
         decision: 'reject',
       },
     })
+  })
+
+  it('accepts request-scoped beforeFunctionCall without changing the business registration', async () => {
+    const store = new DefaultAiAgentSessionStore()
+    const beforeFunctionCall = vi.fn<TaskRequestBeforeFunctionCall>(() => ({
+      status: 'reject',
+      reason: '本轮运行需要 UI 审批',
+      fix: '等待用户批准后再执行。',
+    }))
+    const host = createAiAgentHost({ turnCallbacks: createCallbacks().callbacks, maxToolRounds: 1 })
+      .register('task', createRegistration(store))
+
+    await host.run('task', { id: 'task-a', message: '第一轮' }, { beforeFunctionCall })
+    await host.run('task', { id: 'task-a', message: '第二轮' })
+
+    const functionCalls = store.listSessions()[0]?.history.filter((entry) => entry.kind === 'functionCall')
+    expect(beforeFunctionCall).toHaveBeenCalledTimes(1)
+    expect(functionCalls).toEqual([
+      expect.objectContaining({
+        kind: 'functionCall',
+        status: 'failed',
+        error: expect.objectContaining({
+          code: 'AI_TOOL_REJECTED_BEFORE_EXECUTION',
+          msg: '本轮运行需要 UI 审批',
+        }),
+      }),
+      expect.objectContaining({
+        kind: 'functionCall',
+        status: 'failed',
+        error: expect.objectContaining({
+          code: 'INTENTIONAL_FAILURE',
+          msg: '工具失败',
+        }),
+      }),
+    ])
   })
 
   it('aborts the session when beforeFunctionCall returns abort', async () => {

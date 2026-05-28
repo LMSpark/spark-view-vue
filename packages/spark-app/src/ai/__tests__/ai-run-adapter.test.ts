@@ -23,7 +23,7 @@ import {
   formatAiRunError,
   noopTraceSink,
 } from '../ai-run-adapter'
-import type { AiRunHost, AiRunTraceSink } from '../ai-run-adapter'
+import type { AiRunBeforeFunctionCall, AiRunHost, AiRunTraceSink } from '../ai-run-adapter'
 
 function createTraceSink() {
   return {
@@ -200,6 +200,32 @@ describe('createAiRunAdapter', () => {
     expect(trace.appendReasoning).toHaveBeenCalledWith('thinking')
     expect(trace.appendToolCall).toHaveBeenCalledWith(toolCall)
     expect(trace.finish).toHaveBeenCalledTimes(1)
+  })
+
+  it('passes request-scoped beforeFunctionCall through chat options without requiring UI state', async () => {
+    const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
+    const result = createRunResult()
+    const run = vi.fn(async (
+      _alias: string,
+      _input: AiJsonParams,
+      _chat?: AiAgentTaskChatOptions,
+    ) => result)
+    const host: AiRunHost = { run }
+    const adapter = createAiRunAdapter()
+
+    await expect(adapter.run({
+      host,
+      alias: 'page-design',
+      input: { prompt: 'approve me' },
+      beforeFunctionCall,
+    })).resolves.toBe(result)
+
+    expect(run).toHaveBeenCalledWith(
+      'page-design',
+      { prompt: 'approve me' },
+      expect.objectContaining({ beforeFunctionCall }),
+    )
+    expect(beforeFunctionCall).not.toHaveBeenCalled()
   })
 
   it('appends formatted errors and rethrows non-abort failures', async () => {

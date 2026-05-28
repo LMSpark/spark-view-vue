@@ -7,6 +7,8 @@
  */
 
 import type {
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
   AiAgentHostRunResult,
   AiAgentSessionRecord,
   AiAgentStreamEvent,
@@ -40,6 +42,9 @@ export const noopTraceSink: AiRunTraceSink = Object.freeze({
 })
 
 export type AiRunErrorFormatter = (error: unknown) => string
+export type AiRunBeforeFunctionCall = (
+  options: AiAgentBeforeFunctionCallOptions,
+) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
 
 export type AiRunHost = Readonly<{
   run<TInput extends AiJsonParams>(
@@ -58,6 +63,7 @@ export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Re
   alias: string
   input: TInput
   trace?: AiRunTraceSink
+  beforeFunctionCall?: AiRunBeforeFunctionCall
   onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }>
@@ -133,6 +139,7 @@ export function createAiRunAdapter(
         onDelta: (delta) => trace.appendDelta(delta),
         onReasoning: (reasoning) => trace.appendReasoning(reasoning),
         onToolCall: (record) => trace.appendToolCall(record),
+        ...(command.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: command.beforeFunctionCall }),
       })
 
       if (activeRun !== currentRun || currentRun.aborted) return null

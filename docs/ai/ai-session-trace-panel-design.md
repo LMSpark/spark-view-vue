@@ -914,11 +914,17 @@ Adapter 的启动命令用具名对象，避免 4 个以上位置参数：
 
 ```typescript
 import type {
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
   AiAgentHostRunResult,
   AiAgentSessionRecord,
   AiAgentTaskChatOptions,
 } from '@spark-view/spark-ai/agent'
 import type { AiJsonParams } from '@spark-view/spark-ai/json'
+
+export type AiRunBeforeFunctionCall = (
+  options: AiAgentBeforeFunctionCallOptions,
+) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
 
 export type AiRunHost = Readonly<{
   run<TInput extends AiJsonParams>(
@@ -933,6 +939,7 @@ export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Re
   alias: string
   input: TInput
   trace?: AiRunTraceSink
+  beforeFunctionCall?: AiRunBeforeFunctionCall
   onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }>
@@ -977,6 +984,7 @@ function formatAiRunError(error: unknown): string {
    - `onDelta: trace.appendDelta`
    - `onReasoning: trace.appendReasoning`
    - `onToolCall: trace.appendToolCall`
+   - `beforeFunctionCall: command.beforeFunctionCall`（可选，通用审批桥接，不绑定业务）
    - `signal: abortController.signal`
 6. `then(result)`：若 `runId` 仍是当前运行，调用 `onSessionRecord?.(result.session.getSessionRecord())`。
 7. `catch(error)`：如果是本地 abort 后的 reject，不重复追加错误；否则 `trace.appendError(formatAiRunError(error))`。
@@ -1042,6 +1050,7 @@ pnpm exec vitest run tests/page-design-ai-runner.test.ts tests/dev-system-header
 - `beforeFunctionCall` 钩子：在 `runtime.executeTool()` 前执行；`allow` 继续执行，`reject` 回灌失败 tool result 但不中止 turn，`abort` 进入生命周期终止流程。
 - `AiAgentSession.stop(reason)`：外部无 UI 场景也能停止当前业务会话，写入 `sessionStore.stopSession()` 并触发 `onEndBusinessInstance`。
 - `AiAgentHost.listSessions(alias?)`：Host 层直接暴露会话发现；传 alias 返回单业务会话，不传则聚合当前 Host 业务会话。
+- M3-1 通用桥接：`AiAgentChatRequest.beforeFunctionCall` 支持每次 run 注入 UI-neutral 前置裁决；`spark-app` 的 `AiRunAdapterCommand.beforeFunctionCall` 只做透传，不牵扯 pageDesign 或其他业务侧。
 
 尚未进入 UI 开发的 M3 功能：
 

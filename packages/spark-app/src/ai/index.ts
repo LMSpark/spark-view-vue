@@ -8,6 +8,7 @@ export type {
   AiRunAdapterCommand,
   AiRunAdapterOptions,
   AiRunAdapterState,
+  AiRunBeforeFunctionCall,
   AiRunErrorFormatter,
   AiRunHost,
   AiRunTraceSink,

@@ -32,6 +32,7 @@ import type { AiJsonParams } from '../../json'
 import { toAiAgentRuntimeScope } from '../business/business-scope'
 import type {
   AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
   AiAgentLifecycleDirective,
 } from '../business/lifecycle-types'
 import type { AiAgentRegistration } from '../business/registration-types'
@@ -109,6 +110,12 @@ type CompleteToolCallExecutionInput<TInput extends AiJsonParams = AiJsonParams> 
 const CONTINUE_DIRECTIVE: AiAgentLifecycleDirective = { status: 'continue' }
 const ALLOW_FUNCTION_CALL_DIRECTIVE: AiAgentBeforeFunctionCallDirective = { status: 'allow' }
 
+type ResolveBeforeFunctionCallDirectiveInput<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  request: AiAgentChatRequest
+  registration: AiAgentRegistration<TInput>
+  options: AiAgentBeforeFunctionCallOptions
+}>
+
 /* ── 工具调用执行器 ────────────────────────────────────────── */
 
 export class AiAgentToolCallExecutor {
@@ -146,12 +153,16 @@ export class AiAgentToolCallExecutor {
     // 步骤 3：解析 JSON 参数字符串
     const args = parsedArgs.args
 
-    // 步骤 4：执行前策略裁决（人工审批、权限策略等）
-    const beforeDirective = await input.registration.beforeFunctionCall?.({
-      ...runtimeContext,
-      toolName: protocolToolName,
-      args,
-    }) ?? ALLOW_FUNCTION_CALL_DIRECTIVE
+    // 步骤 4：执行前策略裁决（请求级 UI 桥接先裁决，注册级业务策略仍可兜底）
+    const beforeDirective = await resolveBeforeFunctionCallDirective({
+      request: input.request,
+      registration: input.registration,
+      options: {
+        ...runtimeContext,
+        toolName: protocolToolName,
+        args,
+      },
+    })
     if (beforeDirective.status !== 'allow') {
       return this.completeExecution({
         source: input,
@@ -260,6 +271,18 @@ export class AiAgentToolCallExecutor {
       directive,
     }
   }
+}
+
+async function resolveBeforeFunctionCallDirective<TInput extends AiJsonParams>(
+  input: ResolveBeforeFunctionCallDirectiveInput<TInput>,
+): Promise<AiAgentBeforeFunctionCallDirective> {
+  const requestDirective = await input.request.beforeFunctionCall?.(input.options)
+  if (requestDirective !== undefined && requestDirective.status !== 'allow') {
+    return requestDirective
+  }
+
+  const registrationDirective = await input.registration.beforeFunctionCall?.(input.options)
+  return registrationDirective ?? requestDirective ?? ALLOW_FUNCTION_CALL_DIRECTIVE
 }
 
 function beforeFunctionCallFailureResult(

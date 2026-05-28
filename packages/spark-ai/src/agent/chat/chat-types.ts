@@ -17,6 +17,10 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
+import type {
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
+} from '../business/lifecycle-types'
 import type { AiAgentFunctionCallResult } from '../session/session-types'
 
 // ═══════════════════════════════════════════════════════════════
@@ -45,6 +49,7 @@ export type AiAgentChatMessage = Readonly<{
  *   onUsage     — token 用量回调
  *   onStreamEvent — 原始 AI turn 事件回调
  *   onToolCall  — 工具调用记录回调
+ *   beforeFunctionCall — 本次请求级工具执行前置裁决
  *
  * 可选控制：
  *   turn        — 轮次元数据（未提供时自动生成）
@@ -61,6 +66,9 @@ export type AiAgentChatRequest = Readonly<{
   onUsage?: (usageRaw: Record<string, unknown>) => void
   onStreamEvent?: (event: AiAgentStreamEvent) => void
   onToolCall?: (record: AiAgentToolCallRecord) => void
+  beforeFunctionCall?: (
+    options: AiAgentBeforeFunctionCallOptions,
+  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
 }>
 
 // ═══════════════════════════════════════════════════════════════
