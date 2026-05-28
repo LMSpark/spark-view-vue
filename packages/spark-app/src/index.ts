@@ -203,3 +203,19 @@ export {
 
 // ── Page UI Host Component ──
 export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
+
+// ── AI run adapter（headless） ──
+export {
+  createAiRunAdapter,
+  formatAiRunError,
+  noopTraceSink,
+} from './ai'
+
+export type {
+  AiRunAdapterCommand,
+  AiRunAdapterOptions,
+  AiRunAdapterState,
+  AiRunErrorFormatter,
+  AiRunHost,
+  AiRunTraceSink,
+} from './ai'
