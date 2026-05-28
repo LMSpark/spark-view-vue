@@ -339,3 +339,27 @@ export type {
   PageContext,
   PageModelRenderConfig,
 } from './page/index.js'
+
+// ── AI 会话监视组件 ──
+export {
+  AiSessionTracePanel,
+  useSessionStream,
+  useSessionDiagnostics,
+} from './ai/index.js'
+
+export type {
+  AiSessionTracePanelProps,
+  SessionStreamViewProps,
+  SessionChatBubbleProps,
+  SessionReasoningBlockProps,
+  SessionToolCallCardProps,
+  SessionDiagnosticsPanelProps,
+  UseSessionStreamReturn,
+  UseSessionDiagnosticsOptions,
+  UseSessionDiagnosticsReturn,
+  StreamDisplayEntry,
+  ToolCallDisplayItem,
+  ReasoningDisplayItem,
+  SessionDiagnosticsData,
+  SessionDiagnosticIssue,
+} from './ai/index.js'
