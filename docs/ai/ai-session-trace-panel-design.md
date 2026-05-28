@@ -406,10 +406,10 @@ function replaceEntryAt(
 // ── 事件状态机 ──
 
 function appendEvent(event: AiAgentStreamEvent): void {
-  const turnId = event.scope?.turnId
-  if (turnId === undefined || turnId.length === 0) return
+  const turnId = event.scope.turnId
+  if (turnId.length === 0) return
 
-  const eventType = String(event.type ?? '')
+  const eventType = String(event.type)
 
   if (
     eventType === 'llm-request' ||
@@ -438,15 +438,21 @@ function appendEvent(event: AiAgentStreamEvent): void {
   }
 
   if (eventType === 'error') {
-    const message = typeof event.data === 'string'
-      ? event.data
-      : (event.data as Record<string, unknown>)?.message
-    appendError(String(message ?? 'AI turn error'))
+    appendError(readErrorMessage(event.data))
     finalizeCurrentTurn()
     return
   }
 
   // tool-result：仅诊断，不改变条目列表
+}
+
+function readErrorMessage(data: unknown): string {
+  if (typeof data === 'string' && data.trim().length > 0) return data
+  if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
+    const message = (data as Record<string, unknown>)['message']
+    if (typeof message === 'string' && message.trim().length > 0) return message
+  }
+  return 'AI turn error'
 }
 
 // ── delta / reasoning：不静默丢弃 ──
@@ -830,17 +836,18 @@ pnpm --filter @spark-view/spark-component exec vitest run src/tests/ai/
 
 ## 十二、M2/M3 展望
 
-### M2 计划（依赖 M1 完成）
+### M2 状态（当前分支已落地前两切片）
 
-- 第一切片：headless AI run adapter 边界与实现计划（无 UI 也能跑）
+- 第一切片：headless AI run adapter 已落地在 `packages/spark-app/src/ai/ai-run-adapter.ts`（无 UI 也能跑）
+- 第二切片：DevSystem pageDesign app service 已接入 adapter，落点为 `src/services/page-design-ai-runner.ts`
 - 后续可选：`SessionInputBar.vue`（textarea + 附件引用 + Send/Stop 按钮）
-- 后续可选：`AiSessionRunner` 接口 + adapter 实现示例（调用方参考；需等第一切片验证后再冻结 API）
+- 后续可选：`AiSessionRunner` 接口 + adapter 实现示例（调用方参考；需等人工验收后再冻结 API）
 - 后续可选：多模态附件引用：文本描述 + URL + 文件名（base64 仅 UI 预览，不进 historyMsgs）
 - 后续可选：`SessionTabBar.vue`（el-tabs，按 `{ moduleId, moduleInstanceId }` 对管理多个 session）
 
-### M2 Adapter Boundary / Integration Plan（第一切片）
+### M2 Adapter Boundary / Integration（已实现前两切片）
 
-M2 第一切片只定义 **AI run adapter / app shell** 的边界，不修改 `AiSessionTracePanel` 的领域模型。目标是验证真实运行链路：
+M2 前两切片只定义并落地 **AI run adapter / app shell** 的边界，不修改 `AiSessionTracePanel` 的领域模型。目标是验证真实运行链路：
 
 ```text
 APP SSE -> spark-ai runtime/transport/collector -> host.run callbacks -> trace sink -> AiSessionTracePanel props
@@ -852,8 +859,8 @@ APP SSE -> spark-ai runtime/transport/collector -> host.run callbacks -> trace s
 
 Adapter 不属于 `spark-component/src/ai/**`。推荐落点是应用壳或 AI 运行编排层，例如：
 
-- `packages/spark-app/src/ai/useAiRunAdapter.ts`
-- 或业务 app shell 自己的 `src/ai/useAiRunAdapter.ts`
+- `packages/spark-app/src/ai/ai-run-adapter.ts`（当前 headless core）
+- 业务 app shell 自己的服务层，例如 `src/services/page-design-ai-runner.ts`
 
 Adapter 可以接触 `AiAgentHost`、alias、业务输入、`AbortController` 和错误映射；`AiSessionTracePanel` 及其子组件不能接触这些对象。若需要 Vue 绑定，可以在 adapter 外包一层很薄的 Vue wrapper，但 core adapter 必须能在无 UI、无组件挂载的环境下执行。
 
@@ -906,13 +913,22 @@ Adapter 的启动命令用具名对象，避免 4 个以上位置参数：
 
 ```typescript
 import type {
-  AiAgentHost,
   AiAgentHostRunResult,
   AiAgentSessionRecord,
+  AiAgentTaskChatOptions,
 } from '@spark-view/spark-ai/agent'
+import type { AiJsonParams } from '@spark-view/spark-ai/json'
 
-export type AiRunAdapterCommand<TInput> = Readonly<{
-  host: AiAgentHost
+export type AiRunHost = Readonly<{
+  run<TInput extends AiJsonParams>(
+    alias: string,
+    input: TInput,
+    chat?: AiAgentTaskChatOptions,
+  ): Promise<AiAgentHostRunResult>
+}>
+
+export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  host: AiRunHost
   alias: string
   input: TInput
   trace?: AiRunTraceSink
@@ -923,11 +939,13 @@ export type AiRunAdapterCommand<TInput> = Readonly<{
 export type AiRunAdapterState = Readonly<{
   isRunning(): boolean
   abort(reason?: string): void
-  run<TInput>(command: AiRunAdapterCommand<TInput>): Promise<AiAgentHostRunResult | null>
+  run<TInput extends AiJsonParams>(
+    command: AiRunAdapterCommand<TInput>,
+  ): Promise<AiAgentHostRunResult | null>
 }>
 ```
 
-这组类型属于 adapter/app shell，不进入 `spark-component/src/ai/**`。如果后续要沉淀公共 runner API，必须等 M2 验证完成后再单独评审。Vue app 可以用 wrapper 把 `onSessionRecord` 映射到 `sessionRecord.value = record`，但 core adapter 不 import `vue`。
+这组类型属于 adapter/app shell，不进入 `spark-component/src/ai/**`。当前已从 `@spark-view/spark-app` public entry 导出。Vue app 可以用 wrapper 把 `onSessionRecord` 映射到 `sessionRecord.value = record`，但 core adapter 不 import `vue`。如果后续要沉淀更高阶 runner API，必须等人工验收后再单独评审。
 
 `run()` 返回值语义：
 
@@ -966,7 +984,7 @@ function formatAiRunError(error: unknown): string {
 
 #### 12.5 禁止事项
 
-M2 第一切片继续禁止：
+M2 前两切片继续禁止：
 
 - `spark-component/src/ai/**` import `AiAgentHost`。
 - `spark-component/src/ai/**` 创建或关闭 `EventSource` / SSE connection。
@@ -987,6 +1005,34 @@ M2 adapter 第一切片至少覆盖：
 - `abort()` 立即追加 system-message，并在 reject/resolve 两种路径下都不会重复错误。
 - 并发 `run()` 被 fail-fast 拒绝。
 - `spark-component/src/ai/**` 仍不出现 `AiAgentHost`、`EventSource`、`PageModel*`、`@spark-view/spark-page-config`。
+
+#### 12.7 当前实现验收状态
+
+当前分支已完成两刀落地：
+
+1. `packages/spark-app/src/ai/ai-run-adapter.ts`
+   - 提供 `createAiRunAdapter()`、`noopTraceSink`、`AiRunHost`、`AiRunTraceSink`。
+   - `AiRunHost` 是窄契约，只要求 `run(alias, input, chat?)`；生产可传 `AiAgentHost`，测试或业务 adapter 可传同等结构对象。
+   - `trace` 是可选 observer；不传 `trace` 时仍通过 no-op sink headless 运行。
+   - `abort()` 立即 `AbortController.abort()` + `trace.markAborted()`，不等待 `host.run()` reject。
+
+2. `src/services/page-design-ai-runner.ts`
+   - DevSystem pageDesign app service 已通过 `createAiRunAdapter()` 调用 `pageDesignHost.run()`。
+   - 该文件属于 app/business adapter 层，可以知道 `PageEditor`、`ensurePageDesignBusiness()` 和 `PageDesignRunInput`。
+   - `spark-component/src/ai/**` 未被修改，panel 仍只消费纯 AI/session props。
+   - 兼容 legacy `events` 回调，同时支持传入 full `trace` sink。`PageDesignAiRunEvents` 仅用于旧状态消息；full session UI 应优先传 `trace`，不要把同一个 `useSessionStream()` 同时传给 `trace` 和 `events`。
+
+已验证：
+
+```bash
+pnpm --filter @spark-view/spark-app run test:run -- src/ai/__tests__/ai-run-adapter.test.ts
+pnpm --filter @spark-view/spark-app run typecheck
+pnpm --filter @spark-view/spark-app run lint
+pnpm exec vitest run tests/page-design-ai-runner.test.ts
+pnpm run typecheck
+pnpm run lint
+pnpm exec vitest run tests/page-design-ai-runner.test.ts tests/dev-system-header-save.test.ts tests/use-dev-state-page-data-history.test.ts
+```
 
 ### M3 计划（依赖 spark-ai 内核补齐）
 
