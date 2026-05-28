@@ -19,7 +19,6 @@ export default defineConfig({
       { find: /^@spark-view\/spark-page-config\/editor$/, replacement: resolve(__dirname, './src/editor/page-editor.ts') },
       { find: /^@spark-view\/spark-page-config\/json-document$/, replacement: resolve(__dirname, './src/json-document-public.ts') },
       { find: /^@spark-view\/spark-component\/runtime$/, replacement: resolve(__dirname, '../spark-component/src/runtime/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/design$/, replacement: resolve(__dirname, './src/design/index.ts') },
       { find: /^@spark-view\/spark-page-config\/ai$/, replacement: resolve(__dirname, './src/ai/index.ts') },
       { find: /^@spark-view\/spark-page-config\/ai\/payloads\/component-catalog\.json$/, replacement: resolve(__dirname, './src/ai/payloads/component-catalog.json') },
     ]

@@ -1,12 +1,12 @@
 import { createRequest, type HttpClientBase, type RequestInterceptor } from '@spark-view/spark-utils'
+import type { BasePageConfigLoader, ConfigLoaderOptions } from '../config/config-types'
+import { PageConfigFileApi } from '../config/page-config-file-api'
+import { createConfigLoader } from '../config/page-config-loader'
+import { NavigationConfigClient } from '../navigation/nav-client'
 import {
-  PageConfigFileApi,
-  createConfigLoader,
-  type BasePageConfigLoader,
-  type ConfigLoaderOptions,
-} from '../config'
-import { NavigationConfigClient } from '../navigation'
-import { PageModel, type PageModelLike } from './page-model'
+  PageModel,
+  type PageModelLike,
+} from './page-model'
 
 export type PageModelFileStorage = 'localStorage' | 'sessionStorage' | 'memory'
 

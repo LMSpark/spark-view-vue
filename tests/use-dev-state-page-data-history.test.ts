@@ -32,7 +32,8 @@ vi.mock('@/services/api-paths', () => ({
 
 import { canonicalizePageDataJson } from '../packages/spark-page-config/src/design/page-data-canonicalize'
 import { PageModel } from '../packages/spark-page-config/src'
-import { useDevState, type PageConfigFileName } from '../src/views/app/dev-system/useDevState'
+import { useDevState } from '../src/views/app/dev-system/useDevState'
+import type { PageModelFileName } from '@spark-view/spark-page-config'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
 const PAGE_MODEL_FILE_NAMES = PageModel.fileNames
@@ -94,12 +95,19 @@ async function requestFullFromGet(config: { url: string }): Promise<Record<strin
       headers: {},
     }
   } catch (error) {
-    const maybeStatus = error as { status?: unknown; response?: { status?: unknown } }
-    if (maybeStatus.status === undefined && typeof maybeStatus.response?.status === 'number') {
-      maybeStatus.status = maybeStatus.response.status
+    if (
+      isErrorLike(error) &&
+      error.status === undefined &&
+      typeof error.response?.status === 'number'
+    ) {
+      error.status = error.response.status
     }
     throw error
   }
+}
+
+function isErrorLike(value: unknown): value is { status?: unknown; response?: { status?: unknown } } {
+  return value !== null && typeof value === 'object'
 }
 
 describe('useDevState documents SSOT', () => {
@@ -309,7 +317,7 @@ describe('useDevState documents SSOT', () => {
     const scope = effectScope()
     try {
       scope.run(() => {
-        const editor = useDevFileEditor(state, ref<PageConfigFileName>('pagedata.json'))
+        const editor = useDevFileEditor(state, ref<PageModelFileName>('pagedata.json'))
         const initialCanonical = canonicalizePageDataJson(initial).text
 
         // V3.1: text is a direct read-only projection of the model

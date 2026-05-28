@@ -11,7 +11,7 @@ import {
 } from '@spark-view/spark-ai/modules'
 import type { AiAgentRuntimeContext } from '@spark-view/spark-ai/agent'
 import type { AiJsonValue } from '@spark-view/spark-ai/json'
-import type { PageDesignEditHost } from '../src/design/index'
+import type { PageDesignEditHost } from '../src/design/page-edit-session'
 import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignService } from '../src/design/page-design-service'

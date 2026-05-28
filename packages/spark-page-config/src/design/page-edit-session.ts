@@ -17,7 +17,7 @@ import type {
 import type {
   NavigationNodeDraft,
   NavigationContextDraft,
-} from '../navigation'
+} from '../navigation/nav-editing'
 
 // ── 编辑会话核心契约 ───────────────────────────────────────
 

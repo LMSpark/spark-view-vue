@@ -10,19 +10,19 @@
  * context 通过 setContextItems / updateContextConfig / addContextItem / removeContextItem 修改。
  */
 
-import type { NavNode, NavNodeKind } from '../navigation'
+import type { NavNode, NavNodeKind } from '../navigation/nav-model'
 import type {
   NavigationNodeDraft,
   NavigationContextDraft,
   NavigationContextDraftConfig,
   NavigationNodeDraftApplyResult,
-} from '../navigation'
+} from '../navigation/nav-editing'
 import {
   createNavigationNodeDraft,
   applyNavigationNodeDraftToNode,
   applyNodeKindPresetToDraft,
-} from '../navigation'
-import type { NavigationConfigClient } from '../navigation'
+} from '../navigation/nav-editing'
+import type { NavigationConfigClient } from '../navigation/nav-client'
 
 function cloneConfig(c: NavigationContextDraftConfig): NavigationContextDraftConfig {
   return { placeholder: c.placeholder, defaultValue: c.defaultValue, paramName: c.paramName }

@@ -16,7 +16,7 @@ import {
   ensurePageDesignBusiness,
   type PageDesignRunInput,
 } from '../src/ai/index'
-import type { PageDesignEditHost } from '../src/design/index'
+import type { PageDesignEditHost } from '../src/design/page-edit-session'
 import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignService } from '../src/design/page-design-service'

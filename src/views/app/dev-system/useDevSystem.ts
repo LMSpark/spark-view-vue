@@ -9,13 +9,14 @@
  */
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { useDevState, type DevWorkspaceTab, type PageConfigFileName } from './useDevState'
+import { useDevState, type DevWorkspaceTab } from './useDevState'
+import type { PageModelFileName } from '@spark-view/spark-page-config'
 import { onPageConfigChange } from '@/services/sse-events'
 
 export function useDevSystem() {
   const { router, tenantPath } = useTenantRouter()
   const state = useDevState()
-  const isPageFileName = (value: string): value is PageConfigFileName =>
+  const isPageFileName = (value: string): value is PageModelFileName =>
     state.pageFileNames.some((name) => name === value)
 
   // ─── 工作区 Tab 状态 ───────────────────────────────────
@@ -23,7 +24,7 @@ export function useDevSystem() {
   const previewRefreshToken = ref(0)
   const pageDesignAiPrompt = ref('')
 
-  const currentWorkspaceFile = computed<PageConfigFileName | null>(() =>
+  const currentWorkspaceFile = computed<PageModelFileName | null>(() =>
     isPageFileName(workTab.value) ? workTab.value : null,
   )
 
@@ -92,7 +93,7 @@ export function useDevSystem() {
     await state.runPageDesignAi({ userRequirement })
   }
 
-  function isWorkspaceTabDirty(name: PageConfigFileName): boolean {
+  function isWorkspaceTabDirty(name: PageModelFileName): boolean {
     return state.isDocumentDirty(name)
   }
 

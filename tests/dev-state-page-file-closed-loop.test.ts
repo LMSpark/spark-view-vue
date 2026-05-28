@@ -64,12 +64,19 @@ async function requestFullFromGet(config: { url: string }): Promise<Record<strin
       headers: {},
     }
   } catch (error) {
-    const maybeStatus = error as { status?: unknown; response?: { status?: unknown } }
-    if (maybeStatus.status === undefined && typeof maybeStatus.response?.status === 'number') {
-      maybeStatus.status = maybeStatus.response.status
+    if (
+      isErrorLike(error) &&
+      error.status === undefined &&
+      typeof error.response?.status === 'number'
+    ) {
+      error.status = error.response.status
     }
     throw error
   }
+}
+
+function isErrorLike(value: unknown): value is { status?: unknown; response?: { status?: unknown } } {
+  return value !== null && typeof value === 'object'
 }
 
 describe('DevState 页面文件闭环', () => {

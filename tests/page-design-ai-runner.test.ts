@@ -1,62 +1,135 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { PageEditor } from '@spark-view/spark-page-config/editor'
+import { createPageEditor, type PageEditor } from '@spark-view/spark-page-config/editor'
 import { createAiRunAdapter, type AiRunTraceSink } from '@spark-view/spark-app'
 import type {
+  AiAgentHost,
   AiAgentHostRunResult,
   AiAgentSessionRecord,
   AiAgentStreamEvent,
+  AiAgentTurnCallbacks,
   AiAgentToolCallRecord,
 } from '@spark-view/spark-ai/agent'
+import {
+  AiAgentRegistration,
+  AiAgentRuntimeContext,
+  AiAgentScope,
+  AiAgentSession,
+  AiAgentTarget,
+  AiAgentTask,
+  createAiAgentHost,
+  DefaultAiAgentSessionStore,
+} from '@spark-view/spark-ai/agent'
+import { AiModuleRuntime } from '@spark-view/spark-ai/modules'
+import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-view/spark-utils'
 import { runPageDesignAiSession } from '@/services/page-design-ai-runner'
 
 const mocks = vi.hoisted(() => {
-  const aiAgentHostKey = Symbol('AI_AGENT_HOST')
   const pageDesignRun = vi.fn()
   return {
-    aiAgentHostKey,
     pageDesignRun,
     ensurePageDesignBusiness: vi.fn(() => ({ run: pageDesignRun })),
   }
 })
-
-vi.mock('@spark-view/spark-ai/agent', () => ({
-  AI_AGENT_HOST: mocks.aiAgentHostKey,
-}))
 
 vi.mock('@spark-view/spark-page-config/ai', () => ({
   PAGE_DESIGN_MODULE_ID: 'pageDesign',
   ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
 }))
 
-function createEditor(activePage: { pageId: string; isLoaded: boolean } | null): PageEditor {
-  return {
-    getActivePage: vi.fn(() => activePage),
-    setActivePage: vi.fn(),
-    ensureActivePageFilesLoaded: vi.fn(),
-    createPageDesignEditHost: vi.fn(() => ({})),
-  } as unknown as PageEditor
-}
-
-function createSessionRecord(instanceId = 'session-1'): AiAgentSessionRecord {
-  return {
-    moduleId: 'pageDesign',
-    moduleInstanceId: 'orders',
-    instanceId,
-    runtimeInstanceId: 'runtime-1',
-    status: 'Stopped',
-    startedAt: 1,
-    updatedAt: 2,
-    history: [],
+class TestHttpClient extends HttpClientBase {
+  protected async executeRequest(_config: RequestConfig): Promise<HttpResponse<unknown>> {
+    return { data: null, status: 200, statusText: 'OK', headers: {} }
   }
 }
 
-function createRunResult(record = createSessionRecord()): AiAgentHostRunResult {
-  return {
-    task: {},
-    session: {
-      getSessionRecord: () => record,
-    },
-  } as unknown as AiAgentHostRunResult
+type ActivePageState = Readonly<{
+  pageId: string
+  isLoaded: boolean
+}>
+
+function createEditor(activePage: ActivePageState | null): PageEditor {
+  const editor = createPageEditor({
+    http: new TestHttpClient(),
+    getPageConfigApi: () => '/api/pages',
+    getNavigationApi: () => '/api/navigation',
+  })
+  Object.defineProperty(editor, 'getActivePage', {
+    value: vi.fn(() => activePage),
+    configurable: true,
+  })
+  Object.defineProperty(editor, 'setActivePage', {
+    value: vi.fn(),
+    configurable: true,
+  })
+  Object.defineProperty(editor, 'ensureActivePageFilesLoaded', {
+    value: vi.fn(),
+    configurable: true,
+  })
+  Object.defineProperty(editor, 'createPageDesignEditHost', {
+    value: vi.fn(() => ({})),
+    configurable: true,
+  })
+  return editor
+}
+
+function createAiHost(): AiAgentHost {
+  const turnCallbacks: AiAgentTurnCallbacks = {
+    executeTurn: async () => ({ text: '', toolCalls: [] }),
+    appendMessages: async () => undefined,
+  }
+  return createAiAgentHost({ turnCallbacks })
+}
+
+function createCapabilityConsumer(host: AiAgentHost): SparkCapabilityConsumer {
+  return (name) => name.read(host)
+}
+
+type RunFixture = Readonly<{
+  result: AiAgentHostRunResult
+  record: AiAgentSessionRecord
+}>
+
+function createRunFixture(instanceId = 'orders'): RunFixture {
+  const moduleId = 'pageDesign'
+  const store = new DefaultAiAgentSessionStore({ now: () => 1 })
+  const context = new AiAgentRuntimeContext(moduleId, instanceId, instanceId)
+  store.startSession(context)
+  const registration = new AiAgentRegistration({
+    moduleId,
+    name: '页面设计',
+    description: '页面设计',
+    runtime: new AiModuleRuntime(),
+    sessionStore: store,
+  })
+  const registry = {
+    get: (requestedModuleId: string) =>
+      requestedModuleId === moduleId ? registration : undefined,
+  }
+  const turnCallbacks: AiAgentTurnCallbacks = {
+    executeTurn: async () => ({ text: '', toolCalls: [] }),
+    appendMessages: async () => undefined,
+  }
+  const scope = new AiAgentScope(moduleId, instanceId, instanceId, instanceId)
+  const task = new AiAgentTask(moduleId, {
+    pageId: instanceId,
+    userRequirement: '补一个按钮',
+  }, scope, {
+    userMessage: '补一个按钮',
+    systemPrompt: '页面设计',
+  })
+  const session = new AiAgentSession(
+    { registry, turnCallbacks },
+    new AiAgentTarget(moduleId, instanceId),
+  )
+  const record = session.getSessionRecord()
+  if (record === null) {
+    throw new Error('Failed to create test pageDesign AI session record.')
+  }
+  return { result: { task, session }, record }
+}
+
+function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
+  return createRunFixture(instanceId).result
 }
 
 function createStreamEvent(): AiAgentStreamEvent {
@@ -127,15 +200,15 @@ describe('runPageDesignAiSession', () => {
 
   it('uses the already loaded active PageModel instead of loading files on AI click', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: true })
-    const aiHost = {}
-    const record = createSessionRecord('session-from-host')
-    mocks.pageDesignRun.mockResolvedValue(createRunResult(record))
+    const aiHost = createAiHost()
+    const { result: runResult, record } = createRunFixture('session-from-host')
+    mocks.pageDesignRun.mockResolvedValue(runResult)
 
     const result = await runPageDesignAiSession({
       pageId: 'orders',
       userRequirement: '补一个按钮',
       editor,
-      consumeCapability: ((key: unknown) => key === mocks.aiAgentHostKey ? aiHost : null) as never,
+      consumeCapability: createCapabilityConsumer(aiHost),
     })
 
     expect(result).toEqual({ sawToolCall: false, sessionRecord: record })
@@ -150,10 +223,10 @@ describe('runPageDesignAiSession', () => {
 
   it('wires pageDesign host callbacks through the headless AI run adapter', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: true })
-    const aiHost = {}
+    const aiHost = createAiHost()
     const event = createStreamEvent()
     const toolCall = createToolCallRecord()
-    const record = createSessionRecord('session-with-stream')
+    const { result: runResult, record } = createRunFixture('session-with-stream')
     const trace = createTraceSink()
     const onSessionRecord = vi.fn()
     const events = {
@@ -172,14 +245,14 @@ describe('runPageDesignAiSession', () => {
       chat.onDelta?.('delta text')
       chat.onReasoning?.('reasoning text')
       chat.onToolCall?.(toolCall)
-      return createRunResult(record)
+      return runResult
     })
 
     const result = await runPageDesignAiSession({
       pageId: 'orders',
       userRequirement: '补一个按钮',
       editor,
-      consumeCapability: ((key: unknown) => key === mocks.aiAgentHostKey ? aiHost : null) as never,
+      consumeCapability: createCapabilityConsumer(aiHost),
       trace,
       events,
       onSessionRecord,
@@ -203,12 +276,12 @@ describe('runPageDesignAiSession', () => {
 
   it('lets callers abort through an injected headless adapter', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: true })
-    const aiHost = {}
+    const aiHost = createAiHost()
     const adapter = createAiRunAdapter()
     const trace = createTraceSink()
     const onSessionRecord = vi.fn()
     const pending = createDeferred<AiAgentHostRunResult>()
-    const lateRecord = createSessionRecord('late-session')
+    const { result: lateResult } = createRunFixture('late-session')
     let signal: AbortSignal | undefined
     mocks.pageDesignRun.mockImplementation((
       _alias: string,
@@ -223,7 +296,7 @@ describe('runPageDesignAiSession', () => {
       pageId: 'orders',
       userRequirement: '补一个按钮',
       editor,
-      consumeCapability: ((key: unknown) => key === mocks.aiAgentHostKey ? aiHost : null) as never,
+      consumeCapability: createCapabilityConsumer(aiHost),
       adapter,
       trace,
       onSessionRecord,
@@ -232,7 +305,7 @@ describe('runPageDesignAiSession', () => {
     expect(adapter.isRunning()).toBe(true)
     adapter.abort('用户取消')
     expect(signal?.aborted).toBe(true)
-    pending.resolve(createRunResult(lateRecord))
+    pending.resolve(lateResult)
 
     await expect(promise).resolves.toEqual({ sawToolCall: false, sessionRecord: null })
     expect(trace.markAborted).toHaveBeenCalledWith('用户取消')
@@ -244,12 +317,13 @@ describe('runPageDesignAiSession', () => {
 
   it('fails fast when the active PageModel is not loaded', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: false })
+    const aiHost = createAiHost()
 
     await expect(runPageDesignAiSession({
       pageId: 'orders',
       userRequirement: '补一个按钮',
       editor,
-      consumeCapability: (() => ({})) as never,
+      consumeCapability: createCapabilityConsumer(aiHost),
     })).rejects.toThrow('requires PageModel "orders" to be loaded')
 
     expect(editor.ensureActivePageFilesLoaded).not.toHaveBeenCalled()

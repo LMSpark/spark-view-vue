@@ -23,7 +23,7 @@ import {
 } from '@spark-view/spark-page-config/ai'
 
 // 内化模块的测试通过内部源路径导入
-import { PAGE_DESIGN_100_STEP_FLOW } from '../src/design/index'
+import { PAGE_DESIGN_100_STEP_FLOW } from '../src/design/artifacts/design-flow'
 
 describe('spark-page-config public subpath imports', () => {
   it('exposes PageModel and PageEditor as the public page-config surface', () => {

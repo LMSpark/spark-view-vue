@@ -4,23 +4,22 @@
  * 提供页面文件与导航节点的生命周期管理能力。
  */
 
-import type { BasePageConfigLoader } from '../config'
+import type { BasePageConfigLoader, PageConfigFileName } from '../config/config-types'
 import type {
   PageConfigCreatePageParams,
   PageConfigFileApi,
-} from '../config'
+} from '../config/page-config-file-api'
 import {
   PAGE_CONFIG_FILE_NAMES,
-  type PageConfigFileName,
-} from '../config'
-import type { NavNode } from '../navigation'
+} from '../config/config-types'
+import type { NavNode } from '../navigation/nav-model'
 import { assertNonEmptyPageId } from '../internal/assert-page-id'
 import {
   defaultNavIconByKind,
   findConfigNodeByPageId,
   normalizeNavNode,
-} from '../navigation'
-import type { NavigationConfigClient } from '../navigation'
+} from '../navigation/nav-editing'
+import type { NavigationConfigClient } from '../navigation/nav-client'
 
 export type PageConfigFileLifecycleOptions = {
   fileApi: PageConfigFileApi

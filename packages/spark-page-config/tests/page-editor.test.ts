@@ -4,20 +4,20 @@ import { PageEditor, createPageEditor } from '@spark-view/spark-page-config/edit
 import type { DataSetCrudTool, SparkNodeTree } from '@spark-view/spark-data'
 import {
   BasePageConfigLoader,
-  PageConfigFileApi,
   type ConfigLoadResult,
   type PageConfig,
   type PageConfigFileLoadOptions,
   type PageConfigFileName,
   type PageDataConfig,
   type RuleConfig,
-} from '../src/config'
+} from '../src/config/config-types'
+import { PageConfigFileApi } from '../src/config/page-config-file-api'
 import {
-  NavigationConfigClient,
   buildNavRoot,
   findNodeById,
-  type AppNavRoot,
-} from '../src/navigation'
+} from '../src/navigation/nav-editing'
+import { NavigationConfigClient } from '../src/navigation/nav-client'
+import type { AppNavRoot } from '../src/navigation/nav-model'
 
 class TestPageConfigLoader extends BasePageConfigLoader {
   readonly loadPageFileContentSpy: (

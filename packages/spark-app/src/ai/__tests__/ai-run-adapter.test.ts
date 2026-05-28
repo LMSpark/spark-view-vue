@@ -5,8 +5,19 @@ import type {
   AiAgentStreamEvent,
   AiAgentTaskChatOptions,
   AiAgentToolCallRecord,
+  AiAgentTurnCallbacks,
+} from '@spark-view/spark-ai/agent'
+import {
+  AiAgentRegistration,
+  AiAgentRuntimeContext,
+  AiAgentScope,
+  AiAgentSession,
+  AiAgentTarget,
+  AiAgentTask,
+  DefaultAiAgentSessionStore,
 } from '@spark-view/spark-ai/agent'
 import type { AiJsonParams } from '@spark-view/spark-ai/json'
+import { AiModuleRuntime } from '@spark-view/spark-ai/modules'
 import {
   createAiRunAdapter,
   formatAiRunError,
@@ -28,26 +39,49 @@ function createTraceSink() {
   } satisfies AiRunTraceSink
 }
 
-function createSessionRecord(instanceId = 'session-1'): AiAgentSessionRecord {
-  return {
-    moduleId: 'module-1',
-    moduleInstanceId: 'module-instance-1',
-    instanceId,
-    runtimeInstanceId: 'runtime-1',
-    status: 'Stopped',
-    startedAt: 1,
-    updatedAt: 2,
-    history: [],
+type RunFixture = Readonly<{
+  result: AiAgentHostRunResult
+  record: AiAgentSessionRecord
+}>
+
+function createRunFixture(instanceId = 'session-1'): RunFixture {
+  const moduleId = 'module-1'
+  const store = new DefaultAiAgentSessionStore({ now: () => 1 })
+  const context = new AiAgentRuntimeContext(moduleId, instanceId, instanceId)
+  store.startSession(context)
+  const registration = new AiAgentRegistration({
+    moduleId,
+    name: '测试模块',
+    description: '测试模块',
+    runtime: new AiModuleRuntime(),
+    sessionStore: store,
+  })
+  const registry = {
+    get: (requestedModuleId: string) =>
+      requestedModuleId === moduleId ? registration : undefined,
   }
+  const turnCallbacks: AiAgentTurnCallbacks = {
+    executeTurn: async () => ({ text: '', toolCalls: [] }),
+    appendMessages: async () => undefined,
+  }
+  const scope = new AiAgentScope(moduleId, instanceId, instanceId, instanceId)
+  const task = new AiAgentTask(moduleId, { prompt: 'test' }, scope, {
+    userMessage: 'test',
+    systemPrompt: 'test',
+  })
+  const session = new AiAgentSession(
+    { registry, turnCallbacks },
+    new AiAgentTarget(moduleId, instanceId),
+  )
+  const record = session.getSessionRecord()
+  if (record === null) {
+    throw new Error('Failed to create test AI session record.')
+  }
+  return { result: { task, session }, record }
 }
 
-function createRunResult(record = createSessionRecord()): AiAgentHostRunResult {
-  return {
-    task: {},
-    session: {
-      getSessionRecord: () => record,
-    },
-  } as unknown as AiAgentHostRunResult
+function createRunResult(instanceId = 'session-1'): AiAgentHostRunResult {
+  return createRunFixture(instanceId).result
 }
 
 function createStreamEvent(type = 'delta'): AiAgentStreamEvent {
@@ -99,8 +133,7 @@ function createDeferred<T>(): Deferred<T> {
 describe('createAiRunAdapter', () => {
   it('runs headlessly without a trace sink and reports session snapshots', async () => {
     const input = { prompt: 'build page' } satisfies AiJsonParams
-    const record = createSessionRecord()
-    const result = createRunResult(record)
+    const { result, record } = createRunFixture()
     const onSessionRecord = vi.fn<(record: AiAgentSessionRecord | null) => void>()
     const run = vi.fn(async (
       _alias: string,
@@ -229,7 +262,7 @@ describe('createAiRunAdapter', () => {
     const pending = createDeferred<AiAgentHostRunResult>()
     const trace = createTraceSink()
     const onSessionRecord = vi.fn<(record: AiAgentSessionRecord | null) => void>()
-    const result = createRunResult(createSessionRecord('late-session'))
+    const result = createRunResult('late-session')
     const run = vi.fn((
       _alias: string,
       _input: AiJsonParams,

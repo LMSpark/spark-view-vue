@@ -5,7 +5,9 @@
  */
 
 import { SnapshotHistory } from '@spark-view/spark-utils'
-import type { BasePageConfigLoader, PageConfigFileName, PageConfigFileApi } from '../config'
+import type { BasePageConfigLoader, PageConfigFileName } from '../config/config-types'
+import type { PageConfigFileApi } from '../config/page-config-file-api'
+import type { PageFileRestoreCommand } from './page-file-restore-command'
 
 const HISTORY_LIMIT = 100
 
@@ -119,12 +121,8 @@ export class PageTextModel {
   }
 
   /** 恢复远端历史版本。恢复成功后以远端内容为 saved baseline。 */
-  async restoreVersion(
-    pageId: string,
-    version: number,
-    fileApi: PageConfigFileApi,
-    configLoader: BasePageConfigLoader,
-  ): Promise<void> {
+  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
+    const { pageId, version, fileApi, configLoader } = command
     await fileApi.restoreVersion(pageId, this._fileName, version)
     const result = await configLoader.loadPageFileContent(pageId, this._fileName, { forceReload: true })
     if (!result.success) {

@@ -19,19 +19,11 @@ export {
 export * as JsonDocumentRuntime from './json-document'
 
 export type {
-  DirtyPart,
-  PageModelCreateMountedParams,
-  PageModelCreateMountedResult,
-  PageModelCreatePageParams,
   PageModelFileName,
   PageModelFileVersionSummary,
-  PageModelLike,
-  PageModelLoadOptions,
-  PageModelMountParams,
   PageModelNavigationDraft,
+  PageModelLike,
   PageModelPageSummary,
-  PageModelRemoveMountedParams,
-  PageModelRemoveMountedResult,
   PageModelRenderConfig,
 } from './editor/page-model'
 

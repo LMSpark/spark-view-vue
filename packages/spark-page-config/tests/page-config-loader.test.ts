@@ -8,8 +8,10 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createFileLoader, createRequest, type FileLoadResult } from '@spark-view/spark-utils'
-import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '../src/config'
-import type { RuleConfig } from '../src/config'
+import { compileRule, normalizeRuleNode, parseCss, parsePageData, parseScript } from '../src/config/page-config-compiler'
+import { PageConfigFileApi } from '../src/config/page-config-file-api'
+import { PageConfigLoader } from '../src/config/page-config-loader'
+import type { RuleConfig } from '../src/config/config-types'
 import type { SparkNode } from '@spark-view/spark-data'
 import { DataSet } from '@spark-view/spark-data'
 

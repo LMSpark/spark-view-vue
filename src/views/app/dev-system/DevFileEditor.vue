@@ -139,7 +139,8 @@ import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
 import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@spark-view/spark-page-config/editor'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
-import type { DevState, PageConfigFileVersionSummary, PageConfigFileName } from './useDevState'
+import type { DevState } from './useDevState'
+import type { PageModelFileName, PageModelFileVersionSummary } from '@spark-view/spark-page-config'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
@@ -149,25 +150,25 @@ const RULE_JSON_SCHEMA = createRuleJsonSchema(pageDesignComponentCatalog)
 
 const props = withDefaults(defineProps<{
   state: DevState
-  activeFile?: PageConfigFileName
+  activeFile?: PageModelFileName
   showTabs?: boolean
 }>(), {
   showTabs: true,
 })
 
 const emit = defineEmits<{
-  (e: 'active-file-change', file: PageConfigFileName): void
+  (e: 'active-file-change', file: PageModelFileName): void
 }>()
 
-const localActiveFile = ref<PageConfigFileName>('rule.json')
+const localActiveFile = ref<PageModelFileName>('rule.json')
 const showVersionPanel = ref(false)
 const remoteVersionLoading = ref(false)
 const restoringVersion = ref<number | null>(null)
 const creatingVersion = ref(false)
-const remotePageVersions = ref<PageConfigFileVersionSummary[]>([])
+const remotePageVersions = ref<PageModelFileVersionSummary[]>([])
 const pageDataViewMode = ref<'visual' | 'text'>('visual')
 const pageDataViewModePinned = ref(false)
-const resolvedActiveFile = computed<PageConfigFileName>(() => props.activeFile ?? localActiveFile.value)
+const resolvedActiveFile = computed<PageModelFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs)
 const editor = useDevFileEditor(props.state, resolvedActiveFile)
 
@@ -276,7 +277,7 @@ async function createVersion() {
   }
 }
 
-async function confirmDeleteVersion(row: PageConfigFileVersionSummary) {
+async function confirmDeleteVersion(row: PageModelFileVersionSummary) {
   try {
     await ElMessageBox.confirm(
       `确定删除版本 v${row.version} 吗？此操作不可撤销。`,

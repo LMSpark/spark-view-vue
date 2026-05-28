@@ -128,7 +128,7 @@
  * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
  */
 import { onMounted } from 'vue'
-import type { PageConfigFileName } from './useDevState'
+import type { PageModelFileName } from '@spark-view/spark-page-config'
 import { useDevSystem } from './useDevSystem'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
@@ -153,14 +153,14 @@ const {
   isWorkspaceTabDirty,
 } = useDevSystem()
 
-const FILE_ICON_MAP: Record<PageConfigFileName, string> = {
+const FILE_ICON_MAP: Record<PageModelFileName, string> = {
   'rule.json': 'Crop',
   'pagedata.json': 'Coin',
   'script.js': 'Lightning',
   'style.css': 'Brush',
 }
 
-function fileIcon(name: PageConfigFileName): string {
+function fileIcon(name: PageModelFileName): string {
   return FILE_ICON_MAP[name]
 }
 

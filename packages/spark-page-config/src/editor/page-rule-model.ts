@@ -6,7 +6,9 @@
  */
 
 import { SparkNodeTree } from '@spark-view/spark-data'
-import type { BasePageConfigLoader, PageConfigFileApi } from '../config'
+import type { BasePageConfigLoader } from '../config/config-types'
+import type { PageConfigFileApi } from '../config/page-config-file-api'
+import type { PageFileRestoreCommand } from './page-file-restore-command'
 import { parseRuleText, serializeRuleTree } from './page-file-serialization'
 
 export class PageRuleModel {
@@ -111,12 +113,8 @@ export class PageRuleModel {
   }
 
   /** 恢复远端历史版本。恢复成功后以恢复内容为 saved baseline。 */
-  async restoreVersion(
-    pageId: string,
-    version: number,
-    fileApi: PageConfigFileApi,
-    configLoader: BasePageConfigLoader,
-  ): Promise<void> {
+  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
+    const { pageId, version, fileApi, configLoader } = command
     await fileApi.restoreVersion(pageId, 'rule.json', version)
     const result = await configLoader.loadPageFileContent(pageId, 'rule.json', { forceReload: true })
     if (!result.success) {

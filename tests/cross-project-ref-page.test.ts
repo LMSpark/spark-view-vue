@@ -7,6 +7,12 @@ import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'
 
+function isPageModelLike(value: unknown): value is { pageId: string; load: () => Promise<void> } {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+    && typeof Reflect.get(value, 'pageId') === 'string'
+    && typeof Reflect.get(value, 'load') === 'function'
+}
+
 const navTreeState = vi.hoisted((): { tree: AppNavRoot | null } => ({
   tree: null,
 }))
@@ -133,7 +139,8 @@ describe('CrossProjectRefPage', () => {
 
     expect(rendererState.props?.['pageId']).toBe('project-list')
 
-    const pageModel = rendererState.props?.['pageModel'] as { pageId: string; load: () => Promise<void> } | undefined
+    const rawPageModel = rendererState.props?.['pageModel']
+    const pageModel = isPageModelLike(rawPageModel) ? rawPageModel : undefined
     expect(pageModel).toBeDefined()
     if (!pageModel) return
     expect(pageModel.pageId).toBe('project-list')

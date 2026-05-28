@@ -31,10 +31,19 @@ import {
   type PageDesignAiRunOptions,
 } from '@/services/page-design-ai-runner'
 
-export type PageConfigFileName = PageModelFileName
-export type PageConfigFileVersionSummary = PageModelFileVersionSummary
-export type PageConfigPageSummary = PageModelPageSummary
-export type NavigationNodeDraft = PageModelNavigationDraft
+export type PageConfigFileName = Extract<PageModelFileName, string>
+export type PageConfigFileVersionSummary = {
+  [Key in keyof PageModelFileVersionSummary]: PageModelFileVersionSummary[Key]
+}
+export type PageConfigPageSummary = {
+  [Key in keyof PageModelPageSummary]: PageModelPageSummary[Key]
+}
+export type NavigationNodeDraft = {
+  [Key in keyof PageModelNavigationDraft]: PageModelNavigationDraft[Key]
+}
+export type RunPageDesignAiOptions = {
+  [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key]
+}
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -52,7 +61,6 @@ export type DevContextConfig = {
 
 export type DevWorkspaceTab = 'props' | 'preview' | PageConfigFileName
 
-export type RunPageDesignAiOptions = PageDesignAiRunOptions
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { createAuthHeaders, http } from '@/services/http'
@@ -127,8 +135,8 @@ export function useDevState() {
     set path(v: string) { const p = getActivePage(); if (p) { p.navigation.path = v; markNavDirty() } },
     get redirect(): string { return getEditorActivePage()?.navigation.redirect ?? '' },
     set redirect(v: string) { const p = getActivePage(); if (p) { p.navigation.redirect = v; markNavDirty() } },
-    get linkTarget(): NavigationNodeDraft['linkTarget'] { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
-    set linkTarget(v: NavigationNodeDraft['linkTarget']) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
+    get linkTarget(): PageModelNavigationDraft['linkTarget'] { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
+    set linkTarget(v: PageModelNavigationDraft['linkTarget']) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
     get parentPageId(): string { return getEditorActivePage()?.navigation.parentPageId ?? '' },
     set parentPageId(v: string) { const p = getActivePage(); if (p) { p.navigation.parentPageId = v; markNavDirty() } },
     get childPlacement(): string { return getEditorActivePage()?.navigation.childPlacement ?? '' },
@@ -156,7 +164,7 @@ export function useDevState() {
   const activePageId = ref('')
   const fileSaving = ref(false)
 
-  function notifyPageFileChanged(pageId: string, filename: PageConfigFileName | '__created' | '__deleted' | '__bulk'): void {
+  function notifyPageFileChanged(pageId: string, filename: PageModelFileName | '__created' | '__deleted' | '__bulk'): void {
     editor.notifyPageFileChanged(pageId, filename)
   }
 
@@ -164,7 +172,7 @@ export function useDevState() {
   const navEmpty = ref(false)
 
   // ── 页面列表 ──
-  const pageList = ref<PageConfigPageSummary[]>([])
+  const pageList = ref<PageModelPageSummary[]>([])
 
   // ── 状态消息 ──
   const statusMessages = ref<StatusMessage[]>([])
@@ -198,7 +206,7 @@ export function useDevState() {
   // 计算属性
   // ═══════════════════════════════════════════════════════════
 
-  function isDocumentDirty(name: PageConfigFileName): boolean {
+  function isDocumentDirty(name: PageModelFileName): boolean {
     void pageFilesRevision.value
     const snap = editor.readSnapshot()
     return snap.dirtyFiles.has(name)
@@ -283,7 +291,7 @@ export function useDevState() {
     return PageModel.canUseModuleNodeKind(node, treeData.value)
   }
 
-  function getNavDraft(): NavigationNodeDraft | null {
+  function getNavDraft(): PageModelNavigationDraft | null {
     return getActivePage()?.navigation.toDraft() ?? null
   }
 
@@ -321,7 +329,7 @@ export function useDevState() {
     return normalized.length > 96 ? `${normalized.slice(0, 96)}...` : normalized
   }
 
-  async function runPageDesignAi(options: RunPageDesignAiOptions): Promise<void> {
+  async function runPageDesignAi(options: PageDesignAiRunOptions): Promise<void> {
     const pageId = activePageId.value.trim()
     const userRequirement = options.userRequirement.trim()
     if (!pageId) {
@@ -490,12 +498,12 @@ export function useDevState() {
     await editor.ensureActivePageFilesLoaded(loadOptions)
   }
 
-  async function loadPageFile(name: PageConfigFileName, options?: { forceReload?: boolean }): Promise<void> {
+  async function loadPageFile(name: PageModelFileName, options?: { forceReload?: boolean }): Promise<void> {
     if (!syncEditorActivePageFromState()) return
     await editor.loadPageFile(name, options)
   }
 
-  function getPageFileText(name: PageConfigFileName): string {
+  function getPageFileText(name: PageModelFileName): string {
     void pageFilesRevision.value
     return editor.getPageFileText(name)
   }
@@ -504,7 +512,7 @@ export function useDevState() {
   // 后端版本 API
   // ═══════════════════════════════════════════════════════════
 
-  async function listRemotePageVersions(filename: PageConfigFileName): Promise<PageConfigFileVersionSummary[]> {
+  async function listRemotePageVersions(filename: PageModelFileName): Promise<PageModelFileVersionSummary[]> {
     if (!activePageId.value) return []
     editor.setActivePage(activePageId.value)
     try {
@@ -515,7 +523,7 @@ export function useDevState() {
     }
   }
 
-  async function restoreRemotePageVersion(version: number, filename: PageConfigFileName): Promise<boolean> {
+  async function restoreRemotePageVersion(version: number, filename: PageModelFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
     editor.setActivePage(pageId)
@@ -529,7 +537,7 @@ export function useDevState() {
     }
   }
 
-  async function createRemotePageVersion(filename: PageConfigFileName): Promise<boolean> {
+  async function createRemotePageVersion(filename: PageModelFileName): Promise<boolean> {
     if (!activePageId.value) return false
     editor.setActivePage(activePageId.value)
     try {
@@ -542,7 +550,7 @@ export function useDevState() {
     }
   }
 
-  async function deleteRemotePageVersion(version: number, filename: PageConfigFileName): Promise<boolean> {
+  async function deleteRemotePageVersion(version: number, filename: PageModelFileName): Promise<boolean> {
     if (!activePageId.value) return false
     editor.setActivePage(activePageId.value)
     try {
@@ -690,7 +698,7 @@ export function useDevState() {
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
-  async function savePageFile(name: PageConfigFileName): Promise<void> {
+  async function savePageFile(name: PageModelFileName): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
 

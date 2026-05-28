@@ -1,7 +1,7 @@
 import { config as testUtilsConfig, flushPromises, mount } from '@vue/test-utils'
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { defineComponent, h, type App } from 'vue'
+import { defineComponent, h, type App, type Component } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
@@ -9,7 +9,7 @@ import { SparkData, type DataSet } from '@spark-view/spark-data'
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import {
   compileRule,
-} from '../packages/spark-page-config/src/config'
+} from '../packages/spark-page-config/src/config/page-config-compiler'
 import type { PageModelLike, PageModelRenderConfig } from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
@@ -104,13 +104,19 @@ function disableSparkComponentRendererStub(): () => void {
 function createComponentRegistrationProbe(counts: Record<string, number>) {
   return {
     install(app: App) {
-      const original = app.component.bind(app)
-      app.component = ((name: string, component?: Parameters<App['component']>[1]) => {
+      const original = app.component
+      function componentProbe(name: string): Component | undefined
+      function componentProbe(name: string, component: Component): App
+      function componentProbe(name: string, component?: Component): Component | undefined | App {
         if (component !== undefined && (name === 'RenderActions' || name === 'renderActions')) {
           counts[name] = (counts[name] ?? 0) + 1
         }
-        return component === undefined ? original(name) : original(name, component)
-      }) as App['component']
+        if (component === undefined) {
+          return Reflect.apply(original, app, [name])
+        }
+        return Reflect.apply(original, app, [name, component])
+      }
+      app.component = componentProbe
     },
   }
 }

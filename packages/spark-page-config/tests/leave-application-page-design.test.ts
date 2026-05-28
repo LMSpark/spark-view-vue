@@ -10,8 +10,8 @@ import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
 } from '../src/ai/index'
-import { compileRule, parsePageData } from '../src/config'
-import type { PageDesignEditHost } from '../src/design/index'
+import { compileRule, parsePageData } from '../src/config/page-config-compiler'
+import type { PageDesignEditHost } from '../src/design/page-edit-session'
 import { isRecord } from '@spark-view/spark-utils'
 import { SparkNodeTree, getSparkNodeChildren } from '@spark-view/spark-data'
 

@@ -2,7 +2,8 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h, nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DevPreviewTab from '@/views/app/dev-system/DevPreviewTab.vue'
-import type { DevState, PageConfigFileName } from '@/views/app/dev-system/useDevState'
+import type { DevState } from '@/views/app/dev-system/useDevState'
+import type { PageModelFileName } from '@spark-view/spark-page-config'
 
 const SwitchStub = defineComponent({
   name: 'ElSwitch',
@@ -37,22 +38,22 @@ const RendererStub = defineComponent({
 function createPreviewState() {
   const activePageId = ref('cascade-demo')
   const pageFilesRevision = ref(1)
-  const files: Record<PageConfigFileName, string> = {
+  const files: Record<PageModelFileName, string> = {
     'rule.json': '[]',
     'pagedata.json': '{"dataSetName":"Demo","tables":{}}',
     'script.js': '',
     'style.css': '',
   }
   const getActivePage = vi.fn(() => ({ pageId: activePageId.value, isLoaded: true }))
-  const state = {
+  const state: DevState = Object.assign(Object.create(null), {
     activePageId,
     pageFilesRevision,
     getActivePage,
-    getPageFileText: vi.fn((name: PageConfigFileName) => {
+    getPageFileText: vi.fn((name: PageModelFileName) => {
       void pageFilesRevision.value
       return files[name]
     }),
-  } as unknown as DevState
+  })
 
   return {
     state,

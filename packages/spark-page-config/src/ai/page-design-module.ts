@@ -39,7 +39,7 @@ import type {
   PageDesignEditHost,
   PageDesignServiceContext,
 } from '../design/page-edit-session'
-import { summarizePageDesignFlowPhases } from '../design/artifacts'
+import { summarizePageDesignFlowPhases } from '../design/artifacts/design-flow'
 import { PageDesignService } from '../design/page-design-service'
 import { PageDesignDatasetAiModule } from './dataset-tool-catalog'
 import { PageDesignLifecycleAiModule } from './lifecycle-tool-catalog'

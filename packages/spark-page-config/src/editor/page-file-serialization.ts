@@ -24,8 +24,11 @@ export function parseRuleText(rawText: string): SparkNodeTree {
 export function serializeRuleTree(tree: SparkNodeTree): string {
   const root = tree.toJSON()
   const children = getSparkNodeChildren(root.children)
-  const rootValue = children.length === 1 ? children[0] : children
-  return `${JSON.stringify(rootValue as SparkNode, null, 2)}\n`
+  const firstChild = children[0]
+  const rootValue: SparkNode | SparkNode[] = children.length === 1 && firstChild !== undefined
+    ? firstChild
+    : children
+  return `${JSON.stringify(rootValue, null, 2)}\n`
 }
 
 // ── pagedata.json ────────────────────────────────────────

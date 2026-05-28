@@ -84,6 +84,14 @@ type FileLoaderWriteInput = Readonly<{
   expirationLevel: number
 }>
 
+type StorageScopedBudgetCommand = Readonly<{
+  protectedKey: string
+  protectedPayload: string
+  evictionPrefix: string
+  maxBytes: number
+  countAllStorageKeys: boolean
+}>
+
 export type JsonLoadOptions = LoadOptionBase & {
   parseJSON?: true}
 
@@ -784,17 +792,30 @@ export class FileLoader {
   private enforceStorageByteBudget(protectedKey: string, protectedPayload: string): void {
     if (this.opts.storage === 'memory') return
     const prefix = this.resolveStorageBudgetPrefix(protectedKey)
-    this.enforceStorageScopedBudget(protectedKey, protectedPayload, prefix, this.opts.maxStorageBytes, false)
-    this.enforceStorageScopedBudget(protectedKey, protectedPayload, prefix, this.opts.maxStorageTotalBytes, true)
+    this.enforceStorageScopedBudget({
+      protectedKey,
+      protectedPayload,
+      evictionPrefix: prefix,
+      maxBytes: this.opts.maxStorageBytes,
+      countAllStorageKeys: false,
+    })
+    this.enforceStorageScopedBudget({
+      protectedKey,
+      protectedPayload,
+      evictionPrefix: prefix,
+      maxBytes: this.opts.maxStorageTotalBytes,
+      countAllStorageKeys: true,
+    })
   }
 
-  private enforceStorageScopedBudget(
-    protectedKey: string,
-    protectedPayload: string,
-    evictionPrefix: string,
-    maxBytes: number,
-    countAllStorageKeys: boolean,
-  ): void {
+  private enforceStorageScopedBudget(command: StorageScopedBudgetCommand): void {
+    const {
+      protectedKey,
+      protectedPayload,
+      evictionPrefix,
+      maxBytes,
+      countAllStorageKeys,
+    } = command
     if (!Number.isFinite(maxBytes)) return
     const storage = this.storage
     if (!storage) return

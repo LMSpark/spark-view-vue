@@ -9,18 +9,20 @@
 import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import { getSparkNodeChildren } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { BasePageConfigLoader, PageConfigFileApi } from '../config'
-import type { AppNavRoot, NavigationNodeDraft, NavNode, NavNodeKind, NavNodeLocation, NavigationConfigClient } from '../navigation'
+import type { BasePageConfigLoader } from '../config/config-types'
+import type { PageConfigFileApi } from '../config/page-config-file-api'
+import type { AppNavRoot, NavNode } from '../navigation/nav-model'
+import type { NavigationConfigClient } from '../navigation/nav-client'
+import type { NavigationNodeDraft, NavNodeLocation } from '../navigation/nav-editing'
 import {
   canUseModuleNodeKind as canUseNavigationModuleNodeKind,
   createReservedRootGroup as createNavigationReservedRootGroup,
   findConfigNodeByPageId as findNavigationConfigNodeByPageId,
   findNodeById as findNavigationNodeById,
   findNodeLocation as findNavigationNodeLocation,
-  isConfigNodeKind as isConfigNavigationNodeKind,
   isSystemRootDirectory as isNavigationSystemRootDirectory,
   normalizePageIdFromPath,
-} from '../navigation'
+} from '../navigation/nav-editing'
 import { PageConfigFileLifecycle } from '../design/page-file-lifecycle'
 import { NavigationDraftModel } from './navigation-draft-model'
 import { PageRuleModel } from './page-rule-model'
@@ -73,7 +75,9 @@ export type PageModelRemoveMountedResult = {
   deletedFiles: boolean
 }
 
-export type PageModelNavigationDraft = NavigationNodeDraft
+export type PageModelNavigationDraft = {
+  [Key in keyof NavigationNodeDraft]: NavigationNodeDraft[Key]
+}
 
 export type PageModelFileVersionSummary = {
   version: number
@@ -112,7 +116,8 @@ export class PageModel {
   }
 
   static isConfigNodeKind(nodeKind: string | undefined | null): boolean {
-    return isConfigNavigationNodeKind((nodeKind ?? 'page') as NavNodeKind)
+    const kind = nodeKind ?? 'page'
+    return kind === 'page' || kind === 'sub-page'
   }
 
   static findNodeById(nodes: readonly NavNode[], targetId: string): NavNode | null {
@@ -292,11 +297,17 @@ export class PageModel {
 
   async restoreVersion(version: number, name: PageModelFileName): Promise<void> {
     const configLoader = this.configLoaderFactory()
+    const command = {
+      pageId: this.pageId,
+      version,
+      fileApi: this.fileApi,
+      configLoader,
+    }
     switch (name) {
-      case 'rule.json': await this.rule.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
-      case 'pagedata.json': await this.dataSet.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
-      case 'script.js': await this.script.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
-      case 'style.css': await this.style.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
+      case 'rule.json': await this.rule.restoreVersion(command); break
+      case 'pagedata.json': await this.dataSet.restoreVersion(command); break
+      case 'script.js': await this.script.restoreVersion(command); break
+      case 'style.css': await this.style.restoreVersion(command); break
     }
   }
 

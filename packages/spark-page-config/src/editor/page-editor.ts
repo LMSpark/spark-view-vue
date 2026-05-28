@@ -30,19 +30,19 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type {
   BasePageConfigLoader,
   ConfigLoaderOptions,
-} from '../config'
-import {
-  createConfigLoader,
-  PageConfigFileApi,
-} from '../config'
+} from '../config/config-types'
+import { PageConfigFileApi } from '../config/page-config-file-api'
+import { createConfigLoader } from '../config/page-config-loader'
 import type {
   AppNavRoot,
   NavNode,
+  NavNodeKind,
+} from '../navigation/nav-model'
+import type {
   NavigationNodeDraftApplyResult,
   NavigationNodeDraftInput,
-  NavNodeKind,
   NavNodeLocation,
-} from '../navigation'
+} from '../navigation/nav-editing'
 import {
   applyNavigationNodeDraftToNode,
   applyNodeKindPresetToDraft,
@@ -50,9 +50,9 @@ import {
   createNavigationNodeDraft,
   createNavigationNodePatch,
   createRootModuleNode,
-  NavigationConfigClient,
   NavigationEditSession,
-} from '../navigation'
+} from '../navigation/nav-editing'
+import { NavigationConfigClient } from '../navigation/nav-client'
 
 import { SparkNodeTree } from '@spark-view/spark-data'
 
@@ -111,8 +111,6 @@ type CreateMountedPageParams = PageModelCreateMountedParams & {
   pageId: string
 }
 
-type CreateMountedPageResult = PageModelCreateMountedResult
-
 type PageEditorCreatePageParams = PageModelCreatePageParams & {
   pageId: string
 }
@@ -120,8 +118,6 @@ type PageEditorCreatePageParams = PageModelCreatePageParams & {
 type RemoveMountedPageParams = PageModelRemoveMountedParams & {
   pageId: string
 }
-
-type RemoveMountedPageResult = PageModelRemoveMountedResult
 
 /** 变更监听器：editor 状态变更时触发（文档变化、选择变化、导航 dirty 等） */
 export type PageEditorListener = () => void
@@ -849,7 +845,7 @@ export class PageEditor {
   // ── 生命周期：页面挂载 ───────────────────────────────
 
   /** 为当前选中节点创建页面文件并挂载导航。 */
-  async createPageForSelectedNode(params: CreatePageForSelectedNodeParams): Promise<CreateMountedPageResult> {
+  async createPageForSelectedNode(params: CreatePageForSelectedNodeParams): Promise<PageModelCreateMountedResult> {
     const pageId = params.pageId.trim()
     if (!pageId) {
       throw new Error('pageId 不能为空')
@@ -894,7 +890,7 @@ export class PageEditor {
   }
 
   /** 创建页面文件并在导航树中挂载节点。 */
-  async createMountedPage(params: CreateMountedPageParams): Promise<CreateMountedPageResult> {
+  async createMountedPage(params: CreateMountedPageParams): Promise<PageModelCreateMountedResult> {
     const { pageId, ...modelParams } = params
     const result = await this.openPage(pageId).createMounted(modelParams)
     this.invalidatePageList()
@@ -924,7 +920,7 @@ export class PageEditor {
   }
 
   /** 卸载导航节点并删除页面文件。 */
-  async removeMountedPage(params: RemoveMountedPageParams): Promise<RemoveMountedPageResult> {
+  async removeMountedPage(params: RemoveMountedPageParams): Promise<PageModelRemoveMountedResult> {
     const { pageId, ...modelParams } = params
     const result = await this.openPage(pageId).removeMounted(modelParams)
     this.invalidatePageList()
@@ -1100,7 +1096,7 @@ export {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-} from '../design/artifacts'
+} from '../design/artifacts/data-artifacts'
 
 export type {
   DesignerColumnProjection,
@@ -1108,7 +1104,7 @@ export type {
   DesignerTableProjection,
   DesignerTableUiState,
   PageDataEditorMode,
-} from '../design/artifacts'
+} from '../design/artifacts/data-artifacts'
 
 import componentCatalog from '../ai/payloads/component-catalog.json'
 export { componentCatalog }

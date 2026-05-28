@@ -1,13 +1,14 @@
 import { computed, watch, type Ref } from 'vue'
-import type { DevState, PageConfigFileName } from '../useDevState'
+import type { DevState } from '../useDevState'
+import type { PageModelFileName } from '@spark-view/spark-page-config'
 
 /**
- * 文件编辑器绑定器 — 将任意 PageConfigFileName 接入 PageEditor adapter。
+ * 文件编辑器绑定器 — 将任意 PageModelFileName 接入 PageEditor adapter。
  *
  * 四文件文本页签只做只读投影展示；结构化编辑器（JsonTreeEditor / DevDataSetDesigner）
  * 直接操作 page.rule / page.dataSet 子模型。
  */
-export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageConfigFileName>>) {
+export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageModelFileName>>) {
   const isReady = computed(() => {
     void state.pageFilesRevision.value
     return state.getActivePage()?.isLoaded === true
@@ -32,7 +33,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
     await state.ensureActivePageFilesLoaded(options)
   }
 
-  function isFileDirty(name: PageConfigFileName): boolean {
+  function isFileDirty(name: PageModelFileName): boolean {
     return state.isDocumentDirty(name)
   }
 
@@ -66,7 +67,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
   }
 }
 
-function subModelKey(name: PageConfigFileName): 'rule' | 'dataSet' | 'style' | 'script' {
+function subModelKey(name: PageModelFileName): 'rule' | 'dataSet' | 'style' | 'script' {
   switch (name) {
     case 'rule.json': return 'rule'
     case 'pagedata.json': return 'dataSet'

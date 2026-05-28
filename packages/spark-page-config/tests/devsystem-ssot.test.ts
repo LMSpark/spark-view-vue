@@ -21,25 +21,26 @@ import {
   findConfigNodeByPageId,
   findNodeLocation,
   normalizeNavRoot,
-  NavigationConfigClient,
-  type AppNavRoot,
-  type NavNode,
-} from '../src/navigation'
+} from '../src/navigation/nav-editing'
+import { NavigationConfigClient } from '../src/navigation/nav-client'
+import type { AppNavRoot, NavNode } from '../src/navigation/nav-model'
 import {
   BasePageConfigLoader,
-  PageConfigFileApi,
   type ConfigLoadResult,
   type PageConfig,
   type PageConfigFileLoadOptions,
   type PageConfigFileName,
   type PageDataConfig,
   type RuleConfig,
-} from '../src/config'
+} from '../src/config/config-types'
+import {
+  PageConfigFileApi,
+} from '../src/config/page-config-file-api'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
   getNextPageDesignFlowStep,
   summarizePageDesignFlowPhases,
-} from '../src/design/artifacts'
+} from '../src/design/artifacts/design-flow'
 import { isRecord } from '@spark-view/spark-utils'
 import { PageDesignService } from '../src/design/page-design-service'
 
