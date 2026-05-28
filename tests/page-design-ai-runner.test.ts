@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { PageEditor } from '@spark-view/spark-page-config/editor'
-import type { AiRunTraceSink } from '@spark-view/spark-app'
+import { createAiRunAdapter, type AiRunTraceSink } from '@spark-view/spark-app'
 import type {
   AiAgentHostRunResult,
   AiAgentSessionRecord,
@@ -100,6 +100,25 @@ function createTraceSink(): AiRunTraceSink {
   }
 }
 
+type Deferred<T> = Readonly<{
+  promise: Promise<T>
+  resolve(value: T | PromiseLike<T>): void
+  reject(reason?: unknown): void
+}>
+
+function createDeferred<T>(): Deferred<T> {
+  let resolve: ((value: T | PromiseLike<T>) => void) | undefined
+  let reject: ((reason?: unknown) => void) | undefined
+  const promise = new Promise<T>((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise
+    reject = rejectPromise
+  })
+  if (resolve === undefined || reject === undefined) {
+    throw new Error('Failed to create deferred promise.')
+  }
+  return { promise, resolve, reject }
+}
+
 describe('runPageDesignAiSession', () => {
   beforeEach(() => {
     vi.clearAllMocks()
@@ -180,6 +199,47 @@ describe('runPageDesignAiSession', () => {
     expect(events.onToolCall).toHaveBeenCalledWith(toolCall)
     expect(onSessionRecord).toHaveBeenNthCalledWith(1, null)
     expect(onSessionRecord).toHaveBeenNthCalledWith(2, record)
+  })
+
+  it('lets callers abort through an injected headless adapter', async () => {
+    const editor = createEditor({ pageId: 'orders', isLoaded: true })
+    const aiHost = {}
+    const adapter = createAiRunAdapter()
+    const trace = createTraceSink()
+    const onSessionRecord = vi.fn()
+    const pending = createDeferred<AiAgentHostRunResult>()
+    const lateRecord = createSessionRecord('late-session')
+    let signal: AbortSignal | undefined
+    mocks.pageDesignRun.mockImplementation((
+      _alias: string,
+      _input: unknown,
+      chat: { signal?: AbortSignal },
+    ) => {
+      signal = chat.signal
+      return pending.promise
+    })
+
+    const promise = runPageDesignAiSession({
+      pageId: 'orders',
+      userRequirement: '补一个按钮',
+      editor,
+      consumeCapability: ((key: unknown) => key === mocks.aiAgentHostKey ? aiHost : null) as never,
+      adapter,
+      trace,
+      onSessionRecord,
+    })
+
+    expect(adapter.isRunning()).toBe(true)
+    adapter.abort('用户取消')
+    expect(signal?.aborted).toBe(true)
+    pending.resolve(createRunResult(lateRecord))
+
+    await expect(promise).resolves.toEqual({ sawToolCall: false, sessionRecord: null })
+    expect(trace.markAborted).toHaveBeenCalledWith('用户取消')
+    expect(trace.appendError).not.toHaveBeenCalled()
+    expect(onSessionRecord).toHaveBeenCalledTimes(1)
+    expect(onSessionRecord).toHaveBeenCalledWith(null)
+    expect(adapter.isRunning()).toBe(false)
   })
 
   it('fails fast when the active PageModel is not loaded', async () => {
