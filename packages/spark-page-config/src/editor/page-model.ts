@@ -10,7 +10,18 @@ import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import { getSparkNodeChildren } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { BasePageConfigLoader, PageConfigFileApi } from '../config'
-import type { NavigationConfigClient } from '../navigation'
+import type { AppNavRoot, NavNode, NavNodeKind, NavNodeLocation, NavigationConfigClient } from '../navigation'
+import {
+  canUseModuleNodeKind as canUseNavigationModuleNodeKind,
+  createReservedRootGroup as createNavigationReservedRootGroup,
+  findConfigNodeByPageId as findNavigationConfigNodeByPageId,
+  findNodeById as findNavigationNodeById,
+  findNodeLocation as findNavigationNodeLocation,
+  isConfigNodeKind as isConfigNavigationNodeKind,
+  isSystemRootDirectory as isNavigationSystemRootDirectory,
+  normalizePageIdFromPath,
+} from '../navigation'
+import { PageConfigFileLifecycle } from '../design/page-file-lifecycle'
 import { NavigationDraftModel } from './navigation-draft-model'
 import { PageRuleModel } from './page-rule-model'
 import { PageDataSetModel } from './page-data-set-model'
@@ -29,6 +40,52 @@ export type PageModelLoadOptions = {
   allowMissingAsEmpty?: boolean
 }
 
+export const PAGE_MODEL_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
+export type PageModelFileName = typeof PAGE_MODEL_FILE_NAMES[number]
+
+export type PageModelCreatePageParams = {
+  title?: string
+  icon?: string
+}
+
+export type PageModelMountParams = PageModelCreatePageParams & {
+  node?: NavNode
+  parentId?: string | null
+  index?: number
+}
+
+export type PageModelCreateMountedParams = PageModelMountParams & {
+  rollbackPageOnNavigationFailure?: boolean
+}
+
+export type PageModelCreateMountedResult = {
+  page: Record<string, unknown>
+  node: NavNode
+}
+
+export type PageModelRemoveMountedParams = {
+  nodeId?: string
+  deleteFiles?: boolean
+}
+
+export type PageModelRemoveMountedResult = {
+  deletedNode: NavNode | null
+  deletedFiles: boolean
+}
+
+export type PageModelFileVersionSummary = {
+  version: number
+  createdAt: string
+  isCurrent: boolean
+  modifiedBy: string | null
+}
+
+export type PageModelPageSummary = Record<string, unknown> & {
+  pageId: string
+  pageType?: string
+  files?: PageModelFileName[]
+}
+
 export type PageModelRenderConfig = {
   pageId: string
   rule: SparkNode[]
@@ -42,6 +99,47 @@ export type PageModelRenderConfig = {
 // ═══════════════════════════════════════════════════════════
 
 export class PageModel {
+  static readonly fileNames: readonly PageModelFileName[] = PAGE_MODEL_FILE_NAMES
+
+  static isFileName(value: unknown): value is PageModelFileName {
+    return typeof value === 'string' && PAGE_MODEL_FILE_NAMES.some(name => name === value)
+  }
+
+  static resolvePageIdFromPath(path: string | undefined | null): string {
+    return normalizePageIdFromPath(path)
+  }
+
+  static isConfigNodeKind(nodeKind: string | undefined | null): boolean {
+    return isConfigNavigationNodeKind((nodeKind ?? 'page') as NavNodeKind)
+  }
+
+  static findNodeById(nodes: readonly NavNode[], targetId: string): NavNode | null {
+    return findNavigationNodeById([...nodes], targetId)
+  }
+
+  static findNodeLocation(nodes: readonly NavNode[], targetId: string): NavNodeLocation | null {
+    return findNavigationNodeLocation([...nodes], targetId)
+  }
+
+  static findConfigNodeByPageId(nodes: readonly NavNode[], pageId: string): NavNode | null {
+    return findNavigationConfigNodeByPageId([...nodes], pageId)
+  }
+
+  static isSystemRootDirectory(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+    return isNavigationSystemRootDirectory(node, rootNodes)
+  }
+
+  static canUseModuleNodeKind(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+    return canUseNavigationModuleNodeKind(node, [...rootNodes])
+  }
+
+  static createReservedRootGroup(
+    placement: 'toolbar' | 'user-menu',
+    options: { createId: () => string; templateRoot?: AppNavRoot | null },
+  ): NavNode {
+    return createNavigationReservedRootGroup(placement, options)
+  }
+
   readonly pageId: string
 
   readonly navigation = new NavigationDraftModel()
@@ -101,6 +199,122 @@ export class PageModel {
   async save(): Promise<void> {
     const parts = this.dirtyParts()
     await Promise.all(parts.map(part => this._savePart(part)))
+  }
+
+  async loadFile(name: PageModelFileName, options?: PageModelLoadOptions): Promise<void> {
+    const configLoader = this.configLoaderFactory()
+    switch (name) {
+      case 'rule.json': await this.rule.load(this.pageId, configLoader, options); break
+      case 'pagedata.json': await this.dataSet.load(this.pageId, configLoader, options); break
+      case 'script.js': await this.script.load(this.pageId, configLoader, options); break
+      case 'style.css': await this.style.load(this.pageId, configLoader, options); break
+    }
+  }
+
+  getFileText(name: PageModelFileName): string {
+    switch (name) {
+      case 'rule.json': return this.rule.getText()
+      case 'pagedata.json': return this.dataSet.getText()
+      case 'script.js': return this.script.text
+      case 'style.css': return this.style.text
+    }
+  }
+
+  async saveFile(name: PageModelFileName): Promise<void> {
+    switch (name) {
+      case 'rule.json': await this.rule.save(this.pageId, this.fileApi); break
+      case 'pagedata.json': await this.dataSet.save(this.pageId, this.fileApi); break
+      case 'script.js': await this.script.save(this.pageId, this.fileApi); break
+      case 'style.css': await this.style.save(this.pageId, this.fileApi); break
+    }
+    this.clearFileCache(name)
+  }
+
+  async saveDirtyFiles(): Promise<void> {
+    const tasks: Array<Promise<void>> = []
+    if (this.rule.isDirty) tasks.push(this.saveFile('rule.json'))
+    if (this.dataSet.isDirty) tasks.push(this.saveFile('pagedata.json'))
+    if (this.script.isDirty) tasks.push(this.saveFile('script.js'))
+    if (this.style.isDirty) tasks.push(this.saveFile('style.css'))
+    await Promise.all(tasks)
+  }
+
+  async createFiles(params: PageModelCreatePageParams = {}): Promise<Record<string, unknown>> {
+    const result = await this.fileApi.createPage({
+      pageId: this.pageId,
+      ...(params.title === undefined ? {} : { title: params.title }),
+      ...(params.icon === undefined ? {} : { icon: params.icon }),
+    })
+    this.clearFileCache()
+    return result
+  }
+
+  async deleteFiles(): Promise<void> {
+    await this.fileApi.deletePage(this.pageId)
+    this.clearFileCache()
+  }
+
+  async mount(params: PageModelMountParams = {}): Promise<NavNode> {
+    return this.lifecycle().mountPage({
+      pageId: this.pageId,
+      ...params,
+    })
+  }
+
+  async createMounted(params: PageModelCreateMountedParams = {}): Promise<PageModelCreateMountedResult> {
+    return this.lifecycle().createMountedPage({
+      pageId: this.pageId,
+      ...params,
+    })
+  }
+
+  async moveMounted(nodeId: string, newParentId: string | null, index: number): Promise<NavNode> {
+    return this.lifecycle().moveMountedPage(nodeId, newParentId, index)
+  }
+
+  async unmount(nodeId?: string): Promise<NavNode | null> {
+    return this.lifecycle().unmountPage(this.pageId, nodeId)
+  }
+
+  async removeMounted(params: PageModelRemoveMountedParams = {}): Promise<PageModelRemoveMountedResult> {
+    return this.lifecycle().removeMountedPage({
+      pageId: this.pageId,
+      ...(params.nodeId === undefined ? {} : { nodeId: params.nodeId }),
+      ...(params.deleteFiles === undefined ? {} : { deleteFiles: params.deleteFiles }),
+    })
+  }
+
+  async listVersions(name: PageModelFileName): Promise<PageModelFileVersionSummary[]> {
+    return this.fileApi.listVersions(this.pageId, name)
+  }
+
+  async restoreVersion(version: number, name: PageModelFileName): Promise<void> {
+    const configLoader = this.configLoaderFactory()
+    switch (name) {
+      case 'rule.json': await this.rule.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
+      case 'pagedata.json': await this.dataSet.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
+      case 'script.js': await this.script.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
+      case 'style.css': await this.style.restoreVersion(this.pageId, version, this.fileApi, configLoader); break
+    }
+  }
+
+  async createVersion(name: PageModelFileName): Promise<void> {
+    await this.fileApi.createVersion(this.pageId, name)
+  }
+
+  async deleteVersion(version: number, name: PageModelFileName): Promise<void> {
+    await this.fileApi.deleteVersion(this.pageId, name, version)
+  }
+
+  clearFileCache(name?: PageModelFileName): void {
+    const loader = this.configLoaderFactory()
+    if (name !== undefined) {
+      loader.clearCache(`/${encodeURIComponent(this.pageId)}/${encodeURIComponent(name)}`)
+      return
+    }
+    for (const file of PageModel.fileNames) {
+      loader.clearCache(`/${encodeURIComponent(this.pageId)}/${encodeURIComponent(file)}`)
+    }
   }
 
   // ── 订阅 ───────────────────────────────────────────────
@@ -163,6 +377,17 @@ export class PageModel {
         await this.script.save(this.pageId, this.fileApi)
         break
     }
+  }
+
+  private lifecycle(): PageConfigFileLifecycle {
+    if (!this.navClient) {
+      throw new Error('缺少 NavigationConfigClient，无法执行页面导航生命周期操作')
+    }
+    return new PageConfigFileLifecycle({
+      fileApi: this.fileApi,
+      navigationClient: this.navClient,
+      getConfigLoader: () => this.configLoaderFactory(),
+    })
   }
 
   /** 监听所有子模型的 dirty 变化，向上冒泡到 PageModel 的 listener。 */

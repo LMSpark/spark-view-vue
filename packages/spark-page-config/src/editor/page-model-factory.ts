@@ -1,6 +1,5 @@
 import { createRequest, type HttpClientBase, type RequestInterceptor } from '@spark-view/spark-utils'
 import {
-  PAGE_CONFIG_FILE_NAMES,
   PageConfigFileApi,
   createConfigLoader,
   type BasePageConfigLoader,
@@ -23,7 +22,8 @@ export type PageModelFactoryOptions = {
 
 export type PageModelFactoryLike = {
   create(pageId: string): PageModelLike
-  clearCache(key?: string): void
+  clearPageCache(pageId: string): void
+  clearAllCache(): { size: number; keys: string[] }
   getCacheStats(): { size: number; keys: string[] }
   getHttpClient(): HttpClientBase | undefined
 }
@@ -64,14 +64,10 @@ export class PageModelFactory implements PageModelFactoryLike {
     return new PageModel(pageId, this.fileApi, () => this.loader, this.navClient)
   }
 
-  clearCache(key?: string): void {
-    this.loader.clearCache(key)
-  }
-
   clearPageCache(pageId: string): void {
     const normalized = pageId.trim()
     if (!normalized) return
-    for (const file of PAGE_CONFIG_FILE_NAMES) {
+    for (const file of PageModel.fileNames) {
       this.loader.clearCache(`/${normalized}/${file}`)
     }
   }

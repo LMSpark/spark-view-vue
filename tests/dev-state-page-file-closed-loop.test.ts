@@ -5,9 +5,15 @@ import { http } from '@/services/http'
 
 const httpFns = vi.hoisted(() => ({
   get: vi.fn(),
+  requestFull: vi.fn(),
   put: vi.fn(),
   post: vi.fn(),
   delete: vi.fn(),
+  clearCache: vi.fn(),
+  interceptors: {
+    request: { use: vi.fn() },
+    response: { use: vi.fn() },
+  },
 }))
 
 vi.mock('@spark-view/spark-app', () => ({
@@ -24,59 +30,6 @@ vi.mock('@/services/http', () => ({
   http: httpFns,
 }))
 
-vi.mock('@spark-view/spark-page-config/editor', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-page-config/editor')>()
-  const { copyOwnEnumerableProperties, readProperty } = await import('@spark-view/spark-utils/internal')
-  const requireRecord = (value: unknown, message: string): Record<string, unknown> => {
-    const record = copyOwnEnumerableProperties(value)
-    if (record !== null) return record
-    throw new Error(message)
-  }
-  const isStatus = (error: unknown, status: number): boolean => {
-    const directStatus = readProperty(error, 'status')
-    const responseStatus = readProperty(readProperty(error, 'response'), 'status')
-    return directStatus === status || responseStatus === status
-  }
-  const unsupported = async () => ({ success: false as const, error: 'unsupported', timestamp: Date.now() })
-  const createTestConfigLoader = () => ({
-      loadPageConfig: unsupported,
-      loadRule: unsupported,
-      loadPageData: unsupported,
-      loadScript: unsupported,
-      loadCss: unsupported,
-      loadPageFile: unsupported,
-      loadPageFileContent: async (pageId: string, filename: string) => {
-        try {
-          const data = requireRecord(
-            await httpFns.get(`/api/pages-config/${pageId}/${filename}`),
-            `Invalid page file response: ${pageId}/${filename}`,
-          )
-          return { success: true as const, data: String(data['content'] ?? ''), source: 'remote' as const, timestamp: Date.now() }
-        } catch (error) {
-          if ((filename === 'script.js' || filename === 'style.css') && isStatus(error, 404)) {
-            return { success: true as const, data: '', source: 'remote' as const, timestamp: Date.now() }
-          }
-          return {
-            success: false as const,
-            error: error instanceof Error ? error.message : String(error),
-            reason: isStatus(error, 404) ? 'not-found' : 'unknown',
-            timestamp: Date.now(),
-          }
-        }
-      },
-      clearCache: vi.fn(),
-      getCacheStats: () => ({ size: 0, keys: [] }),
-      getHttpClient: () => undefined,
-    }) 
-  return {
-    ...actual,
-    createPageEditor: vi.fn((options: Parameters<typeof actual.createPageEditor>[0]) => actual.createPageEditor({
-      ...options,
-      createConfigLoader: () => createTestConfigLoader(),
-    } as Parameters<typeof actual.createPageEditor>[0] & { createConfigLoader: () => ReturnType<typeof createTestConfigLoader> })),
-  }
-})
-
 const httpMock = vi.mocked(http)
 
 function notFound(): Error & { response: { status: number } } {
@@ -91,9 +44,41 @@ function pageFileResponse(url: string): Record<string, unknown> {
   return { content: '' }
 }
 
+async function requestFullFromGet(config: { url: string }): Promise<Record<string, unknown>> {
+  try {
+    const data = await httpFns.get(config.url)
+    const content = data !== null && typeof data === 'object'
+      ? Object.getOwnPropertyDescriptor(data, 'content')?.value
+      : ''
+    return {
+      data: {
+        protocolVersion: 4,
+        ok: true,
+        data: {
+          content: String(content ?? ''),
+          timestamp: '1',
+        },
+      },
+      status: 200,
+      statusText: 'OK',
+      headers: {},
+    }
+  } catch (error) {
+    const maybeStatus = error as { status?: unknown; response?: { status?: unknown } }
+    if (maybeStatus.status === undefined && typeof maybeStatus.response?.status === 'number') {
+      maybeStatus.status = maybeStatus.response.status
+    }
+    throw error
+  }
+}
+
 describe('DevState 页面文件闭环', () => {
   beforeEach(() => {
     vi.clearAllMocks()
+    httpFns.requestFull.mockImplementation(requestFullFromGet)
+    httpFns.clearCache.mockImplementation(() => undefined)
+    httpFns.interceptors.request.use.mockImplementation(() => () => undefined)
+    httpFns.interceptors.response.use.mockImplementation(() => () => undefined)
   })
 
   it('缺失可选 script/style 不阻断四文件加载', async () => {

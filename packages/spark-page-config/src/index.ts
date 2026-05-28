@@ -5,6 +5,7 @@
  */
 
 export {
+  PAGE_MODEL_FILE_NAMES,
   PageModel,
 } from './editor/page-model'
 
@@ -19,8 +20,12 @@ export * as JsonDocumentRuntime from './json-document'
 
 export type {
   DirtyPart,
+  PageModelCreatePageParams,
+  PageModelFileName,
+  PageModelFileVersionSummary,
   PageModelLike,
   PageModelLoadOptions,
+  PageModelPageSummary,
   PageModelRenderConfig,
 } from './editor/page-model'
 

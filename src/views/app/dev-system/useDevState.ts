@@ -13,28 +13,10 @@
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
 import { refreshRoutes } from '@spark-view/spark-app'
+import type { LinkTarget, NavNode, NavNodeKind, NavPermissionMode } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
 import {
-  PAGE_CONFIG_FILE_NAMES,
-  type PageConfigFileName,
-  type PageConfigPageSummary,
-  type PageConfigFileVersionSummary,
-} from '@spark-view/spark-page-config/editor'
-import {
   createPageEditor,
-  canUseModuleNodeKind,
-  createReservedRootGroup,
-  findConfigNodeByPageId,
-  findNodeById,
-  findNodeLocation,
-  isConfigNodeKind,
-  isSystemRootDirectory,
-  normalizeNavRoot,
-  normalizePageIdFromPath,
-  type LinkTarget,
-  type NavNode,
-  type NavNodeKind,
-  type NavigationNodeDraft,
 } from '@spark-view/spark-page-config/editor'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
@@ -42,8 +24,37 @@ import {
   type PageDesignAiRunOptions,
 } from '@/services/page-design-ai-runner'
 
-export { PAGE_CONFIG_FILE_NAMES }
-export type { PageConfigFileName, PageConfigFileVersionSummary }
+export const PAGE_CONFIG_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
+export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
+export type PageConfigFileVersionSummary = {
+  version: number
+  createdAt: string
+  isCurrent: boolean
+  modifiedBy: string | null
+}
+export type PageConfigPageSummary = Record<string, unknown> & {
+  pageId: string
+  pageType?: string
+  files?: PageConfigFileName[]
+}
+export type NavigationNodeDraft = {
+  id: string
+  title: string
+  icon: string
+  nodeKind: NavNodeKind
+  dividerAfter: boolean
+  description: string
+  path: string
+  redirect: string
+  linkTarget: LinkTarget
+  parentPageId: string
+  childPlacement: string
+  order: number
+  hidden: boolean
+  disabled: boolean
+  refId: string
+  permissionMode: NavPermissionMode
+}
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -65,6 +76,106 @@ export type RunPageDesignAiOptions = PageDesignAiRunOptions
 
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { createAuthHeaders, http } from '@/services/http'
+
+type NavNodeLocation = {
+  node: NavNode
+  parent: NavNode | null
+  parentId: string | null
+  index: number
+}
+
+function normalizePageIdFromPath(path: string | undefined | null): string {
+  return path ? path.replace(/^\/+/, '').trim() : ''
+}
+
+function isConfigNodeKind(nodeKind: NavNodeKind): boolean {
+  return nodeKind === 'page' || nodeKind === 'sub-page'
+}
+
+function isPageLikeKind(kind: NavNodeKind): boolean {
+  return kind === 'page'
+    || kind === 'system-page'
+    || kind === 'system-action'
+    || kind === 'link'
+    || kind === 'sub-page'
+}
+
+function findNodeById(nodes: readonly NavNode[], targetId: string): NavNode | null {
+  for (const node of nodes) {
+    if (node.id === targetId) return node
+    const children = node.children
+    if (Array.isArray(children)) {
+      const found = findNodeById(children, targetId)
+      if (found !== null) return found
+    }
+  }
+  return null
+}
+
+function findParentNodeById(nodes: readonly NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {
+  for (const node of nodes) {
+    if (node.id === targetId) return parent
+    const children = node.children
+    if (Array.isArray(children)) {
+      const found = findParentNodeById(children, targetId, node)
+      if (found !== null) return found
+    }
+  }
+  return null
+}
+
+function findNodeLocation(nodes: readonly NavNode[], targetId: string, parent: NavNode | null = null): NavNodeLocation | null {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]
+    if (node === undefined) continue
+    if (node.id === targetId) return { node, parent, parentId: parent?.id ?? null, index }
+    const children = node.children
+    if (Array.isArray(children)) {
+      const found = findNodeLocation(children, targetId, node)
+      if (found !== null) return found
+    }
+  }
+  return null
+}
+
+function findConfigNodeByPageId(nodes: readonly NavNode[], pageId: string): NavNode | null {
+  for (const node of nodes) {
+    if (isConfigNodeKind(node.nodeKind ?? 'page') && normalizePageIdFromPath(node.path) === pageId) {
+      return node
+    }
+    const children = node.children
+    if (Array.isArray(children)) {
+      const found = findConfigNodeByPageId(children, pageId)
+      if (found !== null) return found
+    }
+  }
+  return null
+}
+
+function isSystemRootDirectory(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+  return Boolean(node?.nodeKind === 'system-directory' && rootNodes.some(rootNode => rootNode.id === node.id))
+}
+
+function canUseModuleNodeKind(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+  if (!node) return true
+  const parent = findParentNodeById(rootNodes, node.id)
+  if (!parent) return true
+  return !isPageLikeKind(parent.nodeKind ?? 'module')
+}
+
+function cloneNavNode(node: NavNode): NavNode {
+  return JSON.parse(JSON.stringify(node)) as NavNode
+}
+
+function createReservedRootGroup(placement: 'toolbar' | 'user-menu', createId: () => string): NavNode {
+  const template = demoNavRoot.children.find(node => node.childPlacement === placement)
+  if (template !== undefined) {
+    return { ...cloneNavNode(template), id: createId() }
+  }
+  return placement === 'toolbar'
+    ? { id: createId(), nodeKind: 'system-directory', title: '工具栏', icon: 'SetUp', childPlacement: 'toolbar', children: [] }
+    : { id: createId(), nodeKind: 'system-directory', title: '用户菜单', icon: 'User', childPlacement: 'user-menu', children: [] }
+}
 
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
@@ -411,8 +522,7 @@ export function useDevState() {
       syncNavFromEditor()
       addStatus('导航配置已加载', 'success')
     } catch {
-      const fallbackRoot = normalizeNavRoot(demoNavRoot)
-      editor.replaceNavigationRoot(fallbackRoot)
+      editor.replaceNavigationRoot(demoNavRoot)
       syncNavFromEditor()
       addStatus('导航加载失败，使用演示数据', 'warning')
     } finally {
@@ -883,10 +993,7 @@ export function useDevState() {
   }
 
   function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): NavNode {
-    return createReservedRootGroup(placement, {
-      createId: () => crypto.randomUUID(),
-      templateRoot: demoNavRoot,
-    })
+    return createReservedRootGroup(placement, () => crypto.randomUUID())
   }
 
   async function restoreReservedRootGroup(placement: 'toolbar' | 'user-menu'): Promise<void> {
@@ -976,8 +1083,7 @@ export function useDevState() {
   }
 
   async function resetToDemo(): Promise<void> {
-    const demoRoot = normalizeNavRoot(demoNavRoot)
-    editor.replaceNavigationRoot(demoRoot, { markDirty: true })
+    editor.replaceNavigationRoot(demoNavRoot, { markDirty: true })
     syncNavFromEditor()
     selectedNode.value = null
     clearFiles()

@@ -44,7 +44,8 @@ const DUMMY_PAGE_MODEL_FACTORY = {
       getHttpClient: () => undefined,
     }
   },
-  clearCache() {},
+  clearPageCache() {},
+  clearAllCache: () => ({ size: 0, keys: [] }),
   getCacheStats: () => ({ size: 0, keys: [] }),
   getHttpClient: () => undefined,
 } satisfies PageModelFactoryLike

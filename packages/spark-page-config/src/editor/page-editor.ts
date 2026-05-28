@@ -100,10 +100,6 @@ export type CreatePageEditorOptions = {
   fileStorage?: PageModelFileStorage
 }
 
-type CreatePageEditorRuntimeOptions = CreatePageEditorOptions & {
-  createConfigLoader?: (options: Partial<ConfigLoaderOptions>) => BasePageConfigLoader
-}
-
 /** loadPageFile / ensureActivePageFilesLoaded / selectPage 共用加载参数 */
 export type PageEditorLoadOptions = {
   forceReload?: boolean
@@ -170,7 +166,6 @@ function toPageConfigApiBaseUrl(pageApi: string): string {
 }
 
 export function createPageEditor(options: CreatePageEditorOptions): PageEditor {
-  const runtimeOptions = options as CreatePageEditorRuntimeOptions
   const fileApi = new PageConfigFileApi({
     getPageConfigApi: options.getPageConfigApi,
     http: options.http,
@@ -187,12 +182,13 @@ export function createPageEditor(options: CreatePageEditorOptions): PageEditor {
     if (pageConfigLoader === null || pageConfigLoaderApiBaseUrl !== apiBaseUrl) {
       const loaderOptions: Partial<ConfigLoaderOptions> = {
         apiBaseUrl,
+        httpClient: options.http,
         fileStorage: options.fileStorage ?? 'localStorage',
       }
       if (options.getHeaders !== undefined) {
         loaderOptions.getHeaders = options.getHeaders
       }
-      pageConfigLoader = (runtimeOptions.createConfigLoader ?? createConfigLoader)(loaderOptions)
+      pageConfigLoader = createConfigLoader(loaderOptions)
       pageConfigLoaderApiBaseUrl = apiBaseUrl
     }
     return pageConfigLoader
@@ -1097,34 +1093,6 @@ export class PageEditor {
   }
 }
 
-// ── 导航工具 re-export（DevSystem 通过 ./editor 子路径消费）──
-
-export {
-  applyNavigationNodeDraftToNode,
-  applyNodeKindPresetToDraft,
-  buildNavRoot,
-  canUseModuleNodeKind,
-  createNavigationNodeDraft,
-  createReservedRootGroup,
-  findConfigNodeByPageId,
-  findNodeById,
-  findNodeLocation,
-  isConfigNodeKind,
-  isSystemRootDirectory,
-  NavigationConfigClient,
-  NavigationEditSession,
-  normalizeNavRoot,
-  normalizePageIdFromPath,
-} from '../navigation'
-
-export type {
-  AppNavRoot,
-  LinkTarget,
-  NavNode,
-  NavNodeKind,
-  NavigationNodeDraft,
-} from '../navigation'
-
 // ── 设计时工具 re-export（DevSystem 通过 ./editor 子路径消费）──
 
 export {
@@ -1161,7 +1129,3 @@ export type {
 
 import componentCatalog from '../ai/payloads/component-catalog.json'
 export { componentCatalog }
-
-export { PAGE_CONFIG_FILE_NAMES } from '../config/config-types'
-export type { PageConfigFileName } from '../config/config-types'
-export type { PageConfigFileVersionSummary, PageConfigPageSummary } from '../config/page-config-file-api'

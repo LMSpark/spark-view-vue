@@ -7,15 +7,15 @@
 ## 公共分层
 
 ```text
-editor 页面模型 -> root 运行态配置投影 -> ai 业务注册 -> json-document 公共辅助能力
+root PageModel 工厂 -> editor 页面编辑聚合 -> ai 业务注册 -> json-document 公共辅助能力
 ```
 
+- `@spark-view/spark-page-config` 是运行态唯一公开入口：只暴露 `PageModel` / `PageModelFactory` / `createPageModelFactory` 以及少量独立公共能力。应用路由和渲染器都只能消费 `PageModel`。
 - `@spark-view/spark-page-config/editor` 是编辑态唯一入口：`PageEditor` 管理已打开的 `PageModel` 缓存，并协调页面生命周期、导航绑定、预览配置、保存和版本恢复。
-- `@spark-view/spark-page-config` 是运行态配置投影入口：loader、compiler 和页面配置文件 API。它消费持久化资产并产出 `PageConfig`，不承载编辑态事实源。
 - `@spark-view/spark-page-config/ai` 是公开的 pageDesign / leave-request AI 业务注册入口。它只暴露注册 helper、kind 常量和诊断能力，不导出 tool module 内部实现。
 - `@spark-view/spark-page-config/json-document` 是通用 JSON 树编辑模型。
 
-包根入口必须保持收敛：它只导出配置运行时能力。不要重新引入旧的 `config`、`node-tree`、`navigation`、`runtime`、`design`、`page/*`、`capabilities/*` 或 `registrations` 子路径。
+包根入口必须保持收敛：不要重新导出 loader、compiler、file-api、workspace、子模型或旧的 `config`、`node-tree`、`navigation`、`runtime`、`design`、`page/*`、`capabilities/*`、`registrations` 子路径。
 
 ## 页面模型主线
 
@@ -52,17 +52,16 @@ PageEditor
       -> style      -> PageConfigFileApi(style.css)
       -> script     -> PageConfigFileApi(script.js)
 
-持久化后的 page config 资产
-  -> PageConfigFileRegistry
-  -> PageConfigLoader
-  -> PageConfigCompiler
-  -> PageConfig
+运行态加载
+  -> PageModelFactory.create(pageId)
+  -> PageModel.load()
+  -> PageModel.toRenderConfig()
   -> SparkPageRenderer
 ```
 
 四文件是 `rule.json`、`pagedata.json`、`script.js` 和 `style.css`。它们是运行态 page config 的资产集合，不是完整 PageModel。必需文件语义由 `PageConfigFileRegistry` 维护；loader 行为应从 descriptor 推导，不要再维护独立的文件名数组。
 
-运行态渲染继续消费 `PageConfigLoader -> PageConfigCompiler -> PageConfig`。编辑态和 AI 不应直接把四文件当作事实源修改；它们只能修改 `PageModel`，再由 `PageModel.save()` 持久化。
+运行态渲染只消费 `PageModel` 内存投影。`PageConfigLoader`、compiler 和 file-api 是 `PageModel` 内部依赖，不允许应用层、渲染层或 AI 层直接创建或调用。编辑态和 AI 不应直接把四文件当作事实源修改；它们只能修改 `PageModel`，再由 `PageModel.save()` 持久化。
 
 `rule.json` 会编译为归一化的 `SparkNode` children。`pagedata.json` 会通过 `spark-data` 编译为 `DataSet`。`script.js` 和 `style.css` 在运行态保持文本资产，由渲染层按现有沙箱和样式注入规则消费。
 
@@ -90,10 +89,10 @@ AI session 必须绑定目标 `pageId`，不能跟随 UI 当前 active page。AI
 只使用包根入口和明确开放的 editor / ai / json-document 子路径：
 
 ```ts
-import { createConfigLoader } from '@spark-view/spark-page-config'
-import { PageEditor } from '@spark-view/spark-page-config/editor'
+import { createPageModelFactory } from '@spark-view/spark-page-config'
+import { createPageEditor } from '@spark-view/spark-page-config/editor'
 import { ensurePageDesignBusiness } from '@spark-view/spark-page-config/ai'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 ```
 
-不要从已移除的 spark-page-config 子路径导入，例如 config、node-tree、navigation、runtime、design、page/loading、capabilities/page-file-document 或 registrations。
+不要导入或重新暴露 loader、compiler、file-api，也不要从已移除的 spark-page-config 子路径导入，例如 config、node-tree、navigation、runtime、design、page/loading、capabilities/page-file-document 或 registrations。

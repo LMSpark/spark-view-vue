@@ -3,14 +3,6 @@ import { createRequest } from '@spark-view/spark-utils'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { DataSetMetadata } from '@spark-view/spark-data'
 import {
-  applyNavigationNodeDraftToNode,
-  buildNavRoot,
-  createPageEditor,
-  createNavigationNodeDraft,
-  createReservedRootGroup,
-  findConfigNodeByPageId,
-  findNodeLocation,
-  normalizeNavRoot,
   buildDataSetMetadataFromDesignerProjection,
   canUseStructuredPageDataEditor,
   createRuleJsonSchema,
@@ -18,12 +10,24 @@ import {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-  type AppNavRoot,
-  type NavNode,
+  PageEditor,
   type RuleEditorComponentMetadata,
 } from '@spark-view/spark-page-config/editor'
 import {
+  applyNavigationNodeDraftToNode,
+  buildNavRoot,
+  createNavigationNodeDraft,
+  createReservedRootGroup,
+  findConfigNodeByPageId,
+  findNodeLocation,
+  normalizeNavRoot,
+  NavigationConfigClient,
+  type AppNavRoot,
+  type NavNode,
+} from '../src/navigation'
+import {
   BasePageConfigLoader,
+  PageConfigFileApi,
   type ConfigLoadResult,
   type PageConfig,
   type PageConfigFileLoadOptions,
@@ -146,12 +150,13 @@ function createLoader(files: Partial<Record<string, string>>): TestPageConfigLoa
 function createEditorHarness(files: Partial<Record<string, string>>) {
   const http = createHttpMock()
   const loader = createLoader(files)
-  const editor = createPageEditor({
-    http,
-    getPageConfigApi: () => '/api/pages-config',
-    getNavigationApi: () => '/api/navigation',
-    createConfigLoader: () => loader,
-  } as Parameters<typeof createPageEditor>[0] & { createConfigLoader: () => TestPageConfigLoader })
+  const fileApi = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
+  const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
+  const editor = new PageEditor({
+    fileApi,
+    navigationClient,
+    getConfigLoader: () => loader,
+  })
   return { editor, http, loader }
 }
 

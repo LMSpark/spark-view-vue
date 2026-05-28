@@ -17,7 +17,7 @@ import {
   buildNavRoot,
   findNodeById,
   type AppNavRoot,
-} from '@spark-view/spark-page-config/editor'
+} from '../src/navigation'
 
 class TestPageConfigLoader extends BasePageConfigLoader {
   readonly loadPageFileContentSpy: (
@@ -275,7 +275,7 @@ describe('PageEditor', () => {
 
   it('creates workspace dependencies through the PageEditor factory', async () => {
     const http = createHttpMock()
-    const loader = new TestPageConfigLoader(createPageFiles('orders'))
+    const files = createPageFiles('orders')
     const root = buildNavRoot([
       { id: 'orders-node', title: 'Orders', nodeKind: 'page', path: '/orders' },
     ])
@@ -283,13 +283,34 @@ describe('PageEditor', () => {
       if (url === '/api/navigation') return root
       throw new Error(`Unexpected get ${url}`)
     })
+    vi.mocked(http.requestFull).mockImplementation(async (config) => {
+      const prefix = '/api/pages-config/orders/'
+      if (!config.url.startsWith(prefix)) {
+        throw new Error(`Unexpected requestFull ${config.url}`)
+      }
+      const filename = config.url.slice(prefix.length)
+      const content = files[`orders/${filename}`]
+      if (content === undefined) {
+        throw Object.assign(new Error('not found'), { status: 404 })
+      }
+      return {
+        data: {
+          protocolVersion: 4,
+          ok: true,
+          data: { content, timestamp: '1' },
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+      }
+    })
 
     const editor = createPageEditor({
       http,
       getPageConfigApi: () => '/api/pages-config',
       getNavigationApi: () => '/api/navigation',
-      createConfigLoader: () => loader,
-    } as Parameters<typeof createPageEditor>[0] & { createConfigLoader: () => TestPageConfigLoader })
+      fileStorage: 'memory',
+    })
 
     await editor.loadNavigation()
     await editor.selectPage('orders', { allowMissingAsEmpty: true })
