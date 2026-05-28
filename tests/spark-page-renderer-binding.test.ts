@@ -5,23 +5,46 @@ import { defineComponent, h, type App } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
 import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import { SparkData, type DataSet } from '@spark-view/spark-data'
+import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import {
   compileRule,
-} from '@spark-view/spark-page-config'
-import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageDataConfig,
-  RuleConfig,
-} from '@spark-view/spark-page-config'
+} from '../packages/spark-page-config/src/config'
+import type { PageModelLike, PageModelRenderConfig } from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 
+type TestPageConfig = {
+  pageId?: string
+  rule: SparkNode[]
+  data: DataSet
+  script?: string
+  css?: string
+}
+
+type TestPageModelOptions = {
+  pageId?: string
+  load?: () => Promise<void>
+  httpClient?: HttpClientBase
+}
+
+function createPageModel(config: TestPageConfig, options?: TestPageModelOptions): PageModelLike {
+  const pageId = options?.pageId ?? config.pageId ?? 'test-page'
+  const state: PageModelRenderConfig = {
+    pageId,
+    rule: config.rule,
+    data: config.data,
+    css: config.css ?? '',
+    script: config.script ?? '',
+  }
+  return {
+    pageId,
+    get isLoaded() { return true },
+    load: options?.load ?? vi.fn(async () => undefined),
+    toRenderConfig: () => state,
+    getHttpClient: () => options?.httpClient,
+  }
+}
 
 function requireRecord(value: unknown, message: string): Record<string, unknown> {
   if (isRecord(value)) return value
@@ -101,7 +124,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     }
   }
 
-  function createPageConfig(label: string): PageConfig {
+  function createPageConfig(label: string): TestPageConfig {
     return {
       pageId: 'test-page',
       rule: [
@@ -131,52 +154,8 @@ describe('SparkPageRenderer root props aggregation', () => {
           },
         },
       }),
-      script: undefined,
-      css: undefined,
-    }
-  }
-
-  class TestRendererPageConfigLoader extends BasePageConfigLoader {
-    constructor(
-      private readonly loadPageConfigHandler: (pageId: string) => Promise<ConfigLoadResult<PageConfig>>,
-    ) {
-      super()
-    }
-
-    override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
-      return this.loadPageConfigHandler(pageId)
-    }
-
-    override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
-      return { success: false }
-    }
-
-    override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
-      return { success: false }
-    }
-
-    override async loadScript(): Promise<ConfigLoadResult<string>> {
-      return { success: false }
-    }
-
-    override async loadCss(): Promise<ConfigLoadResult<string>> {
-      return { success: false }
-    }
-
-    override async loadPageFileContent(
-      _pageId: string,
-      _filename: PageConfigFileName,
-      _options?: PageConfigFileLoadOptions,
-    ): Promise<ConfigLoadResult<string>> {
-      return { success: false }
-    }
-
-    override clearCache(): void {
-      return undefined
-    }
-
-    override getCacheStats(): { size: number; keys: string[] } {
-      return { size: 0, keys: [] }
+      script: '',
+      css: '',
     }
   }
 
@@ -201,8 +180,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     const wrapper = mount(SparkPageRenderer, {
       props: {
-        pageConfig,
-        pageId: 'test-page',
+        pageModel: createPageModel(pageConfig),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -245,8 +223,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     const wrapper = mount(SparkPageRenderer, {
       props: {
-        pageConfig: createPageConfig('初始标题'),
-        pageId: 'test-page',
+        pageModel: createPageModel(createPageConfig('初始标题')),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -267,8 +244,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(readLabel()).toBe('初始标题')
 
     await wrapper.setProps({
-      pageConfig: createPageConfig('更新后标题'),
-      pageId: 'test-page',
+      pageModel: createPageModel(createPageConfig('更新后标题')),
     })
     await flushPromises()
 
@@ -293,11 +269,10 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     mount(SparkPageRenderer, {
       props: {
-        pageConfig: {
+        pageModel: createPageModel({
           ...createPageConfig('初始化'),
           script: "async function __init__() { throw new Error('ASYNC_INIT_FAIL') }",
-        },
-        pageId: 'test-page',
+        }),
         onRuntimeError,
       },
       global: {
@@ -337,7 +312,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     mount(SparkPageRenderer, {
       props: {
-        pageConfig: {
+        pageModel: createPageModel({
           ...createPageConfig('点击'),
           rule: [
             {
@@ -348,8 +323,7 @@ describe('SparkPageRenderer root props aggregation', () => {
             },
           ],
           script: "function explode() { throw new Error('SCRIPT_CLICK_FAIL') }",
-        },
-        pageId: 'test-page',
+        }),
         onRuntimeError,
       },
       global: {
@@ -407,7 +381,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     expect(refreshButtonProps['onClick']).toBeUndefined()
   })
 
-  it('does not infer host route name as pageId on cross-project-ref routes', async () => {
+  it('uses the PageModel pageId on cross-project-ref routes', async () => {
     const router = createRouter({
       history: createMemoryHistory(),
       routes: [
@@ -422,14 +396,17 @@ describe('SparkPageRenderer root props aggregation', () => {
         },
       ],
     })
-    const loadPageConfig = vi.fn(async (): Promise<ConfigLoadResult<PageConfig>> => ({ success: false }))
+    const loadPageModel = vi.fn(async () => undefined)
 
     await router.push('/t/lmspark/homepage/__ref/ref-node')
     await router.isReady()
 
     mount(SparkPageRenderer, {
       props: {
-        configLoader: new TestRendererPageConfigLoader(loadPageConfig),
+        pageModel: createPageModel(createPageConfig('跨项目目标'), {
+          pageId: 'project-list',
+          load: loadPageModel,
+        }),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -438,7 +415,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     await flushPromises()
 
-    expect(loadPageConfig).not.toHaveBeenCalled()
+    expect(loadPageModel).toHaveBeenCalledTimes(1)
   })
 
   it('loads explicit target pageId inside cross-project-ref routes', async () => {
@@ -456,16 +433,7 @@ describe('SparkPageRenderer root props aggregation', () => {
         },
       ],
     })
-    const pageConfig = createPageConfig('跨项目目标')
-    const loadPageConfig = vi.fn(async (): Promise<ConfigLoadResult<PageConfig>> => ({
-      success: true,
-      data: {
-        ...pageConfig,
-        pageId: 'project-list',
-      },
-      source: 'remote',
-      timestamp: Date.now(),
-    }))
+    const loadPageModel = vi.fn(async () => undefined)
 
     await router.push('/t/lmspark/homepage/__ref/ref-node')
     await router.isReady()
@@ -473,7 +441,10 @@ describe('SparkPageRenderer root props aggregation', () => {
     mount(SparkPageRenderer, {
       props: {
         pageId: 'project-list',
-        configLoader: new TestRendererPageConfigLoader(loadPageConfig),
+        pageModel: createPageModel(createPageConfig('跨项目目标'), {
+          pageId: 'project-list',
+          load: loadPageModel,
+        }),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -485,7 +456,7 @@ describe('SparkPageRenderer root props aggregation', () => {
 
     await flushPromises()
 
-    expect(loadPageConfig).toHaveBeenCalledWith('project-list')
+    expect(loadPageModel).toHaveBeenCalledTimes(1)
   })
 
   it('does not reload an explicit pageId when the global route changes', async () => {
@@ -506,15 +477,7 @@ describe('SparkPageRenderer root props aggregation', () => {
         },
       ],
     })
-    const loadPageConfig = vi.fn(async (pageId: string): Promise<ConfigLoadResult<PageConfig>> => ({
-      success: true,
-      data: {
-        ...createPageConfig(pageId),
-        pageId,
-      },
-      source: 'remote',
-      timestamp: Date.now(),
-    }))
+    const loadPageModel = vi.fn(async () => undefined)
 
     await router.push('/pages/old')
     await router.isReady()
@@ -522,7 +485,10 @@ describe('SparkPageRenderer root props aggregation', () => {
     mount(SparkPageRenderer, {
       props: {
         pageId: 'old-page',
-        configLoader: new TestRendererPageConfigLoader(loadPageConfig),
+        pageModel: createPageModel(createPageConfig('old-page'), {
+          pageId: 'old-page',
+          load: loadPageModel,
+        }),
       },
       global: {
         plugins: [Spark.createPlugin(), router],
@@ -530,14 +496,13 @@ describe('SparkPageRenderer root props aggregation', () => {
     })
 
     await flushPromises()
-    expect(loadPageConfig).toHaveBeenCalledTimes(1)
-    expect(loadPageConfig).toHaveBeenLastCalledWith('old-page')
+    expect(loadPageModel).toHaveBeenCalledTimes(1)
 
     await router.push('/pages/new')
     await router.isReady()
     await flushPromises()
 
-    expect(loadPageConfig).toHaveBeenCalledTimes(1)
+    expect(loadPageModel).toHaveBeenCalledTimes(1)
   })
 
   it('rejects props.id in page rules', () => {
@@ -612,8 +577,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     try {
       const wrapper = mount(SparkPageRenderer, {
         props: {
-          pageId: 'render-init',
-          pageConfig: {
+          pageModel: createPageModel({
             ...createPageConfig('render-init'),
             pageId: 'render-init',
             rule: [{ type: 'RenderInitProbe' }],
@@ -624,7 +588,7 @@ describe('SparkPageRenderer root props aggregation', () => {
                 return h('div', { class: 'init-probe' }, _pageState.label)
               }
             `,
-          },
+          }),
         },
         global: {
           plugins: [Spark.createPlugin(), router],
@@ -659,8 +623,7 @@ describe('SparkPageRenderer root props aggregation', () => {
     try {
       const wrapper = mount(SparkPageRenderer, {
         props: {
-          pageId: 'render-click',
-          pageConfig: {
+          pageModel: createPageModel({
             ...createPageConfig('render-click'),
             pageId: 'render-click',
             rule: [{ type: 'RenderClickProbe' }, { type: 'RenderMirrorProbe' }],
@@ -680,7 +643,7 @@ describe('SparkPageRenderer root props aggregation', () => {
                 return h('div', { class: 'mirror-probe', 'data-current': _pageState.current }, _pageState.current)
               }
             `,
-          },
+          }),
         },
         global: {
           plugins: [Spark.createPlugin(), router],
@@ -724,8 +687,7 @@ describe('SparkPageRenderer root props aggregation', () => {
       const baseConfig = createPageConfig('render-actions')
       const wrapper = mount(SparkPageRenderer, {
         props: {
-          pageId: 'render-actions',
-          pageConfig: {
+          pageModel: createPageModel({
             ...baseConfig,
             pageId: 'render-actions',
             rule: [{ type: 'RenderActions' }],
@@ -734,7 +696,7 @@ describe('SparkPageRenderer root props aggregation', () => {
                 return h('div', { class: 'actions-probe' }, 'one')
               }
             `,
-          },
+          }),
         },
         global: {
           plugins: [Spark.createPlugin(), createComponentRegistrationProbe(registrationCounts), router],
@@ -745,7 +707,7 @@ describe('SparkPageRenderer root props aggregation', () => {
       expect(wrapper.find('.actions-probe').text()).toBe('one')
 
       await wrapper.setProps({
-        pageConfig: {
+        pageModel: createPageModel({
           ...baseConfig,
           pageId: 'render-actions',
           rule: [{ type: 'RenderActions' }],
@@ -754,7 +716,7 @@ describe('SparkPageRenderer root props aggregation', () => {
               return h('div', { class: 'actions-probe' }, 'two')
             }
           `,
-        },
+        }),
       })
       await flushPromises()
 

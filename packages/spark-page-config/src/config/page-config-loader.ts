@@ -52,12 +52,12 @@ const DEFAULT_OPTIONS = {
   fileStorage: 'localStorage',
   enableValidation: false,
   timeout: REQUEST_TIMEOUT,
-} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
+} satisfies Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
 
 /** 已解析的加载器选项：所有必填字段均有值，可选字段保持可选。 */
 type ResolvedConfigLoaderOptions =
-  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
-  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry'>
+  Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
+  & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
 
 type OptionalPageFileLoadInput<T> = Readonly<{
   pageId: string
@@ -119,7 +119,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
     this.opts = { ...DEFAULT_OPTIONS, ...options }
     this.fileRegistry = options.fileRegistry ?? createDefaultFileRegistry()
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
-    this.request = createRequest({
+    this.request = this.opts.httpClient ?? createRequest({
       baseURL: this.opts.apiBaseUrl,
       timeout: this.opts.timeout,
     })
@@ -144,7 +144,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
     this.pageFileManifest = null
     this.recentMissingFiles.clear()
 
-    this.fileApiRequest = createRequest({
+    this.fileApiRequest = this.opts.httpClient ?? createRequest({
       baseURL: this.pagesConfigBase,
       timeout: this.opts.timeout,
     })
@@ -160,6 +160,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
 
     this.fileLoader = createFileLoader({
       baseUrl: this.pagesConfigBase,
+      ...(this.opts.httpClient !== undefined && { request: this.opts.httpClient }),
       storage: this.opts.fileStorage,
       cachePrefix: cacheScopePrefix(this.pagesConfigBase),
       fallbackToCache: false,
@@ -269,6 +270,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
       cssSize: cssResult.data?.length ?? 0,
     })
 
+    const timestamp = this.latestResultTimestamp(ruleResult, dataResult, scriptResult, cssResult)
     return {
       success: true,
       data: {
@@ -279,7 +281,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
         css: cssResult.data,
       },
       ...(ruleResult.source !== undefined && { source: ruleResult.source }),
-      timestamp: this.latestResultTimestamp(ruleResult, dataResult, scriptResult, cssResult)
+      ...(timestamp !== undefined && { timestamp }),
     }
   }
 
@@ -331,7 +333,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
     this.ensurePageFileContext()
     const descriptor = this.fileRegistry.get(filename)
     if (!descriptor) {
-      return { success: false, error: `Unknown file type: ${filename}`, timestamp: Date.now() }
+      return { success: false, error: `Unknown file type: ${filename}` }
     }
     const path = this.toPageFilePath(pageId, filename)
     const result = await this.fileLoader.load(path, {
@@ -349,7 +351,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
 
   /** 从失败的 ConfigLoadResult 构建错误响应（DRY）*/
   private failFrom(error: string | undefined, reason?: string): ConfigLoadResult<never> {
-    return { success: false, ...(error !== undefined && { error }), ...(reason !== undefined && { reason }), timestamp: Date.now() }
+    return { success: false, ...(error !== undefined && { error }), ...(reason !== undefined && { reason }) }
   }
 
   // ── 私有辅助 ──────────────────────────────────────────────────────
@@ -363,7 +365,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
     if (this.pageFileManifest !== null) return this.pageFileManifest
 
     try {
-      const response: unknown = await this.fileApiRequest.get<unknown>('/__list', undefined, {
+      const response: unknown = await this.fileApiRequest.get<unknown>(this.fileApiUrl('/__list'), undefined, {
         meta: { silentHttpError: true },
       })
       if (!isUnknownArray(response)) return null
@@ -418,7 +420,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
       error: `${this.pagesConfigBase}${path}: not found`,
       reason: 'not-found',
       source: 'remote',
-      timestamp: Date.now(),
     }
   }
 
@@ -483,7 +484,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
         success: false,
         error: `${this.pagesConfigBase}${path}: ${r.error ?? ''}`,
         ...(isNotFound ? { reason: 'not-found' } : (r.reason !== undefined ? { reason: r.reason } : {})),
-        timestamp
+        ...(timestamp !== undefined && { timestamp }),
       }
     }
     pageLogger.debug('页面配置加载成功', { path, source: 'remote', fromCache: r.fromCache })
@@ -491,7 +492,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
       success: true,
       ...(r.data !== undefined && { data: r.data }),
       source: 'remote',
-      timestamp,
+      ...(timestamp !== undefined && { timestamp }),
       ...(r.timestamp !== undefined && { sourceTimestamp: r.timestamp }),
       ...(r.fromCache !== undefined && { fromCache: r.fromCache }),
       ...(r.notModified !== undefined && { notModified: r.notModified }),
@@ -516,7 +517,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
       error: `${this.pagesConfigBase}${this.toPageFilePath(pageId, filename)}: not found`,
       reason: 'not-found',
       source: 'remote',
-      timestamp: Date.now(),
     }
   }
 
@@ -530,7 +530,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
         success: true,
         data: result.data ?? '',
         source: 'remote',
-        timestamp,
+        ...(timestamp !== undefined && { timestamp }),
         ...(result.timestamp !== undefined && { sourceTimestamp: result.timestamp }),
         ...(result.fromCache !== undefined && { fromCache: result.fromCache }),
         ...(result.notModified !== undefined && { notModified: result.notModified }),
@@ -541,27 +541,34 @@ export class PageConfigLoader extends BasePageConfigLoader {
       success: false,
       error: result.error ?? `${path} 加载失败`,
       ...(result.reason !== undefined && { reason: result.reason }),
-      timestamp,
+      ...(timestamp !== undefined && { timestamp }),
     }
   }
 
-  private resultTimestamp(sourceTimestamp: string | undefined): number {
-    if (sourceTimestamp === undefined || sourceTimestamp.trim() === '') return Date.now()
+  private resultTimestamp(sourceTimestamp: string | undefined): number | undefined {
+    if (sourceTimestamp === undefined || sourceTimestamp.trim() === '') return undefined
     const numeric = Number(sourceTimestamp)
     if (Number.isFinite(numeric)) return numeric
     const parsed = Date.parse(sourceTimestamp)
-    return Number.isFinite(parsed) ? parsed : Date.now()
+    return Number.isFinite(parsed) ? parsed : undefined
   }
 
-  private latestResultTimestamp(...results: Array<ConfigLoadResult<unknown>>): number {
+  private latestResultTimestamp(...results: Array<ConfigLoadResult<unknown>>): number | undefined {
     const timestamps = results
       .map(result => result.timestamp)
       .filter((timestamp): timestamp is number => typeof timestamp === 'number' && Number.isFinite(timestamp))
-    return timestamps.length > 0 ? Math.max(...timestamps) : Date.now()
+    return timestamps.length > 0 ? Math.max(...timestamps) : undefined
   }
 
   private toPageFilePath(pageId: string, filename: string): string {
     return `/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
+  }
+
+  private fileApiUrl(path: string): string {
+    if (this.opts.httpClient === undefined) return path
+    const baseUrl = this.pagesConfigBase.replace(/\/+$/, '')
+    const suffix = path.startsWith('/') ? path : `/${path}`
+    return `${baseUrl}${suffix}`
   }
 
 }

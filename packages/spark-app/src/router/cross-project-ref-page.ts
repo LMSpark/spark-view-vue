@@ -2,19 +2,11 @@ import { computed, defineComponent, h, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import {
-  BasePageConfigLoader,
-  compileRule,
-  parseCss,
-  parsePageData,
-  parseScript,
-  type ConfigLoadResult,
-  type PageConfig,
-  type PageConfigFileName,
+  createPageModelFactory,
+  type PageModelFactoryLike,
+  type PageModelLike,
 } from '@spark-view/spark-page-config'
-import type { DataSet } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-data'
-import { HttpClientBase, createRequest, Logger } from '@spark-view/spark-utils'
-import { readProperty } from '@spark-view/spark-utils/internal'
+import { HttpClientBase, Logger } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'
 import { getNavTree } from '../navigation/nav-access'
@@ -33,16 +25,11 @@ type ResolvedRefTarget = {
   pageId: string | null}
 
 export type CrossProjectRefPageRouteProps = {
-  configLoader: BasePageConfigLoader
+  pageModelFactory: PageModelFactoryLike
   tenantId?: string | undefined
   hostProjectId?: string | undefined
   routePath?: string | undefined
   routeMeta?: Record<string, unknown> | undefined}
-
-type FileResponse = {
-  content?: unknown
-  timestamp?: unknown
-  notModified?: unknown}
 
 type ScopedHttpClientOptions = {
   baseClient: HttpClientBase
@@ -73,34 +60,18 @@ function asNonEmptyString(value: unknown): string | null {
   return trimmed === '' ? null : trimmed
 }
 
-export function createCrossProjectRefRouteProps(configLoader: BasePageConfigLoader) {
+export function createCrossProjectRefRouteProps(pageModelFactory: PageModelFactoryLike) {
   return (route: RouteLocationNormalizedLoaded): CrossProjectRefPageRouteProps => {
     const tenantId = asNonEmptyString(route.params['tenantId'])
     const hostProjectId = asNonEmptyString(route.params['projectId'])
     return {
-      configLoader,
+      pageModelFactory,
       routePath: route.path,
       routeMeta: { ...route.meta },
       ...(tenantId !== null && { tenantId }),
       ...(hostProjectId !== null && { hostProjectId }),
     }
   }
-}
-
-function isNotFoundError(error: unknown): boolean {
-  return readHttpStatus(error) === 404 || readHttpResponseStatus(error) === 404
-}
-
-function isUnauthorizedError(error: unknown): boolean {
-  return readHttpStatus(error) === 401 || readHttpResponseStatus(error) === 401
-}
-
-function readHttpStatus(error: unknown): unknown {
-  return readProperty(error, 'status')
-}
-
-function readHttpResponseStatus(error: unknown): unknown {
-  return readProperty(readProperty(error, 'response'), 'status')
 }
 
 function stripQueryAndHash(path: string): string {
@@ -306,173 +277,10 @@ function createScopedHttpClient(options: ScopedHttpClientOptions): HttpClientBas
   return new ScopedHttpClient(options)
 }
 
-class CrossProjectPageConfigLoader extends BasePageConfigLoader {
-  private readonly client: HttpClientBase
-  private readonly basePath: string
-
-  constructor(client: HttpClientBase, basePath: string) {
-    super()
-    this.client = client
-    this.basePath = basePath
-  }
-
-  clearCache(): void {
-    this.client.clearCache()
-  }
-
-  getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
-  }
-
-  override getHttpClient(): HttpClientBase {
-    return this.client
-  }
-
-  async loadRule(pageId: string): Promise<ConfigLoadResult<SparkNode[]>> {
-    return this.loadRequired(pageId, 'rule.json', compileRule)
-  }
-
-  async loadPageData(pageId: string): Promise<ConfigLoadResult<DataSet>> {
-    return this.loadRequired(pageId, 'pagedata.json', parsePageData)
-  }
-
-  async loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
-    return this.loadOptional(pageId, 'script.js', parseScript)
-  }
-
-  async loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
-    return this.loadOptional(pageId, 'style.css', parseCss)
-  }
-
-  async loadPageFileContent(
-    pageId: string,
-    filename: PageConfigFileName,
-  ): Promise<ConfigLoadResult<string>> {
-    try {
-      return { success: true, data: await this.readFile(pageId, filename), source: 'remote', timestamp: Date.now() }
-    } catch (error: unknown) {
-      if (!isNotFoundError(error)) {
-        const message = error instanceof Error ? error.message : String(error)
-        return { success: false, error: message, timestamp: Date.now() }
-      }
-      return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
-    }
-  }
-
-  async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
-    const ruleResult = await this.loadRule(pageId)
-    if (!ruleResult.success || !ruleResult.data) {
-      return {
-        success: false,
-        ...(ruleResult.reason !== undefined && { reason: ruleResult.reason }),
-        ...(ruleResult.error !== undefined && { error: ruleResult.error }),
-        timestamp: ruleResult.timestamp ?? Date.now(),
-      }
-    }
-
-    const dataResult = await this.loadPageData(pageId)
-    if (!dataResult.success || !dataResult.data) {
-      return {
-        success: false,
-        ...(dataResult.reason !== undefined && { reason: dataResult.reason }),
-        ...(dataResult.error !== undefined && { error: dataResult.error }),
-        timestamp: dataResult.timestamp ?? Date.now(),
-      }
-    }
-
-    const [scriptResult, cssResult] = await Promise.all([
-      this.loadScript(pageId),
-      this.loadCss(pageId),
-    ])
-    if (!scriptResult.success) {
-      return {
-        success: false,
-        ...(scriptResult.reason !== undefined && { reason: scriptResult.reason }),
-        ...(scriptResult.error !== undefined && { error: scriptResult.error }),
-        timestamp: scriptResult.timestamp ?? Date.now(),
-      }
-    }
-    if (!cssResult.success) {
-      return {
-        success: false,
-        ...(cssResult.reason !== undefined && { reason: cssResult.reason }),
-        ...(cssResult.error !== undefined && { error: cssResult.error }),
-        timestamp: cssResult.timestamp ?? Date.now(),
-      }
-    }
-
-    return {
-      success: true,
-      data: {
-        pageId,
-        rule: ruleResult.data,
-        data: dataResult.data,
-        script: scriptResult.data,
-        css: cssResult.data,
-      },
-      source: 'remote',
-      timestamp: Date.now(),
-    }
-  }
-
-  private async loadRequired<T>(
-    pageId: string,
-    filename: string,
-    transform: (content: string) => T,
-  ): Promise<ConfigLoadResult<T>> {
-    try {
-      const text = await this.readFile(pageId, filename)
-      return { success: true, data: transform(text), source: 'remote', timestamp: Date.now() }
-    } catch (error: unknown) {
-      if (isNotFoundError(error)) {
-        return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
-      }
-      if (isUnauthorizedError(error)) {
-        return { success: false, error: `加载 ${pageId}/${filename} 未授权`, timestamp: Date.now() }
-      }
-      const message = error instanceof Error ? error.message : String(error)
-      return { success: false, error: message, timestamp: Date.now() }
-    }
-  }
-
-  private async loadOptional<T extends string>(
-    pageId: string,
-    filename: string,
-    transform: (content: string) => T,
-  ): Promise<ConfigLoadResult<T>> {
-    try {
-      const text = await this.readFile(pageId, filename)
-      return { success: true, data: transform(text), source: 'remote', timestamp: Date.now() }
-    } catch (error: unknown) {
-      if (isNotFoundError(error)) {
-        return { success: false, reason: 'not-found', error: `${pageId}/${filename} 不存在`, timestamp: Date.now() }
-      }
-      const message = error instanceof Error ? error.message : String(error)
-      return { success: false, error: message, timestamp: Date.now() }
-    }
-  }
-
-  private async readFile(pageId: string, filename: string): Promise<string> {
-    const encodedPageId = encodeURIComponent(pageId)
-    const encodedFileName = encodeURIComponent(filename)
-    const result = await this.client.request<FileResponse>({
-      url: `${this.basePath}/${encodedPageId}/${encodedFileName}`,
-      method: 'GET',
-      headers: { 'Content-Type': 'application/json' },
-    })
-    const content = result.content
-    if (typeof content !== 'string') {
-      throw new Error(`配置接口返回无效内容: ${pageId}/${filename}`)
-    }
-    return content
-  }
-
-}
-
 export const CrossProjectRefPage = defineComponent({
   name: 'SparkCrossProjectRefPage',
   props: {
-    configLoader: {
+    pageModelFactory: {
       type: Object,
       required: true,
     },
@@ -522,12 +330,13 @@ export const CrossProjectRefPage = defineComponent({
     const targetProjectId = computed(() => refTarget.value.targetProjectId)
     const targetPageId = computed(() => refTarget.value.pageId)
 
-    const scopedLoader = computed<BasePageConfigLoader | null>(() => {
+    const scopedPageModelFactory = computed<PageModelFactoryLike | null>(() => {
       const scopedTenantId = tenantId.value
       const scopedProjectId = targetProjectId.value
       if (scopedTenantId === null || scopedProjectId === null) return null
 
-      const baseClient = props.configLoader.getHttpClient() ?? createRequest()
+      const baseClient = props.pageModelFactory.getHttpClient()
+      if (!baseClient) return null
       const scopedClient = createScopedHttpClient({
         baseClient,
         scopedHeaders: {
@@ -539,10 +348,19 @@ export const CrossProjectRefPage = defineComponent({
         targetProjectId: scopedProjectId,
       })
 
-      return new CrossProjectPageConfigLoader(
-        scopedClient,
-        `/tenants/${encodeURIComponent(scopedTenantId)}/projects/${encodeURIComponent(scopedProjectId)}/pages-config`,
-      )
+      const pagesConfigBaseUrl =
+        `/tenants/${encodeURIComponent(scopedTenantId)}/projects/${encodeURIComponent(scopedProjectId)}/pages-config`
+      return createPageModelFactory({
+        pagesConfigBaseUrl,
+        httpClient: scopedClient,
+      })
+    })
+
+    const scopedPageModel = computed<PageModelLike | null>(() => {
+      const factory = scopedPageModelFactory.value
+      const pageId = targetPageId.value
+      if (factory === null || pageId === null) return null
+      return factory.create(pageId)
     })
 
     const errorMessage = computed(() => {
@@ -577,8 +395,8 @@ export const CrossProjectRefPage = defineComponent({
     }
 
     return () => {
-      if (errorMessage.value !== null || scopedLoader.value === null || targetPageId.value === null) {
-        const message = errorMessage.value ?? '引用页面加载器初始化失败'
+      if (errorMessage.value !== null || scopedPageModel.value === null || targetPageId.value === null) {
+        const message = errorMessage.value ?? '引用页面模型初始化失败'
         logInitError(message)
         return h('div', { class: 'spark-cross-project-ref-error' }, message)
       }
@@ -587,7 +405,7 @@ export const CrossProjectRefPage = defineComponent({
         ref: pageRendererRef,
         key: `${targetProjectId.value}:${targetPageId.value}`,
         pageId: targetPageId.value,
-        configLoader: scopedLoader.value,
+        pageModel: scopedPageModel.value,
       })
     }
   },

@@ -1,11 +1,5 @@
 import { useRoute, useRouter } from 'vue-router'
 import { buildTenantPath, parseTenantScope } from '@/services/tenant-scope'
-import { isRecord } from '@spark-view/spark-utils'
-
-
-function isConfigLoader(value: unknown): value is { clearCache(key?: string): void } {
-  return isRecord(value) && typeof value['clearCache'] === 'function'
-}
 
 /**
  * 租户路由工具 composable
@@ -35,28 +29,9 @@ export function useTenantRouter() {
   function ensureRouteExists(pid: string, namePrefix = 'page') {
     const tenantPrefixed = `/t/:tenantId/:projectId/${pid}`
     const exists = router.getRoutes().some((r) => r.path === tenantPrefixed)
-    if (exists) return
-
-    const configRoute = router.getRoutes().find(
-      (r) => r.meta['pageId'] !== null && r.meta['pageId'] !== undefined && r.meta['type'] !== 'system-page',
-    )
-    if (!configRoute) return
-
-    const comp = configRoute.components?.['default']
-    if (!comp) return
-
-    const rawRouteProps = configRoute.props['default']
-    const configLoader = isRecord(rawRouteProps) && isConfigLoader(rawRouteProps['configLoader'])
-      ? rawRouteProps['configLoader']
-      : undefined
-
-    router.addRoute({
-      path: tenantPrefixed,
-      name: `${namePrefix}-${pid}`,
-      component: comp,
-      ...(configLoader ? { props: { configLoader } } : {}),
-      meta: { pageId: pid, title: pid, icon: 'Document' },
-    })
+    if (!exists) {
+      throw new Error(`页面路由尚未由导航树注册: ${namePrefix}-${pid}`)
+    }
   }
 
   /** 导航到页面（自动注册路由 + 租户前缀跳转） */

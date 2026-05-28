@@ -78,7 +78,7 @@ export type PageDesignRunInput = AiJsonParamShape<{
 }>
 
 // PAGE_DESIGN_REFACTOR_SOURCE[prompt-root]: pageDesign 系统提示词唯一出处；保持小提示词，任务知识通过 lifecycle/payload-catalog 按需查询。
-const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/<childKind>[pageId]；参数看 module_guide 和 tool schema；写入 dataset->node-tree->text-model；组件 props 用 module_call 调 payload-catalog 的 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
+const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/lifecycle[pageId] 查流程，/pageDesign[pageId]/<childKind>[pageId] 编辑四文件；参数看 module_guide 和 tool schema；写入 dataset->node-tree->text-model；组件 props 用 module_call 调 payload-catalog 的 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
 
 // ── 公共注册契约 ───────────────────────────────────────────
 
@@ -285,6 +285,7 @@ function createPageDesign100StepOrchestrationPrompt(input: PageDesignRunInput): 
   return [
     `100 步流程门禁：${createPageDesignFlowPhaseGateText()}。`,
     '执行规则：先完成入口/盘点，再按数据规划到收尾推进；每次跨阶段前用 lifecycle.describeDesignFlow({ phase }) 或 { step, afterStep } 读取当前步骤事实。',
+    '路径规则：/pageDesign[id]/lifecycle[id] 管流程；/pageDesign[id]/<childKind>[id] 编辑四文件。',
     '写入规则：dataset 负责步骤 21-88 的数据事实；node-tree 负责步骤 89-92 的结构；text-model 只在步骤 93-96 补行为和样式；步骤 97-100 做交叉校验、预览修正和总结。',
     describePageDesignModeBoundary(input.mode),
     describePageDesignOperationBoundary(input.allowedOperations),
@@ -403,7 +404,7 @@ class PageDesignRootAiModule extends AiModule {
     super({
       kind: PAGE_DESIGN_ROOT_KIND,
       name: 'Page Design',
-      description: '单页面四文件编辑根模块，子模块负责 lifecycle、文本模型、组件荷载、节点树和数据集。',
+      description: '单页面四文件编辑根模块。子模块直接提供 lifecycle、text-model、payload-catalog、node-tree、dataset 能力。',
       children: PAGE_DESIGN_CHILD_MODULES.map((item) => item.kind),
       list: (ctx, childKind) => AiModuleResult.ok(childModuleRefs(ctx, childKind)),
       find: (ctx, childKind) => {

@@ -1,5 +1,25 @@
 /**
- * Module-semantic knowledge projection — shared helpers.
+ * ═══════════════════════════════════════════════════════════════
+ * modules/knowledge/knowledge-support.ts — 知识投影共享辅助函数
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】knowledge 层的 helper 函数库。被 AiModuleKnowledgeProjector
+ *   独家消费，提供字符串处理、schema 查询、lookup 步骤生成、payload 目录发现、
+ *   关键字匹配、guide 输入解析、函数/kind 层投影等基础能力。
+ *
+ * 【函数分类】
+ *   字符串工具     — normalizeOptionalText / normalizeTextList / uniqueTexts / containsKeyword
+ *   Schema 工具    — paramNames / requiredParamNames
+ *   属性与 payload — attributeAccessMode / payloadRefsForFunction / formatPayloadBinding
+ *   Lookup 步骤    — createFunctionLookupSteps / createPayloadLookupSteps / createInstanceLookupSteps 等
+ *   Payload 目录   — discoverPayloadCatalogs / formatPayloadCatalogLocator
+ *   关键字匹配     — moduleSummaryGuidesMatchKeyword / childSummaryMatchesKeyword
+ *   Guide 解析     — parseGuideInput / buildHumanQuestion
+ *   投影函数       — summarizeFunction / createGuide / createKindLayer / summarizeChildKind
+ *   Prompt 索引    — formatPromptKindIndexLine
+ *
+ * 【消费方】ai-module-knowledge.ts（AiModuleKnowledgeProjector 的所有方法）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
@@ -25,21 +45,34 @@ import type {
   PayloadLookupStepsOptions,
 } from './knowledge-types'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 常量
+// ═══════════════════════════════════════════════════════════════
+
+/** payload 目录的固定函数名 */
 export const PAYLOAD_QUERY_FUNCTION_NAME = 'queryPayloads'
 export const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
+
+/** 固定协议工具路由描述（注入 LLM 系统 prompt） */
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
   '工具：目录=module_query；指南=module_guide；实例=module_find；属性=module_attr；函数=module_call；反问=human_question。',
 ]
+
+/** prompt 中最多展示的 kind 索引数量 */
 export const PROMPT_KIND_INDEX_LIMIT = 12
 
-// ── 字符串工具 ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · 字符串工具
+// ═══════════════════════════════════════════════════════════════
 
+/** 规范化可选文本：trim 后为空的返回 undefined */
 export function normalizeOptionalText(value: string | undefined): string | undefined {
   if (value === undefined) return undefined
   const normalized = value.trim()
   return normalized.length === 0 ? undefined : normalized
 }
 
+/** 规范化字符串列表：trim → 去空 → 去重 */
 export function normalizeTextList(values: readonly string[] | undefined): readonly string[] {
   if (values === undefined) return []
   const out: string[] = []
@@ -53,6 +86,7 @@ export function normalizeTextList(values: readonly string[] | undefined): readon
   return out
 }
 
+/** 字符串列表去重（保留首次出现顺序） */
 export function uniqueTexts(values: readonly string[]): readonly string[] {
   const out: string[] = []
   const seen = new Set<string>()
@@ -65,35 +99,51 @@ export function uniqueTexts(values: readonly string[]): readonly string[] {
   return out
 }
 
+/** 列表中是否有包含 keyword 的字符串（大小写不敏感） */
 export function containsKeyword(values: readonly string[], keyword: string): boolean {
   return values.some((value) => value.toLowerCase().includes(keyword))
 }
 
-// ── kind 路径与工具名 ────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 工具名与调用格式
+// ═══════════════════════════════════════════════════════════════
 
+/** 生成统一的工具名（当前所有函数统一映射到 module_call） */
 export function functionToolName(kindPath: readonly string[], functionName: string): string {
   void kindPath
   void functionName
   return PROTOCOL_TOOL_NAMES.moduleCall
 }
 
+/** 格式化函数调用示例文本 */
 export function formatInvokeStep(kindPath: readonly string[], functionName: string): string {
   const path = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
   return `${PROTOCOL_TOOL_NAMES.moduleCall}({ path: "${path}", functionName: "${functionName}", args })`
 }
 
-// ── Schema 工具 ───────────────────────────────────────────────
+function formatPathPattern(kindPath: readonly string[]): string {
+  return kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
+}
 
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · Schema 工具
+// ═══════════════════════════════════════════════════════════════
+
+/** 获取 schema 中所有属性名 */
 export function paramNames(schema: AiJsonSchemaObject): readonly string[] {
   return Object.keys(schema.properties ?? {})
 }
 
+/** 获取 schema 中的必填参数名列表 */
 export function requiredParamNames(schema: AiJsonSchemaObject): readonly string[] {
   return schema.required ?? []
 }
 
-// ── 属性与 payload ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 5 节 · 属性与 payload 工具
+// ═══════════════════════════════════════════════════════════════
 
+/** 根据 readable/writable 推导属性访问模式 */
 export function attributeAccessMode(
   readable: boolean,
   writable: boolean,
@@ -104,6 +154,7 @@ export function attributeAccessMode(
   return 'none'
 }
 
+/** 获取模块声明中与指定函数关联的 payloadRef 列表 */
 export function payloadRefsForFunction(
   payloads: readonly AiModulePayloadMetadata[],
   functionName: string,
@@ -116,14 +167,18 @@ export function payloadRefsForFunction(
     .map((payload) => payload.payloadRef)
 }
 
+/** 格式化 payload 绑定信息（用于展示） */
 export function formatPayloadBinding(payload: AiModulePayloadMetadata): string {
   const functions = payload.requiredForFunctions ?? []
   if (functions.length === 0) return payload.payloadRef
   return `${payload.payloadRef}(functions=${functions.join('|')})`
 }
 
-// ── Lookup 步骤生成器 ─────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 6 节 · Lookup 步骤生成器
+// ═══════════════════════════════════════════════════════════════
 
+/** 生成函数查找步骤（query → guide → call 三阶段） */
 export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): readonly string[] {
   const keyword = options.functionName ?? '<functionName 或业务关键词>'
   const functionName = options.functionName ?? '<functionName>'
@@ -134,8 +189,11 @@ export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): 
   ]
 }
 
-// ── Payload catalog 发现与格式化 ──────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 7 节 · Payload 目录发现与格式化
+// ═══════════════════════════════════════════════════════════════
 
+/** 发现已注册的 payload 目录模块（同时声明 queryPayloads 和 guidePayload 的模块） */
 export function discoverPayloadCatalogs(kinds: readonly AiModule[]): readonly PayloadCatalogDescriptor[] {
   return kinds
     .filter((moduleKind) =>
@@ -149,6 +207,7 @@ export function discoverPayloadCatalogs(kinds: readonly AiModule[]): readonly Pa
     }))
 }
 
+/** 生成 payload 查找步骤（定位目录 → 查询 → 读取指南 → 构造参数） */
 export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): readonly string[] {
   if (options.payloadRefs.length === 0) return []
   const payloadCatalogs = requirePayloadCatalogs(options)
@@ -164,6 +223,7 @@ export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): re
   ])
 }
 
+/** 断言 payload 目录存在，否则抛出明确错误 */
 function requirePayloadCatalogs(options: PayloadLookupStepsOptions): readonly PayloadCatalogDescriptor[] {
   if (options.payloadCatalogs.length > 0) return options.payloadCatalogs
   throw new Error(
@@ -192,8 +252,11 @@ function formatPayloadCatalogLocator(catalogs: readonly PayloadCatalogDescriptor
   ).join('|')
 }
 
-// ── 关键字匹配 ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 8 节 · 关键字匹配
+// ═══════════════════════════════════════════════════════════════
 
+/** 检查模块摘要是否匹配关键字（递归检查所有 guide 文本） */
 export function moduleSummaryGuidesMatchKeyword(
   summary: AiModuleKnowledgeModuleSummary,
   keyword: string,
@@ -263,8 +326,11 @@ function childSummaryMatchesKeyword(
     || containsKeyword(child.detailLookupSteps, keyword)
 }
 
-// ── Guide 输入解析 ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 9 节 · Guide 输入解析
+// ═══════════════════════════════════════════════════════════════
 
+/** 解析函数 guide 输入：kind + functionName 均为非空时返回 ParsedKnowledgeFunction */
 export function parseGuideInput(input: AiModuleKnowledgeFunctionGuideInput): ParsedKnowledgeFunction | null {
   const kind = input.kind?.trim()
   const functionName = input.functionName?.trim()
@@ -272,6 +338,7 @@ export function parseGuideInput(input: AiModuleKnowledgeFunctionGuideInput): Par
   return { kind, functionName }
 }
 
+/** 构建人工提问文本 */
 export function buildHumanQuestion(
   missingFacts: readonly string[],
   candidateOptions: readonly string[],
@@ -283,8 +350,11 @@ export function buildHumanQuestion(
   return `为了继续处理，我需要你确认：${factText}。${options}`
 }
 
-// ── 函数投影 ──────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 10 节 · 函数投影
+// ═══════════════════════════════════════════════════════════════
 
+/** 投影单个函数为摘要 */
 export function summarizeFunction(options: FunctionKnowledgeProjectionOptions): AiModuleKnowledgeFunctionSummary {
   const { kind, kindPath, fn, payloads, payloadCatalogs } = options
   const payloadRefs = payloadRefsForFunction(payloads, fn.name)
@@ -313,38 +383,75 @@ export function summarizeFunction(options: FunctionKnowledgeProjectionOptions): 
   }
 }
 
+/** 投影单个函数为完整指南 */
 export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModuleKnowledgeFunctionGuide {
   const { kind, kindPath, fn, payloads, payloadCatalogs } = options
   const payloadRefs = payloadRefsForFunction(payloads, fn.name)
   const toolName = functionToolName(kindPath, fn.name)
+  const pathPattern = formatPathPattern(kindPath)
+  const payloadLookupSteps = createPayloadLookupSteps({
+    kind,
+    kindPath,
+    functionName: fn.name,
+    payloadRefs,
+    payloadCatalogs,
+  })
   return {
     toolName,
     kindPath,
     kind,
     functionName: fn.name,
     description: fn.description,
+    callPattern: {
+      toolName: PROTOCOL_TOOL_NAMES.moduleCall,
+      path: pathPattern,
+      functionName: fn.name,
+      args: 'object matching paramsSchema',
+    },
     paramNames: paramNames(fn.paramsSchema),
     requiredParamNames: requiredParamNames(fn.paramsSchema),
     paramsSchema: fn.paramsSchema,
     ...(fn.resultSchema === undefined ? {} : { resultSchema: fn.resultSchema }),
     usageRules: fn.usageRules ?? [],
+    requiredBeforeCall: fn.requiredBeforeCall ?? [],
     failureModes: fn.failureModes ?? [],
+    recoveryHints: createFunctionRecoveryHints({
+      kind,
+      functionName: fn.name,
+      requiredBeforeCall: fn.requiredBeforeCall ?? [],
+      failureModes: fn.failureModes ?? [],
+      payloadLookupSteps,
+    }),
     functionLookupSteps: createFunctionLookupSteps({ kind, kindPath, functionName: fn.name }),
     payloadRefs,
     requiresPayloadGuide: payloadRefs.length > 0,
-    payloadLookupSteps: createPayloadLookupSteps({
-      kind,
-      kindPath,
-      functionName: fn.name,
-      payloadRefs,
-      payloadCatalogs,
-    }),
-    ...(fn.example === undefined ? {} : { example: fn.example }),
+    payloadLookupSteps,
+    examples: fn.examples ?? [],
+    antiExamples: fn.antiExamples ?? [],
   }
 }
 
-// ── Kind 层投影 ───────────────────────────────────────────────
+function createFunctionRecoveryHints(options: Readonly<{
+  kind: string
+  functionName: string
+  requiredBeforeCall: readonly string[]
+  failureModes: ReadonlyArray<Readonly<{ code: string, fix: string }>>
+  payloadLookupSteps: readonly string[]
+}>): readonly string[] {
+  return [
+    `参数或路径失败时，先重新调用 module_guide({ kind: "${options.kind}", functionName: "${options.functionName}" }) 对照 paramsSchema、requiredBeforeCall 和 failureModes。`,
+    '如果 path 不存在，先用 module_find 从根实例或父实例重新定位 path。',
+    ...options.requiredBeforeCall.map((step) => `调用前置条件：${step}`),
+    ...options.failureModes.map((mode) => `遇到 ${mode.code} 时：${mode.fix}`),
+    ...options.payloadLookupSteps.map((step) => `复杂参数恢复：${step}`),
+  ]
+}
 
+// ═══════════════════════════════════════════════════════════════
+// 第 11 节 · Kind 层投影
+// ═══════════════════════════════════════════════════════════════
+
+/** 投影单个模块为知识层次结构（属性 + 函数 + 子kind + 荷载指南） */
 export function createKindLayer(options: KindLayerOptions): AiModuleKnowledgeKindLayer {
   const { moduleKind, allKinds, payloadCatalogs } = options
   const kindPath = resolveAiModulePath(moduleKind, allKinds)
@@ -372,6 +479,7 @@ export function createKindLayer(options: KindLayerOptions): AiModuleKnowledgeKin
   }
 }
 
+/** 为模块的每个属性生成属性指南 */
 export function createAttributeGuides(moduleKind: AiModule): readonly AiModuleKnowledgeAttributeGuide[] {
   return moduleKind.attributes.map((attribute) => ({
     name: attribute.name,
@@ -385,6 +493,7 @@ export function createAttributeGuides(moduleKind: AiModule): readonly AiModuleKn
   }))
 }
 
+/** 为模块的每个函数生成层次函数指南 */
 export function createLayerFunctions(moduleKind: AiModule, kindPath: readonly string[]): readonly AiModuleKnowledgeLayerFunction[] {
   return moduleKind.functions.map((fn) => {
     const payloadRefs = payloadRefsForFunction(moduleKind.payloads, fn.name)
@@ -403,17 +512,20 @@ export function createLayerFunctions(moduleKind: AiModule, kindPath: readonly st
   })
 }
 
+/** 计算模块在层次树中的层级（根为 0） */
 export function kindLayerLevel(moduleKind: AiModule, allKinds: readonly AiModule[]): number {
   const kindPath = resolveAiModulePath(moduleKind, allKinds)
   return kindPath.length - 1
 }
 
+/** 生成路径模式（如 /Page[<PageId>]/Table[<TableId>]） */
 export function createPathPattern(moduleKind: AiModule): string {
   const own = `/${moduleKind.kind}[<${moduleKind.kind}Id>]`
   if (moduleKind.parentKind === undefined) return own
   return `/<parentKind>[<parentId>]${own}`
 }
 
+/** 生成实例指南（refShape + pathPattern + queryFields + discoverySteps + pathBuildSteps + operationSteps） */
 export function createInstanceGuide(moduleKind: AiModule): AiModuleKnowledgeInstanceGuide {
   const pathPattern = createPathPattern(moduleKind)
   return {
@@ -433,6 +545,7 @@ export function createInstanceGuide(moduleKind: AiModule): AiModuleKnowledgeInst
   }
 }
 
+/** 生成实例查询字段列表（id + label + keyword + hint + 所有属性名） */
 export function createInstanceQueryFields(moduleKind: AiModule): readonly string[] {
   return uniqueTexts([
     'id',
@@ -443,6 +556,7 @@ export function createInstanceQueryFields(moduleKind: AiModule): readonly string
   ])
 }
 
+/** 生成实例查询示例（最多 6 个） */
 export function createInstanceQueryExamples(
   moduleKind: AiModule,
 ): ReadonlyArray<Readonly<Record<string, AiJsonValue>>> {
@@ -459,6 +573,7 @@ export function createInstanceQueryExamples(
   return examples
 }
 
+/** 生成实例查找步骤（根模块 vs 子模块） */
 export function createInstanceLookupSteps(moduleKind: AiModule): readonly string[] {
   if (moduleKind.parentKind === undefined) {
     return [
@@ -473,6 +588,7 @@ export function createInstanceLookupSteps(moduleKind: AiModule): readonly string
   ]
 }
 
+/** 生成实例路径构造步骤 */
 export function createInstancePathBuildSteps(moduleKind: AiModule): readonly string[] {
   const segment = `${moduleKind.kind}[<instanceRef.id>]`
   if (moduleKind.parentKind === undefined) {
@@ -488,6 +604,7 @@ export function createInstancePathBuildSteps(moduleKind: AiModule): readonly str
   ]
 }
 
+/** 生成子 kind 查找步骤 */
 export function createChildLookupSteps(
   moduleKind: AiModule,
   allKinds: readonly AiModule[],
@@ -503,6 +620,7 @@ export function createChildLookupSteps(
   ]
 }
 
+/** 生成属性查找步骤 */
 export function createAttributeLookupSteps(moduleKind: AiModule): readonly string[] {
   if (moduleKind.attributes.length === 0) return []
   return [
@@ -512,6 +630,7 @@ export function createAttributeLookupSteps(moduleKind: AiModule): readonly strin
   ]
 }
 
+/** 生成模块函数查找步骤 */
 export function createModuleFunctionLookupSteps(moduleKind: AiModule, kindPath: readonly string[]): readonly string[] {
   if (moduleKind.functions.length === 0) return []
   const path = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
@@ -522,6 +641,7 @@ export function createModuleFunctionLookupSteps(moduleKind: AiModule, kindPath: 
   ]
 }
 
+/** 投影子 kind 摘要（已注册 → 完整信息；未注册 → 占位提示） */
 export function summarizeChildKind(
   childKind: string,
   allKinds: readonly AiModule[],
@@ -570,6 +690,11 @@ export function summarizeChildKind(
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 12 节 · Prompt 索引行格式化
+// ═══════════════════════════════════════════════════════════════
+
+/** 格式化单个 kind 的 prompt 索引行 */
 export function formatPromptKindIndexLine(layer: AiModuleKnowledgeKindLayer): string {
   const prefix = layer.parentKind === undefined ? `root ${layer.kind}` : `${layer.parentKind}/${layer.kind}`
   const childKinds = layer.childKinds.map((child) => child.kind)

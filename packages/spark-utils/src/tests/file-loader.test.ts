@@ -207,6 +207,48 @@ describe('FileLoader', () => {
       )
     })
 
+    it('应该把后端 timestamp 原样作为下一次请求参数', async () => {
+      const sourceTimestamp = '1711111111123'
+
+      mockAxiosRequest.mockResolvedValueOnce({
+        data: {
+          content: 'plain-content',
+          timestamp: sourceTimestamp,
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {},
+      })
+
+      await loader.load('mtime.txt', { parseJSON: false })
+
+      mockAxiosRequest.mockResolvedValueOnce({
+        data: {
+          notModified: true,
+          timestamp: sourceTimestamp,
+        },
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+        config: {},
+      })
+
+      const result = await loader.load('mtime.txt', { parseJSON: false })
+
+      expect(result.success).toBe(true)
+      expect(result.data).toBe('plain-content')
+      expect(result.fromCache).toBe(true)
+      expect(result.notModified).toBe(true)
+      expect(result.timestamp).toBe(sourceTimestamp)
+      expect(mockAxiosRequest).toHaveBeenNthCalledWith(
+        2,
+        expect.objectContaining({
+          params: { timestamp: sourceTimestamp },
+        }),
+      )
+    })
+
     it('应该在强制刷新时忽略缓存', async () => {
       // 首次加载
       mockAxiosRequest.mockResolvedValueOnce({
@@ -420,6 +462,222 @@ describe('FileLoader', () => {
       expect(loader.getTimestamp('stats2.json')).toBe('2024-02-11T10:00:00Z')
     })
 
+    it('localStorage 缓存项格式无效时应删除，避免重复缓存 miss', () => {
+      class FakeStorage implements Storage {
+        private readonly map = new Map<string, FakeStorageRecord>()
+
+        get length(): number {
+          return this.map.size
+        }
+
+        clear(): void {
+          this.map.clear()
+        }
+
+        getItem(key: string): string | null {
+          return this.map.get(key)?.value ?? null
+        }
+
+        key(index: number): string | null {
+          return Array.from(this.map.keys())[index] ?? null
+        }
+
+        removeItem(key: string): void {
+          this.map.delete(key)
+        }
+
+        setItem(key: string, value: string): void {
+          this.map.set(key, { value })
+        }
+      }
+
+      const cacheKey = 'spark_page_bad.json'
+      const fakeStorage = new FakeStorage()
+      const now = Date.now()
+      fakeStorage.setItem(cacheKey, JSON.stringify({
+        data: 'bad-content',
+        timestamp: 'old-field-name',
+        cachedAt: now,
+        lastAccess: now,
+        expirationLevel: 3,
+      }))
+
+      vi.stubGlobal('localStorage', fakeStorage)
+      const localLoader = createFileLoader({
+        baseUrl: '/api/config',
+        storage: 'localStorage',
+        cachePrefix: 'spark_page_',
+      })
+
+      expect(localLoader.hasCache('bad.json')).toBe(false)
+      expect(fakeStorage.getItem(cacheKey)).toBeNull()
+    })
+
+    it('localStorage 超过字节预算时应先按 LRU 清理', () => {
+      class FakeStorage implements Storage {
+        private readonly map = new Map<string, FakeStorageRecord>()
+
+        get length(): number {
+          return this.map.size
+        }
+
+        clear(): void {
+          this.map.clear()
+        }
+
+        getItem(key: string): string | null {
+          return this.map.get(key)?.value ?? null
+        }
+
+        key(index: number): string | null {
+          return Array.from(this.map.keys())[index] ?? null
+        }
+
+        removeItem(key: string): void {
+          this.map.delete(key)
+        }
+
+        setItem(key: string, value: string): void {
+          this.map.set(key, { value })
+        }
+      }
+
+      const fakeStorage = new FakeStorage()
+      const now = Date.now()
+      fakeStorage.setItem('spark_page_old-a.json', JSON.stringify({
+        data: 'a'.repeat(120),
+        sourceTimestamp: 'ts-old-a',
+        cachedAt: now - 2000,
+        lastAccess: now - 2000,
+        expirationLevel: 3,
+      }))
+      fakeStorage.setItem('spark_page_old-b.json', JSON.stringify({
+        data: 'b'.repeat(120),
+        sourceTimestamp: 'ts-old-b',
+        cachedAt: now - 1000,
+        lastAccess: now - 1000,
+        expirationLevel: 3,
+      }))
+
+      vi.stubGlobal('localStorage', fakeStorage)
+      const localLoader = createFileLoader({
+        baseUrl: '/api/config',
+        storage: 'localStorage',
+        cachePrefix: 'spark_page_',
+        maxStorageBytes: 700,
+      })
+
+      localLoader.store({ key: 'new.json', data: 'n'.repeat(120), sourceTimestamp: 'ts-new' })
+
+      expect(fakeStorage.getItem('spark_page_new.json')).not.toBeNull()
+      expect(fakeStorage.getItem('spark_page_old-a.json')).toBeNull()
+    })
+
+    it('localStorage 单个缓存项超过预算时应跳过持久化', () => {
+      class FakeStorage implements Storage {
+        private readonly map = new Map<string, FakeStorageRecord>()
+
+        get length(): number {
+          return this.map.size
+        }
+
+        clear(): void {
+          this.map.clear()
+        }
+
+        getItem(key: string): string | null {
+          return this.map.get(key)?.value ?? null
+        }
+
+        key(index: number): string | null {
+          return Array.from(this.map.keys())[index] ?? null
+        }
+
+        removeItem(key: string): void {
+          this.map.delete(key)
+        }
+
+        setItem(key: string, value: string): void {
+          this.map.set(key, { value })
+        }
+      }
+
+      const fakeStorage = new FakeStorage()
+      vi.stubGlobal('localStorage', fakeStorage)
+      const localLoader = createFileLoader({
+        baseUrl: '/api/config',
+        storage: 'localStorage',
+        cachePrefix: 'spark_page_',
+        maxEntryStorageBytes: 300,
+      })
+
+      localLoader.store({ key: 'huge.json', data: 'x'.repeat(500), sourceTimestamp: 'ts-huge' })
+
+      expect(fakeStorage.getItem('spark_page_huge.json')).toBeNull()
+    })
+
+    it('localStorage 总量超过预算时只驱逐 spark_page 缓存', () => {
+      class FakeStorage implements Storage {
+        private readonly map = new Map<string, FakeStorageRecord>()
+
+        get length(): number {
+          return this.map.size
+        }
+
+        clear(): void {
+          this.map.clear()
+        }
+
+        getItem(key: string): string | null {
+          return this.map.get(key)?.value ?? null
+        }
+
+        key(index: number): string | null {
+          return Array.from(this.map.keys())[index] ?? null
+        }
+
+        removeItem(key: string): void {
+          this.map.delete(key)
+        }
+
+        setItem(key: string, value: string): void {
+          this.map.set(key, { value })
+        }
+      }
+
+      const fakeStorage = new FakeStorage()
+      const now = Date.now()
+      fakeStorage.setItem('other_app_state', 'x'.repeat(500))
+      fakeStorage.setItem('spark_page_old-a.json', JSON.stringify({
+        data: 'a'.repeat(120),
+        sourceTimestamp: 'ts-old-a',
+        cachedAt: now - 2000,
+        lastAccess: now - 2000,
+        expirationLevel: 3,
+      }))
+      fakeStorage.setItem('spark_page_old-b.json', JSON.stringify({
+        data: 'b'.repeat(120),
+        sourceTimestamp: 'ts-old-b',
+        cachedAt: now - 1000,
+        lastAccess: now - 1000,
+        expirationLevel: 3,
+      }))
+
+      vi.stubGlobal('localStorage', fakeStorage)
+      const localLoader = createFileLoader({
+        baseUrl: '/api/config',
+        storage: 'localStorage',
+        cachePrefix: 'spark_page_',
+        maxStorageTotalBytes: 900,
+      })
+
+      localLoader.store({ key: 'new.json', data: 'n'.repeat(120), sourceTimestamp: 'ts-new' })
+
+      expect(fakeStorage.getItem('other_app_state')).not.toBeNull()
+      expect(fakeStorage.getItem('spark_page_new.json')).not.toBeNull()
+      expect(fakeStorage.getItem('spark_page_old-a.json')).toBeNull()
+    })
+
     it('localStorage 配额不足时应按 lastAccess 驱逐，不按 sourceTimestamp 驱逐', () => {
       class FakeStorage implements Storage {
         private readonly map = new Map<string, FakeStorageRecord>()
@@ -462,7 +720,7 @@ describe('FileLoader', () => {
       const now = Date.now()
 
       fakeStorage.setItem('spark_page_old-a.json', JSON.stringify({
-        data: 'a',
+        data: 'a'.repeat(160_000),
         sourceTimestamp: '9999',
         cachedAt: now - 1000,
         lastAccess: now - 1000,

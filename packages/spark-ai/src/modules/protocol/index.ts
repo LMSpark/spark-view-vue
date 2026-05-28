@@ -26,10 +26,14 @@ export {
   AiModulePath,
   AiModulePathParseError,
   AiModulePathSegment,
+  appendAiModulePath,
+  buildAiModulePath,
+  parseAiModulePath,
 } from './module-path'
 
 export type {
   AiModulePathParseErrorCode,
+  AiModulePathSegmentInput,
 } from './module-path'
 
 export {
@@ -58,6 +62,8 @@ export type {
 // ── 第 3 层：元数据声明（依赖 module-context）──
 
 export type {
+  AiModuleFunctionAntiExample,
+  AiModuleFunctionExample,
   AiModuleFunctionFailureMode,
   AiModuleFunctionMetadata,
   AiModuleFunctionResultSchema,

@@ -3,6 +3,8 @@
  * @packageDocumentation
  */
 
+import type { HttpClientBase } from './HttpClientBase'
+
 // ==================== 请求配置 ====================
 
 export type Method = 'GET' | 'POST' | 'PUT' | 'PATCH' | 'DELETE'
@@ -159,6 +161,8 @@ export type FileLoadOptions = {
   storage?: 'localStorage' | 'sessionStorage' | 'memory'
   /** 缓存键前缀 */
   cachePrefix?: string
+  /** 自定义 HTTP client；用于复用上层认证、租户作用域或 URL 重写能力 */
+  request?: HttpClientBase
   /** 超时（ms） */
   timeout?: number
   /** 自定义请求头（静态） */
@@ -175,7 +179,13 @@ export type FileLoadOptions = {
   /** 默认过期级别（默认 3 = 15天），对应 expirationTiers 中的 level */
   defaultExpirationLevel?: number
   /** 最大缓存条目数（默认 100），超过按 LRU 清理 */
-  maxCacheSize?: number}
+  maxCacheSize?: number
+  /** 当前 cachePrefix 在 Web Storage 中最多占用的估算字节数，超过按 LRU 清理 */
+  maxStorageBytes?: number
+  /** Web Storage 总占用的估算字节上限；只驱逐当前缓存前缀下的条目 */
+  maxStorageTotalBytes?: number
+  /** 单个 Web Storage 缓存项最大估算字节数，超过则跳过持久化 */
+  maxEntryStorageBytes?: number}
 
 /**
  * 通用缓存条目（泛型）

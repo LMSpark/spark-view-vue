@@ -1,9 +1,30 @@
 /**
- * AiModule knowledge projection — type definitions.
+ * ═══════════════════════════════════════════════════════════════
+ * modules/knowledge/knowledge-types.ts — 知识投影类型定义
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】modules 知识投影层的 SSOT 类型契约。定义从
+ *   AiModule 注册表到 LLM 可读知识结构的全部投影类型。
+ *   所有类型均为只读（Readonly），确保知识快照是不可变数据。
+ *
+ * 【类型分组】
+ *   属性投影：    AiModuleKnowledgeAttributeGuide / ChildAttributeSummary
+ *   函数投影：    AiModuleKnowledgeLayerFunction / FunctionSummary / FunctionGuide
+ *   实例导航：    AiModuleKnowledgeInstanceGuide
+ *   模块层次：    AiModuleKnowledgeKindLayer / ModuleSummary / ChildKindSummary
+ *   快照：        AiModuleKnowledgeSnapshot
+ *   查询/过滤：   ModuleFilter / FunctionFilter / FunctionGuideInput
+ *   人工提问：    HumanQuestionGuide / HumanQuestionGuideInput
+ *   内部选项：    KindLayerOptions / FunctionKnowledgeProjectionOptions 等
+ *
+ * 【消费方】ai-module-knowledge.ts（投影器）、knowledge-support.ts（辅助函数）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
 import type {
+  AiModuleFunctionAntiExample,
+  AiModuleFunctionExample,
   AiModuleFunctionFailureMode,
   AiModuleFunctionMetadata,
   AiModuleFunctionResultSchema,
@@ -149,17 +170,26 @@ export type AiModuleKnowledgeFunctionGuide = Readonly<{
   kind: string
   functionName: string
   description: string
+  callPattern: Readonly<{
+    toolName: 'module_call'
+    path: string
+    functionName: string
+    args: string
+  }>
   paramNames: readonly string[]
   requiredParamNames: readonly string[]
   paramsSchema: AiJsonSchemaObject
   resultSchema?: AiModuleFunctionResultSchema
   usageRules: readonly string[]
+  requiredBeforeCall: readonly string[]
   failureModes: readonly AiModuleFunctionFailureMode[]
+  recoveryHints: readonly string[]
   functionLookupSteps: readonly string[]
   payloadRefs: readonly string[]
   requiresPayloadGuide: boolean
   payloadLookupSteps: readonly string[]
-  example?: AiJsonValue
+  examples: readonly AiModuleFunctionExample[]
+  antiExamples: readonly AiModuleFunctionAntiExample[]
 }>
 
 export type AiModuleKnowledgeSnapshot = Readonly<{

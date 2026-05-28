@@ -1,23 +1,36 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  MODULE-SEMANTIC · 语义运行时组合根                                           │
- * │  AiModuleRuntime — Composition Root                                     │
- * │                                                                              │
- * │  本模块是 modules 层的 top-level 入口，组合所有内部组件：                       │
- * │    · AiModuleRegistry    — kind 注册表（启动期注册，运行期只读）             │
- * │    · Navigator             — 路径导航 + 发现工具（listChildren/findInstance）   │
- * │    · AttributeAccessor     — 属性读写（getAttribute/setAttribute）            │
- * │    · FunctionInvoker       — function tool 调用（invokeFunction + 参数校验）    │
- * │    · ProtocolToolGenerator — 固定 module_* tools 规约生成                     │
- * │    · ProtocolToolRouter    — 工具调用路由（toolName → 具体操作）               │
- * │                                                                              │
- * │  对外暴露两个核心能力：                                                        │
- * │    · getTools()     — 返回 OpenAI function tool 规约（由 Host 层转发）      │
- * │    · executeTool()     — 执行 tool_call（由 Host 层 tool-call-executor 调用）  │
- * │                                                                              │
- * │  设计原则：不持有业务状态，只做协议层编排和路由。                                │
- * │  业务状态由业务服务或构造期 function runner 承载。                            │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * ═══════════════════════════════════════════════════════════════
+ * modules/runtime/ai-module-runtime.ts — 模块语义运行时组合根
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】modules 层的 top-level 入口。组合所有内部组件
+ *   （Registry / Navigator / AttributeAccessor / FunctionInvoker /
+ *   ProtocolToolGenerator / ProtocolToolRouter / KnowledgeProjector），
+ *   对外暴露 getTools() 和 executeTool() 两个核心能力。
+ *
+ * 【内部组件组合】
+ *   AiModuleRegistry          — kind 注册表（启动期注册，运行期只读）
+ *   Navigator                 — 路径导航 + 发现工具（listChildren/findInstance/describeKind）
+ *   AttributeAccessor         — 属性读写（get/set）
+ *   FunctionInvoker           — 函数调用（invokeFunction + kindPath 校验）
+ *   ProtocolToolGenerator     — 固定 module_* tools 规约生成
+ *   ProtocolToolRouter        — 工具调用路由（toolName → 具体操作）
+ *   AiModuleKnowledgeProjector — 知识投影（project/queryModules/queryFunctions/guideFunction）
+ *
+ * 【对外 API 两组】
+ *   LLM 工具接口：
+ *     · getTools()      — 返回 OpenAI function tool 规约（由 Host 层转发）
+ *     · executeTool()   — 执行 tool_call（由 Host 层 tool-call-executor 调用）
+ *   编程式直接访问（跳过工具路由）：
+ *     · getAttribute / setAttribute / invokeFunction
+ *     · listChildren / findInstance / describeKind
+ *     · projectKnowledge / queryKnowledgeModules / queryKnowledgeFunctions / guideKnowledgeFunction
+ *
+ * 【设计原则】不持有业务状态，只做协议层编排和路由。业务状态由
+ *   业务服务或构造期注入的函数 runner 承载。
+ *
+ * 【消费方】ai-host.ts（注册 + 工具调用）、business-session.ts（工具转发）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiJsonValue } from '../../json'
@@ -53,12 +66,14 @@ import type {
 } from '../protocol'
 import { ProtocolToolRouter } from './protocol-tool-router'
 import type { ProtocolToolArgs } from './protocol-tool-args'
+import {
+  inspectAiModuleRuntime,
+  type AiModuleRuntimeInspectReport,
+} from './runtime-inspector'
 
 export type { ProtocolToolArgs } from './protocol-tool-args'
 
-/* -------------------------------------------------------------------------------
- * 一、AiModuleRuntime
- * ----------------------------------------------------------------------------- */
+/* ── AiModuleRuntime ────────────────────────────────────────── */
 
 export class AiModuleRuntime {
   private readonly kinds: AiModuleRegistry
@@ -84,6 +99,11 @@ export class AiModuleRuntime {
   /** 注册一个已构造 AiModule 实例（启动期操作，重复注册抛 AiModuleConflictError）。 */
   public register<TKind extends AiModule>(moduleKind: TKind): TKind {
     return this.kinds.register(moduleKind)
+  }
+
+  /** 检查当前 runtime 注册图的完整性，供启动日志、单测和接入诊断使用。 */
+  public inspect(): AiModuleRuntimeInspectReport {
+    return inspectAiModuleRuntime(this.kinds.list())
   }
 
   /* ── LLM 工具 ──────────────────────────────────────────── */

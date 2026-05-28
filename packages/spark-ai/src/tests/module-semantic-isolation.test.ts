@@ -3,7 +3,15 @@ import { describe, expect, it } from 'vitest'
 import { coerceJsonValue, coerceStrictJsonValue, paramsSchema, stringSchema } from '../json'
 import { AiModuleRegistry } from '../modules/internal/ai-module-registry'
 import { AiModuleKnowledgeProjector } from '../modules/knowledge/ai-module-knowledge'
-import { AiModule, AiModuleResult, type AiModuleInstanceRef } from '../modules'
+import {
+  AiModule,
+  AiModuleResult,
+  AiModuleRuntime,
+  appendAiModulePath,
+  buildAiModulePath,
+  parseAiModulePath,
+  type AiModuleInstanceRef,
+} from '../modules'
 
 function createRootKind(kind: string, name = kind): AiModule {
   return new AiModule({
@@ -27,6 +35,15 @@ function createFunctionKind(): AiModule {
       name: 'doWork',
       description: 'Execute work.',
       paramsSchema: paramsSchema({ input: stringSchema('Work input.') }, ['input']),
+      requiredBeforeCall: ['先确认目标 task 实例 path。'],
+      examples: [{
+        intent: '用户要求执行工作',
+        args: { input: 'demo' },
+      }],
+      antiExamples: [{
+        user: '只是查看状态',
+        reason: '查看状态不应调用 doWork。',
+      }],
     }],
     runner: (_ctx, _functionName, args) => AiModuleResult.ok(args),
     find: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id: 'task-1', label: 'Task' }]),
@@ -108,6 +125,18 @@ describe('AiModuleKnowledgeProjector', () => {
         toolName: 'module_call',
         kind: 'task',
         functionName: 'doWork',
+        callPattern: {
+          toolName: 'module_call',
+          path: '/task[<taskId>]',
+          functionName: 'doWork',
+        },
+        requiredBeforeCall: ['先确认目标 task 实例 path。'],
+        examples: [expect.objectContaining({ intent: '用户要求执行工作' })],
+        antiExamples: [expect.objectContaining({ reason: '查看状态不应调用 doWork。' })],
+        recoveryHints: expect.arrayContaining([
+          expect.stringContaining('module_guide'),
+          expect.stringContaining('module_find'),
+        ]),
       },
     })
     expect(projector.guideFunction({ kind: '', functionName: '' })).toMatchObject({
@@ -133,5 +162,69 @@ describe('AiModuleKnowledgeProjector', () => {
         question: expect.stringContaining('目标页面 ID'),
       },
     })
+  })
+})
+
+describe('AiModuleRuntime.inspect', () => {
+  it('reports a clean runtime and summarizes registered modules', () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(createRootKind('pageDesign', 'Page Design'))
+
+    expect(runtime.inspect()).toMatchObject({
+      ok: true,
+      status: 'ok',
+      rootKinds: ['pageDesign'],
+      modules: [
+        expect.objectContaining({
+          kind: 'pageDesign',
+          status: 'ok',
+          functionCount: 0,
+        }),
+      ],
+      findings: [],
+    })
+  })
+
+  it('finds broken child declarations before tool execution', () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(new AiModule({
+      kind: 'parent',
+      name: 'Parent',
+      description: 'Parent module.',
+      children: ['child'],
+      list: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([]),
+      find: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id: 'parent-1', label: 'Parent' }]),
+    }))
+
+    expect(runtime.inspect()).toMatchObject({
+      ok: false,
+      status: 'error',
+      findings: [
+        expect.objectContaining({
+          code: 'CHILD_KIND_NOT_REGISTERED',
+          kind: 'parent',
+          childKind: 'child',
+        }),
+      ],
+    })
+  })
+})
+
+describe('AiModule path helpers', () => {
+  it('builds, appends and parses paths with escaped ids', () => {
+    const rootPath = buildAiModulePath([
+      { kind: 'pageDesign', id: 'page/a' },
+    ])
+    const childPath = appendAiModulePath(rootPath, {
+      kind: 'node-tree',
+      id: 'tree]main',
+    })
+
+    expect(rootPath).toBe('/pageDesign[page%2Fa]')
+    expect(childPath).toBe('/pageDesign[page%2Fa]/node-tree[tree%5Dmain]')
+    expect(parseAiModulePath(childPath)).toEqual([
+      { kind: 'pageDesign', id: 'page/a' },
+      { kind: 'node-tree', id: 'tree]main' },
+    ])
   })
 })

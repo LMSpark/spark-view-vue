@@ -1,3 +1,29 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * modules/runtime/protocol-tool-router.ts — 固定协议工具路由器
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】modules 层的工具调用中央调度器。接收 LLM 发出的 tool_call，
+ *   按 toolName 路由到对应的内部组件（Knowledge / Navigator / Attributes / Functions）。
+ *   是 AiModuleRuntime.executeTool() 的核心实现。
+ *
+ * 【6 条路由】
+ *   module_query   → knowledge.queryModules / queryFunctions
+ *   module_guide   → knowledge.guideFunction / navigator.describeKind
+ *   module_find    → navigator.listChildren / findInstance
+ *   module_attr    → attributes.get / attributes.set
+ *   module_call    → functionInvoker.invoke
+ *   human_question → knowledge.guideHumanQuestion
+ *
+ * 【错误处理】
+ *   路径解析失败（AiModulePathParseError）→ INVALID_PATH_* 错误码
+ *   参数校验失败（ProtocolToolArgsError）→ INVALID_TOOL_ARGS 错误码
+ *   未知工具 → UNKNOWN_TOOL 错误码
+ *
+ * 【消费方】AiModuleRuntime.executeTool()（间接被 Host 层 tool-call-executor 消费）
+ * ═══════════════════════════════════════════════════════════════
+ */
+
 import type { AiJsonValue } from '../../json'
 import type { FunctionInvoker } from '../internal/function-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
@@ -17,6 +43,19 @@ import {
 } from './protocol-tool-args'
 import { ProtocolResultProjector } from './protocol-result-projector'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · ProtocolToolRouter 类
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 固定协议工具路由器。
+ *
+ * 组合四个内部组件完成工具调用的完整分发：
+ *   attributes — 属性读写（module_attr）
+ *   functions  — 函数调用（module_call）
+ *   navigator  — 实例导航（module_find）
+ *   knowledge  — 知识投影（module_query / module_guide / human_question）
+ */
 export class ProtocolToolRouter {
   private readonly argsParser = new ProtocolToolArgsParser()
   private readonly resultProjector = new ProtocolResultProjector()
@@ -28,6 +67,12 @@ export class ProtocolToolRouter {
     private readonly knowledge: AiModuleKnowledgeProjector,
   ) {}
 
+  /**
+   * 执行工具调用。
+   *
+   * 流程：校验工具名 → 按 toolName 分发 → 统一错误处理。
+   * 路径解析和参数校验异常被捕获并转为友好的 AiModuleResult 错误。
+   */
   public async execute(
     toolName: string,
     rawArgs: ProtocolToolArgs,
@@ -65,6 +110,9 @@ export class ProtocolToolRouter {
     }
   }
 
+  // ── module_query — 查询模块目录 ──────────────────────────────
+
+  /** 路由 module_query：可选 kind / parentKind / keyword 过滤，可选 includeFunctions 返回函数摘要 */
   private routeModuleQuery(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
     const kind = this.argsParser.optionalString(args, 'kind')
     const parentKind = this.argsParser.optionalString(args, 'parentKind')
@@ -87,6 +135,9 @@ export class ProtocolToolRouter {
     return this.resultProjector.jsonResult(AiModuleResult.ok(modules))
   }
 
+  // ── module_guide — 读取模块/函数指南 ─────────────────────────
+
+  /** 路由 module_guide：无 functionName → describeKind；有 functionName → guideFunction */
   private routeModuleGuide(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
     const kind = this.argsParser.requireString(args, 'kind')
     const functionName = this.argsParser.optionalString(args, 'functionName')
@@ -96,6 +147,9 @@ export class ProtocolToolRouter {
     return this.resultProjector.jsonResult(this.knowledge.guideFunction({ kind, functionName }))
   }
 
+  // ── module_find — 查找/列出实例 ──────────────────────────────
+
+  /** 路由 module_find：有 query → findInstance；无 query → listChildren */
   private async routeModuleFind(
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
@@ -119,6 +173,9 @@ export class ProtocolToolRouter {
     return this.resultProjector.instanceListResult(result)
   }
 
+  // ── module_attr — 属性读写 ──────────────────────────────────
+
+  /** 路由 module_attr：op="get" → 读取属性；op="set" → 写入属性 */
   private async routeModuleAttr(
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
@@ -141,6 +198,9 @@ export class ProtocolToolRouter {
     return this.resultProjector.voidResult(result)
   }
 
+  // ── module_call — 函数调用 ──────────────────────────────────
+
+  /** 路由 module_call：解析路径 → 校验非根路径 → 委托 functionInvoker */
   private async routeModuleCall(
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
@@ -165,6 +225,9 @@ export class ProtocolToolRouter {
     })
   }
 
+  // ── human_question — 人工提问 ───────────────────────────────
+
+  /** 路由 human_question：委托 knowledge.guideHumanQuestion 生成结构化提问指南 */
   private routeHumanQuestion(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
     const missingFacts = this.argsParser.optionalStringArray(args, 'missingFacts')
     const candidateOptions = this.argsParser.optionalStringArray(args, 'candidateOptions')

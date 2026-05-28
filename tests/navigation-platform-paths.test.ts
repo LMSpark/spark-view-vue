@@ -3,15 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config'
-import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageDataConfig,
-  RuleConfig,
-} from '@spark-view/spark-page-config'
+import { createPageModelFactory } from '@spark-view/spark-page-config'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { useNavigation } from '../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
@@ -44,45 +36,7 @@ const NAV_ROOT: AppNavRoot = {
   children: [],
 }
 
-class DummyPageConfigLoader extends BasePageConfigLoader {
-  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
-    return { success: false }
-  }
-
-  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return { success: false }
-  }
-
-  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
-    return { success: false }
-  }
-
-  override async loadScript(): Promise<ConfigLoadResult<string>> {
-    return { success: true, data: '' }
-  }
-
-  override async loadCss(): Promise<ConfigLoadResult<string>> {
-    return { success: true, data: '' }
-  }
-
-  override async loadPageFileContent(
-    _pageId: string,
-    _filename: PageConfigFileName,
-    _options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
-    return { success: false }
-  }
-
-  override clearCache(): void {
-    return undefined
-  }
-
-  override getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
-  }
-}
-
-const DUMMY_CONFIG_LOADER = new DummyPageConfigLoader()
+const DUMMY_PAGE_MODEL_FACTORY = createPageModelFactory()
 
 async function mountNavigationProbe(initialPath: string): Promise<MountedNavigationProbe> {
   let navigateToPath: NavigateToPath | null = null
@@ -137,11 +91,14 @@ async function mountNavigationProbe(initialPath: string): Promise<MountedNavigat
         },
       },
       {
-        path: '/t/:tenantId/:projectId/__ref/06c56d10-4ff6-4c4d-a6ce-772536592c75',
-        name: 'tenant-stale-ref-config',
+        path: '/t/:tenantId/:projectId/__ref/:refNodeId',
+        name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
         component: DummyPage,
-        props: { configLoader: DUMMY_CONFIG_LOADER },
-        meta: { type: 'config-page', pageId: '06c56d10-4ff6-4c4d-a6ce-772536592c75' },
+        props: () => ({ pageModelFactory: DUMMY_PAGE_MODEL_FACTORY }),
+        meta: {
+          type: 'cross-project-ref',
+          crossProjectRefHost: true,
+        },
       },
     ],
   })
@@ -222,4 +179,3 @@ describe('useNavigation platform paths', () => {
     expect(router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)).toBe(true)
   })
 })
-

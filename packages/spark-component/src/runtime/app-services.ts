@@ -230,8 +230,6 @@ export type PageRuntimeServicesCapability = {
   logger?: LoggerApi
   /** 租户上下文 */
   tenant?: { tenantId: string; tenantName?: string; [key: string]: unknown }
-  /** 配置加载器 */
-  configLoader?: unknown
   /** 认证服务 */
   authService?: unknown
   /** 页面服务（部分实现） */

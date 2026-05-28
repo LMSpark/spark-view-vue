@@ -23,6 +23,8 @@ describe('@spark-view/spark-ai/agent public surface', () => {
       'createAiAgentTask',
       'createAiAgentSessionTranscript',
       'createAiAgentTransportTurn',
+      'createAiBusinessKit',
+      'createSimpleInputContract',
       'createTurnEventCollector',
       'previewAiAgentDiagnosticValue',
       'runAiAgent',

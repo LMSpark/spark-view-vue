@@ -1,16 +1,8 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import { createPageModelFactory, type PageModelFactoryLike } from '@spark-view/spark-page-config'
 import { HttpClientBase } from '@spark-view/spark-utils'
-import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageDataConfig,
-  RuleConfig,
-} from '@spark-view/spark-page-config'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'
@@ -37,7 +29,7 @@ vi.mock('@spark-view/spark-component', async () => {
           type: String,
           required: true,
         },
-        configLoader: {
+        pageModel: {
           type: Object,
           required: true,
         },
@@ -50,61 +42,6 @@ vi.mock('@spark-view/spark-component', async () => {
   }
 })
 
-class TestPageConfigLoader extends BasePageConfigLoader {
-  constructor(private readonly httpClient: HttpClientBase) {
-    super()
-  }
-
-  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
-    return { success: false }
-  }
-
-  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return { success: false }
-  }
-
-  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
-    return { success: false }
-  }
-
-  override async loadScript(): Promise<ConfigLoadResult<string>> {
-    return { success: true, data: '', source: 'remote' }
-  }
-
-  override async loadCss(): Promise<ConfigLoadResult<string>> {
-    return { success: true, data: '', source: 'remote' }
-  }
-
-  override async loadPageFileContent(
-    _pageId: string,
-    _filename: PageConfigFileName,
-    _options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
-    return { success: false }
-  }
-
-  override clearCache(): void {
-    this.httpClient.clearCache()
-  }
-
-  override getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
-  }
-
-  override getHttpClient(): HttpClientBase {
-    return this.httpClient
-  }
-}
-
-function createConfigLoader(httpClient: HttpClientBase): BasePageConfigLoader {
-  return new TestPageConfigLoader(httpClient)
-}
-
-function requirePageConfigLoader(value: unknown): BasePageConfigLoader {
-  if (value instanceof BasePageConfigLoader) return value
-  throw new Error('Expected BasePageConfigLoader instance')
-}
-
 class RecordingHttpClient extends HttpClientBase {
   constructor(private readonly requests: RequestConfig[]) {
     super({}, 'RecordingHttpClient')
@@ -112,8 +49,18 @@ class RecordingHttpClient extends HttpClientBase {
 
   protected async executeRequest(config: RequestConfig): Promise<HttpResponse<unknown>> {
     this.requests.push(config)
+    const url = String(config.url)
+    const content = url.endsWith('/pagedata.json')
+      ? '{"dataSetName":"CrossProject","tables":{}}'
+      : url.endsWith('/rule.json')
+        ? '[]'
+        : ''
     return {
-      data: { content: '[]' },
+      data: {
+        protocolVersion: 4,
+        ok: true,
+        data: { content, timestamp: '1' },
+      },
       status: 200,
       statusText: 'OK',
       headers: {},
@@ -166,9 +113,11 @@ describe('CrossProjectRefPage', () => {
     await router.push(`/t/lmspark/homepage/__ref/${hostRefNodeId}`)
     await router.isReady()
 
+    const pageModelFactory = createPageModelFactory({ httpClient })
+
     mount(CrossProjectRefPage, {
       props: {
-        configLoader: createConfigLoader(httpClient),
+        pageModelFactory,
         tenantId: 'lmspark',
         hostProjectId: 'homepage',
         routePath: `/t/lmspark/homepage/__ref/${hostRefNodeId}`,
@@ -184,8 +133,12 @@ describe('CrossProjectRefPage', () => {
 
     expect(rendererState.props?.['pageId']).toBe('project-list')
 
-    const scopedLoader = requirePageConfigLoader(rendererState.props?.['configLoader'])
-    await scopedLoader.loadRule('project-list')
+    const pageModel = rendererState.props?.['pageModel'] as { pageId: string; load: () => Promise<void> } | undefined
+    expect(pageModel).toBeDefined()
+    if (!pageModel) return
+    expect(pageModel.pageId).toBe('project-list')
+
+    await pageModel.load()
 
     expect(requests[0]?.url).toBe('/tenants/lmspark/projects/engineering-pm/pages-config/project-list/rule.json')
     expect(requests[0]?.headers).toMatchObject({
@@ -194,4 +147,3 @@ describe('CrossProjectRefPage', () => {
     })
   })
 })
-

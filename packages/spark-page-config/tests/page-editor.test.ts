@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createRequest, type HttpClientBase } from '@spark-view/spark-utils'
-import { PageEditor, createPageEditor, createPageEditorPreviewConfigLoader } from '@spark-view/spark-page-config/editor'
+import { PageEditor, createPageEditor } from '@spark-view/spark-page-config/editor'
 import type { DataSetCrudTool, SparkNodeTree } from '@spark-view/spark-data'
 import {
   BasePageConfigLoader,
@@ -11,7 +11,7 @@ import {
   type PageConfigFileName,
   type PageDataConfig,
   type RuleConfig,
-} from '@spark-view/spark-page-config/editor'
+} from '../src/config'
 import {
   NavigationConfigClient,
   buildNavRoot,
@@ -250,12 +250,12 @@ describe('PageEditor', () => {
     )
   })
 
-  it('builds renderer preview config through the editor', async () => {
+  it('projects renderer config through the active PageModel', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders', { allowMissingAsEmpty: true })
 
-    const previewConfig = editor.buildPreviewConfig()
+    const previewConfig = editor.getActivePage()?.toRenderConfig()
 
     expect(previewConfig?.rule[0]?.type).toBe('div')
     expect(previewConfig?.script).toBe('console.log("editor")\n')
@@ -271,14 +271,6 @@ describe('PageEditor', () => {
     // PageModel 子模型 setText 直接解析，无效 JSON 会抛出错误
     const page = editor.getActivePage()
     expect(() => page!.rule.setText('{')).toThrow()
-  })
-
-  it('creates a preview loader that only delegates renderer HTTP access', () => {
-    const http = createRequest()
-    const loader = createPageEditorPreviewConfigLoader(http)
-
-    expect(loader.getHttpClient()).toBe(http)
-    expect(loader.getCacheStats()).toEqual({ size: 0, keys: [] })
   })
 
   it('creates workspace dependencies through the PageEditor factory', async () => {
@@ -297,13 +289,13 @@ describe('PageEditor', () => {
       getPageConfigApi: () => '/api/pages-config',
       getNavigationApi: () => '/api/navigation',
       createConfigLoader: () => loader,
-    })
+    } as Parameters<typeof createPageEditor>[0] & { createConfigLoader: () => TestPageConfigLoader })
 
     await editor.loadNavigation()
     await editor.selectPage('orders', { allowMissingAsEmpty: true })
 
     expect(editor.readSnapshot().selectedNode?.id).toBe('orders-node')
-    expect(editor.buildPreviewConfig()?.script).toBe('console.log("editor")\n')
+    expect(editor.getActivePage()?.toRenderConfig().script).toBe('console.log("editor")\n')
   })
 
   it('creates and deletes unmounted page files through PageEditor lifecycle delegates', async () => {

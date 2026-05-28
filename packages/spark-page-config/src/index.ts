@@ -1,50 +1,44 @@
 /**
  * @spark-view/spark-page-config
  *
- * 主入口：页面配置加载、编译与运行时 API。
- * 委托给 PageEditor（editor/page-editor），不再直接引用内部 config 模块。
- *
- * 子路径：
- * - ./editor — PageEditor 聚合编辑能力 + 设计时工具（DevSystem 使用）
+ * 公共入口只暴露页面模型体系。底层 loader/parser/file API 是包内实现细节。
  */
 
-// ── 所有公开导出均委托 page-editor.ts ────────────────────────
+export {
+  PageModel,
+} from './editor/page-model'
 
 export {
-  BasePageConfigLoader,
-  PAGE_CONFIG_FILE_NAMES,
-  PageConfigFileDescriptor,
+  PageEditor,
+  componentCatalog,
+  createPageEditor,
+  PAGE_DATA_JSON_SCHEMA,
 } from './editor/page-editor'
+
+export * as JsonDocumentRuntime from './json-document'
 
 export type {
-  ConfigLoaderOptions,
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageConfigFiles,
-  PageDataConfig,
-  RuleConfig,
-} from './editor/page-editor'
+  DirtyPart,
+  PageModelLike,
+  PageModelLoadOptions,
+  PageModelRenderConfig,
+} from './editor/page-model'
 
 export {
-  PageConfigLoader,
-  createConfigLoader,
-} from './editor/page-editor'
-
-export {
-  compileRule,
-  normalizeRuleNode,
-  parseCss,
-  parsePageData,
-  parseScript,
-} from './editor/page-editor'
-
-export {
-  PageConfigFileApi,
-} from './editor/page-editor'
+  PageModelFactory,
+  createPageModel,
+  createPageModelFactory,
+} from './editor/page-model-factory'
 
 export type {
-  PageConfigFileVersionSummary,
-  PageConfigPageSummary,
+  PageModelFactoryLike,
+  PageModelFactoryOptions,
+  PageModelFileStorage,
+} from './editor/page-model-factory'
+
+export type {
+  CreatePageEditorOptions,
+  PageDesignEditHost,
+  PageEditorLoadOptions,
+  PageEditorSnapshot,
 } from './editor/page-editor'

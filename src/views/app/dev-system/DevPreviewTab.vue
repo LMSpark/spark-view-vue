@@ -38,11 +38,10 @@
           </el-alert>
         </div>
       </template>
-      <template v-else-if="previewConfig">
+      <template v-else-if="previewPageModel">
         <SparkPageRenderer
-          :pageConfig="previewConfig"
-          :pageId="props.state.activePageId.value || 'dev-preview'"
-          :configLoader="previewConfigLoader"
+          :pageModel="previewPageModel"
+          :pageModelRevision="props.state.pageFilesRevision.value"
         />
       </template>
       <template v-else>
@@ -53,23 +52,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, shallowRef, computed, watch, onMounted, onBeforeUnmount } from 'vue'
+import { ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import {
-  createPageEditorPreviewConfigLoader,
-  type PageEditorPreviewConfig,
-} from '@spark-view/spark-page-config/editor'
+import type { PageModel } from '@spark-view/spark-page-config'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
-import { createAuthHeaders } from '@/services/http'
-
-// ── 为预览渲染器提供带 baseURL + auth 的请求加载器 ──
-// DevPreviewTab 直接传 pageConfig（跳过加载器），但 DataSet 仍需要 HTTP 客户端
-// 来执行 api.list 等远程请求。这里构造一个最小 configLoader 仅暴露 getHttpClient()。
-const previewConfigLoader = createPageEditorPreviewConfigLoader({
-  getHeaders: createAuthHeaders,
-})
 
 const props = defineProps<{
   state: DevState
@@ -81,9 +69,9 @@ const autoRefresh = ref(true)
 const livePreview = ref(true)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
-const previewConfig = shallowRef<PageEditorPreviewConfig | null>(null)
+const previewPageModel = shallowRef<PageModel | null>(null)
 
-function assertActivePageModelLoaded(): void {
+function requireActivePageModelLoaded(): PageModel {
   const pageId = props.state.activePageId.value
   const activePage = props.state.getActivePage()
   if (!pageId || activePage === null) {
@@ -95,17 +83,17 @@ function assertActivePageModelLoaded(): void {
   if (!activePage.isLoaded) {
     throw new Error(`页面模型 ${pageId} 尚未加载完成，无法预览`)
   }
+  return activePage
 }
 
 function refresh() {
   loading.value = true
   parseError.value = null
   try {
-    assertActivePageModelLoaded()
-    previewConfig.value = props.state.buildPreviewConfig()
+    previewPageModel.value = requireActivePageModelLoaded()
   } catch (err) {
     parseError.value = err instanceof Error ? err.message : String(err)
-    previewConfig.value = null
+    previewPageModel.value = null
   } finally {
     loading.value = false
   }
@@ -116,30 +104,29 @@ watch(() => props.refreshToken, () => {
   if (autoRefresh.value) void refresh()
 })
 
-// 监听 4 个文档文本变化，debounce 500ms 实时重建预览（不需要重新拉服务器）
-const _docTexts = computed(() => [
-  props.state.pageFilesRevision.value,
-])
 let _liveTimer: ReturnType<typeof setTimeout> | null = null
-watch(_docTexts, () => {
+function scheduleLiveRefresh() {
   if (!livePreview.value) return
   if (_liveTimer !== null) clearTimeout(_liveTimer)
   _liveTimer = setTimeout(() => {
     _liveTimer = null
     if (loading.value) return // 正在手动刷新中，跳过
-    try {
-      assertActivePageModelLoaded()
-      const cfg = props.state.buildPreviewConfig()
-      if (cfg !== null) {
-        parseError.value = null
-        previewConfig.value = cfg
-      }
-    } catch (err) {
-      parseError.value = err instanceof Error ? err.message : String(err)
-      previewConfig.value = null
-    }
+    refresh()
   }, 500)
-})
+}
+
+// 监听内存 PageModel 的可渲染输入，而不是监听通用 editor revision。
+// revision 会因选中节点、导航状态等非预览输入变化而递增；这里让相同四文件文本不会重复重建预览。
+watch(
+  [
+    () => props.state.activePageId.value,
+    () => props.state.getPageFileText('rule.json'),
+    () => props.state.getPageFileText('pagedata.json'),
+    () => props.state.getPageFileText('script.js'),
+    () => props.state.getPageFileText('style.css'),
+  ],
+  scheduleLiveRefresh,
+)
 onBeforeUnmount(() => {
   if (_liveTimer !== null) clearTimeout(_liveTimer)
 })

@@ -6,7 +6,7 @@ import type { DataColumn, DataSetMetadata, TableMetadata, TableRelation } from '
 
 import {
   canonicalizePageDataJson,
-} from '../page-file-document'
+} from '../page-data-canonicalize'
 
 // ── SECTION 4: 页面数据 JSON Schema ──
 

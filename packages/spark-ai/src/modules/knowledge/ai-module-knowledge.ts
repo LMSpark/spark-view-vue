@@ -1,13 +1,30 @@
 /**
- * AiModule knowledge projection.
+ * ═══════════════════════════════════════════════════════════════
+ * modules/knowledge/ai-module-knowledge.ts — AiModule 知识投影器
+ * ═══════════════════════════════════════════════════════════════
  *
- * The projector turns the registered AiModule graph into module summaries,
- * function summaries, function guides, human-question guidance, and a compact
- * prompt snapshot. ProtocolToolRouter exposes those projections through the
- * query/guide tools that are visible to the LLM.
+ * 【架构定位】modules 层的知识投影入口。将已注册的 AiModule 图转换为
+ *   LLM 可读的结构化知识产物：模块摘要、函数摘要、函数指南、人工提问指南
+ *   以及紧凑的 prompt 快照。ProtocolToolRouter 通过 module_query / module_guide
+ *   等工具将这些投影暴露给 LLM。
  *
- * Types live in knowledge-types.ts; helper functions live in
- * knowledge-support.ts. This file owns only the projector class.
+ * 【核心类】
+ *   AiModuleKnowledgeProjector — 知识投影器
+ *     ├─ project()              — 投影完整快照（模块 + 函数 + kindLayer + prompt 文本）
+ *     ├─ queryModules(filter)   — 查询模块目录摘要
+ *     ├─ queryFunctions(filter) — 查询函数目录摘要
+ *     ├─ guideFunction(input)   — 查询单个函数完整指南
+ *     └─ guideHumanQuestion()   — 生成人工提问指南
+ *
+ * 【数据流】
+ *   1. AiModuleRuntime 构造时创建 AiModuleKnowledgeProjector
+ *   2. runtime.projectKnowledge() → projector.project() → AiModuleKnowledgeSnapshot
+ *   3. tool-loop-runner 将 promptSnapshot 拼接到系统提示词
+ *   4. LLM 调用 module_query → projector.queryModules / queryFunctions
+ *   5. LLM 调用 module_guide → projector.guideFunction
+ *
+ * 【依赖】内部 registry + knowledge-support.ts（helper 函数）+ knowledge-types.ts（类型定义）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiModuleRegistry } from '../internal/ai-module-registry'
@@ -44,11 +61,22 @@ import {
   summarizeFunction,
 } from './knowledge-support'
 
-// ── 投影器 class ──────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · AiModuleKnowledgeProjector 类
+// ═══════════════════════════════════════════════════════════════
 
+/**
+ * 知识投影器。
+ *
+ * 将注册表中的 AiModule 图投影为 LLM 可读的结构化知识。
+ * 所有方法均为同步（基于内存中的注册表），不涉及异步 I/O。
+ */
 export class AiModuleKnowledgeProjector {
   public constructor(private readonly kinds: AiModuleRegistry) {}
 
+  // ── 完整快照投影 ──────────────────────────────────────────
+
+  /** 投影完整知识快照：模块目录 + 函数目录 + kindLayer + prompt 文本 */
   public project(): AiModuleKnowledgeSnapshot {
     const modules = this.queryModules()
     const functions = this.queryFunctions()
@@ -61,6 +89,9 @@ export class AiModuleKnowledgeProjector {
     }
   }
 
+  // ── kindLayer 投影 ─────────────────────────────────────────
+
+  /** 为所有已注册模块生成知识层次结构（含属性/函数/子kind/荷载指南） */
   public queryKindLayers(): readonly AiModuleKnowledgeKindLayer[] {
     const moduleKinds = this.kinds.list()
     const payloadCatalogs = discoverPayloadCatalogs(moduleKinds)
@@ -71,6 +102,9 @@ export class AiModuleKnowledgeProjector {
     }))
   }
 
+  // ── 模块目录查询 ──────────────────────────────────────────
+
+  /** 查询模块目录摘要，支持 kind / parentKind / keyword 过滤 */
   public queryModules(
     filter: AiModuleKnowledgeModuleFilter = {},
   ): readonly AiModuleKnowledgeModuleSummary[] {
@@ -144,6 +178,9 @@ export class AiModuleKnowledgeProjector {
     })
   }
 
+  // ── 函数目录查询 ──────────────────────────────────────────
+
+  /** 查询函数目录摘要，支持 kind / keyword 过滤 */
   public queryFunctions(
     filter: AiModuleKnowledgeFunctionFilter = {},
   ): readonly AiModuleKnowledgeFunctionSummary[] {
@@ -174,6 +211,12 @@ export class AiModuleKnowledgeProjector {
     })
   }
 
+  // ── 函数详细指南 ──────────────────────────────────────────
+
+  /**
+   * 查询单个函数的完整指南（schema、用法规则、失败模式等）。
+   * 失败时返回 AiModuleResult.failCode 带机器可读错误码。
+   */
   public guideFunction(
     input: AiModuleKnowledgeFunctionGuideInput,
   ): AiModuleResult<AiModuleKnowledgeFunctionGuide> {
@@ -213,6 +256,15 @@ export class AiModuleKnowledgeProjector {
     }))
   }
 
+  // ── 人工提问指南 ──────────────────────────────────────────
+
+  /**
+   * 生成人工提问指南。
+   *
+   * 当 LLM 遇到不确定信息（缺失用户事实、需要确认等）时，
+   * 通过 human_question 工具触点本方法，获得结构化的提问指引。
+   * 返回的 usageRules 和 resumeFlow 指导 LLM 暂停工具调用并向用户发问。
+   */
   public guideHumanQuestion(
     input: AiModuleHumanQuestionGuideInput,
   ): AiModuleResult<AiModuleHumanQuestionGuide> {
@@ -253,6 +305,16 @@ export class AiModuleKnowledgeProjector {
     })
   }
 
+  // ═══════════════════════════════════════════════════════════
+  // 第 2 节 · Prompt 快照构造（内部）
+  // ═══════════════════════════════════════════════════════════
+
+  /**
+   * 构建 LLM 系统提示词中的知识快照文本。
+   *
+   * 只包含根模块（parentKind === undefined），截断到 PROMPT_KIND_INDEX_LIMIT。
+   * 超出部分提示用 queryModules({ keyword }) 补充查询。
+   */
   private buildPromptSnapshot(
     kindLayers: readonly AiModuleKnowledgeKindLayer[],
   ): string {

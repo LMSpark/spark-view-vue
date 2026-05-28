@@ -6,6 +6,9 @@
  * 不重复暴露子模型 API。
  */
 
+import type { DataSet, SparkNode } from '@spark-view/spark-data'
+import { getSparkNodeChildren } from '@spark-view/spark-data'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { BasePageConfigLoader, PageConfigFileApi } from '../config'
 import type { NavigationConfigClient } from '../navigation'
 import { NavigationDraftModel } from './navigation-draft-model'
@@ -24,6 +27,14 @@ const ALL_PARTS: readonly DirtyPart[] = ['navigation', 'rule', 'dataSet', 'style
 export type PageModelLoadOptions = {
   forceReload?: boolean
   allowMissingAsEmpty?: boolean
+}
+
+export type PageModelRenderConfig = {
+  pageId: string
+  rule: SparkNode[]
+  data: DataSet
+  script: string | undefined
+  css: string | undefined
 }
 
 // ═══════════════════════════════════════════════════════════
@@ -46,7 +57,7 @@ export class PageModel {
     pageId: string,
     private readonly fileApi: PageConfigFileApi,
     private readonly configLoaderFactory: () => BasePageConfigLoader,
-    private readonly navClient: NavigationConfigClient,
+    private readonly navClient?: NavigationConfigClient,
   ) {
     this.pageId = pageId.trim()
     if (!this.pageId) {
@@ -111,11 +122,34 @@ export class PageModel {
     }
   }
 
+  /** 获取内部 HTTP 客户端（渲染层复用认证/租户头）。 */
+  getHttpClient(): HttpClientBase | undefined {
+    return this.configLoaderFactory().getHttpClient()
+  }
+
+  /** 渲染层唯一读取口：直接投影当前内存 PageModel，不重新读取文件。 */
+  toRenderConfig(): PageModelRenderConfig {
+    if (!this._isLoaded) {
+      throw new Error(`页面模型 ${this.pageId} 尚未加载完成`)
+    }
+    return {
+      pageId: this.pageId,
+      rule: getSparkNodeChildren(this.rule.tree.root.children),
+      data: this.dataSet.tool.dataSet,
+      script: optionalText(this.script.text),
+      css: optionalText(this.style.text),
+    }
+  }
+
   private async _savePart(part: DirtyPart): Promise<void> {
     switch (part) {
-      case 'navigation':
+      case 'navigation': {
+        if (!this.navClient) {
+          throw new Error('缺少 NavigationConfigClient，无法保存导航')
+        }
         await this.navigation.save(this.navClient)
         break
+      }
       case 'rule':
         await this.rule.save(this.pageId, this.fileApi)
         break
@@ -141,4 +175,10 @@ export class PageModel {
       })
     }
   }
+}
+
+export type PageModelLike = Pick<PageModel, 'pageId' | 'isLoaded' | 'load' | 'toRenderConfig' | 'getHttpClient'>
+
+function optionalText(value: string): string | undefined {
+  return value.trim() === '' ? undefined : value
 }

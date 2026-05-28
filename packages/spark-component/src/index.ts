@@ -337,5 +337,5 @@ export type {
 
 export type {
   PageContext,
-  PageConfig,
+  PageModelRenderConfig,
 } from './page/index.js'

@@ -41,6 +41,16 @@ export class AiAgentRegistry<TInput extends AiJsonParams = AiJsonParams> {
   public get(moduleId: string): AiAgentRegistration<TInput> | undefined {
     return this.registrations.get(moduleId)
   }
+
+  /** 列出当前所有业务注册项。 */
+  public list(): ReadonlyArray<AiAgentRegistration<TInput>> {
+    return [...this.registrations.values()]
+  }
+
+  /** 删除一个业务注册项，供 Host.unregister 维护别名映射时使用。 */
+  public delete(moduleId: string): boolean {
+    return this.registrations.delete(moduleId)
+  }
 }
 
 function hasExplicitSessionStore(value: unknown): boolean {

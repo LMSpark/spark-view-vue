@@ -50,6 +50,28 @@ export type AiModuleFunctionFailureMode = Readonly<{
 /** 函数结果 schema：简单类型名（如 "string"、"number"）或完整 JSON Schema object */
 export type AiModuleFunctionResultSchema = AiJsonSchema | AiJsonObject
 
+/** 函数调用示例：描述某个用户意图应如何映射到 module_call 参数。 */
+export type AiModuleFunctionExample = Readonly<{
+  /** 用户输入示例，可用于判断触发条件。 */
+  user?: string
+  /** 示例意图说明。 */
+  intent?: string
+  /** 仅函数业务参数示例；最终仍通过 module_call.args 传入。 */
+  args?: AiJsonValue
+  /** 完整 module_call 示例，适合需要展示 path/functionName/args 的场景。 */
+  call?: AiJsonValue
+}>
+
+/** 反例：说明哪些用户意图不应调用该函数，降低危险函数误触发。 */
+export type AiModuleFunctionAntiExample = Readonly<{
+  /** 用户输入或场景示例。 */
+  user?: string
+  /** 不应调用该函数的原因。 */
+  reason: string
+  /** 容易误传的参数示例。 */
+  args?: AiJsonValue
+}>
+
 // ============================================================================
 // 二、属性元数据
 //
@@ -100,10 +122,16 @@ export type AiModuleFunctionMetadata = Readonly<{
   resultSchema?: AiModuleFunctionResultSchema
   /** 使用规则（多条，LLM 在调用前阅读，如 "每次最多追加 100 行"） */
   usageRules?: readonly string[]
+  /** 调用前必须完成的前置动作或确认步骤。 */
+  requiredBeforeCall?: readonly string[]
   /** 失败模式（多条，LLM 在调用失败后参考修复） */
   failureModes?: readonly AiModuleFunctionFailureMode[]
-  /** 调用示例（帮助 LLM 理解参数形状和调用方式） */
+  /** 旧版单参数示例（帮助 LLM 理解 args 形状）。新代码优先使用 examples。 */
   example?: AiJsonValue
+  /** 结构化调用示例。 */
+  examples?: readonly AiModuleFunctionExample[]
+  /** 不应调用本函数的反例。 */
+  antiExamples?: readonly AiModuleFunctionAntiExample[]
 }>
 
 // ============================================================================

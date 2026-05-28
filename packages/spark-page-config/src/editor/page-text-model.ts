@@ -137,15 +137,6 @@ export class PageTextModel {
     this._notify()
   }
 
-  // ── 重置 ───────────────────────────────────────────────
-
-  reset(): void {
-    this._history.clear()
-    this._text = ''
-    this._savedText = ''
-    this._notify()
-  }
-
   // ── 订阅 ───────────────────────────────────────────────
 
   subscribe(listener: () => void): () => void {

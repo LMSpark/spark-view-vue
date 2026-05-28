@@ -1,13 +1,13 @@
 /**
  * 页面四文件 parse / serialize 独立函数。
  *
- * 从 page-file-document.ts 提取，不依赖 PageFileDocument 类。
+ * 供 PageModel 子模型在 load/save 时复用，不依赖设计时 UI 状态。
  * 供 PageModel 在 load/save 时调用。
  */
 
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
-import { canonicalizeDataSetMetadata } from '../design/page-file-document'
+import { canonicalizeDataSetMetadata } from '../design/page-data-canonicalize'
 
 // ── rule.json ────────────────────────────────────────────
 

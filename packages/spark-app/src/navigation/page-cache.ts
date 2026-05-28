@@ -2,21 +2,20 @@
  * 页面配置缓存管理（spark-app 内聚）
  */
 
-type PageCacheLoader = {
-  clearCache(key?: string): void
-  getCacheStats?(): { size: number; keys: string[] }}
+type PageCacheSource = {
+  clearPageCache(pageId: string): void
+  clearAllCache(): { size: number; keys: string[] }
+  getCacheStats(): { size: number; keys: string[] }}
 
 export type PageCacheHandle = {
   clearPageCache(pageId: string): void
   clearAllCache(): { size: number; keys: string[] }
   getCacheStats(): { size: number; keys: string[] }}
 
-export function createPageCache(loader: PageCacheLoader): PageCacheHandle {
+export function createPageCache(source: PageCacheSource): PageCacheHandle {
   return {
     clearPageCache(pageId: string): void {
-      for (const file of PAGE_FILES) {
-        loader.clearCache(`/${pageId}/${file}`)
-      }
+      source.clearPageCache(pageId)
       if (typeof localStorage === 'undefined') return
       for (const file of PAGE_FILES) {
         const base = `${CACHE_PREFIX}/${pageId}/${file}`
@@ -27,8 +26,7 @@ export function createPageCache(loader: PageCacheLoader): PageCacheHandle {
     },
 
     clearAllCache(): { size: number; keys: string[] } {
-      const stats = loader.getCacheStats?.() ?? { size: 0, keys: [] }
-      loader.clearCache()
+      const stats = source.clearAllCache()
       if (typeof localStorage !== 'undefined') {
         const toRemove: string[] = []
         for (let i = 0; i < localStorage.length; i++) {
@@ -41,7 +39,7 @@ export function createPageCache(loader: PageCacheLoader): PageCacheHandle {
     },
 
     getCacheStats(): { size: number; keys: string[] } {
-      return loader.getCacheStats?.() ?? { size: 0, keys: [] }
+      return source.getCacheStats()
     },
   }
 }

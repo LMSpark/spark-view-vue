@@ -1,21 +1,20 @@
 import { describe, expect, it } from 'vitest'
 import {
-  PAGE_CONFIG_FILE_NAMES,
-  compileRule,
-  PageConfigFileDescriptor,
-  PageConfigFileApi,
-  createConfigLoader,
-} from '@spark-view/spark-page-config'
-import { SparkNodeTree } from '@spark-view/spark-data'
-import { NavigationEditSession, buildNavRoot } from '@spark-view/spark-page-config/editor'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component/runtime'
-import {
+  JsonDocumentRuntime,
+  PAGE_DATA_JSON_SCHEMA,
   PageEditor,
+  PageModel,
+  PageModelFactory,
   componentCatalog,
+  createPageModel,
+  createPageModelFactory,
+} from '@spark-view/spark-page-config'
+import {
+  PageEditor as EditorSubpathPageEditor,
+  componentCatalog as editorComponentCatalog,
   createRuleTreePolicy,
 } from '@spark-view/spark-page-config/editor'
-import { buildTreeModel, exportJsonDocument } from '@spark-view/spark-page-config/json-document'
-import { PageConfigLoader as RootPageConfigLoader } from '@spark-view/spark-page-config'
+import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component/runtime'
 import {
   LEAVE_REQUEST_KIND,
   PAGE_DESIGN_MODULE_ID,
@@ -27,68 +26,71 @@ import {
 import { PAGE_DESIGN_100_STEP_FLOW } from '../src/design/index'
 
 describe('spark-page-config public subpath imports', () => {
-  it('exposes PageEditor from the ./editor subpath', () => {
+  it('exposes PageModel and PageEditor as the public page-config surface', () => {
+    const factory = createPageModelFactory({ fileStorage: 'memory' })
+    const model = factory.create('orders')
+
+    expect(PageModel).toBeTypeOf('function')
+    expect(PageModelFactory).toBeTypeOf('function')
+    expect(createPageModel('orders', { fileStorage: 'memory' })).toBeInstanceOf(PageModel)
+    expect(model).toBeInstanceOf(PageModel)
+    expect(model.pageId).toBe('orders')
+
     expect(PageEditor).toBeTypeOf('function')
+    expect(EditorSubpathPageEditor).toBe(PageEditor)
     expect(componentCatalog).toBeTypeOf('object')
+    expect(editorComponentCatalog).toBe(componentCatalog)
     expect(createRuleTreePolicy).toBeTypeOf('function')
+    expect(PAGE_DATA_JSON_SCHEMA).toBeTypeOf('object')
   })
 
-  it('exposes the runtime config root', () => {
-    expect(RootPageConfigLoader).toBeTypeOf('function')
-    expect(createConfigLoader({ fileStorage: 'memory' })).toBeInstanceOf(RootPageConfigLoader)
-    expect(PageConfigFileApi).toBeTypeOf('function')
-    expect(new PageConfigFileDescriptor({ name: 'custom.json', required: false }).name).toBe('custom.json')
-
-    expect(compileRule('[]')).toEqual([])
-    expect(PAGE_CONFIG_FILE_NAMES).toEqual(['rule.json', 'pagedata.json', 'script.js', 'style.css'])
-
-    const tree = SparkNodeTree.fromPageChildren([{ type: 'div', id: 'root-child' }])
-    expect(tree.getNode({ componentId: 'root-child' })?.type).toBe('div')
-
-    const navSession = new NavigationEditSession()
-    navSession.replaceRoot(buildNavRoot([]))
-    expect(navSession.children).toEqual([])
-
+  it('keeps independent runtime, json-document and AI public APIs available', () => {
     expect(PAGE_RUNTIME_SERVICES.toString()).toBe('spark:capability:page-runtime-services')
 
-    const model = buildTreeModel({ hello: 'world' })
-    expect(exportJsonDocument(model)).toEqual({ hello: 'world' })
+    const model = JsonDocumentRuntime.buildTreeModel({ hello: 'world' })
+    expect(JsonDocumentRuntime.exportJsonDocument(model)).toEqual({ hello: 'world' })
     expect(PAGE_DESIGN_100_STEP_FLOW.length).toBeGreaterThan(0)
 
     expect(PAGE_DESIGN_MODULE_ID).toBe('pageDesign')
     expect(createPageDesignBusinessKindDefinition).toBeTypeOf('function')
     expect(ensurePageDesignBusiness).toBeTypeOf('function')
     expect(LEAVE_REQUEST_KIND).toBe('manual-leave')
-    expect(typeof componentCatalog).toBe('object')
   })
 
-  it('keeps pageDesign implementation details out of public import barrels', async () => {
-    const designModule = await import('../src/design/index')
-    const aiModule = await import('@spark-view/spark-page-config/ai')
-    const rootModule = await import('@spark-view/spark-page-config')
+  it('does not leak loader, parser or file-api internals from public barrels', async () => {
+    const rootExports = new Set(Object.keys(await import('@spark-view/spark-page-config')))
+    const editorExports = new Set(Object.keys(await import('@spark-view/spark-page-config/editor')))
+    const forbidden = [
+      'BasePageConfigLoader',
+      'PageConfigLoader',
+      'createConfigLoader',
+      'PageConfigFileApi',
+      'PageConfigFileDescriptor',
+      'createPageEditorPreviewConfigLoader',
+      'compileRule',
+      'parsePageData',
+      'parseScript',
+      'parseCss',
+      'ConfigLoadResult',
+      'PageConfig',
+      'RuleConfig',
+      'PageDataConfig',
+      'PageConfigEditWorkspace',
+      'PageFileDocument',
+      'PageDocumentRegistry',
+      'PageRuleModel',
+      'PageDataSetModel',
+      'PageTextModel',
+    ]
 
-    // root 只导出 config 运行时 API
-    expect(typeof rootModule.BasePageConfigLoader).toBe('function')
-    expect(typeof rootModule.createConfigLoader).toBe('function')
-
-    // 实现细节不在公开 barrel 中
-    const designExports = new Set(Object.keys(designModule))
-    for (const name of ['PageDesignService', 'PageDesignEditSession', 'pageDesignServiceFailure', 'registerPageDesignEditHost']) {
-      expect(designExports.has(name)).toBe(false)
+    for (const name of forbidden) {
+      expect(rootExports.has(name)).toBe(false)
+      expect(editorExports.has(name)).toBe(false)
     }
-    const aiExports = new Set(Object.keys(aiModule))
-    for (const name of [
-      'PageDesignDatasetAiModule',
-      'PageDesignLifecycleAiModule',
-      'PageDesignNodeTreeAiModule',
-      'PageDesignPayloadCatalogAiModule',
-      'PageDesignTextModelAiModule',
-      'createPageDesignComponentPayloadProvider',
-      'createPageDesignPayloadRegistry',
-      'hasPageDesignComponentPayloadKey',
-      'isPageDesignWritableComponentPayloadKey',
-    ]) {
-      expect(aiExports.has(name)).toBe(false)
+
+    for (const name of ['PageModel', 'PageModelFactory', 'createPageModel', 'createPageModelFactory']) {
+      expect(rootExports.has(name)).toBe(true)
+      expect(editorExports.has(name)).toBe(false)
     }
   })
 })

@@ -5,15 +5,15 @@
  */
 
 import type { DataSetContract, SparkData } from '@spark-view/spark-data'
-import type { PageConfig } from '@spark-view/spark-page-config'
+import type { PageModelRenderConfig } from '@spark-view/spark-page-config'
 import type { PageRoute, ScriptContext } from '../../runtime'
 import type { h } from 'vue'
 import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'
 
 // ── 基础重导出 ────────────────────────────────────────────────────────────
 
-// PageConfig 来自 spark-page-config（数据配置层权威定义），本文件仅透出类型
-export type { PageConfig }
+// PageModel 渲染态来自 spark-page-config，是渲染层的唯一页面输入形态。
+export type { PageModelRenderConfig }
 // PageRoute 重导出供渲染层实现层使用
 export type { PageRoute }
 
@@ -56,4 +56,3 @@ export type PageContext = ScriptContext & {
     clearTimeout: (id?: number) => void
     setInterval: (handler: (...args: unknown[]) => void, timeout?: number) => number
     clearInterval: (id?: number) => void}
-

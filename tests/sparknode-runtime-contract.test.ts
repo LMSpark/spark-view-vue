@@ -3,7 +3,6 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
 import { Spark, PAGE_COMPONENT_REGISTRY, registerAllRenderers, useSparkComponent } from '@spark-view/spark-component'
 import type { SparkNode } from '@spark-view/spark-component'
-import type { RuleConfig } from '@spark-view/spark-page-config'
 import { createPageComponentRegistry } from '../packages/spark-component/src/page/context/page-component-registry'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding/build-page-children'
 import type { BuildPageChildrenOptions } from '../packages/spark-component/src/page/binding/build-page-children'
@@ -91,7 +90,7 @@ describe('SparkNode runtime contract', () => {
       ],
     }
 
-    const rule: RuleConfig = node
+    const rule: SparkNode = node
     const actionCtx: BuildPageChildrenOptions['actionCtx'] = {
       getDataSet: () => null,
       getPageService: () => null,

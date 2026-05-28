@@ -31,11 +31,11 @@
  *
  * 对齐 h() 三段式模型（与 RendererTable / RendererForm 同构）：
  *   type     = 'spark-page'（Props extends SparkNode，withDefaults 设定）
- *   props    = configLoader / pageId / pageConfig / enable* / 钩子等
+ *   props    = pageModel / pageId / enable* / 钩子等
  *   children = rule.json 经 buildPageChildren() 归并后的 SparkNode[]（渲染器内部生成）
  *
- * spark-page-config 负责四文件契约与加载：
- *   rule / data / script / css 以中立配置形态进入渲染层
+ * spark-page-config 负责 PageModel：
+ *   rule / data / script / css 均从已加载 PageModel 的内存态进入渲染层
  *
  * spark-component 负责运行时物化：
  *   rule.json 是"声明式 children"
@@ -51,11 +51,7 @@
  * @component
  * @example
  * ```vue
- * <!-- 直传四文件 -->
- * <SparkPageRenderer :pageConfig="pageFiles" pageId="user-list" />
- *
- * <!-- configLoader + pageId -->
- * <SparkPageRenderer :configLoader="loader" pageId="user-list" />
+ * <SparkPageRenderer :pageModel="pageModel" />
  * ```
  */
 import {
@@ -80,7 +76,7 @@ import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { SparkNodeTree } from '@spark-view/spark-data'
-import type { BasePageConfigLoader, PageConfig } from '@spark-view/spark-page-config'
+import type { PageModelLike, PageModelRenderConfig } from '@spark-view/spark-page-config'
 import type { PageRoute } from '../../runtime'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
@@ -303,11 +299,11 @@ function readRouteString(value: unknown): string | undefined {
 function resolveCurrentPageId(
   route: RouteLocationNormalizedLoaded,
   pageId?: string,
-  pageConfigPageId?: string,
+  pageModelPageId?: string,
 ): string {
   const resolved =
     pageId ??
-    pageConfigPageId ??
+    pageModelPageId ??
     readRouteString(route.meta['pageId']) ??
     readRouteString(route.params['id']) ??
     readRouteString(route.name)
@@ -371,26 +367,22 @@ function createRenderFunction(fn: (...args: unknown[]) => unknown): RenderFuncti
 
 // ==================== Props — h(type, props, children) ====================
 
-/** 直传四文件输入（跳过 configLoader 异步加载，pageId 可选） */
-type SparkPageNodePropsInput = Omit<PageConfig, 'pageId'> & {
-  pageId?: string}
-
 /**
  * SparkPageRenderer props — 对齐 h(type, props, children) 三段式。
  *
  * - type     = 'spark-page'（withDefaults 设定默认值）
- * - props    = configLoader / pageId / pageConfig / enable* / 钩子等（本接口所有字段）
+ * - props    = pageModel / pageId / enable* / 钩子等（本接口所有字段）
  * - children = rule.json 经 buildPageChildren 归并后由渲染器内部生成，不作为外部输入
  */
 type Props = Omit<SparkNode, 'type'> & {
   /** 组件类型（withDefaults 默认 'spark-page'，外部调用无需显式传入） */
     type?: string
-    /** 配置加载器实例（与 pageId 搭配，异步加载四文件） */
-    configLoader?: BasePageConfigLoader
-    /** 页面唯一标识符（优先级最高） */
+    /** 页面模型唯一入口；渲染器只消费 PageModel 内存态。 */
+    pageModel: PageModelLike
+    /** 外部变更版本号；同一 PageModel 内存内容变化时触发重渲染。 */
+    pageModelRevision?: number
+    /** 页面唯一标识符（可选校验值；默认取 pageModel.pageId） */
     pageId?: string
-    /** 页面配置对象（直接传入四文件，跳过加载） */
-    pageConfig?: SparkPageNodePropsInput
     /** 是否启用 CSS 作用域隔离 @default true */
     enableCssScope?: boolean
     /** 是否启用 DataSet 自动初始化 @default true */
@@ -402,7 +394,7 @@ type Props = Omit<SparkNode, 'type'> & {
     /** 页面加载前钩子（loadNodeProps 之前） */
     beforeLoad?: (pageId: string) => void | Promise<void>
     /** 页面加载后钩子（applyNodeProps 之后） */
-    afterLoad?: (config: PageConfig) => void | Promise<void>
+    afterLoad?: (state: PageModelRenderConfig) => void | Promise<void>
     /** 错误处理函数 */
     onError?: (error: Error) => void
     /** 运行时错误回调（供外层采集脚本编译/初始化/加载错误）。 */
@@ -498,31 +490,13 @@ function loadValueKey(value: unknown): string {
 function resolveLoadKey(pageId: string): string {
   return [
     pageId,
-    loadValueKey(props.configLoader ?? null),
-    loadValueKey(props.pageConfig ?? null),
-    loadValueKey(props.pageConfig?.rule ?? null),
-    loadValueKey(props.pageConfig?.data ?? null),
-    loadValueKey(props.pageConfig?.script ?? null),
-    loadValueKey(props.pageConfig?.css ?? null),
+    loadValueKey(props.pageModel),
+    loadValueKey(props.pageModelRevision ?? 0),
   ].join('|')
 }
 
-function shouldSkipImplicitConfigLoad(): boolean {
-  if (props.pageConfig || props.pageId !== undefined) return false
-
-  // 非配置页路由不走隐式 PageRenderer，防止 transition out-in 期间误触发。
-  // cross-project-ref 的真实渲染器由 CrossProjectRefPage 创建，并显式传入目标 pageId。
-  // 但 pageConfig 直传模式不受此限制（如 DevPreviewTab 嵌入预览）
-  return (
-    route.meta['type'] === 'system-page'
-    || route.meta['type'] === 'cross-project-ref'
-    || route.matched.length === 0
-  )
-}
-
 const loadSourceKey = computed(() => {
-  if (shouldSkipImplicitConfigLoad()) return ''
-  const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageConfig?.pageId)
+  const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageModel.pageId)
   return resolveLoadKey(targetPageId)
 })
 
@@ -602,7 +576,7 @@ function callPageFunction(functionName: string, ...args: unknown[]): unknown {
           })
           .catch((e: unknown) => {
             logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
-            reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
+            reportRuntimeError('script-function', currentPageId.value || props.pageId || props.pageModel.pageId, e)
             invalidateCurrentRenderFunctions()
             throw e
           })
@@ -611,7 +585,7 @@ function callPageFunction(functionName: string, ...args: unknown[]): unknown {
       return result
     } catch (e) {
       logger.error(`[SparkPageRenderer] 事件函数执行失败: ${functionName}`, { error: e })
-      reportRuntimeError('script-function', currentPageId.value || props.pageId || 'unknown', e)
+      reportRuntimeError('script-function', currentPageId.value || props.pageId || props.pageModel.pageId, e)
       invalidateCurrentRenderFunctions()
       throw e
     }
@@ -624,22 +598,13 @@ function callPageFunction(functionName: string, ...args: unknown[]): unknown {
 
 // ==================== 配置加载流水线 ====================
 
-/** 加载 spark-page props：通过 props.pageConfig 直传四文件或 configLoader 异步获取。 */
-async function loadNodeProps(pageId: string): Promise<PageConfig> {
-  if (props.pageConfig) return { ...props.pageConfig, pageId: props.pageConfig.pageId ?? pageId }
-  if (props.configLoader) {
-    const result = await props.configLoader.loadPageConfig(pageId)
-    if (!result.success || !result.data) {
-      if (result.reason === 'not-found') {
-        logger.warn('页面配置不存在', { pageId })
-        throw new Error(`页面不存在: ${pageId}`)
-      }
-      logger.error('配置加载失败', { pageId, error: result.error })
-      throw new Error(`配置加载失败: ${result.error ?? '未知错误'}`)
-    }
-    return result.data
+/** 加载 spark-page props：只从 PageModel 获取内存态。 */
+async function loadNodeProps(pageId: string, options: { forceReload?: boolean } = {}): Promise<PageModelRenderConfig> {
+  if (props.pageModel.pageId !== pageId) {
+    throw new Error(`页面模型不匹配: 路由 ${pageId}, 模型 ${props.pageModel.pageId}`)
   }
-  throw new Error('配置无效: 未提供 configLoader 或 pageConfig')
+  await props.pageModel.load({ forceReload: options.forceReload === true })
+  return props.pageModel.toRenderConfig()
 }
 
 /**
@@ -653,9 +618,9 @@ async function loadNodeProps(pageId: string): Promise<PageConfig> {
  *   ── loading=false → SparkComponentRenderer 挂载 ──
  *   5. nextTick → __init__ + initAutoSelection
  */
-function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
+function applyNodeProps(pageId: string, nodeProps: PageModelRenderConfig): void {
   // 1. css → 作用域隔离
-  if (nodeProps.css) setScopedCss(pageId, nodeProps.css)
+  setScopedCss(pageId, nodeProps.css ?? '')
 
   // 2. script → 沙箱编译 + Render* 组件注册
   executeScript(pageId, nodeProps.script ?? '')
@@ -666,7 +631,7 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
   pds.initDataSet(nodeProps.data)
   const ds = pds.dataSet
   if (ds) {
-    const loaderClient = props.configLoader?.getHttpClient?.()
+    const loaderClient = props.pageModel.getHttpClient()
     if (loaderClient) ds.setSharedHttpClient(loaderClient)
     ds.setAppServices(pageRuntimeServices)
     ds.setPageRoute(pageRoute)
@@ -685,9 +650,7 @@ function applyNodeProps(pageId: string, nodeProps: PageConfig): void {
 
 /** 完整加载流程：解析当前 pageId → beforeLoad → loadNodeProps → applyNodeProps → afterLoad。 */
 async function loadConfig(options: { force?: boolean } = {}): Promise<void> {
-  if (shouldSkipImplicitConfigLoad()) return
-
-  const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageConfig?.pageId)
+  const targetPageId = resolveCurrentPageId(route, props.pageId, props.pageModel.pageId)
   if (!options.force && loading.value && _inFlightPageId === targetPageId) return
 
   _inFlightPageId = targetPageId
@@ -698,7 +661,7 @@ async function loadConfig(options: { force?: boolean } = {}): Promise<void> {
       currentPageId.value = targetPageId
       if (props.beforeLoad) await props.beforeLoad(targetPageId)
       if (isStale()) return
-      const nodeProps = await loadNodeProps(targetPageId)
+      const nodeProps = await loadNodeProps(targetPageId, { forceReload: options.force === true })
       if (isStale()) return
       applyNodeProps(targetPageId, nodeProps)
       didApply = true
@@ -756,10 +719,10 @@ function requestLoad(): void {
 
 // ==================== 生命周期 ====================
 
-// 页面加载输入 = 页面定位 + 四文件直传输入 + 配置加载器。
+// 页面加载输入 = 页面定位 + PageModel 内存态。
 // immediate: true 替代 onMounted + watch 二合一——loadConfig 是异步流水线，
 // DOM 依赖在 await nextTick() 之后才访问，此时组件已挂载，无需等 onMounted。
-// 同 pageId 下的 pageConfig 替换也会触发重载，避免“页面 ID 没变但四文件已更新”时 UI 停留旧状态。
+// 同 pageId 下 pageModelRevision 变化也会触发重载，避免“页面 ID 没变但四文件已更新”时 UI 停留旧状态。
 watch(
   loadSourceKey,
   (nextKey) => {

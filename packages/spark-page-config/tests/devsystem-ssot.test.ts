@@ -30,7 +30,7 @@ import {
   type PageConfigFileName,
   type PageDataConfig,
   type RuleConfig,
-} from '@spark-view/spark-page-config/editor'
+} from '../src/config'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
   getNextPageDesignFlowStep,
@@ -151,7 +151,7 @@ function createEditorHarness(files: Partial<Record<string, string>>) {
     getPageConfigApi: () => '/api/pages-config',
     getNavigationApi: () => '/api/navigation',
     createConfigLoader: () => loader,
-  })
+  } as Parameters<typeof createPageEditor>[0] & { createConfigLoader: () => TestPageConfigLoader })
   return { editor, http, loader }
 }
 

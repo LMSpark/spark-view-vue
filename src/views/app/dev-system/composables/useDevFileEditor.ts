@@ -28,6 +28,7 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
 
   async function ensureLoaded(options?: { forceReload?: boolean }) {
     if (!state.activePageId.value) return
+    if (options?.forceReload !== true && state.getActivePage()?.isLoaded === true) return
     await state.ensureActivePageFilesLoaded(options)
   }
 
@@ -45,10 +46,9 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageC
 
   watch(
     () => state.activePageId.value,
-    (pageId, previousPageId) => {
+    (pageId) => {
       if (!pageId) return
-      const isPageSwitch = previousPageId !== undefined && pageId !== previousPageId
-      void ensureLoaded({ forceReload: isPageSwitch })
+      void ensureLoaded()
     },
     { immediate: true },
   )

@@ -1,11 +1,11 @@
 /**
  * @spark-view/spark-page-config/json-document
  *
- * JSON 文档编辑核心子路径 — 委托给 page-editor.ts 唯一通道。
+ * JSON 文档编辑核心子路径。
  * 仅导出 json-document 相关符号。
  */
 
-export { JsonDocumentRuntime } from './editor/page-editor'
+export * as JsonDocumentRuntime from './json-document'
 
 export {
   addChildNode,
@@ -50,4 +50,4 @@ export {
   type TreeNode,
   type TreeModel,
   type UpdateNodeTypeInput,
-} from './editor/page-editor'
+} from './json-document'

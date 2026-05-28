@@ -10,7 +10,7 @@ import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
 } from '../src/ai/index'
-import { compileRule, parsePageData } from '@spark-view/spark-page-config'
+import { compileRule, parsePageData } from '../src/config'
 import type { PageDesignEditHost } from '../src/design/index'
 import { isRecord } from '@spark-view/spark-utils'
 import { SparkNodeTree, getSparkNodeChildren } from '@spark-view/spark-data'
@@ -25,6 +25,10 @@ const LEAVE_TYPES_TABLE = 'LeaveTypeOptions'
 const leaveDefaultKey = buildDataViewKey(LEAVE_REQUESTS_TABLE, 'default')
 const leavePendingKey = buildDataViewKey(LEAVE_REQUESTS_TABLE, 'pending')
 const leaveTypeOptionsKey = buildDataViewKey(LEAVE_TYPES_TABLE, 'default')
+
+function pageDesignPath(childKind: string): string {
+  return `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/${childKind}[${PAGE_ID}]`
+}
 
 type ToolResult = {
   readonly ok: boolean
@@ -126,7 +130,7 @@ describe('请假申请页面设计测试程序', () => {
     expect(pageInstances[0]).toMatchObject({ id: PAGE_ID })
 
     const bootstrap = await executeDesignTool(registration, 'module_call', {
-      path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/lifecycle[${PAGE_ID}]`,
+      path: pageDesignPath('lifecycle'),
       functionName: 'bootstrap',
       args: {},
     }, context)
@@ -134,7 +138,7 @@ describe('请假申请页面设计测试程序', () => {
 
     const dataPlanningFlow = requireRecordResult(
         await executeDesignTool(registration, 'module_call', {
-        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/lifecycle[${PAGE_ID}]`,
+        path: pageDesignPath('lifecycle'),
         functionName: 'describeDesignFlow',
         args: { phase: '数据规划' },
       }, context),
@@ -150,7 +154,7 @@ describe('请假申请页面设计测试程序', () => {
     for (const key of ['r-section', 'r-card', 'r-form', 'r-text', 'r-select', 'r-date', 'r-number', 'r-textarea', 'r-button', 'r-table']) {
       const guide = requireRecordResult(
         await executeDesignTool(registration, 'module_call', {
-          path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/payload-catalog[${PAGE_ID}]`,
+          path: pageDesignPath('payload-catalog'),
           functionName: 'guidePayload',
           args: { key },
         }, context),
@@ -164,7 +168,7 @@ describe('请假申请页面设计测试程序', () => {
 
     assertOk(
       await executeDesignTool(registration, 'module_call', {
-        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/dataset[${PAGE_ID}]`,
+        path: pageDesignPath('dataset'),
         functionName: 'createTable',
         args: {
           tableName: LEAVE_REQUESTS_TABLE,
@@ -216,7 +220,7 @@ describe('请假申请页面设计测试程序', () => {
 
     assertOk(
       await executeDesignTool(registration, 'module_call', {
-        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/dataset[${PAGE_ID}]`,
+        path: pageDesignPath('dataset'),
         functionName: 'createTable',
         args: {
           tableName: LEAVE_TYPES_TABLE,
@@ -246,7 +250,7 @@ describe('请假申请页面设计测试程序', () => {
 
     assertOk(
       await executeDesignTool(registration, 'module_call', {
-        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/node-tree[${PAGE_ID}]`,
+        path: pageDesignPath('node-tree'),
         functionName: 'addNodes',
         args: {
           parentComponentId: 'spark-page-root',
@@ -376,7 +380,7 @@ describe('请假申请页面设计测试程序', () => {
 
     assertOk(
       await executeDesignTool(registration, 'module_call', {
-        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/text-model[${PAGE_ID}]`,
+        path: pageDesignPath('text-model'),
         functionName: 'writeStyle',
         args: {
           content: [
@@ -447,7 +451,7 @@ describe('请假申请页面设计测试程序', () => {
 
     const style = requireRecordResult(
       await executeDesignTool(registration, 'module_call', {
-        path: `/${PAGE_DESIGN_MODULE_ID}[${PAGE_ID}]/text-model[${PAGE_ID}]`,
+        path: pageDesignPath('text-model'),
         functionName: 'readStyle',
         args: {},
       }, context),

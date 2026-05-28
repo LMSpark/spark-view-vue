@@ -510,10 +510,15 @@ function normalizeFunctionMetadata(
     paramsSchema: fn.paramsSchema,
     ...(fn.resultSchema === undefined ? {} : { resultSchema: fn.resultSchema }),
     ...(fn.usageRules === undefined ? {} : { usageRules: [...fn.usageRules] }),
+    ...(fn.requiredBeforeCall === undefined ? {} : { requiredBeforeCall: [...fn.requiredBeforeCall] }),
     ...(fn.failureModes === undefined
       ? {}
       : { failureModes: fn.failureModes.map((mode) => ({ ...mode })) }),
     ...(fn.example === undefined ? {} : { example: fn.example }),
+    ...(fn.examples === undefined ? {} : { examples: fn.examples.map((example) => ({ ...example })) }),
+    ...(fn.antiExamples === undefined
+      ? {}
+      : { antiExamples: fn.antiExamples.map((example) => ({ ...example })) }),
   }))
 }
 

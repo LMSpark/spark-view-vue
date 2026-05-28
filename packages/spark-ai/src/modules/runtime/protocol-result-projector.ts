@@ -111,10 +111,13 @@ function describeFunctionToJson(fn: AiModuleDescription['functions'][number]): R
     paramsSchema: jsonSchemaToJson(fn.paramsSchema),
     resultSchema: fn.resultSchema === undefined ? null : jsonSchemaToJson(fn.resultSchema),
     usageRules: fn.usageRules === undefined ? [] : [...fn.usageRules],
+    requiredBeforeCall: fn.requiredBeforeCall === undefined ? [] : [...fn.requiredBeforeCall],
     failureModes: fn.failureModes === undefined
       ? []
       : fn.failureModes.map((mode) => ({ code: mode.code, when: mode.when, fix: mode.fix })),
-    example: fn.example === undefined ? null : fn.example,
+    example: fn.example === undefined ? null : unknownToJson(fn.example),
+    examples: fn.examples === undefined ? [] : unknownToJson(fn.examples),
+    antiExamples: fn.antiExamples === undefined ? [] : unknownToJson(fn.antiExamples),
   }
 }
 

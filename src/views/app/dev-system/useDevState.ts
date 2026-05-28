@@ -434,11 +434,11 @@ export function useDevState() {
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
-        await syncPageFilesForNodeAfterLoad(matchedNode, true)
+        await syncPageFilesForNodeAfterLoad(matchedNode, false)
         return
       }
 
-      if (setActivePageContext(preservedActivePageId, true)) {
+      if (setActivePageContext(preservedActivePageId, false)) {
         selectedNode.value = null
         navDirty.value = false
         linkProbeInfo.value = null
@@ -456,7 +456,7 @@ export function useDevState() {
     if (firstNode) {
       selectedNode.value = firstNode
       loadNodeToForm(firstNode)
-      await syncPageFilesForNodeAfterLoad(firstNode, true)
+      await syncPageFilesForNodeAfterLoad(firstNode, false)
     }
   }
 
@@ -481,9 +481,17 @@ export function useDevState() {
     } catch { /* ignore */ }
   }
 
+  function syncEditorActivePageFromState(): boolean {
+    const pageId = activePageId.value
+    if (!pageId) return false
+    if (editor.getActivePage()?.pageId !== pageId) {
+      editor.setActivePage(pageId)
+    }
+    return true
+  }
+
   async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
-    if (!activePageId.value) return
-    editor.setActivePage(activePageId.value)
+    if (!syncEditorActivePageFromState()) return
     const loadOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {
       allowMissingAsEmpty: options?.allowMissingAsEmpty ?? true,
     }
@@ -492,19 +500,13 @@ export function useDevState() {
   }
 
   async function loadPageFile(name: PageConfigFileName, options?: { forceReload?: boolean }): Promise<void> {
-    if (!activePageId.value) return
-    editor.setActivePage(activePageId.value)
+    if (!syncEditorActivePageFromState()) return
     await editor.loadPageFile(name, options)
   }
 
   function getPageFileText(name: PageConfigFileName): string {
     void pageFilesRevision.value
     return editor.getPageFileText(name)
-  }
-
-  function buildPreviewConfig(): ReturnType<typeof editor.buildPreviewConfig> {
-    void pageFilesRevision.value
-    return editor.buildPreviewConfig()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -733,8 +735,8 @@ export function useDevState() {
       handlePathChange(`/${pageId}`)
 
       notifyPageFileChanged(pageId, '__created')
-      setActivePageContext(pageId, true)
-      await ensureActivePageFilesLoaded({ forceReload: true })
+      setActivePageContext(pageId, false)
+      await ensureActivePageFilesLoaded()
       return true
     } catch (e) {
       addStatus(`创建页面失败: ${String(e)}`, 'error')
@@ -786,10 +788,8 @@ export function useDevState() {
     try {
       const pageId = normalizePageIdFromPath(node.path)
       if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
-        editor.setActivePage(pageId)
-        activePageId.value = pageId
-        persistActivePageId(pageId)
-        await editor.selectPage({ forceReload: true, allowMissingAsEmpty: true })
+        setActivePageContext(pageId, activePageId.value !== pageId)
+        await ensureActivePageFilesLoaded()
       } else {
         clearFiles()
         // Still open a PageModel for navigation form binding
@@ -1074,7 +1074,6 @@ export function useDevState() {
   }
 
   function getActivePage(): ReturnType<typeof editor.getActivePage> {
-    if (activePageId.value) editor.setActivePage(activePageId.value)
     return editor.getActivePage()
   }
 
@@ -1138,7 +1137,6 @@ export function useDevState() {
     ensureActivePageFilesLoaded,
     getPageFileText,
     getNavDraft,
-    buildPreviewConfig,
     clearFiles,
     listRemotePageVersions,
     restoreRemotePageVersion,

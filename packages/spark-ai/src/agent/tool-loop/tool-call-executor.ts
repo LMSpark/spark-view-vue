@@ -1,24 +1,30 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 工具调用执行器                                                     │
- * │  Tool Call Executor                                                          │
- * │                                                                              │
- * │  本模块负责执行单次 OpenAI-style tool_call：将 transport 层 function.name       │
- * │  与 function.arguments 路由到 modules runtime，执行后返回 tool output。          │
- * │                                                                              │
- * │  执行流程：                                                                   │
- * │    1. 从 transport tool_call 中提取 function.name                            │
- * │    2. 校验固定 toolName（如 "module_call" / "module_find"）                    │
- * │    3. 解析 JSON 参数字符串 → Record<string, AiJsonValue>                     │
- * │    4. 调用 registration.runtime.executeTool 执行 query/navigation 或 function tool│
- * │    5. 将 AiModuleResult 转换为 AiAgentFunctionCallResult                │
- * │    6. 写入 sessionStore（appendFunctionCall）                                 │
- * │    7. 调用业务方 afterFunctionCall 生命周期钩子                                │
- * │    8. 发送诊断事件（emitToolResultEvent）+ 业务回调（onToolCall）              │
- * │    9. 返回 toolMessage（role: 'tool'）和生命周期指令                            │
- * │                                                                              │
- * │  调用方：tool-loop-runner.ts（runToolLoop 内每个 tool_call 循环）              │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * ═══════════════════════════════════════════════════════════════
+ * agent/tool-loop/tool-call-executor.ts — 工具调用执行器
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】Agent 层的单次工具调用执行单元。将 LLM 返回的
+ *   OpenAI-style tool_call（function.name + function.arguments）
+ *   路由到 modules runtime 执行，收集结果并写回 sessionStore。
+ *
+ * 【核心类】
+ *   AiAgentToolCallExecutor — 工具调用执行器
+ *     ├─ execute()            — 主流程：校验 → 解析 → 执行 → 写历史 → 回调
+ *     └─ completeExecution()  — 统一后处理：sessionStore 写入 + 生命周期钩子 + 诊断事件
+ *
+ * 【执行流程】
+ *   1. 从 transport tool_call 提取 function.name
+ *   2. 校验固定 toolName（resolveToolName）
+ *   3. 解析 JSON 参数字符串 → Record<string, AiJsonValue>
+ *   4. 调用 registration.runtime.executeTool 执行路由
+ *   5. 将 AiModuleResult 转换为 AiAgentFunctionCallResult
+ *   6. 写入 sessionStore（appendFunctionCall）
+ *   7. 调用业务方 afterFunctionCall 生命周期钩子
+ *   8. 发送诊断事件（emitToolResultEvent）+ 业务回调（onToolCall）
+ *   9. 返回 toolMessage（role: 'tool'）和生命周期指令
+ *
+ * 【消费方】tool-loop-runner.ts（runToolLoop 内每个 tool_call 循环）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiJsonParams } from '../../json'
@@ -45,9 +51,7 @@ import {
   toFunctionCallResult,
 } from './result-mapper'
 
-/* -------------------------------------------------------------------------------
- * 一、类型定义
- * ----------------------------------------------------------------------------- */
+/* ── 类型定义 ──────────────────────────────────────────────── */
 
 /** 从 transport toolName 回查当前 runtime 可执行 toolName。 */
 type AiAgentToolNameResolver = (toolName: string) => string | null
@@ -92,16 +96,12 @@ type CompleteToolCallExecutionInput<TInput extends AiJsonParams = AiJsonParams> 
   started: number
 }>
 
-/* -------------------------------------------------------------------------------
- * 二、常量
- * ----------------------------------------------------------------------------- */
+/* ── 常量 ──────────────────────────────────────────────────── */
 
 /** 默认 continue 指令（无业务方钩子时使用） */
 const CONTINUE_DIRECTIVE: AiAgentLifecycleDirective = { status: 'continue' }
 
-/* -------------------------------------------------------------------------------
- * 三、工具调用执行器
- * ----------------------------------------------------------------------------- */
+/* ── 工具调用执行器 ────────────────────────────────────────── */
 
 export class AiAgentToolCallExecutor {
   /**

@@ -30,8 +30,11 @@ export {
 } from './business/ai-host'
 
 export type {
+  AiAgentHostDryRunResult,
   AiAgentHostEnsureCommand,
   AiAgentHostEntryMap,
+  AiAgentHostRegistrationDescription,
+  AiAgentHostRegistrationSummary,
   AiAgentHostRunResult,
   CreateAiAgentHostOptions,
 } from './business/ai-host'
@@ -39,6 +42,11 @@ export type {
 export {
   AiAgentRegistration,
 } from './business/registration-types'
+
+export {
+  createAiBusinessKit,
+  createSimpleInputContract,
+} from './business/business-kit'
 
 export {
   AiAgentRuntimeContext,
@@ -55,6 +63,13 @@ export {
 export type {
   AiAgentRegistrationOptions,
 } from './business/registration-types'
+
+export type {
+  AiBusinessIdOptions,
+  AiBusinessKit,
+  CreateAiBusinessKitOptions,
+  CreateSimpleInputContractOptions,
+} from './business/business-kit'
 
 export type {
   AiAgentInputContract,

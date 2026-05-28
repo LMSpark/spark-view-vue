@@ -96,6 +96,23 @@ class PageConfigServiceTest {
         assertFalse(second.containsKey("content"));
     }
 
+    @Test
+    void readFile_returnsContentWhenClientTimestampDoesNotExactlyMatch() throws Exception {
+        service.createPage("t1", "p1", "demo-page", "演示页面", "Document");
+
+        Map<String, Object> first = service.readFile(
+                "t1", "p1", "demo-page", "rule.json", null);
+        String timestamp = (String) first.get("timestamp");
+        String newerClientTimestamp = String.valueOf(Long.parseLong(timestamp) + 1);
+
+        Map<String, Object> second = service.readFile(
+                "t1", "p1", "demo-page", "rule.json", newerClientTimestamp);
+
+        assertFalse(second.containsKey("notModified"));
+        assertNotNull(second.get("content"));
+        assertEquals(timestamp, second.get("timestamp"));
+    }
+
     // ── 文件级版本管理 ──
 
     @Test

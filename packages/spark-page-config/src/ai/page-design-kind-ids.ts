@@ -11,7 +11,7 @@ export const PAGE_DESIGN_CHILD_MODULES = [
   {
     kind: PAGE_DESIGN_LIFECYCLE_KIND,
     label: '页面设计生命周期',
-    summary: '校验 live binding 是否齐全，进入 editing phase。',
+    summary: '校验 live binding 是否齐全，进入 editing phase，并提供 100 步流程事实。',
   },
   {
     kind: PAGE_DESIGN_TEXT_MODEL_KIND,

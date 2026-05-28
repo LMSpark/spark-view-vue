@@ -611,7 +611,7 @@ describe('pageDesign host business registration', () => {
     expect(JSON.stringify(missingContext.checks ?? [])).toContain('CONTEXT_DATA_MEMBER_REQUIRED')
   })
 
-  it('AI tool loop can discover child modules and invoke payload guides through nested paths', async () => {
+  it('AI tool loop can discover child modules and invoke payload guides through direct paths', async () => {
     const pageId = 'page-designer'
     const { host, reads } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })

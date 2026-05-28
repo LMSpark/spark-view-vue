@@ -1,12 +1,19 @@
 /**
- * AI Host session diagnostics.
+ * ═══════════════════════════════════════════════════════════════
+ * agent/session/session-diagnostics.ts — AI 会话历史诊断工具
+ * ═══════════════════════════════════════════════════════════════
  *
- * 该模块只解释 `AiAgentSessionRecord` 的通用历史结构，用于 Agent 能力诊断、
- * smoke 当前运行摘要、调试面板或日志导出。
+ * 【架构定位】Agent 会话层的只读诊断入口。从 AiAgentSessionRecord
+ *   提取摘要和转录视图，用于 Agent 能力诊断、smoke 运行摘要、
+ *   调试面板或日志导出。不修改 sessionStore 状态。
  *
- * 历史会话本身仍保留在 `sessionStore` 中，也是后续再次接入同一会话的起点。
- * diagnostics 只提供摘要/转录视图，不理解 pageDesign、业务模块、工具参数语义，
- * 也不改变 sessionStore 状态。
+ * 【核心函数】
+ *   summarizeAiAgentSessionRecord  — 汇总会话数量、失败工具调用、最后助手文本
+ *   createAiAgentSessionTranscript  — 将 session history 转为方向标识的调试转录
+ *   previewAiAgentDiagnosticValue   — 安全序列化并裁剪诊断值
+ *
+ * 【消费方】APP 层调试面板、smoke 运行摘要、日志导出
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type {
@@ -16,7 +23,9 @@ import type {
   AiAgentSessionRecord,
 } from './session-types'
 
-// ── 公共 DTO ────────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 公共 DTO
+// ═══════════════════════════════════════════════════════════════
 
 export type AiAgentSessionSummary = Readonly<{
   status: string | null
@@ -47,7 +56,9 @@ export type AiAgentSessionTranscriptOptions = Readonly<{
   contentLimit?: number
 }>
 
-// ── 公共诊断入口 ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · 公共诊断入口
+// ═══════════════════════════════════════════════════════════════
 
 // PAGE_DESIGN_REFACTOR_SOURCE[session-diagnostics]: AI 会话历史摘要/转录的通用来源；历史保留在 spark-ai sessionStore，smoke 只读取，不另存完整历史副本。
 /**
@@ -133,7 +144,9 @@ export function previewAiAgentDiagnosticValue(value: unknown, contentLimit = 12_
   return `${text.slice(0, contentLimit)}\n...<truncated ${text.length - contentLimit} chars>`
 }
 
-// ── 内部读取流程 ────────────────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 内部读取辅助
+// ═══════════════════════════════════════════════════════════════
 
 function getAiAgentSessionHistory(sessionRecord: AiAgentSessionRecord | null | undefined): readonly AiAgentHistoryEntry[] {
   return sessionRecord?.history ?? []
@@ -152,7 +165,9 @@ function latestAiAgentAssistantText(sessionRecord: AiAgentSessionRecord | null |
   return ''
 }
 
-// ── 私有类型守卫与格式化 ───────────────────────────────────
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 内部类型守卫与格式化
+// ═══════════════════════════════════════════════════════════════
 
 function isMessageEntry(entry: AiAgentHistoryEntry): entry is AiAgentMessageHistoryEntry {
   return entry.kind === 'message'

@@ -108,6 +108,14 @@ export type ConfigLoaderOptions = {
   apiBaseUrl?: string
 
   /**
+   * 自定义 HTTP client。
+   *
+   * 用于复用上层认证、租户作用域或 URL 重写能力；页面四文件读取仍由
+   * PageConfigLoader/FileLoader 统一处理。
+   */
+  httpClient?: HttpClientBase
+
+  /**
    * 页面配置四文件 API 基础路径。
    *
    * 必须指向 `.../pages-config`，用于 rule.json / pagedata.json / script.js / style.css。
@@ -189,8 +197,8 @@ export abstract class BasePageConfigLoader {
   /**
    * 加载单个页面配置文件原文。
    *
-   * DevSystem / 编辑器等设计时入口需要拿到原文，再交给各自的
-   * PageFileDocument 维护 dirty、undo/redo 和领域模型同步。
+   * DevSystem / 编辑器等设计时入口需要拿到原文，再交给 PageModel
+   * 维护 dirty、undo/redo 和领域模型同步。
    */
   abstract loadPageFileContent(
     pageId: string,

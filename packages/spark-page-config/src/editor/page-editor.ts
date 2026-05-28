@@ -1,7 +1,7 @@
 /**
  * PageEditor — 框架无关的页面编辑聚合入口。
  *
- * 内部组合 PageConfigEditWorkspace、PageConfigFileLifecycle、
+ * 内部组合 PageModel、PageConfigFileLifecycle、
  * NavigationEditSession、NavigationConfigClient，把页面导航属性、
  * 节点属性、rule.json、pagedata.json、style.css、script.js、
  * 版本管理、保存、页面挂载/删除/移动聚合成统一编辑上下文。
@@ -26,28 +26,19 @@
  */
 
 import type { DataSetCrudTool } from '@spark-view/spark-data'
-import { createRequest, type HttpClientBase } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 
 import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
+  BasePageConfigLoader,
   PageConfigFileName,
   PageConfigPageSummary,
-  PageDataConfig,
-  RuleConfig,
   ConfigLoaderOptions,
   PageConfigFileVersionSummary,
   PageConfigCreatePageParams,
 } from '../config'
 import {
-  BasePageConfigLoader,
-  compileRule,
   createConfigLoader,
   PageConfigFileApi,
-  parseCss,
-  parsePageData,
-  parseScript,
 } from '../config'
 import type {
   AppNavRoot,
@@ -77,23 +68,24 @@ import {
 import { SparkNodeTree } from '@spark-view/spark-data'
 
 import { PageModel } from './page-model'
+import type { PageModelFileStorage } from './page-model-factory'
 import type { PageDesignEditHost } from '../design/page-edit-session'
 import {
   PageConfigFileLifecycle,
-} from '../design/page-edit-workspace'
+} from '../design/page-file-lifecycle'
 import type {
   CreateMountedPageParams,
   CreateMountedPageResult,
   RemoveMountedPageParams,
   RemoveMountedPageResult,
-} from '../design/page-edit-workspace'
+} from '../design/page-file-lifecycle'
 
 // ═══════════════════════════════════════════════════════
 // 1. Options / Snapshot / Listener 类型
 // ═══════════════════════════════════════════════════════
 
 /** PageEditor 构造参数 */
-export type PageEditorOptions = {
+type PageEditorOptions = {
   fileApi: PageConfigFileApi
   navigationClient: NavigationConfigClient
   getConfigLoader: () => BasePageConfigLoader
@@ -105,7 +97,10 @@ export type CreatePageEditorOptions = {
   getPageConfigApi: () => string
   getNavigationApi: () => string
   getHeaders?: () => Record<string, string>
-  fileStorage?: ConfigLoaderOptions['fileStorage']
+  fileStorage?: PageModelFileStorage
+}
+
+type CreatePageEditorRuntimeOptions = CreatePageEditorOptions & {
   createConfigLoader?: (options: Partial<ConfigLoaderOptions>) => BasePageConfigLoader
 }
 
@@ -155,13 +150,6 @@ export type PageEditorSnapshot = {
   hasAnyDirty: boolean
 }
 
-export type PageEditorPreviewConfig = Omit<PageConfig, 'pageId'>
-export type PageEditorPreviewConfigLoaderOptions = {
-  http?: HttpClientBase
-  getHeaders?: () => Record<string, string>
-  timeout?: number
-}
-
 // ═══════════════════════════════════════════════════════
 // 2. PageEditor class
 // ═══════════════════════════════════════════════════════
@@ -181,73 +169,8 @@ function toPageConfigApiBaseUrl(pageApi: string): string {
   return normalized || '/'
 }
 
-function normalizeApiUrl(url: string): string {
-  if (
-    url.trim() === ''
-    || /^[a-z][a-z\d+\-.]*:/i.test(url)
-    || url.startsWith('//')
-  ) {
-    return url
-  }
-  const normalizedUrl = url.startsWith('/') ? url : `/${url}`
-  return normalizedUrl.startsWith('/api/') ? normalizedUrl : `/api${normalizedUrl}`
-}
-
-class PageEditorPreviewConfigLoader extends BasePageConfigLoader {
-  constructor(private readonly client: HttpClientBase) {
-    super()
-  }
-
-  override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
-    return this.unsupported(pageId, 'page config')
-  }
-
-  override loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return this.unsupported(pageId, 'rule')
-  }
-
-  override loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
-    return this.unsupported(pageId, 'pagedata')
-  }
-
-  override loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
-    return this.unsupported(pageId, 'script')
-  }
-
-  override loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
-    return this.unsupported(pageId, 'style')
-  }
-
-  override loadPageFileContent(
-    pageId: string,
-    filename: PageConfigFileName,
-    _options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
-    return this.unsupported(pageId, filename)
-  }
-
-  override clearCache(): void {
-    this.client.clearCache()
-  }
-
-  override getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
-  }
-
-  override getHttpClient(): HttpClientBase {
-    return this.client
-  }
-
-  private unsupported<T>(pageId: string, label: string): Promise<ConfigLoadResult<T>> {
-    return Promise.resolve({
-      success: false,
-      error: `Preview loader only exposes HTTP client; ${label} is not loaded here: ${pageId}`,
-      timestamp: Date.now(),
-    })
-  }
-}
-
 export function createPageEditor(options: CreatePageEditorOptions): PageEditor {
+  const runtimeOptions = options as CreatePageEditorRuntimeOptions
   const fileApi = new PageConfigFileApi({
     getPageConfigApi: options.getPageConfigApi,
     http: options.http,
@@ -269,7 +192,7 @@ export function createPageEditor(options: CreatePageEditorOptions): PageEditor {
       if (options.getHeaders !== undefined) {
         loaderOptions.getHeaders = options.getHeaders
       }
-      pageConfigLoader = (options.createConfigLoader ?? createConfigLoader)(loaderOptions)
+      pageConfigLoader = (runtimeOptions.createConfigLoader ?? createConfigLoader)(loaderOptions)
       pageConfigLoaderApiBaseUrl = apiBaseUrl
     }
     return pageConfigLoader
@@ -280,32 +203,6 @@ export function createPageEditor(options: CreatePageEditorOptions): PageEditor {
     navigationClient,
     getConfigLoader,
   })
-}
-
-export function createPageEditorPreviewConfigLoader(
-  options: HttpClientBase | PageEditorPreviewConfigLoaderOptions,
-): BasePageConfigLoader {
-  const client = isHttpClientBase(options)
-    ? options
-    : (options.http ?? createRequest({ timeout: options.timeout ?? 30_000 }))
-  if (!isHttpClientBase(options)) {
-    client.interceptors.request.use({
-      onRequest: (config) => {
-        if (typeof config.url === 'string') {
-          config.url = normalizeApiUrl(config.url)
-        }
-        config.headers = { ...config.headers, ...(options.getHeaders?.() ?? {}) }
-        return config
-      },
-    })
-  }
-  return new PageEditorPreviewConfigLoader(client)
-}
-
-function isHttpClientBase(value: HttpClientBase | PageEditorPreviewConfigLoaderOptions): value is HttpClientBase {
-  return 'get' in value && typeof value.get === 'function'
-    && 'post' in value && typeof value.post === 'function'
-    && 'clearCache' in value && typeof value.clearCache === 'function'
 }
 
 /**
@@ -825,25 +722,6 @@ export class PageEditor {
     }
   }
 
-  // ── 预览配置构建 ─────────────────────────────────────
-
-  /** 从当前四文件文档构建渲染预览配置。 */
-  buildPreviewConfig(): PageEditorPreviewConfig | null {
-    const ruleText = this.getPageFileText('rule.json')
-    const dataText = this.getPageFileText('pagedata.json')
-    const scriptText = this.getPageFileText('script.js')
-    const cssText = this.getPageFileText('style.css')
-
-    if (!ruleText.trim() && !dataText.trim()) return null
-
-    return {
-      rule: ruleText.trim() ? compileRule(ruleText) : [],
-      data: dataText.trim() ? parsePageData(dataText) : parsePageData('{}'),
-      script: scriptText.trim() ? parseScript(scriptText) : undefined,
-      css: cssText.trim() ? parseCss(cssText) : undefined,
-    }
-  }
-
   // ── 工具访问：节点树 ─────────────────────────────────
 
   /** 获取当前 rule.json 的节点树编辑模型。始终返回已初始化的 tree。 */
@@ -1259,12 +1137,6 @@ export type {
   RuleEditorComponentMetadata,
 } from '../design/artifacts/rule-artifacts'
 
-export {
-  canonicalizeDataSetMetadata,
-  canonicalizePageDataJson,
-  canonicalizePageDataValue,
-} from '../design/page-file-document'
-
 export type {
   PageDesignEditHost,
 } from '../design/page-edit-session'
@@ -1290,68 +1162,6 @@ export type {
 import componentCatalog from '../ai/payloads/component-catalog.json'
 export { componentCatalog }
 
-// ── Config runtime re-exports（DevSystem 编辑态统一从 ./editor 获取）──
-export { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, PageConfigFileDescriptor } from '../config/config-types'
-export type {
-  ConfigLoaderOptions,
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageConfigFiles,
-  PageDataConfig,
-  RuleConfig,
-} from '../config/config-types'
-export { createConfigLoader, PageConfigLoader } from '../config/page-config-loader'
-export { compileRule, normalizeRuleNode, parseCss, parsePageData, parseScript } from '../config/page-config-compiler'
-export { PageConfigFileApi } from '../config/page-config-file-api'
+export { PAGE_CONFIG_FILE_NAMES } from '../config/config-types'
+export type { PageConfigFileName } from '../config/config-types'
 export type { PageConfigFileVersionSummary, PageConfigPageSummary } from '../config/page-config-file-api'
-
-export * as JsonDocumentRuntime from '../json-document'
-export {
-  addChildNode,
-  addSiblingNode,
-  applyAutoPopulatePatches,
-  buildJsonTreeRows,
-  buildTreeModel,
-  deleteNode,
-  ensureUniqueObjectKey,
-  exportJsonDocument,
-  filterTreeNodes,
-  flattenJsonDocumentForEdit,
-  formatJsonPath,
-  formatValuePreview,
-  getNodePath,
-  getValueAtJsonPath,
-  isJsonObject,
-  isRecord,
-  normalizeJsonDocument,
-  parseJsonDocument,
-  renameNodeKey,
-  resolveSchemaInfoForPath,
-  restoreJsonDocumentByOriginalType,
-  restoreJsonDocumentFromFlat,
-  rootOf,
-  serializeJsonDocument,
-  toDisplayRows,
-  updateNodeType,
-  updateNodeValue,
-} from '../json-document'
-
-export type {
-  AutoPopulateEntry,
-  FlatJsonTreeDocument,
-  JsonDocument,
-  JsonNodeType,
-  JsonObject,
-  JsonPath,
-  JsonSchemaInfo,
-  JsonTreePolicy,
-  JsonValue,
-  MutationResult,
-  RenameNodeKeyInput,
-  TreeDisplayNode,
-  TreeNode,
-  TreeModel,
-  UpdateNodeTypeInput,
-} from '../json-document'

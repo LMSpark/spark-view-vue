@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, watchEffect } from 'vue'
 import { useDevState } from '@/views/app/dev-system/useDevState'
 import { http } from '@/services/http'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config/editor'
 
 const httpFns = vi.hoisted(() => ({
   get: vi.fn(),
@@ -39,7 +38,7 @@ vi.mock('@spark-view/spark-page-config/editor', async (importOriginal) => {
     return directStatus === status || responseStatus === status
   }
   const unsupported = async () => ({ success: false as const, error: 'unsupported', timestamp: Date.now() })
-  const createTestConfigLoader = (): BasePageConfigLoader => ({
+  const createTestConfigLoader = () => ({
       loadPageConfig: unsupported,
       loadRule: unsupported,
       loadPageData: unsupported,
@@ -68,13 +67,13 @@ vi.mock('@spark-view/spark-page-config/editor', async (importOriginal) => {
       clearCache: vi.fn(),
       getCacheStats: () => ({ size: 0, keys: [] }),
       getHttpClient: () => undefined,
-    }) as BasePageConfigLoader
+    }) 
   return {
     ...actual,
     createPageEditor: vi.fn((options: Parameters<typeof actual.createPageEditor>[0]) => actual.createPageEditor({
       ...options,
       createConfigLoader: () => createTestConfigLoader(),
-    })),
+    } as Parameters<typeof actual.createPageEditor>[0] & { createConfigLoader: () => ReturnType<typeof createTestConfigLoader> })),
   }
 })
 
@@ -99,7 +98,7 @@ describe('DevState 页面文件闭环', () => {
 
   it('缺失可选 script/style 不阻断四文件加载', async () => {
     const state = useDevState()
-    state.activePageId.value = 'demo'
+    state.selectPage('demo')
     httpMock.get.mockImplementation(async (url: string) => {
       if (url.endsWith('/script.js') || url.endsWith('/style.css')) throw notFound()
       return pageFileResponse(url)
@@ -114,7 +113,7 @@ describe('DevState 页面文件闭环', () => {
 
   it('缺失 rule/pagedata 以空文本进入编辑态，不写入占位内容', async () => {
     const state = useDevState()
-    state.activePageId.value = 'demo'
+    state.selectPage('demo')
     httpMock.get.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) throw notFound()
       if (url.endsWith('/pagedata.json')) throw notFound()
@@ -131,7 +130,7 @@ describe('DevState 页面文件闭环', () => {
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {
     const state = useDevState()
-    state.activePageId.value = 'demo'
+    state.selectPage('demo')
     httpMock.get.mockResolvedValueOnce([
       { version: 1, createdAt: 1710000000000, isCurrent: true, modifiedBy: 'tester' },
     ])
@@ -150,7 +149,7 @@ describe('DevState 页面文件闭环', () => {
 
   it('restore 后立即强制重读并回填文档模型', async () => {
     const state = useDevState()
-    state.activePageId.value = 'demo'
+    state.selectPage('demo')
     state.getActivePage()!.script.setText('console.log("old")')
     httpMock.post.mockResolvedValueOnce({ ok: true })
     httpMock.get.mockImplementation(async (url: string) => pageFileResponse(url))

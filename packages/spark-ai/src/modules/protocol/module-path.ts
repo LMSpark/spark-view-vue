@@ -82,6 +82,11 @@ export class AiModulePathSegment {
   }
 }
 
+export type AiModulePathSegmentInput = Readonly<{
+  kind: string
+  id: string
+}>
+
 // ============================================================================
 // 三、模块路径 — AiModulePath
 //
@@ -204,6 +209,32 @@ export class AiModulePath {
   }
 }
 
+export function buildAiModulePath(segments: readonly AiModulePathSegmentInput[]): string {
+  if (segments.length === 0) return '/'
+  return AiModulePath.of(segments.map((segment) => new AiModulePathSegment(
+    encodeAiModulePathPart(segment.kind, 'kind'),
+    encodeAiModulePathPart(segment.id, 'id'),
+  ))).toString()
+}
+
+export function parseAiModulePath(raw: string): readonly AiModulePathSegmentInput[] {
+  return AiModulePath.parse(raw).segments.map((segment) => ({
+    kind: decodeAiModulePathPart(segment.kind, raw),
+    id: decodeAiModulePathPart(segment.id, raw),
+  }))
+}
+
+export function appendAiModulePath(
+  parentPath: string | AiModulePath,
+  segment: AiModulePathSegmentInput,
+): string {
+  const parent = typeof parentPath === 'string' ? AiModulePath.parse(parentPath) : parentPath
+  return parent.append(new AiModulePathSegment(
+    encodeAiModulePathPart(segment.kind, 'kind'),
+    encodeAiModulePathPart(segment.id, 'id'),
+  )).toString()
+}
+
 // ============================================================================
 // 四、内部解析器
 //
@@ -280,4 +311,20 @@ function splitRawSegments(raw: string): string[] {
   // 最后一段（末尾没有 '/' 分隔符）
   segments.push(body.slice(segmentStart))
   return segments
+}
+
+function encodeAiModulePathPart(value: string, field: string): string {
+  const normalized = value.trim()
+  if (normalized.length === 0) {
+    throw new AiModulePathParseError(field === 'kind' ? 'EMPTY_KIND' : 'EMPTY_ID', value, `${field} must not be empty`)
+  }
+  return encodeURIComponent(normalized)
+}
+
+function decodeAiModulePathPart(value: string, raw: string): string {
+  try {
+    return decodeURIComponent(value)
+  } catch {
+    throw new AiModulePathParseError('INVALID_SEGMENT', raw, `invalid path escape "${value}"`)
+  }
 }

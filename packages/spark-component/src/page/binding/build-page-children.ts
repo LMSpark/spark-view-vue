@@ -1,5 +1,5 @@
 /**
- * RuleConfig/SparkNode → page children 绑定器
+ * SparkNode → page children 绑定器
  *
  * 边界约束：
  * - spark-page-config 负责提供声明式 SparkNode 树
@@ -12,7 +12,6 @@
  * - 顶层 id 去重
  */
 
-import type { RuleConfig } from '@spark-view/spark-page-config'
 import { normalizeSparkNode, isSparkNode, type SparkNode, type SparkNodeChildren } from '../../core/types'
 import type { ActionExecutionContext } from '../actions'
 import { normalizeOnProps } from './bind-normalize.js'
@@ -41,7 +40,7 @@ export type BuildPageChildrenOptions = {
  * - 保证顶层 id 在同一次构建内唯一
  */
 export function buildPageChildren(
-  rules: RuleConfig[],
+  rules: SparkNode[],
   options: BuildPageChildrenOptions,
 ): SparkNode[] {
   const { callFunc, actionCtx } = options
@@ -107,7 +106,7 @@ export function buildPageChildren(
   // ── 节点绑定主流程 ─────────────────────────────────────────────────────
 
   /**
-   * 将单个 RuleConfig/SparkNode 形态对象绑定为运行时 SparkNode。
+   * 将单个 SparkNode 形态对象绑定为运行时 SparkNode。
    *
    * 绑定顺序故意固定：
    * 1. 复制并规范化 props
@@ -159,4 +158,3 @@ export function buildPageChildren(
   // 根级规则逐项绑定，保持输入顺序稳定。
   return rules.map(bindNode)
 }
-

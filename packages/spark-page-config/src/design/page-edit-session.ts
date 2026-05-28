@@ -3,7 +3,7 @@
  *
  * 包含 PageDesignEditSession、编辑宿主类型以及 Service 层契约类型。
  * PageDesignService 已迁移至 page-design-service.ts。
- * PageConfigEditWorkspace / PageConfigFileLifecycle 已迁移至 page-edit-workspace.ts。
+ * PageConfigFileLifecycle 已迁移至 page-file-lifecycle.ts。
  */
 
 import type { DataSetCrudTool } from '@spark-view/spark-data'
@@ -18,8 +18,6 @@ import type {
   NavigationNodeDraft,
   NavigationContextDraft,
 } from '../navigation'
-
-export type { SparkNodeTreeMethodKey } from '@spark-view/spark-data'
 
 // ── 编辑会话核心契约 ───────────────────────────────────────
 
@@ -125,36 +123,10 @@ export type PageDesignServiceActionBinding<TTarget> = {
 
 // ── Service Result 守卫 ───────────────────────────────────
 
-export function pageDesignServiceSuccess<TResult>(
-  data: TResult,
-  summary: string,
-): PageDesignServiceResult<TResult> {
-  return { ok: true, data, summary }
-}
-
 export function pageDesignServiceFailure(
   code: string,
   msg: string,
   fix: string,
 ): PageDesignServiceResult<never> {
   return { ok: false, code, msg, fix }
-}
-
-function getProp(value: object, key: string): unknown {
-  const desc = Object.getOwnPropertyDescriptor(value, key)
-  return desc?.value
-}
-
-export function isPageDesignServiceResult(value: unknown): value is PageDesignServiceResult<unknown> {
-  if (typeof value !== 'object' || value === null || !('ok' in value)) return false
-  const okValue = getProp(value, 'ok')
-  if (okValue === true) {
-    return 'data' in value && typeof getProp(value, 'summary') === 'string'
-  }
-  if (okValue === false) {
-    return typeof getProp(value, 'code') === 'string'
-      && typeof getProp(value, 'msg') === 'string'
-      && typeof getProp(value, 'fix') === 'string'
-  }
-  return false
 }

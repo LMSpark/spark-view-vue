@@ -14,5 +14,5 @@ export type {
 
 export type {
   PageContext,
-  PageConfig,
+  PageModelRenderConfig,
 } from './context/types.js'

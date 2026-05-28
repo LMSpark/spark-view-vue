@@ -844,6 +844,518 @@ flowchart LR
 - `NODE_PAYLOAD_SCHEMA_INVALID`：组件 props 不符合 guidePayload 返回的 schema。
 - `NO_NODE_TREE` / `NO_DATASET_EDIT` / `NO_TEXT_MODEL`：DevSystem 未打开或未绑定当前页面 live edit host。
 
+## SPARK AI 优化路线图
+
+本节是后续优化方案，不是当前已实现兼容面。实现前应先补测试和迁移说明，避免把“建议协议”误当成现有 API。
+
+优化目标：
+
+| 目标 | 说明 |
+| --- | --- |
+| 降低接入成本 | 新业务少写样板代码，注册步骤更清楚。 |
+| 提升 LLM 调用成功率 | guide 信息更结构化，错误更可恢复。 |
+| 提升运行可靠性 | path、schema、生命周期、session 更可诊断。 |
+| 增强工程可维护性 | 类型更强、测试更完整、文档更短更准。 |
+
+图 7 — 推荐落地路线：
+
+```mermaid
+flowchart LR
+  p0["第一阶段<br/>接入体验和诊断"]
+  p1["第二阶段<br/>LLM 调用质量"]
+  p2["第三阶段<br/>类型安全和高级能力"]
+
+  p0a["注册模板<br/>runtime.inspect()<br/>path 工具<br/>标准错误结构"]
+  p1a["增强 module_guide<br/>examples / antiExamples<br/>标准系统提示<br/>golden transcript"]
+  p2a["typed runner<br/>inputContract builder<br/>pause 生命周期<br/>权限模型"]
+
+  p0 --> p0a --> p1 --> p1a --> p2 --> p2a
+```
+
+### P0 必须优先做
+
+#### 1. 业务注册模板
+
+当前新业务需要手写：
+
+- service
+- root module
+- child module
+- runtime register
+- inputContract
+- registration
+- host register
+- turnCallbacks 测试桩
+
+建议新增脚手架或模板函数：
+
+```ts
+createAiBusinessKit({
+  kindID,
+  rootKind,
+  name,
+  description,
+  inputSchema,
+  identityField,
+  modules,
+  createScope,
+  createOrchestration,
+})
+```
+
+如果暂不做函数，也应提供官方模板目录：
+
+```text
+templates/
+  basic-business/
+    service.ts
+    root-module.ts
+    child-module.ts
+    registration.ts
+    host.ts
+    test.ts
+```
+
+验收标准：
+
+- 新业务复制模板即可完成最小可运行 Agent。
+- 模板内显式包含 `sessionStore`、root `find`、child `find/list`、function `runner`。
+- 模板测试覆盖 runtime、registration、tool-loop 三层。
+
+#### 2. 强化 module_guide 输出质量
+
+LLM 是否能正确调用，主要依赖 `module_guide`。建议让 `module_guide({ kind, functionName })` 返回更结构化的信息：
+
+```ts
+type AiModuleFunctionGuide = {
+  kind: string
+  functionName: string
+  description: string
+  paramsSchema: AiJsonSchemaObject
+  examples?: readonly AiModuleFunctionExample[]
+  antiExamples?: readonly AiModuleFunctionAntiExample[]
+  usageRules?: readonly string[]
+  requiredBeforeCall?: readonly string[]
+  failureModes?: readonly AiModuleFunctionFailureMode[]
+  recoveryHints?: readonly string[]
+}
+```
+
+建议扩展 `AiModuleFunctionMetadata`：
+
+- `examples`
+- `antiExamples`
+- `requiredBeforeCall`
+- `recoveryHints`
+
+示例：
+
+```ts
+{
+  name: 'closeTicket',
+  usageRules: ['关闭前必须确认用户意图'],
+  requiredBeforeCall: ['如果用户没有明确确认，先调用 human_question'],
+  examples: [
+    {
+      user: '问题解决了，关闭吧',
+      args: {},
+    },
+  ],
+  antiExamples: [
+    {
+      user: '我看看状态',
+      reason: '只是查看状态，不能关闭工单',
+    },
+  ],
+}
+```
+
+验收标准：
+
+- guide 能给出可复制的 `module_call` 示例。
+- 高风险函数必须声明 `usageRules` 或 `requiredBeforeCall`。
+- 失败后能从 guide 读到下一步恢复建议。
+
+#### 3. 标准化错误结构
+
+当前 `AiModuleResult.failCode(code, message, hint)` 已有基础能力。后续建议统一投影为更适合 LLM 恢复的错误结构：
+
+```ts
+type AiToolFailure = {
+  ok: false
+  error: {
+    code: string
+    message: string
+    fix: string
+    retryable: boolean
+    checks?: readonly string[]
+    suggestedToolCall?: {
+      toolName: 'module_query' | 'module_guide' | 'module_find' | 'module_attr' | 'module_call' | 'human_question'
+      args: Record<string, unknown>
+    }
+  }
+}
+```
+
+内置错误建议至少包含：
+
+| 字段 | 说明 |
+| --- | --- |
+| `code` | 稳定错误码。 |
+| `message` | 人类可读错误。 |
+| `fix` | 给 LLM 的修复建议。 |
+| `retryable` | 是否可以修正参数后重试。 |
+| `suggestedToolCall` | 推荐下一步工具调用。 |
+
+验收标准：
+
+- schema 错误建议回到 `module_guide`。
+- path 错误建议回到 `module_find`。
+- 缺用户事实建议调用 `human_question`。
+- APP 层可用统一字段做错误展示。
+
+#### 4. 注册期完整性诊断
+
+建议新增：
+
+```ts
+const report = runtime.inspect()
+```
+
+输出示例：
+
+```ts
+{
+  modules: [
+    {
+      kind: 'pageDesign',
+      status: 'ok',
+      functions: 4,
+      attributes: 2,
+      children: ['node-tree', 'dataset'],
+    },
+  ],
+  warnings: [
+    {
+      code: 'FUNCTION_WITHOUT_FAILURE_MODES',
+      kind: 'node-tree',
+      functionName: 'replaceNode',
+      message: '建议为高风险函数声明 failureModes。',
+    },
+  ],
+}
+```
+
+建议检查：
+
+- root module 是否存在。
+- children 是否都有对应注册模块。
+- 子模块 `parentKind` 是否和父模块声明一致。
+- function 是否有 `paramsSchema`。
+- 危险函数是否有 `usageRules` 或 `failureModes`。
+- payloadRef 是否有 catalog module 可查。
+
+验收标准：
+
+- runtime 单测可断言 `inspect().warnings`。
+- APP 启动日志可打印异常注册。
+- pageDesign 这类复杂业务能在注册期提前发现能力树缺口。
+
+### P1 推荐优化
+
+#### 1. typed function runner
+
+当前 `runFunction(ctx, functionName, args)` 依赖字符串分发，函数名和 metadata 容易不一致，args 也需要手动取值。建议提供声明式 runner：
+
+```ts
+const runner = createAiFunctionRunner({
+  describeTicket: {
+    schema: noParamsSchema(),
+    run: (ctx) => service.describe(ticketIdFromCtx(ctx)),
+  },
+  setPriority: {
+    schema: TICKET_PRIORITY_SCHEMA,
+    run: (ctx, args: { priority: string }) =>
+      service.setPriority(ticketIdFromCtx(ctx), args.priority),
+  },
+})
+```
+
+收益：
+
+- 减少 `switch`。
+- 减少函数名拼写错误。
+- args 类型更安全。
+
+#### 2. inputContract builder
+
+当前 inputContract 写法重复，建议新增：
+
+```ts
+createSimpleInputContract({
+  kindID: SUPPORT_TICKET_MODULE_ID,
+  identityField: 'ticketId',
+  messageField: 'message',
+  paramsSchema: TICKET_RUN_INPUT_SCHEMA,
+  systemPrompt: (input) => `当前工单：${input.ticketId}`,
+})
+```
+
+收益：
+
+- 减少 `AiAgentScope` 手写错误。
+- 统一业务输入规范。
+- 更容易教学和 code review。
+
+#### 3. path 构建和解析工具
+
+路径是协议关键点，建议公开：
+
+```ts
+buildAiModulePath([
+  { kind: 'support-ticket', id: 'T-1001' },
+])
+
+parseAiModulePath('/support-ticket[T-1001]')
+
+appendAiModulePath(parentPath, {
+  kind: 'node-tree',
+  id: 'page-a',
+})
+```
+
+要求：
+
+- 支持 id 转义，避免 `]`、`/` 等字符导致解析问题。
+- guide 示例、APP 测试和业务 helper 复用同一套 builder。
+
+#### 4. session debug timeline
+
+当前已有 `createAiAgentSessionTranscript(record)` 和 `summarizeAiAgentSessionRecord(record)`。建议增加更适合排查工具链的：
+
+```ts
+createAiAgentDebugTimeline(record)
+```
+
+输出示例：
+
+```text
+[User] 请把工单优先级调高
+[Assistant ToolCall] module_find {"path":"/","childKind":"support-ticket"}
+[Tool Result OK] found /support-ticket[T-1001]
+[Assistant ToolCall] module_call setPriority {"priority":"high"}
+[Tool Result OK] {"ticketId":"T-1001","priority":"high"}
+[Assistant] 已将优先级调整为 high。
+```
+
+收益：
+
+- 排查 LLM 工具链更快。
+- 测试失败时可直接打印。
+- 可放进开发控制台。
+
+### P2 体验增强
+
+#### 1. Host 注册诊断 API
+
+建议增加：
+
+- `host.listRegistrations()`
+- `host.describe(alias)`
+- `host.unregister(alias)`
+
+输出示例：
+
+| alias | moduleId | name | rootKinds |
+| --- | --- | --- | --- |
+| `ticketAssistant` | `supportTicket` | Support Ticket Assistant | `support-ticket` |
+| `pageDesign` | `pageDesign` | Page Design Assistant | `pageDesign` |
+
+#### 2. dry-run 模式
+
+用于不调用真实 LLM，仅验证注册质量：
+
+```ts
+await host.dryRun('ticketAssistant', {
+  ticketId: 'T-1001',
+  message: '查看状态',
+})
+```
+
+返回建议：
+
+```ts
+{
+  ok: true,
+  scope: {},
+  orchestration: {},
+  tools: ['module_query', 'module_guide', 'module_find', 'module_attr', 'module_call', 'human_question'],
+  warnings: [],
+}
+```
+
+#### 3. human_question 结构化候选项
+
+当前 `candidateOptions` 是字符串数组。建议升级为可渲染结构：
+
+```ts
+candidateOptions: [
+  {
+    id: 'confirm-close',
+    label: '确认关闭工单',
+    value: { action: 'close' },
+  },
+  {
+    id: 'keep-open',
+    label: '暂不关闭',
+    value: { action: 'keepOpen' },
+  },
+]
+```
+
+收益：
+
+- 追问可以渲染成按钮。
+- 降低用户输入歧义。
+- 方便后续多端适配。
+
+### Prompt 优化
+
+建议 `spark-ai` 提供标准系统提示模板，由 registration 追加业务提示。核心规则：
+
+```text
+你只能使用固定工具访问业务能力。
+不要臆造工具名。
+不要直接输出内部 path，除非用户需要诊断。
+调用业务函数必须使用 module_call。
+如果不知道模块或函数，先 module_query / module_guide。
+如果不知道实例路径，先 module_find。
+如果缺少事实，调用 human_question。
+```
+
+典型工具流程也应标准化：
+
+1. `module_query` 查询相关 kind。
+2. `module_guide` 获取函数使用说明。
+3. `module_find` 定位实例 path。
+4. `module_call` 或 `module_attr` 执行业务操作。
+5. 根据工具结果向用户总结。
+
+如果 `module_call` 返回失败，优先根据 `error.fix` 或 `suggestedToolCall` 修复。
+
+### 测试优化
+
+每个业务至少保留三类测试：
+
+1. Module runtime 测试：验证 `module_find`、`module_guide`、`module_call`、错误路径、schema 校验。
+2. Agent registration 测试：验证 inputContract normalize、scope 生成、systemPrompt 不为空、sessionStore 注入。
+3. Host tool-loop 测试：使用 mock turnCallbacks 验证 LLM toolCall、工具执行、appendMessages、afterFunctionCall 生命周期。
+
+建议增加 golden transcript 测试，保存典型用户请求的工具链快照，防止 prompt 或 guide 改动导致行为退化。
+
+### 文档优化
+
+当前治理要求 AI 相关规则收敛到 `docs/ai/spark-ai-complete-guide.md`。后续若要拆分文档，必须先更新 `docs/DOCUMENT-GOVERNANCE.dm` 和 `docs/README.md`，并保留本文件作为 SSOT 入口。
+
+推荐未来拆分方向：
+
+```text
+docs/ai/
+  quick-start.md
+  concepts.md
+  module-registration.md
+  agent-registration.md
+  debugging.md
+  real-examples.md
+```
+
+首页建议控制在 100 行内，只保留：
+
+- 一句话模型。
+- 架构图。
+- 最小注册代码。
+- 最小运行代码。
+- 常见错误链接。
+
+### API 命名优化
+
+当前概念容易混淆：
+
+| 当前名 | 问题 | 建议 |
+| --- | --- | --- |
+| `kindID` | 和 module kind 容易混 | 可考虑新增 `agentId` 或 `businessId` 别名。 |
+| `moduleId` | wire 层语义像业务注册 ID | 文档统一解释为 business registration id 的 wire 投影。 |
+| `moduleInstanceId` | 和 path segment id 有重叠 | 明确它是当前业务主实例 ID。 |
+| `alias` | Host 运行入口名 | 保留，但强调它不是 kind/moduleId。 |
+
+如果不想破坏兼容，可先新增别名字段：
+
+```ts
+createAiAgentRegistration({
+  businessId: 'supportTicket',
+  // deprecated: kindID
+})
+```
+
+### 可靠性优化
+
+生命周期可考虑增加 `pause`：
+
+```ts
+return {
+  status: 'pause',
+  reason: 'waiting for user confirmation',
+}
+```
+
+工具循环建议增加策略：
+
+```ts
+toolLoopPolicy: {
+  maxToolRounds: 8,
+  maxConsecutiveFailures: 3,
+  preventDuplicateToolCall: true,
+}
+```
+
+目标：
+
+- 防止 LLM 在错误路径上无限重试。
+- 限制连续相同 tool call。
+- 降低后端成本。
+
+### 安全与权限优化
+
+建议在 `AiModulePathContext` 或 Host context 中引入权限信息：
+
+```ts
+{
+  userId,
+  roles,
+  permissions,
+  tenantId,
+}
+```
+
+模块函数可声明权限：
+
+```ts
+{
+  name: 'closeTicket',
+  requiredPermissions: ['ticket.close'],
+}
+```
+
+运行时在 `module_call` 前统一校验，避免 LLM 触发越权操作，并让审计日志包含完整用户、租户和权限上下文。
+
+### 最推荐的三个马上改动
+
+如果只能先做三件事，优先级是：
+
+1. 增加 `runtime.inspect()`：启动时检查模块树完整性。
+2. 增强 `module_guide`：提供结构化调用示例、反例和恢复建议。
+3. 提供新业务模板：让业务方复制模板快速注册，避免重复踩坑。
+
 ## AI 代码生成行为
 
 生成或修改代码时遵守以下约束：

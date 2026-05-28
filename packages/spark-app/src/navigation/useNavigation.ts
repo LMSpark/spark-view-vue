@@ -2,7 +2,6 @@ import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { createRequest } from '@spark-view/spark-utils'
 import { readPrototypeProperty } from '@spark-view/spark-utils/internal'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config'
 import type {
   ChildPlacement,
   NavContextConfig,
@@ -16,7 +15,6 @@ import type {
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
 import { refreshRoutes } from './nav-access'
-import { CrossProjectRefPage, createCrossProjectRefRouteProps } from '../router/cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../router/cross-project-ref-route'
 import { resolveNavNodeRuntimeTarget } from './runtime-target'
 import type { NavigationActionRegistry } from './action-registry'
@@ -432,55 +430,10 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     })
   }
 
-  function isConfigLoader(value: unknown): value is BasePageConfigLoader {
-    return value !== null &&
-      typeof value === 'object' &&
-      typeof readPrototypeProperty(value, 'loadPageConfig') === 'function'
-  }
-
-  function readRouteRecordConfigLoader(routeRecord: { props?: unknown }): BasePageConfigLoader | null {
-    const propsByView = routeRecord.props
-    if (propsByView === null || typeof propsByView !== 'object') return null
-
-    const defaultProps = readPrototypeProperty(propsByView, 'default')
-    const propsObject = defaultProps !== null && typeof defaultProps === 'object'
-      ? defaultProps
-      : propsByView
-
-    const configLoader = readPrototypeProperty(propsObject, 'configLoader')
-    return isConfigLoader(configLoader) ? configLoader : null
-  }
-
-  function findRegisteredConfigLoader(): BasePageConfigLoader | null {
-    for (const routeRecord of router.getRoutes()) {
-      const configLoader = readRouteRecordConfigLoader(routeRecord)
-      if (configLoader !== null) return configLoader
-    }
-    return null
-  }
-
   function ensureCrossProjectRefHostRoute(): boolean {
     const existing = router.getRoutes().find(routeRecord => routeRecord.name === CROSS_PROJECT_REF_HOST_ROUTE_NAME)
     const defaultProps = readPrototypeProperty(existing?.props, 'default')
-    if (existing?.meta['crossProjectRefHost'] === true && typeof defaultProps === 'function') return true
-
-    const configLoader = findRegisteredConfigLoader()
-    if (configLoader === null) return false
-    if (existing?.name !== undefined) {
-      router.removeRoute(existing.name)
-    }
-
-    router.addRoute({
-      path: '/t/:tenantId/:projectId/__ref/:refNodeId',
-      name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
-      component: CrossProjectRefPage,
-      props: createCrossProjectRefRouteProps(configLoader),
-      meta: {
-        type: 'cross-project-ref',
-        crossProjectRefHost: true,
-      },
-    })
-    return router.hasRoute(CROSS_PROJECT_REF_HOST_ROUTE_NAME)
+    return existing?.meta['crossProjectRefHost'] === true && typeof defaultProps === 'function'
   }
 
   async function navigateToRefNode(node: NavNode): Promise<void> {
@@ -714,4 +667,3 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 export function useNav(): NavigationContext | null {
   return inject(NAV_KEY, null)
 }
-

@@ -1,8 +1,26 @@
 /**
- * AI turn APP SSE event collector.
+ * ═══════════════════════════════════════════════════════════════
+ * agent/tool-loop/turn-event-collector.ts — AI turn APP SSE 事件收集器
+ * ═══════════════════════════════════════════════════════════════
  *
- * This module is pure orchestration: callers provide an APP SSE source and this
- * collector aggregates neutral ai-frame events into one turn result.
+ * 【架构定位】Agent 层的纯编排组件。消费方提供 APP SSE 事件源，
+ *   本收集器将中立的 llm-frame 事件聚合为一个完整的 turn 结果。
+ *   不处理网络请求，只做事件过滤、状态管理和结果汇总。
+ *
+ * 【核心类型】
+ *   TurnEventCollector  — 收集器接口（result Promise + close 方法）
+ *   TurnEventState      — 内部状态机（text/reasoning/toolCalls 聚合）
+ *
+ * 【数据流】
+ *   1. createTurnEventCollector({ input, source }) → 注册 llm-frame 事件监听
+ *   2. 收到 delta 事件 → 追加 text（可选 onDelta 回调）
+ *   3. 收到 reasoning 事件 → 追加 reasoning（可选 onReasoning 回调）
+ *   4. 收到 result 事件 → 汇总 text + toolCalls，触发完成
+ *   5. 收到 done 事件 → 以当前累积状态完成
+ *   6. 收到 error / 超时 / abort → reject
+ *
+ * 【消费方】transport 层的 executeTurn 实现（APP 层注入）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiAgentStreamEvent } from '../chat/chat-types'
@@ -15,34 +33,65 @@ import type {
   AiAgentTransportToolCall,
 } from '../transport/transport-types'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 常量与内部类型
+// ═══════════════════════════════════════════════════════════════
+
+/** APP SSE 事件名：AI frame 事件 */
 const AI_FRAME_EVENT_NAME = 'llm-frame'
 
+/** AI turn 事件超时时间（5 分钟） */
 const AI_TURN_EVENT_TIMEOUT_MS = 300_000
 
+/** AI turn 事件类型 */
 type AiTurnEventKind = 'delta' | 'reasoning' | 'result' | 'error' | 'done'
 
+/** 匹配后的 AI frame 荷载（已校验 sessionId / turnId） */
 type AiAgentFramePayload = Readonly<{
   sessionId: string
   turnId: string
   frame: AiAgentFrame
 }>
 
+/** AI frame 基本结构 */
 type AiAgentFrame = Readonly<{
   type: string
   data?: unknown
 }>
 
+/** 收集器的构造输入 */
 type TurnEventCollectorInput = Readonly<{
   input: AiAgentStreamTurnInput
   source: AiAgentAppSseEventSource
   timeoutMs?: number
 }>
 
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · 公共接口
+// ═══════════════════════════════════════════════════════════════
+
+/** AI turn 事件收集器接口 */
 export type TurnEventCollector = Readonly<{
   result: Promise<AiAgentStreamTurnResult>
   close(): void
 }>
 
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 工厂函数 — 创建收集器实例
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 创建 turn 事件收集器。
+ *
+ * 内部流程：
+ *   1. 注册 llm-frame 事件监听
+ *   2. 设置超时定时器（默认 5 分钟）
+ *   3. 设置 AbortSignal 监听
+ *   4. 返回 { result: Promise, close() } 接口
+ *
+ * 每收到一个匹配的 AI frame，委托 TurnEventState 处理。
+ * 完成后自动清理监听器和定时器。
+ */
 export function createTurnEventCollector(options: TurnEventCollectorInput): TurnEventCollector {
   const { input, source } = options
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
@@ -90,11 +139,23 @@ export function createTurnEventCollector(options: TurnEventCollectorInput): Turn
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 4 节 · 内部状态机 — 事件聚合与结果构造
+// ═══════════════════════════════════════════════════════════════
+
+/** Promise sink：完成后注入 resolve/reject */
 type TurnEventStateSink = Readonly<{
   resolve(result: AiAgentStreamTurnResult): void
   reject(error: unknown): void
 }>
 
+/**
+ * Turn 事件状态机。
+ *
+ * 聚合来自 SSE 流的 delta / reasoning / result / error / done 事件，
+ * 维护 text、reasoning 和 toolCalls 的累积状态。
+ * settled 标记防止重复完成。
+ */
 class TurnEventState {
   private text = ''
   private reasoning: string | undefined
@@ -104,10 +165,12 @@ class TurnEventState {
 
   public constructor(private readonly input: AiAgentStreamTurnInput) {}
 
+  /** 绑定 Promise sink（构造函数内部调用） */
   public bind(sink: TurnEventStateSink): void {
     this.sink = sink
   }
 
+  /** 处理单个 AI frame 事件 */
   public handle(kind: AiTurnEventKind, event: AiAgentAppSseEvent, frame: AiAgentFrame): void {
     if (this.settled) return
     this.input.onStreamEvent?.(toStreamEvent(this.input, kind, frame))
@@ -133,16 +196,19 @@ class TurnEventState {
     }
   }
 
+  /** 失败处理（超时 / error / abort） */
   public fail(error: unknown): void {
     if (this.settled) return
     this.settled = true
     this.sink?.reject(error)
   }
 
+  /** 主动关闭（不再接收事件） */
   public close(): void {
     this.settled = true
   }
 
+  /** 追加文本增量 */
   private appendDelta(data: unknown): void {
     const delta = readFrameText(data, 'delta')
     if (delta === '') return
@@ -150,6 +216,7 @@ class TurnEventState {
     this.input.onDelta?.(delta)
   }
 
+  /** 追加推理过程增量 */
   private appendReasoning(data: unknown): void {
     const reasoning = readFrameText(data, 'reasoning') || readFrameText(data, 'delta')
     if (reasoning === '') return
@@ -157,6 +224,7 @@ class TurnEventState {
     this.input.onReasoning?.(reasoning)
   }
 
+  /** 应用最终结果（覆盖累积的 text/reasoning/toolCalls） */
   private applyResult(data: Readonly<Record<string, unknown>>): void {
     if (typeof data['text'] === 'string') this.text = data['text']
     if (typeof data['reasoning'] === 'string') this.reasoning = data['reasoning']
@@ -164,6 +232,7 @@ class TurnEventState {
     if (toolCalls !== null) this.toolCalls = toolCalls
   }
 
+  /** 完成收集：构造 AiAgentStreamTurnResult 并 resolve */
   private complete(): void {
     if (this.settled) return
     this.settled = true
@@ -175,6 +244,11 @@ class TurnEventState {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 5 节 · SSE 事件解析与规范化
+// ═══════════════════════════════════════════════════════════════
+
+/** 读取并校验匹配的 AI frame：校验事件名、sessionId、turnId 和 frame 结构 */
 function readMatchingAiAgentFrame(
   event: AiAgentAppSseEvent,
   input: AiAgentStreamTurnInput,
@@ -198,6 +272,7 @@ function readMatchingAiAgentFrame(
   }
 }
 
+/** 根据 frame.type 推导事件类型 */
 function toTurnEventKind(frame: AiAgentFrame): AiTurnEventKind {
   if (frame.type === 'error') return 'error'
   if (frame.type === 'done') return 'done'
@@ -208,6 +283,7 @@ function toTurnEventKind(frame: AiAgentFrame): AiTurnEventKind {
   return 'delta'
 }
 
+/** 构造 AiAgentStreamEvent（用于 onStreamEvent 回调） */
 function toStreamEvent(
   input: AiAgentStreamTurnInput,
   kind: AiTurnEventKind,
@@ -227,6 +303,7 @@ function toStreamEvent(
   }
 }
 
+/** 格式化 turn 错误消息（提取 code / message） */
 function formatTurnEventError(data: unknown): string {
   if (typeof data === 'string' && data.trim() !== '') return data
   if (!isRecord(data)) return 'AI turn failed'
@@ -239,11 +316,13 @@ function formatTurnEventError(data: unknown): string {
   return code === '' ? message : `${message} (code=${code})`
 }
 
+/** 从 frame data 中安全读取文本字符串 */
 function readFrameText(data: unknown, key: string): string {
   if (isRecord(data) && typeof data[key] === 'string') return data[key]
   return typeof data === 'string' ? data : ''
 }
 
+/** 从结果中规范化 tool_calls 数组 */
 function readToolCalls(value: unknown): readonly AiAgentTransportToolCall[] | null {
   if (!Array.isArray(value)) return null
   return value
@@ -251,14 +330,15 @@ function readToolCalls(value: unknown): readonly AiAgentTransportToolCall[] | nu
     .filter((call): call is AiAgentTransportToolCall => call !== null)
 }
 
+/**
+ * 规范化单条 tool_call。
+ * 要求：function.name 非空，id 非空（对齐 OpenAI tool_call 规范）。
+ * 不合规的 tool_call 被丢弃（后端不生成 id 视为不兼容格式）。
+ */
 function normalizeToolCall(value: unknown): AiAgentTransportToolCall | null {
   if (!isRecord(value)) return null
   const fn = isRecord(value['function']) ? value['function'] : null
   if (fn === null || typeof fn['name'] !== 'string' || fn['name'].trim() === '') return null
-  // AiAgentTransportToolCall.id is required per OpenAI tool_call spec.
-  // Backends that produce tool calls without ids are non-conformant;
-  // the collector treats these as malformed and discards them rather
-  // than silently fabricating ids.
   if (typeof value['id'] !== 'string' || value['id'].trim().length === 0) return null
   const rawArguments = fn['arguments']
   return {

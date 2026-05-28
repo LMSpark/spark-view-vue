@@ -1,25 +1,34 @@
 /**
- * ┌─────────────────────────────────────────────────────────────────────────────┐
- * │  AI HOST · 工具循环执行器                                                     │
- * │  Tool Loop Runner                                                            │
- * │                                                                              │
- * │  本模块是 AI Host 的核心编排引擎，负责"用户消息 → AI 推理 → 工具调用"           │
- * │  的完整闭环。每个 turn 内可执行多轮（round）工具调用，直到：                     │
- * │    · LLM 不再返回工具调用（自然结束）                                          │
- * │    · 业务生命周期回调返回 complete/abort（业务主动终止）                        │
- * │    · 达到 maxToolRounds 上限（安全阀）                                         │
- * │                                                                              │
- * │  单轮执行流程：                                                               │
- * │    1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 描述 + 知识快照）│
- * │    2. 提取最新用户消息 → 发送给 LLM（turnCallbacks.executeTurn）              │
- * │    3. LLM 返回文本 + 工具调用列表                                              │
- * │    4. 依次执行工具调用（toolCallExecutor.execute）                             │
- * │    5. 将 assistant(tool_calls) + tool 结果 append 到后端 V4 会话                │
- * │    6. 检查生命周期指令：continue → 下一轮；complete/abort → 结束              │
- * │    7. 结束时：发送最终消息 → appendMessages → stopSession → 释放实例           │
- * │                                                                              │
- * │  调用方：business-session.ts（AiAgentMessageSender.send）                       │
- * └─────────────────────────────────────────────────────────────────────────────┘
+ * ═══════════════════════════════════════════════════════════════
+ * agent/tool-loop/tool-loop-runner.ts — AI Host 工具循环执行器
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】Agent 层的核心编排引擎。负责"用户消息 → AI 推理 →
+ *   工具调用 → AI 再推理"的完整闭环。每个 turn 内可执行多轮（round）
+ *   工具调用，直到 LLM 自然结束、业务终止或达到上限。
+ *
+ * 【核心类】
+ *   AiAgentToolLoopRunner — 工具循环执行器
+ *     ├─ runToolLoop()              — 主循环入口
+ *     ├─ completeLifecycleDirective  — 生命周期终止流程
+ *     └─ appendMessagesToTransport   — 消息同步到传输层
+ *
+ * 【单轮执行流程】
+ *   1. 构建系统提示词（业务 systemPrompt + 请求 systemPrompt + 知识快照）
+ *   2. 提取最新用户消息 → 发送给 LLM（turnCallbacks.executeTurn）
+ *   3. LLM 返回文本 + 工具调用列表
+ *   4. 依次执行工具调用（toolCallExecutor.execute）
+ *   5. 将 assistant(tool_calls) + tool 结果 append 到后端会话
+ *   6. 检查生命周期指令：continue → 下一轮；complete/abort → 结束
+ *   7. 结束时：发送最终消息 → appendMessages → stopSession → 释放实例
+ *
+ * 【终止条件】
+ *   · LLM 不再返回工具调用（自然结束）
+ *   · 业务生命周期回调返回 complete/abort（业务主动终止）
+ *   · 达到 maxToolRounds 上限（安全阀）
+ *
+ * 【消费方】business-session.ts（AiAgentMessageSender.send）
+ * ═══════════════════════════════════════════════════════════════
  */
 
 import type { AiJsonParams } from '../../json'
@@ -54,9 +63,7 @@ function toAiAgentTransportTools(
   }))
 }
 
-/* -------------------------------------------------------------------------------
- * 一、输入/输出类型
- * ----------------------------------------------------------------------------- */
+/* ── 输入/输出类型 ──────────────────────────────────────────── */
 
 /** 工具循环的输入参数 */
 type AiAgentToolLoopInput<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
@@ -68,9 +75,7 @@ type AiAgentToolLoopInput<TInput extends AiJsonParams = AiJsonParams> = Readonly
   clearSelected: () => void
 }>
 
-/* -------------------------------------------------------------------------------
- * 二、工具循环执行器
- * ----------------------------------------------------------------------------- */
+/* ── 工具循环执行器 ────────────────────────────────────────── */
 
 export class AiAgentToolLoopRunner {
   private readonly toolCallExecutor = new AiAgentToolCallExecutor()
@@ -339,9 +344,7 @@ export class AiAgentToolLoopRunner {
   }
 }
 
-/* -------------------------------------------------------------------------------
- * 三、内部辅助类型与函数
- * ----------------------------------------------------------------------------- */
+/* ── 内部辅助类型 ──────────────────────────────────────────── */
 
 /** completeLifecycleDirective 方法的输入参数 */
 type CompleteLifecycleDirectiveInput<TInput extends AiJsonParams = AiJsonParams> = Readonly<{

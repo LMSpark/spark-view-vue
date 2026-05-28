@@ -7,7 +7,7 @@
 
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config'
+import type { PageModelFactoryLike } from '@spark-view/spark-page-config'
 import type { NavNode, AppNavRoot } from '../navigation/nav-model'
 import { createLogger } from '../logger'
 import { readProperty } from '@spark-view/spark-utils/internal'
@@ -39,8 +39,8 @@ export type DynamicRouterOptions = {
   /** Vue Router 实例 */
   router: Router
 
-  /** 配置加载器 */
-  configLoader: BasePageConfigLoader
+  /** PageModel 工厂 */
+  pageModelFactory: PageModelFactoryLike
 
   /**
    * 动态页面组件（必需）
@@ -49,7 +49,7 @@ export type DynamicRouterOptions = {
    * @example
    * ```typescript
    * import { PageRenderer } from '@spark-view/spark-component'
-   * const options = { router, configLoader, pageComponent: PageRenderer }
+   * const options = { router, pageModelFactory, pageComponent: PageRenderer }
    * ```
    */
   pageComponent: Component
@@ -117,7 +117,7 @@ type RouteRegistrationOptions = {
  */
 export class DynamicRouter {
   private router: Router
-  private configLoader: BasePageConfigLoader
+  private pageModelFactory: PageModelFactoryLike
   private pageComponent: Component
   private registeredRoutes: Set<string> = new Set()
   /** path → Component 映射（system-page 路由使用） */
@@ -145,7 +145,7 @@ export class DynamicRouter {
 
   constructor(options: DynamicRouterOptions) {
     this.router = options.router
-    this.configLoader = options.configLoader
+    this.pageModelFactory = options.pageModelFactory
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pageComponent 结构可缺失
     if (options.pageComponent === undefined || options.pageComponent === null) {
@@ -259,7 +259,7 @@ export class DynamicRouter {
       path: routePath,
       name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
       component: CrossProjectRefPage,
-      props: createCrossProjectRefRouteProps(this.configLoader),
+      props: createCrossProjectRefRouteProps(this.pageModelFactory),
       meta: {
         type: 'cross-project-ref',
         crossProjectRefHost: true,
@@ -475,7 +475,7 @@ export class DynamicRouter {
               path: routePath,
               name: routeName,
               component: CrossProjectRefPage,
-              props: createCrossProjectRefRouteProps(this.configLoader),
+              props: createCrossProjectRefRouteProps(this.pageModelFactory),
               meta: {
                 type: 'cross-project-ref',
                 pageId,
@@ -556,7 +556,10 @@ export class DynamicRouter {
           path: routePath,
           name: routeName,
           component: this.pageComponent,
-          props: { configLoader: this.configLoader, pageId },
+          props: {
+            pageModel: this.pageModelFactory.create(pageId),
+            pageId,
+          },
           meta: {
             type: 'config-page',
             pageId,
@@ -645,4 +648,3 @@ export class DynamicRouter {
 export function createDynamicRouter(options: DynamicRouterOptions): DynamicRouter {
   return new DynamicRouter(options)
 }
-

@@ -191,9 +191,10 @@ export class TransformedFileLoader<T> {
 }
 
 export class FileLoader {
-  private opts: Required<Omit<FileLoadOptions, 'getHeaders'>> & Pick<FileLoadOptions, 'getHeaders'>
+  private opts: Required<Omit<FileLoadOptions, 'getHeaders' | 'request'>> & Pick<FileLoadOptions, 'getHeaders' | 'request'>
   private memCache = new Map<string, CacheEntry<unknown>>()
   private request: HttpClientBase
+  private readonly usesExternalRequest: boolean
   private storage: Storage | null
   private listeners: FileLoaderListeners = {
     'file-loaded': [],
@@ -211,9 +212,13 @@ export class FileLoader {
       expirationTiers: DEFAULT_EXPIRATION_TIERS,
       defaultExpirationLevel: 3,  // 默认15天
       maxCacheSize: 100,
+      maxStorageBytes: Infinity,
+      maxStorageTotalBytes: Infinity,
+      maxEntryStorageBytes: Infinity,
       ...options
     }
-    this.request = createRequest({
+    this.usesExternalRequest = options.request !== undefined
+    this.request = options.request ?? createRequest({
       baseURL: this.opts.baseUrl,
       timeout: this.opts.timeout,
       headers: this.opts.headers
@@ -479,6 +484,14 @@ export class FileLoader {
     return knownTimestamp ? { timestamp: knownTimestamp } : {}
   }
 
+  private fileRequestUrl(fileName: string): string {
+    if (!this.usesExternalRequest) return fileName
+    const baseUrl = this.opts.baseUrl.replace(/\/+$/, '')
+    if (baseUrl === '') return fileName
+    const path = fileName.startsWith('/') ? fileName : `/${fileName}`
+    return `${baseUrl}${path}`
+  }
+
   /** 加载原始文件内容（仅维护 string 缓存，不做 JSON.parse 或 transform） */
   private async loadRaw(fileName: string, forceRefresh: boolean, expirationLevel?: number): Promise<FileLoadResult<string>> {
     try {
@@ -490,7 +503,7 @@ export class FileLoader {
       const params = FileLoader.timestampParams(knownTimestamp)
 
       const response = await this.request.requestFull({
-        url: fileName,
+        url: this.fileRequestUrl(fileName),
         method: 'GET',
         params,
         meta: {
@@ -568,7 +581,14 @@ export class FileLoader {
     } else {
       try {
         const raw = this.storage?.getItem(k)
-        entry = raw ? this.parseCacheEntry(raw) : null
+        if (raw) {
+          entry = this.parseCacheEntry(raw)
+          if (entry === null) {
+            this.storageRemove(k)
+            logger.debug('缓存项格式无效，已从本地存储删除', { key })
+            return null
+          }
+        }
       } catch {
         // 损坏的缓存项：清理后返回 null，避免反复 parse 失败
         try { this.storage?.removeItem(k) } catch { /* ignore removeItem failure */ }
@@ -681,6 +701,10 @@ export class FileLoader {
     const recoverQuota = options.recoverQuota ?? true
     const reportFailureAsError = options.reportFailureAsError ?? true
     const payload = JSON.stringify(entry)
+    if (this.shouldSkipPersistentWrite(key, payload)) return
+    if (recoverQuota) {
+      this.enforceStorageByteBudget(key, payload)
+    }
     let attempt = 0
 
     while (attempt <= 20) {
@@ -706,17 +730,21 @@ export class FileLoader {
           continue
         }
 
-        // 先尝试当前 prefix 内驱逐，失败则升级为跨租户全局驱逐
-        let evictedKey = this.evictLeastRecentlyUsedStorageEntry(key)
-        evictedKey ??= this.evictGlobalStorageEntry(key)
-        if (!evictedKey) {
+        // 先尝试当前 prefix 内按本次写入大小批量驱逐，失败则升级为跨租户全局驱逐。
+        let eviction = this.evictLeastRecentlyUsedStorageEntriesForWrite(key, payload, false)
+        if (eviction.count === 0) {
+          eviction = this.evictLeastRecentlyUsedStorageEntriesForWrite(key, payload, true)
+        }
+        if (eviction.count === 0) {
           logger.error('缓存写入失败（配额已满且无可驱逐项）', { key, error: e })
           return
         }
 
         logger.debug('缓存配额已满，驱逐最旧缓存后重试写入', {
           key,
-          evictedKey,
+          evictedKey: eviction.firstKey,
+          evictedCount: eviction.count,
+          freedBytes: eviction.freedBytes,
           attempt,
         })
         attempt++
@@ -742,15 +770,94 @@ export class FileLoader {
     return error['name'] === 'QuotaExceededError' || error['code'] === 22 || error['code'] === 1014
   }
 
-  private evictLeastRecentlyUsedStorageEntry(protectedKey: string): string | null {
-    if (this.opts.storage === 'memory') return null
-    const storage = this.storage
-    if (!storage) return null
+  private estimateStorageBytes(key: string, value: string): number {
+    return (key.length + value.length) * 2
+  }
 
-    const prefix = this.opts.cachePrefix
+  private shouldSkipPersistentWrite(key: string, payload: string): boolean {
+    if (this.opts.storage === 'memory' || !Number.isFinite(this.opts.maxEntryStorageBytes)) return false
+    const bytes = this.estimateStorageBytes(key, payload)
+    if (bytes <= this.opts.maxEntryStorageBytes) return false
+    return true
+  }
+
+  private enforceStorageByteBudget(protectedKey: string, protectedPayload: string): void {
+    if (this.opts.storage === 'memory') return
+    const prefix = this.resolveStorageBudgetPrefix(protectedKey)
+    this.enforceStorageScopedBudget(protectedKey, protectedPayload, prefix, this.opts.maxStorageBytes, false)
+    this.enforceStorageScopedBudget(protectedKey, protectedPayload, prefix, this.opts.maxStorageTotalBytes, true)
+  }
+
+  private enforceStorageScopedBudget(
+    protectedKey: string,
+    protectedPayload: string,
+    evictionPrefix: string,
+    maxBytes: number,
+    countAllStorageKeys: boolean,
+  ): void {
+    if (!Number.isFinite(maxBytes)) return
+    const storage = this.storage
+    if (!storage) return
+
+    const protectedBytes = this.estimateStorageBytes(protectedKey, protectedPayload)
+    const entries: Array<{ key: string; lastAccess: number; bytes: number }> = []
+    let totalBytes = 0
+
+    for (let i = 0; i < storage.length; i++) {
+      const key = storage.key(i)
+      if (key === null || key === protectedKey) continue
+      try {
+        const raw = storage.getItem(key)
+        if (!raw) continue
+        const bytes = this.estimateStorageBytes(key, raw)
+        const isEvictionCandidate = key.startsWith(evictionPrefix)
+        if (countAllStorageKeys || isEvictionCandidate) totalBytes += bytes
+        if (!isEvictionCandidate) continue
+        const entry = this.parseCacheEntry(raw)
+        entries.push({ key, bytes, lastAccess: entry?.lastAccess ?? entry?.cachedAt ?? 0 })
+      } catch {
+        const raw = storage.getItem(key) ?? ''
+        const bytes = this.estimateStorageBytes(key, raw)
+        const isEvictionCandidate = key.startsWith(evictionPrefix)
+        if (countAllStorageKeys || isEvictionCandidate) totalBytes += bytes
+        if (isEvictionCandidate) entries.push({ key, bytes, lastAccess: 0 })
+      }
+    }
+
+    let bytesToFree = totalBytes + protectedBytes - maxBytes
+    if (bytesToFree <= 0) return
+    bytesToFree += Math.min(maxBytes * 0.2, 512 * 1024)
+
+    entries.sort((a, b) => a.lastAccess - b.lastAccess)
+    for (const entry of entries) {
+      if (bytesToFree <= 0) break
+      try {
+        storage.removeItem(entry.key)
+        bytesToFree -= entry.bytes
+      } catch {
+        // ignore individual remove failures; quota recovery can still try later.
+      }
+    }
+  }
+
+  private resolveStorageBudgetPrefix(protectedKey: string): string {
+    return protectedKey.startsWith('spark_page_') ? 'spark_page_' : this.opts.cachePrefix
+  }
+
+  private evictLeastRecentlyUsedStorageEntriesForWrite(
+    protectedKey: string,
+    protectedPayload: string,
+    global: boolean,
+  ): { firstKey: string | null; count: number; freedBytes: number } {
+    if (this.opts.storage === 'memory') return { firstKey: null, count: 0, freedBytes: 0 }
+    const storage = this.storage
+    if (!storage) return { firstKey: null, count: 0, freedBytes: 0 }
+
+    const prefix = global ? 'spark_page_' : this.opts.cachePrefix
+    const minBytes = Math.max(this.estimateStorageBytes(protectedKey, protectedPayload), 256 * 1024)
     // 配额不足时按本地 LRU 驱逐。
     // 页面四文件的 sourceTimestamp 可能很旧但仍被频繁访问，不能因此优先清掉。
-    const entries: Array<{ key: string; lastAccess: number }> = []
+    const entries: Array<{ key: string; lastAccess: number; bytes: number }> = []
 
     for (let i = 0; i < storage.length; i++) {
       const key = storage.key(i)
@@ -758,69 +865,37 @@ export class FileLoader {
       try {
         const raw = storage.getItem(key)
         if (!raw) continue
+        const bytes = this.estimateStorageBytes(key, raw)
         const entry = this.parseCacheEntry(raw)
         if (entry === null) {
-          entries.push({ key, lastAccess: 0 })
+          entries.push({ key, lastAccess: 0, bytes })
           continue
         }
-        entries.push({ key, lastAccess: entry.lastAccess || entry.cachedAt || 0 })
+        entries.push({ key, lastAccess: entry.lastAccess, bytes })
       } catch {
-        entries.push({ key, lastAccess: 0 })
+        const raw = storage.getItem(key) ?? ''
+        entries.push({ key, lastAccess: 0, bytes: this.estimateStorageBytes(key, raw) })
       }
     }
 
-    if (entries.length === 0) return null
+    if (entries.length === 0) return { firstKey: null, count: 0, freedBytes: 0 }
 
     entries.sort((a, b) => a.lastAccess - b.lastAccess)
-    const target = entries[0]
-    if (!target) return null
-    try {
-      storage.removeItem(target.key)
-      return target.key
-    } catch {
-      return null
-    }
-  }
-
-  /** 跨租户全局驱逐：当当前 prefix 下无可驱逐项时，从所有 spark_page_ 缓存中按本地 LRU 驱逐 */
-  private evictGlobalStorageEntry(protectedKey: string): string | null {
-    if (this.opts.storage === 'memory') return null
-    const storage = this.storage
-    if (!storage) return null
-
-    const globalPrefix = 'spark_page_'
-    // 这里同样是 lastAccess/cachedAt 顺序，不是 sourceTimestamp 顺序。
-    // sourceTimestamp 排序属于“文件版本展示”，不属于“前端空间回收”。
-    const entries: Array<{ key: string; lastAccess: number }> = []
-
-    for (let i = 0; i < storage.length; i++) {
-      const key = storage.key(i)
-      if (!key?.startsWith(globalPrefix) || key === protectedKey) continue
+    let firstKey: string | null = null
+    let count = 0
+    let freedBytes = 0
+    for (const entry of entries) {
+      if (freedBytes >= minBytes) break
       try {
-        const raw = storage.getItem(key)
-        if (!raw) continue
-        const entry = this.parseCacheEntry(raw)
-        if (entry === null) {
-          entries.push({ key, lastAccess: 0 })
-          continue
-        }
-        entries.push({ key, lastAccess: entry.lastAccess || entry.cachedAt || 0 })
+        storage.removeItem(entry.key)
+        firstKey ??= entry.key
+        count++
+        freedBytes += entry.bytes
       } catch {
-        entries.push({ key, lastAccess: 0 })
+        // ignore individual remove failures
       }
     }
-
-    if (entries.length === 0) return null
-
-    entries.sort((a, b) => a.lastAccess - b.lastAccess)
-    const target = entries[0]
-    if (!target) return null
-    try {
-      storage.removeItem(target.key)
-      return target.key
-    } catch {
-      return null
-    }
+    return { firstKey, count, freedBytes }
   }
 
   /** 跨租户全局过期清理：清理所有 spark_page_ 前缀下的闲置过期缓存 */
@@ -945,8 +1020,10 @@ export class FileLoader {
       }
     }
 
-    // 如果超出限制，删除最旧的项
-    const excess = entries.length - this.opts.maxCacheSize
+    // 超出 maxCacheSize 时删除最旧的项。预留一个空位给即将写入的新条目，
+    // 避免写后超限触发 QuotaExceededError 重试循环。
+    const limit = Math.max(0, this.opts.maxCacheSize - 1)
+    const excess = entries.length - limit
     if (excess > 0) {
       entries.sort((a, b) => a.lastAccess - b.lastAccess)
       const toRemove = entries.slice(0, excess)

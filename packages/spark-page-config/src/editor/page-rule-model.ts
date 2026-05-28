@@ -22,7 +22,6 @@ export class PageRuleModel {
   }
 
   markDirty(): void {
-    if (this._dirty) return
     this._dirty = true
     this._notify()
   }

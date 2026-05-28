@@ -3,15 +3,7 @@ import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
 import type { AppNavRoot } from '../../navigation/nav-model'
-import { BasePageConfigLoader } from '@spark-view/spark-page-config'
-import type {
-  ConfigLoadResult,
-  PageConfig,
-  PageConfigFileLoadOptions,
-  PageConfigFileName,
-  PageDataConfig,
-  RuleConfig,
-} from '@spark-view/spark-page-config'
+import type { PageModelFactoryLike, PageModelLike } from '@spark-view/spark-page-config'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',
@@ -40,45 +32,22 @@ const PRE_AUTH_NAV: AppNavRoot = {
   ],
 }
 
-class DummyPageConfigLoader extends BasePageConfigLoader {
-  override async loadPageConfig(): Promise<ConfigLoadResult<PageConfig>> {
-    return { success: false }
-  }
-
-  override async loadRule(): Promise<ConfigLoadResult<RuleConfig[]>> {
-    return { success: false }
-  }
-
-  override async loadPageData(): Promise<ConfigLoadResult<PageDataConfig>> {
-    return { success: false }
-  }
-
-  override async loadScript(): Promise<ConfigLoadResult<string>> {
-    return { success: false }
-  }
-
-  override async loadCss(): Promise<ConfigLoadResult<string>> {
-    return { success: false }
-  }
-
-  override async loadPageFileContent(
-    _pageId: string,
-    _filename: PageConfigFileName,
-    _options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
-    return { success: false }
-  }
-
-  override clearCache(): void {
-    return undefined
-  }
-
-  override getCacheStats(): { size: number; keys: string[] } {
-    return { size: 0, keys: [] }
-  }
-}
-
-const DUMMY_CONFIG_LOADER = new DummyPageConfigLoader()
+const DUMMY_PAGE_MODEL_FACTORY = {
+  create(pageId: string): PageModelLike {
+    return {
+      pageId,
+      get isLoaded() { return false },
+      async load() {},
+      toRenderConfig() {
+        throw new Error('Dummy page model should not render in router tests')
+      },
+      getHttpClient: () => undefined,
+    }
+  },
+  clearCache() {},
+  getCacheStats: () => ({ size: 0, keys: [] }),
+  getHttpClient: () => undefined,
+} satisfies PageModelFactoryLike
 
 describe('DynamicRouter unauthorized fallback', () => {
   it('falls back to preAuthNavTree when loadNavigation returns 401', async () => {
@@ -87,7 +56,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: DUMMY_CONFIG_LOADER,
+      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -122,7 +91,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: DUMMY_CONFIG_LOADER,
+      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -146,7 +115,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      configLoader: DUMMY_CONFIG_LOADER,
+      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -155,4 +124,3 @@ describe('DynamicRouter unauthorized fallback', () => {
     await expect(dynamicRouter.registerRoutes()).rejects.toEqual({ status: 401 })
   })
 })
-

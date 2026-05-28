@@ -21,6 +21,9 @@ export {
   AiModulePath,
   AiModulePathParseError,
   AiModulePathSegment,
+  appendAiModulePath,
+  buildAiModulePath,
+  parseAiModulePath,
 } from './protocol/module-path'
 
 export {
@@ -33,6 +36,8 @@ export type {
 } from './protocol/module-operation'
 
 export type {
+  AiModuleFunctionAntiExample,
+  AiModuleFunctionExample,
   AiModuleFunctionFailureMode,
   AiModuleFunctionMetadata,
   AiModuleFunctionResultSchema,
@@ -56,6 +61,7 @@ export type {
 
 export type {
   AiModulePathParseErrorCode,
+  AiModulePathSegmentInput,
 } from './protocol/module-path'
 
 export type {
@@ -72,6 +78,14 @@ export {
 export type {
   ProtocolToolArgs,
 } from './runtime/ai-module-runtime'
+
+export type {
+  AiModuleRuntimeInspectFinding,
+  AiModuleRuntimeInspectLevel,
+  AiModuleRuntimeInspectModule,
+  AiModuleRuntimeInspectReport,
+  AiModuleRuntimeInspectStatus,
+} from './runtime/runtime-inspector'
 
 // ── 3. 知识投影类型 ─────────────────────────────────────────
 export type {

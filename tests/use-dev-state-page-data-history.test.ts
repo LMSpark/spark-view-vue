@@ -1,6 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { effectScope, ref } from 'vue'
-import type { BasePageConfigLoader } from '@spark-view/spark-page-config/editor'
 
 const { httpGet, httpPost, httpPut } = vi.hoisted(() => ({
   httpGet: vi.fn(),
@@ -27,7 +26,7 @@ vi.mock('@spark-view/spark-page-config/editor', async (importOriginal) => {
     return directStatus === status || responseStatus === status
   }
   const unsupported = async () => ({ success: false as const, error: 'unsupported', timestamp: Date.now() })
-  const createTestConfigLoader = (): BasePageConfigLoader => ({
+  const createTestConfigLoader = () => ({
       loadPageConfig: unsupported,
       loadRule: unsupported,
       loadPageData: unsupported,
@@ -56,13 +55,13 @@ vi.mock('@spark-view/spark-page-config/editor', async (importOriginal) => {
       clearCache: vi.fn(),
       getCacheStats: () => ({ size: 0, keys: [] }),
       getHttpClient: () => undefined,
-    }) as BasePageConfigLoader
+    }) 
   return {
     ...actual,
     createPageEditor: vi.fn((options: Parameters<typeof actual.createPageEditor>[0]) => actual.createPageEditor({
       ...options,
       createConfigLoader: () => createTestConfigLoader(),
-    })),
+    } as Parameters<typeof actual.createPageEditor>[0] & { createConfigLoader: () => ReturnType<typeof createTestConfigLoader> })),
   }
 })
 
@@ -71,7 +70,7 @@ vi.mock('@/services/api-paths', () => ({
   getNavApi: () => '/api/navigation',
 }))
 
-import { canonicalizePageDataJson } from '@spark-view/spark-page-config/editor'
+import { canonicalizePageDataJson } from '../packages/spark-page-config/src/design/page-data-canonicalize'
 import { PAGE_CONFIG_FILE_NAMES, useDevState, type PageConfigFileName } from '../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
@@ -238,7 +237,7 @@ describe('useDevState documents SSOT', () => {
 
   it('rule.json setText + undo reflects in the live SparkNodeTree', () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
 
     state.getActivePage()!.rule.setText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
     state.getActivePage()!.rule.setText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
@@ -254,7 +253,7 @@ describe('useDevState documents SSOT', () => {
 
   it('script.js undo stays in sync with the page model', () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
 
     state.getActivePage()!.script.setText('console.log("alpha")\n')
     state.getActivePage()!.script.setText('console.log("beta")\n')
@@ -266,7 +265,7 @@ describe('useDevState documents SSOT', () => {
 
   it('style.css undo stays in sync with the page model', () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
 
     state.getActivePage()!.style.setText('.page { color: red; }\n')
     state.getActivePage()!.style.setText('.page { color: blue; }\n')
@@ -278,7 +277,7 @@ describe('useDevState documents SSOT', () => {
 
   it('savePageFile uploads current text and clears dirty without touching history', async () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
     state.getActivePage()!.dataSet.setText(createPageDataText('Gamma', true))
 
     expect(state.isDocumentDirty('pagedata.json')).toBe(true)
@@ -300,7 +299,7 @@ describe('useDevState documents SSOT', () => {
 
   it('dev file editor text is a read-only projection of the model (no drafts)', () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
     const initial = createPageDataText('Alpha', true)
 
     httpGet.mockImplementation(async (url: string) => {
@@ -335,7 +334,7 @@ describe('useDevState documents SSOT', () => {
 
   it('designer-level mutate reflects in text and is undoable', async () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
     state.getActivePage()!.dataSet.setText(createPageDataText('Live', true))
 
     await state.editDataSet((tool) => {
@@ -402,7 +401,7 @@ describe('useDevState documents SSOT', () => {
 
   it('pageDataDirty mirrors pagedata document dirty flag', () => {
     const state = useDevState()
-    state.activePageId.value = 'orders-page'
+    state.selectPage('orders-page')
     expect(state.pageDataDirty.value).toBe(false)
     state.getActivePage()!.dataSet.setText(createPageDataText('Dirty', true))
     expect(state.pageDataDirty.value).toBe(true)

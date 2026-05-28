@@ -1,6 +1,37 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * modules/internal/protocol-tool-generator.ts — 固定协议工具规约生成器
+ * ═══════════════════════════════════════════════════════════════
+ *
+ * 【架构定位】modules 层的 OpenAI function tool 规约生成入口。
+ *   读取已注册的 AiModule 图，为 LLM 生成 6 个固定协议工具的 JSON Schema 规约。
+ *   每个工具对应一类协议操作：查询、指南、查找、属性读写、函数调用、人工提问。
+ *
+ * 【6 个固定协议工具】
+ *   module_query   — 查询已注册的模块目录（支持 kind / parentKind / keyword 过滤）
+ *   module_guide   — 读取单个模块或函数的详细指南
+ *   module_find    — 查找或列出模块实例（需提供具体父路径）
+ *   module_attr    — 读写模块的声明属性
+ *   module_call    — 调用模块的声明函数
+ *   human_question — 遇到不确定信息时向用户发问（暂停工具循环）
+ *
+ * 【数据流】
+ *   1. AiModuleRuntime.getTools() → ProtocolToolGenerator.generate()
+ *   2. 返回 OpenAI 格式的工具规约数组
+ *   3. Host 层转发给 LLM → LLM 选择工具调用 → ProtocolToolRouter 路由执行
+ *
+ * 【消费方】AiModuleRuntime（通过 getTools() 暴露），间接被 Host 层 tool-loop-runner 消费
+ * ═══════════════════════════════════════════════════════════════
+ */
+
 import type { AiJsonSchemaObject } from '../../json'
 import type { AiModuleRegistry } from './ai-module-registry'
 
+// ═══════════════════════════════════════════════════════════════
+// 第 1 节 · 工具规约类型与常量
+// ═══════════════════════════════════════════════════════════════
+
+/** 单个 OpenAI function tool 的完整规约 */
 export type AiModuleToolSpec = Readonly<{
   type: 'function'
   function: {
@@ -11,6 +42,7 @@ export type AiModuleToolSpec = Readonly<{
   }
 }>
 
+/** 6 个固定协议工具的联合类型 */
 export type ProtocolToolName =
   | 'module_query'
   | 'module_guide'
@@ -19,6 +51,7 @@ export type ProtocolToolName =
   | 'module_call'
   | 'human_question'
 
+/** 工具名称常量映射（冻结对象，避免魔法字符串） */
 export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleQuery: 'module_query'
   moduleGuide: 'module_guide'
@@ -35,11 +68,22 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   humanQuestion: 'human_question',
 })
 
+// ═══════════════════════════════════════════════════════════════
+// 第 2 节 · ProtocolToolGenerator 类
+// ═══════════════════════════════════════════════════════════════
+
+/**
+ * 协议工具规约生成器。
+ *
+ * 从注册表中读取已注册的模块，为 LLM 生成 6 个固定工具的 JSON Schema。
+ * 每个工具的 parameters 字段严格对齐 OpenAI function calling 规范。
+ */
 export class ProtocolToolGenerator {
   public constructor(
     private readonly kinds: AiModuleRegistry,
   ) {}
 
+  /** 生成全部 6 个协议工具的规约数组 */
   public generate(): readonly AiModuleToolSpec[] {
     return [
       this.buildModuleQuery(),
@@ -51,6 +95,7 @@ export class ProtocolToolGenerator {
     ]
   }
 
+  /** module_query — 查询已注册模块目录 */
   private buildModuleQuery(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -79,6 +124,7 @@ export class ProtocolToolGenerator {
     }
   }
 
+  /** module_guide — 读取模块或函数的详细指南 */
   private buildModuleGuide(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -101,6 +147,7 @@ export class ProtocolToolGenerator {
     }
   }
 
+  /** module_find — 查找或列出模块实例 */
   private buildModuleFind(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -127,6 +174,7 @@ export class ProtocolToolGenerator {
     }
   }
 
+  /** module_attr — 读写模块属性 */
   private buildModuleAttr(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -158,6 +206,7 @@ export class ProtocolToolGenerator {
     }
   }
 
+  /** module_call — 调用模块函数 */
   private buildModuleCall(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -185,6 +234,7 @@ export class ProtocolToolGenerator {
     }
   }
 
+  /** human_question — 向用户发问（暂停工具循环、收集缺失事实） */
   private buildHumanQuestion(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -218,6 +268,11 @@ export class ProtocolToolGenerator {
   }
 }
 
+// ═══════════════════════════════════════════════════════════════
+// 第 3 节 · 共享参数 schema 构造器 + 类型守卫
+// ═══════════════════════════════════════════════════════════════
+
+/** 生成 path 参数的 JSON Schema（多个工具复用） */
 function pathProperty(allowRoot = false): AiJsonSchemaObject {
   return {
     type: 'string',
@@ -227,6 +282,7 @@ function pathProperty(allowRoot = false): AiJsonSchemaObject {
   }
 }
 
+/** 生成 instanceQuery 参数的 JSON Schema（module_find 复用） */
 function instanceQueryProperty(): AiJsonSchemaObject {
   return {
     type: 'object',
@@ -246,6 +302,7 @@ function instanceQueryProperty(): AiJsonSchemaObject {
   }
 }
 
+/** 类型守卫：判断字符串是否为合法的协议工具名 */
 export function isProtocolToolName(name: string): name is ProtocolToolName {
   const known: readonly ProtocolToolName[] = Object.values(PROTOCOL_TOOL_NAMES)
   return known.some((candidate) => candidate === name)

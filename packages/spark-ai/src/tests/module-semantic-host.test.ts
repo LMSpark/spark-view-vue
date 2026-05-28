@@ -3,9 +3,11 @@ import { describe, expect, it } from 'vitest'
 import {
   AiAgentScope,
   DefaultAiAgentSessionStore,
+  createAiBusinessKit,
   createAiAgentHost,
   createAiAgentRegistration,
   createAiAgentSessionTranscript,
+  createSimpleInputContract,
   summarizeAiAgentSessionRecord,
   type AiAgentTurnCallbacks,
 } from '../agent'
@@ -160,6 +162,66 @@ describe('AiAgentHost public API', () => {
     })
 
     expect(ensuredAgain.has('taskAssistant')).toBe(true)
+  })
+
+  it('creates business kit registrations and dry-runs without calling LLM', () => {
+    type TicketInput = AiJsonParams & Readonly<{ ticketId: string; message: string }>
+    const inputContract = createSimpleInputContract<TicketInput>({
+      businessId: 'ticket',
+      paramsSchema: paramsSchema({
+        ticketId: stringSchema('工单 ID'),
+        message: stringSchema('用户消息'),
+      }, ['ticketId', 'message']),
+      identityField: 'ticketId',
+      messageField: 'message',
+      systemPrompt: (input) => `当前工单：${input.ticketId}。按固定 module_* 工具协议处理。`,
+    })
+    const kit = createAiBusinessKit<TicketInput>({
+      businessId: 'ticket',
+      name: '工单助手',
+      description: '处理工单。',
+      rootModule: new AiModule({
+        kind: 'ticket',
+        name: '工单',
+        description: '工单根模块',
+        find: (_ctx, childKind, query) => {
+          if (childKind !== 'ticket') return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
+          const id = typeof query['id'] === 'string' ? query['id'] : 'T-1001'
+          return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `工单 ${id}` }])
+        },
+      }),
+      inputContract,
+    })
+    const host = createAiAgentHost({ turnCallbacks: createCallbacks().callbacks })
+      .register('ticketAssistant', kit.registration)
+
+    expect(kit.inspectReport).toMatchObject({ ok: true, rootKinds: ['ticket'] })
+    expect(host.listRegistrations()).toEqual([
+      expect.objectContaining({
+        alias: 'ticketAssistant',
+        moduleId: 'ticket',
+        rootKinds: ['ticket'],
+        status: 'ok',
+      }),
+    ])
+    expect(host.describe('ticketAssistant')).toMatchObject({
+      moduleId: 'ticket',
+      inspectReport: expect.objectContaining({ ok: true }),
+    })
+    expect(host.dryRun('ticketAssistant', {
+      ticketId: 'T-1001',
+      message: '查看状态',
+    })).toMatchObject({
+      ok: true,
+      moduleId: 'ticket',
+      scope: expect.objectContaining({ businessRegistrationId: 'ticket', businessInstanceId: 'T-1001' }),
+      orchestration: expect.objectContaining({
+        userMessage: '查看状态',
+        systemPrompt: expect.stringContaining('T-1001'),
+      }),
+      tools: expect.arrayContaining(['module_query', 'module_call']),
+    })
+    expect(host.unregister('ticketAssistant').has('ticketAssistant')).toBe(false)
   })
 })
 

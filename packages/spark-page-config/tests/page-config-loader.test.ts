@@ -8,8 +8,8 @@
 
 import { describe, it, expect, beforeEach, vi } from 'vitest'
 import { createFileLoader, createRequest, type FileLoadResult } from '@spark-view/spark-utils'
-import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '@spark-view/spark-page-config'
-import type { RuleConfig } from '@spark-view/spark-page-config'
+import { PageConfigFileApi, PageConfigLoader, compileRule, normalizeRuleNode, parsePageData, parseScript, parseCss } from '../src/config'
+import type { RuleConfig } from '../src/config'
 import type { SparkNode } from '@spark-view/spark-data'
 import { DataSet } from '@spark-view/spark-data'
 
@@ -138,6 +138,22 @@ describe('PageConfigLoader', () => {
       expect(r.sourceTimestamp).toBe('1775376073936')
       expect(r.fromCache).toBe(true)
       expect(r.notModified).toBe(true)
+    })
+
+    it('loadRule: 后端版本戳不透明时不使用 Date.now 伪造 timestamp', async () => {
+      const rules = [{ type: 'div', id: 'root' }]
+      mockFileLoader.load.mockResolvedValue({
+        success: true,
+        data: rules,
+        timestamp: 'opaque-version-token',
+        fromCache: false,
+      })
+
+      const r = await loader.loadRule('order-page')
+
+      expect(r.success).toBe(true)
+      expect(r.sourceTimestamp).toBe('opaque-version-token')
+      expect(r.timestamp).toBeUndefined()
     })
 
     it('loadPageData: 成功返回页面数据', async () => {
@@ -299,6 +315,10 @@ describe('PageConfigLoader', () => {
         baseUrl: pagesConfigBaseUrl,
         getHeaders,
       }))
+      const fileLoaderOptions = vi.mocked(createFileLoader).mock.calls.at(-1)?.[0]
+      expect(Object.hasOwn(fileLoaderOptions ?? {}, 'maxStorageBytes')).toBe(false)
+      expect(Object.hasOwn(fileLoaderOptions ?? {}, 'maxStorageTotalBytes')).toBe(false)
+      expect(Object.hasOwn(fileLoaderOptions ?? {}, 'maxEntryStorageBytes')).toBe(false)
       expect(vi.mocked(createRequest)).toHaveBeenCalledWith(expect.objectContaining({
         baseURL: '/api',
       }))

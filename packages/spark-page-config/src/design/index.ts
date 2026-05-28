@@ -2,11 +2,7 @@ export {
   canonicalizeDataSetMetadata,
   canonicalizePageDataJson,
   canonicalizePageDataValue,
-} from './page-file-document'
-
-export type {
-  PageFileLoadState,
-} from './page-file-document'
+} from './page-data-canonicalize'
 
 export type {
   PageDesignEditHost,
@@ -14,12 +10,6 @@ export type {
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
   PageDesignServiceOptions,
-  SparkNodeTreeMethodKey,
-} from './page-edit-session'
-
-export {
-  isPageDesignServiceResult,
-  pageDesignServiceSuccess,
 } from './page-edit-session'
 
 export type {
