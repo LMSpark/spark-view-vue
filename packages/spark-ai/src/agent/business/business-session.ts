@@ -48,6 +48,7 @@ import {
   type AiAgentTaskChatOptions,
 } from './business-task'
 import type { AiAgentOptions } from './host-options'
+import type { AiAgentLifecycleDirective } from './lifecycle-types'
 import type { AiAgentRegistration } from './registration-types'
 import type {
   AiAgentRuntimeContext,
@@ -253,6 +254,19 @@ export class AiAgentSession {
     const registration = this.state.selected?.registration
       ?? this.options.registry.get(this.scope.businessRegistrationId)
     return registration?.sessionStore.getSession(toAiAgentRuntimeScope(this.scope)) ?? null
+  }
+
+  /** 停止当前业务会话：标记 sessionStore，并触发业务结束回调。 */
+  public async stop(reason = 'manual-stop'): Promise<AiAgentSessionRecord | null> {
+    const registration = this.state.selected?.registration ?? this.resolveRegistration()
+    const runtimeContext = toAiAgentRuntimeScope(this.scope)
+    const stopped = registration.sessionStore.stopSession(runtimeContext, reason)
+    if (stopped !== null) {
+      const directive: AiAgentLifecycleDirective = { status: 'abort', reason }
+      await registration.onEndBusinessInstance?.(runtimeContext, directive)
+    }
+    this.state.clearSelected()
+    return stopped
   }
 
   /** 发送消息：提取用户输入 → AI 推理 → 工具调用 */

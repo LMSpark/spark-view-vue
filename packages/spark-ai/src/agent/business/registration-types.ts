@@ -21,6 +21,8 @@ import type { AiAgentSessionStore } from '../session/session-types'
 import type { AiAgentInputContract } from './business-task'
 import type {
   AiAgentAfterFunctionCallOptions,
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
   AiAgentLifecycleDirective,
 } from './lifecycle-types'
 import type { AiAgentRuntimeContext } from './scope-types'
@@ -50,6 +52,13 @@ export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParam
    * 可用于注入当前上下文相关的指引（如当前页面、当前数据源等）。
    */
   systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
+  /**
+   * 工具调用前置处理器——runtime.executeTool 前触发。
+   * 典型用途：人工审批、权限策略、只读/危险操作拦截。reject/abort 不会执行 runtime 工具。
+   */
+  beforeFunctionCall?: (
+    options: AiAgentBeforeFunctionCallOptions,
+  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
   /**
    * 工具调用后置处理器——LLM 每次完成工具调用后触发。
    * 接收本次调用的上下文（工具名称、参数、返回值），返回生命周期指令。
@@ -106,6 +115,10 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
 
   /** 系统提示注入 */
   public readonly systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
+  /** 工具调用前处理 */
+  public readonly beforeFunctionCall?: (
+    options: AiAgentBeforeFunctionCallOptions,
+  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
   /** 工具调用后处理 */
   public readonly afterFunctionCall?: (
     options: AiAgentAfterFunctionCallOptions,
@@ -131,6 +144,7 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
     if (options.inputContract !== undefined) this.inputContract = options.inputContract
     this.sessionStore = options.sessionStore
     if (options.systemPrompt !== undefined) this.systemPrompt = options.systemPrompt
+    if (options.beforeFunctionCall !== undefined) this.beforeFunctionCall = options.beforeFunctionCall
     if (options.afterFunctionCall !== undefined) this.afterFunctionCall = options.afterFunctionCall
     if (options.onStartSession !== undefined) this.onStartSession = options.onStartSession
     if (options.onEndBusinessInstance !== undefined) this.onEndBusinessInstance = options.onEndBusinessInstance

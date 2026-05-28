@@ -41,6 +41,8 @@ import type { AiAgentChatMessage, AiAgentChatRequest } from '../chat/chat-types'
 import type { AiAgentSessionStore } from '../session/session-types'
 import type {
   AiAgentAfterFunctionCallOptions,
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
   AiAgentLifecycleDirective,
 } from './lifecycle-types'
 import { AiAgentRegistration } from './registration-types'
@@ -79,6 +81,9 @@ export type AiAgentDefinition<TInput extends AiJsonParams = AiJsonParams> = Read
   inputContract: AiAgentInputContract<TInput>
   sessionStore: AiAgentSessionStore
   systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
+  beforeFunctionCall?: (
+    options: AiAgentBeforeFunctionCallOptions,
+  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
   afterFunctionCall?: (
     options: AiAgentAfterFunctionCallOptions,
   ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
@@ -162,6 +167,7 @@ export function createAiAgentRegistration<TInput extends AiJsonParams = AiJsonPa
     inputContract: definition.inputContract,
     sessionStore: definition.sessionStore,
     ...(definition.systemPrompt === undefined ? {} : { systemPrompt: definition.systemPrompt }),
+    ...(definition.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: definition.beforeFunctionCall }),
     ...(definition.afterFunctionCall === undefined ? {} : { afterFunctionCall: definition.afterFunctionCall }),
     ...(definition.onStartSession === undefined ? {} : { onStartSession: definition.onStartSession }),
     ...(definition.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: definition.onEndBusinessInstance }),

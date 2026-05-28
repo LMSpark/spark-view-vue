@@ -84,6 +84,9 @@ export type {
 
 export type {
   AiAgentAfterFunctionCallOptions,
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
+  AiAgentBeforeFunctionCallStatus,
   AiAgentLifecycleDirective,
   AiAgentLifecycleStatus,
 } from './business/lifecycle-types'

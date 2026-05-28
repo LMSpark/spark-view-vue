@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'vitest'
+import { describe, expect, it, vi } from 'vitest'
 
 import {
   AiAgentScope,
@@ -9,6 +9,7 @@ import {
   createAiAgentSessionTranscript,
   createSimpleInputContract,
   summarizeAiAgentSessionRecord,
+  type AiAgentRegistrationOptions,
   type AiAgentTurnCallbacks,
 } from '../agent'
 import {
@@ -25,6 +26,11 @@ import {
 } from '../json'
 
 type TaskInput = AiJsonParams & Readonly<{ id: string; message: string }>
+type TaskRegistrationHooks = Readonly<{
+  beforeFunctionCall?: NonNullable<AiAgentRegistrationOptions<TaskInput>['beforeFunctionCall']>
+  afterFunctionCall?: NonNullable<AiAgentRegistrationOptions<TaskInput>['afterFunctionCall']>
+  onEndBusinessInstance?: NonNullable<AiAgentRegistrationOptions<TaskInput>['onEndBusinessInstance']>
+}>
 
 function createRuntime(): AiModuleRuntime {
   const runtime = new AiModuleRuntime()
@@ -57,13 +63,19 @@ function createRuntime(): AiModuleRuntime {
   return runtime
 }
 
-function createRegistration(store = new DefaultAiAgentSessionStore()) {
+function createRegistration(
+  store = new DefaultAiAgentSessionStore(),
+  hooks: TaskRegistrationHooks = {},
+) {
   return createAiAgentRegistration<TaskInput>({
     kindID: 'task',
     name: '任务助手',
     description: '测试任务助手',
     runtime: createRuntime(),
     sessionStore: store,
+    ...(hooks.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: hooks.beforeFunctionCall }),
+    ...(hooks.afterFunctionCall === undefined ? {} : { afterFunctionCall: hooks.afterFunctionCall }),
+    ...(hooks.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: hooks.onEndBusinessInstance }),
     inputContract: {
       paramsSchema: paramsSchema({
         id: stringSchema('任务 ID'),
@@ -252,6 +264,79 @@ describe('AiAgentHost public API', () => {
     })
   })
 
+  it('rejects a tool call in beforeFunctionCall without executing runtime or after hook', async () => {
+    const store = new DefaultAiAgentSessionStore()
+    const beforeFunctionCall = vi.fn<NonNullable<AiAgentRegistrationOptions<TaskInput>['beforeFunctionCall']>>(() => ({
+      status: 'reject',
+      reason: '需要人工审批',
+      fix: '等待用户批准后再执行。',
+    }))
+    const afterFunctionCall = vi.fn<NonNullable<AiAgentRegistrationOptions<TaskInput>['afterFunctionCall']>>(() => ({
+      status: 'continue',
+    }))
+    const host = createAiAgentHost({ turnCallbacks: createCallbacks().callbacks, maxToolRounds: 2 })
+      .register('task', createRegistration(store, { beforeFunctionCall, afterFunctionCall }))
+
+    await host.run('task', { id: 'task-a', message: '执行任务' })
+
+    expect(beforeFunctionCall).toHaveBeenCalledWith(expect.objectContaining({
+      moduleId: 'task',
+      moduleInstanceId: 'task-a',
+      instanceId: 'task-a',
+      toolName: 'module_call',
+      args: expect.objectContaining({
+        functionName: 'fail',
+      }),
+    }))
+    expect(afterFunctionCall).not.toHaveBeenCalled()
+
+    const functionCall = store.listSessions()[0]?.history.find((entry) => entry.kind === 'functionCall')
+    expect(functionCall).toMatchObject({
+      kind: 'functionCall',
+      status: 'failed',
+      error: {
+        code: 'AI_TOOL_REJECTED_BEFORE_EXECUTION',
+        msg: '需要人工审批',
+        fix: '等待用户批准后再执行。',
+      },
+      metadata: {
+        blockedBy: 'beforeFunctionCall',
+        decision: 'reject',
+      },
+    })
+  })
+
+  it('aborts the session when beforeFunctionCall returns abort', async () => {
+    const store = new DefaultAiAgentSessionStore()
+    const onEndBusinessInstance = vi.fn<NonNullable<AiAgentRegistrationOptions<TaskInput>['onEndBusinessInstance']>>()
+    const beforeFunctionCall = vi.fn<NonNullable<AiAgentRegistrationOptions<TaskInput>['beforeFunctionCall']>>(() => ({
+      status: 'abort',
+      reason: '用户取消工具执行',
+      finalAssistantMessage: '已停止本次操作。',
+    }))
+    const host = createAiAgentHost({ turnCallbacks: createCallbacks().callbacks, maxToolRounds: 2 })
+      .register('task', createRegistration(store, { beforeFunctionCall, onEndBusinessInstance }))
+
+    await host.run('task', { id: 'task-a', message: '执行任务' })
+
+    const record = host.listSessions('task')[0]
+    expect(record).toMatchObject({ status: 'Stopped', reason: '用户取消工具执行' })
+    expect(record?.history).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        kind: 'message',
+        role: 'assistant',
+        content: '已停止本次操作。',
+      }),
+    ]))
+    expect(onEndBusinessInstance).toHaveBeenCalledWith(expect.objectContaining({
+      moduleId: 'task',
+      moduleInstanceId: 'task-a',
+    }), expect.objectContaining({
+      status: 'abort',
+      reason: '用户取消工具执行',
+    }))
+  })
+
   it('rejects business kits whose runtime inspect report is not ok', () => {
     expect(() => createAiBusinessKit({
       businessId: 'broken',
@@ -296,16 +381,14 @@ describe('AiAgent session history', () => {
       functionNames: ['module_call', 'module_call'],
     })
 
-    const context = {
-      moduleId: 'task',
-      moduleInstanceId: 'task-a',
-      instanceId: 'task-a',
-    }
-    store.stopSession(context, 'manual-stop')
-    const recordAfterStop = store.getSession(context)
+    expect(host.listSessions('task')).toHaveLength(1)
+    expect(host.listSessions()).toHaveLength(1)
+
+    const recordAfterStop = await second.session.stop('manual-stop')
     const transcript = createAiAgentSessionTranscript(recordAfterStop)
 
     expect(recordAfterStop).toMatchObject({ status: 'Stopped', reason: 'manual-stop' })
+    expect(host.listSessions('task')[0]).toMatchObject({ status: 'Stopped', reason: 'manual-stop' })
     expect(transcript.some((entry) => entry.kind === 'functionCall' && entry.status === 'failed')).toBe(true)
     expect(transcript.some((entry) => entry.kind === 'message' && entry.content === '第二轮')).toBe(true)
   })

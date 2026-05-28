@@ -39,6 +39,7 @@ import type { AiAgentTurnCallbacks } from '../transport/transport-types'
 import type { AiAgentRegistration } from './registration-types'
 import type { AiAgentOptions } from './host-options'
 import type { AiAgentScope } from './scope-types'
+import type { AiAgentSessionRecord } from '../session/session-types'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型 — Host 构造、运行、注册的输入/输出类型
@@ -248,6 +249,21 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
     }
   }
 
+  /** 列出已注册业务的会话记录。传 alias 时只返回该业务，不传则聚合当前 Host 所有业务。 */
+  public listSessions(alias?: string): readonly AiAgentSessionRecord[] {
+    if (alias !== undefined) {
+      return this.requireRegistration(alias).sessionStore.listSessions()
+    }
+
+    const sessions: AiAgentSessionRecord[] = []
+    for (const moduleId of this.state.moduleIdToAlias.keys()) {
+      const registration = this.state.registry.get(moduleId)
+      if (registration === undefined) continue
+      sessions.push(...registration.sessionStore.listSessions())
+    }
+    return sessions.sort(compareSessionsByStartedAt)
+  }
+
   /** 删除一个 alias 及其绑定的业务注册项，主要用于测试、热更新和调试面板。 */
   public unregister(alias: string): AiAgentHost {
     const normalizedAlias = normalizeAlias(alias)
@@ -348,6 +364,19 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
     }
     return options
   }
+
+  private requireRegistration(alias: string): AiAgentRegistration {
+    const normalizedAlias = normalizeAlias(alias)
+    const moduleId = this.state.aliasToModuleId.get(normalizedAlias)
+    if (moduleId === undefined) {
+      throw new Error(`AI host run alias is not registered: ${normalizedAlias}`)
+    }
+    const registration = this.state.registry.get(moduleId)
+    if (registration === undefined) {
+      throw new Error(`AI host business moduleId is not registered: ${moduleId}`)
+    }
+    return registration
+  }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -421,13 +450,18 @@ function diagnosticsFromInspectReport(report: AiModuleRuntimeInspectReport): rea
   }]
 }
 
-/** 类型守卫：判断一个值是否为 AiAgentHost 实例（通过 duck typing 检测四个方法） */
+function compareSessionsByStartedAt(left: AiAgentSessionRecord, right: AiAgentSessionRecord): number {
+  return left.startedAt - right.startedAt
+}
+
+/** 类型守卫：判断一个值是否为 AiAgentHost 实例（通过 duck typing 检测核心方法） */
 function isAiAgentHost(value: unknown): value is AiAgentHost {
   if (!isRecord(value)) return false
   return isCallable(value['register'])
     && isCallable(value['ensure'])
     && isCallable(value['has'])
     && isCallable(value['run'])
+    && isCallable(value['listSessions'])
 }
 
 /** 规范化别名：trim + 禁止首尾空白 */

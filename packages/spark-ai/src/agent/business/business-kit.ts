@@ -18,6 +18,8 @@ import {
 } from './business-task'
 import type {
   AiAgentAfterFunctionCallOptions,
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentBeforeFunctionCallOptions,
   AiAgentLifecycleDirective,
 } from './lifecycle-types'
 import type { AiAgentRegistration } from './registration-types'
@@ -42,6 +44,9 @@ export type CreateSimpleInputContractOptions<TInput extends AiJsonParams = AiJso
 
 export type AiBusinessLifecycleOptions = Readonly<{
   systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
+  beforeFunctionCall?: (
+    options: AiAgentBeforeFunctionCallOptions,
+  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
   afterFunctionCall?: (
     options: AiAgentAfterFunctionCallOptions,
   ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
@@ -126,6 +131,7 @@ export function createAiBusinessKit<TInput extends AiJsonParams = AiJsonParams>(
     inputContract,
     sessionStore: options.sessionStore ?? new DefaultAiAgentSessionStore(),
     ...(lifecycle?.systemPrompt === undefined ? {} : { systemPrompt: lifecycle.systemPrompt }),
+    ...(lifecycle?.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: lifecycle.beforeFunctionCall }),
     ...(lifecycle?.afterFunctionCall === undefined ? {} : { afterFunctionCall: lifecycle.afterFunctionCall }),
     ...(lifecycle?.onStartSession === undefined ? {} : { onStartSession: lifecycle.onStartSession }),
     ...(lifecycle?.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: lifecycle.onEndBusinessInstance }),

@@ -14,7 +14,7 @@ spark-app 和 spark-component 中均无现成的 AI 会话监视 UI 组件。
 
 - **M1（本方案）**：只读 trace panel + 流缓冲（live callbacks）+ 诊断面板（post-completion snapshot）。组件不管理 Host 生命周期，由调用方传入 callbacks 和 sessionRecord。
 - **M2**：增加 runner adapter（start/send/abort UI）+ 附件引用支持。
-- **M3**：等 spark-ai 内核补齐 beforeFunctionCall、session.stop() 后，增加工具审批和多会话管理。
+- **M3**：spark-ai 内核前置能力已补齐 `beforeFunctionCall`、`AiAgentSession.stop(reason)`、`AiAgentHost.listSessions(alias?)`；后续在此基础上增加工具审批和多会话管理 UI。
 
 ### 1.3 关键约束
 
@@ -38,10 +38,11 @@ spark-app 和 spark-component 中均无现成的 AI 会话监视 UI 组件。
 | `host.run()` 内部 `await session.send()`，Promise resolve 时首轮已结束 | `business-session.ts:294-302` | `sessionRecord` 仅在 `host.run()` 返回后可用，诊断面板是"完成后 snapshot" |
 | `onDelta` 签名是 `(delta: string)`，无 turnId | `chat-types.ts` | turn 归属靠 `appendEvent` 从 `event.scope.turnId` 记录 activeTurnId |
 | `onStreamEvent` 签名是 `(event: AiAgentStreamEvent)`，`event.scope.turnId` 存 turnId | `chat-types.ts` | `appendEvent` 是唯一能获取 turnId 的入口 |
-| `afterFunctionCall` 在 `runtime.executeTool()` **之后**执行 | `tool-call-executor.ts:142→179` | M1 不做执行前审批，工具卡片展示已完成结果 |
-| 不存在 `beforeFunctionCall` 钩子 | 全代码搜索零结果 | 审批需等 spark-ai 内核先补齐 |
-| `AbortController.abort()` 导致 tool loop `return`，但**不调用** `stopSession()` | `tool-loop-runner.ts:132-133` | UI 显示"本地已中断"，标注 `abort ≠ session stopped` |
-| `AiAgentSession` 没有 `stop()` 方法 | `business-session.ts:225-275` | 无法从外部正确停止会话 |
+| `beforeFunctionCall` 在 `runtime.executeTool()` **之前**执行 | `tool-call-executor.ts` | M3 审批只能接这里；reject/abort 不执行 runtime 工具 |
+| `afterFunctionCall` 在 `runtime.executeTool()` **之后**执行 | `tool-call-executor.ts` | M1 只展示已完成工具结果，业务后置生命周期仍接这里 |
+| `AbortController.abort()` 导致 tool loop `return`，但**不调用** `stopSession()` | `tool-loop-runner.ts` | UI 显示"本地已中断"；需要正式停止时调用 `AiAgentSession.stop(reason)` |
+| `AiAgentSession.stop(reason)` 已标记 sessionStore 并触发 `onEndBusinessInstance` | `business-session.ts` | 外部无 UI 场景也能正确停止会话 |
+| `AiAgentHost.listSessions(alias?)` 已聚合暴露 sessionStore 会话记录 | `ai-host.ts` | 多会话发现不需要组件绕进 store |
 | `AiAgentChatMessage.content` 是 `string` | `chat-types.ts` | 多模态仅文本引用（URL/文件名），base64 不进 historyMsgs |
 | `DefaultAiAgentSessionStore` 内部用 `moduleId + "\0" + moduleInstanceId` 做 key | `default-session-store.ts` | 这是实现细节，M1 不暴露为公共 API；组件内部用 `{ moduleId, moduleInstanceId }` 对 |
 
@@ -1034,12 +1035,19 @@ pnpm run lint
 pnpm exec vitest run tests/page-design-ai-runner.test.ts tests/dev-system-header-save.test.ts tests/use-dev-state-page-data-history.test.ts
 ```
 
-### M3 计划（依赖 spark-ai 内核补齐）
+### M3 状态（spark-ai 内核前置切片已落地）
 
-- `beforeFunctionCall` 钩子 → 执行前工具审批
-- `AiAgentSession.stop(reason)` → 正确的会话停止
-- `sessionStore.listSessions()` 暴露 → 多会话发现
-- `AiSessionRunner` / `AiSessionMonitorEntry` 在此时正式导出为公共 API
+当前分支已完成 M3-0 内核前置能力：
+
+- `beforeFunctionCall` 钩子：在 `runtime.executeTool()` 前执行；`allow` 继续执行，`reject` 回灌失败 tool result 但不中止 turn，`abort` 进入生命周期终止流程。
+- `AiAgentSession.stop(reason)`：外部无 UI 场景也能停止当前业务会话，写入 `sessionStore.stopSession()` 并触发 `onEndBusinessInstance`。
+- `AiAgentHost.listSessions(alias?)`：Host 层直接暴露会话发现；传 alias 返回单业务会话，不传则聚合当前 Host 业务会话。
+
+尚未进入 UI 开发的 M3 功能：
+
+- 工具审批 UI 与 pending approval 状态编排。
+- 多会话管理 UI。
+- `AiSessionRunner` / `AiSessionMonitorEntry` 是否正式导出为公共 API 的最终命名与契约冻结。
 
 ---
 

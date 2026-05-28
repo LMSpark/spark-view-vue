@@ -16,12 +16,13 @@
  *   1. 从 transport tool_call 提取 function.name
  *   2. 校验固定 toolName（resolveToolName）
  *   3. 解析 JSON 参数字符串 → Record<string, AiJsonValue>
- *   4. 调用 registration.runtime.executeTool 执行路由
- *   5. 将 AiModuleResult 转换为 AiAgentFunctionCallResult
- *   6. 写入 sessionStore（appendFunctionCall）
- *   7. 调用业务方 afterFunctionCall 生命周期钩子
- *   8. 发送诊断事件（emitToolResultEvent）+ 业务回调（onToolCall）
- *   9. 返回 toolMessage（role: 'tool'）和生命周期指令
+ *   4. 调用 registration.beforeFunctionCall 做执行前策略裁决
+ *   5. 调用 registration.runtime.executeTool 执行路由
+ *   6. 将 AiModuleResult 转换为 AiAgentFunctionCallResult
+ *   7. 写入 sessionStore（appendFunctionCall）
+ *   8. 调用业务方 afterFunctionCall 生命周期钩子
+ *   9. 发送诊断事件（emitToolResultEvent）+ 业务回调（onToolCall）
+ *  10. 返回 toolMessage（role: 'tool'）和生命周期指令
  *
  * 【消费方】tool-loop-runner.ts（runToolLoop 内每个 tool_call 循环）
  * ═══════════════════════════════════════════════════════════════
@@ -29,7 +30,10 @@
 
 import type { AiJsonParams } from '../../json'
 import { toAiAgentRuntimeScope } from '../business/business-scope'
-import type { AiAgentLifecycleDirective } from '../business/lifecycle-types'
+import type {
+  AiAgentBeforeFunctionCallDirective,
+  AiAgentLifecycleDirective,
+} from '../business/lifecycle-types'
 import type { AiAgentRegistration } from '../business/registration-types'
 import type { AiAgentScope } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentTurnMeta } from '../chat/chat-types'
@@ -94,12 +98,16 @@ type CompleteToolCallExecutionInput<TInput extends AiJsonParams = AiJsonParams> 
   args: AiJsonParams
   callResult: AiAgentFunctionCallResult<unknown>
   started: number
+  lifecycleDirective?: AiAgentLifecycleDirective
+  skipAfterFunctionCall?: boolean
+  metadata?: Record<string, unknown>
 }>
 
 /* ── 常量 ──────────────────────────────────────────────────── */
 
 /** 默认 continue 指令（无业务方钩子时使用） */
 const CONTINUE_DIRECTIVE: AiAgentLifecycleDirective = { status: 'continue' }
+const ALLOW_FUNCTION_CALL_DIRECTIVE: AiAgentBeforeFunctionCallDirective = { status: 'allow' }
 
 /* ── 工具调用执行器 ────────────────────────────────────────── */
 
@@ -138,14 +146,36 @@ export class AiAgentToolCallExecutor {
     // 步骤 3：解析 JSON 参数字符串
     const args = parsedArgs.args
 
-    // 步骤 4：委托 runtime 执行 query/navigation 或 business function tool
+    // 步骤 4：执行前策略裁决（人工审批、权限策略等）
+    const beforeDirective = await input.registration.beforeFunctionCall?.({
+      ...runtimeContext,
+      toolName: protocolToolName,
+      args,
+    }) ?? ALLOW_FUNCTION_CALL_DIRECTIVE
+    if (beforeDirective.status !== 'allow') {
+      return this.completeExecution({
+        source: input,
+        runtimeContext,
+        protocolToolName,
+        args,
+        callResult: beforeFunctionCallFailureResult(beforeDirective),
+        started,
+        skipAfterFunctionCall: true,
+        metadata: beforeFunctionCallMetadata(beforeDirective),
+        ...(beforeDirective.status === 'abort'
+          ? { lifecycleDirective: beforeFunctionCallLifecycleDirective(beforeDirective) }
+          : {}),
+      })
+    }
+
+    // 步骤 5：委托 runtime 执行 query/navigation 或 business function tool
     const operationResult = await input.registration.runtime.executeTool(protocolToolName, args, {
       moduleId: runtimeContext.moduleId,
       moduleInstanceId: runtimeContext.moduleInstanceId,
       instanceId: runtimeContext.instanceId,
     })
 
-    // 步骤 5：转换操作结果为 function call result 格式
+    // 步骤 6：转换操作结果为 function call result 格式
     const callResult = toFunctionCallResult(operationResult)
 
     return this.completeExecution({
@@ -161,9 +191,19 @@ export class AiAgentToolCallExecutor {
   private async completeExecution<TInput extends AiJsonParams>(
     input: CompleteToolCallExecutionInput<TInput>,
   ): Promise<AiAgentToolCallExecutionOutput> {
-    const { source, runtimeContext, protocolToolName, args, callResult, started } = input
+    const {
+      source,
+      runtimeContext,
+      protocolToolName,
+      args,
+      callResult,
+      started,
+      lifecycleDirective,
+      skipAfterFunctionCall,
+      metadata,
+    } = input
 
-    // 步骤 6：写入 sessionStore 历史
+    // 步骤 7：写入 sessionStore 历史
     source.sessionStore.appendFunctionCall({
       moduleId: runtimeContext.moduleId,
       moduleInstanceId: runtimeContext.moduleInstanceId,
@@ -173,19 +213,23 @@ export class AiAgentToolCallExecutor {
       args,
       status: callResult.ok ? 'completed' : 'failed',
       ...(callResult.ok ? { result: callResult.data } : { error: failureFromCallResult(callResult) }),
+      ...(metadata === undefined ? {} : { metadata }),
     })
 
-    // 步骤 7：调用业务方 afterFunctionCall 钩子（未提供则默认 continue）
-    const directive = await source.registration.afterFunctionCall?.({
-      ...runtimeContext,
-      toolName: protocolToolName,
-      args,
-      result: callResult,
-    }) ?? CONTINUE_DIRECTIVE
+    // 步骤 8：调用业务方 afterFunctionCall 钩子（未提供则默认 continue）
+    const directive = lifecycleDirective
+      ?? (skipAfterFunctionCall === true
+        ? CONTINUE_DIRECTIVE
+        : await source.registration.afterFunctionCall?.({
+          ...runtimeContext,
+          toolName: protocolToolName,
+          args,
+          result: callResult,
+        }) ?? CONTINUE_DIRECTIVE)
 
     const durationMs = Date.now() - started
 
-    // 步骤 8a：通知业务方工具调用记录（用于前端展示/调试）
+    // 步骤 9a：通知业务方工具调用记录（用于前端展示/调试）
     source.request.onToolCall?.({
       toolName: protocolToolName,
       args,
@@ -197,7 +241,7 @@ export class AiAgentToolCallExecutor {
       durationMs,
     })
 
-    // 步骤 8b：发送诊断 stream 事件
+    // 步骤 9b：发送诊断 stream 事件
     emitToolResultEvent({
       request: source.request,
       scope: source.scope,
@@ -206,7 +250,7 @@ export class AiAgentToolCallExecutor {
       data: callResult,
     })
 
-    // 步骤 9：返回 toolMessage + 生命周期指令
+    // 步骤 10：返回 toolMessage + 生命周期指令
     return {
       toolMessage: {
         role: 'tool',
@@ -216,6 +260,54 @@ export class AiAgentToolCallExecutor {
       directive,
     }
   }
+}
+
+function beforeFunctionCallFailureResult(
+  directive: AiAgentBeforeFunctionCallDirective,
+): AiAgentFunctionCallResult<unknown> {
+  const reason = directive.reason ?? defaultBeforeFunctionCallReason(directive)
+  const fix = directive.fix ?? '请根据执行前审批或策略反馈调整请求后重试。'
+  const code = directive.status === 'abort'
+    ? 'AI_TOOL_ABORTED_BEFORE_EXECUTION'
+    : 'AI_TOOL_REJECTED_BEFORE_EXECUTION'
+  return {
+    ok: false,
+    code,
+    msg: reason,
+    fix,
+    checks: [{
+      level: 'error',
+      code,
+      message: reason,
+      hint: fix,
+    }],
+  }
+}
+
+function beforeFunctionCallLifecycleDirective(
+  directive: AiAgentBeforeFunctionCallDirective,
+): AiAgentLifecycleDirective {
+  return {
+    status: 'abort',
+    reason: directive.reason ?? defaultBeforeFunctionCallReason(directive),
+    ...(directive.finalAssistantMessage === undefined ? {} : { finalAssistantMessage: directive.finalAssistantMessage }),
+    ...(directive.releaseInstance === undefined ? {} : { releaseInstance: directive.releaseInstance }),
+  }
+}
+
+function beforeFunctionCallMetadata(
+  directive: AiAgentBeforeFunctionCallDirective,
+): Record<string, unknown> {
+  return {
+    blockedBy: 'beforeFunctionCall',
+    decision: directive.status,
+  }
+}
+
+function defaultBeforeFunctionCallReason(directive: AiAgentBeforeFunctionCallDirective): string {
+  return directive.status === 'abort'
+    ? '工具调用在执行前被中止。'
+    : '工具调用在执行前被拒绝。'
 }
 
 function readToolArgs(raw: string | undefined): ParsedToolArgs {

@@ -85,6 +85,7 @@ export class DefaultAiAgentSessionStore extends AiAgentSessionStore {
       existing.status = 'Started'
       existing.updatedAt = ts
       delete existing.stoppedAt
+      delete existing.reason
       return cloneSession(existing)
     }
     // 新建 session
