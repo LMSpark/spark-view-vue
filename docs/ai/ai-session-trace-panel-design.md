@@ -832,10 +832,161 @@ pnpm --filter @spark-view/spark-component exec vitest run src/tests/ai/
 
 ### M2 计划（依赖 M1 完成）
 
-- `SessionInputBar.vue`（textarea + 附件引用 + Send/Stop 按钮）
-- `AiSessionRunner` 接口 + adapter 实现示例（调用方参考）
-- 多模态附件引用：文本描述 + URL + 文件名（base64 仅 UI 预览，不进 historyMsgs）
-- `SessionTabBar.vue`（el-tabs，按 `{ moduleId, moduleInstanceId }` 对管理多个 session）
+- 第一切片：headless AI run adapter 边界与实现计划（无 UI 也能跑）
+- 后续可选：`SessionInputBar.vue`（textarea + 附件引用 + Send/Stop 按钮）
+- 后续可选：`AiSessionRunner` 接口 + adapter 实现示例（调用方参考；需等第一切片验证后再冻结 API）
+- 后续可选：多模态附件引用：文本描述 + URL + 文件名（base64 仅 UI 预览，不进 historyMsgs）
+- 后续可选：`SessionTabBar.vue`（el-tabs，按 `{ moduleId, moduleInstanceId }` 对管理多个 session）
+
+### M2 Adapter Boundary / Integration Plan（第一切片）
+
+M2 第一切片只定义 **AI run adapter / app shell** 的边界，不修改 `AiSessionTracePanel` 的领域模型。目标是验证真实运行链路：
+
+```text
+APP SSE -> spark-ai runtime/transport/collector -> host.run callbacks -> trace sink -> AiSessionTracePanel props
+```
+
+核心原则：**AI 运行能力必须 headless-first**。有没有 UI 都能运行；UI 只是一个可选 observer。Adapter 的核心实现不得依赖 Vue、DOM 或任何具体组件实例。
+
+#### 12.1 Adapter 所在层
+
+Adapter 不属于 `spark-component/src/ai/**`。推荐落点是应用壳或 AI 运行编排层，例如：
+
+- `packages/spark-app/src/ai/useAiRunAdapter.ts`
+- 或业务 app shell 自己的 `src/ai/useAiRunAdapter.ts`
+
+Adapter 可以接触 `AiAgentHost`、alias、业务输入、`AbortController` 和错误映射；`AiSessionTracePanel` 及其子组件不能接触这些对象。若需要 Vue 绑定，可以在 adapter 外包一层很薄的 Vue wrapper，但 core adapter 必须能在无 UI、无组件挂载的环境下执行。
+
+#### 12.2 Trace Sink 契约
+
+Adapter 不直接 import `AiSessionTracePanel.vue`，也不读写 `entries` 数组。它可以接收一个可选的结构化 sink；`useSessionStream()` 的返回值天然满足该 sink。无 UI 场景下不传 sink，adapter 使用 no-op sink，AI 仍然照常运行。
+
+```typescript
+import type {
+  AiAgentStreamEvent,
+  AiAgentToolCallRecord,
+} from '@spark-view/spark-ai/agent'
+
+export type AiRunTraceSink = Readonly<{
+  appendUserMessage(content: string): void
+  appendEvent(event: AiAgentStreamEvent): void
+  appendDelta(delta: string): void
+  appendReasoning(text: string): void
+  appendToolCall(record: AiAgentToolCallRecord): void
+  appendError(message: string): void
+  markAborted(message?: string): void
+  finish(): void
+  reset(): void
+}>
+
+const noopTraceSink: AiRunTraceSink = {
+  appendUserMessage: () => undefined,
+  appendEvent: () => undefined,
+  appendDelta: () => undefined,
+  appendReasoning: () => undefined,
+  appendToolCall: () => undefined,
+  appendError: () => undefined,
+  markAborted: () => undefined,
+  finish: () => undefined,
+  reset: () => undefined,
+}
+```
+
+注意：
+
+- `AiRunTraceSink` 可以在 adapter 层定义，M2 第一切片不要从 `spark-component` 公共入口导出新 runner 类型。
+- UI 层传入 `useSessionStream()`，adapter 只调用 sink 方法，不感知 Vue 组件结构。
+- Sink 接收的是 normalized callbacks，不接收 APP SSE 原始 frame。
+- Sink 是可选观察者，不是运行依赖；headless run 必须不传 sink 也能完成。
+- `noopTraceSink` 必须显式实现每个方法，不要用 `as AiRunTraceSink` 掩盖遗漏。
+
+#### 12.3 Adapter Command
+
+Adapter 的启动命令用具名对象，避免 4 个以上位置参数：
+
+```typescript
+import type {
+  AiAgentHost,
+  AiAgentHostRunResult,
+  AiAgentSessionRecord,
+} from '@spark-view/spark-ai/agent'
+
+export type AiRunAdapterCommand<TInput> = Readonly<{
+  host: AiAgentHost
+  alias: string
+  input: TInput
+  trace?: AiRunTraceSink
+  onSessionRecord?: (record: AiAgentSessionRecord | null) => void
+  userMessage?: string
+}>
+
+export type AiRunAdapterState = Readonly<{
+  isRunning(): boolean
+  abort(reason?: string): void
+  run<TInput>(command: AiRunAdapterCommand<TInput>): Promise<AiAgentHostRunResult | null>
+}>
+```
+
+这组类型属于 adapter/app shell，不进入 `spark-component/src/ai/**`。如果后续要沉淀公共 runner API，必须等 M2 验证完成后再单独评审。Vue app 可以用 wrapper 把 `onSessionRecord` 映射到 `sessionRecord.value = record`，但 core adapter 不 import `vue`。
+
+`run()` 返回值语义：
+
+- 正常完成：返回 `AiAgentHostRunResult`。
+- 本地 abort 后 run 结束、或旧 `runId` 被更新的运行替代：返回 `null`，表示这次结果不再应驱动 UI/snapshot。
+- 并发 `run()` 是否抛错或返回 `null` 由 adapter 选择，但必须 fail-fast，不能静默复用同一运行状态。
+
+默认错误格式化：
+
+```typescript
+function formatAiRunError(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
+}
+```
+
+第一切片先使用默认格式化；后续如需业务化错误文案，再通过 adapter options 增加 formatter，不下沉到 panel。
+
+#### 12.4 Run / Abort 状态机
+
+推荐状态机：
+
+1. `run(command)` 开始时 fail-fast：如果已有运行中 turn，直接抛错或返回受控错误，不并发复用同一个 trace sink。
+2. 解析 `trace = command.trace ?? noopTraceSink`；调用 `trace.reset()`，并通过 `onSessionRecord?.(null)` 清空外部 snapshot。
+3. 如有 `userMessage`，先 `trace.appendUserMessage(userMessage)`；无 UI 时 no-op sink 忽略该调用。
+4. 创建新的 `AbortController`，保存本地 `runId` 和 `aborted=false`。
+5. 调用 `host.run(alias, input, callbacks)`，callbacks 只转发到 trace sink：
+   - `onStreamEvent: trace.appendEvent`
+   - `onDelta: trace.appendDelta`
+   - `onReasoning: trace.appendReasoning`
+   - `onToolCall: trace.appendToolCall`
+   - `signal: abortController.signal`
+6. `then(result)`：若 `runId` 仍是当前运行，调用 `onSessionRecord?.(result.session.getSessionRecord())`。
+7. `catch(error)`：如果是本地 abort 后的 reject，不重复追加错误；否则 `trace.appendError(formatAiRunError(error))`。
+8. `finally()`：若 `runId` 仍是当前运行，调用 `trace.finish()`，清理 controller，`running=false`。
+9. `abort(reason)`：如果存在运行中 controller，先标记 `aborted=true`，再 `controller.abort()`，然后立即 `trace.markAborted(reason ?? '本地已中断')`。不要等待 `host.run()` reject，因为 abort 在 turn 间隙可能 resolve。
+
+#### 12.5 禁止事项
+
+M2 第一切片继续禁止：
+
+- `spark-component/src/ai/**` import `AiAgentHost`。
+- `spark-component/src/ai/**` 创建或关闭 `EventSource` / SSE connection。
+- `spark-component/src/ai/**` 解析 APP SSE 原始 frame、keepalive、heartbeat 或 transport event。
+- `spark-component/src/ai/**` import `@spark-view/spark-page-config`，或引用 `PageModelLike` / `PageModelRenderConfig`。
+- Adapter 把 base64、业务文件对象或 PageModel 塞进 `historyMsgs`；附件只能转成文本引用、URL 或文件名。
+- Core adapter import `vue`、DOM API 或具体 UI 组件。
+- 把 trace sink 作为运行必需参数；无 UI 时必须能使用 no-op sink 正常执行。
+
+#### 12.6 验证清单
+
+M2 adapter 第一切片至少覆盖：
+
+- `run()` 将 `host.run()` 的四类 callbacks 正确转发给 trace sink。
+- `run()` 在未传 `trace` 的 headless 场景下仍能完成，并返回 `AiAgentHostRunResult`。
+- `run()` resolve 后设置 `sessionRecord`。
+- `run()` reject 后追加 error，并在 finally 中 `finish()`。
+- `abort()` 立即追加 system-message，并在 reject/resolve 两种路径下都不会重复错误。
+- 并发 `run()` 被 fail-fast 拒绝。
+- `spark-component/src/ai/**` 仍不出现 `AiAgentHost`、`EventSource`、`PageModel*`、`@spark-view/spark-page-config`。
 
 ### M3 计划（依赖 spark-ai 内核补齐）
 
