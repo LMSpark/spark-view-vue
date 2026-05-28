@@ -8,8 +8,22 @@ export type {
   AiRunAdapterCommand,
   AiRunAdapterOptions,
   AiRunAdapterState,
+  AiRunAbortHandler,
   AiRunBeforeFunctionCall,
   AiRunErrorFormatter,
   AiRunHost,
   AiRunTraceSink,
 } from './ai-run-adapter'
+
+export {
+  AiToolApprovalBridge,
+  createAiToolApprovalBridge,
+} from './tool-approval-bridge'
+
+export type {
+  AiToolApprovalBridgeListener,
+  AiToolApprovalBridgeOptions,
+  AiToolApprovalBridgeSnapshot,
+  AiToolApprovalRequest,
+  AiToolApprovalRequestIdFactory,
+} from './tool-approval-bridge'

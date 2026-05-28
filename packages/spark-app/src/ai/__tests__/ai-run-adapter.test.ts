@@ -253,6 +253,7 @@ describe('createAiRunAdapter', () => {
   it('aborts an active run without reporting a host error', async () => {
     const pending = createDeferred<AiAgentHostRunResult>()
     const trace = createTraceSink()
+    const onAbort = vi.fn()
     let signal: AbortSignal | undefined
     const run = vi.fn((
       _alias: string,
@@ -270,11 +271,13 @@ describe('createAiRunAdapter', () => {
       alias: 'page-design',
       input: { prompt: 'abort' },
       trace,
+      onAbort,
     })
     expect(adapter.isRunning()).toBe(true)
 
     adapter.abort('user stopped')
     expect(signal?.aborted).toBe(true)
+    expect(onAbort).toHaveBeenCalledWith('user stopped')
     pending.reject(new Error('transport aborted'))
 
     await expect(promise).resolves.toBeNull()

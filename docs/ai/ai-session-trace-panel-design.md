@@ -991,6 +991,43 @@ function formatAiRunError(error: unknown): string {
 8. `finally()`：若 `runId` 仍是当前运行，调用 `trace.finish()`，清理 controller，`running=false`。
 9. `abort(reason)`：如果存在运行中 controller，先标记 `aborted=true`，再 `controller.abort()`，然后立即 `trace.markAborted(reason ?? '本地已中断')`。不要等待 `host.run()` reject，因为 abort 在 turn 间隙可能 resolve。
 
+#### 12.4.1 Tool Approval Bridge
+
+审批 UI 不直接消费 `AiAgentHost`、业务 registration 或 SSE。`spark-app` 提供纯 TS 状态桥：
+
+```typescript
+export type AiToolApprovalRequest = Readonly<{
+  id: string
+  moduleId: string
+  moduleInstanceId: string
+  instanceId: string
+  toolName: string
+  args: AiJsonParams
+  requestedAt: number
+}>
+
+export type AiToolApprovalBridgeSnapshot = Readonly<{
+  pending: readonly AiToolApprovalRequest[]
+}>
+
+export class AiToolApprovalBridge {
+  readonly beforeFunctionCall: AiRunBeforeFunctionCall
+  listPending(): readonly AiToolApprovalRequest[]
+  decide(requestId: string, directive: AiAgentBeforeFunctionCallDirective): boolean
+  cancelPending(reason?: string): number
+  subscribe(listener: (snapshot: AiToolApprovalBridgeSnapshot) => void): () => void
+}
+```
+
+使用方式：
+
+- runner wrapper 创建 `const approvals = createAiToolApprovalBridge()`。
+- 调用 `adapter.run({ ..., beforeFunctionCall: approvals.beforeFunctionCall, onAbort: approvals.cancelPending })`。
+- UI 只订阅 `approvals.subscribe()` 得到 `pending`，渲染工具名、参数预览和审批按钮。
+- 用户点击允许：`approvals.decide(id, { status: 'allow' })`。
+- 用户点击拒绝：`approvals.decide(id, { status: 'reject', reason, fix })`。
+- 用户点击停止：`adapter.abort(reason)` 触发 `onAbort`，取消所有 pending approval，避免 tool loop 悬挂在审批 Promise。
+
 #### 12.5 禁止事项
 
 M2 前两切片继续禁止：
@@ -1051,6 +1088,7 @@ pnpm exec vitest run tests/page-design-ai-runner.test.ts tests/dev-system-header
 - `AiAgentSession.stop(reason)`：外部无 UI 场景也能停止当前业务会话，写入 `sessionStore.stopSession()` 并触发 `onEndBusinessInstance`。
 - `AiAgentHost.listSessions(alias?)`：Host 层直接暴露会话发现；传 alias 返回单业务会话，不传则聚合当前 Host 业务会话。
 - M3-1 通用桥接：`AiAgentChatRequest.beforeFunctionCall` 支持每次 run 注入 UI-neutral 前置裁决；`spark-app` 的 `AiRunAdapterCommand.beforeFunctionCall` 只做透传，不牵扯 pageDesign 或其他业务侧。
+- M3-2 通用状态桥：`spark-app` 提供 `createAiToolApprovalBridge()`，负责 pending approval 列表、allow/reject/abort 决策、abort 时取消 pending；它是纯 TS 状态机，不 import Vue、业务包或 APP SSE。
 
 尚未进入 UI 开发的 M3 功能：
 

@@ -45,6 +45,7 @@ export type AiRunErrorFormatter = (error: unknown) => string
 export type AiRunBeforeFunctionCall = (
   options: AiAgentBeforeFunctionCallOptions,
 ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
+export type AiRunAbortHandler = (reason: string) => void
 
 export type AiRunHost = Readonly<{
   run<TInput extends AiJsonParams>(
@@ -64,6 +65,7 @@ export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Re
   input: TInput
   trace?: AiRunTraceSink
   beforeFunctionCall?: AiRunBeforeFunctionCall
+  onAbort?: AiRunAbortHandler
   onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }>
@@ -80,6 +82,7 @@ type ActiveRun = {
   readonly runId: number
   readonly controller: AbortController
   readonly trace: AiRunTraceSink
+  readonly onAbort?: AiRunAbortHandler
   aborted: boolean
 }
 
@@ -101,9 +104,11 @@ export function createAiRunAdapter(
   function abort(reason?: string): void {
     const current = activeRun
     if (current === null || current.aborted) return
+    const abortReason = reason ?? '本地已中断'
     current.aborted = true
     current.controller.abort()
-    current.trace.markAborted(reason ?? '本地已中断')
+    current.trace.markAborted(abortReason)
+    current.onAbort?.(abortReason)
   }
 
   async function run<TInput extends AiJsonParams>(
@@ -122,6 +127,7 @@ export function createAiRunAdapter(
       runId,
       controller,
       trace,
+      ...(command.onAbort === undefined ? {} : { onAbort: command.onAbort }),
       aborted: false,
     }
     activeRun = currentRun
