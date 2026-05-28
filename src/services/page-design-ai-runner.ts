@@ -26,6 +26,13 @@ export type PageDesignAiRunOptions = {
   preserveExistingInteractions?: boolean
 }
 
+/**
+ * Legacy status callbacks for DevSystem status messages.
+ *
+ * Prefer `trace` for full session rendering. Do not pass the same
+ * `useSessionStream()` sink through both `trace` and these event callbacks,
+ * otherwise the caller will duplicate its own UI entries.
+ */
 export type PageDesignAiRunEvents = {
   onReasoning?: (reasoning: string) => void
   onDelta?: (delta: string) => void
