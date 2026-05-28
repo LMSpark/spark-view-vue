@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { useSessionStream } from '../../ai/composables/useSessionStream'
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
+import type { AiAgentFunctionCallResult } from '@spark-view/spark-ai/agent'
 
-// mock previewAiAgentDiagnosticValue: 截断长文本
 vi.mock('@spark-view/spark-ai/agent', async () => {
   const actual = await vi.importActual('@spark-view/spark-ai/agent')
   return {
@@ -15,8 +15,16 @@ vi.mock('@spark-view/spark-ai/agent', async () => {
   }
 })
 
-function makeStreamEvent(overrides: Partial<AiAgentStreamEvent> = {}): AiAgentStreamEvent {
-  return {
+type StreamEventOptions = Readonly<{
+  type?: string
+  data?: unknown
+  turnKey?: string
+  streamKey?: string
+  scope?: AiAgentStreamEvent['scope']
+}>
+
+function makeStreamEvent(options: StreamEventOptions = {}): AiAgentStreamEvent {
+  const defaults = {
     type: 'delta',
     data: 'hello',
     turnKey: 'kind::instance-1::turn-1',
@@ -27,22 +35,33 @@ function makeStreamEvent(overrides: Partial<AiAgentStreamEvent> = {}): AiAgentSt
       eventModuleId: 'module-1',
       turnId: 'turn-1',
     },
-    ...overrides,
-  } as AiAgentStreamEvent
+  }
+  return { ...defaults, ...options }
 }
 
-function makeToolCallRecord(overrides: Partial<AiAgentToolCallRecord> = {}): AiAgentToolCallRecord {
-  return {
+type ToolCallRecordOptions = Readonly<{
+  toolName?: string
+  args?: unknown
+  turnId?: string
+  round?: number
+  callId?: string
+  status?: 'success' | 'error'
+  result?: AiAgentFunctionCallResult<unknown>
+  durationMs?: number
+}>
+
+function makeToolCallRecord(options: ToolCallRecordOptions = {}): AiAgentToolCallRecord {
+  const defaults = {
     toolName: 'testTool',
     args: { key: 'value' },
     turnId: 'turn-1',
     round: 1,
     callId: 'call-1',
-    status: 'success',
-    result: { ok: true, data: 'done' },
+    status: 'success' as const,
+    result: { ok: true as const, data: 'done' },
     durationMs: 150,
-    ...overrides,
-  } as unknown as AiAgentToolCallRecord
+  }
+  return { ...defaults, ...options }
 }
 
 describe('useSessionStream', () => {
@@ -68,7 +87,6 @@ describe('useSessionStream', () => {
   })
 
   it('onStreamEvent 先到、onDelta 后到时，delta 能归入正确 turn', () => {
-    // 模拟真实时序：onStreamEvent → onDelta
     stream.appendEvent(makeStreamEvent({ type: 'llm-request' }))
     stream.appendDelta('first chunk')
 
@@ -95,10 +113,6 @@ describe('useSessionStream', () => {
     stream.appendEvent(makeStreamEvent({ type: 'delta' }))
     stream.appendDelta('world')
 
-    // 应该有两个 assistant-delta 的 merge：只剩 1 个 assistant-delta + 2 reasoning = 3 条
-    // 实际：reasoning 和 delta 各按 findLastIndex 合并同类→ 1 reasoning + 1 delta
-    // 第二段 reasoning：findLastIndex 找到第一个 reasoning → 合并 → 1 个 reasoning
-    // 第二段 delta：findLastIndex 找到第一个 delta → 合并 → 1 个 delta
     expect(stream.entries.value).toHaveLength(2)
 
     const r = stream.entries.value[0]

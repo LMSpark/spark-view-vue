@@ -142,18 +142,21 @@ function getRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegis
   return created
 }
 
+function isRenderFunctionRegistryMap(value: unknown): value is Map<string, RenderFunctionRegistration> {
+  return value instanceof Map
+}
+
 function readStoredRenderFunctionRegistry(app: object): Map<string, RenderFunctionRegistration> | null {
-  const value = (app as Record<symbol, unknown>)[RENDER_FUNCTION_REGISTRY_KEY]
-  return value instanceof Map ? value as Map<string, RenderFunctionRegistration> : null
+  const value = Reflect.get(app, RENDER_FUNCTION_REGISTRY_KEY)
+  return isRenderFunctionRegistryMap(value) ? value : null
 }
 
 function storeRenderFunctionRegistry(
   app: object,
   registry: Map<string, RenderFunctionRegistration>,
 ): void {
-  const owner = app as Record<symbol, unknown>
-  if (owner[RENDER_FUNCTION_REGISTRY_KEY] === registry) return
-  Object.defineProperty(owner, RENDER_FUNCTION_REGISTRY_KEY, {
+  if (Reflect.get(app, RENDER_FUNCTION_REGISTRY_KEY) === registry) return
+  Object.defineProperty(app, RENDER_FUNCTION_REGISTRY_KEY, {
     value: registry,
     configurable: false,
     enumerable: false,

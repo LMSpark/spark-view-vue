@@ -104,17 +104,14 @@ function disableSparkComponentRendererStub(): () => void {
 function createComponentRegistrationProbe(counts: Record<string, number>) {
   return {
     install(app: App) {
-      const original = app.component
+      const original = app.component.bind(app)
       function componentProbe(name: string): Component | undefined
       function componentProbe(name: string, component: Component): App
       function componentProbe(name: string, component?: Component): Component | undefined | App {
         if (component !== undefined && (name === 'RenderActions' || name === 'renderActions')) {
           counts[name] = (counts[name] ?? 0) + 1
         }
-        if (component === undefined) {
-          return Reflect.apply(original, app, [name])
-        }
-        return Reflect.apply(original, app, [name, component])
+        return component === undefined ? original(name) : original(name, component)
       }
       app.component = componentProbe
     },

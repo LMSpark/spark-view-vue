@@ -109,10 +109,14 @@ export function useSessionStream(): UseSessionStreamReturn {
 
   // ── error data 安全读取 ──
 
+  function isPlainObject(value: unknown): value is Record<string, unknown> {
+    return value !== null && typeof value === 'object' && !Array.isArray(value)
+  }
+
   function readErrorMessage(data: unknown): string {
     if (typeof data === 'string' && data.trim().length > 0) return data
-    if (data !== null && typeof data === 'object' && !Array.isArray(data)) {
-      const message = (data as Record<string, unknown>)['message']
+    if (isPlainObject(data)) {
+      const message = data['message']
       if (typeof message === 'string' && message.trim().length > 0) return message
     }
     return 'AI turn error'

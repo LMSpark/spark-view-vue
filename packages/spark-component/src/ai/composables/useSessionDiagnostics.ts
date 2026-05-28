@@ -58,10 +58,13 @@ function extractDiagnosticIssues(
   return issues
 }
 
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
 function isFailedFunctionCall(
   entry: unknown,
 ): entry is AiAgentFunctionCallHistoryEntry {
-  if (entry === null || entry === undefined || typeof entry !== 'object') return false
-  const record = entry as Record<string, unknown>
-  return record['kind'] === 'functionCall' && record['status'] === 'failed'
+  if (!isPlainObject(entry)) return false
+  return entry['kind'] === 'functionCall' && entry['status'] === 'failed'
 }

@@ -1,6 +1,12 @@
 import { describe, it, expect } from 'vitest'
 import { useSessionDiagnostics } from '../../ai/composables/useSessionDiagnostics'
-import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'
+import type {
+  AiAgentSessionRecord,
+  AiAgentFunctionCallHistoryEntry,
+  AiAgentMessageHistoryEntry,
+  AiAgentHistoryEntry,
+  AiAgentFunctionCallFailure,
+} from '@spark-view/spark-ai/agent'
 import { ref } from 'vue'
 
 const BASE = {
@@ -10,34 +16,71 @@ const BASE = {
   runtimeInstanceId: 'rt-1',
 }
 
-function makeSessionRecord(overrides: Partial<AiAgentSessionRecord> = {}): AiAgentSessionRecord {
-  return {
-    ...BASE,
-    status: 'Completed',
+type SessionRecordOptions = Readonly<{
+  moduleId?: string
+  moduleInstanceId?: string
+  instanceId?: string
+  runtimeInstanceId?: string
+  status?: AiAgentSessionRecord['status']
+  startedAt?: number
+  updatedAt?: number
+  stoppedAt?: number
+  reason?: string
+  history?: readonly AiAgentHistoryEntry[]
+}>
+
+function makeSessionRecord(options: SessionRecordOptions = {}): AiAgentSessionRecord {
+  const defaults = {
+    moduleId: BASE.moduleId,
+    moduleInstanceId: BASE.moduleInstanceId,
+    instanceId: BASE.instanceId,
+    runtimeInstanceId: BASE.runtimeInstanceId,
+    status: 'Started' as const,
     startedAt: Date.now(),
     updatedAt: Date.now(),
-    history: [],
-    ...overrides,
-  } as unknown as AiAgentSessionRecord
+    history: [] as const,
+  }
+  return { ...defaults, ...options }
 }
 
-function makeFailedCallEntry(overrides: Record<string, unknown> = {}) {
-  return {
+type FailedCallEntryOptions = Readonly<{
+  kind?: 'functionCall'
+  seq?: number
+  id?: string
+  timestamp?: number
+  toolName?: string
+  args?: unknown
+  status?: AiAgentFunctionCallHistoryEntry['status']
+  error?: AiAgentFunctionCallFailure
+}>
+
+function makeFailedCallEntry(options: FailedCallEntryOptions = {}): AiAgentFunctionCallHistoryEntry {
+  const defaults = {
     ...BASE,
-    kind: 'functionCall',
+    kind: 'functionCall' as const,
     seq: 1,
     id: 'fc-1',
     timestamp: Date.now(),
     toolName: 'testTool',
-    args: {},
-    status: 'failed',
-    error: { ok: false, code: 'ERR', msg: 'boom', fix: 'try again' },
-    ...overrides,
+    args: {} satisfies unknown,
+    status: 'failed' as const,
+    error: { ok: false as const, code: 'ERR', msg: 'boom', fix: 'try again' },
   }
+  return { ...defaults, ...options }
 }
 
-function makeMessageEntry(overrides: Record<string, unknown> = {}) {
-  return {
+type MessageEntryOptions = Readonly<{
+  kind?: 'message'
+  seq?: number
+  id?: string
+  timestamp?: number
+  role?: AiAgentMessageHistoryEntry['role']
+  source?: AiAgentMessageHistoryEntry['source']
+  content?: string
+}>
+
+function makeMessageEntry(options: MessageEntryOptions = {}): AiAgentMessageHistoryEntry {
+  const defaults = {
     ...BASE,
     kind: 'message' as const,
     seq: 1,
@@ -46,8 +89,8 @@ function makeMessageEntry(overrides: Record<string, unknown> = {}) {
     role: 'user' as const,
     source: 'ui' as const,
     content: 'hello',
-    ...overrides,
   }
+  return { ...defaults, ...options }
 }
 
 describe('useSessionDiagnostics', () => {
@@ -77,7 +120,7 @@ describe('useSessionDiagnostics', () => {
   it('失败 functionCall → issue 列表包含对应条目', () => {
     const record = makeSessionRecord({
       history: [makeFailedCallEntry()],
-    } as Partial<AiAgentSessionRecord>)
+    })
 
     const sessionRef = ref<AiAgentSessionRecord | null>(record)
     const { data } = useSessionDiagnostics({ sessionRecord: () => sessionRef.value })
@@ -93,7 +136,7 @@ describe('useSessionDiagnostics', () => {
       history: [makeFailedCallEntry({
         error: { ok: false, code: 'TIMEOUT', msg: 'tool timed out', fix: 'increase timeout' },
       })],
-    } as Partial<AiAgentSessionRecord>)
+    })
 
     const sessionRef = ref<AiAgentSessionRecord | null>(record)
     const { data } = useSessionDiagnostics({ sessionRecord: () => sessionRef.value })
@@ -114,7 +157,7 @@ describe('useSessionDiagnostics', () => {
         makeMessageEntry({ role: 'user', content: 'hello' }),
         makeMessageEntry({ seq: 2, id: 'm2', role: 'assistant', source: 'llm', content: 'hi' }),
       ],
-    } as Partial<AiAgentSessionRecord>)
+    })
 
     expect(data.value.summary.historyCount).toBe(2)
     expect(data.value.summary.messageCount).toBe(2)

@@ -242,12 +242,6 @@ export type PageRuntimeServicesCapability = {
 // 将 PageRuntimeServicesCapability 注册到全局 capability 系统。
 // ═══════════════════════════════════════════════════════
 
-declare module '@spark-view/spark-utils' {
-  interface CapabilityTypeMap {
-    'spark:capability:page-runtime-services': PageRuntimeServicesCapability
-  }
-}
-
 function isPageRuntimeServicesCapability(value: unknown): value is PageRuntimeServicesCapability {
   return isRecord(value)
 }
