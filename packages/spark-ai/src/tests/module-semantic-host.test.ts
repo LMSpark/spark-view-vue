@@ -166,16 +166,6 @@ describe('AiAgentHost public API', () => {
 
   it('creates business kit registrations and dry-runs without calling LLM', () => {
     type TicketInput = AiJsonParams & Readonly<{ ticketId: string; message: string }>
-    const inputContract = createSimpleInputContract<TicketInput>({
-      businessId: 'ticket',
-      paramsSchema: paramsSchema({
-        ticketId: stringSchema('工单 ID'),
-        message: stringSchema('用户消息'),
-      }, ['ticketId', 'message']),
-      identityField: 'ticketId',
-      messageField: 'message',
-      systemPrompt: (input) => `当前工单：${input.ticketId}。按固定 module_* 工具协议处理。`,
-    })
     const kit = createAiBusinessKit<TicketInput>({
       businessId: 'ticket',
       name: '工单助手',
@@ -190,7 +180,15 @@ describe('AiAgentHost public API', () => {
           return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `工单 ${id}` }])
         },
       }),
-      inputContract,
+      input: {
+        paramsSchema: paramsSchema({
+          ticketId: stringSchema('工单 ID'),
+          message: stringSchema('用户消息'),
+        }, ['ticketId', 'message']),
+        identityField: 'ticketId',
+        messageField: 'message',
+        systemPrompt: (input) => `当前工单：${input.ticketId}。按固定 module_* 工具协议处理。`,
+      },
     })
     const host = createAiAgentHost({ turnCallbacks: createCallbacks().callbacks })
       .register('ticketAssistant', kit.registration)
@@ -219,9 +217,64 @@ describe('AiAgentHost public API', () => {
         userMessage: '查看状态',
         systemPrompt: expect.stringContaining('T-1001'),
       }),
+      orchestrationSummary: expect.objectContaining({
+        userMessageLength: 4,
+        readonlyStepCount: 0,
+      }),
       tools: expect.arrayContaining(['module_query', 'module_call']),
+      diagnostics: [expect.objectContaining({ code: 'RUNTIME_INSPECT_OK' })],
     })
     expect(host.unregister('ticketAssistant').has('ticketAssistant')).toBe(false)
+  })
+
+  it('keeps simple input contracts available for low-level registrations', () => {
+    type TicketInput = AiJsonParams & Readonly<{ ticketId: string; message: string }>
+    const inputContract = createSimpleInputContract<TicketInput>({
+      businessId: 'ticket',
+      paramsSchema: paramsSchema({
+        ticketId: stringSchema('工单 ID'),
+        message: stringSchema('用户消息'),
+      }, ['ticketId', 'message']),
+      identityField: 'ticketId',
+      messageField: 'message',
+      systemPrompt: (input) => `当前工单：${input.ticketId}`,
+    })
+
+    const orchestration = inputContract.toOrchestration({
+      ticketId: 'T-1001',
+      message: '查看状态',
+    })
+
+    expect(inputContract.identityField).toBe('ticketId')
+    expect(orchestration).toMatchObject({
+      userMessage: '查看状态',
+      systemPrompt: '当前工单：T-1001',
+    })
+  })
+
+  it('rejects business kits whose runtime inspect report is not ok', () => {
+    expect(() => createAiBusinessKit({
+      businessId: 'broken',
+      name: '破损业务',
+      description: '用于验证 fail-fast。',
+      rootModule: new AiModule({
+        kind: 'broken',
+        name: 'Broken',
+        description: 'Broken root.',
+        children: ['missing-child'],
+        list: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([]),
+        find: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id: 'broken-1', label: 'Broken' }]),
+      }),
+      input: {
+        paramsSchema: paramsSchema({
+          id: stringSchema('业务 ID'),
+          message: stringSchema('用户消息'),
+        }, ['id', 'message']),
+        identityField: 'id',
+        messageField: 'message',
+        systemPrompt: '按固定 module_* 工具协议处理。',
+      },
+    })).toThrow('firstFinding=error/CHILD_KIND_NOT_REGISTERED')
   })
 })
 

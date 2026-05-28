@@ -47,7 +47,7 @@ export type AiModuleSetAttributeRequest = Readonly<{
 //
 // path 与 kindPath 的关系：
 //   path      — 模块实例路径（定位具体实例，如 /Page[main]/Table[0]）
-//   kindPath  — 模块类型路径（定位 AiModule，如 ["page-design", "table"]）
+//   kindPath  — 模块类型路径（定位 AiModule，如 ["workspace", "board"]）
 //   两者长度必须一致，kindPath[i] 是 path.segments[i].kind 对应的注册 kind。
 // ============================================================================
 

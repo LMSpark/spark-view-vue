@@ -1,20 +1,26 @@
-# modules
+# modules 模块协议
 
-`@spark-view/spark-ai/modules` is the protocol layer between the agent and business modules. It owns semantic discovery and execution routing, but it does not own business live state or agent session history.
+`@spark-view/spark-ai/modules` 是 Agent 与业务模块之间的协议层。它负责语义发现和执行路由，但不持有业务运行状态，也不持有 Agent 会话历史。
 
-## Public Concepts
+## 边界
 
-- `AiModule`: core class for module metadata plus explicit runtime delegates.
-- `AiModuleRuntime`: composition root and fixed tool-call router.
-- `AiModuleFunctionMetadata` and `AiModuleAttributeMetadata`: function and attribute declarations.
-- `AiModuleOptions`: constructor contract that combines declarative metadata with runtime delegates.
-- `AiModulePath`, `AiModulePathSegment`, `AiModulePathParseError`: path parsing.
-- `AiModulePathContext`, `AiModuleHostContext`, `AiModuleInstanceRef`, `AiModuleInstanceQuery`: execution context and instance references.
-- `AiModuleResult` and `AiModuleCheck`: protocol result envelope and diagnostics.
+SPARK AI 只定义协议与运行时。业务 AI 包消费这些协议，并在消费层注册自己的模块、服务、输入契约和副作用。`pageDesign` 是业务层案例，不是 SPARK AI 内核物料。
 
-## Tool Protocol
+旧 `core`、`runtime`、`protocol`、`adapter` public entry 只作为禁止旧入口出现。新代码必须使用四个 public subpath：根入口、`json`、`modules`、`agent`。
 
-The LLM-facing tool set is fixed:
+## 公共概念
+
+- `AiModule`：模块元数据与显式运行时 delegate 的核心 class。
+- `AiModuleRuntime`：组合根与固定工具调用路由器。
+- `AiModuleFunctionMetadata`、`AiModuleAttributeMetadata`：函数与属性声明。
+- `AiModuleOptions`：组合声明式元数据和运行时 delegate 的构造契约。
+- `AiModulePath`、`AiModulePathSegment`、`AiModulePathParseError`：路径解析。
+- `AiModulePathContext`、`AiModuleHostContext`、`AiModuleInstanceRef`、`AiModuleInstanceQuery`：执行上下文与实例引用。
+- `AiModuleResult`、`AiModuleCheck`：协议结果信封与诊断信息。
+
+## 工具协议
+
+LLM 可见工具集合固定为：
 
 1. `module_query`
 2. `module_guide`
@@ -23,15 +29,15 @@ The LLM-facing tool set is fixed:
 5. `module_call`
 6. `human_question`
 
-Business functions are not separate dynamic tool names. Call them with:
+业务函数不会导出成独立动态工具名。通过以下协议调用：
 
 ```json
-{ "path": "/pageDesign[page-a]/lifecycle[page-a]", "functionName": "bootstrap", "args": {} }
+{ "path": "/ticket[T-1001]/detail[T-1001]", "functionName": "summarize", "args": {} }
 ```
 
-## Registration
+## 注册
 
-`AiModuleRuntime.register(module)` accepts only an already-constructed `AiModule`.
+`AiModuleRuntime.register(module)` 只接受已经构造完成的 `AiModule`。
 
 ```ts
 import {
@@ -44,19 +50,19 @@ import {
 const runtime = new AiModuleRuntime()
 
 const runner: AiModuleRunner = (ctx, functionName, args) => {
-  if (functionName !== 'archive') {
-    return AiModuleResult.failCode('FUNCTION_NOT_DECLARED', `${functionName} is not implemented`)
+  if (functionName !== 'close') {
+    return AiModuleResult.failCode('FUNCTION_NOT_DECLARED', `${functionName} 未实现`)
   }
-  return AiModuleResult.ok({ schoolId: ctx.segment.id, reason: args['reason'] })
+  return AiModuleResult.ok({ ticketId: ctx.segment.id, reason: args['reason'] })
 }
 
 runtime.register(new AiModule({
-  kind: 'school',
-  name: 'School',
-  description: 'School business module',
+  kind: 'ticket',
+  name: '工单',
+  description: '工单业务模块',
   functions: [{
-    name: 'archive',
-    description: 'Archive the current school',
+    name: 'close',
+    description: '关闭当前工单',
     paramsSchema: {
       type: 'object',
       required: ['reason'],
@@ -65,10 +71,10 @@ runtime.register(new AiModule({
     },
   }],
   runner,
-  find: (ctx, childKind) => childKind === 'school'
-    ? AiModuleResult.ok([{ id: ctx.host?.moduleInstanceId ?? 'school-1', label: 'Current school' }])
+  find: (ctx, childKind) => childKind === 'ticket'
+    ? AiModuleResult.ok([{ id: ctx.host?.moduleInstanceId ?? 'T-1001', label: '当前工单' }])
     : AiModuleResult.ok([]),
 }))
 ```
 
-If a module declares functions, attributes, or children, the corresponding runner/accessor/list/find delegate must be explicit.
+模块只要声明了 functions、attributes 或 children，就必须显式提供对应的 runner、accessor、list、find delegate。

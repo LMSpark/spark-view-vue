@@ -13,27 +13,27 @@ import type { AiJsonValue } from '../json'
 
 function createRuntime(): AiModuleRuntime {
   const runtime = new AiModuleRuntime()
-  runtime.register(createPageDesignModule())
-  runtime.register(createNodeTreeModule())
+  runtime.register(createWorkspaceModule())
+  runtime.register(createBoardModule())
   return runtime
 }
 
-function createPageDesignModule(): AiModule {
-  let title = '初始页面'
+function createWorkspaceModule(): AiModule {
+  let title = '初始工作区'
   return new AiModule({
-    kind: 'pageDesign',
-    name: '页面设计',
-    description: '页面设计根能力',
+    kind: 'workspace',
+    name: '工作区',
+    description: '工作区根能力',
     attributes: [
       {
         name: 'title',
-        description: '页面标题',
+        description: '工作区标题',
         schema: { type: 'string' },
         readable: true,
         writable: true,
       },
     ],
-    children: ['node-tree'],
+    children: ['board'],
     attributeAccessor: {
       get: () => AiModuleResult.ok(title),
       set: (_ctx, _attrName, value) => {
@@ -42,47 +42,47 @@ function createPageDesignModule(): AiModule {
       },
     },
     list: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([
-      { id: 'tree-1', label: '主节点树' },
+      { id: 'board-1', label: '主工作板' },
     ]),
     find: (ctx, childKind, query) => {
-      if (ctx.segments.length === 0 && childKind === 'pageDesign') {
-        const id = typeof query['id'] === 'string' ? query['id'] : ctx.host?.moduleInstanceId ?? 'page-1'
-        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `页面 ${id}` }])
+      if (ctx.segments.length === 0 && childKind === 'workspace') {
+        const id = typeof query['id'] === 'string' ? query['id'] : ctx.host?.moduleInstanceId ?? 'workspace-1'
+        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `工作区 ${id}` }])
       }
-      if (childKind === 'node-tree') {
-        const id = typeof query['id'] === 'string' ? query['id'] : 'tree-1'
-        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `节点树 ${id}` }])
+      if (childKind === 'board') {
+        const id = typeof query['id'] === 'string' ? query['id'] : 'board-1'
+        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id, label: `工作板 ${id}` }])
       }
       return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
     },
   })
 }
 
-function createNodeTreeModule(spy: { host?: AiModulePathContext['host'] } = {}): AiModule {
+function createBoardModule(spy: { host?: AiModulePathContext['host'] } = {}): AiModule {
   return new AiModule({
-    kind: 'node-tree',
-    name: '节点树',
-    description: '页面节点树',
-    parentKind: 'pageDesign',
+    kind: 'board',
+    name: '工作板',
+    description: '工作区工作板',
+    parentKind: 'workspace',
     functions: [
       {
-        name: 'getNode',
-        description: '按节点 id 读取节点',
+        name: 'getItem',
+        description: '按条目 id 读取工作板条目',
         paramsSchema: {
           type: 'object',
           properties: { id: { type: 'string' } },
           required: ['id'],
           additionalProperties: false,
         },
-        usageRules: ['先通过 module_find 确认节点树实例路径'],
+        usageRules: ['先通过 module_find 确认工作板实例路径'],
         failureModes: [
-          { code: 'NODE_NOT_FOUND', when: '节点不存在', fix: '重新查询节点 id' },
+          { code: 'ITEM_NOT_FOUND', when: '条目不存在', fix: '重新查询条目 id' },
         ],
       },
     ],
     runner: (ctx, functionName, args) => {
       spy.host = ctx.host
-      if (functionName !== 'getNode') {
+      if (functionName !== 'getItem') {
         return AiModuleResult.failCode('UNKNOWN_FUNCTION', functionName)
       }
       return AiModuleResult.ok<AiJsonValue>({
@@ -105,48 +105,48 @@ describe('AiModuleRuntime fixed tool protocol', () => {
       PROTOCOL_TOOL_NAMES.moduleCall,
       PROTOCOL_TOOL_NAMES.humanQuestion,
     ])
-    expect(names).not.toContain('pageDesign_node-tree_getNode')
+    expect(names).not.toContain('task_detail_getNode')
   })
 
   it('module_query returns module summaries and optional function summaries', async () => {
     const result = await createRuntime().executeTool('module_query', {
-      keyword: '节点',
+      keyword: '工作板',
       includeFunctions: true,
     })
 
     expect(result.ok).toBe(true)
     expect(result.data).toMatchObject({
       modules: expect.arrayContaining([
-      expect.objectContaining({ kind: 'node-tree', functionNames: ['getNode'] }),
-    ]),
+        expect.objectContaining({ kind: 'board', functionNames: ['getItem'] }),
+      ]),
       functions: expect.arrayContaining([
-      expect.objectContaining({
-        toolName: 'module_call',
-        kind: 'node-tree',
-        functionName: 'getNode',
-      }),
-    ]),
+        expect.objectContaining({
+          toolName: 'module_call',
+          kind: 'board',
+          functionName: 'getItem',
+        }),
+      ]),
     })
   })
 
   it('module_guide reads kind metadata and function guide', async () => {
     const runtime = createRuntime()
 
-    await expect(runtime.executeTool('module_guide', { kind: 'pageDesign' })).resolves.toMatchObject({
+    await expect(runtime.executeTool('module_guide', { kind: 'workspace' })).resolves.toMatchObject({
       ok: true,
       data: expect.objectContaining({
-        kind: 'pageDesign',
+        kind: 'workspace',
         attributes: [expect.objectContaining({ name: 'title' })],
       }),
     })
     await expect(runtime.executeTool('module_guide', {
-      kind: 'node-tree',
-      functionName: 'getNode',
+      kind: 'board',
+      functionName: 'getItem',
     })).resolves.toMatchObject({
       ok: true,
       data: expect.objectContaining({
         toolName: 'module_call',
-        functionName: 'getNode',
+        functionName: 'getItem',
         paramsSchema: expect.objectContaining({ required: ['id'] }),
       }),
     })
@@ -157,35 +157,35 @@ describe('AiModuleRuntime fixed tool protocol', () => {
 
     await expect(runtime.executeTool('module_find', { path: '/' })).resolves.toMatchObject({
       ok: true,
-      data: [expect.objectContaining({ id: 'pageDesign' })],
+      data: [expect.objectContaining({ id: 'workspace' })],
     })
     await expect(runtime.executeTool('module_find', {
       path: '/',
-      childKind: 'pageDesign',
-      query: { id: 'page-a' },
+      childKind: 'workspace',
+      query: { id: 'workspace-a' },
     })).resolves.toMatchObject({
       ok: true,
-      data: [expect.objectContaining({ id: 'page-a' })],
+      data: [expect.objectContaining({ id: 'workspace-a' })],
     })
     await expect(runtime.executeTool('module_find', {
-      path: '/pageDesign[page-a]',
-      childKind: 'node-tree',
-      query: { id: 'tree-1' },
+      path: '/workspace[workspace-a]',
+      childKind: 'board',
+      query: { id: 'board-1' },
     })).resolves.toMatchObject({
       ok: true,
-      data: [expect.objectContaining({ id: 'tree-1' })],
+      data: [expect.objectContaining({ id: 'board-1' })],
     })
   })
 
   it('module_attr reads and writes attributes through explicit accessor', async () => {
     const runtime = createRuntime()
-    const path = '/pageDesign[page-a]'
+    const path = '/workspace[workspace-a]'
 
     await expect(runtime.executeTool('module_attr', {
       op: 'set',
       path,
       attrName: 'title',
-      value: '请假页面',
+      value: '工单工作区',
     })).resolves.toMatchObject({ ok: true })
     await expect(runtime.executeTool('module_attr', {
       op: 'get',
@@ -193,37 +193,37 @@ describe('AiModuleRuntime fixed tool protocol', () => {
       attrName: 'title',
     })).resolves.toMatchObject({
       ok: true,
-      data: '请假页面',
+      data: '工单工作区',
     })
   })
 
   it('module_call uses { path, functionName, args } and passes host context', async () => {
     const spy: { host?: AiModulePathContext['host'] } = {}
     const runtime = new AiModuleRuntime()
-    runtime.register(createPageDesignModule())
-    runtime.register(createNodeTreeModule(spy))
+    runtime.register(createWorkspaceModule())
+    runtime.register(createBoardModule(spy))
 
-    const host = { moduleId: 'pageDesign', moduleInstanceId: 'page-a', instanceId: 'turn-1' }
+    const host = { moduleId: 'workspace', moduleInstanceId: 'workspace-a', instanceId: 'turn-1' }
     const result = await runtime.executeTool('module_call', {
-      path: '/pageDesign[page-a]/node-tree[tree-1]',
-      functionName: 'getNode',
-      args: { id: 'node-1' },
+      path: '/workspace[workspace-a]/board[board-1]',
+      functionName: 'getItem',
+      args: { id: 'item-1' },
     }, host)
 
     expect(result).toMatchObject({
       ok: true,
       data: {
-        id: 'node-1',
-        path: ['pageDesign:page-a', 'node-tree:tree-1'],
+        id: 'item-1',
+        path: ['workspace:workspace-a', 'board:board-1'],
       },
     })
     expect(spy.host).toEqual(host)
   })
 
   it('rejects the deleted dynamic function tool protocol', async () => {
-    const result = await createRuntime().executeTool('pageDesign_node-tree_getNode', {
-      $paths: ['page-a', 'tree-1'],
-      id: 'node-1',
+    const result = await createRuntime().executeTool('task_detail_getNode', {
+      $paths: ['task-a', 'detail-1'],
+      id: 'item-1',
     })
 
     expect(result).toMatchObject({
@@ -264,12 +264,12 @@ describe('AiModule explicit delegate requirements', () => {
 
   it('keeps direct runtime APIs for internal callers', async () => {
     const runtime = createRuntime()
-    const path = AiModulePath.parse('/pageDesign[page-a]')
+    const path = AiModulePath.parse('/workspace[workspace-a]')
 
     await expect(runtime.getAttribute(path, 'title')).resolves.toMatchObject({
       ok: true,
-      data: '初始页面',
+      data: '初始工作区',
     })
-    expect(runtime.queryKnowledgeModules({ kind: 'node-tree' })).toHaveLength(1)
+    expect(runtime.queryKnowledgeModules({ kind: 'board' })).toHaveLength(1)
   })
 })

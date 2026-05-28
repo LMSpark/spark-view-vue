@@ -105,7 +105,7 @@ export class TicketAiModule extends AiModule {
   public constructor(private readonly service: TicketService) {
     super({
       kind: TICKET_KIND,
-      name: 'Support Ticket',
+      name: '支持工单',
       description: '支持工单处理根模块。',
       functions: TICKET_FUNCTIONS,
       find: (ctx, childKind, query) => {
@@ -142,9 +142,7 @@ export class TicketAiModule extends AiModule {
 
 ```ts
 import {
-  AiAgentScope,
-  DefaultAiAgentSessionStore,
-  createAiAgentRegistration,
+  createAiBusinessKit,
 } from '@spark-view/spark-ai/agent'
 import type { AiAgentRegistration } from '@spark-view/spark-ai/agent'
 import {
@@ -153,7 +151,6 @@ import {
   type AiJsonParamShape,
   type AiJsonParams,
 } from '@spark-view/spark-ai/json'
-import { AiModuleRuntime } from '@spark-view/spark-ai/modules'
 import { TicketAiModule } from './modules'
 import { TicketService } from './service'
 
@@ -171,45 +168,30 @@ const TICKET_INPUT_SCHEMA = paramsSchema({
 
 export function createTicketRegistration(): AiAgentRegistration<TicketRunInput> {
   const service = new TicketService()
-  const runtime = new AiModuleRuntime()
-  runtime.register(new TicketAiModule(service))
-
-  const inspect = runtime.inspect()
-  if (!inspect.ok) {
-    throw new Error(`Ticket AI registration invalid: ${inspect.findings.map((item) => item.code).join(', ')}`)
-  }
-
-  return createAiAgentRegistration({
-    kindID: TICKET_BUSINESS_ID,
-    name: 'Support Ticket Assistant',
+  const kit = createAiBusinessKit<TicketRunInput>({
+    businessId: TICKET_BUSINESS_ID,
+    name: '支持工单助手',
     description: '支持工单助手。',
-    runtime,
-    sessionStore: new DefaultAiAgentSessionStore(),
-    inputContract: {
+    rootModule: new TicketAiModule(service),
+    input: {
       paramsSchema: TICKET_INPUT_SCHEMA,
       identityField: 'ticketId',
+      messageField: 'message',
       normalize: (input) => ({
         ticketId: requireText(input, 'ticketId'),
         message: requireText(input, 'message'),
       }),
-      toScope: (input) => new AiAgentScope(
-        TICKET_BUSINESS_ID,
-        input.ticketId,
-        input.ticketId,
-        input.ticketId,
-      ),
-      toOrchestration: (input) => ({
-        userMessage: input.message,
-        systemPrompt: `首轮先定位当前工单：module_find({ path: "/", childKind: "support-ticket", query: { id: "${input.ticketId}" } })。`,
-      }),
+      systemPrompt: (input) =>
+        `首轮先定位当前工单：module_find({ path: "/", childKind: "support-ticket", query: { id: "${input.ticketId}" } })。`,
     },
   })
+  return kit.registration
 }
 
 function requireText(input: AiJsonParams, fieldName: 'ticketId' | 'message'): string {
   const value = input[fieldName]
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error(`ticket input.${fieldName} must be a non-empty string.`)
+    throw new Error(`ticket input.${fieldName} 必须是非空字符串。`)
   }
   return value.trim()
 }
@@ -241,7 +223,7 @@ import { TicketAiModule } from './modules'
 import { TicketService } from './service'
 
 describe('TicketAiModule', () => {
-  it('sets ticket priority through module_call', async () => {
+  it('通过 module_call 设置工单优先级', async () => {
     const runtime = new AiModuleRuntime()
     runtime.register(new TicketAiModule(new TicketService()))
 

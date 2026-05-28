@@ -83,6 +83,20 @@ export type AiAgentHostRegistrationDescription = AiAgentHostRegistrationSummary 
   inspectReport: AiModuleRuntimeInspectReport
 }>
 
+export type AiAgentHostDryRunDiagnostic = Readonly<{
+  level: 'error' | 'warn' | 'info'
+  code: string
+  message: string
+  fix?: string
+}>
+
+export type AiAgentHostOrchestrationSummary = Readonly<{
+  title?: string
+  userMessageLength: number
+  systemPromptLength: number
+  readonlyStepCount: number
+}>
+
 export type AiAgentHostDryRunResult = Readonly<
   | {
     ok: true
@@ -91,8 +105,10 @@ export type AiAgentHostDryRunResult = Readonly<
     normalizedInput: AiJsonParams
     scope: AiAgentScope
     orchestration: AiAgentOrchestrationPlan
+    orchestrationSummary: AiAgentHostOrchestrationSummary
     tools: readonly string[]
     inspectReport: AiModuleRuntimeInspectReport
+    diagnostics: readonly AiAgentHostDryRunDiagnostic[]
   }
   | {
     ok: false
@@ -100,6 +116,7 @@ export type AiAgentHostDryRunResult = Readonly<
     error: Readonly<{
       message: string
     }>
+    diagnostics: readonly AiAgentHostDryRunDiagnostic[]
   }
 >
 
@@ -255,6 +272,7 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
         throw new Error(`AI host business moduleId is not registered: ${moduleId}`)
       }
       const task = createAiAgentTask(this.state.registry, moduleId, args)
+      const inspectReport = registration.runtime.inspect()
       return {
         ok: true,
         alias: normalizedAlias,
@@ -262,16 +280,24 @@ export class AiAgentHost<TEntries extends AiAgentHostEntryMap = {}> {
         normalizedInput: task.normalizedInput,
         scope: task.scope,
         orchestration: task.orchestration,
+        orchestrationSummary: summarizeOrchestration(task.orchestration),
         tools: registration.runtime.getTools().map((tool) => tool.function.name),
-        inspectReport: registration.runtime.inspect(),
+        inspectReport,
+        diagnostics: diagnosticsFromInspectReport(inspectReport),
       }
     } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
       return {
         ok: false,
         alias,
         error: {
-          message: error instanceof Error ? error.message : String(error),
+          message,
         },
+        diagnostics: [{
+          level: 'error',
+          code: 'DRY_RUN_FAILED',
+          message,
+        }],
       }
     }
   }
@@ -368,6 +394,31 @@ function summarizeRegistration(
     moduleCount: report.moduleCount,
     status: report.status,
   }
+}
+
+function summarizeOrchestration(orchestration: AiAgentOrchestrationPlan): AiAgentHostOrchestrationSummary {
+  return {
+    ...(orchestration.title === undefined ? {} : { title: orchestration.title }),
+    userMessageLength: orchestration.userMessage.length,
+    systemPromptLength: orchestration.systemPrompt.length,
+    readonlyStepCount: orchestration.readonlySteps?.length ?? 0,
+  }
+}
+
+function diagnosticsFromInspectReport(report: AiModuleRuntimeInspectReport): readonly AiAgentHostDryRunDiagnostic[] {
+  if (report.findings.length > 0) {
+    return report.findings.map((finding) => ({
+      level: finding.level,
+      code: finding.code,
+      message: finding.message,
+      ...(finding.fix === undefined ? {} : { fix: finding.fix }),
+    }))
+  }
+  return [{
+    level: 'info',
+    code: 'RUNTIME_INSPECT_OK',
+    message: `AiModuleRuntime inspect passed: moduleCount=${report.moduleCount}; rootKinds=[${report.rootKinds.join(', ')}]`,
+  }]
 }
 
 /** 类型守卫：判断一个值是否为 AiAgentHost 实例（通过 duck typing 检测四个方法） */

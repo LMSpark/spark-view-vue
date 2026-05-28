@@ -77,10 +77,10 @@ describe('json coercion helpers', () => {
 describe('AiModuleRegistry', () => {
   it('registers only constructed AiModule instances', () => {
     const registry = new AiModuleRegistry()
-    const moduleKind = createRootKind('pageDesign', 'Page Design')
+    const moduleKind = createRootKind('workspace', 'Workspace')
 
     expect(registry.register(moduleKind)).toBe(moduleKind)
-    expect(registry.get('pageDesign')).toBe(moduleKind)
+    expect(registry.get('workspace')).toBe(moduleKind)
     expect(registry.list()).toEqual([moduleKind])
   })
 
@@ -95,12 +95,12 @@ describe('AiModuleRegistry', () => {
 describe('AiModuleKnowledgeProjector', () => {
   it('projects module and function summaries for the fixed module_call protocol', () => {
     const registry = new AiModuleRegistry()
-    registry.register(createRootKind('pageDesign', 'Page Design'))
+    registry.register(createRootKind('workspace', 'Workspace'))
     registry.register(createFunctionKind())
     const projector = new AiModuleKnowledgeProjector(registry)
 
-    expect(projector.queryModules({ kind: 'pageDesign' })).toEqual([
-      expect.objectContaining({ kind: 'pageDesign', pathPattern: '/pageDesign[<pageDesignId>]' }),
+    expect(projector.queryModules({ kind: 'workspace' })).toEqual([
+      expect.objectContaining({ kind: 'workspace', pathPattern: '/workspace[<workspaceId>]' }),
     ])
     expect(projector.queryFunctions({ keyword: 'work' })).toEqual([
       expect.objectContaining({
@@ -149,9 +149,9 @@ describe('AiModuleKnowledgeProjector', () => {
     const projector = new AiModuleKnowledgeProjector(new AiModuleRegistry())
 
     const result = projector.guideHumanQuestion({
-      context: '修改页面',
-      reason: '缺少目标页面',
-      missingFacts: ['目标页面 ID'],
+      context: '修改任务',
+      reason: '缺少目标任务',
+      missingFacts: ['目标任务 ID'],
     })
 
     expect(result).toMatchObject({
@@ -159,7 +159,7 @@ describe('AiModuleKnowledgeProjector', () => {
       data: {
         shouldAskHuman: true,
         stopToolCalls: true,
-        question: expect.stringContaining('目标页面 ID'),
+        question: expect.stringContaining('目标任务 ID'),
       },
     })
   })
@@ -168,15 +168,15 @@ describe('AiModuleKnowledgeProjector', () => {
 describe('AiModuleRuntime.inspect', () => {
   it('reports a clean runtime and summarizes registered modules', () => {
     const runtime = new AiModuleRuntime()
-    runtime.register(createRootKind('pageDesign', 'Page Design'))
+    runtime.register(createRootKind('workspace', 'Workspace'))
 
     expect(runtime.inspect()).toMatchObject({
       ok: true,
       status: 'ok',
-      rootKinds: ['pageDesign'],
+      rootKinds: ['workspace'],
       modules: [
         expect.objectContaining({
-          kind: 'pageDesign',
+          kind: 'workspace',
           status: 'ok',
           functionCount: 0,
         }),
@@ -213,18 +213,18 @@ describe('AiModuleRuntime.inspect', () => {
 describe('AiModule path helpers', () => {
   it('builds, appends and parses paths with escaped ids', () => {
     const rootPath = buildAiModulePath([
-      { kind: 'pageDesign', id: 'page/a' },
+      { kind: 'workspace', id: 'workspace/a' },
     ])
     const childPath = appendAiModulePath(rootPath, {
-      kind: 'node-tree',
-      id: 'tree]main',
+      kind: 'board',
+      id: 'board]main',
     })
 
-    expect(rootPath).toBe('/pageDesign[page%2Fa]')
-    expect(childPath).toBe('/pageDesign[page%2Fa]/node-tree[tree%5Dmain]')
+    expect(rootPath).toBe('/workspace[workspace%2Fa]')
+    expect(childPath).toBe('/workspace[workspace%2Fa]/board[board%5Dmain]')
     expect(parseAiModulePath(childPath)).toEqual([
-      { kind: 'pageDesign', id: 'page/a' },
-      { kind: 'node-tree', id: 'tree]main' },
+      { kind: 'workspace', id: 'workspace/a' },
+      { kind: 'board', id: 'board]main' },
     ])
   })
 })

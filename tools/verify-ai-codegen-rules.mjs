@@ -25,8 +25,8 @@ const interfaceAllowlist = new Set([
   'packages/spark-page-config/src/page/services/app-services.ts:CapabilityTypeMap',
   'packages/spark-page-config/src/runtime/app-services.ts:CapabilityTypeMap',
   'packages/spark-component/src/core/capability-keys.ts:CapabilityTypeMap',
-  // Host session-types and transport-types are complete type-contract modules;
-  // topic-based re-export files add artificial indirection.
+  // Host session-types 与 transport-types 是完整类型契约模块；
+  // 按主题再次 re-export 会制造额外间接层。
   'packages/spark-ai/src/agent/index.ts:./session/session-types',
   'packages/spark-ai/src/index.ts:./agent/session/session-types',
   'packages/spark-ai/src/agent/index.ts:./transport/transport-types',
@@ -77,12 +77,17 @@ const maxDefaultPositionalSignatureParams = 3
 const maxConstructorParameterPropertyParams = 4
 
 const publicSurfaceAllowlist = new Set([
-  // Schema builders intentionally expose paired value builders and Options types:
-  // the Options names keep public function signatures short without hiding contracts.
+  // Schema 构造器会成对暴露值构造器与 Options 类型：
+  // Options 名称能让公共函数签名保持简短，同时不隐藏契约。
   'packages/spark-ai/src/index.ts:./json',
+  // Agent 与 module 协议聚合出口是四个允许 @spark-view/spark-ai subpath 背后的显式公共门面。
+  'packages/spark-ai/src/agent/index.ts:./business/ai-host',
+  'packages/spark-ai/src/agent/index.ts:./business/business-kit',
+  'packages/spark-ai/src/modules/index.ts:./protocol/module-metadata',
+  'packages/spark-ai/src/modules/protocol/index.ts:./module-metadata',
   'packages/spark-ai/src/json/index.ts:./helpers',
-  // Host session-types and transport-types are complete type-contract modules;
-  // topic-based re-export files add artificial indirection.
+  // Host session-types 与 transport-types 是完整类型契约模块；
+  // 按主题再次 re-export 会制造额外间接层。
   'packages/spark-ai/src/agent/index.ts:./session/session-types',
   'packages/spark-ai/src/index.ts:./agent/session/session-types',
   'packages/spark-ai/src/agent/index.ts:./transport/transport-types',
@@ -92,6 +97,7 @@ const publicSurfaceAllowlist = new Set([
 const publicClassMethodSurfaces = new Map([
   ['packages/spark-ai/src/modules/runtime/ai-module-runtime.ts:AiModuleRuntime', new Set([
     'register',
+    'inspect',
     'getTools',
     'executeTool',
     'getAttribute',
@@ -155,6 +161,7 @@ function scanSource(parsed, violations) {
   scanPublicSurfaceConvergence(parsed, violations)
   scanPublicClassMethodSurfaces(parsed, violations)
   scanSignatureConventions(parsed, violations)
+  scanLegacyProtocolLiterals(parsed, violations)
 
   for (const ref of collectModuleReferences(sourceFile)) {
     if (isForbiddenSparkAiSpecifier(ref.specifier)) {
@@ -249,6 +256,39 @@ function scanSource(parsed, violations) {
   }
 
   visit(sourceFile)
+}
+
+function scanLegacyProtocolLiterals(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
+  if (isTestFile(file)) return
+
+  function visit(node) {
+    if (ts.isStringLiteralLike(node) || ts.isNoSubstitutionTemplateLiteral(node)) {
+      const text = node.text
+      if (text === '$paths' || text.includes('"$paths"') || text.includes("'$paths'")) {
+        violations.push({
+          file,
+          line: lineFor(sourceFile, node, lineOffset),
+          message: 'legacy protocol identity $paths is forbidden; use module path plus session scope',
+        })
+      }
+      if (looksLikeDynamicFunctionToolName(text)) {
+        violations.push({
+          file,
+          line: lineFor(sourceFile, node, lineOffset),
+          message: `legacy dynamic function tool name is forbidden: ${text}`,
+        })
+      }
+    }
+
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+}
+
+function looksLikeDynamicFunctionToolName(value) {
+  return /^[a-z][a-z0-9-]*_[a-z][a-z0-9-]*_(?:[A-Z][A-Za-z0-9]*|[a-z][A-Za-z0-9]*[A-Z][A-Za-z0-9]*)$/u.test(value)
 }
 
 function scanNamedImportConvergence(parsed, violations) {

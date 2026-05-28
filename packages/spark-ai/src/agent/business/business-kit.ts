@@ -5,6 +5,7 @@ import type {
 import {
   AiModuleRuntime,
   type AiModule,
+  type AiModuleRuntimeInspectFinding,
   type AiModuleRuntimeInspectReport,
 } from '../../modules'
 import { DefaultAiAgentSessionStore } from '../session/default-session-store'
@@ -23,20 +24,34 @@ import type { AiAgentRegistration } from './registration-types'
 import type { AiAgentRuntimeContext } from './scope-types'
 
 export type AiBusinessIdOptions = Readonly<{
-  businessId?: string
-  kindID?: string
+  businessId: string
+}>
+
+export type AiBusinessInputOptions<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
+  paramsSchema: AiJsonSchemaObject
+  identityField: keyof TInput & string
+  messageField: keyof TInput & string
+  normalize?: (input: AiJsonParams) => TInput
+  systemPrompt: string | ((input: TInput) => string)
+  title?: string | ((input: TInput) => string | undefined)
+  readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined)
 }>
 
 export type CreateSimpleInputContractOptions<TInput extends AiJsonParams = AiJsonParams> =
-  AiBusinessIdOptions & Readonly<{
-    paramsSchema: AiJsonSchemaObject
-    identityField: keyof TInput & string
-    messageField: keyof TInput & string
-    normalize?: (input: AiJsonParams) => TInput
-    systemPrompt: string | ((input: TInput) => string)
-    title?: string | ((input: TInput) => string | undefined)
-    readonlySteps?: readonly string[] | ((input: TInput) => readonly string[] | undefined)
-  }>
+  AiBusinessIdOptions & AiBusinessInputOptions<TInput>
+
+export type AiBusinessLifecycleOptions = Readonly<{
+  systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
+  afterFunctionCall?: (
+    options: AiAgentAfterFunctionCallOptions,
+  ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
+  onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>
+  onEndBusinessInstance?: (
+    context: AiAgentRuntimeContext,
+    directive: AiAgentLifecycleDirective,
+  ) => void | Promise<void>
+  releaseModuleInstance?: (moduleInstanceId: string) => void
+}>
 
 export type CreateAiBusinessKitOptions<TInput extends AiJsonParams = AiJsonParams> =
   AiBusinessIdOptions & Readonly<{
@@ -45,18 +60,9 @@ export type CreateAiBusinessKitOptions<TInput extends AiJsonParams = AiJsonParam
     rootModule: AiModule
     modules?: readonly AiModule[]
     runtime?: AiModuleRuntime
-    inputContract: AiAgentInputContract<TInput>
+    input: AiBusinessInputOptions<TInput>
     sessionStore?: AiAgentSessionStore
-    systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
-    afterFunctionCall?: (
-      options: AiAgentAfterFunctionCallOptions,
-    ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
-    onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>
-    onEndBusinessInstance?: (
-      context: AiAgentRuntimeContext,
-      directive: AiAgentLifecycleDirective,
-    ) => void | Promise<void>
-    releaseModuleInstance?: (moduleInstanceId: string) => void
+    lifecycle?: AiBusinessLifecycleOptions
   }>
 
 export type AiBusinessKit<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
@@ -70,16 +76,18 @@ export function createSimpleInputContract<TInput extends AiJsonParams = AiJsonPa
   options: CreateSimpleInputContractOptions<TInput>,
 ): AiAgentInputContract<TInput> {
   const businessId = normalizeBusinessId(options)
+  const identityField = normalizeInputField(options.identityField, 'identityField')
+  const messageField = normalizeInputField(options.messageField, 'messageField')
   return {
     paramsSchema: options.paramsSchema,
-    identityField: normalizeRequiredText(options.identityField, 'identityField') as keyof TInput & string,
-    normalize: options.normalize ?? ((input) => ({ ...input } as TInput)),
+    identityField,
+    normalize: options.normalize ?? defaultNormalize,
     toScope: (input) => {
-      const identity = readRequiredString(input, options.identityField, 'identityField')
+      const identity = readRequiredString(input, identityField, 'identityField')
       return createAiAgentScope(businessId, identity)
     },
     toOrchestration: (input) => {
-      const userMessage = readRequiredString(input, options.messageField, 'messageField')
+      const userMessage = readRequiredString(input, messageField, 'messageField')
       const systemPrompt = resolveTextOption(options.systemPrompt, input, 'systemPrompt')
       const title = resolveOptionalTextOption(options.title, input)
       const readonlySteps = resolveOptionalTextListOption(options.readonlySteps, input)
@@ -104,18 +112,24 @@ export function createAiBusinessKit<TInput extends AiJsonParams = AiJsonParams>(
     runtime.register(moduleKind)
   }
   const inspectReport = runtime.inspect()
+  assertInspectableRuntime(inspectReport, businessId)
+  const lifecycle = options.lifecycle
+  const inputContract = createSimpleInputContract<TInput>({
+    businessId,
+    ...options.input,
+  })
   const registration = createAiAgentRegistration<TInput>({
     kindID: businessId,
     name: options.name,
     description: options.description,
     runtime,
-    inputContract: options.inputContract,
+    inputContract,
     sessionStore: options.sessionStore ?? new DefaultAiAgentSessionStore(),
-    ...(options.systemPrompt === undefined ? {} : { systemPrompt: options.systemPrompt }),
-    ...(options.afterFunctionCall === undefined ? {} : { afterFunctionCall: options.afterFunctionCall }),
-    ...(options.onStartSession === undefined ? {} : { onStartSession: options.onStartSession }),
-    ...(options.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: options.onEndBusinessInstance }),
-    ...(options.releaseModuleInstance === undefined ? {} : { releaseModuleInstance: options.releaseModuleInstance }),
+    ...(lifecycle?.systemPrompt === undefined ? {} : { systemPrompt: lifecycle.systemPrompt }),
+    ...(lifecycle?.afterFunctionCall === undefined ? {} : { afterFunctionCall: lifecycle.afterFunctionCall }),
+    ...(lifecycle?.onStartSession === undefined ? {} : { onStartSession: lifecycle.onStartSession }),
+    ...(lifecycle?.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: lifecycle.onEndBusinessInstance }),
+    ...(lifecycle?.releaseModuleInstance === undefined ? {} : { releaseModuleInstance: lifecycle.releaseModuleInstance }),
   })
   return {
     businessId,
@@ -126,8 +140,44 @@ export function createAiBusinessKit<TInput extends AiJsonParams = AiJsonParams>(
 }
 
 function normalizeBusinessId(options: AiBusinessIdOptions): string {
-  const businessId = options.businessId ?? options.kindID
-  return normalizeRequiredText(businessId, 'businessId')
+  return normalizeRequiredText(options.businessId, 'businessId')
+}
+
+function defaultNormalize<TInput extends AiJsonParams>(input: AiJsonParams): TInput {
+  if (isSchemaValidatedInput<TInput>(input)) return input
+  throw new Error('[AiBusinessKit] input must match paramsSchema before normalization.')
+}
+
+function isSchemaValidatedInput<TInput extends AiJsonParams>(input: AiJsonParams): input is TInput {
+  void input
+  return true
+}
+
+function normalizeInputField<TInput extends AiJsonParams>(
+  field: keyof TInput & string,
+  label: string,
+): keyof TInput & string {
+  normalizeRequiredText(field, label)
+  return field
+}
+
+function assertInspectableRuntime(report: AiModuleRuntimeInspectReport, businessId: string): void {
+  if (report.status === 'ok') return
+  const finding = report.findings.find((item) => item.level === 'error')
+    ?? report.findings.find((item) => item.level === 'warn')
+  throw new Error(formatInspectFailure(report, businessId, finding))
+}
+
+function formatInspectFailure(
+  report: AiModuleRuntimeInspectReport,
+  businessId: string,
+  finding: AiModuleRuntimeInspectFinding | undefined,
+): string {
+  const rootKinds = report.rootKinds.length === 0 ? '(none)' : report.rootKinds.join(', ')
+  const summary = `AiBusinessKit runtime inspect failed for "${businessId}": status=${report.status}; moduleCount=${report.moduleCount}; rootKinds=[${rootKinds}]`
+  if (finding === undefined) return summary
+  const fix = finding.fix === undefined ? '' : `; fix=${finding.fix}`
+  return `${summary}; firstFinding=${finding.level}/${finding.code}: ${finding.message}${fix}`
 }
 
 function normalizeRequiredText(value: unknown, field: string): string {

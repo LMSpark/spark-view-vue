@@ -4,7 +4,7 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】Agent 会话层的只读诊断入口。从 AiAgentSessionRecord
- *   提取摘要和转录视图，用于 Agent 能力诊断、smoke 运行摘要、
+ *   提取摘要和转录视图，用于 Agent 能力诊断、冒烟运行摘要、
  *   调试面板或日志导出。不修改 sessionStore 状态。
  *
  * 【核心函数】
@@ -12,7 +12,7 @@
  *   createAiAgentSessionTranscript  — 将 session history 转为方向标识的调试转录
  *   previewAiAgentDiagnosticValue   — 安全序列化并裁剪诊断值
  *
- * 【消费方】APP 层调试面板、smoke 运行摘要、日志导出
+ * 【消费方】APP 层调试面板、冒烟运行摘要、日志导出
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -60,12 +60,12 @@ export type AiAgentSessionTranscriptOptions = Readonly<{
 // 第 2 节 · 公共诊断入口
 // ═══════════════════════════════════════════════════════════════
 
-// PAGE_DESIGN_REFACTOR_SOURCE[session-diagnostics]: AI 会话历史摘要/转录的通用来源；历史保留在 spark-ai sessionStore，smoke 只读取，不另存完整历史副本。
+// AI_AGENT_REFACTOR_SOURCE[session-diagnostics]: AI 会话摘要和转录来自 sessionStore；冒烟检查不能维护重复历史。
 /**
  * 汇总会话历史的数量、失败工具调用和最后一条助手文本。
  * 用于判断 Agent 工具能力是否闭环，也是再次接入会话前的轻量状态视图。
  *
- * `sessionRecord` 为空时返回空摘要，便于 smoke 在会话启动失败后仍能生成当前运行摘要。
+ * `sessionRecord` 为空时返回空摘要，便于冒烟检查在会话启动失败后仍能生成当前运行摘要。
  */
 export function summarizeAiAgentSessionRecord(sessionRecord: AiAgentSessionRecord | null | undefined): AiAgentSessionSummary {
   const history = getAiAgentSessionHistory(sessionRecord)

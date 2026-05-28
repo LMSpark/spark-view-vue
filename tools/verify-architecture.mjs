@@ -50,8 +50,39 @@ export function scanArchitectureRules(options = {}) {
   checkSrcImplementationRules(root, exclude, violations)
   checkWorkspacePackageImports(root, exclude, violations)
   checkSparkAiPublicSurface(root, violations)
+  checkSparkAiBusinessMaterial(root, exclude, violations)
 
   return { violations }
+}
+
+function checkSparkAiBusinessMaterial(root, exclude, violations) {
+  const files = collectSourceFiles({
+    root,
+    includeRoots: ['packages/spark-ai/src'],
+    extensions: SCRIPT_EXTENSIONS,
+    exclude,
+  })
+
+  const forbidden = [
+    { pattern: /\bpageDesign\b/u, label: 'pageDesign' },
+    { pattern: /\bPAGE_DESIGN_[A-Z0-9_]*\b/u, label: 'PAGE_DESIGN_*' },
+    { pattern: /\bpage-design\b/u, label: 'page-design' },
+  ]
+
+  for (const filePath of files) {
+    const rel = relativePath(root, filePath)
+    const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/u)
+    for (let index = 0; index < lines.length; index += 1) {
+      const line = lines[index]
+      const match = forbidden.find((item) => item.pattern.test(line))
+      if (match === undefined) continue
+      violations.push({
+        file: rel,
+        line: index + 1,
+        message: `spark-ai kernel must not contain business material: ${match.label}`,
+      })
+    }
+  }
 }
 
 export function runArchitectureCli(argv = process.argv.slice(2)) {

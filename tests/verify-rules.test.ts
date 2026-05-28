@@ -47,6 +47,8 @@ describe('verification rules', () => {
       "const value = {} as Record<string, unknown>",
       'type OldType = LlmParameterSchemaRoot',
       'type OldMember = AiModule.PathContext',
+      "const dynamicTool = 'task_detail_getNode'",
+      "const legacyArgs = '{\"$paths\":[\"task-a\"]}'",
     ].join('\n'))
     writeFile(root, 'src/bad.vue', [
       '<script setup lang="ts">',
@@ -65,6 +67,8 @@ describe('verification rules', () => {
     expect(output).toContain('type assertion is forbidden')
     expect(output).toContain('legacy AI type name is forbidden')
     expect(output).toContain('legacy AiModule namespace member is forbidden')
+    expect(output).toContain('legacy dynamic function tool name is forbidden')
+    expect(output).toContain('legacy protocol identity $paths is forbidden')
     expect(output).toContain('bad.vue')
   })
 
@@ -198,6 +202,40 @@ describe('verification rules', () => {
     expect(result.status).toBe(1)
     expect(output).toContain('spark-ai package exports')
     expect(output).toContain('spark-ai aliases')
+  })
+
+  it('rejects business material inside the spark-ai kernel', () => {
+    const root = createTempRoot()
+    writeJson(root, 'packages/spark-ai/package.json', {
+      name: '@spark-view/spark-ai',
+      exports: {
+        '.': './dist/index.js',
+        './json': './dist/json/index.js',
+        './agent': './dist/agent/index.js',
+        './modules': './dist/modules/index.js',
+      },
+    })
+    writeFile(root, 'tsconfig.json', [
+      '{',
+      '  "compilerOptions": {',
+      '    "paths": {',
+      '      "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],',
+      '      "@spark-view/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
+      '      "@spark-view/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
+      '      "@spark-view/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"]',
+      '    }',
+      '  }',
+      '}',
+    ].join('\n'))
+    writeFile(root, 'packages/spark-ai/src/bad.ts', [
+      "export const PAGE_DESIGN_TRACE = 'pageDesign should stay in business packages'",
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-architecture.mjs', '--root', root])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('spark-ai kernel must not contain business material')
   })
 })
 

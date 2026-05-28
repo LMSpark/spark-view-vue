@@ -220,8 +220,8 @@ class AiAgentMessageSender {
  *   scope      — 业务作用域
  *   sessionId  — 后端会话 ID（kind + 顶层实例 ID）
  */
-// PAGE_DESIGN_AI_TRACE[host-session-entry]: pageDesign live LLM 评测经 AiAgent.run 进入 AI Host 会话线；清理冗余时保留这一处作为前端 AI 会话入口。
-// PAGE_DESIGN_REFACTOR_SOURCE[host-session-entry]: 前端 Agent 会话入口；sessionId 来自 kind + instanceId，turn 隔离在 send/transport 层继续传递。
+// AI_AGENT_TRACE[host-session-entry]: 实时业务会话经 AiAgent.run 进入 AI Host。
+// AI_AGENT_REFACTOR_SOURCE[host-session-entry]: sessionId 来自业务 kind + 实例 id；turn 隔离继续在 send/transport 层传递。
 export class AiAgentSession {
   public readonly target: AiAgentTarget
   public readonly scope: AiAgentScope
@@ -310,8 +310,8 @@ export async function runAiAgent<TInput extends AiJsonParams = AiJsonParams>(
  * 3. 直接使用 AiModuleRuntime 固定协议工具规约
  * 4. 返回 AiAgentStartSessionResult（含 session + tools）
  */
-// PAGE_DESIGN_AI_TRACE[agent-session-start]: startAiAgentRegistrationSession 负责调用业务 onStartSession 并投影 modules 固定工具；pageDesign 的工具列表从这里进入 LLM。
-// PAGE_DESIGN_REFACTOR_SOURCE[tool-schema-projection]: modules 工具投影成 LLM function schema 的源头；不要在业务 mjs 中手写工具 schema。
+// AI_AGENT_TRACE[agent-session-start]: startAiAgentRegistrationSession 负责调用业务 onStartSession，并投影固定 module 工具。
+// AI_AGENT_REFACTOR_SOURCE[tool-schema-projection]: modules 是 LLM function schema 的来源；业务壳层不要手写工具 schema。
 export async function startAiAgentRegistrationSession<TInput extends AiJsonParams>(
   registration: AiAgentRegistration<TInput>,
   context: AiAgentRuntimeContext,

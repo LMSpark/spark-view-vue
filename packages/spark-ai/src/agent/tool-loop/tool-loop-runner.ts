@@ -98,8 +98,8 @@ export class AiAgentToolLoopRunner {
    *   7. 若 lifecycleDirective ≠ 'continue' → 进入生命周期终止流程
    *   8. 否则把本轮消息 append 到 V4 后端会话，下一轮用空 messages 续写 session 历史
    */
-  // PAGE_DESIGN_AI_TRACE[host-tool-loop]: pageDesign 的 LLM round、toolCalls、工具结果回填都在这里闭环；冗余清理时用它区分 AI 编排和具体业务工具实现。
-  // PAGE_DESIGN_REFACTOR_SOURCE[tool-result-feedback]: 工具执行结果和 ok:false 参数校验回灌给 LLM 的通用闭环；业务工具只返回结构化结果。
+  // AI_AGENT_TRACE[host-tool-loop]: LLM round、tool call 和工具结果回填在这里完成通用 Agent 闭环。
+  // AI_AGENT_REFACTOR_SOURCE[tool-result-feedback]: ok:false 参数校验回灌属于内核闭环；业务工具只返回结构化结果。
   public async runToolLoop<TInput extends AiJsonParams>(input: AiAgentToolLoopInput<TInput>): Promise<void> {
     const { registration, scope, request, turn, clearSelected } = input
     const runtimeContext = toAiAgentRuntimeScope(scope)

@@ -166,13 +166,13 @@ export type AiModulePayloadMetadata = Readonly<{
 // ============================================================================
 
 export type AiModuleOptions = Readonly<{
-  /** 模块类型标识（全小写，在注册表中唯一，如 "school"、"page-design"） */
+  /** 模块类型标识（全小写，在注册表中唯一，如 "school"、"ticket"） */
   kind: string
   /** 模块显示名（LLM 可见，如 "学校管理"、"页面设计器"） */
   name: string
   /** 模块说明（LLM 可见，描述业务能力，如 "管理学校基本信息和班级配置"） */
   description: string
-  /** 父模块 kind（可选，表达模块层级关系，如 "page-design" 是 "table" 的 parentKind） */
+  /** 父模块 kind（可选，表达模块层级关系，如 "workspace" 是 "board" 的 parentKind） */
   parentKind?: string
   /** 属性表（可选，声明 LLM 可读写的一组属性） */
   attributes?: readonly AiModuleAttributeMetadata[]
