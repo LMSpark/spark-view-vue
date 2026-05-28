@@ -9,16 +9,14 @@
  */
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
-import { PAGE_CONFIG_FILE_NAMES, useDevState, type DevWorkspaceTab, type PageConfigFileName } from './useDevState'
+import { useDevState, type DevWorkspaceTab, type PageConfigFileName } from './useDevState'
 import { onPageConfigChange } from '@/services/sse-events'
-
-function isPageFileName(value: string): value is PageConfigFileName {
-  return PAGE_CONFIG_FILE_NAMES.some((name) => name === value)
-}
 
 export function useDevSystem() {
   const { router, tenantPath } = useTenantRouter()
   const state = useDevState()
+  const isPageFileName = (value: string): value is PageConfigFileName =>
+    state.pageFileNames.some((name) => name === value)
 
   // ─── 工作区 Tab 状态 ───────────────────────────────────
   const workTab = ref<DevWorkspaceTab>('props')

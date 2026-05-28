@@ -10,7 +10,7 @@ import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import { getSparkNodeChildren } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { BasePageConfigLoader, PageConfigFileApi } from '../config'
-import type { AppNavRoot, NavNode, NavNodeKind, NavNodeLocation, NavigationConfigClient } from '../navigation'
+import type { AppNavRoot, NavigationNodeDraft, NavNode, NavNodeKind, NavNodeLocation, NavigationConfigClient } from '../navigation'
 import {
   canUseModuleNodeKind as canUseNavigationModuleNodeKind,
   createReservedRootGroup as createNavigationReservedRootGroup,
@@ -72,6 +72,8 @@ export type PageModelRemoveMountedResult = {
   deletedNode: NavNode | null
   deletedFiles: boolean
 }
+
+export type PageModelNavigationDraft = NavigationNodeDraft
 
 export type PageModelFileVersionSummary = {
   version: number
@@ -365,16 +367,16 @@ export class PageModel {
         break
       }
       case 'rule':
-        await this.rule.save(this.pageId, this.fileApi)
+        await this.saveFile('rule.json')
         break
       case 'dataSet':
-        await this.dataSet.save(this.pageId, this.fileApi)
+        await this.saveFile('pagedata.json')
         break
       case 'style':
-        await this.style.save(this.pageId, this.fileApi)
+        await this.saveFile('style.css')
         break
       case 'script':
-        await this.script.save(this.pageId, this.fileApi)
+        await this.saveFile('script.js')
         break
     }
   }

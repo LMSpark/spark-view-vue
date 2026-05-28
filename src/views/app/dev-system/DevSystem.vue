@@ -58,7 +58,7 @@
             </template>
             <el-empty v-else description="在左侧树中选择节点开始编辑" />
           </el-tab-pane>
-          <el-tab-pane v-for="fname in PAGE_CONFIG_FILE_NAMES" :key="fname" :name="fname" :disabled="!state.activePageId.value">
+          <el-tab-pane v-for="fname in state.pageFileNames" :key="fname" :name="fname" :disabled="!state.activePageId.value">
             <template #label>
               <span :class="{ 'tab-dirty': isWorkspaceTabDirty(fname) }">
                 <NavIcon :name="fileIcon(fname)" :size="13" /> {{ fname }}
@@ -128,7 +128,7 @@
  * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
  */
 import { onMounted } from 'vue'
-import { PAGE_CONFIG_FILE_NAMES, type PageConfigFileName } from './useDevState'
+import type { PageConfigFileName } from './useDevState'
 import { useDevSystem } from './useDevSystem'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'

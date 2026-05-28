@@ -4,17 +4,24 @@
  * 编辑能力是普通业务能力，只负责 DevSystem 的页面配置编辑。
  *
  * SSOT 设计：
- * - 页面 4 文件（rule / pagedata / script / style）的真源由 PageEditor 持有。
+ * - 页面 4 文件（rule / pagedata / script / style）的真源由 PageModel 持有。
  * - Vue 层只通过 PageEditor adapter 方法读取文本、状态、dirty、undo/redo 和工具模型。
  * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件状态合一暴露。
  *
- * 后端由 PageEditor 统一聚合；adapter 保留 UI 响应式映射、localStorage、
+ * 页面生命周期由 PageModel 覆盖；adapter 保留 UI 响应式映射、localStorage、
  * autoSave、refreshRoutes、demoNavRoot fallback 和状态消息。
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
 import { refreshRoutes } from '@spark-view/spark-app'
-import type { LinkTarget, NavNode, NavNodeKind, NavPermissionMode } from '@spark-view/spark-app'
+import type { NavNode, NavNodeKind } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
+import {
+  PageModel,
+  type PageModelFileName,
+  type PageModelFileVersionSummary,
+  type PageModelNavigationDraft,
+  type PageModelPageSummary,
+} from '@spark-view/spark-page-config'
 import {
   createPageEditor,
 } from '@spark-view/spark-page-config/editor'
@@ -24,37 +31,10 @@ import {
   type PageDesignAiRunOptions,
 } from '@/services/page-design-ai-runner'
 
-export const PAGE_CONFIG_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const
-export type PageConfigFileName = typeof PAGE_CONFIG_FILE_NAMES[number]
-export type PageConfigFileVersionSummary = {
-  version: number
-  createdAt: string
-  isCurrent: boolean
-  modifiedBy: string | null
-}
-export type PageConfigPageSummary = Record<string, unknown> & {
-  pageId: string
-  pageType?: string
-  files?: PageConfigFileName[]
-}
-export type NavigationNodeDraft = {
-  id: string
-  title: string
-  icon: string
-  nodeKind: NavNodeKind
-  dividerAfter: boolean
-  description: string
-  path: string
-  redirect: string
-  linkTarget: LinkTarget
-  parentPageId: string
-  childPlacement: string
-  order: number
-  hidden: boolean
-  disabled: boolean
-  refId: string
-  permissionMode: NavPermissionMode
-}
+export type PageConfigFileName = PageModelFileName
+export type PageConfigFileVersionSummary = PageModelFileVersionSummary
+export type PageConfigPageSummary = PageModelPageSummary
+export type NavigationNodeDraft = PageModelNavigationDraft
 
 // ═══════════════════════════════════════════════════════════
 // 类型
@@ -77,106 +57,6 @@ export type RunPageDesignAiOptions = PageDesignAiRunOptions
 import { getPageApi, getNavApi } from '@/services/api-paths'
 import { createAuthHeaders, http } from '@/services/http'
 
-type NavNodeLocation = {
-  node: NavNode
-  parent: NavNode | null
-  parentId: string | null
-  index: number
-}
-
-function normalizePageIdFromPath(path: string | undefined | null): string {
-  return path ? path.replace(/^\/+/, '').trim() : ''
-}
-
-function isConfigNodeKind(nodeKind: NavNodeKind): boolean {
-  return nodeKind === 'page' || nodeKind === 'sub-page'
-}
-
-function isPageLikeKind(kind: NavNodeKind): boolean {
-  return kind === 'page'
-    || kind === 'system-page'
-    || kind === 'system-action'
-    || kind === 'link'
-    || kind === 'sub-page'
-}
-
-function findNodeById(nodes: readonly NavNode[], targetId: string): NavNode | null {
-  for (const node of nodes) {
-    if (node.id === targetId) return node
-    const children = node.children
-    if (Array.isArray(children)) {
-      const found = findNodeById(children, targetId)
-      if (found !== null) return found
-    }
-  }
-  return null
-}
-
-function findParentNodeById(nodes: readonly NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {
-  for (const node of nodes) {
-    if (node.id === targetId) return parent
-    const children = node.children
-    if (Array.isArray(children)) {
-      const found = findParentNodeById(children, targetId, node)
-      if (found !== null) return found
-    }
-  }
-  return null
-}
-
-function findNodeLocation(nodes: readonly NavNode[], targetId: string, parent: NavNode | null = null): NavNodeLocation | null {
-  for (let index = 0; index < nodes.length; index += 1) {
-    const node = nodes[index]
-    if (node === undefined) continue
-    if (node.id === targetId) return { node, parent, parentId: parent?.id ?? null, index }
-    const children = node.children
-    if (Array.isArray(children)) {
-      const found = findNodeLocation(children, targetId, node)
-      if (found !== null) return found
-    }
-  }
-  return null
-}
-
-function findConfigNodeByPageId(nodes: readonly NavNode[], pageId: string): NavNode | null {
-  for (const node of nodes) {
-    if (isConfigNodeKind(node.nodeKind ?? 'page') && normalizePageIdFromPath(node.path) === pageId) {
-      return node
-    }
-    const children = node.children
-    if (Array.isArray(children)) {
-      const found = findConfigNodeByPageId(children, pageId)
-      if (found !== null) return found
-    }
-  }
-  return null
-}
-
-function isSystemRootDirectory(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
-  return Boolean(node?.nodeKind === 'system-directory' && rootNodes.some(rootNode => rootNode.id === node.id))
-}
-
-function canUseModuleNodeKind(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
-  if (!node) return true
-  const parent = findParentNodeById(rootNodes, node.id)
-  if (!parent) return true
-  return !isPageLikeKind(parent.nodeKind ?? 'module')
-}
-
-function cloneNavNode(node: NavNode): NavNode {
-  return JSON.parse(JSON.stringify(node)) as NavNode
-}
-
-function createReservedRootGroup(placement: 'toolbar' | 'user-menu', createId: () => string): NavNode {
-  const template = demoNavRoot.children.find(node => node.childPlacement === placement)
-  if (template !== undefined) {
-    return { ...cloneNavNode(template), id: createId() }
-  }
-  return placement === 'toolbar'
-    ? { id: createId(), nodeKind: 'system-directory', title: '工具栏', icon: 'SetUp', childPlacement: 'toolbar', children: [] }
-    : { id: createId(), nodeKind: 'system-directory', title: '用户菜单', icon: 'User', childPlacement: 'user-menu', children: [] }
-}
-
 // ═══════════════════════════════════════════════════════════
 // 共享状态工厂
 // ═══════════════════════════════════════════════════════════
@@ -188,6 +68,7 @@ export function useDevState() {
     getNavigationApi: getNavApi,
     getHeaders: createAuthHeaders,
   })
+  const pageFileNames = editor.getPageFileNames()
   const capabilityConsumer = getCurrentInstance() === null
     ? null
     : useSparkComponent({ type: 'dev-system-ai-runner' }).sparkConsume
@@ -246,8 +127,8 @@ export function useDevState() {
     set path(v: string) { const p = getActivePage(); if (p) { p.navigation.path = v; markNavDirty() } },
     get redirect(): string { return getEditorActivePage()?.navigation.redirect ?? '' },
     set redirect(v: string) { const p = getActivePage(); if (p) { p.navigation.redirect = v; markNavDirty() } },
-    get linkTarget(): LinkTarget { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
-    set linkTarget(v: LinkTarget) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
+    get linkTarget(): NavigationNodeDraft['linkTarget'] { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
+    set linkTarget(v: NavigationNodeDraft['linkTarget']) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
     get parentPageId(): string { return getEditorActivePage()?.navigation.parentPageId ?? '' },
     set parentPageId(v: string) { const p = getActivePage(); if (p) { p.navigation.parentPageId = v; markNavDirty() } },
     get childPlacement(): string { return getEditorActivePage()?.navigation.childPlacement ?? '' },
@@ -323,7 +204,7 @@ export function useDevState() {
     return snap.dirtyFiles.has(name)
   }
 
-  const hasAnyFileDirty = computed(() => PAGE_CONFIG_FILE_NAMES.some((n) => isDocumentDirty(n)))
+  const hasAnyFileDirty = computed(() => pageFileNames.some((n) => isDocumentDirty(n)))
   const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
 
   const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
@@ -395,11 +276,11 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function isSystemRootDirectoryInTree(node: NavNode | null | undefined): boolean {
-    return isSystemRootDirectory(node, treeData.value)
+    return PageModel.isSystemRootDirectory(node, treeData.value)
   }
 
   function canUseModuleNodeKindInTree(node: NavNode | null | undefined): boolean {
-    return canUseModuleNodeKind(node, treeData.value)
+    return PageModel.canUseModuleNodeKind(node, treeData.value)
   }
 
   function getNavDraft(): NavigationNodeDraft | null {
@@ -407,8 +288,8 @@ export function useDevState() {
   }
 
   function syncActivePageContextByPath(path: string): void {
-    const pageId = normalizePageIdFromPath(path)
-    if (pageId && isConfigNodeKind(navDraft.nodeKind)) {
+    const pageId = PageModel.resolvePageIdFromPath(path)
+    if (pageId && PageModel.isConfigNodeKind(navDraft.nodeKind)) {
       setActivePageContext(pageId, activePageId.value !== pageId)
       return
     }
@@ -530,7 +411,7 @@ export function useDevState() {
     }
 
     if (preservedSelectedNodeId) {
-      const matchedNode = findNodeById(treeData.value, preservedSelectedNodeId)
+      const matchedNode = PageModel.findNodeById(treeData.value, preservedSelectedNodeId)
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
@@ -540,7 +421,7 @@ export function useDevState() {
     }
 
     if (preservedActivePageId) {
-      const matchedNode = findConfigNodeByPageId(treeData.value, preservedActivePageId)
+      const matchedNode = PageModel.findConfigNodeByPageId(treeData.value, preservedActivePageId)
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
@@ -572,8 +453,8 @@ export function useDevState() {
 
   async function syncPageFilesForNodeAfterLoad(node: NavNode, forceReload: boolean): Promise<void> {
     editor.selectNode(node.id)
-    const pageId = normalizePageIdFromPath(node.path)
-    if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
+    const pageId = PageModel.resolvePageIdFromPath(node.path)
+    if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page')) {
       setActivePageContext(pageId, forceReload || activePageId.value !== pageId)
       try {
         await editor.ensureActivePageFilesLoaded({ forceReload, allowMissingAsEmpty: true })
@@ -679,7 +560,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function loadNodeToForm(node: NavNode): void {
-    const pageId = normalizePageIdFromPath(node.path) || node.id || `nav-node-${node.id}`
+    const pageId = PageModel.resolvePageIdFromPath(node.path) || node.id || `nav-node-${node.id}`
     editor.setActivePage(pageId)
     const page = editor.getActivePage()
     if (page) {
@@ -865,7 +746,7 @@ export function useDevState() {
   }
 
   async function saveAllDirtyPageFiles(): Promise<void> {
-    for (const name of PAGE_CONFIG_FILE_NAMES) {
+    for (const name of pageFileNames) {
       if (isDocumentDirty(name)) await savePageFile(name)
     }
   }
@@ -896,8 +777,8 @@ export function useDevState() {
     selectedNode.value = node
     editor.selectNode(node.id)
     try {
-      const pageId = normalizePageIdFromPath(node.path)
-      if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
+      const pageId = PageModel.resolvePageIdFromPath(node.path)
+      if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page')) {
         setActivePageContext(pageId, activePageId.value !== pageId)
         await ensureActivePageFilesLoaded()
       } else {
@@ -993,7 +874,10 @@ export function useDevState() {
   }
 
   function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): NavNode {
-    return createReservedRootGroup(placement, () => crypto.randomUUID())
+    return PageModel.createReservedRootGroup(placement, {
+      createId: () => crypto.randomUUID(),
+      templateRoot: demoNavRoot,
+    })
   }
 
   async function restoreReservedRootGroup(placement: 'toolbar' | 'user-menu'): Promise<void> {
@@ -1018,7 +902,7 @@ export function useDevState() {
   }
 
   async function addChildNode(parent: NavNode): Promise<void> {
-    const pageId = normalizePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
+    const pageId = PageModel.resolvePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
     try {
       await editor.createMountedPage({
         pageId,
@@ -1039,8 +923,8 @@ export function useDevState() {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
     }
-    const pageId = normalizePageIdFromPath(data.path)
-    const shouldRemoveMountedPage = pageId.length > 0 && isConfigNodeKind(data.nodeKind ?? 'page')
+    const pageId = PageModel.resolvePageIdFromPath(data.path)
+    const shouldRemoveMountedPage = pageId.length > 0 && PageModel.isConfigNodeKind(data.nodeKind ?? 'page')
     const deletePromise = shouldRemoveMountedPage
       ? editor.removeMountedPage({ pageId, nodeId: data.id })
       : editor.deleteNode(data.id)
@@ -1066,7 +950,7 @@ export function useDevState() {
 
   async function moveNodeInTree(data: NavNode): Promise<void> {
     if (isSystemRootDirectoryInTree(data)) return
-    const location = findNodeLocation(treeData.value, data.id)
+    const location = PageModel.findNodeLocation(treeData.value, data.id)
     if (!location) return
     navSaving.value = true
     try {
@@ -1212,6 +1096,7 @@ export function useDevState() {
     navEmpty,
 
     // 页面 4 文件
+    pageFileNames,
     activePageId,
     fileSaving,
     pageFilesRevision,

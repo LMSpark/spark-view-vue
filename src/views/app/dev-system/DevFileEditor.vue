@@ -49,7 +49,7 @@
       </div>
 
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
-        <el-tab-pane v-for="f in PAGE_CONFIG_FILE_NAMES" :key="f" :name="f">
+        <el-tab-pane v-for="f in props.state.pageFileNames" :key="f" :name="f">
           <template #label>
             <span class="file-tab-label" :class="{ 'file-dirty': editor.isFileDirty(f) }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
@@ -139,7 +139,6 @@ import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
 import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@spark-view/spark-page-config/editor'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
-import { PAGE_CONFIG_FILE_NAMES } from './useDevState'
 import type { DevState, PageConfigFileVersionSummary, PageConfigFileName } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
@@ -548,5 +547,4 @@ function formatVersionTime(raw: string | null | undefined): string {
   justify-content: center;
 }
 </style>
-
 
