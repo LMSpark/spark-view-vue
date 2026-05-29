@@ -7,8 +7,6 @@
  *    MODULE_CONTEXT / PAGE_COMPONENT_REGISTRY / CSS_SCOPE
  * 3. 页面 UI 服务与权限键（从 spark-utils 迁入）：
  *    PAGE_SERVICE / PAGE_PERMISSION_MODE / NavPermissionMode
- * 4. 字段渲染局部策略：
- *    FIELD_PERMISSION_POLICY
  *
  * 注：PageServiceCapability 等运行时服务契约以
  * @spark-view/spark-component/runtime 为 SSOT。
@@ -26,8 +24,6 @@ import type {
 export type {
   NavPermissionMode,
 } from '@spark-view/spark-data'
-
-export type FieldPermissionPolicy = 'unrestricted'
 
 export type {
   PageMessageType,
@@ -121,7 +117,6 @@ declare module '@spark-view/spark-utils' {
     'spark:capability:css-scope': PageCssScopeCapability
     'spark:capability:page-service': PageServiceCapability
     'spark:capability:permission-mode': NavPermissionMode
-    'spark:capability:field-permission-policy': FieldPermissionPolicy
   }
 }
 
@@ -192,10 +187,6 @@ function isNavPermissionMode(value: unknown): value is NavPermissionMode {
   return value === 'none' || value === 'masked' || value === 'invisible'
 }
 
-function isFieldPermissionPolicy(value: unknown): value is FieldPermissionPolicy {
-  return value === 'unrestricted'
-}
-
 // ── 能力键 ────────────────────────────────────────────────────────────────
 
 export const PAGE_DATASET = defineCapability<DataSetContract>('spark:capability:page-dataset', isDataSetContract)
@@ -208,4 +199,3 @@ export const CSS_SCOPE = defineCapability<PageCssScopeCapability>('spark:capabil
 
 export const PAGE_SERVICE = defineCapability<PageServiceCapability>('spark:capability:page-service', isPageServiceCapability)
 export const PAGE_PERMISSION_MODE = defineCapability<NavPermissionMode>('spark:capability:permission-mode', isNavPermissionMode)
-export const FIELD_PERMISSION_POLICY = defineCapability<FieldPermissionPolicy>('spark:capability:field-permission-policy', isFieldPermissionPolicy)

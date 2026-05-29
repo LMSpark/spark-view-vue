@@ -7,12 +7,12 @@
  *
  * ## 设计原则
  * - 纯函数优先：所有权限检查/过滤/字段状态计算均为纯函数，无类实例、无单例
- * - usePermission 是唯一的 Vue composable 桥接，内部消费 PAGE_PERMISSION_MODE 与字段局部策略能力
+ * - usePermission 是唯一的 Vue composable 桥接，内部消费 PAGE_PERMISSION_MODE 能力
  * - 其他 composable 只能通过 usePermission() 访问权限数据，不允许直接 sparkConsume 权限能力
  */
 
-// ── 权限能力键 ──
-export { FIELD_PERMISSION_POLICY, PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
+// ── 页面权限模型（能力键，仅 SparkPageRenderer 应 import） ──
+export { PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
 
 // ── 权限检查纯函数 ──
 export {
@@ -47,4 +47,3 @@ export { usePermission } from './usePermission'
 export type { FieldRenderConfig, FieldRenderState } from './FieldRenderHelper'
 export type { PermissionAction, PermissionActionContext, PermissionActionName } from './PermissionResolver'
 export type { UsePermissionReturn } from './usePermission'
-export type { FieldPermissionPolicy } from '../core/capability-keys.js'
