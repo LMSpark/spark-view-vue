@@ -1,3 +1,23 @@
+/**
+ * spark-page-config AI 子系统的公共入口（barrel）。
+ *
+ * ## 架构层次
+ * ```
+ * index.ts  (公共 barrel — 外部消费者唯一入口)
+ *   ├── page-design-module.ts      编排入口：组装 5 个子 kind → AiAgentRegistration
+ *   ├── page-design-kind-ids.ts    常量注册：root + 5 个子 kind 的 ID 与元数据
+ *   ├── page-design-session-diagnostics.ts  质量诊断：事后校验 payload guide 覆盖率
+ *   └── leave-request.ts           独立示例：人工请假业务模块（与 PageDesign 无关）
+ * ```
+ *
+ * ## 暴露原则
+ * - 只暴露外部消费者需要的符号：业务注册入口、kind ID 常量、诊断工具。
+ * - 内部 AiModule 子类（PageDesignDatasetAiModule 等）不从此 barrel 导出，
+ *   它们由 page-design-module.ts 内部组装，外部只通过 Host registry 间接使用。
+ */
+
+// ── 编排入口：pageDesign 业务注册与 Host 门面 ──────────────
+
 export {
   PAGE_DESIGN_MODULE_ID,
   PAGE_DESIGN_AI_AGENT_HOST_ALIAS,
@@ -12,6 +32,8 @@ export type {
   PageDesignRunMode,
 } from './page-design-module'
 
+// ── 常量：pageDesign 的 root + 5 个子 kind ID ──────────────
+
 export {
   PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
   PAGE_DESIGN_DATASET_KIND,
@@ -21,6 +43,8 @@ export {
   PAGE_DESIGN_ROOT_KIND,
   PAGE_DESIGN_TEXT_MODEL_KIND,
 } from './page-design-kind-ids'
+
+// ── 质量诊断：事后校验 payload guide 覆盖率 ─────────────────
 
 export {
   componentTypesFromPageDesignRule,
@@ -34,6 +58,8 @@ export type {
   PageDesignFileSnapshot,
   PageDesignPayloadGuideValidation,
 } from './page-design-session-diagnostics'
+
+// ── 独立示例：人工请假业务模块 ─────────────────────────────
 
 export {
   LEAVE_REQUEST_KIND,

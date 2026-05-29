@@ -1,15 +1,45 @@
 /**
- * PageDesign modules/agent 业务注册。
+ * PageDesign AI 业务注册——整个 spark-page-config AI 子系统的编排入口。
  *
- * PageDesign 只注册到 Host 一次(moduleId=pageDesign),内部暴露 1 个根 kind 和 5 个子 kind:
- * pageDesign -> lifecycle / text-model / payload-catalog / node-tree / dataset。
+ * ## 架构概览
+ * ```
+ * createPageDesignBusinessKindDefinition(options)
+ *   ├── new PageDesignService({ getEditHost })          // 业务服务层：封装四文件读写
+ *   ├── new AiModuleRuntime()                          // AI 模块运行时
+ *   ├── runtime.register(new PageDesignRootAiModule())  // 根 kind：实例发现与子模块路由
+ *   ├── runtime.register(new PageDesignLifecycleAiModule())     // 流程控制
+ *   ├── runtime.register(new PageDesignTextModelAiModule())     // script/style 编辑
+ *   ├── runtime.register(new PageDesignPayloadCatalogAiModule()) // 组件知识库
+ *   ├── runtime.register(new PageDesignNodeTreeAiModule())      // rule.json 编辑
+ *   ├── runtime.register(new PageDesignDatasetAiModule())       // pagedata.json 编辑
+ *   └── → AiAgentDefinition { runtime, inputContract, sessionStore, systemPrompt, hooks }
+ * ```
  *
- * Agent 只通过固定工具工作:
- * module_query({ kind }) → module_guide({ kind, functionName? }) →
- * human_question({ context, reason, missingFacts }) when user facts are missing →
- * module_find({ path: "/", childKind: "pageDesign", query }) →
- * module_find({ path: "/pageDesign[<pageId>]", childKind, query }) →
- * module_call({ path, functionName, args })。
+ * ## 会话生命周期
+ * ```
+ * 1. onStartSession    → service.bootstrap() 校验 live binding
+ * 2. toOrchestration   → 生成首轮 tool_call 编排：
+ *                         module_find → describeProgress → describeDesignFlow
+ * 3. LLM 自主循环      → 按 100 步流程，通过 5 个子 kind 编辑四文件
+ * 4. afterFunctionCall → 检测 edit host 不可用 → abort 会话
+ * 5. releaseModuleInstance → service.releasePage() 清理资源
+ * ```
+ *
+ * ## 五个子 kind 的写入顺序
+ * dataset（步骤 21-88）→ node-tree（步骤 89-92）→ text-model（步骤 93-96）
+ * node-tree 的 validateDataFirst 强制"数据优先"规则。
+ *
+ * ## 五种运行模式
+ * - create：从零建立新页面
+ * - modify：先盘点旧配置，再小步修改
+ * - fix：定位失败绑定或校验错误，修正后复核
+ * - data：只处理数据模型（步骤 21-88）
+ * - style：只处理样式（步骤 96-100），不改数据模型
+ *
+ * ## 公共 API
+ * - `createPageDesignBusinessRegistration` → AiAgentRegistration（Host 注册用）
+ * - `createPageDesignBusinessKindDefinition` → AiAgentDefinition（kindID 真源）
+ * - `ensurePageDesignBusiness` → 便捷门面：自动注册到 AiAgentHost
  */
 
 import {

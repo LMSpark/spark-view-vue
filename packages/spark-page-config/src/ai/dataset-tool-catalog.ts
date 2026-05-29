@@ -1,18 +1,36 @@
 /**
- * 页面设计 DataSet 工具模块。
+ * 页面设计 DataSet 工具模块（pagedata.json 编辑）。
  *
- * 提供 DataSetCrudTool/pagedata.json 数据空间的完整 CRUD 函数注册表，覆盖：
- * 历史：undo / redo / clearHistory / canUndo / canRedo / historyCursor / export
- * 表：listTables / getTable / createTable / updateTable / renameTable / deleteTable
- * 列：listColumns / getColumn / createColumn / updateColumn / renameColumn / deleteColumn
- * 视图：listViews / getView / createView / updateView / deleteView
- * 行：listRows / getRow / createRow / createRows / updateRow / updateRows / deleteRow / deleteRows
- * 关系：listRelations / getRelation / createRelation / updateRelation / deleteRelation
- * 依赖：listDependencies / getDependency / createDependency / updateDependency / deleteDependency
- * 聚合：listAggregates / getAggregate / addAggregate / updateAggregate / removeAggregate
- * 计算列：getComputeExpression / setComputeExpression / clearComputeExpression
+ * ## 在 PageDesign 流程中的位置
+ * dataset 是四文件编辑的第一环——按 dataset → node-tree → text-model 顺序，
+ * 必须先建立数据模型（表、列、视图、行、关系、聚合），再搭建页面结构。
+ * 对应 100 步流程的步骤 21-88（数据规划与数据利用）。
+ * node-tree 的 validateDataFirst 会强制检查：写目录组件前 pagedata.json 必须有 DataTable。
  *
- * 所有操作直接作用于 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool 实例。
+ * ## 动作分组（~40 个）
+ * ```
+ * 历史管理（7）： export / canUndo / canRedo / historyCursor / undo / redo / clearHistory
+ * 表操作（6）：   listTables / getTable / createTable / updateTable / renameTable / deleteTable
+ * 列操作（6）：   listColumns / getColumn / createColumn / updateColumn / renameColumn / deleteColumn
+ * 视图操作（5）： listViews / getView / createView / updateView / deleteView
+ * 行操作（7）：   listRows / getRow / createRow / createRows / updateRow / updateRows / deleteRow / deleteRows
+ * 关系操作（5）： listRelations / getRelation / createRelation / updateRelation / deleteRelation
+ * 依赖操作（5）： listDependencies / getDependency / createDependency / updateDependency / deleteDependency
+ * 聚合操作（5）： listAggregates / getAggregate / addAggregate / updateAggregate / removeAggregate
+ * 计算列（3）：   getComputeExpression / setComputeExpression / clearComputeExpression
+ * ```
+ *
+ * ## 方法名映射
+ * 部分动作名与 DataSetCrudTool 实际方法名不同，通过 DATASET_ACTION_METHOD_NAMES 映射：
+ * - export → toJson
+ * - canUndo → getCanUndo
+ * - canRedo → getCanRedo
+ * - historyCursor → getHistoryCursor
+ * 其余动作名与 DataSetCrudTool 方法名一一对应（DATASET_DIRECT_METHOD_NAMES）。
+ *
+ * ## 变异追踪
+ * DATASET_MUTATING_ACTION_NAMES 记录所有会修改 pagedata.json 状态的动作，
+ * 用于 undo/redo 历史和脏状态追踪。
  */
 
 import * as SparkAiSchema from '@spark-view/spark-ai/json'

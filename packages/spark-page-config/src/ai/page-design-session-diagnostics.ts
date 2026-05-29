@@ -1,9 +1,21 @@
 /**
- * PageDesign AI session diagnostics.
+ * PageDesign AI 会话质量诊断。
  *
- * 该模块只处理 pageDesign 通用结构证据：rule.json 中出现了哪些目录组件、
- * 当前 AI 会话是否显式查询过这些组件的 payload guide。具体业务页面是否合格
- * 由对应 smoke/test 自己判断，不放入 page-config 底层。
+ * ## 诊断流程
+ * ```
+ * validatePageDesignPayloadGuidesFromSession(files, sessionRecord)
+ *   ├── componentTypesFromPageDesignRule(files)
+ *   │     └── parsePageDesignJsonFile → flattenPageDesignSparkNodes
+ *   │           从 rule.json 提取所有 payload-catalog 内存在的组件 type
+ *   └── guidedPageDesignPayloadKeysFromSession(sessionRecord)
+ *         从会话历史的 module_call(guidePayload) 中提取已查询过的组件 key
+ *         → 比对得出 missingGuides
+ * ```
+ *
+ * ## 职责边界
+ * 该模块只检查"LLM 是否显式查询过组件参数指南"这一结构事实。
+ * 具体业务页面是否合格（数据完整性、交互逻辑、视觉还原）由对应
+ * smoke/test 自行判断，不放入 page-config 底层。
  */
 
 import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'

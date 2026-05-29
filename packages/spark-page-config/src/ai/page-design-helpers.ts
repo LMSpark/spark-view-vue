@@ -1,7 +1,18 @@
 /**
- * PageDesign modules 共享 helper。
+ * PageDesign 子模块共享工具。
  *
- * 多个 catalog AiModule 子类的公共工具函数。
+ * ## 职责
+ * - `createCurrentPageRef` — 从 AiModulePathContext 提取当前 pageId，构造 AiModuleInstanceRef
+ * - `findCurrentPageInstance` — 按 childKind 过滤并返回当前页面实例引用
+ *
+ * ## 消费方
+ * 所有 5 个子模块的 AiModule 子类都依赖这两个函数来发现"当前页面实例"，
+ * 保证 LLM 操作始终作用于用户选中的目标页面，而不是跨页面操作。
+ *
+ * ## 设计要点
+ * - pageId 来源优先级：ctx.host.moduleInstanceId → ctx.segment.id → ''
+ * - findCurrentPageInstance 只在 childKind === ownKind 时返回实例，
+ *   避免 lifecycle 模块错误响应 node-tree 的 find 请求。
  */
 
 import type {

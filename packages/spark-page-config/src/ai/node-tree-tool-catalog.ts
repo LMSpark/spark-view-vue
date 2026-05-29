@@ -1,12 +1,38 @@
 /**
- * 页面设计节点树工具模块。
+ * 页面设计节点树工具模块（rule.json 编辑）。
  *
- * 提供 nodeTree 的完整 CRUD 函数注册表：
- * 读取：getNode / getLocation / hasNode / getParent / listChildren / countNodes / getAllData / collectDataKeys / collectHandlerNames / findByType
- * 写入：addNode / addNodes / moveNode / setProps / setPropsBatch / replaceNode / replaceNodes / removeNode / removeNodes
+ * ## 在 PageDesign 流程中的位置
+ * node-tree 是四文件编辑的第二环（dataset → node-tree → text-model），
+ * 对应 100 步流程的步骤 89-92（页面结构）。
+ * 所有 rule.json 的结构变更都集中在本 AiModule，是 PageDesign 最核心的写入边界。
  *
- * 所有操作作用于 SparkNodeTree/rule.json 模型，通过 componentId（节点顶层 id 字段）定位节点，
- * 绝对禁止将组件类型名（r-table / r-tabs 等）当作 componentId 使用。
+ * ## 动作总览（19 个）
+ * ```
+ * 读取（10 个）：getNode / getLocation / hasNode / getParent / listChildren /
+ *              countNodes / getAllData / collectDataKeys / collectHandlerNames / findByType
+ * 写入（9 个）： addNode / addNodes / moveNode / setProps / setPropsBatch /
+ *              replaceNode / replaceNodes / removeNode / removeNodes
+ * ```
+ *
+ * ## 写入前校验流水线（8 步）
+ * 每次写动作执行前，按以下顺序逐项校验，任一失败即拒绝写入并返回修复指引：
+ * ```
+ * 1. validateWrittenNodeIds       — 每个新增/替换 SparkNode 必须带顶层 id
+ * 2. validateWritableNodeTypes    — type 必须在 payload-catalog 内或为 native HTML 标签
+ * 3. validateSetPropsWritableTargets — setProps 目标节点 type 合法性
+ * 4. validateDataFirst            — 目录组件写入前，pagedata.json 必须已有 DataTable
+ * 5. validateCompleteContainerWrite — 禁止只写空容器壳（div/r-section/r-card 等无子节点）
+ * 6. ensurePayloadGuides          — 组件 type 的 payload guide 必须存在
+ * 7. validateNodePayloadProps     — 按 paramsSchema 校验 node.props（由 PageDesignService 代理）
+ * 8. validateRequiredDataBindings — r-form/r-detail 有 dataViewKey 时必须带 contextDataMember:"currentRow"
+ * ```
+ *
+ * ## 关键约束
+ * - **componentId 语义**：必须是节点顶层 id 字段的值，绝对禁止将组件类型名（r-table/r-tabs）当作 componentId
+ * - **type 白名单**：只能是 payload-catalog 可查询到的业务组件 或 NATIVE_HTML_TAGS 中的标准 HTML 标签
+ * - **数据优先**：写目录组件前 pagedata.json 必须已有业务表（由 validateDataFirst 强制）
+ * - **merge=false 警告**：整体替换 props 时必须把原有 dataViewKey/contextDataMember/field 等关键绑定完整带回
+ * - **空容器检测**：addNode/addNodes 时如果所有节点都是无子节点的空容器壳，视为不完整写入并拒绝
  */
 
 import * as SparkAiSchema from '@spark-view/spark-ai/json'

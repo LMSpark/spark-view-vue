@@ -1,8 +1,32 @@
 /**
- * 页面设计参数荷载目录工具模块。
+ * 页面设计组件参数荷载目录工具模块。
  *
- * 本文件按功能顺序承载组件 payload 目录：构建产物读取、
- * provider registry、LLM 工具动作、guide 记录和 paramsSchema 投影。
+ * ## 在 PageDesign 流程中的位置
+ * payload-catalog 是 LLM 的"组件知识库"——node-tree 写入 SparkNode 前，
+ * LLM 必须先通过本模块查询目标组件的 props 参数指南，再按 paramsSchema 构造合法 props。
+ * ```
+ * LLM 想写一个 r-table
+ *   → payload-catalog.queryPayloads({ keyword: "table" })   // 获取候选组件摘要
+ *   → payload-catalog.guidePayload({ key: "renderer-table" }) // 获取完整 paramsSchema
+ *   → node-tree.addNode({ node: { type: "r-table", props: {...} } })
+ * ```
+ *
+ * ## 两层查询设计
+ * - `queryPayloads` — 返回摘要（key/type/category/description/requiredProps），
+ *   不包含完整 paramsSchema。LLM 先浏览候选组件，再按需深入。
+ * - `guidePayload` — 返回单个组件的完整 paramsSchema + props + emits。
+ *   成功调用后自动通知 PageDesignService 记录已查询的组件指南，
+ *   供 session diagnostics 事后校验覆盖率。
+ *
+ * ## Provider 注册
+ * 本模块注册一个 provider：moduleKind=node-tree, payloadRef=spark.component。
+ * LLM 通过 module_call(path=payload-catalog, functionName=guidePayload, args={key}) 查询时，
+ * registry 按 moduleKind + payloadRef 路由到正确的 provider。
+ *
+ * ## 数据来源
+ * 组件目录数据来自 `./payloads/component-catalog.json`（VCM 构建产物），
+ * 在 import time 校验结构完整性。推荐排序由 RECOMMENDED_PAYLOAD_ORDER 控制，
+ * 优先展示 r-section/r-form/r-table 等高频组件。
  */
 
 import {

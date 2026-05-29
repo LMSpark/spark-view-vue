@@ -1,10 +1,27 @@
 /**
- * 页面设计生命周期工具模块。
+ * 页面设计生命周期与流程控制工具模块。
  *
- * 提供三个函数：
- * - bootstrap — Host 启动会话时自动执行，校验 live binding 能力并进入 editing phase
- * - describeProgress — 查询当前编辑运行状态、可用性和下一步建议
- * - describeDesignFlow — 查询页面设计 100 步流程，支持阶段/步骤过滤
+ * ## 在 PageDesign 流程中的位置
+ * ```
+ * Host 启动 pageDesign 会话
+ *   → lifecycle.bootstrap()          [自动] 校验 live binding（nodeTree / dataset / text-model 是否就绪）
+ *   → lifecycle.describeProgress()   [首轮] 查询当前编辑阶段、binding 可用性、下一步建议
+ *   → lifecycle.describeDesignFlow() [首轮] 查询 100 步流程，按 intent 返回匹配的任务知识
+ *   → dataset / node-tree / text-model  按流程阶段执行实际编辑
+ *   → lifecycle.describeProgress()   [循环] 不确定状态时复查
+ * ```
+ *
+ * ## 三个动作的职责
+ * - `bootstrap` — 只做 live binding 校验，不写四文件。Host 启动时自动调用，
+ *   LLM 常规流程不得主动调用，除非工具结果明确要求重新校验。
+ * - `describeProgress` — 只读编辑运行状态，返回 phase / bindings / nextStep。
+ * - `describeDesignFlow` — 只读 100 步流程事实与任务知识；
+ *   支持 phase/step/afterStep/intent 四种过滤维度。
+ *
+ * ## 设计原则
+ * 本模块是"流程知识源"——LLM 通过它知道当前在第几步、下一步该做什么。
+ * 四文件的实际写入必须经 dataset、node-tree 或 text-model 子模块，
+ * lifecycle 自身不持有任何写入能力。
  */
 
 import {

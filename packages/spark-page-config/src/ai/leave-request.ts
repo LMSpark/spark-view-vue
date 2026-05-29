@@ -1,7 +1,36 @@
 /**
- * 人工请假模块：草稿服务 + modules/agent 业务注册。
+ * 人工请假模块——独立的 AI 业务示例。
  *
- * 由 leave-request-service.ts + leave-request-module.ts 合并而成。
+ * ## 与 PageDesign 的关系
+ * 本模块与 PageDesign **完全独立**，不共享任何类型、服务或 AiModule。
+ * 它只是恰好放在 `ai/` 目录下，作为"如何用 spark-ai 框架注册一个 AI 业务模块"的参考实现。
+ *
+ * ## 模块结构
+ * ```
+ * SECTION 1: LeaveRequestService          草稿状态机（draft → submitted / cancelled）
+ * SECTION 2: LeaveRequestAiModule         AI 工具暴露（4 个动作 + 生命周期钩子）
+ *            LeaveRequestPersonAiModule   人员目录（只读属性查询）
+ *            createLeaveRequestBusinessRegistration  完整的 AiAgentRegistration 装配
+ * ```
+ *
+ * ## 会话生命周期
+ * ```
+ * 1. onStartSession     → 注入人员目录、系统提示词
+ * 2. LLM 自主循环       → describeDraft → setDraftFields → submitDraft
+ * 3. afterFunctionCall  → submitDraft 成功后自动 complete；
+ *                         cancelDraft 成功后自动 abort
+ * 4. releaseModuleInstance → service.releaseDraft() 清理
+ * ```
+ *
+ * ## 四个 AI 动作
+ * - `describeDraft` — 查看草稿当前状态与已填字段
+ * - `setDraftFields` — 填写/修改草稿字段（申请人、类型、日期、原因、审批人）
+ * - `submitDraft` — 提交草稿（校验必填字段 → 状态改为 submitted）
+ * - `cancelDraft` — 取消草稿（状态改为 cancelled，可选填写取消原因）
+ *
+ * ## 公共 API
+ * - `createLeaveRequestBusinessRegistration(options)` → AiAgentRegistration
+ * - `createLeaveRequestDraftId(now?)` → 生成草稿 ID
  */
 
 // ── SECTION 1: 请假草稿服务（原 leave-request-service.ts）───────────

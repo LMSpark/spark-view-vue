@@ -1,10 +1,25 @@
 /**
- * 页面设计文本模型工具模块。
+ * 页面设计文本模型工具模块（script.js / style.css 读写）。
  *
- * 提供四个函数：readScript / writeScript / readStyle / writeStyle
- * 用于读写当前页面的 script.js 和 style.css 文本模型内容。
- * Host 启动 pageDesign 会话时会自动完成 lifecycle.bootstrap，确保宿主已绑定 readScript/readStyle/writeScript/writeStyle 能力。
- * 写入为全量覆盖，不支持 patch。
+ * ## 在 PageDesign 流程中的位置
+ * text-model 是四文件编辑的最后一环——按 dataset → node-tree → text-model 顺序，
+ * 只有在数据表和页面结构就位后，才进入脚本和样式的写入阶段。
+ * 对应 100 步流程的步骤 93-96（行为与样式）。
+ *
+ * ## 四个动作
+ * - `readScript` / `readStyle` — 读取当前全文，无参数
+ * - `writeScript` / `writeStyle` — 全量覆盖写入（不支持 patch）
+ *
+ * ## writeScript 的前置校验
+ * 写入前会通过 `validateScriptServiceContract` 检查脚本内容是否使用了
+ * 运行时不可用的伪 API（如 $page.getDataSet、$page.setFieldValue 等），
+ * 以及函数签名是否超过 3 个位置参数。命中任一规则则拒绝写入并返回修复指引。
+ *
+ * ## 运行时 API 合同
+ * - 数据入口：$dataSet（DataView / CRUD）
+ * - 组件入口：$components.getApi("component-id")
+ * - 页面服务：$page.showMessage / showConfirm / navigate 等（仅限白名单能力）
+ * - 禁止的伪 API 列表见 FORBIDDEN_SCRIPT_API_RULES
  */
 
 import {
