@@ -46,9 +46,7 @@ export function writeDataViewEditingValue(input: DataViewEditingWriteInput): boo
   const { source, row, field, value } = input
   if (!row || !isDataViewEditingSource(source)) return false
   const rowId = source.getPkKey(row)
-  if (rowId === undefined) {
-    throw new Error(`字段 "${field}" 绑定到 DataView，但当前行缺少可解析主键，无法写入编辑态`)
-  }
+  if (rowId === undefined) return false
   source.updateEditingValue(rowId, field, value)
   return true
 }
