@@ -96,7 +96,7 @@ type ApplyFilterSafelyOptions = {
 function isEmptyFilterValue(value: unknown): boolean {
   if (value === undefined || value === null) return true
   if (typeof value === 'string') return value.trim().length === 0
-  if (Array.isArray(value)) return value.length === 0
+  if (Array.isArray(value)) return value.length === 0 || value.every(isEmptyFilterValue)
   return false
 }
 
@@ -315,11 +315,43 @@ function toResidentFieldRefCondition(descriptor: ResidentFieldRefFilterDescripto
 function buildCondition(config: SparkNode, value: unknown): FilterExpression | undefined {
   const field = getNodeField(config)
   if (!field || isEmptyFilterValue(value)) return undefined
+  if (isRangeFilterConfig(config)) {
+    return buildRangeCondition(field, value)
+  }
   return {
     field,
     op: inferFilterOperator(config, value),
     value: toFilterValueExpression(value),
   }
+}
+
+function toOptionalFilterValueExpression(value: unknown): FilterValueExpression | undefined {
+  if (isEmptyFilterValue(value)) return undefined
+  return toFilterValueExpression(value)
+}
+
+function buildRangeCondition(field: string, value: unknown): FilterExpression | undefined {
+  if (!Array.isArray(value)) {
+    return {
+      field,
+      op: FILTER_OPERATOR_EQUALS,
+      value: toFilterValueExpression(value),
+    }
+  }
+
+  const start = toOptionalFilterValueExpression(value[0])
+  const end = toOptionalFilterValueExpression(value[1])
+  if (start === undefined && end === undefined) return undefined
+  if (start !== undefined && end !== undefined) {
+    return {
+      field,
+      op: FILTER_OPERATOR_BETWEEN,
+      value: [start, end],
+    }
+  }
+  if (start !== undefined) return { field, op: '>=', value: start }
+  if (end !== undefined) return { field, op: '<=', value: end }
+  return undefined
 }
 
 // ============================================================

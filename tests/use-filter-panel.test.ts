@@ -181,6 +181,70 @@ describe('useFilterPanel', () => {
     scope.stop()
   })
 
+  it('范围筛选会跳过双空值，单边值转换为上下界条件', async () => {
+    const { view, setFilter } = createView({
+      rows: [{ id: 1, amount: 100 }],
+      columns: [
+        { name: 'id' },
+        { name: 'amount' },
+      ],
+      resourceType: 'static-data',
+    })
+
+    const filterChildren = [
+      {
+        type: 'r-number',
+        props: {
+          field: 'amount',
+          filterMode: 'range',
+        },
+        children: [],
+      },
+    ]
+
+    const { scope, api, logger } = await mountTableFilters(view, filterChildren)
+    api.filterModel['amount'] = [undefined, undefined]
+
+    await nextTick()
+    await Promise.resolve()
+
+    expect(setFilter).not.toHaveBeenCalled()
+    expect(api.activeFilterCount.value).toBe(0)
+    expect(logger.error).not.toHaveBeenCalled()
+
+    api.filterModel['amount'] = [100, undefined]
+    await nextTick()
+    await Promise.resolve()
+
+    expect(setFilter).toHaveBeenLastCalledWith({
+      field: 'amount',
+      op: '>=',
+      value: 100,
+    })
+    expect(api.activeFilterCount.value).toBe(1)
+
+    api.filterModel['amount'] = [undefined, 200]
+    await nextTick()
+    await Promise.resolve()
+
+    expect(setFilter).toHaveBeenLastCalledWith({
+      field: 'amount',
+      op: '<=',
+      value: 200,
+    })
+
+    api.filterModel['amount'] = [100, 200]
+    await nextTick()
+    await Promise.resolve()
+
+    expect(setFilter).toHaveBeenLastCalledWith({
+      field: 'amount',
+      op: 'between',
+      value: [100, 200],
+    })
+    scope.stop()
+  })
+
   it('结构化 ref 常驻条件会同步到 DataView 且不进入过滤条输入模型', async () => {
     const { view, setFilter } = createView({
       rows: [{ id: 1, total: 20, minTotal: 10 }],
