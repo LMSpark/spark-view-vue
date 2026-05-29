@@ -454,7 +454,7 @@ describe('PageConfigLoader', () => {
       expect(mockFileLoader.load).toHaveBeenNthCalledWith(2, '/zero-code-page/pagedata.json')
     })
 
-    it('loadPageConfig: 清单不可用时忽略可选脚本和样式 404', async () => {
+    it('loadPageConfig: 清单不可用时脚本和样式 404 会导致整体加载失败', async () => {
       mockRequestClient.get.mockRejectedValue(new Error('manifest unavailable'))
       mockFileLoader.load
         .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
@@ -464,10 +464,9 @@ describe('PageConfigLoader', () => {
 
       const r = await loader.loadPageConfig('zero-code-page')
 
-      expect(r.success).toBe(true)
-      expect(r.data?.script).toBeUndefined()
-      expect(r.data?.css).toBeUndefined()
-      expect(mockFileLoader.load).toHaveBeenCalledTimes(4)
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(3)
     })
 
     it('loadScript: 远程 fetch 文本文件', async () => {
@@ -530,10 +529,10 @@ describe('PageConfigLoader', () => {
       expect(r.data).toBeUndefined()
     })
 
-    it('loadPageFileContent: 编辑态清单已知缺失时由 loader 短路，不发逐文件 404 请求', async () => {
+    it('loadPageFileContent: 清单已知缺失时由 loader 短路，不发逐文件 404 请求', async () => {
       mockRequestClient.get.mockResolvedValue([{ pageId: 'orders', files: ['rule.json'] }])
 
-      const r = await loader.loadPageFileContent('missing-page', 'rule.json', { allowMissingAsEmpty: true })
+      const r = await loader.loadPageFileContent('missing-page', 'rule.json')
 
       expect(r.success).toBe(false)
       expect(r.reason).toBe('not-found')

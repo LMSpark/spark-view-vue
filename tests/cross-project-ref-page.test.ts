@@ -147,8 +147,11 @@ describe('CrossProjectRefPage', () => {
 
     await pageModel.load()
 
-    expect(requests[0]?.url).toBe('/tenants/lmspark/projects/engineering-pm/pages-config/project-list/rule.json')
-    expect(requests[0]?.headers).toMatchObject({
+    const ruleRequest = requests.find((request) =>
+      String(request.url).endsWith('/project-list/rule.json'),
+    )
+    expect(ruleRequest?.url).toBe('/tenants/lmspark/projects/engineering-pm/pages-config/project-list/rule.json')
+    expect(ruleRequest?.headers).toMatchObject({
       'X-Tenant-Id': 'lmspark',
       'X-Project-Id': 'engineering-pm',
     })

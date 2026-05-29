@@ -87,17 +87,12 @@ export class PageDataSetModel {
   async load(
     pageId: string,
     configLoader: BasePageConfigLoader,
-    options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean },
+    options?: { forceReload?: boolean },
   ): Promise<void> {
     const result = await configLoader.loadPageFileContent(pageId, 'pagedata.json', {
       forceReload: options?.forceReload === true,
-      allowMissingAsEmpty: options?.allowMissingAsEmpty === true,
     })
     if (!result.success) {
-      if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) {
-        this.resetToEmpty(pageId)
-        return
-      }
       throw new Error(result.error ?? result.reason ?? 'pagedata.json 加载失败')
     }
     const rawText = result.data ?? ''

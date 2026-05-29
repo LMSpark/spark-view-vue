@@ -196,7 +196,7 @@ describe('PageEditor', () => {
 
     await editor.loadNavigation()
     editor.selectNode('orders-node')
-    await editor.selectPage({ allowMissingAsEmpty: true })
+    await editor.selectPage()
 
     const snapshot = editor.readSnapshot()
     expect(snapshot.pageId).toBe('orders')
@@ -216,7 +216,7 @@ describe('PageEditor', () => {
     })
 
     await editor.loadNavigation()
-    await editor.selectPage('draft-page', { allowMissingAsEmpty: true })
+    await editor.selectPage('draft-page')
 
     const snapshot = editor.readSnapshot()
     expect(snapshot.pageId).toBe('draft-page')
@@ -226,34 +226,26 @@ describe('PageEditor', () => {
     expect(snapshot.dataSetTool).not.toBeNull()
   })
 
-  it('lets PageModel open a missing page as empty through the loader boundary', async () => {
+  it('rejects missing page files instead of silently opening as empty', async () => {
     const { editor, loader } = createEditorHarness({
       files: {},
       root: buildNavRoot([]),
     })
 
     await editor.loadNavigation()
-    await editor.selectPage('employee-leave-form-smoke', { allowMissingAsEmpty: true })
+    await expect(editor.selectPage('employee-leave-form-smoke')).rejects.toThrow('not found')
 
-    const snapshot = editor.readSnapshot()
-    expect(snapshot.pageId).toBe('employee-leave-form-smoke')
-    expect(snapshot.isLoaded).toBe(true)
-    expect(snapshot.ruleJson).toBe('[]\n')
-    expect(snapshot.pageDataJson).toContain('"dataSetName": "employee-leave-form-smoke"')
-    expect(snapshot.script).toBe('')
-    expect(snapshot.style).toBe('')
-    expect(loader.loadPageFileContentSpy).toHaveBeenCalledTimes(4)
     expect(loader.loadPageFileContentSpy).toHaveBeenCalledWith(
       'employee-leave-form-smoke',
       'rule.json',
-      { forceReload: false, allowMissingAsEmpty: true },
+      { forceReload: false },
     )
   })
 
   it('projects renderer config through the active PageModel', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const previewConfig = editor.getActivePage()?.toRenderConfig()
 
@@ -266,7 +258,7 @@ describe('PageEditor', () => {
   it('throws on invalid JSON input through PageModel rule.setText', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     // PageModel 子模型 setText 直接解析，无效 JSON 会抛出错误
     const page = editor.getActivePage()
@@ -313,7 +305,7 @@ describe('PageEditor', () => {
     })
 
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     expect(editor.readSnapshot().selectedNode?.id).toBe('orders-node')
     expect(editor.getActivePage()?.toRenderConfig().script).toBe('console.log("editor")\n')
@@ -341,7 +333,7 @@ describe('PageEditor', () => {
   it('exposes PageDesign edit host only through PageEditor delegation', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const host = editor.createPageDesignEditHost()
     expect(host.readScript?.()).toBe('console.log("editor")\n')
@@ -378,8 +370,8 @@ describe('PageEditor', () => {
     })
 
     await editor.loadNavigation()
-    await editor.selectPage('page-a', { allowMissingAsEmpty: true })
-    await editor.selectPage('page-b', { allowMissingAsEmpty: true })
+    await editor.selectPage('page-a')
+    await editor.selectPage('page-b')
 
     const host = editor.createPageDesignEditHost({ pageId: 'page-a' })
     host.writeScript?.('console.log("A AI")')
@@ -396,7 +388,7 @@ describe('PageEditor', () => {
   it('fails fast for an unloaded PageDesign target without creating an empty PageModel', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const host = editor.createPageDesignEditHost({ pageId: 'missing-page' })
 
@@ -409,7 +401,7 @@ describe('PageEditor', () => {
   it('bumps revision for repeated PageDesign writes after the model is already dirty', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const host = editor.createPageDesignEditHost({ pageId: 'orders' })
     host.writeScript?.('console.log("first")')
@@ -435,7 +427,7 @@ describe('PageEditor', () => {
     })
 
     await editor.loadNavigation()
-    await editor.selectPage('draft-page', { allowMissingAsEmpty: true })
+    await editor.selectPage('draft-page')
 
     const host = editor.createPageDesignEditHost({ pageId: 'draft-page' })
 
@@ -448,7 +440,7 @@ describe('PageEditor', () => {
   it('commits DataSetCrudTool edits through pagedata.json dirty and revision notifications', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
     const beforeRevision = editor.revision
 
     await editor.editDataSet((tool: DataSetCrudTool) => {
@@ -467,7 +459,7 @@ describe('PageEditor', () => {
   it('waits for async DataSetCrudTool edits before notifying pagedata.json text projection', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     await editor.editDataSet(async (tool: DataSetCrudTool) => {
       await tool.createRow({
@@ -484,7 +476,7 @@ describe('PageEditor', () => {
   it('commits SparkNodeTree edits through rule.json dirty and revision notifications', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
     const beforeRevision = editor.revision
 
     await editor.editNodeTree((tree: SparkNodeTree) => {
@@ -549,7 +541,7 @@ describe('PageEditor', () => {
   it('activates PageModel after selectPage so getActivePage returns a live model', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const page = editor.getActivePage()
     expect(page).not.toBeNull()
@@ -563,7 +555,7 @@ describe('PageEditor', () => {
   it('reads snapshot from active PageModel instead of workspace fallback', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const snapshot = editor.readSnapshot()
     expect(snapshot.pageId).toBe('orders')
@@ -577,7 +569,7 @@ describe('PageEditor', () => {
   it('editDataSet mutates active PageModel and readSnapshot reflects dirty state', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     await editor.editDataSet((tool) => {
       tool.createTable({
@@ -598,7 +590,7 @@ describe('PageEditor', () => {
   it('editNodeTree mutates active PageModel and readSnapshot reflects dirty state', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     await editor.editNodeTree((tree) => {
       tree.setProps({ componentId: 'root-child', props: { text: 'Updated' } })
@@ -616,7 +608,7 @@ describe('PageEditor', () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     editor.selectNode('orders-node')
-    await editor.selectPage('orders', { allowMissingAsEmpty: true })
+    await editor.selectPage('orders')
 
     const host = editor.createPageDesignEditHost()
 

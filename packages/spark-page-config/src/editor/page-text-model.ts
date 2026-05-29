@@ -87,17 +87,12 @@ export class PageTextModel {
   async load(
     pageId: string,
     configLoader: BasePageConfigLoader,
-    options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean },
+    options?: { forceReload?: boolean },
   ): Promise<void> {
     const result = await configLoader.loadPageFileContent(pageId, this._fileName, {
       forceReload: options?.forceReload === true,
-      allowMissingAsEmpty: options?.allowMissingAsEmpty === true,
     })
     if (!result.success) {
-      if (result.reason === 'not-found' && options?.allowMissingAsEmpty === true) {
-        this.resetToEmpty()
-        return
-      }
       throw new Error(result.error ?? result.reason ?? `${this._fileName} 加载失败`)
     }
     this._history.clear()

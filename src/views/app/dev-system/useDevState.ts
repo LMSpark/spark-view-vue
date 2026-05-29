@@ -512,15 +512,11 @@ export function useDevState() {
   }
 
   async function syncPageFilesForNodeAfterLoad(node: NavNode, forceReload: boolean): Promise<void> {
-    editor.selectNode(node.id)
     const pageId = PageModel.resolvePageIdFromPath(node.path)
     if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page')) {
-      setActivePageContext(pageId, forceReload || activePageId.value !== pageId)
-      try {
-        await editor.ensureActivePageFilesLoaded({ forceReload, allowMissingAsEmpty: true })
-      } catch {
-        // 文件加载失败不阻塞
-      }
+      await editor.selectPage(pageId, { forceReload })
+      activePageId.value = editor.readSnapshot().pageId
+      persistActivePageId(pageId)
       return
     }
     clearFiles()
@@ -541,11 +537,9 @@ export function useDevState() {
     return true
   }
 
-  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean; allowMissingAsEmpty?: boolean }): Promise<void> {
+  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
     if (!syncEditorActivePageFromState()) return
-    const loadOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {
-      allowMissingAsEmpty: options?.allowMissingAsEmpty ?? true,
-    }
+    const loadOptions: { forceReload?: boolean } = {}
     if (options?.forceReload !== undefined) loadOptions.forceReload = options.forceReload
     await editor.ensureActivePageFilesLoaded(loadOptions)
   }
@@ -786,8 +780,9 @@ export function useDevState() {
       handlePathChange(`/${pageId}`)
 
       notifyPageFileChanged(pageId, '__created')
-      setActivePageContext(pageId, false)
-      await ensureActivePageFilesLoaded()
+      await editor.selectPage(pageId)
+      activePageId.value = editor.readSnapshot().pageId
+      persistActivePageId(pageId)
       return true
     } catch (e) {
       addStatus(`创建页面失败: ${String(e)}`, 'error')
@@ -839,8 +834,9 @@ export function useDevState() {
     try {
       const pageId = PageModel.resolvePageIdFromPath(node.path)
       if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page')) {
-        setActivePageContext(pageId, activePageId.value !== pageId)
-        await ensureActivePageFilesLoaded()
+        await editor.selectPage(pageId)
+        activePageId.value = editor.readSnapshot().pageId
+        persistActivePageId(pageId)
       } else {
         clearFiles()
         // Still open a PageModel for navigation form binding

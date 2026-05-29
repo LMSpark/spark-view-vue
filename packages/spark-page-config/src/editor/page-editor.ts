@@ -93,7 +93,6 @@ export type CreatePageEditorOptions = {
 /** loadPageFile / ensureActivePageFilesLoaded / selectPage 共用加载参数 */
 export type PageEditorLoadOptions = {
   forceReload?: boolean
-  allowMissingAsEmpty?: boolean
 }
 
 export type PageDesignEditHostOptions = {
@@ -359,9 +358,8 @@ export class PageEditor {
     const mountedNode = PageModel.findConfigNodeByPageId(this.navSession.root.children, pageId)
     this.selectedNodeId = mountedNode?.id ?? null
     const page = this.openPage(pageId)
-    const pageModelOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {}
+    const pageModelOptions: { forceReload?: boolean } = {}
     if (options?.forceReload === true) pageModelOptions.forceReload = true
-    if (options?.allowMissingAsEmpty === true) pageModelOptions.allowMissingAsEmpty = true
     await page.load(pageModelOptions)
     this.bumpRevision()
   }
@@ -549,9 +547,8 @@ export class PageEditor {
     if (!page) {
       throw new Error('无活动页面，无法加载页面文件')
     }
-    const loadOptions: { forceReload?: boolean; allowMissingAsEmpty?: boolean } = {}
+    const loadOptions: { forceReload?: boolean } = {}
     if (options?.forceReload === true) loadOptions.forceReload = true
-    if (options?.allowMissingAsEmpty === true) loadOptions.allowMissingAsEmpty = true
     await page.load(loadOptions)
   }
 
@@ -561,7 +558,7 @@ export class PageEditor {
     if (!page) {
       throw new Error('无活动页面，无法加载页面文件')
     }
-    const loadOpts = { forceReload: options?.forceReload === true, allowMissingAsEmpty: options?.allowMissingAsEmpty === true }
+    const loadOpts = { forceReload: options?.forceReload === true }
     await page.loadFile(name, loadOpts)
   }
 

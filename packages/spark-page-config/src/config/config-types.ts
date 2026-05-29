@@ -82,11 +82,6 @@ export type PageConfigFileLoadOptions = {
    * 跳过客户端缓存，强制重新请求后端文件接口。
    */
   forceReload?: boolean
-  /**
-   * 编辑态允许缺失文件以空文档呈现。加载器会在清单已知缺失时短路，
-   * 避免继续发起必然 404 的逐文件 GET，同时保持 FileLoader 缓存/时间戳边界。
-   */
-  allowMissingAsEmpty?: boolean
 }
 
 /**

@@ -471,7 +471,6 @@ async function prepareTargetPage(editor, options) {
 async function loadTargetPage(editor, pageId) {
   await editor.selectPage(pageId, {
     forceReload: true,
-    allowMissingAsEmpty: false,
   })
 }
 
@@ -495,7 +494,7 @@ async function saveDirtyFiles(editor) {
 }
 
 async function readRemoteFiles(editor, pageId) {
-  await editor.selectPage(pageId, { forceReload: true, allowMissingAsEmpty: false })
+  await editor.selectPage(pageId, { forceReload: true })
   return readEditorFiles(editor)
 }
 

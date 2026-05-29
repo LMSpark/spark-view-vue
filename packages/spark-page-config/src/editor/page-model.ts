@@ -39,7 +39,6 @@ const ALL_PARTS: readonly DirtyPart[] = ['navigation', 'rule', 'dataSet', 'style
 
 export type PageModelLoadOptions = {
   forceReload?: boolean
-  allowMissingAsEmpty?: boolean
 }
 
 export const PAGE_MODEL_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css'] as const

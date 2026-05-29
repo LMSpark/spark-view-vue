@@ -292,11 +292,9 @@ export class PageConfigLoader extends BasePageConfigLoader {
   ): Promise<ConfigLoadResult<string>> {
     this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)
-    if (options?.allowMissingAsEmpty === true) {
-      const knownFiles = await this.getKnownPageFiles(pageId)
-      if (this.isKnownMissing(knownFiles, filename)) {
-        return this.knownMissingPageFileResult(path)
-      }
+    const knownFiles = await this.getKnownPageFiles(pageId)
+    if (this.isKnownMissing(knownFiles, filename)) {
+      return this.knownMissingPageFileResult(path)
     }
     const result = await this.fileLoader.load(path, {
       parseJSON: false,
@@ -336,16 +334,14 @@ export class PageConfigLoader extends BasePageConfigLoader {
       return { success: false, error: `Unknown file type: ${filename}` }
     }
     const path = this.toPageFilePath(pageId, filename)
+    const knownFiles = await this.getKnownPageFiles(pageId)
+    if (this.isPageConfigFileName(filename) && this.isKnownMissing(knownFiles, filename)) {
+      return this.knownMissingPageFileResult(path)
+    }
     const result = await this.fileLoader.load(path, {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
     })
-    if (!result.success) {
-      if (descriptor.required) {
-        return this.pageFileContentResultFromData(result, path)
-      }
-      return { success: true, source: 'remote' }
-    }
     return this.pageFileContentResultFromData(result, path)
   }
 
@@ -452,9 +448,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
     }
 
     const result = await this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
-    if (!result.success && result.reason === 'not-found') {
-      return { success: true, source: 'remote' }
-    }
     return result
   }
 

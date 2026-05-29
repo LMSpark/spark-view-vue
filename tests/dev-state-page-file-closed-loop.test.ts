@@ -98,7 +98,7 @@ describe('DevState 页面文件闭环', () => {
     httpFns.interceptors.response.use.mockImplementation(() => () => undefined)
   })
 
-  it('缺失可选 script/style 不阻断四文件加载', async () => {
+  it('缺失 script/style 时 fail-fast，不静默写入空文档', async () => {
     const state = useDevState()
     state.selectPage('demo')
     httpMock.get.mockImplementation(async (url: string) => {
@@ -106,14 +106,12 @@ describe('DevState 页面文件闭环', () => {
       return pageFileResponse(url)
     })
 
-    await state.ensureActivePageFilesLoaded({ forceReload: true })
+    await expect(state.ensureActivePageFilesLoaded({ forceReload: true })).rejects.toThrow('not found')
 
-    expect(state.getActivePage()?.isLoaded).toBe(true)
-    expect(state.getPageFileText('script.js')).toBe('')
-    expect(state.getPageFileText('style.css')).toBe('')
+    expect(state.getActivePage()?.isLoaded).toBe(false)
   })
 
-  it('缺失 rule/pagedata 以空文本进入编辑态，不写入占位内容', async () => {
+  it('缺失 rule/pagedata 时 fail-fast，不创建占位模型', async () => {
     const state = useDevState()
     state.selectPage('demo')
     httpMock.get.mockImplementation(async (url: string) => {
@@ -122,12 +120,9 @@ describe('DevState 页面文件闭环', () => {
       return pageFileResponse(url)
     })
 
-    await state.ensureActivePageFilesLoaded()
+    await expect(state.ensureActivePageFilesLoaded()).rejects.toThrow('not found')
 
-    expect(state.getActivePage()?.isLoaded).toBe(true)
-    // V3.1: empty rule tree serializes to '[]\n'; empty DataSet serializes to its default JSON
-    expect(state.getPageFileText('rule.json')).toBe('[]\n')
-    expect(state.getPageFileText('pagedata.json')).not.toBe('')
+    expect(state.getActivePage()?.isLoaded).toBe(false)
   })
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {
