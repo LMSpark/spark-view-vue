@@ -12,7 +12,7 @@
  */
 
 // ── 页面权限模型（能力键，仅 SparkPageRenderer 应 import） ──
-export { FIELD_PERMISSION_POLICY, PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
+export { SUBTREE_FIELD_POLICY, PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
 
 // ── 权限检查纯函数 ──
 export {

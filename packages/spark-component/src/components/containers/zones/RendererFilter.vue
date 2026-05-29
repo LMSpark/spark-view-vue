@@ -74,7 +74,7 @@
  * 与 DataView.setFilter 同步，无需父容器注入桥接字段。
  */
 import { computed, ref, toRef, watch } from 'vue'
-import { FIELD_PERMISSION_POLICY } from '../../../permission'
+import { SUBTREE_FIELD_POLICY } from '../../../permission'
 import { DATA_SOURCE, SparkComponentRenderer, getSparkNodeChildren, nodeId, nodeInputProp, useSparkPageComponent,
   type SparkNode,
 } from '../../internal'
@@ -220,7 +220,7 @@ const fieldScopeConfig = computed<SparkNode>(() => ({
 }))
 
 // r-filter 下的组件是筛选条件输入，需要始终可写；局部字段策略不改变页面权限模式。
-sparkProvide(FIELD_PERMISSION_POLICY, 'unrestricted')
+sparkProvide(SUBTREE_FIELD_POLICY, 'unrestricted')
 
 async function handleSearch(): Promise<void> {
   await searchFilters()

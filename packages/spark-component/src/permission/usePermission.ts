@@ -1,20 +1,20 @@
 /**
  * usePermission — 权限 API composable
  *
- * 统一封装 PAGE_PERMISSION_MODE / FIELD_PERMISSION_POLICY 能力消费 + 权限判断/字段状态。
+ * 统一封装 PAGE_PERMISSION_MODE / SUBTREE_FIELD_POLICY 能力消费 + 权限判断/字段状态。
  * 消费方只需调用本 composable 返回的方法，无需自行 sparkConsume 权限模式。
  *
  * 设计原则：
  * - permissionMode 由后端随导航配置下发，PageRenderer 通过 sparkProvide 注入
- * - fieldPermissionPolicy 只描述局部字段输入策略，不改变页面级 permissionMode
+ * - subtreeFieldPolicy 只描述子树内字段输入策略，不改变页面级 permissionMode
  * - 前端权限仅为渲染层表现，真正安全由后端控制
  * - 所有权限判断收口到本模块，方便统一维护
  */
 import type { DataRow, ModelPermission } from '@spark-view/spark-data'
-import type { FieldPermissionPolicy, NavPermissionMode } from '../core/capability-keys.js'
+import type { SubtreeFieldPolicy, NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'
-import { FIELD_PERMISSION_POLICY, PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
+import { SUBTREE_FIELD_POLICY, PAGE_PERMISSION_MODE } from '../core/capability-keys.js'
 import {
   isPermittedAction,
   resolveFieldPermissionState,
@@ -28,8 +28,8 @@ export type UsePermissionReturn = {
   /** 当前页面权限模式（后端下发），undefined 表示能力未注入；渲染器默认提供 'masked'。 */
   readonly permissionMode: NavPermissionMode | undefined
 
-  /** 当前字段权限局部策略；通常仅筛选条件等本地输入子树会提供。 */
-  readonly fieldPermissionPolicy: FieldPermissionPolicy | undefined
+  /** 当前子树级字段输入策略；通常仅筛选条件等本地输入子树会提供。 */
+  readonly subtreeFieldPolicy: SubtreeFieldPolicy | undefined
 
   /** 判断动作是否被权限允许 */
   isPermitted(action: PermissionAction | undefined, context?: Omit<PermissionActionContext, 'permissionMode'>): boolean
@@ -55,11 +55,11 @@ export type UsePermissionReturn = {
 export function usePermission(): UsePermissionReturn {
   const { sparkConsume } = useSparkConsume()
   const mode = sparkConsume(PAGE_PERMISSION_MODE) ?? undefined
-  const fieldPermissionPolicy = sparkConsume(FIELD_PERMISSION_POLICY) ?? undefined
+  const subtreeFieldPolicy = sparkConsume(SUBTREE_FIELD_POLICY) ?? undefined
 
   return {
     get permissionMode() { return mode },
-    get fieldPermissionPolicy() { return fieldPermissionPolicy },
+    get subtreeFieldPolicy() { return subtreeFieldPolicy },
 
     isPermitted(action, context) {
       return isPermittedAction(action, { ...context, permissionMode: mode })
@@ -78,7 +78,7 @@ export function usePermission(): UsePermissionReturn {
         field,
         row,
         config: config ?? {},
-        permissionMode: fieldPermissionPolicy === 'unrestricted' ? 'none' : mode,
+        permissionMode: subtreeFieldPolicy === 'unrestricted' ? 'none' : mode,
       })
     },
   }
