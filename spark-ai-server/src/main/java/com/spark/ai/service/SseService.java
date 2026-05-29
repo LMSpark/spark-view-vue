@@ -57,6 +57,8 @@ public class SseService {
     public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
     public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
     public static final String EVENT_DEBUG_FC_ERROR_REPORT = "debug-fc-error-report";
+    public static final String EVENT_AI_HOST_RUN_REQUEST = "ai-host-run-request";
+    public static final String EVENT_AI_HOST_RUN_RESULT = "ai-host-run-result";
     public static final String EVENT_AI_TURN_DELTA = "ai-turn-delta";
     public static final String EVENT_AI_TURN_REASONING = "ai-turn-reasoning";
     public static final String EVENT_AI_TURN_USAGE = "ai-turn-usage";

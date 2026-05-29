@@ -26,6 +26,7 @@
 
 import {
   noParamsSchema,
+  enumSchema,
   numberSchema,
   paramsSchema,
   stringSchema,
@@ -49,7 +50,23 @@ import { createCurrentPageRef, findCurrentPageInstance } from './page-design-hel
 // PAGE_DESIGN_AI_TRACE[page-design-lifecycle]: pageDesign AI 的 bootstrap/progress/100-step 流程出处；只负责编辑态与流程事实，不直接写四文件。
 const NO_PARAMS = noParamsSchema('bootstrap / describeProgress 不接收文件快照参数，请传 {} 或留空。')
 const DESIGN_FLOW_PARAMS = paramsSchema({
-  phase: stringSchema('可选。按阶段名筛选页面设计 100 步，例如 数据规划、数据利用、结构、行为。'),
+  phase: enumSchema([
+    '入口',
+    '盘点',
+    '数据规划',
+    '最小表模型',
+    '表关系',
+    '页面规划',
+    '数据利用',
+    '按需视图',
+    '视图依赖',
+    '结构',
+    '行为',
+    '样式',
+    '交叉校验',
+    '预览修正',
+    '收尾',
+  ], '可选。必须使用 describeDesignFlow 返回的中文 phase 名；例如 页面规划、数据利用、结构、行为。'),
   step: numberSchema('可选。查询指定步骤编号，范围 1-100。'),
   afterStep: numberSchema('可选。返回指定已完成步骤之后的下一步。'),
   intent: stringSchema('可选。用户原始意图；用于返回匹配的任务知识 guide，例如申请表单闭环。'),

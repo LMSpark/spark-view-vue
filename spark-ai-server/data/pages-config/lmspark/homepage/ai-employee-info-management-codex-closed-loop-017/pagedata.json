@@ -1,0 +1,69 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "Department": {
+      "tableName": "Department",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "部门编号",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "部门名称",
+          "required": true
+        },
+        {
+          "name": "managerId",
+          "type": "string",
+          "label": "负责人编号"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Department",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "dept-001",
+              "name": "技术部",
+              "managerId": "emp-001"
+            },
+            {
+              "id": "dept-002",
+              "name": "产品部",
+              "managerId": "emp-002"
+            },
+            {
+              "id": "dept-003",
+              "name": "市场部",
+              "managerId": "emp-003"
+            },
+            {
+              "id": "dept-004",
+              "name": "人事部",
+              "managerId": "emp-004"
+            },
+            {
+              "id": "dept-005",
+              "name": "财务部",
+              "managerId": "emp-005"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "valueField": "id",
+          "labelField": "name"
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "reference"
+    }
+  }
+}

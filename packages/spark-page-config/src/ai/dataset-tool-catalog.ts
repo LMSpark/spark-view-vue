@@ -247,6 +247,37 @@ const AGGREGATES_SCHEMA = objectSchema({}, {
   description: '这是 Record<string, AggregateColumnConfig> / Map-like 对象结构，不是数组。对象键就是聚合输出字段名，例如 totalAmount、rowCount、avgScore、minPrice、maxPrice、statusList；配置本身会进入 view.toJson()/fromJson()，而 aggregateResult / selectionAggregateResult 是运行时派生结果。',
 })
 
+const FILTER_OPERATOR_SCHEMA = enumSchema([
+  '==',
+  '!=',
+  '>',
+  '>=',
+  '<',
+  '<=',
+  'in',
+  'not in',
+  'like',
+  'not like',
+  'contains',
+  'startsWith',
+  'endsWith',
+  'is null',
+  'is not null',
+  'between',
+  'not between',
+], '过滤操作符；简单等值使用 "=="，不要使用 eq。')
+
+const FILTER_EXPRESSION_SCHEMA = objectSchema({
+  field: stringSchema('叶子条件字段名。简单等值示例：{ field: "status", op: "==", value: "active" }。不要写 { status: "active" }。'),
+  op: FILTER_OPERATOR_SCHEMA,
+  value: anySchema('比较值；可为标量、数组，或 { kind: "field", field: "otherField" } 字段引用。'),
+  type: enumSchema(['and', 'or', '!condition', '!and', '!or'], '组合或取反节点类型；叶子条件通常不写 type。'),
+  children: arraySchema(objectSchema({}, { additionalProperties: true }), '组合节点 children；每个子节点仍是 FilterExpression。'),
+}, {
+  additionalProperties: true,
+  description: 'FilterExpression 判别联合：叶子 { field, op, value }；组合 { type:"and"|"or", children:[...] }；取反叶子 { type:"!condition", field, op, value }。禁止字段映射简写。',
+})
+
 const VIEW_METADATA_SCHEMA = objectSchema({
   rows: arraySchema(ROW_DATA_SCHEMA, '仅页面内联数据才应直接提供，例如 resourceType = page-data/static-data 且未配置 api 的草稿行、选项行或示例行。'),
   autoCurrentFirst: booleanSchema('请求成功后是否自动聚焦第一行'),
@@ -265,7 +296,7 @@ const VIEW_METADATA_SCHEMA = objectSchema({
   labelField: stringSchema('标签字段'),
   selectionDelimiter: stringSchema('多选序列化分隔符；空字符串表示单选'),
   treeConfig: TREE_CONFIG_SCHEMA,
-  filterExpression: objectSchema({}, { additionalProperties: true, description: '复杂过滤对象；简单场景建议先省略' }),
+  filterExpression: FILTER_EXPRESSION_SCHEMA,
   sortExpression: arraySchema(objectSchema({}, { additionalProperties: true }), '例如 [{ field: "createdAt", direction: "desc" }]'),
   aggregates: AGGREGATES_SCHEMA,
 }, {
@@ -397,6 +428,9 @@ const VIEW_DEPENDENCY_UPDATE_SCHEMA = objectSchema({
 const STATIC_ROWS_ONLY_RULE = '只有页面内联数据才应直接通过 rows/defaultRows 传行数据：resourceType = page-data/static-data 或未配置 api 的本地原型；真实远端 CRUD 表不要臆造 rows。'
 const DEFAULT_VIEW_RULE = '省略 viewId 时默认作用于 default 视图。'
 const DEFAULT_VIEW_LIFECYCLE_RULE = 'default 视图不能通过 createView 创建，也不能通过 deleteView 删除。'
+const VIEW_IDEMPOTENT_RULE = '命名 view 写入前先 listViews/getView；不存在才 createView，已存在必须 updateView。createView 不是幂等动作。'
+const FILTER_EXPRESSION_RULE = 'filterExpression 必须使用 FilterExpression 结构：简单等值写 { field: "status", op: "==", value: "active" }；不要写 { status: "active" }，也不要写 op:"eq"。'
+const COUNT_AGGREGATE_FIELD_RULE = 'count 聚合也要显式 field，通常使用主键字段 id；key 是聚合输出字段名，不等于源字段名。'
 const REMOTE_ROW_RESULT_RULE = '行级 request 动作在远端 CRUD 模式下可能返回 CrudResult，本地模式返回本地对象或布尔值。'
 const RELATION_AMBIGUITY_RULE = '同一 parentTable + childTable 下存在多条关系时，必须补 parentField 与 childField 做消歧。'
 const RUNTIME_WIRED_RULE = '该动作直接作用于当前 PageDesignEditHost.getDataSetTool() 返回的 DataSetCrudTool/pagedata.json 模型。'
@@ -985,9 +1019,15 @@ const DATASET_ACTIONS: readonly AiModuleFunctionMetadata[] = [
         },
       },
     },
+    requiredBeforeCall: [
+      '先调用 dataset.listViews 或 dataset.getView 确认 viewId 是否已存在；已存在时改用 updateView。',
+      '如果要写 filterExpression，先阅读本函数 guide 中的 filterExpression schema。',
+    ],
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_LIFECYCLE_RULE,
+      VIEW_IDEMPOTENT_RULE,
+      FILTER_EXPRESSION_RULE,
       STATIC_ROWS_ONLY_RULE,
       '如需配置聚合，请在 config.aggregates 中声明输出键 -> 聚合配置；这是对象映射（Record/Map-like），不是数组；不要把 aggregateResult 当作可直接写入 rows 的静态字段。',
       RUNTIME_WIRED_RULE,
@@ -1027,9 +1067,14 @@ const DATASET_ACTIONS: readonly AiModuleFunctionMetadata[] = [
         },
       },
     },
+    requiredBeforeCall: [
+      '先调用 dataset.getView 或 dataset.listViews 确认目标 view 存在；不存在时先 createView。',
+      '如果要写 filterExpression，先阅读本函数 guide 中的 filterExpression schema。',
+    ],
     usageRules: [
       JSON_OBJECT_RULE,
       DEFAULT_VIEW_RULE,
+      FILTER_EXPRESSION_RULE,
       STATIC_ROWS_ONLY_RULE,
       '如果 updates.rows 存在，会先 replaceRows，再 applyViewConfig。',
       '如需新增或修改聚合，统一写在 updates.aggregates；这是对象映射（Record/Map-like），输出键会成为 aggregateResult / selectionAggregateResult 上的字段名。',
@@ -1646,9 +1691,14 @@ const DATASET_ACTIONS: readonly AiModuleFunctionMetadata[] = [
       key: 'totalAmount',
       config: { type: 'sum', field: 'amount' },
     },
+    requiredBeforeCall: [
+      '先调用 dataset.listColumns 确认 config.field 是真实列；count 聚合也需要 field。',
+      '先调用 dataset.listAggregates 或 dataset.getAggregate 判断 key 是否已存在；已存在时改用 updateAggregate。',
+    ],
     usageRules: [
       DEFAULT_VIEW_RULE,
       JSON_OBJECT_RULE,
+      COUNT_AGGREGATE_FIELD_RULE,
       '视图聚合新增步骤：先选 viewId（不传即 default）→ 指定 key（输出字段名）→ 设 config.type（sum/count/avg/min/max/join）与 field。',
       'MAP 引用规则：key 决定结果落点，config.field 只决定聚合源字段；例如 key=totalAmount 且 field=amount，读取时使用 dataMember=aggregateResult、dataField=totalAmount。',
       '新增后 aggregates[key] 保留配置全貌；容器侧从 aggregateResult[key]（全量）或 selectionAggregateResult[key]（选中集）读取对应聚合结果。',

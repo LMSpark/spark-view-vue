@@ -108,7 +108,7 @@ export type PageDesignRunInput = AiJsonParamShape<{
 }>
 
 // PAGE_DESIGN_REFACTOR_SOURCE[prompt-root]: pageDesign 系统提示词唯一出处；保持小提示词，任务知识通过 lifecycle/payload-catalog 按需查询。
-const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/lifecycle[pageId] 查流程，/pageDesign[pageId]/<childKind>[pageId] 编辑四文件；参数看 module_guide 和 tool schema；写入 dataset->node-tree->text-model；组件 props 用 module_call 调 payload-catalog 的 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
+const AI_FUNCTION_ARCHITECTURE_PROMPT = 'pageDesign：path=/pageDesign[pageId]/lifecycle[pageId] 查流程，/pageDesign[pageId]/<childKind>[pageId] 编辑四文件；参数看 module_function_guide 和 tool schema；写入 dataset->node-tree->text-model；组件 props 用 module_call 调 payload-catalog 的 queryPayloads/guidePayload；失败读 code/msg/fix/checks。'
 
 // ── 公共注册契约 ───────────────────────────────────────────
 
@@ -272,26 +272,22 @@ function createPageDesignOrchestration(
 ): SparkAiAgent.AiAgentOrchestrationPlan {
   const pageId = input.pageId
   const userRequirement = input.userRequirement
-  const initialFindCall = createPageDesignFindToolCallText(pageId)
   const describeProgressCall = createPageDesignLifecycleToolCallText(pageId, 'describeProgress', {})
   const describeDesignFlowCall = createPageDesignLifecycleIntentToolCallText(pageId)
   return {
     title: 'pageDesign registered task orchestration',
     userMessage: userRequirement,
     systemPrompt: [
-      `首轮仅 tool_call：${initialFindCall}。无正文；Host 返回 ref.id 后：调用 ${describeProgressCall} -> ${describeDesignFlowCall}。`,
+      '工具通道硬约束：所有 module_* 必须通过 OpenAI function calling 的 tool_calls 发起；禁止在正文输出 {"tool_call":...}、module_call(...)、JSON 设计稿或代码块来代替工具调用。',
+      `首轮只允许发起一个真实 tool_calls：function.name="module_find"，function.arguments=${JSON.stringify({
+        path: '/',
+        childKind: PAGE_DESIGN_ROOT_KIND,
+        query: { id: pageId },
+      })}。无正文；Host 返回 ref.id 后，用真实 tool_calls 顺序调用 ${describeProgressCall} -> ${describeDesignFlowCall}。`,
       createPageDesign100StepOrchestrationPrompt(input),
     ].join('\n'),
     readonlySteps: createPageDesignReadonlySteps(input),
   }
-}
-
-function createPageDesignFindToolCallText(pageId: string): string {
-  return `module_find(${JSON.stringify({
-    path: '/',
-    childKind: PAGE_DESIGN_ROOT_KIND,
-    query: { id: pageId },
-  })})`
 }
 
 function createPageDesignLifecycleToolCallText(
@@ -317,6 +313,9 @@ function createPageDesign100StepOrchestrationPrompt(input: PageDesignRunInput): 
     '执行规则：先完成入口/盘点，再按数据规划到收尾推进；每次跨阶段前用 lifecycle.describeDesignFlow({ phase }) 或 { step, afterStep } 读取当前步骤事实。',
     '路径规则：/pageDesign[id]/lifecycle[id] 管流程；/pageDesign[id]/<childKind>[id] 编辑四文件。',
     '写入规则：dataset 负责步骤 21-88 的数据事实；node-tree 负责步骤 89-92 的结构；text-model 只在步骤 93-96 补行为和样式；步骤 97-100 做交叉校验、预览修正和总结。',
+    '完成规则：页面产物必须通过 module_call 实际写入四文件；只在正文输出页面 JSON、设计说明或代码块不算完成。',
+    '知识规则：module_find 只返回实例，不返回函数表；首次调用 dataset/node-tree/text-model/payload-catalog 的具体函数前，必须先 module_query({ kind, includeFunctions:true }) 选真实函数，再 module_function_guide({ kind, functionName }) 消费函数契约。',
+    '修复规则：FUNCTION_NOT_DECLARED / SCHEMA_VALIDATION_FAILED / ACTION_ERROR 后，先按 code/msg/fix/checks 回查 module_query/module_function_guide 或 payload-catalog.guidePayload，再重试；不要继续猜。',
     describePageDesignModeBoundary(input.mode),
     describePageDesignOperationBoundary(input.allowedOperations),
     input.preserveExistingInteractions === true ? '保留边界：保留现有页面交互、handler、组件 id 和数据绑定；修改前先盘点旧 rule/script。' : undefined,

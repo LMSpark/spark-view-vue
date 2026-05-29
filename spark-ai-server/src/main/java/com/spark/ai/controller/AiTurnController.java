@@ -60,7 +60,7 @@ public class AiTurnController {
         if (turnId == null) {
             return error(HttpStatus.BAD_REQUEST, "MISSING_REQUIRED_FIELD", "turnId 不能为空");
         }
-        if (messages == null || messages.isEmpty()) {
+        if (messages == null) {
             return error(HttpStatus.BAD_REQUEST, "MISSING_REQUIRED_FIELD", "messages 不能为空");
         }
 

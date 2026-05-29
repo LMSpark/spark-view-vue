@@ -119,6 +119,8 @@ describe('leave-request host business registration', () => {
     expect(started.tools.map((tool) => tool.function.name)).toEqual([
       'module_query',
       'module_guide',
+      'module_attribute_guide',
+      'module_function_guide',
       'module_find',
       'module_attr',
       'module_call',
@@ -148,7 +150,7 @@ describe('leave-request host business registration', () => {
     expect(knowledgeData).toEqual(expect.arrayContaining([
       expect.objectContaining({
         kind: LEAVE_REQUEST_KIND,
-        childKindSummaries: [
+        childKindSummaries: expect.arrayContaining([
           expect.objectContaining({
             kind: LEAVE_REQUEST_PERSON_KIND,
             description: expect.stringContaining('人员编码'),
@@ -156,10 +158,10 @@ describe('leave-request host business registration', () => {
               expect.objectContaining({ name: 'code', description: expect.stringContaining('人员编码') }),
             ]),
             detailLookupSteps: expect.arrayContaining([
-              expect.stringContaining(`module_query({ kind: "${LEAVE_REQUEST_PERSON_KIND}" })`),
+              expect.stringContaining(`module_query({ kind: "${LEAVE_REQUEST_PERSON_KIND}", includeFunctions: true })`),
             ]),
           }),
-        ],
+        ]),
       }),
       expect.objectContaining({
         kind: LEAVE_REQUEST_PERSON_KIND,
@@ -176,12 +178,21 @@ describe('leave-request host business registration', () => {
     ]))
     for (const action of described.data['functions']) {
       if (!isRecord(action)) throw new Error('action not record')
-      expect(action).toHaveProperty('paramsSchema')
-      expect(action).toHaveProperty('resultSchema')
-      expect(action).toHaveProperty('usageRules')
-      expect(action).toHaveProperty('failureModes')
-      expect(action).toHaveProperty('example')
+      expect(action).toHaveProperty('description')
+      expect(action).not.toHaveProperty('paramsSchema')
+      expect(action).not.toHaveProperty('failureModes')
     }
+    const setDraftGuide = await registration.runtime.executeTool('module_function_guide', {
+      kind: LEAVE_REQUEST_KIND,
+      functionName: 'setDraftFields',
+    }, toAiAgentRuntimeScope(scope))
+    expect(setDraftGuide.ok).toBe(true)
+    expect(setDraftGuide.data).toMatchObject({
+      functionName: 'setDraftFields',
+      paramsSchema: expect.any(Object),
+      usageRules: expect.any(Array),
+      failureModes: expect.any(Array),
+    })
   })
 
   it('填写假条前可通过 leave-person 实例查询人员编码并写入草稿', async () => {

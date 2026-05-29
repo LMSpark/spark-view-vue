@@ -42,6 +42,9 @@
       "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
       "@spark-view/spark-page-config/editor": ["./packages/spark-page-config/src/editor/page-editor.ts"],
       "@spark-view/spark-page-config/ai": ["./packages/spark-page-config/src/ai/index.ts"],
+      "@spark-view/spark-page-config/internal/compiler": ["./packages/spark-page-config/src/config/page-config-compiler.ts"],
+      "@spark-view/spark-page-config/internal/page-data-canonicalize": ["./packages/spark-page-config/src/design/page-data-canonicalize.ts"],
+      "@spark-view/spark-page-config/internal/payload-catalog": ["./packages/spark-page-config/src/ai/payload-catalog-tool-catalog.ts"],
       "@spark-view/spark-page-config/json-document": ["./packages/spark-page-config/src/json-document-public.ts"],
       // during development we prefer to resolve to source so that new exports
       // (e.g. setupAutoRegister) are picked up without rebuilding the package

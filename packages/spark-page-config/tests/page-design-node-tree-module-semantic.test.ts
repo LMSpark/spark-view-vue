@@ -105,6 +105,8 @@ describe('NodeTree AiModule 接入(E2E)', () => {
     expect(runtime.getTools().map((tool) => tool.function.name)).toEqual([
       'module_query',
       'module_guide',
+      'module_attribute_guide',
+      'module_function_guide',
       'module_find',
       'module_attr',
       'module_call',
@@ -112,7 +114,7 @@ describe('NodeTree AiModule 接入(E2E)', () => {
     ])
   })
 
-  it('module_guide 列出 NodeTree functions 并完整返回 function 元数据', async () => {
+  it('module_guide 列出 NodeTree function 摘要，module_function_guide 返回完整函数元数据', async () => {
     const { runtime, hostContext } = buildRuntime()
     const result = await executeNodeTreeTool(runtime, 'module_guide', { kind: 'node-tree' }, hostContext)
     const data = getRecord(result)
@@ -122,12 +124,21 @@ describe('NodeTree AiModule 接入(E2E)', () => {
     expect(actions).toHaveLength(19)
     for (const action of actions) {
       if (!isRecord(action)) throw new Error('action not record')
-      expect(action).toHaveProperty('paramsSchema')
-      expect(action).toHaveProperty('resultSchema')
-      expect(action).toHaveProperty('usageRules')
-      expect(action).toHaveProperty('failureModes')
-      expect(action).toHaveProperty('example')
+      expect(action).toHaveProperty('name')
+      expect(action).toHaveProperty('functionName')
+      expect(action).toHaveProperty('description')
+      expect(action).not.toHaveProperty('paramsSchema')
+      expect(action).not.toHaveProperty('failureModes')
     }
+
+    const guide = getRecord(await executeNodeTreeTool(runtime, 'module_function_guide', {
+      kind: 'node-tree',
+      functionName: 'getNode',
+    }, hostContext))
+    expect(guide).toHaveProperty('paramsSchema')
+    expect(guide).toHaveProperty('usageRules')
+    expect(guide).toHaveProperty('failureModes')
+    expect(guide).toHaveProperty('examples')
   })
 
   it('module_call getNode/countNodes/addNode 落到真实 SparkNodeTree', async () => {
@@ -186,12 +197,11 @@ describe('NodeTree AiModule 可发现链路', () => {
     expect(first['id']).toBe(pageId)
     expect(first['label']).toBe('当前页面节点树')
 
-    const describeResult = await executeNodeTreeTool(runtime, 'module_guide', { kind: 'node-tree' }, hostContext)
-    const describeData = getRecord(describeResult)
-    const functions = describeData['functions']
-    if (!Array.isArray(functions)) throw new Error('functions not array')
-    const getNode = functions.find((action) => isRecord(action) && action['name'] === 'getNode')
-    if (!isRecord(getNode) || !isRecord(getNode['paramsSchema'])) {
+    const getNode = getRecord(await executeNodeTreeTool(runtime, 'module_function_guide', {
+      kind: 'node-tree',
+      functionName: 'getNode',
+    }, hostContext))
+    if (!isRecord(getNode['paramsSchema'])) {
       throw new Error('getNode paramsSchema missing')
     }
     expect(getNode['paramsSchema']['additionalProperties']).not.toBe(true)

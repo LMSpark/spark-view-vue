@@ -12,9 +12,9 @@
  * ```
  *
  * ## 两层查询设计
- * - `queryPayloads` — 返回摘要（key/type/category/description/requiredProps），
+ * - `queryPayloads` — 返回目录概要（key/type/category/description/requiredProps），
  *   不包含完整 paramsSchema。LLM 先浏览候选组件，再按需深入。
- * - `guidePayload` — 返回单个组件的完整 paramsSchema + props + emits。
+ * - `guidePayload` — 返回单个组件的具体 paramsSchema + props + emits。
  *   成功调用后自动通知 PageDesignService 记录已查询的组件指南，
  *   供 session diagnostics 事后校验覆盖率。
  *
@@ -137,13 +137,13 @@ const PAYLOAD_CATALOG_ACTIONS: readonly AiModuleFunctionMetadata[] = [
     usageRules: [
       '新增或替换 SparkNode 前先查询候选组件。',
       '组件参数目录注册在 node-tree 模块下；不确定 provider 时先 queryPayloads，不要假设 payloadRef。',
-      '拿到目标 key 后再调用 guidePayload 获取完整 paramsSchema。',
+      '拿到目标 key 后再调用 guidePayload 获取具体 paramsSchema。',
     ],
     failureModes: [],
   },
   {
     name: 'guidePayload',
-    description: '查询单个组件 type/key 的参数荷载指南，用于构造合法 SparkNode props。',
+    description: '查询单个组件 type/key 的具体参数荷载指南，用于构造合法 SparkNode props。',
     paramsSchema: paramsSchema({
       key: stringSchema('组件 type/key，例如 renderer-button。', { minLength: 1 }),
       moduleKind: stringSchema('参数所属 AiModule。默认 node-tree。'),
@@ -330,6 +330,8 @@ function queryPageDesignPayloads(
         payloadRef: provider.data.provider.payloadRef,
         description: provider.data.provider.description,
       },
+      knowledgeLevel: 'directory',
+      directoryFirstRule: 'queryPayloads 只返回目录概要；选定 key 后必须调用 guidePayload 获取具体 props 契约。',
       total: items.length,
       items,
     },
@@ -356,6 +358,8 @@ function guidePageDesignPayload(
     data: {
       moduleKind: provider.data.moduleKind,
       payloadRef: provider.data.payloadRef,
+      knowledgeLevel: 'detail',
+      directoryLookupStep: `queryPayloads({ moduleKind: "${provider.data.moduleKind}", payloadRef: "${provider.data.payloadRef}", key: "${key}" })`,
       payload: guide,
     },
     summary: `${provider.data.moduleKind}/${provider.data.payloadRef}/${key} 参数荷载指南已返回`,
@@ -450,6 +454,8 @@ function guidePageDesignComponentPayload(key: string): AiModulePayloadGuide | nu
   }
   return {
     ...summarizePayload(entry),
+    knowledgeLevel: 'detail',
+    directoryLookupStep: `queryPayloads({ key: "${payloadKey(entry)}" })`,
     description: `${entry.type} SparkNode props 参数荷载指南`,
     props: entry.props ?? [],
     emits: entry.emits ?? [],
@@ -518,9 +524,11 @@ function summarizePayload(entry: PageDesignPayloadEntry): AiModulePayloadSummary
   const props = entry.props ?? []
   const requiredProps = props.filter((prop) => prop.required === true).map((prop) => prop.name)
   return {
+    knowledgeLevel: 'directory',
     moduleKind: PAGE_DESIGN_NODE_TREE_KIND,
     payloadRef: PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
     key: payloadKey(entry),
+    detailLookupStep: `guidePayload({ key: "${payloadKey(entry)}" })`,
     type: entry.type,
     ...(entry.category === undefined ? {} : { category: entry.category }),
     ...(entry.description === undefined ? {} : { description: entry.description }),

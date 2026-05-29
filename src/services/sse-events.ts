@@ -27,6 +27,8 @@ const ServerEventType = Object.freeze({
   DEBUG_SCREENSHOT_REQUEST: 'debug-screenshot-request',
   DEBUG_SCREENSHOT_RESULT: 'debug-screenshot-result',
   DEBUG_FC_ERROR_REPORT: 'debug-fc-error-report',
+  AI_HOST_RUN_REQUEST: 'ai-host-run-request',
+  AI_HOST_RUN_RESULT: 'ai-host-run-result',
 })
 
 // Payload contracts ---------------------------------------------------------
@@ -112,6 +114,41 @@ export type DebugFcErrorReportEvent = {
   reportId: string
   serverTimestamp: number
   [key: string]: unknown
+}
+
+export type AiHostRunRequestEvent = {
+  requestId: string
+  alias: string
+  args: Record<string, unknown>
+  timestamp: number
+  timeoutMs?: number
+  reason?: string
+}
+
+export type AiHostRunResultStatus =
+  | 'completed'
+  | 'failed'
+  | 'timeout'
+  | 'busy'
+  | 'unknown_alias'
+  | 'non_runnable'
+  | 'invalid_args'
+  | 'cancelled'
+
+export type AiHostRunResultEvent = {
+  requestId: string
+  alias: string
+  status: AiHostRunResultStatus
+  durationMs?: number
+  clientTimestamp?: number
+  serverTimestamp?: number
+  sessionId?: string
+  businessRegistrationId?: string
+  businessInstanceId?: string
+  text?: string
+  reasoning?: string
+  toolCalls?: unknown
+  error?: unknown
 }
 
 type EventNormalizer<T> = (data: unknown) => T | null
@@ -290,6 +327,28 @@ export function onDebugFcErrorReport(
     eventType: ServerEventType.DEBUG_FC_ERROR_REPORT,
     normalize: normalizeDebugFcErrorReportEvent,
     label: 'AI 调试 FC 错误',
+    callback,
+  })
+}
+
+export function onAiHostRunRequest(
+  callback: (event: AiHostRunRequestEvent) => void,
+): () => void {
+  return onTypedServerEvent({
+    eventType: ServerEventType.AI_HOST_RUN_REQUEST,
+    normalize: normalizeAiHostRunRequestEvent,
+    label: 'AI Host Run 请求',
+    callback,
+  })
+}
+
+export function onAiHostRunResult(
+  callback: (event: AiHostRunResultEvent) => void,
+): () => void {
+  return onTypedServerEvent({
+    eventType: ServerEventType.AI_HOST_RUN_RESULT,
+    normalize: normalizeAiHostRunResultEvent,
+    label: 'AI Host Run 回执',
     callback,
   })
 }
@@ -701,6 +760,63 @@ function normalizeDebugFcErrorReportEvent(data: unknown): DebugFcErrorReportEven
   }
 }
 
+function normalizeAiHostRunRequestEvent(data: unknown): AiHostRunRequestEvent | null {
+  if (!isRecord(data)) return null
+
+  const requestId = readRequiredString(data, 'requestId')
+  const alias = readRequiredString(data, 'alias')
+  const args = isRecord(data['args']) ? data['args'] : null
+  if (requestId === null || alias === null || args === null) return null
+
+  const event: AiHostRunRequestEvent = {
+    requestId,
+    alias,
+    args,
+    timestamp: normalizeTimestamp(data['timestamp']),
+  }
+  const timeoutMs = normalizePositiveNumber(data['timeoutMs'])
+  const reason = readNonEmptyStringProperty(data, 'reason')
+
+  if (timeoutMs !== undefined) event.timeoutMs = timeoutMs
+  if (reason !== undefined) event.reason = reason
+  return event
+}
+
+function normalizeAiHostRunResultEvent(data: unknown): AiHostRunResultEvent | null {
+  if (!isRecord(data)) return null
+
+  const requestId = readRequiredString(data, 'requestId')
+  const alias = readRequiredString(data, 'alias')
+  const status = readAiHostRunStatus(data['status'])
+  if (requestId === null || alias === null || status === null) return null
+
+  const event: AiHostRunResultEvent = {
+    requestId,
+    alias,
+    status,
+  }
+  const durationMs = normalizePositiveNumber(data['durationMs'])
+  const clientTimestamp = normalizeOptionalTimestamp(data['clientTimestamp'])
+  const serverTimestamp = normalizeOptionalTimestamp(data['serverTimestamp'])
+  const sessionId = readNonEmptyStringProperty(data, 'sessionId')
+  const businessRegistrationId = readNonEmptyStringProperty(data, 'businessRegistrationId')
+  const businessInstanceId = readNonEmptyStringProperty(data, 'businessInstanceId')
+  const text = readNonEmptyStringProperty(data, 'text')
+  const reasoning = readNonEmptyStringProperty(data, 'reasoning')
+
+  if (durationMs !== undefined) event.durationMs = durationMs
+  if (clientTimestamp !== undefined) event.clientTimestamp = clientTimestamp
+  if (serverTimestamp !== undefined) event.serverTimestamp = serverTimestamp
+  if (sessionId !== undefined) event.sessionId = sessionId
+  if (businessRegistrationId !== undefined) event.businessRegistrationId = businessRegistrationId
+  if (businessInstanceId !== undefined) event.businessInstanceId = businessInstanceId
+  if (text !== undefined) event.text = text
+  if (reasoning !== undefined) event.reasoning = reasoning
+  if ('toolCalls' in data) event.toolCalls = data['toolCalls']
+  if ('error' in data) event.error = data['error']
+  return event
+}
+
 // Scalar readers ------------------------------------------------------------
 
 
@@ -722,6 +838,32 @@ function normalizeNumber(value: unknown, fallback = 0): number {
   return fallback
 }
 
+function normalizePositiveNumber(value: unknown): number | undefined {
+  const number = normalizeNumber(value, Number.NaN)
+  return Number.isFinite(number) && number > 0 ? number : undefined
+}
+
+function normalizeOptionalTimestamp(value: unknown): number | undefined {
+  if (value === undefined || value === null) return undefined
+  return normalizeTimestamp(value)
+}
+
+function readAiHostRunStatus(value: unknown): AiHostRunResultStatus | null {
+  if (typeof value !== 'string') return null
+  switch (value) {
+    case 'completed':
+    case 'failed':
+    case 'timeout':
+    case 'busy':
+    case 'unknown_alias':
+    case 'non_runnable':
+    case 'invalid_args':
+    case 'cancelled':
+      return value
+    default:
+      return null
+  }
+}
 
 function readRequiredString(data: Record<string, unknown>, key: string): string | null {
   return readNonEmptyStringProperty(data, key) ?? null

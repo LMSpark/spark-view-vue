@@ -218,7 +218,7 @@ export function getNextPageDesignFlowStep(completedStep: number): PageDesignFlow
 export function matchPageDesignTaskGuides(intent?: string): readonly PageDesignTaskGuide[] {
   const text = intent?.trim().toLowerCase() ?? ''
   if (text.length === 0) return []
-  const guides: PageDesignTaskGuide[] = []
+  const guides: PageDesignTaskGuide[] = [GENERAL_PAGE_DESIGN_PROTOCOL_GUIDE]
   if (/(请假|休假|leave|申请|application|表单|form)/iu.test(text)) {
     guides.push(APPLICATION_FORM_TASK_GUIDE)
   }
@@ -226,6 +226,41 @@ export function matchPageDesignTaskGuides(intent?: string): readonly PageDesignT
 }
 
 // PAGE_DESIGN_REFACTOR_SOURCE[task-knowledge-catalog]: intent 命中的任务知识放在这里；不要复制到 system prompt、smoke 脚本或通讯层。
+const GENERAL_PAGE_DESIGN_PROTOCOL_GUIDE: PageDesignTaskGuide = {
+  id: 'page-design-tool-protocol',
+  title: '通用页面设计知识获取协议：缺什么查什么',
+  when: '所有 pageDesign 页面设计任务。该 guide 只描述获取知识的方法，不预置具体业务字段或组件答案。',
+  relevantSteps: [11, 12, 13, 16, 17, 18, 19, 20, 61, 65, 71, 78, 89, 90, 91, 93, 96, 97, 98],
+  dataPlanning: [
+    '不知道某个 kind 有哪些函数时，先 module_query({ kind, includeFunctions:true }) 看函数目录，再 module_function_guide({ kind, functionName }) 看参数和失败恢复。',
+    '不知道当前页面事实时，先查只读函数：dataset / node-tree / text-model 的真实只读函数名必须从 module_query 或 module_function_guide 获取。',
+    'FUNCTION_NOT_DECLARED 说明你猜了不存在的函数；下一步必须回到 module_query/module_function_guide，而不是换另一个猜测名。',
+    'ACTION_ERROR 或 SCHEMA_VALIDATION_FAILED 后，读取 code/msg/fix/checks，再对同一 kind/functionName 调 module_function_guide 对照 paramsSchema 后重试。',
+  ],
+  dataViewPlanning: [
+    '不知道 view、filterExpression、aggregates、DataViewKey 怎么写时，不要从记忆生成；对 dataset.createView/updateView/addAggregate/listAggregates 调 module_function_guide。',
+    '不知道已有 view 或 aggregate 是否存在时，先调用对应只读函数；不要把 create* 当成幂等 upsert。',
+    '不知道 UI 怎么绑定 DataView 成员时，查 node-tree/payload-catalog 指南以及 dataset 相关函数指南。',
+  ],
+  payloadPlanning: [
+    '不知道组件 type 或可用组件时，先调用 payload-catalog.queryPayloads。',
+    '不知道组件 props、toolbar/filter/actions 等结构时，必须调用 payload-catalog.guidePayload({ key:type })；node-tree 校验失败后仍回到对应 guidePayload。',
+    '不知道 node-tree 写入函数签名时，先 module_function_guide({ kind:"node-tree", functionName })。',
+  ],
+  functionCallPlan: [
+    'FC: 缺函数目录 -> module_query。',
+    'FC: 缺函数参数/失败恢复 -> module_function_guide。',
+    'FC: 缺组件目录 -> payload-catalog.queryPayloads。',
+    'FC: 缺组件 props -> payload-catalog.guidePayload。',
+    'FC: 缺当前页面状态 -> 调对应 kind 的只读函数，函数名从目录/指南获取。',
+  ],
+  validation: [
+    '遇到未知函数、未知参数、未知组件、未知状态时，下一步应该是查询知识，不是继续猜。',
+    '每次写入前应能说出知识来源：module_query、module_function_guide、payload-catalog 或只读状态函数。',
+    '失败恢复应基于工具回执的 code/msg/fix/checks 和对应指南。',
+  ],
+}
+
 // 该 guide 只表达申请类表单的通用闭环，不能替代某个业务页面的测试验收。
 const APPLICATION_FORM_TASK_GUIDE: PageDesignTaskGuide = {
   id: 'application-form-create-submit-list',

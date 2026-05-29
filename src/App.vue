@@ -150,8 +150,10 @@ import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { createAiDebugBridge } from '@/services/ai-debug-bridge'
+import { createAiHostRunBridge } from '@/services/ai-host-run-bridge'
 import { appAiAgent } from '@/services/ai-host'
 import { createAuthHeaders } from '@/services/http'
+import { preparePageDesignHostRun } from '@/services/page-design-host-run-provider'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -218,6 +220,7 @@ const activeSettingsScope = ref<string | null>(null)
 let isApplyingProjectUiSettings = false
 let _stopPageConfigChange: (() => void) | null = null
 let _stopAiDebugBridge: (() => void) | null = null
+let _stopAiHostRunBridge: (() => void) | null = null
 const pageConfigRefreshRevision = ref(0)
 const sparkRendererRouteKey = computed(() => {
   const base = mode.value === 'multi' ? route.path : route.fullPath
@@ -562,7 +565,7 @@ async function reloadNavigation(): Promise<void> {
 }
 
 onMounted(() => {
-  // APP 公共 SSE 在壳层接入：页面配置刷新和 AI 调试桥接都依赖同一条 /api/events。
+  // APP 公共 SSE 在壳层接入：页面配置刷新、AI 调试和 Host Run 桥接都依赖同一条 /api/events。
   if (_stopPageConfigChange === null) {
     _stopPageConfigChange = onPageConfigChange(handlePageConfigChange)
   }
@@ -574,6 +577,12 @@ onMounted(() => {
       platformPathPrefix: PLATFORM_PATH_PREFIX,
     })
       .start()
+  }
+  if (_stopAiHostRunBridge === null) {
+    _stopAiHostRunBridge = createAiHostRunBridge({
+      host: appAiAgent,
+      prepareRun: preparePageDesignHostRun,
+    }).start()
   }
 
   // start.ts 已在 mount 前调用 registerRoutes() 注册路由 + 加载导航树
@@ -597,6 +606,8 @@ onUnmounted(() => {
   _stopPageConfigChange = null
   _stopAiDebugBridge?.()
   _stopAiDebugBridge = null
+  _stopAiHostRunBridge?.()
+  _stopAiHostRunBridge = null
 })
 
 // ── 登录后自动同步导航 UI ──
@@ -766,4 +777,3 @@ async function handleCrossAppNavigate(projectIdOrFullPath: string, pathArg?: str
 }
 
 </style>
-

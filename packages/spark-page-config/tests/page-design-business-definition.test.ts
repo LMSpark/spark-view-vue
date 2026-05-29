@@ -86,17 +86,25 @@ function testTurn() {
   }
 }
 
-function expectActionMetadataComplete(describeData: Record<string, unknown>): void {
+function expectActionSummariesOnly(describeData: Record<string, unknown>): void {
   const functions = describeData['functions']
   if (!Array.isArray(functions)) throw new Error('functions not array')
   for (const fn of functions) {
     if (!isRecord(fn)) throw new Error('function not record')
-    expect(fn).toHaveProperty('paramsSchema')
-    expect(fn).toHaveProperty('resultSchema')
-    expect(fn).toHaveProperty('usageRules')
-    expect(fn).toHaveProperty('failureModes')
-    expect(fn).toHaveProperty('example')
+    expect(fn).toHaveProperty('name')
+    expect(fn).toHaveProperty('functionName')
+    expect(fn).toHaveProperty('description')
+    expect(fn).not.toHaveProperty('paramsSchema')
+    expect(fn).not.toHaveProperty('usageRules')
+    expect(fn).not.toHaveProperty('failureModes')
   }
+}
+
+function expectFunctionGuideComplete(guideData: Record<string, unknown>): void {
+  expect(guideData).toHaveProperty('paramsSchema')
+  expect(guideData).toHaveProperty('usageRules')
+  expect(guideData).toHaveProperty('failureModes')
+  expect(guideData).toHaveProperty('examples')
 }
 
 function assertPageDesignRunInputTypes(): void {
@@ -180,6 +188,8 @@ describe('pageDesign host business registration', () => {
     expect(started.tools.map((tool) => tool.function.name)).toEqual([
       'module_query',
       'module_guide',
+      'module_attribute_guide',
+      'module_function_guide',
       'module_find',
       'module_attr',
       'module_call',
@@ -221,7 +231,17 @@ describe('pageDesign host business registration', () => {
       const described = await executeDesignTool(registration, 'module_guide', { kind }, context)
       const description = getRecord(described)
       expect(description['parentKind']).toBe(PAGE_DESIGN_MODULE_ID)
-      expectActionMetadataComplete(description)
+      expectActionSummariesOnly(description)
+      const functions = description['functions']
+      if (!Array.isArray(functions)) throw new Error('functions not array')
+      const firstFunction = functions.find((fn) => isRecord(fn) && typeof fn['functionName'] === 'string')
+      if (isRecord(firstFunction) && typeof firstFunction['functionName'] === 'string') {
+        const guide = getRecord(await executeDesignTool(registration, 'module_function_guide', {
+          kind,
+          functionName: firstFunction['functionName'],
+        }, context))
+        expectFunctionGuideComplete(guide)
+      }
     }
 
     const payloadDescription = getRecord(await executeDesignTool(registration, 'module_guide', {
@@ -314,8 +334,11 @@ describe('pageDesign host business registration', () => {
     expect(prompt).not.toContain('AI Host 任务输入')
     expect(prompt).toContain('kindID=pageDesign')
     expect(prompt).toContain('"pageId":"page-designer"')
-    expect(prompt).toContain('首轮仅 tool_call')
-    expect(prompt).toContain('module_find({"path":"/","childKind":"pageDesign","query":{"id":"page-designer"}})')
+    expect(prompt).toContain('工具通道硬约束')
+    expect(prompt).toContain('真实 tool_calls')
+    expect(prompt).toContain('function.name="module_find"')
+    expect(prompt).toContain('function.arguments={"path":"/","childKind":"pageDesign","query":{"id":"page-designer"}}')
+    expect(prompt).toContain('禁止在正文输出 {"tool_call":...}')
     expect(prompt).toContain('无正文')
     expect(prompt).toContain('Host 返回 ref.id 后')
     expect(prompt).toContain('"functionName":"describeProgress"')
@@ -766,6 +789,8 @@ describe('pageDesign host business registration', () => {
     expect(roundToolNames[0]).toEqual([
       'module_query',
       'module_guide',
+      'module_attribute_guide',
+      'module_function_guide',
       'module_find',
       'module_attr',
       'module_call',
