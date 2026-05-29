@@ -15,7 +15,7 @@
  *   FunctionInvoker           — 函数调用（invokeFunction + kindPath 校验）
  *   ProtocolToolGenerator     — 固定 module_* tools 规约生成
  *   ProtocolToolRouter        — 工具调用路由（toolName → 具体操作）
- *   AiModuleKnowledgeProjector — 知识投影（project/queryModules/queryFunctions/guideFunction）
+ *   AiModuleKnowledgeProjector — 知识投影（project/queryModules/queryFunctions/guideAttribute/guideFunction）
  *
  * 【对外 API 两组】
  *   LLM 工具接口：
@@ -24,7 +24,7 @@
  *   编程式直接访问（跳过工具路由）：
  *     · getAttribute / setAttribute / invokeFunction
  *     · listChildren / findInstance / describeKind
- *     · projectKnowledge / queryKnowledgeModules / queryKnowledgeFunctions / guideKnowledgeFunction
+ *     · projectKnowledge / queryKnowledgeModules / queryKnowledgeFunctions / guideKnowledgeAttribute / guideKnowledgeFunction
  *
  * 【设计原则】不持有业务状态，只做协议层编排和路由。业务状态由
  *   业务服务或构造期注入的函数 runner 承载。
@@ -46,6 +46,8 @@ import {
   AiModuleKnowledgeProjector,
 } from '../knowledge/ai-module-knowledge'
 import type {
+  AiModuleKnowledgeAttributeDetailGuide,
+  AiModuleKnowledgeAttributeGuideInput,
   AiModuleKnowledgeFunctionFilter,
   AiModuleKnowledgeFunctionGuide,
   AiModuleKnowledgeFunctionGuideInput,
@@ -185,6 +187,13 @@ export class AiModuleRuntime {
     filter: AiModuleKnowledgeFunctionFilter = {},
   ): readonly AiModuleKnowledgeFunctionSummary[] {
     return this.knowledge.queryFunctions(filter)
+  }
+
+  /** 查询单个属性完整指南。 */
+  public guideKnowledgeAttribute(
+    input: AiModuleKnowledgeAttributeGuideInput,
+  ): AiModuleResult<AiModuleKnowledgeAttributeDetailGuide> {
+    return this.knowledge.guideAttribute(input)
   }
 
   /** 查询单个函数完整指南。 */

@@ -93,13 +93,15 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  * 根据 LLM 发起的工具调用名称和参数，推断该调用归属于哪个能力模块（kind）。
  *
  * 规则：
- *   · module_guide / module_query → 优先取 args.kind
+ *   · module_guide / module_attribute_guide / module_function_guide / module_query → 优先取 args.kind
  *   · path 工具    → 从 args.path 尾部提取 kind 名称（去除 [...] 过滤器）
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
  *   module_call({ path: "/node-tree[tree-1]", functionName: "getNode" }) → "node-tree"
  *   module_guide({ kind: "Table" })                                      → "Table"
+ *   module_attribute_guide({ kind: "Table", attrName: "title" })          → "Table"
+ *   module_function_guide({ kind: "Table", functionName: "listRows" })   → "Table"
  *   module_find({ path: "/root" })                                        → "root"
  * ----------------------------------------------------------------------------- */
 
@@ -107,7 +109,7 @@ export function eventModuleIdFromProtocolCall(
   toolName: string,
   args: Readonly<Record<string, unknown>>,
 ): string {
-  if ((toolName === 'module_guide' || toolName === 'module_query')
+  if ((toolName === 'module_guide' || toolName === 'module_attribute_guide' || toolName === 'module_function_guide' || toolName === 'module_query')
     && typeof args['kind'] === 'string'
     && args['kind'].trim().length > 0) {
     return args['kind']

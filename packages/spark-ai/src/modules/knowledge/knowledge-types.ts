@@ -21,7 +21,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
+import type { AiJsonSchema, AiJsonSchemaObject, AiJsonValue } from '../../json'
 import type {
   AiModuleFunctionAntiExample,
   AiModuleFunctionExample,
@@ -33,41 +33,49 @@ import type {
 } from '../protocol'
 
 export type AiModuleKnowledgeAttributeAccessMode = 'read' | 'write' | 'read-write' | 'none'
+export type AiModuleKnowledgeLevel = 'directory' | 'overview' | 'detail'
 
 export type AiModuleKnowledgeAttributeGuide = Readonly<{
+  knowledgeLevel: 'directory'
   name: string
   description: string
   access: AiModuleKnowledgeAttributeAccessMode
   readable: boolean
   writable: boolean
-  schemaLookupStep: string
+  detailToolName: 'module_attribute_guide'
+  detailLookupStep: string
   readStep?: string
   writeStep?: string
 }>
 
 export type AiModuleKnowledgeLayerFunction = Readonly<{
+  knowledgeLevel: 'directory'
   toolName: string
   kindPath: readonly string[]
   functionName: string
   description: string
-  paramNames: readonly string[]
-  requiredParamNames: readonly string[]
+  detailToolName: 'module_function_guide'
+  detailLookupStep: string
   lookupSteps: readonly string[]
   invokeStep: string
   payloadRefs: readonly string[]
+  requiresPayloadGuide: boolean
 }>
 
 export type AiModuleKnowledgeChildAttributeSummary = Readonly<{
+  knowledgeLevel: 'directory'
   name: string
   description: string
   access: AiModuleKnowledgeAttributeAccessMode
+  detailLookupStep: string
 }>
 
 export type AiModuleKnowledgeChildFunctionSummary = Readonly<{
+  knowledgeLevel: 'directory'
   functionName: string
   description: string
-  requiredParamNames: readonly string[]
   payloadRefs: readonly string[]
+  detailLookupStep: string
 }>
 
 export type AiModuleKnowledgeChildKindSummary = Readonly<{
@@ -81,6 +89,55 @@ export type AiModuleKnowledgeChildKindSummary = Readonly<{
   attributeSummaries: readonly AiModuleKnowledgeChildAttributeSummary[]
   functionSummaries: readonly AiModuleKnowledgeChildFunctionSummary[]
   detailLookupSteps: readonly string[]
+}>
+
+export type AiModuleKnowledgeKindGuideAttribute = Readonly<{
+  knowledgeLevel: 'directory'
+  name: string
+  description: string
+  access: AiModuleKnowledgeAttributeAccessMode
+  readable: boolean
+  writable: boolean
+  detailToolName: 'module_attribute_guide'
+  detailLookupStep: string
+}>
+
+export type AiModuleKnowledgeKindGuideFunction = Readonly<{
+  knowledgeLevel: 'directory'
+  name: string
+  functionName: string
+  description: string
+  detailLookupStep: string
+}>
+
+export type AiModuleKnowledgeKindGuidePayload = Readonly<{
+  payloadRef: string
+  description: string
+  requiredForFunctions: readonly string[]
+}>
+
+export type AiModuleKnowledgeKindGuideChild = Readonly<{
+  kind: string
+  name: string
+  description: string
+}>
+
+export type AiModuleKnowledgeKindGuide = Readonly<{
+  knowledgeLevel: 'overview'
+  kind: string
+  name: string
+  description: string
+  registeredPrompt: string
+  parentKind?: string
+  pathPattern: string
+  directoryFirstRule: string
+  howToUse: readonly string[]
+  nextSteps: readonly string[]
+  attributes: readonly AiModuleKnowledgeKindGuideAttribute[]
+  functions: readonly AiModuleKnowledgeKindGuideFunction[]
+  payloads: readonly AiModuleKnowledgeKindGuidePayload[]
+  children: readonly string[]
+  childKinds: readonly AiModuleKnowledgeKindGuideChild[]
 }>
 
 export type AiModuleKnowledgeInstanceGuide = Readonly<{
@@ -148,14 +205,17 @@ export type AiModuleKnowledgeModuleFilter = Readonly<{
 }>
 
 export type AiModuleKnowledgeFunctionSummary = Readonly<{
+  knowledgeLevel: 'directory'
   toolName: string
   kindPath: readonly string[]
   kind: string
   functionName: string
   description: string
-  paramNames: readonly string[]
-  requiredParamNames: readonly string[]
-  failureCodes: readonly string[]
+  detailToolName: 'module_function_guide'
+  detailLookupStep: string
+  hasParams: boolean
+  hasUsageRules: boolean
+  hasFailureModes: boolean
   usageRuleCount: number
   failureModeCount: number
   functionLookupSteps: readonly string[]
@@ -165,11 +225,13 @@ export type AiModuleKnowledgeFunctionSummary = Readonly<{
 }>
 
 export type AiModuleKnowledgeFunctionGuide = Readonly<{
+  knowledgeLevel: 'detail'
   toolName: string
   kindPath: readonly string[]
   kind: string
   functionName: string
   description: string
+  directoryLookupStep: string
   callPattern: Readonly<{
     toolName: 'module_call'
     path: string
@@ -207,6 +269,27 @@ export type AiModuleKnowledgeFunctionFilter = Readonly<{
 export type AiModuleKnowledgeFunctionGuideInput = Readonly<{
   kind?: string
   functionName?: string
+}>
+
+export type AiModuleKnowledgeAttributeGuideInput = Readonly<{
+  kind?: string
+  attrName?: string
+}>
+
+export type AiModuleKnowledgeAttributeDetailGuide = Readonly<{
+  knowledgeLevel: 'detail'
+  kind: string
+  attrName: string
+  name: string
+  description: string
+  access: AiModuleKnowledgeAttributeAccessMode
+  readable: boolean
+  writable: boolean
+  directoryLookupStep: string
+  schema: AiJsonSchema
+  readStep?: string
+  writeStep?: string
+  example?: AiJsonValue
 }>
 
 export type AiModuleHumanQuestionGuideInput = Readonly<{

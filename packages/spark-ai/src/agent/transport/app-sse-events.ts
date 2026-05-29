@@ -38,6 +38,8 @@ import type { ApiEnvelopeContext, ApiEnvelopeEvent } from '@spark-view/spark-uti
  *   debug-screenshot-request — 截图请求
  *   debug-screenshot-result  — 截图结果
  *   debug-fc-error-report    — 函数调用错误报告
+ *   ai-host-run-request      — 定向触发 APP Host run
+ *   ai-host-run-result       — APP Host run 执行回执
  *   llm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）
  *
  * `string & {}` 后缀允许业务方扩展自定义事件名，同时保留 IDE 自动补全。
@@ -52,6 +54,8 @@ export type AiAgentAppSseEventName =
   | 'debug-screenshot-request'
   | 'debug-screenshot-result'
   | 'debug-fc-error-report'
+  | 'ai-host-run-request'
+  | 'ai-host-run-result'
   | 'llm-frame'
   | (string & {})
 

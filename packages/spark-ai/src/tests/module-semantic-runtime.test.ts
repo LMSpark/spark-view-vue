@@ -94,18 +94,21 @@ function createBoardModule(spy: { host?: AiModulePathContext['host'] } = {}): Ai
 }
 
 describe('AiModuleRuntime fixed tool protocol', () => {
-  it('exposes only the six fixed module tools', () => {
+  it('exposes only the fixed module tools', () => {
     const names = createRuntime().getTools().map((tool) => tool.function.name)
 
     expect(names).toEqual([
       PROTOCOL_TOOL_NAMES.moduleQuery,
       PROTOCOL_TOOL_NAMES.moduleGuide,
+      PROTOCOL_TOOL_NAMES.moduleAttributeGuide,
+      PROTOCOL_TOOL_NAMES.moduleFunctionGuide,
       PROTOCOL_TOOL_NAMES.moduleFind,
       PROTOCOL_TOOL_NAMES.moduleAttr,
       PROTOCOL_TOOL_NAMES.moduleCall,
       PROTOCOL_TOOL_NAMES.humanQuestion,
     ])
     expect(names).not.toContain('task_detail_getNode')
+    expect(createRuntime().projectKnowledge().promptSnapshot).toContain('module_attribute_guide')
   })
 
   it('module_query returns module summaries and optional function summaries', async () => {
@@ -129,17 +132,41 @@ describe('AiModuleRuntime fixed tool protocol', () => {
     })
   })
 
-  it('module_guide reads kind metadata and function guide', async () => {
+  it('module_guide reads kind metadata and module_*_guide reads concrete contracts', async () => {
     const runtime = createRuntime()
 
     await expect(runtime.executeTool('module_guide', { kind: 'workspace' })).resolves.toMatchObject({
       ok: true,
       data: expect.objectContaining({
         kind: 'workspace',
-        attributes: [expect.objectContaining({ name: 'title' })],
+        registeredPrompt: '工作区根能力',
+        attributes: [expect.objectContaining({
+          knowledgeLevel: 'directory',
+          name: 'title',
+          detailToolName: 'module_attribute_guide',
+        })],
+      }),
+    })
+    await expect(runtime.executeTool('module_attribute_guide', {
+      kind: 'workspace',
+      attrName: 'title',
+    })).resolves.toMatchObject({
+      ok: true,
+      data: expect.objectContaining({
+        knowledgeLevel: 'detail',
+        kind: 'workspace',
+        attrName: 'title',
+        schema: expect.objectContaining({ type: 'string' }),
       }),
     })
     await expect(runtime.executeTool('module_guide', {
+      kind: 'board',
+      functionName: 'getItem',
+    })).resolves.toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'INVALID_TOOL_ARGS' })],
+    })
+    await expect(runtime.executeTool('module_function_guide', {
       kind: 'board',
       functionName: 'getItem',
     })).resolves.toMatchObject({

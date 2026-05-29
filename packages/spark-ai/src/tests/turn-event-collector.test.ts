@@ -181,6 +181,169 @@ describe('createTurnEventCollector', () => {
     expect(hub.listenerCount()).toBe(0)
   })
 
+  it('recovers tool_calls JSON emitted as assistant text', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: JSON.stringify({
+        tool_calls: [{
+          id: 'call-1',
+          type: 'function',
+          function: {
+            name: 'module_find',
+            arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+          },
+        }],
+      }),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call-1',
+        type: 'function',
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+        },
+      }],
+    })
+  })
+
+  it('recovers fenced pseudo tool_call text with args', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '```json',
+        JSON.stringify({
+          tool_call: 'module_find',
+          args: { path: '/', childKind: 'pageDesign' },
+        }),
+        '```',
+      ].join('\n'),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_text_1',
+        type: 'function',
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+        },
+      }],
+    })
+  })
+
+  it('recovers multiple fenced tool_calls emitted as assistant text', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        'I will call tools.',
+        '```json',
+        JSON.stringify({
+          tool_calls: [{
+            id: 'call-1',
+            type: 'function',
+            function: {
+              name: 'module_find',
+              arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+            },
+          }],
+        }),
+        '``````json',
+        JSON.stringify({
+          tool_calls: [{
+            id: 'call-2',
+            type: 'function',
+            function: {
+              name: 'module_call',
+              arguments: JSON.stringify({ path: '/pageDesign[x]', functionName: 'writeFiles', args: {} }),
+            },
+          }],
+        }),
+        '```',
+      ].join('\n'),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [
+        {
+          id: 'call-1',
+          type: 'function',
+          function: {
+            name: 'module_find',
+            arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+          },
+        },
+        {
+          id: 'call-2',
+          type: 'function',
+          function: {
+            name: 'module_call',
+            arguments: JSON.stringify({ path: '/pageDesign[x]', functionName: 'writeFiles', args: {} }),
+          },
+        },
+      ],
+    })
+  })
+
+  it('recovers DSML invoke blocks emitted as assistant text', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '<｜DSML｜tool_calls>',
+        '<｜DSML｜invoke name="module_call">',
+        '<｜DSML｜parameter name="path" string="true">/pageDesign[x]/lifecycle[x]</｜DSML｜parameter>',
+        '<｜DSML｜parameter name="functionName" string="true">describeProgress</｜DSML｜parameter>',
+        '<｜DSML｜parameter name="args" string="false">{}</｜DSML｜parameter>',
+        '</｜DSML｜invoke>',
+        '</｜DSML｜tool_calls>',
+      ].join('\n'),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_dsml_1',
+        type: 'function',
+        function: {
+          name: 'module_call',
+          arguments: JSON.stringify({
+            path: '/pageDesign[x]/lifecycle[x]',
+            functionName: 'describeProgress',
+            args: {},
+          }),
+        },
+      }],
+    })
+  })
+
   it('rejects APP SSE turn errors', async () => {
     const hub = createTestEventHub()
     const streamEvents: AiAgentStreamEvent[] = []

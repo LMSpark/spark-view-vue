@@ -10,7 +10,7 @@
 
 - JSON Schema 与 JSON 值规整。
 - `AiModule` 能力声明、实例路径、属性和函数执行协议。
-- `AiModuleRuntime` 固定六工具路由。
+- `AiModuleRuntime` 固定八工具路由。
 - `AiAgentRegistration` / `AiAgentHost` 注册与运行入口。
 - Agent session history、tool loop、APP 传输回调契约。
 - 调试诊断、runtime inspect、session transcript。
@@ -293,7 +293,7 @@ functions: [{
   failureModes: [{
     code: 'INVALID_PRIORITY',
     when: 'priority 不在枚举范围内',
-    fix: '调用 module_guide 查看 setPriority 的 paramsSchema。',
+    fix: '调用 module_function_guide 查看 setPriority 的 paramsSchema。',
   }],
   examples: [{
     intent: '用户要求调高优先级',
@@ -306,7 +306,7 @@ functions: [{
 }]
 ```
 
-`module_guide({ kind, functionName })` 会把这些字段投影给 LLM：
+`module_function_guide({ kind, functionName })` 会把这些字段投影给 LLM：
 
 - `toolName: 'module_call'`
 - `kindPath`
@@ -367,7 +367,7 @@ runtime 会检查：
 - 父模块是否声明了对应 child kind。
 - path 中每一段是否能从父级解析到子级。
 
-## 6. 运行时与固定六工具
+## 6. 运行时与固定八工具
 
 ### 6.1 运行时组合根
 
@@ -401,11 +401,13 @@ const result = await runtime.executeTool('module_call', {
 
 ### 6.2 固定工具列表
 
-LLM 只会看到六个固定工具：
+LLM 只会看到八个固定工具：
 
 ```text
 module_query
 module_guide
+module_attribute_guide
+module_function_guide
 module_find
 module_attr
 module_call
@@ -417,8 +419,12 @@ human_question
 ```mermaid
 flowchart LR
   Q["module_query"] --> G["module_guide"]
+  G --> AG["module_attribute_guide"]
+  Q --> FG["module_function_guide"]
   G --> F["module_find"]
+  FG --> C["module_call"]
   F --> C["module_call"]
+  AG --> A["module_attr"]
   F --> A["module_attr"]
   C --> R["tool result"]
   A --> R
@@ -446,7 +452,7 @@ flowchart LR
 
 ### 6.4 `module_guide`
 
-用途：读取模块或函数调用指南。
+用途：读取模块 kind 的用途、属性/函数/payload 目录概要。
 
 模块指南：
 
@@ -454,7 +460,19 @@ flowchart LR
 { "kind": "ticket" }
 ```
 
-函数指南：
+### 6.5 `module_attribute_guide`
+
+用途：读取具体属性 schema、读写权限和示例。LLM 应先从 `module_guide({ kind })` 的属性目录中选定真实 `attrName`，再调用本工具。
+
+```json
+{ "kind": "ticket", "attrName": "title" }
+```
+
+属性指南会明确告诉 LLM：读写属性必须通过 `module_attr({ op, path, attrName, value })` 执行。
+
+### 6.6 `module_function_guide`
+
+用途：读取具体函数调用指南。
 
 ```json
 { "kind": "ticket", "functionName": "setPriority" }
@@ -462,7 +480,7 @@ flowchart LR
 
 函数指南会明确告诉 LLM：业务函数必须通过 `module_call({ path, functionName, args })` 执行。
 
-### 6.5 `module_find`
+### 6.7 `module_find`
 
 用途：定位实例 path 所需的 id。
 
@@ -496,7 +514,7 @@ flowchart LR
 
 如果带 `query`，必须提供 `childKind`。
 
-### 6.6 `module_attr`
+### 6.8 `module_attr`
 
 用途：读写属性。
 
@@ -517,7 +535,7 @@ flowchart LR
 }
 ```
 
-### 6.7 `module_call`
+### 6.9 `module_call`
 
 用途：执行业务函数。
 
@@ -537,7 +555,7 @@ flowchart LR
 - 执行前会按该函数的 `paramsSchema` 校验。
 - runner 接收到 `AiModulePathContext`，包含 path segments 和 host context。
 
-### 6.8 `human_question`
+### 6.10 `human_question`
 
 用途：当缺少事实或需要确认时，要求 LLM 停止继续工具调用并追问用户。
 
@@ -558,11 +576,12 @@ flowchart LR
 
 - module summary。
 - function summary。
+- attribute guide。
 - function guide。
 - human question guide。
 - prompt snapshot。
 
-prompt snapshot 很短，只包含固定工具路线、root kinds 和流程提醒。它不是完整业务知识库；详细信息应由 LLM 通过 `module_query` 和 `module_guide` 获取。
+prompt snapshot 很短，只包含固定工具路线、root kinds 和流程提醒。它不是完整业务知识库；详细信息应由 LLM 通过 `module_query`、`module_guide`、`module_attribute_guide` 和 `module_function_guide` 获取。
 
 典型推荐流程：
 
@@ -576,7 +595,7 @@ sequenceDiagram
   U->>L: "把工单优先级调高"
   L->>R: "module_query({ keyword: '优先级', includeFunctions: true })"
   R-->>L: "function summary"
-  L->>R: "module_guide({ kind: 'ticket', functionName: 'setPriority' })"
+  L->>R: "module_function_guide({ kind: 'ticket', functionName: 'setPriority' })"
   R-->>L: "paramsSchema, callPattern, examples"
   L->>R: "module_find({ path: '/', childKind: 'ticket', query: ... })"
   R-->>L: "id: T-1001"
@@ -1126,7 +1145,7 @@ tool loop 会通过 `request.onStreamEvent` 发诊断事件：
 
 `eventModuleId` 推断规则：
 
-- `module_guide` / `module_query` 优先取 `args.kind`。
+- `module_guide` / `module_attribute_guide` / `module_function_guide` / `module_query` 优先取 `args.kind`。
 - 带 path 的工具取 path 尾段 kind。
 - 否则回退为 toolName。
 
@@ -1305,8 +1324,8 @@ flowchart TD
 
 | 现象 | 来源 | 修复 |
 | --- | --- | --- |
-| `UNKNOWN_TOOL` | LLM 调用了非六工具名 | 系统提示强调只能用 `module_*` 固定工具；不要暴露动态工具名 |
-| `INVALID_TOOL_ARGS` | 工具参数不是 object 或字段类型不对 | 让 LLM 重新调用，并先查 `module_guide` |
+| `UNKNOWN_TOOL` | LLM 调用了非八工具名 | 系统提示强调只能用 `module_*` 固定工具；不要暴露动态工具名 |
+| `INVALID_TOOL_ARGS` | 工具参数不是 object 或字段类型不对 | 让 LLM 重新调用，并先查 `module_query` 或 `module_function_guide` |
 | `TOOL_ARGS_INVALID_JSON` | OpenAI tool call 的 `function.arguments` 不是 JSON 字符串 | APP 传输层必须保留合法 JSON object 字符串 |
 | `FUNCTION_NOT_FOUND` | functionName 未声明 | 检查 `functions` metadata 与 runner 分发一致 |
 | `SCHEMA_VALIDATION_FAILED` | args 不符合 paramsSchema | paramsSchema 写清 required 和 enum，guide 提供 examples |
@@ -1323,7 +1342,7 @@ flowchart TD
 - `host-public-surface.test.ts`: agent 公共 barrel 只导出稳定 API。
 - `schema-validator.test.ts`: JSON Schema 校验和诊断。
 - `module-semantic-isolation.test.ts`: JSON coercion、registry、knowledge、inspect、path helper。
-- `module-semantic-runtime.test.ts`: 固定六工具、module_query/guide/find/attr/call、动态工具拒绝。
+- `module-semantic-runtime.test.ts`: 固定八工具、module_query/guide/attribute_guide/function_guide/find/attr/call、动态工具拒绝。
 - `module-semantic-host.test.ts`: Host register/ensure/run/dryRun、business kit、session history。
 - `session-diagnostics.test.ts`: summary/transcript。
 - `turn-event-collector.test.ts`: APP SSE 聚合、过滤、错误、超时、turnKey/streamKey。
@@ -1332,7 +1351,7 @@ flowchart TD
 
 ```text
 Module runtime 测试:
-  module_find, module_guide, module_call, module_attr, schema 错误路径
+  module_find, module_guide, module_attribute_guide, module_function_guide, module_call, module_attr, schema 错误路径
 
 Agent registration 测试:
   inputContract normalize, scope, orchestration, sessionStore, inspect

@@ -66,6 +66,8 @@ Runtime exposes only these transport-ready tools:
 
 - `module_query`
 - `module_guide`
+- `module_attribute_guide`
+- `module_function_guide`
 - `module_find`
 - `module_attr`
 - `module_call`

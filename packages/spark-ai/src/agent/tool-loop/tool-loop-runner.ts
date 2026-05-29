@@ -133,6 +133,7 @@ export class AiAgentToolLoopRunner {
       if (request.signal?.aborted) return
 
       const currentRound = round + 1
+      const llmTurn = toLlmRoundTurn(turn, currentRound)
       const tools = round === 0 ? initialTransportTools : toAiAgentTransportTools(registration.runtime.getTools())
       const toolNames = round === 0 ? initialToolNames : new Set(tools.map((tool) => tool.function.name))
 
@@ -140,13 +141,13 @@ export class AiAgentToolLoopRunner {
       emitAiAgentDiagnosticEvent({
         request,
         scope,
-        turn,
+        turn: llmTurn,
         type: 'llm-request',
         data: {
           kind: 'streamTurn',
           round: currentRound,
           sessionId,
-          turnId: turn.turnId,
+          turnId: llmTurn.turnId,
           systemPrompt,
           tools,
           messages: pendingMessages,
@@ -157,7 +158,7 @@ export class AiAgentToolLoopRunner {
       const result = await this.callbacks.executeTurn({
         sessionId,
         scope,
-        turn,
+        turn: llmTurn,
         systemPrompt,
         tools,
         messages: pendingMessages,
@@ -219,7 +220,7 @@ export class AiAgentToolLoopRunner {
       await this.appendMessagesToTransport({
         scope,
         request,
-        turn,
+        turn: llmTurn,
         sessionId,
         messages: messagesToAppend,
       })
@@ -373,4 +374,13 @@ function requireSessionStore<TInput extends AiJsonParams>(
   registration: AiAgentRegistration<TInput>,
 ): AiAgentSessionStore {
   return registration.sessionStore
+}
+
+function toLlmRoundTurn(turn: AiAgentTurnMeta, round: number): AiAgentTurnMeta {
+  if (round <= 1) return turn
+  return {
+    ...turn,
+    turnId: `${turn.turnId}-llm-round-${round}`,
+    seq: turn.seq + round - 1,
+  }
 }

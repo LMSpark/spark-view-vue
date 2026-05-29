@@ -97,14 +97,24 @@ function createRegistration(
   })
 }
 
-function createCallbacks(): { callbacks: AiAgentTurnCallbacks; rounds: string[][] } {
+function createCallbacks(): {
+  callbacks: AiAgentTurnCallbacks
+  rounds: string[][]
+  prompts: string[]
+  turnIds: string[]
+} {
   const rounds: string[][] = []
+  const prompts: string[] = []
+  const turnIds: string[] = []
   const callbacks: AiAgentTurnCallbacks = {
     prepareSession: async (input) => {
+      prompts.push(input.systemPrompt)
       rounds.push(input.tools.map((tool) => tool.function.name))
     },
     executeTurn: async (input) => {
+      prompts.push(input.systemPrompt)
       rounds.push(input.tools.map((tool) => tool.function.name))
+      turnIds.push(input.turn.turnId)
       if (input.messages.length > 0) {
         return {
           text: '',
@@ -126,12 +136,12 @@ function createCallbacks(): { callbacks: AiAgentTurnCallbacks; rounds: string[][
     },
     appendMessages: async () => {},
   }
-  return { callbacks, rounds }
+  return { callbacks, rounds, prompts, turnIds }
 }
 
 describe('AiAgentHost public API', () => {
   it('registers, ensures and runs by alias without dynamic run map', async () => {
-    const { callbacks, rounds } = createCallbacks()
+    const { callbacks, rounds, prompts } = createCallbacks()
     const host = createAiAgentHost({ turnCallbacks: callbacks, maxToolRounds: 2 })
       .register('taskAssistant', createRegistration())
 
@@ -141,12 +151,34 @@ describe('AiAgentHost public API', () => {
     expect(rounds[0]).toEqual([
       'module_query',
       'module_guide',
+      'module_attribute_guide',
+      'module_function_guide',
       'module_find',
       'module_attr',
       'module_call',
       'human_question',
     ])
+    expect(prompts[0]).toContain('module_attribute_guide')
     expect(Reflect.get(host, 'taskAssistant')).toBeUndefined()
+  })
+
+  it('uses a unique transport turn id for each LLM tool-loop round', async () => {
+    const { callbacks, turnIds } = createCallbacks()
+    const host = createAiAgentHost({ turnCallbacks: callbacks, maxToolRounds: 2 })
+      .register('taskAssistant', createRegistration())
+
+    await host.run('taskAssistant', { id: 'task-a', message: '执行任务' }, {
+      turn: {
+        turnId: 'turn-main',
+        seq: 1,
+        baseRevision: 0,
+        queuedAt: '2026-05-30T00:00:00.000Z',
+        startedAt: '2026-05-30T00:00:00.000Z',
+        maxParallelTurns: 1,
+      },
+    })
+
+    expect(turnIds).toEqual(['turn-main', 'turn-main-llm-round-2'])
   })
 
   it('requires explicit sessionStore during registration', () => {

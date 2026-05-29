@@ -343,7 +343,7 @@ function validateChildTarget(
     return AiModuleResult.failCode(
       'CHILD_KIND_NOT_DECLARED',
       `kind "${parentKind.kind}" 未声明子 kind "${childKind}"`,
-      `可调用 describeKind("${parentKind.kind}") 查看允许的子 kind`,
+      `可调用 module_guide({ kind: "${parentKind.kind}" }) 查看允许的子 kind`,
     )
   }
   if (child.parentKind !== parentKind.kind) {
@@ -367,6 +367,6 @@ function parentKindMismatch(moduleKind: AiModule, actualParentKind: string): AiM
     expectedParentKind === undefined
       ? `kind "${moduleKind.kind}" 是根 kind，不能挂在父 kind "${actualParentKind}" 下`
       : `kind "${moduleKind.kind}" 的 parentKind 是 "${expectedParentKind}"，不能挂在父 kind "${actualParentKind}" 下`,
-    '请按 module_query/module_guide 返回的 kindPath 构造 module_call.path。',
+    '请按 module_query/module_function_guide 返回的 kindPath 构造 module_call.path。',
   )
 }

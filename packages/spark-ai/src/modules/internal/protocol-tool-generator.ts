@@ -4,12 +4,14 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】modules 层的 OpenAI function tool 规约生成入口。
- *   读取已注册的 AiModule 图，为 LLM 生成 6 个固定协议工具的 JSON Schema 规约。
+ *   读取已注册的 AiModule 图，为 LLM 生成 8 个固定协议工具的 JSON Schema 规约。
  *   每个工具对应一类协议操作：查询、指南、查找、属性读写、函数调用、人工提问。
  *
- * 【6 个固定协议工具】
+ * 【8 个固定协议工具】
  *   module_query   — 查询已注册的模块目录（支持 kind / parentKind / keyword 过滤）
- *   module_guide   — 读取单个模块或函数的详细指南
+ *   module_guide   — 读取单个模块 kind 的用途与目录概要
+ *   module_attribute_guide — 读取单个属性的详细读写指南
+ *   module_function_guide — 读取单个函数的详细调用指南
  *   module_find    — 查找或列出模块实例（需提供具体父路径）
  *   module_attr    — 读写模块的声明属性
  *   module_call    — 调用模块的声明函数
@@ -42,10 +44,12 @@ export type AiModuleToolSpec = Readonly<{
   }
 }>
 
-/** 6 个固定协议工具的联合类型 */
+/** 8 个固定协议工具的联合类型 */
 export type ProtocolToolName =
   | 'module_query'
   | 'module_guide'
+  | 'module_attribute_guide'
+  | 'module_function_guide'
   | 'module_find'
   | 'module_attr'
   | 'module_call'
@@ -55,6 +59,8 @@ export type ProtocolToolName =
 export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleQuery: 'module_query'
   moduleGuide: 'module_guide'
+  moduleAttributeGuide: 'module_attribute_guide'
+  moduleFunctionGuide: 'module_function_guide'
   moduleFind: 'module_find'
   moduleAttr: 'module_attr'
   moduleCall: 'module_call'
@@ -62,6 +68,8 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
 }> = Object.freeze({
   moduleQuery: 'module_query',
   moduleGuide: 'module_guide',
+  moduleAttributeGuide: 'module_attribute_guide',
+  moduleFunctionGuide: 'module_function_guide',
   moduleFind: 'module_find',
   moduleAttr: 'module_attr',
   moduleCall: 'module_call',
@@ -75,7 +83,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
 /**
  * 协议工具规约生成器。
  *
- * 从注册表中读取已注册的模块，为 LLM 生成 6 个固定工具的 JSON Schema。
+ * 从注册表中读取已注册的模块，为 LLM 生成 8 个固定工具的 JSON Schema。
  * 每个工具的 parameters 字段严格对齐 OpenAI function calling 规范。
  */
 export class ProtocolToolGenerator {
@@ -83,11 +91,13 @@ export class ProtocolToolGenerator {
     private readonly kinds: AiModuleRegistry,
   ) {}
 
-  /** 生成全部 6 个协议工具的规约数组 */
+  /** 生成全部 8 个协议工具的规约数组 */
   public generate(): readonly AiModuleToolSpec[] {
     return [
       this.buildModuleQuery(),
       this.buildModuleGuide(),
+      this.buildModuleAttributeGuide(),
+      this.buildModuleFunctionGuide(),
       this.buildModuleFind(),
       this.buildModuleAttr(),
       this.buildModuleCall(),
@@ -124,23 +134,71 @@ export class ProtocolToolGenerator {
     }
   }
 
-  /** module_guide — 读取模块或函数的详细指南 */
+  /** module_guide — 读取模块 kind 的用途与目录概要 */
   private buildModuleGuide(): AiModuleToolSpec {
     return {
       type: 'function',
       function: {
         name: PROTOCOL_TOOL_NAMES.moduleGuide,
         description: [
-          'Read detailed guidance for one module kind or one function.',
-          'Use { kind } to inspect module metadata. Use { kind, functionName } to inspect a function contract before module_call.',
+          'Read overview guidance for one registered module kind.',
+          'Use this to inspect module metadata, attributes, children, payload refs, and declared function names.',
+          'For concrete contracts, call module_attribute_guide or module_function_guide after choosing from the directory.',
         ].join('\n'),
         parameters: {
           type: 'object',
           properties: {
             kind: { type: 'string', description: 'Registered module kind.' },
-            functionName: { type: 'string', description: 'Optional declared function name on the module kind.' },
           },
           required: ['kind'],
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  /** module_attribute_guide — 读取单个属性的完整读写指南 */
+  private buildModuleAttributeGuide(): AiModuleToolSpec {
+    return {
+      type: 'function',
+      function: {
+        name: PROTOCOL_TOOL_NAMES.moduleAttributeGuide,
+        description: [
+          'Read the exact contract for one declared attribute before module_attr.',
+          'Requires both kind and attrName. Returns access, schema, read/write steps, and example when declared.',
+          'Use this after module_query or module_guide selects a real attribute name.',
+        ].join('\n'),
+        parameters: {
+          type: 'object',
+          properties: {
+            kind: { type: 'string', description: 'Registered module kind that declares the attribute.' },
+            attrName: { type: 'string', description: 'Exact declared attribute name on the module kind.' },
+          },
+          required: ['kind', 'attrName'],
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  /** module_function_guide — 读取单个函数的完整调用指南 */
+  private buildModuleFunctionGuide(): AiModuleToolSpec {
+    return {
+      type: 'function',
+      function: {
+        name: PROTOCOL_TOOL_NAMES.moduleFunctionGuide,
+        description: [
+          'Read the exact contract for one declared function before calling module_call.',
+          'Requires both kind and functionName. Returns paramsSchema, requiredBeforeCall, usageRules, failureModes, recoveryHints, and payload lookup steps.',
+          'Use this after module_query(includeFunctions=true) selects a real functionName, and again after FUNCTION_NOT_DECLARED or SCHEMA_VALIDATION_FAILED.',
+        ].join('\n'),
+        parameters: {
+          type: 'object',
+          properties: {
+            kind: { type: 'string', description: 'Registered module kind that declares the function.' },
+            functionName: { type: 'string', description: 'Exact declared function name on the module kind.' },
+          },
+          required: ['kind', 'functionName'],
           additionalProperties: false,
         },
       },
@@ -195,7 +253,7 @@ export class ProtocolToolGenerator {
             path: pathProperty(),
             attrName: { type: 'string', description: 'Declared attribute name on the path tail kind.' },
             value: {
-              description: 'Value for op="set"; must match the declared attribute schema.',
+              description: 'Value for op="set"; shape is described by module_attribute_guide.',
               type: ['string', 'number', 'boolean', 'object', 'array', 'null'],
             },
           },
@@ -223,7 +281,7 @@ export class ProtocolToolGenerator {
             functionName: { type: 'string', description: 'Declared function name on the path tail kind.' },
             args: {
               type: 'object',
-              description: 'Business arguments for the function. Shape is described by module_guide.',
+              description: 'Business arguments for the function. Shape is described by module_function_guide.',
               additionalProperties: true,
             },
           },

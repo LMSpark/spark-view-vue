@@ -24,10 +24,12 @@ LLM 可见工具集合固定为：
 
 1. `module_query`
 2. `module_guide`
-3. `module_find`
-4. `module_attr`
-5. `module_call`
-6. `human_question`
+3. `module_attribute_guide`
+4. `module_function_guide`
+5. `module_find`
+6. `module_attr`
+7. `module_call`
+8. `human_question`
 
 业务函数不会导出成独立动态工具名。通过以下协议调用：
 

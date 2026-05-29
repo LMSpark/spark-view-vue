@@ -4,15 +4,17 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】modules 层的知识投影入口。将已注册的 AiModule 图转换为
- *   LLM 可读的结构化知识产物：模块摘要、函数摘要、函数指南、人工提问指南
- *   以及紧凑的 prompt 快照。ProtocolToolRouter 通过 module_query / module_guide
+ *   LLM 可读的结构化知识产物：模块摘要、模块指南、函数摘要、函数指南、人工提问指南
+ *   以及紧凑的 prompt 快照。ProtocolToolRouter 通过 module_query / module_attribute_guide / module_function_guide
  *   等工具将这些投影暴露给 LLM。
  *
  * 【核心类】
  *   AiModuleKnowledgeProjector — 知识投影器
  *     ├─ project()              — 投影完整快照（模块 + 函数 + kindLayer + prompt 文本）
  *     ├─ queryModules(filter)   — 查询模块目录摘要
+ *     ├─ guideKind(kind)        — 查询单个模块轻量指南
  *     ├─ queryFunctions(filter) — 查询函数目录摘要
+ *     ├─ guideAttribute(input)  — 查询单个属性完整指南
  *     ├─ guideFunction(input)   — 查询单个函数完整指南
  *     └─ guideHumanQuestion()   — 生成人工提问指南
  *
@@ -21,7 +23,7 @@
  *   2. runtime.projectKnowledge() → projector.project() → AiModuleKnowledgeSnapshot
  *   3. tool-loop-runner 将 promptSnapshot 拼接到系统提示词
  *   4. LLM 调用 module_query → projector.queryModules / queryFunctions
- *   5. LLM 调用 module_guide → projector.guideFunction
+ *   5. LLM 调用 module_attribute_guide / module_function_guide → projector.guideAttribute / guideFunction
  *
  * 【依赖】内部 registry + knowledge-support.ts（helper 函数）+ knowledge-types.ts（类型定义）
  * ═══════════════════════════════════════════════════════════════
@@ -33,18 +35,22 @@ import {
   AiModuleResult,
 } from '../protocol'
 import type {
+  AiModuleKnowledgeAttributeDetailGuide,
+  AiModuleKnowledgeAttributeGuideInput,
   AiModuleKnowledgeFunctionFilter,
   AiModuleKnowledgeFunctionGuide,
   AiModuleKnowledgeFunctionGuideInput,
   AiModuleKnowledgeFunctionSummary,
   AiModuleHumanQuestionGuide,
   AiModuleHumanQuestionGuideInput,
+  AiModuleKnowledgeKindGuide,
   AiModuleKnowledgeKindLayer,
   AiModuleKnowledgeModuleFilter,
   AiModuleKnowledgeModuleSummary,
   AiModuleKnowledgeSnapshot,
 } from './knowledge-types'
 import {
+  attributeAccessMode,
   buildHumanQuestion,
   createGuide,
   createKindLayer,
@@ -100,6 +106,147 @@ export class AiModuleKnowledgeProjector {
       allKinds: moduleKinds,
       payloadCatalogs,
     }))
+  }
+
+  // ── kind 指南查询 ──────────────────────────────────────────
+
+  /**
+   * 查询单个 kind 的轻量指南。
+   *
+   * 只返回模块用途、使用路线、属性/子模块/payload 摘要和函数说明。
+   * 单个属性的 schema/example 通过 module_attribute_guide(kind,attrName) 按需读取；
+   * 单个函数的 paramsSchema、usageRules、failureModes 等细节通过
+   * module_function_guide(kind,functionName) 按需读取。
+   */
+  public guideKind(kind: string): AiModuleResult<AiModuleKnowledgeKindGuide> {
+    const normalizedKind = normalizeOptionalText(kind)
+    if (normalizedKind === undefined) {
+      return AiModuleResult.failCode(
+        'INVALID_GUIDE_REQUEST',
+        'module_guide requires a non-empty kind.',
+        'Call module_guide({ kind }) to inspect module purpose and function descriptions.',
+      )
+    }
+
+    const moduleKind = this.kinds.get(normalizedKind)
+    if (moduleKind === undefined) {
+      return AiModuleResult.failCode(
+        'KIND_NOT_REGISTERED',
+        `kind "${normalizedKind}" is not registered.`,
+        'Call module_query() or module_find({ path: "/" }) to inspect available kinds.',
+      )
+    }
+
+    const allKinds = this.kinds.list()
+    const layer = createKindLayer({
+      moduleKind,
+      allKinds,
+      payloadCatalogs: discoverPayloadCatalogs(allKinds),
+    })
+    return AiModuleResult.ok({
+      knowledgeLevel: 'overview',
+      kind: layer.kind,
+      name: layer.name,
+      description: layer.description,
+      registeredPrompt: layer.description,
+      ...(layer.parentKind === undefined ? {} : { parentKind: layer.parentKind }),
+      pathPattern: layer.pathPattern,
+      directoryFirstRule: '先用 module_query/module_guide 获取目录概要并选择目标，再用 module_attribute_guide/module_function_guide 或 payload guide 获取具体契约。',
+      howToUse: [
+        ...layer.instanceLookupSteps,
+        ...layer.childLookupSteps,
+        ...layer.attributeLookupSteps,
+        ...layer.functionLookupSteps,
+      ],
+      nextSteps: [
+        '用 module_query({ kind, includeFunctions:true }) 获取函数目录。',
+        '选定 attrName 后，用 module_attribute_guide({ kind, attrName }) 获取属性 schema、读写权限和示例。',
+        '选定 functionName 后，用 module_function_guide({ kind, functionName }) 获取参数、规则和失败恢复。',
+        '定位实例 path 后，用 module_call({ path, functionName, args }) 执行。',
+      ],
+      attributes: layer.attributes.map((attribute) => ({
+        knowledgeLevel: 'directory',
+        name: attribute.name,
+        description: attribute.description,
+        access: attribute.access,
+        readable: attribute.readable,
+        writable: attribute.writable,
+        detailToolName: attribute.detailToolName,
+        detailLookupStep: attribute.detailLookupStep,
+      })),
+      functions: layer.functions.map((fn) => ({
+        knowledgeLevel: 'directory',
+        name: fn.functionName,
+        functionName: fn.functionName,
+        description: fn.description,
+        detailLookupStep: fn.detailLookupStep,
+      })),
+      payloads: moduleKind.payloads.map((payload) => ({
+        payloadRef: payload.payloadRef,
+        description: payload.description,
+        requiredForFunctions: payload.requiredForFunctions === undefined ? [] : [...payload.requiredForFunctions],
+      })),
+      children: [...moduleKind.children],
+      childKinds: layer.childKinds.map((child) => ({
+        kind: child.kind,
+        name: child.name,
+        description: child.description,
+      })),
+    })
+  }
+
+  // ── 属性详细指南 ──────────────────────────────────────────
+
+  /**
+   * 查询单个属性的完整指南（schema、读写权限、读写步骤等）。
+   * 失败时返回 AiModuleResult.failCode 带机器可读错误码。
+   */
+  public guideAttribute(
+    input: AiModuleKnowledgeAttributeGuideInput,
+  ): AiModuleResult<AiModuleKnowledgeAttributeDetailGuide> {
+    const kind = normalizeOptionalText(input.kind)
+    const attrName = normalizeOptionalText(input.attrName)
+    if (kind === undefined || attrName === undefined) {
+      return AiModuleResult.failCode(
+        'INVALID_ATTRIBUTE_GUIDE_REQUEST',
+        'module_attribute_guide requires kind and attrName for attribute guidance.',
+        'Call module_attribute_guide({ kind, attrName }) after module_guide({ kind }) selects a real attribute name.',
+      )
+    }
+
+    const moduleKind = this.kinds.get(kind)
+    if (moduleKind === undefined) {
+      return AiModuleResult.failCode(
+        'KIND_NOT_REGISTERED',
+        `kind "${kind}" is not registered.`,
+        'Call module_query() or module_find({ path: "/" }) to inspect available kinds.',
+      )
+    }
+
+    const attribute = moduleKind.findAttribute(attrName)
+    if (attribute === undefined) {
+      return AiModuleResult.failCode(
+        'ATTRIBUTE_NOT_FOUND',
+        `attribute "${attrName}" is not declared on kind "${kind}".`,
+        'Call module_guide({ kind }) to inspect real attribute names before retrying.',
+      )
+    }
+
+    return AiModuleResult.ok({
+      knowledgeLevel: 'detail',
+      kind,
+      attrName,
+      name: attribute.name,
+      description: attribute.description,
+      access: attributeAccessMode(attribute.readable, attribute.writable),
+      readable: attribute.readable,
+      writable: attribute.writable,
+      directoryLookupStep: `module_guide({ kind: "${kind}" })`,
+      schema: attribute.schema,
+      ...(attribute.readable ? { readStep: `module_attr({ op: "get", path, attrName: "${attribute.name}" })` } : {}),
+      ...(attribute.writable ? { writeStep: `module_attr({ op: "set", path, attrName: "${attribute.name}", value })` } : {}),
+      ...(attribute.example === undefined ? {} : { example: attribute.example }),
+    })
   }
 
   // ── 模块目录查询 ──────────────────────────────────────────
@@ -224,8 +371,8 @@ export class AiModuleKnowledgeProjector {
     if (parsed === null) {
       return AiModuleResult.failCode(
         'INVALID_GUIDE_REQUEST',
-        'module_guide requires kind and functionName for function guidance.',
-        'Call module_guide({ kind, functionName }) after module_query({ includeFunctions: true }).',
+        'module_function_guide requires kind and functionName for function guidance.',
+        'Call module_function_guide({ kind, functionName }) after module_query({ includeFunctions: true }).',
       )
     }
 
@@ -244,7 +391,7 @@ export class AiModuleKnowledgeProjector {
       return AiModuleResult.failCode(
         'FUNCTION_NOT_FOUND',
         `function "${parsed.functionName}" is not declared on kind "${parsed.kind}".`,
-        'Call module_query({ kind, includeFunctions: true }) or module_guide({ kind }) before retrying.',
+        'Call module_query({ kind, includeFunctions: true }) to inspect real function names, or module_guide({ kind }) for kind metadata before retrying.',
       )
     }
     return AiModuleResult.ok(createGuide({
@@ -298,8 +445,8 @@ export class AiModuleKnowledgeProjector {
       ],
       resumeFlow: [
         '用户回答后，把回答并入当前任务事实。',
-        '如仍不确定模块或函数，先 queryModules / queryFunctions。',
-        '执行前用 guideFunction 或 describeKind 确认 function schema。',
+        '如仍不确定模块或函数，先 module_query 查询目录。',
+        '执行前用 module_query/module_function_guide 确认 functionName 和 schema。',
         '具备足够事实后再调用对应 OpenAI function tool。',
       ],
     })
@@ -332,7 +479,7 @@ export class AiModuleKnowledgeProjector {
       ...FIXED_PROTOCOL_TOOL_ROUTING_LINES,
       ...promptKinds.map(formatPromptKindIndexLine),
       ...(hiddenKindCount > 0 ? [`...还有 ${String(hiddenKindCount)} 个 kind，使用 queryModules({ keyword }) 查询。`] : []),
-      '流程：实例->schema 与元数据->执行；复杂参数按 payloadLookupSteps 查 payload-catalog。',
+      '消费顺序：module_find 定位实例 -> module_query 选真实函数 -> module_function_guide 消费函数契约 -> module_call 执行；payload 也必须 queryPayloads 选 key -> guidePayload 取详情。',
     ]
     return lines.join('\n')
   }

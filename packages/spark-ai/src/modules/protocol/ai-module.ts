@@ -263,7 +263,7 @@ export class AiModule {
         return schemaValidationFailed(
           `${this.kind}.${attrName} 属性值`,
           validation.issues,
-          '请按该属性在 describeKind 中声明的 schema 修正属性值。',
+          `请调用 module_attribute_guide({ kind: "${this.kind}", attrName: "${attrName}" }) 读取 schema 后修正属性值。`,
         )
       }
       return AiModuleResult.ok(value)
@@ -298,7 +298,7 @@ export class AiModule {
       return schemaValidationFailed(
         `${this.kind}.${attrName} 属性写入值`,
         validation.issues,
-        '请按该属性在 describeKind 中声明的 schema 修正 value。',
+        `请调用 module_attribute_guide({ kind: "${this.kind}", attrName: "${attrName}" }) 读取 schema 后修正 value。`,
       )
     }
 
@@ -337,7 +337,7 @@ export class AiModule {
       return schemaValidationFailed(
         `${this.kind}.${functionName} 参数`,
         validation.issues,
-        '请按该函数在 describeKind 中声明的 paramsSchema 调整参数后重试。',
+        `请调用 module_function_guide({ kind: "${this.kind}", functionName: "${functionName}" }) 读取 paramsSchema、usageRules 和 failureModes 后重试。`,
       )
     }
 
@@ -619,7 +619,7 @@ function normalizeRequiredUniqueTexts(options: RequiredTextListOptions): readonl
 //
 // 所有协议方法的失败路径最终都通过本节的工厂函数构造 AiModuleResult。
 // 统一使用 AiModuleResult.failCode / fail 返回，每个函数对应一个明确的协议错误码。
-// LLM 可通过错误码分支处理（如 ATTRIBUTE_NOT_DECLARED → 调用 describeKind 查看属性表）。
+// LLM 可通过错误码分支处理（如 ATTRIBUTE_NOT_DECLARED → 调用 module_guide/module_attribute_guide 查看属性表）。
 //
 // 分组（按校验链出现顺序）：
 //   Schema 校验错误   — schemaValidationFailed
@@ -667,23 +667,23 @@ function functionNotImplemented(kind: string, functionName: string): AiModuleRes
   )
 }
 
-/** 函数未声明：kind 的 functions 表中找不到该 functionName。LLM 应调用 describeKind 查看函数表。 */
+/** 函数未声明：kind 的 functions 表中找不到该 functionName。LLM 应调用 module_query/module_function_guide 查看函数表和契约。 */
 function functionNotDeclared(kind: string, functionName: string): AiModuleResult<never> {
   return AiModuleResult.failCode(
     'FUNCTION_NOT_DECLARED',
     `kind "${kind}" 未声明函数 "${functionName}"`,
-    '可调用 describeKind 查看该 kind 的函数表。',
+    `调用 module_query({ kind: "${kind}", includeFunctions: true }) 查看真实函数名，再用 module_function_guide({ kind: "${kind}", functionName: "<真实函数名>" }) 查看函数契约；不要继续猜 functionName。`,
   )
 }
 
 // ── 属性相关错误 ──
 
-/** 属性未声明：kind 的 attributes 表中找不到该 attrName。LLM 应调用 describeKind 查看属性表。 */
+/** 属性未声明：kind 的 attributes 表中找不到该 attrName。LLM 应调用 module_guide 查看属性目录。 */
 function attributeNotDeclared(kind: string, attrName: string): AiModuleResult<never> {
   return AiModuleResult.failCode(
     'ATTRIBUTE_NOT_DECLARED',
     `kind "${kind}" 未声明属性 "${attrName}"`,
-    '可调用 describeKind 查看该 kind 的属性表。',
+    `调用 module_guide({ kind: "${kind}" }) 查看真实 attrName，再用 module_attribute_guide({ kind: "${kind}", attrName: "<真实属性名>" }) 查看属性契约；不要继续猜 attrName。`,
   )
 }
 
@@ -692,7 +692,7 @@ function attributeNotReadable(kind: string, attrName: string): AiModuleResult<ne
   return AiModuleResult.failCode(
     'ATTRIBUTE_NOT_READABLE',
     `属性 "${attrName}" 在 kind "${kind}" 上不可读`,
-    '请只读取 readable=true 的属性；可调用 describeKind 查看属性权限。',
+    `请只读取 readable=true 的属性；可调用 module_attribute_guide({ kind: "${kind}", attrName: "${attrName}" }) 查看属性权限。`,
   )
 }
 
@@ -701,7 +701,7 @@ function attributeNotWritable(kind: string, attrName: string): AiModuleResult<ne
   return AiModuleResult.failCode(
     'ATTRIBUTE_NOT_WRITABLE',
     `属性 "${attrName}" 在 kind "${kind}" 上不可写`,
-    '请只写入 writable=true 的属性；可调用 describeKind 查看属性权限。',
+    `请只写入 writable=true 的属性；可调用 module_attribute_guide({ kind: "${kind}", attrName: "${attrName}" }) 查看属性权限。`,
   )
 }
 

@@ -104,10 +104,13 @@ describe('AiModuleKnowledgeProjector', () => {
     ])
     expect(projector.queryFunctions({ keyword: 'work' })).toEqual([
       expect.objectContaining({
+        knowledgeLevel: 'directory',
         toolName: 'module_call',
         kind: 'task',
         functionName: 'doWork',
-        requiredParamNames: ['input'],
+        detailToolName: 'module_function_guide',
+        detailLookupStep: 'module_function_guide({ kind: "task", functionName: "doWork" })',
+        hasParams: true,
       }),
     ])
   })
@@ -122,9 +125,11 @@ describe('AiModuleKnowledgeProjector', () => {
     expect(result).toMatchObject({
       ok: true,
       data: {
+        knowledgeLevel: 'detail',
         toolName: 'module_call',
         kind: 'task',
         functionName: 'doWork',
+        directoryLookupStep: 'module_query({ kind: "task", keyword: "doWork", includeFunctions: true })',
         callPattern: {
           toolName: 'module_call',
           path: '/task[<taskId>]',
@@ -134,7 +139,7 @@ describe('AiModuleKnowledgeProjector', () => {
         examples: [expect.objectContaining({ intent: '用户要求执行工作' })],
         antiExamples: [expect.objectContaining({ reason: '查看状态不应调用 doWork。' })],
         recoveryHints: expect.arrayContaining([
-          expect.stringContaining('module_guide'),
+          expect.stringContaining('module_function_guide'),
           expect.stringContaining('module_find'),
         ]),
       },

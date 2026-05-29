@@ -7,9 +7,11 @@
  *   按 toolName 路由到对应的内部组件（Knowledge / Navigator / Attributes / Functions）。
  *   是 AiModuleRuntime.executeTool() 的核心实现。
  *
- * 【6 条路由】
+ * 【8 条路由】
  *   module_query   → knowledge.queryModules / queryFunctions
- *   module_guide   → knowledge.guideFunction / navigator.describeKind
+ *   module_guide   → knowledge.guideKind
+ *   module_attribute_guide → knowledge.guideAttribute
+ *   module_function_guide → knowledge.guideFunction
  *   module_find    → navigator.listChildren / findInstance
  *   module_attr    → attributes.get / attributes.set
  *   module_call    → functionInvoker.invoke
@@ -54,7 +56,7 @@ import { ProtocolResultProjector } from './protocol-result-projector'
  *   attributes — 属性读写（module_attr）
  *   functions  — 函数调用（module_call）
  *   navigator  — 实例导航（module_find）
- *   knowledge  — 知识投影（module_query / module_guide / human_question）
+ *   knowledge  — 知识投影（module_query / module_attribute_guide / module_function_guide / human_question）
  */
 export class ProtocolToolRouter {
   private readonly argsParser = new ProtocolToolArgsParser()
@@ -90,6 +92,8 @@ export class ProtocolToolRouter {
       switch (toolName) {
         case PROTOCOL_TOOL_NAMES.moduleQuery: return this.routeModuleQuery(rawArgs)
         case PROTOCOL_TOOL_NAMES.moduleGuide: return this.routeModuleGuide(rawArgs)
+        case PROTOCOL_TOOL_NAMES.moduleAttributeGuide: return this.routeModuleAttributeGuide(rawArgs)
+        case PROTOCOL_TOOL_NAMES.moduleFunctionGuide: return this.routeModuleFunctionGuide(rawArgs)
         case PROTOCOL_TOOL_NAMES.moduleFind: return await this.routeModuleFind(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleAttr: return await this.routeModuleAttr(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleCall: return await this.routeModuleCall(rawArgs, host)
@@ -135,16 +139,40 @@ export class ProtocolToolRouter {
     return this.resultProjector.jsonResult(AiModuleResult.ok(modules))
   }
 
-  // ── module_guide — 读取模块/函数指南 ─────────────────────────
+  // ── module_guide — 读取模块指南 ─────────────────────────────
 
-  /** 路由 module_guide：无 functionName → describeKind；有 functionName → guideFunction */
+  /** 路由 module_guide：读取 kind 轻量指南；函数细节交给 module_function_guide */
   private routeModuleGuide(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
     const kind = this.argsParser.requireString(args, 'kind')
     const functionName = this.argsParser.optionalString(args, 'functionName')
-    if (functionName === undefined) {
-      return this.resultProjector.describeKindResult(this.navigator.describeKind(kind))
+    if (functionName !== undefined) {
+      return AiModuleResult.failCode(
+        'INVALID_TOOL_ARGS',
+        'module_guide only accepts { kind } and does not return function contracts.',
+        `Call module_function_guide({ kind: "${kind}", functionName: "${functionName}" }) for paramsSchema, usageRules and failureModes.`,
+      )
     }
-    return this.resultProjector.jsonResult(this.knowledge.guideFunction({ kind, functionName }))
+    return this.resultProjector.jsonResult(this.knowledge.guideKind(kind))
+  }
+
+  // ── module_attribute_guide — 读取属性指南 ────────────────────
+
+  /** 路由 module_attribute_guide：kind + attrName 均必填，读取属性完整契约 */
+  private routeModuleAttributeGuide(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
+    return this.resultProjector.jsonResult(this.knowledge.guideAttribute({
+      kind: this.argsParser.requireString(args, 'kind'),
+      attrName: this.argsParser.requireString(args, 'attrName'),
+    }))
+  }
+
+  // ── module_function_guide — 读取函数指南 ──────────────────────
+
+  /** 路由 module_function_guide：kind + functionName 均必填，读取函数完整契约 */
+  private routeModuleFunctionGuide(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
+    return this.resultProjector.jsonResult(this.knowledge.guideFunction({
+      kind: this.argsParser.requireString(args, 'kind'),
+      functionName: this.argsParser.requireString(args, 'functionName'),
+    }))
   }
 
   // ── module_find — 查找/列出实例 ──────────────────────────────

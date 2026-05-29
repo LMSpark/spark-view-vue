@@ -9,10 +9,10 @@
 1. **AiModule 注册**：把一个业务领域的能力声明成 LLM 可发现、可校验、可调用的模块树。
 2. **AiAgent 注册**：把一棵模块树包装成一个可运行的业务助手，并接入会话历史、生命周期和 APP 层 AI turn I/O。
 
-业务函数不会变成动态 tool 名。LLM 永远只看到六个固定工具：
+业务函数不会变成动态 tool 名。LLM 永远只看到八个固定工具：
 
 ```text
-module_query, module_guide, module_find, module_attr, module_call, human_question
+module_query, module_guide, module_attribute_guide, module_function_guide, module_find, module_attr, module_call, human_question
 ```
 
 真正的业务函数通过 `module_call({ path, functionName, args })` 执行。
@@ -185,7 +185,9 @@ LLM 不应传旧式 `$paths` 或动态工具名。实例身份只来自 `path` �
 | 工具 | 参数 | 用途 |
 | --- | --- | --- |
 | `module_query` | `{ kind?, parentKind?, keyword?, includeFunctions? }` | 查已注册模块摘要 |
-| `module_guide` | `{ kind, functionName? }` | 查 kind 元数据或函数完整指南 |
+| `module_guide` | `{ kind }` | 查 kind 用途、属性/函数/payload 目录概要 |
+| `module_attribute_guide` | `{ kind, attrName }` | 查具体属性 schema、读写权限和示例 |
+| `module_function_guide` | `{ kind, functionName }` | 查具体函数完整指南 |
 | `module_find` | `{ path, childKind?, query? }` | 从根或父路径查实例 |
 | `module_attr` | `{ op, path, attrName, value? }` | 读写声明的属性 |
 | `module_call` | `{ path, functionName, args }` | 调用声明的业务函数 |
@@ -203,7 +205,9 @@ sequenceDiagram
 
   L->>R: module_query({ keyword })
   R-->>L: 模块摘要
-  L->>R: module_guide({ kind, functionName })
+  L->>R: module_guide({ kind })
+  R-->>L: 属性/函数目录概要
+  L->>R: module_function_guide({ kind, functionName })
   R-->>L: 函数 schema/规则/失败模式
   L->>R: module_find({ path: "/", childKind, query })
   R->>N: findInstance
@@ -793,7 +797,7 @@ manual-leave
 | `UNKNOWN_TOOL` | LLM 使用了旧动态工具名 | 改用固定 `module_call` |
 | `PATH_INVALID` | path 中某段实例不存在 | 先 `module_find` 查询父子实例 |
 | `CHILD_KIND_NOT_DECLARED` | 父模块未声明该子 kind | 检查父模块 `children` 和子模块 `parentKind` |
-| `SCHEMA_VALIDATION_FAILED` | args 或 attribute value 不符合 schema | 先 `module_guide` 查看 schema 后重试 |
+| `SCHEMA_VALIDATION_FAILED` | args 或 attribute value 不符合 schema | 函数参数先 `module_function_guide` 查看 schema；属性值先 `module_attribute_guide` 查看 attribute schema |
 
 ## 14. 注册新业务的步骤清单
 

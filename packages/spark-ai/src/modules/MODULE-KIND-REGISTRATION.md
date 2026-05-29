@@ -23,6 +23,8 @@ SPARK AI 定义模块协议、固定工具、运行时 inspect 和 Agent 注册�
 
 - `module_query`
 - `module_guide`
+- `module_attribute_guide`
+- `module_function_guide`
 - `module_find`
 - `module_attr`
 - `module_call`

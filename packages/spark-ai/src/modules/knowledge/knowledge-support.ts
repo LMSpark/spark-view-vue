@@ -55,7 +55,12 @@ export const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
 
 /** 固定协议工具路由描述（注入 LLM 系统 prompt） */
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
-  '工具：目录=module_query；指南=module_guide；实例=module_find；属性=module_attr；函数=module_call；反问=human_question。',
+  '协议硬约束：调用 module_* 或 human_question 时，必须使用 OpenAI function calling 的 tool_calls 通道；不要在正文中输出 {"tool_call":...}、module_call(...)、JSON 方案或代码块来冒充工具调用。',
+  '如果下一步需要读取/写入/校验/创建任何注册能力事实，必须发起真实 tool_calls；正文只能用于没有工具调用后的最终总结。',
+  '工具：目录=module_query；模块指南=module_guide；属性指南=module_attribute_guide；函数指南=module_function_guide；实例=module_find；属性=module_attr；函数=module_call；反问=human_question。',
+  '所有知识都先目录概要后具体指南：先用 query 类工具选真实 kind/function/key，再用 guide 类工具读取具体契约。',
+  'module_find 只定位实例，不代表已掌握函数表；首次 module_call 某 kind/functionName 前，先 module_query({kind,includeFunctions:true}) 选真实函数，再 module_function_guide({kind,functionName}) 读具体契约。',
+  '禁止猜 functionName/attrName；FUNCTION_NOT_DECLARED 或 ATTRIBUTE_NOT_DECLARED 后必须回到 module_query/module_guide，再按 module_function_guide/module_attribute_guide 返回的真实契约重试。',
 ]
 
 /** prompt 中最多展示的 kind 索引数量 */
@@ -183,8 +188,8 @@ export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): 
   const keyword = options.functionName ?? '<functionName 或业务关键词>'
   const functionName = options.functionName ?? '<functionName>'
   return [
-    `先调用 module_query({ kind: "${options.kind}", keyword: "${keyword}", includeFunctions: true }) 查函数目录，确认 functionName、必填参数和 failureCodes。`,
-    `再调用 module_guide({ kind: "${options.kind}", functionName: "${functionName}" }) 读取完整 paramsSchema、usageRules 和 failureModes。`,
+    `目录阶段：调用 module_query({ kind: "${options.kind}", keyword: "${keyword}", includeFunctions: true }) 查函数概要，选择真实 functionName。`,
+    `具体阶段：调用 module_function_guide({ kind: "${options.kind}", functionName: "${functionName}" }) 读取 paramsSchema、usageRules 和 failureModes。`,
     `随后调用 module_call({ path, functionName: "${functionName}", args }) 执行业务函数。`,
   ]
 }
@@ -217,8 +222,8 @@ export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): re
   const finalFunctionName = options.functionName ?? '<functionName>'
   return options.payloadRefs.flatMap((payloadRef) => [
     `先定位 payload 目录模块 ${catalogLocator}; 没有实例路径时用 module_find 获取目录实例。`,
-    `先调用 module_call({ path: "${catalogPathPattern}", functionName: "${catalogFunctions.queryPayloads}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit } }) 查询目录并选择真实 key。`,
-    `再调用 module_call({ path: "${catalogPathPattern}", functionName: "${catalogFunctions.guidePayload}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key } }) 读取 paramsSchema、usageRules 和 failureModes。`,
+    `目录阶段：调用 module_call({ path: "${catalogPathPattern}", functionName: "${catalogFunctions.queryPayloads}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit } }) 查询概要并选择真实 key。`,
+    `具体阶段：调用 module_call({ path: "${catalogPathPattern}", functionName: "${catalogFunctions.guidePayload}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key } }) 读取 paramsSchema、usageRules 和 failureModes。`,
     `最后调用 module_call({ path, functionName: "${finalFunctionName}", args }); 复杂参数只能按 guidePayload 返回的 schema 字段构造。`,
   ])
 }
@@ -273,10 +278,12 @@ export function moduleSummaryGuidesMatchKeyword(
     ...summary.functionLookupSteps,
   ], keyword)
     || summary.attributeGuides.some((attribute) => containsKeyword([
+      attribute.knowledgeLevel,
       attribute.name,
       attribute.description,
       attribute.access,
-      attribute.schemaLookupStep,
+      attribute.detailToolName,
+      attribute.detailLookupStep,
       attribute.readStep ?? '',
       attribute.writeStep ?? '',
     ], keyword))
@@ -284,9 +291,9 @@ export function moduleSummaryGuidesMatchKeyword(
       fn.toolName,
       fn.functionName,
       fn.description,
+      fn.detailToolName,
+      fn.detailLookupStep,
       fn.invokeStep,
-      ...fn.paramNames,
-      ...fn.requiredParamNames,
       ...fn.lookupSteps,
       ...fn.payloadRefs,
     ], keyword))
@@ -313,14 +320,16 @@ function childSummaryMatchesKeyword(
     ...child.childKindNames,
   ], keyword)
     || child.attributeSummaries.some((attribute) => containsKeyword([
+      attribute.knowledgeLevel,
       attribute.name,
       attribute.description,
       attribute.access,
+      attribute.detailLookupStep,
     ], keyword))
     || child.functionSummaries.some((fn) => containsKeyword([
       fn.functionName,
       fn.description,
-      ...fn.requiredParamNames,
+      fn.detailLookupStep,
       ...fn.payloadRefs,
     ], keyword))
     || containsKeyword(child.detailLookupSteps, keyword)
@@ -359,15 +368,19 @@ export function summarizeFunction(options: FunctionKnowledgeProjectionOptions): 
   const { kind, kindPath, fn, payloads, payloadCatalogs } = options
   const payloadRefs = payloadRefsForFunction(payloads, fn.name)
   const toolName = functionToolName(kindPath, fn.name)
+  const paramList = paramNames(fn.paramsSchema)
   return {
+    knowledgeLevel: 'directory',
     toolName,
     kindPath,
     kind,
     functionName: fn.name,
     description: fn.description,
-    paramNames: paramNames(fn.paramsSchema),
-    requiredParamNames: requiredParamNames(fn.paramsSchema),
-    failureCodes: fn.failureModes?.map((mode) => mode.code) ?? [],
+    detailToolName: PROTOCOL_TOOL_NAMES.moduleFunctionGuide,
+    detailLookupStep: formatFunctionGuideLookupStep(kind, fn.name),
+    hasParams: paramList.length > 0,
+    hasUsageRules: (fn.usageRules?.length ?? 0) > 0,
+    hasFailureModes: (fn.failureModes?.length ?? 0) > 0,
     usageRuleCount: fn.usageRules?.length ?? 0,
     failureModeCount: fn.failureModes?.length ?? 0,
     functionLookupSteps: createFunctionLookupSteps({ kind, kindPath, functionName: fn.name }),
@@ -397,11 +410,13 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
     payloadCatalogs,
   })
   return {
+    knowledgeLevel: 'detail',
     toolName,
     kindPath,
     kind,
     functionName: fn.name,
     description: fn.description,
+    directoryLookupStep: `module_query({ kind: "${kind}", keyword: "${fn.name}", includeFunctions: true })`,
     callPattern: {
       toolName: PROTOCOL_TOOL_NAMES.moduleCall,
       path: pathPattern,
@@ -439,7 +454,7 @@ function createFunctionRecoveryHints(options: Readonly<{
   payloadLookupSteps: readonly string[]
 }>): readonly string[] {
   return [
-    `参数或路径失败时，先重新调用 module_guide({ kind: "${options.kind}", functionName: "${options.functionName}" }) 对照 paramsSchema、requiredBeforeCall 和 failureModes。`,
+    `参数或路径失败时，先重新调用 module_function_guide({ kind: "${options.kind}", functionName: "${options.functionName}" }) 对照 paramsSchema、requiredBeforeCall 和 failureModes。`,
     '如果 path 不存在，先用 module_find 从根实例或父实例重新定位 path。',
     ...options.requiredBeforeCall.map((step) => `调用前置条件：${step}`),
     ...options.failureModes.map((mode) => `遇到 ${mode.code} 时：${mode.fix}`),
@@ -482,12 +497,14 @@ export function createKindLayer(options: KindLayerOptions): AiModuleKnowledgeKin
 /** 为模块的每个属性生成属性指南 */
 export function createAttributeGuides(moduleKind: AiModule): readonly AiModuleKnowledgeAttributeGuide[] {
   return moduleKind.attributes.map((attribute) => ({
+    knowledgeLevel: 'directory',
     name: attribute.name,
     description: attribute.description,
     access: attributeAccessMode(attribute.readable, attribute.writable),
     readable: attribute.readable,
     writable: attribute.writable,
-    schemaLookupStep: `module_guide({ kind: "${moduleKind.kind}" }).attributes["${attribute.name}"].schema`,
+    detailToolName: PROTOCOL_TOOL_NAMES.moduleAttributeGuide,
+    detailLookupStep: formatAttributeGuideLookupStep(moduleKind.kind, attribute.name),
     ...(attribute.readable ? { readStep: `module_attr({ op: "get", path, attrName: "${attribute.name}" })` } : {}),
     ...(attribute.writable ? { writeStep: `module_attr({ op: "set", path, attrName: "${attribute.name}", value })` } : {}),
   }))
@@ -499,15 +516,17 @@ export function createLayerFunctions(moduleKind: AiModule, kindPath: readonly st
     const payloadRefs = payloadRefsForFunction(moduleKind.payloads, fn.name)
     const toolName = functionToolName(kindPath, fn.name)
     return {
+      knowledgeLevel: 'directory',
       toolName,
       kindPath,
       functionName: fn.name,
       description: fn.description,
-      paramNames: paramNames(fn.paramsSchema),
-      requiredParamNames: requiredParamNames(fn.paramsSchema),
+      detailToolName: PROTOCOL_TOOL_NAMES.moduleFunctionGuide,
+      detailLookupStep: formatFunctionGuideLookupStep(moduleKind.kind, fn.name),
       lookupSteps: createFunctionLookupSteps({ kind: moduleKind.kind, kindPath, functionName: fn.name }),
       invokeStep: formatInvokeStep(kindPath, fn.name),
       payloadRefs,
+      requiresPayloadGuide: payloadRefs.length > 0,
     }
   })
 }
@@ -624,7 +643,8 @@ export function createChildLookupSteps(
 export function createAttributeLookupSteps(moduleKind: AiModule): readonly string[] {
   if (moduleKind.attributes.length === 0) return []
   return [
-    `module_guide({ kind: "${moduleKind.kind}" }) 查看 attributes 的 schema、readable 和 writable。`,
+    `目录阶段：调用 module_guide({ kind: "${moduleKind.kind}" }) 查看 attributes 概要，选择真实 attrName。`,
+    `具体阶段：调用 module_attribute_guide({ kind: "${moduleKind.kind}", attrName: "<attrName>" }) 查看 schema、readable 和 writable。`,
     `读取属性使用 module_attr({ op: "get", path, attrName })。`,
     `写入属性使用 module_attr({ op: "set", path, attrName, value })。`,
   ]
@@ -636,7 +656,7 @@ export function createModuleFunctionLookupSteps(moduleKind: AiModule, kindPath: 
   const path = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
   return [
     `module_query({ kind: "${moduleKind.kind}", includeFunctions: true }) 查看 ${moduleKind.kind} 函数目录。`,
-    `module_guide({ kind: "${moduleKind.kind}", functionName: "<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
+    `module_function_guide({ kind: "${moduleKind.kind}", functionName: "<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
     `module_call({ path: "${path}", functionName: "<functionName>", args }) 执行业务函数。`,
   ]
 }
@@ -672,22 +692,33 @@ export function summarizeChildKind(
     payloadRefs: child.payloads.map((payload) => payload.payloadRef),
     childKindNames: [...child.children],
     attributeSummaries: child.attributes.map((attribute) => ({
+      knowledgeLevel: 'directory',
       name: attribute.name,
       description: attribute.description,
       access: attributeAccessMode(attribute.readable, attribute.writable),
+      detailLookupStep: formatAttributeGuideLookupStep(child.kind, attribute.name),
     })),
     functionSummaries: child.functions.map((fn) => ({
+      knowledgeLevel: 'directory',
       functionName: fn.name,
       description: fn.description,
-      requiredParamNames: requiredParamNames(fn.paramsSchema),
       payloadRefs: payloadRefsForFunction(child.payloads, fn.name),
+      detailLookupStep: formatFunctionGuideLookupStep(child.kind, fn.name),
     })),
     detailLookupSteps: [
-      `module_query({ kind: "${child.kind}" }) 读取 ${child.kind} 自己的 instanceGuide、attributeGuides 和 functionGuides。`,
-      `module_guide({ kind: "${child.kind}" }) 查看 ${child.kind} 的 attributes/functions/payloads/children 元数据。`,
+      `module_query({ kind: "${child.kind}", includeFunctions: true }) 读取 ${child.kind} 目录概要。`,
+      `module_guide({ kind: "${child.kind}" }) 查看 ${child.kind} 的模块用途和函数说明。`,
       `在父实例 path 下 module_find({ path, childKind: "${child.kind}", query }) 定位子实例。`,
     ],
   }
+}
+
+function formatFunctionGuideLookupStep(kind: string, functionName: string): string {
+  return `${PROTOCOL_TOOL_NAMES.moduleFunctionGuide}({ kind: "${kind}", functionName: "${functionName}" })`
+}
+
+export function formatAttributeGuideLookupStep(kind: string, attrName: string): string {
+  return `${PROTOCOL_TOOL_NAMES.moduleAttributeGuide}({ kind: "${kind}", attrName: "${attrName}" })`
 }
 
 // ═══════════════════════════════════════════════════════════════

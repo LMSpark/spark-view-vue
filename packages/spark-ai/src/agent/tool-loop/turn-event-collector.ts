@@ -229,12 +229,27 @@ class TurnEventState {
     if (typeof data['text'] === 'string') this.text = data['text']
     if (typeof data['reasoning'] === 'string') this.reasoning = data['reasoning']
     const toolCalls = readToolCalls(data['toolCalls']) ?? readToolCalls(data['tool_calls'])
-    if (toolCalls !== null) this.toolCalls = toolCalls
+    if (toolCalls !== null) {
+      this.toolCalls = toolCalls
+      return
+    }
+    const recoveredToolCalls = recoverToolCallsFromText(this.text)
+    if (recoveredToolCalls !== null) {
+      this.toolCalls = recoveredToolCalls
+      this.text = ''
+    }
   }
 
   /** 完成收集：构造 AiAgentStreamTurnResult 并 resolve */
   private complete(): void {
     if (this.settled) return
+    if (this.toolCalls.length === 0) {
+      const recoveredToolCalls = recoverToolCallsFromText(this.text)
+      if (recoveredToolCalls !== null) {
+        this.toolCalls = recoveredToolCalls
+        this.text = ''
+      }
+    }
     this.settled = true
     this.sink?.resolve({
       text: this.text,
@@ -328,6 +343,229 @@ function readToolCalls(value: unknown): readonly AiAgentTransportToolCall[] | nu
   return value
     .map(normalizeToolCall)
     .filter((call): call is AiAgentTransportToolCall => call !== null)
+}
+
+function recoverToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] | null {
+  const calls = [
+    ...recoverJsonToolCallsFromText(text),
+    ...recoverDsmlToolCallsFromText(text),
+  ]
+  const normalizedCalls = dedupeRecoveredToolCalls(calls)
+  return normalizedCalls.length === 0 ? null : normalizedCalls
+}
+
+function recoverJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+  const calls: AiAgentTransportToolCall[] = []
+  for (const jsonText of extractJsonCandidates(text)) {
+    try {
+      const parsed: unknown = JSON.parse(jsonText)
+      const toolCalls = readTextToolCalls(parsed)
+      if (toolCalls !== null) calls.push(...toolCalls)
+    } catch {
+      // Ignore malformed text fragments; another candidate may still carry a valid tool call.
+    }
+  }
+  return calls
+}
+
+function extractJsonCandidates(text: string): readonly string[] {
+  const candidates: string[] = []
+  for (const block of extractFencedCodeBlocks(text)) {
+    candidates.push(...extractBalancedJsonCandidates(block))
+  }
+  candidates.push(...extractBalancedJsonCandidates(text))
+  return candidates
+}
+
+function extractFencedCodeBlocks(text: string): readonly string[] {
+  const blocks: string[] = []
+  const fencePattern = /```(?:json|JSON)?\s*([\s\S]*?)```/g
+  for (const match of text.matchAll(fencePattern)) {
+    const block = match[1]?.trim()
+    if (block !== undefined && block.length > 0) blocks.push(block)
+  }
+  return blocks
+}
+
+function extractBalancedJsonCandidates(text: string): readonly string[] {
+  const candidates: string[] = []
+  let start = -1
+  let depth = 0
+  let quote: '"' | null = null
+  let escaping = false
+  const stack: string[] = []
+
+  for (let index = 0; index < text.length; index += 1) {
+    const char = text[index]
+    if (quote !== null) {
+      if (escaping) {
+        escaping = false
+      } else if (char === '\\') {
+        escaping = true
+      } else if (char === quote) {
+        quote = null
+      }
+      continue
+    }
+
+    if (char === '"') {
+      quote = char
+      continue
+    }
+
+    if (char === '{' || char === '[') {
+      if (depth === 0) start = index
+      stack.push(char)
+      depth += 1
+      continue
+    }
+
+    if ((char === '}' || char === ']') && depth > 0) {
+      const opener = stack[stack.length - 1]
+      if ((opener === '{' && char !== '}') || (opener === '[' && char !== ']')) {
+        start = -1
+        depth = 0
+        stack.length = 0
+        continue
+      }
+      stack.pop()
+      depth -= 1
+      if (depth === 0 && start >= 0) {
+        candidates.push(text.slice(start, index + 1))
+        start = -1
+      }
+    }
+  }
+
+  return candidates
+}
+
+function readTextToolCalls(value: unknown): readonly AiAgentTransportToolCall[] | null {
+  if (Array.isArray(value)) return readLenientToolCalls(value)
+  if (!isRecord(value)) return null
+  const toolCalls = value['tool_calls'] ?? value['toolCalls']
+  if (Array.isArray(toolCalls)) return readLenientToolCalls(toolCalls)
+  const single = normalizeTextToolCall(value, 0)
+  return single === null ? null : [single]
+}
+
+function readLenientToolCalls(value: readonly unknown[]): readonly AiAgentTransportToolCall[] | null {
+  const calls = value
+    .map((item, index) => normalizeTextToolCall(item, index))
+    .filter((call): call is AiAgentTransportToolCall => call !== null)
+  return calls.length === 0 ? null : calls
+}
+
+function recoverDsmlToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+  const calls: AiAgentTransportToolCall[] = []
+  const invokePattern = /<[|｜]DSML[|｜]invoke\b([^>]*)>([\s\S]*?)<\/[|｜]DSML[|｜]invoke>/g
+  for (const match of text.matchAll(invokePattern)) {
+    const attrs = match[1] ?? ''
+    const body = match[2] ?? ''
+    const name = readDsmlAttr(attrs, 'name')
+    if (name === null || name.trim() === '') continue
+    calls.push({
+      id: `call_dsml_${String(calls.length + 1)}`,
+      type: 'function',
+      function: {
+        name,
+        arguments: JSON.stringify(readDsmlParameters(body)),
+      },
+    })
+  }
+  return calls
+}
+
+function readDsmlParameters(body: string): Record<string, unknown> {
+  const params: Record<string, unknown> = {}
+  const paramPattern = /<[|｜]DSML[|｜]parameter\b([^>]*)>([\s\S]*?)<\/[|｜]DSML[|｜]parameter>/g
+  for (const match of body.matchAll(paramPattern)) {
+    const attrs = match[1] ?? ''
+    const name = readDsmlAttr(attrs, 'name')
+    if (name === null || name.trim() === '') continue
+    params[name] = readDsmlParameterValue(match[2] ?? '', readDsmlAttr(attrs, 'string'))
+  }
+  return params
+}
+
+function readDsmlParameterValue(rawValue: string, stringFlag: string | null): unknown {
+  const value = rawValue.trim()
+  if (stringFlag === 'false') {
+    try {
+      return JSON.parse(value)
+    } catch {
+      return value
+    }
+  }
+  return value
+}
+
+function readDsmlAttr(attrs: string, name: string): string | null {
+  const pattern = new RegExp(`\\b${name}="([^"]*)"`)
+  return pattern.exec(attrs)?.[1] ?? null
+}
+
+function dedupeRecoveredToolCalls(
+  calls: readonly AiAgentTransportToolCall[],
+): readonly AiAgentTransportToolCall[] {
+  const seenPayloads = new Set<string>()
+  const usedIds = new Set<string>()
+  const result: AiAgentTransportToolCall[] = []
+  for (const call of calls) {
+    const payloadKey = `${call.function.name}\u0000${call.function.arguments}`
+    if (seenPayloads.has(payloadKey)) continue
+    seenPayloads.add(payloadKey)
+    const id = createRecoveredToolCallId(call.id, usedIds, result.length)
+    usedIds.add(id)
+    result.push({
+      ...call,
+      id,
+    })
+  }
+  return result
+}
+
+function createRecoveredToolCallId(id: string, usedIds: ReadonlySet<string>, index: number): string {
+  const normalized = id.trim()
+  if (normalized.length > 0 && !usedIds.has(normalized)) return normalized
+  let nextIndex = index + 1
+  let nextId = `call_text_${String(nextIndex)}`
+  while (usedIds.has(nextId)) {
+    nextIndex += 1
+    nextId = `call_text_${String(nextIndex)}`
+  }
+  return nextId
+}
+
+function normalizeTextToolCall(value: unknown, index: number): AiAgentTransportToolCall | null {
+  if (!isRecord(value)) return null
+  const fn = isRecord(value['function']) ? value['function'] : null
+  const name = fn !== null && typeof fn['name'] === 'string'
+    ? fn['name']
+    : readTextToolName(value)
+  if (name === null || name.trim() === '') return null
+  const rawArguments = fn !== null && Object.hasOwn(fn, 'arguments')
+    ? fn['arguments']
+    : (Object.hasOwn(value, 'arguments') ? value['arguments'] : value['args'])
+  const id = typeof value['id'] === 'string' && value['id'].trim() !== ''
+    ? value['id']
+    : `call_text_${String(index + 1)}`
+  return {
+    id,
+    type: 'function',
+    function: {
+      name,
+      arguments: typeof rawArguments === 'string' ? rawArguments : JSON.stringify(rawArguments ?? {}),
+    },
+  }
+}
+
+function readTextToolName(value: Readonly<Record<string, unknown>>): string | null {
+  for (const key of ['tool_call', 'toolCall', 'function_name', 'functionName', 'name']) {
+    const candidate = value[key]
+    if (typeof candidate === 'string' && candidate.trim() !== '') return candidate
+  }
+  return null
 }
 
 /**
