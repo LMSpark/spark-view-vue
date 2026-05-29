@@ -61,3 +61,16 @@ export type SessionDiagnosticsData = Readonly<{
   transcript: readonly AiAgentSessionTranscriptEntry[]
   issues: readonly SessionDiagnosticIssue[]
 }>
+
+// ── 工具审批 ──
+
+/**
+ * 待审批工具调用的展示条目。
+ * 只包含调用方映射后的展示字段，不依赖上游包类型。
+ */
+export type ToolApprovalDisplayItem = Readonly<{
+  id: string
+  toolName: string
+  argsPreview: string
+  moduleId: string
+}>
