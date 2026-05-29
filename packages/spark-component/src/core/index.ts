@@ -54,11 +54,13 @@ export type {
   PageSelectedFile,
   PageUploadedFile,
   NavPermissionMode,
+  FieldPermissionPolicy,
 } from './capability-keys.js'
 
 export {
   PAGE_SERVICE,
   PAGE_PERMISSION_MODE,
+  FIELD_PERMISSION_POLICY,
 } from './capability-keys.js'
 
 export type {

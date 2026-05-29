@@ -65,6 +65,7 @@ export type {
 export {
   PAGE_SERVICE,
   PAGE_PERMISSION_MODE,
+  FIELD_PERMISSION_POLICY,
   PAGE_DATASET,
   DATA_SOURCE,
   DATA_ROW,
@@ -96,6 +97,7 @@ export type {
   PageComponentInstanceEntry,
   PageComponentApiEntry,
   PageCssScopeCapability,
+  FieldPermissionPolicy,
 } from './core/index.js'
 export type {
   RendererTableApi,
