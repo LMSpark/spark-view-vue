@@ -1,11 +1,6 @@
 import { describe, it, expect, beforeEach } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { ref } from 'vue'
-import type { AiAgentSessionRecord, AiAgentHistoryEntry } from '@spark-view/spark-ai/agent'
-import {
-  summarizeAiAgentSessionRecord,
-  createAiAgentSessionTranscript,
-} from '@spark-view/spark-ai/agent'
 
 // ── mock 子组件 ──
 vi.mock('../../ai/components/SessionStreamView.vue', () => ({
@@ -29,33 +24,31 @@ import type { SessionDiagnosticsData, StreamDisplayEntry } from '../../ai/types'
 
 function createEmptyDiagnostics(): SessionDiagnosticsData {
   return {
-    summary: summarizeAiAgentSessionRecord(null),
-    transcript: createAiAgentSessionTranscript(null),
+    summary: {
+      status: null,
+      historyCount: 0,
+      messageCount: 0,
+      toolCallCount: 0,
+      failedToolCallCount: 0,
+      functionNames: [],
+      lastAssistantText: '',
+    },
+    transcript: [],
     issues: [],
   }
 }
 
-type SessionRecordOptions = Readonly<{
-  moduleId?: string
-  moduleInstanceId?: string
-  instanceId?: string
-  runtimeInstanceId?: string
-  status?: AiAgentSessionRecord['status']
-  startedAt?: number
-  updatedAt?: number
-  history?: readonly AiAgentHistoryEntry[]
-}>
-
-function makeSessionRecord(options: SessionRecordOptions = {}): AiAgentSessionRecord {
+function createStartedDiagnostics(): SessionDiagnosticsData {
+  const base = createEmptyDiagnostics()
   return {
-    moduleId: options.moduleId ?? 'm1',
-    moduleInstanceId: options.moduleInstanceId ?? 'mi1',
-    instanceId: options.instanceId ?? 'inst-1',
-    runtimeInstanceId: options.runtimeInstanceId ?? 'rt-1',
-    status: options.status ?? 'Started',
-    startedAt: options.startedAt ?? Date.now(),
-    updatedAt: options.updatedAt ?? Date.now(),
-    history: options.history ?? [],
+    ...base,
+    summary: {
+      ...base.summary,
+      status: 'Started',
+      historyCount: 1,
+      messageCount: 1,
+      lastAssistantText: '已读取页面',
+    },
   }
 }
 
@@ -85,7 +78,6 @@ function createElementPlusStubs() {
 }
 
 describe('AiSessionTracePanel', () => {
-  const sessionRecord = ref<AiAgentSessionRecord | null>(null)
   const entries = ref<readonly StreamDisplayEntry[]>([])
   const isStreaming = ref(false)
   const isReasoning = ref(false)
@@ -95,7 +87,6 @@ describe('AiSessionTracePanel', () => {
 
   function createProps(overrides: Record<string, unknown> = {}) {
     return {
-      sessionRecord: sessionRecord.value,
       entries: entries.value,
       isStreaming: isStreaming.value,
       isReasoning: isReasoning.value,
@@ -114,7 +105,6 @@ describe('AiSessionTracePanel', () => {
   }
 
   beforeEach(() => {
-    sessionRecord.value = null
     entries.value = []
     isStreaming.value = false
     isReasoning.value = false
@@ -123,7 +113,7 @@ describe('AiSessionTracePanel', () => {
 
   // ── 空状态 ──
 
-  it('sessionRecord 为 null 且无 entries → 显示 empty 占位', () => {
+  it('无 entries 且诊断投影为空 → 显示 empty 占位', () => {
     const wrapper = mountPanel()
     expect(wrapper.find('[data-testid="el-empty"]').exists()).toBe(true)
     expect(wrapper.find('[data-testid="stream-view"]').exists()).toBe(false)
@@ -145,10 +135,10 @@ describe('AiSessionTracePanel', () => {
     expect(wrapper.find('[data-testid="el-empty"]').exists()).toBe(false)
   })
 
-  // ── sessionRecord 非 null 但 entries 为空 → 仍渲染 body（诊断面板有数据） ──
+  // ── entries 为空但诊断投影有数据 → 仍渲染 body ──
 
-  it('sessionRecord 非 null 时 entries 为空 → 仍渲染 body', () => {
-    sessionRecord.value = makeSessionRecord()
+  it('有诊断投影但 entries 为空 → 仍渲染 body', () => {
+    diagnostics.value = createStartedDiagnostics()
     const wrapper = mountPanel()
     expect(wrapper.find('[data-testid="el-row"]').exists()).toBe(true)
   })

@@ -294,26 +294,6 @@ describe('PageEditor page file and lifecycle SSOT', () => {
     expect(editor.readSnapshot().isLoaded).toBe(false)
   })
 
-  it('lists pages and restores remote versions through PageEditor cache boundaries', async () => {
-    const { editor, http, loader } = createEditorHarness({
-      'orders/script.js': 'console.log("restored")',
-    })
-    vi.mocked(http.get).mockResolvedValueOnce([{ pageId: 'orders', pageType: 'config', files: ['rule.json'] }])
-    vi.mocked(http.post).mockResolvedValue({})
-
-    await expect(editor.listPages()).resolves.toEqual([
-      { pageId: 'orders', pageType: 'config', files: ['rule.json'] },
-    ])
-
-    editor.setActivePage('orders')
-    await editor.restoreRemotePageVersion(2, 'script.js')
-
-    expect(http.get).toHaveBeenCalledWith('/api/pages-config/__list')
-    expect(http.post).toHaveBeenCalledWith('/api/pages-config/orders/script.js/__versions/2/__restore', {})
-    expect(loader.loadPageFileContentSpy).toHaveBeenCalledWith('orders', 'script.js', { forceReload: true })
-    expect(editor.getPageFileText('script.js')).toBe('console.log("restored")')
-  })
-
   it('creates page files, mounts navigation, reloads editor navigation and clears page cache', async () => {
     const { editor, http, loader } = createEditorHarness({})
     const mountedNode: NavNode = { id: 'new-page', title: 'New Page', nodeKind: 'page', path: '/new-page' }

@@ -36,7 +36,7 @@
 <script setup lang="ts">
 /**
  * 工具调用卡片——纯渲染，接收已截断的字符串。
- * 截断在 useSessionStream.appendToolCall() 中完成。
+ * 截断由外部 AI runtime/trace 投影完成。
  */
 import { computed } from 'vue'
 import { Promotion } from '@element-plus/icons-vue'

@@ -10,7 +10,6 @@ import type {
   AiAgentBeforeFunctionCallDirective,
   AiAgentBeforeFunctionCallOptions,
   AiAgentHostRunResult,
-  AiAgentSessionRecord,
   AiAgentStreamEvent,
   AiAgentTaskChatOptions,
   AiAgentToolCallRecord,
@@ -46,6 +45,7 @@ export type AiRunBeforeFunctionCall = (
   options: AiAgentBeforeFunctionCallOptions,
 ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
 export type AiRunAbortHandler = (reason: string) => void
+export type AiRunAdapterRunStatus = 'completed' | 'aborted'
 
 export type AiRunHost = Readonly<{
   run<TInput extends AiJsonParams>(
@@ -66,7 +66,6 @@ export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Re
   trace?: AiRunTraceSink
   beforeFunctionCall?: AiRunBeforeFunctionCall
   onAbort?: AiRunAbortHandler
-  onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }>
 
@@ -75,7 +74,7 @@ export type AiRunAdapterState = Readonly<{
   abort(reason?: string): void
   run<TInput extends AiJsonParams>(
     command: AiRunAdapterCommand<TInput>,
-  ): Promise<AiAgentHostRunResult | null>
+  ): Promise<AiRunAdapterRunStatus>
 }>
 
 type ActiveRun = {
@@ -113,7 +112,7 @@ export function createAiRunAdapter(
 
   async function run<TInput extends AiJsonParams>(
     command: AiRunAdapterCommand<TInput>,
-  ): Promise<AiAgentHostRunResult | null> {
+  ): Promise<AiRunAdapterRunStatus> {
     if (activeRun !== null) {
       throw new Error('AI run is already in progress.')
     }
@@ -133,13 +132,12 @@ export function createAiRunAdapter(
     activeRun = currentRun
 
     trace.reset()
-    command.onSessionRecord?.(null)
     if (command.userMessage !== undefined) {
       trace.appendUserMessage(command.userMessage)
     }
 
     try {
-      const result = await command.host.run(command.alias, command.input, {
+      await command.host.run(command.alias, command.input, {
         signal: controller.signal,
         onStreamEvent: (event) => trace.appendEvent(event),
         onDelta: (delta) => trace.appendDelta(delta),
@@ -148,11 +146,10 @@ export function createAiRunAdapter(
         ...(command.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: command.beforeFunctionCall }),
       })
 
-      if (activeRun !== currentRun || currentRun.aborted) return null
-      command.onSessionRecord?.(result.session.getSessionRecord())
-      return result
+      if (activeRun !== currentRun || currentRun.aborted) return 'aborted'
+      return 'completed'
     } catch (error) {
-      if (currentRun.aborted) return null
+      if (currentRun.aborted) return 'aborted'
       if (activeRun === currentRun) {
         trace.appendError(formatError(error))
       }

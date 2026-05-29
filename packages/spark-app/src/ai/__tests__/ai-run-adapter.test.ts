@@ -1,7 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import type {
   AiAgentHostRunResult,
-  AiAgentSessionRecord,
   AiAgentStreamEvent,
   AiAgentTaskChatOptions,
   AiAgentToolCallRecord,
@@ -39,12 +38,7 @@ function createTraceSink() {
   } satisfies AiRunTraceSink
 }
 
-type RunFixture = Readonly<{
-  result: AiAgentHostRunResult
-  record: AiAgentSessionRecord
-}>
-
-function createRunFixture(instanceId = 'session-1'): RunFixture {
+function createRunResult(instanceId = 'session-1'): AiAgentHostRunResult {
   const moduleId = 'module-1'
   const store = new DefaultAiAgentSessionStore({ now: () => 1 })
   const context = new AiAgentRuntimeContext(moduleId, instanceId, instanceId)
@@ -73,15 +67,7 @@ function createRunFixture(instanceId = 'session-1'): RunFixture {
     { registry, turnCallbacks },
     new AiAgentTarget(moduleId, instanceId),
   )
-  const record = session.getSessionRecord()
-  if (record === null) {
-    throw new Error('Failed to create test AI session record.')
-  }
-  return { result: { task, session }, record }
-}
-
-function createRunResult(instanceId = 'session-1'): AiAgentHostRunResult {
-  return createRunFixture(instanceId).result
+  return { task, session }
 }
 
 function createStreamEvent(type = 'delta'): AiAgentStreamEvent {
@@ -131,10 +117,9 @@ function createDeferred<T>(): Deferred<T> {
 }
 
 describe('createAiRunAdapter', () => {
-  it('runs headlessly without a trace sink and reports session snapshots', async () => {
+  it('runs headlessly without a trace sink', async () => {
     const input = { prompt: 'build page' } satisfies AiJsonParams
-    const { result, record } = createRunFixture()
-    const onSessionRecord = vi.fn<(record: AiAgentSessionRecord | null) => void>()
+    const result = createRunResult()
     const run = vi.fn(async (
       _alias: string,
       _input: AiJsonParams,
@@ -147,8 +132,7 @@ describe('createAiRunAdapter', () => {
       host,
       alias: 'page-design',
       input,
-      onSessionRecord,
-    })).resolves.toBe(result)
+    })).resolves.toBe('completed')
 
     expect(run).toHaveBeenCalledWith(
       'page-design',
@@ -161,8 +145,6 @@ describe('createAiRunAdapter', () => {
         onToolCall: expect.any(Function),
       }),
     )
-    expect(onSessionRecord).toHaveBeenNthCalledWith(1, null)
-    expect(onSessionRecord).toHaveBeenNthCalledWith(2, record)
     expect(adapter.isRunning()).toBe(false)
   })
 
@@ -191,7 +173,7 @@ describe('createAiRunAdapter', () => {
       input: { prompt: 'trace me' },
       trace,
       userMessage: 'trace me',
-    })).resolves.toBe(result)
+    })).resolves.toBe('completed')
 
     expect(trace.reset).toHaveBeenCalledTimes(1)
     expect(trace.appendUserMessage).toHaveBeenCalledWith('trace me')
@@ -218,7 +200,7 @@ describe('createAiRunAdapter', () => {
       alias: 'page-design',
       input: { prompt: 'approve me' },
       beforeFunctionCall,
-    })).resolves.toBe(result)
+    })).resolves.toBe('completed')
 
     expect(run).toHaveBeenCalledWith(
       'page-design',
@@ -280,17 +262,16 @@ describe('createAiRunAdapter', () => {
     expect(onAbort).toHaveBeenCalledWith('user stopped')
     pending.reject(new Error('transport aborted'))
 
-    await expect(promise).resolves.toBeNull()
+    await expect(promise).resolves.toBe('aborted')
     expect(trace.markAborted).toHaveBeenCalledWith('user stopped')
     expect(trace.appendError).not.toHaveBeenCalled()
     expect(trace.finish).toHaveBeenCalledTimes(1)
     expect(adapter.isRunning()).toBe(false)
   })
 
-  it('does not publish a session snapshot if the host resolves after abort', async () => {
+  it('ignores a host result that resolves after abort', async () => {
     const pending = createDeferred<AiAgentHostRunResult>()
     const trace = createTraceSink()
-    const onSessionRecord = vi.fn<(record: AiAgentSessionRecord | null) => void>()
     const result = createRunResult('late-session')
     const run = vi.fn((
       _alias: string,
@@ -305,14 +286,11 @@ describe('createAiRunAdapter', () => {
       alias: 'page-design',
       input: { prompt: 'late' },
       trace,
-      onSessionRecord,
     })
     adapter.abort()
     pending.resolve(result)
 
-    await expect(promise).resolves.toBeNull()
-    expect(onSessionRecord).toHaveBeenCalledTimes(1)
-    expect(onSessionRecord).toHaveBeenCalledWith(null)
+    await expect(promise).resolves.toBe('aborted')
     expect(trace.markAborted).toHaveBeenCalledWith('本地已中断')
     expect(adapter.isRunning()).toBe(false)
   })
@@ -341,7 +319,7 @@ describe('createAiRunAdapter', () => {
     })).rejects.toThrow('AI run is already in progress.')
 
     pending.resolve(result)
-    await expect(first).resolves.toBe(result)
+    await expect(first).resolves.toBe('completed')
     expect(run).toHaveBeenCalledTimes(1)
   })
 })

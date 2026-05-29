@@ -90,7 +90,6 @@ describe('spark-page-config public subpath imports', () => {
       'PAGE_CONFIG_FILE_NAMES',
       'PageConfigFileName',
       'PageConfigFileVersionSummary',
-      'PageConfigPageSummary',
     ]
 
     for (const name of forbidden) {

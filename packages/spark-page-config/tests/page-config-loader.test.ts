@@ -324,9 +324,6 @@ describe('PageConfigLoader', () => {
       expect(vi.mocked(createRequest)).toHaveBeenCalledWith(expect.objectContaining({
         baseURL: '/api',
       }))
-      expect(vi.mocked(createRequest)).toHaveBeenCalledWith(expect.objectContaining({
-        baseURL: pagesConfigBaseUrl,
-      }))
     })
 
     it('pagesConfigBaseUrl: 函数型地址在首次读取前不提前解析', () => {
@@ -407,20 +404,17 @@ describe('PageConfigLoader', () => {
       expect(mockFileLoader.load).toHaveBeenCalledWith('/missing-page/rule.json')
     })
 
-    it('loadPageConfig: 文件清单确认缺失时直接返回 not-found，不触发四文件 GET', async () => {
-      mockRequestClient.get.mockResolvedValue([
-        { pageId: 'data-report', files: [] },
-      ])
+    it('loadPageConfig: 不请求页面清单，rule.json 缺失由逐文件请求 fail-fast', async () => {
+      mockRequestClient.get.mockRejectedValue(new Error('unexpected __list request'))
+      mockFileLoader.load.mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadPageConfig('data-report')
 
       expect(r.success).toBe(false)
       expect(r.reason).toBe('not-found')
       expect(r.error).toContain('/data-report/rule.json')
-      expect(mockRequestClient.get).toHaveBeenCalledWith('/__list', undefined, {
-        meta: { silentHttpError: true },
-      })
-      expect(mockFileLoader.load).not.toHaveBeenCalled()
+      expect(mockRequestClient.get).not.toHaveBeenCalled()
+      expect(mockFileLoader.load).toHaveBeenCalledWith('/data-report/rule.json')
     })
 
     it('loadPageConfig: 远程 pagedata.json 不存在时 fail-fast', async () => {
@@ -436,37 +430,38 @@ describe('PageConfigLoader', () => {
       expect(mockFileLoader.load).toHaveBeenLastCalledWith('/missing-data-page/pagedata.json')
     })
 
-    it('loadPageConfig: 清单确认无 script.js/style.css 时按零代码页面加载', async () => {
-      mockRequestClient.get.mockResolvedValue([
-        { pageId: 'zero-code-page', files: ['rule.json', 'pagedata.json'] },
-      ])
+    it('loadPageConfig: 不通过清单跳过 script.js/style.css，脚本缺失 fail-fast', async () => {
+      mockRequestClient.get.mockRejectedValue(new Error('unexpected __list request'))
       mockFileLoader.load
         .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
         .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
-
-      const r = await loader.loadPageConfig('zero-code-page')
-
-      expect(r.success).toBe(true)
-      expect(r.data?.script).toBeUndefined()
-      expect(r.data?.css).toBeUndefined()
-      expect(mockFileLoader.load).toHaveBeenCalledTimes(2)
-      expect(mockFileLoader.load).toHaveBeenNthCalledWith(1, '/zero-code-page/rule.json')
-      expect(mockFileLoader.load).toHaveBeenNthCalledWith(2, '/zero-code-page/pagedata.json')
-    })
-
-    it('loadPageConfig: 清单不可用时脚本和样式 404 会导致整体加载失败', async () => {
-      mockRequestClient.get.mockRejectedValue(new Error('manifest unavailable'))
-      mockFileLoader.load
-        .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
-        .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
-        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
         .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadPageConfig('zero-code-page')
 
       expect(r.success).toBe(false)
       expect(r.reason).toBe('not-found')
+      expect(mockRequestClient.get).not.toHaveBeenCalled()
       expect(mockFileLoader.load).toHaveBeenCalledTimes(3)
+      expect(mockFileLoader.load).toHaveBeenNthCalledWith(1, '/zero-code-page/rule.json')
+      expect(mockFileLoader.load).toHaveBeenNthCalledWith(2, '/zero-code-page/pagedata.json')
+      expect(mockFileLoader.load).toHaveBeenNthCalledWith(3, '/zero-code-page/script.js')
+    })
+
+    it('loadPageConfig: style.css 404 会导致整体加载失败', async () => {
+      mockRequestClient.get.mockRejectedValue(new Error('unexpected __list request'))
+      mockFileLoader.load
+        .mockResolvedValueOnce(fileOk([{ type: 'div', id: 'remote-root' }]))
+        .mockResolvedValueOnce(fileOk({ dataSetName: 'Empty', tables: {} }))
+        .mockResolvedValueOnce(fileOk('console.log("ready")'))
+        .mockResolvedValueOnce({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
+
+      const r = await loader.loadPageConfig('zero-code-page')
+
+      expect(r.success).toBe(false)
+      expect(r.reason).toBe('not-found')
+      expect(mockRequestClient.get).not.toHaveBeenCalled()
+      expect(mockFileLoader.load).toHaveBeenCalledTimes(4)
     })
 
     it('loadScript: 远程 fetch 文本文件', async () => {
@@ -529,17 +524,19 @@ describe('PageConfigLoader', () => {
       expect(r.data).toBeUndefined()
     })
 
-    it('loadPageFileContent: 清单已知缺失时由 loader 短路，不发逐文件 404 请求', async () => {
-      mockRequestClient.get.mockResolvedValue([{ pageId: 'orders', files: ['rule.json'] }])
+    it('loadPageFileContent: 不请求页面清单，直接读取指定文件并返回 not-found', async () => {
+      mockRequestClient.get.mockRejectedValue(new Error('unexpected __list request'))
+      mockFileLoader.load.mockResolvedValue({ success: false, error: 'not found', fromCache: false, reason: 'not-found' })
 
       const r = await loader.loadPageFileContent('missing-page', 'rule.json')
 
       expect(r.success).toBe(false)
       expect(r.reason).toBe('not-found')
-      expect(mockRequestClient.get).toHaveBeenCalledWith('/__list', undefined, {
-        meta: { silentHttpError: true },
+      expect(mockRequestClient.get).not.toHaveBeenCalled()
+      expect(mockFileLoader.load).toHaveBeenCalledWith('/missing-page/rule.json', {
+        parseJSON: false,
+        forceRefresh: false,
       })
-      expect(mockFileLoader.load).not.toHaveBeenCalled()
     })
 
     it('loadPageFileContent: 远程 script/style 不存在时返回失败，不生成空文本', async () => {

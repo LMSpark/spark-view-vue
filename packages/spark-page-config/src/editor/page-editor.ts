@@ -63,7 +63,6 @@ import type {
   PageModelCreatePageParams,
   PageModelFileName,
   PageModelFileVersionSummary,
-  PageModelPageSummary,
   PageModelRemoveMountedParams,
   PageModelRemoveMountedResult,
 } from './page-model'
@@ -219,7 +218,6 @@ export class PageEditor {
   private selectedNodeId: string | null = null
   private navigationDirty = false
   private navigationDirtyScope: NavigationDirtyScope | null = null
-  private pageListCache: PageModelPageSummary[] = []
 
   private revisionCounter = 0
   private readonly listeners = new Set<PageEditorListener>()
@@ -872,7 +870,6 @@ export class PageEditor {
       this.markNavigationDirty('node')
       await this.saveSelectedNavigationNode()
       this._activePageId = pageId
-      this.invalidatePageList()
       this.bumpRevision()
       return { page, node: this.getSelectedNode() ?? selected }
     } catch (error) {
@@ -880,7 +877,6 @@ export class PageEditor {
       this.selectedNodeId = selected.id
       this.markNavigationClean()
       await pageModel.deleteFiles()
-      this.invalidatePageList()
       this.bumpRevision()
       throw error
     }
@@ -890,7 +886,6 @@ export class PageEditor {
   async createMountedPage(params: CreateMountedPageParams): Promise<PageModelCreateMountedResult> {
     const { pageId, ...modelParams } = params
     const result = await this.openPage(pageId).createMounted(modelParams)
-    this.invalidatePageList()
     await this.reloadNavigation({ selectedNodeId: result.node.id })
     return result
   }
@@ -899,7 +894,6 @@ export class PageEditor {
   async createPageFiles(params: PageEditorCreatePageParams): Promise<Record<string, unknown>> {
     const { pageId, ...modelParams } = params
     const result = await this.openPage(pageId).createFiles(modelParams)
-    this.invalidatePageList()
     this.bumpRevision()
     return result
   }
@@ -908,7 +902,6 @@ export class PageEditor {
   async deletePageFiles(pageId: string): Promise<void> {
     const normalized = pageId.trim()
     await this.openPage(normalized).deleteFiles()
-    this.invalidatePageList()
     if (this._activePageId === normalized) {
       this._activePageId = ''
     }
@@ -920,7 +913,6 @@ export class PageEditor {
   async removeMountedPage(params: RemoveMountedPageParams): Promise<PageModelRemoveMountedResult> {
     const { pageId, ...modelParams } = params
     const result = await this.openPage(pageId).removeMounted(modelParams)
-    this.invalidatePageList()
     if (this._activePageId === params.pageId) {
       this._activePageId = ''
     }
@@ -967,31 +959,11 @@ export class PageEditor {
     await this.openPage(this._activePageId).deleteVersion(version, filename)
   }
 
-  // ── 页面列表 ─────────────────────────────────────────
-
-  /** 返回页面列表（优先使用缓存）。 */
-  async listPages(): Promise<PageModelPageSummary[]> {
-    if (this.pageListCache.length === 0) {
-      return this.refreshPages()
-    }
-    return this.pageListCache
-  }
-
-  /** 强制刷新页面列表并更新缓存。 */
-  async refreshPages(): Promise<PageModelPageSummary[]> {
-    this.pageListCache = await this.fileApi.listPages()
-    this.bumpRevision()
-    return this.pageListCache
-  }
-
   /** 通知外部 SSE 事件导致页面文件变化，使缓存失效。 */
   notifyPageFileChanged(
     _pageId: string,
-    filename: PageModelFileName | '__created' | '__deleted' | '__bulk',
+    _filename: PageModelFileName | '__created' | '__deleted' | '__bulk',
   ): void {
-    if (filename === '__bulk' || filename === '__created' || filename === '__deleted') {
-      this.pageListCache = []
-    }
     this.bumpRevision()
   }
 
@@ -1042,10 +1014,6 @@ export class PageEditor {
     if (page?.navigation.isDirty === true) {
       page.navigation.markClean()
     }
-  }
-
-  private invalidatePageList(): void {
-    this.pageListCache = []
   }
 
   private async reloadNavigation(options?: { selectedNodeId?: string | null }): Promise<AppNavRoot> {

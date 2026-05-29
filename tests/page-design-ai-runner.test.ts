@@ -9,7 +9,6 @@ import {
 import type {
   AiAgentHost,
   AiAgentHostRunResult,
-  AiAgentSessionRecord,
   AiAgentStreamEvent,
   AiAgentTurnCallbacks,
   AiAgentToolCallRecord,
@@ -89,12 +88,7 @@ function createCapabilityConsumer(host: AiAgentHost): SparkCapabilityConsumer {
   return (name) => name.read(host)
 }
 
-type RunFixture = Readonly<{
-  result: AiAgentHostRunResult
-  record: AiAgentSessionRecord
-}>
-
-function createRunFixture(instanceId = 'orders'): RunFixture {
+function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
   const moduleId = 'pageDesign'
   const store = new DefaultAiAgentSessionStore({ now: () => 1 })
   const context = new AiAgentRuntimeContext(moduleId, instanceId, instanceId)
@@ -126,15 +120,7 @@ function createRunFixture(instanceId = 'orders'): RunFixture {
     { registry, turnCallbacks },
     new AiAgentTarget(moduleId, instanceId),
   )
-  const record = session.getSessionRecord()
-  if (record === null) {
-    throw new Error('Failed to create test pageDesign AI session record.')
-  }
-  return { result: { task, session }, record }
-}
-
-function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
-  return createRunFixture(instanceId).result
+  return { task, session }
 }
 
 function createStreamEvent(): AiAgentStreamEvent {
@@ -206,7 +192,7 @@ describe('runPageDesignAiSession', () => {
   it('uses the already loaded active PageModel instead of loading files on AI click', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: true })
     const aiHost = createAiHost()
-    const { result: runResult, record } = createRunFixture('session-from-host')
+    const runResult = createRunResult('session-from-host')
     mocks.pageDesignRun.mockResolvedValue(runResult)
 
     const result = await runPageDesignAiSession({
@@ -216,7 +202,7 @@ describe('runPageDesignAiSession', () => {
       consumeCapability: createCapabilityConsumer(aiHost),
     })
 
-    expect(result).toEqual({ sawToolCall: false, sessionRecord: record })
+    expect(result).toEqual({ sawToolCall: false })
     expect(editor.setActivePage).not.toHaveBeenCalled()
     expect(editor.ensureActivePageFilesLoaded).not.toHaveBeenCalled()
     expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
@@ -231,13 +217,10 @@ describe('runPageDesignAiSession', () => {
     const aiHost = createAiHost()
     const event = createStreamEvent()
     const toolCall = createToolCallRecord()
-    const { result: runResult, record } = createRunFixture('session-with-stream')
+    const runResult = createRunResult('session-with-stream')
     const trace = createTraceSink()
-    const onSessionRecord = vi.fn()
     const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
     const events = {
-      onReasoning: vi.fn(),
-      onDelta: vi.fn(),
       onToolCall: vi.fn(),
       onStreamEvent: vi.fn(),
     }
@@ -263,11 +246,10 @@ describe('runPageDesignAiSession', () => {
       consumeCapability: createCapabilityConsumer(aiHost),
       trace,
       events,
-      onSessionRecord,
       beforeFunctionCall,
     })
 
-    expect(result).toEqual({ sawToolCall: true, sessionRecord: record })
+    expect(result).toEqual({ sawToolCall: true })
     expect(trace.reset).toHaveBeenCalledTimes(1)
     expect(trace.appendUserMessage).toHaveBeenCalledWith('补一个按钮')
     expect(trace.appendEvent).toHaveBeenCalledWith(event)
@@ -276,11 +258,7 @@ describe('runPageDesignAiSession', () => {
     expect(trace.appendToolCall).toHaveBeenCalledWith(toolCall)
     expect(trace.finish).toHaveBeenCalledTimes(1)
     expect(events.onStreamEvent).toHaveBeenCalledWith(event)
-    expect(events.onDelta).toHaveBeenCalledWith('delta text')
-    expect(events.onReasoning).toHaveBeenCalledWith('reasoning text')
     expect(events.onToolCall).toHaveBeenCalledWith(toolCall)
-    expect(onSessionRecord).toHaveBeenNthCalledWith(1, null)
-    expect(onSessionRecord).toHaveBeenNthCalledWith(2, record)
   })
 
   it('passes approval hooks to an injected adapter without binding them to pageDesign business registration', async () => {
@@ -288,14 +266,15 @@ describe('runPageDesignAiSession', () => {
     const aiHost = createAiHost()
     const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
     const onAbort = vi.fn()
-    const { result: runResult, record } = createRunFixture('adapter-session')
+    const runResult = createRunResult('adapter-session')
     const adapter: AiRunAdapterState = {
       isRunning: vi.fn(() => false),
       abort: vi.fn(),
       run: vi.fn(async (command) => {
         expect(command.beforeFunctionCall).toBe(beforeFunctionCall)
         expect(command.onAbort).toBe(onAbort)
-        return runResult
+        void runResult
+        return 'completed' as const
       }),
     }
 
@@ -309,7 +288,7 @@ describe('runPageDesignAiSession', () => {
       onAbort,
     })
 
-    expect(result).toEqual({ sawToolCall: false, sessionRecord: record })
+    expect(result).toEqual({ sawToolCall: false })
     expect(adapter.run).toHaveBeenCalledOnce()
     expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
   })
@@ -319,9 +298,8 @@ describe('runPageDesignAiSession', () => {
     const aiHost = createAiHost()
     const adapter = createAiRunAdapter()
     const trace = createTraceSink()
-    const onSessionRecord = vi.fn()
     const pending = createDeferred<AiAgentHostRunResult>()
-    const { result: lateResult } = createRunFixture('late-session')
+    const lateResult = createRunResult('late-session')
     let signal: AbortSignal | undefined
     mocks.pageDesignRun.mockImplementation((
       _alias: string,
@@ -339,7 +317,6 @@ describe('runPageDesignAiSession', () => {
       consumeCapability: createCapabilityConsumer(aiHost),
       adapter,
       trace,
-      onSessionRecord,
     })
 
     expect(adapter.isRunning()).toBe(true)
@@ -347,11 +324,9 @@ describe('runPageDesignAiSession', () => {
     expect(signal?.aborted).toBe(true)
     pending.resolve(lateResult)
 
-    await expect(promise).resolves.toEqual({ sawToolCall: false, sessionRecord: null })
+    await expect(promise).resolves.toEqual({ sawToolCall: false })
     expect(trace.markAborted).toHaveBeenCalledWith('用户取消')
     expect(trace.appendError).not.toHaveBeenCalled()
-    expect(onSessionRecord).toHaveBeenCalledTimes(1)
-    expect(onSessionRecord).toHaveBeenCalledWith(null)
     expect(adapter.isRunning()).toBe(false)
   })
 

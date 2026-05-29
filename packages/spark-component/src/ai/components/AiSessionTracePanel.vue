@@ -35,8 +35,23 @@ const props = withDefaults(defineProps<AiSessionTracePanelProps>(), {
 })
 
 const isEmpty = computed(() =>
-  props.sessionRecord === null && props.entries.length === 0,
+  props.entries.length === 0 && !hasDiagnostics(props.diagnostics),
 )
+
+function hasDiagnostics(data: AiSessionTracePanelProps['diagnostics']): boolean {
+  const summary = data.summary
+  return (
+    summary.status !== null
+    || summary.historyCount > 0
+    || summary.messageCount > 0
+    || summary.toolCallCount > 0
+    || summary.failedToolCallCount > 0
+    || summary.functionNames.length > 0
+    || summary.lastAssistantText.length > 0
+    || data.transcript.length > 0
+    || data.issues.length > 0
+  )
+}
 </script>
 
 <style module>

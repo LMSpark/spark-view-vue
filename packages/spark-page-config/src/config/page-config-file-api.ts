@@ -8,13 +8,11 @@
  * │  类型分组（按远程 API 操作类型）                       │
  * │                                                      │
  * │  1. 摘要类型： PageConfigFileVersionSummary           │
- * │               PageConfigPageSummary                   │
  * │  2. 参数类型： PageConfigCreatePageParams             │
  * │               PageConfigFileApiOptions                │
  * │  3. API 类：   PageConfigFileApi                      │
  * │     - 文件写入：saveFileContent()                     │
- * │     - 页面 CRUD：listPages() / createPage()           │
- * │                  deletePage()                         │
+ * │     - 页面 CRUD：createPage() / deletePage()          │
  * │     - 版本管理：listVersions() / createVersion()      │
  * │                  restoreVersion() / deleteVersion()   │
  * └──────────────────────────────────────────────────────┘
@@ -42,15 +40,6 @@ export type PageConfigFileVersionSummary = {
   modifiedBy: string | null
 }
 
-/** 页面配置摘要：用于页面列表展示 */
-export type PageConfigPageSummary = Record<string, unknown> & {
-  /** 页面 ID */
-  pageId: string
-  /** 页面类型（可选） */
-  pageType?: string
-  /** 已存在的配置文件列表 */
-  files?: PageConfigFileName[]
-}
 
 // ═══════════════════════════════════════════════════════
 // 2. 参数类型
@@ -179,29 +168,6 @@ export class PageConfigFileApi {
   }
 
   // ── 页面 CRUD ──
-
-  /** 获取所有页面的摘要列表 */
-  async listPages(): Promise<PageConfigPageSummary[]> {
-    const rows = normalizeRecordRows(await this.http.get<unknown>(`${this.baseUrl()}/__list`))
-    return rows
-      .map((row): PageConfigPageSummary | null => {
-        const pageId = row['pageId']
-        if (typeof pageId !== 'string' || pageId.trim() === '') return null
-        return {
-          ...row,
-          pageId,
-          ...(typeof row['pageType'] === 'string' ? { pageType: row['pageType'] } : {}),
-          ...(Array.isArray(row['files'])
-            ? {
-                files: row['files'].filter(
-                  (name): name is PageConfigFileName => typeof name === 'string',
-                ),
-              }
-            : {}),
-        }
-      })
-      .filter((row): row is PageConfigPageSummary => row !== null)
-  }
 
   /** 创建新页面（四文件骨架） */
   async createPage(params: PageConfigCreatePageParams): Promise<Record<string, unknown>> {

@@ -12,7 +12,7 @@ import type {
   AiRunBeforeFunctionCall,
   AiRunTraceSink,
 } from '@spark-view/spark-app'
-import type { AiAgentSessionRecord, AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
+import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
 import type { PageEditor } from '@spark-view/spark-page-config/editor'
@@ -32,15 +32,12 @@ export type PageDesignAiRunOptions = {
 }
 
 /**
- * Legacy status callbacks for DevSystem status messages.
+ * Legacy non-content callbacks for DevSystem status messages.
  *
- * Prefer `trace` for full session rendering. Do not pass the same
- * `useSessionStream()` sink through both `trace` and these event callbacks,
- * otherwise the caller will duplicate its own UI entries.
+ * AI stream content belongs to `trace` / spark-ai. UI callers must not store
+ * delta or reasoning fragments through this side channel.
  */
 export type PageDesignAiRunEvents = {
-  onReasoning?: (reasoning: string) => void
-  onDelta?: (delta: string) => void
   onToolCall?: (record: AiAgentToolCallRecord) => void
   onStreamEvent?: (event: AiAgentStreamEvent) => void
 }
@@ -54,13 +51,11 @@ export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
   adapter?: AiRunAdapterState
   beforeFunctionCall?: AiRunBeforeFunctionCall
   onAbort?: AiRunAbortHandler
-  onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }
 
 export type PageDesignAiRunResult = {
   sawToolCall: boolean
-  sessionRecord: AiAgentSessionRecord | null
 }
 
 export async function runPageDesignAiSession(command: PageDesignAiRunCommand): Promise<PageDesignAiRunResult> {
@@ -84,9 +79,8 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   })
 
   let sawToolCall = false
-  let sessionRecord: AiAgentSessionRecord | null = null
   const adapter = command.adapter ?? createAiRunAdapter()
-  const result = await adapter.run({
+  await adapter.run({
     host: pageDesignHost,
     alias: PAGE_DESIGN_MODULE_ID,
     input: buildPageDesignRunInput(pageId, command),
@@ -101,16 +95,9 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
       },
     }),
     userMessage: command.userMessage ?? userRequirement,
-    onSessionRecord: (record) => {
-      sessionRecord = record
-      command.onSessionRecord?.(record)
-    },
   })
-  if (result !== null) {
-    sessionRecord = result.session.getSessionRecord()
-  }
 
-  return { sawToolCall, sessionRecord }
+  return { sawToolCall }
 }
 
 type CreatePageDesignTraceSinkOptions = Readonly<{
@@ -130,11 +117,9 @@ function createPageDesignTraceSink(options: CreatePageDesignTraceSinkOptions): A
     },
     appendDelta: (delta) => {
       trace.appendDelta(delta)
-      options.events?.onDelta?.(delta)
     },
     appendReasoning: (reasoning) => {
       trace.appendReasoning(reasoning)
-      options.events?.onReasoning?.(reasoning)
     },
     appendToolCall: (record) => {
       trace.appendToolCall(record)

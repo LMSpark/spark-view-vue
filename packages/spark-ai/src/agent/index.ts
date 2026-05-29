@@ -176,6 +176,20 @@ export type {
   AiAgentSessionTranscriptOptions,
 } from './session/session-diagnostics'
 
+export {
+  createAiAgentRunTrace,
+} from './session/session-run-trace'
+
+export type {
+  AiAgentRunTrace,
+  AiAgentRunTraceEntry,
+  AiAgentRunTraceListener,
+  AiAgentRunTraceOptions,
+  AiAgentRunTraceReasoning,
+  AiAgentRunTraceSnapshot,
+  AiAgentRunTraceToolCall,
+} from './session/session-run-trace'
+
 // ── 7. APP turn 回调契约与类型 ──────────────────────────────
 
 export {

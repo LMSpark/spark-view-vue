@@ -29,13 +29,12 @@ export type AiAgentTurnBridgeOptions = Readonly<{
 }>
 
 export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {}): AiAgentTurnCallbacks {
-  const preparedSessionIds = new Set<string>()
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
   const windowSize = normalizeWindowSize(options.windowSize)
 
   return {
     prepareSession: async (input) => {
-      if (preparedSessionIds.has(input.sessionId)) return
+      // The backend owns session lifecycle and persistence; APP only ensures it before a turn.
       const body = await http.post(AI_SESSION_API_BASE, {
         protocolVersion: AI_TURN_PROTOCOL_VERSION,
         sessionId: input.sessionId,
@@ -48,7 +47,6 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
         ...(windowSize === undefined ? {} : { windowSize }),
       }, signalConfig(input.signal))
       assertPreparedSession(body, input)
-      preparedSessionIds.add(input.sessionId)
     },
     executeTurn: async (input) => {
       const collector = createTurnEventCollector({

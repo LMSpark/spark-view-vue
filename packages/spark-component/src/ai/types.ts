@@ -2,45 +2,28 @@
  * AI 会话监视组件 — 共享领域类型（SSOT）。
  *
  * StreamDisplayEntry、ToolCallDisplayItem、ReasoningDisplayItem
- * 等流展示类型只在这里定义。所有组件和 composable 从此文件导入。
+ * 等流展示类型只在这里定义。UI 组件只消费外部传入的展示投影。
  */
 
 import type {
+  AiAgentRunTraceEntry,
+  AiAgentRunTraceReasoning,
+  AiAgentRunTraceToolCall,
   AiAgentSessionSummary,
   AiAgentSessionTranscriptEntry,
 } from '@spark-view/spark-ai/agent'
 
 // ── 流展示条目 ──
 
-export type ToolCallDisplayItem = Readonly<{
-  toolName: string
-  argsPreview: string
-  turnId: string
-  round: number
-  callId: string | null
-  status: 'success' | 'error'
-  resultSummary: string | null
-  durationMs: number
-}>
+export type ToolCallDisplayItem = AiAgentRunTraceToolCall
 
-export type ReasoningDisplayItem = Readonly<{
-  text: string
-  turnId: string
-  collapsed: boolean
-}>
+export type ReasoningDisplayItem = AiAgentRunTraceReasoning
 
 /**
  * 流视图中的一条渲染条目。
- * 所有字段 Readonly——实现中通过数组项替换而非原地修改来更新。
+ * 真正的状态机在 spark-ai，UI 只消费这个简版投影。
  */
-export type StreamDisplayEntry =
-  | Readonly<{ kind: 'user-message'; content: string; timestamp: number }>
-  | Readonly<{ kind: 'assistant-delta'; content: string; turnId: string }>
-  | Readonly<{ kind: 'assistant-complete'; content: string; turnId: string }>
-  | Readonly<{ kind: 'reasoning'; item: ReasoningDisplayItem }>
-  | Readonly<{ kind: 'tool-call'; item: ToolCallDisplayItem }>
-  | Readonly<{ kind: 'error'; message: string; timestamp: number }>
-  | Readonly<{ kind: 'system-message'; content: string; timestamp: number }>
+export type StreamDisplayEntry = AiAgentRunTraceEntry
 
 // ── 诊断数据 ──
 
@@ -53,8 +36,7 @@ export type SessionDiagnosticIssue = Readonly<{
 
 /**
  * 诊断数据——永远有值（非 null）。
- * summarizeAiAgentSessionRecord(null) 本身支持空记录，
- * composable 返回空摘要而非 null。
+ * 由外部 runtime/diagnostics 层生成；UI 只渲染摘要投影，不读取完整 session。
  */
 export type SessionDiagnosticsData = Readonly<{
   summary: AiAgentSessionSummary

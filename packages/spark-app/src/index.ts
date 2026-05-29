@@ -216,6 +216,7 @@ export type {
   AiRunAbortHandler,
   AiRunAdapterCommand,
   AiRunAdapterOptions,
+  AiRunAdapterRunStatus,
   AiRunAdapterState,
   AiRunBeforeFunctionCall,
   AiRunErrorFormatter,

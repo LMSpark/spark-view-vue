@@ -162,7 +162,6 @@ function createEditorHarness(options?: {
 
   vi.mocked(http.get).mockImplementation(async (url: string) => {
     if (url === '/api/navigation') return root
-    if (url === '/api/pages-config/__list') return [{ pageId: 'orders', pageType: 'config' }]
     throw new Error(`Unexpected get ${url}`)
   })
   vi.mocked(http.put).mockImplementation(async (url: string, patch: unknown) => {

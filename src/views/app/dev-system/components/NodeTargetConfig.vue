@@ -217,7 +217,6 @@ const systemRouteTargetOptions = computed<TargetOption[]>(() =>
 
 const configPageOptions = computed(() => {
   return props.state.pageList.value
-    .filter((p) => String(p['pageType'] ?? 'config') !== 'system-page')
     .map((p) => {
       const pageId = String(p['pageId'] ?? '')
       const path = String(p['path'] ?? `/${pageId}`)
@@ -635,4 +634,3 @@ async function createPageFromPath() {
   justify-content: flex-start;
 }
 </style>
-

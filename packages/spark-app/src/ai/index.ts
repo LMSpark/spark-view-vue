@@ -7,6 +7,7 @@ export {
 export type {
   AiRunAdapterCommand,
   AiRunAdapterOptions,
+  AiRunAdapterRunStatus,
   AiRunAdapterState,
   AiRunAbortHandler,
   AiRunBeforeFunctionCall,

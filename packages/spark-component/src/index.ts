@@ -345,8 +345,6 @@ export {
   AiSessionTracePanel,
   AiToolApprovalCard,
   AiToolApprovalPanel,
-  useSessionStream,
-  useSessionDiagnostics,
 } from './ai/index.js'
 
 export type {
@@ -359,9 +357,6 @@ export type {
   AiToolApprovalCardProps,
   AiToolApprovalCardEmits,
   AiToolApprovalPanelProps,
-  UseSessionStreamReturn,
-  UseSessionDiagnosticsOptions,
-  UseSessionDiagnosticsReturn,
   StreamDisplayEntry,
   ToolCallDisplayItem,
   ReasoningDisplayItem,

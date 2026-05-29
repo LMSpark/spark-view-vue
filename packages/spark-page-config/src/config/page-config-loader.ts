@@ -24,7 +24,7 @@ import type {
   PageConfig,
   PageFileRegistry,
 } from './config-types'
-import { BasePageConfigLoader, PAGE_CONFIG_FILE_NAMES, createDefaultFileRegistry } from './config-types'
+import { BasePageConfigLoader, createDefaultFileRegistry } from './config-types'
 import type { DataSet } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-data'
 import {
@@ -59,18 +59,6 @@ type ResolvedConfigLoaderOptions =
   Omit<Required<ConfigLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
   & Pick<ConfigLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
 
-type OptionalPageFileLoadInput<T> = Readonly<{
-  pageId: string
-  filename: PageConfigFileName
-  localLoader: TransformedFileLoader<T>
-  knownFiles: ReadonlySet<PageConfigFileName> | null
-}>
-
-/** 安全判断未知值是否为数组。 */
-function isUnknownArray(value: unknown): value is readonly unknown[] {
-  return Array.isArray(value)
-}
-
 /** 去除 URL 尾部斜杠。 */
 function trimTrailingSlash(path: string): string {
   return path.replace(/\/+$/, '')
@@ -96,11 +84,8 @@ export class PageConfigLoader extends BasePageConfigLoader {
   private fileLoader!: FileLoader
   /** 共享 axios 请求实例（远程 API 调用统一通道，自动注入 auth/tenant headers） */
   private request: HttpClientBase
-  /** 页面配置文件 API 请求实例，baseURL 固定到 .../pages-config。 */
-  private fileApiRequest!: HttpClientBase
   private pagesConfigBase = ''
   private readonly recentMissingFiles = new Set<string>()
-  private pageFileManifest: Map<string, Set<PageConfigFileName>> | null = null
   /** 页面文件注册表，用于动态控制加载哪些文件类型 */
   private readonly fileRegistry: PageFileRegistry
 
@@ -141,22 +126,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
 
   private resetPageFileContext(pagesConfigBase: string): void {
     this.pagesConfigBase = pagesConfigBase
-    this.pageFileManifest = null
     this.recentMissingFiles.clear()
-
-    this.fileApiRequest = this.opts.httpClient ?? createRequest({
-      baseURL: this.pagesConfigBase,
-      timeout: this.opts.timeout,
-    })
-    if (this.opts.getHeaders) {
-      const getHeaders = this.opts.getHeaders
-      this.fileApiRequest.interceptors.request.use({
-        onRequest: (config) => {
-          config.headers = { ...config.headers, ...getHeaders() }
-          return config
-        }
-      })
-    }
 
     this.fileLoader = createFileLoader({
       baseUrl: this.pagesConfigBase,
@@ -230,12 +200,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
   async loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
     this.ensurePageFileContext()
     pageLogger.info('加载完整页面配置', { pageId })
-    const knownFiles = await this.getKnownPageFiles(pageId)
-    const missingKnownFile = this.requiredPageConfigFileNames()
-      .find(filename => this.isKnownMissing(knownFiles, filename))
-    if (missingKnownFile !== undefined) {
-      return this.missingPageFileResult(pageId, missingKnownFile)
-    }
 
     const ruleResult = await this.loadRule(pageId)
     if (!ruleResult.success) return this.failFrom(ruleResult.error, ruleResult.reason)
@@ -246,20 +210,10 @@ export class PageConfigLoader extends BasePageConfigLoader {
       throw new Error(`Page data loader returned no data: ${pageId}/pagedata.json`)
     }
 
-    const scriptResult = await this.loadOptionalPageFile({
-      pageId,
-      filename: 'script.js',
-      localLoader: this.scriptLoader,
-      knownFiles,
-    })
+    const scriptResult = await this.loadOptionalPageFile(pageId, 'script.js', this.scriptLoader)
     if (!scriptResult.success) return this.failFrom(scriptResult.error, scriptResult.reason)
 
-    const cssResult = await this.loadOptionalPageFile({
-      pageId,
-      filename: 'style.css',
-      localLoader: this.cssLoader,
-      knownFiles,
-    })
+    const cssResult = await this.loadOptionalPageFile(pageId, 'style.css', this.cssLoader)
     if (!cssResult.success) return this.failFrom(cssResult.error, cssResult.reason)
 
     pageLogger.debug('页面附加资源加载完成', {
@@ -292,10 +246,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
   ): Promise<ConfigLoadResult<string>> {
     this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)
-    const knownFiles = await this.getKnownPageFiles(pageId)
-    if (this.isKnownMissing(knownFiles, filename)) {
-      return this.knownMissingPageFileResult(path)
-    }
     const result = await this.fileLoader.load(path, {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
@@ -308,10 +258,7 @@ export class PageConfigLoader extends BasePageConfigLoader {
     this.fileLoader.clearCache(key)
     if (!key) {
       this.recentMissingFiles.clear()
-      this.pageFileManifest = null
-      return
     }
-    this.invalidatePageFileManifest(key)
   }
 
   getCacheStats(): { size: number; keys: string[] } {
@@ -334,10 +281,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
       return { success: false, error: `Unknown file type: ${filename}` }
     }
     const path = this.toPageFilePath(pageId, filename)
-    const knownFiles = await this.getKnownPageFiles(pageId)
-    if (this.isPageConfigFileName(filename) && this.isKnownMissing(knownFiles, filename)) {
-      return this.knownMissingPageFileResult(path)
-    }
     const result = await this.fileLoader.load(path, {
       parseJSON: false,
       forceRefresh: options?.forceReload === true,
@@ -352,83 +295,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
 
   // ── 私有辅助 ──────────────────────────────────────────────────────
 
-  private async getKnownPageFiles(pageId: string): Promise<ReadonlySet<PageConfigFileName> | null> {
-    const manifest = await this.getPageFileManifest()
-    return manifest?.get(pageId) ?? (manifest === null ? null : new Set<PageConfigFileName>())
-  }
-
-  private async getPageFileManifest(): Promise<Map<string, Set<PageConfigFileName>> | null> {
-    if (this.pageFileManifest !== null) return this.pageFileManifest
-
-    try {
-      const response: unknown = await this.fileApiRequest.get<unknown>(this.fileApiUrl('/__list'), undefined, {
-        meta: { silentHttpError: true },
-      })
-      if (!isUnknownArray(response)) return null
-
-      function getProp(obj: object, key: string): unknown {
-        const desc = Object.getOwnPropertyDescriptor(obj, key)
-        return desc?.value
-      }
-
-      const manifest = new Map<string, Set<PageConfigFileName>>()
-      for (const row of response) {
-        if (row === null || typeof row !== 'object') continue
-        const pageId = getProp(row, 'pageId')
-        if (typeof pageId !== 'string' || pageId.trim() === '') continue
-        const filesRaw = getProp(row, 'files')
-        const files = Array.isArray(filesRaw)
-          ? filesRaw.filter((name): name is PageConfigFileName => this.isPageConfigFileName(name))
-          : []
-        manifest.set(pageId, new Set(files))
-      }
-      this.pageFileManifest = manifest
-      return manifest
-    } catch (error) {
-      pageLogger.debug('页面文件清单不可用，回退逐文件加载', { error })
-      return null
-    }
-  }
-
-  private isPageConfigFileName(value: unknown): value is PageConfigFileName {
-    return typeof value === 'string'
-      && (PAGE_CONFIG_FILE_NAMES.some((filename) => filename === value) || this.fileRegistry.has(value))
-  }
-
-  private requiredPageConfigFileNames(): PageConfigFileName[] {
-    return PAGE_CONFIG_FILE_NAMES.filter((filename) => {
-      const descriptor = this.fileRegistry.get(filename)
-      return descriptor?.required === true
-    })
-  }
-
-  private isKnownMissing(
-    knownFiles: ReadonlySet<PageConfigFileName> | null,
-    filename: PageConfigFileName,
-  ): boolean {
-    return knownFiles !== null && !knownFiles.has(filename)
-  }
-
-  private knownMissingPageFileResult(path: string): ConfigLoadResult<never> {
-    pageLogger.debug('远程页面配置文件清单已确认缺失，跳过逐文件请求', { path })
-    return {
-      success: false,
-      error: `${this.pagesConfigBase}${path}: not found`,
-      reason: 'not-found',
-      source: 'remote',
-    }
-  }
-
-  private invalidatePageFileManifest(key: string): void {
-    if (this.pageFileManifest === null) return
-    const pageId = key.replace(/^\/+/, '').split('/')[0]
-    if (pageId === undefined || pageId === '') {
-      this.pageFileManifest = null
-      return
-    }
-    this.pageFileManifest.delete(decodeURIComponent(pageId))
-  }
-
   /**
    * 加载页面四文件。
    * 统一走 FileLoader + 编译缓存；远程模式由 FileLoader 对接 timestamp/notModified。
@@ -441,12 +307,11 @@ export class PageConfigLoader extends BasePageConfigLoader {
     return this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
   }
 
-  private async loadOptionalPageFile<T>(input: OptionalPageFileLoadInput<T>): Promise<ConfigLoadResult<T | undefined>> {
-    const { pageId, filename, localLoader, knownFiles } = input
-    if (this.isKnownMissing(knownFiles, filename)) {
-      return { success: true, source: 'remote' }
-    }
-
+  private async loadOptionalPageFile<T>(
+    pageId: string,
+    filename: PageConfigFileName,
+    localLoader: TransformedFileLoader<T>,
+  ): Promise<ConfigLoadResult<T | undefined>> {
     const result = await this.derivedResult(localLoader, this.toPageFilePath(pageId, filename))
     return result
   }
@@ -503,16 +368,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
     return this.fileResultFromData(await loader.load(path), path)
   }
 
-  private missingPageFileResult<T>(pageId: string, filename: PageConfigFileName): ConfigLoadResult<T> {
-    pageLogger.debug('远程页面配置文件不存在', { pageId, filename })
-    return {
-      success: false,
-      error: `${this.pagesConfigBase}${this.toPageFilePath(pageId, filename)}: not found`,
-      reason: 'not-found',
-      source: 'remote',
-    }
-  }
-
   private pageFileContentResultFromData(
     result: { success: boolean; data?: string; error?: string; reason?: string; timestamp?: string; fromCache?: boolean; notModified?: boolean },
     path: string,
@@ -557,12 +412,6 @@ export class PageConfigLoader extends BasePageConfigLoader {
     return `/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
   }
 
-  private fileApiUrl(path: string): string {
-    if (this.opts.httpClient === undefined) return path
-    const baseUrl = this.pagesConfigBase.replace(/\/+$/, '')
-    const suffix = path.startsWith('/') ? path : `/${path}`
-    return `${baseUrl}${suffix}`
-  }
 
 }
 

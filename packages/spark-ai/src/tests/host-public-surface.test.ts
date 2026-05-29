@@ -18,6 +18,7 @@ describe('@spark-view/spark-ai/agent public surface', () => {
       'DefaultAiAgentSessionStore',
       'createAiAgentHost',
       'createAiAgentRegistration',
+      'createAiAgentRunTrace',
       'createAiAgentScope',
       'createAiAgentSession',
       'createAiAgentTask',

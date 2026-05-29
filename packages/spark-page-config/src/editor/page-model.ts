@@ -11,7 +11,7 @@ import { getSparkNodeChildren } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { BasePageConfigLoader } from '../config/config-types'
 import type { PageConfigFileApi } from '../config/page-config-file-api'
-import type { AppNavRoot, NavNode } from '../navigation/nav-model'
+import type { AppNavRoot, NavNode, NavNodeKind } from '../navigation/nav-model'
 import type { NavigationConfigClient } from '../navigation/nav-client'
 import type { NavigationNodeDraft, NavNodeLocation } from '../navigation/nav-editing'
 import {
@@ -87,8 +87,13 @@ export type PageModelFileVersionSummary = {
 
 export type PageModelPageSummary = Record<string, unknown> & {
   pageId: string
-  pageType?: string
-  files?: PageModelFileName[]
+  path: string
+  title: string
+  nodeId: string
+  nodeKind: NavNodeKind
+  description?: string
+  userRequirement?: string
+  icon?: string
 }
 
 export type PageModelRenderConfig = {

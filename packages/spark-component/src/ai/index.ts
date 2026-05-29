@@ -4,8 +4,6 @@ export { default as AiToolApprovalCard } from './components/AiToolApprovalCard.v
 export { default as AiToolApprovalPanel } from './components/AiToolApprovalPanel.vue'
 
 // ── composables ──
-export { useSessionStream } from './composables/useSessionStream'
-export { useSessionDiagnostics } from './composables/useSessionDiagnostics'
 
 // ── 组件 Props 类型 ──
 export type { AiSessionTracePanelProps } from './components/AiSessionTracePanel.props'
@@ -18,8 +16,6 @@ export type { AiToolApprovalCardProps, AiToolApprovalCardEmits } from './compone
 export type { AiToolApprovalPanelProps } from './components/AiToolApprovalPanel.props'
 
 // ── composable 类型 ──
-export type { UseSessionStreamReturn } from './composables/useSessionStream'
-export type { UseSessionDiagnosticsOptions, UseSessionDiagnosticsReturn } from './composables/useSessionDiagnostics'
 
 // ── 领域类型（SSOT） ──
 export type {

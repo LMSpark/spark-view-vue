@@ -12,7 +12,7 @@
  * autoSave、refreshRoutes、demoNavRoot fallback 和状态消息。
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
-import { createAiToolApprovalBridge, refreshRoutes } from '@spark-view/spark-app'
+import { createAiRunAdapter, createAiToolApprovalBridge, refreshRoutes } from '@spark-view/spark-app'
 import type { AiToolApprovalRequest, NavNode, NavNodeKind } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
@@ -175,6 +175,36 @@ export function useDevState() {
   // ── 页面列表 ──
   const pageList = ref<PageModelPageSummary[]>([])
 
+  function buildPageListFromNavigation(nodes: readonly NavNode[]): PageModelPageSummary[] {
+    const pages: PageModelPageSummary[] = []
+    const seen = new Set<string>()
+
+    function visit(list: readonly NavNode[]): void {
+      for (const node of list) {
+        const pageId = PageModel.resolvePageIdFromPath(node.path)
+        if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page') && !seen.has(pageId)) {
+          seen.add(pageId)
+          pages.push({
+            pageId,
+            path: node.path ?? `/${pageId}`,
+            title: node.title,
+            nodeId: node.id,
+            nodeKind: node.nodeKind ?? 'page',
+            ...(node.description !== undefined ? {
+              description: node.description,
+              userRequirement: node.description,
+            } : {}),
+            ...(node.icon !== undefined ? { icon: node.icon } : {}),
+          })
+        }
+        if (Array.isArray(node.children)) visit(node.children)
+      }
+    }
+
+    visit(nodes)
+    return pages
+  }
+
   // ── 状态消息 ──
   const statusMessages = ref<StatusMessage[]>([])
   const linkProbeLoading = ref(false)
@@ -186,13 +216,21 @@ export function useDevState() {
   const AUTO_SAVE_DELAY = 800
 
   // ── SPARK AI tool approval bridge + current pageDesign entry ──
-  const pageDesignAiRunning = ref(false)
+  const pageDesignAiAdapter = createAiRunAdapter()
+  const pageDesignAiRunRevision = ref(0)
   const aiToolApprovals = createAiToolApprovalBridge()
-  const aiToolApprovalPending = ref<readonly ToolApprovalDisplayItem[]>([])
-  let pageDesignAiInFlight = false
+  const aiToolApprovalRevision = ref(0)
+  const pageDesignAiRunning = computed(() => {
+    void pageDesignAiRunRevision.value
+    return pageDesignAiAdapter.isRunning()
+  })
+  const aiToolApprovalPending = computed<readonly ToolApprovalDisplayItem[]>(() => {
+    void aiToolApprovalRevision.value
+    return aiToolApprovals.listPending().map(toToolApprovalDisplayItem)
+  })
 
-  aiToolApprovals.subscribe((snapshot) => {
-    aiToolApprovalPending.value = snapshot.pending.map(toToolApprovalDisplayItem)
+  aiToolApprovals.subscribe(() => {
+    aiToolApprovalRevision.value += 1
   })
 
   // ── 编辑器状态同步 ───────────────────────────────────
@@ -200,6 +238,7 @@ export function useDevState() {
   function syncNavFromEditor(): void {
     const snap = editor.readSnapshot()
     treeData.value = [...snap.treeData]
+    pageList.value = buildPageListFromNavigation(treeData.value)
     navDirty.value = snap.navigationDirty
     navEmpty.value = snap.treeData.length === 0
     if (snap.selectedNodeId && snap.selectedNode) {
@@ -256,8 +295,8 @@ export function useDevState() {
 
   function isBackendConfigPage(pageId: string): boolean {
     const pageMeta = pageList.value.find((page) => page.pageId === pageId)
-    if (!pageMeta) return true
-    return (pageMeta.pageType ?? 'config') !== 'system-page'
+    if (!pageMeta) return treeData.value.length === 0
+    return PageModel.isConfigNodeKind(pageMeta.nodeKind)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -331,11 +370,6 @@ export function useDevState() {
     }
   }
 
-  function compactAiStatus(text: string): string {
-    const normalized = text.replace(/\s+/g, ' ').trim()
-    return normalized.length > 96 ? `${normalized.slice(0, 96)}...` : normalized
-  }
-
   function previewApprovalArgs(args: AiToolApprovalRequest['args']): string {
     try {
       const text = JSON.stringify(args, null, 2)
@@ -389,12 +423,10 @@ export function useDevState() {
       addStatus('请先输入 AI 编辑需求', 'warning')
       return
     }
-    if (pageDesignAiInFlight) return
+    if (pageDesignAiAdapter.isRunning()) return
 
-    pageDesignAiInFlight = true
+    pageDesignAiRunRevision.value += 1
     await nextTick()
-    pageDesignAiRunning.value = true
-    let lastStreamStatusAt = 0
 
     try {
       addStatus(`AI 开始编辑页面 ${pageId}`, 'info')
@@ -403,25 +435,10 @@ export function useDevState() {
         pageId,
         editor,
         consumeCapability: capabilityConsumer,
+        adapter: pageDesignAiAdapter,
         beforeFunctionCall: aiToolApprovals.beforeFunctionCall,
         onAbort: aiToolApprovals.cancelPending,
         events: {
-          onReasoning: (reasoning) => {
-            const message = compactAiStatus(reasoning)
-            if (!message) return
-            const now = Date.now()
-            if (now - lastStreamStatusAt < 1200) return
-            lastStreamStatusAt = now
-            addStatus(`AI 推理：${message}`, 'info')
-          },
-          onDelta: (delta) => {
-            const message = compactAiStatus(delta)
-            if (!message) return
-            const now = Date.now()
-            if (now - lastStreamStatusAt < 1200) return
-            lastStreamStatusAt = now
-            addStatus(`AI 回复：${message}`, 'info')
-          },
           onToolCall: (record) => {
             syncNavFromEditor()
             const type: StatusMessage['type'] = record.status === 'success' ? 'info' : 'warning'
@@ -445,8 +462,7 @@ export function useDevState() {
       addStatus(`AI 编辑失败: ${String(error)}`, 'error')
     } finally {
       aiToolApprovals.cancelPending('AI 编辑会话已结束。')
-      pageDesignAiInFlight = false
-      pageDesignAiRunning.value = false
+      pageDesignAiRunRevision.value += 1
     }
   }
 
@@ -522,10 +538,8 @@ export function useDevState() {
     clearFiles()
   }
 
-  async function loadPages(): Promise<void> {
-    try {
-      pageList.value = await editor.listPages()
-    } catch { /* ignore */ }
+  function loadPages(): void {
+    pageList.value = buildPageListFromNavigation(treeData.value)
   }
 
   function syncEditorActivePageFromState(): boolean {
@@ -753,7 +767,6 @@ export function useDevState() {
       editor.setActivePage(pageId)
       await editor.savePageFile(name)
       addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
-      await loadPages()
     } catch (e) {
       addStatus(`保存 ${name} 失败: ${String(e)}`, 'error')
     } finally {
@@ -772,7 +785,7 @@ export function useDevState() {
         title: params.title,
         icon: params.icon,
       })
-      await loadPages()
+      syncNavFromEditor()
 
       navDraft.path = `/${pageId}`
       navDraft.title = params.title
@@ -966,7 +979,6 @@ export function useDevState() {
         rollbackPageOnNavigationFailure: true,
       })
       syncNavFromEditor()
-      await loadPages()
       await refreshRoutes()
       addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
     } catch (e) {
@@ -992,7 +1004,6 @@ export function useDevState() {
         }
         if (shouldRemoveMountedPage) {
           notifyPageFileChanged(pageId, '__deleted')
-          void loadPages()
         }
         syncNavFromEditor()
         addStatus(`已删除 ${data.title}`, 'info')
@@ -1129,10 +1140,7 @@ export function useDevState() {
 
   async function initialize(): Promise<void> {
     const persistedActivePageId = readPersistedActivePageId()
-    await Promise.all([
-      loadNavConfig({ preserveActivePageId: persistedActivePageId }),
-      loadPages(),
-    ])
+    await loadNavConfig({ preserveActivePageId: persistedActivePageId })
   }
 
   return {

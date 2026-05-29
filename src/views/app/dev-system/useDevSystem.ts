@@ -42,6 +42,12 @@ export function useDevSystem() {
   const canPreviewCurrentPage = computed(
     () => Boolean(state.navDraft.path || state.activePageId.value),
   )
+  const activePageRequirement = computed(() => {
+    const pageId = state.activePageId.value
+    if (!pageId) return ''
+    const page = state.pageList.value.find(item => item.pageId === pageId)
+    return String(page?.userRequirement ?? page?.description ?? '').trim()
+  })
   const canSaveCleanNode = computed(() => {
     if (workTab.value !== 'props') return false
     const node = state.selectedNode.value
@@ -50,7 +56,7 @@ export function useDevSystem() {
   const canSaveFromHeader = computed(() => state.hasAnyDirty.value || canSaveCleanNode.value)
   const headerSaveLabel = computed(() => state.hasAnyDirty.value ? '全部保存' : '保存')
   const canRunPageDesignAi = computed(() =>
-    Boolean(state.activePageId.value),
+    Boolean(state.activePageId.value && (pageDesignAiPrompt.value.trim() || activePageRequirement.value)),
   )
 
   // 选中节点时自动切到节点属性页签
@@ -89,7 +95,7 @@ export function useDevSystem() {
 
   async function runPageDesignAi() {
     if (!canRunPageDesignAi.value) return
-    const userRequirement = pageDesignAiPrompt.value.trim()
+    const userRequirement = pageDesignAiPrompt.value.trim() || activePageRequirement.value
     await state.runPageDesignAi({ userRequirement })
   }
 

@@ -451,13 +451,8 @@ function createPageConfigRuntime(options, auth) {
 }
 
 async function prepareTargetPage(editor, options) {
-  const pages = await editor.listPages()
-  let exists = pages.some((page) => page.pageId === options.pageId)
-  if (exists && options.replacePage) {
-    await editor.deletePageFiles(options.pageId)
-    exists = false
-  }
-  if (!exists) {
+  if (options.replacePage) {
+    try { await editor.deletePageFiles(options.pageId) } catch { /* page may not exist */ }
     await editor.createPageFiles({
       pageId: options.pageId,
       title: options.pageTitle,
@@ -465,7 +460,16 @@ async function prepareTargetPage(editor, options) {
     })
     return 'created'
   }
-  return 'reused'
+  try {
+    await editor.createPageFiles({
+      pageId: options.pageId,
+      title: options.pageTitle,
+      ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
+    })
+    return 'created'
+  } catch {
+    return 'reused'
+  }
 }
 
 async function loadTargetPage(editor, pageId) {

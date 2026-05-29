@@ -17,6 +17,11 @@ const httpFns = vi.hoisted(() => ({
 }))
 
 vi.mock('@spark-view/spark-app', () => ({
+  createAiRunAdapter: vi.fn(() => ({
+    isRunning: vi.fn(() => false),
+    abort: vi.fn(),
+    run: vi.fn(async () => 'completed' as const),
+  })),
   createAiToolApprovalBridge: vi.fn(() => ({
     beforeFunctionCall: vi.fn(async () => ({ status: 'allow' })),
     cancelPending: vi.fn(() => 0),
@@ -188,5 +193,39 @@ describe('DevState 页面文件闭环', () => {
     expect(state.selectedNode.value?.id).toBe('beta-node')
     expect(state.activePageId.value).toBe('beta')
     expect(observedDraftIds.at(-1)).toBe('beta-node')
+  })
+
+  it('初始化页面列表从导航树派生，不请求 pages-config __list', async () => {
+    const state = useDevState()
+    httpMock.get.mockImplementation(async (url: string) => {
+      if (url === '/api/navigation') {
+        return {
+          title: 'root',
+          childPlacement: 'header',
+          children: [
+            { id: 'alpha-node', title: 'Alpha', nodeKind: 'page', path: '/alpha', icon: 'Document', description: 'Alpha 页面需求' },
+            { id: 'sys-node', title: 'System', nodeKind: 'system-page', path: '/system' },
+          ],
+        }
+      }
+      if (url.includes('/__list')) {
+        throw new Error(`unexpected GET ${url}`)
+      }
+      return pageFileResponse(url)
+    })
+
+    await state.initialize()
+
+    expect(state.pageList.value).toEqual([
+      expect.objectContaining({
+        pageId: 'alpha',
+        path: '/alpha',
+        title: 'Alpha',
+        nodeId: 'alpha-node',
+        description: 'Alpha 页面需求',
+        userRequirement: 'Alpha 页面需求',
+      }),
+    ])
+    expect(httpMock.get).not.toHaveBeenCalledWith('/api/pages-config/__list')
   })
 })
