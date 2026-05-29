@@ -23,6 +23,10 @@
       "types": "./dist/ai/index.d.ts",
       "import": "./dist/ai/index.js"
     },
+    "./leave-request": {
+      "types": "./dist/leave-request/index.d.ts",
+      "import": "./dist/leave-request/index.js"
+    },
     "./json-document": {
       "types": "./dist/json-document-public.d.ts",
       "import": "./dist/json-document-public.js"

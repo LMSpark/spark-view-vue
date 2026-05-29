@@ -16,6 +16,7 @@
       "@spark-view/spark-page-config": ["./src/index.ts"],
       "@spark-view/spark-page-config/editor": ["./src/editor/page-editor.ts"],
       "@spark-view/spark-page-config/ai": ["./src/ai/index.ts"],
+      "@spark-view/spark-page-config/leave-request": ["./src/leave-request/index.ts"],
       "@spark-view/spark-page-config/json-document": ["./src/json-document-public.ts"],
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],

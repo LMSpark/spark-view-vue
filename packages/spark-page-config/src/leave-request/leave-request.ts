@@ -3,7 +3,7 @@
  *
  * ## 与 PageDesign 的关系
  * 本模块与 PageDesign **完全独立**，不共享任何类型、服务或 AiModule。
- * 它只是恰好放在 `ai/` 目录下，作为"如何用 spark-ai 框架注册一个 AI 业务模块"的参考实现。
+ * 位于独立的 `leave-request/` 文件夹中，作为"如何用 spark-ai 框架注册一个 AI 业务模块"的参考实现。
  *
  * ## 模块结构
  * ```

@@ -16,7 +16,7 @@ import {
   LEAVE_REQUEST_MODULE_ID,
   LEAVE_REQUEST_PERSON_KIND,
   createLeaveRequestBusinessRegistration,
-} from '../src/ai/index'
+} from '../src/leave-request/index'
 import type { AiJsonValue } from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
 

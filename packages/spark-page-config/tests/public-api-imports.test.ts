@@ -16,11 +16,13 @@ import {
 } from '@spark-view/spark-page-config/editor'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component/runtime'
 import {
-  LEAVE_REQUEST_KIND,
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessKindDefinition,
   ensurePageDesignBusiness,
 } from '@spark-view/spark-page-config/ai'
+import {
+  LEAVE_REQUEST_KIND,
+} from '@spark-view/spark-page-config/leave-request'
 
 // 内化模块的测试通过内部源路径导入
 import { PAGE_DESIGN_100_STEP_FLOW } from '../src/design/artifacts/design-flow'
