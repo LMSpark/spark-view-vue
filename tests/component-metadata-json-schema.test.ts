@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { AiJsonSchemaValidator, type AiJsonSchemaObject, type AiJsonValue } from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
-import { createPageDesignPayloadRegistry } from '../packages/spark-page-config/src/ai/payload-catalog-tool-catalog'
+import { createPageDesignPayloadRegistry } from '@spark-view/spark-page-config/internal/payload-catalog'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
   '$id',

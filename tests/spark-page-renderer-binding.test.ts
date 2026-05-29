@@ -9,7 +9,7 @@ import { SparkData, type DataSet } from '@spark-view/spark-data'
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import {
   compileRule,
-} from '../packages/spark-page-config/src/config/page-config-compiler'
+} from '@spark-view/spark-page-config/internal/compiler'
 import type { PageModelLike, PageModelRenderConfig } from '@spark-view/spark-page-config'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'

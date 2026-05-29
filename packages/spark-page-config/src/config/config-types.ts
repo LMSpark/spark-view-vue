@@ -2,6 +2,12 @@
  * 页面配置加载域公共类型。
  *
  * 该文件只描述页面四文件的加载契约，不掺入 Vue、路由或编辑器运行时。
+ *
+ * ## CRUD 角色
+ * - 本文件所有类型服务于 **Read** 管线（加载 + 解析），不涉及 Create/Delete。
+ * - Create/Delete 管线的 API 参数类型在 page-config-file-api.ts 中定义。
+ * - PAGE_CONFIG_FILE_NAMES / PageConfigFileDescriptor / PageConfigFileRegistry
+ *   是 Read 和 Write 共享的基础设施类型。
  */
 
 import type { DataSet } from '@spark-view/spark-data'

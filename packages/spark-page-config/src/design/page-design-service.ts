@@ -30,7 +30,7 @@ import {
   type PageDesignServiceResult,
   type PageDesignTextFileKey,
 } from './page-edit-session'
-import { validateScriptServiceContract } from '../ai/text-model-tool-catalog'
+import { validateScriptServiceContract } from './script-contract'
 
 // ── Action 结果序列化与错误映射 ───────────────────────────
 

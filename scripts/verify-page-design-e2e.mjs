@@ -27,7 +27,7 @@ import {
 import {
   ensurePageDesignBusiness,
   validatePageDesignPayloadGuidesFromSession,
-} from '../packages/spark-page-config/src/ai/index.js'
+} from '@spark-view/spark-page-config/ai'
 import { createRequest } from '@spark-view/spark-utils'
 import {
   PAGE_CONFIG_FILE_NAMES,
