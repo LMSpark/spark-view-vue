@@ -1,6 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createPageEditor, type PageEditor } from '@spark-view/spark-page-config/editor'
-import { createAiRunAdapter, type AiRunTraceSink } from '@spark-view/spark-app'
+import {
+  createAiRunAdapter,
+  type AiRunAdapterState,
+  type AiRunBeforeFunctionCall,
+  type AiRunTraceSink,
+} from '@spark-view/spark-app'
 import type {
   AiAgentHost,
   AiAgentHostRunResult,
@@ -229,6 +234,7 @@ describe('runPageDesignAiSession', () => {
     const { result: runResult, record } = createRunFixture('session-with-stream')
     const trace = createTraceSink()
     const onSessionRecord = vi.fn()
+    const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
     const events = {
       onReasoning: vi.fn(),
       onDelta: vi.fn(),
@@ -240,7 +246,9 @@ describe('runPageDesignAiSession', () => {
       onDelta?: (value: string) => void
       onReasoning?: (value: string) => void
       onToolCall?: (value: AiAgentToolCallRecord) => void
+      beforeFunctionCall?: AiRunBeforeFunctionCall
     }) => {
+      expect(chat.beforeFunctionCall).toBe(beforeFunctionCall)
       chat.onStreamEvent?.(event)
       chat.onDelta?.('delta text')
       chat.onReasoning?.('reasoning text')
@@ -256,6 +264,7 @@ describe('runPageDesignAiSession', () => {
       trace,
       events,
       onSessionRecord,
+      beforeFunctionCall,
     })
 
     expect(result).toEqual({ sawToolCall: true, sessionRecord: record })
@@ -272,6 +281,37 @@ describe('runPageDesignAiSession', () => {
     expect(events.onToolCall).toHaveBeenCalledWith(toolCall)
     expect(onSessionRecord).toHaveBeenNthCalledWith(1, null)
     expect(onSessionRecord).toHaveBeenNthCalledWith(2, record)
+  })
+
+  it('passes approval hooks to an injected adapter without binding them to pageDesign business registration', async () => {
+    const editor = createEditor({ pageId: 'orders', isLoaded: true })
+    const aiHost = createAiHost()
+    const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
+    const onAbort = vi.fn()
+    const { result: runResult, record } = createRunFixture('adapter-session')
+    const adapter: AiRunAdapterState = {
+      isRunning: vi.fn(() => false),
+      abort: vi.fn(),
+      run: vi.fn(async (command) => {
+        expect(command.beforeFunctionCall).toBe(beforeFunctionCall)
+        expect(command.onAbort).toBe(onAbort)
+        return runResult
+      }),
+    }
+
+    const result = await runPageDesignAiSession({
+      pageId: 'orders',
+      userRequirement: '补一个按钮',
+      editor,
+      consumeCapability: createCapabilityConsumer(aiHost),
+      adapter,
+      beforeFunctionCall,
+      onAbort,
+    })
+
+    expect(result).toEqual({ sawToolCall: false, sessionRecord: record })
+    expect(adapter.run).toHaveBeenCalledOnce()
+    expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
   })
 
   it('lets callers abort through an injected headless adapter', async () => {

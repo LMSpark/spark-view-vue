@@ -1,6 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
+import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
 import DevSystem from '@/views/app/dev-system/DevSystem.vue'
 
 let devSystemCtx: ReturnType<typeof createDevSystemCtx>
@@ -21,10 +22,14 @@ function createDevSystemCtx(overrides: Record<string, unknown> = {}) {
     navDirty: ref(false),
     hasAnyFileDirty: ref(false),
     pageDesignAiRunning: ref(false),
+    aiToolApprovalPending: ref<readonly ToolApprovalDisplayItem[]>([]),
     pageDataError: ref(null),
     statusMessages: ref([]),
     pageList: ref([]),
     initialize: vi.fn().mockResolvedValue(undefined),
+    approveAiTool: vi.fn(),
+    rejectAiTool: vi.fn(),
+    abortAiTool: vi.fn(),
   }
 
   return {
@@ -55,35 +60,58 @@ const PassthroughStub = defineComponent({
   template: '<div><slot name="label" /><slot /></div>',
 })
 
+const ApprovalPanelStub = defineComponent({
+  props: {
+    pending: {
+      type: Array,
+      default: () => [],
+    },
+    emptyText: String,
+  },
+  emits: ['allow', 'reject', 'abort'],
+  template: `
+    <div data-testid="ai-tool-approval-panel">
+      <button type="button" data-testid="approval-allow" @click="$emit('allow', pending[0].id)">allow</button>
+      <button type="button" data-testid="approval-reject" @click="$emit('reject', pending[0].id, 'no')">reject</button>
+      <button type="button" data-testid="approval-abort" @click="$emit('abort', pending[0].id, 'stop')">abort</button>
+    </div>
+  `,
+})
+
+function mountDevSystem() {
+  return mount(DevSystem, {
+    global: {
+      directives: {
+        loading: {
+          mounted: vi.fn(),
+          updated: vi.fn(),
+        },
+      },
+      stubs: {
+        AiToolApprovalPanel: ApprovalPanelStub,
+        DevSiteTree: true,
+        DevNodeProps: true,
+        DevFileEditor: true,
+        DevPreviewTab: true,
+        ElButton: ButtonStub,
+        ElEmpty: true,
+        ElInput: true,
+        ElTabPane: PassthroughStub,
+        ElTabs: PassthroughStub,
+        ElTag: true,
+        NavIcon: true,
+      },
+    },
+  })
+}
+
 describe('DevSystem header save action', () => {
   beforeEach(() => {
     devSystemCtx = createDevSystemCtx()
   })
 
   it('shows a save button for clean editable node props and triggers save', async () => {
-    const wrapper = mount(DevSystem, {
-      global: {
-        directives: {
-          loading: {
-            mounted: vi.fn(),
-            updated: vi.fn(),
-          },
-        },
-        stubs: {
-          DevSiteTree: true,
-          DevNodeProps: true,
-          DevFileEditor: true,
-          DevPreviewTab: true,
-          ElButton: ButtonStub,
-          ElEmpty: true,
-          ElInput: true,
-          ElTabPane: PassthroughStub,
-          ElTabs: PassthroughStub,
-          ElTag: true,
-          NavIcon: true,
-        },
-      },
-    })
+    const wrapper = mountDevSystem()
 
     const saveButton = wrapper.findAll('button').find(button => button.text().includes('保存'))
     expect(saveButton).toBeDefined()
@@ -91,5 +119,26 @@ describe('DevSystem header save action', () => {
     await saveButton!.trigger('click')
 
     expect(devSystemCtx.saveAll).toHaveBeenCalledOnce()
+  })
+
+  it('mounts the generic AI tool approval panel from app state', async () => {
+    devSystemCtx.state.aiToolApprovalPending.value = [{
+      id: 'approval-1',
+      toolName: 'module_call',
+      moduleId: 'pageDesign',
+      argsPreview: '{}',
+    }]
+
+    const wrapper = mountDevSystem()
+
+    expect(wrapper.find('[data-testid="ai-tool-approval-panel"]').exists()).toBe(true)
+
+    await wrapper.find('[data-testid="approval-allow"]').trigger('click')
+    await wrapper.find('[data-testid="approval-reject"]').trigger('click')
+    await wrapper.find('[data-testid="approval-abort"]').trigger('click')
+
+    expect(devSystemCtx.state.approveAiTool).toHaveBeenCalledWith('approval-1')
+    expect(devSystemCtx.state.rejectAiTool).toHaveBeenCalledWith('approval-1', 'no')
+    expect(devSystemCtx.state.abortAiTool).toHaveBeenCalledWith('approval-1', 'stop')
   })
 })

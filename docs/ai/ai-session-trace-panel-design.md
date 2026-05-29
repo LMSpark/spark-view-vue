@@ -13,8 +13,8 @@ spark-app 和 spark-component 中均无现成的 AI 会话监视 UI 组件。
 在 `packages/spark-component/src/ai/` 下创建 AI 会话监视组件系统，分三期交付：
 
 - **M1（本方案）**：只读 trace panel + 流缓冲（live callbacks）+ 诊断面板（post-completion snapshot）。组件不管理 Host 生命周期，由调用方传入 callbacks 和 sessionRecord。
-- **M2**：增加 runner adapter（start/send/abort UI）+ 附件引用支持。
-- **M3**：spark-ai 内核前置能力已补齐 `beforeFunctionCall`、`AiAgentSession.stop(reason)`、`AiAgentHost.listSessions(alias?)`；后续在此基础上增加工具审批和多会话管理 UI。
+- **M2**：增加 headless runner adapter，并在 APP service 中接入真实业务 run；UI 仍只是可选 observer。
+- **M3**：spark-ai 内核前置能力已补齐 `beforeFunctionCall`、`AiAgentSession.stop(reason)`、`AiAgentHost.listSessions(alias?)`；通用工具审批 bridge、展示组件和 DevSystem APP 挂载已落地，多会话管理 UI 后续另开。
 
 ### 1.3 关键约束
 
@@ -835,12 +835,13 @@ pnpm --filter @spark-view/spark-component exec vitest run src/tests/ai/
 
 ---
 
-## 十二、M2/M3 展望
+## 十二、M2/M3 状态
 
-### M2 状态（当前分支已落地前两切片）
+### M2 状态（当前分支已落地）
 
 - 第一切片：headless AI run adapter 已落地在 `packages/spark-app/src/ai/ai-run-adapter.ts`（无 UI 也能跑）
 - 第二切片：DevSystem pageDesign app service 已接入 adapter，落点为 `src/services/page-design-ai-runner.ts`
+- 第三切片：DevSystem 已挂载通用 `AiToolApprovalPanel`，通过 APP 状态桥接 pending approval，不让组件直接知道 Host/SSE/业务包
 - 后续可选：`SessionInputBar.vue`（textarea + 附件引用 + Send/Stop 按钮）
 - 后续可选：`AiSessionRunner` 接口 + adapter 实现示例（调用方参考；需等人工验收后再冻结 API）
 - 后续可选：多模态附件引用：文本描述 + URL + 文件名（base64 仅 UI 预览，不进 historyMsgs）
@@ -926,6 +927,8 @@ export type AiRunBeforeFunctionCall = (
   options: AiAgentBeforeFunctionCallOptions,
 ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
 
+export type AiRunAbortHandler = (reason: string) => void
+
 export type AiRunHost = Readonly<{
   run<TInput extends AiJsonParams>(
     alias: string,
@@ -940,6 +943,7 @@ export type AiRunAdapterCommand<TInput extends AiJsonParams = AiJsonParams> = Re
   input: TInput
   trace?: AiRunTraceSink
   beforeFunctionCall?: AiRunBeforeFunctionCall
+  onAbort?: AiRunAbortHandler
   onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }>
@@ -1021,9 +1025,9 @@ export class AiToolApprovalBridge {
 
 使用方式：
 
-- runner wrapper 创建 `const approvals = createAiToolApprovalBridge()`。
+- APP service 或 runner wrapper 创建 `const approvals = createAiToolApprovalBridge()`。
 - 调用 `adapter.run({ ..., beforeFunctionCall: approvals.beforeFunctionCall, onAbort: approvals.cancelPending })`。
-- UI 只订阅 `approvals.subscribe()` 得到 `pending`，渲染工具名、参数预览和审批按钮。
+- APP 层订阅 `approvals.subscribe()` 得到 `pending`，映射成组件展示类型后传给 `AiToolApprovalPanel`。
 - 用户点击允许：`approvals.decide(id, { status: 'allow' })`。
 - 用户点击拒绝：`approvals.decide(id, { status: 'reject', reason, fix })`。
 - 用户点击停止：`adapter.abort(reason)` 触发 `onAbort`，取消所有 pending approval，避免 tool loop 悬挂在审批 Promise。
@@ -1050,11 +1054,13 @@ M2 adapter 第一切片至少覆盖：
 - `run()` reject 后追加 error，并在 finally 中 `finish()`。
 - `abort()` 立即追加 system-message，并在 reject/resolve 两种路径下都不会重复错误。
 - 并发 `run()` 被 fail-fast 拒绝。
+- `beforeFunctionCall` 能以 request/run 级 hook 透传，不写进业务 registration。
+- approval bridge 在 abort/finish 时能取消 pending Promise，避免工具循环悬挂。
 - `spark-component/src/ai/**` 仍不出现 `AiAgentHost`、`EventSource`、`PageModel*`、`@spark-view/spark-page-config`。
 
 #### 12.7 当前实现验收状态
 
-当前分支已完成两刀落地：
+当前分支已完成四刀落地：
 
 1. `packages/spark-app/src/ai/ai-run-adapter.ts`
    - 提供 `createAiRunAdapter()`、`noopTraceSink`、`AiRunHost`、`AiRunTraceSink`。
@@ -1068,31 +1074,46 @@ M2 adapter 第一切片至少覆盖：
    - `spark-component/src/ai/**` 未被修改，panel 仍只消费纯 AI/session props。
    - 兼容 legacy `events` 回调，同时支持传入 full `trace` sink。`PageDesignAiRunEvents` 仅用于旧状态消息；full session UI 应优先传 `trace`，不要把同一个 `useSessionStream()` 同时传给 `trace` 和 `events`。
 
+3. `packages/spark-app/src/ai/tool-approval-bridge.ts`
+   - 提供 `createAiToolApprovalBridge()`，保存待审批工具请求，公开 `beforeFunctionCall`、`decide()`、`cancelPending()` 和 `subscribe()`。
+   - 该桥是通用 APP 状态机，不 import Vue、`spark-component`、`spark-page-config`、PageModel 或 APP SSE。
+   - 已从 `@spark-view/spark-app` public entry 导出。
+
+4. `src/views/app/dev-system/DevSystem.vue` + `src/views/app/dev-system/useDevState.ts`
+   - APP 层创建通用 approval bridge，订阅 pending request，映射为 `ToolApprovalDisplayItem` 后传给 `AiToolApprovalPanel`。
+   - `AiToolApprovalPanel` 通过 top-level `@spark-view/spark-component` 公共入口导入；组件只接纯展示数据并 emit `allow/reject/abort`。
+   - 当前接入点是 DevSystem 的 pageDesign run，但 bridge/组件契约本身不绑定 pageDesign，后续业务可复用同一 APP 能力。
+
 已验证：
 
 ```bash
 pnpm --filter @spark-view/spark-app run test:run -- src/ai/__tests__/ai-run-adapter.test.ts
+pnpm --filter @spark-view/spark-app run test:run -- src/ai/__tests__/tool-approval-bridge.test.ts src/ai/__tests__/ai-run-adapter.test.ts
 pnpm --filter @spark-view/spark-app run typecheck
 pnpm --filter @spark-view/spark-app run lint
 pnpm exec vitest run tests/page-design-ai-runner.test.ts
+pnpm exec vitest run tests/dev-state-page-file-closed-loop.test.ts tests/dev-system-header-save.test.ts tests/page-design-ai-runner.test.ts
 pnpm run typecheck
 pnpm run lint
+pnpm run test
+pnpm run verify:ai-codegen
 pnpm exec vitest run tests/page-design-ai-runner.test.ts tests/dev-system-header-save.test.ts tests/use-dev-state-page-data-history.test.ts
 ```
 
-### M3 状态（spark-ai 内核前置切片已落地）
+### M3 状态（工具审批链路已落地到 APP 挂载）
 
-当前分支已完成 M3-0 内核前置能力：
+当前分支已完成 M3-0 到 M3-2：
 
 - `beforeFunctionCall` 钩子：在 `runtime.executeTool()` 前执行；`allow` 继续执行，`reject` 回灌失败 tool result 但不中止 turn，`abort` 进入生命周期终止流程。
 - `AiAgentSession.stop(reason)`：外部无 UI 场景也能停止当前业务会话，写入 `sessionStore.stopSession()` 并触发 `onEndBusinessInstance`。
 - `AiAgentHost.listSessions(alias?)`：Host 层直接暴露会话发现；传 alias 返回单业务会话，不传则聚合当前 Host 业务会话。
 - M3-1 通用桥接：`AiAgentChatRequest.beforeFunctionCall` 支持每次 run 注入 UI-neutral 前置裁决；`spark-app` 的 `AiRunAdapterCommand.beforeFunctionCall` 只做透传，不牵扯 pageDesign 或其他业务侧。
 - M3-2 通用状态桥：`spark-app` 提供 `createAiToolApprovalBridge()`，负责 pending approval 列表、allow/reject/abort 决策、abort 时取消 pending；它是纯 TS 状态机，不 import Vue、业务包或 APP SSE。
+- M3-2 展示层：`spark-component` 提供 `AiToolApprovalCard` / `AiToolApprovalPanel`，只消费 `ToolApprovalDisplayItem` 和 emit，不持有 bridge。
+- M3-2 APP 挂载：DevSystem 在 APP 层把 bridge pending 映射到审批组件，页面设计只是当前业务接入点，不污染通用 bridge/组件契约。
 
-尚未进入 UI 开发的 M3 功能：
+尚未进入的 M3 功能：
 
-- 工具审批 UI 与 pending approval 状态编排。
 - 多会话管理 UI。
 - `AiSessionRunner` / `AiSessionMonitorEntry` 是否正式导出为公共 API 的最终命名与契约冻结。
 

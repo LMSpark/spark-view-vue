@@ -12,9 +12,10 @@
  * autoSave、refreshRoutes、demoNavRoot fallback 和状态消息。
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
-import { refreshRoutes } from '@spark-view/spark-app'
-import type { NavNode, NavNodeKind } from '@spark-view/spark-app'
+import { createAiToolApprovalBridge, refreshRoutes } from '@spark-view/spark-app'
+import type { AiToolApprovalRequest, NavNode, NavNodeKind } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
+import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
 import {
   PageModel,
   type PageModelFileName,
@@ -184,9 +185,15 @@ export function useDevState() {
   let autoSaveTimer: ReturnType<typeof setTimeout> | null = null
   const AUTO_SAVE_DELAY = 800
 
-  // ── pageDesign AI ──
+  // ── SPARK AI tool approval bridge + current pageDesign entry ──
   const pageDesignAiRunning = ref(false)
+  const aiToolApprovals = createAiToolApprovalBridge()
+  const aiToolApprovalPending = ref<readonly ToolApprovalDisplayItem[]>([])
   let pageDesignAiInFlight = false
+
+  aiToolApprovals.subscribe((snapshot) => {
+    aiToolApprovalPending.value = snapshot.pending.map(toToolApprovalDisplayItem)
+  })
 
   // ── 编辑器状态同步 ───────────────────────────────────
 
@@ -329,6 +336,48 @@ export function useDevState() {
     return normalized.length > 96 ? `${normalized.slice(0, 96)}...` : normalized
   }
 
+  function previewApprovalArgs(args: AiToolApprovalRequest['args']): string {
+    try {
+      const text = JSON.stringify(args, null, 2)
+      return text.length > 600 ? `${text.slice(0, 600)}...` : text
+    } catch {
+      return String(args)
+    }
+  }
+
+  function toToolApprovalDisplayItem(request: AiToolApprovalRequest): ToolApprovalDisplayItem {
+    return {
+      id: request.id,
+      toolName: request.toolName,
+      moduleId: request.moduleId,
+      argsPreview: previewApprovalArgs(request.args),
+    }
+  }
+
+  function approveAiTool(requestId: string): void {
+    if (!aiToolApprovals.decide(requestId, { status: 'allow' })) return
+    addStatus('AI 工具调用已允许', 'info')
+  }
+
+  function rejectAiTool(requestId: string, reason: string): void {
+    const normalizedReason = reason.trim()
+    if (!aiToolApprovals.decide(requestId, {
+      status: 'reject',
+      reason: normalizedReason || '用户拒绝工具调用',
+      fix: '请根据用户拒绝原因调整方案；必要时先询问用户。',
+    })) return
+    addStatus('AI 工具调用已拒绝', 'warning')
+  }
+
+  function abortAiTool(requestId: string, reason: string): void {
+    const normalizedReason = reason.trim()
+    if (!aiToolApprovals.decide(requestId, {
+      status: 'abort',
+      reason: normalizedReason || '用户中止工具调用',
+    })) return
+    addStatus('AI 工具调用已中止', 'warning')
+  }
+
   async function runPageDesignAi(options: PageDesignAiRunOptions): Promise<void> {
     const pageId = activePageId.value.trim()
     const userRequirement = options.userRequirement.trim()
@@ -354,6 +403,8 @@ export function useDevState() {
         pageId,
         editor,
         consumeCapability: capabilityConsumer,
+        beforeFunctionCall: aiToolApprovals.beforeFunctionCall,
+        onAbort: aiToolApprovals.cancelPending,
         events: {
           onReasoning: (reasoning) => {
             const message = compactAiStatus(reasoning)
@@ -393,6 +444,7 @@ export function useDevState() {
     } catch (error) {
       addStatus(`AI 编辑失败: ${String(error)}`, 'error')
     } finally {
+      aiToolApprovals.cancelPending('AI 编辑会话已结束。')
       pageDesignAiInFlight = false
       pageDesignAiRunning.value = false
     }
@@ -1120,6 +1172,7 @@ export function useDevState() {
     linkProbeInfo,
     autoSaveStatus,
     pageDesignAiRunning,
+    aiToolApprovalPending,
 
     // 计算属性
     hasAnyFileDirty,
@@ -1152,6 +1205,9 @@ export function useDevState() {
     saveNodeChanges,
     saveAll,
     runPageDesignAi,
+    approveAiTool,
+    rejectAiTool,
+    abortAiTool,
     selectNode,
     handlePathChange,
     handleNodeKindChange,

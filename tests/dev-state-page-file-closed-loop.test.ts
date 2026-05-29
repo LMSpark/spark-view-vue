@@ -17,6 +17,16 @@ const httpFns = vi.hoisted(() => ({
 }))
 
 vi.mock('@spark-view/spark-app', () => ({
+  createAiToolApprovalBridge: vi.fn(() => ({
+    beforeFunctionCall: vi.fn(async () => ({ status: 'allow' })),
+    cancelPending: vi.fn(() => 0),
+    decide: vi.fn(() => false),
+    listPending: vi.fn(() => []),
+    subscribe: vi.fn((listener: (snapshot: { pending: [] }) => void) => {
+      listener({ pending: [] })
+      return vi.fn()
+    }),
+  })),
   refreshRoutes: vi.fn(),
 }))
 

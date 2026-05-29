@@ -6,7 +6,12 @@
  * to the pageDesign business registration and live PageModel edit host.
  */
 import { createAiRunAdapter, noopTraceSink } from '@spark-view/spark-app'
-import type { AiRunAdapterState, AiRunTraceSink } from '@spark-view/spark-app'
+import type {
+  AiRunAbortHandler,
+  AiRunAdapterState,
+  AiRunBeforeFunctionCall,
+  AiRunTraceSink,
+} from '@spark-view/spark-app'
 import type { AiAgentSessionRecord, AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
@@ -47,6 +52,8 @@ export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
   events?: PageDesignAiRunEvents
   trace?: AiRunTraceSink
   adapter?: AiRunAdapterState
+  beforeFunctionCall?: AiRunBeforeFunctionCall
+  onAbort?: AiRunAbortHandler
   onSessionRecord?: (record: AiAgentSessionRecord | null) => void
   userMessage?: string
 }
@@ -83,6 +90,8 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     host: pageDesignHost,
     alias: PAGE_DESIGN_MODULE_ID,
     input: buildPageDesignRunInput(pageId, command),
+    ...(command.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: command.beforeFunctionCall }),
+    ...(command.onAbort === undefined ? {} : { onAbort: command.onAbort }),
     trace: createPageDesignTraceSink({
       trace: command.trace,
       events: command.events,

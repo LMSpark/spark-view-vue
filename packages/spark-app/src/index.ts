@@ -207,15 +207,23 @@ export { default as AppPageUiHost } from './page-ui/AppPageUiHost.vue'
 // ── AI run adapter（headless） ──
 export {
   createAiRunAdapter,
+  createAiToolApprovalBridge,
   formatAiRunError,
   noopTraceSink,
 } from './ai'
 
 export type {
+  AiRunAbortHandler,
   AiRunAdapterCommand,
   AiRunAdapterOptions,
   AiRunAdapterState,
+  AiRunBeforeFunctionCall,
   AiRunErrorFormatter,
   AiRunHost,
   AiRunTraceSink,
+  AiToolApprovalBridgeListener,
+  AiToolApprovalBridgeOptions,
+  AiToolApprovalBridgeSnapshot,
+  AiToolApprovalRequest,
+  AiToolApprovalRequestIdFactory,
 } from './ai'

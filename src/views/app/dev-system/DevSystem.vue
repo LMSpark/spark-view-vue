@@ -50,6 +50,22 @@
 
       <!-- 中栏：工作区 -->
       <div class="dev-body__workspace">
+        <div
+          v-if="state.aiToolApprovalPending.value.length > 0"
+          class="dev-ai-approvals"
+        >
+          <div class="dev-ai-approvals__header">
+            <NavIcon name="Tools" :size="14" />
+            <span>AI 工具审批</span>
+          </div>
+          <AiToolApprovalPanel
+            :pending="state.aiToolApprovalPending.value"
+            empty-text="暂无待审批工具"
+            @allow="state.approveAiTool"
+            @reject="state.rejectAiTool"
+            @abort="state.abortAiTool"
+          />
+        </div>
         <el-tabs v-model="workTab" type="border-card" class="workspace-tabs">
           <!-- 🔧 节点属性（选中节点时可用） -->
           <el-tab-pane label="节点属性" name="props" :disabled="!state.selectedNode.value">
@@ -129,6 +145,7 @@
  */
 import { onMounted } from 'vue'
 import type { PageModelFileName } from '@spark-view/spark-page-config'
+import { AiToolApprovalPanel } from '@spark-view/spark-component'
 import { useDevSystem } from './useDevSystem'
 import DevSiteTree from './DevSiteTree.vue'
 import DevNodeProps from './DevNodeProps.vue'
@@ -214,6 +231,23 @@ onMounted(() => {
 
 .dev-ai-input {
   width: min(360px, 34vw);
+}
+
+.dev-ai-approvals {
+  flex-shrink: 0;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--el-border-color-lighter);
+  background: var(--el-fill-color-blank);
+}
+
+.dev-ai-approvals__header {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--el-text-color-secondary);
 }
 
 /* ═══ 主体三栏 ═══ */

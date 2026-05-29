@@ -343,6 +343,8 @@ export type {
 // ── AI 会话监视组件 ──
 export {
   AiSessionTracePanel,
+  AiToolApprovalCard,
+  AiToolApprovalPanel,
   useSessionStream,
   useSessionDiagnostics,
 } from './ai/index.js'
@@ -354,6 +356,9 @@ export type {
   SessionReasoningBlockProps,
   SessionToolCallCardProps,
   SessionDiagnosticsPanelProps,
+  AiToolApprovalCardProps,
+  AiToolApprovalCardEmits,
+  AiToolApprovalPanelProps,
   UseSessionStreamReturn,
   UseSessionDiagnosticsOptions,
   UseSessionDiagnosticsReturn,
@@ -362,4 +367,5 @@ export type {
   ReasoningDisplayItem,
   SessionDiagnosticsData,
   SessionDiagnosticIssue,
+  ToolApprovalDisplayItem,
 } from './ai/index.js'
