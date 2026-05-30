@@ -15,16 +15,113 @@ AI 代码生成规则是生产线质量门，排在理念和逻辑之后、兼�
 
 ## 1. 代码组织层次
 
-- 优先按"接口契约 → class 基础/默认实现 → 具体 class → 必要子类"的层次组织代码。
-- 不要把系统扁平化成大量平级 `interface`、泛型、工具类型和随处导出的符号。
+核心原则：**代码按层次组织，不按文件平铺。** 一个模块的典型层次是：
+
+```
+契约层（少量 interface，跨模块协议）
+  ↓
+实体/领域层（class，状态 + 行为一体）
+  ↓
+实现层（class implements 契约）
+  ↓
+子类层（必要的 "is-a" 特化，不是方法复用）
+```
+
+- 不要制造"interface 大平层"——几十个平级 interface 散落各处，没有层次归属，大多只有单一实现。
+- 不要制造"type 大平层"——遍地泛型工具类型和随处 export 的碎片 type。
 - 先复用已有 class、registry、factory、capability key 和领域对象，再新增结构。
+- 一个模块对外暴露的符号应控制在个位数；如果调用方需要 import 一堆东西才能用，先收敛门面。
 
 ### interface 使用原则
 
-- 不要默认为每个 class 创建同名 `interface`。
-- 不要使用 `Ixxx`、`XxxInterface`、`XxxImpl` 这类机械命名。
-- 只有稳定契约、跨模块能力、DTO/config/payload 或多个实现共享协议才使用 `interface`。
-- 如果只有一个实现，默认使用具体 class 或普通函数。
+核心立场：**interface 是契约，不是装饰品。** 禁止把系统拆成遍地散落的平级 `interface`，没有层次、没有归属、没有消费者——这就是"interface 大平层"反模式。
+
+#### interface 的合法场景（四有一）
+
+- **有契约** — 跨模块、跨团队、跨进程的稳定协议，变更成本高。
+- **有多实现** — 两个及以上 class/模块共享同一协议，替换实现不影响调用方。
+- **有边界** — DTO、config、payload、事件体等数据载体，穿越模块边界。
+- **有消费者** — 被外部调用方或下游模块 import，不是"可能以后有用"。
+- 不满足以上任何一条 → **不许用 interface**，直接用 class、type alias 或匿名内联。
+
+#### 禁止事项
+
+- 禁止为每个 class 自动创建同名 `interface`。
+- 禁止 `Ixxx`、`XxxInterface`、`XxxImpl` 机械命名。
+- 禁止"一个文件一个 interface"的碎片化导出——相关的 interface 应共处一个契约文件。
+- 禁止只有单一实现的 interface——它不叫契约，叫膨胀。
+- 禁止无消费者的公共 interface——写了没人用就删掉。
+
+#### 反例：interface 大平层
+
+```ts
+// ❌ 禁止：模块导出 6 个平级 interface，散落在 4 个文件中，大多只有单一实现
+
+// --- user-types.ts ---
+export interface User { id: string; name: string }
+export interface UserCreateInput { name: string; email: string }
+export interface UserUpdateInput { name?: string; email?: string }
+
+// --- user-repo.ts ---
+export interface UserRepository {
+  findById(id: string): User
+  create(input: UserCreateInput): User
+}
+
+// --- user-service.ts ---
+export interface UserService {
+  getUser(id: string): User
+  registerUser(input: UserCreateInput): User
+}
+
+// --- user-controller.ts ---
+export interface UserController {
+  handleGet(req: Request): Response
+}
+
+// 整个模块最后只有一个 UserRepositoryImpl、一个 UserServiceImpl……
+// 6 个 interface，全是平层，没有层次，调用方 import 一堆碎片。
+```
+
+#### 正例：层次化组织
+
+```ts
+// ✅ 正确：按契约层次收束，一个模块只暴露有限契约
+
+// --- user-contract.ts ---（唯一的公共契约文件）
+export interface UserRepository {
+  findById(id: string): User
+  create(input: UserCreateInput): User
+}
+
+// 只有真正多实现或跨边界的才放 contract；其余用 type 或 class 内部消化
+
+// --- user.entity.ts ---
+export class User {
+  // 状态 + 行为一体，不另建 IUser
+  constructor(
+    public readonly id: string,
+    public name: string,
+    public email: string,
+  ) {}
+}
+
+// --- user-create.input.ts ---
+export type UserCreateInput = Readonly<{ name: string; email: string }>
+// 数据载体用 type alias，不需要 interface
+
+// --- user.repository.impl.ts ---
+export class MongoUserRepository implements UserRepository {
+  // 唯一的实现，但 UserRepository 是跨模块契约 → 保留 interface
+}
+```
+
+#### interface 收束检查清单
+
+新增或保留 interface 前，回答三个问题：
+1. 这个 interface 会被两个以上的 class 实现吗？（否 → 不用 interface）
+2. 这个 interface 有外部消费者吗？（否 → 不用 interface，或至少不 export）
+3. 相关的 interface 能合并成一个契约文件吗？（能 → 合并，别散落）
 
 ### class 使用原则
 

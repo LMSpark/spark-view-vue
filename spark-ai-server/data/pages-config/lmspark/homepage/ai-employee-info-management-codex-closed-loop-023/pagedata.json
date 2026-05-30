@@ -1,0 +1,382 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "Department": {
+      "tableName": "Department",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "部门ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "部门名称",
+          "required": true
+        },
+        {
+          "name": "code",
+          "type": "string",
+          "label": "部门编码"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Department",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "dept-001",
+              "name": "技术部",
+              "code": "TECH"
+            },
+            {
+              "id": "dept-002",
+              "name": "产品部",
+              "code": "PROD"
+            },
+            {
+              "id": "dept-003",
+              "name": "市场部",
+              "code": "MKT"
+            },
+            {
+              "id": "dept-004",
+              "name": "人力资源部",
+              "code": "HR"
+            },
+            {
+              "id": "dept-005",
+              "name": "财务部",
+              "code": "FIN"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "valueField": "id",
+          "labelField": "name"
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "reference"
+    },
+    "Position": {
+      "tableName": "Position",
+      "columns": [
+        {
+          "label": "岗位ID",
+          "isPrimaryKey": true,
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "label": "岗位名称",
+          "required": true,
+          "name": "name",
+          "type": "string"
+        },
+        {
+          "label": "所属部门ID",
+          "name": "departmentId",
+          "type": "string"
+        },
+        {
+          "label": "职级",
+          "name": "rank",
+          "type": "number"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Position",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "departmentId": "dept-001",
+              "id": "pos-001",
+              "name": "高级工程师",
+              "rank": 3
+            },
+            {
+              "departmentId": "dept-001",
+              "id": "pos-002",
+              "name": "工程师",
+              "rank": 2
+            },
+            {
+              "departmentId": "dept-001",
+              "id": "pos-003",
+              "name": "初级工程师",
+              "rank": 1
+            },
+            {
+              "departmentId": "dept-002",
+              "id": "pos-004",
+              "name": "产品经理",
+              "rank": 3
+            },
+            {
+              "departmentId": "dept-002",
+              "id": "pos-005",
+              "name": "产品助理",
+              "rank": 1
+            },
+            {
+              "departmentId": "dept-003",
+              "id": "pos-006",
+              "name": "市场总监",
+              "rank": 4
+            },
+            {
+              "departmentId": "dept-003",
+              "id": "pos-007",
+              "name": "市场专员",
+              "rank": 2
+            },
+            {
+              "departmentId": "dept-004",
+              "id": "pos-008",
+              "name": "HR经理",
+              "rank": 3
+            },
+            {
+              "departmentId": "dept-005",
+              "id": "pos-009",
+              "name": "会计",
+              "rank": 2
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "valueField": "id",
+          "labelField": "name"
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "reference"
+    },
+    "Employee": {
+      "tableName": "Employee",
+      "columns": [
+        {
+          "isPrimaryKey": true,
+          "label": "员工ID",
+          "name": "id",
+          "type": "string"
+        },
+        {
+          "label": "姓名",
+          "name": "name",
+          "required": true,
+          "type": "string"
+        },
+        {
+          "label": "所属部门",
+          "name": "departmentId",
+          "type": "string"
+        },
+        {
+          "label": "岗位",
+          "name": "positionId",
+          "type": "string"
+        },
+        {
+          "label": "入职状态",
+          "name": "status",
+          "type": "string"
+        },
+        {
+          "label": "联系电话",
+          "name": "phone",
+          "type": "string"
+        },
+        {
+          "label": "邮箱",
+          "name": "email",
+          "type": "string"
+        },
+        {
+          "label": "入职日期",
+          "name": "hireDate",
+          "type": "string"
+        },
+        {
+          "label": "联系地址",
+          "name": "address",
+          "type": "string"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Employee",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "address": "北京市海淀区中关村大街1号",
+              "departmentId": "dept-001",
+              "email": "zhangsan@example.com",
+              "hireDate": "2020-03-15",
+              "id": "emp-001",
+              "name": "张三",
+              "phone": "13800138001",
+              "positionId": "pos-001",
+              "status": "active"
+            },
+            {
+              "address": "上海市浦东新区张江高科技园区",
+              "departmentId": "dept-001",
+              "email": "lisi@example.com",
+              "hireDate": "2021-07-01",
+              "id": "emp-002",
+              "name": "李四",
+              "phone": "13800138002",
+              "positionId": "pos-002",
+              "status": "active"
+            },
+            {
+              "address": "深圳市南山区科技园",
+              "departmentId": "dept-001",
+              "email": "wangwu@example.com",
+              "hireDate": "2023-01-10",
+              "id": "emp-003",
+              "name": "王五",
+              "phone": "13800138003",
+              "positionId": "pos-003",
+              "status": "onboarding"
+            },
+            {
+              "address": "广州市天河区珠江新城",
+              "departmentId": "dept-002",
+              "email": "zhaoliu@example.com",
+              "hireDate": "2019-05-20",
+              "id": "emp-004",
+              "name": "赵六",
+              "phone": "13800138004",
+              "positionId": "pos-004",
+              "status": "active"
+            },
+            {
+              "address": "杭州市西湖区文三路",
+              "departmentId": "dept-002",
+              "email": "sunqi@example.com",
+              "hireDate": "2022-09-01",
+              "id": "emp-005",
+              "name": "孙七",
+              "phone": "13800138005",
+              "positionId": "pos-005",
+              "status": "inactive"
+            },
+            {
+              "address": "成都市高新区天府大道",
+              "departmentId": "dept-003",
+              "email": "zhouba@example.com",
+              "hireDate": "2018-11-08",
+              "id": "emp-006",
+              "name": "周八",
+              "phone": "13800138006",
+              "positionId": "pos-006",
+              "status": "active"
+            },
+            {
+              "address": "南京市鼓楼区新模范马路",
+              "departmentId": "dept-003",
+              "email": "wujiu@example.com",
+              "hireDate": "2021-04-15",
+              "id": "emp-007",
+              "name": "吴九",
+              "phone": "13800138007",
+              "positionId": "pos-007",
+              "status": "active"
+            },
+            {
+              "address": "武汉市洪山区珞喻路",
+              "departmentId": "dept-004",
+              "email": "zhengshi@example.com",
+              "hireDate": "2020-08-22",
+              "id": "emp-008",
+              "name": "郑十",
+              "phone": "13800138008",
+              "positionId": "pos-008",
+              "status": "active"
+            },
+            {
+              "address": "西安市雁塔区科技路",
+              "departmentId": "dept-005",
+              "email": "liuyi@example.com",
+              "hireDate": "2017-06-30",
+              "id": "emp-009",
+              "name": "刘一",
+              "phone": "13800138009",
+              "positionId": "pos-009",
+              "status": "active"
+            },
+            {
+              "address": "重庆市渝北区新牌坊",
+              "departmentId": "dept-004",
+              "email": "chener@example.com",
+              "hireDate": "2024-02-01",
+              "id": "emp-010",
+              "name": "陈二",
+              "phone": "13800138010",
+              "positionId": "pos-008",
+              "status": "onboarding"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "master"
+    }
+  },
+  "tableRelations": [
+    {
+      "parentTable": "Department",
+      "childTable": "Position",
+      "parentField": "id",
+      "childField": "departmentId"
+    },
+    {
+      "parentTable": "Department",
+      "childTable": "Employee",
+      "parentField": "id",
+      "childField": "departmentId"
+    },
+    {
+      "parentTable": "Position",
+      "childTable": "Employee",
+      "parentField": "id",
+      "childField": "positionId"
+    }
+  ],
+  "viewDependencies": [
+    {
+      "parentTable": "Department",
+      "childTable": "Position",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Department",
+      "childTable": "Employee",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Position",
+      "childTable": "Employee",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    }
+  ]
+}

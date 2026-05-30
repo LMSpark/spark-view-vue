@@ -38,7 +38,13 @@
 
 ## 不可协商规则
 
-- **AI 代码生成行为准则：** 生成或修改代码必须遵守 [docs/ai/AI_CODE_GENERATION_BEHAVIOR.md](../docs/ai/AI_CODE_GENERATION_BEHAVIOR.md)。不要默认用 `interface`、泛型和零散导出扁平化一切；优先按“接口契约 -> class 基础/默认实现 -> 具体 class -> 必要子类”的层次组织。
+- **AI Code Generation Behavior:** When generating or modifying code, you MUST follow [docs/ai/AI_CODE_GENERATION_BEHAVIOR.en.md](../docs/ai/AI_CODE_GENERATION_BEHAVIOR.en.md). Core rules inlined below (see full doc for detailed anti-pattern/correct-pattern examples):
+  - **Layered organization — no flat-land.** Organize code as `Contract → Entity/Domain → Implementation → Subclass`. Do NOT flatten the system into scattered peer-level `interface` and fragmented type exports.
+  - **Interface SPICE gate:** Only use `interface` when at least one holds: Stable contract / Polymorphism (2+ impls) / Interface boundary (DTO, config, payload) / Consumer exists. Otherwise → class, type alias, or inline.
+  - **Interface five prohibitions:** ① No same-name interface for every class ② No Ixxx / XxxInterface / XxxImpl naming ③ No "one interface per file" fragmentation — related interfaces go in one contract file ④ No single-implementation interfaces ⑤ No public interfaces with zero consumers.
+  - **Three-question checklist before adding an interface:** Will 2+ classes implement it? Does it have an external consumer? Can related interfaces merge into one contract file? One "no" → don't use interface.
+  - **Function signature hard constraints:** Max 3 positional params (constructor param-props max 4); no inline JSDoc in parameter lists; no anonymous inline object types as parameters; use `?` not `| undefined`.
+  - **Export convergence:** Module public surface ≤ single-digit symbols; public barrel `export *` is forbidden.
 - **UI 组装强制 SOP**（AI Tool 调用规范）：
   1. 需要构造组件时，先调用 `queryPayloads({})` 或 `queryPayloads({ category: 'container' })` / `queryPayloads({ keyword: '...' })` 查全量/分类/关键词参数荷载列表。
   2. 选定组件类型（如 r-table）后，必定调用 `guidePayload({ key: 'r-table' })` 拉取该型 SparkNode JSON Schema (配置规格)。

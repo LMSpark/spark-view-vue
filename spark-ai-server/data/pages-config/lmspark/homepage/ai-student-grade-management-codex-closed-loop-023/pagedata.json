@@ -1,0 +1,502 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "Class": {
+      "tableName": "Class",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "班级ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "班级名称"
+        },
+        {
+          "name": "grade",
+          "type": "string",
+          "label": "年级"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Class",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "c1",
+              "name": "高一(1)班",
+              "grade": "高一"
+            },
+            {
+              "id": "c2",
+              "name": "高一(2)班",
+              "grade": "高一"
+            },
+            {
+              "id": "c3",
+              "name": "高二(1)班",
+              "grade": "高二"
+            },
+            {
+              "id": "c4",
+              "name": "高二(2)班",
+              "grade": "高二"
+            },
+            {
+              "id": "c5",
+              "name": "高三(1)班",
+              "grade": "高三"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "page-data",
+      "businessCategory": "reference"
+    },
+    "Course": {
+      "tableName": "Course",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "课程ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "课程名称"
+        },
+        {
+          "name": "category",
+          "type": "string",
+          "label": "课程分类"
+        },
+        {
+          "name": "credit",
+          "type": "number",
+          "label": "学分"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Course",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "co1",
+              "name": "语文",
+              "category": "文科",
+              "credit": 4
+            },
+            {
+              "id": "co2",
+              "name": "数学",
+              "category": "理科",
+              "credit": 5
+            },
+            {
+              "id": "co3",
+              "name": "英语",
+              "category": "文科",
+              "credit": 4
+            },
+            {
+              "id": "co4",
+              "name": "物理",
+              "category": "理科",
+              "credit": 4
+            },
+            {
+              "id": "co5",
+              "name": "化学",
+              "category": "理科",
+              "credit": 3
+            },
+            {
+              "id": "co6",
+              "name": "生物",
+              "category": "理科",
+              "credit": 3
+            },
+            {
+              "id": "co7",
+              "name": "历史",
+              "category": "文科",
+              "credit": 3
+            },
+            {
+              "id": "co8",
+              "name": "地理",
+              "category": "文科",
+              "credit": 3
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "page-data",
+      "businessCategory": "reference"
+    },
+    "Student": {
+      "tableName": "Student",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "学生ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "学生姓名"
+        },
+        {
+          "name": "studentNo",
+          "type": "string",
+          "label": "学号"
+        },
+        {
+          "name": "classId",
+          "type": "string",
+          "label": "班级ID"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Student",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "s1",
+              "name": "张三",
+              "studentNo": "2024001",
+              "classId": "c1"
+            },
+            {
+              "id": "s2",
+              "name": "李四",
+              "studentNo": "2024002",
+              "classId": "c1"
+            },
+            {
+              "id": "s3",
+              "name": "王五",
+              "studentNo": "2024003",
+              "classId": "c2"
+            },
+            {
+              "id": "s4",
+              "name": "赵六",
+              "studentNo": "2024004",
+              "classId": "c2"
+            },
+            {
+              "id": "s5",
+              "name": "孙七",
+              "studentNo": "2024005",
+              "classId": "c3"
+            },
+            {
+              "id": "s6",
+              "name": "周八",
+              "studentNo": "2024006",
+              "classId": "c3"
+            },
+            {
+              "id": "s7",
+              "name": "吴九",
+              "studentNo": "2024007",
+              "classId": "c4"
+            },
+            {
+              "id": "s8",
+              "name": "郑十",
+              "studentNo": "2024008",
+              "classId": "c5"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true
+        }
+      },
+      "resourceType": "page-data",
+      "businessCategory": "master"
+    },
+    "Grade": {
+      "tableName": "Grade",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "成绩ID",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "studentId",
+          "type": "string",
+          "label": "学生ID"
+        },
+        {
+          "name": "courseId",
+          "type": "string",
+          "label": "课程ID"
+        },
+        {
+          "name": "classId",
+          "type": "string",
+          "label": "班级ID"
+        },
+        {
+          "name": "score",
+          "type": "number",
+          "label": "分数",
+          "min": 0,
+          "max": 100
+        },
+        {
+          "name": "gradeLevel",
+          "type": "string",
+          "label": "等级"
+        },
+        {
+          "name": "isAnomaly",
+          "type": "boolean",
+          "label": "是否异常",
+          "defaultValue": false
+        },
+        {
+          "name": "examDate",
+          "type": "date",
+          "label": "考试日期"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "Grade",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "g1",
+              "studentId": "s1",
+              "courseId": "co1",
+              "classId": "c1",
+              "score": 85,
+              "gradeLevel": "B",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g2",
+              "studentId": "s1",
+              "courseId": "co2",
+              "classId": "c1",
+              "score": 92,
+              "gradeLevel": "A",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g3",
+              "studentId": "s1",
+              "courseId": "co3",
+              "classId": "c1",
+              "score": 78,
+              "gradeLevel": "C",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g4",
+              "studentId": "s2",
+              "courseId": "co1",
+              "classId": "c1",
+              "score": 95,
+              "gradeLevel": "A",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g5",
+              "studentId": "s2",
+              "courseId": "co2",
+              "classId": "c1",
+              "score": 45,
+              "gradeLevel": "F",
+              "isAnomaly": true,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g6",
+              "studentId": "s2",
+              "courseId": "co3",
+              "classId": "c1",
+              "score": 88,
+              "gradeLevel": "B",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g7",
+              "studentId": "s3",
+              "courseId": "co1",
+              "classId": "c2",
+              "score": 72,
+              "gradeLevel": "C",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g8",
+              "studentId": "s3",
+              "courseId": "co2",
+              "classId": "c2",
+              "score": 60,
+              "gradeLevel": "D",
+              "isAnomaly": false,
+              "examDate": "2025-06-15"
+            },
+            {
+              "id": "g9",
+              "studentId": "s4",
+              "courseId": "co4",
+              "classId": "c2",
+              "score": 98,
+              "gradeLevel": "A",
+              "isAnomaly": false,
+              "examDate": "2025-06-16"
+            },
+            {
+              "id": "g10",
+              "studentId": "s5",
+              "courseId": "co5",
+              "classId": "c3",
+              "score": 33,
+              "gradeLevel": "F",
+              "isAnomaly": true,
+              "examDate": "2025-06-16"
+            },
+            {
+              "id": "g11",
+              "studentId": "s6",
+              "courseId": "co6",
+              "classId": "c3",
+              "score": 82,
+              "gradeLevel": "B",
+              "isAnomaly": false,
+              "examDate": "2025-06-16"
+            },
+            {
+              "id": "g12",
+              "studentId": "s7",
+              "courseId": "co7",
+              "classId": "c4",
+              "score": 91,
+              "gradeLevel": "A",
+              "isAnomaly": false,
+              "examDate": "2025-06-17"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "aggregates": {
+            "totalCount": {
+              "type": "count"
+            },
+            "avgScore": {
+              "type": "avg",
+              "field": "score"
+            },
+            "maxScore": {
+              "type": "max",
+              "field": "score"
+            },
+            "minScore": {
+              "type": "min",
+              "field": "score"
+            },
+            "anomalyCount": {
+              "type": "count",
+              "field": "isAnomaly"
+            }
+          }
+        }
+      },
+      "resourceType": "page-data",
+      "businessCategory": "master"
+    }
+  },
+  "tableRelations": [
+    {
+      "parentTable": "Class",
+      "childTable": "Student",
+      "parentField": "id",
+      "childField": "classId",
+      "relationName": "Class_Student"
+    },
+    {
+      "parentTable": "Student",
+      "childTable": "Grade",
+      "parentField": "id",
+      "childField": "studentId",
+      "relationName": "Student_Grade"
+    },
+    {
+      "parentTable": "Course",
+      "childTable": "Grade",
+      "parentField": "id",
+      "childField": "courseId",
+      "relationName": "Course_Grade"
+    },
+    {
+      "parentTable": "Class",
+      "childTable": "Grade",
+      "parentField": "id",
+      "childField": "classId",
+      "relationName": "Class_Grade"
+    }
+  ],
+  "viewDependencies": [
+    {
+      "parentTable": "Class",
+      "childTable": "Student",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Student",
+      "childTable": "Grade",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Course",
+      "childTable": "Grade",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    },
+    {
+      "parentTable": "Class",
+      "childTable": "Grade",
+      "dependencyType": "currentRow",
+      "autoLoad": true
+    }
+  ]
+}

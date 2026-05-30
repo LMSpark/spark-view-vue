@@ -1,0 +1,129 @@
+{
+  "schemaVersion": 2,
+  "dataSetName": "PageDataSet",
+  "tables": {
+    "employee": {
+      "tableName": "employee",
+      "columns": [
+        {
+          "name": "id",
+          "type": "string",
+          "label": "工号",
+          "isPrimaryKey": true
+        },
+        {
+          "name": "name",
+          "type": "string",
+          "label": "姓名",
+          "required": true,
+          "allowDBNull": false
+        },
+        {
+          "name": "department",
+          "type": "string",
+          "label": "部门"
+        },
+        {
+          "name": "position",
+          "type": "string",
+          "label": "岗位"
+        },
+        {
+          "name": "status",
+          "type": "string",
+          "label": "状态"
+        },
+        {
+          "name": "phone",
+          "type": "string",
+          "label": "联系电话"
+        },
+        {
+          "name": "email",
+          "type": "string",
+          "label": "邮箱"
+        },
+        {
+          "name": "joinDate",
+          "type": "date",
+          "label": "入职日期"
+        },
+        {
+          "name": "idNumber",
+          "type": "string",
+          "label": "身份证号"
+        }
+      ],
+      "views": {
+        "default": {
+          "tableName": "employee",
+          "viewId": "default",
+          "page": 1,
+          "pageSize": 20,
+          "rows": [
+            {
+              "id": "EMP001",
+              "name": "张三",
+              "department": "技术部",
+              "position": "工程师",
+              "status": "在职",
+              "phone": "13800138001",
+              "email": "zhangsan@example.com",
+              "joinDate": "2021-03-15",
+              "idNumber": "110101199001011234"
+            },
+            {
+              "id": "EMP002",
+              "name": "李四",
+              "department": "产品部",
+              "position": "经理",
+              "status": "在职",
+              "phone": "13800138002",
+              "email": "lisi@example.com",
+              "joinDate": "2019-07-01",
+              "idNumber": "110101199102022345"
+            },
+            {
+              "id": "EMP003",
+              "name": "王五",
+              "department": "市场部",
+              "position": "专员",
+              "status": "离职",
+              "phone": "13800138003",
+              "email": "wangwu@example.com",
+              "joinDate": "2020-01-10",
+              "idNumber": "110101199203033456"
+            },
+            {
+              "id": "EMP004",
+              "name": "赵六",
+              "department": "技术部",
+              "position": "主管",
+              "status": "试用",
+              "phone": "13800138004",
+              "email": "zhaoliu@example.com",
+              "joinDate": "2024-06-01",
+              "idNumber": "110101199304044567"
+            },
+            {
+              "id": "EMP005",
+              "name": "孙七",
+              "department": "人事部",
+              "position": "专员",
+              "status": "休假",
+              "phone": "13800138005",
+              "email": "sunqi@example.com",
+              "joinDate": "2022-09-20",
+              "idNumber": "110101199405055678"
+            }
+          ],
+          "autoCurrentFirst": true,
+          "autoSelectFirst": true,
+          "autoLoad": true
+        }
+      },
+      "resourceType": "static-data",
+      "businessCategory": "master"
+    }
+  }
+}

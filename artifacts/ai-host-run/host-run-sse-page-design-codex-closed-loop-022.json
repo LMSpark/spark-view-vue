@@ -1,0 +1,83 @@
+{
+  "ok": false,
+  "durationMs": 55483,
+  "appClientId": "ef241239-3085-418e-8af5-60b42408a463",
+  "pages": [
+    {
+      "key": "student",
+      "pageId": "ai-student-grade-management-codex-closed-loop-022",
+      "requestId": "b6078f99-7fd0-44fc-9863-605f39570ae5",
+      "status": "failed",
+      "durationMs": 55436,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "POST /api/ai/sessions/pageDesign%3Aai-student-grade-management-codex-closed-loop-022/turn failed: 409 {\"protocolVersion\":4,\"ok\":false,\"error\":{\"code\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"message\":\"AI 本轮包含并行写入计划，请改为串行或拆分执行\",\"category\":\"parallelism\",\"severity\":\"error\",\"retryPolicy\":\"serialize-or-split\",\"details\":{\"error\":{\"severity\":\"error\",\"category\":\"parallelism\",\"code\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"retryPolicy\":\"serialize-or-split\",\"message\":\"AI 本轮包含并行写入计划，请改为串行或拆分执行\"},\"sessionId\":\"pageDesign:ai-student-grade-management-codex-closed-loop-022\",\"state\":\"FAILED\",\"stateTransition\":\"CALL->FAILED\",\"protocolVersion\":4,\"handoff\":{\"reasonCode\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"nextAction\":\"请根据 runtime.guard.details 处理后重试\",\"checklist\":[\"检查上次失败工具调用参数\",\"确认是否继续执行\",\"必要时手工修复后再恢复\"]},\"runtime\":{\"round\":9,\"scope\":{\"moduleId\":\"pageDesign\",\"moduleInstanceId\":\"ai-student-grade-management-codex-closed-loop-022\",\"instanceId\":\"ai-student-grade-management-codex-closed-loop-022\",\"runtimeInstanceId\":\"ai-student-grade-management-codex-closed-loop-022\"},\"idempotency\":[{\"toolCallId\":\"call_00_FrLUCguaRSxBbAIuaLwv2079\",\"action\":\"module_call\",\"policy\":\"strong\",\"idempotencyKey\":\"pageDesign:ai-student-grade-management-codex-closed-loop-022:9:module_call:09849a0744e87da7:call_00_FrLUCguaRSxBbAIuaLwv2079\",\"argsHash\":\"09849a0744e87da7\",\"replayed\":false,\"riskLevel\":\"medium\",\"ruleSource\":\"fallback\"},{\"toolCallId\":\"call_01_2CmWSgj7Bm6YVdxc8YXu8456\",\"action\":\"module_call\",\"policy\":\"strong\",\"idempotencyKey\":\"pageDesign:ai-student-grade-management-codex-closed-loop-022:9:module_call:2e6c3ea9c2804f17:call_01_2CmWSgj7Bm6YVdxc8YXu8456\",\"argsHash\":\"2e6c3ea9c2804f17\",\"replayed\":false,\"riskLevel\":\"medium\",\"ruleSource\":\"fallback\"},{\"toolCallId\":\"call_02_VSnpOC8MWTVwnUD4RWXy1173\",\"action\":\"module_call\",\"policy\":\"strong\",\"idempotencyKey\":\"pageDesign:ai-student-grade-management-codex-closed-loop-022:9:module_call:10a0a87f7c53605a:call_02_VSnpOC8MWTVwnUD4RWXy1173\",\"argsHash\":\"10a0a87f7c53605a\",\"replayed\":false,\"riskLevel\":\"medium\",\"ruleSource\":\"fallback\"}],\"scheduling\":{\"strategy\":\"conflict-aware\",\"groups\":[{\"groupIndex\":0,\"toolCallIds\":[\"call_00_FrLUCguaRSxBbAIuaLwv2079\",\"call_01_2CmWSgj7Bm6YVdxc8YXu8456\"],\"modes\":[\"write\",\"write\"],\"ruleSources\":[\"fallback\"],\"dominantRuleSource\":\"fallback\"},{\"groupIndex\":1,\"toolCallIds\":[\"call_02_VSnpOC8MWTVwnUD4RWXy1173\"],\"modes\":[\"write\"],\"ruleSources\":[\"fallback\"],\"dominantRuleSource\":\"fallback\"}],\"maxParallelWidth\":2,\"writeCalls\":3,\"executionMode\":\"serial-write-guard\",\"collisionScope\":\"domain+entity\",\"classificationStrategy\":\"action-rule-object+runtime-fallback\",\"ruleMatchStrategy\":\"exact-first-prefix-second-fallback\",\"ruleSources\":[\"fallback\"],\"dominantRuleSource\":\"fallback\",\"decision\":\"block\"},\"guard\":{\"blocked\":true,\"reasonCode\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"details\":[{\"reasonCode\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"groupIndex\":0,\"parallelWidth\":2}]}}}},\"context\":{\"requestId\":\"fe9c8650-a8eb-452b-be18-8a844a3404d8\",\"tenantId\":\"lmspark\",\"projectId\":\"homepage\",\"username\":\"admin\"},\"event\":{\"transport\":\"http\",\"name\":\"response\",\"terminal\":true}}"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    },
+    {
+      "key": "employee",
+      "pageId": "ai-employee-info-management-codex-closed-loop-022",
+      "requestId": "8e031dbe-8311-48d0-a388-01fb6b1908bd",
+      "status": "failed",
+      "durationMs": 48028,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "POST /api/ai/sessions/pageDesign%3Aai-employee-info-management-codex-closed-loop-022/turn failed: 409 {\"protocolVersion\":4,\"ok\":false,\"error\":{\"code\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"message\":\"AI 本轮包含并行写入计划，请改为串行或拆分执行\",\"category\":\"parallelism\",\"severity\":\"error\",\"retryPolicy\":\"serialize-or-split\",\"details\":{\"error\":{\"severity\":\"error\",\"category\":\"parallelism\",\"code\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"retryPolicy\":\"serialize-or-split\",\"message\":\"AI 本轮包含并行写入计划，请改为串行或拆分执行\"},\"sessionId\":\"pageDesign:ai-employee-info-management-codex-closed-loop-022\",\"state\":\"FAILED\",\"stateTransition\":\"CALL->FAILED\",\"protocolVersion\":4,\"handoff\":{\"reasonCode\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"nextAction\":\"请根据 runtime.guard.details 处理后重试\",\"checklist\":[\"检查上次失败工具调用参数\",\"确认是否继续执行\",\"必要时手工修复后再恢复\"]},\"runtime\":{\"round\":6,\"scope\":{\"moduleId\":\"pageDesign\",\"moduleInstanceId\":\"ai-employee-info-management-codex-closed-loop-022\",\"instanceId\":\"ai-employee-info-management-codex-closed-loop-022\",\"runtimeInstanceId\":\"ai-employee-info-management-codex-closed-loop-022\"},\"idempotency\":[{\"toolCallId\":\"call_00_Slw38KuG2rUXJHn9KiPD0872\",\"action\":\"module_call\",\"policy\":\"strong\",\"idempotencyKey\":\"pageDesign:ai-employee-info-management-codex-closed-loop-022:6:module_call:5912d9bd2ffb940e:call_00_Slw38KuG2rUXJHn9KiPD0872\",\"argsHash\":\"5912d9bd2ffb940e\",\"replayed\":false,\"riskLevel\":\"medium\",\"ruleSource\":\"fallback\"},{\"toolCallId\":\"call_01_cVeauYNmOSknuEvCKB6o0662\",\"action\":\"module_query\",\"policy\":\"strong\",\"idempotencyKey\":\"pageDesign:ai-employee-info-management-codex-closed-loop-022:6:module_query:08f9d0491324f6d9:call_01_cVeauYNmOSknuEvCKB6o0662\",\"argsHash\":\"08f9d0491324f6d9\",\"replayed\":false,\"riskLevel\":\"medium\",\"ruleSource\":\"fallback\"},{\"toolCallId\":\"call_02_6hSYXVhZXqgFbiEgBGGB5648\",\"action\":\"module_query\",\"policy\":\"strong\",\"idempotencyKey\":\"pageDesign:ai-employee-info-management-codex-closed-loop-022:6:module_query:ac0ae71c83cd65dd:call_02_6hSYXVhZXqgFbiEgBGGB5648\",\"argsHash\":\"ac0ae71c83cd65dd\",\"replayed\":false,\"riskLevel\":\"medium\",\"ruleSource\":\"fallback\"}],\"scheduling\":{\"strategy\":\"conflict-aware\",\"groups\":[{\"groupIndex\":0,\"toolCallIds\":[\"call_00_Slw38KuG2rUXJHn9KiPD0872\",\"call_01_cVeauYNmOSknuEvCKB6o0662\"],\"modes\":[\"write\",\"write\"],\"ruleSources\":[\"fallback\"],\"dominantRuleSource\":\"fallback\"},{\"groupIndex\":1,\"toolCallIds\":[\"call_02_6hSYXVhZXqgFbiEgBGGB5648\"],\"modes\":[\"write\"],\"ruleSources\":[\"fallback\"],\"dominantRuleSource\":\"fallback\"}],\"maxParallelWidth\":2,\"writeCalls\":3,\"executionMode\":\"serial-write-guard\",\"collisionScope\":\"domain+entity\",\"classificationStrategy\":\"action-rule-object+runtime-fallback\",\"ruleMatchStrategy\":\"exact-first-prefix-second-fallback\",\"ruleSources\":[\"fallback\"],\"dominantRuleSource\":\"fallback\",\"decision\":\"block\"},\"guard\":{\"blocked\":true,\"reasonCode\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"details\":[{\"reasonCode\":\"PARALLEL_WRITE_NOT_ALLOWED_STAGE1\",\"groupIndex\":0,\"parallelWidth\":2}]}}}},\"context\":{\"requestId\":\"d5214539-d8d5-4b7d-8e6c-cb31db012ee9\",\"tenantId\":\"lmspark\",\"projectId\":\"homepage\",\"username\":\"admin\"},\"event\":{\"transport\":\"http\",\"name\":\"response\",\"terminal\":true}}"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    }
+  ]
+}

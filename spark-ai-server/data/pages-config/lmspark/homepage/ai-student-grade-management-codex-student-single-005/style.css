@@ -1,0 +1,110 @@
+/* 学生成绩管理工作台样式 */
+.grade-workbench {
+  display: grid;
+  gap: 16px;
+  padding: 20px;
+  background: #f6f8fb;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.grade-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.grade-metric-card {
+  min-height: 88px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 600;
+  border-radius: 8px;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  padding: 12px;
+}
+
+.grade-metric-card .metric-label {
+  font-size: 13px;
+  color: #6b7280;
+  margin-bottom: 6px;
+}
+
+.grade-metric-card .metric-value {
+  font-size: 24px;
+  color: #1f2937;
+}
+
+.grade-metric-card.abnormal .metric-value {
+  color: #ef4444;
+}
+
+.grade-filter-row {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  align-items: end;
+  background: #fff;
+  padding: 16px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.grade-form-section [data-component-id="grade-form"] {
+  max-width: 1120px;
+}
+
+.grade-form-section {
+  background: #fff;
+  padding: 20px;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+}
+
+.grade-table-section {
+  min-height: 320px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+.grade-table-section [data-component-id="grade-table"] {
+  border: none;
+  background: #fff;
+}
+
+/* 等级颜色标识 */
+.grade-a { color: #16a34a; font-weight: 700; }
+.grade-b { color: #2563eb; font-weight: 700; }
+.grade-c { color: #ca8a04; font-weight: 700; }
+.grade-d { color: #ea580c; font-weight: 700; }
+.grade-f { color: #dc2626; font-weight: 700; }
+
+/* 异常行高亮 */
+.row-abnormal {
+  background: #fef2f2 !important;
+  border-left: 3px solid #ef4444;
+}
+
+/* 搜索与操作区 */
+.grade-toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+}
+
+/* 响应式 */
+@media (max-width: 1200px) {
+  .grade-summary-grid { grid-template-columns: repeat(3, 1fr); }
+  .grade-filter-row { grid-template-columns: repeat(2, 1fr); }
+}
+
+@media (max-width: 900px) {
+  .grade-summary-grid,
+  .grade-filter-row { grid-template-columns: 1fr; }
+}

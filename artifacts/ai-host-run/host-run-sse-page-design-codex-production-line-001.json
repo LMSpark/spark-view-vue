@@ -1,0 +1,81 @@
+{
+  "ok": false,
+  "durationMs": 292616,
+  "appClientId": "b780738b-b3b8-4a54-a18b-6274591fa7d4",
+  "pages": [
+    {
+      "key": "student",
+      "pageId": "ai-student-grade-management-codex-production-line-001",
+      "requestId": "8c1a8870-e74d-48a8-9375-7092af77eace",
+      "status": "failed",
+      "durationMs": 19355,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "POST /api/ai/sessions/pageDesign%3Aai-student-grade-management-codex-production-line-001/turn failed: 502 {\"protocolVersion\":4,\"ok\":false,\"error\":{\"code\":\"LLM_CALL_FAILED\",\"message\":\"LLM 调用失败，请稍后重试或检查模型服务配置\",\"category\":\"llm-call\",\"severity\":\"error\",\"retryPolicy\":\"safe-retry\",\"details\":{\"error\":{\"severity\":\"error\",\"category\":\"llm-call\",\"code\":\"LLM_CALL_FAILED\",\"retryPolicy\":\"safe-retry\",\"message\":\"LLM 调用失败，请稍后重试或检查模型服务配置\"},\"sessionId\":\"pageDesign:ai-student-grade-management-codex-production-line-001\",\"state\":\"FAILED\",\"stateTransition\":\"CALL->FAILED\",\"protocolVersion\":4}},\"context\":{\"requestId\":\"39ecab6d-842a-4234-8bcf-3f168a00dd4a\",\"tenantId\":\"lmspark\",\"projectId\":\"homepage\",\"username\":\"admin\"},\"event\":{\"transport\":\"http\",\"name\":\"response\",\"terminal\":true}}"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 146,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    },
+    {
+      "key": "employee",
+      "pageId": "ai-employee-info-management-codex-production-line-001",
+      "requestId": "99c4191a-c5d8-4c29-94b8-19d1f2da5a45",
+      "status": "completed",
+      "durationMs": 273223,
+      "sessionId": "pageDesign:ai-employee-info-management-codex-production-line-001",
+      "error": null,
+      "resultTextPreview": "",
+      "toolCallCount": 35,
+      "files": {
+        "rule.json": {
+          "bytes": 3,
+          "lines": 2
+        },
+        "pagedata.json": {
+          "bytes": 9136,
+          "lines": 340
+        },
+        "script.js": {
+          "bytes": 146,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small",
+          "rule.json root is not object"
+        ]
+      }
+    }
+  ]
+}

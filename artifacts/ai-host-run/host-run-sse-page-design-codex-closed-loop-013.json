@@ -1,0 +1,83 @@
+{
+  "ok": false,
+  "durationMs": 30454,
+  "appClientId": "3c1e714f-d3bb-4e42-93a7-07ef53f1a39f",
+  "pages": [
+    {
+      "key": "student",
+      "pageId": "ai-student-grade-management-codex-closed-loop-013",
+      "requestId": "ab158440-f03c-41a3-b1b2-dfbd4f6e63e0",
+      "status": "failed",
+      "durationMs": 30392,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "SSE provider error 且 fallback 失败: I/O error on POST request for \"https://api.openai.com/v1/chat/completions\": Connect timed out (code=AI_STREAM_ERROR)"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    },
+    {
+      "key": "employee",
+      "pageId": "ai-employee-info-management-codex-closed-loop-013",
+      "requestId": "5fd106ea-e588-4c70-97ce-916eb5828045",
+      "status": "failed",
+      "durationMs": 30391,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "SSE provider error 且 fallback 失败: I/O error on POST request for \"https://api.openai.com/v1/chat/completions\": Connect timed out (code=AI_STREAM_ERROR)"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    }
+  ]
+}

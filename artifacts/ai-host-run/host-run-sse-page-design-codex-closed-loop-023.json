@@ -1,0 +1,78 @@
+{
+  "ok": false,
+  "durationMs": 385081,
+  "appClientId": "1394c3c4-76df-4e42-8c15-0a02e622afa2",
+  "pages": [
+    {
+      "key": "student",
+      "pageId": "ai-student-grade-management-codex-closed-loop-023",
+      "requestId": "1ea88fe5-3932-4768-ac37-368109480efa",
+      "status": "completed",
+      "durationMs": 325577,
+      "sessionId": "pageDesign:ai-student-grade-management-codex-closed-loop-023",
+      "error": null,
+      "resultTextPreview": "",
+      "toolCallCount": 38,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 12279,
+          "lines": 503
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    },
+    {
+      "key": "employee",
+      "pageId": "ai-employee-info-management-codex-closed-loop-023",
+      "requestId": "589c1922-d545-4bf2-8eb3-d1b2363e2330",
+      "status": "completed",
+      "durationMs": 385032,
+      "sessionId": "pageDesign:ai-employee-info-management-codex-closed-loop-023",
+      "error": null,
+      "resultTextPreview": "",
+      "toolCallCount": 46,
+      "files": {
+        "rule.json": {
+          "bytes": 3,
+          "lines": 2
+        },
+        "pagedata.json": {
+          "bytes": 10299,
+          "lines": 383
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small",
+          "rule.json root is not object"
+        ]
+      }
+    }
+  ]
+}

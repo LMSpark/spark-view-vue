@@ -1,0 +1,81 @@
+{
+  "ok": false,
+  "durationMs": 814903,
+  "appClientId": "4b06dbae-2289-40b6-8f83-69074fa0633d",
+  "pages": [
+    {
+      "key": "student",
+      "pageId": "ai-student-grade-management-codex-production-line-002",
+      "requestId": "91595430-0ad6-4428-a870-6f0406914b24",
+      "status": "completed",
+      "durationMs": 374361,
+      "sessionId": "pageDesign:ai-student-grade-management-codex-production-line-002",
+      "error": null,
+      "resultTextPreview": "",
+      "toolCallCount": 35,
+      "files": {
+        "rule.json": {
+          "bytes": 3,
+          "lines": 2
+        },
+        "pagedata.json": {
+          "bytes": 7649,
+          "lines": 327
+        },
+        "script.js": {
+          "bytes": 146,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small",
+          "script.js is too small",
+          "rule.json root is not object"
+        ]
+      }
+    },
+    {
+      "key": "employee",
+      "pageId": "ai-employee-info-management-codex-production-line-002",
+      "requestId": "5257fc30-0e75-4b9e-8f21-aa035147940b",
+      "status": "completed",
+      "durationMs": 440465,
+      "sessionId": "pageDesign:ai-employee-info-management-codex-production-line-002",
+      "error": null,
+      "resultTextPreview": "",
+      "toolCallCount": 32,
+      "files": {
+        "rule.json": {
+          "bytes": 32639,
+          "lines": 1261
+        },
+        "pagedata.json": {
+          "bytes": 12277,
+          "lines": 448
+        },
+        "script.js": {
+          "bytes": 146,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small",
+          "script.js is too small",
+          "rule.json root is not object"
+        ]
+      }
+    }
+  ]
+}

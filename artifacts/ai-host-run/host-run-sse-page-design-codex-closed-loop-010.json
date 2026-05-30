@@ -1,0 +1,83 @@
+{
+  "ok": false,
+  "durationMs": 66595,
+  "appClientId": "4e3c3bbf-32d7-40ee-9d41-032afaff89dd",
+  "pages": [
+    {
+      "key": "student",
+      "pageId": "ai-student-grade-management-codex-closed-loop-010",
+      "requestId": "77b41d88-0f7d-4a62-9484-caaaf0a94d28",
+      "status": "failed",
+      "durationMs": 66538,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "LLM tool-call request failed (code=AI_STREAM_ERROR)"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    },
+    {
+      "key": "employee",
+      "pageId": "ai-employee-info-management-codex-closed-loop-010",
+      "requestId": "55077b33-e2b1-4b11-b458-36ced9e1f9c9",
+      "status": "failed",
+      "durationMs": 66535,
+      "sessionId": null,
+      "error": {
+        "code": "AI_HOST_RUN_FAILED",
+        "message": "LLM tool-call request failed (code=AI_STREAM_ERROR)"
+      },
+      "resultTextPreview": "",
+      "toolCallCount": 0,
+      "files": {
+        "rule.json": {
+          "bytes": 332,
+          "lines": 21
+        },
+        "pagedata.json": {
+          "bytes": 73,
+          "lines": 6
+        },
+        "script.js": {
+          "bytes": 142,
+          "lines": 5
+        },
+        "style.css": {
+          "bytes": 38,
+          "lines": 2
+        }
+      },
+      "validation": {
+        "ok": false,
+        "errors": [
+          "style.css is too small"
+        ]
+      }
+    }
+  ]
+}

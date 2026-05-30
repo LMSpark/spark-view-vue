@@ -2,6 +2,7 @@
 
 @docs/ai/AI_CODE_CHANGE_PROTOCOL.md
 @docs/ai/ai-code-generation-behavior.md
+@docs/ai/AI_CODE_GENERATION_BEHAVIOR.en.md
 
 ## Language
 
