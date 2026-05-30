@@ -22,6 +22,10 @@ export {
 } from './project/project-planning-model'
 
 export {
+  applyProjectPlanningCommandToRoot,
+} from './project/project-planning-edit-host'
+
+export {
   ProjectReferenceClient,
 } from './project/project-reference-client'
 
@@ -43,6 +47,16 @@ export type {
   ProjectPlanningSnapshot,
   ProjectPlannedNode,
 } from './project/project-planning-model'
+
+export type {
+  ProjectPlanningApplyCommand,
+  ProjectPlanningApplyMode,
+  ProjectPlanningApplyResult,
+  ProjectPlanningEditHost,
+  ProjectPlanningNavigationApplyResult,
+  ProjectPlanningNodePlan,
+  ProjectPlanningRootApplyOptions,
+} from './project/project-planning-edit-host'
 
 export type {
   ListProjectReferencesOptions,

@@ -1,8 +1,23 @@
 /**
  * @spark-view/spark-page-config/ai
  *
- * PageNode AI 更新入口：只暴露业务注册、kind 常量和诊断工具。
+ * AI 更新入口：按业务注册暴露 ProjectPlanning 和 PageDesign。
  */
+
+export {
+  PROJECT_PLANNING_AI_AGENT_HOST_ALIAS,
+  PROJECT_PLANNING_MODULE_ID,
+  createProjectPlanningBusinessKindDefinition,
+  createProjectPlanningBusinessRegistration,
+  ensureProjectPlanningBusiness,
+} from './project/ai/project-planning-module'
+
+export type {
+  ProjectPlanningModuleOptions,
+  ProjectPlanningRunInput,
+  ProjectPlanningRunMode,
+  ProjectPlanningRuntimeContext,
+} from './project/ai/project-planning-module'
 
 export {
   PAGE_DESIGN_AI_AGENT_HOST_ALIAS,

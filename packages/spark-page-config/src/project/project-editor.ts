@@ -87,6 +87,8 @@ import type { PageNodeFileStorage } from './page-node-factory'
 import type { PageDesignEditHost } from '../page-model/update/page-edit-session'
 import { ProjectModel } from './project-model'
 import type { ProjectPlanningSnapshot } from './project-planning-model'
+import type { ProjectPlanningEditHost } from './project-planning-edit-host'
+import { applyProjectPlanningCommandToRoot } from './project-planning-edit-host'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,
@@ -739,6 +741,32 @@ export class ProjectEditor {
         const p = requireMountedNavigation('onNavContextChanged')
         p.navigation.applyContext(context)
         notifyChanged()
+      },
+    }
+  }
+
+  /**
+   * 创建项目策划 AI live edit host。
+   * 只允许读写项目需求和导航规划节点，不暴露页面四文件配置入口。
+   */
+  createProjectPlanningEditHost(): ProjectPlanningEditHost {
+    const editor = this
+    return {
+      readProjectPlanning: () => editor.project.planning.readProjectPlanning(),
+      applyProjectPlanning: (command) => {
+        const applied = applyProjectPlanningCommandToRoot({
+          root: editor.project.nodes.root,
+          command,
+        })
+        if (command.projectRequirement !== undefined) {
+          editor.project.planning.setProjectRequirement(command.projectRequirement)
+        }
+        editor.replaceNavigationRoot(applied.root, { markDirty: true })
+        const { root: _appliedRoot, ...result } = applied
+        return {
+          ...result,
+          projectPlanning: editor.project.planning.readProjectPlanning(),
+        }
       },
     }
   }
