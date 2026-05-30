@@ -66,7 +66,7 @@ packages/
 ├── spark-app/                   # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
 ├── spark-component/             # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
 ├── spark-data/                  # 📊 数据空间（DataSet、DataView、TreeManager、关系与聚合）
-├── spark-page-config/           # 📄 页面配置系统（配置加载、脚本沙箱、路由集成）
+├── spark-page-config/           # 📄 软件项目模型（ProjectModel、项目节点、配置页内容子模型）
 ├── spark-utils/                 # 🛠️ 共享工具（Logger、HTTP、能力键、基础类型）
 ├── vite-plugin-spark-catalog/   # 🧱 构建期目录生成插件（VCM 提取、组件元数据整理）
 └── vxe-table/                   # 📋 表格插件工作区（VXE Table 集成与适配）
@@ -208,14 +208,13 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 
 ## 📚 文档导航
 
-- [🏗️ 架构设计](docs/architecture/DATAFLOW_ARCHITECTURE.md) - 完整的数据流和分层架构
-- [🤖 SPARK AI 包使用指南](docs/ai/SPARK_AI_PACKAGE_USAGE_GUIDE.md) - AI Core、业务按钮与显式业务会话关系的唯一入口
-- [⚙️ 组件开发](docs/guides/COMPONENT_DEVELOPMENT.md) - 组件注册和能力系统
-- [📊 数据管理](docs/guides/DATA_MANAGEMENT.md) - DataSet 和 TreeManager 使用
-- [🌲 树能力总览](docs/guides/TREE_CAPABILITY.md) - 树容器、DataView、TreeManager、导航树 API 与零代码动作
-- [🔌 插件配置](docs/guides/PLUGIN_CONFIGURATION.md) - 第三方库集成
-- [📄 配置系统](docs/guides/CONFIG_SYSTEM.md) - 多租户与远程配置
-- [🚀 快速开始](docs/guides/QUICKSTART.md) - 5分钟上手指南
+文档入口统一从 [docs/README.md](docs/README.md) 开始。当前只保留中文主线和可执行指南：
+
+- [快速开始](docs/guides/QUICKSTART.md)
+- [项目整体认知](docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md)
+- [spark-page-config 架构](docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
+- [数据流架构](docs/architecture/DATAFLOW_ARCHITECTURE.md)
+- [AI 完整指南](docs/ai/spark-ai-complete-guide.md)
 
 ## 🤝 贡献
 

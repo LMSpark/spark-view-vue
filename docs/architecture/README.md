@@ -1,18 +1,25 @@
-# 架构文档索引
+# 架构文档
 
-这个目录面向维护者，记录当前系统结构和边界。历史方案不在这里延续；若必须留档，应在文件顶部明确标记为归档。
+这个目录只放当前仍然成立的架构事实，不再保存历史迁移记录和一次性方案。
 
-## 先看这三篇
+## 保留文档
 
-1. [SPARK_PAGE_CONFIG_ARCHITECTURE.md](SPARK_PAGE_CONFIG_ARCHITECTURE.md)：`ProjectModel`、`PageNode`、项目节点树和项目策划。
-2. [DATAFLOW_ARCHITECTURE.md](DATAFLOW_ARCHITECTURE.md)：项目模型到渲染运行时的数据流。
-3. [PLATFORM_TENANT_ROUTING.md](PLATFORM_TENANT_ROUTING.md)：平台、租户、项目、模块树和路由作用域。
+1. [SPARK_PAGE_CONFIG_ARCHITECTURE.md](SPARK_PAGE_CONFIG_ARCHITECTURE.md)：`spark-page-config` 的项目模型、节点模型和配置页内容模型。
+2. [DATAFLOW_ARCHITECTURE.md](DATAFLOW_ARCHITECTURE.md)：项目节点、DataSet、DataView、Renderer 的数据流。
+3. [PLATFORM_TENANT_ROUTING.md](PLATFORM_TENANT_ROUTING.md)：平台、租户、项目、模块和页面路由边界。
+4. [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)：权限快照、字段权限和动作权限。
 
-## 其他专题
+## 当前术语
 
-- [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)：权限模型、快照与渲染规则。
-- [VERSION_MANAGEMENT.md](VERSION_MANAGEMENT.md)：DevSystem 版本管理。
-- [CAPABILITY_SYSTEM_MIGRATION.md](CAPABILITY_SYSTEM_MIGRATION.md)：能力系统迁移记录。
+| 术语 | 含义 |
+|---|---|
+| `ProjectModel` | 软件项目模型，一个项目由多个项目节点组成 |
+| `ProjectNodeCollection` | 平铺节点集合，和后端 DB 行结构对应 |
+| `ProjectNodeModel` | 节点基类，包含 id、pid、标题、描述、路径、图标和 navigation 草稿 |
+| `ProjectConfigPageNodeModel` | 配置页节点，覆盖 `page` 和 `sub-page`，只扩展 `rule / dataSet / style / script` |
+| `ProjectVuePageNodeModel` | Vue 页面节点，只保存项目节点事实和 Vue 目标 |
+| `description` | 节点功能描述，也是用户需求的单一真源 |
+| DevSystem | 项目模型消费层，只能通过 `spark-page-config` 对接后端 DB / file |
 
 ## 治理顺序
 
@@ -20,21 +27,4 @@
 理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容
 ```
 
-架构文档先解释系统为什么存在，再解释如何分层。兼容说明只能放在边界位置。
-
-## 当前术语
-
-| 术语 | 含义 |
-|---|---|
-| `ProjectModel` | 软件项目模型，一个项目由模块树和多个页面节点模型组成 |
-| 项目节点树 | 项目内模块、页面、子页面的树；后端 API 仍叫 navigation |
-| `ProjectPlanningModel` | 项目策划、模块策划、页面策划模型 |
-| `PageNode` | 单页面节点模型，包含 navigation/rule/dataSet/script/style |
-| `description` | 节点功能描述和用户需求的单一真源 |
-| DevSystem | 项目模型消费层，不是模型层 |
-
-## 编写边界
-
-- 架构文档不写新手操作手册。
-- AI runtime 规则统一放到 [../ai/spark-ai-complete-guide.md](../ai/spark-ai-complete-guide.md)。
-- `spark-page-config` 必须保持纯模型包，文档不能引导它依赖 UI 或 App service。
+架构文档先说明理念和边界，再说明结构和调用链。兼容说明只放在真实消费边界，不为旧术语单独保留文档。

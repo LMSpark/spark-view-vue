@@ -1,4 +1,4 @@
-# Quickstart
+# 快速开始
 
 > 先跑起来，再理解模型：ProjectModel -> ProjectNodeCollection -> PageNode -> Renderer。
 

@@ -356,32 +356,24 @@ section DirectoryRegistry {
   entry docs_ai {
     path: "docs/ai/"
     owner: "spark-ai"
-    purpose: "AI 平台、Host、代码生成和业务流程说明。"
-    index: null
-    allowed_files: ["kebab-case.md", "legacy UPPER_SNAKE allowlist"]
+    purpose: "AI 运行时、业务模块注册和代码生成规则。"
+    index: "docs/ai/README.md"
+    allowed_files: ["README.md", "kebab-case.md"]
   }
 
   entry docs_architecture {
     path: "docs/architecture/"
     owner: "architecture"
-    purpose: "跨包架构说明和历史架构记录。"
+    purpose: "当前仍然成立的跨包架构事实和边界。"
     index: "docs/architecture/README.md"
     allowed_files: ["README.md", "kebab-case.md", "legacy UPPER_SNAKE allowlist"]
     new_file_rule: "新的结构化决策模型写 docs/<UPPER-KEBAB>.dm，不写 docs/architecture/DM-*.md。"
   }
 
-  entry docs_api {
-    path: "docs/api/"
-    owner: "api"
-    purpose: "跨包 API 示例和后端/前端交互示例。"
-    index: null
-    allowed_files: ["kebab-case.md", "legacy UPPER_SNAKE allowlist"]
-  }
-
   entry docs_guides {
     path: "docs/guides/"
     owner: "docs"
-    purpose: "用户指南、接入指南和操作教程。"
+    purpose: "当前可执行的用户指南、接入指南和操作教程。"
     index: "docs/guides/README.md"
     allowed_files: ["README.md", "kebab-case.md", "legacy UPPER_SNAKE allowlist"]
   }
@@ -536,7 +528,7 @@ section NamingExamples {
 
   markdown_bad_for_new_files: [
     "docs/ai/SPARK_AI_NEW_TOPIC.md",
-    "docs/architecture/DM-SINGLE-CATALOG-CLOSED-LOOP-CHECK-2026-04-12.md",
+    "docs/architecture/DM-OLD-RULE-2026-05-23.md",
     "docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md",
     "packages/spark-utils/REQUEST_GUIDE.md"
   ]

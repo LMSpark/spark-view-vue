@@ -372,4 +372,4 @@ onMounted(() => {
 
 - [数据流架构](../architecture/DATAFLOW_ARCHITECTURE.md) — 完整调用链
 - [组件开发指南](COMPONENT_DEVELOPMENT.md) — 能力系统
-- [插件配置](PLUGIN_CONFIGURATION.md) — UI 库集成
+- [文档入口](../README.md) — 当前保留的中文主线

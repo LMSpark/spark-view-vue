@@ -319,9 +319,8 @@ describe('PluginManager', () => {
 
 ## 🔗 相关文档
 
-- [插件配置指南](../../../docs/guides/PLUGIN_CONFIGURATION.md)
-- [SparkApp API 文档](../README.md)
-- [架构升级说明](../../../docs/PLUGIN_ARCHITECTURE_UPGRADE.md)
+- [SparkApp 包说明](../../README.md)
+- [文档入口](../../../../docs/README.md)
 
 ## 🚀 未来扩展
 

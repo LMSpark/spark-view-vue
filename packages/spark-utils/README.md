@@ -65,4 +65,4 @@ pnpm --filter @spark-view/spark-utils run test:run
 ## 进一步阅读
 
 - [../spark-component/README.md](../spark-component/README.md)
-- [../../docs/guides/PACKAGE_USAGE.md](../../docs/guides/PACKAGE_USAGE.md)
+- [../../docs/README.md](../../docs/README.md)
