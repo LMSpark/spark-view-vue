@@ -1,47 +1,36 @@
 /**
  * @spark-view/spark-page-config
  *
- * 公共入口只暴露页面模型体系。底层 loader/parser/file API 是包内实现细节。
+ * 根入口只暴露 ProjectModel / PageNodeModel 数据真源和装配工厂。
+ * 手动编辑、AI 更新、JSON 文档和独立业务示例分别走专用 subpath。
  */
 
 export {
-  PAGE_MODEL_FILE_NAMES,
-  PageModel,
-} from './editor/page-model'
+  ProjectModel,
+} from './project/project-model'
 
 export {
-  PageEditor,
-  componentCatalog,
-  createPageEditor,
-  PAGE_DATA_JSON_SCHEMA,
-} from './editor/page-editor'
-
-export * as JsonDocumentRuntime from './json-document'
+  PageNodeFactory,
+  createPageNode,
+  createPageNodeFactory,
+} from './project/page-node-factory'
 
 export type {
-  PageModelFileName,
-  PageModelFileVersionSummary,
-  PageModelNavigationDraft,
-  PageModelLike,
-  PageModelPageSummary,
-  PageModelRenderConfig,
-} from './editor/page-model'
+  ProjectModelLike,
+  ProjectModelOptions,
+} from './project/project-model'
 
 export {
-  PageModelFactory,
-  createPageModel,
-  createPageModelFactory,
-} from './editor/page-model-factory'
+  ProjectConfigPageNodeModel,
+} from './project/project-node-model'
 
 export type {
-  PageModelFactoryLike,
-  PageModelFactoryOptions,
-  PageModelFileStorage,
-} from './editor/page-model-factory'
+  PageNodeLike,
+  PageNodeRenderConfig,
+} from './project/project-node-model'
 
 export type {
-  CreatePageEditorOptions,
-  PageDesignEditHost,
-  PageEditorLoadOptions,
-  PageEditorSnapshot,
-} from './editor/page-editor'
+  PageNodeFactoryLike,
+  PageNodeFactoryOptions,
+  PageNodeFileStorage,
+} from './project/page-node-factory'

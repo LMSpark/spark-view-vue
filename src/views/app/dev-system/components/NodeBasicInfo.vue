@@ -30,12 +30,12 @@
         </el-radio-group>
       </el-form-item>
     </div>
-    <el-form-item label="描述" class="fi fi--wide">
+    <el-form-item label="功能描述" class="fi fi--wide">
       <el-input
         v-model="state.navDraft.description"
         type="textarea"
         :autosize="{ minRows: 4, maxRows: 12 }"
-        placeholder="节点的业务用途与功能说明。&#10;示例：级联操作演示页 — 展示 DataSet 主从表联动，父表选中行变更自动驱动子表数据过滤与刷新。"
+        placeholder="页面功能策划，也是 AI 用户需求。&#10;示例：级联操作演示页 — 展示 DataSet 主从表联动，父表选中行变更自动驱动子表数据过滤与刷新。"
         @change="state.markNavDirty"
       />
     </el-form-item>

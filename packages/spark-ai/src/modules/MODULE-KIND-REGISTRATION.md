@@ -29,15 +29,20 @@ SPARK AI 定义模块协议、固定工具、运行时 inspect 和 Agent 注册�
 - `module_attr`
 - `module_call`
 - `human_question`
+- 业务函数 direct tool：`<functionName>`
 
-业务函数绝不导出为动态工具名。通过以下协议调用：
+业务函数优先导出为 OpenAI 标准 direct tool：`function.name` 就是真实业务函数名，
+`arguments` 只能包含 `path` 和 `args`。`module_call({ path, functionName, args })`
+保留为旧协议兼容路径。
 
 ```json
 {
-  "path": "/ticket[T-1001]/detail[T-1001]",
-  "functionName": "summarize",
-  "args": {
-    "includeHistory": true
+  "name": "summarize",
+  "arguments": {
+    "path": "/ticket[T-1001]/detail[T-1001]",
+    "args": {
+      "includeHistory": true
+    }
   }
 }
 ```

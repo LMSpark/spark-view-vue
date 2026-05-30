@@ -62,7 +62,7 @@ function isSparkConfig(value: unknown): boolean {
   return isRecord(value) && typeof readProperty(value, 'enabled') === 'boolean'
 }
 
-function isPageConfig(value: unknown): boolean {
+function isPageNodeConfig(value: unknown): boolean {
   return isRecord(value)
     && readStringProperty(value, 'apiBaseUrl') !== undefined
     && readStringProperty(value, 'homePath') !== undefined
@@ -103,7 +103,7 @@ function isAppFullConfig(value: unknown): value is AppFullConfig {
     && readStringProperty(value, 'mountTarget') !== undefined
     && isRecord(readProperty(value, 'plugins'))
     && isSparkConfig(readProperty(value, 'spark'))
-    && isPageConfig(readProperty(value, 'pageConfig'))
+    && isPageNodeConfig(readProperty(value, 'pageNode'))
     && isAppBaseConfig(readProperty(value, 'config'))
     && isLoggerConfig(readProperty(value, 'logger'))
 }
@@ -356,7 +356,7 @@ export class ConfigLoader {
     // 支持环境变量覆盖 API 地址
     if (typeof env['VITE_API_BASE_URL'] === 'string' && env['VITE_API_BASE_URL'] !== '') {
       config.config.apiBaseUrl = env['VITE_API_BASE_URL']
-      config.pageConfig.apiBaseUrl = env['VITE_API_BASE_URL']
+      config.pageNode.apiBaseUrl = env['VITE_API_BASE_URL']
     }
 
     return config
@@ -374,7 +374,7 @@ export class ConfigLoader {
         vxeTable: true
       },
       spark: { enabled: true },
-      pageConfig: {
+      pageNode: {
         apiBaseUrl: '/api',
         homePath: '/home'
       },

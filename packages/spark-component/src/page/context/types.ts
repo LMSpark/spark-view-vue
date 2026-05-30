@@ -5,15 +5,15 @@
  */
 
 import type { DataSetContract, SparkData } from '@spark-view/spark-data'
-import type { PageModelRenderConfig } from '@spark-view/spark-page-config'
+import type { PageNodeRenderConfig } from '@spark-view/spark-page-config'
 import type { PageRoute, ScriptContext } from '../../runtime'
 import type { h } from 'vue'
 import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'
 
 // ── 基础重导出 ────────────────────────────────────────────────────────────
 
-// PageModel 渲染态来自 spark-page-config，是渲染层的唯一页面输入形态。
-export type { PageModelRenderConfig }
+// PageNode 渲染态来自 spark-page-config，是渲染层的唯一页面输入形态。
+export type { PageNodeRenderConfig }
 // PageRoute 重导出供渲染层实现层使用
 export type { PageRoute }
 

@@ -1,24 +1,30 @@
-# 文档索引
+# SPARK View 文档
 
-SPARK 的文档按“如何使用”“为什么这样设计”两层组织；AI 相关约束统一收敛到单篇 SSOT 指南，先按问题类型找入口，不要一开始就通读全部目录。
+> 当前口径：SPARK View 以软件项目模型为核心，`spark-page-config` 保持纯模型；DevSystem、Vue 和 AI 都是消费层。
 
-## 目录分层
+## 主线
 
-- [guides/README.md](guides/README.md)：面向使用者和接入方，优先看这里。
-- [architecture/README.md](architecture/README.md)：面向维护者，记录系统内部结构和关键设计决策。
-- [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：AI Core、显式业务会话、业务输入注册、LLM 工具协议与 pageDesign 链路的唯一入口。
+```text
+ProjectModel
+  -> ProjectNodeCollection(flat nodes)
+  -> ProjectPlanningModel
+  -> ProjectConfigPageNodeModel(page/sub-page)
+  -> SparkPageRenderer
+```
 
-## 建议阅读顺序
+`navigation` 是后端传输命名；模型层把它解释为项目节点。树只是 flat nodes 的投影。
 
-1. [guides/QUICKSTART.md](guides/QUICKSTART.md)：先把项目跑起来。
-2. [guides/DATA_MANAGEMENT.md](guides/DATA_MANAGEMENT.md)：理解 DataSet / DataView。
-3. [guides/CONDITION_EXPRESSION.md](guides/CONDITION_EXPRESSION.md)：理解过滤表达式与计算表达式的执行边界。
-4. [guides/CONFIG_SYSTEM.md](guides/CONFIG_SYSTEM.md)：理解页面结构配置与脚本边界。
-5. [architecture/DATAFLOW_ARCHITECTURE.md](architecture/DATAFLOW_ARCHITECTURE.md)：需要深入运行时时再看内部链路。
-6. [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：涉及 AI Core、业务按钮入口或页面级 AI 编辑链路时再进入。
+## 核心文档
 
-## 使用约定
+1. [architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md](architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)：ProjectModel、ProjectNodeCollection、PageNode 子类。
+2. [architecture/DATAFLOW_ARCHITECTURE.md](architecture/DATAFLOW_ARCHITECTURE.md)：项目节点到运行时渲染的数据流。
+3. [SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md](SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md)：项目整体认知。
+4. [guides/CONFIG_SYSTEM.md](guides/CONFIG_SYSTEM.md)：应用配置与项目节点配置边界。
+5. [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：AI runtime 与业务注册。
 
-- `guides/` 只放当前仍然有效的使用文档。
-- `architecture/` 只放系统结构与演进说明，不放操作手册。
-- AI 相关规则不再拆散到多篇归档文档，统一维护在 [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)。
+## 文档规则
+
+- 不再使用旧页面聚合术语作为公共模型术语。
+- 不再把旧模块树字段写成模型字段。
+- 说明 navigation 时必须标明它是后端历史命名，模型 SSOT 是 flat project nodes。
+- 涉及页面内容时使用 PageNode / 配置页节点 / 四文件投影。

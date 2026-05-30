@@ -3,7 +3,7 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DevPreviewTab from '@/views/app/dev-system/DevPreviewTab.vue'
 import type { DevState } from '@/views/app/dev-system/useDevState'
-import type { PageModelFileName } from '@spark-view/spark-page-config'
+import type { PageNodeFileName } from '@spark-view/spark-page-config/project'
 
 const SwitchStub = defineComponent({
   name: 'ElSwitch',
@@ -27,18 +27,18 @@ const ButtonStub = defineComponent({
 const RendererStub = defineComponent({
   name: 'SparkPageRenderer',
   props: {
-    pageModel: Object,
-    pageModelRevision: Number,
+    pageNode: Object,
+    pageNodeRevision: Number,
   },
   setup(props) {
-    return () => h('div', { class: 'renderer-stub', 'data-page-id': props.pageModel?.['pageId'] })
+    return () => h('div', { class: 'renderer-stub', 'data-page-id': props.pageNode?.['pageId'] })
   },
 })
 
 function createPreviewState() {
   const activePageId = ref('cascade-demo')
   const pageFilesRevision = ref(1)
-  const files: Record<PageModelFileName, string> = {
+  const files: Record<PageNodeFileName, string> = {
     'rule.json': '[]',
     'pagedata.json': '{"dataSetName":"Demo","tables":{}}',
     'script.js': '',
@@ -49,7 +49,7 @@ function createPreviewState() {
     activePageId,
     pageFilesRevision,
     getActivePage,
-    getPageFileText: vi.fn((name: PageModelFileName) => {
+    getPageFileText: vi.fn((name: PageNodeFileName) => {
       void pageFilesRevision.value
       return files[name]
     }),

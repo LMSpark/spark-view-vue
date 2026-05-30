@@ -14,6 +14,8 @@
       "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-view/spark-component": ["../spark-component/dist/index.d.ts"],
       "@spark-view/spark-page-config": ["../spark-page-config/src/index.ts"],
+      "@spark-view/spark-page-config/project": ["../spark-page-config/src/project.ts"],
+      "@spark-view/spark-page-config/ai": ["../spark-page-config/src/ai.ts"],
       "@spark-view/spark-ai": ["../spark-ai/src/index.ts"],
       "@spark-view/spark-ai/json": ["../spark-ai/src/json/index.ts"],
       "@spark-view/spark-ai/agent": ["../spark-ai/src/agent/index.ts"],
@@ -23,4 +25,3 @@
   "include": ["src/**/*"],
   "exclude": ["node_modules", "dist", "**/*.example.ts", "**/*.example.vue"]
 }
-

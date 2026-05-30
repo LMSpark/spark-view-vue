@@ -67,8 +67,8 @@ export type AppFullConfig = {
   /** SPARK 组件系统 */
   spark: { enabled: boolean }
 
-  /** 页面配置系统 */
-  pageConfig: {
+  /** PageNode 运行配置 */
+  pageNode: {
     apiBaseUrl: string
     timeout?: number
     homePath: string

@@ -10,9 +10,9 @@ import {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-  PageEditor,
+  ProjectEditor,
   type RuleEditorComponentMetadata,
-} from '@spark-view/spark-page-config/editor'
+} from '@spark-view/spark-page-config/project'
 import {
   applyNavigationNodeDraftToNode,
   buildNavRoot,
@@ -21,28 +21,28 @@ import {
   findConfigNodeByPageId,
   findNodeLocation,
   normalizeNavRoot,
-} from '../src/navigation/nav-editing'
-import { NavigationConfigClient } from '../src/navigation/nav-client'
-import type { AppNavRoot, NavNode } from '../src/navigation/nav-model'
+} from '../src/page-model/navigation/nav-editing'
+import { NavigationConfigClient } from '../src/page-model/navigation/nav-client'
+import type { AppNavRoot, NavNode } from '../src/page-model/navigation/nav-model'
 import {
-  BasePageConfigLoader,
-  type ConfigLoadResult,
-  type PageConfig,
-  type PageConfigFileLoadOptions,
-  type PageConfigFileName,
+  BasePageContentLoader,
+  type PageContentLoadResult,
+  type PageContentConfig,
+  type PageNodeFileLoadOptions,
   type PageDataConfig,
   type RuleConfig,
-} from '../src/config/config-types'
+} from '../src/page-model/read/page-content-types'
+import type { PageNodeFileName } from '../src/page-model/model/page-file-registry'
 import {
-  PageConfigFileApi,
-} from '../src/config/page-config-file-api'
+  PageNodeFileApi,
+} from '../src/page-model/model/page-file-api'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
   getNextPageDesignFlowStep,
   summarizePageDesignFlowPhases,
-} from '../src/design/artifacts/design-flow'
+} from '../src/page-model/update/artifacts/design-flow'
 import { isRecord } from '@spark-view/spark-utils'
-import { PageDesignService } from '../src/design/page-design-service'
+import { PageDesignService } from '../src/page-model/update/page-design-service'
 
 function createHttpMock(): HttpClientBase {
   const client = createRequest()
@@ -67,21 +67,21 @@ function requireRecord(value: unknown, message: string): Record<string, unknown>
   throw new Error(message)
 }
 
-class TestPageConfigLoader extends BasePageConfigLoader {
+class TestPageContentLoader extends BasePageContentLoader {
   readonly loadPageFileContentSpy: (
     pageId: string,
-    filename: PageConfigFileName,
-    options?: PageConfigFileLoadOptions,
-  ) => Promise<ConfigLoadResult<string>>
+    filename: PageNodeFileName,
+    options?: PageNodeFileLoadOptions,
+  ) => Promise<PageContentLoadResult<string>>
 
   readonly clearCacheSpy = vi.fn()
 
   constructor(files: Partial<Record<string, string>>) {
     super()
-    this.loadPageFileContentSpy = vi.fn(async (pageId: string, filename: PageConfigFileName, options?: PageConfigFileLoadOptions) => {
+    this.loadPageFileContentSpy = vi.fn(async (pageId: string, filename: PageNodeFileName, options?: PageNodeFileLoadOptions) => {
       const key = `${pageId}/${filename}`
       if (!Object.hasOwn(files, key)) {
-        const result: ConfigLoadResult<string> = {
+        const result: PageContentLoadResult<string> = {
           success: false,
           error: `${key} not found`,
           reason: 'not-found',
@@ -89,7 +89,7 @@ class TestPageConfigLoader extends BasePageConfigLoader {
         }
         return result
       }
-      const result: ConfigLoadResult<string> = {
+      const result: PageContentLoadResult<string> = {
         success: true,
         data: files[key] ?? '',
         source: 'remote',
@@ -99,31 +99,31 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     })
   }
 
-  override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+  override loadPageContentConfig(pageId: string): Promise<PageContentLoadResult<PageContentConfig>> {
     return this.unsupported(pageId, 'page config')
   }
 
-  override loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+  override loadRule(pageId: string): Promise<PageContentLoadResult<RuleConfig[]>> {
     return this.unsupported(pageId, 'rule')
   }
 
-  override loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+  override loadPageData(pageId: string): Promise<PageContentLoadResult<PageDataConfig>> {
     return this.unsupported(pageId, 'pagedata')
   }
 
-  override loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
+  override loadScript(pageId: string): Promise<PageContentLoadResult<string>> {
     return this.unsupported(pageId, 'script')
   }
 
-  override loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
+  override loadCss(pageId: string): Promise<PageContentLoadResult<string>> {
     return this.unsupported(pageId, 'style')
   }
 
   override loadPageFileContent(
     pageId: string,
-    filename: PageConfigFileName,
-    options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
+    filename: PageNodeFileName,
+    options?: PageNodeFileLoadOptions,
+  ): Promise<PageContentLoadResult<string>> {
     return this.loadPageFileContentSpy(pageId, filename, options)
   }
 
@@ -135,28 +135,29 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     return { size: 0, keys: [] }
   }
 
-  private unsupported<T>(pageId: string, label: string): Promise<ConfigLoadResult<T>> {
+  private unsupported<T>(pageId: string, label: string): Promise<PageContentLoadResult<T>> {
     return Promise.resolve({
       success: false,
-      error: `TestPageConfigLoader does not load ${label}: ${pageId}`,
+      error: `TestPageContentLoader does not load ${label}: ${pageId}`,
       timestamp: 0,
     })
   }
 }
 
-function createLoader(files: Partial<Record<string, string>>): TestPageConfigLoader {
-  return new TestPageConfigLoader(files)
+function createLoader(files: Partial<Record<string, string>>): TestPageContentLoader {
+  return new TestPageContentLoader(files)
 }
 
 function createEditorHarness(files: Partial<Record<string, string>>) {
   const http = createHttpMock()
   const loader = createLoader(files)
-  const fileApi = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
+  const fileApi = new PageNodeFileApi({ getPageFilesApi: () => '/api/pages-config', http })
   const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
-  const editor = new PageEditor({
+  const editor = new ProjectEditor({
+    projectId: 'test-project',
     fileApi,
     navigationClient,
-    getConfigLoader: () => loader,
+    getContentLoader: () => loader,
   })
   return { editor, http, loader }
 }
@@ -203,7 +204,7 @@ describe('DevSystem navigation SSOT', () => {
     })
   })
 
-  it('keeps reserved root group templates and node-first persistence behind PageEditor', async () => {
+  it('keeps reserved root group templates and node-first persistence behind ProjectEditor', async () => {
     const demo = normalizeNavRoot({
       title: 'Demo',
       childPlacement: 'header',
@@ -248,8 +249,8 @@ describe('DevSystem navigation SSOT', () => {
   })
 })
 
-describe('PageEditor page file and lifecycle SSOT', () => {
-  it('loads four files through PageEditor, saves dirty text and clears cache', async () => {
+describe('ProjectEditor page file and lifecycle SSOT', () => {
+  it('loads four files through ProjectEditor, saves dirty text and clears cache', async () => {
     const { editor, http, loader } = createEditorHarness({
       'orders/rule.json': '[{"type":"div"}]',
       'orders/pagedata.json': '{"dataSetName":"Orders","tables":{}}',
@@ -279,7 +280,7 @@ describe('PageEditor page file and lifecycle SSOT', () => {
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/orders/script.js')
   })
 
-  it('surfaces missing active page files through PageEditor without exposing documents', async () => {
+  it('surfaces missing active page files through ProjectEditor without exposing documents', async () => {
     const { editor } = createEditorHarness({
       'orders/rule.json': '[{"type":"div"}]',
       'orders/pagedata.json': '{"dataSetName":"Orders","tables":{}}',
@@ -288,9 +289,9 @@ describe('PageEditor page file and lifecycle SSOT', () => {
 
     editor.setActivePage('orders')
 
-    // ensureActivePageFilesLoaded 委托给 PageModel.load，缺失文件时抛出子模型错误
+    // ensureActivePageFilesLoaded 委托给 PageNode.load，缺失文件时抛出子模型错误
     await expect(editor.ensureActivePageFilesLoaded()).rejects.toThrow('orders/script.js')
-    // 加载失败时 PageModel 未标记为已加载
+    // 加载失败时 PageNode 未标记为已加载
     expect(editor.readSnapshot().isLoaded).toBe(false)
   })
 

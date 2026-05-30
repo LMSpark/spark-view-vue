@@ -162,7 +162,7 @@ export class AiModuleKnowledgeProjector {
         '用 module_query({ kind, includeFunctions:true }) 获取函数目录。',
         '选定 attrName 后，用 module_attribute_guide({ kind, attrName }) 获取属性 schema、读写权限和示例。',
         '选定 functionName 后，用 module_function_guide({ kind, functionName }) 获取参数、规则和失败恢复。',
-        '定位实例 path 后，用 module_call({ path, functionName, args }) 执行。',
+        '定位实例 path 后，用对应 OpenAI 业务函数 functionName({ path, args }) 执行。',
       ],
       attributes: layer.attributes.map((attribute) => ({
         knowledgeLevel: 'directory',
@@ -479,7 +479,7 @@ export class AiModuleKnowledgeProjector {
       ...FIXED_PROTOCOL_TOOL_ROUTING_LINES,
       ...promptKinds.map(formatPromptKindIndexLine),
       ...(hiddenKindCount > 0 ? [`...还有 ${String(hiddenKindCount)} 个 kind，使用 queryModules({ keyword }) 查询。`] : []),
-      '消费顺序：module_find 定位实例 -> module_query 选真实函数 -> module_function_guide 消费函数契约 -> module_call 执行；payload 也必须 queryPayloads 选 key -> guidePayload 取详情。',
+      '消费顺序：module_find 定位实例 -> module_query 选真实函数 -> module_function_guide 消费函数契约 -> 直接调用 functionName({path,args})；payload 也必须 queryPayloads 选 key -> guidePayload 取详情。',
     ]
     return lines.join('\n')
   }

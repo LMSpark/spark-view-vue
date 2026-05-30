@@ -36,7 +36,7 @@
     "spark": {
         "enabled": true
     },
-    "pageConfig": {
+    "pageNode": {
         "source": "local",
         "apiBaseUrl": "/api",
         "homePath": "/home"

@@ -233,9 +233,8 @@ export type AiModuleKnowledgeFunctionGuide = Readonly<{
   description: string
   directoryLookupStep: string
   callPattern: Readonly<{
-    toolName: 'module_call'
+    toolName: string
     path: string
-    functionName: string
     args: string
   }>
   paramNames: readonly string[]

@@ -301,7 +301,7 @@ public class PageConfigController {
 
     // ══════════════════════════════════════════════════════════════════════════
     // 扁平兼容路由（/api/pages-config/**）
-    // 前端 PageConfigLoader 使用这些路由，租户 / 项目从请求头推断
+    // 前端 PageContentLoader 使用这些路由，租户 / 项目从请求头推断
     // ══════════════════════════════════════════════════════════════════════════
 
     private static final ResponseEntity<?> MISSING_CONTEXT = ResponseEntity.badRequest().body(

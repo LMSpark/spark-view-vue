@@ -38,6 +38,8 @@ vi.mock('@spark-view/spark-app', () => ({
 vi.mock('@/services/api-paths', () => ({
   getPageApi: () => '/api/pages-config',
   getNavApi: () => '/api/navigation',
+  getProjectApi: () => '/api/projects',
+  getProjectNavigationApi: (projectId: string) => `/api/projects/${projectId}/navigation`,
 }))
 
 vi.mock('@/services/http', () => ({

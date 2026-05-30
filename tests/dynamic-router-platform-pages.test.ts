@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPageModelFactory } from '@spark-view/spark-page-config'
+import { createPageNodeFactory } from '@spark-view/spark-page-config'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { createDynamicRouter } from '../packages/spark-app/src/router/dynamic'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
@@ -11,7 +11,7 @@ const DummyPage = defineComponent({
   template: '<div />',
 })
 
-const DUMMY_PAGE_MODEL_FACTORY = createPageModelFactory()
+const DUMMY_PAGE_NODE_FACTORY = createPageNodeFactory()
 
 const PRE_AUTH_NAV: AppNavRoot = {
   id: 'root',
@@ -42,7 +42,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -79,7 +79,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -116,7 +116,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -159,7 +159,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -197,7 +197,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -234,7 +234,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -270,7 +270,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -303,7 +303,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -355,7 +355,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -410,7 +410,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -460,7 +460,7 @@ describe('DynamicRouter platform pages', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,
@@ -474,4 +474,3 @@ describe('DynamicRouter platform pages', () => {
     expect(hostRoute?.meta['crossProjectRefHost']).toBe(true)
   })
 })
-

@@ -97,6 +97,8 @@ export type AiAgentStreamTurnResult = Readonly<{
   text: string
   reasoning?: string
   toolCalls: readonly AiAgentTransportToolCall[]
+  /** true 表示 transport 已把本轮 assistant 消息写入后端历史；工具循环只需追加 tool 结果。 */
+  assistantMessagePersisted?: boolean
 }>
 
 /** 追加消息请求输入 */

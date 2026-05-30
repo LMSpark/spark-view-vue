@@ -63,6 +63,13 @@ function toAiAgentTransportTools(
   }))
 }
 
+const TOOL_PRODUCTION_LINE_PROMPT = [
+  '工具生产线模式：只要下一步需要查询、校验、写入、修复或完成任务，就必须发起真实 OpenAI tool_call。',
+  '工具回合的 assistant.content 必须为空；不要输出计划、解释、JSON、代码块或“我将调用工具”。',
+  '每轮最多调用一个 tool_call，等待 tool 结果后再决定下一步。',
+  '任务完成时调用 agent_complete({ summary }) 收尾；不要用自然语言正文收尾。',
+].join('\n')
+
 /* ── 输入/输出类型 ──────────────────────────────────────────── */
 
 /** 工具循环的输入参数 */
@@ -111,6 +118,7 @@ export class AiAgentToolLoopRunner {
     const systemPrompt = [
       registration.systemPrompt?.(runtimeContext),
       request.systemPrompt,
+      TOOL_PRODUCTION_LINE_PROMPT,
       registration.runtime.projectKnowledge().promptSnapshot,
     ].filter((part): part is string => typeof part === 'string' && part.trim().length > 0).join('\n\n')
 
@@ -169,8 +177,13 @@ export class AiAgentToolLoopRunner {
         ...(request.onStreamEvent === undefined ? {} : { onStreamEvent: request.onStreamEvent }),
       })
 
-      // 将 AI 文本回复写入会话历史
-      if (result.text.trim().length > 0) {
+      const controlledToolCalls = selectControlledRoundToolCalls({
+        toolCalls: result.toolCalls,
+        assistantMessagePersisted: result.assistantMessagePersisted === true,
+      })
+
+      // 工具生产线回合不持久化解释性正文，避免把无效 token 带入下一轮。
+      if (controlledToolCalls.length === 0 && result.text.trim().length > 0) {
         sessionStore.appendMessage({
           ...runtimeContext,
           role: 'assistant',
@@ -180,14 +193,14 @@ export class AiAgentToolLoopRunner {
       }
 
       // 无工具调用 → 对话自然结束
-      if (result.toolCalls.length === 0) return
+      if (controlledToolCalls.length === 0) return
 
       // 逐个执行工具调用
       const toolMessages: AiAgentTransportMessage[] = []
       const executedToolCalls: AiAgentTransportToolCall[] = []
       let lifecycleDirective: AiAgentLifecycleDirective | null = null
 
-      for (const call of result.toolCalls) {
+      for (const call of controlledToolCalls) {
         const output = await this.toolCallExecutor.execute({
           registration,
           scope,
@@ -212,10 +225,12 @@ export class AiAgentToolLoopRunner {
       // 构造本轮的 assistant 消息（含 tool_calls 数组）
       const assistantMessage: AiAgentTransportMessage = {
         role: 'assistant',
-        content: result.text,
+        content: '',
         tool_calls: executedToolCalls,
       }
-      const messagesToAppend: AiAgentTransportMessage[] = [assistantMessage, ...toolMessages]
+      const messagesToAppend: AiAgentTransportMessage[] = result.assistantMessagePersisted === true
+        ? [...toolMessages]
+        : [assistantMessage, ...toolMessages]
 
       await this.appendMessagesToTransport({
         scope,
@@ -343,6 +358,19 @@ export class AiAgentToolLoopRunner {
       messages: input.messages,
     })
   }
+}
+
+function selectControlledRoundToolCalls(input: Readonly<{
+  toolCalls: readonly AiAgentTransportToolCall[]
+  assistantMessagePersisted: boolean
+}>): readonly AiAgentTransportToolCall[] {
+  if (input.toolCalls.length <= 1) return input.toolCalls
+  if (input.assistantMessagePersisted) {
+    // 外部传输层已经持久化 assistant.tool_calls 时，必须回填全部 tool 结果以保持后端会话合法。
+    return input.toolCalls
+  }
+  const [first] = input.toolCalls
+  return first === undefined ? [] : [first]
 }
 
 /* ── 内部辅助类型 ──────────────────────────────────────────── */

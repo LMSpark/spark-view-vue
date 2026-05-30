@@ -98,7 +98,7 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
- *   module_call({ path: "/node-tree[tree-1]", functionName: "getNode" }) → "node-tree"
+ *   getNode({ path: "/node-tree[tree-1]", args: {} })                    → "node-tree"
  *   module_guide({ kind: "Table" })                                      → "Table"
  *   module_attribute_guide({ kind: "Table", attrName: "title" })          → "Table"
  *   module_function_guide({ kind: "Table", functionName: "listRows" })   → "Table"

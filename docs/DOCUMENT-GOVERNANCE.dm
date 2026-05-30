@@ -234,7 +234,6 @@ section DirectoryRules {
       "跨包架构",
       "AI 平台边界",
       "使用指南",
-      "视频/博客系列",
       "全仓治理模型"
     ]
   }
@@ -301,7 +300,7 @@ section DirectoryRegistry {
     owner: "repo"
     purpose: "仓库入口和顶层约定。"
     index: "README.md"
-    allowed_files: ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "CHANGELOG.md", "SPARK_VIEW_16_BLOG_SERIES_PLAN.md"]
+    allowed_files: ["README.md", "AGENTS.md", "CLAUDE.md", "CONTRIBUTING.md", "CHANGELOG.md"]
     new_file_rule: "不再新增普通专题文档到根目录。"
   }
 
@@ -385,22 +384,6 @@ section DirectoryRegistry {
     purpose: "用户指南、接入指南和操作教程。"
     index: "docs/guides/README.md"
     allowed_files: ["README.md", "kebab-case.md", "legacy UPPER_SNAKE allowlist"]
-  }
-
-  entry docs_blog_series {
-    path: "docs/blog-series/"
-    owner: "docs"
-    purpose: "博客系列正文。"
-    index: "docs/blog-series/README.md"
-    allowed_files: ["README.md", "NN-kebab-case.md"]
-  }
-
-  entry docs_video_series {
-    path: "docs/video-series/"
-    owner: "docs"
-    purpose: "视频系列脚本、分镜和检查表。"
-    index: "docs/video-series/README.md"
-    allowed_files: ["README.md", "kebab-case.md", "legacy UPPER_SNAKE allowlist", "NN-kebab-case/*.md"]
   }
 
   entry packages {
@@ -545,7 +528,6 @@ section UpdateRules {
 section NamingExamples {
   markdown_good: [
     "docs/guides/testing-best-practices.md",
-    "docs/blog-series/01-spark-view-not-json-form-generator.md",
     "packages/spark-ai/ARCHITECTURE.md",
     "packages/spark-data/API.md",
     "packages/vxe-table/README.zh-TW.md",

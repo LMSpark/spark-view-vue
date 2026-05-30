@@ -93,11 +93,11 @@ function createBoardModule(spy: { host?: AiModulePathContext['host'] } = {}): Ai
   })
 }
 
-describe('AiModuleRuntime fixed tool protocol', () => {
-  it('exposes only the fixed module tools', () => {
+describe('AiModuleRuntime function tool protocol', () => {
+  it('exposes fixed module tools plus direct declared function tools', () => {
     const names = createRuntime().getTools().map((tool) => tool.function.name)
 
-    expect(names).toEqual([
+    expect(names).toEqual(expect.arrayContaining([
       PROTOCOL_TOOL_NAMES.moduleQuery,
       PROTOCOL_TOOL_NAMES.moduleGuide,
       PROTOCOL_TOOL_NAMES.moduleAttributeGuide,
@@ -106,7 +106,9 @@ describe('AiModuleRuntime fixed tool protocol', () => {
       PROTOCOL_TOOL_NAMES.moduleAttr,
       PROTOCOL_TOOL_NAMES.moduleCall,
       PROTOCOL_TOOL_NAMES.humanQuestion,
-    ])
+      PROTOCOL_TOOL_NAMES.agentComplete,
+      'getItem',
+    ]))
     expect(names).not.toContain('task_detail_getNode')
     expect(createRuntime().projectKnowledge().promptSnapshot).toContain('module_attribute_guide')
   })
@@ -124,7 +126,7 @@ describe('AiModuleRuntime fixed tool protocol', () => {
       ]),
       functions: expect.arrayContaining([
         expect.objectContaining({
-          toolName: 'module_call',
+          toolName: 'getItem',
           kind: 'board',
           functionName: 'getItem',
         }),
@@ -172,9 +174,10 @@ describe('AiModuleRuntime fixed tool protocol', () => {
     })).resolves.toMatchObject({
       ok: true,
       data: expect.objectContaining({
-        toolName: 'module_call',
+        toolName: 'getItem',
         functionName: 'getItem',
         paramsSchema: expect.objectContaining({ required: ['id'] }),
+        callPattern: expect.objectContaining({ toolName: 'getItem' }),
       }),
     })
   })
@@ -224,7 +227,7 @@ describe('AiModuleRuntime fixed tool protocol', () => {
     })
   })
 
-  it('module_call uses { path, functionName, args } and passes host context', async () => {
+  it('module_call compatibility route uses { path, functionName, args } and passes host context', async () => {
     const spy: { host?: AiModulePathContext['host'] } = {}
     const runtime = new AiModuleRuntime()
     runtime.register(createWorkspaceModule())
@@ -234,6 +237,28 @@ describe('AiModuleRuntime fixed tool protocol', () => {
     const result = await runtime.executeTool('module_call', {
       path: '/workspace[workspace-a]/board[board-1]',
       functionName: 'getItem',
+      args: { id: 'item-1' },
+    }, host)
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: {
+        id: 'item-1',
+        path: ['workspace:workspace-a', 'board:board-1'],
+      },
+    })
+    expect(spy.host).toEqual(host)
+  })
+
+  it('direct function tools use functionName({ path, args }) and pass host context', async () => {
+    const spy: { host?: AiModulePathContext['host'] } = {}
+    const runtime = new AiModuleRuntime()
+    runtime.register(createWorkspaceModule())
+    runtime.register(createBoardModule(spy))
+
+    const host = { moduleId: 'workspace', moduleInstanceId: 'workspace-a', instanceId: 'turn-1' }
+    const result = await runtime.executeTool('getItem', {
+      path: '/workspace[workspace-a]/board[board-1]',
       args: { id: 'item-1' },
     }, host)
 

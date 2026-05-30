@@ -1,395 +1,141 @@
-# 平台 → 租户 → 项目 → 导航路由 架构文档
+# 平台、租户、项目与节点路由
 
-> 本文档梳理 SPARK 系统中平台、租户、项目、导航、路由之间的完整关系链。
+> 当前口径：SPARK View 以项目为业务应用边界。每个项目都有自己的项目节点树、多个 `PageNode`、数据表、权限和运行时路由。后端 API 仍保留 `navigation` 命名，但在领域模型里它是项目节点树。
 
-## 1. 实体层级关系
+## 实体层级
 
-```
-平台 (SPARK Platform)
-  └── 租户 (Tenant) ← X-Tenant-Id 隔离
-        ├── 用户 (User) ← JWT 认证，tenantId claim
-        └── 项目 (Project) ← X-Project-Id
-              │
-              ├── �️ 企业管理平台 (homepage)           ← 系统保留，随租户自动创建，不可删除
-              │     projectType="homepage", sortOrder=0
-              │     登录后默认落地项目（defaultProjectId）
-              │     │
-              │     ├── /dashboard — 管理仪表板（登录后落地页）
-              │     ├── 📱 应用管理 — 创建 / 删除 / 状态管理业务应用
-              │     ├── ⚙️ 系统管理 — 用户、权限、平台设置
-              │     └── ... 用户通过 AI / 页面管理创建的配置页面
-              │
-              └── 📦 业务应用 (app) × N               ← 用户自建，sortOrder=100
-                    projectType="app"
-                    │
-                    ├── 独立导航树
-                    ├── 独立页面配置 (rule.json / pagedata.json / script.js)
-                    ├── 独立数据表 (TableSchema + TableRow)
-                    └── ⚙️ 系统设置（自管理）
-                          ├── 页面管理 — 管理本应用的页面
-                          ├── 导航管理 — 管理本应用的导航树
-                          ├── 站点管理 — 管理本应用的站点配置
-                          ├── 开发工作台 — AI 页面生成 / 调试
-                          └── 缓存管理 — 本应用的缓存
+```text
+平台
+  └── 租户 tenantId
+        └── 项目 projectId
+              ├── ProjectModel
+              │     ├── nodes
+              │     ├── planning
+              │     └── config page cache
+              ├── 后端 DB
+              └── 页面四文件存储
 ```
 
-### 1.1 平台 vs 租户
+一个租户可以有多个项目。`homepage` 是系统保留项目，用于承载企业管理平台和应用生命周期管理；用户创建的业务应用也是项目，和 `homepage` 使用同一套模型。
 
-| 维度 | 平台 | 租户 |
-|------|------|------|
-| 访问路径 | `/`（公共首页） | `/t/{tenantId}/*` |
-| 认证要求 | 无需登录 | 需要 JWT + X-Tenant-Id |
-| 数据隔离 | 无数据 | 所有业务数据按 tenantId 隔离 |
-| 路由 | 仅 `/`（VUE_PAGE_MAP scope='platform'） | 所有 `/t/:tenantId/*` 下的路由 |
+## homepage 与业务项目
 
-### 1.2 企业管理平台（homepage 项目）— 自举架构
+| 项目 | 角色 | 技术地位 |
+|---|---|---|
+| `homepage` | 企业管理平台，负责创建、删除、停用、查看业务项目 | 普通项目模型 + 系统保留职责 |
+| `app` 项目 | 业务应用，承载自己的模块、页面、数据和权限 | 普通项目模型 |
 
-> **核心理念：自举（Self-Bootstrapping）**
->
-> homepage **本身就是一个应用**（project），与用户创建的业务应用在架构上**完全同构**——
-> 它拥有自己的导航树、页面配置、路由表、数据表，与任何 `projectType="app"` 的项目使用相同的基础设施。
->
-> homepage 的特殊之处不在于它的技术实现，而在于它的**职能**：
-> 它用自身提供的页面配置能力来管理自身，用自身的导航体系来组织管理功能——这就是自举。
->
-> ```
-> homepage 应用 ≡ 一个普通应用 + 管理其他应用的能力
->                ↑                  ↑
->            同构基础设施          额外职能
->         （导航/页面/路由/数据）  （创建/配置/删除 app 项目）
-> ```
+`homepage` 不直接代管业务项目内部页面。每个项目都有自己的项目节点集合和自管理入口。
 
-#### 自举的具体含义
+## 项目节点树
 
-| 基础设施 | homepage 如何使用 | 业务应用如何使用 |
-|---------|------------------|----------------|
-| **导航树** | 组织平台管理功能（应用管理、系统管理等） | 组织业务功能 + 自身的系统设置 |
-| **页面配置** | dashboard / 应用管理页面 | 业务页面 + 页面管理 / 导航管理 / 开发工作台 |
-| **路由表** | routes.json 包含 dashboard / 应用列表 等 | routes.json 包含业务路由 + 系统设置路由 |
-| **数据表** | 存储应用列表、全局配置等管理数据 | 存储业务数据 |
-| **权限** | 管控谁可以创建/删除应用 | 管控业务数据读写 + 应用自身配置 |
-
-同一套 `Project → NavigationConfig → PageConfig → routes.json → DataTable` 管道，**homepage 和 app 走的是同一条路**。
-homepage 不是凌驾于应用体系之上的"管理层"，而是体系内的**第一个应用**，恰好承担了管理其他应用的职责。
-
-每个租户拥有 **1 个系统保留的自举应用（homepage）+ N 个用户自建业务应用**，二者均以 `ProjectEntity` 建模：
-
-| 项目类型 | projectType | projectId | sortOrder | 说明 |
-|---------|-------------|-----------|-----------|------|
-| **企业管理平台** | `"homepage"` | `"homepage"` | 0 | 随租户自动创建，**不可删除**，登录后默认落地，自举管理 |
-| **业务应用** | `"app"` | 自定义 ID | 100 | 由 homepage 应用创建，独立的工作空间 |
-
-#### 为什么 dashboard 必须属于 homepage 项目？
-
-`/t/{tenantId}/dashboard` 是 homepage 应用的**导航落地页**——不是游离于项目体系之外的静态页面，
-而是 homepage 应用的一部分，与业务应用中的首页地位等同。自举要求：
-
-1. **同构** — dashboard 和业务应用的页面一样，在 homepage 应用的导航树、路由表、page_config 表中注册
-2. **可编排** — 后续可通过 homepage 应用自身的页面管理功能，将 dashboard 从 Vue 组件迁移到配置驱动
-3. **统一导航** — dashboard 与应用管理、页面管理等管理页面在同一棵导航树中，用户无感知切换
-4. **权限一致** — homepage 应用的权限体系统一管控所有管理页面（包括 dashboard）的访问
-
-#### 职能边界：homepage 只管生命周期，应用自管理开发
-
-**核心原则**：homepage 不深入干预任何应用的内部实现，只做**应用生命周期管理**（创建、删除、状态）。
-页面管理、导航管理、站点管理、开发工作台等**应用开发工具**放在每个应用自身的「系统设置」中——即**应用自管理**。
-
-| 职能 | 归属 | 说明 |
-|------|------|------|
-| 创建应用 | homepage | 新建 `projectType="app"` 的项目 |
-| 删除应用 | homepage | 删除业务应用（homepage 不可删除） |
-| 应用状态管理 | homepage | 启用 / 停用 / 归档 |
-| 应用基本信息 | homepage | 名称、图标、描述、排序 |
-| 页面管理 | **应用自身** | 应用的系统设置 → 页面管理 |
-| 导航管理 | **应用自身** | 应用的系统设置 → 导航管理 |
-| 站点管理 | **应用自身** | 应用的系统设置 → 站点管理 |
-| 开发工作台 | **应用自身** | 应用的系统设置 → 开发工作台 / AI Studio |
-| 缓存管理 | **应用自身** | 应用的系统设置 → 缓存管理 |
-
-#### homepage 导航结构（精简）
-
-```
-homepage 项目导航树
-  ├── 📊 工作台 (/dashboard)          ← 登录后落地页，所有应用概览
-  ├── 📱 应用管理                      ← ⭐ 唯一核心职能
-  │     ├── 应用列表                    ← 查看所有 projectType="app" 的项目
-  │     ├── 创建应用                    ← 创建新项目（自动初始化导航/路由/系统设置）
-  │     └── 应用状态                    ← 启用 / 停用 / 归档 / 删除
-  └── ⚙️ 系统管理                      ← 平台级（非应用级）设置
-        ├── 用户管理
-        ├── 权限设置
-        └── 平台设置 (/settings)
+```text
+项目 => 子模块 || 页面
+子模块 => 子模块 || 页面
+页面 => 子页面 => 子页面
 ```
 
-#### 每个业务应用的系统设置（自管理）
+项目节点树同时承担：
 
-```
-业务应用导航树
-  ├── 📊 工作台                        ← 应用自己的 dashboard
-  ├── ...业务功能页面...                ← 应用的核心业务
-  └── ⚙️ 系统设置                      ← 应用自管理入口
-        ├── 📄 页面管理 (/page-manager) ← 管理本应用的页面配置
-        ├── 🧭 导航管理 (/nav-manager)  ← 管理本应用的导航树
-        ├── 🏗️ 站点管理 (/site-manager) ← 管理本应用的站点配置
-        ├── ⚡ 开发工作台 (/dev)         ← 本应用的开发调试
-        ├── 🤖 AI Studio                ← AI 驱动的页面生成（对本应用）
-        └── 🗄️ 缓存管理 (/cache-manager)← 本应用的缓存
-```
+- 项目内模块结构。
+- 页面入口结构。
+- 路由派生来源。
+- 页面功能策划来源。
+- 权限、上下文、跨项目引用等页面入口配置。
 
-> **关键洞察**：page-manager / nav-manager / dev 等 Vue 组件是**通用工具**，
-> 它们读取当前 `defaultProjectId` 来确定操作哪个项目的数据——
-> 同一套组件在 homepage 的系统设置中操作 homepage 数据，在 app-A 的系统设置中操作 app-A 数据。
-> 切换项目 = 切换数据作用域，工具代码不变。
+节点 `description` 是功能描述和用户需求。父级与本级描述会共同约束当前模块或页面。
 
-#### 生命周期
+## 项目策划
 
-```
-注册租户
-  → AuthController.registerTenant()
-    → ProjectService.ensureHomepage(tenantId)   ← 幂等，已存在则跳过
-      → INSERT ProjectEntity { projectId="homepage", projectType="homepage",
-                                name="企业管理平台", icon="🏗️", sortOrder=0 }
-    → migrateNavigation()                        ← 从 navigation-default.json 初始化导航树
-      → 包含 dashboard / 应用管理 / 开发工具 / 系统管理 等完整管理导航
-
-登录
-  → JWT { tenantId, defaultProjectId: "homepage" }
-  → 前端 getUser().defaultProjectId → api-paths.ts → 所有 API 自动路由到 homepage 项目
-  → 重定向到 /t/{tenantId}/dashboard（homepage 项目的导航落地页）
-  → App.vue reloadNavigation() → 加载 homepage 项目的管理导航树
-
-切换到业务应用（未来）
-  → 更新 defaultProjectId → API 路径自动切换到目标应用
-  → 加载目标应用的独立导航树
-  → 目标应用有自己的 dashboard / 页面 / 数据表
-
-返回管理平台
-  → defaultProjectId 恢复为 "homepage"
-  → 重新加载企业管理导航树
+```text
+项目策划 = 模块策划 + 页面策划
+模块策划 = 所属模块下的全子模块 + 页面 + 子页面策划
+页面策划 = 页面下的全子页面策划
 ```
 
-**保护机制**：`ProjectService.deleteProject()` 遇到 `projectType == "homepage"` 抛异常，防止误删。
+`spark-page-config` 的 `ProjectPlanningModel` 是项目策划的唯一模型入口。DevSystem 和 AI 生成页面时读取 `pageFeatures`，不自行从菜单节点拼接需求。
 
-### 1.3 业务应用（app 项目）— 与 homepage 完全同构
+## 后端 API
 
-由 homepage 应用的「应用管理」功能创建。关键认知：**业务应用与 homepage 在架构上完全同构**——
-它们使用完全相同的基础设施管道，没有任何"降级"或"简化"版本：
+作用域 API 显式包含 tenantId 和 projectId：
 
-- **导航树**（NavigationConfig）：应用自己的菜单结构，独立于 homepage 导航
-- **页面配置**（PageConfig）：应用自己的 rule.json / pagedata.json / script.js
-- **路由表**（routes.json）：`DynamicRouter` 从应用的 routes.json 加载
-- **数据表**（TableSchema + TableRow）：应用自己的业务数据
-- **权限**：应用自己的权限快照
-- **系统设置**：应用自带页面管理、导航管理、开发工作台等自管理功能
-
-同构意味着：业务应用拥有**完整的自管理能力**——自己的 dashboard、自己的页面管理、自己的导航管理，
-不需要"回到 homepage"才能配置自身。homepage 只在应用的创建和删除环节介入。
-
-### 1.4 自举关系图
-
-```
-┌─────────────────────────────────────────────────────────────────┐
-│  homepage 应用（企业管理平台）                                      │
-│                                                                 │
-│  基础设施（与 app 完全相同）：                                       │
-│    导航树 → 应用管理 / 开发工具 / 系统管理 / ...                      │
-│    页面配置 → dashboard / page-manager / nav-manager / ...        │
-│    路由表 → routes.json                                          │
-│    数据表 → 应用列表 / 全局配置 / ...                                │
-│                                                                 │
-│  额外职能（自举赋予）：                                              │
-│    创建 / 删除 / 状态管理业务应用（不深入干预应用内部）                 │
-│    ProjectService.createProject({ projectType: "app", ... })     │
-│                                                                 │
-│  API 路径：/api/tenants/{tid}/projects/homepage/...               │
-│                                                                 │
-│  切换入口 ──────────────┐                                        │
-└─────────────────────────┼────────────────────────────────────────┘
-                          ▼
-┌──────────────────────────────────────────┐
-│ app-A（业务应用）        app-B     app-C  │
-│                                          │
-│ 基础设施（与 homepage 完全相同）：           │
-│   导航树 → 业务功能 + 系统设置             │
-│   页面配置 → 业务页面 + 自管理页面          │
-│   路由表 → routes.json                    │
-│   数据表 → 业务数据                        │
-│   系统设置 → 页面/导航/站点管理 + 开发工作台 │
-│                                          │
-│ API: /api/tenants/{tid}/projects/{id}/... │
-│                                          │
-│ 返回入口 → defaultProjectId = "homepage"  │
-│            回到自举应用                    │
-└──────────────────────────────────────────┘
+```text
+/api/tenants/{tenantId}/projects/{projectId}/navigation
+/api/tenants/{tenantId}/projects/{projectId}/pages-config
+/api/tenants/{tenantId}/projects/{projectId}/data
 ```
 
-> **自举的关键洞察**：homepage 和 app 之间**没有父子层级**（技术层面），
-> 只有**职能分工**——homepage 管理应用的生命周期（创建/删除/状态），
-> 应用内部的开发和配置由应用自身的系统设置完成。
-> homepage 不深入干预任何应用的内部实现。
+语义对应：
 
-## 2. 后端 API 结构
+| API | 领域语义 |
+|---|---|
+| `/navigation` | 项目节点树 |
+| `/pages-config` | 页面四文件 |
+| `/data` | 项目数据表和业务数据 |
 
-### 2.1 作用域 API（需要 tenantId + projectId）
+页面文件兼容路由仍可从 Header 推断作用域：
 
-```
-/api/tenants/{tenantId}/projects/{projectId}/navigation     ← 导航 CRUD
-/api/tenants/{tenantId}/projects/{projectId}/pages-config    ← 页面配置
-/api/tenants/{tenantId}/projects/{projectId}/data            ← 数据表 CRUD
-```
-
-### 2.2 PageConfig 扁平兼容路由（从 Header 推断）
-
-```
-/api/pages-config/*   ← 从 X-Tenant-Id + X-Project-Id 请求头推断作用域
+```text
+/api/pages-config/*
+X-Tenant-Id
+X-Project-Id
 ```
 
-> **注意**：仅 PageConfigController 有扁平兼容路由。NavigationController 和 GenericTableController 必须在 URL 中显式传递 tenantId/projectId。
+新代码优先使用显式作用域 API 或由 `createProjectEditor()` 注入的 API 函数。
 
-### 2.3 认证 API（无需租户上下文）
+## 前端上下文
 
-```
-/api/auth/login              ← 登录
-/api/auth/register           ← 注册用户
-/api/auth/register-tenant    ← 注册新租户
-/api/auth/me                 ← 当前用户信息
-```
+登录后前端持有：
 
-### 2.4 全局 API（无租户隔离）
-
-```
-/api/config/default          ← 默认应用配置
-/api/tenants                 ← 租户列表
-/api/events                  ← SSE 事件流
-/api/ai/*                    ← AI 对话、元数据
-/api/logs                    ← 日志上报
+```text
+tenantId
+defaultProjectId
 ```
 
-## 3. 前端租户上下文链路
+`src/services/api-paths.ts` 根据当前用户生成：
 
-### 3.1 登录 → 存储 → 注入
-
-```
-LoginView → auth.login({ tenantId, username, password })
-  → 后端返回 JWT + AuthUser { tenantId, defaultProjectId }
-  → saveAuth(token, user) → localStorage
-  → 跳转 /t/{tenantId}/dashboard
-```
-
-### 3.2 API 请求头注入
-
-`src/services/http.ts` 的请求拦截器自动注入：
-
-```
-Authorization:  Bearer {JWT}
-X-Tenant-Id:    {user.tenantId}      ← 从 localStorage 读取
-X-Project-Id:   {user.defaultProjectId}  ← 默认 "homepage"
+```text
+getNavApi()                  => 当前项目节点树 API
+getProjectNavigationApi(id)  => 指定项目节点树 API
+getPageApi()                 => 当前项目页面四文件 API
+getProjectApi()              => 项目列表 API
+getDataApi()                 => 当前项目数据 API
 ```
 
-### 3.3 路由体系
+DevSystem 把这些函数注入 `createProjectEditor()`，之后所有项目模型读写都通过 `spark-page-config/project`。
 
-| 路由类型 | 路径模式 | 组件 | 注册方式 | 所属项目 |
-|---------|---------|------|--------|----------|
-| 公共路由 | `/`、`/about`、`/login` 等 | Vue 组件 | VUE_PAGE_MAP scope='platform'（preAuthNavTree 自动派生） | 无（平台级） |
-| 管理页面路由 | `/t/:tenantId/dashboard` 等 | Vue 组件 | staticRoutes → 同步到 page_config → routes.json | homepage |
-| 配置页面路由 | `/t/:tenantId/{pageId}` | SparkPageRenderer | DynamicRouter 从 routes.json 加载 | homepage 或 app |
+## 路由派生
 
-> **关键**：管理页面路由（dashboard / page-manager / nav-manager 等）虽然使用 Vue 组件渲染，
-> 但它们通过 `syncStaticRoutesToBackend()` 同步到 homepage 项目的 `page_config` 表，
-> 并出现在 homepage 项目的 `routes.json` 和导航树中。
-> 后端是路由的**单一数据源**，前端 staticRoutes 仅作为组件映射和离线兜底。
-
-### 3.4 路由守卫规则
-
-```
-1. 未登录 + 非平台路由 → /（平台首页）
-2. 已登录 + /login → /t/{tenantId}{getNavHomePath()}
-3. 已登录 + 旧扁平路径 → /t/{tenantId}{path}
+```text
+项目节点树
+  -> page / sub-page 节点
+  -> pageId
+  -> DynamicRouter
+  -> SparkPageRenderer
+  -> PageNode.load()
 ```
 
-## 4. 前端作用域 API 路径
+路由只负责把用户带到页面；页面内容仍由 `PageNode` 加载并投影。模块节点不直接渲染页面，除非它被显式转为页面节点。
 
-`src/services/api-paths.ts` 提供动态函数，根据当前登录用户的 tenantId/projectId 生成作用域路径：
+## 项目切换
 
-```typescript
-getNavApi()   → /api/tenants/{tenantId}/projects/{projectId}/navigation
-getPageApi()  → /api/tenants/{tenantId}/projects/{projectId}/pages-config
-getDataApi()  → /api/tenants/{tenantId}/projects/{projectId}/data
+```text
+切换 defaultProjectId
+  -> API 路径切换到目标项目
+  -> 重新加载项目节点树
+  -> 重新注册动态路由
+  -> DevSystem 重新创建或刷新 ProjectEditor
 ```
 
-> 所有管理界面（DevWorkbench）通过这些函数获取正确的 API 路径（原 PageManager、NavModuleManager、SiteManager 已合并到 DevSystem）。
-> http.ts 拦截器额外注入 X-Tenant-Id/X-Project-Id 请求头（双重保险，URL + Header 一致）。
+项目切换不是简单菜单切换，而是整个 `ProjectModel` 作用域切换。
 
-## 5. 数据流全景图
+## 关键约束
 
-```
-用户登录
-  → JWT { tenantId: "lmspark", defaultProjectId: "homepage" }
-  → localStorage { spark_token, spark_user }
-  → http.ts 拦截器自动注入 X-Tenant-Id / X-Project-Id: "homepage"
-
-平台首页 (/)
-  → 公共路由，无 API 调用
-  → 登录成功 → /t/{tenantId}{getNavHomePath()}
-
-进入企业管理平台 (/t/lmspark/dashboard)
-  → App.vue onMounted
-    → syncStaticRoutesToBackend()  ← 管理页面路由同步到 homepage 项目
-    → registerRoutes()             ← 从 homepage 项目的 routes.json 加载所有路由
-    → reloadNavigation()           ← 加载 homepage 项目的管理导航树
-    → 渲染 dashboard（homepage 项目的落地页）
-
-homepage 导航点击 → /t/lmspark/{管理页面}
-  ├── pageType="vue-component" → 使用 Vue 组件（page-manager / nav-manager 等）
-  └── pageType="config" → SparkPageRenderer
-      → ConfigLoader.load({pageId})
-      → GET /api/pages-config/{pageId}/rule.json      (扁平路由 + Header)
-      → GET /api/pages-config/{pageId}/pagedata.json
-      → GET /api/pages-config/{pageId}/script.js
-
-切换到业务应用（未来）
-  → 更新 defaultProjectId = "appId"
-  → reloadNavigation()  ← 加载业务应用的独立导航树
-  → registerRoutes()    ← 加载业务应用的 routes.json
-  → 进入业务应用的工作空间
-
-返回管理平台
-  → defaultProjectId = "homepage"
-  → reloadNavigation()  ← 恢复企业管理导航树
-```
-
-## 6. 关键设计约束
-
-1. **homepage 项目 = 企业管理平台**：不是普通「首页」，而是创建/管理业务应用的控制中心，dashboard 是其落地页
-2. **后端是单一数据源**：所有路由、导航、页面配置都存储在后端，前端通过 API 获取
-3. **JWT tenantId 验证**：后端 JwtAuthFilter 检查 X-Tenant-Id 请求头与 JWT claim 一致
-4. **homepage 不可删除**：每个租户的 homepage 项目由系统保证存在
-5. **DynamicRouter 双通道**：vue-component 路由用预注册组件，config 路由用 PageRenderer
-6. **dashboard 归属 homepage 项目**：通过 `syncStaticRoutesToBackend()` 同步到 page_config 表，出现在 homepage 项目的 routes.json 和导航树中
-7. **ConfigLoader 走扁平路由**：`/api/pages-config/{pageId}/{file}`（依赖 Header 推断 tenant/project）
-8. **管理 API 走显式路由**：`/api/tenants/{tid}/projects/{pid}/...`（URL 中包含完整作用域）
-9. **项目切换 = 导航切换**：切换 `defaultProjectId` 后，导航树和路由表自动切换到目标项目
-10. **应用自管理**：页面管理/导航管理/开发工作台等工具在每个应用的系统设置中，homepage 不代管
-
-## 7. 演进路线
-
-### 已实现
-
-- ✅ homepage 项目自动创建与保护
-- ✅ 管理页面通过 staticRoutes 同步到 homepage 项目
-- ✅ homepage 导航树包含 dashboard + 管理工具
-- ✅ 所有 API 通过 `defaultProjectId = "homepage"` 自动路由到管理平台
-
-### 近期（应用管理 + 自管理）
-
-- 📱 应用管理页面（创建 / 列表 / 状态管理 / 删除业务应用）
-- 🔄 项目切换机制（更新 `defaultProjectId` + 重载导航/路由）
-- ⚙️ 应用系统设置（每个应用内置页面管理/导航管理/开发工作台）
-- 📊 dashboard 可编排化（从 Vue 组件迁移到 config 驱动）
-
-### 远期
-
-- 🎨 dashboard 拖拽式布局编辑器
-- 📦 应用模板（从模板一键创建业务应用 + 预置导航/页面/数据/系统设置）
-- 🔐 应用级权限（不同用户看到不同的应用列表）
-- 🧩 系统设置组件化（统一的设置面板，可在任何应用中复用）
+1. 项目是业务应用边界。
+2. 一个项目由平铺项目节点集合组成，页面节点是其中一种节点类型。
+3. 项目节点树即项目内模块树，不只是导航菜单。
+4. 节点 `description` 是功能描述和用户需求。
+5. `homepage` 是系统保留项目，不是技术上的上帝层。
+6. DevSystem 是项目内自管理工具，只通过 `spark-page-config/project` 连接后端。
+7. 后端存储可以是 DB + file，但模型包保持纯模型，不绑定存储实现。
+8. 旧 `navigation` API 命名只能作为传输命名，不能反向污染领域模型。

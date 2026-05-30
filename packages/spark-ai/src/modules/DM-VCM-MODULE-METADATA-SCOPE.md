@@ -10,12 +10,15 @@ LLM 只能通过固定工具理解语义：
 
 - `module_query`
 - `module_guide`
+- `module_function_guide`
 - `module_find`
 - `module_attr`
 - `module_call`
 - `human_question`
+- 业务函数 direct tool：`<functionName>`
 
-业务函数通过 `module_call({ path, functionName, args })` 执行。`path` 由 `module_find` 返回的实例 id 和 `pathPattern` 构造。
+业务函数优先通过 OpenAI direct function 执行：`functionName({ path, args })`。
+`path` 由 `module_find` 返回的实例 id 和 `pathPattern` 构造；`module_call({ path, functionName, args })` 仅保留为旧协议兼容。
 
 ## Metadata Tags
 

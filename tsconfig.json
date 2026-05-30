@@ -45,8 +45,9 @@
       "@spark-view/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],
       "@spark-view/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],
       "@spark-view/spark-page-config": ["./packages/spark-page-config/src/index.ts"],
-      "@spark-view/spark-page-config/editor": ["./packages/spark-page-config/src/editor/page-editor.ts"],
-      "@spark-view/spark-page-config/ai": ["./packages/spark-page-config/src/ai/index.ts"],
+      "@spark-view/spark-page-config/project": ["./packages/spark-page-config/src/project.ts"],
+      "@spark-view/spark-page-config/ai": ["./packages/spark-page-config/src/ai.ts"],
+      "@spark-view/spark-page-config/leave-request": ["./packages/spark-page-config/src/leave-request/index.ts"],
       "@spark-view/spark-page-config/json-document": ["./packages/spark-page-config/src/json-document-public.ts"]
     },
     "types": ["vite/client", "vitest/globals"]

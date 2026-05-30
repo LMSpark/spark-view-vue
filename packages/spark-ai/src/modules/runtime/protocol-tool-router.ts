@@ -7,15 +7,17 @@
  *   按 toolName 路由到对应的内部组件（Knowledge / Navigator / Attributes / Functions）。
  *   是 AiModuleRuntime.executeTool() 的核心实现。
  *
- * 【8 条路由】
+ * 【路由】
  *   module_query   → knowledge.queryModules / queryFunctions
  *   module_guide   → knowledge.guideKind
  *   module_attribute_guide → knowledge.guideAttribute
  *   module_function_guide → knowledge.guideFunction
  *   module_find    → navigator.listChildren / findInstance
  *   module_attr    → attributes.get / attributes.set
- *   module_call    → functionInvoker.invoke
+ *   module_call    → functionInvoker.invoke（兼容旧协议）
+ *   <functionName> → functionInvoker.invoke（OpenAI direct function protocol: arguments={path,args}）
  *   human_question → knowledge.guideHumanQuestion
+ *   agent_complete → 工具化收尾，避免自然语言正文完成
  *
  * 【错误处理】
  *   路径解析失败（AiModulePathParseError）→ INVALID_PATH_* 错误码
@@ -27,6 +29,7 @@
  */
 
 import type { AiJsonValue } from '../../json'
+import type { AiModuleRegistry } from '../internal/ai-module-registry'
 import type { FunctionInvoker } from '../internal/function-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
 import type { Navigator } from '../internal/navigator'
@@ -45,6 +48,14 @@ import {
 } from './protocol-tool-args'
 import { ProtocolResultProjector } from './protocol-result-projector'
 
+type ProtocolToolRouterOptions = Readonly<{
+  attributes: AttributeAccessor
+  functions: FunctionInvoker
+  navigator: Navigator
+  knowledge: AiModuleKnowledgeProjector
+  kinds: AiModuleRegistry
+}>
+
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · ProtocolToolRouter 类
 // ═══════════════════════════════════════════════════════════════
@@ -54,20 +65,26 @@ import { ProtocolResultProjector } from './protocol-result-projector'
  *
  * 组合四个内部组件完成工具调用的完整分发：
  *   attributes — 属性读写（module_attr）
- *   functions  — 函数调用（module_call）
+ *   functions  — 函数调用（module_call 兼容旧协议；业务函数名直连为标准协议）
  *   navigator  — 实例导航（module_find）
  *   knowledge  — 知识投影（module_query / module_attribute_guide / module_function_guide / human_question）
  */
 export class ProtocolToolRouter {
   private readonly argsParser = new ProtocolToolArgsParser()
   private readonly resultProjector = new ProtocolResultProjector()
+  private readonly attributes: AttributeAccessor
+  private readonly functions: FunctionInvoker
+  private readonly navigator: Navigator
+  private readonly knowledge: AiModuleKnowledgeProjector
+  private readonly kinds: AiModuleRegistry
 
-  public constructor(
-    private readonly attributes: AttributeAccessor,
-    private readonly functions: FunctionInvoker,
-    private readonly navigator: Navigator,
-    private readonly knowledge: AiModuleKnowledgeProjector,
-  ) {}
+  public constructor(options: ProtocolToolRouterOptions) {
+    this.attributes = options.attributes
+    this.functions = options.functions
+    this.navigator = options.navigator
+    this.knowledge = options.knowledge
+    this.kinds = options.kinds
+  }
 
   /**
    * 执行工具调用。
@@ -82,11 +99,14 @@ export class ProtocolToolRouter {
   ): Promise<AiModuleResult<AiJsonValue>> {
     try {
       if (!this.argsParser.isProtocolToolName(toolName)) {
-        return AiModuleResult.failCode(
-          'UNKNOWN_TOOL',
-          `工具 "${toolName}" 未在固定 AI module 协议中定义`,
-          `可用工具: ${Object.values(PROTOCOL_TOOL_NAMES).join(', ')}`,
-        )
+        if (!this.isDirectFunctionToolName(toolName)) {
+          return AiModuleResult.failCode(
+            'UNKNOWN_TOOL',
+            `工具 "${toolName}" 未在 AI module 协议或已声明业务函数中定义`,
+            `可用协议工具: ${Object.values(PROTOCOL_TOOL_NAMES).join(', ')}；业务函数请先 module_query({ includeFunctions: true }) 查询。`,
+          )
+        }
+        return await this.routeDirectModuleFunction(toolName, rawArgs, host)
       }
 
       switch (toolName) {
@@ -98,6 +118,7 @@ export class ProtocolToolRouter {
         case PROTOCOL_TOOL_NAMES.moduleAttr: return await this.routeModuleAttr(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleCall: return await this.routeModuleCall(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.humanQuestion: return this.routeHumanQuestion(rawArgs)
+        case PROTOCOL_TOOL_NAMES.agentComplete: return this.routeAgentComplete(rawArgs)
       }
     } catch (error) {
       if (error instanceof AiModulePathParseError) {
@@ -226,9 +247,9 @@ export class ProtocolToolRouter {
     return this.resultProjector.voidResult(result)
   }
 
-  // ── module_call — 函数调用 ──────────────────────────────────
+  // ── module_call — 兼容函数调用 ───────────────────────────────
 
-  /** 路由 module_call：解析路径 → 校验非根路径 → 委托 functionInvoker */
+  /** 路由 module_call：兼容旧协议，解析路径 → 校验非根路径 → 委托 functionInvoker */
   private async routeModuleCall(
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
@@ -241,7 +262,34 @@ export class ProtocolToolRouter {
       return AiModuleResult.failCode(
         'INVALID_TOOL_ARGS',
         'module_call.path 必须指向具体模块实例，不能使用根路径 "/"',
-        '先用 module_find 定位实例 path，再调用 module_call。',
+        '先用 module_find 定位实例 path，再调用目标 direct function；旧协议兼容场景使用 module_call 路由。',
+      )
+    }
+    return this.functions.invoke({
+      path,
+      kindPath,
+      functionName,
+      args: callArgs,
+      ...(host === undefined ? {} : { host }),
+    })
+  }
+
+  // ── <functionName> — 标准 OpenAI 业务函数调用 ────────────────
+
+  /** 路由直接业务函数：tool_call.function.name 就是 functionName，arguments={path,args}。 */
+  private async routeDirectModuleFunction(
+    functionName: string,
+    args: ProtocolToolArgs,
+    host?: AiModuleHostContext,
+  ): Promise<AiModuleResult<AiJsonValue>> {
+    const path = AiModulePath.parse(this.argsParser.requireString(args, 'path'))
+    const callArgs = this.argsParser.requireObject(args, 'args')
+    const kindPath = path.segments.map((segment) => segment.kind)
+    if (kindPath.length === 0) {
+      return AiModuleResult.failCode(
+        'INVALID_TOOL_ARGS',
+        `${functionName}.path 必须指向具体模块实例，不能使用根路径 "/"`,
+        '先用 module_find 定位实例 path，再调用具体业务函数。',
       )
     }
     return this.functions.invoke({
@@ -265,5 +313,29 @@ export class ProtocolToolRouter {
       ...(missingFacts === undefined ? {} : { missingFacts }),
       ...(candidateOptions === undefined ? {} : { candidateOptions }),
     }))
+  }
+
+  // ── agent_complete — 工具化完成当前生产线 ───────────────────
+
+  private routeAgentComplete(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
+    const summary = this.argsParser.requireString(args, 'summary').trim()
+    return AiModuleResult.ok({
+      completed: true,
+      summary,
+    }, undefined, {
+      agentLifecycle: 'complete',
+      finalAssistantMessage: summary,
+    })
+  }
+
+  private isDirectFunctionToolName(toolName: string): boolean {
+    if (!/^[A-Za-z0-9_-]{1,64}$/.test(toolName)) return false
+    let count = 0
+    for (const moduleKind of this.kinds.list()) {
+      for (const fn of moduleKind.functions) {
+        if (fn.name === toolName) count += 1
+      }
+    }
+    return count === 1
   }
 }

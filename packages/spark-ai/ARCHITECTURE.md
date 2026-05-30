@@ -2,6 +2,16 @@
 
 > SSOT for `packages/spark-ai`. The package is intentionally breaking: old `schema`, `module-semantic`, `host`, dynamic tool names, and `$paths` are not public compatibility surfaces.
 
+## Governance Priority
+
+`spark-ai` follows this order when philosophy, protocol, generated code, structure, and compatibility conflict:
+
+```text
+理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容
+```
+
+Compatibility is the last constraint, not the first. If an old public shape makes the production line less stable, harder for AI to generate correctly, or inconsistent with the runtime protocol, narrow or remove it and keep compatibility only at the boundary.
+
 ## Public Subpaths
 
 `package.json` exposes exactly four public entries:
@@ -51,7 +61,8 @@ packages/spark-ai/src/
 │       ├── ai-module-runtime.ts
 │       ├── protocol-tool-args.ts
 │       ├── protocol-tool-router.ts
-│       └── protocol-result-projector.ts
+│       ├── protocol-result-projector.ts
+│       └── runtime-inspector.ts
 └── agent/
     ├── business/
     ├── chat/
@@ -60,9 +71,11 @@ packages/spark-ai/src/
     └── transport/
 ```
 
-## Fixed Tool Protocol
+## Tool Protocol
 
-Runtime exposes only these transport-ready tools:
+Runtime exposes three tool groups.
+
+Protocol tools are stable production-line controls:
 
 - `module_query`
 - `module_guide`
@@ -70,10 +83,23 @@ Runtime exposes only these transport-ready tools:
 - `module_function_guide`
 - `module_find`
 - `module_attr`
-- `module_call`
 - `human_question`
+- `agent_complete`
 
-`module_call` uses `{ path, functionName, args }`. Instance identity comes from `path` plus current agent session scope.
+Business functions are exposed as standard OpenAI direct function tools:
+
+```text
+tool_call.function.name = <registered functionName>
+tool_call.function.arguments = { "path": "/kind[id]", "args": { ... } }
+```
+
+`functionName` stays in the OpenAI tool name. Instance identity stays in `path`; function payload stays in `args`.
+
+Compatibility tools are kept only at the boundary:
+
+- `module_call({ path, functionName, args })`
+
+`module_call` is not the primary production protocol. It exists for legacy callers and compatibility tests; new business flows should use direct function tools.
 
 ## Session History
 

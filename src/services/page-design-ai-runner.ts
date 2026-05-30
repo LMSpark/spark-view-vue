@@ -2,8 +2,8 @@
  * App service adapter for DevSystem pageDesign AI.
  *
  * Keeps the UI layer away from AI platform tokens and page-config AI registration:
- * UI passes a generic capability consumer and PageEditor, this adapter wires them
- * to the pageDesign business registration and live PageModel edit host.
+ * UI passes a generic capability consumer and ProjectEditor, this adapter wires them
+ * to the pageDesign business registration and live PageNode edit host.
  */
 import { createAiRunAdapter, noopTraceSink } from '@spark-view/spark-app'
 import type {
@@ -15,7 +15,7 @@ import type {
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
-import type { PageEditor } from '@spark-view/spark-page-config/editor'
+import type { ProjectEditor } from '@spark-view/spark-page-config/project'
 import {
   PAGE_DESIGN_MODULE_ID,
   ensurePageDesignBusiness,
@@ -44,7 +44,7 @@ export type PageDesignAiRunEvents = {
 
 export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
   pageId: string
-  editor: PageEditor
+  editor: ProjectEditor
   consumeCapability: SparkCapabilityConsumer | null
   events?: PageDesignAiRunEvents
   trace?: AiRunTraceSink
@@ -69,7 +69,7 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     throw new Error('AI Host 未注册，无法启动 pageDesign。')
   }
 
-  assertActivePageModelLoaded(command.editor, pageId)
+  assertActivePageNodeLoaded(command.editor, pageId)
 
   const pageDesignHost = ensurePageDesignBusiness({
     host: aiAgentHost,
@@ -132,16 +132,16 @@ function createPageDesignTraceSink(options: CreatePageDesignTraceSinkOptions): A
   }
 }
 
-function assertActivePageModelLoaded(editor: PageEditor, pageId: string): void {
+function assertActivePageNodeLoaded(editor: ProjectEditor, pageId: string): void {
   const activePage = editor.getActivePage()
   if (activePage === null) {
-    throw new Error('pageDesign AI requires the current PageModel to be opened before editing.')
+    throw new Error('pageDesign AI requires the current PageNode to be opened before editing.')
   }
   if (activePage.pageId !== pageId) {
-    throw new Error(`pageDesign AI active PageModel mismatch: expected "${pageId}", got "${activePage.pageId}".`)
+    throw new Error(`pageDesign AI active PageNode mismatch: expected "${pageId}", got "${activePage.pageId}".`)
   }
   if (!activePage.isLoaded) {
-    throw new Error(`pageDesign AI requires PageModel "${pageId}" to be loaded before editing.`)
+    throw new Error(`pageDesign AI requires PageNode "${pageId}" to be loaded before editing.`)
   }
 }
 

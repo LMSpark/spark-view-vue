@@ -15,11 +15,12 @@ import {
   createPageDesignBusinessRegistration,
   ensurePageDesignBusiness,
   type PageDesignRunInput,
-} from '../src/ai/index'
-import type { PageDesignEditHost } from '../src/design/page-edit-session'
+} from '../src/ai'
+import type { PageDesignEditHost } from '../src/page-model/update/page-edit-session'
+import type { NavigationNodeDraft } from '../src/page-model/navigation/nav-editing'
 import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { PageDesignService } from '../src/design/page-design-service'
+import { PageDesignService } from '../src/page-model/update/page-design-service'
 import { isRecord } from '@spark-view/spark-utils'
 import { getArray, getRecord } from './helpers/test-utils'
 
@@ -35,12 +36,32 @@ function resultStepCount(value: unknown): number {
 
 function createHost(options: { script?: string; style?: string } = {}): {
   host: PageDesignEditHost
-  reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number }
+  reads: () => { script: string; style: string; nodeChanged: number; dataChanged: number; navTitle: string; navIcon: string }
+  nodeTree: SparkNodeTree
+  dataSetTool: DataSetCrudTool
 } {
   let script = options.script ?? 'export default {}'
   let style = options.style ?? '.page { color: red; }'
   let nodeChanged = 0
   let dataChanged = 0
+  let navDraft: NavigationNodeDraft = {
+    id: 'page-node',
+    title: '未命名页面',
+    icon: 'Document',
+    nodeKind: 'page' as const,
+    dividerAfter: false,
+    description: '',
+    path: '/page-design-test',
+    redirect: '',
+    linkTarget: 'iframe' as const,
+    parentPageId: '',
+    childPlacement: '',
+    order: 0,
+    hidden: false,
+    disabled: false,
+    refId: '',
+    permissionMode: 'masked' as const,
+  }
   const nodeTree = SparkNodeTree.fromJson({ type: 'page', props: {}, children: [] })
   const dataSetTool = new DataSetCrudTool('page-design-test')
   return {
@@ -53,8 +74,12 @@ function createHost(options: { script?: string; style?: string } = {}): {
       writeScript: (content) => { script = content },
       readStyle: () => style,
       writeStyle: (content) => { style = content },
+      getNavDraft: () => navDraft,
+      onNavDraftChanged: (patch) => { navDraft = { ...navDraft, ...patch } },
     },
-    reads: () => ({ script, style, nodeChanged, dataChanged }),
+    reads: () => ({ script, style, nodeChanged, dataChanged, navTitle: navDraft.title, navIcon: navDraft.icon }),
+    nodeTree,
+    dataSetTool,
   }
 }
 
@@ -154,6 +179,17 @@ function pageDesignCall(
   }
 }
 
+function pageDesignDirectCall(
+  childKind: string,
+  args: Readonly<Record<string, AiJsonValue>> = {},
+  pageId = 'page-designer',
+): Readonly<Record<string, AiJsonValue>> {
+  return {
+    path: `/${PAGE_DESIGN_MODULE_ID}[${pageId}]/${childKind}[${pageId}]`,
+    args,
+  }
+}
+
 describe('pageDesign host business registration', () => {
   it('lets the page-design service be manually orchestrated without an AI session', async () => {
     const { host, reads } = createHost()
@@ -177,15 +213,70 @@ describe('pageDesign host business registration', () => {
     expect(service.getState(context).phase).toBe('editing')
   })
 
-  it('registers pageDesign as root kind with five child AiModule kinds', async () => {
+  it('detects production stages from the PageNode snapshot before mapping to flow steps', () => {
+    const page = createHost({ script: 'export default {}', style: '.page {}' })
+    const service = new PageDesignService({ getEditHost: () => page.host })
+    const context = {
+      pageId: 'stage-page',
+      requestId: 'stage-run',
+    }
+
+    expect(service.bootstrap(context)).toMatchObject({ ok: true })
+    const initialProgress = service.describeProgress(context)
+    if (!initialProgress.ok) throw new Error(initialProgress.msg)
+    const initialProgressData = initialProgress.data
+    if (!isRecord(initialProgressData) || !isRecord(initialProgressData['stageDetection'])) throw new Error('expected stage detection')
+    const initialDetection = initialProgressData['stageDetection']
+    expect(initialDetection['sourceOfTruth']).toBe('PageNode')
+    expect(initialDetection['decisionOrder']).toEqual(['PageNode', '100-step-flow', 'four-file-edit'])
+    expect(initialDetection['finalReady']).toBe(false)
+    if (!Array.isArray(initialDetection['nextActions'])) throw new Error('expected next actions')
+    expect(initialDetection['nextActions'][0]).toContain('standard-page.buildManagementWorkbench')
+
+    const assembled = service.buildManagementWorkbench(context, {
+      title: '学生成绩管理',
+      entityName: 'StudentGrade',
+      fields: [
+        { name: 'studentName', label: '学生姓名', type: 'string', role: 'title', required: true },
+        { name: 'className', label: '班级', type: 'string', role: 'group' },
+        { name: 'subject', label: '科目', type: 'string', role: 'category', options: ['语文', '数学'] },
+        { name: 'score', label: '成绩', type: 'number', role: 'score' },
+      ],
+      filters: ['班级', '科目'],
+      metrics: ['学生数', '平均分', '优秀人数'],
+      primaryAction: '保存成绩',
+    })
+    expect(assembled).toMatchObject({ ok: true })
+
+    const readyProgress = service.describeProgress(context)
+    if (!readyProgress.ok) throw new Error(readyProgress.msg)
+    const readyProgressData = readyProgress.data
+    if (!isRecord(readyProgressData) || !isRecord(readyProgressData['stageDetection'])) throw new Error('expected ready stage detection')
+    const detection = readyProgressData['stageDetection']
+    expect(detection['sourceOfTruth']).toBe('PageNode')
+    expect(detection['finalReady']).toBe(true)
+    expect(detection['nextPhase']).toBe(null)
+
+    if (!isRecord(detection['metrics'])) throw new Error('expected metrics')
+    const metrics = detection['metrics']
+    expect(metrics['tableCount']).toBe(1)
+    expect(Number(metrics['dataViewBindingCount'])).toBeGreaterThan(0)
+
+    if (!Array.isArray(detection['phases'])) throw new Error('expected phases')
+    const phases = detection['phases']
+    const dependencyPhase = phases.find((item) => isRecord(item) && item['phase'] === '视图依赖')
+    expect(isRecord(dependencyPhase) ? dependencyPhase['status'] : null).toBe('ready')
+  })
+
+  it('registers pageDesign as root kind with standard parts and low-level child AiModule kinds', async () => {
     const { host } = createHost()
     const registration = createPageDesignBusinessRegistration({ getEditToolHost: () => host })
     const context = hostContext('page-designer')
     const started = await startAiAgentRegistrationSession(registration, context)
 
     expect(registration.moduleId).toBe(PAGE_DESIGN_MODULE_ID)
-    expect(registration.description).toBe('页面四文件编辑。')
-    expect(started.tools.map((tool) => tool.function.name)).toEqual([
+    expect(registration.description).toBe('页面 PageNode 生产线。')
+    expect(started.tools.map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'module_query',
       'module_guide',
       'module_attribute_guide',
@@ -194,7 +285,15 @@ describe('pageDesign host business registration', () => {
       'module_attr',
       'module_call',
       'human_question',
-    ])
+      'describeProgress',
+      'buildManagementWorkbench',
+      'writeScript',
+      'writeStyle',
+      'addNodes',
+      'createTable',
+      'queryPayloads',
+      'guidePayload',
+    ]))
 
     const listed = await executeDesignTool(registration, 'module_find', { path: '/' }, context)
     const ids = getArray(listed).map((entry) => isRecord(entry) ? entry['id'] : null)
@@ -212,14 +311,14 @@ describe('pageDesign host business registration', () => {
     const rootDescription = getRecord(await executeDesignTool(registration, 'module_guide', {
       kind: PAGE_DESIGN_MODULE_ID,
     }, context))
-    expect(rootDescription['children']).toEqual(['lifecycle', 'text-model', 'payload-catalog', 'node-tree', 'dataset'])
+    expect(rootDescription['children']).toEqual(['lifecycle', 'standard-page', 'text-model', 'payload-catalog', 'node-tree', 'dataset'])
 
     const childRefs = getArray(await executeDesignTool(registration, 'module_find', {
       path: '/pageDesign[page-designer]',
     }, context))
-    expect(childRefs).toHaveLength(5)
+    expect(childRefs).toHaveLength(6)
 
-    for (const kind of ['lifecycle', 'text-model', 'payload-catalog', 'node-tree', 'dataset']) {
+    for (const kind of ['lifecycle', 'standard-page', 'text-model', 'payload-catalog', 'node-tree', 'dataset']) {
       const found = await executeDesignTool(registration, 'module_find', {
         path: '/pageDesign[page-designer]',
         childKind: kind,
@@ -336,17 +435,23 @@ describe('pageDesign host business registration', () => {
     expect(prompt).toContain('"pageId":"page-designer"')
     expect(prompt).toContain('工具通道硬约束')
     expect(prompt).toContain('真实 tool_calls')
+    expect(prompt).toContain('tool_calls 数组长度必须为 1')
+    expect(prompt).toContain('禁止在同一轮并行发起多个查询或写入')
+    expect(prompt).toContain('直接函数参数规则')
+    expect(prompt).toContain('SSOT 规则')
+    expect(prompt).toContain('最小可验收门禁')
     expect(prompt).toContain('function.name="module_find"')
     expect(prompt).toContain('function.arguments={"path":"/","childKind":"pageDesign","query":{"id":"page-designer"}}')
     expect(prompt).toContain('禁止在正文输出 {"tool_call":...}')
     expect(prompt).toContain('无正文')
     expect(prompt).toContain('Host 返回 ref.id 后')
-    expect(prompt).toContain('"functionName":"describeProgress"')
-    expect(prompt).toContain('"functionName":"describeDesignFlow"')
+    expect(prompt).toContain('每轮只调用一个真实 tool_call')
+    expect(prompt).toContain('describeProgress({"path"')
+    expect(prompt).toContain('describeDesignFlow({"path"')
     expect(prompt).toContain('"intent":messages[0].content')
-    expect(prompt).toContain('100 步流程门禁')
+    expect(prompt).toContain('阶段成果门禁')
     expect(prompt).toContain('入口(1-10) -> 盘点(11-20)')
-    expect(prompt).toContain('写入规则：dataset 负责步骤 21-88')
+    expect(prompt).toContain('写入建议：通常先让数据事实支撑 UI')
   })
 
   it('carries pageDesign mode and operation boundaries into the 100-step orchestration', () => {
@@ -406,13 +511,13 @@ describe('pageDesign host business registration', () => {
     }), context)
     expect(resultStepCount(getRecord(designFlow))).toBe(10)
 
-    const writeScript = await executeDesignTool(registration, 'module_call', pageDesignCall('text-model', 'writeScript', {
+    const writeScript = await executeDesignTool(registration, 'writeScript', pageDesignDirectCall('text-model', {
       content: 'export default { mounted() {} }',
     }), context)
     expect(writeScript.ok).toBe(true)
     expect(reads().script).toBe('export default { mounted() {} }')
 
-    const longSignatureScript = await executeDesignTool(registration, 'module_call', pageDesignCall('text-model', 'writeScript', {
+    const longSignatureScript = await executeDesignTool(registration, 'writeScript', pageDesignDirectCall('text-model', {
       content: 'function handleSubmit(form, row, table, page) { return form }',
     }), context)
     expect(longSignatureScript.ok).toBe(false)
@@ -420,10 +525,10 @@ describe('pageDesign host business registration', () => {
     expect(longSignatureScript.checks?.[0]?.message).toContain('长位置参数函数签名')
     expect(reads().script).toBe('export default { mounted() {} }')
 
-    const readScript = await executeDesignTool(registration, 'module_call', pageDesignCall('text-model', 'readScript'), context)
+    const readScript = await executeDesignTool(registration, 'readScript', pageDesignDirectCall('text-model'), context)
     expect(readScript).toMatchObject({ ok: true, data: { content: 'export default { mounted() {} }' } })
 
-    const payloads = await executeDesignTool(registration, 'module_call', pageDesignCall('payload-catalog', 'queryPayloads', {
+    const payloads = await executeDesignTool(registration, 'queryPayloads', pageDesignDirectCall('payload-catalog', {
       key: 'r-button',
       limit: 1,
     }), context)
@@ -439,7 +544,7 @@ describe('pageDesign host business registration', () => {
     expect(payloadItems[0]['moduleKind']).toBe('node-tree')
     expect(payloadItems[0]['payloadRef']).toBe('spark.component')
 
-    const payloadGuide = await executeDesignTool(registration, 'module_call', pageDesignCall('payload-catalog', 'guidePayload', {
+    const payloadGuide = await executeDesignTool(registration, 'guidePayload', pageDesignDirectCall('payload-catalog', {
       key: 'r-button',
     }), context)
     const payloadGuideData = getRecord(payloadGuide)
@@ -460,18 +565,18 @@ describe('pageDesign host business registration', () => {
     expect(paramsSchema['properties']).toHaveProperty('action')
     expect(paramsSchema['properties']).toHaveProperty('label')
 
-    const displayPayloads = await executeDesignTool(registration, 'module_call', pageDesignCall('payload-catalog', 'queryPayloads', {
+    const displayPayloads = await executeDesignTool(registration, 'queryPayloads', pageDesignDirectCall('payload-catalog', {
       key: 'display-statistic',
       limit: 1,
     }), context)
     expect(resultItemCount(getRecord(displayPayloads))).toBe(1)
 
-    const displayGuide = await executeDesignTool(registration, 'module_call', pageDesignCall('payload-catalog', 'guidePayload', {
+    const displayGuide = await executeDesignTool(registration, 'guidePayload', pageDesignDirectCall('payload-catalog', {
       key: 'display-statistic',
     }), context)
     expect(displayGuide.ok).toBe(true)
 
-    const recommendedFields = await executeDesignTool(registration, 'module_call', pageDesignCall('payload-catalog', 'queryPayloads', {
+    const recommendedFields = await executeDesignTool(registration, 'queryPayloads', pageDesignDirectCall('payload-catalog', {
       category: 'field',
       configurableOnly: true,
       limit: 5,
@@ -488,10 +593,10 @@ describe('pageDesign host business registration', () => {
     ])
     expect(fieldItems.every((item) => isRecord(item) && item['configurable'] === true)).toBe(true)
 
-    const countNodes = await executeDesignTool(registration, 'module_call', pageDesignCall('node-tree', 'countNodes'), context)
+    const countNodes = await executeDesignTool(registration, 'countNodes', pageDesignDirectCall('node-tree'), context)
     expect(countNodes).toMatchObject({ ok: true, data: 1 })
 
-    const listTables = await executeDesignTool(registration, 'module_call', pageDesignCall('dataset', 'listTables'), context)
+    const listTables = await executeDesignTool(registration, 'listTables', pageDesignDirectCall('dataset'), context)
     expect(listTables).toMatchObject({ ok: true, data: [] })
   })
 
@@ -645,136 +750,121 @@ describe('pageDesign host business registration', () => {
     const statuses: string[] = []
     const roundToolNames: string[][] = []
     let streamRound = 0
+    const scriptedToolCalls = [
+      {
+        id: 'discover-root',
+        type: 'function' as const,
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: '/' }),
+        },
+      },
+      {
+        id: 'find-root',
+        type: 'function' as const,
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: '/', childKind: PAGE_DESIGN_MODULE_ID, query: {} }),
+        },
+      },
+      {
+        id: 'discover-child',
+        type: 'function' as const,
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: `/pageDesign[${pageId}]` }),
+        },
+      },
+      {
+        id: 'find-child',
+        type: 'function' as const,
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({
+            path: `/pageDesign[${pageId}]`,
+            childKind: 'text-model',
+            query: {},
+          }),
+        },
+      },
+      {
+        id: 'find-payload-catalog',
+        type: 'function' as const,
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({
+            path: `/pageDesign[${pageId}]`,
+            childKind: 'payload-catalog',
+            query: {},
+          }),
+        },
+      },
+      {
+        id: 'describe-child',
+        type: 'function' as const,
+        function: {
+          name: 'module_guide',
+          arguments: JSON.stringify({ kind: 'text-model' }),
+        },
+      },
+      {
+        id: 'describe-payload-catalog',
+        type: 'function' as const,
+        function: {
+          name: 'module_guide',
+          arguments: JSON.stringify({ kind: 'payload-catalog' }),
+        },
+      },
+      {
+        id: 'query-payloads',
+        type: 'function' as const,
+        function: {
+          name: 'queryPayloads',
+          arguments: JSON.stringify({
+            path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
+            args: { key: 'r-button', limit: 1 },
+          }),
+        },
+      },
+      {
+        id: 'guide-payload',
+        type: 'function' as const,
+        function: {
+          name: 'guidePayload',
+          arguments: JSON.stringify({
+            path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
+            args: { key: 'r-button' },
+          }),
+        },
+      },
+      {
+        id: 'invoke-child',
+        type: 'function' as const,
+        function: {
+          name: 'writeScript',
+          arguments: JSON.stringify({
+            path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
+            args: { content: 'export default { aiSubmoduleAddressed: true }' },
+          }),
+        },
+      },
+    ]
     const turnCallbacks: AiAgentTurnCallbacks = {
       executeTurn: (input) => {
         roundToolNames.push(input.tools.map((tool) => tool.function.name))
         streamRound += 1
-        if (streamRound === 1) {
+        const toolCall = scriptedToolCalls[streamRound - 1]
+        if (toolCall !== undefined) {
           return Promise.resolve({
             text: '',
-            toolCalls: [
-              {
-                id: 'discover-root',
-                type: 'function',
-                function: {
-                  name: 'module_find',
-                  arguments: JSON.stringify({ path: '/' }),
-                },
-              },
-              {
-                id: 'find-root',
-                type: 'function',
-                function: {
-                  name: 'module_find',
-                  arguments: JSON.stringify({ path: '/', childKind: PAGE_DESIGN_MODULE_ID, query: {} }),
-                },
-              },
-            ],
-          })
-        }
-        if (streamRound === 2) {
-          return Promise.resolve({
-            text: '',
-            toolCalls: [
-              {
-                id: 'discover-child',
-                type: 'function',
-                function: {
-                  name: 'module_find',
-                  arguments: JSON.stringify({ path: `/pageDesign[${pageId}]` }),
-                },
-              },
-              {
-                id: 'find-child',
-                type: 'function',
-                function: {
-                  name: 'module_find',
-                  arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]`,
-                    childKind: 'text-model',
-                    query: {},
-                  }),
-                },
-              },
-              {
-                id: 'find-payload-catalog',
-                type: 'function',
-                function: {
-                  name: 'module_find',
-                  arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]`,
-                    childKind: 'payload-catalog',
-                    query: {},
-                  }),
-                },
-              },
-              {
-                id: 'describe-child',
-                type: 'function',
-                function: {
-                  name: 'module_guide',
-                  arguments: JSON.stringify({ kind: 'text-model' }),
-                },
-              },
-              {
-                id: 'describe-payload-catalog',
-                type: 'function',
-                function: {
-                  name: 'module_guide',
-                  arguments: JSON.stringify({ kind: 'payload-catalog' }),
-                },
-              },
-            ],
-          })
-        }
-        if (streamRound === 3) {
-          return Promise.resolve({
-            text: '',
-            toolCalls: [
-              {
-                id: 'query-payloads',
-                type: 'function',
-                function: {
-                  name: 'module_call',
-                  arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-                    functionName: 'queryPayloads',
-                    args: { key: 'r-button', limit: 1 },
-                  }),
-                },
-              },
-              {
-                id: 'guide-payload',
-                type: 'function',
-                function: {
-                  name: 'module_call',
-                  arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-                    functionName: 'guidePayload',
-                    args: { key: 'r-button' },
-                  }),
-                },
-              },
-              {
-                id: 'invoke-child',
-                type: 'function',
-                function: {
-                  name: 'module_call',
-                  arguments: JSON.stringify({
-                    path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
-                    functionName: 'writeScript',
-                    args: { content: 'export default { aiSubmoduleAddressed: true }' },
-                  }),
-                },
-              },
-            ],
+            toolCalls: [toolCall],
           })
         }
         return Promise.resolve({ text: 'done', toolCalls: [] })
       },
       appendMessages: () => Promise.resolve(),
     }
-    const runner = new AiAgentToolLoopRunner(turnCallbacks, 4)
+    const runner = new AiAgentToolLoopRunner(turnCallbacks, scriptedToolCalls.length + 1)
 
     await runner.runToolLoop({
       registration,
@@ -784,9 +874,9 @@ describe('pageDesign host business registration', () => {
       clearSelected: () => undefined,
     })
 
-    expect(roundToolNames).toHaveLength(4)
+    expect(roundToolNames).toHaveLength(scriptedToolCalls.length + 1)
     expect(roundToolNames[0]).not.toContain('invokeAction')
-    expect(roundToolNames[0]).toEqual([
+    expect(roundToolNames[0]).toEqual(expect.arrayContaining([
       'module_query',
       'module_guide',
       'module_attribute_guide',
@@ -795,7 +885,10 @@ describe('pageDesign host business registration', () => {
       'module_attr',
       'module_call',
       'human_question',
-    ])
+      'queryPayloads',
+      'guidePayload',
+      'writeScript',
+    ]))
     expect(statuses).toEqual([
       'success',
       'success',
@@ -814,34 +907,157 @@ describe('pageDesign host business registration', () => {
     const functionCalls = history.filter((entry) => entry.kind === 'functionCall')
     expect(functionCalls).toEqual(expect.arrayContaining([
       expect.objectContaining({
-        toolName: 'module_call',
+        toolName: 'queryPayloads',
         status: 'completed',
         args: {
           path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-          functionName: 'queryPayloads',
           args: { key: 'r-button', limit: 1 },
         },
       }),
       expect.objectContaining({
-        toolName: 'module_call',
+        toolName: 'guidePayload',
         status: 'completed',
         args: {
           path: `/pageDesign[${pageId}]/payload-catalog[${pageId}]`,
-          functionName: 'guidePayload',
           args: { key: 'r-button' },
         },
       }),
     ]))
     expect(functionCalls.at(-1)).toMatchObject({
       kind: 'functionCall',
-      toolName: 'module_call',
+      toolName: 'writeScript',
       status: 'completed',
       args: {
         path: `/pageDesign[${pageId}]/text-model[${pageId}]`,
-        functionName: 'writeScript',
         args: { content: 'export default { aiSubmoduleAddressed: true }' },
       },
     })
+  })
+
+  it('rejects agent_complete until the broad page deliverable gate is satisfied', async () => {
+    const page = createHost({ script: 'export default {}', style: '.page {}' })
+    const registration = createPageDesignBusinessRegistration({
+      getEditToolHost: () => page.host,
+    })
+    const context = hostContext('student-grade-page')
+
+    await expect(Promise.resolve(registration.beforeFunctionCall?.({
+      ...context,
+      toolName: 'agent_complete',
+      args: { summary: 'done' },
+    }))).resolves.toMatchObject({
+      status: 'reject',
+      fix: expect.stringContaining('最终验收未通过'),
+    })
+
+    page.dataSetTool.createTable({
+      tableName: 'StudentGrade',
+      columns: [
+        { name: 'id', type: 'string', isPrimaryKey: true },
+        { name: 'studentName', type: 'string' },
+        { name: 'score', type: 'number' },
+      ],
+      resourceType: 'static-data',
+      views: {
+        default: {
+          rows: [{ id: 'g-1', studentName: 'Alice', score: 92 }],
+        },
+      },
+    })
+    page.nodeTree.replaceRoot({
+      type: 'page',
+      id: 'student-grade-workbench',
+      children: [
+        {
+          type: 'r-section',
+          id: 'grade-summary',
+          props: { title: '学生成绩管理' },
+          children: ['学生成绩管理'],
+        },
+        {
+          type: 'r-table',
+          id: 'grade-table-zone',
+          props: {
+            dataViewKey: 'StudentGrade@default',
+            dataMember: 'rows',
+            rowKey: 'id',
+          },
+        },
+        {
+          type: 'r-form',
+          id: 'grade-form-zone',
+          props: {
+            dataViewKey: 'StudentGrade@default',
+            contextDataMember: 'currentRow',
+          },
+          children: [
+            { type: 'r-text', id: 'grade-student-name', props: { field: 'studentName' } },
+            { type: 'r-number', id: 'grade-score', props: { field: 'score' } },
+          ],
+        },
+      ],
+    })
+    page.host.writeScript?.([
+      'export default {',
+      '  methods: {',
+      '    gradeLevel(score) { if (score >= 90) return "优秀"; if (score >= 80) return "良好"; return "待提升" },',
+      '    isAbnormal(score) { return score < 0 || score > 100 },',
+      '  },',
+      '}',
+    ].join('\n'))
+    page.host.writeStyle?.([
+      '.student-grade-workbench { display: grid; gap: 16px; padding: 20px; background: #f6f8fb; color: #1f2937; }',
+      '.student-grade-workbench .summary { display: flex; align-items: center; justify-content: space-between; border: 1px solid #d8dee9; padding: 14px; }',
+      '.student-grade-workbench .filters { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }',
+      '.student-grade-workbench .table { min-height: 280px; border: 1px solid #ccd4e0; background: #fff; }',
+      '.student-grade-workbench .warning { color: #b45309; font-weight: 600; }',
+    ].join('\n'))
+
+    await expect(Promise.resolve(registration.beforeFunctionCall?.({
+      ...context,
+      toolName: 'agent_complete',
+      args: { summary: 'done' },
+    }))).resolves.toMatchObject({ status: 'allow' })
+  })
+
+  it('assembles a management workbench through a deterministic standard part', async () => {
+    const page = createHost({ script: 'export default {}', style: '.page {}' })
+    const registration = createPageDesignBusinessRegistration({
+      getEditToolHost: () => page.host,
+    })
+    const context = hostContext('employee-page')
+    await startAiAgentRegistrationSession(registration, context)
+
+    const result = await executeDesignTool(registration, 'buildManagementWorkbench', {
+      path: '/pageDesign[employee-page]/standard-page[employee-page]',
+      args: {
+        title: '员工信息管理',
+        entityName: 'Employee',
+        fields: [
+          { name: 'name', label: '姓名', type: 'string', role: 'title', required: true },
+          { name: 'department', label: '部门', type: 'string', role: 'department', options: ['研发部', '人事部'] },
+          { name: 'status', label: '状态', type: 'string', role: 'status', options: ['在职', '试用', '离职'] },
+          { name: 'hireDate', label: '入职日期', type: 'date', role: 'date' },
+        ],
+        filters: ['部门', '状态'],
+        metrics: ['员工总数', '在职人数', '试用人数'],
+        primaryAction: '保存档案',
+      },
+    }, context)
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: expect.objectContaining({
+        tableName: 'employee',
+        dataViewKey: 'employee@default',
+        standardPart: 'management-workbench',
+      }),
+    })
+    expect(Object.keys(page.dataSetTool.toJson().tables)).toEqual(['employee'])
+    expect(page.nodeTree.countNodes()).toBeGreaterThan(8)
+    expect(page.reads().script.length).toBeGreaterThan(180)
+    expect(page.reads().style.length).toBeGreaterThan(400)
+    expect(page.reads().navTitle).toBe('员工信息管理')
   })
 
   it('fails fast when live adapter is missing', async () => {

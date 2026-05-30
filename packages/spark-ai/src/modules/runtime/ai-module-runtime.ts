@@ -93,7 +93,13 @@ export class AiModuleRuntime {
     this.functions = new FunctionInvoker(this.navigator)
     this.knowledge = new AiModuleKnowledgeProjector(this.kinds)
     this.toolGenerator = new ProtocolToolGenerator(this.kinds)
-    this.toolRouter = new ProtocolToolRouter(this.attributes, this.functions, this.navigator, this.knowledge)
+    this.toolRouter = new ProtocolToolRouter({
+      attributes: this.attributes,
+      functions: this.functions,
+      navigator: this.navigator,
+      knowledge: this.knowledge,
+      kinds: this.kinds,
+    })
   }
 
   /* ── 注册 ──────────────────────────────────────────────── */

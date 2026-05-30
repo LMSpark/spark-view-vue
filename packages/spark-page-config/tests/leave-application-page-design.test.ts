@@ -9,9 +9,9 @@ import { DataMember, DataSetCrudTool, buildDataViewKey } from '@spark-view/spark
 import {
   PAGE_DESIGN_MODULE_ID,
   createPageDesignBusinessRegistration,
-} from '../src/ai/index'
-import { compileRule, parsePageData } from '../src/config/page-config-compiler'
-import type { PageDesignEditHost } from '../src/design/page-edit-session'
+} from '../src/ai'
+import { compileRule, parsePageData } from '../src/page-model/read/page-content-compiler'
+import type { PageDesignEditHost } from '../src/page-model/update/page-edit-session'
 import { isRecord } from '@spark-view/spark-utils'
 import { SparkNodeTree, getSparkNodeChildren } from '@spark-view/spark-data'
 

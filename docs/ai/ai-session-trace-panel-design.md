@@ -23,8 +23,8 @@ spark-app 和 spark-component 中均无现成的 AI 会话监视 UI 组件。
 - 遵循 `ai-code-generation-behavior.md`（参数 ≤3、禁止匿名内联对象类型、禁止参数内嵌 JSDoc）
 - 遵循 spark-component 现有 Vue 模式（`<script setup lang="ts">`、BEM + scoped 样式、composable 提取逻辑）
 - 函数签名最多 3 个位置参数；可选参数用 `?` 不用 `| undefined`
-- **禁止 `src/ai/**` import `@spark-view/spark-page-config`**；Panel 不感知 PageModel
-- **禁止 `src/ai/**` 引用 `PageModelLike` / `PageModelRenderConfig`** 或读取 `pagedata/rule`
+- **禁止 `src/ai/**` import `@spark-view/spark-page-config`**；Panel 不感知 PageNode
+- **禁止 `src/ai/**` 引用 `PageNodeLike` / `PageNodeRenderConfig`** 或读取 `pagedata/rule`
 - **禁止 `AiSessionTracePanel` 直接持有 SSE connection** 或处理 transport heartbeat/keepalive；SSE 由 `spark-ai` runtime 管理
 
 ---
@@ -1039,8 +1039,8 @@ M2 前两切片继续禁止：
 - `spark-component/src/ai/**` import `AiAgentHost`。
 - `spark-component/src/ai/**` 创建或关闭 `EventSource` / SSE connection。
 - `spark-component/src/ai/**` 解析 APP SSE 原始 frame、keepalive、heartbeat 或 transport event。
-- `spark-component/src/ai/**` import `@spark-view/spark-page-config`，或引用 `PageModelLike` / `PageModelRenderConfig`。
-- Adapter 把 base64、业务文件对象或 PageModel 塞进 `historyMsgs`；附件只能转成文本引用、URL 或文件名。
+- `spark-component/src/ai/**` import `@spark-view/spark-page-config`，或引用 `PageNodeLike` / `PageNodeRenderConfig`。
+- Adapter 把 base64、业务文件对象或 PageNode 塞进 `historyMsgs`；附件只能转成文本引用、URL 或文件名。
 - Core adapter import `vue`、DOM API 或具体 UI 组件。
 - 把 trace sink 作为运行必需参数；无 UI 时必须能使用 no-op sink 正常执行。
 
@@ -1056,7 +1056,7 @@ M2 adapter 第一切片至少覆盖：
 - 并发 `run()` 被 fail-fast 拒绝。
 - `beforeFunctionCall` 能以 request/run 级 hook 透传，不写进业务 registration。
 - approval bridge 在 abort/finish 时能取消 pending Promise，避免工具循环悬挂。
-- `spark-component/src/ai/**` 仍不出现 `AiAgentHost`、`EventSource`、`PageModel*`、`@spark-view/spark-page-config`。
+- `spark-component/src/ai/**` 仍不出现 `AiAgentHost`、`EventSource`、`PageNode*`、`@spark-view/spark-page-config`。
 
 #### 12.7 当前实现验收状态
 
@@ -1070,13 +1070,13 @@ M2 adapter 第一切片至少覆盖：
 
 2. `src/services/page-design-ai-runner.ts`
    - DevSystem pageDesign app service 已通过 `createAiRunAdapter()` 调用 `pageDesignHost.run()`。
-   - 该文件属于 app/business adapter 层，可以知道 `PageEditor`、`ensurePageDesignBusiness()` 和 `PageDesignRunInput`。
+   - 该文件属于 app/business adapter 层，可以知道 `ProjectEditor`、`ensurePageDesignBusiness()` 和 `PageDesignRunInput`。
    - `spark-component/src/ai/**` 未被修改，panel 仍只消费纯 AI/session props。
    - 兼容 legacy `events` 回调，同时支持传入 full `trace` sink。`PageDesignAiRunEvents` 仅用于旧状态消息；full session UI 应优先传 `trace`，不要把同一个 `useSessionStream()` 同时传给 `trace` 和 `events`。
 
 3. `packages/spark-app/src/ai/tool-approval-bridge.ts`
    - 提供 `createAiToolApprovalBridge()`，保存待审批工具请求，公开 `beforeFunctionCall`、`decide()`、`cancelPending()` 和 `subscribe()`。
-   - 该桥是通用 APP 状态机，不 import Vue、`spark-component`、`spark-page-config`、PageModel 或 APP SSE。
+   - 该桥是通用 APP 状态机，不 import Vue、`spark-component`、`spark-page-config`、PageNode 或 APP SSE。
    - 已从 `@spark-view/spark-app` public entry 导出。
 
 4. `src/views/app/dev-system/DevSystem.vue` + `src/views/app/dev-system/useDevState.ts`

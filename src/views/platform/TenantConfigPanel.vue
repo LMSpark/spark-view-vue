@@ -90,7 +90,7 @@
             {{ appConfig.apiBaseUrl || '-' }}
           </el-descriptions-item>
           <el-descriptions-item label="首页路径">
-            {{ pageConfig.homePath || '-' }}
+            {{ pageNode.homePath || '-' }}
           </el-descriptions-item>
           <el-descriptions-item label="日志级别">
             <el-tag :type="logLevelTagType">{{ appConfig.logLevel || '-' }}</el-tag>
@@ -167,7 +167,7 @@ type TenantFullConfig = {
     enableMock?: boolean
     features?: Record<string, unknown>
   }
-  pageConfig?: {
+  pageNode?: {
     apiBaseUrl?: string
     homePath?: string
   }
@@ -181,7 +181,7 @@ function isTenantFullConfig(value: unknown): value is TenantFullConfig {
   return isRecord(value)
     && isOptionalRecord(value['tenant'])
     && isOptionalRecord(value['config'])
-    && isOptionalRecord(value['pageConfig'])
+    && isOptionalRecord(value['pageNode'])
 }
 
 const props = defineProps<{
@@ -210,7 +210,7 @@ const form = reactive({
 
 const tenantInfo = computed(() => fullConfig.value?.tenant)
 const appConfig = computed(() => fullConfig.value?.config ?? {})
-const pageConfig = computed(() => fullConfig.value?.pageConfig ?? {})
+const pageNode = computed(() => fullConfig.value?.pageNode ?? {})
 const theme = computed(() => tenantInfo.value?.theme ?? {})
 const featureEntries = computed(() => Object.entries(appConfig.value.features ?? {}))
 const fullConfigJson = computed(() => jsonDraft.value || JSON.stringify(fullConfig.value, null, 2))
@@ -232,7 +232,7 @@ function syncForm(config: TenantFullConfig): void {
   form.logo = tenant?.logo ?? ''
   form.primaryColor = tenantTheme.primaryColor ?? ''
   form.borderRadius = tenantTheme.borderRadius ?? ''
-  form.homePath = config.pageConfig?.homePath ?? ''
+  form.homePath = config.pageNode?.homePath ?? ''
   form.logLevel = config.config?.logLevel ?? 'info'
 }
 

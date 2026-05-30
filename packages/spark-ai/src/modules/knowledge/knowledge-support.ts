@@ -55,11 +55,11 @@ export const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
 
 /** 固定协议工具路由描述（注入 LLM 系统 prompt） */
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
-  '协议硬约束：调用 module_* 或 human_question 时，必须使用 OpenAI function calling 的 tool_calls 通道；不要在正文中输出 {"tool_call":...}、module_call(...)、JSON 方案或代码块来冒充工具调用。',
+  '协议硬约束：调用 module_*、human_question 或业务函数时，必须使用 OpenAI function calling 的 tool_calls 通道；不要在正文中输出 {"tool_call":...}、module_call(...)、JSON 方案或代码块来冒充工具调用。',
   '如果下一步需要读取/写入/校验/创建任何注册能力事实，必须发起真实 tool_calls；正文只能用于没有工具调用后的最终总结。',
-  '工具：目录=module_query；模块指南=module_guide；属性指南=module_attribute_guide；函数指南=module_function_guide；实例=module_find；属性=module_attr；函数=module_call；反问=human_question。',
+  '工具：目录=module_query；模块指南=module_guide；属性指南=module_attribute_guide；函数指南=module_function_guide；实例=module_find；属性=module_attr；业务函数=直接调用 functionName({path,args})；旧函数路由 module_call 仅作兼容；反问=human_question。',
   '所有知识都先目录概要后具体指南：先用 query 类工具选真实 kind/function/key，再用 guide 类工具读取具体契约。',
-  'module_find 只定位实例，不代表已掌握函数表；首次 module_call 某 kind/functionName 前，先 module_query({kind,includeFunctions:true}) 选真实函数，再 module_function_guide({kind,functionName}) 读具体契约。',
+  'module_find 只定位实例，不代表已掌握函数表；首次调用某 kind/functionName 前，先 module_query({kind,includeFunctions:true}) 选真实函数，再 module_function_guide({kind,functionName}) 读具体契约。',
   '禁止猜 functionName/attrName；FUNCTION_NOT_DECLARED 或 ATTRIBUTE_NOT_DECLARED 后必须回到 module_query/module_guide，再按 module_function_guide/module_attribute_guide 返回的真实契约重试。',
 ]
 
@@ -113,17 +113,16 @@ export function containsKeyword(values: readonly string[], keyword: string): boo
 // 第 3 节 · 工具名与调用格式
 // ═══════════════════════════════════════════════════════════════
 
-/** 生成统一的工具名（当前所有函数统一映射到 module_call） */
+/** 生成 OpenAI 标准业务函数工具名：function.name 直接使用声明的 functionName。 */
 export function functionToolName(kindPath: readonly string[], functionName: string): string {
   void kindPath
-  void functionName
-  return PROTOCOL_TOOL_NAMES.moduleCall
+  return functionName
 }
 
 /** 格式化函数调用示例文本 */
 export function formatInvokeStep(kindPath: readonly string[], functionName: string): string {
   const path = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
-  return `${PROTOCOL_TOOL_NAMES.moduleCall}({ path: "${path}", functionName: "${functionName}", args })`
+  return `${functionName}({ path: "${path}", args })`
 }
 
 function formatPathPattern(kindPath: readonly string[]): string {
@@ -190,7 +189,7 @@ export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): 
   return [
     `目录阶段：调用 module_query({ kind: "${options.kind}", keyword: "${keyword}", includeFunctions: true }) 查函数概要，选择真实 functionName。`,
     `具体阶段：调用 module_function_guide({ kind: "${options.kind}", functionName: "${functionName}" }) 读取 paramsSchema、usageRules 和 failureModes。`,
-    `随后调用 module_call({ path, functionName: "${functionName}", args }) 执行业务函数。`,
+    `随后调用 OpenAI 业务函数 ${functionName}({ path, args })；function.name 已经是业务函数名，不要再把 functionName 放进 arguments。`,
   ]
 }
 
@@ -222,9 +221,9 @@ export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): re
   const finalFunctionName = options.functionName ?? '<functionName>'
   return options.payloadRefs.flatMap((payloadRef) => [
     `先定位 payload 目录模块 ${catalogLocator}; 没有实例路径时用 module_find 获取目录实例。`,
-    `目录阶段：调用 module_call({ path: "${catalogPathPattern}", functionName: "${catalogFunctions.queryPayloads}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit } }) 查询概要并选择真实 key。`,
-    `具体阶段：调用 module_call({ path: "${catalogPathPattern}", functionName: "${catalogFunctions.guidePayload}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key } }) 读取 paramsSchema、usageRules 和 failureModes。`,
-    `最后调用 module_call({ path, functionName: "${finalFunctionName}", args }); 复杂参数只能按 guidePayload 返回的 schema 字段构造。`,
+    `目录阶段：调用 ${catalogFunctions.queryPayloads}({ path: "${catalogPathPattern}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit } }) 查询概要并选择真实 key。`,
+    `具体阶段：调用 ${catalogFunctions.guidePayload}({ path: "${catalogPathPattern}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key } }) 读取 paramsSchema、usageRules 和 failureModes。`,
+    `最后调用 ${finalFunctionName}({ path, args }); 复杂参数只能按 guidePayload 返回的 schema 字段构造。`,
   ])
 }
 
@@ -418,9 +417,8 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
     description: fn.description,
     directoryLookupStep: `module_query({ kind: "${kind}", keyword: "${fn.name}", includeFunctions: true })`,
     callPattern: {
-      toolName: PROTOCOL_TOOL_NAMES.moduleCall,
+      toolName,
       path: pathPattern,
-      functionName: fn.name,
       args: 'object matching paramsSchema',
     },
     paramNames: paramNames(fn.paramsSchema),
@@ -558,7 +556,7 @@ export function createInstanceGuide(moduleKind: AiModule): AiModuleKnowledgeInst
     operationSteps: [
       `用 module_guide({ kind: "${moduleKind.kind}" }) 读取元数据。`,
       `属性读写复用同一个实例 path：module_attr({ op, path, attrName, value })。`,
-      `函数调用复用同一个实例 path：module_call({ path, functionName, args })。`,
+      `函数调用复用同一个实例 path：functionName({ path, args })。`,
       `进入子 kind 时，以当前实例 path 作为 parentPath 调用 module_find。`,
     ],
   }
@@ -657,7 +655,7 @@ export function createModuleFunctionLookupSteps(moduleKind: AiModule, kindPath: 
   return [
     `module_query({ kind: "${moduleKind.kind}", includeFunctions: true }) 查看 ${moduleKind.kind} 函数目录。`,
     `module_function_guide({ kind: "${moduleKind.kind}", functionName: "<functionName>" }) 查看单个函数 paramsSchema、usageRules 和 failureModes。`,
-    `module_call({ path: "${path}", functionName: "<functionName>", args }) 执行业务函数。`,
+    `<functionName>({ path: "${path}", args }) 执行业务函数；不要在 arguments 根层传 functionName。`,
   ]
 }
 

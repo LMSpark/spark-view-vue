@@ -164,7 +164,7 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 
 | 能力键 | 定义包 | 类型 | 典型提供者 |
 |---|---|---|---|
-| `PAGE_RUNTIME_SERVICES` | `spark-page-config/runtime` | `PageRuntimeServicesCapability` — router、logger、租户 | 页面根 |
+| `PAGE_RUNTIME_SERVICES` | `spark-component/runtime` | `PageRuntimeServicesCapability` — router、logger、租户 | 页面根 |
 | `PAGE_SERVICE` | `spark-component` | `PageServiceCapability` — 弹框、导航、消息 | PageRenderer |
 | `PAGE_DATASET` | `spark-component` | `DataSetContract` — 页面级 DataSet | PageRenderer |
 | `DATA_SOURCE` | `spark-component` | `DataView` — 组件级数据视图 | 容器组件 |

@@ -12,13 +12,13 @@
  *     └─ invoke(request) → 导航到目标路径 → 校验 kindPath 一致性 → 调用 module.invokeFunction()
  *
  * 【数据流】
- *   1. ProtocolToolRouter.routeModuleCall() 解析 tool_call 参数
+ *   1. ProtocolToolRouter 解析 direct function 或 module_call 兼容参数
  *   2. 构造 AiModuleFunctionInvokeRequest { path, kindPath, functionName, args, host }
  *   3. FunctionInvoker.invoke(request) → navigator.navigate(path, host)
  *   4. 校验 kindPath 一致性（防止 LLM 把函数用在错误的模块上）
  *   5. 委托 moduleKind.invokeFunction(ctx, functionName, args)
  *
- * 【消费方】ProtocolToolRouter（通过 module_call 工具路由）
+ * 【消费方】ProtocolToolRouter（direct function 优先，module_call 兼容）
  * ═══════════════════════════════════════════════════════════════
  */
 

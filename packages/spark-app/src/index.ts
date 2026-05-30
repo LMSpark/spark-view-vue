@@ -1,4 +1,4 @@
-﻿/**
+/**
  * @spark-view/spark-app
  * SPARK Application Layer - 应用层基础设施
  */
@@ -22,7 +22,7 @@ export { SparkApp } from './namespace'
 
 // Start（高级 API - 推荐）
 export { start } from './start'
-export type { StartOptions, SparkOptions, PageConfigOptions } from './start'
+export type { StartOptions, SparkOptions, PageNodeOptions } from './start'
 
 // Bootstrap（中级 API）
 export { bootstrap } from './bootstrap'

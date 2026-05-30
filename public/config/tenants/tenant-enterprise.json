@@ -17,7 +17,7 @@
             "enableOffline": true
         }
     },
-    "pageConfig": {
+    "pageNode": {
         "apiBaseUrl": "/api/enterprise",
         "source": "local",
         "homePath": "/home"

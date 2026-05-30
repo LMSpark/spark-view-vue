@@ -90,13 +90,8 @@ export type {
 // ── 3. 知识投影类型 ─────────────────────────────────────────
 export type {
   AiModuleKnowledgeAttributeDetailGuide,
-  AiModuleKnowledgeAttributeGuide,
-  AiModuleKnowledgeAttributeGuideInput,
-  AiModuleKnowledgeFunctionFilter,
   AiModuleKnowledgeFunctionGuide,
-  AiModuleKnowledgeFunctionGuideInput,
   AiModuleKnowledgeFunctionSummary,
-  AiModuleKnowledgeModuleFilter,
   AiModuleKnowledgeModuleSummary,
   AiModuleKnowledgeSnapshot,
 } from './knowledge/knowledge-types'

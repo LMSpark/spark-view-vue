@@ -14,8 +14,9 @@
  *   module_function_guide — 读取单个函数的详细调用指南
  *   module_find    — 查找或列出模块实例（需提供具体父路径）
  *   module_attr    — 读写模块的声明属性
- *   module_call    — 调用模块的声明函数
+ *   module_call    — 兼容旧协议调用模块声明函数；新协议优先直接暴露 functionName({ path, args })
  *   human_question — 遇到不确定信息时向用户发问（暂停工具循环）
+ *   agent_complete — 以工具调用完成当前生产线，避免自然语言正文收尾
  *
  * 【数据流】
  *   1. AiModuleRuntime.getTools() → ProtocolToolGenerator.generate()
@@ -27,6 +28,7 @@
  */
 
 import type { AiJsonSchemaObject } from '../../json'
+import { resolveAiModulePath } from './ai-module-path'
 import type { AiModuleRegistry } from './ai-module-registry'
 
 // ═══════════════════════════════════════════════════════════════
@@ -37,7 +39,7 @@ import type { AiModuleRegistry } from './ai-module-registry'
 export type AiModuleToolSpec = Readonly<{
   type: 'function'
   function: {
-    readonly name: ProtocolToolName
+    readonly name: string
     readonly description: string
     readonly parameters: AiJsonSchemaObject
     readonly strict?: boolean
@@ -54,6 +56,7 @@ export type ProtocolToolName =
   | 'module_attr'
   | 'module_call'
   | 'human_question'
+  | 'agent_complete'
 
 /** 工具名称常量映射（冻结对象，避免魔法字符串） */
 export const PROTOCOL_TOOL_NAMES: Readonly<{
@@ -65,6 +68,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleAttr: 'module_attr'
   moduleCall: 'module_call'
   humanQuestion: 'human_question'
+  agentComplete: 'agent_complete'
 }> = Object.freeze({
   moduleQuery: 'module_query',
   moduleGuide: 'module_guide',
@@ -74,6 +78,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleAttr: 'module_attr',
   moduleCall: 'module_call',
   humanQuestion: 'human_question',
+  agentComplete: 'agent_complete',
 })
 
 // ═══════════════════════════════════════════════════════════════
@@ -83,7 +88,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
 /**
  * 协议工具规约生成器。
  *
- * 从注册表中读取已注册的模块，为 LLM 生成 8 个固定工具的 JSON Schema。
+ * 从注册表中读取已注册的模块，为 LLM 生成固定导航工具和直接业务函数工具的 JSON Schema。
  * 每个工具的 parameters 字段严格对齐 OpenAI function calling 规范。
  */
 export class ProtocolToolGenerator {
@@ -91,7 +96,7 @@ export class ProtocolToolGenerator {
     private readonly kinds: AiModuleRegistry,
   ) {}
 
-  /** 生成全部 8 个协议工具的规约数组 */
+  /** 生成协议工具和业务函数工具的规约数组 */
   public generate(): readonly AiModuleToolSpec[] {
     return [
       this.buildModuleQuery(),
@@ -102,6 +107,8 @@ export class ProtocolToolGenerator {
       this.buildModuleAttr(),
       this.buildModuleCall(),
       this.buildHumanQuestion(),
+      this.buildAgentComplete(),
+      ...this.buildDeclaredFunctionTools(),
     ]
   }
 
@@ -188,7 +195,7 @@ export class ProtocolToolGenerator {
       function: {
         name: PROTOCOL_TOOL_NAMES.moduleFunctionGuide,
         description: [
-          'Read the exact contract for one declared function before calling module_call.',
+          'Read the exact contract for one declared function before calling the direct business function tool.',
           'Requires both kind and functionName. Returns paramsSchema, requiredBeforeCall, usageRules, failureModes, recoveryHints, and payload lookup steps.',
           'Use this after module_query(includeFunctions=true) selects a real functionName, and again after FUNCTION_NOT_DECLARED or SCHEMA_VALIDATION_FAILED.',
         ].join('\n'),
@@ -264,7 +271,7 @@ export class ProtocolToolGenerator {
     }
   }
 
-  /** module_call — 调用模块函数 */
+  /** module_call — 兼容旧协议调用模块函数；新调用优先使用 direct function */
   private buildModuleCall(): AiModuleToolSpec {
     return {
       type: 'function',
@@ -286,6 +293,63 @@ export class ProtocolToolGenerator {
             },
           },
           required: ['path', 'functionName', 'args'],
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  /** 声明函数直投 OpenAI tool：function.name 就是业务 functionName，arguments={path,args}。 */
+  private buildDeclaredFunctionTools(): readonly AiModuleToolSpec[] {
+    const modules = this.kinds.list()
+    const nameCounts = new Map<string, number>()
+    for (const moduleKind of modules) {
+      for (const fn of moduleKind.functions) {
+        if (!isDirectFunctionToolName(fn.name)) continue
+        nameCounts.set(fn.name, (nameCounts.get(fn.name) ?? 0) + 1)
+      }
+    }
+
+    return modules.flatMap((moduleKind) => {
+      const kindPath = resolveAiModulePath(moduleKind, modules)
+      const pathPattern = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
+      return moduleKind.functions
+        .filter((fn) => nameCounts.get(fn.name) === 1 && isDirectFunctionToolName(fn.name))
+        .map((fn) => this.buildDeclaredFunctionTool({
+          functionName: fn.name,
+          kind: moduleKind.kind,
+          pathPattern,
+          description: fn.description,
+        }))
+    })
+  }
+
+  private buildDeclaredFunctionTool(input: Readonly<{
+    functionName: string
+    kind: string
+    pathPattern: string
+    description: string
+  }>): AiModuleToolSpec {
+    return {
+      type: 'function',
+      function: {
+        name: input.functionName,
+        description: [
+          `Call declared AiModule function "${input.functionName}" on kind "${input.kind}".`,
+          input.description,
+          `Use arguments={"path":"${input.pathPattern}","args":{...}}. Do not pass functionName in arguments; the OpenAI function name already is the business function name.`,
+        ].join('\n'),
+        parameters: {
+          type: 'object',
+          properties: {
+            path: pathProperty(),
+            args: {
+              type: 'object',
+              description: `Business arguments for ${input.kind}.${input.functionName}. Read the exact schema with module_function_guide before calling.`,
+              additionalProperties: true,
+            },
+          },
+          required: ['path', 'args'],
           additionalProperties: false,
         },
       },
@@ -319,6 +383,31 @@ export class ProtocolToolGenerator {
             },
           },
           required: ['context', 'reason'],
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  /** agent_complete — 用函数调用收尾，保持工具生产线无正文。 */
+  private buildAgentComplete(): AiModuleToolSpec {
+    return {
+      type: 'function',
+      function: {
+        name: PROTOCOL_TOOL_NAMES.agentComplete,
+        description: [
+          'Complete the current agent production line after all required tool work is done.',
+          'Use this instead of assistant prose when no more tools are needed. Keep summary short.',
+        ].join('\n'),
+        parameters: {
+          type: 'object',
+          properties: {
+            summary: {
+              type: 'string',
+              description: 'Short final user-facing summary. Do not include implementation dumps.',
+            },
+          },
+          required: ['summary'],
           additionalProperties: false,
         },
       },
@@ -364,4 +453,9 @@ function instanceQueryProperty(): AiJsonSchemaObject {
 export function isProtocolToolName(name: string): name is ProtocolToolName {
   const known: readonly ProtocolToolName[] = Object.values(PROTOCOL_TOOL_NAMES)
   return known.some((candidate) => candidate === name)
+}
+
+function isDirectFunctionToolName(name: string): boolean {
+  if (isProtocolToolName(name)) return false
+  return /^[A-Za-z0-9_-]{1,64}$/.test(name)
 }

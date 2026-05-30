@@ -1,4 +1,5 @@
 import type { AiModule } from '../protocol'
+import { isProtocolToolName } from '../internal/protocol-tool-generator'
 
 export type AiModuleRuntimeInspectStatus = 'ok' | 'warning' | 'error'
 
@@ -41,6 +42,7 @@ const PAYLOAD_QUERY_FUNCTION_NAME = 'queryPayloads'
 const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
 
 const HIGH_RISK_FUNCTION_PATTERN = /archive|cancel|clear|close|delete|destroy|drop|remove|replace|reset|set|submit|update|write/iu
+const OPENAI_FUNCTION_NAME_PATTERN = /^[A-Za-z0-9_-]{1,64}$/
 
 export function inspectAiModuleRuntime(modules: readonly AiModule[]): AiModuleRuntimeInspectReport {
   const byKind = new Map(modules.map((moduleKind) => [moduleKind.kind, moduleKind]))
@@ -76,6 +78,7 @@ export function inspectAiModuleRuntime(modules: readonly AiModule[]): AiModuleRu
     inspectFunctions(moduleKind, findings)
     inspectPayloads(moduleKind, hasPayloadCatalog, findings)
   }
+  inspectDirectFunctionTools(modules, findings)
 
   const errorCount = findings.filter((finding) => finding.level === 'error').length
   const warningCount = findings.filter((finding) => finding.level === 'warn').length
@@ -98,6 +101,58 @@ export function inspectAiModuleRuntime(modules: readonly AiModule[]): AiModuleRu
     findings,
     errorCount,
     warningCount,
+  }
+}
+
+function inspectDirectFunctionTools(
+  modules: readonly AiModule[],
+  findings: AiModuleRuntimeInspectFinding[],
+): void {
+  const directNameUsages = new Map<string, Array<Readonly<{ kind: string }>>>()
+  for (const moduleKind of modules) {
+    for (const fn of moduleKind.functions) {
+      if (isProtocolToolName(fn.name)) {
+        findings.push({
+          level: 'info',
+          code: 'DIRECT_FUNCTION_TOOL_NAME_RESERVED',
+          kind: moduleKind.kind,
+          functionName: fn.name,
+          message: `函数 "${moduleKind.kind}.${fn.name}" 与 spark-ai 协议工具同名，不会生成 OpenAI direct business tool。`,
+          fix: '如需直连 OpenAI functionName({ path, args })，请改成非 module_* / human_question / agent_complete 的唯一业务动作名；否则继续使用 module_call 兼容路由。',
+        })
+        continue
+      }
+      if (!OPENAI_FUNCTION_NAME_PATTERN.test(fn.name)) {
+        findings.push({
+          level: 'info',
+          code: 'DIRECT_FUNCTION_TOOL_NAME_INVALID',
+          kind: moduleKind.kind,
+          functionName: fn.name,
+          message: `函数 "${moduleKind.kind}.${fn.name}" 不符合 OpenAI function name 规则，不会生成 direct business tool。`,
+          fix: '函数名需匹配 /^[A-Za-z0-9_-]{1,64}$/；否则继续使用 module_call 兼容路由。',
+        })
+        continue
+      }
+      directNameUsages.set(fn.name, [
+        ...(directNameUsages.get(fn.name) ?? []),
+        { kind: moduleKind.kind },
+      ])
+    }
+  }
+
+  for (const [functionName, usages] of directNameUsages.entries()) {
+    if (usages.length <= 1) continue
+    const locations = usages.map((usage) => `${usage.kind}.${functionName}`).join(', ')
+    for (const usage of usages) {
+      findings.push({
+        level: 'info',
+        code: 'DIRECT_FUNCTION_TOOL_NAME_CONFLICT',
+        kind: usage.kind,
+        functionName,
+        message: `业务函数名 "${functionName}" 在 runtime 中不唯一，OpenAI direct business tool 不会生成。冲突位置：${locations}。`,
+        fix: '为需要直连的业务函数使用唯一动作名；保留重名时仍可通过 module_call({ path, functionName, args }) 调用。',
+      })
+    }
   }
 }
 

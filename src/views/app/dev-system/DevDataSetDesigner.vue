@@ -287,7 +287,7 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-view/spark-page-config/editor'
+} from '@spark-view/spark-page-config/project'
 import type { DevState } from './useDevState'
 import type {
   CrudApi,
@@ -555,7 +555,7 @@ function resetDesignerRuntimeState(): void {
   pendingProjectionLayout.value = null
 }
 
-// ═══ 直接对接 DataSetCrudTool 页面模型 ═══
+// ═══ 直接对接 DataSetCrudTool 页面节点子模型 ═══
 
 function refreshFromLiveData(silent = false): void {
   const tool = getPageDataTool()

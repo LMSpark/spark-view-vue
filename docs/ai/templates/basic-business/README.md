@@ -223,14 +223,13 @@ import { TicketAiModule } from './modules'
 import { TicketService } from './service'
 
 describe('TicketAiModule', () => {
-  it('通过 module_call 设置工单优先级', async () => {
+  it('通过 direct function 设置工单优先级', async () => {
     const runtime = new AiModuleRuntime()
     runtime.register(new TicketAiModule(new TicketService()))
 
     expect(runtime.inspect().ok).toBe(true)
-    await expect(runtime.executeTool('module_call', {
+    await expect(runtime.executeTool('setPriority', {
       path: '/support-ticket[T-1001]',
-      functionName: 'setPriority',
       args: { priority: 'high' },
     })).resolves.toMatchObject({
       ok: true,

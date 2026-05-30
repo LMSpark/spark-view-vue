@@ -4,11 +4,11 @@
  * 编辑能力是普通业务能力，只负责 DevSystem 的页面配置编辑。
  *
  * SSOT 设计：
- * - 页面 4 文件（rule / pagedata / script / style）的真源由 PageModel 持有。
- * - Vue 层只通过 PageEditor adapter 方法读取文本、状态、dirty、undo/redo 和工具模型。
+ * - 页面 4 文件（rule / pagedata / script / style）的真源由配置页节点持有。
+ * - Vue 层只通过 ProjectEditor adapter 方法读取文本、状态、dirty、undo/redo 和工具模型。
  * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件状态合一暴露。
  *
- * 页面生命周期由 PageModel 覆盖；adapter 保留 UI 响应式映射、localStorage、
+ * 页面生命周期由配置页节点覆盖；adapter 保留 UI 响应式映射、localStorage、
  * autoSave、refreshRoutes、demoNavRoot fallback 和状态消息。
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
@@ -17,30 +17,30 @@ import type { AiToolApprovalRequest, NavNode, NavNodeKind } from '@spark-view/sp
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
 import {
-  PageModel,
-  type PageModelFileName,
-  type PageModelFileVersionSummary,
-  type PageModelNavigationDraft,
-  type PageModelPageSummary,
-} from '@spark-view/spark-page-config'
-import {
-  createPageEditor,
-} from '@spark-view/spark-page-config/editor'
+  createProjectEditor,
+  ProjectNodeTools,
+  type PageNodeFileName,
+  type PageNodeFileVersionSummary,
+  type ProjectPageReference,
+  type ProjectPageNodeSummary,
+  type ProjectSummary,
+} from '@spark-view/spark-page-config/project'
+import type { NavigationNodeDraft as ProjectNavigationNodeDraft } from '@spark-view/spark-page-config/project'
 import { demoNavRoot } from '@/layout/demo-nav'
 import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
 } from '@/services/page-design-ai-runner'
 
-export type PageConfigFileName = Extract<PageModelFileName, string>
-export type PageConfigFileVersionSummary = {
-  [Key in keyof PageModelFileVersionSummary]: PageModelFileVersionSummary[Key]
+export type DevPageFileName = Extract<PageNodeFileName, string>
+export type DevPageFileVersionSummary = {
+  [Key in keyof PageNodeFileVersionSummary]: PageNodeFileVersionSummary[Key]
 }
 export type PageConfigPageSummary = {
-  [Key in keyof PageModelPageSummary]: PageModelPageSummary[Key]
+  [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key]
 }
 export type NavigationNodeDraft = {
-  [Key in keyof PageModelNavigationDraft]: PageModelNavigationDraft[Key]
+  [Key in keyof ProjectNavigationNodeDraft]: ProjectNavigationNodeDraft[Key]
 }
 export type RunPageDesignAiOptions = {
   [Key in keyof PageDesignAiRunOptions]: PageDesignAiRunOptions[Key]
@@ -60,10 +60,11 @@ export type DevContextConfig = {
   defaultValue: string
   paramName: string}
 
-export type DevWorkspaceTab = 'props' | 'preview' | PageConfigFileName
+export type DevWorkspaceTab = 'props' | 'preview' | DevPageFileName
 
 
-import { getPageApi, getNavApi } from '@/services/api-paths'
+import { getPageApi, getNavApi, getProjectApi, getProjectNavigationApi } from '@/services/api-paths'
+import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
 
 // ═══════════════════════════════════════════════════════════
@@ -71,12 +72,16 @@ import { createAuthHeaders, http } from '@/services/http'
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
-  const editor = createPageEditor({
+  const editor = createProjectEditor({
+    projectId: getUser()?.defaultProjectId ?? 'homepage',
     http,
-    getPageConfigApi: getPageApi,
+    getPageFilesApi: getPageApi,
     getNavigationApi: getNavApi,
+    getProjectsApi: getProjectApi,
+    getProjectNavigationApi,
     getHeaders: createAuthHeaders,
   })
+  const projectId = editor.project.projectId
   const pageFileNames = editor.getPageFileNames()
   const capabilityConsumer = getCurrentInstance() === null
     ? null
@@ -107,7 +112,7 @@ export function useDevState() {
   })
 
   function getEditorActivePage(): ReturnType<typeof editor.getActivePage> {
-    // navDraft proxies a framework-free PageEditor model. Track only explicit
+    // navDraft proxies a framework-free ProjectEditor model. Track only explicit
     // navigation draft switches here; tying it to every editor revision creates
     // needless tab/render feedback in Vue.
     void navDraftRevision.value
@@ -136,8 +141,8 @@ export function useDevState() {
     set path(v: string) { const p = getActivePage(); if (p) { p.navigation.path = v; markNavDirty() } },
     get redirect(): string { return getEditorActivePage()?.navigation.redirect ?? '' },
     set redirect(v: string) { const p = getActivePage(); if (p) { p.navigation.redirect = v; markNavDirty() } },
-    get linkTarget(): PageModelNavigationDraft['linkTarget'] { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
-    set linkTarget(v: PageModelNavigationDraft['linkTarget']) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
+    get linkTarget(): NavigationNodeDraft['linkTarget'] { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
+    set linkTarget(v: NavigationNodeDraft['linkTarget']) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
     get parentPageId(): string { return getEditorActivePage()?.navigation.parentPageId ?? '' },
     set parentPageId(v: string) { const p = getActivePage(); if (p) { p.navigation.parentPageId = v; markNavDirty() } },
     get childPlacement(): string { return getEditorActivePage()?.navigation.childPlacement ?? '' },
@@ -161,11 +166,11 @@ export function useDevState() {
     placeholder: '', defaultValue: '', paramName: '',
   })
 
-  // ── 页面文件状态（只经 PageEditor 访问）──
+  // ── 页面文件状态（只经 ProjectEditor 访问）──
   const activePageId = ref('')
   const fileSaving = ref(false)
 
-  function notifyPageFileChanged(pageId: string, filename: PageModelFileName | '__created' | '__deleted' | '__bulk'): void {
+  function notifyPageFileChanged(pageId: string, filename: PageNodeFileName | '__created' | '__deleted' | '__bulk'): void {
     editor.notifyPageFileChanged(pageId, filename)
   }
 
@@ -173,37 +178,7 @@ export function useDevState() {
   const navEmpty = ref(false)
 
   // ── 页面列表 ──
-  const pageList = ref<PageModelPageSummary[]>([])
-
-  function buildPageListFromNavigation(nodes: readonly NavNode[]): PageModelPageSummary[] {
-    const pages: PageModelPageSummary[] = []
-    const seen = new Set<string>()
-
-    function visit(list: readonly NavNode[]): void {
-      for (const node of list) {
-        const pageId = PageModel.resolvePageIdFromPath(node.path)
-        if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page') && !seen.has(pageId)) {
-          seen.add(pageId)
-          pages.push({
-            pageId,
-            path: node.path ?? `/${pageId}`,
-            title: node.title,
-            nodeId: node.id,
-            nodeKind: node.nodeKind ?? 'page',
-            ...(node.description !== undefined ? {
-              description: node.description,
-              userRequirement: node.description,
-            } : {}),
-            ...(node.icon !== undefined ? { icon: node.icon } : {}),
-          })
-        }
-        if (Array.isArray(node.children)) visit(node.children)
-      }
-    }
-
-    visit(nodes)
-    return pages
-  }
+  const pageList = ref<PageConfigPageSummary[]>([])
 
   // ── 状态消息 ──
   const statusMessages = ref<StatusMessage[]>([])
@@ -238,7 +213,7 @@ export function useDevState() {
   function syncNavFromEditor(): void {
     const snap = editor.readSnapshot()
     treeData.value = [...snap.treeData]
-    pageList.value = buildPageListFromNavigation(treeData.value)
+    pageList.value = [...snap.pageFeatures]
     navDirty.value = snap.navigationDirty
     navEmpty.value = snap.treeData.length === 0
     if (snap.selectedNodeId && snap.selectedNode) {
@@ -252,7 +227,7 @@ export function useDevState() {
   // 计算属性
   // ═══════════════════════════════════════════════════════════
 
-  function isDocumentDirty(name: PageModelFileName): boolean {
+  function isDocumentDirty(name: PageNodeFileName): boolean {
     void pageFilesRevision.value
     const snap = editor.readSnapshot()
     return snap.dirtyFiles.has(name)
@@ -294,9 +269,9 @@ export function useDevState() {
   }
 
   function isBackendConfigPage(pageId: string): boolean {
-    const pageMeta = pageList.value.find((page) => page.pageId === pageId)
+    const pageMeta = pageList.value.find((page: PageConfigPageSummary) => page.pageId === pageId)
     if (!pageMeta) return treeData.value.length === 0
-    return PageModel.isConfigNodeKind(pageMeta.nodeKind)
+    return ProjectNodeTools.isConfigNodeKind(pageMeta.nodeKind)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -330,20 +305,20 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function isSystemRootDirectoryInTree(node: NavNode | null | undefined): boolean {
-    return PageModel.isSystemRootDirectory(node, treeData.value)
+    return ProjectNodeTools.isSystemRootDirectory(node, treeData.value)
   }
 
   function canUseModuleNodeKindInTree(node: NavNode | null | undefined): boolean {
-    return PageModel.canUseModuleNodeKind(node, treeData.value)
+    return ProjectNodeTools.canUseModuleNodeKind(node, treeData.value)
   }
 
-  function getNavDraft(): PageModelNavigationDraft | null {
+  function getNavDraft(): NavigationNodeDraft | null {
     return getActivePage()?.navigation.toDraft() ?? null
   }
 
   function syncActivePageContextByPath(path: string): void {
-    const pageId = PageModel.resolvePageIdFromPath(path)
-    if (pageId && PageModel.isConfigNodeKind(navDraft.nodeKind)) {
+    const pageId = ProjectNodeTools.resolvePageIdFromPath(path)
+    if (pageId && ProjectNodeTools.isConfigNodeKind(navDraft.nodeKind)) {
       setActivePageContext(pageId, activePageId.value !== pageId)
       return
     }
@@ -487,7 +462,7 @@ export function useDevState() {
     }
 
     if (preservedSelectedNodeId) {
-      const matchedNode = PageModel.findNodeById(treeData.value, preservedSelectedNodeId)
+      const matchedNode = ProjectNodeTools.findNodeById(treeData.value, preservedSelectedNodeId)
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
@@ -497,7 +472,7 @@ export function useDevState() {
     }
 
     if (preservedActivePageId) {
-      const matchedNode = PageModel.findConfigNodeByPageId(treeData.value, preservedActivePageId)
+      const matchedNode = ProjectNodeTools.findPageNodeByPageId(treeData.value, preservedActivePageId)
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
@@ -528,8 +503,8 @@ export function useDevState() {
   }
 
   async function syncPageFilesForNodeAfterLoad(node: NavNode, forceReload: boolean): Promise<void> {
-    const pageId = PageModel.resolvePageIdFromPath(node.path)
-    if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page')) {
+    const pageId = ProjectNodeTools.resolvePageNodePageId(node)
+    if (pageId && ProjectNodeTools.isConfigNodeKind(node.nodeKind ?? 'page')) {
       await editor.selectPage(pageId, { forceReload })
       activePageId.value = editor.readSnapshot().pageId
       persistActivePageId(pageId)
@@ -539,7 +514,7 @@ export function useDevState() {
   }
 
   function loadPages(): void {
-    pageList.value = buildPageListFromNavigation(treeData.value)
+    pageList.value = [...editor.readSnapshot().pageFeatures]
   }
 
   function syncEditorActivePageFromState(): boolean {
@@ -558,12 +533,12 @@ export function useDevState() {
     await editor.ensureActivePageFilesLoaded(loadOptions)
   }
 
-  async function loadPageFile(name: PageModelFileName, options?: { forceReload?: boolean }): Promise<void> {
+  async function loadPageFile(name: PageNodeFileName, options?: { forceReload?: boolean }): Promise<void> {
     if (!syncEditorActivePageFromState()) return
     await editor.loadPageFile(name, options)
   }
 
-  function getPageFileText(name: PageModelFileName): string {
+  function getPageFileText(name: PageNodeFileName): string {
     void pageFilesRevision.value
     return editor.getPageFileText(name)
   }
@@ -572,7 +547,7 @@ export function useDevState() {
   // 后端版本 API
   // ═══════════════════════════════════════════════════════════
 
-  async function listRemotePageVersions(filename: PageModelFileName): Promise<PageModelFileVersionSummary[]> {
+  async function listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
     if (!activePageId.value) return []
     editor.setActivePage(activePageId.value)
     try {
@@ -583,7 +558,7 @@ export function useDevState() {
     }
   }
 
-  async function restoreRemotePageVersion(version: number, filename: PageModelFileName): Promise<boolean> {
+  async function restoreRemotePageVersion(version: number, filename: PageNodeFileName): Promise<boolean> {
     const pageId = activePageId.value
     if (!pageId) return false
     editor.setActivePage(pageId)
@@ -597,7 +572,7 @@ export function useDevState() {
     }
   }
 
-  async function createRemotePageVersion(filename: PageModelFileName): Promise<boolean> {
+  async function createRemotePageVersion(filename: PageNodeFileName): Promise<boolean> {
     if (!activePageId.value) return false
     editor.setActivePage(activePageId.value)
     try {
@@ -610,7 +585,7 @@ export function useDevState() {
     }
   }
 
-  async function deleteRemotePageVersion(version: number, filename: PageModelFileName): Promise<boolean> {
+  async function deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<boolean> {
     if (!activePageId.value) return false
     editor.setActivePage(activePageId.value)
     try {
@@ -628,7 +603,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function loadNodeToForm(node: NavNode): void {
-    const pageId = PageModel.resolvePageIdFromPath(node.path) || node.id || `nav-node-${node.id}`
+    const pageId = ProjectNodeTools.resolvePageNodePageId(node) || node.id || `nav-node-${node.id}`
     editor.setActivePage(pageId)
     const page = editor.getActivePage()
     if (page) {
@@ -758,7 +733,7 @@ export function useDevState() {
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
-  async function savePageFile(name: PageModelFileName): Promise<void> {
+  async function savePageFile(name: PageNodeFileName): Promise<void> {
     const pageId = activePageId.value
     if (!pageId) return
 
@@ -845,14 +820,14 @@ export function useDevState() {
     selectedNode.value = node
     editor.selectNode(node.id)
     try {
-      const pageId = PageModel.resolvePageIdFromPath(node.path)
-      if (pageId && PageModel.isConfigNodeKind(node.nodeKind ?? 'page')) {
+      const pageId = ProjectNodeTools.resolvePageNodePageId(node)
+      if (pageId && ProjectNodeTools.isConfigNodeKind(node.nodeKind ?? 'page')) {
         await editor.selectPage(pageId)
         activePageId.value = editor.readSnapshot().pageId
         persistActivePageId(pageId)
       } else {
         clearFiles()
-        // Still open a PageModel for navigation form binding
+        // Still open a detached config page node for navigation form binding.
         const navPageId = pageId || node.id || `nav-node-${node.id}`
         editor.setActivePage(navPageId)
       }
@@ -918,6 +893,14 @@ export function useDevState() {
     }
   }
 
+  async function listReferenceProjects(): Promise<ProjectSummary[]> {
+    return editor.listReferenceProjects()
+  }
+
+  async function listReferenceProjectPages(targetProjectId: string): Promise<ProjectPageReference[]> {
+    return editor.listReferenceProjectPages(targetProjectId)
+  }
+
   // ═══════════════════════════════════════════════════════════
   // 树增删
   // ═══════════════════════════════════════════════════════════
@@ -943,7 +926,7 @@ export function useDevState() {
   }
 
   function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): NavNode {
-    return PageModel.createReservedRootGroup(placement, {
+    return ProjectNodeTools.createReservedRootGroup(placement, {
       createId: () => crypto.randomUUID(),
       templateRoot: demoNavRoot,
     })
@@ -971,7 +954,7 @@ export function useDevState() {
   }
 
   async function addChildNode(parent: NavNode): Promise<void> {
-    const pageId = PageModel.resolvePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
+    const pageId = ProjectNodeTools.resolvePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
     try {
       await editor.createMountedPage({
         pageId,
@@ -991,8 +974,8 @@ export function useDevState() {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
     }
-    const pageId = PageModel.resolvePageIdFromPath(data.path)
-    const shouldRemoveMountedPage = pageId.length > 0 && PageModel.isConfigNodeKind(data.nodeKind ?? 'page')
+    const pageId = ProjectNodeTools.resolvePageNodePageId(data)
+    const shouldRemoveMountedPage = pageId.length > 0 && ProjectNodeTools.isConfigNodeKind(data.nodeKind ?? 'page')
     const deletePromise = shouldRemoveMountedPage
       ? editor.removeMountedPage({ pageId, nodeId: data.id })
       : editor.deleteNode(data.id)
@@ -1017,7 +1000,7 @@ export function useDevState() {
 
   async function moveNodeInTree(data: NavNode): Promise<void> {
     if (isSystemRootDirectoryInTree(data)) return
-    const location = PageModel.findNodeLocation(treeData.value, data.id)
+    const location = ProjectNodeTools.findNodeLocation(treeData.value, data.id)
     if (!location) return
     navSaving.value = true
     try {
@@ -1105,7 +1088,7 @@ export function useDevState() {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 工具访问（委托 PageEditor）
+  // 工具访问（委托 ProjectEditor）
   // ═══════════════════════════════════════════════════════════
 
   function editDataSet(
@@ -1145,6 +1128,7 @@ export function useDevState() {
 
   return {
     // 导航树
+    projectId,
     treeData,
     navLoading,
     navSaving,
@@ -1221,6 +1205,8 @@ export function useDevState() {
     restoreReservedRootGroup,
     canUseModuleNodeKind: canUseModuleNodeKindInTree,
     addChildNode,
+    listReferenceProjects,
+    listReferenceProjectPages,
     removeNodeFromTree,
     moveNodeInTree,
     resetToDemo,

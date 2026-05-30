@@ -2,7 +2,7 @@
  * APP 壳层 pageDesign Host Run provider。
  *
  * 这是 pageDesign 业务注册到通用 Host Run 分布式桥的装配层：它只创建
- * headless PageEditor、按请求 pageId 打开页面、确保业务注册，并在运行结束后
+ * headless ProjectEditor、按请求 pageId 打开页面、确保业务注册，并在运行结束后
  * 保存 dirty 四文件。SPARK AI 内核仍不持有页面状态或业务编排。
  */
 
@@ -12,19 +12,20 @@ import type {
   AiAgentHostRunResult,
 } from '@spark-view/spark-ai/agent'
 import type { AiJsonParams } from '@spark-view/spark-ai/json'
-import { createPageEditor, type PageEditor } from '@spark-view/spark-page-config/editor'
+import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-page-config/project'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
 } from '@spark-view/spark-page-config/ai'
 import { getNavApi, getPageApi } from '@/services/api-paths'
+import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
 import type {
   AiHostRunTarget,
   AiHostRunPrepare,
 } from '@/services/ai-host-run-bridge'
 
-const pageDesignEditors = new Map<string, PageEditor>()
+const pageDesignEditors = new Map<string, ProjectEditor>()
 
 export const preparePageDesignHostRun: AiHostRunPrepare<AiAgentHost> = async (event, host) => {
   if (event.alias !== PAGE_DESIGN_MODULE_ID) return host
@@ -50,10 +51,11 @@ export const preparePageDesignHostRun: AiHostRunPrepare<AiAgentHost> = async (ev
   return createSavingPageDesignHost(pageDesignHost, pageId)
 }
 
-function createHeadlessPageDesignEditor(): PageEditor {
-  return createPageEditor({
+function createHeadlessPageDesignEditor(): ProjectEditor {
+  return createProjectEditor({
+    projectId: getUser()?.defaultProjectId ?? 'homepage',
     http,
-    getPageConfigApi: getPageApi,
+    getPageFilesApi: getPageApi,
     getNavigationApi: getNavApi,
     getHeaders: createAuthHeaders,
   })

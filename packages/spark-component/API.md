@@ -338,7 +338,7 @@ export {
 }
 export type {
   PageContext,
-  PageConfig,
+  PageNodeRenderConfig,
 }
 ```
 

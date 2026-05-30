@@ -6,7 +6,7 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { createPageModelFactory, type PageModelFactoryOptions } from '@spark-view/spark-page-config'
+import { createPageNodeFactory, type PageNodeFactoryOptions } from '@spark-view/spark-page-config'
 import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
@@ -70,9 +70,9 @@ export type SparkOptions = {
   autoRegister?: boolean}
 
 /**
- * 页面配置系统配置
+ * PageNode 运行配置
  */
-export type PageConfigOptions = {
+export type PageNodeOptions = {
   /** API 基础路径 */
   apiBaseUrl: string
   /**
@@ -136,8 +136,8 @@ export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
     /** SPARK 组件系统配置 */
     spark?: SparkOptions
 
-    /** 页面配置系统配置 */
-    pageConfig?: PageConfigOptions
+    /** PageNode 运行配置 */
+    pageNode?: PageNodeOptions
 
     /** UI 插件列表 */
     plugins?: Plugin[]
@@ -187,7 +187,7 @@ export async function start(options: StartOptions): Promise<void> {
     routerMode = 'history',
     mountTarget = '#app',
     spark,
-    pageConfig,
+    pageNode,
     plugins,
     theme,
     onBeforeStart,
@@ -295,21 +295,21 @@ export async function start(options: StartOptions): Promise<void> {
     }
 
     // 5. 配置动态路由系统
-    if (pageConfig) {
+    if (pageNode) {
       logStartDebug('配置动态路由系统...')
 
-      const pageModelFactoryOptions: PageModelFactoryOptions = {
-        apiBaseUrl: pageConfig.apiBaseUrl
+      const pageNodeFactoryOptions: PageNodeFactoryOptions = {
+        apiBaseUrl: pageNode.apiBaseUrl
       }
 
-      if (pageConfig.pagesConfigBaseUrl !== undefined) pageModelFactoryOptions.pagesConfigBaseUrl = pageConfig.pagesConfigBaseUrl
-      if (pageConfig.timeout !== undefined) pageModelFactoryOptions.timeout = pageConfig.timeout
-      if (pageConfig.getHeaders) pageModelFactoryOptions.getHeaders = pageConfig.getHeaders
+      if (pageNode.pagesConfigBaseUrl !== undefined) pageNodeFactoryOptions.pagesConfigBaseUrl = pageNode.pagesConfigBaseUrl
+      if (pageNode.timeout !== undefined) pageNodeFactoryOptions.timeout = pageNode.timeout
+      if (pageNode.getHeaders) pageNodeFactoryOptions.getHeaders = pageNode.getHeaders
 
-      const pageModelFactory = createPageModelFactory(pageModelFactoryOptions)
+      const pageNodeFactory = createPageNodeFactory(pageNodeFactoryOptions)
 
       // 默认使用 SparkPageRenderer 组件（SPARK 原生页面渲染器）
-      let pageComponent = pageConfig.pageComponent
+      let pageComponent = pageNode.pageComponent
 
       // 如果未提供 pageComponent，自动导入 SparkPageRenderer
       if (!pageComponent) {
@@ -320,16 +320,16 @@ export async function start(options: StartOptions): Promise<void> {
 
       const dynamicRouterOptions: DynamicRouterOptions = {
         router,
-        pageModelFactory,
+        pageNodeFactory,
         pageComponent, // SparkPageRenderer 或用户提供的组件，if 块已确保非空
-        ...(pageConfig.componentMap !== undefined && { componentMap: pageConfig.componentMap }),
-        ...(pageConfig.tenantPathPrefix !== undefined && { tenantPathPrefix: pageConfig.tenantPathPrefix }),
-        ...(pageConfig.loadNavigation !== undefined && { loadNavigation: pageConfig.loadNavigation }),
-        ...(pageConfig.loadPlatformNavigation !== undefined && { loadPlatformNavigation: pageConfig.loadPlatformNavigation }),
-        ...(pageConfig.isPlatformNavigationEnabled !== undefined && { isPlatformNavigationEnabled: pageConfig.isPlatformNavigationEnabled }),
-        ...(pageConfig.platformPathPrefix !== undefined && { platformPathPrefix: pageConfig.platformPathPrefix }),
-        ...(pageConfig.preAuthNavTree !== undefined && { preAuthNavTree: pageConfig.preAuthNavTree }),
-        ...(pageConfig.isAuthenticated !== undefined && { isAuthenticated: pageConfig.isAuthenticated }),
+        ...(pageNode.componentMap !== undefined && { componentMap: pageNode.componentMap }),
+        ...(pageNode.tenantPathPrefix !== undefined && { tenantPathPrefix: pageNode.tenantPathPrefix }),
+        ...(pageNode.loadNavigation !== undefined && { loadNavigation: pageNode.loadNavigation }),
+        ...(pageNode.loadPlatformNavigation !== undefined && { loadPlatformNavigation: pageNode.loadPlatformNavigation }),
+        ...(pageNode.isPlatformNavigationEnabled !== undefined && { isPlatformNavigationEnabled: pageNode.isPlatformNavigationEnabled }),
+        ...(pageNode.platformPathPrefix !== undefined && { platformPathPrefix: pageNode.platformPathPrefix }),
+        ...(pageNode.preAuthNavTree !== undefined && { preAuthNavTree: pageNode.preAuthNavTree }),
+        ...(pageNode.isAuthenticated !== undefined && { isAuthenticated: pageNode.isAuthenticated }),
       }
 
       const dynamicRouter = createDynamicRouter(dynamicRouterOptions)
@@ -346,7 +346,7 @@ export async function start(options: StartOptions): Promise<void> {
 
       // 注入到全局访问模块：导航访问 + 缓存管理
       setDynamicRouter(dynamicRouter)
-      setPageCacheHandle(createPageCache(pageModelFactory))
+      setPageCacheHandle(createPageCache(pageNodeFactory))
     }
 
     // 6. 执行 Bootstrap 流程

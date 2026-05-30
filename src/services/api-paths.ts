@@ -49,6 +49,20 @@ export function getProjectApi(): string {
   return `/api/tenants/${tenantId}/projects`
 }
 
+export function getProjectNavigationApi(projectId: string): string {
+  const user = getUser()
+  if (!user) {
+    throw new Error('缺少登录用户，无法构造项目导航 API 路径')
+  }
+  const normalizedProjectId = projectId.trim()
+  if (!normalizedProjectId) {
+    throw new Error('projectId 不能为空，无法构造项目导航 API 路径')
+  }
+  const urlScope = typeof window !== 'undefined' ? parseTenantScope(window.location.pathname) : null
+  const tenantId = isPlatformAdminUser(user) && urlScope !== null ? urlScope.tenantId : user.tenantId
+  return `/api/tenants/${tenantId}/projects/${encodeURIComponent(normalizedProjectId)}/navigation`
+}
+
 export function getPlatformNavApi(): string {
   return '/api/platform/navigation'
 }

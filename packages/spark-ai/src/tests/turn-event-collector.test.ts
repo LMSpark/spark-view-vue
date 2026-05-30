@@ -196,7 +196,7 @@ describe('createTurnEventCollector', () => {
           type: 'function',
           function: {
             name: 'module_find',
-            arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+            arguments: JSON.stringify({ path: '/', childKind: 'sampleKind' }),
           },
         }],
       }),
@@ -209,7 +209,7 @@ describe('createTurnEventCollector', () => {
         type: 'function',
         function: {
           name: 'module_find',
-          arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+          arguments: JSON.stringify({ path: '/', childKind: 'sampleKind' }),
         },
       }],
     })
@@ -228,7 +228,7 @@ describe('createTurnEventCollector', () => {
         '```json',
         JSON.stringify({
           tool_call: 'module_find',
-          args: { path: '/', childKind: 'pageDesign' },
+          args: { path: '/', childKind: 'sampleKind' },
         }),
         '```',
       ].join('\n'),
@@ -241,7 +241,7 @@ describe('createTurnEventCollector', () => {
         type: 'function',
         function: {
           name: 'module_find',
-          arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+          arguments: JSON.stringify({ path: '/', childKind: 'sampleKind' }),
         },
       }],
     })
@@ -265,7 +265,7 @@ describe('createTurnEventCollector', () => {
             type: 'function',
             function: {
               name: 'module_find',
-              arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+              arguments: JSON.stringify({ path: '/', childKind: 'sampleKind' }),
             },
           }],
         }),
@@ -276,7 +276,7 @@ describe('createTurnEventCollector', () => {
             type: 'function',
             function: {
               name: 'module_call',
-              arguments: JSON.stringify({ path: '/pageDesign[x]', functionName: 'writeFiles', args: {} }),
+              arguments: JSON.stringify({ path: '/sampleKind[x]', functionName: 'writeResult', args: {} }),
             },
           }],
         }),
@@ -292,7 +292,7 @@ describe('createTurnEventCollector', () => {
           type: 'function',
           function: {
             name: 'module_find',
-            arguments: JSON.stringify({ path: '/', childKind: 'pageDesign' }),
+            arguments: JSON.stringify({ path: '/', childKind: 'sampleKind' }),
           },
         },
         {
@@ -300,7 +300,7 @@ describe('createTurnEventCollector', () => {
           type: 'function',
           function: {
             name: 'module_call',
-            arguments: JSON.stringify({ path: '/pageDesign[x]', functionName: 'writeFiles', args: {} }),
+            arguments: JSON.stringify({ path: '/sampleKind[x]', functionName: 'writeResult', args: {} }),
           },
         },
       ],
@@ -319,7 +319,7 @@ describe('createTurnEventCollector', () => {
       text: [
         '<｜DSML｜tool_calls>',
         '<｜DSML｜invoke name="module_call">',
-        '<｜DSML｜parameter name="path" string="true">/pageDesign[x]/lifecycle[x]</｜DSML｜parameter>',
+        '<｜DSML｜parameter name="path" string="true">/sampleKind[x]/lifecycle[x]</｜DSML｜parameter>',
         '<｜DSML｜parameter name="functionName" string="true">describeProgress</｜DSML｜parameter>',
         '<｜DSML｜parameter name="args" string="false">{}</｜DSML｜parameter>',
         '</｜DSML｜invoke>',
@@ -335,7 +335,7 @@ describe('createTurnEventCollector', () => {
         function: {
           name: 'module_call',
           arguments: JSON.stringify({
-            path: '/pageDesign[x]/lifecycle[x]',
+            path: '/sampleKind[x]/lifecycle[x]',
             functionName: 'describeProgress',
             args: {},
           }),

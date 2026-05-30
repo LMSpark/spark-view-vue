@@ -16,12 +16,11 @@ export default defineConfig({
       { find: /^@spark-view\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
       { find: /^@spark-view\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
       { find: /^@spark-view\/spark-page-config$/, replacement: resolve(__dirname, './src/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/editor$/, replacement: resolve(__dirname, './src/editor/page-editor.ts') },
+      { find: /^@spark-view\/spark-page-config\/project$/, replacement: resolve(__dirname, './src/project.ts') },
       { find: /^@spark-view\/spark-page-config\/json-document$/, replacement: resolve(__dirname, './src/json-document-public.ts') },
       { find: /^@spark-view\/spark-component\/runtime$/, replacement: resolve(__dirname, '../spark-component/src/runtime/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/ai$/, replacement: resolve(__dirname, './src/ai/index.ts') },
+      { find: /^@spark-view\/spark-page-config\/ai$/, replacement: resolve(__dirname, './src/ai.ts') },
       { find: /^@spark-view\/spark-page-config\/leave-request$/, replacement: resolve(__dirname, './src/leave-request/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/ai\/payloads\/component-catalog\.json$/, replacement: resolve(__dirname, './src/ai/payloads/component-catalog.json') },
     ]
   }
 })

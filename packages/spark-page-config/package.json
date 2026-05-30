@@ -15,13 +15,13 @@
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
     },
-    "./editor": {
-      "types": "./dist/editor/page-editor.d.ts",
-      "import": "./dist/editor/page-editor.js"
+    "./project": {
+      "types": "./dist/project.d.ts",
+      "import": "./dist/project.js"
     },
     "./ai": {
-      "types": "./dist/ai/index.d.ts",
-      "import": "./dist/ai/index.js"
+      "types": "./dist/ai.d.ts",
+      "import": "./dist/ai.js"
     },
     "./leave-request": {
       "types": "./dist/leave-request/index.d.ts",

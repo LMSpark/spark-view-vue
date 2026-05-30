@@ -25,7 +25,6 @@ const standardMarkdownNames = new Set([
 ])
 
 const legacyMarkdownAllowlist = new Set([
-  'SPARK_VIEW_16_BLOG_SERIES_PLAN.md',
   'docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md',
   'docs/api/DYNAMIC_DATA_EXAMPLE_ZH.md',
   'docs/api/SPARK_COMMUNICATION_ENVELOPE_V4.md',
@@ -49,8 +48,6 @@ const legacyMarkdownAllowlist = new Set([
   'docs/guides/SAVE_DATASET_ACTION.md',
   'docs/guides/TESTING_BEST_PRACTICES.md',
   'docs/guides/TREE_CAPABILITY.md',
-  'docs/video-series/RENDERING.md',
-  'docs/video-series/SERIES_BIBLE.md',
   'packages/spark-ai/src/modules/DM-VCM-MODULE-METADATA-SCOPE.md',
   'packages/spark-ai/src/modules/MODULE-KIND-REGISTRATION.md',
   'packages/spark-utils/REQUEST_GUIDE.md',

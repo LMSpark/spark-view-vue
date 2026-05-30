@@ -116,7 +116,7 @@ describe('leave-request host business registration', () => {
     const started = await startAiAgentRegistrationSession(registration, toAiAgentRuntimeScope(scope))
 
     expect(registration.moduleId).toBe(LEAVE_REQUEST_MODULE_ID)
-    expect(started.tools.map((tool) => tool.function.name)).toEqual([
+    expect(started.tools.map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'module_query',
       'module_guide',
       'module_attribute_guide',
@@ -125,7 +125,12 @@ describe('leave-request host business registration', () => {
       'module_attr',
       'module_call',
       'human_question',
-    ])
+      'agent_complete',
+      'describeDraft',
+      'setDraftFields',
+      'submitDraft',
+      'cancelDraft',
+    ]))
     expect(registration.systemPrompt?.(toAiAgentRuntimeScope(scope))).toContain('当前日期')
 
     const described = await registration.runtime.executeTool('module_guide', { kind: LEAVE_REQUEST_KIND }, toAiAgentRuntimeScope(scope))

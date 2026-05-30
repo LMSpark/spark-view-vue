@@ -3,7 +3,7 @@ import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
 import type { AppNavRoot } from '../../navigation/nav-model'
-import type { PageModelFactoryLike, PageModelLike } from '@spark-view/spark-page-config'
+import type { PageNodeFactoryLike, PageNodeLike } from '@spark-view/spark-page-config'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',
@@ -32,8 +32,8 @@ const PRE_AUTH_NAV: AppNavRoot = {
   ],
 }
 
-const DUMMY_PAGE_MODEL_FACTORY = {
-  create(pageId: string): PageModelLike {
+const DUMMY_PAGE_NODE_FACTORY = {
+  create(pageId: string): PageNodeLike {
     return {
       pageId,
       get isLoaded() { return false },
@@ -48,7 +48,7 @@ const DUMMY_PAGE_MODEL_FACTORY = {
   clearAllCache: () => ({ size: 0, keys: [] }),
   getCacheStats: () => ({ size: 0, keys: [] }),
   getHttpClient: () => undefined,
-} satisfies PageModelFactoryLike
+} satisfies PageNodeFactoryLike
 
 describe('DynamicRouter unauthorized fallback', () => {
   it('falls back to preAuthNavTree when loadNavigation returns 401', async () => {
@@ -57,7 +57,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -92,7 +92,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       preAuthNavTree: PRE_AUTH_NAV,
@@ -116,7 +116,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     const dynamicRouter = createDynamicRouter({
       router,
-      pageModelFactory: DUMMY_PAGE_MODEL_FACTORY,
+      pageNodeFactory: DUMMY_PAGE_NODE_FACTORY,
       pageComponent: DummyPage,
       loadNavigation,
       isAuthenticated: () => true,

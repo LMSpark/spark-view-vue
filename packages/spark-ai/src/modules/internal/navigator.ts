@@ -367,6 +367,6 @@ function parentKindMismatch(moduleKind: AiModule, actualParentKind: string): AiM
     expectedParentKind === undefined
       ? `kind "${moduleKind.kind}" 是根 kind，不能挂在父 kind "${actualParentKind}" 下`
       : `kind "${moduleKind.kind}" 的 parentKind 是 "${expectedParentKind}"，不能挂在父 kind "${actualParentKind}" 下`,
-    '请按 module_query/module_function_guide 返回的 kindPath 构造 module_call.path。',
+    '请先通过 module_find 定位实例 path，再用目标 direct function 调用；仅旧协议兼容场景使用 module_call。',
   )
 }

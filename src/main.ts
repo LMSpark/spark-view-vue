@@ -13,7 +13,7 @@
  *
  * 📦 架构层次（由 SparkApp.start 自动完成）：
  * - L1: @spark-view/spark-app - 应用基础设施层
- * - L2: @spark-view/spark-page-config - 页面配置编排层
+ * - L2: @spark-view/spark-page-config - PageNode 编排层
  * - L4-L6: @spark-view/spark-component - 组件核心层
  *
  *
@@ -347,9 +347,9 @@ async function startApp() {
         // 不需要手动传递 registerComponents
       },
 
-      // === 页面配置系统（路由从 DB 动态加载）===
-      pageConfig: {
-        ...appConfig.pageConfig,
+      // === PageNode 运行配置（路由从 DB 动态加载）===
+      pageNode: {
+        ...appConfig.pageNode,
         pagesConfigBaseUrl: getPageApi,
         pageComponent: SparkPageRenderer,
         componentMap,

@@ -64,7 +64,7 @@
  * @example
  * ```vue
  * <!-- 根渲染器 -->
- * <SparkComponentRenderer :config="pageConfig" />
+ * <SparkComponentRenderer :config="nodeConfig" />
  *
  * <!-- 测试时指定 rootContext -->
  * <SparkComponentRenderer :config="config" :parent-context="rootContext" />

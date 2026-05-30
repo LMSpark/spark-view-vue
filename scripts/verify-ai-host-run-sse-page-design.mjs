@@ -23,8 +23,8 @@ import {
   PAGE_DESIGN_MODULE_ID,
 } from '@spark-view/spark-page-config/ai'
 import {
-  createPageEditor,
-} from '@spark-view/spark-page-config/editor'
+  createProjectEditor,
+} from '@spark-view/spark-page-config/project'
 import { createRequest, isRecord } from '@spark-view/spark-utils'
 import {
   createAppSseEventHub,
@@ -39,12 +39,14 @@ const DEFAULT_PASSWORD = 'admin123'
 const DEFAULT_MAX_ROUNDS = 32
 const DEFAULT_RUN_TIMEOUT_MS = 20 * 60 * 1000
 const DEFAULT_TURN_TIMEOUT_MS = 240_000
+const DEFAULT_SESSION_TURN_SAFE_RETRIES = 2
+const SESSION_TURN_RETRY_BASE_MS = 800
 const REQUEST_TIMEOUT_MS = 30_000
 
 const RESULT_EVENT = 'ai-host-run-result'
 const REQUEST_EVENT = 'ai-host-run-request'
 const AI_TURN_EVENTS = ['llm-frame']
-const PAGE_CONFIG_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
+const PAGE_MODEL_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
 
 function parseArgs(argv) {
   const runId = createDefaultRunId()
@@ -59,6 +61,8 @@ function parseArgs(argv) {
     maxRounds: numberFromEnv(process.env.AI_MAX_TOOL_ROUNDS, DEFAULT_MAX_ROUNDS),
     runTimeoutMs: numberFromEnv(process.env.AI_HOST_RUN_TIMEOUT_MS, DEFAULT_RUN_TIMEOUT_MS),
     turnTimeoutMs: numberFromEnv(process.env.AI_TURN_TIMEOUT_MS, DEFAULT_TURN_TIMEOUT_MS),
+    sessionTurnSafeRetries: numberFromEnv(process.env.AI_SESSION_TURN_SAFE_RETRIES, DEFAULT_SESSION_TURN_SAFE_RETRIES),
+    turnTransport: normalizeTurnTransport(process.env.AI_TURN_TRANSPORT ?? 'session-turn'),
     replacePage: process.env.AI_REPLACE_PAGE === undefined ? true : process.env.AI_REPLACE_PAGE !== '0',
     sequential: process.env.AI_HOST_RUN_SEQUENTIAL === '1',
     pageKeys: parsePageKeyList(process.env.AI_HOST_RUN_ONLY ?? ''),
@@ -77,6 +81,9 @@ function parseArgs(argv) {
           '数据模型使用 Class、Student、Course、Grade 四类数据；成绩包含分数、等级、是否异常等字段。',
           '页面采用单页工作台布局：筛选区、统计摘要、成绩表格、录入/编辑表单。',
           '页面需要支持成绩录入、成绩列表、课程与班级筛选、汇总统计、等级判断和异常成绩提示。',
+          '优先完成最小可验收四文件闭环：先建精简数据，再写 rule.json 可见 UI，再写 script.js 服务和 style.css 样式；不要只创建数据模型。',
+          '所有 node-tree/text-model 调用都必须通过 OpenAI 标准业务函数 tool_call，例如 addNodes({ path, args })、writeScript({ path, args })、writeStyle({ path, args })；不要使用 module_call({ path, functionName, args }) 作为首选。',
+          'style.css 必须包含不少于 400 字符的页面样式；script.js 必须包含面向成绩等级、异常提示或筛选统计的页面服务。',
           '产物必须包含可运行的数据模型、页面节点、脚本服务和样式。',
         ].join(''),
       },
@@ -92,6 +99,9 @@ function parseArgs(argv) {
           '数据模型使用 Department、Position、Employee 三类数据；员工包含状态、联系方式、入职日期、岗位和部门字段。',
           '页面采用单页工作台布局：筛选区、统计摘要、员工表格、档案编辑表单。',
           '页面需要支持员工档案维护、部门岗位筛选、入职状态管理、联系信息展示、统计摘要和数据校验。',
+          '优先完成最小可验收四文件闭环：先建精简数据，再写 rule.json 可见 UI，再写 script.js 服务和 style.css 样式；不要只创建数据模型。',
+          '所有 node-tree/text-model 调用都必须通过 OpenAI 标准业务函数 tool_call，例如 addNodes({ path, args })、writeScript({ path, args })、writeStyle({ path, args })；不要使用 module_call({ path, functionName, args }) 作为首选。',
+          'style.css 必须包含不少于 400 字符的页面样式；script.js 必须包含面向员工状态、联系方式校验或部门岗位筛选的页面服务。',
           '产物必须包含可运行的数据模型、页面节点、脚本服务和样式。',
         ].join(''),
       },
@@ -147,6 +157,12 @@ function parseArgs(argv) {
         break
       case 'turn-timeout-ms':
         options.turnTimeoutMs = Number(value)
+        break
+      case 'session-turn-retries':
+        options.sessionTurnSafeRetries = Number(value)
+        break
+      case 'turn-transport':
+        options.turnTransport = normalizeTurnTransport(value)
         break
       case 'replace-page':
         options.replacePage = booleanFlag(value)
@@ -216,6 +232,8 @@ function parseArgs(argv) {
   requirePositiveNumber(options.maxRounds, 'maxRounds')
   requirePositiveNumber(options.runTimeoutMs, 'runTimeoutMs')
   requirePositiveNumber(options.turnTimeoutMs, 'turnTimeoutMs')
+  requirePositiveNumber(options.sessionTurnSafeRetries, 'sessionTurnSafeRetries')
+  options.turnTransport = normalizeTurnTransport(options.turnTransport)
   return options
 }
 
@@ -236,6 +254,8 @@ function printHelp() {
     '  --run-id <id>             Stable page suffix',
     '  --timeout-ms <n>          Host run timeout in ms',
     '  --turn-timeout-ms <n>     LLM turn timeout in ms',
+    '  --session-turn-retries <n> Safe retries for transient session-turn LLM failures',
+    '  --turn-transport <mode>   session-turn (default) or app-sse',
     '  --student-page-id <id>    Student page ID',
     '  --student-request <text>  Student page requirement',
     '  --employee-page-id <id>   Employee page ID',
@@ -338,8 +358,14 @@ async function startHeadlessHostRunWorker(options, auth) {
   }
 
   eventHub.on(REQUEST_EVENT, (event) => {
+    const data = event.data
+    const requestId = isRecord(data) ? readString(data, 'requestId') : ''
+    const alias = isRecord(data) ? readString(data, 'alias') : ''
+    const dataArgs = isRecord(data) ? data.args : null
+    const pageId = isRecord(dataArgs) ? readString(dataArgs, 'pageId') : ''
+    console.log(`[host-run-sse] request received requestId=${requestId} alias=${alias} pageId=${pageId}`)
     void handleHostRunRequest({
-      event: event.data,
+      event: data,
       options,
       auth,
       host: pageDesignHost,
@@ -399,6 +425,7 @@ async function handleHostRunRequest(runtime) {
       await completeHostRun(runtime, failureResult(event, startedAt, 'unknown_alias', 'AI_HOST_RUN_UNKNOWN_ALIAS', `alias is not registered: ${alias}`))
       return
     }
+    console.log(`[host-run-sse] host run start requestId=${requestId} alias=${alias} pageId=${pageId}`)
 
     const pageId = readString(args, 'pageId')
     if (alias === PAGE_DESIGN_MODULE_ID && pageId.length > 0) {
@@ -429,6 +456,7 @@ async function handleHostRunRequest(runtime) {
 
     const snapshot = trace.snapshot()
     const savedFiles = await savePreparedPageFiles(runtime, pageId)
+    console.log(`[host-run-sse] host run completed requestId=${requestId} sessionId=${result.session.sessionId} toolCalls=${snapshot.toolCalls.length}`)
     await completeHostRun(runtime, {
       requestId,
       alias,
@@ -466,7 +494,8 @@ async function handleHostRunRequest(runtime) {
 async function triggerHostRun({ options, auth, worker, page }) {
   const requestId = randomUUID()
   const resultPromise = waitForResult(worker.eventHub, requestId, options.runTimeoutMs + 30_000)
-  await postBackendJson(options, auth, '/api/ai/host-run/request', {
+  console.log(`[host-run-sse] request post page=${page.key} pageId=${page.pageId} requestId=${requestId}`)
+  const accepted = await postBackendJson(options, auth, '/api/ai/host-run/request', {
     appClientId: worker.appClientId,
     requestId,
     alias: PAGE_DESIGN_MODULE_ID,
@@ -478,6 +507,7 @@ async function triggerHostRun({ options, auth, worker, page }) {
     timeoutMs: options.runTimeoutMs,
     reason: `headless-verify:${page.key}`,
   }, undefined, { Cookie: worker.appSseCookie })
+  console.log(`[host-run-sse] request accepted requestId=${requestId} delivered=${String(accepted?.delivered ?? '')}`)
   const result = await resultPromise
   return { requestId, page, result }
 }
@@ -531,17 +561,23 @@ function validateGeneratedPage(files, page) {
   const errors = []
   const ruleJson = parseJson(files['rule.json'], 'rule.json', errors)
   const pageDataJson = parseJson(files['pagedata.json'], 'pagedata.json', errors)
-  if (typeof files['style.css'] !== 'string' || files['style.css'].trim().length < 20) {
+  if (typeof files['style.css'] !== 'string' || files['style.css'].trim().length < 400) {
     errors.push('style.css is too small')
   }
   if (typeof files['script.js'] !== 'string') {
     errors.push('script.js is missing')
+  } else if (files['script.js'].trim().length < 180) {
+    errors.push('script.js is too small')
   }
-  if (!isRecord(ruleJson)) {
-    errors.push('rule.json root is not object')
+  if (!isValidRuleRoot(ruleJson)) {
+    errors.push('rule.json root is not a non-empty object or array')
+  } else if (isInitialPlaceholderRule(ruleJson)) {
+    errors.push('rule.json is still the initial placeholder')
   }
   if (!isRecord(pageDataJson)) {
     errors.push('pagedata.json root is not object')
+  } else if (!hasPageDataTables(pageDataJson)) {
+    errors.push('pagedata.json has no business tables')
   }
   const allText = Object.values(files).join('\n')
   if (!allText.includes(page.title.slice(0, 2))) {
@@ -551,6 +587,20 @@ function validateGeneratedPage(files, page) {
     ok: errors.length === 0,
     errors,
   }
+}
+
+function hasPageDataTables(value) {
+  return isRecord(value.tables) && Object.keys(value.tables).length > 0
+}
+
+function isValidRuleRoot(value) {
+  if (isRecord(value)) return true
+  return Array.isArray(value) && value.length > 0
+}
+
+function isInitialPlaceholderRule(value) {
+  const serialized = JSON.stringify(value)
+  return serialized.includes('页面配置就绪') || serialized.includes('请编辑 rule.json')
 }
 
 async function writeReport(options, summary) {
@@ -575,9 +625,10 @@ function createPageConfigRuntime(options, auth) {
     },
   })
   return {
-    editor: createPageEditor({
+    editor: createProjectEditor({
+      projectId: auth.projectId,
       http,
-      getPageConfigApi: () => `${options.backendUrl}/api/pages-config`,
+      getPageFilesApi: () => `${options.backendUrl}/api/pages-config`,
       getNavigationApi: () => `${options.backendUrl}/api/navigation`,
       getHeaders: () => createAuthHeaders(options, auth),
       fileStorage: 'memory',
@@ -633,6 +684,10 @@ function createTurnCallbacks(options, auth) {
       preparedSessionIds.add(input.sessionId)
     },
     executeTurn: async (input) => {
+      if (options.turnTransport === 'session-turn') {
+        return executeSessionTurn(options, auth, input)
+      }
+
       const eventHub = createAppSseEventHub()
       let appSseCookie = ''
       const subscription = subscribeAppSseEvents({
@@ -678,6 +733,75 @@ function createTurnCallbacks(options, auth) {
       assertAppendMessages(body, input)
     },
   }
+}
+
+async function executeSessionTurn(options, auth, input) {
+  for (let attempt = 0; ; attempt += 1) {
+    try {
+      return await executeSessionTurnOnce(options, auth, input)
+    } catch (error) {
+      if (attempt >= options.sessionTurnSafeRetries || !isSafeRetryableTurnError(error)) throw error
+      console.warn(`[host-run-sse] session-turn safe retry ${attempt + 1}/${options.sessionTurnSafeRetries}: ${errorMessage(error)}`)
+      await delay(SESSION_TURN_RETRY_BASE_MS * 2 ** attempt, input.signal)
+    }
+  }
+}
+
+async function executeSessionTurnOnce(options, auth, input) {
+  const body = await postBackendJson(options, auth, `/api/ai/sessions/${encodeURIComponent(input.sessionId)}/turn`, {
+    protocolVersion: 4,
+    scope: toAiAgentRuntimeScope(input.scope),
+    turn: createAiAgentTransportTurn(input),
+    messages: input.messages,
+  }, input.signal)
+  assertSessionTurnResult(body, input)
+  const result = {
+    text: typeof body.text === 'string' ? body.text : '',
+    ...(typeof body.reasoning === 'string' ? { reasoning: body.reasoning } : {}),
+    toolCalls: readToolCalls(body.toolCalls),
+    assistantMessagePersisted: true,
+  }
+  input.onStreamEvent?.({
+    type: 'result',
+    data: body,
+    turnKey: '',
+    streamKey: '',
+    scope: {
+      businessRegistrationId: input.scope.businessRegistrationId,
+      businessInstanceId: input.scope.businessInstanceId,
+      eventModuleId: 'llm',
+      turnId: input.turn.turnId,
+    },
+  })
+  if (result.reasoning !== undefined && result.reasoning.length > 0) input.onReasoning?.(result.reasoning)
+  if (result.toolCalls.length === 0 && result.text.length > 0) input.onDelta?.(result.text)
+  return result
+}
+
+function isSafeRetryableTurnError(error) {
+  const message = errorMessage(error)
+  return message.includes('LLM_CALL_FAILED')
+    || message.includes('"retryPolicy":"safe-retry"')
+    || message.includes('"retryPolicy": "safe-retry"')
+    || message.includes('(safe-retry)')
+}
+
+async function delay(ms, signal) {
+  if (signal?.aborted) throw new Error('session-turn retry aborted')
+  await new Promise((resolve, reject) => {
+    let onAbort = () => {}
+    const cleanup = () => signal?.removeEventListener('abort', onAbort)
+    const timer = setTimeout(() => {
+      cleanup()
+      resolve()
+    }, ms)
+    onAbort = () => {
+      clearTimeout(timer)
+      cleanup()
+      reject(new Error('session-turn retry aborted'))
+    }
+    signal?.addEventListener('abort', onAbort, { once: true })
+  })
 }
 
 async function resolveBackendAuth(options) {
@@ -785,7 +909,7 @@ function toAiJsonParams(args) {
 async function saveDirtyFiles(editor) {
   const saved = []
   const dirtyFiles = editor.readSnapshot().dirtyFiles
-  for (const name of PAGE_CONFIG_FILE_NAMES) {
+  for (const name of PAGE_MODEL_FILE_NAMES) {
     if (!dirtyFiles.has(name)) continue
     await editor.savePageFile(name)
     saved.push(name)
@@ -813,7 +937,7 @@ async function saveDirtyFilesAfterFailure(runtime, event) {
 }
 
 function readEditorFiles(editor) {
-  return Object.fromEntries(PAGE_CONFIG_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
+  return Object.fromEntries(PAGE_MODEL_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
 }
 
 function summarizeFiles(files) {
@@ -846,6 +970,36 @@ function assertAppendMessages(body, input) {
   if (!isRecord(body)) throw new Error('AI append response missing body')
   if (readString(body, 'sessionId') !== input.sessionId) throw new Error('AI append response sessionId mismatch')
   if (readString(body, 'turnId') !== input.turn.turnId) throw new Error('AI append response turnId mismatch')
+}
+
+function assertSessionTurnResult(body, input) {
+  if (!isRecord(body)) throw new Error('AI session turn response missing body')
+  if (readString(body, 'sessionId') !== input.sessionId) throw new Error('AI session turn response sessionId mismatch')
+  const turnId = readString(body, 'turnId')
+  if (turnId.length > 0 && turnId !== input.turn.turnId) throw new Error('AI session turn response turnId mismatch')
+}
+
+function readToolCalls(value) {
+  if (!Array.isArray(value)) return []
+  return value
+    .map(normalizeToolCall)
+    .filter((call) => call !== null)
+}
+
+function normalizeToolCall(value) {
+  if (!isRecord(value)) return null
+  const fn = isRecord(value.function) ? value.function : null
+  if (fn === null || typeof fn.name !== 'string' || fn.name.trim().length === 0) return null
+  if (typeof value.id !== 'string' || value.id.trim().length === 0) return null
+  const rawArguments = fn.arguments
+  return {
+    id: value.id,
+    type: 'function',
+    function: {
+      name: fn.name,
+      arguments: typeof rawArguments === 'string' ? rawArguments : JSON.stringify(rawArguments ?? {}),
+    },
+  }
 }
 
 function appClientCookieFromResponse(response) {
@@ -965,6 +1119,12 @@ function parsePageKeyList(value) {
     }
   }
   return Array.from(new Set(keys))
+}
+
+function normalizeTurnTransport(value) {
+  const normalized = String(value ?? '').trim()
+  if (normalized === 'session-turn' || normalized === 'app-sse') return normalized
+  throw new Error(`Unknown turn transport: ${value}`)
 }
 
 function requireNonEmpty(value, label) {

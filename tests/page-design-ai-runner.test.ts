@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createPageEditor, type PageEditor } from '@spark-view/spark-page-config/editor'
+import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-page-config/project'
 import {
   createAiRunAdapter,
   type AiRunAdapterState,
@@ -51,10 +51,11 @@ type ActivePageState = Readonly<{
   isLoaded: boolean
 }>
 
-function createEditor(activePage: ActivePageState | null): PageEditor {
-  const editor = createPageEditor({
+function createEditor(activePage: ActivePageState | null): ProjectEditor {
+  const editor = createProjectEditor({
+    projectId: 'test-project',
     http: new TestHttpClient(),
-    getPageConfigApi: () => '/api/pages',
+    getPageFilesApi: () => '/api/pages',
     getNavigationApi: () => '/api/navigation',
   })
   Object.defineProperty(editor, 'getActivePage', {
@@ -189,7 +190,7 @@ describe('runPageDesignAiSession', () => {
     mocks.pageDesignRun.mockResolvedValue(createRunResult())
   })
 
-  it('uses the already loaded active PageModel instead of loading files on AI click', async () => {
+  it('uses the already loaded active PageNode instead of loading files on AI click', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: true })
     const aiHost = createAiHost()
     const runResult = createRunResult('session-from-host')
@@ -330,7 +331,7 @@ describe('runPageDesignAiSession', () => {
     expect(adapter.isRunning()).toBe(false)
   })
 
-  it('fails fast when the active PageModel is not loaded', async () => {
+  it('fails fast when the active PageNode is not loaded', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: false })
     const aiHost = createAiHost()
 
@@ -339,7 +340,7 @@ describe('runPageDesignAiSession', () => {
       userRequirement: '补一个按钮',
       editor,
       consumeCapability: createCapabilityConsumer(aiHost),
-    })).rejects.toThrow('requires PageModel "orders" to be loaded')
+    })).rejects.toThrow('requires PageNode "orders" to be loaded')
 
     expect(editor.ensureActivePageFilesLoaded).not.toHaveBeenCalled()
   })

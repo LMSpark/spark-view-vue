@@ -29,6 +29,7 @@
  */
 
 import type { AiJsonParams } from '../../json'
+import { PROTOCOL_TOOL_NAMES } from '../../modules/internal/protocol-tool-generator'
 import { toAiAgentRuntimeScope } from '../business/business-scope'
 import type {
   AiAgentBeforeFunctionCallDirective,
@@ -188,6 +189,7 @@ export class AiAgentToolCallExecutor {
 
     // 步骤 6：转换操作结果为 function call result 格式
     const callResult = toFunctionCallResult(operationResult)
+    const completeDirective = completeDirectiveFromToolResult(protocolToolName, callResult)
 
     return this.completeExecution({
       source: input,
@@ -196,6 +198,10 @@ export class AiAgentToolCallExecutor {
       args,
       callResult,
       started,
+      ...(completeDirective === null ? {} : {
+        lifecycleDirective: completeDirective,
+        skipAfterFunctionCall: true,
+      }),
     })
   }
 
@@ -365,4 +371,24 @@ function toolArgsFailureResult(error: ToolArgsParseError): AiAgentFunctionCallRe
       },
     ],
   }
+}
+
+function completeDirectiveFromToolResult(
+  toolName: string,
+  result: AiAgentFunctionCallResult<unknown>,
+): AiAgentLifecycleDirective | null {
+  if (toolName !== PROTOCOL_TOOL_NAMES.agentComplete || !result.ok) return null
+  const data = result.data
+  const summary = isRecord(data) && typeof data['summary'] === 'string'
+    ? data['summary'].trim()
+    : ''
+  return {
+    status: 'complete',
+    reason: 'agent_complete',
+    ...(summary.length === 0 ? {} : { finalAssistantMessage: summary }),
+  }
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

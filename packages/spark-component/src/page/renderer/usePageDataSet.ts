@@ -7,10 +7,10 @@
  * 职责单一：仅关注 DataSet 引用的持有/释放，不持有 UI/Rule 相关依赖。
  * DataSet ↔ el-table 的同步由 SparkPageRenderer 渲染器内部负责。
  *
- * 数据转换统一由上游 PageModel 完成，
+ * 数据转换统一由上游 PageNode 完成，
  * 本 composable 只接受已编译好的 DataSet 实例，不做任何归一化。
  *
- * ⚠️ 不调用 DataSet.destroy()——DataSet 实例由 PageModel 持有，
+ * ⚠️ 不调用 DataSet.destroy()——DataSet 实例由 PageNode 持有，
  * 同一页面的多次进入共享同一个 DataSet 对象。调用 destroy() 会导致
  * 第二次进入页面时拿到已销毁的 DataSet，表格无数据。
  * 清除实例引用即可，GC 由缓存策略负责。
@@ -54,7 +54,7 @@ export function usePageDataSet(options: UsePageDataSetOptions): UsePageDataSetRe
 
   const clearDataSet = () => {
     // 仅释放引用——不调用 destroy()
-    // DataSet 由 PageModel 持有，destroy 后同一页面内存态会被破坏。
+    // DataSet 由 PageNode 持有，destroy 后同一页面内存态会被破坏。
     dataSet = null
   }
 

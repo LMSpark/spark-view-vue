@@ -93,7 +93,7 @@ describe('AiModuleRegistry', () => {
 })
 
 describe('AiModuleKnowledgeProjector', () => {
-  it('projects module and function summaries for the fixed module_call protocol', () => {
+  it('projects module and direct function summaries for the OpenAI tool protocol', () => {
     const registry = new AiModuleRegistry()
     registry.register(createRootKind('workspace', 'Workspace'))
     registry.register(createFunctionKind())
@@ -105,7 +105,7 @@ describe('AiModuleKnowledgeProjector', () => {
     expect(projector.queryFunctions({ keyword: 'work' })).toEqual([
       expect.objectContaining({
         knowledgeLevel: 'directory',
-        toolName: 'module_call',
+        toolName: 'doWork',
         kind: 'task',
         functionName: 'doWork',
         detailToolName: 'module_function_guide',
@@ -126,14 +126,13 @@ describe('AiModuleKnowledgeProjector', () => {
       ok: true,
       data: {
         knowledgeLevel: 'detail',
-        toolName: 'module_call',
+        toolName: 'doWork',
         kind: 'task',
         functionName: 'doWork',
         directoryLookupStep: 'module_query({ kind: "task", keyword: "doWork", includeFunctions: true })',
         callPattern: {
-          toolName: 'module_call',
+          toolName: 'doWork',
           path: '/task[<taskId>]',
-          functionName: 'doWork',
         },
         requiredBeforeCall: ['先确认目标 task 实例 path。'],
         examples: [expect.objectContaining({ intent: '用户要求执行工作' })],
@@ -211,6 +210,77 @@ describe('AiModuleRuntime.inspect', () => {
           childKind: 'child',
         }),
       ],
+    })
+  })
+
+  it('reports non-direct OpenAI function names without blocking module_call fallback', () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(new AiModule({
+      kind: 'alpha',
+      name: 'Alpha',
+      description: 'Alpha module.',
+      functions: [
+        {
+          name: 'sameAction',
+          description: 'Duplicate direct tool name.',
+          paramsSchema: { type: 'object', properties: {}, additionalProperties: false },
+        },
+        {
+          name: 'bad.name',
+          description: 'Invalid OpenAI tool name.',
+          paramsSchema: { type: 'object', properties: {}, additionalProperties: false },
+        },
+        {
+          name: 'module_query',
+          description: 'Reserved protocol tool name.',
+          paramsSchema: { type: 'object', properties: {}, additionalProperties: false },
+        },
+      ],
+      runner: () => AiModuleResult.ok({ ok: true }),
+      find: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id: 'alpha-1', label: 'Alpha' }]),
+    }))
+    runtime.register(new AiModule({
+      kind: 'beta',
+      name: 'Beta',
+      description: 'Beta module.',
+      functions: [{
+        name: 'sameAction',
+        description: 'Duplicate direct tool name.',
+        paramsSchema: { type: 'object', properties: {}, additionalProperties: false },
+      }],
+      runner: () => AiModuleResult.ok({ ok: true }),
+      find: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([{ id: 'beta-1', label: 'Beta' }]),
+    }))
+
+    expect(runtime.inspect()).toMatchObject({
+      ok: true,
+      status: 'ok',
+      findings: expect.arrayContaining([
+        expect.objectContaining({
+          level: 'info',
+          code: 'DIRECT_FUNCTION_TOOL_NAME_CONFLICT',
+          kind: 'alpha',
+          functionName: 'sameAction',
+        }),
+        expect.objectContaining({
+          level: 'info',
+          code: 'DIRECT_FUNCTION_TOOL_NAME_CONFLICT',
+          kind: 'beta',
+          functionName: 'sameAction',
+        }),
+        expect.objectContaining({
+          level: 'info',
+          code: 'DIRECT_FUNCTION_TOOL_NAME_INVALID',
+          kind: 'alpha',
+          functionName: 'bad.name',
+        }),
+        expect.objectContaining({
+          level: 'info',
+          code: 'DIRECT_FUNCTION_TOOL_NAME_RESERVED',
+          kind: 'alpha',
+          functionName: 'module_query',
+        }),
+      ]),
     })
   })
 })

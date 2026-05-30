@@ -10,13 +10,13 @@
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { useDevState, type DevWorkspaceTab } from './useDevState'
-import type { PageModelFileName } from '@spark-view/spark-page-config'
+import type { PageNodeFileName } from '@spark-view/spark-page-config/project'
 import { onPageConfigChange } from '@/services/sse-events'
 
 export function useDevSystem() {
   const { router, tenantPath } = useTenantRouter()
   const state = useDevState()
-  const isPageFileName = (value: string): value is PageModelFileName =>
+  const isPageFileName = (value: string): value is PageNodeFileName =>
     state.pageFileNames.some((name) => name === value)
 
   // ─── 工作区 Tab 状态 ───────────────────────────────────
@@ -24,7 +24,7 @@ export function useDevSystem() {
   const previewRefreshToken = ref(0)
   const pageDesignAiPrompt = ref('')
 
-  const currentWorkspaceFile = computed<PageModelFileName | null>(() =>
+  const currentWorkspaceFile = computed<PageNodeFileName | null>(() =>
     isPageFileName(workTab.value) ? workTab.value : null,
   )
 
@@ -45,8 +45,8 @@ export function useDevSystem() {
   const activePageRequirement = computed(() => {
     const pageId = state.activePageId.value
     if (!pageId) return ''
-    const page = state.pageList.value.find(item => item.pageId === pageId)
-    return String(page?.userRequirement ?? page?.description ?? '').trim()
+    const page = state.pageList.value.find((item: { pageId: string }) => item.pageId === pageId)
+    return String(page?.effectiveUserRequirement ?? page?.description ?? '').trim()
   })
   const canSaveCleanNode = computed(() => {
     if (workTab.value !== 'props') return false
@@ -99,7 +99,7 @@ export function useDevSystem() {
     await state.runPageDesignAi({ userRequirement })
   }
 
-  function isWorkspaceTabDirty(name: PageModelFileName): boolean {
+  function isWorkspaceTabDirty(name: PageNodeFileName): boolean {
     return state.isDocumentDirty(name)
   }
 

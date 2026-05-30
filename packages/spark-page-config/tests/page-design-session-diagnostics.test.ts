@@ -4,7 +4,7 @@ import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'
 import {
   componentTypesFromPageDesignRule,
   validatePageDesignPayloadGuidesFromSession,
-} from '../src/ai/index'
+} from '../src/ai'
 
 // ── Fixture ─────────────────────────────────────────────────
 
@@ -31,6 +31,37 @@ function sessionRecord(): AiAgentSessionRecord {
         args: {
           path: '/pageDesign[page-a]/payload-catalog[page-a]',
           functionName: 'guidePayload',
+          args: { key: 'r-form' },
+        },
+        status: 'completed',
+        result: { ok: true },
+      },
+    ],
+  }
+}
+
+function directFunctionSessionRecord(): AiAgentSessionRecord {
+  return {
+    moduleId: 'pageDesign',
+    moduleInstanceId: 'page-a',
+    instanceId: 'page-a',
+    runtimeInstanceId: 'page-a',
+    status: 'Started',
+    startedAt: 1000,
+    updatedAt: 2000,
+    history: [
+      {
+        kind: 'functionCall',
+        moduleId: 'pageDesign',
+        moduleInstanceId: 'page-a',
+        instanceId: 'page-a',
+        runtimeInstanceId: 'page-a',
+        id: 'f1',
+        seq: 1,
+        timestamp: 1000,
+        toolName: 'guidePayload',
+        args: {
+          path: '/pageDesign[page-a]/payload-catalog[page-a]',
           args: { key: 'r-form' },
         },
         status: 'completed',
@@ -72,6 +103,26 @@ describe('pageDesign session diagnostics', () => {
     }
 
     expect(validatePageDesignPayloadGuidesFromSession(files, sessionRecord())).toEqual({
+      ok: false,
+      componentTypes: ['r-button', 'r-form'],
+      guidedPayloadKeys: ['r-form'],
+      missingGuides: ['r-button'],
+    })
+  })
+
+  it('accepts OpenAI direct guidePayload calls as payload guide evidence', () => {
+    const files = {
+      'rule.json': JSON.stringify({
+        type: 'page',
+        id: 'page',
+        children: [
+          { type: 'r-form', id: 'form', props: {} },
+          { type: 'r-button', id: 'button', props: {} },
+        ],
+      }),
+    }
+
+    expect(validatePageDesignPayloadGuidesFromSession(files, directFunctionSessionRecord())).toEqual({
       ok: false,
       componentTypes: ['r-button', 'r-form'],
       guidedPayloadKeys: ['r-form'],

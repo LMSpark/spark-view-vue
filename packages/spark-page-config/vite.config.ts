@@ -6,8 +6,8 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
-        'editor/page-editor': resolve(__dirname, 'src/editor/page-editor.ts'),
-        'ai/index': resolve(__dirname, 'src/ai/index.ts'),
+        project: resolve(__dirname, 'src/project.ts'),
+        ai: resolve(__dirname, 'src/ai.ts'),
         'leave-request/index': resolve(__dirname, 'src/leave-request/index.ts'),
         'json-document-public': resolve(__dirname, 'src/json-document-public.ts'),
       },

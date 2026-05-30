@@ -13,8 +13,7 @@ import {
   type AiAgentTaskChatOptions,
   type AiAgentRunTraceToolCall,
 } from '@spark-view/spark-ai/agent'
-import { coerceStrictJsonValue, type AiJsonParams } from '@spark-view/spark-ai/json'
-import { isRecord } from '@spark-view/spark-utils'
+import { coerceStrictJsonValue, type AiJsonParams, type AiJsonValue } from '@spark-view/spark-ai/json'
 import { http } from '@/services/http'
 import {
   onAiHostRunRequest,
@@ -218,10 +217,17 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
 
 function toAiJsonParams(args: Record<string, unknown>): AiJsonParams {
   const coerced = coerceStrictJsonValue(args)
-  if (!isRecord(coerced)) {
+  if (!isAiJsonParams(coerced)) {
     throw new Error('AI Host Run args must be a JSON object.')
   }
-  return coerced as AiJsonParams
+  return coerced
+}
+
+function isAiJsonParams(value: AiJsonValue | undefined): value is AiJsonParams {
+  return value !== undefined
+    && value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
 }
 
 function createDryRunFailureResult(

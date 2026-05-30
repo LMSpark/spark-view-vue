@@ -1,30 +1,30 @@
 import { describe, expect, it, vi } from 'vitest'
 import { createRequest, type HttpClientBase } from '@spark-view/spark-utils'
-import { PageEditor, createPageEditor } from '@spark-view/spark-page-config/editor'
+import { ProjectEditor, createProjectEditor } from '@spark-view/spark-page-config/project'
 import type { DataSetCrudTool, SparkNodeTree } from '@spark-view/spark-data'
 import {
-  BasePageConfigLoader,
-  type ConfigLoadResult,
-  type PageConfig,
-  type PageConfigFileLoadOptions,
-  type PageConfigFileName,
+  BasePageContentLoader,
+  type PageContentLoadResult,
+  type PageContentConfig,
+  type PageNodeFileLoadOptions,
   type PageDataConfig,
   type RuleConfig,
-} from '../src/config/config-types'
-import { PageConfigFileApi } from '../src/config/page-config-file-api'
+} from '../src/page-model/read/page-content-types'
+import type { PageNodeFileName } from '../src/page-model/model/page-file-registry'
+import { PageNodeFileApi } from '../src/page-model/model/page-file-api'
 import {
   buildNavRoot,
   findNodeById,
-} from '../src/navigation/nav-editing'
-import { NavigationConfigClient } from '../src/navigation/nav-client'
-import type { AppNavRoot } from '../src/navigation/nav-model'
+} from '../src/page-model/navigation/nav-editing'
+import { NavigationConfigClient } from '../src/page-model/navigation/nav-client'
+import type { AppNavRoot } from '../src/page-model/navigation/nav-model'
 
-class TestPageConfigLoader extends BasePageConfigLoader {
+class TestPageContentLoader extends BasePageContentLoader {
   readonly loadPageFileContentSpy: (
     pageId: string,
-    filename: PageConfigFileName,
-    options?: PageConfigFileLoadOptions,
-  ) => Promise<ConfigLoadResult<string>>
+    filename: PageNodeFileName,
+    options?: PageNodeFileLoadOptions,
+  ) => Promise<PageContentLoadResult<string>>
 
   readonly clearCacheSpy = vi.fn()
 
@@ -32,9 +32,9 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     super()
     this.loadPageFileContentSpy = vi.fn(async (
       pageId: string,
-      filename: PageConfigFileName,
-      options?: PageConfigFileLoadOptions,
-    ): Promise<ConfigLoadResult<string>> => {
+      filename: PageNodeFileName,
+      options?: PageNodeFileLoadOptions,
+    ): Promise<PageContentLoadResult<string>> => {
       const key = `${pageId}/${filename}`
       if (!Object.hasOwn(this.files, key)) {
         return {
@@ -53,31 +53,31 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     })
   }
 
-  override loadPageConfig(pageId: string): Promise<ConfigLoadResult<PageConfig>> {
+  override loadPageContentConfig(pageId: string): Promise<PageContentLoadResult<PageContentConfig>> {
     return this.unsupported(pageId, 'page config')
   }
 
-  override loadRule(pageId: string): Promise<ConfigLoadResult<RuleConfig[]>> {
+  override loadRule(pageId: string): Promise<PageContentLoadResult<RuleConfig[]>> {
     return this.unsupported(pageId, 'rule')
   }
 
-  override loadPageData(pageId: string): Promise<ConfigLoadResult<PageDataConfig>> {
+  override loadPageData(pageId: string): Promise<PageContentLoadResult<PageDataConfig>> {
     return this.unsupported(pageId, 'pagedata')
   }
 
-  override loadScript(pageId: string): Promise<ConfigLoadResult<string>> {
+  override loadScript(pageId: string): Promise<PageContentLoadResult<string>> {
     return this.unsupported(pageId, 'script')
   }
 
-  override loadCss(pageId: string): Promise<ConfigLoadResult<string>> {
+  override loadCss(pageId: string): Promise<PageContentLoadResult<string>> {
     return this.unsupported(pageId, 'style')
   }
 
   override loadPageFileContent(
     pageId: string,
-    filename: PageConfigFileName,
-    options?: PageConfigFileLoadOptions,
-  ): Promise<ConfigLoadResult<string>> {
+    filename: PageNodeFileName,
+    options?: PageNodeFileLoadOptions,
+  ): Promise<PageContentLoadResult<string>> {
     return this.loadPageFileContentSpy(pageId, filename, options)
   }
 
@@ -89,10 +89,10 @@ class TestPageConfigLoader extends BasePageConfigLoader {
     return { size: 0, keys: [] }
   }
 
-  private unsupported<T>(pageId: string, label: string): Promise<ConfigLoadResult<T>> {
+  private unsupported<T>(pageId: string, label: string): Promise<PageContentLoadResult<T>> {
     return Promise.resolve({
       success: false,
-      error: `TestPageConfigLoader does not load ${label}: ${pageId}`,
+      error: `TestPageContentLoader does not load ${label}: ${pageId}`,
       timestamp: 0,
     })
   }
@@ -140,14 +140,14 @@ function createEditorHarness(options?: {
   files?: Partial<Record<string, string>>
   root?: AppNavRoot
 }): {
-  editor: PageEditor
+  editor: ProjectEditor
   http: HttpClientBase
-  loader: TestPageConfigLoader
+  loader: TestPageContentLoader
   setRoot: (root: AppNavRoot) => void
 } {
   const http = createHttpMock()
-  const loader = new TestPageConfigLoader(options?.files ?? createPageFiles('orders'))
-  const fileApi = new PageConfigFileApi({ getPageConfigApi: () => '/api/pages-config', http })
+  const loader = new TestPageContentLoader(options?.files ?? createPageFiles('orders'))
+  const fileApi = new PageNodeFileApi({ getPageFilesApi: () => '/api/pages-config', http })
   const navigationClient = new NavigationConfigClient({ getNavigationApi: () => '/api/navigation', http })
   let root = options?.root ?? buildNavRoot([
     {
@@ -176,10 +176,11 @@ function createEditorHarness(options?: {
   })
 
   return {
-    editor: new PageEditor({
+    editor: new ProjectEditor({
+      projectId: 'test-project',
       fileApi,
       navigationClient,
-      getConfigLoader: () => loader,
+      getContentLoader: () => loader,
     }),
     http,
     loader,
@@ -189,7 +190,7 @@ function createEditorHarness(options?: {
   }
 }
 
-describe('PageEditor', () => {
+describe('ProjectEditor', () => {
   it('loads navigation and page files into one framework-free snapshot', async () => {
     const { editor } = createEditorHarness()
 
@@ -241,7 +242,7 @@ describe('PageEditor', () => {
     )
   })
 
-  it('projects renderer config through the active PageModel', async () => {
+  it('projects renderer config through the active PageNode', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -249,22 +250,24 @@ describe('PageEditor', () => {
     const previewConfig = editor.getActivePage()?.toRenderConfig()
 
     expect(previewConfig?.rule[0]?.type).toBe('div')
+    expect(previewConfig?.navigation?.draft.title).toBe('Orders')
+    expect(previewConfig?.navigation?.draft.path).toBe('/orders')
     expect(previewConfig?.script).toBe('console.log("editor")\n')
     expect(previewConfig?.css).toBe('.page { color: red; }\n')
     expect(previewConfig?.data).toBeDefined()
   })
 
-  it('throws on invalid JSON input through PageModel rule.setText', async () => {
+  it('throws on invalid JSON input through PageNode rule.setText', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
 
-    // PageModel 子模型 setText 直接解析，无效 JSON 会抛出错误
+    // PageNode 子模型 setText 直接解析，无效 JSON 会抛出错误
     const page = editor.getActivePage()
     expect(() => page!.rule.setText('{')).toThrow()
   })
 
-  it('creates workspace dependencies through the PageEditor factory', async () => {
+  it('creates workspace dependencies through the ProjectEditor factory', async () => {
     const http = createHttpMock()
     const files = createPageFiles('orders')
     const root = buildNavRoot([
@@ -296,9 +299,10 @@ describe('PageEditor', () => {
       }
     })
 
-    const editor = createPageEditor({
+    const editor = createProjectEditor({
+      projectId: 'test-project',
       http,
-      getPageConfigApi: () => '/api/pages-config',
+      getPageFilesApi: () => '/api/pages-config',
       getNavigationApi: () => '/api/navigation',
       fileStorage: 'memory',
     })
@@ -310,7 +314,7 @@ describe('PageEditor', () => {
     expect(editor.getActivePage()?.toRenderConfig().script).toBe('console.log("editor")\n')
   })
 
-  it('creates and deletes unmounted page files through PageEditor lifecycle delegates', async () => {
+  it('creates and deletes unmounted page files through ProjectEditor lifecycle delegates', async () => {
     const { editor, http, loader } = createEditorHarness()
     vi.mocked(http.post).mockResolvedValueOnce({ created: true })
     vi.mocked(http.delete).mockResolvedValueOnce({})
@@ -329,7 +333,7 @@ describe('PageEditor', () => {
     expect(loader.clearCacheSpy).toHaveBeenCalledWith('/draft-page/style.css')
   })
 
-  it('exposes PageDesign edit host only through PageEditor delegation', async () => {
+  it('exposes PageDesign edit host only through ProjectEditor delegation', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -384,7 +388,7 @@ describe('PageEditor', () => {
     expect(pageA.dirtyFiles.has('script.js')).toBe(true)
   })
 
-  it('fails fast for an unloaded PageDesign target without creating an empty PageModel', async () => {
+  it('fails fast for an unloaded PageDesign target without creating an empty PageNode', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -535,9 +539,9 @@ describe('PageEditor', () => {
     expect(http.delete).toHaveBeenCalledWith('/api/pages-config/new-page')
   })
 
-  // ── PageModel 集成测试 ────────────────────────────────
+  // ── PageNode 集成测试 ────────────────────────────────
 
-  it('activates PageModel after selectPage so getActivePage returns a live model', async () => {
+  it('activates PageNode after selectPage so getActivePage returns a live model', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -551,7 +555,7 @@ describe('PageEditor', () => {
     expect(page!.style.text).toContain('color: red')
   })
 
-  it('reads snapshot from active PageModel instead of workspace fallback', async () => {
+  it('reads snapshot from active PageNode instead of workspace fallback', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -565,7 +569,7 @@ describe('PageEditor', () => {
     expect(snapshot.hasAnyDirty).toBe(false)
   })
 
-  it('editDataSet mutates active PageModel and readSnapshot reflects dirty state', async () => {
+  it('editDataSet mutates active PageNode and readSnapshot reflects dirty state', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -586,7 +590,7 @@ describe('PageEditor', () => {
     expect(page?.dataSet.isDirty).toBe(true)
   })
 
-  it('editNodeTree mutates active PageModel and readSnapshot reflects dirty state', async () => {
+  it('editNodeTree mutates active PageNode and readSnapshot reflects dirty state', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     await editor.selectPage('orders')
@@ -603,7 +607,7 @@ describe('PageEditor', () => {
     expect(page?.rule.isDirty).toBe(true)
   })
 
-  it('createPageDesignEditHost provides navigation channels from active PageModel', async () => {
+  it('createPageDesignEditHost provides navigation channels from active PageNode', async () => {
     const { editor } = createEditorHarness()
     await editor.loadNavigation()
     editor.selectNode('orders-node')

@@ -109,6 +109,7 @@ const publicClassMethodSurfaces = new Map([
     'projectKnowledge',
     'queryKnowledgeModules',
     'queryKnowledgeFunctions',
+    'guideKnowledgeAttribute',
     'guideKnowledgeFunction',
   ])],
 ])
@@ -660,7 +661,7 @@ function isTestFile(file) {
 
 function enforcesOptionalUndefinedConvention(file) {
   return file.startsWith('packages/spark-ai/src/')
-    || file.startsWith('packages/spark-page-config/src/ai/')
+    || file.startsWith('packages/spark-page-config/src/page-model/ai/')
 }
 
 if (isCliEntrypoint(import.meta.url)) {

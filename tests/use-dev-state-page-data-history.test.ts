@@ -28,15 +28,15 @@ vi.mock('@/services/http', () => ({
 vi.mock('@/services/api-paths', () => ({
   getPageApi: () => '/api/pages-config',
   getNavApi: () => '/api/navigation',
+  getProjectApi: () => '/api/projects',
+  getProjectNavigationApi: (projectId: string) => `/api/projects/${projectId}/navigation`,
 }))
 
-import { canonicalizePageDataJson } from '@spark-view/spark-page-config/internal/page-data-canonicalize'
-import { PageModel } from '@spark-view/spark-page-config'
+import { canonicalizePageDataJson } from '../packages/spark-page-config/src/page-model/update/page-data-canonicalize'
+import { PAGE_NODE_FILE_NAMES, type PageNodeFileName } from '@spark-view/spark-page-config/project'
 import { useDevState } from '../src/views/app/dev-system/useDevState'
-import type { PageModelFileName } from '@spark-view/spark-page-config'
 import { useDevFileEditor } from '../src/views/app/dev-system/composables/useDevFileEditor'
 
-const PAGE_MODEL_FILE_NAMES = PageModel.fileNames
 
 function requireValue<T>(value: T | null | undefined, message: string): T {
   if (value !== null && value !== undefined) return value
@@ -134,7 +134,7 @@ describe('useDevState documents SSOT', () => {
     const initial = createPageDataText('Alpha', true)
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/pagedata.json')) return { content: initial }
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
@@ -156,7 +156,7 @@ describe('useDevState documents SSOT', () => {
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/pagedata.json')) return { content: initial }
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
@@ -183,7 +183,7 @@ describe('useDevState documents SSOT', () => {
   it('ensureActivePageFilesLoaded loads each file exactly once', async () => {
     const fetchCount: Record<string, number> = {}
     httpGet.mockImplementation(async (url: string) => {
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (!name) throw new Error(`unexpected GET ${url}`)
       fetchCount[name] = (fetchCount[name] ?? 0) + 1
       if (name === 'pagedata.json') return { content: createPageDataText('Shared', true) }
@@ -207,7 +207,7 @@ describe('useDevState documents SSOT', () => {
 
   it('ensureActivePageFilesLoaded fails fast and preserves existing documents when remote fetch fails', async () => {
     httpGet.mockImplementation(async (url: string) => {
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (!name) throw new Error(`unexpected GET ${url}`)
       if (name === 'pagedata.json') return { content: createPageDataText('Stable', true) }
       if (name === 'rule.json') return { content: '[]\n' }
@@ -223,7 +223,7 @@ describe('useDevState documents SSOT', () => {
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) throw new Error('network-down')
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (!name) throw new Error(`unexpected GET ${url}`)
       if (name === 'pagedata.json') return { content: createPageDataText('Mutated', true) }
       return { content: '' }
@@ -308,7 +308,7 @@ describe('useDevState documents SSOT', () => {
     const initial = createPageDataText('Alpha', true)
 
     httpGet.mockImplementation(async (url: string) => {
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
@@ -317,7 +317,7 @@ describe('useDevState documents SSOT', () => {
     const scope = effectScope()
     try {
       scope.run(() => {
-        const editor = useDevFileEditor(state, ref<PageModelFileName>('pagedata.json'))
+        const editor = useDevFileEditor(state, ref<PageNodeFileName>('pagedata.json'))
         const initialCanonical = canonicalizePageDataJson(initial).text
 
         // V3.1: text is a direct read-only projection of the model
@@ -371,7 +371,7 @@ describe('useDevState documents SSOT', () => {
     // In V3.1, sub-models are always initialized; isLoaded distinguishes loaded vs unloaded
     expect(state.getNodeTree()).not.toBeNull()
     expect(state.getDataSetTool()).not.toBeNull()
-    for (const name of PAGE_MODEL_FILE_NAMES) {
+    for (const name of PAGE_NODE_FILE_NAMES) {
       expect(state.isDocumentDirty(name)).toBe(false)
       expect((state.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('idle')
     }
@@ -381,7 +381,7 @@ describe('useDevState documents SSOT', () => {
     const initial = '[]\n'
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) return { content: initial }
-      const name = PAGE_MODEL_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
+      const name = PAGE_NODE_FILE_NAMES.find((f) => url.endsWith(`/${f}`))
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })

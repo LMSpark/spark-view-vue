@@ -1,13 +1,13 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPageModelFactory, type PageModelFactoryLike } from '@spark-view/spark-page-config'
+import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-view/spark-page-config'
 import { HttpClientBase } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'
 
-function isPageModelLike(value: unknown): value is { pageId: string; load: () => Promise<void> } {
+function isPageNodeLike(value: unknown): value is { pageId: string; load: () => Promise<void> } {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
     && typeof Reflect.get(value, 'pageId') === 'string'
     && typeof Reflect.get(value, 'load') === 'function'
@@ -35,7 +35,7 @@ vi.mock('@spark-view/spark-component', async () => {
           type: String,
           required: true,
         },
-        pageModel: {
+        pageNode: {
           type: Object,
           required: true,
         },
@@ -119,11 +119,11 @@ describe('CrossProjectRefPage', () => {
     await router.push(`/t/lmspark/homepage/__ref/${hostRefNodeId}`)
     await router.isReady()
 
-    const pageModelFactory = createPageModelFactory({ httpClient })
+    const pageNodeFactory = createPageNodeFactory({ httpClient })
 
     mount(CrossProjectRefPage, {
       props: {
-        pageModelFactory,
+        pageNodeFactory,
         tenantId: 'lmspark',
         hostProjectId: 'homepage',
         routePath: `/t/lmspark/homepage/__ref/${hostRefNodeId}`,
@@ -139,13 +139,13 @@ describe('CrossProjectRefPage', () => {
 
     expect(rendererState.props?.['pageId']).toBe('project-list')
 
-    const rawPageModel = rendererState.props?.['pageModel']
-    const pageModel = isPageModelLike(rawPageModel) ? rawPageModel : undefined
-    expect(pageModel).toBeDefined()
-    if (!pageModel) return
-    expect(pageModel.pageId).toBe('project-list')
+    const rawPageNode = rendererState.props?.['pageNode']
+    const pageNode = isPageNodeLike(rawPageNode) ? rawPageNode : undefined
+    expect(pageNode).toBeDefined()
+    if (!pageNode) return
+    expect(pageNode.pageId).toBe('project-list')
 
-    await pageModel.load()
+    await pageNode.load()
 
     const ruleRequest = requests.find((request) =>
       String(request.url).endsWith('/project-list/rule.json'),

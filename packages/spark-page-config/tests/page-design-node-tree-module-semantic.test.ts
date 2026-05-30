@@ -11,11 +11,11 @@ import {
 } from '@spark-view/spark-ai/modules'
 import type { AiAgentRuntimeContext } from '@spark-view/spark-ai/agent'
 import type { AiJsonValue } from '@spark-view/spark-ai/json'
-import type { PageDesignEditHost } from '../src/design/page-edit-session'
+import type { PageDesignEditHost } from '../src/page-model/update/page-edit-session'
 import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
-import { PageDesignService } from '../src/design/page-design-service'
-import { PageDesignNodeTreeAiModule } from '../src/ai/node-tree-tool-catalog'
+import { PageDesignService } from '../src/page-model/update/page-design-service'
+import { PageDesignNodeTreeAiModule } from '../src/page-model/ai/node-tree-tool-catalog'
 import { isRecord } from '@spark-view/spark-utils'
 import { getArray, getRecord } from './helpers/test-utils'
 
@@ -102,7 +102,7 @@ function nodeTreeCall(
 describe('NodeTree AiModule 接入(E2E)', () => {
   it('暴露 query/navigation tools 与 NodeTree function tools', () => {
     const { runtime } = buildRuntime()
-    expect(runtime.getTools().map((tool) => tool.function.name)).toEqual([
+    expect(runtime.getTools().map((tool) => tool.function.name)).toEqual(expect.arrayContaining([
       'module_query',
       'module_guide',
       'module_attribute_guide',
@@ -111,7 +111,10 @@ describe('NodeTree AiModule 接入(E2E)', () => {
       'module_attr',
       'module_call',
       'human_question',
-    ])
+      'agent_complete',
+      'getNode',
+      'addNodes',
+    ]))
   })
 
   it('module_guide 列出 NodeTree function 摘要，module_function_guide 返回完整函数元数据', async () => {

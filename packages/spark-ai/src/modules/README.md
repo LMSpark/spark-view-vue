@@ -30,11 +30,19 @@ LLM 可见工具集合固定为：
 6. `module_attr`
 7. `module_call`
 8. `human_question`
+9. 业务函数 direct tool：`<functionName>`
 
-业务函数不会导出成独立动态工具名。通过以下协议调用：
+业务函数优先导出为 OpenAI 标准 direct tool，`function.name` 直接等于业务函数名，
+`arguments` 固定为 `{ "path": "...", "args": {...} }`。`module_call` 只作为旧协议兼容路由。
 
 ```json
-{ "path": "/ticket[T-1001]/detail[T-1001]", "functionName": "summarize", "args": {} }
+{
+  "name": "summarize",
+  "arguments": {
+    "path": "/ticket[T-1001]/detail[T-1001]",
+    "args": {}
+  }
+}
 ```
 
 ## 注册

@@ -337,7 +337,7 @@ export type {
 
 export type {
   PageContext,
-  PageModelRenderConfig,
+  PageNodeRenderConfig,
 } from './page/index.js'
 
 // ── AI 会话监视组件 ──

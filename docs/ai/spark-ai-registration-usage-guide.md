@@ -9,13 +9,15 @@
 1. **AiModule 注册**：把一个业务领域的能力声明成 LLM 可发现、可校验、可调用的模块树。
 2. **AiAgent 注册**：把一棵模块树包装成一个可运行的业务助手，并接入会话历史、生命周期和 APP 层 AI turn I/O。
 
-业务函数不会变成动态 tool 名。LLM 永远只看到八个固定工具：
+LLM 先通过稳定的 `module_*` 协议发现业务能力，再通过 OpenAI direct function
+调用真实业务函数。固定协议工具是：
 
 ```text
 module_query, module_guide, module_attribute_guide, module_function_guide, module_find, module_attr, module_call, human_question
 ```
 
-真正的业务函数通过 `module_call({ path, functionName, args })` 执行。
+业务函数优先以真实 `functionName` 作为 tool name，参数固定为
+`{ path, args }`；`module_call({ path, functionName, args })` 只作为旧协议兼容。
 
 ## 2. 总体架构图
 
@@ -100,13 +102,13 @@ flowchart LR
   R1 --> T1[创建 AiAgentTask]
   T1 --> T2[启动 AiAgentSession]
   T2 --> T3[调用 LLM]
-  T3 --> T4[执行 module_* tool]
+  T3 --> T4[执行协议 tool 或 direct function]
   T4 --> M2
 ```
 
 | 注册点 | API | 注册 key | 注册内容 | 消费方 |
 | --- | --- | --- | --- | --- |
-| 模块类型注册 | `AiModuleRuntime.register(module)` | `module.kind` | `AiModule` 实例 | `module_query/module_find/module_call` |
+| 模块类型注册 | `AiModuleRuntime.register(module)` | `module.kind` | `AiModule` 实例 | `module_query/module_find/direct function/module_call 兼容` |
 | Agent 业务注册 | `createAiAgentRegistration(...)` | `kindID/moduleId` | runtime、输入契约、sessionStore、生命周期 | `AiAgentHost` |
 | Host 运行别名注册 | `host.register(alias, registration)` 或 `host.ensure(alias, command)` | `alias` | 一个业务助手入口 | 页面/服务调用方 |
 
@@ -178,7 +180,7 @@ flowchart TB
 /manual-leave[leaveDraft:123]/leave-person[E1001]
 ```
 
-LLM 不应传旧式 `$paths` 或动态工具名。实例身份只来自 `path` 和当前 Host session scope。
+LLM 不应传旧式 `$paths` 或未注册工具名。实例身份只来自 `path` 和当前 Host session scope。
 
 ### 5.3 固定工具协议
 
@@ -190,8 +192,9 @@ LLM 不应传旧式 `$paths` 或动态工具名。实例身份只来自 `path` �
 | `module_function_guide` | `{ kind, functionName }` | 查具体函数完整指南 |
 | `module_find` | `{ path, childKind?, query? }` | 从根或父路径查实例 |
 | `module_attr` | `{ op, path, attrName, value? }` | 读写声明的属性 |
-| `module_call` | `{ path, functionName, args }` | 调用声明的业务函数 |
+| `module_call` | `{ path, functionName, args }` | 兼容旧协议调用声明的业务函数 |
 | `human_question` | `{ context, reason, missingFacts?, candidateOptions? }` | 需要用户补事实时生成追问 |
+| `<functionName>` | `{ path, args }` | OpenAI direct function，优先执行业务函数 |
 
 典型执行顺序：
 
@@ -213,7 +216,7 @@ sequenceDiagram
   R->>N: findInstance
   N->>M: find(ctx, childKind, query)
   M-->>L: AiModuleInstanceRef[]
-  L->>R: module_call({ path, functionName, args })
+  L->>R: functionName({ path, args })
   R->>N: navigate(path)
   N->>M: invokeFunction(ctx, functionName, args)
   M->>S: service action
@@ -406,9 +409,8 @@ await runtime.executeTool('module_find', {
   query: { id: 'T-1001' },
 })
 
-await runtime.executeTool('module_call', {
+await runtime.executeTool('setPriority', {
   path: '/support-ticket[T-1001]',
-  functionName: 'setPriority',
   args: { priority: 'high' },
 })
 ```
@@ -584,7 +586,7 @@ await ticketHost.run('ticketAssistant', {
 已有代码里的真实入口形态：
 
 - `src/services/ai-host.ts` 创建全局 `appAiAgent`。
-- `packages/spark-page-config/src/ai/page-design-module.ts` 通过 `ensurePageDesignBusiness()` 把 pageDesign 注册到 Host。
+- `packages/spark-page-config/src/page-model/ai/page-design-module.ts` 通过 `ensurePageDesignBusiness()` 把 pageDesign 注册到 Host。
 - `src/services/page-design-ai-runner.ts` 从 `AI_AGENT_HOST` capability 取 Host，然后调用 `host.run(...)`。
 
 ## 9. turnCallbacks 怎么接
@@ -614,10 +616,9 @@ const callbacks: AiAgentTurnCallbacks = {
           id: 'call-1',
           type: 'function',
           function: {
-            name: 'module_call',
+            name: 'describeTicket',
             arguments: JSON.stringify({
               path: '/support-ticket[T-1001]',
-              functionName: 'describeTicket',
               args: {},
             }),
           },
@@ -658,7 +659,7 @@ sequenceDiagram
   L->>C: executeTurn(messages, tools)
   C-->>L: text + toolCalls
   L->>E: execute(toolCall)
-  E->>R: executeTool(module_call, args, hostContext)
+  E->>R: executeTool(functionName, { path, args }, hostContext)
   R-->>E: AiModuleResult
   E->>Store: appendFunctionCall(...)
   E-->>L: tool message + lifecycle directive
@@ -702,11 +703,11 @@ flowchart LR
   CatalogModule[payload-catalog AiModule] --> Registry[AiModulePayloadRegistry]
   Registry --> Provider[AiModulePayloadProvider]
 
-  LLM[LLM] --> Q[module_call queryPayloads]
+  LLM[LLM] --> Q[queryPayloads direct tool]
   Q --> CatalogModule
-  LLM --> G[module_call guidePayload]
+  LLM --> G[guidePayload direct tool]
   G --> CatalogModule
-  LLM --> C[module_call addNode]
+  LLM --> C[addNode direct tool]
   C --> TargetModule
 ```
 
@@ -732,7 +733,7 @@ runtime.register(new PageDesignNodeTreeAiModule({
 - `queryPayloads`
 - `guidePayload`
 
-`AiModulePayloadRegistry` 本身不是 LLM tool。它通常被 catalog AiModule 持有，catalog AiModule 再用 `module_call` 暴露查询能力。
+`AiModulePayloadRegistry` 本身不是 LLM tool。它通常被 catalog AiModule 持有，catalog AiModule 再用 `queryPayloads({ path, args })` / `guidePayload({ path, args })` 这类 direct function 暴露查询能力；`module_call` 只用于旧会话兼容。
 
 ## 12. 真实代码对照
 
@@ -751,7 +752,7 @@ pageDesign
 
 注册位置：
 
-- `packages/spark-page-config/src/ai/page-design-module.ts`
+- `packages/spark-page-config/src/page-model/ai/page-design-module.ts`
 
 它的装配特点：
 
@@ -777,7 +778,7 @@ manual-leave
 
 注册位置：
 
-- `packages/spark-page-config/src/ai/leave-request.ts`
+- `packages/spark-page-config/src/leave-request/leave-request.ts`
 
 它的装配特点：
 
@@ -794,7 +795,7 @@ manual-leave
 | `find for "x" is required` | 根模块没有 `find` | 根模块必须支持从 `/` 查询当前业务实例 |
 | `Duplicate AI host run alias` | Host alias 重复 | 换 alias，或用 `ensure` 幂等注册 |
 | `requires explicit sessionStore` | Agent registration 没有 sessionStore | 注入 `new DefaultAiAgentSessionStore()` 或自定义 store |
-| `UNKNOWN_TOOL` | LLM 使用了旧动态工具名 | 改用固定 `module_call` |
+| `UNKNOWN_TOOL` | LLM 使用了未注册或冲突的工具名 | 先 `module_query/module_function_guide` 确认真实函数；可直连时使用 `functionName({ path, args })`，否则退回 `module_call` 兼容路由 |
 | `PATH_INVALID` | path 中某段实例不存在 | 先 `module_find` 查询父子实例 |
 | `CHILD_KIND_NOT_DECLARED` | 父模块未声明该子 kind | 检查父模块 `children` 和子模块 `parentKind` |
 | `SCHEMA_VALIDATION_FAILED` | args 或 attribute value 不符合 schema | 函数参数先 `module_function_guide` 查看 schema；属性值先 `module_attribute_guide` 查看 attribute schema |
@@ -851,7 +852,7 @@ manual-leave
 
 - `packages/spark-ai/src/tests/module-semantic-runtime.test.ts`
 - `packages/spark-ai/src/tests/module-semantic-host.test.ts`
-- `packages/spark-page-config/src/ai/page-design-module.ts`
-- `packages/spark-page-config/src/ai/leave-request.ts`
+- `packages/spark-page-config/src/page-model/ai/page-design-module.ts`
+- `packages/spark-page-config/src/leave-request/leave-request.ts`
 - `src/services/ai-host.ts`
 - `src/services/page-design-ai-runner.ts`

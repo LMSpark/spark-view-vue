@@ -221,10 +221,10 @@ let isApplyingProjectUiSettings = false
 let _stopPageConfigChange: (() => void) | null = null
 let _stopAiDebugBridge: (() => void) | null = null
 let _stopAiHostRunBridge: (() => void) | null = null
-const pageConfigRefreshRevision = ref(0)
+const pageNodeRefreshRevision = ref(0)
 const sparkRendererRouteKey = computed(() => {
   const base = mode.value === 'multi' ? route.path : route.fullPath
-  return `${base}::page-config-${pageConfigRefreshRevision.value}`
+  return `${base}::page-node-${pageNodeRefreshRevision.value}`
 })
 
 function toTenantProjectSettingsScope(tenantId: string | undefined, projectId: string | undefined): string | null {
@@ -510,7 +510,7 @@ function handlePageConfigChange(event: FileChangeEvent): void {
     readRoutePageId() === event.pageId
     || (typeof refPageId === 'string' && refPageId === event.pageId)
   ) {
-    pageConfigRefreshRevision.value += 1
+    pageNodeRefreshRevision.value += 1
   }
 }
 

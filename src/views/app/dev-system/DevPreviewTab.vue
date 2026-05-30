@@ -38,10 +38,10 @@
           </el-alert>
         </div>
       </template>
-      <template v-else-if="previewPageModel">
+      <template v-else-if="previewPageNode">
         <SparkPageRenderer
-          :pageModel="previewPageModel"
-          :pageModelRevision="props.state.pageFilesRevision.value"
+          :pageNode="previewPageNode"
+          :pageNodeRevision="props.state.pageFilesRevision.value"
         />
       </template>
       <template v-else>
@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import type { PageModel } from '@spark-view/spark-page-config'
+import type { ProjectConfigPageNodeModel } from '@spark-view/spark-page-config/project'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
@@ -69,19 +69,19 @@ const autoRefresh = ref(true)
 const livePreview = ref(true)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
-const previewPageModel = shallowRef<PageModel | null>(null)
+const previewPageNode = shallowRef<ProjectConfigPageNodeModel | null>(null)
 
-function requireActivePageModelLoaded(): PageModel {
+function requireActivePageNodeLoaded(): ProjectConfigPageNodeModel {
   const pageId = props.state.activePageId.value
   const activePage = props.state.getActivePage()
   if (!pageId || activePage === null) {
     throw new Error('请先选择一个已加载的配置页面')
   }
   if (activePage.pageId !== pageId) {
-    throw new Error(`预览页面模型不一致: 当前页面 ${pageId}, 模型 ${activePage.pageId}`)
+    throw new Error(`预览页面节点不一致: 当前页面 ${pageId}, 节点 ${activePage.pageId}`)
   }
   if (!activePage.isLoaded) {
-    throw new Error(`页面模型 ${pageId} 尚未加载完成，无法预览`)
+    throw new Error(`页面节点 ${pageId} 尚未加载完成，无法预览`)
   }
   return activePage
 }
@@ -90,10 +90,10 @@ function refresh() {
   loading.value = true
   parseError.value = null
   try {
-    previewPageModel.value = requireActivePageModelLoaded()
+    previewPageNode.value = requireActivePageNodeLoaded()
   } catch (err) {
     parseError.value = err instanceof Error ? err.message : String(err)
-    previewPageModel.value = null
+    previewPageNode.value = null
   } finally {
     loading.value = false
   }
@@ -115,7 +115,7 @@ function scheduleLiveRefresh() {
   }, 500)
 }
 
-// 监听内存 PageModel 的可渲染输入，而不是监听通用 editor revision。
+// 监听内存 PageNode 的可渲染输入，而不是监听通用 editor revision。
 // revision 会因选中节点、导航状态等非预览输入变化而递增；这里让相同四文件文本不会重复重建预览。
 watch(
   [

@@ -154,9 +154,6 @@ import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
 import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
-import { getProjectApi } from '@/services/api-paths'
-import { getUser } from '@/services/auth'
-import { http } from '@/services/http'
 
 const props = defineProps<{ state: DevState }>()
 const flags = useNodeKindFlags(props.state)
@@ -215,9 +212,9 @@ const systemRouteTargetOptions = computed<TargetOption[]>(() =>
   })),
 )
 
-const configPageOptions = computed(() => {
+const configPageOptions = computed<Array<{ path: string; title: string }>>(() => {
   return props.state.pageList.value
-    .map((p) => {
+    .map((p: Record<string, unknown>) => {
       const pageId = String(p['pageId'] ?? '')
       const path = String(p['path'] ?? `/${pageId}`)
       const title = String(p['title'] ?? pageId)
@@ -226,7 +223,7 @@ const configPageOptions = computed(() => {
 })
 
 const pageTargetOptions = computed<TargetOption[]>(() =>
-  configPageOptions.value.map((opt) => ({
+  configPageOptions.value.map((opt: { path: string; title: string }) => ({
     value: `page:${opt.path}`,
     label: `页面 · ${opt.title}（${opt.path}）`,
   })),
@@ -424,14 +421,12 @@ const syncingRefSelection = ref(false)
 async function loadRefProjects() {
   refProjectsLoading.value = true
   try {
-    const currentProjectId = getUser()?.defaultProjectId ?? ''
-    const projects = await http.get<Array<Record<string, unknown>>>(getProjectApi())
+    const projects = await props.state.listReferenceProjects()
     refProjectOptions.value = projects
       .map((p) => ({
-        value: String(p['projectId'] ?? p['id'] ?? ''),
-        label: String(p['name'] ?? p['projectId'] ?? ''),
+        value: p.projectId,
+        label: p.name || p.projectId,
       }))
-      .filter((o) => o.value !== currentProjectId)
   } catch {
     refProjectOptions.value = []
   } finally {
@@ -444,22 +439,14 @@ async function loadRefPages(projectId: string) {
   refPagesLoading.value = true
   refPageOptions.value = []
   try {
-    const user = getUser()
-    const tenantId = user?.tenantId ?? 'default'
-    const navUrl = `/api/tenants/${tenantId}/projects/${projectId}/navigation`
-    const config = await http.get<{ children?: NavNode[] }>(navUrl)
-    const pages: SelectOption[] = []
-    function collect(nodes: NavNode[]) {
-      for (const n of nodes) {
-        if (n.nodeKind === 'page' && n.id) {
-          const suffix = n.path ? `（${n.path}）` : ''
-          pages.push({ value: n.id, label: `${n.title ?? n.id}${suffix}` })
-        }
-        if (Array.isArray(n.children)) collect(n.children)
+    const pages = await props.state.listReferenceProjectPages(projectId)
+    refPageOptions.value = pages.map((page) => {
+      const suffix = page.path ? `（${page.path}）` : ''
+      return {
+        value: page.nodeId,
+        label: `${page.title || page.pageId}${suffix}`,
       }
-    }
-    collect(config.children ?? [])
-    refPageOptions.value = pages
+    })
   } catch {
     refPageOptions.value = []
   } finally {
@@ -483,8 +470,7 @@ async function syncRefSelectionFromNode(): Promise<void> {
   syncingRefSelection.value = true
 
   if (selectedNode?.nodeKind === 'ref' && selectedNode.refId) {
-    const user = getUser()
-    const projectId = selectedNode.refProjectId ?? user?.defaultProjectId ?? ''
+    const projectId = selectedNode.refProjectId ?? props.state.projectId
     refProjectSelection.value = projectId
 
     if (projectId) {

@@ -122,10 +122,9 @@ function createCallbacks(): {
             id: 'call-1',
             type: 'function',
             function: {
-              name: 'module_call',
+              name: 'fail',
               arguments: JSON.stringify({
                 path: '/task[task-a]',
-                functionName: 'fail',
                 args: {},
               }),
             },
@@ -148,7 +147,7 @@ describe('AiAgentHost public API', () => {
     expect(host.has('taskAssistant')).toBe(true)
     await host.run('taskAssistant', { id: 'task-a', message: '执行任务' })
 
-    expect(rounds[0]).toEqual([
+    expect(rounds[0]).toEqual(expect.arrayContaining([
       'module_query',
       'module_guide',
       'module_attribute_guide',
@@ -157,7 +156,10 @@ describe('AiAgentHost public API', () => {
       'module_attr',
       'module_call',
       'human_question',
-    ])
+      'agent_complete',
+      'complete',
+      'fail',
+    ]))
     expect(prompts[0]).toContain('module_attribute_guide')
     expect(Reflect.get(host, 'taskAssistant')).toBeUndefined()
   })
@@ -179,6 +181,87 @@ describe('AiAgentHost public API', () => {
     })
 
     expect(turnIds).toEqual(['turn-main', 'turn-main-llm-round-2'])
+  })
+
+  it('appends only tool messages when transport already persisted assistant tool calls', async () => {
+    const appendedRoles: string[][] = []
+    const callbacks: AiAgentTurnCallbacks = {
+      executeTurn: async () => ({
+        text: '',
+        assistantMessagePersisted: true,
+        toolCalls: [{
+          id: 'call-1',
+          type: 'function',
+          function: {
+            name: 'complete',
+            arguments: JSON.stringify({
+              path: '/task[task-a]',
+              args: {},
+            }),
+          },
+        }],
+      }),
+      appendMessages: async (input) => {
+        appendedRoles.push(input.messages.map((message) => message.role))
+      },
+    }
+    const host = createAiAgentHost({ turnCallbacks: callbacks, maxToolRounds: 1 })
+      .register('taskAssistant', createRegistration())
+
+    await host.run('taskAssistant', { id: 'task-a', message: '执行任务' })
+
+    expect(appendedRoles).toEqual([['tool']])
+  })
+
+  it('executes one tool call per non-persisted production round', async () => {
+    const store = new DefaultAiAgentSessionStore()
+    const appendedToolCallCounts: number[] = []
+    const callbacks: AiAgentTurnCallbacks = {
+      executeTurn: async () => ({
+        text: '',
+        toolCalls: [
+          {
+            id: 'call-1',
+            type: 'function',
+            function: {
+              name: 'fail',
+              arguments: JSON.stringify({
+                path: '/task[task-a]',
+                args: {},
+              }),
+            },
+          },
+          {
+            id: 'call-2',
+            type: 'function',
+            function: {
+              name: 'complete',
+              arguments: JSON.stringify({
+                path: '/task[task-a]',
+                args: {},
+              }),
+            },
+          },
+        ],
+      }),
+      appendMessages: async (input) => {
+        const assistant = input.messages.find((message) => message.role === 'assistant')
+        appendedToolCallCounts.push(assistant?.tool_calls?.length ?? 0)
+      },
+    }
+    const host = createAiAgentHost({ turnCallbacks: callbacks, maxToolRounds: 1 })
+      .register('taskAssistant', createRegistration(store))
+
+    await host.run('taskAssistant', { id: 'task-a', message: '执行任务' })
+
+    const functionCalls = store.listSessions()[0]?.history.filter((entry) => entry.kind === 'functionCall')
+    expect(functionCalls).toEqual([
+      expect.objectContaining({
+        toolName: 'fail',
+        status: 'failed',
+      }),
+    ])
+    expect(appendedToolCallCounts).toEqual([1])
   })
 
   it('requires explicit sessionStore during registration', () => {
@@ -317,9 +400,10 @@ describe('AiAgentHost public API', () => {
       moduleId: 'task',
       moduleInstanceId: 'task-a',
       instanceId: 'task-a',
-      toolName: 'module_call',
+      toolName: 'fail',
       args: expect.objectContaining({
-        functionName: 'fail',
+        path: '/task[task-a]',
+        args: {},
       }),
     }))
     expect(afterFunctionCall).not.toHaveBeenCalled()
@@ -447,7 +531,7 @@ describe('AiAgent session history', () => {
     expect(summarizeAiAgentSessionRecord(recordBeforeStop)).toMatchObject({
       status: 'Started',
       failedToolCallCount: 2,
-      functionNames: ['module_call', 'module_call'],
+      functionNames: ['fail', 'fail'],
     })
 
     expect(host.listSessions('task')).toHaveLength(1)

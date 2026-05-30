@@ -2,9 +2,9 @@ import { computed, defineComponent, h, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-view/spark-component'
 import {
-  createPageModelFactory,
-  type PageModelFactoryLike,
-  type PageModelLike,
+  createPageNodeFactory,
+  type PageNodeFactoryLike,
+  type PageNodeLike,
 } from '@spark-view/spark-page-config'
 import { HttpClientBase, Logger } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
@@ -25,7 +25,7 @@ type ResolvedRefTarget = {
   pageId: string | null}
 
 export type CrossProjectRefPageRouteProps = {
-  pageModelFactory: PageModelFactoryLike
+  pageNodeFactory: PageNodeFactoryLike
   tenantId?: string | undefined
   hostProjectId?: string | undefined
   routePath?: string | undefined
@@ -60,12 +60,12 @@ function asNonEmptyString(value: unknown): string | null {
   return trimmed === '' ? null : trimmed
 }
 
-export function createCrossProjectRefRouteProps(pageModelFactory: PageModelFactoryLike) {
+export function createCrossProjectRefRouteProps(pageNodeFactory: PageNodeFactoryLike) {
   return (route: RouteLocationNormalizedLoaded): CrossProjectRefPageRouteProps => {
     const tenantId = asNonEmptyString(route.params['tenantId'])
     const hostProjectId = asNonEmptyString(route.params['projectId'])
     return {
-      pageModelFactory,
+      pageNodeFactory,
       routePath: route.path,
       routeMeta: { ...route.meta },
       ...(tenantId !== null && { tenantId }),
@@ -280,7 +280,7 @@ function createScopedHttpClient(options: ScopedHttpClientOptions): HttpClientBas
 export const CrossProjectRefPage = defineComponent({
   name: 'SparkCrossProjectRefPage',
   props: {
-    pageModelFactory: {
+    pageNodeFactory: {
       type: Object,
       required: true,
     },
@@ -330,12 +330,12 @@ export const CrossProjectRefPage = defineComponent({
     const targetProjectId = computed(() => refTarget.value.targetProjectId)
     const targetPageId = computed(() => refTarget.value.pageId)
 
-    const scopedPageModelFactory = computed<PageModelFactoryLike | null>(() => {
+    const scopedPageNodeFactory = computed<PageNodeFactoryLike | null>(() => {
       const scopedTenantId = tenantId.value
       const scopedProjectId = targetProjectId.value
       if (scopedTenantId === null || scopedProjectId === null) return null
 
-      const baseClient = props.pageModelFactory.getHttpClient()
+      const baseClient = props.pageNodeFactory.getHttpClient()
       if (!baseClient) return null
       const scopedClient = createScopedHttpClient({
         baseClient,
@@ -350,14 +350,14 @@ export const CrossProjectRefPage = defineComponent({
 
       const pagesConfigBaseUrl =
         `/tenants/${encodeURIComponent(scopedTenantId)}/projects/${encodeURIComponent(scopedProjectId)}/pages-config`
-      return createPageModelFactory({
+      return createPageNodeFactory({
         pagesConfigBaseUrl,
         httpClient: scopedClient,
       })
     })
 
-    const scopedPageModel = computed<PageModelLike | null>(() => {
-      const factory = scopedPageModelFactory.value
+    const scopedPageNode = computed<PageNodeLike | null>(() => {
+      const factory = scopedPageNodeFactory.value
       const pageId = targetPageId.value
       if (factory === null || pageId === null) return null
       return factory.create(pageId)
@@ -395,8 +395,8 @@ export const CrossProjectRefPage = defineComponent({
     }
 
     return () => {
-      if (errorMessage.value !== null || scopedPageModel.value === null || targetPageId.value === null) {
-        const message = errorMessage.value ?? '引用页面模型初始化失败'
+      if (errorMessage.value !== null || scopedPageNode.value === null || targetPageId.value === null) {
+        const message = errorMessage.value ?? '引用页面节点初始化失败'
         logInitError(message)
         return h('div', { class: 'spark-cross-project-ref-error' }, message)
       }
@@ -405,7 +405,7 @@ export const CrossProjectRefPage = defineComponent({
         ref: pageRendererRef,
         key: `${targetProjectId.value}:${targetPageId.value}`,
         pageId: targetPageId.value,
-        pageModel: scopedPageModel.value,
+        pageNode: scopedPageNode.value,
       })
     }
   },

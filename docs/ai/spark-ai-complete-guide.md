@@ -4,13 +4,13 @@
 
 ## 1. 一句话定位
 
-`@spark-view/spark-ai` 是 SPARK View 的 AI Runtime 包，职责是把业务能力声明成可被 LLM 安全调用的固定工具协议。
+`@spark-view/spark-ai` 是 SPARK View 的 AI 运行时包，职责是把业务能力声明成可被 LLM 安全发现、校验并调用的生产线协议。
 
 它负责：
 
 - JSON Schema 与 JSON 值规整。
 - `AiModule` 能力声明、实例路径、属性和函数执行协议。
-- `AiModuleRuntime` 固定八工具路由。
+- `AiModuleRuntime` 协议工具路由与 OpenAI direct function 路由。
 - `AiAgentRegistration` / `AiAgentHost` 注册与运行入口。
 - Agent session history、tool loop、APP 传输回调契约。
 - 调试诊断、runtime inspect、session transcript。
@@ -308,7 +308,7 @@ functions: [{
 
 `module_function_guide({ kind, functionName })` 会把这些字段投影给 LLM：
 
-- `toolName: 'module_call'`
+- `toolName: '<functionName>'`
 - `kindPath`
 - `callPattern`
 - `paramsSchema`
@@ -367,7 +367,7 @@ runtime 会检查：
 - 父模块是否声明了对应 child kind。
 - path 中每一段是否能从父级解析到子级。
 
-## 6. 运行时与固定八工具
+## 6. 运行时与工具协议
 
 ### 6.1 运行时组合根
 
@@ -378,9 +378,8 @@ const runtime = new AiModuleRuntime()
 runtime.register(ticketModule)
 
 const tools = runtime.getTools()
-const result = await runtime.executeTool('module_call', {
+const result = await runtime.executeTool('setPriority', {
   path: '/ticket[T-1001]',
-  functionName: 'setPriority',
   args: { priority: 'high' },
 })
 ```
@@ -399,9 +398,9 @@ const result = await runtime.executeTool('module_call', {
 - `projectKnowledge()`
 - `inspect()`
 
-### 6.2 固定工具列表
+### 6.2 工具列表
 
-LLM 只会看到八个固定工具：
+LLM 会看到稳定协议工具，以及从已注册 AiModule 函数投影出的 OpenAI direct function tools：
 
 ```text
 module_query
@@ -412,9 +411,11 @@ module_find
 module_attr
 module_call
 human_question
+<functionName>
 ```
 
-业务函数不会变成动态工具名。旧协议里的动态工具名和 `$paths` 不再是公共兼容面。
+业务函数优先直接调用 `functionName({ path, args })`。`module_call({ path, functionName, args })`
+保留为旧协议兼容；旧式 `$paths` 不再是公共兼容面。
 
 ```mermaid
 flowchart LR
@@ -422,8 +423,8 @@ flowchart LR
   G --> AG["module_attribute_guide"]
   Q --> FG["module_function_guide"]
   G --> F["module_find"]
-  FG --> C["module_call"]
-  F --> C["module_call"]
+  FG --> C["<functionName>"]
+  F --> C["<functionName>"]
   AG --> A["module_attr"]
   F --> A["module_attr"]
   C --> R["tool result"]
@@ -478,7 +479,8 @@ flowchart LR
 { "kind": "ticket", "functionName": "setPriority" }
 ```
 
-函数指南会明确告诉 LLM：业务函数必须通过 `module_call({ path, functionName, args })` 执行。
+函数指南会明确告诉 LLM：业务函数优先通过 `functionName({ path, args })` 执行；
+`module_call({ path, functionName, args })` 只作为旧协议兼容。
 
 ### 6.7 `module_find`
 
@@ -535,14 +537,13 @@ flowchart LR
 }
 ```
 
-### 6.9 `module_call`
+### 6.9 `<functionName>` direct tool
 
 用途：执行业务函数。
 
 ```json
 {
   "path": "/ticket[T-1001]",
-  "functionName": "setPriority",
   "args": { "priority": "high" }
 }
 ```
@@ -551,9 +552,11 @@ flowchart LR
 
 - `path` 不能是 `/`。
 - `args` 必须是 JSON object。
-- `functionName` 必须在 path 尾部 kind 的 metadata 中声明。
+- tool name 必须是 path 尾部 kind 的 metadata 中声明的函数名。
 - 执行前会按该函数的 `paramsSchema` 校验。
 - runner 接收到 `AiModulePathContext`，包含 path segments 和 host context。
+
+`module_call({ path, functionName, args })` 执行同一条运行时路由，但只作为旧协议兼容。
 
 ### 6.10 `human_question`
 
@@ -599,7 +602,7 @@ sequenceDiagram
   R-->>L: "paramsSchema, callPattern, examples"
   L->>R: "module_find({ path: '/', childKind: 'ticket', query: ... })"
   R-->>L: "id: T-1001"
-  L->>R: "module_call({ path: '/ticket[T-1001]', functionName: 'setPriority', args: ... })"
+  L->>R: "setPriority({ path: '/ticket[T-1001]', args: ... })"
   R->>B: "runner(ctx, 'setPriority', args)"
   B-->>R: "AiModuleResult"
   R-->>L: "tool result"
@@ -1324,7 +1327,7 @@ flowchart TD
 
 | 现象 | 来源 | 修复 |
 | --- | --- | --- |
-| `UNKNOWN_TOOL` | LLM 调用了非八工具名 | 系统提示强调只能用 `module_*` 固定工具；不要暴露动态工具名 |
+| `UNKNOWN_TOOL` | LLM 调用了未注册或冲突的工具名 | 先用 `module_query/module_function_guide` 确认真实函数；可直连时使用 `functionName({ path, args })`，否则退回 `module_call` 兼容路由 |
 | `INVALID_TOOL_ARGS` | 工具参数不是 object 或字段类型不对 | 让 LLM 重新调用，并先查 `module_query` 或 `module_function_guide` |
 | `TOOL_ARGS_INVALID_JSON` | OpenAI tool call 的 `function.arguments` 不是 JSON 字符串 | APP 传输层必须保留合法 JSON object 字符串 |
 | `FUNCTION_NOT_FOUND` | functionName 未声明 | 检查 `functions` metadata 与 runner 分发一致 |
@@ -1342,7 +1345,7 @@ flowchart TD
 - `host-public-surface.test.ts`: agent 公共 barrel 只导出稳定 API。
 - `schema-validator.test.ts`: JSON Schema 校验和诊断。
 - `module-semantic-isolation.test.ts`: JSON coercion、registry、knowledge、inspect、path helper。
-- `module-semantic-runtime.test.ts`: 固定八工具、module_query/guide/attribute_guide/function_guide/find/attr/call、动态工具拒绝。
+- `module-semantic-runtime.test.ts`: 协议工具、direct function、module_query/guide/attribute_guide/function_guide/find/attr/call、未知工具拒绝。
 - `module-semantic-host.test.ts`: Host register/ensure/run/dryRun、business kit、session history。
 - `session-diagnostics.test.ts`: summary/transcript。
 - `turn-event-collector.test.ts`: APP SSE 聚合、过滤、错误、超时、turnKey/streamKey。
@@ -1351,7 +1354,7 @@ flowchart TD
 
 ```text
 Module runtime 测试:
-  module_find, module_guide, module_attribute_guide, module_function_guide, module_call, module_attr, schema 错误路径
+  module_find, module_guide, module_attribute_guide, module_function_guide, direct function, module_call 兼容, module_attr, schema 错误路径
 
 Agent registration 测试:
   inputContract normalize, scope, orchestration, sessionStore, inspect

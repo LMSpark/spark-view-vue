@@ -30,12 +30,15 @@ import {
 } from '@spark-view/spark-page-config/ai'
 import { createRequest } from '@spark-view/spark-utils'
 import {
-  PAGE_CONFIG_FILE_NAMES,
-  compileRule,
-  createPageEditor,
-  parsePageData,
-} from '@spark-view/spark-page-config/editor'
-import { parseDataViewKey } from '@spark-view/spark-data'
+  PAGE_MODEL_FILE_NAMES,
+  createProjectEditor,
+} from '@spark-view/spark-page-config/project'
+import {
+  DataSet,
+  SparkNodeTree,
+  getSparkNodeChildren,
+  parseDataViewKey,
+} from '@spark-view/spark-data'
 
 // ============================================================================
 // 第 1 层：默认常量
@@ -44,6 +47,18 @@ import { parseDataViewKey } from '@spark-view/spark-data'
 const DEFAULT_BACKEND_URL = 'http://localhost:8080'
 const DEFAULT_TENANT_ID = 'lmspark'
 const DEFAULT_PROJECT_ID = 'homepage'
+
+function compileRule(raw) {
+  const tree = SparkNodeTree.fromRuleJson(raw, {
+    fillMissingComponentId: false,
+    historyLimit: 0,
+  })
+  return getSparkNodeChildren(tree.root.children)
+}
+
+function parsePageData(raw) {
+  return raw.trim() === '' ? DataSet.fromJson({}) : DataSet.fromJson(raw)
+}
 const DEFAULT_USERNAME = 'admin'
 const DEFAULT_PASSWORD = 'admin123'
 const DEFAULT_PAGE_ID = 'ai-leave-request-form'
@@ -81,7 +96,7 @@ function parseArgs(argv) {
     requestText: process.env.AI_PAGE_REQUEST ?? DEFAULT_REQUEST_TEXT,
     maxRounds: numberFromEnv(process.env.AI_MAX_TOOL_ROUNDS, DEFAULT_MAX_ROUNDS),
     turnTimeoutMs: numberFromEnv(process.env.AI_TURN_TIMEOUT_MS, DEFAULT_TURN_TIMEOUT_MS),
-    // ── PageEditor Host 模式 ──
+    // ── ProjectEditor Host 模式 ──
     hostMode: process.env.AI_AGENT_HOST_MODE === 'inline' ? 'inline' : 'builtin',
     // ── 输出控制 ──
     printFiles: process.env.AI_PRINT_FILES === '1',
@@ -262,8 +277,8 @@ function printHelp() {
     '  --max-rounds <n>           最大工具调用轮次（默认 32）',
     '  --turn-timeout-ms <n>      LLM turn 超时毫秒（默认 240000）',
     '',
-    'PageEditor Host 模式:',
-    '  --host-mode builtin|inline  两种模式均通过 PageEditor live edit host 读写四文件（默认 builtin）',
+    'ProjectEditor Host 模式:',
+    '  --host-mode builtin|inline  两种模式均通过 ProjectEditor live edit host 读写四文件（默认 builtin）',
     '',
     '输出控制:',
     '  --print-files              输出中附带四文件完整内容',
@@ -422,10 +437,10 @@ function createAuthHeaders(options, auth) {
 }
 
 // ============================================================================
-// 第 5 层：PageEditor 页面生命周期
+// 第 5 层：ProjectEditor 页面生命周期
 // ============================================================================
 
-// PAGE_DESIGN_AI_TRACE[e2e-page-editor]: 把 pages-config API 包装成 PageEditor，pageDesign 工具只通过 editor 修改四文件。
+// PAGE_DESIGN_AI_TRACE[e2e-project-editor]: 把 pages-config API 包装成 ProjectEditor，pageDesign 工具只通过 editor 修改四文件。
 function createPageConfigRuntime(options, auth) {
   const http = createRequest({
     baseURL: options.backendUrl,
@@ -440,9 +455,10 @@ function createPageConfigRuntime(options, auth) {
       return config
     },
   })
-  const editor = createPageEditor({
+  const editor = createProjectEditor({
+    projectId: auth.projectId,
     http,
-    getPageConfigApi: () => `${options.backendUrl}/api/pages-config`,
+    getPageFilesApi: () => `${options.backendUrl}/api/pages-config`,
     getNavigationApi: () => `${options.backendUrl}/api/navigation`,
     getHeaders: () => createAuthHeaders(options, auth),
     fileStorage: 'memory',
@@ -479,7 +495,7 @@ async function loadTargetPage(editor, pageId) {
 }
 
 function readEditorFiles(editor) {
-  return Object.fromEntries(PAGE_CONFIG_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
+  return Object.fromEntries(PAGE_MODEL_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
 }
 
 function changedFiles(before, after) {
@@ -489,7 +505,7 @@ function changedFiles(before, after) {
 async function saveDirtyFiles(editor) {
   const saved = []
   const dirtyFiles = editor.readSnapshot().dirtyFiles
-  for (const name of PAGE_CONFIG_FILE_NAMES) {
+  for (const name of PAGE_MODEL_FILE_NAMES) {
     if (!dirtyFiles.has(name)) continue
     await editor.savePageFile(name)
     saved.push(name)
@@ -645,15 +661,15 @@ function assertAppendMessages(body, input) {
 }
 
 // ============================================================================
-// 第 7 层：PageEditor Host（两种模式，通过 --host-mode 切换）
+// 第 7 层：ProjectEditor Host（两种模式，通过 --host-mode 切换）
 // ============================================================================
 
-// builtin 模式：使用 PageEditor 委托出的 live edit host。
+// builtin 模式：使用 ProjectEditor 委托出的 live edit host。
 function createBuiltinHost(editor) {
   return editor.createPageDesignEditHost()
 }
 
-// inline 模式保留 CLI 兼容性；四文件读写仍然必须从 PageEditor 出口进入。
+// inline 模式保留 CLI 兼容性；四文件读写仍然必须从 ProjectEditor 出口进入。
 function createInlineHost(editor) {
   return editor.createPageDesignEditHost()
 }
@@ -1353,7 +1369,7 @@ async function run(options) {
   await loadTargetPage(editor, options.pageId)
   const before = readEditorFiles(editor)
 
-  // 3. 创建 PageEditor host（根据 --host-mode 选择实现）
+  // 3. 创建 ProjectEditor host（根据 --host-mode 选择实现）
   const host = options.hostMode === 'inline'
     ? createInlineHost(editor)
     : createBuiltinHost(editor)
@@ -1406,7 +1422,7 @@ async function run(options) {
   const changed = changedFiles(before, after)
   const savedFiles = await saveDirtyFiles(editor)
   const remoteFiles = await readRemoteFiles(editor, options.pageId)
-  const verifiedFiles = PAGE_CONFIG_FILE_NAMES.map((name) => ({
+  const verifiedFiles = PAGE_MODEL_FILE_NAMES.map((name) => ({
     name,
     changed: changed.includes(name),
     saved: savedFiles.includes(name),
