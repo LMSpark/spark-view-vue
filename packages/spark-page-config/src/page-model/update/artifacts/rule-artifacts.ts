@@ -2,7 +2,15 @@
  * 规则编辑器工件：组件元数据、规则树策略、规则 JSON Schema。
  */
 
-import type { JsonObject, JsonValue } from '../../../json-document'
+import { isRecord } from '@spark-view/spark-utils'
+import type {
+  AutoPopulateEntry,
+  JsonObject,
+  JsonPath,
+  JsonTreePolicy,
+  JsonValue,
+} from '../../../json-document'
+import { ensureUniqueObjectKey } from '../../../json-document'
 
 // ── SECTION 1: 规则编辑器组件元数据 ──
 
@@ -113,7 +121,14 @@ function parseEnumFromTypeString(type: string): string[] {
 }
 
 function inferDefaultFromProp(prop: RuleEditorComponentCatalogProp): JsonValue {
-  if (prop.default !== undefined) return parseJsonDefault(prop.default)
+  if (prop.default !== undefined) {
+    try {
+      return parseJsonDefault(prop.default)
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      throw new Error(`invalid default metadata for component prop "${prop.name}": ${message}`)
+    }
+  }
 
   const type = (prop.type ?? '').toLowerCase()
   if (type.includes('number')) return 0
@@ -148,10 +163,6 @@ function extractShortLabel(description: string | undefined): string {
 }
 
 // ── SECTION 2: 规则树编辑策略 ──
-
-import type { AutoPopulateEntry, JsonPath, JsonTreePolicy } from '../../../json-document'
-import { isRecord } from '@spark-view/spark-utils'
-import { ensureUniqueObjectKey } from '../../../json-document'
 
 const SPARK_NODE_STRUCT_KEYS = new Set(['type', 'props', 'children'])
 
@@ -391,6 +402,7 @@ type JsonSchemaNode = {
   [key: string]: unknown
 }
 
+// FIXME: 与 data-artifacts.ts 中的 withMeta 重复，后续统一提取到共享模块
 function withMeta<T extends JsonSchemaNode>(
   title: string,
   description: string,

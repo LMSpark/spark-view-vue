@@ -23,8 +23,12 @@ import {
 } from '../node/project-node-model'
 import type { ProjectPlanningSnapshot } from './project-planning-model'
 
+// ── 命令类型与常量 ─────────────────────────────────────────
+
+/** 策划应用模式：merge 保留已有节点只增改，replace 清空后重建。 */
 export type ProjectPlanningApplyMode = 'merge' | 'replace'
 
+/** AI 输出的单个策划节点：描述将要创建的模块、页面或子页面。 */
 export type ProjectPlanningNodePlan = {
   nodeId: string
   parentNodeId?: string | null
@@ -37,12 +41,14 @@ export type ProjectPlanningNodePlan = {
   childPlacement?: ChildPlacement
 }
 
+/** AI 策划命令：包含项目需求和策划节点列表，由 AI 模块输出。 */
 export type ProjectPlanningApplyCommand = {
   projectRequirement?: string
   mode?: ProjectPlanningApplyMode
   nodes: readonly ProjectPlanningNodePlan[]
 }
 
+/** 策划应用到导航根的结果：包含新导航树、变更统计和警告。 */
 export type ProjectPlanningNavigationApplyResult = {
   root: AppNavRoot
   mode: ProjectPlanningApplyMode
@@ -55,15 +61,18 @@ export type ProjectPlanningNavigationApplyResult = {
   warnings: readonly string[]
 }
 
+/** 合并导航结果与项目策划快照的最终返回类型。 */
 export type ProjectPlanningApplyResult = Omit<ProjectPlanningNavigationApplyResult, 'root'> & {
   projectPlanning: ProjectPlanningSnapshot
 }
 
+/** 策划编辑宿主契约：提供策划快照读取与命令应用两个能力。 */
 export type ProjectPlanningEditHost = {
   readProjectPlanning(): ProjectPlanningSnapshot
   applyProjectPlanning(command: ProjectPlanningApplyCommand): ProjectPlanningApplyResult | Promise<ProjectPlanningApplyResult>
 }
 
+/** 应用到导航根的全参数选项：包含当前导航根和策划命令。 */
 export type ProjectPlanningRootApplyOptions = {
   root: AppNavRoot
   command: ProjectPlanningApplyCommand
@@ -91,6 +100,17 @@ const PROJECT_PLANNING_NODE_KINDS = new Set<ProjectPlanningNodeKind>(['module', 
 const PROJECT_PLANNING_MODES = new Set<ProjectPlanningApplyMode>(['merge', 'replace'])
 const PLANNING_CHILD_PLACEMENTS = new Set<ChildPlacement>(['header', 'sidebar', 'parent', 'flat'])
 
+// ── 策划结果应用到导航树 ─────────────────────────────────
+
+/**
+ * 将 AI 策划输出应用到导航树根节点。
+ *
+ * merge 模式：保留已有节点，只增改策划中指定的节点。
+ * replace 模式：仅保留 toolbar / user-menu 根子节点，其余按策划重建。
+ *
+ * 执行校验：父节点 kind 必须能容纳子节点 kind（module 可含 page/page/sub-page，page 可含 sub-page）；
+ * 同时检测循环引用并拒绝非法 childPlacement。
+ */
 export function applyProjectPlanningCommandToRoot(
   options: ProjectPlanningRootApplyOptions,
 ): ProjectPlanningNavigationApplyResult {
@@ -316,6 +336,8 @@ function validateNoPlanningCycles(rowsById: ReadonlyMap<string, FlatNodeRow>): v
     }
   }
 }
+
+// ── 内部辅助：节点创建、校验与树操作 ────────────────────
 
 function collectPlanningWarnings(plans: readonly NormalizedPlanningNodePlan[]): string[] {
   const warnings: string[] = []

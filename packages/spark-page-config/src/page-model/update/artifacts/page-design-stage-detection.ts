@@ -1,9 +1,13 @@
 /**
- * PageDesign stage detection.
+ * PageDesign 阶段检测 — PageNode 是 SSOT。
  *
- * PageNode is the source of truth. The 100-step flow is only a production
- * checklist projected from the current PageNode snapshot; four-file editing is
- * the final write surface for rule / pagedata / script / style.
+ * 以 PageNode 当前状态为唯一真源，将五部分模型（navigation / dataSet / rule / script / style）
+ * 的快照映射到 100 步流程的阶段完成度上。四文件编辑是最终的写入面。
+ *
+ * ## 决策优先级
+ * 1. PageNode 快照 → 模型部件事实
+ * 2. 100 步流程 → 阶段边界映射
+ * 3. 四文件编辑 → 写入面
  */
 
 import {
@@ -22,12 +26,19 @@ import type {
 } from '../page-edit-session'
 import { summarizePageDesignFlowPhases } from './design-flow'
 
+// ── 公共类型与常量 ───────────────────────────────────────────
+
+/** 页面脚本最小有效字符数（低于此值视为空壳）。 */
 export const PAGE_DESIGN_MIN_SCRIPT_CHARS = 180
+/** 页面样式最小有效字符数（低于此值视为空壳）。 */
 export const PAGE_DESIGN_MIN_STYLE_CHARS = 400
 
+/** PageNode 五部分模型键：导航、数据集、规则、脚本、样式。 */
 export type PageDesignModelPartKey = 'navigation' | 'dataSet' | 'rule' | 'script' | 'style'
+/** 阶段状态：blocked 阻塞 | pending 待处理 | in-progress 进行中 | ready 就绪。 */
 export type PageDesignStageStatus = 'blocked' | 'pending' | 'in-progress' | 'ready'
 
+/** 单个模型部件的检测结果：绑定状态、就绪状态、问题和证据。 */
 export type PageDesignModelPartDetection = {
   key: PageDesignModelPartKey
   required: boolean
@@ -38,6 +49,7 @@ export type PageDesignModelPartDetection = {
   evidence: readonly string[]
 }
 
+/** 100 步流程的阶段检测结果：该阶段状态、依赖的模型部件、缺失项。 */
 export type PageDesignFlowPhaseDetection = {
   phase: string
   firstStep: number
@@ -48,6 +60,12 @@ export type PageDesignFlowPhaseDetection = {
   evidence: readonly string[]
 }
 
+/**
+ * PageDesign 阶段检测完整结果。
+ *
+ * 包含五部分模型部件的检测结果、100 步流程的阶段映射、最终问题和建议的下一步操作。
+ * SSOT 为 PageNode，流程步骤仅作为阶段边界参考。
+ */
 export type PageDesignStageDetection = {
   sourceOfTruth: 'PageNode'
   decisionOrder: readonly ['PageNode', '100-step-flow', 'four-file-edit']
@@ -75,6 +93,8 @@ export type PageDesignStageDetectionInput = {
   phase: PageDesignEditPhase
   host: PageDesignEditHost | null
 }
+
+// ── 快照内部类型 ───────────────────────────────────────────
 
 type NavigationSnapshot = {
   bound: boolean
@@ -142,6 +162,8 @@ type PageNodeSnapshot = {
   style: TextSnapshot
 }
 
+// ── 阶段检测入口 ───────────────────────────────────────────
+
 const REQUIRED_DATA_MEMBER_VALUES: ReadonlySet<string> = new Set(Object.values(DataMember))
 
 export function detectPageDesignStages(input: PageDesignStageDetectionInput): PageDesignStageDetection {
@@ -178,6 +200,8 @@ export function detectPageDesignStages(input: PageDesignStageDetectionInput): Pa
 export function inspectPageDesignFinalIssues(host: PageDesignEditHost): readonly string[] {
   return detectPageDesignStages({ phase: 'editing', host }).finalIssues
 }
+
+// ── PageNode 快照采集 ──────────────────────────────────────
 
 function createPageNodeSnapshot(input: PageDesignStageDetectionInput): PageNodeSnapshot {
   const navigation = createNavigationSnapshot(input.host)
@@ -594,6 +618,8 @@ function createTextSnapshot(host: PageDesignEditHost | null, key: 'script' | 'st
   }
 }
 
+// ── 模型部件检测与最终问题汇总 ─────────────────────────────
+
 function createPageNodePartDetections(snapshot: PageNodeSnapshot): Record<PageDesignModelPartKey, PageDesignModelPartDetection> {
   return {
     navigation: {
@@ -662,6 +688,8 @@ function inspectHandlerReferences(handlerNames: readonly string[], script: strin
     .filter((handler) => !script.includes(handler))
     .map((handler) => `rule.json handler 未在 script.js 中实现: ${handler}`)
 }
+
+// ── 100步流程阶段映射 ──────────────────────────────────────
 
 function createPhaseDetections(
   editPhase: PageDesignEditPhase,
@@ -884,6 +912,8 @@ function phaseDetection(command: PhaseDetectionCommand): PageDesignFlowPhaseDete
   }
 }
 
+// ── 内部工具函数 ───────────────────────────────────────────
+
 function createNextActions(snapshot: PageNodeSnapshot, finalIssues: readonly string[]): string[] {
   if (finalIssues.length === 0) return ['agent_complete({ summary }) 申请收尾']
   if (!snapshot.dataSet.ready) {
@@ -911,6 +941,7 @@ function readString(value: unknown): string | null {
   return normalized.length > 0 ? normalized : null
 }
 
+// FIXME: 与 page-design-service.ts 中的 normalizeText 重复，后续统一提取到共享模块
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }

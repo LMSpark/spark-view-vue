@@ -33,7 +33,7 @@ import {
 import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
 import {
   PageNodeFilePath,
-  createDefaultPageNodeFileRegistry,
+  PageNodeFileRegistry,
   type PageNodeFileName,
   type PageNodeFileRegistryView,
 } from '../model/page-file/page-file-registry'
@@ -80,6 +80,8 @@ function resolvePagesConfigBaseUrl(options: ResolvedPageContentLoaderOptions): s
   return `${trimTrailingSlash(options.apiBaseUrl)}/pages-config`
 }
 
+// ═══ PageContentLoader 构造与配置 ═══════════════════════════
+
 export class PageContentLoader extends BasePageContentLoader {
   private opts: ResolvedPageContentLoaderOptions
   private fileLoader!: FileLoader
@@ -103,7 +105,7 @@ export class PageContentLoader extends BasePageContentLoader {
   constructor(options: Partial<PageContentLoaderOptions> = {}) {
     super()
     this.opts = { ...DEFAULT_OPTIONS, ...options }
-    this.fileRegistry = options.fileRegistry ?? createDefaultPageNodeFileRegistry()
+    this.fileRegistry = options.fileRegistry ?? PageNodeFileRegistry.default()
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
     this.request = this.opts.httpClient ?? createRequest({
       baseURL: this.opts.apiBaseUrl,
@@ -198,6 +200,8 @@ export class PageContentLoader extends BasePageContentLoader {
     return this.loadRequiredPageFile(pageId, 'script.js', this.scriptLoader)
   }
 
+  // ═══ 加载器公共方法 ═══════════════════════════════════════
+
   async loadPageContentConfig(pageId: string): Promise<PageContentLoadResult<PageContentConfig>> {
     this.ensurePageFileContext()
     pageLogger.info('加载页面内容配置', { pageId })
@@ -253,6 +257,8 @@ export class PageContentLoader extends BasePageContentLoader {
     })
     return this.pageFileContentResultFromData(result, path)
   }
+
+  // ═══ 缓存管理 ═══════════════════════════════════════════
 
   clearCache(key?: string): void {
     this.ensurePageFileContext()

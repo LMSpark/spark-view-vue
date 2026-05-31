@@ -15,6 +15,8 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-data'
 import type { PageNodeFileName, PageNodeFileRegistryView } from '../model/page-file/page-file-registry'
 
+// ── 页面四文件载荷类型 ───────────────────────────────────
+
 export type { SparkNode as RuleConfig } from '@spark-view/spark-data'
 export type { DataSet as PageDataConfig } from '@spark-view/spark-data'
 
@@ -46,6 +48,8 @@ export type PageNodeFileLoadOptions = {
 export type PageContentConfig = PageContentConfigFiles & {
   pageId: string
 }
+
+// ── 加载器选项与结果类型 ─────────────────────────────────
 
 /**
  * 页面内容加载器选项。
@@ -122,6 +126,8 @@ export type PageContentLoadResult<T = unknown> = {
   /** Whether the server reported the source file was unchanged. */
   notModified?: boolean
 }
+
+// ═══════════════ BasePageContentLoader 抽象契约 ═══════════════
 
 /**
  * 页面内容加载器基类。

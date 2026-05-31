@@ -4,6 +4,11 @@
  * 项目级编辑入口：DevSystem 等设计时 UI 通过这里编辑项目平铺节点集合和配置页节点。
  */
 
+/** @internal 内部组件参数目录数据；外部应通过专用 subpath 获取 */
+import componentCatalog from './page-model/ai/payloads/component-catalog.json'
+
+// ── 项目核心模型 ─────────────────────────────────────────
+
 export {
   ProjectEditor,
   createProjectEditor,
@@ -12,18 +17,6 @@ export {
 export {
   ProjectModel,
 } from './project/core/project-model'
-
-export {
-  ProjectNodeCollection,
-} from './project/node/project-node-collection'
-
-export {
-  ProjectPlanningModel,
-} from './project/planning/project-planning-model'
-
-export {
-  applyProjectPlanningCommandToRoot,
-} from './project/planning/project-planning-edit-host'
 
 export {
   ProjectReferenceClient,
@@ -39,6 +32,64 @@ export type {
   ProjectModelLike,
   ProjectModelOptions,
 } from './project/core/project-model'
+
+export type {
+  ListProjectReferencesOptions,
+  ProjectPageReference,
+  ProjectReferenceClientOptions,
+  ProjectSummary,
+} from './project/core/project-reference-client'
+
+// ── 项目节点模型 ─────────────────────────────────────────
+
+export {
+  ProjectNodeCollection,
+} from './project/node/project-node-collection'
+
+export {
+  ProjectConfigPageNodeModel,
+  ProjectLinkNodeModel,
+  ProjectModuleNodeModel,
+  ProjectNodeModel,
+  ProjectRefNodeModel,
+  ProjectSystemActionNodeModel,
+  ProjectVuePageNodeModel,
+  isConfigNodeKind,
+  resolvePageNodePageId,
+} from './project/node/project-node-model'
+
+export type {
+  ConfigPageContentPart,
+  PageNodeLike,
+  PageNodeLoadOptions,
+  PageNodeNavigationConfig,
+  PageNodeRenderConfig,
+  ProjectConfigPageDirtyPart,
+  ProjectNodeModelOptions,
+  ProjectNodeDirtyPart,
+  ProjectConfigPageNodeModelOptions,
+  ProjectNavigationFlatNode,
+  ProjectNodeFamily,
+  ProjectPageNodeSummary,
+  ProjectPagePlanningNodeKind,
+  ProjectPlanningNodeKind,
+  ProjectPlanningParentKind,
+  ProjectRequirementConstraint,
+} from './project/node/project-node-model'
+
+export type {
+  ProjectNodeCollectionOptions,
+} from './project/node/project-node-collection'
+
+// ── 项目 AI 策划 ─────────────────────────────────────────
+
+export {
+  ProjectPlanningModel,
+} from './project/planning/project-planning-model'
+
+export {
+  applyProjectPlanningCommandToRoot,
+} from './project/planning/project-planning-edit-host'
 
 export type {
   ProjectPlanningModelOptions,
@@ -58,21 +109,11 @@ export type {
   ProjectPlanningRootApplyOptions,
 } from './project/planning/project-planning-edit-host'
 
-export type {
-  ListProjectReferencesOptions,
-  ProjectPageReference,
-  ProjectReferenceClientOptions,
-  ProjectSummary,
-} from './project/core/project-reference-client'
+// ── 页面设计工件（跨领域共享） ─────────────────────────
 
 export {
   PAGE_NODE_FILE_NAMES,
 } from './page-model/model/page-file/page-file-registry'
-
-/** @internal 内部工具包装类，函数已有直接导出；未来版本可能移除此导出 */
-export {
-  ProjectNodeTools,
-} from './project/node/project-node-tools'
 
 export {
   buildDataSetMetadataFromDesignerProjection,
@@ -118,47 +159,17 @@ export type {
   PageNodeFileVersionSummary,
 } from './page-model/model/page-file/page-file-api'
 
+// ── 内部工具（仅限框架内使用） ──────────────────────────
+
+/** @internal 内部工具包装类，函数已有直接导出；未来版本可能移除此导出 */
+export {
+  ProjectNodeTools,
+} from './project/node/project-node-tools'
+
 export type {
   BuildProjectPageSummariesOptions,
   ProjectNodeDraft,
   ReadPlanningNodeOptions,
 } from './project/node/project-node-tools'
 
-export type {
-  ConfigPageContentPart,
-  PageNodeLike,
-  PageNodeLoadOptions,
-  PageNodeNavigationConfig,
-  PageNodeRenderConfig,
-  ProjectConfigPageDirtyPart,
-  ProjectNodeModelOptions,
-  ProjectNodeDirtyPart,
-  ProjectConfigPageNodeModelOptions,
-  ProjectNavigationFlatNode,
-  ProjectNodeFamily,
-  ProjectPageNodeSummary,
-  ProjectPagePlanningNodeKind,
-  ProjectPlanningNodeKind,
-  ProjectPlanningParentKind,
-  ProjectRequirementConstraint,
-} from './project/node/project-node-model'
-
-export type {
-  ProjectNodeCollectionOptions,
-} from './project/node/project-node-collection'
-
-export {
-  ProjectConfigPageNodeModel,
-  ProjectLinkNodeModel,
-  ProjectModuleNodeModel,
-  ProjectNodeModel,
-  ProjectRefNodeModel,
-  ProjectSystemActionNodeModel,
-  ProjectVuePageNodeModel,
-  isConfigNodeKind,
-  resolvePageNodePageId,
-} from './project/node/project-node-model'
-
-/** @internal 内部组件参数目录数据；外部应通过专用 subpath 获取 */
-import componentCatalog from './page-model/ai/payloads/component-catalog.json'
 export { componentCatalog }

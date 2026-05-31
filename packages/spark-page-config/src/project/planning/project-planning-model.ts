@@ -22,12 +22,16 @@ import {
   type ProjectRequirementConstraint,
 } from '../node/project-node-model'
 
+// ── 选项与计划输出类型 ───────────────────────────────────
+
+/** 策划模型构造选项。 */
 export type ProjectPlanningModelOptions = {
   projectId: string
   nodes: ProjectNodeCollection
   projectRequirement?: string
 }
 
+/** 单个策划节点：从导航树节点中提取的策划视角信息，包含需求约束链和子节点。 */
 export type ProjectPlannedNode = {
   nodeId: string
   title: string
@@ -41,6 +45,7 @@ export type ProjectPlannedNode = {
   children: ProjectPlannedNode[]
 }
 
+/** 模块级策划：包含子模块和子页面的层级规划。 */
 export type ProjectModulePlan = {
   nodeId: string
   title: string
@@ -53,6 +58,7 @@ export type ProjectModulePlan = {
   pagePlans: ProjectPagePlan[]
 }
 
+/** 页面级策划：单页面或子页面的功能规划。 */
 export type ProjectPagePlan = {
   nodeId: string
   pageId: string
@@ -66,6 +72,11 @@ export type ProjectPagePlan = {
   subPagePlans: ProjectPagePlan[]
 }
 
+/**
+ * 项目策划快照：按 scope（project/module/page）聚合的完整策划视图。
+ *
+ * 这是 AI 策划模块的输入格式，由 ProjectPlanningModel 的 read* 方法产出。
+ */
 export type ProjectPlanningSnapshot = {
   projectId: string
   scope: 'project' | 'module' | 'page'
@@ -79,6 +90,8 @@ export type ProjectPlanningSnapshot = {
   nodes: ProjectPlannedNode[]
   pageFeatures: ProjectPageNodeSummary[]
 }
+
+// ═══════════════ ProjectPlanningModel ═══════════════════════
 
 export class ProjectPlanningModel {
   readonly projectId: string
@@ -115,6 +128,11 @@ export class ProjectPlanningModel {
     return this.nodes.readPageSummaries()
   }
 
+  /**
+   * 读取项目级策划快照。
+   *
+   * 递归遍历所有导航节点，聚合模块计划、页面计划和策划节点列表。
+   */
   readProjectPlanning(): ProjectPlanningSnapshot {
     const requirementConstraints = this.readProjectConstraints()
     const parts = buildPlanningParts(this.nodes.children, 'project', requirementConstraints)

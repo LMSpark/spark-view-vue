@@ -56,6 +56,8 @@ import { NavigationConfigClient } from '../../page-model/navigation/nav-client'
 
 import { SparkNodeTree } from '@spark-view/spark-data'
 
+// ── 内部域模型导入（page-model / project） ──
+
 import type {
   ProjectConfigPageNodeModel,
   ProjectPageNodeSummary,
@@ -96,7 +98,7 @@ import {
 } from './project-reference-client'
 
 // ═══════════════════════════════════════════════════════
-// 1. Options / Snapshot / Listener 类型
+// 1. 选项 / 快照 / 监听器 类型（Options / Snapshot / Listener）
 // ═══════════════════════════════════════════════════════
 
 /** ProjectEditor 构造参数 */
@@ -180,7 +182,7 @@ export type ProjectEditorSnapshot = {
 }
 
 // ═══════════════════════════════════════════════════════
-// 2. ProjectEditor class
+// 2. ProjectEditor class — 项目编辑聚合根
 // ═══════════════════════════════════════════════════════
 
 type NavigationDirtyScope = 'node' | 'root'

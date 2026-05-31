@@ -5,6 +5,35 @@
  * 不直接支配模型，也不直接拼进 system prompt。LLM 应通过
  * lifecycle.describeProgress 读取 PageNode 阶段检测，通过 describeDesignFlow
  * 按 intent、phase 或 step 查询必要流程，避免一次性灌入全量流程和具体组件目录。
+ *
+ * ## 页面设计生命周期（6 阶段）
+ *
+ *   项目策划 ──→ 页面模型定义 ──→ AI 辅助设计 ──→ 页面编辑/更新 ──→ 页面编译/读取 ──→ 导航集成
+ *   (planning)    (model/)        (ai/)          (update/)        (read/)          (navigation/)
+ *
+ * 1. 项目策划 — project/planning/
+ *    AI 将用户需求分解为模块/页面层级结构，输出策划快照供后续阶段消费。
+ *
+ * 2. 页面模型 — page-model/model/
+ *    核心数据模型（rule / dataset / text / file 生命周期），是四文件编辑的领域层。
+ *
+ * 3. AI 设计 — page-model/ai/ + project/ai/
+ *    AI 工具目录与编辑模块，提供 module_query / module_function_guide / payload 查询等能力。
+ *
+ * 4. 页面更新 — page-model/update/
+ *    Live edit 会话管理、设计服务、工件检测（阶段检测/数据工件/规则工件）。
+ *
+ * 5. 页面读取 — page-model/read/
+ *    内容加载与编译管线，将四文件反序列化为运行时可用格式。
+ *
+ * 6. 导航集成 — page-model/navigation/
+ *    导航树编辑与建模，将页面节点挂载到项目导航结构中。
+ *
+ * ## 100 步流程与阶段检测的关系
+ *
+ * 100 步流程是"生产检查清单"，阶段检测（page-design-stage-detection.ts）以 PageNode
+ * 快照为 SSOT，将流程步骤映射为阶段完成度。二者是"检查视图 ←→ 事实源"的关系，
+ * 流程步骤不是驱动源，只用于定位当前进度和下一步操作。
  */
 
 // ── 公共流程 DTO ───────────────────────────────────────────
@@ -209,22 +238,7 @@ export function getNextPageDesignFlowStep(completedStep: number): PageDesignFlow
   return getPageDesignFlowStep(completedStep + 1)
 }
 
-// ── intent 任务知识匹配 ────────────────────────────────────
-
-/**
- * 根据用户原始意图匹配任务知识。
- *
- * guide 是“申请类表单”这样的模式知识，不是具体页面验收；具体业务断言仍属于 smoke/test。
- */
-export function matchPageDesignTaskGuides(intent?: string): readonly PageDesignTaskGuide[] {
-  const text = intent?.trim().toLowerCase() ?? ''
-  if (text.length === 0) return []
-  const guides: PageDesignTaskGuide[] = [GENERAL_PAGE_DESIGN_PROTOCOL_GUIDE]
-  if (/(请假|休假|leave|申请|application|表单|form)/iu.test(text)) {
-    guides.push(APPLICATION_FORM_TASK_GUIDE)
-  }
-  return guides
-}
+// ── 任务知识目录（常量） ────────────────────────────────────
 
 // PAGE_DESIGN_REFACTOR_SOURCE[task-knowledge-catalog]: intent 命中的任务知识放在这里；不要复制到 system prompt、smoke 脚本或通讯层。
 const GENERAL_PAGE_DESIGN_PROTOCOL_GUIDE: PageDesignTaskGuide = {
@@ -302,4 +316,21 @@ const APPLICATION_FORM_TASK_GUIDE: PageDesignTaskGuide = {
     '待处理列表与统计读取同一个 pending/approval 视图。',
     'rule.json 中目录组件 type 都能在会话历史看到显式 guidePayload。',
   ],
+}
+
+// ── intent 任务知识匹配 ────────────────────────────────────
+
+/**
+ * 根据用户原始意图匹配任务知识。
+ *
+ * guide 是”申请类表单”这样的模式知识，不是具体页面验收；具体业务断言仍属于 smoke/test。
+ */
+export function matchPageDesignTaskGuides(intent?: string): readonly PageDesignTaskGuide[] {
+  const text = intent?.trim().toLowerCase() ?? ''
+  if (text.length === 0) return []
+  const guides: PageDesignTaskGuide[] = [GENERAL_PAGE_DESIGN_PROTOCOL_GUIDE]
+  if (/(请假|休假|leave|申请|application|表单|form)/iu.test(text)) {
+    guides.push(APPLICATION_FORM_TASK_GUIDE)
+  }
+  return guides
 }

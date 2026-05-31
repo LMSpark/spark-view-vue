@@ -8,7 +8,7 @@ import {
   canonicalizePageDataJson,
 } from '../page-data-canonicalize'
 
-// ── SECTION 4: 页面数据 JSON Schema ──
+// ── 页面数据 JSON Schema ──────────────────────────────────
 
 export type PageDataEditorMode = 'tree' | 'text' | 'table'
 
@@ -51,6 +51,7 @@ type JsonSchemaNode = {
   [key: string]: unknown
 }
 
+// FIXME: 与 rule-artifacts.ts 中的 withMeta 重复，后续统一提取到共享模块
 function withMeta<T extends JsonSchemaNode>(
   title: string,
   description: string,
@@ -288,7 +289,7 @@ export const PAGE_DATA_JSON_SCHEMA: Record<string, unknown> = {
   },
 }
 
-// ── SECTION 6: DataSet 设计器投影 ──
+// ── DataSet 设计器投影 ────────────────────────────────────
 
 export type DesignerColumnProjection = DataColumn & {
   id: string

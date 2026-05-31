@@ -884,6 +884,7 @@ function createManagementWorkbenchStyle(input: NormalizedWorkbenchRequest): stri
   ].join('\n')
 }
 
+// FIXME: 与 page-design-stage-detection.ts 中的 normalizeText 重复，后续统一提取到共享模块
 function normalizeText(value: unknown): string {
   return typeof value === 'string' ? value.trim() : ''
 }
