@@ -7,38 +7,38 @@
 export {
   ProjectEditor,
   createProjectEditor,
-} from './project/project-editor'
+} from './project/core/project-editor'
 
 export {
   ProjectModel,
-} from './project/project-model'
+} from './project/core/project-model'
 
 export {
   ProjectNodeCollection,
-} from './project/project-node-collection'
+} from './project/node/project-node-collection'
 
 export {
   ProjectPlanningModel,
-} from './project/project-planning-model'
+} from './project/planning/project-planning-model'
 
 export {
   applyProjectPlanningCommandToRoot,
-} from './project/project-planning-edit-host'
+} from './project/planning/project-planning-edit-host'
 
 export {
   ProjectReferenceClient,
-} from './project/project-reference-client'
+} from './project/core/project-reference-client'
 
 export type {
   CreateProjectEditorOptions,
   ProjectEditorLoadOptions,
   ProjectEditorSnapshot,
-} from './project/project-editor'
+} from './project/core/project-editor'
 
 export type {
   ProjectModelLike,
   ProjectModelOptions,
-} from './project/project-model'
+} from './project/core/project-model'
 
 export type {
   ProjectPlanningModelOptions,
@@ -46,7 +46,7 @@ export type {
   ProjectPagePlan,
   ProjectPlanningSnapshot,
   ProjectPlannedNode,
-} from './project/project-planning-model'
+} from './project/planning/project-planning-model'
 
 export type {
   ProjectPlanningApplyCommand,
@@ -56,22 +56,22 @@ export type {
   ProjectPlanningNavigationApplyResult,
   ProjectPlanningNodePlan,
   ProjectPlanningRootApplyOptions,
-} from './project/project-planning-edit-host'
+} from './project/planning/project-planning-edit-host'
 
 export type {
   ListProjectReferencesOptions,
   ProjectPageReference,
   ProjectReferenceClientOptions,
   ProjectSummary,
-} from './project/project-reference-client'
+} from './project/core/project-reference-client'
 
 export {
   PAGE_NODE_FILE_NAMES,
-} from './page-model/model/page-file-registry'
+} from './page-model/model/page-file/page-file-registry'
 
 export {
   ProjectNodeTools,
-} from './project/project-node-tools'
+} from './project/node/project-node-tools'
 
 export {
   buildDataSetMetadataFromDesignerProjection,
@@ -107,7 +107,7 @@ export type {
 
 export type {
   PageNodeFileName,
-} from './page-model/model/page-file-registry'
+} from './page-model/model/page-file/page-file-registry'
 
 export type {
   NavigationNodeDraft,
@@ -115,13 +115,13 @@ export type {
 
 export type {
   PageNodeFileVersionSummary,
-} from './page-model/model/page-file-api'
+} from './page-model/model/page-file/page-file-api'
 
 export type {
   BuildProjectPageSummariesOptions,
   ProjectNodeDraft,
   ReadPlanningNodeOptions,
-} from './project/project-node-tools'
+} from './project/node/project-node-tools'
 
 export type {
   ConfigPageContentPart,
@@ -140,11 +140,11 @@ export type {
   ProjectPlanningNodeKind,
   ProjectPlanningParentKind,
   ProjectRequirementConstraint,
-} from './project/project-node-model'
+} from './project/node/project-node-model'
 
 export type {
   ProjectNodeCollectionOptions,
-} from './project/project-node-collection'
+} from './project/node/project-node-collection'
 
 export {
   ProjectConfigPageNodeModel,
@@ -156,7 +156,7 @@ export {
   ProjectVuePageNodeModel,
   isConfigNodeKind,
   resolvePageNodePageId,
-} from './project/project-node-model'
+} from './project/node/project-node-model'
 
 import componentCatalog from './page-model/ai/payloads/component-catalog.json'
 export { componentCatalog }

@@ -73,12 +73,12 @@ import type {
 import { summarizePageDesignFlowPhases } from '../update/artifacts/design-flow'
 import { inspectPageDesignFinalIssues } from '../update/artifacts/page-design-stage-detection'
 import { PageDesignService } from '../update/page-design-service'
-import { PageDesignDatasetAiModule } from './dataset-tool-catalog'
-import { PageDesignLifecycleAiModule } from './lifecycle-tool-catalog'
-import { PageDesignNodeTreeAiModule } from './node-tree-tool-catalog'
-import { PageDesignPayloadCatalogAiModule } from './payload-catalog-tool-catalog'
-import { PageDesignStandardPageAiModule } from './standard-page-tool-catalog'
-import { PageDesignTextModelAiModule } from './text-model-tool-catalog'
+import { PageDesignDatasetAiModule } from './tool-catalogs/dataset-tool-catalog'
+import { PageDesignLifecycleAiModule } from './tool-catalogs/lifecycle-tool-catalog'
+import { PageDesignNodeTreeAiModule } from './tool-catalogs/node-tree-tool-catalog'
+import { PageDesignPayloadCatalogAiModule } from './tool-catalogs/payload-catalog-tool-catalog'
+import { PageDesignStandardPageAiModule } from './tool-catalogs/standard-page-tool-catalog'
+import { PageDesignTextModelAiModule } from './tool-catalogs/text-model-tool-catalog'
 import {
   PAGE_DESIGN_CHILD_MODULES,
   PAGE_DESIGN_COMPONENT_PAYLOAD_REF,

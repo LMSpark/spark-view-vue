@@ -6,8 +6,8 @@ import {
 } from '@spark-view/spark-page-config/project'
 import { createRequest } from '@spark-view/spark-utils'
 import { buildNavRoot } from '../src/page-model/navigation/nav-editing'
-import { PageNodeFileApi } from '../src/page-model/model/page-file-api'
-import { PageNodeFileCache } from '../src/page-model/model/page-file-cache'
+import { PageNodeFileApi } from '../src/page-model/model/page-file/page-file-api'
+import { PageNodeFileCache } from '../src/page-model/model/page-file/page-file-cache'
 import { PageContentLoader } from '../src/page-model/read/page-content-loader'
 
 describe('ProjectPlanningModel', () => {

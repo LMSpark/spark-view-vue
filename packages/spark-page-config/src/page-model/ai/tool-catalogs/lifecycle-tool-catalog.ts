@@ -41,9 +41,9 @@ import {
 } from '@spark-view/spark-ai/modules'
 import type {
   PageDesignServiceContext,
-} from '../update/page-edit-session'
-import type { PageDesignService } from '../update/page-design-service'
-import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
+} from '../../update/page-edit-session'
+import type { PageDesignService } from '../../update/page-design-service'
+import { createCurrentPageRef, findCurrentPageInstance } from '../page-design-helpers'
 
 // ── 参数 schema 与使用规则 ────────────────────────────────
 

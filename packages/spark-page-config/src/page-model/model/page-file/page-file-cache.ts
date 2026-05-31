@@ -4,7 +4,7 @@
  * 只负责把 PageNode 四文件路径映射到 loader cache key 并清理缓存。
  */
 
-import type { BasePageContentLoader } from '../read/page-content-types'
+import type { BasePageContentLoader } from '../../read/page-content-types'
 import {
   PageNodeFilePath,
   type PageNodeFileName,

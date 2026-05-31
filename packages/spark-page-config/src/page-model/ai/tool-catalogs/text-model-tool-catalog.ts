@@ -38,9 +38,9 @@ import {
 } from '@spark-view/spark-ai/modules'
 import type {
   PageDesignServiceContext,
-} from '../update/page-edit-session'
-import type { PageDesignService } from '../update/page-design-service'
-import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
+} from '../../update/page-edit-session'
+import type { PageDesignService } from '../../update/page-design-service'
+import { createCurrentPageRef, findCurrentPageInstance } from '../page-design-helpers'
 
 const NO_PARAMS = noParamsSchema('readScript / readStyle 不接受参数，请传 {} 或留空。')
 const CONTENT_SCHEMA = stringSchema('完整文本内容（全量覆盖写入，不支持 patch）')

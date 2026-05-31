@@ -52,10 +52,10 @@ import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type {
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
-} from '../update/page-edit-session'
-import type { PageDesignService } from '../update/page-design-service'
+} from '../../update/page-edit-session'
+import type { PageDesignService } from '../../update/page-design-service'
 import { isRecord } from '@spark-view/spark-utils'
-import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
+import { createCurrentPageRef, findCurrentPageInstance } from '../page-design-helpers'
 
 type DatasetActionRunner = PageDesignServiceActionBinding<DataSetCrudTool>['run']
 type DataSetCrudToolMethodName = Extract<{

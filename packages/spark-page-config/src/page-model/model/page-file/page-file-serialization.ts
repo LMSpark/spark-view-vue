@@ -7,7 +7,7 @@
 
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
-import { canonicalizeDataSetMetadata } from '../update/page-data-canonicalize'
+import { canonicalizeDataSetMetadata } from '../../update/page-data-canonicalize'
 
 // ── rule.json ────────────────────────────────────────────
 

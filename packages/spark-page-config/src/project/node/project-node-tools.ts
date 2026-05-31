@@ -1,5 +1,5 @@
-import type { AppNavRoot, NavNode } from '../page-model/navigation/nav-model'
-import type { NavigationNodeDraft, NavNodeLocation } from '../page-model/navigation/nav-editing'
+import type { AppNavRoot, NavNode } from '../../page-model/navigation/nav-model'
+import type { NavigationNodeDraft, NavNodeLocation } from '../../page-model/navigation/nav-editing'
 import {
   canUseModuleNodeKind,
   createReservedRootGroup,
@@ -8,7 +8,7 @@ import {
   findNodeLocation,
   isSystemRootDirectory,
   normalizePageIdFromPath,
-} from '../page-model/navigation/nav-editing'
+} from '../../page-model/navigation/nav-editing'
 import {
   appendProjectRequirementConstraint,
   canProjectNodeContainChild,

@@ -5,19 +5,19 @@
  * 层级关系只由 pid 表达；需要树时通过 projection 生成 children。
  */
 
-import type { AppNavRoot, NavNode } from '../page-model/navigation/nav-model'
-import type { NavigationEditSession, NavNodeLocation } from '../page-model/navigation/nav-editing'
+import type { AppNavRoot, NavNode } from '../../page-model/navigation/nav-model'
+import type { NavigationEditSession, NavNodeLocation } from '../../page-model/navigation/nav-editing'
 import {
   createChildPageNode,
   createRootModuleNode,
   findNodeById,
   findNodeLocation,
   NavigationEditSession as DefaultNavigationEditSession,
-} from '../page-model/navigation/nav-editing'
-import type { PageNodeFileApi } from '../page-model/model/page-file-api'
-import type { PageNodeFileCache } from '../page-model/model/page-file-cache'
-import type { NavigationConfigClient } from '../page-model/navigation/nav-client'
-import type { BasePageContentLoader } from '../page-model/read/page-content-types'
+} from '../../page-model/navigation/nav-editing'
+import type { PageNodeFileApi } from '../../page-model/model/page-file/page-file-api'
+import type { PageNodeFileCache } from '../../page-model/model/page-file/page-file-cache'
+import type { NavigationConfigClient } from '../../page-model/navigation/nav-client'
+import type { BasePageContentLoader } from '../../page-model/read/page-content-types'
 import {
   appendProjectRequirementConstraint,
   buildProjectNavigationTree,

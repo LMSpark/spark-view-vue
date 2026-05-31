@@ -33,8 +33,8 @@ import type {
   ProjectPlanningApplyResult,
   ProjectPlanningEditHost,
   ProjectPlanningNodePlan,
-} from '../project-planning-edit-host'
-import type { ProjectPlanningSnapshot } from '../project-planning-model'
+} from '../planning/project-planning-edit-host'
+import type { ProjectPlanningSnapshot } from '../planning/project-planning-model'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 export const PROJECT_PLANNING_AI_AGENT_HOST_ALIAS = PROJECT_PLANNING_MODULE_ID

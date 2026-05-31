@@ -7,9 +7,9 @@
 
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import type { BasePageContentLoader } from '../read/page-content-types'
-import type { PageNodeFileApi } from './page-file-api'
-import type { PageFileRestoreCommand } from './page-file-restore-command'
-import { parsePageDataText, serializeDataSet } from './page-file-serialization'
+import type { PageNodeFileApi } from './page-file/page-file-api'
+import type { PageFileRestoreCommand } from './page-file/page-file-restore-command'
+import { parsePageDataText, serializeDataSet } from './page-file/page-file-serialization'
 
 export class PageDataSetModel {
   tool: DataSetCrudTool = new DataSetCrudTool('')

@@ -11,16 +11,16 @@ import type {
   AppNavRoot,
   ChildPlacement,
   NavNode,
-} from '../page-model/navigation/nav-model'
+} from '../../page-model/navigation/nav-model'
 import {
   defaultNavIconByKind,
   normalizeNavRoot,
-} from '../page-model/navigation/nav-editing'
+} from '../../page-model/navigation/nav-editing'
 import {
   canProjectNodeContainChild,
   type ProjectPlanningNodeKind,
   type ProjectPlanningParentKind,
-} from './project-node-model'
+} from '../node/project-node-model'
 import type { ProjectPlanningSnapshot } from './project-planning-model'
 
 export type ProjectPlanningApplyMode = 'merge' | 'replace'

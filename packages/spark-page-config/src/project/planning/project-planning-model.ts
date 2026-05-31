@@ -6,8 +6,8 @@
  * 任务输入使用的同值投影。
  */
 
-import type { NavNode } from '../page-model/navigation/nav-model'
-import type { ProjectNodeCollection } from './project-node-collection'
+import type { NavNode } from '../../page-model/navigation/nav-model'
+import type { ProjectNodeCollection } from '../node/project-node-collection'
 import {
   appendProjectRequirementConstraint,
   canProjectNodeContainChild,
@@ -20,7 +20,7 @@ import {
   type ProjectPlanningNodeKind,
   type ProjectPlanningParentKind,
   type ProjectRequirementConstraint,
-} from './project-node-model'
+} from '../node/project-node-model'
 
 export type ProjectPlanningModelOptions = {
   projectId: string

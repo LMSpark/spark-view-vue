@@ -10,8 +10,8 @@ import {
   type PageDataConfig,
   type RuleConfig,
 } from '../src/page-model/read/page-content-types'
-import type { PageNodeFileName } from '../src/page-model/model/page-file-registry'
-import { PageNodeFileApi } from '../src/page-model/model/page-file-api'
+import type { PageNodeFileName } from '../src/page-model/model/page-file/page-file-registry'
+import { PageNodeFileApi } from '../src/page-model/model/page-file/page-file-api'
 import {
   buildNavRoot,
   findNodeById,

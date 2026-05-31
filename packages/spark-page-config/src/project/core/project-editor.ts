@@ -31,64 +31,64 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type {
   BasePageContentLoader,
   PageContentLoaderOptions,
-} from '../page-model/read/page-content-types'
-import { PageNodeFileApi } from '../page-model/model/page-file-api'
-import { createPageContentLoader } from '../page-model/read/page-content-loader'
+} from '../../page-model/read/page-content-types'
+import { PageNodeFileApi } from '../../page-model/model/page-file/page-file-api'
+import { createPageContentLoader } from '../../page-model/read/page-content-loader'
 import type {
   AppNavRoot,
   NavNode,
   NavNodeKind,
-} from '../page-model/navigation/nav-model'
+} from '../../page-model/navigation/nav-model'
 import type {
   NavigationNodeDraftApplyResult,
   NavigationNodeDraftInput,
   NavNodeLocation,
   NavigationEditSession,
-} from '../page-model/navigation/nav-editing'
+} from '../../page-model/navigation/nav-editing'
 import {
   applyNavigationNodeDraftToNode,
   applyNodeKindPresetToDraft,
   createNavigationNodeDraft,
   createNavigationNodePatch,
   createReservedRootGroup,
-} from '../page-model/navigation/nav-editing'
-import { NavigationConfigClient } from '../page-model/navigation/nav-client'
+} from '../../page-model/navigation/nav-editing'
+import { NavigationConfigClient } from '../../page-model/navigation/nav-client'
 
 import { SparkNodeTree } from '@spark-view/spark-data'
 
 import type {
   ProjectConfigPageNodeModel,
   ProjectPageNodeSummary,
-} from './project-node-model'
+} from '../node/project-node-model'
 import {
   isConfigNodeKind,
   resolvePageNodePageId,
-} from './project-node-model'
-import { PageNodeFileCache } from '../page-model/model/page-file-cache'
+} from '../node/project-node-model'
+import { PageNodeFileCache } from '../../page-model/model/page-file/page-file-cache'
 import {
   PageNodeFileCreator,
   type PageNodeCreatePageParams,
-} from '../page-model/model/page-file-creator'
-import { PageNodeFileDeleter } from '../page-model/model/page-file-deleter'
-import { PageNodeFileVersions } from '../page-model/model/page-file-versions'
-import type { PageNodeFileVersionSummary } from '../page-model/model/page-file-api'
+} from '../../page-model/model/page-file/page-file-creator'
+import { PageNodeFileDeleter } from '../../page-model/model/page-file/page-file-deleter'
+import { PageNodeFileVersions } from '../../page-model/model/page-file/page-file-versions'
+import type { PageNodeFileVersionSummary } from '../../page-model/model/page-file/page-file-api'
 import {
   PageNodeNavigationOperations,
   type PageNodeCreateMountedParams,
   type PageNodeCreateMountedResult,
   type PageNodeRemoveMountedParams,
   type PageNodeRemoveMountedResult,
-} from '../page-model/navigation/page-node-navigation-operations'
+} from '../../page-model/navigation/page-node-navigation-operations'
 import {
   PAGE_NODE_FILE_NAMES,
   type PageNodeFileName,
-} from '../page-model/model/page-file-registry'
-import type { PageNodeFileStorage } from './page-node-factory'
-import type { PageDesignEditHost } from '../page-model/update/page-edit-session'
+} from '../../page-model/model/page-file/page-file-registry'
+import type { PageNodeFileStorage } from '../node/page-node-factory'
+import type { PageDesignEditHost } from '../../page-model/update/page-edit-session'
 import { ProjectModel } from './project-model'
-import type { ProjectPlanningSnapshot } from './project-planning-model'
-import type { ProjectPlanningEditHost } from './project-planning-edit-host'
-import { applyProjectPlanningCommandToRoot } from './project-planning-edit-host'
+import type { ProjectPlanningSnapshot } from '../planning/project-planning-model'
+import type { ProjectPlanningEditHost } from '../planning/project-planning-edit-host'
+import { applyProjectPlanningCommandToRoot } from '../planning/project-planning-edit-host'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,

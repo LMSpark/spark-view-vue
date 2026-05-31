@@ -6,9 +6,9 @@
 
 import { SnapshotHistory } from '@spark-view/spark-utils'
 import type { BasePageContentLoader } from '../read/page-content-types'
-import type { PageNodeFileName } from './page-file-registry'
-import type { PageNodeFileApi } from './page-file-api'
-import type { PageFileRestoreCommand } from './page-file-restore-command'
+import type { PageNodeFileName } from './page-file/page-file-registry'
+import type { PageNodeFileApi } from './page-file/page-file-api'
+import type { PageFileRestoreCommand } from './page-file/page-file-restore-command'
 
 const HISTORY_LIMIT = 100
 

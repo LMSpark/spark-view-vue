@@ -20,7 +20,7 @@
 
 import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'
 import { isRecord } from '@spark-view/spark-utils'
-import { hasPageDesignComponentPayloadKey } from './payload-catalog-tool-catalog'
+import { hasPageDesignComponentPayloadKey } from './tool-catalogs/payload-catalog-tool-catalog'
 
 // ── 公共 DTO ────────────────────────────────────────────────
 

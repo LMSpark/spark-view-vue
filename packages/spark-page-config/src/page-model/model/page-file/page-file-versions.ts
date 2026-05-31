@@ -4,15 +4,15 @@
  * 只负责页面四文件版本列表、恢复、创建快照和删除快照。
  */
 
-import type { BasePageContentLoader } from '../read/page-content-types'
+import type { BasePageContentLoader } from '../../read/page-content-types'
 import type {
   PageNodeFileApi,
   PageNodeFileVersionSummary,
 } from './page-file-api'
 import type { PageNodeFileName } from './page-file-registry'
-import type { PageRuleModel } from './page-rule-model'
-import type { PageDataSetModel } from './page-data-set-model'
-import type { PageTextModel } from './page-text-model'
+import type { PageRuleModel } from '../page-rule-model'
+import type { PageDataSetModel } from '../page-data-set-model'
+import type { PageTextModel } from '../page-text-model'
 
 export type PageFileVersionTarget = {
   pageId: string

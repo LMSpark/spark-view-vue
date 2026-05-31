@@ -32,10 +32,10 @@ import {
   type PageDataConfig,
   type RuleConfig,
 } from '../src/page-model/read/page-content-types'
-import type { PageNodeFileName } from '../src/page-model/model/page-file-registry'
+import type { PageNodeFileName } from '../src/page-model/model/page-file/page-file-registry'
 import {
   PageNodeFileApi,
-} from '../src/page-model/model/page-file-api'
+} from '../src/page-model/model/page-file/page-file-api'
 import {
   PAGE_DESIGN_100_STEP_FLOW,
   getNextPageDesignFlowStep,

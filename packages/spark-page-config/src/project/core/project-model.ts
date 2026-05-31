@@ -6,13 +6,13 @@
  * rule / dataSet / script / style 子模型，不再经过独立 PageNode 中间层。
  */
 
-import type { NavigationEditSession } from '../page-model/navigation/nav-editing'
-import type { NavigationConfigClient } from '../page-model/navigation/nav-client'
-import type { BasePageContentLoader } from '../page-model/read/page-content-types'
-import type { PageNodeFileApi } from '../page-model/model/page-file-api'
-import type { PageNodeFileCache } from '../page-model/model/page-file-cache'
-import { ProjectNodeCollection } from './project-node-collection'
-import { ProjectPlanningModel } from './project-planning-model'
+import type { NavigationEditSession } from '../../page-model/navigation/nav-editing'
+import type { NavigationConfigClient } from '../../page-model/navigation/nav-client'
+import type { BasePageContentLoader } from '../../page-model/read/page-content-types'
+import type { PageNodeFileApi } from '../../page-model/model/page-file/page-file-api'
+import type { PageNodeFileCache } from '../../page-model/model/page-file/page-file-cache'
+import { ProjectNodeCollection } from '../node/project-node-collection'
+import { ProjectPlanningModel } from '../planning/project-planning-model'
 
 export type ProjectModelOptions = {
   projectId: string

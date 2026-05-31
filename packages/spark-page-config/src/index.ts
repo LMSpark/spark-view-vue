@@ -7,30 +7,30 @@
 
 export {
   ProjectModel,
-} from './project/project-model'
+} from './project/core/project-model'
 
 export {
   PageNodeFactory,
   createPageNode,
   createPageNodeFactory,
-} from './project/page-node-factory'
+} from './project/node/page-node-factory'
 
 export type {
   ProjectModelLike,
   ProjectModelOptions,
-} from './project/project-model'
+} from './project/core/project-model'
 
 export {
   ProjectConfigPageNodeModel,
-} from './project/project-node-model'
+} from './project/node/project-node-model'
 
 export type {
   PageNodeLike,
   PageNodeRenderConfig,
-} from './project/project-node-model'
+} from './project/node/project-node-model'
 
 export type {
   PageNodeFactoryLike,
   PageNodeFactoryOptions,
   PageNodeFileStorage,
-} from './project/page-node-factory'
+} from './project/node/page-node-factory'

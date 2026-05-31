@@ -50,21 +50,21 @@ import {
   type AiModulePayloadMetadata,
   type AiModulePathContext,
 } from '@spark-view/spark-ai/modules'
-import { PageDesignService } from '../update/page-design-service'
+import { PageDesignService } from '../../update/page-design-service'
 import type {
   PageDesignNodePayloadValidationTarget,
-} from '../update/page-design-service'
+} from '../../update/page-design-service'
 import type {
   PageDesignNodeTree,
   PageDesignServiceActionBinding,
   PageDesignServiceContext,
-} from '../update/page-edit-session'
+} from '../../update/page-edit-session'
 import {
   isSparkNode,
 } from '@spark-view/spark-data'
 import type * as SparkData from '@spark-view/spark-data'
 import { isRecord } from '@spark-view/spark-utils'
-import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
+import { createCurrentPageRef, findCurrentPageInstance } from '../page-design-helpers'
 import {
   getPageDesignComponentPayloadGuide,
   isPageDesignWritableComponentPayloadKey,

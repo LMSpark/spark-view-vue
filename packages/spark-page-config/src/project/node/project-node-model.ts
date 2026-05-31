@@ -10,24 +10,24 @@
 import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import { getSparkNodeChildren } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode, NavNodeKind } from '../page-model/navigation/nav-model'
+import type { AppNavRoot, NavNode, NavNodeKind } from '../../page-model/navigation/nav-model'
 import type {
   NavigationContextDraft,
   NavigationNodeDraft,
-} from '../page-model/navigation/nav-editing'
+} from '../../page-model/navigation/nav-editing'
 import {
   normalizeNavRoot,
   normalizePageIdFromPath,
-} from '../page-model/navigation/nav-editing'
-import type { NavigationConfigClient } from '../page-model/navigation/nav-client'
-import type { BasePageContentLoader } from '../page-model/read/page-content-types'
-import type { PageNodeFileApi } from '../page-model/model/page-file-api'
-import type { PageNodeFileCache } from '../page-model/model/page-file-cache'
-import type { PageNodeFileName } from '../page-model/model/page-file-registry'
-import { NavigationDraftModel } from '../page-model/model/navigation-draft-model'
-import { PageDataSetModel } from '../page-model/model/page-data-set-model'
-import { PageRuleModel } from '../page-model/model/page-rule-model'
-import { PageTextModel } from '../page-model/model/page-text-model'
+} from '../../page-model/navigation/nav-editing'
+import type { NavigationConfigClient } from '../../page-model/navigation/nav-client'
+import type { BasePageContentLoader } from '../../page-model/read/page-content-types'
+import type { PageNodeFileApi } from '../../page-model/model/page-file/page-file-api'
+import type { PageNodeFileCache } from '../../page-model/model/page-file/page-file-cache'
+import type { PageNodeFileName } from '../../page-model/model/page-file/page-file-registry'
+import { NavigationDraftModel } from '../../page-model/navigation/navigation-draft-model'
+import { PageDataSetModel } from '../../page-model/model/page-data-set-model'
+import { PageRuleModel } from '../../page-model/model/page-rule-model'
+import { PageTextModel } from '../../page-model/model/page-text-model'
 
 export type ProjectNodeFamily =
   | 'module'

@@ -7,7 +7,7 @@
 
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import type { PageNodeFileName } from './page-file-registry'
-import { assertNonEmptyPageId } from '../../internal/assert-page-id'
+import { assertNonEmptyPageId } from '../../../internal/assert-page-id'
 
 export type PageNodeFileVersionSummary = {
   version: number

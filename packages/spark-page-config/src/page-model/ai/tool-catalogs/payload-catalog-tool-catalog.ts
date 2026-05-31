@@ -41,16 +41,16 @@ import {
   stringSchema,
 } from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
-import type { PageDesignServiceContext } from '../update/page-edit-session'
-import type { PageDesignServiceResult } from '../update/page-edit-session'
-import { PageDesignService } from '../update/page-design-service'
-import componentCatalogPayload from './payloads/component-catalog.json'
-import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
+import type { PageDesignServiceContext } from '../../update/page-edit-session'
+import type { PageDesignServiceResult } from '../../update/page-edit-session'
+import { PageDesignService } from '../../update/page-design-service'
+import componentCatalogPayload from '../payloads/component-catalog.json'
+import { createCurrentPageRef, findCurrentPageInstance } from '../page-design-helpers'
 import {
   PAGE_DESIGN_COMPONENT_PAYLOAD_REF,
   PAGE_DESIGN_NODE_TREE_KIND,
   PAGE_DESIGN_PAYLOAD_CATALOG_KIND,
-} from './page-design-kind-ids'
+} from '../page-design-kind-ids'
 
 type PayloadCatalogFunctionId = 'queryPayloads' | 'guidePayload'
 type AiModuleFunctionMetadata = SparkAiModules.AiModuleFunctionMetadata

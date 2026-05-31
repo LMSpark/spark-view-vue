@@ -13,7 +13,7 @@
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-data'
-import type { PageNodeFileName, PageNodeFileRegistryView } from '../model/page-file-registry'
+import type { PageNodeFileName, PageNodeFileRegistryView } from '../model/page-file/page-file-registry'
 
 export type { SparkNode as RuleConfig } from '@spark-view/spark-data'
 export type { DataSet as PageDataConfig } from '@spark-view/spark-data'

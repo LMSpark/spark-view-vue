@@ -20,8 +20,8 @@ import {
   type ProjectPlanningEditHost,
 } from '@spark-view/spark-page-config/project'
 import type { ProjectPlanningApplyCommand } from '@spark-view/spark-page-config/project'
-import { PageNodeFileApi } from '../src/page-model/model/page-file-api'
-import { PageNodeFileCache } from '../src/page-model/model/page-file-cache'
+import { PageNodeFileApi } from '../src/page-model/model/page-file/page-file-api'
+import { PageNodeFileCache } from '../src/page-model/model/page-file/page-file-cache'
 import { PageContentLoader } from '../src/page-model/read/page-content-loader'
 
 function createPlanningHost(projectId = 'school'): ProjectPlanningEditHost {

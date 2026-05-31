@@ -36,7 +36,7 @@ import {
   createDefaultPageNodeFileRegistry,
   type PageNodeFileName,
   type PageNodeFileRegistryView,
-} from '../model/page-file-registry'
+} from '../model/page-file/page-file-registry'
 
 // 编译函数从同一文件域的 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from './page-content-compiler'

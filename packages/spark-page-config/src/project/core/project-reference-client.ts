@@ -1,9 +1,9 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { AppNavRoot } from '../page-model/navigation/nav-model'
+import type { AppNavRoot } from '../../page-model/navigation/nav-model'
 import {
   ProjectNodeTools,
-} from './project-node-tools'
-import type { ProjectPageNodeSummary } from './project-node-model'
+} from '../node/project-node-tools'
+import type { ProjectPageNodeSummary } from '../node/project-node-model'
 
 export type ProjectReferenceClientOptions = {
   http: HttpClientBase

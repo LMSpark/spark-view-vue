@@ -15,7 +15,7 @@ import type { PageDesignEditHost } from '../src/page-model/update/page-edit-sess
 import { SparkNodeTree } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
 import { PageDesignService } from '../src/page-model/update/page-design-service'
-import { PageDesignNodeTreeAiModule } from '../src/page-model/ai/node-tree-tool-catalog'
+import { PageDesignNodeTreeAiModule } from '../src/page-model/ai/tool-catalogs/node-tree-tool-catalog'
 import { isRecord } from '@spark-view/spark-utils'
 import { getArray, getRecord } from './helpers/test-utils'
 

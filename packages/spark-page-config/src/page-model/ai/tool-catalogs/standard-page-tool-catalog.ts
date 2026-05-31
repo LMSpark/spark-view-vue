@@ -20,10 +20,10 @@ import type {
   PageDesignManagementWorkbenchField,
   PageDesignManagementWorkbenchRequest,
   PageDesignService,
-} from '../update/page-design-service'
-import type { PageDesignServiceContext } from '../update/page-edit-session'
-import { createCurrentPageRef, findCurrentPageInstance } from './page-design-helpers'
-import { PAGE_DESIGN_STANDARD_PAGE_KIND } from './page-design-kind-ids'
+} from '../../update/page-design-service'
+import type { PageDesignServiceContext } from '../../update/page-edit-session'
+import { createCurrentPageRef, findCurrentPageInstance } from '../page-design-helpers'
+import { PAGE_DESIGN_STANDARD_PAGE_KIND } from '../page-design-kind-ids'
 
 const {
   anySchema,
