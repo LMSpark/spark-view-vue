@@ -15,9 +15,9 @@ export default defineConfig({
       { find: /^@spark-view\/spark-ai$/, replacement: resolve(__dirname, '../spark-ai/src/index.ts') },
       { find: /^@spark-view\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
       { find: /^@spark-view\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
-      { find: /^@spark-view\/spark-page-config$/, replacement: resolve(__dirname, '../spark-page-config/src/index.ts') },
-      { find: /^@spark-view\/spark-page-config\/project$/, replacement: resolve(__dirname, '../spark-page-config/src/project.ts') },
-      { find: /^@spark-view\/spark-page-config\/ai$/, replacement: resolve(__dirname, '../spark-page-config/src/ai.ts') },
+      { find: /^@spark-view\/spark-project-model$/, replacement: resolve(__dirname, '../spark-project-model/src/index.ts') },
+      { find: /^@spark-view\/spark-project-model\/project$/, replacement: resolve(__dirname, '../spark-project-model/src/project.ts') },
+      { find: /^@spark-view\/spark-project-model\/ai$/, replacement: resolve(__dirname, '../spark-project-model/src/ai.ts') },
       { find: /^@spark-view\/spark-app$/, replacement: resolve(__dirname, './src/index.ts') },
       { find: /^@spark-view\/spark-app\/(.*)$/, replacement: resolve(__dirname, './src/$1') },
     ]

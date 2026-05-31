@@ -5,7 +5,7 @@ import {
   createPageNodeFactory,
   type PageNodeFactoryLike,
   type PageNodeLike,
-} from '@spark-view/spark-page-config'
+} from '@spark-view/spark-project-model'
 import { HttpClientBase, Logger } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot, NavNode } from '../navigation/nav-model'

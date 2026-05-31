@@ -3,7 +3,7 @@ import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
 import type { AppNavRoot } from '../../navigation/nav-model'
-import type { PageNodeFactoryLike, PageNodeLike } from '@spark-view/spark-page-config'
+import type { PageNodeFactoryLike, PageNodeLike } from '@spark-view/spark-project-model'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',

@@ -5,7 +5,7 @@
  */
 
 import type { DataSetContract, SparkData } from '@spark-view/spark-data'
-import type { PageNodeRenderConfig } from '@spark-view/spark-page-config'
+import type { PageNodeRenderConfig } from '@spark-view/spark-project-model'
 import type { PageRoute, ScriptContext } from '../../runtime'
 import type { h } from 'vue'
 import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'

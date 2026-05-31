@@ -44,7 +44,7 @@
     "@codemirror/view": "^6.41.0",
     "@spark-view/spark-ai": "workspace:*",
     "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-page-config": "workspace:*",
+    "@spark-view/spark-project-model": "workspace:*",
     "@spark-view/spark-utils": "workspace:*",
     "codemirror": "^6.0.2",
     "vanilla-jsoneditor": "^3.12.0"

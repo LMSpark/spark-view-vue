@@ -31,7 +31,7 @@ import { createThemeService } from './theme'
  * ```ts
  * // main.ts - 显式导入各层
  * import { SparkApp } from '@spark-view/spark-app'        // L1 应用层
- * import { createPageNodeFactory } from '@spark-view/spark-page-config' // L2 页面节点层
+ * import { createPageNodeFactory } from '@spark-view/spark-project-model' // L2 页面节点层
  * // 其他层级包按需在主应用中导入
  *
  * // 使用应用层功能
