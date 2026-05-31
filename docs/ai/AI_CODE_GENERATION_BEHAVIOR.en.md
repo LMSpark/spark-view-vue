@@ -29,6 +29,9 @@ Subclass layer (genuine "is-a" specialization, not method reuse)
 
 - No "interface flat-land" — dozens of peer-level interfaces scattered everywhere with no hierarchy, most having a single implementation.
 - No "type flat-land" — utility generics and fragmented type exports everywhere.
+- No "class flat-land" — a dozen class files flat in one directory, class names with no hierarchy prefix, related classes scattered everywhere.
+- No "file flat-land" — twenty or thirty files at the same level in a single directory with no subdirectory grouping.
+- No "folder flat-land" — more than 7 sibling directories with no parent grouping, all flat.
 - Reuse existing classes, registries, factories, capability keys, and domain objects before introducing new structures.
 - A module's public surface should be single-digit. If callers need to import a pile of things, converge through a facade first.
 
@@ -128,6 +131,211 @@ Before adding or keeping an interface, answer three questions:
 
 - Classes carry state, lifecycle, caching, invariants, and default behavior.
 - Subclasses express genuine "is-a" relationships only — do not inherit just to reuse a few methods.
+
+### Class Naming & Organization Hierarchy
+
+Core stance: **Class names MUST reflect domain hierarchy, not flat peer-level naming.** Class files flat in one directory, class names with no hierarchy prefix, related classes scattered — this is the "class flat-land" anti-pattern.
+
+#### Class Naming Hierarchy Rules
+
+- Classes in the same domain MUST share a common naming prefix or suffix that expresses hierarchy. For example, `PageNodeFileApi`, `PageNodeFileCache`, `PageNodeFileCreator` share the `PageNodeFile` prefix → they belong to the same subdomain and should live under a `page-file/` subdirectory.
+- Do NOT place 5+ classes without a common prefix in the same directory — this signals unclear domain boundaries.
+- Subclass naming MUST express the "is-a" relationship: `MongoUserRepository` implements `UserRepository`, not `UserRepositoryImpl`.
+
+#### Class File Organization Rules
+
+- When a directory exceeds **7 class files**, it MUST be split into subdirectories by domain.
+- Classes sharing a clear prefix (e.g., `XxxDelegate`, `XxxAiModule`, `XxxModel`) MUST be placed in a subdirectory named after that prefix.
+- One class per file, but related classes MUST co-reside in the same subdirectory, not be scattered across different directories.
+
+#### Anti-Pattern: Class Flat-Land
+
+```ts
+// ❌ PROHIBITED: 8 Delegate classes flat in strategies/, no subdirectory grouping
+
+// --- strategies/AggregateDelegate.ts ---
+export class AggregateDelegate { /* ... */ }
+
+// --- strategies/CascadeDelegate.ts ---
+export class CascadeDelegate { /* ... */ }
+
+// --- strategies/ComputedColumnDelegate.ts ---
+export class ComputedColumnDelegate { /* ... */ }
+
+// --- strategies/CrudDelegate.ts ---
+export class CrudDelegate { /* ... */ }
+
+// --- strategies/DirtyTrackingDelegate.ts ---
+export class DirtyTrackingDelegate { /* ... */ }
+
+// --- strategies/LocalMutationDelegate.ts ---
+export class LocalMutationDelegate { /* ... */ }
+
+// --- strategies/PrimaryKeyDelegate.ts ---
+export class PrimaryKeyDelegate { /* ... */ }
+
+// --- strategies/SelectionDelegate.ts ---
+export class SelectionDelegate { /* ... */ }
+
+// 8 Delegates, all flat, not grouped by responsibility (data integrity vs mutation tracking vs UI).
+// When adding a new Delegate, developers don't know where to put it — they just keep dumping into strategies/.
+```
+
+#### Correct Pattern: Class Domain Layering
+
+```ts
+// ✅ CORRECT: split into subdirectories by responsibility, class names retain domain prefix
+
+// --- strategies/data-integrity/PrimaryKeyDelegate.ts ---
+export class PrimaryKeyDelegate { /* ... */ }
+
+// --- strategies/data-integrity/CascadeDelegate.ts ---
+export class CascadeDelegate { /* ... */ }
+
+// --- strategies/data-integrity/ComputedColumnDelegate.ts ---
+export class ComputedColumnDelegate { /* ... */ }
+
+// --- strategies/data-integrity/AggregateDelegate.ts ---
+export class AggregateDelegate { /* ... */ }
+
+// --- strategies/mutation/CrudDelegate.ts ---
+export class CrudDelegate { /* ... */ }
+
+// --- strategies/mutation/DirtyTrackingDelegate.ts ---
+export class DirtyTrackingDelegate { /* ... */ }
+
+// --- strategies/mutation/LocalMutationDelegate.ts ---
+export class LocalMutationDelegate { /* ... */ }
+
+// --- strategies/ui/SelectionDelegate.ts ---
+export class SelectionDelegate { /* ... */ }
+
+// Responsibilities are clear. A new Delegate immediately has an obvious home.
+// Each subdirectory has ≤ 4 files — clear at a glance.
+```
+
+### File & Directory Organization Rules (Mandatory)
+
+Core stance: **Files organize by domain hierarchy, not by flat type grouping.** Twenty or thirty files at the same level in a directory with no subdirectory grouping — this is the "file flat-land" anti-pattern.
+
+#### Hard File Count Limit
+
+- A single directory MUST NOT contain more than **10 `.ts`/`.vue` files** (excluding `index.ts` barrel files).
+- Beyond 10 files, the directory MUST be split into subdirectories by domain or feature.
+- Test files are subject to the same rule — when a test directory exceeds 10 test files, it MUST be split into subdirectories by the module under test.
+
+#### File Naming Prefix Rule
+
+- When 3 or more files share the same prefix (e.g., `page-file-api.ts`, `page-file-cache.ts`, `page-file-creator.ts`), those files constitute a subdomain and MUST be grouped into a subdirectory named after that prefix.
+- Anti-pattern: 6 `page-file-*.ts` files and 4 `page-*-model.ts` files all flat in `model/` — should be split into `model/page-file/` and `model/page-model/`.
+
+#### Component File Pairing Rule
+
+- `.props.ts` + `.vue` paired files (e.g., `FieldText.props.ts` + `FieldText.vue`) MUST be placed in a component-specific subdirectory.
+- Anti-pattern: 60 files (30 `.vue` + 30 `.props.ts`) all flat in `data-components/`.
+- Correct: `data-components/FieldText/` contains only `FieldText.props.ts` + `FieldText.vue`.
+
+#### Anti-Pattern: File Flat-Land
+
+```
+// ❌ PROHIBITED: 60 files flat in data-components/
+data-components/
+  FieldAutocomplete.props.ts
+  FieldAutocomplete.vue
+  FieldCascader.props.ts
+  FieldCascader.vue
+  FieldCheckbox.props.ts
+  FieldCheckbox.vue
+  ... (54 more files)
+  index.ts
+```
+
+#### Correct Pattern: Per-Component Subdirectory
+
+```
+// ✅ CORRECT: one subdirectory per component
+data-components/
+  basic/
+    FieldText/
+      FieldText.props.ts
+      FieldText.vue
+    FieldNumber/
+      FieldNumber.props.ts
+      FieldNumber.vue
+  selection/
+    FieldSelect/
+      FieldSelect.props.ts
+      FieldSelect.vue
+    FieldCheckbox/
+      FieldCheckbox.props.ts
+      FieldCheckbox.vue
+  index.ts
+```
+
+### Folder Hierarchy Rules
+
+Core stance: **Folders group by domain, not flat peer-level.** Sibling directories exceeding a threshold with no parent-child grouping — this is the "folder flat-land" anti-pattern.
+
+#### Sibling Directory Count Limit
+
+- A single directory level MUST NOT contain more than **7 subdirectories** (excluding files).
+- Beyond 7 subdirectories, they MUST be merged into parent grouping directories by domain or concern.
+
+#### Directory Naming Hierarchy
+
+- Directory names MUST reflect domain ownership, forming a coarse-to-fine hierarchy path.
+- Anti-pattern: 13 files + 0 subdirectories under `src/services/`, with AI, auth, and project services all flat.
+- Correct: `src/services/ai/`, `src/services/auth/`, `src/services/project/` — three-level grouping.
+
+#### Anti-Pattern: Folder Flat-Land
+
+```
+// ❌ PROHIBITED: 13 service files + 0 subdirectories
+services/
+  ai-host.ts
+  ai-debug-bridge.ts
+  ai-host-run-bridge.ts
+  ai-turn-bridge.ts
+  page-design-ai-runner.ts
+  page-design-host-run-provider.ts
+  sse-events.ts
+  auth.ts
+  http.ts
+  api-paths.ts
+  project-switch.ts
+  project-ui-settings.ts
+  tenant-scope.ts
+```
+
+#### Correct Pattern: Domain Grouping
+
+```
+// ✅ CORRECT: three-level domain grouping, ≤ 7 entries per level
+services/
+  ai/
+    ai-host.ts
+    ai-debug-bridge.ts
+    ai-host-run-bridge.ts
+    ai-turn-bridge.ts
+  page-design/
+    page-design-ai-runner.ts
+    page-design-host-run-provider.ts
+  project/
+    project-switch.ts
+    project-ui-settings.ts
+    tenant-scope.ts
+  auth.ts
+  http.ts
+  api-paths.ts
+  sse-events.ts
+```
+
+### Flat-Land Convergence Checklist
+
+Before adding a class, file, or directory, answer three questions:
+1. Does the sibling directory exceed 7 files/subdirectories? (Yes → split into subdirectories first, then add)
+2. Do 3 or more existing files/classes share the same prefix? (Yes → they should be grouped into a subdirectory)
+3. Does this new class/file belong to the same subdomain as existing code? (Yes → place it in the corresponding subdirectory, not at the root level)
 
 ### Generics Usage Principles
 
@@ -252,6 +460,11 @@ export function objectSchema(
 - Forbidden: legacy `ModuleKind.PathContext`, `ModuleKind.OperationResult` namespace types.
 - Framework-agnostic packages MUST NOT import Vue, Vue Router, Element Plus, VueUse, or Pinia.
 - Cross-package relative imports that bypass `@spark-view/*` are FORBIDDEN between workspace packages.
+- **Single-directory file limit**: A single directory MUST NOT exceed 10 `.ts`/`.vue` files (excluding `index.ts`); beyond that, split into subdirectories.
+- **Single-directory subdirectory limit**: A single directory level MUST NOT exceed 7 subdirectories; beyond that, merge into parent grouping directories by domain.
+- **Class naming hierarchy**: 5+ independent classes without a common prefix in the same directory signals unclear domain boundaries — split into subdirectories.
+- **Component file pairing**: `.props.ts` + `.vue` paired files MUST go into a component-specific subdirectory; flat-dumping in the parent directory is FORBIDDEN.
+- **Test file hierarchy**: Test directories are subject to the same file and directory count limits above.
 
 ## 7. References
 

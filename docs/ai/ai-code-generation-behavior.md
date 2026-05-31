@@ -29,6 +29,9 @@ AI 代码生成规则是生产线质量门，排在理念和逻辑之后、兼�
 
 - 不要制造"interface 大平层"——几十个平级 interface 散落各处，没有层次归属，大多只有单一实现。
 - 不要制造"type 大平层"——遍地泛型工具类型和随处 export 的碎片 type。
+- 不要制造"class 大平层"——同一目录下十几个 class 文件平铺，类名无层次前缀，相关 class 散落各处。
+- 不要制造"文件大平层"——单个目录下二三十个文件平级，没有子目录分组。
+- 不要制造"文件夹大平层"——同级目录超过 7 个、没有父子分组，全部平铺。
 - 先复用已有 class、registry、factory、capability key 和领域对象，再新增结构。
 - 一个模块对外暴露的符号应控制在个位数；如果调用方需要 import 一堆东西才能用，先收敛门面。
 
@@ -127,6 +130,211 @@ export class MongoUserRepository implements UserRepository {
 
 - class 用于承载状态、生命周期、缓存、不变量和默认行为。
 - 子类只表达明确的"是一种"关系，不为复用几个方法而继承。
+
+### class 命名与组织层次
+
+核心立场：**class 命名必须反映领域层次，不能所有人平级命名。** 同一目录下 class 文件平铺、类名无层次前缀、相关 class 散落各处——这就是"class 大平层"反模式。
+
+#### class 命名层次规则
+
+- 同一领域下的 class 必须有共同的命名前缀或后缀，表达层次归属。例如 `PageNodeFileApi`、`PageNodeFileCache`、`PageNodeFileCreator` 共享 `PageNodeFile` 前缀 → 它们属于同一个子领域，应归入 `page-file/` 子目录。
+- 禁止在同一个目录下出现 5 个以上无共同前缀的 class——这说明领域划分不清。
+- 子类命名必须体现"是一种"关系：`MongoUserRepository` implements `UserRepository`，不是 `UserRepositoryImpl`。
+
+#### class 文件组织规则
+
+- 同一目录下 class 文件超过 **7 个** 时，必须按领域拆分子目录。
+- 共享明确前缀的 class（如 `XxxDelegate`、`XxxAiModule`、`XxxModel`）必须放入以该前缀命名的子目录。
+- 一个 class 一个文件，但相关的 class 应共处于同一个子目录，不是散落在不同目录。
+
+#### 反例：class 大平层
+
+```ts
+// ❌ 禁止：8 个 Delegate 类平铺在 strategies/ 目录下，无子目录分组
+
+// --- strategies/AggregateDelegate.ts ---
+export class AggregateDelegate { /* ... */ }
+
+// --- strategies/CascadeDelegate.ts ---
+export class CascadeDelegate { /* ... */ }
+
+// --- strategies/ComputedColumnDelegate.ts ---
+export class ComputedColumnDelegate { /* ... */ }
+
+// --- strategies/CrudDelegate.ts ---
+export class CrudDelegate { /* ... */ }
+
+// --- strategies/DirtyTrackingDelegate.ts ---
+export class DirtyTrackingDelegate { /* ... */ }
+
+// --- strategies/LocalMutationDelegate.ts ---
+export class LocalMutationDelegate { /* ... */ }
+
+// --- strategies/PrimaryKeyDelegate.ts ---
+export class PrimaryKeyDelegate { /* ... */ }
+
+// --- strategies/SelectionDelegate.ts ---
+export class SelectionDelegate { /* ... */ }
+
+// 8 个 Delegate，全平级，没有按职责（数据完整性 vs 变更追踪 vs UI）分组。
+// 新增一个 Delegate 时开发者不知道该放哪，只能继续往 strategies/ 扔。
+```
+
+#### 正例：class 按领域分层
+
+```ts
+// ✅ 正确：按职责拆分子目录，class 命名保留领域前缀
+
+// --- strategies/data-integrity/PrimaryKeyDelegate.ts ---
+export class PrimaryKeyDelegate { /* ... */ }
+
+// --- strategies/data-integrity/CascadeDelegate.ts ---
+export class CascadeDelegate { /* ... */ }
+
+// --- strategies/data-integrity/ComputedColumnDelegate.ts ---
+export class ComputedColumnDelegate { /* ... */ }
+
+// --- strategies/data-integrity/AggregateDelegate.ts ---
+export class AggregateDelegate { /* ... */ }
+
+// --- strategies/mutation/CrudDelegate.ts ---
+export class CrudDelegate { /* ... */ }
+
+// --- strategies/mutation/DirtyTrackingDelegate.ts ---
+export class DirtyTrackingDelegate { /* ... */ }
+
+// --- strategies/mutation/LocalMutationDelegate.ts ---
+export class LocalMutationDelegate { /* ... */ }
+
+// --- strategies/ui/SelectionDelegate.ts ---
+export class SelectionDelegate { /* ... */ }
+
+// 职责清晰，新增 Delegate 时能立刻判断归属子目录。
+// 每个子目录下文件数 ≤ 4，一目了然。
+```
+
+### 文件与目录组织规则（强制）
+
+核心立场：**文件按领域层次组织，不按类型平铺。** 一个目录下二三十个文件平级、没有子目录分组——这就是"文件大平层"反模式。
+
+#### 文件数量硬限制
+
+- 单个目录下 `.ts`/`.vue` 文件数 **不得超过 10 个**（不含 `index.ts` 桶文件）。
+- 超过 10 个时，必须按领域或功能拆分为子目录。
+- 测试文件同样适用此规则——测试目录下超过 10 个测试文件时，必须按被测模块拆分子目录。
+
+#### 文件命名前缀规则
+
+- 当 3 个及以上文件共享同一前缀（如 `page-file-api.ts`、`page-file-cache.ts`、`page-file-creator.ts`），这些文件构成一个子领域，必须归入以该前缀命名的子目录。
+- 反例：`model/` 目录下 6 个 `page-file-*.ts` 文件与 4 个 `page-*-model.ts` 文件平铺——应拆为 `model/page-file/` 和 `model/page-model/`。
+
+#### 组件文件配对规则
+
+- `.props.ts` + `.vue` 配对文件（如 `FieldText.props.ts` + `FieldText.vue`）必须放入组件专属子目录。
+- 反例：`data-components/` 目录下 60 个文件（30 个 `.vue` + 30 个 `.props.ts`）全部平铺。
+- 正例：`data-components/FieldText/` 目录下只有 `FieldText.props.ts` + `FieldText.vue`。
+
+#### 反例：文件大平层
+
+```
+// ❌ 禁止：data-components/ 目录下 60 个文件平铺
+data-components/
+  FieldAutocomplete.props.ts
+  FieldAutocomplete.vue
+  FieldCascader.props.ts
+  FieldCascader.vue
+  FieldCheckbox.props.ts
+  FieldCheckbox.vue
+  ... (54 more files)
+  index.ts
+```
+
+#### 正例：按组件拆分子目录
+
+```
+// ✅ 正确：每个组件一个子目录
+data-components/
+  basic/
+    FieldText/
+      FieldText.props.ts
+      FieldText.vue
+    FieldNumber/
+      FieldNumber.props.ts
+      FieldNumber.vue
+  selection/
+    FieldSelect/
+      FieldSelect.props.ts
+      FieldSelect.vue
+    FieldCheckbox/
+      FieldCheckbox.props.ts
+      FieldCheckbox.vue
+  index.ts
+```
+
+### 文件夹层次规则
+
+核心立场：**文件夹按领域分组，不能所有人平级。** 同级目录超过一定数量、没有父子分组——这就是"文件夹大平层"反模式。
+
+#### 同级目录数量限制
+
+- 同一级目录下子目录数 **不得超过 7 个**（不含文件）。
+- 超过 7 个时，必须按领域或关注点合并为父级分组目录。
+
+#### 目录命名层次
+
+- 目录名必须体现领域归属，形成从粗到细的层次路径。
+- 反例：`src/services/` 下 13 个文件 + 0 个子目录，AI、认证、项目三类服务平铺。
+- 正例：`src/services/ai/`、`src/services/auth/`、`src/services/project/` 三层分组。
+
+#### 反例：文件夹大平层
+
+```
+// ❌ 禁止：13 个服务文件 + 0 个子目录
+services/
+  ai-host.ts
+  ai-debug-bridge.ts
+  ai-host-run-bridge.ts
+  ai-turn-bridge.ts
+  page-design-ai-runner.ts
+  page-design-host-run-provider.ts
+  sse-events.ts
+  auth.ts
+  http.ts
+  api-paths.ts
+  project-switch.ts
+  project-ui-settings.ts
+  tenant-scope.ts
+```
+
+#### 正例：按领域分组
+
+```
+// ✅ 正确：三级领域分组，每级 ≤ 7 个条目
+services/
+  ai/
+    ai-host.ts
+    ai-debug-bridge.ts
+    ai-host-run-bridge.ts
+    ai-turn-bridge.ts
+  page-design/
+    page-design-ai-runner.ts
+    page-design-host-run-provider.ts
+  project/
+    project-switch.ts
+    project-ui-settings.ts
+    tenant-scope.ts
+  auth.ts
+  http.ts
+  api-paths.ts
+  sse-events.ts
+```
+
+### 大平层收束检查清单
+
+新增 class、文件或目录前，回答三个问题：
+1. 同级目录下文件/子目录数是否超过 7 个？（是 → 拆分子目录再新增）
+2. 是否有 3 个及以上现有文件/class 共享同一前缀？（是 → 它们应归入子目录）
+3. 这个新 class/文件与现有代码属于同一子领域吗？（是 → 放入对应子目录，别往根目录扔）
 
 ### 泛型使用原则
 
@@ -251,6 +459,11 @@ export function objectSchema(
 - 禁止旧 `ModuleKind.PathContext`、`ModuleKind.OperationResult` 等 namespace 类型。
 - 框架无关包禁止导入 Vue、Vue Router、Element Plus、VueUse 或 Pinia。
 - workspace 包之间禁止绕过 `@spark-view/*` 的跨包相对导入。
+- **单目录文件数**：单个目录下 `.ts`/`.vue` 文件不得超过 10 个（不含 `index.ts`）；超过必须拆子目录。
+- **单目录子目录数**：同一级目录下子目录数不得超过 7 个；超过必须按领域合并父级分组。
+- **class 命名层次**：同一目录下 5 个以上无共同前缀的独立 class 视为领域划分不清，必须拆分子目录。
+- **组件配对文件**：`.props.ts` + `.vue` 配对文件必须放入组件专属子目录，禁止平铺在父目录。
+- **测试文件层次**：测试目录同样受上述文件数和目录数限制。
 
 ## 7. 参考
 
