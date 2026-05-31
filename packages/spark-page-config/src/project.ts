@@ -69,6 +69,7 @@ export {
   PAGE_NODE_FILE_NAMES,
 } from './page-model/model/page-file/page-file-registry'
 
+/** @internal 内部工具包装类，函数已有直接导出；未来版本可能移除此导出 */
 export {
   ProjectNodeTools,
 } from './project/node/project-node-tools'
@@ -158,5 +159,6 @@ export {
   resolvePageNodePageId,
 } from './project/node/project-node-model'
 
+/** @internal 内部组件参数目录数据；外部应通过专用 subpath 获取 */
 import componentCatalog from './page-model/ai/payloads/component-catalog.json'
 export { componentCatalog }

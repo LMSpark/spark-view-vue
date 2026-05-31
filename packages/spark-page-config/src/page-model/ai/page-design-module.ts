@@ -559,6 +559,11 @@ export type PageDesignAiAgentEntry = Record<
   SparkAiAgent.AiAgentRegistration<PageDesignRunInput>
 >
 
+type PageDesignAiAgentEntryForAlias<TAlias extends string> = Record<
+  TAlias,
+  SparkAiAgent.AiAgentRegistration<PageDesignRunInput>
+>
+
 /**
  * 将 pageDesign 业务入口确保注册到 AI Host。
  * 调用方拿到返回值后即可使用 `host.run('pageDesign', { pageId, userRequirement })`。
@@ -568,10 +573,10 @@ export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHo
 ): SparkAiAgent.AiAgentHost<TEntries & PageDesignAiAgentEntry>
 export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string>(
   options: EnsurePageDesignBusinessOptions<TEntries, TAlias> & { readonly alias: TAlias },
-): SparkAiAgent.AiAgentHost<TEntries & Record<TAlias, SparkAiAgent.AiAgentRegistration<PageDesignRunInput>>>
+): SparkAiAgent.AiAgentHost<TEntries & PageDesignAiAgentEntryForAlias<TAlias>>
 export function ensurePageDesignBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string>(
   options: EnsurePageDesignBusinessOptions<TEntries, TAlias>,
-): SparkAiAgent.AiAgentHost<TEntries & Record<TAlias | typeof PAGE_DESIGN_AI_AGENT_HOST_ALIAS, SparkAiAgent.AiAgentRegistration<PageDesignRunInput>>> {
+): SparkAiAgent.AiAgentHost<TEntries & PageDesignAiAgentEntryForAlias<TAlias | typeof PAGE_DESIGN_AI_AGENT_HOST_ALIAS>> {
   const alias = options.alias ?? PAGE_DESIGN_AI_AGENT_HOST_ALIAS
   return options.host.ensure(alias, {
     moduleId: PAGE_DESIGN_MODULE_ID,

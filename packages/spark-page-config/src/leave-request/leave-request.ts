@@ -760,6 +760,7 @@ function getRuntimeTimeZone(): string {
   try {
     return Intl.DateTimeFormat().resolvedOptions().timeZone || 'local'
   } catch {
+    // Intl API 在当前运行时不可用，回退到 'local'
     return 'local'
   }
 }
@@ -780,7 +781,7 @@ function formatDateInTimeZone(date: Date, timeZone: string): string {
       return `${year}-${month}-${day}`
     }
   } catch {
-    // fall through to UTC date
+    // formatToParts 失败时回退到 UTC 日期
   }
   return date.toISOString().slice(0, 10)
 }

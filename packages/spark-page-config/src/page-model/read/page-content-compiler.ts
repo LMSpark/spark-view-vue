@@ -47,11 +47,9 @@ function getNamespaceRecord(target: unknown): Record<string, unknown> {
   if (!isNonEmptyObject(target)) return {}
   const record: Record<string, unknown> = {}
   for (const key of Object.getOwnPropertyNames(target)) {
-    try {
-      record[key] = target[key]
-    } catch {
-      // 忽略不可访问的属性（如 getter 抛出异常）
-    }
+    const descriptor = Object.getOwnPropertyDescriptor(target, key)
+    if (descriptor !== undefined && typeof descriptor.get === 'function') continue
+    record[key] = target[key]
   }
   return record
 }

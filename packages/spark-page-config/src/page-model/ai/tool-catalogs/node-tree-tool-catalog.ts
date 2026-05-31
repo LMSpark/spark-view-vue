@@ -743,7 +743,7 @@ export class PageDesignNodeTreeAiModule extends AiModule {
 
   private async collectSetPropsPayloadTarget(
     context: PageDesignServiceContext,
-    args: Readonly<Record<string, unknown>>,
+    args: RecordRow,
     path: string,
   ): Promise<PageDesignNodePayloadValidationTarget | null> {
     const componentId = typeof args['componentId'] === 'string' ? args['componentId'].trim() : ''
@@ -804,7 +804,7 @@ export class PageDesignNodeTreeAiModule extends AiModule {
   private async collectSetPropsNodeTypes(
     context: PageDesignServiceContext,
     actionName: string,
-    args: Readonly<Record<string, unknown>>,
+    args: RecordRow,
   ): Promise<ReadonlyArray<{ readonly type: string; readonly id: string; readonly path: string }>> {
     const rawItems = args['items']
     const items: readonly unknown[] = Array.isArray(rawItems)
@@ -1208,39 +1208,39 @@ function readRemoveNodesParams(args: unknown): SparkData.SparkNodeTreeRemoveNode
   }
 }
 
-function requireArgRecord(args: unknown, label: string): Readonly<Record<string, unknown>> {
+function requireArgRecord(args: unknown, label: string): RecordRow {
   if (!isRecord(args)) throw new Error(`${label} must be a JSON object`)
   return args
 }
 
-function readOptionalParentComponentId(record: Readonly<Record<string, unknown>>): string | null | undefined {
+function readOptionalParentComponentId(record: RecordRow): string | null | undefined {
   const value = record['parentComponentId']
   if (value === undefined) return undefined
   if (value === null || typeof value === 'string') return value
   throw new Error('parentComponentId must be string, null, or omitted')
 }
 
-function requireStringField(record: Readonly<Record<string, unknown>>, key: string, label: string): string {
+function requireStringField(record: RecordRow, key: string, label: string): string {
   const value = record[key]
   if (typeof value !== 'string' || value.length === 0) throw new Error(`${label} must be a non-empty string`)
   return value
 }
 
-function optionalStringField(record: Readonly<Record<string, unknown>>, key: string, label: string): string | undefined {
+function optionalStringField(record: RecordRow, key: string, label: string): string | undefined {
   const value = record[key]
   if (value === undefined || value === null || value === '') return undefined
   if (typeof value !== 'string') throw new Error(`${label} must be a string`)
   return value
 }
 
-function optionalNumberField(record: Readonly<Record<string, unknown>>, key: string, label: string): number | undefined {
+function optionalNumberField(record: RecordRow, key: string, label: string): number | undefined {
   const value = record[key]
   if (value === undefined || value === null) return undefined
   if (typeof value !== 'number') throw new Error(`${label} must be a number`)
   return value
 }
 
-function optionalBooleanField(record: Readonly<Record<string, unknown>>, key: string, label: string): boolean | undefined {
+function optionalBooleanField(record: RecordRow, key: string, label: string): boolean | undefined {
   const value = record[key]
   if (value === undefined || value === null) return undefined
   if (typeof value !== 'boolean') throw new Error(`${label} must be a boolean`)
@@ -1248,7 +1248,7 @@ function optionalBooleanField(record: Readonly<Record<string, unknown>>, key: st
 }
 
 function requireRecordField(
-  record: Readonly<Record<string, unknown>>,
+  record: RecordRow,
   key: string,
   label: string,
 ): Record<string, unknown> {
@@ -1257,29 +1257,31 @@ function requireRecordField(
   return value
 }
 
+type RecordRow = Readonly<Record<string, unknown>>
+
 function requireRecordArrayField(
-  record: Readonly<Record<string, unknown>>,
+  record: RecordRow,
   key: string,
   label: string,
-): ReadonlyArray<Readonly<Record<string, unknown>>> {
+): readonly RecordRow[] {
   const value = record[key]
   if (!Array.isArray(value) || !value.every(isRecord)) throw new Error(`${label} must be an object array`)
   return value
 }
 
-function requireSparkNodeField(record: Readonly<Record<string, unknown>>, key: string, label: string): SparkData.SparkNode {
+function requireSparkNodeField(record: RecordRow, key: string, label: string): SparkData.SparkNode {
   const value = record[key]
   if (!isSparkNode(value)) throw new Error(`${label} must be a SparkNode`)
   return value
 }
 
-function requireSparkNodeArrayField(record: Readonly<Record<string, unknown>>, key: string, label: string): SparkData.SparkNode[] {
+function requireSparkNodeArrayField(record: RecordRow, key: string, label: string): SparkData.SparkNode[] {
   const value = record[key]
   if (!Array.isArray(value) || !value.every(isSparkNode)) throw new Error(`${label} must be a SparkNode array`)
   return value
 }
 
-function requireStringArrayField(record: Readonly<Record<string, unknown>>, key: string, label: string): string[] {
+function requireStringArrayField(record: RecordRow, key: string, label: string): string[] {
   const value = record[key]
   if (!Array.isArray(value) || !value.every((item) => typeof item === 'string')) {
     throw new Error(`${label} must be a string array`)

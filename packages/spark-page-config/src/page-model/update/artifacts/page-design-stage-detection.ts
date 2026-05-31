@@ -395,11 +395,11 @@ function createRuleSnapshot(host: PageDesignEditHost | null, dataSet: DataSetSna
   const root = tree.toJSON()
   const facts = collectRuleFacts(root)
   const dataViewKeys = [...new Set([
-    ...safeCollectDataViewKeys(tree),
+    ...collectDataViewKeys(tree),
     ...facts.dataViewKeys,
   ])].sort()
   const handlerNames = [...new Set([
-    ...safeCollectHandlerNames(tree),
+    ...collectHandlerNames(tree),
     ...facts.handlerNames,
   ])].sort()
   const childCount = Array.isArray(root.children) ? root.children.length : 0
@@ -441,20 +441,12 @@ function createRuleSnapshot(host: PageDesignEditHost | null, dataSet: DataSetSna
   }
 }
 
-function safeCollectDataViewKeys(tree: Pick<PageDesignNodeTree, 'collectDataViewKeys'>): string[] {
-  try {
-    return [...tree.collectDataViewKeys()]
-  } catch {
-    return []
-  }
+function collectDataViewKeys(tree: Pick<PageDesignNodeTree, 'collectDataViewKeys'>): string[] {
+  return [...tree.collectDataViewKeys()]
 }
 
-function safeCollectHandlerNames(tree: Pick<PageDesignNodeTree, 'collectHandlerNames'>): string[] {
-  try {
-    return [...tree.collectHandlerNames()]
-  } catch {
-    return []
-  }
+function collectHandlerNames(tree: Pick<PageDesignNodeTree, 'collectHandlerNames'>): string[] {
+  return [...tree.collectHandlerNames()]
 }
 
 function inspectRuleDataViewKeys(dataViewKeys: readonly string[], dataSet: DataSetSnapshot): string[] {

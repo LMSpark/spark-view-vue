@@ -514,7 +514,7 @@ export type RenameNodeKeyInput = Readonly<{
   model: TreeModel
   uid: string
   nextKeyInput: string
-  policy?: Partial<JsonTreePolicy> | undefined
+  policy?: Partial<JsonTreePolicy>
 }>
 
 /** 重命名对象键 */
@@ -543,7 +543,7 @@ export type UpdateNodeTypeInput = Readonly<{
   model: TreeModel
   uid: string
   nextType: JsonNodeType
-  policy?: Partial<JsonTreePolicy> | undefined
+  policy?: Partial<JsonTreePolicy>
 }>
 
 /** 切换节点类型 */

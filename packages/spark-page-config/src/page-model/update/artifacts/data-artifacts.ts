@@ -65,6 +65,7 @@ export function canUseStructuredPageDataEditor(rawText: string): boolean {
     canonicalizePageDataJson(rawText)
     return true
   } catch {
+    // canonicalize 失败 → 无法使用结构化编辑器，返回 false 让调用方降级
     return false
   }
 }

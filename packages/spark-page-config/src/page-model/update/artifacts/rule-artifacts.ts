@@ -123,13 +123,9 @@ function inferDefaultFromProp(prop: RuleEditorComponentCatalogProp): JsonValue {
 }
 
 function parseJsonDefault(raw: string): JsonValue {
-  try {
-    const parsed: unknown = JSON.parse(raw)
-    if (!isJsonValue(parsed)) throw new Error('default prop metadata is not JSON serializable')
-    return parsed
-  } catch {
-    return raw
-  }
+  const parsed: unknown = JSON.parse(raw)
+  if (!isJsonValue(parsed)) throw new Error('default prop metadata is not JSON serializable')
+  return parsed
 }
 
 function isJsonValue(value: unknown): value is JsonValue {

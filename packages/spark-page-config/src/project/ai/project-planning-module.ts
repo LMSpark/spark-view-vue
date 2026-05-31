@@ -377,15 +377,20 @@ export type ProjectPlanningAiAgentEntry = Record<
   SparkAiAgent.AiAgentRegistration<ProjectPlanningRunInput>
 >
 
+type ProjectPlanningAiAgentEntryForAlias<TAlias extends string> = Record<
+  TAlias,
+  SparkAiAgent.AiAgentRegistration<ProjectPlanningRunInput>
+>
+
 export function ensureProjectPlanningBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap>(
   options: EnsureProjectPlanningBusinessOptions<TEntries, typeof PROJECT_PLANNING_AI_AGENT_HOST_ALIAS>,
 ): SparkAiAgent.AiAgentHost<TEntries & ProjectPlanningAiAgentEntry>
 export function ensureProjectPlanningBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string>(
   options: EnsureProjectPlanningBusinessOptions<TEntries, TAlias> & { readonly alias: TAlias },
-): SparkAiAgent.AiAgentHost<TEntries & Record<TAlias, SparkAiAgent.AiAgentRegistration<ProjectPlanningRunInput>>>
+): SparkAiAgent.AiAgentHost<TEntries & ProjectPlanningAiAgentEntryForAlias<TAlias>>
 export function ensureProjectPlanningBusiness<TEntries extends SparkAiAgent.AiAgentHostEntryMap, TAlias extends string>(
   options: EnsureProjectPlanningBusinessOptions<TEntries, TAlias>,
-): SparkAiAgent.AiAgentHost<TEntries & Record<TAlias | typeof PROJECT_PLANNING_AI_AGENT_HOST_ALIAS, SparkAiAgent.AiAgentRegistration<ProjectPlanningRunInput>>> {
+): SparkAiAgent.AiAgentHost<TEntries & ProjectPlanningAiAgentEntryForAlias<TAlias | typeof PROJECT_PLANNING_AI_AGENT_HOST_ALIAS>> {
   const alias = options.alias ?? PROJECT_PLANNING_AI_AGENT_HOST_ALIAS
   return options.host.ensure(alias, {
     moduleId: PROJECT_PLANNING_MODULE_ID,
