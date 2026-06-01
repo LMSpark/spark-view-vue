@@ -36,6 +36,7 @@ public class ProjectService {
     private static final String TENANT_HOME_NAVIGATION_TEMPLATE = "navigation-tenant-home-default.json";
     private static final String APP_PROJECT_NAVIGATION_TEMPLATE = "navigation-app-default.json";
     private static final String PLATFORM_NAVIGATION_TEMPLATE = "navigation-platform-default.json";
+    private static final String PATH_TENANT_HOME = "/home";
     private static final String PATH_APP_LIST = "/app-list";
     private static final String PATH_DEV = "/dev";
     private static final String PATH_DBMS = "/dbms";
@@ -331,7 +332,7 @@ public class ProjectService {
         boolean changed = ensureRootNodeByPath(
                 children,
                 appListNode(tenantId, projectId),
-                "/dashboard");
+                PATH_TENANT_HOME);
         changed |= rebuildDevelopmentCenter(children, tenantId, projectId, false);
         return changed;
     }

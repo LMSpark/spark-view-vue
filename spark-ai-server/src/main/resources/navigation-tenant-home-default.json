@@ -1,14 +1,14 @@
 {
     "childPlacement": "header",
-    "homePath": "/dashboard",
+    "homePath": "/home",
     "children": [
         {
             "id": "home",
-            "nodeKind": "system-page",
+            "nodeKind": "page",
             "title": "企业管理平台",
             "description": "租户主站工作台",
             "icon": "DataBoard",
-            "path": "/dashboard"
+            "path": "/home"
         },
         {
             "id": "app-list",

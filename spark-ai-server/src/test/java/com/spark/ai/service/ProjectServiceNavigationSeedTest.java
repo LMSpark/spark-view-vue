@@ -68,6 +68,8 @@ class ProjectServiceNavigationSeedTest {
         projectService.ensureHomepage("lmspark");
 
         Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID);
+        assertTrue(containsPath(nav, "/home"));
+        assertFalse(containsPath(nav, "/dashboard"));
         assertTrue(containsPath(nav, "/app-list"));
         assertTrue(containsPath(nav, "/dev"));
         assertTrue(containsPath(nav, "/dbms"));

@@ -73,7 +73,7 @@ describe('DynamicRouter unauthorized fallback', () => {
     expect(dynamicRouter.getNavTree()).toEqual(PRE_AUTH_NAV)
   })
 
-  it('keeps preAuth static routes when authenticated navigation loads successfully', async () => {
+  it('uses only dynamic navigation routes when authenticated navigation loads successfully', async () => {
     const router = createRouter({ history: createMemoryHistory(), routes: [] })
     const loadNavigation = vi.fn().mockResolvedValue({
       id: 'tenant-root',
@@ -106,7 +106,7 @@ describe('DynamicRouter unauthorized fallback', () => {
 
     await expect(dynamicRouter.registerRoutes()).resolves.toBeUndefined()
 
-    expect(dynamicRouter.getRegisteredRoutes()).toContain('/demo/template-dsl')
+    expect(dynamicRouter.getRegisteredRoutes()).not.toContain('/demo/template-dsl')
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/t/:tenantId/:projectId/dashboard')
   })
 

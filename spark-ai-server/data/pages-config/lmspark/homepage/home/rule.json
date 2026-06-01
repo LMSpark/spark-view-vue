@@ -397,7 +397,7 @@
             }
           },
           {
-            "type": "select",
+            "type": "r-select",
             "props": {
               "field": "status",
               "title": "状态",

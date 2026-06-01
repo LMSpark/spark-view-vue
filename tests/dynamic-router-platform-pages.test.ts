@@ -60,7 +60,7 @@ describe('DynamicRouter platform pages', () => {
     expect(dynamicRouter.getNavTree()).toEqual(PRE_AUTH_NAV)
   })
 
-  it('keeps preAuth platform pages after authenticated navigation loads', async () => {
+  it('uses only dynamic navigation routes after authenticated navigation loads', async () => {
     const router = createRouter({ history: createMemoryHistory(), routes: [] })
     const loadNavigation = vi.fn().mockResolvedValue({
       id: 'tenant-root',
@@ -93,7 +93,7 @@ describe('DynamicRouter platform pages', () => {
 
     await expect(dynamicRouter.registerRoutes()).resolves.toBeUndefined()
 
-    expect(dynamicRouter.getRegisteredRoutes()).toContain('/demo/template-dsl')
+    expect(dynamicRouter.getRegisteredRoutes()).not.toContain('/demo/template-dsl')
     expect(dynamicRouter.getRegisteredRoutes()).toContain('/t/:tenantId/:projectId/dashboard')
   })
 
