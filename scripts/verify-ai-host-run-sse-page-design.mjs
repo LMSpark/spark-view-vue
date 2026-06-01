@@ -31,7 +31,7 @@ import {
   subscribeAppSseEvents,
 } from './app-sse-client.mjs'
 
-const DEFAULT_BACKEND_URL = 'http://localhost:8080'
+const DEFAULT_BACKEND_URL = 'http://localhost:8180'
 const DEFAULT_TENANT_ID = 'lmspark'
 const DEFAULT_PROJECT_ID = 'homepage'
 const DEFAULT_USERNAME = 'admin'

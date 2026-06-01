@@ -1,6 +1,6 @@
 spring:
   datasource:
-    url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3307/spark_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
+    url: ${MYSQL_JDBC_URL:jdbc:mysql://127.0.0.1:3406/spark_ai?useUnicode=true&characterEncoding=utf8&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true&useSSL=false}
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${MYSQL_USER:spark}
     password: ${MYSQL_PASSWORD:spark}

@@ -474,7 +474,7 @@ class DynamicDataServiceTest {
             INSERT INTO DATA_SOURCE_SERVER (
                 SERVER_NAME, HOST, PORT, DB_TYPE, USERNAME, PASSWORD,
                 ISOLATION_MODE, TENANT_ID, CREATED_BY, STATUS, CREATED_AT, UPDATED_AT
-            ) VALUES ('XA Test Server', 'localhost', 3306, 'mysql', 'spark', 'encrypted',
+            ) VALUES ('XA Test Server', 'localhost', 3406, 'mysql', 'spark', 'encrypted',
                                 'TENANT_SHARED', NULL, 'tester', 'active', CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
             """);
         DynamicDataService jtaDataService = new DynamicDataService(

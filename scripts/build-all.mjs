@@ -18,7 +18,7 @@
  *   JAVA_HOME      — Java 17 路径（默认自动检测）
  *   SKIP_JAVA      — 设为 true 跳过 Java 构建（仅前端）
  *   SKIP_FE        — 设为 true 跳过前端构建
- *   BACKEND_PORT   — 后端端口（默认 8080）
+ *   BACKEND_PORT   — 后端端口（默认 8180）
  */
 
 import { spawn, execSync } from 'node:child_process'
@@ -32,7 +32,7 @@ const skipJava = process.env['SKIP_JAVA'] === 'true'
 const skipFe = args.includes('--skip-fe') || process.env['SKIP_FE'] === 'true'
 const noUpload = args.includes('--no-upload')
 const REQUESTED_BACKEND_PORT = process.env['BACKEND_PORT']?.trim() || ''
-let backendPort = REQUESTED_BACKEND_PORT || '18080'
+let backendPort = REQUESTED_BACKEND_PORT || '8180'
 let backendExited = false
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
@@ -67,7 +67,7 @@ function run(cmd, opts = {}) {
 }
 
 function ensureMysqlService() {
-  console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3307/spark_ai')
+  console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3406/spark_ai')
   run(`docker compose -f "${COMPOSE_FILE}" up -d mysql`, { cwd: ROOT_DIR })
 }
 

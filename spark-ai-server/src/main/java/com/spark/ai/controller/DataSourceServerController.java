@@ -79,7 +79,7 @@ public class DataSourceServerController {
     public ResponseEntity<?> testNewConnection(@RequestBody Map<String, Object> body) {
         try {
             String host = (String) body.get("host");
-            int port = body.get("port") instanceof Number n ? n.intValue() : 3306;
+            int port = body.get("port") instanceof Number n ? n.intValue() : 3406;
             String dbType = (String) body.getOrDefault("dbType", "mysql");
             String username = (String) body.get("username");
             String password = (String) body.get("password");

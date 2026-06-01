@@ -44,7 +44,7 @@ import {
 // 第 1 层：默认常量
 // ============================================================================
 
-const DEFAULT_BACKEND_URL = 'http://localhost:8080'
+const DEFAULT_BACKEND_URL = 'http://localhost:8180'
 const DEFAULT_TENANT_ID = 'lmspark'
 const DEFAULT_PROJECT_ID = 'homepage'
 
@@ -257,7 +257,7 @@ function printHelp() {
     '  node --import tsx scripts/verify-page-design-e2e.mjs [options]',
     '',
     '后端连接:',
-    '  --backend-url <url>        Java AI 后端地址（默认 http://localhost:8080）',
+    '  --backend-url <url>        Java AI 后端地址（默认 http://localhost:8180）',
     '  --tenant-id <id>           租户 ID（默认 lmspark）',
     '  --project-id <id>          项目 ID（默认 homepage）',
     '  --username <name>          登录用户名（默认 admin）',

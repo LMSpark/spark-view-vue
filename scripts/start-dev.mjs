@@ -10,7 +10,7 @@
  *   OPENAI_API_KEY     — LLM API Key
  *   OPENAI_BASE_URL    — LLM 端点（默认 https://api.deepseek.com）
  *   AI_MODEL           — 模型名称（默认 deepseek-chat）
- *   BACKEND_PORT       — 后端端口（默认 8080）
+ *   BACKEND_PORT       — 后端端口（默认 8180）
  */
 
 import { spawn, spawnSync } from 'node:child_process'
@@ -20,7 +20,7 @@ import http from 'node:http'
 import net from 'node:net'
 import { loadLocalJavaEnv } from './load-java-env.mjs'
 
-const BACKEND_PORT = process.env['BACKEND_PORT'] || '8080'
+const BACKEND_PORT = process.env['BACKEND_PORT'] || '8180'
 const BACKEND_URL = `http://localhost:${BACKEND_PORT}`
 const ROOT_DIR = resolve(import.meta.dirname, '..')
 const SERVER_DIR = resolve(ROOT_DIR, 'spark-ai-server')
@@ -146,7 +146,7 @@ async function findAvailablePort(startPort, maxAttempts = 20) {
 }
 
 function ensureMysqlService() {
-  console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3307/spark_ai')
+  console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3406/spark_ai')
   const result = spawnSync('docker', ['compose', '-f', COMPOSE_FILE, 'up', '-d', 'mysql'], {
     cwd: ROOT_DIR,
     stdio: 'inherit',
@@ -234,7 +234,7 @@ try {
 console.log(`\n✅ Java 后端就绪: ${BACKEND_URL}`)
 console.log(`🚀 启动 Vite 前端...\n`)
 
-const DEFAULT_FE_PORT = 5173
+const DEFAULT_FE_PORT = 5273
 const vitePort = await findAvailablePort(DEFAULT_FE_PORT)
 if (vitePort !== DEFAULT_FE_PORT) {
   console.warn(`⚠️ 端口 ${DEFAULT_FE_PORT} 已占用，Vite 将使用端口 ${vitePort}`)

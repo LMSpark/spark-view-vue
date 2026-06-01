@@ -51,8 +51,8 @@ async function login(backendBase) {
 function parseArgs(argv) {
   const options = {
     pageId: 'dynamic-columns',
-    backendBase: 'http://127.0.0.1:8080',
-    frontendBase: 'http://127.0.0.1:5173',
+    backendBase: 'http://127.0.0.1:8180',
+    frontendBase: 'http://127.0.0.1:5273',
     selector: '',
     expectText: '',
     timeoutMs: 90_000,

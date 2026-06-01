@@ -61,14 +61,14 @@ export default defineConfig({
     include: ['vxe-table'],
   },
   server: {
-    port: 5173,
+    port: 5273,
     strictPort: true,
     fs: {
       allow: ['..', '../../src'],
     },
     proxy: {
       '/api': {
-        target: process.env.AI_BACKEND_URL ?? 'http://127.0.0.1:8080',
+        target: process.env.AI_BACKEND_URL ?? 'http://127.0.0.1:8180',
         changeOrigin: true,
         secure: false,
       },

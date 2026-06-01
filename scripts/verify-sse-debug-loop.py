@@ -104,7 +104,7 @@ def compare_images_diff_ratio(before_path: Path, after_path: Path) -> dict:
 
 def main():
     parser = argparse.ArgumentParser(description='SSE debug loop verifier (route + screenshot)')
-    parser.add_argument('--backend', default='http://127.0.0.1:8080')
+    parser.add_argument('--backend', default='http://127.0.0.1:8180')
     parser.add_argument('--page-id', default='section-grid-demo')
     parser.add_argument('--path', default='/t/lmspark/homepage/section-grid-demo')
     parser.add_argument('--selector', default='.section-grid-demo .el-table')

@@ -9,5 +9,5 @@ FROM eclipse-temurin:17-jre
 WORKDIR /app
 ENV SPRING_PROFILES_ACTIVE=prod
 COPY --from=build /workspace/target/spark-ai-server-1.0.0.jar /app/spark-ai-server.jar
-EXPOSE 8080
+EXPOSE 8180
 ENTRYPOINT ["java", "-jar", "/app/spark-ai-server.jar"]

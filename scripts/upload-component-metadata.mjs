@@ -10,11 +10,11 @@
  *   node scripts/upload-component-metadata.mjs [--url <serverUrl>]
  *
  * 环境变量：
- *   AI_BACKEND_URL  — 后端地址（默认 http://localhost:8080）
+ *   AI_BACKEND_URL  — 后端地址（默认 http://localhost:8180）
  *
  * 示例：
  *   node scripts/upload-component-metadata.mjs
- *   node scripts/upload-component-metadata.mjs --url http://192.168.1.100:8080
+ *   node scripts/upload-component-metadata.mjs --url http://192.168.1.100:8180
  *   AI_BACKEND_URL=https://api.example.com node scripts/upload-component-metadata.mjs
  */
 
@@ -29,7 +29,7 @@ const projectRoot = resolve(__dirname, '..')
 
 function parseArgs() {
   const args = process.argv.slice(2)
-  let url = process.env.AI_BACKEND_URL ?? 'http://localhost:8080'
+  let url = process.env.AI_BACKEND_URL ?? 'http://localhost:8180'
 
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--url' && i + 1 < args.length) {

@@ -48,7 +48,7 @@ async function login(backendBase) {
 
 function parseArgs(argv) {
   const options = {
-    backendBase: 'http://127.0.0.1:8080',
+    backendBase: 'http://127.0.0.1:8180',
     pageId: 'section-grid-demo',
     path: '/t/lmspark/homepage/section-grid-demo',
     selector: '.section-grid-demo .el-table',

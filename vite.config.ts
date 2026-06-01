@@ -44,7 +44,7 @@ export default defineConfig({
     include: ['vxe-table']
   },
   server: {
-    port: 5173,
+    port: 5273,
     strictPort: true,
     fs: {
       allow: ['..', '../../src']
@@ -52,9 +52,9 @@ export default defineConfig({
     proxy: {
       // ── API 代理到 Java 后端 ──────────────────────────────────────────
       // 页面配置（routes.json, rule.json 等）、AI 端点全部由 Java 后端管理。
-      // AI_BACKEND_URL 指定后端地址（默认 http://localhost:8080）。
+      // AI_BACKEND_URL 指定后端地址（默认 http://localhost:8180）。
       '/api': {
-        target: process.env['AI_BACKEND_URL'] ?? 'http://127.0.0.1:8080',
+        target: process.env['AI_BACKEND_URL'] ?? 'http://127.0.0.1:8180',
         changeOrigin: true,
         secure: false,
         // APP 只有 /api/events 这一条 SSE 通道；AI turn 由 HTTP 命令启动，

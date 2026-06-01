@@ -1294,11 +1294,11 @@ type ServerDialogState = {
 const dlgServer = reactive<ServerDialogState>({
   visible: false,
   loading: false,
-  form: { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
+  form: { serverName: '', host: '', port: 3406, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
 })
 
 function resetServerForm() {
-  dlgServer.form = { serverName: '', host: '', port: 3306, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
+  dlgServer.form = { serverName: '', host: '', port: 3406, dbType: 'mysql', username: '', password: '', isolationMode: 'TENANT_ISOLATED' }
 }
 
 function openCreateServer() {

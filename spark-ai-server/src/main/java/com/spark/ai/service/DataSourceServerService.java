@@ -61,7 +61,7 @@ public class DataSourceServerService {
     public Map<String, Object> createServer(Map<String, Object> body, boolean isPlatformAdmin, String currentTenant, String createdBy) {
         String serverName = require(body.get("serverName"), "serverName");
         String host = require(body.get("host"), "host");
-        int port = intParam(body.get("port"), 3306);
+        int port = intParam(body.get("port"), 3406);
         String dbType = stringOrDefault(body.get("dbType"), "mysql");
         String username = require(body.get("username"), "username");
         String rawPassword = require(body.get("password"), "password");
@@ -114,7 +114,7 @@ public class DataSourceServerService {
 
         String serverName = stringOrDefault(body.get("serverName"), (String) existing.get("SERVER_NAME"));
         String host = stringOrDefault(body.get("host"), (String) existing.get("HOST"));
-        int port = body.containsKey("port") ? intParam(body.get("port"), 3306) : ((Number) existing.get("PORT")).intValue();
+        int port = body.containsKey("port") ? intParam(body.get("port"), 3406) : ((Number) existing.get("PORT")).intValue();
         String dbType = stringOrDefault(body.get("dbType"), (String) existing.get("DB_TYPE"));
         String username = stringOrDefault(body.get("username"), (String) existing.get("USERNAME"));
         String encryptedPassword = existing.get("PASSWORD").toString();
