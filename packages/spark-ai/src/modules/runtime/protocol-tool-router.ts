@@ -28,7 +28,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { AiJsonValue } from '../../json'
+import type { AiJsonParams, AiJsonValue } from '../../json'
 import type { AiModuleRegistry } from '../internal/ai-module-registry'
 import type { FunctionInvoker } from '../internal/function-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
@@ -39,6 +39,7 @@ import {
   AiModulePath,
   AiModulePathParseError,
   AiModuleResult,
+  type AiModulePathContext,
   type AiModuleHostContext,
 } from '../protocol'
 import {
@@ -54,6 +55,19 @@ type ProtocolToolRouterOptions = Readonly<{
   navigator: Navigator
   knowledge: AiModuleKnowledgeProjector
   kinds: AiModuleRegistry
+  handleToolDispatcher?: AiModuleHandleToolDispatcher
+}>
+
+export type AiModuleHandleToolDispatchCommand = Readonly<{
+  businessInstanceId: string
+  handleId: string
+  actionName: string
+  args: AiJsonParams
+  ctx: AiModulePathContext
+}>
+
+export type AiModuleHandleToolDispatcher = Readonly<{
+  dispatchHandle(command: AiModuleHandleToolDispatchCommand): Promise<AiModuleResult<AiJsonValue>>
 }>
 
 // ═══════════════════════════════════════════════════════════════
@@ -77,6 +91,7 @@ export class ProtocolToolRouter {
   private readonly navigator: Navigator
   private readonly knowledge: AiModuleKnowledgeProjector
   private readonly kinds: AiModuleRegistry
+  private handleToolDispatcher?: AiModuleHandleToolDispatcher
 
   public constructor(options: ProtocolToolRouterOptions) {
     this.attributes = options.attributes
@@ -84,6 +99,9 @@ export class ProtocolToolRouter {
     this.navigator = options.navigator
     this.knowledge = options.knowledge
     this.kinds = options.kinds
+    if (options.handleToolDispatcher !== undefined) {
+      this.handleToolDispatcher = options.handleToolDispatcher
+    }
   }
 
   /**
@@ -98,6 +116,9 @@ export class ProtocolToolRouter {
     host?: AiModuleHostContext,
   ): Promise<AiModuleResult<AiJsonValue>> {
     try {
+      if (toolName === 'module_handle_call') {
+        return await this.routeModuleHandleCall(rawArgs, host)
+      }
       if (!this.argsParser.isProtocolToolName(toolName)) {
         if (!this.isDirectFunctionToolName(toolName)) {
           return AiModuleResult.failCode(
@@ -133,6 +154,33 @@ export class ProtocolToolRouter {
       }
       throw error
     }
+  }
+
+  private async routeModuleHandleCall(
+    args: ProtocolToolArgs,
+    host?: AiModuleHostContext,
+  ): Promise<AiModuleResult<AiJsonValue>> {
+    if (this.handleToolDispatcher === undefined) {
+      return AiModuleResult.failCode(
+        'HANDLE_TOOL_NOT_REGISTERED',
+        '当前 runtime 未注册 module_handle_call',
+        '请先执行返回 _handles 的 root action，或检查 AiModuleAdapter 注册流程。',
+      )
+    }
+    if (host === undefined || host.moduleInstanceId.trim().length === 0) {
+      return AiModuleResult.failCode(
+        'HANDLE_SCOPE_NOT_FOUND',
+        'module_handle_call 缺少 business instance 标识',
+        'Host 层执行工具时必须传入当前业务实例上下文。',
+      )
+    }
+    return this.handleToolDispatcher.dispatchHandle({
+      businessInstanceId: host.moduleInstanceId,
+      handleId: this.argsParser.requireString(args, 'handleId'),
+      actionName: this.argsParser.requireString(args, 'actionName'),
+      args: this.argsParser.optionalObject(args, 'args'),
+      ctx: { segments: [], host },
+    })
   }
 
   // ── module_query — 查询模块目录 ──────────────────────────────

@@ -953,13 +953,14 @@ type SchemaExampleAnnotationInput = Readonly<{
 
 function annotateSchemaExamples(input: SchemaExampleAnnotationInput): PropSchema {
   const { schema, name, type, defaultValue } = input
-  const examples = createPropExamples({
+  const request: PropExamplesRequest = {
     name,
     type,
     schema,
     defaultValue,
-    sourceExamples: schema.examples,
-  })
+    ...(schema.examples === undefined ? {} : { sourceExamples: schema.examples }),
+  }
+  const examples = createPropExamples(request)
   return {
     ...schema,
     ...(defaultValue !== undefined ? { default: defaultValue } : {}),

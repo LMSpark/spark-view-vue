@@ -8,8 +8,8 @@
  * ## 模块结构
  * ```
  * SECTION 1: LeaveRequestService          草稿状态机（draft → submitted / cancelled）
- * SECTION 2: LeaveRequestAiModule         AI 工具暴露（4 个动作 + 生命周期钩子）
- *            LeaveRequestPersonAiModule   人员目录（只读属性查询）
+ * SECTION 2: LeaveRequestAiService        AI action 暴露（草稿动作 + 人员目录 handle）
+ *            PersonDirectory              API-bearing 人员目录返回对象
  *            createLeaveRequestBusinessRegistration  完整的 AiAgentRegistration 装配
  * ```
  *
@@ -312,17 +312,15 @@ class LeaveRequestService {
 // ── SECTION 2: 请假模块注册（原 leave-request-module.ts）────────────
 
 import {
+  AiModuleAdapter,
   DefaultAiAgentSessionStore,
   type AiAgentRegistration,
   type AiAgentRuntimeContext,
   type AiAgentFunctionCallResult,
 } from '@spark-view/spark-ai/agent'
 import {
-  AiModule,
   AiModuleResult,
-  AiModuleRuntime,
-  type AiModuleFunctionMetadata,
-  type AiModuleInstanceRef,
+  type AiModuleMetadataJson,
   type AiModulePathContext,
 } from '@spark-view/spark-ai/modules'
 import type {
@@ -330,6 +328,7 @@ import type {
   AiJsonValue,
 } from '@spark-view/spark-ai/json'
 import {
+  coerceJsonValue,
   noParamsSchema,
   objectSchema,
   stringSchema,
@@ -338,7 +337,6 @@ import { isRecord } from '@spark-view/spark-utils'
 
 export const LEAVE_REQUEST_MODULE_ID = 'manualLeave'
 export const LEAVE_REQUEST_KIND = 'manual-leave'
-export const LEAVE_REQUEST_PERSON_KIND = 'leave-person'
 
 export type LeaveRequestBusinessRegistrationOptions = {
   readonly now?: () => number
@@ -354,14 +352,14 @@ const DEFAULT_LEAVE_REQUEST_PERSONS: readonly LeaveRequestPersonRecord[] = [
 
 const DRAFT_FIELDS_SCHEMA: Record<string, AiJsonSchema> = {
   applicantName: { type: 'string', description: '请假人姓名。' },
-  applicantCode: { type: 'string', description: '请假人人员编码；通过 leave-person 实例查询得到，对应 AiModuleInstanceRef.id。' },
+  applicantCode: { type: 'string', description: '请假人人员编码；通过人员目录 handle 的 getPerson/searchPersons 查询得到。' },
   leaveType: { type: 'string', description: '请假类型，例如 annual、sick、personal、other。' },
   startDate: { type: 'string', description: '开始日期，格式 YYYY-MM-DD。用户给"今天/明天/后天"等相对日期时，必须基于系统提示中的当前日期换算；日期来源以当前运行时上下文和用户确认为准。' },
   endDate: { type: 'string', description: '结束日期，格式 YYYY-MM-DD。按自然日包含起止日计算；例如请假 2 天时，endDate = startDate + 1 天。' },
   totalDays: { type: 'number', description: '请假天数，必须大于 0。用户说"请假两天"时填 2。' },
   reason: { type: 'string', description: '请假事由。' },
   approver: { type: 'string', description: '审批人姓名。' },
-  approverCode: { type: 'string', description: '审批人人员编码；通过 leave-person 实例查询得到，对应 AiModuleInstanceRef.id。' },
+  approverCode: { type: 'string', description: '审批人人员编码；通过人员目录 handle 的 getPerson/searchPersons 查询得到。' },
 }
 
 const SET_DRAFT_FIELDS_SCHEMA = objectSchema({
@@ -374,83 +372,14 @@ const CANCEL_DRAFT_SCHEMA = objectSchema({
   reason: stringSchema('取消原因。用户未说明时可省略。'),
 })
 
-const LEAVE_REQUEST_ACTIONS: readonly AiModuleFunctionMetadata[] = [
-  {
-    name: 'describeDraft',
-    description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
-    paramsSchema: NO_PARAMS,
-    resultSchema: {
-      draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
-      missingFields: 'string[] — 提交前仍缺少的字段。',
-    },
-    example: {},
-    usageRules: ['用户要求查看当前申请、确认已收集信息或不知道下一步时调用。', '本函数只读业务 Live state。'],
-    failureModes: [],
-  },
-  {
-    name: 'setDraftFields',
-    description: '把用户明确给出的请假信息写入当前草稿。',
-    paramsSchema: SET_DRAFT_FIELDS_SCHEMA,
-    resultSchema: {
-      draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
-      missingFields: 'string[] — 提交前仍缺少的字段。',
-    },
-    example: {
-      fields: {
-        applicantName: 'Ada',
-        applicantCode: 'E1001',
-        leaveType: 'annual',
-        startDate: '2026-05-14',
-        endDate: '2026-05-15',
-        totalDays: 2,
-        reason: 'family care',
-      },
-    },
-    usageRules: [
-      '只写入用户明确表达的字段；缺少请假人、日期、原因或审批人时先追问确认。',
-      '填写 applicantCode 或 approverCode 前，先在当前 manual-leave 实例下调用 module_find({ path, childKind: "leave-person", query }) 查询人员实例；人员编码取 AiModuleInstanceRef.id。',
-      '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算，无法唯一确定时先追问。',
-      '写入 startDate/endDate/totalDays 前，必须保证三者一致；请假 N 天按自然日包含起止日计算。',
-      '只有调用 setDraftFields 成功后，才能说字段已记录或草稿已更新。',
-    ],
-    failureModes: [
-      { code: 'INVALID_FIELDS', when: 'fields 不是对象', fix: '把字段放在 fields 对象中。' },
-      { code: 'INVALID_DATE_RANGE', when: '结束日期早于开始日期', fix: '向用户确认日期范围。' },
-      { code: 'DRAFT_NOT_EDITABLE', when: '草稿已提交或取消', fix: '创建新草稿或停止修改。' },
-    ],
-  },
-  {
-    name: 'submitDraft',
-    description: '提交当前人工请假申请。提交前会校验必填字段和日期范围。',
-    paramsSchema: NO_PARAMS,
-    resultSchema: {
-      draft: 'LeaveRequestDraftState — 当前请假草稿状态。',
-      missingFields: 'string[] — 提交前仍缺少的字段。',
-    },
-    example: {},
-    usageRules: ['只有用户明确表示提交或确认信息完整时调用。', '如果返回 MISSING_REQUIRED_FIELDS，继续追问缺失字段。'],
-    failureModes: [
-      { code: 'MISSING_REQUIRED_FIELDS', when: '提交前缺少必填字段', fix: '追问缺失字段后再提交。' },
-      { code: 'DRAFT_ALREADY_SUBMITTED', when: '草稿已提交', fix: '提示用户当前草稿已提交。' },
-      { code: 'DRAFT_CANCELLED', when: '草稿已取消', fix: '创建新的请假草稿。' },
-    ],
-  },
-  {
-    name: 'cancelDraft',
-    description: '取消当前未提交的人工请假草稿。',
-    paramsSchema: CANCEL_DRAFT_SCHEMA,
-    resultSchema: {
-      draft: 'LeaveRequestDraftState — 取消后的草稿状态。',
-    },
-    example: { reason: '用户取消申请' },
-    usageRules: ['只有用户明确表示取消当前请假流程时调用。'],
-    failureModes: [
-      { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '提示用户当前申请已提交，引导用户走审批撤回流程。' },
-    ],
-  },
-]
-
-class LeaveRequestPersonDirectory {
+/**
+ * 人员目录 API 对象。
+ *
+ * @moduleKind person-directory
+ * @moduleName 人员目录
+ * @moduleDescription 请假人员和审批人查询。
+ */
+class PersonDirectory {
   private readonly people: readonly LeaveRequestPersonRecord[]
 
   public constructor(people: readonly LeaveRequestPersonRecord[]) {
@@ -462,152 +391,279 @@ class LeaveRequestPersonDirectory {
     }))
   }
 
-  public listRefs(): readonly AiModuleInstanceRef[] {
-    return this.people.map((person) => this.toRef(person))
+  /**
+   * 按条件搜索人员。
+   *
+   * @moduleAction searchPersons
+   */
+  public searchPersons(
+    _ctx: AiModulePathContext,
+    args: Readonly<{ keyword?: string; role?: string; department?: string }>,
+  ): AiModuleResult<AiJsonValue> {
+    const matches = this.people.filter((person) => personMatchesQuery(person, args))
+    return AiModuleResult.ok(matches.map(personToJson))
   }
 
-  public findRefs(query: Readonly<Record<string, AiJsonValue>>): readonly AiModuleInstanceRef[] {
-    return this.people.filter((person) => personMatchesQuery(person, query)).map((person) => this.toRef(person))
+  /**
+   * 按编码获取人员详情。
+   *
+   * @moduleAction getPerson
+   */
+  public getPerson(
+    _ctx: AiModulePathContext,
+    args: Readonly<{ code: string }>,
+  ): AiModuleResult<AiJsonValue> {
+    const person = this.findByCode(args.code)
+    if (person === undefined) {
+      return AiModuleResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${args.code}`, '先调用 searchPersons 查询可用人员。')
+    }
+    return AiModuleResult.ok(personToJson(person))
   }
 
-  public findByCode(code: string): LeaveRequestPersonRecord | undefined {
+  private findByCode(code: string): LeaveRequestPersonRecord | undefined {
     const normalized = code.trim().toLowerCase()
     return this.people.find((person) => person.code.toLowerCase() === normalized)
   }
-
-  private toRef(person: LeaveRequestPersonRecord): AiModuleInstanceRef {
-    return {
-      id: person.code,
-      label: person.name,
-      summary: `人员编码 ${person.code}；部门 ${person.department}；角色 ${person.role}`,
-    }
-  }
 }
 
-class LeaveRequestAiModule extends AiModule {
+/**
+ * 人工请假 AI 服务。
+ *
+ * @moduleKind manual-leave
+ * @moduleName 人工请假
+ * @moduleDescription 帮助员工收集、确认并提交人工请假申请。
+ */
+class LeaveRequestAiService {
   private readonly service: LeaveRequestService
+  private readonly persons: PersonDirectory
 
-  public constructor(
-    service: LeaveRequestService,
-    people: LeaveRequestPersonDirectory,
-  ) {
-    super({
-      kind: LEAVE_REQUEST_KIND,
-      name: '人工请假',
-      description: '帮助员工收集、确认并提交人工请假申请。',
-      functions: LEAVE_REQUEST_ACTIONS,
-      children: [LEAVE_REQUEST_PERSON_KIND],
-      list: (_ctx, childKind) => {
-        if (childKind !== undefined && childKind !== LEAVE_REQUEST_PERSON_KIND) {
-          return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
-        }
-        return AiModuleResult.ok(people.listRefs())
-      },
-      find: (ctx, childKind, query) => {
-        if (childKind === LEAVE_REQUEST_KIND && ctx.segments.length === 0) {
-          const ref = createCurrentLeaveRequestRef(ctx)
-          return AiModuleResult.ok<readonly AiModuleInstanceRef[]>(ref === null ? [] : [ref])
-        }
-        if (childKind === LEAVE_REQUEST_PERSON_KIND) {
-          return AiModuleResult.ok(people.findRefs(query))
-        }
-        return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
-      },
-    })
-    this.service = service
+  public constructor(options: LeaveRequestBusinessRegistrationOptions = {}) {
+    this.service = new LeaveRequestService(options.now)
+    this.persons = new PersonDirectory(options.persons ?? DEFAULT_LEAVE_REQUEST_PERSONS)
   }
 
-  protected override runFunction(
+  /**
+   * 描述当前人工请假草稿状态。
+   *
+   * @moduleAction describeDraft
+   * @usageRule 用户要求查看当前申请、确认已收集信息或不知道下一步时调用。
+   */
+  public describeDraft(ctx: AiModulePathContext): AiModuleResult<AiJsonValue> {
+    return serviceResultToModuleResult(this.service.describeDraft(toServiceContext(ctx)))
+  }
+
+  /**
+   * 把用户明确给出的请假信息写入当前草稿。
+   *
+   * @moduleAction setDraftFields
+   * @usageRule 只写入用户明确表达的字段；缺少请假人、日期、原因或审批人时先追问确认。
+   * @usageRule 日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算。
+   * @failureMode INVALID_FIELDS fields 不是对象 => 把字段放在 fields 对象中。
+   */
+  public setDraftFields(
     ctx: AiModulePathContext,
-    actionName: string,
-    args: Readonly<Record<string, AiJsonValue>>,
-  ): Promise<AiModuleResult<AiJsonValue>> {
-    if (this.findFunction(actionName) === undefined) {
-      throw new Error(`${this.kind} action is not declared: ${actionName}`)
-    }
-    switch (actionName) {
-      case 'describeDraft':
-        return Promise.resolve(this.serviceResultToOperationResult(this.service.describeDraft(toServiceContext(ctx))))
-      case 'setDraftFields':
-        return Promise.resolve(this.serviceResultToOperationResult(this.service.setDraftFields(toServiceContext(ctx), args['fields'])))
-      case 'submitDraft':
-        return Promise.resolve(this.serviceResultToOperationResult(this.service.submitDraft(toServiceContext(ctx))))
-      case 'cancelDraft':
-        return Promise.resolve(this.serviceResultToOperationResult(
-          this.service.cancelDraft(toServiceContext(ctx), typeof args['reason'] === 'string' ? args['reason'] : undefined),
-        ))
-      default:
-        throw new Error(`manual-leave action runner is not registered: ${actionName}`)
-    }
+    args: Readonly<{ fields: Record<string, unknown> }>,
+  ): AiModuleResult<AiJsonValue> {
+    return serviceResultToModuleResult(this.service.setDraftFields(toServiceContext(ctx), args.fields))
   }
 
-  protected override createCurrentInstanceRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
-    return createCurrentLeaveRequestRef(ctx)
+  /**
+   * 提交当前人工请假申请。
+   *
+   * @moduleAction submitDraft
+   * @usageRule 只有用户明确表示提交或确认信息完整时调用。
+   * @failureMode MISSING_REQUIRED_FIELDS 提交前缺少必填字段 => 追问缺失字段后再提交。
+   */
+  public submitDraft(ctx: AiModulePathContext): AiModuleResult<AiJsonValue> {
+    return serviceResultToModuleResult(this.service.submitDraft(toServiceContext(ctx)))
+  }
+
+  /**
+   * 取消当前未提交的人工请假草稿。
+   *
+   * @moduleAction cancelDraft
+   * @usageRule 只有用户明确表示取消当前请假流程时调用。
+   */
+  public cancelDraft(
+    ctx: AiModulePathContext,
+    args: Readonly<{ reason?: string }>,
+  ): AiModuleResult<AiJsonValue> {
+    return serviceResultToModuleResult(this.service.cancelDraft(toServiceContext(ctx), args.reason))
+  }
+
+  /**
+   * 获取人员目录 API 对象。
+   *
+   * @moduleAction listPersons
+   * @usageRule 填写 applicantCode 或 approverCode 前，先调用本函数获取人员目录 handle，再调用 searchPersons/getPerson。
+   */
+  public listPersons(): AiModuleResult<PersonDirectory> {
+    return AiModuleResult.ok(this.persons)
+  }
+
+  public getDraft(leaveDraftId: string): LeaveRequestDraftState {
+    return this.service.getDraft(leaveDraftId)
+  }
+
+  public releaseDraft(leaveDraftId: string): void {
+    this.service.releaseDraft(leaveDraftId)
   }
 }
 
-class LeaveRequestPersonAiModule extends AiModule {
-  public constructor(people: LeaveRequestPersonDirectory) {
-    super({
-      kind: LEAVE_REQUEST_PERSON_KIND,
-      name: '请假人员',
-      description: '可用于填写请假人和审批人的人员实例目录，实例 id 即人员编码。',
-      parentKind: LEAVE_REQUEST_KIND,
-      attributes: [
-        { name: 'code', description: '人员编码。', schema: { type: 'string' }, readable: true, writable: false },
-        { name: 'name', description: '人员姓名。', schema: { type: 'string' }, readable: true, writable: false },
-        { name: 'department', description: '人员所属部门。', schema: { type: 'string' }, readable: true, writable: false },
-        { name: 'role', description: '人员角色，例如 employee 或 approver。', schema: { type: 'string' }, readable: true, writable: false },
-      ],
-      attributeAccessor: {
-        get: (ctx, attrName) => {
-          const person = people.findByCode(ctx.segment?.id ?? '')
-          if (person === undefined) {
-            return AiModuleResult.failCode('PERSON_NOT_FOUND', `人员编码不存在：${ctx.segment?.id ?? ''}`, '先通过 module_find 查询可用 leave-person 实例。')
-          }
-          return AiModuleResult.ok(personAttribute(person, attrName))
-        },
-        set: () => AiModuleResult.failCode('PERSON_ATTRIBUTE_READONLY', '人员目录属性只读。', '请读取人员实例属性后，把编码写入请假草稿字段。'),
+const LEAVE_REQUEST_METADATA: AiModuleMetadataJson = {
+  schemaVersion: 1,
+  rootApi: {
+    kind: LEAVE_REQUEST_KIND,
+    name: '人工请假',
+    description: '帮助员工收集、确认并提交人工请假申请。',
+    actions: [
+      {
+        name: 'describeDraft',
+        methodName: 'describeDraft',
+        description: '读取当前人工请假草稿状态、已填写字段和仍缺少的提交字段。',
+        paramsSchema: NO_PARAMS,
+        usageRules: ['用户要求查看当前申请、确认已收集信息或不知道下一步时调用。'],
       },
-      functions: [],
-      children: [],
-      list: () => AiModuleResult.ok<readonly AiModuleInstanceRef[]>([]),
-      find: (_ctx, childKind, query) =>
-        AiModuleResult.ok(childKind === LEAVE_REQUEST_PERSON_KIND ? people.findRefs(query) : []),
-    })
-  }
+      {
+        name: 'setDraftFields',
+        methodName: 'setDraftFields',
+        description: '把用户明确给出的请假信息写入当前草稿。',
+        paramsSchema: SET_DRAFT_FIELDS_SCHEMA,
+        usageRules: [
+          '只写入用户明确表达的字段；缺少请假人、日期、原因或审批人时先追问确认。',
+          '日期使用 YYYY-MM-DD；用户给相对日期时必须基于系统提示中的当前日期换算。',
+          '填写 applicantCode 或 approverCode 前，先调用 listPersons 获取人员目录 handle。',
+        ],
+        failureModes: [
+          { code: 'INVALID_FIELDS', when: 'fields 不是对象', fix: '把字段放在 fields 对象中。' },
+          { code: 'INVALID_DATE_RANGE', when: '结束日期早于开始日期', fix: '向用户确认日期范围。' },
+          { code: 'DRAFT_NOT_EDITABLE', when: '草稿已提交或取消', fix: '创建新草稿或停止修改。' },
+        ],
+      },
+      {
+        name: 'submitDraft',
+        methodName: 'submitDraft',
+        description: '提交当前人工请假申请。提交前会校验必填字段和日期范围。',
+        paramsSchema: NO_PARAMS,
+        usageRules: ['只有用户明确表示提交或确认信息完整时调用。'],
+        failureModes: [
+          { code: 'MISSING_REQUIRED_FIELDS', when: '提交前缺少必填字段', fix: '追问缺失字段后再提交。' },
+          { code: 'DRAFT_ALREADY_SUBMITTED', when: '草稿已提交', fix: '提示用户当前草稿已提交。' },
+          { code: 'DRAFT_CANCELLED', when: '草稿已取消', fix: '创建新的请假草稿。' },
+        ],
+      },
+      {
+        name: 'cancelDraft',
+        methodName: 'cancelDraft',
+        description: '取消当前未提交的人工请假草稿。',
+        paramsSchema: CANCEL_DRAFT_SCHEMA,
+        usageRules: ['只有用户明确表示取消当前请假流程时调用。'],
+        failureModes: [
+          { code: 'DRAFT_ALREADY_SUBMITTED', when: '申请已提交', fix: '提示用户当前申请已提交，引导用户走审批撤回流程。' },
+        ],
+      },
+      {
+        name: 'listPersons',
+        methodName: 'listPersons',
+        description: '获取人员目录 API 对象。',
+        paramsSchema: NO_PARAMS,
+        usageRules: ['填写 applicantCode 或 approverCode 前调用。'],
+        resultApis: [{
+          resultPath: [],
+          api: {
+            kind: 'person-directory',
+            name: '人员目录',
+            description: '请假人员和审批人查询。',
+            actions: [
+              {
+                name: 'searchPersons',
+                methodName: 'searchPersons',
+                description: '按条件搜索人员。',
+                paramsSchema: objectSchema({
+                  keyword: stringSchema('人员姓名、编码、部门或角色关键字。'),
+                  role: stringSchema('人员角色，例如 employee 或 approver。'),
+                  department: stringSchema('部门关键字。'),
+                }),
+              },
+              {
+                name: 'getPerson',
+                methodName: 'getPerson',
+                description: '按编码获取人员详情。',
+                paramsSchema: objectSchema({
+                  code: stringSchema('人员编码。'),
+                }, { required: ['code'] }),
+              },
+            ],
+          },
+        }],
+      },
+    ],
+  },
 }
 
-function createLeaveRequestAiModule(
-  service: LeaveRequestService,
-  people: LeaveRequestPersonDirectory,
-): AiModule {
-  return new LeaveRequestAiModule(service, people)
+export function createLeaveRequestBusinessRegistration(
+  options: LeaveRequestBusinessRegistrationOptions = {},
+): AiAgentRegistration {
+  const service = new LeaveRequestAiService(options)
+  return AiModuleAdapter.createRegistration({
+    moduleClass: LeaveRequestAiService,
+    metadata: LEAVE_REQUEST_METADATA,
+    options: {
+      moduleId: LEAVE_REQUEST_MODULE_ID,
+      instance: service,
+      sessionStore: new DefaultAiAgentSessionStore(options.now === undefined ? {} : { now: options.now }),
+      onStartSession: (instance, context) => {
+        instance.getDraft(context.moduleInstanceId)
+      },
+      systemPrompt: () => createLeaveRequestSystemPrompt(new Date((options.now ?? Date.now)())),
+      afterFunctionCall: (_instance, call) => {
+        const actionName = readBusinessFunctionName(call.toolName, call.args)
+        if (actionName === 'submitDraft' && call.result.ok) {
+          return {
+            status: 'complete',
+            reason: 'leave request submitted',
+            finalAssistantMessage: submittedLeaveMessage(call.result),
+            releaseInstance: true,
+          }
+        }
+        if (actionName === 'cancelDraft' && call.result.ok) {
+          return {
+            status: 'abort',
+            reason: 'leave request cancelled',
+            finalAssistantMessage: '当前请假草稿已取消。',
+            releaseInstance: true,
+          }
+        }
+        return { status: 'continue' }
+      },
+      releaseModuleInstance: (instance, moduleInstanceId) => {
+        instance.releaseDraft(moduleInstanceId)
+      },
+    },
+  })
 }
 
-function createCurrentLeaveRequestRef(ctx: AiModulePathContext): AiModuleInstanceRef | null {
-  const leaveDraftId = ctx.host?.moduleInstanceId
-  if (leaveDraftId === undefined || leaveDraftId.length === 0) {
-    return null
+export function createLeaveRequestDraftId(now = Date.now): string {
+  const randomId = typeof globalThis.crypto.randomUUID === 'function'
+    ? globalThis.crypto.randomUUID()
+    : `${now()}-${Math.random().toString(36).slice(2, 10)}`
+  return `leaveDraft:${randomId}`
+}
+
+function serviceResultToModuleResult(result: LeaveRequestServiceResult<unknown>): AiModuleResult<AiJsonValue> {
+  if (result.ok) {
+    return AiModuleResult.ok(coerceJsonValue(result.data) ?? null)
   }
-  return { id: leaveDraftId, label: '当前请假草稿', summary: '当前人工请假业务实例' }
+  return AiModuleResult.failCode(result.code, result.msg, result.fix)
 }
 
 function personMatchesQuery(
   person: LeaveRequestPersonRecord,
-  query: Readonly<Record<string, AiJsonValue>>,
+  query: Readonly<Record<string, unknown>>,
 ): boolean {
-  const id = readQueryText(query, 'id')
-  const code = readQueryText(query, 'code')
-  const name = readQueryText(query, 'name')
-  const label = readQueryText(query, 'label')
   const keyword = readQueryText(query, 'keyword')
   const role = readQueryText(query, 'role')
   const department = readQueryText(query, 'department')
-  if (id !== undefined && !sameText(person.code, id)) return false
-  if (code !== undefined && !sameText(person.code, code)) return false
-  if (name !== undefined && !includesText(person.name, name)) return false
-  if (label !== undefined && !includesText(person.name, label)) return false
   if (role !== undefined && !sameText(person.role, role)) return false
   if (department !== undefined && !includesText(person.department, department)) return false
   if (keyword !== undefined) {
@@ -617,17 +673,16 @@ function personMatchesQuery(
   return true
 }
 
-function personAttribute(person: LeaveRequestPersonRecord, attrName: string): string {
-  switch (attrName) {
-    case 'code': return person.code
-    case 'name': return person.name
-    case 'department': return person.department
-    case 'role': return person.role
-    default: return ''
+function personToJson(person: LeaveRequestPersonRecord): AiJsonValue {
+  return {
+    code: person.code,
+    name: person.name,
+    department: person.department,
+    role: person.role,
   }
 }
 
-function readQueryText(query: Readonly<Record<string, AiJsonValue>>, key: string): string | undefined {
+function readQueryText(query: Readonly<Record<string, unknown>>, key: string): string | undefined {
   const value = query[key]
   return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
 }
@@ -638,58 +693,6 @@ function sameText(value: string, query: string): boolean {
 
 function includesText(value: string, query: string): boolean {
   return value.trim().toLowerCase().includes(query.trim().toLowerCase())
-}
-
-export function createLeaveRequestBusinessRegistration(
-  options: LeaveRequestBusinessRegistrationOptions = {},
-): AiAgentRegistration {
-  const service = new LeaveRequestService(options.now)
-  const people = new LeaveRequestPersonDirectory(options.persons ?? DEFAULT_LEAVE_REQUEST_PERSONS)
-  const runtime = new AiModuleRuntime()
-  runtime.register(createLeaveRequestAiModule(service, people))
-  runtime.register(new LeaveRequestPersonAiModule(people))
-
-  return {
-    moduleId: LEAVE_REQUEST_MODULE_ID,
-    name: '人工请假',
-    description: '帮助员工收集、确认并提交人工请假申请。',
-    runtime,
-    sessionStore: new DefaultAiAgentSessionStore(options.now === undefined ? {} : { now: options.now }),
-    systemPrompt: () => createLeaveRequestSystemPrompt(new Date((options.now ?? Date.now)())),
-    onStartSession: (context) => {
-      service.getDraft(context.moduleInstanceId)
-    },
-    afterFunctionCall: (call) => {
-      const actionName = readBusinessFunctionName(call.toolName, call.args)
-      if (actionName === 'submitDraft' && call.result.ok) {
-        return {
-          status: 'complete',
-          reason: 'leave request submitted',
-          finalAssistantMessage: submittedLeaveMessage(call.result),
-          releaseInstance: true,
-        }
-      }
-      if (actionName === 'cancelDraft' && call.result.ok) {
-        return {
-          status: 'abort',
-          reason: 'leave request cancelled',
-          finalAssistantMessage: '当前请假草稿已取消。',
-          releaseInstance: true,
-        }
-      }
-      return { status: 'continue' }
-    },
-    releaseModuleInstance: (moduleInstanceId) => {
-      service.releaseDraft(moduleInstanceId)
-    },
-  }
-}
-
-export function createLeaveRequestDraftId(now = Date.now): string {
-  const randomId = typeof globalThis.crypto.randomUUID === 'function'
-    ? globalThis.crypto.randomUUID()
-    : `${now()}-${Math.random().toString(36).slice(2, 10)}`
-  return `leaveDraft:${randomId}`
 }
 
 function toServiceContext(ctx: AiModulePathContext | AiAgentRuntimeContext): LeaveRequestServiceContext {
@@ -712,6 +715,9 @@ function readBusinessFunctionName(
 ): string | null {
   if (toolName === 'module_call' && typeof args['functionName'] === 'string') {
     return args['functionName']
+  }
+  if (['describeDraft', 'setDraftFields', 'submitDraft', 'cancelDraft', 'listPersons'].includes(toolName)) {
+    return toolName
   }
   return null
 }
@@ -749,8 +755,8 @@ function createLeaveRequestSystemPrompt(now: Date): string {
     `- 当前日期：${currentDate}`,
     `- 当前 UTC 时间：${now.toISOString()}`,
     `- 当前时区：${timeZone}`,
-    '- 人员编码来源：在当前 manual-leave 实例下使用 module_find({ path, childKind: "leave-person", query: { name/keyword/role } }) 查询人员实例；返回的 AiModuleInstanceRef.id 即人员编码。',
-    '- 填写 applicantCode 或 approverCode 时，先查询 leave-person 实例，再把人员实例 id 写入草稿字段。',
+    '- 人员编码来源：先调用 listPersons 获取人员目录 handle，再通过 module_handle_call 调用 searchPersons/getPerson 查询人员。',
+    '- 填写 applicantCode 或 approverCode 时，把 getPerson 返回的 code 写入草稿字段。',
     '处理"今天/明天/后天/下周一"等相对日期时，必须基于当前日期换算；无法唯一确定时先 human_question，再追问用户；日期来源只使用当前运行时上下文和用户确认。',
     '缺少请假人、类型、起止日期、天数、事由或提交确认时，先用 human_question 生成反问指南，再用自然语言向用户补问。',
   ].join('\n')

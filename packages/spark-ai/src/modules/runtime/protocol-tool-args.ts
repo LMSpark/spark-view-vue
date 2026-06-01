@@ -97,6 +97,15 @@ export class ProtocolToolArgsParser {
     return value
   }
 
+  /** 提取可选对象参数（缺失/null → 空对象，非对象抛错）。 */
+  public optionalObject(args: ProtocolToolArgs, key: string): AiJsonParams {
+    if (!(key in args)) return {}
+    const value = args[key]
+    if (value === null || value === undefined) return {}
+    if (!isJsonObject(value)) throw new ProtocolToolArgsError(`参数 "${key}" 不是 JSON 对象`)
+    return value
+  }
+
   /** 提取必填任意值参数（key 不存在或值为 undefined 抛错） */
   public requireValue(args: ProtocolToolArgs, key: string): AiJsonValue {
     if (!(key in args)) throw new ProtocolToolArgsError(`参数 "${key}" 缺失`)

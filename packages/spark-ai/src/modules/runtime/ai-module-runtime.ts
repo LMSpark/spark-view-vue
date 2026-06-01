@@ -67,6 +67,7 @@ import type {
   AiModuleSetAttributeRequest,
 } from '../protocol'
 import { ProtocolToolRouter } from './protocol-tool-router'
+import type { AiModuleHandleToolDispatcher } from './protocol-tool-router'
 import type { ProtocolToolArgs } from './protocol-tool-args'
 import {
   inspectAiModuleRuntime,
@@ -74,6 +75,11 @@ import {
 } from './runtime-inspector'
 
 export type { ProtocolToolArgs } from './protocol-tool-args'
+
+export type AiModuleRuntimeOptions = Readonly<{
+  handleCallTool?: AiModuleToolSpec
+  handleToolDispatcher?: AiModuleHandleToolDispatcher
+}>
 
 /* ── AiModuleRuntime ────────────────────────────────────────── */
 
@@ -85,8 +91,9 @@ export class AiModuleRuntime {
   private readonly toolGenerator: ProtocolToolGenerator
   private readonly toolRouter: ProtocolToolRouter
   private readonly knowledge: AiModuleKnowledgeProjector
+  private handleToolSpec?: AiModuleToolSpec
 
-  public constructor() {
+  public constructor(options: AiModuleRuntimeOptions = {}) {
     this.kinds = new AiModuleRegistry()
     this.navigator = new Navigator(this.kinds)
     this.attributes = new AttributeAccessor(this.navigator)
@@ -99,7 +106,13 @@ export class AiModuleRuntime {
       navigator: this.navigator,
       knowledge: this.knowledge,
       kinds: this.kinds,
+      ...(options.handleToolDispatcher === undefined ? {} : {
+        handleToolDispatcher: options.handleToolDispatcher,
+      }),
     })
+    if (options.handleCallTool !== undefined) {
+      this.handleToolSpec = options.handleCallTool
+    }
   }
 
   /* ── 注册 ──────────────────────────────────────────────── */
@@ -118,7 +131,8 @@ export class AiModuleRuntime {
 
   /** 获取所有 LLM 可见的固定 module_* function tool 规约。 */
   public getTools(): readonly AiModuleToolSpec[] {
-    return this.toolGenerator.generate()
+    const tools = this.toolGenerator.generate()
+    return this.handleToolSpec === undefined ? tools : [...tools, this.handleToolSpec]
   }
 
   /** 执行 tool_call（Host 层 tool-call-executor 调用） */

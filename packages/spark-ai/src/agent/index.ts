@@ -51,6 +51,11 @@ export {
 } from './business/business-kit'
 
 export {
+  AiModuleAdapter,
+  AiModuleHandleRegistry,
+} from './business/ai-module-adapter'
+
+export {
   AiAgentRuntimeContext,
   AiAgentScope,
   AiAgentTarget,
@@ -65,6 +70,13 @@ export {
 export type {
   AiAgentRegistrationOptions,
 } from './business/registration-types'
+
+export type {
+  AiApiObjectHandle,
+  AiModuleAdapterRegistrationCommand,
+  AiModuleAdapterRegisterCommand,
+  AiModuleAdapterRegisterOptions,
+} from './business/ai-module-adapter'
 
 export type {
   AiBusinessInputOptions,

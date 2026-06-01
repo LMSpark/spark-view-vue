@@ -15,6 +15,8 @@ describe('@spark-view/spark-ai/agent public surface', () => {
       'AiAgentTask',
       'AiAgentTarget',
       'AiAgentToolLoopRunner',
+      'AiModuleAdapter',
+      'AiModuleHandleRegistry',
       'DefaultAiAgentSessionStore',
       'createAiAgentHost',
       'createAiAgentRegistration',

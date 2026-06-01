@@ -87,6 +87,18 @@ export type {
   AiModuleRuntimeInspectStatus,
 } from './runtime/runtime-inspector'
 
+export type {
+  AiApiActionMetadata,
+  AiApiObjectMetadata,
+  AiApiResultApiRef,
+  AiModuleMetadataJson,
+} from './metadata'
+
+export {
+  AiApiObjectMetadataValidationError,
+  validateApiObjectMetadata,
+} from './metadata'
+
 // ── 3. 知识投影类型 ─────────────────────────────────────────
 export type {
   AiModuleKnowledgeAttributeDetailGuide,

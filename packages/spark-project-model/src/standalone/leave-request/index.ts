@@ -14,7 +14,6 @@
 export {
   LEAVE_REQUEST_KIND,
   LEAVE_REQUEST_MODULE_ID,
-  LEAVE_REQUEST_PERSON_KIND,
   createLeaveRequestBusinessRegistration,
   createLeaveRequestDraftId,
 } from './leave-request'

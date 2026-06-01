@@ -7,10 +7,12 @@
 import { mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, relative } from 'node:path'
 import ts from 'typescript'
+import { tsTypeToJsonSchema, type GeneratedJsonSchema } from './ts-type-to-json-schema'
 
 export type ModuleAbilityMetadataGeneratorOptions = {
   sources: readonly string[]
-  outFile: string}
+  outFile: string
+  moduleOutFile?: string}
 
 type ModuleDocTag = {
   name: string
@@ -74,9 +76,35 @@ type ModuleAbilityMetadata = {
   actions: readonly ModuleActionMetadata[]
   source: ModuleSourceRef & { className: string }}
 
+type AiApiResultApiRefMetadata = {
+  resultPath: readonly string[]
+  api: AiApiObjectMetadata}
+
+type AiApiActionMetadata = {
+  name: string
+  methodName: string
+  description: string
+  paramsSchema: GeneratedJsonSchema
+  resultSchema?: GeneratedJsonSchema
+  resultApis?: readonly AiApiResultApiRefMetadata[]
+  usageRules?: readonly string[]
+  failureModes?: readonly ModuleFailureModeMetadata[]}
+
+type AiApiObjectMetadata = {
+  kind: string
+  name: string
+  description: string
+  actions: readonly AiApiActionMetadata[]}
+
+type AiModuleMetadataJson = {
+  schemaVersion: 1
+  rootApi: AiApiObjectMetadata}
+
 export type ModuleMetadataGenerationResult = {
   abilities: readonly ModuleAbilityMetadata[]
-  outFile: string}
+  outFile: string
+  moduleMetadata: readonly AiModuleMetadataJson[]
+  moduleOutFile?: string}
 
 const MODULE_METADATA_SCHEMA_VERSION = 1
 const MODULE_ATTACK_SURFACE_RISKS = ['low', 'medium', 'high', 'critical'] as const
@@ -119,12 +147,29 @@ export function generateModuleAbilityMetadata(
     }
     return extractAbilityMetadata(root, sourceFile, checker)
   })
+  const moduleMetadata = rootFiles.flatMap((file) => {
+    const sourceFile = program.getSourceFile(file)
+    if (sourceFile === undefined) {
+      throw new Error(`module metadata source not found: ${file}`)
+    }
+    return extractApiObjectMetadata(sourceFile, checker)
+  })
   validateGeneratedAbilities(abilities)
 
   const outFile = resolve(root, options.outFile)
   mkdirSync(dirname(outFile), { recursive: true })
   writeFileSync(outFile, formatGeneratedMetadata(abilities), 'utf8')
-  return { abilities, outFile }
+  const moduleOutFile = options.moduleOutFile === undefined ? undefined : resolve(root, options.moduleOutFile)
+  if (moduleOutFile !== undefined) {
+    mkdirSync(dirname(moduleOutFile), { recursive: true })
+    writeFileSync(moduleOutFile, formatGeneratedApiObjectMetadata(moduleMetadata), 'utf8')
+  }
+  return {
+    abilities,
+    outFile,
+    moduleMetadata,
+    ...(moduleOutFile === undefined ? {} : { moduleOutFile }),
+  }
 }
 
 function extractAbilityMetadata(
@@ -154,6 +199,139 @@ function extractAbilityMetadata(
 
   visit(sourceFile)
   return abilities
+}
+
+function extractApiObjectMetadata(
+  sourceFile: ts.SourceFile,
+  checker: ts.TypeChecker,
+): AiModuleMetadataJson[] {
+  const modules: AiModuleMetadataJson[] = []
+
+  function visit(node: ts.Node): void {
+    if (ts.isClassDeclaration(node)) {
+      const api = createApiObjectMetadata(checker, node, new Set())
+      if (api !== undefined) {
+        modules.push({ schemaVersion: MODULE_METADATA_SCHEMA_VERSION, rootApi: api })
+      }
+    }
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+  return modules
+}
+
+function createApiObjectMetadata(
+  checker: ts.TypeChecker,
+  node: ts.ClassDeclaration,
+  visited: Set<ts.Symbol>,
+): AiApiObjectMetadata | undefined {
+  const tags = readDocTags(node, node.getSourceFile())
+  const kind = firstTagText(tags, 'moduleKind')
+  if (kind === undefined) return undefined
+  return {
+    kind,
+    name: firstTagText(tags, 'moduleName') ?? node.name?.text ?? kind,
+    description: firstTagText(tags, 'moduleDescription') ?? readSummary(node) ?? kind,
+    actions: node.members
+      .filter(ts.isMethodDeclaration)
+      .map(method => createApiActionMetadata(checker, method, visited))
+      .filter(isNotUndefined),
+  }
+}
+
+function createApiActionMetadata(
+  checker: ts.TypeChecker,
+  node: ts.MethodDeclaration,
+  visited: Set<ts.Symbol>,
+): AiApiActionMetadata | undefined {
+  const sourceFile = node.getSourceFile()
+  const tags = readDocTags(node, sourceFile)
+  const actionName = parseActionName(firstTagText(tags, 'moduleAction'))
+  if (actionName === undefined) return undefined
+  const resultType = getInnerReturnType(checker, node)
+  return {
+    name: actionName,
+    methodName: propertyNameText(node.name, sourceFile),
+    description: readSummary(node) ?? actionName,
+    paramsSchema: generateParamsSchema(checker, node),
+    ...(resultType === undefined ? {} : { resultSchema: tsTypeToJsonSchema(checker, resultType) }),
+    ...(resultType === undefined ? {} : {
+      resultApis: discoverResultApis({
+        checker,
+        type: resultType,
+        resultPath: [],
+        visited,
+      }),
+    }),
+    usageRules: tagTexts(tags, 'usageRule'),
+    failureModes: tags.filter(tag => tag.name === 'failureMode').map(parseFailureMode),
+  }
+}
+
+function generateParamsSchema(checker: ts.TypeChecker, node: ts.MethodDeclaration): GeneratedJsonSchema {
+  const argsParam = node.parameters.length >= 2 ? node.parameters[1] : undefined
+  if (argsParam === undefined) return { type: 'object', properties: {}, required: [] }
+  const schema = tsTypeToJsonSchema(checker, checker.getTypeAtLocation(argsParam))
+  return schema.type === 'object' ? schema : { type: 'object', properties: {}, required: [] }
+}
+
+function getInnerReturnType(checker: ts.TypeChecker, node: ts.MethodDeclaration): ts.Type | undefined {
+  const signature = checker.getSignatureFromDeclaration(node)
+  if (signature === undefined) return undefined
+  return unwrapAiModuleResult(checker, checker.getReturnTypeOfSignature(signature))
+}
+
+function unwrapAiModuleResult(checker: ts.TypeChecker, type: ts.Type): ts.Type {
+  const awaited = checker.getAwaitedType(type) ?? type
+  if (!isTypeReferenceTo(checker, awaited, 'AiModuleResult')) return awaited
+  const args = readTypeReferenceArguments(awaited)
+  return args[0] ?? awaited
+}
+
+type DiscoverResultApisCommand = Readonly<{
+  checker: ts.TypeChecker
+  type: ts.Type
+  resultPath: readonly string[]
+  visited: Set<ts.Symbol>
+}>
+
+function discoverResultApis(command: DiscoverResultApisCommand): AiApiResultApiRefMetadata[] {
+  const results: AiApiResultApiRefMetadata[] = []
+  const api = createApiObjectFromType(command.checker, command.type, command.visited)
+  if (api !== undefined) {
+    results.push({ resultPath: command.resultPath, api })
+    return results
+  }
+
+  for (const prop of command.type.getProperties()) {
+    const declaration = prop.declarations?.[0]
+    if (declaration === undefined) continue
+    const propType = command.checker.getTypeOfSymbolAtLocation(prop, declaration)
+    results.push(...discoverResultApis({
+      checker: command.checker,
+      type: propType,
+      resultPath: [...command.resultPath, prop.name],
+      visited: command.visited,
+    }))
+  }
+  return results
+}
+
+function createApiObjectFromType(
+  checker: ts.TypeChecker,
+  type: ts.Type,
+  visited: Set<ts.Symbol>,
+): AiApiObjectMetadata | undefined {
+  const symbol = type.getSymbol()
+  if (symbol === undefined || visited.has(symbol)) return undefined
+  const classDeclaration = symbol.declarations?.find(ts.isClassDeclaration)
+  if (classDeclaration === undefined) return undefined
+  const tags = readDocTags(classDeclaration, classDeclaration.getSourceFile())
+  if (firstTagText(tags, 'moduleKind') === undefined) return undefined
+  const nextVisited = new Set(visited)
+  nextVisited.add(symbol)
+  return createApiObjectMetadata(checker, classDeclaration, nextVisited)
 }
 
 type CreateAbilityMetadataRequest = {
@@ -214,7 +392,7 @@ type ActionMetadataCreateInput = Readonly<{
 function createActionMetadata(input: ActionMetadataCreateInput): ModuleActionMetadata | undefined {
   const { root, sourceFile, checker, node } = input
   const tags = readDocTags(node, sourceFile)
-  const actionName = firstTagText(tags, 'moduleAction')
+  const actionName = parseActionName(firstTagText(tags, 'moduleAction'))
   if (actionName === undefined) return undefined
 
   const description = readSummary(node)
@@ -391,6 +569,12 @@ function parseExample(text: string): unknown {
   }
 }
 
+function parseActionName(raw: string | undefined): string | undefined {
+  if (raw === undefined) return undefined
+  const [name] = raw.trim().split(/\s+/u)
+  return name === undefined || name.length === 0 ? undefined : name
+}
+
 function readParamDescriptions(tags: readonly ModuleDocTag[]): Map<string, string> {
   const result = new Map<string, string>()
   for (const tag of tags) {
@@ -462,6 +646,42 @@ function formatGeneratedMetadata(abilities: readonly ModuleAbilityMetadata[]): s
     note: 'Do not edit by hand; update domain ability class JSDoc and rerun pnpm run generate:module-metadata.',
     abilities,
   }, null, 2)}\n`
+}
+
+function formatGeneratedApiObjectMetadata(moduleMetadata: readonly AiModuleMetadataJson[]): string {
+  return `${JSON.stringify({
+    schemaVersion: MODULE_METADATA_SCHEMA_VERSION,
+    generatedBy: 'packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts',
+    note: 'Do not edit by hand; update domain API class JSDoc and rerun pnpm run generate:module-metadata.',
+    modules: moduleMetadata,
+  }, null, 2)}\n`
+}
+
+function isTypeReferenceTo(checker: ts.TypeChecker, type: ts.Type, name: string): boolean {
+  if (!isIndexableObject(type)) return false
+  const target = type['target']
+  if (!isIndexableObject(target)) return false
+  const symbol = target['symbol']
+  return isTsSymbol(symbol) && checker.symbolToString(symbol) === name
+}
+
+function readTypeReferenceArguments(type: ts.Type): readonly ts.Type[] {
+  if (!isIndexableObject(type)) return []
+  const args = type['typeArguments']
+  if (!Array.isArray(args)) return []
+  return args.filter(isTsType)
+}
+
+function isTsType(value: unknown): value is ts.Type {
+  return isIndexableObject(value) && typeof value['flags'] === 'number'
+}
+
+function isTsSymbol(value: unknown): value is ts.Symbol {
+  return isIndexableObject(value) && typeof value['escapedName'] !== 'undefined'
+}
+
+function isIndexableObject(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object'
 }
 
 function normalizePath(path: string): string {
