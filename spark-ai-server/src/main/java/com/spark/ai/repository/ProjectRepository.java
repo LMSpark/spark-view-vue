@@ -8,7 +8,7 @@ import java.util.Optional;
 
 public interface ProjectRepository extends JpaRepository<ProjectEntity, Long> {
 
-    List<ProjectEntity> findByTenantIdOrderBySortOrderAscCreatedAtAsc(String tenantId);
+    List<ProjectEntity> findByTenantIdOrderByOrderAscCreatedAtAsc(String tenantId);
 
     Optional<ProjectEntity> findByTenantIdAndProjectId(String tenantId, String projectId);
 

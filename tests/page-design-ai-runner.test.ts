@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-page-config/project'
+import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
 import {
   createAiRunAdapter,
   type AiRunAdapterState,
@@ -35,7 +35,7 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@spark-view/spark-page-config/ai', () => ({
+vi.mock('@spark-view/spark-project-model/ai', () => ({
   PAGE_DESIGN_MODULE_ID: 'pageDesign',
   ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
 }))
@@ -112,7 +112,7 @@ function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
   const scope = new AiAgentScope(moduleId, instanceId, instanceId, instanceId)
   const task = new AiAgentTask(moduleId, {
     pageId: instanceId,
-    userRequirement: '补一个按钮',
+    description: '补一个按钮',
   }, scope, {
     userMessage: '补一个按钮',
     systemPrompt: '页面设计',
@@ -198,7 +198,7 @@ describe('runPageDesignAiSession', () => {
 
     const result = await runPageDesignAiSession({
       pageId: 'orders',
-      userRequirement: '补一个按钮',
+      description: '补一个按钮',
       editor,
       consumeCapability: createCapabilityConsumer(aiHost),
     })
@@ -209,7 +209,7 @@ describe('runPageDesignAiSession', () => {
     expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
     expect(mocks.pageDesignRun).toHaveBeenCalledWith('pageDesign', {
       pageId: 'orders',
-      userRequirement: '补一个按钮',
+      description: '补一个按钮',
     }, expect.any(Object))
   })
 
@@ -242,7 +242,7 @@ describe('runPageDesignAiSession', () => {
 
     const result = await runPageDesignAiSession({
       pageId: 'orders',
-      userRequirement: '补一个按钮',
+      description: '补一个按钮',
       editor,
       consumeCapability: createCapabilityConsumer(aiHost),
       trace,
@@ -281,7 +281,7 @@ describe('runPageDesignAiSession', () => {
 
     const result = await runPageDesignAiSession({
       pageId: 'orders',
-      userRequirement: '补一个按钮',
+      description: '补一个按钮',
       editor,
       consumeCapability: createCapabilityConsumer(aiHost),
       adapter,
@@ -313,7 +313,7 @@ describe('runPageDesignAiSession', () => {
 
     const promise = runPageDesignAiSession({
       pageId: 'orders',
-      userRequirement: '补一个按钮',
+      description: '补一个按钮',
       editor,
       consumeCapability: createCapabilityConsumer(aiHost),
       adapter,
@@ -337,7 +337,7 @@ describe('runPageDesignAiSession', () => {
 
     await expect(runPageDesignAiSession({
       pageId: 'orders',
-      userRequirement: '补一个按钮',
+      description: '补一个按钮',
       editor,
       consumeCapability: createCapabilityConsumer(aiHost),
     })).rejects.toThrow('requires PageNode "orders" to be loaded')

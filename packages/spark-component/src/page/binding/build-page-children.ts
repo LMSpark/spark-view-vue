@@ -2,7 +2,7 @@
  * SparkNode → page children 绑定器
  *
  * 边界约束：
- * - spark-page-config 负责提供声明式 SparkNode 树
+ * - spark-project-model 负责提供声明式 SparkNode 树
  * - spark-component 负责将其物化为运行时 children（SparkNode[]）
  *
  * 绑定内容：

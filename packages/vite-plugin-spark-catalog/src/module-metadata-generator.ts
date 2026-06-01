@@ -85,12 +85,12 @@ const MODULE_ATTACK_SURFACE_RISK_VALUES: ReadonlySet<string> = new Set(MODULE_AT
 const MODULE_MUTATION_MODE_VALUES: ReadonlySet<string> = new Set(MODULE_MUTATION_MODES)
 
 const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
-  'packages/spark-page-config/src/page/model/spark-node-tree.ts',
+  'packages/spark-data/src/node-tree/spark-node-tree.ts',
   'packages/spark-data/src/dataset-crud-tool.ts',
 ] as const
 
 const PAGE_DESIGN_MODULE_METADATA_OUT_FILE =
-  'packages/spark-page-config/src/registrations/page-design-ability-metadata.generated.json'
+  'packages/spark-project-model/src/ai/page-design/page-design-ability-metadata.generated.json'
 
 export function generatePageDesignModuleMetadata(root: string): ModuleMetadataGenerationResult {
   return generateModuleAbilityMetadata(root, {

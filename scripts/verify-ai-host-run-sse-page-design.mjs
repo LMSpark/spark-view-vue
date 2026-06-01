@@ -21,10 +21,10 @@ import { coerceStrictJsonValue } from '@spark-view/spark-ai/json'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
-} from '@spark-view/spark-page-config/ai'
+} from '@spark-view/spark-project-model/ai'
 import {
   createProjectEditor,
-} from '@spark-view/spark-page-config/project'
+} from '@spark-view/spark-project-model/project'
 import { createRequest, isRecord } from '@spark-view/spark-utils'
 import {
   createAppSseEventHub,
@@ -74,7 +74,7 @@ function parseArgs(argv) {
         pageId: `ai-student-grade-management-${runId}`,
         title: '学生成绩管理',
         icon: 'DataAnalysis',
-        requirement: [
+        description: [
           '实现学生成绩管理页面设计。',
           '这是 headless 自动执行场景，不向用户反问；缺失事实按以下默认决策继续。',
           '数据来源固定为 page-data 静态示例数据，预置班级、学生、课程、成绩样例行。',
@@ -92,7 +92,7 @@ function parseArgs(argv) {
         pageId: `ai-employee-info-management-${runId}`,
         title: '员工信息管理',
         icon: 'User',
-        requirement: [
+        description: [
           '实现员工信息管理页面设计。',
           '这是 headless 自动执行场景，不向用户反问；缺失事实按以下默认决策继续。',
           '数据来源固定为 page-data 静态示例数据，预置部门、岗位、员工样例行。',
@@ -194,7 +194,7 @@ function parseArgs(argv) {
         updatePage(options.pages, 'student', { title: value })
         break
       case 'student-request':
-        updatePage(options.pages, 'student', { requirement: value })
+        updatePage(options.pages, 'student', { description: value })
         break
       case 'employee-page-id':
         updatePage(options.pages, 'employee', { pageId: value })
@@ -203,7 +203,7 @@ function parseArgs(argv) {
         updatePage(options.pages, 'employee', { title: value })
         break
       case 'employee-request':
-        updatePage(options.pages, 'employee', { requirement: value })
+        updatePage(options.pages, 'employee', { description: value })
         break
       default:
         throw new Error(`Unknown option: --${key}`)
@@ -227,7 +227,7 @@ function parseArgs(argv) {
   for (const page of options.pages) {
     page.pageId = requireNonEmpty(page.pageId, `${page.key}.pageId`)
     page.title = requireNonEmpty(page.title, `${page.key}.title`)
-    page.requirement = requireNonEmpty(page.requirement, `${page.key}.requirement`)
+    page.description = requireNonEmpty(page.description, `${page.key}.description`)
   }
   requirePositiveNumber(options.maxRounds, 'maxRounds')
   requirePositiveNumber(options.runTimeoutMs, 'runTimeoutMs')
@@ -257,9 +257,9 @@ function printHelp() {
     '  --session-turn-retries <n> Safe retries for transient session-turn LLM failures',
     '  --turn-transport <mode>   session-turn (default) or app-sse',
     '  --student-page-id <id>    Student page ID',
-    '  --student-request <text>  Student page requirement',
+    '  --student-request <text>  Student page description',
     '  --employee-page-id <id>   Employee page ID',
-    '  --employee-request <text> Employee page requirement',
+    '  --employee-request <text> Employee page description',
     '  --only <keys>             Comma-separated page keys: student,employee',
     '  --sequential              Trigger selected runs one by one',
     '  --no-replace-page         Reuse existing pages',
@@ -501,7 +501,7 @@ async function triggerHostRun({ options, auth, worker, page }) {
     alias: PAGE_DESIGN_MODULE_ID,
     args: {
       pageId: page.pageId,
-      userRequirement: page.requirement,
+      description: page.description,
       mode: 'create',
     },
     timeoutMs: options.runTimeoutMs,

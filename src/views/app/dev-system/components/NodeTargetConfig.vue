@@ -63,12 +63,11 @@
         <NavIcon name="InfoFilled" :size="12" /> 当前节点类型无需路由选择或页面选择
       </el-tag>
     </el-form-item>
-
     <!-- 超链接（link 节点） -->
     <el-form-item v-if="flags.isLinkNode.value" label="超链接" class="fi fi--wide">
       <div class="link-url-row">
         <el-input
-          v-model="state.navDraft.path"
+          v-model="state.navEditDto.path"
           placeholder="https://..."
           @change="state.onLinkUrlChanged"
         />
@@ -81,7 +80,7 @@
       </div>
     </el-form-item>
     <el-form-item v-if="flags.isLinkNode.value" label="渲染方式" class="fi fi--wide">
-      <el-radio-group v-model="state.navDraft.linkTarget" @change="state.markNavDirty">
+      <el-radio-group v-model="state.navEditDto.linkTarget" @change="state.markNavDirty">
         <el-radio-button value="iframe">内嵌 iframe</el-radio-button>
         <el-radio-button value="self">当前窗口</el-radio-button>
         <el-radio-button value="new-tab">新标签打开</el-radio-button>
@@ -92,18 +91,6 @@
         {{ state.linkProbeInfo.value.embeddable ? '可嵌入' : '禁止嵌入' }}
       </el-tag>
       <span class="hint-text" style="margin-left: 8px">{{ state.linkProbeInfo.value.reason }}</span>
-    </el-form-item>
-
-    <!-- 重定向（目录/模块节点） -->
-    <el-form-item v-if="flags.isDirectoryNode.value" label="重定向" class="fi fi--wide">
-      <el-input v-model="state.navDraft.redirect" placeholder="组节点默认跳转路径" @input="state.markNavDirty" />
-    </el-form-item>
-
-    <!-- 父页面（子页面节点） -->
-    <el-form-item v-if="flags.isSubPageNode.value" label="父页面" class="fi fi--medium">
-      <el-select v-model="state.navDraft.parentPageId" clearable placeholder="选择所属父页面" @change="state.markNavDirty">
-        <el-option v-for="opt in parentPageOptions" :key="opt.id" :label="opt.label" :value="opt.id" />
-      </el-select>
     </el-form-item>
 
     <!-- 跨工程引用（ref 节点） -->
@@ -149,7 +136,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { NavNode, NavNodeKind } from '@spark-view/spark-data'
+import type { NavNode } from '@spark-view/spark-data'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
@@ -240,37 +227,37 @@ const targetPlaceholder = computed(() => {
 function applyTargetSelection(value: string) {
   if (flags.isSystemPageNode.value) {
     if (!value) {
-      props.state.navDraft.path = ''
+      props.state.navEditDto.path = ''
       props.state.markNavDirty()
       props.state.clearFiles()
       return
     }
     const routePath = value.replace(/^route:/, '')
-    props.state.navDraft.path = routePath
+    props.state.navEditDto.path = routePath
     props.state.handlePathChange(routePath)
     return
   }
 
   if (flags.isSystemActionNode.value) {
     if (!value) {
-      props.state.navDraft.path = ''
+      props.state.navEditDto.path = ''
       props.state.markNavDirty()
       return
     }
-    props.state.navDraft.path = value.replace(/^action:/, '')
+    props.state.navEditDto.path = value.replace(/^action:/, '')
     props.state.markNavDirty()
     return
   }
 
   if (flags.isPageNode.value) {
     if (!value) {
-      props.state.navDraft.path = ''
+      props.state.navEditDto.path = ''
       props.state.markNavDirty()
       props.state.clearFiles()
       return
     }
     const pagePath = value.replace(/^page:/, '')
-    props.state.navDraft.path = pagePath
+    props.state.navEditDto.path = pagePath
     props.state.handlePathChange(pagePath)
   }
 }
@@ -278,53 +265,21 @@ function applyTargetSelection(value: string) {
 const targetValue = computed<string>({
   get() {
     if (flags.isSystemPageNode.value) {
-      const path = props.state.navDraft.path
+      const path = props.state.navEditDto.path
       return path ? `route:${path}` : ''
     }
     if (flags.isSystemActionNode.value) {
-      const path = props.state.navDraft.path
+      const path = props.state.navEditDto.path
       return path ? `action:${path}` : ''
     }
     if (flags.isPageNode.value) {
-      return props.state.navDraft.path ? `page:${props.state.navDraft.path}` : ''
+      return props.state.navEditDto.path ? `page:${props.state.navEditDto.path}` : ''
     }
     return ''
   },
   set(value) {
     applyTargetSelection(value)
   },
-})
-
-// ── 父页面选项（sub-page 用） ──
-
-type ParentPageOption = {
-  id: string
-  label: string}
-
-function inferNodeKind(node: NavNode): NavNodeKind {
-  if (node.nodeKind !== undefined) return node.nodeKind
-  if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
-  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab' || node.linkTarget === 'self') return 'link'
-  return 'page'
-}
-
-function collectParentPageOptions(nodes: NavNode[], selectedId: string, options: ParentPageOption[]) {
-  for (const node of nodes) {
-    const nodeKind = inferNodeKind(node)
-    if (node.id !== selectedId && (nodeKind === 'page' || nodeKind === 'system-page' || nodeKind === 'system-action')) {
-      const suffix = node.path ? `（${node.path}）` : ''
-      options.push({ id: node.id, label: `${node.title}${suffix}` })
-    }
-    if (Array.isArray(node.children)) {
-      collectParentPageOptions(node.children, selectedId, options)
-    }
-  }
-}
-
-const parentPageOptions = computed(() => {
-  const options: ParentPageOption[] = []
-  collectParentPageOptions(props.state.treeData.value, props.state.navDraft.id, options)
-  return options
 })
 
 // ── 路径有效性状态 ──
@@ -345,7 +300,7 @@ type NodeTargetStatus = {
  */
 const pathStatus = computed<NodeTargetStatus | null>(() => {
   if (!flags.showPathStatus.value) return null
-  const path = props.state.navDraft.path
+  const path = props.state.navEditDto.path
   if (!path) return null
 
   if (flags.isSystemActionNode.value) {
@@ -359,7 +314,7 @@ const pathStatus = computed<NodeTargetStatus | null>(() => {
   if (flags.isSystemPageNode.value) {
     if (path in VUE_PAGE_MAP) {
       const entry = VUE_PAGE_MAP[path]!
-      const nodeTitle = props.state.navDraft.title.trim()
+      const nodeTitle = props.state.navEditDto.title.trim()
       if (nodeTitle && nodeTitle !== entry.title) {
         return {
           type: 'info',
@@ -395,8 +350,8 @@ function hasConfigPage(pageId: string): boolean {
 }
 
 const showCreatePageAction = computed(() => flags.isPageNode.value)
-const explicitTargetPageId = computed(() => normalizeConfigPageId(props.state.navDraft.path))
-const fallbackNodePageId = computed(() => normalizeConfigPageId(props.state.navDraft.id))
+const explicitTargetPageId = computed(() => normalizeConfigPageId(props.state.navEditDto.path))
+const fallbackNodePageId = computed(() => normalizeConfigPageId(props.state.navEditDto.id))
 const createPageCandidateId = computed(() => {
   const explicitPageId = explicitTargetPageId.value
   if (explicitPageId && !hasConfigPage(explicitPageId)) return explicitPageId
@@ -510,7 +465,7 @@ watch(refProjectSelection, (projectId) => {
     void loadRefPages(projectId)
   } else {
     refPageOptions.value = []
-    props.state.navDraft.refId = ''
+    props.state.navEditDto.refId = ''
     props.state.markNavDirty()
   }
 })
@@ -518,11 +473,11 @@ watch(refProjectSelection, (projectId) => {
 // 页面选择→写入 refId
 watch(refPageSelection, (nodeId) => {
   if (syncingRefSelection.value) return
-  if (nodeId && nodeId !== props.state.navDraft.id) {
-    props.state.navDraft.refId = nodeId
+  if (nodeId && nodeId !== props.state.navEditDto.id) {
+    props.state.navEditDto.refId = nodeId
     props.state.markNavDirty()
   } else if (!nodeId) {
-    props.state.navDraft.refId = ''
+    props.state.navEditDto.refId = ''
     props.state.markNavDirty()
   }
 })
@@ -531,10 +486,10 @@ watch(refPageSelection, (nodeId) => {
 
 const refStatus = computed<NodeTargetStatus | null>(() => {
   if (!flags.isRefNode.value) return null
-  const refId = props.state.navDraft.refId
+  const refId = props.state.navEditDto.refId
   if (!refId) return null
 
-  if (refId === props.state.navDraft.id) {
+  if (refId === props.state.navEditDto.id) {
     return { type: 'danger', icon: 'CircleCloseFilled', text: '不能引用自身' }
   }
 
@@ -568,8 +523,8 @@ async function createPageFromPath() {
     return
   }
 
-  const nodeTitle = props.state.navDraft.title.trim() || pageId
-  const nodeIcon = props.state.navDraft.icon.trim() || 'Document'
+  const nodeTitle = props.state.navEditDto.title.trim() || pageId
+  const nodeIcon = props.state.navEditDto.icon.trim() || 'Document'
   creatingPage.value = true
   try {
     const created = await props.state.createPageForSelectedNode({

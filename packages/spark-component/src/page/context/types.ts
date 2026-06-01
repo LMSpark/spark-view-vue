@@ -12,7 +12,7 @@ import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'
 
 // ── 基础重导出 ────────────────────────────────────────────────────────────
 
-// PageNode 渲染态来自 spark-page-config，是渲染层的唯一页面输入形态。
+// PageNode 渲染态来自 spark-project-model，是渲染层的唯一页面输入形态。
 export type { PageNodeRenderConfig }
 // PageRoute 重导出供渲染层实现层使用
 export type { PageRoute }
@@ -33,7 +33,7 @@ export type PageComponentAccessApi = {
 /**
  * 页面脚本运行时上下文。
  *
- * 继承 `ScriptContext`（spark-page-config，框架无关契约），
+ * 继承 `ScriptContext`（spark-project-model，框架无关契约），
  * 在此基础上添加 spark-component 层具体注入字段：
  * - `$dataSet` — DataSet 实例（具体类型）
  * - `$components` — 覆盖为更完整的 `PageComponentAccessApi`

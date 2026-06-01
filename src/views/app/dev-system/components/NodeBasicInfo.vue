@@ -1,16 +1,16 @@
 <template>
   <div>
     <el-divider content-position="left">基础信息</el-divider>
-    <el-form-item label="ID" class="fi fi--wide">
-      <el-input v-model="state.navDraft.id" placeholder="唯一标识" @change="state.markNavDirty" />
+    <el-form-item label="节点 ID" class="fi fi--wide">
+      <el-input :model-value="state.navEditDto.id" disabled placeholder="NODE_ID" />
     </el-form-item>
     <el-form-item label="标题" class="fi fi--wide">
-      <el-input v-model="state.navDraft.title" placeholder="显示名称" @change="state.markNavDirty" />
+      <el-input v-model="state.navEditDto.title" placeholder="显示名称" @change="state.markNavDirty" />
     </el-form-item>
     <div class="fi-inline-row">
       <el-form-item label="图标" class="fi fi--narrow fi-inline-row__icon">
         <IconPicker
-          v-model="state.navDraft.icon"
+          v-model="state.navEditDto.icon"
           class="icon-picker-compact"
           placeholder="选择图标"
           width="220"
@@ -18,7 +18,7 @@
         />
       </el-form-item>
       <el-form-item label="节点类别" class="fi fi--medium fi-inline-row__type">
-        <el-radio-group v-model="state.navDraft.nodeKind" class="type-radio-group" @change="state.handleNodeKindChange">
+        <el-radio-group v-model="state.navEditDto.nodeKind" class="type-radio-group" @change="state.handleNodeKindChange">
           <el-radio-button value="system-directory">系统模块</el-radio-button>
           <el-radio-button value="module" :disabled="moduleKindDisabled">模块</el-radio-button>
           <el-radio-button value="system-page">系统页面</el-radio-button>
@@ -32,7 +32,7 @@
     </div>
     <el-form-item label="功能描述" class="fi fi--wide">
       <el-input
-        v-model="state.navDraft.description"
+        v-model="state.navEditDto.description"
         type="textarea"
         :autosize="{ minRows: 4, maxRows: 12 }"
         placeholder="页面功能策划，也是 AI 用户需求。&#10;示例：级联操作演示页 — 展示 DataSet 主从表联动，父表选中行变更自动驱动子表数据过滤与刷新。"

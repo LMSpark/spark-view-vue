@@ -31,7 +31,6 @@
             >
               恢复用户菜单组
             </el-dropdown-item>
-            <el-dropdown-item divided @click="handleReset">重置演示</el-dropdown-item>
           </el-dropdown-menu>
         </template>
       </el-dropdown>
@@ -168,13 +167,6 @@ async function handleRemove(node: { parent: { data: NavNode } }, data: NavNode) 
   state.removeNodeFromTree(node, data)
 }
 
-async function handleReset() {
-  try {
-    await ElMessageBox.confirm('确定重置为演示导航？当前修改将丢失。', '确认', { type: 'warning' })
-  } catch { return }
-  await state.resetToDemo()
-}
-
 function expandAll() {
   for (const k of getAllKeys(state.treeData.value)) treeRef.value?.getNode(k)?.expand()
 }
@@ -258,4 +250,3 @@ defineExpose({ treeRef })
 
 :deep(.el-tree-node__content:hover) .node-actions { opacity: 1; }
 </style>
-

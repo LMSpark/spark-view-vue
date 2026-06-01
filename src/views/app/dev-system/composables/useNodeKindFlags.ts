@@ -6,15 +6,15 @@ import type { DevState } from '../useDevState'
 
 export function useNodeKindFlags(state: DevState) {
   const isDirectoryNode = computed(() => {
-    const kind = state.navDraft.nodeKind
+    const kind = state.navEditDto.nodeKind
     return kind === 'system-directory' || kind === 'module'
   })
-  const isSystemPageNode = computed(() => state.navDraft.nodeKind === 'system-page')
-  const isSystemActionNode = computed(() => state.navDraft.nodeKind === 'system-action')
-  const isPageNode = computed(() => state.navDraft.nodeKind === 'page')
-  const isLinkNode = computed(() => state.navDraft.nodeKind === 'link')
-  const isSubPageNode = computed(() => state.navDraft.nodeKind === 'sub-page')
-  const isRefNode = computed(() => state.navDraft.nodeKind === 'ref')
+  const isSystemPageNode = computed(() => state.navEditDto.nodeKind === 'system-page')
+  const isSystemActionNode = computed(() => state.navEditDto.nodeKind === 'system-action')
+  const isPageNode = computed(() => state.navEditDto.nodeKind === 'page')
+  const isLinkNode = computed(() => state.navEditDto.nodeKind === 'link')
+  const isSubPageNode = computed(() => state.navEditDto.nodeKind === 'sub-page')
+  const isRefNode = computed(() => state.navEditDto.nodeKind === 'ref')
 
   const showTargetSelector = computed(() =>
     isSystemPageNode.value || isPageNode.value || isSystemActionNode.value,

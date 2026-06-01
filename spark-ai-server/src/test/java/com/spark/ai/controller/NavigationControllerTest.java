@@ -1,6 +1,5 @@
 package com.spark.ai.controller;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.service.ProjectNavigationTreeService;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -13,7 +12,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.Map;
 
-import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -27,9 +25,6 @@ class NavigationControllerTest {
 
     @Autowired
     MockMvc mockMvc;
-
-    @Autowired
-    ObjectMapper objectMapper;
 
     @MockBean
         ProjectNavigationTreeService navigationTreeService;
@@ -62,28 +57,37 @@ class NavigationControllerTest {
     }
 
     @Test
-    void saveNavConfig_success() throws Exception {
-        Map<String, Object> nav = Map.of(
-                "childPlacement", "header",
-                "children", List.of(Map.of("id", "mod1", "title", "模块1"))
-        );
+    void rootNavigationPut_isNotExposed() throws Exception {
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation"))
+                .andExpect(status().isMethodNotAllowed());
 
-        mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(nav)))
-                .andExpect(status().isOk())
-                .andExpect(jsonPath("$.data.success").value(true));
-
-        verify(navigationTreeService).saveNavConfig(eq("t1"), eq("p1"), any());
+        verifyNoInteractions(navigationTreeService);
     }
 
     @Test
-    void saveNavConfig_rejectsMissingChildren() throws Exception {
-        mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation")
+    void rootNavigationPost_isNotExposed() throws Exception {
+        mockMvc.perform(post("/api/tenants/t1/projects/p1/navigation"))
+                .andExpect(status().isMethodNotAllowed());
+
+        verifyNoInteractions(navigationTreeService);
+    }
+
+    @Test
+    void updateNode_allowsOrderPatchForAiReorder() throws Exception {
+        when(navigationTreeService.updateNode(eq("t1"), eq("p1"), eq("leaf"), anyMap()))
+                .thenReturn(Map.of("id", "leaf", "title", "叶子", "order", 0));
+
+        mockMvc.perform(put("/api/tenants/t1/projects/p1/navigation/nodes/leaf")
                         .contentType(MediaType.APPLICATION_JSON)
-                .content("{\"childPlacement\":\"header\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").exists());
+                        .content("{\"title\":\"叶子\",\"order\":0}"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.data.node.order").value(0));
+
+        verify(navigationTreeService).updateNode(
+                eq("t1"),
+                eq("p1"),
+                eq("leaf"),
+                argThat(patch -> patch.containsKey("order") && patch.get("order").equals(0)));
     }
 
     @Test

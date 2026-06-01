@@ -167,7 +167,7 @@
           "allowDBNull": true
         },
         {
-          "name": "sortOrder",
+          "name": "order",
           "type": "number"
         },
         {

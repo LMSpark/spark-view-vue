@@ -1,11 +1,11 @@
 /**
- * @spark-view/spark-page-config/json-document
+ * @spark-view/spark-project-model/json-document
  *
  * JSON 文档编辑核心子路径。
  * 仅导出 json-document 相关符号。
  */
 
-export * as JsonDocumentRuntime from './json-document'
+export * as JsonDocumentRuntime from './standalone/json-document'
 
 export {
   addChildNode,
@@ -50,4 +50,4 @@ export {
   type TreeNode,
   type TreeModel,
   type UpdateNodeTypeInput,
-} from './json-document'
+} from './standalone/json-document'

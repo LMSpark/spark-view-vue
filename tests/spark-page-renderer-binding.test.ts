@@ -9,8 +9,8 @@ import { SparkData, type DataSet } from '@spark-view/spark-data'
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import {
   compileRule,
-} from '../packages/spark-page-config/src/page-model/read/page-content-compiler'
-import type { PageNodeLike, PageNodeRenderConfig } from '@spark-view/spark-page-config'
+} from '../packages/spark-project-model/src/service/content-loader/compiler.service'
+import type { PageNodeLike, PageNodeRenderConfig } from '@spark-view/spark-project-model'
 import { buildPageChildren } from '../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../packages/spark-component/src/page/actions'
 

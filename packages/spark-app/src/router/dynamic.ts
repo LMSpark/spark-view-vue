@@ -1,8 +1,7 @@
 /**
  * 动态路由注册器 - 支持 SPA 动态路由
  *
- * 迁移自 spark-page-config/router，职责上属于应用引导层（spark-app），
- * spark-page-config 只保留纯 TS 的配置加载/解析能力。
+ * 动态路由属于应用引导层（spark-app），页面节点能力来自 spark-project-model。
  */
 
 import type { Router, RouteRecordRaw } from 'vue-router'

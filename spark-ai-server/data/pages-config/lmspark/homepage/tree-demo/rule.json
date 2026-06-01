@@ -186,7 +186,7 @@
                             "path": "",
                             "linkTarget": "self",
                             "childPlacement": "flat",
-                            "sortOrder": 100,
+                            "order": 100,
                             "dividerAfter": null,
                             "hidden": false,
                             "disabled": false,
@@ -239,7 +239,7 @@
                             "path": "",
                             "linkTarget": "self",
                             "childPlacement": "flat",
-                            "sortOrder": 100,
+                            "order": 100,
                             "dividerAfter": null,
                             "hidden": false,
                             "disabled": false,
@@ -372,7 +372,7 @@
                                 "props": {
                                   "label": "排序",
                                   "colSpan": 12,
-                                  "field": "sortOrder"
+                                  "field": "order"
                                 }
                               },
                               {

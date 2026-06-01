@@ -1,6 +1,6 @@
 import { computed, watch, type Ref } from 'vue'
 import type { DevState } from '../useDevState'
-import type { PageNodeFileName } from '@spark-view/spark-page-config/project'
+import type { PageNodeFileName } from '@spark-view/spark-project-model/project'
 
 /**
  * 文件编辑器绑定器 — 将任意 PageNodeFileName 接入 ProjectEditor adapter。

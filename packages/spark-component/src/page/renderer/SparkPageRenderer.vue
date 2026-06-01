@@ -34,7 +34,7 @@
  *   props    = pageNode / pageId / enable* / 钩子等
  *   children = rule.json 经 buildPageChildren() 归并后的 SparkNode[]（渲染器内部生成）
  *
- * spark-page-config 负责 PageNode：
+ * spark-project-model 负责 PageNode：
  *   rule / data / script / css 均从已加载 PageNode 的内存态进入渲染层
  *
  * spark-component 负责运行时物化：

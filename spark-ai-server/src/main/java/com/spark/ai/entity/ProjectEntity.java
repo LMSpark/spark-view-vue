@@ -41,9 +41,9 @@ public class ProjectEntity {
     @Column(length = 1024)
     private String description;
 
-    /** 排序权重（homepage 固定 0） */
+    /** 展示顺序（homepage 固定 0），投影到 DB SORT_ORDER。 */
     @Column(name = "sort_order", nullable = false)
-    private Integer sortOrder = 0;
+    private Integer order = 0;
 
     @Column(name = "created_at", nullable = false, updatable = false)
     private Instant createdAt;
@@ -85,8 +85,8 @@ public class ProjectEntity {
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
 
-    public Integer getSortOrder() { return sortOrder; }
-    public void setSortOrder(Integer sortOrder) { this.sortOrder = sortOrder; }
+    public Integer getOrder() { return order; }
+    public void setOrder(Integer order) { this.order = order; }
 
     public Instant getCreatedAt() { return createdAt; }
     public Instant getUpdatedAt() { return updatedAt; }

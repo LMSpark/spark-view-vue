@@ -26,7 +26,7 @@
       class="system-dir-alert"
       title="系统模块（固定分组）不可删除、不可改类型、不可改层级；仅可编辑子项"
     />
-    <el-form :model="state.navDraft" :disabled="isSystemRootDirectory" label-width="100px" size="default" class="node-form">
+    <el-form :model="state.navEditDto" :disabled="isSystemRootDirectory" label-width="100px" size="default" class="node-form">
       <NodeBasicInfo :state="state" :module-kind-disabled="moduleKindDisabled" />
       <NodeTargetConfig :state="state" />
       <NodeLayoutConfig :state="state" />

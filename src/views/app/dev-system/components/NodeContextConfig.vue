@@ -2,14 +2,14 @@
   <template v-if="isDirectoryNode">
     <el-divider content-position="left">模块上下文（Context）</el-divider>
     <el-form-item label="启用上下文" class="switch-item">
-      <el-switch v-model="state.navDraft.hasContext" @change="state.toggleContext" />
+      <el-switch v-model="state.navEditDto.hasContext" @change="state.toggleContext" />
       <span class="switch-item__hint">启用后可配置下拉上下文选项</span>
       <el-button size="small" type="primary" plain class="context-demo-btn" @click="state.fillDemoContext">
         <NavIcon name="MagicStick" :size="14" /> 一键填充演示数据
       </el-button>
       <span class="context-demo-tip">用于快速预览上下文下拉效果</span>
     </el-form-item>
-    <template v-if="state.navDraft.hasContext">
+    <template v-if="state.navEditDto.hasContext">
       <el-form-item label="选项列表" class="fi fi--wide">
         <div class="context-items">
           <div v-for="(item, idx) in state.contextItems.value" :key="idx" class="context-item-row">

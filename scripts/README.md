@@ -6,7 +6,7 @@
 
 - `start-dev.mjs`：一键启动项目 Docker MySQL、Java 后端和前端开发环境。
 - `build-all.mjs`：完整构建流水线；需要临时后端上传元数据时会先启动项目 Docker MySQL。
-- `upload-component-metadata.mjs`：将 `packages/spark-page-config/src/page-model/ai/payloads/component-catalog.json` 上传到 AI 后端。
+- `upload-component-metadata.mjs`：将 `packages/spark-project-model/src/ai/page-design/payload/component-catalog.json` 上传到 AI 后端。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`：根应用链路验证脚本。
 - AI live 验证脚本放在根 `scripts/`，由脚本层自行持有 HTTP 与 APP SSE I/O。

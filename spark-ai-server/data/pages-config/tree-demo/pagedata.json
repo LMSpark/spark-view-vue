@@ -161,7 +161,7 @@
           "type": "string"
         },
         {
-          "name": "sortOrder",
+          "name": "order",
           "type": "number"
         },
         {

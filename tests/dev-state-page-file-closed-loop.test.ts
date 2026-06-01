@@ -166,7 +166,7 @@ describe('DevState 页面文件闭环', () => {
     expect(state.pageFilesRevision.value).toBeGreaterThan(0)
   })
 
-  it('切换左侧节点时触发右侧 navDraft 订阅刷新', async () => {
+  it('切换左侧节点时触发右侧 navEditDto 订阅刷新', async () => {
     const state = useDevState()
     httpMock.get.mockImplementation(async (url: string) => {
       if (url === '/api/navigation') {
@@ -183,9 +183,9 @@ describe('DevState 页面文件闭环', () => {
     })
 
     await state.loadNavConfig()
-    const observedDraftIds: string[] = []
+    const observedEditDtoIds: string[] = []
     const stop = watchEffect(() => {
-      observedDraftIds.push(state.navDraft.id)
+      observedEditDtoIds.push(state.navEditDto.id)
     })
 
     await state.selectNode(state.treeData.value[1]!)
@@ -194,7 +194,7 @@ describe('DevState 页面文件闭环', () => {
 
     expect(state.selectedNode.value?.id).toBe('beta-node')
     expect(state.activePageId.value).toBe('beta')
-    expect(observedDraftIds.at(-1)).toBe('beta-node')
+    expect(observedEditDtoIds.at(-1)).toBe('beta-node')
   })
 
   it('初始化页面列表从导航树派生，不请求 pages-config __list', async () => {
@@ -225,9 +225,38 @@ describe('DevState 页面文件闭环', () => {
         title: 'Alpha',
         nodeId: 'alpha-node',
         description: 'Alpha 页面需求',
-        userRequirement: 'Alpha 页面需求',
       }),
     ])
     expect(httpMock.get).not.toHaveBeenCalledWith('/api/pages-config/__list')
+  })
+
+  it('header 保存导航属性时只提交选中节点 patch，不整树保存', async () => {
+    const state = useDevState()
+    const root = {
+      title: 'root',
+      childPlacement: 'header',
+      children: [
+        { id: 'alpha-node', title: 'Alpha', nodeKind: 'page', path: '/alpha' },
+      ],
+    }
+    httpMock.get.mockImplementation(async (url: string) => {
+      if (url === '/api/navigation') return root
+      return pageFileResponse(url)
+    })
+    httpMock.put.mockResolvedValueOnce({
+      node: { id: 'alpha-node', title: 'Alpha updated', nodeKind: 'page', path: '/alpha' },
+    })
+
+    await state.loadNavConfig()
+    state.navEditDto.title = 'Alpha updated'
+    await state.saveAll()
+
+    expect(httpMock.put).toHaveBeenCalledWith(
+      '/api/navigation/nodes/alpha-node',
+      expect.objectContaining({ title: 'Alpha updated', order: 0 }),
+    )
+    expect(httpMock.put).not.toHaveBeenCalledWith('/api/navigation/nodes/alpha-node/move', expect.anything())
+    expect(httpMock.put).not.toHaveBeenCalledWith('/api/navigation', expect.anything())
+    expect(httpMock.post).not.toHaveBeenCalledWith('/api/navigation', expect.anything())
   })
 })

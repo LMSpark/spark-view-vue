@@ -9,7 +9,7 @@
     "packages/spark-component/src/**/*.vue",
     "packages/spark-data/src/**/*.ts",
     "packages/spark-utils/src/**/*.ts",
-    "packages/spark-page-config/src/**/*.ts"
+    "packages/spark-project-model/src/**/*.ts"
   ],
   "exclude": [
     "node_modules",

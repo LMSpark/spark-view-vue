@@ -10,7 +10,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { useDevState, type DevWorkspaceTab } from './useDevState'
-import type { PageNodeFileName } from '@spark-view/spark-page-config/project'
+import type { PageNodeFileName } from '@spark-view/spark-project-model/project'
 import { onPageConfigChange } from '@/services/sse-events'
 
 export function useDevSystem() {
@@ -40,13 +40,13 @@ export function useDevSystem() {
 
   // ─── 派生能力 ──────────────────────────────────────────
   const canPreviewCurrentPage = computed(
-    () => Boolean(state.navDraft.path || state.activePageId.value),
+    () => Boolean(state.navEditDto.path || state.activePageId.value),
   )
-  const activePageRequirement = computed(() => {
+  const activePageDescription = computed(() => {
     const pageId = state.activePageId.value
     if (!pageId) return ''
     const page = state.pageList.value.find((item: { pageId: string }) => item.pageId === pageId)
-    return String(page?.effectiveUserRequirement ?? page?.description ?? '').trim()
+    return String(page?.effectiveDescription ?? page?.description ?? '').trim()
   })
   const canSaveCleanNode = computed(() => {
     if (workTab.value !== 'props') return false
@@ -56,7 +56,7 @@ export function useDevSystem() {
   const canSaveFromHeader = computed(() => state.hasAnyDirty.value || canSaveCleanNode.value)
   const headerSaveLabel = computed(() => state.hasAnyDirty.value ? '全部保存' : '保存')
   const canRunPageDesignAi = computed(() =>
-    Boolean(state.activePageId.value && (pageDesignAiPrompt.value.trim() || activePageRequirement.value)),
+    Boolean(state.activePageId.value && (pageDesignAiPrompt.value.trim() || activePageDescription.value)),
   )
 
   // 选中节点时自动切到节点属性页签
@@ -95,8 +95,8 @@ export function useDevSystem() {
 
   async function runPageDesignAi() {
     if (!canRunPageDesignAi.value) return
-    const userRequirement = pageDesignAiPrompt.value.trim() || activePageRequirement.value
-    await state.runPageDesignAi({ userRequirement })
+    const description = pageDesignAiPrompt.value.trim() || activePageDescription.value
+    await state.runPageDesignAi({ description })
   }
 
   function isWorkspaceTabDirty(name: PageNodeFileName): boolean {

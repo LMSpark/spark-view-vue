@@ -94,8 +94,8 @@
           <div class="workspace-footer__left">
             <template v-if="state.selectedNode.value">
               <span class="footer-info">
-                <NavIcon name="Share" :size="13" /> {{ state.navDraft.id }}
-                <template v-if="state.navDraft.title"> · {{ state.navDraft.title }}</template>
+                <NavIcon name="Share" :size="13" /> {{ state.navEditDto.id }}
+                <template v-if="state.navEditDto.title"> · {{ state.navEditDto.title }}</template>
               </span>
               <el-tag v-if="state.navDirty.value" type="warning" size="small">属性已修改</el-tag>
             </template>
@@ -144,7 +144,7 @@
  * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
  */
 import { onMounted } from 'vue'
-import type { PageNodeFileName } from '@spark-view/spark-page-config/project'
+import type { PageNodeFileName } from '@spark-view/spark-project-model/project'
 import { AiToolApprovalPanel } from '@spark-view/spark-component'
 import { useDevSystem } from './useDevSystem'
 import DevSiteTree from './DevSiteTree.vue'

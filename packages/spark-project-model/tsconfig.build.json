@@ -2,7 +2,23 @@
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "declaration": true,
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": true,
+    "noEmit": false,
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "paths": {
+      "@spark-view/spark-ai": ["../spark-ai/dist/index.d.ts"],
+      "@spark-view/spark-ai/json": ["../spark-ai/dist/json/index.d.ts"],
+      "@spark-view/spark-ai/agent": ["../spark-ai/dist/agent/index.d.ts"],
+      "@spark-view/spark-ai/modules": ["../spark-ai/dist/modules/index.d.ts"],
+      "@spark-view/spark-data": ["../spark-data/dist/types/index.d.ts"],
+      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"],
+      "@spark-view/spark-utils/internal": ["../spark-utils/dist/internal/index.d.ts"],
+      "@spark-view/spark-project-model": ["./src/index.ts"],
+      "@spark-view/spark-project-model/project": ["./src/project.ts"],
+      "@spark-view/spark-project-model/ai": ["./src/ai.ts"],
+      "@spark-view/spark-component/runtime": ["../spark-component/dist/runtime/index.d.ts"]
+    }
   },
   "include": ["src"],
   "exclude": ["node_modules", "dist", "tests"]

@@ -22,8 +22,8 @@ const includeFiles = [
 
 const interfaceAllowlist = new Set([
   'packages/spark-utils/src/capability/core.ts:CapabilityTypeMap',
-  'packages/spark-page-config/src/page/services/app-services.ts:CapabilityTypeMap',
-  'packages/spark-page-config/src/runtime/app-services.ts:CapabilityTypeMap',
+  'packages/spark-component/src/page/services/app-services.ts:CapabilityTypeMap',
+  'packages/spark-component/src/runtime/app-services.ts:CapabilityTypeMap',
   'packages/spark-component/src/core/capability-keys.ts:CapabilityTypeMap',
   // Host session-types 与 transport-types 是完整类型契约模块；
   // 按主题再次 re-export 会制造额外间接层。
@@ -645,7 +645,7 @@ function isProtocolPublicSurfaceFile(file) {
   return file.endsWith('/index.ts')
     && (
       file.startsWith('packages/spark-ai/src/')
-      || file.startsWith('packages/spark-page-config/src/')
+      || file.startsWith('packages/spark-project-model/src/')
     )
 }
 
@@ -661,7 +661,7 @@ function isTestFile(file) {
 
 function enforcesOptionalUndefinedConvention(file) {
   return file.startsWith('packages/spark-ai/src/')
-    || file.startsWith('packages/spark-page-config/src/page-model/ai/')
+    || file.startsWith('packages/spark-project-model/src/ai/')
 }
 
 if (isCliEntrypoint(import.meta.url)) {

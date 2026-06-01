@@ -43,7 +43,7 @@ describe('project UI settings storage', () => {
     })
   })
 
-  it('uses the scoped storage key format from the plan', () => {
+  it('uses the scoped storage key format', () => {
     expect(getProjectUiSettingsStorageKey('tenant:lmspark:project:homepage')).toBe(
       'spark-ui-settings:tenant:lmspark:project:homepage',
     )

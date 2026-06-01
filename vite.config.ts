@@ -29,10 +29,10 @@ export default defineConfig({
       '@spark-view/spark-data': path.resolve(root, 'packages', 'spark-data', 'src', 'index.ts'),
       '@spark-view/spark-utils/internal': path.resolve(root, 'packages', 'spark-utils', 'src', 'internal', 'index.ts'),
       '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
-      '@spark-view/spark-page-config/project': path.resolve(root, 'packages', 'spark-page-config', 'src', 'project.ts'),
-      '@spark-view/spark-page-config/ai': path.resolve(root, 'packages', 'spark-page-config', 'src', 'ai.ts'),
-      '@spark-view/spark-page-config/json-document': path.resolve(root, 'packages', 'spark-page-config', 'src', 'json-document-public.ts'),
-      '@spark-view/spark-page-config': path.resolve(root, 'packages', 'spark-page-config', 'src', 'index.ts'),
+      '@spark-view/spark-project-model/project': path.resolve(root, 'packages', 'spark-project-model', 'src', 'project.ts'),
+      '@spark-view/spark-project-model/ai': path.resolve(root, 'packages', 'spark-project-model', 'src', 'ai.ts'),
+      '@spark-view/spark-project-model/json-document': path.resolve(root, 'packages', 'spark-project-model', 'src', 'json-document-public.ts'),
+      '@spark-view/spark-project-model': path.resolve(root, 'packages', 'spark-project-model', 'src', 'index.ts'),
       '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),
       '@spark-view/spark-ai/json': path.resolve(root, 'packages', 'spark-ai', 'src', 'json', 'index.ts'),
       '@spark-view/spark-ai/agent': path.resolve(root, 'packages', 'spark-ai', 'src', 'agent', 'index.ts'),
@@ -199,7 +199,7 @@ export default defineConfig({
           if (normalizedId.includes('packages/spark-app')) {
             return 'spark-app'
           }
-          if (normalizedId.includes('packages/spark-page-config')) {
+          if (normalizedId.includes('packages/spark-project-model')) {
             return 'spark-config'
           }
 

@@ -158,7 +158,7 @@ export default [
               '../**/spark-data*',
               '../**/spark-component*',
               '../**/spark-app*',
-              '../**/spark-page-config*'
+              '../**/spark-project-model*'
             ],
             message: '禁止挎包路径导入，请使用 @spark-view/<package-name> 替代'
           }
@@ -186,7 +186,7 @@ export default [
           './packages/spark-utils/tsconfig.json',
           './packages/spark-data/tsconfig.json',
           './packages/spark-component/tsconfig.json',
-          './packages/spark-page-config/tsconfig.json',
+          './packages/spark-project-model/tsconfig.json',
           './packages/spark-app/tsconfig.json',
           './packages/vite-plugin-spark-catalog/tsconfig.json'
         ],

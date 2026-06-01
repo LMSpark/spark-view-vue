@@ -17,7 +17,7 @@ function createDevSystemCtx(overrides: Record<string, unknown> = {}) {
     fileSaving: ref(false),
     navLoading: ref(false),
     selectedNode: ref({ id: 'dbms', title: '数据库管理' }),
-    navDraft: { id: 'dbms', title: '数据库管理' },
+    navEditDto: { id: 'dbms', title: '数据库管理' },
     activePageId: ref('dbms'),
     navDirty: ref(false),
     hasAnyFileDirty: ref(false),

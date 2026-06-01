@@ -11,6 +11,8 @@ export default defineConfig({
     lib: {
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
+        project: resolve(__dirname, 'src/project.ts'),
+        ai: resolve(__dirname, 'src/ai.ts'),
         'json-document-public': resolve(__dirname, 'src/json-document-public.ts'),
       },
       formats: ['es'],

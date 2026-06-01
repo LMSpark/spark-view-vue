@@ -3,6 +3,7 @@ package com.spark.ai.api;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.server.ResponseStatusException;
@@ -29,6 +30,13 @@ public class GlobalExceptionHandler {
     @ExceptionHandler({NoSuchElementException.class, NoSuchFileException.class})
     public ResponseEntity<ApiEnvelope<Object>> notFound(Exception error, HttpServletRequest request) {
         return error(HttpStatus.NOT_FOUND, "NOT_FOUND", error.getMessage(), request);
+    }
+
+    @ExceptionHandler(HttpRequestMethodNotSupportedException.class)
+    public ResponseEntity<ApiEnvelope<Object>> methodNotAllowed(
+            HttpRequestMethodNotSupportedException error,
+            HttpServletRequest request) {
+        return error(HttpStatus.METHOD_NOT_ALLOWED, "METHOD_NOT_ALLOWED", error.getMessage(), request);
     }
 
     @ExceptionHandler(ResponseStatusException.class)

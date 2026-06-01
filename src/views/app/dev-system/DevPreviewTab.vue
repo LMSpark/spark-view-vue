@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import type { ProjectConfigPageNodeModel } from '@spark-view/spark-page-config/project'
+import type { ConfigPageNode } from '@spark-view/spark-project-model/project'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
@@ -69,9 +69,9 @@ const autoRefresh = ref(true)
 const livePreview = ref(true)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
-const previewPageNode = shallowRef<ProjectConfigPageNodeModel | null>(null)
+const previewPageNode = shallowRef<ConfigPageNode | null>(null)
 
-function requireActivePageNodeLoaded(): ProjectConfigPageNodeModel {
+function requireActivePageNodeLoaded(): ConfigPageNode {
   const pageId = props.state.activePageId.value
   const activePage = props.state.getActivePage()
   if (!pageId || activePage === null) {

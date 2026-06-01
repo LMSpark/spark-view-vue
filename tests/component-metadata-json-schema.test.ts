@@ -4,7 +4,7 @@ import { describe, expect, it } from 'vitest'
 
 import { AiJsonSchemaValidator, type AiJsonSchemaObject, type AiJsonValue } from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
-import { createPageDesignPayloadRegistry } from '../packages/spark-page-config/src/page-model/ai/tool-catalogs/payload-catalog-tool-catalog'
+import { createPageDesignPayloadRegistry } from '../packages/spark-project-model/src/ai/page-design/tool-catalog/payload-catalog'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
   '$id',
@@ -273,13 +273,13 @@ async function queryPayloads(args: Record<string, AiJsonValue>): Promise<JsonRec
 
 describe('Vue component metadata JSON Schema', () => {
   it('keeps generated component catalog schemas standard JSON Schema 2020-12', () => {
-    const catalog = readJsonFile(resolve(process.cwd(), 'packages/spark-page-config/src/page-model/ai/payloads/component-catalog.json'))
+    const catalog = readJsonFile(resolve(process.cwd(), 'packages/spark-project-model/src/ai/page-design/payload/component-catalog.json'))
 
     expectStandardComponentCatalog('component-catalog', catalog)
   })
 
   it('keeps backend-persisted component metadata in sync and standard JSON Schema 2020-12', () => {
-    const catalog = readJsonFile(resolve(process.cwd(), 'packages/spark-page-config/src/page-model/ai/payloads/component-catalog.json'))
+    const catalog = readJsonFile(resolve(process.cwd(), 'packages/spark-project-model/src/ai/page-design/payload/component-catalog.json'))
     const backendMetadata = readJsonFile(resolve(process.cwd(), 'spark-ai-server/data/component-metadata.json'))
 
     expectStandardComponentCatalog('component-metadata', backendMetadata)

@@ -287,7 +287,7 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-view/spark-page-config/project'
+} from '@spark-view/spark-project-model/project'
 import type { DevState } from './useDevState'
 import type {
   CrudApi,

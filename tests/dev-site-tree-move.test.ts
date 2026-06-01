@@ -18,7 +18,6 @@ function createState(node: NavNode): DevState {
   state.removeNodeFromTree = vi.fn<DevState['removeNodeFromTree']>()
   state.selectNode = vi.fn<DevState['selectNode']>(async () => {})
   state.moveNodeInTree = vi.fn<DevState['moveNodeInTree']>(async () => {})
-  state.resetToDemo = vi.fn<DevState['resetToDemo']>(async () => {})
   return state
 }
 
@@ -60,4 +59,3 @@ describe('DevSiteTree move persistence', () => {
     expect(state.moveNodeInTree).toHaveBeenCalledWith(node)
   })
 })
-

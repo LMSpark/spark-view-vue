@@ -1,20 +1,17 @@
 package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.spark.ai.entity.NavigationNodeFlatEntity;
+import com.spark.ai.repository.NavigationNodeFlatRepository;
 import com.spark.ai.security.AccessGuardService;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.io.IOException;
-import java.sql.PreparedStatement;
-import java.sql.Timestamp;
-import java.time.Instant;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -24,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.UUID;
@@ -36,7 +34,7 @@ import java.util.regex.Pattern;
 @Service
 public class ProjectNavigationTreeService {
 
-    private record FlatNode(String nodeId, String parentId, Integer sortOrder, Map<String, Object> node) {}
+    private record FlatNode(String nodeId, String parentId, Integer order, Map<String, Object> node) {}
 
     private static final Logger log = LoggerFactory.getLogger(ProjectNavigationTreeService.class);
     private static final String DEFAULT_HOME_PATH = "/dashboard";
@@ -44,151 +42,17 @@ public class ProjectNavigationTreeService {
     private static final Set<String> VALID_NODE_KINDS = Set.of("system-directory", "module", "system-page", "system-action", "page", "link", "sub-page", "ref");
     private static final Set<String> VALID_CHILD_PLACEMENTS = Set.of("header", "sidebar", "toolbar", "user-menu", "parent", "flat");
 
-    // ── SQL（PARENT_ID 为 VARCHAR，存 NODE_ID 字符串）─────────────────────
-
-    private static final String SELECT_FLAT_SQL = """
-        SELECT NODE_ID, PARENT_ID, TITLE, DESCRIPTION, NODE_KIND, PATH, ICON,
-           DIVIDER_AFTER, CHILD_PLACEMENT, LINK_TARGET,
-           HIDDEN, DISABLED, SORT_ORDER, REF_ID, CONTEXT,
-           PERMISSIONS
-        FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ?
-        ORDER BY SORT_ORDER, NODE_ID
-        """;
-    private static final String DELETE_ALL_SQL = """
-        DELETE FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ?
-        """;
-    private static final String INSERT_FLAT_SQL = """
-        INSERT INTO NAVIGATION_NODE_FLAT (
-            PARENT_ID, TENANT_ID, PROJECT_ID,
-            TITLE, DESCRIPTION, NODE_KIND, PATH, ICON,
-            DIVIDER_AFTER, CHILD_PLACEMENT, LINK_TARGET,
-            HIDDEN, DISABLED, SORT_ORDER,
-            NODE_ID, UPDATED_AT, REF_ID, CONTEXT,
-            PERMISSIONS
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-        """;
-    private static final String EXISTS_NODE_SQL = """
-        SELECT 1 FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
-        """;
-    private static final String MAX_SORT_ORDER_SQL = """
-        SELECT COALESCE(MAX(SORT_ORDER), -1) + 1
-        FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID %s
-        """;
-    private static final String SHIFT_SORT_ORDER_SQL = """
-        UPDATE NAVIGATION_NODE_FLAT SET SORT_ORDER = SORT_ORDER + 1
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID %s AND SORT_ORDER >= ?
-        """;
-    private static final String UPDATE_NODE_SQL = """
-        UPDATE NAVIGATION_NODE_FLAT SET
-            TITLE = ?, DESCRIPTION = ?, NODE_KIND = ?, PATH = ?, ICON = ?,
-            DIVIDER_AFTER = ?, CHILD_PLACEMENT = ?, LINK_TARGET = ?,
-            HIDDEN = ?, DISABLED = ?, REF_ID = ?, CONTEXT = ?,
-            PERMISSIONS = ?, UPDATED_AT = ?
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
-        """;
-    private static final String DELETE_BY_NODE_ID_SQL = """
-        DELETE FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
-        """;
-    private static final String DELETE_CHILDREN_SQL = """
-        DELETE FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID = ?
-        """;
-    private static final String SELECT_CHILDREN_SQL = """
-        SELECT NODE_ID FROM NAVIGATION_NODE_FLAT
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND PARENT_ID = ?
-        """;
-    private static final String MOVE_NODE_SQL = """
-        UPDATE NAVIGATION_NODE_FLAT SET
-            PARENT_ID = ?, SORT_ORDER = ?, UPDATED_AT = ?
-        WHERE TENANT_ID = ? AND PROJECT_ID = ? AND NODE_ID = ?
-        """;
-    private static final String CHECK_SYSTEM_ROOT_SQL = """
-        SELECT NODE_KIND, PARENT_ID FROM NAVIGATION_NODE_FLAT WHERE NODE_ID = ?
-        """;
-    /** 跨项目解析 ref 节点：通过全局唯一 NODE_ID 查目标节点基本信息 */
-    private static final String RESOLVE_REF_SQL = """
-        SELECT NODE_ID, TENANT_ID, PROJECT_ID, TITLE, ICON, PATH, NODE_KIND
-        FROM NAVIGATION_NODE_FLAT WHERE NODE_ID = ?
-        """;
-
     private final ObjectMapper objectMapper;
-    private final JdbcTemplate jdbcTemplate;
     private final AccessGuardService accessGuardService;
-
-    public ProjectNavigationTreeService(ObjectMapper objectMapper,
-                                        JdbcTemplate jdbcTemplate) {
-        this(objectMapper, jdbcTemplate, null);
-    }
+    private final NavigationNodeFlatRepository navigationNodeRepository;
 
     @Autowired
     public ProjectNavigationTreeService(ObjectMapper objectMapper,
-                                        JdbcTemplate jdbcTemplate,
-                                        AccessGuardService accessGuardService) {
+                                        AccessGuardService accessGuardService,
+                                        NavigationNodeFlatRepository navigationNodeRepository) {
         this.objectMapper = objectMapper;
-        this.jdbcTemplate = jdbcTemplate;
         this.accessGuardService = accessGuardService;
-    }
-
-    @PostConstruct
-    void ensureSchema() {
-        if (isMySql()) {
-            log.info("[Navigation] MySQL profile detected; schema is managed by Flyway");
-            return;
-        }
-        jdbcTemplate.execute("""
-            CREATE TABLE IF NOT EXISTS NAVIGATION_NODE_FLAT (
-                NODE_ID         VARCHAR(255)  NOT NULL PRIMARY KEY,
-                PARENT_ID       VARCHAR(255),
-                TENANT_ID       VARCHAR(255)  NOT NULL,
-                PROJECT_ID      VARCHAR(255)  NOT NULL,
-                TITLE           VARCHAR(500),
-                DESCRIPTION     VARCHAR(2000),
-                NODE_KIND       VARCHAR(50),
-                PATH            VARCHAR(500),
-                ICON            VARCHAR(255),
-                DIVIDER_AFTER   BOOLEAN       DEFAULT FALSE,
-                CHILD_PLACEMENT VARCHAR(50),
-                LINK_TARGET     VARCHAR(50),
-                HIDDEN          BOOLEAN       DEFAULT FALSE,
-                DISABLED        BOOLEAN       DEFAULT FALSE,
-                SORT_ORDER      INT           DEFAULT 0,
-                UPDATED_AT      TIMESTAMP,
-                REF_ID          VARCHAR(255),
-                CONTEXT         CLOB,
-                PERMISSIONS     VARCHAR(2000)
-            )
-            """);
-        // 向已有表安全添加新列（列已存在则忽略）
-        safeAddColumn("PERMISSIONS", "VARCHAR(2000)");
-        jdbcTemplate.execute("""
-            CREATE INDEX IF NOT EXISTS IDX_NAV_TENANT_PROJECT
-            ON NAVIGATION_NODE_FLAT (TENANT_ID, PROJECT_ID)
-            """);
-        log.info("[Navigation] 表 NAVIGATION_NODE_FLAT 已就绪");
-    }
-
-    private boolean isMySql() {
-        try (var connection = jdbcTemplate.getDataSource().getConnection()) {
-            String product = connection.getMetaData().getDatabaseProductName();
-            return product != null && product.toLowerCase().contains("mysql");
-        } catch (Exception ignored) {
-            return false;
-        }
-    }
-
-    /** 安全添加列：如果列已存在则忽略。 */
-    private void safeAddColumn(String column, String type) {
-        try {
-            jdbcTemplate.execute("ALTER TABLE NAVIGATION_NODE_FLAT ADD COLUMN " + column + " " + type);
-            log.info("[Navigation] 已添加列 {}", column);
-        } catch (Exception e) {
-            // 列已存在，忽略
-        }
+        this.navigationNodeRepository = navigationNodeRepository;
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -209,15 +73,15 @@ public class ProjectNavigationTreeService {
     }
 
     /**
-     * 保存导航配置（完整覆盖）。
+     * 导入导航配置（完整覆盖）。仅供后端初始化/种子修复使用；前端编辑必须走节点级 CRUD。
      */
     @Transactional
-    public void saveNavConfig(String tenantId, String projectId,
+    public void importNavConfig(String tenantId, String projectId,
                                Map<String, Object> navRoot) throws IOException {
         guardProject(tenantId, projectId);
         persistTree(tenantId, projectId, navRoot);
         String json = objectMapper.writerWithDefaultPrettyPrinter().writeValueAsString(navRoot);
-        log.info("[Navigation] 整树保存 tenant={} project={} ({} bytes)", tenantId, projectId, json.length());
+        log.info("[Navigation] 导入导航树 tenant={} project={} ({} bytes)", tenantId, projectId, json.length());
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -253,16 +117,16 @@ public class ProjectNavigationTreeService {
             throw new IllegalArgumentException("父节点不存在: " + parentNodeId);
         }
 
-        int sortOrder;
+        int order;
         if (index < 0) {
-            sortOrder = nextSortOrder(tenantId, projectId, parentNodeId);
+            order = nextOrder(tenantId, projectId, parentNodeId);
         } else {
-            shiftSortOrders(tenantId, projectId, parentNodeId, index);
-            sortOrder = index;
+            shiftOrders(tenantId, projectId, parentNodeId, index);
+            order = index;
         }
 
-        insertFlatRow(tenantId, projectId, parentNodeId, sanitized, sortOrder);
-        sanitized.put("order", sortOrder);
+        insertFlatRow(tenantId, projectId, parentNodeId, sanitized, order);
+        sanitized.put("order", order);
         log.info("[Navigation] 新增节点 id={} tenant={} project={}", newId, tenantId, projectId);
         return sanitized;
     }
@@ -278,31 +142,61 @@ public class ProjectNavigationTreeService {
         if (!nodeExists(tenantId, projectId, id)) {
             throw new IllegalArgumentException("节点不存在: " + id);
         }
-        if (patch.containsKey("order") || patch.containsKey("sortOrder")) {
-            throw new IllegalArgumentException("排序只能通过 moveNode 调整");
-        }
 
         Map<String, Object> merged = new LinkedHashMap<>(patch);
         merged.put("id", id);
-        String title = asTrimmedString(merged.get("title"));
-        if (title.isBlank()) title = id;
 
-        jdbcTemplate.update(UPDATE_NODE_SQL,
-                title,
-                blankToNull(asTrimmedString(merged.get("description"))),
-                blankToNull(asTrimmedString(merged.get("nodeKind"))),
-                blankToNull(asTrimmedString(merged.get("path"))),
-                blankToNull(asTrimmedString(merged.get("icon"))),
-                toBoolean(merged.get("dividerAfter")),
-                blankToNull(asTrimmedString(merged.get("childPlacement"))),
-                blankToNull(asTrimmedString(merged.get("linkTarget"))),
-                toBoolean(merged.get("hidden")),
-                toBoolean(merged.get("disabled")),
-                blankToNull(asTrimmedString(merged.get("refId"))),
-                serializeContext(merged.get("context")),
-                blankToNull(asTrimmedString(merged.get("permissionMode"))),
-                Timestamp.from(Instant.now()),
-                tenantId, projectId, id);
+        NavigationNodeFlatEntity entity = getRequiredNode(tenantId, projectId, id);
+        if (merged.containsKey("title")) {
+            String title = asTrimmedString(merged.get("title"));
+            entity.setTitle(title.isBlank() ? id : title);
+        }
+        if (merged.containsKey("description")) {
+            entity.setDescription(blankToNull(asTrimmedString(merged.get("description"))));
+        }
+        if (merged.containsKey("nodeKind")) {
+            entity.setNodeKind(blankToNull(asTrimmedString(merged.get("nodeKind"))));
+        }
+        if (merged.containsKey("path")) {
+            entity.setPath(blankToNull(asTrimmedString(merged.get("path"))));
+        }
+        if (merged.containsKey("icon")) {
+            entity.setIcon(blankToNull(asTrimmedString(merged.get("icon"))));
+        }
+        if (merged.containsKey("dividerAfter")) {
+            entity.setDividerAfter(toBoolean(merged.get("dividerAfter")));
+        }
+        if (merged.containsKey("childPlacement")) {
+            entity.setChildPlacement(blankToNull(asTrimmedString(merged.get("childPlacement"))));
+        }
+        if (merged.containsKey("linkTarget")) {
+            entity.setLinkTarget(blankToNull(asTrimmedString(merged.get("linkTarget"))));
+        }
+        if (merged.containsKey("hidden")) {
+            entity.setHidden(toBoolean(merged.get("hidden")));
+        }
+        if (merged.containsKey("disabled")) {
+            entity.setDisabled(toBoolean(merged.get("disabled")));
+        }
+        if (merged.containsKey("refId")) {
+            entity.setRefId(blankToNull(asTrimmedString(merged.get("refId"))));
+        }
+        if (merged.containsKey("context")) {
+            entity.setContext(serializeContext(merged.get("context")));
+        }
+        if (merged.containsKey("permissionMode")) {
+            entity.setPermissions(blankToNull(asTrimmedString(merged.get("permissionMode"))));
+        }
+        navigationNodeRepository.save(entity);
+
+        if (merged.containsKey("order")) {
+            Integer requestedOrder = toInt(merged.get("order"));
+            if (requestedOrder == null || requestedOrder < 0) {
+                throw new IllegalArgumentException("order 必须是非负整数");
+            }
+            int order = reorderNode(tenantId, projectId, entity, entity.getParentId(), requestedOrder);
+            merged.put("order", order);
+        }
 
         log.info("[Navigation] 更新节点 id={} tenant={} project={}", id, tenantId, projectId);
         return merged;
@@ -319,7 +213,9 @@ public class ProjectNavigationTreeService {
             throw new IllegalArgumentException("节点不存在: " + id);
         }
 
+        String parentNodeId = getRequiredNode(tenantId, projectId, id).getParentId();
         deleteNodeRecursive(tenantId, projectId, id);
+        compactSiblingOrders(tenantId, projectId, parentNodeId);
         log.info("[Navigation] 删除节点 id={} tenant={} project={}", id, tenantId, projectId);
         return Map.of("id", id);
     }
@@ -346,21 +242,13 @@ public class ProjectNavigationTreeService {
             }
         }
 
-        int sortOrder;
-        if (index < 0) {
-            sortOrder = nextSortOrder(tenantId, projectId, parentNodeId);
-        } else {
-            shiftSortOrders(tenantId, projectId, parentNodeId, index);
-            sortOrder = index;
-        }
-
-        jdbcTemplate.update(MOVE_NODE_SQL,
-                parentNodeId, sortOrder, Timestamp.from(Instant.now()),
-                tenantId, projectId, id);
+        NavigationNodeFlatEntity entity = getRequiredNode(tenantId, projectId, id);
+        int targetIndex = index < 0 ? nextOrder(tenantId, projectId, parentNodeId) : index;
+        int order = reorderNode(tenantId, projectId, entity, parentNodeId, targetIndex);
 
         log.info("[Navigation] 移动节点 id={} newParentId={} tenant={} project={}",
             id, parentNodeId, tenantId, projectId);
-        return Map.of("id", id, "order", sortOrder);
+        return Map.of("id", id, "order", order);
     }
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -950,14 +838,12 @@ public class ProjectNavigationTreeService {
                     node.put("childPlacement", childPlacement);
                 }
 
-                putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
                 if (!children.isEmpty()) {
                     node.put("children", children);
                 }
             }
             case "sub-page" -> {
                 node.put("hidden", true);
-                putIfNotBlank(node, "parentPageId", asTrimmedString(raw.get("parentPageId")));
             }
             case "ref" -> {
                 // 跨工程引用：仅存储 refId，运行时由 resolveRefNodes 填充目标信息
@@ -996,7 +882,6 @@ public class ProjectNavigationTreeService {
                 } else {
                     putIfNotBlank(node, "path", normalizePath(asTrimmedString(raw.get("path"))));
                 }
-                putIfNotBlank(node, "redirect", normalizePath(asTrimmedString(raw.get("redirect"))));
                 if (Boolean.TRUE.equals(raw.get("hidden"))) {
                     node.put("hidden", true);
                 }
@@ -1129,7 +1014,34 @@ public class ProjectNavigationTreeService {
     }
 
     private List<Map<String, Object>> fetchFlatRows(String tenantId, String projectId) {
-        return jdbcTemplate.queryForList(SELECT_FLAT_SQL, tenantId, projectId);
+        return navigationNodeRepository.findByTenantIdAndProjectIdOrderByOrderAscNodeIdAsc(tenantId, projectId)
+                .stream()
+                .map(this::entityToFlatRow)
+                .toList();
+    }
+
+    private Map<String, Object> entityToFlatRow(NavigationNodeFlatEntity entity) {
+        Map<String, Object> row = new LinkedHashMap<>();
+        row.put("NODE_ID", entity.getNodeId());
+        row.put("PARENT_ID", entity.getParentId());
+        row.put("TENANT_ID", entity.getTenantId());
+        row.put("PROJECT_ID", entity.getProjectId());
+        row.put("TITLE", entity.getTitle());
+        row.put("DESCRIPTION", entity.getDescription());
+        row.put("NODE_KIND", entity.getNodeKind());
+        row.put("PATH", entity.getPath());
+        row.put("ICON", entity.getIcon());
+        row.put("DIVIDER_AFTER", entity.getDividerAfter());
+        row.put("CHILD_PLACEMENT", entity.getChildPlacement());
+        row.put("LINK_TARGET", entity.getLinkTarget());
+        row.put("HIDDEN", entity.getHidden());
+        row.put("DISABLED", entity.getDisabled());
+        row.put("SORT_ORDER", entity.getOrder());
+        row.put("UPDATED_AT", entity.getUpdatedAt());
+        row.put("REF_ID", entity.getRefId());
+        row.put("CONTEXT", entity.getContext());
+        row.put("PERMISSIONS", entity.getPermissions());
+        return row;
     }
 
     @SuppressWarnings("unchecked")
@@ -1143,7 +1055,7 @@ public class ProjectNavigationTreeService {
             String nodeId = asTrimmedString(row.get("NODE_ID"));
             if (nodeId.isBlank()) continue;
             String parentId = asTrimmedString(row.get("PARENT_ID"));
-            Integer sortOrder = toInt(row.get("SORT_ORDER"));
+            Integer order = toInt(row.get("SORT_ORDER"));
 
             Map<String, Object> node = new LinkedHashMap<>();
             node.put("id", nodeId);
@@ -1158,8 +1070,8 @@ public class ProjectNavigationTreeService {
             putIfNotBlank(node, "childPlacement", asTrimmedString(row.get("CHILD_PLACEMENT")));
             putIfNotBlank(node, "linkTarget", asTrimmedString(row.get("LINK_TARGET")));
             putIfNotBlank(node, "refId", asTrimmedString(row.get("REF_ID")));
-            if (sortOrder != null) {
-                node.put("order", sortOrder);
+            if (order != null) {
+                node.put("order", order);
             }
 
             String contextJson = asTrimmedString(row.get("CONTEXT"));
@@ -1188,7 +1100,7 @@ public class ProjectNavigationTreeService {
                 node.put("permissionMode", "masked");
             }
 
-            flatNodes.add(new FlatNode(nodeId, parentId.isBlank() ? null : parentId, sortOrder, node));
+            flatNodes.add(new FlatNode(nodeId, parentId.isBlank() ? null : parentId, order, node));
         }
 
         // 按 parentId（NODE_ID 字符串）分组
@@ -1199,10 +1111,10 @@ public class ProjectNavigationTreeService {
         }
         for (List<FlatNode> siblings : childrenByParent.values()) {
             siblings.sort((a, b) -> {
-                int aSort = a.sortOrder() == null ? Integer.MAX_VALUE : a.sortOrder();
-                int bSort = b.sortOrder() == null ? Integer.MAX_VALUE : b.sortOrder();
-                int bySort = Integer.compare(aSort, bSort);
-                if (bySort != 0) return bySort;
+                int aOrder = a.order() == null ? Integer.MAX_VALUE : a.order();
+                int bOrder = b.order() == null ? Integer.MAX_VALUE : b.order();
+                int byOrder = Integer.compare(aOrder, bOrder);
+                if (byOrder != 0) return byOrder;
                 return a.nodeId().compareTo(b.nodeId());
             });
         }
@@ -1293,15 +1205,15 @@ public class ProjectNavigationTreeService {
         }
 
         // 查询目标节点
-        List<Map<String, Object>> targets = jdbcTemplate.queryForList(RESOLVE_REF_SQL, refId);
+        List<NavigationNodeFlatEntity> targets = navigationNodeRepository.findByNodeId(refId);
         if (targets.isEmpty()) {
             node.put("refBroken", true);
             return;
         }
 
-        Map<String, Object> target = targets.get(0);
-        String targetTenantId = asTrimmedString(target.get("TENANT_ID"));
-        String targetKind = asTrimmedString(target.get("NODE_KIND"));
+        NavigationNodeFlatEntity target = targets.get(0);
+        String targetTenantId = asTrimmedString(target.getTenantId());
+        String targetKind = asTrimmedString(target.getNodeKind());
 
         // 跨租户拦截：只允许同租户内跨工程引用
         if (!currentTenantId.equals(targetTenantId)) {
@@ -1315,10 +1227,10 @@ public class ProjectNavigationTreeService {
             return;
         }
 
-        String targetProjectId = asTrimmedString(target.get("PROJECT_ID"));
-        String targetPath = asTrimmedString(target.get("PATH"));
-        String targetTitle = asTrimmedString(target.get("TITLE"));
-        String targetIcon = asTrimmedString(target.get("ICON"));
+        String targetProjectId = asTrimmedString(target.getProjectId());
+        String targetPath = asTrimmedString(target.getPath());
+        String targetTitle = asTrimmedString(target.getTitle());
+        String targetIcon = asTrimmedString(target.getIcon());
 
         // 用目标信息填充（仅覆盖 ref 节点未显式设置的字段）
         if (asTrimmedString(node.get("title")).isBlank() || node.get("title").equals(node.get("id"))) {
@@ -1376,7 +1288,7 @@ public class ProjectNavigationTreeService {
 
     @SuppressWarnings("unchecked")
     private void replaceFlatRows(String tenantId, String projectId, Map<String, Object> root) {
-        jdbcTemplate.update(DELETE_ALL_SQL, tenantId, projectId);
+        navigationNodeRepository.deleteByTenantIdAndProjectId(tenantId, projectId);
 
         Object childrenValue = root.get("children");
         if (!(childrenValue instanceof List<?> rawChildren) || rawChildren.isEmpty()) {
@@ -1411,10 +1323,10 @@ public class ProjectNavigationTreeService {
                                String projectId,
                                String parentNodeId,
                                Map<String, Object> node,
-                               int sortOrder) {
+                               int order) {
         String nodeId = asTrimmedString(node.get("id"));
         if (nodeId.isBlank()) {
-            nodeId = "node-" + sortOrder;
+            nodeId = "node-" + order;
         }
         final String effectiveNodeId = nodeId;
 
@@ -1432,29 +1344,26 @@ public class ProjectNavigationTreeService {
         final String contextJson = serializeContext(node.get("context"));
         final String effectiveTitle = title.isBlank() ? effectiveNodeId : title;
 
-        jdbcTemplate.update(connection -> {
-            PreparedStatement statement = connection.prepareStatement(INSERT_FLAT_SQL);
-            statement.setString(1, parentNodeId);
-            statement.setString(2, tenantId);
-            statement.setString(3, projectId);
-            statement.setString(4, effectiveTitle);
-            statement.setString(5, description.isBlank() ? null : description);
-            statement.setString(6, nodeKind.isBlank() ? null : nodeKind);
-            statement.setString(7, path.isBlank() ? null : path);
-            statement.setString(8, icon.isBlank() ? null : icon);
-            statement.setObject(9, dividerAfter);
-            statement.setString(10, childPlacement.isBlank() ? null : childPlacement);
-            statement.setString(11, linkTarget.isBlank() ? null : linkTarget);
-            statement.setObject(12, hidden);
-            statement.setObject(13, disabled);
-            statement.setInt(14, sortOrder);
-            statement.setString(15, effectiveNodeId);
-            statement.setTimestamp(16, Timestamp.from(Instant.now()));
-            statement.setString(17, refId.isBlank() ? null : refId);
-            statement.setString(18, contextJson);
-            statement.setString(19, blankToNull(asTrimmedString(node.get("permissionMode"))));
-            return statement;
-        });
+        NavigationNodeFlatEntity entity = new NavigationNodeFlatEntity();
+        entity.setNodeId(effectiveNodeId);
+        entity.setParentId(parentNodeId);
+        entity.setTenantId(tenantId);
+        entity.setProjectId(projectId);
+        entity.setTitle(effectiveTitle);
+        entity.setDescription(blankToNull(description));
+        entity.setNodeKind(blankToNull(nodeKind));
+        entity.setPath(blankToNull(path));
+        entity.setIcon(blankToNull(icon));
+        entity.setDividerAfter(dividerAfter);
+        entity.setChildPlacement(blankToNull(childPlacement));
+        entity.setLinkTarget(blankToNull(linkTarget));
+        entity.setHidden(hidden);
+        entity.setDisabled(disabled);
+        entity.setOrder(order);
+        entity.setRefId(blankToNull(refId));
+        entity.setContext(contextJson);
+        entity.setPermissions(blankToNull(asTrimmedString(node.get("permissionMode"))));
+        navigationNodeRepository.save(entity);
 
         return effectiveNodeId;
     }
@@ -1480,11 +1389,11 @@ public class ProjectNavigationTreeService {
     }
 
     private boolean isSystemRootDirectory(String nodeId) {
-        var rows = jdbcTemplate.queryForList(CHECK_SYSTEM_ROOT_SQL, nodeId);
+        List<NavigationNodeFlatEntity> rows = navigationNodeRepository.findByNodeId(nodeId);
         if (rows.isEmpty()) return false;
-        var row = rows.get(0);
-        return "system-directory".equals(asTrimmedString(row.get("NODE_KIND")))
-            && asTrimmedString(row.get("PARENT_ID")).isBlank();
+        NavigationNodeFlatEntity row = rows.get(0);
+        return "system-directory".equals(asTrimmedString(row.getNodeKind()))
+            && asTrimmedString(row.getParentId()).isBlank();
     }
 
     private String trimOrNull(String value) {
@@ -1501,55 +1410,107 @@ public class ProjectNavigationTreeService {
 
     /** 检查 NODE_ID 是否存在。 */
     private boolean nodeExists(String tenantId, String projectId, String nodeId) {
-        List<Map<String, Object>> rows = jdbcTemplate.queryForList(
-                EXISTS_NODE_SQL, tenantId, projectId, nodeId);
-        return !rows.isEmpty();
+        return navigationNodeRepository.existsByTenantIdAndProjectIdAndNodeId(tenantId, projectId, nodeId);
+    }
+
+    private NavigationNodeFlatEntity getRequiredNode(String tenantId, String projectId, String nodeId) {
+        return navigationNodeRepository.findByTenantIdAndProjectIdAndNodeId(tenantId, projectId, nodeId)
+                .orElseThrow(() -> new IllegalArgumentException("节点不存在: " + nodeId));
     }
 
     /** 获取同级下一个可用排序值。parentNodeId 为 null 表示根级。 */
-    private int nextSortOrder(String tenantId, String projectId, String parentNodeId) {
-        String sql = String.format(MAX_SORT_ORDER_SQL,
-                parentNodeId == null ? "IS NULL" : "= ?");
-        Integer next;
-        if (parentNodeId == null) {
-            next = jdbcTemplate.queryForObject(sql, Integer.class, tenantId, projectId);
-        } else {
-            next = jdbcTemplate.queryForObject(sql, Integer.class, tenantId, projectId, parentNodeId);
-        }
+    private int nextOrder(String tenantId, String projectId, String parentNodeId) {
+        Integer next = navigationNodeRepository.nextOrder(tenantId, projectId, parentNodeId);
         return next != null ? next : 0;
     }
 
-    /** 在指定父节点下，将 SORT_ORDER >= index 的节点全部 +1，腾出位置。 */
-    private void shiftSortOrders(String tenantId, String projectId, String parentNodeId, int index) {
-        String sql = String.format(SHIFT_SORT_ORDER_SQL,
-                parentNodeId == null ? "IS NULL" : "= ?");
-        if (parentNodeId == null) {
-            jdbcTemplate.update(sql, tenantId, projectId, index);
-        } else {
-            jdbcTemplate.update(sql, tenantId, projectId, parentNodeId, index);
+    /** 在指定父节点下，将 order >= index 的节点全部 +1，腾出位置。 */
+    private void shiftOrders(String tenantId, String projectId, String parentNodeId, int index) {
+        List<NavigationNodeFlatEntity> siblings = parentNodeId == null
+                ? navigationNodeRepository.findByTenantIdAndProjectIdAndParentIdIsNull(tenantId, projectId)
+                : navigationNodeRepository.findByTenantIdAndProjectIdAndParentId(tenantId, projectId, parentNodeId);
+        List<NavigationNodeFlatEntity> shifted = new ArrayList<>();
+        for (NavigationNodeFlatEntity sibling : siblings) {
+            int current = sibling.getOrder() == null ? 0 : sibling.getOrder();
+            if (current >= index) {
+                sibling.setOrder(current + 1);
+                shifted.add(sibling);
+            }
         }
+        if (!shifted.isEmpty()) {
+            navigationNodeRepository.saveAll(shifted);
+        }
+    }
+
+    /** 将节点放入目标父节点的指定顺序，并重新压紧同级 order。 */
+    private int reorderNode(String tenantId,
+                            String projectId,
+                            NavigationNodeFlatEntity moving,
+                            String parentNodeId,
+                            int index) {
+        List<NavigationNodeFlatEntity> siblings = parentNodeId == null
+                ? navigationNodeRepository.findByTenantIdAndProjectIdAndParentIdIsNull(tenantId, projectId)
+                : navigationNodeRepository.findByTenantIdAndProjectIdAndParentId(tenantId, projectId, parentNodeId);
+        siblings.sort((a, b) -> {
+            int aOrder = a.getOrder() == null ? Integer.MAX_VALUE : a.getOrder();
+            int bOrder = b.getOrder() == null ? Integer.MAX_VALUE : b.getOrder();
+            if (aOrder != bOrder) {
+                return Integer.compare(aOrder, bOrder);
+            }
+            return a.getNodeId().compareTo(b.getNodeId());
+        });
+        siblings.removeIf(node -> Objects.equals(node.getNodeId(), moving.getNodeId()));
+
+        int targetIndex = Math.min(index, siblings.size());
+        String previousParentId = moving.getParentId();
+        moving.setParentId(parentNodeId);
+        siblings.add(targetIndex, moving);
+        for (int i = 0; i < siblings.size(); i++) {
+            siblings.get(i).setOrder(i);
+        }
+        navigationNodeRepository.saveAll(siblings);
+        if (!Objects.equals(previousParentId, parentNodeId)) {
+            compactSiblingOrders(tenantId, projectId, previousParentId);
+        }
+        return targetIndex;
+    }
+
+    /** 删除/跨父移动后，将源父节点下的同级 order 压紧为 0..n。 */
+    private void compactSiblingOrders(String tenantId, String projectId, String parentNodeId) {
+        List<NavigationNodeFlatEntity> siblings = parentNodeId == null
+                ? navigationNodeRepository.findByTenantIdAndProjectIdAndParentIdIsNull(tenantId, projectId)
+                : navigationNodeRepository.findByTenantIdAndProjectIdAndParentId(tenantId, projectId, parentNodeId);
+        siblings.sort((a, b) -> {
+            int aOrder = a.getOrder() == null ? Integer.MAX_VALUE : a.getOrder();
+            int bOrder = b.getOrder() == null ? Integer.MAX_VALUE : b.getOrder();
+            if (aOrder != bOrder) {
+                return Integer.compare(aOrder, bOrder);
+            }
+            return a.getNodeId().compareTo(b.getNodeId());
+        });
+        for (int i = 0; i < siblings.size(); i++) {
+            siblings.get(i).setOrder(i);
+        }
+        navigationNodeRepository.saveAll(siblings);
     }
 
     /** 递归删除节点及其所有子孙。 */
     private void deleteNodeRecursive(String tenantId, String projectId, String nodeId) {
-        List<String> childNodeIds = jdbcTemplate.query(
-                SELECT_CHILDREN_SQL,
-                (rs, rowNum) -> rs.getString("NODE_ID"),
+        List<NavigationNodeFlatEntity> children = navigationNodeRepository.findByTenantIdAndProjectIdAndParentId(
                 tenantId, projectId, nodeId);
-        for (String childId : childNodeIds) {
-            deleteNodeRecursive(tenantId, projectId, childId);
+        for (NavigationNodeFlatEntity child : children) {
+            deleteNodeRecursive(tenantId, projectId, child.getNodeId());
         }
-        jdbcTemplate.update(DELETE_BY_NODE_ID_SQL, tenantId, projectId, nodeId);
+        navigationNodeRepository.deleteByTenantIdAndProjectIdAndNodeId(tenantId, projectId, nodeId);
     }
 
     /** 判断 targetNodeId 是否是 ancestorNodeId 的子孙（防循环移动）。 */
     private boolean isDescendantOf(String tenantId, String projectId,
                                     String ancestorNodeId, String targetNodeId) {
-        List<String> childNodeIds = jdbcTemplate.query(
-                SELECT_CHILDREN_SQL,
-                (rs, rowNum) -> rs.getString("NODE_ID"),
+        List<NavigationNodeFlatEntity> children = navigationNodeRepository.findByTenantIdAndProjectIdAndParentId(
                 tenantId, projectId, ancestorNodeId);
-        for (String childId : childNodeIds) {
+        for (NavigationNodeFlatEntity child : children) {
+            String childId = child.getNodeId();
             if (childId.equals(targetNodeId)) return true;
             if (isDescendantOf(tenantId, projectId, childId, targetNodeId)) return true;
         }

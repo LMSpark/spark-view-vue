@@ -2,16 +2,15 @@ package com.spark.ai.service;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.spark.ai.entity.ProjectEntity;
+import com.spark.ai.repository.NavigationNodeFlatRepository;
 import com.spark.ai.repository.ProjectMemberRepository;
 import com.spark.ai.repository.ProjectRepository;
 import com.spark.ai.security.AccessGuardService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Mock;
-import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.jdbc.core.JdbcTemplate;
-import org.springframework.jdbc.datasource.DriverManagerDataSource;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
+import org.springframework.boot.test.mock.mockito.MockBean;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -24,7 +23,10 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
-@ExtendWith(MockitoExtension.class)
+@DataJpaTest(properties = {
+        "spring.jpa.hibernate.ddl-auto=create-drop",
+        "spring.flyway.enabled=false"
+})
 class ProjectServiceNavigationSeedTest {
     private static final List<String> EXPECTED_PLATFORM_VUE_CLEANUP_PATHS = List.of(
             "/dashboard",
@@ -36,28 +38,24 @@ class ProjectServiceNavigationSeedTest {
             "/demo/r-form-compare"
     );
 
-    @Mock
+    @MockBean
     private ProjectRepository projectRepo;
 
-    @Mock
+    @MockBean
     private ProjectMemberRepository memberRepo;
 
-    @Mock
+    @MockBean
     private AccessGuardService accessGuard;
+
+    @Autowired
+    private NavigationNodeFlatRepository navigationNodeRepository;
 
     private ProjectNavigationTreeService navigationTreeService;
     private ProjectService projectService;
 
     @BeforeEach
     void setUp() {
-        DriverManagerDataSource dataSource = new DriverManagerDataSource();
-        dataSource.setDriverClassName("org.h2.Driver");
-        dataSource.setUrl("jdbc:h2:mem:project-service-navigation-" + System.nanoTime() + ";MODE=LEGACY;DB_CLOSE_DELAY=-1");
-        dataSource.setUsername("sa");
-        dataSource.setPassword("");
-
-        navigationTreeService = new ProjectNavigationTreeService(new ObjectMapper(), new JdbcTemplate(dataSource));
-        navigationTreeService.ensureSchema();
+        navigationTreeService = new ProjectNavigationTreeService(new ObjectMapper(), accessGuard, navigationNodeRepository);
         projectService = new ProjectService(projectRepo, memberRepo, navigationTreeService, new ObjectMapper(), accessGuard);
         projectService.loadNavigationTemplates();
     }
@@ -98,13 +96,13 @@ class ProjectServiceNavigationSeedTest {
 
     @Test
     void existingAppProjectNavigationPrunesMisplacedTenantEntriesOnly() throws Exception {
-        navigationTreeService.saveNavConfig("lmspark", "engineering-pm", navRoot(
+        navigationTreeService.importNavConfig("lmspark", "engineering-pm", navRoot(
                 node("home", "工作台", "/dashboard"),
                 node("back-to-homepage", "返回应用工场", "/app-list"),
                 node("dbms", "数据库管理", "/dbms"),
                 node("custom", "自定义页面", "/custom-page")
         ));
-        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc("lmspark"))
+        when(projectRepo.findByTenantIdOrderByOrderAscCreatedAtAsc("lmspark"))
                 .thenReturn(List.of(project("lmspark", "engineering-pm", ProjectService.APP_PROJECT_TYPE)));
 
         projectService.ensureAllProjectNavigations("lmspark");
@@ -117,7 +115,7 @@ class ProjectServiceNavigationSeedTest {
 
     @Test
         void existingHomepageNavigationRebuildsDevelopmentCenter() throws Exception {
-        navigationTreeService.saveNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
+        navigationTreeService.importNavConfig("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
                 node("home", "工作台", "/dashboard"),
             node("back-to-homepage", "返回应用工场", "/app-list"),
             node("dbms", "DBMS", "/dbms"),
@@ -125,7 +123,7 @@ class ProjectServiceNavigationSeedTest {
                 node("legacy-dev", "开发系统", "/dev"),
                 node("legacy-cache", "缓存", "/cache-manager"))
         ));
-        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc("lmspark"))
+        when(projectRepo.findByTenantIdOrderByOrderAscCreatedAtAsc("lmspark"))
                 .thenReturn(List.of(project("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
 
         projectService.ensureAllProjectNavigations("lmspark");
@@ -141,7 +139,7 @@ class ProjectServiceNavigationSeedTest {
 
         @Test
     void existingPlatformHomepageRemovesTopLevelDbmsAndRebuildsDevelopmentCenter() throws Exception {
-        navigationTreeService.saveNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
+        navigationTreeService.importNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
             node("platform-dashboard", "平台首页", "/dashboard"),
             node("platform-tenants", "租户管理", "/tenants"),
             node("platform-apps", "应用管理", "/apps"),
@@ -150,7 +148,7 @@ class ProjectServiceNavigationSeedTest {
                 node("platform-dev", "开发系统", "/dev"),
                 node("platform-cache", "缓存管理", "/cache-manager"))
         ));
-        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(ProjectService.PLATFORM_TENANT_ID))
+        when(projectRepo.findByTenantIdOrderByOrderAscCreatedAtAsc(ProjectService.PLATFORM_TENANT_ID))
             .thenReturn(List.of(project(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
 
         projectService.ensureAllProjectNavigations(ProjectService.PLATFORM_TENANT_ID);
@@ -180,7 +178,7 @@ class ProjectServiceNavigationSeedTest {
 
     @Test
     void existingPlatformHomepageRebuildsSingleVueCleanupCandidateModule() throws Exception {
-        navigationTreeService.saveNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
+        navigationTreeService.importNavConfig(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, navRoot(
             node("platform-dashboard", "平台首页", "/dashboard"),
             node("platform-tenants", "租户管理", "/tenants"),
             node("platform-apps", "应用管理", "/apps"),
@@ -191,7 +189,7 @@ class ProjectServiceNavigationSeedTest {
             module("platform-dev-center", "开发中心",
                 node("platform-dev", "开发系统", "/dev"))
         ));
-        when(projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(ProjectService.PLATFORM_TENANT_ID))
+        when(projectRepo.findByTenantIdOrderByOrderAscCreatedAtAsc(ProjectService.PLATFORM_TENANT_ID))
             .thenReturn(List.of(project(ProjectService.PLATFORM_TENANT_ID, ProjectService.HOMEPAGE_PROJECT_ID, ProjectService.HOMEPAGE_PROJECT_TYPE)));
 
         projectService.ensureAllProjectNavigations(ProjectService.PLATFORM_TENANT_ID);
@@ -216,7 +214,7 @@ class ProjectServiceNavigationSeedTest {
         assertEquals("平台管理工作台", platform.getName());
         assertEquals(ProjectService.HOMEPAGE_PROJECT_TYPE, platform.getProjectType());
         assertEquals("Monitor", platform.getIcon());
-        assertEquals(0, platform.getSortOrder());
+        assertEquals(0, platform.getOrder());
 
         ProjectEntity ordinary = project("lmspark", ProjectService.HOMEPAGE_PROJECT_ID, "legacy");
         when(projectRepo.findByTenantIdAndProjectId("lmspark", ProjectService.HOMEPAGE_PROJECT_ID))
@@ -227,7 +225,7 @@ class ProjectServiceNavigationSeedTest {
         assertEquals("企业管理平台", ordinary.getName());
         assertEquals(ProjectService.HOMEPAGE_PROJECT_TYPE, ordinary.getProjectType());
         assertEquals("OfficeBuilding", ordinary.getIcon());
-        assertEquals(0, ordinary.getSortOrder());
+        assertEquals(0, ordinary.getOrder());
     }
 
     @Test
@@ -277,7 +275,7 @@ class ProjectServiceNavigationSeedTest {
         project.setProjectType(projectType);
         project.setIcon("Box");
         project.setDescription("");
-        project.setSortOrder(100);
+        project.setOrder(100);
         return project;
     }
 
@@ -303,7 +301,6 @@ class ProjectServiceNavigationSeedTest {
         node.put("nodeKind", "module");
         node.put("title", title);
         node.put("childPlacement", "sidebar");
-        node.put("redirect", "/dev");
         node.put("children", new ArrayList<>(List.of(children)));
         return node;
     }

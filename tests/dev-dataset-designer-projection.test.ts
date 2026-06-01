@@ -7,7 +7,7 @@ import {
   projectDesignerTables,
   reconcileDesignerTableUiState,
   type DesignerTableProjection,
-} from '@spark-view/spark-page-config/project'
+} from '@spark-view/spark-project-model/project'
 
 function createMetadata(partial?: Partial<DataSetMetadata>): DataSetMetadata {
   return {

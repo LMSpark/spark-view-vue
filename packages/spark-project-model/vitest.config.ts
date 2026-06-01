@@ -17,6 +17,8 @@ export default defineConfig({
       { find: /^@spark-view\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
       { find: /^@spark-view\/spark-utils\/internal$/, replacement: resolve(__dirname, '../spark-utils/dist/internal/index.js') },
       { find: /^@spark-view\/spark-project-model$/, replacement: resolve(__dirname, './src/index.ts') },
+      { find: /^@spark-view\/spark-project-model\/project$/, replacement: resolve(__dirname, './src/project.ts') },
+      { find: /^@spark-view\/spark-project-model\/ai$/, replacement: resolve(__dirname, './src/ai.ts') },
       { find: /^@spark-view\/spark-component\/runtime$/, replacement: resolve(__dirname, '../spark-component/src/runtime/index.ts') },
     ],
   },

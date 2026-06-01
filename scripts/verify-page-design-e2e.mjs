@@ -27,12 +27,12 @@ import {
 import {
   ensurePageDesignBusiness,
   validatePageDesignPayloadGuidesFromSession,
-} from '@spark-view/spark-page-config/ai'
+} from '@spark-view/spark-project-model/ai'
 import { createRequest } from '@spark-view/spark-utils'
 import {
   PAGE_MODEL_FILE_NAMES,
   createProjectEditor,
-} from '@spark-view/spark-page-config/project'
+} from '@spark-view/spark-project-model/project'
 import {
   DataSet,
   SparkNodeTree,
@@ -665,13 +665,13 @@ function assertAppendMessages(body, input) {
 // ============================================================================
 
 // builtin 模式：使用 ProjectEditor 委托出的 live edit host。
-function createBuiltinHost(editor) {
-  return editor.createPageDesignEditHost()
+function createBuiltinHost(editor, pageId) {
+  return editor.createPageDesignEditHost({ pageId })
 }
 
-// inline 模式保留 CLI 兼容性；四文件读写仍然必须从 ProjectEditor 出口进入。
-function createInlineHost(editor) {
-  return editor.createPageDesignEditHost()
+// inline 模式仍从 ProjectEditor 出口进入四文件读写。
+function createInlineHost(editor, pageId) {
+  return editor.createPageDesignEditHost({ pageId })
 }
 
 // ============================================================================
@@ -1371,8 +1371,8 @@ async function run(options) {
 
   // 3. 创建 ProjectEditor host（根据 --host-mode 选择实现）
   const host = options.hostMode === 'inline'
-    ? createInlineHost(editor)
-    : createBuiltinHost(editor)
+    ? createInlineHost(editor, options.pageId)
+    : createBuiltinHost(editor, options.pageId)
 
   // 4. 注册 pageDesign 业务入口
   const pageDesignHost = createPageDesignAiAgent(options, auth, host)
@@ -1389,7 +1389,7 @@ async function run(options) {
 
   const demand = await sendDemand((input) => pageDesignHost.run('pageDesign', input), {
     pageId: options.pageId,
-    userRequirement: options.requestText,
+    description: options.requestText,
   }, options.turnTimeoutMs, {
     onDelta: (delta) => {
       textDeltas.push(delta)

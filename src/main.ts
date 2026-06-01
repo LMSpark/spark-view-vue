@@ -13,7 +13,7 @@
  *
  * 📦 架构层次（由 SparkApp.start 自动完成）：
  * - L1: @spark-view/spark-app - 应用基础设施层
- * - L2: @spark-view/spark-page-config - PageNode 编排层
+ * - L2: @spark-view/spark-project-model - PageNode 编排层
  * - L4-L6: @spark-view/spark-component - 组件核心层
  *
  *

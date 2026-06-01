@@ -21,7 +21,7 @@ import {
 const frameworkFreePackages = new Set([
   '@spark-view/spark-utils',
   '@spark-view/spark-data',
-  '@spark-view/spark-page-config',
+  '@spark-view/spark-project-model',
 ])
 
 const forbiddenFrameworkImports = [

@@ -98,7 +98,8 @@ type ProjectItem = {
   projectType: string
   icon: string
   description: string
-  sortOrder: number}
+  order: number
+}
 
 const router = useRouter()
 const route = useRoute()

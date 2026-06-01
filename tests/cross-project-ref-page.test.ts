@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-view/spark-page-config'
+import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-view/spark-project-model'
 import { HttpClientBase } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
 import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'

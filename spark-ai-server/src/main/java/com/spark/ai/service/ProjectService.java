@@ -101,7 +101,7 @@ public class ProjectService {
      */
     public List<Map<String, Object>> listProjects(String tenantId) {
         accessGuard.requireTenantUser(tenantId);
-        List<ProjectEntity> projects = projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(tenantId);
+        List<ProjectEntity> projects = projectRepo.findByTenantIdOrderByOrderAscCreatedAtAsc(tenantId);
         List<Map<String, Object>> result = new ArrayList<>();
         for (ProjectEntity p : projects) {
             result.add(toMap(p));
@@ -137,7 +137,7 @@ public class ProjectService {
         entity.setProjectType(APP_PROJECT_TYPE);
         entity.setIcon(icon != null ? icon : "📦");
         entity.setDescription(description != null ? description : "");
-        entity.setSortOrder(100);
+        entity.setOrder(100);
         projectRepo.save(entity);
         if (ctx != null) {
             ensureProjectMember(tenantId, projectId, ctx.username(), ctx.isAdmin() ? "owner" : "member");
@@ -163,7 +163,7 @@ public class ProjectService {
         if (patch.containsKey("name")) entity.setName((String) patch.get("name"));
         if (patch.containsKey("icon")) entity.setIcon((String) patch.get("icon"));
         if (patch.containsKey("description")) entity.setDescription((String) patch.get("description"));
-        if (patch.containsKey("sortOrder")) entity.setSortOrder(((Number) patch.get("sortOrder")).intValue());
+        if (patch.containsKey("order")) entity.setOrder(((Number) patch.get("order")).intValue());
 
         projectRepo.save(entity);
         log.info("[Project] 更新项目: tenant={}, project={}", tenantId, projectId);
@@ -213,7 +213,7 @@ public class ProjectService {
     }
 
     public void ensureAllProjectNavigations(String tenantId) {
-        List<ProjectEntity> projects = projectRepo.findByTenantIdOrderBySortOrderAscCreatedAtAsc(tenantId);
+        List<ProjectEntity> projects = projectRepo.findByTenantIdOrderByOrderAscCreatedAtAsc(tenantId);
         for (ProjectEntity project : projects) {
             ensureDefaultNavigation(project.getTenantId(), project.getProjectId());
         }
@@ -247,7 +247,7 @@ public class ProjectService {
                 return;
             }
             if (reconcileNavigationHierarchy(tenantId, projectId, existing)) {
-                navigationTreeService.saveNavConfig(tenantId, projectId, existing);
+                navigationTreeService.importNavConfig(tenantId, projectId, existing);
             }
         } catch (Exception e) {
             log.warn("[Project] 检查/初始化导航失败: tenant={}, project={}", tenantId, projectId, e);
@@ -267,7 +267,7 @@ public class ProjectService {
         try {
             Map<String, Object> navRoot = instantiateNavigationTemplate(template, tenantId, projectId);
             reconcileNavigationHierarchy(tenantId, projectId, navRoot);
-            navigationTreeService.saveNavConfig(tenantId, projectId, navRoot);
+            navigationTreeService.importNavConfig(tenantId, projectId, navRoot);
             log.info("[Project] 已初始化应用导航: tenant={}, project={}", tenantId, projectId);
         } catch (Exception e) {
             log.warn("[Project] 应用导航模板初始化失败（不影响项目创建）: tenant={}, project={}", tenantId, projectId, e);
@@ -854,7 +854,7 @@ public class ProjectService {
         homepage.setDescription(PLATFORM_TENANT_ID.equals(tenantId)
                 ? "平台能力、租户、数据源与运维配置管理"
                 : "企业级开发管理平台 — 创建和管理业务应用");
-        homepage.setSortOrder(0);
+        homepage.setOrder(0);
     }
 
     private String scopedNodeId(String tenantId, String projectId, String nodeId) {
@@ -910,7 +910,7 @@ public class ProjectService {
         m.put("projectType", p.getProjectType());
         m.put("icon", p.getIcon());
         m.put("description", p.getDescription());
-        m.put("sortOrder", p.getSortOrder());
+        m.put("order", p.getOrder());
         m.put("createdAt", p.getCreatedAt() != null ? p.getCreatedAt().toString() : null);
         m.put("updatedAt", p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : null);
         return m;

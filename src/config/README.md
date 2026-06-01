@@ -16,4 +16,4 @@
 
 - [vue-page-map.ts](vue-page-map.ts)
 - [../views/README.md](../views/README.md)
-- [../../packages/spark-page-config/README.md](../../packages/spark-page-config/README.md)
+- [../../packages/spark-project-model/README.md](../../packages/spark-project-model/README.md)

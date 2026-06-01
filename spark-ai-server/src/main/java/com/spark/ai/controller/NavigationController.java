@@ -1,5 +1,8 @@
 package com.spark.ai.controller;
 
+import com.spark.ai.dto.NavigationNodeAddRequest;
+import com.spark.ai.dto.NavigationNodeEditPatchDto;
+import com.spark.ai.dto.NavigationNodeMoveRequest;
 import com.spark.ai.service.ProjectNavigationTreeService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -22,7 +25,7 @@ public class NavigationController {
     }
 
     // ─────────────────────────────────────────────────────────────────────────
-    // 整树读写
+    // 整树读取
     // ─────────────────────────────────────────────────────────────────────────
 
     @GetMapping
@@ -46,23 +49,6 @@ public class NavigationController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError()
                     .body(Map.of("error", "读取导航配置失败: " + e.getMessage()));
-        }
-    }
-
-    @PutMapping
-    public ResponseEntity<?> saveNavConfig(@PathVariable String tenantId,
-                                            @PathVariable String projectId,
-                                            @RequestBody Map<String, Object> navRoot) {
-        try {
-            if (navRoot == null || !navRoot.containsKey("children")) {
-                return ResponseEntity.badRequest()
-                        .body(Map.of("error", "缺少 children 字段"));
-            }
-            navigationTreeService.saveNavConfig(tenantId, projectId, navRoot);
-            return ResponseEntity.ok(Map.of("success", true));
-        } catch (IOException e) {
-            return ResponseEntity.internalServerError()
-                    .body(Map.of("error", "保存导航配置失败: " + e.getMessage()));
         }
     }
 
@@ -167,18 +153,14 @@ public class NavigationController {
     @PostMapping("/nodes")
     public ResponseEntity<?> addNode(@PathVariable String tenantId,
                                       @PathVariable String projectId,
-                                      @RequestBody Map<String, Object> body) {
+                                      @RequestBody NavigationNodeAddRequest body) {
         try {
-            String parentId = (String) body.get("parentId");
-            int index = body.containsKey("index")
-                    ? ((Number) body.get("index")).intValue() : -1;
-            @SuppressWarnings("unchecked")
-            Map<String, Object> node = (Map<String, Object>) body.get("node");
-            if (node == null) {
+            if (body == null || body.node() == null) {
                 return ResponseEntity.badRequest().body(Map.of("error", "缺少 node 字段"));
             }
-                Map<String, Object> created = navigationTreeService.addNode(
-                    tenantId, projectId, parentId, node, index);
+            int index = body.index() != null ? body.index() : -1;
+            Map<String, Object> created = navigationTreeService.addNode(
+                    tenantId, projectId, body.parentId(), body.node().toMap(), index);
             return ResponseEntity.ok(Map.of("success", true, "node", created));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -192,10 +174,10 @@ public class NavigationController {
     public ResponseEntity<?> updateNode(@PathVariable String tenantId,
                                          @PathVariable String projectId,
                                          @PathVariable String id,
-                                         @RequestBody Map<String, Object> patch) {
+                                         @RequestBody NavigationNodeEditPatchDto patch) {
         try {
-                Map<String, Object> updated = navigationTreeService.updateNode(
-                    tenantId, projectId, id, patch);
+            Map<String, Object> updated = navigationTreeService.updateNode(
+                    tenantId, projectId, id, patch != null ? patch.toMap() : Map.of());
             return ResponseEntity.ok(Map.of("success", true, "node", updated));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
@@ -225,13 +207,11 @@ public class NavigationController {
     public ResponseEntity<?> moveNode(@PathVariable String tenantId,
                                        @PathVariable String projectId,
                                        @PathVariable String id,
-                                       @RequestBody Map<String, Object> body) {
+                                       @RequestBody NavigationNodeMoveRequest body) {
         try {
-            String newParentId = (String) body.get("newParentId");
-            int index = body.containsKey("index")
-                    ? ((Number) body.get("index")).intValue() : -1;
-                Map<String, Object> moved = navigationTreeService.moveNode(
-                    tenantId, projectId, id, newParentId, index);
+            int index = body != null && body.index() != null ? body.index() : -1;
+            Map<String, Object> moved = navigationTreeService.moveNode(
+                    tenantId, projectId, id, body != null ? body.newParentId() : null, index);
             return ResponseEntity.ok(Map.of("success", true, "node", moved));
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

@@ -15,17 +15,17 @@ import type {
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
-import type { ProjectEditor } from '@spark-view/spark-page-config/project'
+import type { ProjectEditor } from '@spark-view/spark-project-model/project'
 import {
   PAGE_DESIGN_MODULE_ID,
   ensurePageDesignBusiness,
   type PageDesignAllowedOperations,
   type PageDesignRunInput,
   type PageDesignRunMode,
-} from '@spark-view/spark-page-config/ai'
+} from '@spark-view/spark-project-model/ai'
 
 export type PageDesignAiRunOptions = {
-  userRequirement: string
+  description: string
   mode?: PageDesignRunMode
   allowedOperations?: PageDesignAllowedOperations
   preserveExistingInteractions?: boolean
@@ -60,9 +60,9 @@ export type PageDesignAiRunResult = {
 
 export async function runPageDesignAiSession(command: PageDesignAiRunCommand): Promise<PageDesignAiRunResult> {
   const pageId = command.pageId.trim()
-  const userRequirement = command.userRequirement.trim()
+  const description = command.description.trim()
   if (!pageId) throw new Error('pageDesign AI requires a pageId.')
-  if (!userRequirement) throw new Error('pageDesign AI requires a userRequirement.')
+  if (!description) throw new Error('pageDesign AI requires a description.')
 
   const aiAgentHost = command.consumeCapability?.(AI_AGENT_HOST) ?? null
   if (aiAgentHost === null) {
@@ -94,7 +94,7 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
         command.events?.onToolCall?.(record)
       },
     }),
-    userMessage: command.userMessage ?? userRequirement,
+    userMessage: command.userMessage ?? description,
   })
 
   return { sawToolCall }
@@ -148,13 +148,13 @@ function assertActivePageNodeLoaded(editor: ProjectEditor, pageId: string): void
 function buildPageDesignRunInput(pageId: string, options: PageDesignAiRunOptions): PageDesignRunInput {
   const input: {
     pageId: string
-    userRequirement: string
+    description: string
     mode?: PageDesignRunMode
     allowedOperations?: PageDesignAllowedOperations
     preserveExistingInteractions?: boolean
   } = {
     pageId,
-    userRequirement: options.userRequirement.trim(),
+    description: options.description.trim(),
   }
   if (options.mode !== undefined) input.mode = options.mode
   if (options.allowedOperations !== undefined) input.allowedOperations = options.allowedOperations

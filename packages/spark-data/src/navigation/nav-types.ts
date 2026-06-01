@@ -85,7 +85,6 @@ export type NavNode = AppModuleBase & AppNavigation & {
   path?: string
   linkTarget?: LinkTarget
   redirect?: string
-  parentPageId?: string
   refId?: string
   refPath?: string
   refProjectId?: string
