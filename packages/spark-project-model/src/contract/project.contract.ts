@@ -1,16 +1,16 @@
-import type { AppNavRoot, NavNode, NavigationNodeEditInputDto, NavNodeLocation } from './navigation.contract'
-import type { ProjectPageNodeSummary } from './node.contract'
+import type { ProjectModelData, NavigationNodeEditInputDto, ProjectNodeData, ProjectNodeLocation } from './navigation.contract'
+import type { ProjectPageNodeSummary } from '../entity/node/module-node.entity'
 
 export type ProjectModelDto = {
   projectId: string
-  navigation: AppNavRoot
+  navigation: ProjectModelData
   pages: ProjectPageNodeSummary[]
 }
 
 export type ProjectEditorSnapshot = {
-  pageId: string; navigationRoot: AppNavRoot; treeData: NavNode[]
-  selectedNode: NavNode | null; selectedNodeId: string | null
-  navigationLocation: NavNodeLocation | null; navigationEditDto: NavigationNodeEditInputDto | null
+  pageId: string; navigationRoot: ProjectModelData; treeData: ProjectNodeData[]
+  selectedNode: ProjectNodeData | null; selectedNodeId: string | null
+  navigationLocation: ProjectNodeLocation | null; navigationEditDto: NavigationNodeEditInputDto | null
   pageFeatures: ProjectPageNodeSummary[]
   ruleJson: string; pageDataJson: string; script: string; style: string
   dirtyFiles: Set<string>; parseErrors: Record<string, string | null>

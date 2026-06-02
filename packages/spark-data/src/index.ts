@@ -28,28 +28,6 @@ export type { FieldRenderState, PermissionActionContext } from './script-types'
 export { TreeManager } from './tree-manager'
 export { DataSetCrudTool } from './dataset-crud-tool'
 
-// ===== Navigation 类型（纯数据模型，从 spark-page-config 委托迁入）=====
-
-export {
-  isNavNode,
-} from './navigation'
-
-export type {
-  AppModuleBase,
-  AppNavRoot,
-  AppNavigation,
-  ChildPlacement,
-  LinkTarget,
-  NavContextConfig,
-  NavContextItem,
-  NavContextState,
-  NavNode,
-  NavNodeKind,
-  NavPermissionMode,
-  RegionItems,
-  RegionVisibility,
-} from './navigation'
-
 // ===== Node Tree（页面节点树模型，从 spark-page-config 迁入）=====
 
 export {

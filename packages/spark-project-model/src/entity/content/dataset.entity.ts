@@ -1,143 +1,112 @@
-/**
- * DataSetContent — pagedata.json 领域模型。
- *
- * 持有 DataSetCrudTool 作为真源，提供 mutate / undo / redo / dirty / subscribe，
- * 以及 IO 能力（load / save / restoreVersion）。
- */
-
-import { DataSetCrudTool } from '@spark-view/spark-data'
+/** pagedata.json 本体模型：持有 DataSet、编辑历史和自身文件 IO。 */
+import { DataSet, DataSetCrudTool } from '@spark-view/spark-data'
 import type { BasePageContentLoader } from '../../service/content-loader/types'
 import type { PageNodeFileApi } from '../../service/file/file-api.service'
 import type { PageFileRestoreCommand } from '../../service/file/file-restore-command'
 import { parsePageDataText, serializeDataSet } from '../../service/file/file-serialization'
 
 export class DataSetContent {
-  tool: DataSetCrudTool = new DataSetCrudTool('')
+  value: DataSet
 
+  private readonly undoStack: string[] = []
+  private readonly redoStack: string[] = []
   private _dirty = false
-  private readonly _listeners = new Set<() => void>()
 
-  // ── Dirty ──────────────────────────────────────────────
-
-  get isDirty(): boolean {
-    return this._dirty
+  constructor(readonly pageId: string) {
+    this.value = DataSet.fromJson({ dataSetName: pageId, tables: {} })
   }
 
-  markDirty(): void {
-    this._dirty = true
-    this._notify()
-  }
+  get isDirty(): boolean { return this._dirty }
+  get canUndo(): boolean { return this.undoStack.length > 0 }
+  get canRedo(): boolean { return this.redoStack.length > 0 }
 
-  markClean(): void {
-    if (!this._dirty) return
-    this._dirty = false
-    this._notify()
-  }
+  getText(): string { return serializeDataSet(this.value) }
 
-  // ── 投影 ───────────────────────────────────────────────
-
-  /** 只读投影文本（用于文件查看器展示）。 */
-  getText(): string {
-    return serializeDataSet(this.tool)
-  }
-
-  /** 从文本解析并以 reconcileFromJson 替换当前 tool，保留 undo 历史。成功时标记 dirty。 */
   setText(text: string): void {
-    if (!text.trim()) {
-      this.tool = new DataSetCrudTool(this.tool.toJson().dataSetName)
-    } else {
-      this.tool = DataSetCrudTool.reconcileFromJson(text, this.tool, { preserveHistory: true })
-    }
+    this.pushUndo()
+    this.value = parsePageDataText(text, this.pageId)
     this.markDirty()
   }
 
-  // ── 编辑 ───────────────────────────────────────────────
-
-  /** 通过回调修改 tool，完成后标记 dirty。 */
-  mutate(fn: (tool: DataSetCrudTool) => void): void {
-    fn(this.tool)
-    this.markDirty()
+  loadText(text: string): void {
+    this.value = parsePageDataText(text, this.pageId)
+    this.clearHistory()
+    this.markClean()
   }
 
-  // ── Undo / Redo ────────────────────────────────────────
-
-  get canUndo(): boolean {
-    return this.tool.canUndo
-  }
-
-  get canRedo(): boolean {
-    return this.tool.canRedo
-  }
-
-  undo(): boolean {
-    const ok = this.tool.undo()
-    if (ok) this.markDirty()
-    return ok
-  }
-
-  redo(): boolean {
-    const ok = this.tool.redo()
-    if (ok) this.markDirty()
-    return ok
-  }
-
-  // ── IO ─────────────────────────────────────────────────
-
-  /** 从远端加载 pagedata.json 并解析到 tool。空内容时以 pageId 构造空 DataSetCrudTool。 */
-  async load(
-    pageId: string,
-    contentLoader: BasePageContentLoader,
-    options?: { forceReload?: boolean },
-  ): Promise<void> {
-    const result = await contentLoader.loadPageFileContent(pageId, 'pagedata.json', {
+  async load(loader: BasePageContentLoader, options?: { forceReload?: boolean }): Promise<void> {
+    const result = await loader.loadPageFileContent(this.pageId, 'pagedata.json', {
       forceReload: options?.forceReload === true,
     })
     if (!result.success) {
       throw new Error(result.error ?? result.reason ?? 'pagedata.json 加载失败')
     }
-    const rawText = result.data ?? ''
-    if (!rawText.trim()) {
-      this.tool = new DataSetCrudTool(pageId)
-    } else {
-      this.tool = parsePageDataText(rawText)
-    }
+    this.loadText(result.data ?? '')
+  }
+
+  async save(api: PageNodeFileApi): Promise<void> {
+    await api.saveFileContent(this.pageId, 'pagedata.json', this.getText())
     this.markClean()
   }
 
-  resetToEmpty(pageId: string): void {
-    this.tool = new DataSetCrudTool(pageId)
-    this.markClean()
-  }
-
-  /** 序列化并保存到远端。 */
-  async save(pageId: string, fileApi: PageNodeFileApi): Promise<void> {
-    await fileApi.saveFileContent(pageId, 'pagedata.json', this.getText())
-    this.markClean()
-  }
-
-  /** 恢复远端历史版本。恢复成功后以恢复内容为 saved baseline。 */
   async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
-    const { pageId, version, fileApi, contentLoader } = command
-    await fileApi.restoreVersion(pageId, 'pagedata.json', version)
-    const result = await contentLoader.loadPageFileContent(pageId, 'pagedata.json', { forceReload: true })
+    await command.fileApi.restoreVersion(this.pageId, 'pagedata.json', command.version)
+    const result = await command.contentLoader.loadPageFileContent(this.pageId, 'pagedata.json', { forceReload: true })
     if (!result.success) {
-      throw new Error(`恢复版本后读取失败: ${pageId}/pagedata.json v${version}`)
+      throw new Error(`恢复版本后读取失败: ${this.pageId}/pagedata.json v${command.version}`)
     }
-    const rawText = result.data ?? ''
-    this.tool = rawText.trim() ? parsePageDataText(rawText) : new DataSetCrudTool(pageId)
-    this.markClean()
+    this.loadText(result.data ?? '')
   }
 
-  // ── 订阅 ───────────────────────────────────────────────
-
-  subscribe(listener: () => void): () => void {
-    this._listeners.add(listener)
-    return () => { this._listeners.delete(listener) }
+  getTool(): DataSetCrudTool {
+    return DataSetCrudTool.fromJson(this.value.toJson())
   }
 
-  private _notify(): void {
-    for (const listener of this._listeners) {
-      listener()
-    }
+  replaceTool(tool: DataSetCrudTool): void {
+    this.pushUndo()
+    this.value = DataSet.fromJson(tool.toJson())
+    this.markDirty()
+  }
+
+  async editTool(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
+    const tool = this.getTool()
+    await run(tool)
+    this.replaceTool(tool)
+  }
+
+  undo(): boolean {
+    const text = this.undoStack.pop()
+    if (text === undefined) return false
+    this.redoStack.push(this.getText())
+    this.value = parsePageDataText(text, this.pageId)
+    this.markDirty()
+    return true
+  }
+
+  redo(): boolean {
+    const text = this.redoStack.pop()
+    if (text === undefined) return false
+    this.undoStack.push(this.getText())
+    this.value = parsePageDataText(text, this.pageId)
+    this.markDirty()
+    return true
+  }
+
+  markClean(): void {
+    this._dirty = false
+  }
+
+  private markDirty(): void {
+    this._dirty = true
+  }
+
+  private pushUndo(): void {
+    this.undoStack.push(this.getText())
+    this.redoStack.length = 0
+  }
+
+  private clearHistory(): void {
+    this.undoStack.length = 0
+    this.redoStack.length = 0
   }
 }

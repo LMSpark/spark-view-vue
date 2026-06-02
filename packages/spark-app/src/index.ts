@@ -170,20 +170,16 @@ export { useColorScheme, setColorSchemeStorageScope, PRIMARY_PRESETS, NAV_PRESET
 export { NAV_KEY } from './navigation/nav-types'
 export type { NavigationContext } from './navigation/nav-types'
 export type {
-  AppModuleBase,
-  AppNavigation,
-  NavNode,
-  AppNavRoot,
-  NavContextState,
-  NavContextItem,
-  NavContextConfig,
-  RegionItems,
-  RegionVisibility,
+  ProjectModelData,
   ChildPlacement,
-  LinkTarget,
+  NavContextItem,
+  NavContextState,
   NavNodeKind,
   NavPermissionMode,
-} from './navigation/nav-model'
+  ProjectNodeData,
+  RegionItems,
+  RegionVisibility,
+} from '@spark-view/spark-project-model'
 export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet, StylePreset, StyleColorSet } from './navigation/useColorScheme'
 

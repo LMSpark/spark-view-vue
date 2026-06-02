@@ -1,40 +1,122 @@
 /** 节点基类——ProjectNode + PageNode。 */
-import type { NavNode, NavNodeKind } from '../../service/navigation/nav-model'
+import { isRecord } from '@spark-view/spark-utils'
 import { NavigationEditModel } from '../navigation/edit.entity'
-import type { ProjectNodeFamily, ProjectDescriptionContext } from '../../contract/node.contract'
-import type { PageNodeFileApi } from '../../service/file/file-api.service'
-import type { PageNodeFileCache } from '../../service/file/file-cache.service'
-import type { BasePageContentLoader } from '../../service/content-loader/types'
-import type { NavigationConfigClient } from '../../service/navigation/client.service'
+import type { LinkTarget } from './leaf-nodes.entity'
+import type { ProjectNodeFamily, ProjectDescriptionContext } from './module-node.entity'
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext, projectNavNodeToFlatRow } from './node-helpers'
 import type { ProjectNavigationFlatNode } from './node-helpers'
 
-export type ProjectNodeAttributes = Omit<NavNode, 'id' | 'title' | 'description' | 'children'>
+/** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
+export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
+
+/** 项目节点类型。 */
+export type NavNodeKind =
+  | 'system-directory'
+  | 'module'
+  | 'system-page'
+  | 'system-action'
+  | 'page'
+  | 'link'
+  | 'sub-page'
+  | 'ref'
+
+/** 权限未匹配时的展示模式。 */
+export type NavPermissionMode = 'none' | 'masked' | 'invisible'
+
+/** 上下文下拉选项项。 */
+export type NavContextItem = {
+  id: string | number
+  title: string
+}
+
+/** 动态上下文配置：描述 ProjectNode 上下文的来源和交互行为。 */
+export type NavContextConfig = {
+  source: string | NavContextItem[]
+  placeholder?: string | undefined
+  defaultValue?: string | number | undefined
+  paramName?: string | undefined
+}
+
+/** 项目树节点的可序列化数据形状。 */
+export type ProjectNodeData = {
+  id: string
+  title: string
+  description?: string | undefined
+  version?: string | undefined
+  icon?: string | undefined
+  nodeKind?: NavNodeKind | undefined
+  childPlacement?: ChildPlacement | undefined
+  context?: string | NavContextItem[] | NavContextConfig | undefined
+  order?: number | undefined
+  hidden?: boolean | undefined
+  disabled?: boolean | undefined
+  dividerAfter?: boolean | undefined
+  permissionMode?: NavPermissionMode | undefined
+  children?: ProjectNodeData[] | undefined
+  path?: string | undefined
+  linkTarget?: LinkTarget | undefined
+  redirect?: string | undefined
+  refId?: string | undefined
+  refPath?: string | undefined
+  refProjectId?: string | undefined
+  refBroken?: boolean | undefined
+}
+
+export function isProjectNodeData(value: unknown): value is ProjectNodeData {
+  if (!isRecord(value)) return false
+  if (typeof value['id'] !== 'string') return false
+  if (typeof value['title'] !== 'string') return false
+  const children = value['children']
+  return children === undefined || (Array.isArray(children) && children.every(isProjectNodeData))
+}
+
+/** 项目模型的可序列化根数据。 */
+export type ProjectModelData = {
+  id?: string | undefined
+  title: string
+  description?: string | undefined
+  version?: string | undefined
+  childPlacement: 'header' | 'sidebar'
+  children: ProjectNodeData[]
+  homePath?: string | undefined
+}
+
+/** 按区域分组的导航节点列表。 */
+export type RegionItems = {
+  header: ProjectNodeData[]
+  sidebar: ProjectNodeData[]
+  toolbar: ProjectNodeData[]
+  userMenu: ProjectNodeData[]
+}
+
+/** 各区域是否可见。 */
+export type RegionVisibility = {
+  header: boolean
+  sidebar: boolean
+  toolbar: boolean
+  userMenu: boolean
+}
+
+/** 导航上下文运行时状态。 */
+export type NavContextState = {
+  config: NavContextConfig
+  nodeId: string
+  selected: string | number | null
+  items: NavContextItem[]
+  loading: boolean
+  error: string | null
+}
 
 export type ProjectNodeModelOptions = {
-  node: NavNode
+  node: ProjectNodeData
   pid: string | null
   descriptionContext?: readonly ProjectDescriptionContext[]
   resolveChildren?: ((node: ProjectNode) => readonly ProjectNode[]) | undefined
 }
 
-export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
-  pageId?: string
-  fileApi: PageNodeFileApi
-  fileCache: PageNodeFileCache
-  contentLoaderFactory: () => BasePageContentLoader
-  navClient?: NavigationConfigClient | undefined
-}
-
-export type ProjectNodeDirtyPart = 'navigation'
-
-export type ConfigPageContentPart = 'rule' | 'dataSet' | 'style' | 'script'
-
-export type ProjectConfigPageDirtyPart = ProjectNodeDirtyPart | ConfigPageContentPart
-
 export abstract class ProjectNode {
   readonly navigation = new NavigationEditModel()
-  #node: NavNode
+  #node: ProjectNodeData
   #pid: string | null
   #descriptionContext: ProjectDescriptionContext[]
   #resolveChildren: ((node: ProjectNode) => readonly ProjectNode[]) | undefined
@@ -50,14 +132,9 @@ export abstract class ProjectNode {
   abstract get family(): ProjectNodeFamily
 
   /**
-   * 节点领域类型。
-   */
-  get type(): ProjectNodeFamily { return this.family }
-
-  /**
    * 原始导航节点快照。
    */
-  get node(): NavNode { return this.#node }
+  get node(): ProjectNodeData { return this.#node }
 
   /**
    * 父节点 ID；根级节点为 null。
@@ -80,30 +157,22 @@ export abstract class ProjectNode {
   get description(): string { return readProjectNodeDescription(this.#node) }
 
   /**
-   * 节点自由属性，不包含 id、name、description 和 children。
-   */
-  get attributes(): ProjectNodeAttributes {
-    const { id: _id, title: _title, description: _description, children: _children, ...attributes } = this.#node
-    return { ...attributes }
-  }
-
-  /**
-   * 当前节点的直接子节点。
-   */
-  get children(): ProjectNode[] { return [...(this.#resolveChildren?.(this) ?? [])] }
-
-  /**
    * @deprecated use name
    */
   get title(): string { return this.name }
 
   get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
-  get icon(): string | undefined { return this.#node.icon }
-  get path(): string | undefined { return this.#node.path }
-  get nodeKind(): NavNodeKind { return this.#node.nodeKind ?? 'page' }
   get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
 
-  rebindNavigationNode(node: NavNode, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]): void {
+  protected readChildren<TChild extends ProjectNode = ProjectNode>(): TChild[] {
+    return [...(this.#resolveChildren?.(this) ?? [])] as TChild[]
+  }
+
+  protected bindChildrenResolver(resolveChildren: (node: ProjectNode) => readonly ProjectNode[]): void {
+    this.#resolveChildren = resolveChildren
+  }
+
+  rebindNavigationNode(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]): void {
     this.#node = node
     this.#pid = normalizePid(pid)
     this.#descriptionContext = [...descriptionContext]
@@ -112,8 +181,4 @@ export abstract class ProjectNode {
   }
 
   toFlatRow(): ProjectNavigationFlatNode { return projectNavNodeToFlatRow(this.#node, this.#pid) }
-}
-
-export abstract class PageNode extends ProjectNode {
-  abstract get pageNodeKind(): 'config' | 'vue' | 'action' | 'link' | 'ref'
 }

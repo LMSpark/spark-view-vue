@@ -2,7 +2,7 @@ import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createPageNodeFactory } from '@spark-view/spark-project-model'
-import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 import { createDynamicRouter } from '../packages/spark-app/src/router/dynamic'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
 
@@ -13,7 +13,7 @@ const DummyPage = defineComponent({
 
 const DUMMY_PAGE_NODE_FACTORY = createPageNodeFactory()
 
-const PRE_AUTH_NAV: AppNavRoot = {
+const PRE_AUTH_NAV: ProjectModelData = {
   id: 'root',
   title: 'root',
   childPlacement: 'header',
@@ -75,7 +75,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -112,7 +112,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -155,7 +155,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -193,7 +193,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -230,7 +230,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -266,7 +266,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -299,7 +299,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -335,7 +335,7 @@ describe('DynamicRouter platform pages', () => {
             children: [],
           },
         ],
-      } satisfies AppNavRoot)
+      } satisfies ProjectModelData)
       .mockResolvedValueOnce({
         id: 'tenant-root',
         title: 'tenant-root',
@@ -351,7 +351,7 @@ describe('DynamicRouter platform pages', () => {
             children: [],
           },
         ],
-      } satisfies AppNavRoot)
+      } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -406,7 +406,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,
@@ -456,7 +456,7 @@ describe('DynamicRouter platform pages', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,

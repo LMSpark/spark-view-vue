@@ -18,14 +18,14 @@ import { defineCapability, isCallable, isRecord } from '@spark-view/spark-utils'
 import { DataView, isDataRow, type DataRow, type DataSetContract } from '@spark-view/spark-data'
 import type {
   NavPermissionMode,
-} from '@spark-view/spark-data'
+} from '@spark-view/spark-project-model'
 import type {
   PageServiceCapability,
 } from '../runtime'
 
 export type {
   NavPermissionMode,
-} from '@spark-view/spark-data'
+} from '@spark-view/spark-project-model'
 
 /** 子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。 */
 export type SubtreeFieldPolicy = 'unrestricted'

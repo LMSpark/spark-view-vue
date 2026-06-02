@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import type { DevState } from './useDevState'
 import { formatChildPlacementLabel } from './childPlacementLabels'
 import NavIcon from '@/components/NavIcon.vue'
@@ -110,14 +110,14 @@ const NODE_KIND_LABEL: Record<string, string> = {
   'sub-page': '子页面',
 }
 
-function inferNodeKind(node: NavNode): string {
+function inferNodeKind(node: ProjectNodeData): string {
   if (node.nodeKind) return node.nodeKind
   if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
   if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab') return 'link'
   return 'page'
 }
 
-function formatNodeKind(node: NavNode): string {
+function formatNodeKind(node: ProjectNodeData): string {
   const kind = inferNodeKind(node)
   return NODE_KIND_LABEL[kind] ?? kind
 }
@@ -132,7 +132,7 @@ watch(() => state.selectedNode.value, async (node) => {
   }
 }, { immediate: true })
 
-function filterNode(value: string, data: NavNode) {
+function filterNode(value: string, data: ProjectNodeData) {
   if (!value) return true
   const v = value.toLowerCase()
   return data.title.toLowerCase().includes(v) ||
@@ -140,23 +140,23 @@ function filterNode(value: string, data: NavNode) {
     (data.path?.toLowerCase().includes(v) ?? false)
 }
 
-async function handleNodeClick(data: NavNode) {
+async function handleNodeClick(data: ProjectNodeData) {
   await state.selectNode(data)
 }
 
-function allowNodeDrag(data: NavNode): boolean {
+function allowNodeDrag(data: ProjectNodeData): boolean {
   return !state.isSystemRootDirectory(data)
 }
 
-function allowNodeDrop(draggingNode: { data: NavNode }): boolean {
+function allowNodeDrop(draggingNode: { data: ProjectNodeData }): boolean {
   return !state.isSystemRootDirectory(draggingNode.data)
 }
 
-function handleNodeDrop(draggingNode: { data: NavNode }) {
+function handleNodeDrop(draggingNode: { data: ProjectNodeData }) {
   void state.moveNodeInTree(draggingNode.data)
 }
 
-async function handleRemove(node: { parent: { data: NavNode } }, data: NavNode) {
+async function handleRemove(node: { parent: { data: ProjectNodeData } }, data: ProjectNodeData) {
   try {
     await ElMessageBox.confirm(
       `确定删除 "${data.title}"？${data.children?.length ? `（含 ${data.children.length} 个子节点）` : ''}`,
@@ -173,7 +173,7 @@ function expandAll() {
 function collapseAll() {
   for (const k of getAllKeys(state.treeData.value)) treeRef.value?.getNode(k)?.collapse()
 }
-function getAllKeys(nodes: NavNode[]): string[] {
+function getAllKeys(nodes: ProjectNodeData[]): string[] {
   return nodes.flatMap(n => [n.id, ...(n.children ? getAllKeys(n.children) : [])])
 }
 

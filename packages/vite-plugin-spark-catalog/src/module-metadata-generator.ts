@@ -515,13 +515,37 @@ function createApiAttributeMetadata(
   trace: ModuleMetadataTrace,
   state: ApiObjectExtractionState,
 ): AiApiAttributeMetadata[] {
-  return node.members
-    .filter(isApiAttributeMember)
+  return collectApiAttributeMembers(checker, node)
     .map(member => createApiAttributeMetadataFromMember(checker, member, visited, trace, state))
     .filter(isNotUndefined)
 }
 
 type ApiAttributeMember = ts.PropertyDeclaration | ts.GetAccessorDeclaration
+
+function collectApiAttributeMembers(checker: ts.TypeChecker, node: ts.ClassDeclaration): ApiAttributeMember[] {
+  const baseClass = readBaseClassDeclaration(checker, node)
+  const inherited = baseClass?.members.filter(isApiAttributeMember) ?? []
+  const members = [...inherited, ...node.members.filter(isApiAttributeMember)]
+  const seen = new Set<string>()
+  const result: ApiAttributeMember[] = []
+  for (const member of members) {
+    const name = propertyNameText(member.name, member.getSourceFile())
+    if (seen.has(name)) continue
+    seen.add(name)
+    result.push(member)
+  }
+  return result
+}
+
+function readBaseClassDeclaration(checker: ts.TypeChecker, node: ts.ClassDeclaration): ts.ClassDeclaration | undefined {
+  const extendsClause = node.heritageClauses
+    ?.find(clause => clause.token === ts.SyntaxKind.ExtendsKeyword)
+    ?.types[0]
+  if (extendsClause === undefined) return undefined
+  const baseType = checker.getTypeAtLocation(extendsClause.expression)
+  const declaration = baseType.symbol.declarations?.find(ts.isClassDeclaration)
+  return declaration
+}
 
 function isApiAttributeMember(node: ts.ClassElement): node is ApiAttributeMember {
   return ts.isPropertyDeclaration(node) || ts.isGetAccessorDeclaration(node)

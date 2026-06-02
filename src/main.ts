@@ -42,7 +42,7 @@
 import * as SparkAppRuntime from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport, isRecord } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode } from '@spark-view/spark-data'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
 
 import {
   consumePendingLogout,
@@ -119,23 +119,23 @@ function normalizeChildPlacement(value: string | undefined): 'header' | 'sidebar
   throw new Error(`Invalid navigation childPlacement: ${value}`)
 }
 
-function isNavNode(value: unknown): value is NavNode {
+function isProjectNodeData(value: unknown): value is ProjectNodeData {
   if (!isRecord(value)) return false
   if (typeof value['id'] !== 'string') return false
   if (typeof value['title'] !== 'string') return false
   const children = value['children']
-  return children === undefined || (Array.isArray(children) && children.every(isNavNode))
+  return children === undefined || (Array.isArray(children) && children.every(isProjectNodeData))
 }
 
-function requireNavNodes(value: unknown, context: string): NavNode[] {
+function requireNavNodes(value: unknown, context: string): ProjectNodeData[] {
   if (Array.isArray(value)) {
     const nodes: unknown[] = value
-    if (nodes.every(isNavNode)) return nodes
+    if (nodes.every(isProjectNodeData)) return nodes
   }
-  throw new Error(`${context} 必须是 NavNode[]`)
+  throw new Error(`${context} 必须是 ProjectNodeData[]`)
 }
 
-function normalizeNavData(data: unknown): AppNavRoot {
+function normalizeNavData(data: unknown): ProjectModelData {
   if (!isRecord(data)) throw new Error('导航接口返回值必须是对象')
   const rawChildPlacement = data['childPlacement']
   const rawTitle = data['title']
@@ -148,7 +148,7 @@ function normalizeNavData(data: unknown): AppNavRoot {
   }
 }
 
-function navigationContainsPath(nodes: NavNode[], targetPath: string): boolean {
+function navigationContainsPath(nodes: ProjectNodeData[], targetPath: string): boolean {
   const normalizedTargetPath = normalizeRoutePath(targetPath)
   for (const node of nodes) {
     const runtimeTarget = resolveNavNodeRuntimeTarget(node)

@@ -7,7 +7,7 @@
  * 新增 Vue 组件页面只需在此处添加一条记录，无需同步维护多处。
  */
 import type { Component } from 'vue'
-import type { AppNavRoot } from '@spark-view/spark-data'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 
 /**
  * 页面作用域级别
@@ -96,7 +96,7 @@ export function getPublicPaths(): Set<string> {
  * 替代 main.ts 中硬编码的 preAuthNavTree，确保 public 页面变更只需修改 VUE_PAGE_MAP。
  * 登录后 DynamicRouter.refreshRoutes() 会用远程导航树完全替换。
  */
-export function buildPreAuthNavTree(): AppNavRoot {
+export function buildPreAuthNavTree(): ProjectModelData {
   const children = Object.entries(VUE_PAGE_MAP)
     .filter(([, entry]) => entry.scope === 'public')
     .map(([path, entry]) => ({
@@ -126,4 +126,3 @@ export function getVuePageOptions(): Array<{ path: string; title: string; scope:
     ...(entry.description !== undefined && { description: entry.description }),
   }))
 }
-

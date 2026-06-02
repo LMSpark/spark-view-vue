@@ -1,7 +1,7 @@
 /**
  * 导航编辑器：节点 DTO、补丁应用、树遍历和编辑会话。
  *
- * 为导航树编辑器提供从 NavNode 到编辑 DTO 的双向转换，
+ * 为项目树编辑器提供从 ProjectNodeData 到编辑 DTO 的双向转换，
  * 以及编辑会话的内存状态管理。
  *
  * ┌──────────────────────────────────────────────────────┐
@@ -11,11 +11,11 @@
  * │              NavigationContextEditDto                   │
  * │              NavigationNodeEditInputDto                 │
  * │              NavigationNodeEditApplyResultDto           │
- * │  2. 树遍历：  NavNodeLocation                         │
+ * │  2. 树遍历：  ProjectNodeLocation                     │
  * │  3. 常量表：  DEFAULT_NAV_ICON_BY_KIND                │
  * │  4. 类型守卫：isNavContextConfig / isChildPlacement    │
  * │  5. 节点正规化：normalizePageIdFromPath               │
- * │                normalizeNavNode / normalizeNavRoot    │
+ * │                normalizeProjectNodeData / normalizeNavRoot │
  * │                buildNavRoot                           │
  * │  6. 树查找：  findNodeById / findParentNodeById       │
  * │              findNodeLocation / findConfigNodeByPageId│
@@ -32,15 +32,15 @@
 
 import { deepClone } from '@spark-view/spark-utils'
 import type {
-  AppNavRoot,
+  ProjectModelData,
   ChildPlacement,
-  NavContextConfig,
   NavContextItem,
-  NavNode,
   NavNodeKind,
-} from './nav-model'
+  ProjectNodeData,
+} from '@spark-view/spark-project-model'
+import type { NavContextConfig } from '../../entity/node/node-base.entity'
 import type {
-  NavNodeLocation,
+  ProjectNodeLocation,
   NavigationContextEditConfigDto,
   NavigationNodeEditDto,
   NavigationNodeEditApplyResultDto,
@@ -49,7 +49,7 @@ import type {
 } from '../../contract/navigation.contract'
 
 export type {
-  NavNodeLocation,
+  ProjectNodeLocation,
   NavigationContextEditDto,
   NavigationContextEditConfigDto,
   NavigationNodeEditDto,
@@ -99,7 +99,7 @@ const SYSTEM_CHILD_PLACEMENTS = new Set(['toolbar', 'user-menu'])
 // ═══════════════════════════════════════════════════════
 // 5. 节点正规化
 //
-// 将不完整或不规范的 NavNode / AppNavRoot 转为合法形态。
+// 将不完整或不规范的 ProjectNodeData / ProjectModelData 转为合法形态。
 // ═══════════════════════════════════════════════════════
 
 /** 从路径字符串中提取页面 ID */
@@ -122,7 +122,7 @@ export function isPageLikeKind(kind: NavNodeKind): boolean {
 }
 
 /** 根据现有字段推断节点类型 */
-export function inferNavNodeKind(node: NavNode, parentPlacement?: string): NavNodeKind {
+export function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavNodeKind {
   if (node.nodeKind !== undefined) return node.nodeKind
   if (parentPlacement !== undefined && SYSTEM_CHILD_PLACEMENTS.has(parentPlacement)) return 'system-action'
   if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
@@ -131,7 +131,7 @@ export function inferNavNodeKind(node: NavNode, parentPlacement?: string): NavNo
 }
 
 /** 深拷贝并正规化单个导航节点 */
-export function normalizeNavNode(node: NavNode, parentPlacement?: string): NavNode {
+export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?: string): ProjectNodeData {
   const cloned = deepClone(node)
   cloned.nodeKind = inferNavNodeKind(cloned, parentPlacement)
   if (cloned.nodeKind === 'sub-page') {
@@ -146,7 +146,7 @@ export function normalizeNavNode(node: NavNode, parentPlacement?: string): NavNo
     delete cloned.linkTarget
   }
   if (Array.isArray(cloned.children)) {
-    cloned.children = cloned.children.map(child => normalizeNavNode(child, cloned.childPlacement))
+    cloned.children = cloned.children.map(child => normalizeProjectNodeData(child, cloned.childPlacement))
   }
   return cloned
 }
@@ -157,20 +157,22 @@ export function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar
   return isRootChildPlacement(normalized) ? normalized : 'header'
 }
 
+type NormalizeNavRootInput = {
+  id?: string | undefined
+  title?: string | undefined
+  description?: string | undefined
+  version?: string | undefined
+  childPlacement?: string | undefined
+  children?: ProjectNodeData[] | undefined
+  homePath?: string | undefined
+}
+
 /** 正规化完整的导航根节点 */
-export function normalizeNavRoot(config: {
-  id?: string
-  title?: string
-  description?: string
-  version?: string
-  childPlacement?: string
-  children?: NavNode[]
-  homePath?: string
-}): AppNavRoot {
-  const root: AppNavRoot = {
+export function normalizeNavRoot(config: NormalizeNavRootInput): ProjectModelData {
+  const root: ProjectModelData = {
     title: config.title ?? '',
     childPlacement: normalizeRootChildPlacement(config.childPlacement),
-    children: (config.children ?? []).map(node => normalizeNavNode(node)),
+    children: (config.children ?? []).map(node => normalizeProjectNodeData(node)),
   }
   const id = typeof config.id === 'string' ? config.id.trim() : ''
   const description = typeof config.description === 'string' ? config.description.trim() : ''
@@ -184,7 +186,7 @@ export function normalizeNavRoot(config: {
 }
 
 /** 构建导航根节点 */
-export function buildNavRoot(children: NavNode[], options?: Partial<Omit<AppNavRoot, 'children'>>): AppNavRoot {
+export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, 'children'>>): ProjectModelData {
   return normalizeNavRoot({
     title: options?.title ?? '',
     childPlacement: options?.childPlacement ?? 'header',
@@ -200,7 +202,7 @@ export function buildNavRoot(children: NavNode[], options?: Partial<Omit<AppNavR
 // ═══════════════════════════════════════════════════════
 
 /** 按 ID 查找节点（深度优先） */
-export function findNodeById(nodes: readonly NavNode[], targetId: string): NavNode | null {
+export function findNodeById(nodes: readonly ProjectNodeData[], targetId: string): ProjectNodeData | null {
   for (const node of nodes) {
     if (node.id === targetId) return node
     if (Array.isArray(node.children)) {
@@ -212,7 +214,7 @@ export function findNodeById(nodes: readonly NavNode[], targetId: string): NavNo
 }
 
 /** 按 ID 查找节点的父节点 */
-export function findParentNodeById(nodes: readonly NavNode[], targetId: string, parent: NavNode | null = null): NavNode | null {
+export function findParentNodeById(nodes: readonly ProjectNodeData[], targetId: string, parent: ProjectNodeData | null = null): ProjectNodeData | null {
   for (const node of nodes) {
     if (node.id === targetId) return parent
     if (Array.isArray(node.children)) {
@@ -224,7 +226,7 @@ export function findParentNodeById(nodes: readonly NavNode[], targetId: string, 
 }
 
 /** 查找节点及其在树中的位置 */
-export function findNodeLocation(nodes: readonly NavNode[], targetId: string, parent: NavNode | null = null): NavNodeLocation | null {
+export function findNodeLocation(nodes: readonly ProjectNodeData[], targetId: string, parent: ProjectNodeData | null = null): ProjectNodeLocation | null {
   for (let index = 0; index < nodes.length; index += 1) {
     const node = nodes[index]
     if (node === undefined) continue
@@ -240,7 +242,7 @@ export function findNodeLocation(nodes: readonly NavNode[], targetId: string, pa
 }
 
 /** 按 pageId 查找可配置的页面节点 */
-export function findConfigNodeByPageId(nodes: readonly NavNode[], pageId: string): NavNode | null {
+export function findConfigNodeByPageId(nodes: readonly ProjectNodeData[], pageId: string): ProjectNodeData | null {
   for (const node of nodes) {
     if (isConfigNodeKind(node.nodeKind ?? 'page') && normalizePageIdFromPath(node.path) === pageId) {
       return node
@@ -254,12 +256,12 @@ export function findConfigNodeByPageId(nodes: readonly NavNode[], pageId: string
 }
 
 /** 判断节点是否为顶层系统目录 */
-export function isSystemRootDirectory(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+export function isSystemRootDirectory(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
   return Boolean(node?.nodeKind === 'system-directory' && rootNodes.some(rootNode => rootNode.id === node.id))
 }
 
 /** 判断节点是否可以使用 module 类型（父节点不是页面类） */
-export function canUseModuleNodeKind(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+export function canUseModuleNodeKind(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
   if (!node) return true
   const parent = findParentNodeById(rootNodes, node.id)
   if (!parent) return true
@@ -274,7 +276,7 @@ export function defaultNavIconByKind(kind: NavNodeKind): string {
 // ═══════════════════════════════════════════════════════
 // 7. DTO 操作
 //
-// NavNode ↔ NavigationNodeEditDto 双向转换 + 补丁应用。
+// ProjectNodeData ↔ NavigationNodeEditDto 双向转换 + 补丁应用。
 // ═══════════════════════════════════════════════════════
 
 function emptyContextConfig(): NavigationContextEditConfigDto {
@@ -285,8 +287,8 @@ function normalizeContextItems(items: readonly NavContextItem[]): Array<{ id: st
   return items.map(item => ({ id: String(item.id), title: item.title }))
 }
 
-/** 从 NavNode 创建编辑器 DTO */
-export function createNavigationNodeEditDto(navNode: NavNode): NavigationNodeEditInputDto {
+/** 从 ProjectNodeData 创建编辑器 DTO */
+export function createNavigationNodeEditDto(navNode: ProjectNodeData): NavigationNodeEditInputDto {
   const nodeDto: NavigationNodeEditDto = {
     id: navNode.id,
     title: navNode.title,
@@ -394,7 +396,7 @@ export function applyNodeKindPresetToEditDto(node: NavigationNodeEditDto, kind: 
   return next
 }
 
-/** 将编辑 DTO 输入转为 NavNode 补丁（不修改原始节点） */
+/** 将编辑 DTO 输入转为 ProjectNodeData 补丁（不修改原始节点） */
 export function createNavigationNodePatch(input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
   const nodeDto = { ...input.node }
   const warnings: string[] = []
@@ -410,7 +412,7 @@ export function createNavigationNodePatch(input: NavigationNodeEditInputDto): Na
     nodeDto.linkTarget = 'iframe'
   }
 
-  const patch: NavigationNodeEditPatchDto & Pick<NavNode, 'title' | 'nodeKind'> = {
+  const patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'> = {
     title: nodeDto.title,
     nodeKind: nodeDto.nodeKind,
     icon: nodeDto.icon,
@@ -460,8 +462,8 @@ export function createNavigationNodePatch(input: NavigationNodeEditInputDto): Na
   return { patch, warnings }
 }
 
-/** 将编辑 DTO 补丁应用到已有 NavNode 实例 */
-export function applyNavigationNodeEditDtoToNode(node: NavNode, input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
+/** 将编辑 DTO 补丁应用到已有 ProjectNodeData 实例 */
+export function applyNavigationNodeEditDtoToNode(node: ProjectNodeData, input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
   const result = createNavigationNodePatch(input)
   if (!('icon' in result.patch)) delete node.icon
   if (!('description' in result.patch)) delete node.description
@@ -496,7 +498,7 @@ export function applyNavigationNodeEditDtoToNode(node: NavNode, input: Navigatio
 // ═══════════════════════════════════════════════════════
 
 /** 创建根模块节点 */
-export function createRootModuleNode(createId: () => string): NavNode {
+export function createRootModuleNode(createId: () => string): ProjectNodeData {
   return {
     id: createId(),
     nodeKind: 'module',
@@ -508,7 +510,7 @@ export function createRootModuleNode(createId: () => string): NavNode {
 }
 
 /** 创建子页面节点 */
-export function createChildPageNode(createId: () => string): NavNode {
+export function createChildPageNode(createId: () => string): ProjectNodeData {
   const id = createId()
   return {
     id,
@@ -522,13 +524,13 @@ export function createChildPageNode(createId: () => string): NavNode {
 /** 创建保留区域根分组（工具栏 / 用户菜单） */
 export function createReservedRootGroup(
   placement: 'toolbar' | 'user-menu',
-  options: { createId: () => string; templateRoot?: AppNavRoot | null },
-): NavNode {
+  options: { createId: () => string; templateRoot?: ProjectModelData | null },
+): ProjectNodeData {
   const template = options.templateRoot?.children.find(node => node.childPlacement === placement)
   if (template) {
     const cloned = deepClone(template)
     cloned.id = options.createId()
-    return normalizeNavNode(cloned)
+    return normalizeProjectNodeData(cloned)
   }
 
   if (placement === 'toolbar') {
@@ -559,39 +561,39 @@ export function createReservedRootGroup(
 // 提供查找、替换等操作方法。
 // ═══════════════════════════════════════════════════════
 
-/** 导航编辑会话：持有 AppNavRoot 的内存快照，提供查找和替换操作 */
+/** 导航编辑会话：持有 ProjectModelData 的内存快照，提供查找和替换操作 */
 export class NavigationEditSession {
-  private rootValue: AppNavRoot = normalizeNavRoot({ title: '', childPlacement: 'header', children: [] })
+  private rootValue: ProjectModelData = normalizeNavRoot({ title: '', childPlacement: 'header', children: [] })
 
   /** 当前根节点快照 */
-  get root(): AppNavRoot {
+  get root(): ProjectModelData {
     return this.rootValue
   }
 
   /** 根节点的子节点列表 */
-  get children(): NavNode[] {
+  get children(): ProjectNodeData[] {
     return this.rootValue.children
   }
 
   /** 替换整个根节点 */
-  replaceRoot(root: Partial<AppNavRoot> & { children?: NavNode[] }): AppNavRoot {
+  replaceRoot(root: Partial<ProjectModelData> & { children?: ProjectNodeData[] }): ProjectModelData {
     this.rootValue = normalizeNavRoot(root)
     return this.rootValue
   }
 
   /** 替换根节点的所有子节点 */
-  replaceChildren(children: NavNode[], options?: Partial<Omit<AppNavRoot, 'children'>>): AppNavRoot {
+  replaceChildren(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, 'children'>>): ProjectModelData {
     this.rootValue = buildNavRoot(children, options)
     return this.rootValue
   }
 
   /** 按 ID 查找节点 */
-  findNode(id: string): NavNode | null {
+  findNode(id: string): ProjectNodeData | null {
     return findNodeById(this.rootValue.children, id)
   }
 
   /** 查找节点在树中的位置 */
-  findLocation(id: string): NavNodeLocation | null {
+  findLocation(id: string): ProjectNodeLocation | null {
     return findNodeLocation(this.rootValue.children, id)
   }
 }

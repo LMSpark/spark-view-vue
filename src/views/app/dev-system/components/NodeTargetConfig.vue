@@ -136,7 +136,7 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
@@ -164,7 +164,7 @@ type VuePathOption = {
   displayTitle: string
   extra: string}
 
-function collectPathTitles(nodes: NavNode[], map: Map<string, string>) {
+function collectPathTitles(nodes: ProjectNodeData[], map: Map<string, string>) {
   for (const node of nodes) {
     const path = node.path ?? ''
     const title = node.title ?? ''

@@ -2,7 +2,7 @@ import { describe, it, expect, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
-import type { AppNavRoot } from '../../navigation/nav-model'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 import type { PageNodeFactoryLike, PageNodeLike } from '@spark-view/spark-project-model'
 
 const DummyPage = defineComponent({
@@ -10,7 +10,7 @@ const DummyPage = defineComponent({
   template: '<div />',
 })
 
-const PRE_AUTH_NAV: AppNavRoot = {
+const PRE_AUTH_NAV: ProjectModelData = {
   id: 'root',
   title: 'root',
   childPlacement: 'header',
@@ -88,7 +88,7 @@ describe('DynamicRouter unauthorized fallback', () => {
           children: [],
         },
       ],
-    } satisfies AppNavRoot)
+    } satisfies ProjectModelData)
 
     const dynamicRouter = createDynamicRouter({
       router,

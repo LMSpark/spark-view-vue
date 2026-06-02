@@ -11,7 +11,7 @@ import type { NavigationConfigClient } from '../../service/navigation/client.ser
 import type { BasePageContentLoader } from '../../service/content-loader/types'
 import type { PageNodeFileApi } from '../../service/file/file-api.service'
 import type { PageNodeFileCache } from '../../service/file/file-cache.service'
-import type { AppNavRoot, NavNode } from '../../service/navigation/nav-model'
+import type { ProjectModelData, ProjectNodeData } from '../node/node-base.entity'
 import type { ConfigPageNode, ProjectNavigationFlatNode, ProjectNode, ProjectPageNodeSummary } from '../node/node-factory'
 import { ModuleNode } from '../node/module-node.entity'
 import { ProjectNodeCollection } from './node-collection.entity'
@@ -41,13 +41,8 @@ export type ProjectModelOptions = {
  * @moduleMutation page-design read-write 当前项目模型可定位页面配置模型。
  * @moduleActionMode explicit
  */
-export class ProjectModel extends ModuleNode {
+export class ProjectModel extends ModuleNode<ProjectNode> {
   private readonly nodeStore: ProjectNodeCollection
-
-  /**
-   * 当前项目的直接子节点。
-   */
-  override get children(): ProjectNode[] { return this.nodeStore.rootNodes }
 
   constructor(options: ProjectModelOptions) {
     const projectId = options.projectId.trim()
@@ -67,6 +62,7 @@ export class ProjectModel extends ModuleNode {
       ...(options.navClient === undefined ? {} : { navClient: options.navClient }),
       ...(options.navigationSession === undefined ? {} : { navigationSession: options.navigationSession }),
     })
+    this.bindChildrenResolver(() => this.nodeStore.rootNodes)
   }
 
   /**
@@ -77,12 +73,12 @@ export class ProjectModel extends ModuleNode {
   /**
    * 当前项目导航根快照。
    */
-  get root(): AppNavRoot { return this.nodeStore.root }
+  get root(): ProjectModelData { return this.nodeStore.root }
 
   /**
    * 当前项目导航树的直接子节点。
    */
-  get navigationChildren(): NavNode[] { return this.nodeStore.children }
+  get navigationChildren(): ProjectNodeData[] { return this.nodeStore.children }
 
   /**
    * 当前项目节点的平铺行投影。
@@ -90,13 +86,13 @@ export class ProjectModel extends ModuleNode {
   get flatRows(): ProjectNavigationFlatNode[] { return this.nodeStore.flatRows }
 
   setProjectId(projectId: string): void { this.nodeStore.setProjectId(projectId) }
-  replaceRoot(root: AppNavRoot): AppNavRoot { return this.nodeStore.replaceRoot(root) }
-  toTree(): NavNode[] { return this.nodeStore.toTree() }
+  replaceRoot(root: ProjectModelData): ProjectModelData { return this.nodeStore.replaceRoot(root) }
+  toTree(): ProjectNodeData[] { return this.nodeStore.toTree() }
   findNodeById(nodeId: string): ProjectNode | null { return this.nodeStore.findNodeById(nodeId) }
-  findRawNodeById(nodeId: string): NavNode | null { return this.nodeStore.findRawNodeById(nodeId) }
+  findRawNodeById(nodeId: string): ProjectNodeData | null { return this.nodeStore.findRawNodeById(nodeId) }
   findNodeLocation(nodeId: string): ReturnType<ProjectNodeCollection['findNodeLocation']> { return this.nodeStore.findNodeLocation(nodeId) }
   findConfigPageByPageId(pageId: string): ConfigPageNode | null { return this.nodeStore.findConfigPageByPageId(pageId) }
-  findPageNode(pageId: string): NavNode | null { return this.nodeStore.findPageNode(pageId) }
+  findPageNode(pageId: string): ProjectNodeData | null { return this.nodeStore.findPageNode(pageId) }
 
   /**
    * 按 pageId 获取或实例化配置页面节点。
@@ -108,15 +104,15 @@ export class ProjectModel extends ModuleNode {
   closeConfigPage(pageId: string): void { this.nodeStore.closeConfigPage(pageId) }
   configPages(): IterableIterator<ConfigPageNode> { return this.nodeStore.configPages() }
   readPageSummaries(): ProjectPageNodeSummary[] { return this.nodeStore.readPageSummaries() }
-  addRootModule(createId: () => string): NavNode { return this.nodeStore.addRootModule(createId) }
-  addChildPage(createId: () => string, parent: NavNode | null = null): NavNode { return this.nodeStore.addChildPage(createId, parent) }
-  removeNode(nodeId: string): NavNode | null { return this.nodeStore.removeNode(nodeId) }
+  addRootModule(createId: () => string): ProjectNodeData { return this.nodeStore.addRootModule(createId) }
+  addChildPage(createId: () => string, parent: ProjectNodeData | null = null): ProjectNodeData { return this.nodeStore.addChildPage(createId, parent) }
+  removeNode(nodeId: string): ProjectNodeData | null { return this.nodeStore.removeNode(nodeId) }
   refreshNavRefs(): void { this.nodeStore.refreshNavRefs() }
 }
 
 export type ProjectModelLike = Pick<ProjectModel, 'projectId' | 'children'>
 
-function createProjectModelNode(projectId: string): NavNode {
+function createProjectModelNode(projectId: string): ProjectNodeData {
   return {
     id: projectId,
     title: projectId,

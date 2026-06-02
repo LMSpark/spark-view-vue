@@ -7,18 +7,18 @@
 
 import { assertNonEmptyPageId } from '../../standalone/internal/assert-page-id'
 import type { NavigationConfigClient } from './client.service'
-import type { NavNode } from './nav-model'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import {
   defaultNavIconByKind,
   findConfigNodeByPageId,
-  normalizeNavNode,
+  normalizeProjectNodeData,
 } from './editing.service'
 
 export type PageNavigationMountParams = {
   pageId: string
   title?: string
   icon?: string
-  node?: NavNode
+  node?: ProjectNodeData
   parentId?: string | null
   index?: number
 }
@@ -27,7 +27,7 @@ export type PageNavigationLifecycleOptions = {
   navigationClient: NavigationConfigClient
 }
 
-function defaultPageNavigationNode(params: PageNavigationMountParams): NavNode {
+function defaultPageNavigationNode(params: PageNavigationMountParams): ProjectNodeData {
   const pageId = assertNonEmptyPageId(params.pageId)
   const title = params.title?.trim()
   const icon = params.icon?.trim()
@@ -38,7 +38,7 @@ function defaultPageNavigationNode(params: PageNavigationMountParams): NavNode {
     nodeKind: 'page',
     path: `/${pageId}`,
   }
-  return normalizeNavNode(node)
+  return normalizeProjectNodeData(node)
 }
 
 export class PageNavigationLifecycle {
@@ -48,7 +48,7 @@ export class PageNavigationLifecycle {
     this.navigationClient = options.navigationClient
   }
 
-  async mountPage(params: PageNavigationMountParams): Promise<NavNode> {
+  async mountPage(params: PageNavigationMountParams): Promise<ProjectNodeData> {
     assertNonEmptyPageId(params.pageId)
     return this.navigationClient.addNode({
       ...(params.parentId === undefined ? {} : { parentId: params.parentId }),
@@ -57,14 +57,14 @@ export class PageNavigationLifecycle {
     })
   }
 
-  async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<NavNode> {
+  async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
     if (nodeId.trim().length === 0) {
       throw new Error('nodeId must be a non-empty string')
     }
     return this.navigationClient.moveNode(nodeId, newParentId, index)
   }
 
-  async unmountPage(pageId: string, nodeId?: string): Promise<NavNode | null> {
+  async unmountPage(pageId: string, nodeId?: string): Promise<ProjectNodeData | null> {
     const normalizedPageId = assertNonEmptyPageId(pageId)
     const resolvedNodeId = await this.resolveNavigationNodeId(normalizedPageId, nodeId)
     return this.navigationClient.deleteNode(resolvedNodeId)

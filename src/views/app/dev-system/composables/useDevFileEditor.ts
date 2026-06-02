@@ -16,11 +16,11 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageN
   const isDirty = computed(() => isFileDirty(activeFile.value))
   const canUndo = computed(() => {
     void state.pageFilesRevision.value
-    return state.getActivePage()?.[subModelKey(activeFile.value)]?.canUndo ?? false
+    return canUndoFile(activeFile.value)
   })
   const canRedo = computed(() => {
     void state.pageFilesRevision.value
-    return state.getActivePage()?.[subModelKey(activeFile.value)]?.canRedo ?? false
+    return canRedoFile(activeFile.value)
   })
   const text = computed(() => {
     void state.pageFilesRevision.value
@@ -35,6 +35,28 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageN
 
   function isFileDirty(name: PageNodeFileName): boolean {
     return state.isDocumentDirty(name)
+  }
+
+  function canUndoFile(name: PageNodeFileName): boolean {
+    const page = state.getActivePage()
+    if (!page) return false
+    switch (name) {
+      case 'rule.json': return page.canUndoRule
+      case 'pagedata.json': return page.canUndoDataSet
+      case 'script.js': return page.script.canUndo
+      case 'style.css': return page.style.canUndo
+    }
+  }
+
+  function canRedoFile(name: PageNodeFileName): boolean {
+    const page = state.getActivePage()
+    if (!page) return false
+    switch (name) {
+      case 'rule.json': return page.canRedoRule
+      case 'pagedata.json': return page.canRedoDataSet
+      case 'script.js': return page.script.canRedo
+      case 'style.css': return page.style.canRedo
+    }
   }
 
   async function save() {
@@ -64,14 +86,5 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageN
     isFileDirty,
     save,
     refresh,
-  }
-}
-
-function subModelKey(name: PageNodeFileName): 'rule' | 'dataSet' | 'style' | 'script' {
-  switch (name) {
-    case 'rule.json': return 'rule'
-    case 'pagedata.json': return 'dataSet'
-    case 'script.js': return 'script'
-    case 'style.css': return 'style'
   }
 }

@@ -1,13 +1,13 @@
 /** 节点纯函数——tree/flat 转换、pageId 解析、类型判断。 */
-import type { AppNavRoot, NavNode, NavNodeKind } from '../../service/navigation/nav-model'
+import type { NavNodeKind, ProjectModelData, ProjectNodeData } from './node-base.entity'
 import { normalizeNavRoot, normalizePageIdFromPath } from '../../service/navigation/editing.service'
-import type { NodeKind, ProjectDescriptionContext } from '../../contract/node.contract'
+import type { NodeKind, ProjectDescriptionContext } from './module-node.entity'
 
 export type ProjectNavigationFlatNode = {
   id: string; pid: string | null; title: string; description: string; nodeKind: NavNodeKind
   path: string; icon: string; dividerAfter: boolean; childPlacement: string
   linkTarget: string; hidden: boolean; disabled: boolean; order: number
-  refId: string; permissionMode: string; node: NavNode
+  refId: string; permissionMode: string; node: ProjectNodeData
 }
 
 export function normalizePid(v: string | null | undefined): string | null { const n = v?.trim() ?? ''; return n || null }
@@ -16,7 +16,7 @@ export function isConfigNodeKind(kind: string | undefined | null): boolean { ret
 export function isProjectPageNodeKind(kind: string | undefined | null): kind is 'page' | 'sub-page' { return kind === 'page' || kind === 'sub-page' }
 export function isProjectModuleNodeKind(kind: string | undefined | null): boolean { return kind === 'module' || kind === 'system-directory' }
 
-export function readProjectEditNodeKind(node: NavNode | null | undefined): NodeKind | null {
+export function readProjectEditNodeKind(node: ProjectNodeData | null | undefined): NodeKind | null {
   const k = node?.nodeKind ?? 'page'
   if (k === 'module' || k === 'system-directory') return 'module'
   if (k === 'page') return 'page'
@@ -37,21 +37,21 @@ export function readAllowedProjectEditChildKinds(p: 'project' | NodeKind): reado
 export function normalizeConfigPageId(v: string | undefined | null): string { return (v ?? '').trim() }
 export function resolvePageIdFromProjectPath(path: string | undefined | null): string { return normalizePageIdFromPath(path) }
 
-export function resolvePageNodePageId(node: NavNode | null | undefined): string {
+export function resolvePageNodePageId(node: ProjectNodeData | null | undefined): string {
   if (!node || !isConfigNodeKind(node.nodeKind ?? 'page')) return ''
   const pid = resolvePageIdFromProjectPath(node.path)
   return pid || node.id.trim()
 }
 
-export function readProjectNodeDescription(node: NavNode | null | undefined): string { return node?.description?.trim() ?? '' }
+export function readProjectNodeDescription(node: ProjectNodeData | null | undefined): string { return node?.description?.trim() ?? '' }
 
-export function createProjectDescriptionContext(node: NavNode | null | undefined): ProjectDescriptionContext | null {
+export function createProjectDescriptionContext(node: ProjectNodeData | null | undefined): ProjectDescriptionContext | null {
   const d = readProjectNodeDescription(node)
   if (!node || !d) return null
   return { nodeId: node.id, title: node.title, nodeKind: node.nodeKind ?? 'page', description: d }
 }
 
-export function appendProjectDescriptionContext(c: readonly ProjectDescriptionContext[], node: NavNode | null | undefined): ProjectDescriptionContext[] {
+export function appendProjectDescriptionContext(c: readonly ProjectDescriptionContext[], node: ProjectNodeData | null | undefined): ProjectDescriptionContext[] {
   const n = createProjectDescriptionContext(node)
   return n === null ? [...c] : [...c, n]
 }
@@ -60,10 +60,10 @@ export function formatProjectDescriptionContext(c: readonly ProjectDescriptionCo
   return c.map(i => `${i.title}: ${i.description}`).join('\n')
 }
 
-export function flattenProjectNavigationRoot(root: AppNavRoot): Array<{ node: NavNode; pid: string | null }> {
+export function flattenProjectNavigationRoot(root: ProjectModelData): Array<{ node: ProjectNodeData; pid: string | null }> {
   const normalizedRoot = normalizeNavRoot(root)
-  const r: Array<{ node: NavNode; pid: string | null }> = []
-  const visit = (nodes: readonly NavNode[], pid: string | null): void => {
+  const r: Array<{ node: ProjectNodeData; pid: string | null }> = []
+  const visit = (nodes: readonly ProjectNodeData[], pid: string | null): void => {
     for (const n of nodes) { r.push({ node: n, pid }); visit(Array.isArray(n.children) ? n.children : [], n.id); delete n.children }
   }
   visit(normalizedRoot.children, null)
@@ -71,10 +71,10 @@ export function flattenProjectNavigationRoot(root: AppNavRoot): Array<{ node: Na
 }
 
 /** 树节点最小接口——避免循环依赖 */
-type TreeNodeLike = { readonly id: string; readonly pid: string | null; readonly node: NavNode }
+type TreeNodeLike = { readonly id: string; readonly pid: string | null; readonly node: ProjectNodeData }
 
-export function buildProjectNavigationTree(nodes: readonly TreeNodeLike[]): NavNode[] {
-  const byParent = new Map<string, NavNode[]>()
+export function buildProjectNavigationTree(nodes: readonly TreeNodeLike[]): ProjectNodeData[] {
+  const byParent = new Map<string, ProjectNodeData[]>()
   for (const m of nodes) {
     const k = m.pid ?? ''; const c = { ...m.node }; delete c.children
     const s = byParent.get(k) ?? []; s.push(c); byParent.set(k, s)
@@ -89,7 +89,7 @@ export function buildProjectNavigationTree(nodes: readonly TreeNodeLike[]): NavN
   return sortNavNodes(byParent.get('') ?? [])
 }
 
-export function projectNavNodeToFlatRow(node: NavNode, pid: string | null): ProjectNavigationFlatNode {
+export function projectNavNodeToFlatRow(node: ProjectNodeData, pid: string | null): ProjectNavigationFlatNode {
   return { id: node.id, pid: normalizePid(pid), title: node.title, description: node.description ?? '',
     nodeKind: node.nodeKind ?? 'page', path: node.path ?? '', icon: node.icon ?? '',
     dividerAfter: node.dividerAfter === true, childPlacement: node.childPlacement ?? '',
@@ -98,11 +98,11 @@ export function projectNavNodeToFlatRow(node: NavNode, pid: string | null): Proj
     permissionMode: node.permissionMode ?? '', node }
 }
 
-function sortNavNodes(nodes: NavNode[]): NavNode[] {
+function sortNavNodes(nodes: ProjectNodeData[]): ProjectNodeData[] {
   return nodes.sort((a, b) => { const oa = typeof a.order === 'number' ? a.order : 0; const ob = typeof b.order === 'number' ? b.order : 0; return oa !== ob ? oa - ob : a.id.localeCompare(b.id) })
 }
 
-function findProjectedNode(nodes: readonly NavNode[], id: string): NavNode | null {
+function findProjectedNode(nodes: readonly ProjectNodeData[], id: string): ProjectNodeData | null {
   for (const n of nodes) { if (n.id === id) return n; const f = findProjectedNode(n.children ?? [], id); if (f) return f }
   return null
 }

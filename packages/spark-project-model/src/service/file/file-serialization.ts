@@ -5,25 +5,23 @@
  * 供 PageNode 在 load/save 时调用。
  */
 
-import { DataSetCrudTool } from '@spark-view/spark-data'
+import { DataSet } from '@spark-view/spark-data'
 import { getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
 import { canonicalizeDataSetMetadata } from '../../artifact/data.artifact'
 
 // ── rule.json ────────────────────────────────────────────
 
-/** rule.json 文本 → SparkNodeTree。空文本返回空树。 */
-export function parseRuleText(rawText: string): SparkNodeTree {
+/** rule.json 文本 → 页面根 SparkNode。空文本返回空页面根。 */
+export function parseRuleText(rawText: string): SparkNode {
   if (!rawText.trim()) {
-    return SparkNodeTree.fromPageChildren([])
+    return SparkNodeTree.fromPageChildren([]).root
   }
-  const normalizedRoot = SparkNodeTree.fromRuleJson(rawText).toJSON()
-  return SparkNodeTree.fromJson(normalizedRoot)
+  return SparkNodeTree.fromRuleJson(rawText).root
 }
 
-/** SparkNodeTree → rule.json 文本。 */
-export function serializeRuleTree(tree: SparkNodeTree): string {
-  const root = tree.toJSON()
-  const children = getSparkNodeChildren(root.children)
+/** 页面根 SparkNode → rule.json 文本。 */
+export function serializeRuleTree(rule: SparkNode): string {
+  const children = getSparkNodeChildren(rule.children)
   const firstChild = children[0]
   const rootValue: SparkNode | SparkNode[] = children.length === 1 && firstChild !== undefined
     ? firstChild
@@ -33,15 +31,15 @@ export function serializeRuleTree(tree: SparkNodeTree): string {
 
 // ── pagedata.json ────────────────────────────────────────
 
-/** pagedata.json 文本 → DataSetCrudTool。空文本以 defaultDataSetName 构造空工具。 */
-export function parsePageDataText(rawText: string, defaultDataSetName = ''): DataSetCrudTool {
+/** pagedata.json 文本 → DataSet。空文本以 defaultDataSetName 构造空数据集。 */
+export function parsePageDataText(rawText: string, defaultDataSetName = ''): DataSet {
   if (!rawText.trim()) {
-    return new DataSetCrudTool(defaultDataSetName)
+    return DataSet.fromJson({ dataSetName: defaultDataSetName, tables: {} })
   }
-  return DataSetCrudTool.fromJson(rawText)
+  return DataSet.fromJson(rawText)
 }
 
-/** DataSetCrudTool → pagedata.json 文本。 */
-export function serializeDataSet(tool: DataSetCrudTool): string {
-  return canonicalizeDataSetMetadata(tool.toJson())
+/** DataSet → pagedata.json 文本。 */
+export function serializeDataSet(dataSet: DataSet): string {
+  return canonicalizeDataSetMetadata(dataSet.toJson())
 }

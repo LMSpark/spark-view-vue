@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
-import type { NavNode, NavigationContext } from '@spark-view/spark-app'
+import type { NavigationContext, ProjectNodeData } from '@spark-view/spark-app'
 import { NAV_KEY } from '@spark-view/spark-app'
 import AppSidebar from '@/layout/AppSidebar.vue'
 
@@ -80,7 +80,7 @@ const NavIconStub = defineComponent({
   },
 })
 
-function createNavigationContext(activePath: NavNode[]): NavigationContext {
+function createNavigationContext(activePath: ProjectNodeData[]): NavigationContext {
   const regionItems = computed(() => ({
     header: [],
     sidebar: [],
@@ -115,13 +115,13 @@ describe('AppSidebar navigation rendering', () => {
     await router.push('/platform/dev')
     await router.isReady()
 
-    const devCenter: NavNode = {
+    const devCenter: ProjectNodeData = {
       id: 'platform-dev-center',
       nodeKind: 'module',
       title: '开发中心',
       childPlacement: 'sidebar',
     }
-    const items: NavNode[] = [
+    const items: ProjectNodeData[] = [
       {
         id: 'platform-dbms',
         nodeKind: 'system-page',
@@ -184,14 +184,14 @@ describe('AppSidebar navigation rendering', () => {
     await router.push('/settings')
     await router.isReady()
 
-    const settingsLeaf: NavNode = {
+    const settingsLeaf: ProjectNodeData = {
       id: 'settings-basic',
       nodeKind: 'system-page',
       title: '基本设置',
       icon: 'Setting',
       path: '/settings',
     }
-    const settingsGroup: NavNode = {
+    const settingsGroup: ProjectNodeData = {
       id: 'system-settings',
       nodeKind: 'module',
       title: '系统设置',
@@ -199,7 +199,7 @@ describe('AppSidebar navigation rendering', () => {
       childPlacement: 'parent',
       children: [settingsLeaf],
     }
-    const rootGroup: NavNode = {
+    const rootGroup: ProjectNodeData = {
       id: 'system-config',
       nodeKind: 'module',
       title: '系统配置',

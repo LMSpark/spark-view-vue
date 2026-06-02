@@ -23,7 +23,7 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import { getNavHomePath, useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
@@ -36,7 +36,7 @@ type BreadcrumbItem = {
 const route = useRoute()
 const router = useRouter()
 const nav = useNav()
-const safeActivePath = computed<NavNode[]>(() => Array.isArray(nav?.activePath.value) ? nav.activePath.value : [])
+const safeActivePath = computed<ProjectNodeData[]>(() => Array.isArray(nav?.activePath.value) ? nav.activePath.value : [])
 
 function goHome() {
   nav?.navigateToPath(getNavHomePath())
@@ -45,7 +45,7 @@ function goHome() {
 const crumbs = computed<BreadcrumbItem[]>(() => {
   // 优先使用导航模型的 activePath
   if (safeActivePath.value.length > 0) {
-    return safeActivePath.value.map((node: NavNode) => ({
+    return safeActivePath.value.map((node: ProjectNodeData) => ({
       id: node.id,
       path: node.path ?? '',
       title: node.title,
@@ -67,7 +67,7 @@ const crumbs = computed<BreadcrumbItem[]>(() => {
 function onCrumbClick(item: BreadcrumbItem) {
   // 优先使用导航模型的 navigateTo（处理重定向、首个叶子等）
   if (nav && item.id) {
-    const node = safeActivePath.value.find((n: NavNode) => n.id === item.id)
+    const node = safeActivePath.value.find((n: ProjectNodeData) => n.id === item.id)
     if (node) {
       nav.navigateTo(node)
       return
@@ -139,4 +139,3 @@ function onCrumbClick(item: BreadcrumbItem) {
   margin-right: 2px;
 }
 </style>
-

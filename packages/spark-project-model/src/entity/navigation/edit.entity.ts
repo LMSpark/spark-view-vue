@@ -2,15 +2,15 @@
  * 导航编辑领域模型 — PageNode 的导航属性子模型。
  *
  * 持有页面导航节点的全部可编辑属性（dev-system 节点属性表单 + context），
- * 以及到导航树中 NavNode 的引用。
+ * 以及到项目树中 ProjectNodeData 的引用。
  * 通过现有 createNavigationNodeEditDto / applyNavigationNodeEditDtoToNode
- * 完成 NavNode ↔ DTO 双向转换。
+ * 完成 ProjectNodeData ↔ DTO 双向转换。
  *
  * 所有字段使用 getter/setter：任意字段赋值自动标记 dirty 并通知订阅者。
  * context 通过 setContextItems / updateContextConfig / addContextItem / removeContextItem 修改。
  */
 
-import type { NavNode, NavNodeKind } from '../../service/navigation/nav-model'
+import type { NavNodeKind, ProjectNodeData } from '../node/node-base.entity'
 import type {
   NavigationNodeEditDto,
   NavigationContextEditDto,
@@ -57,7 +57,7 @@ export class NavigationEditModel {
   private _contextConfig: NavigationContextEditConfigDto = emptyContextConfig()
 
   // ── 树节点引用 ──
-  navNode: NavNode | null = null
+  navNode: ProjectNodeData | null = null
 
   // ── Dirty ──
   private _dirty = false
@@ -192,7 +192,7 @@ export class NavigationEditModel {
   // ── 节点操作 ───────────────────────────────────────────
 
   /** 从导航树节点加载属性到 DTO 字段，绕过 setter 直接写入内部存储，然后清除 dirty。 */
-  loadFromNode(node: NavNode): void {
+  loadFromNode(node: ProjectNodeData): void {
     this.navNode = node
     const input = createNavigationNodeEditDto(node)
     this._bulkLoadEditDto(input.node)

@@ -8,7 +8,7 @@ import {
 } from '@spark-view/spark-project-model'
 import { HttpClientBase, Logger } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode } from '../navigation/nav-model'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
 import { getNavTree } from '../navigation/nav-access'
 
 type ReloadableRenderer = {
@@ -39,7 +39,7 @@ type ScopedHttpClientOptions = {
   targetProjectId: string}
 
 type RefTargetResolutionInput = Readonly<{
-  navTree: AppNavRoot | null
+  navTree: ProjectModelData | null
   routePath: string
   routeMeta: Record<string, unknown>
   hostProjectId: string | null
@@ -137,7 +137,7 @@ function parseRefPath(refPath: string | null): ParsedRefPath {
   }
 }
 
-function refNodeHostPath(node: NavNode): string {
+function refNodeHostPath(node: ProjectNodeData): string {
   const explicitPath = asNonEmptyString(node.path)
   if (explicitPath !== null && normalizePath(explicitPath).includes('/__ref/')) {
     return explicitPath
@@ -145,7 +145,7 @@ function refNodeHostPath(node: NavNode): string {
   return `/__ref/${encodeURIComponent(node.id)}`
 }
 
-function findRefNodeById(nodes: NavNode[], refNodeId: string): NavNode | null {
+function findRefNodeById(nodes: ProjectNodeData[], refNodeId: string): ProjectNodeData | null {
   for (const node of nodes) {
     if (node.nodeKind === 'ref' && node.id === refNodeId) return node
     if (node.children?.length) {
@@ -156,7 +156,7 @@ function findRefNodeById(nodes: NavNode[], refNodeId: string): NavNode | null {
   return null
 }
 
-function findRefNodeByHostPath(nodes: NavNode[], routePath: string): NavNode | null {
+function findRefNodeByHostPath(nodes: ProjectNodeData[], routePath: string): ProjectNodeData | null {
   const targetPath = stripTenantProjectPrefix(routePath)
   for (const node of nodes) {
     if (node.nodeKind === 'ref' && stripTenantProjectPrefix(refNodeHostPath(node)) === targetPath) {
@@ -170,7 +170,7 @@ function findRefNodeByHostPath(nodes: NavNode[], routePath: string): NavNode | n
   return null
 }
 
-function findRouteRefNode(navTree: AppNavRoot | null, routePath: string, hostRefNodeId: string | null): NavNode | null {
+function findRouteRefNode(navTree: ProjectModelData | null, routePath: string, hostRefNodeId: string | null): ProjectNodeData | null {
   if (navTree === null) return null
   if (hostRefNodeId !== null) {
     const byId = findRefNodeById(navTree.children, hostRefNodeId)

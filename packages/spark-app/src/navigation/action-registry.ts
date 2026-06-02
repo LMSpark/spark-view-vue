@@ -1,9 +1,9 @@
 import type { InjectionKey } from 'vue'
-import type { NavNode } from './nav-model'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 
 export type NavigationActionContext = {
   command: string
-  node?: NavNode
+  node?: ProjectNodeData
   source?: 'navigation' | 'toolbar' | 'user-menu' | 'app-shell'}
 
 export type NavigationActionHandler = {

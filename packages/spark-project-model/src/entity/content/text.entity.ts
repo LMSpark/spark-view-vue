@@ -15,6 +15,7 @@ export class TextContent {
   private readonly _listeners = new Set<() => void>()
 
   constructor(
+    readonly pageId: string,
     readonly fileName: PageTextFileName,
     initialText = '',
   ) {
@@ -57,8 +58,8 @@ export class TextContent {
     return true
   }
 
-  async load(pageId: string, loader: BasePageContentLoader, options?: { forceReload?: boolean }): Promise<void> {
-    const result = await loader.loadPageFileContent(pageId, this.fileName, {
+  async load(loader: BasePageContentLoader, options?: { forceReload?: boolean }): Promise<void> {
+    const result = await loader.loadPageFileContent(this.pageId, this.fileName, {
       forceReload: options?.forceReload === true,
     })
     if (!result.success) {
@@ -67,16 +68,16 @@ export class TextContent {
     this.replaceSavedText(result.data ?? '')
   }
 
-  async save(pageId: string, api: PageNodeFileApi): Promise<void> {
-    await api.saveFileContent(pageId, this.fileName, this._text)
+  async save(api: PageNodeFileApi): Promise<void> {
+    await api.saveFileContent(this.pageId, this.fileName, this._text)
     this.markSaved()
   }
 
   async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
-    await command.fileApi.restoreVersion(command.pageId, this.fileName, command.version)
-    const result = await command.contentLoader.loadPageFileContent(command.pageId, this.fileName, { forceReload: true })
+    await command.fileApi.restoreVersion(this.pageId, this.fileName, command.version)
+    const result = await command.contentLoader.loadPageFileContent(this.pageId, this.fileName, { forceReload: true })
     if (!result.success) {
-      throw new Error(`恢复版本后读取失败: ${command.pageId}/${this.fileName} v${command.version}`)
+      throw new Error(`恢复版本后读取失败: ${this.pageId}/${this.fileName} v${command.version}`)
     }
     this.replaceSavedText(result.data ?? '')
   }
@@ -100,9 +101,9 @@ export class TextContent {
 }
 
 export class ScriptContent extends TextContent {
-  constructor(initialText = '') { super('script.js', initialText) }
+  constructor(pageId: string, initialText = '') { super(pageId, 'script.js', initialText) }
 }
 
 export class StyleContent extends TextContent {
-  constructor(initialText = '') { super('style.css', initialText) }
+  constructor(pageId: string, initialText = '') { super(pageId, 'style.css', initialText) }
 }

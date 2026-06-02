@@ -11,9 +11,28 @@
  * helpers.ts    → 纯函数
  */
 
-export { ProjectNode, PageNode } from './node-base.entity'
-export type { ProjectNodeModelOptions, ProjectNodeDirtyPart } from './node-base.entity'
-export type { ProjectConfigPageNodeModelOptions, ConfigPageContentPart, ProjectConfigPageDirtyPart } from './node-base.entity'
+export { ProjectNode } from './node-base.entity'
+export { PageNode } from './page-node.entity'
+export type {
+  ChildPlacement,
+  NavContextConfig,
+  NavContextItem,
+  NavContextState,
+  NavNodeKind,
+  NavPermissionMode,
+  ProjectModelData,
+  ProjectNodeData,
+  ProjectNodeModelOptions,
+  RegionItems,
+  RegionVisibility,
+} from './node-base.entity'
+export type {
+  ConfigPageContentPart,
+  ProjectConfigPageDirtyPart,
+  ProjectConfigPageNodeModelOptions,
+  ProjectNodeDirtyPart,
+} from './config-page.entity'
+export { isProjectNodeData } from './node-base.entity'
 
 export { ModuleNode } from './module-node.entity'
 
@@ -55,9 +74,10 @@ import { ActionNode } from './leaf-nodes.entity'
 import { LinkNode } from './leaf-nodes.entity'
 import { RefNode } from './leaf-nodes.entity'
 import { ModuleNode } from './module-node.entity'
-import { PageNode, type ProjectNode } from './node-base.entity'
+import type { ProjectNode } from './node-base.entity'
+import { PageNode } from './page-node.entity'
 import { isConfigNodeKind } from './node-helpers'
-import type { ProjectConfigPageNodeModelOptions } from './node-base.entity'
+import type { ProjectConfigPageNodeModelOptions } from './config-page.entity'
 
 export function createProjectNodeModel(options: ProjectConfigPageNodeModelOptions): ProjectNode {
   const nodeKind = options.node.nodeKind ?? 'page'
@@ -73,7 +93,19 @@ export function isProjectConfigPageNodeModel(node: ProjectNode | null | undefine
 export function isProjectModuleNodeModel(node: ProjectNode | null | undefined): node is ModuleNode { return node instanceof ModuleNode }
 export function isProjectPageNodeModel(node: ProjectNode | null | undefined): node is PageNode { return node instanceof PageNode }
 
-export type { PageNodeLike } from '../../contract/node.contract'
-export type { PageNodeRenderConfig } from '../../contract/node.contract'
-export type { ProjectPageNodeSummary } from '../../contract/node.contract'
-export type { ProjectNodeFamily, ProjectEditNodeKind, ProjectPageEditNodeKind, ProjectEditParentKind, ProjectDescriptionContext, PageNodeLoadOptions, PageNodeNavigationConfig } from '../../contract/node.contract'
+export type {
+  NodeKind,
+  PageNodeFactoryLike,
+  PageNodeFactoryOptions,
+  PageNodeFileStorage,
+  PageNodeLike,
+  PageNodeLoadOptions,
+  PageNodeNavigationConfig,
+  PageNodeRenderConfig,
+  ProjectDescriptionContext,
+  ProjectEditNodeKind,
+  ProjectEditParentKind,
+  ProjectNodeFamily,
+  ProjectPageEditNodeKind,
+  ProjectPageNodeSummary,
+} from './module-node.entity'

@@ -52,7 +52,7 @@
 <script setup lang="ts">
 import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import { useNav } from '@spark-view/spark-app'
 import AppSidebarNode from './AppSidebarNode.vue'
 import NavIcon from '@/components/NavIcon.vue'
@@ -60,7 +60,7 @@ import NavIcon from '@/components/NavIcon.vue'
 const props = withDefaults(defineProps<{
   title?: string
   collapsed?: boolean
-  items?: NavNode[]
+  items?: ProjectNodeData[]
 }>(), {
   title: 'SPARK',
   collapsed: false,
@@ -70,7 +70,7 @@ const props = withDefaults(defineProps<{
 const route = useRoute()
 const router = useRouter()
 const nav = useNav()
-const safeItems = computed<NavNode[]>(() => Array.isArray(props.items) ? props.items : [])
+const safeItems = computed<ProjectNodeData[]>(() => Array.isArray(props.items) ? props.items : [])
 
 /** 活动高亮索引 */
 const activeIndex = computed(() => {
@@ -81,7 +81,7 @@ const activeIndex = computed(() => {
   return activeNode !== undefined ? menuIndex(activeNode) : route.path
 })
 
-function menuIndex(item: NavNode): string {
+function menuIndex(item: ProjectNodeData): string {
   return item.path ?? item.id
 }
 
@@ -228,4 +228,3 @@ function routeIcon(item: { meta?: Record<string | number | symbol, unknown> }): 
   pointer-events: none;
 }
 </style>
-

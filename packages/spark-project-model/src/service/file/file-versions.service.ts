@@ -10,12 +10,12 @@ import type {
   PageNodeFileVersionSummary,
 } from './file-api.service'
 import type { PageNodeFileName } from './file-registry.service'
+import type { ConfigPageNode } from '../../entity/node/config-page.entity'
+import type { ScriptContent, StyleContent } from '../../entity/content/text.entity'
 import type { RuleContent } from '../../entity/content/rule.entity'
 import type { DataSetContent } from '../../entity/content/dataset.entity'
-import type { ScriptContent, StyleContent } from '../../entity/content/text.entity'
 
-export type PageFileVersionTarget = {
-  pageId: string
+export type PageFileVersionTarget = Pick<ConfigPageNode, 'pageId'> & {
   rule: RuleContent
   dataSet: DataSetContent
   script: ScriptContent

@@ -151,7 +151,7 @@ import {
   User, Setting, SwitchButton, ArrowDown, HomeFilled,
 } from '@element-plus/icons-vue'
 import { useNotifications } from '@/composables/useNotifications'
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
@@ -162,9 +162,9 @@ const props = withDefaults(defineProps<{
   username?: string
   avatar?: string
   /** 工具栏导航项（由导航配置驱动，path 匹配内置按钮） */
-  toolbarItems?: NavNode[]
+  toolbarItems?: ProjectNodeData[]
   /** 用户菜单导航项（由导航配置驱动，path 匹配内置命令） */
-  userMenuItems?: NavNode[]
+  userMenuItems?: ProjectNodeData[]
 }>(), {
   title: 'SPARK 应用工场',
   isDark: false,
@@ -181,10 +181,10 @@ const emit = defineEmits<{
   'user-command': [command: string]
 }>()
 
-const safeToolbarItems = computed<NavNode[]>(() => Array.isArray(props.toolbarItems) ? props.toolbarItems : [])
-const safeUserMenuItems = computed<NavNode[]>(() => Array.isArray(props.userMenuItems) ? props.userMenuItems : [])
+const safeToolbarItems = computed<ProjectNodeData[]>(() => Array.isArray(props.toolbarItems) ? props.toolbarItems : [])
+const safeUserMenuItems = computed<ProjectNodeData[]>(() => Array.isArray(props.userMenuItems) ? props.userMenuItems : [])
 const builtInToolbarActions = new Set(['search', 'fullscreen', 'notifications', 'theme-toggle'])
-const genericToolbarItems = computed<NavNode[]>(() =>
+const genericToolbarItems = computed<ProjectNodeData[]>(() =>
   safeToolbarItems.value.filter(item => !builtInToolbarActions.has(toolbarCommand(item))),
 )
 
@@ -193,7 +193,7 @@ function hasAction(action: string): boolean {
   return safeToolbarItems.value.some(item => toolbarCommand(item) === action)
 }
 
-function toolbarCommand(item: NavNode): string {
+function toolbarCommand(item: ProjectNodeData): string {
   return String(item.path ?? item.redirect ?? item.id).replace(/^\/+/, '')
 }
 /* 通知（SSE 实时驱动） */
@@ -467,4 +467,3 @@ function handleUserCommand(command: string | number | object) {
   }
 }
 </style>
-

@@ -34,9 +34,17 @@ export {
   readProjectNodeDescription,
   flattenProjectNavigationRoot,
   buildProjectNavigationTree,
+  isProjectNodeData,
 } from './entity/node/node-factory'
 
 export type {
+  ProjectModelData,
+  ChildPlacement,
+  NavContextItem,
+  NavContextState,
+  NavNodeKind,
+  NavPermissionMode,
+  ProjectNodeData,
   ProjectNodeFamily,
   ProjectDescriptionContext,
   PageNodeLoadOptions,
@@ -47,17 +55,18 @@ export type {
   ConfigPageContentPart,
   ProjectConfigPageDirtyPart,
   ProjectNavigationFlatNode,
+  RegionItems,
+  RegionVisibility,
 } from './entity/node/node-factory'
 
-// ── 导航 ──────────────────────────────────────────────
+// ── 导航 DTO（契约层）─────────────────────────────
 
 export type {
   NavigationNodeAddRequestDto,
   NavigationNodeEditDto,
   NavigationNodeEditPatchDto,
   NavigationNodeMoveRequestDto,
-  NavNode,
-  NavNodeKind,
+  ProjectNodeLocation,
 } from './contract/navigation.contract'
 
 // ── 工厂 ──────────────────────────────────────────────

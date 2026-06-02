@@ -13,7 +13,7 @@
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
 import { createAiRunAdapter, createAiToolApprovalBridge, refreshRoutes } from '@spark-view/spark-app'
-import type { AiToolApprovalRequest, NavNode, NavNodeKind } from '@spark-view/spark-app'
+import type { AiToolApprovalRequest, NavNodeKind, ProjectNodeData } from '@spark-view/spark-app'
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
 import {
@@ -85,11 +85,11 @@ export function useDevState() {
   }
 
   // ── 导航树 ──
-  const treeData = ref<NavNode[]>([])
+  const treeData = ref<ProjectNodeData[]>([])
   const navLoading = ref(false)
   const navSaving = ref(false)
   const navDirty = ref(false)
-  const selectedNode = ref<NavNode | null>(null)
+  const selectedNode = ref<ProjectNodeData | null>(null)
   const navEditDtoRevision = ref(0)
   const pageFilesRevision = ref(editor.revision)
 
@@ -286,11 +286,11 @@ export function useDevState() {
   // 导航树工具
   // ═══════════════════════════════════════════════════════════
 
-  function isSystemRootDirectoryInTree(node: NavNode | null | undefined): boolean {
+  function isSystemRootDirectoryInTree(node: ProjectNodeData | null | undefined): boolean {
     return ProjectNodeTools.isSystemRootDirectory(node, treeData.value)
   }
 
-  function canUseModuleNodeKindInTree(node: NavNode | null | undefined): boolean {
+  function canUseModuleNodeKindInTree(node: ProjectNodeData | null | undefined): boolean {
     return ProjectNodeTools.canUseModuleNodeKind(node, treeData.value)
   }
 
@@ -479,7 +479,7 @@ export function useDevState() {
     }
   }
 
-  async function syncPageFilesForNodeAfterLoad(node: NavNode, forceReload: boolean): Promise<void> {
+  async function syncPageFilesForNodeAfterLoad(node: ProjectNodeData, forceReload: boolean): Promise<void> {
     const pageId = ProjectNodeTools.resolvePageNodePageId(node)
     if (pageId && ProjectNodeTools.isConfigNodeKind(node.nodeKind ?? 'page')) {
       await editor.selectPage(pageId, { forceReload })
@@ -575,7 +575,7 @@ export function useDevState() {
   // 节点表单
   // ═══════════════════════════════════════════════════════════
 
-  function loadNodeToForm(node: NavNode): void {
+  function loadNodeToForm(node: ProjectNodeData): void {
     const pageId = ProjectNodeTools.resolvePageNodePageId(node) || node.id || `nav-node-${node.id}`
     editor.setActivePage(pageId)
     const page = editor.getActivePage()
@@ -773,7 +773,7 @@ export function useDevState() {
   // 节点选中
   // ═══════════════════════════════════════════════════════════
 
-  async function selectNode(node: NavNode): Promise<void> {
+  async function selectNode(node: ProjectNodeData): Promise<void> {
     cancelAutoSave()
     if (navDirty.value && selectedNode.value) void saveNodeChanges()
     selectedNode.value = node
@@ -883,7 +883,7 @@ export function useDevState() {
     return treeData.value.some((node) => node.childPlacement === placement)
   }
 
-  function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): NavNode {
+  function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): ProjectNodeData {
     return ProjectNodeTools.createReservedRootGroup(placement, {
       createId: () => crypto.randomUUID(),
     })
@@ -907,7 +907,7 @@ export function useDevState() {
     }
   }
 
-  async function addChildNode(parent: NavNode): Promise<void> {
+  async function addChildNode(parent: ProjectNodeData): Promise<void> {
     const pageId = ProjectNodeTools.resolvePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
     try {
       await editor.createMountedPage({
@@ -923,7 +923,7 @@ export function useDevState() {
     }
   }
 
-  function removeNodeFromTree(_node: { parent: { data: NavNode } }, data: NavNode): void {
+  function removeNodeFromTree(_node: { parent: { data: ProjectNodeData } }, data: ProjectNodeData): void {
     if (isSystemRootDirectoryInTree(data)) {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
@@ -952,7 +952,7 @@ export function useDevState() {
     )
   }
 
-  async function moveNodeInTree(data: NavNode): Promise<void> {
+  async function moveNodeInTree(data: ProjectNodeData): Promise<void> {
     if (isSystemRootDirectoryInTree(data)) return
     const location = ProjectNodeTools.findNodeLocation(treeData.value, data.id)
     if (!location) return

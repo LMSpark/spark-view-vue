@@ -7,7 +7,7 @@
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
 import type { PageNodeFactoryLike } from '@spark-view/spark-project-model'
-import type { NavNode, AppNavRoot } from '../navigation/nav-model'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
 import { createLogger } from '../logger'
 import { readProperty } from '@spark-view/spark-utils/internal'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
@@ -70,9 +70,9 @@ export type DynamicRouterOptions = {
    * 导航数据加载函数 — 导航树作为路由的唯一来源。
    *
    * 已认证时 `registerRoutes()` 使用此函数加载远程导航树并派生路由。
-   * 返回的 AppNavRoot 对象同时用于 UI 渲染（侧栏/顶栏菜单）。
+   * 返回的 ProjectModelData 对象同时用于 UI 渲染（侧栏/顶栏菜单）。
    */
-  loadNavigation?: (() => Promise<AppNavRoot>) | undefined
+  loadNavigation?: (() => Promise<ProjectModelData>) | undefined
 
   /**
    * 平台工作台导航加载函数。
@@ -80,7 +80,7 @@ export type DynamicRouterOptions = {
    * 返回的节点 path 仍保持相对形态（如 /dashboard、/tenants），
    * 注册路由时统一映射到 platformPathPrefix 下（默认 /platform）。
    */
-  loadPlatformNavigation?: (() => Promise<AppNavRoot>) | undefined
+  loadPlatformNavigation?: (() => Promise<ProjectModelData>) | undefined
 
   /** 平台工作台路由前缀（默认 /platform）。 */
   platformPathPrefix?: string | undefined
@@ -95,7 +95,7 @@ export type DynamicRouterOptions = {
    * 使用此本地导航树注册路由（如 / 和 /login）。
    * 登录后 `refreshRoutes()` 会用远程导航树替换。
    */
-  preAuthNavTree?: AppNavRoot | undefined
+  preAuthNavTree?: ProjectModelData | undefined
 
   /**
    * 认证状态检查回调。
@@ -126,21 +126,21 @@ export class DynamicRouter {
   /** tenantPathPrefix 的实体路径匹配（如 '^/t/[^/]+'） */
   private tenantPathRegex: RegExp | null
   /** 导航数据加载函数（提供后从导航树派生路由） */
-  private _loadNavigation: (() => Promise<AppNavRoot>) | undefined
+  private _loadNavigation: (() => Promise<ProjectModelData>) | undefined
   /** 平台工作台导航数据加载函数 */
-  private _loadPlatformNavigation: (() => Promise<AppNavRoot>) | undefined
+  private _loadPlatformNavigation: (() => Promise<ProjectModelData>) | undefined
   private platformPathPrefix: string
   private _isPlatformNavigationEnabled: () => boolean
   /** 登录前本地导航树 */
-  private _preAuthNavTree: AppNavRoot | null = null
-  private _tenantNavTree: AppNavRoot | null = null
-  private _platformNavTree: AppNavRoot | null = null
+  private _preAuthNavTree: ProjectModelData | null = null
+  private _tenantNavTree: ProjectModelData | null = null
+  private _platformNavTree: ProjectModelData | null = null
   /** 认证状态检查回调 */
   private _isAuthenticated: () => boolean
   /** 已加载的导航树（UI 侧栏/顶栏共享此数据） */
-  private _navTree: AppNavRoot | null = null
-  /** NavNode → 注册路由路径追踪（弱引用，导航树刷新后自动 GC） */
-  private _navRouteMap = new WeakMap<NavNode, string>()
+  private _navTree: ProjectModelData | null = null
+  /** ProjectNodeData → 注册路由路径追踪（弱引用，导航树刷新后自动 GC） */
+  private _navRouteMap = new WeakMap<ProjectNodeData, string>()
 
   constructor(options: DynamicRouterOptions) {
     this.router = options.router
@@ -213,7 +213,7 @@ export class DynamicRouter {
     return currentPath === this.platformPathPrefix || currentPath.startsWith(`${this.platformPathPrefix}/`)
   }
 
-  private activeNavTree(): AppNavRoot | null {
+  private activeNavTree(): ProjectModelData | null {
     if (this.isCurrentPlatformRoute() && this._platformNavTree !== null) {
       return this._platformNavTree
     }
@@ -267,7 +267,7 @@ export class DynamicRouter {
     this.registeredRoutes.add(routePath)
   }
 
-  private resolveCrossProjectRefUrl(node: NavNode): string | null {
+  private resolveCrossProjectRefUrl(node: ProjectNodeData): string | null {
     const refPath = typeof node.refPath === 'string' ? node.refPath.trim() : ''
     if (refPath === '') return null
 
@@ -369,7 +369,7 @@ export class DynamicRouter {
    * - 其他页面类节点 → pageComponent (PageRenderer)
    * @param options 路由注册作用域；public 跳过租户前缀，platform 使用 /platform 前缀
    */
-  private registerRoutesFromNav(nodes: NavNode[], options: RouteRegistrationOptions = {}): void {
+  private registerRoutesFromNav(nodes: ProjectNodeData[], options: RouteRegistrationOptions = {}): void {
     const skipTenantPrefix = options.skipTenantPrefix === true
     const routePathPrefix = options.routePathPrefix
     this.registerCrossProjectRefHostRoute(skipTenantPrefix || routePathPrefix !== undefined)
@@ -596,7 +596,7 @@ export class DynamicRouter {
   }
 
   /** 刷新路由（重新加载导航树，保留静态组件映射），返回加载后的导航树 */
-  async refreshRoutes(): Promise<AppNavRoot | null> {
+  async refreshRoutes(): Promise<ProjectModelData | null> {
     routerLogger.info('刷新动态路由')
 
     // 保存旧路由集合；先注册新路由再删除旧路由，避免 Vue Router 内部
@@ -632,7 +632,7 @@ export class DynamicRouter {
   }
 
   /** 获取已加载的导航树（导航模式下可用） */
-  getNavTree(): AppNavRoot | null {
+  getNavTree(): ProjectModelData | null {
     this._navTree = this.activeNavTree()
     return this._navTree
   }

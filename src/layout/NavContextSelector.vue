@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-import type { NavContextState } from '@spark-view/spark-data'
+import type { NavContextState } from '@spark-view/spark-project-model'
 import { useNav } from '@spark-view/spark-app'
 
 const props = defineProps<{
@@ -86,4 +86,3 @@ function onSelect(val: string) {
   cursor: help;
 }
 </style>
-

@@ -45,12 +45,12 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import { useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
-  item: NavNode
+  item: ProjectNodeData
   collapsed?: boolean
   showText?: boolean
 }>(), {
@@ -61,11 +61,11 @@ const props = withDefaults(defineProps<{
 const route = useRoute()
 const nav = useNav()
 
-function menuIndex(item: NavNode): string {
+function menuIndex(item: ProjectNodeData): string {
   return item.path ?? item.id
 }
 
-function shouldRenderAsSubMenu(item: NavNode): boolean {
+function shouldRenderAsSubMenu(item: ProjectNodeData): boolean {
   const children = visibleChildren(item)
   if (children.length === 0) return false
   if (!isDirectoryNode(item)) return false
@@ -74,27 +74,27 @@ function shouldRenderAsSubMenu(item: NavNode): boolean {
   return children.some((child) => isDirectoryNode(child) && visibleChildren(child).length > 0)
 }
 
-function isDirectoryNode(item: NavNode): boolean {
+function isDirectoryNode(item: ProjectNodeData): boolean {
   return item.nodeKind === 'module' || item.nodeKind === 'system-directory'
 }
 
-function isDirectoryGroupNode(item: NavNode): boolean {
+function isDirectoryGroupNode(item: ProjectNodeData): boolean {
   return isDirectoryNode(item) && visibleChildren(item).length > 0
 }
 
-function visibleChildren(item: NavNode): NavNode[] {
+function visibleChildren(item: ProjectNodeData): ProjectNodeData[] {
   return (item.children ?? []).filter((child) => !child.hidden && child.nodeKind !== 'sub-page')
 }
 
-function isActive(item: NavNode): boolean {
+function isActive(item: ProjectNodeData): boolean {
   return nav?.isNodeActive(item) ?? menuIndex(item) === route.path
 }
 
-function showDividerAfter(item: NavNode): boolean {
+function showDividerAfter(item: ProjectNodeData): boolean {
   return !props.collapsed && item.dividerAfter === true
 }
 
-function onItemClick(item: NavNode) {
+function onItemClick(item: ProjectNodeData) {
   nav?.navigateTo(item)
 }
 </script>

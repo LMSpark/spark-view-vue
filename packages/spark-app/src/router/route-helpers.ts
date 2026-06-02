@@ -1,4 +1,4 @@
-import type { NavNode } from '../navigation/nav-model'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 
 function normalizePath(path: string): string {
   const trimmed = path.trim()
@@ -22,7 +22,7 @@ export function resolveCrossProjectRefPageId(refPath: string | undefined): strin
   return pageId === '' ? null : pageId
 }
 
-export function resolveNavRoutePageId(node: NavNode, rawNodePath: string): string {
+export function resolveNavRoutePageId(node: ProjectNodeData, rawNodePath: string): string {
   if (node.nodeKind === 'ref') {
     return resolveCrossProjectRefPageId(node.refPath) ?? node.refId ?? node.id
   }

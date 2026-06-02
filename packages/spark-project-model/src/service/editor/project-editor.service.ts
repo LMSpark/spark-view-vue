@@ -33,15 +33,15 @@ import type {
 import { PageNodeFileApi } from '../file/file-api.service'
 import { createPageContentLoader } from '../content-loader/loader.service'
 import type {
-  AppNavRoot,
-  NavNode,
+  ProjectModelData,
   NavNodeKind,
-} from '../navigation/nav-model'
+  ProjectNodeData,
+} from '@spark-view/spark-project-model'
 import type {
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
   NavigationNodeEditPatchDto,
-  NavNodeLocation,
+  ProjectNodeLocation,
   NavigationEditSession,
 } from '../navigation/editing.service'
 import {
@@ -150,11 +150,11 @@ export type ProjectEditorListener = () => void
  */
 export type ProjectEditorSnapshot = {
   pageId: string
-  navigationRoot: AppNavRoot
-  treeData: NavNode[]
-  selectedNode: NavNode | null
+  navigationRoot: ProjectModelData
+  treeData: ProjectNodeData[]
+  selectedNode: ProjectNodeData | null
   selectedNodeId: string | null
-  navigationLocation: NavNodeLocation | null
+  navigationLocation: ProjectNodeLocation | null
   navigationEditDto: NavigationNodeEditInputDto | null
   pageFeatures: ProjectPageNodeSummary[]
   ruleJson: string
@@ -364,7 +364,7 @@ export class ProjectEditor {
   // ── 导航加载 & 选择 ──────────────────────────────────
 
   /** 加载远端项目节点 root 到内存 ProjectModel 中。 */
-  async loadNavigation(): Promise<AppNavRoot> {
+  async loadNavigation(): Promise<ProjectModelData> {
     return this.reloadNavigation()
   }
 
@@ -478,8 +478,8 @@ export class ProjectEditor {
     }
 
     if (activePage) {
-      if (activePage.rule.isDirty) dirtyFiles.add('rule.json')
-      if (activePage.dataSet.isDirty) dirtyFiles.add('pagedata.json')
+      if (activePage.isRuleDirty) dirtyFiles.add('rule.json')
+      if (activePage.isDataSetDirty) dirtyFiles.add('pagedata.json')
       if (activePage.script.isDirty) dirtyFiles.add('script.js')
       if (activePage.style.isDirty) dirtyFiles.add('style.css')
     }
@@ -496,8 +496,8 @@ export class ProjectEditor {
       navigationLocation: navLocation,
       navigationEditDto: navEditDto,
       pageFeatures,
-      ruleJson: activePage?.rule.getText() ?? '',
-      pageDataJson: activePage?.dataSet.getText() ?? '',
+      ruleJson: activePage?.getRuleText() ?? '',
+      pageDataJson: activePage?.getDataSetText() ?? '',
       script: activePage?.script.text ?? '',
       style: activePage?.style.text ?? '',
       dirtyFiles,
@@ -560,7 +560,7 @@ export class ProjectEditor {
   async saveSelectedNavigationNode(): Promise<void> {
     const page = this.getActivePage()
     let nodeId: string
-    let patch: NavigationNodeEditPatchDto & Pick<NavNode, 'title' | 'nodeKind'>
+    let patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'>
 
     if (page?.navigation.isDirty && page.navigation.navNode) {
       nodeId = page.navigation.navNode.id
@@ -647,7 +647,7 @@ export class ProjectEditor {
   // ── 生命周期：导航树节点 ──────────────────────────────
 
   /** 在导航根添加模块节点。 */
-  addRootNode(createId: () => string): NavNode {
+  addRootNode(createId: () => string): ProjectNodeData {
     const node = this.project.addRootModule(createId)
     this.markNavigationDirty('root')
     this.bumpRevision()
@@ -655,14 +655,14 @@ export class ProjectEditor {
   }
 
   /** 通过节点级接口新增导航节点。 */
-  async addNavigationNode(params: { parentId?: string | null; node: NavNode; index?: number }): Promise<NavNode> {
+  async addNavigationNode(params: { parentId?: string | null; node: ProjectNodeData; index?: number }): Promise<ProjectNodeData> {
     const node = await this.navClient.addNode(params)
     await this.reloadNavigation({ selectedNodeId: node.id })
     return node
   }
 
   /** 在当前选中节点下添加子页面节点。无选中节点时添加到根下。 */
-  addChildPageNode(createId: () => string): NavNode {
+  addChildPageNode(createId: () => string): ProjectNodeData {
     const selected = this.getSelectedNode()
     const node = this.project.addChildPage(createId, selected)
     this.markNavigationDirty('root')
@@ -671,7 +671,7 @@ export class ProjectEditor {
   }
 
   /** 从项目节点集合中移除节点并返回被删节点。如移除的是当前选中节点则清除选中。 */
-  removeNode(nodeId: string): NavNode | null {
+  removeNode(nodeId: string): ProjectNodeData | null {
     const normalized = nodeId.trim()
     const removed = this.project.removeNode(normalized)
     if (this.selectedNodeId === normalized) {
@@ -683,7 +683,7 @@ export class ProjectEditor {
   }
 
   /** 直接从远端删除非配置节点（不删页面文件）。配置页面请用 removeMountedPage。 */
-  async deleteNode(nodeId: string): Promise<NavNode | null> {
+  async deleteNode(nodeId: string): Promise<ProjectNodeData | null> {
     const normalized = nodeId.trim()
     if (!normalized) {
       throw new Error('nodeId 不能为空')
@@ -702,7 +702,7 @@ export class ProjectEditor {
   }
 
   /** 恢复或创建保留区域根分组（toolbar / user-menu）。 */
-  restoreReservedRootGroup(placement: 'toolbar' | 'user-menu', createId: () => string): NavNode {
+  restoreReservedRootGroup(placement: 'toolbar' | 'user-menu', createId: () => string): ProjectNodeData {
     const node = createReservedRootGroup(placement, {
       createId,
       templateRoot: this.project.root,
@@ -828,7 +828,7 @@ export class ProjectEditor {
   }
 
   /** 在导航树中移动页面节点。 */
-  async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<NavNode> {
+  async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
     const result = await this.navigationOperations.moveMountedPage(nodeId, newParentId, index)
     await this.reloadNavigation({ selectedNodeId: nodeId })
     return result
@@ -898,12 +898,12 @@ export class ProjectEditor {
 
   // ── 内部方法 ─────────────────────────────────────────
 
-  private getSelectedNode(): NavNode | null {
+  private getSelectedNode(): ProjectNodeData | null {
     if (!this.selectedNodeId) return null
     return this.project.findRawNodeById(this.selectedNodeId)
   }
 
-  private requireSelectedNode(message: string): NavNode {
+  private requireSelectedNode(message: string): ProjectNodeData {
     const node = this.getSelectedNode()
     if (node) return node
     throw new Error(message)
@@ -943,7 +943,7 @@ export class ProjectEditor {
     }
   }
 
-  private async reloadNavigation(options?: { selectedNodeId?: string | null }): Promise<AppNavRoot> {
+  private async reloadNavigation(options?: { selectedNodeId?: string | null }): Promise<ProjectModelData> {
     const root = await this.navClient.loadRoot()
     this.project.replaceRoot(root)
     const selectedNodeId = options?.selectedNodeId ?? null

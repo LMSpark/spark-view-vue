@@ -6,7 +6,7 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { createPageNodeFactory, type PageNodeFactoryOptions } from '@spark-view/spark-project-model'
+import { createPageNodeFactory, type ProjectModelData, type PageNodeFactoryOptions } from '@spark-view/spark-project-model'
 import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
@@ -15,7 +15,6 @@ import { bootstrap } from './bootstrap'
 import { createLogger } from './logger'
 import { setDynamicRouter } from './navigation/nav-access'
 import { setPageCacheHandle } from './navigation/page-cache-access'
-import type { AppNavRoot } from './navigation/nav-model'
 import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
 import { toError } from '@spark-view/spark-utils'
 import { readNumberProperty, readProperty } from '@spark-view/spark-utils/internal'
@@ -105,9 +104,9 @@ export type PageNodeOptions = {
    * 已认证时 DynamicRouter 使用此函数加载远程导航树并派生路由。
    * refreshRoutes() 返回加载后的导航树供 UI 直接消费。
    */
-  loadNavigation?: () => Promise<AppNavRoot>
+  loadNavigation?: () => Promise<ProjectModelData>
   /** 平台工作台导航加载函数；节点路径会注册到 /platform 前缀下。 */
-  loadPlatformNavigation?: () => Promise<AppNavRoot>
+  loadPlatformNavigation?: () => Promise<ProjectModelData>
   /** 是否启用平台工作台导航注册。 */
   isPlatformNavigationEnabled?: () => boolean
   /** 平台工作台路由前缀，默认 /platform。 */
@@ -118,7 +117,7 @@ export type PageNodeOptions = {
    * 当用户未登录时，`registerRoutes()` 使用此本地导航树注册路由（如 / 和 /login）。
    * 登录后 `refreshRoutes()` 会用远程导航树替换。
    */
-  preAuthNavTree?: AppNavRoot}
+  preAuthNavTree?: ProjectModelData}
 
 /**
  * 启动配置（扩展自 BootstrapOptions）

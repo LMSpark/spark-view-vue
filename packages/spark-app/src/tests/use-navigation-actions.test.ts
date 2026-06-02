@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent, reactive } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
-import type { AppNavRoot, NavNode } from '../navigation/nav-model'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
 import type { NavigationContext } from '../navigation/nav-types'
 import { useNavigation } from '../navigation/useNavigation'
 import { createNavigationActionRegistry } from '../navigation/action-registry'
@@ -16,13 +16,13 @@ describe('useNavigation system-action handling', () => {
     await router.push('/')
     await router.isReady()
 
-    const actionNode: NavNode = {
+    const actionNode: ProjectNodeData = {
       id: 'settings-action',
       title: 'Settings',
       nodeKind: 'system-action',
       path: 'settings',
     }
-    const navRoot = reactive<AppNavRoot>({
+    const navRoot = reactive<ProjectModelData>({
       title: '',
       childPlacement: 'header',
       children: [actionNode],
@@ -67,7 +67,7 @@ describe('useNavigation system-action handling', () => {
     await router.push('/settings')
     await router.isReady()
 
-    const navRoot = reactive<AppNavRoot>({
+    const navRoot = reactive<ProjectModelData>({
       title: '',
       childPlacement: 'header',
       children: [

@@ -38,38 +38,38 @@
 </template>
 
 <script setup lang="ts">
-import type { NavNode } from '@spark-view/spark-data'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import { useNav } from '@spark-view/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{
-  items?: NavNode[]
+  items?: ProjectNodeData[]
 }>(), {
   items: () => [],
 })
 
 const nav = useNav()
 
-function handleClick(node: NavNode) {
+function handleClick(node: ProjectNodeData) {
   if (node.disabled) return
   nav?.navigateTo(node)
 }
 
-function isActive(node: NavNode): boolean {
+function isActive(node: ProjectNodeData): boolean {
   return nav?.isNodeActive(node) ?? false
 }
 
-function badge(node: NavNode): string | number | undefined {
+function badge(node: ProjectNodeData): string | number | undefined {
   return nav?.getBadge(node.id)
 }
 
-function hasDropdown(item: NavNode): boolean {
+function hasDropdown(item: ProjectNodeData): boolean {
   if (item.nodeKind !== 'module' && item.nodeKind !== 'system-directory') return false
   const cp = item.childPlacement
   return Boolean(item.children?.length && (cp === 'parent' || cp === 'flat'))
 }
 
-function visibleChildren(item: NavNode): NavNode[] {
+function visibleChildren(item: ProjectNodeData): ProjectNodeData[] {
   return (item.children ?? []).filter((c) => !c.hidden && !c.disabled && c.nodeKind !== 'sub-page')
 }
 </script>
@@ -193,4 +193,3 @@ function visibleChildren(item: NavNode): NavNode[] {
   margin: 4px 12px;
 }
 </style>
-

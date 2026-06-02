@@ -4,14 +4,14 @@ import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
 import { createPageNodeFactory } from '@spark-view/spark-project-model'
-import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 import { useNavigation } from '../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../packages/spark-app/src/router/cross-project-ref-route'
 
 type NavigateToPath = {
   (path: string): void}
 
-const refreshRoutesMock = vi.hoisted(() => vi.fn<() => Promise<AppNavRoot | null>>())
+const refreshRoutesMock = vi.hoisted(() => vi.fn<() => Promise<ProjectModelData | null>>())
 
 vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
   refreshRoutes: refreshRoutesMock,
@@ -29,7 +29,7 @@ const DummyPage = defineComponent({
   },
 })
 
-const NAV_ROOT: AppNavRoot = {
+const NAV_ROOT: ProjectModelData = {
   id: 'root',
   title: 'root',
   childPlacement: 'header',

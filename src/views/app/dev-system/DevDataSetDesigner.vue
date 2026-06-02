@@ -402,13 +402,13 @@ function applyHistoryMutation(
 }
 
 function undo() {
-  const ok = props.state.getActivePage()?.dataSet.undo() ?? false
+  const ok = props.state.getActivePage()?.undoDataSet() ?? false
   if (!ok) return
   resetSelectionState()
 }
 
 function redo() {
-  const ok = props.state.getActivePage()?.dataSet.redo() ?? false
+  const ok = props.state.getActivePage()?.redoDataSet() ?? false
   if (!ok) return
   resetSelectionState()
 }
@@ -432,11 +432,11 @@ function commitLayoutCheckpoint(): void {
 
 const canUndo = computed(() => {
   projectedMetadata.value
-  return props.state.getActivePage()?.dataSet.canUndo ?? false
+  return props.state.getActivePage()?.canUndoDataSet ?? false
 })
 const canRedo = computed(() => {
   projectedMetadata.value
-  return props.state.getActivePage()?.dataSet.canRedo ?? false
+  return props.state.getActivePage()?.canRedoDataSet ?? false
 })
 
 watch(

@@ -124,7 +124,7 @@ import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 
 import { useRoute, useRouter } from 'vue-router'
 import * as SparkAppRuntime from '@spark-view/spark-app'
 import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
-import type { AppNavRoot } from '@spark-view/spark-data'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
 import {
   MODULE_CONTEXT,
@@ -435,7 +435,7 @@ navigationActionRegistry.register('theme-toggle', () => {
 })
 
 /* ── 导航模型（预认证时使用 preAuthNavTree，登录后使用远程导航树） ── */
-const _navRoot = reactive<AppNavRoot>({ title: '', childPlacement: 'header', children: [] })
+const _navRoot = reactive<ProjectModelData>({ title: '', childPlacement: 'header', children: [] })
 const nav = useNavigation(_navRoot, {
   onCrossAppNavigate: handleCrossAppNavigate,
   getHeaders: createAuthHeaders,
@@ -549,7 +549,7 @@ watch(
 )
 
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
-function applyNavTree(navData: AppNavRoot | null): void {
+function applyNavTree(navData: ProjectModelData | null): void {
   const safeChildren = Array.isArray(navData?.children) ? navData.children : []
   if (navData && safeChildren.length > 0) {
     _navRoot.childPlacement = navData.childPlacement

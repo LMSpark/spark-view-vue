@@ -5,7 +5,7 @@
  * 它贴近 navigation 子模块，不让 PageNode 聚合类直接持有导航生命周期流程。
  */
 
-import type { NavNode } from './nav-model'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 import type { NavigationConfigClient } from './client.service'
 import {
   PageNavigationLifecycle,
@@ -20,7 +20,7 @@ export type PageNodeCreateMountedParams = PageNodeMountParams & {
 
 export type PageNodeCreateMountedResult = {
   page: Record<string, unknown>
-  node: NavNode
+  node: ProjectNodeData
 }
 
 export type PageNodeRemoveMountedParams = {
@@ -29,7 +29,7 @@ export type PageNodeRemoveMountedParams = {
 }
 
 export type PageNodeRemoveMountedResult = {
-  deletedNode: NavNode | null
+  deletedNode: ProjectNodeData | null
   deletedFiles: boolean
 }
 
@@ -46,18 +46,18 @@ export class PageNodeNavigationOperations {
     })
   }
 
-  mountPage(pageId: string, params: PageNodeMountParams = {}): Promise<NavNode> {
+  mountPage(pageId: string, params: PageNodeMountParams = {}): Promise<ProjectNodeData> {
     return this.lifecycle.mountPage({
       pageId,
       ...params,
     })
   }
 
-  moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<NavNode> {
+  moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
     return this.lifecycle.moveMountedPage(nodeId, newParentId, index)
   }
 
-  unmountPage(pageId: string, nodeId?: string): Promise<NavNode | null> {
+  unmountPage(pageId: string, nodeId?: string): Promise<ProjectNodeData | null> {
     return this.lifecycle.unmountPage(pageId, nodeId)
   }
 }

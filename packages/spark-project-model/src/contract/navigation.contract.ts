@@ -1,6 +1,19 @@
-export type { AppNavRoot, ChildPlacement, LinkTarget, NavNode, NavNodeKind, NavPermissionMode } from '@spark-view/spark-data'
-export { isNavNode } from '@spark-view/spark-data'
-import type { LinkTarget, NavContextConfig, NavContextItem, NavNode, NavNodeKind, NavPermissionMode } from '@spark-view/spark-data'
+export type {
+  ProjectModelData,
+  ChildPlacement,
+  NavNodeKind,
+  NavPermissionMode,
+  ProjectNodeData,
+} from '../entity/node/node-base.entity'
+export { isProjectNodeData } from '../entity/node/node-base.entity'
+import type {
+  NavContextItem,
+  NavNodeKind,
+  NavPermissionMode,
+  ProjectNodeData,
+} from '../entity/node/node-base.entity'
+import type { LinkTarget } from '../entity/node/leaf-nodes.entity'
+import type { NavContextConfig } from '../entity/node/node-base.entity'
 
 export type NavigationNodeEditDto = {
   id: string
@@ -52,8 +65,13 @@ export type NavigationNodeEditInputDto = {
 }
 
 export type NavigationNodeEditApplyResultDto = {
-  patch: NavigationNodeEditPatchDto & Pick<NavNode, 'title' | 'nodeKind'>
+  patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'>
   warnings: string[]
 }
 
-export type NavNodeLocation = { node: NavNode; parent: NavNode | null; parentId: string | null; index: number }
+export type ProjectNodeLocation = {
+  node: ProjectNodeData
+  parent: ProjectNodeData | null
+  parentId: string | null
+  index: number
+}

@@ -1,4 +1,4 @@
-import type { NavNode } from './nav-model'
+import type { ProjectNodeData } from '@spark-view/spark-project-model'
 
 export type NavNodeRouteTargetKind = 'page' | 'external-link' | 'cross-project-ref'
 
@@ -43,13 +43,13 @@ function normalizeActionCommand(value: string): string {
   return value.trim().replace(/^\/+/, '')
 }
 
-function resolveRefHostPath(node: NavNode): string {
+function resolveRefHostPath(node: ProjectNodeData): string {
   const explicitPath = typeof node.path === 'string' ? normalizeNavRuntimePath(node.path) : ''
   if (explicitPath.includes('/__ref/')) return explicitPath
   return normalizeNavRuntimePath(`/__ref/${encodeURIComponent(node.id)}`)
 }
 
-export function resolveNavNodeRuntimeTarget(node: NavNode): NavNodeRuntimeTarget {
+export function resolveNavNodeRuntimeTarget(node: ProjectNodeData): NavNodeRuntimeTarget {
   const nodeKind = node.nodeKind ?? 'page'
 
   if (nodeKind === 'sub-page') {

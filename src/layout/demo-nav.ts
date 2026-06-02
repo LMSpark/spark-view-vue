@@ -1,4 +1,4 @@
-import type { AppNavRoot } from '@spark-view/spark-data'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 
 /**
  * 演示导航树 — 将 routes.json 中的扁平路由组织为模块化导航。
@@ -9,7 +9,7 @@ import type { AppNavRoot } from '@spark-view/spark-data'
  *   - 组件演示 → sidebar（子项在左侧栏）
  *   - 系统管理 → sidebar + parent（子菜单嵌套在侧栏内）
  */
-export const demoNavRoot: AppNavRoot = {
+export const demoNavRoot: ProjectModelData = {
   title: 'SPARK Demo',
   childPlacement: 'header',
   homePath: '/dashboard',
@@ -158,5 +158,4 @@ export const demoNavRoot: AppNavRoot = {
     },
   ],
 }
-
 

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { AppNavRoot, NavNode } from '@spark-view/spark-data'
+import type { AppNavRoot, ProjectNodeData } from '@spark-view/spark-project-model'
 import type { HttpClientBase, HttpResponse } from '@spark-view/spark-utils'
 import { ConfigPageNode, ModuleNode } from '@spark-view/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
@@ -58,12 +58,13 @@ describe('ProjectModel', () => {
       { id: 'settings', title: '设置', nodeKind: 'page', path: '/settings' },
     ]})
 
-    expect(p.type).toBe('module')
+    expect(p.family).toBe('module')
     expect(p.name).toBe('crm')
     expect(p.children.map(node => node.id)).toEqual(['sales', 'settings'])
     expect(p.children[0]?.children.map(node => node.id)).toEqual(['orders'])
+    expect(p.children[1]).toBeInstanceOf(ConfigPageNode)
     expect(p.children[1]?.children).toEqual([])
-    expect(p.findNodeById('sales')?.attributes).toMatchObject({ nodeKind: 'module' })
+    expect(p.findNodeById('sales')?.node).toMatchObject({ nodeKind: 'module' })
   })
 
   it('supports detached config pages', () => {
@@ -121,7 +122,7 @@ describe('ProjectModel', () => {
         { id: 'orders', title: '订单', nodeKind: 'page' as const, path: '/orders' },
       ],
     }
-    const movedNode: NavNode = { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders', order: 0 }
+    const movedNode: ProjectNodeData = { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders', order: 0 }
     const http = {
       get: async <T = unknown>() => root as T,
       put: async <T = unknown>(url: string, body: unknown) => {

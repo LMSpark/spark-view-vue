@@ -1,4 +1,4 @@
-import type { ChildPlacement } from '@spark-view/spark-data'
+import type { ChildPlacement } from '@spark-view/spark-project-model'
 
 type ChildPlacementValue = '' | ChildPlacement
 

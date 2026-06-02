@@ -1,6 +1,6 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { AppNavRoot, NavNode } from './nav-model'
-import { isNavNode } from './nav-model'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
+import { isProjectNodeData } from '@spark-view/spark-project-model'
 import { normalizeNavRoot } from './editing.service'
 import type {
   NavigationNodeAddRequestDto,
@@ -18,13 +18,13 @@ export type LinkProbeResult = {
   reason: string
 }
 
-function extractNavNode(response: Record<string, unknown>): NavNode {
-  if (isNavNode(response['node'])) return response['node']
+function extractProjectNodeData(response: Record<string, unknown>): ProjectNodeData {
+  if (isProjectNodeData(response['node'])) return response['node']
   throw new Error('服务器响应缺少节点数据')
 }
 
-function extractOptionalNavNode(response: Record<string, unknown>): NavNode | null {
-  return isNavNode(response['deleted']) ? response['deleted'] : null
+function extractOptionalProjectNodeData(response: Record<string, unknown>): ProjectNodeData | null {
+  return isProjectNodeData(response['deleted']) ? response['deleted'] : null
 }
 
 export class NavigationConfigClient {
@@ -36,43 +36,43 @@ export class NavigationConfigClient {
     this.http = options.http
   }
 
-  async loadRoot(): Promise<AppNavRoot> {
-    const config = await this.http.get<Partial<AppNavRoot>>(this.baseUrl())
+  async loadRoot(): Promise<ProjectModelData> {
+    const config = await this.http.get<Partial<ProjectModelData>>(this.baseUrl())
     return normalizeNavRoot(config)
   }
 
-  async addNode(params: { parentId?: string | null; node: NavNode; index?: number }): Promise<NavNode> {
+  async addNode(params: { parentId?: string | null; node: ProjectNodeData; index?: number }): Promise<ProjectNodeData> {
     const body: NavigationNodeAddRequestDto = {
       ...(params.parentId === undefined || params.parentId === null ? {} : { parentId: params.parentId }),
       node: toNavigationNodeEditDto(params.node),
       ...(params.index === undefined ? {} : { index: params.index }),
     }
     const response = await this.http.post<Record<string, unknown>>(`${this.baseUrl()}/nodes`, body)
-    return extractNavNode(response)
+    return extractProjectNodeData(response)
   }
 
-  async updateNode(id: string, patch: NavigationNodeEditPatchDto): Promise<NavNode> {
+  async updateNode(id: string, patch: NavigationNodeEditPatchDto): Promise<ProjectNodeData> {
     const response = await this.http.put<Record<string, unknown>>(
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}`,
       patch,
     )
-    return extractNavNode(response)
+    return extractProjectNodeData(response)
   }
 
-  async deleteNode(id: string): Promise<NavNode | null> {
+  async deleteNode(id: string): Promise<ProjectNodeData | null> {
     const response = await this.http.delete<Record<string, unknown>>(
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}`,
     )
-    return extractOptionalNavNode(response)
+    return extractOptionalProjectNodeData(response)
   }
 
-  async moveNode(id: string, newParentId: string | null, index: number): Promise<NavNode> {
+  async moveNode(id: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
     const body: NavigationNodeMoveRequestDto = { newParentId, index }
     const response = await this.http.put<Record<string, unknown>>(
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}/move`,
       body,
     )
-    return extractNavNode(response)
+    return extractProjectNodeData(response)
   }
 
   async probeLink(url: string): Promise<LinkProbeResult> {
@@ -88,7 +88,7 @@ export class NavigationConfigClient {
   }
 }
 
-function toNavigationNodeEditDto(node: NavNode) {
+function toNavigationNodeEditDto(node: ProjectNodeData) {
   return {
     id: node.id,
     title: node.title,

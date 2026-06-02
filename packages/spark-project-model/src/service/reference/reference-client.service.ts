@@ -1,5 +1,5 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { AppNavRoot } from '../../service/navigation/nav-model'
+import type { ProjectModelData } from '../../entity/node/node-base.entity'
 import {
   ProjectNodeTools,
 } from '../../service/navigation/tools.service'
@@ -49,7 +49,7 @@ export class ProjectReferenceClient {
     if (!normalizedProjectId) {
       throw new Error('projectId 不能为空')
     }
-    const root = await this.http.get<Partial<AppNavRoot>>(this.getProjectNavigationApi(normalizedProjectId))
+    const root = await this.http.get<Partial<ProjectModelData>>(this.getProjectNavigationApi(normalizedProjectId))
     const children = Array.isArray(root.children) ? root.children : []
     return ProjectNodeTools.buildPageSummaries(children)
       .map(page => ({

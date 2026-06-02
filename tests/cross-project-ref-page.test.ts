@@ -4,7 +4,7 @@ import { createMemoryHistory, createRouter } from 'vue-router'
 import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-view/spark-project-model'
 import { HttpClientBase } from '@spark-view/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
-import type { AppNavRoot } from '../packages/spark-app/src/navigation/nav-model'
+import type { ProjectModelData } from '@spark-view/spark-project-model'
 import { CrossProjectRefPage } from '../packages/spark-app/src/router/cross-project-ref-page'
 
 function isPageNodeLike(value: unknown): value is { pageId: string; load: () => Promise<void> } {
@@ -13,7 +13,7 @@ function isPageNodeLike(value: unknown): value is { pageId: string; load: () => 
     && typeof Reflect.get(value, 'load') === 'function'
 }
 
-const navTreeState = vi.hoisted((): { tree: AppNavRoot | null } => ({
+const navTreeState = vi.hoisted((): { tree: ProjectModelData | null } => ({
   tree: null,
 }))
 

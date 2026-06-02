@@ -1,134 +1,112 @@
-/**
- * RuleContent — rule.json 领域模型。
- *
- * 持有 SparkNodeTree 作为真源，提供 mutate / undo / redo / dirty / subscribe，
- * 以及 IO 能力（load / save / restoreVersion）。
- */
-
-import { SparkNodeTree } from '@spark-view/spark-data'
+/** rule.json 本体模型：持有页面根节点、编辑历史和自身文件 IO。 */
+import { getSparkNodeChildren, SparkNodeTree } from '@spark-view/spark-data'
+import type { SparkNode, SparkNodeTree as SparkNodeTreeModel } from '@spark-view/spark-data'
 import type { BasePageContentLoader } from '../../service/content-loader/types'
 import type { PageNodeFileApi } from '../../service/file/file-api.service'
 import type { PageFileRestoreCommand } from '../../service/file/file-restore-command'
 import { parseRuleText, serializeRuleTree } from '../../service/file/file-serialization'
 
 export class RuleContent {
-  tree: SparkNodeTree = SparkNodeTree.fromPageChildren([])
+  root: SparkNode = SparkNodeTree.fromPageChildren([]).root
 
+  private readonly undoStack: string[] = []
+  private readonly redoStack: string[] = []
   private _dirty = false
-  private readonly _listeners = new Set<() => void>()
 
-  // ── Dirty ──────────────────────────────────────────────
+  constructor(readonly pageId: string) {}
 
-  get isDirty(): boolean {
-    return this._dirty
-  }
+  get children(): SparkNode[] { return getSparkNodeChildren(this.root.children) }
+  get isDirty(): boolean { return this._dirty }
+  get canUndo(): boolean { return this.undoStack.length > 0 }
+  get canRedo(): boolean { return this.redoStack.length > 0 }
 
-  markDirty(): void {
-    this._dirty = true
-    this._notify()
-  }
+  getText(): string { return serializeRuleTree(this.root) }
 
-  markClean(): void {
-    if (!this._dirty) return
-    this._dirty = false
-    this._notify()
-  }
-
-  // ── 投影 ───────────────────────────────────────────────
-
-  /** 只读投影文本（用于文件查看器展示）。 */
-  getText(): string {
-    return serializeRuleTree(this.tree)
-  }
-
-  /** 从文本解析并以 replaceRoot 替换当前 tree，保留 undo 历史。成功时标记 dirty。 */
   setText(text: string): void {
-    const parsed = parseRuleText(text)
-    this.tree.replaceRoot(parsed.toJSON())
+    this.pushUndo()
+    this.root = parseRuleText(text)
     this.markDirty()
   }
 
-  // ── 编辑 ───────────────────────────────────────────────
-
-  /** 通过回调修改 tree，完成后标记 dirty。 */
-  mutate(fn: (tree: SparkNodeTree) => void): void {
-    fn(this.tree)
-    this.markDirty()
+  loadText(text: string): void {
+    this.root = parseRuleText(text)
+    this.clearHistory()
+    this.markClean()
   }
 
-  // ── Undo / Redo ────────────────────────────────────────
-
-  get canUndo(): boolean {
-    return this.tree.canUndo
-  }
-
-  get canRedo(): boolean {
-    return this.tree.canRedo
-  }
-
-  undo(): boolean {
-    const ok = this.tree.undo() !== null
-    if (ok) this.markDirty()
-    return ok
-  }
-
-  redo(): boolean {
-    const ok = this.tree.redo() !== null
-    if (ok) this.markDirty()
-    return ok
-  }
-
-  // ── IO ─────────────────────────────────────────────────
-
-  /** 从远端加载 rule.json 并解析到 tree。 */
-  async load(
-    pageId: string,
-    contentLoader: BasePageContentLoader,
-    options?: { forceReload?: boolean },
-  ): Promise<void> {
-    const result = await contentLoader.loadPageFileContent(pageId, 'rule.json', {
+  async load(loader: BasePageContentLoader, options?: { forceReload?: boolean }): Promise<void> {
+    const result = await loader.loadPageFileContent(this.pageId, 'rule.json', {
       forceReload: options?.forceReload === true,
     })
     if (!result.success) {
       throw new Error(result.error ?? result.reason ?? 'rule.json 加载失败')
     }
-    this.tree = parseRuleText(result.data ?? '')
+    this.loadText(result.data ?? '')
+  }
+
+  async save(api: PageNodeFileApi): Promise<void> {
+    await api.saveFileContent(this.pageId, 'rule.json', this.getText())
     this.markClean()
   }
 
-  resetToEmpty(): void {
-    this.tree = SparkNodeTree.fromPageChildren([])
-    this.markClean()
-  }
-
-  /** 序列化并保存到远端。 */
-  async save(pageId: string, fileApi: PageNodeFileApi): Promise<void> {
-    await fileApi.saveFileContent(pageId, 'rule.json', this.getText())
-    this.markClean()
-  }
-
-  /** 恢复远端历史版本。恢复成功后以恢复内容为 saved baseline。 */
   async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
-    const { pageId, version, fileApi, contentLoader } = command
-    await fileApi.restoreVersion(pageId, 'rule.json', version)
-    const result = await contentLoader.loadPageFileContent(pageId, 'rule.json', { forceReload: true })
+    await command.fileApi.restoreVersion(this.pageId, 'rule.json', command.version)
+    const result = await command.contentLoader.loadPageFileContent(this.pageId, 'rule.json', { forceReload: true })
     if (!result.success) {
-      throw new Error(`恢复版本后读取失败: ${pageId}/rule.json v${version}`)
+      throw new Error(`恢复版本后读取失败: ${this.pageId}/rule.json v${command.version}`)
     }
-    this.tree = parseRuleText(result.data ?? '')
-    this.markClean()
+    this.loadText(result.data ?? '')
   }
 
-  // ── 订阅 ───────────────────────────────────────────────
-
-  subscribe(listener: () => void): () => void {
-    this._listeners.add(listener)
-    return () => { this._listeners.delete(listener) }
+  getTree(): SparkNodeTreeModel {
+    return SparkNodeTree.fromJson(this.root)
   }
 
-  private _notify(): void {
-    for (const listener of this._listeners) {
-      listener()
-    }
+  replaceTree(tree: SparkNodeTreeModel): void {
+    this.pushUndo()
+    this.root = tree.root
+    this.markDirty()
+  }
+
+  async editTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
+    const tree = this.getTree()
+    await run(tree)
+    this.replaceTree(tree)
+  }
+
+  undo(): boolean {
+    const text = this.undoStack.pop()
+    if (text === undefined) return false
+    this.redoStack.push(this.getText())
+    this.root = parseRuleText(text)
+    this.markDirty()
+    return true
+  }
+
+  redo(): boolean {
+    const text = this.redoStack.pop()
+    if (text === undefined) return false
+    this.undoStack.push(this.getText())
+    this.root = parseRuleText(text)
+    this.markDirty()
+    return true
+  }
+
+  markClean(): void {
+    this._dirty = false
+  }
+
+  private markDirty(): void {
+    this._dirty = true
+  }
+
+  private pushUndo(): void {
+    this.undoStack.push(this.getText())
+    this.redoStack.length = 0
+  }
+
+  private clearHistory(): void {
+    this.undoStack.length = 0
+    this.redoStack.length = 0
   }
 }

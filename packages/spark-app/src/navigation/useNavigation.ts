@@ -4,20 +4,21 @@ import { createRequest } from '@spark-view/spark-utils'
 import { readPrototypeProperty } from '@spark-view/spark-utils/internal'
 import type {
   ChildPlacement,
-  NavContextConfig,
   NavContextItem,
   NavContextState,
-  NavNode,
-  AppNavRoot,
+  ProjectModelData,
+  ProjectNodeData,
   RegionItems,
   RegionVisibility,
-} from './nav-model'
+} from '@spark-view/spark-project-model'
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
 import { refreshRoutes } from './nav-access'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../router/cross-project-ref-route'
 import { resolveNavNodeRuntimeTarget } from './runtime-target'
 import type { NavigationActionRegistry } from './action-registry'
+
+type NavContextConfig = Extract<NonNullable<ProjectNodeData['context']>, { source: unknown }>
 
 /* ══════════════════════════════════════════════════════════
  * useNavigation — 应用导航核心 composable
@@ -90,12 +91,12 @@ type UseNavigationOptions = {
   /** system-action 命令执行器 */
   actionRegistry?: NavigationActionRegistry}
 
-export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptions): NavigationContext {
+export function useNavigation(navRoot: ProjectModelData, _options?: UseNavigationOptions): NavigationContext {
   const route = useRoute()
   const router = useRouter()
 
   // ── 活动路径（从根到当前叶子） ──
-  const _activePath = ref<NavNode[]>([])
+  const _activePath = ref<ProjectNodeData[]>([])
 
   // ── 角标动态覆写 ──
   const _badges = reactive<Record<string, string | number | undefined>>({})
@@ -129,7 +130,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     return normalizePath(stripWorkspacePrefix(path))
   }
 
-  function resolveNodeRoutePath(node: NavNode): string | null {
+  function resolveNodeRoutePath(node: ProjectNodeData): string | null {
     const target = resolveNavNodeRuntimeTarget(node)
     return target.kind === 'route' ? target.path : null
   }
@@ -180,15 +181,15 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
    * 节点排序 & 过滤
    * ──────────────────────────────────────────── */
 
-  function sortNodes(nodes: NavNode[]): NavNode[] {
+  function sortNodes(nodes: ProjectNodeData[]): ProjectNodeData[] {
     return [...nodes].sort((a, b) => (a.order ?? 0) - (b.order ?? 0))
   }
 
-  function isSubPageNode(node: NavNode): boolean {
+  function isSubPageNode(node: ProjectNodeData): boolean {
     return node.nodeKind === 'sub-page'
   }
 
-  function filterVisible(nodes: NavNode[]): NavNode[] {
+  function filterVisible(nodes: ProjectNodeData[]): ProjectNodeData[] {
     return sortNodes(nodes).filter((n) => !n.hidden && !isSubPageNode(n))
   }
 
@@ -196,7 +197,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
    * 活动路径查找（DFS）
    * ──────────────────────────────────────────── */
 
-  function findActivePath(nodes: NavNode[], targetPath: string): NavNode[] {
+  function findActivePath(nodes: ProjectNodeData[], targetPath: string): ProjectNodeData[] {
     const normalizedTargetPath = normalizeComparablePath(targetPath)
 
     for (const node of sortNodes(nodes)) {
@@ -224,7 +225,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
 
     // 根级子项：toolbar/user-menu 组提取到对应区域，其余放入 root childPlacement 指定区域
     const rootVisible = filterVisible(navRoot.children)
-    const normalRoots: NavNode[] = []
+    const normalRoots: ProjectNodeData[] = []
     for (const child of rootVisible) {
       if (child.childPlacement === 'toolbar' && child.children?.length) {
         regions.toolbar = filterVisible(child.children)
@@ -259,7 +260,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
   }))
 
   /** 解析 childPlacement（'parent' 向上追溯到祖先的非 parent 值） */
-  function resolveChildPlacement(node: NavNode): ChildPlacement {
+  function resolveChildPlacement(node: ProjectNodeData): ChildPlacement {
     const placement = node.childPlacement ?? 'sidebar'
     if (placement !== 'parent') return placement
 
@@ -436,7 +437,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     return existing?.meta['crossProjectRefHost'] === true && typeof defaultProps === 'function'
   }
 
-  async function navigateToRefNode(node: NavNode): Promise<void> {
+  async function navigateToRefNode(node: ProjectNodeData): Promise<void> {
     const target = resolveNavNodeRuntimeTarget(node)
     if (target.kind !== 'route') return
 
@@ -529,7 +530,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     navigateByPath(path)
   }
 
-  function navigateTo(node: NavNode) {
+  function navigateTo(node: ProjectNodeData) {
     if (node.disabled) return
     const target = resolveNavNodeRuntimeTarget(node)
     if (target.kind === 'hidden') return
@@ -607,7 +608,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
     }
   }
 
-  function findFirstLeaf(nodes: NavNode[]): NavNode | undefined {
+  function findFirstLeaf(nodes: ProjectNodeData[]): ProjectNodeData | undefined {
     for (const node of filterVisible(nodes)) {
       if (isSubPageNode(node)) continue
       if (node.disabled) continue
@@ -636,7 +637,7 @@ export function useNavigation(navRoot: AppNavRoot, _options?: UseNavigationOptio
    * 活动判断
    * ──────────────────────────────────────────── */
 
-  function isNodeActive(node: NavNode): boolean {
+  function isNodeActive(node: ProjectNodeData): boolean {
     return _activePath.value.some((n) => n.id === node.id)
   }
 

@@ -5,8 +5,8 @@
  * 层级关系只由 pid 表达；需要树时通过 projection 生成 children。
  */
 
-import type { AppNavRoot, NavNode } from '../../service/navigation/nav-model'
-import type { NavigationEditSession, NavNodeLocation } from '../../service/navigation/editing.service'
+import type { ProjectModelData, ProjectNodeData } from '../node/node-base.entity'
+import type { NavigationEditSession, ProjectNodeLocation } from '../../service/navigation/editing.service'
 import {
   createChildPageNode,
   createRootModuleNode,
@@ -80,14 +80,14 @@ export class ProjectNodeCollection {
     this.replaceRoot(this.session.root)
   }
 
-  get root(): AppNavRoot {
+  get root(): ProjectModelData {
     return {
       ...this.session.root,
       children: this.toTree(),
     }
   }
 
-  get children(): NavNode[] {
+  get children(): ProjectNodeData[] {
     return this.toTree()
   }
 
@@ -108,7 +108,7 @@ export class ProjectNodeCollection {
     this.rebindDescriptionContext()
   }
 
-  replaceRoot(root: AppNavRoot): AppNavRoot {
+  replaceRoot(root: ProjectModelData): ProjectModelData {
     const previousConfigPages = new Map(this.configPagesByPageId)
     const previousDetachedPages = new Map(this.detachedConfigPagesByPageId)
     this.session.replaceRoot(root)
@@ -147,7 +147,7 @@ export class ProjectNodeCollection {
     return this.root
   }
 
-  toTree(): NavNode[] {
+  toTree(): ProjectNodeData[] {
     return buildProjectNavigationTree(this.nodes)
   }
 
@@ -155,11 +155,11 @@ export class ProjectNodeCollection {
     return this.nodesById.get(nodeId.trim()) ?? null
   }
 
-  findRawNodeById(nodeId: string): NavNode | null {
+  findRawNodeById(nodeId: string): ProjectNodeData | null {
     return this.findNodeById(nodeId)?.node ?? null
   }
 
-  findNodeLocation(nodeId: string): NavNodeLocation | null {
+  findNodeLocation(nodeId: string): ProjectNodeLocation | null {
     return findNodeLocation(this.children, nodeId)
   }
 
@@ -167,7 +167,7 @@ export class ProjectNodeCollection {
     return this.configPagesByPageId.get(pageId.trim()) ?? null
   }
 
-  findPageNode(pageId: string): NavNode | null {
+  findPageNode(pageId: string): ProjectNodeData | null {
     return this.findConfigPageByPageId(pageId)?.node ?? null
   }
 
@@ -187,7 +187,7 @@ export class ProjectNodeCollection {
     }
     const existing = this.findConfigPageByPageId(normalized)
     if (existing) return existing
-    const node: NavNode = {
+    const node: ProjectNodeData = {
       id: normalized,
       title: normalized,
       nodeKind: 'page',
@@ -237,14 +237,14 @@ export class ProjectNodeCollection {
     return summaries
   }
 
-  addRootModule(createId: () => string): NavNode {
+  addRootModule(createId: () => string): ProjectNodeData {
     const node = createRootModuleNode(createId)
     node.order = this.nextRootOrder()
     this.insertNode(node, null)
     return node
   }
 
-  addChildPage(createId: () => string, parent: NavNode | null): NavNode {
+  addChildPage(createId: () => string, parent: ProjectNodeData | null): ProjectNodeData {
     const node = createChildPageNode(createId)
     const pid = parent?.id ?? null
     node.order = this.nextChildOrder(pid)
@@ -252,7 +252,7 @@ export class ProjectNodeCollection {
     return node
   }
 
-  removeNode(nodeId: string): NavNode | null {
+  removeNode(nodeId: string): ProjectNodeData | null {
     const normalized = nodeId.trim()
     if (!normalized) {
       throw new Error('nodeId 不能为空')
@@ -274,7 +274,7 @@ export class ProjectNodeCollection {
     this.rebindDescriptionContext()
   }
 
-  private insertNode(node: NavNode, pid: string | null): ProjectNode {
+  private insertNode(node: ProjectNodeData, pid: string | null): ProjectNode {
     if (this.nodesById.has(node.id)) {
       throw new Error(`项目节点已存在: ${node.id}`)
     }
@@ -326,7 +326,7 @@ export class ProjectNodeCollection {
   }
 
   private syncSessionRoot(): void {
-    const nextRoot: AppNavRoot = {
+    const nextRoot: ProjectModelData = {
       ...this.session.root,
       children: this.toTree(),
     }
@@ -339,7 +339,7 @@ export class ProjectNodeCollection {
     }
   }
 
-  private readDescriptionContextForNode(node: NavNode, pid: string | null): ProjectDescriptionContext[] {
+  private readDescriptionContextForNode(node: ProjectNodeData, pid: string | null): ProjectDescriptionContext[] {
     let context = this.readProjectDescriptionContext()
     const ancestors = this.readAncestorNodes(pid)
     for (const ancestor of ancestors) {
@@ -359,8 +359,8 @@ export class ProjectNodeCollection {
     }]
   }
 
-  private readAncestorNodes(pid: string | null): NavNode[] {
-    const ancestors: NavNode[] = []
+  private readAncestorNodes(pid: string | null): ProjectNodeData[] {
+    const ancestors: ProjectNodeData[] = []
     let currentPid = pid
     while (currentPid) {
       const current = this.findNodeById(currentPid)
@@ -372,12 +372,12 @@ export class ProjectNodeCollection {
   }
 }
 
-export function findProjectRawNodeById(nodes: readonly NavNode[], nodeId: string): NavNode | null {
+export function findProjectRawNodeById(nodes: readonly ProjectNodeData[], nodeId: string): ProjectNodeData | null {
   return findNodeById(nodes, nodeId)
 }
 
 export function readProjectPageSummaryFromNode(
-  node: NavNode,
+  node: ProjectNodeData,
   descriptionContext: readonly ProjectDescriptionContext[],
 ): ProjectPageNodeSummary | null {
   const pageId = resolvePageNodePageId(node)
@@ -396,6 +396,6 @@ export function readProjectPageSummaryFromNode(
   }
 }
 
-export function projectFlatRowFromNode(node: NavNode, pid: string | null): ProjectNavigationFlatNode {
+export function projectFlatRowFromNode(node: ProjectNodeData, pid: string | null): ProjectNavigationFlatNode {
   return projectNavNodeToFlatRow(node, pid)
 }

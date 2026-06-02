@@ -1,5 +1,5 @@
-import type { AppNavRoot, NavNode } from './nav-model'
-import type { NavNodeLocation } from './editing.service'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectNodeLocation } from './editing.service'
 import {
   canUseModuleNodeKind,
   createRootModuleNode,
@@ -30,11 +30,11 @@ export type BuildProjectPageSummariesOptions = {
 }
 
 export type ReadProjectEditNodeOptions = {
-  rootNodes: readonly NavNode[]
+  rootNodes: readonly ProjectNodeData[]
 }
 
 export class ProjectNodeTools {
-  static createRootModuleNode(createId: () => string): NavNode {
+  static createRootModuleNode(createId: () => string): ProjectNodeData {
     return createRootModuleNode(createId)
   }
 
@@ -46,19 +46,19 @@ export class ProjectNodeTools {
     return isConfigNodeKind(nodeKind)
   }
 
-  static findNodeById(nodes: readonly NavNode[], targetId: string): NavNode | null {
+  static findNodeById(nodes: readonly ProjectNodeData[], targetId: string): ProjectNodeData | null {
     return findNodeById(nodes, targetId)
   }
 
-  static findNodeLocation(nodes: readonly NavNode[], targetId: string): NavNodeLocation | null {
+  static findNodeLocation(nodes: readonly ProjectNodeData[], targetId: string): ProjectNodeLocation | null {
     return findNodeLocation(nodes, targetId)
   }
 
-  static findConfigNodeByPageId(nodes: readonly NavNode[], pageId: string): NavNode | null {
+  static findConfigNodeByPageId(nodes: readonly ProjectNodeData[], pageId: string): ProjectNodeData | null {
     return findConfigNodeByPageId(nodes, pageId)
   }
 
-  static findPageNodeByPageId(nodes: readonly NavNode[], pageId: string): NavNode | null {
+  static findPageNodeByPageId(nodes: readonly ProjectNodeData[], pageId: string): ProjectNodeData | null {
     const normalized = pageId.trim()
     if (!normalized) return null
     for (const node of nodes) {
@@ -69,19 +69,19 @@ export class ProjectNodeTools {
     return null
   }
 
-  static isSystemRootDirectory(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+  static isSystemRootDirectory(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
     return isSystemRootDirectory(node, rootNodes)
   }
 
-  static canUseModuleNodeKind(node: NavNode | null | undefined, rootNodes: readonly NavNode[]): boolean {
+  static canUseModuleNodeKind(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
     return canUseModuleNodeKind(node, rootNodes)
   }
 
-  static readEditNodeKind(node: NavNode | null | undefined): ProjectEditNodeKind | null {
+  static readEditNodeKind(node: ProjectNodeData | null | undefined): ProjectEditNodeKind | null {
     return readProjectEditNodeKind(node)
   }
 
-  static resolvePageNodePageId(node: NavNode | null | undefined): string {
+  static resolvePageNodePageId(node: ProjectNodeData | null | undefined): string {
     return resolvePageNodePageId(node)
   }
 
@@ -97,7 +97,7 @@ export class ProjectNodeTools {
   }
 
   static readEditParentKind(
-    node: NavNode | null | undefined,
+    node: ProjectNodeData | null | undefined,
     options: ReadProjectEditNodeOptions,
   ): ProjectEditParentKind {
     if (!node) return 'project'
@@ -108,7 +108,7 @@ export class ProjectNodeTools {
   }
 
   static canUseEditNodeKind(
-    node: NavNode | null | undefined,
+    node: ProjectNodeData | null | undefined,
     nextKind: ProjectEditNodeKind,
     options: ReadProjectEditNodeOptions,
   ): boolean {
@@ -120,18 +120,18 @@ export class ProjectNodeTools {
 
   static createReservedRootGroup(
     placement: 'toolbar' | 'user-menu',
-    options: { createId: () => string; templateRoot?: AppNavRoot | null },
-  ): NavNode {
+    options: { createId: () => string; templateRoot?: ProjectModelData | null },
+  ): ProjectNodeData {
     return createReservedRootGroup(placement, options)
   }
 
-  static readNodeDescription(node: NavNode | null | undefined): string {
+  static readNodeDescription(node: ProjectNodeData | null | undefined): string {
     return readProjectNodeDescription(node)
   }
 
   static appendDescriptionContext(
     context: readonly ProjectDescriptionContext[],
-    node: NavNode | null | undefined,
+    node: ProjectNodeData | null | undefined,
   ): ProjectDescriptionContext[] {
     return appendProjectDescriptionContext(context, node)
   }
@@ -141,14 +141,14 @@ export class ProjectNodeTools {
   }
 
   static buildPageSummaries(
-    nodes: readonly NavNode[],
+    nodes: readonly ProjectNodeData[],
     options: BuildProjectPageSummariesOptions = {},
   ): ProjectPageNodeSummary[] {
     const pages: ProjectPageNodeSummary[] = []
     const seen = new Set<string>()
 
     const visit = (
-      list: readonly NavNode[],
+      list: readonly ProjectNodeData[],
       context: readonly ProjectDescriptionContext[],
     ): void => {
       for (const node of list) {
