@@ -5,7 +5,7 @@
  * 它贴近 navigation 子模块，不让 PageNode 聚合类直接持有导航生命周期流程。
  */
 
-import type { ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectNodeData } from '../../entity/node/node-base.entity'
 import type { NavigationConfigClient } from './client.service'
 import {
   PageNavigationLifecycle,

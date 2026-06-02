@@ -3,7 +3,7 @@ import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import { ProjectNode } from './node-base.entity'
 import type { ChildPlacement, NavContextConfig, NavContextItem, NavNodeKind, NavPermissionMode } from './node-base.entity'
-import type { NavigationContextEditDto, NavigationNodeEditDto } from '../../contract/navigation.contract'
+import type { NavigationContextEditDto, NavigationNodeEditDto } from '../navigation/edit.entity'
 
 export type ProjectNodeFamily = 'module' | 'config-page' | 'vue-page' | 'system-action' | 'link' | 'ref'
 export type NodeKind = 'module' | 'page' | 'sub-page'

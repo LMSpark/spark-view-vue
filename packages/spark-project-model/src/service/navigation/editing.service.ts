@@ -37,8 +37,15 @@ import type {
   NavContextItem,
   NavNodeKind,
   ProjectNodeData,
-} from '@spark-view/spark-project-model'
+} from '../../entity/node/node-base.entity'
 import type { NavContextConfig } from '../../entity/node/node-base.entity'
+import {
+  buildNavRoot,
+  inferNavNodeKind,
+  normalizeNavRoot,
+  normalizePageIdFromPath,
+  normalizeProjectNodeData,
+} from '../../entity/node/node-helpers'
 import type {
   ProjectNodeLocation,
   NavigationContextEditConfigDto,
@@ -46,7 +53,7 @@ import type {
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
   NavigationNodeEditPatchDto,
-} from '../../contract/navigation.contract'
+} from '../../entity/navigation/edit.entity'
 
 export type {
   ProjectNodeLocation,
@@ -58,7 +65,7 @@ export type {
   NavigationNodeAddRequestDto,
   NavigationNodeMoveRequestDto,
   NavigationNodeEditPatchDto,
-} from '../../contract/navigation.contract'
+} from '../../entity/navigation/edit.entity'
 
 // ═══════════════════════════════════════════════════════
 // 3. 常量表
@@ -90,22 +97,13 @@ function isChildPlacement(value: string): value is ChildPlacement {
   return CHILD_PLACEMENT_VALUES.has(value)
 }
 
-function isRootChildPlacement(value: string): value is 'header' | 'sidebar' {
-  return value === 'header' || value === 'sidebar'
-}
-
-const SYSTEM_CHILD_PLACEMENTS = new Set(['toolbar', 'user-menu'])
-
 // ═══════════════════════════════════════════════════════
 // 5. 节点正规化
 //
 // 将不完整或不规范的 ProjectNodeData / ProjectModelData 转为合法形态。
 // ═══════════════════════════════════════════════════════
 
-/** 从路径字符串中提取页面 ID */
-export function normalizePageIdFromPath(path: string | undefined | null): string {
-  return path ? path.replace(/^\/+/, '').trim() : ''
-}
+export { buildNavRoot, inferNavNodeKind, normalizeNavRoot, normalizePageIdFromPath, normalizeProjectNodeData }
 
 /** 判断节点类型是否为可配置的页面节点 */
 export function isConfigNodeKind(nodeKind: NavNodeKind): boolean {
@@ -119,80 +117,6 @@ export function isPageLikeKind(kind: NavNodeKind): boolean {
     || kind === 'system-action'
     || kind === 'link'
     || kind === 'sub-page'
-}
-
-/** 根据现有字段推断节点类型 */
-export function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavNodeKind {
-  if (node.nodeKind !== undefined) return node.nodeKind
-  if (parentPlacement !== undefined && SYSTEM_CHILD_PLACEMENTS.has(parentPlacement)) return 'system-action'
-  if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
-  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab' || node.linkTarget === 'self') return 'link'
-  return 'page'
-}
-
-/** 深拷贝并正规化单个导航节点 */
-export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?: string): ProjectNodeData {
-  const cloned = deepClone(node)
-  cloned.nodeKind = inferNavNodeKind(cloned, parentPlacement)
-  if (cloned.nodeKind === 'sub-page') {
-    cloned.hidden = true
-    delete cloned.path
-    delete cloned.linkTarget
-  } else if (cloned.nodeKind === 'link') {
-    if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab' && cloned.linkTarget !== 'self') {
-      cloned.linkTarget = 'iframe'
-    }
-  } else {
-    delete cloned.linkTarget
-  }
-  if (Array.isArray(cloned.children)) {
-    cloned.children = cloned.children.map(child => normalizeProjectNodeData(child, cloned.childPlacement))
-  }
-  return cloned
-}
-
-/** 正规化根节点 childPlacement 值，非法值回退为 'header' */
-export function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
-  const normalized = String(value ?? '').trim()
-  return isRootChildPlacement(normalized) ? normalized : 'header'
-}
-
-type NormalizeNavRootInput = {
-  id?: string | undefined
-  title?: string | undefined
-  description?: string | undefined
-  version?: string | undefined
-  childPlacement?: string | undefined
-  children?: ProjectNodeData[] | undefined
-  homePath?: string | undefined
-}
-
-/** 正规化完整的导航根节点 */
-export function normalizeNavRoot(config: NormalizeNavRootInput): ProjectModelData {
-  const root: ProjectModelData = {
-    title: config.title ?? '',
-    childPlacement: normalizeRootChildPlacement(config.childPlacement),
-    children: (config.children ?? []).map(node => normalizeProjectNodeData(node)),
-  }
-  const id = typeof config.id === 'string' ? config.id.trim() : ''
-  const description = typeof config.description === 'string' ? config.description.trim() : ''
-  const version = typeof config.version === 'string' ? config.version.trim() : ''
-  const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
-  if (id) root.id = id
-  if (description) root.description = description
-  if (version) root.version = version
-  if (homePath) root.homePath = homePath
-  return root
-}
-
-/** 构建导航根节点 */
-export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, 'children'>>): ProjectModelData {
-  return normalizeNavRoot({
-    title: options?.title ?? '',
-    childPlacement: options?.childPlacement ?? 'header',
-    ...(options?.homePath !== undefined ? { homePath: options.homePath } : {}),
-    children,
-  })
 }
 
 // ═══════════════════════════════════════════════════════

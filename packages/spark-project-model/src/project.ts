@@ -47,14 +47,12 @@ export {
 } from './entity/node/node-factory'
 
 export type {
-  ConfigPageContentPart,
+  ConfigPageDirtyPart,
   PageNodeLike,
   PageNodeLoadOptions,
   PageNodeNavigationConfig,
   PageNodeRenderConfig,
-  ProjectConfigPageDirtyPart,
   ProjectNavigationFlatNode,
-  ProjectNodeDirtyPart,
   ProjectNodeFamily,
   ProjectPageNodeSummary,
   ProjectDescriptionContext,

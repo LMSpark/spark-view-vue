@@ -1,6 +1,6 @@
 /** 节点纯函数——tree/flat 转换、pageId 解析、类型判断。 */
+import { deepClone } from '@spark-view/spark-utils'
 import type { NavNodeKind, ProjectModelData, ProjectNodeData } from './node-base.entity'
-import { normalizeNavRoot, normalizePageIdFromPath } from '../../service/navigation/editing.service'
 import type { NodeKind, ProjectDescriptionContext } from './module-node.entity'
 
 export type ProjectNavigationFlatNode = {
@@ -12,9 +12,84 @@ export type ProjectNavigationFlatNode = {
 
 export function normalizePid(v: string | null | undefined): string | null { const n = v?.trim() ?? ''; return n || null }
 
+export function normalizePageIdFromPath(path: string | undefined | null): string {
+  return path ? path.replace(/^\/+/, '').trim() : ''
+}
+
 export function isConfigNodeKind(kind: string | undefined | null): boolean { return (kind ?? 'page') === 'page' || kind === 'sub-page' }
 export function isProjectPageNodeKind(kind: string | undefined | null): kind is 'page' | 'sub-page' { return kind === 'page' || kind === 'sub-page' }
 export function isProjectModuleNodeKind(kind: string | undefined | null): boolean { return kind === 'module' || kind === 'system-directory' }
+
+const SYSTEM_CHILD_PLACEMENTS = new Set(['toolbar', 'user-menu'])
+
+export function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavNodeKind {
+  if (node.nodeKind !== undefined) return node.nodeKind
+  if (parentPlacement !== undefined && SYSTEM_CHILD_PLACEMENTS.has(parentPlacement)) return 'system-action'
+  if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
+  if (node.linkTarget === 'iframe' || node.linkTarget === 'new-tab' || node.linkTarget === 'self') return 'link'
+  return 'page'
+}
+
+export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?: string): ProjectNodeData {
+  const cloned = deepClone(node)
+  cloned.nodeKind = inferNavNodeKind(cloned, parentPlacement)
+  if (cloned.nodeKind === 'sub-page') {
+    cloned.hidden = true
+    delete cloned.path
+    delete cloned.linkTarget
+  } else if (cloned.nodeKind === 'link') {
+    if (cloned.linkTarget !== 'iframe' && cloned.linkTarget !== 'new-tab' && cloned.linkTarget !== 'self') {
+      cloned.linkTarget = 'iframe'
+    }
+  } else {
+    delete cloned.linkTarget
+  }
+  if (Array.isArray(cloned.children)) {
+    cloned.children = cloned.children.map(child => normalizeProjectNodeData(child, cloned.childPlacement))
+  }
+  return cloned
+}
+
+export function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
+  const normalized = String(value ?? '').trim()
+  return normalized === 'header' || normalized === 'sidebar' ? normalized : 'header'
+}
+
+type NormalizeNavRootInput = {
+  id?: string | undefined
+  title?: string | undefined
+  description?: string | undefined
+  version?: string | undefined
+  childPlacement?: string | undefined
+  children?: ProjectNodeData[] | undefined
+  homePath?: string | undefined
+}
+
+export function normalizeNavRoot(config: NormalizeNavRootInput): ProjectModelData {
+  const root: ProjectModelData = {
+    title: config.title ?? '',
+    childPlacement: normalizeRootChildPlacement(config.childPlacement),
+    children: (config.children ?? []).map(node => normalizeProjectNodeData(node)),
+  }
+  const id = typeof config.id === 'string' ? config.id.trim() : ''
+  const description = typeof config.description === 'string' ? config.description.trim() : ''
+  const version = typeof config.version === 'string' ? config.version.trim() : ''
+  const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
+  if (id) root.id = id
+  if (description) root.description = description
+  if (version) root.version = version
+  if (homePath) root.homePath = homePath
+  return root
+}
+
+export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, 'children'>>): ProjectModelData {
+  return normalizeNavRoot({
+    title: options?.title ?? '',
+    childPlacement: options?.childPlacement ?? 'header',
+    ...(options?.homePath !== undefined ? { homePath: options.homePath } : {}),
+    children,
+  })
+}
 
 export function readProjectEditNodeKind(node: ProjectNodeData | null | undefined): NodeKind | null {
   const k = node?.nodeKind ?? 'page'

@@ -10,7 +10,7 @@
 export { ProjectModel } from './entity/project/project.entity'
 export type { ProjectModelLike } from './entity/project/project.entity'
 export type { ProjectModelOptions } from './entity/project/project.entity'
-export type { ProjectModelDto } from './contract/project.contract'
+export type { ProjectModelDto } from './entity/project/project.entity'
 
 // ── 节点 ──────────────────────────────────────────────
 
@@ -51,9 +51,7 @@ export type {
   PageNodeNavigationConfig,
   PageNodeRenderConfig,
   ProjectPageNodeSummary,
-  ProjectNodeDirtyPart,
-  ConfigPageContentPart,
-  ProjectConfigPageDirtyPart,
+  ConfigPageDirtyPart,
   ProjectNavigationFlatNode,
   RegionItems,
   RegionVisibility,
@@ -67,7 +65,7 @@ export type {
   NavigationNodeEditPatchDto,
   NavigationNodeMoveRequestDto,
   ProjectNodeLocation,
-} from './contract/navigation.contract'
+} from './entity/navigation/edit.entity'
 
 // ── 工厂 ──────────────────────────────────────────────
 

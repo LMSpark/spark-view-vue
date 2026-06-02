@@ -3,7 +3,7 @@
  *
  * base.ts       → ProjectNode, PageNode
  * module.ts     → ModuleNode
- * config-page/  → ConfigPageNode + content
+ * config-page   → ConfigPageNode
  * vue-page.ts   → VuePageNode
  * action.ts     → ActionNode
  * link.ts       → LinkNode
@@ -27,10 +27,8 @@ export type {
   RegionVisibility,
 } from './node-base.entity'
 export type {
-  ConfigPageContentPart,
-  ProjectConfigPageDirtyPart,
+  ConfigPageDirtyPart,
   ProjectConfigPageNodeModelOptions,
-  ProjectNodeDirtyPart,
 } from './config-page.entity'
 export { isProjectNodeData } from './node-base.entity'
 

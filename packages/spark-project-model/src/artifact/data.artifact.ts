@@ -617,7 +617,8 @@ function isEqualArray(a: unknown[] | undefined, b: unknown[] | undefined): boole
 }
 
 function normalizeDesignerComparableMetadata(metadata: DataSetMetadata): DataSetMetadata {
-  const { pageId: _pageId, ...rest } = metadata
+  const rest = { ...metadata }
+  delete rest.pageId
   const tableEntries = Object.entries(metadata.tables)
   const tablePositions = Object.fromEntries(
     tableEntries.map(([tableName], index) => [

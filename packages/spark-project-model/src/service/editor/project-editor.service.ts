@@ -36,7 +36,7 @@ import type {
   ProjectModelData,
   NavNodeKind,
   ProjectNodeData,
-} from '@spark-view/spark-project-model'
+} from '../../entity/node/node-base.entity'
 import type {
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
@@ -83,9 +83,8 @@ import {
   type PageNodeFileName,
 } from '../file/file-registry.service'
 import type { PageNodeFileStorage } from '../../factory/page-node.factory'
-import type { ProjectModelDto } from '../../contract/project.contract'
-export type { ProjectModelDto } from '../../contract/project.contract'
-import { ProjectModel } from '../../entity/project/project.entity'
+import { ProjectModel, type ProjectModelDto } from '../../entity/project/project.entity'
+export type { ProjectModelDto } from '../../entity/project/project.entity'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,

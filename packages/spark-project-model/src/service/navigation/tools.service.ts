@@ -1,4 +1,4 @@
-import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectModelData, ProjectNodeData } from '../../entity/node/node-base.entity'
 import type { ProjectNodeLocation } from './editing.service'
 import {
   canUseModuleNodeKind,

@@ -1,7 +1,6 @@
 /** 节点基类——ProjectNode + PageNode。 */
 import { isRecord } from '@spark-view/spark-utils'
 import { NavigationEditModel } from '../navigation/edit.entity'
-import type { LinkTarget } from './leaf-nodes.entity'
 import type { ProjectNodeFamily, ProjectDescriptionContext } from './module-node.entity'
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext, projectNavNodeToFlatRow } from './node-helpers'
 import type { ProjectNavigationFlatNode } from './node-helpers'
@@ -54,7 +53,7 @@ export type ProjectNodeData = {
   permissionMode?: NavPermissionMode | undefined
   children?: ProjectNodeData[] | undefined
   path?: string | undefined
-  linkTarget?: LinkTarget | undefined
+  linkTarget?: 'iframe' | 'new-tab' | 'self' | undefined
   redirect?: string | undefined
   refId?: string | undefined
   refPath?: string | undefined
@@ -155,11 +154,6 @@ export abstract class ProjectNode {
    * 节点描述。
    */
   get description(): string { return readProjectNodeDescription(this.#node) }
-
-  /**
-   * @deprecated use name
-   */
-  get title(): string { return this.name }
 
   get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
   get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }

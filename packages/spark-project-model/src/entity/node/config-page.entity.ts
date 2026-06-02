@@ -23,11 +23,7 @@ export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
   navClient?: NavigationConfigClient | undefined
 }
 
-export type ProjectNodeDirtyPart = 'navigation'
-
-export type ConfigPageContentPart = 'rule' | 'dataSet' | 'style' | 'script'
-
-export type ProjectConfigPageDirtyPart = ProjectNodeDirtyPart | ConfigPageContentPart
+export type ConfigPageDirtyPart = 'navigation' | 'rule' | 'dataSet' | 'style' | 'script'
 
 const CONFIG_PAGE_DIRTY_PARTS = ['navigation', 'rule', 'dataSet', 'style', 'script'] as const
 
@@ -346,11 +342,6 @@ export class ConfigPageNode extends PageNode {
   get children(): ConfigPageNode[] { return this.readChildren<ConfigPageNode>() }
 
   /**
-   * 当前配置页面 ID。
-   */
-  get pageid(): string { return this.pageId }
-
-  /**
    * 当前页面的实际路由路径；缺省时使用 pageId 生成。
    */
   get resolvedPath(): string { return this.path ?? `/${this.pageId}` }
@@ -372,7 +363,7 @@ export class ConfigPageNode extends PageNode {
    *
    * @moduleMutation page-config read 查询当前页面配置脏分区。
    */
-  dirtyParts(): ProjectConfigPageDirtyPart[] { return CONFIG_PAGE_DIRTY_PARTS.filter(p => this.isPartDirty(p)) }
+  dirtyParts(): ConfigPageDirtyPart[] { return CONFIG_PAGE_DIRTY_PARTS.filter(p => this.isPartDirty(p)) }
 
   /**
    * 加载当前页面的 rule.json、pagedata.json、script.js 和 style.css。
@@ -645,7 +636,7 @@ export class ConfigPageNode extends PageNode {
    */
   toSummary(): ProjectPageNodeSummary {
     return {
-      pageId: this.pageId, path: this.resolvedPath, title: this.title,
+      pageId: this.pageId, path: this.resolvedPath, title: this.name,
       nodeId: this.id, nodeKind: this.nodeKind, description: this.description,
       descriptionContext: this.descriptionContext,
       effectiveDescription: this.effectiveDescription,
@@ -654,14 +645,14 @@ export class ConfigPageNode extends PageNode {
   }
 
   private clearFileCache(name?: PageNodeFileName): void { this.fileCache.clearPageCache(this.pageId, name) }
-  private isPartDirty(part: ProjectConfigPageDirtyPart): boolean {
+  private isPartDirty(part: ConfigPageDirtyPart): boolean {
     if (part === 'navigation') return this.navigation.isDirty
     if (part === 'rule') return this.isRuleDirty
     if (part === 'dataSet') return this.isDataSetDirty
     if (part === 'style') return this.style.isDirty
     return this.script.isDirty
   }
-  private async savePart(part: ProjectConfigPageDirtyPart): Promise<void> {
+  private async savePart(part: ConfigPageDirtyPart): Promise<void> {
     if (part === 'navigation') { if (!this.navClient) throw new Error('缺少 NavigationConfigClient'); await this.navigation.save(this.navClient) }
     else if (part === 'rule') await this.saveFile('rule.json')
     else if (part === 'dataSet') await this.saveFile('pagedata.json')

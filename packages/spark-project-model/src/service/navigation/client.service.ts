@@ -1,12 +1,12 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
-import { isProjectNodeData } from '@spark-view/spark-project-model'
-import { normalizeNavRoot } from './editing.service'
+import type { ProjectModelData, ProjectNodeData } from '../../entity/node/node-base.entity'
+import { isProjectNodeData } from '../../entity/node/node-base.entity'
+import { normalizeNavRoot } from '../../entity/node/node-helpers'
 import type {
   NavigationNodeAddRequestDto,
   NavigationNodeEditPatchDto,
   NavigationNodeMoveRequestDto,
-} from '../../contract/navigation.contract'
+} from '../../entity/navigation/edit.entity'
 
 export type NavigationConfigClientOptions = {
   getNavigationApi: () => string

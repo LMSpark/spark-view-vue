@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { AppNavRoot, ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
 import type { HttpClientBase, HttpResponse } from '@spark-view/spark-utils'
 import { ConfigPageNode, ModuleNode } from '@spark-view/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
@@ -61,9 +61,12 @@ describe('ProjectModel', () => {
     expect(p.family).toBe('module')
     expect(p.name).toBe('crm')
     expect(p.children.map(node => node.id)).toEqual(['sales', 'settings'])
-    expect(p.children[0]?.children.map(node => node.id)).toEqual(['orders'])
+    expect(p.children[0]).toBeInstanceOf(ModuleNode)
+    const sales = p.children[0]
+    expect(sales instanceof ModuleNode ? sales.children.map(node => node.id) : []).toEqual(['orders'])
     expect(p.children[1]).toBeInstanceOf(ConfigPageNode)
-    expect(p.children[1]?.children).toEqual([])
+    const settings = p.children[1]
+    expect(settings instanceof ConfigPageNode ? settings.children : []).toEqual([])
     expect(p.findNodeById('sales')?.node).toMatchObject({ nodeKind: 'module' })
   })
 
@@ -115,7 +118,7 @@ describe('ProjectModel', () => {
 
   it('moves mounted pages through the dedicated move endpoint', async () => {
     const putCalls: Array<{ url: string; body: unknown }> = []
-    const root: AppNavRoot = {
+    const root: ProjectModelData = {
       title: 'CRM',
       childPlacement: 'header' as const,
       children: [

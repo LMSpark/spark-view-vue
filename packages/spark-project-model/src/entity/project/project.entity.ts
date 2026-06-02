@@ -16,6 +16,12 @@ import type { ConfigPageNode, ProjectNavigationFlatNode, ProjectNode, ProjectPag
 import { ModuleNode } from '../node/module-node.entity'
 import { ProjectNodeCollection } from './node-collection.entity'
 
+export type ProjectModelDto = {
+  projectId: string
+  navigation: ProjectModelData
+  pages: ProjectPageNodeSummary[]
+}
+
 export type ProjectModelOptions = {
   projectId: string
   fileApi: PageNodeFileApi

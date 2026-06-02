@@ -61,10 +61,3 @@ export class PageNodeFileRegistry extends Map<string, PageNodeFileDescriptor> {
     )
   }
 }
-
-/**
- * @deprecated 请直接使用 PageNodeFileRegistry.default()。此函数仅做一层委托，无额外逻辑。
- */
-export function createDefaultPageNodeFileRegistry(): PageNodeFileRegistry {
-  return PageNodeFileRegistry.default()
-}
