@@ -8,13 +8,11 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, relative } from 'node:path'
 import ts from 'typescript'
 import { createChecker } from 'vue-component-meta'
-import type { PropertyMetaSchema } from 'vue-component-meta'
-import { vcmPropertyMetaSchemaToJsonSchema } from './extract-component-api-vcm'
-import { tsTypeToJsonSchema, type GeneratedJsonSchema, type GeneratedJsonSchemaObject } from './ts-type-to-json-schema'
+import { tsTypeToJsonSchema, type GeneratedJsonSchema } from './ts-type-to-json-schema'
 
 export type ModuleAbilityMetadataGeneratorOptions = {
   sources: readonly string[]
-  outFile: string
+  outFile?: string
   moduleOutFile?: string
   vcmCatalogOutFile?: string
   runtimeOutFile?: string
@@ -133,44 +131,14 @@ type AiModuleMetadataJson = {
   schemaVersion: 1
   rootApi: AiApiObjectMetadata}
 
-type VcmObjectElementRef = {
-  $ref: string}
-
-type VcmObjectPropertyElement = {
+type VcmComponentMeta = {
+  name: string
   description: string
-  schema: GeneratedJsonSchema
-  readable: boolean
-  writable: boolean
-  object?: VcmObjectElementRef}
-
-type VcmObjectMethodReturnElement = {
-  schema?: GeneratedJsonSchema
-  objects?: ReadonlyArray<{
-    path: readonly string[]
-    object: VcmObjectElementRef}>}
-
-type VcmObjectMethodElement = {
-  description: string
-  paramsSchema: GeneratedJsonSchema
-  takesContext?: boolean
-  returns?: VcmObjectMethodReturnElement}
-
-type VcmObjectElement = {
-  className: string
-  description: string
-  schema?: GeneratedJsonSchema
-  constructor?: AiApiConstructorMetadata
-  properties: Record<string, VcmObjectPropertyElement>
-  methods: Record<string, VcmObjectMethodElement>}
-
-type VcmObjectMetadataCatalog = {
-  $schema: 'https://json-schema.org/draft/2020-12/schema'
-  version: '1.0.0'
-  buildTime: string
-  elementCount: number
-  entryElements: readonly string[]
-  elements: Record<string, VcmObjectElement>
-  $defs?: Record<string, GeneratedJsonSchema>}
+  type: unknown
+  props: readonly unknown[]
+  events: readonly unknown[]
+  slots: readonly unknown[]
+  exposed: readonly unknown[]}
 
 type ModuleMetadataTrace = {
   enabled: boolean
@@ -245,7 +213,7 @@ export type ModuleMetadataDiagnostics = {
 
 export type ModuleMetadataGenerationResult = {
   abilities: readonly ModuleAbilityMetadata[]
-  outFile: string
+  outFile?: string
   moduleMetadata: readonly AiModuleMetadataJson[]
   diagnostics: ModuleMetadataDiagnostics
   moduleOutFile?: string
@@ -267,29 +235,13 @@ const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
 
 const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
 
-const PAGE_DESIGN_MODULE_METADATA_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-ability-metadata.generated.json'
-
-const PAGE_DESIGN_API_OBJECT_METADATA_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-module-metadata.generated.json'
-
 const PAGE_DESIGN_VCM_MODEL_METADATA_OUT_FILE =
   'packages/spark-project-model/src/vcm/page-design/page-design-vcm-metadata.generated.json'
-
-const PAGE_DESIGN_MODULE_METADATA_RUNTIME_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-ability-metadata.runtime.generated.json'
-
-const PAGE_DESIGN_API_OBJECT_METADATA_RUNTIME_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-module-metadata.runtime.generated.json'
 
 export function generatePageDesignModuleMetadata(root: string): ModuleMetadataGenerationResult {
   return generateModuleAbilityMetadata(root, {
     sources: PAGE_DESIGN_MODULE_METADATA_SOURCES,
-    outFile: PAGE_DESIGN_MODULE_METADATA_OUT_FILE,
-    moduleOutFile: PAGE_DESIGN_API_OBJECT_METADATA_OUT_FILE,
     vcmCatalogOutFile: PAGE_DESIGN_VCM_MODEL_METADATA_OUT_FILE,
-    runtimeOutFile: PAGE_DESIGN_MODULE_METADATA_RUNTIME_OUT_FILE,
-    moduleRuntimeOutFile: PAGE_DESIGN_API_OBJECT_METADATA_RUNTIME_OUT_FILE,
     apiRoots: PAGE_DESIGN_MODULE_METADATA_API_ROOTS,
   })
 }
@@ -330,22 +282,24 @@ export function generateModuleAbilityMetadata(
   const diagnostics = createModuleMetadataDiagnostics(abilities, moduleMetadata)
   const vcmCatalogElementCount = moduleMetadata.length
 
-  const outFile = resolve(root, options.outFile)
+  const outFile = options.outFile === undefined ? undefined : resolve(root, options.outFile)
   const moduleOutFile = options.moduleOutFile === undefined ? undefined : resolve(root, options.moduleOutFile)
   const vcmCatalogOutFile = options.vcmCatalogOutFile === undefined ? undefined : resolve(root, options.vcmCatalogOutFile)
   const runtimeOutFile = options.runtimeOutFile === undefined ? undefined : resolve(root, options.runtimeOutFile)
   const moduleRuntimeOutFile = options.moduleRuntimeOutFile === undefined ? undefined : resolve(root, options.moduleRuntimeOutFile)
   if (options.writeFiles !== false) {
-    mkdirSync(dirname(outFile), { recursive: true })
-    writeFileSync(outFile, formatGeneratedMetadata(abilities, diagnostics), 'utf8')
+    if (outFile !== undefined) {
+      mkdirSync(dirname(outFile), { recursive: true })
+      writeFileSync(outFile, formatGeneratedMetadata(abilities, diagnostics), 'utf8')
+    }
     if (moduleOutFile !== undefined) {
       mkdirSync(dirname(moduleOutFile), { recursive: true })
       writeFileSync(moduleOutFile, formatGeneratedApiObjectMetadata(moduleMetadata, diagnostics), 'utf8')
     }
     if (vcmCatalogOutFile !== undefined) {
       mkdirSync(dirname(vcmCatalogOutFile), { recursive: true })
-      const vcmSchemas = extractVcmRootClassSchemas(root, options.sources, moduleMetadata)
-      writeFileSync(vcmCatalogOutFile, formatVcmObjectElementCatalog(moduleMetadata, vcmSchemas), 'utf8')
+      const vcmMeta = extractVcmRootClassSchemas(root, options.sources, moduleMetadata)
+      writeFileSync(vcmCatalogOutFile, formatVcmObjectElementCatalog(moduleMetadata, vcmMeta), 'utf8')
     }
     if (runtimeOutFile !== undefined) {
       mkdirSync(dirname(runtimeOutFile), { recursive: true })
@@ -358,7 +312,7 @@ export function generateModuleAbilityMetadata(
   }
   return {
     abilities,
-    outFile,
+    ...(outFile === undefined ? {} : { outFile }),
     moduleMetadata,
     diagnostics,
     ...(moduleOutFile === undefined ? {} : { moduleOutFile }),
@@ -1304,44 +1258,23 @@ function formatGeneratedApiObjectMetadata(
 
 function formatVcmObjectElementCatalog(
   moduleMetadata: readonly AiModuleMetadataJson[],
-  vcmSchemas: ReadonlyMap<string, GeneratedJsonSchema> = new Map(),
+  vcmMeta: VcmComponentMeta | undefined,
 ): string {
-  return `${JSON.stringify(normalizeGeneratedJsonSchemaValue(createVcmObjectMetadataCatalog(moduleMetadata, vcmSchemas)), null, 2)}\n`
-}
-
-function createVcmObjectMetadataCatalog(
-  moduleMetadata: readonly AiModuleMetadataJson[],
-  vcmSchemas: ReadonlyMap<string, GeneratedJsonSchema> = new Map(),
-): VcmObjectMetadataCatalog {
-  const entryElements = moduleMetadata.map(module => module.rootApi.className)
-  const apis = moduleMetadata.map(module => module.rootApi)
-  const elementClassNames = new Set(entryElements)
-  const schemaPool = createVcmSchemaPool()
-  const elements = Object.fromEntries(apis.map(api => [api.className, toVcmObjectElement(api, schemaPool, vcmSchemas, elementClassNames)]))
-  const $defs = schemaPool.definitions()
-  return {
-    $schema: 'https://json-schema.org/draft/2020-12/schema',
-    version: '1.0.0',
-    buildTime: new Date().toISOString(),
-    elementCount: apis.length,
-    entryElements,
-    elements,
-    ...(Object.keys($defs).length === 0 ? {} : { $defs }),
-  }
+  return `${JSON.stringify(normalizeGeneratedJsonSchemaValue(vcmMeta ?? createFallbackVcmComponentMeta(moduleMetadata)), null, 2)}\n`
 }
 
 function extractVcmRootClassSchemas(
   root: string,
   sources: readonly string[],
   moduleMetadata: readonly AiModuleMetadataJson[],
-): ReadonlyMap<string, GeneratedJsonSchema> {
+): VcmComponentMeta | undefined {
   const rootApis = moduleMetadata.map(module => module.rootApi)
-  if (rootApis.length === 0) return new Map()
+  if (rootApis.length === 0) return undefined
   const tsconfigPath = resolve(root, 'tsconfig.catalog.json')
-  if (!existsSync(tsconfigPath)) return new Map()
+  if (!existsSync(tsconfigPath)) return undefined
 
   const sourceByClassName = findClassSourceFiles(root, sources, rootApis.map(api => api.className))
-  if (sourceByClassName.size === 0) return new Map()
+  if (sourceByClassName.size === 0) return undefined
 
   const virtualFile = resolve(root, '__spark_vcm_object_metadata_probe.vue').replace(/\\/g, '/')
   const imports = rootApis
@@ -1351,7 +1284,7 @@ function extractVcmRootClassSchemas(
       return `import type { ${api.className} } from './${normalizePath(relative(root, source))}'`
     })
     .filter(isNotUndefined)
-  if (imports.length === 0) return new Map()
+  if (imports.length === 0) return undefined
 
   const props = rootApis
     .filter(api => sourceByClassName.has(api.className))
@@ -1367,16 +1300,7 @@ function extractVcmRootClassSchemas(
   checker.updateFile(virtualFile, source)
   try {
     const meta = checker.getComponentMeta(virtualFile)
-    const schemas = new Map<string, GeneratedJsonSchema>()
-    for (const prop of meta.props) {
-      if (prop.global) continue
-      const converted = vcmPropertyMetaSchemaToJsonSchema(
-        prop.schema as PropertyMetaSchema | undefined,
-        prop.description,
-      )
-      if (converted !== undefined) schemas.set(prop.name, converted as GeneratedJsonSchema)
-    }
-    return schemas
+    return sanitizeVcmComponentMeta(meta)
   } finally {
     checker.deleteFile(virtualFile)
   }
@@ -1411,220 +1335,52 @@ function findClassSourceFiles(
   return found
 }
 
-function toVcmObjectElement(
-  api: AiApiObjectMetadata,
-  schemaPool: VcmSchemaPool,
-  vcmSchemas: ReadonlyMap<string, GeneratedJsonSchema>,
-  elementClassNames: ReadonlySet<string>,
-): VcmObjectElement {
-  const schema = vcmSchemas.get(api.className)
+function createFallbackVcmComponentMeta(moduleMetadata: readonly AiModuleMetadataJson[]): VcmComponentMeta {
   return {
-    className: api.className,
-    description: api.description,
-    ...(schema === undefined ? {} : { schema: normalizeVcmSchema(schema, schemaPool) }),
-    ...(api.constructorSignature === undefined ? {} : { constructor: normalizeVcmConstructorElement(api.constructorSignature, schemaPool) }),
-    properties: Object.fromEntries((api.attributes ?? []).map(attribute => [attribute.name, toVcmObjectPropertyElement(attribute, schemaPool, elementClassNames)])),
-    methods: Object.fromEntries(api.actions.map(action => [action.name, toVcmObjectMethodElement(action, schemaPool, elementClassNames)])),
+    name: '',
+    description: '',
+    type: 1,
+    props: moduleMetadata.map(module => ({
+      name: module.rootApi.className,
+      global: false,
+      description: module.rootApi.description,
+      tags: [],
+      required: true,
+      type: module.rootApi.className,
+      schema: {
+        kind: 'object',
+        type: module.rootApi.className,
+        schema: {},
+      },
+    })),
+    events: [],
+    slots: [],
+    exposed: [],
   }
 }
 
-function normalizeVcmConstructorElement(
-  constructorSignature: AiApiConstructorMetadata,
-  schemaPool: VcmSchemaPool,
-): AiApiConstructorMetadata {
-  return {
-    ...constructorSignature,
-    paramsSchema: normalizeVcmSchema(constructorSignature.paramsSchema, schemaPool),
-  }
+function sanitizeVcmComponentMeta(meta: unknown): VcmComponentMeta {
+  return sanitizeVcmJsonValue(meta) as VcmComponentMeta
 }
 
-function toVcmObjectPropertyElement(
-  attribute: AiApiAttributeMetadata,
-  schemaPool: VcmSchemaPool,
-  elementClassNames: ReadonlySet<string>,
-): VcmObjectPropertyElement {
-  return {
-    description: attribute.description,
-    schema: normalizeVcmSchema(attribute.schema, schemaPool),
-    readable: attribute.readable,
-    writable: attribute.writable,
-    ...(attribute.api === undefined || !elementClassNames.has(attribute.api.className) ? {} : { object: toVcmObjectRef(attribute.api) }),
-  }
-}
-
-function toVcmObjectMethodElement(
-  action: AiApiActionMetadata,
-  schemaPool: VcmSchemaPool,
-  elementClassNames: ReadonlySet<string>,
-): VcmObjectMethodElement {
-  const returns = toVcmObjectMethodReturnElement(action, schemaPool, elementClassNames)
-  return {
-    description: action.description,
-    paramsSchema: normalizeVcmSchema(action.paramsSchema, schemaPool),
-    ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
-    ...(returns === undefined ? {} : { returns }),
-  }
-}
-
-function toVcmObjectMethodReturnElement(
-  action: AiApiActionMetadata,
-  schemaPool: VcmSchemaPool,
-  elementClassNames: ReadonlySet<string>,
-): VcmObjectMethodReturnElement | undefined {
-  const objects = (action.resultApis ?? [])
-    .filter(ref => elementClassNames.has(ref.api.className))
-    .map(ref => ({
-      path: ref.resultPath,
-      object: toVcmObjectRef(ref.api),
-    }))
-  if (action.resultSchema === undefined && objects.length === 0) return undefined
-  return {
-    ...(action.resultSchema === undefined ? {} : { schema: normalizeVcmSchema(action.resultSchema, schemaPool) }),
-    ...(objects.length === 0 ? {} : { objects }),
-  }
-}
-
-function toVcmObjectRef(api: AiApiObjectMetadata): VcmObjectElementRef {
-  return { $ref: `#/elements/${api.className}` }
-}
-
-type VcmSchemaPool = {
-  reserveDefinitionName: (name: string) => string
-  setDefinition: (name: string, schema: GeneratedJsonSchema) => string
-  definitions: () => Record<string, GeneratedJsonSchema>}
-
-function createVcmSchemaPool(): VcmSchemaPool {
-  const definitions = new Map<string, GeneratedJsonSchema>()
-  const reserved = new Set<string>()
-
-  const nextName = (name: string): string => {
-    const base = jsonSchemaDefinitionName(name)
-    if (!definitions.has(base) && !reserved.has(base)) {
-      reserved.add(base)
-      return base
-    }
-    let index = 2
-    while (definitions.has(`${base}_${String(index)}`) || reserved.has(`${base}_${String(index)}`)) index++
-    const candidate = `${base}_${String(index)}`
-    reserved.add(candidate)
-    return candidate
-  }
-
-  return {
-    reserveDefinitionName(name) {
-      return nextName(name)
-    },
-    setDefinition(name, schema) {
-      const schemaKey = stableStringify(schema)
-      for (const [existingName, existingSchema] of definitions.entries()) {
-        if (stableStringify(existingSchema) === schemaKey) {
-          reserved.delete(name)
-          return existingName
-        }
-      }
-      definitions.set(name, schema)
-      reserved.delete(name)
-      return name
-    },
-    definitions() {
-      return Object.fromEntries([...definitions.entries()].sort(([left], [right]) => left.localeCompare(right)))
-    },
-  }
-}
-
-function normalizeVcmSchema(
-  schema: GeneratedJsonSchema,
-  pool: VcmSchemaPool,
-  refScope: ReadonlyMap<string, string> = new Map(),
-  inlineRoot = true,
-): GeneratedJsonSchema {
-  if (!isGeneratedSchemaObject(schema)) return schema
-
-  const localRefScope = new Map(refScope)
-  const localDefs: Readonly<Record<string, GeneratedJsonSchema>> | undefined = isIndexableObject(schema.$defs)
-    ? schema.$defs as Readonly<Record<string, GeneratedJsonSchema>>
-    : undefined
-  if (localDefs !== undefined) {
-    for (const name of Object.keys(localDefs)) {
-      localRefScope.set(name, pool.reserveDefinitionName(name))
-    }
-    for (const [name, definition] of Object.entries(localDefs)) {
-      const reservedName = localRefScope.get(name)
-      if (reservedName === undefined) continue
-      const finalName = pool.setDefinition(
-        reservedName,
-        normalizeVcmSchema(definition, pool, localRefScope),
-      )
-      localRefScope.set(name, finalName)
-    }
-  }
-
-  const normalized = normalizeVcmSchemaValue(schema, pool, localRefScope) as GeneratedJsonSchema
-  if (!isGeneratedSchemaObject(normalized)) return normalized
-  const { $defs: _localDefs, ...withoutLocalDefs } = normalized
-  if (!inlineRoot && isPoolableVcmSchemaObject(withoutLocalDefs)) {
-    const reservedName = pool.reserveDefinitionName(String(withoutLocalDefs['title']))
-    const normalizedDefinition = normalizeVcmSchema(withoutLocalDefs as GeneratedJsonSchemaObject, pool, localRefScope, true)
-    const finalName = pool.setDefinition(reservedName, normalizedDefinition)
-    const description = withoutLocalDefs['description']
-    return {
-      $ref: `#/$defs/${finalName}`,
-      ...(typeof description === 'string' ? { description } : {}),
-    }
-  }
-  return withoutLocalDefs as GeneratedJsonSchemaObject
-}
-
-function normalizeVcmSchemaValue(
-  value: unknown,
-  pool: VcmSchemaPool,
-  refScope: ReadonlyMap<string, string>,
-): unknown {
-  if (Array.isArray(value)) return value.map(item =>
-    !Array.isArray(item) && isIndexableObject(item)
-      ? normalizeVcmSchema(item as GeneratedJsonSchema, pool, refScope, false)
-      : normalizeVcmSchemaValue(item, pool, refScope))
+function sanitizeVcmJsonValue(value: unknown, seen = new WeakSet<object>()): unknown {
+  if (Array.isArray(value)) return value.map(item => sanitizeVcmJsonValue(item, seen))
   if (!isIndexableObject(value)) return value
-
-  const ref = value['$ref']
-  const normalizedEntries = Object.entries(value)
-    .filter(([key]) => key !== '$defs')
-    .map(([key, child]) => [
-      key,
-      key === '$ref' && typeof ref === 'string'
-        ? normalizeVcmSchemaRef(ref, refScope)
-        : !Array.isArray(child) && isIndexableObject(child)
-          ? normalizeVcmSchema(child as GeneratedJsonSchema, pool, refScope, false)
-          : normalizeVcmSchemaValue(child, pool, refScope),
-    ])
-  return Object.fromEntries(normalizedEntries)
+  if (seen.has(value)) return undefined
+  seen.add(value)
+  const entries = Object.entries(value)
+    .filter(([key]) => !isNonSerializableVcmKey(key))
+    .map(([key, child]) => [key, sanitizeVcmJsonValue(child, seen)])
+    .filter(([, child]) => child !== undefined)
+  return Object.fromEntries(entries)
 }
 
-function isPoolableVcmSchemaObject(schema: Readonly<Record<string, unknown>>): boolean {
-  return typeof schema['title'] === 'string'
-    && (isIndexableObject(schema['properties']) || Array.isArray(schema['prefixItems']) || schema['items'] !== undefined)
-}
-
-function normalizeVcmSchemaRef(ref: string, refScope: ReadonlyMap<string, string>): string {
-  const prefix = '#/$defs/'
-  if (!ref.startsWith(prefix)) return ref
-  const name = ref.slice(prefix.length)
-  return `${prefix}${refScope.get(name) ?? name}`
-}
-
-function jsonSchemaDefinitionName(identityKey: string): string {
-  return identityKey.replace(/[^a-zA-Z0-9_.-]/gu, '_')
-}
-
-function stableStringify(value: unknown): string {
-  if (Array.isArray(value)) return `[${value.map(stableStringify).join(',')}]`
-  if (value !== null && typeof value === 'object') {
-    return `{${Object.entries(value)
-      .sort(([left], [right]) => left.localeCompare(right))
-      .map(([key, child]) => `${JSON.stringify(key)}:${stableStringify(child)}`)
-      .join(',')}}`
-  }
-  return JSON.stringify(value)
+function isNonSerializableVcmKey(key: string): boolean {
+  return key === 'declarations'
+    || key === 'rawType'
+    || key === 'schemaSource'
+    || key === 'getDeclarations'
+    || key === 'getTypeObject'
 }
 
 function normalizeGeneratedJsonSchemaValue<T>(value: T): T {

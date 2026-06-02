@@ -1,1305 +1,3118 @@
 {
-  "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "version": "1.0.0",
-  "buildTime": "2026-06-02T16:00:31.458Z",
-  "elementCount": 1,
-  "entryElements": [
-    "ProjectModel"
-  ],
-  "elements": {
-    "ProjectModel": {
-      "className": "ProjectModel",
-      "description": "当前项目模型，作为 VCM 根能力按 pageId 定位或实例化配置页面节点。",
+  "type": 1,
+  "props": [
+    {
+      "name": "ProjectModel",
+      "global": false,
+      "description": "",
+      "tags": [],
+      "required": true,
+      "type": "ProjectModel",
       "schema": {
-        "title": "ProjectModel",
-        "type": "object",
-        "properties": {
-          "projectId": {
-            "type": "string"
-          },
-          "nodes": {
-            "$ref": "#/$defs/ProjectNodeCollection",
-            "description": "当前项目的节点集合子模型。\n\n页面配置节点通过 nodes.openConfigPage(pageId) 进入；ProjectModel 不额外制造 page 访问方法。"
-          }
-        },
-        "required": [
-          "projectId",
-          "nodes"
-        ]
-      },
-      "constructor": {
-        "description": "Create ProjectModel instance.",
-        "paramsSchema": {
-          "type": "object",
-          "properties": {
-            "options": {
-              "type": "object",
-              "properties": {
-                "projectId": {
-                  "type": "string"
-                },
+        "kind": "object",
+        "type": "ProjectModel",
+        "schema": {
+          "nodeStore": {
+            "name": "nodeStore",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNodeCollection",
+            "schema": {
+              "kind": "object",
+              "type": "ProjectNodeCollection",
+              "schema": {
                 "fileApi": {
-                  "type": "object",
-                  "title": "PageNodeFileApi"
+                  "name": "fileApi",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "PageFileWriter",
+                  "schema": {
+                    "kind": "object",
+                    "type": "PageFileWriter",
+                    "schema": {
+                      "saveFileContent": {
+                        "name": "saveFileContent",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", content: string) => Promise<void>",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", content: string): Promise<void>",
+                          "schema": []
+                        }
+                      },
+                      "restoreVersion": {
+                        "name": "restoreVersion",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", version: number) => Promise<void>",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(pageId: string, filename: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\", version: number): Promise<void>",
+                          "schema": []
+                        }
+                      }
+                    }
+                  }
                 },
                 "fileCache": {
-                  "type": "object",
-                  "title": "PageNodeFileCache"
+                  "name": "fileCache",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "PageFileCache",
+                  "schema": {
+                    "kind": "object",
+                    "type": "PageFileCache",
+                    "schema": {
+                      "clearPageCache": {
+                        "name": "clearPageCache",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(pageId: string, filename?: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\" | undefined) => void",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(pageId: string, filename?: \"rule.json\" | \"pagedata.json\" | \"script.js\" | \"style.css\" | undefined): void",
+                          "schema": []
+                        }
+                      }
+                    }
+                  }
                 },
-                "contentLoaderFactory": true,
+                "contentLoaderFactory": {
+                  "name": "contentLoaderFactory",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => PageFileContentLoader",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): PageFileContentLoader"
+                  }
+                },
                 "navClient": {
-                  "type": [
-                    "object"
-                  ]
+                  "name": "navClient",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "NavigationNodePatchWriter | undefined",
+                  "schema": {
+                    "kind": "enum",
+                    "type": "NavigationNodePatchWriter | undefined",
+                    "schema": [
+                      "undefined",
+                      {
+                        "kind": "object",
+                        "type": "NavigationNodePatchWriter",
+                        "schema": {
+                          "updateNode": {
+                            "name": "updateNode",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "(id: string, patch: NavigationNodeEditPatchDto) => Promise<ProjectNodeData>",
+                            "schema": {
+                              "kind": "event",
+                              "type": "(id: string, patch: NavigationNodeEditPatchDto): Promise<ProjectNodeData>",
+                              "schema": []
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
                 },
-                "navigationSession": {
-                  "type": [
-                    "object"
-                  ]
+                "session": {
+                  "name": "session",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "NavigationEditSession",
+                  "schema": {
+                    "kind": "object",
+                    "type": "NavigationEditSession",
+                    "schema": {
+                      "rootValue": {
+                        "name": "rootValue",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "ProjectModelData",
+                        "schema": {
+                          "kind": "object",
+                          "type": "ProjectModelData",
+                          "schema": {
+                            "id": {
+                              "name": "id",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string | undefined",
+                              "schema": {
+                                "kind": "enum",
+                                "type": "string | undefined",
+                                "schema": [
+                                  "undefined",
+                                  "string"
+                                ]
+                              }
+                            },
+                            "title": {
+                              "name": "title",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": true,
+                              "type": "string",
+                              "schema": "string"
+                            },
+                            "description": {
+                              "name": "description",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string | undefined",
+                              "schema": "string | undefined"
+                            },
+                            "version": {
+                              "name": "version",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string | undefined",
+                              "schema": "string | undefined"
+                            },
+                            "childPlacement": {
+                              "name": "childPlacement",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": true,
+                              "type": "\"header\" | \"sidebar\"",
+                              "schema": {
+                                "kind": "enum",
+                                "type": "\"header\" | \"sidebar\"",
+                                "schema": [
+                                  "\"header\"",
+                                  "\"sidebar\""
+                                ]
+                              }
+                            },
+                            "children": {
+                              "name": "children",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": true,
+                              "type": "ProjectNodeData[]",
+                              "schema": {
+                                "kind": "array",
+                                "type": "ProjectNodeData[]",
+                                "schema": [
+                                  {
+                                    "kind": "object",
+                                    "type": "ProjectNodeData",
+                                    "schema": {
+                                      "id": {
+                                        "name": "id",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": true,
+                                        "type": "string",
+                                        "schema": "string"
+                                      },
+                                      "title": {
+                                        "name": "title",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": true,
+                                        "type": "string",
+                                        "schema": "string"
+                                      },
+                                      "description": {
+                                        "name": "description",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "version": {
+                                        "name": "version",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "icon": {
+                                        "name": "icon",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "nodeKind": {
+                                        "name": "nodeKind",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "NavNodeKind | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "NavNodeKind | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "\"module\"",
+                                            "\"system-action\"",
+                                            "\"link\"",
+                                            "\"ref\"",
+                                            "\"system-directory\"",
+                                            "\"system-page\"",
+                                            "\"page\"",
+                                            "\"sub-page\""
+                                          ]
+                                        }
+                                      },
+                                      "childPlacement": {
+                                        "name": "childPlacement",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "ChildPlacement | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "ChildPlacement | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "\"flat\"",
+                                            "\"header\"",
+                                            "\"sidebar\"",
+                                            "\"toolbar\"",
+                                            "\"user-menu\"",
+                                            "\"parent\""
+                                          ]
+                                        }
+                                      },
+                                      "context": {
+                                        "name": "context",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | NavContextItem[] | NavContextConfig | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "string | NavContextItem[] | NavContextConfig | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "string",
+                                            {
+                                              "kind": "array",
+                                              "type": "NavContextItem[]",
+                                              "schema": [
+                                                {
+                                                  "kind": "object",
+                                                  "type": "NavContextItem",
+                                                  "schema": {
+                                                    "id": {
+                                                      "name": "id",
+                                                      "global": false,
+                                                      "description": "",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "string | number",
+                                                      "schema": {
+                                                        "kind": "enum",
+                                                        "type": "string | number",
+                                                        "schema": [
+                                                          "string",
+                                                          "number"
+                                                        ]
+                                                      }
+                                                    },
+                                                    "title": {
+                                                      "name": "title",
+                                                      "global": false,
+                                                      "description": "",
+                                                      "tags": [],
+                                                      "required": true,
+                                                      "type": "string",
+                                                      "schema": "string"
+                                                    }
+                                                  }
+                                                }
+                                              ]
+                                            },
+                                            {
+                                              "kind": "object",
+                                              "type": "NavContextConfig",
+                                              "schema": {
+                                                "source": {
+                                                  "name": "source",
+                                                  "global": false,
+                                                  "description": "",
+                                                  "tags": [],
+                                                  "required": true,
+                                                  "type": "string | NavContextItem[]",
+                                                  "schema": {
+                                                    "kind": "enum",
+                                                    "type": "string | NavContextItem[]",
+                                                    "schema": [
+                                                      "string",
+                                                      "NavContextItem[]"
+                                                    ]
+                                                  }
+                                                },
+                                                "placeholder": {
+                                                  "name": "placeholder",
+                                                  "global": false,
+                                                  "description": "",
+                                                  "tags": [],
+                                                  "required": false,
+                                                  "type": "string | undefined",
+                                                  "schema": "string | undefined"
+                                                },
+                                                "defaultValue": {
+                                                  "name": "defaultValue",
+                                                  "global": false,
+                                                  "description": "",
+                                                  "tags": [],
+                                                  "required": false,
+                                                  "type": "string | number | undefined",
+                                                  "schema": {
+                                                    "kind": "enum",
+                                                    "type": "string | number | undefined",
+                                                    "schema": [
+                                                      "undefined",
+                                                      "string",
+                                                      "number"
+                                                    ]
+                                                  }
+                                                },
+                                                "paramName": {
+                                                  "name": "paramName",
+                                                  "global": false,
+                                                  "description": "",
+                                                  "tags": [],
+                                                  "required": false,
+                                                  "type": "string | undefined",
+                                                  "schema": "string | undefined"
+                                                }
+                                              }
+                                            }
+                                          ]
+                                        }
+                                      },
+                                      "order": {
+                                        "name": "order",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "number | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "number | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "number"
+                                          ]
+                                        }
+                                      },
+                                      "hidden": {
+                                        "name": "hidden",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "boolean | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "boolean | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "false",
+                                            "true"
+                                          ]
+                                        }
+                                      },
+                                      "disabled": {
+                                        "name": "disabled",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "boolean | undefined",
+                                        "schema": "boolean | undefined"
+                                      },
+                                      "dividerAfter": {
+                                        "name": "dividerAfter",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "boolean | undefined",
+                                        "schema": "boolean | undefined"
+                                      },
+                                      "permissionMode": {
+                                        "name": "permissionMode",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "NavPermissionMode | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "NavPermissionMode | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "\"none\"",
+                                            "\"masked\"",
+                                            "\"invisible\""
+                                          ]
+                                        }
+                                      },
+                                      "children": {
+                                        "name": "children",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "ProjectNodeData[] | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "ProjectNodeData[] | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "ProjectNodeData[]"
+                                          ]
+                                        }
+                                      },
+                                      "path": {
+                                        "name": "path",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "linkTarget": {
+                                        "name": "linkTarget",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "\"iframe\" | \"new-tab\" | \"self\" | undefined",
+                                        "schema": {
+                                          "kind": "enum",
+                                          "type": "\"iframe\" | \"new-tab\" | \"self\" | undefined",
+                                          "schema": [
+                                            "undefined",
+                                            "\"iframe\"",
+                                            "\"new-tab\"",
+                                            "\"self\""
+                                          ]
+                                        }
+                                      },
+                                      "redirect": {
+                                        "name": "redirect",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "refId": {
+                                        "name": "refId",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "refPath": {
+                                        "name": "refPath",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "refProjectId": {
+                                        "name": "refProjectId",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "string | undefined",
+                                        "schema": "string | undefined"
+                                      },
+                                      "refBroken": {
+                                        "name": "refBroken",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": false,
+                                        "type": "boolean | undefined",
+                                        "schema": "boolean | undefined"
+                                      }
+                                    }
+                                  }
+                                ]
+                              }
+                            },
+                            "homePath": {
+                              "name": "homePath",
+                              "global": false,
+                              "description": "",
+                              "tags": [],
+                              "required": false,
+                              "type": "string | undefined",
+                              "schema": "string | undefined"
+                            }
+                          }
+                        }
+                      },
+                      "root": {
+                        "name": "root",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "ProjectModelData",
+                        "schema": "ProjectModelData"
+                      },
+                      "children": {
+                        "name": "children",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "ProjectNodeData[]",
+                        "schema": "ProjectNodeData[]"
+                      },
+                      "replaceRoot": {
+                        "name": "replaceRoot",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(root: Partial<ProjectModelData> & { children?: ProjectNodeData[]; }) => ProjectModelData",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(root: Partial<ProjectModelData> & { children?: ProjectNodeData[]; }): ProjectModelData",
+                          "schema": []
+                        }
+                      },
+                      "replaceChildren": {
+                        "name": "replaceChildren",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, \"children\">> | undefined) => ProjectModelData",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, \"children\">> | undefined): ProjectModelData",
+                          "schema": [
+                            "ProjectNodeData"
+                          ]
+                        }
+                      },
+                      "findNode": {
+                        "name": "findNode",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(id: string) => ProjectNodeData | null",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(id: string): ProjectNodeData | null",
+                          "schema": []
+                        }
+                      },
+                      "findLocation": {
+                        "name": "findLocation",
+                        "global": false,
+                        "description": "",
+                        "tags": [],
+                        "required": true,
+                        "type": "(id: string) => ProjectNodeLocation | null",
+                        "schema": {
+                          "kind": "event",
+                          "type": "(id: string): ProjectNodeLocation | null",
+                          "schema": []
+                        }
+                      }
+                    }
+                  }
+                },
+                "projectId": {
+                  "name": "projectId",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "string",
+                  "schema": "string"
+                },
+                "nodesById": {
+                  "name": "nodesById",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "Map<string, ProjectNode>",
+                  "schema": "Map<string, ProjectNode>"
+                },
+                "configPagesByPageId": {
+                  "name": "configPagesByPageId",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "Map<string, ConfigPageNode>",
+                  "schema": "Map<string, ConfigPageNode>"
+                },
+                "detachedConfigPagesByPageId": {
+                  "name": "detachedConfigPagesByPageId",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "Map<string, ConfigPageNode>",
+                  "schema": "Map<string, ConfigPageNode>"
+                },
+                "root": {
+                  "name": "root",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "ProjectModelData",
+                  "schema": "ProjectModelData"
+                },
+                "children": {
+                  "name": "children",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "ProjectNodeData[]",
+                  "schema": "ProjectNodeData[]"
+                },
+                "nodes": {
+                  "name": "nodes",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "ProjectNode[]",
+                  "schema": {
+                    "kind": "array",
+                    "type": "ProjectNode[]",
+                    "schema": [
+                      {
+                        "kind": "object",
+                        "type": "ProjectNode",
+                        "schema": {
+                          "navigation": {
+                            "name": "navigation",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "NavigationEditModel",
+                            "schema": {
+                              "kind": "object",
+                              "type": "NavigationEditModel",
+                              "schema": {
+                                "_id": {
+                                  "name": "_id",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_title": {
+                                  "name": "_title",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_icon": {
+                                  "name": "_icon",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_nodeKind": {
+                                  "name": "_nodeKind",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NavNodeKind",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "NavNodeKind",
+                                    "schema": [
+                                      "\"module\"",
+                                      "\"system-action\"",
+                                      "\"link\"",
+                                      "\"ref\"",
+                                      "\"system-directory\"",
+                                      "\"system-page\"",
+                                      "\"page\"",
+                                      "\"sub-page\""
+                                    ]
+                                  }
+                                },
+                                "_dividerAfter": {
+                                  "name": "_dividerAfter",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "boolean",
+                                    "schema": [
+                                      "false",
+                                      "true"
+                                    ]
+                                  }
+                                },
+                                "_description": {
+                                  "name": "_description",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_path": {
+                                  "name": "_path",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_linkTarget": {
+                                  "name": "_linkTarget",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NonNullable<\"iframe\" | \"new-tab\" | \"self\" | undefined>",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "NonNullable<\"iframe\" | \"new-tab\" | \"self\" | undefined>",
+                                    "schema": [
+                                      "\"iframe\"",
+                                      "\"new-tab\"",
+                                      "\"self\""
+                                    ]
+                                  }
+                                },
+                                "_childPlacement": {
+                                  "name": "_childPlacement",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_order": {
+                                  "name": "_order",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "number",
+                                  "schema": "number"
+                                },
+                                "_hidden": {
+                                  "name": "_hidden",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "_disabled": {
+                                  "name": "_disabled",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "_refId": {
+                                  "name": "_refId",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "_permissionMode": {
+                                  "name": "_permissionMode",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NavPermissionMode",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "NavPermissionMode",
+                                    "schema": [
+                                      "\"none\"",
+                                      "\"masked\"",
+                                      "\"invisible\""
+                                    ]
+                                  }
+                                },
+                                "_hasContext": {
+                                  "name": "_hasContext",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "_contextItems": {
+                                  "name": "_contextItems",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "{ id: string; title: string; }[]",
+                                  "schema": {
+                                    "kind": "array",
+                                    "type": "{ id: string; title: string; }[]",
+                                    "schema": [
+                                      {
+                                        "kind": "object",
+                                        "type": "{ id: string; title: string; }",
+                                        "schema": {
+                                          "id": {
+                                            "name": "id",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string"
+                                          },
+                                          "title": {
+                                            "name": "title",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "_contextConfig": {
+                                  "name": "_contextConfig",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NavigationContextEditConfigDto",
+                                  "schema": {
+                                    "kind": "object",
+                                    "type": "NavigationContextEditConfigDto",
+                                    "schema": {
+                                      "placeholder": {
+                                        "name": "placeholder",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": true,
+                                        "type": "string",
+                                        "schema": "string"
+                                      },
+                                      "defaultValue": {
+                                        "name": "defaultValue",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": true,
+                                        "type": "string",
+                                        "schema": "string"
+                                      },
+                                      "paramName": {
+                                        "name": "paramName",
+                                        "global": false,
+                                        "description": "",
+                                        "tags": [],
+                                        "required": true,
+                                        "type": "string",
+                                        "schema": "string"
+                                      }
+                                    }
+                                  }
+                                },
+                                "navNode": {
+                                  "name": "navNode",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "ProjectNodeData | null",
+                                  "schema": {
+                                    "kind": "enum",
+                                    "type": "ProjectNodeData | null",
+                                    "schema": [
+                                      "null",
+                                      "ProjectNodeData"
+                                    ]
+                                  }
+                                },
+                                "_dirty": {
+                                  "name": "_dirty",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "_listeners": {
+                                  "name": "_listeners",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "Set<() => void>",
+                                  "schema": "Set<() => void>"
+                                },
+                                "isDirty": {
+                                  "name": "isDirty",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "markDirty": {
+                                  "name": "markDirty",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "() => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(): void"
+                                  }
+                                },
+                                "markClean": {
+                                  "name": "markClean",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "() => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(): void"
+                                  }
+                                },
+                                "id": {
+                                  "name": "id",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "title": {
+                                  "name": "title",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "icon": {
+                                  "name": "icon",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "nodeKind": {
+                                  "name": "nodeKind",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NavNodeKind",
+                                  "schema": "NavNodeKind"
+                                },
+                                "dividerAfter": {
+                                  "name": "dividerAfter",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "description": {
+                                  "name": "description",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "path": {
+                                  "name": "path",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "linkTarget": {
+                                  "name": "linkTarget",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NonNullable<\"iframe\" | \"new-tab\" | \"self\" | undefined>",
+                                  "schema": "NonNullable<\"iframe\" | \"new-tab\" | \"self\" | undefined>"
+                                },
+                                "childPlacement": {
+                                  "name": "childPlacement",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "order": {
+                                  "name": "order",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "number",
+                                  "schema": "number"
+                                },
+                                "hidden": {
+                                  "name": "hidden",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "disabled": {
+                                  "name": "disabled",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "refId": {
+                                  "name": "refId",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "string",
+                                  "schema": "string"
+                                },
+                                "permissionMode": {
+                                  "name": "permissionMode",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "NavPermissionMode",
+                                  "schema": "NavPermissionMode"
+                                },
+                                "hasContext": {
+                                  "name": "hasContext",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "boolean",
+                                  "schema": "boolean"
+                                },
+                                "contextItems": {
+                                  "name": "contextItems",
+                                  "global": false,
+                                  "description": "只读上下文项（不可直接 push / splice，请用 addContextItem / removeContextItem / setContextItems）。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "readonly { id: string; title: string; }[]",
+                                  "schema": {
+                                    "kind": "array",
+                                    "type": "readonly { id: string; title: string; }[]",
+                                    "schema": [
+                                      {
+                                        "kind": "object",
+                                        "type": "{ id: string; title: string; }",
+                                        "schema": {
+                                          "id": {
+                                            "name": "id",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string"
+                                          },
+                                          "title": {
+                                            "name": "title",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "contextConfig": {
+                                  "name": "contextConfig",
+                                  "global": false,
+                                  "description": "只读上下文配置（不可直接赋值字段，请用 updateContextConfig / setContextConfig）。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "Readonly<NavigationContextEditConfigDto>",
+                                  "schema": "Readonly<NavigationContextEditConfigDto>"
+                                },
+                                "setContextItems": {
+                                  "name": "setContextItems",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(items: { id: string; title: string; }[]) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(items: { id: string; title: string; }[]): void",
+                                    "schema": [
+                                      {
+                                        "kind": "object",
+                                        "type": "{ id: string; title: string; }",
+                                        "schema": {
+                                          "id": {
+                                            "name": "id",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string"
+                                          },
+                                          "title": {
+                                            "name": "title",
+                                            "global": false,
+                                            "description": "",
+                                            "tags": [],
+                                            "required": true,
+                                            "type": "string",
+                                            "schema": "string"
+                                          }
+                                        }
+                                      }
+                                    ]
+                                  }
+                                },
+                                "addContextItem": {
+                                  "name": "addContextItem",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(item?: { id: string; title: string; } | undefined) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(item?: { id: string; title: string; } | undefined): void",
+                                    "schema": []
+                                  }
+                                },
+                                "removeContextItem": {
+                                  "name": "removeContextItem",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(index: number) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(index: number): void",
+                                    "schema": []
+                                  }
+                                },
+                                "setContextConfig": {
+                                  "name": "setContextConfig",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(config: NavigationContextEditConfigDto) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(config: NavigationContextEditConfigDto): void",
+                                    "schema": []
+                                  }
+                                },
+                                "updateContextConfig": {
+                                  "name": "updateContextConfig",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(patch: Partial<NavigationContextEditConfigDto>) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(patch: Partial<NavigationContextEditConfigDto>): void",
+                                    "schema": []
+                                  }
+                                },
+                                "applyEditPatchDto": {
+                                  "name": "applyEditPatchDto",
+                                  "global": false,
+                                  "description": "从 NavigationNodeEditDto 批量加载字段并标记 dirty。供 AI host / 外部调用方使用。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(patch: Partial<Omit<NavigationNodeEditDto, \"id\">>) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(patch: Partial<Omit<NavigationNodeEditDto, \"id\">>): void",
+                                    "schema": []
+                                  }
+                                },
+                                "applyContext": {
+                                  "name": "applyContext",
+                                  "global": false,
+                                  "description": "从 NavigationContextEditDto 批量加载上下文并标记 dirty。供 AI host / 外部调用方使用。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(patch: Partial<NavigationContextEditDto>) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(patch: Partial<NavigationContextEditDto>): void",
+                                    "schema": []
+                                  }
+                                },
+                                "loadFromNode": {
+                                  "name": "loadFromNode",
+                                  "global": false,
+                                  "description": "从导航树节点加载属性到 DTO 字段，绕过 setter 直接写入内部存储，然后清除 dirty。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(node: ProjectNodeData) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(node: ProjectNodeData): void",
+                                    "schema": []
+                                  }
+                                },
+                                "applyToNode": {
+                                  "name": "applyToNode",
+                                  "global": false,
+                                  "description": "将 DTO 字段应用回树节点，返回补丁和警告。不清除 dirty（由 save 流程清除）。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "() => NavigationNodeEditApplyResultDto",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(): NavigationNodeEditApplyResultDto"
+                                  }
+                                },
+                                "applyKindPreset": {
+                                  "name": "applyKindPreset",
+                                  "global": false,
+                                  "description": "切换节点类型，重置关联字段并标记 dirty。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(kind: NavNodeKind) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(kind: NavNodeKind): void",
+                                    "schema": []
+                                  }
+                                },
+                                "toEditDto": {
+                                  "name": "toEditDto",
+                                  "global": false,
+                                  "description": "将当前字段组装为 NavigationNodeEditDto。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "() => NavigationNodeEditDto",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(): NavigationNodeEditDto"
+                                  }
+                                },
+                                "toEditInputDto": {
+                                  "name": "toEditInputDto",
+                                  "global": false,
+                                  "description": "将当前字段 + 上下文组装为 NavigationNodeEditInputDto。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "() => { node: NavigationNodeEditDto; context: NavigationContextEditDto; }",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(): { node: NavigationNodeEditDto; context: NavigationContextEditDto; }"
+                                  }
+                                },
+                                "save": {
+                                  "name": "save",
+                                  "global": false,
+                                  "description": "应用 DTO 到树节点并持久化到远端。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(navClient: NavigationNodePatchWriter) => Promise<void>",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(navClient: NavigationNodePatchWriter): Promise<void>",
+                                    "schema": []
+                                  }
+                                },
+                                "subscribe": {
+                                  "name": "subscribe",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(listener: () => void) => () => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(listener: () => void): () => void",
+                                    "schema": []
+                                  }
+                                },
+                                "_bulkLoadEditDto": {
+                                  "name": "_bulkLoadEditDto",
+                                  "global": false,
+                                  "description": "绕过 setter 批量写入 DTO 字段，不触发 dirty。",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "(node: NavigationNodeEditDto) => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(node: NavigationNodeEditDto): void",
+                                    "schema": []
+                                  }
+                                },
+                                "_notify": {
+                                  "name": "_notify",
+                                  "global": false,
+                                  "description": "",
+                                  "tags": [],
+                                  "required": true,
+                                  "type": "() => void",
+                                  "schema": {
+                                    "kind": "event",
+                                    "type": "(): void"
+                                  }
+                                }
+                              }
+                            }
+                          },
+                          "__#245@#node": {
+                            "name": "__#245@#node",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "ProjectNodeData",
+                            "schema": "ProjectNodeData"
+                          },
+                          "__#245@#pid": {
+                            "name": "__#245@#pid",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string | null",
+                            "schema": {
+                              "kind": "enum",
+                              "type": "string | null",
+                              "schema": [
+                                "null",
+                                "string"
+                              ]
+                            }
+                          },
+                          "__#245@#descriptionContext": {
+                            "name": "__#245@#descriptionContext",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "ProjectDescriptionContext[]",
+                            "schema": {
+                              "kind": "array",
+                              "type": "ProjectDescriptionContext[]",
+                              "schema": [
+                                {
+                                  "kind": "object",
+                                  "type": "ProjectDescriptionContext",
+                                  "schema": {
+                                    "nodeId": {
+                                      "name": "nodeId",
+                                      "global": false,
+                                      "description": "",
+                                      "tags": [],
+                                      "required": true,
+                                      "type": "string",
+                                      "schema": "string"
+                                    },
+                                    "title": {
+                                      "name": "title",
+                                      "global": false,
+                                      "description": "",
+                                      "tags": [],
+                                      "required": true,
+                                      "type": "string",
+                                      "schema": "string"
+                                    },
+                                    "nodeKind": {
+                                      "name": "nodeKind",
+                                      "global": false,
+                                      "description": "",
+                                      "tags": [],
+                                      "required": true,
+                                      "type": "string",
+                                      "schema": "string"
+                                    },
+                                    "description": {
+                                      "name": "description",
+                                      "global": false,
+                                      "description": "",
+                                      "tags": [],
+                                      "required": true,
+                                      "type": "string",
+                                      "schema": "string"
+                                    }
+                                  }
+                                }
+                              ]
+                            }
+                          },
+                          "__#245@#resolveChildren": {
+                            "name": "__#245@#resolveChildren",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "((node: ProjectNode) => readonly ProjectNode[]) | undefined",
+                            "schema": {
+                              "kind": "enum",
+                              "type": "((node: ProjectNode) => readonly ProjectNode[]) | undefined",
+                              "schema": [
+                                "undefined",
+                                {
+                                  "kind": "event",
+                                  "type": "(node: ProjectNode): readonly ProjectNode[]",
+                                  "schema": []
+                                }
+                              ]
+                            }
+                          },
+                          "family": {
+                            "name": "family",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "ProjectNodeFamily",
+                            "schema": {
+                              "kind": "enum",
+                              "type": "ProjectNodeFamily",
+                              "schema": [
+                                "\"module\"",
+                                "\"config-page\"",
+                                "\"vue-page\"",
+                                "\"system-action\"",
+                                "\"link\"",
+                                "\"ref\""
+                              ]
+                            }
+                          },
+                          "node": {
+                            "name": "node",
+                            "global": false,
+                            "description": "原始导航节点快照。",
+                            "tags": [],
+                            "required": true,
+                            "type": "ProjectNodeData",
+                            "schema": "ProjectNodeData"
+                          },
+                          "pid": {
+                            "name": "pid",
+                            "global": false,
+                            "description": "父节点 ID；根级节点为 null。",
+                            "tags": [],
+                            "required": true,
+                            "type": "string | null",
+                            "schema": "string | null"
+                          },
+                          "id": {
+                            "name": "id",
+                            "global": false,
+                            "description": "节点 ID。",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "name": {
+                            "name": "name",
+                            "global": false,
+                            "description": "节点名称。",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "description": {
+                            "name": "description",
+                            "global": false,
+                            "description": "节点描述。",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "effectiveDescription": {
+                            "name": "effectiveDescription",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "descriptionContext": {
+                            "name": "descriptionContext",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "ProjectDescriptionContext[]",
+                            "schema": "ProjectDescriptionContext[]"
+                          },
+                          "readChildren": {
+                            "name": "readChildren",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "<TChild extends ProjectNode = ProjectNode>() => TChild[]",
+                            "schema": {
+                              "kind": "event",
+                              "type": "<TChild extends ProjectNode = ProjectNode>(): TChild[]"
+                            }
+                          },
+                          "bindChildrenResolver": {
+                            "name": "bindChildrenResolver",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "(resolveChildren: (node: ProjectNode) => readonly ProjectNode[]) => void",
+                            "schema": {
+                              "kind": "event",
+                              "type": "(resolveChildren: (node: ProjectNode) => readonly ProjectNode[]): void",
+                              "schema": []
+                            }
+                          },
+                          "rebindNavigationNode": {
+                            "name": "rebindNavigationNode",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]) => void",
+                            "schema": {
+                              "kind": "event",
+                              "type": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]): void",
+                              "schema": []
+                            }
+                          },
+                          "toFlatRow": {
+                            "name": "toFlatRow",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "() => ProjectNavigationFlatNode",
+                            "schema": {
+                              "kind": "event",
+                              "type": "(): ProjectNavigationFlatNode"
+                            }
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "rootNodes": {
+                  "name": "rootNodes",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "ProjectNode[]",
+                  "schema": "ProjectNode[]"
+                },
+                "flatRows": {
+                  "name": "flatRows",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "ProjectNavigationFlatNode[]",
+                  "schema": {
+                    "kind": "array",
+                    "type": "ProjectNavigationFlatNode[]",
+                    "schema": [
+                      {
+                        "kind": "object",
+                        "type": "ProjectNavigationFlatNode",
+                        "schema": {
+                          "id": {
+                            "name": "id",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "pid": {
+                            "name": "pid",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string | null",
+                            "schema": "string | null"
+                          },
+                          "title": {
+                            "name": "title",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "description": {
+                            "name": "description",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "nodeKind": {
+                            "name": "nodeKind",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "NavNodeKind",
+                            "schema": "NavNodeKind"
+                          },
+                          "path": {
+                            "name": "path",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "icon": {
+                            "name": "icon",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "dividerAfter": {
+                            "name": "dividerAfter",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "boolean",
+                            "schema": "boolean"
+                          },
+                          "childPlacement": {
+                            "name": "childPlacement",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "linkTarget": {
+                            "name": "linkTarget",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "hidden": {
+                            "name": "hidden",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "boolean",
+                            "schema": "boolean"
+                          },
+                          "disabled": {
+                            "name": "disabled",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "boolean",
+                            "schema": "boolean"
+                          },
+                          "order": {
+                            "name": "order",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "number",
+                            "schema": "number"
+                          },
+                          "refId": {
+                            "name": "refId",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "permissionMode": {
+                            "name": "permissionMode",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "string",
+                            "schema": "string"
+                          },
+                          "node": {
+                            "name": "node",
+                            "global": false,
+                            "description": "",
+                            "tags": [],
+                            "required": true,
+                            "type": "ProjectNodeData",
+                            "schema": "ProjectNodeData"
+                          }
+                        }
+                      }
+                    ]
+                  }
+                },
+                "setProjectId": {
+                  "name": "setProjectId",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(projectId: string) => void",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(projectId: string): void",
+                    "schema": []
+                  }
+                },
+                "replaceRoot": {
+                  "name": "replaceRoot",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(root: ProjectModelData) => ProjectModelData",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(root: ProjectModelData): ProjectModelData",
+                    "schema": []
+                  }
+                },
+                "toTree": {
+                  "name": "toTree",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => ProjectNodeData[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): ProjectNodeData[]"
+                  }
+                },
+                "findNodeById": {
+                  "name": "findNodeById",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(nodeId: string) => ProjectNode | null",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(nodeId: string): ProjectNode | null",
+                    "schema": []
+                  }
+                },
+                "findRawNodeById": {
+                  "name": "findRawNodeById",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(nodeId: string) => ProjectNodeData | null",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(nodeId: string): ProjectNodeData | null",
+                    "schema": []
+                  }
+                },
+                "findNodeLocation": {
+                  "name": "findNodeLocation",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(nodeId: string) => ProjectNodeLocation | null",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(nodeId: string): ProjectNodeLocation | null",
+                    "schema": []
+                  }
+                },
+                "findConfigPageByPageId": {
+                  "name": "findConfigPageByPageId",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(pageId: string) => ConfigPageNode | null",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pageId: string): ConfigPageNode | null",
+                    "schema": []
+                  }
+                },
+                "findPageNode": {
+                  "name": "findPageNode",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(pageId: string) => ProjectNodeData | null",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pageId: string): ProjectNodeData | null",
+                    "schema": []
+                  }
+                },
+                "openConfigPage": {
+                  "name": "openConfigPage",
+                  "global": false,
+                  "description": "按 pageId 获取或实例化配置页面节点。\n\npageId 会进入 ConfigPageNode 构造参数；ConfigPageNode 构造时同步实例化 rule、dataSet、script、style 四个子模型。\n文件内容由页面加载生命周期填充。",
+                  "tags": [
+                    {
+                      "name": "param",
+                      "text": "pageId 配置页面 ID。"
+                    },
+                    {
+                      "name": "moduleMutation",
+                      "text": "page-config read 按 pageId 获取或实例化配置页面节点。"
+                    }
+                  ],
+                  "required": true,
+                  "type": "(pageId: string) => ConfigPageNode",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pageId: string): ConfigPageNode",
+                    "schema": []
+                  }
+                },
+                "closeConfigPage": {
+                  "name": "closeConfigPage",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(pageId: string) => void",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pageId: string): void",
+                    "schema": []
+                  }
+                },
+                "configPages": {
+                  "name": "configPages",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => IterableIterator<ConfigPageNode>",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): IterableIterator<ConfigPageNode>"
+                  }
+                },
+                "readPageSummaries": {
+                  "name": "readPageSummaries",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => ProjectPageNodeSummary[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): ProjectPageNodeSummary[]"
+                  }
+                },
+                "addRootModule": {
+                  "name": "addRootModule",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(createId: () => string) => ProjectNodeData",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(createId: () => string): ProjectNodeData",
+                    "schema": []
+                  }
+                },
+                "addChildPage": {
+                  "name": "addChildPage",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(createId: () => string, parent: ProjectNodeData | null) => ProjectNodeData",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(createId: () => string, parent: ProjectNodeData | null): ProjectNodeData",
+                    "schema": []
+                  }
+                },
+                "removeNode": {
+                  "name": "removeNode",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(nodeId: string) => ProjectNodeData | null",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(nodeId: string): ProjectNodeData | null",
+                    "schema": []
+                  }
+                },
+                "refreshNavRefs": {
+                  "name": "refreshNavRefs",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => void",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): void"
+                  }
+                },
+                "insertNode": {
+                  "name": "insertNode",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(node: ProjectNodeData, pid: string | null) => ProjectNode",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(node: ProjectNodeData, pid: string | null): ProjectNode",
+                    "schema": []
+                  }
+                },
+                "removeModel": {
+                  "name": "removeModel",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(model: ProjectNode) => void",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(model: ProjectNode): void",
+                    "schema": []
+                  }
+                },
+                "collectDescendants": {
+                  "name": "collectDescendants",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(nodeId: string) => ProjectNode[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(nodeId: string): ProjectNode[]",
+                    "schema": []
+                  }
+                },
+                "getChildNodes": {
+                  "name": "getChildNodes",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(pid: string | null) => ProjectNode[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pid: string | null): ProjectNode[]",
+                    "schema": []
+                  }
+                },
+                "nextRootOrder": {
+                  "name": "nextRootOrder",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => number",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): number"
+                  }
+                },
+                "nextChildOrder": {
+                  "name": "nextChildOrder",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(pid: string | null) => number",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pid: string | null): number",
+                    "schema": []
+                  }
+                },
+                "syncSessionRoot": {
+                  "name": "syncSessionRoot",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => void",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): void"
+                  }
+                },
+                "rebindDescriptionContext": {
+                  "name": "rebindDescriptionContext",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => void",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): void"
+                  }
+                },
+                "readDescriptionContextForNode": {
+                  "name": "readDescriptionContextForNode",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(node: ProjectNodeData, pid: string | null) => ProjectDescriptionContext[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(node: ProjectNodeData, pid: string | null): ProjectDescriptionContext[]",
+                    "schema": []
+                  }
+                },
+                "readProjectDescriptionContext": {
+                  "name": "readProjectDescriptionContext",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "() => ProjectDescriptionContext[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(): ProjectDescriptionContext[]"
+                  }
+                },
+                "readAncestorNodes": {
+                  "name": "readAncestorNodes",
+                  "global": false,
+                  "description": "",
+                  "tags": [],
+                  "required": true,
+                  "type": "(pid: string | null) => ProjectNodeData[]",
+                  "schema": {
+                    "kind": "event",
+                    "type": "(pid: string | null): ProjectNodeData[]",
+                    "schema": []
+                  }
                 }
-              },
-              "required": [
-                "projectId",
-                "fileApi",
-                "fileCache",
-                "contentLoaderFactory"
-              ]
+              }
             }
           },
-          "required": [
-            "options"
-          ]
-        }
-      },
-      "properties": {
-        "nodes": {
-          "description": "当前项目的节点集合子模型。\n\n页面配置节点通过 nodes.openConfigPage(pageId) 进入；ProjectModel 不额外制造 page 访问方法。",
-          "schema": {
-            "type": "object",
-            "title": "ProjectNodeCollection"
+          "projectId": {
+            "name": "projectId",
+            "global": false,
+            "description": "当前项目 ID。",
+            "tags": [],
+            "required": true,
+            "type": "string",
+            "schema": "string"
           },
-          "readable": true,
-          "writable": false
+          "root": {
+            "name": "root",
+            "global": false,
+            "description": "当前项目导航根快照。",
+            "tags": [],
+            "required": true,
+            "type": "ProjectModelData",
+            "schema": "ProjectModelData"
+          },
+          "navigationChildren": {
+            "name": "navigationChildren",
+            "global": false,
+            "description": "当前项目导航树的直接子节点。",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNodeData[]",
+            "schema": "ProjectNodeData[]"
+          },
+          "flatRows": {
+            "name": "flatRows",
+            "global": false,
+            "description": "当前项目节点的平铺行投影。",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNavigationFlatNode[]",
+            "schema": "ProjectNavigationFlatNode[]"
+          },
+          "setProjectId": {
+            "name": "setProjectId",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(projectId: string) => void",
+            "schema": {
+              "kind": "event",
+              "type": "(projectId: string): void",
+              "schema": []
+            }
+          },
+          "replaceRoot": {
+            "name": "replaceRoot",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(root: ProjectModelData) => ProjectModelData",
+            "schema": {
+              "kind": "event",
+              "type": "(root: ProjectModelData): ProjectModelData",
+              "schema": []
+            }
+          },
+          "toTree": {
+            "name": "toTree",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "() => ProjectNodeData[]",
+            "schema": {
+              "kind": "event",
+              "type": "(): ProjectNodeData[]"
+            }
+          },
+          "findNodeById": {
+            "name": "findNodeById",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(nodeId: string) => ProjectNode | null",
+            "schema": {
+              "kind": "event",
+              "type": "(nodeId: string): ProjectNode | null",
+              "schema": []
+            }
+          },
+          "findRawNodeById": {
+            "name": "findRawNodeById",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(nodeId: string) => ProjectNodeData | null",
+            "schema": {
+              "kind": "event",
+              "type": "(nodeId: string): ProjectNodeData | null",
+              "schema": []
+            }
+          },
+          "findNodeLocation": {
+            "name": "findNodeLocation",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(nodeId: string) => ProjectNodeLocation | null",
+            "schema": {
+              "kind": "event",
+              "type": "(nodeId: string): ProjectNodeLocation | null",
+              "schema": []
+            }
+          },
+          "findConfigPageByPageId": {
+            "name": "findConfigPageByPageId",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(pageId: string) => ConfigPageNode | null",
+            "schema": {
+              "kind": "event",
+              "type": "(pageId: string): ConfigPageNode | null",
+              "schema": []
+            }
+          },
+          "findPageNode": {
+            "name": "findPageNode",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(pageId: string) => ProjectNodeData | null",
+            "schema": {
+              "kind": "event",
+              "type": "(pageId: string): ProjectNodeData | null",
+              "schema": []
+            }
+          },
+          "openConfigPage": {
+            "name": "openConfigPage",
+            "global": false,
+            "description": "按 pageId 获取或实例化配置页面节点。\n\npageId 会进入 ConfigPageNode 构造参数；ConfigPageNode 构造时同步实例化 rule、dataSet、script、style 四个子模型。",
+            "tags": [],
+            "required": true,
+            "type": "(pageId: string) => ConfigPageNode",
+            "schema": {
+              "kind": "event",
+              "type": "(pageId: string): ConfigPageNode",
+              "schema": []
+            }
+          },
+          "closeConfigPage": {
+            "name": "closeConfigPage",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(pageId: string) => void",
+            "schema": {
+              "kind": "event",
+              "type": "(pageId: string): void",
+              "schema": []
+            }
+          },
+          "configPages": {
+            "name": "configPages",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "() => IterableIterator<ConfigPageNode>",
+            "schema": {
+              "kind": "event",
+              "type": "(): IterableIterator<ConfigPageNode>"
+            }
+          },
+          "readPageSummaries": {
+            "name": "readPageSummaries",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "() => ProjectPageNodeSummary[]",
+            "schema": {
+              "kind": "event",
+              "type": "(): ProjectPageNodeSummary[]"
+            }
+          },
+          "addRootModule": {
+            "name": "addRootModule",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(createId: () => string) => ProjectNodeData",
+            "schema": {
+              "kind": "event",
+              "type": "(createId: () => string): ProjectNodeData",
+              "schema": []
+            }
+          },
+          "addChildPage": {
+            "name": "addChildPage",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(createId: () => string, parent?: ProjectNodeData | null) => ProjectNodeData",
+            "schema": {
+              "kind": "event",
+              "type": "(createId: () => string, parent?: ProjectNodeData | null): ProjectNodeData",
+              "schema": []
+            }
+          },
+          "removeNode": {
+            "name": "removeNode",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(nodeId: string) => ProjectNodeData | null",
+            "schema": {
+              "kind": "event",
+              "type": "(nodeId: string): ProjectNodeData | null",
+              "schema": []
+            }
+          },
+          "refreshNavRefs": {
+            "name": "refreshNavRefs",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "() => void",
+            "schema": {
+              "kind": "event",
+              "type": "(): void"
+            }
+          },
+          "family": {
+            "name": "family",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNodeFamily",
+            "schema": "ProjectNodeFamily"
+          },
+          "isSystemModule": {
+            "name": "isSystemModule",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "boolean",
+            "schema": "boolean"
+          },
+          "children": {
+            "name": "children",
+            "global": false,
+            "description": "当前模块节点的直接子节点。",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNode[]",
+            "schema": "ProjectNode[]"
+          },
+          "icon": {
+            "name": "icon",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "string | undefined",
+            "schema": "string | undefined"
+          },
+          "nodeKind": {
+            "name": "nodeKind",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "NavNodeKind",
+            "schema": "NavNodeKind"
+          },
+          "childPlacement": {
+            "name": "childPlacement",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "ChildPlacement | undefined",
+            "schema": "ChildPlacement | undefined"
+          },
+          "context": {
+            "name": "context",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "string | NavContextItem[] | NavContextConfig | undefined",
+            "schema": "string | NavContextItem[] | NavContextConfig | undefined"
+          },
+          "order": {
+            "name": "order",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "number | undefined",
+            "schema": "number | undefined"
+          },
+          "hidden": {
+            "name": "hidden",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "boolean | undefined",
+            "schema": "boolean | undefined"
+          },
+          "disabled": {
+            "name": "disabled",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "boolean | undefined",
+            "schema": "boolean | undefined"
+          },
+          "dividerAfter": {
+            "name": "dividerAfter",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "boolean | undefined",
+            "schema": "boolean | undefined"
+          },
+          "permissionMode": {
+            "name": "permissionMode",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "NavPermissionMode | undefined",
+            "schema": "NavPermissionMode | undefined"
+          },
+          "redirect": {
+            "name": "redirect",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "string | undefined",
+            "schema": "string | undefined"
+          },
+          "navigation": {
+            "name": "navigation",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "NavigationEditModel",
+            "schema": "NavigationEditModel"
+          },
+          "__#245@#node": {
+            "name": "__#245@#node",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNodeData",
+            "schema": "ProjectNodeData"
+          },
+          "__#245@#pid": {
+            "name": "__#245@#pid",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "string | null",
+            "schema": "string | null"
+          },
+          "__#245@#descriptionContext": {
+            "name": "__#245@#descriptionContext",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "ProjectDescriptionContext[]",
+            "schema": "ProjectDescriptionContext[]"
+          },
+          "__#245@#resolveChildren": {
+            "name": "__#245@#resolveChildren",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "((node: ProjectNode) => readonly ProjectNode[]) | undefined",
+            "schema": "((node: ProjectNode) => readonly ProjectNode[]) | undefined"
+          },
+          "node": {
+            "name": "node",
+            "global": false,
+            "description": "原始导航节点快照。",
+            "tags": [],
+            "required": true,
+            "type": "ProjectNodeData",
+            "schema": "ProjectNodeData"
+          },
+          "pid": {
+            "name": "pid",
+            "global": false,
+            "description": "父节点 ID；根级节点为 null。",
+            "tags": [],
+            "required": true,
+            "type": "string | null",
+            "schema": "string | null"
+          },
+          "id": {
+            "name": "id",
+            "global": false,
+            "description": "节点 ID。",
+            "tags": [],
+            "required": true,
+            "type": "string",
+            "schema": "string"
+          },
+          "name": {
+            "name": "name",
+            "global": false,
+            "description": "节点名称。",
+            "tags": [],
+            "required": true,
+            "type": "string",
+            "schema": "string"
+          },
+          "description": {
+            "name": "description",
+            "global": false,
+            "description": "节点描述。",
+            "tags": [],
+            "required": true,
+            "type": "string",
+            "schema": "string"
+          },
+          "effectiveDescription": {
+            "name": "effectiveDescription",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "string",
+            "schema": "string"
+          },
+          "descriptionContext": {
+            "name": "descriptionContext",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "ProjectDescriptionContext[]",
+            "schema": "ProjectDescriptionContext[]"
+          },
+          "readChildren": {
+            "name": "readChildren",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "<TChild extends ProjectNode = ProjectNode>() => TChild[]",
+            "schema": "<TChild extends ProjectNode = ProjectNode>() => TChild[]"
+          },
+          "bindChildrenResolver": {
+            "name": "bindChildrenResolver",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(resolveChildren: (node: ProjectNode) => readonly ProjectNode[]) => void",
+            "schema": "(resolveChildren: (node: ProjectNode) => readonly ProjectNode[]) => void"
+          },
+          "rebindNavigationNode": {
+            "name": "rebindNavigationNode",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]) => void",
+            "schema": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]) => void"
+          },
+          "toFlatRow": {
+            "name": "toFlatRow",
+            "global": false,
+            "description": "",
+            "tags": [],
+            "required": true,
+            "type": "() => ProjectNavigationFlatNode",
+            "schema": "() => ProjectNavigationFlatNode"
+          }
         }
-      },
-      "methods": {}
+      }
+    },
+    {
+      "name": "key",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "PropertyKey | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "PropertyKey | undefined",
+        "schema": [
+          "undefined",
+          "string",
+          "number",
+          "symbol"
+        ]
+      }
+    },
+    {
+      "name": "ref",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeRef | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeRef | undefined",
+        "schema": [
+          "undefined",
+          "string",
+          "Ref<any, any>",
+          {
+            "kind": "event",
+            "type": "(ref: Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null, refs: Record<...>): void",
+            "schema": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "ref_for",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "boolean | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "boolean | undefined",
+        "schema": [
+          "undefined",
+          "false",
+          "true"
+        ]
+      }
+    },
+    {
+      "name": "ref_key",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "string | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "string | undefined",
+        "schema": [
+          "undefined",
+          "string"
+        ]
+      }
+    },
+    {
+      "name": "onVue:beforeMount",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:mounted",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:beforeUpdate",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>, oldVNode: VNode<RendererNode, RendererElement, { ...; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeUpdateHook[]",
+            "schema": [
+              "VNodeUpdateHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:updated",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>, oldVNode: VNode<RendererNode, RendererElement, { ...; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeUpdateHook[]",
+            "schema": [
+              "VNodeUpdateHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:beforeUnmount",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:unmounted",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "class",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "unknown",
+      "schema": "unknown"
+    },
+    {
+      "name": "style",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "unknown",
+      "schema": "unknown"
     }
-  },
-  "$defs": {
-    "__id__string__title__string___": {
-      "title": "{ id: string; title: string; }",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "id",
-        "title"
-      ]
-    },
-    "__id__string__title__string_____": {
-      "type": "array",
-      "title": "{ id: string; title: string; }[]",
-      "items": {
-        "$ref": "#/$defs/__id__string__title__string___"
-      }
-    },
-    "__request____use___interceptor__RequestInterceptor___________void_____response____use___interceptor__ResponseInterceptor___________void______": {
-      "type": "object",
-      "title": "{ request: { use: (interceptor: RequestInterceptor) => () => void; }; response: { use: (interceptor: ResponseInterceptor) => () => void; }; }",
-      "properties": {
-        "request": {
-          "$ref": "#/$defs/__use___interceptor__RequestInterceptor___________void___"
-        },
-        "response": {
-          "$ref": "#/$defs/__use___interceptor__ResponseInterceptor___________void___"
-        }
-      },
-      "required": [
-        "request",
-        "response"
-      ]
-    },
-    "__use___interceptor__RequestInterceptor___________void___": {
-      "type": "object",
-      "title": "{ use: (interceptor: RequestInterceptor) => () => void; }",
-      "properties": {
-        "use": {}
-      },
-      "required": [
-        "use"
-      ]
-    },
-    "__use___interceptor__ResponseInterceptor___________void___": {
-      "type": "object",
-      "title": "{ use: (interceptor: ResponseInterceptor) => () => void; }",
-      "properties": {
-        "use": {}
-      },
-      "required": [
-        "use"
-      ]
-    },
-    "_...args__unknown_____void": {
-      "type": "array",
-      "title": "(...args: unknown[]): void",
-      "prefixItems": [
-        {}
-      ]
-    },
-    "_children__NavNode____options___Partial_Omit_AppNavRoot___children______AppNavRoot": {
-      "type": "array",
-      "description": "替换根节点的所有子节点",
-      "title": "(children: NavNode[], options?: Partial<Omit<AppNavRoot, \"children\">>): AppNavRoot",
-      "prefixItems": [
-        {}
-      ]
-    },
-    "_items____id__string__title__string________void": {
-      "type": "array",
-      "title": "(items: { id: string; title: string; }[]): void",
-      "prefixItems": [
-        {
-          "type": "string"
-        }
-      ]
-    },
-    "AppNavRoot": {
-      "title": "AppNavRoot",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "childPlacement": {
-          "type": "string",
-          "title": "\"header\" | \"sidebar\"",
-          "enum": [
-            "header",
-            "sidebar"
-          ]
-        },
-        "children": {
-          "$ref": "#/$defs/NavNode__"
-        },
-        "homePath": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "title",
-        "childPlacement",
-        "children"
-      ]
-    },
-    "HttpClientBase": {
-      "title": "HttpClientBase",
-      "type": "object",
-      "properties": {
-        "cache": {
-          "type": "string"
-        },
-        "reqInterceptors": {
-          "$ref": "#/$defs/RequestInterceptor__"
-        },
-        "resInterceptors": {
-          "$ref": "#/$defs/ResponseInterceptor__"
-        },
-        "logger": {
-          "$ref": "#/$defs/LoggerApi"
-        },
-        "defaults": {},
-        "executeRequest": {
-          "description": "执行单次 HTTP 请求并返回完整响应。\n\n- 不含重试、缓存、拦截器——这些由基类统一处理\n- 子类只负责\"发出请求 → 读取响应\""
-        },
-        "normalizeAdapterError": {
-          "description": "将错误转换为统一 RequestError，保留已经归一化过的错误。"
-        },
-        "normalizeTransportError": {
-          "description": "将适配器原始错误转换为统一 RequestError。适配器可覆盖以保留 status/code/response 等细节。"
-        },
-        "interceptors": {
-          "$ref": "#/$defs/__request____use___interceptor__RequestInterceptor___________void_____response____use___interceptor__ResponseInterceptor___________void______"
-        },
-        "request": {},
-        "requestFull": {},
-        "requestWithRetry": {
-          "type": "boolean",
-          "description": "统一重试循环——request() 和 requestFull() 的单一实现。"
-        },
-        "get": {
-          "type": "string"
-        },
-        "post": {
-          "type": "string"
-        },
-        "put": {
-          "type": "string"
-        },
-        "patch": {
-          "type": "string"
-        },
-        "delete": {
-          "type": "string"
-        },
-        "clearCache": {
-          "type": "string"
-        },
-        "applyRequestInterceptors": {},
-        "applyResponseInterceptors": {},
-        "applyResponseErrorInterceptors": {},
-        "mergeConfig": {},
-        "stripDuplicatedBasePrefix": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "normalizePathPrefix": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "isRequestError": {},
-        "buildRequestError": {
-          "type": "string"
-        },
-        "extractApiEnvelopeErrorMessage": {
-          "type": "string"
-        },
-        "unwrapApiEnvelopeResponse": {},
-        "isApiEnvelope": {},
-        "extractEnvelopeNextAction": {
-          "type": "string"
-        },
-        "safePreview": {
-          "type": "string"
-        },
-        "getCache": {},
-        "setCache": {},
-        "evictOldestEntries": {},
-        "cacheKey": {
-          "type": "string"
-        },
-        "delay": {
-          "type": "number"
-        }
-      },
-      "required": [
-        "cache",
-        "reqInterceptors",
-        "resInterceptors",
-        "logger",
-        "defaults",
-        "executeRequest",
-        "normalizeAdapterError",
-        "normalizeTransportError",
-        "interceptors",
-        "request",
-        "requestFull",
-        "requestWithRetry",
-        "get",
-        "post",
-        "put",
-        "patch",
-        "delete",
-        "clearCache",
-        "applyRequestInterceptors",
-        "applyResponseInterceptors",
-        "applyResponseErrorInterceptors",
-        "mergeConfig",
-        "stripDuplicatedBasePrefix",
-        "normalizePathPrefix",
-        "isRequestError",
-        "buildRequestError",
-        "extractApiEnvelopeErrorMessage",
-        "unwrapApiEnvelopeResponse",
-        "isApiEnvelope",
-        "extractEnvelopeNextAction",
-        "safePreview",
-        "getCache",
-        "setCache",
-        "evictOldestEntries",
-        "cacheKey",
-        "delay"
-      ]
-    },
-    "LoggerApi": {
-      "title": "LoggerApi",
-      "type": "object",
-      "properties": {
-        "debug": {
-          "$ref": "#/$defs/_...args__unknown_____void"
-        },
-        "info": {
-          "$ref": "#/$defs/_...args__unknown_____void"
-        },
-        "warn": {
-          "$ref": "#/$defs/_...args__unknown_____void"
-        },
-        "error": {
-          "$ref": "#/$defs/_...args__unknown_____void"
-        }
-      },
-      "required": [
-        "debug",
-        "info",
-        "warn",
-        "error"
-      ]
-    },
-    "NavigationConfigClient": {
-      "title": "NavigationConfigClient",
-      "type": "object",
-      "properties": {
-        "getNavigationApi": {
-          "type": "string"
-        },
-        "http": {},
-        "loadRoot": {},
-        "addNode": {
-          "type": "string"
-        },
-        "updateNode": {
-          "type": "string"
-        },
-        "deleteNode": {
-          "type": "string"
-        },
-        "moveNode": {
-          "type": "string"
-        },
-        "probeLink": {
-          "type": "string"
-        },
-        "baseUrl": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "getNavigationApi",
-        "http",
-        "loadRoot",
-        "addNode",
-        "updateNode",
-        "deleteNode",
-        "moveNode",
-        "probeLink",
-        "baseUrl"
-      ]
-    },
-    "NavigationContextEditConfigDto": {
-      "title": "NavigationContextEditConfigDto",
-      "type": "object",
-      "properties": {
-        "placeholder": {
-          "type": "string"
-        },
-        "defaultValue": {
-          "type": "string"
-        },
-        "paramName": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "placeholder",
-        "defaultValue",
-        "paramName"
-      ]
-    },
-    "NavigationEditModel": {
-      "title": "NavigationEditModel",
-      "type": "object",
-      "properties": {
-        "_id": {
-          "type": "string"
-        },
-        "_title": {
-          "type": "string"
-        },
-        "_icon": {
-          "type": "string"
-        },
-        "_nodeKind": {
-          "title": "NavNodeKind",
-          "enum": [
-            "system-directory",
-            "module",
-            "system-page",
-            "system-action",
-            "page",
-            "link",
-            "sub-page",
-            "ref"
-          ],
-          "type": "string"
-        },
-        "_dividerAfter": {
-          "type": "boolean"
-        },
-        "_description": {
-          "type": "string"
-        },
-        "_path": {
-          "type": "string"
-        },
-        "_linkTarget": {
-          "title": "LinkTarget",
-          "enum": [
-            "iframe",
-            "new-tab",
-            "self"
-          ],
-          "type": "string"
-        },
-        "_childPlacement": {
-          "type": "string"
-        },
-        "_order": {
-          "type": "number"
-        },
-        "_hidden": {
-          "type": "boolean"
-        },
-        "_disabled": {
-          "type": "boolean"
-        },
-        "_refId": {
-          "type": "string"
-        },
-        "_permissionMode": {
-          "title": "NavPermissionMode",
-          "enum": [
-            "none",
-            "masked",
-            "invisible"
-          ],
-          "type": "string"
-        },
-        "_hasContext": {
-          "type": "boolean"
-        },
-        "_contextItems": {
-          "$ref": "#/$defs/__id__string__title__string_____"
-        },
-        "_contextConfig": {
-          "$ref": "#/$defs/NavigationContextEditConfigDto"
-        },
-        "navNode": {
-          "type": "null"
-        },
-        "_dirty": {
-          "type": "boolean"
-        },
-        "_listeners": {},
-        "isDirty": {
-          "type": "boolean"
-        },
-        "markDirty": {},
-        "markClean": {},
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "nodeKind": {},
-        "dividerAfter": {
-          "type": "boolean"
-        },
-        "description": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "linkTarget": {},
-        "childPlacement": {
-          "type": "string"
-        },
-        "order": {
-          "type": "number"
-        },
-        "hidden": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "refId": {
-          "type": "string"
-        },
-        "permissionMode": {},
-        "hasContext": {
-          "type": "boolean"
-        },
-        "contextItems": {
-          "$ref": "#/$defs/readonly___id__string__title__string_____",
-          "description": "只读上下文项（不可直接 push / splice，请用 addContextItem / removeContextItem / setContextItems）。"
-        },
-        "contextConfig": {
-          "description": "只读上下文配置（不可直接赋值字段，请用 updateContextConfig / setContextConfig）。"
-        },
-        "setContextItems": {
-          "$ref": "#/$defs/_items____id__string__title__string________void"
-        },
-        "addContextItem": {
-          "type": "string"
-        },
-        "removeContextItem": {
-          "type": "number"
-        },
-        "setContextConfig": {},
-        "updateContextConfig": {},
-        "applyEditPatchDto": {
-          "description": "从 NavigationNodeEditDto 批量加载字段并标记 dirty。供 AI host / 外部调用方使用。"
-        },
-        "applyContext": {
-          "description": "从 NavigationContextEditDto 批量加载上下文并标记 dirty。供 AI host / 外部调用方使用。"
-        },
-        "loadFromNode": {
-          "description": "从导航树节点加载属性到 DTO 字段，绕过 setter 直接写入内部存储，然后清除 dirty。"
-        },
-        "applyToNode": {
-          "description": "将 DTO 字段应用回树节点，返回补丁和警告。不清除 dirty（由 save 流程清除）。"
-        },
-        "applyKindPreset": {
-          "description": "切换节点类型，重置关联字段并标记 dirty。"
-        },
-        "toEditDto": {
-          "description": "将当前字段组装为 NavigationNodeEditDto。"
-        },
-        "toEditInputDto": {
-          "type": "object",
-          "description": "将当前字段 + 上下文组装为 NavigationNodeEditInputDto。"
-        },
-        "save": {
-          "description": "应用 DTO 到树节点并持久化到远端。"
-        },
-        "subscribe": {},
-        "_bulkLoadEditDto": {
-          "description": "绕过 setter 批量写入 DTO 字段，不触发 dirty。"
-        },
-        "_notify": {}
-      },
-      "required": [
-        "_id",
-        "_title",
-        "_icon",
-        "_nodeKind",
-        "_dividerAfter",
-        "_description",
-        "_path",
-        "_linkTarget",
-        "_childPlacement",
-        "_order",
-        "_hidden",
-        "_disabled",
-        "_refId",
-        "_permissionMode",
-        "_hasContext",
-        "_contextItems",
-        "_contextConfig",
-        "navNode",
-        "_dirty",
-        "_listeners",
-        "isDirty",
-        "markDirty",
-        "markClean",
-        "id",
-        "title",
-        "icon",
-        "nodeKind",
-        "dividerAfter",
-        "description",
-        "path",
-        "linkTarget",
-        "childPlacement",
-        "order",
-        "hidden",
-        "disabled",
-        "refId",
-        "permissionMode",
-        "hasContext",
-        "contextItems",
-        "contextConfig",
-        "setContextItems",
-        "addContextItem",
-        "removeContextItem",
-        "setContextConfig",
-        "updateContextConfig",
-        "applyEditPatchDto",
-        "applyContext",
-        "loadFromNode",
-        "applyToNode",
-        "applyKindPreset",
-        "toEditDto",
-        "toEditInputDto",
-        "save",
-        "subscribe",
-        "_bulkLoadEditDto",
-        "_notify"
-      ]
-    },
-    "NavigationEditSession": {
-      "title": "NavigationEditSession",
-      "type": "object",
-      "properties": {
-        "rootValue": {
-          "$ref": "#/$defs/AppNavRoot"
-        },
-        "root": {
-          "description": "当前根节点快照"
-        },
-        "children": {
-          "type": "array",
-          "description": "根节点的子节点列表"
-        },
-        "replaceRoot": {
-          "type": "array",
-          "description": "替换整个根节点"
-        },
-        "replaceChildren": {
-          "$ref": "#/$defs/_children__NavNode____options___Partial_Omit_AppNavRoot___children______AppNavRoot",
-          "description": "替换根节点的所有子节点"
-        },
-        "findNode": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "按 ID 查找节点"
-        },
-        "findLocation": {
-          "type": [
-            "string",
-            "null"
-          ],
-          "description": "查找节点在树中的位置"
-        }
-      },
-      "required": [
-        "rootValue",
-        "root",
-        "children",
-        "replaceRoot",
-        "replaceChildren",
-        "findNode",
-        "findLocation"
-      ]
-    },
-    "NavNode": {
-      "title": "NavNode",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "version": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "title": "NavNodeKind",
-          "enum": [
-            "system-directory",
-            "module",
-            "system-page",
-            "system-action",
-            "page",
-            "link",
-            "sub-page",
-            "ref"
-          ],
-          "type": "string"
-        },
-        "childPlacement": {
-          "title": "ChildPlacement",
-          "enum": [
-            "flat",
-            "header",
-            "sidebar",
-            "toolbar",
-            "user-menu",
-            "parent"
-          ],
-          "type": "string"
-        },
-        "context": {
-          "type": [
-            "string",
-            "array"
-          ]
-        },
-        "order": {
-          "type": "number"
-        },
-        "hidden": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "dividerAfter": {
-          "type": "boolean"
-        },
-        "permissionMode": {
-          "title": "NavPermissionMode",
-          "enum": [
-            "none",
-            "masked",
-            "invisible"
-          ],
-          "type": "string"
-        },
-        "children": {
-          "type": "array"
-        },
-        "path": {
-          "type": "string"
-        },
-        "linkTarget": {
-          "title": "LinkTarget",
-          "enum": [
-            "iframe",
-            "new-tab",
-            "self"
-          ],
-          "type": "string"
-        },
-        "redirect": {
-          "type": "string"
-        },
-        "refId": {
-          "type": "string"
-        },
-        "refPath": {
-          "type": "string"
-        },
-        "refProjectId": {
-          "type": "string"
-        },
-        "refBroken": {
-          "type": "boolean"
-        }
-      },
-      "required": [
-        "id",
-        "title"
-      ]
-    },
-    "NavNode__": {
-      "type": "array",
-      "title": "NavNode[]",
-      "items": {
-        "$ref": "#/$defs/NavNode"
-      }
-    },
-    "PageNodeFileApi": {
-      "title": "PageNodeFileApi",
-      "type": "object",
-      "properties": {
-        "getPageFilesApi": {
-          "type": "string"
-        },
-        "http": {
-          "$ref": "#/$defs/HttpClientBase"
-        },
-        "saveFileContent": {
-          "type": "string"
-        },
-        "createFiles": {
-          "type": "string"
-        },
-        "deleteFiles": {
-          "type": "string"
-        },
-        "listVersions": {
-          "type": "string"
-        },
-        "restoreVersion": {
-          "type": "string"
-        },
-        "createVersion": {
-          "type": "string"
-        },
-        "deleteVersion": {
-          "type": "string"
-        },
-        "fileUrl": {
-          "type": "string"
-        },
-        "baseUrl": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "getPageFilesApi",
-        "http",
-        "saveFileContent",
-        "createFiles",
-        "deleteFiles",
-        "listVersions",
-        "restoreVersion",
-        "createVersion",
-        "deleteVersion",
-        "fileUrl",
-        "baseUrl"
-      ]
-    },
-    "PageNodeFileCache": {
-      "title": "PageNodeFileCache",
-      "type": "object",
-      "properties": {
-        "contentLoaderFactory": {},
-        "clearPageCache": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "contentLoaderFactory",
-        "clearPageCache"
-      ]
-    },
-    "ProjectDescriptionContext": {
-      "title": "ProjectDescriptionContext",
-      "type": "object",
-      "properties": {
-        "nodeId": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "nodeKind": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "nodeId",
-        "title",
-        "nodeKind",
-        "description"
-      ]
-    },
-    "ProjectDescriptionContext__": {
-      "type": "array",
-      "title": "ProjectDescriptionContext[]",
-      "items": {
-        "$ref": "#/$defs/ProjectDescriptionContext"
-      }
-    },
-    "ProjectNavigationFlatNode": {
-      "title": "ProjectNavigationFlatNode",
-      "type": "object",
-      "properties": {
-        "id": {
-          "type": "string"
-        },
-        "pid": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "nodeKind": {},
-        "path": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "dividerAfter": {
-          "type": "boolean"
-        },
-        "childPlacement": {
-          "type": "string"
-        },
-        "linkTarget": {
-          "type": "string"
-        },
-        "hidden": {
-          "type": "boolean"
-        },
-        "disabled": {
-          "type": "boolean"
-        },
-        "order": {
-          "type": "number"
-        },
-        "refId": {
-          "type": "string"
-        },
-        "permissionMode": {
-          "type": "string"
-        },
-        "node": {}
-      },
-      "required": [
-        "id",
-        "pid",
-        "title",
-        "description",
-        "nodeKind",
-        "path",
-        "icon",
-        "dividerAfter",
-        "childPlacement",
-        "linkTarget",
-        "hidden",
-        "disabled",
-        "order",
-        "refId",
-        "permissionMode",
-        "node"
-      ]
-    },
-    "ProjectNavigationFlatNode__": {
-      "type": "array",
-      "title": "ProjectNavigationFlatNode[]",
-      "items": {
-        "$ref": "#/$defs/ProjectNavigationFlatNode"
-      }
-    },
-    "ProjectNode": {
-      "title": "ProjectNode",
-      "type": "object",
-      "properties": {
-        "navigation": {
-          "$ref": "#/$defs/NavigationEditModel"
-        },
-        "_node": {},
-        "_pid": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "_descriptionContext": {
-          "$ref": "#/$defs/ProjectDescriptionContext__"
-        },
-        "family": {
-          "title": "ProjectNodeFamily",
-          "enum": [
-            "module",
-            "system-action",
-            "link",
-            "ref",
-            "config-page",
-            "vue-page"
-          ],
-          "type": "string"
-        },
-        "node": {},
-        "pid": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "id": {
-          "type": "string"
-        },
-        "title": {
-          "type": "string"
-        },
-        "description": {
-          "type": "string"
-        },
-        "effectiveDescription": {
-          "type": "string"
-        },
-        "icon": {
-          "type": "string"
-        },
-        "path": {
-          "type": "string"
-        },
-        "nodeKind": {},
-        "descriptionContext": {
-          "type": "array"
-        },
-        "rebindNavigationNode": {
-          "type": "string"
-        },
-        "toFlatRow": {}
-      },
-      "required": [
-        "navigation",
-        "_node",
-        "_pid",
-        "_descriptionContext",
-        "family",
-        "node",
-        "pid",
-        "id",
-        "title",
-        "description",
-        "effectiveDescription",
-        "icon",
-        "path",
-        "nodeKind",
-        "descriptionContext",
-        "rebindNavigationNode",
-        "toFlatRow"
-      ]
-    },
-    "ProjectNode__": {
-      "type": "array",
-      "title": "ProjectNode[]",
-      "items": {
-        "$ref": "#/$defs/ProjectNode"
-      }
-    },
-    "ProjectNodeCollection": {
-      "description": "当前项目的节点集合子模型。\n\n页面配置节点通过 nodes.openConfigPage(pageId) 进入；ProjectModel 不额外制造 page 访问方法。",
-      "title": "ProjectNodeCollection",
-      "type": "object",
-      "properties": {
-        "fileApi": {
-          "$ref": "#/$defs/PageNodeFileApi"
-        },
-        "fileCache": {
-          "$ref": "#/$defs/PageNodeFileCache"
-        },
-        "contentLoaderFactory": {},
-        "navClient": {
-          "$ref": "#/$defs/NavigationConfigClient"
-        },
-        "session": {
-          "$ref": "#/$defs/NavigationEditSession"
-        },
-        "projectId": {
-          "type": "string"
-        },
-        "nodesById": {
-          "type": "string"
-        },
-        "configPagesByPageId": {
-          "type": "string"
-        },
-        "detachedConfigPagesByPageId": {
-          "type": "string"
-        },
-        "root": {},
-        "children": {
-          "type": "array"
-        },
-        "nodes": {
-          "$ref": "#/$defs/ProjectNode__"
-        },
-        "flatRows": {
-          "$ref": "#/$defs/ProjectNavigationFlatNode__"
-        },
-        "setProjectId": {
-          "type": "string"
-        },
-        "replaceRoot": {},
-        "toTree": {
-          "type": "array"
-        },
-        "findNodeById": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "findRawNodeById": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "findNodeLocation": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "findConfigPageByPageId": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "findPageNode": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "openConfigPage": {
-          "type": "string",
-          "description": "按 pageId 获取或实例化配置页面节点。\n\npageId 会进入 ConfigPageNode 构造参数；ConfigPageNode 构造时同步实例化 rule、dataSet、script、style 四个子模型。\n文件内容由页面加载生命周期填充。"
-        },
-        "closeConfigPage": {
-          "type": "string"
-        },
-        "configPages": {},
-        "readPageSummaries": {
-          "type": "array"
-        },
-        "addRootModule": {
-          "type": "string"
-        },
-        "addChildPage": {
-          "type": "string"
-        },
-        "removeNode": {
-          "type": [
-            "string",
-            "null"
-          ]
-        },
-        "refreshNavRefs": {},
-        "insertNode": {
-          "type": "string"
-        },
-        "removeModel": {},
-        "collectDescendants": {
-          "type": "string"
-        },
-        "nextRootOrder": {
-          "type": "number"
-        },
-        "nextChildOrder": {
-          "type": "string"
-        },
-        "syncSessionRoot": {},
-        "rebindDescriptionContext": {},
-        "readDescriptionContextForNode": {
-          "type": "string"
-        },
-        "readProjectDescriptionContext": {
-          "type": "array"
-        },
-        "readAncestorNodes": {
-          "type": "string"
-        }
-      },
-      "required": [
-        "fileApi",
-        "fileCache",
-        "contentLoaderFactory",
-        "navClient",
-        "session",
-        "projectId",
-        "nodesById",
-        "configPagesByPageId",
-        "detachedConfigPagesByPageId",
-        "root",
-        "children",
-        "nodes",
-        "flatRows",
-        "setProjectId",
-        "replaceRoot",
-        "toTree",
-        "findNodeById",
-        "findRawNodeById",
-        "findNodeLocation",
-        "findConfigPageByPageId",
-        "findPageNode",
-        "openConfigPage",
-        "closeConfigPage",
-        "configPages",
-        "readPageSummaries",
-        "addRootModule",
-        "addChildPage",
-        "removeNode",
-        "refreshNavRefs",
-        "insertNode",
-        "removeModel",
-        "collectDescendants",
-        "nextRootOrder",
-        "nextChildOrder",
-        "syncSessionRoot",
-        "rebindDescriptionContext",
-        "readDescriptionContextForNode",
-        "readProjectDescriptionContext",
-        "readAncestorNodes"
-      ]
-    },
-    "readonly___id__string__title__string_____": {
-      "type": "array",
-      "description": "只读上下文项（不可直接 push / splice，请用 addContextItem / removeContextItem / setContextItems）。",
-      "title": "readonly { id: string; title: string; }[]",
-      "items": {
-        "$ref": "#/$defs/__id__string__title__string___"
-      }
-    },
-    "RequestInterceptor": {
-      "title": "RequestInterceptor",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "onRequest": {},
-        "onRequestError": {
-          "description": "请求阶段错误回调。\n\n当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，\n允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。"
-        }
-      }
-    },
-    "RequestInterceptor__": {
-      "type": "array",
-      "title": "RequestInterceptor[]",
-      "items": {
-        "$ref": "#/$defs/RequestInterceptor"
-      }
-    },
-    "ResponseInterceptor": {
-      "title": "ResponseInterceptor",
-      "type": "object",
-      "properties": {
-        "name": {
-          "type": "string"
-        },
-        "onResponse": {},
-        "onResponseError": {}
-      }
-    },
-    "ResponseInterceptor__": {
-      "type": "array",
-      "title": "ResponseInterceptor[]",
-      "items": {
-        "$ref": "#/$defs/ResponseInterceptor"
-      }
-    }
-  }
+  ],
+  "events": [],
+  "slots": [],
+  "exposed": []
 }

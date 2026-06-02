@@ -197,49 +197,32 @@ class QueryRoot {
     expect(result.vcmCatalogOutFile).toBe(join(root, 'out/vcm-models.json'))
     expect(result.vcmCatalogElementCount).toBe(1)
     const generated = JSON.parse(readFileSync(join(root, 'out/vcm-models.json'), 'utf8')) as {
-      $schema?: string
-      version: string
-      elementCount: number
-      entryElements: string[]
-      elements: Record<string, {
-        properties?: Record<string, {
-          schema?: unknown
-          object?: { $ref: string }
-        }>
-        methods?: Record<string, {
-          paramsSchema?: {
-            properties?: Record<string, unknown>
-            $defs?: Record<string, unknown>
-          }
-        }>
+      props?: Array<{
+        name?: string
+        schema?: {
+          kind?: string
+          type?: string
+        }
       }>
-      $defs?: Record<string, unknown>
+      events?: unknown[]
+      slots?: unknown[]
+      exposed?: unknown[]
     }
     expect(generated).toMatchObject({
-      $schema: 'https://json-schema.org/draft/2020-12/schema',
-      version: '1.0.0',
-      elementCount: 1,
-      entryElements: ['QueryRoot'],
+      props: expect.any(Array),
+      events: expect.any(Array),
+      slots: expect.any(Array),
+      exposed: expect.any(Array),
     })
-    expect(generated.elements['QueryRoot']?.properties?.['child']?.object).toBeUndefined()
-    expect(generated.elements['QueryRoot']?.properties?.['child']).toMatchObject({
-      schema: { type: 'object', title: 'QueryChild' },
-    })
-    expect(generated.elements['QueryRoot']?.methods?.['configure']?.paramsSchema?.properties?.['args']).toMatchObject({
-      properties: {
-        node: { $ref: '#/$defs/TreeNode' },
-        items: { type: 'array', items: { $ref: '#/$defs/TreeNode' } },
-      },
-    })
-    expect(generated.elements['QueryRoot']?.methods?.['configure']?.paramsSchema?.$defs).toBeUndefined()
-    expect(generated.$defs?.['TreeNode']).toMatchObject({
-      type: 'object',
-      properties: {
-        id: { type: 'string' },
+    const rootProp = generated.props?.find(prop => prop.name === 'QueryRoot')
+    expect(rootProp).toMatchObject({
+      name: 'QueryRoot',
+      schema: {
+        kind: 'object',
+        type: 'QueryRoot',
       },
     })
     expect(JSON.stringify(generated)).not.toContain('"required":[]')
-    expect(Object.keys(generated.elements)).toEqual(['QueryRoot'])
   })
 
   it('can diagnose extracted metadata without writing generated files', () => {

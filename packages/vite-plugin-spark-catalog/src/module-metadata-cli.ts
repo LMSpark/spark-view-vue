@@ -25,29 +25,13 @@ const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
 
 const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
 
-const PAGE_DESIGN_MODULE_METADATA_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-ability-metadata.generated.json'
-
-const PAGE_DESIGN_API_OBJECT_METADATA_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-module-metadata.generated.json'
-
 const PAGE_DESIGN_VCM_MODEL_METADATA_OUT_FILE =
   'packages/spark-project-model/src/vcm/page-design/page-design-vcm-metadata.generated.json'
-
-const PAGE_DESIGN_MODULE_METADATA_RUNTIME_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-ability-metadata.runtime.generated.json'
-
-const PAGE_DESIGN_API_OBJECT_METADATA_RUNTIME_OUT_FILE =
-  'packages/spark-project-model/src/ai/page-design/page-design-module-metadata.runtime.generated.json'
 
 logger.info(diagnoseOnly ? '🚀 开始诊断 AI 能力模块元数据 ...' : '🚀 开始生成 AI 能力模块元数据 ...')
 const result = generateModuleAbilityMetadata(root, {
   sources: PAGE_DESIGN_MODULE_METADATA_SOURCES,
-  outFile: PAGE_DESIGN_MODULE_METADATA_OUT_FILE,
-  moduleOutFile: PAGE_DESIGN_API_OBJECT_METADATA_OUT_FILE,
   vcmCatalogOutFile: PAGE_DESIGN_VCM_MODEL_METADATA_OUT_FILE,
-  runtimeOutFile: PAGE_DESIGN_MODULE_METADATA_RUNTIME_OUT_FILE,
-  moduleRuntimeOutFile: PAGE_DESIGN_API_OBJECT_METADATA_RUNTIME_OUT_FILE,
   apiRoots: PAGE_DESIGN_MODULE_METADATA_API_ROOTS,
   trace,
   extractResults,
@@ -55,11 +39,9 @@ const result = generateModuleAbilityMetadata(root, {
   writeFiles: !diagnoseOnly,
 })
 if (diagnoseOnly) {
-  logger.info(`✅ 已完成元数据提取诊断；未写入 generated JSON。abilityOutput=${result.outFile}`)
+  logger.info(`✅ 已完成元数据提取诊断；未写入 generated JSON。vcmOutput=${result.vcmCatalogOutFile}`)
 } else {
-  logger.info(`✅ ${result.abilities.length} 个能力模块元数据已写入 ${result.outFile}`)
-  logger.info(`✅ ${result.diagnostics.moduleCount} 个 API object metadata 已写入 ${result.moduleOutFile}`)
-  logger.info(`✅ ${String(result.vcmCatalogElementCount ?? result.diagnostics.moduleCount)} 个 VCM object elements 已写入 ${result.vcmCatalogOutFile}`)
+  logger.info(`✅ ProjectModel VCM raw metadata 已写入 ${result.vcmCatalogOutFile}`)
 }
 logger.info([
   '📊 metadata diagnostics:',

@@ -158,10 +158,9 @@ function readPageDesignProjectMetadata(): AiModuleMetadataJson {
 
 function assertPageDesignVcmMetadata(): void {
   const metadata = pageDesignVcmMetadata as Readonly<{
-    entryElements?: readonly string[]
-    elements?: Record<string, unknown>
+    props?: ReadonlyArray<{ name?: string }>
   }>
-  if (!metadata.entryElements?.includes('ProjectModel') || metadata.elements?.['ProjectModel'] === undefined) {
+  if (metadata.props?.some(prop => prop.name === 'ProjectModel') !== true) {
     throw new Error('Generated pageDesign VCM metadata is missing ProjectModel. Run pnpm run generate:module-metadata.')
   }
 }
