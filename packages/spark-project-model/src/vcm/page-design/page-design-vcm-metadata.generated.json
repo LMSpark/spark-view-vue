@@ -1,0 +1,1305 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "version": "1.0.0",
+  "buildTime": "2026-06-02T16:00:31.458Z",
+  "elementCount": 1,
+  "entryElements": [
+    "ProjectModel"
+  ],
+  "elements": {
+    "ProjectModel": {
+      "className": "ProjectModel",
+      "description": "当前项目模型，作为 VCM 根能力按 pageId 定位或实例化配置页面节点。",
+      "schema": {
+        "title": "ProjectModel",
+        "type": "object",
+        "properties": {
+          "projectId": {
+            "type": "string"
+          },
+          "nodes": {
+            "$ref": "#/$defs/ProjectNodeCollection",
+            "description": "当前项目的节点集合子模型。\n\n页面配置节点通过 nodes.openConfigPage(pageId) 进入；ProjectModel 不额外制造 page 访问方法。"
+          }
+        },
+        "required": [
+          "projectId",
+          "nodes"
+        ]
+      },
+      "constructor": {
+        "description": "Create ProjectModel instance.",
+        "paramsSchema": {
+          "type": "object",
+          "properties": {
+            "options": {
+              "type": "object",
+              "properties": {
+                "projectId": {
+                  "type": "string"
+                },
+                "fileApi": {
+                  "type": "object",
+                  "title": "PageNodeFileApi"
+                },
+                "fileCache": {
+                  "type": "object",
+                  "title": "PageNodeFileCache"
+                },
+                "contentLoaderFactory": true,
+                "navClient": {
+                  "type": [
+                    "object"
+                  ]
+                },
+                "navigationSession": {
+                  "type": [
+                    "object"
+                  ]
+                }
+              },
+              "required": [
+                "projectId",
+                "fileApi",
+                "fileCache",
+                "contentLoaderFactory"
+              ]
+            }
+          },
+          "required": [
+            "options"
+          ]
+        }
+      },
+      "properties": {
+        "nodes": {
+          "description": "当前项目的节点集合子模型。\n\n页面配置节点通过 nodes.openConfigPage(pageId) 进入；ProjectModel 不额外制造 page 访问方法。",
+          "schema": {
+            "type": "object",
+            "title": "ProjectNodeCollection"
+          },
+          "readable": true,
+          "writable": false
+        }
+      },
+      "methods": {}
+    }
+  },
+  "$defs": {
+    "__id__string__title__string___": {
+      "title": "{ id: string; title: string; }",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "__id__string__title__string_____": {
+      "type": "array",
+      "title": "{ id: string; title: string; }[]",
+      "items": {
+        "$ref": "#/$defs/__id__string__title__string___"
+      }
+    },
+    "__request____use___interceptor__RequestInterceptor___________void_____response____use___interceptor__ResponseInterceptor___________void______": {
+      "type": "object",
+      "title": "{ request: { use: (interceptor: RequestInterceptor) => () => void; }; response: { use: (interceptor: ResponseInterceptor) => () => void; }; }",
+      "properties": {
+        "request": {
+          "$ref": "#/$defs/__use___interceptor__RequestInterceptor___________void___"
+        },
+        "response": {
+          "$ref": "#/$defs/__use___interceptor__ResponseInterceptor___________void___"
+        }
+      },
+      "required": [
+        "request",
+        "response"
+      ]
+    },
+    "__use___interceptor__RequestInterceptor___________void___": {
+      "type": "object",
+      "title": "{ use: (interceptor: RequestInterceptor) => () => void; }",
+      "properties": {
+        "use": {}
+      },
+      "required": [
+        "use"
+      ]
+    },
+    "__use___interceptor__ResponseInterceptor___________void___": {
+      "type": "object",
+      "title": "{ use: (interceptor: ResponseInterceptor) => () => void; }",
+      "properties": {
+        "use": {}
+      },
+      "required": [
+        "use"
+      ]
+    },
+    "_...args__unknown_____void": {
+      "type": "array",
+      "title": "(...args: unknown[]): void",
+      "prefixItems": [
+        {}
+      ]
+    },
+    "_children__NavNode____options___Partial_Omit_AppNavRoot___children______AppNavRoot": {
+      "type": "array",
+      "description": "替换根节点的所有子节点",
+      "title": "(children: NavNode[], options?: Partial<Omit<AppNavRoot, \"children\">>): AppNavRoot",
+      "prefixItems": [
+        {}
+      ]
+    },
+    "_items____id__string__title__string________void": {
+      "type": "array",
+      "title": "(items: { id: string; title: string; }[]): void",
+      "prefixItems": [
+        {
+          "type": "string"
+        }
+      ]
+    },
+    "AppNavRoot": {
+      "title": "AppNavRoot",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "childPlacement": {
+          "type": "string",
+          "title": "\"header\" | \"sidebar\"",
+          "enum": [
+            "header",
+            "sidebar"
+          ]
+        },
+        "children": {
+          "$ref": "#/$defs/NavNode__"
+        },
+        "homePath": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "title",
+        "childPlacement",
+        "children"
+      ]
+    },
+    "HttpClientBase": {
+      "title": "HttpClientBase",
+      "type": "object",
+      "properties": {
+        "cache": {
+          "type": "string"
+        },
+        "reqInterceptors": {
+          "$ref": "#/$defs/RequestInterceptor__"
+        },
+        "resInterceptors": {
+          "$ref": "#/$defs/ResponseInterceptor__"
+        },
+        "logger": {
+          "$ref": "#/$defs/LoggerApi"
+        },
+        "defaults": {},
+        "executeRequest": {
+          "description": "执行单次 HTTP 请求并返回完整响应。\n\n- 不含重试、缓存、拦截器——这些由基类统一处理\n- 子类只负责\"发出请求 → 读取响应\""
+        },
+        "normalizeAdapterError": {
+          "description": "将错误转换为统一 RequestError，保留已经归一化过的错误。"
+        },
+        "normalizeTransportError": {
+          "description": "将适配器原始错误转换为统一 RequestError。适配器可覆盖以保留 status/code/response 等细节。"
+        },
+        "interceptors": {
+          "$ref": "#/$defs/__request____use___interceptor__RequestInterceptor___________void_____response____use___interceptor__ResponseInterceptor___________void______"
+        },
+        "request": {},
+        "requestFull": {},
+        "requestWithRetry": {
+          "type": "boolean",
+          "description": "统一重试循环——request() 和 requestFull() 的单一实现。"
+        },
+        "get": {
+          "type": "string"
+        },
+        "post": {
+          "type": "string"
+        },
+        "put": {
+          "type": "string"
+        },
+        "patch": {
+          "type": "string"
+        },
+        "delete": {
+          "type": "string"
+        },
+        "clearCache": {
+          "type": "string"
+        },
+        "applyRequestInterceptors": {},
+        "applyResponseInterceptors": {},
+        "applyResponseErrorInterceptors": {},
+        "mergeConfig": {},
+        "stripDuplicatedBasePrefix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "normalizePathPrefix": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "isRequestError": {},
+        "buildRequestError": {
+          "type": "string"
+        },
+        "extractApiEnvelopeErrorMessage": {
+          "type": "string"
+        },
+        "unwrapApiEnvelopeResponse": {},
+        "isApiEnvelope": {},
+        "extractEnvelopeNextAction": {
+          "type": "string"
+        },
+        "safePreview": {
+          "type": "string"
+        },
+        "getCache": {},
+        "setCache": {},
+        "evictOldestEntries": {},
+        "cacheKey": {
+          "type": "string"
+        },
+        "delay": {
+          "type": "number"
+        }
+      },
+      "required": [
+        "cache",
+        "reqInterceptors",
+        "resInterceptors",
+        "logger",
+        "defaults",
+        "executeRequest",
+        "normalizeAdapterError",
+        "normalizeTransportError",
+        "interceptors",
+        "request",
+        "requestFull",
+        "requestWithRetry",
+        "get",
+        "post",
+        "put",
+        "patch",
+        "delete",
+        "clearCache",
+        "applyRequestInterceptors",
+        "applyResponseInterceptors",
+        "applyResponseErrorInterceptors",
+        "mergeConfig",
+        "stripDuplicatedBasePrefix",
+        "normalizePathPrefix",
+        "isRequestError",
+        "buildRequestError",
+        "extractApiEnvelopeErrorMessage",
+        "unwrapApiEnvelopeResponse",
+        "isApiEnvelope",
+        "extractEnvelopeNextAction",
+        "safePreview",
+        "getCache",
+        "setCache",
+        "evictOldestEntries",
+        "cacheKey",
+        "delay"
+      ]
+    },
+    "LoggerApi": {
+      "title": "LoggerApi",
+      "type": "object",
+      "properties": {
+        "debug": {
+          "$ref": "#/$defs/_...args__unknown_____void"
+        },
+        "info": {
+          "$ref": "#/$defs/_...args__unknown_____void"
+        },
+        "warn": {
+          "$ref": "#/$defs/_...args__unknown_____void"
+        },
+        "error": {
+          "$ref": "#/$defs/_...args__unknown_____void"
+        }
+      },
+      "required": [
+        "debug",
+        "info",
+        "warn",
+        "error"
+      ]
+    },
+    "NavigationConfigClient": {
+      "title": "NavigationConfigClient",
+      "type": "object",
+      "properties": {
+        "getNavigationApi": {
+          "type": "string"
+        },
+        "http": {},
+        "loadRoot": {},
+        "addNode": {
+          "type": "string"
+        },
+        "updateNode": {
+          "type": "string"
+        },
+        "deleteNode": {
+          "type": "string"
+        },
+        "moveNode": {
+          "type": "string"
+        },
+        "probeLink": {
+          "type": "string"
+        },
+        "baseUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "getNavigationApi",
+        "http",
+        "loadRoot",
+        "addNode",
+        "updateNode",
+        "deleteNode",
+        "moveNode",
+        "probeLink",
+        "baseUrl"
+      ]
+    },
+    "NavigationContextEditConfigDto": {
+      "title": "NavigationContextEditConfigDto",
+      "type": "object",
+      "properties": {
+        "placeholder": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": "string"
+        },
+        "paramName": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "placeholder",
+        "defaultValue",
+        "paramName"
+      ]
+    },
+    "NavigationEditModel": {
+      "title": "NavigationEditModel",
+      "type": "object",
+      "properties": {
+        "_id": {
+          "type": "string"
+        },
+        "_title": {
+          "type": "string"
+        },
+        "_icon": {
+          "type": "string"
+        },
+        "_nodeKind": {
+          "title": "NavNodeKind",
+          "enum": [
+            "system-directory",
+            "module",
+            "system-page",
+            "system-action",
+            "page",
+            "link",
+            "sub-page",
+            "ref"
+          ],
+          "type": "string"
+        },
+        "_dividerAfter": {
+          "type": "boolean"
+        },
+        "_description": {
+          "type": "string"
+        },
+        "_path": {
+          "type": "string"
+        },
+        "_linkTarget": {
+          "title": "LinkTarget",
+          "enum": [
+            "iframe",
+            "new-tab",
+            "self"
+          ],
+          "type": "string"
+        },
+        "_childPlacement": {
+          "type": "string"
+        },
+        "_order": {
+          "type": "number"
+        },
+        "_hidden": {
+          "type": "boolean"
+        },
+        "_disabled": {
+          "type": "boolean"
+        },
+        "_refId": {
+          "type": "string"
+        },
+        "_permissionMode": {
+          "title": "NavPermissionMode",
+          "enum": [
+            "none",
+            "masked",
+            "invisible"
+          ],
+          "type": "string"
+        },
+        "_hasContext": {
+          "type": "boolean"
+        },
+        "_contextItems": {
+          "$ref": "#/$defs/__id__string__title__string_____"
+        },
+        "_contextConfig": {
+          "$ref": "#/$defs/NavigationContextEditConfigDto"
+        },
+        "navNode": {
+          "type": "null"
+        },
+        "_dirty": {
+          "type": "boolean"
+        },
+        "_listeners": {},
+        "isDirty": {
+          "type": "boolean"
+        },
+        "markDirty": {},
+        "markClean": {},
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "nodeKind": {},
+        "dividerAfter": {
+          "type": "boolean"
+        },
+        "description": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "linkTarget": {},
+        "childPlacement": {
+          "type": "string"
+        },
+        "order": {
+          "type": "number"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "permissionMode": {},
+        "hasContext": {
+          "type": "boolean"
+        },
+        "contextItems": {
+          "$ref": "#/$defs/readonly___id__string__title__string_____",
+          "description": "只读上下文项（不可直接 push / splice，请用 addContextItem / removeContextItem / setContextItems）。"
+        },
+        "contextConfig": {
+          "description": "只读上下文配置（不可直接赋值字段，请用 updateContextConfig / setContextConfig）。"
+        },
+        "setContextItems": {
+          "$ref": "#/$defs/_items____id__string__title__string________void"
+        },
+        "addContextItem": {
+          "type": "string"
+        },
+        "removeContextItem": {
+          "type": "number"
+        },
+        "setContextConfig": {},
+        "updateContextConfig": {},
+        "applyEditPatchDto": {
+          "description": "从 NavigationNodeEditDto 批量加载字段并标记 dirty。供 AI host / 外部调用方使用。"
+        },
+        "applyContext": {
+          "description": "从 NavigationContextEditDto 批量加载上下文并标记 dirty。供 AI host / 外部调用方使用。"
+        },
+        "loadFromNode": {
+          "description": "从导航树节点加载属性到 DTO 字段，绕过 setter 直接写入内部存储，然后清除 dirty。"
+        },
+        "applyToNode": {
+          "description": "将 DTO 字段应用回树节点，返回补丁和警告。不清除 dirty（由 save 流程清除）。"
+        },
+        "applyKindPreset": {
+          "description": "切换节点类型，重置关联字段并标记 dirty。"
+        },
+        "toEditDto": {
+          "description": "将当前字段组装为 NavigationNodeEditDto。"
+        },
+        "toEditInputDto": {
+          "type": "object",
+          "description": "将当前字段 + 上下文组装为 NavigationNodeEditInputDto。"
+        },
+        "save": {
+          "description": "应用 DTO 到树节点并持久化到远端。"
+        },
+        "subscribe": {},
+        "_bulkLoadEditDto": {
+          "description": "绕过 setter 批量写入 DTO 字段，不触发 dirty。"
+        },
+        "_notify": {}
+      },
+      "required": [
+        "_id",
+        "_title",
+        "_icon",
+        "_nodeKind",
+        "_dividerAfter",
+        "_description",
+        "_path",
+        "_linkTarget",
+        "_childPlacement",
+        "_order",
+        "_hidden",
+        "_disabled",
+        "_refId",
+        "_permissionMode",
+        "_hasContext",
+        "_contextItems",
+        "_contextConfig",
+        "navNode",
+        "_dirty",
+        "_listeners",
+        "isDirty",
+        "markDirty",
+        "markClean",
+        "id",
+        "title",
+        "icon",
+        "nodeKind",
+        "dividerAfter",
+        "description",
+        "path",
+        "linkTarget",
+        "childPlacement",
+        "order",
+        "hidden",
+        "disabled",
+        "refId",
+        "permissionMode",
+        "hasContext",
+        "contextItems",
+        "contextConfig",
+        "setContextItems",
+        "addContextItem",
+        "removeContextItem",
+        "setContextConfig",
+        "updateContextConfig",
+        "applyEditPatchDto",
+        "applyContext",
+        "loadFromNode",
+        "applyToNode",
+        "applyKindPreset",
+        "toEditDto",
+        "toEditInputDto",
+        "save",
+        "subscribe",
+        "_bulkLoadEditDto",
+        "_notify"
+      ]
+    },
+    "NavigationEditSession": {
+      "title": "NavigationEditSession",
+      "type": "object",
+      "properties": {
+        "rootValue": {
+          "$ref": "#/$defs/AppNavRoot"
+        },
+        "root": {
+          "description": "当前根节点快照"
+        },
+        "children": {
+          "type": "array",
+          "description": "根节点的子节点列表"
+        },
+        "replaceRoot": {
+          "type": "array",
+          "description": "替换整个根节点"
+        },
+        "replaceChildren": {
+          "$ref": "#/$defs/_children__NavNode____options___Partial_Omit_AppNavRoot___children______AppNavRoot",
+          "description": "替换根节点的所有子节点"
+        },
+        "findNode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "按 ID 查找节点"
+        },
+        "findLocation": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "查找节点在树中的位置"
+        }
+      },
+      "required": [
+        "rootValue",
+        "root",
+        "children",
+        "replaceRoot",
+        "replaceChildren",
+        "findNode",
+        "findLocation"
+      ]
+    },
+    "NavNode": {
+      "title": "NavNode",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "version": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "title": "NavNodeKind",
+          "enum": [
+            "system-directory",
+            "module",
+            "system-page",
+            "system-action",
+            "page",
+            "link",
+            "sub-page",
+            "ref"
+          ],
+          "type": "string"
+        },
+        "childPlacement": {
+          "title": "ChildPlacement",
+          "enum": [
+            "flat",
+            "header",
+            "sidebar",
+            "toolbar",
+            "user-menu",
+            "parent"
+          ],
+          "type": "string"
+        },
+        "context": {
+          "type": [
+            "string",
+            "array"
+          ]
+        },
+        "order": {
+          "type": "number"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "dividerAfter": {
+          "type": "boolean"
+        },
+        "permissionMode": {
+          "title": "NavPermissionMode",
+          "enum": [
+            "none",
+            "masked",
+            "invisible"
+          ],
+          "type": "string"
+        },
+        "children": {
+          "type": "array"
+        },
+        "path": {
+          "type": "string"
+        },
+        "linkTarget": {
+          "title": "LinkTarget",
+          "enum": [
+            "iframe",
+            "new-tab",
+            "self"
+          ],
+          "type": "string"
+        },
+        "redirect": {
+          "type": "string"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "refPath": {
+          "type": "string"
+        },
+        "refProjectId": {
+          "type": "string"
+        },
+        "refBroken": {
+          "type": "boolean"
+        }
+      },
+      "required": [
+        "id",
+        "title"
+      ]
+    },
+    "NavNode__": {
+      "type": "array",
+      "title": "NavNode[]",
+      "items": {
+        "$ref": "#/$defs/NavNode"
+      }
+    },
+    "PageNodeFileApi": {
+      "title": "PageNodeFileApi",
+      "type": "object",
+      "properties": {
+        "getPageFilesApi": {
+          "type": "string"
+        },
+        "http": {
+          "$ref": "#/$defs/HttpClientBase"
+        },
+        "saveFileContent": {
+          "type": "string"
+        },
+        "createFiles": {
+          "type": "string"
+        },
+        "deleteFiles": {
+          "type": "string"
+        },
+        "listVersions": {
+          "type": "string"
+        },
+        "restoreVersion": {
+          "type": "string"
+        },
+        "createVersion": {
+          "type": "string"
+        },
+        "deleteVersion": {
+          "type": "string"
+        },
+        "fileUrl": {
+          "type": "string"
+        },
+        "baseUrl": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "getPageFilesApi",
+        "http",
+        "saveFileContent",
+        "createFiles",
+        "deleteFiles",
+        "listVersions",
+        "restoreVersion",
+        "createVersion",
+        "deleteVersion",
+        "fileUrl",
+        "baseUrl"
+      ]
+    },
+    "PageNodeFileCache": {
+      "title": "PageNodeFileCache",
+      "type": "object",
+      "properties": {
+        "contentLoaderFactory": {},
+        "clearPageCache": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "contentLoaderFactory",
+        "clearPageCache"
+      ]
+    },
+    "ProjectDescriptionContext": {
+      "title": "ProjectDescriptionContext",
+      "type": "object",
+      "properties": {
+        "nodeId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "nodeKind": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "nodeId",
+        "title",
+        "nodeKind",
+        "description"
+      ]
+    },
+    "ProjectDescriptionContext__": {
+      "type": "array",
+      "title": "ProjectDescriptionContext[]",
+      "items": {
+        "$ref": "#/$defs/ProjectDescriptionContext"
+      }
+    },
+    "ProjectNavigationFlatNode": {
+      "title": "ProjectNavigationFlatNode",
+      "type": "object",
+      "properties": {
+        "id": {
+          "type": "string"
+        },
+        "pid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "nodeKind": {},
+        "path": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "dividerAfter": {
+          "type": "boolean"
+        },
+        "childPlacement": {
+          "type": "string"
+        },
+        "linkTarget": {
+          "type": "string"
+        },
+        "hidden": {
+          "type": "boolean"
+        },
+        "disabled": {
+          "type": "boolean"
+        },
+        "order": {
+          "type": "number"
+        },
+        "refId": {
+          "type": "string"
+        },
+        "permissionMode": {
+          "type": "string"
+        },
+        "node": {}
+      },
+      "required": [
+        "id",
+        "pid",
+        "title",
+        "description",
+        "nodeKind",
+        "path",
+        "icon",
+        "dividerAfter",
+        "childPlacement",
+        "linkTarget",
+        "hidden",
+        "disabled",
+        "order",
+        "refId",
+        "permissionMode",
+        "node"
+      ]
+    },
+    "ProjectNavigationFlatNode__": {
+      "type": "array",
+      "title": "ProjectNavigationFlatNode[]",
+      "items": {
+        "$ref": "#/$defs/ProjectNavigationFlatNode"
+      }
+    },
+    "ProjectNode": {
+      "title": "ProjectNode",
+      "type": "object",
+      "properties": {
+        "navigation": {
+          "$ref": "#/$defs/NavigationEditModel"
+        },
+        "_node": {},
+        "_pid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "_descriptionContext": {
+          "$ref": "#/$defs/ProjectDescriptionContext__"
+        },
+        "family": {
+          "title": "ProjectNodeFamily",
+          "enum": [
+            "module",
+            "system-action",
+            "link",
+            "ref",
+            "config-page",
+            "vue-page"
+          ],
+          "type": "string"
+        },
+        "node": {},
+        "pid": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "id": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "description": {
+          "type": "string"
+        },
+        "effectiveDescription": {
+          "type": "string"
+        },
+        "icon": {
+          "type": "string"
+        },
+        "path": {
+          "type": "string"
+        },
+        "nodeKind": {},
+        "descriptionContext": {
+          "type": "array"
+        },
+        "rebindNavigationNode": {
+          "type": "string"
+        },
+        "toFlatRow": {}
+      },
+      "required": [
+        "navigation",
+        "_node",
+        "_pid",
+        "_descriptionContext",
+        "family",
+        "node",
+        "pid",
+        "id",
+        "title",
+        "description",
+        "effectiveDescription",
+        "icon",
+        "path",
+        "nodeKind",
+        "descriptionContext",
+        "rebindNavigationNode",
+        "toFlatRow"
+      ]
+    },
+    "ProjectNode__": {
+      "type": "array",
+      "title": "ProjectNode[]",
+      "items": {
+        "$ref": "#/$defs/ProjectNode"
+      }
+    },
+    "ProjectNodeCollection": {
+      "description": "当前项目的节点集合子模型。\n\n页面配置节点通过 nodes.openConfigPage(pageId) 进入；ProjectModel 不额外制造 page 访问方法。",
+      "title": "ProjectNodeCollection",
+      "type": "object",
+      "properties": {
+        "fileApi": {
+          "$ref": "#/$defs/PageNodeFileApi"
+        },
+        "fileCache": {
+          "$ref": "#/$defs/PageNodeFileCache"
+        },
+        "contentLoaderFactory": {},
+        "navClient": {
+          "$ref": "#/$defs/NavigationConfigClient"
+        },
+        "session": {
+          "$ref": "#/$defs/NavigationEditSession"
+        },
+        "projectId": {
+          "type": "string"
+        },
+        "nodesById": {
+          "type": "string"
+        },
+        "configPagesByPageId": {
+          "type": "string"
+        },
+        "detachedConfigPagesByPageId": {
+          "type": "string"
+        },
+        "root": {},
+        "children": {
+          "type": "array"
+        },
+        "nodes": {
+          "$ref": "#/$defs/ProjectNode__"
+        },
+        "flatRows": {
+          "$ref": "#/$defs/ProjectNavigationFlatNode__"
+        },
+        "setProjectId": {
+          "type": "string"
+        },
+        "replaceRoot": {},
+        "toTree": {
+          "type": "array"
+        },
+        "findNodeById": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "findRawNodeById": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "findNodeLocation": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "findConfigPageByPageId": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "findPageNode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "openConfigPage": {
+          "type": "string",
+          "description": "按 pageId 获取或实例化配置页面节点。\n\npageId 会进入 ConfigPageNode 构造参数；ConfigPageNode 构造时同步实例化 rule、dataSet、script、style 四个子模型。\n文件内容由页面加载生命周期填充。"
+        },
+        "closeConfigPage": {
+          "type": "string"
+        },
+        "configPages": {},
+        "readPageSummaries": {
+          "type": "array"
+        },
+        "addRootModule": {
+          "type": "string"
+        },
+        "addChildPage": {
+          "type": "string"
+        },
+        "removeNode": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "refreshNavRefs": {},
+        "insertNode": {
+          "type": "string"
+        },
+        "removeModel": {},
+        "collectDescendants": {
+          "type": "string"
+        },
+        "nextRootOrder": {
+          "type": "number"
+        },
+        "nextChildOrder": {
+          "type": "string"
+        },
+        "syncSessionRoot": {},
+        "rebindDescriptionContext": {},
+        "readDescriptionContextForNode": {
+          "type": "string"
+        },
+        "readProjectDescriptionContext": {
+          "type": "array"
+        },
+        "readAncestorNodes": {
+          "type": "string"
+        }
+      },
+      "required": [
+        "fileApi",
+        "fileCache",
+        "contentLoaderFactory",
+        "navClient",
+        "session",
+        "projectId",
+        "nodesById",
+        "configPagesByPageId",
+        "detachedConfigPagesByPageId",
+        "root",
+        "children",
+        "nodes",
+        "flatRows",
+        "setProjectId",
+        "replaceRoot",
+        "toTree",
+        "findNodeById",
+        "findRawNodeById",
+        "findNodeLocation",
+        "findConfigPageByPageId",
+        "findPageNode",
+        "openConfigPage",
+        "closeConfigPage",
+        "configPages",
+        "readPageSummaries",
+        "addRootModule",
+        "addChildPage",
+        "removeNode",
+        "refreshNavRefs",
+        "insertNode",
+        "removeModel",
+        "collectDescendants",
+        "nextRootOrder",
+        "nextChildOrder",
+        "syncSessionRoot",
+        "rebindDescriptionContext",
+        "readDescriptionContextForNode",
+        "readProjectDescriptionContext",
+        "readAncestorNodes"
+      ]
+    },
+    "readonly___id__string__title__string_____": {
+      "type": "array",
+      "description": "只读上下文项（不可直接 push / splice，请用 addContextItem / removeContextItem / setContextItems）。",
+      "title": "readonly { id: string; title: string; }[]",
+      "items": {
+        "$ref": "#/$defs/__id__string__title__string___"
+      }
+    },
+    "RequestInterceptor": {
+      "title": "RequestInterceptor",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "onRequest": {},
+        "onRequestError": {
+          "description": "请求阶段错误回调。\n\n当前版本中，此回调在**同一拦截器**的 `onRequest` 抛出异常时被调用，\n允许拦截器自行记录或处理自身引发的错误。异常仍会向上传播。"
+        }
+      }
+    },
+    "RequestInterceptor__": {
+      "type": "array",
+      "title": "RequestInterceptor[]",
+      "items": {
+        "$ref": "#/$defs/RequestInterceptor"
+      }
+    },
+    "ResponseInterceptor": {
+      "title": "ResponseInterceptor",
+      "type": "object",
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "onResponse": {},
+        "onResponseError": {}
+      }
+    },
+    "ResponseInterceptor__": {
+      "type": "array",
+      "title": "ResponseInterceptor[]",
+      "items": {
+        "$ref": "#/$defs/ResponseInterceptor"
+      }
+    }
+  }
+}

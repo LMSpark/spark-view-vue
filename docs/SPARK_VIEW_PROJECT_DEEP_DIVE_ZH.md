@@ -111,8 +111,9 @@ DevSystem
 ```text
 AI Agent Host
   -> ensurePageDesignBusiness()
-  -> PageDesignService
-  -> ProjectEditor.createPageDesignEditHost({ pageId })
+  -> ProjectEditor.project
+  -> ProjectModel.nodes.openConfigPage(pageId)
+  -> ConfigPageNode
   -> PageNode 子模型
 ```
 

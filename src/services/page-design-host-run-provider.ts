@@ -39,12 +39,12 @@ export const preparePageDesignHostRun: AiHostRunPrepare<AiAgentHost> = async (ev
 
   const pageDesignHost = ensurePageDesignBusiness({
     host,
-    getPageDesignEditHost: (context) => {
+    getPageDesignEditor: (context) => {
       const editor = pageDesignEditors.get(context.moduleInstanceId)
       if (editor === undefined) {
         throw new Error(`Headless pageDesign editor is not prepared: ${context.moduleInstanceId}`)
       }
-      return editor.createPageDesignEditHost({ pageId: context.moduleInstanceId })
+      return editor
     },
   })
 

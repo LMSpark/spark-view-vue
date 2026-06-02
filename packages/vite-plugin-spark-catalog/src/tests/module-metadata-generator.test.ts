@@ -42,6 +42,17 @@ class DemoDirectory {
  * @moduleKind demo-root
  */
 class DemoRootService {
+  /**
+   * Create demo root service.
+   *
+   * @param name Demo service name.
+   * @param options Optional creation flags.
+   */
+  constructor(name: string, options?: { enabled: boolean }) {
+    void name
+    void options
+  }
+
   /** Describe current state. */
   public describe(_ctx: unknown): AiModuleResult<{ status: string }> {
     void _ctx
@@ -89,6 +100,24 @@ class DemoRootService {
       'helper',
     ])
     const rootModule = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-root')
+    expect(result.abilities[0]?.constructorSignature).toMatchObject({
+      description: 'Create demo root service.',
+      params: [
+        { name: 'name', type: 'string', optional: false, description: 'Demo service name.' },
+        { name: 'options', type: '{ enabled: boolean }', optional: true, description: 'Optional creation flags.' },
+      ],
+    })
+    expect(rootModule?.rootApi.constructorSignature).toMatchObject({
+      description: 'Create demo root service.',
+      paramsSchema: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          options: expect.any(Object),
+        },
+        required: ['name'],
+      },
+    })
     expect(rootModule?.rootApi.actions.map(action => action.name)).toEqual([
       'describe',
       'submitDraft',
@@ -116,6 +145,101 @@ class DemoRootService {
     expect(generated.diagnostics.resultApiCount).toBe(1)
     expect(generated.modules[0]?.rootApi.kind).toBe('demo-directory')
     expect(generated.modules[1]?.rootApi.kind).toBe('demo-root')
+  })
+
+  it('writes a VCM object element catalog JSON', () => {
+    const root = createTempRoot()
+    writeFileSync(join(root, 'sample.ts'), `
+type TreeNode = {
+  id: string
+  child?: TreeNode
+}
+
+/**
+ * Child model.
+ *
+ * @moduleKind query-child
+ */
+class QueryChild {
+  private readonly _secret = 'secret'
+
+  /** Read child title. */
+  public title(): string {
+    return 'title'
+  }
+}
+
+/**
+ * Root model.
+ *
+ * @moduleKind query-root
+ */
+class QueryRoot {
+  /** Child model attribute. */
+  public readonly child = new QueryChild()
+
+  /** Configure tree metadata. */
+  public configure(args: { node: TreeNode; items: TreeNode[] }): string {
+    void args
+    return 'ok'
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['sample.ts'],
+      outFile: 'out/abilities.json',
+      moduleOutFile: 'out/modules.json',
+      vcmCatalogOutFile: 'out/vcm-models.json',
+      apiRoots: ['QueryRoot'],
+    })
+
+    expect(result.vcmCatalogOutFile).toBe(join(root, 'out/vcm-models.json'))
+    expect(result.vcmCatalogElementCount).toBe(1)
+    const generated = JSON.parse(readFileSync(join(root, 'out/vcm-models.json'), 'utf8')) as {
+      $schema?: string
+      version: string
+      elementCount: number
+      entryElements: string[]
+      elements: Record<string, {
+        properties?: Record<string, {
+          schema?: unknown
+          object?: { $ref: string }
+        }>
+        methods?: Record<string, {
+          paramsSchema?: {
+            properties?: Record<string, unknown>
+            $defs?: Record<string, unknown>
+          }
+        }>
+      }>
+      $defs?: Record<string, unknown>
+    }
+    expect(generated).toMatchObject({
+      $schema: 'https://json-schema.org/draft/2020-12/schema',
+      version: '1.0.0',
+      elementCount: 1,
+      entryElements: ['QueryRoot'],
+    })
+    expect(generated.elements['QueryRoot']?.properties?.['child']?.object).toBeUndefined()
+    expect(generated.elements['QueryRoot']?.properties?.['child']).toMatchObject({
+      schema: { type: 'object', title: 'QueryChild' },
+    })
+    expect(generated.elements['QueryRoot']?.methods?.['configure']?.paramsSchema?.properties?.['args']).toMatchObject({
+      properties: {
+        node: { $ref: '#/$defs/TreeNode' },
+        items: { type: 'array', items: { $ref: '#/$defs/TreeNode' } },
+      },
+    })
+    expect(generated.elements['QueryRoot']?.methods?.['configure']?.paramsSchema?.$defs).toBeUndefined()
+    expect(generated.$defs?.['TreeNode']).toMatchObject({
+      type: 'object',
+      properties: {
+        id: { type: 'string' },
+      },
+    })
+    expect(JSON.stringify(generated)).not.toContain('"required":[]')
+    expect(Object.keys(generated.elements)).toEqual(['QueryRoot'])
   })
 
   it('can diagnose extracted metadata without writing generated files', () => {

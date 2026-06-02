@@ -57,7 +57,7 @@ export const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
   '协议硬约束：调用 module_*、human_question 或业务函数时，必须使用 OpenAI function calling 的 tool_calls 通道；不要在正文中输出 {"tool_call":...}、module_call(...)、JSON 方案或代码块来冒充工具调用。',
   '如果下一步需要读取/写入/校验/创建任何注册能力事实，必须发起真实 tool_calls；正文只能用于没有工具调用后的最终总结。',
-  '工具：目录=module_query；模块指南=module_guide；属性指南=module_attribute_guide；函数指南=module_function_guide；实例=module_find；属性=module_attr；脚本=module_script；业务函数=直接调用 functionName({path,args})；旧函数路由 module_call 仅作兼容；反问=human_question。',
+  '工具：目录=module_query；模块指南=module_guide；属性指南=module_attribute_guide；函数指南=module_function_guide；实例=module_find；属性=module_attr；脚本=module_script；临时记忆=module_memory；业务函数=直接调用 functionName({path,args})；旧函数路由 module_call 仅作兼容；反问=human_question。',
   '所有知识都先目录概要后具体指南：先用 query 类工具选真实 kind/function/key，再用 guide 类工具读取具体契约。',
   'module_find 只定位实例，不代表已掌握函数表；首次调用某 kind/functionName 前，先 module_query({kind,includeFunctions:true}) 选真实函数，再 module_function_guide({kind,functionName}) 读具体契约。',
   '禁止猜 functionName/attrName；FUNCTION_NOT_DECLARED 或 ATTRIBUTE_NOT_DECLARED 后必须回到 module_query/module_guide，再按 module_function_guide/module_attribute_guide 返回的真实契约重试。',
@@ -431,7 +431,7 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
       `先用 module_query({ kind: "${kind}", includeFunctions: true }) 查函数目录。`,
       `再用 module_function_guide({ kind: "${kind}", functionName: "${fn.name}" }) 读取完整 paramsSchema/resultApis。`,
       '若直接调用能力，用 callPattern 组织 function call。',
-      '若需要批量、组合或条件逻辑，调用 module_script；脚本中 this 就是模块上下文，协议 helper 也可从 this.$tools 访问，args 必须满足 paramsSchema。',
+      '若需要批量、组合或条件逻辑，调用 module_script；脚本中 this 就是模块上下文，协议 helper 也可从 this.$tools 访问，临时记忆可用 this.memory，args 必须满足 paramsSchema。',
       '脚本执行前不要猜字段；复杂参数先查 payload/属性/函数指南。',
     ],
     paramNames: paramNames(fn.paramsSchema),

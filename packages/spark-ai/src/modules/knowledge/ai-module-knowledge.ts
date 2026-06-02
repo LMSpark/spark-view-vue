@@ -29,6 +29,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
+import type { AiJsonSchema } from '../../json'
 import type { AiModuleRegistry } from '../internal/ai-module-registry'
 import { resolveAiModulePath } from '../internal/ai-module-path'
 import {
@@ -206,6 +207,7 @@ export class AiModuleKnowledgeProjector {
   ): AiModuleResult<AiModuleKnowledgeAttributeDetailGuide> {
     const kind = normalizeOptionalText(input.kind)
     const attrName = normalizeOptionalText(input.attrName)
+    const property = normalizeOptionalText(input.property)
     if (kind === undefined || attrName === undefined) {
       return AiModuleResult.failCode(
         'INVALID_ATTRIBUTE_GUIDE_REQUEST',
@@ -232,17 +234,23 @@ export class AiModuleKnowledgeProjector {
       )
     }
 
+    const selectedSchema = selectAttributeSchemaBranch(attribute.schema, property)
+    if (selectedSchema instanceof AiModuleResult) return selectedSchema
+
     return AiModuleResult.ok({
       knowledgeLevel: 'detail',
       kind,
       attrName,
+      ...(property === undefined ? {} : { property }),
       name: attribute.name,
       description: attribute.description,
       access: attributeAccessMode(attribute.readable, attribute.writable),
       readable: attribute.readable,
       writable: attribute.writable,
       directoryLookupStep: `module_guide({ kind: "${kind}" })`,
-      schema: attribute.schema,
+      schema: selectedSchema.schema,
+      childProperties: childSchemaProperties(selectedSchema.schema),
+      propertyLookupSteps: createPropertyLookupSteps(kind, attribute.name, selectedSchema.schema, property),
       ...(attribute.readable ? { readStep: `module_attr({ op: "get", path, attrName: "${attribute.name}" })` } : {}),
       ...(attribute.writable ? { writeStep: `module_attr({ op: "set", path, attrName: "${attribute.name}", value })` } : {}),
       ...(attribute.example === undefined ? {} : { example: attribute.example }),
@@ -483,4 +491,68 @@ export class AiModuleKnowledgeProjector {
     ]
     return lines.join('\n')
   }
+}
+
+type SchemaBranchSelection =
+  | Readonly<{ ok: true, schema: AiJsonSchema }>
+  | AiModuleResult<never>
+
+function selectAttributeSchemaBranch(schema: AiJsonSchema, property: string | undefined): SchemaBranchSelection {
+  if (property === undefined) return { ok: true, schema }
+  const parts = property.split('.').map(part => part.trim()).filter(part => part.length > 0)
+  if (parts.length === 0) return { ok: true, schema }
+  let current: AiJsonSchema = schema
+  for (const part of parts) {
+    const resolved = resolveLocalSchemaRef(schema, current)
+    if (!isSchemaObject(resolved) || !isSchemaObject(resolved.properties)) {
+      return AiModuleResult.failCode(
+        'ATTRIBUTE_PROPERTY_NOT_OBJECT',
+        `属性局部 "${property}" 无法继续展开字段 "${part}"。`,
+        '先不传 property 读取属性整体 schema，再按 childProperties 中的字段继续查询。',
+      )
+    }
+    const next = resolved.properties[part]
+    if (next === undefined) {
+      return AiModuleResult.failCode(
+        'ATTRIBUTE_PROPERTY_NOT_FOUND',
+        `属性局部字段 "${part}" 不存在。`,
+        '先调用 module_attribute_guide({ kind, attrName }) 查看 childProperties，再选择真实字段。',
+      )
+    }
+    current = next
+  }
+  return { ok: true, schema: resolveLocalSchemaRef(schema, current) }
+}
+
+function resolveLocalSchemaRef(root: AiJsonSchema, schema: AiJsonSchema): AiJsonSchema {
+  if (!isSchemaObject(schema) || typeof schema.$ref !== 'string') return schema
+  const prefix = '#/$defs/'
+  if (!schema.$ref.startsWith(prefix)) return schema
+  const defName = schema.$ref.slice(prefix.length)
+  if (!isSchemaObject(root) || !isSchemaObject(root['$defs'])) return schema
+  const found = root['$defs'][defName]
+  return found === undefined ? schema : found as AiJsonSchema
+}
+
+function childSchemaProperties(schema: AiJsonSchema): readonly string[] {
+  if (!isSchemaObject(schema) || !isSchemaObject(schema.properties)) return []
+  return Object.keys(schema.properties)
+}
+
+function createPropertyLookupSteps(
+  kind: string,
+  attrName: string,
+  schema: AiJsonSchema,
+  property: string | undefined,
+): readonly string[] {
+  const children = childSchemaProperties(schema)
+  if (children.length === 0) return []
+  const prefix = property === undefined ? '' : `${property}.`
+  return children.map((child) =>
+    `继续查看局部结构：module_attribute_guide({ kind: "${kind}", attrName: "${attrName}", property: "${prefix}${child}" })`
+  )
+}
+
+function isSchemaObject(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

@@ -89,6 +89,7 @@ export type {
 
 export type {
   AiApiActionMetadata,
+  AiApiConstructorMetadata,
   AiApiObjectMetadata,
   AiApiResultApiRef,
   AiModuleMetadataJson,

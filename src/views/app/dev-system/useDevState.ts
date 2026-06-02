@@ -5,7 +5,7 @@
  *
  * SSOT 设计：
  * - 页面 4 文件（rule / pagedata / script / style）的真源由配置页节点持有。
- * - Vue 层只通过 ProjectEditor adapter 方法读取文本、状态、dirty、undo/redo 和工具模型。
+ * - Vue 层通过当前 ConfigPageNode 读取文本、状态、dirty、undo/redo 和工具模型。
  * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件状态合一暴露。
  *
  * 页面生命周期由配置页节点覆盖；adapter 保留 UI 响应式映射、localStorage、
@@ -1023,29 +1023,37 @@ export function useDevState() {
   }
 
   // ═══════════════════════════════════════════════════════════
-  // 工具访问（委托 ProjectEditor）
+  // 工具访问（委托当前 ConfigPageNode）
   // ═══════════════════════════════════════════════════════════
 
   function editDataSet(
-    run: Parameters<typeof editor.editDataSet>[0],
-  ): ReturnType<typeof editor.editDataSet> {
-    return editor.editDataSet(run)
+    run: Parameters<NonNullable<ReturnType<typeof editor.getActivePage>>['editDataSet']>[0],
+  ): Promise<void> {
+    const page = getActivePage()
+    if (!page) {
+      return Promise.reject(new Error('无活动页面，无法编辑数据集'))
+    }
+    return page.editDataSet(run)
   }
 
-  function getDataSetTool(): ReturnType<typeof editor.getDataSetTool> {
+  function getDataSetTool(): ReturnType<NonNullable<ReturnType<typeof editor.getActivePage>>['getDataSetTool']> | null {
     void pageFilesRevision.value
-    return editor.getDataSetTool()
+    return getActivePage()?.getDataSetTool() ?? null
   }
 
   function editNodeTree(
-    run: Parameters<typeof editor.editNodeTree>[0],
-  ): ReturnType<typeof editor.editNodeTree> {
-    return editor.editNodeTree(run)
+    run: Parameters<NonNullable<ReturnType<typeof editor.getActivePage>>['editNodeTree']>[0],
+  ): Promise<void> {
+    const page = getActivePage()
+    if (!page) {
+      return Promise.reject(new Error('无活动页面，无法编辑节点树'))
+    }
+    return page.editNodeTree(run)
   }
 
-  function getNodeTree(): ReturnType<typeof editor.getNodeTree> {
+  function getNodeTree(): ReturnType<NonNullable<ReturnType<typeof editor.getActivePage>>['getNodeTree']> | null {
     void pageFilesRevision.value
-    return editor.getNodeTree()
+    return getActivePage()?.getNodeTree() ?? null
   }
 
   function getActivePage(): ReturnType<typeof editor.getActivePage> {

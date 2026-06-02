@@ -1,5 +1,6 @@
 /** ConfigPageNode——配置页节点，挂接 rule/dataset/script/style。 */
 import { getSparkNodeChildren } from '@spark-view/spark-data'
+import type { DataSetCrudTool, SparkNodeTree } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { NavigationConfigClient } from '../../service/navigation/client.service'
 import type { BasePageContentLoader } from '../../service/content-loader/types'
@@ -20,6 +21,23 @@ const CONFIG_PAGE_DIRTY_PARTS = ['navigation', 'rule', 'dataSet', 'style', 'scri
 
 function optionalText(value: string): string | undefined { return value.trim() === '' ? undefined : value }
 
+/**
+ * 配置页面节点。
+ *
+ * 持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型，
+ * 是 page-design AI 进入页面配置 live model 的根能力提供方。
+ *
+ * @moduleKind config-page
+ * @moduleAbility pageDesign.configPage
+ * @moduleName Page Design Config Page
+ * @moduleDescription 当前配置页面节点，按真实 PageNode 子模型暴露 rule、pagedata、script 和 style 能力。
+ * @moduleEntity configPage 配置页面
+ * @moduleScope 当前 ConfigPageNode 实例代表一个已打开页面的配置模型。
+ * @moduleAttackSurface page-files high rule.json、pagedata.json、script.js、style.css 写入会改变页面运行与渲染行为。
+ * @moduleTrustBoundary 调用方负责选择并加载当前 ConfigPageNode；本类只暴露当前页面节点持有的真实子模型。
+ * @moduleGuard 写入前必须确认页面已加载，并优先查询节点树、数据集和脚本文本的当前状态。
+ * @moduleMutation page-config read-write 公开写方法会修改当前页面配置文件模型。
+ */
 export class ConfigPageNode extends PageNode {
   readonly rule = new RuleContent()
   readonly dataSet = new DataSetContent()
@@ -33,6 +51,14 @@ export class ConfigPageNode extends PageNode {
   private readonly _listeners = new Set<() => void>()
   private _isLoaded = false
 
+  /**
+   * 创建配置页面节点领域模型。
+   *
+   * 构造参数由 ProjectEditor/PageNodeFactory 装配，包含导航节点、文件 API、文件缓存和内容加载器。
+   * LLM 通常不直接创建 ConfigPageNode，而是使用当前 host 已加载的页面节点实例。
+   *
+   * @param options 配置页面节点装配参数。
+   */
   constructor(options: ProjectConfigPageNodeModelOptions) {
     super(options)
     this._pageId = normalizeConfigPageId(options.pageId ?? resolvePageNodePageId(options.node))
@@ -44,13 +70,42 @@ export class ConfigPageNode extends PageNode {
 
   get family(): ProjectNodeFamily { return 'config-page' }
   get pageNodeKind(): 'config' { return 'config' }
+
+  /**
+   * 当前配置页面 ID。
+   */
   get pageId(): string { return this._pageId }
+
+  /**
+   * 当前页面的实际路由路径；缺省时使用 pageId 生成。
+   */
   get resolvedPath(): string { return this.path ?? `/${this.pageId}` }
+
+  /**
+   * 当前页面四个配置文件是否已经加载到内存模型。
+   */
   get isLoaded(): boolean { return this._isLoaded }
 
+  /**
+   * 判断当前页面是否存在未保存的配置变更。
+   *
+   * @moduleMutation page-config read 查询当前页面配置脏状态。
+   */
   isDirty(): boolean { return CONFIG_PAGE_DIRTY_PARTS.some(p => this.isPartDirty(p)) }
+
+  /**
+   * 列出当前存在未保存变更的配置分区。
+   *
+   * @moduleMutation page-config read 查询当前页面配置脏分区。
+   */
   dirtyParts(): ProjectConfigPageDirtyPart[] { return CONFIG_PAGE_DIRTY_PARTS.filter(p => this.isPartDirty(p)) }
 
+  /**
+   * 加载当前页面的 rule.json、pagedata.json、script.js 和 style.css。
+   *
+   * @moduleMutation page-config read 从远端加载当前页面配置文件。
+   * @vcmIgnore
+   */
   async load(options: PageNodeLoadOptions = {}): Promise<void> {
     const forceReload = options.forceReload === true
     if (this._isLoaded && !forceReload) return
@@ -64,8 +119,20 @@ export class ConfigPageNode extends PageNode {
     this._isLoaded = true
   }
 
+  /**
+   * 保存当前页面所有存在未保存变更的配置文件。
+   *
+   * @moduleMutation page-config write 保存当前页面配置文件。
+   * @vcmIgnore
+   */
   async save(): Promise<void> { await Promise.all(this.dirtyParts().map(p => this.savePart(p))) }
 
+  /**
+   * 加载当前页面指定配置文件。
+   *
+   * @moduleMutation page-config read 从远端加载指定页面配置文件。
+   * @vcmIgnore
+   */
   async loadFile(name: PageNodeFileName, options?: PageNodeLoadOptions): Promise<void> {
     const l = this.contentLoaderFactory()
     switch (name) {
@@ -76,6 +143,11 @@ export class ConfigPageNode extends PageNode {
     }
   }
 
+  /**
+   * 读取当前页面指定配置文件的文本内容。
+   *
+   * @moduleMutation page-config read 读取页面配置文件文本。
+   */
   getFileText(name: PageNodeFileName): string {
     switch (name) {
       case 'rule.json': return this.rule.getText()
@@ -85,6 +157,12 @@ export class ConfigPageNode extends PageNode {
     }
   }
 
+  /**
+   * 保存当前页面指定配置文件。
+   *
+   * @moduleMutation page-config write 保存指定页面配置文件。
+   * @vcmIgnore
+   */
   async saveFile(name: PageNodeFileName): Promise<void> {
     switch (name) {
       case 'rule.json': await this.rule.save(this.pageId, this.fileApi); break
@@ -95,6 +173,12 @@ export class ConfigPageNode extends PageNode {
     this.clearFileCache(name)
   }
 
+  /**
+   * 保存当前页面所有 dirty 配置文件。
+   *
+   * @moduleMutation page-config write 保存当前页面所有 dirty 文件。
+   * @vcmIgnore
+   */
   async saveDirtyFiles(): Promise<void> {
     const tasks: Array<Promise<void>> = []
     if (this.rule.isDirty) tasks.push(this.saveFile('rule.json'))
@@ -107,6 +191,131 @@ export class ConfigPageNode extends PageNode {
   subscribe(l: () => void): () => void { this._listeners.add(l); return () => { this._listeners.delete(l) } }
   getHttpClient(): HttpClientBase | undefined { return this.contentLoaderFactory().getHttpClient() }
 
+  /**
+   * 获取当前页面 rule.json 的节点树编辑模型。
+   *
+   * 返回的 SparkNodeTree 是节点树真实能力提供方，后续可继续调用 node-tree 方法。
+   *
+   * @moduleMutation rule.json read 获取当前页面节点树子模型。
+   */
+  getNodeTree(): SparkNodeTree {
+    return this.rule.tree
+  }
+
+  /**
+   * 替换当前页面 rule.json 的节点树模型。
+   *
+   * 用于页面设计器把已编辑的 SparkNodeTree 写回当前页面节点；写回后 rule.json 标记为 dirty。
+   *
+   * @param nodeTree 新的页面节点树模型。
+   * @moduleMutation rule.json write 替换当前页面节点树子模型。
+   * @vcmIgnore
+   */
+  replaceNodeTree(nodeTree: SparkNodeTree): void {
+    this.rule.tree = nodeTree
+    this.rule.markDirty()
+  }
+
+  /**
+   * 在当前页面节点树上执行编辑。
+   *
+   * 回调由宿主代码传入，适用于非 VCM 的编辑器内部流程；VCM 应优先获取节点树子模块后调用其方法。
+   *
+   * @param run 节点树编辑回调。
+   * @moduleMutation rule.json write 修改当前页面节点树。
+   * @vcmIgnore
+   */
+  async editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void> {
+    await run(this.rule.tree)
+    this.rule.markDirty()
+  }
+
+  /**
+   * 获取当前页面 pagedata.json 的 DataSet CRUD 工具。
+   *
+   * 返回的 DataSetCrudTool 是数据集真实能力提供方，后续可继续调用 dataset 方法。
+   *
+   * @moduleMutation pagedata.json read 获取当前页面数据集子模型。
+   */
+  getDataSetTool(): DataSetCrudTool {
+    return this.dataSet.tool
+  }
+
+  /**
+   * 替换当前页面 pagedata.json 的 DataSet CRUD 工具。
+   *
+   * 用于页面设计器把已编辑的 DataSetCrudTool 写回当前页面节点；写回后 pagedata.json 标记为 dirty。
+   *
+   * @param tool 新的数据集编辑工具。
+   * @moduleMutation pagedata.json write 替换当前页面数据集子模型。
+   * @vcmIgnore
+   */
+  replaceDataSetTool(tool: DataSetCrudTool): void {
+    this.dataSet.tool = tool
+    this.dataSet.markDirty()
+  }
+
+  /**
+   * 在当前页面数据集工具上执行编辑。
+   *
+   * 回调由宿主代码传入，适用于非 VCM 的编辑器内部流程；VCM 应优先获取数据集子模块后调用其方法。
+   *
+   * @param run 数据集编辑回调。
+   * @moduleMutation pagedata.json write 修改当前页面数据集。
+   * @vcmIgnore
+   */
+  async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
+    await run(this.dataSet.tool)
+    this.dataSet.markDirty()
+  }
+
+  /**
+   * 读取当前页面 script.js 文本。
+   *
+   * @moduleMutation script.js read 读取当前页面脚本文本。
+   */
+  readScript(): string {
+    return this.script.text
+  }
+
+  /**
+   * 写入当前页面 script.js 文本。
+   *
+   * 写入前应先调用 readScript 获取原文，做最小必要修改；不要重写无关逻辑。
+   *
+   * @param content 新的 script.js 完整文本。
+   * @moduleMutation script.js write 更新当前页面脚本文本。
+   */
+  writeScript(content: string): void {
+    this.script.setText(content)
+  }
+
+  /**
+   * 读取当前页面 style.css 文本。
+   *
+   * @moduleMutation style.css read 读取当前页面样式文本。
+   */
+  readStyle(): string {
+    return this.style.text
+  }
+
+  /**
+   * 写入当前页面 style.css 文本。
+   *
+   * 写入前应先调用 readStyle 获取原文，做最小必要修改；不要覆盖无关样式。
+   *
+   * @param content 新的 style.css 完整文本。
+   * @moduleMutation style.css write 更新当前页面样式文本。
+   */
+  writeStyle(content: string): void {
+    this.style.setText(content)
+  }
+
+  /**
+   * 转成渲染器所需页面配置快照。
+   *
+   * @moduleMutation page-config read 生成当前页面渲染配置快照。
+   */
   toRenderConfig(): PageNodeRenderConfig {
     if (!this._isLoaded) throw new Error(`配置页面节点 ${this.pageId} 尚未加载完成`)
     return {
@@ -119,6 +328,11 @@ export class ConfigPageNode extends PageNode {
     }
   }
 
+  /**
+   * 转成页面列表和诊断使用的概要信息。
+   *
+   * @moduleMutation page-config read 生成当前页面概要。
+   */
   toSummary(): ProjectPageNodeSummary {
     return {
       pageId: this.pageId, path: this.resolvedPath, title: this.title,

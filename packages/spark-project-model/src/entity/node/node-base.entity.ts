@@ -9,10 +9,13 @@ import type { NavigationConfigClient } from '../../service/navigation/client.ser
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext, projectNavNodeToFlatRow } from './node-helpers'
 import type { ProjectNavigationFlatNode } from './node-helpers'
 
+export type ProjectNodeAttributes = Omit<NavNode, 'id' | 'title' | 'description' | 'children'>
+
 export type ProjectNodeModelOptions = {
   node: NavNode
   pid: string | null
   descriptionContext?: readonly ProjectDescriptionContext[]
+  resolveChildren?: ((node: ProjectNode) => readonly ProjectNode[]) | undefined
 }
 
 export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
@@ -31,39 +34,84 @@ export type ProjectConfigPageDirtyPart = ProjectNodeDirtyPart | ConfigPageConten
 
 export abstract class ProjectNode {
   readonly navigation = new NavigationEditModel()
-  protected _node: NavNode
-  private _pid: string | null
-  private _descriptionContext: ProjectDescriptionContext[]
+  #node: NavNode
+  #pid: string | null
+  #descriptionContext: ProjectDescriptionContext[]
+  #resolveChildren: ((node: ProjectNode) => readonly ProjectNode[]) | undefined
 
   constructor(options: ProjectNodeModelOptions) {
-    this._node = options.node
-    this._pid = normalizePid(options.pid)
-    this._descriptionContext = [...(options.descriptionContext ?? [])]
-    this.navigation.loadFromNode(this._node)
+    this.#node = options.node
+    this.#pid = normalizePid(options.pid)
+    this.#descriptionContext = [...(options.descriptionContext ?? [])]
+    this.#resolveChildren = options.resolveChildren
+    this.navigation.loadFromNode(this.#node)
   }
 
   abstract get family(): ProjectNodeFamily
 
-  get node(): NavNode { return this._node }
-  get pid(): string | null { return this._pid }
-  get id(): string { return this._node.id }
-  get title(): string { return this._node.title }
-  get description(): string { return readProjectNodeDescription(this._node) }
-  get effectiveDescription(): string { return formatProjectDescriptionContext(this._descriptionContext) }
-  get icon(): string | undefined { return this._node.icon }
-  get path(): string | undefined { return this._node.path }
-  get nodeKind(): NavNodeKind { return this._node.nodeKind ?? 'page' }
-  get descriptionContext(): ProjectDescriptionContext[] { return [...this._descriptionContext] }
+  /**
+   * 节点领域类型。
+   */
+  get type(): ProjectNodeFamily { return this.family }
+
+  /**
+   * 原始导航节点快照。
+   */
+  get node(): NavNode { return this.#node }
+
+  /**
+   * 父节点 ID；根级节点为 null。
+   */
+  get pid(): string | null { return this.#pid }
+
+  /**
+   * 节点 ID。
+   */
+  get id(): string { return this.#node.id }
+
+  /**
+   * 节点名称。
+   */
+  get name(): string { return this.#node.title }
+
+  /**
+   * 节点描述。
+   */
+  get description(): string { return readProjectNodeDescription(this.#node) }
+
+  /**
+   * 节点自由属性，不包含 id、name、description 和 children。
+   */
+  get attributes(): ProjectNodeAttributes {
+    const { id: _id, title: _title, description: _description, children: _children, ...attributes } = this.#node
+    return { ...attributes }
+  }
+
+  /**
+   * 当前节点的直接子节点。
+   */
+  get children(): ProjectNode[] { return [...(this.#resolveChildren?.(this) ?? [])] }
+
+  /**
+   * @deprecated use name
+   */
+  get title(): string { return this.name }
+
+  get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
+  get icon(): string | undefined { return this.#node.icon }
+  get path(): string | undefined { return this.#node.path }
+  get nodeKind(): NavNodeKind { return this.#node.nodeKind ?? 'page' }
+  get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
 
   rebindNavigationNode(node: NavNode, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]): void {
-    this._node = node
-    this._pid = normalizePid(pid)
-    this._descriptionContext = [...descriptionContext]
+    this.#node = node
+    this.#pid = normalizePid(pid)
+    this.#descriptionContext = [...descriptionContext]
     if (this.navigation.isDirty) { this.navigation.navNode = node }
     else { this.navigation.loadFromNode(node) }
   }
 
-  toFlatRow(): ProjectNavigationFlatNode { return projectNavNodeToFlatRow(this._node, this._pid) }
+  toFlatRow(): ProjectNavigationFlatNode { return projectNavNodeToFlatRow(this.#node, this.#pid) }
 }
 
 export abstract class PageNode extends ProjectNode {

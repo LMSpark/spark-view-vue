@@ -126,6 +126,9 @@ importers:
       husky:
         specifier: ^9.1.7
         version: 9.1.7
+      jmespath:
+        specifier: 0.16.0
+        version: 0.16.0
       jsdom:
         specifier: ^29.0.2
         version: 29.0.2

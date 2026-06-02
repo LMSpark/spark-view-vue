@@ -15,6 +15,7 @@
  *   module_find    → navigator.listChildren / findInstance
  *   module_attr    → attributes.get / attributes.set
  *   module_call    → functionInvoker.invoke（兼容旧协议）
+ *   module_memory  → runtime-local scoped scratchpad
  *   <functionName> → functionInvoker.invoke（OpenAI direct function protocol: arguments={path,args}）
  *   human_question → knowledge.guideHumanQuestion
  *   agent_complete → 工具化收尾，避免自然语言正文完成
@@ -91,6 +92,7 @@ export class ProtocolToolRouter {
   private readonly navigator: Navigator
   private readonly knowledge: AiModuleKnowledgeProjector
   private readonly kinds: AiModuleRegistry
+  private readonly memoryByScope = new Map<string, Map<string, AiJsonValue>>()
   private handleToolDispatcher?: AiModuleHandleToolDispatcher
 
   public constructor(options: ProtocolToolRouterOptions) {
@@ -139,6 +141,7 @@ export class ProtocolToolRouter {
         case PROTOCOL_TOOL_NAMES.moduleAttr: return await this.routeModuleAttr(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleCall: return await this.routeModuleCall(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleScript: return await this.routeModuleScript(rawArgs, host)
+        case PROTOCOL_TOOL_NAMES.moduleMemory: return this.routeModuleMemory(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.humanQuestion: return this.routeHumanQuestion(rawArgs)
         case PROTOCOL_TOOL_NAMES.agentComplete: return this.routeAgentComplete(rawArgs)
       }
@@ -224,9 +227,11 @@ export class ProtocolToolRouter {
 
   /** 路由 module_attribute_guide：kind + attrName 均必填，读取属性完整契约 */
   private routeModuleAttributeGuide(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
+    const property = this.argsParser.optionalString(args, 'property')
     return this.resultProjector.jsonResult(this.knowledge.guideAttribute({
       kind: this.argsParser.requireString(args, 'kind'),
       attrName: this.argsParser.requireString(args, 'attrName'),
+      ...(property === undefined ? {} : { property }),
     }))
   }
 
@@ -325,8 +330,39 @@ export class ProtocolToolRouter {
     return executeModuleScript(this.argsParser.requireString(args, 'script'), this.createScriptContext(host))
   }
 
+  private routeModuleMemory(args: ProtocolToolArgs, host?: AiModuleHostContext): AiModuleResult<AiJsonValue> {
+    const op = this.argsParser.requireString(args, 'op')
+    const memory = this.memoryForHost(host)
+    if (op === 'list') {
+      return AiModuleResult.ok({ keys: Array.from(memory.keys()) })
+    }
+    if (op === 'clear') {
+      const count = memory.size
+      memory.clear()
+      return AiModuleResult.ok({ cleared: count })
+    }
+    const key = this.argsParser.requireString(args, 'key')
+    if (op === 'get') {
+      return AiModuleResult.ok({
+        key,
+        found: memory.has(key),
+        value: memory.get(key) ?? null,
+      })
+    }
+    if (op === 'set') {
+      const value = this.argsParser.requireValue(args, 'value')
+      memory.set(key, value)
+      return AiModuleResult.ok({ key, value })
+    }
+    if (op === 'delete') {
+      return AiModuleResult.ok({ key, deleted: memory.delete(key) })
+    }
+    throw new ProtocolToolArgsError('参数 "op" 必须是 get/set/delete/list/clear')
+  }
+
   private createScriptContext(host?: AiModuleHostContext): AiModuleScriptContext {
     const moduleContext = this.createProviderScriptContext(host)
+    const memory = this.createScriptMemory(host)
     const helpers = {
       module_query: (args: ProtocolToolArgs = {}) => this.routeModuleQuery(args),
       module_guide: (args: ProtocolToolArgs) => this.routeModuleGuide(args),
@@ -335,13 +371,46 @@ export class ProtocolToolRouter {
       module_find: (args: ProtocolToolArgs) => this.routeModuleFind(args, host),
       module_attr: (args: ProtocolToolArgs) => this.routeModuleAttr(args, host),
       module_call: (args: ProtocolToolArgs) => this.routeModuleCall(args, host),
+      module_memory: (args: ProtocolToolArgs) => this.routeModuleMemory(args, host),
       call: (functionName: string, args: ProtocolToolArgs) => this.routeDirectModuleFunction(functionName, args, host),
     }
     return {
       ...helpers,
       $tools: helpers,
+      memory,
       ...moduleContext,
     }
+  }
+
+  private createScriptMemory(host?: AiModuleHostContext): Readonly<Record<string, unknown>> {
+    const memory = this.memoryForHost(host)
+    return {
+      get: (key: string): AiJsonValue | undefined => memory.get(key),
+      set: (key: string, value: AiJsonValue): AiJsonValue => {
+        memory.set(key, value)
+        return value
+      },
+      delete: (key: string): boolean => memory.delete(key),
+      list: (): readonly string[] => Array.from(memory.keys()),
+      clear: (): number => {
+        const count = memory.size
+        memory.clear()
+        return count
+      },
+      snapshot: (): Readonly<Record<string, AiJsonValue>> => Object.fromEntries(memory.entries()),
+    }
+  }
+
+  private memoryForHost(host?: AiModuleHostContext): Map<string, AiJsonValue> {
+    const key = host === undefined
+      ? '__default__'
+      : `${host.moduleId}\u0000${host.moduleInstanceId}\u0000${host.instanceId}`
+    let memory = this.memoryByScope.get(key)
+    if (memory === undefined) {
+      memory = new Map<string, AiJsonValue>()
+      this.memoryByScope.set(key, memory)
+    }
+    return memory
   }
 
   private createProviderScriptContext(host?: AiModuleHostContext): Readonly<Record<string, unknown>> {

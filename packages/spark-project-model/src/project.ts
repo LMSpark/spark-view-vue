@@ -100,10 +100,6 @@ export type {
   NavigationNodeMoveRequestDto,
 } from './service/navigation/editing.service'
 
-export type {
-  PageDesignEditHost,
-} from './contract/edit-host.contract'
-
 export {
   PAGE_DATA_JSON_SCHEMA,
   buildDataSetMetadataFromDesignerProjection,

@@ -70,10 +70,6 @@ function createEditor(activePage: ActivePageState | null): ProjectEditor {
     value: vi.fn(),
     configurable: true,
   })
-  Object.defineProperty(editor, 'createPageDesignEditHost', {
-    value: vi.fn(() => ({})),
-    configurable: true,
-  })
   return editor
 }
 

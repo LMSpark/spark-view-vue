@@ -44,6 +44,20 @@ export type ProjectNodeCollectionOptions = {
   navigationSession?: NavigationEditSession | undefined
 }
 
+/**
+ * 项目节点集合。
+ *
+ * 管理项目中的平铺节点模型，并按 pageId 获取或实例化配置页面节点。
+ *
+ * @moduleKind project-node-collection
+ * @moduleName Project Node Collection
+ * @moduleDescription 当前项目节点集合，负责把 pageId 解析为 ConfigPageNode 子模型。
+ * @moduleEntity projectNodes 项目节点集合
+ * @moduleScope 当前 ProjectNodeCollection 实例代表一个项目内的节点模型集合。
+ * @moduleGuard 进入页面配置编辑前，先用 openConfigPage(pageId) 获取 ConfigPageNode。
+ * @moduleMutation project-nodes read-write 节点集合可实例化配置页面节点模型。
+ * @moduleActionMode explicit
+ */
 export class ProjectNodeCollection {
   private readonly fileApi: PageNodeFileApi
   private readonly fileCache: PageNodeFileCache
@@ -81,6 +95,10 @@ export class ProjectNodeCollection {
     return [...this.nodesById.values()]
   }
 
+  get rootNodes(): ProjectNode[] {
+    return this.getChildNodes(null)
+  }
+
   get flatRows(): ProjectNavigationFlatNode[] {
     return this.nodes.map(node => node.toFlatRow())
   }
@@ -106,6 +124,7 @@ export class ProjectNodeCollection {
           node: item.node,
           pid: item.pid,
           descriptionContext,
+          resolveChildren: node => this.getChildNodes(node.id),
           fileApi: this.fileApi,
           fileCache: this.fileCache,
           contentLoaderFactory: this.contentLoaderFactory,
@@ -152,6 +171,15 @@ export class ProjectNodeCollection {
     return this.findConfigPageByPageId(pageId)?.node ?? null
   }
 
+  /**
+   * 按 pageId 获取或实例化配置页面节点。
+   *
+   * pageId 会进入 ConfigPageNode 构造参数；ConfigPageNode 构造时同步实例化 rule、dataSet、script、style 四个子模型。
+   * 文件内容由页面加载生命周期填充。
+   *
+   * @param pageId 配置页面 ID。
+   * @moduleMutation page-config read 按 pageId 获取或实例化配置页面节点。
+   */
   openConfigPage(pageId: string): ConfigPageNode {
     const normalized = pageId.trim()
     if (!normalized) {
@@ -168,8 +196,10 @@ export class ProjectNodeCollection {
     }
     const model = createProjectNodeModel({
       node,
+      pageId: normalized,
       pid: null,
       descriptionContext: this.readDescriptionContextForNode(node, null),
+      resolveChildren: childNode => this.getChildNodes(childNode.id),
       fileApi: this.fileApi,
       fileCache: this.fileCache,
       contentLoaderFactory: this.contentLoaderFactory,
@@ -252,6 +282,7 @@ export class ProjectNodeCollection {
       node,
       pid,
       descriptionContext: this.readDescriptionContextForNode(node, pid),
+      resolveChildren: nodeModel => this.getChildNodes(nodeModel.id),
       fileApi: this.fileApi,
       fileCache: this.fileCache,
       contentLoaderFactory: this.contentLoaderFactory,
@@ -279,6 +310,10 @@ export class ProjectNodeCollection {
       result.push(node, ...this.collectDescendants(node.id))
     }
     return result
+  }
+
+  private getChildNodes(pid: string | null): ProjectNode[] {
+    return this.nodes.filter(node => node.pid === pid)
   }
 
   private nextRootOrder(): number {

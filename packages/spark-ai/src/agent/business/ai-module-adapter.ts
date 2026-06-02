@@ -11,10 +11,13 @@ import {
   AiModuleResult,
   AiModuleRuntime,
   type AiModuleFunctionMetadata,
+  type AiModuleAttributeMetadata,
+  type AiModulePathContext,
 } from '../../modules'
 import {
   validateApiObjectMetadata,
   type AiApiActionMetadata,
+  type AiApiAttributeMetadata,
   type AiApiObjectMetadata,
   type AiApiResultApiRef,
   type AiModuleMetadataJson,
@@ -33,7 +36,7 @@ import { AiAgentRegistration, type AiAgentRegistrationOptions } from './registra
 import type { AiAgentRuntimeContext } from './scope-types'
 import { createAiApiScriptContext, executeAiApiAction } from './ai-api-script-context'
 
-type AiModuleAdapterConstructor<T> = new (...args: readonly unknown[]) => T
+type AiModuleAdapterConstructor<T> = new (...args: never[]) => T
 
 export type AiModuleAdapterRegisterCommand<T> = Readonly<{
   host: AiAgentHost
@@ -53,6 +56,7 @@ export type AiModuleAdapterRegisterOptions<T> = Readonly<{
   moduleId?: string
   instance?: T
   constructArgs?: readonly unknown[]
+  resolveInstance?: (context: AiModulePathContext) => T
   inputContract?: AiAgentInputContract
   sessionStore?: AiAgentSessionStore
   systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined
@@ -95,16 +99,21 @@ export class AiModuleAdapter {
   public static createRegistration<T>(command: AiModuleAdapterRegistrationCommand<T>): AiAgentRegistration {
     validateApiObjectMetadata(command.metadata.rootApi)
 
-    const instance = command.options.instance
-      ?? new command.moduleClass(...(command.options.constructArgs ?? []))
+    assertResolvableInstanceOptions(command.options)
+    const instance = command.options.resolveInstance === undefined
+      ? command.options.instance ?? constructModuleInstance(command.moduleClass, command.options.constructArgs ?? [])
+      : command.options.instance
     const adapter = new AiModuleAdapter()
     const runtime = new AiModuleRuntime()
-    runtime.register(adapter.buildRootAiModule(command.metadata.rootApi, instance))
+    runtime.register(adapter.buildRootAiModule(
+      command.metadata.rootApi,
+      createInstanceResolver(command.moduleClass, command.options, instance),
+    ))
 
-    const systemPrompt = bindOptionalLifecycle(instance, command.options.systemPrompt)
-    const beforeFunctionCall = bindOptionalLifecycle(instance, command.options.beforeFunctionCall)
-    const afterFunctionCall = bindOptionalLifecycle(instance, command.options.afterFunctionCall)
-    const onStartSession = bindOptionalLifecycle(instance, command.options.onStartSession)
+    const systemPrompt = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.systemPrompt)
+    const beforeFunctionCall = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.beforeFunctionCall)
+    const afterFunctionCall = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.afterFunctionCall)
+    const onStartSession = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.onStartSession)
     const registrationOptions: AiAgentRegistrationOptions = {
       moduleId: command.options.moduleId ?? command.metadata.rootApi.kind,
       name: command.metadata.rootApi.name,
@@ -112,10 +121,14 @@ export class AiModuleAdapter {
       runtime,
       sessionStore: command.options.sessionStore ?? new DefaultAiAgentSessionStore(),
       onEndBusinessInstance: async (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => {
-        await command.options.onEndBusinessInstance?.(instance, context, directive)
+        if (instance !== undefined) {
+          await command.options.onEndBusinessInstance?.(instance, context, directive)
+        }
       },
       releaseModuleInstance: (moduleInstanceId: string) => {
-        command.options.releaseModuleInstance?.(instance, moduleInstanceId)
+        if (instance !== undefined) {
+          command.options.releaseModuleInstance?.(instance, moduleInstanceId)
+        }
       },
       ...(command.options.inputContract === undefined ? {} : { inputContract: command.options.inputContract }),
       ...(systemPrompt === undefined ? {} : { systemPrompt }),
@@ -126,16 +139,20 @@ export class AiModuleAdapter {
     return new AiAgentRegistration(registrationOptions)
   }
 
-  private buildRootAiModule<T>(api: AiApiObjectMetadata, instance: T): AiModule {
+  private buildRootAiModule<T>(
+    api: AiApiObjectMetadata,
+    resolveInstance: (ctx: AiModulePathContext) => T,
+  ): AiModule {
     return new AiModule({
       kind: api.kind,
       name: api.name,
       description: api.description,
-      ...(api.attributes === undefined ? {} : { attributes: api.attributes }),
+      ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(toModuleAttributeMetadata) }),
       functions: api.actions.map(toModuleFunctionMetadata),
       find: () => AiModuleResult.ok([]),
-      scriptContext: ctx => createAiApiScriptContext(instance, api, ctx),
+      scriptContext: ctx => createAiApiScriptContext(resolveInstance(ctx), api, ctx),
       runner: async (ctx, functionName, args) => {
+        const instance = resolveInstance(ctx)
         const action = api.actions.find(candidate => candidate.name === functionName)
         if (action === undefined) {
           return AiModuleResult.failCode(
@@ -151,6 +168,46 @@ export class AiModuleAdapter {
       },
     })
   }
+}
+
+function toModuleAttributeMetadata(attribute: AiApiAttributeMetadata): AiModuleAttributeMetadata {
+  return {
+    name: attribute.name,
+    description: attribute.description,
+    schema: attribute.schema,
+    readable: attribute.readable,
+    writable: attribute.writable,
+  }
+}
+
+function assertResolvableInstanceOptions<T>(options: AiModuleAdapterRegisterOptions<T>): void {
+  const hasLifecycle = options.systemPrompt !== undefined
+    || options.beforeFunctionCall !== undefined
+    || options.afterFunctionCall !== undefined
+    || options.onStartSession !== undefined
+    || options.onEndBusinessInstance !== undefined
+    || options.releaseModuleInstance !== undefined
+  if (options.resolveInstance !== undefined && options.instance === undefined && hasLifecycle) {
+    throw new Error('AiModuleAdapter resolveInstance requires options.instance when instance-bound lifecycle callbacks are provided.')
+  }
+}
+
+function createInstanceResolver<T>(
+  moduleClass: AiModuleAdapterConstructor<T>,
+  options: AiModuleAdapterRegisterOptions<T>,
+  instance: T | undefined,
+): (ctx: AiModulePathContext) => T {
+  if (options.resolveInstance !== undefined) return options.resolveInstance
+  if (instance !== undefined) return () => instance
+  return () => constructModuleInstance(moduleClass, options.constructArgs ?? [])
+}
+
+function constructModuleInstance<T>(
+  moduleClass: AiModuleAdapterConstructor<T>,
+  args: readonly unknown[],
+): T {
+  const construct = moduleClass as unknown as new (...args: unknown[]) => T
+  return new construct(...args)
 }
 
 function toModuleFunctionMetadata(action: AiApiActionMetadata): AiModuleFunctionMetadata {

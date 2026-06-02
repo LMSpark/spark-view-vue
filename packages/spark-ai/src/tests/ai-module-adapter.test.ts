@@ -23,6 +23,10 @@ class DirectoryApi {
 class RootApi {
   private readonly directory = new DirectoryApi()
 
+  public echo(args: Readonly<{ text: string }>): AiModuleResult<AiJsonValue> {
+    return AiModuleResult.ok({ text: args.text })
+  }
+
   public listDirectory(): AiModuleResult<Readonly<{ directory: DirectoryApi }>> {
     return AiModuleResult.ok({ directory: this.directory })
   }
@@ -61,6 +65,16 @@ const TEST_METADATA: AiModuleMetadataJson = {
       },
     ],
     actions: [
+      {
+        name: 'echo',
+        methodName: 'echo',
+        description: 'Echo one-argument VCM method args',
+        paramsSchema: {
+          type: 'object',
+          properties: { text: { type: 'string' } },
+          required: ['text'],
+        },
+      },
       {
         name: 'listDirectory',
         methodName: 'listDirectory',
@@ -144,6 +158,24 @@ describe('AiModuleAdapter', () => {
     expect(isJsonObject(rootResult.data) && '_handles' in rootResult.data).toBe(false)
   })
 
+  it('calls one-argument VCM methods with args instead of ctx', async () => {
+    const registration = AiModuleAdapter.createRegistration({
+      moduleClass: RootApi,
+      metadata: TEST_METADATA,
+      options: {},
+    })
+
+    const result = await registration.runtime.executeTool('echo', {
+      path: '/root-api[root]',
+      args: { text: 'hello' },
+    }, { moduleId: 'root-api', moduleInstanceId: '', instanceId: 'turn-1' })
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: { text: 'hello' },
+    })
+  })
+
   it('exposes resultApis through function guide metadata', async () => {
     const registration = AiModuleAdapter.createRegistration({
       moduleClass: RootApi,
@@ -188,9 +220,39 @@ describe('AiModuleAdapter', () => {
         schema: {
           type: 'object',
         },
+        childProperties: ['title', 'nested'],
       },
     })
     expect(isJsonObject(rootGuide.data) && 'schemaPath' in rootGuide.data).toBe(false)
+  })
+
+  it('can query a complex attribute local property schema', async () => {
+    const registration = AiModuleAdapter.createRegistration({
+      moduleClass: RootApi,
+      metadata: TEST_METADATA,
+      options: {},
+    })
+
+    const nestedGuide = await registration.runtime.executeTool('module_attribute_guide', {
+      kind: 'root-api',
+      attrName: 'config',
+      property: 'nested',
+    })
+
+    expect(nestedGuide).toMatchObject({
+      ok: true,
+      data: {
+        property: 'nested',
+        schema: {
+          type: 'object',
+          properties: {
+            enabled: { type: 'boolean' },
+          },
+        },
+        childProperties: ['enabled'],
+      },
+    })
+    expect(isJsonObject(nestedGuide.data) && 'schemaPath' in nestedGuide.data).toBe(false)
   })
 
   it('executes provider submodule methods through this.property.method script chains', async () => {
@@ -251,13 +313,9 @@ describe('AiModuleAdapter', () => {
       `,
     }, { moduleId: 'root-api', moduleInstanceId: 'root-1', instanceId: 'turn-1' })
 
-    expect(result).toMatchObject({
-      ok: false,
-      checks: [{
-        code: 'SCRIPT_EXECUTION_FAILED',
-      }],
-    })
-    expect(result.checks?.[0]?.message).toContain('SCHEMA_VALIDATION_FAILED')
+    expect(result.ok).toBe(false)
+    expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
+    expect(result.checks?.[1]?.code).toBe('SCRIPT_EXECUTION_FAILED')
   })
 })
 

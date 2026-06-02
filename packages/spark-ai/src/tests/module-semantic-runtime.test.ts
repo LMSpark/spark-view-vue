@@ -106,6 +106,7 @@ describe('AiModuleRuntime function tool protocol', () => {
       PROTOCOL_TOOL_NAMES.moduleAttr,
       PROTOCOL_TOOL_NAMES.moduleCall,
       PROTOCOL_TOOL_NAMES.moduleScript,
+      PROTOCOL_TOOL_NAMES.moduleMemory,
       PROTOCOL_TOOL_NAMES.humanQuestion,
       PROTOCOL_TOOL_NAMES.agentComplete,
       'getItem',
@@ -162,6 +163,61 @@ describe('AiModuleRuntime function tool protocol', () => {
     })
     expect(result.checks?.[0]?.message).toContain('脚本第 3 行')
     expect(result.checks?.[0]?.hint).toContain('脚本第 3 行')
+  })
+
+  it('stores temporary scoped memory through module_memory', async () => {
+    const runtime = createRuntime()
+    const leftHost = { moduleId: 'workspace', moduleInstanceId: 'left', instanceId: 'turn-1' }
+    const rightHost = { moduleId: 'workspace', moduleInstanceId: 'right', instanceId: 'turn-1' }
+
+    await expect(runtime.executeTool('module_memory', {
+      op: 'set',
+      key: 'selectedFunction',
+      value: 'getItem',
+    }, leftHost)).resolves.toMatchObject({
+      ok: true,
+      data: { key: 'selectedFunction', value: 'getItem' },
+    })
+
+    await expect(runtime.executeTool('module_memory', {
+      op: 'get',
+      key: 'selectedFunction',
+    }, leftHost)).resolves.toMatchObject({
+      ok: true,
+      data: { found: true, value: 'getItem' },
+    })
+
+    await expect(runtime.executeTool('module_memory', {
+      op: 'get',
+      key: 'selectedFunction',
+    }, rightHost)).resolves.toMatchObject({
+      ok: true,
+      data: { found: false, value: null },
+    })
+  })
+
+  it('exposes temporary memory inside module_script', async () => {
+    const result = await createRuntime().executeTool('module_script', {
+      script: `
+        this.memory.set('draftArgs', { id: 'item-2' })
+        return {
+          keys: this.memory.list(),
+          draftArgs: this.memory.get('draftArgs'),
+          snapshot: this.memory.snapshot(),
+        }
+      `,
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: {
+        keys: ['draftArgs'],
+        draftArgs: { id: 'item-2' },
+        snapshot: {
+          draftArgs: { id: 'item-2' },
+        },
+      },
+    })
   })
 
   it('module_query returns module summaries and optional function summaries', async () => {

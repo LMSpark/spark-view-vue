@@ -3,7 +3,7 @@
  *
  * Keeps the UI layer away from AI platform tokens and page-config AI registration:
  * UI passes a generic capability consumer and ProjectEditor, this adapter wires them
- * to the pageDesign business registration and live PageNode edit host.
+ * to the pageDesign business registration and live ProjectEditor model.
  */
 import { createAiRunAdapter, noopTraceSink } from '@spark-view/spark-app'
 import type {
@@ -73,9 +73,12 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
 
   const pageDesignHost = ensurePageDesignBusiness({
     host: aiAgentHost,
-    getPageDesignEditHost: (context) => command.editor.createPageDesignEditHost({
-      pageId: context.moduleInstanceId,
-    }),
+    getPageDesignEditor: (context) => {
+      if (context.moduleInstanceId !== pageId) {
+        throw new Error(`pageDesign editor mismatch: expected "${pageId}", got "${context.moduleInstanceId}".`)
+      }
+      return command.editor
+    },
   })
 
   let sawToolCall = false

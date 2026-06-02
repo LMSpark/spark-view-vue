@@ -58,6 +58,9 @@ function typeToJsonSchema(
   if (isArrayLike(checker, type)) return arrayToJsonSchema(checker, type, state)
   if (isRecordType(checker, type)) return { type: 'object', additionalProperties: true }
 
+  const classInstanceName = readClassInstanceName(checker, type)
+  if (classInstanceName !== undefined) return { type: 'object', title: classInstanceName }
+
   const typeKey = readNamedObjectKey(checker, type)
   if (typeKey !== undefined && !options.inlineNamedObject) {
     ensureDefinition(checker, type, state, typeKey)
@@ -157,6 +160,14 @@ function readNamedObjectKey(checker: ts.TypeChecker, type: ts.Type): string | un
   if (isAnonymousObjectType(type)) return undefined
   const symbol = type.aliasSymbol ?? type.getSymbol()
   if (symbol === undefined) return undefined
+  const name = checker.symbolToString(symbol)
+  return isUsefulDefinitionName(name) ? name : undefined
+}
+
+function readClassInstanceName(checker: ts.TypeChecker, type: ts.Type): string | undefined {
+  const symbol = type.getSymbol()
+  if (symbol === undefined) return undefined
+  if (symbol.declarations?.some(ts.isClassDeclaration) !== true) return undefined
   const name = checker.symbolToString(symbol)
   return isUsefulDefinitionName(name) ? name : undefined
 }

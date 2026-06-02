@@ -1,33 +1,7 @@
 {
   "schemaVersion": 1,
   "generatedBy": "packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts",
-  "note": "Do not edit by hand; update domain API class JSDoc and rerun pnpm run generate:module-metadata.",
-  "diagnostics": {
-    "abilityCount": 4,
-    "moduleCount": 1,
-    "actionCount": 0,
-    "resultApiCount": 4,
-    "referencedApiKinds": [
-      "project-node-collection"
-    ],
-    "emptySchemaNodeCount": 0,
-    "maxSchemaDepth": 0,
-    "modules": [
-      {
-        "kind": "project",
-        "name": "Page Design Project",
-        "actionCount": 0,
-        "directResultApiKinds": [
-          "project-node-collection"
-        ],
-        "resultApiCount": 4,
-        "emptySchemaNodeCount": 0,
-        "maxSchemaDepth": 0,
-        "actions": []
-      }
-    ],
-    "findings": []
-  },
+  "note": "Runtime metadata; diagnostics are emitted in page-design-module-metadata.generated.json.",
   "modules": [
     {
       "schemaVersion": 1,

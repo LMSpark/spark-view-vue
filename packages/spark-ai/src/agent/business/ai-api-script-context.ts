@@ -4,7 +4,7 @@ import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from
 
 type MethodTarget = Readonly<Record<string, unknown>>
 type ScriptCallable = (args?: AiJsonParams) => unknown
-type ApiMethod = (ctx: AiModulePathContext, args: AiJsonParams) => unknown
+type ApiMethod = (first: AiModulePathContext | AiJsonParams, second?: AiJsonParams) => unknown
 
 type ApiProxyState = Readonly<{
   value: Promise<unknown>
@@ -65,13 +65,19 @@ export async function executeAiApiAction(
       '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
     )
   }
-  const raw = await method.call(target, ctx, args)
+  const raw = await callApiMethod(method, target, action, ctx, args)
   if (raw instanceof AiModuleResult) return raw
-  return AiModuleResult.failCode(
-    'INVALID_ACTION_RESULT',
-    `${action.name} 必须返回 AiModuleResult`,
-    '检查业务方法签名，不要返回普通对象或 undefined。',
-  )
+  return AiModuleResult.ok(raw)
+}
+
+export class AiApiScriptActionFailure extends Error {
+  public constructor(
+    public readonly actionName: string,
+    public readonly result: AiModuleResult<unknown>,
+  ) {
+    const first = result.checks?.[0]
+    super(first === undefined ? `${actionName} failed` : `${first.code}: ${first.message}`)
+  }
 }
 
 function createApiProxy(state: ApiProxyState, ctx: AiModulePathContext): unknown {
@@ -113,8 +119,7 @@ async function callApiActionInScript(
 ): Promise<unknown> {
   const result = await executeAiApiAction(target, action, args, ctx)
   if (!result.ok) {
-    const first = result.checks?.[0]
-    throw new Error(first === undefined ? `${action.name} failed` : `${first.code}: ${first.message}`)
+    throw new AiApiScriptActionFailure(action.name, result)
   }
   return result.data
 }
@@ -156,6 +161,8 @@ function createResultProxy(
 }
 
 function resolvePropertyApi(api: AiApiObjectMetadata, property: string): AiApiObjectMetadata | undefined {
+  const attributeApi = api.attributes?.find(attribute => attribute.name === property)?.api
+  if (attributeApi !== undefined) return attributeApi
   for (const action of api.actions) {
     const found = action.resultApis?.find(ref => ref.resultPath.length === 1 && ref.resultPath[0] === property)
     if (found !== undefined) return found.api
@@ -178,6 +185,24 @@ function isScriptCallable(value: unknown): value is ScriptCallable {
 
 function isApiMethod(value: unknown): value is ApiMethod {
   return typeof value === 'function'
+}
+
+function callApiMethod(
+  method: ApiMethod,
+  target: MethodTarget,
+  action: AiApiActionMetadata,
+  ctx: AiModulePathContext,
+  args: AiJsonParams,
+): unknown {
+  if (action.takesContext === true) return method.call(target, ctx, args)
+  if (action.takesContext === false) return Reflect.apply(method, target, projectPositionalArgs(action, args))
+  return method.length >= 2 ? method.call(target, ctx, args) : method.call(target, args)
+}
+
+function projectPositionalArgs(action: AiApiActionMetadata, args: AiJsonParams): readonly unknown[] {
+  const properties = action.paramsSchema.properties
+  if (properties === undefined) return []
+  return Object.keys(properties).map(name => args[name])
 }
 
 function samePath(left: readonly string[], right: readonly string[]): boolean {

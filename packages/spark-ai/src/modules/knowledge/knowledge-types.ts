@@ -282,12 +282,14 @@ export type AiModuleKnowledgeFunctionGuideInput = Readonly<{
 export type AiModuleKnowledgeAttributeGuideInput = Readonly<{
   kind?: string
   attrName?: string
+  property?: string
 }>
 
 export type AiModuleKnowledgeAttributeDetailGuide = Readonly<{
   knowledgeLevel: 'detail'
   kind: string
   attrName: string
+  property?: string
   name: string
   description: string
   access: AiModuleKnowledgeAttributeAccessMode
@@ -295,6 +297,8 @@ export type AiModuleKnowledgeAttributeDetailGuide = Readonly<{
   writable: boolean
   directoryLookupStep: string
   schema: AiJsonSchema
+  childProperties: readonly string[]
+  propertyLookupSteps: readonly string[]
   readStep?: string
   writeStep?: string
   example?: AiJsonValue

@@ -48,8 +48,17 @@ function collectApiObjectMetadataFindings(
   if (api.description.trim().length === 0) {
     findings.push({ level: 'error', rule: 'description-required', message: `${api.kind} description 不能为空` })
   }
+  const constructorMetadata = api.constructorSignature
+  if (constructorMetadata !== undefined) {
+    if (constructorMetadata.description.trim().length === 0) {
+      findings.push({ level: 'error', rule: 'constructor-description-required', message: `${api.kind} constructor description 不能为空` })
+    }
+    if (constructorMetadata.paramsSchema.type !== 'object') {
+      findings.push({ level: 'error', rule: 'constructor-params-schema-invalid', message: `${api.kind} constructor paramsSchema 必须是 type=object` })
+    }
+  }
   if (api.actions.length === 0) {
-    findings.push({ level: 'error', rule: 'actions-required', message: `${api.kind} 至少需要一个 @moduleAction` })
+    findings.push({ level: 'error', rule: 'actions-required', message: `${api.kind} 至少需要一个 action` })
   }
 
   const actionNames = new Set<string>()

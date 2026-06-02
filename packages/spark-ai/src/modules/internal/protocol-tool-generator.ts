@@ -16,6 +16,7 @@
  *   module_attr    — 读写模块的声明属性
  *   module_call    — 兼容旧协议调用模块声明函数；新协议优先直接暴露 functionName({ path, args })
  *   module_script  — 在模块上下文沙箱中执行脚本，适合组合多次查询/调用
+ *   module_memory  — 当前会话/业务实例的临时 JSON 记忆体
  *   human_question — 遇到不确定信息时向用户发问（暂停工具循环）
  *   agent_complete — 以工具调用完成当前生产线，避免自然语言正文收尾
  *
@@ -57,6 +58,7 @@ export type ProtocolToolName =
   | 'module_attr'
   | 'module_call'
   | 'module_script'
+  | 'module_memory'
   | 'human_question'
   | 'agent_complete'
 
@@ -70,6 +72,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleAttr: 'module_attr'
   moduleCall: 'module_call'
   moduleScript: 'module_script'
+  moduleMemory: 'module_memory'
   humanQuestion: 'human_question'
   agentComplete: 'agent_complete'
 }> = Object.freeze({
@@ -81,6 +84,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleAttr: 'module_attr',
   moduleCall: 'module_call',
   moduleScript: 'module_script',
+  moduleMemory: 'module_memory',
   humanQuestion: 'human_question',
   agentComplete: 'agent_complete',
 })
@@ -111,6 +115,7 @@ export class ProtocolToolGenerator {
       this.buildModuleAttr(),
       this.buildModuleCall(),
       this.buildModuleScript(),
+      this.buildModuleMemory(),
       this.buildHumanQuestion(),
       this.buildAgentComplete(),
       ...this.buildDeclaredFunctionTools(),
@@ -178,6 +183,7 @@ export class ProtocolToolGenerator {
         description: [
           'Read the exact contract for one declared attribute before module_attr.',
           'Requires both kind and attrName. Returns access, schema, read/write steps, and example when declared.',
+          'For complex object attributes, pass property like "metadata.columns" to inspect only that local schema branch.',
           'Use this after module_query or module_guide selects a real attribute name.',
         ].join('\n'),
         parameters: {
@@ -185,6 +191,7 @@ export class ProtocolToolGenerator {
           properties: {
             kind: { type: 'string', description: 'Registered module kind that declares the attribute.' },
             attrName: { type: 'string', description: 'Exact declared attribute name on the module kind.' },
+            property: { type: 'string', description: 'Optional dot-separated property branch inside the attribute schema.' },
           },
           required: ['kind', 'attrName'],
           additionalProperties: false,
@@ -325,6 +332,41 @@ export class ProtocolToolGenerator {
             },
           },
           required: ['script'],
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  /** module_memory — 当前会话/业务实例的临时 JSON 记忆体 */
+  private buildModuleMemory(): AiModuleToolSpec {
+    return {
+      type: 'function',
+      function: {
+        name: PROTOCOL_TOOL_NAMES.moduleMemory,
+        description: [
+          'Read and write temporary JSON memory for the current module host scope.',
+          'Use it as an LLM scratchpad for selected kind/function names, guide digests, draft args, and diagnostic notes.',
+          'Do not store business live state or durable user facts here; this memory is runtime-local and may be cleared.',
+        ].join('\n'),
+        parameters: {
+          type: 'object',
+          properties: {
+            op: {
+              type: 'string',
+              enum: ['get', 'set', 'delete', 'list', 'clear'],
+              description: 'Memory operation.',
+            },
+            key: {
+              type: 'string',
+              description: 'Memory key. Required for get/set/delete.',
+            },
+            value: {
+              type: ['string', 'number', 'boolean', 'object', 'array', 'null'],
+              description: 'JSON value. Required for set.',
+            },
+          },
+          required: ['op'],
           additionalProperties: false,
         },
       },

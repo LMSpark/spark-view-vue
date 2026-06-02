@@ -1,7 +1,7 @@
 /**
- * PageDesign AI 会话质量诊断。
+ * PageDesign AI trace 质量诊断。
  *
- * 这里只检查会话历史是否显式查询过组件 payload 指南；页面业务验收留给上层 smoke/e2e。
+ * 这里只检查 AI trace/history 是否显式查询过组件 payload 指南；页面业务验收留给上层 smoke/e2e。
  */
 
 import type { AiAgentSessionRecord } from '@spark-view/spark-ai/agent'
@@ -22,12 +22,12 @@ type PageDesignJsonParseResult = Readonly<
   | { ok: false; error: string }
 >
 
-export function validatePageDesignPayloadGuidesFromSession(
+export function validatePageDesignPayloadGuidesFromHistory(
   files: PageDesignFileSnapshot,
   sessionRecord: AiAgentSessionRecord | null | undefined,
 ): PageDesignPayloadGuideValidation {
   const componentTypes = componentTypesFromPageDesignRule(files)
-  const guidedPayloadKeys = guidedPageDesignPayloadKeysFromSession(sessionRecord)
+  const guidedPayloadKeys = guidedPageDesignPayloadKeysFromHistory(sessionRecord)
   const guidedSet = new Set(guidedPayloadKeys)
   const missingGuides = componentTypes.filter((type) => !guidedSet.has(type))
   return {
@@ -47,7 +47,7 @@ export function componentTypesFromPageDesignRule(files: PageDesignFileSnapshot):
     .sort()
 }
 
-export function guidedPageDesignPayloadKeysFromSession(
+export function guidedPageDesignPayloadKeysFromHistory(
   sessionRecord: AiAgentSessionRecord | null | undefined,
 ): readonly string[] {
   return [...new Set((sessionRecord?.history ?? []).flatMap((entry) => {

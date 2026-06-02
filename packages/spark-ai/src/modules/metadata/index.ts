@@ -1,5 +1,7 @@
 export type {
   AiApiActionMetadata,
+  AiApiAttributeMetadata,
+  AiApiConstructorMetadata,
   AiApiObjectMetadata,
   AiApiResultApiRef,
   AiModuleMetadataJson,

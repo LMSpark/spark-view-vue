@@ -18,14 +18,12 @@
  * │     - 快照读取                                        │
  * │     - 节点属性编辑 & 保存                               │
  * │     - 四文件加载 / 编辑 / 保存                          │
- * │     - 工具访问（nodeTree / dataSet）                   │
  * │     - 生命周期（导航树节点 + 页面挂载）                  │
  * │     - 版本管理                                        │
  * │     - 辅助                                            │
  * └──────────────────────────────────────────────────────┘
  */
 
-import type { DataSetCrudTool } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 
 import type {
@@ -54,8 +52,6 @@ import {
   createReservedRootGroup,
 } from '../navigation/editing.service'
 import { NavigationConfigClient } from '../navigation/client.service'
-
-import { SparkNodeTree } from '@spark-view/spark-data'
 
 // ── 内部域模型导入（page-model / project） ──
 
@@ -87,7 +83,6 @@ import {
   type PageNodeFileName,
 } from '../file/file-registry.service'
 import type { PageNodeFileStorage } from '../../factory/page-node.factory'
-import type { PageDesignEditHost } from '../../contract/edit-host.contract'
 import type { ProjectModelDto } from '../../contract/project.contract'
 export type { ProjectModelDto } from '../../contract/project.contract'
 import { ProjectModel } from '../../entity/project/project.entity'
@@ -127,10 +122,6 @@ export type ProjectEditorLoadOptions = {
   forceReload?: boolean
 }
 
-export type PageDesignEditHostOptions = {
-  pageId: string
-}
-
 /** createPageForSelectedNode 参数 */
 export type CreatePageForSelectedNodeParams = {
   pageId: string
@@ -166,8 +157,6 @@ export type ProjectEditorSnapshot = {
   navigationLocation: NavNodeLocation | null
   navigationEditDto: NavigationNodeEditInputDto | null
   pageFeatures: ProjectPageNodeSummary[]
-  nodeTree: SparkNodeTree | null
-  dataSetTool: DataSetCrudTool | null
   ruleJson: string
   pageDataJson: string
   script: string
@@ -328,7 +317,22 @@ export class ProjectEditor {
   /** 获取当前活动配置页节点（不存在时返回 null）。 */
   getActivePage(): ConfigPageNode | null {
     if (!this._activePageId) return null
-    return this.project.nodes.findConfigPageByPageId(this._activePageId)
+    return this.project.findConfigPageByPageId(this._activePageId)
+  }
+
+  /** 获取当前已加载配置页面节点。 */
+  requireActivePage(): ConfigPageNode {
+    if (!this._activePageId) {
+      throw new Error('无活动页面，无法获取配置页面节点')
+    }
+    const page = this.project.findConfigPageByPageId(this._activePageId)
+    if (page === null) {
+      throw new Error(`配置页面节点 ${this._activePageId} 不存在或尚未打开`)
+    }
+    if (!page.isLoaded) {
+      throw new Error(`配置页面节点 ${page.pageId} 尚未加载完成`)
+    }
+    return page
   }
 
   /**
@@ -339,14 +343,14 @@ export class ProjectEditor {
     if (!normalized) {
       throw new Error('pageId 不能为空')
     }
-    const page = this.project.nodes.openConfigPage(normalized)
+    const page = this.project.openConfigPage(normalized)
     page.subscribe(() => this.bumpRevision())
     return page
   }
 
   /** 关闭未挂载的配置页节点。 */
   closePage(pageId: string): void {
-    this.project.nodes.closeConfigPage(pageId)
+    this.project.closeConfigPage(pageId)
   }
 
   /**
@@ -354,7 +358,7 @@ export class ProjectEditor {
    * 页面已从树中移除时 navNode 置为 null。
    */
   refreshNavRefs(): void {
-    this.project.nodes.refreshNavRefs()
+    this.project.refreshNavRefs()
   }
 
   // ── 导航加载 & 选择 ──────────────────────────────────
@@ -375,7 +379,7 @@ export class ProjectEditor {
       this.bumpRevision()
       return
     }
-    const found = this.project.nodes.findRawNodeById(normalized)
+    const found = this.project.findRawNodeById(normalized)
     if (!found) {
       throw new Error(`导航节点未找到: ${normalized}`)
     }
@@ -405,7 +409,7 @@ export class ProjectEditor {
     }
 
     this._activePageId = pageId
-    const mountedNode = this.project.nodes.findPageNode(pageId)
+    const mountedNode = this.project.findPageNode(pageId)
     this.selectedNodeId = mountedNode?.id ?? null
     const page = this.openPage(pageId)
     const pageNodeOptions: { forceReload?: boolean } = {}
@@ -431,12 +435,12 @@ export class ProjectEditor {
       this.clearActivePage()
       return
     }
-    if (options?.forceReset === true && this._activePageId === normalizedPageId) {
+    if (options?.forceReset === true && this.getActivePage()?.pageId === normalizedPageId) {
       this.closePage(normalizedPageId)
     }
     this._activePageId = normalizedPageId
     this.openPage(normalizedPageId)
-    const mountedNode = this.project.nodes.findPageNode(normalizedPageId)
+    const mountedNode = this.project.findPageNode(normalizedPageId)
     if (mountedNode) {
       this.selectedNodeId = mountedNode.id
     }
@@ -447,15 +451,15 @@ export class ProjectEditor {
 
   /** 返回当前编辑上下文的即时快照。全部从 active PageNode 读取。 */
   readSnapshot(): ProjectEditorSnapshot {
-    const pageId = this._activePageId
-    const root = this.project.nodes.root
+    const pageId = this.getActivePage()?.pageId ?? ''
+    const root = this.project.root
     const treeData = root.children
     const selectedNode = this.selectedNodeId
-      ? this.project.nodes.findRawNodeById(this.selectedNodeId)
+      ? this.project.findRawNodeById(this.selectedNodeId)
       : null
 
     const navLocation = selectedNode
-      ? this.project.nodes.findNodeLocation(selectedNode.id)
+      ? this.project.findNodeLocation(selectedNode.id)
       : null
 
     const navEditDto = selectedNode
@@ -463,7 +467,7 @@ export class ProjectEditor {
       : null
 
     const activePage = this.getActivePage()
-    const pageFeatures = this.project.nodes.readPageSummaries()
+    const pageFeatures = this.project.readPageSummaries()
 
     const dirtyFiles = new Set<PageNodeFileName>()
     const parseErrors: Record<PageNodeFileName, string | null> = {
@@ -492,8 +496,6 @@ export class ProjectEditor {
       navigationLocation: navLocation,
       navigationEditDto: navEditDto,
       pageFeatures,
-      nodeTree: activePage?.rule.tree ?? null,
-      dataSetTool: activePage?.dataSet.tool ?? null,
       ruleJson: activePage?.rule.getText() ?? '',
       pageDataJson: activePage?.dataSet.getText() ?? '',
       script: activePage?.script.text ?? '',
@@ -511,8 +513,8 @@ export class ProjectEditor {
   readProjectModelDto(): ProjectModelDto {
     return {
       projectId: this.project.projectId,
-      navigation: this.project.nodes.root,
-      pages: this.project.nodes.readPageSummaries(),
+      navigation: this.project.root,
+      pages: this.project.readPageSummaries(),
     }
   }
 
@@ -642,130 +644,11 @@ export class ProjectEditor {
     return page.getFileText(name)
   }
 
-  /** 创建指定 pageId 的 PageDesign live edit host。 */
-  createPageDesignEditHost(options: PageDesignEditHostOptions): PageDesignEditHost {
-    const editor = this
-    const targetPageId = options.pageId.trim()
-    if (!targetPageId) {
-      throw new Error('PageDesign edit host requires a non-empty pageId.')
-    }
-    const targetLabel = (): string => targetPageId
-    const page = (): ConfigPageNode | null => {
-      const resolved = editor.project.nodes.findConfigPageByPageId(targetPageId)
-      if (resolved?.isLoaded !== true) return null
-      return resolved
-    }
-    const requirePage = (operation: string): ConfigPageNode => {
-      const resolved = page()
-      if (resolved !== null) return resolved
-      throw new Error(`PageDesign edit host unavailable: page "${targetLabel()}" is not opened and loaded for ${operation}.`)
-    }
-    const notifyChanged = (): void => {
-      editor.bumpRevision()
-    }
-    return {
-      getNodeTree: () => {
-        const p = page()
-        return p?.rule.tree ?? null
-      },
-      onNodeTreeChanged: (nodeTree) => {
-        const p = requirePage('onNodeTreeChanged')
-        p.rule.tree = nodeTree instanceof SparkNodeTree
-          ? nodeTree
-          : SparkNodeTree.fromJson(nodeTree.toJSON())
-        p.rule.markDirty()
-        notifyChanged()
-      },
-      getDataSetTool: () => {
-        const p = page()
-        return p?.dataSet.tool ?? null
-      },
-      onDataSetChanged: (tool) => {
-        const p = requirePage('onDataSetChanged')
-        p.dataSet.tool = tool
-        p.dataSet.markDirty()
-        notifyChanged()
-      },
-      readScript: () => {
-        return requirePage('readScript').script.text
-      },
-      writeScript: (content) => {
-        const p = requirePage('writeScript')
-        p.script.setText(content)
-        notifyChanged()
-      },
-      readStyle: () => {
-        return requirePage('readStyle').style.text
-      },
-      writeStyle: (content) => {
-        const p = requirePage('writeStyle')
-        p.style.setText(content)
-        notifyChanged()
-      },
-    }
-  }
-
-  // ── 工具访问：节点树 ─────────────────────────────────
-
-  /** 获取当前 rule.json 的节点树编辑模型。始终返回已初始化的 tree。 */
-  getNodeTree(): SparkNodeTree | null {
-    const page = this.getActivePage()
-    return page ? page.rule.tree : null
-  }
-
-  /** 获取当前 rule.json 的节点树，未加载时 fail-fast。 */
-  requireNodeTree(): SparkNodeTree {
-    const tree = this.getNodeTree()
-    if (!tree) {
-      throw new Error('rule.json 未加载，无法操作节点树')
-    }
-    return tree
-  }
-
-  /** 编辑节点树。委托 active PageNode 子模型。 */
-  async editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void> {
-    const page = this.getActivePage()
-    if (!page) {
-      throw new Error('无活动页面，无法编辑节点树')
-    }
-    await run(page.rule.tree)
-    page.rule.markDirty()
-    this.bumpRevision()
-  }
-
-  // ── 工具访问：数据集 ─────────────────────────────────
-
-  /** 获取当前 pagedata.json 的数据集编辑工具。始终返回已初始化的 tool。 */
-  getDataSetTool(): DataSetCrudTool | null {
-    const page = this.getActivePage()
-    return page ? page.dataSet.tool : null
-  }
-
-  /** 获取当前 pagedata.json 的数据集工具，未加载时 fail-fast。 */
-  requireDataSetTool(): DataSetCrudTool {
-    const tool = this.getDataSetTool()
-    if (!tool) {
-      throw new Error('pagedata.json 未加载，无法操作数据集')
-    }
-    return tool
-  }
-
-  /** 编辑数据集。委托 active PageNode 子模型。 */
-  async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
-    const page = this.getActivePage()
-    if (!page) {
-      throw new Error('无活动页面，无法编辑数据集')
-    }
-    await run(page.dataSet.tool)
-    page.dataSet.markDirty()
-    this.bumpRevision()
-  }
-
   // ── 生命周期：导航树节点 ──────────────────────────────
 
   /** 在导航根添加模块节点。 */
   addRootNode(createId: () => string): NavNode {
-    const node = this.project.nodes.addRootModule(createId)
+    const node = this.project.addRootModule(createId)
     this.markNavigationDirty('root')
     this.bumpRevision()
     return node
@@ -781,7 +664,7 @@ export class ProjectEditor {
   /** 在当前选中节点下添加子页面节点。无选中节点时添加到根下。 */
   addChildPageNode(createId: () => string): NavNode {
     const selected = this.getSelectedNode()
-    const node = this.project.nodes.addChildPage(createId, selected)
+    const node = this.project.addChildPage(createId, selected)
     this.markNavigationDirty('root')
     this.bumpRevision()
     return node
@@ -790,7 +673,7 @@ export class ProjectEditor {
   /** 从项目节点集合中移除节点并返回被删节点。如移除的是当前选中节点则清除选中。 */
   removeNode(nodeId: string): NavNode | null {
     const normalized = nodeId.trim()
-    const removed = this.project.nodes.removeNode(normalized)
+    const removed = this.project.removeNode(normalized)
     if (this.selectedNodeId === normalized) {
       this.selectedNodeId = null
     }
@@ -813,7 +696,7 @@ export class ProjectEditor {
     this.navigationDirtyScope = null
     // 同步远端状态到内存
     const root = await this.navClient.loadRoot()
-    this.project.nodes.replaceRoot(root)
+    this.project.replaceRoot(root)
     this.bumpRevision()
     return result
   }
@@ -822,9 +705,9 @@ export class ProjectEditor {
   restoreReservedRootGroup(placement: 'toolbar' | 'user-menu', createId: () => string): NavNode {
     const node = createReservedRootGroup(placement, {
       createId,
-      templateRoot: this.project.nodes.root,
+      templateRoot: this.project.root,
     })
-    const children = this.project.nodes.children
+    const children = this.project.navigationChildren
     const existingIndex = children.findIndex(
       child => child.childPlacement === placement,
     )
@@ -922,7 +805,7 @@ export class ProjectEditor {
   async deletePageFiles(pageId: string): Promise<void> {
     const normalized = pageId.trim()
     await this.fileDeleter.deleteFiles(normalized)
-    if (this._activePageId === normalized) {
+    if (this.getActivePage()?.pageId === normalized) {
       this._activePageId = ''
     }
     this.closePage(normalized)
@@ -937,7 +820,7 @@ export class ProjectEditor {
       await this.fileDeleter.deleteFiles(params.pageId)
     }
     const result = { deletedNode, deletedFiles: shouldDeleteFiles }
-    if (this._activePageId === params.pageId) {
+    if (this.getActivePage()?.pageId === params.pageId) {
       this._activePageId = ''
     }
     await this.reloadNavigation({ selectedNodeId: this.selectedNodeId })
@@ -955,8 +838,9 @@ export class ProjectEditor {
 
   /** 获取指定文件的远端版本列表。 */
   async listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
-    if (!this._activePageId) return []
-    return this.fileVersions.listVersions(this._activePageId, filename)
+    const page = this.getActivePage()
+    if (!page) return []
+    return this.fileVersions.listVersions(page.pageId, filename)
   }
 
   /** 恢复指定文件的远端历史版本。主路径走子模型 restoreVersion。 */
@@ -970,14 +854,16 @@ export class ProjectEditor {
 
   /** 为指定文件创建远端版本快照。 */
   async createRemotePageVersion(filename: PageNodeFileName): Promise<void> {
-    if (!this._activePageId) return
-    await this.fileVersions.createVersion(this._activePageId, filename)
+    const page = this.getActivePage()
+    if (!page) return
+    await this.fileVersions.createVersion(page.pageId, filename)
   }
 
   /** 删除指定文件的远端版本。 */
   async deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
-    if (!this._activePageId) return
-    await this.fileVersions.deleteVersion(this._activePageId, filename, version)
+    const page = this.getActivePage()
+    if (!page) return
+    await this.fileVersions.deleteVersion(page.pageId, filename, version)
   }
 
   /** 通知外部 SSE 事件导致页面文件变化，使缓存失效。 */
@@ -1014,7 +900,7 @@ export class ProjectEditor {
 
   private getSelectedNode(): NavNode | null {
     if (!this.selectedNodeId) return null
-    return this.project.nodes.findRawNodeById(this.selectedNodeId)
+    return this.project.findRawNodeById(this.selectedNodeId)
   }
 
   private requireSelectedNode(message: string): NavNode {
@@ -1059,9 +945,9 @@ export class ProjectEditor {
 
   private async reloadNavigation(options?: { selectedNodeId?: string | null }): Promise<AppNavRoot> {
     const root = await this.navClient.loadRoot()
-    this.project.nodes.replaceRoot(root)
+    this.project.replaceRoot(root)
     const selectedNodeId = options?.selectedNodeId ?? null
-    this.selectedNodeId = selectedNodeId && this.project.nodes.findRawNodeById(selectedNodeId)
+    this.selectedNodeId = selectedNodeId && this.project.findRawNodeById(selectedNodeId)
       ? selectedNodeId
       : null
     this.markNavigationClean()

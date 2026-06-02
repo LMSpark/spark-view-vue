@@ -1,4 +1,6 @@
 import { describe, expect, it } from 'vitest'
+import type { AppNavRoot, NavNode } from '@spark-view/spark-data'
+import type { HttpClientBase, HttpResponse } from '@spark-view/spark-utils'
 import { ConfigPageNode, ModuleNode } from '@spark-view/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
 import { createRequest } from '@spark-view/spark-utils'
@@ -18,12 +20,12 @@ describe('ProjectModel', () => {
 
   it('finds pages by pageId from the tree', () => {
     const p = createEditor().project
-    p.nodes.replaceRoot({ childPlacement: 'header', children: [{
+    p.replaceRoot({ title: 'CRM', childPlacement: 'header', children: [{
       id: 'orders-node', title: '订单页面', nodeKind: 'page', path: '/orders',
       children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page', description: '订单详情功能' }],
     }]})
-    const page = p.nodes.findConfigPageByPageId('orders')
-    const sub = p.nodes.findConfigPageByPageId('order-detail')
+    const page = p.findConfigPageByPageId('orders')
+    const sub = p.findConfigPageByPageId('order-detail')
     expect(page).toBeInstanceOf(ConfigPageNode)
     expect(sub).toBeInstanceOf(ConfigPageNode)
     expect(page?.nodeKind).toBe('page')
@@ -33,23 +35,40 @@ describe('ProjectModel', () => {
 
   it('builds tree from flat collection and finds nodes', () => {
     const p = createEditor().project
-    p.nodes.replaceRoot({ childPlacement: 'header', children: [
+    p.replaceRoot({ title: 'CRM', childPlacement: 'header', children: [
       { id: 'sales', title: '销售模块', nodeKind: 'module', description: '销售模块', children: [
         { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders', description: '订单页面' },
       ]},
     ]})
-    const tree = p.nodes.toTree()
+    const tree = p.toTree()
     expect(tree.length).toBeGreaterThanOrEqual(1)
-    const salesNode = p.nodes.findNodeById('sales')
+    const salesNode = p.findNodeById('sales')
     expect(salesNode).toBeInstanceOf(ModuleNode)
     expect(salesNode?.description).toBe('销售模块')
-    const orderNode = p.nodes.findNodeById('orders')
+    const orderNode = p.findNodeById('orders')
     expect(orderNode).toBeInstanceOf(ConfigPageNode)
+  })
+
+  it('exposes node hierarchy instead of a flat node list', () => {
+    const p = createEditor().project
+    p.replaceRoot({ title: 'CRM', childPlacement: 'header', children: [
+      { id: 'sales', title: '销售模块', nodeKind: 'module', children: [
+        { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
+      ]},
+      { id: 'settings', title: '设置', nodeKind: 'page', path: '/settings' },
+    ]})
+
+    expect(p.type).toBe('module')
+    expect(p.name).toBe('crm')
+    expect(p.children.map(node => node.id)).toEqual(['sales', 'settings'])
+    expect(p.children[0]?.children.map(node => node.id)).toEqual(['orders'])
+    expect(p.children[1]?.children).toEqual([])
+    expect(p.findNodeById('sales')?.attributes).toMatchObject({ nodeKind: 'module' })
   })
 
   it('supports detached config pages', () => {
     const p = createEditor().project
-    const page = p.nodes.openConfigPage('standalone')
+    const page = p.openConfigPage('standalone')
     expect(page).toBeInstanceOf(ConfigPageNode)
     expect(page.pageId).toBe('standalone')
     expect(page.navigation.navNode).toBeNull()
@@ -95,25 +114,33 @@ describe('ProjectModel', () => {
 
   it('moves mounted pages through the dedicated move endpoint', async () => {
     const putCalls: Array<{ url: string; body: unknown }> = []
-    const root = {
+    const root: AppNavRoot = {
+      title: 'CRM',
       childPlacement: 'header' as const,
       children: [
         { id: 'orders', title: '订单', nodeKind: 'page' as const, path: '/orders' },
       ],
     }
+    const movedNode: NavNode = { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders', order: 0 }
+    const http = {
+      get: async <T = unknown>() => root as T,
+      put: async <T = unknown>(url: string, body: unknown) => {
+        putCalls.push({ url, body })
+        return { node: movedNode } as T
+      },
+      post: async <T = unknown>() => ({ node: movedNode } as T),
+      delete: async <T = unknown>() => ({ deleted: { id: 'orders', title: '订单' } } as T),
+      requestFull: async <T = unknown>(): Promise<HttpResponse<T>> => ({
+        data: {} as T,
+        status: 200,
+        statusText: 'OK',
+        headers: {},
+      }),
+      clearCache: () => {},
+    } as unknown as HttpClientBase
     const editor = createProjectEditor({
       projectId: 'crm',
-      http: {
-        get: async () => root,
-        put: async (url: string, body: unknown) => {
-          putCalls.push({ url, body })
-          return { node: { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders', order: 0 } }
-        },
-        post: async () => ({ node: { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders' } }),
-        delete: async () => ({ deleted: { id: 'orders', title: '订单' } }),
-        requestFull: async () => ({ data: {}, status: 200, statusText: 'OK', headers: {}, config: {} }),
-        clearCache: () => {},
-      },
+      http,
       getPageFilesApi: () => '/api/pages-config',
       getNavigationApi: () => '/api/navigation',
     })

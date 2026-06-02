@@ -8,7 +8,7 @@
 
 import { toErrorMessage } from '@spark-view/spark-utils'
 import { coerceJsonValue, type AiJsonValue } from '../../json'
-import { AiModuleResult } from '../protocol'
+import { AiModuleCheck, AiModuleResult } from '../protocol'
 
 export type AiModuleScriptContext = Readonly<Record<string, unknown>>
 
@@ -31,6 +31,27 @@ export async function executeModuleScript(
     return AiModuleResult.ok(data)
   } catch (error) {
     const location = findScriptErrorLocation(error)
+    const originalFailure = readOriginalAiModuleFailure(error)
+    if (originalFailure !== undefined) {
+      const locationHint = location === undefined
+        ? '脚本链式调用返回业务失败；先按原始错误码修正参数或业务状态。'
+        : `脚本第 ${String(location.line)} 行的链式调用返回业务失败；先按原始错误码修正参数或业务状态。`
+      return AiModuleResult.fail([
+        ...(originalFailure.checks ?? [
+          AiModuleCheck.error('SCRIPT_ACTION_FAILED', toErrorMessage(error), locationHint),
+        ]),
+        AiModuleCheck.error(
+          'SCRIPT_EXECUTION_FAILED',
+          location === undefined
+            ? `脚本链式调用失败: ${toErrorMessage(error)}`
+            : `脚本第 ${String(location.line)} 行链式调用失败: ${toErrorMessage(error)}`,
+          locationHint,
+        ),
+      ], {
+        ...(originalFailure.state ?? {}),
+        ...(location === undefined ? {} : { scriptLine: location.line }),
+      })
+    }
     const locationText = location === undefined ? '' : `，脚本第 ${String(location.line)} 行`
     return AiModuleResult.failCode(
       'SCRIPT_EXECUTION_FAILED',
@@ -40,6 +61,13 @@ export async function executeModuleScript(
         : `检查脚本第 ${String(location.line)} 行附近的语法、this helper 名称和参数 schema 后重试。`,
     )
   }
+}
+
+function readOriginalAiModuleFailure(error: unknown): AiModuleResult<unknown> | undefined {
+  if (!isIndexableObject(error)) return undefined
+  const result = error['result']
+  if (!(result instanceof AiModuleResult)) return undefined
+  return result.ok ? undefined : result
 }
 
 async function runScript(script: string, context: AiModuleScriptContext): Promise<unknown> {
@@ -73,4 +101,8 @@ function findScriptErrorLocation(error: unknown): Readonly<{ line: number, colum
     line,
     ...(Number.isInteger(generatedColumn) ? { column: generatedColumn } : {}),
   }
+}
+
+function isIndexableObject(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object'
 }

@@ -1,4 +1,4 @@
-import type { PageDesignEditHost } from '../../contract/edit-host.contract'
+import type { ProjectEditor } from '../../service/editor/project-editor.service'
 
 export type PageDesignServiceContext = {
   requestId: string
@@ -6,7 +6,7 @@ export type PageDesignServiceContext = {
 }
 
 export type PageDesignServiceOptions = {
-  getEditHost: (context: PageDesignServiceContext) => PageDesignEditHost
+  getEditor: (context: PageDesignServiceContext) => ProjectEditor
 }
 
 export type PageDesignServiceResult<TResult> =

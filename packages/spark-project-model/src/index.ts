@@ -76,7 +76,6 @@ export type {
 
 // ── 编辑宿主 ──────────────────────────────────────────
 
-export type { PageDesignEditHost } from './contract/edit-host.contract'
 
 // ── 契约 ──────────────────────────────────────────────
 

@@ -6,19 +6,32 @@
  */
 
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
-import type {
-  AiModuleAttributeMetadata,
-  AiModuleFunctionFailureMode,
-} from '../protocol/module-metadata'
+import type { AiModuleFunctionFailureMode } from '../protocol/module-metadata'
 
 /** API 对象元数据（根对象或 action 返回的嵌套对象）。 */
 export type AiApiObjectMetadata = Readonly<{
   kind: string
   name: string
   description: string
+  constructorSignature?: AiApiConstructorMetadata
   actions: readonly AiApiActionMetadata[]
-  /** v1 adapter 不消费 attributes；保留给后续属性 accessor 设计。 */
-  attributes?: readonly AiModuleAttributeMetadata[]
+  attributes?: readonly AiApiAttributeMetadata[]
+}>
+
+/** API 对象构造函数元数据。 */
+export type AiApiConstructorMetadata = Readonly<{
+  description: string
+  paramsSchema: AiJsonSchemaObject
+}>
+
+/** API 属性元数据。 */
+export type AiApiAttributeMetadata = Readonly<{
+  name: string
+  description: string
+  schema: AiJsonSchema
+  readable: boolean
+  writable: boolean
+  api?: AiApiObjectMetadata
 }>
 
 /** API action 元数据。 */
@@ -27,6 +40,7 @@ export type AiApiActionMetadata = Readonly<{
   methodName: string
   description: string
   paramsSchema: AiJsonSchemaObject
+  takesContext?: boolean
   resultSchema?: AiJsonSchema
   resultApis?: readonly AiApiResultApiRef[]
   usageRules?: readonly string[]
