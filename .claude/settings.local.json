@@ -27,7 +27,10 @@
       "Bash(pnpm --filter @spark-view/spark-page-config run build)",
       "Bash(npx vitest *)",
       "Bash(rm -rf src/*)",
-      "Bash(cp -r ../spark-page-config/src/* src/)"
+      "Bash(cp -r ../spark-page-config/src/* src/)",
+      "Bash(code --install-extension Catppuccin.catppuccin-vsc)",
+      "Bash(git restore *)",
+      "Bash(git clean *)"
     ],
     "additionalDirectories": [
       "D:\\SPARK_VIEW\\.claude"
