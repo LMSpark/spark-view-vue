@@ -1,5 +1,5 @@
 import type { ProjectModelData, ProjectNodeData } from '../../entity/node/node-base.entity'
-import type { ProjectNodeLocation } from './editing.service'
+import type { ProjectNodeLocation } from '../../entity/navigation/edit.entity'
 import {
   canUseModuleNodeKind,
   createRootModuleNode,
@@ -9,7 +9,7 @@ import {
   findNodeLocation,
   isSystemRootDirectory,
   normalizePageIdFromPath,
-} from './editing.service'
+} from '../../entity/node/node-helpers'
 import {
   appendProjectDescriptionContext,
   canProjectNodeContainChild,

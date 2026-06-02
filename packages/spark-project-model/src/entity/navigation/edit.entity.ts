@@ -11,18 +11,13 @@
  */
 
 import type {
+  ChildPlacement,
   NavContextConfig,
   NavContextItem,
   NavNodeKind,
   NavPermissionMode,
   ProjectNodeData,
 } from '../node/node-base.entity'
-import {
-  createNavigationNodeEditDto,
-  applyNavigationNodeEditDtoToNode,
-  applyNodeKindPresetToEditDto,
-} from '../../service/navigation/editing.service'
-import type { NavigationConfigClient } from '../../service/navigation/client.service'
 
 export type NavigationNodeEditDto = {
   id: string
@@ -85,7 +80,24 @@ export type ProjectNodeLocation = {
   index: number
 }
 
+export type NavigationNodePatchWriter = {
+  updateNode(id: string, patch: NavigationNodeEditPatchDto): Promise<ProjectNodeData>
+}
+
 type NavigationNodeEditModelPatchDto = Partial<Omit<NavigationNodeEditDto, 'id'>>
+
+export const DEFAULT_NAV_ICON_BY_KIND: Record<NavNodeKind, string> = {
+  'system-directory': 'FolderOpened',
+  'module': 'FolderOpened',
+  'system-page': 'Monitor',
+  'system-action': 'Lightning',
+  'page': 'Document',
+  'link': 'Link',
+  'sub-page': 'Document',
+  'ref': 'Connection',
+}
+
+const CHILD_PLACEMENT_VALUES: ReadonlySet<string> = new Set(['header', 'sidebar', 'toolbar', 'user-menu', 'parent', 'flat'])
 
 function cloneConfig(c: NavigationContextEditConfigDto): NavigationContextEditConfigDto {
   return { placeholder: c.placeholder, defaultValue: c.defaultValue, paramName: c.paramName }
@@ -93,6 +105,222 @@ function cloneConfig(c: NavigationContextEditConfigDto): NavigationContextEditCo
 
 function emptyContextConfig(): NavigationContextEditConfigDto {
   return { placeholder: '', defaultValue: '', paramName: '' }
+}
+
+function isNavContextConfig(value: string | NavContextItem[] | NavContextConfig | undefined): value is NavContextConfig {
+  return typeof value === 'object' && !Array.isArray(value) && 'source' in value
+}
+
+function isChildPlacement(value: string): value is ChildPlacement {
+  return CHILD_PLACEMENT_VALUES.has(value)
+}
+
+function normalizeContextItems(items: readonly NavContextItem[]): Array<{ id: string; title: string }> {
+  return items.map(item => ({ id: String(item.id), title: item.title }))
+}
+
+export function defaultNavIconByKind(kind: NavNodeKind): string {
+  return DEFAULT_NAV_ICON_BY_KIND[kind]
+}
+
+export function createNavigationNodeEditDto(navNode: ProjectNodeData): NavigationNodeEditInputDto {
+  const nodeDto: NavigationNodeEditDto = {
+    id: navNode.id,
+    title: navNode.title,
+    icon: navNode.icon ?? defaultNavIconByKind(navNode.nodeKind ?? 'page'),
+    nodeKind: navNode.nodeKind ?? 'page',
+    dividerAfter: navNode.dividerAfter ?? false,
+    description: navNode.description ?? '',
+    path: navNode.path ?? '',
+    linkTarget: navNode.linkTarget === 'new-tab' || navNode.linkTarget === 'self' ? navNode.linkTarget : 'iframe',
+    refId: navNode.refId ?? '',
+    childPlacement: navNode.childPlacement ?? '',
+    order: navNode.order ?? 0,
+    hidden: navNode.hidden ?? false,
+    disabled: navNode.disabled ?? false,
+    permissionMode: navNode.permissionMode ?? 'masked',
+  }
+
+  if (navNode.context === undefined) {
+    return {
+      node: nodeDto,
+      context: { hasContext: false, items: [], config: emptyContextConfig() },
+    }
+  }
+
+  if (Array.isArray(navNode.context)) {
+    return {
+      node: nodeDto,
+      context: {
+        hasContext: true,
+        items: normalizeContextItems(navNode.context),
+        config: emptyContextConfig(),
+      },
+    }
+  }
+
+  if (isNavContextConfig(navNode.context)) {
+    const source = navNode.context.source
+    return {
+      node: nodeDto,
+      context: {
+        hasContext: true,
+        items: Array.isArray(source) ? normalizeContextItems(source) : [],
+        config: {
+          placeholder: navNode.context.placeholder ?? '',
+          defaultValue: navNode.context.defaultValue !== undefined
+            ? String(navNode.context.defaultValue)
+            : '',
+          paramName: navNode.context.paramName ?? '',
+        },
+      },
+    }
+  }
+
+  return {
+    node: nodeDto,
+    context: { hasContext: false, items: [], config: emptyContextConfig() },
+  }
+}
+
+export function applyNodeKindPresetToEditDto(node: NavigationNodeEditDto, kind: NavNodeKind): NavigationNodeEditDto {
+  const next = { ...node }
+  const previousKind = next.nodeKind
+  next.nodeKind = kind
+
+  const previousDefault = defaultNavIconByKind(previousKind)
+  const nextDefault = defaultNavIconByKind(kind)
+  if (!next.icon || next.icon === previousDefault) {
+    next.icon = nextDefault
+  }
+
+  if (kind === 'system-directory') {
+    next.hidden = false
+    next.path = ''
+    next.linkTarget = 'iframe'
+    return next
+  }
+  if (kind === 'module') {
+    next.hidden = false
+    next.path = ''
+    next.linkTarget = 'iframe'
+    return next
+  }
+  if (kind === 'system-page' || kind === 'page') {
+    next.hidden = false
+    next.linkTarget = 'iframe'
+    return next
+  }
+  if (kind === 'link') {
+    next.hidden = false
+    next.path = ''
+    next.refId = ''
+    return next
+  }
+  if (kind === 'ref') {
+    next.hidden = false
+    next.path = ''
+    next.linkTarget = 'iframe'
+    return next
+  }
+
+  next.hidden = true
+  next.path = ''
+  next.linkTarget = 'iframe'
+  return next
+}
+
+export function createNavigationNodePatch(input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
+  const nodeDto = { ...input.node }
+  const warnings: string[] = []
+
+  if (nodeDto.nodeKind === 'sub-page') {
+    nodeDto.hidden = true
+    nodeDto.path = ''
+    nodeDto.linkTarget = 'iframe'
+  } else if (nodeDto.nodeKind === 'ref') {
+    nodeDto.path = ''
+    nodeDto.linkTarget = 'iframe'
+  } else if (nodeDto.nodeKind === 'system-page' || nodeDto.nodeKind === 'page') {
+    nodeDto.linkTarget = 'iframe'
+  }
+
+  const patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'> = {
+    title: nodeDto.title,
+    nodeKind: nodeDto.nodeKind,
+    icon: nodeDto.icon,
+    dividerAfter: nodeDto.dividerAfter,
+    description: nodeDto.description,
+    path: nodeDto.path,
+    linkTarget: nodeDto.linkTarget,
+    childPlacement: nodeDto.childPlacement,
+    order: nodeDto.order,
+    hidden: nodeDto.hidden,
+    disabled: nodeDto.disabled,
+    refId: nodeDto.refId,
+    permissionMode: nodeDto.permissionMode,
+  }
+
+  if (nodeDto.nodeKind === 'link') patch.linkTarget = nodeDto.linkTarget
+  if (nodeDto.nodeKind === 'ref' && nodeDto.refId) {
+    if (nodeDto.refId === nodeDto.id) {
+      warnings.push('不能引用自身，已忽略 refId')
+      patch.refId = ''
+    } else {
+      patch.refId = nodeDto.refId
+    }
+  }
+  if (nodeDto.childPlacement && !isChildPlacement(nodeDto.childPlacement)) patch.childPlacement = ''
+
+  patch.context = ''
+  if (input.context.hasContext && input.context.items.length > 0) {
+    const items = input.context.items.filter(item => item.id && item.title)
+    if (items.length > 0) {
+      if (
+        input.context.config.placeholder
+        || input.context.config.defaultValue
+        || input.context.config.paramName
+      ) {
+        const ctx: NavContextConfig = { source: items }
+        if (input.context.config.placeholder) ctx.placeholder = input.context.config.placeholder
+        if (input.context.config.defaultValue) ctx.defaultValue = input.context.config.defaultValue
+        if (input.context.config.paramName) ctx.paramName = input.context.config.paramName
+        patch.context = ctx
+      } else {
+        patch.context = items
+      }
+    }
+  }
+
+  return { patch, warnings }
+}
+
+export function applyNavigationNodeEditDtoToNode(node: ProjectNodeData, input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
+  const result = createNavigationNodePatch(input)
+  if (!('icon' in result.patch)) delete node.icon
+  if (!('description' in result.patch)) delete node.description
+  if (!('path' in result.patch)) delete node.path
+  if (!('linkTarget' in result.patch)) delete node.linkTarget
+  if (!('childPlacement' in result.patch)) delete node.childPlacement
+  if (!('hidden' in result.patch)) delete node.hidden
+  if (!('disabled' in result.patch)) delete node.disabled
+  if (!('context' in result.patch)) delete node.context
+  if (!('dividerAfter' in result.patch)) delete node.dividerAfter
+  if (!('nodeKind' in result.patch)) delete node.nodeKind
+  if (!('refId' in result.patch)) delete node.refId
+  if (!('permissionMode' in result.patch)) delete node.permissionMode
+  Object.assign(node, result.patch)
+  if (!result.patch.icon) delete node.icon
+  if (!result.patch.description) delete node.description
+  if (!result.patch.path) delete node.path
+  if (result.patch.nodeKind !== 'link' || !result.patch.linkTarget) delete node.linkTarget
+  if (!result.patch.childPlacement) delete node.childPlacement
+  if (!result.patch.hidden) delete node.hidden
+  if (!result.patch.disabled) delete node.disabled
+  if (result.patch.context === undefined || result.patch.context === '') delete node.context
+  if (!result.patch.dividerAfter) delete node.dividerAfter
+  if (result.patch.nodeKind !== 'ref' || !result.patch.refId) delete node.refId
+  return result
 }
 
 export class NavigationEditModel {
@@ -314,7 +542,7 @@ export class NavigationEditModel {
   // ── IO ─────────────────────────────────────────────────
 
   /** 应用 DTO 到树节点并持久化到远端。 */
-  async save(navClient: NavigationConfigClient): Promise<void> {
+  async save(navClient: NavigationNodePatchWriter): Promise<void> {
     if (!this.navNode) {
       throw new Error('导航节点引用为空，无法保存')
     }

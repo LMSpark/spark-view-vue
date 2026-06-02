@@ -6,13 +6,11 @@
  * rule / dataSet / script / style 子模型，不再经过独立 PageNode 中间层。
  */
 
-import type { NavigationEditSession } from '../../service/navigation/editing.service'
-import type { NavigationConfigClient } from '../../service/navigation/client.service'
-import type { BasePageContentLoader } from '../../service/content-loader/types'
-import type { PageNodeFileApi } from '../../service/file/file-api.service'
-import type { PageNodeFileCache } from '../../service/file/file-cache.service'
+import type { NavigationEditSession } from '../navigation/session.entity'
 import type { ProjectModelData, ProjectNodeData } from '../node/node-base.entity'
 import type { ConfigPageNode, ProjectNavigationFlatNode, ProjectNode, ProjectPageNodeSummary } from '../node/node-factory'
+import type { NavigationNodePatchWriter } from '../navigation/edit.entity'
+import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../node/page-file-types'
 import { ModuleNode } from '../node/module-node.entity'
 import { ProjectNodeCollection } from './node-collection.entity'
 
@@ -24,10 +22,10 @@ export type ProjectModelDto = {
 
 export type ProjectModelOptions = {
   projectId: string
-  fileApi: PageNodeFileApi
-  fileCache: PageNodeFileCache
-  contentLoaderFactory: () => BasePageContentLoader
-  navClient?: NavigationConfigClient | undefined
+  fileApi: PageFileWriter
+  fileCache: PageFileCache
+  contentLoaderFactory: () => PageFileContentLoader
+  navClient?: NavigationNodePatchWriter | undefined
   navigationSession?: NavigationEditSession
 }
 

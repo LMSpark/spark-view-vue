@@ -42,15 +42,15 @@ import type {
   NavigationNodeEditInputDto,
   NavigationNodeEditPatchDto,
   ProjectNodeLocation,
-  NavigationEditSession,
-} from '../navigation/editing.service'
+} from '../../entity/navigation/edit.entity'
+import type { NavigationEditSession } from '../../entity/navigation/session.entity'
 import {
   applyNavigationNodeEditDtoToNode,
   applyNodeKindPresetToEditDto,
   createNavigationNodeEditDto,
   createNavigationNodePatch,
-  createReservedRootGroup,
-} from '../navigation/editing.service'
+} from '../../entity/navigation/edit.entity'
+import { createReservedRootGroup } from '../../entity/node/node-helpers'
 import { NavigationConfigClient } from '../navigation/client.service'
 
 // ── 内部域模型导入（page-model / project） ──

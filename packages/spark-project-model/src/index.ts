@@ -82,7 +82,7 @@ export type {
 } from './factory/page-node.factory'
 
 // ── 编辑宿主 ──────────────────────────────────────────
-
+export type { PageDesignEditHost, PageDesignEditPhase, PageDesignNodeTree } from './entity/project/edit-host.entity'
 
 // ── 契约 ──────────────────────────────────────────────
 

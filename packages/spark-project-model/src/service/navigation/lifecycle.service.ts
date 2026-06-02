@@ -8,11 +8,11 @@
 import { assertNonEmptyPageId } from '../../standalone/internal/assert-page-id'
 import type { NavigationConfigClient } from './client.service'
 import type { ProjectNodeData } from '../../entity/node/node-base.entity'
+import { defaultNavIconByKind } from '../../entity/navigation/edit.entity'
 import {
-  defaultNavIconByKind,
   findConfigNodeByPageId,
   normalizeProjectNodeData,
-} from './editing.service'
+} from '../../entity/node/node-helpers'
 
 export type PageNavigationMountParams = {
   pageId: string

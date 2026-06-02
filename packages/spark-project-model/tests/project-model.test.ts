@@ -4,7 +4,7 @@ import type { HttpClientBase, HttpResponse } from '@spark-view/spark-utils'
 import { ConfigPageNode, ModuleNode } from '@spark-view/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
 import { createRequest } from '@spark-view/spark-utils'
-import { createNavigationNodePatch } from '../src/service/navigation/editing.service'
+import { createNavigationNodePatch } from '../src/entity/navigation/edit.entity'
 
 describe('ProjectModel', () => {
   function createEditor(): ProjectEditor {

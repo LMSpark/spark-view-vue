@@ -6,18 +6,17 @@
  */
 
 import type { ProjectModelData, ProjectNodeData } from '../node/node-base.entity'
-import type { NavigationEditSession, ProjectNodeLocation } from '../../service/navigation/editing.service'
+import type { ProjectNodeLocation } from '../navigation/edit.entity'
+import type { NavigationEditSession } from '../navigation/session.entity'
 import {
   createChildPageNode,
   createRootModuleNode,
   findNodeById,
   findNodeLocation,
-  NavigationEditSession as DefaultNavigationEditSession,
-} from '../../service/navigation/editing.service'
-import type { PageNodeFileApi } from '../../service/file/file-api.service'
-import type { PageNodeFileCache } from '../../service/file/file-cache.service'
-import type { NavigationConfigClient } from '../../service/navigation/client.service'
-import type { BasePageContentLoader } from '../../service/content-loader/types'
+} from '../node/node-helpers'
+import { NavigationEditSession as DefaultNavigationEditSession } from '../navigation/session.entity'
+import type { NavigationNodePatchWriter } from '../navigation/edit.entity'
+import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../node/page-file-types'
 import {
   appendProjectDescriptionContext,
   buildProjectNavigationTree,
@@ -37,10 +36,10 @@ import {
 
 export type ProjectNodeCollectionOptions = {
   projectId?: string | undefined
-  fileApi: PageNodeFileApi
-  fileCache: PageNodeFileCache
-  contentLoaderFactory: () => BasePageContentLoader
-  navClient?: NavigationConfigClient | undefined
+  fileApi: PageFileWriter
+  fileCache: PageFileCache
+  contentLoaderFactory: () => PageFileContentLoader
+  navClient?: NavigationNodePatchWriter | undefined
   navigationSession?: NavigationEditSession | undefined
 }
 
@@ -59,10 +58,10 @@ export type ProjectNodeCollectionOptions = {
  * @moduleActionMode explicit
  */
 export class ProjectNodeCollection {
-  private readonly fileApi: PageNodeFileApi
-  private readonly fileCache: PageNodeFileCache
-  private readonly contentLoaderFactory: () => BasePageContentLoader
-  private readonly navClient: NavigationConfigClient | undefined
+  private readonly fileApi: PageFileWriter
+  private readonly fileCache: PageFileCache
+  private readonly contentLoaderFactory: () => PageFileContentLoader
+  private readonly navClient: NavigationNodePatchWriter | undefined
   private readonly session: NavigationEditSession
   private projectId: string
   private readonly nodesById = new Map<string, ProjectNode>()

@@ -13,7 +13,8 @@
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-data'
-import type { PageNodeFileName, PageNodeFileRegistryView } from '../file/file-registry.service'
+import type { PageNodeFileName } from '../../entity/node/page-file-types'
+import type { PageNodeFileRegistryView } from '../file/file-registry.service'
 
 // ── 页面四文件载荷类型 ───────────────────────────────────
 
@@ -29,28 +30,32 @@ export type PageContentConfigFiles = {
   css: string | undefined
 }
 
-export type PageNodeFileLoadOptions = {
+export type { PageNodeFileLoadOptions } from '../../entity/node/page-file-types'
+import type { PageNodeFileLoadOptions } from '../../entity/node/page-file-types'
+
+export type PageContentLoadResult<T = unknown> = {
   /**
-   * 跳过客户端缓存，强制重新请求后端文件接口。
+   * Loading succeeded.
    */
-  forceReload?: boolean
+  success: boolean
+  data?: T
+  error?: string
+  /** 失败原因：'not-found' 表示页面/文件不存在（404），与其他加载错误区分 */
+  reason?: string
+  source?: 'remote'
+  timestamp?: number
+  /** Raw source timestamp returned by the page-config file API. */
+  sourceTimestamp?: string
+  /** Whether the result was resolved from client cache after a notModified response. */
+  fromCache?: boolean
+  /** Whether the server reported the source file was unchanged. */
+  notModified?: boolean
 }
 
-/**
- * 四文件页面配置。
- *
- * 这是 PageContentLoader 的读取结果，不代表完整 PageNode；
- * 完整 PageNode 还包含来自 ProjectNode 基类的 navigation 配置。
- */
 export type PageContentConfig = PageContentConfigFiles & {
   pageId: string
 }
 
-// ── 加载器选项与结果类型 ─────────────────────────────────
-
-/**
- * 页面内容加载器选项。
- */
 export type PageContentLoaderOptions = {
   /**
    * 远程 API 基础路径。
@@ -103,25 +108,6 @@ export type PageContentLoaderOptions = {
    * 未提供时使用默认的四文件注册表。
    */
   fileRegistry?: PageNodeFileRegistryView
-}
-
-/**
- * 页面内容加载结果。
- */
-export type PageContentLoadResult<T = unknown> = {
-  success: boolean
-  data?: T
-  error?: string
-  /** 失败原因：'not-found' 表示页面/文件不存在（404），与其他加载错误区分 */
-  reason?: string
-  source?: 'remote'
-  timestamp?: number
-  /** Raw source timestamp returned by the page-config file API. */
-  sourceTimestamp?: string
-  /** Whether the result was resolved from client cache after a notModified response. */
-  fromCache?: boolean
-  /** Whether the server reported the source file was unchanged. */
-  notModified?: boolean
 }
 
 // ═══════════════ BasePageContentLoader 抽象契约 ═══════════════

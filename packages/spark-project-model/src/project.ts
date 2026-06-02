@@ -96,7 +96,7 @@ export type {
   NavigationNodeEditDto,
   NavigationNodeEditPatchDto,
   NavigationNodeMoveRequestDto,
-} from './service/navigation/editing.service'
+} from './entity/navigation/edit.entity'
 
 export {
   PAGE_DATA_JSON_SCHEMA,

@@ -1,6 +1,7 @@
 /** 节点纯函数——tree/flat 转换、pageId 解析、类型判断。 */
 import { deepClone } from '@spark-view/spark-utils'
 import type { NavNodeKind, ProjectModelData, ProjectNodeData } from './node-base.entity'
+import type { ProjectNodeLocation } from '../navigation/edit.entity'
 import type { NodeKind, ProjectDescriptionContext } from './module-node.entity'
 
 export type ProjectNavigationFlatNode = {
@@ -107,6 +108,129 @@ export function canProjectNodeContainChild(p: 'project' | NodeKind, c: NodeKind)
 export function readAllowedProjectEditChildKinds(p: 'project' | NodeKind): readonly NodeKind[] {
   if (p === 'project' || p === 'module') return ['module', 'page']
   return ['sub-page']
+}
+
+export function isPageLikeKind(kind: NavNodeKind): boolean {
+  return kind === 'page'
+    || kind === 'system-page'
+    || kind === 'system-action'
+    || kind === 'link'
+    || kind === 'sub-page'
+}
+
+export function findNodeById(nodes: readonly ProjectNodeData[], targetId: string): ProjectNodeData | null {
+  for (const node of nodes) {
+    if (node.id === targetId) return node
+    if (Array.isArray(node.children)) {
+      const found = findNodeById(node.children, targetId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+export function findParentNodeById(nodes: readonly ProjectNodeData[], targetId: string, parent: ProjectNodeData | null = null): ProjectNodeData | null {
+  for (const node of nodes) {
+    if (node.id === targetId) return parent
+    if (Array.isArray(node.children)) {
+      const found = findParentNodeById(node.children, targetId, node)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+export function findNodeLocation(nodes: readonly ProjectNodeData[], targetId: string, parent: ProjectNodeData | null = null): ProjectNodeLocation | null {
+  for (let index = 0; index < nodes.length; index += 1) {
+    const node = nodes[index]
+    if (node === undefined) continue
+    if (node.id === targetId) {
+      return { node, parent, parentId: parent?.id ?? null, index }
+    }
+    if (Array.isArray(node.children)) {
+      const found = findNodeLocation(node.children, targetId, node)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+export function findConfigNodeByPageId(nodes: readonly ProjectNodeData[], pageId: string): ProjectNodeData | null {
+  for (const node of nodes) {
+    if (isConfigNodeKind(node.nodeKind ?? 'page') && normalizePageIdFromPath(node.path) === pageId) {
+      return node
+    }
+    if (Array.isArray(node.children)) {
+      const found = findConfigNodeByPageId(node.children, pageId)
+      if (found) return found
+    }
+  }
+  return null
+}
+
+export function isSystemRootDirectory(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
+  return Boolean(node?.nodeKind === 'system-directory' && rootNodes.some(rootNode => rootNode.id === node.id))
+}
+
+export function canUseModuleNodeKind(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
+  if (!node) return true
+  const parent = findParentNodeById(rootNodes, node.id)
+  if (!parent) return true
+  return !isPageLikeKind(parent.nodeKind ?? 'module')
+}
+
+export function createRootModuleNode(createId: () => string): ProjectNodeData {
+  return {
+    id: createId(),
+    nodeKind: 'module',
+    title: '新模块',
+    icon: 'FolderOpened',
+    childPlacement: 'sidebar',
+    children: [],
+  }
+}
+
+export function createChildPageNode(createId: () => string): ProjectNodeData {
+  const id = createId()
+  return {
+    id,
+    nodeKind: 'page',
+    title: '新页面',
+    icon: 'Document',
+    path: `/${id}`,
+  }
+}
+
+export function createReservedRootGroup(
+  placement: 'toolbar' | 'user-menu',
+  options: { createId: () => string; templateRoot?: ProjectModelData | null },
+): ProjectNodeData {
+  const template = options.templateRoot?.children.find(node => node.childPlacement === placement)
+  if (template) {
+    const cloned = { ...template }
+    cloned.id = options.createId()
+    return normalizeProjectNodeData(cloned)
+  }
+
+  if (placement === 'toolbar') {
+    return {
+      id: options.createId(),
+      nodeKind: 'system-directory',
+      title: '工具栏',
+      icon: 'SetUp',
+      childPlacement: 'toolbar',
+      children: [],
+    }
+  }
+
+  return {
+    id: options.createId(),
+    nodeKind: 'system-directory',
+    title: '用户菜单',
+    icon: 'User',
+    childPlacement: 'user-menu',
+    children: [],
+  }
 }
 
 export function normalizeConfigPageId(v: string | undefined | null): string { return (v ?? '').trim() }
