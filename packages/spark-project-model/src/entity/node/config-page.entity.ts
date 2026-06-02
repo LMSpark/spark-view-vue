@@ -1,17 +1,17 @@
 /** ConfigPageNode——配置页节点，挂接 rule/dataset/script/style。 */
-import type { DataSetCrudTool } from '@spark-view/spark-data'
+import { DataSet, DataSetCrudTool, getSparkNodeChildren, SparkNodeTree } from '@spark-view/spark-data'
 import type { SparkNodeTree as SparkNodeTreeModel } from '@spark-view/spark-data'
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import type { SparkNode } from '@spark-view/spark-data'
+import { SnapshotHistory, type HttpClientBase } from '@spark-view/spark-utils'
 import type { NavigationConfigClient } from '../../service/navigation/client.service'
 import type { BasePageContentLoader } from '../../service/content-loader/types'
 import type { PageNodeFileApi } from '../../service/file/file-api.service'
 import type { PageNodeFileCache } from '../../service/file/file-cache.service'
 import type { PageNodeFileName } from '../../service/file/file-registry.service'
+import type { PageFileRestoreCommand } from '../../service/file/file-restore-command'
+import { parsePageDataText, parseRuleText, serializeDataSet, serializeRuleTree } from '../../service/file/file-serialization'
 import { PageNode } from './page-node.entity'
 import type { ProjectNodeModelOptions } from './node-base.entity'
-import { ScriptContent, StyleContent } from '../content/text.entity'
-import { RuleContent } from '../content/rule.entity'
-import { DataSetContent } from '../content/dataset.entity'
 import { normalizeConfigPageId, resolvePageNodePageId } from './node-helpers'
 import type { ProjectNodeFamily, PageNodeLoadOptions, PageNodeRenderConfig, ProjectPageNodeSummary } from './module-node.entity'
 
@@ -31,7 +31,259 @@ export type ProjectConfigPageDirtyPart = ProjectNodeDirtyPart | ConfigPageConten
 
 const CONFIG_PAGE_DIRTY_PARTS = ['navigation', 'rule', 'dataSet', 'style', 'script'] as const
 
+const TEXT_HISTORY_LIMIT = 100
+
 function optionalText(value: string): string | undefined { return value.trim() === '' ? undefined : value }
+
+export class PageRuleFile {
+  tree: SparkNodeTreeModel = SparkNodeTree.fromPageChildren([])
+
+  private dirty = false
+
+  constructor(readonly pageId: string) {}
+
+  get root(): SparkNode { return this.tree.root }
+  get children(): SparkNode[] { return getSparkNodeChildren(this.root.children) }
+  get isDirty(): boolean { return this.dirty }
+  get canUndo(): boolean { return this.tree.canUndo }
+  get canRedo(): boolean { return this.tree.canRedo }
+
+  getText(): string { return serializeRuleTree(this.root) }
+
+  setText(text: string): void {
+    this.tree.replaceRoot(parseRuleText(text))
+    this.dirty = true
+  }
+
+  loadText(text: string): void {
+    this.tree = SparkNodeTree.fromJson(parseRuleText(text))
+    this.dirty = false
+  }
+
+  async load(loader: BasePageContentLoader, options?: PageNodeLoadOptions): Promise<void> {
+    const result = await loader.loadPageFileContent(this.pageId, 'rule.json', {
+      forceReload: options?.forceReload === true,
+    })
+    if (!result.success) throw new Error(result.error ?? result.reason ?? 'rule.json 加载失败')
+    this.loadText(result.data ?? '')
+  }
+
+  async save(api: PageNodeFileApi): Promise<void> {
+    await api.saveFileContent(this.pageId, 'rule.json', this.getText())
+    this.dirty = false
+  }
+
+  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
+    await command.fileApi.restoreVersion(this.pageId, 'rule.json', command.version)
+    const result = await command.contentLoader.loadPageFileContent(this.pageId, 'rule.json', { forceReload: true })
+    if (!result.success) throw new Error(`恢复版本后读取失败: ${this.pageId}/rule.json v${command.version}`)
+    this.loadText(result.data ?? '')
+  }
+
+  getTree(): SparkNodeTreeModel {
+    return this.tree
+  }
+
+  replaceTree(tree: SparkNodeTreeModel): void {
+    this.tree = tree
+    this.dirty = true
+  }
+
+  async editTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
+    const tree = this.getTree()
+    await run(tree)
+    this.replaceTree(tree)
+  }
+
+  undo(): boolean {
+    const ok = this.tree.undo() !== null
+    if (ok) this.dirty = true
+    return ok
+  }
+
+  redo(): boolean {
+    const ok = this.tree.redo() !== null
+    if (ok) this.dirty = true
+    return ok
+  }
+}
+
+export class PageDataSetFile {
+  value: DataSet
+
+  private readonly undoStack: string[] = []
+  private readonly redoStack: string[] = []
+  private dirty = false
+
+  constructor(readonly pageId: string) {
+    this.value = DataSet.fromJson({ dataSetName: pageId, tables: {} })
+  }
+
+  get isDirty(): boolean { return this.dirty }
+  get canUndo(): boolean { return this.undoStack.length > 0 }
+  get canRedo(): boolean { return this.redoStack.length > 0 }
+
+  getText(): string { return serializeDataSet(this.value) }
+
+  setText(text: string): void {
+    this.pushUndo()
+    this.value = parsePageDataText(text, this.pageId)
+    this.dirty = true
+  }
+
+  loadText(text: string): void {
+    this.value = parsePageDataText(text, this.pageId)
+    this.clearHistory()
+    this.dirty = false
+  }
+
+  async load(loader: BasePageContentLoader, options?: PageNodeLoadOptions): Promise<void> {
+    const result = await loader.loadPageFileContent(this.pageId, 'pagedata.json', {
+      forceReload: options?.forceReload === true,
+    })
+    if (!result.success) throw new Error(result.error ?? result.reason ?? 'pagedata.json 加载失败')
+    this.loadText(result.data ?? '')
+  }
+
+  async save(api: PageNodeFileApi): Promise<void> {
+    await api.saveFileContent(this.pageId, 'pagedata.json', this.getText())
+    this.dirty = false
+  }
+
+  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
+    await command.fileApi.restoreVersion(this.pageId, 'pagedata.json', command.version)
+    const result = await command.contentLoader.loadPageFileContent(this.pageId, 'pagedata.json', { forceReload: true })
+    if (!result.success) throw new Error(`恢复版本后读取失败: ${this.pageId}/pagedata.json v${command.version}`)
+    this.loadText(result.data ?? '')
+  }
+
+  getTool(): DataSetCrudTool {
+    return DataSetCrudTool.fromJson(this.value.toJson())
+  }
+
+  replaceTool(tool: DataSetCrudTool): void {
+    this.pushUndo()
+    this.value = DataSet.fromJson(tool.toJson())
+    this.dirty = true
+  }
+
+  async editTool(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
+    const tool = this.getTool()
+    await run(tool)
+    this.replaceTool(tool)
+  }
+
+  undo(): boolean {
+    const text = this.undoStack.pop()
+    if (text === undefined) return false
+    this.redoStack.push(this.getText())
+    this.value = parsePageDataText(text, this.pageId)
+    this.dirty = true
+    return true
+  }
+
+  redo(): boolean {
+    const text = this.redoStack.pop()
+    if (text === undefined) return false
+    this.undoStack.push(this.getText())
+    this.value = parsePageDataText(text, this.pageId)
+    this.dirty = true
+    return true
+  }
+
+  private pushUndo(): void {
+    this.undoStack.push(this.getText())
+    this.redoStack.length = 0
+  }
+
+  private clearHistory(): void {
+    this.undoStack.length = 0
+    this.redoStack.length = 0
+  }
+}
+
+export class PageTextFile {
+  private _text: string
+  private savedText: string
+  private readonly history = new SnapshotHistory<string>(TEXT_HISTORY_LIMIT)
+  private readonly listeners = new Set<() => void>()
+
+  constructor(
+    readonly pageId: string,
+    readonly fileName: 'script.js' | 'style.css',
+    initialText = '',
+  ) {
+    this._text = initialText
+    this.savedText = initialText
+    this.history.push(initialText)
+  }
+
+  get text(): string { return this._text }
+  get isDirty(): boolean { return this._text !== this.savedText }
+  get canUndo(): boolean { return this.history.canUndo }
+  get canRedo(): boolean { return this.history.canRedo }
+
+  setText(content: string): void {
+    if (this.history.current === content) return
+    this.history.push(content)
+    this._text = content
+    this.notify()
+  }
+
+  undo(): boolean {
+    const prev = this.history.undo()
+    if (prev === null) return false
+    this._text = prev
+    this.notify()
+    return true
+  }
+
+  redo(): boolean {
+    const next = this.history.redo()
+    if (next === null) return false
+    this._text = next
+    this.notify()
+    return true
+  }
+
+  async load(loader: BasePageContentLoader, options?: PageNodeLoadOptions): Promise<void> {
+    const result = await loader.loadPageFileContent(this.pageId, this.fileName, {
+      forceReload: options?.forceReload === true,
+    })
+    if (!result.success) throw new Error(result.error ?? result.reason ?? `${this.fileName} 加载失败`)
+    this.replaceSavedText(result.data ?? '')
+  }
+
+  async save(api: PageNodeFileApi): Promise<void> {
+    await api.saveFileContent(this.pageId, this.fileName, this._text)
+    this.savedText = this._text
+    this.notify()
+  }
+
+  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
+    await command.fileApi.restoreVersion(this.pageId, this.fileName, command.version)
+    const result = await command.contentLoader.loadPageFileContent(this.pageId, this.fileName, { forceReload: true })
+    if (!result.success) throw new Error(`恢复版本后读取失败: ${this.pageId}/${this.fileName} v${command.version}`)
+    this.replaceSavedText(result.data ?? '')
+  }
+
+  subscribe(listener: () => void): () => void {
+    this.listeners.add(listener)
+    return () => { this.listeners.delete(listener) }
+  }
+
+  private replaceSavedText(text: string): void {
+    this.history.clear()
+    this.history.push(text)
+    this._text = text
+    this.savedText = text
+    this.notify()
+  }
+
+  private notify(): void {
+    for (const listener of this.listeners) listener()
+  }
+}
 
 /**
  * 配置页面节点。
@@ -51,10 +303,10 @@ function optionalText(value: string): string | undefined { return value.trim() =
  * @moduleMutation page-config read-write 公开写方法会修改当前页面配置文件模型。
  */
 export class ConfigPageNode extends PageNode {
-  readonly rule: RuleContent
-  readonly dataSet: DataSetContent
-  readonly style: StyleContent
-  readonly script: ScriptContent
+  readonly rule: PageRuleFile
+  readonly dataSet: PageDataSetFile
+  readonly style: PageTextFile
+  readonly script: PageTextFile
   readonly pageId: string
   private readonly fileApi: PageNodeFileApi
   private readonly fileCache: PageNodeFileCache
@@ -76,10 +328,10 @@ export class ConfigPageNode extends PageNode {
     const pageId = normalizeConfigPageId(options.pageId ?? resolvePageNodePageId(options.node))
     if (!pageId) throw new Error('配置页面节点缺少 pageId')
     this.pageId = pageId
-    this.rule = new RuleContent(pageId)
-    this.dataSet = new DataSetContent(pageId)
-    this.style = new StyleContent(pageId)
-    this.script = new ScriptContent(pageId)
+    this.rule = new PageRuleFile(pageId)
+    this.dataSet = new PageDataSetFile(pageId)
+    this.style = new PageTextFile(pageId, 'style.css')
+    this.script = new PageTextFile(pageId, 'script.js')
     this.fileApi = options.fileApi; this.fileCache = options.fileCache
     this.contentLoaderFactory = options.contentLoaderFactory; this.navClient = options.navClient
     this.wireSubModels()
