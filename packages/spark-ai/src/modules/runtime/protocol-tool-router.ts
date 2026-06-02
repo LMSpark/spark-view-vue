@@ -48,6 +48,7 @@ import {
   type ProtocolToolArgs,
 } from './protocol-tool-args'
 import { ProtocolResultProjector } from './protocol-result-projector'
+import { executeModuleScript, type AiModuleScriptContext } from './module-script-sandbox'
 
 type ProtocolToolRouterOptions = Readonly<{
   attributes: AttributeAccessor
@@ -59,7 +60,6 @@ type ProtocolToolRouterOptions = Readonly<{
 }>
 
 export type AiModuleHandleToolDispatchCommand = Readonly<{
-  businessInstanceId: string
   handleId: string
   actionName: string
   args: AiJsonParams
@@ -138,6 +138,7 @@ export class ProtocolToolRouter {
         case PROTOCOL_TOOL_NAMES.moduleFind: return await this.routeModuleFind(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleAttr: return await this.routeModuleAttr(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.moduleCall: return await this.routeModuleCall(rawArgs, host)
+        case PROTOCOL_TOOL_NAMES.moduleScript: return await this.routeModuleScript(rawArgs, host)
         case PROTOCOL_TOOL_NAMES.humanQuestion: return this.routeHumanQuestion(rawArgs)
         case PROTOCOL_TOOL_NAMES.agentComplete: return this.routeAgentComplete(rawArgs)
       }
@@ -164,22 +165,17 @@ export class ProtocolToolRouter {
       return AiModuleResult.failCode(
         'HANDLE_TOOL_NOT_REGISTERED',
         '当前 runtime 未注册 module_handle_call',
-        '请先执行返回 _handles 的 root action，或检查 AiModuleAdapter 注册流程。',
-      )
-    }
-    if (host === undefined || host.moduleInstanceId.trim().length === 0) {
-      return AiModuleResult.failCode(
-        'HANDLE_SCOPE_NOT_FOUND',
-        'module_handle_call 缺少 business instance 标识',
-        'Host 层执行工具时必须传入当前业务实例上下文。',
+        '当前注册流程未启用 handle dispatcher；请改用 module_query/module_function_guide 查看元数据，或使用声明函数/脚本执行通道。',
       )
     }
     return this.handleToolDispatcher.dispatchHandle({
-      businessInstanceId: host.moduleInstanceId,
       handleId: this.argsParser.requireString(args, 'handleId'),
       actionName: this.argsParser.requireString(args, 'actionName'),
       args: this.argsParser.optionalObject(args, 'args'),
-      ctx: { segments: [], host },
+      ctx: {
+        segments: [],
+        ...(host === undefined ? {} : { host }),
+      },
     })
   }
 
@@ -320,6 +316,49 @@ export class ProtocolToolRouter {
       args: callArgs,
       ...(host === undefined ? {} : { host }),
     })
+  }
+
+  private async routeModuleScript(
+    args: ProtocolToolArgs,
+    host?: AiModuleHostContext,
+  ): Promise<AiModuleResult<AiJsonValue>> {
+    return executeModuleScript(this.argsParser.requireString(args, 'script'), this.createScriptContext(host))
+  }
+
+  private createScriptContext(host?: AiModuleHostContext): AiModuleScriptContext {
+    const moduleContext = this.createProviderScriptContext(host)
+    const helpers = {
+      module_query: (args: ProtocolToolArgs = {}) => this.routeModuleQuery(args),
+      module_guide: (args: ProtocolToolArgs) => this.routeModuleGuide(args),
+      module_attribute_guide: (args: ProtocolToolArgs) => this.routeModuleAttributeGuide(args),
+      module_function_guide: (args: ProtocolToolArgs) => this.routeModuleFunctionGuide(args),
+      module_find: (args: ProtocolToolArgs) => this.routeModuleFind(args, host),
+      module_attr: (args: ProtocolToolArgs) => this.routeModuleAttr(args, host),
+      module_call: (args: ProtocolToolArgs) => this.routeModuleCall(args, host),
+      call: (functionName: string, args: ProtocolToolArgs) => this.routeDirectModuleFunction(functionName, args, host),
+    }
+    return {
+      ...helpers,
+      $tools: helpers,
+      ...moduleContext,
+    }
+  }
+
+  private createProviderScriptContext(host?: AiModuleHostContext): Readonly<Record<string, unknown>> {
+    const moduleKind = this.resolveScriptModule(host)
+    if (moduleKind === undefined) return {}
+    return moduleKind.createScriptContext({
+      segments: [],
+      ...(host === undefined ? {} : { host }),
+    })
+  }
+
+  private resolveScriptModule(host?: AiModuleHostContext) {
+    if (host !== undefined) {
+      return this.kinds.get(host.moduleId)
+    }
+    const rootKinds = this.kinds.list().filter(moduleKind => moduleKind.parentKind === undefined)
+    return rootKinds.length === 1 ? rootKinds[0] : undefined
   }
 
   // ── <functionName> — 标准 OpenAI 业务函数调用 ────────────────

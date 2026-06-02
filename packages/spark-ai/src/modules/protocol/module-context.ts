@@ -141,6 +141,14 @@ export type AiModuleRunner = (
 ) => AiModuleOperation<AiJsonValue>
 
 /**
+ * 脚本上下文委托。
+ * 返回值会合入 module_script 的 this；用于让能力提供方暴露自然的属性链/方法链。
+ */
+export type AiModuleScriptContextProvider = (
+  ctx: AiModulePathContext,
+) => Readonly<Record<string, unknown>>
+
+/**
  * 子实例列表委托。
  * 接收 ctx + 可选 childKind 过滤，返回实例引用列表。
  * 未提供时默认返回空列表。

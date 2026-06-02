@@ -912,6 +912,20 @@ function isObjectSchema(schema: PropSchema | undefined): schema is PropSchema & 
 }
 
 /**
+ * 将 VCM 的 PropertyMetaSchema 直接转换为标准 JSON Schema 子集。
+ *
+ * 这个入口不做 catalog 降噪：primitive、object、array、enum、event 都会尽量转成
+ * 标准 JSON Schema 关键字，且不会写入 `__nestedSchema` 等构建期内部字段。
+ */
+export function vcmPropertyMetaSchemaToJsonSchema(
+  vcmSchema: PropertyMetaSchema | undefined,
+  rootDescription?: string,
+): PropSchema | undefined {
+  if (vcmSchema === undefined) return undefined
+  return convertSchema(vcmSchema, rootDescription, { mode: 'standard' })
+}
+
+/**
  * 将 VCM 的 PropertyMetaSchema 转换为我们的 PropSchema
  *
  * 设计约束：
@@ -925,6 +939,10 @@ function withSchemaDescription(schema: PropSchema, description: string | undefin
   return { ...schema, description: normalized }
 }
 
+type ConvertSchemaOptions = Readonly<{
+  mode?: 'catalog' | 'standard'
+}>
+
 function isVcmNoiseDescription(description: string): boolean {
   return description.includes('Gets or sets the length of the array')
 }
@@ -937,11 +955,14 @@ function readVcmSchemaDescription(vcmSchema: PropertyMetaSchema): string | undef
   return stripCatalogDocTags(description)
 }
 
-function createArrayItemsSchema(itemSchemas: PropertyMetaSchema[]): PropSchema | undefined {
+function createArrayItemsSchema(
+  itemSchemas: PropertyMetaSchema[],
+  options: ConvertSchemaOptions = {},
+): PropSchema | undefined {
   const convertedItems = itemSchemas
     .map((item) => {
       if (typeof item === 'string') return schemaForTsType(item)
-      return convertSchema(item) ?? schemaForTsType(item.type)
+      return convertSchema(item, undefined, options) ?? schemaForTsType(item.type)
     })
     .filter((schema) => Object.keys(schema).length > 0)
 
@@ -953,13 +974,19 @@ function createArrayItemsSchema(itemSchemas: PropertyMetaSchema[]): PropSchema |
   return createUnionSchema('array item', itemTypes)
 }
 
-function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescription?: string): PropSchema | undefined {
+function convertSchema(
+  vcmSchema: PropertyMetaSchema | undefined,
+  rootDescription?: string,
+  options: ConvertSchemaOptions = {},
+): PropSchema | undefined {
   if (vcmSchema === undefined) {
     return undefined
   }
 
   if (typeof vcmSchema === 'string') {
-    return undefined
+    if (options.mode !== 'standard') return undefined
+    const schema = schemaForTsType(vcmSchema)
+    return Object.keys(schema).length === 0 ? undefined : schema
   }
 
   const schemaDescription = rootDescription ?? readVcmSchemaDescription(vcmSchema)
@@ -976,10 +1003,18 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescriptio
       if (propMeta.required === true) required.push(key)
 
       // 递归处理嵌套 schema（如 ActionsNode.props 中的结构化对象类型）
-      const nestedPropSchema = convertSchema(propMeta.schema, description !== '' ? stripCatalogDocTags(description) : undefined)
+      const nestedPropSchema = convertSchema(
+        propMeta.schema,
+        description !== '' ? stripCatalogDocTags(description) : undefined,
+        options,
+      )
       if (nestedPropSchema !== undefined) {
-        // 暂存完整的嵌套 schema，供后续处理时提升到 schema type 池
-        childSchema.__nestedSchema = nestedPropSchema
+        if (options.mode === 'standard') {
+          Object.assign(childSchema, nestedPropSchema)
+        } else {
+          // 暂存完整的嵌套 schema，供后续处理时提升到 schema type 池
+          childSchema.__nestedSchema = nestedPropSchema
+        }
       }
       // 如果是 object schema，记录到收集器以供共池化处理
       if (isObjectSchema(nestedPropSchema)) {
@@ -1008,7 +1043,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescriptio
       (variant) => typeof variant === 'string' && variant !== 'undefined',
     )
     if (objectVariants.length === 1 && nonUndefinedStringVariants.length === 0) {
-      return convertSchema(objectVariants[0], schemaDescription)
+      return convertSchema(objectVariants[0], schemaDescription, options)
     }
 
     // 情形 2：普通 enum —— 仅在包含字符串字面量时保留，避免把 `string | undefined` 等
@@ -1026,7 +1061,7 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescriptio
   }
 
   if (vcmSchema.kind === 'array' && vcmSchema.schema !== undefined) {
-    const items = createArrayItemsSchema(vcmSchema.schema)
+    const items = createArrayItemsSchema(vcmSchema.schema, options)
     return withSchemaDescription({
       title: normalizeCatalogTypeText(vcmSchema.type),
       type: 'array',
@@ -1048,8 +1083,8 @@ function convertSchema(vcmSchema: PropertyMetaSchema | undefined, rootDescriptio
   return undefined
 }
 
-function normalizeDescription(value: string): string {
-  return value.replace(/\r\n?/g, '\n')
+function normalizeDescription(value: string | undefined): string {
+  return (value ?? '').replace(/\r\n?/g, '\n')
 }
 
 function uniqueSchemaTypes(schemas: PropertyMetaSchema[]): string[] {

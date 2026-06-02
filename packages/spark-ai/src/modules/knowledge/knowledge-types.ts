@@ -27,6 +27,7 @@ import type {
   AiModuleFunctionExample,
   AiModuleFunctionFailureMode,
   AiModuleFunctionMetadata,
+  AiModuleFunctionResultApiMetadata,
   AiModuleFunctionResultSchema,
   AiModule,
   AiModulePayloadMetadata,
@@ -216,6 +217,7 @@ export type AiModuleKnowledgeFunctionSummary = Readonly<{
   hasParams: boolean
   hasUsageRules: boolean
   hasFailureModes: boolean
+  resultApiKinds: readonly string[]
   usageRuleCount: number
   failureModeCount: number
   functionLookupSteps: readonly string[]
@@ -237,10 +239,17 @@ export type AiModuleKnowledgeFunctionGuide = Readonly<{
     path: string
     args: string
   }>
+  scriptPattern: Readonly<{
+    receiver: string
+    call: string
+    args: string
+  }>
+  programmingFlow: readonly string[]
   paramNames: readonly string[]
   requiredParamNames: readonly string[]
   paramsSchema: AiJsonSchemaObject
   resultSchema?: AiModuleFunctionResultSchema
+  resultApis: readonly AiModuleFunctionResultApiMetadata[]
   usageRules: readonly string[]
   requiredBeforeCall: readonly string[]
   failureModes: readonly AiModuleFunctionFailureMode[]

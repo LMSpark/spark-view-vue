@@ -22,6 +22,7 @@ import type {
   AiModuleChildrenLister,
   AiModuleInstanceFinder,
   AiModuleRunner,
+  AiModuleScriptContextProvider,
 } from './module-context'
 
 export type { AiModuleAttributeAccessor } from './module-context'
@@ -72,6 +73,18 @@ export type AiModuleFunctionAntiExample = Readonly<{
   args?: AiJsonValue
 }>
 
+export type AiModuleFunctionResultApiMetadata = Readonly<{
+  resultPath: readonly string[]
+  kind: string
+  name: string
+  description: string
+  actions: ReadonlyArray<Readonly<{
+    name: string
+    description: string
+    paramNames: readonly string[]
+  }>>
+}>
+
 // ============================================================================
 // 二、属性元数据
 //
@@ -120,6 +133,8 @@ export type AiModuleFunctionMetadata = Readonly<{
   paramsSchema: AiJsonSchemaObject
   /** 返回值 schema（可选，帮助 LLM 理解返回值结构） */
   resultSchema?: AiModuleFunctionResultSchema
+  /** 返回值中真实声明的 API 对象引用；仅作元数据指南，不合成运行时子模块或 handle。 */
+  resultApis?: readonly AiModuleFunctionResultApiMetadata[]
   /** 使用规则（多条，LLM 在调用前阅读，如 "每次最多追加 100 行"） */
   usageRules?: readonly string[]
   /** 调用前必须完成的前置动作或确认步骤。 */
@@ -186,6 +201,8 @@ export type AiModuleOptions = Readonly<{
   attributeAccessor?: AiModuleAttributeAccessor
   /** 函数执行委托（未提供时默认返回 FUNCTION_NOT_IMPLEMENTED） */
   runner?: AiModuleRunner
+  /** module_script 的 this 上下文扩展；用于暴露能力提供方的自然属性链/方法链。 */
+  scriptContext?: AiModuleScriptContextProvider
   /** 子实例列表委托（未提供时默认返回空列表） */
   list?: AiModuleChildrenLister
   /** 子实例查询委托（未提供时默认返回仅含当前实例的列表） */

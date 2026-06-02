@@ -172,6 +172,12 @@ function getArrayFilterValue(value: unknown): unknown[] | null {
 // DataView 类
 // ─────────────────────────────────────────────
 
+/**
+ * DataView - 单个表视图的数据操作子模块。
+ *
+ * @moduleKind data-view
+ * @moduleName Data View
+ */
 export class DataView implements DataSource {
 
   // ─────────────────────────────────────────────

@@ -52,7 +52,6 @@ export {
 
 export {
   AiModuleAdapter,
-  AiModuleHandleRegistry,
 } from './business/ai-module-adapter'
 
 export {

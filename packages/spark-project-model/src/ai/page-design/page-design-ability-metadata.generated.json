@@ -1,0 +1,1649 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts",
+  "note": "Do not edit by hand; update domain ability class JSDoc and rerun pnpm run generate:module-metadata.",
+  "diagnostics": {
+    "abilityCount": 1,
+    "moduleCount": 1,
+    "actionCount": 51,
+    "resultApiCount": 39,
+    "referencedApiKinds": [
+      "data-table",
+      "data-view"
+    ],
+    "emptySchemaNodeCount": 0,
+    "maxSchemaDepth": 5,
+    "modules": [
+      {
+        "kind": "dataset",
+        "name": "Page Design DataSet",
+        "actionCount": 51,
+        "directResultApiKinds": [
+          "data-table",
+          "data-table",
+          "data-table",
+          "data-table",
+          "data-table",
+          "data-table",
+          "data-table",
+          "data-view",
+          "data-view",
+          "data-view",
+          "data-table",
+          "data-table"
+        ],
+        "resultApiCount": 39,
+        "emptySchemaNodeCount": 0,
+        "maxSchemaDepth": 5,
+        "actions": [
+          {
+            "kind": "dataset",
+            "action": "toJson",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "getCanUndo",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "getCanRedo",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "getHistoryCursor",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "undo",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "redo",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "clearHistory",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "replaceFromJson",
+            "paramsPropertyCount": 2,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "listTables",
+            "paramsPropertyCount": 0,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 1
+          },
+          {
+            "kind": "dataset",
+            "action": "getTable",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 2
+          },
+          {
+            "kind": "dataset",
+            "action": "listColumns",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 2
+          },
+          {
+            "kind": "dataset",
+            "action": "getColumn",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "createColumn",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "updateColumn",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "renameColumn",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteColumn",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "createTable",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "updateTable",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "renameTable",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteTable",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 2
+          },
+          {
+            "kind": "dataset",
+            "action": "listViews",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 2
+          },
+          {
+            "kind": "dataset",
+            "action": "getView",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 1,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "createView",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 1,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "updateView",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 1,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteView",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "listAggregates",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "getAggregate",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "addAggregate",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "updateAggregate",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "removeAggregate",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "getComputeExpression",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "setComputeExpression",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "clearComputeExpression",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 4,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "listRows",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "getRow",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "createRow",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "createRows",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "updateRow",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "updateRows",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 5
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteRow",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteRows",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "listRelations",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "getRelation",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "createRelation",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "updateRelation",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteRelation",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "listDependencies",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "getDependency",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          },
+          {
+            "kind": "dataset",
+            "action": "createDependency",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "updateDependency",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 4
+          },
+          {
+            "kind": "dataset",
+            "action": "deleteDependency",
+            "paramsPropertyCount": 1,
+            "resultApiCount": 0,
+            "emptySchemaNodeCount": 0,
+            "maxSchemaDepth": 3
+          }
+        ]
+      }
+    ],
+    "findings": []
+  },
+  "abilities": [
+    {
+      "abilityId": "pageDesign.dataset",
+      "kind": "dataset",
+      "name": "Page Design DataSet",
+      "description": "当前页面 DataSetCrudTool/pagedata.json 数据空间读写能力。",
+      "entity": {
+        "id": "dataSet",
+        "label": "页面数据集"
+      },
+      "scope": "当前 DataSetCrudTool 实例代表一个页面 pagedata.json 模型。",
+      "attackSurfaces": [
+        {
+          "id": "dataset-schema",
+          "risk": "high",
+          "description": "表、列、视图、聚合、计算表达式、关系和依赖写入会改变页面 dataViewKey/dataMember/dataField 绑定语义。"
+        },
+        {
+          "id": "dataset-row-data",
+          "risk": "medium",
+          "description": "行数据和默认值会进入页面预览或静态数据源，必须保持 JSON 可序列化。"
+        },
+        {
+          "id": "remote-crud-config",
+          "risk": "high",
+          "description": "api/crudConfig 写入会改变页面运行时远端 CRUD 访问目标。"
+        }
+      ],
+      "trustBoundaries": [
+        "调用方负责把当前页面 pagedata.json live model 映射为 DataSetCrudTool 实例；本类只暴露数据集读写能力。"
+      ],
+      "guards": [
+        "修改结构前必须确认表、字段、视图和绑定链仍能解析；远端 CRUD 配置不得伪造未知接口。"
+      ],
+      "mutations": [
+        {
+          "resource": "pagedata.json",
+          "mode": "read-write",
+          "description": "DataSetCrudTool 公开写方法直接修改当前页面 pagedata.json live model。"
+        }
+      ],
+      "actions": [
+        {
+          "name": "toJson",
+          "methodName": "toJson",
+          "description": "将当前 DataSet 序列化为元数据对象。",
+          "params": [],
+          "returnType": "DataSetMetadata",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 235
+          }
+        },
+        {
+          "name": "getCanUndo",
+          "methodName": "getCanUndo",
+          "description": "查询当前数据集历史是否可撤销。",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 260
+          }
+        },
+        {
+          "name": "getCanRedo",
+          "methodName": "getCanRedo",
+          "description": "查询当前数据集历史是否可重做。",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 269
+          }
+        },
+        {
+          "name": "getHistoryCursor",
+          "methodName": "getHistoryCursor",
+          "description": "查询当前数据集历史栈游标位置。",
+          "params": [],
+          "returnType": "number",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 278
+          }
+        },
+        {
+          "name": "undo",
+          "methodName": "undo",
+          "description": "撤销最近一次结构写操作。\r\n成功时替换内部 DataSet 并返回 true；无可撤销时返回 false。",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 288
+          }
+        },
+        {
+          "name": "redo",
+          "methodName": "redo",
+          "description": "重做最近一次被撤销的操作。\r\n成功时替换内部 DataSet 并返回 true；无可重做时返回 false。",
+          "params": [],
+          "returnType": "boolean",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 301
+          }
+        },
+        {
+          "name": "clearHistory",
+          "methodName": "clearHistory",
+          "description": "清空当前数据集的 undo/redo 历史，只保留当前快照作为新的历史起点。",
+          "params": [],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 313
+          }
+        },
+        {
+          "name": "replaceFromJson",
+          "methodName": "replaceFromJson",
+          "description": "用外部快照替换当前 DataSet。\r\n默认会把替换结果压入历史栈，确保该替换可被撤销/重做。",
+          "params": [
+            {
+              "name": "snapshot",
+              "type": "DataSetMetadata | Record<string, unknown> | string",
+              "optional": false
+            },
+            {
+              "name": "options",
+              "type": "{ commitHistory?: boolean }",
+              "optional": true
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 329
+          }
+        },
+        {
+          "name": "listTables",
+          "methodName": "listTables",
+          "description": "列出当前 DataSet 中的全部数据表。",
+          "params": [],
+          "returnType": "DataTable[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 361
+          }
+        },
+        {
+          "name": "getTable",
+          "methodName": "getTable",
+          "description": "获取指定数据表。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 372
+          }
+        },
+        {
+          "name": "listColumns",
+          "methodName": "listColumns",
+          "description": "列出指定数据表的全部列定义。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataColumn[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 384
+          }
+        },
+        {
+          "name": "getColumn",
+          "methodName": "getColumn",
+          "description": "获取指定数据表中的单个列定义。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataColumn | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 397
+          }
+        },
+        {
+          "name": "createColumn",
+          "methodName": "createColumn",
+          "description": "向指定数据表追加一列。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; column: DataColumn }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 414
+          }
+        },
+        {
+          "name": "updateColumn",
+          "methodName": "updateColumn",
+          "description": "更新指定列定义。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string; updates: Partial<DataColumn> }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 436
+          }
+        },
+        {
+          "name": "renameColumn",
+          "methodName": "renameColumn",
+          "description": "重命名指定字段，并迁移行数据、视图字段引用和表关系字段引用。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string; newColumnName: string }",
+              "optional": false,
+              "description": "字段重命名参数。"
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 456
+          }
+        },
+        {
+          "name": "deleteColumn",
+          "methodName": "deleteColumn",
+          "description": "删除指定列。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 549
+          }
+        },
+        {
+          "name": "createTable",
+          "methodName": "createTable",
+          "description": "创建数据表并按需初始化资源语义、API、CRUD 配置和视图。",
+          "params": [
+            {
+              "name": "options",
+              "type": "DataSetCrudToolCreateTableOptions",
+              "optional": false,
+              "description": "建表参数。"
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 567
+          }
+        },
+        {
+          "name": "updateTable",
+          "methodName": "updateTable",
+          "description": "更新数据表结构、资源语义及运行配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string } & DataSetCrudToolUpdateTableOptions",
+              "optional": false
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 604
+          }
+        },
+        {
+          "name": "renameTable",
+          "methodName": "renameTable",
+          "description": "重命名数据表，并迁移视图 tableName、关系、依赖和布局位置引用。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; newTableName: string }",
+              "optional": false,
+              "description": "表重命名参数。"
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 651
+          }
+        },
+        {
+          "name": "deleteTable",
+          "methodName": "deleteTable",
+          "description": "删除指定数据表。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 729
+          }
+        },
+        {
+          "name": "listViews",
+          "methodName": "listViews",
+          "description": "列出某个数据表下的全部视图。",
+          "params": [
+            {
+              "name": "tableNameOrParams",
+              "type": "string | { tableName: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 746
+          }
+        },
+        {
+          "name": "getView",
+          "methodName": "getView",
+          "description": "获取指定视图。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 758
+          }
+        },
+        {
+          "name": "createView",
+          "methodName": "createView",
+          "description": "创建一个非 default 视图。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId: string; config?: ViewMetadata }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 775
+          }
+        },
+        {
+          "name": "updateView",
+          "methodName": "updateView",
+          "description": "更新指定视图的元数据配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; updates: Partial<ViewMetadata> }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataView",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 803
+          }
+        },
+        {
+          "name": "deleteView",
+          "methodName": "deleteView",
+          "description": "删除指定视图。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 824
+          }
+        },
+        {
+          "name": "listAggregates",
+          "methodName": "listAggregates",
+          "description": "列出指定视图的全部聚合配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string }",
+              "optional": false,
+              "description": "聚合查询参数。"
+            }
+          ],
+          "returnType": "Record<string, AggregateColumnConfig>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 842
+          }
+        },
+        {
+          "name": "getAggregate",
+          "methodName": "getAggregate",
+          "description": "读取指定视图中的单个聚合配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string }",
+              "optional": false,
+              "description": "聚合定位参数。"
+            }
+          ],
+          "returnType": "AggregateColumnConfig | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 855
+          }
+        },
+        {
+          "name": "addAggregate",
+          "methodName": "addAggregate",
+          "description": "向指定视图新增一个聚合配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string; config: AggregateColumnConfig }",
+              "optional": false,
+              "description": "聚合创建参数。"
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 870
+          }
+        },
+        {
+          "name": "updateAggregate",
+          "methodName": "updateAggregate",
+          "description": "更新指定视图中的聚合配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string; updates: Partial<AggregateColumnConfig> }",
+              "optional": false,
+              "description": "聚合更新参数。"
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 890
+          }
+        },
+        {
+          "name": "removeAggregate",
+          "methodName": "removeAggregate",
+          "description": "删除指定视图中的聚合配置。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string; key: string }",
+              "optional": false,
+              "description": "聚合删除参数。"
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 919
+          }
+        },
+        {
+          "name": "getComputeExpression",
+          "methodName": "getComputeExpression",
+          "description": "读取指定字段的计算表达式。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false,
+              "description": "字段定位参数。"
+            }
+          ],
+          "returnType": "string | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 938
+          }
+        },
+        {
+          "name": "setComputeExpression",
+          "methodName": "setComputeExpression",
+          "description": "设置指定字段的计算表达式。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string; expression: string }",
+              "optional": false,
+              "description": "计算表达式设置参数。"
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 951
+          }
+        },
+        {
+          "name": "clearComputeExpression",
+          "methodName": "clearComputeExpression",
+          "description": "清除指定字段的计算表达式。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; columnName: string }",
+              "optional": false,
+              "description": "字段定位参数。"
+            }
+          ],
+          "returnType": "DataTable",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 969
+          }
+        },
+        {
+          "name": "listRows",
+          "methodName": "listRows",
+          "description": "列出指定视图当前持有的全部行。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataRow[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 997
+          }
+        },
+        {
+          "name": "getRow",
+          "methodName": "getRow",
+          "description": "通过主键查找一条行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; id: string | number; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "DataRow | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1012
+          }
+        },
+        {
+          "name": "createRow",
+          "methodName": "createRow",
+          "description": "在指定视图中创建一条新行。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; data: Partial<DataRow>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<DataRow | CrudResult<DataRow>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1032
+          }
+        },
+        {
+          "name": "createRows",
+          "methodName": "createRows",
+          "description": "在指定视图中批量创建多条新行。\r\n\r\n- immediate + API 模式：优先走 view.crud.batchCreateRecords\r\n- 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; items: Array<Partial<DataRow>>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<CrudResult<BatchResult>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1054
+          }
+        },
+        {
+          "name": "updateRow",
+          "methodName": "updateRow",
+          "description": "更新指定主键的行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; id: string | number; data: Partial<DataRow>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<boolean | CrudResult<DataRow>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1080
+          }
+        },
+        {
+          "name": "updateRows",
+          "methodName": "updateRows",
+          "description": "批量更新多条行数据。\r\n\r\n对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; items: Array<{ id: string | number; data: Partial<DataRow> }>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<CrudResult<BatchResult>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1101
+          }
+        },
+        {
+          "name": "deleteRow",
+          "methodName": "deleteRow",
+          "description": "删除指定主键的行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; id: string | number; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<boolean | CrudResult<boolean>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1129
+          }
+        },
+        {
+          "name": "deleteRows",
+          "methodName": "deleteRows",
+          "description": "批量删除多条行数据。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ tableName: string; ids: Array<string | number>; viewId?: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "Promise<CrudResult<BatchResult>>",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1146
+          }
+        },
+        {
+          "name": "listRelations",
+          "methodName": "listRelations",
+          "description": "列出 DataSet 中的表关系。",
+          "params": [
+            {
+              "name": "filter",
+              "type": "Partial<Pick<TableRelation, 'parentTable' | 'childTable'>>",
+              "optional": true,
+              "description": "可选过滤条件，仅支持按 parentTable / childTable 过滤。"
+            }
+          ],
+          "returnType": "TableRelation[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1170
+          }
+        },
+        {
+          "name": "getRelation",
+          "methodName": "getRelation",
+          "description": "获取单条表关系。",
+          "params": [
+            {
+              "name": "selector",
+              "type": "RelationSelector",
+              "optional": false,
+              "description": "关系选择器。"
+            }
+          ],
+          "returnType": "TableRelation | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1186
+          }
+        },
+        {
+          "name": "createRelation",
+          "methodName": "createRelation",
+          "description": "创建一条表关系。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string; parentField: string; childField: string; relationName?: string }",
+              "optional": false,
+              "description": "关系参数。"
+            }
+          ],
+          "returnType": "TableRelation",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1209
+          }
+        },
+        {
+          "name": "updateRelation",
+          "methodName": "updateRelation",
+          "description": "更新一条表关系。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ selector: RelationSelector; updates: Partial<TableRelation> }",
+              "optional": false
+            }
+          ],
+          "returnType": "TableRelation",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1230
+          }
+        },
+        {
+          "name": "deleteRelation",
+          "methodName": "deleteRelation",
+          "description": "删除一条表关系。",
+          "params": [
+            {
+              "name": "selector",
+              "type": "RelationSelector",
+              "optional": false,
+              "description": "关系选择器。"
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1246
+          }
+        },
+        {
+          "name": "listDependencies",
+          "methodName": "listDependencies",
+          "description": "列出 DataSet 中的视图依赖。",
+          "params": [
+            {
+              "name": "filter",
+              "type": "Partial<Pick<ViewDependency, 'parentTable' | 'childTable'>>",
+              "optional": true,
+              "description": "可选过滤条件，支持按 parentTable / childTable 过滤。"
+            }
+          ],
+          "returnType": "ViewDependency[]",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1262
+          }
+        },
+        {
+          "name": "getDependency",
+          "methodName": "getDependency",
+          "description": "获取一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "ViewDependency | undefined",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1278
+          }
+        },
+        {
+          "name": "createDependency",
+          "methodName": "createDependency",
+          "description": "创建一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ dependency: ViewDependency }",
+              "optional": false,
+              "description": "依赖参数。"
+            }
+          ],
+          "returnType": "ViewDependency",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1296
+          }
+        },
+        {
+          "name": "updateDependency",
+          "methodName": "updateDependency",
+          "description": "更新一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string; updates: Partial<ViewDependency> }",
+              "optional": false
+            }
+          ],
+          "returnType": "ViewDependency",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1319
+          }
+        },
+        {
+          "name": "deleteDependency",
+          "methodName": "deleteDependency",
+          "description": "删除一条视图依赖。",
+          "params": [
+            {
+              "name": "params",
+              "type": "{ parentTable: string; childTable: string }",
+              "optional": false
+            }
+          ],
+          "returnType": "void",
+          "usageRules": [],
+          "failureModes": [],
+          "examples": [],
+          "attackSurfaces": [],
+          "guards": [],
+          "mutations": [],
+          "source": {
+            "file": "packages/spark-data/src/dataset-crud-tool.ts",
+            "line": 1338
+          }
+        }
+      ],
+      "source": {
+        "file": "packages/spark-data/src/dataset-crud-tool.ts",
+        "line": 136,
+        "className": "DataSetCrudTool"
+      }
+    }
+  ]
+}

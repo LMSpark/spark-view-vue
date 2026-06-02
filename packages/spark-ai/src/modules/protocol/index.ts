@@ -56,6 +56,7 @@ export type {
   AiModuleInstanceRef,
   AiModuleOperation,
   AiModuleRunner,
+  AiModuleScriptContextProvider,
   AiModulePathContext,
 } from './module-context'
 
@@ -66,6 +67,7 @@ export type {
   AiModuleFunctionExample,
   AiModuleFunctionFailureMode,
   AiModuleFunctionMetadata,
+  AiModuleFunctionResultApiMetadata,
   AiModuleFunctionResultSchema,
   AiModuleAttributeAccessor,
   AiModuleAttributeAccess,

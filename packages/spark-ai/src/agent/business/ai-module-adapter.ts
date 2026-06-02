@@ -1,23 +1,16 @@
 /**
  * agent/business · VCM API 对象注册适配器
  *
- * VCM/LLM 语义：把普通业务 class + VCM 元数据桥接为 root AiModule，并把 action
- * 返回的 API-bearing 对象登记为 handle，供 module_handle_call 后续调用。@ai-visible
+ * VCM/LLM 语义：把普通业务 class + VCM 元数据桥接为 root AiModule。
+ * 返回 API 对象只作为元数据暴露给指南，不在运行时合成 handle/子模块。@ai-visible
  */
 
-import {
-  AiJsonSchemaValidator,
-  coerceJsonValue,
-  type AiJsonParams,
-  type AiJsonValue,
-} from '../../json'
+import { coerceJsonValue } from '../../json'
 import {
   AiModule,
   AiModuleResult,
   AiModuleRuntime,
   type AiModuleFunctionMetadata,
-  type AiModulePathContext,
-  type AiModuleToolSpec,
 } from '../../modules'
 import {
   validateApiObjectMetadata,
@@ -38,6 +31,7 @@ import type { AiAgentHost } from './ai-host'
 import type { AiAgentInputContract } from './business-task'
 import { AiAgentRegistration, type AiAgentRegistrationOptions } from './registration-types'
 import type { AiAgentRuntimeContext } from './scope-types'
+import { createAiApiScriptContext, executeAiApiAction } from './ai-api-script-context'
 
 type AiModuleAdapterConstructor<T> = new (...args: readonly unknown[]) => T
 
@@ -82,56 +76,13 @@ export type AiModuleAdapterRegisterOptions<T> = Readonly<{
 export type AiApiObjectHandle = Readonly<{
   handleId: string
   apiKind: string
+  apiName: string
+  apiDescription: string
   instance: object
-  actions: readonly AiApiActionMetadata[]
-  businessInstanceId: string
-}>
-
-type AiApiObjectHandleEntry = Omit<AiApiObjectHandle, 'handleId' | 'businessInstanceId'>
-
-type HandleEnvelope = Readonly<{
-  value: AiJsonValue | null
-  _handles: ReadonlyArray<Readonly<{ handleId: string; apiKind: string }>>
-}>
-
-type CallableMethod = (target: unknown, ctx: AiModulePathContext, args: AiJsonParams) => unknown
-
-export class AiModuleHandleRegistry {
-  private readonly handlesByInstance = new Map<string, Map<string, AiApiObjectHandle>>()
-  private handleCounter = 0
-
-  public register(businessInstanceId: string, entry: AiApiObjectHandleEntry): string {
-    const handleId = `hnd_${String(++this.handleCounter)}`
-    const handle: AiApiObjectHandle = { ...entry, handleId, businessInstanceId }
-    let instanceMap = this.handlesByInstance.get(businessInstanceId)
-    if (instanceMap === undefined) {
-      instanceMap = new Map()
-      this.handlesByInstance.set(businessInstanceId, instanceMap)
-    }
-    instanceMap.set(handleId, handle)
-    return handleId
-  }
-
-  public get(businessInstanceId: string, handleId: string): AiApiObjectHandle | undefined {
-    return this.handlesByInstance.get(businessInstanceId)?.get(handleId)
-  }
-
-  public clearForInstance(businessInstanceId: string): void {
-    this.handlesByInstance.delete(businessInstanceId)
-  }
-}
-
-type HandleDispatchCommand = Readonly<{
-  businessInstanceId: string
-  handleId: string
-  actionName: string
-  args: AiJsonParams
-  ctx: AiModulePathContext
+  api: AiApiObjectMetadata
 }>
 
 export class AiModuleAdapter {
-  private readonly handleRegistry = new AiModuleHandleRegistry()
-
   public static register<T>(command: AiModuleAdapterRegisterCommand<T>): AiAgentHost {
     const registration = AiModuleAdapter.createRegistration({
       moduleClass: command.moduleClass,
@@ -147,10 +98,7 @@ export class AiModuleAdapter {
     const instance = command.options.instance
       ?? new command.moduleClass(...(command.options.constructArgs ?? []))
     const adapter = new AiModuleAdapter()
-    const runtime = new AiModuleRuntime({
-      handleCallTool: adapter.createHandleCallToolSpec(command.metadata.rootApi),
-      handleToolDispatcher: adapter,
-    })
+    const runtime = new AiModuleRuntime()
     runtime.register(adapter.buildRootAiModule(command.metadata.rootApi, instance))
 
     const systemPrompt = bindOptionalLifecycle(instance, command.options.systemPrompt)
@@ -164,11 +112,9 @@ export class AiModuleAdapter {
       runtime,
       sessionStore: command.options.sessionStore ?? new DefaultAiAgentSessionStore(),
       onEndBusinessInstance: async (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => {
-        adapter.handleRegistry.clearForInstance(context.moduleInstanceId)
         await command.options.onEndBusinessInstance?.(instance, context, directive)
       },
       releaseModuleInstance: (moduleInstanceId: string) => {
-        adapter.handleRegistry.clearForInstance(moduleInstanceId)
         command.options.releaseModuleInstance?.(instance, moduleInstanceId)
       },
       ...(command.options.inputContract === undefined ? {} : { inputContract: command.options.inputContract }),
@@ -180,51 +126,15 @@ export class AiModuleAdapter {
     return new AiAgentRegistration(registrationOptions)
   }
 
-  public async dispatchHandle(command: HandleDispatchCommand): Promise<AiModuleResult<AiJsonValue>> {
-    const handle = this.handleRegistry.get(command.businessInstanceId, command.handleId)
-    if (handle === undefined) {
-      return AiModuleResult.failCode(
-        'HANDLE_NOT_FOUND',
-        `handle "${command.handleId}" 不存在或已过期`,
-        '重新调用创建该 handle 的 action，获取新的 handle。',
-      )
-    }
-    const action = handle.actions.find(candidate => candidate.name === command.actionName)
-    if (action === undefined) {
-      return AiModuleResult.failCode(
-        'HANDLE_ACTION_NOT_FOUND',
-        `handle "${command.handleId}" (${handle.apiKind}) 没有 action "${command.actionName}"`,
-        `可用 actions: ${handle.actions.map(candidate => candidate.name).join(', ')}`,
-      )
-    }
-    const validation = AiJsonSchemaValidator.validateDeserializedParams(command.args, action.paramsSchema)
-    if (!validation.ok) {
-      return AiModuleResult.failCode(
-        'INVALID_PARAMS',
-        `action "${command.actionName}" 参数校验失败: ${AiJsonSchemaValidator.formatAiJsonValidationIssues(validation.issues)}`,
-        `期望 schema: ${JSON.stringify(action.paramsSchema)}`,
-      )
-    }
-    const method = readCallableMethod(handle.instance, action.methodName)
-    if (method === undefined) {
-      return functionNotImplemented(handle.apiKind, action.methodName)
-    }
-    const result = await readModuleResult(method(handle.instance, command.ctx, command.args), handle.apiKind, action.methodName)
-    return this.attachHandles(command.businessInstanceId, action.resultApis ?? [], result)
-  }
-
   private buildRootAiModule<T>(api: AiApiObjectMetadata, instance: T): AiModule {
     return new AiModule({
       kind: api.kind,
       name: api.name,
       description: api.description,
+      ...(api.attributes === undefined ? {} : { attributes: api.attributes }),
       functions: api.actions.map(toModuleFunctionMetadata),
-      find: (ctx, childKind) => {
-        if (childKind !== api.kind) return AiModuleResult.ok([])
-        const instanceId = ctx.host?.moduleInstanceId
-        if (instanceId === undefined || instanceId.length === 0) return AiModuleResult.ok([])
-        return AiModuleResult.ok([{ id: instanceId, label: `当前 ${api.name}`, summary: api.description }])
-      },
+      find: () => AiModuleResult.ok([]),
+      scriptContext: ctx => createAiApiScriptContext(instance, api, ctx),
       runner: async (ctx, functionName, args) => {
         const action = api.actions.find(candidate => candidate.name === functionName)
         if (action === undefined) {
@@ -234,75 +144,12 @@ export class AiModuleAdapter {
             '检查 VCM 元数据 actions 是否包含该 functionName。',
           )
         }
-        const methodName = action.methodName
-        const method = readCallableMethod(instance, methodName)
-        if (method === undefined) {
-          return functionNotImplemented(api.kind, methodName)
-        }
-        const result = await readModuleResult(method(instance, ctx, args), api.kind, methodName)
-        const businessInstanceId = readBusinessInstanceId(ctx)
-        if (businessInstanceId === undefined && (action.resultApis ?? []).length > 0) {
-          return AiModuleResult.failCode(
-            'HANDLE_SCOPE_NOT_FOUND',
-            '无法创建 API 对象 handle：当前调用缺少 business instance 标识',
-            'Host 层执行工具时必须注入 ctx.host.moduleInstanceId。',
-          )
-        }
-        return this.attachHandles(businessInstanceId ?? '', action.resultApis ?? [], result)
+        const result = await executeAiApiAction(instance, action, args, ctx)
+        if (!result.ok) return AiModuleResult.passthroughFailure(result)
+        const data = coerceJsonValue(result.data)
+        return AiModuleResult.ok(data === undefined ? null : data)
       },
     })
-  }
-
-  private createHandleCallToolSpec(rootApi: AiApiObjectMetadata): AiModuleToolSpec {
-    const allHandleActions = collectHandleActionLabels(rootApi)
-    return {
-      type: 'function',
-      function: {
-        name: 'module_handle_call',
-        description: [
-          'Call an action on an API object handle returned in a previous _handles payload.',
-          allHandleActions.length === 0 ? 'No handle actions are currently declared.' : `Available handle actions: ${allHandleActions.join(', ')}.`,
-        ].join('\n'),
-        parameters: {
-          type: 'object',
-          properties: {
-            handleId: { type: 'string', description: 'Handle ID from a previous _handles item.' },
-            actionName: { type: 'string', description: 'Action name declared on the handle API object.' },
-            args: { type: 'object', description: 'Action arguments matching the handle action paramsSchema.' },
-          },
-          required: ['handleId', 'actionName'],
-          additionalProperties: false,
-        },
-      },
-    }
-  }
-
-  private attachHandles(
-    businessInstanceId: string,
-    refs: readonly AiApiResultApiRef[],
-    result: AiModuleResult<unknown>,
-  ): AiModuleResult<AiJsonValue> {
-    if (!result.ok) return AiModuleResult.passthroughFailure(result)
-    if (refs.length === 0) {
-      const data = coerceJsonValue(result.data)
-      return AiModuleResult.ok(data === undefined ? null : data)
-    }
-    const handles: Array<{ handleId: string; apiKind: string }> = []
-    for (const ref of refs) {
-      const nestedInstance = extractByPath(result.data, ref.resultPath)
-      if (!isObjectInstance(nestedInstance)) continue
-      const handleId = this.handleRegistry.register(businessInstanceId, {
-        apiKind: ref.api.kind,
-        instance: nestedInstance,
-        actions: ref.api.actions,
-      })
-      handles.push({ handleId, apiKind: ref.api.kind })
-    }
-    if (handles.length === 0) {
-      const data = coerceJsonValue(result.data)
-      return AiModuleResult.ok(data === undefined ? null : data)
-    }
-    return AiModuleResult.ok(toHandleEnvelope(result.data, handles))
   }
 }
 
@@ -312,88 +159,28 @@ function toModuleFunctionMetadata(action: AiApiActionMetadata): AiModuleFunction
     description: action.description,
     paramsSchema: action.paramsSchema,
     ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
+    ...(action.resultApis === undefined ? {} : { resultApis: action.resultApis.map(toModuleFunctionResultApiMetadata) }),
     ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
     ...(action.failureModes === undefined ? {} : { failureModes: action.failureModes.map(mode => ({ ...mode })) }),
   }
 }
 
-function toHandleEnvelope(
-  value: unknown,
-  handles: ReadonlyArray<Readonly<{ handleId: string; apiKind: string }>>,
-): HandleEnvelope {
+function toModuleFunctionResultApiMetadata(ref: AiApiResultApiRef): NonNullable<AiModuleFunctionMetadata['resultApis']>[number] {
   return {
-    value: coerceJsonValue(value) ?? null,
-    _handles: handles,
+    resultPath: [...ref.resultPath],
+    kind: ref.api.kind,
+    name: ref.api.name,
+    description: ref.api.description,
+    actions: ref.api.actions.map(action => ({
+      name: action.name,
+      description: action.description,
+      paramNames: isIndexableObject(action.paramsSchema.properties) ? Object.keys(action.paramsSchema.properties) : [],
+    })),
   }
-}
-
-function extractByPath(data: unknown, path: readonly string[]): unknown {
-  let current = data
-  for (const key of path) {
-    if (!isIndexableObject(current)) return undefined
-    current = current[key]
-  }
-  return current
-}
-
-function collectHandleActionLabels(api: AiApiObjectMetadata): readonly string[] {
-  const labels: string[] = []
-  for (const action of api.actions) {
-    for (const ref of action.resultApis ?? []) {
-      labels.push(...ref.api.actions.map(handleAction => `${ref.api.kind}.${handleAction.name}`))
-    }
-  }
-  return labels
-}
-
-function readBusinessInstanceId(ctx: AiModulePathContext): string | undefined {
-  const value = ctx.host?.moduleInstanceId
-  return typeof value === 'string' && value.trim().length > 0 ? value : undefined
-}
-
-function readCallableMethod(target: unknown, methodName: string): CallableMethod | undefined {
-  if (!hasCallableProperty(target, methodName)) return undefined
-  return (methodTarget, ctx, args) => {
-    if (!hasCallableProperty(methodTarget, methodName)) return undefined
-    return methodTarget[methodName]?.(ctx, args)
-  }
-}
-
-function functionNotImplemented(kind: string, methodName: string): AiModuleResult<never> {
-  return AiModuleResult.failCode(
-    'FUNCTION_NOT_IMPLEMENTED',
-    `${kind} 未实现方法 "${methodName}"`,
-    '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
-  )
-}
-
-function isObjectInstance(value: unknown): value is object {
-  return value !== null && typeof value === 'object'
 }
 
 function isIndexableObject(value: unknown): value is Readonly<Record<string, unknown>> {
   return value !== null && typeof value === 'object'
-}
-
-function hasCallableProperty(
-  value: unknown,
-  methodName: string,
-): value is Readonly<Record<string, (ctx: AiModulePathContext, args: AiJsonParams) => unknown>> {
-  return isIndexableObject(value) && typeof value[methodName] === 'function'
-}
-
-async function readModuleResult(
-  value: unknown,
-  kind: string,
-  methodName: string,
-): Promise<AiModuleResult<unknown>> {
-  const resolved = await value
-  if (resolved instanceof AiModuleResult) return resolved
-  return AiModuleResult.failCode(
-    'INVALID_ACTION_RESULT',
-    `${kind}.${methodName} 必须返回 AiModuleResult`,
-    '检查业务方法签名，不要返回普通对象或 undefined。',
-  )
 }
 
 function bindOptionalLifecycle<T, TArgs extends readonly unknown[], TResult>(

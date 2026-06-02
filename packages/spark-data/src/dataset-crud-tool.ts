@@ -229,7 +229,6 @@ export class DataSetCrudTool {
   /**
    * 将当前 DataSet 序列化为元数据对象。
    *
-   * @moduleAction export
    * @moduleMutation pagedata.json read 导出当前页面数据集元数据快照。
    * @returns 可用于持久化或传输的 DataSet 元数据。
    */
@@ -254,7 +253,8 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction canUndo
+   * 查询当前数据集历史是否可撤销。
+   *
    * @moduleMutation pagedata.json read 查询当前页面数据集是否可撤销。
    */
   getCanUndo(): boolean {
@@ -262,7 +262,8 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction canRedo
+   * 查询当前数据集历史是否可重做。
+   *
    * @moduleMutation pagedata.json read 查询当前页面数据集是否可重做。
    */
   getCanRedo(): boolean {
@@ -270,7 +271,8 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction historyCursor
+   * 查询当前数据集历史栈游标位置。
+   *
    * @moduleMutation pagedata.json read 查询当前页面数据集历史游标。
    */
   getHistoryCursor(): number {
@@ -281,7 +283,6 @@ export class DataSetCrudTool {
    * 撤销最近一次结构写操作。
    * 成功时替换内部 DataSet 并返回 true；无可撤销时返回 false。
    *
-   * @moduleAction undo
    * @moduleMutation pagedata.json write 撤销当前页面数据集最近一次结构写操作。
    */
   undo(): boolean {
@@ -295,7 +296,6 @@ export class DataSetCrudTool {
    * 重做最近一次被撤销的操作。
    * 成功时替换内部 DataSet 并返回 true；无可重做时返回 false。
    *
-   * @moduleAction redo
    * @moduleMutation pagedata.json write 重做当前页面数据集最近一次被撤销的结构写操作。
    */
   redo(): boolean {
@@ -306,7 +306,8 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction clearHistory
+   * 清空当前数据集的 undo/redo 历史，只保留当前快照作为新的历史起点。
+   *
    * @moduleMutation pagedata.json write 清空当前页面数据集的 undo/redo 历史。
    */
   clearHistory(): void {
@@ -354,7 +355,6 @@ export class DataSetCrudTool {
   /**
    * 列出当前 DataSet 中的全部数据表。
    *
-   * @moduleAction listTables
    * @moduleMutation pagedata.json read 列出当前页面数据集中的全部表。
    * @returns 数据表实例列表。
    */
@@ -365,7 +365,6 @@ export class DataSetCrudTool {
   /**
    * 获取指定数据表。
    *
-   * @moduleAction getTable
    * @moduleMutation pagedata.json read 读取当前页面数据集中的单个表。
    * @param tableName 表名。
    * @returns 命中的 DataTable；不存在时返回 undefined。
@@ -377,7 +376,6 @@ export class DataSetCrudTool {
   /**
    * 列出指定数据表的全部列定义。
    *
-   * @moduleAction listColumns
    * @moduleMutation pagedata.json read 列出指定表的全部字段。
    * @param tableName 表名。
    * @returns 列定义副本列表。
@@ -390,7 +388,6 @@ export class DataSetCrudTool {
   /**
    * 获取指定数据表中的单个列定义。
    *
-   * @moduleAction getColumn
    * @moduleMutation pagedata.json read 读取指定表的单个字段定义。
    * @param tableName 表名。
    * @param columnName 列名。
@@ -406,7 +403,6 @@ export class DataSetCrudTool {
   /**
    * 向指定数据表追加一列。
    *
-   * @moduleAction createColumn
    * @moduleAttackSurface dataset-schema high 新增字段会改变数据绑定字段、校验器和视图列缓存。
    * @moduleGuard 新字段名必须在表内唯一，并与现有 dataField 绑定策略一致。
    * @moduleMutation pagedata.json write 向指定表追加字段。
@@ -428,7 +424,6 @@ export class DataSetCrudTool {
   /**
    * 更新指定列定义。
    *
-   * @moduleAction updateColumn
    * @moduleAttackSurface dataset-schema high 字段定义更新会改变数据类型、校验、显示和计算语义。
    * @moduleGuard 更新前必须确认列存在，且变更不会破坏既有 dataField 绑定。
    * @moduleMutation pagedata.json write 更新指定字段定义。
@@ -450,10 +445,13 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction renameColumn
+   * 重命名指定字段，并迁移行数据、视图字段引用和表关系字段引用。
+   *
    * @moduleAttackSurface dataset-schema high 字段重命名会影响视图行数据、关系、依赖和组件 dataField 绑定。
    * @moduleGuard 必须确认 newColumnName 在表内唯一，并同步检查页面绑定。
    * @moduleMutation pagedata.json write 重命名指定字段并迁移内部引用。
+   * @param params 字段重命名参数。
+   * @returns 重命名后的 DataTable。
    */
   renameColumn(params: { tableName: string; columnName: string; newColumnName: string }): DataTable {
     const tableName = params.tableName.trim()
@@ -541,7 +539,6 @@ export class DataSetCrudTool {
   /**
    * 删除指定列。
    *
-   * @moduleAction deleteColumn
    * @moduleAttackSurface dataset-schema high 删除字段会破坏依赖该字段的数据绑定、关系和视图配置。
    * @moduleGuard 删除前必须确认字段没有被组件、视图、关系或依赖引用。
    * @moduleMutation pagedata.json write 删除指定字段。
@@ -557,9 +554,8 @@ export class DataSetCrudTool {
   }
 
   /**
-  * 创建数据表并按需初始化资源语义、API、CRUD 配置和视图。
+   * 创建数据表并按需初始化资源语义、API、CRUD 配置和视图。
    *
-   * @moduleAction createTable
    * @moduleAttackSurface dataset-schema high 新建表会新增可被页面组件绑定的数据空间。
    * @moduleAttackSurface remote-crud-config high 建表时写入 api/crudConfig 会改变远端访问目标。
    * @moduleGuard tableName 必须唯一，columns 必须包含合法字段定义。
@@ -594,9 +590,8 @@ export class DataSetCrudTool {
   }
 
   /**
-  * 更新数据表结构、资源语义及运行配置。
+   * 更新数据表结构、资源语义及运行配置。
    *
-   * @moduleAction updateTable
    * @moduleAttackSurface dataset-schema high 表结构更新会影响字段、默认行、视图、资源语义和绑定链。
    * @moduleAttackSurface remote-crud-config high api/crudConfig 更新会改变页面运行时远端 CRUD 行为。
    * @moduleGuard 修改前必须确认表存在，并检查 columnsToRemove/defaultRows 对现有绑定的影响。
@@ -645,10 +640,13 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction renameTable
+   * 重命名数据表，并迁移视图 tableName、关系、依赖和布局位置引用。
+   *
    * @moduleAttackSurface dataset-schema high 表重命名会影响 dataViewKey、关系、依赖、布局和组件绑定。
    * @moduleGuard 必须确认 newTableName 唯一，并同步检查页面 dataViewKey 引用。
    * @moduleMutation pagedata.json write 重命名页面数据表并迁移内部引用。
+   * @param params 表重命名参数。
+   * @returns 重命名后的 DataTable。
    */
   renameTable(params: { tableName: string; newTableName: string }): DataTable {
     const tableName = params.tableName.trim()
@@ -722,7 +720,6 @@ export class DataSetCrudTool {
   /**
    * 删除指定数据表。
    *
-   * @moduleAction deleteTable
    * @moduleAttackSurface dataset-schema high 删除表会移除所有字段、视图、行数据和组件绑定入口。
    * @moduleGuard 删除前必须确认表未被 relation/dependency 和页面组件引用。
    * @moduleMutation pagedata.json write 删除页面数据表。
@@ -741,7 +738,6 @@ export class DataSetCrudTool {
   /**
    * 列出某个数据表下的全部视图。
    *
-   * @moduleAction listViews
    * @moduleMutation pagedata.json read 列出指定表下的全部视图。
    * @param tableName 表名。
    * @returns 视图实例列表。
@@ -754,7 +750,6 @@ export class DataSetCrudTool {
   /**
    * 获取指定视图。
    *
-   * @moduleAction getView
    * @moduleMutation pagedata.json read 读取指定数据视图。
    * @param tableName 表名。
    * @param viewId 视图 ID，默认 default。
@@ -768,7 +763,6 @@ export class DataSetCrudTool {
   /**
    * 创建一个非 default 视图。
    *
-   * @moduleAction createView
    * @moduleAttackSurface dataset-view high 新建视图会新增可被页面组件绑定的 DataView。
    * @moduleGuard 不能创建 default 视图，viewId 必须在表内唯一。
    * @moduleMutation pagedata.json write 创建页面数据视图。
@@ -797,7 +791,6 @@ export class DataSetCrudTool {
   /**
    * 更新指定视图的元数据配置。
    *
-   * @moduleAction updateView
    * @moduleAttackSurface dataset-view high 视图配置更新会改变过滤、排序、分页、主键和绑定输出。
    * @moduleGuard 更新前必须确认 tableName/viewId 存在，并保持 DataViewKey 可解析。
    * @moduleMutation pagedata.json write 更新页面数据视图。
@@ -821,7 +814,6 @@ export class DataSetCrudTool {
   /**
    * 删除指定视图。
    *
-   * @moduleAction deleteView
    * @moduleAttackSurface dataset-view high 删除视图会破坏引用该 viewId 的组件 dataViewKey。
    * @moduleGuard 不能删除 default 视图，删除前必须确认页面没有引用该视图。
    * @moduleMutation pagedata.json write 删除页面数据视图。
@@ -841,8 +833,11 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction listAggregates
+   * 列出指定视图的全部聚合配置。
+   *
    * @moduleMutation pagedata.json read 列出指定视图聚合配置。
+   * @param params 聚合查询参数。
+   * @returns 聚合 key 到聚合配置的映射。
    */
   listAggregates(params: { tableName: string; viewId?: string }): Record<string, AggregateColumnConfig> {
     const tableName = this.requireNonEmptyString(params.tableName, 'listAggregates.tableName')
@@ -851,8 +846,11 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction getAggregate
+   * 读取指定视图中的单个聚合配置。
+   *
    * @moduleMutation pagedata.json read 读取指定聚合配置。
+   * @param params 聚合定位参数。
+   * @returns 命中的聚合配置；不存在时返回 undefined。
    */
   getAggregate(params: { tableName: string; viewId?: string; key: string }): AggregateColumnConfig | undefined {
     const tableName = this.requireNonEmptyString(params.tableName, 'getAggregate.tableName')
@@ -862,10 +860,12 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction addAggregate
+   * 向指定视图新增一个聚合配置。
+   *
    * @moduleAttackSurface dataset-aggregate medium 聚合配置会改变 aggregateResult 输出。
    * @moduleGuard key 必须唯一，config 必须引用存在字段。
    * @moduleMutation pagedata.json write 新增指定视图聚合配置。
+   * @param params 聚合创建参数。
    */
   addAggregate(params: { tableName: string; viewId?: string; key: string; config: AggregateColumnConfig }): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'addAggregate.tableName')
@@ -880,10 +880,12 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction updateAggregate
+   * 更新指定视图中的聚合配置。
+   *
    * @moduleAttackSurface dataset-aggregate medium 聚合配置更新会改变 aggregateResult 输出。
    * @moduleGuard 更新前必须确认聚合 key 存在，且引用字段有效。
    * @moduleMutation pagedata.json write 更新指定视图聚合配置。
+   * @param params 聚合更新参数。
    */
   updateAggregate(
     params: { tableName: string; viewId?: string; key: string; updates: Partial<AggregateColumnConfig> },
@@ -907,10 +909,12 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction removeAggregate
+   * 删除指定视图中的聚合配置。
+   *
    * @moduleAttackSurface dataset-aggregate medium 删除聚合配置会影响依赖 aggregateResult 的页面组件。
    * @moduleGuard 删除前必须确认页面没有依赖该聚合 key。
    * @moduleMutation pagedata.json write 删除指定视图聚合配置。
+   * @param params 聚合删除参数。
    */
   removeAggregate(params: { tableName: string; viewId?: string; key: string }): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'removeAggregate.tableName')
@@ -925,18 +929,24 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction getComputeExpression
+   * 读取指定字段的计算表达式。
+   *
    * @moduleMutation pagedata.json read 读取字段计算表达式。
+   * @param params 字段定位参数。
+   * @returns 字段计算表达式；未设置时返回 undefined。
    */
   getComputeExpression(params: { tableName: string; columnName: string }): string | undefined {
     return this.getColumn(params)?.computeExpression
   }
 
   /**
-   * @moduleAction setComputeExpression
+   * 设置指定字段的计算表达式。
+   *
    * @moduleAttackSurface dataset-compute high 计算表达式会改变字段值生成逻辑。
    * @moduleGuard expression 必须只使用受支持的 DataSet 计算表达式语法和现有字段。
    * @moduleMutation pagedata.json write 设置字段计算表达式。
+   * @param params 计算表达式设置参数。
+   * @returns 更新后的 DataTable。
    */
   setComputeExpression(params: { tableName: string; columnName: string; expression: string }): DataTable {
     const expression = this.requireNonEmptyString(params.expression, 'setComputeExpression.expression')
@@ -948,10 +958,13 @@ export class DataSetCrudTool {
   }
 
   /**
-   * @moduleAction clearComputeExpression
+   * 清除指定字段的计算表达式。
+   *
    * @moduleAttackSurface dataset-compute medium 清除计算表达式会改变字段值来源。
    * @moduleGuard 清除前必须确认页面不依赖该计算字段。
    * @moduleMutation pagedata.json write 清除字段计算表达式。
+   * @param params 字段定位参数。
+   * @returns 更新后的 DataTable。
    */
   clearComputeExpression(params: { tableName: string; columnName: string }): DataTable {
     const tableName = this.requireNonEmptyString(params.tableName, 'clearComputeExpression.tableName')
@@ -975,7 +988,6 @@ export class DataSetCrudTool {
   /**
    * 列出指定视图当前持有的全部行。
    *
-   * @moduleAction listRows
    * @moduleMutation pagedata.json read 列出指定视图行数据。
    * @param tableName 表名。
    * @param viewId 视图 ID，默认 default。
@@ -990,7 +1002,6 @@ export class DataSetCrudTool {
   /**
    * 通过主键查找一条行数据。
    *
-   * @moduleAction getRow
    * @moduleMutation pagedata.json read 读取指定行数据。
    * @param tableName 表名。
    * @param id 主键值。
@@ -1009,7 +1020,6 @@ export class DataSetCrudTool {
   /**
    * 在指定视图中创建一条新行。
    *
-   * @moduleAction createRow
    * @moduleAttackSurface dataset-row-data medium 新增行会改变页面预览或静态数据源。
    * @moduleGuard data 必须匹配目标表字段和主键约束。
    * @moduleMutation pagedata.json write 新增指定视图行数据。
@@ -1037,7 +1047,6 @@ export class DataSetCrudTool {
    * - immediate + API 模式：优先走 view.crud.batchCreateRecords
    * - 其余模式：逐条复用 view.addRow，并统一收口为 BatchResult
    *
-   * @moduleAction createRows
    * @moduleAttackSurface dataset-row-data medium 批量新增行会改变页面预览或静态数据源。
    * @moduleGuard items 必须逐项匹配目标表字段和主键约束。
    * @moduleMutation pagedata.json write 批量新增指定视图行数据。
@@ -1058,7 +1067,6 @@ export class DataSetCrudTool {
   /**
    * 更新指定主键的行数据。
    *
-   * @moduleAction updateRow
    * @moduleAttackSurface dataset-row-data medium 更新行会改变页面预览或静态数据源。
    * @moduleGuard data 必须只包含目标表允许字段。
    * @moduleMutation pagedata.json write 更新指定行数据。
@@ -1086,7 +1094,6 @@ export class DataSetCrudTool {
    *
    * 对话侧统一传 id + data，底层再按视图主键字段拼装 batchUpdate payload。
    *
-   * @moduleAction updateRows
    * @moduleAttackSurface dataset-row-data medium 批量更新行会改变页面预览或静态数据源。
    * @moduleGuard items 必须逐项匹配目标表字段和主键约束。
    * @moduleMutation pagedata.json write 批量更新指定视图行数据。
@@ -1110,7 +1117,6 @@ export class DataSetCrudTool {
   /**
    * 删除指定主键的行数据。
    *
-   * @moduleAction deleteRow
    * @moduleAttackSurface dataset-row-data medium 删除行会改变页面预览或静态数据源。
    * @moduleGuard 删除前必须确认目标 id 对应的行不是页面示例或默认选项依赖。
    * @moduleMutation pagedata.json write 删除指定行数据。
@@ -1133,7 +1139,6 @@ export class DataSetCrudTool {
   /**
    * 批量删除多条行数据。
    *
-   * @moduleAction deleteRows
    * @moduleAttackSurface dataset-row-data medium 批量删除行会改变页面预览或静态数据源。
    * @moduleGuard ids 必须逐项确认，避免误删示例或默认选项数据。
    * @moduleMutation pagedata.json write 批量删除指定视图行数据。
@@ -1158,7 +1163,6 @@ export class DataSetCrudTool {
   /**
    * 列出 DataSet 中的表关系。
    *
-   * @moduleAction listRelations
    * @moduleMutation pagedata.json read 列出数据表关系。
    * @param filter 可选过滤条件，仅支持按 parentTable / childTable 过滤。
    * @returns 关系列表。
@@ -1174,7 +1178,6 @@ export class DataSetCrudTool {
   /**
    * 获取单条表关系。
    *
-   * @moduleAction getRelation
    * @moduleMutation pagedata.json read 读取指定数据表关系。
    * @param selector 关系选择器。
    * @returns 命中的表关系；不存在时返回 undefined。
@@ -1196,7 +1199,6 @@ export class DataSetCrudTool {
   /**
    * 创建一条表关系。
    *
-   * @moduleAction createRelation
    * @moduleAttackSurface dataset-relation high 新建关系会改变主从表联动、筛选和组件级数据依赖。
    * @moduleGuard 父子表与字段必须存在，且不能创建重复或歧义关系。
    * @moduleMutation pagedata.json write 创建数据表关系。
@@ -1217,7 +1219,6 @@ export class DataSetCrudTool {
   /**
    * 更新一条表关系。
    *
-   * @moduleAction updateRelation
    * @moduleAttackSurface dataset-relation high 更新关系会改变主从表联动和组件数据依赖。
    * @moduleGuard selector 必须唯一命中，updates 不得指向不存在的表或字段。
    * @moduleMutation pagedata.json write 更新数据表关系。
@@ -1236,7 +1237,6 @@ export class DataSetCrudTool {
   /**
    * 删除一条表关系。
    *
-   * @moduleAction deleteRelation
    * @moduleAttackSurface dataset-relation high 删除关系会破坏依赖主从联动的数据视图。
    * @moduleGuard 删除前必须确认没有视图或组件依赖该关系。
    * @moduleMutation pagedata.json write 删除数据表关系。
@@ -1255,7 +1255,6 @@ export class DataSetCrudTool {
   /**
    * 列出 DataSet 中的视图依赖。
    *
-   * @moduleAction listDependencies
    * @moduleMutation pagedata.json read 列出数据视图依赖。
    * @param filter 可选过滤条件，支持按 parentTable / childTable 过滤。
    * @returns 依赖列表。
@@ -1271,7 +1270,6 @@ export class DataSetCrudTool {
   /**
    * 获取一条视图依赖。
    *
-   * @moduleAction getDependency
    * @moduleMutation pagedata.json read 读取指定数据视图依赖。
    * @param parentTable 父表名。
    * @param childTable 子表名。
@@ -1288,7 +1286,6 @@ export class DataSetCrudTool {
   /**
    * 创建一条视图依赖。
    *
-   * @moduleAction createDependency
    * @moduleAttackSurface dataset-dependency high 新建依赖会改变父子视图刷新和过滤链路。
    * @moduleGuard dependency 必须引用存在表和字段，并避免循环依赖。
    * @moduleMutation pagedata.json write 创建数据视图依赖。
@@ -1310,7 +1307,6 @@ export class DataSetCrudTool {
   /**
    * 更新一条视图依赖。
    *
-   * @moduleAction updateDependency
    * @moduleAttackSurface dataset-dependency high 更新依赖会改变父子视图刷新和过滤链路。
    * @moduleGuard 更新后仍必须引用存在表和字段，并避免循环依赖。
    * @moduleMutation pagedata.json write 更新数据视图依赖。
@@ -1332,7 +1328,6 @@ export class DataSetCrudTool {
   /**
    * 删除一条视图依赖。
    *
-   * @moduleAction deleteDependency
    * @moduleAttackSurface dataset-dependency high 删除依赖会改变依赖视图的联动刷新行为。
    * @moduleGuard 删除前必须确认页面没有依赖该父子视图联动。
    * @moduleMutation pagedata.json write 删除数据视图依赖。

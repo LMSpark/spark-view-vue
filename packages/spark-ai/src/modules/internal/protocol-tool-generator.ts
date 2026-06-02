@@ -4,10 +4,10 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】modules 层的 OpenAI function tool 规约生成入口。
- *   读取已注册的 AiModule 图，为 LLM 生成 8 个固定协议工具的 JSON Schema 规约。
+ *   读取已注册的 AiModule 图，为 LLM 生成固定协议工具的 JSON Schema 规约。
  *   每个工具对应一类协议操作：查询、指南、查找、属性读写、函数调用、人工提问。
  *
- * 【8 个固定协议工具】
+ * 【固定协议工具】
  *   module_query   — 查询已注册的模块目录（支持 kind / parentKind / keyword 过滤）
  *   module_guide   — 读取单个模块 kind 的用途与目录概要
  *   module_attribute_guide — 读取单个属性的详细读写指南
@@ -15,6 +15,7 @@
  *   module_find    — 查找或列出模块实例（需提供具体父路径）
  *   module_attr    — 读写模块的声明属性
  *   module_call    — 兼容旧协议调用模块声明函数；新协议优先直接暴露 functionName({ path, args })
+ *   module_script  — 在模块上下文沙箱中执行脚本，适合组合多次查询/调用
  *   human_question — 遇到不确定信息时向用户发问（暂停工具循环）
  *   agent_complete — 以工具调用完成当前生产线，避免自然语言正文收尾
  *
@@ -46,7 +47,7 @@ export type AiModuleToolSpec = Readonly<{
   }
 }>
 
-/** 8 个固定协议工具的联合类型 */
+/** 固定协议工具的联合类型 */
 export type ProtocolToolName =
   | 'module_query'
   | 'module_guide'
@@ -55,6 +56,7 @@ export type ProtocolToolName =
   | 'module_find'
   | 'module_attr'
   | 'module_call'
+  | 'module_script'
   | 'human_question'
   | 'agent_complete'
 
@@ -67,6 +69,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleFind: 'module_find'
   moduleAttr: 'module_attr'
   moduleCall: 'module_call'
+  moduleScript: 'module_script'
   humanQuestion: 'human_question'
   agentComplete: 'agent_complete'
 }> = Object.freeze({
@@ -77,6 +80,7 @@ export const PROTOCOL_TOOL_NAMES: Readonly<{
   moduleFind: 'module_find',
   moduleAttr: 'module_attr',
   moduleCall: 'module_call',
+  moduleScript: 'module_script',
   humanQuestion: 'human_question',
   agentComplete: 'agent_complete',
 })
@@ -106,6 +110,7 @@ export class ProtocolToolGenerator {
       this.buildModuleFind(),
       this.buildModuleAttr(),
       this.buildModuleCall(),
+      this.buildModuleScript(),
       this.buildHumanQuestion(),
       this.buildAgentComplete(),
       ...this.buildDeclaredFunctionTools(),
@@ -293,6 +298,33 @@ export class ProtocolToolGenerator {
             },
           },
           required: ['path', 'functionName', 'args'],
+          additionalProperties: false,
+        },
+      },
+    }
+  }
+
+  /** module_script — 在模块上下文沙箱中执行脚本 */
+  private buildModuleScript(): AiModuleToolSpec {
+    return {
+      type: 'function',
+      function: {
+        name: PROTOCOL_TOOL_NAMES.moduleScript,
+        description: [
+          'Execute JavaScript with this bound to the module context itself; ctx is the same object.',
+          'Use this when direct function calls are too small-grained and the task needs branching, loops, or multiple metadata/API calls.',
+          'Available helpers include this.module_query, this.module_guide, this.module_attribute_guide, this.module_function_guide, this.module_find, this.module_attr, this.module_call, and this.call; the same helpers are also available under this.$tools when a provider method has the same name.',
+          'Return a JSON-serializable value.',
+        ].join('\n'),
+        parameters: {
+          type: 'object',
+          properties: {
+            script: {
+              type: 'string',
+              description: 'JavaScript body executed inside async function with this bound to the module context. Example: return await this.module_query({ includeFunctions: true })',
+            },
+          },
+          required: ['script'],
           additionalProperties: false,
         },
       },

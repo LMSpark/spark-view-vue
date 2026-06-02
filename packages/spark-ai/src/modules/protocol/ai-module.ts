@@ -47,6 +47,7 @@ import type {
   AiModuleInstanceRef,
   AiModuleOperation,
   AiModuleRunner,
+  AiModuleScriptContextProvider,
   AiModulePathContext,
 } from './module-context'
 import { AiModuleCheck, AiModuleResult } from './module-operation'
@@ -141,6 +142,7 @@ export class AiModule {
   // 运行时委托（构造后不可变，每个委托对应一类运行时操作）
   private readonly attributeAccessor: AiModuleAttributeAccessor
   private readonly functionRunner: AiModuleRunner
+  private readonly scriptContextProvider: AiModuleScriptContextProvider | undefined
   private readonly childLister: AiModuleChildrenLister
   private readonly instanceFinder: AiModuleInstanceFinder
 
@@ -181,10 +183,9 @@ export class AiModule {
     this.payloads = normalizePayloadMetadata(options.payloads ?? [], kind)
     this.children = normalizeChildKinds(options.children ?? [], kind)
 
-    // 【第二阶段】属性委托必填校验
-    if (this.attributes.length > 0 && options.attributeAccessor === undefined) {
-      throw new Error(`attributeAccessor for "${kind}" is required when attributes are declared`)
-    }
+    // 【第二阶段】运行委托必填校验
+    // 属性元数据可仅用于 module_guide/module_attribute_guide；真正读写时若未注册委托，
+    // EMPTY_ATTRIBUTE_ACCESSOR 会返回明确的 ATTRIBUTE_ACCESSOR_NOT_REGISTERED。
     const hasFunctionRunner = options.runner !== undefined || this.runFunction !== AiModule.prototype.runFunction
     if (this.functions.length > 0 && !hasFunctionRunner) {
       throw new Error(`runner for "${kind}" is required when functions are declared`)
@@ -199,6 +200,7 @@ export class AiModule {
     // 【第三阶段】填充默认委托
     this.attributeAccessor = options.attributeAccessor ?? EMPTY_ATTRIBUTE_ACCESSOR
     this.functionRunner = options.runner ?? ((_ctx, functionName) => functionNotImplemented(this.kind, functionName))
+    this.scriptContextProvider = options.scriptContext
     this.childLister = options.list ?? EMPTY_CHILD_LISTER
     this.instanceFinder = options.find ?? EMPTY_INSTANCE_FINDER
   }
@@ -213,6 +215,11 @@ export class AiModule {
   /** 按 name 查找函数元数据。Navigator、describeKind 和 invokeFunction 内部校验使用。 */
   public findFunction(functionName: string): AiModuleFunctionMetadata | undefined {
     return this.moduleFunctionByName.get(functionName)
+  }
+
+  /** 构造 module_script 的能力提供方上下文；无委托时返回空对象。 */
+  public createScriptContext(ctx: AiModulePathContext): Readonly<Record<string, unknown>> {
+    return this.scriptContextProvider?.(ctx) ?? {}
   }
 
   // ── 协议方法 · 属性读取 ──
@@ -509,6 +516,17 @@ function normalizeFunctionMetadata(
     ),
     paramsSchema: fn.paramsSchema,
     ...(fn.resultSchema === undefined ? {} : { resultSchema: fn.resultSchema }),
+    ...(fn.resultApis === undefined ? {} : { resultApis: fn.resultApis.map(resultApi => ({
+      resultPath: [...resultApi.resultPath],
+      kind: resultApi.kind,
+      name: resultApi.name,
+      description: resultApi.description,
+      actions: resultApi.actions.map(action => ({
+        name: action.name,
+        description: action.description,
+        paramNames: [...action.paramNames],
+      })),
+    })) }),
     ...(fn.usageRules === undefined ? {} : { usageRules: [...fn.usageRules] }),
     ...(fn.requiredBeforeCall === undefined ? {} : { requiredBeforeCall: [...fn.requiredBeforeCall] }),
     ...(fn.failureModes === undefined

@@ -40,6 +40,7 @@ import type {
 } from './component-catalog-schema'
 import { auditCatalog, logAuditReport } from './catalog-quality-audit'
 import type { AuditReport, AuditOptions } from './catalog-quality-audit'
+import { jsonSchemaDefinitionName } from './json-schema-pool'
 
 import { nestedSchemaCollector } from './nested-schema-collector'
 // ── 2. 常量与生成约束 (Constants & Policies) ───────────────────────────────────────
@@ -1236,16 +1237,12 @@ function sortRecord<T>(record: Record<string, T>): Record<string, T> {
   return recordFromEntries(Object.entries(record).sort(([left], [right]) => left.localeCompare(right)))
 }
 
-function escapeJsonPointerSegment(value: string): string {
-  return value.replace(/~/gu, '~0').replace(/\//gu, '~1')
-}
-
 function toDefsRef(ref: string): string {
   const trimmed = ref.trim()
   if (trimmed.startsWith('#') || /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(trimmed)) {
     return trimmed
   }
-  return `#/$defs/${escapeJsonPointerSegment(trimmed)}`
+  return `#/$defs/${jsonSchemaDefinitionName(trimmed)}`
 }
 
 function normalizePublicSchemaRefs(schema: PropSchema): PropSchema {
@@ -1281,10 +1278,7 @@ function normalizePublicRootSchema(type: string, schema: PropSchema): PropSchema
 function schemaTypeFromRef(ref: string | undefined): string | undefined {
   if (ref === undefined) return undefined
   if (ref.startsWith('#/$defs/')) {
-    return ref
-      .slice('#/$defs/'.length)
-      .replace(/~1/gu, '/')
-      .replace(/~0/gu, '~')
+    return ref.slice('#/$defs/'.length)
   }
   if (ref.startsWith('#') || /^[A-Za-z][A-Za-z0-9+.-]*:/u.test(ref)) return undefined
   return ref

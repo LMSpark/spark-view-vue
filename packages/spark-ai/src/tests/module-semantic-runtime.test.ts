@@ -105,12 +105,63 @@ describe('AiModuleRuntime function tool protocol', () => {
       PROTOCOL_TOOL_NAMES.moduleFind,
       PROTOCOL_TOOL_NAMES.moduleAttr,
       PROTOCOL_TOOL_NAMES.moduleCall,
+      PROTOCOL_TOOL_NAMES.moduleScript,
       PROTOCOL_TOOL_NAMES.humanQuestion,
       PROTOCOL_TOOL_NAMES.agentComplete,
       'getItem',
     ]))
     expect(names).not.toContain('task_detail_getNode')
     expect(createRuntime().projectKnowledge().promptSnapshot).toContain('module_attribute_guide')
+  })
+
+  it('executes scripts with this bound to the module context itself', async () => {
+    const result = await createRuntime().executeTool('module_script', {
+      script: `
+        const guide = await this.module_function_guide({ kind: 'board', functionName: 'getItem' })
+        const item = await this.call('getItem', {
+          path: '/workspace[workspace-a]/board[board-1]',
+          args: { id: 'item-1' },
+        })
+        return {
+          guideOk: guide.ok,
+          functionName: guide.data.functionName,
+          item: item.data,
+          sameContext: this === ctx,
+        }
+      `,
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: {
+        guideOk: true,
+        functionName: 'getItem',
+        item: {
+          id: 'item-1',
+          path: ['workspace:workspace-a', 'board:board-1'],
+        },
+        sameContext: true,
+      },
+    })
+  })
+
+  it('reports module_script runtime error line numbers', async () => {
+    const result = await createRuntime().executeTool('module_script', {
+      script: [
+        'const first = 1',
+        'const second = first + 1',
+        'throw new Error("boom")',
+      ].join('\n'),
+    })
+
+    expect(result).toMatchObject({
+      ok: false,
+      checks: [{
+        code: 'SCRIPT_EXECUTION_FAILED',
+      }],
+    })
+    expect(result.checks?.[0]?.message).toContain('脚本第 3 行')
+    expect(result.checks?.[0]?.hint).toContain('脚本第 3 行')
   })
 
   it('module_query returns module summaries and optional function summaries', async () => {
@@ -323,5 +374,31 @@ describe('AiModule explicit delegate requirements', () => {
       data: '初始工作区',
     })
     expect(runtime.queryKnowledgeModules({ kind: 'board' })).toHaveLength(1)
+  })
+
+  it('allows metadata-only attributes and fails only on runtime access without accessor', async () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(new AiModule({
+      kind: 'metadata-only',
+      name: '元数据属性',
+      description: '只声明属性元数据',
+      attributes: [{
+        name: 'config',
+        description: '复杂配置',
+        schema: { type: 'object', properties: { title: { type: 'string' } } },
+        readable: true,
+        writable: false,
+      }],
+      find: () => AiModuleResult.ok([]),
+    }))
+
+    expect(runtime.guideKnowledgeAttribute({ kind: 'metadata-only', attrName: 'config' })).toMatchObject({
+      ok: true,
+      data: { name: 'config' },
+    })
+    await expect(runtime.getAttribute(AiModulePath.parse('/metadata-only[root]'), 'config')).resolves.toMatchObject({
+      ok: false,
+      checks: [{ code: 'ATTRIBUTE_ACCESSOR_NOT_REGISTERED' }],
+    })
   })
 })

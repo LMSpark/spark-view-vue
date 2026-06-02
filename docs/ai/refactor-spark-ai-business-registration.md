@@ -12,7 +12,7 @@
 这是一种"静态子模块树"设计：业务方需要手写子模块 class、手写 list/find 委托、手动往 runtime 注册每个子模块 class。
 
 **新模型**：action 返回对象由 VCM `resultSchema` 自动发现嵌套 API → 运行时创建可寻址 handle → LLM 继续调用该对象 API。
-这是一种"API 对象图"设计：业务方只需在返回类型中使用含 `@moduleAction` 的 class，VCM 构建期自动发现，adapter 运行时自动处理。
+这是一种"API 对象图"设计：业务方只需在返回类型中使用带 class 级模块注解的 API class，VCM 构建期自动发现 public `AiModuleResult` 方法，adapter 运行时自动处理。
 
 **被替换的旧机制（仅允许在"旧模型对比"中出现，不得作为新方案机制使用）**：
 
@@ -33,7 +33,7 @@
 
 ```
 业务 class（普通 class，不继承 AiModule，不手写 AiModuleOptions）
-  + JSDoc tags（@moduleKind, @moduleAction, @usageRule ...）
+  + class 级 JSDoc tags（@moduleKind, @moduleName, @moduleDescription ...）
   + 方法参数 TypeScript 类型 → paramsSchema
   + 方法返回 TypeScript 类型 → resultSchema + 嵌套 API 发现
       │
@@ -154,28 +154,22 @@ export type AiModuleMetadataJson = Readonly<{
 
 **移除**：`@moduleChildren`、`@moduleParentKind`（不再需要，子 API 由 VCM 返回类型自动发现）
 
-### 方法级 JSDoc tags
+### 方法级发现规则
 
-| Tag | 必填 | 格式 | 生成到 |
-|-----|------|------|--------|
-| `@moduleAction` | **是** | `@moduleAction <functionName>` | `actions[].name` |
-| 方法 summary | 推荐 | JSDoc 第一段自然语言 | `actions[].description` |
-| `@usageRule` | 选填 | `@usageRule <规则>` | `actions[].usageRules[]` |
-| `@failureMode` | 选填 | `@failureMode <code> <when> => <fix>` | `actions[].failureModes[]` |
+方法级不再使用 VCM 专用 tag。action 由生成器自动发现：
 
-**`@moduleAction` 严格格式**：只解析第一个 token 作为 functionName。方法描述来自 JSDoc summary，不写在 `@moduleAction` 后面。
+- 方法必须是 `public`。
+- 方法必须返回 `AiModuleResult<T>` 或 `Promise<AiModuleResult<T>>`。
+- 方法必须有自然语言 JSDoc summary，生成到 `actions[].description`。
+- `actions[].name` 固定使用 method name。
+- 非 AI 可见方法使用 `private/protected`，或不返回 `AiModuleResult`；特殊情况下可用通用 `@internal` 排除。
 
 ```typescript
-// ✅ 正确：functionName 纯净，描述在 summary
+// ✅ 正确：没有方法级 VCM tag，action name 来自 method name
 /**
  * 提交请假草稿
- * @moduleAction submitDraft
- * @usageRule 必须先确认草稿内容
  */
 submitDraft(ctx: AiModulePathContext, args: Readonly<{ reason?: string }>): AiModuleResult<AiJsonValue>
-
-// ❌ 错误：描述不应写在 @moduleAction 后面
-/** @moduleAction submitDraft 提交请假草稿 */
 ```
 
 ### VCM 自动发现规则（无 JSDoc tag，纯类型推断）
@@ -186,19 +180,18 @@ submitDraft(ctx: AiModulePathContext, args: Readonly<{ reason?: string }>): AiMo
 - `AiModuleResult<AiJsonValue>` → 展开泛型参数，从 `AiJsonValue` 提取结构
 - `AiModuleResult<Readonly<{ draft: LeaveDraft }>>` → 生成 object schema + 识别 `LeaveDraft` 为 API-bearing
 
-**嵌套 API 发现**：如果返回类型展开后，某个属性的类型是另一个含 `@moduleAction` 方法的 class → 递归生成 `resultApis` 条目
+**嵌套 API 发现**：如果返回类型展开后，某个属性的类型是另一个带 class 级模块注解且含 public `AiModuleResult` 方法的 class → 递归生成 `resultApis` 条目
 
 ```typescript
 // LeaveRequestService 的 listPersons 方法返回 PersonDirectory
-// PersonDirectory 有 @moduleAction 方法 → VCM 自动发现
+// PersonDirectory 有 class 级 @moduleKind，且有 public AiModuleResult 方法 → VCM 自动发现
 /**
  * 获取人员目录
- * @moduleAction listPersons
  */
 listPersons(ctx: AiModulePathContext, args: Readonly<{}>): AiModuleResult<PersonDirectory>
 ```
 
-VCM 发现 `PersonDirectory` class 有 `@moduleAction` 方法 → 生成 `resultApis`：
+VCM 发现 `PersonDirectory` class 有 class 级模块注解和 public action 方法 → 生成 `resultApis`：
 
 ```json
 {

@@ -38,6 +38,9 @@ import { assertNoSeparator, resolveApi } from './core/utils'
  * 视图集合（DataView）、CRUD 配置（api, crudConfig）；
  * 其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。
  * 数据操作由 DataView 负责。
+ *
+ * @moduleKind data-table
+ * @moduleName Data Table
  */
 export class DataTable {
   // ===== DataSet 引用 =====
