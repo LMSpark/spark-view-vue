@@ -2,9 +2,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { AiJsonSchemaValidator, type AiJsonSchemaObject, type AiJsonValue } from '@spark-view/spark-ai/json'
+import { AiJsonSchemaValidator, type AiJsonSchemaObject } from '@spark-view/spark-ai/json'
 import { isRecord } from '@spark-view/spark-utils'
-import { createPageDesignPayloadRegistry } from '../packages/spark-project-model/src/ai/page-design/tool-catalog/payload-catalog'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
   '$id',
@@ -253,89 +252,10 @@ function getRecord(value: unknown, label: string): JsonRecord {
   return value
 }
 
-async function guidePayloadParamsSchema(key: string): Promise<JsonRecord> {
-  const provider = createPageDesignPayloadRegistry().requireProvider('node-tree', 'spark.component')
-  const payload = provider.guidePayload(key)
-  expect(payload).not.toBeNull()
-  return getRecord(payload?.paramsSchema, 'guidePayload.paramsSchema')
-}
-
-async function queryPayloads(args: Record<string, AiJsonValue>): Promise<JsonRecord> {
-  const provider = createPageDesignPayloadRegistry().requireProvider('node-tree', 'spark.component')
-  const items = provider.queryPayloads(args)
-  return {
-    moduleKind: 'node-tree',
-    payloadRef: 'spark.component',
-    total: items.length,
-    items,
-  }
-}
-
 describe('Vue component metadata JSON Schema', () => {
-  it('keeps generated component catalog schemas standard JSON Schema 2020-12', () => {
-    const catalog = readJsonFile(resolve(process.cwd(), 'packages/spark-project-model/src/ai/page-design/payload/component-catalog.json'))
-
-    expectStandardComponentCatalog('component-catalog', catalog)
-  })
-
-  it('keeps backend-persisted component metadata in sync and standard JSON Schema 2020-12', () => {
-    const catalog = readJsonFile(resolve(process.cwd(), 'packages/spark-project-model/src/ai/page-design/payload/component-catalog.json'))
+  it('keeps backend-persisted component metadata standard JSON Schema 2020-12', () => {
     const backendMetadata = readJsonFile(resolve(process.cwd(), 'spark-ai-server/data/component-metadata.json'))
 
     expectStandardComponentCatalog('component-metadata', backendMetadata)
-    expect(getRecord(backendMetadata, 'component-metadata')['componentCount']).toBe(getRecord(catalog, 'component-catalog')['componentCount'])
-    expect(Object.keys(getRecord(getRecord(backendMetadata, 'component-metadata')['components'], 'component-metadata.components'))).toEqual(
-      Object.keys(getRecord(getRecord(catalog, 'component-catalog')['components'], 'component-catalog.components')),
-    )
-  })
-
-  it('projects guidePayload paramsSchema as standard JSON Schema object root', async () => {
-    const paramsSchema = await guidePayloadParamsSchema('r-button')
-    const issues: string[] = []
-
-    expect(paramsSchema['type']).toBe('object')
-    const defs = isRecord(paramsSchema['$defs']) ? paramsSchema['$defs'] : {}
-    validateStandardSchemaNode('guidePayload.r-button.paramsSchema', paramsSchema, defs, issues)
-    expect(issues).toEqual([])
-  })
-
-  it('projects guidePayload paramsSchema with recursively complete local $defs', async () => {
-    const paramsSchema = await guidePayloadParamsSchema('r-table')
-    const defs = getRecord(paramsSchema['$defs'], 'guidePayload.r-table.paramsSchema.$defs')
-    const issues: string[] = []
-
-    expect(defs).toHaveProperty('r-toolbar')
-    expect(defs).toHaveProperty('r-filter')
-    expect(defs).toHaveProperty('r-tail')
-    expect(defs).toHaveProperty('SparkNode')
-    validateStandardSchemaNode('guidePayload.r-table.paramsSchema', paramsSchema, defs, issues)
-    expect(issues).toEqual([])
-  })
-
-  it('projects queryPayloads directory entries with usable summaries before guide lookup', async () => {
-    const directory = await queryPayloads({ key: 'r-table', limit: 1 })
-    const items = directory['items']
-    if (!Array.isArray(items) || items.length !== 1) throw new Error('queryPayloads should return one r-table item')
-    const item = getRecord(items[0], 'queryPayloads.items[0]')
-
-    expect(directory['total']).toBe(1)
-    expect(directory).toMatchObject({
-      moduleKind: 'node-tree',
-      payloadRef: 'spark.component',
-    })
-    expect(item).toMatchObject({
-      moduleKind: 'node-tree',
-      payloadRef: 'spark.component',
-      key: 'r-table',
-      type: 'r-table',
-      category: 'container',
-      configurable: true,
-      internal: false,
-    })
-    expect(typeof item['description']).toBe('string')
-    expect(String(item['description']).length).toBeGreaterThan(20)
-    expect(typeof item['filePath']).toBe('string')
-    expect(typeof item['propCount']).toBe('number')
-    expect(item['propCount']).toBeGreaterThan(0)
   })
 })

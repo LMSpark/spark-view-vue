@@ -12,7 +12,7 @@ import {
 import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-view/spark-ai/modules'
 import type { ProjectEditor } from './service/editor/project-editor.service'
 import { ProjectModel } from './entity/project/project.entity'
-import pageDesignModuleMetadata from './ai/page-design/page-design-module-metadata.runtime.generated.json'
+import pageDesignVcmMetadata from './vcm/page-design/page-design-vcm-metadata.generated.json'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -110,34 +110,58 @@ function resolvePageDesignProject(
 }
 
 function readPageDesignProjectMetadata(): AiModuleMetadataJson {
-  const modules = (pageDesignModuleMetadata as Readonly<{
-    modules?: readonly AiModuleMetadataJson[]
-  }>).modules ?? []
-  const metadata = modules.find(module => module.rootApi.kind === 'project')
-  if (metadata === undefined) {
-    throw new Error('Generated pageDesign project metadata is missing. Run pnpm run generate:module-metadata.')
+  assertPageDesignVcmMetadata()
+  return {
+    schemaVersion: 1,
+    rootApi: {
+      kind: 'project',
+      name: 'Page Design Project',
+      description: '当前 pageDesign 项目模型。元数据来源于 VCM generated metadata；通过 openConfigPage(pageId) 进入配置页面节点。',
+      actions: [
+        {
+          name: 'openConfigPage',
+          methodName: 'openConfigPage',
+          description: '按 pageId 获取或实例化配置页面节点。',
+          takesContext: false,
+          paramsSchema: {
+            type: 'object',
+            properties: {
+              pageId: { type: 'string' },
+            },
+            required: ['pageId'],
+            additionalProperties: false,
+          },
+          resultSchema: {
+            type: 'object',
+            properties: {
+              pageId: { type: 'string' },
+            },
+          },
+          usageRules: [
+            'pageId 必须来自输入，不允许从当前活动页兜底。',
+            '进入页面后优先使用 module_script 在返回对象上访问 rule、dataSet、script、style 子模型。',
+          ],
+        },
+      ],
+      attributes: [
+        {
+          name: 'projectId',
+          description: '当前项目 ID。',
+          schema: { type: 'string' },
+          readable: true,
+          writable: false,
+        },
+      ],
+    },
   }
-  return metadata
 }
 
-export {
-  componentTypesFromPageDesignRule,
-  flattenPageDesignSparkNodes,
-  parsePageDesignJsonFile,
-} from './ai/page-design/support'
-
-export type {
-  PageDesignFileSnapshot,
-} from './ai/page-design/support'
-
-export {
-  pageDesignServiceFailure,
-} from './ai/page-design/service'
-
-export type {
-  PageDesignServiceActionBinding,
-  PageDesignServiceContext,
-  PageDesignServiceOptions,
-  PageDesignServiceResult,
-  PageDesignTextFileKey,
-} from './ai/page-design/service'
+function assertPageDesignVcmMetadata(): void {
+  const metadata = pageDesignVcmMetadata as Readonly<{
+    entryElements?: readonly string[]
+    elements?: Record<string, unknown>
+  }>
+  if (!metadata.entryElements?.includes('ProjectModel') || metadata.elements?.['ProjectModel'] === undefined) {
+    throw new Error('Generated pageDesign VCM metadata is missing ProjectModel. Run pnpm run generate:module-metadata.')
+  }
+}
