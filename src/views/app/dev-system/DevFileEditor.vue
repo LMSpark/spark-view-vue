@@ -84,7 +84,7 @@
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="(val: unknown) => state.getActivePage()?.setRuleText(String(val))"
+            @update:model-value="(val: unknown) => state.setRuleText(String(val))"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"

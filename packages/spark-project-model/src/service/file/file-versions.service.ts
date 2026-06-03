@@ -1,4 +1,4 @@
-/**
+﻿/**
  * PageNode file version use case.
  *
  * 只负责页面四文件版本列表、恢复、创建快照和删除快照。
@@ -9,14 +9,15 @@ import type {
   PageNodeFileApi,
   PageNodeFileVersionSummary,
 } from './file-api.service'
+import type { PageFileRestoreCommand } from '../../entity/node/page-file-types'
 import type { PageNodeFileName } from './file-registry.service'
-import type { ConfigPageNode } from '../../entity/node/config-page.entity'
 
-export type PageFileVersionTarget = Pick<ConfigPageNode, 'pageId'> & {
-  rule: ConfigPageNode['rule']
-  dataSet: ConfigPageNode['dataSet']
-  script: ConfigPageNode['script']
-  style: ConfigPageNode['style']
+export type PageFileVersionTarget = {
+  pageId: string
+  rule: { restoreVersion(cmd: PageFileRestoreCommand): Promise<void> }
+  dataSet: { restoreVersion(cmd: PageFileRestoreCommand): Promise<void> }
+  script: { restoreVersion(cmd: PageFileRestoreCommand): Promise<void> }
+  style: { restoreVersion(cmd: PageFileRestoreCommand): Promise<void> }
 }
 
 export type PageNodeRestoreFileVersionCommand = {

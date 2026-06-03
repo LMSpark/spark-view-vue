@@ -41,7 +41,6 @@ describe('page-design VCM metadata reflection', () => {
       'children',
       'projectId',
       'root',
-      'navigationChildren',
       'flatRows',
     ])
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'nodes')).toBeUndefined()

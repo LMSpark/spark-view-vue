@@ -40,7 +40,7 @@ describe('ProjectModel', () => {
         { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders', description: '订单页面' },
       ]},
     ]})
-    const tree = p.toTree()
+    const tree = p.root.children
     expect(tree.length).toBeGreaterThanOrEqual(1)
     const salesNode = p.findNodeById('sales')
     expect(salesNode).toBeInstanceOf(ModuleNode)

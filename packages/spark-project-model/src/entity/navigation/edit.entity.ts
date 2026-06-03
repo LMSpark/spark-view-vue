@@ -84,8 +84,6 @@ export type NavigationNodePatchWriter = {
   updateNode(id: string, patch: NavigationNodeEditPatchDto): Promise<ProjectNodeData>
 }
 
-type NavigationNodeEditModelPatchDto = Partial<Omit<NavigationNodeEditDto, 'id'>>
-
 export const DEFAULT_NAV_ICON_BY_KIND: Record<NavNodeKind, string> = {
   'system-directory': 'FolderOpened',
   'module': 'FolderOpened',
@@ -324,174 +322,141 @@ export function applyNavigationNodeEditDtoToNode(node: ProjectNodeData, input: N
 }
 
 export class NavigationEditModel {
-  // ── 私有存储 ──
-  private _id = ''
-  private _title = ''
-  private _icon = ''
-  private _nodeKind: NavNodeKind = 'page'
-  private _dividerAfter = false
-  private _description = ''
-  private _path = ''
-  private _linkTarget: NavigationNodeEditDto['linkTarget'] = 'iframe'
-  private _childPlacement = ''
-  private _order = 0
-  private _hidden = false
-  private _disabled = false
-  private _refId = ''
-  private _permissionMode: NavigationNodeEditDto['permissionMode'] = 'masked'
+  // ── 私有存储（ECMAScript private，不出现在类型反射中）──
+  #id = ''
+  #title = ''
+  #icon = ''
+  #nodeKind: NavNodeKind = 'page'
+  #dividerAfter = false
+  #description = ''
+  #path = ''
+  #linkTarget: NavigationNodeEditDto['linkTarget'] = 'iframe'
+  #childPlacement = ''
+  #order = 0
+  #hidden = false
+  #disabled = false
+  #refId = ''
+  #permissionMode: NavigationNodeEditDto['permissionMode'] = 'masked'
 
   // ── 上下文 ──
-  private _hasContext = false
-  private _contextItems: Array<{ id: string; title: string }> = []
-  private _contextConfig: NavigationContextEditConfigDto = emptyContextConfig()
+  #hasContext = false
+  #contextItems: Array<{ id: string; title: string }> = []
+  #contextConfig: NavigationContextEditConfigDto = emptyContextConfig()
 
   // ── 树节点引用 ──
+  /** @vcmIgnore */
   navNode: ProjectNodeData | null = null
 
   // ── Dirty ──
-  private _dirty = false
-  private readonly _listeners = new Set<() => void>()
+  #dirty = false
+  #listeners = new Set<() => void>()
 
   get isDirty(): boolean {
-    return this._dirty
+    return this.#dirty
   }
 
+  /** @vcmIgnore */
   markDirty(): void {
-    if (this._dirty) return
-    this._dirty = true
-    this._notify()
+    if (this.#dirty) return
+    this.#dirty = true
+    this.#notify()
   }
 
+  /** @vcmIgnore */
   markClean(): void {
-    if (!this._dirty) return
-    this._dirty = false
-    this._notify()
+    if (!this.#dirty) return
+    this.#dirty = false
+    this.#notify()
   }
 
   // ── 节点属性 getter/setter（赋值即 dirty）───────────────
 
-  get id(): string { return this._id }
+  /** @vcmIgnore */
+  get id(): string { return this.#id }
 
-  get title(): string { return this._title }
-  set title(v: string) { if (this._title === v) return; this._title = v; this.markDirty() }
+  get title(): string { return this.#title }
+  set title(v: string) { if (this.#title === v) return; this.#title = v; this.markDirty() }
 
-  get icon(): string { return this._icon }
-  set icon(v: string) { if (this._icon === v) return; this._icon = v; this.markDirty() }
+  get icon(): string { return this.#icon }
+  set icon(v: string) { if (this.#icon === v) return; this.#icon = v; this.markDirty() }
 
-  get nodeKind(): NavNodeKind { return this._nodeKind }
-  set nodeKind(v: NavNodeKind) { if (this._nodeKind === v) return; this._nodeKind = v; this.markDirty() }
+  get nodeKind(): NavNodeKind { return this.#nodeKind }
+  set nodeKind(v: NavNodeKind) { if (this.#nodeKind === v) return; this.#nodeKind = v; this.markDirty() }
 
-  get dividerAfter(): boolean { return this._dividerAfter }
-  set dividerAfter(v: boolean) { if (this._dividerAfter === v) return; this._dividerAfter = v; this.markDirty() }
+  /** @vcmIgnore */
+  get dividerAfter(): boolean { return this.#dividerAfter }
+  set dividerAfter(v: boolean) { if (this.#dividerAfter === v) return; this.#dividerAfter = v; this.markDirty() }
 
-  get description(): string { return this._description }
-  set description(v: string) { if (this._description === v) return; this._description = v; this.markDirty() }
+  get description(): string { return this.#description }
+  set description(v: string) { if (this.#description === v) return; this.#description = v; this.markDirty() }
 
-  get path(): string { return this._path }
-  set path(v: string) { if (this._path === v) return; this._path = v; this.markDirty() }
+  get path(): string { return this.#path }
+  set path(v: string) { if (this.#path === v) return; this.#path = v; this.markDirty() }
 
-  get linkTarget(): NavigationNodeEditDto['linkTarget'] { return this._linkTarget }
-  set linkTarget(v: NavigationNodeEditDto['linkTarget']) { if (this._linkTarget === v) return; this._linkTarget = v; this.markDirty() }
+  /** @vcmIgnore */
+  get linkTarget(): NavigationNodeEditDto['linkTarget'] { return this.#linkTarget }
+  set linkTarget(v: NavigationNodeEditDto['linkTarget']) { if (this.#linkTarget === v) return; this.#linkTarget = v; this.markDirty() }
 
-  get childPlacement(): string { return this._childPlacement }
-  set childPlacement(v: string) { if (this._childPlacement === v) return; this._childPlacement = v; this.markDirty() }
+  /** @vcmIgnore */
+  get childPlacement(): string { return this.#childPlacement }
+  set childPlacement(v: string) { if (this.#childPlacement === v) return; this.#childPlacement = v; this.markDirty() }
 
-  get order(): number { return this._order }
-  set order(v: number) { if (this._order === v) return; this._order = v; this.markDirty() }
+  /** @vcmIgnore */
+  get order(): number { return this.#order }
+  set order(v: number) { if (this.#order === v) return; this.#order = v; this.markDirty() }
 
-  get hidden(): boolean { return this._hidden }
-  set hidden(v: boolean) { if (this._hidden === v) return; this._hidden = v; this.markDirty() }
+  get hidden(): boolean { return this.#hidden }
+  set hidden(v: boolean) { if (this.#hidden === v) return; this.#hidden = v; this.markDirty() }
 
-  get disabled(): boolean { return this._disabled }
-  set disabled(v: boolean) { if (this._disabled === v) return; this._disabled = v; this.markDirty() }
+  get disabled(): boolean { return this.#disabled }
+  set disabled(v: boolean) { if (this.#disabled === v) return; this.#disabled = v; this.markDirty() }
 
-  get refId(): string { return this._refId }
-  set refId(v: string) { if (this._refId === v) return; this._refId = v; this.markDirty() }
+  /** @vcmIgnore */
+  get refId(): string { return this.#refId }
+  set refId(v: string) { if (this.#refId === v) return; this.#refId = v; this.markDirty() }
 
-  get permissionMode(): NavigationNodeEditDto['permissionMode'] { return this._permissionMode }
-  set permissionMode(v: NavigationNodeEditDto['permissionMode']) { if (this._permissionMode === v) return; this._permissionMode = v; this.markDirty() }
+  /** @vcmIgnore */
+  get permissionMode(): NavigationNodeEditDto['permissionMode'] { return this.#permissionMode }
+  set permissionMode(v: NavigationNodeEditDto['permissionMode']) { if (this.#permissionMode === v) return; this.#permissionMode = v; this.markDirty() }
 
   // ── 上下文 getter/setter ───────────────────────────────
 
-  get hasContext(): boolean { return this._hasContext }
-  set hasContext(v: boolean) { if (this._hasContext === v) return; this._hasContext = v; this.markDirty() }
+  get hasContext(): boolean { return this.#hasContext }
+  set hasContext(v: boolean) { if (this.#hasContext === v) return; this.#hasContext = v; this.markDirty() }
 
-  /** 只读上下文项（不可直接 push / splice，请用 addContextItem / removeContextItem / setContextItems）。 */
-  get contextItems(): ReadonlyArray<{ id: string; title: string }> { return this._contextItems }
+  /** 只读上下文项（不可直接 push / splice，请用 setContextItems）。 */
+  get contextItems(): ReadonlyArray<{ id: string; title: string }> { return this.#contextItems }
 
-  /** 只读上下文配置（不可直接赋值字段，请用 updateContextConfig / setContextConfig）。 */
-  get contextConfig(): Readonly<NavigationContextEditConfigDto> { return this._contextConfig }
+  /** 只读上下文配置（不可直接赋值字段，请用 setContextConfig）。 */
+  get contextConfig(): Readonly<NavigationContextEditConfigDto> { return this.#contextConfig }
 
   // ── 上下文修改方法（自动 dirty）────────────────────────
 
   setContextItems(items: Array<{ id: string; title: string }>): void {
-    this._contextItems = items.map(i => ({ ...i }))
+    this.#contextItems = items.map(i => ({ ...i }))
     this.markDirty()
   }
 
-  addContextItem(item?: { id: string; title: string }): void {
-    this._contextItems.push(item ? { ...item } : { id: '', title: '' })
-    this.markDirty()
-  }
-
-  removeContextItem(index: number): void {
-    if (index < 0 || index >= this._contextItems.length) return
-    this._contextItems.splice(index, 1)
-    this.markDirty()
-  }
-
+  /** @vcmIgnore */
   setContextConfig(config: NavigationContextEditConfigDto): void {
-    this._contextConfig = cloneConfig(config)
-    this.markDirty()
-  }
-
-  updateContextConfig(patch: Partial<NavigationContextEditConfigDto>): void {
-    if (patch.placeholder !== undefined) this._contextConfig.placeholder = patch.placeholder
-    if (patch.defaultValue !== undefined) this._contextConfig.defaultValue = patch.defaultValue
-    if (patch.paramName !== undefined) this._contextConfig.paramName = patch.paramName
-    this.markDirty()
-  }
-
-  /** 从 NavigationNodeEditDto 批量加载字段并标记 dirty。供 AI host / 外部调用方使用。 */
-  applyEditPatchDto(patch: NavigationNodeEditModelPatchDto): void {
-    if (patch.title !== undefined) this._title = patch.title
-    if (patch.icon !== undefined) this._icon = patch.icon
-    if (patch.nodeKind !== undefined) this._nodeKind = patch.nodeKind
-    if (patch.dividerAfter !== undefined) this._dividerAfter = patch.dividerAfter
-    if (patch.description !== undefined) this._description = patch.description
-    if (patch.path !== undefined) this._path = patch.path
-    if (patch.linkTarget !== undefined) this._linkTarget = patch.linkTarget
-    if (patch.childPlacement !== undefined) this._childPlacement = patch.childPlacement
-    if (patch.order !== undefined) this._order = patch.order
-    if (patch.hidden !== undefined) this._hidden = patch.hidden
-    if (patch.disabled !== undefined) this._disabled = patch.disabled
-    if (patch.refId !== undefined) this._refId = patch.refId
-    if (patch.permissionMode !== undefined) this._permissionMode = patch.permissionMode
-    this.markDirty()
-  }
-
-  /** 从 NavigationContextEditDto 批量加载上下文并标记 dirty。供 AI host / 外部调用方使用。 */
-  applyContext(patch: Partial<NavigationContextEditDto>): void {
-    if (patch.hasContext !== undefined) this._hasContext = patch.hasContext
-    if (patch.items !== undefined) this._contextItems = patch.items.map(i => ({ ...i }))
-    if (patch.config !== undefined) this._contextConfig = cloneConfig(patch.config)
+    this.#contextConfig = cloneConfig(config)
     this.markDirty()
   }
 
   // ── 节点操作 ───────────────────────────────────────────
 
-  /** 从导航树节点加载属性到 DTO 字段，绕过 setter 直接写入内部存储，然后清除 dirty。 */
+  /** @vcmIgnore */
   loadFromNode(node: ProjectNodeData): void {
     this.navNode = node
     const input = createNavigationNodeEditDto(node)
-    this._bulkLoadEditDto(input.node)
-    this._hasContext = input.context.hasContext
-    this._contextItems = input.context.items.map(i => ({ ...i }))
-    this._contextConfig = cloneConfig(input.context.config)
-    this._dirty = false
+    this.#bulkLoadEditDto(input.node)
+    this.#hasContext = input.context.hasContext
+    this.#contextItems = input.context.items.map(i => ({ ...i }))
+    this.#contextConfig = cloneConfig(input.context.config)
+    this.#dirty = false
   }
 
-  /** 将 DTO 字段应用回树节点，返回补丁和警告。不清除 dirty（由 save 流程清除）。 */
+  /** @vcmIgnore */
   applyToNode(): NavigationNodeEditApplyResultDto {
     if (!this.navNode) {
       throw new Error('导航节点引用为空，无法应用编辑 DTO')
@@ -502,39 +467,38 @@ export class NavigationEditModel {
   /** 切换节点类型，重置关联字段并标记 dirty。 */
   applyKindPreset(kind: NavNodeKind): void {
     const updated = applyNodeKindPresetToEditDto(this.toEditDto(), kind)
-    this._bulkLoadEditDto(updated)
-    this._dirty = true
-    this._notify()
+    this.#bulkLoadEditDto(updated)
+    this.#dirty = true
+    this.#notify()
   }
 
-  /** 将当前字段组装为 NavigationNodeEditDto。 */
-  toEditDto(): NavigationNodeEditDto {
+  private toEditDto(): NavigationNodeEditDto {
     return {
-      id: this._id,
-      title: this._title,
-      icon: this._icon,
-      nodeKind: this._nodeKind,
-      dividerAfter: this._dividerAfter,
-      description: this._description,
-      path: this._path,
-      linkTarget: this._linkTarget,
-      childPlacement: this._childPlacement,
-      order: this._order,
-      hidden: this._hidden,
-      disabled: this._disabled,
-      refId: this._refId,
-      permissionMode: this._permissionMode,
+      id: this.#id,
+      title: this.#title,
+      icon: this.#icon,
+      nodeKind: this.#nodeKind,
+      dividerAfter: this.#dividerAfter,
+      description: this.#description,
+      path: this.#path,
+      linkTarget: this.#linkTarget,
+      childPlacement: this.#childPlacement,
+      order: this.#order,
+      hidden: this.#hidden,
+      disabled: this.#disabled,
+      refId: this.#refId,
+      permissionMode: this.#permissionMode,
     }
   }
 
-  /** 将当前字段 + 上下文组装为 NavigationNodeEditInputDto。 */
+  /** @vcmIgnore */
   toEditInputDto(): { node: NavigationNodeEditDto; context: NavigationContextEditDto } {
     return {
       node: this.toEditDto(),
       context: {
-        hasContext: this._hasContext,
-        items: this._contextItems,
-        config: cloneConfig(this._contextConfig),
+        hasContext: this.#hasContext,
+        items: this.#contextItems,
+        config: cloneConfig(this.#contextConfig),
       },
     }
   }
@@ -553,33 +517,33 @@ export class NavigationEditModel {
 
   // ── 订阅 ───────────────────────────────────────────────
 
+  /** @vcmIgnore */
   subscribe(listener: () => void): () => void {
-    this._listeners.add(listener)
-    return () => { this._listeners.delete(listener) }
+    this.#listeners.add(listener)
+    return () => { this.#listeners.delete(listener) }
   }
 
   // ── 内部 ───────────────────────────────────────────────
 
-  /** 绕过 setter 批量写入 DTO 字段，不触发 dirty。 */
-  private _bulkLoadEditDto(node: NavigationNodeEditDto): void {
-    this._id = node.id
-    this._title = node.title
-    this._icon = node.icon
-    this._nodeKind = node.nodeKind
-    this._dividerAfter = node.dividerAfter
-    this._description = node.description
-    this._path = node.path
-    this._linkTarget = node.linkTarget
-    this._childPlacement = node.childPlacement
-    this._order = node.order
-    this._hidden = node.hidden
-    this._disabled = node.disabled
-    this._refId = node.refId
-    this._permissionMode = node.permissionMode
+  #bulkLoadEditDto(node: NavigationNodeEditDto): void {
+    this.#id = node.id
+    this.#title = node.title
+    this.#icon = node.icon
+    this.#nodeKind = node.nodeKind
+    this.#dividerAfter = node.dividerAfter
+    this.#description = node.description
+    this.#path = node.path
+    this.#linkTarget = node.linkTarget
+    this.#childPlacement = node.childPlacement
+    this.#order = node.order
+    this.#hidden = node.hidden
+    this.#disabled = node.disabled
+    this.#refId = node.refId
+    this.#permissionMode = node.permissionMode
   }
 
-  private _notify(): void {
-    for (const listener of this._listeners) {
+  #notify(): void {
+    for (const listener of this.#listeners) {
       listener()
     }
   }

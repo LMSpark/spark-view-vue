@@ -133,6 +133,7 @@ export abstract class ProjectNode {
   /**
    * 原始导航节点快照。
    */
+  /** @vcmIgnore */
   get node(): ProjectNodeData { return this.#node }
 
   /**
@@ -155,8 +156,8 @@ export abstract class ProjectNode {
    */
   get description(): string { return readProjectNodeDescription(this.#node) }
 
-  get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
-  get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
+  protected get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
+  protected get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
 
   protected readChildren<TChild extends ProjectNode = ProjectNode>(): TChild[] {
     return [...(this.#resolveChildren?.(this) ?? [])] as TChild[]
@@ -166,6 +167,7 @@ export abstract class ProjectNode {
     this.#resolveChildren = resolveChildren
   }
 
+  /** @vcmIgnore */
   rebindNavigationNode(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]): void {
     this.#node = node
     this.#pid = normalizePid(pid)
@@ -174,5 +176,6 @@ export abstract class ProjectNode {
     else { this.navigation.loadFromNode(node) }
   }
 
+  /** @vcmIgnore */
   toFlatRow(): ProjectNavigationFlatNode { return projectNavNodeToFlatRow(this.#node, this.#pid) }
 }

@@ -2,7 +2,7 @@
 import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import { ProjectNode } from './node-base.entity'
-import type { ChildPlacement, NavContextConfig, NavContextItem, NavNodeKind, NavPermissionMode } from './node-base.entity'
+import type { ChildPlacement, NavContextConfig, NavContextItem, NavNodeKind } from './node-base.entity'
 import type { NavigationContextEditDto, NavigationNodeEditDto } from '../navigation/edit.entity'
 
 export type ProjectNodeFamily = 'module' | 'config-page' | 'vue-page' | 'system-action' | 'link' | 'ref'
@@ -47,7 +47,6 @@ export type PageNodeLike = {
   readonly isLoaded: boolean
   load(options?: PageNodeLoadOptions): Promise<void>
   toRenderConfig(): PageNodeRenderConfig
-  getHttpClient(): HttpClientBase | undefined
 }
 export type PageNodeFactoryLike = {
   create(pageId: string): PageNodeLike
@@ -59,7 +58,6 @@ export type PageNodeFactoryLike = {
 
 export class ModuleNode<TChild extends ProjectNode = ProjectNode> extends ProjectNode {
   get family(): ProjectNodeFamily { return 'module' }
-  get isSystemModule(): boolean { return this.nodeKind === 'system-directory' }
   /**
    * 当前模块节点的直接子节点。
    */
@@ -68,10 +66,4 @@ export class ModuleNode<TChild extends ProjectNode = ProjectNode> extends Projec
   get nodeKind(): NavNodeKind { return this.node.nodeKind ?? 'module' }
   get childPlacement(): ChildPlacement | undefined { return this.node.childPlacement }
   get context(): string | NavContextItem[] | NavContextConfig | undefined { return this.node.context }
-  get order(): number | undefined { return this.node.order }
-  get hidden(): boolean | undefined { return this.node.hidden }
-  get disabled(): boolean | undefined { return this.node.disabled }
-  get dividerAfter(): boolean | undefined { return this.node.dividerAfter }
-  get permissionMode(): NavPermissionMode | undefined { return this.node.permissionMode }
-  get redirect(): string | undefined { return this.node.redirect }
 }

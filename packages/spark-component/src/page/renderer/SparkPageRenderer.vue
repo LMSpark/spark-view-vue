@@ -71,7 +71,7 @@ import {
   type VNodeArrayChildren,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
-import { Logger, isCallable } from '@spark-view/spark-utils'
+import { Logger, isCallable, type HttpClientBase } from '@spark-view/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
 import type { DataSet } from '@spark-view/spark-data'
 import { DataSetCrudTool } from '@spark-view/spark-data'
@@ -451,6 +451,10 @@ function isNavPermissionMode(value: unknown): value is NavPermissionMode {
   return value === 'none' || value === 'masked' || value === 'invisible'
 }
 
+type PageNodeWithHttpClient = PageNodeLike & {
+  getHttpClient(): HttpClientBase | undefined
+}
+
 sparkProvide(PAGE_PERMISSION_MODE, isNavPermissionMode(route.meta['permissionMode']) ? route.meta['permissionMode'] : 'masked')
 
 // ── DataSet ──
@@ -634,7 +638,7 @@ function applyNodeProps(pageId: string, nodeProps: PageNodeRenderConfig): void {
   pds.initDataSet(nodeProps.data)
   const ds = pds.dataSet
   if (ds) {
-    const loaderClient = props.pageNode.getHttpClient()
+    const loaderClient = readPageNodeHttpClient(props.pageNode)
     if (loaderClient) ds.setSharedHttpClient(loaderClient)
     ds.setAppServices(pageRuntimeServices)
     ds.setPageRoute(pageRoute)
@@ -647,6 +651,11 @@ function applyNodeProps(pageId: string, nodeProps: PageNodeRenderConfig): void {
   // 4. rule → SparkNodeTree → buildPageChildren → children
   _nodeTree = SparkNodeTree.fromPageChildren(nodeProps.rule)
   rebuildChildren()
+}
+
+function readPageNodeHttpClient(pageNode: PageNodeLike): HttpClientBase | undefined {
+  const candidate = pageNode as Partial<PageNodeWithHttpClient>
+  return typeof candidate.getHttpClient === 'function' ? candidate.getHttpClient() : undefined
 }
 
 // ==================== 加载入口 ====================

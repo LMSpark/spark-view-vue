@@ -81,6 +81,7 @@ export class ProjectModel extends ModuleNode<ProjectNode> {
 
   /**
    * 当前项目导航树的直接子节点。
+   * @vcmIgnore
    */
   get navigationChildren(): ProjectNodeData[] { return this.nodeStore.children }
 
@@ -89,13 +90,19 @@ export class ProjectModel extends ModuleNode<ProjectNode> {
    */
   get flatRows(): ProjectNavigationFlatNode[] { return this.nodeStore.flatRows }
 
-  setProjectId(projectId: string): void { this.nodeStore.setProjectId(projectId) }
+  /** @vcmIgnore */
   replaceRoot(root: ProjectModelData): ProjectModelData { return this.nodeStore.replaceRoot(root) }
-  toTree(): ProjectNodeData[] { return this.nodeStore.toTree() }
+  /**
+   * 按节点 ID 查找并返回项目节点模型；找不到返回 null。
+   */
   findNodeById(nodeId: string): ProjectNode | null { return this.nodeStore.findNodeById(nodeId) }
+  /** @vcmIgnore */
   findRawNodeById(nodeId: string): ProjectNodeData | null { return this.nodeStore.findRawNodeById(nodeId) }
+  /** @vcmIgnore */
   findNodeLocation(nodeId: string): ReturnType<ProjectNodeCollection['findNodeLocation']> { return this.nodeStore.findNodeLocation(nodeId) }
+  /** @vcmIgnore */
   findConfigPageByPageId(pageId: string): ConfigPageNode | null { return this.nodeStore.findConfigPageByPageId(pageId) }
+  /** @vcmIgnore */
   findPageNode(pageId: string): ProjectNodeData | null { return this.nodeStore.findPageNode(pageId) }
 
   /**
@@ -105,12 +112,25 @@ export class ProjectModel extends ModuleNode<ProjectNode> {
    */
   openConfigPage(pageId: string): ConfigPageNode { return this.nodeStore.openConfigPage(pageId) }
 
+  /** @vcmIgnore */
   closeConfigPage(pageId: string): void { this.nodeStore.closeConfigPage(pageId) }
-  configPages(): IterableIterator<ConfigPageNode> { return this.nodeStore.configPages() }
+  /**
+   * 读取当前项目所有配置页面的概要列表（pageId、路径、标题、描述）。
+   */
   readPageSummaries(): ProjectPageNodeSummary[] { return this.nodeStore.readPageSummaries() }
+  /**
+   * 在项目根节点下新建一个模块节点并返回其数据。
+   */
   addRootModule(createId: () => string): ProjectNodeData { return this.nodeStore.addRootModule(createId) }
+  /**
+   * 在指定父节点下新建一个配置页面节点并返回其数据；parent 为 null 时挂在根下。
+   */
   addChildPage(createId: () => string, parent: ProjectNodeData | null = null): ProjectNodeData { return this.nodeStore.addChildPage(createId, parent) }
+  /**
+   * 移除指定 nodeId 的节点及其所有子孙，返回被移除节点数据；节点不存在则 throw。
+   */
   removeNode(nodeId: string): ProjectNodeData | null { return this.nodeStore.removeNode(nodeId) }
+  /** @vcmIgnore */
   refreshNavRefs(): void { this.nodeStore.refreshNavRefs() }
 }
 

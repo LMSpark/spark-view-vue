@@ -5,9 +5,18 @@
  * model/update 层用它们驱动保存、版本和编辑器标签。
  */
 
-export { PAGE_NODE_FILE_NAMES } from '../../entity/node/page-file-types'
-export type { PageNodeFileName } from '../../entity/node/page-file-types'
-import { PAGE_NODE_FILE_NAMES } from '../../entity/node/page-file-types'
+export const PAGE_NODE_FILE_NAMES: readonly ['rule.json', 'pagedata.json', 'script.js', 'style.css'] = [
+  'rule.json',
+  'pagedata.json',
+  'script.js',
+  'style.css',
+]
+
+export type PageNodeFileName = typeof PAGE_NODE_FILE_NAMES[number]
+
+export type PageNodeFileLoadOptions = {
+  forceReload?: boolean
+}
 
 /**
  * PageNode file cache/address path builder.

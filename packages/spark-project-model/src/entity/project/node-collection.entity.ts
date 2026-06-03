@@ -102,11 +102,6 @@ export class ProjectNodeCollection {
     return this.nodes.map(node => node.toFlatRow())
   }
 
-  setProjectId(projectId: string): void {
-    this.projectId = projectId.trim() || 'project'
-    this.rebindDescriptionContext()
-  }
-
   replaceRoot(root: ProjectModelData): ProjectModelData {
     const previousConfigPages = new Map(this.configPagesByPageId)
     const previousDetachedPages = new Map(this.detachedConfigPagesByPageId)
@@ -219,10 +214,6 @@ export class ProjectNodeCollection {
     if (!this.detachedConfigPagesByPageId.has(page.pageId)) return
     this.detachedConfigPagesByPageId.delete(page.pageId)
     this.configPagesByPageId.delete(page.pageId)
-  }
-
-  configPages(): IterableIterator<ConfigPageNode> {
-    return this.configPagesByPageId.values()
   }
 
   readPageSummaries(): ProjectPageNodeSummary[] {

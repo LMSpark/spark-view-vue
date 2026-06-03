@@ -4,7 +4,6 @@ import type { BasePageContentLoader, PageContentLoaderOptions } from '../service
 import { PageNodeFileApi } from '../service/file/file-api.service'
 import { PageNodeFileCache } from '../service/file/file-cache.service'
 import { createPageContentLoader } from '../service/content-loader/loader.service'
-import { NavigationConfigClient } from '../service/navigation/client.service'
 import { ConfigPageNode, type PageNodeLike } from '../entity/node/node-factory'
 
 export type PageNodeFileStorage = 'localStorage' | 'sessionStorage' | 'memory'
@@ -32,7 +31,6 @@ export class PageNodeFactory implements PageNodeFactoryLike {
   private readonly loader: BasePageContentLoader
   private readonly fileApi: PageNodeFileApi
   private readonly fileCache: PageNodeFileCache
-  private readonly navClient: NavigationConfigClient
   private readonly getPagesConfigBaseUrl: () => string
 
   constructor(options: PageNodeFactoryOptions = {}) {
@@ -51,10 +49,6 @@ export class PageNodeFactory implements PageNodeFactoryLike {
     })
     this.fileCache = new PageNodeFileCache({
       contentLoaderFactory: () => this.loader,
-    })
-    this.navClient = new NavigationConfigClient({
-      getNavigationApi: () => resolveNavigationApiBaseUrl(apiBaseUrl, options.navigationApiBaseUrl),
-      http: this.http,
     })
   }
 
@@ -76,7 +70,6 @@ export class PageNodeFactory implements PageNodeFactoryLike {
       fileApi: this.fileApi,
       fileCache: this.fileCache,
       contentLoaderFactory: () => this.loader,
-      navClient: this.navClient,
     })
     page.navigation.navNode = null
     return page
@@ -126,10 +119,6 @@ function resolveUrlOption(apiBaseUrl: string, option: string | (() => string) | 
 
 function resolvePagesConfigBaseUrl(apiBaseUrl: string, option: string | (() => string) | undefined): string {
   return resolveUrlOption(apiBaseUrl, option, '/pages-config')
-}
-
-function resolveNavigationApiBaseUrl(apiBaseUrl: string, option: string | (() => string) | undefined): string {
-  return resolveUrlOption(apiBaseUrl, option, '/navigation')
 }
 
 function installHeaderInterceptor(http: HttpClientBase, getHeaders: (() => Record<string, string>) | undefined): void {

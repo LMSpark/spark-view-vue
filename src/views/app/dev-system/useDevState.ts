@@ -1056,6 +1056,52 @@ export function useDevState() {
     return getActivePage()?.getNodeTree() ?? null
   }
 
+  function setRuleText(text: string): void {
+    const page = getActivePage()
+    if (!page) return
+    page.rule.setText(text)
+    notifyPageFileChanged(page.pageId, 'rule.json')
+  }
+
+  function setDataSetText(text: string): void {
+    const page = getActivePage()
+    if (!page) return
+    page.dataSet.setText(text)
+    notifyPageFileChanged(page.pageId, 'pagedata.json')
+  }
+
+  function undoRule(): boolean {
+    const page = getActivePage()
+    if (!page) return false
+    const ok = page.rule.undo()
+    if (ok) notifyPageFileChanged(page.pageId, 'rule.json')
+    return ok
+  }
+
+  function redoRule(): boolean {
+    const page = getActivePage()
+    if (!page) return false
+    const ok = page.rule.redo()
+    if (ok) notifyPageFileChanged(page.pageId, 'rule.json')
+    return ok
+  }
+
+  function undoDataSet(): boolean {
+    const page = getActivePage()
+    if (!page) return false
+    const ok = page.dataSet.undo()
+    if (ok) notifyPageFileChanged(page.pageId, 'pagedata.json')
+    return ok
+  }
+
+  function redoDataSet(): boolean {
+    const page = getActivePage()
+    if (!page) return false
+    const ok = page.dataSet.redo()
+    if (ok) notifyPageFileChanged(page.pageId, 'pagedata.json')
+    return ok
+  }
+
   function getActivePage(): ReturnType<typeof editor.getActivePage> {
     return editor.getActivePage()
   }
@@ -1158,6 +1204,12 @@ export function useDevState() {
     editDataSet,
     editNodeTree,
     getNodeTree,
+    setRuleText,
+    setDataSetText,
+    undoRule,
+    redoRule,
+    undoDataSet,
+    redoDataSet,
     getActivePage,
     initialize,
   }

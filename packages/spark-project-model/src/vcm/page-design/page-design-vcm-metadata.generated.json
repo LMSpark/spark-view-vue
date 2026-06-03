@@ -760,8 +760,8 @@
                               "kind": "object",
                               "type": "NavigationEditModel",
                               "schema": {
-                                "_id": {
-                                  "name": "_id",
+                                "__#243@#id": {
+                                  "name": "__#243@#id",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -769,8 +769,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_title": {
-                                  "name": "_title",
+                                "__#243@#title": {
+                                  "name": "__#243@#title",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -778,8 +778,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_icon": {
-                                  "name": "_icon",
+                                "__#243@#icon": {
+                                  "name": "__#243@#icon",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -787,8 +787,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_nodeKind": {
-                                  "name": "_nodeKind",
+                                "__#243@#nodeKind": {
+                                  "name": "__#243@#nodeKind",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -809,8 +809,8 @@
                                     ]
                                   }
                                 },
-                                "_dividerAfter": {
-                                  "name": "_dividerAfter",
+                                "__#243@#dividerAfter": {
+                                  "name": "__#243@#dividerAfter",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -825,8 +825,8 @@
                                     ]
                                   }
                                 },
-                                "_description": {
-                                  "name": "_description",
+                                "__#243@#description": {
+                                  "name": "__#243@#description",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -834,8 +834,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_path": {
-                                  "name": "_path",
+                                "__#243@#path": {
+                                  "name": "__#243@#path",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -843,8 +843,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_linkTarget": {
-                                  "name": "_linkTarget",
+                                "__#243@#linkTarget": {
+                                  "name": "__#243@#linkTarget",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -860,8 +860,8 @@
                                     ]
                                   }
                                 },
-                                "_childPlacement": {
-                                  "name": "_childPlacement",
+                                "__#243@#childPlacement": {
+                                  "name": "__#243@#childPlacement",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -869,8 +869,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_order": {
-                                  "name": "_order",
+                                "__#243@#order": {
+                                  "name": "__#243@#order",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -878,8 +878,8 @@
                                   "type": "number",
                                   "schema": "number"
                                 },
-                                "_hidden": {
-                                  "name": "_hidden",
+                                "__#243@#hidden": {
+                                  "name": "__#243@#hidden",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -887,8 +887,8 @@
                                   "type": "boolean",
                                   "schema": "boolean"
                                 },
-                                "_disabled": {
-                                  "name": "_disabled",
+                                "__#243@#disabled": {
+                                  "name": "__#243@#disabled",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -896,8 +896,8 @@
                                   "type": "boolean",
                                   "schema": "boolean"
                                 },
-                                "_refId": {
-                                  "name": "_refId",
+                                "__#243@#refId": {
+                                  "name": "__#243@#refId",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -905,8 +905,8 @@
                                   "type": "string",
                                   "schema": "string"
                                 },
-                                "_permissionMode": {
-                                  "name": "_permissionMode",
+                                "__#243@#permissionMode": {
+                                  "name": "__#243@#permissionMode",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -922,8 +922,8 @@
                                     ]
                                   }
                                 },
-                                "_hasContext": {
-                                  "name": "_hasContext",
+                                "__#243@#hasContext": {
+                                  "name": "__#243@#hasContext",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -931,8 +931,8 @@
                                   "type": "boolean",
                                   "schema": "boolean"
                                 },
-                                "_contextItems": {
-                                  "name": "_contextItems",
+                                "__#243@#contextItems": {
+                                  "name": "__#243@#contextItems",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -969,8 +969,8 @@
                                     ]
                                   }
                                 },
-                                "_contextConfig": {
-                                  "name": "_contextConfig",
+                                "__#243@#contextConfig": {
+                                  "name": "__#243@#contextConfig",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -1014,7 +1014,11 @@
                                   "name": "navNode",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "ProjectNodeData | null",
                                   "schema": {
@@ -1026,8 +1030,8 @@
                                     ]
                                   }
                                 },
-                                "_dirty": {
-                                  "name": "_dirty",
+                                "__#243@#dirty": {
+                                  "name": "__#243@#dirty",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -1035,8 +1039,8 @@
                                   "type": "boolean",
                                   "schema": "boolean"
                                 },
-                                "_listeners": {
-                                  "name": "_listeners",
+                                "__#243@#listeners": {
+                                  "name": "__#243@#listeners",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -1057,7 +1061,11 @@
                                   "name": "markDirty",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "() => void",
                                   "schema": {
@@ -1069,7 +1077,11 @@
                                   "name": "markClean",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "() => void",
                                   "schema": {
@@ -1081,7 +1093,11 @@
                                   "name": "id",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "string",
                                   "schema": "string"
@@ -1117,7 +1133,11 @@
                                   "name": "dividerAfter",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "boolean",
                                   "schema": "boolean"
@@ -1144,7 +1164,11 @@
                                   "name": "linkTarget",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "NonNullable<\"iframe\" | \"new-tab\" | \"self\" | undefined>",
                                   "schema": "NonNullable<\"iframe\" | \"new-tab\" | \"self\" | undefined>"
@@ -1153,7 +1177,11 @@
                                   "name": "childPlacement",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "string",
                                   "schema": "string"
@@ -1162,7 +1190,11 @@
                                   "name": "order",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "number",
                                   "schema": "number"
@@ -1189,7 +1221,11 @@
                                   "name": "refId",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "string",
                                   "schema": "string"
@@ -1198,7 +1234,11 @@
                                   "name": "permissionMode",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "NavPermissionMode",
                                   "schema": "NavPermissionMode"
@@ -1253,7 +1293,7 @@
                                 "contextConfig": {
                                   "name": "contextConfig",
                                   "global": false,
-                                  "description": "只读上下文配置（不可直接赋值字段，请用 updateContextConfig / setContextConfig）。",
+                                  "description": "只读上下文配置（不可直接赋值字段，请用 updateContextConfig）。",
                                   "tags": [],
                                   "required": true,
                                   "type": "Readonly<NavigationContextEditConfigDto>",
@@ -1327,7 +1367,11 @@
                                   "name": "setContextConfig",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "(config: NavigationContextEditConfigDto) => void",
                                   "schema": {
@@ -1378,8 +1422,12 @@
                                 "loadFromNode": {
                                   "name": "loadFromNode",
                                   "global": false,
-                                  "description": "从导航树节点加载属性到 DTO 字段，绕过 setter 直接写入内部存储，然后清除 dirty。",
-                                  "tags": [],
+                                  "description": "",
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "(node: ProjectNodeData) => void",
                                   "schema": {
@@ -1391,8 +1439,12 @@
                                 "applyToNode": {
                                   "name": "applyToNode",
                                   "global": false,
-                                  "description": "将 DTO 字段应用回树节点，返回补丁和警告。不清除 dirty（由 save 流程清除）。",
-                                  "tags": [],
+                                  "description": "",
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "() => NavigationNodeEditApplyResultDto",
                                   "schema": {
@@ -1416,7 +1468,7 @@
                                 "toEditDto": {
                                   "name": "toEditDto",
                                   "global": false,
-                                  "description": "将当前字段组装为 NavigationNodeEditDto。",
+                                  "description": "",
                                   "tags": [],
                                   "required": true,
                                   "type": "() => NavigationNodeEditDto",
@@ -1428,8 +1480,12 @@
                                 "toEditInputDto": {
                                   "name": "toEditInputDto",
                                   "global": false,
-                                  "description": "将当前字段 + 上下文组装为 NavigationNodeEditInputDto。",
-                                  "tags": [],
+                                  "description": "",
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "() => { node: NavigationNodeEditDto; context: NavigationContextEditDto; }",
                                   "schema": {
@@ -1454,7 +1510,11 @@
                                   "name": "subscribe",
                                   "global": false,
                                   "description": "",
-                                  "tags": [],
+                                  "tags": [
+                                    {
+                                      "name": "vcmIgnore"
+                                    }
+                                  ],
                                   "required": true,
                                   "type": "(listener: () => void) => () => void",
                                   "schema": {
@@ -1463,10 +1523,10 @@
                                     "schema": []
                                   }
                                 },
-                                "_bulkLoadEditDto": {
-                                  "name": "_bulkLoadEditDto",
+                                "__#243@#bulkLoadEditDto": {
+                                  "name": "__#243@#bulkLoadEditDto",
                                   "global": false,
-                                  "description": "绕过 setter 批量写入 DTO 字段，不触发 dirty。",
+                                  "description": "",
                                   "tags": [],
                                   "required": true,
                                   "type": "(node: NavigationNodeEditDto) => void",
@@ -1476,8 +1536,8 @@
                                     "schema": []
                                   }
                                 },
-                                "_notify": {
-                                  "name": "_notify",
+                                "__#243@#notify": {
+                                  "name": "__#243@#notify",
                                   "global": false,
                                   "description": "",
                                   "tags": [],
@@ -1491,8 +1551,8 @@
                               }
                             }
                           },
-                          "__#245@#node": {
-                            "name": "__#245@#node",
+                          "__#244@#node": {
+                            "name": "__#244@#node",
                             "global": false,
                             "description": "",
                             "tags": [],
@@ -1500,8 +1560,8 @@
                             "type": "ProjectNodeData",
                             "schema": "ProjectNodeData"
                           },
-                          "__#245@#pid": {
-                            "name": "__#245@#pid",
+                          "__#244@#pid": {
+                            "name": "__#244@#pid",
                             "global": false,
                             "description": "",
                             "tags": [],
@@ -1516,8 +1576,8 @@
                               ]
                             }
                           },
-                          "__#245@#descriptionContext": {
-                            "name": "__#245@#descriptionContext",
+                          "__#244@#descriptionContext": {
+                            "name": "__#244@#descriptionContext",
                             "global": false,
                             "description": "",
                             "tags": [],
@@ -1572,8 +1632,8 @@
                               ]
                             }
                           },
-                          "__#245@#resolveChildren": {
-                            "name": "__#245@#resolveChildren",
+                          "__#244@#resolveChildren": {
+                            "name": "__#244@#resolveChildren",
                             "global": false,
                             "description": "",
                             "tags": [],
@@ -1615,8 +1675,12 @@
                           "node": {
                             "name": "node",
                             "global": false,
-                            "description": "原始导航节点快照。",
-                            "tags": [],
+                            "description": "",
+                            "tags": [
+                              {
+                                "name": "vcmIgnore"
+                              }
+                            ],
                             "required": true,
                             "type": "ProjectNodeData",
                             "schema": "ProjectNodeData"
@@ -1661,7 +1725,11 @@
                             "name": "effectiveDescription",
                             "global": false,
                             "description": "",
-                            "tags": [],
+                            "tags": [
+                              {
+                                "name": "vcmIgnore"
+                              }
+                            ],
                             "required": true,
                             "type": "string",
                             "schema": "string"
@@ -1670,7 +1738,11 @@
                             "name": "descriptionContext",
                             "global": false,
                             "description": "",
-                            "tags": [],
+                            "tags": [
+                              {
+                                "name": "vcmIgnore"
+                              }
+                            ],
                             "required": true,
                             "type": "ProjectDescriptionContext[]",
                             "schema": "ProjectDescriptionContext[]"
@@ -1704,7 +1776,11 @@
                             "name": "rebindNavigationNode",
                             "global": false,
                             "description": "",
-                            "tags": [],
+                            "tags": [
+                              {
+                                "name": "vcmIgnore"
+                              }
+                            ],
                             "required": true,
                             "type": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]) => void",
                             "schema": {
@@ -1717,7 +1793,11 @@
                             "name": "toFlatRow",
                             "global": false,
                             "description": "",
-                            "tags": [],
+                            "tags": [
+                              {
+                                "name": "vcmIgnore"
+                              }
+                            ],
                             "required": true,
                             "type": "() => ProjectNavigationFlatNode",
                             "schema": {
@@ -1903,19 +1983,6 @@
                     ]
                   }
                 },
-                "setProjectId": {
-                  "name": "setProjectId",
-                  "global": false,
-                  "description": "",
-                  "tags": [],
-                  "required": true,
-                  "type": "(projectId: string) => void",
-                  "schema": {
-                    "kind": "event",
-                    "type": "(projectId: string): void",
-                    "schema": []
-                  }
-                },
                 "replaceRoot": {
                   "name": "replaceRoot",
                   "global": false,
@@ -2039,18 +2106,6 @@
                     "kind": "event",
                     "type": "(pageId: string): void",
                     "schema": []
-                  }
-                },
-                "configPages": {
-                  "name": "configPages",
-                  "global": false,
-                  "description": "",
-                  "tags": [],
-                  "required": true,
-                  "type": "() => IterableIterator<ConfigPageNode>",
-                  "schema": {
-                    "kind": "event",
-                    "type": "(): IterableIterator<ConfigPageNode>"
                   }
                 },
                 "readPageSummaries": {
@@ -2280,7 +2335,11 @@
             "name": "navigationChildren",
             "global": false,
             "description": "当前项目导航树的直接子节点。",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "ProjectNodeData[]",
             "schema": "ProjectNodeData[]"
@@ -2294,24 +2353,15 @@
             "type": "ProjectNavigationFlatNode[]",
             "schema": "ProjectNavigationFlatNode[]"
           },
-          "setProjectId": {
-            "name": "setProjectId",
-            "global": false,
-            "description": "",
-            "tags": [],
-            "required": true,
-            "type": "(projectId: string) => void",
-            "schema": {
-              "kind": "event",
-              "type": "(projectId: string): void",
-              "schema": []
-            }
-          },
           "replaceRoot": {
             "name": "replaceRoot",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(root: ProjectModelData) => ProjectModelData",
             "schema": {
@@ -2324,7 +2374,11 @@
             "name": "toTree",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "() => ProjectNodeData[]",
             "schema": {
@@ -2335,7 +2389,7 @@
           "findNodeById": {
             "name": "findNodeById",
             "global": false,
-            "description": "",
+            "description": "按节点 ID 查找并返回项目节点模型；找不到返回 null。",
             "tags": [],
             "required": true,
             "type": "(nodeId: string) => ProjectNode | null",
@@ -2349,7 +2403,11 @@
             "name": "findRawNodeById",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(nodeId: string) => ProjectNodeData | null",
             "schema": {
@@ -2362,7 +2420,11 @@
             "name": "findNodeLocation",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(nodeId: string) => ProjectNodeLocation | null",
             "schema": {
@@ -2375,7 +2437,11 @@
             "name": "findConfigPageByPageId",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(pageId: string) => ConfigPageNode | null",
             "schema": {
@@ -2388,7 +2454,11 @@
             "name": "findPageNode",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(pageId: string) => ProjectNodeData | null",
             "schema": {
@@ -2414,7 +2484,11 @@
             "name": "closeConfigPage",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(pageId: string) => void",
             "schema": {
@@ -2423,22 +2497,10 @@
               "schema": []
             }
           },
-          "configPages": {
-            "name": "configPages",
-            "global": false,
-            "description": "",
-            "tags": [],
-            "required": true,
-            "type": "() => IterableIterator<ConfigPageNode>",
-            "schema": {
-              "kind": "event",
-              "type": "(): IterableIterator<ConfigPageNode>"
-            }
-          },
           "readPageSummaries": {
             "name": "readPageSummaries",
             "global": false,
-            "description": "",
+            "description": "读取当前项目所有配置页面的概要列表（pageId、路径、标题、描述）。",
             "tags": [],
             "required": true,
             "type": "() => ProjectPageNodeSummary[]",
@@ -2450,7 +2512,7 @@
           "addRootModule": {
             "name": "addRootModule",
             "global": false,
-            "description": "",
+            "description": "在项目根节点下新建一个模块节点并返回其数据。",
             "tags": [],
             "required": true,
             "type": "(createId: () => string) => ProjectNodeData",
@@ -2463,7 +2525,7 @@
           "addChildPage": {
             "name": "addChildPage",
             "global": false,
-            "description": "",
+            "description": "在指定父节点下新建一个配置页面节点并返回其数据；parent 为 null 时挂在根下。",
             "tags": [],
             "required": true,
             "type": "(createId: () => string, parent?: ProjectNodeData | null) => ProjectNodeData",
@@ -2476,7 +2538,7 @@
           "removeNode": {
             "name": "removeNode",
             "global": false,
-            "description": "",
+            "description": "移除指定 nodeId 的节点及其所有子孙，返回被移除节点数据；节点不存在则 throw。",
             "tags": [],
             "required": true,
             "type": "(nodeId: string) => ProjectNodeData | null",
@@ -2490,7 +2552,11 @@
             "name": "refreshNavRefs",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "() => void",
             "schema": {
@@ -2624,8 +2690,8 @@
             "type": "NavigationEditModel",
             "schema": "NavigationEditModel"
           },
-          "__#245@#node": {
-            "name": "__#245@#node",
+          "__#244@#node": {
+            "name": "__#244@#node",
             "global": false,
             "description": "",
             "tags": [],
@@ -2633,8 +2699,8 @@
             "type": "ProjectNodeData",
             "schema": "ProjectNodeData"
           },
-          "__#245@#pid": {
-            "name": "__#245@#pid",
+          "__#244@#pid": {
+            "name": "__#244@#pid",
             "global": false,
             "description": "",
             "tags": [],
@@ -2642,8 +2708,8 @@
             "type": "string | null",
             "schema": "string | null"
           },
-          "__#245@#descriptionContext": {
-            "name": "__#245@#descriptionContext",
+          "__#244@#descriptionContext": {
+            "name": "__#244@#descriptionContext",
             "global": false,
             "description": "",
             "tags": [],
@@ -2651,8 +2717,8 @@
             "type": "ProjectDescriptionContext[]",
             "schema": "ProjectDescriptionContext[]"
           },
-          "__#245@#resolveChildren": {
-            "name": "__#245@#resolveChildren",
+          "__#244@#resolveChildren": {
+            "name": "__#244@#resolveChildren",
             "global": false,
             "description": "",
             "tags": [],
@@ -2663,8 +2729,12 @@
           "node": {
             "name": "node",
             "global": false,
-            "description": "原始导航节点快照。",
-            "tags": [],
+            "description": "",
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "ProjectNodeData",
             "schema": "ProjectNodeData"
@@ -2709,7 +2779,11 @@
             "name": "effectiveDescription",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "string",
             "schema": "string"
@@ -2718,7 +2792,11 @@
             "name": "descriptionContext",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "ProjectDescriptionContext[]",
             "schema": "ProjectDescriptionContext[]"
@@ -2745,7 +2823,11 @@
             "name": "rebindNavigationNode",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]) => void",
             "schema": "(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]) => void"
@@ -2754,7 +2836,11 @@
             "name": "toFlatRow",
             "global": false,
             "description": "",
-            "tags": [],
+            "tags": [
+              {
+                "name": "vcmIgnore"
+              }
+            ],
             "required": true,
             "type": "() => ProjectNavigationFlatNode",
             "schema": "() => ProjectNavigationFlatNode"

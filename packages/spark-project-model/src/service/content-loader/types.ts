@@ -1,4 +1,4 @@
-/**
+﻿/**
  * 页面四文件加载域公共类型。
  *
  * 该文件只描述 PageNode 内容配置四文件的加载契约，不掺入 Vue、路由或编辑器运行时。
@@ -13,7 +13,7 @@
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-data'
-import type { PageNodeFileName } from '../../entity/node/page-file-types'
+import type { PageNodeFileName, PageNodeFileLoadOptions } from '../file/file-registry.service'
 import type { PageNodeFileRegistryView } from '../file/file-registry.service'
 
 // ── 页面四文件载荷类型 ───────────────────────────────────
@@ -30,8 +30,7 @@ export type PageContentConfigFiles = {
   css: string | undefined
 }
 
-export type { PageNodeFileLoadOptions } from '../../entity/node/page-file-types'
-import type { PageNodeFileLoadOptions } from '../../entity/node/page-file-types'
+export type { PageNodeFileLoadOptions } from '../file/file-registry.service'
 
 export type PageContentLoadResult<T = unknown> = {
   /**

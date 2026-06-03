@@ -41,8 +41,8 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageN
     const page = state.getActivePage()
     if (!page) return false
     switch (name) {
-      case 'rule.json': return page.canUndoRule
-      case 'pagedata.json': return page.canUndoDataSet
+      case 'rule.json': return page.rule.canUndo
+      case 'pagedata.json': return page.dataSet.canUndo
       case 'script.js': return page.script.canUndo
       case 'style.css': return page.style.canUndo
     }
@@ -52,8 +52,8 @@ export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageN
     const page = state.getActivePage()
     if (!page) return false
     switch (name) {
-      case 'rule.json': return page.canRedoRule
-      case 'pagedata.json': return page.canRedoDataSet
+      case 'rule.json': return page.rule.canRedo
+      case 'pagedata.json': return page.dataSet.canRedo
       case 'script.js': return page.script.canRedo
       case 'style.css': return page.style.canRedo
     }

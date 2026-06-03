@@ -1,7 +1,5 @@
 /** ConfigPageNode——配置页节点，挂接 rule/dataset/script/style。 */
 import type { DataSetCrudTool, SparkNodeTree as SparkNodeTreeModel } from '@spark-view/spark-data'
-import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { NavigationNodePatchWriter } from '../navigation/edit.entity'
 import type {
   PageFileCache,
   PageFileContentLoader,
@@ -21,7 +19,6 @@ export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
   fileApi: PageFileWriter
   fileCache: PageFileCache
   contentLoaderFactory: () => PageFileContentLoader
-  navClient?: NavigationNodePatchWriter | undefined
 }
 
 export type ConfigPageDirtyPart = 'navigation' | 'rule' | 'dataSet' | 'style' | 'script'
@@ -56,7 +53,6 @@ export class ConfigPageNode extends PageNode {
   private readonly fileApi: PageFileWriter
   private readonly fileCache: PageFileCache
   private readonly contentLoaderFactory: () => PageFileContentLoader
-  private readonly navClient: NavigationNodePatchWriter | undefined
   private readonly _listeners = new Set<() => void>()
   private _isLoaded = false
 
@@ -78,7 +74,7 @@ export class ConfigPageNode extends PageNode {
     this.style = new PageTextFile(pageId, 'style.css')
     this.script = new PageTextFile(pageId, 'script.js')
     this.fileApi = options.fileApi; this.fileCache = options.fileCache
-    this.contentLoaderFactory = options.contentLoaderFactory; this.navClient = options.navClient
+    this.contentLoaderFactory = options.contentLoaderFactory
     this.wireSubModels()
   }
 
@@ -90,10 +86,7 @@ export class ConfigPageNode extends PageNode {
    */
   get children(): ConfigPageNode[] { return this.readChildren<ConfigPageNode>() }
 
-  /**
-   * 当前页面的实际路由路径；缺省时使用 pageId 生成。
-   */
-  get resolvedPath(): string { return this.path ?? `/${this.pageId}` }
+  protected get resolvedPath(): string { return this.path ?? `/${this.pageId}` }
 
   /**
    * 当前页面四个配置文件是否已经加载到内存模型。
@@ -132,14 +125,6 @@ export class ConfigPageNode extends PageNode {
     ])
     this._isLoaded = true
   }
-
-  /**
-   * 保存当前页面所有存在未保存变更的配置文件。
-   *
-   * @moduleMutation page-config write 保存当前页面配置文件。
-   * @vcmIgnore
-   */
-  async save(): Promise<void> { await Promise.all(this.dirtyParts().map(p => this.savePart(p))) }
 
   /**
    * 加载当前页面指定配置文件。
@@ -202,8 +187,8 @@ export class ConfigPageNode extends PageNode {
     await Promise.all(tasks)
   }
 
+  /** @vcmIgnore */
   subscribe(l: () => void): () => void { this._listeners.add(l); return () => { this._listeners.delete(l) } }
-  getHttpClient(): HttpClientBase | undefined { return this.contentLoaderFactory().getHttpClient() }
 
   /**
    * 获取当前页面 rule.json 的节点树编辑模型。
@@ -214,20 +199,6 @@ export class ConfigPageNode extends PageNode {
    */
   getNodeTree(): SparkNodeTreeModel {
     return this.rule.getTree()
-  }
-
-  /**
-   * 替换当前页面 rule.json 的节点树模型。
-   *
-   * 用于页面设计器把已编辑的 SparkNodeTree 写回当前页面节点；写回后 rule.json 标记为 dirty。
-   *
-   * @param nodeTree 新的页面节点树模型。
-   * @moduleMutation rule.json write 替换当前页面节点树子模型。
-   * @vcmIgnore
-   */
-  replaceNodeTree(nodeTree: SparkNodeTreeModel): void {
-    this.rule.replaceTree(nodeTree)
-    this.notify()
   }
 
   /**
@@ -256,20 +227,6 @@ export class ConfigPageNode extends PageNode {
   }
 
   /**
-   * 替换当前页面 pagedata.json 的 DataSet CRUD 工具。
-   *
-   * 用于页面设计器把已编辑的 DataSetCrudTool 写回当前页面节点；写回后 pagedata.json 标记为 dirty。
-   *
-   * @param tool 新的数据集编辑工具。
-   * @moduleMutation pagedata.json write 替换当前页面数据集子模型。
-   * @vcmIgnore
-   */
-  replaceDataSetTool(tool: DataSetCrudTool): void {
-    this.dataSet.replaceTool(tool)
-    this.notify()
-  }
-
-  /**
    * 在当前页面数据集工具上执行编辑。
    *
    * 回调由宿主代码传入，适用于非 VCM 的编辑器内部流程；VCM 应优先获取数据集子模块后调用其方法。
@@ -283,42 +240,14 @@ export class ConfigPageNode extends PageNode {
     this.notify()
   }
 
+  /** @vcmIgnore */
   get isRuleDirty(): boolean { return this.rule.isDirty }
+  /** @vcmIgnore */
   get isDataSetDirty(): boolean { return this.dataSet.isDirty }
-  get canUndoRule(): boolean { return this.rule.canUndo }
-  get canRedoRule(): boolean { return this.rule.canRedo }
-  get canUndoDataSet(): boolean { return this.dataSet.canUndo }
-  get canRedoDataSet(): boolean { return this.dataSet.canRedo }
+  /** @vcmIgnore */
   getRuleText(): string { return this.rule.getText() }
-  setRuleText(text: string): void {
-    this.rule.setText(text)
-    this.notify()
-  }
+  /** @vcmIgnore */
   getDataSetText(): string { return this.dataSet.getText() }
-  setDataSetText(text: string): void {
-    this.dataSet.setText(text)
-    this.notify()
-  }
-  undoRule(): boolean {
-    const ok = this.rule.undo()
-    if (ok) this.notify()
-    return ok
-  }
-  redoRule(): boolean {
-    const ok = this.rule.redo()
-    if (ok) this.notify()
-    return ok
-  }
-  undoDataSet(): boolean {
-    const ok = this.dataSet.undo()
-    if (ok) this.notify()
-    return ok
-  }
-  redoDataSet(): boolean {
-    const ok = this.dataSet.redo()
-    if (ok) this.notify()
-    return ok
-  }
   /**
    * 读取当前页面 script.js 文本。
    *
@@ -400,13 +329,6 @@ export class ConfigPageNode extends PageNode {
     if (part === 'dataSet') return this.isDataSetDirty
     if (part === 'style') return this.style.isDirty
     return this.script.isDirty
-  }
-  private async savePart(part: ConfigPageDirtyPart): Promise<void> {
-    if (part === 'navigation') { if (!this.navClient) throw new Error('缺少 NavigationConfigClient'); await this.navigation.save(this.navClient) }
-    else if (part === 'rule') await this.saveFile('rule.json')
-    else if (part === 'dataSet') await this.saveFile('pagedata.json')
-    else if (part === 'style') await this.saveFile('style.css')
-    else await this.saveFile('script.js')
   }
   private wireSubModels(): void { for (const m of [this.navigation, this.style, this.script]) m.subscribe(() => this.notify()) }
   private notify(): void { for (const l of this._listeners) l() }

@@ -38,13 +38,14 @@ function createPageNode(config: TestPageContentConfig, options?: TestPageNodeOpt
     css: config.css ?? '',
     script: config.script ?? '',
   }
-  return {
+  const pageNode: PageNodeLike & { getHttpClient(): HttpClientBase | undefined } = {
     pageId,
     get isLoaded() { return true },
     load: options?.load ?? vi.fn(async () => undefined),
     toRenderConfig: () => state,
     getHttpClient: () => options?.httpClient,
   }
+  return pageNode
 }
 
 function requireRecord(value: unknown, message: string): Record<string, unknown> {

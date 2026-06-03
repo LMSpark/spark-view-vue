@@ -146,7 +146,7 @@ describe('useDevState documents SSOT', () => {
     expect((state.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
     expect(state.isDocumentDirty('pagedata.json')).toBe(false)
     expect(state.getDataSetTool()).not.toBeNull()
-    expect((state.getActivePage()?.canUndoDataSet ?? false)).toBe(false)
+    expect((state.getActivePage()?.dataSet.canUndo ?? false)).toBe(false)
     expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
   })
 
@@ -165,18 +165,18 @@ describe('useDevState documents SSOT', () => {
     state.selectPage('orders-page')
     await state.ensureActivePageFilesLoaded()
 
-    state.getActivePage()!.setDataSetText(next)
+    state.setDataSetText(next)
 
     expect(state.isDocumentDirty('pagedata.json')).toBe(true)
-    expect((state.getActivePage()?.canUndoDataSet ?? false)).toBe(true)
+    expect((state.getActivePage()?.dataSet.canUndo ?? false)).toBe(true)
     expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
 
-    expect(state.getActivePage()?.undoDataSet()).toBe(true)
+    expect(state.undoDataSet()).toBe(true)
     expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
     // undo always marks dirty in V3.1 single-track model
     expect(state.isDocumentDirty('pagedata.json')).toBe(true)
 
-    expect(state.getActivePage()?.redoDataSet()).toBe(true)
+    expect(state.redoDataSet()).toBe(true)
     expect(state.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
   })
 
@@ -244,13 +244,13 @@ describe('useDevState documents SSOT', () => {
     const state = useDevState()
     state.selectPage('orders-page')
 
-    state.getActivePage()!.setRuleText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
-    state.getActivePage()!.setRuleText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
+    state.setRuleText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    state.setRuleText(`${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
 
     const treeNow = requireValue(state.getNodeTree(), 'rule model 未初始化').toJSON()
     expect(readFirstChildType(treeNow.children)).toBe('el-button')
 
-    expect(state.getActivePage()?.undoRule()).toBe(true)
+    expect(state.undoRule()).toBe(true)
     const treeUndo = requireValue(state.getNodeTree(), 'rule model 未初始化').toJSON()
     expect(readFirstChildType(treeUndo.children)).toBe('div')
     expect(JSON.parse(state.getPageFileText('rule.json'))).toMatchObject({ type: 'div' })
@@ -283,10 +283,10 @@ describe('useDevState documents SSOT', () => {
   it('savePageFile uploads current text and clears dirty without touching history', async () => {
     const state = useDevState()
     state.selectPage('orders-page')
-    state.getActivePage()!.setDataSetText(createPageDataText('Gamma', true))
+    state.setDataSetText(createPageDataText('Gamma', true))
 
     expect(state.isDocumentDirty('pagedata.json')).toBe(true)
-    const canUndoBefore = (state.getActivePage()?.canUndoDataSet ?? false)
+    const canUndoBefore = (state.getActivePage()?.dataSet.canUndo ?? false)
 
     httpPut.mockResolvedValue({ ok: true })
     httpGet.mockResolvedValue([])
@@ -299,7 +299,7 @@ describe('useDevState documents SSOT', () => {
       { headers: { 'Content-Type': 'text/plain' } },
     )
     expect(state.isDocumentDirty('pagedata.json')).toBe(false)
-    expect((state.getActivePage()?.canUndoDataSet ?? false)).toBe(canUndoBefore)
+    expect((state.getActivePage()?.dataSet.canUndo ?? false)).toBe(canUndoBefore)
   })
 
   it('dev file editor text is a read-only projection of the model (no drafts)', () => {
@@ -312,7 +312,7 @@ describe('useDevState documents SSOT', () => {
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
-    state.getActivePage()!.setDataSetText(initial)
+    state.setDataSetText(initial)
 
     const scope = effectScope()
     try {
@@ -329,7 +329,7 @@ describe('useDevState documents SSOT', () => {
 
         // Direct model mutation is reflected in the text projection
         const next = createPageDataText('DirectSet', true)
-        state.getActivePage()!.setDataSetText(next)
+        state.setDataSetText(next)
         expect(editor.text.value).toBe(canonicalizePageDataJson(next).text)
       })
     } finally {
@@ -340,7 +340,7 @@ describe('useDevState documents SSOT', () => {
   it('designer-level mutate reflects in text and is undoable', async () => {
     const state = useDevState()
     state.selectPage('orders-page')
-    state.getActivePage()!.setDataSetText(createPageDataText('Live', true))
+    state.setDataSetText(createPageDataText('Live', true))
 
     await state.editDataSet((tool) => {
       tool.createColumn({ tableName: 'Orders', column: { name: 'status', type: 'string' } })
@@ -349,17 +349,17 @@ describe('useDevState documents SSOT', () => {
     expect(state.getPageFileText('pagedata.json')).toContain('status')
     expect(state.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
 
-    expect(state.getActivePage()?.undoDataSet()).toBe(true)
+    expect(state.undoDataSet()).toBe(true)
     expect(state.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeUndefined()
 
-    expect(state.getActivePage()?.redoDataSet()).toBe(true)
+    expect(state.redoDataSet()).toBe(true)
     expect(state.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
   })
 
   it('page switch resets all documents', () => {
     const state = useDevState()
     state.selectPage('orders-page')
-    state.getActivePage()!.setDataSetText(createPageDataText('PageA', true))
+    state.setDataSetText(createPageDataText('PageA', true))
     state.getActivePage()!.script.setText('// a\n')
 
     expect(state.getDataSetTool()).not.toBeNull()
@@ -391,16 +391,16 @@ describe('useDevState documents SSOT', () => {
     await state.ensureActivePageFilesLoaded()
 
     expect(state.isDocumentDirty('rule.json')).toBe(false)
-    expect((state.getActivePage()?.canUndoRule ?? false)).toBe(false)
+    expect((state.getActivePage()?.rule.canUndo ?? false)).toBe(false)
 
-    state.getActivePage()!.setRuleText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    state.setRuleText(`${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
     expect(state.isDocumentDirty('rule.json')).toBe(true)
-    expect((state.getActivePage()?.canUndoRule ?? false)).toBe(true)
+    expect((state.getActivePage()?.rule.canUndo ?? false)).toBe(true)
 
-    expect(state.getActivePage()?.undoRule()).toBe(true)
+    expect(state.undoRule()).toBe(true)
     // undo always marks dirty in V3.1 single-track model
     expect(state.isDocumentDirty('rule.json')).toBe(true)
-    expect((state.getActivePage()?.canUndoRule ?? false)).toBe(false)
+    expect((state.getActivePage()?.rule.canUndo ?? false)).toBe(false)
     expect(state.getPageFileText('rule.json')).toBe(initial)
   })
 
@@ -408,7 +408,7 @@ describe('useDevState documents SSOT', () => {
     const state = useDevState()
     state.selectPage('orders-page')
     expect(state.pageDataDirty.value).toBe(false)
-    state.getActivePage()!.setDataSetText(createPageDataText('Dirty', true))
+    state.setDataSetText(createPageDataText('Dirty', true))
     expect(state.pageDataDirty.value).toBe(true)
   })
 
