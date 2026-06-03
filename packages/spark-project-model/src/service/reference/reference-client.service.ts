@@ -1,4 +1,4 @@
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import type { ProjectModelData, ProjectPageNodeSummary } from '../../entity/node/node-base.entity'
 import { buildProjectPageSummaries } from '../../entity/node/node-helpers'
 
@@ -77,8 +77,4 @@ function normalizeProjectRow(value: unknown): ProjectSummary {
 function readString(record: Record<string, unknown>, key: string): string {
   const value = record[key]
   return typeof value === 'string' ? value : ''
-}
-
-function isRecord(value: unknown): value is Record<string, unknown> {
-  return typeof value === 'object' && value !== null && !Array.isArray(value)
 }

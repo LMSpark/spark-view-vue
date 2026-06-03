@@ -18,11 +18,10 @@
 
 import type {
   PageContentLoaderOptions,
-  PageContentLoadResult,
   PageContentConfig,
-  PageNodeFileLoadOptions,
 } from './types'
 import { BasePageContentLoader } from './types'
+import type { PageContentLoadResult, PageNodeLoadOptions } from '../../entity/node/page-file-types'
 import type { DataSet } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-data'
 import {
@@ -30,11 +29,13 @@ import {
   createFileLoader,
   createRequest
 } from '@spark-view/spark-utils'
-import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
+import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap } from '@spark-view/spark-utils'
 import {
   PageNodeFilePath,
   type PageNodeFileName,
 } from '../../entity/node/page-file-types'
+import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
+import { installHeaderInterceptor } from '../../standalone/internal/install-header-interceptor'
 
 // 编译函数从同一文件域的 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from './compiler.service'
@@ -57,11 +58,6 @@ const DEFAULT_OPTIONS = {
 type ResolvedPageContentLoaderOptions =
   Omit<Required<PageContentLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'httpClient'>
   & Pick<PageContentLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'httpClient'>
-
-/** 去除 URL 尾部斜杠。 */
-function trimTrailingSlash(path: string): string {
-  return path.replace(/\/+$/, '')
-}
 
 /** 为缓存前缀生成作用域标识符，避免不同后端路径之间的缓存冲突。 */
 function cacheScopePrefix(baseUrl: string): string {
@@ -107,16 +103,7 @@ export class PageContentLoader extends BasePageContentLoader {
       timeout: this.opts.timeout,
     })
     // 动态请求头注入（auth / tenant headers）
-    if (this.opts.getHeaders) {
-      const getHeaders = this.opts.getHeaders
-      const headerInterceptor: RequestInterceptor = {
-        onRequest: (config) => {
-          config.headers = { ...config.headers, ...getHeaders() }
-          return config
-        }
-      }
-      this.request.interceptors.request.use(headerInterceptor)
-    }
+    installHeaderInterceptor(this.request, this.opts.getHeaders)
     // 函数型 pagesConfigBaseUrl 可能依赖登录态或当前项目，首次真实读取前不提前解析。
     if (typeof this.opts.pagesConfigBaseUrl === 'function') return
     this.resetPageFileContext(resolvePagesConfigBaseUrl(this.opts))
@@ -242,7 +229,7 @@ export class PageContentLoader extends BasePageContentLoader {
   async loadPageFileContent(
     pageId: string,
     filename: PageNodeFileName,
-    options?: PageNodeFileLoadOptions,
+    options?: PageNodeLoadOptions,
   ): Promise<PageContentLoadResult<string>> {
     this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)
@@ -275,7 +262,7 @@ export class PageContentLoader extends BasePageContentLoader {
   override async loadPageFile(
     pageId: string,
     filename: PageNodeFileName,
-    options?: PageNodeFileLoadOptions,
+    options?: PageNodeLoadOptions,
   ): Promise<PageContentLoadResult<unknown>> {
     this.ensurePageFileContext()
     const path = this.toPageFilePath(pageId, filename)

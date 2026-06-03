@@ -169,7 +169,7 @@
 
     .live-strip {
       display: grid;
-      grid-template-columns: 1fr auto auto;
+      grid-template-columns: 1fr repeat(4, auto);
       gap: 14px;
       align-items: center;
       padding: 12px 14px;
@@ -365,13 +365,13 @@
     .data-card {
       display: grid;
       grid-template-rows: auto 1fr auto;
-      gap: 8px;
+      gap: 7px;
       min-width: 0;
       min-height: 0;
       border: 1px solid var(--line);
       border-left: 4px solid var(--accent);
       border-radius: var(--radius);
-      padding: 12px;
+      padding: 10px;
       background: #fff;
       box-shadow: 0 8px 22px rgba(23, 32, 51, 0.06);
     }
@@ -410,6 +410,81 @@
       white-space: nowrap;
     }
 
+    .card-body {
+      display: grid;
+      grid-template-columns: 86px minmax(0, 1fr);
+      gap: 10px;
+      align-items: stretch;
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .card-copy {
+      min-width: 0;
+      min-height: 0;
+    }
+
+    .card-image {
+      position: relative;
+      display: grid;
+      min-width: 0;
+      min-height: 64px;
+      overflow: hidden;
+      border-radius: 6px;
+      background: #e8eef6;
+      isolation: isolate;
+    }
+
+    .card-image img {
+      display: block;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      transition: filter 160ms ease, opacity 160ms ease;
+    }
+
+    .card-image.status-loading img,
+    .card-image.status-downgraded img {
+      filter: saturate(0.7) blur(1px);
+      opacity: 0.78;
+    }
+
+    .card-image-placeholder {
+      display: grid;
+      place-items: center;
+      min-height: 100%;
+      color: var(--muted);
+      background:
+        linear-gradient(135deg, rgba(15, 118, 110, 0.16), rgba(102, 86, 217, 0.12)),
+        #edf3f8;
+      font-size: 11px;
+      font-weight: 800;
+      letter-spacing: 0;
+      text-transform: uppercase;
+    }
+
+    .card-image-status {
+      position: absolute;
+      left: 5px;
+      right: 5px;
+      bottom: 5px;
+      z-index: 1;
+      overflow: hidden;
+      border-radius: 999px;
+      padding: 3px 6px;
+      color: #fff;
+      background: rgba(23, 32, 51, 0.68);
+      font-size: 10px;
+      font-weight: 800;
+      line-height: 1.2;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .skeleton-image {
+      border: 0;
+    }
+
     .card-title {
       min-width: 0;
       margin: 0;
@@ -431,7 +506,7 @@
       font-size: 12px;
       line-height: 1.45;
       -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
+      -webkit-line-clamp: 3;
     }
 
     .card-bottom {
@@ -561,6 +636,10 @@
         grid-template-columns: 1fr;
         grid-template-rows: repeat(6, minmax(0, 1fr));
       }
+
+      .card-body {
+        grid-template-columns: 92px minmax(0, 1fr);
+      }
     }
 
     @media (prefers-reduced-motion: reduce) {
@@ -584,6 +663,14 @@
       const { createApp, nextTick, markRaw } = Vue;
       const nf = new Intl.NumberFormat("zh-CN");
       const tags = ["审核", "草稿", "已同步", "待确认", "归档", "变更"];
+      const imagePalette = [
+        ["#0f766e", "#7dd3fc"],
+        ["#6656d9", "#f0abfc"],
+        ["#b7791f", "#fde68a"],
+        ["#2563eb", "#86efac"],
+        ["#be123c", "#fdba74"],
+        ["#475569", "#c4b5fd"]
+      ];
 
       function clamp(value, min, max) {
         return Math.min(max, Math.max(min, value));
@@ -606,6 +693,75 @@
           error.name = "AbortError";
           return error;
         }
+      }
+
+      function escapeSvgText(value) {
+        return String(value).replace(/[&<>"']/g, (char) => {
+          switch (char) {
+            case "&":
+              return "&amp;";
+            case "<":
+              return "&lt;";
+            case ">":
+              return "&gt;";
+            case '"':
+              return "&quot;";
+            default:
+              return "&#39;";
+          }
+        });
+      }
+
+      function svgToDataUri(svg) {
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svg)}`;
+      }
+
+      function colorsFor(cardId) {
+        return imagePalette[cardId % imagePalette.length];
+      }
+
+      function buildCardImage(card, mode) {
+        const [start, end] = colorsFor(card.id);
+        const label = escapeSvgText(`#${card.id}`);
+        const title = escapeSvgText(card.title);
+        const tag = escapeSvgText(card.tag);
+        const opacity = mode === "preview" ? 0.58 : 1;
+        const textureOpacity = mode === "preview" ? 0.14 : 0.24;
+
+        return svgToDataUri(`
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 320 180" role="img" aria-label="${title}">
+            <defs>
+              <linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+                <stop offset="0%" stop-color="${start}"/>
+                <stop offset="100%" stop-color="${end}"/>
+              </linearGradient>
+              <pattern id="dots" width="18" height="18" patternUnits="userSpaceOnUse">
+                <circle cx="3" cy="3" r="2" fill="#ffffff" opacity="${textureOpacity}"/>
+              </pattern>
+            </defs>
+            <rect width="320" height="180" rx="18" fill="url(#g)" opacity="${opacity}"/>
+            <rect width="320" height="180" rx="18" fill="url(#dots)"/>
+            <circle cx="258" cy="34" r="58" fill="#ffffff" opacity="0.16"/>
+            <circle cx="32" cy="160" r="72" fill="#172033" opacity="0.14"/>
+            <text x="24" y="46" fill="#ffffff" font-family="Arial, sans-serif" font-size="26" font-weight="700">${label}</text>
+            <text x="24" y="82" fill="#ffffff" font-family="Arial, sans-serif" font-size="18" font-weight="700">${tag}</text>
+            <text x="24" y="132" fill="#ffffff" font-family="Arial, sans-serif" font-size="20" font-weight="700">${title}</text>
+          </svg>
+        `);
+      }
+
+      function buildMockCardImagePreview(card) {
+        return buildCardImage(card, "preview");
+      }
+
+      function newIdleImageState() {
+        return {
+          status: "idle",
+          src: "",
+          previewSrc: "",
+          errorText: "",
+          delay: null
+        };
       }
 
       function buildMockCards(page, pageSize) {
@@ -653,6 +809,39 @@
         });
       }
 
+      function mockFetchCardImage({ card, signal }) {
+        const delay = 180 + Math.floor(Math.random() * 360);
+        return new Promise((resolve, reject) => {
+          if (signal?.aborted) {
+            reject(makeAbortError());
+            return;
+          }
+
+          const timer = window.setTimeout(() => {
+            if (signal?.aborted) {
+              reject(makeAbortError());
+              return;
+            }
+
+            resolve({
+              cardId: card.id,
+              delay,
+              src: buildCardImage(card, "full"),
+              previewSrc: buildCardImage(card, "preview")
+            });
+          }, delay);
+
+          signal?.addEventListener(
+            "abort",
+            () => {
+              window.clearTimeout(timer);
+              reject(makeAbortError());
+            },
+            { once: true }
+          );
+        });
+      }
+
       const PageHeader = {
         props: {
           totalPages: { type: Number, required: true }
@@ -662,7 +851,7 @@
           <header class="topbar">
             <div>
               <h1>Vue 卡片虚拟分页</h1>
-              <p class="subtitle">全 Vue 组件版；每页 6 个卡片，mockFetchCards 模拟异步分页数据。</p>
+              <p class="subtitle">全 Vue 组件版；每页 6 个卡片，mockFetchCards 模拟异步分页数据，图片按可见区域请求。</p>
             </div>
             <div class="button-row" aria-label="快捷跳页">
               <button type="button" @click="$emit('jump', 1)">第 1 页</button>
@@ -774,7 +963,183 @@
         `
       };
 
+      const LazyCardImage = {
+        props: {
+          card: { type: Object, required: true },
+          rootMargin: { type: String, default: "96px 0px" }
+        },
+        data() {
+          return {
+            imageState: newIdleImageState(),
+            observer: null,
+            activeController: null,
+            requestToken: 0,
+            isVisible: false
+          };
+        },
+        computed: {
+          statusText() {
+            switch (this.imageState.status) {
+              case "loading":
+                return "图片请求中";
+              case "loaded":
+                return this.imageState.delay ? `已加载 ${this.imageState.delay}ms` : "已加载";
+              case "downgraded":
+                return "离开后降级";
+              case "error":
+                return this.imageState.errorText || "图片失败";
+              default:
+                return "等待进入视口";
+            }
+          },
+          placeholderText() {
+            return this.imageState.status === "loading" ? "requesting" : "queued";
+          }
+        },
+        watch: {
+          "card.id"() {
+            this.abortCurrentRequest();
+            this.resetImageState();
+            if (this.isVisible) {
+              this.requestImage();
+            }
+          }
+        },
+        mounted() {
+          nextTick(() => {
+            this.mountObserver();
+          });
+        },
+        beforeUnmount() {
+          this.observer?.disconnect();
+          this.observer = null;
+          this.abortCurrentRequest();
+        },
+        methods: {
+          resetImageState() {
+            this.imageState = newIdleImageState();
+          },
+          abortCurrentRequest() {
+            this.requestToken += 1;
+            this.activeController?.abort();
+            this.activeController = null;
+          },
+          requestImage() {
+            if (this.imageState.status === "loading" || this.imageState.status === "loaded") return;
+
+            const controller = markRaw(new AbortController());
+            const token = ++this.requestToken;
+            const previewSrc = this.imageState.previewSrc || buildMockCardImagePreview(this.card);
+            this.activeController = controller;
+            this.imageState = {
+              status: "loading",
+              src: previewSrc,
+              previewSrc,
+              errorText: "",
+              delay: null
+            };
+
+            mockFetchCardImage({
+              card: this.card,
+              signal: controller.signal
+            })
+              .then((result) => {
+                if (token !== this.requestToken || controller.signal.aborted) return;
+
+                this.imageState = {
+                  status: "loaded",
+                  src: result.src,
+                  previewSrc: result.previewSrc,
+                  errorText: "",
+                  delay: result.delay
+                };
+              })
+              .catch((error) => {
+                if (token !== this.requestToken || controller.signal.aborted) return;
+
+                this.imageState = {
+                  ...this.imageState,
+                  status: "error",
+                  errorText: error?.message || String(error)
+                };
+              })
+              .finally(() => {
+                if (this.activeController === controller) {
+                  this.activeController = null;
+                }
+              });
+          },
+          downgradeImage() {
+            this.abortCurrentRequest();
+
+            const previewSrc = this.imageState.previewSrc;
+            if (!previewSrc) {
+              this.resetImageState();
+              return;
+            }
+
+            this.imageState = {
+              ...this.imageState,
+              status: "downgraded",
+              src: previewSrc,
+              errorText: ""
+            };
+          },
+          handleIntersection(entries) {
+            const nextVisible = entries.some((entry) => entry.isIntersecting || entry.intersectionRatio > 0);
+            if (nextVisible === this.isVisible) return;
+
+            this.isVisible = nextVisible;
+            if (this.isVisible) {
+              this.requestImage();
+              return;
+            }
+
+            this.downgradeImage();
+          },
+          mountObserver() {
+            const element = this.$refs.host;
+            if (!element) return;
+
+            this.observer?.disconnect();
+            if (!("IntersectionObserver" in window)) {
+              this.isVisible = true;
+              this.requestImage();
+              return;
+            }
+
+            const root = element.closest(".viewport");
+            this.observer = markRaw(
+              new IntersectionObserver((entries) => this.handleIntersection(entries), {
+                root: root instanceof Element ? root : null,
+                rootMargin: this.rootMargin,
+                threshold: 0.01
+              })
+            );
+            this.observer.observe(element);
+          }
+        },
+        template: `
+          <div ref="host" class="card-image" :class="'status-' + imageState.status">
+            <img
+              v-if="imageState.src"
+              :src="imageState.src"
+              :alt="card.title + ' 缩略图'"
+              decoding="async"
+              loading="eager"
+            />
+            <div v-else class="card-image-placeholder">
+              <span>{{ placeholderText }}</span>
+            </div>
+            <span class="card-image-status">{{ statusText }}</span>
+          </div>
+        `
+      };
+
       const VirtualCardViewport = {
+        components: {
+          LazyCardImage
+        },
         props: {
           cache: { type: Object, required: true },
           pending: { type: Object, required: true },
@@ -868,9 +1233,12 @@
                             <span class="card-index">#{{ format(cardFor(page, slot).id) }}</span>
                             <span class="card-tag">{{ cardFor(page, slot).tag }}</span>
                           </div>
-                          <div>
-                            <h2 class="card-title">{{ cardFor(page, slot).title }}</h2>
-                            <p class="card-note">{{ cardFor(page, slot).note }}</p>
+                          <div class="card-body">
+                            <lazy-card-image :card="cardFor(page, slot)" />
+                            <div class="card-copy">
+                              <h2 class="card-title">{{ cardFor(page, slot).title }}</h2>
+                              <p class="card-note">{{ cardFor(page, slot).note }}</p>
+                            </div>
                           </div>
                           <div class="card-bottom">
                             <span>页内 {{ slot }}/{{ pageSize }}</span>
@@ -882,9 +1250,16 @@
                             <span class="card-index">#{{ format(cardNumber(page, slot)) }}</span>
                             <span class="card-tag">{{ isPagePending(page) ? "loading" : "queued" }}</span>
                           </div>
-                          <div>
-                            <div class="skeleton-line medium"></div>
-                            <p class="card-note">第 {{ format(page) }} 页的 mock 数据会在停稳后异步填充。</p>
+                          <div class="card-body">
+                            <div class="card-image skeleton-image">
+                              <div class="card-image-placeholder">
+                                <span>queued</span>
+                              </div>
+                            </div>
+                            <div class="card-copy">
+                              <div class="skeleton-line medium"></div>
+                              <p class="card-note">第 {{ format(page) }} 页的 mock 数据会在停稳后异步填充。</p>
+                            </div>
                           </div>
                           <div class="card-bottom">
                             <span class="skeleton-line short"></span>

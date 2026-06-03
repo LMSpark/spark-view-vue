@@ -9,7 +9,7 @@ export const PAGE_NODE_FILE_NAMES: readonly ['rule.json', 'pagedata.json', 'scri
 
 export type PageNodeFileName = typeof PAGE_NODE_FILE_NAMES[number]
 
-export type PageNodeFileLoadOptions = {
+export type PageNodeLoadOptions = {
   forceReload?: boolean
 }
 
@@ -51,7 +51,7 @@ export type PageFileContentLoader = {
   loadPageFileContent(
     pageId: string,
     filename: PageNodeFileName,
-    options?: PageNodeFileLoadOptions,
+    options?: PageNodeLoadOptions,
   ): Promise<PageContentLoadResult<string>>
   getHttpClient(): HttpClientBase | undefined
 }

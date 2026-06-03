@@ -11,6 +11,7 @@ import type {
   JsonValue,
 } from '../standalone/json-document'
 import { ensureUniqueObjectKey } from '../standalone/json-document'
+import { withMeta } from './with-meta'
 
 // ── SECTION 1: 规则编辑器组件元数据 ──
 
@@ -403,19 +404,6 @@ export function createRuleTreePolicy(
 }
 
 // ── SECTION 3: 规则 JSON Schema ──
-
-type JsonSchemaNode = {
-  [key: string]: unknown
-}
-
-// FIXME: 与 data-artifacts.ts 中的 withMeta 重复，后续统一提取到共享模块
-function withMeta<T extends JsonSchemaNode>(
-  title: string,
-  description: string,
-  schema: T,
-): T & { title: string; description: string } {
-  return { title, description, ...schema }
-}
 
 export function createRuleJsonSchema(
   metadataSource?: RuleEditorComponentMetadataSource,

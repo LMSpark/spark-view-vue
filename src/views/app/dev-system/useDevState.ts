@@ -1,4 +1,4 @@
-/**
+﻿/**
  * DevSystem 全局共享状态 — 跨面板的响应式数据中心。
  *
  * 编辑能力是普通业务能力，只负责 DevSystem 的页面配置编辑。
@@ -17,7 +17,17 @@ import type { AiToolApprovalRequest, NavNodeKind, ProjectNodeData } from '@spark
 import { useSparkComponent } from '@spark-view/spark-component'
 import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
 import {
-  ProjectNodeTools,
+  isConfigNodeKind,
+  findNodeById,
+  findPageNodeByPageId,
+  findNodeLocation,
+  isSystemRootDirectory,
+  canUseModuleNodeKind,
+  resolvePageNodePageId,
+  normalizePageIdFromPath,
+  createRootModuleNode,
+  createReservedRootGroup,
+  type ProjectNodeLocation,
   type PageNodeFileName,
   type PageNodeFileVersionSummary,
   type ProjectPageReference,
@@ -253,7 +263,7 @@ export function useDevState() {
   function isBackendConfigPage(pageId: string): boolean {
     const pageMeta = pageList.value.find((page: PageConfigPageSummary) => page.pageId === pageId)
     if (!pageMeta) return treeData.value.length === 0
-    return ProjectNodeTools.isConfigNodeKind(pageMeta.nodeKind)
+    return isConfigNodeKind(pageMeta.nodeKind)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -287,16 +297,16 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function isSystemRootDirectoryInTree(node: ProjectNodeData | null | undefined): boolean {
-    return ProjectNodeTools.isSystemRootDirectory(node, treeData.value)
+    return isSystemRootDirectory(node, treeData.value)
   }
 
   function canUseModuleNodeKindInTree(node: ProjectNodeData | null | undefined): boolean {
-    return ProjectNodeTools.canUseModuleNodeKind(node, treeData.value)
+    return canUseModuleNodeKind(node, treeData.value)
   }
 
   function syncActivePageContextByPath(path: string): void {
-    const pageId = ProjectNodeTools.resolvePageIdFromPath(path)
-    if (pageId && ProjectNodeTools.isConfigNodeKind(navEditDto.nodeKind)) {
+    const pageId = normalizePageIdFromPath(path)
+    if (pageId && isConfigNodeKind(navEditDto.nodeKind)) {
       setActivePageContext(pageId, activePageId.value !== pageId)
       return
     }
@@ -439,7 +449,7 @@ export function useDevState() {
     }
 
     if (preservedSelectedNodeId) {
-      const matchedNode = ProjectNodeTools.findNodeById(treeData.value, preservedSelectedNodeId)
+      const matchedNode = findNodeById(treeData.value, preservedSelectedNodeId)
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
@@ -449,7 +459,7 @@ export function useDevState() {
     }
 
     if (preservedActivePageId) {
-      const matchedNode = ProjectNodeTools.findPageNodeByPageId(treeData.value, preservedActivePageId)
+      const matchedNode = findPageNodeByPageId(treeData.value, preservedActivePageId)
       if (matchedNode) {
         selectedNode.value = matchedNode
         loadNodeToForm(matchedNode)
@@ -480,8 +490,8 @@ export function useDevState() {
   }
 
   async function syncPageFilesForNodeAfterLoad(node: ProjectNodeData, forceReload: boolean): Promise<void> {
-    const pageId = ProjectNodeTools.resolvePageNodePageId(node)
-    if (pageId && ProjectNodeTools.isConfigNodeKind(node.nodeKind ?? 'page')) {
+    const pageId = resolvePageNodePageId(node)
+    if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
       await editor.selectPage(pageId, { forceReload })
       activePageId.value = editor.readSnapshot().pageId
       persistActivePageId(pageId)
@@ -576,7 +586,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function loadNodeToForm(node: ProjectNodeData): void {
-    const pageId = ProjectNodeTools.resolvePageNodePageId(node) || node.id || `nav-node-${node.id}`
+    const pageId = resolvePageNodePageId(node) || node.id || `nav-node-${node.id}`
     editor.setActivePage(pageId)
     const page = editor.getActivePage()
     if (page) {
@@ -779,8 +789,8 @@ export function useDevState() {
     selectedNode.value = node
     editor.selectNode(node.id)
     try {
-      const pageId = ProjectNodeTools.resolvePageNodePageId(node)
-      if (pageId && ProjectNodeTools.isConfigNodeKind(node.nodeKind ?? 'page')) {
+      const pageId = resolvePageNodePageId(node)
+      if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
         await editor.selectPage(pageId)
         activePageId.value = editor.readSnapshot().pageId
         persistActivePageId(pageId)
@@ -865,7 +875,7 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function addRootNode(): void {
-    const node = ProjectNodeTools.createRootModuleNode(() => crypto.randomUUID())
+    const node = createRootModuleNode(() => crypto.randomUUID())
     void editor.addNavigationNode({ node }).then(
       (created) => {
         selectedNode.value = created
@@ -884,7 +894,7 @@ export function useDevState() {
   }
 
   function getReservedRootGroupTemplate(placement: 'toolbar' | 'user-menu'): ProjectNodeData {
-    return ProjectNodeTools.createReservedRootGroup(placement, {
+    return createReservedRootGroup(placement, {
       createId: () => crypto.randomUUID(),
     })
   }
@@ -908,7 +918,7 @@ export function useDevState() {
   }
 
   async function addChildNode(parent: ProjectNodeData): Promise<void> {
-    const pageId = ProjectNodeTools.resolvePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
+    const pageId = normalizePageIdFromPath(`/child-${crypto.randomUUID().slice(0, 8)}`)
     try {
       await editor.createMountedPage({
         pageId,
@@ -928,8 +938,8 @@ export function useDevState() {
       addStatus(`系统目录 ${data.title} 不可删除，仅可编辑子项`, 'warning')
       return
     }
-    const pageId = ProjectNodeTools.resolvePageNodePageId(data)
-    const shouldRemoveMountedPage = pageId.length > 0 && ProjectNodeTools.isConfigNodeKind(data.nodeKind ?? 'page')
+    const pageId = resolvePageNodePageId(data)
+    const shouldRemoveMountedPage = pageId.length > 0 && isConfigNodeKind(data.nodeKind ?? 'page')
     const deletePromise = shouldRemoveMountedPage
       ? editor.removeMountedPage({ pageId, nodeId: data.id })
       : editor.deleteNode(data.id)
@@ -954,7 +964,7 @@ export function useDevState() {
 
   async function moveNodeInTree(data: ProjectNodeData): Promise<void> {
     if (isSystemRootDirectoryInTree(data)) return
-    const location = ProjectNodeTools.findNodeLocation(treeData.value, data.id)
+    const location: ProjectNodeLocation | null = findNodeLocation(treeData.value, data.id)
     if (!location) return
     navSaving.value = true
     try {

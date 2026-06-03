@@ -8,6 +8,7 @@
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
 import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../../entity/node/page-file-types'
 import { assertNonEmptyPageId } from '../../standalone/internal/assert-page-id'
+import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
 
 export type PageNodeCreateFilesParams = PageFileCreateOptions & {
   pageId: string
@@ -139,6 +140,6 @@ export class PageNodeFileApi {
   }
 
   private baseUrl(): string {
-    return this.getPageFilesApi().replace(/\/+$/, '')
+    return trimTrailingSlash(this.getPageFilesApi())
   }
 }

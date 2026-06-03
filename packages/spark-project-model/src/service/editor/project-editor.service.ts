@@ -71,13 +71,14 @@ import {
   type PageNodeFileName,
 } from '../../entity/node/page-file-types'
 import type { PageNodeFileStorage } from '../../factory/page-node.factory'
-import { ProjectModel, type ProjectModelDto } from '../../entity/project/project.entity'
-export type { ProjectModelDto } from '../../entity/project/project.entity'
+import { ProjectModel } from '../../entity/project/project.entity'
+import type { ProjectModelDto } from '../../entity/project/project.entity'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,
   type ProjectSummary,
 } from '../reference/reference-client.service'
+import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
 
 // ═══════════════════════════════════════════════════════
 // 1. 选项 / 快照 / 监听器 类型（Options / Snapshot / Listener）
@@ -179,7 +180,7 @@ function isProjectEditorLoadOptions(value: unknown): value is ProjectEditorLoadO
 }
 
 function toPageFilesApiBaseUrl(pageApi: string): string {
-  const normalized = pageApi.replace(/\/+$/, '')
+  const normalized = trimTrailingSlash(pageApi)
   const suffix = '/pages-config'
   if (normalized.endsWith(suffix)) {
     return normalized.slice(0, -suffix.length) || '/'

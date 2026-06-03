@@ -6,6 +6,20 @@ export interface MockCard {
   score: string;
 }
 
+export type CardImageStatus = "idle" | "loading" | "loaded" | "downgraded" | "error";
+
+export interface MockCardImageRequest {
+  card: MockCard;
+  signal?: AbortSignal;
+}
+
+export interface MockCardImageResult {
+  cardId: number;
+  delay: number;
+  src: string;
+  previewSrc: string;
+}
+
 export interface MockPageResult {
   page: number;
   pageSize: number;

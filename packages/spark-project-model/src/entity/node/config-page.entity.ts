@@ -4,7 +4,7 @@ import type {
   PageFileCache,
   PageFileContentLoader,
   PageFileCreateOptions,
-  PageNodeFileLoadOptions,
+  PageNodeLoadOptions,
   PageFileWriter,
   PageNodeFileName,
   PageNodeFileVersionSummary,
@@ -22,7 +22,7 @@ import { PageRuleFile } from '../content/rule.entity'
 import { PageDataSetFile } from '../content/dataset.entity'
 import { PageTextFile } from '../content/text.entity'
 
-export type PageNodeLoadOptions = PageNodeFileLoadOptions
+export type { PageNodeLoadOptions } from './page-file-types'
 
 export type PageNodeRenderConfig = {
   pageId: string

@@ -1,5 +1,4 @@
 import { DataSet, getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
-import { canonicalizeDataSetMetadata } from '../../artifact/data.artifact'
 
 export function parseRuleText(rawText: string): SparkNode {
   if (!rawText.trim()) {
@@ -25,5 +24,5 @@ export function parsePageDataText(rawText: string, defaultDataSetName = ''): Dat
 }
 
 export function serializeDataSet(dataSet: DataSet): string {
-  return canonicalizeDataSetMetadata(dataSet.toJson())
+  return `${JSON.stringify(dataSet.toJson(), null, 2)}\n`
 }

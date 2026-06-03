@@ -13,9 +13,10 @@ export {
 export type {
   CreateProjectEditorOptions,
   ProjectEditorLoadOptions,
-  ProjectModelDto,
   ProjectEditorSnapshot,
 } from './service/editor/project-editor.service'
+
+export type { ProjectModelDto } from './entity/project/project.entity'
 
 export {
   ProjectModel,
@@ -37,6 +38,16 @@ export {
 
 export {
   isConfigNodeKind,
+  findPageNodeByPageId,
+  findNodeById,
+  findNodeLocation,
+  findConfigNodeByPageId,
+  isSystemRootDirectory,
+  canUseModuleNodeKind,
+  resolvePageNodePageId,
+  normalizePageIdFromPath,
+  createRootModuleNode,
+  createReservedRootGroup,
 } from './entity/node/node-helpers'
 
 export type {
@@ -44,6 +55,10 @@ export type {
   PageNodeLoadOptions,
   PageNodeRenderConfig,
 } from './entity/node/config-page.entity'
+
+export type {
+  ProjectNodeLocation,
+} from './entity/node/node-base.entity'
 
 export type {
   ProjectNodeFamily,
@@ -74,10 +89,6 @@ export type {
 export type {
   PageNodeFileVersionSummary,
 } from './entity/node/page-file-types'
-
-export {
-  ProjectNodeTools,
-} from './service/navigation/tools.service'
 
 export type {
   ProjectPageReference,

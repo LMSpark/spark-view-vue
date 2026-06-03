@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted, ref } from "vue";
 import { formatNumber } from "../composables/useVirtualCardPaging";
+import LazyCardImage from "./LazyCardImage.vue";
 import type { MockCard, WheelPageEvent } from "../types";
 
 const props = defineProps<{
@@ -134,9 +135,12 @@ defineExpose({
                     <span class="card-index">#{{ formatNumber(cardFor(page, slot)!.id) }}</span>
                     <span class="card-tag">{{ cardFor(page, slot)!.tag }}</span>
                   </div>
-                  <div>
-                    <h2 class="card-title">{{ cardFor(page, slot)!.title }}</h2>
-                    <p class="card-note">{{ cardFor(page, slot)!.note }}</p>
+                  <div class="card-body">
+                    <LazyCardImage :card="cardFor(page, slot)!" />
+                    <div class="card-copy">
+                      <h2 class="card-title">{{ cardFor(page, slot)!.title }}</h2>
+                      <p class="card-note">{{ cardFor(page, slot)!.note }}</p>
+                    </div>
                   </div>
                   <div class="card-bottom">
                     <span>页内 {{ slot }}/{{ pageSize }}</span>
@@ -149,9 +153,16 @@ defineExpose({
                     <span class="card-index">#{{ formatNumber(cardNumber(page, slot)) }}</span>
                     <span class="card-tag">{{ isPagePending(page) ? "loading" : "queued" }}</span>
                   </div>
-                  <div>
-                    <div class="skeleton-line medium"></div>
-                    <p class="card-note">第 {{ formatNumber(page) }} 页的 mock 数据会在停稳后异步填充。</p>
+                  <div class="card-body">
+                    <div class="card-image skeleton-image">
+                      <div class="card-image-placeholder">
+                        <span>queued</span>
+                      </div>
+                    </div>
+                    <div class="card-copy">
+                      <div class="skeleton-line medium"></div>
+                      <p class="card-note">第 {{ formatNumber(page) }} 页的 mock 数据会在停稳后异步填充。</p>
+                    </div>
                   </div>
                   <div class="card-bottom">
                     <span class="skeleton-line short"></span>

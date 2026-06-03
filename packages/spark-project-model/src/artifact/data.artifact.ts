@@ -10,6 +10,7 @@ import {
   type TableRelation,
 } from '@spark-view/spark-data'
 import { copyOwnEnumerableProperties } from '@spark-view/spark-utils/internal'
+import { withMeta } from './with-meta'
 
 function parsePageDataText(rawText: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(rawText)
@@ -90,18 +91,6 @@ const resourceTypes = [
 ]
 const businessCategories = ['master', 'child', 'reference']
 
-type JsonSchemaNode = {
-  [key: string]: unknown
-}
-
-// FIXME: 与 rule-artifacts.ts 中的 withMeta 重复，后续统一提取到共享模块
-function withMeta<T extends JsonSchemaNode>(
-  title: string,
-  description: string,
-  schema: T,
-): T & { title: string; description: string } {
-  return { title, description, ...schema }
-}
 
 export function canUseStructuredPageDataEditor(rawText: string): boolean {
   if (rawText.trim() === '') return false

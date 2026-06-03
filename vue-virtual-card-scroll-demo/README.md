@@ -19,6 +19,7 @@ index.html
 - 滚动条代表完整数据量
 - 拖动时只实时显示目标页，不请求中间页
 - 停稳后通过 `mockFetchCards()` 异步加载目标页附近数据
+- 卡片图片通过 `IntersectionObserver` 按可见性加载：进入可视区域请求图片，离开时取消未完成请求或降级为预览图
 - `上页` / `下页` 支持微调
 - 鼠标滚轮按速度跳页：慢滚 1 页，快速滚动会跳多页
 - mock 请求支持 `AbortController`，快速跳页会取消无用请求
@@ -42,7 +43,9 @@ vue-source/src/App.vue
 
 ```text
 vue-source/src/components/VirtualCardViewport.vue
+vue-source/src/components/LazyCardImage.vue
 vue-source/src/composables/useVirtualCardPaging.ts
+vue-source/src/mock/mockFetchCardImage.ts
 vue-source/src/mock/mockFetchCards.ts
 vue-source/src/types.ts
 vue-source/src/styles.css

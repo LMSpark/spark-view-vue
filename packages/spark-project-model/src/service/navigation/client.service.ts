@@ -2,10 +2,12 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { ProjectModelData, ProjectNodeData } from '../../entity/node/node-base.entity'
 import { isProjectNodeData } from '../../entity/node/node-base.entity'
 import { normalizeNavRoot } from '../../entity/node/node-helpers'
-import type {
-  NavigationNodeEditPatchDto,
-  NavigationNodeEditDto,
+import {
+  createNavigationNodeEditDto,
+  type NavigationNodeEditDto,
+  type NavigationNodeEditPatchDto,
 } from '../../entity/navigation/edit.entity'
+import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
 
 export type NavigationConfigClientOptions = {
   getNavigationApi: () => string
@@ -52,9 +54,10 @@ export class NavigationConfigClient {
   }
 
   async addNode(params: { parentId?: string | null; node: ProjectNodeData; index?: number }): Promise<ProjectNodeData> {
+    const editDto = createNavigationNodeEditDto(params.node)
     const body: NavigationNodeAddRequestDto = {
       ...(params.parentId === undefined || params.parentId === null ? {} : { parentId: params.parentId }),
-      node: toNavigationNodeEditDto(params.node),
+      node: editDto.node,
       ...(params.index === undefined ? {} : { index: params.index }),
     }
     const response = await this.http.post<Record<string, unknown>>(`${this.baseUrl()}/nodes`, body)
@@ -94,25 +97,6 @@ export class NavigationConfigClient {
   }
 
   private baseUrl(): string {
-    return this.getNavigationApi().replace(/\/+$/, '')
-  }
-}
-
-function toNavigationNodeEditDto(node: ProjectNodeData): NavigationNodeEditDto {
-  return {
-    id: node.id,
-    title: node.title,
-    icon: node.icon ?? '',
-    nodeKind: node.nodeKind ?? 'page',
-    dividerAfter: node.dividerAfter ?? false,
-    description: node.description ?? '',
-    path: node.path ?? '',
-    linkTarget: node.linkTarget ?? 'iframe',
-    childPlacement: node.childPlacement ?? '',
-    order: node.order ?? 0,
-    hidden: node.hidden ?? false,
-    disabled: node.disabled ?? false,
-    refId: node.refId ?? '',
-    permissionMode: node.permissionMode ?? 'masked',
+    return trimTrailingSlash(this.getNavigationApi())
   }
 }

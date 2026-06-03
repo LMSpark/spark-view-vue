@@ -12,7 +12,7 @@
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-data'
-import type { PageContentLoadResult, PageNodeFileLoadOptions, PageNodeFileName } from '../../entity/node/page-file-types'
+import type { PageContentLoadResult, PageNodeLoadOptions, PageNodeFileName } from '../../entity/node/page-file-types'
 
 // ── 页面四文件载荷类型 ───────────────────────────────────
 
@@ -27,8 +27,6 @@ export type PageContentConfigFiles = {
   script: string | undefined
   css: string | undefined
 }
-
-export type { PageContentLoadResult, PageNodeFileLoadOptions } from '../../entity/node/page-file-types'
 
 export type PageContentConfig = PageContentConfigFiles & {
   pageId: string
@@ -116,7 +114,7 @@ export abstract class BasePageContentLoader {
   abstract loadPageFileContent(
     pageId: string,
     filename: PageNodeFileName,
-    options?: PageNodeFileLoadOptions,
+    options?: PageNodeLoadOptions,
   ): Promise<PageContentLoadResult<string>>
 
   /**
@@ -126,7 +124,7 @@ export abstract class BasePageContentLoader {
   loadPageFile(
     pageId: string,
     filename: PageNodeFileName,
-    _options?: PageNodeFileLoadOptions,
+    _options?: PageNodeLoadOptions,
   ): Promise<PageContentLoadResult<unknown>> {
     throw new Error(`Page content loader does not support dynamic file loading: ${pageId}/${filename}`)
   }

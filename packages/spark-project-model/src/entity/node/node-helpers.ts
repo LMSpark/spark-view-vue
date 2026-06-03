@@ -188,6 +188,17 @@ export function findConfigNodeByPageId(nodes: readonly ProjectNodeData[], pageId
   return null
 }
 
+export function findPageNodeByPageId(nodes: readonly ProjectNodeData[], pageId: string): ProjectNodeData | null {
+  const normalized = pageId.trim()
+  if (!normalized) return null
+  for (const node of nodes) {
+    if (resolvePageNodePageId(node) === normalized) return node
+    const found = findPageNodeByPageId(node.children ?? [], normalized)
+    if (found !== null) return found
+  }
+  return null
+}
+
 export function isSystemRootDirectory(node: ProjectNodeData | null | undefined, rootNodes: readonly ProjectNodeData[]): boolean {
   return Boolean(node?.nodeKind === 'system-directory' && rootNodes.some(rootNode => rootNode.id === node.id))
 }
@@ -254,11 +265,10 @@ export function createReservedRootGroup(
 }
 
 export function normalizeConfigPageId(v: string | undefined | null): string { return (v ?? '').trim() }
-function resolvePageIdFromProjectPath(path: string | undefined | null): string { return normalizePageIdFromPath(path) }
 
 export function resolvePageNodePageId(node: ProjectNodeData | null | undefined): string {
   if (!node || !isConfigNodeKind(node.nodeKind ?? 'page')) return ''
-  const pid = resolvePageIdFromProjectPath(node.path)
+  const pid = normalizePageIdFromPath(node.path)
   return pid || node.id.trim()
 }
 

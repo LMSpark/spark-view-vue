@@ -1,11 +1,13 @@
 import { createRequest } from '@spark-view/spark-utils'
-import type { HttpClientBase, RequestInterceptor } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { BasePageContentLoader, PageContentLoaderOptions } from '../service/content-loader/types'
 import { PageNodeFileApi } from '../service/file/file-api.service'
 import { PageNodeFileCache } from '../service/file/file-cache.service'
 import { createPageContentLoader } from '../service/content-loader/loader.service'
 import { ProjectModel } from '../entity/project/project.entity'
 import type { ConfigPageNode, PageNodeLike } from '../entity/node/config-page.entity'
+import { trimTrailingSlash } from '../standalone/internal/trim-trailing-slash'
+import { installHeaderInterceptor } from '../standalone/internal/install-header-interceptor'
 
 export type PageNodeFileStorage = 'localStorage' | 'sessionStorage' | 'memory'
 
@@ -36,7 +38,7 @@ export class PageNodeFactory implements PageNodeFactoryLike {
   private readonly getPagesConfigBaseUrl: () => string
 
   constructor(options: PageNodeFactoryOptions = {}) {
-    const apiBaseUrl = normalizeBaseUrl(options.apiBaseUrl ?? '/api')
+    const apiBaseUrl = trimTrailingSlash(options.apiBaseUrl ?? '/api')
     this.http = options.httpClient ?? createRequest({
       baseURL: apiBaseUrl,
       ...(options.timeout === undefined ? {} : { timeout: options.timeout }),
@@ -97,32 +99,15 @@ export function createPageNode(pageId: string, options: PageNodeFactoryOptions =
   return createPageNodeFactory(options).create(pageId)
 }
 
-function normalizeBaseUrl(value: string): string {
-  const trimmed = value.trim()
-  if (trimmed === '') return '/api'
-  return trimmed.replace(/\/+$/, '')
-}
-
 function resolveUrlOption(apiBaseUrl: string, option: string | (() => string) | undefined, fallbackSuffix: string): string {
   const raw = option === undefined
     ? `${apiBaseUrl}${fallbackSuffix}`
     : (typeof option === 'function' ? option() : option)
-  return raw.replace(/\/+$/, '')
+  return trimTrailingSlash(raw)
 }
 
 function resolvePagesConfigBaseUrl(apiBaseUrl: string, option: string | (() => string) | undefined): string {
   return resolveUrlOption(apiBaseUrl, option, '/pages-config')
-}
-
-function installHeaderInterceptor(http: HttpClientBase, getHeaders: (() => Record<string, string>) | undefined): void {
-  if (getHeaders === undefined) return
-  const interceptor: RequestInterceptor = {
-    onRequest: (config) => {
-      config.headers = { ...config.headers, ...getHeaders() }
-      return config
-    },
-  }
-  http.interceptors.request.use(interceptor)
 }
 
 function toLoaderOptions(
