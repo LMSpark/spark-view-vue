@@ -5,100 +5,67 @@
  * for consumers that need the full editor surface.
  */
 
-export {
-  ProjectEditor,
-  createProjectEditor,
-} from './service/editor/project-editor.service'
-
-export type {
-  CreateProjectEditorOptions,
-  ProjectEditorLoadOptions,
-  ProjectEditorSnapshot,
-} from './service/editor/project-editor.service'
-
-export type { ProjectModelDto } from './entity/project/project.entity'
-
-export {
-  ProjectModel,
-} from './entity/project/project.entity'
-
-export type {
-  ProjectModelOptions,
-  ProjectInfo,
-  ProjectInfoInput,
-} from './entity/project/project.entity'
-
-export {
-  ProjectNode,
-} from './entity/node/node-base.entity'
-
-export {
-  ConfigPageNode,
-} from './entity/node/config-page.entity'
+// ── Core types (re-exported for editor-surface consumers) ──────────────────
 
 export {
   isConfigNodeKind,
-  findPageNodeByPageId,
   findNodeById,
   findNodeLocation,
-  findConfigNodeByPageId,
+  findPageNodeByPageId,
   isSystemRootDirectory,
   canUseModuleNodeKind,
   resolvePageNodePageId,
   normalizePageIdFromPath,
   createRootModuleNode,
   createReservedRootGroup,
-} from './entity/node/node-helpers'
-
-export type {
-  PageNodeLike,
-  PageNodeLoadOptions,
-  PageNodeRenderConfig,
-} from './entity/node/config-page.entity'
+} from './core/node-helpers'
 
 export type {
   ProjectNodeLocation,
-} from './entity/node/node-base.entity'
-
-export type {
-  ProjectNodeFamily,
   ProjectPageNodeSummary,
-  ProjectDescriptionContext,
-} from './entity/node/node-base.entity'
-
-export {
-  PageNodeFactory,
-  createPageNode,
-  createPageNodeFactory,
-} from './factory/page-node.factory'
-
-export type {
-  PageNodeFactoryLike,
-  PageNodeFactoryOptions,
-  PageNodeFileStorage,
-} from './factory/page-node.factory'
-
-export {
-  PAGE_NODE_FILE_NAMES,
-} from './entity/node/page-file-types'
-
-export type {
-  PageNodeFileName,
-} from './entity/node/page-file-types'
-
-export type {
-  PageNodeFileVersionSummary,
-} from './entity/node/page-file-types'
-
-export type {
-  ProjectPageReference,
-  ProjectSummary,
-} from './service/reference/reference-client.service'
+} from './core/node'
 
 export type {
   NavigationNodeEditDto,
   NavigationNodeEditPatchDto,
-} from './entity/navigation/edit.entity'
+  NavigationNodeEditApplyResultDto,
+  NavigationNodeEditInputDto,
+} from './core/navigation-edit'
+
+export {
+  PAGE_NODE_FILE_NAMES,
+} from './core/page-file'
+
+export type {
+  PageNodeFileName,
+  PageNodeFileVersionSummary,
+} from './core/page-file'
+
+export {
+  ConfigPageNode,
+} from './core/config-page'
+
+export type {
+  PageNodeLike,
+} from './core/config-page'
+
+// ── Editor ────────────────────────────────────────────────────────────────
+
+export {
+  ProjectEditor,
+  createProjectEditor,
+} from './editor/editor'
+
+export type {
+  CreateProjectEditorOptions,
+  ProjectEditorLoadOptions,
+  ProjectEditorSnapshot,
+} from './editor/editor'
+
+export type {
+  ProjectPageReference,
+  ProjectSummary,
+} from './infra/reference'
 
 export {
   PAGE_DATA_JSON_SCHEMA,
@@ -108,20 +75,20 @@ export {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-} from './artifact/data.artifact'
+} from './design/data'
 
 export {
   componentCatalog,
   createRuleJsonSchema,
   createRuleTreePolicy,
-} from './artifact/rule.artifact'
+} from './design/rule'
 
 export type {
   DesignerRelationProjection,
   DesignerTableUiState,
   DesignerTableProjection,
-} from './artifact/data.artifact'
+} from './design/data'
 
 export type {
   RuleEditorComponentCatalog,
-} from './artifact/rule.artifact'
+} from './design/rule'

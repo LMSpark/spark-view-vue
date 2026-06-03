@@ -5,9 +5,9 @@ import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
-} from '../node/page-file-types'
-import { parseRuleText, serializeRuleTree } from '../node/page-file-serialization'
-import type { PageNodeLoadOptions } from '../node/config-page.entity'
+} from '../page-file'
+import { parseRuleText, serializeRuleTree } from '../page-serial'
+import type { PageNodeLoadOptions } from '../config-page'
 
 export class PageRuleFile {
   tree: SparkNodeTreeModel = SparkNodeTree.fromPageChildren([])

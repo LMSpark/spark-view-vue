@@ -29,56 +29,56 @@ import type { HttpClientBase } from '@spark-view/spark-utils'
 import type {
   BasePageContentLoader,
   PageContentLoaderOptions,
-} from '../content-loader/types'
-import { PageNodeFileApi } from '../file/file-api.service'
-import { createPageContentLoader } from '../content-loader/loader.service'
+} from '../infra/loader/types'
+import { PageNodeFileApi } from '../infra/file-api'
+import { createPageContentLoader } from '../infra/loader/loader'
 import type {
   ProjectModelData,
   NavNodeKind,
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-} from '../../entity/node/node-base.entity'
+} from '../core/node'
 import type {
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
   NavigationNodeEditPatchDto,
-} from '../../entity/navigation/edit.entity'
+} from '../core/navigation-edit'
 import {
   applyNavigationNodeEditDtoToNode,
   applyNodeKindPresetToEditDto,
   createNavigationNodeEditDto,
   createNavigationNodePatch,
-} from '../../entity/navigation/edit.entity'
+} from '../core/navigation-edit'
 import {
   createReservedRootGroup,
   isConfigNodeKind,
   resolvePageNodePageId,
-} from '../../entity/node/node-helpers'
-import { NavigationConfigClient } from '../navigation/client.service'
+} from '../core/node-helpers'
+import { NavigationConfigClient } from '../infra/nav-client'
 
 // ── 内部域模型导入（page-model / project） ──
 
-import type { ConfigPageNode } from '../../entity/node/config-page.entity'
-import { PageNodeFileCache } from '../file/file-cache.service'
-import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../../entity/node/page-file-types'
+import type { ConfigPageNode } from '../core/config-page'
+import { PageNodeFileCache } from '../infra/file-cache'
+import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../core/page-file'
 import {
   PageNavigationLifecycle,
   type PageNavigationMountParams,
-} from '../navigation/lifecycle.service'
+} from '../infra/nav-lifecycle'
 import {
   PAGE_NODE_FILE_NAMES,
   type PageNodeFileName,
-} from '../../entity/node/page-file-types'
-import type { PageNodeFileStorage } from '../../factory/page-node.factory'
-import { ProjectModel } from '../../entity/project/project.entity'
-import type { ProjectModelDto } from '../../entity/project/project.entity'
+} from '../core/page-file'
+import type { PageNodeFileStorage } from './factory'
+import { ProjectModel } from '../core/project'
+import type { ProjectModelDto } from '../core/project'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,
   type ProjectSummary,
-} from '../reference/reference-client.service'
-import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
+} from '../infra/reference'
+import { trimTrailingSlash } from '../infra/util'
 
 // ═══════════════════════════════════════════════════════
 // 1. 选项 / 快照 / 监听器 类型（Options / Snapshot / Listener）

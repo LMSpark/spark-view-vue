@@ -5,14 +5,14 @@
  * 页面文件创建/删除由 PageNodeFileApi 处理，组合顺序由 PageNode 聚合根负责。
  */
 
-import { assertNonEmptyPageId } from '../../standalone/internal/assert-page-id'
-import type { NavigationConfigClient } from './client.service'
-import type { ProjectNodeData } from '../../entity/node/node-base.entity'
-import { defaultNavIconByKind } from '../../entity/navigation/edit.entity'
+import { assertNonEmptyPageId } from './util'
+import type { NavigationConfigClient } from './nav-client'
+import type { ProjectNodeData } from '../core/node'
+import { defaultNavIconByKind } from '../core/navigation-edit'
 import {
   findConfigNodeByPageId,
   normalizeProjectNodeData,
-} from '../../entity/node/node-helpers'
+} from '../core/node-helpers'
 
 export type PageNavigationMountParams = {
   pageId: string

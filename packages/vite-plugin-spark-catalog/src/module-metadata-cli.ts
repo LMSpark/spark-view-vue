@@ -26,7 +26,7 @@ const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
 const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
 
 const PAGE_DESIGN_VCM_MODEL_METADATA_OUT_FILE =
-  'packages/spark-project-model/src/vcm/page-design/page-design-vcm-metadata.generated.json'
+  'packages/spark-project-model/src/ai/page-design/page-design-vcm-metadata.generated.json'
 
 logger.info(diagnoseOnly ? '🚀 开始诊断 AI 能力模块元数据 ...' : '🚀 开始生成 AI 能力模块元数据 ...')
 const result = generateModuleAbilityMetadata(root, {

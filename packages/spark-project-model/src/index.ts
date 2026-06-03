@@ -7,21 +7,21 @@
 
 // ── 核心 ──────────────────────────────────────────────
 
-export { ProjectModel } from './entity/project/project.entity'
-export type { ProjectModelOptions } from './entity/project/project.entity'
-export type { ProjectModelDto } from './entity/project/project.entity'
-export type { ProjectInfo, ProjectInfoInput } from './entity/project/project.entity'
+export { ProjectModel } from './core/project'
+export type { ProjectModelOptions } from './core/project'
+export type { ProjectModelDto } from './core/project'
+export type { ProjectInfo, ProjectInfoInput } from './core/project'
 
 // ── 节点 ──────────────────────────────────────────────
 
 export {
   ProjectNode,
   isProjectNodeData,
-} from './entity/node/node-base.entity'
+} from './core/node'
 
 export {
   ConfigPageNode,
-} from './entity/node/config-page.entity'
+} from './core/config-page'
 
 export {
   isConfigNodeKind,
@@ -29,7 +29,16 @@ export {
   readProjectNodeDescription,
   flattenProjectNavigationRoot,
   buildProjectNavigationTree,
-} from './entity/node/node-helpers'
+  findPageNodeByPageId,
+  findNodeById,
+  findNodeLocation,
+  findConfigNodeByPageId,
+  isSystemRootDirectory,
+  canUseModuleNodeKind,
+  normalizePageIdFromPath,
+  createRootModuleNode,
+  createReservedRootGroup,
+} from './core/node-helpers'
 
 export type {
   ProjectModelData,
@@ -45,19 +54,31 @@ export type {
   ProjectPageNodeSummary,
   RegionItems,
   RegionVisibility,
-} from './entity/node/node-base.entity'
+} from './core/node'
 
 export type {
   PageNodeLoadOptions,
   PageNodeRenderConfig,
-} from './entity/node/config-page.entity'
+  PageNodeLike,
+} from './core/config-page'
 
 // ── 导航 DTO（契约层）─────────────────────────────
 
 export type {
   NavigationNodeEditDto,
   NavigationNodeEditPatchDto,
-} from './entity/navigation/edit.entity'
+} from './core/navigation-edit'
+
+// ── 页面文件 ──────────────────────────────────────────
+
+export {
+  PAGE_NODE_FILE_NAMES,
+} from './core/page-file'
+
+export type {
+  PageNodeFileName,
+  PageNodeFileVersionSummary,
+} from './core/page-file'
 
 // ── 工厂 ──────────────────────────────────────────────
 
@@ -65,14 +86,10 @@ export {
   PageNodeFactory,
   createPageNode,
   createPageNodeFactory,
-} from './factory/page-node.factory'
+} from './editor/factory'
 
 export type {
   PageNodeFactoryLike,
   PageNodeFactoryOptions,
   PageNodeFileStorage,
-} from './factory/page-node.factory'
-
-// ── 契约 ──────────────────────────────────────────────
-
-export type { PageNodeLike } from './entity/node/config-page.entity'
+} from './editor/factory'

@@ -21,17 +21,13 @@ function parsePageDataText(rawText: string): Record<string, unknown> {
   return record
 }
 
-function metadataToRecord(meta: DataSetMetadata): Record<string, unknown> {
-  return copyOwnEnumerableProperties(meta) ?? {}
-}
-
 export function canonicalizePageDataValue(rawValue: Record<string, unknown>): {
   text: string
   value: Record<string, unknown>
   tool: DataSetCrudTool
 } {
   const tool = DataSetCrudTool.fromJson(rawValue)
-  const value = metadataToRecord(tool.toJson())
+  const value = copyOwnEnumerableProperties(tool.toJson()) ?? {}
 
   return {
     text: `${JSON.stringify(value, null, 2)}\n`,
@@ -49,7 +45,7 @@ export function canonicalizePageDataJson(rawText: string): {
 }
 
 export function canonicalizeDataSetMetadata(metadata: DataSetMetadata): string {
-  return canonicalizePageDataValue(metadataToRecord(metadata)).text
+  return canonicalizePageDataValue(copyOwnEnumerableProperties(metadata) ?? {}).text
 }
 
 // ── 页面数据 JSON Schema ──────────────────────────────────

@@ -8,21 +8,21 @@ import type {
   PageFileWriter,
   PageNodeFileName,
   PageNodeFileVersionSummary,
-} from './page-file-types'
-import { PAGE_NODE_FILE_NAMES } from './page-file-types'
+} from './page-file'
+import { PAGE_NODE_FILE_NAMES } from './page-file'
 import {
   ProjectNode,
   type ProjectNodeFamily,
   type ProjectNodeData,
   type ProjectNodeModelOptions,
   type ProjectPageNodeSummary,
-} from './node-base.entity'
+} from './node'
 import { normalizeConfigPageId, resolvePageNodePageId } from './node-helpers'
-import { PageRuleFile } from '../content/rule.entity'
-import { PageDataSetFile } from '../content/dataset.entity'
-import { PageTextFile } from '../content/text.entity'
+import { PageRuleFile } from './content/rule-file'
+import { PageDataSetFile } from './content/dataset-file'
+import { PageTextFile } from './content/text-file'
 
-export type { PageNodeLoadOptions } from './page-file-types'
+export type { PageNodeLoadOptions } from './page-file'
 
 export type PageNodeRenderConfig = {
   pageId: string

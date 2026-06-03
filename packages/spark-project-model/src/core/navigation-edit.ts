@@ -12,7 +12,7 @@ import type {
   NavNodeKind,
   NavPermissionMode,
   ProjectNodeData,
-} from '../node/node-base.entity'
+} from './node'
 
 export type NavigationNodeEditDto = {
   id: string

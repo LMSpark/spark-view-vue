@@ -6,9 +6,9 @@
  */
 
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
-import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../../entity/node/page-file-types'
-import { assertNonEmptyPageId } from '../../standalone/internal/assert-page-id'
-import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
+import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../core/page-file'
+import { assertNonEmptyPageId } from './util'
+import { trimTrailingSlash } from './util'
 
 export type PageNodeCreateFilesParams = PageFileCreateOptions & {
   pageId: string

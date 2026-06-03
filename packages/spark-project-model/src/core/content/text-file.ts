@@ -4,8 +4,8 @@ import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
-} from '../node/page-file-types'
-import type { PageNodeLoadOptions } from '../node/config-page.entity'
+} from '../page-file'
+import type { PageNodeLoadOptions } from '../config-page'
 
 const TEXT_HISTORY_LIMIT = 100
 

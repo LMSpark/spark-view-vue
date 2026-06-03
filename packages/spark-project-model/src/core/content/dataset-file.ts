@@ -4,9 +4,9 @@ import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
-} from '../node/page-file-types'
-import { parsePageDataText, serializeDataSet } from '../node/page-file-serialization'
-import type { PageNodeLoadOptions } from '../node/config-page.entity'
+} from '../page-file'
+import { parsePageDataText, serializeDataSet } from '../page-serial'
+import type { PageNodeLoadOptions } from '../config-page'
 
 export class PageDataSetFile {
   value: DataSet

@@ -1,6 +1,6 @@
 /** 项目节点基类。 */
 import { isRecord } from '@spark-view/spark-utils'
-import { NavigationEditModel } from '../navigation/edit.entity'
+import { NavigationEditModel } from './navigation-edit'
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './node-helpers'
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */

@@ -9,8 +9,8 @@ import type {
   JsonPath,
   JsonTreePolicy,
   JsonValue,
-} from '../standalone/json-document'
-import { ensureUniqueObjectKey } from '../standalone/json-document'
+} from './json-document'
+import { ensureUniqueObjectKey } from './json-document'
 import { withMeta } from './with-meta'
 
 // ── SECTION 1: 规则编辑器组件元数据 ──

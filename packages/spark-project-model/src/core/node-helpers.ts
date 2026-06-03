@@ -7,7 +7,7 @@ import type {
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-} from './node-base.entity'
+} from './node'
 
 export function normalizePid(v: string | null | undefined): string { return v?.trim() ?? '' }
 

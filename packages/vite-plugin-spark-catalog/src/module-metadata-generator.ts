@@ -236,7 +236,7 @@ const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
 const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
 
 const PAGE_DESIGN_VCM_MODEL_METADATA_OUT_FILE =
-  'packages/spark-project-model/src/vcm/page-design/page-design-vcm-metadata.generated.json'
+  'packages/spark-project-model/src/ai/page-design/page-design-vcm-metadata.generated.json'
 
 export function generatePageDesignModuleMetadata(root: string): ModuleMetadataGenerationResult {
   return generateModuleAbilityMetadata(root, {

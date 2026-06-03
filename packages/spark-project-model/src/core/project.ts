@@ -12,12 +12,12 @@ import {
   type ProjectNodeData,
   type ProjectNodeLocation,
   type ProjectPageNodeSummary,
-} from '../node/node-base.entity'
+} from './node'
 import {
   ConfigPageNode,
   type ProjectConfigPageNodeModelOptions,
-} from '../node/config-page.entity'
-import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../node/page-file-types'
+} from './config-page'
+import type { PageFileCache, PageFileContentLoader, PageFileWriter } from './page-file'
 import {
   appendProjectDescriptionContext,
   buildProjectNavigationTree,
@@ -29,7 +29,7 @@ import {
   isConfigNodeKind,
   normalizeNavRoot,
   resolvePageNodePageId,
-} from '../node/node-helpers'
+} from './node-helpers'
 
 export type ProjectModelDto = {
   projectId: string

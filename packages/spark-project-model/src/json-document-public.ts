@@ -5,7 +5,7 @@
  * 仅导出 json-document 相关符号。
  */
 
-export * as JsonDocumentRuntime from './standalone/json-document'
+export * as JsonDocumentRuntime from './design/json-document'
 
 export {
   addChildNode,
@@ -50,4 +50,4 @@ export {
   type TreeNode,
   type TreeModel,
   type UpdateNodeTypeInput,
-} from './standalone/json-document'
+} from './design/json-document'

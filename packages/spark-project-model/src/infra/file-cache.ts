@@ -4,11 +4,11 @@
  * 只负责把 PageNode 四文件路径映射到 loader cache key 并清理缓存。
  */
 
-import type { BasePageContentLoader } from '../content-loader/types'
+import type { BasePageContentLoader } from './loader/types'
 import {
   PageNodeFilePath,
   type PageNodeFileName,
-} from '../../entity/node/page-file-types'
+} from '../core/page-file'
 
 export type PageNodeFileCacheOptions = {
   contentLoaderFactory: () => BasePageContentLoader

@@ -21,7 +21,7 @@ import type {
   PageContentConfig,
 } from './types'
 import { BasePageContentLoader } from './types'
-import type { PageContentLoadResult, PageNodeLoadOptions } from '../../entity/node/page-file-types'
+import type { PageContentLoadResult, PageNodeLoadOptions } from '../../core/page-file'
 import type { DataSet } from '@spark-view/spark-data'
 import type { SparkNode } from '@spark-view/spark-data'
 import {
@@ -33,12 +33,12 @@ import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEvent
 import {
   PageNodeFilePath,
   type PageNodeFileName,
-} from '../../entity/node/page-file-types'
-import { trimTrailingSlash } from '../../standalone/internal/trim-trailing-slash'
-import { installHeaderInterceptor } from '../../standalone/internal/install-header-interceptor'
+} from '../../core/page-file'
+import { trimTrailingSlash } from '../util'
+import { installHeaderInterceptor } from '../util'
 
 // 编译函数从同一文件域的 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
-import { compileRule, parsePageData, parseScript, parseCss } from './compiler.service'
+import { compileRule, parsePageData, parseScript, parseCss } from './compiler'
 
 const pageLogger = Logger('PageContentConfig')
 
