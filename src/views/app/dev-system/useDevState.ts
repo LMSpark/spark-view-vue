@@ -12,10 +12,10 @@
  * autoSave、refreshRoutes 和状态消息。
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
-import { createAiRunAdapter, createAiToolApprovalBridge, refreshRoutes } from '@spark-view/spark-app'
-import type { AiToolApprovalRequest, NavNodeKind, ProjectNodeData } from '@spark-view/spark-app'
-import { useSparkComponent } from '@spark-view/spark-component'
-import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
+import { createAiRunAdapter, createAiToolApprovalBridge, refreshRoutes } from '@spark-appworks/spark-app'
+import type { AiToolApprovalRequest, NavNodeKind, ProjectNodeData } from '@spark-appworks/spark-app'
+import { useSparkComponent } from '@spark-appworks/spark-component'
+import type { ToolApprovalDisplayItem } from '@spark-appworks/spark-component'
 import {
   isConfigNodeKind,
   findNodeById,
@@ -30,11 +30,13 @@ import {
   type ProjectNodeLocation,
   type PageNodeFileName,
   type PageNodeFileVersionSummary,
-  type ProjectPageReference,
   type ProjectPageNodeSummary,
-  type ProjectSummary,
-} from '@spark-view/spark-project-model/project'
-import type { NavigationNodeEditDto as ProjectNavigationNodeEditDto } from '@spark-view/spark-project-model/project'
+} from '@spark-appworks/spark-project-model'
+import type {
+  NavigationNodeEditDto as ProjectNavigationNodeEditDto,
+  ProjectPageReference,
+  ProjectSummary,
+} from '@spark-appworks/spark-project-model/project'
 import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
@@ -107,7 +109,7 @@ export function useDevState() {
     pageFilesRevision.value = editor.revision
   })
 
-  function getEditorActivePage(): ReturnType<typeof editor.getActivePage> {
+  function _getEditorActivePage(): ReturnType<typeof editor.getActivePage> {
     // navEditDto proxies a framework-free ProjectEditor model. Track only explicit
     // navigation DTO switches here; tying it to every editor revision creates
     // needless tab/render feedback in Vue.
@@ -119,38 +121,46 @@ export function useDevState() {
     navEditDtoRevision.value++
   }
 
-  // ── 节点编辑表单（navEditDto：直接代理到 activePage.navigation）──
+  // ── 节点编辑表单（navEditDto：代理到 editor.navigationEditDto 工作副本）──
   const navEditDto = reactive({
-    get id(): string { return getEditorActivePage()?.navigation.id ?? '' },
+    get id(): string { return editor.navigationEditDto?.node.id ?? '' },
     set id(_v: string) {},
-    get title(): string { return getEditorActivePage()?.navigation.title ?? '' },
-    set title(v: string) { const p = getActivePage(); if (p) { p.navigation.title = v; markNavDirty() } },
-    get icon(): string { return getEditorActivePage()?.navigation.icon ?? '' },
-    set icon(v: string) { const p = getActivePage(); if (p) { p.navigation.icon = v; markNavDirty() } },
-    get nodeKind(): NavNodeKind { return getEditorActivePage()?.navigation.nodeKind ?? 'page' },
-    set nodeKind(v: NavNodeKind) { const p = getActivePage(); if (p) { p.navigation.nodeKind = v; markNavDirty() } },
-    get dividerAfter(): boolean { return getEditorActivePage()?.navigation.dividerAfter ?? false },
-    set dividerAfter(v: boolean) { const p = getActivePage(); if (p) { p.navigation.dividerAfter = v; markNavDirty() } },
-    get description(): string { return getEditorActivePage()?.navigation.description ?? '' },
-    set description(v: string) { const p = getActivePage(); if (p) { p.navigation.description = v; markNavDirty() } },
-    get path(): string { return getEditorActivePage()?.navigation.path ?? '' },
-    set path(v: string) { const p = getActivePage(); if (p) { p.navigation.path = v; markNavDirty() } },
-    get linkTarget(): NavigationNodeEditDto['linkTarget'] { return getEditorActivePage()?.navigation.linkTarget ?? 'iframe' },
-    set linkTarget(v: NavigationNodeEditDto['linkTarget']) { const p = getActivePage(); if (p) { p.navigation.linkTarget = v; markNavDirty() } },
-    get childPlacement(): string { return getEditorActivePage()?.navigation.childPlacement ?? '' },
-    set childPlacement(v: string) { const p = getActivePage(); if (p) { p.navigation.childPlacement = v; markNavDirty() } },
-    get order(): number { return getEditorActivePage()?.navigation.order ?? 0 },
-    set order(v: number) { const p = getActivePage(); if (p) { p.navigation.order = v; markNavDirty() } },
-    get hidden(): boolean { return getEditorActivePage()?.navigation.hidden ?? false },
-    set hidden(v: boolean) { const p = getActivePage(); if (p) { p.navigation.hidden = v; markNavDirty() } },
-    get disabled(): boolean { return getEditorActivePage()?.navigation.disabled ?? false },
-    set disabled(v: boolean) { const p = getActivePage(); if (p) { p.navigation.disabled = v; markNavDirty() } },
-    get refId(): string { return getEditorActivePage()?.navigation.refId ?? '' },
-    set refId(v: string) { const p = getActivePage(); if (p) { p.navigation.refId = v; markNavDirty() } },
-    get permissionMode(): 'none' | 'masked' | 'invisible' { return getEditorActivePage()?.navigation.permissionMode ?? 'masked' },
-    set permissionMode(v: 'none' | 'masked' | 'invisible') { const p = getActivePage(); if (p) { p.navigation.permissionMode = v; markNavDirty() } },
-    get hasContext(): boolean { return getEditorActivePage()?.navigation.hasContext ?? false },
-    set hasContext(v: boolean) { const p = getActivePage(); if (p) { p.navigation.hasContext = v; markNavDirty() } },
+    get title(): string { return editor.navigationEditDto?.node.title ?? '' },
+    set title(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.title = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get icon(): string { return editor.navigationEditDto?.node.icon ?? '' },
+    set icon(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.icon = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get nodeKind(): NavNodeKind { return editor.navigationEditDto?.node.nodeKind ?? 'page' },
+    set nodeKind(v: NavNodeKind) { const dto = editor.navigationEditDto; if (dto) { dto.node.nodeKind = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get dividerAfter(): boolean { return editor.navigationEditDto?.node.dividerAfter ?? false },
+    set dividerAfter(v: boolean) { const dto = editor.navigationEditDto; if (dto) { dto.node.dividerAfter = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get description(): string { return editor.navigationEditDto?.node.description ?? '' },
+    set description(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.description = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get path(): string { return editor.navigationEditDto?.node.path ?? '' },
+    set path(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.path = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get linkTarget(): NavigationNodeEditDto['linkTarget'] { return editor.navigationEditDto?.node.linkTarget ?? 'iframe' },
+    set linkTarget(v: NavigationNodeEditDto['linkTarget']) { const dto = editor.navigationEditDto; if (dto) { dto.node.linkTarget = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get childPlacement(): string { return editor.navigationEditDto?.node.childPlacement ?? '' },
+    set childPlacement(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.childPlacement = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get order(): number { return editor.navigationEditDto?.node.order ?? 0 },
+    set order(v: number) { const dto = editor.navigationEditDto; if (dto) { dto.node.order = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get hidden(): boolean { return editor.navigationEditDto?.node.hidden ?? false },
+    set hidden(v: boolean) { const dto = editor.navigationEditDto; if (dto) { dto.node.hidden = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get disabled(): boolean { return editor.navigationEditDto?.node.disabled ?? false },
+    set disabled(v: boolean) { const dto = editor.navigationEditDto; if (dto) { dto.node.disabled = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get refId(): string { return editor.navigationEditDto?.node.refId ?? '' },
+    set refId(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.refId = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get permissionMode(): 'none' | 'masked' | 'invisible' { return editor.navigationEditDto?.node.permissionMode ?? 'masked' },
+    set permissionMode(v: 'none' | 'masked' | 'invisible') { const dto = editor.navigationEditDto; if (dto) { dto.node.permissionMode = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
+    get hasContext(): boolean { return editor.navigationEditDto?.context.hasContext ?? false },
+    set hasContext(v: boolean) {
+      const dto = editor.navigationEditDto
+      if (dto) {
+        dto.context.hasContext = v
+        if (!v) { dto.context.items = [] }
+        editor.applyNavigationEditDto(dto)
+        markNavDirty()
+      }
+    },
   })
   /** 可变的上下文选项列表（v-model 需要可变数组元素；通过 setContextItems 同步到子模型）。 */
   const contextItems = ref<Array<{ id: string; title: string }>>([])
@@ -314,10 +324,7 @@ export function useDevState() {
   }
 
   function applyNodeKindPreset(kind: NavNodeKind): void {
-    const page = getActivePage()
-    if (page) {
-      page.navigation.applyKindPreset(kind)
-    }
+    editor.applyNodeKindPreset(kind)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -588,11 +595,12 @@ export function useDevState() {
   function loadNodeToForm(node: ProjectNodeData): void {
     const pageId = resolvePageNodePageId(node) || node.id || `nav-node-${node.id}`
     editor.setActivePage(pageId)
-    const page = editor.getActivePage()
-    if (page) {
-      page.navigation.loadFromNode(node)
-      contextItems.value = [...page.navigation.contextItems]
-      Object.assign(contextConfig, page.navigation.contextConfig)
+    editor.selectNode(node.id)
+    editor.beginNavigationEdit()
+    const dto = editor.navigationEditDto
+    if (dto) {
+      contextItems.value = [...dto.context.items]
+      Object.assign(contextConfig, dto.context.config)
     }
     navDirty.value = false
     linkProbeInfo.value = null
@@ -614,11 +622,12 @@ export function useDevState() {
       addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
     }
 
-    const page = getActivePage()
-    if (page) {
-      page.navigation.setContextItems(contextItems.value)
-      page.navigation.setContextConfig({ ...contextConfig })
-      const result = page.navigation.applyToNode()
+    // context 字段同步到 DTO
+    const dto = editor.navigationEditDto
+    if (dto) {
+      dto.context.items = contextItems.value.map(item => ({ ...item }))
+      Object.assign(dto.context.config, contextConfig)
+      const result = editor.applyNavigationEditDto(dto)
       for (const warning of result.warnings) {
         addStatus(warning, 'warning')
       }
@@ -628,8 +637,6 @@ export function useDevState() {
 
   function markNavDirty(): void {
     navDirty.value = true
-    const page = getActivePage()
-    if (page) page.navigation.markDirty()
     scheduleAutoSave()
   }
 
@@ -985,26 +992,33 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function toggleContext(val: boolean): void {
-    const page = getActivePage()
     if (val && contextItems.value.length === 0) {
       contextItems.value.push({ id: '', title: '' })
     }
-    if (page) {
-      page.navigation.hasContext = val
-      page.navigation.setContextItems(contextItems.value)
+    const dto = editor.navigationEditDto
+    if (dto) {
+      dto.context.hasContext = val
+      dto.context.items = contextItems.value.map(item => ({ ...item }))
+      editor.applyNavigationEditDto(dto)
     }
     markNavDirty()
   }
   function addContextItem(): void {
     contextItems.value.push({ id: '', title: '' })
-    const page = getActivePage()
-    if (page) page.navigation.setContextItems(contextItems.value)
+    const dto = editor.navigationEditDto
+    if (dto) {
+      dto.context.items = contextItems.value.map(item => ({ ...item }))
+      editor.applyNavigationEditDto(dto)
+    }
     markNavDirty()
   }
   function removeContextItem(idx: number): void {
     contextItems.value.splice(idx, 1)
-    const page = getActivePage()
-    if (page) page.navigation.setContextItems(contextItems.value)
+    const dto = editor.navigationEditDto
+    if (dto) {
+      dto.context.items = contextItems.value.map(item => ({ ...item }))
+      editor.applyNavigationEditDto(dto)
+    }
     markNavDirty()
   }
   function fillDemoContext(): void {
@@ -1013,21 +1027,23 @@ export function useDevState() {
     contextConfig.placeholder = DEMO_CONTEXT_CONFIG.placeholder
     contextConfig.defaultValue = DEMO_CONTEXT_CONFIG.defaultValue
     contextConfig.paramName = DEMO_CONTEXT_CONFIG.paramName
-    const page = getActivePage()
-    if (page) {
-      page.navigation.setContextItems(contextItems.value)
-      page.navigation.setContextConfig({ ...contextConfig })
+    const dto = editor.navigationEditDto
+    if (dto) {
+      dto.context.items = contextItems.value.map(item => ({ ...item }))
+      Object.assign(dto.context.config, contextConfig)
+      editor.applyNavigationEditDto(dto)
     }
     markNavDirty()
     addStatus('已填充模块上下文演示数据', 'info')
   }
 
-  /** context 字段变更时写穿到 page.navigation 并标记 dirty。 */
+  /** context 字段变更时写穿到编辑器 DTO 并标记 dirty。 */
   function syncContextToNav(): void {
-    const page = getActivePage()
-    if (page) {
-      page.navigation.setContextItems(contextItems.value)
-      page.navigation.setContextConfig({ ...contextConfig })
+    const dto = editor.navigationEditDto
+    if (dto) {
+      dto.context.items = contextItems.value.map(item => ({ ...item }))
+      Object.assign(dto.context.config, contextConfig)
+      editor.applyNavigationEditDto(dto)
     }
     markNavDirty()
   }
@@ -1134,7 +1150,7 @@ export function useDevState() {
     navDirty,
     selectedNode,
 
-    // 编辑表单（navEditDto 直接代理到 activePage.navigation）
+    // 编辑表单（navEditDto 代理到 editor.navigationEditDto 工作副本）
     navEditDto,
     contextItems,
     contextConfig,

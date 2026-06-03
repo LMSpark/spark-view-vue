@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-view/spark-component'
-import type { ConfigPageNode } from '@spark-view/spark-project-model/project'
+import type { ConfigPageNode } from '@spark-view/spark-project-model'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'

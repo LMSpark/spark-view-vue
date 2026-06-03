@@ -5,7 +5,7 @@
  * 读路径仍由 BasePageContentLoader 负责，子模型只依赖这里的写能力。
  */
 
-import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
+import { isRecord, type HttpClientBase } from '@spark-appworks/spark-utils'
 import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../core/page-file'
 import { assertNonEmptyPageId } from './util'
 import { trimTrailingSlash } from './util'

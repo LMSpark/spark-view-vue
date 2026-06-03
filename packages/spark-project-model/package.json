@@ -1,5 +1,5 @@
 {
-  "name": "@spark-view/spark-project-model",
+  "name": "@spark-appworks/spark-project-model",
   "version": "0.1.0",
   "type": "module",
   "license": "MIT",
@@ -16,10 +16,6 @@
     "./ai": {
       "types": "./dist/ai.d.ts",
       "import": "./dist/ai.js"
-    },
-    "./json-document": {
-      "types": "./dist/json-document-public.d.ts",
-      "import": "./dist/json-document-public.js"
     }
   },
   "main": "./dist/index.js",
@@ -35,9 +31,10 @@
     "lint:fix": "eslint src --ext .ts --fix"
   },
   "dependencies": {
-    "@spark-view/spark-ai": "workspace:*",
-    "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*"
+    "@spark-appworks/spark-ai": "workspace:*",
+    "@spark-appworks/spark-data": "workspace:*",
+    "@spark-appworks/spark-json-document": "workspace:*",
+    "@spark-appworks/spark-utils": "workspace:*"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",

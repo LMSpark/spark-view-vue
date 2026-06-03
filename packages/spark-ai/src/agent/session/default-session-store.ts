@@ -29,7 +29,7 @@ import {
   type AiAgentMessageSource,
   type AiAgentSessionRecord,
 } from './session-types'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 /** 存储选项：允许注入自定义时间源（便于测试） */
 export type DefaultAiAgentSessionStoreOptions = Readonly<{

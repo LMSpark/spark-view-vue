@@ -5,24 +5,24 @@
  * UI passes a generic capability consumer and ProjectEditor, this adapter wires them
  * to the pageDesign business registration and live ProjectEditor model.
  */
-import { createAiRunAdapter, noopTraceSink } from '@spark-view/spark-app'
+import { createAiRunAdapter, noopTraceSink } from '@spark-appworks/spark-app'
 import type {
   AiRunAbortHandler,
   AiRunAdapterState,
   AiRunBeforeFunctionCall,
   AiRunTraceSink,
-} from '@spark-view/spark-app'
-import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-view/spark-ai/agent'
-import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
-import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
-import type { ProjectEditor } from '@spark-view/spark-project-model/project'
+} from '@spark-appworks/spark-app'
+import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
+import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
+import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
+import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import {
   PAGE_DESIGN_MODULE_ID,
   ensurePageDesignBusiness,
   type PageDesignAllowedOperations,
   type PageDesignRunInput,
   type PageDesignRunMode,
-} from '@spark-view/spark-project-model/ai'
+} from '@spark-appworks/spark-project-model/ai'
 
 export type PageDesignAiRunOptions = {
   description: string

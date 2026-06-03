@@ -1,29 +1,11 @@
 /**
- * @spark-view/spark-project-model/project
+ * @spark-appworks/spark-project-model/project
  *
- * Project editing subpath. Keeps implementation exports off the root contract
- * for consumers that need the full editor surface.
+ * Project editing subpath — L3 编辑器层 + 设计制品。
+ * 消费者需同时从 root 入口导入 L1/L2 领域类型。
  */
 
-// ── Core types (re-exported for editor-surface consumers) ──────────────────
-
-export {
-  isConfigNodeKind,
-  findNodeById,
-  findNodeLocation,
-  findPageNodeByPageId,
-  isSystemRootDirectory,
-  canUseModuleNodeKind,
-  resolvePageNodePageId,
-  normalizePageIdFromPath,
-  createRootModuleNode,
-  createReservedRootGroup,
-} from './core/node-helpers'
-
-export type {
-  ProjectNodeLocation,
-  ProjectPageNodeSummary,
-} from './core/node'
+// ── L3 导航编辑 DTO ──────────────────────────────────────────
 
 export type {
   NavigationNodeEditDto,
@@ -32,24 +14,7 @@ export type {
   NavigationNodeEditInputDto,
 } from './core/navigation-edit'
 
-export {
-  PAGE_NODE_FILE_NAMES,
-} from './core/page-file'
-
-export type {
-  PageNodeFileName,
-  PageNodeFileVersionSummary,
-} from './core/page-file'
-
-export {
-  ConfigPageNode,
-} from './core/config-page'
-
-export type {
-  PageNodeLike,
-} from './core/config-page'
-
-// ── Editor ────────────────────────────────────────────────────────────────
+// ── L3 编辑器 ────────────────────────────────────────────────
 
 export {
   ProjectEditor,
@@ -66,6 +31,8 @@ export type {
   ProjectPageReference,
   ProjectSummary,
 } from './infra/reference'
+
+// ── 设计制品 ─────────────────────────────────────────────────
 
 export {
   PAGE_DATA_JSON_SCHEMA,

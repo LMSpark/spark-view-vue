@@ -1,5 +1,5 @@
 /** 节点纯函数——tree/flat 转换、pageId 解析、类型判断。 */
-import { deepClone } from '@spark-view/spark-utils'
+import { deepClone } from '@spark-appworks/spark-utils'
 import type {
   NavNodeKind,
   ProjectDescriptionContext,

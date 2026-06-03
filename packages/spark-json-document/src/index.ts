@@ -10,7 +10,7 @@
 //   - 不可变变更：所有 mutation 返回新 TreeModel，不修改原模型
 // ══════════════════════════════════════════════════════════════
 
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 // ── 基础 JSON 类型 ──────────────────────────────────────────
 

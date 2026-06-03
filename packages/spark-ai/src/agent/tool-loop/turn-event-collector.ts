@@ -25,7 +25,7 @@
 
 import type { AiAgentStreamEvent } from '../chat/chat-types'
 import type { AiAgentAppSseEvent } from '../transport/app-sse-events'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type {
   AiAgentAppSseEventSource,
   AiAgentStreamTurnInput,

@@ -1,11 +1,10 @@
 /** PageTextFile——script.js / style.css 的内存模型，负责文本内容的读写与撤销重做。 */
-import { SnapshotHistory } from '@spark-view/spark-utils'
+import { SnapshotHistory } from '@spark-appworks/spark-utils'
 import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
 } from '../page-file'
-import type { PageNodeLoadOptions } from '../config-page'
 
 const TEXT_HISTORY_LIMIT = 100
 
@@ -13,7 +12,6 @@ export class PageTextFile {
   private _text: string
   private savedText: string
   private readonly history = new SnapshotHistory<string>(TEXT_HISTORY_LIMIT)
-  private readonly listeners = new Set<() => void>()
 
   constructor(
     readonly pageId: string,
@@ -38,14 +36,12 @@ export class PageTextFile {
     if (this.history.current === content) return
     this.history.push(content)
     this._text = content
-    this.notify()
   }
 
   undo(): boolean {
     const prev = this.history.undo()
     if (prev === null) return false
     this._text = prev
-    this.notify()
     return true
   }
 
@@ -53,11 +49,10 @@ export class PageTextFile {
     const next = this.history.redo()
     if (next === null) return false
     this._text = next
-    this.notify()
     return true
   }
 
-  async load(loader: PageFileContentLoader, options?: PageNodeLoadOptions): Promise<void> {
+  async load(loader: PageFileContentLoader, options?: { forceReload?: boolean }): Promise<void> {
     const result = await loader.loadPageFileContent(this.pageId, this.fileName, {
       forceReload: options?.forceReload === true,
     })
@@ -68,7 +63,6 @@ export class PageTextFile {
   async save(api: PageFileWriter): Promise<void> {
     await api.saveFileContent(this.pageId, this.fileName, this._text)
     this.savedText = this._text
-    this.notify()
   }
 
   async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
@@ -78,20 +72,10 @@ export class PageTextFile {
     this.replaceSavedText(result.data ?? '')
   }
 
-  subscribe(listener: () => void): () => void {
-    this.listeners.add(listener)
-    return () => { this.listeners.delete(listener) }
-  }
-
   private replaceSavedText(text: string): void {
     this.history.clear()
     this.history.push(text)
     this._text = text
     this.savedText = text
-    this.notify()
-  }
-
-  private notify(): void {
-    for (const listener of this.listeners) listener()
   }
 }

@@ -33,7 +33,7 @@ vi.mock('@/services/api-paths', () => ({
 }))
 
 import { canonicalizePageDataJson } from '../../packages/spark-project-model/src/design/data'
-import { PAGE_NODE_FILE_NAMES, type PageNodeFileName } from '@spark-view/spark-project-model/project'
+import { PAGE_NODE_FILE_NAMES, type PageNodeFileName } from '@spark-appworks/spark-project-model'
 import { useDevState } from '../../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../../src/views/app/dev-system/composables/useDevFileEditor'
 

@@ -1,6 +1,5 @@
 /** 项目节点基类。 */
-import { isRecord } from '@spark-view/spark-utils'
-import { NavigationEditModel } from './navigation-edit'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './node-helpers'
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
@@ -138,7 +137,6 @@ export type ProjectNodeModelOptions = {
 }
 
 export class ProjectNode {
-  readonly navigation = new NavigationEditModel()
   #node: ProjectNodeData
   #pid: string
   #descriptionContext: ProjectDescriptionContext[]
@@ -147,7 +145,6 @@ export class ProjectNode {
     this.#node = options.node
     this.#pid = normalizePid(options.pid)
     this.#descriptionContext = [...(options.descriptionContext ?? [])]
-    this.navigation.loadFromNode(this.#node)
   }
 
   get family(): ProjectNodeFamily {
@@ -207,7 +204,5 @@ export class ProjectNode {
     this.#node = node
     this.#pid = normalizePid(pid)
     this.#descriptionContext = [...descriptionContext]
-    if (this.navigation.isDirty) { this.navigation.navNode = node }
-    else { this.navigation.loadFromNode(node) }
   }
 }

@@ -19,7 +19,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import type { ApiEnvelopeContext, ApiEnvelopeEvent } from '@spark-view/spark-utils'
+import type { ApiEnvelopeContext, ApiEnvelopeEvent } from '@spark-appworks/spark-utils'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · SSE 事件名 — 所有合法的 APP SSE 事件名

@@ -1,4 +1,4 @@
-import { DataSet, getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
+import { DataSet, getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-appworks/spark-data'
 
 export function parseRuleText(rawText: string): SparkNode {
   if (!rawText.trim()) {

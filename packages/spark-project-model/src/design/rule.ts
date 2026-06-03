@@ -2,15 +2,15 @@
  * 规则编辑器工件：组件元数据、规则树策略、规则 JSON Schema。
  */
 
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type {
   AutoPopulateEntry,
   JsonObject,
   JsonPath,
   JsonTreePolicy,
   JsonValue,
-} from './json-document'
-import { ensureUniqueObjectKey } from './json-document'
+} from '@spark-appworks/spark-json-document'
+import { ensureUniqueObjectKey } from '@spark-appworks/spark-json-document'
 import { withMeta } from './with-meta'
 
 // ── SECTION 1: 规则编辑器组件元数据 ──

@@ -144,7 +144,7 @@
  * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
  */
 import { onMounted } from 'vue'
-import type { PageNodeFileName } from '@spark-view/spark-project-model/project'
+import type { PageNodeFileName } from '@spark-view/spark-project-model'
 import { AiToolApprovalPanel } from '@spark-view/spark-component'
 import { useDevSystem } from './useDevSystem'
 import DevSiteTree from './DevSiteTree.vue'

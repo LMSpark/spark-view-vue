@@ -10,7 +10,7 @@
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
 import { useDevState, type DevWorkspaceTab } from './useDevState'
-import type { PageNodeFileName } from '@spark-view/spark-project-model/project'
+import type { PageNodeFileName } from '@spark-appworks/spark-project-model'
 import { onPageConfigChange } from '@/services/sse-events'
 
 export function useDevSystem() {

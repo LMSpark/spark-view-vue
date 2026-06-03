@@ -1,0 +1,27 @@
+{
+  "name": "@spark-appworks/spark-json-document",
+  "version": "0.1.0",
+  "type": "module",
+  "license": "MIT",
+  "description": "Generic JSON document tree editing engine with UUID-stable identity, immutable mutations, and policy injection",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": ["dist"],
+  "scripts": {
+    "build": "vite build",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@spark-appworks/spark-utils": "workspace:*"
+  },
+  "devDependencies": {
+    "typescript": "~6.0.2",
+    "vite": "^6.3.0"
+  }
+}

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
-import { SPARK_PAGE_NODE_TYPE, SPARK_PAGE_ROOT_ID, SparkNodeTree } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-data'
+import { SPARK_PAGE_NODE_TYPE, SPARK_PAGE_ROOT_ID, SparkNodeTree } from '@spark-appworks/spark-data'
+import type { SparkNode } from '@spark-appworks/spark-data'
 
 function createSparkNodeTree(): SparkNode {
   return {

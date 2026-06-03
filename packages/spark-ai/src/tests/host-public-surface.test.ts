@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-describe('@spark-view/spark-ai/agent public surface', () => {
+describe('@spark-appworks/spark-ai/agent public surface', () => {
   it('exports only the stable runtime symbols from the host barrel', async () => {
     const hostModule = await import('../agent')
 

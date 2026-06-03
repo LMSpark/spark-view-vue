@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-describe('@spark-view/spark-ai root public surface', () => {
+describe('@spark-appworks/spark-ai root public surface', () => {
   it('keeps the package root as a small facade over json/modules/agent', async () => {
     const rootModule = await import('../index')
 

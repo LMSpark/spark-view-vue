@@ -22,14 +22,14 @@ import type {
 } from './types'
 import { BasePageContentLoader } from './types'
 import type { PageContentLoadResult, PageNodeLoadOptions } from '../../core/page-file'
-import type { DataSet } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-data'
+import type { DataSet } from '@spark-appworks/spark-data'
+import type { SparkNode } from '@spark-appworks/spark-data'
 import {
   Logger,
   createFileLoader,
   createRequest
-} from '@spark-view/spark-utils'
-import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'
+import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap } from '@spark-appworks/spark-utils'
 import {
   PageNodeFilePath,
   type PageNodeFileName,

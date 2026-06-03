@@ -8,8 +8,8 @@ import {
   type DataSetMetadata,
   type TableMetadata,
   type TableRelation,
-} from '@spark-view/spark-data'
-import { copyOwnEnumerableProperties } from '@spark-view/spark-utils/internal'
+} from '@spark-appworks/spark-data'
+import { copyOwnEnumerableProperties } from '@spark-appworks/spark-utils/internal'
 import { withMeta } from './with-meta'
 
 function parsePageDataText(rawText: string): Record<string, unknown> {

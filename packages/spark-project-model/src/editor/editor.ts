@@ -24,7 +24,7 @@
  * └──────────────────────────────────────────────────────┘
  */
 
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-appworks/spark-utils'
 
 import type {
   BasePageContentLoader,
@@ -251,6 +251,7 @@ export class ProjectEditor {
   private selectedNodeId: string | null = null
   private navigationDirty = false
   private navigationDirtyScope: NavigationDirtyScope | null = null
+  private workingEditDto: NavigationNodeEditInputDto | null = null
 
   private revisionCounter = 0
   private readonly listeners = new Set<ProjectEditorListener>()
@@ -325,7 +326,6 @@ export class ProjectEditor {
       throw new Error('pageId 不能为空')
     }
     const page = this.project.openConfigPage(normalized)
-    page.subscribe(() => this.bumpRevision())
     return page
   }
 
@@ -463,7 +463,7 @@ export class ProjectEditor {
     }
 
     const hasAnyFileDirty = dirtyFiles.size > 0
-    const navDirty = this.navigationDirty || (activePage?.navigation.isDirty ?? false)
+    const navDirty = this.navigationDirty || this.workingEditDto !== null
 
     return {
       pageId,
@@ -500,50 +500,69 @@ export class ProjectEditor {
   // ── 节点属性编辑 ─────────────────────────────────────
 
   /**
-   * 应用导航节点编辑 DTO 到当前页面导航节点。
+   * 应用导航节点编辑 DTO 到当前选中节点。
    * 只改内存节点并标记 navigation dirty，不提交远端。
    */
   applyNavigationEditDto(input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
     const node = this.requireSelectedNode('未选中导航节点，无法编辑导航属性')
     const result = applyNavigationNodeEditDtoToNode(node, input)
     this.selectedNodeId = node.id
+    this.workingEditDto = createNavigationNodeEditDto(node)
     this.markNavigationDirty('node')
-    this.getActivePage()?.navigation.markDirty()
     this.bumpRevision()
     return result
   }
 
-  /** 对当前页面导航节点应用节点类型预设（切换类型时重置关联字段）。 */
+  /** 对当前选中节点应用节点类型预设（切换类型时重置关联字段）。 */
   applyNodeKindPreset(kind: NavNodeKind): void {
     const node = this.requireSelectedNode('未选中导航节点，无法修改节点类型')
     const nodeDto = createNavigationNodeEditDto(node)
     const updatedNode = applyNodeKindPresetToEditDto(nodeDto.node, kind)
-    // 用更新后的 DTO 覆盖原 DTO 的关键字段再 apply
     const mergedInput: NavigationNodeEditInputDto = {
       ...nodeDto,
       node: updatedNode,
     }
     applyNavigationNodeEditDtoToNode(node, mergedInput)
+    this.workingEditDto = createNavigationNodeEditDto(node)
     this.selectedNodeId = node.id
     this.markNavigationDirty('node')
+    this.bumpRevision()
+  }
+
+  /** 读取当前选中节点的导航编辑 DTO（工作副本）。 */
+  get navigationEditDto(): NavigationNodeEditInputDto | null { return this.workingEditDto }
+
+  /** 当前是否有未保存的导航编辑。 */
+  get isNavigationEditing(): boolean { return this.workingEditDto !== null }
+
+  /** 开始导航编辑会话：为当前选中节点创建工作副本 DTO。 */
+  beginNavigationEdit(): NavigationNodeEditInputDto {
+    const node = this.requireSelectedNode('未选中导航节点，无法开始导航编辑')
+    this.workingEditDto = createNavigationNodeEditDto(node)
+    this.bumpRevision()
+    return this.workingEditDto
+  }
+
+  /** 放弃当前导航编辑会话。 */
+  discardNavigationEdit(): void {
+    this.workingEditDto = null
+    this.markNavigationClean()
     this.bumpRevision()
   }
 
   // ── 导航保存 ─────────────────────────────────────────
 
   /**
-   * 将当前页面导航节点的修改持久化到远端。
-   * 优先使用基类 navigation.applyToNode() 生成的 patch；
-   * 回退到从选中树节点重新创建 DTO（createPageForSelectedNode 等路径）。
+   * 将当前选中导航节点的修改持久化到远端。
+   * 优先使用 workingEditDto 生成 patch；回退到从选中树节点重新创建 DTO。
    */
   async saveSelectedNavigationNode(): Promise<void> {
-    const page = this.getActivePage()
     let nodeId: string
     let patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'>
 
-    if (page?.navigation.isDirty && page.navigation.navNode) {
-      nodeId = page.navigation.navNode.id
-      const result = page.navigation.applyToNode()
+    if (this.workingEditDto !== null) {
+      const result = createNavigationNodePatch(this.workingEditDto)
+      nodeId = this.workingEditDto.node.id
       patch = result.patch
     } else {
       const node = this.requireSelectedNode('未选中导航节点，无法保存导航属性')
@@ -554,6 +573,7 @@ export class ProjectEditor {
     }
 
     await this.navClient.updateNode(nodeId, patch)
+    this.workingEditDto = null
     await this.reloadNavigation({ selectedNodeId: nodeId })
   }
 
@@ -601,18 +621,16 @@ export class ProjectEditor {
   /** 保存所有变更：dirty 文件 + 当前导航节点。前端编辑不做整树提交。 */
   async saveAll(): Promise<void> {
     await this.saveDirtyPageFiles()
-    const page = this.getActivePage()
-    const navDirty = this.navigationDirty || page?.navigation.isDirty === true
+    const navDirty = this.navigationDirty || this.workingEditDto !== null
     if (!navDirty) return
 
     if (this.navigationDirtyScope === 'root') {
       throw new Error('前端导航编辑必须按节点提交，不能整树保存')
     } else {
-      if (!page) return
       await this.saveSelectedNavigationNode()
     }
 
-    page.navigation.markClean()
+    this.workingEditDto = null
     this.markNavigationClean()
   }
 
@@ -914,10 +932,7 @@ export class ProjectEditor {
   private markNavigationClean(): void {
     this.navigationDirty = false
     this.navigationDirtyScope = null
-    const page = this.getActivePage()
-    if (page?.navigation.isDirty === true) {
-      page.navigation.markClean()
-    }
+    this.workingEditDto = null
   }
 
   private async reloadNavigation(options?: { selectedNodeId?: string | null }): Promise<ProjectModelData> {

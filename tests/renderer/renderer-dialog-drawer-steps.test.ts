@@ -8,9 +8,9 @@ import {
   Spark,
   isSparkNode,
   useSparkComponent,
-} from '@spark-view/spark-component'
-import type { SparkNode, SparkNodeChildren } from '@spark-view/spark-component'
-import { defineCapability, isRecord } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-component'
+import type { SparkNode, SparkNodeChildren } from '@spark-appworks/spark-component'
+import { defineCapability, isRecord } from '@spark-appworks/spark-utils'
 import RendererStepItem from '../../packages/spark-component/src/components/containers/layout/RendererStepItem.vue'
 import RendererToolbar from '../../packages/spark-component/src/components/containers/layout/RendererToolbar.vue'
 import { createRendererDialogZeroCode } from '../../packages/spark-component/src/components/containers/layout/RendererDialog/zero-code'

@@ -34,6 +34,23 @@
     "useUnknownInCatchVariables": true,
     "paths": {
       "@/*": ["src/*"],
+      "@spark-appworks/spark-utils": ["./packages/spark-utils/src/index.ts"],
+      "@spark-appworks/spark-utils/internal": ["./packages/spark-utils/src/internal/index.ts"],
+      "@spark-appworks/spark-component/runtime": ["./packages/spark-component/src/runtime/index.ts"],
+      "@spark-appworks/spark-component": ["./packages/spark-component/src/index.ts"],
+      "@spark-appworks/spark-data": ["./packages/spark-data/src/index.ts"],
+      "@spark-appworks/spark-project-model": ["./packages/spark-project-model/src/index.ts"],
+      "@spark-appworks/spark-project-model/project": ["./packages/spark-project-model/src/project.ts"],
+      "@spark-appworks/spark-project-model/ai": ["./packages/spark-project-model/src/ai.ts"],
+      "@spark-appworks/spark-json-document": ["./packages/spark-json-document/src/index.ts"],
+      // during development we prefer to resolve to source so that new exports
+      // (e.g. setupAutoRegister) are picked up without rebuilding the package
+      "@spark-appworks/spark-app": ["./packages/spark-app/src/index.ts"],
+      "@spark-appworks/spark-ai": ["./packages/spark-ai/src/index.ts"],
+      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],
+      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],
+      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],
+      // backward-compat aliases – keep until all @spark-view/* imports are migrated
       "@spark-view/spark-utils": ["./packages/spark-utils/src/index.ts"],
       "@spark-view/spark-utils/internal": ["./packages/spark-utils/src/internal/index.ts"],
       "@spark-view/spark-component/runtime": ["./packages/spark-component/src/runtime/index.ts"],
@@ -42,9 +59,7 @@
       "@spark-view/spark-project-model": ["./packages/spark-project-model/src/index.ts"],
       "@spark-view/spark-project-model/project": ["./packages/spark-project-model/src/project.ts"],
       "@spark-view/spark-project-model/ai": ["./packages/spark-project-model/src/ai.ts"],
-      "@spark-view/spark-project-model/json-document": ["./packages/spark-project-model/src/json-document-public.ts"],
-      // during development we prefer to resolve to source so that new exports
-      // (e.g. setupAutoRegister) are picked up without rebuilding the package
+      "@spark-view/spark-json-document": ["./packages/spark-json-document/src/index.ts"],
       "@spark-view/spark-app": ["./packages/spark-app/src/index.ts"],
       "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],
       "@spark-view/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],

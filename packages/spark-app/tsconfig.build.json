@@ -11,7 +11,7 @@
       "@spark-view/spark-project-model": ["../spark-project-model/dist/index.d.ts"],
       "@spark-view/spark-project-model/project": ["../spark-project-model/dist/project.d.ts"],
       "@spark-view/spark-project-model/ai": ["../spark-project-model/dist/ai.d.ts"],
-      "@spark-view/spark-project-model/json-document": ["../spark-project-model/dist/json-document-public.d.ts"],
+      "@spark-view/spark-json-document": ["../spark-json-document/dist/index.d.ts"],
       "@spark-view/spark-ai": ["../spark-ai/dist/index.d.ts"],
       "@spark-view/spark-ai/json": ["../spark-ai/dist/json/index.d.ts"],
       "@spark-view/spark-ai/agent": ["../spark-ai/dist/agent/index.d.ts"],

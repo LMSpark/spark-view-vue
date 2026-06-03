@@ -31,7 +31,7 @@ export default defineConfig({
       '@spark-view/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
       '@spark-view/spark-project-model/project': path.resolve(root, 'packages', 'spark-project-model', 'src', 'project.ts'),
       '@spark-view/spark-project-model/ai': path.resolve(root, 'packages', 'spark-project-model', 'src', 'ai.ts'),
-      '@spark-view/spark-project-model/json-document': path.resolve(root, 'packages', 'spark-project-model', 'src', 'json-document-public.ts'),
+      '@spark-view/spark-json-document': path.resolve(root, 'packages', 'spark-json-document', 'src', 'index.ts'),
       '@spark-view/spark-project-model': path.resolve(root, 'packages', 'spark-project-model', 'src', 'index.ts'),
       '@spark-view/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),
       '@spark-view/spark-ai/json': path.resolve(root, 'packages', 'spark-ai', 'src', 'json', 'index.ts'),

@@ -1,4 +1,4 @@
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-appworks/spark-utils'
 import type { ProjectModelData, ProjectNodeData } from '../core/node'
 import { isProjectNodeData } from '../core/node'
 import { normalizeNavRoot } from '../core/node-helpers'

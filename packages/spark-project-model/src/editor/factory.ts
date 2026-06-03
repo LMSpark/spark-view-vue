@@ -1,5 +1,5 @@
-import { createRequest } from '@spark-view/spark-utils'
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-appworks/spark-utils'
+import type { HttpClientBase } from '@spark-appworks/spark-utils'
 import type { BasePageContentLoader, PageContentLoaderOptions } from '../infra/loader/types'
 import { PageNodeFileApi } from '../infra/file-api'
 import { PageNodeFileCache } from '../infra/file-cache'

@@ -10,8 +10,8 @@
  * - 两者可独立测试、独立演进
  */
 
-import { DataSet, SparkData } from '@spark-view/spark-data'
-import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree, type SparkNode } from '@spark-view/spark-data'
+import { DataSet, SparkData } from '@spark-appworks/spark-data'
+import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree, type SparkNode } from '@spark-appworks/spark-data'
 
 // ═══ 工厂解析：模块加载时一次性探测 spark-data 暴露的 DataSet 构建入口 ═══
 

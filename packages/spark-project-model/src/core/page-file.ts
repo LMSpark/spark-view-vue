@@ -1,4 +1,4 @@
-import type { HttpClientBase } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-appworks/spark-utils'
 
 export const PAGE_NODE_FILE_NAMES: readonly ['rule.json', 'pagedata.json', 'script.js', 'style.css'] = [
   'rule.json',

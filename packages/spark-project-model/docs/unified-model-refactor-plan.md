@@ -1,5 +1,9 @@
 # spark-project-model 统一模型重构计划（修正版）
 
+> 状态说明：本文是未来目录迁移计划，不是当前源码地图。
+> 当前运行结构仍是 `core/`、`infra/`、`editor/`、`design/`、`ai/`、`vcm/`，包级协作契约见 `../README.md` 和 `../AGENTS.md`。
+> 在目录迁移完整执行前，测试、元数据生成器、工具和消费方不得引用本文中的 `entity/`、`service/`、`contract/` 等计划路径。
+
 ## 0. 修正结论
 
 上一版方案把“项目策划”设计成独立子系统，这是错误的。本次修正版明确：
@@ -8,7 +12,7 @@
 2. **其他行为全部归结为 edit / CRUD**：不存在独立“策划模型层”。增删改查项目树就是编辑项目，增删改查配置页内容就是编辑页面。
 3. **pageModel 不是 project-model 包**：`pageModel` 只表示页面配置节点内容模型，即配置页节点上的 `rule.json`、`pagedata.json`、`script.js`、`style.css` 四类内容。
 4. **project-model 是项目树模型包**：它管理项目节点树、配置页节点、页面四文件内容、导航编辑 DTO、文件 IO、内容加载、编辑器 façade、AI page-design 编辑宿主契约。
-5. **不保留旧别名，不向后兼容**：所有活跃消费方必须改为 `@spark-view/spark-project-model` 及其明确子路径。
+5. **不保留旧别名，不向后兼容**：所有活跃消费方必须改为 `@spark-appworks/spark-project-model` 及其明确子路径。
 6. **严格 SSOT / SOLID**：类型契约只放稳定跨层协议；实体持有状态；服务编排 IO 和编辑用例；工厂只做跨层装配；AI 只暴露 page-design 编辑边界。
 
 ## 1. 本次范围
@@ -18,23 +22,23 @@
 源包名为：
 
 ```text
-@spark-view/spark-project-model
+@spark-appworks/spark-project-model
 ```
 
 允许公共入口：
 
 ```text
-@spark-view/spark-project-model
-@spark-view/spark-project-model/project
-@spark-view/spark-project-model/ai
-@spark-view/spark-project-model/json-document
+@spark-appworks/spark-project-model
+@spark-appworks/spark-project-model/project
+@spark-appworks/spark-project-model/ai
+@spark-appworks/spark-project-model/json-document
 ```
 
 禁止继续使用：
 
 ```text
-@spark-view/spark-page-config
-@spark-view/spark-page-config/*
+@spark-appworks/spark-page-config
+@spark-appworks/spark-page-config/*
 packages/spark-page-config
 spark-page-config.bak
 ```
@@ -433,7 +437,7 @@ pnpm-lock.yaml
 
 目标：
 
-- 所有活跃代码不再引用 `@spark-view/spark-page-config`。
+- 所有活跃代码不再引用 `@spark-appworks/spark-page-config`。
 - 所有活跃代码不再引用 `packages/spark-page-config`。
 - 构建期组件 catalog 输出到 `packages/spark-project-model/src/ai/page-design/payload/component-catalog.json`。
 - backend component metadata 与 project-model payload catalog 保持同步。
@@ -460,7 +464,7 @@ entity/content 文件数 = 3
 以下扫描必须无结果：
 
 ```bash
-rg "@spark-view/spark-page-config|packages/spark-page-config|spark-page-config\\.bak" packages src tests scripts tools
+rg "@spark-appworks/spark-page-config|packages/spark-page-config|spark-page-config\\.bak" packages src tests scripts tools
 ```
 
 文档历史和 changelog 可另行清理，不作为运行时阻断；活跃源码、测试、脚本、构建配置必须清零。

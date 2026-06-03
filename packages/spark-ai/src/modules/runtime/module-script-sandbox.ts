@@ -6,7 +6,7 @@
  * 当前文件负责脚本入口，只做错误投影和 JSON 返回值规整。
  */
 
-import { toErrorMessage } from '@spark-view/spark-utils'
+import { toErrorMessage } from '@spark-appworks/spark-utils'
 import { coerceJsonValue, type AiJsonValue } from '../../json'
 import { AiModuleCheck, AiModuleResult } from '../protocol'
 

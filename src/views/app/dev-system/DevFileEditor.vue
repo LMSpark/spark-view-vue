@@ -140,7 +140,7 @@ import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type Rule
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import type { DevState } from './useDevState'
-import type { PageNodeFileName, PageNodeFileVersionSummary } from '@spark-view/spark-project-model/project'
+import type { PageNodeFileName, PageNodeFileVersionSummary } from '@spark-view/spark-project-model'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 

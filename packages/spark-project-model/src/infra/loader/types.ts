@@ -9,9 +9,9 @@
  * - 四文件名由 PageNodeFileName 固定约束，不做动态注册。
  */
 
-import type { DataSet } from '@spark-view/spark-data'
-import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { SparkNode } from '@spark-view/spark-data'
+import type { DataSet } from '@spark-appworks/spark-data'
+import type { HttpClientBase } from '@spark-appworks/spark-utils'
+import type { SparkNode } from '@spark-appworks/spark-data'
 import type { PageContentLoadResult, PageNodeLoadOptions, PageNodeFileName } from '../../core/page-file'
 
 // ── 页面四文件载荷类型 ───────────────────────────────────

@@ -4,13 +4,13 @@ import { resolve } from 'node:path'
 import { defineComponent, h, type App, type Component } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
-import { Spark, SparkPageRenderer, type SparkNode } from '@spark-view/spark-component'
-import { SparkData, type DataSet } from '@spark-view/spark-data'
-import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
+import { Spark, SparkPageRenderer, type SparkNode } from '@spark-appworks/spark-component'
+import { SparkData, type DataSet } from '@spark-appworks/spark-data'
+import { isRecord, type HttpClientBase } from '@spark-appworks/spark-utils'
 import {
   compileRule,
 } from '../../packages/spark-project-model/src/infra/loader/compiler'
-import type { PageNodeLike, PageNodeRenderConfig } from '@spark-view/spark-project-model'
+import type { PageNodeLike, PageNodeRenderConfig } from '@spark-appworks/spark-project-model'
 import { buildPageChildren } from '../../packages/spark-component/src/page/binding'
 import type { ActionExecutionContext } from '../../packages/spark-component/src/page/actions'
 

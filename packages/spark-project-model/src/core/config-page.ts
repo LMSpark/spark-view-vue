@@ -1,5 +1,5 @@
 /** ConfigPageNode——配置页节点，挂接 rule/dataset/script/style。 */
-import type { DataSet, DataSetCrudTool, SparkNode, SparkNodeTree as SparkNodeTreeModel } from '@spark-view/spark-data'
+import type { DataSet, DataSetCrudTool, SparkNode, SparkNodeTree as SparkNodeTreeModel } from '@spark-appworks/spark-data'
 import type {
   PageFileCache,
   PageFileContentLoader,
@@ -84,7 +84,6 @@ export class ConfigPageNode extends ProjectNode {
   private readonly fileCache: PageFileCache
   private readonly contentLoaderFactory: () => PageFileContentLoader
   private readonly files: Record<PageNodeFileName, ConfigPageFileModel>
-  private readonly _listeners = new Set<() => void>()
   private _isLoaded = false
 
   /**
@@ -112,7 +111,6 @@ export class ConfigPageNode extends ProjectNode {
     }
     this.fileApi = options.fileApi; this.fileCache = options.fileCache
     this.contentLoaderFactory = options.contentLoaderFactory
-    this.wireSubModels()
   }
 
   override get family(): ProjectNodeFamily { return 'config-page' }
@@ -130,7 +128,7 @@ export class ConfigPageNode extends ProjectNode {
    * @moduleMutation page-config read 查询当前页面配置脏状态。
    */
   isDirty(): boolean {
-    return this.navigation.isDirty || this.getDirtyFileNames().length > 0
+    return this.getDirtyFileNames().length > 0
   }
 
   /**
@@ -251,9 +249,6 @@ export class ConfigPageNode extends ProjectNode {
     await this.fileApi.deleteVersion(this.pageId, name, version)
   }
 
-  /** @vcmIgnore */
-  subscribe(l: () => void): () => void { this._listeners.add(l); return () => { this._listeners.delete(l) } }
-
   /**
    * 获取当前页面 rule.json 的节点树编辑模型。
    *
@@ -276,7 +271,6 @@ export class ConfigPageNode extends ProjectNode {
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)
-    this.notify()
   }
 
   /**
@@ -301,7 +295,6 @@ export class ConfigPageNode extends ProjectNode {
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)
-    this.notify()
   }
 
   /**
@@ -355,7 +348,7 @@ export class ConfigPageNode extends ProjectNode {
     if (!this._isLoaded) throw new Error(`配置页面节点 ${this.pageId} 尚未加载完成`)
     return {
       pageId: this.pageId,
-      navigation: this.navigation.navNode,
+      navigation: null,
       rule: this.rule.children,
       data: this.dataSet.value,
       script: optionalText(this.script.text),
@@ -379,6 +372,4 @@ export class ConfigPageNode extends ProjectNode {
   }
 
   private clearFileCache(name?: PageNodeFileName): void { this.fileCache.clearPageCache(this.pageId, name) }
-  private wireSubModels(): void { for (const m of [this.navigation, this.style, this.script]) m.subscribe(() => this.notify()) }
-  private notify(): void { for (const l of this._listeners) l() }
 }

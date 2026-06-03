@@ -1,6 +1,6 @@
 /** HTTP 请求拦截器安装工具、路径工具、pageId 断言。 */
 
-import type { HttpClientBase, RequestInterceptor } from '@spark-view/spark-utils'
+import type { HttpClientBase, RequestInterceptor } from '@spark-appworks/spark-utils'
 
 /** 断言 pageId 是非空字符串，返回 trim 后的值。 */
 export function assertNonEmptyPageId(pageId: string): string {

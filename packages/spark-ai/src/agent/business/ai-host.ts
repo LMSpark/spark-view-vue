@@ -24,7 +24,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import { defineCapability, isCallable, isRecord } from '@spark-view/spark-utils'
+import { defineCapability, isCallable, isRecord } from '@spark-appworks/spark-utils'
 import type { AiJsonParams } from '../../json'
 import type { AiModuleRuntimeInspectReport } from '../../modules'
 import { AiAgentRegistry } from './business-registry'

@@ -194,11 +194,7 @@ import { deepClone, isRecord } from '@spark-view/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
-import { JsonDocumentRuntime } from '@spark-view/spark-project-model/json-document'
-
-// ── 内部扩展行类型（添加 schema + 搜索字段）─────────────────
-
-const {
+import {
   addChildNode,
   addSiblingNode,
   applyAutoPopulatePatches,
@@ -215,17 +211,16 @@ const {
   toDisplayRows,
   updateNodeType,
   updateNodeValue,
-} = JsonDocumentRuntime
-
-type JsonDocument = JsonDocumentRuntime.JsonDocument
-type JsonNodeType = JsonDocumentRuntime.JsonNodeType
-type JsonObject = JsonDocumentRuntime.JsonObject
-type JsonPath = JsonDocumentRuntime.JsonPath
-type JsonTreePolicy = JsonDocumentRuntime.JsonTreePolicy
-type JsonValue = JsonDocumentRuntime.JsonValue
-type MutationResult = JsonDocumentRuntime.MutationResult
-type TreeModel = JsonDocumentRuntime.TreeModel
-type TreeDisplayNode = JsonDocumentRuntime.TreeDisplayNode
+  type JsonDocument,
+  type JsonNodeType,
+  type JsonObject,
+  type JsonPath,
+  type JsonTreePolicy,
+  type JsonValue,
+  type MutationResult,
+  type TreeModel,
+  type TreeDisplayNode,
+} from '@spark-view/spark-json-document'
 
 type DisplayRow = TreeDisplayNode & {
   displayKey: string

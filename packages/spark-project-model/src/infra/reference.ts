@@ -1,4 +1,4 @@
-import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
+import { isRecord, type HttpClientBase } from '@spark-appworks/spark-utils'
 import type { ProjectModelData, ProjectPageNodeSummary } from '../core/node'
 import { buildProjectPageSummaries } from '../core/node-helpers'
 

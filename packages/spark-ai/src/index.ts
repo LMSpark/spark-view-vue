@@ -4,9 +4,9 @@
  * SPARK AI root facade.
  *
  * Use the focused public entries for new code:
- * - `@spark-view/spark-ai/json`
- * - `@spark-view/spark-ai/modules`
- * - `@spark-view/spark-ai/agent`
+ * - `@spark-appworks/spark-ai/json`
+ * - `@spark-appworks/spark-ai/modules`
+ * - `@spark-appworks/spark-ai/agent`
  */
 
 export {

@@ -95,7 +95,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   private readonly contentLoaderFactory: () => PageFileContentLoader
   private readonly nodesById = new Map<string, TNode>()
   private readonly configPagesByPageId = new Map<string, ConfigPageNode>()
-  private readonly detachedConfigPagesByPageId = new Map<string, ConfigPageNode>()
 
   constructor(options: ProjectModelOptions) {
     const projectId = options.projectId.trim()
@@ -180,7 +179,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   replaceRoot(root: ProjectModelData): ProjectModelData {
     const normalizedRoot = normalizeNavRoot(root)
     const previousConfigPages = new Map(this.configPagesByPageId)
-    const previousDetachedPages = new Map(this.detachedConfigPagesByPageId)
     this.nodesById.clear()
     this.configPagesByPageId.clear()
 
@@ -188,23 +186,16 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
       const descriptionContext = this.readDescriptionContextForNode(item.node, item.pid)
       const pageId = resolvePageNodePageId(item.node)
       const reusablePage = (pageId
-        ? previousConfigPages.get(pageId) ?? previousDetachedPages.get(pageId) ?? null
+        ? previousConfigPages.get(pageId) ?? null
         : null) as TNode | null
       const model = reusablePage ?? this.createNodeModel(item.node, item.pid, descriptionContext)
       model.rebindNavigationNode(item.node, item.pid, descriptionContext)
       this.nodesById.set(model.id, model)
       if (isProjectConfigPageNodeModel(model)) {
         this.configPagesByPageId.set(model.pageId, model)
-        this.detachedConfigPagesByPageId.delete(model.pageId)
       }
     }
 
-    for (const [pageId, page] of previousDetachedPages) {
-      if (!this.configPagesByPageId.has(pageId)) {
-        this.detachedConfigPagesByPageId.set(pageId, page)
-        this.configPagesByPageId.set(pageId, page)
-      }
-    }
     return this.navigationRoot
   }
 
@@ -271,9 +262,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     if (!isProjectConfigPageNodeModel(model)) {
       throw new Error(`节点 ${normalized} 不是配置页面节点`)
     }
-    model.navigation.navNode = null
     this.configPagesByPageId.set(model.pageId, model)
-    this.detachedConfigPagesByPageId.set(model.pageId, model)
     return model
   }
 
@@ -281,8 +270,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   closeConfigPage(pageId: string): void {
     const page = this.findConfigPageByPageId(pageId)
     if (!page) return
-    if (!this.detachedConfigPagesByPageId.has(page.pageId)) return
-    this.detachedConfigPagesByPageId.delete(page.pageId)
     this.configPagesByPageId.delete(page.pageId)
   }
 
@@ -345,9 +332,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /** @vcmIgnore */
   refreshNavRefs(): void {
     this.rebindDescriptionContext()
-  }
-
-  /** @vcmIgnore */
+  }  /** @vcmIgnore */
   toTree(): ProjectNodeData[] {
     return buildProjectNavigationTree(this.flatRows)
   }

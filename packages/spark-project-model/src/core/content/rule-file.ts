@@ -1,6 +1,6 @@
 /** PageRuleFile——rule.json 的内存模型，负责节点树的读写与撤销重做。 */
-import { getSparkNodeChildren, SparkNodeTree } from '@spark-view/spark-data'
-import type { SparkNodeTree as SparkNodeTreeModel, SparkNode } from '@spark-view/spark-data'
+import { getSparkNodeChildren, SparkNodeTree } from '@spark-appworks/spark-data'
+import type { SparkNodeTree as SparkNodeTreeModel, SparkNode } from '@spark-appworks/spark-data'
 import type {
   PageFileContentLoader,
   PageFileRestoreCommand,

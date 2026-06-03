@@ -25,7 +25,7 @@ export default defineConfig({
       '@spark-view/spark-data': resolve(root, './packages/spark-data/src/index.ts'),
       '@spark-view/spark-project-model/project': resolve(root, './packages/spark-project-model/src/project.ts'),
       '@spark-view/spark-project-model/ai': resolve(root, './packages/spark-project-model/src/ai.ts'),
-      '@spark-view/spark-project-model/json-document': resolve(root, './packages/spark-project-model/src/json-document-public.ts'),
+      '@spark-view/spark-json-document': resolve(root, './packages/spark-json-document/src/index.ts'),
       '@spark-view/spark-project-model': resolve(root, './packages/spark-project-model/src/index.ts'),
       '@spark-view/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
       '@spark-view/spark-ai/json': resolve(root, './packages/spark-ai/src/json/index.ts'),

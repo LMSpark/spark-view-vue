@@ -15,7 +15,7 @@
  * ═══════════════════════════════════════════════════════════════
  */
 
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type { AiJsonParams } from '../../json'
 import type { AiAgentRegistration } from './registration-types'
 

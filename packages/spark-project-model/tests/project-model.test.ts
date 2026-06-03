@@ -1,10 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
-import type { HttpClientBase, HttpResponse } from '@spark-view/spark-utils'
-import { ConfigPageNode, ProjectNode } from '@spark-view/spark-project-model'
-import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
-import { createRequest } from '@spark-view/spark-utils'
-import { createNavigationNodePatch } from '../src/entity/navigation/edit.entity'
+import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
+import type { HttpClientBase, HttpResponse } from '@spark-appworks/spark-utils'
+import { ConfigPageNode, ProjectNode } from '@spark-appworks/spark-project-model'
+import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
+import { createRequest } from '@spark-appworks/spark-utils'
+import { createNavigationNodePatch } from '../src/core/navigation-edit'
 
 describe('ProjectModel', () => {
   function createRoot(children: ProjectNodeData[], childPlacement: 'header' | 'sidebar' = 'header'): ProjectModelData {

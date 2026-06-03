@@ -26,7 +26,7 @@
  */
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type { AiJsonSchema, AiJsonSchemaObject } from './types'
 
 // ═══════════════════════════════════════════════════════════════

@@ -1,5 +1,5 @@
 /**
- * @spark-view/spark-project-model/ai
+ * @spark-appworks/spark-project-model/ai
  *
  * AI-facing contracts that are implemented by the project editor package.
  */
@@ -8,8 +8,8 @@ import {
   AiModuleAdapter,
   createSimpleInputContract,
   type AiAgentHost,
-} from '@spark-view/spark-ai/agent'
-import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-view/spark-ai/modules'
+} from '@spark-appworks/spark-ai/agent'
+import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
 import type { ProjectEditor } from '../editor/editor'
 import { ProjectModel } from '../core/project'
 import pageDesignVcmMetadata from '../vcm/page-design/page-design-vcm-metadata.generated.json'

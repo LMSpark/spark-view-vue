@@ -58,7 +58,7 @@ export default [
       'no-restricted-imports': ['error', {
         paths: [
           {
-            name: '@spark-view/spark-component',
+            name: '@spark-appworks/spark-component',
             importNames: [
               'defineCapability',
               'sparkProvide',
@@ -69,10 +69,10 @@ export default [
               'createSparkCapabilityConsumer',
               'getSparkCapabilityProvider',
             ],
-            message: '能力系统 core 位于 @spark-view/spark-utils，请从 @spark-view/spark-utils 导入对应符号。'
+            message: '能力系统 core 位于 @spark-appworks/spark-utils，请从 @spark-appworks/spark-utils 导入对应符号。'
           },
           {
-            name: '@spark-view/spark-component',
+            name: '@spark-appworks/spark-component',
             allowTypeImports: true,
             importNames: [
               'CapabilityKey',
@@ -81,24 +81,24 @@ export default [
               'SparkCapabilityConsumer',
               'CapabilityTypeMap',
             ],
-            message: '能力系统 core 类型位于 @spark-view/spark-utils，请从 @spark-view/spark-utils 导入对应类型。'
+            message: '能力系统 core 类型位于 @spark-appworks/spark-utils，请从 @spark-appworks/spark-utils 导入对应类型。'
           }
         ],
         patterns: [
           {
             group: [
-              '@spark-view/spark-component/types',
-              '@spark-view/spark-component/capabilities',
-              '@spark-view/spark-component/capability-keys',
-              '@spark-view/spark-component/useSparkComponent',
-              '@spark-view/spark-component/internal-context',
-              '@spark-view/spark-component/renderer',
-              '@spark-view/spark-component/src/types',
-              '@spark-view/spark-component/src/capabilities',
-              '@spark-view/spark-component/src/capability-keys',
-              '@spark-view/spark-component/src/useSparkComponent',
-              '@spark-view/spark-component/src/internal-context',
-              '@spark-view/spark-component/src/renderer'
+              '@spark-appworks/spark-component/types',
+              '@spark-appworks/spark-component/capabilities',
+              '@spark-appworks/spark-component/capability-keys',
+              '@spark-appworks/spark-component/useSparkComponent',
+              '@spark-appworks/spark-component/internal-context',
+              '@spark-appworks/spark-component/renderer',
+              '@spark-appworks/spark-component/src/types',
+              '@spark-appworks/spark-component/src/capabilities',
+              '@spark-appworks/spark-component/src/capability-keys',
+              '@spark-appworks/spark-component/src/useSparkComponent',
+              '@spark-appworks/spark-component/src/internal-context',
+              '@spark-appworks/spark-component/src/renderer'
             ],
             message: '这些 spark-component 历史子路径已移除，请改用包根出口或现行 core/page/system/internal 路径。'
           },
@@ -146,7 +146,7 @@ export default [
     }
   },
   // 严禁挎包路径导入：packages 内任何文件不得用相对路径引入其他包的源码
-  // 必须通过 @spark-view/xxx 包名导入
+  // 必须通过 @spark-appworks/xxx 包名导入
   {
     files: ['packages/**/*.ts', 'packages/**/*.vue', 'packages/**/*.js'],
     rules: {
@@ -160,7 +160,7 @@ export default [
               '../**/spark-app*',
               '../**/spark-project-model*'
             ],
-            message: '禁止挎包路径导入，请使用 @spark-view/<package-name> 替代'
+            message: '禁止挎包路径导入，请使用 @spark-appworks/<package-name> 替代'
           }
         ]
       }]
@@ -186,6 +186,7 @@ export default [
           './packages/spark-utils/tsconfig.json',
           './packages/spark-data/tsconfig.json',
           './packages/spark-component/tsconfig.json',
+          './packages/spark-json-document/tsconfig.json',
           './packages/spark-project-model/tsconfig.json',
           './packages/spark-app/tsconfig.json',
           './packages/vite-plugin-spark-catalog/tsconfig.json'
