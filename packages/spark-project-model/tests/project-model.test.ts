@@ -7,6 +7,16 @@ import { createRequest } from '@spark-view/spark-utils'
 import { createNavigationNodePatch } from '../src/entity/navigation/edit.entity'
 
 describe('ProjectModel', () => {
+  function createRoot(children: ProjectNodeData[], childPlacement: 'header' | 'sidebar' = 'header'): ProjectModelData {
+    return {
+      id: 'homepage_root',
+      title: 'CRM',
+      nodeKind: 'module',
+      childPlacement,
+      children,
+    }
+  }
+
   function createEditor(): ProjectEditor {
     const http = createRequest()
     return createProjectEditor({
@@ -20,10 +30,10 @@ describe('ProjectModel', () => {
 
   it('finds pages by pageId from the tree', () => {
     const p = createEditor().project
-    p.replaceRoot({ title: 'CRM', childPlacement: 'header', children: [{
+    p.replaceRoot(createRoot([{
       id: 'orders-node', title: '订单页面', nodeKind: 'page', path: '/orders',
       children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page', description: '订单详情功能' }],
-    }]})
+    }]))
     const page = p.findConfigPageByPageId('orders')
     const sub = p.findConfigPageByPageId('order-detail')
     expect(page).toBeInstanceOf(ConfigPageNode)
@@ -35,12 +45,12 @@ describe('ProjectModel', () => {
 
   it('builds tree from flat collection and finds nodes', () => {
     const p = createEditor().project
-    p.replaceRoot({ title: 'CRM', childPlacement: 'header', children: [
+    p.replaceRoot(createRoot([
       { id: 'sales', title: '销售模块', nodeKind: 'module', description: '销售模块', children: [
         { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders', description: '订单页面' },
       ]},
-    ]})
-    const tree = p.root.children
+    ]))
+    const tree = p.navigationRoot.children
     expect(tree.length).toBeGreaterThanOrEqual(1)
     const salesNode = p.findNodeById('sales')
     expect(salesNode).toBeInstanceOf(ModuleNode)
@@ -51,23 +61,92 @@ describe('ProjectModel', () => {
 
   it('exposes node hierarchy instead of a flat node list', () => {
     const p = createEditor().project
-    p.replaceRoot({ title: 'CRM', childPlacement: 'header', children: [
+    p.replaceRoot(createRoot([
       { id: 'sales', title: '销售模块', nodeKind: 'module', children: [
         { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
       ]},
       { id: 'settings', title: '设置', nodeKind: 'page', path: '/settings' },
+    ]))
+
+    expect(p.family).toBe('project')
+    expect(p.name).toBe('crm')
+    const rootNodes = p.getChildNodes('')
+    expect(rootNodes.map(node => node.id)).toEqual(['homepage_root'])
+    expect(rootNodes.map(node => node.pid)).toEqual([''])
+    expect(rootNodes[0]).toBeInstanceOf(ModuleNode)
+    const root = rootNodes[0]
+    expect(root?.title).toBe('CRM')
+    expect(root?.childPlacement).toBe('header')
+    expect(root instanceof ModuleNode ? p.getChildNodes(root.id).map(node => node.id) : []).toEqual(['sales', 'settings'])
+    const sales = p.findNodeById('sales')
+    expect(sales instanceof ModuleNode ? p.getChildNodes(sales.id).map(node => node.id) : []).toEqual(['orders'])
+    const settings = p.findNodeById('settings')
+    expect(settings).toBeInstanceOf(ConfigPageNode)
+    expect(settings instanceof ConfigPageNode ? p.getChildNodes(settings.id) : []).toEqual([])
+    expect(p.findNodeById('sales')?.toNodeData()).toMatchObject({ nodeKind: 'module' })
+  })
+
+  it('uses a real project node as the project home node and keeps placement on root', () => {
+    const p = createEditor().project
+    p.replaceRoot(createRoot([
+      { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
+    ], 'sidebar'))
+    p.replaceProjectInfo({ homeNodeId: 'orders' })
+
+    expect(p.homeNodeId).toBe('orders')
+    expect(p.homeNode).toBe(p.findNodeById('orders'))
+    expect(p.projectInfo.homeNodeId).toBe('orders')
+    expect(p.navigationRoot.childPlacement).toBe('sidebar')
+    expect(p.rootNode?.id).toBe('homepage_root')
+  })
+
+  it('promotes a persisted root node returned as the only top-level child', () => {
+    const p = createEditor().project
+    p.replaceRoot({ title: '', childPlacement: 'header', children: [{
+      id: 'homepage_root',
+      title: 'CRM',
+      nodeKind: 'module',
+      childPlacement: 'sidebar',
+      children: [{ id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' }],
+    }]})
+
+    expect(p.rootNode?.id).toBe('homepage_root')
+    expect(p.getChildNodes('').map(node => node.id)).toEqual(['homepage_root'])
+    expect(p.getChildNodes('homepage_root').map(node => node.id)).toEqual(['orders'])
+    expect(p.navigationRoot.children.map(node => node.id)).toEqual(['orders'])
+  })
+
+  it('promotes a persisted module root even when root childPlacement is missing', () => {
+    const p = createEditor().project
+    p.replaceRoot({ title: '', childPlacement: 'header', children: [{
+      id: 'homepage_root',
+      title: 'CRM',
+      nodeKind: 'module',
+      children: [{ id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' }],
+    }]})
+
+    expect(p.rootNode?.id).toBe('homepage_root')
+    expect(p.navigationRoot.childPlacement).toBe('header')
+    expect(p.navigationRoot.children.map(node => node.id)).toEqual(['orders'])
+  })
+
+  it('promotes persisted root from mixed top-level rows and merges siblings under it', () => {
+    const p = createEditor().project
+    p.replaceRoot({ title: '', childPlacement: 'header', children: [
+      {
+        id: 'homepage_root',
+        title: '',
+        nodeKind: 'module',
+        childPlacement: 'header',
+        children: [{ id: 'home', title: '企业管理平台', nodeKind: 'system-page', path: '/home' }],
+      },
+      { id: 'app-list', title: '应用管理', nodeKind: 'system-page', path: '/app-list' },
     ]})
 
-    expect(p.family).toBe('module')
-    expect(p.name).toBe('crm')
-    expect(p.children.map(node => node.id)).toEqual(['sales', 'settings'])
-    expect(p.children[0]).toBeInstanceOf(ModuleNode)
-    const sales = p.children[0]
-    expect(sales instanceof ModuleNode ? sales.children.map(node => node.id) : []).toEqual(['orders'])
-    expect(p.children[1]).toBeInstanceOf(ConfigPageNode)
-    const settings = p.children[1]
-    expect(settings instanceof ConfigPageNode ? settings.children : []).toEqual([])
-    expect(p.findNodeById('sales')?.node).toMatchObject({ nodeKind: 'module' })
+    expect(p.rootNode?.id).toBe('homepage_root')
+    expect(p.getChildNodes('').map(node => node.id)).toEqual(['homepage_root'])
+    expect(p.getChildNodes('homepage_root').map(node => node.id)).toEqual(['app-list', 'home'])
+    expect(p.navigationRoot.children.map(node => node.id)).toEqual(['app-list', 'home'])
   })
 
   it('supports detached config pages', () => {
@@ -119,7 +198,9 @@ describe('ProjectModel', () => {
   it('moves mounted pages through the dedicated move endpoint', async () => {
     const putCalls: Array<{ url: string; body: unknown }> = []
     const root: ProjectModelData = {
+      id: 'homepage_root',
       title: 'CRM',
+      nodeKind: 'module',
       childPlacement: 'header' as const,
       children: [
         { id: 'orders', title: '订单', nodeKind: 'page' as const, path: '/orders' },

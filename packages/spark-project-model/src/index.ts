@@ -8,18 +8,15 @@
 // ── 核心 ──────────────────────────────────────────────
 
 export { ProjectModel } from './entity/project/project.entity'
-export type { ProjectModelLike } from './entity/project/project.entity'
 export type { ProjectModelOptions } from './entity/project/project.entity'
 export type { ProjectModelDto } from './entity/project/project.entity'
+export type { ProjectInfo, ProjectInfoInput } from './entity/project/project.entity'
 
 // ── 节点 ──────────────────────────────────────────────
-
-export { ProjectNodeCollection } from './entity/project/node-collection.entity'
 
 export {
   ProjectNode,
   ModuleNode,
-  PageNode,
   ConfigPageNode,
   VuePageNode,
   ActionNode,
@@ -27,8 +24,6 @@ export {
   RefNode,
   createProjectNodeModel,
   isProjectConfigPageNodeModel,
-  isProjectModuleNodeModel,
-  isProjectPageNodeModel,
   isConfigNodeKind,
   resolvePageNodePageId,
   readProjectNodeDescription,
@@ -52,7 +47,6 @@ export type {
   PageNodeRenderConfig,
   ProjectPageNodeSummary,
   ConfigPageDirtyPart,
-  ProjectNavigationFlatNode,
   RegionItems,
   RegionVisibility,
 } from './entity/node/node-factory'

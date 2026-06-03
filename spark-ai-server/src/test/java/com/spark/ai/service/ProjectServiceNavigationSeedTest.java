@@ -86,7 +86,7 @@ class ProjectServiceNavigationSeedTest {
     void appProjectNavigationDoesNotContainTenantManagementEntries() throws Exception {
         when(projectRepo.existsByTenantIdAndProjectId("lmspark", "engineering-pm")).thenReturn(false);
 
-        projectService.createProject("lmspark", "engineering-pm", "工程管理", "Box", "项目管理应用");
+        projectService.createProject("lmspark", "engineering-pm", "工程管理", "Box", "项目管理应用", null);
 
         Map<String, Object> nav = navigationTreeService.getNavConfig("lmspark", "engineering-pm");
         assertFalse(containsPath(nav, "/app-list"));

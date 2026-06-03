@@ -44,7 +44,8 @@ public class ProjectController {
             }
             Map<String, Object> result = projectService.createProject(
                     tenantId, projectId,
-                    body.get("name"), body.get("icon"), body.get("description"));
+                    body.get("name"), body.get("icon"), body.get("description"),
+                    body.get("homeNodeId"));
             return ResponseEntity.ok(result);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

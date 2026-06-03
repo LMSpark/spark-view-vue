@@ -22,18 +22,14 @@ export {
 } from './entity/project/project.entity'
 
 export type {
-  ProjectModelLike,
   ProjectModelOptions,
+  ProjectInfo,
+  ProjectInfoInput,
 } from './entity/project/project.entity'
-
-export {
-  ProjectNodeCollection,
-} from './entity/project/node-collection.entity'
 
 export {
   ProjectNode,
   ModuleNode,
-  PageNode,
   ConfigPageNode,
   VuePageNode,
   ActionNode,
@@ -42,8 +38,6 @@ export {
   createProjectNodeModel,
   isConfigNodeKind,
   isProjectConfigPageNodeModel,
-  isProjectModuleNodeModel,
-  isProjectPageNodeModel,
 } from './entity/node/node-factory'
 
 export type {
@@ -52,7 +46,6 @@ export type {
   PageNodeLoadOptions,
   PageNodeNavigationConfig,
   PageNodeRenderConfig,
-  ProjectNavigationFlatNode,
   ProjectNodeFamily,
   ProjectPageNodeSummary,
   ProjectDescriptionContext,

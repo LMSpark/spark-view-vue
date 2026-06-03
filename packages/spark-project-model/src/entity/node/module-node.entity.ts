@@ -2,7 +2,7 @@
 import type { DataSet, SparkNode } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import { ProjectNode } from './node-base.entity'
-import type { ChildPlacement, NavContextConfig, NavContextItem, NavNodeKind } from './node-base.entity'
+import type { NavNodeKind } from './node-base.entity'
 import type { NavigationContextEditDto, NavigationNodeEditDto } from '../navigation/edit.entity'
 
 export type ProjectNodeFamily = 'module' | 'config-page' | 'vue-page' | 'system-action' | 'link' | 'ref'
@@ -56,14 +56,6 @@ export type PageNodeFactoryLike = {
   getHttpClient(): HttpClientBase | undefined
 }
 
-export class ModuleNode<TChild extends ProjectNode = ProjectNode> extends ProjectNode {
+export class ModuleNode extends ProjectNode {
   get family(): ProjectNodeFamily { return 'module' }
-  /**
-   * 当前模块节点的直接子节点。
-   */
-  get children(): TChild[] { return this.readChildren<TChild>() }
-  get icon(): string | undefined { return this.node.icon }
-  get nodeKind(): NavNodeKind { return this.node.nodeKind ?? 'module' }
-  get childPlacement(): ChildPlacement | undefined { return this.node.childPlacement }
-  get context(): string | NavContextItem[] | NavContextConfig | undefined { return this.node.context }
 }

@@ -1,10 +1,10 @@
 /**
  * 项目节点模型——barrel 入口。
  *
- * base.ts       → ProjectNode, PageNode
+ * base.ts       → ProjectNode
  * module.ts     → ModuleNode
  * config-page   → ConfigPageNode
- * vue-page.ts   → VuePageNode
+ * leaf-nodes.ts → VuePageNode / ActionNode / LinkNode / RefNode
  * action.ts     → ActionNode
  * link.ts       → LinkNode
  * ref.ts        → RefNode
@@ -12,7 +12,6 @@
  */
 
 export { ProjectNode } from './node-base.entity'
-export { PageNode } from './page-node.entity'
 export type {
   ChildPlacement,
   NavContextConfig,
@@ -43,8 +42,6 @@ export { ActionNode } from './leaf-nodes.entity'
 export { LinkNode } from './leaf-nodes.entity'
 export { RefNode } from './leaf-nodes.entity'
 
-export type { ProjectNavigationFlatNode } from './node-helpers'
-
 export {
   isConfigNodeKind,
   isProjectPageNodeKind,
@@ -61,7 +58,6 @@ export {
   formatProjectDescriptionContext,
   flattenProjectNavigationRoot,
   buildProjectNavigationTree,
-  projectNavNodeToFlatRow,
   optionalText,
 } from './node-helpers'
 
@@ -73,7 +69,6 @@ import { LinkNode } from './leaf-nodes.entity'
 import { RefNode } from './leaf-nodes.entity'
 import { ModuleNode } from './module-node.entity'
 import type { ProjectNode } from './node-base.entity'
-import { PageNode } from './page-node.entity'
 import { isConfigNodeKind } from './node-helpers'
 import type { ProjectConfigPageNodeModelOptions } from './config-page.entity'
 
@@ -88,8 +83,6 @@ export function createProjectNodeModel(options: ProjectConfigPageNodeModelOption
 }
 
 export function isProjectConfigPageNodeModel(node: ProjectNode | null | undefined): node is ConfigPageNode { return node instanceof ConfigPageNode }
-export function isProjectModuleNodeModel(node: ProjectNode | null | undefined): node is ModuleNode { return node instanceof ModuleNode }
-export function isProjectPageNodeModel(node: ProjectNode | null | undefined): node is PageNode { return node instanceof PageNode }
 
 export type {
   NodeKind,

@@ -65,7 +65,7 @@ export class PageNodeFactory implements PageNodeFactoryLike {
         path: `/${normalized}`,
         icon: 'Document',
       },
-      pid: null,
+      pid: '',
       pageId: normalized,
       fileApi: this.fileApi,
       fileCache: this.fileCache,

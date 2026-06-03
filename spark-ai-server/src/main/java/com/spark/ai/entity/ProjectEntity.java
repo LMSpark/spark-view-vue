@@ -41,6 +41,10 @@ public class ProjectEntity {
     @Column(length = 1024)
     private String description;
 
+    /** 项目打开时默认渲染的导航节点 ID，对应 NAVIGATION_NODE_FLAT.NODE_ID。 */
+    @Column(name = "home_node_id", length = 255)
+    private String homeNodeId;
+
     /** 展示顺序（homepage 固定 0），投影到 DB SORT_ORDER。 */
     @Column(name = "sort_order", nullable = false)
     private Integer order = 0;
@@ -84,6 +88,9 @@ public class ProjectEntity {
 
     public String getDescription() { return description; }
     public void setDescription(String description) { this.description = description; }
+
+    public String getHomeNodeId() { return homeNodeId; }
+    public void setHomeNodeId(String homeNodeId) { this.homeNodeId = homeNodeId; }
 
     public Integer getOrder() { return order; }
     public void setOrder(Integer order) { this.order = order; }

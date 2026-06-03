@@ -125,7 +125,8 @@ public class ProjectService {
      */
     @Transactional
     public Map<String, Object> createProject(String tenantId, String projectId,
-                                              String name, String icon, String description) {
+                                              String name, String icon, String description,
+                                              String homeNodeId) {
         if (projectRepo.existsByTenantIdAndProjectId(tenantId, projectId)) {
             throw new IllegalArgumentException("项目已存在: " + projectId);
         }
@@ -138,6 +139,7 @@ public class ProjectService {
         entity.setProjectType(APP_PROJECT_TYPE);
         entity.setIcon(icon != null ? icon : "📦");
         entity.setDescription(description != null ? description : "");
+        entity.setHomeNodeId(blankToNull(homeNodeId));
         entity.setOrder(100);
         projectRepo.save(entity);
         if (ctx != null) {
@@ -164,6 +166,7 @@ public class ProjectService {
         if (patch.containsKey("name")) entity.setName((String) patch.get("name"));
         if (patch.containsKey("icon")) entity.setIcon((String) patch.get("icon"));
         if (patch.containsKey("description")) entity.setDescription((String) patch.get("description"));
+        if (patch.containsKey("homeNodeId")) entity.setHomeNodeId(blankToNull((String) patch.get("homeNodeId")));
         if (patch.containsKey("order")) entity.setOrder(((Number) patch.get("order")).intValue());
 
         projectRepo.save(entity);
@@ -877,6 +880,10 @@ public class ProjectService {
         return value instanceof String text ? text.trim() : "";
     }
 
+    private String blankToNull(String value) {
+        return value == null || value.isBlank() ? null : value.trim();
+    }
+
     @SuppressWarnings("unchecked")
     private boolean shouldReplacePlatformNavigation(String tenantId, Map<String, Object> existing) {
         if (!PLATFORM_TENANT_ID.equals(tenantId)) {
@@ -911,6 +918,7 @@ public class ProjectService {
         m.put("projectType", p.getProjectType());
         m.put("icon", p.getIcon());
         m.put("description", p.getDescription());
+        m.put("homeNodeId", p.getHomeNodeId());
         m.put("order", p.getOrder());
         m.put("createdAt", p.getCreatedAt() != null ? p.getCreatedAt().toString() : null);
         m.put("updatedAt", p.getUpdatedAt() != null ? p.getUpdatedAt().toString() : null);

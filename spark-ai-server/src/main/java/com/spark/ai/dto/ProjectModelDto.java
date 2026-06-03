@@ -10,9 +10,23 @@ import java.util.List;
  */
 public record ProjectModelDto(
         String projectId,
+        ProjectInfoDto project,
         NavigationRootDto navigation,
         List<ProjectPageNodeSummaryDto> pages
 ) {
+    public record ProjectInfoDto(
+            String tenantId,
+            String projectId,
+            String name,
+            String projectType,
+            String icon,
+            String description,
+            String homeNodeId,
+            Integer order,
+            String createdAt,
+            String updatedAt
+    ) {}
+
     public record NavigationRootDto(
             String title,
             String childPlacement,

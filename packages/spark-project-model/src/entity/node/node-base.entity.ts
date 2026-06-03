@@ -1,9 +1,8 @@
-/** 节点基类——ProjectNode + PageNode。 */
+/** 项目节点基类。 */
 import { isRecord } from '@spark-view/spark-utils'
 import { NavigationEditModel } from '../navigation/edit.entity'
 import type { ProjectNodeFamily, ProjectDescriptionContext } from './module-node.entity'
-import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext, projectNavNodeToFlatRow } from './node-helpers'
-import type { ProjectNavigationFlatNode } from './node-helpers'
+import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './node-helpers'
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
 export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
@@ -70,11 +69,10 @@ export function isProjectNodeData(value: unknown): value is ProjectNodeData {
 }
 
 /** 项目模型的可序列化根数据。 */
-export type ProjectModelData = {
+export type ProjectModelData = Omit<ProjectNodeData, 'id' | 'nodeKind' | 'children' | 'childPlacement'> & {
   id?: string | undefined
+  nodeKind?: 'module' | 'system-directory' | undefined
   title: string
-  description?: string | undefined
-  version?: string | undefined
   childPlacement: 'header' | 'sidebar'
   children: ProjectNodeData[]
   homePath?: string | undefined
@@ -108,38 +106,32 @@ export type NavContextState = {
 
 export type ProjectNodeModelOptions = {
   node: ProjectNodeData
-  pid: string | null
+  pid: string
   descriptionContext?: readonly ProjectDescriptionContext[]
-  resolveChildren?: ((node: ProjectNode) => readonly ProjectNode[]) | undefined
 }
 
 export abstract class ProjectNode {
   readonly navigation = new NavigationEditModel()
   #node: ProjectNodeData
-  #pid: string | null
+  #pid: string
   #descriptionContext: ProjectDescriptionContext[]
-  #resolveChildren: ((node: ProjectNode) => readonly ProjectNode[]) | undefined
 
   constructor(options: ProjectNodeModelOptions) {
     this.#node = options.node
     this.#pid = normalizePid(options.pid)
     this.#descriptionContext = [...(options.descriptionContext ?? [])]
-    this.#resolveChildren = options.resolveChildren
     this.navigation.loadFromNode(this.#node)
   }
 
   abstract get family(): ProjectNodeFamily
 
-  /**
-   * 原始导航节点快照。
-   */
   /** @vcmIgnore */
-  get node(): ProjectNodeData { return this.#node }
+  toNodeData(): ProjectNodeData { return this.#node }
 
   /**
-   * 父节点 ID；根级节点为 null。
+   * 父节点 ID；根级节点为 ''。
    */
-  get pid(): string | null { return this.#pid }
+  get pid(): string { return this.#pid }
 
   /**
    * 节点 ID。
@@ -151,6 +143,24 @@ export abstract class ProjectNode {
    */
   get name(): string { return this.#node.title }
 
+  get title(): string { return this.#node.title }
+  get version(): string | undefined { return this.#node.version }
+  get nodeKind(): NavNodeKind { return this.#node.nodeKind ?? 'page' }
+  get path(): string | undefined { return this.#node.path }
+  get icon(): string | undefined { return this.#node.icon }
+  get dividerAfter(): boolean { return this.#node.dividerAfter === true }
+  get childPlacement(): ChildPlacement | undefined { return this.#node.childPlacement }
+  get linkTarget(): ProjectNodeData['linkTarget'] | undefined { return this.#node.linkTarget }
+  get hidden(): boolean { return this.#node.hidden === true }
+  get disabled(): boolean { return this.#node.disabled === true }
+  get order(): number { return typeof this.#node.order === 'number' ? this.#node.order : 0 }
+  get refId(): string | undefined { return this.#node.refId }
+  get refPath(): string | undefined { return this.#node.refPath }
+  get refProjectId(): string | undefined { return this.#node.refProjectId }
+  get refBroken(): boolean | undefined { return this.#node.refBroken }
+  get context(): ProjectNodeData['context'] { return this.#node.context }
+  get permissionMode(): NavPermissionMode | undefined { return this.#node.permissionMode }
+
   /**
    * 节点描述。
    */
@@ -159,23 +169,12 @@ export abstract class ProjectNode {
   protected get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
   protected get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
 
-  protected readChildren<TChild extends ProjectNode = ProjectNode>(): TChild[] {
-    return [...(this.#resolveChildren?.(this) ?? [])] as TChild[]
-  }
-
-  protected bindChildrenResolver(resolveChildren: (node: ProjectNode) => readonly ProjectNode[]): void {
-    this.#resolveChildren = resolveChildren
-  }
-
   /** @vcmIgnore */
-  rebindNavigationNode(node: ProjectNodeData, pid: string | null, descriptionContext: readonly ProjectDescriptionContext[]): void {
+  rebindNavigationNode(node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]): void {
     this.#node = node
     this.#pid = normalizePid(pid)
     this.#descriptionContext = [...descriptionContext]
     if (this.navigation.isDirty) { this.navigation.navNode = node }
     else { this.navigation.loadFromNode(node) }
   }
-
-  /** @vcmIgnore */
-  toFlatRow(): ProjectNavigationFlatNode { return projectNavNodeToFlatRow(this.#node, this.#pid) }
 }

@@ -38,7 +38,6 @@ describe('page-design VCM metadata reflection', () => {
     expect(projectApi?.kind).toBe('project')
     expect(projectApi?.actions.map(action => action.name)).toEqual([])
     expect(projectApi?.attributes?.map(attribute => attribute.name)).toEqual([
-      'children',
       'projectId',
       'root',
       'flatRows',
@@ -76,7 +75,7 @@ describe('page-design VCM metadata reflection', () => {
       type?: unknown
       props?: Array<{
         name?: string
-        schema?: {
+        schema?: string | {
           kind?: string
           type?: string
           schema?: Record<string, unknown>
@@ -95,11 +94,7 @@ describe('page-design VCM metadata reflection', () => {
     })
     expect(projectProp).toMatchObject({
       name: 'ProjectModel',
-      schema: {
-        kind: 'object',
-        type: 'ProjectModel',
-      },
     })
-    expect(projectProp?.schema?.schema).toHaveProperty('projectId')
+    expect(projectProp?.schema).toBe('ProjectModel<ProjectNode>')
   })
 })

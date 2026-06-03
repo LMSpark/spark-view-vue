@@ -1,30 +1,19 @@
 /** Leaf project nodes: Vue system pages, actions, links, and refs. */
-import { PageNode } from './page-node.entity'
+import { ProjectNode } from './node-base.entity'
 import type { ProjectNodeFamily } from './module-node.entity'
 
-export class VuePageNode extends PageNode {
+export class VuePageNode extends ProjectNode {
   get family(): ProjectNodeFamily { return 'vue-page' }
-  get pageNodeKind(): 'vue' { return 'vue' }
-  get routePath(): string { return this.path ?? '' }
 }
 
-export class ActionNode extends PageNode {
+export class ActionNode extends ProjectNode {
   get family(): ProjectNodeFamily { return 'system-action' }
-  get pageNodeKind(): 'action' { return 'action' }
-  get actionKey(): string { return this.path ?? '' }
 }
 
-export class LinkNode extends PageNode {
+export class LinkNode extends ProjectNode {
   get family(): ProjectNodeFamily { return 'link' }
-  get pageNodeKind(): 'link' { return 'link' }
-  get linkTarget(): 'iframe' | 'new-tab' | 'self' | undefined { return this.node.linkTarget }
 }
 
-export class RefNode extends PageNode {
+export class RefNode extends ProjectNode {
   get family(): ProjectNodeFamily { return 'ref' }
-  get pageNodeKind(): 'ref' { return 'ref' }
-  get refId(): string | undefined { return this.node.refId }
-  get refPath(): string | undefined { return this.node.refPath }
-  get refProjectId(): string | undefined { return this.node.refProjectId }
-  get refBroken(): boolean | undefined { return this.node.refBroken }
 }

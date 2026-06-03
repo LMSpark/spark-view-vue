@@ -4,14 +4,7 @@ import type { NavNodeKind, ProjectModelData, ProjectNodeData } from './node-base
 import type { ProjectNodeLocation } from '../navigation/edit.entity'
 import type { NodeKind, ProjectDescriptionContext } from './module-node.entity'
 
-export type ProjectNavigationFlatNode = {
-  id: string; pid: string | null; title: string; description: string; nodeKind: NavNodeKind
-  path: string; icon: string; dividerAfter: boolean; childPlacement: string
-  linkTarget: string; hidden: boolean; disabled: boolean; order: number
-  refId: string; permissionMode: string; node: ProjectNodeData
-}
-
-export function normalizePid(v: string | null | undefined): string | null { const n = v?.trim() ?? ''; return n || null }
+export function normalizePid(v: string | null | undefined): string { return v?.trim() ?? '' }
 
 export function normalizePageIdFromPath(path: string | undefined | null): string {
   return path ? path.replace(/^\/+/, '').trim() : ''
@@ -59,35 +52,78 @@ export function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar
 type NormalizeNavRootInput = {
   id?: string | undefined
   title?: string | undefined
-  description?: string | undefined
-  version?: string | undefined
   childPlacement?: string | undefined
   children?: ProjectNodeData[] | undefined
+  icon?: string | undefined
+  description?: string | undefined
+  version?: string | undefined
+  nodeKind?: 'module' | 'system-directory' | undefined
   homePath?: string | undefined
 }
 
 export function normalizeNavRoot(config: NormalizeNavRootInput): ProjectModelData {
+  const promoted = promotePersistedRoot(config)
   const root: ProjectModelData = {
-    title: config.title ?? '',
-    childPlacement: normalizeRootChildPlacement(config.childPlacement),
-    children: (config.children ?? []).map(node => normalizeProjectNodeData(node)),
+    ...(promoted.id === undefined || promoted.id.trim() === '' ? {} : { id: promoted.id.trim() }),
+    title: promoted.title ?? '',
+    ...(promoted.icon === undefined || promoted.icon.trim() === '' ? {} : { icon: promoted.icon.trim() }),
+    ...(promoted.description === undefined || promoted.description.trim() === '' ? {} : { description: promoted.description }),
+    ...(promoted.version === undefined || promoted.version.trim() === '' ? {} : { version: promoted.version.trim() }),
+    ...(promoted.homePath === undefined || promoted.homePath.trim() === '' ? {} : { homePath: promoted.homePath.trim() }),
+    nodeKind: promoted.nodeKind ?? 'module',
+    childPlacement: normalizeRootChildPlacement(promoted.childPlacement),
+    children: (promoted.children ?? []).map(node => normalizeProjectNodeData(node)),
   }
-  const id = typeof config.id === 'string' ? config.id.trim() : ''
-  const description = typeof config.description === 'string' ? config.description.trim() : ''
-  const version = typeof config.version === 'string' ? config.version.trim() : ''
-  const homePath = typeof config.homePath === 'string' ? config.homePath.trim() : ''
-  if (id) root.id = id
-  if (description) root.description = description
-  if (version) root.version = version
-  if (homePath) root.homePath = homePath
   return root
+}
+
+function promotePersistedRoot(config: NormalizeNavRootInput): NormalizeNavRootInput {
+  const rootId = config.id?.trim()
+  const children = config.children ?? []
+  if (rootId || children.length === 0) return config
+
+  const candidate = findPersistedRootCandidate(children)
+  if (!isPersistedRootCandidate(candidate)) return config
+
+  const nestedChildren = candidate.children ?? []
+  const siblingChildren = children.filter(node => node.id !== candidate.id)
+  return {
+    ...config,
+    id: candidate.id,
+    title: candidate.title,
+    icon: candidate.icon,
+    description: candidate.description,
+    version: candidate.version,
+    nodeKind: candidate.nodeKind === 'system-directory' ? 'system-directory' : 'module',
+    childPlacement: candidate.childPlacement ?? config.childPlacement,
+    children: [...nestedChildren, ...siblingChildren],
+  }
+}
+
+function findPersistedRootCandidate(children: readonly ProjectNodeData[]): ProjectNodeData | undefined {
+  const candidates = children.filter(isPersistedRootCandidate)
+  return candidates.find(node => node.childPlacement === 'header' || node.childPlacement === 'sidebar')
+    ?? candidates.find(node => !node.path && !node.linkTarget)
+    ?? candidates[0]
+}
+
+function isPersistedRootCandidate(node: ProjectNodeData | undefined): node is ProjectNodeData {
+  if (!node) return false
+  if (node.nodeKind !== 'module' && node.nodeKind !== 'system-directory') return false
+  if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return false
+  return true
 }
 
 export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit<ProjectModelData, 'children'>>): ProjectModelData {
   return normalizeNavRoot({
+    id: options?.id,
     title: options?.title ?? '',
+    icon: options?.icon,
+    description: options?.description,
+    version: options?.version,
+    nodeKind: options?.nodeKind,
+    homePath: options?.homePath,
     childPlacement: options?.childPlacement ?? 'header',
-    ...(options?.homePath !== undefined ? { homePath: options.homePath } : {}),
     children,
   })
 }
@@ -259,42 +295,44 @@ export function formatProjectDescriptionContext(c: readonly ProjectDescriptionCo
   return c.map(i => `${i.title}: ${i.description}`).join('\n')
 }
 
-export function flattenProjectNavigationRoot(root: ProjectModelData): Array<{ node: ProjectNodeData; pid: string | null }> {
+export function flattenProjectNavigationRoot(root: ProjectModelData): Array<{ node: ProjectNodeData; pid: string }> {
   const normalizedRoot = normalizeNavRoot(root)
-  const r: Array<{ node: ProjectNodeData; pid: string | null }> = []
-  const visit = (nodes: readonly ProjectNodeData[], pid: string | null): void => {
+  const rootId = normalizedRoot.id?.trim()
+  if (!rootId) {
+    throw new Error('导航 root.id 不能为空')
+  }
+  const r: Array<{ node: ProjectNodeData; pid: string }> = []
+  const visit = (nodes: readonly ProjectNodeData[], pid: string): void => {
     for (const n of nodes) { r.push({ node: n, pid }); visit(Array.isArray(n.children) ? n.children : [], n.id); delete n.children }
   }
-  visit(normalizedRoot.children, null)
+  const rootNode: ProjectNodeData = { ...normalizedRoot, id: rootId, nodeKind: normalizedRoot.nodeKind ?? 'module' }
+  r.push({ node: rootNode, pid: '' })
+  visit(rootNode.children ?? [], rootId)
+  delete rootNode.children
   return r
 }
 
 /** 树节点最小接口——避免循环依赖 */
-type TreeNodeLike = { readonly id: string; readonly pid: string | null; readonly node: ProjectNodeData }
+type TreeNodeLike = {
+  readonly id: string
+  readonly pid: string
+  toNodeData(): ProjectNodeData
+}
 
 export function buildProjectNavigationTree(nodes: readonly TreeNodeLike[]): ProjectNodeData[] {
   const byParent = new Map<string, ProjectNodeData[]>()
   for (const m of nodes) {
-    const k = m.pid ?? ''; const c = { ...m.node }; delete c.children
+    const k = m.pid; const c = { ...m.toNodeData() }; delete c.children
     const s = byParent.get(k) ?? []; s.push(c); byParent.set(k, s)
   }
   for (const m of [...nodes].sort((a, b) => b.id.length - a.id.length)) {
     const children = byParent.get(m.id) ?? []
     if (children.length > 0) {
-      const p = findProjectedNode(byParent.get(m.pid ?? '') ?? [], m.id)
+      const p = findProjectedNode(byParent.get(m.pid) ?? [], m.id)
       if (p) p.children = sortNavNodes(children)
     }
   }
   return sortNavNodes(byParent.get('') ?? [])
-}
-
-export function projectNavNodeToFlatRow(node: ProjectNodeData, pid: string | null): ProjectNavigationFlatNode {
-  return { id: node.id, pid: normalizePid(pid), title: node.title, description: node.description ?? '',
-    nodeKind: node.nodeKind ?? 'page', path: node.path ?? '', icon: node.icon ?? '',
-    dividerAfter: node.dividerAfter === true, childPlacement: node.childPlacement ?? '',
-    linkTarget: node.linkTarget ?? '', hidden: node.hidden === true, disabled: node.disabled === true,
-    order: typeof node.order === 'number' ? node.order : 0, refId: node.refId ?? '',
-    permissionMode: node.permissionMode ?? '', node }
 }
 
 function sortNavNodes(nodes: ProjectNodeData[]): ProjectNodeData[] {

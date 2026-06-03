@@ -2,7 +2,7 @@
  * ProjectEditor — 框架无关的项目编辑聚合入口。
  *
  * 一个项目由平铺节点集合组成。ProjectEditor 组合 ProjectModel、
- * NavigationEditSession、NavigationConfigClient，把项目节点、配置页节点导航属性、
+ * NavigationConfigClient，把项目节点、配置页节点导航属性、
  * rule.json、pagedata.json、style.css、script.js、
  * 版本管理、保存、页面挂载/删除/移动聚合成统一编辑上下文。
  *
@@ -43,7 +43,6 @@ import type {
   NavigationNodeEditPatchDto,
   ProjectNodeLocation,
 } from '../../entity/navigation/edit.entity'
-import type { NavigationEditSession } from '../../entity/navigation/session.entity'
 import {
   applyNavigationNodeEditDtoToNode,
   applyNodeKindPresetToEditDto,
@@ -102,7 +101,6 @@ type ProjectEditorOptions = {
   navigationClient: NavigationConfigClient
   getContentLoader: () => BasePageContentLoader
   projectReferenceClient?: ProjectReferenceClient
-  navigationSession?: NavigationEditSession
 }
 
 export type CreateProjectEditorOptions = {
@@ -145,7 +143,7 @@ export type ProjectEditorListener = () => void
 
 /**
  * ProjectEditor 即时快照。
- * 包含当前项目节点、活动 PageNode 内容子模型、节点脏状态和加载状态。
+ * 包含当前项目节点、活动配置页内容子模型、节点脏状态和加载状态。
  */
 export type ProjectEditorSnapshot = {
   pageId: string
@@ -287,7 +285,6 @@ export class ProjectEditor {
       fileCache: this.fileCache,
       contentLoaderFactory: this.contentLoaderFactory,
       navClient: this.navClient,
-      ...(options.navigationSession === undefined ? {} : { navigationSession: options.navigationSession }),
     })
   }
 
@@ -306,7 +303,7 @@ export class ProjectEditor {
     }
   }
 
-  /** 页面文件名唯一从 PageNode 暴露，消费层不再自定义四文件清单。 */
+  /** 页面文件名唯一从配置页模型暴露，消费层不再自定义四文件清单。 */
   getPageFileNames(): readonly PageNodeFileName[] {
     return PAGE_NODE_FILE_NAMES
   }
@@ -378,7 +375,7 @@ export class ProjectEditor {
       this.bumpRevision()
       return
     }
-    const found = this.project.findRawNodeById(normalized)
+    const found = this.project.findNodeById(normalized)?.toNodeData() ?? null
     if (!found) {
       throw new Error(`导航节点未找到: ${normalized}`)
     }
@@ -408,7 +405,7 @@ export class ProjectEditor {
     }
 
     this._activePageId = pageId
-    const mountedNode = this.project.findPageNode(pageId)
+    const mountedNode = this.project.findConfigPageByPageId(pageId)?.toNodeData() ?? null
     this.selectedNodeId = mountedNode?.id ?? null
     const page = this.openPage(pageId)
     const pageNodeOptions: { forceReload?: boolean } = {}
@@ -439,7 +436,7 @@ export class ProjectEditor {
     }
     this._activePageId = normalizedPageId
     this.openPage(normalizedPageId)
-    const mountedNode = this.project.findPageNode(normalizedPageId)
+    const mountedNode = this.project.findConfigPageByPageId(normalizedPageId)?.toNodeData() ?? null
     if (mountedNode) {
       this.selectedNodeId = mountedNode.id
     }
@@ -448,13 +445,13 @@ export class ProjectEditor {
 
   // ── 快照读取 ─────────────────────────────────────────
 
-  /** 返回当前编辑上下文的即时快照。全部从 active PageNode 读取。 */
+  /** 返回当前编辑上下文的即时快照。全部从 active ConfigPageNode 读取。 */
   readSnapshot(): ProjectEditorSnapshot {
     const pageId = this.getActivePage()?.pageId ?? ''
-    const root = this.project.root
-    const treeData = root.children
+    const navigationRoot = this.project.navigationRoot
+    const treeData = this.project.toTree()
     const selectedNode = this.selectedNodeId
-      ? this.project.findRawNodeById(this.selectedNodeId)
+      ? this.project.findNodeById(this.selectedNodeId)?.toNodeData() ?? null
       : null
 
     const navLocation = selectedNode
@@ -488,7 +485,7 @@ export class ProjectEditor {
 
     return {
       pageId,
-      navigationRoot: root,
+      navigationRoot,
       treeData,
       selectedNode,
       selectedNodeId: this.selectedNodeId,
@@ -512,7 +509,8 @@ export class ProjectEditor {
   readProjectModelDto(): ProjectModelDto {
     return {
       projectId: this.project.projectId,
-      navigation: this.project.root,
+      project: this.project.projectInfo,
+      navigation: this.project.navigationRoot,
       pages: this.project.readPageSummaries(),
     }
   }
@@ -590,7 +588,7 @@ export class ProjectEditor {
     await page.load(loadOptions)
   }
 
-  /** 加载单个页面文件到 active PageNode。 */
+  /** 加载单个页面文件到 active ConfigPageNode。 */
   async loadPageFile(name: PageNodeFileName, options?: ProjectEditorLoadOptions): Promise<void> {
     const page = this.getActivePage()
     if (!page) {
@@ -602,7 +600,7 @@ export class ProjectEditor {
 
   // ── 四文件保存 ───────────────────────────────────────
 
-  /** 保存单个页面文件。委托 active PageNode 子模型。 */
+  /** 保存单个页面文件。委托 active ConfigPageNode 子模型。 */
   async savePageFile(name: PageNodeFileName): Promise<void> {
     const page = this.getActivePage()
     if (!page) {
@@ -704,9 +702,9 @@ export class ProjectEditor {
   restoreReservedRootGroup(placement: 'toolbar' | 'user-menu', createId: () => string): ProjectNodeData {
     const node = createReservedRootGroup(placement, {
       createId,
-      templateRoot: this.project.root,
+      templateRoot: this.project.navigationRoot,
     })
-    const children = this.project.navigationChildren
+    const children = this.project.toTree()
     const existingIndex = children.findIndex(
       child => child.childPlacement === placement,
     )
@@ -715,6 +713,7 @@ export class ProjectEditor {
     } else {
       children.unshift(node)
     }
+    this.project.replaceNavigationChildren(children)
     this.markNavigationDirty('root')
     this.bumpRevision()
     return node
@@ -899,7 +898,7 @@ export class ProjectEditor {
 
   private getSelectedNode(): ProjectNodeData | null {
     if (!this.selectedNodeId) return null
-    return this.project.findRawNodeById(this.selectedNodeId)
+    return this.project.findNodeById(this.selectedNodeId)?.toNodeData() ?? null
   }
 
   private requireSelectedNode(message: string): ProjectNodeData {
@@ -946,7 +945,7 @@ export class ProjectEditor {
     const root = await this.navClient.loadRoot()
     this.project.replaceRoot(root)
     const selectedNodeId = options?.selectedNodeId ?? null
-    this.selectedNodeId = selectedNodeId && this.project.findRawNodeById(selectedNodeId)
+    this.selectedNodeId = selectedNodeId && this.project.findNodeById(selectedNodeId)
       ? selectedNodeId
       : null
     this.markNavigationClean()

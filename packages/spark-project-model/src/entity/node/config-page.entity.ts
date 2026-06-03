@@ -6,8 +6,7 @@ import type {
   PageFileWriter,
   PageNodeFileName,
 } from './page-file-types'
-import { PageNode } from './page-node.entity'
-import type { ProjectNodeModelOptions } from './node-base.entity'
+import { ProjectNode, type ProjectNodeModelOptions } from './node-base.entity'
 import { normalizeConfigPageId, resolvePageNodePageId } from './node-helpers'
 import type { ProjectNodeFamily, PageNodeLoadOptions, PageNodeRenderConfig, ProjectPageNodeSummary } from './module-node.entity'
 import { PageRuleFile } from '../content/rule.entity'
@@ -36,7 +35,7 @@ function optionalText(value: string): string | undefined { return value.trim() =
  * @moduleKind config-page
  * @moduleAbility pageDesign.configPage
  * @moduleName Page Design Config Page
- * @moduleDescription 当前配置页面节点，按真实 PageNode 子模型暴露 rule、pagedata、script 和 style 能力。
+ * @moduleDescription 当前配置页面节点，按真实配置页子模型暴露 rule、pagedata、script 和 style 能力。
  * @moduleEntity configPage 配置页面
  * @moduleScope 当前 ConfigPageNode 实例代表一个已打开页面的配置模型。
  * @moduleAttackSurface page-files high rule.json、pagedata.json、script.js、style.css 写入会改变页面运行与渲染行为。
@@ -44,7 +43,7 @@ function optionalText(value: string): string | undefined { return value.trim() =
  * @moduleGuard 写入前必须确认页面已加载，并优先查询节点树、数据集和脚本文本的当前状态。
  * @moduleMutation page-config read-write 公开写方法会修改当前页面配置文件模型。
  */
-export class ConfigPageNode extends PageNode {
+export class ConfigPageNode extends ProjectNode {
   readonly rule: PageRuleFile
   readonly dataSet: PageDataSetFile
   readonly style: PageTextFile
@@ -79,12 +78,6 @@ export class ConfigPageNode extends PageNode {
   }
 
   get family(): ProjectNodeFamily { return 'config-page' }
-  get pageNodeKind(): 'config' { return 'config' }
-
-  /**
-   * 当前配置页面的直接子页面。
-   */
-  get children(): ConfigPageNode[] { return this.readChildren<ConfigPageNode>() }
 
   protected get resolvedPath(): string { return this.path ?? `/${this.pageId}` }
 
