@@ -8,7 +8,7 @@ import type { BasePageContentLoader } from '../content-loader/types'
 import {
   PageNodeFilePath,
   type PageNodeFileName,
-} from './file-registry.service'
+} from '../../entity/node/page-file-types'
 
 export type PageNodeFileCacheOptions = {
   contentLoaderFactory: () => BasePageContentLoader

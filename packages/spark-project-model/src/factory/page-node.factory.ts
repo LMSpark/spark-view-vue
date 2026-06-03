@@ -4,7 +4,8 @@ import type { BasePageContentLoader, PageContentLoaderOptions } from '../service
 import { PageNodeFileApi } from '../service/file/file-api.service'
 import { PageNodeFileCache } from '../service/file/file-cache.service'
 import { createPageContentLoader } from '../service/content-loader/loader.service'
-import { ConfigPageNode, type PageNodeLike } from '../entity/node/node-factory'
+import { ProjectModel } from '../entity/project/project.entity'
+import type { ConfigPageNode, PageNodeLike } from '../entity/node/config-page.entity'
 
 export type PageNodeFileStorage = 'localStorage' | 'sessionStorage' | 'memory'
 
@@ -31,6 +32,7 @@ export class PageNodeFactory implements PageNodeFactoryLike {
   private readonly loader: BasePageContentLoader
   private readonly fileApi: PageNodeFileApi
   private readonly fileCache: PageNodeFileCache
+  private readonly project: ProjectModel<ConfigPageNode>
   private readonly getPagesConfigBaseUrl: () => string
 
   constructor(options: PageNodeFactoryOptions = {}) {
@@ -50,6 +52,12 @@ export class PageNodeFactory implements PageNodeFactoryLike {
     this.fileCache = new PageNodeFileCache({
       contentLoaderFactory: () => this.loader,
     })
+    this.project = new ProjectModel<ConfigPageNode>({
+      projectId: '__page-node-factory__',
+      fileApi: this.fileApi,
+      fileCache: this.fileCache,
+      contentLoaderFactory: () => this.loader,
+    })
   }
 
   create(pageId: string): ConfigPageNode {
@@ -57,22 +65,7 @@ export class PageNodeFactory implements PageNodeFactoryLike {
     if (!normalized) {
       throw new Error('pageId 不能为空')
     }
-    const page = new ConfigPageNode({
-      node: {
-        id: normalized,
-        title: normalized,
-        nodeKind: 'page',
-        path: `/${normalized}`,
-        icon: 'Document',
-      },
-      pid: '',
-      pageId: normalized,
-      fileApi: this.fileApi,
-      fileCache: this.fileCache,
-      contentLoaderFactory: () => this.loader,
-    })
-    page.navigation.navNode = null
-    return page
+    return this.project.openConfigPage(normalized)
   }
 
   clearPageCache(pageId: string): void {

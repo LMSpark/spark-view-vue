@@ -1,7 +1,6 @@
 /** 项目节点基类。 */
 import { isRecord } from '@spark-view/spark-utils'
 import { NavigationEditModel } from '../navigation/edit.entity'
-import type { ProjectNodeFamily, ProjectDescriptionContext } from './module-node.entity'
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './node-helpers'
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
@@ -20,6 +19,15 @@ export type NavNodeKind =
 
 /** 权限未匹配时的展示模式。 */
 export type NavPermissionMode = 'none' | 'masked' | 'invisible'
+
+export type ProjectNodeFamily = 'module' | 'config-page' | 'vue-page' | 'system-action' | 'link' | 'ref'
+
+export type ProjectDescriptionContext = {
+  nodeId: string
+  title: string
+  nodeKind: string
+  description: string
+}
 
 /** 上下文下拉选项项。 */
 export type NavContextItem = {
@@ -58,6 +66,13 @@ export type ProjectNodeData = {
   refPath?: string | undefined
   refProjectId?: string | undefined
   refBroken?: boolean | undefined
+}
+
+export type ProjectNodeLocation = {
+  node: ProjectNodeData
+  parent: ProjectNodeData | null
+  parentId: string | null
+  index: number
 }
 
 export function isProjectNodeData(value: unknown): value is ProjectNodeData {
@@ -104,13 +119,25 @@ export type NavContextState = {
   error: string | null
 }
 
+export type ProjectPageNodeSummary = Record<string, unknown> & {
+  pageId: string
+  path: string
+  title: string
+  nodeId: string
+  nodeKind: NavNodeKind
+  description: string
+  descriptionContext: ProjectDescriptionContext[]
+  effectiveDescription: string
+  icon?: string
+}
+
 export type ProjectNodeModelOptions = {
   node: ProjectNodeData
   pid: string
   descriptionContext?: readonly ProjectDescriptionContext[]
 }
 
-export abstract class ProjectNode {
+export class ProjectNode {
   readonly navigation = new NavigationEditModel()
   #node: ProjectNodeData
   #pid: string
@@ -123,7 +150,13 @@ export abstract class ProjectNode {
     this.navigation.loadFromNode(this.#node)
   }
 
-  abstract get family(): ProjectNodeFamily
+  get family(): ProjectNodeFamily {
+    if (this.nodeKind === 'system-page') return 'vue-page'
+    if (this.nodeKind === 'system-action') return 'system-action'
+    if (this.nodeKind === 'link') return 'link'
+    if (this.nodeKind === 'ref') return 'ref'
+    return 'module'
+  }
 
   /** @vcmIgnore */
   toNodeData(): ProjectNodeData { return this.#node }

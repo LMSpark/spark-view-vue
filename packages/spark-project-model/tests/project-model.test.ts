@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
 import type { HttpClientBase, HttpResponse } from '@spark-view/spark-utils'
-import { ConfigPageNode, ModuleNode } from '@spark-view/spark-project-model'
+import { ConfigPageNode, ProjectNode } from '@spark-view/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
 import { createRequest } from '@spark-view/spark-utils'
 import { createNavigationNodePatch } from '../src/entity/navigation/edit.entity'
@@ -53,7 +53,8 @@ describe('ProjectModel', () => {
     const tree = p.navigationRoot.children
     expect(tree.length).toBeGreaterThanOrEqual(1)
     const salesNode = p.findNodeById('sales')
-    expect(salesNode).toBeInstanceOf(ModuleNode)
+    expect(salesNode).toBeInstanceOf(ProjectNode)
+    expect(salesNode?.family).toBe('module')
     expect(salesNode?.description).toBe('销售模块')
     const orderNode = p.findNodeById('orders')
     expect(orderNode).toBeInstanceOf(ConfigPageNode)
@@ -73,13 +74,14 @@ describe('ProjectModel', () => {
     const rootNodes = p.getChildNodes('')
     expect(rootNodes.map(node => node.id)).toEqual(['homepage_root'])
     expect(rootNodes.map(node => node.pid)).toEqual([''])
-    expect(rootNodes[0]).toBeInstanceOf(ModuleNode)
+    expect(rootNodes[0]).toBeInstanceOf(ProjectNode)
+    expect(rootNodes[0]?.family).toBe('module')
     const root = rootNodes[0]
     expect(root?.title).toBe('CRM')
     expect(root?.childPlacement).toBe('header')
-    expect(root instanceof ModuleNode ? p.getChildNodes(root.id).map(node => node.id) : []).toEqual(['sales', 'settings'])
+    expect(root ? p.getChildNodes(root.id).map(node => node.id) : []).toEqual(['sales', 'settings'])
     const sales = p.findNodeById('sales')
-    expect(sales instanceof ModuleNode ? p.getChildNodes(sales.id).map(node => node.id) : []).toEqual(['orders'])
+    expect(sales ? p.getChildNodes(sales.id).map(node => node.id) : []).toEqual(['orders'])
     const settings = p.findNodeById('settings')
     expect(settings).toBeInstanceOf(ConfigPageNode)
     expect(settings instanceof ConfigPageNode ? p.getChildNodes(settings.id) : []).toEqual([])

@@ -1,5 +1,4 @@
-import type { ProjectModelData, ProjectNodeData } from '../../entity/node/node-base.entity'
-import type { ProjectNodeLocation } from '../../entity/navigation/edit.entity'
+import type { ProjectModelData, ProjectNodeData, ProjectNodeLocation } from '../../entity/node/node-base.entity'
 import {
   canUseModuleNodeKind,
   createRootModuleNode,
@@ -7,31 +6,11 @@ import {
   findConfigNodeByPageId,
   findNodeById,
   findNodeLocation,
+  isConfigNodeKind,
   isSystemRootDirectory,
   normalizePageIdFromPath,
-} from '../../entity/node/node-helpers'
-import {
-  appendProjectDescriptionContext,
-  canProjectNodeContainChild,
-  formatProjectDescriptionContext,
-  isConfigNodeKind,
-  readAllowedProjectEditChildKinds,
-  readProjectNodeDescription,
-  readProjectEditNodeKind,
   resolvePageNodePageId,
-  type ProjectPageNodeSummary,
-  type ProjectEditNodeKind,
-  type ProjectEditParentKind,
-  type ProjectDescriptionContext,
-} from '../../entity/node/node-factory'
-
-export type BuildProjectPageSummariesOptions = {
-  descriptionContext?: readonly ProjectDescriptionContext[]
-}
-
-export type ReadProjectEditNodeOptions = {
-  rootNodes: readonly ProjectNodeData[]
-}
+} from '../../entity/node/node-helpers'
 
 export class ProjectNodeTools {
   static createRootModuleNode(createId: () => string): ProjectNodeData {
@@ -77,45 +56,8 @@ export class ProjectNodeTools {
     return canUseModuleNodeKind(node, rootNodes)
   }
 
-  static readEditNodeKind(node: ProjectNodeData | null | undefined): ProjectEditNodeKind | null {
-    return readProjectEditNodeKind(node)
-  }
-
   static resolvePageNodePageId(node: ProjectNodeData | null | undefined): string {
     return resolvePageNodePageId(node)
-  }
-
-  static canContainEditChild(
-    parentKind: ProjectEditParentKind,
-    childKind: ProjectEditNodeKind,
-  ): boolean {
-    return canProjectNodeContainChild(parentKind, childKind)
-  }
-
-  static readAllowedEditChildKinds(parentKind: ProjectEditParentKind): readonly ProjectEditNodeKind[] {
-    return readAllowedProjectEditChildKinds(parentKind)
-  }
-
-  static readEditParentKind(
-    node: ProjectNodeData | null | undefined,
-    options: ReadProjectEditNodeOptions,
-  ): ProjectEditParentKind {
-    if (!node) return 'project'
-    const location = ProjectNodeTools.findNodeLocation(options.rootNodes, node.id)
-    const parentNode = location?.parent ?? null
-    if (!parentNode) return 'project'
-    return ProjectNodeTools.readEditNodeKind(parentNode) ?? 'project'
-  }
-
-  static canUseEditNodeKind(
-    node: ProjectNodeData | null | undefined,
-    nextKind: ProjectEditNodeKind,
-    options: ReadProjectEditNodeOptions,
-  ): boolean {
-    return ProjectNodeTools.canContainEditChild(
-      ProjectNodeTools.readEditParentKind(node, options),
-      nextKind,
-    )
   }
 
   static createReservedRootGroup(
@@ -123,57 +65,5 @@ export class ProjectNodeTools {
     options: { createId: () => string; templateRoot?: ProjectModelData | null },
   ): ProjectNodeData {
     return createReservedRootGroup(placement, options)
-  }
-
-  static readNodeDescription(node: ProjectNodeData | null | undefined): string {
-    return readProjectNodeDescription(node)
-  }
-
-  static appendDescriptionContext(
-    context: readonly ProjectDescriptionContext[],
-    node: ProjectNodeData | null | undefined,
-  ): ProjectDescriptionContext[] {
-    return appendProjectDescriptionContext(context, node)
-  }
-
-  static formatDescriptionContext(context: readonly ProjectDescriptionContext[]): string {
-    return formatProjectDescriptionContext(context)
-  }
-
-  static buildPageSummaries(
-    nodes: readonly ProjectNodeData[],
-    options: BuildProjectPageSummariesOptions = {},
-  ): ProjectPageNodeSummary[] {
-    const pages: ProjectPageNodeSummary[] = []
-    const seen = new Set<string>()
-
-    const visit = (
-      list: readonly ProjectNodeData[],
-      context: readonly ProjectDescriptionContext[],
-    ): void => {
-      for (const node of list) {
-        const nextContext = appendProjectDescriptionContext(context, node)
-        const pageId = resolvePageNodePageId(node)
-        if (pageId !== '' && isConfigNodeKind(node.nodeKind ?? 'page') && !seen.has(pageId)) {
-          const description = readProjectNodeDescription(node)
-          seen.add(pageId)
-          pages.push({
-            pageId,
-            path: node.path ?? `/${pageId}`,
-            title: node.title,
-            nodeId: node.id,
-            nodeKind: node.nodeKind ?? 'page',
-            description,
-            descriptionContext: nextContext,
-            effectiveDescription: formatProjectDescriptionContext(nextContext),
-            ...(node.icon !== undefined ? { icon: node.icon } : {}),
-          })
-        }
-        visit(node.children ?? [], nextContext)
-      }
-    }
-
-    visit(nodes, options.descriptionContext ?? [])
-    return pages
   }
 }

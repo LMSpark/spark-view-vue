@@ -33,10 +33,8 @@ import {
 import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEventMap, RequestInterceptor } from '@spark-view/spark-utils'
 import {
   PageNodeFilePath,
-  PageNodeFileRegistry,
   type PageNodeFileName,
-  type PageNodeFileRegistryView,
-} from '../file/file-registry.service'
+} from '../../entity/node/page-file-types'
 
 // 编译函数从同一文件域的 compiler 模块导入（职责分离：loader 管加载，compiler 管解析）
 import { compileRule, parsePageData, parseScript, parseCss } from './compiler.service'
@@ -53,12 +51,12 @@ const DEFAULT_OPTIONS = {
   fileStorage: 'localStorage',
   enableValidation: false,
   timeout: REQUEST_TIMEOUT,
-} satisfies Omit<Required<PageContentLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
+} satisfies Omit<Required<PageContentLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'httpClient'>
 
 /** 已解析的加载器选项：所有必填字段均有值，可选字段保持可选。 */
 type ResolvedPageContentLoaderOptions =
-  Omit<Required<PageContentLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
-  & Pick<PageContentLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'fileRegistry' | 'httpClient'>
+  Omit<Required<PageContentLoaderOptions>, 'getHeaders' | 'pagesConfigBaseUrl' | 'httpClient'>
+  & Pick<PageContentLoaderOptions, 'getHeaders' | 'pagesConfigBaseUrl' | 'httpClient'>
 
 /** 去除 URL 尾部斜杠。 */
 function trimTrailingSlash(path: string): string {
@@ -89,8 +87,6 @@ export class PageContentLoader extends BasePageContentLoader {
   private request: HttpClientBase
   private pagesConfigBase = ''
   private readonly recentMissingFiles = new Set<string>()
-  /** 页面文件注册表，用于动态控制加载哪些文件类型 */
-  private readonly fileRegistry: PageNodeFileRegistryView
 
   /**
    * 派生加载器：各自对应一种文件类型的编译产物缓存。
@@ -105,7 +101,6 @@ export class PageContentLoader extends BasePageContentLoader {
   constructor(options: Partial<PageContentLoaderOptions> = {}) {
     super()
     this.opts = { ...DEFAULT_OPTIONS, ...options }
-    this.fileRegistry = options.fileRegistry ?? PageNodeFileRegistry.default()
     // 创建共享 Request 实例（远程 API 调用的统一 axios 通道）
     this.request = this.opts.httpClient ?? createRequest({
       baseURL: this.opts.apiBaseUrl,
@@ -279,14 +274,10 @@ export class PageContentLoader extends BasePageContentLoader {
 
   override async loadPageFile(
     pageId: string,
-    filename: string,
+    filename: PageNodeFileName,
     options?: PageNodeFileLoadOptions,
   ): Promise<PageContentLoadResult<unknown>> {
     this.ensurePageFileContext()
-    const descriptor = this.fileRegistry.get(filename)
-    if (!descriptor) {
-      return { success: false, error: `Unknown file type: ${filename}` }
-    }
     const path = this.toPageFilePath(pageId, filename)
     const result = await this.fileLoader.load(path, {
       parseJSON: false,

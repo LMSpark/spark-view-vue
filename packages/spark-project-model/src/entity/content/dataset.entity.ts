@@ -6,7 +6,7 @@ import type {
   PageFileWriter,
 } from '../node/page-file-types'
 import { parsePageDataText, serializeDataSet } from '../node/page-file-serialization'
-import type { PageNodeLoadOptions } from '../node/module-node.entity'
+import type { PageNodeLoadOptions } from '../node/config-page.entity'
 
 export class PageDataSetFile {
   value: DataSet

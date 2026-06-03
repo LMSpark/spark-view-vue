@@ -5,7 +5,7 @@ import type {
   PageFileRestoreCommand,
   PageFileWriter,
 } from '../node/page-file-types'
-import type { PageNodeLoadOptions } from '../node/module-node.entity'
+import type { PageNodeLoadOptions } from '../node/config-page.entity'
 
 const TEXT_HISTORY_LIMIT = 100
 
@@ -29,6 +29,10 @@ export class PageTextFile {
   get isDirty(): boolean { return this._text !== this.savedText }
   get canUndo(): boolean { return this.history.canUndo }
   get canRedo(): boolean { return this.history.canRedo }
+
+  getText(): string {
+    return this._text
+  }
 
   setText(content: string): void {
     if (this.history.current === content) return

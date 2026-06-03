@@ -42,7 +42,7 @@
 import * as SparkAppRuntime from '@spark-view/spark-app'
 import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
 import { addLogTransport, isRecord } from '@spark-view/spark-utils'
-import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
+import { isProjectNodeData, type ProjectModelData, type ProjectNodeData } from '@spark-view/spark-project-model'
 
 import {
   consumePendingLogout,
@@ -117,14 +117,6 @@ function normalizeChildPlacement(value: string | undefined): 'header' | 'sidebar
   if (value === undefined || value === 'header') return 'header'
   if (value === 'sidebar') return 'sidebar'
   throw new Error(`Invalid navigation childPlacement: ${value}`)
-}
-
-function isProjectNodeData(value: unknown): value is ProjectNodeData {
-  if (!isRecord(value)) return false
-  if (typeof value['id'] !== 'string') return false
-  if (typeof value['title'] !== 'string') return false
-  const children = value['children']
-  return children === undefined || (Array.isArray(children) && children.every(isProjectNodeData))
 }
 
 function requireNavNodes(value: unknown, context: string): ProjectNodeData[] {

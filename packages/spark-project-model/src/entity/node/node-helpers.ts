@@ -1,8 +1,13 @@
 /** 节点纯函数——tree/flat 转换、pageId 解析、类型判断。 */
 import { deepClone } from '@spark-view/spark-utils'
-import type { NavNodeKind, ProjectModelData, ProjectNodeData } from './node-base.entity'
-import type { ProjectNodeLocation } from '../navigation/edit.entity'
-import type { NodeKind, ProjectDescriptionContext } from './module-node.entity'
+import type {
+  NavNodeKind,
+  ProjectDescriptionContext,
+  ProjectModelData,
+  ProjectNodeData,
+  ProjectNodeLocation,
+  ProjectPageNodeSummary,
+} from './node-base.entity'
 
 export function normalizePid(v: string | null | undefined): string { return v?.trim() ?? '' }
 
@@ -11,12 +16,9 @@ export function normalizePageIdFromPath(path: string | undefined | null): string
 }
 
 export function isConfigNodeKind(kind: string | undefined | null): boolean { return (kind ?? 'page') === 'page' || kind === 'sub-page' }
-export function isProjectPageNodeKind(kind: string | undefined | null): kind is 'page' | 'sub-page' { return kind === 'page' || kind === 'sub-page' }
-export function isProjectModuleNodeKind(kind: string | undefined | null): boolean { return kind === 'module' || kind === 'system-directory' }
-
 const SYSTEM_CHILD_PLACEMENTS = new Set(['toolbar', 'user-menu'])
 
-export function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavNodeKind {
+function inferNavNodeKind(node: ProjectNodeData, parentPlacement?: string): NavNodeKind {
   if (node.nodeKind !== undefined) return node.nodeKind
   if (parentPlacement !== undefined && SYSTEM_CHILD_PLACEMENTS.has(parentPlacement)) return 'system-action'
   if (node.childPlacement === 'toolbar' || node.childPlacement === 'user-menu') return 'system-directory'
@@ -44,7 +46,7 @@ export function normalizeProjectNodeData(node: ProjectNodeData, parentPlacement?
   return cloned
 }
 
-export function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
+function normalizeRootChildPlacement(value: unknown): 'header' | 'sidebar' {
   const normalized = String(value ?? '').trim()
   return normalized === 'header' || normalized === 'sidebar' ? normalized : 'header'
 }
@@ -128,25 +130,7 @@ export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit
   })
 }
 
-export function readProjectEditNodeKind(node: ProjectNodeData | null | undefined): NodeKind | null {
-  const k = node?.nodeKind ?? 'page'
-  if (k === 'module' || k === 'system-directory') return 'module'
-  if (k === 'page') return 'page'
-  if (k === 'sub-page') return 'sub-page'
-  return null
-}
-
-export function canProjectNodeContainChild(p: 'project' | NodeKind, c: NodeKind): boolean {
-  if (p === 'project' || p === 'module') return c === 'module' || c === 'page'
-  return c === 'sub-page'
-}
-
-export function readAllowedProjectEditChildKinds(p: 'project' | NodeKind): readonly NodeKind[] {
-  if (p === 'project' || p === 'module') return ['module', 'page']
-  return ['sub-page']
-}
-
-export function isPageLikeKind(kind: NavNodeKind): boolean {
+function isPageLikeKind(kind: NavNodeKind): boolean {
   return kind === 'page'
     || kind === 'system-page'
     || kind === 'system-action'
@@ -165,7 +149,7 @@ export function findNodeById(nodes: readonly ProjectNodeData[], targetId: string
   return null
 }
 
-export function findParentNodeById(nodes: readonly ProjectNodeData[], targetId: string, parent: ProjectNodeData | null = null): ProjectNodeData | null {
+function findParentNodeById(nodes: readonly ProjectNodeData[], targetId: string, parent: ProjectNodeData | null = null): ProjectNodeData | null {
   for (const node of nodes) {
     if (node.id === targetId) return parent
     if (Array.isArray(node.children)) {
@@ -270,7 +254,7 @@ export function createReservedRootGroup(
 }
 
 export function normalizeConfigPageId(v: string | undefined | null): string { return (v ?? '').trim() }
-export function resolvePageIdFromProjectPath(path: string | undefined | null): string { return normalizePageIdFromPath(path) }
+function resolvePageIdFromProjectPath(path: string | undefined | null): string { return normalizePageIdFromPath(path) }
 
 export function resolvePageNodePageId(node: ProjectNodeData | null | undefined): string {
   if (!node || !isConfigNodeKind(node.nodeKind ?? 'page')) return ''
@@ -280,7 +264,7 @@ export function resolvePageNodePageId(node: ProjectNodeData | null | undefined):
 
 export function readProjectNodeDescription(node: ProjectNodeData | null | undefined): string { return node?.description?.trim() ?? '' }
 
-export function createProjectDescriptionContext(node: ProjectNodeData | null | undefined): ProjectDescriptionContext | null {
+function createProjectDescriptionContext(node: ProjectNodeData | null | undefined): ProjectDescriptionContext | null {
   const d = readProjectNodeDescription(node)
   if (!node || !d) return null
   return { nodeId: node.id, title: node.title, nodeKind: node.nodeKind ?? 'page', description: d }
@@ -293,6 +277,47 @@ export function appendProjectDescriptionContext(c: readonly ProjectDescriptionCo
 
 export function formatProjectDescriptionContext(c: readonly ProjectDescriptionContext[]): string {
   return c.map(i => `${i.title}: ${i.description}`).join('\n')
+}
+
+type BuildProjectPageSummariesOptions = {
+  descriptionContext?: readonly ProjectDescriptionContext[]
+}
+
+export function buildProjectPageSummaries(
+  nodes: readonly ProjectNodeData[],
+  options: BuildProjectPageSummariesOptions = {},
+): ProjectPageNodeSummary[] {
+  const pages: ProjectPageNodeSummary[] = []
+  const seen = new Set<string>()
+
+  const visit = (
+    list: readonly ProjectNodeData[],
+    context: readonly ProjectDescriptionContext[],
+  ): void => {
+    for (const node of list) {
+      const nextContext = appendProjectDescriptionContext(context, node)
+      const pageId = resolvePageNodePageId(node)
+      if (pageId !== '' && isConfigNodeKind(node.nodeKind ?? 'page') && !seen.has(pageId)) {
+        const description = readProjectNodeDescription(node)
+        seen.add(pageId)
+        pages.push({
+          pageId,
+          path: node.path ?? `/${pageId}`,
+          title: node.title,
+          nodeId: node.id,
+          nodeKind: node.nodeKind ?? 'page',
+          description,
+          descriptionContext: nextContext,
+          effectiveDescription: formatProjectDescriptionContext(nextContext),
+          ...(node.icon !== undefined ? { icon: node.icon } : {}),
+        })
+      }
+      visit(node.children ?? [], nextContext)
+    }
+  }
+
+  visit(nodes, options.descriptionContext ?? [])
+  return pages
 }
 
 export function flattenProjectNavigationRoot(root: ProjectModelData): Array<{ node: ProjectNodeData; pid: string }> {
@@ -343,5 +368,3 @@ function findProjectedNode(nodes: readonly ProjectNodeData[], id: string): Proje
   for (const n of nodes) { if (n.id === id) return n; const f = findProjectedNode(n.children ?? [], id); if (f) return f }
   return null
 }
-
-export function optionalText(value: string): string | undefined { return value.trim() === '' ? undefined : value }

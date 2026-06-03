@@ -16,21 +16,20 @@ export type { ProjectInfo, ProjectInfoInput } from './entity/project/project.ent
 
 export {
   ProjectNode,
-  ModuleNode,
+  isProjectNodeData,
+} from './entity/node/node-base.entity'
+
+export {
   ConfigPageNode,
-  VuePageNode,
-  ActionNode,
-  LinkNode,
-  RefNode,
-  createProjectNodeModel,
-  isProjectConfigPageNodeModel,
+} from './entity/node/config-page.entity'
+
+export {
   isConfigNodeKind,
   resolvePageNodePageId,
   readProjectNodeDescription,
   flattenProjectNavigationRoot,
   buildProjectNavigationTree,
-  isProjectNodeData,
-} from './entity/node/node-factory'
+} from './entity/node/node-helpers'
 
 export type {
   ProjectModelData,
@@ -40,25 +39,24 @@ export type {
   NavNodeKind,
   NavPermissionMode,
   ProjectNodeData,
+  ProjectNodeLocation,
   ProjectNodeFamily,
   ProjectDescriptionContext,
-  PageNodeLoadOptions,
-  PageNodeNavigationConfig,
-  PageNodeRenderConfig,
   ProjectPageNodeSummary,
-  ConfigPageDirtyPart,
   RegionItems,
   RegionVisibility,
-} from './entity/node/node-factory'
+} from './entity/node/node-base.entity'
+
+export type {
+  PageNodeLoadOptions,
+  PageNodeRenderConfig,
+} from './entity/node/config-page.entity'
 
 // ── 导航 DTO（契约层）─────────────────────────────
 
 export type {
-  NavigationNodeAddRequestDto,
   NavigationNodeEditDto,
   NavigationNodeEditPatchDto,
-  NavigationNodeMoveRequestDto,
-  ProjectNodeLocation,
 } from './entity/navigation/edit.entity'
 
 // ── 工厂 ──────────────────────────────────────────────
@@ -75,9 +73,6 @@ export type {
   PageNodeFileStorage,
 } from './factory/page-node.factory'
 
-// ── 编辑宿主 ──────────────────────────────────────────
-export type { PageDesignEditHost, PageDesignEditPhase, PageDesignNodeTree } from './entity/project/edit-host.entity'
-
 // ── 契约 ──────────────────────────────────────────────
 
-export type { PageNodeLike } from './entity/node/node-factory'
+export type { PageNodeLike } from './entity/node/config-page.entity'

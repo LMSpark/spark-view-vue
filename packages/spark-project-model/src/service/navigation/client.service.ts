@@ -3,9 +3,8 @@ import type { ProjectModelData, ProjectNodeData } from '../../entity/node/node-b
 import { isProjectNodeData } from '../../entity/node/node-base.entity'
 import { normalizeNavRoot } from '../../entity/node/node-helpers'
 import type {
-  NavigationNodeAddRequestDto,
   NavigationNodeEditPatchDto,
-  NavigationNodeMoveRequestDto,
+  NavigationNodeEditDto,
 } from '../../entity/navigation/edit.entity'
 
 export type NavigationConfigClientOptions = {
@@ -16,6 +15,17 @@ export type NavigationConfigClientOptions = {
 export type LinkProbeResult = {
   embeddable: boolean
   reason: string
+}
+
+type NavigationNodeAddRequestDto = {
+  parentId?: string | null
+  index?: number
+  node: NavigationNodeEditDto
+}
+
+type NavigationNodeMoveRequestDto = {
+  newParentId: string | null
+  index: number
 }
 
 function extractProjectNodeData(response: Record<string, unknown>): ProjectNodeData {
@@ -88,7 +98,7 @@ export class NavigationConfigClient {
   }
 }
 
-function toNavigationNodeEditDto(node: ProjectNodeData) {
+function toNavigationNodeEditDto(node: ProjectNodeData): NavigationNodeEditDto {
   return {
     id: node.id,
     title: node.title,

@@ -13,6 +13,16 @@ export type PageNodeFileLoadOptions = {
   forceReload?: boolean
 }
 
+export class PageNodeFilePath {
+  static forFile(pageId: string, filename: string): string {
+    return `/${encodeURIComponent(pageId)}/${encodeURIComponent(filename)}`
+  }
+
+  static forPage(pageId: string): readonly string[] {
+    return PAGE_NODE_FILE_NAMES.map(filename => PageNodeFilePath.forFile(pageId, filename))
+  }
+}
+
 export type PageContentLoadResult<T = unknown> = {
   success: boolean
   data?: T
@@ -25,6 +35,18 @@ export type PageContentLoadResult<T = unknown> = {
   notModified?: boolean
 }
 
+export type PageNodeFileVersionSummary = {
+  version: number
+  createdAt: string
+  isCurrent: boolean
+  modifiedBy: string | null
+}
+
+export type PageFileCreateOptions = {
+  title?: string
+  icon?: string
+}
+
 export type PageFileContentLoader = {
   loadPageFileContent(
     pageId: string,
@@ -35,8 +57,13 @@ export type PageFileContentLoader = {
 }
 
 export type PageFileWriter = {
+  createFiles(params: PageFileCreateOptions & { pageId: string }): Promise<Record<string, unknown>>
+  deleteFiles(pageId: string): Promise<void>
   saveFileContent(pageId: string, filename: PageNodeFileName, content: string): Promise<void>
+  listVersions(pageId: string, filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]>
   restoreVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void>
+  createVersion(pageId: string, filename: PageNodeFileName): Promise<void>
+  deleteVersion(pageId: string, filename: PageNodeFileName, version: number): Promise<void>
 }
 
 export type PageFileCache = {

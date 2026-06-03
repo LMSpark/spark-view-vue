@@ -36,12 +36,13 @@ import type {
   ProjectModelData,
   NavNodeKind,
   ProjectNodeData,
+  ProjectNodeLocation,
+  ProjectPageNodeSummary,
 } from '../../entity/node/node-base.entity'
 import type {
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
   NavigationNodeEditPatchDto,
-  ProjectNodeLocation,
 } from '../../entity/navigation/edit.entity'
 import {
   applyNavigationNodeEditDtoToNode,
@@ -49,38 +50,26 @@ import {
   createNavigationNodeEditDto,
   createNavigationNodePatch,
 } from '../../entity/navigation/edit.entity'
-import { createReservedRootGroup } from '../../entity/node/node-helpers'
+import {
+  createReservedRootGroup,
+  isConfigNodeKind,
+  resolvePageNodePageId,
+} from '../../entity/node/node-helpers'
 import { NavigationConfigClient } from '../navigation/client.service'
 
 // ── 内部域模型导入（page-model / project） ──
 
-import type {
-  ConfigPageNode,
-  ProjectPageNodeSummary,
-} from '../../entity/node/node-factory'
-import {
-  isConfigNodeKind,
-  resolvePageNodePageId,
-} from '../../entity/node/node-factory'
+import type { ConfigPageNode } from '../../entity/node/config-page.entity'
 import { PageNodeFileCache } from '../file/file-cache.service'
+import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../../entity/node/page-file-types'
 import {
-  PageNodeFileCreator,
-  type PageNodeCreatePageParams,
-} from '../file/file-creator.service'
-import { PageNodeFileDeleter } from '../file/file-deleter.service'
-import { PageNodeFileVersions } from '../file/file-versions.service'
-import type { PageNodeFileVersionSummary } from '../file/file-api.service'
-import {
-  PageNodeNavigationOperations,
-  type PageNodeCreateMountedParams,
-  type PageNodeCreateMountedResult,
-  type PageNodeRemoveMountedParams,
-  type PageNodeRemoveMountedResult,
-} from '../navigation/operations.service'
+  PageNavigationLifecycle,
+  type PageNavigationMountParams,
+} from '../navigation/lifecycle.service'
 import {
   PAGE_NODE_FILE_NAMES,
   type PageNodeFileName,
-} from '../file/file-registry.service'
+} from '../../entity/node/page-file-types'
 import type { PageNodeFileStorage } from '../../factory/page-node.factory'
 import { ProjectModel, type ProjectModelDto } from '../../entity/project/project.entity'
 export type { ProjectModelDto } from '../../entity/project/project.entity'
@@ -126,16 +115,29 @@ export type CreatePageForSelectedNodeParams = {
   icon?: string
 }
 
-type CreateMountedPageParams = PageNodeCreateMountedParams & {
+type CreateMountedPageParams = Omit<PageNavigationMountParams, 'pageId'> & {
+  pageId: string
+  rollbackPageOnNavigationFailure?: boolean
+}
+
+type ProjectEditorCreatePageParams = PageFileCreateOptions & {
   pageId: string
 }
 
-type ProjectEditorCreatePageParams = PageNodeCreatePageParams & {
-  pageId: string
+type PageNodeCreateMountedResult = {
+  page: Record<string, unknown>
+  node: ProjectNodeData
 }
 
-type RemoveMountedPageParams = PageNodeRemoveMountedParams & {
+type RemoveMountedPageParams = {
   pageId: string
+  nodeId?: string
+  deleteFiles?: boolean
+}
+
+type PageNodeRemoveMountedResult = {
+  deletedNode: ProjectNodeData | null
+  deletedFiles: boolean
 }
 
 /** 变更监听器：project editor 状态变更时触发（文档变化、选择变化、模块树 dirty 等） */
@@ -239,13 +241,9 @@ export function createProjectEditor(options: CreateProjectEditorOptions): Projec
 export class ProjectEditor {
   readonly project: ProjectModel
   private readonly navClient: NavigationConfigClient
-  private readonly fileApi: PageNodeFileApi
   private readonly contentLoaderFactory: () => BasePageContentLoader
   private readonly fileCache: PageNodeFileCache
-  private readonly fileCreator: PageNodeFileCreator
-  private readonly fileDeleter: PageNodeFileDeleter
-  private readonly fileVersions: PageNodeFileVersions
-  private readonly navigationOperations: PageNodeNavigationOperations
+  private readonly navigationLifecycle: PageNavigationLifecycle
   private readonly projectReferenceClient: ProjectReferenceClient | null
 
   private _activePageId = ''
@@ -258,33 +256,19 @@ export class ProjectEditor {
 
   constructor(options: ProjectEditorOptions) {
     this.navClient = options.navigationClient
-    this.fileApi = options.fileApi
     this.contentLoaderFactory = options.getContentLoader
     this.fileCache = new PageNodeFileCache({
       contentLoaderFactory: this.contentLoaderFactory,
     })
-    this.fileCreator = new PageNodeFileCreator({
-      fileApi: this.fileApi,
-      fileCache: this.fileCache,
-    })
-    this.fileDeleter = new PageNodeFileDeleter({
-      fileApi: this.fileApi,
-      fileCache: this.fileCache,
-    })
-    this.fileVersions = new PageNodeFileVersions({
-      fileApi: this.fileApi,
-      contentLoaderFactory: this.contentLoaderFactory,
-    })
-    this.navigationOperations = new PageNodeNavigationOperations({
+    this.navigationLifecycle = new PageNavigationLifecycle({
       navigationClient: this.navClient,
     })
     this.projectReferenceClient = options.projectReferenceClient ?? null
     this.project = new ProjectModel({
       projectId: options.projectId,
-      fileApi: this.fileApi,
+      fileApi: options.fileApi,
       fileCache: this.fileCache,
       contentLoaderFactory: this.contentLoaderFactory,
-      navClient: this.navClient,
     })
   }
 
@@ -474,10 +458,7 @@ export class ProjectEditor {
     }
 
     if (activePage) {
-      if (activePage.isRuleDirty) dirtyFiles.add('rule.json')
-      if (activePage.isDataSetDirty) dirtyFiles.add('pagedata.json')
-      if (activePage.script.isDirty) dirtyFiles.add('script.js')
-      if (activePage.style.isDirty) dirtyFiles.add('style.css')
+      for (const name of activePage.getDirtyFileNames()) dirtyFiles.add(name)
     }
 
     const hasAnyFileDirty = dirtyFiles.size > 0
@@ -492,10 +473,10 @@ export class ProjectEditor {
       navigationLocation: navLocation,
       navigationEditDto: navEditDto,
       pageFeatures,
-      ruleJson: activePage?.getRuleText() ?? '',
-      pageDataJson: activePage?.getDataSetText() ?? '',
-      script: activePage?.script.text ?? '',
-      style: activePage?.style.text ?? '',
+      ruleJson: activePage?.getFileText('rule.json') ?? '',
+      pageDataJson: activePage?.getFileText('pagedata.json') ?? '',
+      script: activePage?.getFileText('script.js') ?? '',
+      style: activePage?.getFileText('style.css') ?? '',
       dirtyFiles,
       parseErrors,
       isLoaded: activePage?.isLoaded === true,
@@ -728,9 +709,8 @@ export class ProjectEditor {
       throw new Error('pageId 不能为空')
     }
     const selected = this.requireSelectedNode('未选中导航节点，无法创建并绑定页面')
-    this.openPage(pageId)
-    const page = await this.fileCreator.createFiles({
-      pageId,
+    const pageNode = this.openPage(pageId)
+    const page = await pageNode.createFiles({
       ...(params.title === undefined ? {} : { title: params.title }),
       ...(params.icon === undefined ? {} : { icon: params.icon }),
     })
@@ -759,7 +739,7 @@ export class ProjectEditor {
       applyNavigationNodeEditDtoToNode(selected, previousEditDto)
       this.selectedNodeId = selected.id
       this.markNavigationClean()
-      await this.fileDeleter.deleteFiles(pageId)
+      await pageNode.deleteFiles()
       this.bumpRevision()
       throw error
     }
@@ -768,19 +748,18 @@ export class ProjectEditor {
   /** 创建页面文件并在导航树中挂载节点。 */
   async createMountedPage(params: CreateMountedPageParams): Promise<PageNodeCreateMountedResult> {
     const { pageId, ...modelParams } = params
-    this.openPage(pageId)
-    const page = await this.fileCreator.createFiles({
-      pageId,
+    const pageNode = this.openPage(pageId)
+    const page = await pageNode.createFiles({
       ...(modelParams.title === undefined ? {} : { title: modelParams.title }),
       ...(modelParams.icon === undefined ? {} : { icon: modelParams.icon }),
     })
     try {
-      const node = await this.navigationOperations.mountPage(pageId, modelParams)
+      const node = await this.navigationLifecycle.mountPage({ pageId, ...modelParams })
       await this.reloadNavigation({ selectedNodeId: node.id })
       return { page, node }
     } catch (error) {
       if (modelParams.rollbackPageOnNavigationFailure === true) {
-        await this.fileDeleter.deleteFiles(pageId)
+        await pageNode.deleteFiles()
       }
       throw error
     }
@@ -789,9 +768,8 @@ export class ProjectEditor {
   /** 仅创建页面四文件，不挂载导航。 */
   async createPageFiles(params: ProjectEditorCreatePageParams): Promise<Record<string, unknown>> {
     const { pageId, ...modelParams } = params
-    this.openPage(pageId)
-    const result = await this.fileCreator.createFiles({
-      pageId,
+    const pageNode = this.openPage(pageId)
+    const result = await pageNode.createFiles({
       ...(modelParams.title === undefined ? {} : { title: modelParams.title }),
       ...(modelParams.icon === undefined ? {} : { icon: modelParams.icon }),
     })
@@ -802,7 +780,7 @@ export class ProjectEditor {
   /** 仅删除页面四文件，不操作导航。 */
   async deletePageFiles(pageId: string): Promise<void> {
     const normalized = pageId.trim()
-    await this.fileDeleter.deleteFiles(normalized)
+    await this.project.openConfigPage(normalized).deleteFiles()
     if (this.getActivePage()?.pageId === normalized) {
       this._activePageId = ''
     }
@@ -812,10 +790,10 @@ export class ProjectEditor {
 
   /** 卸载导航节点并删除页面文件。 */
   async removeMountedPage(params: RemoveMountedPageParams): Promise<PageNodeRemoveMountedResult> {
-    const deletedNode = await this.navigationOperations.unmountPage(params.pageId, params.nodeId)
+    const deletedNode = await this.navigationLifecycle.unmountPage(params.pageId, params.nodeId)
     const shouldDeleteFiles = params.deleteFiles !== false
     if (shouldDeleteFiles) {
-      await this.fileDeleter.deleteFiles(params.pageId)
+      await this.project.openConfigPage(params.pageId).deleteFiles()
     }
     const result = { deletedNode, deletedFiles: shouldDeleteFiles }
     if (this.getActivePage()?.pageId === params.pageId) {
@@ -827,7 +805,7 @@ export class ProjectEditor {
 
   /** 在导航树中移动页面节点。 */
   async moveMountedPage(nodeId: string, newParentId: string | null, index: number): Promise<ProjectNodeData> {
-    const result = await this.navigationOperations.moveMountedPage(nodeId, newParentId, index)
+    const result = await this.navigationLifecycle.moveMountedPage(nodeId, newParentId, index)
     await this.reloadNavigation({ selectedNodeId: nodeId })
     return result
   }
@@ -838,7 +816,7 @@ export class ProjectEditor {
   async listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
     const page = this.getActivePage()
     if (!page) return []
-    return this.fileVersions.listVersions(page.pageId, filename)
+    return page.listFileVersions(filename)
   }
 
   /** 恢复指定文件的远端历史版本。主路径走子模型 restoreVersion。 */
@@ -847,21 +825,21 @@ export class ProjectEditor {
     if (!page) {
       throw new Error('无活动页面，无法恢复版本')
     }
-    await this.fileVersions.restoreVersion({ page, filename, version })
+    await page.restoreRemoteFileVersion(filename, version)
   }
 
   /** 为指定文件创建远端版本快照。 */
   async createRemotePageVersion(filename: PageNodeFileName): Promise<void> {
     const page = this.getActivePage()
     if (!page) return
-    await this.fileVersions.createVersion(page.pageId, filename)
+    await page.createFileVersion(filename)
   }
 
   /** 删除指定文件的远端版本。 */
   async deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
     const page = this.getActivePage()
     if (!page) return
-    await this.fileVersions.deleteVersion(page.pageId, filename, version)
+    await page.deleteFileVersion(filename, version)
   }
 
   /** 通知外部 SSE 事件导致页面文件变化，使缓存失效。 */

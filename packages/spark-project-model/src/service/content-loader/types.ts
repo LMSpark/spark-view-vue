@@ -5,16 +5,14 @@
  * navigation 也是 PageNode 配置项，但它属于导航树配置资产，由 NavigationConfigClient 管理。
  *
  * ## CRUD 角色
- * - 本文件所有类型服务于 **Read** 管线（加载 + 解析），不涉及 Create/Delete。
- * - Create/Delete 管线的 API 参数类型在 model/page-file-api.ts 中定义。
- * - PageNodeFileRegistry 位于 model/，Read 和 Write 共用同一套四文件定义。
+ * - 本文件所有类型服务于 **Read** 管线（加载 + 解析）。
+ * - 四文件名由 PageNodeFileName 固定约束，不做动态注册。
  */
 
 import type { DataSet } from '@spark-view/spark-data'
 import type { HttpClientBase } from '@spark-view/spark-utils'
 import type { SparkNode } from '@spark-view/spark-data'
-import type { PageNodeFileName, PageNodeFileLoadOptions } from '../file/file-registry.service'
-import type { PageNodeFileRegistryView } from '../file/file-registry.service'
+import type { PageContentLoadResult, PageNodeFileLoadOptions, PageNodeFileName } from '../../entity/node/page-file-types'
 
 // ── 页面四文件载荷类型 ───────────────────────────────────
 
@@ -30,26 +28,7 @@ export type PageContentConfigFiles = {
   css: string | undefined
 }
 
-export type { PageNodeFileLoadOptions } from '../file/file-registry.service'
-
-export type PageContentLoadResult<T = unknown> = {
-  /**
-   * Loading succeeded.
-   */
-  success: boolean
-  data?: T
-  error?: string
-  /** 失败原因：'not-found' 表示页面/文件不存在（404），与其他加载错误区分 */
-  reason?: string
-  source?: 'remote'
-  timestamp?: number
-  /** Raw source timestamp returned by the page-config file API. */
-  sourceTimestamp?: string
-  /** Whether the result was resolved from client cache after a notModified response. */
-  fromCache?: boolean
-  /** Whether the server reported the source file was unchanged. */
-  notModified?: boolean
-}
+export type { PageContentLoadResult, PageNodeFileLoadOptions } from '../../entity/node/page-file-types'
 
 export type PageContentConfig = PageContentConfigFiles & {
   pageId: string
@@ -102,11 +81,6 @@ export type PageContentLoaderOptions = {
    */
   getHeaders?: () => Record<string, string>
 
-  /**
-   * 页面文件注册表，用于动态控制加载哪些文件类型。
-   * 未提供时使用默认的四文件注册表。
-   */
-  fileRegistry?: PageNodeFileRegistryView
 }
 
 // ═══════════════ BasePageContentLoader 抽象契约 ═══════════════
@@ -151,7 +125,7 @@ export abstract class BasePageContentLoader {
    */
   loadPageFile(
     pageId: string,
-    filename: string,
+    filename: PageNodeFileName,
     _options?: PageNodeFileLoadOptions,
   ): Promise<PageContentLoadResult<unknown>> {
     throw new Error(`Page content loader does not support dynamic file loading: ${pageId}/${filename}`)

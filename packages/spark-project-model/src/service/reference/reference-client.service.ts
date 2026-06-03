@@ -1,9 +1,6 @@
 import type { HttpClientBase } from '@spark-view/spark-utils'
-import type { ProjectModelData } from '../../entity/node/node-base.entity'
-import {
-  ProjectNodeTools,
-} from '../../service/navigation/tools.service'
-import type { ProjectPageNodeSummary } from '../../entity/node/node-factory'
+import type { ProjectModelData, ProjectPageNodeSummary } from '../../entity/node/node-base.entity'
+import { buildProjectPageSummaries } from '../../entity/node/node-helpers'
 
 export type ProjectReferenceClientOptions = {
   http: HttpClientBase
@@ -51,7 +48,7 @@ export class ProjectReferenceClient {
     }
     const root = await this.http.get<Partial<ProjectModelData>>(this.getProjectNavigationApi(normalizedProjectId))
     const children = Array.isArray(root.children) ? root.children : []
-    return ProjectNodeTools.buildPageSummaries(children)
+    return buildProjectPageSummaries(children)
       .map(page => ({
         ...page,
         projectId: normalizedProjectId,

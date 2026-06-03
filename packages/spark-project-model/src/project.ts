@@ -29,27 +29,27 @@ export type {
 
 export {
   ProjectNode,
-  ModuleNode,
+} from './entity/node/node-base.entity'
+
+export {
   ConfigPageNode,
-  VuePageNode,
-  ActionNode,
-  LinkNode,
-  RefNode,
-  createProjectNodeModel,
+} from './entity/node/config-page.entity'
+
+export {
   isConfigNodeKind,
-  isProjectConfigPageNodeModel,
-} from './entity/node/node-factory'
+} from './entity/node/node-helpers'
 
 export type {
-  ConfigPageDirtyPart,
   PageNodeLike,
   PageNodeLoadOptions,
-  PageNodeNavigationConfig,
   PageNodeRenderConfig,
+} from './entity/node/config-page.entity'
+
+export type {
   ProjectNodeFamily,
   ProjectPageNodeSummary,
   ProjectDescriptionContext,
-} from './entity/node/node-factory'
+} from './entity/node/node-base.entity'
 
 export {
   PageNodeFactory,
@@ -65,15 +65,15 @@ export type {
 
 export {
   PAGE_NODE_FILE_NAMES,
-} from './service/file/file-registry.service'
+} from './entity/node/page-file-types'
 
 export type {
   PageNodeFileName,
-} from './service/file/file-registry.service'
+} from './entity/node/page-file-types'
 
 export type {
   PageNodeFileVersionSummary,
-} from './service/file/file-api.service'
+} from './entity/node/page-file-types'
 
 export {
   ProjectNodeTools,
@@ -85,10 +85,8 @@ export type {
 } from './service/reference/reference-client.service'
 
 export type {
-  NavigationNodeAddRequestDto,
   NavigationNodeEditDto,
   NavigationNodeEditPatchDto,
-  NavigationNodeMoveRequestDto,
 } from './entity/navigation/edit.entity'
 
 export {

@@ -5,28 +5,30 @@
  * ProjectModel 直接持有导航编辑会话与节点索引，不再通过独立 collection 中间层转发。
  */
 
-import type { ProjectNodeLocation } from '../navigation/edit.entity'
-import type { NavigationNodePatchWriter } from '../navigation/edit.entity'
-import type { ProjectModelData, ProjectNodeData } from '../node/node-base.entity'
+import {
+  ProjectNode,
+  type ProjectDescriptionContext,
+  type ProjectModelData,
+  type ProjectNodeData,
+  type ProjectNodeLocation,
+  type ProjectPageNodeSummary,
+} from '../node/node-base.entity'
+import {
+  ConfigPageNode,
+  type ProjectConfigPageNodeModelOptions,
+} from '../node/config-page.entity'
 import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../node/page-file-types'
 import {
   appendProjectDescriptionContext,
   buildProjectNavigationTree,
-  createProjectNodeModel,
-  flattenProjectNavigationRoot,
-  isProjectConfigPageNodeModel,
-  resolvePageNodePageId,
-  type ConfigPageNode,
-  type ProjectDescriptionContext,
-  type ProjectNode,
-  type ProjectPageNodeSummary,
-} from '../node/node-factory'
-import {
   buildNavRoot,
   createChildPageNode,
   createRootModuleNode,
   findNodeLocation,
+  flattenProjectNavigationRoot,
+  isConfigNodeKind,
   normalizeNavRoot,
+  resolvePageNodePageId,
 } from '../node/node-helpers'
 
 export type ProjectModelDto = {
@@ -59,7 +61,6 @@ export type ProjectModelOptions = {
   fileApi: PageFileWriter
   fileCache: PageFileCache
   contentLoaderFactory: () => PageFileContentLoader
-  navClient?: NavigationNodePatchWriter | undefined
 }
 
 /**
@@ -92,7 +93,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   private readonly fileApi: PageFileWriter
   private readonly fileCache: PageFileCache
   private readonly contentLoaderFactory: () => PageFileContentLoader
-  private readonly navClient: NavigationNodePatchWriter | undefined
   private readonly nodesById = new Map<string, TNode>()
   private readonly configPagesByPageId = new Map<string, ConfigPageNode>()
   private readonly detachedConfigPagesByPageId = new Map<string, ConfigPageNode>()
@@ -111,7 +111,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.fileApi = options.fileApi
     this.fileCache = options.fileCache
     this.contentLoaderFactory = options.contentLoaderFactory
-    this.navClient = options.navClient
   }
 
   /**
@@ -371,7 +370,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
       fileApi: this.fileApi,
       fileCache: this.fileCache,
       contentLoaderFactory: this.contentLoaderFactory,
-      ...(this.navClient === undefined ? {} : { navClient: this.navClient }),
     }) as TNode
   }
 
@@ -468,4 +466,14 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
 
 function compareProjectNodes(a: ProjectNode, b: ProjectNode): number {
   return a.order !== b.order ? a.order - b.order : a.id.localeCompare(b.id)
+}
+
+function createProjectNodeModel(options: ProjectConfigPageNodeModelOptions): ProjectNode {
+  const nodeKind = options.node.nodeKind ?? 'page'
+  if (isConfigNodeKind(nodeKind)) return new ConfigPageNode(options)
+  return new ProjectNode(options)
+}
+
+function isProjectConfigPageNodeModel(node: ProjectNode | null | undefined): node is ConfigPageNode {
+  return node instanceof ConfigPageNode
 }

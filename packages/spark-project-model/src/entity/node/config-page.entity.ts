@@ -1,17 +1,44 @@
 /** ConfigPageNode——配置页节点，挂接 rule/dataset/script/style。 */
-import type { DataSetCrudTool, SparkNodeTree as SparkNodeTreeModel } from '@spark-view/spark-data'
+import type { DataSet, DataSetCrudTool, SparkNode, SparkNodeTree as SparkNodeTreeModel } from '@spark-view/spark-data'
 import type {
   PageFileCache,
   PageFileContentLoader,
+  PageFileCreateOptions,
+  PageNodeFileLoadOptions,
   PageFileWriter,
   PageNodeFileName,
+  PageNodeFileVersionSummary,
 } from './page-file-types'
-import { ProjectNode, type ProjectNodeModelOptions } from './node-base.entity'
+import { PAGE_NODE_FILE_NAMES } from './page-file-types'
+import {
+  ProjectNode,
+  type ProjectNodeFamily,
+  type ProjectNodeData,
+  type ProjectNodeModelOptions,
+  type ProjectPageNodeSummary,
+} from './node-base.entity'
 import { normalizeConfigPageId, resolvePageNodePageId } from './node-helpers'
-import type { ProjectNodeFamily, PageNodeLoadOptions, PageNodeRenderConfig, ProjectPageNodeSummary } from './module-node.entity'
 import { PageRuleFile } from '../content/rule.entity'
 import { PageDataSetFile } from '../content/dataset.entity'
 import { PageTextFile } from '../content/text.entity'
+
+export type PageNodeLoadOptions = PageNodeFileLoadOptions
+
+export type PageNodeRenderConfig = {
+  pageId: string
+  navigation: ProjectNodeData | null
+  rule: SparkNode[]
+  data: DataSet
+  script: string | undefined
+  css: string | undefined
+}
+
+export type PageNodeLike = {
+  readonly pageId: string
+  readonly isLoaded: boolean
+  load(options?: PageNodeLoadOptions): Promise<void>
+  toRenderConfig(): PageNodeRenderConfig
+}
 
 export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
   pageId?: string
@@ -20,11 +47,15 @@ export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
   contentLoaderFactory: () => PageFileContentLoader
 }
 
-export type ConfigPageDirtyPart = 'navigation' | 'rule' | 'dataSet' | 'style' | 'script'
-
-const CONFIG_PAGE_DIRTY_PARTS = ['navigation', 'rule', 'dataSet', 'style', 'script'] as const
-
 function optionalText(value: string): string | undefined { return value.trim() === '' ? undefined : value }
+
+type ConfigPageFileModel = {
+  readonly isDirty: boolean
+  getText(): string
+  load(loader: PageFileContentLoader, options?: PageNodeLoadOptions): Promise<void>
+  save(api: PageFileWriter): Promise<void>
+  restoreVersion(command: Parameters<PageRuleFile['restoreVersion']>[0]): Promise<void>
+}
 
 /**
  * 配置页面节点。
@@ -52,6 +83,7 @@ export class ConfigPageNode extends ProjectNode {
   private readonly fileApi: PageFileWriter
   private readonly fileCache: PageFileCache
   private readonly contentLoaderFactory: () => PageFileContentLoader
+  private readonly files: Record<PageNodeFileName, ConfigPageFileModel>
   private readonly _listeners = new Set<() => void>()
   private _isLoaded = false
 
@@ -72,12 +104,18 @@ export class ConfigPageNode extends ProjectNode {
     this.dataSet = new PageDataSetFile(pageId)
     this.style = new PageTextFile(pageId, 'style.css')
     this.script = new PageTextFile(pageId, 'script.js')
+    this.files = {
+      'rule.json': this.rule,
+      'pagedata.json': this.dataSet,
+      'script.js': this.script,
+      'style.css': this.style,
+    }
     this.fileApi = options.fileApi; this.fileCache = options.fileCache
     this.contentLoaderFactory = options.contentLoaderFactory
     this.wireSubModels()
   }
 
-  get family(): ProjectNodeFamily { return 'config-page' }
+  override get family(): ProjectNodeFamily { return 'config-page' }
 
   protected get resolvedPath(): string { return this.path ?? `/${this.pageId}` }
 
@@ -91,14 +129,36 @@ export class ConfigPageNode extends ProjectNode {
    *
    * @moduleMutation page-config read 查询当前页面配置脏状态。
    */
-  isDirty(): boolean { return CONFIG_PAGE_DIRTY_PARTS.some(p => this.isPartDirty(p)) }
+  isDirty(): boolean {
+    return this.navigation.isDirty || this.getDirtyFileNames().length > 0
+  }
 
   /**
-   * 列出当前存在未保存变更的配置分区。
+   * 创建当前配置页面的四文件资产。
    *
-   * @moduleMutation page-config read 查询当前页面配置脏分区。
+   * @moduleMutation page-config write 创建当前页面配置文件集合。
+   * @vcmIgnore
    */
-  dirtyParts(): ConfigPageDirtyPart[] { return CONFIG_PAGE_DIRTY_PARTS.filter(p => this.isPartDirty(p)) }
+  async createFiles(options: PageFileCreateOptions = {}): Promise<Record<string, unknown>> {
+    const result = await this.fileApi.createFiles({
+      pageId: this.pageId,
+      ...(options.title === undefined ? {} : { title: options.title }),
+      ...(options.icon === undefined ? {} : { icon: options.icon }),
+    })
+    this.clearFileCache()
+    return result
+  }
+
+  /**
+   * 删除当前配置页面的四文件资产。
+   *
+   * @moduleMutation page-config write 删除当前页面配置文件集合。
+   * @vcmIgnore
+   */
+  async deleteFiles(): Promise<void> {
+    await this.fileApi.deleteFiles(this.pageId)
+    this.clearFileCache()
+  }
 
   /**
    * 加载当前页面的 rule.json、pagedata.json、script.js 和 style.css。
@@ -110,12 +170,7 @@ export class ConfigPageNode extends ProjectNode {
     const forceReload = options.forceReload === true
     if (this._isLoaded && !forceReload) return
     const l = this.contentLoaderFactory()
-    await Promise.all([
-      this.rule.load(l, options),
-      this.dataSet.load(l, options),
-      this.style.load(l, options),
-      this.script.load(l, options),
-    ])
+    await Promise.all(PAGE_NODE_FILE_NAMES.map(name => this.files[name].load(l, options)))
     this._isLoaded = true
   }
 
@@ -127,12 +182,7 @@ export class ConfigPageNode extends ProjectNode {
    */
   async loadFile(name: PageNodeFileName, options?: PageNodeLoadOptions): Promise<void> {
     const l = this.contentLoaderFactory()
-    switch (name) {
-      case 'rule.json': await this.rule.load(l, options); return
-      case 'pagedata.json': await this.dataSet.load(l, options); return
-      case 'script.js': await this.script.load(l, options); return
-      case 'style.css': await this.style.load(l, options); return
-    }
+    await this.files[name].load(l, options)
   }
 
   /**
@@ -141,12 +191,7 @@ export class ConfigPageNode extends ProjectNode {
    * @moduleMutation page-config read 读取页面配置文件文本。
    */
   getFileText(name: PageNodeFileName): string {
-    switch (name) {
-      case 'rule.json': return this.getRuleText()
-      case 'pagedata.json': return this.getDataSetText()
-      case 'script.js': return this.script.text
-      case 'style.css': return this.style.text
-    }
+    return this.files[name].getText()
   }
 
   /**
@@ -156,12 +201,7 @@ export class ConfigPageNode extends ProjectNode {
    * @vcmIgnore
    */
   async saveFile(name: PageNodeFileName): Promise<void> {
-    switch (name) {
-      case 'rule.json': await this.rule.save(this.fileApi); break
-      case 'pagedata.json': await this.dataSet.save(this.fileApi); break
-      case 'script.js': await this.script.save(this.fileApi); break
-      case 'style.css': await this.style.save(this.fileApi); break
-    }
+    await this.files[name].save(this.fileApi)
     this.clearFileCache(name)
   }
 
@@ -172,12 +212,43 @@ export class ConfigPageNode extends ProjectNode {
    * @vcmIgnore
    */
   async saveDirtyFiles(): Promise<void> {
-    const tasks: Array<Promise<void>> = []
-    if (this.isRuleDirty) tasks.push(this.saveFile('rule.json'))
-    if (this.isDataSetDirty) tasks.push(this.saveFile('pagedata.json'))
-    if (this.script.isDirty) tasks.push(this.saveFile('script.js'))
-    if (this.style.isDirty) tasks.push(this.saveFile('style.css'))
-    await Promise.all(tasks)
+    await Promise.all(this.getDirtyFileNames().map(name => this.saveFile(name)))
+  }
+
+  /** @vcmIgnore */
+  getDirtyFileNames(): PageNodeFileName[] {
+    return PAGE_NODE_FILE_NAMES.filter(name => this.files[name].isDirty)
+  }
+
+  /** @vcmIgnore */
+  async restoreFileVersion(name: PageNodeFileName, command: Parameters<PageRuleFile['restoreVersion']>[0]): Promise<void> {
+    await this.files[name].restoreVersion(command)
+  }
+
+  /** @vcmIgnore */
+  async listFileVersions(name: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
+    return this.fileApi.listVersions(this.pageId, name)
+  }
+
+  /** @vcmIgnore */
+  async restoreRemoteFileVersion(name: PageNodeFileName, version: number): Promise<void> {
+    await this.restoreFileVersion(name, {
+      pageId: this.pageId,
+      version,
+      fileApi: this.fileApi,
+      contentLoader: this.contentLoaderFactory(),
+    })
+    this.clearFileCache(name)
+  }
+
+  /** @vcmIgnore */
+  async createFileVersion(name: PageNodeFileName): Promise<void> {
+    await this.fileApi.createVersion(this.pageId, name)
+  }
+
+  /** @vcmIgnore */
+  async deleteFileVersion(name: PageNodeFileName, version: number): Promise<void> {
+    await this.fileApi.deleteVersion(this.pageId, name, version)
   }
 
   /** @vcmIgnore */
@@ -233,14 +304,6 @@ export class ConfigPageNode extends ProjectNode {
     this.notify()
   }
 
-  /** @vcmIgnore */
-  get isRuleDirty(): boolean { return this.rule.isDirty }
-  /** @vcmIgnore */
-  get isDataSetDirty(): boolean { return this.dataSet.isDirty }
-  /** @vcmIgnore */
-  getRuleText(): string { return this.rule.getText() }
-  /** @vcmIgnore */
-  getDataSetText(): string { return this.dataSet.getText() }
   /**
    * 读取当前页面 script.js 文本。
    *
@@ -292,7 +355,7 @@ export class ConfigPageNode extends ProjectNode {
     if (!this._isLoaded) throw new Error(`配置页面节点 ${this.pageId} 尚未加载完成`)
     return {
       pageId: this.pageId,
-      navigation: this.navigation.navNode === null ? null : this.navigation.toEditInputDto(),
+      navigation: this.navigation.navNode,
       rule: this.rule.children,
       data: this.dataSet.value,
       script: optionalText(this.script.text),
@@ -316,13 +379,6 @@ export class ConfigPageNode extends ProjectNode {
   }
 
   private clearFileCache(name?: PageNodeFileName): void { this.fileCache.clearPageCache(this.pageId, name) }
-  private isPartDirty(part: ConfigPageDirtyPart): boolean {
-    if (part === 'navigation') return this.navigation.isDirty
-    if (part === 'rule') return this.isRuleDirty
-    if (part === 'dataSet') return this.isDataSetDirty
-    if (part === 'style') return this.style.isDirty
-    return this.script.isDirty
-  }
   private wireSubModels(): void { for (const m of [this.navigation, this.style, this.script]) m.subscribe(() => this.notify()) }
   private notify(): void { for (const l of this._listeners) l() }
 }

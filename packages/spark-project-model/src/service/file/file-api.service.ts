@@ -6,20 +6,11 @@
  */
 
 import { isRecord, type HttpClientBase } from '@spark-view/spark-utils'
-import type { PageNodeFileName } from './file-registry.service'
+import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../../entity/node/page-file-types'
 import { assertNonEmptyPageId } from '../../standalone/internal/assert-page-id'
 
-export type PageNodeFileVersionSummary = {
-  version: number
-  createdAt: string
-  isCurrent: boolean
-  modifiedBy: string | null
-}
-
-export type PageNodeCreateFilesParams = {
+export type PageNodeCreateFilesParams = PageFileCreateOptions & {
   pageId: string
-  title?: string
-  icon?: string
 }
 
 export type PageNodeFileApiOptions = {
