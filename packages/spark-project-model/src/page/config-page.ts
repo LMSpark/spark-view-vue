@@ -8,21 +8,21 @@ import type {
   PageFileWriter,
   PageNodeFileName,
   PageNodeFileVersionSummary,
-} from './page-file'
-import { PAGE_NODE_FILE_NAMES } from './page-file'
+} from './file'
+import { PAGE_NODE_FILE_NAMES } from './file'
 import {
   ProjectNode,
   type ProjectNodeFamily,
   type ProjectNodeData,
   type ProjectNodeModelOptions,
   type ProjectPageNodeSummary,
-} from './node'
-import { normalizeConfigPageId, resolvePageNodePageId } from './node-helpers'
+} from '../navigation/node'
+import { normalizeConfigPageId, resolvePageNodePageId } from '../navigation/helpers'
 import { PageRuleFile } from './content/rule-file'
 import { PageDataSetFile } from './content/dataset-file'
 import { PageTextFile } from './content/text-file'
 
-export type { PageNodeLoadOptions } from './page-file'
+export type { PageNodeLoadOptions } from './file'
 
 export type PageNodeRenderConfig = {
   pageId: string
@@ -61,7 +61,7 @@ type ConfigPageFileModel = {
  * 配置页面节点。
  *
  * 持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型，
- * 是 page-design AI 进入页面配置 live model 的根能力提供方。
+ * 是编辑器进入页面配置 live model 的根能力提供方。
  *
  * @moduleKind config-page
  * @moduleAbility pageDesign.configPage
@@ -135,7 +135,6 @@ export class ConfigPageNode extends ProjectNode {
    * 创建当前配置页面的四文件资产。
    *
    * @moduleMutation page-config write 创建当前页面配置文件集合。
-   * @vcmIgnore
    */
   async createFiles(options: PageFileCreateOptions = {}): Promise<Record<string, unknown>> {
     const result = await this.fileApi.createFiles({
@@ -151,7 +150,6 @@ export class ConfigPageNode extends ProjectNode {
    * 删除当前配置页面的四文件资产。
    *
    * @moduleMutation page-config write 删除当前页面配置文件集合。
-   * @vcmIgnore
    */
   async deleteFiles(): Promise<void> {
     await this.fileApi.deleteFiles(this.pageId)
@@ -162,7 +160,6 @@ export class ConfigPageNode extends ProjectNode {
    * 加载当前页面的 rule.json、pagedata.json、script.js 和 style.css。
    *
    * @moduleMutation page-config read 从远端加载当前页面配置文件。
-   * @vcmIgnore
    */
   async load(options: PageNodeLoadOptions = {}): Promise<void> {
     const forceReload = options.forceReload === true
@@ -176,7 +173,6 @@ export class ConfigPageNode extends ProjectNode {
    * 加载当前页面指定配置文件。
    *
    * @moduleMutation page-config read 从远端加载指定页面配置文件。
-   * @vcmIgnore
    */
   async loadFile(name: PageNodeFileName, options?: PageNodeLoadOptions): Promise<void> {
     const l = this.contentLoaderFactory()
@@ -196,7 +192,6 @@ export class ConfigPageNode extends ProjectNode {
    * 保存当前页面指定配置文件。
    *
    * @moduleMutation page-config write 保存指定页面配置文件。
-   * @vcmIgnore
    */
   async saveFile(name: PageNodeFileName): Promise<void> {
     await this.files[name].save(this.fileApi)
@@ -207,28 +202,19 @@ export class ConfigPageNode extends ProjectNode {
    * 保存当前页面所有 dirty 配置文件。
    *
    * @moduleMutation page-config write 保存当前页面所有 dirty 文件。
-   * @vcmIgnore
    */
   async saveDirtyFiles(): Promise<void> {
     await Promise.all(this.getDirtyFileNames().map(name => this.saveFile(name)))
   }
-
-  /** @vcmIgnore */
   getDirtyFileNames(): PageNodeFileName[] {
     return PAGE_NODE_FILE_NAMES.filter(name => this.files[name].isDirty)
   }
-
-  /** @vcmIgnore */
   async restoreFileVersion(name: PageNodeFileName, command: Parameters<PageRuleFile['restoreVersion']>[0]): Promise<void> {
     await this.files[name].restoreVersion(command)
   }
-
-  /** @vcmIgnore */
   async listFileVersions(name: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
     return this.fileApi.listVersions(this.pageId, name)
   }
-
-  /** @vcmIgnore */
   async restoreRemoteFileVersion(name: PageNodeFileName, version: number): Promise<void> {
     await this.restoreFileVersion(name, {
       pageId: this.pageId,
@@ -238,13 +224,9 @@ export class ConfigPageNode extends ProjectNode {
     })
     this.clearFileCache(name)
   }
-
-  /** @vcmIgnore */
   async createFileVersion(name: PageNodeFileName): Promise<void> {
     await this.fileApi.createVersion(this.pageId, name)
   }
-
-  /** @vcmIgnore */
   async deleteFileVersion(name: PageNodeFileName, version: number): Promise<void> {
     await this.fileApi.deleteVersion(this.pageId, name, version)
   }
@@ -263,11 +245,10 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 在当前页面节点树上执行编辑。
    *
-   * 回调由宿主代码传入，适用于非 VCM 的编辑器内部流程；VCM 应优先获取节点树子模块后调用其方法。
+   * 回调由宿主代码传入，适用于编辑器内部流程；外部自动化应优先获取节点树子模块后调用其方法。
    *
    * @param run 节点树编辑回调。
    * @moduleMutation rule.json write 修改当前页面节点树。
-   * @vcmIgnore
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)
@@ -287,11 +268,10 @@ export class ConfigPageNode extends ProjectNode {
   /**
    * 在当前页面数据集工具上执行编辑。
    *
-   * 回调由宿主代码传入，适用于非 VCM 的编辑器内部流程；VCM 应优先获取数据集子模块后调用其方法。
+   * 回调由宿主代码传入，适用于编辑器内部流程；外部自动化应优先获取数据集子模块后调用其方法。
    *
    * @param run 数据集编辑回调。
    * @moduleMutation pagedata.json write 修改当前页面数据集。
-   * @vcmIgnore
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)
@@ -373,3 +353,4 @@ export class ConfigPageNode extends ProjectNode {
 
   private clearFileCache(name?: PageNodeFileName): void { this.fileCache.clearPageCache(this.pageId, name) }
 }
+

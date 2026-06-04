@@ -35,7 +35,7 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@spark-appworks/spark-project-model/ai', () => ({
+vi.mock('@/services/page-design-business', () => ({
   PAGE_DESIGN_MODULE_ID: 'pageDesign',
   ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
 }))

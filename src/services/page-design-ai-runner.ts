@@ -22,7 +22,7 @@ import {
   type PageDesignAllowedOperations,
   type PageDesignRunInput,
   type PageDesignRunMode,
-} from '@spark-appworks/spark-project-model/ai'
+} from '@/services/page-design-business'
 
 export type PageDesignAiRunOptions = {
   description: string

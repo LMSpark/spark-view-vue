@@ -12,12 +12,12 @@ import {
   type ProjectNodeData,
   type ProjectNodeLocation,
   type ProjectPageNodeSummary,
-} from './node'
+} from '../navigation/node'
 import {
   ConfigPageNode,
   type ProjectConfigPageNodeModelOptions,
-} from './config-page'
-import type { PageFileCache, PageFileContentLoader, PageFileWriter } from './page-file'
+} from '../page/config-page'
+import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../page/file'
 import {
   appendProjectDescriptionContext,
   buildProjectNavigationTree,
@@ -29,7 +29,7 @@ import {
   isConfigNodeKind,
   normalizeNavRoot,
   resolvePageNodePageId,
-} from './node-helpers'
+} from '../navigation/helpers'
 
 export type ProjectModelDto = {
   projectId: string
@@ -66,12 +66,12 @@ export type ProjectModelOptions = {
 /**
  * 项目模型。
  *
- * 持有项目导航编辑会话和配置页节点，是 page-design VCM 的项目级模型根。
+ * 持有项目导航编辑会话和配置页节点，是项目级模型根。
  *
  * @moduleAbility pageDesign.project
  * @moduleKind project
  * @moduleName Page Design Project
- * @moduleDescription 当前项目模型，作为 VCM 根能力按 pageId 定位或实例化配置页面节点。
+ * @moduleDescription 当前项目模型，作为模型根能力按 pageId 定位或实例化配置页面节点。
  * @moduleEntity project 项目
  * @moduleScope 当前 ProjectModel 实例代表一个项目的节点集合。
  * @moduleTrustBoundary ProjectEditor 负责装配、加载和保存；ProjectModel 暴露正确的领域模型层级。
@@ -166,18 +166,17 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
 
   /** @deprecated root 只保留为旧导航树 DTO 名称；新代码使用 navigationRoot。 */
   get root(): ProjectModelData { return this.navigationRoot }
-
-  /** @vcmIgnore */
   getChildNodes(nodeId = ''): TNode[] { return this.readChildNodes(nodeId) }
 
   /**
    * 当前项目节点的平铺投影；ProjectNode 直接携带 nodeId、pid、order 等 DB 平铺字段。
    */
   get flatRows(): TNode[] { return [...this.nodesById.values()] }
-
-  /** @vcmIgnore */
   replaceRoot(root: ProjectModelData): ProjectModelData {
-    const normalizedRoot = normalizeNavRoot(root)
+    const normalized = normalizeNavRoot(root)
+    const normalizedRoot: ProjectModelData = normalized.id?.trim()
+      ? normalized
+      : { ...normalized, id: `${this.projectId}_root` }
     const previousConfigPages = new Map(this.configPagesByPageId)
     this.nodesById.clear()
     this.configPagesByPageId.clear()
@@ -198,8 +197,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
 
     return this.navigationRoot
   }
-
-  /** @vcmIgnore */
   replaceProjectInfo(project: ProjectInfoInput): ProjectInfo {
     const projectId = project.projectId?.trim()
     if (projectId !== undefined && projectId !== '' && projectId !== this.projectId) {
@@ -222,8 +219,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     if (project.updatedAt !== undefined) this.projectUpdatedAt = project.updatedAt
     return this.projectInfo
   }
-
-  /** @vcmIgnore */
   replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
     return this.replaceRoot(buildNavRoot(children, this.navigationRoot))
   }
@@ -232,11 +227,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * 按节点 ID 查找并返回项目节点模型；找不到返回 null。
    */
   findNodeById(nodeId: string): TNode | null { return this.nodesById.get(nodeId.trim()) ?? null }
-
-  /** @vcmIgnore */
   findNodeLocation(nodeId: string): ProjectNodeLocation | null { return findNodeLocation(this.toTree(), nodeId) }
-
-  /** @vcmIgnore */
   findConfigPageByPageId(pageId: string): ConfigPageNode | null { return this.configPagesByPageId.get(pageId.trim()) ?? null }
 
   /**
@@ -265,8 +256,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.configPagesByPageId.set(model.pageId, model)
     return model
   }
-
-  /** @vcmIgnore */
   closeConfigPage(pageId: string): void {
     const page = this.findConfigPageByPageId(pageId)
     if (!page) return
@@ -328,11 +317,9 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.removeModel(model)
     return removed
   }
-
-  /** @vcmIgnore */
   refreshNavRefs(): void {
     this.rebindDescriptionContext()
-  }  /** @vcmIgnore */
+  }
   toTree(): ProjectNodeData[] {
     return buildProjectNavigationTree(this.flatRows)
   }

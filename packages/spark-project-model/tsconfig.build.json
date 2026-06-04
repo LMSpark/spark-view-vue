@@ -7,16 +7,11 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "paths": {
-      "@spark-appworks/spark-ai": ["../spark-ai/dist/index.d.ts"],
-      "@spark-appworks/spark-ai/json": ["../spark-ai/dist/json/index.d.ts"],
-      "@spark-appworks/spark-ai/agent": ["../spark-ai/dist/agent/index.d.ts"],
-      "@spark-appworks/spark-ai/modules": ["../spark-ai/dist/modules/index.d.ts"],
       "@spark-appworks/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-appworks/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-appworks/spark-utils/internal": ["../spark-utils/dist/internal/index.d.ts"],
       "@spark-appworks/spark-project-model": ["./src/index.ts"],
       "@spark-appworks/spark-project-model/project": ["./src/project.ts"],
-      "@spark-appworks/spark-project-model/ai": ["./src/ai.ts"],
       "@spark-appworks/spark-component/runtime": ["../spark-component/dist/runtime/index.d.ts"]
     }
   },

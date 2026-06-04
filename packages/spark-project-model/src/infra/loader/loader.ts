@@ -21,7 +21,7 @@ import type {
   PageContentConfig,
 } from './types'
 import { BasePageContentLoader } from './types'
-import type { PageContentLoadResult, PageNodeLoadOptions } from '../../core/page-file'
+import type { PageContentLoadResult, PageNodeLoadOptions } from '../../page/file'
 import type { DataSet } from '@spark-appworks/spark-data'
 import type { SparkNode } from '@spark-appworks/spark-data'
 import {
@@ -33,7 +33,7 @@ import type { FileLoader, TransformedFileLoader, HttpClientBase, FileLoaderEvent
 import {
   PageNodeFilePath,
   type PageNodeFileName,
-} from '../../core/page-file'
+} from '../../page/file'
 import { trimTrailingSlash } from '../util'
 import { installHeaderInterceptor } from '../util'
 

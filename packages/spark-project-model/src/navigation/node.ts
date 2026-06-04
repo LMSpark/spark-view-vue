@@ -1,6 +1,6 @@
 /** 项目节点基类。 */
 import { isRecord } from '@spark-appworks/spark-utils'
-import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './node-helpers'
+import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './helpers'
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
 export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'
@@ -154,8 +154,6 @@ export class ProjectNode {
     if (this.nodeKind === 'ref') return 'ref'
     return 'module'
   }
-
-  /** @vcmIgnore */
   toNodeData(): ProjectNodeData { return this.#node }
 
   /**
@@ -198,8 +196,6 @@ export class ProjectNode {
 
   protected get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
   protected get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
-
-  /** @vcmIgnore */
   rebindNavigationNode(node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]): void {
     this.#node = node
     this.#pid = normalizePid(pid)

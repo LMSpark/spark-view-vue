@@ -1,0 +1,7 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --dir packages/spark-project-model run typecheck)"
+    ]
+  }
+}

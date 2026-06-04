@@ -4,8 +4,8 @@ import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
-} from '../page-file'
-import { parsePageDataText, serializeDataSet } from '../page-serial'
+} from '../file'
+import { parsePageDataText, serializeDataSet } from '../serial'
 import type { PageNodeLoadOptions } from '../config-page'
 
 export class PageDataSetFile {

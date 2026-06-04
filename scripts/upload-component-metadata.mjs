@@ -3,7 +3,7 @@
  * 上传组件元数据到 AI 服务端
  *
  * 在 `pnpm run generate:catalog`（或 `pnpm run build`）完成后执行，将
- * packages/spark-project-model/src/ai/page-design/payload/component-catalog.json
+ * src/services/page-design/payload/component-catalog.json
  * 上传到 Java 后端的 POST /api/ai/component-metadata 端点。
  *
  * 用法：
@@ -44,11 +44,11 @@ function parseArgs() {
 
 async function main() {
   const { url } = parseArgs()
-  const metadataPath = resolve(projectRoot, 'packages', 'spark-project-model', 'src', 'ai', 'page-design', 'payload', 'component-catalog.json')
+  const metadataPath = resolve(projectRoot, 'src', 'services', 'page-design', 'payload', 'component-catalog.json')
 
   // 检查文件存在
   if (!existsSync(metadataPath)) {
-    console.error('❌ 未找到 packages/spark-project-model/src/ai/page-design/payload/component-catalog.json')
+    console.error('❌ 未找到 src/services/page-design/payload/component-catalog.json')
     console.error('   请先执行 pnpm run generate:catalog 生成目录')
     process.exit(1)
   }

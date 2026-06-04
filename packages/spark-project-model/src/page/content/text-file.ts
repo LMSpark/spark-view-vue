@@ -4,7 +4,7 @@ import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
-} from '../page-file'
+} from '../file'
 
 const TEXT_HISTORY_LIMIT = 100
 

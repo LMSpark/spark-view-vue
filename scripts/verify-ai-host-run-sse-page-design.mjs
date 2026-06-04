@@ -21,7 +21,7 @@ import { coerceStrictJsonValue } from '@spark-appworks/spark-ai/json'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
-} from '@spark-appworks/spark-project-model/ai'
+} from '../src/services/page-design-business.ts'
 import {
   createProjectEditor,
 } from '@spark-appworks/spark-project-model/project'

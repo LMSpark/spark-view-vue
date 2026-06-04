@@ -12,7 +12,7 @@
 import type { DataSet } from '@spark-appworks/spark-data'
 import type { HttpClientBase } from '@spark-appworks/spark-utils'
 import type { SparkNode } from '@spark-appworks/spark-data'
-import type { PageContentLoadResult, PageNodeLoadOptions, PageNodeFileName } from '../../core/page-file'
+import type { PageContentLoadResult, PageNodeLoadOptions, PageNodeFileName } from '../../page/file'
 
 // ── 页面四文件载荷类型 ───────────────────────────────────
 

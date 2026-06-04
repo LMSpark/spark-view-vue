@@ -32,7 +32,7 @@ vi.mock('@/services/api-paths', () => ({
   getProjectNavigationApi: (projectId: string) => `/api/projects/${projectId}/navigation`,
 }))
 
-import { canonicalizePageDataJson } from '../../packages/spark-project-model/src/design/data'
+import { canonicalizePageDataJson } from '../../packages/spark-project-model/src/editor/artifacts/page-data'
 import { PAGE_NODE_FILE_NAMES, type PageNodeFileName } from '@spark-appworks/spark-project-model'
 import { useDevState } from '../../src/views/app/dev-system/useDevState'
 import { useDevFileEditor } from '../../src/views/app/dev-system/composables/useDevFileEditor'

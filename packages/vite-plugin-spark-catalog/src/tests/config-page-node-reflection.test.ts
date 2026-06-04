@@ -8,8 +8,8 @@ import { generateModuleAbilityMetadata } from '../module-metadata-generator'
 const root = resolve(import.meta.dirname, '../../../..')
 
 const pageDesignSources = [
-  'packages/spark-project-model/src/entity/project/project.entity.ts',
-  'packages/spark-project-model/src/entity/node/config-page.entity.ts',
+  'packages/spark-project-model/src/project/model.ts',
+  'packages/spark-project-model/src/page/config-page.ts',
   'packages/spark-data/src/dataset-crud-tool.ts',
   'packages/spark-data/src/node-tree/spark-node-tree.ts',
 ] as const
@@ -39,7 +39,7 @@ describe('page-design VCM metadata reflection', () => {
     expect(projectApi?.actions.map(action => action.name)).toEqual([])
     expect(projectApi?.attributes?.map(attribute => attribute.name)).toEqual([
       'projectId',
-      'root',
+      'navigationRoot',
       'flatRows',
     ])
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'nodes')).toBeUndefined()

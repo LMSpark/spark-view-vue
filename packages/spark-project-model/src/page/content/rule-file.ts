@@ -5,8 +5,8 @@ import type {
   PageFileContentLoader,
   PageFileRestoreCommand,
   PageFileWriter,
-} from '../page-file'
-import { parseRuleText, serializeRuleTree } from '../page-serial'
+} from '../file'
+import { parseRuleText, serializeRuleTree } from '../serial'
 import type { PageNodeLoadOptions } from '../config-page'
 
 export class PageRuleFile {

@@ -9,8 +9,8 @@
 - 软件项目根模型：`ProjectModel` 是设计 + 运行 + 编辑会话的统一入口。
 - 设计态：导航设计、页面组件树、DataSet 设计、脚本/样式设计、AI design context。
 - 运行态：导航运行投影、路由投影、页面运行实例、DataSet/DataView live state、模块上下文、权限投影、运行错误。
-- 共享编辑协同：`ProjectEditor` 作为 AI + DevSystem 共用 façade，把人工交互和 AI tool 调用转换为 ProjectModel 命令。
-- AI page-design：把 `ProjectModel` 暴露给 AI，使设计修改能定位到项目、页面、数据和运行诊断。
+- 共享编辑协同：`ProjectEditor` 作为 DevSystem 和外部自动化共用 façade，把交互转换为 ProjectModel 命令。
+- page-design AI 的业务注册放在 app service 层；本包只提供可被注册消费的项目模型。
 - 独立 artifact：rule schema、DataSet 设计器投影、JSON document runtime。
 
 ## 它不负责什么
@@ -25,13 +25,12 @@
 
 ```text
 src/
-├── core/      # 当前领域模型与稳定数据形状：ProjectModel、ProjectNode、ConfigPageNode、四文件内容模型
-├── infra/     # I/O 与加载设施：file API/cache、navigation client、content loader、reference client
-├── editor/    # 当前 AI + DevSystem 共享 facade 与 PageNodeFactory 装配
-├── design/    # 设计器 artifact：data/rule schema、json-document runtime
-├── ai/        # AI-facing registration
-├── vcm/       # generated VCM metadata
-└── *.ts       # public entry barrels
+├── project/     # ProjectModel
+├── navigation/  # ProjectNode、导航 DTO、树/平铺转换
+├── page/        # ConfigPageNode、PageNodeFactory、四文件内容模型
+├── editor/      # ProjectEditor facade 与编辑器 artifacts
+├── infra/       # I/O 与加载设施：file API/cache、navigation client、content loader、reference client
+└── *.ts         # public entry barrels
 ```
 
 `src/MODEL-HIERARCHY.md` 定义目标模型。当前实现尚未完全达到该形态，后续重构应向 `ProjectModel.design/runtime/editor` 三子域收敛。
@@ -47,9 +46,7 @@ src/
 ## 公共入口
 
 - `@spark-appworks/spark-project-model`：软件模型根、设计/运行公共类型、页面工厂兼容出口。
-- `@spark-appworks/spark-project-model/project`：AI + DevSystem 共用项目编辑协同层。
-- `@spark-appworks/spark-project-model/ai`：page-design AI 对 ProjectModel 的设计入口。
-- `@spark-appworks/spark-project-model/json-document`：独立 JSON document runtime。
+- `@spark-appworks/spark-project-model/project`：DevSystem 和外部自动化共用项目编辑协同层。
 
 跨包消费只能走这些入口。包外不要 import `src/core/*`、`src/infra/*`、`src/editor/*`。包内测试可以引用内部文件，但必须引用当前真实路径。
 
@@ -80,8 +77,8 @@ pagedata.json -> parsePageData -> DataSet -> usePageDataSet -> PAGE_DATASET -> D
 - ProjectModel 可以持有 headless runtime state，但不得持有 UI 框架实例。
 - 新增能力优先归入 `ProjectModel.design`、`ProjectModel.runtime` 或 `ProjectModel.editor` 的语义，而不是散落到 UI 层。
 - 保持 fail-fast：缺失 pageId、无效节点、未加载页面、配置不一致要抛错。
-- 新增公共能力前先决定出口：root、`/project`、`/ai` 或 `/json-document`。
-- VCM/LLM 可见语义写在首次声明处，metadata 不承诺未注册的函数、属性或子模块。
+- 新增公共能力前先决定出口：root 或 `/project`。
+- LLM 可见语义写在首次声明处，metadata 不承诺未注册的函数、属性或子模块。
 
 ## 快速验证
 

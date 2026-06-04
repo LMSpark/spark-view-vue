@@ -16,7 +16,7 @@ import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-p
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
-} from '@spark-appworks/spark-project-model/ai'
+} from '@/services/page-design-business'
 import { getNavApi, getPageApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'

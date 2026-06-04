@@ -10,17 +10,17 @@
 
 // ── L1 项目模型 ──────────────────────────────────────────────
 
-export { ProjectModel } from './core/project'
-export type { ProjectModelOptions } from './core/project'
-export type { ProjectModelDto } from './core/project'
-export type { ProjectInfo, ProjectInfoInput } from './core/project'
+export { ProjectModel } from './project/model'
+export type { ProjectModelOptions } from './project/model'
+export type { ProjectModelDto } from './project/model'
+export type { ProjectInfo, ProjectInfoInput } from './project/model'
 
 // ── L1 导航节点 ──────────────────────────────────────────────
 
 export {
   ProjectNode,
   isProjectNodeData,
-} from './core/node'
+} from './navigation/node'
 
 export {
   isConfigNodeKind,
@@ -37,7 +37,7 @@ export {
   normalizePageIdFromPath,
   createRootModuleNode,
   createReservedRootGroup,
-} from './core/node-helpers'
+} from './navigation/helpers'
 
 export type {
   ProjectModelData,
@@ -53,28 +53,28 @@ export type {
   ProjectPageNodeSummary,
   RegionItems,
   RegionVisibility,
-} from './core/node'
+} from './navigation/node'
 
 // ── L2 页面设计 ──────────────────────────────────────────────
 
 export {
   ConfigPageNode,
-} from './core/config-page'
+} from './page/config-page'
 
 export type {
   PageNodeLoadOptions,
   PageNodeRenderConfig,
   PageNodeLike,
-} from './core/config-page'
+} from './page/config-page'
 
 export {
   PAGE_NODE_FILE_NAMES,
-} from './core/page-file'
+} from './page/file'
 
 export type {
   PageNodeFileName,
   PageNodeFileVersionSummary,
-} from './core/page-file'
+} from './page/file'
 
 // ── 工厂 ──────────────────────────────────────────────────────
 
@@ -82,10 +82,10 @@ export {
   PageNodeFactory,
   createPageNode,
   createPageNodeFactory,
-} from './editor/factory'
+} from './page/factory'
 
 export type {
   PageNodeFactoryLike,
   PageNodeFactoryOptions,
   PageNodeFileStorage,
-} from './editor/factory'
+} from './page/factory'

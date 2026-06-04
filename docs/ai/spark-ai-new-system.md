@@ -51,15 +51,15 @@ flowchart TD
 
 输出是：
 
-- `packages/spark-project-model/src/ai/page-design/page-design-ability-metadata.generated.json`
-- `packages/spark-project-model/src/ai/page-design/page-design-module-metadata.generated.json`
+- `src/services/page-design/page-design-ability-metadata.generated.json`
+- `src/services/page-design/page-design-module-metadata.generated.json`
 
 提取原则：
 
 - 只按 class 提取能力边界。
 - class 级 `@moduleKind` / `@moduleName` 定义 API 对象身份。
 - public 方法是 action；public 属性/getter 是 attribute。
-- `@internal` / `@vcmIgnore` 不进入元数据。
+- `@internal` 不进入元数据。
 - `@moduleAction` 不再作为必要条件。
 - 返回值中的已标注 class 按 `resultApis` 暴露为后续可操作 API。
 - `resultPath: []` 表示返回值本身就是子模块。

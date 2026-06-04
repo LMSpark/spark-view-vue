@@ -1,13 +1,13 @@
 import type { HttpClientBase } from '@spark-appworks/spark-utils'
-import type { ProjectModelData, ProjectNodeData } from '../core/node'
-import { isProjectNodeData } from '../core/node'
-import { normalizeNavRoot } from '../core/node-helpers'
+import type { ProjectModelData, ProjectNodeData } from '../../navigation/node'
+import { isProjectNodeData } from '../../navigation/node'
+import { normalizeNavRoot } from '../../navigation/helpers'
 import {
   createNavigationNodeEditDto,
   type NavigationNodeEditDto,
   type NavigationNodeEditPatchDto,
-} from '../core/navigation-edit'
-import { trimTrailingSlash } from './util'
+} from '../../navigation/edit'
+import { trimTrailingSlash } from '../util'
 
 export type NavigationConfigClientOptions = {
   getNavigationApi: () => string

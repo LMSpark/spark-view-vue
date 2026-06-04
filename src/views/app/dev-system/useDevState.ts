@@ -33,6 +33,7 @@ import {
   type ProjectPageNodeSummary,
 } from '@spark-appworks/spark-project-model'
 import type {
+  NavigationNodeEditInputDto,
   NavigationNodeEditDto as ProjectNavigationNodeEditDto,
   ProjectPageReference,
   ProjectSummary,
@@ -121,37 +122,42 @@ export function useDevState() {
     navEditDtoRevision.value++
   }
 
+  function readNavEditDto(): NavigationNodeEditInputDto | null {
+    void navEditDtoRevision.value
+    return editor.navigationEditDto
+  }
+
   // ── 节点编辑表单（navEditDto：代理到 editor.navigationEditDto 工作副本）──
   const navEditDto = reactive({
-    get id(): string { return editor.navigationEditDto?.node.id ?? '' },
+    get id(): string { return readNavEditDto()?.node.id ?? '' },
     set id(_v: string) {},
-    get title(): string { return editor.navigationEditDto?.node.title ?? '' },
+    get title(): string { return readNavEditDto()?.node.title ?? '' },
     set title(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.title = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get icon(): string { return editor.navigationEditDto?.node.icon ?? '' },
+    get icon(): string { return readNavEditDto()?.node.icon ?? '' },
     set icon(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.icon = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get nodeKind(): NavNodeKind { return editor.navigationEditDto?.node.nodeKind ?? 'page' },
+    get nodeKind(): NavNodeKind { return readNavEditDto()?.node.nodeKind ?? 'page' },
     set nodeKind(v: NavNodeKind) { const dto = editor.navigationEditDto; if (dto) { dto.node.nodeKind = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get dividerAfter(): boolean { return editor.navigationEditDto?.node.dividerAfter ?? false },
+    get dividerAfter(): boolean { return readNavEditDto()?.node.dividerAfter ?? false },
     set dividerAfter(v: boolean) { const dto = editor.navigationEditDto; if (dto) { dto.node.dividerAfter = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get description(): string { return editor.navigationEditDto?.node.description ?? '' },
+    get description(): string { return readNavEditDto()?.node.description ?? '' },
     set description(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.description = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get path(): string { return editor.navigationEditDto?.node.path ?? '' },
+    get path(): string { return readNavEditDto()?.node.path ?? '' },
     set path(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.path = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get linkTarget(): NavigationNodeEditDto['linkTarget'] { return editor.navigationEditDto?.node.linkTarget ?? 'iframe' },
+    get linkTarget(): NavigationNodeEditDto['linkTarget'] { return readNavEditDto()?.node.linkTarget ?? 'iframe' },
     set linkTarget(v: NavigationNodeEditDto['linkTarget']) { const dto = editor.navigationEditDto; if (dto) { dto.node.linkTarget = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get childPlacement(): string { return editor.navigationEditDto?.node.childPlacement ?? '' },
+    get childPlacement(): string { return readNavEditDto()?.node.childPlacement ?? '' },
     set childPlacement(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.childPlacement = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get order(): number { return editor.navigationEditDto?.node.order ?? 0 },
+    get order(): number { return readNavEditDto()?.node.order ?? 0 },
     set order(v: number) { const dto = editor.navigationEditDto; if (dto) { dto.node.order = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get hidden(): boolean { return editor.navigationEditDto?.node.hidden ?? false },
+    get hidden(): boolean { return readNavEditDto()?.node.hidden ?? false },
     set hidden(v: boolean) { const dto = editor.navigationEditDto; if (dto) { dto.node.hidden = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get disabled(): boolean { return editor.navigationEditDto?.node.disabled ?? false },
+    get disabled(): boolean { return readNavEditDto()?.node.disabled ?? false },
     set disabled(v: boolean) { const dto = editor.navigationEditDto; if (dto) { dto.node.disabled = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get refId(): string { return editor.navigationEditDto?.node.refId ?? '' },
+    get refId(): string { return readNavEditDto()?.node.refId ?? '' },
     set refId(v: string) { const dto = editor.navigationEditDto; if (dto) { dto.node.refId = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get permissionMode(): 'none' | 'masked' | 'invisible' { return editor.navigationEditDto?.node.permissionMode ?? 'masked' },
+    get permissionMode(): 'none' | 'masked' | 'invisible' { return readNavEditDto()?.node.permissionMode ?? 'masked' },
     set permissionMode(v: 'none' | 'masked' | 'invisible') { const dto = editor.navigationEditDto; if (dto) { dto.node.permissionMode = v; editor.applyNavigationEditDto(dto); markNavDirty() } },
-    get hasContext(): boolean { return editor.navigationEditDto?.context.hasContext ?? false },
+    get hasContext(): boolean { return readNavEditDto()?.context.hasContext ?? false },
     set hasContext(v: boolean) {
       const dto = editor.navigationEditDto
       if (dto) {

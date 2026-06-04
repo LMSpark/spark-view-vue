@@ -142,6 +142,121 @@ Core stance: **Class names MUST reflect domain hierarchy, not flat peer-level na
 - Do NOT place 5+ classes without a common prefix in the same directory — this signals unclear domain boundaries.
 - Subclass naming MUST express the "is-a" relationship: `MongoUserRepository` implements `UserRepository`, not `UserRepositoryImpl`.
 
+#### Class Naming Dictionary Layering Rules (Mandatory)
+
+Core stance: **Class names MUST reflect domain paths (dictionary-style), NOT free combinations of orthogonal dimensions (matrix-style).**
+
+**Dictionary-style naming**: class name = domain path + domain-internal role. The left side is a stable domain hierarchy path; the right side is a natural specialization within that domain.
+
+```
+✅ Dictionary-style: domain path → role
+
+PageFileReader       → domain path=PageFile, role=Reader
+PageFileWriter       → domain path=PageFile, role=Writer
+PageFileCache        → domain path=PageFile, role=Cache
+DataSetValidator     → domain path=DataSet, role=Validator
+DataSetTransformer   → domain path=DataSet, role=Transformer
+```
+
+Characteristics:
+- Adding a new role within a domain does not affect class names in other domains
+- Directory structure maps 1:1 to naming — `PageFileReader` naturally belongs under `page-file/`
+- Name length reflects hierarchy depth only, not dimension combination count
+
+**Matrix-style naming** (PROHIBITED): class name = dimension A × dimension B × role. Cartesian product of orthogonal dimensions.
+
+```
+❌ Matrix-style: dimensionA × dimensionB × role
+
+Dim1 (storage): Mongo / Redis / Memory
+Dim2 (entity):  User / Order / Product
+Dim3 (role):    Repository / Service / Controller
+
+→ MongoUserRepository, MongoOrderRepository, RedisUserRepository...
+→ 3×3×3 = 27 class names, no hierarchy, just combinations
+```
+
+Characteristics:
+- Any two segments in the class name can be independently swapped to produce a valid new name → matrix-style
+- Adding one dimension value (e.g., `Postgres`) causes class name explosion
+- Directory structure cannot group naturally — "group by storage" and "group by entity" both make sense but neither is complete
+- Name length grows linearly with dimension count
+
+**Mandatory rules:**
+
+1. Class name structure MUST be `[DomainPath][Role]`, NOT `[DimA][DimB][Role]`.
+2. Domain path MUST map 1:1 to directory path: `PageFileXxx` → `page-file/` subdirectory. `PageFileXxx` MUST NOT appear in the root directory.
+3. Role suffix MUST be meaningful within the domain — it cannot be reused as an independent dimension across domains.
+4. When adding a class, first determine which existing domain path it belongs to — if it belongs to an existing domain, use that domain prefix and place it in the corresponding subdirectory; if it belongs to no existing domain, create the new domain subdirectory first; NEVER throw an unprefixed class into the root directory.
+5. Implementation details (storage backend, serialization format, transport protocol, etc.) MUST NOT appear as naming dimensions. In `MongoUserRepository`, `Mongo` is an implementation detail, not a domain path — the correct approach is `UserRepository` as the domain class with `Mongo` as a constructor parameter or configuration, not part of the class name.
+
+**Matrix-style naming detection signals:**
+
+- The same prefix segment appears in multiple class names but does not belong to the same domain → matrix-style
+- Any two segments in the class name can be independently swapped to produce a valid new name → matrix-style
+- Class name exceeds 3 segments (A-B-C-Role) and the first 2+ segments are orthogonal dimensions → matrix-style
+- Adding one dimension value (e.g., a new storage backend) requires creating new classes for all domains → matrix-style
+
+**Anti-Pattern: Matrix-Style Naming**
+
+```ts
+// ❌ PROHIBITED: Cartesian product of 3 orthogonal dimensions
+
+// Dim1 (storage) × Dim2 (entity) × Dim3 (role)
+export class MongoUserRepository { /* ... */ }
+export class MongoOrderRepository { /* ... */ }
+export class RedisUserRepository { /* ... */ }
+export class RedisOrderRepository { /* ... */ }
+export class MemoryUserRepository { /* ... */ }
+export class MemoryOrderRepository { /* ... */ }
+
+// Add Postgres → must write PostgresUserRepository, PostgresOrderRepository...
+// Add Product entity → must write MongoProductRepository, RedisProductRepository...
+// 2×2 = 6 classes already; 3×3 = 27 classes — dimension explosion
+```
+
+**Correct Pattern: Dictionary-Style Layered Naming**
+
+```ts
+// ✅ CORRECT: domain path + role; implementation details do NOT enter class names
+
+// --- user/user-repository.ts ---
+export class UserRepository {
+  // domain path=User, role=Repository
+  // Storage backend injected via constructor — not part of class name
+  constructor(private readonly store: DataStore) {}
+}
+
+// --- user/user-service.ts ---
+export class UserService {
+  // domain path=User, role=Service
+}
+
+// --- order/order-repository.ts ---
+export class OrderRepository {
+  // domain path=Order, role=Repository
+  constructor(private readonly store: DataStore) {}
+}
+
+// --- order/order-service.ts ---
+export class OrderService {
+  // domain path=Order, role=Service
+}
+
+// Add Postgres → only need a new DataStore implementation, no class names change
+// Add Product → new product/ subdirectory + ProductRepository, no impact on user/ or order/
+```
+
+**Dictionary Layering Checklist:**
+
+When adding or renaming a class, answer these questions in order:
+
+1. **What is the domain path?** — the leftmost consecutive PascalCase segments (e.g., `PageFile`)
+2. **What is the role?** — the rightmost segment (e.g., `Reader`, `Validator`)
+3. **Are there independently swappable dimensions in the middle?** — if yes, the naming violates dictionary layering and must be reorganized
+4. **Does the directory path match the domain path?** — `PageFileXxx` → `page-file/` subdirectory
+5. **Does adding a new dimension value cause class name explosion?** — if adding a storage backend requires renaming classes across all domains, that dimension is an implementation detail and MUST NOT enter the class name
+
 #### Class File Organization Rules
 
 - When a directory exceeds **7 class files**, it MUST be split into subdirectories by domain.
@@ -463,6 +578,7 @@ export function objectSchema(
 - **Single-directory file limit**: A single directory MUST NOT exceed 10 `.ts`/`.vue` files (excluding `index.ts`); beyond that, split into subdirectories.
 - **Single-directory subdirectory limit**: A single directory level MUST NOT exceed 7 subdirectories; beyond that, merge into parent grouping directories by domain.
 - **Class naming hierarchy**: 5+ independent classes without a common prefix in the same directory signals unclear domain boundaries — split into subdirectories.
+- **Class naming dictionary layering**: class names MUST be `[DomainPath][Role]` (dictionary-style); multi-orthogonal-dimension concatenation (matrix-style) is FORBIDDEN; implementation details (storage backend, serialization format, transport protocol) MUST NOT appear as naming dimensions.
 - **Component file pairing**: `.props.ts` + `.vue` paired files MUST go into a component-specific subdirectory; flat-dumping in the parent directory is FORBIDDEN.
 - **Test file hierarchy**: Test directories are subject to the same file and directory count limits above.
 

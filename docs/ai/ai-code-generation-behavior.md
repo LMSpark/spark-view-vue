@@ -141,6 +141,121 @@ export class MongoUserRepository implements UserRepository {
 - 禁止在同一个目录下出现 5 个以上无共同前缀的 class——这说明领域划分不清。
 - 子类命名必须体现"是一种"关系：`MongoUserRepository` implements `UserRepository`，不是 `UserRepositoryImpl`。
 
+#### class 命名字典分层规则（强制）
+
+核心立场：**class 命名必须反映领域路径（字典式），禁止多维度自由组合拼接（矩阵式）。**
+
+**字典式命名**：类名 = 领域路径 + 领域内角色。左侧是稳定的领域层次路径，右侧是领域内部的自然细化。
+
+```
+✅ 字典式：领域路径 → 角色
+
+PageFileReader       → 领域路径=PageFile, 角色=Reader
+PageFileWriter       → 领域路径=PageFile, 角色=Writer
+PageFileCache        → 领域路径=PageFile, 角色=Cache
+DataSetValidator     → 领域路径=DataSet, 角色=Validator
+DataSetTransformer   → 领域路径=DataSet, 角色=Transformer
+```
+
+特征：
+- 新增领域内角色不会导致其他领域的类名变化
+- 目录结构与命名完全一致——`PageFileReader` 自然归属 `page-file/` 子目录
+- 类名长度只反映层次深度，不反映维度组合数
+
+**矩阵式命名**（禁止）：类名 = 维度A × 维度B × 角色。多个正交维度的笛卡尔积拼接。
+
+```
+❌ 矩阵式：维度A × 维度B × 角色
+
+维度1（存储）: Mongo / Redis / Memory
+维度2（实体）: User / Order / Product
+维度3（角色）: Repository / Service / Controller
+
+→ MongoUserRepository, MongoOrderRepository, RedisUserRepository...
+→ 3×3×3 = 27 个类名，没有层次，只有组合
+```
+
+特征：
+- 类名中任意两段可以独立替换产生合法新类名 → 矩阵式
+- 新增一个维度值（如加 `Postgres`）导致类名爆炸
+- 目录结构无法自然分组——"按存储分"还是"按实体分"都合理但都不完整
+- 类名长度随维度数线性增长
+
+**强制规则：**
+
+1. 类名结构必须是 `[领域路径][角色]`，不是 `[维度A][维度B][角色]`。
+2. 领域路径必须与目录路径一一对应：`PageFileXxx` → `page-file/` 子目录。不允许 `PageFileXxx` 出现在根目录。
+3. 角色后缀必须在领域内部有意义，不能跨领域复用为独立维度。
+4. 新增 class 时先判断它属于哪个已有领域路径——属于已有领域则用该领域前缀并放入对应子目录；不属于任何已有领域则先建新领域子目录再放 class；绝不往根目录扔无前缀 class。
+5. 实现细节（存储后端、序列化格式、传输协议等）不得作为命名维度。`MongoUserRepository` 中 `Mongo` 是实现细节不是领域路径——正确做法是 `UserRepository` 作为领域 class，`Mongo` 作为构造参数或配置，不进入类名。
+
+**矩阵式命名检测信号：**
+
+- 同一前缀段在多个类名中出现但不属于同一领域 → 矩阵式
+- 类名中任意两段可以独立替换产生合法新类名 → 矩阵式
+- 类名超过 3 段（A-B-C-Role）且前 2+ 段是正交维度 → 矩阵式
+- 新增一个维度值（如新存储后端）需要为所有领域创建新类 → 矩阵式
+
+**反例：矩阵式命名**
+
+```ts
+// ❌ 禁止：3 个正交维度的笛卡尔积
+
+// 维度1（存储）× 维度2（实体）× 维度3（角色）
+export class MongoUserRepository { /* ... */ }
+export class MongoOrderRepository { /* ... */ }
+export class RedisUserRepository { /* ... */ }
+export class RedisOrderRepository { /* ... */ }
+export class MemoryUserRepository { /* ... */ }
+export class MemoryOrderRepository { /* ... */ }
+
+// 新增加 Postgres → 又要写 PostgresUserRepository, PostgresOrderRepository...
+// 新增加 Product 实体 → 又要写 MongoProductRepository, RedisProductRepository...
+// 2×2 已经 6 个类，3×3 = 27 个类，维度爆炸
+```
+
+**正例：字典式分层命名**
+
+```ts
+// ✅ 正确：领域路径 + 角色，实现细节不入类名
+
+// --- user/user-repository.ts ---
+export class UserRepository {
+  // 领域路径=User, 角色=Repository
+  // 存储后端通过构造参数注入，不进入类名
+  constructor(private readonly store: DataStore) {}
+}
+
+// --- user/user-service.ts ---
+export class UserService {
+  // 领域路径=User, 角色=Service
+}
+
+// --- order/order-repository.ts ---
+export class OrderRepository {
+  // 领域路径=Order, 角色=Repository
+  constructor(private readonly store: DataStore) {}
+}
+
+// --- order/order-service.ts ---
+export class OrderService {
+  // 领域路径=Order, 角色=Service
+}
+
+// 新增加 Postgres → 只需新建 DataStore 实现，不改任何类名
+// 新增加 Product → 新建 product/ 子目录 + ProductRepository，不影响 user/ 和 order/
+```
+
+**命名字典分层检查清单：**
+
+新增或重命名 class 时，必须依次回答：
+
+1. **领域路径是什么？** — 类名左侧连续大写段（如 `PageFile`）
+2. **角色是什么？** — 类名最右一段（如 `Reader`、`Validator`）
+3. **中间有没有可独立替换的维度？** — 有则违反字典分层，必须重新组织
+4. **目录路径与领域路径一致吗？** — `PageFileXxx` → `page-file/` 子目录
+5. **新增维度值是否导致类名爆炸？** — 如果加一个存储后端需要改所有领域类名，说明该维度是实现细节，不进入类名
+
 #### class 文件组织规则
 
 - 同一目录下 class 文件超过 **7 个** 时，必须按领域拆分子目录。
@@ -462,6 +577,7 @@ export function objectSchema(
 - **单目录文件数**：单个目录下 `.ts`/`.vue` 文件不得超过 10 个（不含 `index.ts`）；超过必须拆子目录。
 - **单目录子目录数**：同一级目录下子目录数不得超过 7 个；超过必须按领域合并父级分组。
 - **class 命名层次**：同一目录下 5 个以上无共同前缀的独立 class 视为领域划分不清，必须拆分子目录。
+- **class 命名字典分层**：类名必须是 `[领域路径][角色]`（字典式），禁止多正交维度拼接（矩阵式）；实现细节（存储后端、序列化格式、传输协议）不得作为命名维度。
 - **组件配对文件**：`.props.ts` + `.vue` 配对文件必须放入组件专属子目录，禁止平铺在父目录。
 - **测试文件层次**：测试目录同样受上述文件数和目录数限制。
 

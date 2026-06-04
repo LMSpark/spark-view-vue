@@ -21,7 +21,7 @@ const rendererState = vi.hoisted((): { props: Record<string, unknown> | null } =
   props: null,
 }))
 
-vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
+vi.mock('../../packages/spark-app/src/navigation/nav-access', () => ({
   getNavTree: () => navTreeState.tree,
 }))
 

@@ -27,7 +27,7 @@ import {
 import {
   ensurePageDesignBusiness,
   validatePageDesignPayloadGuidesFromSession,
-} from '@spark-appworks/spark-project-model/ai'
+} from '../src/services/page-design-business.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
 import {
   PAGE_MODEL_FILE_NAMES,

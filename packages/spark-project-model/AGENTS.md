@@ -4,7 +4,7 @@
 
 ## 目标方向
 
-`ProjectModel` 是软件设计 + 运行一体化的根模型。后续修改代码时，以 `ProjectModel` 为模型主语；`ProjectEditor` 是 AI + DevSystem 共用的编辑协同层，不是单个 UI 的私有适配器。
+`ProjectModel` 是软件设计 + 运行一体化的根模型。后续修改代码时，以 `ProjectModel` 为模型主语；`ProjectEditor` 是 DevSystem 和外部自动化共用的编辑协同层，不是单个 UI 的私有适配器。
 
 目标结构：
 
@@ -21,15 +21,14 @@ ProjectModel
 
 ## 当前结构优先
 
-当前运行源码仍使用：
+当前运行源码使用：
 
 ```text
-core/    当前领域模型、节点、导航编辑 DTO、配置页四文件模型
-infra/   文件/导航/引用/内容加载设施
-editor/  AI + DevSystem 共享 ProjectEditor facade 与 PageNodeFactory
-design/  data/rule/json-document artifact
-ai/      page-design AI 注册
-vcm/     generated metadata
+project/     ProjectModel
+navigation/  ProjectNode、导航 DTO、树/平铺转换
+page/        ConfigPageNode、PageNodeFactory、四文件内容模型
+editor/      ProjectEditor facade 与编辑器 artifacts
+infra/       文件/导航/引用/内容加载设施
 ```
 
 `src/MODEL-HIERARCHY.md` 是目标模型契约。`docs/unified-model-refactor-plan.md` 是未来目录迁移计划，不是当前源码地图。除非任务明确要求目录迁移，否则不要把 `entity/`、`service/`、`contract/` 等计划路径写进测试、工具或 import。
@@ -50,18 +49,15 @@ vcm/     generated metadata
 
 ```text
 @spark-appworks/spark-project-model
-@spark-appworks/spark-project-model/projectDevSystem
-@spark-appworks/spark-project-model/ai
-@spark-appworks/spark-project-model/json-document
+@spark-appworks/spark-project-model/project
 ```
 
-包外不要相对导入本包 `src/*`。包内测试可以测内部函数，但必须引用当前真实路径，例如 `../src/core/navigation-edit`。
+包外不要相对导入本包 `src/*`。包内测试可以测内部函数，但必须引用当前真实路径，例如 `../src/navigation/edit`。
 
-## AI / VCM
+## AI 边界
 
 - page-design 的模型根是 `ProjectModel`。
-- page-design metadata 的源码根是 `src/core/project.ts`、`src/core/config-page.ts` 加 `spark-data` 的 DataSet / node-tree 能力。
-- metadata 输出在 `src/vcm/page-design/page-design-vcm-metadata.generated.json`。
+- page-design AI 注册属于 app/service 层，不属于 `spark-project-model`。
 - `AiModule` metadata 不得承诺未注册的函数、属性或子模块。
 - LLM 可见能力说明优先写在 class/function 首次声明处。
 

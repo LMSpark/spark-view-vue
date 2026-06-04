@@ -12,10 +12,6 @@
     "./project": {
       "types": "./dist/project.d.ts",
       "import": "./dist/project.js"
-    },
-    "./ai": {
-      "types": "./dist/ai.d.ts",
-      "import": "./dist/ai.js"
     }
   },
   "main": "./dist/index.js",
@@ -31,7 +27,6 @@
     "lint:fix": "eslint src --ext .ts --fix"
   },
   "dependencies": {
-    "@spark-appworks/spark-ai": "workspace:*",
     "@spark-appworks/spark-data": "workspace:*",
     "@spark-appworks/spark-json-document": "workspace:*",
     "@spark-appworks/spark-utils": "workspace:*"

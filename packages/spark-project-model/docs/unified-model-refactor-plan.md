@@ -30,7 +30,7 @@
 ```text
 @spark-appworks/spark-project-model
 @spark-appworks/spark-project-model/project
-@spark-appworks/spark-project-model/ai
+app service page-design business
 @spark-appworks/spark-project-model/json-document
 ```
 
@@ -365,7 +365,7 @@ compileRule / parsePageData / parseScript / parseCss
 
 ### 3.3 /ai 入口
 
-`src/ai.ts` 只导出 page-design 运行所需的稳定协议：
+app service 只导出 page-design 运行所需的稳定协议：
 
 ```text
 PAGE_DESIGN_MODULE_ID
@@ -439,7 +439,7 @@ pnpm-lock.yaml
 
 - 所有活跃代码不再引用 `@spark-appworks/spark-project-model`。
 - 所有活跃代码不再引用 `packages/spark-project-model`。
-- 构建期组件 catalog 输出到 `packages/spark-project-model/src/ai/page-design/payload/component-catalog.json`。
+- 构建期组件 catalog 输出到 `src/services/page-design/payload/component-catalog.json`。
 - backend component metadata 与 project-model payload catalog 保持同步。
 
 ## 6. 验收清单

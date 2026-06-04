@@ -12,7 +12,7 @@ export type {
   NavigationNodeEditPatchDto,
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
-} from './core/navigation-edit'
+} from './navigation/edit'
 
 // ── L3 编辑器 ────────────────────────────────────────────────
 
@@ -30,7 +30,7 @@ export type {
 export type {
   ProjectPageReference,
   ProjectSummary,
-} from './infra/reference'
+} from './infra/reference/client'
 
 // ── 设计制品 ─────────────────────────────────────────────────
 
@@ -42,20 +42,20 @@ export {
   projectDesignerRelations,
   projectDesignerTables,
   reconcileDesignerTableUiState,
-} from './design/data'
+} from './editor/artifacts/page-data'
 
 export {
   componentCatalog,
   createRuleJsonSchema,
   createRuleTreePolicy,
-} from './design/rule'
+} from './editor/artifacts/rule'
 
 export type {
   DesignerRelationProjection,
   DesignerTableUiState,
   DesignerTableProjection,
-} from './design/data'
+} from './editor/artifacts/page-data'
 
 export type {
   RuleEditorComponentCatalog,
-} from './design/rule'
+} from './editor/artifacts/rule'

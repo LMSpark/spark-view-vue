@@ -30,7 +30,7 @@ import type {
   BasePageContentLoader,
   PageContentLoaderOptions,
 } from '../infra/loader/types'
-import { PageNodeFileApi } from '../infra/file-api'
+import { PageNodeFileApi } from '../infra/file/api'
 import { createPageContentLoader } from '../infra/loader/loader'
 import type {
   ProjectModelData,
@@ -38,46 +38,46 @@ import type {
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-} from '../core/node'
+} from '../navigation/node'
 import type {
   NavigationNodeEditApplyResultDto,
   NavigationNodeEditInputDto,
   NavigationNodeEditPatchDto,
-} from '../core/navigation-edit'
+} from '../navigation/edit'
 import {
   applyNavigationNodeEditDtoToNode,
   applyNodeKindPresetToEditDto,
   createNavigationNodeEditDto,
   createNavigationNodePatch,
-} from '../core/navigation-edit'
+} from '../navigation/edit'
 import {
   createReservedRootGroup,
   isConfigNodeKind,
   resolvePageNodePageId,
-} from '../core/node-helpers'
-import { NavigationConfigClient } from '../infra/nav-client'
+} from '../navigation/helpers'
+import { NavigationConfigClient } from '../infra/navigation/client'
 
 // ── 内部域模型导入（page-model / project） ──
 
-import type { ConfigPageNode } from '../core/config-page'
-import { PageNodeFileCache } from '../infra/file-cache'
-import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../core/page-file'
+import type { ConfigPageNode } from '../page/config-page'
+import { PageNodeFileCache } from '../infra/file/cache'
+import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../page/file'
 import {
   PageNavigationLifecycle,
   type PageNavigationMountParams,
-} from '../infra/nav-lifecycle'
+} from '../infra/navigation/lifecycle'
 import {
   PAGE_NODE_FILE_NAMES,
   type PageNodeFileName,
-} from '../core/page-file'
-import type { PageNodeFileStorage } from './factory'
-import { ProjectModel } from '../core/project'
-import type { ProjectModelDto } from '../core/project'
+} from '../page/file'
+import type { PageNodeFileStorage } from '../page/factory'
+import { ProjectModel } from '../project/model'
+import type { ProjectModelDto } from '../project/model'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,
   type ProjectSummary,
-} from '../infra/reference'
+} from '../infra/reference/client'
 import { trimTrailingSlash } from '../infra/util'
 
 // ═══════════════════════════════════════════════════════
@@ -434,7 +434,7 @@ export class ProjectEditor {
   readSnapshot(): ProjectEditorSnapshot {
     const pageId = this.getActivePage()?.pageId ?? ''
     const navigationRoot = this.project.navigationRoot
-    const treeData = this.project.toTree()
+    const treeData = navigationRoot.children
     const selectedNode = this.selectedNodeId
       ? this.project.findNodeById(this.selectedNodeId)?.toNodeData() ?? null
       : null

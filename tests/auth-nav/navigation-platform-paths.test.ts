@@ -13,7 +13,7 @@ type NavigateToPath = {
 
 const refreshRoutesMock = vi.hoisted(() => vi.fn<() => Promise<ProjectModelData | null>>())
 
-vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
+vi.mock('../../packages/spark-app/src/navigation/nav-access', () => ({
   refreshRoutes: refreshRoutesMock,
 }))
 

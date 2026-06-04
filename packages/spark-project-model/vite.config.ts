@@ -12,7 +12,6 @@ export default defineConfig({
       entry: {
         index: resolve(__dirname, 'src/index.ts'),
         project: resolve(__dirname, 'src/project.ts'),
-        ai: resolve(__dirname, 'src/ai.ts'),
       },
       formats: ['es'],
     },

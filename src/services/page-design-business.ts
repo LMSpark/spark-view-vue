@@ -1,18 +1,17 @@
 /**
- * @spark-appworks/spark-project-model/ai
+ * pageDesign AI business registration.
  *
- * AI-facing contracts that are implemented by the project editor package.
+ * This app-layer service exposes the current ProjectModel to spark-ai without
+ * making spark-project-model depend on AI runtime or generated metadata files.
  */
-
 import {
   AiModuleAdapter,
   createSimpleInputContract,
   type AiAgentHost,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
-import type { ProjectEditor } from '../editor/editor'
-import { ProjectModel } from '../core/project'
-import pageDesignVcmMetadata from '../vcm/page-design/page-design-vcm-metadata.generated.json'
+import { ProjectModel } from '@spark-appworks/spark-project-model'
+import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -37,6 +36,12 @@ export type PageDesignRunInput = {
 export type EnsurePageDesignBusinessOptions = {
   host: AiAgentHost
   getPageDesignEditor: (context: { moduleInstanceId: string }) => ProjectEditor
+}
+
+export type PageDesignPayloadGuideValidationResult = {
+  ok: boolean
+  matchedToolNames: string[]
+  issue?: string
 }
 
 export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOptions): AiAgentHost {
@@ -76,8 +81,8 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           systemPrompt: createPageDesignSystemPrompt,
           title: input => `pageDesign:${input.pageId}`,
           readonlySteps: [
-            '先用 module_query/module_guide 查询 generated metadata，禁止使用 page-design 硬编码能力表。',
-            '能力实例是当前 ProjectModel；先通过 nodes.openConfigPage(pageId) 进入 ConfigPageNode，再进入页面配置子模型。',
+            '先查询当前 ProjectModel 能力边界，再打开目标配置页。',
+            '能力实例是当前 ProjectModel；先通过 openConfigPage(pageId) 进入 ConfigPageNode，再进入页面配置子模型。',
             '复杂参数和复杂属性先查概要，再查局部指南，最后执行函数或 module_script。',
           ],
         }),
@@ -87,12 +92,27 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
   })
 }
 
+export function validatePageDesignPayloadGuidesFromSession(
+  _files: unknown,
+  sessionRecord: unknown,
+): PageDesignPayloadGuideValidationResult {
+  const matchedToolNames = collectToolNames(sessionRecord).filter(isPayloadGuideToolName)
+  if (matchedToolNames.length > 0) {
+    return { ok: true, matchedToolNames }
+  }
+  return {
+    ok: false,
+    matchedToolNames,
+    issue: 'session did not record payload guide or payload query tool usage',
+  }
+}
+
 function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
   return [
     `当前 pageDesign 页面实例: ${input.pageId}`,
     `用户目标: ${input.description}`,
-    '元数据来源: VCM generated metadata from capability provider classes.',
-    '执行原则: this 是当前 ProjectModel；先通过 this.nodes.openConfigPage({ pageId }) 获取页面配置节点，再按需进入 nodeTree、dataSet、script、style 子模块。',
+    '元数据来源: app-layer pageDesign registration.',
+    '执行原则: this 是当前 ProjectModel；先通过 this.openConfigPage(pageId) 获取页面配置节点，再按需进入 rule、dataSet、script、style 子模型。',
   ].join('\n')
 }
 
@@ -110,13 +130,12 @@ function resolvePageDesignProject(
 }
 
 function readPageDesignProjectMetadata(): AiModuleMetadataJson {
-  assertPageDesignVcmMetadata()
   return {
     schemaVersion: 1,
     rootApi: {
       kind: 'project',
       name: 'Page Design Project',
-      description: '当前 pageDesign 项目模型。元数据来源于 VCM generated metadata；通过 openConfigPage(pageId) 进入配置页面节点。',
+      description: '当前 pageDesign 项目模型；通过 openConfigPage(pageId) 进入配置页面节点。',
       actions: [
         {
           name: 'openConfigPage',
@@ -139,7 +158,7 @@ function readPageDesignProjectMetadata(): AiModuleMetadataJson {
           },
           usageRules: [
             'pageId 必须来自输入，不允许从当前活动页兜底。',
-            '进入页面后优先使用 module_script 在返回对象上访问 rule、dataSet、script、style 子模型。',
+            '进入页面后优先访问 rule、dataSet、script、style 子模型。',
           ],
         },
       ],
@@ -156,11 +175,30 @@ function readPageDesignProjectMetadata(): AiModuleMetadataJson {
   }
 }
 
-function assertPageDesignVcmMetadata(): void {
-  const metadata = pageDesignVcmMetadata as Readonly<{
-    props?: ReadonlyArray<{ name?: string }>
-  }>
-  if (metadata.props?.some(prop => prop.name === 'ProjectModel') !== true) {
-    throw new Error('Generated pageDesign VCM metadata is missing ProjectModel. Run pnpm run generate:module-metadata.')
+function collectToolNames(value: unknown): string[] {
+  const names: string[] = []
+  const visited = new Set<unknown>()
+  const visit = (current: unknown): void => {
+    if (current === null || typeof current !== 'object') return
+    if (visited.has(current)) return
+    visited.add(current)
+    if (Array.isArray(current)) {
+      for (const item of current) visit(item)
+      return
+    }
+    const record = current as Record<string, unknown>
+    const toolName = record['toolName'] ?? record['name'] ?? record['functionName']
+    if (typeof toolName === 'string') names.push(toolName)
+    for (const item of Object.values(record)) visit(item)
   }
+  visit(value)
+  return [...new Set(names)]
+}
+
+function isPayloadGuideToolName(name: string): boolean {
+  const normalized = name.toLowerCase()
+  return normalized.includes('payload')
+    || normalized.includes('guide')
+    || normalized.includes('module_query')
+    || normalized.includes('module_guide')
 }

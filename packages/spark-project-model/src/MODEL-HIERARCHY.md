@@ -143,7 +143,7 @@ spark-app / spark-component runtime
 |---|---|
 | `@spark-appworks/spark-project-model` | 软件模型根、设计/运行公共类型、页面工厂兼容出口 |
 | `@spark-appworks/spark-project-model/project` | AI + DevSystem 共用项目编辑协同层 |
-| `@spark-appworks/spark-project-model/ai` | page-design AI 对 ProjectModel 的设计入口 |
+| app service page-design business | page-design AI 对 ProjectModel 的设计入口 |
 | `@spark-appworks/spark-project-model/json-document` | 独立 JSON 文档运行时 |
 
 后续实现中，新的能力优先挂到 ProjectModel 的 design/runtime/editor 子域，而不是继续扩散到 ProjectEditor 或 UI 层。

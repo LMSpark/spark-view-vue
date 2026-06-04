@@ -4,7 +4,7 @@ import type { HttpClientBase, HttpResponse } from '@spark-appworks/spark-utils'
 import { ConfigPageNode, ProjectNode } from '@spark-appworks/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import { createRequest } from '@spark-appworks/spark-utils'
-import { createNavigationNodePatch } from '../src/core/navigation-edit'
+import { createNavigationNodePatch } from '../src/navigation/edit'
 
 describe('ProjectModel', () => {
   function createRoot(children: ProjectNodeData[], childPlacement: 'header' | 'sidebar' = 'header'): ProjectModelData {
@@ -156,7 +156,8 @@ describe('ProjectModel', () => {
     const page = p.openConfigPage('standalone')
     expect(page).toBeInstanceOf(ConfigPageNode)
     expect(page.pageId).toBe('standalone')
-    expect(page.navigation.navNode).toBeNull()
+    expect(p.findConfigPageByPageId('standalone')).toBe(page)
+    expect(p.findNodeById('standalone')).toBeNull()
   })
 
   it('creates full navigation patch so editable fields can be cleared', () => {
