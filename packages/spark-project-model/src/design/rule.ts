@@ -10,8 +10,7 @@ import type {
   JsonTreePolicy,
   JsonValue,
 } from '@spark-appworks/spark-json-document'
-import { ensureUniqueObjectKey } from '@spark-appworks/spark-json-document'
-import { withMeta } from './with-meta'
+import { ensureUniqueObjectKey, withMeta } from '@spark-appworks/spark-json-document'
 
 // ── SECTION 1: 规则编辑器组件元数据 ──
 

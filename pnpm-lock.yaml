@@ -171,6 +171,9 @@ importers:
 
   packages/spark-ai:
     dependencies:
+      '@spark-appworks/spark-json-document':
+        specifier: workspace:*
+        version: link:../spark-json-document
       '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
@@ -385,7 +388,13 @@ importers:
       '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
+      ajv:
+        specifier: ^8.18.0
+        version: 8.18.0
     devDependencies:
+      rimraf:
+        specifier: ^6.1.3
+        version: 6.1.3
       typescript:
         specifier: ~6.0.2
         version: 6.0.2

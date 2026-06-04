@@ -10,7 +10,7 @@ import {
   type TableRelation,
 } from '@spark-appworks/spark-data'
 import { copyOwnEnumerableProperties } from '@spark-appworks/spark-utils/internal'
-import { withMeta } from './with-meta'
+import { withMeta } from '@spark-appworks/spark-json-document'
 
 function parsePageDataText(rawText: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(rawText)

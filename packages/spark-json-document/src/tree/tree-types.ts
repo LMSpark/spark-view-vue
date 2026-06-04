@@ -1,0 +1,119 @@
+/**
+ * ═══════════════════════════════════════════════════════════════
+ * tree/tree-types.ts — 树模型类型定义
+ * ═══════════════════════════════════════════════════════════════
+ */
+
+import type { JsonPath, JsonValue, JsonObject } from '../core'
+
+// ── 节点类型枚举 ───────────────────────────────────────────────
+
+export type JsonNodeType = 'object' | 'array' | 'string' | 'number' | 'boolean' | 'null'
+
+// ── 树节点（纯模型，6 字段）─────────────────────────────────
+
+export type TreeNode = {
+  /** 节点 UUID */
+  readonly id: string
+  /** 父节点 ID；根节点为 null */
+  readonly parentId: string | null
+  /** 在父容器中的键 (string) 或索引 (number) */
+  readonly segment: string | number
+  /** 节点类型 */
+  readonly type: JsonNodeType
+  /** 叶子节点的原始值 */
+  readonly value: string | number | boolean | null
+  /** 同级排序权重（parentId 相同的节点按此排序） */
+  readonly order: number
+}
+
+// ── 显示行（toDisplayRows 输出）──────────────────────────────
+
+export type TreeDisplayNode = TreeNode & {
+  /** 嵌套深度（根 = 0） */
+  readonly depth: number
+  /** 从根到此节点的路径 */
+  readonly path: JsonPath
+  /** 直接子节点数量 */
+  readonly childCount: number
+  /** 键是否可重命名 */
+  readonly keyEditable: boolean
+  /** 类型是否可切换 */
+  readonly typeEditable: boolean
+  /** 是否可删除 */
+  readonly deletable: boolean
+}
+
+// ── 树模型 ────────────────────────────────────────────────────
+
+export type TreeModel = ReadonlyMap<string, TreeNode>
+
+// ── Mutation 结果 ─────────────────────────────────────────────
+
+export type MutationResult = {
+  /** 变更后的新树模型 */
+  readonly model: TreeModel
+  /** 操作后应聚焦的节点 ID */
+  readonly focusId: string
+  /** 操作后应展开的节点 ID（null 表示无需展开） */
+  readonly expandId: string | null
+}
+
+// ── 变更输入类型 ──────────────────────────────────────────────
+
+export type RenameNodeKeyInput = Readonly<{
+  model: TreeModel
+  uid: string
+  nextKeyInput: string
+  policy?: Partial<JsonTreePolicy>
+}>
+
+export type UpdateNodeTypeInput = Readonly<{
+  model: TreeModel
+  uid: string
+  nextType: JsonNodeType
+  policy?: Partial<JsonTreePolicy>
+}>
+
+// ── 策略接口 ─────────────────────────────────────────────────
+
+export type JsonTreePolicy = {
+  /** 根节点显示标签。默认 '$' */
+  rootLabel?: string
+  /** 该路径是否受保护（不可删除）。默认全部可删除 */
+  isProtected?(path: JsonPath): boolean
+  /** 该路径的键是否可重命名。默认：对象属性可改，数组索引不可改 */
+  canEditKey?(path: JsonPath): boolean
+  /** 该路径的类型是否可切换。默认：除根节点外均可 */
+  canEditType?(path: JsonPath): boolean
+  /** 为目标对象建议新子键名 */
+  suggestChildKey?(target: JsonObject, parentPath: JsonPath): string
+  /** 为数组添加子项时的默认值 */
+  createDefaultArrayItem?(parentPath: JsonPath): JsonValue
+  /** 为对象添加子项时的默认值 */
+  createDefaultObjectValue?(parentPath: JsonPath, key: string): JsonValue
+  /** 返回该路径的可选值列表（用于下拉选择，优先级低于 Schema enum） */
+  getValueOptions?(path: JsonPath): string[] | undefined
+  /** 返回该路径的带标签下拉选项。优先级最高：getValueLabels > Schema enum > getValueOptions */
+  getValueLabels?(path: JsonPath): Array<{ label: string; value: string }> | undefined
+  /** 值变更后需要自动填充到文档的补丁。返回的条目中已有的键不会被覆盖 */
+  getAutoPopulate?(changedPath: JsonPath, newValue: JsonValue): AutoPopulateEntry[] | undefined
+}
+
+/**
+ * 自动填充条目：在 targetPath 指向的对象上合并 entries 键值对。
+ * - 若 targetPath 处不是 object，跳过
+ * - 若某 key 已存在且新旧值都是 object，递归一层合并（仅补缺）
+ * - 若某 key 已存在且不都是 object，跳过（不覆盖）
+ */
+export type AutoPopulateEntry = {
+  targetPath: JsonPath
+  entries: Record<string, JsonValue>
+}
+
+// ── 平铺文档类型 ──────────────────────────────────────────────
+
+export type FlatJsonTreeDocument = {
+  readonly rootType: 'object' | 'array'
+  readonly rows: TreeNode[]
+}

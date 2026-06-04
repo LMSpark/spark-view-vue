@@ -10,7 +10,13 @@
     "removeComments": false,
     "sourceMap": true,
     "noEmitOnError": true,
-    "composite": false
+    "composite": false,
+    "paths": {
+      "@spark-appworks/spark-utils": ["../spark-utils/dist/index.d.ts"],
+      "@spark-appworks/spark-json-document": ["../spark-json-document/dist/index.d.ts"],
+      "@spark-appworks/spark-json-document/schema": ["../spark-json-document/dist/schema/index.d.ts"],
+      "@spark-appworks/spark-json-document/tree": ["../spark-json-document/dist/tree/index.d.ts"]
+    }
   },
   "include": ["src/**/*.ts"],
   "exclude": [

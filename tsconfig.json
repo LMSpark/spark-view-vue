@@ -47,7 +47,9 @@
       "@spark-appworks/spark-project-model": ["./packages/spark-project-model/src/index.ts"],
       "@spark-appworks/spark-project-model/project": ["./packages/spark-project-model/src/project.ts"],
       "@spark-appworks/spark-project-model/ai": ["./packages/spark-project-model/src/ai.ts"],
-      "@spark-appworks/spark-json-document": ["./packages/spark-json-document/src/index.ts"]
+      "@spark-appworks/spark-json-document": ["./packages/spark-json-document/src/index.ts"],
+      "@spark-appworks/spark-json-document/schema": ["./packages/spark-json-document/src/schema/index.ts"],
+      "@spark-appworks/spark-json-document/tree": ["./packages/spark-json-document/src/tree/index.ts"]
     },
     "types": ["vite/client", "vitest/globals"]
   },

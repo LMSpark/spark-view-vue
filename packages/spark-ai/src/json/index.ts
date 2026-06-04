@@ -1,16 +1,15 @@
 /**
  * ═══════════════════════════════════════════════════════════════
- * json/index.ts — SPARK AI json 公共入口
+ * json/index.ts — SPARK AI json 公共入口（deprecated re-export 层）
  * ═══════════════════════════════════════════════════════════════
  *
- * 【架构定位】最底层，被 modules 和 agent 共同依赖。
- *   这是 LLM 参数 / JSON Schema / 参数校验的单一事实源。
- *
- * 【导出策略】类型和值分列导出，便于消费方按需导入 type-only。
+ * 【迁移说明】所有 JSON/Schema 类型和工具已统一到 @spark-appworks/spark-json-document。
+ *   本入口保留旧名称作为 deprecated alias。
+ *   新代码应直接从 @spark-appworks/spark-json-document 导入。
  * ═══════════════════════════════════════════════════════════════
  */
 
-// ── 类型：JSON Schema 核心类型（SSOT）─────────────────────────
+// ── 类型：JSON Schema 核心类型（deprecated aliases）──────────
 export type {
   AiJsonObject,
   AiJsonParamShape,
@@ -21,7 +20,7 @@ export type {
   AiJsonValue,
 } from './types'
 
-// ── 值：Schema 便捷构造器 ─────────────────────────────────────
+// ── 值：Schema 便捷构造器（deprecated re-exports）────────────
 export {
   anySchema,
   arraySchema,
@@ -42,7 +41,7 @@ export type {
   StringSchemaOptions,
 } from './helpers'
 
-// ── 值 + 类型：参数校验器 ─────────────────────────────────────
+// ── 值 + 类型：参数校验器（deprecated aliases）───────────────
 export {
   AiJsonSchemaValidator,
 } from './validator'
@@ -52,7 +51,7 @@ export type {
   AiJsonValidationResult,
 } from './validator'
 
-// ── 值：JSON 值规整 ──────────────────────────────────────────
+// ── 值：JSON 值规整（deprecated re-exports）──────────────────
 export {
   coerceJsonValue,
   coerceStrictJsonValue,
