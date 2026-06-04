@@ -9,9 +9,9 @@ import {
   type DataViewMemberDiagnostic,
   type DataView,
   type DataRow,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 import { PAGE_DATASET } from '../../internal'
-import type { SparkCapabilityConsumer } from '@spark-view/spark-utils'
+import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import type {
   DataViewState,
 } from './view-runtime-state.js'

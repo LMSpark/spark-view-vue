@@ -1,5 +1,5 @@
 import type { ComputedRef } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { FormItemRule } from '../../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../../shared-types.js'
 import { useFieldContext } from '../../context/useFieldContext'

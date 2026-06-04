@@ -12,9 +12,9 @@
  * - SPARK 组件系统 + 动态路由系统
  *
  * 📦 架构层次（由 SparkApp.start 自动完成）：
- * - L1: @spark-view/spark-app - 应用基础设施层
- * - L2: @spark-view/spark-project-model - PageNode 编排层
- * - L4-L6: @spark-view/spark-component - 组件核心层
+ * - L1: @spark-appworks/spark-app - 应用基础设施层
+ * - L2: @spark-appworks/spark-project-model - PageNode 编排层
+ * - L4-L6: @spark-appworks/spark-component - 组件核心层
  *
  *
  * 💾 缓存分级过期策略：
@@ -39,10 +39,10 @@
  */
 
 // SPARK 架构包
-import * as SparkAppRuntime from '@spark-view/spark-app'
-import { SparkPageRenderer, Spark } from '@spark-view/spark-component'
-import { addLogTransport, isRecord } from '@spark-view/spark-utils'
-import { isProjectNodeData, type ProjectModelData, type ProjectNodeData } from '@spark-view/spark-project-model'
+import * as SparkAppRuntime from '@spark-appworks/spark-app'
+import { SparkPageRenderer, Spark } from '@spark-appworks/spark-component'
+import { addLogTransport, isRecord } from '@spark-appworks/spark-utils'
+import { isProjectNodeData, type ProjectModelData, type ProjectNodeData } from '@spark-appworks/spark-project-model'
 
 import {
   consumePendingLogout,

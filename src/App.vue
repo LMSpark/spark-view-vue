@@ -122,16 +122,16 @@
 <script setup lang="ts">
 import { computed, onMounted, onUnmounted, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import * as SparkAppRuntime from '@spark-view/spark-app'
-import { AI_AGENT_HOST } from '@spark-view/spark-ai/agent'
-import type { ProjectModelData } from '@spark-view/spark-project-model'
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
+import * as SparkAppRuntime from '@spark-appworks/spark-app'
+import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
+import { PAGE_RUNTIME_SERVICES } from '@spark-appworks/spark-component'
 import {
   MODULE_CONTEXT,
   useSparkComponent,
   type ModuleContext,
   type ModuleContextCapability,
-} from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
 import {
   getToken,
   getUser,

@@ -50,8 +50,8 @@ import {
 import { resolveButtonStyle } from '../../../page/actions/index'
 import type { RButtonProps } from './RendererButton.props'
 import { extractModelPermission, usePermission } from '../../../permission'
-import type { DataView, DataRow } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+import type { DataView, DataRow } from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { useActionButtonRuntime } from './useActionButtonRuntime'
 
 type ClickHandler = {

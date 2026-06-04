@@ -1,5 +1,5 @@
 import { computed, watchEffect } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { ValueRef } from '../../../shared-types.js'
 import { isDataViewEditingSource } from '../../context/dataViewEditing'
 

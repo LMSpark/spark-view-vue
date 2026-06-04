@@ -90,7 +90,7 @@ defineOptions({ inheritAttrs: false })
 import { computed, inject } from 'vue'
 import { SparkComponentRenderer } from '../../internal'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../internal'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { SparkNodeProps } from '../../shared-types.js'
 import type { FormItemRule } from '../columnFormRules'
 import { useResolvedFieldContext } from '../context/useResolvedFieldContext'

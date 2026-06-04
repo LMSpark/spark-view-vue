@@ -7,7 +7,7 @@
  * 新增 Vue 组件页面只需在此处添加一条记录，无需同步维护多处。
  */
 import type { Component } from 'vue'
-import type { ProjectModelData } from '@spark-view/spark-project-model'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
 
 /**
  * 页面作用域级别

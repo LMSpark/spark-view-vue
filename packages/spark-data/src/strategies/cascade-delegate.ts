@@ -10,7 +10,7 @@
  * 遵循 SOLID：子订阅父，父不知子。
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 import type { DataRelation } from '../types'
 import type { DataView } from '../data-view'
 import { getParentRows } from '../core/utils'

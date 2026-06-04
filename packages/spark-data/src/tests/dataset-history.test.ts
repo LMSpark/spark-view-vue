@@ -5,7 +5,7 @@ import {
   formatPageDataSnapshot,
   getDataSetSnapshot,
   listDataSetSnapshots,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 import { requireArray, requireRecord } from './test-type-helpers'
 
 type MemoryStorageMap = Map<string, string>

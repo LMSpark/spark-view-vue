@@ -4,8 +4,8 @@
  * 批量过滤行、字段，并保留服务端已经处理好的显示值
  */
 
-import type { DataRow } from '@spark-view/spark-data'
-import { FieldVisibility } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
+import { FieldVisibility } from '@spark-appworks/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import { canDelete, canEdit, isFieldEditable, isFieldVisible, getFieldVisibility } from './PermissionChecker'
 

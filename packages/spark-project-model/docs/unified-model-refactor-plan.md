@@ -37,10 +37,10 @@
 禁止继续使用：
 
 ```text
-@spark-appworks/spark-page-config
-@spark-appworks/spark-page-config/*
-packages/spark-page-config
-spark-page-config.bak
+@spark-appworks/spark-project-model
+@spark-appworks/spark-project-model/*
+packages/spark-project-model
+spark-project-model.bak
 ```
 
 ### 1.2 模型与 edit 归属
@@ -437,8 +437,8 @@ pnpm-lock.yaml
 
 目标：
 
-- 所有活跃代码不再引用 `@spark-appworks/spark-page-config`。
-- 所有活跃代码不再引用 `packages/spark-page-config`。
+- 所有活跃代码不再引用 `@spark-appworks/spark-project-model`。
+- 所有活跃代码不再引用 `packages/spark-project-model`。
 - 构建期组件 catalog 输出到 `packages/spark-project-model/src/ai/page-design/payload/component-catalog.json`。
 - backend component metadata 与 project-model payload catalog 保持同步。
 
@@ -455,8 +455,8 @@ entity/content 文件数 = 3
 不存在独立策划实体目录
 不存在独立策划服务目录
 不存在独立策划 AI 目录
-不存在 packages/spark-page-config
-不存在 spark-page-config.bak
+不存在 packages/spark-project-model
+不存在 spark-project-model.bak
 ```
 
 ### 6.2 引用验收
@@ -464,7 +464,7 @@ entity/content 文件数 = 3
 以下扫描必须无结果：
 
 ```bash
-rg "@spark-appworks/spark-page-config|packages/spark-page-config|spark-page-config\\.bak" packages src tests scripts tools
+rg "@spark-appworks/spark-project-model|packages/spark-project-model|spark-project-model\\.bak" packages src tests scripts tools
 ```
 
 文档历史和 changelog 可另行清理，不作为运行时阻断；活跃源码、测试、脚本、构建配置必须清零。

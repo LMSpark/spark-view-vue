@@ -1,6 +1,6 @@
 # @spark-appworks/spark-project-model
 
-`spark-project-model` 是 SPARK View 的软件模型核心。它的目标不是只管理项目树或配置页文件，而是让 `ProjectModel` 成为软件设计态、运行态、AI 设计能力和 DevSystem 编辑能力的一体化根模型。
+`spark-project-model` 是 SPARK AppWorks 的软件模型核心。它的目标不是只管理项目树或配置页文件，而是让 `ProjectModel` 成为软件设计态、运行态、AI 设计能力和 DevSystem 编辑能力的一体化根模型。
 
 本包的文化：软件只有一个模型根。设计修改、运行投影、运行诊断和编辑会话都应该能回到同一个 `ProjectModel`，但这个模型必须保持框架无关。
 

@@ -11,7 +11,7 @@
       "Bash(mv .claude .claude_tmp && git stash pop)"
     ],
     "additionalDirectories": [
-      "D:\\SPARK_VIEW\\.claude"
+      "D:\\SPARK_AppWorks\\.claude"
     ]
   }
 }

@@ -1,5 +1,5 @@
-import { isDataRow, type DataView, type DataRow } from '@spark-view/spark-data'
-import type { LoggerApi } from '@spark-view/spark-utils'
+import { isDataRow, type DataView, type DataRow } from '@spark-appworks/spark-data'
+import type { LoggerApi } from '@spark-appworks/spark-utils'
 import { getSelectedRows } from '../../../../page/actions/index.js'
 import { createContainerCrudContext, getNativeRefValue } from '../zero-code-shared.js'
 import { toDataRecord } from '../data-row-utils.js'

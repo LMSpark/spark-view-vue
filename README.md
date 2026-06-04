@@ -30,8 +30,8 @@
 
 ```bash
 # 1. 克隆仓库
-git clone https://github.com/LMSpark/spark-view-vue.git SPARK_VIEW
-cd SPARK_VIEW
+git clone https://github.com/LMSpark/spark-view-vue.git SPARK_AppWorks
+cd SPARK_AppWorks
 
 # 2. 安装依赖
 pnpm install
@@ -66,13 +66,13 @@ packages/
 ├── spark-app/                   # 🏗️ 应用层基础设施（路由、认证、配置、插件系统）
 ├── spark-component/             # ⚙️ 组件核心系统（注册表、能力管理、上下文、页面渲染器）
 ├── spark-data/                  # 📊 数据空间（DataSet、DataView、TreeManager、关系与聚合）
-├── spark-page-config/           # 📄 软件项目模型（ProjectModel、项目节点、配置页内容子模型）
+├── spark-project-model/           # 📄 软件项目模型（ProjectModel、项目节点、配置页内容子模型）
 ├── spark-utils/                 # 🛠️ 共享工具（Logger、HTTP、能力键、基础类型）
 ├── vite-plugin-spark-catalog/   # 🧱 构建期目录生成插件（VCM 提取、组件元数据整理）
 └── vxe-table/                   # 📋 表格插件工作区（VXE Table 集成与适配）
 ```
 
-- 运行时主线：`spark-app` + `spark-component` + `spark-data` + `spark-page-config`
+- 运行时主线：`spark-app` + `spark-component` + `spark-data` + `spark-project-model`
 - AI 主线：`spark-ai` + `vite-plugin-spark-catalog` + `spark-ai-server`
 - 公共基础：`spark-utils`
 - 目录索引： [packages/README.md](packages/README.md) 、 [scripts/README.md](scripts/README.md) 、 [tools/README.md](tools/README.md)
@@ -211,8 +211,8 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 文档入口统一从 [docs/README.md](docs/README.md) 开始。当前只保留中文主线和可执行指南：
 
 - [快速开始](docs/guides/QUICKSTART.md)
-- [项目整体认知](docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md)
-- [spark-page-config 架构](docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
+- [项目整体认知](docs/SPARK_AppWorks_PROJECT_DEEP_DIVE_ZH.md)
+- [spark-project-model 架构](docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
 - [数据流架构](docs/architecture/DATAFLOW_ARCHITECTURE.md)
 - [AI 完整指南](docs/ai/spark-ai-complete-guide.md)
 
@@ -225,7 +225,7 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 3. 更新相关文档
 4. 提交前运行 `pnpm run typecheck && pnpm run lint && pnpm run test`
 5. 提交信息遵循 Conventional Commits（由 Husky + commitlint 强制校验），格式示例：`feat(spark-data): add X`。
-   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`。
+   - 允许的 scope：`deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-project-model`。
    - 详情与示例见 `CONTRIBUTING.md`（新增）。
 
 ## 📄 许可证

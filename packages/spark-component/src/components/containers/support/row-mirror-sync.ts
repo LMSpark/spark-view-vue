@@ -1,4 +1,4 @@
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 
 export function syncReactiveRow(
   target: DataRow,

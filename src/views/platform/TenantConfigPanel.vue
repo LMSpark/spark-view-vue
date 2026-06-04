@@ -141,7 +141,7 @@
 import { computed, reactive, ref, watch } from 'vue'
 import { ElMessage } from 'element-plus'
 import { DocumentCopy, Refresh } from '@element-plus/icons-vue'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { http } from '@/services/http'
 import { getPlatformTenantApi, getTenantConfigApi } from '@/services/api-paths'
 

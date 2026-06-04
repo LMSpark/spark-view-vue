@@ -16,16 +16,16 @@ import {
   createAiAgentTransportTurn,
   createTurnEventCollector,
   toAiAgentRuntimeScope,
-} from '@spark-view/spark-ai/agent'
-import { coerceStrictJsonValue } from '@spark-view/spark-ai/json'
+} from '@spark-appworks/spark-ai/agent'
+import { coerceStrictJsonValue } from '@spark-appworks/spark-ai/json'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
-} from '@spark-view/spark-project-model/ai'
+} from '@spark-appworks/spark-project-model/ai'
 import {
   createProjectEditor,
-} from '@spark-view/spark-project-model/project'
-import { createRequest, isRecord } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-project-model/project'
+import { createRequest, isRecord } from '@spark-appworks/spark-utils'
 import {
   createAppSseEventHub,
   subscribeAppSseEvents,

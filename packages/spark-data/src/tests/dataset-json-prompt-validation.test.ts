@@ -14,8 +14,8 @@
  */
 
 import { afterEach, describe, it, expect } from 'vitest'
-import { DataSet } from '@spark-view/spark-data'
-import type { DataRow } from '@spark-view/spark-data'
+import { DataSet } from '@spark-appworks/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 
 /** 读取行字段（绕过 noPropertyAccessFromIndexSignature） */
 const f = (row: DataRow | undefined | null, field: string): unknown => row?.[field]

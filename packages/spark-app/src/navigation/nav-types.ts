@@ -1,5 +1,5 @@
 import type { ComputedRef, InjectionKey } from 'vue'
-import type { NavContextState, ProjectNodeData, RegionItems, RegionVisibility } from '@spark-view/spark-project-model'
+import type { NavContextState, ProjectNodeData, RegionItems, RegionVisibility } from '@spark-appworks/spark-project-model'
 
 /* ══════════════════════════════════════════════════════════
  * NavigationContext — Vue 依赖的运行时类型

@@ -13,8 +13,8 @@ import type {
   AiAgentStreamEvent,
   AiAgentTaskChatOptions,
   AiAgentToolCallRecord,
-} from '@spark-view/spark-ai/agent'
-import type { AiJsonParams } from '@spark-view/spark-ai/json'
+} from '@spark-appworks/spark-ai/agent'
+import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 
 export type AiRunTraceSink = Readonly<{
   appendUserMessage(content: string): void

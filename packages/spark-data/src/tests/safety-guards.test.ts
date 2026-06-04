@@ -7,7 +7,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { DataSet, DataView } from '@spark-view/spark-data'
+import { DataSet, DataView } from '@spark-appworks/spark-data'
 import { TreeManager } from '../tree-manager'
 import { CrudService } from '../crud-service'
 

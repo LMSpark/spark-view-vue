@@ -11,7 +11,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { defineCapability, sparkProvide, sparkConsume, isRecord } from '@spark-view/spark-utils'
+import { defineCapability, sparkProvide, sparkConsume, isRecord } from '@spark-appworks/spark-utils'
 import { PAGE_RUNTIME_SERVICES } from '../runtime'
 import {
   Spark,
@@ -20,9 +20,9 @@ import {
   useSparkPageComponent,
   PAGE_SERVICE,
   PAGE_COMPONENT_REGISTRY,
-} from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
-import type { SparkEventEmitter } from '@spark-view/spark-data'
+} from '@spark-appworks/spark-component'
+import type { SparkNode } from '@spark-appworks/spark-component'
+import type { SparkEventEmitter } from '@spark-appworks/spark-data'
 import { createPageComponentRegistry } from '../page/context/page-component-registry'
 
 function isStringCapability(value: unknown): value is string {

@@ -40,7 +40,7 @@ describe('verification rules', () => {
   it('rejects forbidden codegen patterns including Vue script blocks', () => {
     const root = createTempRoot()
     writeFile(root, 'src/bad.ts', [
-      "import '@spark-view/spark-ai/core'",
+      "import '@spark-appworks/spark-ai/core'",
       'export interface BadPayload { value: string }',
       'namespace LegacyNamespace { export const value = 1 }',
       "export * from './other'",
@@ -60,7 +60,7 @@ describe('verification rules', () => {
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
-    expect(output).toContain('forbidden @spark-view/spark-ai subpath')
+    expect(output).toContain('forbidden @spark-appworks/spark-ai subpath')
     expect(output).toContain('interface declaration is forbidden')
     expect(output).toContain('TypeScript namespace declaration is forbidden')
     expect(output).toContain('export * is forbidden')
@@ -83,7 +83,7 @@ describe('verification rules', () => {
       "} from './flat'",
     ].join('\n'))
     writeFile(root, 'packages/spark-ai/src/consumer.ts', [
-      "import { One, Two, Three, Four, Five, Six, Seven, Eight, Nine } from '@spark-view/spark-ai/agent'",
+      "import { One, Two, Three, Four, Five, Six, Seven, Eight, Nine } from '@spark-appworks/spark-ai/agent'",
       'export const names = [One, Two, Three, Four, Five, Six, Seven, Eight, Nine]',
     ].join('\n'))
     writeFile(root, 'packages/spark-ai/src/flat.ts', [
@@ -157,7 +157,7 @@ describe('verification rules', () => {
   it('rejects framework imports inside framework-free packages', () => {
     const root = createTempRoot()
     writeJson(root, 'packages/spark-data/package.json', {
-      name: '@spark-view/spark-data',
+      name: '@spark-appworks/spark-data',
       dependencies: {},
     })
     writeFile(root, 'packages/spark-data/src/index.ts', "import { ref } from 'vue'\nexport const value = ref(1)\n")
@@ -173,7 +173,7 @@ describe('verification rules', () => {
   it('validates the spark-ai public subpath allowlist', () => {
     const root = createTempRoot()
     writeJson(root, 'packages/spark-ai/package.json', {
-      name: '@spark-view/spark-ai',
+      name: '@spark-appworks/spark-ai',
       exports: {
         '.': './dist/index.js',
         './json': './dist/json/index.js',
@@ -186,11 +186,11 @@ describe('verification rules', () => {
       '{',
       '  "compilerOptions": {',
       '    "paths": {',
-      '      "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],',
-      '      "@spark-view/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
-      '      "@spark-view/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
-      '      "@spark-view/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],',
-      '      "@spark-view/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"]',
+      '      "@spark-appworks/spark-ai": ["./packages/spark-ai/src/index.ts"],',
+      '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
+      '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
+      '      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],',
+      '      "@spark-appworks/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"]',
       '    }',
       '  }',
       '}',
@@ -207,7 +207,7 @@ describe('verification rules', () => {
   it('rejects business material inside the spark-ai kernel', () => {
     const root = createTempRoot()
     writeJson(root, 'packages/spark-ai/package.json', {
-      name: '@spark-view/spark-ai',
+      name: '@spark-appworks/spark-ai',
       exports: {
         '.': './dist/index.js',
         './json': './dist/json/index.js',
@@ -219,10 +219,10 @@ describe('verification rules', () => {
       '{',
       '  "compilerOptions": {',
       '    "paths": {',
-      '      "@spark-view/spark-ai": ["./packages/spark-ai/src/index.ts"],',
-      '      "@spark-view/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
-      '      "@spark-view/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
-      '      "@spark-view/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"]',
+      '      "@spark-appworks/spark-ai": ["./packages/spark-ai/src/index.ts"],',
+      '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
+      '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
+      '      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"]',
       '    }',
       '  }',
       '}',

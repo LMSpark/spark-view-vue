@@ -17,7 +17,7 @@
  */
 
 import { onUnmounted } from 'vue'
-import type { DataSet } from '@spark-view/spark-data'
+import type { DataSet } from '@spark-appworks/spark-data'
 
 /**
  * DataSet 管理选项接口

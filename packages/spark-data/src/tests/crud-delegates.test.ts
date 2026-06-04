@@ -12,7 +12,7 @@ import { CrudService, createCrudService } from '../crud-service'
 import { SelectionDelegate } from '../strategies/selection-delegate'
 import { LocalMutationDelegate } from '../strategies/local-mutation-delegate'
 import { CrudDelegate } from '../strategies/crud-delegate'
-import { createRequest } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-appworks/spark-utils'
 import type { CrudApi, FilterExpression } from '../types'
 import { setMember } from './test-type-helpers'
 

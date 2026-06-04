@@ -51,13 +51,13 @@ import { createLogger } from './logger'
 import { loadConfig } from './config'
 import { AuthService } from './auth'
 import type { AuthConfig } from './auth/types'
-import { toErrorMessage, toError, createRequest, isRecord } from '@spark-view/spark-utils'
+import { toErrorMessage, toError, createRequest, isRecord } from '@spark-appworks/spark-utils'
 import {
   isStringArray,
   readProperty,
   readStringArrayProperty,
   readStringProperty,
-} from '@spark-view/spark-utils/internal'
+} from '@spark-appworks/spark-utils/internal'
 
 /**
  * =============================================================================

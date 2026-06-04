@@ -20,7 +20,7 @@
  */
 
 import { computed, shallowReactive, toRef, watch } from 'vue'
-import { DataMember, type DataColumn, type DataView, type DataRow } from '@spark-view/spark-data'
+import { DataMember, type DataColumn, type DataView, type DataRow } from '@spark-appworks/spark-data'
 import {
   DATA_SOURCE,
   MODULE_CONTEXT,

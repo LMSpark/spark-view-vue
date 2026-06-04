@@ -19,13 +19,13 @@
  * ⚠️ **禁止将此文件改名为 `script-api.ts`**（见 copilot-instructions 规划节）
  */
 
-import type { FieldVisibility, DataRow, ModelPermission } from '@spark-view/spark-data'
-import type { FieldRenderState, PermissionActionContext } from '@spark-view/spark-data'
+import type { FieldVisibility, DataRow, ModelPermission } from '@spark-appworks/spark-data'
+import type { FieldRenderState, PermissionActionContext } from '@spark-appworks/spark-data'
 import type {
   FieldRenderConfig,
   ComponentInstanceSnapshot,
   ContextSnapshot,
-} from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'
 import type {
   PageServiceCapability,
 } from './app-services'
@@ -227,7 +227,7 @@ export type PageComponentAccessInScript = {
 
 // ==================== 模块上下文（内联类型）====================
 //
-// 以下类型现已统一管理在 @spark-view/spark-utils:
+// 以下类型现已统一管理在 @spark-appworks/spark-utils:
 //   ContextItem (= 原 ModuleContextItemInScript)
 //   ContextSnapshot (= 原 ModuleContextInScript)
 //

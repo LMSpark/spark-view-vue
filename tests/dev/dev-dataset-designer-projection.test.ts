@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { DataSetMetadata } from '@spark-view/spark-data'
+import type { DataSetMetadata } from '@spark-appworks/spark-data'
 import {
   buildDataSetMetadataFromDesignerProjection,
   hasDesignerProjectionChanges,
@@ -7,7 +7,7 @@ import {
   projectDesignerTables,
   reconcileDesignerTableUiState,
   type DesignerTableProjection,
-} from '@spark-view/spark-project-model/project'
+} from '@spark-appworks/spark-project-model/project'
 
 function createMetadata(partial?: Partial<DataSetMetadata>): DataSetMetadata {
   return {

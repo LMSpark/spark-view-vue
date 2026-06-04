@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import { createRequest } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-appworks/spark-utils'
 import { SparkData } from '../spark-data'
 import { CrudService } from '../crud-service'
 

@@ -10,9 +10,9 @@ import {
   createTurnEventCollector,
   toAiAgentRuntimeScope,
   type AiAgentTurnCallbacks,
-} from '@spark-view/spark-ai/agent'
-import type * as SparkAiAgent from '@spark-view/spark-ai/agent'
-import { isRecord } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-ai/agent'
+import type * as SparkAiAgent from '@spark-appworks/spark-ai/agent'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { http } from '@/services/http'
 import { createAppSseEventSource } from '@/services/sse-events'
 

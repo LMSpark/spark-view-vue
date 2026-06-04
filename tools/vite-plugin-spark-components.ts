@@ -29,7 +29,7 @@
  * ## 生成的代码
  * ```typescript
  * // virtual:spark-components
- * import { Spark } from '@spark-view/spark-component'
+ * import { Spark } from '@spark-appworks/spark-component'
  * import PageRenderer from './components/PageRenderer.vue'
  *
  * export function registerComponents() {
@@ -402,7 +402,7 @@ class ComponentAnalyzer {
  * 组件总数: ${this.components.length} (同步: ${syncComponents.length}, 异步: ${asyncComponents.length})
  */
 
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 ${asyncComponents.length > 0 ? "import { defineAsyncComponent } from 'vue'\n" : ''}
 
 /* -----------------------------------------------------------------------------

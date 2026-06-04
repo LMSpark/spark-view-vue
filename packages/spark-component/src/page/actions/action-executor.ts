@@ -30,8 +30,8 @@ import type {
   OpenAction,
 } from './action-types'
 import { isCancellableControl, type CancellableControl } from '../../components/containers/support/interactionControl.js'
-import { Logger } from '@spark-view/spark-utils'
-import type { DataRow } from '@spark-view/spark-data'
+import { Logger } from '@spark-appworks/spark-utils'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import { extractErrorMessage, interpolate, createActionNotifier, isRowLike } from './executor-helpers'
 

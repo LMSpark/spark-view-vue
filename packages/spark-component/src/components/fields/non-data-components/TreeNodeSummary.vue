@@ -16,7 +16,7 @@
  * @description 树节点摘要展示组件，在 r-tree 场景中渲染节点名称、类型、状态等多字段信息。
  */
 import { computed } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import { DATA_ROW, DATA_SOURCE, useSparkComponent } from '../../internal'
 import type { RTreeNodeSummaryProps } from './TreeNodeSummary.props'
 

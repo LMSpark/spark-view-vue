@@ -7,7 +7,7 @@ import {
   type DataRow,
   type ModelPermission,
   type TreeConfig,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import { extractModelPermission } from '../../../permission/index.js'
 import { toDataRecord } from './data-row-utils.js'

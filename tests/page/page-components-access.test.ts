@@ -3,7 +3,7 @@ import { ref } from 'vue'
 import { buildPageContext } from '../../packages/spark-component/src/page/context/buildPageContext'
 import { compileFunctions } from '../../packages/spark-component/src/page/createSandbox'
 import { createPageComponentRegistry } from '../../packages/spark-component/src/page/context/page-component-registry'
-import type { PageDialogOptions, PageDialogResult, PageServiceCapability } from '@spark-view/spark-component'
+import type { PageDialogOptions, PageDialogResult, PageServiceCapability } from '@spark-appworks/spark-component'
 
 const mockPageService: PageServiceCapability = {
   showDialog: vi.fn(async (_options: PageDialogOptions): Promise<PageDialogResult> => 'close'),

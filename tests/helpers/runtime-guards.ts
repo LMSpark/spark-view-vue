@@ -1,4 +1,4 @@
-import { copyOwnEnumerableProperties, isStringArray } from '@spark-view/spark-utils/internal'
+import { copyOwnEnumerableProperties, isStringArray } from '@spark-appworks/spark-utils/internal'
 
 export function requireRecord(value: unknown, context: string): Record<string, unknown> {
   const record = copyOwnEnumerableProperties(value)

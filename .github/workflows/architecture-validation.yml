@@ -37,17 +37,17 @@ jobs:
           npx madge --circular --extensions ts,js \
             packages/spark-utils/src \
             packages/spark-data/src \
-            packages/spark-page-config/src \
+            packages/spark-project-model/src \
             packages/spark-component/src \
             packages/spark-app/src
 
       - name: Validate workspace protocol
         run: |
           echo "Checking workspace:* protocol usage..."
-          for pkg in spark-utils spark-data spark-page-config spark-component spark-app; do
-            jq -e '.dependencies // {} | to_entries | map(select(.key | startswith("@spark-view/")) | select(.value | startswith("workspace:") | not)) | length == 0' \
+          for pkg in spark-utils spark-data spark-project-model spark-component spark-app; do
+            jq -e '.dependencies // {} | to_entries | map(select(.key | startswith("@spark-appworks/")) | select(.value | startswith("workspace:") | not)) | length == 0' \
               "packages/$pkg/package.json" || {
-                echo "ERROR: $pkg has @spark-view/* dependencies not using workspace:* protocol"
+                echo "ERROR: $pkg has @spark-appworks/* dependencies not using workspace:* protocol"
                 exit 1
               }
           done

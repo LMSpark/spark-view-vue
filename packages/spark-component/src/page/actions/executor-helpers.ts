@@ -15,13 +15,13 @@
  * 10. ActionDescriptor 禁用判断 — isActionDescriptorDisabled
  */
 
-import { isDataRow, resolveDataViewKey, type DataView, type DataRow } from '@spark-view/spark-data'
+import { isDataRow, resolveDataViewKey, type DataView, type DataRow } from '@spark-appworks/spark-data'
 import type { PageMessageType } from '../../components/internal'
 import type { SparkNode } from '../../components/internal'
 import { nodeInputProps } from '../../components/internal'
 import type { ActionDescriptor, ActionExecutionContext, ActionExecutionScope, ActionUiDecorator } from './action-types'
-import { Logger } from '@spark-view/spark-utils'
-import { copyOwnEnumerableProperties } from '@spark-view/spark-utils/internal'
+import { Logger } from '@spark-appworks/spark-utils'
+import { copyOwnEnumerableProperties } from '@spark-appworks/spark-utils/internal'
 
 const _notifierLogger = Logger('action-executor')
 

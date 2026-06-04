@@ -7,8 +7,8 @@
  * 所有 API 调用自动附带 X-Tenant-Id 头。
  */
 
-import { createRequest, isRequestError, isRecord } from '@spark-view/spark-utils'
-import { isStringArray, readStringProperty } from '@spark-view/spark-utils/internal'
+import { createRequest, isRequestError, isRecord } from '@spark-appworks/spark-utils'
+import { isStringArray, readStringProperty } from '@spark-appworks/spark-utils/internal'
 
 // ── Token 管理 ──────────────────────────────────────────────────────────────
 

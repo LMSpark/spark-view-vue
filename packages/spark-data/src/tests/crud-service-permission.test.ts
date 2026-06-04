@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest'
-import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-view/spark-data'
+import { INSTANCE_PERMISSION_FIELD, MODEL_PERMISSION_FIELD } from '@spark-appworks/spark-data'
 import { CrudService } from '../crud-service'
 import { getMember, requireRecord } from './test-type-helpers'
 

@@ -86,4 +86,4 @@ export {
   sparkFindNearestProvider,
   sparkFindNearestProviderByKeys,
   sparkConsumeFromProvider,
-} from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'

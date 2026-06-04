@@ -28,7 +28,7 @@
 import { isActionDescriptor, executeActionDescriptor } from '../actions'
 import type { ActionExecutionContext, ActionDescriptor, ActionExecutionOptions } from '../actions'
 import { extractActionExecutionControl } from '../actions'
-import { isCallable, isRecord } from '@spark-view/spark-utils'
+import { isCallable, isRecord } from '@spark-appworks/spark-utils'
 
 /** 沙箱函数调用签名 */
 type CallFunc = {

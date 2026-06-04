@@ -12,7 +12,7 @@
     "noEmitOnError": true,
     "removeComments": false,
     "paths": {
-      "@spark-view/spark-utils": ["../spark-utils/dist/index.d.ts"]
+      "@spark-appworks/spark-utils": ["../spark-utils/dist/index.d.ts"]
     }
   },
   "include": ["src/**/*.ts"],

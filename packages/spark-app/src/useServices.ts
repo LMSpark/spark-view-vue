@@ -20,14 +20,14 @@
  * 
  * - ✅ Logger：使用工厂函数
  *   ```ts
- *   import { Logger } from '@spark-view/spark-utils'
+ *   import { Logger } from '@spark-appworks/spark-utils'
  *   const logger = Logger('MyModule')
  *   ```
  */
 
 import { inject } from 'vue'
 import { SPARK_REGISTRY_KEY } from './constants'
-import type { ComponentRegistry as SparkRegistry } from '@spark-view/spark-component'
+import type { ComponentRegistry as SparkRegistry } from '@spark-appworks/spark-component'
 
 // ============================================================================
 // 核心基础设施 Composables（仅保留 SPARK 组件系统必需）

@@ -1,4 +1,4 @@
-import type { ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 
 function normalizePath(path: string): string {
   const trimmed = path.trim()

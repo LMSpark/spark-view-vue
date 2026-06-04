@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { FieldText, FieldCheckbox, FieldSlider, FieldRate, FieldColor, FieldMention } from '@spark-view/spark-component'
-import { DATA_SOURCE, SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-view/spark-component'
-import { SparkData, type DataView } from '@spark-view/spark-data'
+import { FieldText, FieldCheckbox, FieldSlider, FieldRate, FieldColor, FieldMention } from '@spark-appworks/spark-component'
+import { DATA_SOURCE, SPARK_REGISTRY_KEY, Spark, useSparkComponent } from '@spark-appworks/spark-component'
+import { SparkData, type DataView } from '@spark-appworks/spark-data'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 import { mount } from '@vue/test-utils'
 

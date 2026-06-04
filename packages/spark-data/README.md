@@ -1,4 +1,4 @@
-# @spark-view/spark-data
+# @spark-appworks/spark-data
 
 SPARK 的纯数据层包，提供 DataSet、DataTable、DataView、TreeManager 以及围绕它们的关系、计算列和聚合能力。
 
@@ -18,9 +18,9 @@ SPARK 的纯数据层包，提供 DataSet、DataTable、DataView、TreeManager �
 ## 开发命令
 
 ```bash
-pnpm --filter @spark-view/spark-data run build
-pnpm --filter @spark-view/spark-data run typecheck
-pnpm --filter @spark-view/spark-data run test:run
+pnpm --filter @spark-appworks/spark-data run build
+pnpm --filter @spark-appworks/spark-data run typecheck
+pnpm --filter @spark-appworks/spark-data run test:run
 ```
 
 ## 进一步阅读

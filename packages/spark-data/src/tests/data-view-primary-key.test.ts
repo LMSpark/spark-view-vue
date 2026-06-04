@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 import { DataTable } from '../data-table'
 
 describe('DataView.primaryKey 从 DataTable 列定义自动推导', () => {

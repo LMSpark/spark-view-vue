@@ -1,5 +1,5 @@
-import type { CrudResult, DataRow } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+import type { CrudResult, DataRow } from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 // ── 可取消控制器（从 core/cancellable-control 内聚至此） ──────────────────
 

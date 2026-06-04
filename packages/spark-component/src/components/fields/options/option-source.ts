@@ -1,4 +1,4 @@
-import { SparkData, type DataView, type FlatTreeNode } from '@spark-view/spark-data'
+import { SparkData, type DataView, type FlatTreeNode } from '@spark-appworks/spark-data'
 
 export function buildOptionSourceFromView(
   view: DataView,

@@ -2,7 +2,7 @@
 /**
  * publish-packages.mjs
  *
- * 构建并发布所有 @spark-view/* 子包到 npm。
+ * 构建并发布所有 @spark-appworks/* 子包到 npm。
  *
  * 用法：
  *   node scripts/publish-packages.mjs [--dry-run] [--tag <tag>]

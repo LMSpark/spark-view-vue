@@ -22,7 +22,7 @@
  * @description 链接组件，可渲染子内容。
  */
 import { computed } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import {
   DATA_ROW,
   DATA_SOURCE,

@@ -6,8 +6,8 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { createPageNodeFactory, type ProjectModelData, type PageNodeFactoryOptions } from '@spark-view/spark-project-model'
-import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-view/spark-component'
+import { createPageNodeFactory, type ProjectModelData, type PageNodeFactoryOptions } from '@spark-appworks/spark-project-model'
+import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-appworks/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
 import type { BootstrapOptions } from './types'
@@ -16,8 +16,8 @@ import { createLogger } from './logger'
 import { setDynamicRouter } from './navigation/nav-access'
 import { setPageCacheHandle } from './navigation/page-cache-access'
 import { createThemeService, type ThemeServiceOptions, type ThemeServiceReactive } from './theme'
-import { toError } from '@spark-view/spark-utils'
-import { readNumberProperty, readProperty } from '@spark-view/spark-utils/internal'
+import { toError } from '@spark-appworks/spark-utils'
+import { readNumberProperty, readProperty } from '@spark-appworks/spark-utils/internal'
 
 const startLogger = createLogger('start')
 
@@ -168,7 +168,7 @@ export type StartOptions = Omit<BootstrapOptions, 'app' | 'router'> & {
  *
  * @example
  * ```typescript
- * import { SparkApp } from '@spark-view/spark-app'
+ * import { SparkApp } from '@spark-appworks/spark-app'
  * import App from './App.vue'
  *
  * SparkApp.start({

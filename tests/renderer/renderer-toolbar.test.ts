@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest'
 import { mount } from '@vue/test-utils'
 import { defineComponent, h } from 'vue'
-import { RendererToolbar } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
+import { RendererToolbar } from '@spark-appworks/spark-component'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 const SparkActionStub = defineComponent(
   (props: { config: SparkNode }) => {

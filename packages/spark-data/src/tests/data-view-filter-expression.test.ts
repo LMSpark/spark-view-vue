@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 
 describe('DataView static-data 本地过滤表达式', () => {
   it('支持结合计算列与结构化 ref 参数解析', async () => {

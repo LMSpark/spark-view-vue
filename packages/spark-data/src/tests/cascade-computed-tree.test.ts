@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
-import type { DataRow } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import { requireArray, requireRecord } from './test-type-helpers'
 
 describe('Cascade with computed parent field on tree data', () => {

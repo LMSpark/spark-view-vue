@@ -1,6 +1,6 @@
 import { ref, computed, watch } from 'vue'
-import { isRecord } from '@spark-view/spark-utils'
-import { readProperty } from '@spark-view/spark-utils/internal'
+import { isRecord } from '@spark-appworks/spark-utils'
+import { readProperty } from '@spark-appworks/spark-utils/internal'
 
 // ── Color utilities ──
 

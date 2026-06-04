@@ -17,8 +17,8 @@ const httpMock = vi.hoisted(() => ({
   requestFull: vi.fn(),
 }))
 
-vi.mock('@spark-view/spark-utils', async (importOriginal) => {
-  const actual = await importOriginal<typeof import('@spark-view/spark-utils')>()
+vi.mock('@spark-appworks/spark-utils', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@spark-appworks/spark-utils')>()
   return {
     ...actual,
     createRequest: vi.fn(() => ({

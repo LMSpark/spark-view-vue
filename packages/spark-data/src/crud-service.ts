@@ -5,10 +5,10 @@
  * 与 DataSet/DataTable 深度集成，支持权限和数据转换
  */
 
-import { HttpClientBase, createRequest, Logger, toError, isRecord } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest, Logger, toError, isRecord } from '@spark-appworks/spark-utils'
 import type {
   RequestConfig
-} from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'
 import type {
   CrudApi,
   HttpEndpoint,

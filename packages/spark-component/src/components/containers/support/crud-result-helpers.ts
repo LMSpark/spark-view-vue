@@ -3,8 +3,8 @@
  *
  * builtin-action-handler.ts 和 page/actions/action-executor.ts 共享。
  */
-import type { CrudResult, DataRow } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+import type { CrudResult, DataRow } from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 export function isCrudResult<T>(value: unknown): value is CrudResult<T> {
   return isRecord(value)

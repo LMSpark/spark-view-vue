@@ -17,7 +17,7 @@
  *   - 仅导出公共 API，内部实现细节不导出
  *   - 禁止 namespace 合并；公共类型从所属文件显式登记
  *
- * 【消费方】@spark-view/spark-ai（src/index.ts）、spark-page-config、spark-app
+ * 【消费方】@spark-appworks/spark-ai（src/index.ts）、spark-project-model、spark-app
  * ═══════════════════════════════════════════════════════════════
  */
 

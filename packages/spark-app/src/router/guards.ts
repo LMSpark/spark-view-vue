@@ -7,7 +7,7 @@
  */
 
 import type { Router } from 'vue-router'
-import { isStringArray } from '@spark-view/spark-utils/internal'
+import { isStringArray } from '@spark-appworks/spark-utils/internal'
 import type { RouterGuardOptions, AppContext } from '../types'
 import { createLogger } from '../logger'
 

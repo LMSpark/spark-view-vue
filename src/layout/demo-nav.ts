@@ -1,4 +1,4 @@
-import type { ProjectModelData } from '@spark-view/spark-project-model'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
 
 /**
  * 演示导航树 — 将 routes.json 中的扁平路由组织为模块化导航。

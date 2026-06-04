@@ -8,7 +8,7 @@ import { resolve, isAbsolute } from 'path'
  * 使用 vite build --lib + preserveModules 保证：
  * 1. Vue SFC 被 @vitejs/plugin-vue 正确编译为带 render 函数的 JS（而非 vue-tsc 的 type-aug stub）
  * 2. 各模块保持独立文件，支持 tree-shaking
- * 3. 外部依赖（vue、@spark-view/* 等）不被打包进去
+ * 3. 外部依赖（vue、@spark-appworks/* 等）不被打包进去
  *
  * 构建顺序（见 package.json "build" script）：
  *   1. vite build → 生成 dist/**‌/*.js

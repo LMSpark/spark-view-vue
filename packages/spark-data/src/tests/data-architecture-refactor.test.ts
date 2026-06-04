@@ -5,7 +5,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { DataSet } from '@spark-view/spark-data'
+import { DataSet } from '@spark-appworks/spark-data'
 import { getMember } from './test-type-helpers'
 
 describe('Data Architecture Refactor', () => {

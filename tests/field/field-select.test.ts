@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { FieldSelect } from '@spark-view/spark-component'
+import { FieldSelect } from '@spark-appworks/spark-component'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 
 // ── Element Plus stubs ────────────────────────────────────────────────────────

@@ -5,7 +5,7 @@ import {
   type DataView,
   type DataRow,
   type TreeConfig,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 import type { TreeNode } from './RendererTree/zero-code'
 import type { DataViewState } from './view-runtime-state.js'
 import {

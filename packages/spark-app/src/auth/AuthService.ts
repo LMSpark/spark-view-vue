@@ -23,16 +23,16 @@ import { isAppEnvironment } from '../types'
 // ==================== 核心依赖 ====================
 import { TokenManager } from './TokenManager'
 import { createLogger } from '../logger'
-import { toError, createRequest, isRequestError } from '@spark-view/spark-utils'
-import type { HttpClientBase, Method, RequestConfig } from '@spark-view/spark-utils'
+import { toError, createRequest, isRequestError } from '@spark-appworks/spark-utils'
+import type { HttpClientBase, Method, RequestConfig } from '@spark-appworks/spark-utils'
 import { envAdapter } from '../env'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import {
   readProperty,
   isStringArray,
   readStringArrayProperty,
   readStringProperty,
-} from '@spark-view/spark-utils/internal'
+} from '@spark-appworks/spark-utils/internal'
 
 // =============================================================================
 // 2. 常量和日志 (Constants & Logger)

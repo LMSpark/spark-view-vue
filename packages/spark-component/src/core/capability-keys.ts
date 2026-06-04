@@ -2,7 +2,7 @@
  * spark-component 能力键定义。
  *
  * ## 三类键：
- * 1. 数据层键（依赖 @spark-view/spark-data 类型）：PAGE_DATASET / DATA_SOURCE / DATA_ROW
+ * 1. 数据层键（依赖 @spark-appworks/spark-data 类型）：PAGE_DATASET / DATA_SOURCE / DATA_ROW
  * 2. 渲染层键（原在 spark-utils 中但属于 spark-component 语义）：
  *    MODULE_CONTEXT / PAGE_COMPONENT_REGISTRY / CSS_SCOPE
  * 3. 页面 UI 服务与权限键（从 spark-utils 迁入）：
@@ -11,21 +11,21 @@
  *    SUBTREE_FIELD_POLICY
  *
  * 注：PageServiceCapability 等运行时服务契约以
- * @spark-view/spark-component/runtime 为 SSOT。
+ * @spark-appworks/spark-component/runtime 为 SSOT。
  */
 
-import { defineCapability, isCallable, isRecord } from '@spark-view/spark-utils'
-import { DataView, isDataRow, type DataRow, type DataSetContract } from '@spark-view/spark-data'
+import { defineCapability, isCallable, isRecord } from '@spark-appworks/spark-utils'
+import { DataView, isDataRow, type DataRow, type DataSetContract } from '@spark-appworks/spark-data'
 import type {
   NavPermissionMode,
-} from '@spark-view/spark-project-model'
+} from '@spark-appworks/spark-project-model'
 import type {
   PageServiceCapability,
 } from '../runtime'
 
 export type {
   NavPermissionMode,
-} from '@spark-view/spark-project-model'
+} from '@spark-appworks/spark-project-model'
 
 /** 子树级字段输入策略 — 仅描述子树内字段输入行为，不改变全局 permissionMode。 */
 export type SubtreeFieldPolicy = 'unrestricted'
@@ -112,7 +112,7 @@ export type PageCssScopeCapability = {
 
 // ── CapabilityTypeMap 扩展（数据层键 + 渲染层键 + 页面 UI/权限键） ────────
 
-declare module '@spark-view/spark-utils' {
+declare module '@spark-appworks/spark-utils' {
   interface CapabilityTypeMap {
     'spark:capability:page-dataset': DataSetContract
     'spark:capability:data-source': DataView

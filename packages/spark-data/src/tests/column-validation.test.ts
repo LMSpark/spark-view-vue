@@ -10,7 +10,7 @@
 import { describe, it, expect } from 'vitest'
 import { extractColumnRules, isColumnRequired } from '../column-validation'
 import { createValidator, createSchema } from '../validation'
-import type { DataColumn } from '@spark-view/spark-data'
+import type { DataColumn } from '@spark-appworks/spark-data'
 
 // ===== extractColumnRules =====
 

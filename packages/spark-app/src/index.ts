@@ -1,5 +1,5 @@
 /**
- * @spark-view/spark-app
+ * @spark-appworks/spark-app
  * SPARK Application Layer - 应用层基础设施
  */
 
@@ -179,7 +179,7 @@ export type {
   ProjectNodeData,
   RegionItems,
   RegionVisibility,
-} from '@spark-view/spark-project-model'
+} from '@spark-appworks/spark-project-model'
 export type { TabPage, PageMode } from './navigation/useTabPages'
 export type { PrimaryPreset, NavPreset, NavColorSet, StylePreset, StyleColorSet } from './navigation/useColorScheme'
 

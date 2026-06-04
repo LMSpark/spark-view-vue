@@ -118,7 +118,7 @@ import {
   type SparkNode,
 } from '../../../internal'
 import type { RListProps } from './RendererList.props'
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-appworks/spark-data'
 import type { RendererListApi } from './types'
 import { useContainerToolbar, useContainerModuleContext } from '../../runtime/container-ui'
 import { useContainerDataSource } from '../view-data-source'

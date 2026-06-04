@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest'
-import type { AiAgentBeforeFunctionCallOptions } from '@spark-view/spark-ai/agent'
+import type { AiAgentBeforeFunctionCallOptions } from '@spark-appworks/spark-ai/agent'
 import {
   AiToolApprovalBridge,
   createAiToolApprovalBridge,

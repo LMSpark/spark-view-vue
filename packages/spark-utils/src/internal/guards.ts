@@ -2,7 +2,7 @@
  * SPARK 类型守卫（基础层）。
  *
  * 所有包的类型守卫 SSoT，按使用频率分为两级：
- * - 根出口（@spark-view/spark-utils）：isRecord、isObject、isCallable
+ * - 根出口（@spark-appworks/spark-utils）：isRecord、isObject、isCallable
  * - /internal 出口：全部守卫，包括扩展的 read*Property 系列
  */
 

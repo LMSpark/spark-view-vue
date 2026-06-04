@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { isDataViewEditingSource, writeDataViewEditingValue } from '../../packages/spark-component/src/components/fields/context/dataViewEditing'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 
 function createEditingSource(rows?: DataRow[]) {
   const store = new Map<string | number, DataRow>()

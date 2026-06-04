@@ -5,13 +5,13 @@
  * 页面配置、数据任务、通知、AI 调试等业务动作在各自订阅方处理。
  */
 
-import { Logger, isRecord, type ApiEnvelopeContext, type ApiEnvelopeEvent } from '@spark-view/spark-utils'
-import { readNonEmptyStringProperty } from '@spark-view/spark-utils/internal'
+import { Logger, isRecord, type ApiEnvelopeContext, type ApiEnvelopeEvent } from '@spark-appworks/spark-utils'
+import { readNonEmptyStringProperty } from '@spark-appworks/spark-utils/internal'
 import type {
   AiAgentAppSseEvent,
   AiAgentAppSseEventName,
   AiAgentAppSseEventSource,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 
 const logger = Logger('SSE')
 

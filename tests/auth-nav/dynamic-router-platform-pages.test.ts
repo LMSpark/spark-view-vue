@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPageNodeFactory } from '@spark-view/spark-project-model'
-import type { ProjectModelData } from '@spark-view/spark-project-model'
+import { createPageNodeFactory } from '@spark-appworks/spark-project-model'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
 import { createDynamicRouter } from '../../packages/spark-app/src/router/dynamic'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../../packages/spark-app/src/router/cross-project-ref-route'
 

@@ -9,10 +9,10 @@ import { computed, onUnmounted, ref } from 'vue'
 import {
   useSparkComponent,
   MODULE_CONTEXT,
-} from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
 import type {
   SparkNode,
-} from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
 
 type Props = {
   config?: SparkNode

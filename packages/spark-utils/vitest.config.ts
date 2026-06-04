@@ -9,8 +9,8 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@spark-view/spark-utils': resolve(__dirname, './src/index.ts'),
-      '@spark-view/spark-utils/*': resolve(__dirname, './src/*')
+      '@spark-appworks/spark-utils': resolve(__dirname, './src/index.ts'),
+      '@spark-appworks/spark-utils/*': resolve(__dirname, './src/*')
     }
   }
 })

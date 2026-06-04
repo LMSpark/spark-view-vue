@@ -1,4 +1,4 @@
-import type { CrudResult, DataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-view/spark-data'
+import type { CrudResult, DataRow, NestedTreeNode, NestedTreeSearchResult } from '@spark-appworks/spark-data'
 import type { BaseContainerApi } from '../../support/base-container-api.js'
 
 export type RendererTreePath = {

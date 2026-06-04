@@ -140,15 +140,15 @@ import {
   DATA_SOURCE,
 } from '../../../internal'
 import type { RTableProps } from './RendererTable.props'
-import type { DataColumn, DataRow, DataView } from '@spark-view/spark-data'
+import type { DataColumn, DataRow, DataView } from '@spark-appworks/spark-data'
 import { createRendererTableZeroCode, type NativeTableLike } from './zero-code'
-import { RequestState } from '@spark-view/spark-data'
+import { RequestState } from '@spark-appworks/spark-data'
 import { useContainerDataSource } from '../view-data-source'
 import { buildTreeTableRows } from '../view-tree-state'
 import { useContainerToolbar } from '../../runtime/container-ui'
 import RendererHostScope from '../../support/RendererHostScope.vue'
 import DataViewMetaBar from '../DataViewMetaBar.vue'
-import { DataMember } from '@spark-view/spark-data'
+import { DataMember } from '@spark-appworks/spark-data'
 import { TABLE_COLUMN_RESIZABLE_KEY } from '../../../fields/context/tableColumnContext'
 import { toDataRecord } from '../data-row-utils'
 

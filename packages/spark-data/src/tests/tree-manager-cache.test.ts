@@ -3,7 +3,7 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 
 describe('TreeManager 缓存操作', () => {
   it('addNodesToCache 正确写入缓存', () => {

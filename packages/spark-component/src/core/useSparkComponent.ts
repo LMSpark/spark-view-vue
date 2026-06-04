@@ -7,7 +7,7 @@
  * - 对外暴露 useSparkConsume（只消费）和 useSparkComponent（创建并管理上下文）两个入口。
  */
 import { computed, onMounted, onUnmounted, getCurrentInstance } from 'vue'
-import * as SparkUtils from '@spark-view/spark-utils'
+import * as SparkUtils from '@spark-appworks/spark-utils'
 import { PAGE_RUNTIME_SERVICES } from '../runtime'
 import { PAGE_COMPONENT_REGISTRY } from './capability-keys.js'
 import type { PageComponentRegistry } from './capability-keys.js'

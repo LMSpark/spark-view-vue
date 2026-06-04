@@ -28,10 +28,10 @@ const config: StorybookConfig = {
     const existingAliases = isStringAliasRecord(config.resolve.alias) ? config.resolve.alias : {}
     config.resolve.alias = {
       ...existingAliases,
-      '@spark-view/spark-component': r('packages/spark-component/dist/index.js'),
-      '@spark-view/spark-data':      r('packages/spark-data/dist/index.js'),
-      '@spark-view/spark-app':       r('packages/spark-app/dist/index.js'),
-      '@spark-view/spark-utils':     r('packages/spark-utils/dist/index.js'),
+      '@spark-appworks/spark-component': r('packages/spark-component/dist/index.js'),
+      '@spark-appworks/spark-data':      r('packages/spark-data/dist/index.js'),
+      '@spark-appworks/spark-app':       r('packages/spark-app/dist/index.js'),
+      '@spark-appworks/spark-utils':     r('packages/spark-utils/dist/index.js'),
     };
     return config;
   }

@@ -23,16 +23,16 @@ importers:
       '@element-plus/icons-vue':
         specifier: ^2.3.2
         version: 2.3.2(vue@3.5.32(typescript@6.0.2))
-      '@spark-view/spark-app':
+      '@spark-appworks/spark-app':
         specifier: workspace:*
         version: link:packages/spark-app
-      '@spark-view/spark-component':
+      '@spark-appworks/spark-component':
         specifier: workspace:*
         version: link:packages/spark-component
-      '@spark-view/spark-data':
+      '@spark-appworks/spark-data':
         specifier: workspace:*
         version: link:packages/spark-data
-      '@spark-view/spark-project-model':
+      '@spark-appworks/spark-project-model':
         specifier: workspace:*
         version: link:packages/spark-project-model
       '@vueuse/core':
@@ -75,7 +75,7 @@ importers:
       '@rollup/rollup-win32-x64-msvc':
         specifier: ^4.60.1
         version: 4.60.1
-      '@spark-view/vite-plugin-spark-catalog':
+      '@spark-appworks/vite-plugin-spark-catalog':
         specifier: workspace:*
         version: link:packages/vite-plugin-spark-catalog
       '@storybook/vue3':
@@ -171,7 +171,7 @@ importers:
 
   packages/spark-ai:
     dependencies:
-      '@spark-view/spark-utils':
+      '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
       ajv:
@@ -208,19 +208,19 @@ importers:
 
   packages/spark-app:
     dependencies:
-      '@spark-view/spark-ai':
+      '@spark-appworks/spark-ai':
         specifier: workspace:*
         version: link:../spark-ai
-      '@spark-view/spark-component':
+      '@spark-appworks/spark-component':
         specifier: workspace:*
         version: link:../spark-component
-      '@spark-view/spark-data':
+      '@spark-appworks/spark-data':
         specifier: workspace:*
         version: link:../spark-data
-      '@spark-view/spark-project-model':
+      '@spark-appworks/spark-project-model':
         specifier: workspace:*
         version: link:../spark-project-model
-      '@spark-view/spark-utils':
+      '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
       '@vueuse/core':
@@ -281,19 +281,19 @@ importers:
       '@codemirror/view':
         specifier: ^6.41.0
         version: 6.41.0
-      '@spark-view/spark-ai':
+      '@spark-appworks/spark-ai':
         specifier: workspace:*
         version: link:../spark-ai
-      '@spark-view/spark-data':
+      '@spark-appworks/spark-data':
         specifier: workspace:*
         version: link:../spark-data
-      '@spark-view/spark-json-document':
+      '@spark-appworks/spark-json-document':
         specifier: workspace:*
         version: link:../spark-json-document
-      '@spark-view/spark-project-model':
+      '@spark-appworks/spark-project-model':
         specifier: workspace:*
         version: link:../spark-project-model
-      '@spark-view/spark-utils':
+      '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
       codemirror:
@@ -348,7 +348,7 @@ importers:
 
   packages/spark-data:
     dependencies:
-      '@spark-view/spark-utils':
+      '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
     devDependencies:
@@ -382,7 +382,7 @@ importers:
 
   packages/spark-json-document:
     dependencies:
-      '@spark-view/spark-utils':
+      '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
     devDependencies:
@@ -395,16 +395,16 @@ importers:
 
   packages/spark-project-model:
     dependencies:
-      '@spark-view/spark-ai':
+      '@spark-appworks/spark-ai':
         specifier: workspace:*
         version: link:../spark-ai
-      '@spark-view/spark-data':
+      '@spark-appworks/spark-data':
         specifier: workspace:*
         version: link:../spark-data
-      '@spark-view/spark-json-document':
+      '@spark-appworks/spark-json-document':
         specifier: workspace:*
         version: link:../spark-json-document
-      '@spark-view/spark-utils':
+      '@spark-appworks/spark-utils':
         specifier: workspace:*
         version: link:../spark-utils
     devDependencies:

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { FieldIcon } from '@spark-view/spark-component'
+import { FieldIcon } from '@spark-appworks/spark-component'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({

@@ -6,7 +6,7 @@
 /**
  * 日志级别（从 spark-utils 统一导入）
  */
-import type { LogLevel } from '@spark-view/spark-utils'
+import type { LogLevel } from '@spark-appworks/spark-utils'
 import type { App } from 'vue'
 import type { Router } from 'vue-router'
 import type { AuthConfig } from './auth'

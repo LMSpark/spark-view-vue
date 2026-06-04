@@ -1,4 +1,4 @@
-# @spark-view/spark-app
+# @spark-appworks/spark-app
 
 > SPARK 应用层基础设施 - 提供应用启动、认证、路由守卫、错误处理和日志系统
 
@@ -14,7 +14,7 @@
 ## 安装
 
 ```bash
-pnpm add @spark-view/spark-app
+pnpm add @spark-appworks/spark-app
 ```
 
 ## 快速开始
@@ -24,7 +24,7 @@ pnpm add @spark-view/spark-app
 最简单的方式 - 100% 声明式配置：
 
 ```typescript
-import { SparkApp } from '@spark-view/spark-app'
+import { SparkApp } from '@spark-appworks/spark-app'
 import App from './App.vue'
 
 await SparkApp.start({
@@ -45,7 +45,7 @@ await SparkApp.start({
 ```typescript
 import { createApp } from 'vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import { SparkApp } from '@spark-view/spark-app'
+import { SparkApp } from '@spark-appworks/spark-app'
 import App from './App.vue'
 import routes from './routes'
 
@@ -73,7 +73,7 @@ await SparkApp.bootstrap({
 ### 认证 API
 
 ```typescript
-import { createAuthService } from '@spark-view/spark-app'
+import { createAuthService } from '@spark-appworks/spark-app'
 
 const auth = createAuthService()
 auth.initialize({ baseURL: '/api/auth' })
@@ -98,7 +98,7 @@ const authResult = await auth.checkAuth()
 ### 日志 API
 
 ```typescript
-import { createLogger } from '@spark-view/spark-app'
+import { createLogger } from '@spark-appworks/spark-app'
 
 const logger = createLogger('MyComponent')
 
@@ -111,9 +111,9 @@ logger.debug('调试信息', { data: {...} })
 ### 服务访问（推荐使用 SPARK 能力系统）
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES, useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES, useSparkComponent } from '@spark-appworks/spark-component'
 import { useRouter } from 'vue-router'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 
 export default {
   setup() {
@@ -139,7 +139,7 @@ export default {
 ### 组件注册表访问
 
 ```typescript
-import { useSparkRegistry } from '@spark-view/spark-app'
+import { useSparkRegistry } from '@spark-appworks/spark-app'
 
 export default {
   setup() {
@@ -155,7 +155,7 @@ export default {
 ### 配置管理
 
 ```typescript
-import { loadConfig, isFeatureEnabled } from '@spark-view/spark-app'
+import { loadConfig, isFeatureEnabled } from '@spark-appworks/spark-app'
 
 // 加载配置
 const config = await loadConfig({
@@ -175,7 +175,7 @@ if (isFeatureEnabled(config, 'enableExport')) {
 ### 错误处理
 
 ```typescript
-import { setupErrorHandler, createErrorBoundary } from '@spark-view/spark-app'
+import { setupErrorHandler, createErrorBoundary } from '@spark-appworks/spark-app'
 
 // 全局错误处理
 setupErrorHandler(app, {
@@ -269,11 +269,11 @@ import { useRouter } from 'vue-router'
 const router = useRouter()
 
 // 使用 Logger 工厂函数
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 const logger = Logger('MyComponent')
 
 // 使用 SPARK 能力系统
-import { PAGE_RUNTIME_SERVICES, useSparkComponent } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES, useSparkComponent } from '@spark-appworks/spark-component'
 const { sparkConsume } = useSparkComponent({ type: 'my-comp' })
 const services = sparkConsume(PAGE_RUNTIME_SERVICES)
 

@@ -16,8 +16,8 @@ import type {
 import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView } from './data-view'
-import type { HttpClientBase } from '@spark-view/spark-utils'
-import { deepClone, Logger, isRecord } from '@spark-view/spark-utils'
+import type { HttpClientBase } from '@spark-appworks/spark-utils'
+import { deepClone, Logger, isRecord } from '@spark-appworks/spark-utils'
 
 const dsLogger = Logger('DataSet')
 import {

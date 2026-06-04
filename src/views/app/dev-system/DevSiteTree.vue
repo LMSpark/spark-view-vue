@@ -89,7 +89,7 @@
 <script setup lang="ts">
 import { ref, watch, nextTick } from 'vue'
 import { ElMessageBox } from 'element-plus'
-import type { ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 import type { DevState } from './useDevState'
 import { formatChildPlacementLabel } from './childPlacementLabels'
 import NavIcon from '@/components/NavIcon.vue'

@@ -4,7 +4,7 @@
 
 ## 保留文档
 
-1. [SPARK_PAGE_CONFIG_ARCHITECTURE.md](SPARK_PAGE_CONFIG_ARCHITECTURE.md)：`spark-page-config` 的项目模型、节点模型和配置页内容模型。
+1. [SPARK_PAGE_CONFIG_ARCHITECTURE.md](SPARK_PAGE_CONFIG_ARCHITECTURE.md)：`spark-project-model` 的项目模型、节点模型和配置页内容模型。
 2. [DATAFLOW_ARCHITECTURE.md](DATAFLOW_ARCHITECTURE.md)：项目节点、DataSet、DataView、Renderer 的数据流。
 3. [PLATFORM_TENANT_ROUTING.md](PLATFORM_TENANT_ROUTING.md)：平台、租户、项目、模块和页面路由边界。
 4. [PERMISSION_SYSTEM.md](PERMISSION_SYSTEM.md)：权限快照、字段权限和动作权限。
@@ -19,7 +19,7 @@
 | `ProjectConfigPageNodeModel` | 配置页节点，覆盖 `page` 和 `sub-page`，只扩展 `rule / dataSet / style / script` |
 | `ProjectVuePageNodeModel` | Vue 页面节点，只保存项目节点事实和 Vue 目标 |
 | `description` | 节点功能描述，也是用户需求的单一真源 |
-| DevSystem | 项目模型消费层，只能通过 `spark-page-config` 对接后端 DB / file |
+| DevSystem | 项目模型消费层，只能通过 `spark-project-model` 对接后端 DB / file |
 
 ## 治理顺序
 

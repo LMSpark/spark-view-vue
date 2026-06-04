@@ -2,7 +2,7 @@ import { mount } from '@vue/test-utils'
 import { defineComponent } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
 import DevSiteTree from '@/views/app/dev-system/DevSiteTree.vue'
-import type { ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 import { useDevState, type DevState } from '@/views/app/dev-system/useDevState'
 
 function createState(node: ProjectNodeData): DevState {

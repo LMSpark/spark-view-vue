@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { usePageDataSet } from '../page/renderer/usePageDataSet'
-import { DataSet } from '@spark-view/spark-data'
+import { DataSet } from '@spark-appworks/spark-data'
 
 describe('usePageDataSet - DataSet 生命周期管理', () => {
   it('接受已编译的 DataSet 实例并正确存储', () => {

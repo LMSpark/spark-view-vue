@@ -1,6 +1,6 @@
 import { expect, test, vi } from 'vitest'
 import { mount } from '@vue/test-utils'
-import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+import { SparkComponentRenderer, Spark, SPARK_REGISTRY_KEY } from '@spark-appworks/spark-component'
 import { defineComponent, h } from 'vue'
 import SparkComponentRendererSource from '../../packages/spark-component/src/components/SparkComponentRenderer.vue'
 

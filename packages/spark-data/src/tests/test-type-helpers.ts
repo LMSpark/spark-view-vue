@@ -8,7 +8,7 @@ export function rows(value: DataRow[]): DataRow[] {
   return value
 }
 
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 export { isRecord }
 
 export function requireRecord(value: unknown, message: string): Record<string, unknown> {

@@ -1,6 +1,6 @@
 # 插件管理系统
 
-**位置**: `@spark-view/spark-app/plugins`
+**位置**: `@spark-appworks/spark-app/plugins`
 **职责**: 提供统一的插件注册、配置和加载机制
 
 ## 📋 概述
@@ -131,7 +131,7 @@ type PluginInstance = {
 import {
   registerBuiltinPlugins,
   PluginManager
-} from '@spark-view/spark-app'
+} from '@spark-appworks/spark-app'
 
 // 注册内置插件
 registerBuiltinPlugins()
@@ -154,7 +154,7 @@ plugins.forEach(({ plugin, options }) => {
 ### 2. 注册自定义插件
 
 ```typescript
-import { getGlobalPluginRegistry } from '@spark-view/spark-app'
+import { getGlobalPluginRegistry } from '@spark-appworks/spark-app'
 
 getGlobalPluginRegistry().register('pinia', {
   name: 'Pinia',
@@ -170,7 +170,7 @@ getGlobalPluginRegistry().register('pinia', {
 ### 3. 在 SparkApp.start() 中使用
 
 ```typescript
-import { SparkApp, registerBuiltinPlugins, PluginManager } from '@spark-view/spark-app'
+import { SparkApp, registerBuiltinPlugins, PluginManager } from '@spark-appworks/spark-app'
 
 async function startApp() {
   registerBuiltinPlugins()
@@ -291,7 +291,7 @@ loader: () => import('element-plus')  // 懒加载
 ## 🧪 测试
 
 ```typescript
-import { createPluginRegistry, PluginManager } from '@spark-view/spark-app'
+import { createPluginRegistry, PluginManager } from '@spark-appworks/spark-app'
 
 describe('registry', () => {
   it('should register plugin', () => {

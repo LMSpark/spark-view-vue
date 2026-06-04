@@ -151,7 +151,7 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { isPlatformAdminUser, login, register, registerTenant } from '@/services/auth'
-import { refreshRoutes, getNavHomePath } from '@spark-view/spark-app'
+import { refreshRoutes, getNavHomePath } from '@spark-appworks/spark-app'
 import { buildTenantPath } from '@/services/tenant-scope'
 import type { FormInstance, FormRules } from 'element-plus'
 import { OfficeBuilding, User, Lock, Edit, Message, Postcard } from '@element-plus/icons-vue'

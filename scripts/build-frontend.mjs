@@ -4,7 +4,7 @@ import { execSync } from 'node:child_process'
 import { resolve } from 'node:path'
 
 const ROOT_DIR = resolve(import.meta.dirname, '..')
-const CONFIG_TIME_BUILD_DEP_PACKAGES = ['@spark-view/spark-utils']
+const CONFIG_TIME_BUILD_DEP_PACKAGES = ['@spark-appworks/spark-utils']
 
 function run(cmd, opts = {}) {
   console.log(`\n> ${cmd}\n`)

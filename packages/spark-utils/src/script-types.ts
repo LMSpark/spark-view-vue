@@ -1,7 +1,7 @@
 /**
  * 页面脚本共享类型 — 框架无关的基础数据结构
  *
- * 这些类型原是 spark-page-config 中 `script-context-types.ts` 的 InScript 类型，
+ * 这些类型原是 spark-project-model 中 `script-context-types.ts` 的 InScript 类型，
  * 提取到 spark-utils 以在更底层复用。
  */
 

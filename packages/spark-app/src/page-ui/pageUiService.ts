@@ -1,5 +1,5 @@
 import { reactive } from 'vue'
-import { createRequest, isRecord } from '@spark-view/spark-utils'
+import { createRequest, isRecord } from '@spark-appworks/spark-utils'
 import type {
   PageBrowseFilesOptions,
   PageDialogOptions,
@@ -9,7 +9,7 @@ import type {
   PageServiceCapability,
   PageUploadedFile,
   PageUploadFilesOptions,
-} from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
 
 type PageSelectedEntity = NonNullable<PageSelectEntitiesOptions['options']>[number]
 

@@ -12,14 +12,14 @@ pnpm run typecheck
 模型包单独验证：
 
 ```bash
-pnpm --filter @spark-view/spark-page-config typecheck
-pnpm --filter @spark-view/spark-page-config test:run
+pnpm --filter @spark-appworks/spark-project-model typecheck
+pnpm --filter @spark-appworks/spark-project-model test:run
 ```
 
 ## 运行态创建页面节点
 
 ```ts
-import { createPageNodeFactory } from '@spark-view/spark-page-config'
+import { createPageNodeFactory } from '@spark-appworks/spark-project-model'
 
 const factory = createPageNodeFactory({
   fileStorage: 'localStorage',
@@ -36,7 +36,7 @@ const renderConfig = pageNode.toRenderConfig()
 ## 设计态编辑项目
 
 ```ts
-import { createProjectEditor } from '@spark-view/spark-page-config/project'
+import { createProjectEditor } from '@spark-appworks/spark-project-model/project'
 
 const editor = createProjectEditor({
   projectId: 'homepage',

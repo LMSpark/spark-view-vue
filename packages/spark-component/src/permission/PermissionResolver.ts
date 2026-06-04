@@ -9,7 +9,7 @@ import type {
   DataRow,
   ModelPermission,
   PermissionActionContext as ScriptPermissionActionContext,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { nodeInputProp } from '../core/types'

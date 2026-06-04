@@ -1,6 +1,6 @@
 # 平台、租户、项目与节点路由
 
-> 当前口径：SPARK View 以项目为业务应用边界。每个项目都有自己的项目节点树、多个 `PageNode`、数据表、权限和运行时路由。后端 API 仍保留 `navigation` 命名，但在领域模型里它是项目节点树。
+> 当前口径：SPARK AppWorks 以项目为业务应用边界。每个项目都有自己的项目节点树、多个 `PageNode`、数据表、权限和运行时路由。后端 API 仍保留 `navigation` 命名，但在领域模型里它是项目节点树。
 
 ## 实体层级
 
@@ -53,7 +53,7 @@
 页面策划 = 页面下的全子页面策划
 ```
 
-`spark-page-config` 的 `ProjectPlanningModel` 是项目策划的唯一模型入口。DevSystem 和 AI 生成页面时读取 `pageFeatures`，不自行从菜单节点拼接需求。
+`spark-project-model` 的 `ProjectPlanningModel` 是项目策划的唯一模型入口。DevSystem 和 AI 生成页面时读取 `pageFeatures`，不自行从菜单节点拼接需求。
 
 ## 后端 API
 
@@ -102,7 +102,7 @@ getProjectApi()              => 项目列表 API
 getDataApi()                 => 当前项目数据 API
 ```
 
-DevSystem 把这些函数注入 `createProjectEditor()`，之后所有项目模型读写都通过 `spark-page-config/project`。
+DevSystem 把这些函数注入 `createProjectEditor()`，之后所有项目模型读写都通过 `spark-project-model/project`。
 
 ## 路由派生
 
@@ -136,6 +136,6 @@ DevSystem 把这些函数注入 `createProjectEditor()`，之后所有项目模�
 3. 项目节点树即项目内模块树，不只是导航菜单。
 4. 节点 `description` 是功能描述和用户需求。
 5. `homepage` 是系统保留项目，不是技术上的上帝层。
-6. DevSystem 是项目内自管理工具，只通过 `spark-page-config/project` 连接后端。
+6. DevSystem 是项目内自管理工具，只通过 `spark-project-model/project` 连接后端。
 7. 后端存储可以是 DB + file，但模型包保持纯模型，不绑定存储实现。
 8. 旧 `navigation` API 命名只能作为传输命名，不能反向污染领域模型。

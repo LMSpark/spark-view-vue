@@ -33,24 +33,24 @@
  *
  * 注册示例：
  *   import { defineAsyncComponent } from 'vue'
- *   import { Spark } from '@spark-view/spark-component'
+ *   import { Spark } from '@spark-appworks/spark-component'
  *   Spark.register('{{name}}', defineAsyncComponent(() => import('./{{pascalName}}.vue')))
  */
-import { useSparkComponent, SparkComponentRenderer } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
+import { useSparkComponent, SparkComponentRenderer } from '@spark-appworks/spark-component'
+import type { SparkNode } from '@spark-appworks/spark-component'
 {{#if isConsumer}}
 // 从对应包导入需要消费的能力键，例如：
-// import { APP_SERVICES } from '@spark-view/spark-utils'
-// import { DATA_SOURCE } from '@spark-view/spark-component'
+// import { APP_SERVICES } from '@spark-appworks/spark-utils'
+// import { DATA_SOURCE } from '@spark-appworks/spark-component'
 // 项目自定义能力键使用 defineCapability<T>('scope:name') 声明。
 {{/if}}
 {{#if isProvider}}
 // 向子组件提供的能力键：
-// import { DATA_SOURCE } from '@spark-view/spark-component'
+// import { DATA_SOURCE } from '@spark-appworks/spark-component'
 {{/if}}
 {{#if isDataSelfResolve}}
-import { PAGE_DATASET } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
 {{/if}}
 
 // ── Props ────────────────────────────────────────────────────────────────────

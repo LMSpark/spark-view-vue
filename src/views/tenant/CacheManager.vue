@@ -145,8 +145,8 @@
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
 import { Coin, Refresh, Delete } from '@element-plus/icons-vue'
-import { clearAllPageCache, refreshRoutes } from '@spark-view/spark-app'
-import { isRecord } from '@spark-view/spark-utils'
+import { clearAllPageCache, refreshRoutes } from '@spark-appworks/spark-app'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { http } from '@/services/http'
 
 // ── 前端缓存状态 ──────────────────────────────────────────

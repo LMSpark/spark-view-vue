@@ -23,8 +23,8 @@
  * └──────────────────────────────────────────────────────┘
  */
 
-import { defineCapability, type LoggerApi } from '@spark-view/spark-utils'
-import { isRecord } from '@spark-view/spark-utils'
+import { defineCapability, type LoggerApi } from '@spark-appworks/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 // ═══════════════════════════════════════════════════════
 // 1. 枚举联合

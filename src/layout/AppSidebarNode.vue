@@ -45,8 +45,8 @@
 
 <script setup lang="ts">
 import { useRoute } from 'vue-router'
-import type { ProjectNodeData } from '@spark-view/spark-project-model'
-import { useNav } from '@spark-view/spark-app'
+import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
+import { useNav } from '@spark-appworks/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
 const props = withDefaults(defineProps<{

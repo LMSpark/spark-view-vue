@@ -13,7 +13,7 @@
  * - 选中状态字段与宿主同引用，外部访问 DataView.currentRow 等字段时即可读到最新值
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 import { isDataRow } from '../core/data-row-guards'
 import type { DataRow } from '../types'
 import type { DataView } from '../data-view'

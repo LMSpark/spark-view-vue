@@ -3,7 +3,7 @@ import {
   FieldVisibility,
   type DataRow,
   type ModelPermission,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 import { permission } from '../../packages/spark-component/src/index'
 
 const {

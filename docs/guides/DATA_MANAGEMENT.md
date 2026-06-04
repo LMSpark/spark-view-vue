@@ -22,7 +22,7 @@ SPARK 数据层核心对象：
 ## 1. 创建 DataSet
 
 ```typescript
-import { DataMember, SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-appworks/spark-data'
 
 const dataSet = SparkData.createDataSet({
   dataSetName: 'UserManagement',
@@ -126,8 +126,8 @@ usersView?.events.on('rowsChanged', () => {
 ### 配置 CRUD API（DataTable 级别）
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
-import type { CrudApi } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { CrudApi } from '@spark-appworks/spark-data'
 
 const usersTable = dataSet.tables['Users']
 
@@ -245,9 +245,9 @@ const selectedUsers = computed(() => view.selectedRows)
 ## 7. DataViewKey（渲染层使用）
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
-import { PAGE_DATASET } from '@spark-view/spark-component'
-import { useSparkComponent } from '@spark-view/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
+import { PAGE_DATASET } from '@spark-appworks/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
 
 // 在渲染层组件中
 const { sparkConsume } = useSparkComponent(props.config)
@@ -309,7 +309,7 @@ ordersView.currentRow = ordersView.rows[0]
 ## 9. TreeManager（树形数据）
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 
 const treeManager = SparkData.createTreeManager({
   idField: 'id',
@@ -335,10 +335,10 @@ const tree = treeManager.buildTree(flatData)
 ```vue
 <script setup lang="ts">
 import { computed, onMounted } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
-import { PAGE_DATASET } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
+import { PAGE_DATASET } from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 type UserGridConfig = SparkNode & {
   dataViewKey: string

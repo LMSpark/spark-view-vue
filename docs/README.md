@@ -1,10 +1,10 @@
-# SPARK View 文档入口
+# SPARK AppWorks 文档入口
 
 > 文档只保留当前能指导设计、开发、调试和评审的内容。历史计划、旧迁移记录、重复解释和过期博客不再保留。
 
 ## 一句话主线
 
-SPARK View 是软件项目模型：一个项目由平铺项目节点组成，节点按类型分为模块、配置页、Vue 页面、动作、外链和引用；树只是节点集合的投影。
+SPARK AppWorks 是软件项目模型：一个项目由平铺项目节点组成，节点按类型分为模块、配置页、Vue 页面、动作、外链和引用；树只是节点集合的投影。
 
 ```text
 ProjectModel
@@ -19,7 +19,7 @@ ProjectModel
 ## 推荐阅读顺序
 
 1. [guides/QUICKSTART.md](guides/QUICKSTART.md)：最短上手路径。
-2. [SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md](SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md)：项目整体认知。
+2. [SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md](SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md)：项目整体认知。
 3. [architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md](architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)：项目模型、节点模型和配置页内容模型。
 4. [architecture/DATAFLOW_ARCHITECTURE.md](architecture/DATAFLOW_ARCHITECTURE.md)：从项目节点到渲染运行时的数据流。
 5. [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：AI 运行时与业务模块注册。

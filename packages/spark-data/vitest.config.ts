@@ -9,10 +9,10 @@ export default defineConfig({
   },
   resolve: {
     alias: {
-      '@spark-view/spark-data': resolve(__dirname, './src/index.ts'),
-      '@spark-view/spark-data/*': resolve(__dirname, './src/*'),
-      '@spark-view/spark-utils': resolve(__dirname, '../spark-utils/src/index.ts'),
-      '@spark-view/spark-utils/*': resolve(__dirname, '../spark-utils/src/*')
+      '@spark-appworks/spark-data': resolve(__dirname, './src/index.ts'),
+      '@spark-appworks/spark-data/*': resolve(__dirname, './src/*'),
+      '@spark-appworks/spark-utils': resolve(__dirname, '../spark-utils/src/index.ts'),
+      '@spark-appworks/spark-utils/*': resolve(__dirname, '../spark-utils/src/*')
     }
   }
 })

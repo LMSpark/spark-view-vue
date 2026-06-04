@@ -7,7 +7,7 @@
  * @module registry
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 import type {
   ComponentRegistry,
   ComponentDefinition,

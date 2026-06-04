@@ -1,8 +1,8 @@
 import { computed, effectScope, nextTick, ref } from 'vue'
 import { describe, expect, it, vi } from 'vitest'
-import type { CrudApi, TableResourceType } from '@spark-view/spark-data'
+import type { CrudApi, TableResourceType } from '@spark-appworks/spark-data'
 import { useContainerDataSourceEffects } from '../../packages/spark-component/src/components/containers/data-views/view-data-source'
-import type { DataViewMemberDiagnostic } from '@spark-view/spark-data'
+import type { DataViewMemberDiagnostic } from '@spark-appworks/spark-data'
 
 type AutoLoadViewLike = {
   autoLoad?: boolean

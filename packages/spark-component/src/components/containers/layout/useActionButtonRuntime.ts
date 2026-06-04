@@ -6,7 +6,7 @@
  */
 
 import { computed, type ComputedRef } from 'vue'
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 import { mergeNodeBeforeRenderProps, resolveNodeBeforeRender } from '../../support/beforeRender.js'
 import { extractModelPermission } from '../../../permission/index.js'
 import {
@@ -20,7 +20,7 @@ import {
 } from '../../../page/actions/index'
 import { getActionProps, readBoolean } from '../../../page/actions/executor-helpers'
 import type { SparkNode } from '../../internal'
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-appworks/spark-data'
 
 // ── 私有：beforeRender 解析（从 view + scope 取上下文，不从 node props 取） ──
 

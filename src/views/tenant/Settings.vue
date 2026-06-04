@@ -205,7 +205,7 @@
 import { ref, computed, onMounted, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { ElMessage } from 'element-plus'
-import { isThemeMode, useTheme } from '@spark-view/spark-app'
+import { isThemeMode, useTheme } from '@spark-appworks/spark-app'
 
 const router = useRouter()
 const theme = useTheme()

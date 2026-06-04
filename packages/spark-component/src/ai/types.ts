@@ -8,7 +8,7 @@
 import type {
   AiAgentSessionSummary,
   AiAgentSessionTranscriptEntry,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 
 // ── 流展示条目 ──
 

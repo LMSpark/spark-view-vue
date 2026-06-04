@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { DataView, DataSet } from '@spark-view/spark-data'
-import type { DataRow } from '@spark-view/spark-data'
+import { DataView, DataSet } from '@spark-appworks/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import { DataTable } from '../data-table'
 
 

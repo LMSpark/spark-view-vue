@@ -9,7 +9,7 @@
  *
  * @example
  * ```ts
- * import { createThemeService } from '@spark-view/spark-app'
+ * import { createThemeService } from '@spark-appworks/spark-app'
  *
  * const theme = createThemeService()
  * theme.setMode('dark')
@@ -17,7 +17,7 @@
  * ```
  */
 
-import type { ThemeCapability as ComponentThemeCapability, ThemeMode } from '@spark-view/spark-component'
+import type { ThemeCapability as ComponentThemeCapability, ThemeMode } from '@spark-appworks/spark-component'
 import { computed, getCurrentScope, inject, onScopeDispose, ref, watch, type ComputedRef, type InjectionKey, type Ref } from 'vue'
 export type { ThemeMode }
 

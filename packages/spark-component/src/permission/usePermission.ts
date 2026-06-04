@@ -10,7 +10,7 @@
  * - 前端权限仅为渲染层表现，真正安全由后端控制
  * - 所有权限判断收口到本模块，方便统一维护
  */
-import type { DataRow, ModelPermission } from '@spark-view/spark-data'
+import type { DataRow, ModelPermission } from '@spark-appworks/spark-data'
 import type { SubtreeFieldPolicy, NavPermissionMode } from '../core/capability-keys.js'
 import type { SparkNode } from '../core/types'
 import { useSparkConsume } from '../core/useSparkComponent'

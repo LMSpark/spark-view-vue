@@ -142,7 +142,7 @@ Users@grid
 
 ## 不变约束
 
-1. `spark-page-config` 保持纯模型。
+1. `spark-project-model` 保持纯模型。
 2. 项目节点集合是 flat SSOT，树是投影。
 3. `page` 和 `sub-page` 合并为同一配置页节点模型。
 4. Vue 页面是项目节点子类，不反向决定数据结构。

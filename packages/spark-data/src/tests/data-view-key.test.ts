@@ -18,7 +18,7 @@ import {
   resolveDataViewKey,
   resolveDataViewMember,
   resolveDataViewMemberBinding,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 
 function createFixtureDataSet(): DataSet {
   return SparkData.createDataSet({

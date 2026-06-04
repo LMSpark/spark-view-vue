@@ -11,7 +11,7 @@
 - 宽输入与归一化入口统一收口到 `fromJson(...)`；历史包裹结构不再接受。
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 ```
 
 ---
@@ -236,16 +236,16 @@ const detailView = SparkData.createDataView('Orders', { viewId: 'detail' })
 如果需要更多控制，可以直接访问类：
 
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 
 // 使用构造器
-const dataSet = new (await import('@spark-view/spark-data')).DataSet({ ... })
+const dataSet = new (await import('@spark-appworks/spark-data')).DataSet({ ... })
 ```
 
 ### 直接类导入
 
 ```typescript
-import { DataSet, TreeManager } from '@spark-view/spark-data'
+import { DataSet, TreeManager } from '@spark-appworks/spark-data'
 
 // 直接使用类
 const tree = new TreeManager({ ... })
@@ -259,13 +259,13 @@ const tree = new TreeManager({ ... })
 
 **推荐：**
 ```typescript
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 const dataSet = SparkData.createDataSet({ ... })
 ```
 
 **不推荐：**
 ```typescript
-import { DataSetManager } from '@spark-view/spark-data'
+import { DataSetManager } from '@spark-appworks/spark-data'
 const dataSet = DataSetManager.create({ ... })
 ```
 
@@ -334,7 +334,7 @@ import type {
   CrudApi,
   TableMetadata,
   ViewMetadata
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 ```
 
 ---
@@ -378,7 +378,7 @@ tableName@viewId                 # dataViewKey：容器定位 DataView
 成员名和字段路径不写入 DataViewKey；读取成员时使用 `dataMember`，读取对象成员内部字段时使用 `dataField`。
 
 ```typescript
-import { DataMember, parseDataViewKey, resolveDataViewMember } from '@spark-view/spark-data'
+import { DataMember, parseDataViewKey, resolveDataViewMember } from '@spark-appworks/spark-data'
 
 parseDataViewKey('Users@grid')
 // → { tableName: 'Users', viewId: 'grid', raw: 'Users@grid' }

@@ -1,4 +1,4 @@
-import { deepClone, isRecord } from '@spark-view/spark-utils'
+import { deepClone, isRecord } from '@spark-appworks/spark-utils'
 
 import type { DataSetContract, DataSetMetadata } from './types'
 

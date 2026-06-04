@@ -1,6 +1,6 @@
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'
 import type { ComputedRef, Ref } from 'vue'
-import { RequestState, type DataRow, type DataView } from '@spark-view/spark-data'
+import { RequestState, type DataRow, type DataView } from '@spark-appworks/spark-data'
 
 type VirtualCardViewportExpose = {
   setScrollTop(value: number): void

@@ -17,7 +17,7 @@ import {
   type DebugScreenshotRequestEvent,
 } from '@/services/sse-events'
 import { buildTenantPath, parseTenantScope, type TenantProjectScope } from '@/services/tenant-scope'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 // Public contract -----------------------------------------------------------
 

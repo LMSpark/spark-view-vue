@@ -4,7 +4,7 @@
  * 构建时通过 vue-component-meta 从 Vue SFC 提取完整的 Props/Emits 类型，
  * 生成单一 component-catalog.json（原版 VCM 输出）。
  *
- * @module @spark-view/vite-plugin-spark-catalog
+ * @module @spark-appworks/vite-plugin-spark-catalog
  */
 
 // ── 插件入口 ──

@@ -38,7 +38,7 @@
 import { computed, shallowReactive, watch } from 'vue'
 import { DATA_ROW, SparkComponentRenderer, useSparkComponent } from '../../internal'
 import { nodeId, type SparkNode } from '../../internal'
-import { isDataRow, type DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataRow } from '@spark-appworks/spark-data'
 import { useContainerGrid } from '../runtime/container-layout'
 import { syncReactiveRow } from './row-mirror-sync'
 

@@ -190,7 +190,7 @@
  * @category internal
  */
 import { computed, nextTick, onBeforeUnmount, ref, shallowRef, watch } from 'vue'
-import { deepClone, isRecord } from '@spark-view/spark-utils'
+import { deepClone, isRecord } from '@spark-appworks/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
@@ -220,7 +220,7 @@ import {
   type MutationResult,
   type TreeModel,
   type TreeDisplayNode,
-} from '@spark-view/spark-json-document'
+} from '@spark-appworks/spark-json-document'
 
 type DisplayRow = TreeDisplayNode & {
   displayKey: string

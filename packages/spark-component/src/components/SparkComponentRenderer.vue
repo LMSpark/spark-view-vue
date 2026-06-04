@@ -82,7 +82,7 @@ import {
   onUnmounted,
   watchEffect,
 } from 'vue'
-import { DataView, isDataRow, type DataRow } from '@spark-view/spark-data'
+import { DataView, isDataRow, type DataRow } from '@spark-appworks/spark-data'
 import UnregisteredNodeFallback from './support/UnregisteredNodeFallback.vue'
 import { resolveHostTypeFromContext } from '../core/useSparkComponent.js'
 import {
@@ -91,7 +91,7 @@ import {
   normalizeSparkNode,
 } from '../core/types.js'
 import type { SparkNode, SparkNodeChildren, CapabilityContext, ComponentRegistry, ComponentChildrenMode } from '../core/types.js'
-import { consumeSparkCapability, createSparkCapabilityContext, isRecord, sparkProvide, sparkRemove } from '@spark-view/spark-utils'
+import { consumeSparkCapability, createSparkCapabilityContext, isRecord, sparkProvide, sparkRemove } from '@spark-appworks/spark-utils'
 import { SPARK_REGISTRY_KEY } from '../system/keys.js'
 import { DATA_ROW, DATA_SOURCE } from '../core/capability-keys.js'
 import { sparkBindContextOwner, sparkResolveParentContext, sparkUnbindContextOwner, type SparkRuntimeOwner } from '../core/capability-context.js'

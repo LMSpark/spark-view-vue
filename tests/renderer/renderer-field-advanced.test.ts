@@ -1,12 +1,12 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, reactive } from 'vue'
-import type { PageServiceCapability } from '@spark-view/spark-component'
+import type { PageServiceCapability } from '@spark-appworks/spark-component'
 import {
   FieldText,
   FieldTextarea, FieldHtmlEditor, FieldFileBrowser, FieldUpload,
   FieldFilePath, FieldImage, FieldEntityPicker, FieldUserPicker,
   FieldDeptPicker, FieldProductPicker, FieldDate, FieldNumber,
-} from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 import { requireHtmlInput, requireHtmlTextArea, requireTextControl } from '../helpers/runtime-guards'
 

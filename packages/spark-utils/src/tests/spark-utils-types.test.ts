@@ -8,10 +8,10 @@
 import { describe, it, expect } from 'vitest'
 import {
   Logger,
-} from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'
 import type {
   LoggerApi,
-} from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'
 
 // ============================================================================
 // Logger 基本功能

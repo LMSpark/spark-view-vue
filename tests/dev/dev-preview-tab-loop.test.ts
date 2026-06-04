@@ -3,7 +3,7 @@ import { defineComponent, h, nextTick, ref } from 'vue'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import DevPreviewTab from '@/views/app/dev-system/DevPreviewTab.vue'
 import type { DevState } from '@/views/app/dev-system/useDevState'
-import type { PageNodeFileName } from '@spark-view/spark-project-model'
+import type { PageNodeFileName } from '@spark-appworks/spark-project-model'
 
 const SwitchStub = defineComponent({
   name: 'ElSwitch',

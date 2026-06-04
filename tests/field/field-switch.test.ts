@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { FieldSwitch } from '@spark-view/spark-component'
-import { SparkData, type DataColumn, type DataView } from '@spark-view/spark-data'
+import { FieldSwitch } from '@spark-appworks/spark-component'
+import { SparkData, type DataColumn, type DataView } from '@spark-appworks/spark-data'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({

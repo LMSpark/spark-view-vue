@@ -185,11 +185,11 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useTheme } from '@spark-view/spark-app'
-import type { ThemeMode } from '@spark-view/spark-app'
-import type { PageMode } from '@spark-view/spark-app'
-import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS, STYLE_PRESETS } from '@spark-view/spark-app'
-import type { StylePreset } from '@spark-view/spark-app'
+import { useTheme } from '@spark-appworks/spark-app'
+import type { ThemeMode } from '@spark-appworks/spark-app'
+import type { PageMode } from '@spark-appworks/spark-app'
+import { useColorScheme, PRIMARY_PRESETS, NAV_PRESETS, STYLE_PRESETS } from '@spark-appworks/spark-app'
+import type { StylePreset } from '@spark-appworks/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 
 defineProps<{

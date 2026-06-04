@@ -8,7 +8,7 @@
  */
 
 import { describe, it, expect, vi } from 'vitest'
-import { RequestState, SparkData } from '@spark-view/spark-data'
+import { RequestState, SparkData } from '@spark-appworks/spark-data'
 import { setMember } from './test-type-helpers'
 
 function createTestDataSet() {

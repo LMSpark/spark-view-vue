@@ -1,5 +1,5 @@
 /**
- * @spark-view/spark-data
+ * @spark-appworks/spark-data
  * SPARK 数据空间 — 数据模型 + CRUD + 树结构 + 权限
  *
  * **推荐入口**：`SparkData` 命名空间（工厂方法 + 解析工具）
@@ -28,7 +28,7 @@ export type { FieldRenderState, PermissionActionContext } from './script-types'
 export { TreeManager } from './tree-manager'
 export { DataSetCrudTool } from './dataset-crud-tool'
 
-// ===== Node Tree（页面节点树模型，从 spark-page-config 迁入）=====
+// ===== Node Tree（页面节点树模型，从 spark-project-model 迁入）=====
 
 export {
   SPARK_NODE_STRUCT_KEYS,

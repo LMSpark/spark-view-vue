@@ -9,7 +9,7 @@
  */
 
 import { defineAsyncComponent } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import { createLogger } from './logger'
 
 const logger = createLogger('AutoRegister')

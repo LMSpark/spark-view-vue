@@ -1,4 +1,4 @@
-# SPARK View Claude Code Instructions
+# SPARK AppWorks Claude Code Instructions
 
 @docs/ai/AI_CODE_CHANGE_PROTOCOL.md
 @docs/ai/ai-code-generation-behavior.md

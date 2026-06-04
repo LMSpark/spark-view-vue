@@ -25,7 +25,7 @@
 
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'
-import type { LoggerApi } from '@spark-view/spark-utils'
+import type { LoggerApi } from '@spark-appworks/spark-utils'
 
 // ═══════════════════════════════════════════════════════
 // 1. 基础数据行 & 事件发射器

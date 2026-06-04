@@ -26,7 +26,7 @@
 import { ref, type Ref } from 'vue'
 import { useRouter, type Router } from 'vue-router'
 import { PAGE_RUNTIME_SERVICES, type PageRuntimeServicesCapability } from '../../runtime'
-import type { LoggerApi } from '@spark-view/spark-utils'
+import type { LoggerApi } from '@spark-appworks/spark-utils'
 import { PAGE_COMPONENT_REGISTRY } from '../../core/capability-keys'
 import type { PageComponentRegistry } from '../../core/capability-keys'
 import { useSparkComponent, type UseSparkComponentReturn } from '../../core/useSparkComponent'

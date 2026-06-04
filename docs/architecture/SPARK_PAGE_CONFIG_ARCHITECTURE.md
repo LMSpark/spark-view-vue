@@ -1,6 +1,6 @@
-# spark-page-config 架构
+# spark-project-model 架构
 
-> 更新基准：2026-05-30。`spark-page-config` 是 SPARK View 的纯模型包，定位为软件项目模型。它不引入 Vue、Vue Router、Element Plus 或应用层 service。
+> 更新基准：2026-05-30。`spark-project-model` 是 SPARK AppWorks 的纯模型包，定位为软件项目模型。它不引入 Vue、Vue Router、Element Plus 或应用层 service。
 
 ## 治理顺序
 
@@ -107,7 +107,7 @@ import {
   createPageNodeFactory,
   type PageNodeLike,
   type PageNodeRenderConfig,
-} from '@spark-view/spark-page-config'
+} from '@spark-appworks/spark-project-model'
 ```
 
 设计态入口：
@@ -117,7 +117,7 @@ import {
   createProjectEditor,
   ProjectNodeTools,
   ProjectReferenceClient,
-} from '@spark-view/spark-page-config/project'
+} from '@spark-appworks/spark-project-model/project'
 ```
 
 内部 loader、compiler、file-api、navigation client 和子模型不从根入口公开。
@@ -153,7 +153,7 @@ src/
 ## 验证
 
 ```bash
-pnpm --filter @spark-view/spark-page-config typecheck
-pnpm --filter @spark-view/spark-page-config test:run
-pnpm --filter @spark-view/spark-page-config lint
+pnpm --filter @spark-appworks/spark-project-model typecheck
+pnpm --filter @spark-appworks/spark-project-model test:run
+pnpm --filter @spark-appworks/spark-project-model lint
 ```

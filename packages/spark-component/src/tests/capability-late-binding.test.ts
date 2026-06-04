@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { defineCapability, sparkProvide, sparkConsume, isRecord } from '@spark-view/spark-utils'
-import { Spark } from '@spark-view/spark-component'
+import { defineCapability, sparkProvide, sparkConsume, isRecord } from '@spark-appworks/spark-utils'
+import { Spark } from '@spark-appworks/spark-component'
 
 
 describe('Capability late-binding', () => {

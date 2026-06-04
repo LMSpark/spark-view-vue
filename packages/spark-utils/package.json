@@ -1,5 +1,5 @@
 {
-  "name": "@spark-view/spark-utils",
+  "name": "@spark-appworks/spark-utils",
   "version": "0.4.4",
   "type": "module",
   "description": "SPARK 工具层 - 常量、符号、Logger 等基础设施",

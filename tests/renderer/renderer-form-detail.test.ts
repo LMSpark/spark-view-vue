@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { defineComponent, h, nextTick } from 'vue'
-import { RendererForm, RendererDetail, FieldText } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+import { RendererForm, RendererDetail, FieldText } from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
 import { getMountedComponentApi, mountWithPageDataSet } from '../helpers/mount-with-page-dataset'
 import { requireRecord, requireString } from '../helpers/runtime-guards'
 

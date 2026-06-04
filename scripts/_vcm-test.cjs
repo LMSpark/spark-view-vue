@@ -3,7 +3,7 @@ const { createChecker } = require('vue-component-meta')
 const checker = createChecker('./tsconfig.catalog.json', { schema: true })
 
 const meta = checker.getComponentMeta(
-  'd:/SPARK_VIEW/packages/spark-component/src/components/containers/RendererFilter.vue'
+  'd:/SPARK_AppWorks/packages/spark-component/src/components/containers/RendererFilter.vue'
 )
 
 const colProp = meta.props.find(p => p.name === 'columns')

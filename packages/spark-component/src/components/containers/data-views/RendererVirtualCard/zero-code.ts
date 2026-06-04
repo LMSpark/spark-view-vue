@@ -1,4 +1,4 @@
-import { isDataRow, type DataRow, type DataView } from '@spark-view/spark-data'
+import { isDataRow, type DataRow, type DataView } from '@spark-appworks/spark-data'
 import { createContainerCrudContext } from '../zero-code-shared.js'
 import type { ValueRef } from '../../../shared-types.js'
 import type { RendererVirtualCardApi } from './types.js'

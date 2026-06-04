@@ -1,10 +1,10 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-view/spark-project-model'
-import { HttpClientBase } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
-import type { ProjectModelData } from '@spark-view/spark-project-model'
+import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-appworks/spark-project-model'
+import { HttpClientBase } from '@spark-appworks/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
 import { CrossProjectRefPage } from '../../packages/spark-app/src/router/cross-project-ref-page'
 
 function isPageNodeLike(value: unknown): value is { pageId: string; load: () => Promise<void> } {
@@ -25,7 +25,7 @@ vi.mock('../packages/spark-app/src/navigation/nav-access', () => ({
   getNavTree: () => navTreeState.tree,
 }))
 
-vi.mock('@spark-view/spark-component', async () => {
+vi.mock('@spark-appworks/spark-component', async () => {
   const vue = await vi.importActual<typeof import('vue')>('vue')
   return {
     SparkPageRenderer: vue.defineComponent({

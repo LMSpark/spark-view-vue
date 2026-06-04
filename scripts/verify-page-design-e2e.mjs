@@ -19,7 +19,7 @@ import {
   previewAiAgentDiagnosticValue,
   summarizeAiAgentSessionRecord,
   toAiAgentRuntimeScope,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 import {
   createAppSseEventHub,
   subscribeAppSseEvents,
@@ -27,18 +27,18 @@ import {
 import {
   ensurePageDesignBusiness,
   validatePageDesignPayloadGuidesFromSession,
-} from '@spark-view/spark-project-model/ai'
-import { createRequest } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-project-model/ai'
+import { createRequest } from '@spark-appworks/spark-utils'
 import {
   PAGE_MODEL_FILE_NAMES,
   createProjectEditor,
-} from '@spark-view/spark-project-model/project'
+} from '@spark-appworks/spark-project-model/project'
 import {
   DataSet,
   SparkNodeTree,
   getSparkNodeChildren,
   parseDataViewKey,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 
 // ============================================================================
 // 第 1 层：默认常量

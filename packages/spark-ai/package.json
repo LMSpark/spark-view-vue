@@ -1,5 +1,5 @@
 {
-  "name": "@spark-view/spark-ai",
+  "name": "@spark-appworks/spark-ai",
   "version": "0.3.7",
   "type": "module",
   "main": "./dist/index.js",
@@ -43,7 +43,7 @@
     }
   },
   "dependencies": {
-    "@spark-view/spark-utils": "workspace:*",
+    "@spark-appworks/spark-utils": "workspace:*",
     "ajv": "^8.18.0"
   },
   "scripts": {

@@ -10,13 +10,13 @@ import type {
   AiAgentHost,
   AiAgentTaskChatOptions,
   AiAgentHostRunResult,
-} from '@spark-view/spark-ai/agent'
-import type { AiJsonParams } from '@spark-view/spark-ai/json'
-import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
+} from '@spark-appworks/spark-ai/agent'
+import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
+import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
-} from '@spark-view/spark-project-model/ai'
+} from '@spark-appworks/spark-project-model/ai'
 import { getNavApi, getPageApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'

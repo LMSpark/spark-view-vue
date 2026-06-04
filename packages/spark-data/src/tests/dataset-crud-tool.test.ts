@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { DataSetCrudTool, SparkData } from '@spark-view/spark-data'
+import { DataSetCrudTool, SparkData } from '@spark-appworks/spark-data'
 
 describe('DataSetCrudTool', () => {
   it('constructor should create an empty DataSet with the provided name', () => {

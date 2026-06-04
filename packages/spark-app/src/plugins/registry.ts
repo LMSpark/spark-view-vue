@@ -1,13 +1,13 @@
 /**
  * 插件管理系统
- * @module @spark-view/spark-app/plugins
+ * @module @spark-appworks/spark-app/plugins
  *
  * 提供统一的插件注册、配置和加载机制
  */
 
 import type { Plugin } from 'vue'
 import { createLogger } from '../logger'
-import { toError } from '@spark-view/spark-utils'
+import { toError } from '@spark-appworks/spark-utils'
 
 const pluginLogger = createLogger('plugins')
 

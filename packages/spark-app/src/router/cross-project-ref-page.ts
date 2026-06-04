@@ -1,14 +1,14 @@
 import { computed, defineComponent, h, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
-import { SparkPageRenderer } from '@spark-view/spark-component'
+import { SparkPageRenderer } from '@spark-appworks/spark-component'
 import {
   createPageNodeFactory,
   type PageNodeFactoryLike,
   type PageNodeLike,
-} from '@spark-view/spark-project-model'
-import { HttpClientBase, Logger } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
-import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
+} from '@spark-appworks/spark-project-model'
+import { HttpClientBase, Logger } from '@spark-appworks/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'
+import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
 import { getNavTree } from '../navigation/nav-access'
 
 type ReloadableRenderer = {

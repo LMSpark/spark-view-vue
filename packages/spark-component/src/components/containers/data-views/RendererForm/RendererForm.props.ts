@@ -1,4 +1,4 @@
-import type { DataMember, DataView } from '@spark-view/spark-data'
+import type { DataMember, DataView } from '@spark-appworks/spark-data'
 import type {
   SparkCrudDataContainerProps,
   SparkGridLayoutProps,

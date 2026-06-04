@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { defineComponent, ref } from 'vue'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import type { ToolApprovalDisplayItem } from '@spark-view/spark-component'
+import type { ToolApprovalDisplayItem } from '@spark-appworks/spark-component'
 import DevSystem from '@/views/app/dev-system/DevSystem.vue'
 
 let devSystemCtx: ReturnType<typeof createDevSystemCtx>

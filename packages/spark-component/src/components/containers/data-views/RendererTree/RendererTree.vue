@@ -102,7 +102,7 @@ import {
   type SparkNode,
 } from '../../../internal'
 import type { RTreeProps } from './RendererTree.props'
-import type { DataRow, DataView } from '@spark-view/spark-data'
+import type { DataRow, DataView } from '@spark-appworks/spark-data'
 import type { RendererTreeApi } from './types'
 import {
   createRendererTreeZeroCode,

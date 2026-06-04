@@ -5,9 +5,9 @@
  * 仅在渲染层使用，spark-data 不依赖任何 UI 框架。
  */
 
-import type { ColumnValidationRule } from '@spark-view/spark-data'
-import type { DataColumn } from '@spark-view/spark-data'
-import { extractColumnRules } from '@spark-view/spark-data'
+import type { ColumnValidationRule } from '@spark-appworks/spark-data'
+import type { DataColumn } from '@spark-appworks/spark-data'
+import { extractColumnRules } from '@spark-appworks/spark-data'
 
 /** 渲染层 FormItemRule 最小子集（避免引入具体实现类型依赖） */
 export type FormItemRule = {

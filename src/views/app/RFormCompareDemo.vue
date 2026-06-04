@@ -129,8 +129,8 @@ import {
   RendererForm,
   type SparkNode,
   useSparkContextScope,
-} from '@spark-view/spark-component'
-import { SparkData, type DataRow } from '@spark-view/spark-data'
+} from '@spark-appworks/spark-component'
+import { SparkData, type DataRow } from '@spark-appworks/spark-data'
 
 type EmployeeRecord = DataRow & {
   id: number

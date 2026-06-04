@@ -1,7 +1,7 @@
 /**
  * 插件管理系统导出
  * 
- * @module @spark-view/spark-app/plugins
+ * @module @spark-appworks/spark-app/plugins
  */
 
 export {

@@ -18,7 +18,7 @@ import {
   createBatchHttpTransport,
 } from '../index'
 import type { LogTransport } from '../index'
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 /** 安全取 mock.calls 第 N 次调用 */
 function callArgs(spy: ReturnType<typeof vi.spyOn>, n = 0): unknown[] {

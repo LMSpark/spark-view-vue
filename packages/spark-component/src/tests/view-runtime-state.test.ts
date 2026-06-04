@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { effectScope, shallowRef } from 'vue'
-import { SparkData, type DataView } from '@spark-view/spark-data'
+import { SparkData, type DataView } from '@spark-appworks/spark-data'
 import { useDataViewState } from '../components/containers/data-views/view-runtime-state'
 
 function createView(): DataView {

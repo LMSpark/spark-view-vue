@@ -9,7 +9,7 @@
 import { computed, type ComputedRef } from 'vue'
 import { useSparkConsume, DATA_ROW, DATA_SOURCE } from '../internal'
 import { PAGE_DATASET } from '../internal'
-import { diagnoseDataViewMember, resolveDataViewMember, type DataMember } from '@spark-view/spark-data'
+import { diagnoseDataViewMember, resolveDataViewMember, type DataMember } from '@spark-appworks/spark-data'
 
 type DisplayDataProps = {
   dataViewKey?: string | undefined

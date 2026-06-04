@@ -25,8 +25,8 @@ applyTo: "packages/spark-component/**, src/components/**, src/composables/**, sr
 
 - `sparkProvide` / `sparkConsume` 是业务 DI 路径。Vue `provide/inject` 只用于基础设施，主要服务 registry。
 - 将 `useSparkComponent()` 保持在 `<script setup>` 顶层，并默认通过它访问可见性、禁用状态、logger 和能力。
-- 前端工作跨包时，不要把 Vue 或 Element Plus 导入 `spark-utils`、`spark-data`、`spark-page-config`。
-- 跨 workspace 包边界绝不要使用相对导入，始终通过 `@spark-view/*` 导入。
+- 前端工作跨包时，不要把 Vue 或 Element Plus 导入 `spark-utils`、`spark-data`、`spark-project-model`。
+- 跨 workspace 包边界绝不要使用相对导入，始终通过 `@spark-appworks/*` 导入。
 
 ## 表格与渲染器注意事项
 

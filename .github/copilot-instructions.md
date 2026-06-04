@@ -15,13 +15,13 @@
   - `pnpm run test` or `pnpm run test -- -t "name"`
   - `cd spark-ai-server && mvn test` — 后端测试
 - Husky pre-commit 会运行 `lint` + `typecheck`。
-- Commit scope 仅允许： `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
+- Commit scope 仅允许： `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-project-model`.
 
 ## 仓库地图
 
 - `packages/spark-utils` — 纯 TypeScript 基础能力：capability key、logger、HTTP、sandbox helpers。
 - `packages/spark-data` — 纯 TypeScript 数据空间：`DataSet`、`DataTable`、`DataView`、`TreeManager`、DataViewKey 辅助工具。
-- `packages/spark-page-config` — 纯 TypeScript 页面配置解析、脚本上下文类型、配置加载。
+- `packages/spark-project-model` — 纯 TypeScript 页面配置解析、脚本上下文类型、配置加载。
 - `packages/spark-component` — Vue 渲染器、组件注册表、能力接线、规则绑定。
 - `packages/spark-app` — 应用壳、路由、认证、插件、启动引导。
 - `spark-ai-server` — AI 聊天、页面配置持久化、scope API 和 SSE 调试流的 Spring Boot 后端。
@@ -53,9 +53,9 @@
 - 配置优先：优先使用 `rule.json`、`pagedata.json`、view metadata 和现有渲染器能力。只有配置无法表达行为时才使用 `script.js`。
 - DataSet 管线单向： `pagedata.json` -> `parsePageData()` -> `DataSet` -> `usePageDataSet()` -> `PAGE_DATASET` -> `dataViewKey + dataMember + dataField` -> `DataView` -> UI. 不要重新引入渲染器侧 raw JSON 归一化、`pageData` 或 `$data` 旁路。
 - `clearDataSet()` 只释放引用。绝不要在其中调用 `DataSet.destroy()`，因为 DataSet 实例会跨导航缓存复用。
-- 包边界严格且必须保持无环： `spark-utils` <- `spark-data` <- `spark-page-config` <- `spark-component` <- `spark-app`.
-- 跨包导入绝不要使用相对路径，必须使用 `@spark-view/*` 包名。
-- `spark-utils`、`spark-data`、`spark-page-config` 必须保持框架无关，不要在这些包里导入 `vue`、`vue-router`、`element-plus` 或其他 UI 框架。
+- 包边界严格且必须保持无环： `spark-utils` <- `spark-data` <- `spark-project-model` <- `spark-component` <- `spark-app`.
+- 跨包导入绝不要使用相对路径，必须使用 `@spark-appworks/*` 包名。
+- `spark-utils`、`spark-data`、`spark-project-model` 必须保持框架无关，不要在这些包里导入 `vue`、`vue-router`、`element-plus` 或其他 UI 框架。
 - SPARK capability DI 不是 Vue DI。业务能力使用 `sparkProvide` / `sparkConsume`；Vue `provide/inject` 只用于基础设施，主要是 registry。
 - 渲染容器以 DataView 为先。`r-table`、`r-form`、`r-detail`、`r-tree` 使用 `dataViewKey` 解析 `DataView`，并向后代提供 `DATA_SOURCE`。
 - 避免破坏 `el-table` -> `el-table-column` 直接关系的 slot 包裹层。容器 children 应通过 `SparkComponentRenderer` 流转。

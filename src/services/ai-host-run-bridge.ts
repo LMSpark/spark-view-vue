@@ -12,8 +12,8 @@ import {
   type AiAgentHostRunResult,
   type AiAgentTaskChatOptions,
   type AiAgentRunTraceToolCall,
-} from '@spark-view/spark-ai/agent'
-import { coerceStrictJsonValue, type AiJsonParams, type AiJsonValue } from '@spark-view/spark-ai/json'
+} from '@spark-appworks/spark-ai/agent'
+import { coerceStrictJsonValue, type AiJsonParams, type AiJsonValue } from '@spark-appworks/spark-ai/json'
 import { http } from '@/services/http'
 import {
   onAiHostRunRequest,

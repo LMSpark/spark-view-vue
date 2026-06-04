@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { HttpClientBase } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
+import { HttpClientBase } from '@spark-appworks/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'
 import { DataSet } from '../dataset'
 import { TreeManager } from '../tree-manager'
 import type { FlatTreeNode } from '../types'

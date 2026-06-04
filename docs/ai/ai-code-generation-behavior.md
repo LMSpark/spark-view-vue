@@ -455,10 +455,10 @@ export function objectSchema(
 - `pnpm run verify:rules` 必须通过。
 - 禁止非 allowlist `interface`、`Interface/Impl` 机械命名、TypeScript `namespace`。
 - 禁止非 `as const` 类型断言和尖括号类型断言。
-- 禁止旧 `@spark-view/spark-ai/core`、`/protocol`、`/runtime`、`/adapter` 等 subpath。
+- 禁止旧 `@spark-appworks/spark-ai/core`、`/protocol`、`/runtime`、`/adapter` 等 subpath。
 - 禁止旧 `ModuleKind.PathContext`、`ModuleKind.OperationResult` 等 namespace 类型。
 - 框架无关包禁止导入 Vue、Vue Router、Element Plus、VueUse 或 Pinia。
-- workspace 包之间禁止绕过 `@spark-view/*` 的跨包相对导入。
+- workspace 包之间禁止绕过 `@spark-appworks/*` 的跨包相对导入。
 - **单目录文件数**：单个目录下 `.ts`/`.vue` 文件不得超过 10 个（不含 `index.ts`）；超过必须拆子目录。
 - **单目录子目录数**：同一级目录下子目录数不得超过 7 个；超过必须按领域合并父级分组。
 - **class 命名层次**：同一目录下 5 个以上无共同前缀的独立 class 视为领域划分不清，必须拆分子目录。

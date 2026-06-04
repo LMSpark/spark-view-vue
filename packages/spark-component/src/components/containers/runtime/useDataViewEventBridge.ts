@@ -12,7 +12,7 @@
 // ============================================================
 
 import { watchEffect } from 'vue'
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-appworks/spark-data'
 
 // ============================================================
 // § 类型定义

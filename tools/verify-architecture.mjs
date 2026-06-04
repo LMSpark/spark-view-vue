@@ -19,9 +19,9 @@ import {
 } from './verifier-common.mjs'
 
 const frameworkFreePackages = new Set([
-  '@spark-view/spark-utils',
-  '@spark-view/spark-data',
-  '@spark-view/spark-project-model',
+  '@spark-appworks/spark-utils',
+  '@spark-appworks/spark-data',
+  '@spark-appworks/spark-project-model',
 ])
 
 const forbiddenFrameworkImports = [
@@ -34,10 +34,10 @@ const forbiddenFrameworkImports = [
 ]
 
 const allowedSparkAiSpecifiers = new Set([
-  '@spark-view/spark-ai',
-  '@spark-view/spark-ai/json',
-  '@spark-view/spark-ai/agent',
-  '@spark-view/spark-ai/modules',
+  '@spark-appworks/spark-ai',
+  '@spark-appworks/spark-ai/json',
+  '@spark-appworks/spark-ai/agent',
+  '@spark-appworks/spark-ai/modules',
 ])
 
 const allowedSparkAiExportKeys = new Set(['.', './json', './agent', './modules'])
@@ -172,20 +172,20 @@ function collectWorkspacePackages(root) {
       if (!fs.existsSync(packageJsonPath)) return null
 
       const packageJson = readJsonFile(packageJsonPath)
-      if (typeof packageJson.name !== 'string' || !packageJson.name.startsWith('@spark-view/')) return null
+      if (typeof packageJson.name !== 'string' || !packageJson.name.startsWith('@spark-appworks/')) return null
       return {
         dirName: entry.name,
         packageDir,
         packageName: packageJson.name,
         srcDir: path.join(packageDir, 'src'),
-        allowedDeps: Object.keys(packageJson.dependencies ?? {}).filter((depName) => depName.startsWith('@spark-view/')),
+        allowedDeps: Object.keys(packageJson.dependencies ?? {}).filter((depName) => depName.startsWith('@spark-appworks/')),
       }
     })
     .filter((pkg) => pkg !== null)
 }
 
 function checkWorkspacePackageImport(pkg, packages, allowedDeps, ref, file, sourceFile, lineOffset, violations) {
-  if (!ref.specifier.startsWith('@spark-view/')) return
+  if (!ref.specifier.startsWith('@spark-appworks/')) return
   const dependencyName = packageNameFromSpecifier(ref.specifier)
   if (dependencyName === pkg.packageName) return
   if (!packages.some((candidate) => candidate.packageName === dependencyName)) return
@@ -194,7 +194,7 @@ function checkWorkspacePackageImport(pkg, packages, allowedDeps, ref, file, sour
   violations.push({
     file,
     line: lineFor(sourceFile, ref.node, lineOffset),
-    message: `${pkg.dirName} must not depend on ${dependencyName.replace('@spark-view/', '')}; declare it in package.json dependencies first`,
+    message: `${pkg.dirName} must not depend on ${dependencyName.replace('@spark-appworks/', '')}; declare it in package.json dependencies first`,
   })
 }
 
@@ -209,7 +209,7 @@ function checkRelativeCrossPackageImport(root, pkg, filePath, ref, file, sourceF
   violations.push({
     file,
     line: lineFor(sourceFile, ref.node, lineOffset),
-    message: 'cross-package relative imports are forbidden; use @spark-view/* package imports',
+    message: 'cross-package relative imports are forbidden; use @spark-appworks/* package imports',
   })
 }
 
@@ -224,12 +224,12 @@ function checkFrameworkFreeImport(pkg, ref, file, sourceFile, lineOffset, violat
 }
 
 function checkSparkAiSpecifier(ref, file, sourceFile, lineOffset, violations) {
-  if (!ref.specifier.startsWith('@spark-view/spark-ai/')) return
+  if (!ref.specifier.startsWith('@spark-appworks/spark-ai/')) return
   if (allowedSparkAiSpecifiers.has(ref.specifier)) return
   violations.push({
     file,
     line: lineFor(sourceFile, ref.node, lineOffset),
-    message: `forbidden @spark-view/spark-ai public subpath: ${ref.specifier}`,
+    message: `forbidden @spark-appworks/spark-ai public subpath: ${ref.specifier}`,
   })
 }
 
@@ -246,7 +246,7 @@ function checkSparkAiPublicSurface(root, violations) {
     if (!fs.existsSync(filePath)) continue
     const content = fs.readFileSync(filePath, 'utf8')
     const keys = new Set()
-    const pattern = /['"](@spark-view\/spark-ai(?:\/[^'"]+)?)['"]\s*:/gu
+    const pattern = /['"](@spark-appworks\/spark-ai(?:\/[^'"]+)?)['"]\s*:/gu
     let match
     while ((match = pattern.exec(content)) !== null) {
       keys.add(match[1])

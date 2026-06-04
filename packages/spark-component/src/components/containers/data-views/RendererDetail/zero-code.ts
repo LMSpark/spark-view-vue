@@ -1,5 +1,5 @@
-import type { DataView } from '@spark-view/spark-data'
-import type { LoggerApi } from '@spark-view/spark-utils'
+import type { DataView } from '@spark-appworks/spark-data'
+import type { LoggerApi } from '@spark-appworks/spark-utils'
 import { createContainerCrudContext } from '../zero-code-shared.js'
 import type { RendererDetailApi } from './types'
 import type { ValueRef } from '../../../shared-types.js'

@@ -522,8 +522,8 @@ page-design hardcode -> LLM 工具/指南
 推荐验证：
 
 ```powershell
-pnpm --filter @spark-view/spark-ai run typecheck
-pnpm --filter @spark-view/vite-plugin-spark-catalog run typecheck
+pnpm --filter @spark-appworks/spark-ai run typecheck
+pnpm --filter @spark-appworks/vite-plugin-spark-catalog run typecheck
 pnpm exec vitest run packages/spark-ai/src/tests/module-semantic-runtime.test.ts packages/spark-ai/src/tests/ai-module-adapter.test.ts packages/spark-ai/src/tests/host-public-surface.test.ts packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts packages/vite-plugin-spark-catalog/src/tests/dataset-crud-tool-reflection.test.ts packages/vite-plugin-spark-catalog/src/tests/vcm-schema-json-schema.test.ts
 ```
 

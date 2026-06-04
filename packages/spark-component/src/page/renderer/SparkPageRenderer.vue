@@ -71,12 +71,12 @@ import {
   type VNodeArrayChildren,
 } from 'vue'
 import { useRoute, type RouteLocationNormalizedLoaded } from 'vue-router'
-import { Logger, isCallable, type HttpClientBase } from '@spark-view/spark-utils'
+import { Logger, isCallable, type HttpClientBase } from '@spark-appworks/spark-utils'
 import type { NavPermissionMode } from '../../core/capability-keys.js'
-import type { DataSet } from '@spark-view/spark-data'
-import { DataSetCrudTool } from '@spark-view/spark-data'
-import { SparkNodeTree } from '@spark-view/spark-data'
-import type { PageNodeLike, PageNodeRenderConfig } from '@spark-view/spark-project-model'
+import type { DataSet } from '@spark-appworks/spark-data'
+import { DataSetCrudTool } from '@spark-appworks/spark-data'
+import { SparkNodeTree } from '@spark-appworks/spark-data'
+import type { PageNodeLike, PageNodeRenderConfig } from '@spark-appworks/spark-project-model'
 import type { PageRoute } from '../../runtime'
 import { getSparkNodeChildren, nodeId, type SparkNode } from '../../core/types'
 import { PAGE_DATASET } from '../../core/capability-keys'
@@ -123,7 +123,7 @@ type RenderFunctionRegistration = {
   fnRef: RenderFunctionRef
   revisionRef: RenderFunctionRevisionRef
   invalidatePage?: () => void}
-const RENDER_FUNCTION_REGISTRY_KEY = Symbol.for('spark-view:render-function-registry')
+const RENDER_FUNCTION_REGISTRY_KEY = Symbol.for('spark-appworks:render-function-registry')
 const renderFunctionRegistries = new WeakMap<object, Map<string, RenderFunctionRegistration>>()
 
 type VueComponentRegistry = {

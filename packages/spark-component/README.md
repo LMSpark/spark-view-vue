@@ -1,4 +1,4 @@
-# @spark-view/spark-component
+# @spark-appworks/spark-component
 
 > SPARK 组件系统核心 - 提供组件管理、能力系统和生命周期控制
 
@@ -13,7 +13,7 @@
 ## 安装
 
 ```bash
-pnpm add @spark-view/spark-component
+pnpm add @spark-appworks/spark-component
 ```
 
 ## 快速开始
@@ -22,7 +22,7 @@ pnpm add @spark-view/spark-component
 
 ```typescript
 import { defineAsyncComponent } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import MyGridComponent from './MyGridComponent.vue'
 import MyFormComponent from './MyFormComponent.vue'
 
@@ -53,8 +53,8 @@ app.use(Spark.createPlugin())
 
 ```vue
 <script setup lang="ts">
-import { defineCapability } from '@spark-view/spark-utils'
-import { useSparkComponent } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-appworks/spark-utils'
+import { useSparkComponent } from '@spark-appworks/spark-component'
 
 const DATA_SOURCE = defineCapability<{ getData(): Promise<unknown[]> }>('demo:data-source')
 const LOGGER = defineCapability<{ info(message: string): void }>('demo:logger')
@@ -75,7 +75,7 @@ const logger = sparkConsume(LOGGER)
 只读祖先能力时，不再使用单独的 helper，统一使用同一个入口的轻量模式：
 
 ```ts
-import { DATA_SOURCE, useSparkConsume } from '@spark-view/spark-component'
+import { DATA_SOURCE, useSparkConsume } from '@spark-appworks/spark-component'
 
 const { sparkConsume, provider } = useSparkConsume()
 
@@ -90,7 +90,7 @@ const dataProvider = provider.nearestCapabilityProvider(DATA_SOURCE)
 组件间通过能力系统通信，避免紧耦合：
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-utils'
+import { defineCapability } from '@spark-appworks/spark-utils'
 
 const COLUMN_MANAGER = defineCapability<{
   addColumn(col: unknown): void
@@ -113,7 +113,7 @@ const columnManager = sparkConsume(COLUMN_MANAGER)
 所有 API 通过 `Spark` 命名空间统一访问：
 
 ```typescript
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 
 // 注册组件
 Spark.register('my-component', MyComponent)
@@ -122,7 +122,7 @@ Spark.register('my-component', MyComponent)
 app.use(Spark.createPlugin())
 
 // 类型定义
-import type { SparkCapabilityContext } from '@spark-view/spark-component'
+import type { SparkCapabilityContext } from '@spark-appworks/spark-component'
 ```
 
 ## API 文档
@@ -141,7 +141,7 @@ import {
   containerComposables,
   fieldComposables,
   displayComposables,
-} from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
 ```
 
 - `containers`：容器 renderer（数据容器 / 结构容器 / 区域组件）
@@ -154,7 +154,7 @@ import {
 
 ```json
 {
-  "@spark-view/spark-utils": "workspace:*",
+  "@spark-appworks/spark-utils": "workspace:*",
   "vue": "^3.4.0"
 }
 ```

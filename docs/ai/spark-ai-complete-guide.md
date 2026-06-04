@@ -4,7 +4,7 @@
 
 ## 1. 一句话定位
 
-`@spark-view/spark-ai` 是 SPARK View 的 AI 运行时包，职责是把业务能力声明成可被 LLM 安全发现、校验并调用的生产线协议。
+`@spark-appworks/spark-ai` 是 SPARK AppWorks 的 AI 运行时包，职责是把业务能力声明成可被 LLM 安全发现、校验并调用的生产线协议。
 
 它负责：
 
@@ -35,10 +35,10 @@
 `packages/spark-ai/package.json` 只暴露四个 public subpath：
 
 ```text
-@spark-view/spark-ai
-@spark-view/spark-ai/json
-@spark-view/spark-ai/modules
-@spark-view/spark-ai/agent
+@spark-appworks/spark-ai
+@spark-appworks/spark-ai/json
+@spark-appworks/spark-ai/modules
+@spark-appworks/spark-ai/agent
 ```
 
 根入口是小门面，只导出：
@@ -55,15 +55,15 @@ export {
   createAiAgentHost,
   createAiAgentRegistration,
   startAiAgentRegistrationSession,
-} from '@spark-view/spark-ai'
+} from '@spark-appworks/spark-ai'
 ```
 
 新代码优先从细分入口导入：
 
 ```ts
-import { paramsSchema, stringSchema } from '@spark-view/spark-ai/json'
-import { AiModule, AiModuleResult, AiModuleRuntime } from '@spark-view/spark-ai/modules'
-import { createAiAgentHost, createAiBusinessKit } from '@spark-view/spark-ai/agent'
+import { paramsSchema, stringSchema } from '@spark-appworks/spark-ai/json'
+import { AiModule, AiModuleResult, AiModuleRuntime } from '@spark-appworks/spark-ai/modules'
+import { createAiAgentHost, createAiBusinessKit } from '@spark-appworks/spark-ai/agent'
 ```
 
 ## 3. 总体架构
@@ -104,7 +104,7 @@ flowchart TD
 
 ### 4.1 JSON 值类型
 
-`@spark-view/spark-ai/json` 使用标准 JSON 值：
+`@spark-appworks/spark-ai/json` 使用标准 JSON 值：
 
 ```ts
 type AiJsonValue =
@@ -144,7 +144,7 @@ import {
   objectSchema,
   paramsSchema,
   stringSchema,
-} from '@spark-view/spark-ai/json'
+} from '@spark-appworks/spark-ai/json'
 
 const inputSchema = paramsSchema({
   ticketId: stringSchema('工单 ID'),
@@ -170,7 +170,7 @@ const inputSchema = paramsSchema({
 值规整有两种：
 
 ```ts
-import { coerceJsonValue, coerceStrictJsonValue } from '@spark-view/spark-ai/json'
+import { coerceJsonValue, coerceStrictJsonValue } from '@spark-appworks/spark-ai/json'
 ```
 
 - `coerceJsonValue` 尽量把运行时值转成 JSON：`Date` 转 ISO、`BigInt` 转字符串、TypedArray 转数组、Map/Set 转对象或数组，循环引用会被丢弃。
@@ -194,7 +194,7 @@ import {
   AiModule,
   AiModuleResult,
   type AiModuleInstanceRef,
-} from '@spark-view/spark-ai/modules'
+} from '@spark-appworks/spark-ai/modules'
 
 const ticketModule = new AiModule({
   kind: 'ticket',
@@ -263,7 +263,7 @@ import {
   appendAiModulePath,
   buildAiModulePath,
   parseAiModulePath,
-} from '@spark-view/spark-ai/modules'
+} from '@spark-appworks/spark-ai/modules'
 
 const rootPath = buildAiModulePath([{ kind: 'ticket', id: 'ticket/a' }])
 // /ticket[ticket%2Fa]
@@ -707,7 +707,7 @@ inputContract: {
 底层注册或高度定制业务可使用构造器显式创建 `inputContract`：
 
 ```ts
-import { createSimpleInputContract } from '@spark-view/spark-ai/agent'
+import { createSimpleInputContract } from '@spark-appworks/spark-ai/agent'
 
 const inputContract = createSimpleInputContract<TicketInput>({
   businessId: 'ticket',
@@ -769,7 +769,7 @@ const kit = createAiBusinessKit<TicketInput>({
 ### 10.1 创建 Host
 
 ```ts
-import { createAiAgentHost } from '@spark-view/spark-ai/agent'
+import { createAiAgentHost } from '@spark-appworks/spark-ai/agent'
 
 const host = createAiAgentHost({
   turnCallbacks,
@@ -879,7 +879,7 @@ await host.run('ticketAssistant', {
 默认实现：
 
 ```ts
-import { DefaultAiAgentSessionStore } from '@spark-view/spark-ai/agent'
+import { DefaultAiAgentSessionStore } from '@spark-appworks/spark-ai/agent'
 
 const sessionStore = new DefaultAiAgentSessionStore()
 ```
@@ -919,7 +919,7 @@ Session history 包含两类：
 import {
   createAiAgentSessionTranscript,
   summarizeAiAgentSessionRecord,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 
 const record = session.getSessionRecord()
 const summary = summarizeAiAgentSessionRecord(record)
@@ -1089,7 +1089,7 @@ appendMessages({
 如果 APP 的 LLM 结果来自公共 SSE，可使用收集器：
 
 ```ts
-import { createTurnEventCollector } from '@spark-view/spark-ai/agent'
+import { createTurnEventCollector } from '@spark-appworks/spark-ai/agent'
 
 const collector = createTurnEventCollector({
   input,
@@ -1112,7 +1112,7 @@ const result = await collector.result
 ### 13.5 turnKey / streamKey
 
 ```ts
-import { createAiAgentTransportTurn } from '@spark-view/spark-ai/agent'
+import { createAiAgentTransportTurn } from '@spark-appworks/spark-ai/agent'
 
 const identity = createAiAgentTransportTurn(input, 'llm-stream')
 ```
@@ -1185,11 +1185,11 @@ import {
   AiModule,
   AiModuleResult,
   type AiModuleInstanceRef,
-} from '@spark-view/spark-ai/modules'
+} from '@spark-appworks/spark-ai/modules'
 import {
   enumSchema,
   paramsSchema,
-} from '@spark-view/spark-ai/json'
+} from '@spark-appworks/spark-ai/json'
 
 function createTicketModule(service: TicketService): AiModule {
   return new AiModule({
@@ -1247,7 +1247,7 @@ function createTicketModule(service: TicketService): AiModule {
 ```ts
 import {
   createAiBusinessKit,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 
 type TicketInput = AiJsonParams & Readonly<{
   ticketId: string
@@ -1374,9 +1374,9 @@ pnpm run verify:docs
 修改 `packages/spark-ai` 后至少运行：
 
 ```bash
-pnpm --filter @spark-view/spark-ai typecheck
-pnpm --filter @spark-view/spark-ai lint
-pnpm --filter @spark-view/spark-ai test:run
+pnpm --filter @spark-appworks/spark-ai typecheck
+pnpm --filter @spark-appworks/spark-ai lint
+pnpm --filter @spark-appworks/spark-ai test:run
 ```
 
 涉及跨包消费代码时，再按变更范围补跑根级检查：
@@ -1429,7 +1429,7 @@ pnpm run test
 
 ### 20.4 spark-ai 边界
 
-- `spark-ai` 不导入 Vue、Router、Element Plus、`spark-page-config` 或 APP UI。
+- `spark-ai` 不导入 Vue、Router、Element Plus、`spark-project-model` 或 APP UI。
 - JSON/modules/agent 保持框架无关。
 - 业务状态属于业务 service。
 - session history 属于 Agent 诊断与续接，不要在业务冒烟检查中复制第二份完整历史。

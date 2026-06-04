@@ -27,7 +27,7 @@
  * ```
  */
 
-import { Logger, toErrorMessage, createSafeProxy } from '@spark-view/spark-utils'
+import { Logger, toErrorMessage, createSafeProxy } from '@spark-appworks/spark-utils'
 import type { DataRow, ComputedColumnFn, TableRelation } from '../types'
 import type { DataSet } from '../dataset'
 import type { DataView } from '../data-view'

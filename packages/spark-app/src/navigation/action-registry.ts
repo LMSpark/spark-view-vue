@@ -1,5 +1,5 @@
 import type { InjectionKey } from 'vue'
-import type { ProjectNodeData } from '@spark-view/spark-project-model'
+import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 
 export type NavigationActionContext = {
   command: string

@@ -5,7 +5,7 @@ import type {
   AiAgentTaskChatOptions,
   AiAgentToolCallRecord,
   AiAgentTurnCallbacks,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 import {
   AiAgentRegistration,
   AiAgentRuntimeContext,
@@ -14,9 +14,9 @@ import {
   AiAgentTarget,
   AiAgentTask,
   DefaultAiAgentSessionStore,
-} from '@spark-view/spark-ai/agent'
-import type { AiJsonParams } from '@spark-view/spark-ai/json'
-import { AiModuleRuntime } from '@spark-view/spark-ai/modules'
+} from '@spark-appworks/spark-ai/agent'
+import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
+import { AiModuleRuntime } from '@spark-appworks/spark-ai/modules'
 import {
   createAiRunAdapter,
   formatAiRunError,

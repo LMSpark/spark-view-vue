@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest'
-import { DataMember, SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-appworks/spark-data'
 import {
   resolveDataViewCapabilities,
   resolveDataViewKey,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 
 describe('spark-component DataView resolver', () => {
   function createDataSet() {

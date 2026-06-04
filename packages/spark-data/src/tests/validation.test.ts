@@ -8,10 +8,10 @@
  */
 
 import { describe, it, expect, beforeEach } from 'vitest'
-import { DataView } from '@spark-view/spark-data'
+import { DataView } from '@spark-appworks/spark-data'
 import { DataTable } from '../data-table'
 import { DataValidator, createValidator, createSchema } from '../validation'
-import type { DataColumn, DataRow } from '@spark-view/spark-data'
+import type { DataColumn, DataRow } from '@spark-appworks/spark-data'
 import { requireError, requireNumber } from './test-type-helpers'
 
 describe('DataValidator - 基础校验', () => {

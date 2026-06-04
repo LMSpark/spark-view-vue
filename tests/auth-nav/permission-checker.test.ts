@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { permission } from '../../packages/spark-component/src/index'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 
 const { canCreate, canImport, canExport, canDelete, canCreateChild, canEdit } = permission
 

@@ -1,5 +1,5 @@
-import type { DataRow, DataView, ModelPermission } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+import type { DataRow, DataView, ModelPermission } from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type { SparkNode, SparkNodeChildren } from '../../core/types.js'
 
 export const BEFORE_RENDER_RESOLVED_PROP = '$beforeRenderResolved'

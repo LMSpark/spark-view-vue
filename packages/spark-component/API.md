@@ -1,4 +1,4 @@
-# @spark-view/spark-component — API 文档
+# @spark-appworks/spark-component — API 文档
 
 > 版本: 0.1.0 | 基于源码生成
 
@@ -88,7 +88,7 @@ const childCtx  = createContext({ type: 'child' }, parentCtx)
 现在它也是**唯一的能力组合函数入口**；历史上的独立只读/父上下文 hook 已废除。
 
 ```typescript
-import { useSparkComponent } from '@spark-view/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
 
 const {
   provider,
@@ -144,7 +144,7 @@ const dataSource = sparkConsume(DATA_SOURCE)
 向当前组件的 `context.capabilities` 写入能力。**这是 SPARK 能力系统，不是 Vue 的 `provide/inject`。**
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-appworks/spark-component'
 
 const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
 sparkProvide(MY_CAP, { doWork() { console.log('working') } })
@@ -161,7 +161,7 @@ sparkProvide(MY_CAP, { doWork() { console.log('working') } })
 沿 `parent` 链向上查找能力（就近原则）。**找不到返回 `null` 是正常情况（late-binding），不应视为错误。**
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-appworks/spark-component'
 
 const services = sparkConsume(PAGE_RUNTIME_SERVICES)
 services?.router?.push('/home')
@@ -257,7 +257,7 @@ type ComponentRegistry = {
 ### 定义能力键
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-appworks/spark-component'
 
 export const MY_CAP = defineCapability<{ doWork(): void }>('app:my-cap')
 // MY_CAP 类型为 CapabilityKey<{ doWork(): void }>
@@ -280,7 +280,7 @@ cap?.doWork()
 
 | 键 | 类型 | 说明 |
 |---|---|---|
-| `PAGE_RUNTIME_SERVICES` | `PageRuntimeServicesCapability`，来自 `@spark-view/spark-component` | `{ router?, logger?, tenant?, configLoader?, authService?, pageService? }` |
+| `PAGE_RUNTIME_SERVICES` | `PageRuntimeServicesCapability`，来自 `@spark-appworks/spark-component` | `{ router?, logger?, tenant?, configLoader?, authService?, pageService? }` |
 | `PAGE_SERVICE` | `PageServiceCapability` | `showMessage / showConfirm / showLoading / navigate` |
 | `PAGE_DATASET` | `DataSetContract` | 页面级 DataSet，由 PageRenderer 提供 |
 | `DATA_SOURCE` | `DataSource` | 组件级 DataView，由容器组件提供 |
@@ -292,7 +292,7 @@ cap?.doWork()
 ## Vue 插件
 
 ```typescript
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 
 const plugin = Spark.createPlugin()
 app.use(plugin)

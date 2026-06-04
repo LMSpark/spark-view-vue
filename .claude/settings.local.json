@@ -24,16 +24,16 @@
       "Bash(node --import tsx -e ' *)",
       "Bash(timeout 10 curl -v -N \"http://127.0.0.1:8080/api/events\" -H \"Accept: text/event-stream\")",
       "Bash(timeout 5 curl -v -N \"http://localhost:5173/api/events\" -H \"Accept: text/event-stream\")",
-      "Bash(pnpm --filter @spark-view/spark-page-config run build)",
+      "Bash(pnpm --filter @spark-appworks/spark-project-model run build)",
       "Bash(npx vitest *)",
       "Bash(rm -rf src/*)",
-      "Bash(cp -r ../spark-page-config/src/* src/)",
+      "Bash(cp -r ../spark-project-model/src/* src/)",
       "Bash(code --install-extension Catppuccin.catppuccin-vsc)",
       "Bash(git restore *)",
       "Bash(git clean *)"
     ],
     "additionalDirectories": [
-      "D:\\SPARK_VIEW\\.claude"
+      "D:\\SPARK_AppWorks\\.claude"
     ]
   }
 }

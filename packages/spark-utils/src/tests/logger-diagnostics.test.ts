@@ -6,7 +6,7 @@ import {
   parseLogArgs,
   isRecord,
   type LogTransport,
-} from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-utils'
 
 type CapturedLog = {
   level: string

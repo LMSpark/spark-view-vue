@@ -13,7 +13,7 @@
  *   显式 unbind（onUnmounted）作为双保险，不依赖 GC 时机。
  */
 
-import type { CapabilityContext } from '@spark-view/spark-utils'
+import type { CapabilityContext } from '@spark-appworks/spark-utils'
 
 export type SparkRuntimeOwner = {
   parent?: SparkRuntimeOwner | null

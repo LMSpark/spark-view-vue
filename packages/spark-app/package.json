@@ -1,5 +1,5 @@
 {
-  "name": "@spark-view/spark-app",
+  "name": "@spark-appworks/spark-app",
   "version": "0.3.7",
   "type": "module",
   "main": "./dist/index.js",
@@ -29,11 +29,11 @@
     }
   },
   "dependencies": {
-    "@spark-view/spark-ai": "workspace:*",
-    "@spark-view/spark-component": "workspace:*",
-    "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-project-model": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*"
+    "@spark-appworks/spark-ai": "workspace:*",
+    "@spark-appworks/spark-component": "workspace:*",
+    "@spark-appworks/spark-data": "workspace:*",
+    "@spark-appworks/spark-project-model": "workspace:*",
+    "@spark-appworks/spark-utils": "workspace:*"
   },
   "scripts": {
     "clean": "rimraf dist",

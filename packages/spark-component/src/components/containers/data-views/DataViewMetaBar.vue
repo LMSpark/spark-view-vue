@@ -22,7 +22,7 @@
 
 <script setup lang="ts">
 import { computed } from 'vue'
-import type { DataColumn, DataRow, RequestState } from '@spark-view/spark-data'
+import type { DataColumn, DataRow, RequestState } from '@spark-appworks/spark-data'
 
 type AggregateEntry = {
   key: string

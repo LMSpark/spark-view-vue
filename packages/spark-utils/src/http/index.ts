@@ -3,7 +3,7 @@
  *
  * @example
  * ```ts
- * import { createRequest, createFileLoader } from '@spark-view/spark-utils'
+ * import { createRequest, createFileLoader } from '@spark-appworks/spark-utils'
  * const http = createRequest({ baseURL: '/api', timeout: 5000 })
  * const data = await http.get<User[]>('/users')
  * ```

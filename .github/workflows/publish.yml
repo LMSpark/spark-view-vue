@@ -47,7 +47,7 @@ jobs:
           REGISTRY_URL: ${{ secrets.VERDACCIO_REGISTRY_URL }}
         run: |
           # 写入鉴权配置（runner 临时目录）
-          echo "@spark-view:registry=${REGISTRY_URL}" >> ~/.npmrc
+          echo "@spark-appworks:registry=${REGISTRY_URL}" >> ~/.npmrc
           echo "//${REGISTRY_URL#http://}/:_authToken=${NPM_TOKEN}" >> ~/.npmrc
 
           DRY_RUN_FLAG=""

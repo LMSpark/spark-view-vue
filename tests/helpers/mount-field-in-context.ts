@@ -10,9 +10,9 @@ import {
   SPARK_REGISTRY_KEY,
   Spark,
   useSparkComponent,
-} from '@spark-view/spark-component'
-import type { SparkNode, SparkCapabilityContext, ComponentRegistry, PageServiceCapability } from '@spark-view/spark-component'
-import type { DataRow, DataSetContract, DataView } from '@spark-view/spark-data'
+} from '@spark-appworks/spark-component'
+import type { SparkNode, SparkCapabilityContext, ComponentRegistry, PageServiceCapability } from '@spark-appworks/spark-component'
+import type { DataRow, DataSetContract, DataView } from '@spark-appworks/spark-data'
 
 type MountFieldInContextOptions = {
   component: Component

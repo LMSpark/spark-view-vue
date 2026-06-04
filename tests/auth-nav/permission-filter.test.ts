@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import { permission } from '../../packages/spark-component/src/index'
 
 const { filterDisplayableFields } = permission

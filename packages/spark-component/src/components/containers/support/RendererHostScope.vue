@@ -14,7 +14,7 @@
  * 2. 渲染 children 子节点（也可用 slot 替代）。
  */
 import { shallowReactive, watch } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import {
   DATA_ROW,
   SparkComponentRenderer,

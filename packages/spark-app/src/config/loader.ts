@@ -11,8 +11,8 @@
 
 import type { AppFullConfig, TenantConfig, ConfigSourceOptions } from './types'
 import { createLogger } from '../logger'
-import { createRequest, isRecord } from '@spark-view/spark-utils'
-import { readBooleanProperty, readNumberProperty, readProperty, readStringProperty } from '@spark-view/spark-utils/internal'
+import { createRequest, isRecord } from '@spark-appworks/spark-utils'
+import { readBooleanProperty, readNumberProperty, readProperty, readStringProperty } from '@spark-appworks/spark-utils/internal'
 
 const configLogger = createLogger('config')
 

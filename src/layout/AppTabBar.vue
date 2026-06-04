@@ -42,8 +42,8 @@
 <script setup lang="ts">
 import { inject, onBeforeUnmount, onMounted, reactive, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { useTabPages } from '@spark-view/spark-app'
-import type { TabPage } from '@spark-view/spark-app'
+import { useTabPages } from '@spark-appworks/spark-app'
+import type { TabPage } from '@spark-appworks/spark-app'
 import NavIcon from '@/components/NavIcon.vue'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import { parseTenantScope } from '@/services/tenant-scope'

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { DataSet } from '@spark-view/spark-data'
+import { DataSet } from '@spark-appworks/spark-data'
 
 describe('DataSet relation rebuild', () => {
   it('fromJson 在关系图就绪后补挂级联订阅', () => {

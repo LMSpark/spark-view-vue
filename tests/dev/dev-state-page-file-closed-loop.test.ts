@@ -16,7 +16,7 @@ const httpFns = vi.hoisted(() => ({
   },
 }))
 
-vi.mock('@spark-view/spark-app', () => ({
+vi.mock('@spark-appworks/spark-app', () => ({
   createAiRunAdapter: vi.fn(() => ({
     isRunning: vi.fn(() => false),
     abort: vi.fn(),

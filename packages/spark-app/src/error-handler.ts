@@ -7,7 +7,7 @@ import { type App, defineComponent } from 'vue'
 import type { ErrorHandlerOptions, ErrorContext } from './types'
 import { ErrorType } from './types'
 import { createLogger } from './logger'
-import { toError } from '@spark-view/spark-utils'
+import { toError } from '@spark-appworks/spark-utils'
 
 const errorLogger = createLogger('error', { suppressErrorConsoleTrace: true })
 

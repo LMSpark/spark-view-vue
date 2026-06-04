@@ -1,7 +1,7 @@
 import { computed, inject, provide, reactive, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { createRequest } from '@spark-view/spark-utils'
-import { readPrototypeProperty } from '@spark-view/spark-utils/internal'
+import { createRequest } from '@spark-appworks/spark-utils'
+import { readPrototypeProperty } from '@spark-appworks/spark-utils/internal'
 import type {
   ChildPlacement,
   NavContextItem,
@@ -10,7 +10,7 @@ import type {
   ProjectNodeData,
   RegionItems,
   RegionVisibility,
-} from '@spark-view/spark-project-model'
+} from '@spark-appworks/spark-project-model'
 import type { NavigationContext } from './nav-types'
 import { NAV_KEY } from './nav-types'
 import { refreshRoutes } from './nav-access'

@@ -36,7 +36,7 @@
  */
 
 import { isSparkNode, normalizeSparkNode, nodeId, type SparkNode, type SparkNodeChildren } from './spark-node.js'
-import { SnapshotHistory } from '@spark-view/spark-utils'
+import { SnapshotHistory } from '@spark-appworks/spark-utils'
 
 // ═══════════════════════════════════════════════════════
 // 1. 入口常量

@@ -1,5 +1,5 @@
-import type { DataRow } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+import type { DataRow } from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 export type DataViewEditingEventName =
   | 'editingFieldChanged'

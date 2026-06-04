@@ -35,8 +35,8 @@
 </template>
 
 <script setup lang="ts">
-import { useSparkComponent } from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 // 1. 扩展 SparkNode，声明组件专属配置
 type MyWidgetConfig = SparkNode & {
@@ -69,7 +69,7 @@ logger.info('MyWidget initialized', { title: props.config.title })
 
 ```typescript
 import { defineAsyncComponent } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import MyWidget from './MyWidget.vue'
 
 // 同步（直接引用，不做代码分割）
@@ -84,7 +84,7 @@ Spark.register('my-widget', defineAsyncComponent(() => import('./MyWidget.vue'))
 ```typescript
 // src/features/my-app/index.ts
 import { defineAsyncComponent } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 
 const modules = import.meta.glob('./components/*.vue') as Record<string, () => Promise<{ default: unknown }>>
 const entries = {
@@ -103,7 +103,7 @@ for (const [type, path] of Object.entries(entries)) {
 ### 方式三：一次性批量（无 glob 绑定，适合内置组件）
 
 ```typescript
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import WidgetA from './WidgetA.vue'
 import WidgetB from './WidgetB.vue'
 
@@ -118,7 +118,7 @@ Spark.registerAll({
 ```typescript
 // main.ts
 import { createApp } from 'vue'
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import App from './App.vue'
 
 const app = createApp(App)
@@ -172,9 +172,9 @@ SPARK 能力系统通过 **Symbol 键** 实现组件间的松耦合通信，沿 
 ### 4.2 消费内置能力
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
-import { useSparkComponent } from '@spark-view/spark-component'
-import { PAGE_SERVICE, PAGE_DATASET } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-appworks/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
+import { PAGE_SERVICE, PAGE_DATASET } from '@spark-appworks/spark-component'
 
 const { sparkConsume } = useSparkComponent(props.config)
 
@@ -192,7 +192,7 @@ const dataSet = sparkConsume(PAGE_DATASET)
 
 ```typescript
 // capability.ts
-import { defineCapability } from '@spark-view/spark-component'
+import { defineCapability } from '@spark-appworks/spark-component'
 
 export type MySearchCapability = {
   search(keyword: string): void
@@ -260,8 +260,8 @@ SPARK 用 DataViewKey 定位 DataView，用 `dataMember` 和 `dataField` 读取 
 ### 5.2 解析 DataViewKey → 数据视图
 
 ```typescript
-import { PAGE_DATASET } from '@spark-view/spark-component'
-import { DataMember, SparkData } from '@spark-view/spark-data'
+import { PAGE_DATASET } from '@spark-appworks/spark-component'
+import { DataMember, SparkData } from '@spark-appworks/spark-data'
 
 const { sparkConsume } = useSparkComponent(props.config)
 const dataSet = sparkConsume(PAGE_DATASET)
@@ -326,8 +326,8 @@ function handleCleared() {
 容器组件（如表格）解析 DataViewKey 后将 `DataView` 向下提供，子组件通过 `sparkConsume(DATA_SOURCE)` 获取：
 
 ```typescript
-import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+import { DATA_SOURCE, PAGE_DATASET } from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
 
 const { sparkProvide, sparkConsume } = useSparkComponent(props.config)
 
@@ -381,7 +381,7 @@ ds?.addSelectedRowsById([4, 5])
 ds?.removeSelectedRowsById([1])
 
 // 传入 EventContext（可选，用于追踪操作来源）
-import { createEventContext } from '@spark-view/spark-data'
+import { createEventContext } from '@spark-appworks/spark-data'
 const ctx = createEventContext('user', { tableName: 'Users', viewId: 'grid' })
 ds?.setCurrentRow(row, ctx)
 ```
@@ -423,9 +423,9 @@ await ds?.batchDeleteRecords([1, 2, 3])
 ### 7.1 提供事件总线
 
 ```typescript
-import { defineCapability } from '@spark-view/spark-component'
-import { createEventEmitter } from '@spark-view/spark-data'
-import type { SparkEventEmitter } from '@spark-view/spark-data'
+import { defineCapability } from '@spark-appworks/spark-component'
+import { createEventEmitter } from '@spark-appworks/spark-data'
+import type { SparkEventEmitter } from '@spark-appworks/spark-data'
 
 // 定义自定义事件能力键
 const MY_EVENTS = defineCapability<SparkEventEmitter>('app:my-events')
@@ -487,7 +487,7 @@ logger.error('请求失败', { error })
 ### 页面层 Logger（推荐）
 
 ```typescript
-import { PAGE_RUNTIME_SERVICES } from '@spark-view/spark-component'
+import { PAGE_RUNTIME_SERVICES } from '@spark-appworks/spark-component'
 
 // 由页面根节点统一提供，组件内只消费 logger，不再做子树级覆盖
 sparkProvide(PAGE_RUNTIME_SERVICES, { router, logger: pageLogger })
@@ -533,7 +533,7 @@ sparkProvide(PAGE_RUNTIME_SERVICES, { router, logger: pageLogger })
 import { mount } from '@vue/test-utils'
 import { createApp } from 'vue'
 import { describe, it, expect } from 'vitest'
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import MyWidget from '../components/MyWidget.vue'
 
 describe('MyWidget', () => {
@@ -553,7 +553,7 @@ describe('MyWidget', () => {
 ### 10.2 能力系统测试
 
 ```typescript
-import { Spark } from '@spark-view/spark-component'
+import { Spark } from '@spark-appworks/spark-component'
 import { MY_SEARCH } from '../capability'
 
 it('provides and consumes capability', () => {
@@ -577,7 +577,7 @@ it('provides and consumes capability', () => {
 ### 10.3 DataView 数据绑定测试
 
 ```typescript
-import { DataMember, SparkData } from '@spark-view/spark-data'
+import { DataMember, SparkData } from '@spark-appworks/spark-data'
 
 it('resolves DataViewKey to rows', () => {
   const dataSet = SparkData.createDataSet({
@@ -677,7 +677,7 @@ gridRef.value?.selectAll()
 | `packages/spark-data/` | `spark-data` |
 | `packages/spark-utils/` | `spark-utils` |
 | `packages/spark-app/` | `spark-app` |
-| `packages/spark-page-config/` | `spark-page-config` |
+| `packages/spark-project-model/` | `spark-project-model` |
 | `docs/` / `scripts/` / 构建配置 | `docs` / `scripts` |
 
 ---
@@ -745,10 +745,10 @@ pnpm run plop
 <!-- MasterGrid.vue -->
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
-import { DATA_SOURCE, PAGE_DATASET } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
+import { DATA_SOURCE, PAGE_DATASET } from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 type MasterGridConfig = SparkNode & {
   dataViewKey: string
@@ -780,10 +780,10 @@ function onRowClick(row: any) {
 <!-- 无需手动订阅——只需在 DataSet.relations 中正确配置 dependencyType: 'currentRow' -->
 <script setup lang="ts">
 import { computed } from 'vue'
-import { useSparkComponent } from '@spark-view/spark-component'
-import { PAGE_DATASET } from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-component'
+import { useSparkComponent } from '@spark-appworks/spark-component'
+import { PAGE_DATASET } from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 type DetailGridConfig = SparkNode & {
   dataViewKey: string

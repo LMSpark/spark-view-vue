@@ -3,7 +3,7 @@
  *
  * Form / Detail / List 可直接展开使用；Table 展开后覆盖 setCurrentRow / setCurrentRowById。
  */
-import type { DataView, DataRow } from '@spark-view/spark-data'
+import type { DataView, DataRow } from '@spark-appworks/spark-data'
 import type { ValueRef } from '../../shared-types.js'
 import type { BaseContainerApi } from './base-container-api.js'
 import { createCancelledCrudResult } from './interactionControl.js'

@@ -1,5 +1,5 @@
 import { DataSet } from './dataset'
-import { SnapshotHistory, deepClone, isRecord } from '@spark-view/spark-utils'
+import { SnapshotHistory, deepClone, isRecord } from '@spark-appworks/spark-utils'
 import { isDataRow } from './core/data-row-guards'
 import type { DataTable } from './data-table'
 import type { DataView } from './data-view'

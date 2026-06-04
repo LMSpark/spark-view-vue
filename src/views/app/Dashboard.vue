@@ -136,7 +136,7 @@
  * @since 1.0.0
  */
 import { ref } from 'vue'
-import { useNav } from '@spark-view/spark-app'
+import { useNav } from '@spark-appworks/spark-app'
 
 const nav = useNav()
 

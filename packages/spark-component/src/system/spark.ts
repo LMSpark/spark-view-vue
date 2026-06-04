@@ -10,7 +10,7 @@
  * @module spark
  */
 
-import { createSparkCapabilityContext } from '@spark-view/spark-utils'
+import { createSparkCapabilityContext } from '@spark-appworks/spark-utils'
 import { createComponentRegistry, getGlobalRegistry } from './registry.js'
 import { createSparkPlugin } from './plugin.js'
 import type { CapabilityContext, ComponentRegistry, SparkNode } from '../core/types.js'

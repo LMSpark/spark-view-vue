@@ -90,7 +90,7 @@ import { getUser } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import { buildTenantPath, stripTenantScope } from '@/services/tenant-scope'
 import NavIcon from '@/components/NavIcon.vue'
-import { getNavHomePath } from '@spark-view/spark-app'
+import { getNavHomePath } from '@spark-appworks/spark-app'
 
 type ProjectItem = {
   projectId: string

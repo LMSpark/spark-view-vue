@@ -1,6 +1,6 @@
 ﻿ 
 import { describe, it, expect } from 'vitest'
-import { Spark, SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+import { Spark, SPARK_REGISTRY_KEY } from '@spark-appworks/spark-component'
 import { createApp } from 'vue'
 
 describe('Vue plugin integration', () => {

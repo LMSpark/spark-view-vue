@@ -1,7 +1,7 @@
 import { computed } from 'vue'
 import type { ComputedRef } from 'vue'
 import { getSparkNodeChildren, type SparkNode } from '../../internal'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { FormItemRule } from '../columnFormRules'
 import type { SparkFieldSemanticProps, SparkNodeProps } from '../../shared-types.js'
 

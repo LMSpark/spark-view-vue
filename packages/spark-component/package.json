@@ -1,5 +1,5 @@
 {
-  "name": "@spark-view/spark-component",
+  "name": "@spark-appworks/spark-component",
   "version": "0.4.5",
   "type": "module",
   "main": "./dist/index.js",
@@ -42,11 +42,11 @@
     "@codemirror/language": "^6.12.3",
     "@codemirror/state": "^6.6.0",
     "@codemirror/view": "^6.41.0",
-    "@spark-view/spark-ai": "workspace:*",
-    "@spark-view/spark-data": "workspace:*",
-    "@spark-view/spark-json-document": "workspace:*",
-    "@spark-view/spark-project-model": "workspace:*",
-    "@spark-view/spark-utils": "workspace:*",
+    "@spark-appworks/spark-ai": "workspace:*",
+    "@spark-appworks/spark-data": "workspace:*",
+    "@spark-appworks/spark-json-document": "workspace:*",
+    "@spark-appworks/spark-project-model": "workspace:*",
+    "@spark-appworks/spark-utils": "workspace:*",
     "codemirror": "^6.0.2",
     "vanilla-jsoneditor": "^3.12.0"
   },

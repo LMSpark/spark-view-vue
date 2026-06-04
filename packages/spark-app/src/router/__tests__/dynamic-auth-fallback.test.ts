@@ -2,8 +2,8 @@ import { describe, it, expect, vi } from 'vitest'
 import { defineComponent } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { createDynamicRouter } from '../dynamic'
-import type { ProjectModelData } from '@spark-view/spark-project-model'
-import type { PageNodeFactoryLike, PageNodeLike } from '@spark-view/spark-project-model'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
+import type { PageNodeFactoryLike, PageNodeLike } from '@spark-appworks/spark-project-model'
 
 const DummyPage = defineComponent({
   name: 'DummyPage',

@@ -6,8 +6,8 @@
 
 import type { Plugin } from 'vue'
 import { getGlobalPluginRegistry } from './registry'
-import { isRecord } from '@spark-view/spark-utils'
-import { readProperty } from '@spark-view/spark-utils/internal'
+import { isRecord } from '@spark-appworks/spark-utils'
+import { readProperty } from '@spark-appworks/spark-utils/internal'
 
 function isVuePlugin(value: unknown): value is Plugin {
   return typeof value === 'function'

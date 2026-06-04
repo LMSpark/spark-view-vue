@@ -1,8 +1,8 @@
 import type {
   AiAgentBeforeFunctionCallDirective,
   AiAgentBeforeFunctionCallOptions,
-} from '@spark-view/spark-ai/agent'
-import type { AiJsonParams } from '@spark-view/spark-ai/json'
+} from '@spark-appworks/spark-ai/agent'
+import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
 
 export type AiToolApprovalRequest = Readonly<{
   id: string

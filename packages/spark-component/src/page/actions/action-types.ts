@@ -16,7 +16,7 @@
  * ```
  */
 
-import type { DataView, DataRow, DataSetContract, DataSetSaveChangesMode, DataSetSaveChangesViewSelector } from '@spark-view/spark-data'
+import type { DataView, DataRow, DataSetContract, DataSetSaveChangesMode, DataSetSaveChangesViewSelector } from '@spark-appworks/spark-data'
 import type { PageServiceCapability, PageMessageType } from '../../core/capability-keys.js'
 import type { CancellableControl } from '../../components/containers/support/interactionControl.js'
 

@@ -7,7 +7,7 @@
 - [spark-app/README.md](spark-app/README.md)：应用层启动、路由、插件、日志与页面宿主。
 - [spark-component/README.md](spark-component/README.md)：组件系统、能力链、渲染容器。
 - [spark-data/README.md](spark-data/README.md)：DataSet、DataView、关系、树、聚合。
-- [spark-page-config/README.md](spark-page-config/README.md)：页面配置加载、脚本上下文与配置装配。
+- [spark-project-model/README.md](spark-project-model/README.md)：页面配置加载、脚本上下文与配置装配。
 - [spark-utils/README.md](spark-utils/README.md)：公共底层工具和能力键。
 
 ## AI 与目录生成

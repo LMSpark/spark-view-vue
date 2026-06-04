@@ -15,7 +15,7 @@
  * CrudService 实例由 DataTable 持有并缓存（模型级共享）。
  */
 
-import { Logger } from '@spark-view/spark-utils'
+import { Logger } from '@spark-appworks/spark-utils'
 import { isDataRow } from '../core/data-row-guards'
 import type { CrudService } from '../crud-service'
 import type {

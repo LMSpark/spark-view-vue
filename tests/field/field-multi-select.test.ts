@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, reactive } from 'vue'
-import { FieldMultiSelect } from '@spark-view/spark-component'
+import { FieldMultiSelect } from '@spark-appworks/spark-component'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 
 const ElFormItemStub = defineComponent({

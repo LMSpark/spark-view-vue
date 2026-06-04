@@ -1,4 +1,4 @@
-import { isDataRow, type DataRow } from '@spark-view/spark-data'
+import { isDataRow, type DataRow } from '@spark-appworks/spark-data'
 
 const TREE_LABEL_FALLBACK_FIELDS: readonly ['label', 'name', 'title'] = ['label', 'name', 'title']
 

@@ -24,8 +24,8 @@ import {
   RendererCol,
   Spark,
   useSparkComponent,
-} from '@spark-view/spark-component'
-import type { SparkNode, SparkCapabilityContext, ComponentRegistry } from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
+import type { SparkNode, SparkCapabilityContext, ComponentRegistry } from '@spark-appworks/spark-component'
 
 // ── Stubs for Element Plus ──
 
@@ -121,7 +121,7 @@ const SparkComponentRendererStub = defineComponent(
 
 // ── Helpers ──
 
-import { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+import { SPARK_REGISTRY_KEY } from '@spark-appworks/spark-component'
 
 type TestSystem = { registry: ComponentRegistry; rootContext: SparkCapabilityContext}
 

@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 import { RequestState } from '../types'
 import type { QueryParams } from '../types'
 

@@ -1,4 +1,4 @@
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { BaseCrudContainerApi } from '../../support/base-container-api.js'
 
 export type RendererTreeApi = BaseCrudContainerApi & {

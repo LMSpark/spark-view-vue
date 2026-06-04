@@ -25,8 +25,8 @@
  * ```
  */
 
-import { HttpClientBase, createRequest } from '@spark-view/spark-utils'
-import type { HttpResponse, RequestConfig } from '@spark-view/spark-utils'
+import { HttpClientBase, createRequest } from '@spark-appworks/spark-utils'
+import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'
 import { getToken, getUser, clearAuth } from './auth'
 
 export function createAuthHeaders(): Record<string, string> {

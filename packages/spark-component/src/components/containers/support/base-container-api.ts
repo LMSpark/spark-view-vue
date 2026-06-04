@@ -4,7 +4,7 @@
  * Table / Form / Detail / List 四大容器共享的 CRUD + 当前行方法签名。
  * Tree 的 CRUD 表面差异较大（appendNode / removeNode 等），不参与该基类。
  */
-import type { CrudResult, DataView, DataRow } from '@spark-view/spark-data'
+import type { CrudResult, DataView, DataRow } from '@spark-appworks/spark-data'
 
 /**
  * 数据容器 CRUD API（统一最小公约数）。

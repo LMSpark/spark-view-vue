@@ -1,4 +1,4 @@
-import { createProjectEditor } from '@spark-view/spark-project-model/project'
+import { createProjectEditor } from '@spark-appworks/spark-project-model/project'
 import { getPageApi, getNavApi, getProjectApi, getProjectNavigationApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'

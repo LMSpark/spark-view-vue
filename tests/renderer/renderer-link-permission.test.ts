@@ -7,10 +7,10 @@ import {
   Spark,
   RendererLink,
   useSparkComponent,
-} from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
-import type { DataView } from '@spark-view/spark-data'
-import type { SparkNode } from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { DataView } from '@spark-appworks/spark-data'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 const ElLinkStub = defineComponent({
   props: ['type', 'underline', 'disabled', 'href', 'target'],

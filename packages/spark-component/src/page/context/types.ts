@@ -4,8 +4,8 @@
  * 页面渲染器 Props（编排层）已迁移至 SparkPageRenderer.vue <script> 块。
  */
 
-import type { DataSetContract, SparkData } from '@spark-view/spark-data'
-import type { PageNodeRenderConfig } from '@spark-view/spark-project-model'
+import type { DataSetContract, SparkData } from '@spark-appworks/spark-data'
+import type { PageNodeRenderConfig } from '@spark-appworks/spark-project-model'
 import type { PageRoute, ScriptContext } from '../../runtime'
 import type { h } from 'vue'
 import type { PageComponentInstanceEntry } from '../../core/capability-keys.js'

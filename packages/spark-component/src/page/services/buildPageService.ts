@@ -18,7 +18,7 @@ import type {
   PageUploadedFile,
   PageDialogResult,
 } from '../../core/capability-keys.js'
-import { createRequest, isRecord, isRequestError } from '@spark-view/spark-utils'
+import { createRequest, isRecord, isRequestError } from '@spark-appworks/spark-utils'
 import { pageLogger } from './pageLogger'
 
 /** 内部实现：ElMessageBox.confirm() 取消时抛出 'cancel' 字符串或 { action: 'cancel' }，用于区分真正的异常。这是 PageServiceCapability 内部实现细节，script.js 不能直接访问 ElMessageBox（已从沙箱移除）。 */

@@ -6,10 +6,10 @@
 
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { PageNodeFactoryLike } from '@spark-view/spark-project-model'
-import type { ProjectModelData, ProjectNodeData } from '@spark-view/spark-project-model'
+import type { PageNodeFactoryLike } from '@spark-appworks/spark-project-model'
+import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
 import { createLogger } from '../logger'
-import { readProperty } from '@spark-view/spark-utils/internal'
+import { readProperty } from '@spark-appworks/spark-utils/internal'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from './cross-project-ref-route'
 import { ExternalLinkFramePage } from './external-link-frame-page'
@@ -47,7 +47,7 @@ export type DynamicRouterOptions = {
    *
    * @example
    * ```typescript
-   * import { PageRenderer } from '@spark-view/spark-component'
+   * import { PageRenderer } from '@spark-appworks/spark-component'
    * const options = { router, pageNodeFactory, pageComponent: PageRenderer }
    * ```
    */

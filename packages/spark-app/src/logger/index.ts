@@ -17,9 +17,9 @@
 /**
  * 日志级别（与 spark-utils 共享）
  */
-export type { LogLevel } from '@spark-view/spark-utils'
-import type { LogLevel, LogTransport as BaseLogTransport } from '@spark-view/spark-utils'
-import { sendBeacon } from '@spark-view/spark-utils'
+export type { LogLevel } from '@spark-appworks/spark-utils'
+import type { LogLevel, LogTransport as BaseLogTransport } from '@spark-appworks/spark-utils'
+import { sendBeacon } from '@spark-appworks/spark-utils'
 
 /**
  * 应用层 Logger API 接口
@@ -356,7 +356,7 @@ export function createBatchHttpTransport(options: BatchTransportOptions): LogTra
  *
  * @example
  * ```ts
- * import { configureRemoteLogger } from '@spark-view/spark-app'
+ * import { configureRemoteLogger } from '@spark-appworks/spark-app'
  *
  * const appConfig = await loadAppConfig()
  * configureRemoteLogger({

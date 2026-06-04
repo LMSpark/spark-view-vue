@@ -1,4 +1,4 @@
-# Contributing to SPARK View
+# Contributing to SPARK AppWorks
 
 感谢你的贡献！本文件包含提交流程、代码质量要求和提交信息规范的快速说明。
 
@@ -39,7 +39,7 @@
 
 - 常用 `type`：`feat`, `fix`, `chore`, `docs`, `refactor`, `perf`, `test`, `style`, `ci`, `build`, `revert`
 - 允许的 `scope`（仓库约定）：
-  - `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`
+  - `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-project-model`
 
 示例：
 ```

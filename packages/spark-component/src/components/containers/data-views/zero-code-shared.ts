@@ -1,4 +1,4 @@
-import type { DataView } from '@spark-view/spark-data'
+import type { DataView } from '@spark-appworks/spark-data'
 import { createBaseCrudMethods, createCrudDispatcher } from '../support/index.js'
 import type { ValueRef } from '../../shared-types.js'
 

@@ -287,7 +287,7 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-view/spark-project-model/project'
+} from '@spark-appworks/spark-project-model/project'
 import type { DevState } from './useDevState'
 import type {
   CrudApi,
@@ -297,7 +297,7 @@ import type {
   DataSetMetadata,
   TableBusinessCategory,
   TableResourceType,
-} from '@spark-view/spark-data'
+} from '@spark-appworks/spark-data'
 
 /**
  * 设计器列 — DataColumn + 画布唯一标识

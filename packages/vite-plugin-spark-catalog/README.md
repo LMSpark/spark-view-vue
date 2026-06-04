@@ -1,4 +1,4 @@
-# @spark-view/vite-plugin-spark-catalog
+# @spark-appworks/vite-plugin-spark-catalog
 
 构建期使用的 Vite 插件工作区，用来从组件源码提取结构化元数据，并生成 AI 运行时和提示词所需的目录产物。
 

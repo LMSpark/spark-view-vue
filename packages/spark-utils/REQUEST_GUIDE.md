@@ -17,7 +17,7 @@
 ### 基本使用
 
 ```typescript
-import { createRequest } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-appworks/spark-utils'
 
 // 创建请求实例
 const request = createRequest({
@@ -138,7 +138,7 @@ request.interceptors.response.use({
 ### 启动配置示例
 
 ```typescript
-import { createRequest } from '@spark-view/spark-utils'
+import { createRequest } from '@spark-appworks/spark-utils'
 
 // 创建全局请求实例
 const request = createRequest({
@@ -232,7 +232,7 @@ const blob = await request.get<Blob>('/file.pdf', {}, {
 ### 页面卸载期上报
 
 ```typescript
-import { sendBeacon } from '@spark-view/spark-utils'
+import { sendBeacon } from '@spark-appworks/spark-utils'
 
 // 页面卸载期日志上报
 sendBeacon('/logs/batch', { logs: [] }, '/api')
@@ -301,7 +301,7 @@ FileLoader 已经实现了文件加载功能，不需要替换。Request 主要�
 
 ```typescript
 // 配置文件加载 - 使用 FileLoader
-import { createFileLoader } from '@spark-view/spark-utils'
+import { createFileLoader } from '@spark-appworks/spark-utils'
 const fileLoader = createFileLoader()
 const config = await fileLoader.load('rule.json', { timestamp: 123456 })
 

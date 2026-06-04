@@ -135,12 +135,12 @@
 
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
-import { SparkCodeEditor, JsonTreeEditor } from '@spark-view/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@spark-view/spark-project-model/project'
+import { SparkCodeEditor, JsonTreeEditor } from '@spark-appworks/spark-component'
+import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@spark-appworks/spark-project-model/project'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import type { DevState } from './useDevState'
-import type { PageNodeFileName, PageNodeFileVersionSummary } from '@spark-view/spark-project-model'
+import type { PageNodeFileName, PageNodeFileVersionSummary } from '@spark-appworks/spark-project-model'
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 

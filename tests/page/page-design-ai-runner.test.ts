@@ -1,18 +1,18 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createProjectEditor, type ProjectEditor } from '@spark-view/spark-project-model/project'
+import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import {
   createAiRunAdapter,
   type AiRunAdapterState,
   type AiRunBeforeFunctionCall,
   type AiRunTraceSink,
-} from '@spark-view/spark-app'
+} from '@spark-appworks/spark-app'
 import type {
   AiAgentHost,
   AiAgentHostRunResult,
   AiAgentStreamEvent,
   AiAgentTurnCallbacks,
   AiAgentToolCallRecord,
-} from '@spark-view/spark-ai/agent'
+} from '@spark-appworks/spark-ai/agent'
 import {
   AiAgentRegistration,
   AiAgentRuntimeContext,
@@ -22,9 +22,9 @@ import {
   AiAgentTask,
   createAiAgentHost,
   DefaultAiAgentSessionStore,
-} from '@spark-view/spark-ai/agent'
-import { AiModuleRuntime } from '@spark-view/spark-ai/modules'
-import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-ai/agent'
+import { AiModuleRuntime } from '@spark-appworks/spark-ai/modules'
+import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import { runPageDesignAiSession } from '@/services/page-design-ai-runner'
 
 const mocks = vi.hoisted(() => {
@@ -35,7 +35,7 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@spark-view/spark-project-model/ai', () => ({
+vi.mock('@spark-appworks/spark-project-model/ai', () => ({
   PAGE_DESIGN_MODULE_ID: 'pageDesign',
   ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
 }))

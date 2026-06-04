@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
 import { computed, defineComponent, h, nextTick, ref, shallowRef } from 'vue'
 import { mount, type VueWrapper } from '@vue/test-utils'
-import { RequestState, SparkData, type DataRow, type DataView } from '@spark-view/spark-data'
+import { RequestState, SparkData, type DataRow, type DataView } from '@spark-appworks/spark-data'
 import { useVirtualCardPaging } from '../components/containers/data-views/RendererVirtualCard/virtual-card-paging'
 
 type ViewportExpose = {

@@ -1,0 +1,15 @@
+{
+  "folders": [
+    {
+      "path": "."
+    }
+  ],
+  "settings": {
+    "typescript.tsdk": "node_modules/typescript/lib",
+    "eslint.workingDirectories": [
+      { "mode": "auto" }
+    ],
+    "github-enterprise.uri": "https://gitee.com",
+    "chatgpt.openOnStartup": false
+  }
+}

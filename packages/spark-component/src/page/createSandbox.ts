@@ -2,7 +2,7 @@
  * 脚本沙箱工具
  */
 
-import { toErrorMessage, createSafeProxy, isCallable, isRecord } from '@spark-view/spark-utils'
+import { toErrorMessage, createSafeProxy, isCallable, isRecord } from '@spark-appworks/spark-utils'
 import type { PageContext } from './context/types'
 import { pageLogger } from './services/pageLogger'
 

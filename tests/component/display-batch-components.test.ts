@@ -18,8 +18,8 @@ import {
   useSparkComponent,
   DATA_ROW,
   SPARK_REGISTRY_KEY,
-} from '@spark-view/spark-component'
-import type { SparkNode } from '@spark-view/spark-component'
+} from '@spark-appworks/spark-component'
+import type { SparkNode } from '@spark-appworks/spark-component'
 
 // ── Stubs ──
 

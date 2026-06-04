@@ -1,4 +1,4 @@
-# @spark-view/spark-ai Architecture
+# @spark-appworks/spark-ai Architecture
 
 > SSOT for `packages/spark-ai`. The package is intentionally breaking: old `schema`, `module-semantic`, `host`, dynamic tool names, and `$paths` are not public compatibility surfaces.
 
@@ -16,10 +16,10 @@ Compatibility is the last constraint, not the first. If an old public shape make
 
 `package.json` exposes exactly four public entries:
 
-- `@spark-view/spark-ai`
-- `@spark-view/spark-ai/json`
-- `@spark-view/spark-ai/modules`
-- `@spark-view/spark-ai/agent`
+- `@spark-appworks/spark-ai`
+- `@spark-appworks/spark-ai/json`
+- `@spark-appworks/spark-ai/modules`
+- `@spark-appworks/spark-ai/agent`
 
 Root export is a small facade. New code should import from `json`, `modules`, or `agent`.
 
@@ -109,7 +109,7 @@ History records user messages, assistant messages, tool args/result/error, lifec
 
 ## Boundary Rules
 
-- `spark-ai` must not import `spark-page-config`, Vue, Element Plus, Router, or app UI code.
+- `spark-ai` must not import `spark-project-model`, Vue, Element Plus, Router, or app UI code.
 - `json`, `modules`, and `agent` stay framework-free.
 - Business live state belongs to business services. Agent session history stores resumable conversation and diagnostics.
 - Protocol arguments must be standard JSON Schema object roots.

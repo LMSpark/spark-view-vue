@@ -58,7 +58,7 @@ mvn spring-boot:run
 
 ### 3. 启用 Vite 代理（接入前端）
 
-在 SPARK_VIEW 根目录创建 `.env.local` 文件（已在 `.gitignore` 中）：
+在 SPARK_AppWorks 根目录创建 `.env.local` 文件（已在 `.gitignore` 中）：
 
 ```
 # 取消注释以将 /api/ai 请求转发到 Java 服务

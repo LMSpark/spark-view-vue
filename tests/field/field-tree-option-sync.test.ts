@@ -4,8 +4,8 @@ import type { Component } from 'vue'
 import {
   FieldCascader,
   FieldTreeSelect,
-} from '@spark-view/spark-component'
-import { SparkData } from '@spark-view/spark-data'
+} from '@spark-appworks/spark-component'
+import { SparkData } from '@spark-appworks/spark-data'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 import { requireRecord, requireRecordArray } from '../helpers/runtime-guards'
 

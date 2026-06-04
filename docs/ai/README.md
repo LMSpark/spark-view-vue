@@ -4,7 +4,7 @@
 
 ## 保留文档
 
-1. [spark-ai-complete-guide.md](spark-ai-complete-guide.md)：`@spark-view/spark-ai` 运行时、模块注册、工具调用、会话和传输契约。
+1. [spark-ai-complete-guide.md](spark-ai-complete-guide.md)：`@spark-appworks/spark-ai` 运行时、模块注册、工具调用、会话和传输契约。
 2. [spark-ai-new-system.md](spark-ai-new-system.md)：新 AI 体系总览，串联 VCM 元数据提取、知识分层、function calling 与脚本执行上下文。
 3. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
 
@@ -12,7 +12,7 @@
 
 - `packages/spark-ai` 只负责 AI 协议和运行时内核。
 - 业务 AI 在消费层注册模块、输入、生命周期和副作用。
-- 页面设计业务只能通过 `spark-page-config` 的项目模型和 PageNode 子模型沉淀事实。
+- 页面设计业务只能通过 `spark-project-model` 的项目模型和 PageNode 子模型沉淀事实。
 - 生成代码必须服从：理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容。
 
 ## 写作规则

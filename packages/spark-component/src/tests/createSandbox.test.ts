@@ -14,7 +14,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { compileFunctions } from '../page/createSandbox'
 import type { PageContext } from '../page/context/types'
-import { SparkData } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
 import { h } from 'vue'
 import * as permissionApi from '../permission/index'
 

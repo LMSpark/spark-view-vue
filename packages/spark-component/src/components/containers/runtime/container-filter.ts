@@ -22,8 +22,8 @@ import type {
   FilterExpression,
   FilterOperator,
   FilterValueExpression,
-} from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+} from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 import { nodeInputProp, type SparkNode } from '../../internal.js'
 
 // ============================================================

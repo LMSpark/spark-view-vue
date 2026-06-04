@@ -30,8 +30,8 @@ import { createThemeService } from './theme'
  * @example
  * ```ts
  * // main.ts - 显式导入各层
- * import { SparkApp } from '@spark-view/spark-app'        // L1 应用层
- * import { createPageNodeFactory } from '@spark-view/spark-project-model' // L2 页面节点层
+ * import { SparkApp } from '@spark-appworks/spark-app'        // L1 应用层
+ * import { createPageNodeFactory } from '@spark-appworks/spark-project-model' // L2 页面节点层
  * // 其他层级包按需在主应用中导入
  *
  * // 使用应用层功能
@@ -116,7 +116,7 @@ export const SparkApp = {
    * - 权限管理
    * - 环境信息
    *
-   * @see useAppContext from '@spark-view/spark-app/composables' - 组件中使用
+   * @see useAppContext from '@spark-appworks/spark-app/composables' - 组件中使用
    */
   createAppContext,
 

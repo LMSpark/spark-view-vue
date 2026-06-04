@@ -13,7 +13,7 @@
  * - `confirmIfNeeded` 实现统一确认弹窗，`confirmMessage=''` 表示有意跳过确认
  */
 
-import type { DataView, DataRow, CrudResult, DataSetSaveChangesOptions } from '@spark-view/spark-data'
+import type { DataView, DataRow, CrudResult, DataSetSaveChangesOptions } from '@spark-appworks/spark-data'
 import type {
   ActionExecutionContext,
   ActionExecutionScope,

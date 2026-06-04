@@ -1,5 +1,5 @@
 import { computed, nextTick, onMounted, ref, watch } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import type { Ref } from 'vue'
 import type { ValueRef } from '../../../shared-types.js'
 

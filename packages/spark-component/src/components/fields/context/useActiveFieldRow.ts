@@ -1,5 +1,5 @@
 import { computed, onScopeDispose, shallowRef } from 'vue'
-import type { DataRow } from '@spark-view/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
 import { DATA_ROW, DATA_SOURCE, useSparkConsume } from '../../internal'
 import { resolveDataViewEditingRow } from './dataViewEditing'
 

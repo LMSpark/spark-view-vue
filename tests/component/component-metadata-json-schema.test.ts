@@ -2,8 +2,8 @@ import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { AiJsonSchemaValidator, type AiJsonSchemaObject } from '@spark-view/spark-ai/json'
-import { isRecord } from '@spark-view/spark-utils'
+import { AiJsonSchemaValidator, type AiJsonSchemaObject } from '@spark-appworks/spark-ai/json'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 const STANDARD_JSON_SCHEMA_KEYWORDS = new Set([
   '$id',

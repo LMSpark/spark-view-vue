@@ -2,8 +2,8 @@ import { mount } from '@vue/test-utils'
 import { computed, defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import { describe, expect, it, vi } from 'vitest'
-import type { NavigationContext, ProjectNodeData } from '@spark-view/spark-app'
-import { NAV_KEY } from '@spark-view/spark-app'
+import type { NavigationContext, ProjectNodeData } from '@spark-appworks/spark-app'
+import { NAV_KEY } from '@spark-appworks/spark-app'
 import AppSidebar from '@/layout/AppSidebar.vue'
 
 const ElMenuStub = defineComponent({

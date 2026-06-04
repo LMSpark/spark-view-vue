@@ -3,8 +3,8 @@
  */
 
 import { describe, it, expect } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
-import type { DataSetMetadata, TableMetadata, TreeConfig, ViewMetadata } from '@spark-view/spark-data'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { DataSetMetadata, TableMetadata, TreeConfig, ViewMetadata } from '@spark-appworks/spark-data'
 
 describe('SparkData Namespace', () => {
   it('应该提供 createDataSet 工厂方法', () => {

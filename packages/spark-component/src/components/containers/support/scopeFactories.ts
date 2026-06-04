@@ -1,4 +1,4 @@
-import type { DataRow, ModelPermission } from '@spark-view/spark-data'
+import type { DataRow, ModelPermission } from '@spark-appworks/spark-data'
 import type { ModuleContext } from '../../internal'
 
 // ── 通用作用域结构 ───────────────────────────────────────────────────────────

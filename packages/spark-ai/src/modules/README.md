@@ -1,6 +1,6 @@
 # modules 模块协议
 
-`@spark-view/spark-ai/modules` 是 Agent 与业务模块之间的协议层。它负责语义发现和执行路由，但不持有业务运行状态，也不持有 Agent 会话历史。
+`@spark-appworks/spark-ai/modules` 是 Agent 与业务模块之间的协议层。它负责语义发现和执行路由，但不持有业务运行状态，也不持有 Agent 会话历史。
 
 ## 边界
 
@@ -55,7 +55,7 @@ import {
   AiModuleResult,
   AiModuleRuntime,
   type AiModuleRunner,
-} from '@spark-view/spark-ai/modules'
+} from '@spark-appworks/spark-ai/modules'
 
 const runtime = new AiModuleRuntime()
 

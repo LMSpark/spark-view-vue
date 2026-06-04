@@ -16,7 +16,7 @@
  * SparkRegistry 注入键
  * 从 spark-component 导入（架构允许 spark-app 依赖 spark-component）
  */
-export { SPARK_REGISTRY_KEY } from '@spark-view/spark-component'
+export { SPARK_REGISTRY_KEY } from '@spark-appworks/spark-component'
 
 /**
  * ============================================

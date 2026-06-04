@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
-import { SparkData } from '@spark-view/spark-data'
-import type { DataRow } from '@spark-view/spark-data'
-import { createRequest } from '@spark-view/spark-utils'
+import { SparkData } from '@spark-appworks/spark-data'
+import type { DataRow } from '@spark-appworks/spark-data'
+import { createRequest } from '@spark-appworks/spark-utils'
 import { isActionDescriptorDisabled } from '../../packages/spark-component/src/page/actions/executor-helpers'
 import { executeActionDescriptor } from '../../packages/spark-component/src/page/actions/action-executor'
 import { nodeToActionDescriptor } from '../../packages/spark-component/src/page/actions/node-to-descriptor'
@@ -10,7 +10,7 @@ import type {
   ActionExecutionScope,
   ActionFormApi,
 } from '../../packages/spark-component/src/page/actions/action-types'
-import type { PageDialogOptions, PageDialogResult, PageServiceCapability } from '@spark-view/spark-component'
+import type { PageDialogOptions, PageDialogResult, PageServiceCapability } from '@spark-appworks/spark-component'
 
 function createDataView() {
   const dataSet = SparkData.createDataSet({

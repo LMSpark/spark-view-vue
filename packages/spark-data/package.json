@@ -1,5 +1,5 @@
 {
-  "name": "@spark-view/spark-data",
+  "name": "@spark-appworks/spark-data",
   "version": "0.5.4",
   "type": "module",
   "main": "./dist/index.js",
@@ -30,7 +30,7 @@
     "lint:fix": "eslint \"src/**/*.{ts,tsx,js}\" --fix"
   },
   "dependencies": {
-    "@spark-view/spark-utils": "workspace:*"
+    "@spark-appworks/spark-utils": "workspace:*"
   },
   "postcss": {},
   "devDependencies": {

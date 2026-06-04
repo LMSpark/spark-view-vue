@@ -456,10 +456,10 @@ export function objectSchema(
 - `pnpm run verify:rules` MUST pass.
 - Forbidden: non-allowlist `interface` proliferation, `Interface/Impl` mechanical naming, TypeScript `namespace`.
 - Forbidden: non-`as const` type assertions and angle-bracket type assertions.
-- Forbidden: legacy `@spark-view/spark-ai/core`, `/protocol`, `/runtime`, `/adapter` subpaths.
+- Forbidden: legacy `@spark-appworks/spark-ai/core`, `/protocol`, `/runtime`, `/adapter` subpaths.
 - Forbidden: legacy `ModuleKind.PathContext`, `ModuleKind.OperationResult` namespace types.
 - Framework-agnostic packages MUST NOT import Vue, Vue Router, Element Plus, VueUse, or Pinia.
-- Cross-package relative imports that bypass `@spark-view/*` are FORBIDDEN between workspace packages.
+- Cross-package relative imports that bypass `@spark-appworks/*` are FORBIDDEN between workspace packages.
 - **Single-directory file limit**: A single directory MUST NOT exceed 10 `.ts`/`.vue` files (excluding `index.ts`); beyond that, split into subdirectories.
 - **Single-directory subdirectory limit**: A single directory level MUST NOT exceed 7 subdirectories; beyond that, merge into parent grouping directories by domain.
 - **Class naming hierarchy**: 5+ independent classes without a common prefix in the same directory signals unclear domain boundaries — split into subdirectories.

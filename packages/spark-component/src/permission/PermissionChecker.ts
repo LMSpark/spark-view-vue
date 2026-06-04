@@ -10,9 +10,9 @@
  * - 'invisible' → 后端控制导航可见性，前端权限检查正常执行
  */
 
-import type { DataRow, ModelPermission } from '@spark-view/spark-data'
-import { FieldVisibility } from '@spark-view/spark-data'
-import { isRecord } from '@spark-view/spark-utils'
+import type { DataRow, ModelPermission } from '@spark-appworks/spark-data'
+import { FieldVisibility } from '@spark-appworks/spark-data'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type { NavPermissionMode } from '../core/capability-keys.js'
 
 // ── 模型级检查 ──

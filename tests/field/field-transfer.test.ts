@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import { defineComponent, h, nextTick, reactive } from 'vue'
-import { FieldTransfer } from '@spark-view/spark-component'
+import { FieldTransfer } from '@spark-appworks/spark-component'
 import { mountFieldInContext } from '../helpers/mount-field-in-context'
 import { requireRecord } from '../helpers/runtime-guards'
 

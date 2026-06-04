@@ -144,7 +144,7 @@ import {
   DATA_SOURCE,
   MODULE_CONTEXT,
 } from '../../../internal'
-import type { DataRow, DataView } from '@spark-view/spark-data'
+import type { DataRow, DataView } from '@spark-appworks/spark-data'
 import type { RVirtualCardProps } from './RendererVirtualCard.props'
 import { useContainerDataSource } from '../view-data-source'
 import { useContainerToolbar, useContainerModuleContext } from '../../runtime/container-ui'

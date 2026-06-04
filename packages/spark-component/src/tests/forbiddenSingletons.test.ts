@@ -33,7 +33,7 @@ describe('forbidden singletons imports', () => {
   const files = walk(root).filter(f => /\.(ts|js|tsx|jsx|vue)$/.test(f))
   const violations: Array<{ file: string; line: number; match: string }> = []
 
-  const importPattern = /import\s+\{[^}]*\b(componentManager|componentRegistry)\b[^}]*\}\s+from\s+['"]@spark-view\/spark-component['"]/g
+  const importPattern = /import\s+\{[^}]*\b(componentManager|componentRegistry)\b[^}]*\}\s+from\s+['"]@spark-appworks\/spark-component['"]/g
 
   for (const file of files) {
     // skip files in packages/spark-component itself

@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from 'vitest'
-import { sendBeacon } from '@spark-view/spark-utils'
+import { sendBeacon } from '@spark-appworks/spark-utils'
 
 describe('sendBeacon', () => {
   afterEach(() => {

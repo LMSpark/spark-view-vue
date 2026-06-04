@@ -10,7 +10,7 @@
  * aggregateResult.
  */
 
-import { isRecord } from '@spark-view/spark-utils'
+import { isRecord } from '@spark-appworks/spark-utils'
 import type { DataView } from '../data-view'
 import { isDataRow } from './data-row-guards'
 import type {

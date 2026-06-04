@@ -1,5 +1,5 @@
-import type { PageMode } from '@spark-view/spark-app'
-import { isRecord } from '@spark-view/spark-utils'
+import type { PageMode } from '@spark-appworks/spark-app'
+import { isRecord } from '@spark-appworks/spark-utils'
 
 export type ProjectUiSettings = {
   headerFirst: boolean

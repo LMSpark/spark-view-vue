@@ -1,4 +1,4 @@
-# SPARK View — Codex 代理说明
+# SPARK AppWorks — Codex 代理说明
 
 ## 环境设置
 
@@ -30,7 +30,7 @@ pnpm run test        # Vitest 单元测试
 packages/
 ├── spark-utils/        # 纯 TS 基础能力：capability key、logger、HTTP
 ├── spark-data/         # DataSet、DataTable、DataView、TreeManager、data-view-key
-├── spark-page-config/  # 页面配置解析、脚本上下文、配置加载
+├── spark-project-model/  # 页面配置解析、脚本上下文、配置加载
 ├── spark-component/    # Vue 渲染器、组件注册表、能力接线
 ├── spark-app/          # 应用壳、路由、认证、插件、启动引导
 ├── spark-ai/           # AI 运行时：SSE、Stills 执行、工具协议
@@ -42,7 +42,7 @@ tests/                  # 根级 Vitest 测试
 ```
 
 **包依赖顺序（严格、无环）：**
-`spark-utils` ← `spark-data` ← `spark-page-config` ← `spark-component` ← `spark-app`
+`spark-utils` ← `spark-data` ← `spark-project-model` ← `spark-component` ← `spark-app`
 
 ## 关键入口
 
@@ -55,14 +55,14 @@ tests/                  # 根级 Vitest 测试
 
 ## 不可协商规则
 
-1. **包边界严格。** 跨包绝不要使用相对导入，只使用 `@spark-view/*` 包名。
-2. **`spark-utils`、`spark-data`、`spark-page-config` 必须保持框架无关。** 这些包里不要导入 `vue`、`vue-router` 或 `element-plus`。
+1. **包边界严格。** 跨包绝不要使用相对导入，只使用 `@spark-appworks/*` 包名。
+2. **`spark-utils`、`spark-data`、`spark-project-model` 必须保持框架无关。** 这些包里不要导入 `vue`、`vue-router` 或 `element-plus`。
 3. **Capability DI ≠ Vue DI。** 业务能力使用 `sparkProvide` / `sparkConsume`。Vue `provide/inject` 只用于基础设施。
 4. **DataSet 管线单向：** `pagedata.json` → `parsePageData()` → `DataSet` → `usePageDataSet()` → `PAGE_DATASET` → `dataViewKey + dataMember + dataField` → `DataView` → UI. 不要用 `pageData` 或 `$data` 旁路绕开。
 5. **绝不要在 `clearDataSet()` 中调用 `DataSet.destroy()`。** DataSet 实例会跨导航缓存复用。
 6. **配置优先。** 优先使用 `rule.json`、`pagedata.json` 和现有渲染器能力。只有配置无法表达行为时才使用 `script.js`。
 7. **Fail-fast。** 不要添加掩盖缺失 API、无效配置或状态不一致的静默回退。
-8. **Commit scope 仅限于：** `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-page-config`.
+8. **Commit scope 仅限于：** `deps`, `docs`, `scripts`, `spark-data`, `spark-app`, `spark-ai`, `spark-component`, `spark-utils`, `spark-project-model`.
 
 ## AI 代码生成行为准则
 
