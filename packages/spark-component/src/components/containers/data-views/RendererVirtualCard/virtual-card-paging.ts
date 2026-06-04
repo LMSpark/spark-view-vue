@@ -24,6 +24,7 @@ type VirtualCardPagingOptions = {
   mobilePageHeight: () => number
   mobileBreakpoint: () => number
   overscanPages: () => number
+  prefetchPages: () => number
   maxCachedPages: () => number
   settleDelay: () => number
   wheelStepPx: () => number
@@ -78,6 +79,7 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
   const normalizedMobileBreakpoint = computed(() => Math.max(1, toFiniteNumber(options.mobileBreakpoint(), 700)))
   const pageHeight = ref(normalizedPageHeight.value)
   const pageSize = computed(() => Math.max(1, Math.trunc(toFiniteNumber(options.pageSize.value, 1))))
+  const prefetchPages = computed(() => Math.max(0, Math.trunc(toFiniteNumber(options.prefetchPages(), 0))))
   const usesLocalRowsPaging = computed(() => {
     const rowCount = options.rows.value.length
     if (rowCount <= pageSize.value) return false
@@ -122,6 +124,13 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
     if (!lastWheelJumpPages.value) return '滚轮按速度跳页'
     return `滚轮跳 ${formatVirtualCardNumber(lastWheelJumpPages.value)} 页`
   })
+  const loadPolicyText = computed(() => {
+    if (isDragging.value) return '停稳后加载目标页'
+    if (usesLocalRowsPaging.value && prefetchPages.value > 0) {
+      return `本地预热第 ${formatVirtualCardNumber(lastLoadTarget.value)} 页附近`
+    }
+    return `加载第 ${formatVirtualCardNumber(lastLoadTarget.value)} 页`
+  })
 
   function computePageHeight(): number {
     if (typeof window === 'undefined') return normalizedPageHeight.value
@@ -146,11 +155,15 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
 
   function rowsForPage(page: number): readonly DataRow[] {
     if (usesLocalRowsPaging.value) {
-      const start = (page - 1) * pageSize.value
-      return options.rows.value.slice(start, start + pageSize.value)
+      return localRowsForPage(page)
     }
     const cached = pageRowsCache.value.get(page)
     return cached ?? []
+  }
+
+  function localRowsForPage(page: number): readonly DataRow[] {
+    const start = (page - 1) * pageSize.value
+    return options.rows.value.slice(start, start + pageSize.value)
   }
 
   function isPagePending(page: number): boolean {
@@ -268,20 +281,27 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
     }
 
     isDragging.value = false
-    await loadPage(targetPage)
+    await loadPageWindow(targetPage)
   }
 
-  async function loadPage(page: number): Promise<void> {
+  async function loadPageWindow(centerPage: number): Promise<void> {
+    const targetPage = clamp(centerPage, 1, totalPages.value)
+    lastLoadTarget.value = targetPage
+
+    if (usesLocalRowsPaging.value) {
+      cacheLocalPageWindow(targetPage)
+      await options.dispatchPageChange(targetPage)
+      return
+    }
+
+    await loadRemotePage(targetPage)
+  }
+
+  async function loadRemotePage(page: number): Promise<void> {
     const view = options.resolvedView.value
     if (!view) return
     const targetPage = clamp(page, 1, totalPages.value)
     lastLoadTarget.value = targetPage
-    if (usesLocalRowsPaging.value) {
-      cachePageRows(targetPage, rowsForPage(targetPage))
-      setPagePending(targetPage, false)
-      await options.dispatchPageChange(targetPage)
-      return
-    }
 
     setPagePending(targetPage, true)
     await options.dispatchPageChange(targetPage)
@@ -309,6 +329,27 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
     const nextCache = new Map(pageRowsCache.value)
     nextCache.set(page, [...rows])
     pageRowsCache.value = trimCache(nextCache, page)
+  }
+
+  function cacheLocalPageWindow(centerPage: number): void {
+    const nextCache = new Map(pageRowsCache.value)
+    for (const page of pageWindow(centerPage)) {
+      nextCache.set(page, [...localRowsForPage(page)])
+      setPagePending(page, false)
+    }
+    pageRowsCache.value = trimCache(nextCache, centerPage)
+  }
+
+  function pageWindow(centerPage: number): number[] {
+    const targetPage = clamp(centerPage, 1, totalPages.value)
+    const radius = prefetchPages.value
+    const pages: number[] = []
+
+    for (let page = targetPage - radius; page <= targetPage + radius; page += 1) {
+      if (page >= 1 && page <= totalPages.value) pages.push(page)
+    }
+
+    return pages
   }
 
   function trimCache(source: Map<number, DataRow[]>, anchorPage: number): Map<number, DataRow[]> {
@@ -340,13 +381,16 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
     pageRowsCache.value = new Map()
     pendingPages.value = new Set()
     notice.value = ''
-    cacheCurrentRows()
+    void loadPageWindow(currentPage.value)
   }
 
   function cacheCurrentRows(): void {
     const rows = options.rows.value
     if (rows.length === 0) return
-    if (usesLocalRowsPaging.value) return
+    if (usesLocalRowsPaging.value) {
+      cacheLocalPageWindow(currentPage.value)
+      return
+    }
     cachePageRows(options.page.value, rows)
     setPagePending(options.page.value, false)
   }
@@ -413,6 +457,7 @@ export function useVirtualCardPaging(options: VirtualCardPagingOptions) {
     visiblePages,
     cachedPages,
     pendingPageNumbers,
+    loadPolicyText,
     wheelStatusText,
     refreshViewportHeight,
     handleViewportScroll,

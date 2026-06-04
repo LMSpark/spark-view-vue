@@ -29,6 +29,8 @@ export type RVirtualCardProps = SparkNodeProps & SparkCrudDataContainerProps & S
   minViewportHeight?: string
   /** 前后额外渲染的虚拟页数。 */
   overscanPages?: number
+  /** 本地全量 rows 模式下，预热目标页前后的页数；远端 DataView 仍只加载目标页。 */
+  prefetchPages?: number
   /** 最多保留的页缓存数量。 */
   maxCachedPages?: number
   /** 每页卡片网格列数。 */

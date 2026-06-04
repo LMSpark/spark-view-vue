@@ -52,7 +52,7 @@ function createView(): DataView {
   return view
 }
 
-function mountHarness(options: { maxCachedPages?: number; settleDelay?: number } = {}) {
+function mountHarness(options: { maxCachedPages?: number; prefetchPages?: number; settleDelay?: number } = {}) {
   const state: {
     harness?: PagingHarness
     wrapper?: VueWrapper
@@ -99,6 +99,7 @@ function mountHarness(options: { maxCachedPages?: number; settleDelay?: number }
         mobilePageHeight: () => 100,
         mobileBreakpoint: () => 700,
         overscanPages: () => 1,
+        prefetchPages: () => options.prefetchPages ?? 1,
         maxCachedPages: () => options.maxCachedPages ?? 24,
         settleDelay: () => options.settleDelay ?? 20,
         wheelStepPx: () => 180,
@@ -202,6 +203,35 @@ describe('useVirtualCardPaging', () => {
 
     await harness.paging.scrollToPage(2)
 
+    expect(harness.dispatchPageChange).toHaveBeenCalledWith(2)
+    expect(harness.setPageMock).not.toHaveBeenCalled()
+
+    unmount()
+  })
+
+  it('prefetches a local page window without mutating the DataView page', async () => {
+    const { harness, unmount } = mountHarness({ maxCachedPages: 3, prefetchPages: 1 })
+
+    harness.total.value = 6
+    harness.pageSize.value = 2
+    harness.rows.value = [
+      { id: 1, title: 'Card 1' },
+      { id: 2, title: 'Card 2' },
+      { id: 3, title: 'Card 3' },
+      { id: 4, title: 'Card 4' },
+      { id: 5, title: 'Card 5' },
+      { id: 6, title: 'Card 6' },
+    ]
+    await nextTick()
+
+    await harness.paging.scrollToPage(2)
+
+    expect(harness.paging.cachedPages.value).toEqual([1, 2, 3])
+    expect(harness.paging.rowsForPage(3)).toMatchObject([
+      { id: 5, title: 'Card 5' },
+      { id: 6, title: 'Card 6' },
+    ])
+    expect(harness.paging.loadPolicyText.value).toContain('本地预热第 2 页附近')
     expect(harness.dispatchPageChange).toHaveBeenCalledWith(2)
     expect(harness.setPageMock).not.toHaveBeenCalled()
 

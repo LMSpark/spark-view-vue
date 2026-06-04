@@ -443,14 +443,6 @@ section DirectoryRegistry {
     allowed_files: ["README.md"]
   }
 
-  entry vue_virtual_card_scroll_demo {
-    path: "vue-virtual-card-scroll-demo/"
-    owner: "demo"
-    purpose: "虚拟滚动演示项目说明。"
-    index: "vue-virtual-card-scroll-demo/README.md"
-    allowed_files: ["README.md"]
-    new_file_rule: "演示目录只保留入口说明，不承载主仓治理规则。"
-  }
 }
 
 section LegacyMarkdownAllowlistPolicy {
