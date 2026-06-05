@@ -42,6 +42,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   }
 
   get family(): 'project' { return 'project' }
+  /** 项目唯一标识，与租户内存储锚点一致。 */
   get projectId(): string { return this.design.projectId }
   get id(): string { return this.projectId }
   get tenantId(): string | undefined { return this.design.tenantId }
@@ -58,9 +59,11 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   get updatedAt(): string | undefined { return this.design.updatedAt }
   get projectInfo(): ProjectInfo { return this.design.projectInfo }
 
+  /** 导航树根 DTO，含子节点树与布局元数据。 */
   get navigationRoot(): ProjectModelData { return this.design.navigationRoot }
 
   getChildNodes(nodeId?: string): TNode[] { return this.design.getChildNodes(nodeId) }
+  /** 导航树扁平节点列表，按遍历顺序排列。 */
   get flatRows(): TNode[] { return this.design.flatRows }
   forEachNode(callback: (node: TNode) => void): void { this.design.forEachNode(callback) }
 
