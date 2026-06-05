@@ -7,14 +7,13 @@
 SPARK AppWorks 是软件项目模型：一个项目由平铺项目节点组成，节点按类型分为模块、配置页、Vue 页面、动作、外链和引用；树只是节点集合的投影。
 
 ```text
-ProjectModel
-  -> ProjectNodeCollection(flat nodes)
-  -> ProjectPlanningModel
-  -> ProjectNodeModel subclasses
+ProjectModel (design + runtime)
+  -> ProjectNode 子类树 / NavigationIndex
+  -> ConfigPageNode (rule / dataSet / script / style)
   -> SparkPageRenderer / DevSystem / AI
 ```
 
-`navigation` 只是后端历史命名；模型层的单一真源是 flat project nodes。`navigation` 字段已经进入 `ProjectNodeModel` 基类，配置页节点只扩展 `rule / dataSet / style / script` 内容子模型。
+后端 API 仍叫 `navigation`，但模型主语是 class 层级：`ProjectDesign` 持有节点与配置页；`ProjectEditor` 负责设计操作与落盘。配置页内容在 `ConfigPageNode`，不是独立文件模型。
 
 ## 推荐阅读顺序
 

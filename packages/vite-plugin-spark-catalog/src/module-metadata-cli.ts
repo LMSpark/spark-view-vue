@@ -17,8 +17,8 @@ const extractResults = process.argv.includes('--extract-results')
 const extractResultSchemas = process.argv.includes('--extract-result-schemas')
 
 const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
-  'packages/spark-project-model/src/project/model.ts',
-  'packages/spark-project-model/src/page/config-page.ts',
+  'packages/spark-project-model/src/model/project/model.ts',
+  'packages/spark-project-model/src/model/page/config-page.ts',
   'packages/spark-data/src/dataset-crud-tool.ts',
   'packages/spark-data/src/node-tree/spark-node-tree.ts',
 ] as const

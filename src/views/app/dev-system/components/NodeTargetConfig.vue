@@ -229,7 +229,7 @@ function applyTargetSelection(value: string) {
     if (!value) {
       props.state.navEditDto.path = ''
       props.state.markNavDirty()
-      props.state.clearFiles()
+      props.state.clearActivePageContext()
       return
     }
     const routePath = value.replace(/^route:/, '')
@@ -253,7 +253,7 @@ function applyTargetSelection(value: string) {
     if (!value) {
       props.state.navEditDto.path = ''
       props.state.markNavDirty()
-      props.state.clearFiles()
+      props.state.clearActivePageContext()
       return
     }
     const pagePath = value.replace(/^page:/, '')

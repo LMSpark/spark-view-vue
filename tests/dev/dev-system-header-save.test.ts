@@ -14,7 +14,7 @@ function createDevSystemCtx(overrides: Record<string, unknown> = {}) {
   const state = {
     hasAnyDirty: ref(false),
     navSaving: ref(false),
-    fileSaving: ref(false),
+    pageIoBusy: ref(false),
     navLoading: ref(false),
     selectedNode: ref({ id: 'dbms', title: '数据库管理' }),
     navEditDto: { id: 'dbms', title: '数据库管理' },

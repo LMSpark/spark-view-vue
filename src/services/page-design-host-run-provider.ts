@@ -1,9 +1,9 @@
 /**
- * APP 壳层 pageDesign Host Run provider。
+ * APP 壳层 pageDesign Host Run provider（隔离式门面实例）。
  *
- * 这是 pageDesign 业务注册到通用 Host Run 分布式桥的装配层：它只创建
- * headless ProjectEditor、按请求 pageId 打开页面、确保业务注册，并在运行结束后
- * 保存 dirty 四文件。SPARK AI 内核仍不持有页面状态或业务编排。
+ * 与 DevSystem 面板内 AI（`getAppProjectEditor()` 共用 `editor.project`）不同：
+ * Host Run / SSE 为无 UI 会话、可并发多 pageId，故每次 run 创建 headless
+ * `createProjectEditor()`，运行结束保存 dirty 四文件后丢弃，不污染 APP 单例 session。
  */
 
 import type {
@@ -12,14 +12,15 @@ import type {
   AiAgentHostRunResult,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
-import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
+import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
 } from '@/services/page-design-business'
-import { getNavApi, getPageApi } from '@/services/api-paths'
-import { getUser } from '@/services/auth'
-import { createAuthHeaders, http } from '@/services/http'
+import {
+  createHeadlessPageDesignEditor,
+  createPageDesignEditorGetter,
+} from '@/services/page-design-editor-provider'
 import type {
   AiHostRunTarget,
   AiHostRunPrepare,
@@ -39,26 +40,10 @@ export const preparePageDesignHostRun: AiHostRunPrepare<AiAgentHost> = async (ev
 
   const pageDesignHost = ensurePageDesignBusiness({
     host,
-    getPageDesignEditor: (context) => {
-      const editor = pageDesignEditors.get(context.moduleInstanceId)
-      if (editor === undefined) {
-        throw new Error(`Headless pageDesign editor is not prepared: ${context.moduleInstanceId}`)
-      }
-      return editor
-    },
+    getPageDesignEditor: createPageDesignEditorGetter(pageDesignEditors),
   })
 
   return createSavingPageDesignHost(pageDesignHost, pageId)
-}
-
-function createHeadlessPageDesignEditor(): ProjectEditor {
-  return createProjectEditor({
-    projectId: getUser()?.defaultProjectId ?? 'homepage',
-    http,
-    getPageFilesApi: getPageApi,
-    getNavigationApi: getNavApi,
-    getHeaders: createAuthHeaders,
-  })
 }
 
 function createSavingPageDesignHost(

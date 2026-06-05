@@ -53,7 +53,7 @@
 页面策划 = 页面下的全子页面策划
 ```
 
-`spark-project-model` 的 `ProjectPlanningModel` 是项目策划的唯一模型入口。DevSystem 和 AI 生成页面时读取 `pageFeatures`，不自行从菜单节点拼接需求。
+项目策划事实由 `ProjectModel.design` 与 `ProjectEditor.readSnapshot().pageFeatures` 承载。DevSystem 和 AI 生成页面时读取 `pageFeatures`，不自行从菜单节点拼接需求。
 
 ## 后端 API
 

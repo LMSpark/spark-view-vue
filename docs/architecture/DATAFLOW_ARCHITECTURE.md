@@ -1,24 +1,22 @@
 # SPARK 数据流架构
 
-> 当前数据流从项目需求开始，经项目节点集合与页面节点模型进入稳定渲染运行时。四文件、navigation API 和 Vue 组件都是投影或消费层，不是理念入口。
+> 当前数据流从项目需求开始，经 `ProjectModel.design` 与 `ConfigPageNode` 进入稳定渲染运行时。四文件、navigation API 和 Vue 组件都是投影或消费层，不是理念入口。
 
 ## 主链路
 
 ```text
 项目需求
-  -> ProjectModel
-  -> ProjectNodeCollection（flat rows，DB 同构）
-  -> ProjectPlanningModel（模块策划 + 页面策划）
-  -> ProjectConfigPageNodeModel（page/sub-page 同类）
+  -> ProjectModel.design (ProjectDesign / NavigationDesign)
+  -> ConfigPageNode (page / sub-page)
   -> PageNodeRenderConfig
   -> SparkPageRenderer
   -> DataSet / SparkNodeTree / script / style
   -> UI
 ```
 
-## 项目节点集合
+## 项目节点
 
-`ProjectNodeCollection` 是项目节点 SSOT。它保存平铺节点，字段与后端 DB 的节点行一致；`root`、`children`、导航树只是为了 UI、路由和策划遍历生成的树形投影。
+**存储真源**是 DB navigation 平铺行；**领域模型**用 `NavigationDesign` 持有 `nodesById` 与 `NavigationIndex`。`root`、`children`、导航树是为 UI、路由和策划遍历生成的投影，不必与表结构同构。
 
 ```text
 flat node
@@ -42,18 +40,16 @@ flat node
 
 ## 页面节点
 
-配置页节点只有一个模型类：
+配置页节点 class：
 
 ```text
-ProjectConfigPageNodeModel
+ConfigPageNode
   nodeKind = page | sub-page
-  rule
-  dataSet
-  script
-  style
+  design: PageDesign (rule / dataSet / script / style)
+  runtime: PageRuntime
 ```
 
-`navigation` 属于 `ProjectNodeModel` 基类；`ProjectConfigPageNodeModel` 只扩展配置页内容子模型。`sub-page` 不再有单独模型。Vue 页面走 `ProjectVuePageNodeModel`，只保存项目节点事实和组件路径，不承载四文件。
+导航元数据属于 `ProjectNode` 基类；`ConfigPageNode` 只扩展页面内容与运行投影。`sub-page` 不是第二套模型。系统页面走 `SystemPageNode`，只保存节点事实和组件路径，不承载四文件。
 
 ## 功能约束
 
@@ -67,7 +63,7 @@ effectiveUserRequirement =
   + current node.description
 ```
 
-消费层统一读取 `ProjectPlanningModel` 或 `ProjectEditor.readSnapshot().pageFeatures`，不要自行拼约束链。
+消费层统一读取 `ProjectEditor.readSnapshot().pageFeatures`，不要自行拼约束链。
 
 ## 运行态
 
@@ -102,9 +98,8 @@ sequenceDiagram
 DevSystem
   -> createProjectEditor()
   -> ProjectEditor
-      -> ProjectModel.nodes
-      -> ProjectModel.planning
-      -> ProjectConfigPageNodeModel
+      -> ProjectModel.design
+      -> ConfigPageNode
       -> 后端 DB + file
 ```
 
@@ -125,7 +120,7 @@ AI 写入只进入内存 PageNode 并标 dirty。保存、版本、路由刷新�
 
 ## DataSet / DataView
 
-`pagedata.json` 进入 `ProjectConfigPageNodeModel.dataSet`，再由 Renderer 初始化 `DataSet`。组件读取必须走：
+`pagedata.json` 进入 `ConfigPageNode.design.dataSet`，再由 Renderer 初始化 `DataSet`。组件读取必须走：
 
 ```text
 dataViewKey + dataMember + dataField
@@ -143,8 +138,8 @@ Users@grid
 ## 不变约束
 
 1. `spark-project-model` 保持纯模型。
-2. 项目节点集合是 flat SSOT，树是投影。
-3. `page` 和 `sub-page` 合并为同一配置页节点模型。
-4. Vue 页面是项目节点子类，不反向决定数据结构。
-5. 四文件是 PageNode 内容投影，不是最高事实源。
+2. 存储真源是 DB + 四文件；领域模型可用树与索引，树是投影。
+3. `page` 和 `sub-page` 同属 `ConfigPageNode`。
+4. 系统页面是 `SystemPageNode` 子类，不反向决定数据结构。
+5. 四文件是页面内容投影，落盘锚点明确即可。
 6. DataSet 管线单向：`pagedata.json -> DataSet -> DataViewKey -> DataView -> UI`。

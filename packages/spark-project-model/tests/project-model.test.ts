@@ -1,10 +1,17 @@
 import { describe, expect, it } from 'vitest'
 import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
 import type { HttpClientBase, HttpResponse } from '@spark-appworks/spark-utils'
-import { ConfigPageNode, ProjectNode } from '@spark-appworks/spark-project-model'
+import {
+  ConfigPageNode,
+  ConfigSubPageNode,
+  ModuleNode,
+  resolvePageDesignSurface,
+  SystemDirectoryNode,
+  VueComponentPageNode,
+} from '@spark-appworks/spark-project-model'
 import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import { createRequest } from '@spark-appworks/spark-utils'
-import { createNavigationNodePatch } from '../src/navigation/edit'
+import { createNavigationNodePatch } from '../src/model/navigation/edit'
 
 describe('ProjectModel', () => {
   function createRoot(children: ProjectNodeData[], childPlacement: 'header' | 'sidebar' = 'header'): ProjectModelData {
@@ -28,6 +35,61 @@ describe('ProjectModel', () => {
     })
   }
 
+  it('resolves page design surface by nodeKind', () => {
+    expect(resolvePageDesignSurface({ id: 'p', title: 'P', nodeKind: 'page', path: '/p' })).toBe('config-files')
+    expect(resolvePageDesignSurface({ id: 's', title: 'S', nodeKind: 'system-page', path: '/dashboard' })).toBe('vue-component')
+    expect(resolvePageDesignSurface({ id: 'l', title: 'L', nodeKind: 'link', path: '/ext' })).toBe('link')
+  })
+
+  it('maps system-page nodes to VueComponentPageNode', () => {
+    const p = createEditor().project
+    p.replaceRoot(createRoot([
+      { id: 'dashboard', title: '仪表盘', nodeKind: 'system-page', path: '/dashboard' },
+    ]))
+    const node = p.findNodeById('dashboard')
+    expect(node).toBeInstanceOf(VueComponentPageNode)
+    const summaries = p.readPageSummaries()
+    expect(summaries[0]?.designSurface).toBe('vue-component')
+  })
+
+  it('maps system-directory nodes to SystemDirectoryNode class', () => {
+    const p = createEditor().project
+    p.replaceRoot({
+      id: 'homepage_root',
+      title: 'CRM',
+      nodeKind: 'module',
+      childPlacement: 'header',
+      children: [
+        {
+          id: 'toolbar-root',
+          title: '工具栏',
+          nodeKind: 'system-directory',
+          childPlacement: 'toolbar',
+          children: [{ id: 'refresh', title: '刷新', nodeKind: 'system-action' }],
+        },
+      ],
+    })
+    const toolbarRoot = p.findNodeById('toolbar-root')
+    expect(toolbarRoot).toBeInstanceOf(SystemDirectoryNode)
+    expect(toolbarRoot?.family).toBe('module')
+  })
+
+  it('exposes design and runtime class aggregates on project root', () => {
+    const p = createEditor().project
+    expect(p.design).toBeDefined()
+    expect(p.runtime).toBeDefined()
+    expect(p.design.navigation).toBe(p.design.navigation)
+    p.design.navigation.replaceRoot(createRoot([
+      { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders' },
+    ]))
+    expect(p.design.findConfigPageByPageId('orders')).toBeInstanceOf(ConfigPageNode)
+    expect(p.runtime.listLoadedPages()).toEqual([])
+    expect(p.runtime.readPageRuntimeStats()).toEqual({ openCount: 1, loadedCount: 0 })
+    expect(p.runtime.findOpenPage('orders')?.pageId).toBe('orders')
+    expect(p.runtime.findLoadedPage('orders')).toBeNull()
+    expect(p.runtime.findRenderConfig('orders')).toBeNull()
+  })
+
   it('finds pages by pageId from the tree', () => {
     const p = createEditor().project
     p.replaceRoot(createRoot([{
@@ -37,7 +99,8 @@ describe('ProjectModel', () => {
     const page = p.findConfigPageByPageId('orders')
     const sub = p.findConfigPageByPageId('order-detail')
     expect(page).toBeInstanceOf(ConfigPageNode)
-    expect(sub).toBeInstanceOf(ConfigPageNode)
+    expect(page).not.toBeInstanceOf(ConfigSubPageNode)
+    expect(sub).toBeInstanceOf(ConfigSubPageNode)
     expect(page?.nodeKind).toBe('page')
     expect(sub?.nodeKind).toBe('sub-page')
     expect(sub?.pageId).toBe('order-detail')
@@ -53,7 +116,7 @@ describe('ProjectModel', () => {
     const tree = p.navigationRoot.children
     expect(tree.length).toBeGreaterThanOrEqual(1)
     const salesNode = p.findNodeById('sales')
-    expect(salesNode).toBeInstanceOf(ProjectNode)
+    expect(salesNode).toBeInstanceOf(ModuleNode)
     expect(salesNode?.family).toBe('module')
     expect(salesNode?.description).toBe('销售模块')
     const orderNode = p.findNodeById('orders')
@@ -74,7 +137,7 @@ describe('ProjectModel', () => {
     const rootNodes = p.getChildNodes('')
     expect(rootNodes.map(node => node.id)).toEqual(['homepage_root'])
     expect(rootNodes.map(node => node.pid)).toEqual([''])
-    expect(rootNodes[0]).toBeInstanceOf(ProjectNode)
+    expect(rootNodes[0]).toBeInstanceOf(ModuleNode)
     expect(rootNodes[0]?.family).toBe('module')
     const root = rootNodes[0]
     expect(root?.title).toBe('CRM')
@@ -153,10 +216,12 @@ describe('ProjectModel', () => {
 
   it('supports detached config pages', () => {
     const p = createEditor().project
-    const page = p.openConfigPage('standalone')
+    const page = p.design.openConfigPage('standalone')
     expect(page).toBeInstanceOf(ConfigPageNode)
+    expect(page.design.rule).toBe(page.rule)
+    expect(page.runtime.isLoaded).toBe(false)
     expect(page.pageId).toBe('standalone')
-    expect(p.findConfigPageByPageId('standalone')).toBe(page)
+    expect(p.design.findConfigPageByPageId('standalone')).toBe(page)
     expect(p.findNodeById('standalone')).toBeNull()
   })
 

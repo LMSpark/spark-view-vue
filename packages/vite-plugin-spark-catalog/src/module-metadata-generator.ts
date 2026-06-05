@@ -227,8 +227,8 @@ const MODULE_ATTACK_SURFACE_RISK_VALUES: ReadonlySet<string> = new Set(MODULE_AT
 const MODULE_MUTATION_MODE_VALUES: ReadonlySet<string> = new Set(MODULE_MUTATION_MODES)
 
 const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
-  'packages/spark-project-model/src/project/model.ts',
-  'packages/spark-project-model/src/page/config-page.ts',
+  'packages/spark-project-model/src/model/project/model.ts',
+  'packages/spark-project-model/src/model/page/config-page.ts',
   'packages/spark-data/src/dataset-crud-tool.ts',
   'packages/spark-data/src/node-tree/spark-node-tree.ts',
 ] as const

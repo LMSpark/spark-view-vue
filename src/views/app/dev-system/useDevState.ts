@@ -1,22 +1,21 @@
 ﻿/**
- * DevSystem 全局共享状态 — 跨面板的响应式数据中心。
+ * DevSystem — **当前登录项目**的导航设计器状态。
  *
- * 编辑能力是普通业务能力，只负责 DevSystem 的页面配置编辑。
+ * 本质：经 APP 门面实例编辑 `editor.project`（ProjectModel 领域实例）中的导航树与配置页
+ * 内容。不是独立「文件系统」，而是同一领域实例在壳层的 Vue 投影。
  *
- * SSOT 设计：
- * - 页面 4 文件（rule / pagedata / script / style）的真源由配置页节点持有。
- * - Vue 层通过当前 ConfigPageNode 读取文本、状态、dirty、undo/redo 和工具模型。
- * - 导航树、节点表单、autoSave、版本 API 与页面 4 文件状态合一暴露。
- *
- * 页面生命周期由配置页节点覆盖；adapter 保留 UI 响应式映射、localStorage、
- * autoSave、refreshRoutes 和状态消息。
+ * - `editor` = `getAppProjectEditor()`（**门面实例**；领域真源在 `editor.project`）
+ * - 导航树 / 节点表单 / dirty：经门面 API + `readSnapshot()` 投影到 Vue ref
+ * - 配置页内容：`state.editor.*`（setPageFileText、editDataSet、save…）
+ * - 本模块只编排：Vue ref、localStorage 活动页、autoSave、SSE、状态消息
  */
 import { ref, reactive, computed, getCurrentInstance, nextTick } from 'vue'
-import { createAiRunAdapter, createAiToolApprovalBridge, refreshRoutes } from '@spark-appworks/spark-app'
+import { createAiRunAdapter, createAiToolApprovalBridge, getNavTree } from '@spark-appworks/spark-app'
 import type { AiToolApprovalRequest, NavNodeKind, ProjectNodeData } from '@spark-appworks/spark-app'
 import { useSparkComponent } from '@spark-appworks/spark-component'
 import type { ToolApprovalDisplayItem } from '@spark-appworks/spark-component'
 import {
+  isConfigFilesPageSurface,
   isConfigNodeKind,
   findNodeById,
   findPageNodeByPageId,
@@ -29,7 +28,6 @@ import {
   createReservedRootGroup,
   type ProjectNodeLocation,
   type PageNodeFileName,
-  type PageNodeFileVersionSummary,
   type ProjectPageNodeSummary,
 } from '@spark-appworks/spark-project-model'
 import type {
@@ -42,12 +40,10 @@ import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
 } from '@/services/page-design-ai-runner'
-import { createDevSystemProjectEditor } from '@/services/dev-system-project-editor'
+import { getAppProjectEditor } from '@/services/project-editor-host'
+import { reloadAndSyncNavigation, syncCommittedNavigationFromRouter } from '@/services/navigation-sync'
 
 export type DevPageFileName = Extract<PageNodeFileName, string>
-export type DevPageFileVersionSummary = {
-  [Key in keyof PageNodeFileVersionSummary]: PageNodeFileVersionSummary[Key]
-}
 export type PageConfigPageSummary = {
   [Key in keyof ProjectPageNodeSummary]: ProjectPageNodeSummary[Key]
 }
@@ -79,7 +75,7 @@ export type DevWorkspaceTab = 'props' | 'preview' | DevPageFileName
 // ═══════════════════════════════════════════════════════════
 
 export function useDevState() {
-  const editor = createDevSystemProjectEditor()
+  const editor = getAppProjectEditor()
   const projectId = editor.project.projectId
   const pageFileNames = editor.getPageFileNames()
   const capabilityConsumer = getCurrentInstance() === null
@@ -97,26 +93,27 @@ export function useDevState() {
     paramName: 'ctx',
   }
 
-  // ── 导航树 ──
-  const treeData = ref<ProjectNodeData[]>([])
+  // ── 导航树（readSnapshot 投影，非独立真源）──
   const navLoading = ref(false)
   const navSaving = ref(false)
-  const navDirty = ref(false)
-  const selectedNode = ref<ProjectNodeData | null>(null)
   const navEditDtoRevision = ref(0)
   const pageFilesRevision = ref(editor.revision)
 
+  function readNavSnapshot() {
+    void pageFilesRevision.value
+    return editor.readSnapshot()
+  }
+
+  const treeData = computed(() => readNavSnapshot().treeData)
+  const pageList = computed(() => readNavSnapshot().pageFeatures)
+  const selectedNode = computed(() => readNavSnapshot().selectedNode)
+  const navEmpty = computed(() => readNavSnapshot().treeData.length === 0)
+  const activePageId = computed(() => readNavSnapshot().pageId)
+
   editor.subscribe(() => {
     pageFilesRevision.value = editor.revision
+    refreshNavEditDtoBindings()
   })
-
-  function _getEditorActivePage(): ReturnType<typeof editor.getActivePage> {
-    // navEditDto proxies a framework-free ProjectEditor model. Track only explicit
-    // navigation DTO switches here; tying it to every editor revision creates
-    // needless tab/render feedback in Vue.
-    void navEditDtoRevision.value
-    return editor.getActivePage()
-  }
 
   function refreshNavEditDtoBindings(): void {
     navEditDtoRevision.value++
@@ -168,25 +165,47 @@ export function useDevState() {
       }
     },
   })
-  /** 可变的上下文选项列表（v-model 需要可变数组元素；通过 setContextItems 同步到子模型）。 */
-  const contextItems = ref<Array<{ id: string; title: string }>>([])
-  const contextConfig = reactive<DevContextConfig>({
-    placeholder: '', defaultValue: '', paramName: '',
+  /** 模块上下文表单 — 代理到 editor.navigationEditDto.context（与 navEditDto 同模式）。 */
+  const contextEdit = reactive({
+    get items(): Array<{ id: string; title: string }> {
+      void navEditDtoRevision.value
+      return editor.navigationEditDto?.context.items ?? []
+    },
+    get placeholder(): string { return readNavEditDto()?.context.config.placeholder ?? '' },
+    set placeholder(v: string) {
+      const dto = editor.navigationEditDto
+      if (!dto) return
+      dto.context.config.placeholder = v
+      editor.applyNavigationEditDto(dto)
+      markNavDirty()
+    },
+    get defaultValue(): string { return readNavEditDto()?.context.config.defaultValue ?? '' },
+    set defaultValue(v: string) {
+      const dto = editor.navigationEditDto
+      if (!dto) return
+      dto.context.config.defaultValue = v
+      editor.applyNavigationEditDto(dto)
+      markNavDirty()
+    },
+    get paramName(): string { return readNavEditDto()?.context.config.paramName ?? '' },
+    set paramName(v: string) {
+      const dto = editor.navigationEditDto
+      if (!dto) return
+      dto.context.config.paramName = v
+      editor.applyNavigationEditDto(dto)
+      markNavDirty()
+    },
   })
 
   // ── 页面文件状态（只经 ProjectEditor 访问）──
-  const activePageId = ref('')
-  const fileSaving = ref(false)
+  const pageIoBusy = ref(false)
 
-  function notifyPageFileChanged(pageId: string, filename: PageNodeFileName | '__created' | '__deleted' | '__bulk'): void {
+  function bumpPageCache(
+    pageId: string,
+    filename: PageNodeFileName | '__created' | '__deleted' | '__bulk',
+  ): void {
     editor.notifyPageFileChanged(pageId, filename)
   }
-
-  // ── 空导航状态 ──
-  const navEmpty = ref(false)
-
-  // ── 页面列表 ──
-  const pageList = ref<PageConfigPageSummary[]>([])
 
   // ── 状态消息 ──
   const statusMessages = ref<StatusMessage[]>([])
@@ -216,36 +235,34 @@ export function useDevState() {
     aiToolApprovalRevision.value += 1
   })
 
-  // ── 编辑器状态同步 ───────────────────────────────────
-
-  function syncNavFromEditor(): void {
-    const snap = editor.readSnapshot()
-    treeData.value = [...snap.treeData]
-    pageList.value = [...snap.pageFeatures]
-    navDirty.value = snap.navigationDirty
-    navEmpty.value = snap.treeData.length === 0
-    if (snap.selectedNodeId && snap.selectedNode) {
-      selectedNode.value = snap.selectedNode
-    } else if (!snap.selectedNodeId) {
-      selectedNode.value = null
-    }
-  }
-
   // ═══════════════════════════════════════════════════════════
   // 计算属性
   // ═══════════════════════════════════════════════════════════
 
-  function isDocumentDirty(name: PageNodeFileName): boolean {
+  const hasAnyFileDirty = computed(() => {
     void pageFilesRevision.value
-    const snap = editor.readSnapshot()
-    return snap.dirtyFiles.has(name)
-  }
+    const dirty = editor.readSnapshot().dirtyFiles
+    return pageFileNames.some((n) => dirty.has(n))
+  })
 
-  const hasAnyFileDirty = computed(() => pageFileNames.some((n) => isDocumentDirty(n)))
-  const hasAnyDirty = computed(() => navDirty.value || hasAnyFileDirty.value)
+  const navDirty = computed(() => {
+    void pageFilesRevision.value
+    return editor.readSnapshot().navigationDirty
+  })
 
-  const pageDataDirty = computed(() => isDocumentDirty('pagedata.json'))
-  const pageDataError = computed(() => null)
+  const hasAnyDirty = computed(() => {
+    void pageFilesRevision.value
+    return editor.readSnapshot().hasAnyDirty
+  })
+
+  const pageDataDirty = computed(() => {
+    void pageFilesRevision.value
+    return editor.readSnapshot().dirtyFiles.has('pagedata.json')
+  })
+  const pageDataError = computed(() => {
+    void pageFilesRevision.value
+    return editor.readSnapshot().parseErrors['pagedata.json']
+  })
 
   // ═══════════════════════════════════════════════════════════
   // 工具：地址 / 持久化 pageId
@@ -279,7 +296,7 @@ export function useDevState() {
   function isBackendConfigPage(pageId: string): boolean {
     const pageMeta = pageList.value.find((page: PageConfigPageSummary) => page.pageId === pageId)
     if (!pageMeta) return treeData.value.length === 0
-    return isConfigNodeKind(pageMeta.nodeKind)
+    return isConfigFilesPageSurface(pageMeta.designSurface)
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -289,23 +306,19 @@ export function useDevState() {
   function setActivePageContext(pageId: string, forceReset = false): boolean {
     const normalizedPageId = pageId.trim()
     if (!normalizedPageId || !isBackendConfigPage(normalizedPageId)) {
-      clearFiles()
+      clearActivePageContext()
       return false
     }
 
     const shouldReset = forceReset || activePageId.value !== normalizedPageId
     editor.setActivePage(normalizedPageId, { forceReset: shouldReset })
-    activePageId.value = editor.readSnapshot().pageId
     persistActivePageId(normalizedPageId)
-    refreshNavEditDtoBindings()
     return true
   }
 
-  function clearFiles(): void {
+  function clearActivePageContext(): void {
     editor.clearActivePage()
-    activePageId.value = ''
     persistActivePageId('')
-    refreshNavEditDtoBindings()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -326,7 +339,7 @@ export function useDevState() {
       setActivePageContext(pageId, activePageId.value !== pageId)
       return
     }
-    clearFiles()
+    clearActivePageContext()
   }
 
   function applyNodeKindPreset(kind: NavNodeKind): void {
@@ -416,18 +429,11 @@ export function useDevState() {
         onAbort: aiToolApprovals.cancelPending,
         events: {
           onToolCall: (record) => {
-            syncNavFromEditor()
             const type: StatusMessage['type'] = record.status === 'success' ? 'info' : 'warning'
             addStatus(`AI 工具 ${record.toolName} ${record.status === 'success' ? '完成' : '失败'}`, type)
           },
-          onStreamEvent: () => {
-            pageFilesRevision.value = editor.revision
-          },
         },
       })
-
-      syncNavFromEditor()
-      pageFilesRevision.value = editor.revision
       addStatus(
         result.sawToolCall
           ? `AI 已修改页面 ${pageId}，请保存`
@@ -446,151 +452,65 @@ export function useDevState() {
   // 数据加载
   // ═══════════════════════════════════════════════════════════
 
+  async function ensureCurrentProjectNavigationLoaded(): Promise<void> {
+    if (editor.readSnapshot().treeData.length > 0) return
+
+    const navFromRouter = getNavTree()
+    if (navFromRouter && navFromRouter.children.length > 0) {
+      syncCommittedNavigationFromRouter()
+      return
+    }
+
+    await editor.loadNavigation()
+  }
+
   async function loadNavConfig(options?: { preserveSelectedNodeId?: string | null; preserveActivePageId?: string | null }): Promise<void> {
     const preservedSelectedNodeId = options?.preserveSelectedNodeId ?? selectedNode.value?.id ?? null
     const preservedActivePageId = options?.preserveActivePageId?.trim() ?? ''
     navLoading.value = true
     try {
-      await editor.loadNavigation()
-      syncNavFromEditor()
-      addStatus('导航配置已加载', 'success')
+      await ensureCurrentProjectNavigationLoaded()
+      refreshNavEditDtoBindings()
+      addStatus(`项目 ${projectId} 导航已就绪`, 'success')
     } catch (error) {
-      syncNavFromEditor()
       addStatus(`导航加载失败: ${String(error)}`, 'error')
     } finally {
       navLoading.value = false
     }
 
+    const snapTree = readNavSnapshot().treeData
+
     if (preservedSelectedNodeId) {
-      const matchedNode = findNodeById(treeData.value, preservedSelectedNodeId)
+      const matchedNode = findNodeById(snapTree, preservedSelectedNodeId)
       if (matchedNode) {
-        selectedNode.value = matchedNode
-        loadNodeToForm(matchedNode)
-        await syncPageFilesForNodeAfterLoad(matchedNode, false)
+        await selectNode(matchedNode)
         return
       }
     }
 
     if (preservedActivePageId) {
-      const matchedNode = findPageNodeByPageId(treeData.value, preservedActivePageId)
+      const matchedNode = findPageNodeByPageId(snapTree, preservedActivePageId)
       if (matchedNode) {
-        selectedNode.value = matchedNode
-        loadNodeToForm(matchedNode)
-        await syncPageFilesForNodeAfterLoad(matchedNode, false)
+        await selectNode(matchedNode)
         return
       }
 
       if (setActivePageContext(preservedActivePageId, false)) {
-        selectedNode.value = null
-        navDirty.value = false
+        editor.selectNode(null)
         linkProbeInfo.value = null
         return
       }
     }
 
-    if (treeData.value.length === 0) {
-      selectedNode.value = null
-      clearFiles()
+    if (snapTree.length === 0) {
+      editor.selectNode(null)
+      clearActivePageContext()
       return
     }
 
-    const firstNode = treeData.value[0]
+    const firstNode = snapTree[0]
     if (firstNode) {
-      selectedNode.value = firstNode
-      loadNodeToForm(firstNode)
-      await syncPageFilesForNodeAfterLoad(firstNode, false)
-    }
-  }
-
-  async function syncPageFilesForNodeAfterLoad(node: ProjectNodeData, forceReload: boolean): Promise<void> {
-    const pageId = resolvePageNodePageId(node)
-    if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
-      await editor.selectPage(pageId, { forceReload })
-      activePageId.value = editor.readSnapshot().pageId
-      persistActivePageId(pageId)
-      return
-    }
-    clearFiles()
-  }
-
-  function syncEditorActivePageFromState(): boolean {
-    const pageId = activePageId.value
-    if (!pageId) return false
-    if (editor.getActivePage()?.pageId !== pageId) {
-      editor.setActivePage(pageId)
-    }
-    return true
-  }
-
-  async function ensureActivePageFilesLoaded(options?: { forceReload?: boolean }): Promise<void> {
-    if (!syncEditorActivePageFromState()) return
-    const loadOptions: { forceReload?: boolean } = {}
-    if (options?.forceReload !== undefined) loadOptions.forceReload = options.forceReload
-    await editor.ensureActivePageFilesLoaded(loadOptions)
-  }
-
-  async function loadPageFile(name: PageNodeFileName, options?: { forceReload?: boolean }): Promise<void> {
-    if (!syncEditorActivePageFromState()) return
-    await editor.loadPageFile(name, options)
-  }
-
-  function getPageFileText(name: PageNodeFileName): string {
-    void pageFilesRevision.value
-    return editor.getPageFileText(name)
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // 页面文件版本
-  // ═══════════════════════════════════════════════════════════
-
-  async function listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
-    if (!activePageId.value) return []
-    editor.setActivePage(activePageId.value)
-    try {
-      return await editor.listRemotePageVersions(filename)
-    } catch (e) {
-      addStatus(`读取后端版本失败: ${String(e)}`, 'error')
-      return []
-    }
-  }
-
-  async function restoreRemotePageVersion(version: number, filename: PageNodeFileName): Promise<boolean> {
-    const pageId = activePageId.value
-    if (!pageId) return false
-    editor.setActivePage(pageId)
-    try {
-      await editor.restoreRemotePageVersion(version, filename)
-      addStatus(`页面 ${pageId} 已将 ${filename} 版本 v${version} 恢复为当前版`, 'success')
-      return true
-    } catch (e) {
-      addStatus(`恢复版本失败: ${String(e)}`, 'error')
-      return false
-    }
-  }
-
-  async function createRemotePageVersion(filename: PageNodeFileName): Promise<boolean> {
-    if (!activePageId.value) return false
-    editor.setActivePage(activePageId.value)
-    try {
-      await editor.createRemotePageVersion(filename)
-      addStatus(`${filename} 已创建新版本快照`, 'success')
-      return true
-    } catch (e) {
-      addStatus(`创建版本快照失败: ${String(e)}`, 'error')
-      return false
-    }
-  }
-
-  async function deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<boolean> {
-    if (!activePageId.value) return false
-    editor.setActivePage(activePageId.value)
-    try {
-      await editor.deleteRemotePageVersion(version, filename)
-      addStatus(`${filename} 版本 v${version} 已删除`, 'success')
-      return true
-    } catch (e) {
-      addStatus(`删除版本失败: ${String(e)}`, 'error')
-      return false
+      await selectNode(firstNode)
     }
   }
 
@@ -603,14 +523,7 @@ export function useDevState() {
     editor.setActivePage(pageId)
     editor.selectNode(node.id)
     editor.beginNavigationEdit()
-    const dto = editor.navigationEditDto
-    if (dto) {
-      contextItems.value = [...dto.context.items]
-      Object.assign(contextConfig, dto.context.config)
-    }
-    navDirty.value = false
     linkProbeInfo.value = null
-    refreshNavEditDtoBindings()
   }
 
   function applyNavChanges(): void {
@@ -618,7 +531,6 @@ export function useDevState() {
     const node = selectedNode.value
     if (isSystemRootDirectoryInTree(node)) {
       loadNodeToForm(node)
-      navDirty.value = false
       addStatus(`系统目录 ${node.title} 不可修改目录属性，仅可编辑子项`, 'warning')
       return
     }
@@ -628,21 +540,16 @@ export function useDevState() {
       addStatus('页面下不能创建模块，已自动改为普通页面', 'warning')
     }
 
-    // context 字段同步到 DTO
     const dto = editor.navigationEditDto
     if (dto) {
-      dto.context.items = contextItems.value.map(item => ({ ...item }))
-      Object.assign(dto.context.config, contextConfig)
       const result = editor.applyNavigationEditDto(dto)
       for (const warning of result.warnings) {
         addStatus(warning, 'warning')
       }
     }
-    navDirty.value = false
   }
 
   function markNavDirty(): void {
-    navDirty.value = true
     scheduleAutoSave()
   }
 
@@ -659,7 +566,7 @@ export function useDevState() {
 
   async function doAutoSave(): Promise<void> {
     autoSaveTimer = null
-    if (!navDirty.value) { autoSaveStatus.value = 'idle'; return }
+    if (!editor.readSnapshot().navigationDirty) { autoSaveStatus.value = 'idle'; return }
     if (!selectedNode.value) { autoSaveStatus.value = 'idle'; return }
     if (isSystemRootDirectoryInTree(selectedNode.value)) { autoSaveStatus.value = 'idle'; return }
 
@@ -684,7 +591,6 @@ export function useDevState() {
     if (!selectedNode.value) return false
     const node = selectedNode.value
     if (isSystemRootDirectoryInTree(node)) {
-      navDirty.value = false
       addStatus(`系统目录 ${node.title} 仅允许编辑子项，跳过节点保存`, 'warning')
       return true
     }
@@ -692,9 +598,8 @@ export function useDevState() {
     navSaving.value = true
     try {
       editor.selectNode(node.id)
-      await editor.saveSelectedNavigationNode()
-      syncNavFromEditor()
-      await refreshRoutes()
+      await editor.saveSelectedNavigationNode({ skipReload: true })
+      await reloadAndSyncNavigation()
       addStatus(`节点 ${node.title} 已保存`, 'success')
       return true
     } catch (e) {
@@ -707,57 +612,39 @@ export function useDevState() {
 
   function selectPage(pageId: string): void {
     if (!isBackendConfigPage(pageId)) {
-      clearFiles()
+      clearActivePageContext()
       addStatus(`页面 ${pageId} 为 vue-component，不提供后端配置文件编辑`, 'warning')
       return
     }
     setActivePageContext(pageId, activePageId.value !== pageId)
   }
 
-  async function savePageFile(name: PageNodeFileName): Promise<void> {
-    const pageId = activePageId.value
-    if (!pageId) return
-
-    fileSaving.value = true
-    try {
-      editor.setActivePage(pageId)
-      await editor.savePageFile(name)
-      addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
-    } catch (e) {
-      addStatus(`保存 ${name} 失败: ${String(e)}`, 'error')
-    } finally {
-      fileSaving.value = false
-    }
-  }
-
   async function createPageForSelectedNode(params: { pageId: string; title: string; icon: string }): Promise<boolean> {
     const pageId = params.pageId.trim()
     if (!pageId || !selectedNode.value) return false
 
-    fileSaving.value = true
+    pageIoBusy.value = true
     try {
       await editor.createPageForSelectedNode({
         pageId,
         title: params.title,
         icon: params.icon,
       })
-      syncNavFromEditor()
 
       navEditDto.path = `/${pageId}`
       navEditDto.title = params.title
       navEditDto.icon = params.icon
       handlePathChange(`/${pageId}`)
 
-      notifyPageFileChanged(pageId, '__created')
+      bumpPageCache(pageId, '__created')
       await editor.selectPage(pageId)
-      activePageId.value = editor.readSnapshot().pageId
       persistActivePageId(pageId)
       return true
     } catch (e) {
       addStatus(`创建页面失败: ${String(e)}`, 'error')
       return false
     } finally {
-      fileSaving.value = false
+      pageIoBusy.value = false
     }
   }
 
@@ -766,13 +653,24 @@ export function useDevState() {
       await saveNodeChanges()
       return
     }
-    navDirty.value = false
     addStatus('未选中节点，无需保存导航属性', 'info')
   }
 
   async function saveAllDirtyPageFiles(): Promise<void> {
+    const pageId = activePageId.value
+    if (!pageId) return
+    editor.setActivePage(pageId)
     for (const name of pageFileNames) {
-      if (isDocumentDirty(name)) await savePageFile(name)
+      if (!editor.readSnapshot().dirtyFiles.has(name)) continue
+      pageIoBusy.value = true
+      try {
+        await editor.savePageFile(name)
+        addStatus(`页面 ${pageId} 已保存 ${name}`, 'success')
+      } catch (e) {
+        addStatus(`保存 ${name} 失败: ${String(e)}`, 'error')
+      } finally {
+        pageIoBusy.value = false
+      }
     }
   }
 
@@ -799,16 +697,14 @@ export function useDevState() {
   async function selectNode(node: ProjectNodeData): Promise<void> {
     cancelAutoSave()
     if (navDirty.value && selectedNode.value) void saveNodeChanges()
-    selectedNode.value = node
     editor.selectNode(node.id)
     try {
       const pageId = resolvePageNodePageId(node)
       if (pageId && isConfigNodeKind(node.nodeKind ?? 'page')) {
         await editor.selectPage(pageId)
-        activePageId.value = editor.readSnapshot().pageId
         persistActivePageId(pageId)
       } else {
-        clearFiles()
+        clearActivePageContext()
         // Keep a navigation edit context for non-page nodes; this is not a pageModel.
         const navPageId = pageId || node.id || `nav-node-${node.id}`
         editor.setActivePage(navPageId)
@@ -890,13 +786,11 @@ export function useDevState() {
   function addRootNode(): void {
     const node = createRootModuleNode(() => crypto.randomUUID())
     void editor.addNavigationNode({ node }).then(
-      (created) => {
-        selectedNode.value = created
-        syncNavFromEditor()
+      () => {
         addStatus('已添加根模块', 'info')
       },
       (e: unknown) => {
-        void editor.loadNavigation().then(() => syncNavFromEditor())
+        void editor.loadNavigation()
         addStatus(`添加模块失败: ${String(e)}`, 'error')
       },
     )
@@ -921,11 +815,9 @@ export function useDevState() {
     const node = getReservedRootGroupTemplate(placement)
     try {
       await editor.addNavigationNode({ node, index: 0 })
-      syncNavFromEditor()
       addStatus(`已恢复 ${node.title}`, 'success')
     } catch (e) {
       await editor.loadNavigation()
-      syncNavFromEditor()
       addStatus(`恢复失败: ${String(e)}`, 'error')
     }
   }
@@ -938,8 +830,7 @@ export function useDevState() {
         parentId: parent.id,
         rollbackPageOnNavigationFailure: true,
       })
-      syncNavFromEditor()
-      await refreshRoutes()
+      await reloadAndSyncNavigation()
       addStatus(`已在 ${parent.title} 下添加子节点`, 'info')
     } catch (e) {
       addStatus(`添加节点失败: ${String(e)}`, 'error')
@@ -959,17 +850,15 @@ export function useDevState() {
     void deletePromise.then(
       () => {
         if (selectedNode.value?.id === data.id) {
-          selectedNode.value = null
-          clearFiles()
+          editor.selectNode(null)
+          clearActivePageContext()
         }
         if (shouldRemoveMountedPage) {
-          notifyPageFileChanged(pageId, '__deleted')
+          bumpPageCache(pageId, '__deleted')
         }
-        syncNavFromEditor()
         addStatus(`已删除 ${data.title}`, 'info')
       },
       (e: unknown) => {
-        syncNavFromEditor()
         addStatus(`删除节点失败: ${String(e)}`, 'error')
       },
     )
@@ -982,8 +871,7 @@ export function useDevState() {
     navSaving.value = true
     try {
       await editor.moveMountedPage(data.id, location.parentId, location.index)
-      syncNavFromEditor()
-      await refreshRoutes()
+      await reloadAndSyncNavigation()
       addStatus(`节点 ${data.title} 已移动`, 'success')
     } catch (e) {
       addStatus(`节点移动失败: ${String(e)}`, 'error')
@@ -998,144 +886,44 @@ export function useDevState() {
   // ═══════════════════════════════════════════════════════════
 
   function toggleContext(val: boolean): void {
-    if (val && contextItems.value.length === 0) {
-      contextItems.value.push({ id: '', title: '' })
-    }
     const dto = editor.navigationEditDto
-    if (dto) {
-      dto.context.hasContext = val
-      dto.context.items = contextItems.value.map(item => ({ ...item }))
+    if (val && dto?.context.items.length === 0) {
+      dto.context.items.push({ id: '', title: '' })
       editor.applyNavigationEditDto(dto)
     }
-    markNavDirty()
+    navEditDto.hasContext = val
   }
   function addContextItem(): void {
-    contextItems.value.push({ id: '', title: '' })
     const dto = editor.navigationEditDto
-    if (dto) {
-      dto.context.items = contextItems.value.map(item => ({ ...item }))
-      editor.applyNavigationEditDto(dto)
-    }
+    if (!dto) return
+    dto.context.items.push({ id: '', title: '' })
+    editor.applyNavigationEditDto(dto)
     markNavDirty()
   }
   function removeContextItem(idx: number): void {
-    contextItems.value.splice(idx, 1)
     const dto = editor.navigationEditDto
-    if (dto) {
-      dto.context.items = contextItems.value.map(item => ({ ...item }))
-      editor.applyNavigationEditDto(dto)
-    }
+    if (!dto) return
+    dto.context.items.splice(idx, 1)
+    editor.applyNavigationEditDto(dto)
     markNavDirty()
   }
   function fillDemoContext(): void {
     navEditDto.hasContext = true
-    contextItems.value = DEMO_CONTEXT_ITEMS.map(item => ({ ...item }))
-    contextConfig.placeholder = DEMO_CONTEXT_CONFIG.placeholder
-    contextConfig.defaultValue = DEMO_CONTEXT_CONFIG.defaultValue
-    contextConfig.paramName = DEMO_CONTEXT_CONFIG.paramName
     const dto = editor.navigationEditDto
-    if (dto) {
-      dto.context.items = contextItems.value.map(item => ({ ...item }))
-      Object.assign(dto.context.config, contextConfig)
-      editor.applyNavigationEditDto(dto)
-    }
+    if (!dto) return
+    dto.context.items = DEMO_CONTEXT_ITEMS.map(item => ({ ...item }))
+    Object.assign(dto.context.config, DEMO_CONTEXT_CONFIG)
+    editor.applyNavigationEditDto(dto)
     markNavDirty()
     addStatus('已填充模块上下文演示数据', 'info')
   }
 
-  /** context 字段变更时写穿到编辑器 DTO 并标记 dirty。 */
-  function syncContextToNav(): void {
+  /** 选项 id/title 就地编辑后提交到 DTO。 */
+  function commitContextEdit(): void {
     const dto = editor.navigationEditDto
-    if (dto) {
-      dto.context.items = contextItems.value.map(item => ({ ...item }))
-      Object.assign(dto.context.config, contextConfig)
-      editor.applyNavigationEditDto(dto)
-    }
+    if (!dto) return
+    editor.applyNavigationEditDto(dto)
     markNavDirty()
-  }
-
-  // ═══════════════════════════════════════════════════════════
-  // 工具访问（委托当前 ConfigPageNode）
-  // ═══════════════════════════════════════════════════════════
-
-  function editDataSet(
-    run: Parameters<NonNullable<ReturnType<typeof editor.getActivePage>>['editDataSet']>[0],
-  ): Promise<void> {
-    const page = getActivePage()
-    if (!page) {
-      return Promise.reject(new Error('无活动页面，无法编辑数据集'))
-    }
-    return page.editDataSet(run)
-  }
-
-  function getDataSetTool(): ReturnType<NonNullable<ReturnType<typeof editor.getActivePage>>['getDataSetTool']> | null {
-    void pageFilesRevision.value
-    return getActivePage()?.getDataSetTool() ?? null
-  }
-
-  function editNodeTree(
-    run: Parameters<NonNullable<ReturnType<typeof editor.getActivePage>>['editNodeTree']>[0],
-  ): Promise<void> {
-    const page = getActivePage()
-    if (!page) {
-      return Promise.reject(new Error('无活动页面，无法编辑节点树'))
-    }
-    return page.editNodeTree(run)
-  }
-
-  function getNodeTree(): ReturnType<NonNullable<ReturnType<typeof editor.getActivePage>>['getNodeTree']> | null {
-    void pageFilesRevision.value
-    return getActivePage()?.getNodeTree() ?? null
-  }
-
-  function setRuleText(text: string): void {
-    const page = getActivePage()
-    if (!page) return
-    page.rule.setText(text)
-    notifyPageFileChanged(page.pageId, 'rule.json')
-  }
-
-  function setDataSetText(text: string): void {
-    const page = getActivePage()
-    if (!page) return
-    page.dataSet.setText(text)
-    notifyPageFileChanged(page.pageId, 'pagedata.json')
-  }
-
-  function undoRule(): boolean {
-    const page = getActivePage()
-    if (!page) return false
-    const ok = page.rule.undo()
-    if (ok) notifyPageFileChanged(page.pageId, 'rule.json')
-    return ok
-  }
-
-  function redoRule(): boolean {
-    const page = getActivePage()
-    if (!page) return false
-    const ok = page.rule.redo()
-    if (ok) notifyPageFileChanged(page.pageId, 'rule.json')
-    return ok
-  }
-
-  function undoDataSet(): boolean {
-    const page = getActivePage()
-    if (!page) return false
-    const ok = page.dataSet.undo()
-    if (ok) notifyPageFileChanged(page.pageId, 'pagedata.json')
-    return ok
-  }
-
-  function redoDataSet(): boolean {
-    const page = getActivePage()
-    if (!page) return false
-    const ok = page.dataSet.redo()
-    if (ok) notifyPageFileChanged(page.pageId, 'pagedata.json')
-    return ok
-  }
-
-  function getActivePage(): ReturnType<typeof editor.getActivePage> {
-    return editor.getActivePage()
   }
 
   // ═══════════════════════════════════════════════════════════
@@ -1158,8 +946,7 @@ export function useDevState() {
 
     // 编辑表单（navEditDto 代理到 editor.navigationEditDto 工作副本）
     navEditDto,
-    contextItems,
-    contextConfig,
+    contextEdit,
 
     // 空导航状态
     navEmpty,
@@ -1167,7 +954,7 @@ export function useDevState() {
     // 页面 4 文件
     pageFileNames,
     activePageId,
-    fileSaving,
+    pageIoBusy,
     pageFilesRevision,
     pageDataError,
     pageDataDirty,
@@ -1186,26 +973,17 @@ export function useDevState() {
     // 计算属性
     hasAnyFileDirty,
     hasAnyDirty,
-    isDocumentDirty,
 
-    notifyPageFileChanged,
+    editor,
 
     // 方法
     addStatus,
     loadNavConfig,
-    loadPageFile,
-    ensureActivePageFilesLoaded,
-    getPageFileText,
-    clearFiles,
-    listRemotePageVersions,
-    restoreRemotePageVersion,
-    createRemotePageVersion,
-    deleteRemotePageVersion,
-    savePageFile,
+    clearActivePageContext,
+    selectPage,
     createPageForSelectedNode,
     onLinkUrlChanged,
     probeLinkTarget,
-    selectPage,
     loadNodeToForm,
     markNavDirty,
     saveNodeChanges,
@@ -1231,18 +1009,7 @@ export function useDevState() {
     addContextItem,
     removeContextItem,
     fillDemoContext,
-    syncContextToNav,
-    getDataSetTool,
-    editDataSet,
-    editNodeTree,
-    getNodeTree,
-    setRuleText,
-    setDataSetText,
-    undoRule,
-    redoRule,
-    undoDataSet,
-    redoDataSet,
-    getActivePage,
+    commitContextEdit,
     initialize,
   }
 }

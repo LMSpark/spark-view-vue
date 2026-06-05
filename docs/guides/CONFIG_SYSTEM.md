@@ -9,18 +9,14 @@ SPARK 配置分两层：
 
 ```text
 ProjectModel
-  ├── nodes: ProjectNodeCollection
-  └── planning: ProjectPlanningModel
-
-ProjectConfigPageNodeModel
-  ├── navigation
-  ├── rule.json
-  ├── pagedata.json
-  ├── script.js
-  └── style.css
+  └── design: ProjectDesign
+        ├── navigation: NavigationDesign  # 节点树 + 平铺索引
+        └── ConfigPageNode
+              ├── PageDesign (rule / dataSet / script / style)
+              └── 持久化 → rule.json / pagedata.json / script.js / style.css
 ```
 
-后端 API 仍叫 `navigation`，但模型层把它解释为项目节点。`ProjectNodeCollection` 与 DB 平铺节点同构，树形导航只是投影。
+后端 API 仍叫 `navigation`，但模型层用 `NavigationDesign` 组织节点；内存可为树与索引，落盘映射到 DB 平铺行。
 
 ## 节点描述
 
@@ -32,7 +28,7 @@ project.description
   + current node.description
 ```
 
-消费层统一读取 `ProjectPlanningModel` 或 `ProjectEditor.readSnapshot().pageFeatures`。
+消费层统一读取 `ProjectEditor.readSnapshot().pageFeatures`（或等价的 `ProjectModel` 设计投影），不要自行拼约束链。
 
 ## 运行态配置
 

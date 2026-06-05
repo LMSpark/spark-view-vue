@@ -287,7 +287,7 @@ import {
   type DesignerRelationProjection,
   type DesignerTableProjection,
   type DesignerTableUiState,
-} from '@spark-appworks/spark-project-model/project'
+} from '@/services/project-model-artifacts'
 import type { DevState } from './useDevState'
 import type {
   CrudApi,
@@ -340,7 +340,8 @@ const relEditorPos = computed(() => {
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
 function getPageDataTool(): DataSetCrudTool | null {
-  return props.state.getDataSetTool()
+  void props.state.pageFilesRevision.value
+  return props.state.editor.getDataSetTool()
 }
 
 function buildColumnIdMap(table: DesignerTableProjection): Record<string, string> {
@@ -381,7 +382,7 @@ function applyMutationWithHistory(
   if (!tool) return
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
-    void props.state.editDataSet((t) => {
+    void props.state.editor.editDataSet((t) => {
       syncLayoutToTool(t)
       mutator(t)
     }).catch((error: unknown) => {
@@ -402,13 +403,13 @@ function applyHistoryMutation(
 }
 
 function undo() {
-  const ok = props.state.undoDataSet()
+  const ok = props.state.editor.undoPageFile('pagedata.json')
   if (!ok) return
   resetSelectionState()
 }
 
 function redo() {
-  const ok = props.state.redoDataSet()
+  const ok = props.state.editor.redoPageFile('pagedata.json')
   if (!ok) return
   resetSelectionState()
 }
@@ -424,19 +425,19 @@ function commitLayoutCheckpoint(): void {
   const anchor = tables.value[0]
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
-  void props.state.editDataSet((t) => {
+  void props.state.editor.editDataSet((t) => {
     syncLayoutToTool(t)
     t.updateTable({ tableName: anchor.tableName })
   })
 }
 
 const canUndo = computed(() => {
-  projectedMetadata.value
-  return props.state.getActivePage()?.dataSet.canUndo ?? false
+  void props.state.pageFilesRevision.value
+  return props.state.editor.canUndoPageFile('pagedata.json')
 })
 const canRedo = computed(() => {
-  projectedMetadata.value
-  return props.state.getActivePage()?.dataSet.canRedo ?? false
+  void props.state.pageFilesRevision.value
+  return props.state.editor.canRedoPageFile('pagedata.json')
 })
 
 watch(

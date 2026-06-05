@@ -14,8 +14,7 @@
       "@spark-appworks/spark-utils/internal": ["../spark-utils/dist/internal/index.d.ts"],
       "@spark-appworks/spark-project-model": ["./src/index.ts"],
       "@spark-appworks/spark-project-model/project": ["./src/project.ts"],
-      "@spark-appworks/spark-json-document": ["../spark-json-document/src/index.ts"],
-      "@spark-appworks/spark-component/runtime": ["../spark-component/src/runtime/index.ts"]
+      "@spark-appworks/spark-json-document": ["../spark-json-document/src/index.ts"]
     }
   },
   "include": ["src/**/*", "tests/**/*"],

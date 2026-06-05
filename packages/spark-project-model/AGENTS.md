@@ -4,42 +4,49 @@
 
 ## 目标方向
 
-`ProjectModel` 是软件设计 + 运行一体化的根模型。后续修改代码时，以 `ProjectModel` 为模型主语；`ProjectEditor` 是 DevSystem 和外部自动化共用的编辑协同层，不是单个 UI 的私有适配器。
+**设计即编辑**，不要在文档或命名里制造「设计层 vs 编辑层」对立。
 
-目标结构：
+**模型是 class 层级**：`ProjectModel` 为根，导航/页面用 `ProjectNode` 子类树，页面内容为 `PageRuleFile` 等 class；`ProjectNodeData` 等 type 仅用于 API/序列化，不要当包内主模型。新增能力优先加 class/子类或 `ProjectModel.design` 聚合，而不是扩一套平行 DTO。
 
 ```text
-ProjectModel
-  design
-  runtime
-  editor
+ProjectModel — 设计内容 + runtime（领域结构与类型）
+ProjectEditor — 设计门面：API + session + subscribe + 落盘（实现分工，语义同属设计）
 ```
 
-- `design` 承载导航设计、页面设计、DataSet 设计、脚本/样式设计和 AI design context。
-- `runtime` 承载框架无关运行态：导航投影、路由投影、页面运行实例、DataSet/DataView live state、模块上下文、权限投影、运行错误。
-- `editor` 承载 DevSystem/AI 编辑会话：selected、active page、drafts、dirty/save state、detached pages。
+- `design` / `runtime` 的划分是「塑造中的软件」vs「跑起来的投影」，不是 design vs edit。
+- selected、dirty、working DTO 是设计过程态，放在 ProjectEditor 是为避免 HTTP/会话耦进类型包，不是另一套业务语义。
 
 ## 当前结构优先
 
 当前运行源码使用：
 
 ```text
-project/     ProjectModel
-navigation/  ProjectNode、导航 DTO、树/平铺转换
-page/        ConfigPageNode、PageNodeFactory、四文件内容模型
-editor/      ProjectEditor facade 与编辑器 artifacts
-infra/       文件/导航/引用/内容加载设施
+model/project/       ProjectModel、ProjectDesign、NavigationDesign、ProjectRuntime
+model/navigation/    ProjectNode 子类、NavigationIndex
+model/page/          ConfigPageNode、PageDesign、四文件
+model/serialization/ compiler 纯函数（禁止 model→io）
+facade/              ProjectEditor + editor-session + 协作者
+factory/             PageNodeFactory
+io/                  file/navigation/loader/reference/http
 ```
 
-`src/MODEL-HIERARCHY.md` 是目标模型契约。`docs/unified-model-refactor-plan.md` 是未来目录迁移计划，不是当前源码地图。除非任务明确要求目录迁移，否则不要把 `entity/`、`service/`、`contract/` 等计划路径写进测试、工具或 import。
+根入口：`index.ts`（model + factory）、`project.ts`（facade）。DevSystem 设计器制品在 `src/services/project-model-artifacts/`。改代码时先归位到正确目录，再改 import。
+
+`src/MODEL-HIERARCHY.md` 与 `src/STRUCTURE.md` 是当前源码地图。
 
 ## 边界文化
 
-- 持久化真源仍然只有 DB navigation + page files。
-- ProjectModel 可以持有完整 headless runtime state，但运行态必须能反向定位到设计真源。
+- **存储真源**只有 DB navigation + page files；commit 只落这里。
+- **领域模型不必与存储同构**：允许树/索引/派生字段；禁止再养一份可独立落盘的第二业务真源。
+- load/save 由 `ProjectEditor` 与 infra 适配；保存必须映射到 `nodeId`、`pageId`、文件锚点，不要求模型内存形状等于表或文件布局。
+- ProjectModel 可持有 headless runtime；运行诊断应能指回设计节点或存储锚点。
 - ProjectModel 不得直接持有 Vue component instance、DOM、Vue Router instance、Element Plus API 或浏览器全局对象作为状态。
-- `ProjectEditor` 是 AI + DevSystem 共用的项目编辑协同层，用同一套 edit/CRUD/save/diagnostics 流程服务人工设计和 AI page-design。
-- `ProjectEditor` 不成为模型主语；它负责把 DevSystem 交互、AI tool 调用和外部 I/O 编排成 ProjectModel 的 design/editor 命令。
+- `ProjectEditor` 是 AI + DevSystem 共用的**设计门面**；CRUD/save/diagnostics 都是设计动作。
+- **模型 vs 实例**：包内是 class **类型**（`ProjectModel`、`ProjectEditor`）；运行时 **领域实例** 为 `editor.project`，**门面实例** 由 APP `getAppProjectEditor()` 托管。勿把 `ProjectEditor` 叫「模型实例」。
+- **AI 门面**：DevSystem 内 AI 用 `getAppProjectEditor()`；隔离 Host Run 用 headless `createProjectEditor()`（见 app `page-design-host-run-provider.ts`）。
+- 包内不持有全局单例；登录后 `ingestNavigationRoot` 写入 `editor.project`。
+- DevSystem 只暴露 `editor = getAppProjectEditor()`（门面）；Vue 经 `state.editor.*` 改领域，用 `readSnapshot()` 投影，不得自建 `ProjectModel` 或平行「文件 API」。
+- 类型主语仍是 `ProjectModel`；`ProjectEditor` 编排对外设计与存储映射，并用 `subscribe` 通知 UI。
 - `ConfigPageNode` 后续应被理解为 ProjectModel 下的 page design + page runtime 节点，而不是孤立页面文件模型。
 - 缺失 API、无效配置、未加载页面、状态不一致必须 fail-fast。
 
@@ -52,7 +59,7 @@ infra/       文件/导航/引用/内容加载设施
 @spark-appworks/spark-project-model/project
 ```
 
-包外不要相对导入本包 `src/*`。包内测试可以测内部函数，但必须引用当前真实路径，例如 `../src/navigation/edit`。
+包外不要相对导入本包 `src/*`。包内测试可以测内部函数，但必须引用当前真实路径，例如 `../src/model/navigation/edit`。
 
 ## AI 边界
 

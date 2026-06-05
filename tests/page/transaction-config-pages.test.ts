@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it, vi } from 'vitest'
-import { compileRule, parsePageData } from '../../packages/spark-project-model/src/infra/loader/compiler'
+import { compileRule, parsePageData } from '@spark-appworks/spark-project-model'
 import { HttpClientBase, isRecord } from '@spark-appworks/spark-utils'
 import { copyOwnEnumerableProperties, readProperty } from '@spark-appworks/spark-utils/internal'
 import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'

@@ -140,6 +140,12 @@ import {
   markLogoutPending,
   switchProject,
 } from '@/services/auth'
+import { resetAppProjectEditor } from '@/services/project-editor-host'
+import {
+  registerShellNavRootListener,
+  reloadAndSyncNavigation,
+  syncCommittedNavigationFromRouter,
+} from '@/services/navigation-sync'
 import AppLayout from '@/layout/AppLayout.vue'
 import AppHeader from '@/layout/AppHeader.vue'
 import AppBreadcrumb from '@/layout/AppBreadcrumb.vue'
@@ -418,6 +424,7 @@ navigationActionRegistry.register('home', () => {
 })
 navigationActionRegistry.register('logout', () => {
   markLogoutPending()
+  resetAppProjectEditor()
   clearAllPageCache()
   window.location.replace(router.resolve('/').href)
 })
@@ -548,6 +555,8 @@ watch(
   { immediate: true },
 )
 
+let unregisterShellNavListener: (() => void) | null = null
+
 /** 将导航树数据写入 _navRoot 响应对象（驱动 useNavigation UI） */
 function applyNavTree(navData: ProjectModelData | null): void {
   const safeChildren = Array.isArray(navData?.children) ? navData.children : []
@@ -560,8 +569,7 @@ function applyNavTree(navData: ProjectModelData | null): void {
 }
 
 async function reloadNavigation(): Promise<void> {
-  const navTree = await refreshRoutes()
-  applyNavTree(navTree)
+  await reloadAndSyncNavigation()
 }
 
 onMounted(() => {
@@ -585,9 +593,15 @@ onMounted(() => {
     }).start()
   }
 
+  unregisterShellNavListener = registerShellNavRootListener(applyNavTree)
+
   // start.ts 已在 mount 前调用 registerRoutes() 注册路由 + 加载导航树
-  // 此处同步读取已加载的导航树并写入 _navRoot，不发起重复 HTTP 请求
-  applyNavTree(getNavTree())
+  // 此处同步读取已加载的导航树并写入 _navRoot + editor.project，不发起重复 HTTP 请求
+  if (isAuthenticated()) {
+    syncCommittedNavigationFromRouter()
+  } else {
+    applyNavTree(getNavTree())
+  }
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   Object.defineProperty(window, '__sparkDev', {
@@ -601,6 +615,8 @@ onMounted(() => {
 })
 
 onUnmounted(() => {
+  unregisterShellNavListener?.()
+  unregisterShellNavListener = null
   moduleContextListeners.clear()
   _stopPageConfigChange?.()
   _stopPageConfigChange = null
@@ -613,8 +629,8 @@ onUnmounted(() => {
 // ── 登录后自动同步导航 UI ──
 watch(isLoginPage, (isLogin, wasLogin) => {
   if (wasLogin && !isLogin && isAuthenticated()) {
-    // LoginView 已在跳转前调用 refreshRoutes() 加载导航树，此处同步读取并写入 _navRoot
-    applyNavTree(getNavTree())
+    // LoginView 已在跳转前 reloadAndSyncNavigation
+    syncCommittedNavigationFromRouter()
   }
 })
 

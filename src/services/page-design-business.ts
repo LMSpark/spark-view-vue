@@ -125,7 +125,7 @@ function resolvePageDesignProject(
     throw new Error('pageDesign ProjectModel requires host.moduleInstanceId.')
   }
   const editor = options.getPageDesignEditor({ moduleInstanceId })
-  editor.project.openConfigPage(moduleInstanceId)
+  editor.openPage(moduleInstanceId)
   return editor.project
 }
 

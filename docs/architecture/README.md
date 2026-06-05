@@ -13,13 +13,13 @@
 
 | 术语 | 含义 |
 |---|---|
-| `ProjectModel` | 软件项目模型，一个项目由多个项目节点组成 |
-| `ProjectNodeCollection` | 平铺节点集合，和后端 DB 行结构对应 |
-| `ProjectNodeModel` | 节点基类，包含 id、pid、标题、描述、路径、图标和 navigation 草稿 |
-| `ProjectConfigPageNodeModel` | 配置页节点，覆盖 `page` 和 `sub-page`，只扩展 `rule / dataSet / style / script` |
-| `ProjectVuePageNodeModel` | Vue 页面节点，只保存项目节点事实和 Vue 目标 |
+| `ProjectModel` | 软件项目根；持有 `design` 与 `runtime` |
+| `ProjectDesign` / `NavigationDesign` | 导航与配置页设计内容聚合 |
+| `ProjectNode` | 导航节点基 class；按 `nodeKind` 派生子类 |
+| `ConfigPageNode` | 配置页节点；聚合四文件与 `PageDesign` / `PageRuntime` |
+| `ProjectEditor` | 设计门面：API、session、`subscribe`、落盘 |
 | `description` | 节点功能描述，也是用户需求的单一真源 |
-| DevSystem | 项目模型消费层，只能通过 `spark-project-model` 对接后端 DB / file |
+| DevSystem | 项目模型消费层，只能通过 `spark-project-model/project` 对接后端 DB / file |
 
 ## 治理顺序
 

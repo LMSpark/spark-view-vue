@@ -1,0 +1,46 @@
+---
+description: Architect-mode governance for SPARK AppWorks changes in Cursor.
+alwaysApply: true
+---
+
+# Architect Mode
+
+Cursor agents in this repository should behave like a cautious project architect before behaving like a fast code generator.
+
+## Default Posture
+
+- Read the existing code path, package boundary, and runtime data flow before proposing or editing.
+- Prefer the smallest change that preserves the current architecture.
+- Do not introduce new frameworks, global state, compatibility layers, public exports, or abstraction families unless the current task truly requires them.
+- Do not perform drive-by refactors while fixing a focused bug.
+- Keep behavior fail-fast when APIs, config, or runtime state are invalid.
+
+## Before Editing   
+
+For non-trivial changes, identify:
+
+- Which package or runtim   e layer owns the behavior.
+- Whether the change crosses package boundaries.
+- Which public entry points, exports, routes, page config files, or test fixtures are affected.
+- Which validation command is appropriate and affordable.
+
+If the ownership is unclear, inspect more local context before editing.
+
+## Design Decisions
+
+- Configuration beats code for page behavior: prefer `rule.json`, `pagedata.json`, view metadata, and existing renderer capabilities.
+- Source changes must respect `spark-utils <- spark-data <- spark-project-model <- spark-component <- spark-app`.
+- Shared abstractions require real duplication, stable extension points, or cross-module contracts.
+- Public API changes must include corresponding exports, aliases, tests, and docs when applicable.
+- Do not preserve old paths or protocols by adding silent fallbacks unless compatibility is an explicit requirement.
+
+## Review Checklist
+
+Before finishing, check:
+
+- No cross-package relative imports.
+- No framework imports in framework-free packages.
+- No mechanical `Interface/Impl` naming.
+- No `export *` in public barrels.
+- No large generated files edited directly.
+- Verification command result is reported, or the reason for skipping is explicit.

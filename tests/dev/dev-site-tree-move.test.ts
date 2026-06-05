@@ -4,12 +4,17 @@ import { describe, expect, it, vi } from 'vitest'
 import DevSiteTree from '@/views/app/dev-system/DevSiteTree.vue'
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 import { useDevState, type DevState } from '@/views/app/dev-system/useDevState'
+import { isolateAppProjectEditorForTest, seedDevStateConfigPages } from './dev-state-test-fixture'
 
 function createState(node: ProjectNodeData): DevState {
+  isolateAppProjectEditorForTest()
   const state = useDevState()
-  state.treeData.value = [node]
-  state.navEmpty.value = false
-  state.selectedNode.value = null
+  seedDevStateConfigPages(state, [{
+    pageId: 'orders',
+    nodeId: node.id,
+    title: node.title,
+    ...(node.path !== undefined ? { path: node.path } : {}),
+  }])
   state.hasReservedRootGroup = vi.fn<DevState['hasReservedRootGroup']>(() => false)
   state.restoreReservedRootGroup = vi.fn<DevState['restoreReservedRootGroup']>(async () => {})
   state.addRootNode = vi.fn<DevState['addRootNode']>()

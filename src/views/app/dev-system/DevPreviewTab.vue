@@ -73,7 +73,7 @@ const previewPageNode = shallowRef<ConfigPageNode | null>(null)
 
 function requireActivePageNodeLoaded(): ConfigPageNode {
   const pageId = props.state.activePageId.value
-  const activePage = props.state.getActivePage()
+  const activePage = props.state.editor.getActivePage()
   if (!pageId || activePage === null) {
     throw new Error('请先选择一个已加载的配置页面')
   }
@@ -120,10 +120,10 @@ function scheduleLiveRefresh() {
 watch(
   [
     () => props.state.activePageId.value,
-    () => props.state.getPageFileText('rule.json'),
-    () => props.state.getPageFileText('pagedata.json'),
-    () => props.state.getPageFileText('script.js'),
-    () => props.state.getPageFileText('style.css'),
+    () => props.state.editor.getPageFileText('rule.json'),
+    () => props.state.editor.getPageFileText('pagedata.json'),
+    () => props.state.editor.getPageFileText('script.js'),
+    () => props.state.editor.getPageFileText('style.css'),
   ],
   scheduleLiveRefresh,
 )

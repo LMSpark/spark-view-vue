@@ -1,5 +1,7 @@
 # SPARK AppWorks 项目深度解析
 
+> **注意**：下文部分类名（如 `ProjectNodeCollection`、`ProjectPlanningModel`）为历史表述。当前权威模型见 [`architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md`](architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md) 与 `packages/spark-project-model/src/MODEL-HIERARCHY.md`。
+>
 > 更新基准：2026-05-30。当前口径：项目先于页面，模型先于文件，PageNode 先于 Vue。
 
 ## 定位

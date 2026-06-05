@@ -1,6 +1,6 @@
 # 快速开始
 
-> 先跑起来，再理解模型：ProjectModel -> ProjectNodeCollection -> PageNode -> Renderer。
+> 先跑起来，再理解模型：ProjectModel -> ConfigPageNode -> Renderer。
 
 ## 安装与验证
 
@@ -58,16 +58,17 @@ DevSystem 只能通过 `ProjectEditor` 进入项目节点、页面文件、版�
 
 ```text
 ProjectModel
-  ├── nodes: ProjectNodeCollection(flat)
-  └── planning: ProjectPlanningModel
+  ├── design: ProjectDesign
+  │   ├── navigation: NavigationDesign
+  │   └── pages → ConfigPageNode*
+  └── runtime: ProjectRuntime
 
-ProjectNodeModel
-  ├── module
-  ├── page/sub-page -> ProjectConfigPageNodeModel
-  ├── system-page   -> ProjectVuePageNodeModel
-  ├── system-action
-  ├── link
-  └── ref
+ProjectNode 子类
+  ├── ModuleNode / SystemPageNode / SystemActionNode
+  ├── LinkNode / RefNode
+  └── ConfigPageNode (page / sub-page)
 ```
+
+策划与 `pageFeatures` 经 `ProjectEditor.readSnapshot()` 读取，不再使用独立的 `ProjectPlanningModel`。
 
 `description` 是节点功能描述，也是用户需求。父级和本级描述共同约束当前页面生成。

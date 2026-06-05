@@ -1,9 +1,8 @@
 /**
- * App service adapter for DevSystem pageDesign AI.
+ * DevSystem 面板内 pageDesign AI — 使用 APP 门面单例（`getAppProjectEditor()`）。
  *
- * Keeps the UI layer away from AI platform tokens and page-config AI registration:
- * UI passes a generic capability consumer and ProjectEditor, this adapter wires them
- * to the pageDesign business registration and live ProjectEditor model.
+ * `command.editor` 必须与手动编辑同一 `editor.project`，保存/撤销语义一致。
+ * 隔离式 SSE Host Run 见 `page-design-host-run-provider.ts`（headless 临时门面）。
  */
 import { createAiRunAdapter, noopTraceSink } from '@spark-appworks/spark-app'
 import type {
@@ -23,6 +22,7 @@ import {
   type PageDesignRunInput,
   type PageDesignRunMode,
 } from '@/services/page-design-business'
+import { resolvePageDesignEditor } from '@/services/page-design-editor-provider'
 
 export type PageDesignAiRunOptions = {
   description: string
@@ -76,6 +76,13 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     getPageDesignEditor: (context) => {
       if (context.moduleInstanceId !== pageId) {
         throw new Error(`pageDesign editor mismatch: expected "${pageId}", got "${context.moduleInstanceId}".`)
+      }
+      const singleton = resolvePageDesignEditor(
+        { moduleInstanceId: pageId, useAppSingleton: true },
+        new Map(),
+      )
+      if (singleton !== command.editor) {
+        throw new Error('pageDesign DevSystem session must use the same ProjectEditor instance as command.editor.')
       }
       return command.editor
     },

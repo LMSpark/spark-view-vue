@@ -151,7 +151,8 @@
 import { reactive, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { isPlatformAdminUser, login, register, registerTenant } from '@/services/auth'
-import { refreshRoutes, getNavHomePath } from '@spark-appworks/spark-app'
+import { getNavHomePath } from '@spark-appworks/spark-app'
+import { reloadAndSyncNavigation } from '@/services/navigation-sync'
 import { buildTenantPath } from '@/services/tenant-scope'
 import type { FormInstance, FormRules } from 'element-plus'
 import { OfficeBuilding, User, Lock, Edit, Message, Postcard } from '@element-plus/icons-vue'
@@ -195,7 +196,7 @@ async function handleLogin() {
   errorMsg.value = ''
   try {
     const user = await login(loginForm)
-    await refreshRoutes()
+    await reloadAndSyncNavigation()
     await router.replace(getUserHomePath(user))
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '登录失败'
@@ -231,7 +232,7 @@ async function handleRegister() {
   errorMsg.value = ''
   try {
     const user = await register(regForm)
-    await refreshRoutes()
+    await reloadAndSyncNavigation()
     await router.replace(getUserHomePath(user))
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '注册失败'
@@ -261,7 +262,7 @@ async function handleRegisterTenant() {
   errorMsg.value = ''
   try {
     const user = await registerTenant(tenantForm)
-    await refreshRoutes()
+    await reloadAndSyncNavigation()
     await router.replace(getUserHomePath(user))
   } catch (e) {
     errorMsg.value = e instanceof Error ? e.message : '租户注册失败'

@@ -45,14 +45,18 @@ function createPreviewState() {
     'style.css': '',
   }
   const getActivePage = vi.fn(() => ({ pageId: activePageId.value, isLoaded: true }))
+  const getPageFileText = vi.fn((name: PageNodeFileName) => {
+    void pageFilesRevision.value
+    return files[name]
+  })
+  const editor = {
+    getActivePage,
+    getPageFileText,
+  }
   const state: DevState = Object.assign(Object.create(null), {
     activePageId,
     pageFilesRevision,
-    getActivePage,
-    getPageFileText: vi.fn((name: PageNodeFileName) => {
-      void pageFilesRevision.value
-      return files[name]
-    }),
+    editor,
   })
 
   return {

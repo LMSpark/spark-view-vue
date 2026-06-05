@@ -11,8 +11,7 @@
       "@spark-appworks/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-appworks/spark-utils/internal": ["../spark-utils/dist/internal/index.d.ts"],
       "@spark-appworks/spark-project-model": ["./src/index.ts"],
-      "@spark-appworks/spark-project-model/project": ["./src/project.ts"],
-      "@spark-appworks/spark-component/runtime": ["../spark-component/dist/runtime/index.d.ts"]
+      "@spark-appworks/spark-project-model/project": ["./src/project.ts"]
     }
   },
   "include": ["src"],

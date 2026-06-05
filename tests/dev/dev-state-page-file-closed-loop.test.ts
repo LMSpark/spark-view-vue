@@ -1,6 +1,15 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { nextTick, watchEffect } from 'vue'
 import { useDevState } from '@/views/app/dev-system/useDevState'
+import {
+  createDevStateWithConfigPages,
+  DEMO_PAGE_FIXTURE,
+  ensureDevStateActivePageLoaded,
+  isolateAppProjectEditorForTest,
+  isDevStatePageDocumentDirty,
+} from './dev-state-test-fixture'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
+import { refreshRoutes } from '@spark-appworks/spark-app'
 import { http } from '@/services/http'
 
 const httpFns = vi.hoisted(() => ({
@@ -16,7 +25,16 @@ const httpFns = vi.hoisted(() => ({
   },
 }))
 
+const navTreeState = vi.hoisted(() => ({
+  tree: null as ProjectModelData | null,
+}))
+
 vi.mock('@spark-appworks/spark-app', () => ({
+  getNavTree: vi.fn(() => navTreeState.tree),
+  refreshRoutes: vi.fn(async () => {
+    if (navTreeState.tree) return navTreeState.tree
+    throw new Error('refreshRoutes: no nav tree')
+  }),
   createAiRunAdapter: vi.fn(() => ({
     isRunning: vi.fn(() => false),
     abort: vi.fn(),
@@ -32,7 +50,6 @@ vi.mock('@spark-appworks/spark-app', () => ({
       return vi.fn()
     }),
   })),
-  refreshRoutes: vi.fn(),
 }))
 
 vi.mock('@/services/api-paths', () => ({
@@ -98,6 +115,7 @@ function isErrorLike(value: unknown): value is { status?: unknown; response?: { 
 
 describe('DevState 页面文件闭环', () => {
   beforeEach(() => {
+    isolateAppProjectEditorForTest()
     vi.clearAllMocks()
     httpFns.requestFull.mockImplementation(requestFullFromGet)
     httpFns.clearCache.mockImplementation(() => undefined)
@@ -106,40 +124,38 @@ describe('DevState 页面文件闭环', () => {
   })
 
   it('缺失 script/style 时 fail-fast，不静默写入空文档', async () => {
-    const state = useDevState()
-    state.selectPage('demo')
+    const state = createDevStateWithConfigPages(DEMO_PAGE_FIXTURE, 'demo')
     httpMock.get.mockImplementation(async (url: string) => {
       if (url.endsWith('/script.js') || url.endsWith('/style.css')) throw notFound()
       return pageFileResponse(url)
     })
 
-    await expect(state.ensureActivePageFilesLoaded({ forceReload: true })).rejects.toThrow('not found')
+    await expect(ensureDevStateActivePageLoaded(state, { forceReload: true })).rejects.toThrow('not found')
 
-    expect(state.getActivePage()?.isLoaded).toBe(false)
+    expect(state.editor.getActivePage()?.isLoaded).toBe(false)
   })
 
   it('缺失 rule/pagedata 时 fail-fast，不创建占位模型', async () => {
-    const state = useDevState()
-    state.selectPage('demo')
+    const state = createDevStateWithConfigPages(DEMO_PAGE_FIXTURE, 'demo')
     httpMock.get.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) throw notFound()
       if (url.endsWith('/pagedata.json')) throw notFound()
       return pageFileResponse(url)
     })
 
-    await expect(state.ensureActivePageFilesLoaded()).rejects.toThrow('not found')
+    await expect(ensureDevStateActivePageLoaded(state)).rejects.toThrow('not found')
 
-    expect(state.getActivePage()?.isLoaded).toBe(false)
+    expect(state.editor.getActivePage()?.isLoaded).toBe(false)
   })
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {
-    const state = useDevState()
-    state.selectPage('demo')
+    const state = createDevStateWithConfigPages(DEMO_PAGE_FIXTURE, 'demo')
     httpMock.get.mockResolvedValueOnce([
       { version: 1, createdAt: 1710000000000, isCurrent: true, modifiedBy: 'tester' },
     ])
 
-    const versions = await state.listRemotePageVersions('script.js')
+    state.editor.setActivePage(state.activePageId.value)
+    const versions = await state.editor.listRemotePageVersions('script.js')
 
     expect(versions).toEqual([
       {
@@ -152,17 +168,15 @@ describe('DevState 页面文件闭环', () => {
   })
 
   it('restore 后立即强制重读并回填文档模型', async () => {
-    const state = useDevState()
-    state.selectPage('demo')
-    state.getActivePage()!.script.setText('console.log("old")')
+    const state = createDevStateWithConfigPages(DEMO_PAGE_FIXTURE, 'demo')
+    state.editor.setPageFileText('script.js', 'console.log("old")')
     httpMock.post.mockResolvedValueOnce({ ok: true })
     httpMock.get.mockImplementation(async (url: string) => pageFileResponse(url))
 
-    const restored = await state.restoreRemotePageVersion(1, 'script.js')
-
-    expect(restored).toBe(true)
-    expect(state.getPageFileText('script.js')).toBe('console.log("restored")')
-    expect(state.isDocumentDirty('script.js')).toBe(false)
+    state.editor.setActivePage('demo')
+    await state.editor.restoreRemotePageVersion(1, 'script.js')
+    expect(state.editor.getPageFileText('script.js')).toBe('console.log("restored")')
+    expect(isDevStatePageDocumentDirty(state, 'script.js')).toBe(false)
     expect(state.pageFilesRevision.value).toBeGreaterThan(0)
   })
 
@@ -225,6 +239,14 @@ describe('DevState 页面文件闭环', () => {
         title: 'Alpha',
         nodeId: 'alpha-node',
         description: 'Alpha 页面需求',
+        designSurface: 'config-files',
+      }),
+      expect.objectContaining({
+        pageId: 'system',
+        path: '/system',
+        title: 'System',
+        nodeId: 'sys-node',
+        designSurface: 'vue-component',
       }),
     ])
     expect(httpMock.get).not.toHaveBeenCalledWith('/api/pages-config/__list')
@@ -232,13 +254,14 @@ describe('DevState 页面文件闭环', () => {
 
   it('header 保存导航属性时只提交选中节点 patch，不整树保存', async () => {
     const state = useDevState()
-    const root = {
+    const root: ProjectModelData = {
       title: 'root',
       childPlacement: 'header',
       children: [
         { id: 'alpha-node', title: 'Alpha', nodeKind: 'page', path: '/alpha' },
       ],
     }
+    navTreeState.tree = root
     httpMock.get.mockImplementation(async (url: string) => {
       if (url === '/api/navigation') return root
       return pageFileResponse(url)
@@ -247,9 +270,26 @@ describe('DevState 页面文件闭环', () => {
       node: { id: 'alpha-node', title: 'Alpha updated', nodeKind: 'page', path: '/alpha' },
     })
 
+    vi.mocked(refreshRoutes).mockImplementation(async (): Promise<ProjectModelData> => {
+      const updated: ProjectModelData = {
+        ...root,
+        children: [
+          { id: 'alpha-node', title: 'Alpha updated', nodeKind: 'page', path: '/alpha' },
+        ],
+      }
+      navTreeState.tree = updated
+      return updated
+    })
+
     await state.loadNavConfig()
     state.navEditDto.title = 'Alpha updated'
+    const refreshCallsBeforeSave = vi.mocked(refreshRoutes).mock.calls.length
+
     await state.saveAll()
+
+    expect(vi.mocked(refreshRoutes).mock.calls.length - refreshCallsBeforeSave).toBe(1)
+    expect(navTreeState.tree?.children?.[0]?.title).toBe('Alpha updated')
+    expect(state.editor.readSnapshot().treeData[0]?.title).toBe('Alpha updated')
 
     expect(httpMock.put).toHaveBeenCalledWith(
       '/api/navigation/nodes/alpha-node',

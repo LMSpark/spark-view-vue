@@ -2,65 +2,65 @@ import { computed, watch, type Ref } from 'vue'
 import type { DevState } from '../useDevState'
 import type { PageNodeFileName } from '@spark-appworks/spark-project-model'
 
-/**
- * 文件编辑器绑定器 — 将任意 PageNodeFileName 接入 ProjectEditor adapter。
- *
- * 四文件文本页签只做只读投影展示；结构化编辑器（JsonTreeEditor / DevDataSetDesigner）
- * 直接操作 page.rule / page.dataSet 子模型。
- */
+/** 页面内容页签绑定 — 只读投影 + 加载/保存，直扑 ProjectEditor。 */
 export function useDevFileEditor(state: DevState, activeFile: Readonly<Ref<PageNodeFileName>>) {
+  const model = state.editor
+
+  function alignActivePage(): boolean {
+    const pageId = state.activePageId.value.trim()
+    if (!pageId) return false
+    if (model.getActivePage()?.pageId !== pageId) {
+      model.setActivePage(pageId)
+    }
+    return true
+  }
+
   const isReady = computed(() => {
     void state.pageFilesRevision.value
-    return state.getActivePage()?.isLoaded === true
+    return model.isActivePageLoaded()
   })
   const isDirty = computed(() => isFileDirty(activeFile.value))
   const canUndo = computed(() => {
     void state.pageFilesRevision.value
-    return canUndoFile(activeFile.value)
+    return model.canUndoPageFile(activeFile.value)
   })
   const canRedo = computed(() => {
     void state.pageFilesRevision.value
-    return canRedoFile(activeFile.value)
+    return model.canRedoPageFile(activeFile.value)
   })
   const text = computed(() => {
     void state.pageFilesRevision.value
-    return state.getPageFileText(activeFile.value)
+    return model.getPageFileText(activeFile.value)
   })
 
   async function ensureLoaded(options?: { forceReload?: boolean }) {
     if (!state.activePageId.value) return
-    if (options?.forceReload !== true && state.getActivePage()?.isLoaded === true) return
-    await state.ensureActivePageFilesLoaded(options)
+    if (options?.forceReload !== true && model.isActivePageLoaded()) return
+    if (!alignActivePage()) return
+    const loadOptions: { forceReload?: boolean } = {}
+    if (options?.forceReload === true) loadOptions.forceReload = true
+    await model.ensureActivePageFilesLoaded(loadOptions)
   }
 
   function isFileDirty(name: PageNodeFileName): boolean {
-    return state.isDocumentDirty(name)
-  }
-
-  function canUndoFile(name: PageNodeFileName): boolean {
-    const page = state.getActivePage()
-    if (!page) return false
-    switch (name) {
-      case 'rule.json': return page.rule.canUndo
-      case 'pagedata.json': return page.dataSet.canUndo
-      case 'script.js': return page.script.canUndo
-      case 'style.css': return page.style.canUndo
-    }
-  }
-
-  function canRedoFile(name: PageNodeFileName): boolean {
-    const page = state.getActivePage()
-    if (!page) return false
-    switch (name) {
-      case 'rule.json': return page.rule.canRedo
-      case 'pagedata.json': return page.dataSet.canRedo
-      case 'script.js': return page.script.canRedo
-      case 'style.css': return page.style.canRedo
-    }
+    void state.pageFilesRevision.value
+    return model.readSnapshot().dirtyFiles.has(name)
   }
 
   async function save() {
-    await state.savePageFile(activeFile.value)
+    const pageId = state.activePageId.value
+    if (!pageId || !alignActivePage()) return
+
+    state.pageIoBusy.value = true
+    try {
+      await model.savePageFile(activeFile.value)
+      state.addStatus(`页面 ${pageId} 已保存 ${activeFile.value}`, 'success')
+    } catch (e) {
+      state.addStatus(`保存 ${activeFile.value} 失败: ${String(e)}`, 'error')
+      throw e
+    } finally {
+      state.pageIoBusy.value = false
+    }
   }
 
   async function refresh() {

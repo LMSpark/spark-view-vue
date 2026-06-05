@@ -16,8 +16,8 @@
             <el-button
               type="primary"
               size="small"
-              :disabled="!editor.isDirty.value"
-              :loading="state.fileSaving.value"
+              :disabled="!fileEditor.isDirty.value"
+              :loading="state.pageIoBusy.value"
               @click="saveFile"
             >
               <NavIcon name="DocumentChecked" :size="14" /> 保存
@@ -51,14 +51,14 @@
       <el-tabs v-if="showTabs" v-model="localActiveFile" type="card" class="file-tab-bar">
         <el-tab-pane v-for="f in props.state.pageFileNames" :key="f" :name="f">
           <template #label>
-            <span class="file-tab-label" :class="{ 'file-dirty': editor.isFileDirty(f) }">
+            <span class="file-tab-label" :class="{ 'file-dirty': fileEditor.isFileDirty(f) }">
               <NavIcon :name="fileIcon(f)" :size="13" /> {{ f }}
             </span>
           </template>
         </el-tab-pane>
       </el-tabs>
 
-      <div class="editor-body" v-loading="!editor.isReady.value">
+      <div class="editor-body" v-loading="!fileEditor.isReady.value">
         <div v-if="resolvedActiveFile === 'pagedata.json'" class="editor-area" :class="{ 'editor-area--dataset': pageDataViewMode === 'visual' }">
           <DevDataSetDesigner
             v-if="pageDataViewMode === 'visual'"
@@ -67,7 +67,7 @@
           />
           <el-input
             v-else
-            :model-value="editor.text.value"
+            :model-value="fileEditor.text.value"
             type="textarea"
             resize="none"
             readonly
@@ -79,16 +79,16 @@
           <JsonTreeEditor
             v-if="resolvedActiveFile === 'rule.json'"
             type="json-tree-editor"
-            :model-value="editor.text.value"
+            :model-value="fileEditor.text.value"
             :policy="rulePolicy"
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="(val: unknown) => state.setRuleText(String(val))"
+            @update:model-value="(val: unknown) => state.editor.setPageFileText('rule.json', String(val))"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
-            :model-value="editor.text.value"
+            :model-value="fileEditor.text.value"
             :language="resolveCodeLanguage(resolvedActiveFile)"
             readonly
             class="code-input code-input--code"
@@ -96,7 +96,7 @@
           />
           <el-input
             v-else
-            :model-value="editor.text.value"
+            :model-value="fileEditor.text.value"
             type="textarea"
             :autosize="{ minRows: 30, maxRows: 60 }"
             readonly
@@ -136,7 +136,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-appworks/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@spark-appworks/spark-project-model/project'
+import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@/services/project-model-artifacts'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import type { DevState } from './useDevState'
@@ -170,7 +170,17 @@ const pageDataViewMode = ref<'visual' | 'text'>('visual')
 const pageDataViewModePinned = ref(false)
 const resolvedActiveFile = computed<PageNodeFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs)
-const editor = useDevFileEditor(props.state, resolvedActiveFile)
+const fileEditor = useDevFileEditor(props.state, resolvedActiveFile)
+const model = computed(() => props.state.editor)
+
+function alignActivePage(): boolean {
+  const pageId = props.state.activePageId.value.trim()
+  if (!pageId) return false
+  if (model.value.getActivePage()?.pageId !== pageId) {
+    model.value.setActivePage(pageId)
+  }
+  return true
+}
 
 watch(() => props.activeFile, (nextFile) => {
   if (nextFile && nextFile !== localActiveFile.value) {
@@ -231,17 +241,21 @@ function setPageDataViewMode(mode: 'visual' | 'text') {
 }
 
 function saveFile() {
-  void editor.save()
+  void fileEditor.save()
 }
 
 function refreshFile() {
-  void editor.refresh()
+  void fileEditor.refresh()
 }
 
 async function loadVersions() {
+  if (!alignActivePage()) return
   remoteVersionLoading.value = true
   try {
-    remotePageVersions.value = await props.state.listRemotePageVersions(resolvedActiveFile.value)
+    remotePageVersions.value = await model.value.listRemotePageVersions(resolvedActiveFile.value)
+  } catch (e) {
+    props.state.addStatus(`读取后端版本失败: ${String(e)}`, 'error')
+    remotePageVersions.value = []
   } finally {
     remoteVersionLoading.value = false
   }
@@ -255,23 +269,30 @@ function toggleVersionPanel() {
 }
 
 async function restoreVersion(version: number) {
+  const pageId = props.state.activePageId.value
+  if (!pageId || !alignActivePage()) return
   restoringVersion.value = version
   try {
-    if (await props.state.restoreRemotePageVersion(version, resolvedActiveFile.value)) {
-      await loadVersions()
-    }
+    await model.value.restoreRemotePageVersion(version, resolvedActiveFile.value)
+    props.state.addStatus(`页面 ${pageId} 已将 ${resolvedActiveFile.value} 版本 v${version} 恢复为当前版`, 'success')
+    await loadVersions()
+  } catch (e) {
+    props.state.addStatus(`恢复版本失败: ${String(e)}`, 'error')
   } finally {
     restoringVersion.value = null
   }
 }
 
 async function createVersion() {
+  if (!alignActivePage()) return
   creatingVersion.value = true
   try {
-    await editor.save()
-    if (await props.state.createRemotePageVersion(resolvedActiveFile.value)) {
-      await loadVersions()
-    }
+    await fileEditor.save()
+    await model.value.createRemotePageVersion(resolvedActiveFile.value)
+    props.state.addStatus(`${resolvedActiveFile.value} 已创建新版本快照`, 'success')
+    await loadVersions()
+  } catch (e) {
+    props.state.addStatus(`创建版本快照失败: ${String(e)}`, 'error')
   } finally {
     creatingVersion.value = false
   }
@@ -287,8 +308,13 @@ async function confirmDeleteVersion(row: PageNodeFileVersionSummary) {
   } catch {
     return
   }
-  if (await props.state.deleteRemotePageVersion(row.version, resolvedActiveFile.value)) {
+  if (!alignActivePage()) return
+  try {
+    await model.value.deleteRemotePageVersion(row.version, resolvedActiveFile.value)
+    props.state.addStatus(`${resolvedActiveFile.value} 版本 v${row.version} 已删除`, 'success')
     await loadVersions()
+  } catch (e) {
+    props.state.addStatus(`删除版本失败: ${String(e)}`, 'error')
   }
 }
 

@@ -1,11 +1,8 @@
 /**
- * useDevSystem — DevSystem 单入口编排器。
+ * useDevSystem — 当前项目导航设计器的单入口编排器。
  *
- * 设计意图：
- *  - 消费层（DevSystem.vue）只需 `const dev = useDevSystem()` 一次 use。
- *  - 内部统一编排：路由能力、dev 全局状态、工作区 Tab 状态。
- *  - UI 相关 watch（选中节点/页面切换联动 workTab）内聚在这里，
- *    消费层不再持有 workTab / previewRefreshToken 等中间 ref。
+ * DevSystem 经 APP 门面实例（ProjectEditor）编辑 editor.project（领域实例）；
+ * 左侧导航树，右侧节点属性与（若为配置页）页面内容。
  */
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
@@ -31,7 +28,7 @@ export function useDevSystem() {
   const stopPageConfigChange = onPageConfigChange((event) => {
     if (event.pageId !== state.activePageId.value) return
     const file = event.file
-    state.notifyPageFileChanged(
+    state.editor.notifyPageFileChanged(
       event.pageId,
       isPageFileName(file) ? file : '__bulk',
     )
@@ -100,7 +97,8 @@ export function useDevSystem() {
   }
 
   function isWorkspaceTabDirty(name: PageNodeFileName): boolean {
-    return state.isDocumentDirty(name)
+    void state.pageFilesRevision.value
+    return state.editor.readSnapshot().dirtyFiles.has(name)
   }
 
   return {

@@ -8,8 +8,8 @@ import { generateModuleAbilityMetadata } from '../module-metadata-generator'
 const root = resolve(import.meta.dirname, '../../../..')
 
 const pageDesignSources = [
-  'packages/spark-project-model/src/project/model.ts',
-  'packages/spark-project-model/src/page/config-page.ts',
+  'packages/spark-project-model/src/model/project/model.ts',
+  'packages/spark-project-model/src/model/page/config-page.ts',
   'packages/spark-data/src/dataset-crud-tool.ts',
   'packages/spark-data/src/node-tree/spark-node-tree.ts',
 ] as const

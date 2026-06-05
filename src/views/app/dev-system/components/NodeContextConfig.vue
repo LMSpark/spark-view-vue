@@ -12,9 +12,9 @@
     <template v-if="state.navEditDto.hasContext">
       <el-form-item label="选项列表" class="fi fi--wide">
         <div class="context-items">
-          <div v-for="(item, idx) in state.contextItems.value" :key="idx" class="context-item-row">
-            <el-input v-model="item.id" class="context-item-row__id" placeholder="ID" @change="state.syncContextToNav" />
-            <el-input v-model="item.title" class="context-item-row__title" placeholder="显示名称" @change="state.syncContextToNav" />
+          <div v-for="(item, idx) in state.contextEdit.items" :key="idx" class="context-item-row">
+            <el-input v-model="item.id" class="context-item-row__id" placeholder="ID" @change="state.commitContextEdit" />
+            <el-input v-model="item.title" class="context-item-row__title" placeholder="显示名称" @change="state.commitContextEdit" />
             <el-button size="small" link type="danger" @click="state.removeContextItem(idx)">
               <NavIcon name="CloseBold" :size="12" />
             </el-button>
@@ -25,13 +25,13 @@
         </div>
       </el-form-item>
       <el-form-item label="占位文字" class="fi fi--medium">
-        <el-input v-model="state.contextConfig.placeholder" placeholder="请选择" @change="state.syncContextToNav" />
+        <el-input v-model="state.contextEdit.placeholder" placeholder="请选择" />
       </el-form-item>
       <el-form-item label="默认值" class="fi fi--medium">
-        <el-input v-model="state.contextConfig.defaultValue" placeholder="默认选中的 ID" @change="state.syncContextToNav" />
+        <el-input v-model="state.contextEdit.defaultValue" placeholder="默认选中的 ID" />
       </el-form-item>
       <el-form-item label="URL 参数名" class="fi fi--medium">
-        <el-input v-model="state.contextConfig.paramName" placeholder="同步到 route.query 的键名" @change="state.syncContextToNav" />
+        <el-input v-model="state.contextEdit.paramName" placeholder="同步到 route.query 的键名" />
       </el-form-item>
     </template>
   </template>

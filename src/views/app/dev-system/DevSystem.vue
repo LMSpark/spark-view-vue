@@ -5,6 +5,7 @@
       <div class="dev-header__left">
         <span class="dev-header__logo"><NavIcon name="Lightning" :size="20" /></span>
         <span class="dev-header__title">SPARK 开发系统</span>
+        <el-tag size="small" type="info" effect="plain">项目 {{ state.projectId }}</el-tag>
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
@@ -33,7 +34,7 @@
           v-if="canSaveFromHeader"
           size="small"
           type="success"
-          :loading="state.navSaving.value || state.fileSaving.value"
+          :loading="state.navSaving.value || state.pageIoBusy.value"
           @click="saveAll"
         >
           <NavIcon name="FolderChecked" :size="14" /> {{ headerSaveLabel }}
