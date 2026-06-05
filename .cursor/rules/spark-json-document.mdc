@@ -1,0 +1,42 @@
+---
+description: Rules for packages/spark-json-document changes.
+globs: "packages/spark-json-document/**/*"
+alwaysApply: false
+---
+
+# spark-json-document Rules
+
+`@spark-appworks/spark-json-document` is a generic JSON document editing engine with JSON Schema types, construction, validation, and UUID-stable tree mutations.
+
+## Public Surface
+
+- `.` exports core, schema, and tree symbols.
+- `./schema` exports JSON Schema types, construction helpers, validator, resolution, and metadata helpers.
+- `./tree` exports tree editing types, build, mutation, flatten, and restore helpers.
+
+## Directory Structure
+
+```text
+src/
+  index.ts
+  core/
+  schema/
+  tree/
+```
+
+## Key Concepts
+
+- Every tree node has a UUID-stable identity.
+- The internal tree model is `TreeModel` backed by `Map<id, TreeNode>`.
+- Mutations are immutable and return new mutation results.
+- Domain-specific behavior is injected through policy objects.
+- JSON Schema target is Draft 2020-12.
+
+## Verification
+
+After implementation changes, run:
+
+```bash
+pnpm --dir packages/spark-json-document run build
+pnpm --dir packages/spark-json-document run typecheck
+```

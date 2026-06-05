@@ -1,0 +1,68 @@
+---
+description: Rules for packages/spark-project-model changes.
+globs: "packages/spark-project-model/**/*"
+alwaysApply: false
+---
+
+# spark-project-model Rules
+
+These rules apply to `packages/spark-project-model/`.
+
+## Model Direction
+
+`ProjectModel` is the root model for software design plus runtime. Treat `ProjectModel` as the model subject; `ProjectEditor` is the shared editing collaboration layer for DevSystem and external automation.
+
+Target mental model:
+
+```text
+ProjectModel
+  design
+  runtime
+  editor
+```
+
+Current source layout remains:
+
+```text
+project/     ProjectModel
+navigation/  ProjectNode, navigation DTOs, tree/flat transforms
+page/        ConfigPageNode, PageNodeFactory, four-file content model
+editor/      ProjectEditor facade and editor artifacts
+infra/       file/navigation/reference/content loading
+```
+
+`src/MODEL-HIERARCHY.md` is the target model contract. `docs/unified-model-refactor-plan.md` is a future migration plan, not the current source map. Unless a task explicitly asks for directory migration, do not introduce planned paths such as `entity/`, `service/`, or `contract/` into imports, tests, or tooling.
+
+## Boundaries
+
+- Persistent source of truth remains DB navigation plus page files.
+- `ProjectModel` may hold full headless runtime state, but runtime state must be traceable back to design source.
+- `ProjectModel` must not directly hold Vue component instances, DOM nodes, Vue Router instances, Element Plus APIs, or browser globals as state.
+- `ProjectEditor` serves human DevSystem editing and AI page-design with the same edit/CRUD/save/diagnostics flow.
+- `ProjectEditor` must not become the model subject.
+- Missing APIs, invalid config, unloaded pages, and inconsistent state must fail fast.
+
+## Public Surface
+
+Cross-package consumers may use only:
+
+```text
+@spark-appworks/spark-project-model
+@spark-appworks/spark-project-model/project
+```
+
+Package-internal tests may target internal functions, but should import real current paths such as `../src/navigation/edit`.
+
+## Verification
+
+After implementation changes, run:
+
+```bash
+pnpm --dir packages/spark-project-model run typecheck
+```
+
+When touching editor, navigation, four-file models, or AI metadata, also run:
+
+```bash
+pnpm --dir packages/spark-project-model run test:run
+```

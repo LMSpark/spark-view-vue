@@ -1,0 +1,22 @@
+# Keep Cursor codebase search focused on source and hand-written project docs.
+node_modules/
+dist/
+target/
+**/target/
+.codex-tmp/
+tmp/
+artifacts/
+
+*.log
+*.cache
+*.tsbuildinfo
+.eslintcache
+
+temp-*.json
+temp-*.txt
+temp-*.cjs
+temp-*.mts
+
+packages/spark-ai/src/catalog/component-catalog.json
+spark-ai-server/data/component-metadata.json
+packages/vxe-table/helper/vetur/*.json

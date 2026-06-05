@@ -3,5 +3,12 @@
         {
             "path": "."
         }
-    ]
+    ],
+    "settings": {
+        "typescript.tsdk": "node_modules/typescript/lib",
+        "eslint.workingDirectories": [
+            { "mode": "auto" }
+        ],
+        "chatgpt.openOnStartup": false
+    }
 }

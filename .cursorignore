@@ -1,0 +1,21 @@
+# Cursor should not read generated artifacts, dependency trees, local secrets, or transient logs.
+node_modules/
+dist/
+target/
+**/target/
+.codex-tmp/
+tmp/
+artifacts/
+
+*.log
+*.tsbuildinfo
+.eslintcache
+
+.env
+.env.*
+!.env.example
+!.env.local.example
+!.env.java.example
+
+packages/spark-ai/src/catalog/component-catalog.json
+spark-ai-server/data/component-metadata.json

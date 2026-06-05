@@ -4,7 +4,7 @@
 		{
 			"label": "Claude Code (DeepSeek v4 Pro)",
 			"type": "shell",
-			"command": ".\\claude.cmd --ide",
+			"command": "claude.cmd --ide",
 			"options": {
 				"cwd": "${workspaceFolder}"
 			},
@@ -27,54 +27,54 @@
 		{
 			"label": "vitest-run",
 			"type": "shell",
-			"command": "npx vitest run --reporter verbose",
+			"command": "pnpm exec vitest run --reporter verbose",
 			"isBackground": false
 		},
 		{
 			"label": "vitest-full-run",
 			"type": "shell",
-			"command": "npx vitest run --reporter verbose",
+			"command": "pnpm exec vitest run --reporter verbose",
 			"isBackground": false
 		},
 		{
 			"label": "vitest-full",
 			"type": "shell",
-			"command": "npx vitest run --reporter verbose"
+			"command": "pnpm exec vitest run --reporter verbose"
 		},
 		{
 			"label": "vitest-check",
 			"type": "shell",
-			"command": "npx vitest run 2>&1 | Select-String -Pattern 'Test Files|Tests ' | ForEach-Object { $_.Line }"
+			"command": "pnpm exec vitest run 2>&1 | Select-String -Pattern 'Test Files|Tests ' | ForEach-Object { $_.Line }"
 		},
 		{
 			"label": "vitest-summary",
 			"type": "shell",
-			"command": "npx vitest run 2>&1 | Select-String -Pattern 'Test Files|Tests |Duration ' | ForEach-Object { $_.Line }"
+			"command": "pnpm exec vitest run 2>&1 | Select-String -Pattern 'Test Files|Tests |Duration ' | ForEach-Object { $_.Line }"
 		},
 		{
 			"label": "vitest-registry-test",
 			"type": "shell",
-			"command": "npx vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-Object -Last 80"
+			"command": "pnpm exec vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-Object -Last 80"
 		},
 		{
 			"label": "vitest-registry-grep",
 			"type": "shell",
-			"command": "npx vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-String -Pattern '✓|×|FAIL|Test Files|Tests ' | ForEach-Object { $_.Line }"
+			"command": "pnpm exec vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-String -Pattern '✓|×|FAIL|Test Files|Tests ' | ForEach-Object { $_.Line }"
 		},
 		{
 			"label": "vitest-reg-summary",
 			"type": "shell",
-			"command": "npx vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-String -Pattern 'FAIL|Test Files|Tests ' -SimpleMatch"
+			"command": "pnpm exec vitest run tests/design-session-registry.test.ts --reporter verbose 2>&1 | Select-String -Pattern 'FAIL|Test Files|Tests ' -SimpleMatch"
 		},
 		{
 			"label": "vitest-reg-full",
 			"type": "shell",
-			"command": "npx vitest run tests/design-session-registry.test.ts 2>&1 | Out-String"
+			"command": "pnpm exec vitest run tests/design-session-registry.test.ts 2>&1 | Out-String"
 		},
 		{
 			"label": "vitest-reg-v2",
 			"type": "shell",
-			"command": "npx vitest run tests/design-session-registry.test.ts 2>&1 | Out-String"
+			"command": "pnpm exec vitest run tests/design-session-registry.test.ts 2>&1 | Out-String"
 		}
 	]
 }

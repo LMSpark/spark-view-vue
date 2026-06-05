@@ -1,14 +1,26 @@
 {
   // 完全禁用 Markdown Lint（可选）
   "markdownlint.run": "onSave",
-  
+
   // 或者排除某些目录
   "files.exclude": {
     "**/.git": true,
     "**/.DS_Store": true,
     "**/node_modules": true
   },
-  
+
+  // 降低搜索噪声；Cursor 代码库索引另见 .cursorindexingignore。
+  "search.exclude": {
+    "**/node_modules": true,
+    "**/dist": true,
+    "**/target": true,
+    "**/.codex-tmp": true,
+    "**/tmp": true,
+    "**/*.log": true,
+    "packages/spark-ai/src/catalog/component-catalog.json": true,
+    "spark-ai-server/data/component-metadata.json": true
+  },
+
   // 排除 Markdown 文件的某些检查
   "markdownlint.config": {
     "default": true,
@@ -21,5 +33,10 @@
     "MD047": false,
     "MD060": false
   },
+  "typescript.tsdk": "node_modules/typescript/lib",
+  "eslint.workingDirectories": [
+    { "mode": "auto" }
+  ],
+  "chatgpt.openOnStartup": false,
   "claudeCode.useTerminal": true
 }
