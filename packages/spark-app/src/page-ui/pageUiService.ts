@@ -5,13 +5,16 @@ import type {
   PageDialogOptions,
   PageDialogResult,
   PageSelectedFile,
+  PageSelectorOption,
   PageSelectEntitiesOptions,
   PageServiceCapability,
   PageUploadedFile,
   PageUploadFilesOptions,
 } from '@spark-appworks/spark-component'
 
-type PageSelectedEntity = NonNullable<PageSelectEntitiesOptions['options']>[number]
+type PageSelectedEntity = PageSelectorOption
+type PageSelectorValue = PageSelectorOption['value']
+type PageSelectorCurrentValue = PageSelectorValue | PageSelectorValue[]
 
 type DialogState = {
   visible: boolean
@@ -93,7 +96,7 @@ function extractUploadedUrl(response: unknown): string | undefined {
   return undefined
 }
 
-function normalizeSelectorKeys(value: PageSelectEntitiesOptions['currentValue'] | undefined): string[] {
+function normalizeSelectorKeys(value: PageSelectorCurrentValue | undefined): string[] {
   if (Array.isArray(value)) return value.map(item => String(item))
   if (typeof value === 'string') {
     if (!value.trim()) return []
@@ -154,9 +157,10 @@ async function uploadFiles(options: PageUploadFilesOptions): Promise<PageUploade
   for (const file of selectedFiles) {
     const formData = new FormData()
     formData.append(options.fieldName ?? 'file', file)
-    const extraData = options.data ?? {}
-    for (const [key, value] of Object.entries(extraData)) {
-      formData.append(key, value)
+    if (options.data !== undefined) {
+      for (const [key, value] of Object.entries(options.data)) {
+        formData.append(key, value)
+      }
     }
 
     const client = createRequest()
@@ -245,7 +249,7 @@ export function closeAppDialog(): void {
 
 export function confirmAppSelector(): void {
   const selected = selectorState.selectedValues
-    .map((selectedValue) => selectorState.options.find(option => String(option.value) === selectedValue) ?? null)
+    .map((selectedValue) => selectorState.options.find((option: PageSelectedEntity) => String(option.value) === selectedValue) ?? null)
     .filter((option): option is PageSelectedEntity => option !== null)
   resolveSelector(selectorState.multiple ? selected : selected.slice(0, 1))
 }

@@ -308,12 +308,11 @@ export async function start(options: StartOptions): Promise<void> {
       const pageNodeFactory = createPageNodeFactory(pageNodeFactoryOptions)
 
       // 默认使用 SparkPageRenderer 组件（SPARK 原生页面渲染器）
-      let pageComponent = pageNode.pageComponent
+      const pageComponent: Component = pageNode.pageComponent ?? SparkPageRenderer
 
-      // 如果未提供 pageComponent，自动导入 SparkPageRenderer
-      if (!pageComponent) {
+      // 如果未提供 pageComponent，自动使用 SparkPageRenderer
+      if (pageNode.pageComponent === undefined) {
         logStartDebug('未提供 pageComponent，使用 SparkPageRenderer...')
-        pageComponent = SparkPageRenderer
         logStartDebug('✅ SparkPageRenderer 已就绪')
       }
 

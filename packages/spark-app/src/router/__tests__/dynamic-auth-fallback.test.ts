@@ -41,7 +41,6 @@ const DUMMY_PAGE_NODE_FACTORY = {
       toRenderConfig() {
         throw new Error('Dummy page model should not render in router tests')
       },
-      getHttpClient: () => undefined,
     }
   },
   clearPageCache() {},
