@@ -246,11 +246,6 @@ export class ProjectEditor {
   private readonly fileCache: PageNodeFileCache
   private readonly navigationLifecycle: PageNavigationLifecycle
   private readonly projectReferenceClient: ProjectReferenceClient | null
-
-  private _activePageId = ''
-  private selectedNodeId: string | null = null
-  private navigationDirty = false
-  private navigationDirtyScope: NavigationDirtyScope | null = null
   private workingEditDto: NavigationNodeEditInputDto | null = null
 
   private revisionCounter = 0
@@ -298,18 +293,20 @@ export class ProjectEditor {
 
   /** 获取当前活动配置页节点（不存在时返回 null）。 */
   getActivePage(): ConfigPageNode | null {
-    if (!this._activePageId) return null
-    return this.project.findConfigPageByPageId(this._activePageId)
+    const activePageId = this.project.editor.activePageId
+    if (!activePageId) return null
+    return this.project.findConfigPageByPageId(activePageId)
   }
 
   /** 获取当前已加载配置页面节点。 */
   requireActivePage(): ConfigPageNode {
-    if (!this._activePageId) {
+    const activePageId = this.project.editor.activePageId
+    if (!activePageId) {
       throw new Error('无活动页面，无法获取配置页面节点')
     }
-    const page = this.project.findConfigPageByPageId(this._activePageId)
+    const page = this.project.findConfigPageByPageId(activePageId)
     if (page === null) {
-      throw new Error(`配置页面节点 ${this._activePageId} 不存在或尚未打开`)
+      throw new Error(`配置页面节点 ${activePageId} 不存在或尚未打开`)
     }
     if (!page.isLoaded) {
       throw new Error(`配置页面节点 ${page.pageId} 尚未加载完成`)
@@ -354,17 +351,7 @@ export class ProjectEditor {
    * 传入 null 或空字符串清除选中。
    */
   selectNode(nodeId: string | null): void {
-    const normalized = nodeId?.trim()
-    if (!normalized) {
-      this.selectedNodeId = null
-      this.bumpRevision()
-      return
-    }
-    const found = this.project.findNodeById(normalized)?.toNodeData() ?? null
-    if (!found) {
-      throw new Error(`导航节点未找到: ${normalized}`)
-    }
-    this.selectedNodeId = normalized
+    this.project.setSelectedNodeId(nodeId)
     this.bumpRevision()
   }
 
@@ -389,10 +376,12 @@ export class ProjectEditor {
       throw new Error('pageId 不能为空，无法加载页面')
     }
 
-    this._activePageId = pageId
-    const mountedNode = this.project.findConfigPageByPageId(pageId)?.toNodeData() ?? null
-    this.selectedNodeId = mountedNode?.id ?? null
     const page = this.openPage(pageId)
+    this.project.setActivePageId(pageId)
+    const mountedNode = this.project.findConfigPageByPageId(pageId)?.toNodeData() ?? null
+    if (mountedNode) {
+      this.project.setSelectedNodeId(mountedNode.id)
+    }
     const pageNodeOptions: { forceReload?: boolean } = {}
     if (options?.forceReload === true) pageNodeOptions.forceReload = true
     await page.load(pageNodeOptions)
@@ -401,11 +390,7 @@ export class ProjectEditor {
 
   /** 清除当前活动页面。 */
   clearActivePage(): void {
-    const activePageId = this._activePageId
-    this._activePageId = ''
-    if (activePageId) {
-      this.closePage(activePageId)
-    }
+    this.project.clearActivePage()
     this.bumpRevision()
   }
 
@@ -419,11 +404,11 @@ export class ProjectEditor {
     if (options?.forceReset === true && this.getActivePage()?.pageId === normalizedPageId) {
       this.closePage(normalizedPageId)
     }
-    this._activePageId = normalizedPageId
     this.openPage(normalizedPageId)
+    this.project.setActivePageId(normalizedPageId)
     const mountedNode = this.project.findConfigPageByPageId(normalizedPageId)?.toNodeData() ?? null
     if (mountedNode) {
-      this.selectedNodeId = mountedNode.id
+      this.project.setSelectedNodeId(mountedNode.id)
     }
     this.bumpRevision()
   }
@@ -435,8 +420,9 @@ export class ProjectEditor {
     const pageId = this.getActivePage()?.pageId ?? ''
     const navigationRoot = this.project.navigationRoot
     const treeData = navigationRoot.children
-    const selectedNode = this.selectedNodeId
-      ? this.project.findNodeById(this.selectedNodeId)?.toNodeData() ?? null
+    const selectedNodeId = this.project.editor.selectedNodeId
+    const selectedNode = selectedNodeId
+      ? this.project.findNodeById(selectedNodeId)?.toNodeData() ?? null
       : null
 
     const navLocation = selectedNode
@@ -463,14 +449,14 @@ export class ProjectEditor {
     }
 
     const hasAnyFileDirty = dirtyFiles.size > 0
-    const navDirty = this.navigationDirty || this.workingEditDto !== null
+    const navDirty = this.project.editor.navigationDirty || this.workingEditDto !== null
 
     return {
       pageId,
       navigationRoot,
       treeData,
       selectedNode,
-      selectedNodeId: this.selectedNodeId,
+      selectedNodeId,
       navigationLocation: navLocation,
       navigationEditDto: navEditDto,
       pageFeatures,
@@ -506,7 +492,7 @@ export class ProjectEditor {
   applyNavigationEditDto(input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
     const node = this.requireSelectedNode('未选中导航节点，无法编辑导航属性')
     const result = applyNavigationNodeEditDtoToNode(node, input)
-    this.selectedNodeId = node.id
+    this.project.setSelectedNodeId(node.id)
     this.workingEditDto = createNavigationNodeEditDto(node)
     this.markNavigationDirty('node')
     this.bumpRevision()
@@ -524,7 +510,7 @@ export class ProjectEditor {
     }
     applyNavigationNodeEditDtoToNode(node, mergedInput)
     this.workingEditDto = createNavigationNodeEditDto(node)
-    this.selectedNodeId = node.id
+    this.project.setSelectedNodeId(node.id)
     this.markNavigationDirty('node')
     this.bumpRevision()
   }
@@ -621,10 +607,10 @@ export class ProjectEditor {
   /** 保存所有变更：dirty 文件 + 当前导航节点。前端编辑不做整树提交。 */
   async saveAll(): Promise<void> {
     await this.saveDirtyPageFiles()
-    const navDirty = this.navigationDirty || this.workingEditDto !== null
+    const navDirty = this.project.editor.navigationDirty || this.workingEditDto !== null
     if (!navDirty) return
 
-    if (this.navigationDirtyScope === 'root') {
+    if (this.project.editor.navigationDirtyScope === 'root') {
       throw new Error('前端导航编辑必须按节点提交，不能整树保存')
     } else {
       await this.saveSelectedNavigationNode()
@@ -671,9 +657,6 @@ export class ProjectEditor {
   removeNode(nodeId: string): ProjectNodeData | null {
     const normalized = nodeId.trim()
     const removed = this.project.removeNode(normalized)
-    if (this.selectedNodeId === normalized) {
-      this.selectedNodeId = null
-    }
     this.markNavigationDirty('root')
     this.bumpRevision()
     return removed
@@ -686,11 +669,6 @@ export class ProjectEditor {
       throw new Error('nodeId 不能为空')
     }
     const result = await this.navClient.deleteNode(normalized)
-    if (this.selectedNodeId === normalized) {
-      this.selectedNodeId = null
-    }
-    this.navigationDirty = false
-    this.navigationDirtyScope = null
     // 同步远端状态到内存
     const root = await this.navClient.loadRoot()
     this.project.replaceRoot(root)
@@ -748,15 +726,15 @@ export class ProjectEditor {
         },
       }
       applyNavigationNodeEditDtoToNode(selected, nextEditDto)
-      this.selectedNodeId = selected.id
+      this.project.setSelectedNodeId(selected.id)
       this.markNavigationDirty('node')
       await this.saveSelectedNavigationNode()
-      this._activePageId = pageId
+      this.project.setActivePageId(pageId)
       this.bumpRevision()
       return { page, node: this.getSelectedNode() ?? selected }
     } catch (error) {
       applyNavigationNodeEditDtoToNode(selected, previousEditDto)
-      this.selectedNodeId = selected.id
+      this.project.setSelectedNodeId(selected.id)
       this.markNavigationClean()
       await pageNode.deleteFiles()
       this.bumpRevision()
@@ -801,7 +779,7 @@ export class ProjectEditor {
     const normalized = pageId.trim()
     await this.project.openConfigPage(normalized).deleteFiles()
     if (this.getActivePage()?.pageId === normalized) {
-      this._activePageId = ''
+      this.project.clearActivePage()
     }
     this.closePage(normalized)
     this.bumpRevision()
@@ -816,9 +794,9 @@ export class ProjectEditor {
     }
     const result = { deletedNode, deletedFiles: shouldDeleteFiles }
     if (this.getActivePage()?.pageId === params.pageId) {
-      this._activePageId = ''
+      this.project.clearActivePage()
     }
-    await this.reloadNavigation({ selectedNodeId: this.selectedNodeId })
+    await this.reloadNavigation({ selectedNodeId: this.project.editor.selectedNodeId })
     return result
   }
 
@@ -894,8 +872,9 @@ export class ProjectEditor {
   // ── 内部方法 ─────────────────────────────────────────
 
   private getSelectedNode(): ProjectNodeData | null {
-    if (!this.selectedNodeId) return null
-    return this.project.findNodeById(this.selectedNodeId)?.toNodeData() ?? null
+    const selectedNodeId = this.project.editor.selectedNodeId
+    if (!selectedNodeId) return null
+    return this.project.findNodeById(selectedNodeId)?.toNodeData() ?? null
   }
 
   private requireSelectedNode(message: string): ProjectNodeData {
@@ -923,15 +902,11 @@ export class ProjectEditor {
   }
 
   private markNavigationDirty(scope: NavigationDirtyScope): void {
-    this.navigationDirty = true
-    this.navigationDirtyScope = scope === 'root'
-      ? 'root'
-      : (this.navigationDirtyScope ?? 'node')
+    this.project.markNavigationDirty(scope)
   }
 
   private markNavigationClean(): void {
-    this.navigationDirty = false
-    this.navigationDirtyScope = null
+    this.project.markNavigationClean()
     this.workingEditDto = null
   }
 
@@ -939,9 +914,11 @@ export class ProjectEditor {
     const root = await this.navClient.loadRoot()
     this.project.replaceRoot(root)
     const selectedNodeId = options?.selectedNodeId ?? null
-    this.selectedNodeId = selectedNodeId && this.project.findNodeById(selectedNodeId)
-      ? selectedNodeId
-      : null
+    if (selectedNodeId && this.project.findNodeById(selectedNodeId)) {
+      this.project.setSelectedNodeId(selectedNodeId)
+    } else {
+      this.project.setSelectedNodeId(null)
+    }
     this.markNavigationClean()
     this.refreshNavRefs()
     this.bumpRevision()

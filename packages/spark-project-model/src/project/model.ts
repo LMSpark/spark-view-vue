@@ -20,16 +20,25 @@ import {
 import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../page/file'
 import {
   appendProjectDescriptionContext,
-  buildProjectNavigationTree,
   buildNavRoot,
+  buildProjectPageSummaries,
   createChildPageNode,
   createRootModuleNode,
-  findNodeLocation,
   flattenProjectNavigationRoot,
   isConfigNodeKind,
   normalizeNavRoot,
   resolvePageNodePageId,
 } from '../navigation/helpers'
+import { NavigationIndex } from '../navigation/index'
+
+export type ProjectModelEditorNavigationDirtyScope = 'node' | 'root'
+
+export type ProjectModelEditorState = {
+  selectedNodeId: string | null
+  activePageId: string | null
+  navigationDirty: boolean
+  navigationDirtyScope: ProjectModelEditorNavigationDirtyScope | null
+}
 
 export type ProjectModelDto = {
   projectId: string
@@ -95,6 +104,14 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   private readonly contentLoaderFactory: () => PageFileContentLoader
   private readonly nodesById = new Map<string, TNode>()
   private readonly configPagesByPageId = new Map<string, ConfigPageNode>()
+  private readonly navigationIndex: NavigationIndex<TNode>
+  private navigationRootCache: ProjectModelData | null = null
+  private readonly editorState: ProjectModelEditorState = {
+    selectedNodeId: null,
+    activePageId: null,
+    navigationDirty: false,
+    navigationDirtyScope: null,
+  }
 
   constructor(options: ProjectModelOptions) {
     const projectId = options.projectId.trim()
@@ -110,6 +127,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.fileApi = options.fileApi
     this.fileCache = options.fileCache
     this.contentLoaderFactory = options.contentLoaderFactory
+    this.navigationIndex = new NavigationIndex(this.nodesById)
   }
 
   /**
@@ -130,6 +148,14 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   get order(): number { return this.projectOrder }
   get createdAt(): string | undefined { return this.projectCreatedAt }
   get updatedAt(): string | undefined { return this.projectUpdatedAt }
+  /**
+   * 编辑会话态（editor 子域）。
+   *
+   * 仅作为只读快照暴露；修改请通过显式方法，避免出现 selected/active/dirty 不一致。
+   */
+  get editor(): Readonly<ProjectModelEditorState> {
+    return this.editorState
+  }
 
   get projectInfo(): ProjectInfo {
     return {
@@ -150,18 +176,21 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * 当前项目导航根快照。
    */
   get navigationRoot(): ProjectModelData {
+    if (this.navigationRootCache) return this.navigationRootCache
     const root = this.rootNode?.toNodeData()
     if (root === undefined) {
-      return buildNavRoot([], { title: this.name, childPlacement: 'header', nodeKind: 'module' })
+      this.navigationRootCache = buildNavRoot([], { title: this.name, childPlacement: 'header', nodeKind: 'module' })
+      return this.navigationRootCache
     }
     const { id, nodeKind, title, childPlacement, children: _children, ...rest } = root
-    return buildNavRoot(this.readChildNodeData(id), {
+    this.navigationRootCache = buildNavRoot(this.readChildNodeData(id), {
       id,
       nodeKind: nodeKind === 'system-directory' ? 'system-directory' : 'module',
       title,
       childPlacement: childPlacement === 'sidebar' ? 'sidebar' : 'header',
       ...rest,
     })
+    return this.navigationRootCache
   }
 
   /** @deprecated root 只保留为旧导航树 DTO 名称；新代码使用 navigationRoot。 */
@@ -169,9 +198,12 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   getChildNodes(nodeId = ''): TNode[] { return this.readChildNodes(nodeId) }
 
   /**
-   * 当前项目节点的平铺投影；ProjectNode 直接携带 nodeId、pid、order 等 DB 平铺字段。
+   * 当前项目节点的平铺投影；优先通过 {@link NavigationIndex} 迭代，避免无谓拷贝。
    */
   get flatRows(): TNode[] { return [...this.nodesById.values()] }
+  forEachNode(callback: (node: TNode) => void): void {
+    for (const node of this.nodesById.values()) callback(node)
+  }
   replaceRoot(root: ProjectModelData): ProjectModelData {
     const normalized = normalizeNavRoot(root)
     const normalizedRoot: ProjectModelData = normalized.id?.trim()
@@ -195,6 +227,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
       }
     }
 
+    this.rebuildNavigationIndex()
     return this.navigationRoot
   }
   replaceProjectInfo(project: ProjectInfoInput): ProjectInfo {
@@ -224,10 +257,83 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   }
 
   /**
+   * 设置当前选中的导航节点 ID。
+   *
+   * - 传入 null 或空字符串将清除选中。
+   * - 传入不存在的节点 ID 时默认 fail-fast；可通过 options.silentIfMissing 允许静默清空。
+   */
+  setSelectedNodeId(nodeId: string | null | undefined, options?: { silentIfMissing?: boolean }): void {
+    const normalized = nodeId?.trim() ?? ''
+    if (!normalized) {
+      this.editorState.selectedNodeId = null
+      return
+    }
+    const exists = this.findNodeById(normalized)
+    if (!exists) {
+      if (options?.silentIfMissing === true) {
+        this.editorState.selectedNodeId = null
+        return
+      }
+      throw new Error(`项目节点未找到: ${normalized}`)
+    }
+    this.editorState.selectedNodeId = normalized
+  }
+
+  /**
+   * 设置当前活动配置页 ID。
+   *
+   * - 传入 null 或空字符串将清除活动页并关闭对应配置页节点。
+   * - 传入不存在的 pageId 将 fail-fast。
+   */
+  setActivePageId(pageId: string | null | undefined): void {
+    const normalized = pageId?.trim() ?? ''
+    if (!normalized) {
+      this.clearActivePage()
+      return
+    }
+    const existing = this.findConfigPageByPageId(normalized)
+    if (!existing) {
+      throw new Error(`配置页面节点未找到: ${normalized}`)
+    }
+    this.editorState.activePageId = normalized
+  }
+
+  /**
+   * 清除当前活动配置页，并关闭该页对应的 ConfigPageNode。
+   */
+  clearActivePage(): void {
+    const activePageId = this.editorState.activePageId
+    this.editorState.activePageId = null
+    if (activePageId) {
+      this.closeConfigPage(activePageId)
+    }
+  }
+
+  /**
+   * 标记导航编辑为 dirty。
+   */
+  markNavigationDirty(scope: ProjectModelEditorNavigationDirtyScope): void {
+    this.editorState.navigationDirty = true
+    this.editorState.navigationDirtyScope = scope === 'root'
+      ? 'root'
+      : (this.editorState.navigationDirtyScope ?? 'node')
+  }
+
+  /**
+   * 清除导航 dirty 状态和编辑范围。
+   */
+  markNavigationClean(): void {
+    this.editorState.navigationDirty = false
+    this.editorState.navigationDirtyScope = null
+  }
+
+  /**
    * 按节点 ID 查找并返回项目节点模型；找不到返回 null。
    */
   findNodeById(nodeId: string): TNode | null { return this.nodesById.get(nodeId.trim()) ?? null }
-  findNodeLocation(nodeId: string): ProjectNodeLocation | null { return findNodeLocation(this.toTree(), nodeId) }
+  findNodeLocation(nodeId: string): ProjectNodeLocation | null {
+    return this.navigationIndex.findNodeLocation(nodeId)
+  }
   findConfigPageByPageId(pageId: string): ConfigPageNode | null { return this.configPagesByPageId.get(pageId.trim()) ?? null }
 
   /**
@@ -257,21 +363,27 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return model
   }
   closeConfigPage(pageId: string): void {
-    const page = this.findConfigPageByPageId(pageId)
+    const normalized = pageId.trim()
+    if (!normalized) return
+    const page = this.findConfigPageByPageId(normalized)
     if (!page) return
     this.configPagesByPageId.delete(page.pageId)
+    if (this.editorState.activePageId === normalized) {
+      this.editorState.activePageId = null
+    }
   }
 
   /**
    * 读取当前项目所有配置页面的概要列表（pageId、路径、标题、描述）。
    */
   readPageSummaries(): ProjectPageNodeSummary[] {
-    const summaries: ProjectPageNodeSummary[] = []
-    const seen = new Set<string>()
-    for (const node of this.flatRows) {
-      if (!isProjectConfigPageNodeModel(node) || seen.has(node.pageId)) continue
-      seen.add(node.pageId)
-      summaries.push(node.toSummary())
+    const summaries = buildProjectPageSummaries(this.navigationIndex.buildTree(), {
+      descriptionContext: this.readProjectDescriptionContext(),
+    })
+    const seen = new Set(summaries.map((summary) => summary.pageId))
+    for (const page of this.configPagesByPageId.values()) {
+      if (seen.has(page.pageId)) continue
+      summaries.push(page.toSummary())
     }
     return summaries
   }
@@ -311,17 +423,40 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
       throw new Error(`项目节点未找到: ${normalized}`)
     }
     const removed = model.toNodeData()
-    for (const child of this.collectDescendants(normalized)) {
+    const descendants = this.navigationIndex.collectDescendants(normalized)
+    for (const child of descendants) {
       this.removeModel(child)
     }
     this.removeModel(model)
+    this.rebuildNavigationIndex()
+
+    // 保持 editor.selectedNodeId / activePageId 与当前导航 + 配置页集合一致。
+    const selectedNodeId = this.editorState.selectedNodeId
+    if (selectedNodeId && !this.findNodeById(selectedNodeId)) {
+      this.editorState.selectedNodeId = null
+    }
+    const activePageId = this.editorState.activePageId
+    if (activePageId && !this.findConfigPageByPageId(activePageId)) {
+      this.editorState.activePageId = null
+    }
+
     return removed
   }
   refreshNavRefs(): void {
     this.rebindDescriptionContext()
   }
   toTree(): ProjectNodeData[] {
-    return buildProjectNavigationTree(this.flatRows)
+    return this.navigationIndex.buildTree()
+  }
+
+  private rebuildNavigationIndex(): void {
+    this.navigationIndex.rebuild()
+    this.navigationRootCache = null
+  }
+
+  private invalidateNavigationCaches(): void {
+    this.navigationIndex.invalidateTree()
+    this.navigationRootCache = null
   }
 
   private ensureRootNode(): TNode {
@@ -354,6 +489,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     if (isProjectConfigPageNodeModel(model)) {
       this.configPagesByPageId.set(model.pageId, model)
     }
+    this.rebuildNavigationIndex()
     return model
   }
 
@@ -364,20 +500,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     }
   }
 
-  private collectDescendants(nodeId: string): TNode[] {
-    const result: TNode[] = []
-    for (const node of this.flatRows) {
-      if (node.pid !== nodeId) continue
-      result.push(node, ...this.collectDescendants(node.id))
-    }
-    return result
-  }
-
   private readChildNodes(pid: string): TNode[] {
-    const normalizedPid = pid.trim()
-    return this.flatRows
-      .filter(node => node.pid === normalizedPid)
-      .sort(compareProjectNodes)
+    return [...this.navigationIndex.getChildren(pid)]
   }
 
   private readChildNodeData(pid: string): ProjectNodeData[] {
@@ -391,16 +515,21 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   }
 
   private nextChildOrder(pid: string): number {
-    const normalizedPid = pid.trim()
-    const siblings = this.flatRows.filter(node => node.pid === normalizedPid)
-    return siblings.reduce((max, node) => Math.max(max, node.order), -1) + 1
+    return this.navigationIndex.nextChildOrder(pid)
   }
 
   private rebindDescriptionContext(): void {
-    for (const model of this.flatRows) {
-      const node = model.toNodeData()
-      model.rebindNavigationNode(node, model.pid, this.readDescriptionContextForNode(node, model.pid))
+    const projectContext = this.readProjectDescriptionContext()
+    const visit = (parentId: string, parentContext: ProjectDescriptionContext[]): void => {
+      for (const model of this.navigationIndex.getChildren(parentId)) {
+        const node = model.toNodeData()
+        const context = appendProjectDescriptionContext(parentContext, node)
+        model.rebindNavigationNode(node, model.pid, context)
+        visit(model.id, context)
+      }
     }
+    visit('', projectContext)
+    this.invalidateNavigationCaches()
   }
 
   private readDescriptionContextForNode(node: ProjectNodeData, pid: string): ProjectDescriptionContext[] {
@@ -434,10 +563,6 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     }
     return ancestors
   }
-}
-
-function compareProjectNodes(a: ProjectNode, b: ProjectNode): number {
-  return a.order !== b.order ? a.order - b.order : a.id.localeCompare(b.id)
 }
 
 function createProjectNodeModel(options: ProjectConfigPageNodeModelOptions): ProjectNode {

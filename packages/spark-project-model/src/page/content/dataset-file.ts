@@ -14,6 +14,7 @@ export class PageDataSetFile {
   private readonly undoStack: string[] = []
   private readonly redoStack: string[] = []
   private dirty = false
+  private toolCache: DataSetCrudTool | null = null
 
   constructor(readonly pageId: string) {
     this.value = DataSet.fromJson({ dataSetName: pageId, tables: {} })
@@ -28,11 +29,13 @@ export class PageDataSetFile {
   setText(text: string): void {
     this.pushUndo()
     this.value = parsePageDataText(text, this.pageId)
+    this.invalidateToolCache()
     this.dirty = true
   }
 
   loadText(text: string): void {
     this.value = parsePageDataText(text, this.pageId)
+    this.invalidateToolCache()
     this.clearHistory()
     this.dirty = false
   }
@@ -58,12 +61,14 @@ export class PageDataSetFile {
   }
 
   getTool(): DataSetCrudTool {
-    return DataSetCrudTool.fromJson(this.value.toJson())
+    this.toolCache ??= DataSetCrudTool.fromJson(this.value.toJson())
+    return this.toolCache
   }
 
   replaceTool(tool: DataSetCrudTool): void {
     this.pushUndo()
     this.value = DataSet.fromJson(tool.toJson())
+    this.invalidateToolCache()
     this.dirty = true
   }
 
@@ -78,6 +83,7 @@ export class PageDataSetFile {
     if (text === undefined) return false
     this.redoStack.push(this.getText())
     this.value = parsePageDataText(text, this.pageId)
+    this.invalidateToolCache()
     this.dirty = true
     return true
   }
@@ -87,8 +93,13 @@ export class PageDataSetFile {
     if (text === undefined) return false
     this.undoStack.push(this.getText())
     this.value = parsePageDataText(text, this.pageId)
+    this.invalidateToolCache()
     this.dirty = true
     return true
+  }
+
+  private invalidateToolCache(): void {
+    this.toolCache = null
   }
 
   private pushUndo(): void {

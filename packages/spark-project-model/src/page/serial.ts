@@ -1,4 +1,5 @@
 import { DataSet, getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-appworks/spark-data'
+import { parsePageData } from '../infra/loader/compiler'
 
 export function parseRuleText(rawText: string): SparkNode {
   if (!rawText.trim()) {
@@ -16,11 +17,12 @@ export function serializeRuleTree(rule: SparkNode): string {
   return `${JSON.stringify(rootValue, null, 2)}\n`
 }
 
+/** pagedata 解析 SSOT：委托 compiler.parsePageData，空内容保留 pageId 默认名。 */
 export function parsePageDataText(rawText: string, defaultDataSetName = ''): DataSet {
   if (!rawText.trim()) {
     return DataSet.fromJson({ dataSetName: defaultDataSetName, tables: {} })
   }
-  return DataSet.fromJson(rawText)
+  return parsePageData(rawText)
 }
 
 export function serializeDataSet(dataSet: DataSet): string {

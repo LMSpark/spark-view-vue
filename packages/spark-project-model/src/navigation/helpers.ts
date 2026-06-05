@@ -354,27 +354,52 @@ type TreeNodeLike = {
   toNodeData(): ProjectNodeData
 }
 
-export function buildProjectNavigationTree(nodes: readonly TreeNodeLike[]): ProjectNodeData[] {
+export function buildProjectNavigationTree(nodes: Iterable<TreeNodeLike>): ProjectNodeData[] {
   const byParent = new Map<string, ProjectNodeData[]>()
-  for (const m of nodes) {
-    const k = m.pid; const c = { ...m.toNodeData() }; delete c.children
-    const s = byParent.get(k) ?? []; s.push(c); byParent.set(k, s)
+  for (const model of nodes) {
+    const data = { ...model.toNodeData() }
+    delete data.children
+    const bucket = byParent.get(model.pid) ?? []
+    bucket.push(data)
+    byParent.set(model.pid, bucket)
   }
-  for (const m of [...nodes].sort((a, b) => b.id.length - a.id.length)) {
-    const children = byParent.get(m.id) ?? []
-    if (children.length > 0) {
-      const p = findProjectedNode(byParent.get(m.pid) ?? [], m.id)
-      if (p) p.children = sortNavNodes(children)
-    }
+  for (const bucket of byParent.values()) {
+    sortNavNodes(bucket)
   }
-  return sortNavNodes(byParent.get('') ?? [])
+  const attachChildren = (node: ProjectNodeData): void => {
+    const children = byParent.get(node.id) ?? []
+    if (children.length === 0) return
+    node.children = children
+    for (const child of children) attachChildren(child)
+  }
+  const roots = byParent.get('') ?? []
+  sortNavNodes(roots)
+  for (const root of roots) attachChildren(root)
+  return roots
+}
+
+export function findFlatNodeLocation<T extends TreeNodeLike>(
+  nodesById: ReadonlyMap<string, T>,
+  getChildren: (pid: string) => readonly T[],
+  targetId: string,
+): ProjectNodeLocation | null {
+  const normalized = targetId.trim()
+  const model = nodesById.get(normalized)
+  if (!model) return null
+  const node = model.toNodeData()
+  const pid = model.pid.trim()
+  const parentModel = pid ? nodesById.get(pid) : undefined
+  const parent = parentModel?.toNodeData() ?? null
+  const siblings = getChildren(pid)
+  const index = siblings.findIndex((sibling) => sibling.id === normalized)
+  return {
+    node,
+    parent,
+    parentId: parent?.id ?? null,
+    index: index >= 0 ? index : 0,
+  }
 }
 
 function sortNavNodes(nodes: ProjectNodeData[]): ProjectNodeData[] {
   return nodes.sort((a, b) => { const oa = typeof a.order === 'number' ? a.order : 0; const ob = typeof b.order === 'number' ? b.order : 0; return oa !== ob ? oa - ob : a.id.localeCompare(b.id) })
-}
-
-function findProjectedNode(nodes: readonly ProjectNodeData[], id: string): ProjectNodeData | null {
-  for (const n of nodes) { if (n.id === id) return n; const f = findProjectedNode(n.children ?? [], id); if (f) return f }
-  return null
 }
