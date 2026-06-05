@@ -54,7 +54,7 @@
 <script setup lang="ts">
 import { ref, shallowRef, watch, onMounted, onBeforeUnmount } from 'vue'
 import { SparkPageRenderer } from '@spark-appworks/spark-component'
-import type { ConfigPageNode } from '@spark-appworks/spark-project-model'
+import type { PageNodeLike } from '@spark-appworks/spark-project-model'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import { Loading } from '@element-plus/icons-vue'
@@ -69,9 +69,9 @@ const autoRefresh = ref(true)
 const livePreview = ref(true)
 const loading = ref(false)
 const parseError = ref<string | null>(null)
-const previewPageNode = shallowRef<ConfigPageNode | null>(null)
+const previewPageNode = shallowRef<PageNodeLike | null>(null)
 
-function requireActivePageNodeLoaded(): ConfigPageNode {
+function requireActivePageNodeLoaded(): PageNodeLike {
   const pageId = props.state.activePageId.value
   const activePage = props.state.editor.getActivePage()
   if (!pageId || activePage === null) {
@@ -83,7 +83,11 @@ function requireActivePageNodeLoaded(): ConfigPageNode {
   if (!activePage.isLoaded) {
     throw new Error(`页面节点 ${pageId} 尚未加载完成，无法预览`)
   }
-  return activePage
+  const loadedPageNode = props.state.editor.getActiveLoadedPageNode()
+  if (loadedPageNode === null) {
+    throw new Error(`页面节点 ${pageId} 尚未打开，无法预览`)
+  }
+  return loadedPageNode
 }
 
 function refresh() {

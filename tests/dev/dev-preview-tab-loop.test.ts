@@ -45,12 +45,26 @@ function createPreviewState() {
     'style.css': '',
   }
   const getActivePage = vi.fn(() => ({ pageId: activePageId.value, isLoaded: true }))
+  const getActiveLoadedPageNode = vi.fn(() => ({
+    pageId: activePageId.value,
+    isLoaded: true,
+    load: () => Promise.resolve(),
+    toRenderConfig: () => ({
+      pageId: activePageId.value,
+      navigation: null,
+      rule: [],
+      data: {} as never,
+      script: undefined,
+      css: undefined,
+    }),
+  }))
   const getPageFileText = vi.fn((name: PageNodeFileName) => {
     void pageFilesRevision.value
     return files[name]
   })
   const editor = {
     getActivePage,
+    getActiveLoadedPageNode,
     getPageFileText,
   }
   const state: DevState = Object.assign(Object.create(null), {
@@ -64,6 +78,7 @@ function createPreviewState() {
     files,
     pageFilesRevision,
     getActivePage,
+    getActiveLoadedPageNode,
   }
 }
 

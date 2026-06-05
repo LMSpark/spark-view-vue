@@ -31,3 +31,8 @@ export type {
   ProjectPageReference,
   ProjectSummary,
 } from './io/reference/client'
+
+// ── 稳定出口：四文件持久化（允许跨包消费） ─────────────────────────
+
+export { PageContentRepository } from './io/page-content-repository'
+export type { ProjectModelIoPorts } from './model/project/ports'

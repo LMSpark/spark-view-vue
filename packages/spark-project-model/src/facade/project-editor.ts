@@ -29,7 +29,10 @@ import {
   PAGE_NODE_FILE_NAMES,
   type PageNodeFileName,
 } from '../model/page/file'
-import { ProjectModel } from '../model/project/model'
+import { createBareProjectModel } from '../factory/project-model-factory'
+import { LoadedPageNode } from '../factory/loaded-page-node'
+import type { ProjectModel } from '../model/project/model'
+import { PageContentRepository } from '../io/page-content-repository'
 import type { ProjectModelDto } from '../model/project/types'
 import {
   ProjectReferenceClient,
@@ -150,20 +153,18 @@ export class ProjectEditor {
   private readonly lifecycle: PageLifecycle
   private readonly snapshot: EditorSnapshot
   private readonly references: ReferenceQuery
-  private readonly fileCache: PageNodeFileCache
+  private readonly pageContent: PageContentRepository
 
   constructor(options: ProjectEditorOptions) {
     const contentLoaderFactory = options.getContentLoader
-    this.fileCache = new PageNodeFileCache({
-      contentLoaderFactory,
-    })
+    const fileCache = new PageNodeFileCache({ contentLoaderFactory })
     const navigationLifecycle = new PageNavigationLifecycle({
       navigationClient: options.navigationClient,
     })
-    this.project = new ProjectModel({
-      projectId: options.projectId,
+    this.project = createBareProjectModel({ projectId: options.projectId })
+    this.pageContent = new PageContentRepository({
       fileApi: options.fileApi,
-      fileCache: this.fileCache,
+      fileCache,
       contentLoaderFactory,
     })
     this.sessionModel = new EditorSession({
@@ -172,9 +173,10 @@ export class ProjectEditor {
     })
     this.ctx = new ProjectEditorContext(this.project, this.sessionModel)
     this.navigation = new NavigationEditor(this.ctx, options.navigationClient)
-    this.pageFiles = new PageFileEditor(this.ctx, this.fileCache, () => this.getActivePage())
+    this.pageFiles = new PageFileEditor(this.ctx, this.pageContent, () => this.getActivePage())
     this.lifecycle = new PageLifecycle(
       this.ctx,
+      this.pageContent,
       navigationLifecycle,
       this.navigation,
       () => this.getActivePage(),
@@ -206,6 +208,11 @@ export class ProjectEditor {
 
   getActivePage(): ConfigPageNode | null {
     return this.ctx.getActivePage()
+  }
+
+  getActiveLoadedPageNode(): LoadedPageNode | null {
+    const page = this.getActivePage()
+    return page === null ? null : new LoadedPageNode(page, this.pageContent)
   }
 
   requireActivePage(): ConfigPageNode {
@@ -275,7 +282,7 @@ export class ProjectEditor {
     }
     const pageNodeOptions: { forceReload?: boolean } = {}
     if (options?.forceReload === true) pageNodeOptions.forceReload = true
-    await page.load(pageNodeOptions)
+    await this.pageContent.loadPage(page, pageNodeOptions)
     this.sessionModel.bump()
   }
 

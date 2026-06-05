@@ -1,6 +1,5 @@
 /**
- * PageNodeFactory — 组合根：装配 io 客户端与 ProjectModel，产出 ConfigPageNode。
- * 不属于纯 model 层。
+ * PageNodeFactory — 组合根：装配 io 与领域 ConfigPageNode，产出 LoadedPageNode（PageNodeLike）。
  */
 import { createRequest } from '@spark-appworks/spark-utils'
 import type { HttpClientBase } from '@spark-appworks/spark-utils'
@@ -8,8 +7,10 @@ import type { BasePageContentLoader, PageContentLoaderOptions } from '../io/load
 import { PageNodeFileApi } from '../io/file/api'
 import { PageNodeFileCache } from '../io/file/cache'
 import { createPageContentLoader } from '../io/loader/loader'
-import { ProjectModel } from '../model/project/model'
-import type { ConfigPageNode, PageNodeLike } from '../model/page/config-page'
+import { PageContentRepository } from '../io/page-content-repository'
+import type { ProjectNodeData } from '../model/navigation/node'
+import { ConfigPageNode, type PageNodeLike } from '../model/page/config-page'
+import { LoadedPageNode } from './loaded-page-node'
 import { trimTrailingSlash, installHeaderInterceptor } from '../io/http'
 
 export type PageNodeFileStorage = 'localStorage' | 'sessionStorage' | 'memory'
@@ -35,9 +36,7 @@ export type PageNodeFactoryLike = {
 export class PageNodeFactory implements PageNodeFactoryLike {
   private readonly http: HttpClientBase
   private readonly loader: BasePageContentLoader
-  private readonly fileApi: PageNodeFileApi
-  private readonly fileCache: PageNodeFileCache
-  private readonly project: ProjectModel<ConfigPageNode>
+  private readonly repository: PageContentRepository
   private readonly getPagesConfigBaseUrl: () => string
 
   constructor(options: PageNodeFactoryOptions = {}) {
@@ -50,33 +49,44 @@ export class PageNodeFactory implements PageNodeFactoryLike {
 
     this.getPagesConfigBaseUrl = () => resolvePagesConfigBaseUrl(apiBaseUrl, options.pagesConfigBaseUrl)
     this.loader = createPageContentLoader(toLoaderOptions(apiBaseUrl, this.http, options))
-    this.fileApi = new PageNodeFileApi({
+    const fileApi = new PageNodeFileApi({
       getPageFilesApi: this.getPagesConfigBaseUrl,
       http: this.http,
     })
-    this.fileCache = new PageNodeFileCache({
+    const fileCache = new PageNodeFileCache({
       contentLoaderFactory: () => this.loader,
     })
-    this.project = new ProjectModel<ConfigPageNode>({
-      projectId: '__page-node-factory__',
-      fileApi: this.fileApi,
-      fileCache: this.fileCache,
+    this.repository = new PageContentRepository({
+      fileApi,
+      fileCache,
       contentLoaderFactory: () => this.loader,
     })
   }
 
-  create(pageId: string): ConfigPageNode {
+  create(pageId: string): LoadedPageNode {
     const normalized = pageId.trim()
     if (!normalized) {
       throw new Error('pageId 不能为空')
     }
-    return this.project.openConfigPage(normalized)
+    const node: ProjectNodeData = {
+      id: normalized,
+      title: normalized,
+      nodeKind: 'page',
+      path: `/${normalized}`,
+      icon: 'Document',
+    }
+    const configPage = new ConfigPageNode({
+      node,
+      pid: '',
+      pageId: normalized,
+    })
+    return new LoadedPageNode(configPage, this.repository)
   }
 
   clearPageCache(pageId: string): void {
     const normalized = pageId.trim()
     if (!normalized) return
-    this.fileCache.clearPageCache(normalized)
+    this.repository.clearPageCache(normalized)
   }
 
   clearAllCache(): { size: number; keys: string[] } {
@@ -98,7 +108,7 @@ export function createPageNodeFactory(options: PageNodeFactoryOptions = {}): Pag
   return new PageNodeFactory(options)
 }
 
-export function createPageNode(pageId: string, options: PageNodeFactoryOptions = {}): ConfigPageNode {
+export function createPageNode(pageId: string, options: PageNodeFactoryOptions = {}): LoadedPageNode {
   return createPageNodeFactory(options).create(pageId)
 }
 

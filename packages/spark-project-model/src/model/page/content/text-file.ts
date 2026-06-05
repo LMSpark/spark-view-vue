@@ -1,10 +1,5 @@
 /** PageTextFile——script.js / style.css 的内存模型，负责文本内容的读写与撤销重做。 */
 import { SnapshotHistory } from '@spark-appworks/spark-utils'
-import type {
-  PageFileContentLoader,
-  PageFileRestoreCommand,
-  PageFileWriter,
-} from '../file'
 
 const TEXT_HISTORY_LIMIT = 100
 
@@ -38,6 +33,17 @@ export class PageTextFile {
     this._text = content
   }
 
+  loadText(text: string): void {
+    this.history.clear()
+    this.history.push(text)
+    this._text = text
+    this.savedText = text
+  }
+
+  markSaved(): void {
+    this.savedText = this._text
+  }
+
   undo(): boolean {
     const prev = this.history.undo()
     if (prev === null) return false
@@ -50,32 +56,5 @@ export class PageTextFile {
     if (next === null) return false
     this._text = next
     return true
-  }
-
-  async load(loader: PageFileContentLoader, options?: { forceReload?: boolean }): Promise<void> {
-    const result = await loader.loadPageFileContent(this.pageId, this.fileName, {
-      forceReload: options?.forceReload === true,
-    })
-    if (!result.success) throw new Error(result.error ?? result.reason ?? `${this.fileName} 加载失败`)
-    this.replaceSavedText(result.data ?? '')
-  }
-
-  async save(api: PageFileWriter): Promise<void> {
-    await api.saveFileContent(this.pageId, this.fileName, this._text)
-    this.savedText = this._text
-  }
-
-  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
-    await command.fileApi.restoreVersion(this.pageId, this.fileName, command.version)
-    const result = await command.contentLoader.loadPageFileContent(this.pageId, this.fileName, { forceReload: true })
-    if (!result.success) throw new Error(`恢复版本后读取失败: ${this.pageId}/${this.fileName} v${command.version}`)
-    this.replaceSavedText(result.data ?? '')
-  }
-
-  private replaceSavedText(text: string): void {
-    this.history.clear()
-    this.history.push(text)
-    this._text = text
-    this.savedText = text
   }
 }

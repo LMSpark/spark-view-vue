@@ -143,8 +143,18 @@ UI subscribe(revision) → readSnapshot() / getActivePage() → 刷新视图
 | 概念 | 是什么 | 在哪 |
 |---|---|---|
 | **模型（类型）** | `ProjectModel`、`ProjectEditor`、`ConfigPageNode` 等 **class 定义** | `spark-project-model` 包；**无**全局单例 |
-| **领域实例** | `ProjectModel` **对象**，`design` + `runtime` 真源 | 活在 `ProjectEditor.project` 内 |
+| **领域实例** | `ProjectModel` **对象**，`design` + `runtime` 真源 | `createBareProjectModel` / `ProjectModel.create`；或 `ProjectEditor.project` |
 | **门面实例** | `ProjectEditor` **对象**，编排 API、session、io、落盘 | APP `getAppProjectEditor()` 单例 |
+
+**构造分离**（已实现）：
+
+| API | 产出 | 持久化 |
+|---|---|---|
+| `ProjectModel.create(init)` / `createBareProjectModel(init)` | 纯领域实例 | 无（纯内存） |
+| `ConfigPageNode` | 页面设计内容 | 无；`hydrateFileText` / `getFileText` 仅内存 |
+| `PageContentRepository` | IO 适配 | load/save/版本/资产 CRUD |
+| `LoadedPageNode` | `PageNodeLike` 渲染适配 | 委托 repository.load |
+| `createProjectEditor(options)` | 门面实例 + 领域实例 | repository 在门面内装配 |
 
 ```text
 spark-project-model（包）

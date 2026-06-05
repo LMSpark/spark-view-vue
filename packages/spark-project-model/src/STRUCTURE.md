@@ -1,15 +1,17 @@
 # src 目录约定
 
 ```text
-model/          领域 class（包主语）；含 serialization/ 纯解析
-facade/         ProjectEditor 薄编排 + 协作者 + EditorSession
-factory/        组合根（PageNodeFactory，装配 io）
-io/             HTTP/文件/loader 适配（仅包内）
+model/          领域 class（包主语）；含 serialization/ 纯解析；ports.ts 定义 IO 端口类型
+facade/         ProjectEditor 薄编排 + 协作者 + EditorSession（门面实例）
+factory/        组合根（createBareProjectModel、PageNodeFactory、LoadedPageNode）
+io/             HTTP/文件/loader 适配；page-content-repository 四文件持久化
 index.ts        导出 model + factory + compiler + page-data 规范化
 project.ts      导出 facade + 落盘 DTO
 ```
 
-依赖：`facade → {model, io}`、`io → model`、`factory → {model, io}`。**禁止 `model → io`**。
+依赖：`facade → {model, factory, io}`、`io → model`、`factory → {model, io}`。**禁止 `model → io`**。
+
+**模型 vs 实例**：`ProjectModel` / `ConfigPageNode` 是纯领域类型；`createBareProjectModel` 产出领域实例；`PageContentRepository`（io/）负责四文件持久化；`createProjectEditor` 产出门面实例；`LoadedPageNode`（factory/）= 领域页 + repository，供渲染管线 `PageNodeLike.load`。
 
 DevSystem 设计器制品（rule schema、DataSet 画布投影）在应用层 `src/services/project-model-artifacts/`，不进入本包。
 

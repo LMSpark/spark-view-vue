@@ -1,6 +1,6 @@
 import type { DataSetCrudTool, SparkNodeTree as SparkNodeTreeModel } from '@spark-appworks/spark-data'
 import type { PageNodeFileName, PageNodeFileVersionSummary } from '../model/page/file'
-import type { PageNodeFileCache } from '../io/file/cache'
+import type { PageContentRepository } from '../io/page-content-repository'
 import type { ConfigPageNode } from '../model/page/config-page'
 import type { ProjectEditorContext } from './project-editor-context'
 import type { ProjectEditorLoadOptions } from './project-editor-types'
@@ -8,7 +8,7 @@ import type { ProjectEditorLoadOptions } from './project-editor-types'
 export class PageFileEditor {
   constructor(
     private readonly ctx: ProjectEditorContext,
-    private readonly fileCache: PageNodeFileCache,
+    private readonly repository: PageContentRepository,
     private readonly getActivePage: () => ReturnType<ProjectEditorContext['getActivePage']>,
   ) {}
 
@@ -19,7 +19,7 @@ export class PageFileEditor {
     }
     const loadOptions: { forceReload?: boolean } = {}
     if (options?.forceReload === true) loadOptions.forceReload = true
-    await page.load(loadOptions)
+    await this.repository.loadPage(page, loadOptions)
   }
 
   async loadPageFile(name: PageNodeFileName, options?: ProjectEditorLoadOptions): Promise<void> {
@@ -28,7 +28,7 @@ export class PageFileEditor {
       throw new Error('无活动页面，无法加载页面文件')
     }
     const loadOpts = { forceReload: options?.forceReload === true }
-    await page.loadFile(name, loadOpts)
+    await this.repository.loadPageFile(page, name, loadOpts)
   }
 
   async savePageFile(name: PageNodeFileName): Promise<void> {
@@ -36,13 +36,13 @@ export class PageFileEditor {
     if (!page) {
       throw new Error('无活动页面，无法保存页面文件')
     }
-    await page.saveFile(name)
+    await this.repository.savePageFile(page, name)
   }
 
   async saveDirtyPageFiles(): Promise<void> {
     const page = this.getActivePage()
     if (!page) return
-    await page.saveDirtyFiles()
+    await this.repository.saveDirtyPageFiles(page)
   }
 
   getPageFileText(name: PageNodeFileName): string {
@@ -124,7 +124,7 @@ export class PageFileEditor {
   async listRemotePageVersions(filename: PageNodeFileName): Promise<PageNodeFileVersionSummary[]> {
     const page = this.getActivePage()
     if (!page) return []
-    return page.listFileVersions(filename)
+    return this.repository.listFileVersions(page, filename)
   }
 
   async restoreRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
@@ -132,30 +132,28 @@ export class PageFileEditor {
     if (!page) {
       throw new Error('无活动页面，无法恢复版本')
     }
-    await page.restoreRemoteFileVersion(filename, version)
+    await this.repository.restoreRemoteFileVersion(page, filename, version)
+    this.notifyPageFileChanged(page.pageId, filename)
   }
 
   async createRemotePageVersion(filename: PageNodeFileName): Promise<void> {
     const page = this.getActivePage()
     if (!page) return
-    await page.createFileVersion(filename)
+    await this.repository.createFileVersion(page, filename)
   }
 
   async deleteRemotePageVersion(version: number, filename: PageNodeFileName): Promise<void> {
     const page = this.getActivePage()
     if (!page) return
-    await page.deleteFileVersion(filename, version)
+    await this.repository.deleteFileVersion(page, filename, version)
   }
 
   notifyPageFileChanged(
     pageId: string,
     filename: PageNodeFileName | '__created' | '__deleted' | '__bulk',
   ): void {
-    if (filename === '__created' || filename === '__deleted' || filename === '__bulk') {
-      this.fileCache.clearPageCache(pageId)
-    } else {
-      this.fileCache.clearPageCache(pageId, filename)
-    }
     this.ctx.session.bump()
+    void pageId
+    void filename
   }
 }

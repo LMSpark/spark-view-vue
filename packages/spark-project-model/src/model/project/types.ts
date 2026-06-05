@@ -1,9 +1,4 @@
 import type { ProjectModelData, ProjectPageNodeSummary } from '../navigation/node'
-import type {
-  PageFileCache,
-  PageFileContentLoader,
-  PageFileWriter,
-} from '../page/file'
 
 export type ProjectModelDto = {
   projectId: string
@@ -29,10 +24,11 @@ export type ProjectInfoInput = Partial<Omit<ProjectInfo, 'projectId'>> & {
   projectId?: string | undefined
 }
 
-export type ProjectModelOptions = {
+/** 纯领域构造参数（无 IO）。 */
+export type ProjectModelInitOptions = {
   projectId: string
   project?: ProjectInfoInput | undefined
-  fileApi: PageFileWriter
-  fileCache: PageFileCache
-  contentLoaderFactory: () => PageFileContentLoader
 }
+
+/** @deprecated 使用 ProjectModelInitOptions */
+export type ProjectModelOptions = ProjectModelInitOptions

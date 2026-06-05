@@ -78,10 +78,3 @@ export type PageFileWriter = {
 export type PageFileCache = {
   clearPageCache(pageId: string, filename?: PageNodeFileName): void
 }
-
-export type PageFileRestoreCommand = {
-  pageId: string
-  version: number
-  fileApi: PageFileWriter
-  contentLoader: PageFileContentLoader
-}

@@ -1,12 +1,6 @@
 /** PageDataSetFile——pagedata.json 的内存模型，负责 DataSet 的读写与撤销重做。 */
 import { DataSet, DataSetCrudTool } from '@spark-appworks/spark-data'
-import type {
-  PageFileContentLoader,
-  PageFileRestoreCommand,
-  PageFileWriter,
-} from '../file'
 import { parsePageDataText, serializeDataSet } from '../serial'
-import type { PageNodeLoadOptions } from '../config-page'
 
 export class PageDataSetFile {
   value: DataSet
@@ -40,24 +34,8 @@ export class PageDataSetFile {
     this.dirty = false
   }
 
-  async load(loader: PageFileContentLoader, options?: PageNodeLoadOptions): Promise<void> {
-    const result = await loader.loadPageFileContent(this.pageId, 'pagedata.json', {
-      forceReload: options?.forceReload === true,
-    })
-    if (!result.success) throw new Error(result.error ?? result.reason ?? 'pagedata.json 加载失败')
-    this.loadText(result.data ?? '')
-  }
-
-  async save(api: PageFileWriter): Promise<void> {
-    await api.saveFileContent(this.pageId, 'pagedata.json', this.getText())
+  markSaved(): void {
     this.dirty = false
-  }
-
-  async restoreVersion(command: PageFileRestoreCommand): Promise<void> {
-    await command.fileApi.restoreVersion(this.pageId, 'pagedata.json', command.version)
-    const result = await command.contentLoader.loadPageFileContent(this.pageId, 'pagedata.json', { forceReload: true })
-    if (!result.success) throw new Error(`恢复版本后读取失败: ${this.pageId}/pagedata.json v${command.version}`)
-    this.loadText(result.data ?? '')
   }
 
   getTool(): DataSetCrudTool {

@@ -42,7 +42,7 @@ io/                  file/navigation/loader/reference/http
 - ProjectModel 可持有 headless runtime；运行诊断应能指回设计节点或存储锚点。
 - ProjectModel 不得直接持有 Vue component instance、DOM、Vue Router instance、Element Plus API 或浏览器全局对象作为状态。
 - `ProjectEditor` 是 AI + DevSystem 共用的**设计门面**；CRUD/save/diagnostics 都是设计动作。
-- **模型 vs 实例**：包内是 class **类型**（`ProjectModel`、`ProjectEditor`）；运行时 **领域实例** 为 `editor.project`，**门面实例** 由 APP `getAppProjectEditor()` 托管。勿把 `ProjectEditor` 叫「模型实例」。
+- **模型 vs 实例**：领域 class（`ProjectModel`、`ConfigPageNode`）纯内存；**领域实例** 用 `createBareProjectModel` / `editor.project`；**门面实例** 用 `createProjectEditor`；四文件 IO 经 `PageContentRepository`（组合根），勿在 `ConfigPageNode` 上直接 load/save。渲染用 `LoadedPageNode`（`PageNodeLike`）。
 - **AI 门面**：DevSystem 内 AI 用 `getAppProjectEditor()`；隔离 Host Run 用 headless `createProjectEditor()`（见 app `page-design-host-run-provider.ts`）。
 - 包内不持有全局单例；登录后 `ingestNavigationRoot` 写入 `editor.project`。
 - DevSystem 只暴露 `editor = getAppProjectEditor()`（门面）；Vue 经 `state.editor.*` 改领域，用 `readSnapshot()` 投影，不得自建 `ProjectModel` 或平行「文件 API」。

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
+import { ConfigPageNode, ConfigSubPageNode, isConfigSubPageNode } from '@spark-appworks/spark-project-model'
 import { tryParsePageDataTextError, tryParseRuleTextError } from '../src/model/page/serial'
 import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
 import { createRequest } from '@spark-appworks/spark-utils'
@@ -125,6 +126,22 @@ describe('ProjectEditor.session — selection and active page', () => {
     expect(editor.readSnapshot().treeData).toHaveLength(1)
     editor.setActivePage('orders')
     expect(editor.session.activePageId).toBe('orders')
+  })
+
+  it('setActivePage on sub-page resolves ConfigSubPageNode without IO on domain', () => {
+    const editor = createEditorWithNavigation([{
+      id: 'orders', title: '订单', nodeKind: 'page', path: '/orders',
+      children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page' }],
+    }])
+
+    editor.setActivePage('order-detail')
+    const page = editor.getActivePage()
+    expect(page).toBeInstanceOf(ConfigSubPageNode)
+    expect(isConfigSubPageNode(page)).toBe(true)
+    expect(page?.isSubPage).toBe(true)
+    expect(page).toBeInstanceOf(ConfigPageNode)
+    expect('load' in (page as object)).toBe(false)
+    expect(editor.session.activePageId).toBe('order-detail')
   })
 
   it('notifies subscribers when session changes', () => {

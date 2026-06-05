@@ -3,15 +3,26 @@
  *
  * 领域模型入口（model/）：class 层级为主语。
  * 设计门面（facade/）：见 `@spark-appworks/spark-project-model/project`。
- * 存储适配（io/）：包内专用，勿跨包 import。
+ * 存储适配（io/）：默认包内专用；如需跨包使用，请从 `@spark-appworks/spark-project-model/project`
+ * 导出入口消费（例如 `PageContentRepository`），不要直接引用 `src/io/*`。
  */
 
 // ── 项目根 ────────────────────────────────────────────────────
 
 export { ProjectModel } from './model/project/model'
+export type { ProjectModelInstance } from './model/project/model'
 export { ProjectDesign, NavigationDesign } from './model/project/design'
 export { ProjectRuntime } from './model/project/runtime'
-export type { ProjectModelOptions, ProjectModelDto, ProjectInfo, ProjectInfoInput } from './model/project/types'
+export type {
+  ProjectModelInitOptions,
+  ProjectModelOptions,
+  ProjectModelDto,
+  ProjectInfo,
+  ProjectInfoInput,
+} from './model/project/types'
+export type { ProjectModelIoPorts } from './model/project/ports'
+export { createInMemoryProjectModelIoPorts } from './model/project/ports'
+export { createBareProjectModel } from './factory/project-model-factory'
 
 // ── 导航节点 ────────────────────────────────────────────────
 
@@ -112,6 +123,7 @@ export {
   createPageNode,
   createPageNodeFactory,
 } from './factory/page-node-factory'
+export { LoadedPageNode } from './factory/loaded-page-node'
 
 export type {
   PageNodeFactoryLike,

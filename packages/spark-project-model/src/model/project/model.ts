@@ -14,9 +14,12 @@ import type {
   ProjectPageNodeSummary,
 } from '../navigation/node'
 import type { ConfigPageNode } from '../page/config-page'
-import type { ProjectInfo, ProjectInfoInput, ProjectModelOptions } from './types'
+import type { ProjectInfo, ProjectInfoInput, ProjectModelInitOptions, ProjectModelOptions } from './types'
 
-export type { ProjectModelDto, ProjectInfo, ProjectInfoInput, ProjectModelOptions } from './types'
+export type { ProjectModelDto, ProjectInfo, ProjectInfoInput, ProjectModelInitOptions, ProjectModelOptions } from './types'
+
+/** 运行时领域实例（`editor.project`）；与门面实例 `ProjectEditor` 区分。 */
+export type ProjectModelInstance = ProjectModel
 
 /**
  * 项目模型根。
@@ -27,6 +30,11 @@ export type { ProjectModelDto, ProjectInfo, ProjectInfoInput, ProjectModelOption
 export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   readonly design: ProjectDesign<TNode>
   readonly runtime: ProjectRuntime
+
+  /** 纯领域实例：无 IO 端口，仅内存导航与设计。 */
+  static create(init: ProjectModelInitOptions): ProjectModel {
+    return new ProjectModel(init)
+  }
 
   constructor(options: ProjectModelOptions) {
     this.design = new ProjectDesign<TNode>(options)

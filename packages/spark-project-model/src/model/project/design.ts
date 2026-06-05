@@ -10,7 +10,6 @@ import type {
 } from '../navigation/node'
 import type { ProjectNode } from '../navigation/node'
 import type { ConfigPageNode } from '../page/config-page'
-import type { PageFileCache, PageFileContentLoader, PageFileWriter } from '../page/file'
 import {
   appendProjectDescriptionContext,
   buildNavRoot,
@@ -31,9 +30,6 @@ export type NavigationDesignHost = {
   readonly projectId: string
   getName(): string
   getDescription(): string
-  readonly fileApi: PageFileWriter
-  readonly fileCache: PageFileCache
-  readonly contentLoaderFactory: () => PageFileContentLoader
   readonly configPagesByPageId: Map<string, ConfigPageNode>
 }
 
@@ -196,14 +192,7 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
     pid: string,
     descriptionContext: readonly ProjectDescriptionContext[],
   ): TNode {
-    return createProjectNodeModel({
-      node,
-      pid,
-      descriptionContext,
-      fileApi: this.host.fileApi,
-      fileCache: this.host.fileCache,
-      contentLoaderFactory: this.host.contentLoaderFactory,
-    }) as TNode
+    return createProjectNodeModel({ node, pid, descriptionContext }) as TNode
   }
 
   private insertNode(node: ProjectNodeData, pid: string): TNode {
@@ -304,9 +293,6 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
   private projectOrder: number
   private projectCreatedAt: string | undefined
   private projectUpdatedAt: string | undefined
-  private readonly fileApi: PageFileWriter
-  private readonly fileCache: PageFileCache
-  private readonly contentLoaderFactory: () => PageFileContentLoader
   private readonly configPagesByPageId = new Map<string, ConfigPageNode>()
 
   constructor(options: ProjectModelOptions) {
@@ -318,16 +304,10 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     this.projectDescriptionValue = ''
     this.projectOrder = 0
     this.replaceProjectInfo(options.project ?? {})
-    this.fileApi = options.fileApi
-    this.fileCache = options.fileCache
-    this.contentLoaderFactory = options.contentLoaderFactory
     this.navigation = new NavigationDesign<TNode>({
       projectId: this.projectIdValue,
       getName: () => this.projectName,
       getDescription: () => this.description,
-      fileApi: this.fileApi,
-      fileCache: this.fileCache,
-      contentLoaderFactory: this.contentLoaderFactory,
       configPagesByPageId: this.configPagesByPageId,
     })
   }

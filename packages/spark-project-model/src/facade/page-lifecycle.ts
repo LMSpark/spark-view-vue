@@ -12,6 +12,7 @@ import type {
   PageNavigationLifecycle,
   PageNavigationMountParams,
 } from '../io/navigation/lifecycle'
+import type { PageContentRepository } from '../io/page-content-repository'
 import type { ProjectEditorContext } from './project-editor-context'
 import type { CreatePageForSelectedNodeParams } from './project-editor-types'
 import type { NavigationEditor } from './navigation-editor'
@@ -44,6 +45,7 @@ type RemoveMountedPageParams = {
 export class PageLifecycle {
   constructor(
     private readonly ctx: ProjectEditorContext,
+    private readonly repository: PageContentRepository,
     private readonly navigationLifecycle: PageNavigationLifecycle,
     private readonly navigation: NavigationEditor,
     private readonly getActivePage: () => ReturnType<ProjectEditorContext['getActivePage']>,
@@ -57,7 +59,7 @@ export class PageLifecycle {
     }
     const selected = this.ctx.requireSelectedNode('未选中导航节点，无法创建并绑定页面')
     const pageNode = this.ctx.openPage(pageId)
-    const page = await pageNode.createFiles({
+    const page = await this.repository.createPageFiles(pageNode, {
       ...(params.title === undefined ? {} : { title: params.title }),
       ...(params.icon === undefined ? {} : { icon: params.icon }),
     })
@@ -86,7 +88,7 @@ export class PageLifecycle {
       applyNavigationNodeEditDtoToNode(selected, previousEditDto)
       this.ctx.session.setSelectedNodeId(selected.id)
       this.ctx.session.markNavigationClean()
-      await pageNode.deleteFiles()
+      await this.repository.deletePageFiles(pageNode)
       this.ctx.session.bump()
       throw error
     }
@@ -95,7 +97,7 @@ export class PageLifecycle {
   async createMountedPage(params: CreateMountedPageParams): Promise<PageNodeCreateMountedResult> {
     const { pageId, ...modelParams } = params
     const pageNode = this.ctx.openPage(pageId)
-    const page = await pageNode.createFiles({
+    const page = await this.repository.createPageFiles(pageNode, {
       ...(modelParams.title === undefined ? {} : { title: modelParams.title }),
       ...(modelParams.icon === undefined ? {} : { icon: modelParams.icon }),
     })
@@ -105,7 +107,7 @@ export class PageLifecycle {
       return { page, node }
     } catch (error) {
       if (modelParams.rollbackPageOnNavigationFailure === true) {
-        await pageNode.deleteFiles()
+        await this.repository.deletePageFiles(pageNode)
       }
       throw error
     }
@@ -114,7 +116,7 @@ export class PageLifecycle {
   async createPageFiles(params: ProjectEditorCreatePageParams): Promise<Record<string, unknown>> {
     const { pageId, ...modelParams } = params
     const pageNode = this.ctx.openPage(pageId)
-    const result = await pageNode.createFiles({
+    const result = await this.repository.createPageFiles(pageNode, {
       ...(modelParams.title === undefined ? {} : { title: modelParams.title }),
       ...(modelParams.icon === undefined ? {} : { icon: modelParams.icon }),
     })
@@ -124,7 +126,8 @@ export class PageLifecycle {
 
   async deletePageFiles(pageId: string): Promise<void> {
     const normalized = pageId.trim()
-    await this.ctx.design.openConfigPage(normalized).deleteFiles()
+    const pageNode = this.ctx.design.openConfigPage(normalized)
+    await this.repository.deletePageFiles(pageNode)
     if (this.getActivePage()?.pageId === normalized) {
       this.clearActivePage()
     }
@@ -136,7 +139,8 @@ export class PageLifecycle {
     const deletedNode = await this.navigationLifecycle.unmountPage(params.pageId, params.nodeId)
     const shouldDeleteFiles = params.deleteFiles !== false
     if (shouldDeleteFiles) {
-      await this.ctx.design.openConfigPage(params.pageId).deleteFiles()
+      const pageNode = this.ctx.design.openConfigPage(params.pageId)
+      await this.repository.deletePageFiles(pageNode)
     }
     const result = { deletedNode, deletedFiles: shouldDeleteFiles }
     if (this.getActivePage()?.pageId === params.pageId) {

@@ -104,6 +104,9 @@ describe('ProjectModel', () => {
     expect(page?.nodeKind).toBe('page')
     expect(sub?.nodeKind).toBe('sub-page')
     expect(sub?.pageId).toBe('order-detail')
+    expect(sub?.isSubPage).toBe(true)
+    expect(sub?.toSummary().designSurface).toBe('config-files')
+    expect(sub?.toSummary().nodeKind).toBe('sub-page')
   })
 
   it('builds tree from flat collection and finds nodes', () => {
