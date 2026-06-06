@@ -216,6 +216,19 @@ describe('ProjectModel', () => {
     expect(p.findNodeById('sales')?.toNodeData()).toMatchObject({ nodeKind: 'module' })
   })
 
+  it('applies project layout edit on root module', () => {
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([
+      { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
+    ], 'header'))
+    expect(p.navigationRoot.childPlacement).toBe('header')
+
+    p.applyProjectLayoutEdit('sidebar')
+    expect(p.navigationRoot.childPlacement).toBe('sidebar')
+    expect(p.rootNode?.toNodeData().childPlacement).toBe('sidebar')
+    expect(p.readDirtyProjection().navigationDirty).toBe(true)
+  })
+
   it('uses a real project node as the project home node and keeps placement on root', () => {
     const p = createWorkspace().project
     p.replaceNavigationRoot(createRoot([

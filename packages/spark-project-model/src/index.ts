@@ -51,6 +51,7 @@ export {
   isSystemRootDirectory,
   canUseModuleNodeKind,
   normalizePageIdFromPath,
+  normalizeNavRoot,
 } from './navigation/navigation-tree'
 
 export type {

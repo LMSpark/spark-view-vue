@@ -36,6 +36,7 @@
                 进入应用
               </el-button>
               <el-tag v-else type="success" size="small">当前应用</el-tag>
+              <el-button size="small" @click="openSettings(project)">设置</el-button>
               <el-button
                 v-if="project.projectType !== 'homepage'"
                 type="danger"
@@ -50,6 +51,15 @@
         </el-col>
       </el-row>
     </div>
+
+    <AppProjectSettingsDialog
+      v-if="settingsTarget"
+      v-model="settingsVisible"
+      :tenant-id="tenantId"
+      :project-id="settingsTarget.projectId"
+      :project-name="settingsTarget.name"
+      @saved="loadProjects"
+    />
 
     <!-- 创建应用弹窗 -->
     <el-dialog v-model="showCreateDialog" title="创建应用" width="480px">
@@ -88,9 +98,10 @@ import { http } from '@/services/http'
 import { getProjectApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
-import { buildTenantPath, stripTenantScope } from '@/services/tenant-scope'
+import { buildTenantPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
 import NavIcon from '@/components/NavIcon.vue'
 import { getNavHomePath } from '@spark-appworks/spark-app'
+import AppProjectSettingsDialog from './AppProjectSettingsDialog.vue'
 
 type ProjectItem = {
   projectId: string
@@ -99,6 +110,7 @@ type ProjectItem = {
   icon: string
   description: string
   order: number
+  homeNodeId?: string | null
 }
 
 const router = useRouter()
@@ -107,6 +119,13 @@ const projectSwitch = inject(PROJECT_SWITCH_KEY)
 const projects = ref<ProjectItem[]>([])
 const showCreateDialog = ref(false)
 const creating = ref(false)
+const settingsVisible = ref(false)
+const settingsTarget = ref<ProjectItem | null>(null)
+
+const tenantId = computed(() => {
+  const fromRoute = parseTenantScope(route.path)?.tenantId
+  return fromRoute ?? getUser()?.tenantId ?? ''
+})
 
 const currentProjectId = computed(() => getRouteProjectId() ?? getUser()?.defaultProjectId ?? 'homepage')
 
@@ -118,7 +137,7 @@ const createForm = ref({
 })
 
 async function loadProjects() {
-  const data = await http.get<ProjectItem[]>(getProjectApi())
+  const data = await http.get<ProjectItem[]>(getProjectApi(tenantId.value))
   projects.value = data
 }
 
@@ -136,6 +155,11 @@ function getCurrentSubPath(): string {
   return stripTenantScope(route.path) || '/app-list'
 }
 
+function openSettings(project: ProjectItem): void {
+  settingsTarget.value = project
+  settingsVisible.value = true
+}
+
 async function handleCreate() {
   const { projectId, name, icon, description } = createForm.value
   if (!projectId.trim()) {
@@ -144,7 +168,7 @@ async function handleCreate() {
   }
   creating.value = true
   try {
-    await http.post(getProjectApi(), { projectId, name, icon, description })
+    await http.post(getProjectApi(tenantId.value), { projectId, name, icon, description })
     ElMessage.success('应用创建成功')
     showCreateDialog.value = false
     createForm.value = { projectId: '', name: '', icon: 'Box', description: '' }
@@ -174,7 +198,7 @@ async function handleDelete(project: ProjectItem) {
       confirmButtonText: '删除',
       cancelButtonText: '取消',
     })
-    await http.delete(`${getProjectApi()}/${project.projectId}`)
+    await http.delete(`${getProjectApi(tenantId.value)}/${project.projectId}`)
     ElMessage.success('已删除')
     await loadProjects()
   } catch {
@@ -238,5 +262,6 @@ onMounted(async () => {
   display: flex;
   align-items: center;
   gap: 8px;
+  flex-wrap: wrap;
 }
 </style>

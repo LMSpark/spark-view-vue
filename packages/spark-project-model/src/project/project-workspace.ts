@@ -196,6 +196,18 @@ export class ProjectWorkspace {
     this.project.markPageLoadedChanged(page.pageId, true)
   }
 
+  async saveProjectLayout(options?: { skipReload?: boolean }): Promise<void> {
+    const root = this.project.rootNode
+    if (!root) throw new Error('导航 root 未加载')
+    const { patch } = createNavigationNodePatch(createNavigationNodeDraft(root.toNodeData()))
+    await this.navigationClient.updateNode(root.id, patch)
+    if (options?.skipReload === true) {
+      this.project.markNavigationClean('root')
+      return
+    }
+    await this.reloadNavigation({ selectedNodeId: this.project.session.session.selectedNodeId })
+  }
+
   async saveSelectedNavigationNode(options?: { skipReload?: boolean }): Promise<void> {
     let nodeId: string
     let patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>
@@ -487,7 +499,8 @@ export class ProjectWorkspace {
     if (!navDirty) return
 
     if (this.project.session.session.navigationDirtyScope === 'root') {
-      throw new Error('导航编辑必须按节点提交，不能整树保存')
+      await this.saveProjectLayout()
+      return
     }
     await this.saveSelectedNavigationNode()
     this.project.markNavigationClean('node')

@@ -60,6 +60,14 @@ export function getProjectApi(tenantId?: string): string {
   return `/api/tenants/${encodeURIComponent(resolvedTenantId)}/projects`
 }
 
+export function getProjectDetailApi(projectId: string, tenantId?: string): string {
+  const normalizedProjectId = projectId.trim()
+  if (!normalizedProjectId) {
+    throw new Error('projectId 不能为空，无法构造项目详情 API 路径')
+  }
+  return `${getProjectApi(tenantId)}/${encodeURIComponent(normalizedProjectId)}`
+}
+
 export function getProjectNavigationApi(projectId: string, tenantId?: string): string {
   const resolvedTenantId = resolveTenantId(tenantId)
   const normalizedProjectId = projectId.trim()

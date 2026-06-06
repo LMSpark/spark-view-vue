@@ -122,6 +122,23 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }
   closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
   readPageSummaries(): ProjectPageNodeSummary[] { return this.design.readPageSummaries() }
+
+  /** 更新根模块 childPlacement（项目级 header / sidebar 布局）。 */
+  applyProjectLayoutEdit(childPlacement: 'header' | 'sidebar'): NavigationNodeDraftApplyResult {
+    const root = this.design.rootNode
+    if (!root) throw new Error('导航 root 未加载')
+    const beforeKey = navigationDraftContentKey(createNavigationNodeDraft(root.toNodeData()))
+    const draft = createNavigationNodeDraft(root.toNodeData())
+    draft.node.childPlacement = childPlacement
+    const { node, result } = this.design.applyNavigationNodeEdit(draft)
+    const nextDraft = createNavigationNodeDraft(node.toNodeData())
+    if (navigationDraftContentKey(nextDraft) !== beforeKey) {
+      this.session.markNavigationDirty('root')
+    }
+    this.emitNavigationChanged({ scope: 'root', nodeId: node.id })
+    return result
+  }
+
   addRootModule(createId: () => string): ProjectNodeData {
     const node = this.design.addRootModule(createId)
     this.session.markNavigationDirty('root')
