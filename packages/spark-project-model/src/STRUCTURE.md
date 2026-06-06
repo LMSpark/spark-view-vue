@@ -2,9 +2,9 @@
 
 ```text
 index.ts              唯一公开入口
-navigation/           ProjectNode 基类、非配置页 kind、树投影/查找、编辑草稿（不依赖 page）
+navigation/           ProjectNode、kinds、tree、index、edit（不依赖 page）
 page/                 ConfigPageNode、四文件、compile-files、canonicalize-page-data、content/*
-project/              ProjectModel、ProjectDesign、ProjectSession、ProjectWorkspace
+project/              ProjectModel、navigation-design、project-design、ProjectSession、ProjectWorkspace
 io/                   HTTP、NavigationClient、PageFileApi、PageContentLoader、ProjectReferenceClient
 ```
 
