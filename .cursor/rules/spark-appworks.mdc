@@ -12,6 +12,7 @@ alwaysApply: true
 - Node >= 20, pnpm >= 10. Verify with `node --version` and `pnpm --version` when environment issues are possible.
 - Frontend dependencies: `pnpm install --frozen-lockfile`.
 - Java work under `spark-ai-server/` requires JDK 17+; pure frontend work skips Java.
+- After `spark-ai-server/` changes, restart `pnpm run dev` (or the Spring Boot process on 8180); the Java backend has no HMR.
 - Avoid slow commands unless explicitly needed: `pnpm run dev`, `pnpm run build`, and `cd spark-ai-server && mvn install`.
 
 ## Fast Verification

@@ -5,6 +5,9 @@
  * 用法：node scripts/start-dev.mjs
  * 或：  pnpm run dev（已配置）
  *
+ * 注意：修改 spark-ai-server/（Java）后必须重启 dev，热更新不会生效。
+ *       仅改前端时 Vite HMR 即可；若 8180 端口已有旧 Java 进程，先停再启。
+ *
  * 环境变量（可选）：
  *   JAVA_HOME          — Java 17 路径（默认自动检测）
  *   OPENAI_API_KEY     — LLM API Key
@@ -163,6 +166,30 @@ function ensureMysqlService() {
   }
 }
 
+const MYSQL_HOST = '127.0.0.1'
+const MYSQL_PORT = 3406
+
+async function waitForMysql(timeoutMs = 60_000) {
+  const start = Date.now()
+  while (Date.now() - start <= timeoutMs) {
+    if (await canConnectPort(MYSQL_HOST, MYSQL_PORT)) {
+      return
+    }
+    await new Promise((resolveP) => setTimeout(resolveP, 1000))
+  }
+  throw new Error(`MySQL ${MYSQL_HOST}:${MYSQL_PORT} 在 ${timeoutMs / 1000}s 内未就绪`)
+}
+
+// MySQL 必须先于 Java 连接池就绪；复用旧后端时也要保证数据库已启动。
+ensureMysqlService()
+try {
+  await waitForMysql()
+  console.log(`✅ MySQL 就绪: ${MYSQL_HOST}:${MYSQL_PORT}`)
+} catch (e) {
+  console.error(`\n❌ ${e.message}`)
+  process.exit(1)
+}
+
 // ── 启动 Java 后端 ──────────────────────────────────────────────────────────
 console.log(`\n🚀 启动 Java 后端 (port ${BACKEND_PORT})...`)
 console.log(`   JAVA_HOME: ${javaHome}`)
@@ -197,8 +224,8 @@ const javaEnv = {
 let backend = null
 if (canReuseExistingBackend) {
   console.warn(`⚠️ 检测到 ${BACKEND_URL} 已有可用后端，将复用现有进程，不重复拉起 Java。`)
+  console.warn('   若出现 MySQL Communications link failure，请停止旧 Java 进程后重新执行 pnpm run dev。')
 } else {
-  ensureMysqlService()
   backend = spawn(mvnCmd, ['spring-boot:run', `-Dserver.port=${BACKEND_PORT}`], {
     cwd: SERVER_DIR,
     env: javaEnv,

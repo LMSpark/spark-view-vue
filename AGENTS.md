@@ -17,6 +17,10 @@ pnpm install --frozen-lockfile
 - `cd spark-ai-server && mvn install` — 下载 Maven 依赖，非常慢
 - `pnpm run build` — 包含 Java 的完整流水线，除非测试构建，否则避免运行
 
+**开发重启约定：**
+- 修改 `spark-ai-server/`（Java、`application*.yml`、Flyway 等）后，**必须重启** `pnpm run dev`（或单独重启 8180 上的 Spring Boot）；后端无 HMR。
+- 仅改前端包/`src/` 时，Vite 热更新即可；不必为纯前端改动重启 Java。
+
 **验证命令（较快，变更后运行）：**
 ```bash
 pnpm run typecheck   # TypeScript 严格检查
