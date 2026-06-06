@@ -10,13 +10,13 @@ SPARK 配置分两层：
 ```text
 ProjectModel
   └── design: ProjectDesign
-        ├── navigation: NavigationDesign  # 节点树 + 平铺索引
+        ├── nodesById + NavigationIndex  # 节点树 + 平铺索引
         └── ConfigPageNode
               ├── PageDesign (rule / dataSet / script / style)
               └── 持久化 → rule.json / pagedata.json / script.js / style.css
 ```
 
-后端 API 仍叫 `navigation`，但模型层用 `NavigationDesign` 组织节点；内存可为树与索引，落盘映射到 DB 平铺行。
+后端 API 仍叫 `navigation`，但模型层由 `ProjectDesign` 统一持有节点树与配置页；内存可为树与索引，落盘映射到 DB 平铺行。
 
 ## 节点描述
 

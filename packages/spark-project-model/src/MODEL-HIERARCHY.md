@@ -110,19 +110,15 @@ classDiagram
   }
 
   class ProjectDesign {
-    +navigation: NavigationDesign
+    nodesById: Map
     +configPagesByPageId: Map
+    +navigationRoot: ProjectModelData
     +findNodeById()
     +findConfigPageByPageId()
     +openPageDesign() / closePageDesign()
     +replaceNavigationRoot()
-  }
-
-  class NavigationDesign {
-    nodesById: Map
-    +navigationRoot: ProjectModelData
     +applyNavigationNodeEdit()
-    +readPageSummariesFromTree()
+    +readPageSummaries()
   }
 
   class NavigationIndex {
@@ -140,10 +136,9 @@ classDiagram
 
   ProjectModel *-- ProjectDesign
   ProjectModel *-- ProjectSession
-  ProjectDesign *-- NavigationDesign
+  ProjectDesign *-- NavigationIndex
   ProjectDesign o-- ConfigPageNode : Map~pageId~
-  NavigationDesign *-- NavigationIndex
-  NavigationDesign o-- ProjectNode : nodesById
+  ProjectDesign o-- ProjectNode : nodesById
 ```
 
 ---
@@ -252,7 +247,7 @@ ProjectWorkspace    → project, navigation, page, io
 | 树纯函数 / pageId 解析 | `navigation/navigation-tree.ts` |
 | nodesById 内存索引 | `navigation/navigation-index.ts` |
 | 节点属性表单 / patch | `navigation/navigation-edit.ts` |
-| 导航 nodesById CRUD | `project/navigation-design.ts` |
+| 导航 nodesById CRUD | `project/project-design.ts` |
 | 项目元数据 + 设计聚合 | `project/project-design.ts` |
 | 四文件内存模型 | `page/content/*`、`page/config-page.ts` |
 | 选中 / dirty / draft | `project/project-session.ts` |

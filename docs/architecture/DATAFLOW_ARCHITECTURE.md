@@ -6,7 +6,7 @@
 
 ```text
 项目需求
-  -> ProjectModel.design (ProjectDesign / NavigationDesign)
+  -> ProjectModel.design (ProjectDesign)
   -> ConfigPageNode (page / sub-page)
   -> PageNodeRenderConfig
   -> SparkPageRenderer
@@ -16,7 +16,7 @@
 
 ## 项目节点
 
-**存储真源**是 DB navigation 平铺行；**领域模型**用 `NavigationDesign` 持有 `nodesById` 与 `NavigationIndex`。`root`、`children`、导航树是为 UI、路由和策划遍历生成的投影，不必与表结构同构。
+**存储真源**是 DB navigation 平铺行；**领域模型**由 `ProjectDesign` 持有 `nodesById` 与 `NavigationIndex`。`root`、`children`、导航树是为 UI、路由和策划遍历生成的投影，不必与表结构同构。
 
 ```text
 flat node

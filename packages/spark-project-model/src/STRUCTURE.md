@@ -4,7 +4,7 @@
 index.ts              唯一公开入口
 navigation/           ProjectNode、kinds、tree、index、edit（不依赖 page）
 page/                 ConfigPageNode、四文件、compile-files、canonicalize-page-data、content/*
-project/              ProjectModel、navigation-design、project-design、ProjectSession、ProjectWorkspace
+project/              ProjectModel、project-design、ProjectSession、ProjectWorkspace
 io/                   HTTP、NavigationClient、PageFileApi、PageContentLoader、ProjectReferenceClient
 ```
 

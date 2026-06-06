@@ -59,7 +59,7 @@ DevSystem 只能通过 `ProjectEditor` 进入项目节点、页面文件、版�
 ```text
 ProjectModel
   ├── design: ProjectDesign
-  │   ├── navigation: NavigationDesign
+  │   ├── nodesById + NavigationIndex
   │   └── pages → ConfigPageNode*
   └── runtime: ProjectRuntime
 

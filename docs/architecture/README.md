@@ -14,7 +14,7 @@
 | 术语 | 含义 |
 |---|---|
 | `ProjectModel` | 软件项目根；持有 `design` 与 `runtime` |
-| `ProjectDesign` / `NavigationDesign` | 导航与配置页设计内容聚合 |
+| `ProjectDesign` | 导航与配置页设计内容聚合 |
 | `ProjectNode` | 导航节点基 class；按 `nodeKind` 派生子类 |
 | `ConfigPageNode` | 配置页节点；聚合四文件与 `PageDesign` / `PageRuntime` |
 | `ProjectEditor` | 设计门面：API、session、`subscribe`、落盘 |

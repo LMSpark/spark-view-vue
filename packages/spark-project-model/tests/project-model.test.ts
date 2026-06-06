@@ -77,8 +77,7 @@ describe('ProjectModel', () => {
   it('exposes the design aggregate on project root', () => {
     const p = createWorkspace().project
     expect(p.design).toBeDefined()
-    expect(p.design.navigation).toBe(p.design.navigation)
-    p.design.navigation.replaceNavigationRoot(createRoot([
+    p.design.replaceNavigationRoot(createRoot([
       { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders' },
     ]))
     expect(p.design.findConfigPageByPageId('orders')).toBeInstanceOf(ConfigPageNode)
