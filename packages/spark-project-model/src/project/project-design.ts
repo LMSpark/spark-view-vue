@@ -22,7 +22,7 @@ import {
   normalizeNavRoot,
   resolvePageNodePageId,
 } from '../navigation/navigation-tree'
-import { instantiateProjectNode, isConfigPageNode } from '../navigation/navigation-kinds'
+import { instantiateProjectNode, isConfigPageNode } from '../page/instantiate-project-node'
 import { applyNavigationNodeDraftToNode } from '../navigation/navigation-edit'
 import { NavigationIndex } from '../navigation/navigation-tree'
 import type { ProjectInfo, ProjectInfoInput, ProjectModelInitOptions } from './project-types'

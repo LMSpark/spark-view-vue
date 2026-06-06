@@ -9,8 +9,10 @@ import type {
   ProjectNodeLocation,
   ProjectPageNodeSummary,
 } from './project-node'
-
-export function normalizePid(v: string | null | undefined): string { return v?.trim() ?? '' }
+import {
+  formatProjectDescriptionContext,
+  readProjectNodeDescription,
+} from './project-node'
 
 export function normalizePageIdFromPath(path: string | undefined | null): string {
   return path ? path.replace(/^\/+/, '').trim() : ''
@@ -243,8 +245,6 @@ export function resolveNavPageSummaryId(node: ProjectNodeData): string {
   return ''
 }
 
-export function readProjectNodeDescription(node: ProjectNodeData | null | undefined): string { return node?.description?.trim() ?? '' }
-
 function createProjectDescriptionContext(node: ProjectNodeData | null | undefined): ProjectDescriptionContext | null {
   const d = readProjectNodeDescription(node)
   if (!node || !d) return null
@@ -254,10 +254,6 @@ function createProjectDescriptionContext(node: ProjectNodeData | null | undefine
 export function appendProjectDescriptionContext(c: readonly ProjectDescriptionContext[], node: ProjectNodeData | null | undefined): ProjectDescriptionContext[] {
   const n = createProjectDescriptionContext(node)
   return n === null ? [...c] : [...c, n]
-}
-
-export function formatProjectDescriptionContext(c: readonly ProjectDescriptionContext[]): string {
-  return c.map(i => `${i.title}: ${i.description}`).join('\n')
 }
 
 type BuildProjectPageSummariesOptions = {

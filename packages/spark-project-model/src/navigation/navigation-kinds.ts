@@ -1,6 +1,4 @@
-/** 按 nodeKind 特化的导航节点 class（存储可平铺，领域按 kind 分层）。 */
-import { ConfigPageNode, ConfigSubPageNode, type ProjectConfigPageNodeModelOptions } from '../page/config-page'
-import { isConfigNodeKind } from './navigation-tree'
+/** 按 nodeKind 特化的导航节点 class（仅非配置页 kind；不含 page/sub-page）。 */
 import { ProjectNode, type ProjectNodeFamily, type ProjectNodeModelOptions } from './project-node'
 
 export class ModuleNode extends ProjectNode {
@@ -56,19 +54,4 @@ export function instantiateNavigationKindNode(options: ProjectNodeModelOptions):
     default:
       return new ModuleNode(options)
   }
-}
-
-export function instantiateProjectNode(options: ProjectConfigPageNodeModelOptions): ProjectNode {
-  const nodeKind = options.node.nodeKind ?? 'page'
-  if (nodeKind === 'sub-page') return new ConfigSubPageNode(options)
-  if (isConfigNodeKind(nodeKind)) return new ConfigPageNode(options)
-  return instantiateNavigationKindNode(options)
-}
-
-export function isConfigPageNode(node: ProjectNode | null | undefined): node is ConfigPageNode {
-  return node instanceof ConfigPageNode
-}
-
-export function isConfigSubPageNode(node: ProjectNode | null | undefined): node is ConfigSubPageNode {
-  return node instanceof ConfigSubPageNode
 }

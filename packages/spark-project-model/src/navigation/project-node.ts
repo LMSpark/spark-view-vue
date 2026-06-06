@@ -4,7 +4,16 @@
  * 按 nodeKind 选择 ConfigPageNode 等子类；ProjectNodeData 仅为序列化形状。
  */
 import { deepClone, isRecord } from '@spark-appworks/spark-utils'
-import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './navigation-tree'
+
+export function normalizePid(v: string | null | undefined): string { return v?.trim() ?? '' }
+
+export function readProjectNodeDescription(node: ProjectNodeData | null | undefined): string {
+  return node?.description?.trim() ?? ''
+}
+
+export function formatProjectDescriptionContext(context: readonly ProjectDescriptionContext[]): string {
+  return context.map(item => `${item.title}: ${item.description}`).join('\n')
+}
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
 export type ChildPlacement = 'header' | 'sidebar' | 'toolbar' | 'user-menu' | 'parent' | 'flat'

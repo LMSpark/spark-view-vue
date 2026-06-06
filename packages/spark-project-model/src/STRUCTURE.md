@@ -1,11 +1,11 @@
 # src 目录约定
 
 ```text
-index.ts              唯一公开入口（禁止新增子入口 barrel）
-project/              ProjectModel、ProjectDesign、ProjectSession、ProjectWorkspace
-navigation/           ProjectNode 子类、树投影/查找、导航编辑草稿
-page/                 ConfigPageNode、四文件模型、runtime-page
+index.ts              唯一公开入口
+navigation/           ProjectNode 基类、非配置页 kind、树投影/查找、编辑草稿（不依赖 page）
+page/                 ConfigPageNode、四文件、实例化入口 instantiate-project-node
   content/            rule / dataset / script / style 子 class
+project/              ProjectModel、ProjectDesign、ProjectSession、ProjectWorkspace
 serialization/        rule/pagedata 解析与规范化
 io/                   HTTP、NavigationClient、PageFileApi、PageContentLoader、ProjectReferenceClient
 ```
@@ -13,14 +13,20 @@ io/                   HTTP、NavigationClient、PageFileApi、PageContentLoader�
 ## 依赖方向
 
 ```text
-project-workspace → { project, navigation, page, io }
-io → { navigation, page }
-page → { navigation, serialization }
-navigation → （纯领域，不依赖 io）
-project → { navigation, page }
+navigation          （纯领域，仅依赖 spark-utils / spark-data）
+page                → navigation
+serialization       → spark-data
+project             → { navigation, page }
+io                  → { navigation, page }
+project-workspace   → { project, navigation, page, io }
 ```
 
-**禁止 `navigation` / `page` / `project` → `io`。**
+**禁止：**
+- `navigation → page` / `navigation → io`
+- `page → io`
+- `project` / `navigation` / `page` → `io`
+
+配置页节点实例化在 `page/instantiate-project-node.ts`：`page → navigation-kinds`，由 `project-design` 调用。
 
 ## 消费层
 
