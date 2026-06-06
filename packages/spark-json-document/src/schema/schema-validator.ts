@@ -26,6 +26,7 @@
 
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
 import { isRecord } from '@spark-appworks/spark-utils'
+import { attachJsonSchemaDefs } from './schema-attach'
 import type { JsonSchema, JsonSchemaObject } from './schema-types'
 
 // ═══════════════════════════════════════════════════════════════
@@ -72,13 +73,7 @@ function attachSchemaDefs(
   schema: unknown,
   defs?: Readonly<Record<string, JsonSchema>>,
 ): unknown {
-  if (defs === undefined || Object.keys(defs).length === 0) return schema
-  if (!isRecord(schema)) return schema
-  const existing = schema['$defs']
-  const mergedDefs = isRecord(existing)
-    ? { ...defs, ...existing }
-    : { ...defs }
-  return { ...schema, $defs: mergedDefs }
+  return attachJsonSchemaDefs(schema, defs)
 }
 
 // ═══════════════════════════════════════════════════════════════

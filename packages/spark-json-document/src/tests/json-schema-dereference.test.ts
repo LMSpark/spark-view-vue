@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { dereferenceJsonSchema } from '../modules/metadata/json-schema-dereference'
+import { dereferenceJsonSchema } from '../schema/schema-dereference'
 
 describe('dereferenceJsonSchema', () => {
   it('inlines document-level $defs for adapter paramsSchema consumption', () => {

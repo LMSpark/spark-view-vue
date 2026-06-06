@@ -1,5 +1,5 @@
 import ts from 'typescript'
-import { standardizeJsonSchema } from './json-schema-standardize'
+import { standardizeJsonSchema } from '@spark-appworks/spark-json-document'
 import {
   JsonSchemaDefinitionPool,
   isJsonSchemaPoolObject,

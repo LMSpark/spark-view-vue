@@ -8,10 +8,8 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
-import {
-  auditModuleMetadataDocument,
-  type Draft2020AuditIssue,
-} from './json-schema-draft2020-audit'
+import type { Draft2020AuditIssue } from '@spark-appworks/spark-json-document'
+import { auditModuleMetadataDocument } from './module-metadata-draft2020-audit'
 import { generateModuleAbilityMetadata } from './module-metadata-generator'
 import { createLogger } from './utils'
 

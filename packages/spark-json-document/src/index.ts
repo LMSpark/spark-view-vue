@@ -106,6 +106,23 @@ export {
   withMeta,
 } from './schema/with-meta'
 
+export {
+  JSON_SCHEMA_DRAFT_2020_12,
+  standardizeJsonSchema,
+  assertDraft2020Schema,
+  auditDraft2020Schema,
+  dereferenceJsonSchema,
+  dereferenceSchemaSlotsInValue,
+  attachJsonSchemaDefs,
+} from './schema/index'
+
+export type {
+  StandardJsonSchema,
+  StandardJsonSchemaObject,
+  Draft2020AuditIssue,
+  JsonSchemaDefs,
+} from './schema/index'
+
 // ═══════════════════════════════════════════════════════════════
 // tree — UUID 稳定树编辑引擎
 // ═══════════════════════════════════════════════════════════════

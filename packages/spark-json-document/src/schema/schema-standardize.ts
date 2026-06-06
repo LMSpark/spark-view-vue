@@ -38,23 +38,23 @@ const SCHEMA_KEY_ORDER = [
 export type StandardJsonSchema = boolean | StandardJsonSchemaObject
 
 export type StandardJsonSchemaObject = {
-  readonly [keyword: string]: unknown
-  readonly $ref?: string
-  readonly type?: string | readonly string[]
-  readonly properties?: Readonly<Record<string, StandardJsonSchema>>
-  readonly required?: readonly string[]
-  readonly items?: StandardJsonSchema
-  readonly prefixItems?: readonly StandardJsonSchema[]
-  readonly additionalProperties?: StandardJsonSchema
-  readonly enum?: readonly unknown[]
-  readonly const?: unknown
-  readonly anyOf?: readonly StandardJsonSchema[]
-  readonly oneOf?: readonly StandardJsonSchema[]
-  readonly allOf?: readonly StandardJsonSchema[]
-  readonly not?: StandardJsonSchema
-  readonly title?: string
-  readonly description?: string
-  readonly $defs?: Readonly<Record<string, StandardJsonSchema>>
+  [keyword: string]: unknown
+  $ref?: string
+  type?: string | readonly string[]
+  properties?: Readonly<Record<string, StandardJsonSchema>>
+  required?: readonly string[]
+  items?: StandardJsonSchema
+  prefixItems?: readonly StandardJsonSchema[]
+  additionalProperties?: StandardJsonSchema
+  enum?: readonly unknown[]
+  const?: unknown
+  anyOf?: readonly StandardJsonSchema[]
+  oneOf?: readonly StandardJsonSchema[]
+  allOf?: readonly StandardJsonSchema[]
+  not?: StandardJsonSchema
+  title?: string
+  description?: string
+  $defs?: Readonly<Record<string, StandardJsonSchema>>
 }
 
 export function standardizeJsonSchema(value: unknown): StandardJsonSchema {
@@ -304,9 +304,10 @@ function isRedundantBooleanEnum(
 }
 
 function sortSchemaKeys(schema: StandardJsonSchemaObject): StandardJsonSchemaObject {
-  const sorted: StandardJsonSchemaObject = {}
+  const sorted: Record<string, unknown> = {}
   for (const key of SCHEMA_KEY_ORDER) {
-    if (schema[key] !== undefined) sorted[key] = schema[key]
+    const value = schema[key]
+    if (value !== undefined) sorted[key] = value
   }
   for (const [key, value] of Object.entries(schema)) {
     if (sorted[key] === undefined) sorted[key] = value

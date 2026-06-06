@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { standardizeJsonSchema } from './json-schema-standardize'
+import { standardizeJsonSchema } from '@spark-appworks/spark-json-document'
 import { jsonSchemaDefinitionName } from './json-schema-pool'
 
 export const MODULE_METADATA_JSON_SCHEMA = 'https://json-schema.org/draft/2020-12/schema'

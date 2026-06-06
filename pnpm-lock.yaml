@@ -484,6 +484,9 @@ importers:
 
   packages/vite-plugin-spark-catalog:
     dependencies:
+      '@spark-appworks/spark-json-document':
+        specifier: workspace:*
+        version: link:../spark-json-document
       glob:
         specifier: ^13.0.6
         version: 13.0.6

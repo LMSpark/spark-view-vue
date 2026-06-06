@@ -56,3 +56,36 @@ export type {
 export {
   withMeta,
 } from './with-meta'
+
+// ── Draft 2020-12 标准化 / 审计 / $ref ────────────────────────
+export {
+  JSON_SCHEMA_DRAFT_2020_12,
+  standardizeJsonSchema,
+} from './schema-standardize'
+
+export type {
+  StandardJsonSchema,
+  StandardJsonSchemaObject,
+} from './schema-standardize'
+
+export {
+  assertDraft2020Schema,
+  auditDraft2020Schema,
+} from './schema-draft2020-audit'
+
+export type {
+  Draft2020AuditIssue,
+} from './schema-draft2020-audit'
+
+export {
+  dereferenceJsonSchema,
+  dereferenceSchemaSlotsInValue,
+} from './schema-dereference'
+
+export type {
+  JsonSchemaDefs,
+} from './schema-dereference'
+
+export {
+  attachJsonSchemaDefs,
+} from './schema-attach'

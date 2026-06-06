@@ -16,6 +16,7 @@
         "typecheck": "tsc --noEmit -p tsconfig.json"
     },
     "dependencies": {
+        "@spark-appworks/spark-json-document": "workspace:*",
         "glob": "^13.0.6",
         "vue-component-meta": "3.3.3"
     },

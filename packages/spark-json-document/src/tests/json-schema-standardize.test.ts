@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { standardizeJsonSchema } from '../json-schema-standardize'
+import { standardizeJsonSchema } from '../schema/schema-standardize'
 
 describe('standardizeJsonSchema', () => {
   it('unwraps single-branch combinators and preserves direct $ref', () => {
