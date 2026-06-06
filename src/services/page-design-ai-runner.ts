@@ -1,5 +1,5 @@
 /**
- * DevSystem 面板内 pageDesign AI — 使用 APP 门面单例（`getAppProjectEditor()`）。
+ * DevSystem 面板内 pageDesign AI — 使用 DevSystem 当前 ProjectWorkspace。
  *
  * `command.editor` 必须与手动编辑同一 `editor.project`，保存/撤销语义一致。
  * 隔离式 SSE Host Run 见 `page-design-host-run-provider.ts`（headless 临时门面）。
@@ -14,7 +14,7 @@ import type {
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
-import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
 import {
   PAGE_DESIGN_MODULE_ID,
   ensurePageDesignBusiness,
@@ -22,7 +22,6 @@ import {
   type PageDesignRunInput,
   type PageDesignRunMode,
 } from '@/services/page-design-business'
-import { resolvePageDesignEditor } from '@/services/page-design-editor-provider'
 
 export type PageDesignAiRunOptions = {
   description: string
@@ -44,7 +43,7 @@ export type PageDesignAiRunEvents = {
 
 export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
   pageId: string
-  editor: ProjectEditor
+  editor: ProjectWorkspace
   consumeCapability: SparkCapabilityConsumer | null
   events?: PageDesignAiRunEvents
   trace?: AiRunTraceSink
@@ -76,13 +75,6 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     getPageDesignEditor: (context) => {
       if (context.moduleInstanceId !== pageId) {
         throw new Error(`pageDesign editor mismatch: expected "${pageId}", got "${context.moduleInstanceId}".`)
-      }
-      const singleton = resolvePageDesignEditor(
-        { moduleInstanceId: pageId, useAppSingleton: true },
-        new Map(),
-      )
-      if (singleton !== command.editor) {
-        throw new Error('pageDesign DevSystem session must use the same ProjectEditor instance as command.editor.')
       }
       return command.editor
     },
@@ -142,8 +134,8 @@ function createPageDesignTraceSink(options: CreatePageDesignTraceSinkOptions): A
   }
 }
 
-function assertActivePageNodeLoaded(editor: ProjectEditor, pageId: string): void {
-  const activePage = editor.getActivePage()
+function assertActivePageNodeLoaded(editor: ProjectWorkspace, pageId: string): void {
+  const activePage = editor.project.getActivePage()
   if (activePage === null) {
     throw new Error('pageDesign AI requires the current PageNode to be opened before editing.')
   }

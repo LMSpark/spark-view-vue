@@ -26,7 +26,16 @@ function createDevSystemCtx(overrides: Record<string, unknown> = {}) {
     pageDataError: ref(null),
     statusMessages: ref([]),
     pageList: ref([]),
+    tenantId: 'tenant-a',
+    projectId: 'homepage',
+    projectPicker: { tenantId: 'tenant-a', projectId: 'homepage' },
+    editableProjects: ref([
+      { tenantId: 'tenant-a', projectId: 'homepage', name: 'Homepage', icon: 'Box', description: '' },
+    ]),
+    projectOptionsLoading: ref(false),
     initialize: vi.fn().mockResolvedValue(undefined),
+    loadEditableProjects: vi.fn().mockResolvedValue(undefined),
+    openProjectPickerScope: vi.fn().mockResolvedValue(true),
     approveAiTool: vi.fn(),
     rejectAiTool: vi.fn(),
     abortAiTool: vi.fn(),
@@ -58,6 +67,14 @@ const ButtonStub = defineComponent({
 
 const PassthroughStub = defineComponent({
   template: '<div><slot name="label" /><slot /></div>',
+})
+
+const SelectStub = defineComponent({
+  props: {
+    modelValue: String,
+  },
+  emits: ['update:modelValue', 'visible-change'],
+  template: '<div><slot /></div>',
 })
 
 const ApprovalPanelStub = defineComponent({
@@ -96,6 +113,8 @@ function mountDevSystem() {
         ElButton: ButtonStub,
         ElEmpty: true,
         ElInput: true,
+        ElOption: true,
+        ElSelect: SelectStub,
         ElTabPane: PassthroughStub,
         ElTabs: PassthroughStub,
         ElTag: true,

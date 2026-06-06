@@ -340,8 +340,8 @@ const relEditorPos = computed(() => {
 const pendingProjectionLayout = shallowRef<LayoutForNewTable | null>(null)
 
 function getPageDataTool(): DataSetCrudTool | null {
-  void props.state.pageFilesRevision.value
-  return props.state.editor.getDataSetTool()
+  void props.state.projectRevision.value
+  return props.state.project.getDataSetTool()
 }
 
 function buildColumnIdMap(table: DesignerTableProjection): Record<string, string> {
@@ -349,8 +349,8 @@ function buildColumnIdMap(table: DesignerTableProjection): Record<string, string
 }
 
 const projectedMetadata = computed<DataSetMetadata | null>(() => {
-  void props.state.pageFilesRevision.value
-  // 以 DataSetCrudTool 为唯一数据源；pagedata 文档变更由 app 层 pageFilesRevision 接入 Vue 响应式。
+  void props.state.projectRevision.value
+  // 以 DataSetCrudTool 为唯一数据源；pagedata 文档变更由 ProjectModel revision 接入 Vue 响应式。
   return getPageDataTool()?.toJson() ?? null
 })
 
@@ -382,7 +382,7 @@ function applyMutationWithHistory(
   if (!tool) return
   try {
     pendingProjectionLayout.value = layoutForNewTable ?? null
-    void props.state.editor.editDataSet((t) => {
+    void props.state.project.editDataSet((t) => {
       syncLayoutToTool(t)
       mutator(t)
     }).catch((error: unknown) => {
@@ -403,13 +403,13 @@ function applyHistoryMutation(
 }
 
 function undo() {
-  const ok = props.state.editor.undoPageFile('pagedata.json')
+  const ok = props.state.project.undoPageFile('pagedata.json')
   if (!ok) return
   resetSelectionState()
 }
 
 function redo() {
-  const ok = props.state.editor.redoPageFile('pagedata.json')
+  const ok = props.state.project.redoPageFile('pagedata.json')
   if (!ok) return
   resetSelectionState()
 }
@@ -425,19 +425,19 @@ function commitLayoutCheckpoint(): void {
   const anchor = tables.value[0]
   if (!anchor) return
   // 通过 no-op 结构提交推进 DataSetCrudTool 历史游标，把当前 UI 布局绑定到同一撤销链。
-  void props.state.editor.editDataSet((t) => {
+  void props.state.project.editDataSet((t) => {
     syncLayoutToTool(t)
     t.updateTable({ tableName: anchor.tableName })
   })
 }
 
 const canUndo = computed(() => {
-  void props.state.pageFilesRevision.value
-  return props.state.editor.canUndoPageFile('pagedata.json')
+  void props.state.projectRevision.value
+  return props.state.project.canUndoPageFile('pagedata.json')
 })
 const canRedo = computed(() => {
-  void props.state.pageFilesRevision.value
-  return props.state.editor.canRedoPageFile('pagedata.json')
+  void props.state.projectRevision.value
+  return props.state.project.canRedoPageFile('pagedata.json')
 })
 
 watch(

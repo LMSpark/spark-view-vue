@@ -84,7 +84,7 @@
             :schema="RULE_JSON_SCHEMA"
             class="code-input code-input--json"
             height="100%"
-            @update:model-value="(val: unknown) => state.editor.setPageFileText('rule.json', String(val))"
+            @update:model-value="(val: unknown) => state.project.writePageFile({ fileName: 'rule.json', text: String(val) })"
           />
           <SparkCodeEditor
             v-else-if="isCodeFile(resolvedActiveFile)"
@@ -171,13 +171,14 @@ const pageDataViewModePinned = ref(false)
 const resolvedActiveFile = computed<PageNodeFileName>(() => props.activeFile ?? localActiveFile.value)
 const showTabs = computed(() => props.showTabs)
 const fileEditor = useDevFileEditor(props.state, resolvedActiveFile)
-const model = computed(() => props.state.editor)
+const host = computed(() => props.state.editor)
+const project = computed(() => props.state.project)
 
 function alignActivePage(): boolean {
   const pageId = props.state.activePageId.value.trim()
   if (!pageId) return false
-  if (model.value.getActivePage()?.pageId !== pageId) {
-    model.value.setActivePage(pageId)
+  if (project.value.getActivePage()?.pageId !== pageId) {
+    project.value.setActivePage(pageId)
   }
   return true
 }
@@ -252,7 +253,7 @@ async function loadVersions() {
   if (!alignActivePage()) return
   remoteVersionLoading.value = true
   try {
-    remotePageVersions.value = await model.value.listRemotePageVersions(resolvedActiveFile.value)
+    remotePageVersions.value = await host.value.listRemotePageVersions(resolvedActiveFile.value)
   } catch (e) {
     props.state.addStatus(`读取后端版本失败: ${String(e)}`, 'error')
     remotePageVersions.value = []
@@ -273,7 +274,7 @@ async function restoreVersion(version: number) {
   if (!pageId || !alignActivePage()) return
   restoringVersion.value = version
   try {
-    await model.value.restoreRemotePageVersion(version, resolvedActiveFile.value)
+    await host.value.restoreRemotePageVersion(version, resolvedActiveFile.value)
     props.state.addStatus(`页面 ${pageId} 已将 ${resolvedActiveFile.value} 版本 v${version} 恢复为当前版`, 'success')
     await loadVersions()
   } catch (e) {
@@ -288,7 +289,7 @@ async function createVersion() {
   creatingVersion.value = true
   try {
     await fileEditor.save()
-    await model.value.createRemotePageVersion(resolvedActiveFile.value)
+    await host.value.createRemotePageVersion(resolvedActiveFile.value)
     props.state.addStatus(`${resolvedActiveFile.value} 已创建新版本快照`, 'success')
     await loadVersions()
   } catch (e) {
@@ -310,7 +311,7 @@ async function confirmDeleteVersion(row: PageNodeFileVersionSummary) {
   }
   if (!alignActivePage()) return
   try {
-    await model.value.deleteRemotePageVersion(row.version, resolvedActiveFile.value)
+    await host.value.deleteRemotePageVersion(row.version, resolvedActiveFile.value)
     props.state.addStatus(`${resolvedActiveFile.value} 版本 v${row.version} 已删除`, 'success')
     await loadVersions()
   } catch (e) {

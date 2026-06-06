@@ -140,7 +140,12 @@ import {
   markLogoutPending,
   switchProject,
 } from '@/services/auth'
-import { resetAppProjectEditor } from '@/services/project-editor-host'
+import { resetAppProjectWorkspace } from '@/services/project-workspace'
+import {
+  readAppProjectNavigationRoot,
+  resetAppProjectModel,
+  syncAppProjectModelFromNav,
+} from '@/services/app-project-model'
 import {
   registerShellNavRootListener,
   reloadAndSyncNavigation,
@@ -424,7 +429,8 @@ navigationActionRegistry.register('home', () => {
 })
 navigationActionRegistry.register('logout', () => {
   markLogoutPending()
-  resetAppProjectEditor()
+  resetAppProjectWorkspace()
+  resetAppProjectModel()
   clearAllPageCache()
   window.location.replace(router.resolve('/').href)
 })
@@ -550,7 +556,7 @@ watch(
   () => {
     activeProjectId.value = resolveActiveProjectId()
     applyProjectSettingsScope(resolveActiveSettingsScope())
-    applyNavTree(getNavTree())
+    syncAppNavProjectionFromRouter()
   },
   { immediate: true },
 )
@@ -566,6 +572,11 @@ function applyNavTree(navData: ProjectModelData | null): void {
   } else if (import.meta.env.DEV) {
     console.warn('[Nav] ⚠️ 导航树为空')
   }
+}
+
+function syncAppNavProjectionFromRouter(): void {
+  syncAppProjectModelFromNav(getNavTree())
+  applyNavTree(readAppProjectNavigationRoot())
 }
 
 async function reloadNavigation(): Promise<void> {
@@ -600,7 +611,7 @@ onMounted(() => {
   if (isAuthenticated()) {
     syncCommittedNavigationFromRouter()
   } else {
-    applyNavTree(getNavTree())
+    syncAppNavProjectionFromRouter()
   }
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）

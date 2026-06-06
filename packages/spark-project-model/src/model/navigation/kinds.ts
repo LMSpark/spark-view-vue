@@ -1,4 +1,6 @@
 /** 按 nodeKind 特化的导航节点 class（存储可平铺，领域按 kind 分层）。 */
+import { ConfigPageNode, ConfigSubPageNode, type ProjectConfigPageNodeModelOptions } from '../page/config-page'
+import { isConfigNodeKind } from './helpers'
 import { ProjectNode, type ProjectNodeFamily, type ProjectNodeModelOptions } from './node'
 
 export class ModuleNode extends ProjectNode {
@@ -21,9 +23,6 @@ export class SystemPageNode extends ProjectNode {
   override get family(): ProjectNodeFamily { return 'system-page' }
 }
 
-/** system-page 节点 — 运行时映射到静态 Vue 组件（VUE_PAGE_MAP），无四文件。 */
-export class VueComponentPageNode extends SystemPageNode {}
-
 export class SystemActionNode extends ProjectNode {
   override get family(): ProjectNodeFamily { return 'system-action' }
 }
@@ -34,10 +33,9 @@ export type AnyProjectNode =
   | LinkNode
   | RefNode
   | SystemPageNode
-  | VueComponentPageNode
   | SystemActionNode
 
-export function createKindNode(options: ProjectNodeModelOptions): AnyProjectNode {
+export function instantiateNavigationKindNode(options: ProjectNodeModelOptions): AnyProjectNode {
   const kind = options.node.nodeKind ?? 'page'
   switch (kind) {
     case 'system-directory':
@@ -49,13 +47,28 @@ export function createKindNode(options: ProjectNodeModelOptions): AnyProjectNode
     case 'ref':
       return new RefNode(options)
     case 'system-page':
-      return new VueComponentPageNode(options)
+      return new SystemPageNode(options)
     case 'system-action':
       return new SystemActionNode(options)
     case 'page':
     case 'sub-page':
-      throw new Error(`createKindNode does not handle config page kind: ${kind}`)
+      throw new Error(`instantiateNavigationKindNode does not handle config page kind: ${kind}`)
     default:
       return new ModuleNode(options)
   }
+}
+
+export function instantiateProjectNode(options: ProjectConfigPageNodeModelOptions): ProjectNode {
+  const nodeKind = options.node.nodeKind ?? 'page'
+  if (nodeKind === 'sub-page') return new ConfigSubPageNode(options)
+  if (isConfigNodeKind(nodeKind)) return new ConfigPageNode(options)
+  return instantiateNavigationKindNode(options)
+}
+
+export function isConfigPageNode(node: ProjectNode | null | undefined): node is ConfigPageNode {
+  return node instanceof ConfigPageNode
+}
+
+export function isConfigSubPageNode(node: ProjectNode | null | undefined): node is ConfigSubPageNode {
+  return node instanceof ConfigSubPageNode
 }

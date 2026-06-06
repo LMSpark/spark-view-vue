@@ -11,7 +11,7 @@ import {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
-import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -35,7 +35,7 @@ export type PageDesignRunInput = {
 
 export type EnsurePageDesignBusinessOptions = {
   host: AiAgentHost
-  getPageDesignEditor: (context: { moduleInstanceId: string }) => ProjectEditor
+  getPageDesignEditor: (context: { moduleInstanceId: string }) => ProjectWorkspace
 }
 
 export type PageDesignPayloadGuideValidationResult = {
@@ -82,7 +82,7 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           title: input => `pageDesign:${input.pageId}`,
           readonlySteps: [
             '先查询当前 ProjectModel 能力边界，再打开目标配置页。',
-            '能力实例是当前 ProjectModel；先通过 openConfigPage(pageId) 进入 ConfigPageNode，再进入页面配置子模型。',
+            '能力实例是当前 ProjectModel；先通过 openPageDesign(pageId) 进入 ConfigPageNode，再进入页面配置子模型。',
             '复杂参数和复杂属性先查概要，再查局部指南，最后执行函数或 module_script。',
           ],
         }),
@@ -112,7 +112,7 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     `当前 pageDesign 页面实例: ${input.pageId}`,
     `用户目标: ${input.description}`,
     '元数据来源: app-layer pageDesign registration.',
-    '执行原则: this 是当前 ProjectModel；先通过 this.openConfigPage(pageId) 获取页面配置节点，再按需进入 rule、dataSet、script、style 子模型。',
+    '执行原则: this 是当前 ProjectModel；先通过 this.openPageDesign(pageId) 获取页面配置节点，再按需进入 rule、dataSet、script、style 子模型。',
   ].join('\n')
 }
 
@@ -124,9 +124,9 @@ function resolvePageDesignProject(
   if (moduleInstanceId === undefined || moduleInstanceId.trim().length === 0) {
     throw new Error('pageDesign ProjectModel requires host.moduleInstanceId.')
   }
-  const editor = options.getPageDesignEditor({ moduleInstanceId })
-  editor.openPage(moduleInstanceId)
-  return editor.project
+  const host = options.getPageDesignEditor({ moduleInstanceId })
+  host.project.openPageDesign(moduleInstanceId)
+  return host.project
 }
 
 function readPageDesignProjectMetadata(): AiModuleMetadataJson {
@@ -135,11 +135,11 @@ function readPageDesignProjectMetadata(): AiModuleMetadataJson {
     rootApi: {
       kind: 'project',
       name: 'Page Design Project',
-      description: '当前 pageDesign 项目模型；通过 openConfigPage(pageId) 进入配置页面节点。',
+      description: '当前 pageDesign 项目模型；通过 openPageDesign(pageId) 进入配置页面节点。',
       actions: [
         {
-          name: 'openConfigPage',
-          methodName: 'openConfigPage',
+          name: 'openPageDesign',
+          methodName: 'openPageDesign',
           description: '按 pageId 获取或实例化配置页面节点。',
           takesContext: false,
           paramsSchema: {

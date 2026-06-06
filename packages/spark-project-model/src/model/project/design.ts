@@ -9,24 +9,32 @@ import type {
   ProjectPageNodeSummary,
 } from '../navigation/node'
 import type { ProjectNode } from '../navigation/node'
+import type {
+  NavigationNodeDraftApplyResult,
+  NavigationNodeDraft,
+} from '../navigation/edit'
 import type { ConfigPageNode } from '../page/config-page'
 import {
   appendProjectDescriptionContext,
   buildNavRoot,
   buildProjectPageSummaries,
-  createChildPageNode,
-  createRootModuleNode,
   flattenProjectNavigationRoot,
   normalizeNavRoot,
   resolvePageNodePageId,
 } from '../navigation/helpers'
-import { createProjectNodeModel, isConfigPageNode } from '../navigation/factory'
-import { NavigationIndex } from '../navigation/index'
-import type { ProjectInfo, ProjectInfoInput, ProjectModelOptions } from './types'
+import { instantiateProjectNode, isConfigPageNode } from '../navigation/kinds'
+import { applyNavigationNodeDraftToNode } from '../navigation/edit'
+import { NavigationIndex } from '../navigation/helpers'
+import type { ProjectInfo, ProjectInfoInput, ProjectModelInitOptions } from './types'
 
 export type { ProjectInfo, ProjectInfoInput } from './types'
 
-export type NavigationDesignHost = {
+export type NavigationDesignEditResult<TNode extends ProjectNode = ProjectNode> = {
+  node: TNode
+  result: NavigationNodeDraftApplyResult
+}
+
+export type NavigationDesignOwner = {
   readonly projectId: string
   getName(): string
   getDescription(): string
@@ -39,7 +47,7 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
   private readonly navigationIndex: NavigationIndex<TNode>
   private navigationRootCache: ProjectModelData | null = null
 
-  constructor(private readonly host: NavigationDesignHost) {
+  constructor(private readonly owner: NavigationDesignOwner) {
     this.navigationIndex = new NavigationIndex(this.nodesById)
   }
 
@@ -52,7 +60,7 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
     const root = this.rootNode?.toNodeData()
     if (root === undefined) {
       this.navigationRootCache = buildNavRoot([], {
-        title: this.host.getName(),
+        title: this.owner.getName(),
         childPlacement: 'header',
         nodeKind: 'module',
       })
@@ -89,24 +97,24 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
     return this.navigationIndex.findNodeLocation(nodeId)
   }
 
-  replaceRoot(root: ProjectModelData): ProjectModelData {
+  replaceNavigationRoot(root: ProjectModelData): ProjectModelData {
     const normalized = normalizeNavRoot(root)
     const normalizedRoot: ProjectModelData = normalized.id?.trim()
       ? normalized
-      : { ...normalized, id: `${this.host.projectId}_root` }
-    const previousConfigPages = new Map(this.host.configPagesByPageId)
+      : { ...normalized, id: `${this.owner.projectId}_root` }
+    const previousConfigPages = new Map(this.owner.configPagesByPageId)
     this.nodesById.clear()
-    this.host.configPagesByPageId.clear()
+    this.owner.configPagesByPageId.clear()
 
     for (const item of flattenProjectNavigationRoot(normalizedRoot)) {
       const descriptionContext = this.readDescriptionContextForNode(item.node, item.pid)
       const pageId = resolvePageNodePageId(item.node)
       const reusablePage = (pageId ? previousConfigPages.get(pageId) ?? null : null) as TNode | null
-      const model = reusablePage ?? this.createNodeModel(item.node, item.pid, descriptionContext)
+      const model = reusablePage ?? this.instantiateNode(item.node, item.pid, descriptionContext)
       model.rebindNavigationNode(item.node, item.pid, descriptionContext)
       this.nodesById.set(model.id, model)
       if (isConfigPageNode(model)) {
-        this.host.configPagesByPageId.set(model.pageId, model)
+        this.owner.configPagesByPageId.set(model.pageId, model)
       }
     }
 
@@ -115,11 +123,18 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
   }
 
   replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
-    return this.replaceRoot(buildNavRoot(children, this.navigationRoot))
+    return this.replaceNavigationRoot(buildNavRoot(children, this.navigationRoot))
   }
 
   addRootModule(createId: () => string): ProjectNodeData {
-    const node = createRootModuleNode(createId)
+    const node: ProjectNodeData = {
+      id: createId(),
+      nodeKind: 'module',
+      title: '新模块',
+      icon: 'FolderOpened',
+      childPlacement: 'sidebar',
+      children: [],
+    }
     const root = this.ensureRootNode()
     node.order = this.nextChildOrder(root.id)
     this.insertNode(node, root.id)
@@ -127,7 +142,14 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
   }
 
   addChildPage(createId: () => string, parent: ProjectNodeData | null = null): ProjectNodeData {
-    const node = createChildPageNode(createId)
+    const id = createId()
+    const node: ProjectNodeData = {
+      id,
+      nodeKind: 'page',
+      title: '新页面',
+      icon: 'Document',
+      path: `/${id}`,
+    }
     const pid = parent?.id ?? this.ensureRootNode().id
     node.order = this.nextChildOrder(pid)
     this.insertNode(node, pid)
@@ -161,13 +183,24 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
     })
   }
 
-  /** 登记尚未挂载到导航树的配置页节点（仅内存，不入 nodesById）。 */
-  createOrphanConfigPageModel(node: ProjectNodeData): ConfigPageNode {
-    const model = this.createNodeModel(node, '', this.readDescriptionContextForNode(node, ''))
+  applyNavigationNodeEdit(input: NavigationNodeDraft): NavigationDesignEditResult<TNode> {
+    const nodeId = input.node.id.trim()
+    if (!nodeId) throw new Error('nodeId 不能为空')
+    const model = this.findNodeById(nodeId)
+    if (!model) throw new Error(`项目节点未找到: ${nodeId}`)
+    const result = applyNavigationNodeDraftToNode(model, input)
+    this.rebuildNavigationIndex()
+    this.rebindDescriptionContext()
+    return { node: model, result }
+  }
+
+  /** 打开尚未挂载到导航树的配置页节点（仅内存，不入 nodesById）。 */
+  openDetachedConfigPage(node: ProjectNodeData): ConfigPageNode {
+    const model = this.instantiateNode(node, '', this.readDescriptionContextForNode(node, ''))
     if (!isConfigPageNode(model)) {
       throw new Error(`节点 ${node.id} 不是配置页面节点`)
     }
-    this.host.configPagesByPageId.set(model.pageId, model)
+    this.owner.configPagesByPageId.set(model.pageId, model)
     return model
   }
 
@@ -187,22 +220,22 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
     throw new Error('导航 root 节点未加载')
   }
 
-  private createNodeModel(
+  private instantiateNode(
     node: ProjectNodeData,
     pid: string,
     descriptionContext: readonly ProjectDescriptionContext[],
   ): TNode {
-    return createProjectNodeModel({ node, pid, descriptionContext }) as TNode
+    return instantiateProjectNode({ node, pid, descriptionContext }) as TNode
   }
 
   private insertNode(node: ProjectNodeData, pid: string): TNode {
     if (this.nodesById.has(node.id)) {
       throw new Error(`项目节点已存在: ${node.id}`)
     }
-    const model = this.createNodeModel(node, pid, this.readDescriptionContextForNode(node, pid))
+    const model = this.instantiateNode(node, pid, this.readDescriptionContextForNode(node, pid))
     this.nodesById.set(model.id, model)
     if (isConfigPageNode(model)) {
-      this.host.configPagesByPageId.set(model.pageId, model)
+      this.owner.configPagesByPageId.set(model.pageId, model)
     }
     this.rebuildNavigationIndex()
     return model
@@ -211,7 +244,7 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
   private removeModel(model: TNode): void {
     this.nodesById.delete(model.id)
     if (isConfigPageNode(model)) {
-      this.host.configPagesByPageId.delete(model.pageId)
+      this.owner.configPagesByPageId.delete(model.pageId)
     }
   }
 
@@ -256,11 +289,11 @@ export class NavigationDesign<TNode extends ProjectNode = ProjectNode> {
   }
 
   private readProjectDescriptionContext(): ProjectDescriptionContext[] {
-    const description = this.host.getDescription()
+    const description = this.owner.getDescription()
     if (!description) return []
     return [{
-      nodeId: this.host.projectId,
-      title: this.host.getName() || this.host.projectId,
+      nodeId: this.owner.projectId,
+      title: this.owner.getName() || this.owner.projectId,
       nodeKind: 'project',
       description,
     }]
@@ -295,7 +328,7 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
   private projectUpdatedAt: string | undefined
   private readonly configPagesByPageId = new Map<string, ConfigPageNode>()
 
-  constructor(options: ProjectModelOptions) {
+  constructor(options: ProjectModelInitOptions) {
     const projectId = options.projectId.trim()
     if (!projectId) throw new Error('projectId 不能为空')
     this.projectIdValue = projectId
@@ -349,7 +382,7 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
   get flatRows(): TNode[] { return this.navigation.flatRows }
   forEachNode(callback: (node: TNode) => void): void { this.navigation.forEachNode(callback) }
 
-  replaceRoot(root: ProjectModelData): ProjectModelData { return this.navigation.replaceRoot(root) }
+  replaceNavigationRoot(root: ProjectModelData): ProjectModelData { return this.navigation.replaceNavigationRoot(root) }
   replaceProjectInfo(project: ProjectInfoInput): ProjectInfo {
     const projectId = project.projectId?.trim()
     if (projectId !== undefined && projectId !== '' && projectId !== this.projectId) {
@@ -385,7 +418,11 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     return this.configPagesByPageId.get(pageId.trim()) ?? null
   }
 
-  openConfigPage(pageId: string): ConfigPageNode {
+  applyNavigationNodeEdit(input: NavigationNodeDraft): NavigationDesignEditResult<TNode> {
+    return this.navigation.applyNavigationNodeEdit(input)
+  }
+
+  openPageDesign(pageId: string): ConfigPageNode {
     const normalized = pageId.trim()
     if (!normalized) throw new Error('pageId 不能为空')
     const existing = this.findConfigPageByPageId(normalized)
@@ -397,10 +434,10 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
       path: `/${normalized}`,
       icon: 'Document',
     }
-    return this.navigation.createOrphanConfigPageModel(node)
+    return this.navigation.openDetachedConfigPage(node)
   }
 
-  closeConfigPage(pageId: string): void {
+  closePageDesign(pageId: string): void {
     const normalized = pageId.trim()
     if (!normalized) return
     const page = this.findConfigPageByPageId(normalized)

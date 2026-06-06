@@ -1,6 +1,6 @@
 import type { PageNodeFileName, ProjectModelData } from '@spark-appworks/spark-project-model'
 import { useDevState } from '@/views/app/dev-system/useDevState'
-import { resetAppProjectEditor } from '@/services/project-editor-host'
+import { resetAppProjectWorkspace } from '@/services/project-workspace'
 
 export type DevState = ReturnType<typeof useDevState>
 
@@ -38,19 +38,19 @@ export function seedDevStateConfigPages(
   state: DevState,
   pages: readonly DevStateTestPage[] = ORDERS_PAGE_FIXTURE,
 ): void {
-  state.editor.ingestNavigationRoot(buildTestNavRoot(pages))
+  state.project.replaceNavigationRoot(buildTestNavRoot(pages))
 }
 
-/** 每个用例重置 APP 门面单例，避免跨测试污染 editor.project。 */
-export function isolateAppProjectEditorForTest(): void {
-  resetAppProjectEditor()
+/** 每个用例重置 APP ProjectWorkspace 缓存，避免跨测试污染 editor.project。 */
+export function isolateAppProjectWorkspaceForTest(): void {
+  resetAppProjectWorkspace()
 }
 
 export function alignDevStateActivePage(state: DevState): boolean {
   const pageId = state.activePageId.value.trim()
   if (!pageId) return false
-  if (state.editor.getActivePage()?.pageId !== pageId) {
-    state.editor.setActivePage(pageId)
+  if (state.project.getActivePage()?.pageId !== pageId) {
+    state.project.setActivePage(pageId)
   }
   return true
 }
@@ -64,8 +64,8 @@ export async function ensureDevStateActivePageLoaded(
 }
 
 export function isDevStatePageDocumentDirty(state: DevState, name: PageNodeFileName): boolean {
-  void state.pageFilesRevision.value
-  return state.editor.readSnapshot().dirtyFiles.has(name)
+  void state.projectRevision.value
+  return state.project.readDirtyProjection().dirtyFiles.has(name)
 }
 
 export async function saveDevStatePageDocument(
@@ -80,7 +80,7 @@ export function createDevStateWithConfigPages(
   pages: readonly DevStateTestPage[] = ORDERS_PAGE_FIXTURE,
   activePageId = 'orders-page',
 ): DevState {
-  isolateAppProjectEditorForTest()
+  isolateAppProjectWorkspaceForTest()
   const state = useDevState()
   seedDevStateConfigPages(state, pages)
   if (activePageId) state.selectPage(activePageId)

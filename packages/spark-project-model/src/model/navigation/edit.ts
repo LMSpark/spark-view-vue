@@ -1,8 +1,8 @@
 /**
  * 导航编辑领域模型 — PageNode 的导航属性子模型。
  *
- * 持有页面导航节点引用和 dirty 状态。
- * 可编辑字段以 ProjectNodeData 为真源，DTO 只在表单读写边界即时生成。
+ * 持有导航节点表单草稿和 patch 生成规则。
+ * 可编辑字段由 ProjectNode class 持有；草稿只在表单读写边界即时生成。
  */
 
 import type {
@@ -11,10 +11,11 @@ import type {
   NavContextItem,
   NavNodeKind,
   NavPermissionMode,
+  ProjectNodeNavigationPatch,
   ProjectNodeData,
 } from './node'
 
-export type NavigationNodeEditDto = {
+export type NavigationNodeDraftNode = {
   id: string
   title: string
   icon: string
@@ -31,7 +32,7 @@ export type NavigationNodeEditDto = {
   permissionMode: NavPermissionMode
 }
 
-export type NavigationNodeEditPatchDto = Partial<Omit<NavigationNodeEditDto, 'id'>> & {
+export type NavigationNodePatch = Partial<Omit<NavigationNodeDraftNode, 'id'>> & {
   context?: string | NavContextItem[] | NavContextConfig
 }
 
@@ -47,14 +48,19 @@ type NavigationContextEditDto = {
   config: NavigationContextEditConfigDto
 }
 
-export type NavigationNodeEditInputDto = {
-  node: NavigationNodeEditDto
+export type NavigationNodeDraft = {
+  node: NavigationNodeDraftNode
   context: NavigationContextEditDto
 }
 
-export type NavigationNodeEditApplyResultDto = {
-  patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'>
+export type NavigationNodeDraftApplyResult = {
+  patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'>
   warnings: string[]
+}
+
+type NavigationNodePatchTarget = {
+  readonly id: string
+  applyNavigationPatch(patch: ProjectNodeNavigationPatch): void
 }
 
 const DEFAULT_NAV_ICON_BY_KIND: Record<NavNodeKind, string> = {
@@ -90,8 +96,8 @@ export function defaultNavIconByKind(kind: NavNodeKind): string {
   return DEFAULT_NAV_ICON_BY_KIND[kind]
 }
 
-export function createNavigationNodeEditDto(navNode: ProjectNodeData): NavigationNodeEditInputDto {
-  const nodeDto: NavigationNodeEditDto = {
+export function createNavigationNodeDraft(navNode: ProjectNodeData): NavigationNodeDraft {
+  const nodeDto: NavigationNodeDraftNode = {
     id: navNode.id,
     title: navNode.title,
     icon: navNode.icon ?? defaultNavIconByKind(navNode.nodeKind ?? 'page'),
@@ -150,7 +156,7 @@ export function createNavigationNodeEditDto(navNode: ProjectNodeData): Navigatio
   }
 }
 
-export function applyNodeKindPresetToEditDto(node: NavigationNodeEditDto, kind: NavNodeKind): NavigationNodeEditDto {
+export function applyNodeKindPresetToDraft(node: NavigationNodeDraftNode, kind: NavNodeKind): NavigationNodeDraftNode {
   const next = { ...node }
   const previousKind = next.nodeKind
   next.nodeKind = kind
@@ -197,7 +203,7 @@ export function applyNodeKindPresetToEditDto(node: NavigationNodeEditDto, kind: 
   return next
 }
 
-export function createNavigationNodePatch(input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
+export function createNavigationNodePatch(input: NavigationNodeDraft): NavigationNodeDraftApplyResult {
   const nodeDto = { ...input.node }
   const warnings: string[] = []
 
@@ -212,7 +218,7 @@ export function createNavigationNodePatch(input: NavigationNodeEditInputDto): Na
     nodeDto.linkTarget = 'iframe'
   }
 
-  const patch: NavigationNodeEditPatchDto & Pick<ProjectNodeData, 'title' | 'nodeKind'> = {
+  const patch: NavigationNodePatch & Pick<ProjectNodeData, 'title' | 'nodeKind'> = {
     title: nodeDto.title,
     nodeKind: nodeDto.nodeKind,
     icon: nodeDto.icon,
@@ -262,30 +268,11 @@ export function createNavigationNodePatch(input: NavigationNodeEditInputDto): Na
   return { patch, warnings }
 }
 
-export function applyNavigationNodeEditDtoToNode(node: ProjectNodeData, input: NavigationNodeEditInputDto): NavigationNodeEditApplyResultDto {
+export function applyNavigationNodeDraftToNode(
+  node: NavigationNodePatchTarget,
+  input: NavigationNodeDraft,
+): NavigationNodeDraftApplyResult {
   const result = createNavigationNodePatch(input)
-  if (!('icon' in result.patch)) delete node.icon
-  if (!('description' in result.patch)) delete node.description
-  if (!('path' in result.patch)) delete node.path
-  if (!('linkTarget' in result.patch)) delete node.linkTarget
-  if (!('childPlacement' in result.patch)) delete node.childPlacement
-  if (!('hidden' in result.patch)) delete node.hidden
-  if (!('disabled' in result.patch)) delete node.disabled
-  if (!('context' in result.patch)) delete node.context
-  if (!('dividerAfter' in result.patch)) delete node.dividerAfter
-  if (!('nodeKind' in result.patch)) delete node.nodeKind
-  if (!('refId' in result.patch)) delete node.refId
-  if (!('permissionMode' in result.patch)) delete node.permissionMode
-  Object.assign(node, result.patch)
-  if (!result.patch.icon) delete node.icon
-  if (!result.patch.description) delete node.description
-  if (!result.patch.path) delete node.path
-  if (result.patch.nodeKind !== 'link' || !result.patch.linkTarget) delete node.linkTarget
-  if (!result.patch.childPlacement) delete node.childPlacement
-  if (!result.patch.hidden) delete node.hidden
-  if (!result.patch.disabled) delete node.disabled
-  if (result.patch.context === undefined || result.patch.context === '') delete node.context
-  if (!result.patch.dividerAfter) delete node.dividerAfter
-  if (result.patch.nodeKind !== 'ref' || !result.patch.refId) delete node.refId
+  node.applyNavigationPatch(result.patch)
   return result
 }

@@ -37,7 +37,7 @@ const RendererStub = defineComponent({
 
 function createPreviewState() {
   const activePageId = ref('cascade-demo')
-  const pageFilesRevision = ref(1)
+  const projectRevision = ref(1)
   const files: Record<PageNodeFileName, string> = {
     'rule.json': '[]',
     'pagedata.json': '{"dataSetName":"Demo","tables":{}}',
@@ -45,7 +45,7 @@ function createPreviewState() {
     'style.css': '',
   }
   const getActivePage = vi.fn(() => ({ pageId: activePageId.value, isLoaded: true }))
-  const getActiveLoadedPageNode = vi.fn(() => ({
+  const getActivePageRenderNode = vi.fn(() => ({
     pageId: activePageId.value,
     isLoaded: true,
     load: () => Promise.resolve(),
@@ -58,27 +58,30 @@ function createPreviewState() {
       css: undefined,
     }),
   }))
-  const getPageFileText = vi.fn((name: PageNodeFileName) => {
-    void pageFilesRevision.value
+  const readPageFileText = vi.fn((name: PageNodeFileName) => {
+    void projectRevision.value
     return files[name]
   })
   const editor = {
+    getActivePageRenderNode,
+  }
+  const project = {
     getActivePage,
-    getActiveLoadedPageNode,
-    getPageFileText,
+    readPageFileText,
   }
   const state: DevState = Object.assign(Object.create(null), {
     activePageId,
-    pageFilesRevision,
+    projectRevision,
     editor,
+    project,
   })
 
   return {
     state,
     files,
-    pageFilesRevision,
+    projectRevision,
     getActivePage,
-    getActiveLoadedPageNode,
+    getActivePageRenderNode,
   }
 }
 
@@ -92,7 +95,7 @@ describe('DevPreviewTab live refresh', () => {
   })
 
   it('does not rebuild preview when editor revision changes but in-memory page files are unchanged', async () => {
-    const { state, files, pageFilesRevision, getActivePage } = createPreviewState()
+    const { state, files, projectRevision, getActivePage } = createPreviewState()
 
     mount(DevPreviewTab, {
       props: {
@@ -115,7 +118,7 @@ describe('DevPreviewTab live refresh', () => {
 
     expect(getActivePage).toHaveBeenCalledTimes(1)
 
-    pageFilesRevision.value += 1
+    projectRevision.value += 1
     await nextTick()
     vi.advanceTimersByTime(600)
     await nextTick()
@@ -123,7 +126,7 @@ describe('DevPreviewTab live refresh', () => {
     expect(getActivePage).toHaveBeenCalledTimes(1)
 
     files['script.js'] = 'console.log("changed")'
-    pageFilesRevision.value += 1
+    projectRevision.value += 1
     await nextTick()
     vi.advanceTimersByTime(600)
     await nextTick()

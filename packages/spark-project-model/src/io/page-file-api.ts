@@ -1,20 +1,20 @@
 /**
- * PageNode file API.
+ * Page file API.
  *
  * 管理 PageNode 四文件的远端写入、页面文件创建/删除和版本操作。
- * 读路径仍由 BasePageContentLoader 负责，子模型只依赖这里的写能力。
+ * 读路径由 PageContentLoader 负责，子模型只依赖这里的写能力。
  */
 
 import { isRecord, type HttpClientBase } from '@spark-appworks/spark-utils'
-import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../../model/page/file'
-import { assertNonEmptyPageId } from '../../model/page/file'
-import { trimTrailingSlash } from '../http'
+import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../model/page/file'
+import { assertNonEmptyPageId } from '../model/page/file'
+import { trimTrailingSlash } from './http'
 
-export type PageNodeCreateFilesParams = PageFileCreateOptions & {
+export type PageFileCreateParams = PageFileCreateOptions & {
   pageId: string
 }
 
-export type PageNodeFileApiOptions = {
+export type PageFileApiOptions = {
   getPageFilesApi: () => string
   http: HttpClientBase
 }
@@ -74,11 +74,11 @@ function assertPositiveVersion(version: number): void {
   }
 }
 
-export class PageNodeFileApi {
+export class PageFileApi {
   private readonly getPageFilesApi: () => string
   private readonly http: HttpClientBase
 
-  constructor(options: PageNodeFileApiOptions) {
+  constructor(options: PageFileApiOptions) {
     this.getPageFilesApi = options.getPageFilesApi
     this.http = options.http
   }
@@ -92,7 +92,7 @@ export class PageNodeFileApi {
     )
   }
 
-  async createFiles(params: PageNodeCreateFilesParams): Promise<Record<string, unknown>> {
+  async createFiles(params: PageFileCreateParams): Promise<Record<string, unknown>> {
     const pageId = assertNonEmptyPageId(params.pageId)
     return normalizeRecordResult(await this.http.post<unknown>(`${this.baseUrl()}/__create`, { ...params, pageId }))
   }

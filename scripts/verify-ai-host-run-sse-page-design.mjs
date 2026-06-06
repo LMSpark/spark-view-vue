@@ -23,8 +23,9 @@ import {
   PAGE_DESIGN_MODULE_ID,
 } from '../src/services/page-design-business.ts'
 import {
-  createProjectEditor,
+  ProjectWorkspace,
 } from '@spark-appworks/spark-project-model/project'
+import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
 import { createRequest, isRecord } from '@spark-appworks/spark-utils'
 import {
   createAppSseEventHub,
@@ -46,7 +47,14 @@ const REQUEST_TIMEOUT_MS = 30_000
 const RESULT_EVENT = 'ai-host-run-result'
 const REQUEST_EVENT = 'ai-host-run-request'
 const AI_TURN_EVENTS = ['llm-frame']
-const PAGE_MODEL_FILE_NAMES = ['rule.json', 'pagedata.json', 'script.js', 'style.css']
+
+function readWorkspaceFileText(workspace, name) {
+  return workspace.project.getActivePage()?.getFileText(name) ?? ''
+}
+
+function readWorkspaceFiles(workspace) {
+  return Object.fromEntries(PAGE_NODE_FILE_NAMES.map((name) => [name, readWorkspaceFileText(workspace, name)]))
+}
 
 function parseArgs(argv) {
   const runId = createDefaultRunId()
@@ -333,12 +341,12 @@ async function startHeadlessHostRunWorker(options, auth) {
   })
   const pageDesignHost = ensurePageDesignBusiness({
     host: aiHost,
-    getPageDesignEditHost: (context) => {
+    getPageDesignEditor: (context) => {
       const editor = editorsByPageId.get(context.moduleInstanceId)
       if (editor === undefined) {
         throw new Error(`Headless editor is not prepared for ${context.moduleInstanceId}`)
       }
-      return editor.createPageDesignEditHost({ pageId: context.moduleInstanceId })
+      return editor
     },
   })
 
@@ -625,7 +633,7 @@ function createPageConfigRuntime(options, auth) {
     },
   })
   return {
-    editor: createProjectEditor({
+    editor: new ProjectWorkspace({
       projectId: auth.projectId,
       http,
       getPageFilesApi: () => `${options.backendUrl}/api/pages-config`,
@@ -908,8 +916,8 @@ function toAiJsonParams(args) {
 
 async function saveDirtyFiles(editor) {
   const saved = []
-  const dirtyFiles = editor.readSnapshot().dirtyFiles
-  for (const name of PAGE_MODEL_FILE_NAMES) {
+  const dirtyFiles = editor.project.readDirtyProjection().dirtyFiles
+  for (const name of PAGE_NODE_FILE_NAMES) {
     if (!dirtyFiles.has(name)) continue
     await editor.savePageFile(name)
     saved.push(name)
@@ -937,7 +945,7 @@ async function saveDirtyFilesAfterFailure(runtime, event) {
 }
 
 function readEditorFiles(editor) {
-  return Object.fromEntries(PAGE_MODEL_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
+  return readWorkspaceFiles(editor)
 }
 
 function summarizeFiles(files) {

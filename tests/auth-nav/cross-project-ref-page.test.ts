@@ -1,7 +1,7 @@
 import { mount } from '@vue/test-utils'
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { createMemoryHistory, createRouter } from 'vue-router'
-import { createPageNodeFactory, type PageNodeFactoryLike } from '@spark-appworks/spark-project-model'
+import { PageContentLoader } from '@spark-appworks/spark-project-model'
 import { HttpClientBase } from '@spark-appworks/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'
@@ -119,11 +119,11 @@ describe('CrossProjectRefPage', () => {
     await router.push(`/t/lmspark/homepage/__ref/${hostRefNodeId}`)
     await router.isReady()
 
-    const pageNodeFactory = createPageNodeFactory({ httpClient })
+    const pageContentLoader = new PageContentLoader({ httpClient, fileStorage: 'memory' })
 
     mount(CrossProjectRefPage, {
       props: {
-        pageNodeFactory,
+        pageContentLoader,
         tenantId: 'lmspark',
         hostProjectId: 'homepage',
         routePath: `/t/lmspark/homepage/__ref/${hostRefNodeId}`,

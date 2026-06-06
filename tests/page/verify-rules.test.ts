@@ -125,7 +125,7 @@ describe('verification rules', () => {
     expect(output).toContain('signature has too many positional parameters')
   })
 
-  it('rejects public method drift on critical facade classes', () => {
+  it('rejects public method drift on critical host classes', () => {
     const root = createTempRoot()
     writeFile(root, 'packages/spark-ai/src/modules/runtime/ai-module-runtime.ts', [
       'export class AiModuleRuntime {',

@@ -28,8 +28,13 @@ vi.mock('@/services/http', () => ({
 vi.mock('@/services/api-paths', () => ({
   getPageApi: () => '/api/pages-config',
   getNavApi: () => '/api/navigation',
-  getProjectApi: () => '/api/projects',
-  getProjectNavigationApi: (projectId: string) => `/api/projects/${projectId}/navigation`,
+  getProjectApi: (tenantId?: string) => tenantId ? `/api/tenants/${tenantId}/projects` : '/api/projects',
+  getProjectNavigationApi: (projectId: string, tenantId?: string) => projectId === 'homepage'
+    ? '/api/navigation'
+    : `/api/tenants/${tenantId ?? 'tenant-a'}/projects/${projectId}/navigation`,
+  getProjectPageApi: (projectId: string, tenantId?: string) => projectId === 'homepage'
+    ? '/api/pages-config'
+    : `/api/tenants/${tenantId ?? 'tenant-a'}/projects/${projectId}/pages-config`,
 }))
 
 import { canonicalizePageDataJson } from '@spark-appworks/spark-project-model'
@@ -38,7 +43,7 @@ import { useDevFileEditor } from '../../src/views/app/dev-system/composables/use
 import {
   createDevStateWithConfigPages,
   ensureDevStateActivePageLoaded,
-  isolateAppProjectEditorForTest,
+  isolateAppProjectWorkspaceForTest,
   isDevStatePageDocumentDirty,
   saveDevStatePageDocument,
 } from './dev-state-test-fixture'
@@ -118,7 +123,7 @@ function isErrorLike(value: unknown): value is { status?: unknown; response?: { 
 
 describe('useDevState documents SSOT', () => {
   beforeEach(() => {
-    isolateAppProjectEditorForTest()
+    isolateAppProjectWorkspaceForTest()
     localStorage.clear()
     httpGet.mockReset()
     httpPost.mockReset()
@@ -149,11 +154,11 @@ describe('useDevState documents SSOT', () => {
     const state = createDevStateWithConfigPages()
     await ensureDevStateActivePageLoaded(state)
 
-    expect((state.editor.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
+    expect((state.project.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
     expect(isDevStatePageDocumentDirty(state, 'pagedata.json')).toBe(false)
-    expect(state.editor.getDataSetTool()).not.toBeNull()
-    expect((state.editor.getActivePage()?.dataSet.canUndo ?? false)).toBe(false)
-    expect(state.editor.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
+    expect(state.project.getDataSetTool()).not.toBeNull()
+    expect((state.project.getActivePage()?.dataSet.canUndo ?? false)).toBe(false)
+    expect(state.project.readPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
   })
 
   it('editing pagedata text reparses model, makes doc dirty and enables undo', async () => {
@@ -170,19 +175,19 @@ describe('useDevState documents SSOT', () => {
     const state = createDevStateWithConfigPages()
     await ensureDevStateActivePageLoaded(state)
 
-    state.editor.setPageFileText('pagedata.json', next)
+    state.project.writePageFile({ fileName: 'pagedata.json', text: next })
 
     expect(isDevStatePageDocumentDirty(state, 'pagedata.json')).toBe(true)
-    expect((state.editor.getActivePage()?.dataSet.canUndo ?? false)).toBe(true)
-    expect(state.editor.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
+    expect((state.project.getActivePage()?.dataSet.canUndo ?? false)).toBe(true)
+    expect(state.project.readPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
 
-    expect(state.editor.undoPageFile('pagedata.json')).toBe(true)
-    expect(state.editor.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
+    expect(state.project.undoPageFile('pagedata.json')).toBe(true)
+    expect(state.project.readPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(initial).text)
     // undo always marks dirty in V3.1 single-track model
     expect(isDevStatePageDocumentDirty(state, 'pagedata.json')).toBe(true)
 
-    expect(state.editor.redoPageFile('pagedata.json')).toBe(true)
-    expect(state.editor.getPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
+    expect(state.project.redoPageFile('pagedata.json')).toBe(true)
+    expect(state.project.readPageFileText('pagedata.json')).toBe(canonicalizePageDataJson(next).text)
   })
 
   it('ensureActivePageFilesLoaded loads each file exactly once', async () => {
@@ -206,7 +211,7 @@ describe('useDevState documents SSOT', () => {
       'script.js': 1,
       'style.css': 1,
     })
-    expect((state.editor.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
+    expect((state.project.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
   })
 
   it('ensureActivePageFilesLoaded fails fast and preserves existing documents when remote fetch fails', async () => {
@@ -221,8 +226,8 @@ describe('useDevState documents SSOT', () => {
     const state = createDevStateWithConfigPages()
     await ensureDevStateActivePageLoaded(state)
 
-    const previousRuleText = state.editor.getPageFileText('rule.json')
-    const previousPageDataText = state.editor.getPageFileText('pagedata.json')
+    const previousRuleText = state.project.readPageFileText('rule.json')
+    const previousPageDataText = state.project.readPageFileText('pagedata.json')
 
     httpGet.mockImplementation(async (url: string) => {
       if (url.endsWith('/rule.json')) throw new Error('network-down')
@@ -238,54 +243,54 @@ describe('useDevState documents SSOT', () => {
     )
 
     // V3.1: parallel load means pagedata may or may not be updated; only rule.json is guaranteed preserved
-    expect(state.editor.getPageFileText('rule.json')).toBe(previousRuleText)
-    expect((state.editor.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
-    expect((state.editor.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
+    expect(state.project.readPageFileText('rule.json')).toBe(previousRuleText)
+    expect((state.project.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
+    expect((state.project.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('loaded')
   })
 
   it('rule.json setText + undo reflects in the live SparkNodeTree', () => {
     const state = createDevStateWithConfigPages()
 
-    state.editor.setPageFileText('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
-    state.editor.setPageFileText('rule.json', `${JSON.stringify([{ type: 'el-button' }], null, 2)}\n`)
+    state.project.writePageFile({ fileName: 'rule.json', text: `${JSON.stringify([{ type: 'div' }], null, 2)}\n` })
+    state.project.writePageFile({ fileName: 'rule.json', text: `${JSON.stringify([{ type: 'el-button' }], null, 2)}\n` })
 
-    const treeNow = requireValue(state.editor.getNodeTree(), 'rule model 未初始化').toJSON()
+    const treeNow = requireValue(state.project.getNodeTree(), 'rule model 未初始化').toJSON()
     expect(readFirstChildType(treeNow.children)).toBe('el-button')
 
-    expect(state.editor.undoPageFile('rule.json')).toBe(true)
-    const treeUndo = requireValue(state.editor.getNodeTree(), 'rule model 未初始化').toJSON()
+    expect(state.project.undoPageFile('rule.json')).toBe(true)
+    const treeUndo = requireValue(state.project.getNodeTree(), 'rule model 未初始化').toJSON()
     expect(readFirstChildType(treeUndo.children)).toBe('div')
-    expect(JSON.parse(state.editor.getPageFileText('rule.json'))).toMatchObject({ type: 'div' })
+    expect(JSON.parse(state.project.readPageFileText('rule.json'))).toMatchObject({ type: 'div' })
   })
 
   it('script.js undo stays in sync with the page model', () => {
     const state = createDevStateWithConfigPages()
 
-    state.editor.setPageFileText('script.js', 'console.log("alpha")\n')
-    state.editor.setPageFileText('script.js', 'console.log("beta")\n')
+    state.project.writePageFile({ fileName: 'script.js', text: 'console.log("alpha")\n' })
+    state.project.writePageFile({ fileName: 'script.js', text: 'console.log("beta")\n' })
 
-    expect(state.editor.getPageFileText('script.js')).toBe('console.log("beta")\n')
-    expect(state.editor.undoPageFile('script.js')).toBe(true)
-    expect(state.editor.getPageFileText('script.js')).toBe('console.log("alpha")\n')
+    expect(state.project.readPageFileText('script.js')).toBe('console.log("beta")\n')
+    expect(state.project.undoPageFile('script.js')).toBe(true)
+    expect(state.project.readPageFileText('script.js')).toBe('console.log("alpha")\n')
   })
 
   it('style.css undo stays in sync with the page model', () => {
     const state = createDevStateWithConfigPages()
 
-    state.editor.setPageFileText('style.css', '.page { color: red; }\n')
-    state.editor.setPageFileText('style.css', '.page { color: blue; }\n')
+    state.project.writePageFile({ fileName: 'style.css', text: '.page { color: red; }\n' })
+    state.project.writePageFile({ fileName: 'style.css', text: '.page { color: blue; }\n' })
 
-    expect(state.editor.getPageFileText('style.css')).toBe('.page { color: blue; }\n')
-    expect(state.editor.undoPageFile('style.css')).toBe(true)
-    expect(state.editor.getPageFileText('style.css')).toBe('.page { color: red; }\n')
+    expect(state.project.readPageFileText('style.css')).toBe('.page { color: blue; }\n')
+    expect(state.project.undoPageFile('style.css')).toBe(true)
+    expect(state.project.readPageFileText('style.css')).toBe('.page { color: red; }\n')
   })
 
   it('savePageFile uploads current text and clears dirty without touching history', async () => {
     const state = createDevStateWithConfigPages()
-    state.editor.setPageFileText('pagedata.json', createPageDataText('Gamma', true))
+    state.project.writePageFile({ fileName: 'pagedata.json', text: createPageDataText('Gamma', true) })
 
     expect(isDevStatePageDocumentDirty(state, 'pagedata.json')).toBe(true)
-    const canUndoBefore = (state.editor.getActivePage()?.dataSet.canUndo ?? false)
+    const canUndoBefore = (state.project.getActivePage()?.dataSet.canUndo ?? false)
 
     httpPut.mockResolvedValue({ ok: true })
     httpGet.mockResolvedValue([])
@@ -294,11 +299,11 @@ describe('useDevState documents SSOT', () => {
 
     expect(httpPut).toHaveBeenCalledWith(
       '/api/pages-config/orders-page/pagedata.json',
-      state.editor.getPageFileText('pagedata.json'),
+      state.project.readPageFileText('pagedata.json'),
       { headers: { 'Content-Type': 'text/plain' } },
     )
     expect(isDevStatePageDocumentDirty(state, 'pagedata.json')).toBe(false)
-    expect((state.editor.getActivePage()?.dataSet.canUndo ?? false)).toBe(canUndoBefore)
+    expect((state.project.getActivePage()?.dataSet.canUndo ?? false)).toBe(canUndoBefore)
   })
 
   it('dev file editor text is a read-only projection of the model (no drafts)', () => {
@@ -310,7 +315,7 @@ describe('useDevState documents SSOT', () => {
       if (name) return { content: '' }
       throw new Error(`unexpected GET ${url}`)
     })
-    state.editor.setPageFileText('pagedata.json', initial)
+    state.project.writePageFile({ fileName: 'pagedata.json', text: initial })
 
     const scope = effectScope()
     try {
@@ -320,14 +325,14 @@ describe('useDevState documents SSOT', () => {
 
         // V3.1: text is a direct read-only projection of the model
         expect(editor.text.value).toBe(initialCanonical)
-        expect(state.editor.getPageFileText('pagedata.json')).toBe(initialCanonical)
+        expect(state.project.readPageFileText('pagedata.json')).toBe(initialCanonical)
 
         // V3.1: no draft APIs; text always equals model text
         expect(editor.isFileDirty('pagedata.json')).toBe(true)
 
         // Direct model mutation is reflected in the text projection
         const next = createPageDataText('DirectSet', true)
-        state.editor.setPageFileText('pagedata.json', next)
+        state.project.writePageFile({ fileName: 'pagedata.json', text: next })
         expect(editor.text.value).toBe(canonicalizePageDataJson(next).text)
       })
     } finally {
@@ -337,40 +342,40 @@ describe('useDevState documents SSOT', () => {
 
   it('designer-level mutate reflects in text and is undoable', async () => {
     const state = createDevStateWithConfigPages()
-    state.editor.setPageFileText('pagedata.json', createPageDataText('Live', true))
+    state.project.writePageFile({ fileName: 'pagedata.json', text: createPageDataText('Live', true) })
 
-    await state.editor.editDataSet((tool) => {
+    await state.project.editDataSet((tool) => {
       tool.createColumn({ tableName: 'Orders', column: { name: 'status', type: 'string' } })
     })
 
-    expect(state.editor.getPageFileText('pagedata.json')).toContain('status')
-    expect(state.editor.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
+    expect(state.project.readPageFileText('pagedata.json')).toContain('status')
+    expect(state.project.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
 
-    expect(state.editor.undoPageFile('pagedata.json')).toBe(true)
-    expect(state.editor.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeUndefined()
+    expect(state.project.undoPageFile('pagedata.json')).toBe(true)
+    expect(state.project.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeUndefined()
 
-    expect(state.editor.redoPageFile('pagedata.json')).toBe(true)
-    expect(state.editor.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
+    expect(state.project.redoPageFile('pagedata.json')).toBe(true)
+    expect(state.project.getDataSetTool()!.getColumn({ tableName: 'Orders', columnName: 'status' })).toBeDefined()
   })
 
   it('page switch resets all documents', () => {
     const state = createDevStateWithConfigPages()
     state.selectPage('orders-page')
-    state.editor.setPageFileText('pagedata.json', createPageDataText('PageA', true))
-    state.editor.setPageFileText('script.js', '// a\n')
+    state.project.writePageFile({ fileName: 'pagedata.json', text: createPageDataText('PageA', true) })
+    state.project.writePageFile({ fileName: 'script.js', text: '// a\n' })
 
-    expect(state.editor.getDataSetTool()).not.toBeNull()
-    expect(state.editor.getPageFileText('script.js')).toBe('// a\n')
+    expect(state.project.getDataSetTool()).not.toBeNull()
+    expect(state.project.readPageFileText('script.js')).toBe('// a\n')
 
     state.selectPage('orders-page-v2')
 
     expect(state.activePageId.value).toBe('orders-page-v2')
     // In V3.1, sub-models are always initialized; isLoaded distinguishes loaded vs unloaded
-    expect(state.editor.getNodeTree()).not.toBeNull()
-    expect(state.editor.getDataSetTool()).not.toBeNull()
+    expect(state.project.getNodeTree()).not.toBeNull()
+    expect(state.project.getDataSetTool()).not.toBeNull()
     for (const name of PAGE_NODE_FILE_NAMES) {
       expect(isDevStatePageDocumentDirty(state, name)).toBe(false)
-      expect((state.editor.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('idle')
+      expect((state.project.getActivePage()?.isLoaded ? 'loaded' : 'idle')).toBe('idle')
     }
   })
 
@@ -387,23 +392,23 @@ describe('useDevState documents SSOT', () => {
     await ensureDevStateActivePageLoaded(state)
 
     expect(isDevStatePageDocumentDirty(state, 'rule.json')).toBe(false)
-    expect((state.editor.getActivePage()?.rule.canUndo ?? false)).toBe(false)
+    expect((state.project.getActivePage()?.rule.canUndo ?? false)).toBe(false)
 
-    state.editor.setPageFileText('rule.json', `${JSON.stringify([{ type: 'div' }], null, 2)}\n`)
+    state.project.writePageFile({ fileName: 'rule.json', text: `${JSON.stringify([{ type: 'div' }], null, 2)}\n` })
     expect(isDevStatePageDocumentDirty(state, 'rule.json')).toBe(true)
-    expect((state.editor.getActivePage()?.rule.canUndo ?? false)).toBe(true)
+    expect((state.project.getActivePage()?.rule.canUndo ?? false)).toBe(true)
 
-    expect(state.editor.undoPageFile('rule.json')).toBe(true)
+    expect(state.project.undoPageFile('rule.json')).toBe(true)
     // undo always marks dirty in V3.1 single-track model
     expect(isDevStatePageDocumentDirty(state, 'rule.json')).toBe(true)
-    expect((state.editor.getActivePage()?.rule.canUndo ?? false)).toBe(false)
-    expect(state.editor.getPageFileText('rule.json')).toBe(initial)
+    expect((state.project.getActivePage()?.rule.canUndo ?? false)).toBe(false)
+    expect(state.project.readPageFileText('rule.json')).toBe(initial)
   })
 
   it('pageDataDirty mirrors pagedata document dirty flag', () => {
     const state = createDevStateWithConfigPages()
     expect(state.pageDataDirty.value).toBe(false)
-    state.editor.setPageFileText('pagedata.json', createPageDataText('Dirty', true))
+    state.project.writePageFile({ fileName: 'pagedata.json', text: createPageDataText('Dirty', true) })
     expect(state.pageDataDirty.value).toBe(true)
   })
 

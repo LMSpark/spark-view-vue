@@ -1,20 +1,20 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
-import { resetAppProjectEditor } from '@/services/project-editor-host'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import { resetAppProjectWorkspace } from '@/services/project-workspace'
 import {
   createHeadlessPageDesignEditor,
   createPageDesignEditorGetter,
   resolvePageDesignEditor,
 } from '@/services/page-design-editor-provider'
-import { getAppProjectEditor } from '@/services/project-editor-host'
+import { getAppProjectWorkspace } from '@/services/project-workspace'
 
 describe('page-design-editor-provider', () => {
   beforeEach(() => {
-    resetAppProjectEditor()
+    resetAppProjectWorkspace()
   })
 
-  it('useAppSingleton resolves to getAppProjectEditor', () => {
-    const appEditor = getAppProjectEditor()
+  it('useAppSingleton resolves to getAppProjectWorkspace', () => {
+    const appEditor = getAppProjectWorkspace()
     const resolved = resolvePageDesignEditor(
       { moduleInstanceId: 'orders', useAppSingleton: true },
       new Map(),
@@ -24,7 +24,7 @@ describe('page-design-editor-provider', () => {
 
   it('isolated mode resolves from headless registry', () => {
     const headless = createHeadlessPageDesignEditor()
-    const registry = new Map<string, ProjectEditor>([['orders', headless]])
+    const registry = new Map<string, ProjectWorkspace>([['orders', headless]])
 
     const resolved = resolvePageDesignEditor(
       { moduleInstanceId: 'orders' },

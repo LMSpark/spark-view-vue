@@ -1,9 +1,9 @@
 /**
  * APP 壳层 pageDesign Host Run provider（隔离式门面实例）。
  *
- * 与 DevSystem 面板内 AI（`getAppProjectEditor()` 共用 `editor.project`）不同：
+ * 与 DevSystem 面板内 AI（共用当前编辑 scope 的 `editor.project`）不同：
  * Host Run / SSE 为无 UI 会话、可并发多 pageId，故每次 run 创建 headless
- * `createProjectEditor()`，运行结束保存 dirty 四文件后丢弃，不污染 APP 单例 session。
+ * 独立 `ProjectWorkspace`，运行结束保存 dirty 四文件后丢弃，不污染 DevSystem 编辑 session。
  */
 
 import type {
@@ -12,7 +12,7 @@ import type {
   AiAgentHostRunResult,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
-import type { ProjectEditor } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,
@@ -26,7 +26,7 @@ import type {
   AiHostRunPrepare,
 } from '@/services/ai-host-run-bridge'
 
-const pageDesignEditors = new Map<string, ProjectEditor>()
+const pageDesignEditors = new Map<string, ProjectWorkspace>()
 
 export const preparePageDesignHostRun: AiHostRunPrepare<AiAgentHost> = async (event, host) => {
   if (event.alias !== PAGE_DESIGN_MODULE_ID) return host

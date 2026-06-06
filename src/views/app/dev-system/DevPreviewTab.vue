@@ -41,7 +41,7 @@
       <template v-else-if="previewPageNode">
         <SparkPageRenderer
           :pageNode="previewPageNode"
-          :pageNodeRevision="props.state.pageFilesRevision.value"
+          :pageNodeRevision="props.state.projectRevision.value"
         />
       </template>
       <template v-else>
@@ -73,7 +73,7 @@ const previewPageNode = shallowRef<PageNodeLike | null>(null)
 
 function requireActivePageNodeLoaded(): PageNodeLike {
   const pageId = props.state.activePageId.value
-  const activePage = props.state.editor.getActivePage()
+  const activePage = props.state.project.getActivePage()
   if (!pageId || activePage === null) {
     throw new Error('请先选择一个已加载的配置页面')
   }
@@ -83,11 +83,11 @@ function requireActivePageNodeLoaded(): PageNodeLike {
   if (!activePage.isLoaded) {
     throw new Error(`页面节点 ${pageId} 尚未加载完成，无法预览`)
   }
-  const loadedPageNode = props.state.editor.getActiveLoadedPageNode()
-  if (loadedPageNode === null) {
+  const renderPageNode = props.state.editor.getActivePageRenderNode()
+  if (renderPageNode === null) {
     throw new Error(`页面节点 ${pageId} 尚未打开，无法预览`)
   }
-  return loadedPageNode
+  return renderPageNode
 }
 
 function refresh() {
@@ -124,10 +124,10 @@ function scheduleLiveRefresh() {
 watch(
   [
     () => props.state.activePageId.value,
-    () => props.state.editor.getPageFileText('rule.json'),
-    () => props.state.editor.getPageFileText('pagedata.json'),
-    () => props.state.editor.getPageFileText('script.js'),
-    () => props.state.editor.getPageFileText('style.css'),
+    () => props.state.project.readPageFileText('rule.json'),
+    () => props.state.project.readPageFileText('pagedata.json'),
+    () => props.state.project.readPageFileText('script.js'),
+    () => props.state.project.readPageFileText('style.css'),
   ],
   scheduleLiveRefresh,
 )

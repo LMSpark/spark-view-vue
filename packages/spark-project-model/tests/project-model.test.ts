@@ -1,15 +1,15 @@
 import { describe, expect, it } from 'vitest'
-import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
+import type { ProjectModelData, ProjectNodeData } from '../src/model/navigation/node'
 import type { HttpClientBase, HttpResponse } from '@spark-appworks/spark-utils'
 import {
-  ConfigPageNode,
-  ConfigSubPageNode,
   ModuleNode,
-  resolvePageDesignSurface,
+  SystemPageNode,
   SystemDirectoryNode,
-  VueComponentPageNode,
-} from '@spark-appworks/spark-project-model'
-import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
+} from '../src/model/navigation/kinds'
+import { ConfigPageNode } from '../src/model/page/config-page'
+import { ConfigSubPageNode } from '../src/model/page/config-page'
+import { resolveProjectPageSurface } from '../src/model/navigation/helpers'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { createNavigationNodePatch } from '../src/model/navigation/edit'
 
@@ -24,9 +24,9 @@ describe('ProjectModel', () => {
     }
   }
 
-  function createEditor(): ProjectEditor {
+  function createWorkspace(): ProjectWorkspace {
     const http = createRequest()
-    return createProjectEditor({
+    return new ProjectWorkspace({
       projectId: 'crm',
       http,
       getPageFilesApi: () => '/api/pages-config',
@@ -36,25 +36,25 @@ describe('ProjectModel', () => {
   }
 
   it('resolves page design surface by nodeKind', () => {
-    expect(resolvePageDesignSurface({ id: 'p', title: 'P', nodeKind: 'page', path: '/p' })).toBe('config-files')
-    expect(resolvePageDesignSurface({ id: 's', title: 'S', nodeKind: 'system-page', path: '/dashboard' })).toBe('vue-component')
-    expect(resolvePageDesignSurface({ id: 'l', title: 'L', nodeKind: 'link', path: '/ext' })).toBe('link')
+    expect(resolveProjectPageSurface({ id: 'p', title: 'P', nodeKind: 'page', path: '/p' })).toBe('config-files')
+    expect(resolveProjectPageSurface({ id: 's', title: 'S', nodeKind: 'system-page', path: '/dashboard' })).toBe('system-page')
+    expect(resolveProjectPageSurface({ id: 'l', title: 'L', nodeKind: 'link', path: '/ext' })).toBe('link')
   })
 
-  it('maps system-page nodes to VueComponentPageNode', () => {
-    const p = createEditor().project
-    p.replaceRoot(createRoot([
+  it('maps system-page nodes to SystemPageNode', () => {
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([
       { id: 'dashboard', title: '仪表盘', nodeKind: 'system-page', path: '/dashboard' },
     ]))
     const node = p.findNodeById('dashboard')
-    expect(node).toBeInstanceOf(VueComponentPageNode)
+    expect(node).toBeInstanceOf(SystemPageNode)
     const summaries = p.readPageSummaries()
-    expect(summaries[0]?.designSurface).toBe('vue-component')
+    expect(summaries[0]?.designSurface).toBe('system-page')
   })
 
   it('maps system-directory nodes to SystemDirectoryNode class', () => {
-    const p = createEditor().project
-    p.replaceRoot({
+    const p = createWorkspace().project
+    p.replaceNavigationRoot({
       id: 'homepage_root',
       title: 'CRM',
       nodeKind: 'module',
@@ -74,25 +74,20 @@ describe('ProjectModel', () => {
     expect(toolbarRoot?.family).toBe('module')
   })
 
-  it('exposes design and runtime class aggregates on project root', () => {
-    const p = createEditor().project
+  it('exposes the design aggregate on project root', () => {
+    const p = createWorkspace().project
     expect(p.design).toBeDefined()
-    expect(p.runtime).toBeDefined()
     expect(p.design.navigation).toBe(p.design.navigation)
-    p.design.navigation.replaceRoot(createRoot([
+    p.design.navigation.replaceNavigationRoot(createRoot([
       { id: 'orders', title: '订单', nodeKind: 'page', path: '/orders' },
     ]))
     expect(p.design.findConfigPageByPageId('orders')).toBeInstanceOf(ConfigPageNode)
-    expect(p.runtime.listLoadedPages()).toEqual([])
-    expect(p.runtime.readPageRuntimeStats()).toEqual({ openCount: 1, loadedCount: 0 })
-    expect(p.runtime.findOpenPage('orders')?.pageId).toBe('orders')
-    expect(p.runtime.findLoadedPage('orders')).toBeNull()
-    expect(p.runtime.findRenderConfig('orders')).toBeNull()
+    expect(p.findConfigPageByPageId('orders')?.pageId).toBe('orders')
   })
 
   it('finds pages by pageId from the tree', () => {
-    const p = createEditor().project
-    p.replaceRoot(createRoot([{
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([{
       id: 'orders-node', title: '订单页面', nodeKind: 'page', path: '/orders',
       children: [{ id: 'order-detail', title: '订单详情', nodeKind: 'sub-page', description: '订单详情功能' }],
     }]))
@@ -110,8 +105,8 @@ describe('ProjectModel', () => {
   })
 
   it('builds tree from flat collection and finds nodes', () => {
-    const p = createEditor().project
-    p.replaceRoot(createRoot([
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([
       { id: 'sales', title: '销售模块', nodeKind: 'module', description: '销售模块', children: [
         { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders', description: '订单页面' },
       ]},
@@ -126,9 +121,52 @@ describe('ProjectModel', () => {
     expect(orderNode).toBeInstanceOf(ConfigPageNode)
   })
 
+  it('keeps ProjectNodeData copies from mutating the node class', () => {
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([
+      {
+        id: 'orders',
+        title: '订单页面',
+        nodeKind: 'page',
+        path: '/orders',
+        context: [{ id: 'tenant-a', title: '租户 A' }],
+      },
+    ]))
+
+    const node = p.findNodeById('orders')
+    const data = node?.toNodeData()
+    if (data) {
+      data.title = '被外部改掉'
+      if (Array.isArray(data.context)) data.context[0]!.title = '租户 B'
+    }
+
+    expect(node?.title).toBe('订单页面')
+    expect(Array.isArray(node?.context) ? node.context[0]?.title : '').toBe('租户 A')
+  })
+
+  it('applies navigation edits through the model class and refreshes cached tree projections', () => {
+    const workspace = createWorkspace()
+    workspace.project.replaceNavigationRoot(createRoot([
+      { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders', order: 0 },
+      { id: 'reports', title: '报表', nodeKind: 'page', path: '/reports', order: 1 },
+    ]))
+    workspace.project.selectNode('orders')
+    expect(workspace.project.readNavigationProjection().treeData.map(node => node.id)).toEqual(['orders', 'reports'])
+
+    const dto = workspace.project.beginNavigationDraft()
+    dto.node.title = '销售订单'
+    dto.node.order = 2
+    workspace.project.applyNavigationNodeEdit(dto)
+
+    const projection = workspace.project.readNavigationProjection()
+    expect(workspace.project.findNodeById('orders')?.title).toBe('销售订单')
+    expect(projection.selectedNode?.title).toBe('销售订单')
+    expect(projection.treeData.map(node => node.id)).toEqual(['reports', 'orders'])
+  })
+
   it('exposes node hierarchy instead of a flat node list', () => {
-    const p = createEditor().project
-    p.replaceRoot(createRoot([
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([
       { id: 'sales', title: '销售模块', nodeKind: 'module', children: [
         { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
       ]},
@@ -155,8 +193,8 @@ describe('ProjectModel', () => {
   })
 
   it('uses a real project node as the project home node and keeps placement on root', () => {
-    const p = createEditor().project
-    p.replaceRoot(createRoot([
+    const p = createWorkspace().project
+    p.replaceNavigationRoot(createRoot([
       { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
     ], 'sidebar'))
     p.replaceProjectInfo({ homeNodeId: 'orders' })
@@ -169,8 +207,8 @@ describe('ProjectModel', () => {
   })
 
   it('promotes a persisted root node returned as the only top-level child', () => {
-    const p = createEditor().project
-    p.replaceRoot({ title: '', childPlacement: 'header', children: [{
+    const p = createWorkspace().project
+    p.replaceNavigationRoot({ title: '', childPlacement: 'header', children: [{
       id: 'homepage_root',
       title: 'CRM',
       nodeKind: 'module',
@@ -185,8 +223,8 @@ describe('ProjectModel', () => {
   })
 
   it('promotes a persisted module root even when root childPlacement is missing', () => {
-    const p = createEditor().project
-    p.replaceRoot({ title: '', childPlacement: 'header', children: [{
+    const p = createWorkspace().project
+    p.replaceNavigationRoot({ title: '', childPlacement: 'header', children: [{
       id: 'homepage_root',
       title: 'CRM',
       nodeKind: 'module',
@@ -199,8 +237,8 @@ describe('ProjectModel', () => {
   })
 
   it('promotes persisted root from mixed top-level rows and merges siblings under it', () => {
-    const p = createEditor().project
-    p.replaceRoot({ title: '', childPlacement: 'header', children: [
+    const p = createWorkspace().project
+    p.replaceNavigationRoot({ title: '', childPlacement: 'header', children: [
       {
         id: 'homepage_root',
         title: '',
@@ -218,11 +256,11 @@ describe('ProjectModel', () => {
   })
 
   it('supports detached config pages', () => {
-    const p = createEditor().project
-    const page = p.design.openConfigPage('standalone')
+    const p = createWorkspace().project
+    const page = p.design.openPageDesign('standalone')
     expect(page).toBeInstanceOf(ConfigPageNode)
-    expect(page.design.rule).toBe(page.rule)
-    expect(page.runtime.isLoaded).toBe(false)
+    expect(page.rule).toBeDefined()
+    expect(page.isLoaded).toBe(false)
     expect(page.pageId).toBe('standalone')
     expect(p.design.findConfigPageByPageId('standalone')).toBe(page)
     expect(p.findNodeById('standalone')).toBeNull()
@@ -294,15 +332,15 @@ describe('ProjectModel', () => {
       }),
       clearCache: () => {},
     } as unknown as HttpClientBase
-    const editor = createProjectEditor({
+    const workspace = new ProjectWorkspace({
       projectId: 'crm',
       http,
       getPageFilesApi: () => '/api/pages-config',
       getNavigationApi: () => '/api/navigation',
     })
 
-    await editor.loadNavigation()
-    await editor.moveMountedPage('orders', null, 0)
+    await workspace.loadNavigation()
+    await workspace.moveMountedPage('orders', null, 0)
 
     expect(putCalls).toEqual([
       { url: '/api/navigation/nodes/orders/move', body: { newParentId: null, index: 0 } },

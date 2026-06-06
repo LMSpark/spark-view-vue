@@ -31,14 +31,14 @@ import { createThemeService } from './theme'
  * ```ts
  * // main.ts - 显式导入各层
  * import { SparkApp } from '@spark-appworks/spark-app'        // L1 应用层
- * import { createPageNodeFactory } from '@spark-appworks/spark-project-model' // L2 页面节点层
+ * import { PageContentLoader } from '@spark-appworks/spark-project-model' // L2 页面节点层
  * // 其他层级包按需在主应用中导入
  *
  * // 使用应用层功能
  * await SparkApp.bootstrap({ app, router, config })
  *
  * // 使用页面节点层功能
- * const pageNodes = createPageNodeFactory({ apiBaseUrl: '/api' })
+ * const pageNodes = new PageContentLoader({ apiBaseUrl: '/api' })
  *
  * // 其他功能在主应用中按需组合使用
  * ```

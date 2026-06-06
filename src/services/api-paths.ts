@@ -8,6 +8,22 @@
 import { getUser, isPlatformAdminUser } from './auth'
 import { parseTenantScope, type TenantProjectScope } from './tenant-scope'
 
+export type ProjectApiScope = {
+  tenantId?: string
+  projectId: string
+}
+
+function resolveTenantId(tenantId?: string): string {
+  const user = getUser()
+  if (!user) {
+    throw new Error('缺少登录用户，无法构造租户作用域 API 路径')
+  }
+  const normalizedTenantId = tenantId?.trim()
+  if (normalizedTenantId) return normalizedTenantId
+  const urlScope: TenantProjectScope | null = typeof window !== 'undefined' ? parseTenantScope(window.location.pathname) : null
+  return isPlatformAdminUser(user) && urlScope !== null ? urlScope.tenantId : user.tenantId
+}
+
 /** 获取当前用户的租户作用域路径前缀 */
 function getScopePath(): string {
   const user = getUser()
@@ -39,28 +55,27 @@ export function getPageApi(): string {
 
 
 /** 项目管理 API 基础路径 — `/api/tenants/{tenantId}/projects` */
-export function getProjectApi(): string {
-  const user = getUser()
-  if (!user) {
-    throw new Error('缺少登录用户，无法构造项目 API 路径')
-  }
-  const urlScope = typeof window !== 'undefined' ? parseTenantScope(window.location.pathname) : null
-  const tenantId = isPlatformAdminUser(user) && urlScope !== null ? urlScope.tenantId : user.tenantId
-  return `/api/tenants/${tenantId}/projects`
+export function getProjectApi(tenantId?: string): string {
+  const resolvedTenantId = resolveTenantId(tenantId)
+  return `/api/tenants/${encodeURIComponent(resolvedTenantId)}/projects`
 }
 
-export function getProjectNavigationApi(projectId: string): string {
-  const user = getUser()
-  if (!user) {
-    throw new Error('缺少登录用户，无法构造项目导航 API 路径')
-  }
+export function getProjectNavigationApi(projectId: string, tenantId?: string): string {
+  const resolvedTenantId = resolveTenantId(tenantId)
   const normalizedProjectId = projectId.trim()
   if (!normalizedProjectId) {
     throw new Error('projectId 不能为空，无法构造项目导航 API 路径')
   }
-  const urlScope = typeof window !== 'undefined' ? parseTenantScope(window.location.pathname) : null
-  const tenantId = isPlatformAdminUser(user) && urlScope !== null ? urlScope.tenantId : user.tenantId
-  return `/api/tenants/${tenantId}/projects/${encodeURIComponent(normalizedProjectId)}/navigation`
+  return `/api/tenants/${encodeURIComponent(resolvedTenantId)}/projects/${encodeURIComponent(normalizedProjectId)}/navigation`
+}
+
+export function getProjectPageApi(projectId: string, tenantId?: string): string {
+  const resolvedTenantId = resolveTenantId(tenantId)
+  const normalizedProjectId = projectId.trim()
+  if (!normalizedProjectId) {
+    throw new Error('projectId 不能为空，无法构造项目页面配置 API 路径')
+  }
+  return `/api/tenants/${encodeURIComponent(resolvedTenantId)}/projects/${encodeURIComponent(normalizedProjectId)}/pages-config`
 }
 
 export function getPlatformNavApi(): string {

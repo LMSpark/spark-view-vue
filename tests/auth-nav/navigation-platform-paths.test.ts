@@ -3,8 +3,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest'
 import { defineComponent, h } from 'vue'
 import { createMemoryHistory, createRouter } from 'vue-router'
 import type { Router } from 'vue-router'
-import { createPageNodeFactory } from '@spark-appworks/spark-project-model'
-import type { ProjectModelData } from '@spark-appworks/spark-project-model'
+import { PageContentLoader, type ProjectModelData } from '@spark-appworks/spark-project-model'
 import { useNavigation } from '../../packages/spark-app/src/navigation/useNavigation'
 import { CROSS_PROJECT_REF_HOST_ROUTE_NAME } from '../../packages/spark-app/src/router/cross-project-ref-route'
 
@@ -36,7 +35,7 @@ const NAV_ROOT: ProjectModelData = {
   children: [],
 }
 
-const DUMMY_PAGE_NODE_FACTORY = createPageNodeFactory()
+const DUMMY_PAGE_CONTENT_LOADER = new PageContentLoader({ fileStorage: 'memory' })
 
 async function mountNavigationProbe(initialPath: string): Promise<MountedNavigationProbe> {
   let navigateToPath: NavigateToPath | null = null
@@ -94,7 +93,7 @@ async function mountNavigationProbe(initialPath: string): Promise<MountedNavigat
         path: '/t/:tenantId/:projectId/__ref/:refNodeId',
         name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
         component: DummyPage,
-        props: () => ({ pageNodeFactory: DUMMY_PAGE_NODE_FACTORY }),
+        props: () => ({ pageContentLoader: DUMMY_PAGE_CONTENT_LOADER }),
         meta: {
           type: 'cross-project-ref',
           crossProjectRefHost: true,

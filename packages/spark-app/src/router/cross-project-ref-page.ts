@@ -2,13 +2,14 @@ import { computed, defineComponent, h, ref } from 'vue'
 import type { RouteLocationNormalizedLoaded } from 'vue-router'
 import { SparkPageRenderer } from '@spark-appworks/spark-component'
 import {
-  createPageNodeFactory,
-  type PageNodeFactoryLike,
+  createRuntimePageNode,
+  PageContentLoader,
   type PageNodeLike,
+  type ProjectModelData,
+  type ProjectNodeData,
 } from '@spark-appworks/spark-project-model'
 import { HttpClientBase, Logger } from '@spark-appworks/spark-utils'
 import type { HttpResponse, RequestConfig } from '@spark-appworks/spark-utils'
-import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
 import { getNavTree } from '../navigation/nav-access'
 
 type ReloadableRenderer = {
@@ -25,7 +26,7 @@ type ResolvedRefTarget = {
   pageId: string | null}
 
 export type CrossProjectRefPageRouteProps = {
-  pageNodeFactory: PageNodeFactoryLike
+  pageContentLoader: PageContentLoader
   tenantId?: string | undefined
   hostProjectId?: string | undefined
   routePath?: string | undefined
@@ -60,12 +61,12 @@ function asNonEmptyString(value: unknown): string | null {
   return trimmed === '' ? null : trimmed
 }
 
-export function createCrossProjectRefRouteProps(pageNodeFactory: PageNodeFactoryLike) {
+export function createCrossProjectRefRouteProps(pageContentLoader: PageContentLoader) {
   return (route: RouteLocationNormalizedLoaded): CrossProjectRefPageRouteProps => {
     const tenantId = asNonEmptyString(route.params['tenantId'])
     const hostProjectId = asNonEmptyString(route.params['projectId'])
     return {
-      pageNodeFactory,
+      pageContentLoader,
       routePath: route.path,
       routeMeta: { ...route.meta },
       ...(tenantId !== null && { tenantId }),
@@ -280,7 +281,7 @@ function createScopedHttpClient(options: ScopedHttpClientOptions): HttpClientBas
 export const CrossProjectRefPage = defineComponent({
   name: 'SparkCrossProjectRefPage',
   props: {
-    pageNodeFactory: {
+    pageContentLoader: {
       type: Object,
       required: true,
     },
@@ -330,13 +331,12 @@ export const CrossProjectRefPage = defineComponent({
     const targetProjectId = computed(() => refTarget.value.targetProjectId)
     const targetPageId = computed(() => refTarget.value.pageId)
 
-    const scopedPageNodeFactory = computed<PageNodeFactoryLike | null>(() => {
+    const scopedPageContentLoader = computed<PageContentLoader | null>(() => {
       const scopedTenantId = tenantId.value
       const scopedProjectId = targetProjectId.value
       if (scopedTenantId === null || scopedProjectId === null) return null
 
-      const baseClient = props.pageNodeFactory.getHttpClient()
-      if (!baseClient) return null
+      const baseClient = props.pageContentLoader.getHttpClient()
       const scopedClient = createScopedHttpClient({
         baseClient,
         scopedHeaders: {
@@ -350,17 +350,17 @@ export const CrossProjectRefPage = defineComponent({
 
       const pagesConfigBaseUrl =
         `/tenants/${encodeURIComponent(scopedTenantId)}/projects/${encodeURIComponent(scopedProjectId)}/pages-config`
-      return createPageNodeFactory({
+      return new PageContentLoader({
         pagesConfigBaseUrl,
         httpClient: scopedClient,
       })
     })
 
     const scopedPageNode = computed<PageNodeLike | null>(() => {
-      const factory = scopedPageNodeFactory.value
+      const loader = scopedPageContentLoader.value
       const pageId = targetPageId.value
-      if (factory === null || pageId === null) return null
-      return factory.create(pageId)
+      if (loader === null || pageId === null) return null
+      return createRuntimePageNode(pageId, loader)
     })
 
     const errorMessage = computed(() => {

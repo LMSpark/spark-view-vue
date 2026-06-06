@@ -1,37 +1,37 @@
 /**
  * pageDesign 门面实例选用策略。
  *
- * - DevSystem 面板内（interactive）：`getAppProjectEditor()`，与手动编辑同一 `editor.project`
- * - Host Run / SSE（isolated）：headless `createProjectEditor()`，按 pageId 注册、运行后丢弃
+ * - DevSystem 面板内：与手动编辑同一 `editor.project`
+ * - 隔离运行：headless `ProjectWorkspace`，按 pageId 注册、运行后丢弃
  */
-import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
-import { getNavApi, getPageApi } from '@/services/api-paths'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
-import { getAppProjectEditor } from '@/services/project-editor-host'
+import { getAppProjectWorkspace } from '@/services/project-workspace'
 
 export type PageDesignEditorResolveContext = {
   moduleInstanceId: string
-  /** DevSystem 面板内 AI 会话：共用 APP 门面单例 */
   useAppSingleton?: boolean
 }
 
-export function createHeadlessPageDesignEditor(): ProjectEditor {
-  return createProjectEditor({
-    projectId: getUser()?.defaultProjectId ?? 'homepage',
+export function createHeadlessPageDesignEditor(): ProjectWorkspace {
+  const projectId = getUser()?.defaultProjectId ?? 'homepage'
+  return new ProjectWorkspace({
+    projectId,
     http,
-    getPageFilesApi: getPageApi,
-    getNavigationApi: getNavApi,
+    getPageFilesApi: () => getProjectPageApi(projectId),
+    getNavigationApi: () => getProjectNavigationApi(projectId),
     getHeaders: createAuthHeaders,
   })
 }
 
 export function resolvePageDesignEditor(
   context: PageDesignEditorResolveContext,
-  headlessRegistry: ReadonlyMap<string, ProjectEditor>,
-): ProjectEditor {
+  headlessRegistry: ReadonlyMap<string, ProjectWorkspace>,
+): ProjectWorkspace {
   if (context.useAppSingleton === true) {
-    return getAppProjectEditor()
+    return getAppProjectWorkspace()
   }
 
   const editor = headlessRegistry.get(context.moduleInstanceId)
@@ -42,9 +42,9 @@ export function resolvePageDesignEditor(
 }
 
 export function createPageDesignEditorGetter(
-  headlessRegistry: ReadonlyMap<string, ProjectEditor>,
+  headlessRegistry: ReadonlyMap<string, ProjectWorkspace>,
   options?: { useAppSingleton?: boolean },
-): (context: { moduleInstanceId: string }) => ProjectEditor {
+): (context: { moduleInstanceId: string }) => ProjectWorkspace {
   const useAppSingleton = options?.useAppSingleton === true
   return (context) => resolvePageDesignEditor(
     { moduleInstanceId: context.moduleInstanceId, useAppSingleton },

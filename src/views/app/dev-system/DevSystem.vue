@@ -5,7 +5,36 @@
       <div class="dev-header__left">
         <span class="dev-header__logo"><NavIcon name="Lightning" :size="20" /></span>
         <span class="dev-header__title">SPARK 开发系统</span>
-        <el-tag size="small" type="info" effect="plain">项目 {{ state.projectId }}</el-tag>
+        <div class="dev-project-picker">
+          <el-input
+            v-model="state.projectPicker.tenantId"
+            class="dev-project-picker__tenant"
+            size="small"
+            placeholder="tenantId"
+            @change="() => state.loadEditableProjects(state.projectPicker.tenantId)"
+          />
+          <el-select
+            v-model="state.projectPicker.projectId"
+            class="dev-project-picker__project"
+            size="small"
+            filterable
+            allow-create
+            default-first-option
+            :loading="state.projectOptionsLoading.value"
+            @visible-change="(visible: boolean) => { if (visible) void state.loadEditableProjects(state.projectPicker.tenantId) }"
+          >
+            <el-option
+              v-for="project in state.editableProjects.value"
+              :key="`${project.tenantId}:${project.projectId}`"
+              :label="project.name || project.projectId"
+              :value="project.projectId"
+            />
+          </el-select>
+          <el-button size="small" :loading="state.navLoading.value" @click="() => state.openProjectPickerScope()">
+            <NavIcon name="FolderOpen" :size="14" /> 打开
+          </el-button>
+        </div>
+        <el-tag size="small" type="info" effect="plain">{{ state.tenantId }}/{{ state.projectId }}</el-tag>
         <el-tag v-if="state.hasAnyDirty.value" type="warning" size="small" effect="dark">未保存</el-tag>
       </div>
       <div class="dev-header__right">
@@ -223,6 +252,17 @@ onMounted(() => {
   font-size: 16px;
   font-weight: 700;
   color: var(--el-text-color-primary);
+}
+.dev-project-picker {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.dev-project-picker__tenant {
+  width: 132px;
+}
+.dev-project-picker__project {
+  width: 180px;
 }
 .dev-header__right {
   display: flex;

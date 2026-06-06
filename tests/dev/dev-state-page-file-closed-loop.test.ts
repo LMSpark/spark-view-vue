@@ -5,7 +5,7 @@ import {
   createDevStateWithConfigPages,
   DEMO_PAGE_FIXTURE,
   ensureDevStateActivePageLoaded,
-  isolateAppProjectEditorForTest,
+  isolateAppProjectWorkspaceForTest,
   isDevStatePageDocumentDirty,
 } from './dev-state-test-fixture'
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'
@@ -55,8 +55,13 @@ vi.mock('@spark-appworks/spark-app', () => ({
 vi.mock('@/services/api-paths', () => ({
   getPageApi: () => '/api/pages-config',
   getNavApi: () => '/api/navigation',
-  getProjectApi: () => '/api/projects',
-  getProjectNavigationApi: (projectId: string) => `/api/projects/${projectId}/navigation`,
+  getProjectApi: (tenantId?: string) => tenantId ? `/api/tenants/${tenantId}/projects` : '/api/projects',
+  getProjectNavigationApi: (projectId: string, tenantId?: string) => projectId === 'homepage'
+    ? '/api/navigation'
+    : `/api/tenants/${tenantId ?? 'tenant-a'}/projects/${projectId}/navigation`,
+  getProjectPageApi: (projectId: string, tenantId?: string) => projectId === 'homepage'
+    ? '/api/pages-config'
+    : `/api/tenants/${tenantId ?? 'tenant-a'}/projects/${projectId}/pages-config`,
 }))
 
 vi.mock('@/services/http', () => ({
@@ -115,7 +120,7 @@ function isErrorLike(value: unknown): value is { status?: unknown; response?: { 
 
 describe('DevState 页面文件闭环', () => {
   beforeEach(() => {
-    isolateAppProjectEditorForTest()
+    isolateAppProjectWorkspaceForTest()
     vi.clearAllMocks()
     httpFns.requestFull.mockImplementation(requestFullFromGet)
     httpFns.clearCache.mockImplementation(() => undefined)
@@ -132,7 +137,7 @@ describe('DevState 页面文件闭环', () => {
 
     await expect(ensureDevStateActivePageLoaded(state, { forceReload: true })).rejects.toThrow('not found')
 
-    expect(state.editor.getActivePage()?.isLoaded).toBe(false)
+    expect(state.project.getActivePage()?.isLoaded).toBe(false)
   })
 
   it('缺失 rule/pagedata 时 fail-fast，不创建占位模型', async () => {
@@ -145,7 +150,7 @@ describe('DevState 页面文件闭环', () => {
 
     await expect(ensureDevStateActivePageLoaded(state)).rejects.toThrow('not found')
 
-    expect(state.editor.getActivePage()?.isLoaded).toBe(false)
+    expect(state.project.getActivePage()?.isLoaded).toBe(false)
   })
 
   it('版本 createdAt 接受后端数字毫秒并归一为 ISO 字符串', async () => {
@@ -154,7 +159,7 @@ describe('DevState 页面文件闭环', () => {
       { version: 1, createdAt: 1710000000000, isCurrent: true, modifiedBy: 'tester' },
     ])
 
-    state.editor.setActivePage(state.activePageId.value)
+    state.project.setActivePage(state.activePageId.value)
     const versions = await state.editor.listRemotePageVersions('script.js')
 
     expect(versions).toEqual([
@@ -169,15 +174,15 @@ describe('DevState 页面文件闭环', () => {
 
   it('restore 后立即强制重读并回填文档模型', async () => {
     const state = createDevStateWithConfigPages(DEMO_PAGE_FIXTURE, 'demo')
-    state.editor.setPageFileText('script.js', 'console.log("old")')
+    state.project.writePageFile({ fileName: 'script.js', text: 'console.log("old")' })
     httpMock.post.mockResolvedValueOnce({ ok: true })
     httpMock.get.mockImplementation(async (url: string) => pageFileResponse(url))
 
-    state.editor.setActivePage('demo')
+    state.project.setActivePage('demo')
     await state.editor.restoreRemotePageVersion(1, 'script.js')
-    expect(state.editor.getPageFileText('script.js')).toBe('console.log("restored")')
+    expect(state.project.readPageFileText('script.js')).toBe('console.log("restored")')
     expect(isDevStatePageDocumentDirty(state, 'script.js')).toBe(false)
-    expect(state.pageFilesRevision.value).toBeGreaterThan(0)
+    expect(state.projectRevision.value).toBeGreaterThan(0)
   })
 
   it('切换左侧节点时触发右侧 navEditDto 订阅刷新', async () => {
@@ -246,7 +251,7 @@ describe('DevState 页面文件闭环', () => {
         path: '/system',
         title: 'System',
         nodeId: 'sys-node',
-        designSurface: 'vue-component',
+        designSurface: 'system-page',
       }),
     ])
     expect(httpMock.get).not.toHaveBeenCalledWith('/api/pages-config/__list')
@@ -289,7 +294,7 @@ describe('DevState 页面文件闭环', () => {
 
     expect(vi.mocked(refreshRoutes).mock.calls.length - refreshCallsBeforeSave).toBe(1)
     expect(navTreeState.tree?.children?.[0]?.title).toBe('Alpha updated')
-    expect(state.editor.readSnapshot().treeData[0]?.title).toBe('Alpha updated')
+    expect(state.project.readNavigationProjection().treeData[0]?.title).toBe('Alpha updated')
 
     expect(httpMock.put).toHaveBeenCalledWith(
       '/api/navigation/nodes/alpha-node',
@@ -298,5 +303,51 @@ describe('DevState 页面文件闭环', () => {
     expect(httpMock.put).not.toHaveBeenCalledWith('/api/navigation/nodes/alpha-node/move', expect.anything())
     expect(httpMock.put).not.toHaveBeenCalledWith('/api/navigation', expect.anything())
     expect(httpMock.post).not.toHaveBeenCalledWith('/api/navigation', expect.anything())
+  })
+
+  it('可打开其他租户项目模型编辑，保存时不刷新当前 APP 导航', async () => {
+    const state = useDevState()
+    const delegatedRoot: ProjectModelData = {
+      title: 'delegated',
+      childPlacement: 'header',
+      children: [
+        { id: 'delegated-node', title: 'Delegated', nodeKind: 'page', path: '/delegated-page' },
+      ],
+    }
+    httpMock.get.mockImplementation(async (url: string) => {
+      if (url === '/api/tenants/tenant-b/projects') {
+        return [
+          { projectId: 'delegated-app', name: 'Delegated App', icon: 'Box', description: '' },
+        ]
+      }
+      if (url === '/api/tenants/tenant-b/projects/delegated-app/navigation') {
+        return delegatedRoot
+      }
+      return pageFileResponse(url)
+    })
+    httpMock.put.mockResolvedValueOnce({
+      node: { id: 'delegated-node', title: 'Delegated updated', nodeKind: 'page', path: '/delegated-page' },
+    })
+
+    await state.loadEditableProjects('tenant-b')
+    state.projectPicker.tenantId = 'tenant-b'
+    state.projectPicker.projectId = 'delegated-app'
+
+    await expect(state.openProjectPickerScope()).resolves.toBe(true)
+
+    expect(state.tenantId).toBe('tenant-b')
+    expect(state.projectId).toBe('delegated-app')
+    expect(state.treeData.value[0]?.id).toBe('delegated-node')
+    expect(state.activePageId.value).toBe('delegated-page')
+
+    state.navEditDto.title = 'Delegated updated'
+    const refreshCallsBeforeSave = vi.mocked(refreshRoutes).mock.calls.length
+    await state.saveAll()
+
+    expect(httpMock.put).toHaveBeenCalledWith(
+      '/api/tenants/tenant-b/projects/delegated-app/navigation/nodes/delegated-node',
+      expect.objectContaining({ title: 'Delegated updated' }),
+    )
+    expect(vi.mocked(refreshRoutes).mock.calls.length).toBe(refreshCallsBeforeSave)
   })
 })

@@ -6,8 +6,12 @@
 
 import type { Router, RouteRecordRaw } from 'vue-router'
 import type { Component } from 'vue'
-import type { PageNodeFactoryLike } from '@spark-appworks/spark-project-model'
-import type { ProjectModelData, ProjectNodeData } from '@spark-appworks/spark-project-model'
+import {
+  createRuntimePageNode,
+  type PageContentLoader,
+  type ProjectModelData,
+  type ProjectNodeData,
+} from '@spark-appworks/spark-project-model'
 import { createLogger } from '../logger'
 import { readProperty } from '@spark-appworks/spark-utils/internal'
 import { CrossProjectRefPage, createCrossProjectRefRouteProps } from './cross-project-ref-page'
@@ -38,8 +42,8 @@ export type DynamicRouterOptions = {
   /** Vue Router 实例 */
   router: Router
 
-  /** 配置页节点工厂 */
-  pageNodeFactory: PageNodeFactoryLike
+  /** 配置页四文件加载器 */
+  pageContentLoader: PageContentLoader
 
   /**
    * 动态页面组件（必需）
@@ -48,7 +52,7 @@ export type DynamicRouterOptions = {
    * @example
    * ```typescript
    * import { PageRenderer } from '@spark-appworks/spark-component'
-   * const options = { router, pageNodeFactory, pageComponent: PageRenderer }
+   * const options = { router, pageContentLoader, pageComponent: PageRenderer }
    * ```
    */
   pageComponent: Component
@@ -116,7 +120,7 @@ type RouteRegistrationOptions = {
  */
 export class DynamicRouter {
   private router: Router
-  private pageNodeFactory: PageNodeFactoryLike
+  private pageContentLoader: PageContentLoader
   private pageComponent: Component
   private registeredRoutes: Set<string> = new Set()
   /** path → Component 映射（system-page 路由使用） */
@@ -144,7 +148,7 @@ export class DynamicRouter {
 
   constructor(options: DynamicRouterOptions) {
     this.router = options.router
-    this.pageNodeFactory = options.pageNodeFactory
+    this.pageContentLoader = options.pageContentLoader
 
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition -- pageComponent 结构可缺失
     if (options.pageComponent === undefined || options.pageComponent === null) {
@@ -258,7 +262,7 @@ export class DynamicRouter {
       path: routePath,
       name: CROSS_PROJECT_REF_HOST_ROUTE_NAME,
       component: CrossProjectRefPage,
-      props: createCrossProjectRefRouteProps(this.pageNodeFactory),
+      props: createCrossProjectRefRouteProps(this.pageContentLoader),
       meta: {
         type: 'cross-project-ref',
         crossProjectRefHost: true,
@@ -474,7 +478,7 @@ export class DynamicRouter {
               path: routePath,
               name: routeName,
               component: CrossProjectRefPage,
-              props: createCrossProjectRefRouteProps(this.pageNodeFactory),
+              props: createCrossProjectRefRouteProps(this.pageContentLoader),
               meta: {
                 type: 'cross-project-ref',
                 pageId,
@@ -556,7 +560,7 @@ export class DynamicRouter {
           name: routeName,
           component: this.pageComponent,
           props: {
-            pageNode: this.pageNodeFactory.create(pageId),
+            pageNode: createRuntimePageNode(pageId, this.pageContentLoader),
             pageId,
           },
           meta: {

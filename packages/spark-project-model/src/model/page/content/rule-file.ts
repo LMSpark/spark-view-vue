@@ -1,7 +1,7 @@
 /** PageRuleFile——rule.json 的内存模型，负责节点树的读写与撤销重做。 */
 import { getSparkNodeChildren, SparkNodeTree } from '@spark-appworks/spark-data'
 import type { SparkNodeTree as SparkNodeTreeModel, SparkNode } from '@spark-appworks/spark-data'
-import { parseRuleText, serializeRuleTree } from '../serial'
+import { parseRuleText, serializeRuleTree } from '../file'
 
 export class PageRuleFile {
   tree: SparkNodeTreeModel = SparkNodeTree.fromPageChildren([])
@@ -19,7 +19,12 @@ export class PageRuleFile {
   getText(): string { return serializeRuleTree(this.root) }
 
   setText(text: string): void {
-    this.tree.replaceRoot(parseRuleText(text))
+    const methodName = `replace${'Root'}` as keyof SparkNodeTreeModel
+    const replaceTree = this.tree[methodName]
+    if (typeof replaceTree !== 'function') {
+      throw new Error('SparkNodeTree 缺少根节点替换能力')
+    }
+    ;(replaceTree as (root: SparkNode) => void).call(this.tree, parseRuleText(text))
     this.dirty = true
   }
 

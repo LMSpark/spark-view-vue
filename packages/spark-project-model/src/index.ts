@@ -1,69 +1,47 @@
 /**
  * @spark-appworks/spark-project-model
  *
- * 领域模型入口（model/）：class 层级为主语。
- * 设计门面（facade/）：见 `@spark-appworks/spark-project-model/project`。
- * 存储适配（io/）：默认包内专用；如需跨包使用，请从 `@spark-appworks/spark-project-model/project`
- * 导出入口消费（例如 `PageContentRepository`），不要直接引用 `src/io/*`。
+ * 领域模型（model/）：class 层级为主语。
+ * 运行态页面加载也从根入口导出；ProjectWorkspace 见 `@spark-appworks/spark-project-model/project`。
  */
 
 // ── 项目根 ────────────────────────────────────────────────────
 
 export { ProjectModel } from './model/project/model'
-export type { ProjectModelInstance } from './model/project/model'
-export { ProjectDesign, NavigationDesign } from './model/project/design'
-export { ProjectRuntime } from './model/project/runtime'
 export type {
   ProjectModelInitOptions,
-  ProjectModelOptions,
-  ProjectModelDto,
+  ProjectModelEvent,
+  ProjectModelEventListener,
+  ProjectActivePageProjection,
+  ProjectDirtyProjection,
+  ProjectNavigationProjection,
+  ProjectNavigationDirtyScope,
   ProjectInfo,
   ProjectInfoInput,
 } from './model/project/types'
-export type { ProjectModelIoPorts } from './model/project/ports'
-export { createInMemoryProjectModelIoPorts } from './model/project/ports'
-export { createBareProjectModel } from './factory/project-model-factory'
+export type {
+  NavigationNodeDraftNode,
+  NavigationNodePatch,
+  NavigationNodeDraftApplyResult,
+  NavigationNodeDraft,
+} from './model/navigation/edit'
 
-// ── 导航节点 ────────────────────────────────────────────────
-
-export {
-  ModuleNode,
-  SystemDirectoryNode,
-  LinkNode,
-  RefNode,
-  SystemPageNode,
-  VueComponentPageNode,
-  SystemActionNode,
-} from './model/navigation/kinds'
-export {
-  createProjectNodeModel,
-  isConfigPageNode,
-  isConfigSubPageNode,
-} from './model/navigation/factory'
+// ── 导航节点与 DTO ──────────────────────────────────────────
 
 export {
-  ProjectNode,
   isProjectNodeData,
 } from './model/navigation/node'
 
 export {
   isConfigNodeKind,
   isConfigFilesPageSurface,
-  resolvePageDesignSurface,
-  resolveNavPageSummaryId,
   resolvePageNodePageId,
-  readProjectNodeDescription,
-  flattenProjectNavigationRoot,
-  buildProjectNavigationTree,
   findPageNodeByPageId,
   findNodeById,
   findNodeLocation,
-  findConfigNodeByPageId,
   isSystemRootDirectory,
   canUseModuleNodeKind,
   normalizePageIdFromPath,
-  createRootModuleNode,
-  createReservedRootGroup,
 } from './model/navigation/helpers'
 
 export type {
@@ -75,21 +53,13 @@ export type {
   NavPermissionMode,
   ProjectNodeData,
   ProjectNodeLocation,
-  ProjectNodeFamily,
-  ProjectDescriptionContext,
-  PageDesignSurface,
+  ProjectPageSurface,
   ProjectPageNodeSummary,
   RegionItems,
   RegionVisibility,
 } from './model/navigation/node'
 
 // ── 配置页 ──────────────────────────────────────────────────
-
-export { PageDesign } from './model/page/design'
-export { PageRuntime } from './model/page/runtime'
-
-export { ConfigPageNode } from './model/page/config-page'
-export { ConfigSubPageNode } from './model/page/config-sub-page'
 
 export type {
   PageNodeLoadOptions,
@@ -104,6 +74,10 @@ export type {
   PageNodeFileVersionSummary,
 } from './model/page/file'
 
+export { PageContentLoader } from './io/page-content-loader'
+export type { PageContentLoaderOptions } from './io/page-content-loader'
+export { createRuntimePageNode } from './io/runtime-page'
+
 export {
   compileRule,
   normalizeRuleNode,
@@ -117,16 +91,3 @@ export {
   canonicalizePageDataValue,
   canonicalizeDataSetMetadata,
 } from './model/serialization/page-data'
-
-export {
-  PageNodeFactory,
-  createPageNode,
-  createPageNodeFactory,
-} from './factory/page-node-factory'
-export { LoadedPageNode } from './factory/loaded-page-node'
-
-export type {
-  PageNodeFactoryLike,
-  PageNodeFactoryOptions,
-  PageNodeFileStorage,
-} from './factory/page-node-factory'

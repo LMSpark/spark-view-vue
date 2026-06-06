@@ -1,15 +1,15 @@
 import type { HttpClientBase } from '@spark-appworks/spark-utils'
-import type { ProjectModelData, ProjectNodeData } from '../../model/navigation/node'
-import { isProjectNodeData } from '../../model/navigation/node'
-import { normalizeNavRoot } from '../../model/navigation/helpers'
+import type { ProjectModelData, ProjectNodeData } from '../model/navigation/node'
+import { isProjectNodeData } from '../model/navigation/node'
+import { normalizeNavRoot } from '../model/navigation/helpers'
 import {
-  createNavigationNodeEditDto,
-  type NavigationNodeEditDto,
-  type NavigationNodeEditPatchDto,
-} from '../../model/navigation/edit'
-import { trimTrailingSlash } from '../http'
+  createNavigationNodeDraft,
+  type NavigationNodeDraftNode,
+  type NavigationNodePatch,
+} from '../model/navigation/edit'
+import { trimTrailingSlash } from './http'
 
-export type NavigationConfigClientOptions = {
+export type NavigationClientOptions = {
   getNavigationApi: () => string
   http: HttpClientBase
 }
@@ -22,7 +22,7 @@ export type LinkProbeResult = {
 type NavigationNodeAddRequestDto = {
   parentId?: string | null
   index?: number
-  node: NavigationNodeEditDto
+  node: NavigationNodeDraftNode
 }
 
 type NavigationNodeMoveRequestDto = {
@@ -39,11 +39,11 @@ function extractOptionalProjectNodeData(response: Record<string, unknown>): Proj
   return isProjectNodeData(response['deleted']) ? response['deleted'] : null
 }
 
-export class NavigationConfigClient {
+export class NavigationClient {
   private readonly getNavigationApi: () => string
   private readonly http: HttpClientBase
 
-  constructor(options: NavigationConfigClientOptions) {
+  constructor(options: NavigationClientOptions) {
     this.getNavigationApi = options.getNavigationApi
     this.http = options.http
   }
@@ -54,7 +54,7 @@ export class NavigationConfigClient {
   }
 
   async addNode(params: { parentId?: string | null; node: ProjectNodeData; index?: number }): Promise<ProjectNodeData> {
-    const editDto = createNavigationNodeEditDto(params.node)
+    const editDto = createNavigationNodeDraft(params.node)
     const body: NavigationNodeAddRequestDto = {
       ...(params.parentId === undefined || params.parentId === null ? {} : { parentId: params.parentId }),
       node: editDto.node,
@@ -64,7 +64,7 @@ export class NavigationConfigClient {
     return extractProjectNodeData(response)
   }
 
-  async updateNode(id: string, patch: NavigationNodeEditPatchDto): Promise<ProjectNodeData> {
+  async updateNode(id: string, patch: NavigationNodePatch): Promise<ProjectNodeData> {
     const response = await this.http.put<Record<string, unknown>>(
       `${this.baseUrl()}/nodes/${encodeURIComponent(id)}`,
       patch,

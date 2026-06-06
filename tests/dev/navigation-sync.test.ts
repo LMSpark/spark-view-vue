@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'
-import { resetAppProjectEditor } from '@/services/project-editor-host'
+import { resetAppProjectWorkspace } from '@/services/project-workspace'
+import { readAppProjectNavigationRoot, resetAppProjectModel } from '@/services/app-project-model'
 
 const navTreeState = vi.hoisted(() => ({
   tree: null as ProjectModelData | null,
@@ -22,7 +23,7 @@ import {
   syncCommittedNavigation,
   syncCommittedNavigationFromRouter,
 } from '@/services/navigation-sync'
-import { getAppProjectEditor } from '@/services/project-editor-host'
+import { getAppProjectWorkspace } from '@/services/project-workspace'
 
 const sampleNav: ProjectModelData = {
   title: 'root',
@@ -34,7 +35,8 @@ const sampleNav: ProjectModelData = {
 
 describe('navigation-sync', () => {
   beforeEach(() => {
-    resetAppProjectEditor()
+    resetAppProjectWorkspace()
+    resetAppProjectModel()
     navTreeState.tree = { ...sampleNav, children: [...sampleNav.children!] }
     navTreeState.refreshCalls = 0
   })
@@ -49,7 +51,8 @@ describe('navigation-sync', () => {
 
     expect(shellWrites).toHaveLength(1)
     expect(shellWrites[0]?.children?.[0]?.id).toBe('alpha-node')
-    expect(getAppProjectEditor().readSnapshot().treeData[0]?.id).toBe('alpha-node')
+    expect(readAppProjectNavigationRoot()?.children[0]?.id).toBe('alpha-node')
+    expect(getAppProjectWorkspace().project.readNavigationProjection().treeData[0]?.id).toBe('alpha-node')
 
     unregister()
   })
@@ -64,7 +67,7 @@ describe('navigation-sync', () => {
 
     expect(shellWrites).toHaveLength(1)
     expect(vi.mocked(refreshRoutes)).not.toHaveBeenCalled()
-    expect(getAppProjectEditor().readSnapshot().treeData[0]?.id).toBe('alpha-node')
+    expect(getAppProjectWorkspace().project.readNavigationProjection().treeData[0]?.id).toBe('alpha-node')
   })
 
   it('reloadAndSyncNavigation refreshes routes once then syncs', async () => {
@@ -74,6 +77,6 @@ describe('navigation-sync', () => {
 
     expect(navTreeState.refreshCalls).toBe(1)
     expect(vi.mocked(refreshRoutes)).toHaveBeenCalledTimes(1)
-    expect(getAppProjectEditor().readSnapshot().treeData[0]?.id).toBe('alpha-node')
+    expect(getAppProjectWorkspace().project.readNavigationProjection().treeData[0]?.id).toBe('alpha-node')
   })
 })

@@ -1,9 +1,9 @@
 /**
  * 项目导航节点基 class。
  *
- * 按 nodeKind 工厂派生 ConfigPageNode 等子类；ProjectNodeData 仅为序列化形状。
+ * 按 nodeKind 选择 ConfigPageNode 等子类；ProjectNodeData 仅为序列化形状。
  */
-import { isRecord } from '@spark-appworks/spark-utils'
+import { deepClone, isRecord } from '@spark-appworks/spark-utils'
 import { normalizePid, readProjectNodeDescription, formatProjectDescriptionContext } from './helpers'
 
 /** 子节点布局位置：决定子节点在 UI 中的渲染区域。 */
@@ -71,6 +71,23 @@ export type ProjectNodeData = {
   refBroken?: boolean | undefined
 }
 
+export type ProjectNodeNavigationPatch = {
+  title: string
+  nodeKind?: NavNodeKind | undefined
+  icon?: string | undefined
+  dividerAfter?: boolean | undefined
+  description?: string | undefined
+  path?: string | undefined
+  linkTarget?: string | undefined
+  childPlacement?: string | undefined
+  order?: number | undefined
+  hidden?: boolean | undefined
+  disabled?: boolean | undefined
+  refId?: string | undefined
+  permissionMode?: NavPermissionMode | undefined
+  context?: string | NavContextItem[] | NavContextConfig | undefined
+}
+
 export type ProjectNodeLocation = {
   node: ProjectNodeData
   parent: ProjectNodeData | null
@@ -122,10 +139,10 @@ export type NavContextState = {
   error: string | null
 }
 
-/** 导航页在模型侧的设计/编辑表面（非 Vue 渲染模式字符串）。 */
-export type PageDesignSurface =
+/** 导航页在模型侧的页面表面（不携带应用框架实现细节）。 */
+export type ProjectPageSurface =
   | 'config-files'
-  | 'vue-component'
+  | 'system-page'
   | 'link'
   | 'ref'
   | 'none'
@@ -136,8 +153,8 @@ export type ProjectPageNodeSummary = Record<string, unknown> & {
   title: string
   nodeId: string
   nodeKind: NavNodeKind
-  /** 模型侧编辑表面：config-files=四文件；vue-component=静态 Vue 页；none=不可编辑页面文件 */
-  designSurface: PageDesignSurface
+  /** 模型侧编辑表面：config-files=四文件；system-page=系统页；none=不可编辑页面文件 */
+  designSurface: ProjectPageSurface
   description: string
   descriptionContext: ProjectDescriptionContext[]
   effectiveDescription: string
@@ -150,13 +167,19 @@ export type ProjectNodeModelOptions = {
   descriptionContext?: readonly ProjectDescriptionContext[]
 }
 
+function cloneProjectNodeData(node: ProjectNodeData): ProjectNodeData {
+  const cloned = deepClone(node)
+  delete cloned.children
+  return cloned
+}
+
 export class ProjectNode {
   #node: ProjectNodeData
   #pid: string
   #descriptionContext: ProjectDescriptionContext[]
 
   constructor(options: ProjectNodeModelOptions) {
-    this.#node = options.node
+    this.#node = cloneProjectNodeData(options.node)
     this.#pid = normalizePid(options.pid)
     this.#descriptionContext = [...(options.descriptionContext ?? [])]
   }
@@ -168,7 +191,38 @@ export class ProjectNode {
     if (this.nodeKind === 'ref') return 'ref'
     return 'module'
   }
-  toNodeData(): ProjectNodeData { return this.#node }
+  toNodeData(): ProjectNodeData { return cloneProjectNodeData(this.#node) }
+
+  /** 导航编辑只能通过 class API 提交；DTO 快照不可作为包内可变真源。 */
+  applyNavigationPatch(patch: ProjectNodeNavigationPatch): void {
+    const next = cloneProjectNodeData(this.#node)
+    if (!('icon' in patch)) delete next.icon
+    if (!('description' in patch)) delete next.description
+    if (!('path' in patch)) delete next.path
+    if (!('linkTarget' in patch)) delete next.linkTarget
+    if (!('childPlacement' in patch)) delete next.childPlacement
+    if (!('hidden' in patch)) delete next.hidden
+    if (!('disabled' in patch)) delete next.disabled
+    if (!('context' in patch)) delete next.context
+    if (!('dividerAfter' in patch)) delete next.dividerAfter
+    if (!('nodeKind' in patch)) delete next.nodeKind
+    if (!('refId' in patch)) delete next.refId
+    if (!('permissionMode' in patch)) delete next.permissionMode
+
+    Object.assign(next, deepClone(patch))
+
+    if (!next.icon) delete next.icon
+    if (!next.description) delete next.description
+    if (!next.path) delete next.path
+    if (next.nodeKind !== 'link' || !next.linkTarget) delete next.linkTarget
+    if (!next.childPlacement) delete next.childPlacement
+    if (!next.hidden) delete next.hidden
+    if (!next.disabled) delete next.disabled
+    if (next.context === undefined || next.context === '') delete next.context
+    if (!next.dividerAfter) delete next.dividerAfter
+    if (next.nodeKind !== 'ref' || !next.refId) delete next.refId
+    this.#node = next
+  }
 
   /**
    * 父节点 ID；根级节点为 ''。
@@ -211,7 +265,7 @@ export class ProjectNode {
   protected get effectiveDescription(): string { return formatProjectDescriptionContext(this.#descriptionContext) }
   protected get descriptionContext(): ProjectDescriptionContext[] { return [...this.#descriptionContext] }
   rebindNavigationNode(node: ProjectNodeData, pid: string, descriptionContext: readonly ProjectDescriptionContext[]): void {
-    this.#node = node
+    this.#node = cloneProjectNodeData(node)
     this.#pid = normalizePid(pid)
     this.#descriptionContext = [...descriptionContext]
   }

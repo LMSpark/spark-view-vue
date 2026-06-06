@@ -1,12 +1,12 @@
 # spark-project-model 架构
 
-> 更新基准：2026-06-05。`spark-project-model` 是 SPARK 的软件设计模型包，不引入 Vue、Vue Router、Element Plus 或应用层 service。
+> 更新基准：2026-06-06。`spark-project-model` 是 SPARK 的软件设计模型包，不引入 Vue、Vue Router、Element Plus 或应用层 service。
 
 权威细节以包内文档为准：
 
-- [`packages/spark-project-model/README.md`](../../packages/spark-project-model/README.md) — 包职责与公共入口
-- [`packages/spark-project-model/src/MODEL-HIERARCHY.md`](../../packages/spark-project-model/src/MODEL-HIERARCHY.md) — class 层级契约
-- [`packages/spark-project-model/src/STRUCTURE.md`](../../packages/spark-project-model/src/STRUCTURE.md) — 目录与依赖规则
+- [`packages/spark-project-model/README.md`](../../packages/spark-project-model/README.md)
+- [`packages/spark-project-model/src/MODEL-HIERARCHY.md`](../../packages/spark-project-model/src/MODEL-HIERARCHY.md)
+- [`packages/spark-project-model/src/STRUCTURE.md`](../../packages/spark-project-model/src/STRUCTURE.md)
 
 ## 治理顺序
 
@@ -14,93 +14,62 @@
 理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容
 ```
 
-## 核心模型（当前实现）
+## 核心模型
 
-**设计即编辑**：改树、改页面、选中、dirty、保存是同一语义。
+**设计即编辑**；**模型 = class + API（事件）**；谁 `new` 谁负责生命周期。
 
 ```text
-ProjectModel                          # 项目根
-├── design: ProjectDesign
-│   ├── navigation: NavigationDesign  # nodesById + NavigationIndex
-│   └── pages → ConfigPageNode*
-├── runtime: ProjectRuntime           # 已加载页渲染快照等
+ProjectModel
+├── design: ProjectDesign      # 导航 + ConfigPageNode Map
+├── session: ProjectSession    # 选中 / activePage / dirty（不落盘）
 └── ProjectNode 子类树
-    ├── ModuleNode / LinkNode / RefNode / SystemPageNode / SystemActionNode
-    └── ConfigPageNode
-        ├── design: PageDesign        # rule / dataSet / script / style
-        └── runtime: PageRuntime
+    └── ConfigPageNode         # rule / dataSet / script / style 四文件子 class
 
-ProjectEditor                         # 设计门面（薄编排）
-  EditorSession                       # 选中 / dirty / working DTO / revision
-  NavigationEditor / PageFileEditor / PageLifecycle / …
+ProjectWorkspace                 # 持有 .project + IO
+PageContentLoader                # 运行态四文件加载
 ```
 
-`ProjectNodeData`、`ProjectModelData` 等 type 仅用于 API 载荷与落盘映射；包内主语是 class 实例树。
+`ProjectNodeData` 等 type 仅用于 API 载荷与落盘映射。
 
-## 存储与模型
+## 存储
 
-| 层 | 职责 |
+| 真源 | 形状 |
 |---|---|
-| 存储真源 | DB navigation + page 四文件（commit 唯一去向） |
-| 领域模型 | 树、索引、派生 summary；形状不必与存储同构 |
-| 设计门面 | `ProjectEditor` load/save 映射到 `nodeId` / `pageId` / 文件锚点 |
+| DB | navigation 平铺表 |
+| 文件 | rule.json、pagedata.json、script.js、style.css |
 
-## 配置页四文件
+## 三消费层
 
-`ConfigPageNode` 聚合页面设计与运行投影：
-
-| 子域 | 持久化 |
+| 层 | 创建 |
 |---|---|
-| `rule` | `rule.json` |
-| `dataSet` | `pagedata.json` |
-| `script` | `script.js` |
-| `style` | `style.css` |
-
-导航元数据属于节点基类，不是四文件之一。
+| spark-app 运行态 | `new PageContentLoader` + `createRuntimePageNode` |
+| DevSystem / AI | `new ProjectWorkspace` 或 `getAppProjectWorkspace(scope)` |
+| 纯内存 | `new ProjectModel({ projectId })` |
 
 ## 公共入口
 
-运行态：
-
 ```ts
-import {
-  createPageNodeFactory,
-  ProjectModel,
-  ConfigPageNode,
-  type PageNodeLike,
-  type PageNodeRenderConfig,
-} from '@spark-appworks/spark-project-model'
+import { ProjectModel, ConfigPageNode, type PageNodeLike } from '@spark-appworks/spark-project-model'
+import { ProjectWorkspace, PageContentLoader, createRuntimePageNode } from '@spark-appworks/spark-project-model/project'
 ```
 
-设计态：
-
-```ts
-import {
-  createProjectEditor,
-  type ProjectEditor,
-} from '@spark-appworks/spark-project-model/project'
-```
-
-包外不要 deep import `src/model/*`、`src/io/*`、`src/facade/*`。
+包外不要 deep import `src/model/*`、`src/io/*`。
 
 ## 源码目录
 
 ```text
 src/
-├── index.ts              # 领域模型 + PageNodeFactory + compiler
-├── project.ts            # ProjectEditor + artifact 制品
-├── model/                # project / navigation / page / serialization
-├── facade/               # ProjectEditor 协作者 + EditorSession
-├── factory/              # PageNodeFactory
-└── io/                   # file / navigation / loader / reference / http
+├── index.ts / project.ts
+├── project-workspace.ts
+├── model/project|navigation|page|serialization/
+└── io/
 ```
 
-依赖：`facade → {model, io}`、`io → model`、`factory → {model, io}`。**禁止 `model → io`**。DevSystem 设计器制品在 `src/services/project-model-artifacts/`。
+依赖：`project-workspace → {model, io}`、`io → model`。**禁止 `model → io`**。
 
 ## 验证
 
 ```bash
-pnpm --filter @spark-appworks/spark-project-model typecheck
-pnpm --filter @spark-appworks/spark-project-model test:run
-pnpm --filter @spark-appworks/spark-project-model build
+pnpm --filter @spark-appworks/spark-project-model run typecheck
+pnpm --filter @spark-appworks/spark-project-model run test:run
 ```

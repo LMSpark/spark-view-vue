@@ -1,17 +1,18 @@
 /**
- * useDevSystem — 当前项目导航设计器的单入口编排器。
+ * useDevSystem — 当前编辑 scope 导航设计器的单入口编排器。
  *
- * DevSystem 经 APP 门面实例（ProjectEditor）编辑 editor.project（领域实例）；
+ * DevSystem 经当前 ProjectWorkspace 编辑对应 scope 的 ProjectModel（领域实例）；
  * 左侧导航树，右侧节点属性与（若为配置页）页面内容。
  */
 import { computed, onScopeDispose, ref, watch } from 'vue'
 import { useTenantRouter } from '@/composables/useTenantRouter'
+import { buildTenantPath } from '@/services/tenant-scope'
 import { useDevState, type DevWorkspaceTab } from './useDevState'
 import type { PageNodeFileName } from '@spark-appworks/spark-project-model'
 import { onPageConfigChange } from '@/services/sse-events'
 
 export function useDevSystem() {
-  const { router, tenantPath } = useTenantRouter()
+  const { router } = useTenantRouter()
   const state = useDevState()
   const isPageFileName = (value: string): value is PageNodeFileName =>
     state.pageFileNames.some((name) => name === value)
@@ -77,7 +78,7 @@ export function useDevSystem() {
 
   // ─── 动作方法 ──────────────────────────────────────────
   function previewPage(pageId: string) {
-    void router.push(tenantPath(`/${pageId}`))
+    void router.push(buildTenantPath({ tenantId: state.tenantId, projectId: state.projectId }, `/${pageId}`))
   }
 
   function switchToPreview() {
@@ -97,8 +98,8 @@ export function useDevSystem() {
   }
 
   function isWorkspaceTabDirty(name: PageNodeFileName): boolean {
-    void state.pageFilesRevision.value
-    return state.editor.readSnapshot().dirtyFiles.has(name)
+    void state.projectRevision.value
+    return state.project.readDirtyProjection().dirtyFiles.has(name)
   }
 
   return {

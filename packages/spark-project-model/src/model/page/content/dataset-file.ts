@@ -1,6 +1,6 @@
 /** PageDataSetFile——pagedata.json 的内存模型，负责 DataSet 的读写与撤销重做。 */
 import { DataSet, DataSetCrudTool } from '@spark-appworks/spark-data'
-import { parsePageDataText, serializeDataSet } from '../serial'
+import { parsePageDataText, serializeDataSet } from '../file'
 
 export class PageDataSetFile {
   value: DataSet

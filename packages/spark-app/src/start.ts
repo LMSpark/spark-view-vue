@@ -6,7 +6,7 @@
 
 import { createApp, type Component, type Plugin } from 'vue'
 import { createRouter, createWebHistory, createWebHashHistory } from 'vue-router'
-import { createPageNodeFactory, type ProjectModelData, type PageNodeFactoryOptions } from '@spark-appworks/spark-project-model'
+import { PageContentLoader, type ProjectModelData } from '@spark-appworks/spark-project-model'
 import { Spark, SparkPageRenderer, registerAllRenderers } from '@spark-appworks/spark-component'
 import { createPageCache } from './navigation/page-cache'
 import { createDynamicRouter, type DynamicRouterOptions } from './router/dynamic'
@@ -297,15 +297,15 @@ export async function start(options: StartOptions): Promise<void> {
     if (pageNode) {
       logStartDebug('配置动态路由系统...')
 
-      const pageNodeFactoryOptions: PageNodeFactoryOptions = {
-        apiBaseUrl: pageNode.apiBaseUrl
+      const loaderOptions: ConstructorParameters<typeof PageContentLoader>[0] = {
+        apiBaseUrl: pageNode.apiBaseUrl,
       }
 
-      if (pageNode.pagesConfigBaseUrl !== undefined) pageNodeFactoryOptions.pagesConfigBaseUrl = pageNode.pagesConfigBaseUrl
-      if (pageNode.timeout !== undefined) pageNodeFactoryOptions.timeout = pageNode.timeout
-      if (pageNode.getHeaders) pageNodeFactoryOptions.getHeaders = pageNode.getHeaders
+      if (pageNode.pagesConfigBaseUrl !== undefined) loaderOptions.pagesConfigBaseUrl = pageNode.pagesConfigBaseUrl
+      if (pageNode.timeout !== undefined) loaderOptions.timeout = pageNode.timeout
+      if (pageNode.getHeaders) loaderOptions.getHeaders = pageNode.getHeaders
 
-      const pageNodeFactory = createPageNodeFactory(pageNodeFactoryOptions)
+      const pageContentLoader = new PageContentLoader(loaderOptions)
 
       // 默认使用 SparkPageRenderer 组件（SPARK 原生页面渲染器）
       const pageComponent: Component = pageNode.pageComponent ?? SparkPageRenderer
@@ -318,7 +318,7 @@ export async function start(options: StartOptions): Promise<void> {
 
       const dynamicRouterOptions: DynamicRouterOptions = {
         router,
-        pageNodeFactory,
+        pageContentLoader,
         pageComponent, // SparkPageRenderer 或用户提供的组件，if 块已确保非空
         ...(pageNode.componentMap !== undefined && { componentMap: pageNode.componentMap }),
         ...(pageNode.tenantPathPrefix !== undefined && { tenantPathPrefix: pageNode.tenantPathPrefix }),
@@ -344,7 +344,7 @@ export async function start(options: StartOptions): Promise<void> {
 
       // 注入到全局访问模块：导航访问 + 缓存管理
       setDynamicRouter(dynamicRouter)
-      setPageCacheHandle(createPageCache(pageNodeFactory))
+      setPageCacheHandle(createPageCache(pageContentLoader))
     }
 
     // 6. 执行 Bootstrap 流程

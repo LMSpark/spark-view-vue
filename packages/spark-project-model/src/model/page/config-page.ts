@@ -11,12 +11,10 @@ import {
   type ProjectNodeModelOptions,
   type ProjectPageNodeSummary,
 } from '../navigation/node'
-import { normalizeConfigPageId, resolvePageDesignSurface, resolvePageNodePageId } from '../navigation/helpers'
+import { normalizeConfigPageId, resolveProjectPageSurface, resolvePageNodePageId } from '../navigation/helpers'
 import { PageRuleFile } from './content/rule-file'
 import { PageDataSetFile } from './content/dataset-file'
 import { PageTextFile } from './content/text-file'
-import { PageDesign } from './design'
-import { PageRuntime } from './runtime'
 
 export type { PageNodeLoadOptions } from './file'
 
@@ -51,14 +49,12 @@ type ConfigPageFileModel = {
  * 配置页面节点。
  *
  * 持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。
- * 持久化（load/save/版本）由 io/PageContentRepository 经门面编排。
+ * 四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。
  *
  * @moduleKind config-page
  * @moduleAbility pageDesign.configPage
  */
 export class ConfigPageNode extends ProjectNode {
-  readonly design: PageDesign
-  readonly runtime: PageRuntime
   readonly rule: PageRuleFile
   readonly dataSet: PageDataSetFile
   readonly style: PageTextFile
@@ -82,8 +78,6 @@ export class ConfigPageNode extends ProjectNode {
       'script.js': this.script,
       'style.css': this.style,
     }
-    this.design = new PageDesign(this.rule, this.dataSet, this.script, this.style, this.files)
-    this.runtime = new PageRuntime(this)
   }
 
   override get family(): ProjectNodeFamily { return 'config-page' }
@@ -95,10 +89,10 @@ export class ConfigPageNode extends ProjectNode {
   get isSubPage(): boolean { return false }
 
   isDirty(): boolean {
-    return this.design.isDirty()
+    return this.getDirtyFileNames().length > 0
   }
 
-  /** 由 PageContentRepository 在远端加载后灌入，不标 dirty。 */
+  /** 由 ProjectWorkspace 或 PageContentLoader 在远端加载后灌入，不标 dirty。 */
   hydrateFileText(name: PageNodeFileName, text: string): void {
     switch (name) {
       case 'rule.json':
@@ -199,7 +193,7 @@ export class ConfigPageNode extends ProjectNode {
   }
 
   getDirtyFileNames(): PageNodeFileName[] {
-    return this.design.getDirtyFileNames()
+    return (Object.keys(this.files) as PageNodeFileName[]).filter(name => this.files[name].isDirty)
   }
 
   getNodeTree(): SparkNodeTreeModel {
@@ -216,22 +210,6 @@ export class ConfigPageNode extends ProjectNode {
 
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)
-  }
-
-  readScript(): string {
-    return this.script.text
-  }
-
-  writeScript(content: string): void {
-    this.script.setText(content)
-  }
-
-  readStyle(): string {
-    return this.style.text
-  }
-
-  writeStyle(content: string): void {
-    this.style.setText(content)
   }
 
   toRenderConfig(): PageNodeRenderConfig {
@@ -251,11 +229,29 @@ export class ConfigPageNode extends ProjectNode {
     return {
       pageId: this.pageId, path: this.resolvedPath, title: this.name,
       nodeId: this.id, nodeKind: this.nodeKind,
-      designSurface: resolvePageDesignSurface(node),
+      designSurface: resolveProjectPageSurface(node),
       description: this.description,
       descriptionContext: this.descriptionContext,
       effectiveDescription: this.effectiveDescription,
       ...(this.icon === undefined ? {} : { icon: this.icon }),
+    }
+  }
+}
+
+/** sub-page 配置页：四文件模型，nodeKind=sub-page，无独立 path。 */
+export class ConfigSubPageNode extends ConfigPageNode {
+  override get isSubPage(): boolean { return true }
+
+  override get family() {
+    return 'config-page' as const
+  }
+
+  override toSummary(): ProjectPageNodeSummary {
+    const summary = super.toSummary()
+    return {
+      ...summary,
+      nodeKind: 'sub-page',
+      designSurface: 'config-files',
     }
   }
 }

@@ -2,7 +2,7 @@
 import { deepClone } from '@spark-appworks/spark-utils'
 import type {
   NavNodeKind,
-  PageDesignSurface,
+  ProjectPageSurface,
   ProjectDescriptionContext,
   ProjectModelData,
   ProjectNodeData,
@@ -18,17 +18,17 @@ export function normalizePageIdFromPath(path: string | undefined | null): string
 
 export function isConfigNodeKind(kind: string | undefined | null): boolean { return (kind ?? 'page') === 'page' || kind === 'sub-page' }
 
-/** 按 nodeKind 解析模型侧页面设计表面（不依赖 APP 层 VUE_PAGE_MAP）。 */
-export function resolvePageDesignSurface(node: ProjectNodeData): PageDesignSurface {
+/** 按 nodeKind 解析模型侧页面表面（不依赖应用路由表）。 */
+export function resolveProjectPageSurface(node: ProjectNodeData): ProjectPageSurface {
   const kind = node.nodeKind ?? 'page'
   if (isConfigNodeKind(kind)) return 'config-files'
-  if (kind === 'system-page') return 'vue-component'
+  if (kind === 'system-page') return 'system-page'
   if (kind === 'link') return 'link'
   if (kind === 'ref') return 'ref'
   return 'none'
 }
 
-export function isConfigFilesPageSurface(surface: PageDesignSurface): boolean {
+export function isConfigFilesPageSurface(surface: ProjectPageSurface): boolean {
   return surface === 'config-files'
 }
 const SYSTEM_CHILD_PLACEMENTS = new Set(['toolbar', 'user-menu'])
@@ -225,60 +225,6 @@ export function canUseModuleNodeKind(node: ProjectNodeData | null | undefined, r
   return !isPageLikeKind(parent.nodeKind ?? 'module')
 }
 
-export function createRootModuleNode(createId: () => string): ProjectNodeData {
-  return {
-    id: createId(),
-    nodeKind: 'module',
-    title: '新模块',
-    icon: 'FolderOpened',
-    childPlacement: 'sidebar',
-    children: [],
-  }
-}
-
-export function createChildPageNode(createId: () => string): ProjectNodeData {
-  const id = createId()
-  return {
-    id,
-    nodeKind: 'page',
-    title: '新页面',
-    icon: 'Document',
-    path: `/${id}`,
-  }
-}
-
-export function createReservedRootGroup(
-  placement: 'toolbar' | 'user-menu',
-  options: { createId: () => string; templateRoot?: ProjectModelData | null },
-): ProjectNodeData {
-  const template = options.templateRoot?.children.find(node => node.childPlacement === placement)
-  if (template) {
-    const cloned = { ...template }
-    cloned.id = options.createId()
-    return normalizeProjectNodeData(cloned)
-  }
-
-  if (placement === 'toolbar') {
-    return {
-      id: options.createId(),
-      nodeKind: 'system-directory',
-      title: '工具栏',
-      icon: 'SetUp',
-      childPlacement: 'toolbar',
-      children: [],
-    }
-  }
-
-  return {
-    id: options.createId(),
-    nodeKind: 'system-directory',
-    title: '用户菜单',
-    icon: 'User',
-    childPlacement: 'user-menu',
-    children: [],
-  }
-}
-
 export function normalizeConfigPageId(v: string | undefined | null): string { return (v ?? '').trim() }
 
 export function resolvePageNodePageId(node: ProjectNodeData | null | undefined): string {
@@ -287,7 +233,7 @@ export function resolvePageNodePageId(node: ProjectNodeData | null | undefined):
   return pid || node.id.trim()
 }
 
-/** 导航树页面摘要用的 pageId（含 system-page / vue-component）。 */
+/** 导航树页面摘要用的 pageId（含配置页与 system-page）。 */
 export function resolveNavPageSummaryId(node: ProjectNodeData): string {
   const configPageId = resolvePageNodePageId(node)
   if (configPageId !== '') return configPageId
@@ -331,9 +277,9 @@ export function buildProjectPageSummaries(
   ): void => {
     for (const node of list) {
       const nextContext = appendProjectDescriptionContext(context, node)
-      const surface = resolvePageDesignSurface(node)
+      const surface = resolveProjectPageSurface(node)
       const pageId = resolveNavPageSummaryId(node)
-      if (pageId !== '' && (surface === 'config-files' || surface === 'vue-component') && !seen.has(pageId)) {
+      if (pageId !== '' && (surface === 'config-files' || surface === 'system-page') && !seen.has(pageId)) {
         const description = readProjectNodeDescription(node)
         seen.add(pageId)
         pages.push({
@@ -429,4 +375,84 @@ export function findFlatNodeLocation<T extends TreeNodeLike>(
 
 function sortNavNodes(nodes: ProjectNodeData[]): ProjectNodeData[] {
   return nodes.sort((a, b) => { const oa = typeof a.order === 'number' ? a.order : 0; const ob = typeof b.order === 'number' ? b.order : 0; return oa !== ob ? oa - ob : a.id.localeCompare(b.id) })
+}
+
+// ── NavigationIndex：内存索引，非存储形状 ────────────────────────────────
+
+export type NavigationTreeNodeLike = {
+  readonly id: string
+  readonly pid: string
+  readonly order: number
+  toNodeData(): ProjectNodeData
+}
+
+export function compareNavigationNodes(
+  a: NavigationTreeNodeLike,
+  b: NavigationTreeNodeLike,
+): number {
+  return a.order !== b.order ? a.order - b.order : a.id.localeCompare(b.id)
+}
+
+export class NavigationIndex<TNode extends NavigationTreeNodeLike> {
+  private readonly nodesById: Map<string, TNode>
+  private childrenByPid = new Map<string, TNode[]>()
+  private treeCache: ProjectNodeData[] | null = null
+
+  constructor(nodesById: Map<string, TNode>) {
+    this.nodesById = nodesById
+  }
+
+  rebuild(): void {
+    this.childrenByPid.clear()
+    this.treeCache = null
+    for (const node of this.nodesById.values()) {
+      const pid = node.pid
+      let bucket = this.childrenByPid.get(pid)
+      if (!bucket) {
+        bucket = []
+        this.childrenByPid.set(pid, bucket)
+      }
+      bucket.push(node)
+    }
+    for (const bucket of this.childrenByPid.values()) {
+      bucket.sort(compareNavigationNodes)
+    }
+  }
+
+  invalidateTree(): void {
+    this.treeCache = null
+  }
+
+  getChildren(pid: string): readonly TNode[] {
+    return this.childrenByPid.get(pid.trim()) ?? []
+  }
+
+  collectDescendants(nodeId: string): TNode[] {
+    const result: TNode[] = []
+    const stack = [...this.getChildren(nodeId)]
+    while (stack.length > 0) {
+      const node = stack.pop()
+      if (node === undefined) continue
+      result.push(node)
+      stack.push(...this.getChildren(node.id))
+    }
+    return result
+  }
+
+  nextChildOrder(pid: string): number {
+    const siblings = this.getChildren(pid)
+    let max = -1
+    for (const node of siblings) max = Math.max(max, node.order)
+    return max + 1
+  }
+
+  buildTree(): ProjectNodeData[] {
+    if (this.treeCache !== null) return this.treeCache
+    this.treeCache = buildProjectNavigationTree(this.nodesById.values())
+    return this.treeCache
+  }
+
+  findNodeLocation(targetId: string): ProjectNodeLocation | null {
+    return findFlatNodeLocation(this.nodesById, (pid) => this.getChildren(pid), targetId)
+  }
 }

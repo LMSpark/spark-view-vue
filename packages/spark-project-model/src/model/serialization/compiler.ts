@@ -13,25 +13,25 @@
 import { DataSet, SparkData } from '@spark-appworks/spark-data'
 import { getSparkNodeChildren, isSparkNode, normalizeSparkNode, SparkNodeTree, type SparkNode } from '@spark-appworks/spark-data'
 
-// ═══ 工厂解析：模块加载时一次性探测 spark-data 暴露的 DataSet 构建入口 ═══
+// ═══ DataSet 创建入口解析：模块加载时一次性探测 spark-data 暴露的构建入口 ═══
 
-/** PageData 对象工厂签名：接收已解析的 JSON 对象，返回 DataSet。 */
-type ObjectFactory = (input: Record<string, unknown>) => DataSet
+/** DataSet 创建函数签名：接收已解析的 JSON 对象，返回 DataSet。 */
+type DataSetCreator = (input: Record<string, unknown>) => DataSet
 
 /** 安全探测对象是否有指定自有属性。 */
 function hasOwn(obj: Record<string, unknown>, key: string): boolean {
   return Object.prototype.hasOwnProperty.call(obj, key)
 }
 
-/** 判断目标是否为接收字符串的工厂函数。 */
-function isStringFactory(
+/** 判断目标是否为接收字符串的 DataSet 创建函数。 */
+function isStringDataSetCreator(
   fn: unknown,
 ): fn is (raw: string) => DataSet {
   return typeof fn === 'function'
 }
 
-/** 判断目标是否为接收对象的工厂函数。 */
-function isObjectFactory(
+/** 判断目标是否为接收对象的 DataSet 创建函数。 */
+function isObjectDataSetCreator(
   fn: unknown,
 ): fn is (raw: Record<string, unknown>) => DataSet {
   return typeof fn === 'function'
@@ -55,43 +55,43 @@ function getNamespaceRecord(target: unknown): Record<string, unknown> {
 }
 
 /**
- * 解析 canonical 工厂：优先查找 SparkData.fromJSON / DataSet.fromJSON，
+ * 解析 canonical DataSet 创建函数：优先查找 SparkData.fromJSON / DataSet.fromJSON，
  * 其次查找 fromJson（小写）。两种签名分别接收 JSON 字符串和已解析对象。
  */
-function resolveCanonicalFactory(): ObjectFactory {
+function resolveCanonicalDataSetCreator(): DataSetCreator {
   const sparkDataObj = getNamespaceRecord(SparkData)
   const dataSetCtor = getNamespaceRecord(DataSet)
 
   // 尝试 fromJSON（接收 JSON 字符串）
   const fromJSON = sparkDataObj['fromJSON'] ?? dataSetCtor['fromJSON']
-  if (isStringFactory(fromJSON)) {
+  if (isStringDataSetCreator(fromJSON)) {
     return (input) => fromJSON(JSON.stringify(input))
   }
 
   // 尝试 fromJson（接收已解析对象）
   const fromJson = sparkDataObj['fromJson'] ?? dataSetCtor['fromJson']
-  if (isObjectFactory(fromJson)) {
+  if (isObjectDataSetCreator(fromJson)) {
     return (input) => fromJson(input)
   }
 
-  throw new Error('spark-data 未导出可用的 canonical 数据集工厂（fromJSON/fromJson）')
+  throw new Error('spark-data 未导出可用的 canonical 数据集创建函数（fromJSON/fromJson）')
 }
 
 /**
- * 解析 pageData 专用工厂：优先使用 SparkData.fromPageData，
- * 不存在时回退到 canonical 工厂。
+ * 解析 pageData 专用 DataSet 创建函数：优先使用 SparkData.fromPageData，
+ * 不存在时回退到 canonical 创建函数。
  */
-function resolvePageDataFactory(): ObjectFactory {
+function resolvePageDataSetCreator(): DataSetCreator {
   const sparkDataObj = getNamespaceRecord(SparkData)
   const fromPageData = sparkDataObj['fromPageData']
-  if (isObjectFactory(fromPageData)) {
+  if (isObjectDataSetCreator(fromPageData)) {
     return (input) => fromPageData(input)
   }
-  // 未提供专用 pagedata 工厂时，退回 canonical 工厂
-  return resolveCanonicalFactory()
+  // 未提供专用 pagedata 创建函数时，退回 canonical 创建函数
+  return resolveCanonicalDataSetCreator()
 }
 
-// ═══ DataSet 输入归一化：处理不规范输入，确保工厂收到合法结构 ═══
+// ═══ DataSet 输入归一化：处理不规范输入，确保创建函数收到合法结构 ═══
 
 /** 判断输入是否为 canonical DataSet 形态（包含 tables / dataSetName 等关键字段）。 */
 function isCanonicalDataSetShape(obj: Record<string, unknown>): boolean {
@@ -148,19 +148,19 @@ function normalizeCanonicalDataSetInput(input: Record<string, unknown>): Record<
 
 /** 创建空 DataSet 作为解析失败时的默认值。 */
 function createDefaultDataSet(): DataSet {
-  return canonicalFactory({ dataSetName: 'PageDataSet', tables: {} })
+  return canonicalDataSetCreator({ dataSetName: 'PageDataSet', tables: {} })
 }
 
-// 模块加载时一次性解析工厂，后续编译调用直接使用
-const canonicalFactory = resolveCanonicalFactory()
-const pageDataFactory = resolvePageDataFactory()
+// 模块加载时一次性解析创建函数，后续编译调用直接使用
+const canonicalDataSetCreator = resolveCanonicalDataSetCreator()
+const pageDataSetCreator = resolvePageDataSetCreator()
 
-/** 根据输入形态选择合适的工厂创建 DataSet 实例。 */
+/** 根据输入形态选择合适的创建函数创建 DataSet 实例。 */
 function createDataSetFromInput(input: Record<string, unknown>): DataSet {
   if (isCanonicalDataSetShape(input)) {
-    return canonicalFactory(normalizeCanonicalDataSetInput(input))
+    return canonicalDataSetCreator(normalizeCanonicalDataSetInput(input))
   }
-  return pageDataFactory(input)
+  return pageDataSetCreator(input)
 }
 
 // ═══ 公开编译入口：纯函数，字符串 → 类型化数据 ═══
@@ -197,7 +197,7 @@ export function normalizeRuleNode(node: unknown): SparkNode {
  * 流程：
  * 1. 空内容 → 返回默认空 DataSet
  * 2. 解析 JSON → 判断是否为 canonical 形态（tables / dataSetName 等）
- * 3. 选择 canonical 工厂或 pageData 工厂创建实例
+ * 3. 选择 canonical 创建函数或 pageData 创建函数创建实例
  * 4. 归一化 tables 结构（补齐 tableName、确保 views.default 存在）
  */
 export function parsePageData(raw: string): DataSet {

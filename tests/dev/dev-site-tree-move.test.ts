@@ -4,10 +4,10 @@ import { describe, expect, it, vi } from 'vitest'
 import DevSiteTree from '@/views/app/dev-system/DevSiteTree.vue'
 import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 import { useDevState, type DevState } from '@/views/app/dev-system/useDevState'
-import { isolateAppProjectEditorForTest, seedDevStateConfigPages } from './dev-state-test-fixture'
+import { isolateAppProjectWorkspaceForTest, seedDevStateConfigPages } from './dev-state-test-fixture'
 
 function createState(node: ProjectNodeData): DevState {
-  isolateAppProjectEditorForTest()
+  isolateAppProjectWorkspaceForTest()
   const state = useDevState()
   seedDevStateConfigPages(state, [{
     pageId: 'orders',

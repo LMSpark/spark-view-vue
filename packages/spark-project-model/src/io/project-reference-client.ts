@@ -1,6 +1,6 @@
 import { isRecord, type HttpClientBase } from '@spark-appworks/spark-utils'
-import type { ProjectModelData, ProjectPageNodeSummary } from '../../model/navigation/node'
-import { buildProjectPageSummaries } from '../../model/navigation/helpers'
+import type { ProjectModelData, ProjectPageNodeSummary } from '../model/navigation/node'
+import { buildProjectPageSummaries } from '../model/navigation/helpers'
 
 export type ProjectReferenceClientOptions = {
   http: HttpClientBase

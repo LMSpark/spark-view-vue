@@ -29,10 +29,8 @@ import {
   validatePageDesignPayloadGuidesFromSession,
 } from '../src/services/page-design-business.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
-import {
-  PAGE_MODEL_FILE_NAMES,
-  createProjectEditor,
-} from '@spark-appworks/spark-project-model/project'
+import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
 import {
   DataSet,
   SparkNodeTree,
@@ -455,7 +453,7 @@ function createPageConfigRuntime(options, auth) {
       return config
     },
   })
-  const editor = createProjectEditor({
+  const editor = new ProjectWorkspace({
     projectId: auth.projectId,
     http,
     getPageFilesApi: () => `${options.backendUrl}/api/pages-config`,
@@ -494,8 +492,12 @@ async function loadTargetPage(editor, pageId) {
   })
 }
 
+function readWorkspaceFileText(workspace, name) {
+  return workspace.project.getActivePage()?.getFileText(name) ?? ''
+}
+
 function readEditorFiles(editor) {
-  return Object.fromEntries(PAGE_MODEL_FILE_NAMES.map((name) => [name, editor.getPageFileText(name)]))
+  return Object.fromEntries(PAGE_NODE_FILE_NAMES.map((name) => [name, readWorkspaceFileText(editor, name)]))
 }
 
 function changedFiles(before, after) {
@@ -504,8 +506,8 @@ function changedFiles(before, after) {
 
 async function saveDirtyFiles(editor) {
   const saved = []
-  const dirtyFiles = editor.readSnapshot().dirtyFiles
-  for (const name of PAGE_MODEL_FILE_NAMES) {
+  const dirtyFiles = editor.project.readDirtyProjection().dirtyFiles
+  for (const name of PAGE_NODE_FILE_NAMES) {
     if (!dirtyFiles.has(name)) continue
     await editor.savePageFile(name)
     saved.push(name)
@@ -661,31 +663,17 @@ function assertAppendMessages(body, input) {
 }
 
 // ============================================================================
-// 第 7 层：ProjectEditor Host（两种模式，通过 --host-mode 切换）
+// 第 7 层：pageDesign 业务注册（ProjectWorkspace 直接作为 IO 入口）
 // ============================================================================
 
-// builtin 模式：使用 ProjectEditor 委托出的 live edit host。
-function createBuiltinHost(editor, pageId) {
-  return editor.createPageDesignEditHost({ pageId })
-}
-
-// inline 模式仍从 ProjectEditor 出口进入四文件读写。
-function createInlineHost(editor, pageId) {
-  return editor.createPageDesignEditHost({ pageId })
-}
-
-// ============================================================================
-// 第 8 层：AI 会话编排
-// ============================================================================
-
-function createPageDesignAiAgent(options, auth, editHost) {
+function createPageDesignAiAgent(options, auth, workspace) {
   const aiHost = createAiAgentHost({
     turnCallbacks: createTurnCallbacks(options, auth),
     maxToolRounds: options.maxRounds,
   })
   return ensurePageDesignBusiness({
     host: aiHost,
-    getPageDesignEditHost: () => editHost,
+    getPageDesignEditor: () => workspace,
   })
 }
 
@@ -1369,13 +1357,8 @@ async function run(options) {
   await loadTargetPage(editor, options.pageId)
   const before = readEditorFiles(editor)
 
-  // 3. 创建 ProjectEditor host（根据 --host-mode 选择实现）
-  const host = options.hostMode === 'inline'
-    ? createInlineHost(editor, options.pageId)
-    : createBuiltinHost(editor, options.pageId)
-
-  // 4. 注册 pageDesign 业务入口
-  const pageDesignHost = createPageDesignAiAgent(options, auth, host)
+  // 3. 注册 pageDesign 业务入口
+  const pageDesignHost = createPageDesignAiAgent(options, auth, editor)
 
   // 5. 启动会话，发送 LLM 需求
   const textDeltas = []
@@ -1422,7 +1405,7 @@ async function run(options) {
   const changed = changedFiles(before, after)
   const savedFiles = await saveDirtyFiles(editor)
   const remoteFiles = await readRemoteFiles(editor, options.pageId)
-  const verifiedFiles = PAGE_MODEL_FILE_NAMES.map((name) => ({
+  const verifiedFiles = PAGE_NODE_FILE_NAMES.map((name) => ({
     name,
     changed: changed.includes(name),
     saved: savedFiles.includes(name),

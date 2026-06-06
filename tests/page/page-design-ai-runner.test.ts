@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { createProjectEditor, type ProjectEditor } from '@spark-appworks/spark-project-model/project'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
 import {
   createAiRunAdapter,
   type AiRunAdapterState,
@@ -51,19 +51,15 @@ type ActivePageState = Readonly<{
   isLoaded: boolean
 }>
 
-function createEditor(activePage: ActivePageState | null): ProjectEditor {
-  const editor = createProjectEditor({
+function createEditor(activePage: ActivePageState | null): ProjectWorkspace {
+  const editor = new ProjectWorkspace({
     projectId: 'test-project',
     http: new TestHttpClient(),
     getPageFilesApi: () => '/api/pages',
     getNavigationApi: () => '/api/navigation',
   })
-  Object.defineProperty(editor, 'getActivePage', {
+  Object.defineProperty(editor.project, 'getActivePage', {
     value: vi.fn(() => activePage),
-    configurable: true,
-  })
-  Object.defineProperty(editor, 'setActivePage', {
-    value: vi.fn(),
     configurable: true,
   })
   Object.defineProperty(editor, 'ensureActivePageFilesLoaded', {
@@ -200,7 +196,6 @@ describe('runPageDesignAiSession', () => {
     })
 
     expect(result).toEqual({ sawToolCall: false })
-    expect(editor.setActivePage).not.toHaveBeenCalled()
     expect(editor.ensureActivePageFilesLoaded).not.toHaveBeenCalled()
     expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
     expect(mocks.pageDesignRun).toHaveBeenCalledWith('pageDesign', {

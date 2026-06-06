@@ -10,52 +10,40 @@ These rules apply to `packages/spark-project-model/`.
 
 ## Model Direction
 
-**Design is editing** — do not split "design layer" vs "edit layer" in docs or naming.
+**设计即编辑** — 不要在文档或命名里拆「设计层 vs 编辑层」。
 
-`ProjectModel` is the class hierarchy root (design + runtime). `ProjectEditor` is the **design facade** (API + `EditorSession` + `subscribe` + persistence), not a competing domain.
+**模型 = class + API（事件）**。`ProjectModel` 是根 class 树；`ProjectWorkspace` 是普通 class，构造时 `new ProjectModel` 并装配 IO，不是「host 层」。
 
 ```text
-ProjectModel.design.navigation  # NavigationDesign owns nodesById
-ProjectModel.design             # config pages Map
-ProjectEditor                   # thin orchestrator + collaborators
+ProjectModel.design / session
+ProjectWorkspace.project   # 需要 load/save 时由消费层 new
+PageContentLoader          # 运行态四文件加载
 ```
 
 ## Source Layout
 
 ```text
 model/project|navigation|page|serialization/
-facade/        project-editor, editor-session, *-editor collaborators
-factory/       page-node-factory
-io/            file, navigation, loader, reference, http
-index.ts       model public API
-project.ts     facade + artifact public API
+io/            page-content-loader, navigation-client, page-file-api, runtime-page
+project-workspace.ts
+index.ts       model 公共 API
+project.ts     ProjectWorkspace 出口
 ```
 
-Dependency: `facade → {model, io}`, `io → model`, `factory → {model, io}`. **Never `model → io`.** DevSystem designer artifacts live in app `src/services/project-model-artifacts/`. Distinguish **model (types)** in package vs **domain instance** (`editor.project`) vs **facade instance** (`getAppProjectEditor()` in APP). Do not call `ProjectEditor` the "model instance". DevSystem Vue calls `state.editor` (facade) — no parallel file layer.
+依赖：`project-workspace → {model, io}`、`io → model`。**禁止 `model → io`。**
 
 Maps: `src/STRUCTURE.md`, `src/MODEL-HIERARCHY.md`.
 
 ## Boundaries
 
-- Persistent truth: DB navigation + page files only.
-- In-memory model shape need not mirror storage; save must map to `nodeId` / `pageId` / file anchors.
-- Session state (`selected`, `dirty`, working DTO) lives in `EditorSession`, not `ProjectModel`.
-- No Vue/DOM/Router/Element Plus in this package.
-- Fail fast on missing APIs, invalid config, unloaded pages.
-
-## Public Surface
-
-```text
-@spark-appworks/spark-project-model
-@spark-appworks/spark-project-model/project
-```
-
-No cross-package `src/*` deep imports.
+- 存储真源：DB navigation + 四文件。
+- session（选中/dirty）在 `ProjectModel.session`，不落盘。
+- 无 Vue/DOM/Router/Element Plus。
+- Fail-fast。
 
 ## Verification
 
 ```bash
 pnpm --filter @spark-appworks/spark-project-model run typecheck
 pnpm --filter @spark-appworks/spark-project-model run test:run
-pnpm --filter @spark-appworks/spark-project-model run build
 ```
