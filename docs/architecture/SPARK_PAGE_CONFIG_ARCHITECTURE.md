@@ -68,8 +68,7 @@ src/
 ├── index.ts
 ├── project/
 ├── navigation/
-├── page/
-├── serialization/
+├── page/             compile-files、canonicalize-page-data、content/*
 └── io/
 ```
 

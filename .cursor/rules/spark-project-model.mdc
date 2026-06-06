@@ -26,8 +26,7 @@ PageContentLoader          # 运行态四文件加载
 index.ts              唯一公开入口
 project/              ProjectModel、ProjectDesign、ProjectSession、ProjectWorkspace
 navigation/           ProjectNode、navigation-kinds、navigation-tree、navigation-edit
-page/                 ConfigPageNode、page-file、runtime-page、content/*
-serialization/        compiler、page-data
+page/                 ConfigPageNode、page-file、compile-files、canonicalize-page-data、runtime-page、content/*
 io/                   page-content-loader、navigation-client、page-file-api、project-reference-client、http
 ```
 

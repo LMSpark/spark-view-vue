@@ -5,7 +5,7 @@
 import { DataSetCrudTool, type DataSetMetadata } from '@spark-appworks/spark-data'
 import { copyOwnEnumerableProperties } from '@spark-appworks/spark-utils/internal'
 
-function parsePageDataText(rawText: string): Record<string, unknown> {
+function parsePageDataJsonRecord(rawText: string): Record<string, unknown> {
   const parsed: unknown = JSON.parse(rawText)
   const record = copyOwnEnumerableProperties(parsed)
   if (record === null) {
@@ -34,7 +34,7 @@ export function canonicalizePageDataJson(rawText: string): {
   value: Record<string, unknown>
   tool: DataSetCrudTool
 } {
-  return canonicalizePageDataValue(parsePageDataText(rawText))
+  return canonicalizePageDataValue(parsePageDataJsonRecord(rawText))
 }
 
 export function canonicalizeDataSetMetadata(metadata: DataSetMetadata): string {

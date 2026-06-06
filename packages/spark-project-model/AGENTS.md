@@ -10,8 +10,7 @@
 src/index.ts
 src/project/
 src/navigation/
-src/page/
-src/serialization/
+src/page/           compile-files、canonicalize-page-data、content/*
 src/io/
 ```
 

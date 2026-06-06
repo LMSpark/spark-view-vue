@@ -1,6 +1,6 @@
 /** 页面四文件：路径常量、IO 类型、文本 parse/serialize。 */
 import { DataSet, getSparkNodeChildren, SparkNodeTree, type SparkNode } from '@spark-appworks/spark-data'
-import { parsePageData } from '../serialization/compiler'
+import { parsePageData } from './compile-files'
 
 export function assertNonEmptyPageId(pageId: string): string {
   const normalized = pageId.trim()

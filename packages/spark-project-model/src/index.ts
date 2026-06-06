@@ -93,10 +93,10 @@ export {
   parsePageData,
   parseScript,
   parseCss,
-} from './serialization/compiler'
+} from './page/compile-files'
 
 export {
   canonicalizePageDataJson,
   canonicalizePageDataValue,
   canonicalizeDataSetMetadata,
-} from './serialization/page-data'
+} from './page/canonicalize-page-data'

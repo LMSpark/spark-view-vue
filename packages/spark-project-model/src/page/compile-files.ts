@@ -1,13 +1,12 @@
 /**
- * 页面配置编译器 — 纯转换函数
+ * 页面四文件编译 — 纯转换函数
  *
  * 职责：将原始字符串（JSON / JS / CSS）转换为类型化数据结构。
  * 所有函数均为无副作用的纯函数，不涉及网络请求、缓存或文件系统。
  *
- * 与 loader/ 分离的原因：
- * - loader 负责 **从哪里加载**（本地/远程/混合 + 缓存策略）
- * - compiler 负责 **如何解析**（字符串 → DataSet / SparkNode / 脚本 / CSS）
- * - 两者可独立测试、独立演进
+ * 与 io/ 分离：
+ * - io 负责 **从哪里加载**（HTTP + 缓存）
+ * - 本模块负责 **如何解析**（字符串 → DataSet / SparkNode / 脚本 / CSS）
  */
 
 import { DataSet, SparkData } from '@spark-appworks/spark-data'
