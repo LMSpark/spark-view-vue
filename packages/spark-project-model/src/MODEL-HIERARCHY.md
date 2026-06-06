@@ -6,6 +6,62 @@
 
 ---
 
+## 0. 心智模型：五层口诀与三轴
+
+### 五层口诀
+
+```text
+项目 → 模块 → 页面 → 子页面 → 四文件
+              └──── 节点树（承载轴）承载 ────┘
+```
+
+| 层级 | 领域语义 | 主要 nodeKind / 载体 |
+|---|---|---|
+| 项目 | `ProjectModel` 根；L0 元数据 | `ProjectModelData`（`childPlacement`、`homeNodeId` …） |
+| 模块 | 策划轴结构单元 | `module`、`system-directory` |
+| 页面 | 策划轴入口 | `page`、`system-page`、`link`、`ref` … |
+| 子页面 | 页面下嵌套入口 | `sub-page` |
+| 四文件 | 实现轴编辑真源 | `ConfigPageNode` → rule / pagedata / script / style |
+
+**节点树（后端 API 仍称 navigation）≠ 主策划。** 节点树承载模块结构、页面入口、路由派生、权限与引用等；**不要**用「导航」一词替代模块 / 页面 / 子页面策划层级。
+
+### 三轴
+
+| 轴 | 职责 | 主要 API / 字段 |
+|---|---|---|
+| **策划轴** | 项目 → 模块 → 页面 → 子页面；功能描述与 AI 策划输入 | `description`、`descriptionContext`、`readPlanningProjection()` |
+| **承载轴** | DB navigation 平铺 + 树投影；含 toolbar / system-page 等 | `ProjectDesign.nodesById`、`NavigationIndex`、`readNavigationProjection()` |
+| **实现轴** | 页面运行时与编辑真源 | `openPageDesign(pageId)` → `ConfigPageNode` 四文件 |
+
+**定稿结构（勿再拆第二套领域）：**
+
+- 唯一领域根：`ProjectModel`
+- 唯一设计聚合：`ProjectDesign`（`nodesById` + `configPagesByPageId` + `navigationRoot`）
+- `navigation/` 目录 = **节点工具包**（type、tree 纯函数、edit）；不是第二套 PlanningModel。未来可 rename 为 `nodes/`，含义不变。
+
+平台策划口径对齐：[PLATFORM_TENANT_ROUTING.md](../../../docs/architecture/PLATFORM_TENANT_ROUTING.md)。
+
+### L0 项目设置
+
+根模块 `childPlacement`（header / sidebar）与 `homeNodeId` 属于**项目级设置**，在 **app-list**（`AppProjectSettingsDialog`）编辑：
+
+- 内存：`applyProjectLayoutEdit()`、`replaceProjectInfo({ homeNodeId })`
+- 落盘：`ProjectWorkspace.saveProjectLayout()`
+
+DevSystem 左侧树不展示隐式 homepage 壳节点；项目首页与模块栏布局在租户应用列表维护。
+
+### AI / VCM 入口
+
+```text
+ProjectModel（pageDesign.project）
+  → readPlanningProjection()     // 策划输入：pageFeatures + descriptionContext
+  → openPageDesign(pageId)       // 实现编辑：ConfigPageNode 四文件
+```
+
+勿恢复独立 `NavigationDesign` 或 `PlanningModel`。
+
+---
+
 ## 1. 总览：三层入口
 
 ```text
@@ -24,7 +80,7 @@
                              │
 ┌────────────────────────────▼────────────────────────────────────┐
 │  ProjectModel（领域根）                                          │
-│  .design  : ProjectDesign    导航树 + 配置页 Map                  │
+│  .design  : ProjectDesign    节点树 + 配置页 Map                  │
 │  .session : ProjectSession   选中 / activePage / dirty（不落盘）   │
 │  subscribe / read*Projection / writePageFile / editDataSet …     │
 └─────────────────────────────────────────────────────────────────┘
@@ -101,11 +157,13 @@ classDiagram
     +revision: number
     +subscribe(listener)
     +readNavigationProjection()
+    +readPlanningProjection()
     +readActivePageProjection()
     +readDirtyProjection()
     +selectNode / setActivePage
     +beginNavigationDraft()
     +applyNavigationNodeEdit()
+    +applyProjectLayoutEdit()
     +writePageFile / editDataSet / editNodeTree
   }
 
@@ -198,9 +256,12 @@ flowchart LR
 
 | 投影 API | 内容 |
 |---|---|
-| `readNavigationProjection()` | treeData、selectedNode、navigationDraft、pageFeatures |
+| `readNavigationProjection()` | treeData、selectedNode、navigationDraft（承载轴 UI） |
+| `readPlanningProjection()` | 策划轴：`pageId`、`path`、`description`、`descriptionContext`、`effectiveDescription` |
 | `readActivePageProjection()` | 四文件文本、parseErrors、isLoaded |
 | `readDirtyProjection()` | dirtyFiles、navigationDirty、hasAnyDirty |
+
+`readNavigationProjection().pageFeatures` 与 `readPlanningProjection()` 同源（`ProjectDesign.readPageSummaries()`）。DevSystem / AI 读策划时用 `readPlanningProjection()`，勿从菜单节点自行拼接需求。
 
 **dirty 语义（勿混用）：**
 
@@ -243,6 +304,7 @@ ProjectWorkspace    → project, navigation, page, io
 
 | 要改什么 | 看哪里 |
 |---|---|
+| 项目 L0 布局 / 首页 | `applyProjectLayoutEdit`、`saveProjectLayout`；app-list `AppProjectSettingsDialog` |
 | 节点 kind 行为 / family | `navigation/project-node.ts`、`navigation-kinds.ts` |
 | 树纯函数 / pageId 解析 | `navigation/navigation-tree.ts` |
 | nodesById 内存索引 | `navigation/navigation-index.ts` |
@@ -403,6 +465,9 @@ saveNodeChanges 成功后（默认 scope）
 
 | 文件 | 职责 |
 |---|---|
+| `src/views/tenant/AppList.vue` | 应用卡片入口 |
+| `src/views/tenant/AppProjectSettingsDialog.vue` | 项目布局 + homeNodeId |
+| `src/services/project-settings.ts` | 加载 / 保存项目 L0 设置 |
 | `src/services/project-workspace.ts` | scope 级 Workspace 缓存与创建 |
 | `src/views/app/dev-system/useDevState.ts` | 投影、navEditDto、select/save 编排 |
 | `src/views/app/dev-system/useDevSystem.ts` | Tab、SSE、顶栏动作 |

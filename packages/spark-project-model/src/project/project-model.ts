@@ -123,6 +123,9 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
   readPageSummaries(): ProjectPageNodeSummary[] { return this.design.readPageSummaries() }
 
+  /** 策划轴投影：各页面功能描述与上下文，供 DevSystem / AI 读取。 */
+  readPlanningProjection(): ProjectPageNodeSummary[] { return this.readPageSummaries() }
+
   /** 更新根模块 childPlacement（项目级 header / sidebar 布局）。 */
   applyProjectLayoutEdit(childPlacement: 'header' | 'sidebar'): NavigationNodeDraftApplyResult {
     const root = this.design.rootNode
