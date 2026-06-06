@@ -29,9 +29,18 @@ export type PageDesignAllowedOperations = {
 export type PageDesignRunInput = {
   pageId: string
   description: string
+  /** readPlanningProjection 的 effectiveDescription；runner 必填。 */
+  effectiveDescription: string
+  planningTitle?: string
+  planningPath?: string
   mode?: PageDesignRunMode
   allowedOperations?: PageDesignAllowedOperations
   preserveExistingInteractions?: boolean
+}
+
+export type ResolvePageDesignPlanningContextOptions = {
+  /** 仅 e2e/脚手架：投影为空时用本轮 description 兜底。生产 runner 勿传。 */
+  fallbackDescription?: string
 }
 
 export type EnsurePageDesignBusinessOptions = {
@@ -43,6 +52,34 @@ export type PageDesignPayloadGuideValidationResult = {
   ok: boolean
   matchedToolNames: string[]
   issue?: string
+}
+
+export function resolvePageDesignPlanningContext(
+  project: ProjectModel,
+  pageId: string,
+  options: ResolvePageDesignPlanningContextOptions = {},
+): Pick<PageDesignRunInput, 'effectiveDescription' | 'planningTitle' | 'planningPath'> {
+  const summary = project.readPlanningProjection().find(item => item.pageId === pageId)
+  if (summary === undefined) {
+    throw new Error(`pageDesign: no planning projection for pageId "${pageId}".`)
+  }
+  let effectiveDescription = summary.effectiveDescription.trim()
+  if (effectiveDescription.length === 0) {
+    const fallback = options.fallbackDescription?.trim() ?? ''
+    if (fallback.length === 0) {
+      throw new Error(
+        `pageDesign: page "${pageId}" has empty effectiveDescription; set navigation description before AI run.`,
+      )
+    }
+    effectiveDescription = fallback
+  }
+  const planningTitle = summary.title.trim()
+  const planningPath = summary.path.trim()
+  return {
+    effectiveDescription,
+    planningTitle: planningTitle.length > 0 ? planningTitle : pageId,
+    planningPath: planningPath.length > 0 ? planningPath : `/${pageId}`,
+  }
 }
 
 export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOptions): AiAgentHost {
@@ -62,6 +99,9 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
             properties: {
               pageId: { type: 'string' },
               description: { type: 'string' },
+              effectiveDescription: { type: 'string' },
+              planningTitle: { type: 'string' },
+              planningPath: { type: 'string' },
               mode: { type: 'string', enum: ['create', 'update', 'fix'] },
               allowedOperations: {
                 type: 'object',
@@ -76,15 +116,15 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
               },
               preserveExistingInteractions: { type: 'boolean' },
             },
-            required: ['pageId', 'description'],
+            required: ['pageId', 'description', 'effectiveDescription'],
             additionalProperties: false,
           },
           systemPrompt: createPageDesignSystemPrompt,
           title: input => `pageDesign:${input.pageId}`,
           readonlySteps: [
-            '先查询当前 ProjectModel 能力边界，再打开目标配置页。',
-            '能力实例是当前 ProjectModel；先通过 openPageDesign(pageId) 进入 ConfigPageNode，再进入页面配置子模型。',
-            '复杂参数和复杂属性先查概要，再查局部指南，最后执行函数或 module_script。',
+            '策划约束已注入 effectiveDescription（来自 readPlanningProjection）；禁止从 navigationRoot 或菜单节点拼接需求。',
+            '先查询 ProjectModel 能力边界，再通过 openPageDesign(pageId) 进入 ConfigPageNode。',
+            '复杂参数先 queryPayloads / guidePayload，结构改写优先 module_script。',
           ],
         }),
         resolveInstance: ctx => resolvePageDesignProject(options, ctx),
@@ -109,11 +149,19 @@ export function validatePageDesignPayloadGuidesFromSession(
 }
 
 function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
+  const effectiveDescription = input.effectiveDescription.trim()
+  if (effectiveDescription.length === 0) {
+    throw new Error('pageDesign systemPrompt requires effectiveDescription from readPlanningProjection.')
+  }
+  const planningTitle = input.planningTitle?.trim() ?? input.pageId
+  const planningPath = input.planningPath?.trim() ?? `/${input.pageId}`
   return [
-    `当前 pageDesign 页面实例: ${input.pageId}`,
-    `用户目标: ${input.description}`,
-    '元数据来源: app-layer pageDesign registration.',
-    '执行原则: this 是当前 ProjectModel；先通过 this.openPageDesign(pageId) 获取页面配置节点，再按需进入 rule、dataSet、script、style 子模型。',
+    `当前 pageDesign 页面: ${input.pageId}（${planningTitle}，path=${planningPath}）`,
+    '策划约束（readPlanningProjection.effectiveDescription，勿从 navigation 树拼接）:',
+    effectiveDescription,
+    `用户本轮目标: ${input.description}`,
+    '元数据来源: generated pageDesign module metadata + component payload catalog.',
+    '执行原则: this 是当前 ProjectModel；openPageDesign(pageId) 进入 ConfigPageNode，再进入 node-tree / dataset / 四文件。',
   ].join('\n')
 }
 

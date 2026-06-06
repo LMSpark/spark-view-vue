@@ -6,7 +6,8 @@
 
 1. [spark-ai-complete-guide.md](spark-ai-complete-guide.md)：`@spark-appworks/spark-ai` 运行时、模块注册、工具调用、会话和传输契约。
 2. [spark-ai-new-system.md](spark-ai-new-system.md)：新 AI 体系总览，串联 VCM 元数据提取、知识分层、function calling 与脚本执行上下文。
-3. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
+3. [AI_NATIVE_RUNTIME_CONTRACT.md](AI_NATIVE_RUNTIME_CONTRACT.md)：AI-Native 系统运行时契约——设计/运行双平面、Agent 路径、kind 注册表、闸门与落地路线图。
+4. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
 
 ## 当前口径
 

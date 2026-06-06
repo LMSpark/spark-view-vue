@@ -568,6 +568,7 @@ function createApiActionMetadata(
     ? undefined
     : discoverResultApis({ checker, type: resultType, resultPath: [], visited, trace, state, seenTypes: new Set() })
   trace.log(`  action ${actionName}: done ${String(Date.now() - startedAt)}ms`)
+  const usageRules = buildActionUsageRules(tags, paramsSchema)
   return {
     name: actionName,
     methodName: propertyNameText(node.name, sourceFile),
@@ -576,9 +577,29 @@ function createApiActionMetadata(
     takesContext,
     ...(resultSchema === undefined ? {} : { resultSchema }),
     ...(resultApis === undefined ? {} : { resultApis }),
-    usageRules: [],
+    usageRules,
     failureModes: [],
   }
+}
+
+function buildActionUsageRules(
+  tags: readonly ModuleDocTag[],
+  paramsSchema: GeneratedJsonSchema,
+): string[] {
+  const rules: string[] = []
+  if (hasDocTag(tags, 'vcmScriptOnly') || paramsSchemaUsesCallback(paramsSchema)) {
+    rules.push('Must use module_script; direct function call is not supported.')
+  }
+  return rules
+}
+
+function paramsSchemaUsesCallback(schema: GeneratedJsonSchema): boolean {
+  if (!isGeneratedSchemaObject(schema) || schema.type !== 'object') return false
+  const runSchema = schema.properties?.run
+  if (runSchema === undefined) return false
+  if (runSchema === true) return true
+  if (isGeneratedSchemaObject(runSchema) && runSchema.type === 'function') return true
+  return false
 }
 
 type ApiCallableDeclaration = ts.MethodDeclaration | ts.ConstructorDeclaration

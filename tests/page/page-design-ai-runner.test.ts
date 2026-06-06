@@ -35,10 +35,13 @@ const mocks = vi.hoisted(() => {
   }
 })
 
-vi.mock('@/services/page-design-business', () => ({
-  PAGE_DESIGN_MODULE_ID: 'pageDesign',
-  ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
-}))
+vi.mock('@/services/page-design-business', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@/services/page-design-business')>()
+  return {
+    ...actual,
+    ensurePageDesignBusiness: mocks.ensurePageDesignBusiness,
+  }
+})
 
 class TestHttpClient extends HttpClientBase {
   protected async executeRequest(_config: RequestConfig): Promise<HttpResponse<unknown>> {
@@ -60,6 +63,20 @@ function createEditor(activePage: ActivePageState | null): ProjectWorkspace {
   })
   Object.defineProperty(editor.project, 'getActivePage', {
     value: vi.fn(() => activePage),
+    configurable: true,
+  })
+  Object.defineProperty(editor.project, 'readPlanningProjection', {
+    value: vi.fn(() => [{
+      pageId: 'orders',
+      path: '/orders',
+      title: '订单',
+      nodeId: 'orders-node',
+      nodeKind: 'page',
+      designSurface: 'config-files',
+      description: '订单列表页',
+      descriptionContext: [],
+      effectiveDescription: '订单列表页：展示与筛选订单',
+    }]),
     configurable: true,
   })
   Object.defineProperty(editor, 'ensureActivePageFilesLoaded', {
@@ -201,6 +218,9 @@ describe('runPageDesignAiSession', () => {
     expect(mocks.pageDesignRun).toHaveBeenCalledWith('pageDesign', {
       pageId: 'orders',
       description: '补一个按钮',
+      effectiveDescription: '订单列表页：展示与筛选订单',
+      planningTitle: '订单',
+      planningPath: '/orders',
     }, expect.any(Object))
   })
 

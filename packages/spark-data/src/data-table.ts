@@ -223,9 +223,10 @@ export class DataTable {
   // ===== 视图管理 =====
 
   /**
-   * 获取已存在的视图（不会创建新视图）
-   * @param viewId - 视图 ID
-   * @returns 对应的 DataView 实例，不存在时返回 undefined
+   * 获取已存在的视图（不会创建新视图）。
+   *
+   * @moduleMutation pagedata.json read 读取指定 data-view。
+   * @param viewId 视图 ID。
    */
   getView(viewId: string): DataView | undefined {
     return this.views[viewId]

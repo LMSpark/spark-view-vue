@@ -88,7 +88,10 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   get updatedAt(): string | undefined { return this.design.updatedAt }
   get projectInfo(): ProjectInfo { return this.design.projectInfo }
 
-  /** 导航树根 DTO，含子节点树与布局元数据。 */
+  /** 导航树根 DTO，含子节点树与布局元数据。
+   *
+   * @vcmIgnore 承载轴过大；策划用 readPlanningProjection，结构化导航用 readNavigationProjection。
+   */
   get navigationRoot(): ProjectModelData { return this.design.navigationRoot }
   get navigationDraft(): NavigationNodeDraft | null { return this.session.navigationDraft }
   get isNavigationEditing(): boolean { return this.session.isNavigationEditing }
@@ -221,7 +224,9 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.openPageDesign(normalizedPageId)
     this.session.setActivePageId(normalizedPageId)
     const mountedNode = this.design.findConfigPageByPageId(normalizedPageId)?.toNodeData() ?? null
-    if (mountedNode) this.session.setSelectedNodeId(mountedNode.id)
+    if (mountedNode) {
+      this.session.setSelectedNodeId(mountedNode.id, { silentIfMissing: true })
+    }
     this.emitSelectionChanged()
   }
 
@@ -337,7 +342,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 通过 DataSetCrudTool 修改当前 active 页的 pagedata.json 内存模型。
    *
-   * @moduleMutation pagedata.json write 在 mutator 内修改 DataSet 结构与数据。
+   * @vcmIgnore 请先 openPageDesign(pageId)，在 ConfigPageNode 上 editDataSet。
+   * @vcmScriptOnly
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     const page = this.requireActivePageDesign()
@@ -352,7 +358,8 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 通过 SparkNodeTree 修改当前 active 页的 rule.json 节点树。
    *
-   * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
+   * @vcmIgnore 请先 openPageDesign(pageId)，在 ConfigPageNode 上 editNodeTree。
+   * @vcmScriptOnly
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     const page = this.requireActivePageDesign()
@@ -376,7 +383,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   /**
    * 读取承载轴投影：导航树、选中节点与 pageFeatures。
    *
-   * @moduleMutation navigation read 只读节点树与选中上下文，不修改模型。
+   * @vcmIgnore pageDesign 请优先 readPlanningProjection；本 action 供 DevSystem 承载轴 UI。
    */
   readNavigationProjection(): ProjectNavigationProjection {
     const navigationRoot = this.design.navigationRoot

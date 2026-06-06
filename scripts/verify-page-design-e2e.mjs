@@ -26,6 +26,7 @@ import {
 } from './app-sse-client.mjs'
 import {
   ensurePageDesignBusiness,
+  resolvePageDesignPlanningContext,
   validatePageDesignPayloadGuidesFromSession,
 } from '../src/services/page-design-business.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
@@ -434,6 +435,14 @@ function createAuthHeaders(options, auth) {
   }
 }
 
+function getProjectNavigationApi(options, projectId) {
+  return `${options.backendUrl}/api/tenants/${encodeURIComponent(options.tenantId)}/projects/${encodeURIComponent(projectId)}/navigation`
+}
+
+function getProjectPageApi(options, projectId) {
+  return `${options.backendUrl}/api/tenants/${encodeURIComponent(options.tenantId)}/projects/${encodeURIComponent(projectId)}/pages-config`
+}
+
 // ============================================================================
 // 第 5 层：ProjectEditor 页面生命周期
 // ============================================================================
@@ -456,8 +465,8 @@ function createPageConfigRuntime(options, auth) {
   const editor = new ProjectWorkspace({
     projectId: auth.projectId,
     http,
-    getPageFilesApi: () => `${options.backendUrl}/api/pages-config`,
-    getNavigationApi: () => `${options.backendUrl}/api/navigation`,
+    getPageFilesApi: () => getProjectPageApi(options, auth.projectId),
+    getNavigationApi: () => getProjectNavigationApi(options, auth.projectId),
     getHeaders: () => createAuthHeaders(options, auth),
     fileStorage: 'memory',
   })
@@ -465,21 +474,31 @@ function createPageConfigRuntime(options, auth) {
 }
 
 async function prepareTargetPage(editor, options) {
-  if (options.replacePage) {
-    try { await editor.deletePageFiles(options.pageId) } catch { /* page may not exist */ }
-    await editor.createPageFiles({
-      pageId: options.pageId,
+  const mountParams = {
+    pageId: options.pageId,
+    title: options.pageTitle,
+    ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
+    node: {
+      id: options.pageId,
       title: options.pageTitle,
+      nodeKind: 'page',
+      path: `/${options.pageId}`,
+      description: options.requestText,
       ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
-    })
+    },
+  }
+
+  if (options.replacePage) {
+    try {
+      await editor.removeMountedPage({ pageId: options.pageId, deleteFiles: true })
+    } catch {
+      try { await editor.deletePageFiles(options.pageId) } catch { /* page may not exist */ }
+    }
+    await editor.createMountedPage(mountParams)
     return 'created'
   }
   try {
-    await editor.createPageFiles({
-      pageId: options.pageId,
-      title: options.pageTitle,
-      ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
-    })
+    await editor.createMountedPage(mountParams)
     return 'created'
   } catch {
     return 'reused'
@@ -1353,6 +1372,7 @@ async function run(options) {
   // 2. 准备页面工作区
   const pageConfig = createPageConfigRuntime(options, auth)
   const editor = pageConfig.editor
+  await editor.loadNavigation()
   const pageStatus = await prepareTargetPage(editor, options)
   await loadTargetPage(editor, options.pageId)
   const before = readEditorFiles(editor)
@@ -1370,9 +1390,13 @@ async function run(options) {
   const toolCalls = []
   const tracer = createConversationTracer(options)
 
+  const planning = resolvePageDesignPlanningContext(editor.project, options.pageId, {
+    fallbackDescription: options.requestText,
+  })
   const demand = await sendDemand((input) => pageDesignHost.run('pageDesign', input), {
     pageId: options.pageId,
     description: options.requestText,
+    ...planning,
   }, options.turnTimeoutMs, {
     onDelta: (delta) => {
       textDeltas.push(delta)

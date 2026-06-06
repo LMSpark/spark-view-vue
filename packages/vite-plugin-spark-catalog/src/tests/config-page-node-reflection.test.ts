@@ -41,19 +41,16 @@ describe('page-design VCM metadata reflection', () => {
       'readPlanningProjection',
       'writePageFile',
       'readPageFileText',
-      'editDataSet',
-      'editNodeTree',
-      'readNavigationProjection',
     ])
     expect(projectApi?.attributes?.map(attribute => attribute.name)).toEqual([
       'projectId',
-      'navigationRoot',
       'flatRows',
     ])
+    expect(projectApi?.attributes?.find(attribute => attribute.name === 'navigationRoot')).toBeUndefined()
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'nodes')).toBeUndefined()
     expect(result.diagnostics).toMatchObject({
       moduleCount: 1,
-      resultApiCount: 1,
+      resultApiCount: 42,
       referencedApiKinds: ['config-page'],
       emptySchemaNodeCount: 0,
     })

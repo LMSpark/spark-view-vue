@@ -137,6 +137,11 @@ export class ConfigPageNode extends ProjectNode {
     }
   }
 
+  /**
+   * 读取四文件文本。
+   *
+   * @moduleMutation page-files read 只读内存四文件文本。
+   */
   getFileText(name: PageNodeFileName): string {
     return this.files[name].getText()
   }
@@ -203,6 +208,11 @@ export class ConfigPageNode extends ProjectNode {
     return (Object.keys(this.files) as PageNodeFileName[]).filter(name => this.files[name].isDirty)
   }
 
+  /**
+   * 读取 rule.json 节点树。
+   *
+   * @moduleMutation rule.json read 只读当前页面 SparkNodeTree。
+   */
   getNodeTree(): SparkNodeTreeModel {
     return this.rule.getTree()
   }
@@ -211,11 +221,17 @@ export class ConfigPageNode extends ProjectNode {
    * 修改 rule.json 节点树。
    *
    * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
+   * @vcmScriptOnly
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)
   }
 
+  /**
+   * 读取 pagedata 数据集工具入口。
+   *
+   * @moduleMutation pagedata.json read 进入 DataSetCrudTool 操作面。
+   */
   getDataSetTool(): DataSetCrudTool {
     return this.dataSet.getTool()
   }
@@ -224,6 +240,7 @@ export class ConfigPageNode extends ProjectNode {
    * 修改 pagedata.json 数据集模型。
    *
    * @moduleMutation pagedata.json write 在 mutator 内通过 DataSetCrudTool 修改 DataSet。
+   * @vcmScriptOnly
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)

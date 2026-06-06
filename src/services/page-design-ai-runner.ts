@@ -18,6 +18,7 @@ import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   PAGE_DESIGN_MODULE_ID,
   ensurePageDesignBusiness,
+  resolvePageDesignPlanningContext,
   type PageDesignAllowedOperations,
   type PageDesignRunInput,
   type PageDesignRunMode,
@@ -70,6 +71,8 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
 
   assertActivePageNodeLoaded(command.editor, pageId)
 
+  const planning = resolvePageDesignPlanningContext(command.editor.project, pageId)
+
   const pageDesignHost = ensurePageDesignBusiness({
     host: aiAgentHost,
     getPageDesignEditor: (context) => {
@@ -85,7 +88,7 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   await adapter.run({
     host: pageDesignHost,
     alias: PAGE_DESIGN_MODULE_ID,
-    input: buildPageDesignRunInput(pageId, command),
+    input: buildPageDesignRunInput(pageId, command, planning),
     ...(command.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: command.beforeFunctionCall }),
     ...(command.onAbort === undefined ? {} : { onAbort: command.onAbort }),
     trace: createPageDesignTraceSink({
@@ -147,17 +150,18 @@ function assertActivePageNodeLoaded(editor: ProjectWorkspace, pageId: string): v
   }
 }
 
-function buildPageDesignRunInput(pageId: string, options: PageDesignAiRunOptions): PageDesignRunInput {
-  const input: {
-    pageId: string
-    description: string
-    mode?: PageDesignRunMode
-    allowedOperations?: PageDesignAllowedOperations
-    preserveExistingInteractions?: boolean
-  } = {
+function buildPageDesignRunInput(
+  pageId: string,
+  options: PageDesignAiRunOptions,
+  planning: Pick<PageDesignRunInput, 'effectiveDescription' | 'planningTitle' | 'planningPath'>,
+): PageDesignRunInput {
+  const input: PageDesignRunInput = {
     pageId,
     description: options.description.trim(),
+    effectiveDescription: planning.effectiveDescription,
   }
+  if (planning.planningTitle !== undefined) input.planningTitle = planning.planningTitle
+  if (planning.planningPath !== undefined) input.planningPath = planning.planningPath
   if (options.mode !== undefined) input.mode = options.mode
   if (options.allowedOperations !== undefined) input.allowedOperations = options.allowedOperations
   if (options.preserveExistingInteractions !== undefined) {
