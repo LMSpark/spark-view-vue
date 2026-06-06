@@ -6,16 +6,18 @@
 
 | 包路径 | 内容 |
 |---|---|
-| `@spark-appworks/spark-project-model` | ProjectModel、导航/page 类型、compiler、运行态 PageContentLoader/createRuntimePageNode |
-| `@spark-appworks/spark-project-model/project` | ProjectWorkspace、workspace options、version/reference 类型 |
+| `@spark-appworks/spark-project-model` | ProjectModel、ProjectWorkspace、导航/page 类型、compiler、运行态 PageContentLoader/createRuntimePageNode、version/reference 类型 |
 
 ## 目录
 
 ```text
-model/project|navigation|page|serialization/
-io/                 PageContentLoader、NavigationClient、PageFileApi、runtime-page
-project-workspace.ts   ProjectWorkspace：持有 .project 并提交 IO
-project.ts / index.ts 公共出口
+src/
+  index.ts          唯一公开入口
+  project/          ProjectModel、ProjectDesign、ProjectSession、ProjectWorkspace
+  navigation/       ProjectNode、节点类型、树投影/查找/规范化、导航编辑草稿
+  page/             ConfigPageNode、四文件模型、runtime-page
+  serialization/    rule/pagedata 解析与规范化
+  io/               HTTP、navigation/page-file/reference 远端 client
 ```
 
 ## 三消费层
@@ -27,5 +29,3 @@ project.ts / index.ts 公共出口
 | 纯内存 | `new ProjectModel({ projectId })` |
 
 存储真源：DB navigation + 四文件（rule / pagedata / script / style）。
-
-详见 `src/STRUCTURE.md`、`src/MODEL-HIERARCHY.md`。

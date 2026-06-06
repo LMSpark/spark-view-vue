@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it } from 'vitest'
-import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { resetAppProjectWorkspace } from '@/services/project-workspace'
 import {
   createHeadlessPageDesignEditor,

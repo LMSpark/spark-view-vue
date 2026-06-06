@@ -6,8 +6,8 @@
  */
 
 import { isRecord, type HttpClientBase } from '@spark-appworks/spark-utils'
-import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../model/page/file'
-import { assertNonEmptyPageId } from '../model/page/file'
+import type { PageFileCreateOptions, PageNodeFileName, PageNodeFileVersionSummary } from '../page/page-file'
+import { assertNonEmptyPageId } from '../page/page-file'
 import { trimTrailingSlash } from './http'
 
 export type PageFileCreateParams = PageFileCreateOptions & {

@@ -1,13 +1,14 @@
 /**
  * @spark-appworks/spark-project-model
  *
- * 领域模型（model/）：class 层级为主语。
- * 运行态页面加载也从根入口导出；ProjectWorkspace 见 `@spark-appworks/spark-project-model/project`。
+ * 领域模型：class 层级为主语。
+ * 运行态页面加载与 ProjectWorkspace 均从根入口导出。
  */
 
 // ── 项目根 ────────────────────────────────────────────────────
 
-export { ProjectModel } from './model/project/model'
+export { ProjectModel } from './project/project-model'
+export { ProjectWorkspace } from './project/project-workspace'
 export type {
   ProjectModelInitOptions,
   ProjectModelEvent,
@@ -18,19 +19,27 @@ export type {
   ProjectNavigationDirtyScope,
   ProjectInfo,
   ProjectInfoInput,
-} from './model/project/types'
+} from './project/project-types'
+export type {
+  ProjectWorkspaceOptions,
+  ProjectPageLoadOptions,
+} from './project/project-workspace'
+export type {
+  ProjectPageReference,
+  ProjectSummary,
+} from './io/project-reference-client'
 export type {
   NavigationNodeDraftNode,
   NavigationNodePatch,
   NavigationNodeDraftApplyResult,
   NavigationNodeDraft,
-} from './model/navigation/edit'
+} from './navigation/navigation-edit'
 
 // ── 导航节点与 DTO ──────────────────────────────────────────
 
 export {
   isProjectNodeData,
-} from './model/navigation/node'
+} from './navigation/project-node'
 
 export {
   isConfigNodeKind,
@@ -42,7 +51,7 @@ export {
   isSystemRootDirectory,
   canUseModuleNodeKind,
   normalizePageIdFromPath,
-} from './model/navigation/helpers'
+} from './navigation/navigation-tree'
 
 export type {
   ProjectModelData,
@@ -57,7 +66,7 @@ export type {
   ProjectPageNodeSummary,
   RegionItems,
   RegionVisibility,
-} from './model/navigation/node'
+} from './navigation/project-node'
 
 // ── 配置页 ──────────────────────────────────────────────────
 
@@ -65,18 +74,18 @@ export type {
   PageNodeLoadOptions,
   PageNodeRenderConfig,
   PageNodeLike,
-} from './model/page/config-page'
+} from './page/config-page'
 
-export { PAGE_NODE_FILE_NAMES } from './model/page/file'
+export { PAGE_NODE_FILE_NAMES } from './page/page-file'
 
 export type {
   PageNodeFileName,
   PageNodeFileVersionSummary,
-} from './model/page/file'
+} from './page/page-file'
 
 export { PageContentLoader } from './io/page-content-loader'
 export type { PageContentLoaderOptions } from './io/page-content-loader'
-export { createRuntimePageNode } from './io/runtime-page'
+export { createRuntimePageNode } from './page/runtime-page'
 
 export {
   compileRule,
@@ -84,10 +93,10 @@ export {
   parsePageData,
   parseScript,
   parseCss,
-} from './model/serialization/compiler'
+} from './serialization/compiler'
 
 export {
   canonicalizePageDataJson,
   canonicalizePageDataValue,
   canonicalizeDataSetMetadata,
-} from './model/serialization/page-data'
+} from './serialization/page-data'

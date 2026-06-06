@@ -7,10 +7,12 @@
 ## 目录
 
 ```text
-model/project|navigation|page|serialization/
-io/
-project-workspace.ts
-project.ts / index.ts
+src/index.ts
+src/project/
+src/navigation/
+src/page/
+src/serialization/
+src/io/
 ```
 
 ## 边界
@@ -19,6 +21,7 @@ project.ts / index.ts
 - `ProjectModel.session`（选中/dirty）不落盘。
 - 无 Vue/DOM/Router。
 - 设计 API → `ProjectModel`；落盘 → `ProjectWorkspace`。
+- 只有 `@spark-appworks/spark-project-model` 一个公开入口，不新增子入口或 barrel 中转层。
 
 ## 验证
 

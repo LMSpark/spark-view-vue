@@ -14,7 +14,7 @@
  * - 后端 API 走 timestamp/notModified + 客户端缓存
  */
 
-import type { PageContentLoadResult, PageNodeLoadOptions } from '../model/page/file'
+import type { PageContentLoadResult, PageNodeLoadOptions } from '../page/page-file'
 import {
   Logger,
   createFileLoader,
@@ -25,7 +25,7 @@ import {
   pageFilePath,
   pageFilePaths,
   type PageNodeFileName,
-} from '../model/page/file'
+} from '../page/page-file'
 import { trimTrailingSlash, installHeaderInterceptor } from './http'
 
 const pageLogger = Logger('PageContentLoader')

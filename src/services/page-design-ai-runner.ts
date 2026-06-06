@@ -14,7 +14,7 @@ import type {
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
-import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   PAGE_DESIGN_MODULE_ID,
   ensurePageDesignBusiness,

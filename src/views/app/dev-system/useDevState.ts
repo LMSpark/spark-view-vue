@@ -37,7 +37,7 @@ import type {
   ProjectWorkspace,
   ProjectPageReference,
   ProjectSummary,
-} from '@spark-appworks/spark-project-model/project'
+} from '@spark-appworks/spark-project-model'
 import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,

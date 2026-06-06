@@ -1,7 +1,7 @@
 /** 按 nodeKind 特化的导航节点 class（存储可平铺，领域按 kind 分层）。 */
 import { ConfigPageNode, ConfigSubPageNode, type ProjectConfigPageNodeModelOptions } from '../page/config-page'
-import { isConfigNodeKind } from './helpers'
-import { ProjectNode, type ProjectNodeFamily, type ProjectNodeModelOptions } from './node'
+import { isConfigNodeKind } from './navigation-tree'
+import { ProjectNode, type ProjectNodeFamily, type ProjectNodeModelOptions } from './project-node'
 
 export class ModuleNode extends ProjectNode {
   override get family(): ProjectNodeFamily { return 'module' }

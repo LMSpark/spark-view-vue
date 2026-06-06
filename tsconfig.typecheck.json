@@ -40,7 +40,6 @@
       "@spark-appworks/spark-component": ["./packages/spark-component/src/index.ts"],
       "@spark-appworks/spark-data": ["./packages/spark-data/src/index.ts"],
       "@spark-appworks/spark-project-model": ["./packages/spark-project-model/src/index.ts"],
-      "@spark-appworks/spark-project-model/project": ["./packages/spark-project-model/src/project.ts"],
       "@spark-appworks/spark-json-document": ["./packages/spark-json-document/src/index.ts"],
       // during development we prefer to resolve to source so that new exports
       // (e.g. setupAutoRegister) are picked up without rebuilding the package

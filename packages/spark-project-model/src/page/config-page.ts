@@ -3,20 +3,20 @@ import type { DataSet, DataSetCrudTool, SparkNode, SparkNodeTree as SparkNodeTre
 import type {
   PageNodeLoadOptions,
   PageNodeFileName,
-} from './file'
+} from './page-file'
 import {
   ProjectNode,
   type ProjectNodeFamily,
   type ProjectNodeData,
   type ProjectNodeModelOptions,
   type ProjectPageNodeSummary,
-} from '../navigation/node'
-import { normalizeConfigPageId, resolveProjectPageSurface, resolvePageNodePageId } from '../navigation/helpers'
+} from '../navigation/project-node'
+import { normalizeConfigPageId, resolveProjectPageSurface, resolvePageNodePageId } from '../navigation/navigation-tree'
 import { PageRuleFile } from './content/rule-file'
 import { PageDataSetFile } from './content/dataset-file'
 import { PageTextFile } from './content/text-file'
 
-export type { PageNodeLoadOptions } from './file'
+export type { PageNodeLoadOptions } from './page-file'
 
 export type PageNodeRenderConfig = {
   pageId: string

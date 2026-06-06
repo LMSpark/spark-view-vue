@@ -3,9 +3,9 @@ import type {
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-} from '../navigation/node'
-import type { NavigationNodeDraft } from '../navigation/edit'
-import type { PageNodeFileName } from '../page/file'
+} from '../navigation/project-node'
+import type { NavigationNodeDraft } from '../navigation/navigation-edit'
+import type { PageNodeFileName } from '../page/page-file'
 
 export type ProjectNavigationDirtyScope = 'node' | 'root'
 

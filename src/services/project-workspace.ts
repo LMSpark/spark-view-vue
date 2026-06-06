@@ -2,7 +2,7 @@
  * APP 层 ProjectWorkspace 缓存。
  */
 import type { ProjectModelData } from '@spark-appworks/spark-project-model'
-import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { getProjectApi, getProjectNavigationApi, getProjectPageApi, type ProjectApiScope } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'

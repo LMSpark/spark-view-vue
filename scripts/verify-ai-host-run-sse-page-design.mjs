@@ -24,7 +24,7 @@ import {
 } from '../src/services/page-design-business.ts'
 import {
   ProjectWorkspace,
-} from '@spark-appworks/spark-project-model/project'
+} from '@spark-appworks/spark-project-model'
 import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
 import { createRequest, isRecord } from '@spark-appworks/spark-utils'
 import {

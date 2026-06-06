@@ -4,7 +4,7 @@
  * - DevSystem 面板内：与手动编辑同一 `editor.project`
  * - 隔离运行：headless `ProjectWorkspace`，按 pageId 注册、运行后丢弃
  */
-import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'

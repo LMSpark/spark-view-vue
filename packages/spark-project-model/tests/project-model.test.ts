@@ -1,17 +1,17 @@
 import { describe, expect, it } from 'vitest'
-import type { ProjectModelData, ProjectNodeData } from '../src/model/navigation/node'
+import type { ProjectModelData, ProjectNodeData } from '../src/navigation/project-node'
 import type { HttpClientBase, HttpResponse } from '@spark-appworks/spark-utils'
 import {
   ModuleNode,
   SystemPageNode,
   SystemDirectoryNode,
-} from '../src/model/navigation/kinds'
-import { ConfigPageNode } from '../src/model/page/config-page'
-import { ConfigSubPageNode } from '../src/model/page/config-page'
-import { resolveProjectPageSurface } from '../src/model/navigation/helpers'
-import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+} from '../src/navigation/navigation-kinds'
+import { ConfigPageNode } from '../src/page/config-page'
+import { ConfigSubPageNode } from '../src/page/config-page'
+import { resolveProjectPageSurface } from '../src/navigation/navigation-tree'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { createRequest } from '@spark-appworks/spark-utils'
-import { createNavigationNodePatch } from '../src/model/navigation/edit'
+import { createNavigationNodePatch } from '../src/navigation/navigation-edit'
 
 describe('ProjectModel', () => {
   function createRoot(children: ProjectNodeData[], childPlacement: 'header' | 'sidebar' = 'header'): ProjectModelData {

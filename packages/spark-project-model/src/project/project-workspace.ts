@@ -4,34 +4,34 @@
  */
 
 import type { HttpClientBase } from '@spark-appworks/spark-utils'
-import { PageFileApi } from './io/page-file-api'
-import { PageContentLoader, type PageContentLoaderOptions } from './io/page-content-loader'
+import { PageFileApi } from '../io/page-file-api'
+import { PageContentLoader, type PageContentLoaderOptions } from '../io/page-content-loader'
 import type {
   ProjectModelData,
   ProjectNodeData,
-} from './model/navigation/node'
-import { NavigationClient } from './io/navigation-client'
-import type { PageFileCreateOptions, PageNodeFileVersionSummary } from './model/page/file'
+} from '../navigation/project-node'
+import { NavigationClient } from '../io/navigation-client'
+import type { PageFileCreateOptions, PageNodeFileVersionSummary } from '../page/page-file'
 import {
   assertNonEmptyPageId,
   PAGE_NODE_FILE_NAMES,
   pageFilePath,
   type PageNodeFileName,
-} from './model/page/file'
-import type { ConfigPageNode, PageNodeLike } from './model/page/config-page'
-import { ProjectModel } from './model/project/model'
+} from '../page/page-file'
+import type { ConfigPageNode, PageNodeLike } from '../page/config-page'
+import { ProjectModel } from './project-model'
 import {
   ProjectReferenceClient,
   type ProjectPageReference,
   type ProjectSummary,
-} from './io/project-reference-client'
-import { trimTrailingSlash } from './io/http'
+} from '../io/project-reference-client'
+import { trimTrailingSlash } from '../io/http'
 import {
   findConfigNodeByPageId,
   isConfigNodeKind,
   normalizeProjectNodeData,
   resolvePageNodePageId,
-} from './model/navigation/helpers'
+} from '../navigation/navigation-tree'
 import {
   applyNodeKindPresetToDraft,
   createNavigationNodeDraft,
@@ -39,7 +39,7 @@ import {
   defaultNavIconByKind,
   type NavigationNodeDraft,
   type NavigationNodePatch,
-} from './model/navigation/edit'
+} from '../navigation/navigation-edit'
 
 export type ProjectPageLoadOptions = {
   forceReload?: boolean

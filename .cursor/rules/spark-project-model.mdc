@@ -12,7 +12,7 @@ These rules apply to `packages/spark-project-model/`.
 
 **设计即编辑** — 不要在文档或命名里拆「设计层 vs 编辑层」。
 
-**模型 = class + API（事件）**。`ProjectModel` 是根 class 树；`ProjectWorkspace` 是普通 class，构造时 `new ProjectModel` 并装配 IO，不是「host 层」。
+**模型 = class + API（事件）**。`ProjectModel` 是根 class 树；`ProjectWorkspace` 持有 `.project` 并提交 IO，不是「host 层」。
 
 ```text
 ProjectModel.design / session
@@ -23,14 +23,15 @@ PageContentLoader          # 运行态四文件加载
 ## Source Layout
 
 ```text
-model/project|navigation|page|serialization/
-io/            page-content-loader, navigation-client, page-file-api, runtime-page
-project-workspace.ts
-index.ts       model 公共 API
-project.ts     ProjectWorkspace 出口
+index.ts              唯一公开入口
+project/              ProjectModel、ProjectDesign、ProjectSession、ProjectWorkspace
+navigation/           ProjectNode、navigation-kinds、navigation-tree、navigation-edit
+page/                 ConfigPageNode、page-file、runtime-page、content/*
+serialization/        compiler、page-data
+io/                   page-content-loader、navigation-client、page-file-api、project-reference-client、http
 ```
 
-依赖：`project-workspace → {model, io}`、`io → model`。**禁止 `model → io`。**
+依赖：`project-workspace → {project, navigation, page, io}`、`io → model`。**禁止 `model → io`。**
 
 Maps: `src/STRUCTURE.md`, `src/MODEL-HIERARCHY.md`.
 
@@ -39,6 +40,7 @@ Maps: `src/STRUCTURE.md`, `src/MODEL-HIERARCHY.md`.
 - 存储真源：DB navigation + 四文件。
 - session（选中/dirty）在 `ProjectModel.session`，不落盘。
 - 无 Vue/DOM/Router/Element Plus。
+- 只有 `@spark-appworks/spark-project-model` 一个公开入口，不新增 `/project` 子入口。
 - Fail-fast。
 
 ## Verification

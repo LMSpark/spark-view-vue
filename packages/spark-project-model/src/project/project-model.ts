@@ -4,25 +4,25 @@
  * 组合 design（设计内容 class 树）与 session（编辑状态）。
  */
 import type { DataSetCrudTool, SparkNodeTree as SparkNodeTreeModel } from '@spark-appworks/spark-data'
-import type { ProjectNode } from '../navigation/node'
-import { ProjectDesign } from './design'
+import type { ProjectNode } from '../navigation/project-node'
+import { ProjectDesign } from './project-design'
 import {
   applyNodeKindPresetToDraft,
   createNavigationNodeDraft,
   type NavigationNodeDraft,
   type NavigationNodeDraftApplyResult,
-} from '../navigation/edit'
+} from '../navigation/navigation-edit'
 import type {
   ProjectModelData,
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-} from '../navigation/node'
-import type { NavNodeKind } from '../navigation/node'
+} from '../navigation/project-node'
+import type { NavNodeKind } from '../navigation/project-node'
 import type { ConfigPageNode } from '../page/config-page'
-import type { PageNodeFileName } from '../page/file'
-import { tryParsePageDataTextError, tryParseRuleTextError } from '../page/file'
-import { ProjectSession } from './session'
+import type { PageNodeFileName } from '../page/page-file'
+import { tryParsePageDataTextError, tryParseRuleTextError } from '../page/page-file'
+import { ProjectSession } from './project-session'
 import type {
   ProjectInfo,
   ProjectInfoInput,
@@ -32,7 +32,7 @@ import type {
   ProjectDirtyProjection,
   ProjectNavigationProjection,
   ProjectPageFileWriteCommand,
-} from './types'
+} from './project-types'
 
 export type {
   ProjectInfo,
@@ -44,7 +44,7 @@ export type {
   ProjectDirtyProjection,
   ProjectNavigationProjection,
   ProjectNavigationDirtyScope,
-} from './types'
+} from './project-types'
 
 /**
  * 项目模型根。

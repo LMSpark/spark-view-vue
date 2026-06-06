@@ -29,7 +29,6 @@ export default defineConfig({
       '@spark-appworks/spark-data': path.resolve(root, 'packages', 'spark-data', 'src', 'index.ts'),
       '@spark-appworks/spark-utils/internal': path.resolve(root, 'packages', 'spark-utils', 'src', 'internal', 'index.ts'),
       '@spark-appworks/spark-utils': path.resolve(root, 'packages', 'spark-utils', 'src', 'index.ts'),
-      '@spark-appworks/spark-project-model/project': path.resolve(root, 'packages', 'spark-project-model', 'src', 'project.ts'),
       '@spark-appworks/spark-json-document': path.resolve(root, 'packages', 'spark-json-document', 'src', 'index.ts'),
       '@spark-appworks/spark-project-model': path.resolve(root, 'packages', 'spark-project-model', 'src', 'index.ts'),
       '@spark-appworks/spark-app': path.resolve(root, 'packages', 'spark-app', 'src', 'index.ts'),

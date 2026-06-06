@@ -1,17 +1,17 @@
 /**
  * 运行态配置页：ConfigPageNode + PageContentLoader 绑定。
  */
-import type { ProjectNodeData } from '../model/navigation/node'
+import type { ProjectNodeData } from '../navigation/project-node'
 import {
   ConfigPageNode,
   type PageNodeLike,
   type PageNodeLoadOptions,
-} from '../model/page/config-page'
+} from '../page/config-page'
 import {
   PAGE_NODE_FILE_NAMES,
   type PageNodeFileName,
-} from '../model/page/file'
-import type { PageContentLoader } from './page-content-loader'
+} from '../page/page-file'
+import type { PageContentLoader } from '../io/page-content-loader'
 
 async function loadRuntimePageFile(
   page: ConfigPageNode,

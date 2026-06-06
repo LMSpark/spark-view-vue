@@ -12,7 +12,7 @@ import type {
   AiAgentHostRunResult,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
-import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   ensurePageDesignBusiness,
   PAGE_DESIGN_MODULE_ID,

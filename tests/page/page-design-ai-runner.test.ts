@@ -1,5 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest'
-import { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   createAiRunAdapter,
   type AiRunAdapterState,

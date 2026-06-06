@@ -10,8 +10,7 @@
       "@spark-appworks/spark-data": ["../spark-data/dist/types/index.d.ts"],
       "@spark-appworks/spark-utils": ["../spark-utils/dist/index.d.ts"],
       "@spark-appworks/spark-utils/internal": ["../spark-utils/dist/internal/index.d.ts"],
-      "@spark-appworks/spark-project-model": ["./src/index.ts"],
-      "@spark-appworks/spark-project-model/project": ["./src/project.ts"]
+      "@spark-appworks/spark-project-model": ["./src/index.ts"]
     }
   },
   "include": ["src"],

@@ -7,12 +7,12 @@ import type {
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-} from '../navigation/node'
-import type { ProjectNode } from '../navigation/node'
+} from '../navigation/project-node'
+import type { ProjectNode } from '../navigation/project-node'
 import type {
   NavigationNodeDraftApplyResult,
   NavigationNodeDraft,
-} from '../navigation/edit'
+} from '../navigation/navigation-edit'
 import type { ConfigPageNode } from '../page/config-page'
 import {
   appendProjectDescriptionContext,
@@ -21,13 +21,13 @@ import {
   flattenProjectNavigationRoot,
   normalizeNavRoot,
   resolvePageNodePageId,
-} from '../navigation/helpers'
-import { instantiateProjectNode, isConfigPageNode } from '../navigation/kinds'
-import { applyNavigationNodeDraftToNode } from '../navigation/edit'
-import { NavigationIndex } from '../navigation/helpers'
-import type { ProjectInfo, ProjectInfoInput, ProjectModelInitOptions } from './types'
+} from '../navigation/navigation-tree'
+import { instantiateProjectNode, isConfigPageNode } from '../navigation/navigation-kinds'
+import { applyNavigationNodeDraftToNode } from '../navigation/navigation-edit'
+import { NavigationIndex } from '../navigation/navigation-tree'
+import type { ProjectInfo, ProjectInfoInput, ProjectModelInitOptions } from './project-types'
 
-export type { ProjectInfo, ProjectInfoInput } from './types'
+export type { ProjectInfo, ProjectInfoInput } from './project-types'
 
 export type NavigationDesignEditResult<TNode extends ProjectNode = ProjectNode> = {
   node: TNode

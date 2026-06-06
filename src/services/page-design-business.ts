@@ -11,7 +11,7 @@ import {
 } from '@spark-appworks/spark-ai/agent'
 import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
-import type { ProjectWorkspace } from '@spark-appworks/spark-project-model/project'
+import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 

@@ -13,7 +13,7 @@ import type {
   NavPermissionMode,
   ProjectNodeNavigationPatch,
   ProjectNodeData,
-} from './node'
+} from './project-node'
 
 export type NavigationNodeDraftNode = {
   id: string

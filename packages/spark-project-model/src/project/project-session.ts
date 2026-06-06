@@ -1,7 +1,7 @@
-import type { NavigationNodeDraft } from '../navigation/edit'
-import type { ProjectNode } from '../navigation/node'
+import type { NavigationNodeDraft } from '../navigation/navigation-edit'
+import type { ProjectNode } from '../navigation/project-node'
 import type { ConfigPageNode } from '../page/config-page'
-import type { ProjectNavigationDirtyScope } from './types'
+import type { ProjectNavigationDirtyScope } from './project-types'
 
 export type ProjectSessionState = {
   selectedNodeId: string | null

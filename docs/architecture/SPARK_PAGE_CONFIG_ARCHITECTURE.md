@@ -43,29 +43,37 @@ PageContentLoader                # 运行态四文件加载
 | 层 | 创建 |
 |---|---|
 | spark-app 运行态 | `new PageContentLoader` + `createRuntimePageNode` |
-| DevSystem / AI | `new ProjectWorkspace` 或 `getAppProjectWorkspace(scope)` |
+| DevSystem / AI | `new ProjectWorkspace` 或 APP `getAppProjectWorkspace(scope)` |
 | 纯内存 | `new ProjectModel({ projectId })` |
 
 ## 公共入口
 
 ```ts
-import { ProjectModel, ConfigPageNode, type PageNodeLike } from '@spark-appworks/spark-project-model'
-import { ProjectWorkspace, PageContentLoader, createRuntimePageNode } from '@spark-appworks/spark-project-model/project'
+import {
+  ProjectModel,
+  ProjectWorkspace,
+  ConfigPageNode,
+  PageContentLoader,
+  createRuntimePageNode,
+  type PageNodeLike,
+} from '@spark-appworks/spark-project-model'
 ```
 
-包外不要 deep import `src/model/*`、`src/io/*`。
+包外不要 deep import `src/project/*`、`src/navigation/*`、`src/page/*`、`src/io/*`。
 
 ## 源码目录
 
 ```text
 src/
-├── index.ts / project.ts
-├── project-workspace.ts
-├── model/project|navigation|page|serialization/
+├── index.ts
+├── project/
+├── navigation/
+├── page/
+├── serialization/
 └── io/
 ```
 
-依赖：`project-workspace → {model, io}`、`io → model`。**禁止 `model → io`**。
+依赖：`project-workspace → {project, navigation, page, io}`、`io → model`。**禁止 `model → io`。**
 
 ## 验证
 
