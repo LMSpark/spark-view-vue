@@ -8,6 +8,7 @@
  *
  * 【设计决策】
  *   - 基于 AJV 2020（标准 JSON Schema 校验引擎），不自己实现校验逻辑。
+ *   - 文档级 $defs 通过 schemaDefs 注入，由 AJV 原生解析 #/$defs/* $ref（非自研 inline）。
  *   - 所有方法为 static，类不持有状态，全局复用单一 Ajv2020 实例。
  *   - AJV error keyword → 中文消息映射集中在一处，便于统一调整措辞。
  *   - JSON Pointer 路径转 $.a.b[0] 格式，方便 LLM 理解错误位置。
@@ -43,6 +44,11 @@ export type JsonValidationResult = Readonly<{
   issues: readonly JsonValidationIssue[]
 }>
 
+/** 校验选项：文档级 $defs 供 AJV 2020 原生解析 #/$defs/* $ref。 */
+export type JsonSchemaValidateOptions = Readonly<{
+  schemaDefs?: Readonly<Record<string, JsonSchema>>
+}>
+
 // ═══════════════════════════════════════════════════════════════
 // 第 2 节 · AJV 实例 — 全局复用，全量错误收集
 // ═══════════════════════════════════════════════════════════════
@@ -60,6 +66,19 @@ const ajv = new Ajv2020({
 /** 是否为 type=object 的标准 JSON Schema 根 */
 function isObjectSchemaRoot(value: unknown): value is JsonSchemaObject & { readonly type: 'object' } {
   return isRecord(value) && value['type'] === 'object'
+}
+
+function attachSchemaDefs(
+  schema: unknown,
+  defs?: Readonly<Record<string, JsonSchema>>,
+): unknown {
+  if (defs === undefined || Object.keys(defs).length === 0) return schema
+  if (!isRecord(schema)) return schema
+  const existing = schema['$defs']
+  const mergedDefs = isRecord(existing)
+    ? { ...defs, ...existing }
+    : { ...defs }
+  return { ...schema, $defs: mergedDefs }
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -105,6 +124,7 @@ export class JsonSchemaValidator {
   static validateDeserializedParams(
     params: unknown,
     schema: unknown,
+    options?: JsonSchemaValidateOptions,
   ): JsonValidationResult {
     const issues: JsonValidationIssue[] = []
 
@@ -124,8 +144,8 @@ export class JsonSchemaValidator {
       }
     }
 
-    // 步骤 ③④：AJV 编译并校验
-    const validate = ajv.compile(schema)
+    // 步骤 ③④：AJV 编译并校验（$ref 由 AJV 2020 + 文档级 $defs 解析）
+    const validate = ajv.compile(attachSchemaDefs(schema, options?.schemaDefs) as JsonSchema)
     if (!validate(params)) {
       issues.push(...(validate.errors ?? []).map(JsonSchemaValidator.issueFromAjvError))
     }
@@ -140,8 +160,9 @@ export class JsonSchemaValidator {
   static validateJsonValue(
     value: unknown,
     schema: JsonSchema,
+    options?: JsonSchemaValidateOptions,
   ): JsonValidationResult {
-    const validate = ajv.compile(schema)
+    const validate = ajv.compile(attachSchemaDefs(schema, options?.schemaDefs) as JsonSchema)
     if (validate(value)) {
       return { ok: true, issues: [] }
     }

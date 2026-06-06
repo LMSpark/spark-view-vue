@@ -57,7 +57,9 @@
     "src/**/*.vue",
     "src/**/*.d.ts",
     "tests/**/*.ts",
-    "packages/spark-ai/src/**/*.ts"
+    "packages/spark-ai/src/**/*.ts",
+    "packages/spark-json-document/src/**/*.ts",
+    "packages/spark-json-document/src/**/*.d.ts"
   ],
   "exclude": [
     "node_modules",

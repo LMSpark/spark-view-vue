@@ -1,0 +1,38 @@
+import { describe, expect, it } from 'vitest'
+
+import { dereferenceJsonSchema } from '../modules/metadata/json-schema-dereference'
+
+describe('dereferenceJsonSchema', () => {
+  it('inlines document-level $defs for adapter paramsSchema consumption', () => {
+    const resolved = dereferenceJsonSchema(
+      {
+        type: 'object',
+        properties: {
+          node: { $ref: '#/$defs/TreeNode' },
+        },
+      },
+      {
+        TreeNode: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+          },
+          required: ['id'],
+        },
+      },
+    )
+
+    expect(resolved).toEqual({
+      type: 'object',
+      properties: {
+        node: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+          },
+          required: ['id'],
+        },
+      },
+    })
+  })
+})

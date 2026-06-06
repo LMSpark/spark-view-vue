@@ -1,4 +1,5 @@
 import ts from 'typescript'
+import { standardizeJsonSchema } from './json-schema-standardize'
 import {
   JsonSchemaDefinitionPool,
   isJsonSchemaPoolObject,
@@ -22,7 +23,7 @@ export type GeneratedJsonSchemaObject = JsonSchemaPoolObject & {
 export function tsTypeToJsonSchema(checker: ts.TypeChecker, type: ts.Type): GeneratedJsonSchema {
   const state = createJsonSchemaGenerationState()
   const schema = typeToJsonSchema(checker, type, state, { inlineNamedObject: true })
-  return attachDefinitions(schema, state)
+  return standardizeJsonSchema(attachDefinitions(schema, state))
 }
 
 type TypeToSchemaOptions = Readonly<{
@@ -55,6 +56,7 @@ function typeToJsonSchema(
   if (isStringLike(type)) return { type: 'string' }
   if (isNumberLike(type)) return { type: 'number' }
   if (isBooleanLike(type)) return { type: 'boolean' }
+  if (isFunctionLike(checker, type)) return true
   if (isArrayLike(checker, type)) return arrayToJsonSchema(checker, type, state)
   if (isRecordType(checker, type)) return { type: 'object', additionalProperties: true }
 
@@ -79,6 +81,7 @@ function unionToJsonSchema(
     .filter(part => !isUndefinedLike(part))
     .map(item => withNestedDepth(state, () => typeToJsonSchema(checker, item, state, { inlineNamedObject: false })))
   if (schemas.length === 0) return true
+  if (schemas.length === 1) return schemas[0] ?? true
 
   const typeNames = schemas.map(schema => isSchemaObject(schema) ? schema.type : undefined).filter((value): value is string => typeof value === 'string')
   if (typeNames.length === schemas.length) return { type: [...new Set(typeNames)] }
@@ -90,6 +93,18 @@ function arrayToJsonSchema(
   type: ts.Type,
   state: JsonSchemaGenerationState,
 ): GeneratedJsonSchema {
+  if (checker.isTupleType(type)) {
+    const elementTypes = readTypeReferenceArguments(type)
+    if (elementTypes.length > 0) {
+      return {
+        type: 'array',
+        prefixItems: elementTypes.map(elementType =>
+          withNestedDepth(state, () => typeToJsonSchema(checker, elementType, state, { inlineNamedObject: false }))),
+        items: false,
+      }
+    }
+  }
+
   const item = readArrayElementType(checker, type)
   return {
     type: 'array',
@@ -244,6 +259,12 @@ function safeTypeToString(checker: ts.TypeChecker, type: ts.Type): string {
 
 function isArrayLike(checker: ts.TypeChecker, type: ts.Type): boolean {
   return checker.isArrayType(type) || checker.isTupleType(type)
+}
+
+function isFunctionLike(checker: ts.TypeChecker, type: ts.Type): boolean {
+  if (type.getCallSignatures().length > 0) return true
+  const text = safeTypeToString(checker, type).toLowerCase()
+  return text.includes('=>') || text.includes('function')
 }
 
 function readArrayElementType(checker: ts.TypeChecker, type: ts.Type): ts.Type | undefined {

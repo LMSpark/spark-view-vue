@@ -229,7 +229,7 @@ class TurnEventState {
     if (typeof data['text'] === 'string') this.text = data['text']
     if (typeof data['reasoning'] === 'string') this.reasoning = data['reasoning']
     const toolCalls = readToolCalls(data['toolCalls']) ?? readToolCalls(data['tool_calls'])
-    if (toolCalls !== null) {
+    if (toolCalls !== null && toolCalls.length > 0) {
       this.toolCalls = toolCalls
       return
     }
@@ -349,6 +349,8 @@ function recoverToolCallsFromText(text: string): readonly AiAgentTransportToolCa
   const calls = [
     ...recoverJsonToolCallsFromText(text),
     ...recoverDsmlToolCallsFromText(text),
+    ...recoverInlineJsonToolCallsFromText(text),
+    ...recoverArgKeyTagToolCallsFromText(text),
   ]
   const normalizedCalls = dedupeRecoveredToolCalls(calls)
   return normalizedCalls.length === 0 ? null : normalizedCalls
@@ -474,6 +476,80 @@ function recoverDsmlToolCallsFromText(text: string): readonly AiAgentTransportTo
     })
   }
   return calls
+}
+
+/** glm / TaoToken 等网关常见：<tool_call>module_find({"path":"/",...})（可无闭合标签）。 */
+function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+  const calls: AiAgentTransportToolCall[] = []
+  const openerPattern = /<tool_call>\s*([A-Za-z_][\w.-]*)\s*\(/gi
+  for (const match of text.matchAll(openerPattern)) {
+    const name = match[1]?.trim() ?? ''
+    const argsStart = match.index + match[0].length
+    const remainder = text.slice(argsStart)
+    const jsonCandidates = extractBalancedJsonCandidates(remainder)
+    const jsonText = jsonCandidates[0]
+    if (name.length === 0 || jsonText === undefined) continue
+    try {
+      const parsed: unknown = JSON.parse(jsonText)
+      if (!isRecord(parsed)) continue
+      calls.push(createRecoveredToolCall(name, parsed, calls.length, 'call_inline'))
+    } catch {
+      // Ignore malformed inline JSON tool calls.
+    }
+  }
+  return calls
+}
+
+/** glm / 部分 OpenAI 兼容网关会把 tool_call 写进 assistant 文本（arg_key / arg_value 标签）。 */
+function recoverArgKeyTagToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+  const calls: AiAgentTransportToolCall[] = []
+  const blockPattern = /<tool_call>\s*([\s\S]*?)\s*<\/tool_call>/gi
+  for (const match of text.matchAll(blockPattern)) {
+    const inner = match[1]?.trim() ?? ''
+    if (inner.length === 0 || inner.includes('(')) continue
+    const nameEnd = inner.search(/<arg_key>/i)
+    const rawName = (nameEnd >= 0 ? inner.slice(0, nameEnd) : inner).trim()
+    if (rawName.length === 0) continue
+    const args: Record<string, unknown> = {}
+    const argsSection = nameEnd >= 0 ? inner.slice(nameEnd) : ''
+    const pairPattern = /<arg_key>\s*([\s\S]*?)\s*<\/arg_key>\s*<arg_value>\s*([\s\S]*?)\s*<\/arg_value>/gi
+    for (const pair of argsSection.matchAll(pairPattern)) {
+      const key = pair[1]?.trim() ?? ''
+      if (key.length === 0) continue
+      args[key] = pair[2]?.trim() ?? ''
+    }
+    calls.push(createRecoveredToolCall(rawName, args, calls.length, 'call_argtag'))
+  }
+  return calls
+}
+
+function createRecoveredToolCall(
+  name: string,
+  args: Record<string, unknown>,
+  index: number,
+  idPrefix: string,
+): AiAgentTransportToolCall {
+  return {
+    id: `${idPrefix}_${String(index + 1)}`,
+    type: 'function',
+    function: {
+      name,
+      arguments: JSON.stringify(normalizeRecoveredToolArguments(name, args)),
+    },
+  }
+}
+
+function normalizeRecoveredToolArguments(
+  toolName: string,
+  args: Record<string, unknown>,
+): Record<string, unknown> {
+  if (toolName !== 'module_find') return args
+  if (Object.hasOwn(args, 'childKind')) return args
+  const kind = args['kind']
+  if (typeof kind !== 'string' || kind.trim().length === 0) return args
+  const next: Record<string, unknown> = { ...args, childKind: kind.trim() }
+  delete next['kind']
+  return next
 }
 
 function readDsmlParameters(body: string): Record<string, unknown> {

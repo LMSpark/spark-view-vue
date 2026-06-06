@@ -47,15 +47,19 @@ export type AiApiActionMetadata = Readonly<{
   failureModes?: readonly AiModuleFunctionFailureMode[]
 }>
 
-/** action 返回值中的 API-bearing 对象引用。 */
+/** action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。 */
 export type AiApiResultApiRef = Readonly<{
   /** 从 result.data 到 API 对象实例的路径；空数组表示 result.data 本身。 */
   resultPath: readonly string[]
-  api: AiApiObjectMetadata
+  api?: AiApiObjectMetadata
+  /** 紧凑 runtime JSON：指向 apiRegistry 中的 module kind。 */
+  $ref?: string
 }>
 
 /** VCM 生成的完整业务模块元数据。 */
 export type AiModuleMetadataJson = Readonly<{
-  schemaVersion: 1
+  schemaVersion: 1 | 2
   rootApi: AiApiObjectMetadata
+  /** schemaVersion=2 时：按 kind 去重后的 action 返回 API 注册表。 */
+  apiRegistry?: Readonly<Record<string, AiApiObjectMetadata>>
 }>

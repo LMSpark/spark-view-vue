@@ -16,4 +16,5 @@ export {
 export type {
   JsonValidationIssue as AiJsonValidationIssue,
   JsonValidationResult as AiJsonValidationResult,
+  JsonSchemaValidateOptions as AiJsonSchemaValidateOptions,
 } from '@spark-appworks/spark-json-document'

@@ -1,4 +1,5 @@
-import { AiJsonSchemaValidator, type AiJsonParams } from '../../json'
+import { readJsonProperty } from '@spark-appworks/spark-json-document'
+import { AiJsonSchemaValidator, type AiJsonParams, type AiJsonSchemaValidateOptions } from '../../json'
 import { AiModuleResult, type AiModulePathContext } from '../../modules'
 import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../modules/metadata'
 
@@ -41,8 +42,9 @@ export async function executeAiApiAction(
   action: AiApiActionMetadata,
   args: AiJsonParams,
   ctx: AiModulePathContext,
+  options: AiJsonSchemaValidateOptions = {},
 ): Promise<AiModuleResult<unknown>> {
-  const validation = AiJsonSchemaValidator.validateDeserializedParams(args, action.paramsSchema)
+  const validation = AiJsonSchemaValidator.validateDeserializedParams(args, action.paramsSchema, options)
   if (!validation.ok) {
     return AiModuleResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
@@ -104,7 +106,7 @@ function createApiProxy(state: ApiProxyState, ctx: AiModulePathContext): unknown
       }
 
       return createApiProxy({
-        value: state.value.then(target => readProperty(target, property)),
+        value: state.value.then(target => readJsonProperty(target, property)),
         api: resolvePropertyApi(state.api, property) ?? state.api,
       }, ctx)
     },
@@ -151,7 +153,7 @@ function createResultProxy(
       if (typeof property !== 'string') return undefined
       const nextPath = [...path, property]
       return createResultProxy(
-        value.then(target => readProperty(target, property)),
+        value.then(target => readJsonProperty(target, property)),
         resultApis,
         nextPath,
         ctx,
@@ -168,11 +170,6 @@ function resolvePropertyApi(api: AiApiObjectMetadata, property: string): AiApiOb
     if (found !== undefined) return found.api
   }
   return undefined
-}
-
-function readProperty(target: unknown, property: string): unknown {
-  if (!isMethodTarget(target)) return undefined
-  return target[property]
 }
 
 function isMethodTarget(value: unknown): value is MethodTarget {

@@ -38,6 +38,12 @@ export {
 } from './core/json-path'
 
 export {
+  readJsonProperty,
+  readJsonValueAtResultPath,
+  resultPathToJmespath,
+} from './core/json-result-path'
+
+export {
   coerceJsonValue,
   coerceStrictJsonValue,
 } from './core/coercion'
@@ -85,6 +91,7 @@ export {
 export type {
   JsonValidationIssue,
   JsonValidationResult,
+  JsonSchemaValidateOptions,
 } from './schema/schema-validator'
 
 export {

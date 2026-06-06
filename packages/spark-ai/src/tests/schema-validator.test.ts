@@ -60,4 +60,32 @@ describe('AiJsonSchemaValidator', () => {
 
     expect(text).toBe('参数校验失败：$.a 缺少必填字段；$.b 缺少必填字段；另有 1 个问题')
   })
+
+  it('resolves document-level $defs through AJV 2020 when validating params', () => {
+    const schema = paramsSchema({
+      node: { $ref: '#/$defs/SparkNode' },
+    }, ['node'])
+    const schemaDefs = {
+      SparkNode: {
+        type: 'object' as const,
+        properties: {
+          type: { type: 'string' as const },
+          id: { type: 'string' as const },
+        },
+        required: ['type', 'id'],
+      },
+    }
+
+    expect(AiJsonSchemaValidator.validateDeserializedParams(
+      { node: { type: 'div', id: 'root' } },
+      schema,
+      { schemaDefs },
+    )).toEqual({ ok: true, issues: [] })
+
+    expect(AiJsonSchemaValidator.validateDeserializedParams(
+      { node: { type: 'div' } },
+      schema,
+      { schemaDefs },
+    ).ok).toBe(false)
+  })
 })

@@ -347,7 +347,7 @@ class SchemaPoolingService {
               type: 'object',
               properties: {
                 id: { type: 'string' },
-                child: { anyOf: [{ $ref: '#/$defs/TreeNode' }] },
+                child: { $ref: '#/$defs/TreeNode' },
               },
             },
           },

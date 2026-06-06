@@ -300,6 +300,55 @@ describe('AiModuleAdapter', () => {
     })
   })
 
+  it('exposes root instances for module_find via projectId or host moduleInstanceId', async () => {
+    class ProjectLikeApi {
+      public readonly projectId = 'homepage'
+
+      public ping(): AiModuleResult<AiJsonValue> {
+        return AiModuleResult.ok({ ok: true })
+      }
+    }
+
+    const registration = AiModuleAdapter.createRegistration({
+      moduleClass: ProjectLikeApi,
+      metadata: {
+        schemaVersion: 1,
+        rootApi: {
+          kind: 'project',
+          name: 'ProjectModel',
+          description: 'Project root for find tests',
+          actions: [{
+            name: 'ping',
+            methodName: 'ping',
+            description: 'Ping',
+            paramsSchema: { type: 'object', properties: {}, required: [] },
+          }],
+        },
+      },
+      options: {},
+    })
+
+    const byProjectId = await registration.runtime.executeTool('module_find', {
+      path: '/',
+      childKind: 'project',
+      query: { id: 'homepage' },
+    }, { moduleId: 'demo-host', moduleInstanceId: 'orders-page', instanceId: 'turn-1' })
+
+    expect(byProjectId).toMatchObject({
+      ok: true,
+      data: [{ id: 'homepage', label: 'homepage' }],
+    })
+
+    const byKeyword = await registration.runtime.executeTool('module_find', {
+      path: '/',
+      childKind: 'project',
+      query: { keyword: 'home' },
+    }, { moduleId: 'demo-host', moduleInstanceId: 'orders-page', instanceId: 'turn-1' })
+
+    expect(byKeyword.ok).toBe(true)
+    expect(Array.isArray(byKeyword.data) && byKeyword.data.length).toBeGreaterThan(0)
+  })
+
   it('validates paramsSchema for script chain action calls before invoking business methods', async () => {
     const registration = AiModuleAdapter.createRegistration({
       moduleClass: RootApi,

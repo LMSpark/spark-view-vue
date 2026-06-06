@@ -84,6 +84,17 @@ function collectApiObjectMetadataFindings(
       if (!Array.isArray(ref.resultPath)) {
         findings.push({ level: 'error', rule: 'result-path-required', message: `${actionLabel} resultApi 缺少 resultPath 数组` })
       }
+      const refKind = ref.$ref?.trim()
+      if (refKind !== undefined && refKind.length > 0) {
+        if (ref.api !== undefined) {
+          findings.push({ level: 'error', rule: 'result-ref-ambiguous', message: `${actionLabel} resultApi 不能同时包含 api 与 $ref` })
+        }
+        continue
+      }
+      if (ref.api === undefined) {
+        findings.push({ level: 'error', rule: 'result-api-required', message: `${actionLabel} resultApi 缺少 api 或 $ref` })
+        continue
+      }
       findings.push(...collectApiObjectMetadataFindings(ref.api, [...ancestry, api.kind]))
     }
   }

@@ -93,11 +93,14 @@ export type {
   AiApiObjectMetadata,
   AiApiResultApiRef,
   AiModuleMetadataJson,
+  ModuleMetadataRuntimeDocument,
 } from './metadata'
 
 export {
   AiApiObjectMetadataValidationError,
   validateApiObjectMetadata,
+  resolveModuleMetadataJson,
+  readModuleMetadataRuntimeDocument,
 } from './metadata'
 
 // ── 3. 知识投影类型 ─────────────────────────────────────────

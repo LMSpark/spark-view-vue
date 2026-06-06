@@ -10,9 +10,10 @@ import {
   type AiAgentHost,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
+import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
-import pageDesignRuntimeMetadata from './page-design/page-design-module-metadata.runtime.generated.json'
+import { pageDesignRuntimeMetadataDocument } from './page-design/page-design-module-metadata.runtime'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -128,6 +129,9 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           ],
         }),
         resolveInstance: ctx => resolvePageDesignProject(options, ctx),
+        ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+          ? {}
+          : { jsonSchemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
       },
     }),
   })
@@ -160,6 +164,7 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     '策划约束（readPlanningProjection.effectiveDescription，勿从 navigation 树拼接）:',
     effectiveDescription,
     `用户本轮目标: ${input.description}`,
+    '导航提示: 根 kind 为 project；先 module_find({ path: "/", childKind: "project", query: { id: "<projectId>" } })，再 openPageDesign(pageId)。',
     '元数据来源: generated pageDesign module metadata + component payload catalog.',
     '执行原则: this 是当前 ProjectModel；openPageDesign(pageId) 进入 ConfigPageNode，再进入 node-tree / dataset / 四文件。',
   ].join('\n')
@@ -179,12 +184,22 @@ function resolvePageDesignProject(
 }
 
 function readPageDesignProjectMetadata(): AiModuleMetadataJson {
-  const modules = (pageDesignRuntimeMetadata as { modules: AiModuleMetadataJson[] }).modules
-  const projectModule = modules.find(module => module.rootApi.kind === 'project')
+  const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
+    module => module.rootApi.kind === 'project',
+  )
   if (projectModule === undefined) {
     throw new Error('pageDesign runtime metadata missing ProjectModel rootApi.')
   }
-  return projectModule
+  return resolveModuleMetadataJson(projectModule, {
+    inlineSchemaRefs: false,
+    ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+      ? {}
+      : { schemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
+  })
+}
+
+function isPlainObject(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }
 
 function collectToolNames(value: unknown): string[] {
@@ -198,10 +213,10 @@ function collectToolNames(value: unknown): string[] {
       for (const item of current) visit(item)
       return
     }
-    const record = current as Record<string, unknown>
-    const toolName = record['toolName'] ?? record['name'] ?? record['functionName']
+    if (!isPlainObject(current)) return
+    const toolName = current['toolName'] ?? current['name'] ?? current['functionName']
     if (typeof toolName === 'string') names.push(toolName)
-    for (const item of Object.values(record)) visit(item)
+    for (const item of Object.values(current)) visit(item)
   }
   visit(value)
   return [...new Set(names)]

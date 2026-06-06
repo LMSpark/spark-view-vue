@@ -307,6 +307,95 @@ describe('createTurnEventCollector', () => {
     })
   })
 
+  it('recovers glm inline JSON tool_call blocks without closing tag', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: '<tool_call>module_find({"childKind":"project","path":"/","query":{"keyword":"leave"}})',
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_inline_1',
+        type: 'function',
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({
+            childKind: 'project',
+            path: '/',
+            query: { keyword: 'leave' },
+          }),
+        },
+      }],
+    })
+  })
+
+  it('maps module_find kind alias to childKind in recovered arg_key blocks', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '<tool_call>module_find',
+        '<arg_key>kind</arg_key><arg_value>demoModule</arg_value>',
+        '<arg_key>path</arg_key><arg_value>/</arg_value>',
+        '</tool_call>',
+      ].join(''),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_argtag_1',
+        type: 'function',
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: '/', childKind: 'demoModule' }),
+        },
+      }],
+    })
+  })
+
+  it('recovers glm arg_key/arg_value tool_call blocks emitted as assistant text', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '<tool_call>module_find',
+        '<arg_key>kind</arg_key><arg_value>demoModule</arg_value>',
+        '<arg_key>path</arg_key><arg_value>/demoModule[orders]</arg_value>',
+        '</tool_call>',
+      ].join(''),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_argtag_1',
+        type: 'function',
+        function: {
+          name: 'module_find',
+          arguments: JSON.stringify({ path: '/demoModule[orders]', childKind: 'demoModule' }),
+        },
+      }],
+    })
+  })
+
   it('recovers DSML invoke blocks emitted as assistant text', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({

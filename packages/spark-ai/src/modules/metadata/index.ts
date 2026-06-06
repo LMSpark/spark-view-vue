@@ -12,6 +12,17 @@ export {
   validateApiObjectMetadata,
 } from './validate-api-object-metadata'
 
+export { resolveModuleMetadataJson } from './resolve-api-object-metadata'
+
+export {
+  MODULE_METADATA_RUNTIME_JSON_SCHEMA,
+  readModuleMetadataRuntimeDocument,
+} from './module-metadata-runtime-document'
+
+export type {
+  ModuleMetadataRuntimeDocument,
+} from './module-metadata-runtime-document'
+
 export type {
   ApiObjectValidationFinding,
 } from './validate-api-object-metadata'

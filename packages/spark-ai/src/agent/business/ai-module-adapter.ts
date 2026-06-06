@@ -5,6 +5,7 @@
  * 返回 API 对象只作为元数据暴露给指南，不在运行时合成 handle/子模块。@ai-visible
  */
 
+import type { AiJsonSchemaValidateOptions } from '../../json'
 import { coerceJsonValue } from '../../json'
 import {
   AiModule,
@@ -12,6 +13,8 @@ import {
   AiModuleRuntime,
   type AiModuleFunctionMetadata,
   type AiModuleAttributeMetadata,
+  type AiModuleInstanceQuery,
+  type AiModuleInstanceRef,
   type AiModulePathContext,
 } from '../../modules'
 import {
@@ -57,6 +60,8 @@ export type AiModuleAdapterRegisterOptions<T> = Readonly<{
   instance?: T
   constructArgs?: readonly unknown[]
   resolveInstance?: (context: AiModulePathContext) => T
+  /** 模块 metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */
+  jsonSchemaDefs?: Readonly<Record<string, unknown>>
   inputContract?: AiAgentInputContract
   sessionStore?: AiAgentSessionStore
   systemPrompt?: (instance: T, context: AiAgentRuntimeContext) => string | undefined
@@ -108,6 +113,7 @@ export class AiModuleAdapter {
     runtime.register(adapter.buildRootAiModule(
       command.metadata.rootApi,
       createInstanceResolver(command.moduleClass, command.options, instance),
+      command.options.jsonSchemaDefs,
     ))
 
     const systemPrompt = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.systemPrompt)
@@ -142,14 +148,21 @@ export class AiModuleAdapter {
   private buildRootAiModule<T>(
     api: AiApiObjectMetadata,
     resolveInstance: (ctx: AiModulePathContext) => T,
+    jsonSchemaDefs?: Readonly<Record<string, unknown>>,
   ): AiModule {
+    const schemaValidateOptions: AiJsonSchemaValidateOptions =
+      jsonSchemaDefs === undefined || Object.keys(jsonSchemaDefs).length === 0
+        ? {}
+        : { schemaDefs: jsonSchemaDefs as NonNullable<AiJsonSchemaValidateOptions['schemaDefs']> }
     return new AiModule({
       kind: api.kind,
       name: api.name,
       description: api.description,
       ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(toModuleAttributeMetadata) }),
       functions: api.actions.map(toModuleFunctionMetadata),
-      find: () => AiModuleResult.ok([]),
+      find: (ctx, _childKind, query) => AiModuleResult.ok(
+        filterRootInstanceRefs(createRootInstanceRefs(resolveInstance(ctx), api, ctx), query),
+      ),
       scriptContext: ctx => createAiApiScriptContext(resolveInstance(ctx), api, ctx),
       runner: async (ctx, functionName, args) => {
         const instance = resolveInstance(ctx)
@@ -161,7 +174,7 @@ export class AiModuleAdapter {
             '检查 VCM 元数据 actions 是否包含该 functionName。',
           )
         }
-        const result = await executeAiApiAction(instance, action, args, ctx)
+        const result = await executeAiApiAction(instance, action, args, ctx, schemaValidateOptions)
         if (!result.ok) return AiModuleResult.passthroughFailure(result)
         const data = coerceJsonValue(result.data)
         return AiModuleResult.ok(data === undefined ? null : data)
@@ -223,6 +236,9 @@ function toModuleFunctionMetadata(action: AiApiActionMetadata): AiModuleFunction
 }
 
 function toModuleFunctionResultApiMetadata(ref: AiApiResultApiRef): NonNullable<AiModuleFunctionMetadata['resultApis']>[number] {
+  if (ref.api === undefined) {
+    throw new Error(`resultApi "${ref.$ref ?? '(unknown)'}" must be resolved before AiModuleAdapter registration.`)
+  }
   return {
     resultPath: [...ref.resultPath],
     kind: ref.api.kind,
@@ -245,4 +261,56 @@ function bindOptionalLifecycle<T, TArgs extends readonly unknown[], TResult>(
   callback: ((instance: T, ...args: TArgs) => TResult) | undefined,
 ): ((...args: TArgs) => TResult) | undefined {
   return callback === undefined ? undefined : (...args) => callback(instance, ...args)
+}
+
+function createRootInstanceRefs<T>(
+  instance: T,
+  api: AiApiObjectMetadata,
+  ctx: AiModulePathContext,
+): readonly AiModuleInstanceRef[] {
+  const refs: AiModuleInstanceRef[] = []
+  const projectId = readInstanceProjectId(instance)
+  if (projectId !== null) {
+    refs.push({
+      id: projectId,
+      label: projectId,
+      summary: api.name,
+    })
+  }
+  const hostInstanceId = ctx.host === undefined ? '' : ctx.host.moduleInstanceId.trim()
+  if (hostInstanceId.length > 0 && !refs.some(ref => ref.id === hostInstanceId)) {
+    refs.push({
+      id: hostInstanceId,
+      label: hostInstanceId,
+      summary: `当前 ${api.kind} Host 实例`,
+    })
+  }
+  if (refs.length > 0) return refs
+  return [{
+    id: api.kind,
+    label: api.name,
+    summary: api.description,
+  }]
+}
+
+function readInstanceProjectId(instance: unknown): string | null {
+  if (!isIndexableObject(instance)) return null
+  const projectId = instance['projectId']
+  if (typeof projectId !== 'string') return null
+  const normalized = projectId.trim()
+  return normalized.length > 0 ? normalized : null
+}
+
+function filterRootInstanceRefs(
+  refs: readonly AiModuleInstanceRef[],
+  query: AiModuleInstanceQuery,
+): readonly AiModuleInstanceRef[] {
+  const id = typeof query['id'] === 'string' ? query['id'].trim() : ''
+  const keyword = typeof query['keyword'] === 'string' ? query['keyword'].trim().toLowerCase() : ''
+  return refs.filter((ref) => {
+    if (id.length > 0 && ref.id !== id) return false
+    if (keyword.length === 0) return true
+    const haystack = `${ref.id} ${ref.label} ${ref.summary ?? ''}`.toLowerCase()
+    return haystack.includes(keyword)
+  })
 }

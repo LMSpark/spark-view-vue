@@ -49,6 +49,7 @@ export {
 export type {
   AiJsonValidationIssue,
   AiJsonValidationResult,
+  AiJsonSchemaValidateOptions,
 } from './validator'
 
 // ── 值：JSON 值规整（deprecated re-exports）──────────────────

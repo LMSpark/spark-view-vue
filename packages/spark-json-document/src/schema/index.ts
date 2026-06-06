@@ -40,6 +40,7 @@ export {
 export type {
   JsonValidationIssue,
   JsonValidationResult,
+  JsonSchemaValidateOptions,
 } from './schema-validator'
 
 // ── 值 + 类型：Schema 路径解析 ────────────────────────────────

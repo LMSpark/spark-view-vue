@@ -5,7 +5,13 @@
  * 用法：
  *   pnpm run generate:module-metadata
  */
+import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
+
+import {
+  auditModuleMetadataDocument,
+  type Draft2020AuditIssue,
+} from './json-schema-draft2020-audit'
 import { generateModuleAbilityMetadata } from './module-metadata-generator'
 import { createLogger } from './utils'
 
@@ -50,6 +56,11 @@ if (diagnoseOnly) {
   logger.info(`✅ VCM catalog 已写入 ${result.vcmCatalogOutFile}`)
   logger.info(`✅ API diagnostics 已写入 ${result.moduleOutFile}`)
   logger.info(`✅ API runtime 已写入 ${PAGE_DESIGN_API_RUNTIME_OUT_FILE}`)
+  logger.info(`✅ API runtime entry 已写入 ${PAGE_DESIGN_API_RUNTIME_OUT_FILE.replace(/\.generated\.json$/u, '.ts')}`)
+  assertGeneratedModuleMetadataDraft2020(root, [
+    PAGE_DESIGN_API_DIAGNOSTICS_OUT_FILE,
+    PAGE_DESIGN_API_RUNTIME_OUT_FILE,
+  ])
 }
 logger.info([
   '📊 metadata diagnostics:',
@@ -71,4 +82,23 @@ for (const module of result.diagnostics.modules) {
 for (const finding of result.diagnostics.findings) {
   const suffix = finding.fix === undefined ? '' : ` fix=${finding.fix}`
   logger.info(`  [${finding.level}] ${finding.rule} ${finding.target}: ${finding.message}${suffix}`)
+}
+
+function assertGeneratedModuleMetadataDraft2020(rootDir: string, relativeFiles: readonly string[]): void {
+  const allIssues: Draft2020AuditIssue[] = []
+  for (const relativeFile of relativeFiles) {
+    const absoluteFile = resolve(rootDir, relativeFile)
+    const document: unknown = JSON.parse(readFileSync(absoluteFile, 'utf8'))
+    const issues = auditModuleMetadataDocument(document)
+    for (const issue of issues) {
+      allIssues.push({
+        ...issue,
+        path: `${relativeFile}:${issue.path}`,
+      })
+    }
+  }
+  if (allIssues.length === 0) return
+
+  const sample = allIssues.slice(0, 8).map(issue => `${issue.path} ${issue.rule} (${issue.detail})`).join('\n')
+  throw new Error(`Draft 2020-12 schema audit failed with ${allIssues.length} issue(s):\n${sample}`)
 }
