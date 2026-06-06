@@ -19,6 +19,7 @@ export class PageRuleFile {
   getText(): string { return serializeRuleTree(this.root) }
 
   setText(text: string): void {
+    if (text === this.getText()) return
     const methodName = `replace${'Root'}` as keyof SparkNodeTreeModel
     const replaceTree = this.tree[methodName]
     if (typeof replaceTree !== 'function') {
@@ -47,8 +48,10 @@ export class PageRuleFile {
   }
 
   async editTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
+    const beforeText = this.getText()
     const tree = this.getTree()
     await run(tree)
+    if (this.getText() === beforeText) return
     this.replaceTree(tree)
   }
 

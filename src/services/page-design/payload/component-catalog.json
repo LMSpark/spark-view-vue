@@ -1,7 +1,7 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-06-04T06:54:50.491Z",
+  "buildTime": "2026-06-05T23:53:15.392Z",
   "componentCount": 106,
   "components": {
     "about": {
@@ -2234,7 +2234,7 @@
           "name": "filterPlaceholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u7B5B\\u9009\\u8DEF\\u5F84 / \\u952E\\u540D / \\u503C\"",
+          "default": "\"筛选路径 / 键名 / 值\"",
           "description": "筛选框占位文本"
         },
         {
@@ -2542,7 +2542,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u8F93\\u5165\"",
+          "default": "\"请输入\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -3170,7 +3170,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\"",
+          "default": "\"请选择\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -3585,14 +3585,14 @@
           "name": "checkedText",
           "type": "string",
           "required": false,
-          "default": "\"\\u662F\"",
+          "default": "\"是\"",
           "description": "选中状态下展示的文本。"
         },
         {
           "name": "uncheckedText",
           "type": "string",
           "required": false,
-          "default": "\"\\u5426\"",
+          "default": "\"否\"",
           "description": "未选中状态下展示的文本。"
         },
         {
@@ -4474,7 +4474,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u9009\\u62E9\\u65E5\\u671F\"",
+          "default": "\"选择日期\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -4561,21 +4561,21 @@
           "name": "startPlaceholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u5F00\\u59CB\\u65E5\\u671F\"",
+          "default": "\"开始日期\"",
           "description": "范围起点占位文案。"
         },
         {
           "name": "endPlaceholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u7ED3\\u675F\\u65E5\\u671F\"",
+          "default": "\"结束日期\"",
           "description": "范围终点占位文案。"
         },
         {
           "name": "rangeSeparator",
           "type": "string",
           "required": false,
-          "default": "\"\\u81F3\"",
+          "default": "\"至\"",
           "description": "范围值中间的展示分隔文案。"
         },
         {
@@ -5557,7 +5557,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\"",
+          "default": "\"请选择\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -5753,14 +5753,14 @@
           "name": "buttonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u9009\\u62E9\"",
+          "default": "\"选择\"",
           "description": "主动作按钮文案。"
         },
         {
           "name": "readonlyButtonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u67E5\\u770B\"",
+          "default": "\"查看\"",
           "description": "只读或查看模式下的主动作按钮文案。"
         },
         {
@@ -5774,7 +5774,7 @@
           "name": "entityName",
           "type": "string",
           "required": false,
-          "default": "\"\\u9879\\u76EE\"",
+          "default": "\"项目\"",
           "description": "实体类型名称，用于驱动选择器语义或远端查询。"
         }
       ],
@@ -5860,7 +5860,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\"",
+          "default": "\"请选择文件\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -5941,7 +5941,7 @@
           "name": "buttonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6D4F\\u89C8\"",
+          "default": "\"浏览\"",
           "description": "主动作按钮文案。"
         },
         {
@@ -6061,7 +6061,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\\u8DEF\\u5F84\"",
+          "default": "\"请选择文件路径\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -6142,7 +6142,7 @@
           "name": "buttonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u4E0A\\u4F20\"",
+          "default": "\"上传\"",
           "description": "主动作按钮文案。"
         },
         {
@@ -6163,7 +6163,7 @@
           "name": "readonlyButtonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6D4F\\u89C8\"",
+          "default": "\"浏览\"",
           "description": "只读或查看模式下的主动作按钮文案。"
         },
         {
@@ -6769,7 +6769,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\\u56FE\\u6807\"",
+          "default": "\"请选择图标\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -7049,7 +7049,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\\u56FE\\u7247\"",
+          "default": "\"请选择图片\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -7130,7 +7130,7 @@
           "name": "buttonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u4E0A\\u4F20\\u56FE\\u7247\"",
+          "default": "\"上传图片\"",
           "description": "主动作按钮文案。"
         },
         {
@@ -7151,7 +7151,7 @@
           "name": "readonlyButtonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6D4F\\u89C8\"",
+          "default": "\"浏览\"",
           "description": "只读或查看模式下的主动作按钮文案。"
         },
         {
@@ -7417,7 +7417,7 @@
           "name": "emptyText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
+          "default": "\"暂无数据\"",
           "description": "空数据提示文案"
         },
         {
@@ -7829,7 +7829,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\"",
+          "default": "\"请选择\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -8276,7 +8276,7 @@
           "name": "title",
           "type": "string",
           "required": false,
-          "default": "\"\\u8FD4\\u56DE\"",
+          "default": "\"返回\"",
           "description": "标题位文本。\n通常用于卡片头、统计标题、面板标题等“主说明”区域。"
         },
         {
@@ -9259,14 +9259,14 @@
           "name": "expandText",
           "type": "string",
           "required": false,
-          "default": "\"\\u5C55\\u5F00\"",
+          "default": "\"展开\"",
           "description": "展开文案"
         },
         {
           "name": "collapseText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6536\\u8D77\"",
+          "default": "\"收起\"",
           "description": "收起文案"
         },
         {
@@ -9661,7 +9661,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\"",
+          "default": "\"请选择\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -10429,14 +10429,14 @@
           "name": "activeText",
           "type": "string",
           "required": false,
-          "default": "\"\\u662F\"",
+          "default": "\"是\"",
           "description": "打开状态下展示的文本。"
         },
         {
           "name": "inactiveText",
           "type": "string",
           "required": false,
-          "default": "\"\\u5426\"",
+          "default": "\"否\"",
           "description": "关闭状态下展示的文本。"
         }
       ],
@@ -11043,7 +11043,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u8F93\\u5165\\u5185\\u5BB9\"",
+          "default": "\"请输入内容\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -11230,7 +11230,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u9009\\u62E9\\u65F6\\u95F4\"",
+          "default": "\"选择时间\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -11318,21 +11318,21 @@
           "name": "startPlaceholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u5F00\\u59CB\\u65F6\\u95F4\"",
+          "default": "\"开始时间\"",
           "description": "范围起点占位文案。"
         },
         {
           "name": "endPlaceholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u7ED3\\u675F\\u65F6\\u95F4\"",
+          "default": "\"结束时间\"",
           "description": "范围终点占位文案。"
         },
         {
           "name": "rangeSeparator",
           "type": "string",
           "required": false,
-          "default": "\"\\u81F3\"",
+          "default": "\"至\"",
           "description": "范围值中间的展示分隔文案。"
         },
         {
@@ -11432,7 +11432,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u9009\\u62E9\\u65F6\\u95F4\"",
+          "default": "\"选择时间\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -12169,14 +12169,14 @@
           "name": "titles",
           "type": "[string, string]",
           "required": false,
-          "default": "[\"\\u5F85\\u9009\", \"\\u5DF2\\u9009\"]",
+          "default": "[\"待选\", \"已选\"]",
           "description": "左右面板标题。"
         },
         {
           "name": "filterPlaceholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u8F93\\u5165\\u5173\\u952E\\u8BCD\"",
+          "default": "\"请输入关键词\"",
           "description": "候选项过滤输入框占位文案。"
         },
         {
@@ -12471,7 +12471,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\"",
+          "default": "\"请选择\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -12765,7 +12765,7 @@
           "name": "placeholder",
           "type": "string",
           "required": false,
-          "default": "\"\\u8BF7\\u9009\\u62E9\\u6587\\u4EF6\"",
+          "default": "\"请选择文件\"",
           "description": "占位文案。\n当组件无值且支持 placeholder 时，用来提示用户预期输入或显示内容格式。"
         },
         {
@@ -12846,7 +12846,7 @@
           "name": "buttonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u70B9\\u51FB\\u4E0A\\u4F20\"",
+          "default": "\"点击上传\"",
           "description": "主动作按钮文案。"
         },
         {
@@ -12867,7 +12867,7 @@
           "name": "readonlyButtonText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6D4F\\u89C8\"",
+          "default": "\"浏览\"",
           "description": "只读或查看模式下的主动作按钮文案。"
         },
         {
@@ -13200,7 +13200,7 @@
           "name": "emptyText",
           "type": "string",
           "required": false,
-          "default": "\"\\u6682\\u65E0\\u6570\\u636E\"",
+          "default": "\"暂无数据\"",
           "description": "空数据提示文案。"
         },
         {
@@ -13244,6 +13244,13 @@
           "required": false,
           "default": "1",
           "description": "前后额外渲染的虚拟页数。"
+        },
+        {
+          "name": "prefetchPages",
+          "type": "number",
+          "required": false,
+          "default": "1",
+          "description": "本地全量 rows 模式下，预热目标页前后的页数；远端 DataView 仍只加载目标页。"
         },
         {
           "name": "maxCachedPages",
@@ -13712,7 +13719,7 @@
           "name": "title",
           "type": "string",
           "required": false,
-          "default": "\"\\u672A\\u6CE8\\u518C\\u7684\\u7EC4\\u4EF6\\u7C7B\\u578B\"",
+          "default": "\"未注册的组件类型\"",
           "description": "提示标题"
         },
         {

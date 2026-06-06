@@ -21,6 +21,7 @@ export class PageDataSetFile {
   getText(): string { return serializeDataSet(this.value) }
 
   setText(text: string): void {
+    if (text === this.getText()) return
     this.pushUndo()
     this.value = parsePageDataText(text, this.pageId)
     this.invalidateToolCache()
@@ -51,9 +52,16 @@ export class PageDataSetFile {
   }
 
   async editTool(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
+    const beforeText = this.getText()
     const tool = this.getTool()
     await run(tool)
-    this.replaceTool(tool)
+    const nextValue = DataSet.fromJson(tool.toJson())
+    const afterText = serializeDataSet(nextValue)
+    if (afterText === beforeText) return
+    this.pushUndo()
+    this.value = nextValue
+    this.invalidateToolCache()
+    this.dirty = true
   }
 
   undo(): boolean {

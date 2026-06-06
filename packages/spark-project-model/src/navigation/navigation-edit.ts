@@ -96,6 +96,11 @@ export function defaultNavIconByKind(kind: NavNodeKind): string {
   return DEFAULT_NAV_ICON_BY_KIND[kind]
 }
 
+/** 比较导航草稿内容是否等价（用于 dirty 判定，不含 UI 会话字段）。 */
+export function navigationDraftContentKey(draft: NavigationNodeDraft): string {
+  return JSON.stringify(draft)
+}
+
 export function createNavigationNodeDraft(navNode: ProjectNodeData): NavigationNodeDraft {
   const nodeDto: NavigationNodeDraftNode = {
     id: navNode.id,

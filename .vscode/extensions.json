@@ -1,0 +1,22 @@
+{
+  "recommendations": [
+    "vue.volar",
+    "dbaeumer.vscode-eslint",
+    "vscjava.vscode-maven",
+    "ms-azuretools.vscode-docker"
+  ],
+  "unwantedRecommendations": [
+    "octref.vetur",
+    "Vue.vscode-typescript-vue-plugin",
+    "johnsoncodehk.volar",
+    "johnsoncodehk.vscode-typescript-vue-plugin",
+    "hollowtree.vue-snippets",
+    "sdras.vue-vscode-snippets",
+    "octref.vetur-vscode",
+    "formulahendry.auto-close-tag",
+    "formulahendry.auto-rename-tag",
+    "esbenp.prettier-vscode",
+    "firsttris.vscode-jest-runner",
+    "orta.vscode-jest"
+  ]
+}

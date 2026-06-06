@@ -164,6 +164,31 @@ describe('ProjectModel', () => {
     expect(projection.treeData.map(node => node.id)).toEqual(['reports', 'orders'])
   })
 
+  it('does not mark navigation dirty when opening draft without edits', () => {
+    const workspace = createWorkspace()
+    workspace.project.replaceNavigationRoot(createRoot([
+      { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
+    ]))
+    workspace.project.selectNode('orders')
+    workspace.project.beginNavigationDraft()
+    const dirty = workspace.project.readDirtyProjection()
+    expect(dirty.navigationDirty).toBe(false)
+    expect(dirty.hasAnyDirty).toBe(false)
+  })
+
+  it('marks navigation dirty only after a real navigation edit', () => {
+    const workspace = createWorkspace()
+    workspace.project.replaceNavigationRoot(createRoot([
+      { id: 'orders', title: '订单页面', nodeKind: 'page', path: '/orders' },
+    ]))
+    workspace.project.selectNode('orders')
+    const dto = workspace.project.beginNavigationDraft()
+    expect(workspace.project.readDirtyProjection().navigationDirty).toBe(false)
+    dto.node.title = '销售订单'
+    workspace.project.applyNavigationNodeEdit(dto)
+    expect(workspace.project.readDirtyProjection().navigationDirty).toBe(true)
+  })
+
   it('exposes node hierarchy instead of a flat node list', () => {
     const p = createWorkspace().project
     p.replaceNavigationRoot(createRoot([

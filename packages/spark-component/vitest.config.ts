@@ -18,7 +18,6 @@ export default defineConfig({
       '@spark-appworks/spark-utils': resolve(__dirname, '../spark-utils/src/index.ts'),
       '@spark-appworks/spark-utils/*': resolve(__dirname, '../spark-utils/src/*'),
       '@spark-appworks/spark-data': resolve(__dirname, '../spark-data/src/index.ts'),
-      '@spark-appworks/spark-project-model/project': resolve(__dirname, '../spark-project-model/src/project.ts'),
       '@spark-appworks/spark-json-document': resolve(__dirname, '../spark-json-document/src/index.ts'),
       '@spark-appworks/spark-project-model': resolve(__dirname, '../spark-project-model/src/index.ts'),
       '@spark-appworks/spark-ai/agent': resolve(__dirname, '../spark-ai/src/agent/index.ts'),

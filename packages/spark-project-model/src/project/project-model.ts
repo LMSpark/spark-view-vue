@@ -9,6 +9,7 @@ import { ProjectDesign } from './project-design'
 import {
   applyNodeKindPresetToDraft,
   createNavigationNodeDraft,
+  navigationDraftContentKey,
   type NavigationNodeDraft,
   type NavigationNodeDraftApplyResult,
 } from '../navigation/navigation-edit'
@@ -218,10 +219,14 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     if (selected.id !== draft.node.id) {
       throw new Error(`导航编辑节点不匹配: ${draft.node.id} != ${selected.id}`)
     }
+    const beforeKey = navigationDraftContentKey(createNavigationNodeDraft(selected))
     const { node, result } = this.design.applyNavigationNodeEdit(draft)
     this.session.setSelectedNodeId(node.id)
-    this.session.setNavigationDraft(createNavigationNodeDraft(node.toNodeData()))
-    this.session.markNavigationDirty('node')
+    const nextDraft = createNavigationNodeDraft(node.toNodeData())
+    this.session.setNavigationDraft(nextDraft)
+    if (navigationDraftContentKey(nextDraft) !== beforeKey) {
+      this.session.markNavigationDirty('node')
+    }
     this.emitNavigationChanged({ scope: 'node', nodeId: node.id })
     return result
   }

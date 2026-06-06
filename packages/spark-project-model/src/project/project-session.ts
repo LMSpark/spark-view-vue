@@ -41,7 +41,7 @@ export class ProjectSession {
   }
 
   get navigationDirty(): boolean {
-    return this.state.navigationDirty || this.navigationDraftValue !== null
+    return this.state.navigationDirty
   }
 
   setNavigationDraft(draft: NavigationNodeDraft | null): void {

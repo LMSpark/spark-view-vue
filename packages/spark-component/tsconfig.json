@@ -11,7 +11,6 @@
       "@spark-appworks/spark-data": ["../spark-data/src/index.ts"],
       "@spark-appworks/spark-project-model": ["../spark-project-model/src/index.ts"],
       "@spark-appworks/spark-json-document": ["../spark-json-document/src/index.ts"],
-      "@spark-appworks/spark-project-model/project": ["../spark-project-model/src/project.ts"],
       "@spark-appworks/spark-ai": ["../spark-ai/src/index.ts"],
       "@spark-appworks/spark-ai/json": ["../spark-ai/src/json/index.ts"],
       "@spark-appworks/spark-ai/agent": ["../spark-ai/src/agent/index.ts"],

@@ -16,7 +16,6 @@ export default defineConfig({
       { find: /^@spark-appworks\/spark-utils$/, replacement: resolve(__dirname, '../spark-utils/src/index.ts') },
       { find: /^@spark-appworks\/spark-data$/, replacement: resolve(__dirname, '../spark-data/src/index.ts') },
       { find: /^@spark-appworks\/spark-project-model$/, replacement: resolve(__dirname, '../spark-project-model/src/index.ts') },
-      { find: /^@spark-appworks\/spark-project-model\/project$/, replacement: resolve(__dirname, '../spark-project-model/src/project.ts') },
       { find: /^@spark-appworks\/spark-json-document$/, replacement: resolve(__dirname, '../spark-json-document/src/index.ts') },
       { find: /^@spark-appworks\/spark-app$/, replacement: resolve(__dirname, './src/index.ts') },
       { find: /^@spark-appworks\/spark-app\/(.*)$/, replacement: resolve(__dirname, './src/$1') },

@@ -132,7 +132,7 @@ function ensureDefinition(
 }
 
 function attachDefinitions(schema: GeneratedJsonSchema, state: JsonSchemaGenerationState): GeneratedJsonSchema {
-  return state.definitions.attachToRoot(schema) as GeneratedJsonSchema
+  return state.definitions.attachToRoot(schema)
 }
 
 function isSchemaObject(schema: GeneratedJsonSchema): schema is GeneratedJsonSchemaObject {
