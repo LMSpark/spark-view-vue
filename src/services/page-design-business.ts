@@ -12,6 +12,7 @@ import {
 import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
+import pageDesignRuntimeMetadata from './page-design/page-design-module-metadata.runtime.generated.json'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -130,49 +131,12 @@ function resolvePageDesignProject(
 }
 
 function readPageDesignProjectMetadata(): AiModuleMetadataJson {
-  return {
-    schemaVersion: 1,
-    rootApi: {
-      kind: 'project',
-      name: 'Page Design Project',
-      description: '当前 pageDesign 项目模型；通过 openPageDesign(pageId) 进入配置页面节点。',
-      actions: [
-        {
-          name: 'openPageDesign',
-          methodName: 'openPageDesign',
-          description: '按 pageId 获取或实例化配置页面节点。',
-          takesContext: false,
-          paramsSchema: {
-            type: 'object',
-            properties: {
-              pageId: { type: 'string' },
-            },
-            required: ['pageId'],
-            additionalProperties: false,
-          },
-          resultSchema: {
-            type: 'object',
-            properties: {
-              pageId: { type: 'string' },
-            },
-          },
-          usageRules: [
-            'pageId 必须来自输入，不允许从当前活动页兜底。',
-            '进入页面后优先访问 rule、dataSet、script、style 子模型。',
-          ],
-        },
-      ],
-      attributes: [
-        {
-          name: 'projectId',
-          description: '当前项目 ID。',
-          schema: { type: 'string' },
-          readable: true,
-          writable: false,
-        },
-      ],
-    },
+  const modules = (pageDesignRuntimeMetadata as { modules: AiModuleMetadataJson[] }).modules
+  const projectModule = modules.find(module => module.rootApi.kind === 'project')
+  if (projectModule === undefined) {
+    throw new Error('pageDesign runtime metadata missing ProjectModel rootApi.')
   }
+  return projectModule
 }
 
 function collectToolNames(value: unknown): string[] {

@@ -1,0 +1,366 @@
+{
+  "type": 1,
+  "props": [
+    {
+      "name": "ProjectModel",
+      "global": false,
+      "description": "",
+      "tags": [],
+      "required": true,
+      "type": "ProjectModel<ProjectNode>",
+      "schema": "ProjectModel<ProjectNode>"
+    },
+    {
+      "name": "key",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "PropertyKey | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "PropertyKey | undefined",
+        "schema": [
+          "undefined",
+          "string",
+          "number",
+          "symbol"
+        ]
+      }
+    },
+    {
+      "name": "ref",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeRef | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeRef | undefined",
+        "schema": [
+          "undefined",
+          "string",
+          "Ref<any, any>",
+          {
+            "kind": "event",
+            "type": "(ref: Element | ComponentPublicInstance<{}, {}, {}, {}, {}, {}, {}, {}, false, ComponentOptionsBase<any, any, any, any, any, any, any, any, any, {}, {}, string, {}, {}, {}, string, ComponentProvideOptions>, ... 4 more ..., any> | null, refs: Record<...>): void",
+            "schema": []
+          }
+        ]
+      }
+    },
+    {
+      "name": "ref_for",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "boolean | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "boolean | undefined",
+        "schema": [
+          "undefined",
+          "false",
+          "true"
+        ]
+      }
+    },
+    {
+      "name": "ref_key",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "string | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "string | undefined",
+        "schema": [
+          "undefined",
+          "string"
+        ]
+      }
+    },
+    {
+      "name": "onVue:beforeMount",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:mounted",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:beforeUpdate",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>, oldVNode: VNode<RendererNode, RendererElement, { ...; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeUpdateHook[]",
+            "schema": [
+              "VNodeUpdateHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:updated",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeUpdateHook | VNodeUpdateHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>, oldVNode: VNode<RendererNode, RendererElement, { ...; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeUpdateHook[]",
+            "schema": [
+              "VNodeUpdateHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:beforeUnmount",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "onVue:unmounted",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+      "schema": {
+        "kind": "enum",
+        "type": "VNodeMountHook | VNodeMountHook[] | undefined",
+        "schema": [
+          "undefined",
+          {
+            "kind": "event",
+            "type": "(vnode: VNode<RendererNode, RendererElement, { [key: string]: any; }>): void",
+            "schema": [
+              {
+                "kind": "object",
+                "type": "RendererNode",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "RendererElement",
+                "schema": {}
+              },
+              {
+                "kind": "object",
+                "type": "{ [key: string]: any; }",
+                "schema": {}
+              }
+            ]
+          },
+          {
+            "kind": "array",
+            "type": "VNodeMountHook[]",
+            "schema": [
+              "VNodeMountHook"
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "class",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "unknown",
+      "schema": "unknown"
+    },
+    {
+      "name": "style",
+      "global": true,
+      "description": "",
+      "tags": [],
+      "required": false,
+      "type": "unknown",
+      "schema": "unknown"
+    }
+  ],
+  "events": [],
+  "slots": [],
+  "exposed": []
+}

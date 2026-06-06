@@ -13,8 +13,8 @@ const logger = createLogger('module-metadata-cli')
 const root = resolve(import.meta.dirname, '../../..')
 const diagnoseOnly = process.argv.includes('--diagnose-only')
 const trace = process.argv.includes('--trace')
-const extractResults = process.argv.includes('--extract-results')
-const extractResultSchemas = process.argv.includes('--extract-result-schemas')
+const extractResults = process.argv.includes('--extract-results') || !diagnoseOnly
+const extractResultSchemas = process.argv.includes('--extract-result-schemas') || !diagnoseOnly
 
 const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
   'packages/spark-project-model/src/project/project-model.ts',
@@ -25,13 +25,19 @@ const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
 
 const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
 
-const PAGE_DESIGN_MODEL_METADATA_OUT_FILE =
+const PAGE_DESIGN_VCM_CATALOG_OUT_FILE =
   'src/services/page-design/page-design-module-metadata.generated.json'
+const PAGE_DESIGN_API_DIAGNOSTICS_OUT_FILE =
+  'src/services/page-design/page-design-module-metadata.api.generated.json'
+const PAGE_DESIGN_API_RUNTIME_OUT_FILE =
+  'src/services/page-design/page-design-module-metadata.runtime.generated.json'
 
 logger.info(diagnoseOnly ? '🚀 开始诊断 AI 能力模块元数据 ...' : '🚀 开始生成 AI 能力模块元数据 ...')
 const result = generateModuleAbilityMetadata(root, {
   sources: PAGE_DESIGN_MODULE_METADATA_SOURCES,
-  vcmCatalogOutFile: PAGE_DESIGN_MODEL_METADATA_OUT_FILE,
+  vcmCatalogOutFile: PAGE_DESIGN_VCM_CATALOG_OUT_FILE,
+  moduleOutFile: PAGE_DESIGN_API_DIAGNOSTICS_OUT_FILE,
+  moduleRuntimeOutFile: PAGE_DESIGN_API_RUNTIME_OUT_FILE,
   apiRoots: PAGE_DESIGN_MODULE_METADATA_API_ROOTS,
   trace,
   extractResults,
@@ -41,7 +47,9 @@ const result = generateModuleAbilityMetadata(root, {
 if (diagnoseOnly) {
   logger.info(`✅ 已完成元数据提取诊断；未写入 generated JSON。vcmOutput=${result.vcmCatalogOutFile}`)
 } else {
-  logger.info(`✅ ProjectModel module metadata 已写入 ${result.vcmCatalogOutFile}`)
+  logger.info(`✅ VCM catalog 已写入 ${result.vcmCatalogOutFile}`)
+  logger.info(`✅ API diagnostics 已写入 ${result.moduleOutFile}`)
+  logger.info(`✅ API runtime 已写入 ${PAGE_DESIGN_API_RUNTIME_OUT_FILE}`)
 }
 logger.info([
   '📊 metadata diagnostics:',

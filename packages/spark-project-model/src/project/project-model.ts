@@ -52,6 +52,7 @@ export type {
  *
  * @moduleAbility pageDesign.project
  * @moduleKind project
+ * @moduleActionMode explicit
  */
 export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   readonly design: ProjectDesign<TNode>
@@ -119,14 +120,32 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return this.design.findConfigPageByPageId(pageId)
   }
 
+  /**
+   * 按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。
+   *
+   * @moduleMutation config-page read 进入页面四文件编辑面，不直接落盘。
+   * @param pageId 目标配置页 pageId，必须来自输入。
+   */
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }
   closePageDesign(pageId: string): void { this.design.closePageDesign(pageId) }
+
+  /**
+   * 读取策划轴投影：各 page/sub-page 的 description 与 descriptionContext。
+   */
   readPageSummaries(): ProjectPageNodeSummary[] { return this.design.readPageSummaries() }
 
-  /** 策划轴投影：各页面功能描述与上下文，供 DevSystem / AI 读取。 */
+  /**
+   * 策划轴投影别名；与 readPageSummaries 同源。
+   *
+   * @moduleMutation planning read 只读策划事实，不修改模型。
+   */
   readPlanningProjection(): ProjectPageNodeSummary[] { return this.readPageSummaries() }
 
-  /** 更新根模块 childPlacement（项目级 header / sidebar 布局）。 */
+  /**
+   * 更新根模块 childPlacement（项目级 header / sidebar 布局）。
+   *
+   * @vcmIgnore app-list 项目设置专用，不在 pageDesign AI 面暴露。
+   */
   applyProjectLayoutEdit(childPlacement: 'header' | 'sidebar'): NavigationNodeDraftApplyResult {
     const root = this.design.rootNode
     if (!root) throw new Error('导航 root 未加载')
@@ -261,12 +280,24 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.applyNavigationNodeEdit(nextDraft)
   }
 
+  /**
+   * 写入指定配置页四文件文本到内存模型。
+   *
+   * @moduleMutation page-files write 修改内存四文件；落盘由 ProjectWorkspace 编排。
+   */
   writePageFile(command: ProjectPageFileWriteCommand): void {
     const page = this.requirePageDesign(command.pageId)
     page.setFileText(command.fileName, command.text)
     this.emitPageFileChanged(page.pageId, command.fileName)
   }
 
+  /**
+   * 读取指定配置页四文件文本。
+   *
+   * @moduleMutation page-files read 只读内存中的 rule/pagedata/script/style 文本。
+   * @param fileName 四文件名。
+   * @param pageId 可选 pageId；省略时使用当前 activePage。
+   */
   readPageFileText(fileName: PageNodeFileName, pageId?: string): string {
     return this.findPageDesign(pageId)?.getFileText(fileName) ?? ''
   }
@@ -303,6 +334,11 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return this.getActivePage()?.getDataSetTool() ?? null
   }
 
+  /**
+   * 通过 DataSetCrudTool 修改当前 active 页的 pagedata.json 内存模型。
+   *
+   * @moduleMutation pagedata.json write 在 mutator 内修改 DataSet 结构与数据。
+   */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     const page = this.requireActivePageDesign()
     await page.editDataSet(run)
@@ -313,6 +349,11 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     return this.getActivePage()?.getNodeTree() ?? null
   }
 
+  /**
+   * 通过 SparkNodeTree 修改当前 active 页的 rule.json 节点树。
+   *
+   * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
+   */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     const page = this.requireActivePageDesign()
     await page.editNodeTree(run)
@@ -332,6 +373,11 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
     this.emitRuntimeChanged({ pageId })
   }
 
+  /**
+   * 读取承载轴投影：导航树、选中节点与 pageFeatures。
+   *
+   * @moduleMutation navigation read 只读节点树与选中上下文，不修改模型。
+   */
   readNavigationProjection(): ProjectNavigationProjection {
     const navigationRoot = this.design.navigationRoot
     const treeData = navigationRoot.children

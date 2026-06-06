@@ -1,0 +1,2096 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts",
+  "note": "Runtime metadata; diagnostics are emitted in page-design-module-metadata.generated.json.",
+  "modules": [
+    {
+      "schemaVersion": 1,
+      "rootApi": {
+        "className": "ProjectModel",
+        "kind": "project",
+        "name": "ProjectModel",
+        "description": "项目模型根。",
+        "attributes": [
+          {
+            "name": "projectId",
+            "description": "项目唯一标识，与租户内存储锚点一致。",
+            "schema": {
+              "type": "string"
+            },
+            "readable": true,
+            "writable": false
+          },
+          {
+            "name": "navigationRoot",
+            "description": "导航树根 DTO，含子节点树与布局元数据。",
+            "schema": {
+              "type": "object",
+              "properties": {
+                "title": {
+                  "type": "string"
+                },
+                "description": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "version": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "icon": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "context": {
+                  "anyOf": [
+                    {
+                      "type": "string"
+                    },
+                    {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/NavContextItem"
+                      }
+                    },
+                    {
+                      "$ref": "#/$defs/NavContextConfig"
+                    }
+                  ]
+                },
+                "order": {
+                  "type": [
+                    "number"
+                  ]
+                },
+                "hidden": {
+                  "type": [
+                    "boolean"
+                  ]
+                },
+                "disabled": {
+                  "type": [
+                    "boolean"
+                  ]
+                },
+                "dividerAfter": {
+                  "type": [
+                    "boolean"
+                  ]
+                },
+                "permissionMode": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "path": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "linkTarget": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "redirect": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "refId": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "refPath": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "refProjectId": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "refBroken": {
+                  "type": [
+                    "boolean"
+                  ]
+                },
+                "id": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "nodeKind": {
+                  "type": [
+                    "string"
+                  ]
+                },
+                "childPlacement": {
+                  "type": "string",
+                  "enum": [
+                    "header",
+                    "sidebar"
+                  ]
+                },
+                "children": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/ProjectNodeData"
+                  }
+                },
+                "homePath": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "title",
+                "childPlacement",
+                "children"
+              ],
+              "$defs": {
+                "NavContextConfig": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": [
+                        "string",
+                        "array"
+                      ]
+                    },
+                    "placeholder": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "defaultValue": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "paramName": {
+                      "type": [
+                        "string"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "NavContextItem": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title"
+                  ]
+                },
+                "ProjectNodeData": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "version": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "nodeKind": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "childPlacement": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "context": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/NavContextItem"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/NavContextConfig"
+                        }
+                      ]
+                    },
+                    "order": {
+                      "type": [
+                        "number"
+                      ]
+                    },
+                    "hidden": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "disabled": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "dividerAfter": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "permissionMode": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "children": {
+                      "type": [
+                        "array"
+                      ]
+                    },
+                    "path": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "linkTarget": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "redirect": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refPath": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refProjectId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refBroken": {
+                      "type": [
+                        "boolean"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title"
+                  ]
+                }
+              }
+            },
+            "readable": true,
+            "writable": false
+          },
+          {
+            "name": "flatRows",
+            "description": "导航树扁平节点列表，按遍历顺序排列。",
+            "schema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/TNode"
+              },
+              "$defs": {
+                "NavContextConfig": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "anyOf": [
+                        true
+                      ]
+                    },
+                    "placeholder": {
+                      "anyOf": [
+                        true
+                      ]
+                    },
+                    "defaultValue": {
+                      "anyOf": [
+                        true
+                      ]
+                    },
+                    "paramName": {
+                      "anyOf": [
+                        true
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "NavContextItem": {
+                  "type": "object",
+                  "properties": {
+                    "id": true,
+                    "title": true
+                  },
+                  "required": [
+                    "id",
+                    "title"
+                  ]
+                },
+                "ProjectDescriptionContext": {
+                  "type": "object",
+                  "properties": {
+                    "nodeId": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "nodeKind": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "nodeId",
+                    "title",
+                    "nodeKind",
+                    "description"
+                  ]
+                },
+                "ProjectNodeData": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "version": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "nodeKind": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "childPlacement": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "context": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/NavContextItem"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/NavContextConfig"
+                        }
+                      ]
+                    },
+                    "order": {
+                      "type": [
+                        "number"
+                      ]
+                    },
+                    "hidden": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "disabled": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "dividerAfter": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "permissionMode": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "children": {
+                      "type": [
+                        "array"
+                      ]
+                    },
+                    "path": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "linkTarget": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "redirect": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refPath": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refProjectId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refBroken": {
+                      "type": [
+                        "boolean"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title"
+                  ]
+                },
+                "TNode": {
+                  "type": "object",
+                  "properties": {
+                    "#node": {
+                      "$ref": "#/$defs/ProjectNodeData"
+                    },
+                    "#pid": {
+                      "type": "string"
+                    },
+                    "#descriptionContext": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ProjectDescriptionContext"
+                      }
+                    },
+                    "family": {
+                      "type": "string",
+                      "enum": [
+                        "module",
+                        "system-page",
+                        "system-action",
+                        "link",
+                        "ref",
+                        "config-page"
+                      ]
+                    },
+                    "toNodeData": true,
+                    "applyNavigationPatch": true,
+                    "pid": {
+                      "type": "string"
+                    },
+                    "id": {
+                      "type": "string"
+                    },
+                    "name": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "nodeKind": {
+                      "type": "string",
+                      "enum": [
+                        "module",
+                        "system-directory",
+                        "system-page",
+                        "system-action",
+                        "page",
+                        "link",
+                        "sub-page",
+                        "ref"
+                      ]
+                    },
+                    "path": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "dividerAfter": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "childPlacement": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "linkTarget": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "hidden": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "order": {
+                      "type": "number"
+                    },
+                    "refId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refPath": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refProjectId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refBroken": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "context": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/NavContextItem"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/NavContextConfig"
+                        }
+                      ]
+                    },
+                    "permissionMode": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "effectiveDescription": {
+                      "type": "string"
+                    },
+                    "descriptionContext": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ProjectDescriptionContext"
+                      }
+                    },
+                    "rebindNavigationNode": true
+                  },
+                  "required": [
+                    "#node",
+                    "#pid",
+                    "#descriptionContext",
+                    "family",
+                    "toNodeData",
+                    "applyNavigationPatch",
+                    "pid",
+                    "id",
+                    "name",
+                    "title",
+                    "version",
+                    "nodeKind",
+                    "path",
+                    "icon",
+                    "dividerAfter",
+                    "childPlacement",
+                    "linkTarget",
+                    "hidden",
+                    "disabled",
+                    "order",
+                    "refId",
+                    "refPath",
+                    "refProjectId",
+                    "refBroken",
+                    "context",
+                    "permissionMode",
+                    "description",
+                    "effectiveDescription",
+                    "descriptionContext",
+                    "rebindNavigationNode"
+                  ]
+                }
+              }
+            },
+            "readable": true,
+            "writable": false
+          }
+        ],
+        "actions": [
+          {
+            "name": "openPageDesign",
+            "methodName": "openPageDesign",
+            "description": "按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {
+                "pageId": {
+                  "type": "string"
+                }
+              },
+              "required": [
+                "pageId"
+              ]
+            },
+            "takesContext": false,
+            "resultSchema": {
+              "type": "object",
+              "title": "ConfigPageNode"
+            },
+            "resultApis": [
+              {
+                "resultPath": [],
+                "api": {
+                  "className": "ConfigPageNode",
+                  "kind": "config-page",
+                  "name": "ConfigPageNode",
+                  "description": "配置页面节点。\n\n持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。\n四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。",
+                  "attributes": [
+                    {
+                      "name": "pid",
+                      "description": "父节点 ID；根级节点为 ''。",
+                      "schema": {
+                        "type": "string"
+                      },
+                      "readable": true,
+                      "writable": false
+                    },
+                    {
+                      "name": "id",
+                      "description": "节点 ID。",
+                      "schema": {
+                        "type": "string"
+                      },
+                      "readable": true,
+                      "writable": false
+                    },
+                    {
+                      "name": "name",
+                      "description": "节点名称。",
+                      "schema": {
+                        "type": "string"
+                      },
+                      "readable": true,
+                      "writable": false
+                    },
+                    {
+                      "name": "description",
+                      "description": "节点描述。",
+                      "schema": {
+                        "type": "string"
+                      },
+                      "readable": true,
+                      "writable": false
+                    },
+                    {
+                      "name": "pageId",
+                      "description": "配置页唯一 pageId，与四文件存储目录一致。",
+                      "schema": {
+                        "type": "string"
+                      },
+                      "readable": true,
+                      "writable": false
+                    }
+                  ],
+                  "actions": [
+                    {
+                      "name": "setFileText",
+                      "methodName": "setFileText",
+                      "description": "写入四文件文本到内存模型。",
+                      "paramsSchema": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string",
+                            "enum": [
+                              "rule.json",
+                              "pagedata.json",
+                              "script.js",
+                              "style.css"
+                            ]
+                          },
+                          "text": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "text"
+                        ]
+                      },
+                      "takesContext": false,
+                      "usageRules": [],
+                      "failureModes": []
+                    },
+                    {
+                      "name": "editNodeTree",
+                      "methodName": "editNodeTree",
+                      "description": "修改 rule.json 节点树。",
+                      "paramsSchema": {
+                        "type": "object",
+                        "properties": {
+                          "run": true
+                        },
+                        "required": [
+                          "run"
+                        ]
+                      },
+                      "takesContext": false,
+                      "usageRules": [],
+                      "failureModes": []
+                    },
+                    {
+                      "name": "editDataSet",
+                      "methodName": "editDataSet",
+                      "description": "修改 pagedata.json 数据集模型。",
+                      "paramsSchema": {
+                        "type": "object",
+                        "properties": {
+                          "run": true
+                        },
+                        "required": [
+                          "run"
+                        ]
+                      },
+                      "takesContext": false,
+                      "usageRules": [],
+                      "failureModes": []
+                    }
+                  ],
+                  "constructorSignature": {
+                    "description": "Create ConfigPageNode instance.",
+                    "paramsSchema": {
+                      "type": "object",
+                      "properties": {
+                        "options": {
+                          "type": "object",
+                          "properties": {
+                            "node": {
+                              "$ref": "#/$defs/ProjectNodeData"
+                            },
+                            "pid": {
+                              "type": "string"
+                            },
+                            "descriptionContext": {
+                              "type": [
+                                "array"
+                              ]
+                            },
+                            "pageId": {
+                              "type": [
+                                "string"
+                              ]
+                            }
+                          },
+                          "required": [
+                            "node",
+                            "pid"
+                          ],
+                          "$defs": {
+                            "NavContextConfig": {
+                              "type": "object",
+                              "properties": {
+                                "source": {
+                                  "type": [
+                                    "string",
+                                    "array"
+                                  ]
+                                },
+                                "placeholder": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "defaultValue": {
+                                  "type": [
+                                    "string",
+                                    "number"
+                                  ]
+                                },
+                                "paramName": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "source"
+                              ]
+                            },
+                            "NavContextItem": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": [
+                                    "string",
+                                    "number"
+                                  ]
+                                },
+                                "title": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "title"
+                              ]
+                            },
+                            "ProjectDescriptionContext": {
+                              "type": "object",
+                              "properties": {
+                                "nodeId": {
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "type": "string"
+                                },
+                                "nodeKind": {
+                                  "type": "string"
+                                },
+                                "description": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "nodeId",
+                                "title",
+                                "nodeKind",
+                                "description"
+                              ]
+                            },
+                            "ProjectNodeData": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string"
+                                },
+                                "title": {
+                                  "type": "string"
+                                },
+                                "description": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "version": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "icon": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "nodeKind": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "childPlacement": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "context": {
+                                  "anyOf": [
+                                    {
+                                      "type": "string"
+                                    },
+                                    {
+                                      "type": "array",
+                                      "items": {
+                                        "$ref": "#/$defs/NavContextItem"
+                                      }
+                                    },
+                                    {
+                                      "$ref": "#/$defs/NavContextConfig"
+                                    }
+                                  ]
+                                },
+                                "order": {
+                                  "type": [
+                                    "number"
+                                  ]
+                                },
+                                "hidden": {
+                                  "type": [
+                                    "boolean"
+                                  ]
+                                },
+                                "disabled": {
+                                  "type": [
+                                    "boolean"
+                                  ]
+                                },
+                                "dividerAfter": {
+                                  "type": [
+                                    "boolean"
+                                  ]
+                                },
+                                "permissionMode": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "children": {
+                                  "type": [
+                                    "array"
+                                  ]
+                                },
+                                "path": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "linkTarget": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "redirect": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "refId": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "refPath": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "refProjectId": {
+                                  "type": [
+                                    "string"
+                                  ]
+                                },
+                                "refBroken": {
+                                  "type": [
+                                    "boolean"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "title"
+                              ]
+                            }
+                          }
+                        }
+                      },
+                      "required": [
+                        "options"
+                      ]
+                    }
+                  }
+                }
+              }
+            ],
+            "usageRules": [],
+            "failureModes": []
+          },
+          {
+            "name": "readPlanningProjection",
+            "methodName": "readPlanningProjection",
+            "description": "策划轴投影别名；与 readPageSummaries 同源。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            },
+            "takesContext": false,
+            "resultSchema": {
+              "type": "array",
+              "items": {
+                "$ref": "#/$defs/ProjectPageNodeSummary"
+              },
+              "$defs": {
+                "ProjectDescriptionContext": {
+                  "type": "object",
+                  "properties": {
+                    "nodeId": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "nodeKind": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "nodeId",
+                    "title",
+                    "nodeKind",
+                    "description"
+                  ]
+                },
+                "ProjectPageNodeSummary": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "nodeId": {
+                      "type": "string"
+                    },
+                    "nodeKind": {
+                      "type": "string",
+                      "enum": [
+                        "module",
+                        "system-directory",
+                        "system-page",
+                        "system-action",
+                        "page",
+                        "link",
+                        "sub-page",
+                        "ref"
+                      ]
+                    },
+                    "designSurface": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "system-page",
+                        "link",
+                        "ref",
+                        "config-files"
+                      ]
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "descriptionContext": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ProjectDescriptionContext"
+                      }
+                    },
+                    "effectiveDescription": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "pageId",
+                    "path",
+                    "title",
+                    "nodeId",
+                    "nodeKind",
+                    "designSurface",
+                    "description",
+                    "descriptionContext",
+                    "effectiveDescription"
+                  ]
+                }
+              }
+            },
+            "resultApis": [],
+            "usageRules": [],
+            "failureModes": []
+          },
+          {
+            "name": "writePageFile",
+            "methodName": "writePageFile",
+            "description": "写入指定配置页四文件文本到内存模型。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {
+                "command": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "fileName": {
+                      "type": "string",
+                      "enum": [
+                        "rule.json",
+                        "pagedata.json",
+                        "script.js",
+                        "style.css"
+                      ]
+                    },
+                    "text": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "fileName",
+                    "text"
+                  ]
+                }
+              },
+              "required": [
+                "command"
+              ]
+            },
+            "takesContext": false,
+            "usageRules": [],
+            "failureModes": []
+          },
+          {
+            "name": "readPageFileText",
+            "methodName": "readPageFileText",
+            "description": "读取指定配置页四文件文本。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {
+                "fileName": {
+                  "type": "string",
+                  "enum": [
+                    "rule.json",
+                    "pagedata.json",
+                    "script.js",
+                    "style.css"
+                  ]
+                },
+                "pageId": {
+                  "type": [
+                    "string"
+                  ]
+                }
+              },
+              "required": [
+                "fileName"
+              ]
+            },
+            "takesContext": false,
+            "resultSchema": {
+              "type": "string"
+            },
+            "resultApis": [],
+            "usageRules": [],
+            "failureModes": []
+          },
+          {
+            "name": "editDataSet",
+            "methodName": "editDataSet",
+            "description": "通过 DataSetCrudTool 修改当前 active 页的 pagedata.json 内存模型。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {
+                "run": true
+              },
+              "required": [
+                "run"
+              ]
+            },
+            "takesContext": false,
+            "usageRules": [],
+            "failureModes": []
+          },
+          {
+            "name": "editNodeTree",
+            "methodName": "editNodeTree",
+            "description": "通过 SparkNodeTree 修改当前 active 页的 rule.json 节点树。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {
+                "run": true
+              },
+              "required": [
+                "run"
+              ]
+            },
+            "takesContext": false,
+            "usageRules": [],
+            "failureModes": []
+          },
+          {
+            "name": "readNavigationProjection",
+            "methodName": "readNavigationProjection",
+            "description": "读取承载轴投影：导航树、选中节点与 pageFeatures。",
+            "paramsSchema": {
+              "type": "object",
+              "properties": {},
+              "required": []
+            },
+            "takesContext": false,
+            "resultSchema": {
+              "type": "object",
+              "properties": {
+                "navigationRoot": {
+                  "$ref": "#/$defs/ProjectModelData"
+                },
+                "treeData": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/ProjectNodeData"
+                  }
+                },
+                "selectedNode": {
+                  "anyOf": [
+                    {
+                      "type": "null",
+                      "enum": [
+                        null
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/ProjectNodeData"
+                    }
+                  ]
+                },
+                "selectedNodeId": {
+                  "type": [
+                    "null",
+                    "string"
+                  ]
+                },
+                "navigationLocation": {
+                  "anyOf": [
+                    {
+                      "type": "null",
+                      "enum": [
+                        null
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/ProjectNodeLocation"
+                    }
+                  ]
+                },
+                "navigationDraft": {
+                  "anyOf": [
+                    {
+                      "type": "null",
+                      "enum": [
+                        null
+                      ]
+                    },
+                    {
+                      "$ref": "#/$defs/NavigationNodeDraft"
+                    }
+                  ]
+                },
+                "pageFeatures": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/$defs/ProjectPageNodeSummary"
+                  }
+                }
+              },
+              "required": [
+                "navigationRoot",
+                "treeData",
+                "selectedNode",
+                "selectedNodeId",
+                "navigationLocation",
+                "navigationDraft",
+                "pageFeatures"
+              ],
+              "$defs": {
+                "NavContextConfig": {
+                  "type": "object",
+                  "properties": {
+                    "source": {
+                      "type": [
+                        "string",
+                        "array"
+                      ]
+                    },
+                    "placeholder": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "defaultValue": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "paramName": {
+                      "type": [
+                        "string"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "source"
+                  ]
+                },
+                "NavContextItem": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": [
+                        "string",
+                        "number"
+                      ]
+                    },
+                    "title": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title"
+                  ]
+                },
+                "NavigationContextEditConfigDto": {
+                  "type": "object",
+                  "properties": {
+                    "placeholder": {
+                      "type": "string"
+                    },
+                    "defaultValue": {
+                      "type": "string"
+                    },
+                    "paramName": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "placeholder",
+                    "defaultValue",
+                    "paramName"
+                  ]
+                },
+                "NavigationContextEditDto": {
+                  "type": "object",
+                  "properties": {
+                    "hasContext": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "title": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "title"
+                        ]
+                      }
+                    },
+                    "config": {
+                      "$ref": "#/$defs/NavigationContextEditConfigDto"
+                    }
+                  },
+                  "required": [
+                    "hasContext",
+                    "items",
+                    "config"
+                  ]
+                },
+                "NavigationNodeDraft": {
+                  "type": "object",
+                  "properties": {
+                    "node": {
+                      "$ref": "#/$defs/NavigationNodeDraftNode"
+                    },
+                    "context": {
+                      "$ref": "#/$defs/NavigationContextEditDto"
+                    }
+                  },
+                  "required": [
+                    "node",
+                    "context"
+                  ]
+                },
+                "NavigationNodeDraftNode": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "type": "string"
+                    },
+                    "nodeKind": {
+                      "type": "string",
+                      "enum": [
+                        "module",
+                        "system-directory",
+                        "system-page",
+                        "system-action",
+                        "page",
+                        "link",
+                        "sub-page",
+                        "ref"
+                      ]
+                    },
+                    "dividerAfter": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "linkTarget": {
+                      "type": "string",
+                      "enum": [
+                        "iframe",
+                        "new-tab",
+                        "self"
+                      ]
+                    },
+                    "childPlacement": {
+                      "type": "string"
+                    },
+                    "order": {
+                      "type": "number"
+                    },
+                    "hidden": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "disabled": {
+                      "type": "boolean",
+                      "enum": [
+                        false,
+                        true
+                      ]
+                    },
+                    "refId": {
+                      "type": "string"
+                    },
+                    "permissionMode": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "masked",
+                        "invisible"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title",
+                    "icon",
+                    "nodeKind",
+                    "dividerAfter",
+                    "description",
+                    "path",
+                    "linkTarget",
+                    "childPlacement",
+                    "order",
+                    "hidden",
+                    "disabled",
+                    "refId",
+                    "permissionMode"
+                  ]
+                },
+                "ProjectDescriptionContext": {
+                  "type": "object",
+                  "properties": {
+                    "nodeId": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "nodeKind": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "nodeId",
+                    "title",
+                    "nodeKind",
+                    "description"
+                  ]
+                },
+                "ProjectModelData": {
+                  "type": "object",
+                  "properties": {
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "version": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "context": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/NavContextItem"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/NavContextConfig"
+                        }
+                      ]
+                    },
+                    "order": {
+                      "type": [
+                        "number"
+                      ]
+                    },
+                    "hidden": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "disabled": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "dividerAfter": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "permissionMode": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "path": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "linkTarget": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "redirect": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refPath": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refProjectId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refBroken": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "id": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "nodeKind": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "childPlacement": {
+                      "type": "string",
+                      "enum": [
+                        "header",
+                        "sidebar"
+                      ]
+                    },
+                    "children": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ProjectNodeData"
+                      }
+                    },
+                    "homePath": {
+                      "type": [
+                        "string"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "title",
+                    "childPlacement",
+                    "children"
+                  ]
+                },
+                "ProjectNodeData": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "description": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "version": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "nodeKind": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "childPlacement": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "context": {
+                      "anyOf": [
+                        {
+                          "type": "string"
+                        },
+                        {
+                          "type": "array",
+                          "items": {
+                            "$ref": "#/$defs/NavContextItem"
+                          }
+                        },
+                        {
+                          "$ref": "#/$defs/NavContextConfig"
+                        }
+                      ]
+                    },
+                    "order": {
+                      "type": [
+                        "number"
+                      ]
+                    },
+                    "hidden": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "disabled": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "dividerAfter": {
+                      "type": [
+                        "boolean"
+                      ]
+                    },
+                    "permissionMode": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "children": {
+                      "type": [
+                        "array"
+                      ]
+                    },
+                    "path": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "linkTarget": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "redirect": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refPath": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refProjectId": {
+                      "type": [
+                        "string"
+                      ]
+                    },
+                    "refBroken": {
+                      "type": [
+                        "boolean"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "title"
+                  ]
+                },
+                "ProjectNodeLocation": {
+                  "type": "object",
+                  "properties": {
+                    "node": {
+                      "$ref": "#/$defs/ProjectNodeData"
+                    },
+                    "parent": {
+                      "anyOf": [
+                        {
+                          "type": "null",
+                          "enum": [
+                            null
+                          ]
+                        },
+                        {
+                          "$ref": "#/$defs/ProjectNodeData"
+                        }
+                      ]
+                    },
+                    "parentId": {
+                      "type": [
+                        "null",
+                        "string"
+                      ]
+                    },
+                    "index": {
+                      "type": "number"
+                    }
+                  },
+                  "required": [
+                    "node",
+                    "parent",
+                    "parentId",
+                    "index"
+                  ]
+                },
+                "ProjectPageNodeSummary": {
+                  "type": "object",
+                  "properties": {
+                    "pageId": {
+                      "type": "string"
+                    },
+                    "path": {
+                      "type": "string"
+                    },
+                    "title": {
+                      "type": "string"
+                    },
+                    "nodeId": {
+                      "type": "string"
+                    },
+                    "nodeKind": {
+                      "type": "string",
+                      "enum": [
+                        "module",
+                        "system-directory",
+                        "system-page",
+                        "system-action",
+                        "page",
+                        "link",
+                        "sub-page",
+                        "ref"
+                      ]
+                    },
+                    "designSurface": {
+                      "type": "string",
+                      "enum": [
+                        "none",
+                        "system-page",
+                        "link",
+                        "ref",
+                        "config-files"
+                      ]
+                    },
+                    "description": {
+                      "type": "string"
+                    },
+                    "descriptionContext": {
+                      "type": "array",
+                      "items": {
+                        "$ref": "#/$defs/ProjectDescriptionContext"
+                      }
+                    },
+                    "effectiveDescription": {
+                      "type": "string"
+                    },
+                    "icon": {
+                      "type": [
+                        "string"
+                      ]
+                    }
+                  },
+                  "required": [
+                    "pageId",
+                    "path",
+                    "title",
+                    "nodeId",
+                    "nodeKind",
+                    "designSurface",
+                    "description",
+                    "descriptionContext",
+                    "effectiveDescription"
+                  ]
+                }
+              }
+            },
+            "resultApis": [],
+            "usageRules": [],
+            "failureModes": []
+          }
+        ],
+        "constructorSignature": {
+          "description": "Create ProjectModel instance.",
+          "paramsSchema": {
+            "type": "object",
+            "properties": {
+              "options": {
+                "type": "object",
+                "properties": {
+                  "projectId": {
+                    "type": "string"
+                  },
+                  "project": {
+                    "anyOf": [
+                      {
+                        "$ref": "#/$defs/ProjectInfoInput"
+                      }
+                    ]
+                  }
+                },
+                "required": [
+                  "projectId"
+                ],
+                "$defs": {
+                  "ProjectInfoInput": {
+                    "type": "object",
+                    "properties": {
+                      "description": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "icon": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "order": {
+                        "type": [
+                          "number"
+                        ]
+                      },
+                      "tenantId": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "name": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "projectType": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "homeNodeId": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "createdAt": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "updatedAt": {
+                        "type": [
+                          "string"
+                        ]
+                      },
+                      "projectId": {
+                        "type": [
+                          "string"
+                        ]
+                      }
+                    },
+                    "required": []
+                  }
+                }
+              }
+            },
+            "required": [
+              "options"
+            ]
+          }
+        }
+      }
+    }
+  ]
+}

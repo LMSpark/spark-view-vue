@@ -53,12 +53,14 @@ type ConfigPageFileModel = {
  *
  * @moduleKind config-page
  * @moduleAbility pageDesign.configPage
+ * @moduleActionMode explicit
  */
 export class ConfigPageNode extends ProjectNode {
   readonly rule: PageRuleFile
   readonly dataSet: PageDataSetFile
   readonly style: PageTextFile
   readonly script: PageTextFile
+  /** 配置页唯一 pageId，与四文件存储目录一致。 */
   readonly pageId: string
   private readonly files: Record<PageNodeFileName, ConfigPageFileModel>
   private _isLoaded = false
@@ -139,6 +141,11 @@ export class ConfigPageNode extends ProjectNode {
     return this.files[name].getText()
   }
 
+  /**
+   * 写入四文件文本到内存模型。
+   *
+   * @moduleMutation page-files write 修改内存四文件文本，不直接落盘。
+   */
   setFileText(name: PageNodeFileName, text: string): void {
     switch (name) {
       case 'rule.json':
@@ -200,6 +207,11 @@ export class ConfigPageNode extends ProjectNode {
     return this.rule.getTree()
   }
 
+  /**
+   * 修改 rule.json 节点树。
+   *
+   * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
+   */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)
   }
@@ -208,6 +220,11 @@ export class ConfigPageNode extends ProjectNode {
     return this.dataSet.getTool()
   }
 
+  /**
+   * 修改 pagedata.json 数据集模型。
+   *
+   * @moduleMutation pagedata.json write 在 mutator 内通过 DataSetCrudTool 修改 DataSet。
+   */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)
   }

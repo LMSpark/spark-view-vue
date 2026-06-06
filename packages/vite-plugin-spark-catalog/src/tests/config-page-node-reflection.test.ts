@@ -36,7 +36,15 @@ describe('page-design VCM metadata reflection', () => {
     expect(result.moduleMetadata).toHaveLength(1)
     const projectApi = result.moduleMetadata[0]?.rootApi
     expect(projectApi?.kind).toBe('project')
-    expect(projectApi?.actions.map(action => action.name)).toEqual([])
+    expect(projectApi?.actions.map(action => action.name)).toEqual([
+      'openPageDesign',
+      'readPlanningProjection',
+      'writePageFile',
+      'readPageFileText',
+      'editDataSet',
+      'editNodeTree',
+      'readNavigationProjection',
+    ])
     expect(projectApi?.attributes?.map(attribute => attribute.name)).toEqual([
       'projectId',
       'navigationRoot',
@@ -45,16 +53,11 @@ describe('page-design VCM metadata reflection', () => {
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'nodes')).toBeUndefined()
     expect(result.diagnostics).toMatchObject({
       moduleCount: 1,
-      resultApiCount: 0,
-      referencedApiKinds: [],
+      resultApiCount: 1,
+      referencedApiKinds: ['config-page'],
       emptySchemaNodeCount: 0,
     })
-    expect(result.diagnostics.findings).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        rule: 'module-result-apis-empty',
-        target: 'project',
-      }),
-    ]))
+    expect(result.diagnostics.findings).toEqual([])
   })
 
   it('writes ProjectModel through the native Vue metadata envelope', { timeout: 30_000 }, () => {
