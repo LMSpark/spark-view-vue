@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-06-05T23:53:15.392Z",
-  "componentCount": 106,
+  "buildTime": "2026-06-06T02:46:19.438Z",
+  "componentCount": 107,
   "components": {
     "about": {
       "type": "about",
@@ -25,6 +25,51 @@
       "props": [],
       "emits": [],
       "source": "vcm+meta"
+    },
+    "app-project-settings-dialog": {
+      "type": "app-project-settings-dialog",
+      "filePath": "src/views/tenant/AppProjectSettingsDialog.vue",
+      "category": "feature",
+      "description": "SPARK 视图组件，可在注册表中通过 type=\"app-project-settings-dialog\" 引用。 配置入口：type=\"app-project-settings-dialog\"，category=feature（功能组件）。 绑定语义：valueType=boolean。 必填 props：tenantId, projectId, projectName, modelValue。 关键 props：tenantId, projectId, projectName, modelValue。 主要事件：update:modelValue, saved。",
+      "props": [
+        {
+          "name": "tenantId",
+          "type": "string",
+          "required": true,
+          "description": "tenantId prop (string); 用于配置该组件的 tenantId 行为或展示。"
+        },
+        {
+          "name": "projectId",
+          "type": "string",
+          "required": true,
+          "description": "projectId prop (string); 用于配置该组件的 projectId 行为或展示。"
+        },
+        {
+          "name": "projectName",
+          "type": "string",
+          "required": true,
+          "description": "projectName prop (string); 用于配置该组件的 projectName 行为或展示。"
+        },
+        {
+          "name": "modelValue",
+          "type": "boolean",
+          "required": true,
+          "description": "Bound model value; 由 v-model 同步的当前值。"
+        }
+      ],
+      "emits": [
+        {
+          "name": "update:modelValue",
+          "type": "[value: boolean]",
+          "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        },
+        {
+          "name": "saved",
+          "type": "[]",
+          "description": "Emitted when saved occurs; 用于通知父级处理该事件。"
+        }
+      ],
+      "source": "vcm"
     },
     "cache-manager": {
       "type": "cache-manager",
@@ -4637,6 +4682,12 @@
       "description": "部门选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择部门。 配置入口：type=\"r-dept-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
+          "name": "modelValue",
+          "type": "string | number | boolean | unknown[]",
+          "required": false,
+          "description": "直接传入的值"
+        },
+        {
           "name": "label",
           "type": "string",
           "required": false,
@@ -4654,12 +4705,6 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
-        },
-        {
-          "name": "modelValue",
-          "type": "string | number | boolean | unknown[]",
-          "required": false,
-          "description": "直接传入的值"
         },
         {
           "name": "name",
@@ -8557,6 +8602,12 @@
       "description": "产品选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择产品。 配置入口：type=\"r-product-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
+          "name": "modelValue",
+          "type": "string | number | boolean | unknown[]",
+          "required": false,
+          "description": "直接传入的值"
+        },
+        {
           "name": "label",
           "type": "string",
           "required": false,
@@ -8574,12 +8625,6 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
-        },
-        {
-          "name": "modelValue",
-          "type": "string | number | boolean | unknown[]",
-          "required": false,
-          "description": "直接传入的值"
         },
         {
           "name": "name",
@@ -9299,7 +9344,7 @@
       "type": "r-segmented",
       "filePath": "packages/spark-component/src/components/fields/data-components/FieldSegmented.vue",
       "category": "field",
-      "description": "分段选择器字段，绑定 string/number 值。 配置入口：type=\"r-segmented\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：change, update:modelValue。",
+      "description": "分段选择器字段，绑定 string/number 值。 配置入口：type=\"r-segmented\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=string。 关键 props：field, value, modelValue, options, optionDataViewKey, label。 主要事件：update:modelValue, change。",
       "props": [
         {
           "name": "permissionDeniedMode",
@@ -9576,14 +9621,14 @@
       ],
       "emits": [
         {
-          "name": "change",
-          "type": "[value: string | number]",
-          "description": "Segmented value changed; 用户切换分段选项。"
-        },
-        {
           "name": "update:modelValue",
           "type": "[value: string | number]",
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
+        },
+        {
+          "name": "change",
+          "type": "[value: string | number]",
+          "description": "Segmented value changed; 用户切换分段选项。"
         }
       ],
       "source": "vcm+meta"
@@ -12933,6 +12978,12 @@
       "description": "用户选择器字段，基于实体选择器预设工厂（createPickerPreset），弹窗选择用户。 配置入口：type=\"r-user-picker\"，category=field（字段组件）。 绑定语义：通过 field 绑定行字段，支持 options/optionDataViewKey 选项数据，bindingDelegate=form-element，valueType=boolean。 关键 props：field, modelValue, options, optionDataViewKey, label, placeholder。 主要事件：update:modelValue。",
       "props": [
         {
+          "name": "modelValue",
+          "type": "string | number | boolean | unknown[]",
+          "required": false,
+          "description": "直接传入的值"
+        },
+        {
           "name": "label",
           "type": "string",
           "required": false,
@@ -12950,12 +13001,6 @@
           "type": "string",
           "required": false,
           "description": "字段绑定名"
-        },
-        {
-          "name": "modelValue",
-          "type": "string | number | boolean | unknown[]",
-          "required": false,
-          "description": "直接传入的值"
         },
         {
           "name": "name",
