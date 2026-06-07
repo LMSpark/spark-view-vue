@@ -1,6 +1,10 @@
 import { describe, expect, it, vi } from 'vitest'
 
-import { createAiApiScriptContext, executeAiApiAction } from '../agent/business/ai-api-script-context'
+import {
+  createAiApiScriptContext,
+  executeAiApiAction,
+  executeAiNativeScript,
+} from '../agent/native-runtime'
 import { paramsSchema, type AiJsonParams } from '../json'
 import type { AiApiObjectMetadata } from '../modules/metadata'
 
@@ -180,6 +184,110 @@ describe('executeAiApiAction', () => {
     )
     expect(result.ok).toBe(false)
     expect(editDataSet).not.toHaveBeenCalled()
+  })
+})
+
+describe('executeAiNativeScript', () => {
+  it('runs script directly from VCM metadata without AiAgentHost', async () => {
+    const createTable = vi.fn()
+    const editDataSet = vi.fn(async (run: (tool: { createTable: typeof createTable }) => void) => {
+      run({ createTable })
+    })
+    const rawPage = {
+      editDataSet,
+      getFileText: vi.fn((name: string) => name === 'script.js' ? 'export default {}' : '{}'),
+    }
+    const project = { openPageDesign: vi.fn(() => rawPage) }
+
+    const result = await executeAiNativeScript({
+      instance: project,
+      metadata: { schemaVersion: 1, rootApi: projectApi },
+      script: [
+        'const page = await this.openPageDesign({ pageId: "orders-page" })',
+        'await page.editDataSet(async (ds) => {',
+        '  ds.createTable({ tableName: "orders", columns: [] })',
+        '})',
+        'return { script: page.getFileText("script.js") }',
+      ].join('\n'),
+    })
+
+    expect(result.ok).toBe(true)
+    expect(project.openPageDesign).toHaveBeenCalledWith('orders-page')
+    expect(createTable).toHaveBeenCalledWith({
+      tableName: 'orders',
+      columns: [],
+    })
+    expect(result.data).toEqual({ script: 'export default {}' })
+  })
+
+  it('uses generated schemaDefs while validating nested native API calls', async () => {
+    const metadataWithSchemaRef = {
+      schemaVersion: 1,
+      rootApi: {
+        ...projectApi,
+        actions: [{
+          ...projectApi.actions[0]!,
+          resultApis: [{
+            resultPath: [],
+            api: {
+              ...configPageApi,
+              actions: [{
+                ...configPageApi.actions[2]!,
+                resultApis: [{
+                  resultPath: [],
+                  api: {
+                    kind: 'dataset',
+                    name: 'DataSet',
+                    description: 'dataset',
+                    actions: [{
+                      name: 'createTable',
+                      methodName: 'createTable',
+                      description: 'create table',
+                      paramsSchema: paramsSchema({
+                        options: { $ref: '#/$defs/TableOptions' },
+                      }, ['options']),
+                      takesContext: false,
+                    }],
+                  },
+                }],
+              }],
+            },
+          }],
+        }],
+      },
+    } as const
+    const createTable = vi.fn()
+    const editDataSet = vi.fn(async (run: (tool: { createTable: typeof createTable }) => void) => {
+      run({ createTable })
+    })
+    const project = { openPageDesign: vi.fn(() => ({ editDataSet })) }
+
+    const result = await executeAiNativeScript({
+      instance: project,
+      metadata: metadataWithSchemaRef,
+      schemaDefs: {
+        TableOptions: {
+          type: 'object',
+          properties: {
+            tableName: { type: 'string' },
+            columns: { type: 'array' },
+          },
+          required: ['tableName', 'columns'],
+          additionalProperties: false,
+        },
+      },
+      script: [
+        'const page = await this.openPageDesign({ pageId: "orders-page" })',
+        'await page.editDataSet(async (ds) => ds.createTable({ tableName: "orders", columns: [] }))',
+        'return { ok: true }',
+      ].join('\n'),
+    })
+
+    expect(result.ok).toBe(true)
+    expect(createTable).toHaveBeenCalledWith({
+      tableName: 'orders',
+      columns: [],
+    })
   })
 })
 

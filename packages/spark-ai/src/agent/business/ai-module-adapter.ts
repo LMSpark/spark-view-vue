@@ -38,7 +38,7 @@ import type { AiAgentHost } from './ai-host'
 import type { AiAgentInputContract } from './business-task'
 import { AiAgentRegistration, type AiAgentRegistrationOptions } from './registration-types'
 import { AiAgentRuntimeContext } from './scope-types'
-import { createAiApiScriptContext, executeAiApiAction } from './ai-api-script-context'
+import { createAiApiScriptContext, executeAiApiAction } from '../native-runtime/native-script-context'
 
 type AiModuleAdapterConstructor<T> = new (...args: never[]) => T
 
@@ -183,7 +183,7 @@ export class AiModuleAdapter {
       find: (ctx, _childKind, query) => AiModuleResult.ok(
         filterRootInstanceRefs(createRootInstanceRefs(resolveInstance(ctx), api, ctx), query),
       ),
-      scriptContext: ctx => createAiApiScriptContext(resolveInstance(ctx), api, ctx),
+      scriptContext: ctx => createAiApiScriptContext(resolveInstance(ctx), api, ctx, schemaValidateOptions),
       runner: async (ctx, functionName, args) => {
         const instance = resolveInstance(ctx)
         const action = api.actions.find(candidate => candidate.name === functionName)

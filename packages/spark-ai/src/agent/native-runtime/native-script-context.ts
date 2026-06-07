@@ -11,6 +11,7 @@ type ApiProxyState = Readonly<{
   value: Promise<unknown>
   api: AiApiObjectMetadata
   resolved: ResolvedValue
+  validateOptions: AiJsonSchemaValidateOptions
 }>
 
 type ResolvedValue = {
@@ -22,8 +23,12 @@ export function createAiApiScriptContext(
   instance: unknown,
   api: AiApiObjectMetadata,
   ctx: AiModulePathContext,
+  validateOptions: AiJsonSchemaValidateOptions = {},
 ): Readonly<Record<string, unknown>> {
-  const proxy = createApiProxy(createApiProxyState(Promise.resolve(instance), api), ctx) as Readonly<Record<string, unknown>>
+  const proxy = createApiProxy(
+    createApiProxyState(Promise.resolve(instance), api, validateOptions),
+    ctx,
+  ) as Readonly<Record<string, unknown>>
   const context: Record<string, unknown> = {}
   for (const action of api.actions) {
     context[action.name] = (...args: readonly unknown[]) => {
@@ -96,8 +101,9 @@ async function wrapAsyncApiActionValue(
   action: AiApiActionMetadata,
   args: AiJsonParams,
   ctx: AiModulePathContext,
+  options: AiJsonSchemaValidateOptions,
 ): Promise<unknown> {
-  return unwrapActionResult(action.name, await executeAiApiAction(target, action, args, ctx))
+  return unwrapActionResult(action.name, await executeAiApiAction(target, action, args, ctx, options))
 }
 
 function wrapRawActionResult(raw: unknown): AiModuleResult<unknown> {
@@ -124,13 +130,17 @@ function createApiProxy(state: ApiProxyState, ctx: AiModulePathContext): unknown
   return createApiSurface(state, ctx, { awaitable: true })
 }
 
-function createApiProxyState(value: Promise<unknown>, api: AiApiObjectMetadata): ApiProxyState {
+function createApiProxyState(
+  value: Promise<unknown>,
+  api: AiApiObjectMetadata,
+  validateOptions: AiJsonSchemaValidateOptions,
+): ApiProxyState {
   const resolved: ResolvedValue = { settled: false }
   void value.then(target => {
     resolved.settled = true
     resolved.value = target
   })
-  return { value, api, resolved }
+  return { value, api, resolved, validateOptions }
 }
 
 function createApiSurface(
@@ -142,18 +152,18 @@ function createApiSurface(
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => state.value.then(
-          target => onFulfilled?.(createResolvedApiSurface(target, state.api, ctx, { awaitable: false })),
+          target => onFulfilled?.(createResolvedApiSurface(target, state.api, ctx, { awaitable: false }, state.validateOptions)),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => state.value.then(
-          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }),
+          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }, state.validateOptions),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => state.value.then(
-          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }),
+          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }, state.validateOptions),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -172,9 +182,11 @@ function createApiSurface(
                 action,
                 normalizedArgs,
                 ctx,
+                state.validateOptions,
               ),
               action.resultApis ?? [],
               ctx,
+              state.validateOptions,
             )
           }
           return wrapResultApis(
@@ -183,9 +195,11 @@ function createApiSurface(
               action,
               normalizedArgs,
               ctx,
+              state.validateOptions,
             )),
             action.resultApis ?? [],
             ctx,
+            state.validateOptions,
           )
         }
       }
@@ -195,13 +209,14 @@ function createApiSurface(
         const propertyValue = readJsonProperty(state.resolved.value, property)
         return propertyApi === undefined
           ? propertyValue
-          : createResolvedApiSurface(propertyValue, propertyApi, ctx, options)
+          : createResolvedApiSurface(propertyValue, propertyApi, ctx, options, state.validateOptions)
       }
 
       return createApiSurface(
         createApiProxyState(
           state.value.then(target => readJsonProperty(target, property)),
           propertyApi ?? state.api,
+          state.validateOptions,
         ),
         ctx,
         options,
@@ -215,23 +230,24 @@ function createResolvedApiSurface(
   api: AiApiObjectMetadata,
   ctx: AiModulePathContext,
   options: ApiProxyOptions,
+  validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   return new Proxy({}, {
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(target).then(
-          () => onFulfilled?.(createResolvedApiSurface(target, api, ctx, { awaitable: false })),
+          () => onFulfilled?.(createResolvedApiSurface(target, api, ctx, { awaitable: false }, validateOptions)),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(
-          createResolvedApiSurface(target, api, ctx, { awaitable: false }),
+          createResolvedApiSurface(target, api, ctx, { awaitable: false }, validateOptions),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => Promise.resolve(
-          createResolvedApiSurface(target, api, ctx, { awaitable: false }),
+          createResolvedApiSurface(target, api, ctx, { awaitable: false }, validateOptions),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -247,16 +263,18 @@ function createResolvedApiSurface(
             action,
             normalizeScriptActionArgList(action, args),
             ctx,
+            validateOptions,
           ),
           action.resultApis ?? [],
           ctx,
+          validateOptions,
         )
       }
 
       const propertyValue = readJsonProperty(target, property)
       const propertyApi = resolvePropertyApi(api, property)
       if (propertyApi !== undefined) {
-        return createResolvedApiSurface(propertyValue, propertyApi, ctx, options)
+        return createResolvedApiSurface(propertyValue, propertyApi, ctx, options, validateOptions)
       }
       return propertyValue
     },
@@ -268,8 +286,9 @@ function callApiActionInScriptValue(
   action: AiApiActionMetadata,
   args: AiJsonParams,
   ctx: AiModulePathContext,
+  options: AiJsonSchemaValidateOptions,
 ): unknown {
-  const result = executeAiApiActionValue(target, action, args, ctx)
+  const result = executeAiApiActionValue(target, action, args, ctx, options)
   if (isPromiseLike(result)) {
     return result.then(value => unwrapActionResult(action.name, value))
   }
@@ -287,12 +306,13 @@ function wrapResultApis(
   value: unknown,
   resultApis: readonly AiApiResultApiRef[],
   ctx: AiModulePathContext,
+  validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   if (resultApis.length === 0) return value
   if (!isPromiseLike(value)) {
-    return createResolvedResultProxy(value, resultApis, [], ctx)
+    return createResolvedResultProxy(value, resultApis, [], ctx, validateOptions)
   }
-  return createResultProxy(Promise.resolve(value), resultApis, [], ctx)
+  return createResultProxy(Promise.resolve(value), resultApis, [], ctx, validateOptions)
 }
 
 function createResolvedResultProxy(
@@ -300,8 +320,9 @@ function createResolvedResultProxy(
   resultApis: readonly AiApiResultApiRef[],
   path: readonly string[],
   ctx: AiModulePathContext,
+  validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
-  return createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: true })
+  return createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: true }, validateOptions)
 }
 
 function createResultProxy(
@@ -309,8 +330,9 @@ function createResultProxy(
   resultApis: readonly AiApiResultApiRef[],
   path: readonly string[],
   ctx: AiModulePathContext,
+  validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
-  return createResultPathSurface(value, resultApis, path, ctx, { awaitable: true })
+  return createResultPathSurface(value, resultApis, path, ctx, { awaitable: true }, validateOptions)
 }
 
 function createResultPathSurface(
@@ -319,27 +341,28 @@ function createResultPathSurface(
   path: readonly string[],
   ctx: AiModulePathContext,
   options: ApiProxyOptions,
+  validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   const api = resultApis.find(ref => samePath(ref.resultPath, path))?.api
   if (api !== undefined) {
-    return createApiSurface(createApiProxyState(value, api), ctx, options)
+    return createApiSurface(createApiProxyState(value, api, validateOptions), ctx, options)
   }
   return new Proxy({}, {
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => value.then(
-          target => onFulfilled?.(createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false })),
+          target => onFulfilled?.(createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }, validateOptions)),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => value.then(
-          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }),
+          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }, validateOptions),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => value.then(
-          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }),
+          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }, validateOptions),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -353,6 +376,7 @@ function createResultPathSurface(
         nextPath,
         ctx,
         options,
+        validateOptions,
       )
     },
   })
@@ -364,27 +388,28 @@ function createResolvedResultPathSurface(
   path: readonly string[],
   ctx: AiModulePathContext,
   options: ApiProxyOptions,
+  validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   const api = resultApis.find(ref => samePath(ref.resultPath, path))?.api
   if (api !== undefined) {
-    return createResolvedApiSurface(value, api, ctx, options)
+    return createResolvedApiSurface(value, api, ctx, options, validateOptions)
   }
   return new Proxy({}, {
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(value).then(
-          () => onFulfilled?.(createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false })),
+          () => onFulfilled?.(createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }, validateOptions)),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(
-          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }),
+          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }, validateOptions),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => Promise.resolve(
-          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }),
+          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }, validateOptions),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -398,6 +423,7 @@ function createResolvedResultPathSurface(
         nextPath,
         ctx,
         options,
+        validateOptions,
       )
     },
   })

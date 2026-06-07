@@ -29,12 +29,13 @@ Root export is a small facade. New code should import from `json`, `modules`, or
 json
   -> modules/protocol
   -> modules/runtime
+  -> agent/native-runtime
   -> agent/session
   -> agent/tool-loop
   -> agent/transport contracts
 ```
 
-Business packages create already-constructed `AiModule` instances, register them in `AiModuleRuntime`, and pass the runtime into an explicit `AiAgentRegistration`.
+VCM generated module metadata is the source of AI-visible business APIs. The native runtime projects metadata into script context and script execution. The older Host/Task/Session/tool-loop path remains a transport and orchestration layer while page-design migrates to metadata-first execution.
 
 ## Source Tree
 
@@ -65,6 +66,7 @@ packages/spark-ai/src/
 │       └── runtime-inspector.ts
 └── agent/
     ├── business/
+    ├── native-runtime/
     ├── chat/
     ├── session/
     ├── tool-loop/

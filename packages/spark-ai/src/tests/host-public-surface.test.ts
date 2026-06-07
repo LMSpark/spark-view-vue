@@ -6,6 +6,7 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
 
     expect(Object.keys(hostModule).sort()).toEqual([
       'AI_AGENT_HOST',
+      'AiApiScriptActionFailure',
       'AiAgentHost',
       'AiAgentRegistration',
       'AiAgentRuntimeContext',
@@ -17,6 +18,7 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'AiAgentToolLoopRunner',
       'AiModuleAdapter',
       'DefaultAiAgentSessionStore',
+      'createAiApiScriptContext',
       'createAiAgentHost',
       'createAiAgentRegistration',
       'createAiAgentRunTrace',
@@ -25,8 +27,12 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'createAiAgentTask',
       'createAiAgentSessionTranscript',
       'createAiAgentTransportTurn',
+      'createAiNativeApiScriptContext',
+      'createAiNativeScriptContext',
       'createSimpleInputContract',
       'createTurnEventCollector',
+      'executeAiApiAction',
+      'executeAiNativeScript',
       'previewAiAgentDiagnosticValue',
       'runAiAgent',
       'startAiAgentRegistrationSession',

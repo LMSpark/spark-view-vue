@@ -7,10 +7,11 @@
  *   1. 业务类型与注册（scope-types / registration-types）
  *   2. 业务作用域工厂（business-scope）
  *   3. 业务会话（business-session）
- *   4. 聊天 DTO（chat-types）
- *   5. 会话存储（session-types / default-session-store）
- *   6. APP turn 回调契约与事件类型（transport-types / app-sse-events）
- *   7. 工具循环（tool-loop-runner / turn-event-collector）
+ *   4. VCM native runtime（metadata -> script context / script execution）
+ *   5. 聊天 DTO（chat-types）
+ *   6. 会话存储（session-types / default-session-store）
+ *   7. APP turn 回调契约与事件类型（transport-types / app-sse-events）
+ *   8. 工具循环（tool-loop-runner / turn-event-collector）
  *
  * 【设计原则】
  *   - class 用 export，type 用 export type（遵循 verbatimModuleSyntax）
@@ -127,7 +128,24 @@ export type {
   AiAgentRunResult,
 } from './business/business-session'
 
-// ── 4. 聊天 DTO ─────────────────────────────────────────────
+// ── 4. VCM native runtime ───────────────────────────────────
+
+export {
+  AiApiScriptActionFailure,
+  createAiApiScriptContext,
+  createAiNativeApiScriptContext,
+  createAiNativeScriptContext,
+  executeAiApiAction,
+  executeAiNativeScript,
+} from './native-runtime'
+
+export type {
+  AiNativeRuntimeSchemaDefs,
+  AiNativeScriptContextCommand,
+  AiNativeScriptRunCommand,
+} from './native-runtime'
+
+// ── 5. 聊天 DTO ─────────────────────────────────────────────
 
 export type {
   AiAgentChatMessage,
@@ -137,7 +155,7 @@ export type {
   AiAgentTurnMeta,
 } from './chat/chat-types'
 
-// ── 5. 会话存储契约 ─────────────────────────────────────────
+// ── 6. 会话存储契约 ─────────────────────────────────────────
 
 export {
   AiAgentSessionStore,
@@ -161,7 +179,7 @@ export type {
   AiAgentMessageSource,
 } from './session/session-types'
 
-// ── 6. 内存会话存储实现 ─────────────────────────────────────
+// ── 7. 内存会话存储实现 ─────────────────────────────────────
 
 export {
   DefaultAiAgentSessionStore,
@@ -197,7 +215,7 @@ export type {
   AiAgentRunTraceToolCall,
 } from './session/session-run-trace'
 
-// ── 7. APP turn 回调契约与类型 ──────────────────────────────
+// ── 8. APP turn 回调契约与类型 ──────────────────────────────
 
 export {
   createAiAgentTransportTurn,
@@ -224,7 +242,7 @@ export type {
   AiAgentAppSseEventName,
 } from './transport/app-sse-events'
 
-// ── 8. 工具循环执行器 ───────────────────────────────────────
+// ── 9. 工具循环执行器 ───────────────────────────────────────
 
 export {
   AiAgentToolLoopRunner,
