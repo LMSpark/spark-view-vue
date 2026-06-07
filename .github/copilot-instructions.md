@@ -45,11 +45,11 @@
   - **Three-question checklist before adding an interface:** Will 2+ classes implement it? Does it have an external consumer? Can related interfaces merge into one contract file? One "no" → don't use interface.
   - **Function signature hard constraints:** Max 3 positional params (constructor param-props max 4); no inline JSDoc in parameter lists; no anonymous inline object types as parameters; use `?` not `| undefined`.
   - **Export convergence:** Module public surface ≤ single-digit symbols; public barrel `export *` is forbidden.
-- **UI 组装强制 SOP**（AI Tool 调用规范）：
-  1. 需要构造组件时，先调用 `queryPayloads({})` 或 `queryPayloads({ category: 'container' })` / `queryPayloads({ keyword: '...' })` 查全量/分类/关键词参数荷载列表。
-  2. 选定组件类型（如 r-table）后，必定调用 `guidePayload({ key: 'r-table' })` 拉取该型 SparkNode JSON Schema (配置规格)。
-  3. 基于拉取到的合法规格在本地拼接 SparkNode (`{ type, props, children }`)。
-  4. 最后调用 `pageDesign@nodeTree@addNode` 或 `pageDesign@nodeTree@addNodes` 实施写入。**绝对禁止不看 specs 凭空构造 props！**
+- **UI 组装强制 SOP**（pageDesign / VCM 模型）：
+  1. 先 `module_function_guide({ kind, functionName })` 读取目标 VCM 函数契约（如 `node-tree` / `addNode`）。
+  2. 结构改写走 `module_script` 原生对象链（`openPageDesign` → `editNodeTree` / `editDataSet`），不要用 `/kind[id]` path 直调。
+  3. SparkNode 的 `type` / `props` 必须来自 VCM schema、示例或已有页面模式，禁止凭空构造 props。
+  4. 脚本 return 四文件结果，落盘由外层 `ProjectWorkspace` 处理。
 - 配置优先：优先使用 `rule.json`、`pagedata.json`、view metadata 和现有渲染器能力。只有配置无法表达行为时才使用 `script.js`。
 - DataSet 管线单向： `pagedata.json` -> `parsePageData()` -> `DataSet` -> `usePageDataSet()` -> `PAGE_DATASET` -> `dataViewKey + dataMember + dataField` -> `DataView` -> UI. 不要重新引入渲染器侧 raw JSON 归一化、`pageData` 或 `$data` 旁路。
 - `clearDataSet()` 只释放引用。绝不要在其中调用 `DataSet.destroy()`，因为 DataSet 实例会跨导航缓存复用。

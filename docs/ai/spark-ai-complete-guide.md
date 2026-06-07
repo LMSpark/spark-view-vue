@@ -459,7 +459,7 @@ flowchart LR
 
 ### 6.4 `module_guide`
 
-用途：读取模块 kind 的用途、属性/函数/payload 目录概要。
+用途：读取模块 kind 的用途、属性/函数目录概要。
 
 模块指南：
 

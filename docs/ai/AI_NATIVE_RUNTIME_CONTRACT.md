@@ -153,7 +153,7 @@ data-table.getView → data-view
 page-runtime.dataset → dataset   （运行态 shortcut，待实现）
 ```
 
-guide-only 模块与 `spark-component` catalog 已注册为 companion modules；`getNodeTree` / `getTable` / `editNodeTree` / `editDataSet` 的 `resultApis` 已投影到 `module_function_guide.programmingFlow`。
+VCM 自动投影的 guide-only 子 kind（如 `config-page`、`node-tree`、`dataset`）由 `AiModuleAdapter.buildVcmGuideModules` 注册；`getNodeTree` / `getTable` / `editNodeTree` / `editDataSet` 的 `resultApis` 已投影到 `module_function_guide.programmingFlow`。
 
 ---
 

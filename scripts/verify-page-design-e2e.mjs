@@ -27,7 +27,6 @@ import {
 import {
   ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
-  validatePageDesignPayloadGuidesFromSession,
 } from '../src/services/page-design-business.ts'
 import { createRequest } from '@spark-appworks/spark-utils'
 import { PAGE_NODE_FILE_NAMES } from '@spark-appworks/spark-project-model'
@@ -1361,7 +1360,7 @@ function validateLeaveTypeOptions(nodes, tables) {
 
 // ── 10.4 合并验收入口 ──
 
-// PAGE_DESIGN_AI_TRACE[e2e-artifact-assertions]: 合并字段组语义 + 提交闭环 + payload guide 三重验收。
+// PAGE_DESIGN_AI_TRACE[e2e-artifact-assertions]: 合并字段组语义 + 提交闭环双重验收。
 function validateArtifacts(files, sessionRecord) {
   const checks = []
   const issues = []
@@ -1471,10 +1470,6 @@ function validateArtifacts(files, sessionRecord) {
     if (!check.ok) issues.push(`closure check failed: ${check.name}`)
   }
 
-  // 阶段 D：payload guide 校验
-  const payloadGuideValidation = validatePageDesignPayloadGuidesFromSession(files, sessionRecord)
-  checks.push({ name: 'payloadGuides', ok: payloadGuideValidation.ok, detail: payloadGuideValidation })
-  if (!payloadGuideValidation.ok) issues.push('payload guide validation failed')
 
   return {
     ok: issues.length === 0,
@@ -1500,7 +1495,6 @@ function validateArtifacts(files, sessionRecord) {
     dataViewKeys: dataViewKeys.keys,
     submitClosure,
     leaveTypeOptions,
-    payloadGuideValidation,
   }
 }
 

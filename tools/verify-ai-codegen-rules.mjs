@@ -289,15 +289,9 @@ function scanLegacyProtocolLiterals(parsed, violations) {
   visit(sourceFile)
 }
 
-const businessRegistrationAllowlist = new Set([
-  'src/services/page-design/spark-component-module.ts',
-])
-
 function scanBusinessRegistrationRules(parsed, violations) {
   const { file, sourceFile, lineOffset } = parsed
   if (!file.replace(/\\/gu, '/').includes('src/services/')) return
-  if (businessRegistrationAllowlist.has(file.replace(/\\/gu, '/'))) return
-
   const text = sourceFile.getFullText()
 
   if (/\bcreateAiBusinessKit\b/u.test(text)) {
@@ -320,7 +314,16 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'companionModules is renamed to payloadCatalogModules; do not inject handwritten business modules',
+      message: 'companionModules is removed; do not inject handwritten business modules',
+    })
+  }
+
+  const removedCatalogModuleOption = ['payload', 'Catalog', 'Modules'].join('')
+  if (new RegExp(`\\b${removedCatalogModuleOption}\\b`, 'u').test(text)) {
+    violations.push({
+      file,
+      line: 1,
+      message: 'removed catalog-module injection option is forbidden; expose complex arguments through VCM metadata and JSON Schema',
     })
   }
 
