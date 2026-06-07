@@ -49,6 +49,9 @@ temp-catalog-per-comp/
 # SSoT JSON 由 generateJsonCatalog 写入 spark-ai/src/catalog/
 # 消费端通过 catalog-projections.ts 按需投影，不再生成独立 TS 常量文件
 
+# AI / e2e 本地运行产物（报告、联调日志等，不提交）
+artifacts/
+
 # AI smoke test trace logs (generated, not committed)
 .codex-tmp/
 
