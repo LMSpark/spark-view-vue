@@ -18,7 +18,7 @@ import java.util.stream.Stream;
  *
  * <pre>
  *   GET  /api/cache/stats  → 后端缓存统计信息
- *   POST /api/cache/clear-metadata → 清除组件元数据内存缓存
+ *   POST /api/cache/clear-metadata → 清除历史组件元数据内存缓存
  * </pre>
  */
 @RestController
@@ -43,13 +43,13 @@ public class CacheController {
     public ResponseEntity<Map<String, Object>> stats() {
         Map<String, Object> result = new LinkedHashMap<>();
 
-        // 组件元数据缓存
+        // 历史组件元数据缓存（pageDesign LLM 不依赖）
         Map<String, Object> metadata = new LinkedHashMap<>();
+        metadata.put("legacy", true);
         metadata.put("loaded", metadataService.hasMetadata());
         metadata.put("buildTime", metadataService.getBuildTime());
-        metadata.put("hasIndex", metadataService.getSkillPromptIndex() != null);
-        metadata.put("hasCompact", metadataService.getSkillPromptCompact() != null);
-        metadata.put("hasFull", metadataService.getSkillPromptFull() != null);
+        metadata.put("version", metadataService.getVersion());
+        metadata.put("componentCount", metadataService.getComponentCount());
         result.put("componentMetadata", metadata);
 
         // 数据库统计
@@ -81,6 +81,9 @@ public class CacheController {
     @PostMapping("/clear-metadata")
     public ResponseEntity<Map<String, Object>> clearMetadata() {
         metadataService.clearInMemoryCache();
-        return ResponseEntity.ok(Map.of("ok", true, "message", "组件元数据内存缓存已清除"));
+        return ResponseEntity.ok(Map.of(
+                "ok", true,
+                "message", "历史组件元数据内存缓存已清除（pageDesign LLM 不依赖该缓存）"
+        ));
     }
 }

@@ -5,7 +5,7 @@
 ## 需要关注的内容
 
 - `pages-config/`：页面配置文件主存储目录。
-- `component-metadata.json`：组件元数据持久化文件。
+- `component-metadata.json`：**历史兼容**旧版 component-catalog 缓存；pageDesign LLM 主路径不读取。可保留作诊断或手动迁移，新部署可不创建。
 
 ## 运行时文件
 

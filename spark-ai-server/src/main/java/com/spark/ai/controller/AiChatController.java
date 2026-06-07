@@ -74,9 +74,10 @@ public class AiChatController {
         }
         return ResponseEntity.ok(Map.of(
                 "hasMetadata", true,
+                "legacy", true,
                 "buildTime", metadataService.getBuildTime(),
-                "skillPromptLength", metadataService.getSkillPromptCompact() != null
-                        ? metadataService.getSkillPromptCompact().length() : 0
+                "version", metadataService.getVersion(),
+                "componentCount", metadataService.getComponentCount()
         ));
     }
 

@@ -77,7 +77,7 @@
             :disabled="!beStats?.componentMetadata?.loaded"
             @click="handleClearMetadata"
           >
-            清除元数据缓存
+            清除历史元数据缓存
           </el-button>
           <el-button type="warning" @click="handleRefreshRoutes">
             刷新路由
@@ -89,30 +89,21 @@
 
         <el-row :gutter="20" style="margin-top: 16px">
           <el-col :span="12">
-            <el-card header="组件元数据缓存">
+            <el-card header="历史组件元数据缓存（pageDesign LLM 不依赖）">
               <el-descriptions :column="1" border size="small" v-loading="beLoading">
                 <el-descriptions-item label="是否已加载">
                   <el-tag :type="beStats?.componentMetadata?.loaded ? 'success' : 'info'" size="small">
                     {{ beStats?.componentMetadata?.loaded ? '✅ 已加载' : '❌ 未加载' }}
                   </el-tag>
                 </el-descriptions-item>
+                <el-descriptions-item label="版本">
+                  {{ beStats?.componentMetadata?.version ?? '—' }}
+                </el-descriptions-item>
                 <el-descriptions-item label="构建时间">
                   {{ beStats?.componentMetadata?.buildTime ?? '—' }}
                 </el-descriptions-item>
-                <el-descriptions-item label="Index 提示词">
-                  <el-tag :type="beStats?.componentMetadata?.hasIndex ? 'success' : 'info'" size="small">
-                    {{ beStats?.componentMetadata?.hasIndex ? '有' : '无' }}
-                  </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="Compact 提示词">
-                  <el-tag :type="beStats?.componentMetadata?.hasCompact ? 'success' : 'info'" size="small">
-                    {{ beStats?.componentMetadata?.hasCompact ? '有' : '无' }}
-                  </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="Full 提示词">
-                  <el-tag :type="beStats?.componentMetadata?.hasFull ? 'success' : 'info'" size="small">
-                    {{ beStats?.componentMetadata?.hasFull ? '有' : '无' }}
-                  </el-tag>
+                <el-descriptions-item label="组件数量">
+                  {{ beStats?.componentMetadata?.componentCount ?? '—' }}
                 </el-descriptions-item>
               </el-descriptions>
             </el-card>
@@ -302,11 +293,11 @@ const beLoading = ref(false)
 
 type BackendStats = {
   componentMetadata: {
+    legacy?: boolean
     loaded: boolean
     buildTime: string | null
-    hasIndex: boolean
-    hasCompact: boolean
-    hasFull: boolean
+    version: string | null
+    componentCount: number
   }
   database: {
     pageCount: number
@@ -329,12 +320,12 @@ async function loadBackendStats() {
 async function handleClearMetadata() {
   try {
     await ElMessageBox.confirm(
-      '确定清除后端组件元数据内存缓存？该历史缓存会在后端下次从本地文件加载后恢复。',
-      '清除元数据缓存',
+      '确定清除后端历史组件元数据内存缓存？pageDesign LLM 不依赖该缓存；重启后端或重新 POST 写入后可恢复。',
+      '清除历史元数据缓存',
       { type: 'warning', confirmButtonText: '清除', cancelButtonText: '取消' },
     )
     await http.post('/api/cache/clear-metadata')
-    ElMessage.success('组件元数据内存缓存已清除')
+    ElMessage.success('历史组件元数据内存缓存已清除')
     await loadBackendStats()
   } catch (e) {
     if (e instanceof Error && e.message !== 'cancel') {
