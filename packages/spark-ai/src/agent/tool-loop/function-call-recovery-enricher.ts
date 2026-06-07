@@ -31,7 +31,7 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
     '脚本恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 核对 usageRules 与 resultApis。',
     '若写 node-tree，必须先 queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component" }) 与 guidePayload({ key })',
     'module_script 参数名必须是 script；host.moduleId 不等于 kind 时 this 仍绑定 project 根模块。',
-    'openPageDesign 返回 ConfigPageNode 链式对象：用 cp.editNodeTree()/editDataSet()，勿用 cp.call()。',
+    'openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree => ...)/page.editDataSet(async ds => ...)，勿用 page.call()。',
   ],
   SCRIPT_ACTION_FAILED: [
     '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 module_function_guide 对照 paramsSchema。',

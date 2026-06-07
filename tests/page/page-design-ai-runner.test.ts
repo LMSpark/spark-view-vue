@@ -9,7 +9,6 @@ import {
 import type {
   AiAgentHost,
   AiAgentHostRunResult,
-  AiAgentStreamEvent,
   AiAgentTurnCallbacks,
   AiAgentToolCallRecord,
 } from '@spark-appworks/spark-ai/agent'
@@ -134,21 +133,6 @@ function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
   return { task, session }
 }
 
-function createStreamEvent(): AiAgentStreamEvent {
-  return {
-    type: 'delta',
-    data: 'stream',
-    turnKey: 'pageDesign:orders:turn-1',
-    streamKey: 'pageDesign:orders:turn-1:stream-1',
-    scope: {
-      businessRegistrationId: 'pageDesign',
-      businessInstanceId: 'orders',
-      eventModuleId: 'pageDesign',
-      turnId: 'turn-1',
-    },
-  }
-}
-
 function createToolCallRecord(): AiAgentToolCallRecord {
   return {
     toolName: 'writeNodeTree',
@@ -232,24 +216,20 @@ describe('runPageDesignAiSession', () => {
   it('wires pageDesign host callbacks through the headless AI run adapter', async () => {
     const editor = createEditor({ pageId: 'orders', isLoaded: true })
     const aiHost = createAiHost()
-    const event = createStreamEvent()
     const toolCall = createToolCallRecord()
     const runResult = createRunResult('session-with-stream')
     const trace = createTraceSink()
     const beforeFunctionCall = vi.fn<AiRunBeforeFunctionCall>(() => ({ status: 'allow' }))
     const events = {
       onToolCall: vi.fn(),
-      onStreamEvent: vi.fn(),
     }
     mocks.pageDesignRun.mockImplementation(async (_alias: string, _input: unknown, chat: {
-      onStreamEvent?: (value: AiAgentStreamEvent) => void
       onDelta?: (value: string) => void
       onReasoning?: (value: string) => void
       onToolCall?: (value: AiAgentToolCallRecord) => void
       beforeFunctionCall?: AiRunBeforeFunctionCall
     }) => {
       expect(chat.beforeFunctionCall).toBe(beforeFunctionCall)
-      chat.onStreamEvent?.(event)
       chat.onDelta?.('delta text')
       chat.onReasoning?.('reasoning text')
       chat.onToolCall?.(toolCall)
@@ -272,12 +252,10 @@ describe('runPageDesignAiSession', () => {
     }))
     expect(trace.reset).toHaveBeenCalledTimes(1)
     expect(trace.appendUserMessage).toHaveBeenCalledWith('补一个按钮')
-    expect(trace.appendEvent).toHaveBeenCalledWith(event)
     expect(trace.appendDelta).toHaveBeenCalledWith('delta text')
     expect(trace.appendReasoning).toHaveBeenCalledWith('reasoning text')
     expect(trace.appendToolCall).toHaveBeenCalledWith(toolCall)
     expect(trace.finish).toHaveBeenCalledTimes(1)
-    expect(events.onStreamEvent).toHaveBeenCalledWith(event)
     expect(events.onToolCall).toHaveBeenCalledWith(toolCall)
   })
 

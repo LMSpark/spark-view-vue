@@ -224,10 +224,10 @@ export class ConfigPageNode extends ProjectNode {
    * @vcmScriptOnly
    * @requiredBeforeCall 写 node-tree 前必须先 queryPayloads / guidePayload(spark.component)。
    * @usageRule 结构批量改写优先 module_script；direct call 不支持。
-   * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 cp.editNodeTree(t=>...) / cp.editDataSet(t=>...)，勿用 cp.call()。
+   * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。
    * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 重新 guidePayload 并按 schema 构造 props
    * @failureMode PAYLOAD_GUIDE_REQUIRED 未查询组件目录 => 先 queryPayloads 再 guidePayload 后重试
-   * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 cp.editNodeTree / cp.editDataSet 等方法
+   * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 page.editNodeTree / page.editDataSet 等方法
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)

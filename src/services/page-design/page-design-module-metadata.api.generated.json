@@ -4344,7 +4344,7 @@
                       "usageRules": [
                         "Must use module_script; direct function call is not supported.",
                         "结构批量改写优先 module_script；direct call 不支持。",
-                        "openPageDesign 返回 ConfigPageNode 链式对象：用 cp.editNodeTree(t=>...) / cp.editDataSet(t=>...)，勿用 cp.call()。"
+                        "openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。"
                       ],
                       "requiredBeforeCall": [
                         "写 node-tree 前必须先 queryPayloads / guidePayload(spark.component)。"
@@ -4363,7 +4363,7 @@
                         {
                           "code": "SCRIPT_EXECUTION_FAILED",
                           "when": "误用 call 链式代理",
-                          "fix": "改用 cp.editNodeTree / cp.editDataSet 等方法"
+                          "fix": "改用 page.editNodeTree / page.editDataSet 等方法"
                         }
                       ]
                     },

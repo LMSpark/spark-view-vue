@@ -138,13 +138,13 @@ describe('pageDesign knowledge integration', () => {
     expect(openPageDesign?.failureModes?.some(mode => mode.code === 'INVALID_TOOL_ARGS')).toBe(true)
   })
 
-  it('editNodeTree metadata warns against cp.call misuse', () => {
+  it('editNodeTree metadata guides native page callback usage', () => {
     const configPageApi = pageDesignRuntimeMetadataDocument.modules
       .flatMap(module => Object.values(module.apiRegistry ?? {}))
       .find(api => api.kind === 'config-page')
     const editNodeTree = configPageApi?.actions.find(action => action.name === 'editNodeTree')
     expect(editNodeTree).toBeDefined()
-    expect(editNodeTree?.usageRules?.some(rule => rule.includes('cp.call()'))).toBe(true)
+    expect(editNodeTree?.usageRules?.some(rule => rule.includes('page.editNodeTree'))).toBe(true)
     expect(editNodeTree?.failureModes?.some(mode => mode.code === 'SCRIPT_EXECUTION_FAILED')).toBe(true)
   })
 

@@ -22,6 +22,15 @@ const configPageApi: AiApiObjectMetadata = {
       takesContext: false,
     },
     {
+      name: 'getFileText',
+      methodName: 'getFileText',
+      description: 'read file',
+      paramsSchema: paramsSchema({
+        name: { type: 'string' },
+      }, ['name']),
+      takesContext: false,
+    },
+    {
       name: 'editDataSet',
       methodName: 'editDataSet',
       description: 'mutate dataset',
@@ -74,15 +83,15 @@ describe('createAiApiScriptContext', () => {
     const editDataSet = vi.fn(async (run: (tool: { tag: string }) => void) => {
       run({ tag: 'dataset' })
     })
-    const page = { editDataSet }
-    const openPageDesign = vi.fn(() => page)
+    const rawPage = { editDataSet }
+    const openPageDesign = vi.fn(() => rawPage)
     const project = { openPageDesign }
     const ctx = { segments: [] as const }
     const scriptContext = createAiApiScriptContext(project, projectApi, ctx)
     const openPage = scriptContext['openPageDesign'] as (args: { pageId: string }) => Promise<Readonly<Record<string, (fn: () => void) => Promise<unknown>>>>
-    const cp = await openPage({ pageId: 'leave-page' })
-    expect(cp).not.toBe(page)
-    const editDataSetOnPage = cp['editDataSet']
+    const page = await openPage({ pageId: 'leave-page' })
+    expect(page).not.toBe(rawPage)
+    const editDataSetOnPage = page['editDataSet']
     expect(editDataSetOnPage).toBeTypeOf('function')
     const mutator = vi.fn()
     await editDataSetOnPage!(mutator)
@@ -98,34 +107,38 @@ describe('createAiApiScriptContext', () => {
       run({ createTable })
     })
     const setFileText = vi.fn()
-    const page = { editDataSet, setFileText }
-    const project = { openPageDesign: vi.fn(() => page) }
+    const getFileText = vi.fn(() => 'export default {}')
+    const rawPage = { editDataSet, setFileText, getFileText }
+    const project = { openPageDesign: vi.fn(() => rawPage) }
     const scriptContext = createAiApiScriptContext(project, projectApi, { segments: [] })
     const openPage = scriptContext['openPageDesign'] as (args: { pageId: string }) => Promise<Readonly<Record<string, ScriptCallableForTest>>>
-    const cp = await openPage({ pageId: 'orders-page' })
+    const page = await openPage({ pageId: 'orders-page' })
 
-    await cp['editDataSet']!(async (ds: { createTable: ScriptCallableForTest }) => {
+    await page['editDataSet']!(async (ds: { createTable: ScriptCallableForTest }) => {
       ds.createTable({
         tableName: 'orders',
         columns: [],
       })
     })
-    cp['setFileText']!('script.js', 'export default {}')
+    page['setFileText']!('script.js', 'export default {}')
+    const script = page['getFileText']!('script.js')
 
     expect(createTable).toHaveBeenCalledWith({
       tableName: 'orders',
       columns: [],
     })
     expect(setFileText).toHaveBeenCalledWith('script.js', 'export default {}')
+    expect(getFileText).toHaveBeenCalledWith('script.js')
+    expect(script).toBe('export default {}')
   })
 
   it('rejects mistaken createTable args passed to editDataSet via script proxy', async () => {
     const editDataSet = vi.fn(async () => undefined)
-    const page = { editDataSet }
-    const scriptContext = createAiApiScriptContext({ openPageDesign: vi.fn(() => page) }, projectApi, { segments: [] })
+    const rawPage = { editDataSet }
+    const scriptContext = createAiApiScriptContext({ openPageDesign: vi.fn(() => rawPage) }, projectApi, { segments: [] })
     const openPage = scriptContext['openPageDesign'] as (args: { pageId: string }) => Promise<Readonly<Record<string, ScriptCallableForTest>>>
-    const cp = await openPage({ pageId: 'leave-page' })
-    await expect(cp['editDataSet']!({
+    const page = await openPage({ pageId: 'leave-page' })
+    await expect(async () => page['editDataSet']!({
       tableName: 'LeaveRequest',
       columns: [],
     })).rejects.toThrow()

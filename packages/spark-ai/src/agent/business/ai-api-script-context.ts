@@ -44,6 +44,16 @@ export async function executeAiApiAction(
   ctx: AiModulePathContext,
   options: AiJsonSchemaValidateOptions = {},
 ): Promise<AiModuleResult<unknown>> {
+  return await executeAiApiActionValue(target, action, args, ctx, options)
+}
+
+function executeAiApiActionValue(
+  target: unknown,
+  action: AiApiActionMetadata,
+  args: AiJsonParams | ((...params: readonly unknown[]) => unknown),
+  ctx: AiModulePathContext,
+  options: AiJsonSchemaValidateOptions = {},
+): AiModuleResult<unknown> | Promise<AiModuleResult<unknown>> {
   const normalizedArgs = normalizeScriptActionArgs(action, args)
   const validation = AiJsonSchemaValidator.validateDeserializedParams(normalizedArgs, action.paramsSchema, options)
   if (!validation.ok) {
@@ -68,7 +78,23 @@ export async function executeAiApiAction(
       '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
     )
   }
-  const raw = await callApiMethod(method, target, action, ctx, normalizedArgs)
+  const raw = callApiMethod(method, target, action, ctx, normalizedArgs)
+  if (isPromiseLike(raw)) {
+    return Promise.resolve(raw).then(value => wrapRawActionResult(value))
+  }
+  return wrapRawActionResult(raw)
+}
+
+async function wrapAsyncApiActionValue(
+  target: unknown,
+  action: AiApiActionMetadata,
+  args: AiJsonParams,
+  ctx: AiModulePathContext,
+): Promise<unknown> {
+  return unwrapActionResult(action.name, await executeAiApiAction(target, action, args, ctx))
+}
+
+function wrapRawActionResult(raw: unknown): AiModuleResult<unknown> {
   if (raw instanceof AiModuleResult) return raw
   return AiModuleResult.ok(raw)
 }
@@ -101,18 +127,18 @@ function createApiSurface(
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => state.value.then(
-          () => onFulfilled?.(createApiSurface(state, ctx, { awaitable: false })),
+          target => onFulfilled?.(createResolvedApiSurface(target, state.api, ctx, { awaitable: false })),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => state.value.then(
-          () => createApiSurface(state, ctx, { awaitable: false }),
+          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => state.value.then(
-          () => createApiSurface(state, ctx, { awaitable: false }),
+          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -123,7 +149,7 @@ function createApiSurface(
       const action = state.api.actions.find(candidate => candidate.name === property)
       if (action !== undefined) {
         return (...args: readonly unknown[]) => wrapResultApis(
-          state.value.then(target => callApiActionInScript(
+          state.value.then(target => wrapAsyncApiActionValue(
             target,
             action,
             normalizeScriptActionArgList(action, args),
@@ -142,15 +168,75 @@ function createApiSurface(
   })
 }
 
-async function callApiActionInScript(
+function createResolvedApiSurface(
+  target: unknown,
+  api: AiApiObjectMetadata,
+  ctx: AiModulePathContext,
+  options: ApiProxyOptions,
+): unknown {
+  return new Proxy({}, {
+    get(_target, property) {
+      if (options.awaitable && property === 'then') {
+        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(target).then(
+          () => onFulfilled?.(createResolvedApiSurface(target, api, ctx, { awaitable: false })),
+          onRejected,
+        )
+      }
+      if (options.awaitable && property === 'catch') {
+        return (onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(
+          createResolvedApiSurface(target, api, ctx, { awaitable: false }),
+        ).catch(onRejected)
+      }
+      if (options.awaitable && property === 'finally') {
+        return (onFinally?: (() => void) | null) => Promise.resolve(
+          createResolvedApiSurface(target, api, ctx, { awaitable: false }),
+        ).finally(onFinally)
+      }
+      if (property === 'then' || property === 'catch' || property === 'finally') {
+        return undefined
+      }
+      if (typeof property !== 'string') return undefined
+
+      const action = api.actions.find(candidate => candidate.name === property)
+      if (action !== undefined) {
+        return (...args: readonly unknown[]) => wrapResultApis(
+          Promise.resolve().then(() => callApiActionInScriptValue(
+            target,
+            action,
+            normalizeScriptActionArgList(action, args),
+            ctx,
+          )),
+          action.resultApis ?? [],
+          ctx,
+        )
+      }
+
+      const propertyValue = readJsonProperty(target, property)
+      const propertyApi = resolvePropertyApi(api, property)
+      if (propertyApi !== undefined) {
+        return createResolvedApiSurface(propertyValue, propertyApi, ctx, options)
+      }
+      return propertyValue
+    },
+  })
+}
+
+function callApiActionInScriptValue(
   target: unknown,
   action: AiApiActionMetadata,
   args: AiJsonParams,
   ctx: AiModulePathContext,
-): Promise<unknown> {
-  const result = await executeAiApiAction(target, action, args, ctx)
+): unknown {
+  const result = executeAiApiActionValue(target, action, args, ctx)
+  if (isPromiseLike(result)) {
+    return result.then(value => unwrapActionResult(action.name, value))
+  }
+  return unwrapActionResult(action.name, result)
+}
+
+function unwrapActionResult(actionName: string, result: AiModuleResult<unknown>): unknown {
   if (!result.ok) {
-    throw new AiApiScriptActionFailure(action.name, result)
+    throw new AiApiScriptActionFailure(actionName, result)
   }
   return result.data
 }
@@ -161,7 +247,19 @@ function wrapResultApis(
   ctx: AiModulePathContext,
 ): unknown {
   if (resultApis.length === 0) return value
+  if (!isPromiseLike(value)) {
+    return createResolvedResultProxy(value, resultApis, [], ctx)
+  }
   return createResultProxy(Promise.resolve(value), resultApis, [], ctx)
+}
+
+function createResolvedResultProxy(
+  value: unknown,
+  resultApis: readonly AiApiResultApiRef[],
+  path: readonly string[],
+  ctx: AiModulePathContext,
+): unknown {
+  return createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: true })
 }
 
 function createResultProxy(
@@ -188,18 +286,18 @@ function createResultPathSurface(
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => value.then(
-          () => onFulfilled?.(createResultPathSurface(value, resultApis, path, ctx, { awaitable: false })),
+          target => onFulfilled?.(createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false })),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => value.then(
-          () => createResultPathSurface(value, resultApis, path, ctx, { awaitable: false }),
+          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => value.then(
-          () => createResultPathSurface(value, resultApis, path, ctx, { awaitable: false }),
+          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -209,6 +307,51 @@ function createResultPathSurface(
       const nextPath = [...path, property]
       return createResultPathSurface(
         value.then(target => readJsonProperty(target, property)),
+        resultApis,
+        nextPath,
+        ctx,
+        options,
+      )
+    },
+  })
+}
+
+function createResolvedResultPathSurface(
+  value: unknown,
+  resultApis: readonly AiApiResultApiRef[],
+  path: readonly string[],
+  ctx: AiModulePathContext,
+  options: ApiProxyOptions,
+): unknown {
+  const api = resultApis.find(ref => samePath(ref.resultPath, path))?.api
+  if (api !== undefined) {
+    return createResolvedApiSurface(value, api, ctx, options)
+  }
+  return new Proxy({}, {
+    get(_target, property) {
+      if (options.awaitable && property === 'then') {
+        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(value).then(
+          () => onFulfilled?.(createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false })),
+          onRejected,
+        )
+      }
+      if (options.awaitable && property === 'catch') {
+        return (onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(
+          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }),
+        ).catch(onRejected)
+      }
+      if (options.awaitable && property === 'finally') {
+        return (onFinally?: (() => void) | null) => Promise.resolve(
+          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }),
+        ).finally(onFinally)
+      }
+      if (property === 'then' || property === 'catch' || property === 'finally') {
+        return undefined
+      }
+      if (typeof property !== 'string') return undefined
+      const nextPath = [...path, property]
+      return createResolvedResultPathSurface(
+        readJsonProperty(value, property),
         resultApis,
         nextPath,
         ctx,
@@ -238,6 +381,12 @@ function isScriptCallable(value: unknown): value is ScriptCallable {
 
 function isApiMethod(value: unknown): value is ApiMethod {
   return typeof value === 'function'
+}
+
+function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
+  return value !== null
+    && (typeof value === 'object' || typeof value === 'function')
+    && typeof (value as { then?: unknown }).then === 'function'
 }
 
 function callApiMethod(

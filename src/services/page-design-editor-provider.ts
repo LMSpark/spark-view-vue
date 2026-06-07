@@ -8,11 +8,9 @@ import { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { getProjectNavigationApi, getProjectPageApi } from '@/services/api-paths'
 import { getUser } from '@/services/auth'
 import { createAuthHeaders, http } from '@/services/http'
-import { getAppProjectWorkspace } from '@/services/project-workspace'
 
 export type PageDesignEditorResolveContext = {
   moduleInstanceId: string
-  useAppSingleton?: boolean
 }
 
 export function createHeadlessPageDesignEditor(): ProjectWorkspace {
@@ -30,10 +28,6 @@ export function resolvePageDesignEditor(
   context: PageDesignEditorResolveContext,
   headlessRegistry: ReadonlyMap<string, ProjectWorkspace>,
 ): ProjectWorkspace {
-  if (context.useAppSingleton === true) {
-    return getAppProjectWorkspace()
-  }
-
   const editor = headlessRegistry.get(context.moduleInstanceId)
   if (editor === undefined) {
     throw new Error(`Headless pageDesign editor is not prepared: ${context.moduleInstanceId}`)
@@ -43,11 +37,9 @@ export function resolvePageDesignEditor(
 
 export function createPageDesignEditorGetter(
   headlessRegistry: ReadonlyMap<string, ProjectWorkspace>,
-  options?: { useAppSingleton?: boolean },
 ): (context: { moduleInstanceId: string }) => ProjectWorkspace {
-  const useAppSingleton = options?.useAppSingleton === true
   return (context) => resolvePageDesignEditor(
-    { moduleInstanceId: context.moduleInstanceId, useAppSingleton },
+    { moduleInstanceId: context.moduleInstanceId },
     headlessRegistry,
   )
 }

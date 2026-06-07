@@ -85,7 +85,7 @@ const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
 const PLAN_WITHOUT_TOOL_NUDGE = [
   '上一次 assistant 正文只是计划/说明，没有真实 OpenAI tool_calls，runtime 未执行任何工具。',
   '下一回合必须直接发起 tool_call（写页面时优先 module_script 或 openPageDesign），禁止再输出计划文字。',
-  '若已 queryPayloads/guidePayload，立即 module_script 调用 this.openPageDesign → cp.editDataSet → cp.editNodeTree。',
+  '若已 queryPayloads/guidePayload，立即 module_script 调用 this.openPageDesign → page.editDataSet → page.editNodeTree。',
 ].join('\n')
 
 const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3

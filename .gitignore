@@ -52,8 +52,11 @@ temp-catalog-per-comp/
 # AI smoke test trace logs (generated, not committed)
 .codex-tmp/
 
-# pageDesign LLM e2e 探针页（本地 replacePage 生成，不提交）
+# pageDesign LLM e2e 探针页（本地 replacePage / host-run 生成，不提交）
 spark-ai-server/data/pages-config/**/ai-leave-request-form-*/
+spark-ai-server/data/pages-config/**/ai-student-grade-management-*/
+spark-ai-server/data/pages-config/**/ai-employee-info-management-*/
+spark-ai-server/data/pages-config/**/ai-test/
 
 # TypeScript incremental build cache
 *.tsbuildinfo

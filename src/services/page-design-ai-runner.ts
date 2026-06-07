@@ -11,7 +11,7 @@ import type {
   AiRunBeforeFunctionCall,
   AiRunTraceSink,
 } from '@spark-appworks/spark-app'
-import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
+import type { AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import type {
@@ -39,14 +39,10 @@ export type PageDesignAiRunOptions = {
 }
 
 /**
- * Legacy non-content callbacks for DevSystem status messages.
- *
- * AI stream content belongs to `trace` / spark-ai. UI callers must not store
- * delta or reasoning fragments through this side channel.
+ * DevSystem 侧 channel：仅转发 tool call 状态，不承载 stream/delta/reasoning（见 trace / spark-ai）。
  */
 export type PageDesignAiRunEvents = {
   onToolCall?: (record: AiAgentToolCallRecord) => void
-  onStreamEvent?: (event: AiAgentStreamEvent) => void
 }
 
 export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
@@ -150,7 +146,6 @@ function createPageDesignTraceSink(options: CreatePageDesignTraceSinkOptions): A
     appendUserMessage: (content) => trace.appendUserMessage(content),
     appendEvent: (event) => {
       trace.appendEvent(event)
-      options.events?.onStreamEvent?.(event)
     },
     appendDelta: (delta) => {
       trace.appendDelta(delta)
