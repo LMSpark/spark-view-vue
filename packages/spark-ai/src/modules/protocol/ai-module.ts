@@ -222,6 +222,25 @@ export class AiModule {
     return this.scriptContextProvider?.(ctx) ?? {}
   }
 
+  /** 导出当前运行时选项，供 inspect 拓扑合并等内部重建使用。 */
+  public toRuntimeOptions(): AiModuleOptions {
+    return {
+      kind: this.kind,
+      name: this.name,
+      description: this.description,
+      ...(this.parentKind === undefined ? {} : { parentKind: this.parentKind }),
+      ...(this.attributes.length === 0 ? {} : { attributes: this.attributes }),
+      ...(this.functions.length === 0 ? {} : { functions: this.functions }),
+      ...(this.payloads.length === 0 ? {} : { payloads: this.payloads }),
+      ...(this.children.length === 0 ? {} : { children: this.children }),
+      attributeAccessor: this.attributeAccessor,
+      runner: this.functionRunner,
+      ...(this.scriptContextProvider === undefined ? {} : { scriptContext: this.scriptContextProvider }),
+      list: this.childLister,
+      find: this.instanceFinder,
+    }
+  }
+
   // ── 协议方法 · 属性读取 ──
   //
   // 5 步校验链，每步失败均有明确的错误码返回给 LLM：

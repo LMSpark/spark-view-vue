@@ -289,6 +289,11 @@ export function buildProjectPageSummaries(
           descriptionContext: nextContext,
           effectiveDescription: formatProjectDescriptionContext(nextContext),
           ...(node.icon !== undefined ? { icon: node.icon } : {}),
+          ...(node.planningStatus !== undefined ? { planningStatus: node.planningStatus } : {}),
+          ...(node.implGate !== undefined ? { implGate: node.implGate } : {}),
+          ...(node.upstreamContractsSatisfied !== undefined
+            ? { upstreamContractsSatisfied: node.upstreamContractsSatisfied }
+            : {}),
         })
       }
       visit(node.children ?? [], nextContext)

@@ -240,8 +240,9 @@ function inferBinding(props: PropEntry[]): CatalogBindingDescriptor | undefined 
   if (names.has('options') || names.has('optionDataViewKey')) descriptor.hasOptions = true
 
   const modelValue = props.find((prop) => prop.name === 'modelValue')
-  if (modelValue?.type.includes('boolean') === true) descriptor.valueType = 'boolean'
-  else if (modelValue?.type.includes('[]') === true || modelValue?.type.includes('Array') === true) descriptor.valueType = 'array'
+  const modelValueType = modelValue?.typeText ?? ''
+  if (modelValueType.includes('boolean')) descriptor.valueType = 'boolean'
+  else if (modelValueType.includes('[]') || modelValueType.includes('Array')) descriptor.valueType = 'array'
   else if (modelValue !== undefined) descriptor.valueType = 'string'
 
   if (names.has('field')) descriptor.bindingDelegate = 'form-element'
@@ -452,7 +453,7 @@ function inferComponentTypeRef(
   propsInterfaceTypeIndex: ReadonlyMap<string, string>,
 ): string | undefined {
   const candidates = [
-    normalizeCatalogTypeText(prop.type),
+    normalizeCatalogTypeText(prop.typeText),
     prop.__schemaIdentityKey,
     prop.schema?.title,
   ]
@@ -1078,15 +1079,15 @@ function compactProps(input: CompactPropsInput): PropEntry[] {
   for (const prop of rawProps) {
     if (STRUCTURAL_PROP_NAMES.has(prop.name)) continue
     const componentTypeRef = inferComponentTypeRef(prop, registeredComponentTypes, propsInterfaceTypeIndex)
-    const type = componentTypeRef ?? normalizeCatalogTypeText(prop.type)
+    const typeText = componentTypeRef ?? normalizeCatalogTypeText(prop.typeText)
     const defaultValue = parseJsonSafeDefault(prop.default)
 
     const compacted: PropEntry = {
       name: prop.name,
-      type,
+      typeText,
       required: prop.required,
       ...(prop.default !== undefined ? { default: prop.default } : {}),
-      description: prop.description ?? createGenericPropDescription(prop.name, type),
+      description: prop.description ?? createGenericPropDescription(prop.name, typeText),
     }
 
     // 组件 props 类型（如 RToolbarProps / RHeaderProps）表示该字段的真相是组件 type；
@@ -1105,7 +1106,7 @@ function compactProps(input: CompactPropsInput): PropEntry[] {
       const schemaWithExamples = annotateSchemaExamples({
         schema: prop.schema,
         name: prop.name,
-        type,
+        type: typeText,
         defaultValue,
       })
       const normalizedSchema = normalizeNestedSchema(schemaPool, schemaWithExamples)
@@ -1131,7 +1132,7 @@ function compactProps(input: CompactPropsInput): PropEntry[] {
       }
     }
     if (!schemaResolved && prop.__enumVariants !== undefined && prop.__enumVariants.length > 0) {
-      const enumType = normalizeCatalogTypeText(prop.type)
+      const enumType = normalizeCatalogTypeText(prop.typeText)
       const enumSchema: PropSchema = {
         title: enumType,
         type: 'string',
@@ -1161,10 +1162,10 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): Emi
   const result: EmitEntry[] = []
 
   for (const emit of rawEmits) {
-    const type = emit.type !== undefined ? normalizeTupleTypeText(emit.type) : undefined
+    const typeText = emit.typeText !== undefined ? normalizeTupleTypeText(emit.typeText) : undefined
     const compacted: EmitEntry = {
       name: emit.name,
-      ...(type !== undefined ? { type } : {}),
+      ...(typeText !== undefined ? { typeText } : {}),
       ...(emit.description !== undefined ? { description: emit.description } : {}),
     }
 
@@ -1190,7 +1191,7 @@ function compactEmits(rawEmits: EmitEntry[], schemaPool: SchemaPoolContext): Emi
       if (payloadSchemas.length > 0) {
         const paramDocs = emit.__payloadParamDocs ?? []
         const eventSchema: PropSchema = {
-          ...(type !== undefined ? { title: type } : {}),
+          ...(typeText !== undefined ? { title: typeText } : {}),
           type: 'array',
           prefixItems: payloadSchemas.map(({ ref, schema, paramDoc: payloadParamDoc }, index) => {
             const paramDoc = payloadParamDoc ?? paramDocs[index]
@@ -1327,7 +1328,7 @@ function inferSimpleSchemaFromType(typeText: string): PropSchema {
 function createComponentPropSchema(prop: PropEntry): PropSchemaProperty {
   const rawSchema = prop.schema ?? (prop.schemaNodeId === undefined ? undefined : { $ref: prop.schemaNodeId })
   const schema = rawSchema === undefined
-    ? inferSimpleSchemaFromType(prop.type)
+    ? inferSimpleSchemaFromType(prop.typeText)
     : normalizePublicSchemaRefs(rawSchema)
   const defaultValue = prop.default === undefined ? undefined : parseJsonSafeDefault(prop.default)
   const property: PropSchemaProperty = {
@@ -1436,7 +1437,7 @@ function toPublicProp(prop: PropEntry): PropEntry {
   const schema = prop.schema ?? (prop.schemaNodeId === undefined ? undefined : { $ref: prop.schemaNodeId })
   const clean: PropEntry = {
     name: prop.name,
-    type: prop.type,
+    typeText: prop.typeText,
     required: prop.required,
     ...(prop.default !== undefined ? { default: prop.default } : {}),
     ...(prop.description !== undefined ? { description: prop.description } : {}),
@@ -1450,7 +1451,7 @@ function toPublicEmit(emit: EmitEntry): EmitEntry {
   const schema = emit.schema ?? (emit.schemaNodeId === undefined ? undefined : { $ref: emit.schemaNodeId })
   return {
     name: emit.name,
-    ...(emit.type !== undefined ? { type: emit.type } : {}),
+    ...(emit.typeText !== undefined ? { typeText: emit.typeText } : {}),
     ...(emit.description !== undefined ? { description: emit.description } : {}),
     ...(schema !== undefined ? { schema: normalizePublicSchemaRefs(schema) } : {}),
   }

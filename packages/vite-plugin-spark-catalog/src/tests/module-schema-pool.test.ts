@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import { poolModuleMetadataSchemas } from '../module-schema-pool'
+import { mergeModuleSchemaDefs, poolModuleMetadataSchemas } from '../module-schema-pool'
 
 describe('poolModuleMetadataSchemas', () => {
   it('keeps Draft 2020-12 primitive schemas inline', () => {
@@ -194,6 +194,48 @@ describe('poolModuleMetadataSchemas', () => {
     expect(pooled.defs.ArrayOf_string).toEqual({
       type: 'array',
       items: { type: 'string' },
+    })
+  })
+
+  it('keeps the richer schema when duplicate $def names conflict', () => {
+    const rich = {
+      type: 'object',
+      title: 'HttpEndpoint',
+      properties: {
+        url: { type: 'string' },
+        method: { type: 'string' },
+      },
+      required: ['url'],
+    }
+    const stub = {
+      type: 'object',
+      title: 'HttpEndpoint',
+    }
+
+    const first = poolModuleMetadataSchemas({
+      schemaVersion: 2,
+      rootApi: {
+        kind: 'project',
+        actions: [{ name: 'a', resultSchema: stub }],
+      },
+      apiRegistry: {},
+    })
+    const second = poolModuleMetadataSchemas({
+      schemaVersion: 2,
+      rootApi: {
+        kind: 'dataset',
+        actions: [{ name: 'b', resultSchema: rich }],
+      },
+      apiRegistry: {},
+    })
+
+    const defs = mergeModuleSchemaDefs([first, second])
+    expect(defs.HttpEndpoint).toMatchObject({
+      type: 'object',
+      properties: {
+        url: { type: 'string' },
+        method: { type: 'string' },
+      },
     })
   })
 

@@ -44,6 +44,7 @@ export type AiApiActionMetadata = Readonly<{
   resultSchema?: AiJsonSchema
   resultApis?: readonly AiApiResultApiRef[]
   usageRules?: readonly string[]
+  requiredBeforeCall?: readonly string[]
   failureModes?: readonly AiModuleFunctionFailureMode[]
 }>
 

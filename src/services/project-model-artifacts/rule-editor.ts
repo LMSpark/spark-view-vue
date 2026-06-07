@@ -25,10 +25,18 @@ export type RuleEditorComponentMetadata = {
 
 export type RuleEditorComponentCatalogProp = {
   name: string
+  /** @deprecated 读取请用 typeText；旧 catalog 兼容字段。 */
   type?: string
+  typeText?: string
   required?: boolean
   default?: string
   description?: string
+}
+
+function readCatalogPropTypeText(prop: RuleEditorComponentCatalogProp): string {
+  const typeText = prop.typeText?.trim()
+  if (typeText !== undefined && typeText.length > 0) return typeText
+  return prop.type?.trim() ?? ''
 }
 
 export type RuleEditorComponentCatalogEntry = {
@@ -88,7 +96,7 @@ export function createRuleEditorComponentMetadata(
     typeLabels[entry.type] = createTypeLabel(entry)
 
     const enumEntries = props
-      .map((prop): [string, string[]] => [prop.name, parseEnumFromTypeString(prop.type ?? '')])
+      .map((prop): [string, string[]] => [prop.name, parseEnumFromTypeString(readCatalogPropTypeText(prop))])
       .filter(([, values]) => values.length > 0)
     if (enumEntries.length > 0) {
       propEnums[entry.type] = Object.fromEntries(enumEntries)
@@ -137,7 +145,7 @@ function inferDefaultFromProp(prop: RuleEditorComponentCatalogProp): JsonValue {
     }
   }
 
-  const type = (prop.type ?? '').toLowerCase()
+  const type = readCatalogPropTypeText(prop).toLowerCase()
   if (type.includes('number')) return 0
   if (type.includes('boolean')) return false
   if (type.includes('[]') || type.includes('array')) return []

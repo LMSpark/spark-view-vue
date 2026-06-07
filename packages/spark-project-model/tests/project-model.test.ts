@@ -163,6 +163,38 @@ describe('ProjectModel', () => {
     expect(projection.treeData.map(node => node.id)).toEqual(['reports', 'orders'])
   })
 
+  it('persists agent gate fields on navigation node and planning projection', () => {
+    const workspace = createWorkspace()
+    workspace.project.replaceNavigationRoot(createRoot([
+      {
+        id: 'orders',
+        title: '订单页面',
+        nodeKind: 'page',
+        path: '/orders',
+        description: '订单列表',
+        order: 0,
+      },
+    ]))
+    workspace.project.selectNode('orders')
+    const dto = workspace.project.beginNavigationDraft()
+    dto.node.planningStatus = 'planning_confirmed'
+    dto.node.implGate = 'open'
+    dto.node.upstreamContractsSatisfied = false
+    workspace.project.applyNavigationNodeEdit(dto)
+
+    const summary = workspace.project.readPlanningProjection().find(item => item.pageId === 'orders')
+    expect(summary).toMatchObject({
+      planningStatus: 'planning_confirmed',
+      implGate: 'open',
+      upstreamContractsSatisfied: false,
+    })
+    expect(workspace.project.findNodeById('orders')?.toNodeData()).toMatchObject({
+      planningStatus: 'planning_confirmed',
+      implGate: 'open',
+      upstreamContractsSatisfied: false,
+    })
+  })
+
   it('does not mark navigation dirty when opening draft without edits', () => {
     const workspace = createWorkspace()
     workspace.project.replaceNavigationRoot(createRoot([

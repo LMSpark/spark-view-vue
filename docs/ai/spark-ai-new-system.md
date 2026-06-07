@@ -8,12 +8,12 @@
 
 1. **元数据链路**：领域 class 的 JSDoc + TypeScript 类型 → VCM 思路提取 → 标准 JSON Schema → generated metadata。
 2. **知识链路**：metadata → `module_query` 概要 → `module_*_guide` 细节 → LLM 分层理解能力。
-3. **执行链路**：OpenAI function calling 或 `module_script` → 同一个模块执行上下文 → 能力提供方 class 方法。
+3. **执行链路**：OpenAI function calling 处理单步动作，`module_script` 处理组合编程；pageDesign 写模型以 `module_script` 为主通道。
 
 核心口径：
 
 - `spark-ai` 不持有业务 live state。
-- `this` 是模块本身；脚本里可以写 `this.getTable(...).getView(...).method(...)`。
+- `this` 是模块本身；pageDesign 脚本里可以写 `const page = await this.openPageDesign({ pageId })`，再通过 `page.editDataSet(...)` / `page.editNodeTree(...)` 改模型。
 - 子模块来自返回值和属性定义的元数据，不额外合成 `children`、父模块、实例 id、`_handles` 或 `schemaPath`。
 - 复杂类型必须池化、去重、`$ref` 化，避免递归展开死循环。
 
@@ -163,7 +163,7 @@ LLM 的基本查询顺序：
 module_query({ keyword, includeFunctions })
 -> module_guide({ kind })
 -> module_function_guide({ kind, functionName })
--> module_script 或 direct function
+-> module_script 或 direct function（pageDesign 写模型优先 module_script）
 ```
 
 属性读写顺序：
@@ -182,7 +182,17 @@ module_query 查能力
 -> module_function_guide 查方法契约和 resultApis
 -> module_memory 暂存已确认的 kind/function/草稿参数
 -> 必要时继续查返回 API 的 kind/function
--> module_script 编写 this.属性.方法 链
+-> module_script 编写原生 JS 方法链
+```
+
+pageDesign 写模型的固定顺序：
+
+```text
+readPlanningProjection 确认 pageId / effectiveDescription
+-> queryPayloads / guidePayload 确认组件 payload
+-> module_script 生成并执行 JS
+-> 返回 ruleJson / pageDataJson / script / style
+-> runner 读取四文件 projection，可选 saveDirtyPageFiles
 ```
 
 失败恢复顺序：
@@ -341,12 +351,15 @@ return await this.getTable({ tableName: "orders" })
 
 payload 是外部目录型知识，例如组件目录、字段目录或可选资源。
 
+pageDesign 中 Vue 组件目录已注册为 **`kind=spark-component`** 的只读 AiModule，与 `project` 并列出现在 kind 索引；provider 命名空间为 **`spark.component`**，消费方为 **`node-tree`** 的 `addNode` / `setProps` 等函数。
+
 LLM 使用 payload 的顺序：
 
 ```text
-先 queryPayloads 选 key
-再 guidePayload 读完整契约
-最后把 payload 指南里的信息用于函数 args
+module_guide({ kind: "spark-component" })
+-> queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component", keyword/category })
+-> guidePayload({ key: "<component-type>" })
+-> module_script on config-page / node-tree
 ```
 
 payload 不应替代函数 schema。它只补充“某个字段可选什么、某类资源有哪些、某个 key 的详细配置是什么”。
@@ -400,7 +413,7 @@ OpenAI direct function 工具仍然可用：
 }
 ```
 
-这适合单个明确动作。
+这适合单个明确动作，不是 pageDesign 结构修改的主入口。
 
 ### 4.2 Script Calling
 
@@ -412,11 +425,45 @@ return await this.getTable({ tableName: "customer" })
   .loadFromServer({})
 ```
 
+pageDesign 的目标脚本形态：
+
+```js
+const page = await this.openPageDesign({ pageId })
+
+await page.editDataSet(async (ds) => {
+  const table = ds.getTable({ tableName: "orders" }) ?? ds.createTable({
+    tableName: "orders",
+    columns: [{ name: "orderNo", type: "string" }],
+  })
+  void table
+})
+
+await page.editNodeTree(async (tree) => {
+  tree.addNode({
+    parentComponentId: null,
+    node: {
+      id: "orders-table",
+      type: "r-table",
+      props: { dataViewKey: "orders@default", dataMember: "rows" },
+    },
+  })
+})
+
+return {
+  ruleJson: page.getFileText("rule.json"),
+  pageDataJson: page.getFileText("pagedata.json"),
+  script: page.getFileText("script.js"),
+  style: page.getFileText("style.css"),
+}
+```
+
 脚本上下文规则：
 
 - `this` 就是模块上下文自身。
 - `ctx === this`。
 - 协议 helper 同时挂在 `this.$tools`，避免和业务方法重名。
+- callback mutator 可直接传函数：`page.editDataSet(async ds => ...)`，无需把 `{ run }` 作为推荐写法。
+- 单对象参数会按 VCM 生成的参数名自动补包，例如 `ds.createTable({ tableName, columns })` 会映射到 `createTable(options)`。
 - 脚本错误会暴露脚本行号。
 - 返回值必须可 JSON 序列化。
 - 中间子模块是链式代理；推荐最终 `await` 整条调用链。
@@ -485,7 +532,7 @@ return await this.getTable({ tableName: "orders" })
 
 ## 7. Page Design 迁移方向
 
-目标是取代 page-design 里的硬编码能力目录。
+目标是取代 page-design 里的硬编码能力目录，并把最终修改动作收敛为“LLM 生成代码，运行时执行代码”。
 
 旧方向：
 
@@ -499,7 +546,7 @@ page-design hardcode -> LLM 工具/指南
 能力提供方 class -> JSDoc/类型 -> generated metadata -> AiModuleAdapter -> LLM 工具/指南/脚本
 ```
 
-也就是说，DataSet/DataTable/DataView 的能力真源应该在源码 class 和注解里。
+也就是说，DataSet/DataTable/DataView 的能力真源应该在源码 class 和注解里；LLM 只通过指南查契约，最终用 `module_script` 修改 `ConfigPageNode` 四文件模型。
 
 有问题时：
 
@@ -515,6 +562,9 @@ page-design hardcode -> LLM 工具/指南
 - `packages/spark-ai/src/tests/module-semantic-runtime.test.ts`
 - `packages/spark-ai/src/tests/ai-module-adapter.test.ts`
 - `packages/spark-ai/src/tests/host-public-surface.test.ts`
+- `packages/spark-ai/src/tests/ai-api-script-context.test.ts`
+- `tests/page/page-design-business.test.ts`
+- `tests/page/page-design-ai-runner.test.ts`
 - `packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts`
 - `packages/vite-plugin-spark-catalog/src/tests/dataset-crud-tool-reflection.test.ts`
 - `packages/vite-plugin-spark-catalog/src/tests/vcm-schema-json-schema.test.ts`
@@ -524,7 +574,7 @@ page-design hardcode -> LLM 工具/指南
 ```powershell
 pnpm --filter @spark-appworks/spark-ai run typecheck
 pnpm --filter @spark-appworks/vite-plugin-spark-catalog run typecheck
-pnpm exec vitest run packages/spark-ai/src/tests/module-semantic-runtime.test.ts packages/spark-ai/src/tests/ai-module-adapter.test.ts packages/spark-ai/src/tests/host-public-surface.test.ts packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts packages/vite-plugin-spark-catalog/src/tests/dataset-crud-tool-reflection.test.ts packages/vite-plugin-spark-catalog/src/tests/vcm-schema-json-schema.test.ts
+pnpm exec vitest run packages/spark-ai/src/tests/module-semantic-runtime.test.ts packages/spark-ai/src/tests/ai-module-adapter.test.ts packages/spark-ai/src/tests/ai-api-script-context.test.ts tests/page/page-design-business.test.ts tests/page/page-design-ai-runner.test.ts packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts
 ```
 
 ## 9. 已落地重点
@@ -533,10 +583,11 @@ pnpm exec vitest run packages/spark-ai/src/tests/module-semantic-runtime.test.ts
 2. **错误透传**：`module_script` 链式调用失败时，原始 `AiModuleResult` checks 保持在前，`SCRIPT_EXECUTION_FAILED` 只作为脚本定位补充。
 3. **复杂属性分层查询**：`module_attribute_guide` 支持 `property` 查询局部 schema，并返回 `childProperties` 与下一步查询建议。
 4. **生成物瘦身策略**：保留诊断版 generated JSON，同时输出 `.runtime.generated.json` 供运行时接入消费。
-5. **page-design 接入替换**：VCM 从 `ProjectModel` 开始，`nodes` 作为真实子模型自动展开；页面配置节点通过 `nodes.openConfigPage(pageId)` 进入，后续再自动展开 `ConfigPageNode`、`nodeTree`、`dataSet`；`spark-ai` 不持有页面 live state。
+5. **page-design 直接代码执行**：VCM 从 `ProjectModel.openPageDesign` 进入 `ConfigPageNode`；LLM 生成 `module_script`，运行时执行 `editDataSet` / `editNodeTree` / `setFileText`，最终得到 `rule.json`、`pagedata.json`、`script.js`、`style.css`。
+6. **runner 四文件 projection**：`runPageDesignAiSession` 返回当前页面四文件和 dirty 文件列表，自动化场景可打开 `saveDirtyFilesAfterRun` 保存 dirty 四文件。
 
 ## 10. 剩余边界
 
-- ConfigPageNode / NodeTree / DataSet 能力按同一套 generated metadata 接入，不再使用 page-design 专属 host/session。
+- ConfigPageNode / NodeTree / DataSet 能力按同一套 generated metadata 接入；pageDesign 只保留业务 runner、闸门和保存策略。
 - 运行版 generated metadata 后续可继续裁剪长描述和非运行字段，但不能影响诊断版完整性。
 - 构造函数 metadata 已可见；是否让 LLM 自动创建实例仍由消费层注册策略决定。

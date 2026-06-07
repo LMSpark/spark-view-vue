@@ -28,6 +28,7 @@
     />
     <el-form :model="state.navEditDto" :disabled="isSystemRootDirectory" label-width="100px" size="default" class="node-form">
       <NodeBasicInfo :state="state" :module-kind-disabled="moduleKindDisabled" />
+      <NodeAgentGateConfig :state="state" />
       <NodeTargetConfig :state="state" />
       <NodeLayoutConfig :state="state" />
       <NodeStateConfig :state="state" />
@@ -41,6 +42,7 @@ import { computed } from 'vue'
 import type { DevState } from './useDevState'
 import NavIcon from '@/components/NavIcon.vue'
 import NodeBasicInfo from './components/NodeBasicInfo.vue'
+import NodeAgentGateConfig from './components/NodeAgentGateConfig.vue'
 import NodeTargetConfig from './components/NodeTargetConfig.vue'
 import NodeLayoutConfig from './components/NodeLayoutConfig.vue'
 import NodeStateConfig from './components/NodeStateConfig.vue'

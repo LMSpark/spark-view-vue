@@ -65,7 +65,9 @@ const DEFAULT_PAGE_TITLE = '请假申请'
 const DEFAULT_PAGE_ICON = 'Document'
 const DEFAULT_REQUEST_TEXT = '实现请假申请页面设计'
 const DEFAULT_MAX_ROUNDS = 32
-const DEFAULT_TURN_TIMEOUT_MS = 240_000
+const DEFAULT_TURN_IDLE_TIMEOUT_MS = 120_000
+const DEFAULT_TURN_TIMEOUT_MS = 600_000
+const DEFAULT_MAX_DEMAND_MS = 360_000
 const REQUEST_TIMEOUT = 30_000
 
 // ============================================================================
@@ -94,7 +96,9 @@ function parseArgs(argv) {
     // ── AI 需求与行为 ──
     requestText: process.env.AI_PAGE_REQUEST ?? DEFAULT_REQUEST_TEXT,
     maxRounds: numberFromEnv(process.env.AI_MAX_TOOL_ROUNDS, DEFAULT_MAX_ROUNDS),
+    turnIdleTimeoutMs: numberFromEnv(process.env.AI_TURN_IDLE_TIMEOUT_MS, DEFAULT_TURN_IDLE_TIMEOUT_MS),
     turnTimeoutMs: numberFromEnv(process.env.AI_TURN_TIMEOUT_MS, DEFAULT_TURN_TIMEOUT_MS),
+    maxDemandMs: numberFromEnv(process.env.AI_MAX_DEMAND_MS, DEFAULT_MAX_DEMAND_MS),
     // ── ProjectEditor Host 模式 ──
     hostMode: process.env.AI_AGENT_HOST_MODE === 'inline' ? 'inline' : 'builtin',
     // ── 输出控制 ──
@@ -174,6 +178,9 @@ function parseArgs(argv) {
         break
       case 'turn-timeout-ms':
         options.turnTimeoutMs = Number(value)
+        break
+      case 'turn-idle-timeout-ms':
+        options.turnIdleTimeoutMs = Number(value)
         break
       case 'host-mode':
         options.hostMode = value === 'inline' ? 'inline' : 'builtin'
@@ -274,7 +281,8 @@ function printHelp() {
     'AI 需求与行为:',
     '  --request <text>           发送给 LLM 的需求文本',
     '  --max-rounds <n>           最大工具调用轮次（默认 32）',
-    '  --turn-timeout-ms <n>      LLM turn 超时毫秒（默认 240000）',
+    '  --turn-idle-timeout-ms <n> 连续无 LLM SSE 帧的空闲超时（默认 120000）',
+    '  --turn-timeout-ms <n>      单轮 turn 绝对上限毫秒（默认 600000）',
     '',
     'ProjectEditor Host 模式:',
     '  --host-mode builtin|inline  两种模式均通过 ProjectEditor live edit host 读写四文件（默认 builtin）',
@@ -484,6 +492,9 @@ async function prepareTargetPage(editor, options) {
       nodeKind: 'page',
       path: `/${options.pageId}`,
       description: options.requestText,
+      planningStatus: 'planning_confirmed',
+      implGate: 'open',
+      upstreamContractsSatisfied: true,
       ...(options.pageIcon.length === 0 ? {} : { icon: options.pageIcon }),
     },
   }
@@ -594,6 +605,7 @@ function createTurnCallbacks(options, auth) {
         input,
         source: eventHub,
         timeoutMs: options.turnTimeoutMs,
+        idleTimeoutMs: options.turnIdleTimeoutMs,
       })
       try {
         const body = await postBackendJson(options, auth, '/api/ai/turns', {
@@ -690,38 +702,155 @@ function createPageDesignAiAgent(options, auth, workspace) {
     turnCallbacks: createTurnCallbacks(options, auth),
     maxToolRounds: options.maxRounds,
   })
-  return ensurePageDesignBusiness({
+  ensurePageDesignBusiness({
     host: aiHost,
     getPageDesignEditor: () => workspace,
   })
+  return aiHost
 }
 
-// PAGE_DESIGN_AI_TRACE[e2e-turn]: 发送 LLM 需求，含 AbortController 超时保护。
-async function sendDemand(runPageDesign, input, timeoutMs, callbacks) {
+// PAGE_DESIGN_AI_TRACE[e2e-turn]: 发送 LLM 需求；连续 2 分钟无 LLM 活动则 abort，仍保留 session 供评估。
+function createIdleAbortController(idleTimeoutMs) {
   const controller = new AbortController()
-  const startedAt = Date.now()
-  const timer = setTimeout(() => controller.abort(), Math.floor(timeoutMs))
-  try {
-    const runResult = await runPageDesign(input, {
-      signal: controller.signal,
-      ...callbacks,
-    })
-    return {
-      report: { ok: true, aborted: false, durationMs: Date.now() - startedAt },
-      runResult,
-    }
-  } catch (error) {
-    return {
-      report: {
-        ok: false,
-        aborted: controller.signal.aborted,
-        durationMs: Date.now() - startedAt,
-        error: error instanceof Error ? error.message : String(error),
-      },
-    }
-  } finally {
-    clearTimeout(timer)
+  let timer = null
+  const touch = () => {
+    if (controller.signal.aborted) return
+    if (timer !== null) clearTimeout(timer)
+    timer = setTimeout(() => {
+      controller.abort(new Error(`AI idle timeout: no LLM activity for ${String(idleTimeoutMs)}ms`))
+    }, idleTimeoutMs)
   }
+  touch()
+  return {
+    signal: controller.signal,
+    touch,
+    abort: (reason) => {
+      if (controller.signal.aborted) return
+      if (timer !== null) clearTimeout(timer)
+      timer = null
+      controller.abort(reason)
+    },
+    dispose: () => {
+      if (timer !== null) clearTimeout(timer)
+      timer = null
+    },
+  }
+}
+
+function wrapChatCallbacksWithIdleTouch(callbacks, touch) {
+  return {
+    ...callbacks,
+    onDelta: (delta) => {
+      touch()
+      callbacks.onDelta?.(delta)
+    },
+    onReasoning: (reasoning) => {
+      touch()
+      callbacks.onReasoning?.(reasoning)
+    },
+    onStreamEvent: (event) => {
+      if (isLlmStreamEvent(event)) touch()
+      callbacks.onStreamEvent?.(event)
+    },
+  }
+}
+
+function isLlmStreamEvent(event) {
+  if (event === null || typeof event !== 'object') return false
+  const type = typeof event.type === 'string' ? event.type : ''
+  return type === 'llm-frame' || type.startsWith('llm-')
+}
+
+async function sendDemand(pageDesignHost, input, timeoutOptions, callbacks) {
+  const idleTimeoutMs = timeoutOptions.turnIdleTimeoutMs ?? DEFAULT_TURN_IDLE_TIMEOUT_MS
+  const maxTimeoutMs = timeoutOptions.maxDemandMs ?? timeoutOptions.turnTimeoutMs ?? DEFAULT_MAX_DEMAND_MS
+  const idle = createIdleAbortController(idleTimeoutMs)
+  const startedAt = Date.now()
+  const maxTimer = setTimeout(() => {
+    idle.abort(new Error(`AI max demand timeout after ${String(maxTimeoutMs)}ms`))
+  }, maxTimeoutMs)
+
+  const chatCallbacks = wrapChatCallbacksWithIdleTouch(callbacks, idle.touch)
+  let sendError = null
+  let runResult = undefined
+  try {
+    runResult = await pageDesignHost.run('pageDesign', input, {
+      signal: idle.signal,
+      ...chatCallbacks,
+    })
+  } catch (error) {
+    sendError = error
+  } finally {
+    idle.dispose()
+    clearTimeout(maxTimer)
+  }
+
+  const sessionRecord = runResult?.session.getSessionRecord()
+    ?? resolveLatestPageDesignSessionRecord(pageDesignHost, input.pageId)
+  return {
+    report: {
+      ok: sendError === null,
+      aborted: idle.signal.aborted,
+      idleTimeoutMs,
+      maxTimeoutMs,
+      durationMs: Date.now() - startedAt,
+      ...(sendError === null ? {} : {
+        error: sendError instanceof Error ? sendError.message : String(sendError),
+      }),
+    },
+    sessionRecord,
+    sessionId: sessionRecord === undefined
+      ? undefined
+      : `${sessionRecord.moduleId}:${sessionRecord.moduleInstanceId}`,
+  }
+}
+
+function resolveLatestPageDesignSessionRecord(pageDesignHost, pageId) {
+  const sessions = pageDesignHost.listSessions('pageDesign')
+  for (let index = sessions.length - 1; index >= 0; index -= 1) {
+    const session = sessions[index]
+    if (session?.moduleInstanceId === pageId) return session
+  }
+  return undefined
+}
+
+function buildRunFailureSummary(input) {
+  const reasons = []
+  const sendDemand = input.sendResult ?? {}
+  const persistence = input.persistenceAssertions ?? {}
+  const artifactValidation = input.artifactValidation ?? {}
+
+  if (sendDemand.ok === false && typeof sendDemand.error === 'string') {
+    reasons.push(`sendDemand.error: ${sendDemand.error}`)
+  }
+  if (sendDemand.aborted === true) {
+    reasons.push(`sendDemand aborted after ${String(sendDemand.durationMs ?? '?')}ms`)
+  }
+  if (persistence.hasToolCalls === false) {
+    reasons.push('no tool calls recorded in session')
+  }
+  if (persistence.hitRoundLimit === true) {
+    reasons.push('tool round limit reached')
+  }
+  if (persistence.requiredFilesChangedAndSaved === false) {
+    reasons.push('rule.json / pagedata.json not changed and saved')
+  }
+  if (persistence.filesPersisted === false) {
+    reasons.push('local files do not match remote pages-config')
+  }
+  if (artifactValidation.ok === false && Array.isArray(artifactValidation.issues)) {
+    for (const issue of artifactValidation.issues.slice(0, 3)) {
+      reasons.push(`artifact: ${issue}`)
+    }
+  }
+  const failedTools = input.sessionSummary?.failedToolCalls ?? []
+  for (const failure of failedTools.slice(0, 2)) {
+    reasons.push(`${failure.toolName}: ${failure.code} ${failure.msg}`)
+  }
+  if (reasons.length === 0 && input.assistantText?.trim().length > 0) {
+    reasons.push(`assistant ended without passing checks: ${summarizeText(input.assistantText, 240)}`)
+  }
+  return reasons
 }
 
 // ============================================================================
@@ -892,27 +1021,42 @@ function readMessageToolCallNames(message) {
   return toolCalls.map(readTransportToolName).filter(Boolean)
 }
 
+function summarizeFailedToolCalls(sessionRecord) {
+  const failures = []
+  for (const entry of sessionRecord.history ?? []) {
+    if (entry?.kind !== 'functionCall' || entry.status !== 'failed') continue
+    const error = isRecord(entry.error) ? entry.error : {}
+    const checks = Array.isArray(error.checks) ? error.checks : []
+    const recoveryHints = checks
+      .filter(check => isRecord(check) && check.code === 'RECOVERY_HINT')
+      .map(check => String(check.message ?? ''))
+      .filter(message => message.length > 0)
+    failures.push({
+      toolName: typeof entry.toolName === 'string' ? entry.toolName : 'unknown',
+      code: typeof error.code === 'string' ? error.code : 'UNKNOWN',
+      msg: typeof error.msg === 'string' ? error.msg : '',
+      fix: typeof error.fix === 'string' ? error.fix : '',
+      recoveryHintCount: recoveryHints.length,
+      recoveryHints: recoveryHints.slice(0, 3),
+    })
+  }
+  return failures
+}
+
 function summarizeSessionRecord(sessionRecord) {
   const summary = summarizeAiAgentSessionRecord(sessionRecord)
   const roleCounts = {}
-  const toolNames = []
 
   for (const entry of sessionRecord.history ?? []) {
     const role = typeof entry.role === 'string' ? entry.role : 'unknown'
     roleCounts[role] = (roleCounts[role] ?? 0) + 1
-    if (Array.isArray(entry.toolCalls)) {
-      for (const call of entry.toolCalls) {
-        if (typeof call.name === 'string') toolNames.push(call.name)
-      }
-    }
   }
 
   return {
     ...summary,
     messageCount: (sessionRecord.history ?? []).length,
     roleCounts,
-    toolCallCount: toolNames.length,
-    toolNames,
+    failedToolCalls: summarizeFailedToolCalls(sessionRecord),
   }
 }
 
@@ -1393,11 +1537,16 @@ async function run(options) {
   const planning = resolvePageDesignPlanningContext(editor.project, options.pageId, {
     fallbackDescription: options.requestText,
   })
-  const demand = await sendDemand((input) => pageDesignHost.run('pageDesign', input), {
+  const demand = await sendDemand(pageDesignHost, {
     pageId: options.pageId,
+    projectId: auth.projectId,
     description: options.requestText,
     ...planning,
-  }, options.turnTimeoutMs, {
+  }, {
+    turnIdleTimeoutMs: options.turnIdleTimeoutMs,
+    turnTimeoutMs: options.turnTimeoutMs,
+    maxDemandMs: options.maxDemandMs,
+  }, {
     onDelta: (delta) => {
       textDeltas.push(delta)
       tracer.onDelta(delta)
@@ -1419,10 +1568,10 @@ async function run(options) {
     onToolCall: (record) => toolCalls.push(record),
   })
   const sendResult = demand.report
-  if (demand.runResult === undefined) {
-    throw new Error(`AI pageDesign run failed before session result was available: ${sendResult.error ?? 'unknown error'}`)
+  if (demand.sessionRecord === undefined) {
+    throw new Error(`AI pageDesign run failed before session was available: ${sendResult.error ?? 'unknown error'}`)
   }
-  const { session } = demand.runResult
+  const sessionRecord = demand.sessionRecord
 
   // 6. 保存脏文件 + 远端回读验证
   const after = readEditorFiles(editor)
@@ -1437,7 +1586,6 @@ async function run(options) {
   }))
 
   // 7. 收集会话记录与诊断摘要
-  const sessionRecord = session.getSessionRecord()
   const sessionSummary = summarizeSessionRecord(sessionRecord)
   const assistantText = sessionSummary.lastAssistantText || textDeltas.join('').trim() || latestResultText.trim()
   const hitRoundLimit = assistantText.includes('工具调用轮次已达上限')
@@ -1449,6 +1597,18 @@ async function run(options) {
   const artifactValidation = validateArtifacts(after, sessionRecord)
 
   const diagnosticStreamEvents = options.printStreamEvents ? streamEvents : []
+  const failureSummary = buildRunFailureSummary({
+    sendResult,
+    persistenceAssertions: {
+      filesPersisted,
+      requiredFilesChangedAndSaved,
+      hitRoundLimit,
+      hasToolCalls,
+    },
+    artifactValidation,
+    sessionSummary,
+    assistantText,
+  })
   return {
     ok: sendResult.ok
       && !sendResult.aborted
@@ -1475,7 +1635,7 @@ async function run(options) {
     replacePage: options.replacePage,
     hostMode: options.hostMode,
     requestText: options.requestText,
-    sessionId: session.sessionId,
+    sessionId: demand.sessionId ?? sessionRecord.moduleInstanceId,
     pageConfigApi: `${options.backendUrl}/api/pages-config/${encodeURIComponent(options.pageId)}`,
     pageConfigDir: `spark-ai-server/data/pages-config/${options.tenantId}/${auth.projectId}/${options.pageId}`,
     changedFiles: changed,
@@ -1490,6 +1650,7 @@ async function run(options) {
       hitRoundLimit,
       hasToolCalls,
     },
+    failureSummary,
     assistantText,
     reasoningText: reasoningDeltas.join('').trim(),
     usages,
@@ -1517,6 +1678,13 @@ run(options).then((result) => {
   console.log(JSON.stringify(result, null, 2))
   if (!result.ok) process.exit(2)
 }).catch((error) => {
-  console.error(error instanceof Error ? (error.stack ?? error.message) : String(error))
+  const message = error instanceof Error ? error.message : String(error)
+  console.log(JSON.stringify({
+    ok: false,
+    error: message,
+    failureSummary: [message],
+    steps: { login: false },
+  }, null, 2))
+  console.error(error instanceof Error ? (error.stack ?? message) : message)
   process.exit(1)
 })

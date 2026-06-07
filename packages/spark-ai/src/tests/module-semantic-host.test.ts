@@ -415,7 +415,7 @@ describe('AiAgentHost public API', () => {
       error: {
         code: 'AI_TOOL_REJECTED_BEFORE_EXECUTION',
         msg: '需要人工审批',
-        fix: '等待用户批准后再执行。',
+        fix: '等待用户批准后再执行。 反查指南：module_function_guide({ kind: "task", functionName: "fail" })。',
       },
       metadata: {
         blockedBy: 'beforeFunctionCall',

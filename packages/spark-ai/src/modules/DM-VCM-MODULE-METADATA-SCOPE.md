@@ -25,6 +25,9 @@ LLM 只能通过固定工具理解语义：
 - `@module`：声明 kind、名称、业务边界和适用场景。
 - `@moduleFind`：声明当前 kind 在合法父路径下的实例查询语义。
 - `@function`：声明 functionName、业务意图、参数含义和失败修复建议。
+- `@usageRule`：函数级使用约束；生成 `usageRules[]`。
+- `@requiredBeforeCall`：调用前置步骤；生成 `requiredBeforeCall[]` 并进入 `module_function_guide.recoveryHints`。
+- `@failureMode`：格式 `CODE when描述 => fix描述`；生成 `failureModes[]`，FC 失败时由 enricher 按 code 反查 fix。
 - `@attribute`：声明属性读取/写入语义。
 - `@payloadRef`：声明复杂参数需要从哪个 payload catalog 查询。
 

@@ -105,7 +105,7 @@ function auditTypePrecision(entry: ComponentEntry, issues: AuditIssue[]): void {
   for (const prop of entry.props) {
     if (STRUCTURAL_PROP_NAMES.has(prop.name)) continue
 
-    const typeStr = prop.type
+    const typeStr = prop.typeText
     for (const pattern of LOW_PRECISION_TYPE_PATTERNS) {
       if (pattern.test(typeStr)) {
         issues.push({

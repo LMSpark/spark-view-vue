@@ -61,10 +61,11 @@ function createEditor(activePage: ActivePageState | null): ProjectWorkspace {
     getPageFilesApi: () => '/api/pages',
     getNavigationApi: () => '/api/navigation',
   })
-  Object.defineProperty(editor.project, 'getActivePage', {
-    value: vi.fn(() => activePage),
-    configurable: true,
-  })
+  if (activePage !== null) {
+    const page = editor.project.openPageDesign(activePage.pageId)
+    editor.project.setActivePage(activePage.pageId)
+    if (activePage.isLoaded) page.markLoaded()
+  }
   Object.defineProperty(editor.project, 'readPlanningProjection', {
     value: vi.fn(() => [{
       pageId: 'orders',
@@ -212,7 +213,10 @@ describe('runPageDesignAiSession', () => {
       consumeCapability: createCapabilityConsumer(aiHost),
     })
 
-    expect(result).toEqual({ sawToolCall: false })
+    expect(result).toEqual(expect.objectContaining({
+      sawToolCall: false,
+      files: expect.objectContaining({ pageId: 'orders' }),
+    }))
     expect(editor.ensureActivePageFilesLoaded).not.toHaveBeenCalled()
     expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
     expect(mocks.pageDesignRun).toHaveBeenCalledWith('pageDesign', {
@@ -221,6 +225,7 @@ describe('runPageDesignAiSession', () => {
       effectiveDescription: '订单列表页：展示与筛选订单',
       planningTitle: '订单',
       planningPath: '/orders',
+      projectId: 'test-project',
     }, expect.any(Object))
   })
 
@@ -261,7 +266,10 @@ describe('runPageDesignAiSession', () => {
       beforeFunctionCall,
     })
 
-    expect(result).toEqual({ sawToolCall: true })
+    expect(result).toEqual(expect.objectContaining({
+      sawToolCall: true,
+      files: expect.objectContaining({ pageId: 'orders' }),
+    }))
     expect(trace.reset).toHaveBeenCalledTimes(1)
     expect(trace.appendUserMessage).toHaveBeenCalledWith('补一个按钮')
     expect(trace.appendEvent).toHaveBeenCalledWith(event)
@@ -300,7 +308,10 @@ describe('runPageDesignAiSession', () => {
       onAbort,
     })
 
-    expect(result).toEqual({ sawToolCall: false })
+    expect(result).toEqual(expect.objectContaining({
+      sawToolCall: false,
+      files: expect.objectContaining({ pageId: 'orders' }),
+    }))
     expect(adapter.run).toHaveBeenCalledOnce()
     expect(mocks.ensurePageDesignBusiness).toHaveBeenCalledWith(expect.objectContaining({ host: aiHost }))
   })
@@ -336,10 +347,44 @@ describe('runPageDesignAiSession', () => {
     expect(signal?.aborted).toBe(true)
     pending.resolve(lateResult)
 
-    await expect(promise).resolves.toEqual({ sawToolCall: false })
+    await expect(promise).resolves.toEqual(expect.objectContaining({
+      sawToolCall: false,
+      files: expect.objectContaining({ pageId: 'orders' }),
+    }))
     expect(trace.markAborted).toHaveBeenCalledWith('用户取消')
     expect(trace.appendError).not.toHaveBeenCalled()
     expect(adapter.isRunning()).toBe(false)
+  })
+
+  it('returns generated four files and can save dirty files after the run', async () => {
+    const editor = createEditor({ pageId: 'orders', isLoaded: true })
+    const aiHost = createAiHost()
+    const saveDirtyPageFiles = vi.spyOn(editor, 'saveDirtyPageFiles')
+    const adapter: AiRunAdapterState = {
+      isRunning: vi.fn(() => false),
+      abort: vi.fn(),
+      run: vi.fn(async () => {
+        const page = editor.project.openPageDesign('orders')
+        page.setFileText('script.js', 'export function generated() { return true }\n')
+        page.setFileText('style.css', '.generated { display: block; }\n')
+        return 'completed' as const
+      }),
+    }
+
+    const result = await runPageDesignAiSession({
+      pageId: 'orders',
+      description: '生成脚本和样式',
+      editor,
+      consumeCapability: createCapabilityConsumer(aiHost),
+      adapter,
+      saveDirtyFilesAfterRun: true,
+    })
+
+    expect(result.files.script).toContain('generated')
+    expect(result.files.style).toContain('.generated')
+    expect(result.savedDirtyFileNames).toEqual(expect.arrayContaining(['script.js', 'style.css']))
+    expect(result.dirtyFileNames).toEqual([])
+    expect(saveDirtyPageFiles).toHaveBeenCalledOnce()
   })
 
   it('fails fast when the active PageNode is not loaded', async () => {

@@ -14,9 +14,14 @@ import type {
 import type { AiAgentStreamEvent, AiAgentToolCallRecord } from '@spark-appworks/spark-ai/agent'
 import { AI_AGENT_HOST } from '@spark-appworks/spark-ai/agent'
 import type { SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
-import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
+import type {
+  PageNodeFileName,
+  ProjectActivePageProjection,
+  ProjectWorkspace,
+} from '@spark-appworks/spark-project-model'
 import {
   PAGE_DESIGN_MODULE_ID,
+  assertPageDesignRunGateAllowed,
   ensurePageDesignBusiness,
   resolvePageDesignPlanningContext,
   type PageDesignAllowedOperations,
@@ -29,6 +34,8 @@ export type PageDesignAiRunOptions = {
   mode?: PageDesignRunMode
   allowedOperations?: PageDesignAllowedOperations
   preserveExistingInteractions?: boolean
+  /** 未声明 implGate 时 fail-fast；生产 runner 建议 true。 */
+  strictImplGate?: boolean
 }
 
 /**
@@ -52,10 +59,15 @@ export type PageDesignAiRunCommand = PageDesignAiRunOptions & {
   beforeFunctionCall?: AiRunBeforeFunctionCall
   onAbort?: AiRunAbortHandler
   userMessage?: string
+  /** 自动化/headless 调用可打开；DevSystem 默认保持手动保存语义。 */
+  saveDirtyFilesAfterRun?: boolean
 }
 
 export type PageDesignAiRunResult = {
   sawToolCall: boolean
+  files: ProjectActivePageProjection
+  dirtyFileNames: PageNodeFileName[]
+  savedDirtyFileNames: PageNodeFileName[]
 }
 
 export async function runPageDesignAiSession(command: PageDesignAiRunCommand): Promise<PageDesignAiRunResult> {
@@ -72,6 +84,13 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   assertActivePageNodeLoaded(command.editor, pageId)
 
   const planning = resolvePageDesignPlanningContext(command.editor.project, pageId)
+  const summary = command.editor.project.readPlanningProjection().find(item => item.pageId === pageId)
+  if (summary === undefined) {
+    throw new Error(`pageDesign: no planning projection for pageId "${pageId}".`)
+  }
+  assertPageDesignRunGateAllowed(summary, command.mode, {
+    strictImplGate: command.strictImplGate === true,
+  })
 
   const pageDesignHost = ensurePageDesignBusiness({
     host: aiAgentHost,
@@ -88,7 +107,7 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   await adapter.run({
     host: pageDesignHost,
     alias: PAGE_DESIGN_MODULE_ID,
-    input: buildPageDesignRunInput(pageId, command, planning),
+    input: buildPageDesignRunInput(pageId, command.editor.project.projectId, command, planning),
     ...(command.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: command.beforeFunctionCall }),
     ...(command.onAbort === undefined ? {} : { onAbort: command.onAbort }),
     trace: createPageDesignTraceSink({
@@ -102,7 +121,20 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
     userMessage: command.userMessage ?? description,
   })
 
-  return { sawToolCall }
+  const dirtyFileNames = readDirtyFileNames(command.editor)
+  const savedDirtyFileNames = command.saveDirtyFilesAfterRun === true
+    ? dirtyFileNames
+    : []
+  if (savedDirtyFileNames.length > 0) {
+    await command.editor.saveDirtyPageFiles()
+  }
+
+  return {
+    sawToolCall,
+    files: command.editor.project.readActivePageProjection(),
+    dirtyFileNames: readDirtyFileNames(command.editor),
+    savedDirtyFileNames,
+  }
 }
 
 type CreatePageDesignTraceSinkOptions = Readonly<{
@@ -150,8 +182,13 @@ function assertActivePageNodeLoaded(editor: ProjectWorkspace, pageId: string): v
   }
 }
 
+function readDirtyFileNames(editor: ProjectWorkspace): PageNodeFileName[] {
+  return Array.from(editor.project.readDirtyProjection().dirtyFiles)
+}
+
 function buildPageDesignRunInput(
   pageId: string,
+  projectId: string,
   options: PageDesignAiRunOptions,
   planning: Pick<PageDesignRunInput, 'effectiveDescription' | 'planningTitle' | 'planningPath'>,
 ): PageDesignRunInput {
@@ -159,6 +196,7 @@ function buildPageDesignRunInput(
     pageId,
     description: options.description.trim(),
     effectiveDescription: planning.effectiveDescription,
+    projectId,
   }
   if (planning.planningTitle !== undefined) input.planningTitle = planning.planningTitle
   if (planning.planningPath !== undefined) input.planningPath = planning.planningPath
@@ -167,5 +205,6 @@ function buildPageDesignRunInput(
   if (options.preserveExistingInteractions !== undefined) {
     input.preserveExistingInteractions = options.preserveExistingInteractions
   }
+  if (options.strictImplGate !== undefined) input.strictImplGate = options.strictImplGate
   return input
 }

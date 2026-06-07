@@ -396,6 +396,39 @@ describe('createTurnEventCollector', () => {
     })
   })
 
+  it('maps recovered module_script code arg to script', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: [
+        '<tool_call>module_script',
+        '<arg_key>path</arg_key><arg_value>/project[leave-page]</arg_value>',
+        '<arg_key>code</arg_key><arg_value>return await this.readPlanningProjection()</arg_value>',
+        '</tool_call>',
+      ].join(''),
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_argtag_1',
+        type: 'function',
+        function: {
+          name: 'module_script',
+          arguments: JSON.stringify({
+            path: '/project[leave-page]',
+            script: 'return await this.readPlanningProjection()',
+          }),
+        },
+      }],
+    })
+  })
+
   it('recovers DSML invoke blocks emitted as assistant text', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({
@@ -508,6 +541,38 @@ describe('createTurnEventCollector', () => {
         { id: 'call-2', type: 'function', function: { name: 'module_guide', arguments: '{"kind":"x"}' } },
       ],
     })
+    expect(hub.listenerCount()).toBe(0)
+  })
+
+  it('fails when no SSE frames arrive within idleTimeoutMs', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 60_000,
+      idleTimeoutMs: 40,
+    })
+
+    await expect(collector.result).rejects.toThrow(/idle timeout/)
+    expect(hub.listenerCount()).toBe(0)
+  })
+
+  it('resets idle timer when SSE frames keep arriving', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 60_000,
+      idleTimeoutMs: 80,
+    })
+
+    hub.emit(createTurnAppEvent('delta', { delta: 'a' }))
+    await new Promise(resolve => setTimeout(resolve, 50))
+    hub.emit(createTurnAppEvent('delta', { delta: 'b' }))
+    await new Promise(resolve => setTimeout(resolve, 50))
+    hub.emit(createTurnAppEvent('result', { text: 'ok', toolCalls: [] }))
+
+    await expect(collector.result).resolves.toEqual({ text: 'ok', toolCalls: [] })
     expect(hub.listenerCount()).toBe(0)
   })
 })

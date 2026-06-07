@@ -24,6 +24,7 @@
  */
 
 import type { AiAgentStreamEvent } from '../chat/chat-types'
+import { PROTOCOL_TOOL_NAMES } from '../../modules/internal/protocol-tool-generator'
 import type { AiAgentAppSseEvent } from '../transport/app-sse-events'
 import { isRecord } from '@spark-appworks/spark-utils'
 import type {
@@ -63,7 +64,10 @@ type AiAgentFrame = Readonly<{
 type TurnEventCollectorInput = Readonly<{
   input: AiAgentStreamTurnInput
   source: AiAgentAppSseEventSource
+  /** 绝对上限：整轮 turn 最长等待时间。 */
   timeoutMs?: number
+  /** 空闲上限：连续无 SSE 帧超过该毫秒则 fail-fast。 */
+  idleTimeoutMs?: number
 }>
 
 // ═══════════════════════════════════════════════════════════════
@@ -95,20 +99,38 @@ export type TurnEventCollector = Readonly<{
 export function createTurnEventCollector(options: TurnEventCollectorInput): TurnEventCollector {
   const { input, source } = options
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
+  const idleTimeoutMs = options.idleTimeoutMs
   const state = new TurnEventState(input)
   const disposers = [source.on(AI_FRAME_EVENT_NAME, (event) => {
     const payload = readMatchingAiAgentFrame(event, input)
     if (payload === null) return
+    resetIdleTimer()
     state.handle(toTurnEventKind(payload.frame), event, payload.frame)
   })]
 
   let timeoutId: ReturnType<typeof setTimeout> | null = null
+  let idleTimeoutId: ReturnType<typeof setTimeout> | null = null
   let cleaned = false
+  const clearTimers = () => {
+    if (timeoutId !== null) clearTimeout(timeoutId)
+    if (idleTimeoutId !== null) clearTimeout(idleTimeoutId)
+    timeoutId = null
+    idleTimeoutId = null
+  }
+  const resetIdleTimer = () => {
+    if (cleaned || idleTimeoutMs === undefined) return
+    if (idleTimeoutId !== null) clearTimeout(idleTimeoutId)
+    idleTimeoutId = setTimeout(() => {
+      state.fail(new Error(
+        `AI turn idle timeout: no APP SSE events for ${String(idleTimeoutMs)}ms: turnId=${input.turn.turnId}`,
+      ))
+    }, idleTimeoutMs)
+  }
   const cleanup = () => {
     if (cleaned) return
     cleaned = true
     for (const dispose of disposers) dispose()
-    if (timeoutId !== null) clearTimeout(timeoutId)
+    clearTimers()
   }
   const result = new Promise<AiAgentStreamTurnResult>((resolve, reject) => {
     state.bind({
@@ -124,6 +146,7 @@ export function createTurnEventCollector(options: TurnEventCollectorInput): Turn
     timeoutId = setTimeout(() => {
       state.fail(new Error(`AI turn timed out waiting for APP SSE events: turnId=${input.turn.turnId}`))
     }, timeoutMs)
+    resetIdleTimer()
     input.signal?.addEventListener('abort', () => {
       state.fail(new Error('AI turn aborted'))
     }, { once: true })
@@ -356,6 +379,19 @@ function recoverToolCallsFromText(text: string): readonly AiAgentTransportToolCa
   return normalizedCalls.length === 0 ? null : normalizedCalls
 }
 
+export function recoverAssistantTextToolCalls(text: string): readonly AiAgentTransportToolCall[] {
+  return recoverToolCallsFromText(text) ?? []
+}
+
+export function containsPseudoToolCallText(text: string): boolean {
+  const trimmed = text.trim()
+  if (trimmed.length === 0) return false
+  return /<tool_call>/i.test(trimmed)
+    || /<[|｜]DSML[|｜]tool_calls>/i.test(trimmed)
+    || /"tool_call"\s*:/.test(trimmed)
+    || /"tool_calls"\s*:/.test(trimmed)
+}
+
 function recoverJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
   const calls: AiAgentTransportToolCall[] = []
   for (const jsonText of extractJsonCandidates(text)) {
@@ -506,10 +542,10 @@ function recoverArgKeyTagToolCallsFromText(text: string): readonly AiAgentTransp
   const blockPattern = /<tool_call>\s*([\s\S]*?)\s*<\/tool_call>/gi
   for (const match of text.matchAll(blockPattern)) {
     const inner = match[1]?.trim() ?? ''
-    if (inner.length === 0 || inner.includes('(')) continue
+    if (inner.length === 0) continue
     const nameEnd = inner.search(/<arg_key>/i)
     const rawName = (nameEnd >= 0 ? inner.slice(0, nameEnd) : inner).trim()
-    if (rawName.length === 0) continue
+    if (rawName.length === 0 || rawName.includes('(')) continue
     const args: Record<string, unknown> = {}
     const argsSection = nameEnd >= 0 ? inner.slice(nameEnd) : ''
     const pairPattern = /<arg_key>\s*([\s\S]*?)\s*<\/arg_key>\s*<arg_value>\s*([\s\S]*?)\s*<\/arg_value>/gi
@@ -543,6 +579,18 @@ function normalizeRecoveredToolArguments(
   toolName: string,
   args: Record<string, unknown>,
 ): Record<string, unknown> {
+  if (toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
+    const next: Record<string, unknown> = { ...args }
+    if (!Object.hasOwn(next, 'script')) {
+      if (typeof next['code'] === 'string') {
+        next['script'] = next['code']
+        delete next['code']
+      } else if (isRecord(next['args']) && typeof next['args']['script'] === 'string') {
+        next['script'] = next['args']['script']
+      }
+    }
+    return next
+  }
   if (toolName !== 'module_find') return args
   if (Object.hasOwn(args, 'childKind')) return args
   const kind = args['kind']

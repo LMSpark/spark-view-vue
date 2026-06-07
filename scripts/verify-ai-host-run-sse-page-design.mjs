@@ -1,5 +1,8 @@
 #!/usr/bin/env node
 /**
+ * @deprecated 探索期 SSE 宿主联调脚本；学生/员工多页场景与当前 pageDesign module_script 主路径不一致。
+ * 日常 pageDesign LLM 验收请用：scripts/verify-page-design-e2e.mjs（pnpm run verify:ai:page-design-form:llm）。
+ *
  * Headless Host Run SSE verification.
  *
  * The script acts as an APP execution node without opening any UI:

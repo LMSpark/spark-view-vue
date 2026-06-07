@@ -10,6 +10,8 @@ import { toErrorMessage } from '@spark-appworks/spark-utils'
 import { coerceJsonValue, type AiJsonValue } from '../../json'
 import { AiModuleCheck, AiModuleResult } from '../protocol'
 
+const SCRIPT_RECOVERY_HINT = '先 module_function_guide 读取 usageRules/paramsSchema；mutator 用 module_script({ script })，参数名必须是 script；失败时读 tool result 的 RECOVERY_HINT。'
+
 export type AiModuleScriptContext = Readonly<Record<string, unknown>>
 
 const GENERATED_STACK_LINE_FOR_SCRIPT_LINE_1 = 6
@@ -53,12 +55,26 @@ export async function executeModuleScript(
       })
     }
     const locationText = location === undefined ? '' : `，脚本第 ${String(location.line)} 行`
+    const errorMessage = toErrorMessage(error)
+    const chainHint = errorMessage.includes('toJSON')
+      ? '勿对 DataSet/DataView/Tree 调 toJSON；先 const page = await this.openPageDesign({ pageId })，再 await page.editDataSet(async ds => ...)。'
+      : errorMessage.includes('.call is not a function')
+        ? 'openPageDesign 返回 ConfigPageNode 链式对象，用 page.editNodeTree(async tree => ...)/editDataSet(async ds => ...)，勿 page.call()。'
+        : errorMessage.includes('editDataSet is not a function') || errorMessage.includes('editNodeTree is not a function')
+          ? '必须先 await this.openPageDesign({ pageId }) 得到 page，再 page.editDataSet(async ds => ...)；勿省略 await。'
+          : errorMessage.includes("reading 'includes'")
+            ? 'DataSet 工具 API 用 t.createTable({ tableName, columns })；勿对 undefined 调 includes。'
+            : errorMessage.includes('run is not a function')
+              ? 'editDataSet/editNodeTree 直接传 callback：page.editDataSet(async ds => ...)；兼容 { run: fn }。'
+              : errorMessage.includes('received non-function run')
+                ? '勿把 createTable 参数对象传给 editDataSet；应 editDataSet(async ds => ds.createTable({...}))。'
+                : ''
     return AiModuleResult.failCode(
       'SCRIPT_EXECUTION_FAILED',
-      `脚本执行失败${locationText}: ${toErrorMessage(error)}`,
+      `脚本执行失败${locationText}: ${errorMessage}`,
       location === undefined
-        ? '检查脚本语法、this helper 名称和参数 schema 后重试。'
-        : `检查脚本第 ${String(location.line)} 行附近的语法、this helper 名称和参数 schema 后重试。`,
+        ? `检查脚本语法、this helper 名称和参数 schema 后重试。${chainHint}${SCRIPT_RECOVERY_HINT}`
+        : `检查脚本第 ${String(location.line)} 行附近的语法、this helper 名称和参数 schema 后重试。${chainHint}${SCRIPT_RECOVERY_HINT}`,
     )
   }
 }

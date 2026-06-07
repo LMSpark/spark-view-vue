@@ -147,6 +147,47 @@ class DemoRootService {
     expect(generated.modules[1]?.rootApi.kind).toBe('demo-root')
   })
 
+  it('discovers resultApis from script-only mutator callback parameter', () => {
+    const root = createTempRoot()
+    writeFileSync(join(root, 'sample.ts'), `
+/**
+ * @moduleKind demo-tree
+ */
+class DemoTree {
+  /** Add node. */
+  public addNode(): void {}
+}
+
+/**
+ * @moduleKind demo-config-page
+ * @moduleActionMode explicit
+ */
+class DemoConfigPage {
+  /**
+   * Edit node tree in module_script.
+   *
+   * @moduleMutation rule.json write Edit node tree in module_script.
+   * @vcmScriptOnly
+   */
+  public async editNodeTree(run: (tree: DemoTree) => void | Promise<void>): Promise<void> {
+    await run(new DemoTree())
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['sample.ts'],
+      outFile: 'out/modules.json',
+      moduleOutFile: 'out/modules.json',
+      extractResults: true,
+    })
+
+    const configPage = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-config-page')
+    const editNodeTree = configPage?.rootApi.actions.find(action => action.name === 'editNodeTree')
+    expect(editNodeTree?.resultApis?.[0]?.api.kind).toBe('demo-tree')
+    expect(editNodeTree?.usageRules).toContain('Must use module_script; direct function call is not supported.')
+  })
+
   it('writes a VCM object element catalog JSON', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
@@ -403,6 +444,55 @@ class PooledParent {
     expect(refs.map(ref => ref.api.kind)).toEqual(['pooled-child', 'pooled-child'])
     expect(refs[0]?.api).toBe(refs[1]?.api)
     expect(refs[0]?.api.actions[0]?.resultApis).toEqual([])
+  })
+
+  it('extracts usageRule, requiredBeforeCall and failureMode tags from action JSDoc', () => {
+    const root = createTempRoot()
+    writeFileSync(join(root, 'sample.ts'), `
+class AiModuleResult<T> {
+  readonly value?: T
+}
+
+/**
+ * Demo root service.
+ *
+ * @moduleKind demo-root
+ */
+class DemoRootService {
+  /**
+   * Submit the current draft.
+   *
+   * @usageRule 必须先确认草稿内容
+   * @requiredBeforeCall 先 readPlanningProjection 确认 pageId
+   * @failureMode DRAFT_NOT_FOUND 草稿不存在 => 先调用 setDraftFields 创建草稿
+   */
+  public submitDraft(): AiModuleResult<{ submitted: boolean }> {
+    return new AiModuleResult()
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['sample.ts'],
+      outFile: 'out/abilities.json',
+      moduleOutFile: 'out/modules.json',
+      extractResults: true,
+      writeFiles: false,
+    })
+
+    const submitDraft = result.moduleMetadata
+      .find(module => module.rootApi.kind === 'demo-root')
+      ?.rootApi.actions.find(action => action.name === 'submitDraft')
+
+    expect(submitDraft).toMatchObject({
+      usageRules: ['必须先确认草稿内容'],
+      requiredBeforeCall: ['先 readPlanningProjection 确认 pageId'],
+      failureModes: [{
+        code: 'DRAFT_NOT_FOUND',
+        when: '草稿不存在',
+        fix: '先调用 setDraftFields 创建草稿',
+      }],
+    })
   })
 })
 

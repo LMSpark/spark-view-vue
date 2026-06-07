@@ -114,12 +114,12 @@ DevSystem
 AI Agent Host
   -> ensurePageDesignBusiness()
   -> ProjectEditor.project
-  -> ProjectModel.nodes.openConfigPage(pageId)
+  -> ProjectModel.openPageDesign(pageId)
   -> ConfigPageNode
   -> PageNode 子模型
 ```
 
-AI 写入只进入内存并标 dirty。保存、版本、路由刷新和发布都必须是明确动作。
+AI 写入先进入内存并标 dirty。DevSystem 保持显式保存；自动化 runner 可在运行结束后保存 dirty 四文件。
 
 ## 数据运行时
 

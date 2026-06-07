@@ -35,9 +35,9 @@ import type { AiJsonParams } from '../../json'
 import { createAiAgentSessionId, toAiAgentRuntimeScope } from '../business/business-scope'
 import type { AiAgentLifecycleDirective } from '../business/lifecycle-types'
 import type { AiAgentRegistration } from '../business/registration-types'
-import type { AiAgentScope } from '../business/scope-types'
+import type { AiAgentScope, AiAgentRuntimeContext } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentTurnMeta } from '../chat/chat-types'
-import type { AiAgentSessionStore } from '../session/session-types'
+import type { AiAgentHistoryEntry, AiAgentSessionStore } from '../session/session-types'
 import type { AiModuleToolSpec } from '../../modules/internal/protocol-tool-generator'
 import type {
   AiAgentTurnCallbacks,
@@ -48,6 +48,10 @@ import type {
 import { emitAiAgentDiagnosticEvent } from './diagnostic-events'
 import { toCurrentTurnMessages } from './payload-codec'
 import { AiAgentToolCallExecutor } from './tool-call-executor'
+import {
+  containsPseudoToolCallText,
+  recoverAssistantTextToolCalls,
+} from './turn-event-collector'
 
 function toAiAgentTransportTools(
   tools: readonly AiModuleToolSpec[],
@@ -69,6 +73,66 @@ const TOOL_PRODUCTION_LINE_PROMPT = [
   '每轮最多调用一个 tool_call，等待 tool 结果后再决定下一步。',
   '任务完成时调用 agent_complete({ summary }) 收尾；不要用自然语言正文收尾。',
 ].join('\n')
+
+const PSEUDO_TOOL_CALL_NUDGE = [
+  '上一次回复把工具调用写进了 assistant 正文（如 <tool_call> 标签），runtime 无法执行。',
+  '请改用 OpenAI tool_calls 通道重新发起；module_script 的参数名必须是 script，不是 code。',
+  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 module_function_guide 或 queryPayloads 后重试。',
+].join('\n')
+
+const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
+
+const PLAN_WITHOUT_TOOL_NUDGE = [
+  '上一次 assistant 正文只是计划/说明，没有真实 OpenAI tool_calls，runtime 未执行任何工具。',
+  '下一回合必须直接发起 tool_call（写页面时优先 module_script 或 openPageDesign），禁止再输出计划文字。',
+  '若已 queryPayloads/guidePayload，立即 module_script 调用 this.openPageDesign → cp.editDataSet → cp.editNodeTree。',
+].join('\n')
+
+const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3
+
+const CATALOG_DISCOVERY_TOOL_NAMES = new Set<string>([
+  'module_query',
+  'module_guide',
+  'module_attribute_guide',
+  'module_function_guide',
+  'module_find',
+  'queryPayloads',
+  'guidePayload',
+])
+
+const EXECUTION_TOOL_NAMES = new Set<string>([
+  'module_script',
+  'openPageDesign',
+  'readPlanningProjection',
+])
+
+const MAX_EXECUTION_PHASE_NUDGES = 3
+const MAX_MODULE_SCRIPT_RETRY_NUDGES = 3
+
+function buildExecutionPhaseNudge(pageId: string): string {
+  return [
+    `目录阶段已完成（queryPayloads/guidePayload 已成功），pageId="${pageId}"。禁止再重复 queryPayloads 或 module_function_guide。`,
+    buildModuleScriptShapeReminder(pageId),
+    'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
+  ].join('\n')
+}
+
+function buildModuleScriptRetryNudge(pageId: string): string {
+  return [
+    '上一次 module_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
+    buildModuleScriptShapeReminder(pageId),
+    'createTable 签名是 createTable({ tableName, columns })，不是 createTable(name, columns)。',
+  ].join('\n')
+}
+
+/** 通用 module_script 形状提醒；业务场景细节由 registration.systemPrompt 提供。 */
+function buildModuleScriptShapeReminder(pageId: string): string {
+  return [
+    `module_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
+    'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
+    'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "<来自 guidePayload>", id: "...", props: { dataViewKey: "<table@viewId>", contextDataMember: "currentRow" } } }); });',
+  ].join('\n')
+}
 
 /* ── 输入/输出类型 ──────────────────────────────────────────── */
 
@@ -135,6 +199,10 @@ export class AiAgentToolLoopRunner {
 
     // 首轮消息：仅包含最新用户输入
     let pendingMessages = toCurrentTurnMessages(request)
+    let pseudoToolCallNudgeCount = 0
+    let planWithoutToolNudgeCount = 0
+    let executionPhaseNudgeCount = 0
+    let moduleScriptRetryNudgeCount = 0
 
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
       // AbortSignal 检查：外部取消信号触发时立即退出
@@ -177,13 +245,33 @@ export class AiAgentToolLoopRunner {
         ...(request.onStreamEvent === undefined ? {} : { onStreamEvent: request.onStreamEvent }),
       })
 
-      const controlledToolCalls = selectControlledRoundToolCalls({
+      let controlledToolCalls = selectControlledRoundToolCalls({
         toolCalls: result.toolCalls,
         assistantMessagePersisted: result.assistantMessagePersisted === true,
       })
 
+      if (controlledToolCalls.length === 0 && result.text.trim().length > 0) {
+        const recovered = recoverAssistantTextToolCalls(result.text)
+        if (recovered.length > 0) {
+          controlledToolCalls = selectControlledRoundToolCalls({
+            toolCalls: recovered,
+            assistantMessagePersisted: false,
+          })
+        }
+      }
+
       // 工具生产线回合不持久化解释性正文，避免把无效 token 带入下一轮。
       if (controlledToolCalls.length === 0 && result.text.trim().length > 0) {
+        if (containsPseudoToolCallText(result.text) && pseudoToolCallNudgeCount < MAX_PSEUDO_TOOL_CALL_NUDGES) {
+          pseudoToolCallNudgeCount += 1
+          pendingMessages = [{ role: 'user', content: PSEUDO_TOOL_CALL_NUDGE }]
+          continue
+        }
+        if (mentionsPendingToolExecution(result.text) && planWithoutToolNudgeCount < MAX_PLAN_WITHOUT_TOOL_NUDGES) {
+          planWithoutToolNudgeCount += 1
+          pendingMessages = [{ role: 'user', content: PLAN_WITHOUT_TOOL_NUDGE }]
+          continue
+        }
         sessionStore.appendMessage({
           ...runtimeContext,
           role: 'assistant',
@@ -259,6 +347,24 @@ export class AiAgentToolLoopRunner {
 
       // V4 后端已通过 appendMessages 持久化本轮 assistant(tool_calls)+tool 结果；
       // 下一轮只需让后端基于 session.conversation 继续，避免重复发送同一批消息。
+      if (
+        executionPhaseNudgeCount < MAX_EXECUTION_PHASE_NUDGES
+        && shouldNudgeExecutionPhase(sessionStore, runtimeContext, executedToolCalls)
+      ) {
+        executionPhaseNudgeCount += 1
+        pendingMessages = [{ role: 'user', content: buildExecutionPhaseNudge(runtimeContext.moduleInstanceId) }]
+        continue
+      }
+
+      if (
+        moduleScriptRetryNudgeCount < MAX_MODULE_SCRIPT_RETRY_NUDGES
+        && shouldNudgeModuleScriptRetry(sessionStore, runtimeContext)
+      ) {
+        moduleScriptRetryNudgeCount += 1
+        pendingMessages = [{ role: 'user', content: buildModuleScriptRetryNudge(runtimeContext.moduleInstanceId) }]
+        continue
+      }
+
       pendingMessages = []
     }
 
@@ -411,4 +517,76 @@ function toLlmRoundTurn(turn: AiAgentTurnMeta, round: number): AiAgentTurnMeta {
     turnId: `${turn.turnId}-llm-round-${round}`,
     seq: turn.seq + round - 1,
   }
+}
+
+function mentionsPendingToolExecution(text: string): boolean {
+  const normalized = text.trim().toLowerCase()
+  if (normalized.length === 0) return false
+  const markers = [
+    'module_script',
+    'openpagedesign',
+    'editnodetree',
+    'editdataset',
+    'querypayloads',
+    'guidepayload',
+    '接下来我将',
+    '我将使用',
+    '我将调用',
+    '下一步将',
+    'next i will',
+    'i will use module_script',
+    'i will call',
+  ]
+  return markers.some(marker => normalized.includes(marker))
+}
+
+function shouldNudgeExecutionPhase(
+  sessionStore: AiAgentSessionStore,
+  context: AiAgentRuntimeContext,
+  executedToolCalls: readonly AiAgentTransportToolCall[],
+): boolean {
+  if (executedToolCalls.length === 0) return false
+
+  const history = sessionStore.getSessionHistory(context)
+  let guidePayloadSucceeded = false
+  let executionStarted = false
+  let queryPayloadCount = 0
+
+  for (const entry of history) {
+    if (!isCompletedFunctionCall(entry)) continue
+    if (entry.toolName === 'guidePayload') guidePayloadSucceeded = true
+    if (entry.toolName === 'queryPayloads') queryPayloadCount += 1
+    if (EXECUTION_TOOL_NAMES.has(entry.toolName)) executionStarted = true
+  }
+
+  if (!guidePayloadSucceeded || executionStarted) return false
+
+  const roundToolNames = executedToolCalls.map(call => call.function.name)
+  const roundIsCatalogOnly = roundToolNames.every(name => CATALOG_DISCOVERY_TOOL_NAMES.has(name))
+  if (!roundIsCatalogOnly) return false
+
+  return queryPayloadCount >= 1 || roundToolNames.includes('queryPayloads')
+}
+
+function shouldNudgeModuleScriptRetry(
+  sessionStore: AiAgentSessionStore,
+  context: AiAgentRuntimeContext,
+): boolean {
+  const history = sessionStore.getSessionHistory(context)
+  for (let index = history.length - 1; index >= 0; index -= 1) {
+    const entry = history[index]
+    if (entry?.kind !== 'functionCall') continue
+    return entry.toolName === 'module_script' && entry.status === 'failed'
+  }
+  return false
+}
+
+function isCompletedFunctionCall(entry: AiAgentHistoryEntry): entry is AiAgentHistoryEntry & {
+  kind: 'functionCall'
+  status: 'completed'
+  toolName: string
+} {
+  return entry.kind === 'functionCall'
+    && entry.status === 'completed'
+    && typeof entry.toolName === 'string'
 }

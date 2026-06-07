@@ -220,6 +220,30 @@ describe('AiModuleRuntime function tool protocol', () => {
     })
   })
 
+  it('binds module_script this to root kind when host.moduleId differs from kind', async () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(new AiModule({
+      kind: 'project',
+      name: 'Project',
+      description: 'Root project module.',
+      scriptContext: () => ({ marker: 'project-root' }),
+      find: () => AiModuleResult.ok([]),
+    }))
+
+    const result = await runtime.executeTool('module_script', {
+      script: 'return this.marker',
+    }, {
+      moduleId: 'modelEditor',
+      moduleInstanceId: 'leave-page',
+      instanceId: 'turn-1',
+    })
+
+    expect(result).toMatchObject({
+      ok: true,
+      data: 'project-root',
+    })
+  })
+
   it('module_query returns module summaries and optional function summaries', async () => {
     const result = await createRuntime().executeTool('module_query', {
       keyword: '工作板',
@@ -286,6 +310,20 @@ describe('AiModuleRuntime function tool protocol', () => {
         paramsSchema: expect.objectContaining({ required: ['id'] }),
         callPattern: expect.objectContaining({ toolName: 'getItem' }),
       }),
+    })
+    await expect(runtime.executeTool('module_function_guide', {
+      kind: 'project',
+      functionName: 'module_find',
+    })).resolves.toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({ code: 'INVALID_TOOL_ARGS' })],
+    })
+    await expect(runtime.executeTool('module_function_guide', {
+      kind: 'board',
+      name: 'getItem',
+    })).resolves.toMatchObject({
+      ok: true,
+      data: expect.objectContaining({ functionName: 'getItem' }),
     })
   })
 
@@ -377,6 +415,116 @@ describe('AiModuleRuntime function tool protocol', () => {
       },
     })
     expect(spy.host).toEqual(host)
+  })
+
+  it('coalesces flat direct function args into { path, args } and infers path from host', async () => {
+    const spy: { host?: AiModulePathContext['host'] } = {}
+    const runtime = new AiModuleRuntime()
+    runtime.register(createWorkspaceModule())
+    runtime.register(createBoardModule(spy))
+
+    const host = { moduleId: 'workspace', moduleInstanceId: 'workspace-a', instanceId: 'turn-1' }
+    const withFlatBusinessArgs = await runtime.executeTool('getItem', {
+      path: '/workspace[workspace-a]/board[board-1]',
+      id: 'item-flat',
+    }, host)
+    expect(withFlatBusinessArgs).toMatchObject({
+      ok: true,
+      data: { id: 'item-flat' },
+    })
+  })
+
+  it('infers root project path when host.moduleId is a business alias', async () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(new AiModule({
+      kind: 'project',
+      name: 'Project',
+      description: 'Root project module.',
+      functions: [{
+        name: 'echoPage',
+        description: 'Echo page id.',
+        paramsSchema: {
+          type: 'object',
+          properties: { pageId: { type: 'string' } },
+          required: ['pageId'],
+          additionalProperties: false,
+        },
+      }],
+      runner: (_ctx, functionName, args) => {
+        if (functionName !== 'echoPage') {
+          return AiModuleResult.failCode('UNKNOWN_FUNCTION', functionName)
+        }
+        return AiModuleResult.ok<AiJsonValue>({ pageId: args['pageId'] ?? null })
+      },
+      find: () => AiModuleResult.ok([]),
+    }))
+
+    const host = { moduleId: 'modelEditor', moduleInstanceId: 'leave-page', instanceId: 'turn-1' }
+    const result = await runtime.executeTool('echoPage', { pageId: 'leave-page' }, host)
+    expect(result).toMatchObject({
+      ok: true,
+      data: { pageId: 'leave-page' },
+    })
+  })
+
+  it('defaults openPageDesign pageId from host when direct call args are empty', async () => {
+    const runtime = new AiModuleRuntime()
+    runtime.register(new AiModule({
+      kind: 'project',
+      name: 'Project',
+      description: 'Root project module.',
+      functions: [{
+        name: 'openPageDesign',
+        description: 'Open page design.',
+        paramsSchema: {
+          type: 'object',
+          properties: { pageId: { type: 'string' } },
+          required: ['pageId'],
+          additionalProperties: false,
+        },
+      }],
+      runner: (_ctx, functionName, args) => {
+        if (functionName !== 'openPageDesign') {
+          return AiModuleResult.failCode('UNKNOWN_FUNCTION', functionName)
+        }
+        return AiModuleResult.ok<AiJsonValue>({ pageId: args['pageId'] ?? null })
+      },
+      find: () => AiModuleResult.ok([]),
+    }))
+
+    const host = { moduleId: 'modelEditor', moduleInstanceId: 'leave-page', instanceId: 'turn-1' }
+    const result = await runtime.executeTool('openPageDesign', {}, host)
+    expect(result).toMatchObject({
+      ok: true,
+      data: { pageId: 'leave-page' },
+    })
+  })
+
+  it('coalesces flat module_find query fields into { query }', async () => {
+    const runtime = createRuntime()
+
+    await expect(runtime.executeTool('module_find', {
+      path: '/',
+      childKind: 'workspace',
+      id: 'workspace-a',
+    })).resolves.toMatchObject({
+      ok: true,
+      data: [expect.objectContaining({ id: 'workspace-a' })],
+    })
+    await expect(runtime.executeTool('module_find', {
+      childKind: 'workspace',
+      query: { id: 'workspace-a' },
+    })).resolves.toMatchObject({
+      ok: true,
+      data: [expect.objectContaining({ id: 'workspace-a' })],
+    })
+  })
+
+  it('accepts module_script code alias as script', async () => {
+    const result = await createRuntime().executeTool('module_script', {
+      code: 'return this.$tools.module_query({ keyword: "工作板" })',
+    })
+    expect(result.ok).toBe(true)
   })
 
   it('rejects the deleted dynamic function tool protocol', async () => {

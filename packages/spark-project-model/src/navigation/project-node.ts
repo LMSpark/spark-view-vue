@@ -78,6 +78,12 @@ export type ProjectNodeData = {
   refPath?: string | undefined
   refProjectId?: string | undefined
   refBroken?: boolean | undefined
+  /** Agent 策划闸门；缺省时由 effectiveDescription 推断。 */
+  planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined
+  /** pageDesign 实现放行闸门；缺省过渡期为 open。 */
+  implGate?: 'closed' | 'open' | undefined
+  /** 上游 iPaaS / 契约就绪；缺省 true。 */
+  upstreamContractsSatisfied?: boolean | undefined
 }
 
 export type ProjectNodeNavigationPatch = {
@@ -95,6 +101,9 @@ export type ProjectNodeNavigationPatch = {
   refId?: string | undefined
   permissionMode?: NavPermissionMode | undefined
   context?: string | NavContextItem[] | NavContextConfig | undefined
+  planningStatus?: 'planning_draft' | 'planning_confirmed' | undefined
+  implGate?: 'closed' | 'open' | undefined
+  upstreamContractsSatisfied?: boolean | undefined
 }
 
 export type ProjectNodeLocation = {
@@ -167,6 +176,12 @@ export type ProjectPageNodeSummary = Record<string, unknown> & {
   description: string
   descriptionContext: ProjectDescriptionContext[]
   effectiveDescription: string
+  /** Agent 可见策划闸门；缺省时由 effectiveDescription 推断 planning_confirmed。 */
+  planningStatus?: 'planning_draft' | 'planning_confirmed'
+  /** 实现放行闸门；缺省过渡期为 open（runner 可 strictImplGate）。 */
+  implGate?: 'closed' | 'open'
+  /** 上游 iPaaS / 契约就绪；缺省 true。 */
+  upstreamContractsSatisfied?: boolean
   icon?: string
 }
 
@@ -217,6 +232,9 @@ export class ProjectNode {
     if (!('nodeKind' in patch)) delete next.nodeKind
     if (!('refId' in patch)) delete next.refId
     if (!('permissionMode' in patch)) delete next.permissionMode
+    if (!('planningStatus' in patch)) delete next.planningStatus
+    if (!('implGate' in patch)) delete next.implGate
+    if (!('upstreamContractsSatisfied' in patch)) delete next.upstreamContractsSatisfied
 
     Object.assign(next, deepClone(patch))
 
@@ -230,6 +248,9 @@ export class ProjectNode {
     if (next.context === undefined || next.context === '') delete next.context
     if (!next.dividerAfter) delete next.dividerAfter
     if (next.nodeKind !== 'ref' || !next.refId) delete next.refId
+    if (!next.planningStatus) delete next.planningStatus
+    if (!next.implGate) delete next.implGate
+    if (next.upstreamContractsSatisfied !== false) delete next.upstreamContractsSatisfied
     this.#node = next
   }
 
@@ -265,6 +286,9 @@ export class ProjectNode {
   get refBroken(): boolean | undefined { return this.#node.refBroken }
   get context(): ProjectNodeData['context'] { return this.#node.context }
   get permissionMode(): NavPermissionMode | undefined { return this.#node.permissionMode }
+  get planningStatus(): ProjectPageNodeSummary['planningStatus'] { return this.#node.planningStatus }
+  get implGate(): ProjectPageNodeSummary['implGate'] { return this.#node.implGate }
+  get upstreamContractsSatisfied(): boolean | undefined { return this.#node.upstreamContractsSatisfied }
 
   /**
    * 节点描述。

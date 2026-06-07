@@ -38,8 +38,10 @@ export type AiModuleRuntimeInspectReport = Readonly<{
   warningCount: number
 }>
 
-const PAYLOAD_QUERY_FUNCTION_NAME = 'queryPayloads'
-const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
+import {
+  PAYLOAD_GUIDE_FUNCTION_NAME,
+  PAYLOAD_QUERY_FUNCTION_NAME,
+} from '../payloads/payload-catalog-constants'
 
 const HIGH_RISK_FUNCTION_PATTERN = /archive|cancel|clear|close|delete|destroy|drop|remove|replace|reset|set|submit|update|write/iu
 const OPENAI_FUNCTION_NAME_PATTERN = /^[A-Za-z0-9_-]{1,64}$/

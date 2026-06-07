@@ -11,6 +11,7 @@ import {
   AiModule,
   AiModuleResult,
   AiModuleRuntime,
+  mergeCompanionChildDeclarations,
   type AiModuleFunctionMetadata,
   type AiModuleAttributeMetadata,
   type AiModuleInstanceQuery,
@@ -19,10 +20,10 @@ import {
 } from '../../modules'
 import {
   validateApiObjectMetadata,
+  toModuleFunctionResultApiMetadata,
   type AiApiActionMetadata,
   type AiApiAttributeMetadata,
   type AiApiObjectMetadata,
-  type AiApiResultApiRef,
   type AiModuleMetadataJson,
 } from '../../modules/metadata'
 import { DefaultAiAgentSessionStore } from '../session/default-session-store'
@@ -36,7 +37,7 @@ import type {
 import type { AiAgentHost } from './ai-host'
 import type { AiAgentInputContract } from './business-task'
 import { AiAgentRegistration, type AiAgentRegistrationOptions } from './registration-types'
-import type { AiAgentRuntimeContext } from './scope-types'
+import { AiAgentRuntimeContext } from './scope-types'
 import { createAiApiScriptContext, executeAiApiAction } from './ai-api-script-context'
 
 type AiModuleAdapterConstructor<T> = new (...args: never[]) => T
@@ -60,6 +61,8 @@ export type AiModuleAdapterRegisterOptions<T> = Readonly<{
   instance?: T
   constructArgs?: readonly unknown[]
   resolveInstance?: (context: AiModulePathContext) => T
+  /** 与 root 模块共用同一 runtime 的伴随 AiModule（如 spark-component catalog、guide-only 子 kind）。 */
+  companionModules?: readonly AiModule[]
   /** 模块 metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */
   jsonSchemaDefs?: Readonly<Record<string, unknown>>
   inputContract?: AiAgentInputContract
@@ -104,22 +107,29 @@ export class AiModuleAdapter {
   public static createRegistration<T>(command: AiModuleAdapterRegistrationCommand<T>): AiAgentRegistration {
     validateApiObjectMetadata(command.metadata.rootApi)
 
-    assertResolvableInstanceOptions(command.options)
     const instance = command.options.resolveInstance === undefined
       ? command.options.instance ?? constructModuleInstance(command.moduleClass, command.options.constructArgs ?? [])
       : command.options.instance
     const adapter = new AiModuleAdapter()
     const runtime = new AiModuleRuntime()
-    runtime.register(adapter.buildRootAiModule(
+    const rootModule = adapter.buildRootAiModule(
       command.metadata.rootApi,
       createInstanceResolver(command.moduleClass, command.options, instance),
       command.options.jsonSchemaDefs,
-    ))
+    )
+    const companionModules = command.options.companionModules ?? []
+    const wiredModules = companionModules.length === 0
+      ? [rootModule]
+      : mergeCompanionChildDeclarations([rootModule, ...companionModules])
+    for (const moduleKind of wiredModules) {
+      runtime.register(moduleKind)
+    }
 
-    const systemPrompt = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.systemPrompt)
-    const beforeFunctionCall = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.beforeFunctionCall)
-    const afterFunctionCall = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.afterFunctionCall)
-    const onStartSession = instance === undefined ? undefined : bindOptionalLifecycle(instance, command.options.onStartSession)
+    const lifecycleOptions = command.options
+    const systemPrompt = bindInstanceLifecycle(lifecycleOptions, instance, lifecycleOptions.systemPrompt)
+    const beforeFunctionCall = bindInstanceLifecycle(lifecycleOptions, instance, lifecycleOptions.beforeFunctionCall)
+    const afterFunctionCall = bindInstanceLifecycle(lifecycleOptions, instance, lifecycleOptions.afterFunctionCall)
+    const onStartSession = bindInstanceLifecycle(lifecycleOptions, instance, lifecycleOptions.onStartSession)
     const registrationOptions: AiAgentRegistrationOptions = {
       moduleId: command.options.moduleId ?? command.metadata.rootApi.kind,
       name: command.metadata.rootApi.name,
@@ -127,13 +137,19 @@ export class AiModuleAdapter {
       runtime,
       sessionStore: command.options.sessionStore ?? new DefaultAiAgentSessionStore(),
       onEndBusinessInstance: async (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => {
-        if (instance !== undefined) {
-          await command.options.onEndBusinessInstance?.(instance, context, directive)
+        const resolved = resolveLifecycleInstance(lifecycleOptions, instance, context)
+        if (resolved !== undefined) {
+          await lifecycleOptions.onEndBusinessInstance?.(resolved, context, directive)
         }
       },
       releaseModuleInstance: (moduleInstanceId: string) => {
-        if (instance !== undefined) {
-          command.options.releaseModuleInstance?.(instance, moduleInstanceId)
+        const resolved = resolveLifecycleInstance(
+          lifecycleOptions,
+          instance,
+          createRuntimeContextForModuleInstance(command.options.moduleId ?? command.metadata.rootApi.kind, moduleInstanceId),
+        )
+        if (resolved !== undefined) {
+          lifecycleOptions.releaseModuleInstance?.(resolved, moduleInstanceId)
         }
       },
       ...(command.options.inputContract === undefined ? {} : { inputContract: command.options.inputContract }),
@@ -193,18 +209,6 @@ function toModuleAttributeMetadata(attribute: AiApiAttributeMetadata): AiModuleA
   }
 }
 
-function assertResolvableInstanceOptions<T>(options: AiModuleAdapterRegisterOptions<T>): void {
-  const hasLifecycle = options.systemPrompt !== undefined
-    || options.beforeFunctionCall !== undefined
-    || options.afterFunctionCall !== undefined
-    || options.onStartSession !== undefined
-    || options.onEndBusinessInstance !== undefined
-    || options.releaseModuleInstance !== undefined
-  if (options.resolveInstance !== undefined && options.instance === undefined && hasLifecycle) {
-    throw new Error('AiModuleAdapter resolveInstance requires options.instance when instance-bound lifecycle callbacks are provided.')
-  }
-}
-
 function createInstanceResolver<T>(
   moduleClass: AiModuleAdapterConstructor<T>,
   options: AiModuleAdapterRegisterOptions<T>,
@@ -231,24 +235,8 @@ function toModuleFunctionMetadata(action: AiApiActionMetadata): AiModuleFunction
     ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
     ...(action.resultApis === undefined ? {} : { resultApis: action.resultApis.map(toModuleFunctionResultApiMetadata) }),
     ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
+    ...(action.requiredBeforeCall === undefined ? {} : { requiredBeforeCall: [...action.requiredBeforeCall] }),
     ...(action.failureModes === undefined ? {} : { failureModes: action.failureModes.map(mode => ({ ...mode })) }),
-  }
-}
-
-function toModuleFunctionResultApiMetadata(ref: AiApiResultApiRef): NonNullable<AiModuleFunctionMetadata['resultApis']>[number] {
-  if (ref.api === undefined) {
-    throw new Error(`resultApi "${ref.$ref ?? '(unknown)'}" must be resolved before AiModuleAdapter registration.`)
-  }
-  return {
-    resultPath: [...ref.resultPath],
-    kind: ref.api.kind,
-    name: ref.api.name,
-    description: ref.api.description,
-    actions: ref.api.actions.map(action => ({
-      name: action.name,
-      description: action.description,
-      paramNames: isIndexableObject(action.paramsSchema.properties) ? Object.keys(action.paramsSchema.properties) : [],
-    })),
   }
 }
 
@@ -261,6 +249,64 @@ function bindOptionalLifecycle<T, TArgs extends readonly unknown[], TResult>(
   callback: ((instance: T, ...args: TArgs) => TResult) | undefined,
 ): ((...args: TArgs) => TResult) | undefined {
   return callback === undefined ? undefined : (...args) => callback(instance, ...args)
+}
+
+function bindInstanceLifecycle<T, TArgs extends readonly unknown[], TResult>(
+  options: AiModuleAdapterRegisterOptions<T>,
+  instance: T | undefined,
+  callback: ((instance: T, ...args: TArgs) => TResult) | undefined,
+): ((...args: TArgs) => TResult) | undefined {
+  if (callback === undefined) return undefined
+  if (instance !== undefined) return bindOptionalLifecycle(instance, callback)
+  if (options.resolveInstance === undefined) return undefined
+  return (...args: TArgs) => {
+    const resolved = resolveLifecycleInstance(options, instance, readRuntimeContextFromLifecycleArgs(args))
+    if (resolved === undefined) {
+      throw new Error('AiModuleAdapter lifecycle callback requires a resolvable module instance.')
+    }
+    return callback(resolved, ...args)
+  }
+}
+
+function resolveLifecycleInstance<T>(
+  options: AiModuleAdapterRegisterOptions<T>,
+  instance: T | undefined,
+  context: AiAgentRuntimeContext,
+): T | undefined {
+  if (instance !== undefined) return instance
+  if (options.resolveInstance === undefined) return undefined
+  return options.resolveInstance(runtimeContextToModulePathContext(context))
+}
+
+function readRuntimeContextFromLifecycleArgs(args: readonly unknown[]): AiAgentRuntimeContext {
+  const candidate = args[0]
+  if (!isRuntimeContextLike(candidate)) {
+    throw new Error('AiModuleAdapter lifecycle callback expected AiAgentRuntimeContext as the first argument.')
+  }
+  return candidate
+}
+
+function isRuntimeContextLike(value: unknown): value is AiAgentRuntimeContext {
+  return value !== null
+    && typeof value === 'object'
+    && typeof Reflect.get(value, 'moduleId') === 'string'
+    && typeof Reflect.get(value, 'moduleInstanceId') === 'string'
+    && typeof Reflect.get(value, 'instanceId') === 'string'
+}
+
+function runtimeContextToModulePathContext(context: AiAgentRuntimeContext): AiModulePathContext {
+  return {
+    segments: [],
+    host: {
+      moduleId: context.moduleId,
+      moduleInstanceId: context.moduleInstanceId,
+      instanceId: context.instanceId,
+    },
+  }
+}
+
+function createRuntimeContextForModuleInstance(moduleId: string, moduleInstanceId: string): AiAgentRuntimeContext {
+  return new AiAgentRuntimeContext(moduleId, moduleInstanceId, moduleInstanceId)
 }
 
 function createRootInstanceRefs<T>(

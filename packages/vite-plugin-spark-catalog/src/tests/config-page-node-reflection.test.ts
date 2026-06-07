@@ -50,7 +50,7 @@ describe('page-design VCM metadata reflection', () => {
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'nodes')).toBeUndefined()
     expect(result.diagnostics).toMatchObject({
       moduleCount: 1,
-      resultApiCount: 42,
+      resultApiCount: 83,
       referencedApiKinds: ['config-page'],
       emptySchemaNodeCount: 0,
     })

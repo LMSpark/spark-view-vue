@@ -56,6 +56,7 @@ import {
   failureFromCallResult,
   toFunctionCallResult,
 } from './result-mapper'
+import { enrichFunctionCallResult } from './function-call-recovery-enricher'
 
 /* ── 类型定义 ──────────────────────────────────────────────── */
 
@@ -146,7 +147,7 @@ export class AiAgentToolCallExecutor {
         runtimeContext,
         protocolToolName,
         args: parsedArgs.args,
-        callResult: parsedArgs.result,
+        callResult: applyFailureRecoveryEnrichment(input.registration.runtime, protocolToolName, parsedArgs.args, parsedArgs.result),
         started,
       })
     }
@@ -170,7 +171,12 @@ export class AiAgentToolCallExecutor {
         runtimeContext,
         protocolToolName,
         args,
-        callResult: beforeFunctionCallFailureResult(beforeDirective),
+        callResult: applyFailureRecoveryEnrichment(
+          input.registration.runtime,
+          protocolToolName,
+          args,
+          beforeFunctionCallFailureResult(beforeDirective),
+        ),
         started,
         skipAfterFunctionCall: true,
         metadata: beforeFunctionCallMetadata(beforeDirective),
@@ -187,8 +193,11 @@ export class AiAgentToolCallExecutor {
       instanceId: runtimeContext.instanceId,
     })
 
-    // 步骤 6：转换操作结果为 function call result 格式
-    const callResult = toFunctionCallResult(operationResult)
+    // 步骤 6：转换操作结果为 function call result 格式，并把失败反查到 guide/catalog 步骤
+    const rawCallResult = toFunctionCallResult(operationResult)
+    const callResult = rawCallResult.ok
+      ? rawCallResult
+      : applyFailureRecoveryEnrichment(input.registration.runtime, protocolToolName, args, rawCallResult)
     const completeDirective = completeDirectiveFromToolResult(protocolToolName, callResult)
 
     return this.completeExecution({
@@ -371,6 +380,21 @@ function toolArgsFailureResult(error: ToolArgsParseError): AiAgentFunctionCallRe
       },
     ],
   }
+}
+
+function applyFailureRecoveryEnrichment(
+  runtime: AiAgentToolCallExecutionInput['registration']['runtime'],
+  protocolToolName: string,
+  args: AiJsonParams,
+  callResult: AiAgentFunctionCallResult<unknown>,
+): AiAgentFunctionCallResult<unknown> {
+  if (callResult.ok) return callResult
+  return enrichFunctionCallResult({
+    runtime,
+    protocolToolName,
+    args,
+    callResult,
+  })
 }
 
 function completeDirectiveFromToolResult(

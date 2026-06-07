@@ -25,7 +25,7 @@
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
 import { resolveAiModulePath } from '../internal/ai-module-path'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
-import type { AiModule, AiModulePayloadMetadata } from '../protocol'
+import type { AiModule, AiModuleFunctionMetadata, AiModulePayloadMetadata } from '../protocol'
 import type {
   FunctionKnowledgeProjectionOptions,
   FunctionLookupStepsOptions,
@@ -49,9 +49,15 @@ import type {
 // 第 1 节 · 常量
 // ═══════════════════════════════════════════════════════════════
 
-/** payload 目录的固定函数名 */
-export const PAYLOAD_QUERY_FUNCTION_NAME = 'queryPayloads'
-export const PAYLOAD_GUIDE_FUNCTION_NAME = 'guidePayload'
+import {
+  PAYLOAD_GUIDE_FUNCTION_NAME,
+  PAYLOAD_QUERY_FUNCTION_NAME,
+} from '../payloads/payload-catalog-constants'
+
+export {
+  PAYLOAD_GUIDE_FUNCTION_NAME,
+  PAYLOAD_QUERY_FUNCTION_NAME,
+}
 
 /** 固定协议工具路由描述（注入 LLM 系统 prompt） */
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
@@ -396,6 +402,27 @@ export function summarizeFunction(options: FunctionKnowledgeProjectionOptions): 
   }
 }
 
+/** 生成 resultApis 深链导航步骤（module_script 链式调用） */
+export function createResultApiNavigationSteps(fn: AiModuleFunctionMetadata): readonly string[] {
+  const resultApis = fn.resultApis ?? []
+  if (resultApis.length === 0) return []
+
+  return resultApis.flatMap((resultApi) => {
+    const pathLabel = resultApi.resultPath.length === 0
+      ? '返回值根对象'
+      : `返回值.${resultApi.resultPath.join('.')}`
+    const actionNames = resultApi.actions.map(action => action.name)
+    const actionHint = actionNames.length === 0
+      ? ''
+      : `；首层动作包括 ${actionNames.slice(0, 6).join(', ')}`
+    return [
+      `${fn.name} 成功后，${pathLabel} 继续暴露 kind "${resultApi.kind}"（${resultApi.name}）${actionHint}。`,
+      `module_function_guide({ kind: "${resultApi.kind}", functionName: "<nextAction>" }) 查看后续 API 契约。`,
+      `结构改写优先 module_script：在脚本上下文中通过 this 链式调用 ${resultApi.kind} 语义 API。`,
+    ]
+  })
+}
+
 /** 投影单个函数为完整指南 */
 export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModuleKnowledgeFunctionGuide {
   const { kind, kindPath, fn, payloads, payloadCatalogs } = options
@@ -409,6 +436,7 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
     payloadRefs,
     payloadCatalogs,
   })
+  const resultApiNavigationSteps = createResultApiNavigationSteps(fn)
   return {
     knowledgeLevel: 'detail',
     toolName,
@@ -433,6 +461,7 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
       '若直接调用能力，用 callPattern 组织 function call。',
       '若需要批量、组合或条件逻辑，调用 module_script；脚本中 this 就是模块上下文，协议 helper 也可从 this.$tools 访问，临时记忆可用 this.memory，args 必须满足 paramsSchema。',
       '脚本执行前不要猜字段；复杂参数先查 payload/属性/函数指南。',
+      ...resultApiNavigationSteps,
     ],
     paramNames: paramNames(fn.paramsSchema),
     requiredParamNames: requiredParamNames(fn.paramsSchema),

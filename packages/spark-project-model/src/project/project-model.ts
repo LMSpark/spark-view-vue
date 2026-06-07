@@ -127,6 +127,10 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * 按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。
    *
    * @moduleMutation config-page read 进入页面四文件编辑面，不直接落盘。
+   * @requiredBeforeCall 先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。
+   * @usageRule 进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。
+   * @failureMode PAGE_NOT_FOUND pageId 不存在 => 先 readPlanningProjection 确认 pageFeatures，必要时 human_question
+   * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 使用 { path: "/project[<projectId>]", args: { pageId: "<pageId>" } }，勿把 pageId 摊平在根级
    * @param pageId 目标配置页 pageId，必须来自输入。
    */
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }

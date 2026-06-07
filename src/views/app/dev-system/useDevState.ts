@@ -329,6 +329,40 @@ export function useDevState() {
     set refId(v: string) { const dto = project.navigationDraft; if (dto) { dto.node.refId = v; project.applyNavigationNodeEdit(dto); markNavDirty() } },
     get permissionMode(): 'none' | 'masked' | 'invisible' { return readNavEditDto()?.node.permissionMode ?? 'masked' },
     set permissionMode(v: 'none' | 'masked' | 'invisible') { const dto = project.navigationDraft; if (dto) { dto.node.permissionMode = v; project.applyNavigationNodeEdit(dto); markNavDirty() } },
+    get planningStatus(): 'planning_draft' | 'planning_confirmed' | undefined {
+      return readNavEditDto()?.node.planningStatus
+    },
+    set planningStatus(v: 'planning_draft' | 'planning_confirmed' | undefined) {
+      const dto = project.navigationDraft
+      if (!dto) return
+      dto.node.planningStatus = v
+      project.applyNavigationNodeEdit(dto)
+      markNavDirty()
+    },
+    get implGate(): 'closed' | 'open' | undefined {
+      return readNavEditDto()?.node.implGate
+    },
+    set implGate(v: 'closed' | 'open' | undefined) {
+      const dto = project.navigationDraft
+      if (!dto) return
+      dto.node.implGate = v
+      project.applyNavigationNodeEdit(dto)
+      markNavDirty()
+    },
+    get upstreamContractsSatisfied(): boolean {
+      return readNavEditDto()?.node.upstreamContractsSatisfied ?? true
+    },
+    set upstreamContractsSatisfied(v: boolean) {
+      const dto = project.navigationDraft
+      if (!dto) return
+      if (v) {
+        delete dto.node.upstreamContractsSatisfied
+      } else {
+        dto.node.upstreamContractsSatisfied = false
+      }
+      project.applyNavigationNodeEdit(dto)
+      markNavDirty()
+    },
     get hasContext(): boolean { return readNavEditDto()?.context.hasContext ?? false },
     set hasContext(v: boolean) {
       const dto = project.navigationDraft

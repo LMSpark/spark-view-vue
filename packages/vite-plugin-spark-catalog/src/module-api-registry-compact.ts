@@ -19,6 +19,7 @@ type AiApiActionMetadata = Readonly<{
   resultSchema?: unknown
   resultApis?: readonly AiApiResultApiRefMetadata[]
   usageRules?: readonly string[]
+  requiredBeforeCall?: readonly string[]
   failureModes?: readonly unknown[]
 }>
 
@@ -130,6 +131,7 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
           })),
         }),
     ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
+    ...(action.requiredBeforeCall === undefined ? {} : { requiredBeforeCall: [...action.requiredBeforeCall] }),
     ...(action.failureModes === undefined ? {} : { failureModes: [...action.failureModes] }),
   }
 }

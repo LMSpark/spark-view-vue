@@ -66,6 +66,7 @@ type ModuleActionMetadata = {
   params: readonly ModuleActionParameterMetadata[]
   returnType?: string
   usageRules: readonly string[]
+  requiredBeforeCall?: readonly string[]
   failureModes: readonly ModuleFailureModeMetadata[]
   examples: readonly unknown[]
   attackSurfaces: readonly ModuleAttackSurfaceMetadata[]
@@ -106,6 +107,7 @@ type AiApiActionMetadata = {
   resultSchema?: GeneratedJsonSchema
   resultApis?: readonly AiApiResultApiRefMetadata[]
   usageRules?: readonly string[]
+  requiredBeforeCall?: readonly string[]
   failureModes?: readonly ModuleFailureModeMetadata[]}
 
 type AiApiAttributeMetadata = {
@@ -571,11 +573,19 @@ function createApiActionMetadata(
   const resultSchema = !trace.extractResultSchemas || resultType === undefined || isVoidLikeType(resultType)
     ? undefined
     : tsTypeToJsonSchema(checker, resultType)
-  const resultApis = hasDocTag(tags, 'vcmNoResultApis') || resultType === undefined || isVoidLikeType(resultType)
+  let resultApis = hasDocTag(tags, 'vcmNoResultApis') || resultType === undefined || isVoidLikeType(resultType)
     ? undefined
     : discoverResultApis({ checker, type: resultType, resultPath: [], visited, trace, state, seenTypes: new Set() })
+  if (resultApis === undefined && (hasDocTag(tags, 'vcmScriptOnly') || paramsSchemaUsesCallback(paramsSchema))) {
+    const callbackResultApis = discoverMutatorCallbackResultApis({ checker, node, visited, trace, state })
+    if (callbackResultApis.length > 0) {
+      resultApis = callbackResultApis
+    }
+  }
   trace.log(`  action ${actionName}: done ${String(Date.now() - startedAt)}ms`)
   const usageRules = buildActionUsageRules(tags, paramsSchema)
+  const failureModes = parseFailureModeTags(tags)
+  const requiredBeforeCall = tagTexts(tags, 'requiredBeforeCall')
   return {
     name: actionName,
     methodName: propertyNameText(node.name, sourceFile),
@@ -585,7 +595,8 @@ function createApiActionMetadata(
     ...(resultSchema === undefined ? {} : { resultSchema }),
     ...(resultApis === undefined ? {} : { resultApis }),
     usageRules,
-    failureModes: [],
+    ...(requiredBeforeCall.length === 0 ? {} : { requiredBeforeCall }),
+    failureModes,
   }
 }
 
@@ -597,7 +608,37 @@ function buildActionUsageRules(
   if (hasDocTag(tags, 'vcmScriptOnly') || paramsSchemaUsesCallback(paramsSchema)) {
     rules.push('Must use module_script; direct function call is not supported.')
   }
+  for (const rule of tagTexts(tags, 'usageRule')) {
+    if (rule.length > 0 && !rules.includes(rule)) {
+      rules.push(rule)
+    }
+  }
   return rules
+}
+
+function parseFailureModeTags(tags: readonly ModuleDocTag[]): ModuleFailureModeMetadata[] {
+  const modes: ModuleFailureModeMetadata[] = []
+  for (const text of tagTexts(tags, 'failureMode')) {
+    const parsed = parseFailureModeTagText(text)
+    if (parsed !== undefined) {
+      modes.push(parsed)
+    }
+  }
+  return modes
+}
+
+function parseFailureModeTagText(text: string): ModuleFailureModeMetadata | undefined {
+  const arrowIndex = text.indexOf('=>')
+  if (arrowIndex <= 0) return undefined
+  const left = text.slice(0, arrowIndex).trim()
+  const fix = text.slice(arrowIndex + 2).trim()
+  if (left.length === 0 || fix.length === 0) return undefined
+  const spaceIndex = left.indexOf(' ')
+  if (spaceIndex <= 0) return undefined
+  const code = left.slice(0, spaceIndex).trim()
+  const when = left.slice(spaceIndex + 1).trim()
+  if (code.length === 0 || when.length === 0) return undefined
+  return { code, when, fix }
 }
 
 function paramsSchemaUsesCallback(schema: GeneratedJsonSchema): boolean {
@@ -607,6 +648,70 @@ function paramsSchemaUsesCallback(schema: GeneratedJsonSchema): boolean {
   if (runSchema === true) return true
   if (isGeneratedSchemaObject(runSchema) && runSchema.type === 'function') return true
   return false
+}
+
+type DiscoverMutatorCallbackResultApisCommand = Readonly<{
+  checker: ts.TypeChecker
+  node: ts.MethodDeclaration
+  visited: Set<ts.Symbol>
+  trace: ModuleMetadataTrace
+  state: ApiObjectExtractionState
+}>
+
+function discoverMutatorCallbackResultApis(
+  command: DiscoverMutatorCallbackResultApisCommand,
+): AiApiResultApiRefMetadata[] {
+  for (const param of command.node.parameters) {
+    if (isContextParameter(command.checker, param)) continue
+    const callbackTargetType = readCallbackFirstArgumentType(command.checker, param)
+    if (callbackTargetType === undefined) continue
+    const refs = discoverResultApis({
+      checker: command.checker,
+      type: callbackTargetType,
+      resultPath: [],
+      visited: command.visited,
+      trace: command.trace,
+      state: command.state,
+      seenTypes: new Set(),
+    })
+    if (refs.length > 0) return refs
+  }
+  return []
+}
+
+function readCallbackFirstArgumentType(
+  checker: ts.TypeChecker,
+  param: ts.ParameterDeclaration,
+): ts.Type | undefined {
+  const fromSyntax = readCallbackFirstArgumentTypeFromSyntax(checker, param.type)
+  if (fromSyntax !== undefined) return fromSyntax
+
+  const paramType = checker.getTypeAtLocation(param)
+  const signatures = paramType.getCallSignatures()
+  if (signatures.length === 0) return undefined
+  for (const signature of signatures) {
+    const callbackParams = signature.getParameters()
+    if (callbackParams.length === 0) continue
+    const firstCallbackParam = callbackParams[0]
+    if (firstCallbackParam === undefined) continue
+    const resolved = safeGetTypeOfSymbolAtLocation(checker, firstCallbackParam, param)
+    if (resolved !== undefined) return resolved
+  }
+  return undefined
+}
+
+function readCallbackFirstArgumentTypeFromSyntax(
+  checker: ts.TypeChecker,
+  typeNode: ts.TypeNode | undefined,
+): ts.Type | undefined {
+  if (typeNode === undefined) return undefined
+  if (ts.isParenthesizedTypeNode(typeNode)) {
+    return readCallbackFirstArgumentTypeFromSyntax(checker, typeNode.type)
+  }
+  if (!ts.isFunctionTypeNode(typeNode)) return undefined
+  const firstParam = typeNode.parameters[0]
+  if (firstParam === undefined) return undefined
+  return checker.getTypeAtLocation(firstParam)
 }
 
 type ApiCallableDeclaration = ts.MethodDeclaration | ts.ConstructorDeclaration
@@ -851,6 +956,9 @@ function createActionMetadata(input: ActionMetadataCreateInput): ModuleActionMet
 
   const description = readSummary(node)
   const returnType = input.trace.extractResults ? readReturnType(checker, node) : undefined
+  const usageRules = buildActionUsageRules(tags, { type: 'object', properties: {} })
+  const failureModes = parseFailureModeTags(tags)
+  const requiredBeforeCall = tagTexts(tags, 'requiredBeforeCall')
 
   return {
     name: actionName,
@@ -858,8 +966,9 @@ function createActionMetadata(input: ActionMetadataCreateInput): ModuleActionMet
     ...(description !== undefined ? { description } : {}),
     params: node.parameters.map(param => createParameterMetadata(sourceFile, param, tags)),
     ...(returnType !== undefined ? { returnType } : {}),
-    usageRules: [],
-    failureModes: [],
+    usageRules,
+    ...(requiredBeforeCall.length === 0 ? {} : { requiredBeforeCall }),
+    failureModes,
     examples: [],
     attackSurfaces: [],
     guards: [],

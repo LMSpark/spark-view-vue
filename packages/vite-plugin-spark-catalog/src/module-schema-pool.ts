@@ -427,9 +427,57 @@ function mergeDefinition(
     pool.set(normalizedName, finalized)
     return
   }
-  if (JSON.stringify(existing) !== JSON.stringify(finalized)) {
-    return
+  if (JSON.stringify(existing) === JSON.stringify(finalized)) return
+  const existingScore = scoreSchemaRichness(existing)
+  const incomingScore = scoreSchemaRichness(finalized)
+  if (incomingScore > existingScore) {
+    pool.set(normalizedName, finalized)
   }
+}
+
+function scoreSchemaRichness(schema: JsonSchemaObject): number {
+  let score = 0
+
+  if (typeof schema.description === 'string' && schema.description.trim().length > 0) score += 1
+  if (Array.isArray(schema.required)) score += schema.required.length
+  if (Array.isArray(schema.enum)) score += schema.enum.length * 2
+  if ('const' in schema) score += 2
+
+  if (schema.properties !== undefined) {
+    const entries = Object.entries(schema.properties)
+    score += entries.length * 8
+    for (const [, propertySchema] of entries) {
+      if (propertySchema === true) {
+        score -= 6
+        continue
+      }
+      if (typeof propertySchema === 'object' && isJsonSchemaObject(propertySchema)) {
+        score += scoreSchemaRichness(propertySchema)
+      }
+    }
+  }
+
+  if (typeof schema.items === 'object' && isJsonSchemaObject(schema.items)) {
+    score += scoreSchemaRichness(schema.items)
+  } else if (schema.items === true) {
+    score += 1
+  }
+
+  for (const keyword of ['anyOf', 'oneOf', 'allOf', 'prefixItems'] as const) {
+    const branch = schema[keyword]
+    if (!Array.isArray(branch)) continue
+    score += branch.length
+    for (const item of branch) {
+      if (typeof item === 'object' && isJsonSchemaObject(item)) {
+        score += scoreSchemaRichness(item)
+      }
+    }
+  }
+
+  if (schema.additionalProperties === true) score -= 20
+  if (isTitleOnlyStub(schema)) score -= 100
+
+  return score
 }
 
 function collectReachableDefNames(

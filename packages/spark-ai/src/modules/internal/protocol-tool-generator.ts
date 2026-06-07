@@ -232,7 +232,8 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.moduleFind,
         description: [
           'Find or list module instances using a concrete parent path.',
-          'Use path="/" for root instances. Provide childKind and query to search; omit query to list children.',
+          'Root lookup: module_find({ path: "/", childKind: "project", query: { id: "<projectId>" } }). Do not list root kind without query.',
+          'Flat query fields such as id are coalesced into query when query object is omitted.',
         ].join('\n'),
         parameters: {
           type: 'object',
@@ -240,12 +241,12 @@ export class ProtocolToolGenerator {
             path: pathProperty(true),
             childKind: {
               type: 'string',
-              description: 'Optional child module kind filter. Required when query is provided.',
+              description: 'Child module kind filter. Required when query is provided.',
             },
             query: instanceQueryProperty(),
           },
           required: ['path'],
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
     }
@@ -320,15 +321,21 @@ export class ProtocolToolGenerator {
         description: [
           'Execute JavaScript with this bound to the module context itself; ctx is the same object.',
           'Use this when direct function calls are too small-grained and the task needs branching, loops, or multiple metadata/API calls.',
+          'Optional path selects the module context tail (e.g. /project[homepage] or /project[homepage]/config-page[pageId]). Without path, this defaults to the business root kind (project), not host.moduleId.',
+          'Parameter name is script (not code). editNodeTree/editDataSet are script-only mutators.',
           'Available helpers include this.module_query, this.module_guide, this.module_attribute_guide, this.module_function_guide, this.module_find, this.module_attr, this.module_call, and this.call; the same helpers are also available under this.$tools when a provider method has the same name.',
           'Return a JSON-serializable value.',
         ].join('\n'),
         parameters: {
           type: 'object',
           properties: {
+            path: {
+              type: 'string',
+              description: 'Optional module path for script this binding. Example: /project[homepage]/config-page[<pageId>]',
+            },
             script: {
               type: 'string',
-              description: 'JavaScript body executed inside async function with this bound to the module context. Example: return await this.module_query({ includeFunctions: true })',
+              description: 'JavaScript body executed inside async function with this bound to the module context. Example: return await this.openPageDesign({ pageId: "<pageId>" })',
             },
           },
           required: ['script'],
@@ -411,7 +418,8 @@ export class ProtocolToolGenerator {
         description: [
           `Call declared AiModule function "${input.functionName}" on kind "${input.kind}".`,
           input.description,
-          `Use arguments={"path":"${input.pathPattern}","args":{...}}. Do not pass functionName in arguments; the OpenAI function name already is the business function name.`,
+          `Use arguments={"path":"${input.pathPattern}","args":{...}}. Flat business fields at the root are coalesced into args at runtime.`,
+          'Do not pass functionName in arguments; the OpenAI function name already is the business function name.',
         ].join('\n'),
         parameters: {
           type: 'object',
@@ -424,7 +432,7 @@ export class ProtocolToolGenerator {
             },
           },
           required: ['path', 'args'],
-          additionalProperties: false,
+          additionalProperties: true,
         },
       },
     }

@@ -404,7 +404,7 @@ function buildPropEntry(p: {
   const cleanDescription = stripCatalogDocTags(description)
   const entry: PropEntryWithIdentity = {
     name: p.name,
-    type: p.type,
+    typeText: p.type,
     required: p.required,
   }
 
@@ -467,7 +467,7 @@ function buildEmitEntry(e: {
   const description = normalizeDescription(e.description)
   const entry: EmitEntry = {
     name: e.name,
-    type: e.type,
+    typeText: e.type,
   }
 
   entry.description = doc?.description ?? (description !== '' ? description : createGenericEmitDescription(e.name))

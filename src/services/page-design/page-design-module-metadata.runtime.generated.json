@@ -320,11 +320,7 @@
         }
       ]
     },
-    "AnonSchema_d9833819eb9f": {
-      "type": "object",
-      "additionalProperties": true
-    },
-    "AnonSchema_de41e6dadf7c": {
+    "AnonSchema_bcc0c4008d74": {
       "type": "object",
       "properties": {
         "add": true,
@@ -339,7 +335,7 @@
         "keys": true,
         "values": true,
         "__@iterator@11": true,
-        "__@toStringTag@316": {
+        "__@toStringTag@326": {
           "type": "string"
         }
       },
@@ -354,8 +350,12 @@
         "keys",
         "values",
         "__@iterator@11",
-        "__@toStringTag@316"
+        "__@toStringTag@326"
       ]
+    },
+    "AnonSchema_d9833819eb9f": {
+      "type": "object",
+      "additionalProperties": true
     },
     "AnonSchema_e447e8c90c3c": {
       "type": "object",
@@ -879,9 +879,15 @@
             "pagination": {
               "type": "object",
               "properties": {
-                "pageParam": true,
-                "sizeParam": true,
-                "sortParam": true
+                "pageParam": {
+                  "type": "string"
+                },
+                "sizeParam": {
+                  "type": "string"
+                },
+                "sortParam": {
+                  "type": "string"
+                }
               }
             }
           },
@@ -1175,12 +1181,24 @@
     "HttpEndpoint": {
       "type": "object",
       "properties": {
-        "url": true,
-        "method": true,
-        "headers": true,
-        "params": true,
-        "pathParams": true,
-        "baseURL": true
+        "url": {
+          "type": "string"
+        },
+        "method": {
+          "type": "string"
+        },
+        "headers": {
+          "$ref": "#/$defs/AnonSchema_d9833819eb9f"
+        },
+        "params": {
+          "$ref": "#/$defs/AnonSchema_d9833819eb9f"
+        },
+        "pathParams": {
+          "$ref": "#/$defs/ArrayOf_any"
+        },
+        "baseURL": {
+          "type": "string"
+        }
       },
       "required": [
         "url"
@@ -1229,10 +1247,21 @@
     "NavContextConfig": {
       "type": "object",
       "properties": {
-        "source": true,
-        "placeholder": true,
-        "defaultValue": true,
-        "paramName": true
+        "source": {
+          "$ref": "#/$defs/ArrayOf_any"
+        },
+        "placeholder": {
+          "type": "string"
+        },
+        "defaultValue": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "paramName": {
+          "type": "string"
+        }
       },
       "required": [
         "source"
@@ -1241,8 +1270,15 @@
     "NavContextItem": {
       "type": "object",
       "properties": {
-        "id": true,
-        "title": true
+        "id": {
+          "type": [
+            "number",
+            "string"
+          ]
+        },
+        "title": {
+          "type": "string"
+        }
       },
       "required": [
         "id",
@@ -1267,54 +1303,53 @@
     "Partial": {
       "type": "object",
       "properties": {
-        "name": {
+        "tableName": {
           "type": "string"
         },
-        "type": {
-          "type": [
-            "string",
-            "object"
-          ]
-        },
-        "label": {
+        "viewId": {
           "type": "string"
         },
-        "allowDBNull": {
+        "rows": {
+          "$ref": "#/$defs/ArrayOf_DataRow"
+        },
+        "filterExpression": {
+          "$ref": "#/$defs/AnonSchema_d9833819eb9f"
+        },
+        "sortExpression": {
+          "$ref": "#/$defs/ArrayOf_SortField"
+        },
+        "autoCurrentFirst": {
           "type": "boolean"
         },
-        "defaultValue": true,
-        "isPrimaryKey": {
+        "autoSelectFirst": {
           "type": "boolean"
         },
-        "autoIncrement": {
-          "type": "boolean"
-        },
-        "isComputed": {
-          "type": "boolean"
-        },
-        "required": {
-          "type": "boolean"
-        },
-        "minLength": {
+        "page": {
           "type": "number"
         },
-        "maxLength": {
+        "pageSize": {
           "type": "number"
         },
-        "min": {
-          "type": "number"
+        "treeConfig": {
+          "$ref": "#/$defs/TreeConfig"
         },
-        "max": {
-          "type": "number"
+        "valueField": {
+          "$ref": "#/$defs/ArrayOf_any"
         },
-        "pattern": {
+        "labelField": {
           "type": "string"
         },
-        "patternMessage": {
+        "selectionDelimiter": {
           "type": "string"
         },
-        "computeExpression": {
+        "autoLoad": {
+          "type": "boolean"
+        },
+        "commitMode": {
           "type": "string"
+        },
+        "aggregates": {
+          "$ref": "#/$defs/AnonSchema_d9833819eb9f"
         }
       }
     },
@@ -1441,6 +1476,15 @@
         },
         "refBroken": {
           "type": "boolean"
+        },
+        "planningStatus": {
+          "type": "string"
+        },
+        "implGate": {
+          "type": "string"
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
         }
       },
       "required": [
@@ -1494,6 +1538,15 @@
         },
         "effectiveDescription": {
           "type": "string"
+        },
+        "planningStatus": {
+          "type": "string"
+        },
+        "implGate": {
+          "type": "string"
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
         },
         "icon": {
           "type": "string"
@@ -1576,7 +1629,9 @@
         "field": {
           "type": "string"
         },
-        "direction": true
+        "direction": {
+          "type": "string"
+        }
       },
       "required": [
         "field"
@@ -1842,6 +1897,15 @@
         "permissionMode": {
           "type": "string"
         },
+        "planningStatus": {
+          "type": "string"
+        },
+        "implGate": {
+          "type": "string"
+        },
+        "upstreamContractsSatisfied": {
+          "type": "boolean"
+        },
         "description": {
           "type": "string"
         },
@@ -1880,6 +1944,9 @@
         "refBroken",
         "context",
         "permissionMode",
+        "planningStatus",
+        "implGate",
+        "upstreamContractsSatisfied",
         "description",
         "effectiveDescription",
         "descriptionContext",
@@ -2073,8 +2140,24 @@
                 "$ref": "config-page"
               }
             ],
-            "usageRules": [],
-            "failureModes": []
+            "usageRules": [
+              "进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。"
+            ],
+            "requiredBeforeCall": [
+              "先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
+            ],
+            "failureModes": [
+              {
+                "code": "PAGE_NOT_FOUND",
+                "when": "pageId 不存在",
+                "fix": "先 readPlanningProjection 确认 pageFeatures，必要时 human_question"
+              },
+              {
+                "code": "INVALID_TOOL_ARGS",
+                "when": "参数形状错误",
+                "fix": "使用 { path: \"/project[<projectId>]\", args: { pageId: \"<pageId>\" } }，勿把 pageId 摊平在根级"
+              }
+            ]
           },
           {
             "name": "readPlanningProjection",
@@ -2348,10 +2431,37 @@
                 ]
               },
               "takesContext": false,
-              "usageRules": [
-                "Must use module_script; direct function call is not supported."
+              "resultApis": [
+                {
+                  "resultPath": [],
+                  "$ref": "node-tree"
+                }
               ],
-              "failureModes": []
+              "usageRules": [
+                "Must use module_script; direct function call is not supported.",
+                "结构批量改写优先 module_script；direct call 不支持。",
+                "openPageDesign 返回 ConfigPageNode 链式对象：用 cp.editNodeTree(t=>...) / cp.editDataSet(t=>...)，勿用 cp.call()。"
+              ],
+              "requiredBeforeCall": [
+                "写 node-tree 前必须先 queryPayloads / guidePayload(spark.component)。"
+              ],
+              "failureModes": [
+                {
+                  "code": "SCHEMA_VALIDATION_FAILED",
+                  "when": "节点 props 不符合 SparkNode 契约",
+                  "fix": "重新 guidePayload 并按 schema 构造 props"
+                },
+                {
+                  "code": "PAYLOAD_GUIDE_REQUIRED",
+                  "when": "未查询组件目录",
+                  "fix": "先 queryPayloads 再 guidePayload 后重试"
+                },
+                {
+                  "code": "SCRIPT_EXECUTION_FAILED",
+                  "when": "误用 call 链式代理",
+                  "fix": "改用 cp.editNodeTree / cp.editDataSet 等方法"
+                }
+              ]
             },
             {
               "name": "getDataSetTool",
@@ -2390,10 +2500,26 @@
                 ]
               },
               "takesContext": false,
-              "usageRules": [
-                "Must use module_script; direct function call is not supported."
+              "resultApis": [
+                {
+                  "resultPath": [],
+                  "$ref": "dataset"
+                }
               ],
-              "failureModes": []
+              "usageRules": [
+                "Must use module_script; direct function call is not supported.",
+                "DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。"
+              ],
+              "requiredBeforeCall": [
+                "先 getDataSetTool 确认当前页 DataSet 已加载。"
+              ],
+              "failureModes": [
+                {
+                  "code": "TABLE_NOT_FOUND",
+                  "when": "表名不存在",
+                  "fix": "先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约"
+                }
+              ]
             }
           ]
         },
@@ -2905,7 +3031,7 @@
               },
               "takesContext": false,
               "resultSchema": {
-                "$ref": "#/$defs/AnonSchema_de41e6dadf7c"
+                "$ref": "#/$defs/AnonSchema_bcc0c4008d74"
               },
               "resultApis": [],
               "usageRules": [],
@@ -2922,7 +3048,7 @@
               },
               "takesContext": false,
               "resultSchema": {
-                "$ref": "#/$defs/AnonSchema_de41e6dadf7c"
+                "$ref": "#/$defs/AnonSchema_bcc0c4008d74"
               },
               "resultApis": [],
               "usageRules": [],

@@ -140,7 +140,8 @@ export type ComponentContractRefs = {
 
 export type PropEntry = {
   name: string
-  type: string
+  /** TypeScript 展示类型；JSON Schema 关键字在 prop.schema.type。 */
+  typeText: string
   required: boolean
   default?: string
   description?: string
@@ -156,8 +157,8 @@ export type PropEntry = {
 
 export type EmitEntry = {
   name: string
-  /** 事件类型签名 */
-  type?: string
+  /** 事件 payload 的 TypeScript 签名展示文本。 */
+  typeText?: string
   /** 事件描述 */
   description?: string
   /** 构建期 schema type 引用；落盘时转换为 JSON Schema `$ref`。 */

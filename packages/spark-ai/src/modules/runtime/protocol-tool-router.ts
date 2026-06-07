@@ -34,12 +34,13 @@ import type { AiModuleRegistry } from '../internal/ai-module-registry'
 import type { FunctionInvoker } from '../internal/function-invoker'
 import type { AttributeAccessor } from '../internal/attribute-accessor'
 import type { Navigator } from '../internal/navigator'
-import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
+import { PROTOCOL_TOOL_NAMES, isProtocolToolName } from '../internal/protocol-tool-generator'
 import type { AiModuleKnowledgeProjector } from '../knowledge/ai-module-knowledge'
 import {
   AiModulePath,
   AiModulePathParseError,
   AiModuleResult,
+  type AiModule,
   type AiModulePathContext,
   type AiModuleHostContext,
 } from '../protocol'
@@ -93,6 +94,7 @@ export class ProtocolToolRouter {
   private readonly knowledge: AiModuleKnowledgeProjector
   private readonly kinds: AiModuleRegistry
   private readonly memoryByScope = new Map<string, Map<string, AiJsonValue>>()
+  private readonly catalogQueryByScope = new Map<string, CatalogQueryCache>()
   private handleToolDispatcher?: AiModuleHandleToolDispatcher
 
   public constructor(options: ProtocolToolRouterOptions) {
@@ -239,9 +241,18 @@ export class ProtocolToolRouter {
 
   /** 路由 module_function_guide：kind + functionName 均必填，读取函数完整契约 */
   private routeModuleFunctionGuide(args: ProtocolToolArgs): AiModuleResult<AiJsonValue> {
+    const normalized = normalizeModuleFunctionGuideArgs(args)
+    const functionName = this.argsParser.requireString(normalized, 'functionName')
+    if (isProtocolToolName(functionName)) {
+      return AiModuleResult.failCode(
+        'INVALID_TOOL_ARGS',
+        `"${functionName}" 是协议工具名，不是业务 functionName。`,
+        '先用 module_query({ includeFunctions: true }) 选择真实 functionName（如 openPageDesign、readPlanningProjection）。',
+      )
+    }
     return this.resultProjector.jsonResult(this.knowledge.guideFunction({
-      kind: this.argsParser.requireString(args, 'kind'),
-      functionName: this.argsParser.requireString(args, 'functionName'),
+      kind: this.argsParser.requireString(normalized, 'kind'),
+      functionName,
     }))
   }
 
@@ -252,16 +263,17 @@ export class ProtocolToolRouter {
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
   ): Promise<AiModuleResult<AiJsonValue>> {
-    const path = AiModulePath.parse(this.argsParser.requireString(args, 'path'))
-    const childKind = this.argsParser.optionalString(args, 'childKind')
-    if ('query' in args) {
+    const normalized = normalizeModuleFindArgs(args, host)
+    const path = AiModulePath.parse(this.argsParser.requireString(normalized, 'path'))
+    const childKind = this.argsParser.optionalString(normalized, 'childKind')
+    if ('query' in normalized) {
       if (childKind === undefined) {
         throw new ProtocolToolArgsError('参数 "childKind" 缺失: module_find 使用 query 时必须指定 childKind')
       }
       const result = await this.navigator.findInstance({
         path,
         childKind,
-        query: this.argsParser.requireObject(args, 'query'),
+        query: this.argsParser.requireObject(normalized, 'query'),
         ...(host === undefined ? {} : { host }),
       })
       return this.resultProjector.instanceListResult(result)
@@ -303,9 +315,11 @@ export class ProtocolToolRouter {
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
   ): Promise<AiModuleResult<AiJsonValue>> {
-    const path = AiModulePath.parse(this.argsParser.requireString(args, 'path'))
-    const functionName = this.argsParser.requireString(args, 'functionName')
-    const callArgs = this.argsParser.requireObject(args, 'args')
+    const normalized = normalizeModuleCallArgs(args, host, this.kinds)
+    const path = AiModulePath.parse(this.argsParser.requireString(normalized, 'path'))
+    const functionName = this.argsParser.requireString(normalized, 'functionName')
+    let callArgs = normalizeCatalogFunctionArgs(functionName, this.argsParser.requireObject(normalized, 'args'))
+    callArgs = this.applyCachedPayloadKey(functionName, callArgs, host)
     const kindPath = path.segments.map((segment) => segment.kind)
     if (kindPath.length === 0) {
       return AiModuleResult.failCode(
@@ -314,20 +328,36 @@ export class ProtocolToolRouter {
         '先用 module_find 定位实例 path，再调用目标 direct function；旧协议兼容场景使用 module_call 路由。',
       )
     }
-    return this.functions.invoke({
+    const result = await this.functions.invoke({
       path,
       kindPath,
       functionName,
       args: callArgs,
       ...(host === undefined ? {} : { host }),
     })
+    this.rememberCatalogQueryResults(host, functionName, callArgs, result)
+    return result
   }
 
   private async routeModuleScript(
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
   ): Promise<AiModuleResult<AiJsonValue>> {
-    return executeModuleScript(this.argsParser.requireString(args, 'script'), this.createScriptContext(host))
+    const normalized = normalizeModuleScriptArgs(args)
+    const script = this.argsParser.requireString(normalized, 'script')
+    const pathRaw = this.argsParser.optionalString(normalized, 'path')
+    if (pathRaw !== undefined) {
+      const path = AiModulePath.parse(pathRaw)
+      const navResult = await this.navigator.navigate(path, host)
+      if (navResult instanceof AiModuleResult) {
+        return navResult
+      }
+      return executeModuleScript(
+        script,
+        this.createScriptContext(host, navResult.moduleKind, navResult.segmentCtx),
+      )
+    }
+    return executeModuleScript(script, this.createScriptContext(host))
   }
 
   private routeModuleMemory(args: ProtocolToolArgs, host?: AiModuleHostContext): AiModuleResult<AiJsonValue> {
@@ -360,8 +390,14 @@ export class ProtocolToolRouter {
     throw new ProtocolToolArgsError('参数 "op" 必须是 get/set/delete/list/clear')
   }
 
-  private createScriptContext(host?: AiModuleHostContext): AiModuleScriptContext {
-    const moduleContext = this.createProviderScriptContext(host)
+  private createScriptContext(
+    host?: AiModuleHostContext,
+    moduleKind?: AiModule,
+    segmentCtx?: AiModulePathContext,
+  ): AiModuleScriptContext {
+    const moduleContext = moduleKind !== undefined && segmentCtx !== undefined
+      ? moduleKind.createScriptContext(segmentCtx)
+      : this.createProviderScriptContext(host)
     const memory = this.createScriptMemory(host)
     const helpers = {
       module_query: (args: ProtocolToolArgs = {}) => this.routeModuleQuery(args),
@@ -424,10 +460,14 @@ export class ProtocolToolRouter {
 
   private resolveScriptModule(host?: AiModuleHostContext) {
     if (host !== undefined) {
-      return this.kinds.get(host.moduleId)
+      const registered = this.kinds.get(host.moduleId)
+      if (registered !== undefined) return registered
     }
     const rootKinds = this.kinds.list().filter(moduleKind => moduleKind.parentKind === undefined)
-    return rootKinds.length === 1 ? rootKinds[0] : undefined
+    if (rootKinds.length === 1) return rootKinds[0]
+    const projectKind = rootKinds.find(moduleKind => moduleKind.kind === 'project')
+    if (projectKind !== undefined) return projectKind
+    return rootKinds[0]
   }
 
   // ── <functionName> — 标准 OpenAI 业务函数调用 ────────────────
@@ -438,8 +478,10 @@ export class ProtocolToolRouter {
     args: ProtocolToolArgs,
     host?: AiModuleHostContext,
   ): Promise<AiModuleResult<AiJsonValue>> {
-    const path = AiModulePath.parse(this.argsParser.requireString(args, 'path'))
-    const callArgs = this.argsParser.requireObject(args, 'args')
+    const normalized = normalizeDirectFunctionCallArgs(args, host, this.kinds, functionName)
+    const path = AiModulePath.parse(this.argsParser.requireString(normalized, 'path'))
+    let callArgs = this.argsParser.requireObject(normalized, 'args')
+    callArgs = this.applyCachedPayloadKey(functionName, callArgs, host)
     const kindPath = path.segments.map((segment) => segment.kind)
     if (kindPath.length === 0) {
       return AiModuleResult.failCode(
@@ -448,13 +490,15 @@ export class ProtocolToolRouter {
         '先用 module_find 定位实例 path，再调用具体业务函数。',
       )
     }
-    return this.functions.invoke({
+    const result = await this.functions.invoke({
       path,
       kindPath,
       functionName,
       args: callArgs,
       ...(host === undefined ? {} : { host }),
     })
+    this.rememberCatalogQueryResults(host, functionName, callArgs, result)
+    return result
   }
 
   // ── human_question — 人工提问 ───────────────────────────────
@@ -494,4 +538,395 @@ export class ProtocolToolRouter {
     }
     return count === 1
   }
+
+  private scopeKey(host?: AiModuleHostContext): string {
+    if (host === undefined) return '__default__'
+    return `${host.moduleId}\u0000${host.moduleInstanceId}`
+  }
+
+  private applyCachedPayloadKey(
+    functionName: string,
+    callArgs: AiJsonParams,
+    host?: AiModuleHostContext,
+  ): AiJsonParams {
+    if (functionName !== 'guidePayload') return callArgs
+    if (readStringField(callArgs, 'key') !== undefined) return callArgs
+    const picked = pickPayloadKeyFromCatalogCache(this.catalogQueryByScope.get(this.scopeKey(host)), callArgs)
+    return picked === undefined ? callArgs : { ...callArgs, key: picked }
+  }
+
+  private rememberCatalogQueryResults(
+    host: AiModuleHostContext | undefined,
+    functionName: string,
+    queryArgs: AiJsonParams,
+    result: AiModuleResult<AiJsonValue>,
+  ): void {
+    if (functionName !== 'queryPayloads' || !result.ok || !Array.isArray(result.data)) return
+    const entries = result.data
+      .map(entry => readCatalogPayloadSummary(entry))
+      .filter((entry): entry is CatalogPayloadSummary => entry !== undefined)
+    if (entries.length === 0) return
+    const scopeKey = this.scopeKey(host)
+    const existing = this.catalogQueryByScope.get(scopeKey)
+    const merged = mergeCatalogPayloadSummaries(existing?.results ?? [], entries)
+    this.catalogQueryByScope.set(scopeKey, {
+      results: merged,
+      lastQuery: queryArgs,
+    })
+  }
+}
+
+const DIRECT_FUNCTION_RESERVED_KEYS = new Set(['path', 'args'])
+const MODULE_CALL_RESERVED_KEYS = new Set(['path', 'functionName', 'args'])
+const MODULE_FIND_RESERVED_KEYS = new Set(['path', 'childKind', 'query'])
+
+/** LLM 常把业务参数摊平在根级；归一化为 { path, args } 形状。 */
+function normalizeDirectFunctionCallArgs(
+  args: ProtocolToolArgs,
+  host: AiModuleHostContext | undefined,
+  kinds: AiModuleRegistry,
+  functionName?: string,
+): ProtocolToolArgs {
+  const pathRaw = readOptionalString(args, 'path')
+  const nestedArgs = readOptionalObject(args, 'args')
+  const hasNestedArgs = nestedArgs !== undefined && !isEmptyJsonObject(nestedArgs)
+
+  if (hasNestedArgs) {
+    const callArgs = functionName === undefined
+      ? nestedArgs
+      : normalizeCatalogFunctionArgs(functionName, nestedArgs)
+    if (pathRaw !== undefined && callArgs === nestedArgs) return args
+    const inferredPath = pathRaw ?? inferDefaultDirectFunctionPath(host, kinds, functionName)
+    return inferredPath === undefined
+      ? { args: callArgs }
+      : { path: inferredPath, args: callArgs }
+  }
+
+  let businessArgs = pickNonReservedFields(args, DIRECT_FUNCTION_RESERVED_KEYS)
+  if (Object.keys(businessArgs).length === 0 && functionName !== undefined) {
+    const defaults = applyHostDefaultCallArgs(functionName, host)
+    if (defaults !== undefined) businessArgs = defaults
+  }
+  if (functionName !== undefined) {
+    businessArgs = normalizeCatalogFunctionArgs(functionName, businessArgs)
+  }
+  if (Object.keys(businessArgs).length === 0) return args
+
+  const inferredPath = pathRaw ?? inferDefaultDirectFunctionPath(host, kinds, functionName)
+  if (inferredPath === undefined) {
+    return { args: businessArgs }
+  }
+  return { path: inferredPath, args: businessArgs }
+}
+
+function applyHostDefaultCallArgs(
+  functionName: string,
+  host: AiModuleHostContext | undefined,
+): AiJsonParams | undefined {
+  if (host === undefined) return undefined
+  if (functionName === 'openPageDesign') {
+    return { pageId: host.moduleInstanceId }
+  }
+  if (functionName === 'readPlanningProjection') {
+    return {}
+  }
+  if (functionName === 'queryPayloads') {
+    return { moduleKind: 'node-tree', payloadRef: 'spark.component' }
+  }
+  return undefined
+}
+
+function applyDirectFunctionDefaultArgs(functionName: string, args: AiJsonParams): AiJsonParams {
+  if (functionName !== 'queryPayloads' && functionName !== 'guidePayload') return args
+  return {
+    moduleKind: 'node-tree',
+    payloadRef: 'spark.component',
+    ...args,
+  }
+}
+
+function normalizeCatalogFunctionArgs(functionName: string, args: AiJsonParams): AiJsonParams {
+  const withDefaults = applyDirectFunctionDefaultArgs(functionName, args)
+  if (functionName === 'guidePayload' || functionName === 'queryPayloads') {
+    return applyCatalogKeyAliases(withDefaults)
+  }
+  return withDefaults
+}
+
+function applyCatalogKeyAliases(args: AiJsonParams): AiJsonParams {
+  const existingKey = readStringField(args, 'key')
+  if (existingKey !== undefined) return args
+  for (const alias of ['type', 'payloadKey', 'componentType', 'component', 'name']) {
+    const value = readStringField(args, alias)
+    if (value === undefined) continue
+    return { ...args, key: value }
+  }
+  return args
+}
+
+function readStringField(args: AiJsonParams, key: string): string | undefined {
+  const value = args[key]
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
+}
+
+function isEmptyJsonObject(value: AiJsonParams): boolean {
+  return Object.keys(value).length === 0
+}
+
+/** module_call 常见误传：{ path, functionName, pageId } 缺 args 包装。 */
+function normalizeModuleCallArgs(
+  args: ProtocolToolArgs,
+  host: AiModuleHostContext | undefined,
+  kinds: AiModuleRegistry,
+): ProtocolToolArgs {
+  const functionName = readOptionalString(args, 'functionName')
+  const pathRaw = readOptionalString(args, 'path')
+  const nestedArgs = readOptionalObject(args, 'args')
+  if (nestedArgs !== undefined && Object.keys(nestedArgs).length > 0) {
+    if (pathRaw !== undefined && functionName !== undefined) return args
+    const inferredPath = pathRaw ?? inferDefaultDirectFunctionPath(host, kinds, functionName)
+    if (inferredPath === undefined || functionName === undefined) return args
+    return { path: inferredPath, functionName, args: nestedArgs }
+  }
+
+  const businessArgs = pickNonReservedFields(args, MODULE_CALL_RESERVED_KEYS)
+  if (Object.keys(businessArgs).length === 0) return args
+
+  const inferredPath = pathRaw ?? inferDefaultDirectFunctionPath(host, kinds, functionName)
+  const normalized: Record<string, AiJsonValue> = { args: businessArgs }
+  if (functionName !== undefined) normalized['functionName'] = functionName
+  if (inferredPath !== undefined) normalized['path'] = inferredPath
+  return normalized
+}
+
+/** module_find 常见误传：{ path, childKind, id } 缺 query 包装；根查找缺 path 时默认 "/"。 */
+function normalizeModuleFindArgs(
+  args: ProtocolToolArgs,
+  host?: AiModuleHostContext,
+): ProtocolToolArgs {
+  let normalized = args
+  if (readOptionalObject(args, 'query') === undefined) {
+    const childKind = readOptionalString(args, 'childKind')
+    if (childKind !== undefined) {
+      const queryFields = pickNonReservedFields(args, MODULE_FIND_RESERVED_KEYS)
+      if (Object.keys(queryFields).length > 0) {
+        normalized = {
+          ...(readOptionalString(args, 'path') === undefined ? {} : { path: args['path'] }),
+          childKind,
+          query: queryFields,
+        }
+      } else if ('query' in args) {
+        const withoutInvalidQuery: Record<string, AiJsonValue> = {}
+        for (const [key, value] of Object.entries(args)) {
+          if (key === 'query') continue
+          withoutInvalidQuery[key] = value
+        }
+        normalized = withoutInvalidQuery
+      }
+    }
+  }
+
+  const childKind = readOptionalString(normalized, 'childKind')
+  if (readOptionalObject(normalized, 'query') === undefined && childKind !== undefined) {
+    const defaultQuery = defaultRootFindQuery(childKind, host)
+    if (defaultQuery !== undefined) {
+      normalized = { ...normalized, query: defaultQuery }
+    }
+  }
+
+  if (readOptionalString(normalized, 'path') === undefined
+    && (readOptionalString(normalized, 'childKind') !== undefined || readOptionalObject(normalized, 'query') !== undefined)) {
+    return { ...normalized, path: '/' }
+  }
+  return normalized
+}
+
+function defaultRootFindQuery(
+  childKind: string,
+  host?: AiModuleHostContext,
+): AiJsonParams | undefined {
+  if (childKind === 'spark-component') {
+    return { id: 'catalog' }
+  }
+  if (childKind === 'project' && host !== undefined && host.moduleInstanceId.trim().length > 0) {
+    return { id: host.moduleInstanceId }
+  }
+  return undefined
+}
+
+function inferDefaultDirectFunctionPath(
+  host: AiModuleHostContext | undefined,
+  kinds: AiModuleRegistry,
+  functionName?: string,
+): string | undefined {
+  if (functionName !== undefined) {
+    const ownerKind = findUniqueKindDeclaringFunction(kinds, functionName)
+    if (ownerKind !== undefined) {
+      return `/${ownerKind.kind}[${defaultInstanceIdForKind(ownerKind, host)}]`
+    }
+  }
+  if (host === undefined) return undefined
+  const registered = kinds.get(host.moduleId)
+  if (registered !== undefined && registered.parentKind === undefined) {
+    return `/${registered.kind}[${host.moduleInstanceId}]`
+  }
+  const projectKind = kinds.list().find(moduleKind => moduleKind.kind === 'project' && moduleKind.parentKind === undefined)
+  if (projectKind !== undefined) {
+    return `/project[${host.moduleInstanceId}]`
+  }
+  const rootKinds = kinds.list().filter(moduleKind => moduleKind.parentKind === undefined)
+  const soleRoot = rootKinds.length === 1 ? rootKinds[0] : undefined
+  if (soleRoot !== undefined) {
+    return `/${soleRoot.kind}[${host.moduleInstanceId}]`
+  }
+  return undefined
+}
+
+function findUniqueKindDeclaringFunction(
+  kinds: AiModuleRegistry,
+  functionName: string,
+): AiModule | undefined {
+  let match: AiModule | undefined
+  for (const moduleKind of kinds.list()) {
+    if (!moduleKind.functions.some(fn => fn.name === functionName)) continue
+    if (match !== undefined) return undefined
+    match = moduleKind
+  }
+  return match
+}
+
+function defaultInstanceIdForKind(
+  moduleKind: AiModule,
+  host: AiModuleHostContext | undefined,
+): string {
+  if (moduleKind.kind === 'spark-component') return 'catalog'
+  if (host !== undefined && host.moduleInstanceId.trim().length > 0) {
+    return host.moduleInstanceId
+  }
+  return moduleKind.kind
+}
+
+/** module_script 常见误传：code 字段代替 script。 */
+function normalizeModuleScriptArgs(args: ProtocolToolArgs): ProtocolToolArgs {
+  if (readOptionalString(args, 'script') !== undefined) return args
+  const code = readOptionalString(args, 'code') ?? readOptionalString(args, 'javascript')
+  if (code === undefined) return args
+  return { ...args, script: code }
+}
+
+/** module_function_guide 常见误传：name / fn 代替 functionName。 */
+function normalizeModuleFunctionGuideArgs(args: ProtocolToolArgs): ProtocolToolArgs {
+  if (readOptionalString(args, 'functionName') !== undefined) return args
+  const alias = readOptionalString(args, 'name') ?? readOptionalString(args, 'fn')
+  if (alias === undefined) return args
+  return { ...args, functionName: alias }
+}
+
+function pickNonReservedFields(
+  args: ProtocolToolArgs,
+  reserved: ReadonlySet<string>,
+): AiJsonParams {
+  const out: Record<string, AiJsonValue> = {}
+  for (const [key, value] of Object.entries(args)) {
+    if (reserved.has(key)) continue
+    out[key] = value
+  }
+  return out
+}
+
+function readOptionalString(args: ProtocolToolArgs, key: string): string | undefined {
+  const value = args[key]
+  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
+}
+
+function readOptionalObject(args: ProtocolToolArgs, key: string): AiJsonParams | undefined {
+  const value = args[key]
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
+  return value
+}
+
+type CatalogPayloadSummary = Readonly<{
+  moduleKind: string
+  payloadRef: string
+  key: string
+  category?: string
+  description?: string
+}>
+
+type CatalogQueryCache = Readonly<{
+  results: readonly CatalogPayloadSummary[]
+  lastQuery?: AiJsonParams
+}>
+
+function readCatalogPayloadSummary(value: unknown): CatalogPayloadSummary | undefined {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
+  const record = value as Readonly<Record<string, unknown>>
+  const key = readStringField(record as AiJsonParams, 'key')
+  const moduleKind = readStringField(record as AiJsonParams, 'moduleKind')
+  const payloadRef = readStringField(record as AiJsonParams, 'payloadRef')
+  if (key === undefined || moduleKind === undefined || payloadRef === undefined) return undefined
+  const category = readStringField(record as AiJsonParams, 'category')
+  const description = readStringField(record as AiJsonParams, 'description')
+  return {
+    moduleKind,
+    payloadRef,
+    key,
+    ...(category === undefined ? {} : { category }),
+    ...(description === undefined ? {} : { description }),
+  }
+}
+
+function mergeCatalogPayloadSummaries(
+  existing: readonly CatalogPayloadSummary[],
+  incoming: readonly CatalogPayloadSummary[],
+): readonly CatalogPayloadSummary[] {
+  const byIdentity = new Map<string, CatalogPayloadSummary>()
+  for (const entry of [...existing, ...incoming]) {
+    byIdentity.set(`${entry.moduleKind}\u0000${entry.payloadRef}\u0000${entry.key}`, entry)
+  }
+  return [...byIdentity.values()]
+}
+
+function pickPayloadKeyFromCatalogCache(
+  cache: CatalogQueryCache | undefined,
+  guideArgs: AiJsonParams,
+): string | undefined {
+  if (cache === undefined || cache.results.length === 0) return undefined
+  const moduleKind = readStringField(guideArgs, 'moduleKind') ?? 'node-tree'
+  const payloadRef = readStringField(guideArgs, 'payloadRef') ?? 'spark.component'
+  let candidates = cache.results.filter(
+    entry => entry.moduleKind === moduleKind && entry.payloadRef === payloadRef,
+  )
+  if (candidates.length === 0) return undefined
+
+  const category = readStringField(guideArgs, 'category')
+  if (category !== undefined) {
+    const byCategory = candidates.filter(entry => entry.category === category)
+    if (byCategory.length > 0) candidates = byCategory
+  }
+
+  const keyword = readStringField(guideArgs, 'keyword')
+  if (keyword !== undefined) {
+    const normalizedKeyword = keyword.toLowerCase()
+    const byKeyword = candidates.filter(entry => matchesPayloadKeyword(entry, normalizedKeyword))
+    if (byKeyword.length > 0) candidates = byKeyword
+  } else if (cache.lastQuery !== undefined) {
+    const lastKeyword = readStringField(cache.lastQuery, 'keyword')
+    if (lastKeyword !== undefined) {
+      const normalizedKeyword = lastKeyword.toLowerCase()
+      const byLastKeyword = candidates.filter(entry => matchesPayloadKeyword(entry, normalizedKeyword))
+      if (byLastKeyword.length === 1) return byLastKeyword[0]?.key
+      if (byLastKeyword.length > 1) candidates = byLastKeyword
+    }
+  }
+
+  if (candidates.length === 1) return candidates[0]?.key
+  return candidates[0]?.key
+}
+
+function matchesPayloadKeyword(entry: CatalogPayloadSummary, keyword: string): boolean {
+  if (entry.key.toLowerCase().includes(keyword)) return true
+  if (entry.category?.toLowerCase().includes(keyword) === true) return true
+  if (entry.description?.toLowerCase().includes(keyword) === true) return true
+  return false
 }

@@ -30,6 +30,9 @@ export type NavigationNodeDraftNode = {
   disabled: boolean
   refId: string
   permissionMode: NavPermissionMode
+  planningStatus?: ProjectNodeData['planningStatus']
+  implGate?: ProjectNodeData['implGate']
+  upstreamContractsSatisfied?: boolean
 }
 
 export type NavigationNodePatch = Partial<Omit<NavigationNodeDraftNode, 'id'>> & {
@@ -117,6 +120,11 @@ export function createNavigationNodeDraft(navNode: ProjectNodeData): NavigationN
     hidden: navNode.hidden ?? false,
     disabled: navNode.disabled ?? false,
     permissionMode: navNode.permissionMode ?? 'masked',
+    ...(navNode.planningStatus !== undefined ? { planningStatus: navNode.planningStatus } : {}),
+    ...(navNode.implGate !== undefined ? { implGate: navNode.implGate } : {}),
+    ...(navNode.upstreamContractsSatisfied !== undefined
+      ? { upstreamContractsSatisfied: navNode.upstreamContractsSatisfied }
+      : {}),
   }
 
   if (navNode.context === undefined) {
@@ -238,6 +246,14 @@ export function createNavigationNodePatch(input: NavigationNodeDraft): Navigatio
     refId: nodeDto.refId,
     permissionMode: nodeDto.permissionMode,
   }
+  Object.assign(patch, {
+    planningStatus: nodeDto.planningStatus,
+    implGate: nodeDto.implGate,
+    upstreamContractsSatisfied: nodeDto.upstreamContractsSatisfied,
+  } satisfies Pick<
+    ProjectNodeNavigationPatch,
+    'planningStatus' | 'implGate' | 'upstreamContractsSatisfied'
+  >)
 
   if (nodeDto.nodeKind === 'link') patch.linkTarget = nodeDto.linkTarget
   if (nodeDto.nodeKind === 'ref' && nodeDto.refId) {

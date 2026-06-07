@@ -111,12 +111,12 @@ DevSystem 是消费层。它可以传入 HTTP、API path、认证头，但不能
 AI Host
   -> ensurePageDesignBusiness()
   -> ProjectEditor.project
-  -> ProjectModel.nodes.openConfigPage(pageId)
+  -> ProjectModel.openPageDesign(pageId)
   -> ConfigPageNode
   -> 配置页节点子模型
 ```
 
-AI 写入只进入内存 PageNode 并标 dirty。保存、版本、路由刷新和发布由显式用户动作触发。
+AI 写入先进入内存 PageNode 并标 dirty。DevSystem 保存、版本、路由刷新和发布由显式用户动作触发；自动化 runner 可在运行结束后保存 dirty 四文件。
 
 ## DataSet / DataView
 

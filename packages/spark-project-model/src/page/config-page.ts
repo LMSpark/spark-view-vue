@@ -222,6 +222,12 @@ export class ConfigPageNode extends ProjectNode {
    *
    * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
    * @vcmScriptOnly
+   * @requiredBeforeCall 写 node-tree 前必须先 queryPayloads / guidePayload(spark.component)。
+   * @usageRule 结构批量改写优先 module_script；direct call 不支持。
+   * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 cp.editNodeTree(t=>...) / cp.editDataSet(t=>...)，勿用 cp.call()。
+   * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 重新 guidePayload 并按 schema 构造 props
+   * @failureMode PAYLOAD_GUIDE_REQUIRED 未查询组件目录 => 先 queryPayloads 再 guidePayload 后重试
+   * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 cp.editNodeTree / cp.editDataSet 等方法
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)
@@ -241,6 +247,9 @@ export class ConfigPageNode extends ProjectNode {
    *
    * @moduleMutation pagedata.json write 在 mutator 内通过 DataSetCrudTool 修改 DataSet。
    * @vcmScriptOnly
+   * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。
+   * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。
+   * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)
@@ -267,6 +276,11 @@ export class ConfigPageNode extends ProjectNode {
       description: this.description,
       descriptionContext: this.descriptionContext,
       effectiveDescription: this.effectiveDescription,
+      ...(this.planningStatus !== undefined ? { planningStatus: this.planningStatus } : {}),
+      ...(this.implGate !== undefined ? { implGate: this.implGate } : {}),
+      ...(this.upstreamContractsSatisfied !== undefined
+        ? { upstreamContractsSatisfied: this.upstreamContractsSatisfied }
+        : {}),
       ...(this.icon === undefined ? {} : { icon: this.icon }),
     }
   }

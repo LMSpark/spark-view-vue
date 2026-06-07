@@ -27,7 +27,7 @@ SPARK 的目标不是「AI 辅助软件开发」，而是：
 
 1. **注解即注册**：TS JSDoc / Java 注解 → VCM 提取 → `AiModuleMetadataJson` → `AiModuleAdapter`；手写 metadata 仅作过渡。
 2. **设计 / 运行同词汇**：`DataTable` / `DataView` / `SparkNodeTree` / `dataViewKey` 在 design 与 runtime 同名；差异在 **实例与 mutation 权限**，不在另一套 API。
-3. **Agent 树 = 能力对象树**：由 `kind` + `resultApis` + `parentKind` 组成；`module_find` 定位实例，`module_script` / direct function 执行。
+3. **Agent 树 = 能力对象树**：由 `kind` + `resultApis` + `parentKind` 组成；`module_find` 只负责发现/定位，模型修改优先由 `module_script` 执行原生代码。
 4. **Fail-fast**：未注册的能力不可调用；Agent 路径须过权限与闸门；错误带 `code/msg/fix/checks`。
 5. **配置即行为**：四文件 + pagedata 是运行真源；语义操作优先于 DOM 操作。
 
@@ -67,6 +67,22 @@ SPARK 的目标不是「AI 辅助软件开发」，而是：
 ## 4. Agent 路径规范
 
 路径是 Agent 树的**实例坐标**，与 [PLATFORM_TENANT_ROUTING.md](../architecture/PLATFORM_TENANT_ROUTING.md) 作用域一致。
+
+pageDesign 写模型时不把路径链作为主用法。LLM 应在 `module_script({ script })` 中通过当前 `ProjectModel` 上下文直接编程：
+
+```ts
+const page = await this.openPageDesign({ pageId })
+await page.editDataSet(async (ds) => { /* pagedata.json */ })
+await page.editNodeTree(async (tree) => { /* rule.json */ })
+page.setFileText('script.js', scriptText)
+page.setFileText('style.css', styleText)
+return {
+  ruleJson: page.getFileText('rule.json'),
+  pageDataJson: page.getFileText('pagedata.json'),
+  script: page.getFileText('script.js'),
+  style: page.getFileText('style.css'),
+}
+```
 
 ### 4.1 作用域前缀
 
@@ -118,6 +134,7 @@ SPARK 的目标不是「AI 辅助软件开发」，而是：
 | `project` | `ProjectModel` | design | 项目根；策划投影、openPageDesign |
 | `config-page` | `ConfigPageNode` | design | 四文件编辑面 |
 | `node-tree` | `SparkNodeTree` | design (+runtime read) | rule 组件树 |
+| `spark-component` | `component-catalog.json` | design | Vue 组件只读目录模块 |
 | `dataset` | `DataSetCrudTool` | both | 页级 DataSet 入口 |
 | `data-table` | `DataTable` | both | 表结构 + 视图容器 |
 | `data-view` | `DataView` | both | 行/筛选/聚合/CRUD 语义 |
@@ -128,14 +145,15 @@ SPARK 的目标不是「AI 辅助软件开发」，而是：
 
 ```text
 project.openPageDesign → config-page
-config-page.editNodeTree → node-tree
-config-page.editDataSet → dataset
+config-page.getNodeTree → node-tree
+config-page.getDataSetTool → dataset
+config-page.editNodeTree / editDataSet → module_script 内 mutator 回调暴露 node-tree / dataset（VCM 从 callback 首参推断 resultApis）
 dataset.getTable → data-table
 data-table.getView → data-view
 page-runtime.dataset → dataset   （运行态 shortcut，待实现）
 ```
 
-当前仓库缺口：`editNodeTree` / `editDataSet` 尚未在 generated JSON 中展开到 `node-tree` / `dataset` 深层；`page-runtime` 尚未注册。
+guide-only 模块与 `spark-component` catalog 已注册为 companion modules；`getNodeTree` / `getTable` / `editNodeTree` / `editDataSet` 的 `resultApis` 已投影到 `module_function_guide.programmingFlow`。
 
 ---
 
@@ -150,6 +168,14 @@ page-runtime.dataset → dataset   （运行态 shortcut，待实现）
 | `impl_gate_open` | 人工按数据流放行实现 | 可 pageDesign | 不可改结构 |
 | `impl_confirmed` | 单页实现定稿 | fix 模式 | 可语义操作 |
 | `integration_passed` | 联调通过 | — | 全 mutation 按角色 |
+
+闸门状态写入 navigation 节点字段（DevSystem「AI 闸门」面板）：
+
+| 字段 | 取值 |
+|---|---|
+| `planningStatus` | `planning_draft` / `planning_confirmed`（空=按 effectiveDescription 推断） |
+| `implGate` | `closed` / `open`（空=过渡期默认 open） |
+| `upstreamContractsSatisfied` | `boolean`（默认 true） |
 
 **Fail-fast 示例**（pageDesign runner 目标行为）：
 
@@ -182,7 +208,7 @@ Agent 不是超级用户。
 |---|---|
 | `*.api.generated.json` | 人工审查 + diagnostics；含 `resultApis` 深链 |
 | `*.runtime.generated.json` | `AiModuleAdapter` 消费 |
-| `component-catalog.json` | payload；`queryPayloads` / `guidePayload` |
+| `component-catalog.json` | `spark-component` catalog 模块；`queryPayloads` / `guidePayload`（payloadRef=`spark.component`）；prop 用 `typeText` 展示 TS 类型，`schema.type` 为 JSON Schema |
 
 构建命令：`pnpm run generate:module-metadata`  
 诊断：`pnpm run diagnose:module-metadata`
@@ -196,15 +222,40 @@ Agent 不是超级用户。
 与 [DM-VCM-MODULE-METADATA-SCOPE.md](../../packages/spark-ai/src/modules/DM-VCM-MODULE-METADATA-SCOPE.md) 一致：
 
 ```text
-1. module_find / module_query     → 定位 kind 与实例 path
-2. module_guide / module_function_guide → 读契约
-3. queryPayloads / guidePayload   → 组件/复杂参数（rule 节点）
-4. module_script 或 functionName({ path, args }) → 执行
-5. human_question                 → 闸门/歧义时中断
+1. readPlanningProjection / module_query       → 确认 pageId、kind 与能力边界
+2. queryPayloads / guidePayload                → 组件/复杂参数（rule 节点）
+3. module_script({ script })                   → LLM 生成原生 JS，运行时执行
+4. 返回 ruleJson / pageDataJson / script / style → runner 读取四文件 projection
+5. agent_complete 或 human_question            → 完成或在闸门/歧义时中断
 ```
 
-**Design 任务**：先 `readPlanningProjection`，再 `openPageDesign`，禁止从 navigation DTO 拼需求。  
+**Design 任务**：先 `readPlanningProjection`，再在 `module_script` 中 `await this.openPageDesign({ pageId })`，禁止从 navigation DTO 拼需求。  
 **Runtime 任务**：先 `page-runtime` 读当前 view/table，再 mutation；禁止 DOM 选择器。
+
+`functionName({ path, args })` 与 `module_call` 只作为单步读写和旧协议兼容；pageDesign 结构修改不得以 `/kind[id]/...` 路径链作为主生成目标。
+
+### 9.1 FC 失败反推链（LLM 可见）
+
+当 LLM function call 失败时，运行时按同一词汇把错误反查到 VCM 真源，再回灌 tool result：
+
+```text
+LLM FC 失败 (code/msg/fix/checks)
+  → function-call-recovery-enricher 追加 RECOVERY_HINT checks
+  → module_function_guide / module_query / queryPayloads（目录 + 指南）
+  → promptSnapshot 固定 SOP（目录优先、禁止猜 functionName）
+  → *.runtime.generated.json + component-catalog.json（VCM 生成物）
+  → 源码 JSDoc：@usageRule / @requiredBeforeCall / @failureMode / @payloadRef
+```
+
+| 层 | 职责 |
+|---|---|
+| **JSDoc（真源）** | 在方法/属性首次声明处写 `@failureMode CODE when => fix`、`@usageRule`、`@requiredBeforeCall` |
+| **VCM 生成器** | `pnpm run generate:module-metadata` 提取为 `usageRules` / `failureModes` / `requiredBeforeCall` |
+| **指南投影** | `module_function_guide` 输出 `recoveryHints`、`functionLookupSteps`、`payloadLookupSteps` |
+| **Prompt Snapshot** | 只教“怎么查”，不内嵌大 schema；强调 FC 失败先 guide 再重试 |
+| **FC enricher** | `tool-call-executor` 在失败 tool result 中追加 `RECOVERY_HINT`，匹配 VCM `failureModes[code].fix` |
+
+**验收**：LLM 在 `SCHEMA_VALIDATION_FAILED` / `FUNCTION_NOT_DECLARED` 后，下一轮 tool_calls 应出现 `module_function_guide` 或 `queryPayloads`，而不是正文 `<tool_call>` 冒充调用。
 
 ---
 
@@ -228,12 +279,13 @@ AppWorks 交付的不是静态页面，而是：
 
 | 阶段 | 交付 | 状态 |
 |---|---|---|
-| **R0** | ProjectModel VCM + pageDesign metadata + DataSet kind 注解 | 进行中 |
-| **R1** | `resultApis` 深链至 node-tree / dataset / data-table / data-view | 待做 |
-| **R2** | navigation meta：`planningStatus` / `implGate`；runner 门禁 | 待做 |
-| **R3** | `PageRuntimeContext` + runtime path 注册 + 页面内 Agent 入口 | 待做 |
-| **R4** | Java VCM + connector kind 并入同一运行时 | 待做 |
-| **R5** | 业务对话壳（runtime Agent UI）+ 联调自动化 | 待做 |
+| **R0** | ProjectModel VCM + pageDesign metadata + DataSet kind 注解 | 已落地 |
+| **R1** | `resultApis` 深链至 node-tree / dataset / data-table / data-view | 已落地（含 mutator callback 推断） |
+| **R2** | LLM 直接生成 `module_script`，执行后得到四文件 projection，可选保存 dirty 文件 | 已落地 |
+| **R3** | navigation meta：`planningStatus` / `implGate`；runner 门禁 | 进行中（runner + DevSystem 节点编辑） |
+| **R4** | `PageRuntimeContext` + runtime path 注册 + 页面内 Agent 入口 | 待做 |
+| **R5** | Java VCM + connector kind 并入同一运行时 | 待做 |
+| **R6** | 业务对话壳（runtime Agent UI）+ 联调自动化 | 待做 |
 
 ---
 
@@ -243,9 +295,10 @@ AppWorks 交付的不是静态页面，而是：
 
 1. 所有 config-page 在 `pageFeatures` 中有 `effectiveDescription`。
 2. generated metadata 中，从 `project` 到 `data-view` 路径可达且无 empty findings。
-3. 已 `impl_confirmed` 的页，runtime path 可绑定 live DataSet 并完成至少一种语义 mutation（如 setFilter）。
-4. Agent 写操作与人操作产生相同 DataView 状态与审计记录。
-5. 未 `impl_gate_open` 的页，design Agent 被 fail-fast 拒绝。
+3. pageDesign Agent 可用一段 `module_script` 原生代码生成/修改 `rule.json`、`pagedata.json`、`script.js`、`style.css`。
+4. 已 `impl_confirmed` 的页，runtime path 可绑定 live DataSet 并完成至少一种语义 mutation（如 setFilter）。
+5. Agent 写操作与人操作产生相同 DataView 状态与审计记录。
+6. 未 `impl_gate_open` 的页，design Agent 被 fail-fast 拒绝。
 
 ---
 

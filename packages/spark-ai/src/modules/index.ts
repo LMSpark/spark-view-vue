@@ -75,6 +75,10 @@ export {
   AiModuleRuntime,
 } from './runtime/ai-module-runtime'
 
+export {
+  mergeCompanionChildDeclarations,
+} from './runtime/companion-topology'
+
 export type {
   ProtocolToolArgs,
 } from './runtime/ai-module-runtime'
@@ -101,6 +105,7 @@ export {
   validateApiObjectMetadata,
   resolveModuleMetadataJson,
   readModuleMetadataRuntimeDocument,
+  toModuleFunctionResultApiMetadata,
 } from './metadata'
 
 // ── 3. 知识投影类型 ─────────────────────────────────────────
@@ -126,6 +131,15 @@ export type {
 export {
   AiModulePayloadRegistry,
 } from './payloads/module-parameter-payload-registry'
+
+export { createPayloadCatalogModule } from './payloads/create-payload-catalog-module'
+
+export type { CreatePayloadCatalogModuleOptions } from './payloads/create-payload-catalog-module'
+
+export {
+  PAYLOAD_GUIDE_FUNCTION_NAME,
+  PAYLOAD_QUERY_FUNCTION_NAME,
+} from './payloads/payload-catalog-constants'
 
 export type {
   AiModulePayloadGuide,
