@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-collapse-item
  * @description 折叠面板项，面板体内以 24 列网格渲染子组件。
  * @category internal
  */

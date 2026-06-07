@@ -12,7 +12,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-segmented
  * @description 分段选择器字段，绑定 string/number 值。
  */
 import { ref, computed, watch } from 'vue'

@@ -10,7 +10,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-breadcrumb-item
  * @description 面包屑导航项，支持链接跳转。
  */
 import { useSparkPageComponent } from '../../internal'

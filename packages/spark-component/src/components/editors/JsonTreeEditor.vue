@@ -185,7 +185,6 @@
 
 <script setup lang="ts">
 /**
- * @skill json-tree-editor
  * @description JSON 树形编辑器，基于 VXE-Table 以可折叠/展开的树结构编辑 JSON 数据。
  * @category internal
  */

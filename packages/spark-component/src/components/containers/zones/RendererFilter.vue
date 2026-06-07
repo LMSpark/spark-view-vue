@@ -68,7 +68,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-filter
  * @description 筛选区组件，自治绑定 DataView。独立使用时仅渲染 wrapper 子节点；
  * 当 children 中含有带 `field` 的过滤项节点时进入面板模式，自维护 filterModel
  * 与 DataView.setFilter 同步，无需父容器注入桥接字段。

@@ -35,4 +35,4 @@ pnpm exec vitest run tests/page/page-design-knowledge.test.ts
 
 ## VCM 注释
 
-组件/能力类 JSDoc 须满足 `@moduleAction`、`@moduleMutation` 等仓库约定；根级校验见 `pnpm run verify:vcm-comments`。
+能力类 JSDoc 须满足 `@moduleAction`、`@moduleMutation` 等仓库约定；当前 module metadata 生成器只读取 TypeScript 能力类，不读取 Vue 组件标签。

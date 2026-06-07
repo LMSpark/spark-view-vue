@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-descriptions-item
  * @description 描述列表项，支持字段绑定。
  */
 import { computed } from 'vue'

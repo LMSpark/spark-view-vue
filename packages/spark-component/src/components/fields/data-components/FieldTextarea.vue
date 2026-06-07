@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-textarea
  * @description 多行文本字段，绑定 string 值，支持自动高度和字数限制。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

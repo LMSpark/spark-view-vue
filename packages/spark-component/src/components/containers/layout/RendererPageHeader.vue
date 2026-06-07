@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-page-header
  * @description 页面头部组件。
  */
 import { computed } from 'vue'

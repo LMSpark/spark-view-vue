@@ -12,8 +12,7 @@
  *
  * 【事件分类】
  *   业务事件：page-config / data-batch-job / data-change / notification
- *   调试事件：debug-route-request / debug-route-result / debug-screenshot-* / debug-fc-error-report
- *   AI 事件：llm-frame（核心：承载 AI turn 的 delta/reasoning/result/error/done 事件）
+ *   AI 事件：ai-host-run-* / llm-frame（承载 APP 侧执行请求与模型 turn 帧）
  *
  * 【消费方】turn-event-collector（监听 llm-frame）、APP 层 SSE 实现
  * ═══════════════════════════════════════════════════════════════
@@ -33,11 +32,6 @@ import type { ApiEnvelopeContext, ApiEnvelopeEvent } from '@spark-appworks/spark
  *   data-batch-job           — 批量数据任务状态
  *   data-change              — 数据变更通知
  *   notification             — 通用通知
- *   debug-route-request      — 调试路由请求
- *   debug-route-result       — 调试路由结果
- *   debug-screenshot-request — 截图请求
- *   debug-screenshot-result  — 截图结果
- *   debug-fc-error-report    — 函数调用错误报告
  *   ai-host-run-request      — 定向触发 APP Host run
  *   ai-host-run-result       — APP Host run 执行回执
  *   llm-frame                — AI 推理帧事件（核心：delta/reasoning/result/error/done）
@@ -49,11 +43,6 @@ export type AiAgentAppSseEventName =
   | 'data-batch-job'
   | 'data-change'
   | 'notification'
-  | 'debug-route-request'
-  | 'debug-route-result'
-  | 'debug-screenshot-request'
-  | 'debug-screenshot-result'
-  | 'debug-fc-error-report'
   | 'ai-host-run-request'
   | 'ai-host-run-result'
   | 'llm-frame'

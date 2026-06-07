@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-descriptions
  * @description 描述列表容器。
  */
 import { computed } from 'vue'

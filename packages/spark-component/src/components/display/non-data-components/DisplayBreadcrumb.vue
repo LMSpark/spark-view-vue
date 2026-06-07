@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-breadcrumb
  * @description 面包屑导航容器，支持自定义分隔符。
  */
 import { computed } from 'vue'

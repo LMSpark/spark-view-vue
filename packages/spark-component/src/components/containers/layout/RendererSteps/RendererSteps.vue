@@ -27,7 +27,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-steps
  * @description 步骤条容器，支持工具栏和步骤内容切换。
  * @category container
  * @notes children 内放 r-step

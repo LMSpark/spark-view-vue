@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill display-countdown
  * @description 倒计时组件，支持自定义格式和结束事件。
  */
 import { computed } from 'vue'

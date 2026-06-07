@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-time-picker
  * @description 时间选择字段，绑定时间字符串或 Date 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

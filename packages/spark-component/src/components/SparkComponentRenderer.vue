@@ -39,7 +39,6 @@
 
 <script setup lang="ts">
 /**
- * @skill spark-component-renderer
  * @description 通用组件渲染器，将 SparkNode 配置递归解析并动态渲染为已注册组件，是 SPARK 渲染引擎的核心入口。
  * @category internal
  */

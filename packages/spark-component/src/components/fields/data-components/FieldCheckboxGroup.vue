@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-checkbox-group
  * @description 复选框组字段，绑定数组值，可切换按钮样式。
  */
 import { computed } from 'vue'

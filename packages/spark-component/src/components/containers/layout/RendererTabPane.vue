@@ -22,7 +22,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tab-pane
  * @description 标签页面板（r-tabs 内部）。
  * @category internal
  */

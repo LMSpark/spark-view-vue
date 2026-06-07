@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-collapse
  * @description 折叠面板容器。
  * @category container
  * @notes children 内放 r-collapse-item

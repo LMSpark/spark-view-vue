@@ -24,7 +24,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-mention
  * @description 提及输入字段，绑定 string 值。
  */
 import { ref, computed, watch } from 'vue'

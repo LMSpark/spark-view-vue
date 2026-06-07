@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-anchor
  * @description 锚点导航容器。
  */
 import { computed } from 'vue'

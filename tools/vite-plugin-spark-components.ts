@@ -75,9 +75,9 @@ const logger = createLogger('SparkComponentsPlugin')
 export type LoadStrategy = 'sync' | 'async'
 
 /**
- * 组件元数据
+ * 组件注册条目
  */
-export type ComponentMetadata = {
+export type ComponentRegistrationEntry = {
   /** 组件名称（kebab-case） */
   name: string
   /** 文件路径（相对于 root） */
@@ -251,7 +251,7 @@ function generateRegisterStatement(componentName: string, strategy: LoadStrategy
 class ComponentAnalyzer {
   private config: Required<SparkComponentsPluginOptions>
   private viteConfig: ResolvedConfig | null = null
-  private components: ComponentMetadata[] = []
+  private components: ComponentRegistrationEntry[] = []
 
   constructor(options: SparkComponentsPluginOptions) {
     this.config = { ...DEFAULT_OPTIONS, ...options }
@@ -267,13 +267,13 @@ class ComponentAnalyzer {
   /**
    * 扫描组件
    */
-  scan(): ComponentMetadata[] {
+  scan(): ComponentRegistrationEntry[] {
     if (!this.viteConfig) {
       throw new Error('Vite config not initialized')
     }
 
     const root = this.viteConfig.root
-    const components: ComponentMetadata[] = []
+    const components: ComponentRegistrationEntry[] = []
 
     logger.info('🔍 开始扫描组件...')
 
@@ -447,18 +447,6 @@ ${asyncComponents.map(c => c.registerStatement).join('\n')}
 }
 
 /**
- * 获取所有组件的元数据
- */
-export function getComponentMetadata() {
-  return ${JSON.stringify(this.components.map(c => ({
-    name: c.name,
-    path: c.path,
-    size: c.size,
-    strategy: c.strategy
-  })), null, 2)}
-}
-
-/**
  * 默认导出
  */
 export default registerComponents
@@ -487,13 +475,6 @@ export type ComponentStats = {
 }
 
 export function registerComponents(app?: App): ComponentStats
-
-export function getComponentMetadata(): Array<{
-  name: ComponentName
-  path: string
-  size: number
-  strategy: 'sync' | 'async'
-}>
 
 export default registerComponents
 `

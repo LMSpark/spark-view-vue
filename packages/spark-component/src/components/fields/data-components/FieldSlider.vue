@@ -16,7 +16,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-slider
  * @description 滑块字段，绑定 number 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

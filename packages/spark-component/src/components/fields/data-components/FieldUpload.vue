@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-upload
  * @description 文件上传字段，绑定文件路径字符串。
  * @notes autoUpload - 自动上传（默认 true）
  * @notes showFileList - 显示文件列表（默认 true）

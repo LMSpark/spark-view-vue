@@ -29,7 +29,6 @@
 
 <script setup lang="ts">
 /**
- * @skill unregistered-node-fallback
  * @description 未注册组件兜底渲染器，在开发阶段显示未找到对应注册的组件类型名称，辅助排查配置错误。
  * @category internal
  */

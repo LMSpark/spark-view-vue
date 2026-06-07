@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-form
  * @description 数据表单容器，通过 CONTEXT_DATA 能力向子组件暴露表单数据。
  * @category container
  * @binding dataViewKey-driven

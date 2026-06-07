@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-button
  * @description 声明式动作按钮，支持 action（CRUD 动作）+ template（样式预设）+ 显式 props 三层样式合并。
  * @category container
  * @binding action

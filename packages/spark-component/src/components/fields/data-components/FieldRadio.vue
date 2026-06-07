@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-radio
  * @description 单选按钮组字段，绑定 string/number 值，可切换按钮样式渲染。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'

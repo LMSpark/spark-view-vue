@@ -12,7 +12,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-text
  * @description 文本输入字段，绑定 string 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

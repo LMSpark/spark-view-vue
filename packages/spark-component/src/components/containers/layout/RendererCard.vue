@@ -21,7 +21,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-card
  * @description 卡片容器，在卡片体内渲染子组件。
  */
 import { computed } from 'vue'

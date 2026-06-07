@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-progress
  * @description 进度条展示组件，支持动态颜色。
  */
 import { computed } from 'vue'

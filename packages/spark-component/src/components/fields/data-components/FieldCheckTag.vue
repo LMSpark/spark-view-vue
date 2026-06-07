@@ -11,7 +11,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-check-tag
  * @description 标签选择字段，绑定 boolean 值。
  */
 import { ref, watch } from 'vue'

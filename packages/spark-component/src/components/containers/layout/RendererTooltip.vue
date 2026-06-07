@@ -25,7 +25,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tooltip
  * @description 文字提示组件，支持位置和延迟配置。
  */
 import { computed } from 'vue'

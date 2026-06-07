@@ -376,7 +376,7 @@ def scene_promise(img: Image.Image, local: float, scene: dict[str, str | float])
     draw_center(draw, 555, "AI 生成的是可治理资产", FONT_H3, "#20d3c2")
     draw_center(draw, 620, "不是散落源码", FONT_BODY, "#f7b733")
 
-    for i, label in enumerate(["需求", "组件目录", "数据规范", "权限策略"]):
+    for i, label in enumerate(["需求", "组件注册", "数据规范", "权限策略"]):
         angle = local * 0.35 + i * math.pi / 2
         x = int(cx + math.cos(angle) * 420) - 70
         y = int(cy + math.sin(angle) * 255) - 24

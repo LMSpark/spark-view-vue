@@ -87,8 +87,6 @@
 
 <script setup lang="ts">
 /**
- * @skill app-list
- * @catalogInternal
  * @description 应用列表页面，以卡片网格展示已创建的项目/应用及入口；属于租户路由页，不允许作为 SparkNode 组件配置生成。
  */
 import { ref, onMounted, computed, inject } from 'vue'

@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-time-select
  * @description 时间间隔选择字段，绑定时间字符串值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

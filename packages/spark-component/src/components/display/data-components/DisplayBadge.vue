@@ -22,7 +22,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-badge
  * @description 徽章展示组件。
  */
 import { computed } from 'vue'

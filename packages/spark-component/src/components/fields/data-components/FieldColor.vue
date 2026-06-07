@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-color
  * @description 颜色选择字段，绑定十六进制颜色字符串，表格/详情模式显示色块预览。
  * @notes showAlpha - 是否支持透明度
  * @notes colorFormat - 颜色格式（'hex'|'rgb'|'hsl'|'hsv'）

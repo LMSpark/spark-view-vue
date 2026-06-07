@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tree-select
  * @description 树形选择字段，绑定单值或数组。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'

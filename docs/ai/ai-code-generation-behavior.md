@@ -407,7 +407,6 @@ data-components/
 // ❌ 禁止：13 个服务文件 + 0 个子目录
 services/
   ai-host.ts
-  ai-debug-bridge.ts
   ai-host-run-bridge.ts
   ai-turn-bridge.ts
   page-design-ai-runner.ts
@@ -428,7 +427,6 @@ services/
 services/
   ai/
     ai-host.ts
-    ai-debug-bridge.ts
     ai-host-run-bridge.ts
     ai-turn-bridge.ts
   page-design/

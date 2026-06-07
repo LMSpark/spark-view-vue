@@ -2,7 +2,7 @@
  * APP 公共 SSE 事件总线。
  *
  * 本文件只维护 `/api/events` 的单例连接、v4 envelope 解包和按事件名分发。
- * 页面配置、数据任务、通知、AI 调试等业务动作在各自订阅方处理。
+ * 页面配置、数据任务、通知、AI Host Run 等业务动作在各自订阅方处理。
  */
 
 import { Logger, isRecord, type ApiEnvelopeContext, type ApiEnvelopeEvent } from '@spark-appworks/spark-utils'
@@ -22,11 +22,6 @@ const ServerEventType = Object.freeze({
   DATA_BATCH_JOB: 'data-batch-job',
   DATA_CHANGE: 'data-change',
   NOTIFICATION: 'notification',
-  DEBUG_ROUTE_REQUEST: 'debug-route-request',
-  DEBUG_ROUTE_RESULT: 'debug-route-result',
-  DEBUG_SCREENSHOT_REQUEST: 'debug-screenshot-request',
-  DEBUG_SCREENSHOT_RESULT: 'debug-screenshot-result',
-  DEBUG_FC_ERROR_REPORT: 'debug-fc-error-report',
   AI_HOST_RUN_REQUEST: 'ai-host-run-request',
   AI_HOST_RUN_RESULT: 'ai-host-run-result',
 })
@@ -69,51 +64,6 @@ export type ServerNotificationEvent = {
   category?: string
   source?: string
   actionUrl?: string
-}
-
-export type DebugRouteRequestEvent = {
-  requestId: string
-  timestamp: number
-  path?: string
-  pageId?: string
-  tenantId?: string
-  projectId?: string
-  replace?: boolean
-  reason?: string
-}
-
-export type DebugRouteResultEvent = {
-  requestId: string
-  status: string
-  serverTimestamp?: number
-  targetPath?: string
-  currentPath?: string
-  message?: string
-}
-
-export type DebugScreenshotRequestEvent = {
-  requestId: string
-  timestamp: number
-  selector?: string
-  pageId?: string
-  reason?: string
-}
-
-export type DebugScreenshotResultEvent = {
-  requestId: string
-  status: string
-  serverTimestamp?: number
-  fileId?: string
-  name?: string
-  url?: string
-  message?: string
-  textDigest?: string
-}
-
-export type DebugFcErrorReportEvent = {
-  reportId: string
-  serverTimestamp: number
-  [key: string]: unknown
 }
 
 export type AiHostRunRequestEvent = {
@@ -272,61 +222,6 @@ export function onNotificationEvent(
     eventType: ServerEventType.NOTIFICATION,
     normalize: normalizeNotificationEvent,
     label: '通知',
-    callback,
-  })
-}
-
-export function onDebugRouteRequest(
-  callback: (event: DebugRouteRequestEvent) => void,
-): () => void {
-  return onTypedServerEvent({
-    eventType: ServerEventType.DEBUG_ROUTE_REQUEST,
-    normalize: normalizeDebugRouteRequestEvent,
-    label: 'AI 调试路由请求',
-    callback,
-  })
-}
-
-export function onDebugRouteResult(
-  callback: (event: DebugRouteResultEvent) => void,
-): () => void {
-  return onTypedServerEvent({
-    eventType: ServerEventType.DEBUG_ROUTE_RESULT,
-    normalize: normalizeDebugRouteResultEvent,
-    label: 'AI 调试路由回执',
-    callback,
-  })
-}
-
-export function onDebugScreenshotRequest(
-  callback: (event: DebugScreenshotRequestEvent) => void,
-): () => void {
-  return onTypedServerEvent({
-    eventType: ServerEventType.DEBUG_SCREENSHOT_REQUEST,
-    normalize: normalizeDebugScreenshotRequestEvent,
-    label: 'AI 调试截图请求',
-    callback,
-  })
-}
-
-export function onDebugScreenshotResult(
-  callback: (event: DebugScreenshotResultEvent) => void,
-): () => void {
-  return onTypedServerEvent({
-    eventType: ServerEventType.DEBUG_SCREENSHOT_RESULT,
-    normalize: normalizeDebugScreenshotResultEvent,
-    label: 'AI 调试截图回执',
-    callback,
-  })
-}
-
-export function onDebugFcErrorReport(
-  callback: (event: DebugFcErrorReportEvent) => void,
-): () => void {
-  return onTypedServerEvent({
-    eventType: ServerEventType.DEBUG_FC_ERROR_REPORT,
-    normalize: normalizeDebugFcErrorReportEvent,
-    label: 'AI 调试 FC 错误',
     callback,
   })
 }
@@ -658,106 +553,6 @@ function normalizeNotificationEvent(data: unknown): ServerNotificationEvent | nu
   if (source !== undefined) event.source = source
   if (actionUrl !== undefined) event.actionUrl = actionUrl
   return event
-}
-
-function normalizeDebugRouteRequestEvent(data: unknown): DebugRouteRequestEvent | null {
-  if (!isRecord(data)) return null
-
-  const requestId = readRequiredString(data, 'requestId')
-  if (requestId === null) return null
-
-  const event: DebugRouteRequestEvent = {
-    requestId,
-    timestamp: normalizeTimestamp(data['timestamp']),
-  }
-  const path = readNonEmptyStringProperty(data, 'path')
-  const pageId = readNonEmptyStringProperty(data, 'pageId')
-  const tenantId = readNonEmptyStringProperty(data, 'tenantId')
-  const projectId = readNonEmptyStringProperty(data, 'projectId')
-  const reason = readNonEmptyStringProperty(data, 'reason')
-
-  if (path !== undefined) event.path = path
-  if (pageId !== undefined) event.pageId = pageId
-  if (tenantId !== undefined) event.tenantId = tenantId
-  if (projectId !== undefined) event.projectId = projectId
-  if (typeof data['replace'] === 'boolean') event.replace = data['replace']
-  if (reason !== undefined) event.reason = reason
-  return event
-}
-
-function normalizeDebugRouteResultEvent(data: unknown): DebugRouteResultEvent | null {
-  if (!isRecord(data)) return null
-
-  const requestId = readRequiredString(data, 'requestId')
-  const status = readRequiredString(data, 'status')
-  if (requestId === null || status === null) return null
-
-  const event: DebugRouteResultEvent = { requestId, status }
-  const targetPath = readNonEmptyStringProperty(data, 'targetPath')
-  const currentPath = readNonEmptyStringProperty(data, 'currentPath')
-  const message = readNonEmptyStringProperty(data, 'message')
-
-  if (typeof data['serverTimestamp'] === 'number') event.serverTimestamp = data['serverTimestamp']
-  if (targetPath !== undefined) event.targetPath = targetPath
-  if (currentPath !== undefined) event.currentPath = currentPath
-  if (message !== undefined) event.message = message
-  return event
-}
-
-function normalizeDebugScreenshotRequestEvent(data: unknown): DebugScreenshotRequestEvent | null {
-  if (!isRecord(data)) return null
-
-  const requestId = readRequiredString(data, 'requestId')
-  if (requestId === null) return null
-
-  const event: DebugScreenshotRequestEvent = {
-    requestId,
-    timestamp: normalizeTimestamp(data['timestamp']),
-  }
-  const selector = readNonEmptyStringProperty(data, 'selector')
-  const pageId = readNonEmptyStringProperty(data, 'pageId')
-  const reason = readNonEmptyStringProperty(data, 'reason')
-
-  if (selector !== undefined) event.selector = selector
-  if (pageId !== undefined) event.pageId = pageId
-  if (reason !== undefined) event.reason = reason
-  return event
-}
-
-function normalizeDebugScreenshotResultEvent(data: unknown): DebugScreenshotResultEvent | null {
-  if (!isRecord(data)) return null
-
-  const requestId = readRequiredString(data, 'requestId')
-  const status = readRequiredString(data, 'status')
-  if (requestId === null || status === null) return null
-
-  const event: DebugScreenshotResultEvent = { requestId, status }
-  const fileId = readNonEmptyStringProperty(data, 'fileId')
-  const name = readNonEmptyStringProperty(data, 'name')
-  const url = readNonEmptyStringProperty(data, 'url')
-  const message = readNonEmptyStringProperty(data, 'message')
-  const textDigest = readNonEmptyStringProperty(data, 'textDigest')
-
-  if (typeof data['serverTimestamp'] === 'number') event.serverTimestamp = data['serverTimestamp']
-  if (fileId !== undefined) event.fileId = fileId
-  if (name !== undefined) event.name = name
-  if (url !== undefined) event.url = url
-  if (message !== undefined) event.message = message
-  if (textDigest !== undefined) event.textDigest = textDigest
-  return event
-}
-
-function normalizeDebugFcErrorReportEvent(data: unknown): DebugFcErrorReportEvent | null {
-  if (!isRecord(data)) return null
-
-  const reportId = readRequiredString(data, 'reportId')
-  if (reportId === null) return null
-
-  return {
-    ...data,
-    reportId,
-    serverTimestamp: normalizeTimestamp(data['serverTimestamp']),
-  }
 }
 
 function normalizeAiHostRunRequestEvent(data: unknown): AiHostRunRequestEvent | null {

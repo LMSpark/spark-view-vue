@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-alert
  * @description 警告提示组件，支持 success/warning/info/error 四种类型。
  */
 import { useSparkPageComponent } from '../../internal'

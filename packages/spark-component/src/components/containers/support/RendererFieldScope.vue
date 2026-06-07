@@ -28,7 +28,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-field-scope
  * @description 字段宿主容器：包裹 el-form 并向下 provide DATA_ROW，
  * 使内部字段组件（r-text / r-select 等）可消费当前行数据并参与表单校验；
  * 同时通过 useContainerGrid 提供 24 列栅格布局。

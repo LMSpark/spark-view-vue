@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-anchor-link
  * @description 锚点链接项，支持嵌套子链接。
  */
 import { useSparkPageComponent } from '../../internal'

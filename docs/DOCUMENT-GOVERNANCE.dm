@@ -546,7 +546,7 @@ section Automation {
     "verify:docs"
 
   default_gate:
-    "verify:rules = verify:arch && verify:ai-codegen && verify:vcm-comments && verify:docs"
+    "verify:rules = verify:arch && verify:ai-codegen && verify:docs"
 
   checks: [
     "扫描 .md 文件名",

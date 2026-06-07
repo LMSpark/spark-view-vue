@@ -97,8 +97,6 @@
 
 <script setup lang="ts">
 /**
- * @skill about
- * @catalogInternal
  * @description 关于页面，展示系统版本、技术栈和项目信息；属于平台路由页，不允许作为 SparkNode 组件配置生成。
  */
 /**

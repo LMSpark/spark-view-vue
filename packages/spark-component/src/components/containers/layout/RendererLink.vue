@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-link
  * @description 链接组件，可渲染子内容。
  */
 import { computed } from 'vue'

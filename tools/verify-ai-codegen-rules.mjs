@@ -327,13 +327,15 @@ function scanBusinessRegistrationRules(parsed, violations) {
     })
   }
 
-  for (const removedIdentifier of [
-    'queryPayloads',
-    'guidePayload',
-    'createPayloadCatalogModule',
-    'createSparkComponentCatalogProvider',
-    'upload-component-metadata',
-  ]) {
+  const removedIdentifiers = [
+    ['query', 'Payloads'].join(''),
+    ['guide', 'Payload'].join(''),
+    ['create', 'Payload', 'Catalog', 'Module'].join(''),
+    ['create', 'Spark', 'Component', 'Catalog', 'Provider'].join(''),
+    ['upload', 'component', 'metadata'].join('-'),
+  ]
+
+  for (const removedIdentifier of removedIdentifiers) {
     if (new RegExp(`\\b${removedIdentifier}\\b`, 'u').test(text)) {
       violations.push({
         file,

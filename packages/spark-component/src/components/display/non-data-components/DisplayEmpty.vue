@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-empty
  * @description 空状态占位组件。
  */
 import { computed } from 'vue'

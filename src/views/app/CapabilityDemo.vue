@@ -159,8 +159,6 @@
 
 <script setup lang="ts">
 /**
- * @skill capability-demo
- * @catalogIgnore
  * @description 能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为；仅用于开发演示，不进入组件配置目录。
  */
 /**

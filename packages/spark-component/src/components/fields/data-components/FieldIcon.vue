@@ -49,7 +49,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-icon
  * @description 图标选择字段，绑定图标名称字符串。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'

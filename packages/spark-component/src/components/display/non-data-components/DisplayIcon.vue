@@ -6,7 +6,6 @@
 
 <script setup lang="ts">
 /**
- * @skill display-icon
  * @description 图标展示组件，解析图标名称渲染为 Element Plus 图标组件，支持尺寸和颜色配置。
  */
 import { computed, markRaw, type Component } from 'vue'

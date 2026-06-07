@@ -1,10 +1,8 @@
 /**
- * SPARK 组件目录配置 - 统一配置源
+ * SPARK 组件注册扫描配置。
  *
- * 所有依赖组件目录的子系统共享此配置，确保一致性：
  * - sparkComponentsPlugin（编译时注册）
  * - AutoLoader（运行时注册）
- * - AI 知识库生成（组件元数据提取）
  *
  * @module scan-config
  * @since 1.2.0
@@ -40,24 +38,8 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
   '**/*.test.vue',
   '**/*.spec.vue',
   '**/__tests__/**',
-  // dev-system 是设计器内部工具，不进入运行组件目录、AI 组件知识或自动注册扫描。
+  // dev-system 是设计器内部工具，不参与运行时自动注册扫描。
   '**/src/views/app/dev-system/**/*.vue',
-] as const
-
-/**
- * Catalog 专用 feature 扫描排除规则（不影响组件注册扫描）。
- *
- * 这批组件属于应用壳层/编辑器内部实现/容器内部桥接，不对外作为可配置业务组件。
- * 若将其纳入 feature 扫描会产生大量“缺少 @skill 注解”噪声，干扰目录覆盖率判断。
- */
-export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
-  '**/src/components/AiChatWidget.vue',
-  '**/src/components/ErrorFallback.vue',
-  '**/src/components/IconPicker.vue',
-  '**/src/components/ModuleContextBadge.vue',
-  '**/src/components/NavIcon.vue',
-
-  '**/packages/spark-component/src/components/containers/support/**/*.vue',
 ] as const
 
 /* ==========================================================================

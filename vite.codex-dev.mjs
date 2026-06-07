@@ -13,16 +13,6 @@ function sparkVirtualModulesPlugin() {
 export function registerComponents() {
   return { total: 0, sync: 0, async: 0 }
 }
-export function getComponentMetadata() {
-  return []
-}
-`,
-    ],
-    [
-      'virtual:spark-skill-catalog',
-      `
-export const skillCatalog = []
-export default skillCatalog
 `,
     ],
   ])

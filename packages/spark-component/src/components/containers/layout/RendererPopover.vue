@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-popover
  * @description 弹出提示容器，支持多种触发方式和位置。
  */
 import { computed } from 'vue'

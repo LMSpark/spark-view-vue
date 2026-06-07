@@ -127,7 +127,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-virtual-card
  * @description 虚拟分页卡片容器，绑定 DataView.rows 并用滚动比例定位远端分页，拖动停稳后才请求目标页。
  * @category container
  * @binding dataViewKey-driven

@@ -38,7 +38,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-dropdown
  * @description 下拉菜单容器，支持分裂按钮模式和命令事件。
  */
 import { computed } from 'vue'

@@ -11,7 +11,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-divider
  * @description 分割线组件，支持文字内容定位。
  */
 import { useSparkPageComponent } from '../../internal'

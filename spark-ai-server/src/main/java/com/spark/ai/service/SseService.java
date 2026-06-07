@@ -52,11 +52,6 @@ public class SseService {
     public static final String EVENT_DATA_BATCH_JOB = "data-batch-job";
     public static final String EVENT_DATA_CHANGE = "data-change";
     public static final String EVENT_NOTIFICATION = "notification";
-    public static final String EVENT_DEBUG_ROUTE_REQUEST = "debug-route-request";
-    public static final String EVENT_DEBUG_ROUTE_RESULT = "debug-route-result";
-    public static final String EVENT_DEBUG_SCREENSHOT_REQUEST = "debug-screenshot-request";
-    public static final String EVENT_DEBUG_SCREENSHOT_RESULT = "debug-screenshot-result";
-    public static final String EVENT_DEBUG_FC_ERROR_REPORT = "debug-fc-error-report";
     public static final String EVENT_AI_HOST_RUN_REQUEST = "ai-host-run-request";
     public static final String EVENT_AI_HOST_RUN_RESULT = "ai-host-run-result";
     public static final String EVENT_AI_TURN_DELTA = "ai-turn-delta";

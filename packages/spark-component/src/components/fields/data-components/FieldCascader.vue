@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-cascader
  * @description 级联选择字段，绑定路径数组值。
  */
 import { computed } from 'vue'

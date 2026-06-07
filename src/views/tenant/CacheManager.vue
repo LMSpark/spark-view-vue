@@ -101,8 +101,6 @@
 
 <script setup lang="ts">
 /**
- * @skill cache-manager
- * @catalogInternal
  * @description 缓存管理页面，查看前后端缓存统计并支持手动清理前端页面缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。
  */
 import { ref, computed, onMounted } from 'vue'

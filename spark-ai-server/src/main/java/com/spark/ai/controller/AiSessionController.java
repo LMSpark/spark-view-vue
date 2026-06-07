@@ -436,31 +436,22 @@ public class AiSessionController {
             String sessionId) {
         String code = result.getErrorCode();
         HttpStatus status = switch (code) {
-            case "INVALID_STATE_TRANSITION", "HANDOFF_REQUIRED",
-                    "IDEMPOTENCY_REPLAY_BLOCKED", "DUPLICATE_TOOL_CALL_ID",
-                    "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1",
-                    "SESSION_SCOPE_MISMATCH" -> HttpStatus.CONFLICT;
+            case "INVALID_STATE_TRANSITION", "SESSION_SCOPE_MISMATCH" -> HttpStatus.CONFLICT;
             case "LLM_CALL_FAILED" -> HttpStatus.BAD_GATEWAY;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
 
         String category = switch (code) {
             case "INVALID_STATE_TRANSITION" -> "state-transition";
-            case "HANDOFF_REQUIRED" -> "handoff";
             case "LLM_CALL_FAILED" -> "llm-call";
             case "SESSION_SCOPE_MISMATCH" -> "session-scope";
-            case "IDEMPOTENCY_REPLAY_BLOCKED" -> "idempotency";
-            case "DUPLICATE_TOOL_CALL_ID" -> "tool-call";
-            case "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> "parallelism";
             default -> "unknown";
         };
 
         String retryPolicy = switch (code) {
-            case "INVALID_STATE_TRANSITION", "HANDOFF_REQUIRED" -> "manual";
+            case "INVALID_STATE_TRANSITION" -> "manual";
             case "LLM_CALL_FAILED" -> "safe-retry";
             case "SESSION_SCOPE_MISMATCH" -> "recreate-session";
-            case "IDEMPOTENCY_REPLAY_BLOCKED", "DUPLICATE_TOOL_CALL_ID" -> "regenerate-plan";
-            case "PARALLEL_WRITE_BUDGET_EXCEEDED", "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> "serialize-or-split";
             default -> "none";
         };
 
@@ -473,7 +464,7 @@ public class AiSessionController {
                 sessionId,
                 result.getState(),
                 result.getStateTransition(),
-                result.getHandoff(),
+                result.getErrorDetails(),
                 result.getRuntimeMeta()
         );
     }
@@ -487,7 +478,7 @@ public class AiSessionController {
             String sessionId,
             String state,
             String stateTransition,
-            Map<String, Object> handoff,
+            Map<String, Object> details,
             Map<String, Object> runtimeMeta) {
 
         Map<String, Object> error = new LinkedHashMap<>();
@@ -511,8 +502,8 @@ public class AiSessionController {
             body.put("stateTransition", stateTransition);
         }
         body.put("protocolVersion", PROTOCOL_VERSION_V4);
-        if (handoff != null) {
-            body.put("handoff", handoff);
+        if (details != null) {
+            body.put("details", details);
         }
         if (runtimeMeta != null) {
             body.put("runtime", runtimeMeta);
@@ -524,13 +515,8 @@ public class AiSessionController {
     private static String errorMessageForCode(String code) {
         return switch (code) {
             case "INVALID_STATE_TRANSITION" -> "AI 会话状态不可直接进入下一轮，请重新生成计划或重建会话";
-            case "HANDOFF_REQUIRED" -> "AI 会话已进入人工接管状态，请先确认上次失败后再继续";
             case "LLM_CALL_FAILED" -> "LLM 调用失败，请稍后重试或检查模型服务配置";
             case "SESSION_SCOPE_MISMATCH" -> "后端 AI 会话与当前页面实例不匹配，请重建会话后继续";
-            case "IDEMPOTENCY_REPLAY_BLOCKED" -> "AI 生成了重复的工具调用，已阻止执行，请重新生成计划";
-            case "DUPLICATE_TOOL_CALL_ID" -> "AI 返回了重复的工具调用 ID，已阻止执行，请重新生成计划";
-            case "PARALLEL_WRITE_BUDGET_EXCEEDED" -> "AI 本轮写入工具调用过多，请拆成更小步骤执行";
-            case "PARALLEL_WRITE_NOT_ALLOWED_STAGE1" -> "AI 本轮包含并行写入计划，请改为串行或拆分执行";
             default -> null;
         };
     }

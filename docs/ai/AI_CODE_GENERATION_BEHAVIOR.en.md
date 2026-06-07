@@ -408,7 +408,6 @@ Core stance: **Folders group by domain, not flat peer-level.** Sibling directori
 // ❌ PROHIBITED: 13 service files + 0 subdirectories
 services/
   ai-host.ts
-  ai-debug-bridge.ts
   ai-host-run-bridge.ts
   ai-turn-bridge.ts
   page-design-ai-runner.ts
@@ -429,7 +428,6 @@ services/
 services/
   ai/
     ai-host.ts
-    ai-debug-bridge.ts
     ai-host-run-bridge.ts
     ai-turn-bridge.ts
   page-design/

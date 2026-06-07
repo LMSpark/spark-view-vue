@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-result
  * @description 结果页组件，含标题、副标题和按钮区。
  */
 import { computed } from 'vue'

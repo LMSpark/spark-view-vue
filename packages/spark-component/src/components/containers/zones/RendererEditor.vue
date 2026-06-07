@@ -10,7 +10,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-editor
  * @description 编辑面板组件，在 r-tree 中作为侧边编辑面板提取渲染，用于节点详情编辑。
  */
 import { computed } from 'vue'

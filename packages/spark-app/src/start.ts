@@ -277,7 +277,7 @@ export async function start(options: StartOptions): Promise<void> {
             if (stats !== null) {
               startLogger.info(`自动注册完成: ${stats.total} 个组件 (同步: ${stats.sync}, 异步: ${stats.async})`)
               if (stats.total === 0) {
-                startLogger.info('编译时注册返回 0 个组件；请确认组件扫描配置覆盖了应用组件目录')
+                startLogger.info('编译时注册返回 0 个组件；请确认组件扫描配置覆盖了应用组件路径')
               }
             } else {
               startLogger.warn('virtual:spark-components.registerComponents 返回值无效，无法确认编译时注册统计')

@@ -10,7 +10,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-timeline
  * @description 时间线容器。
  */
 import { computed } from 'vue'

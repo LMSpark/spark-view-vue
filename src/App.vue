@@ -160,7 +160,6 @@ import AppTabBar from '@/layout/AppTabBar.vue'
 import NavHeaderBar from '@/layout/NavHeaderBar.vue'
 import NavContextSelector from '@/layout/NavContextSelector.vue'
 import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
-import { createAiDebugBridge } from '@/services/ai-debug-bridge'
 import { createAiHostRunBridge } from '@/services/ai-host-run-bridge'
 import { appAiAgent } from '@/services/ai-host'
 import { createAuthHeaders } from '@/services/http'
@@ -230,7 +229,6 @@ useColorScheme()
 const activeSettingsScope = ref<string | null>(null)
 let isApplyingProjectUiSettings = false
 let _stopPageConfigChange: (() => void) | null = null
-let _stopAiDebugBridge: (() => void) | null = null
 let _stopAiHostRunBridge: (() => void) | null = null
 const pageNodeRefreshRevision = ref(0)
 const sparkRendererRouteKey = computed(() => {
@@ -584,18 +582,9 @@ async function reloadNavigation(): Promise<void> {
 }
 
 onMounted(() => {
-  // APP 公共 SSE 在壳层接入：页面配置刷新、AI 调试和 Host Run 桥接都依赖同一条 /api/events。
+  // APP 公共 SSE 在壳层接入：页面配置刷新和 Host Run 桥接共用同一条 /api/events。
   if (_stopPageConfigChange === null) {
     _stopPageConfigChange = onPageConfigChange(handlePageConfigChange)
-  }
-  if (_stopAiDebugBridge === null) {
-    _stopAiDebugBridge = createAiDebugBridge({
-      router,
-      route,
-      publicPaths,
-      platformPathPrefix: PLATFORM_PATH_PREFIX,
-    })
-      .start()
   }
   if (_stopAiHostRunBridge === null) {
     _stopAiHostRunBridge = createAiHostRunBridge({
@@ -631,8 +620,6 @@ onUnmounted(() => {
   moduleContextListeners.clear()
   _stopPageConfigChange?.()
   _stopPageConfigChange = null
-  _stopAiDebugBridge?.()
-  _stopAiDebugBridge = null
   _stopAiHostRunBridge?.()
   _stopAiHostRunBridge = null
 })

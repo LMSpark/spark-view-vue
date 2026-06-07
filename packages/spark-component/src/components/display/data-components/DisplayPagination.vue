@@ -18,7 +18,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-pagination
  * @description 分页控制组件，触发页码/页大小变更事件。
  */
 import { computed } from 'vue'

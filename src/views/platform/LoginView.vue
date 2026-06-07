@@ -144,8 +144,6 @@
 
 <script setup lang="ts">
 /**
- * @skill login-view
- * @catalogInternal
  * @description 多租户登录页面，提供用户名/密码认证和租户选择入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。
  */
 import { reactive, ref } from 'vue'

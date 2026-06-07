@@ -23,7 +23,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-select
  * @description 单选下拉字段，绑定 string/number 值，支持静态选项列表或 optionDataViewKey 动态数据源绑定。
  */
 import { useChoiceFieldState } from './composables/useChoiceFieldState'

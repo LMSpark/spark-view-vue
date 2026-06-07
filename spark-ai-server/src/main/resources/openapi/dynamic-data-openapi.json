@@ -3,7 +3,7 @@
   "info": {
     "title": "SPARK Server API",
     "version": "1.0.0",
-    "description": "Complete SPARK server API documentation, including authentication, app config, page config, AI, projects, navigation, cache, diagnostics, metadata-driven dynamic tables, unified CRUD, DataView query, tree operations, batch jobs, and SSE notifications."
+    "description": "Complete SPARK server API documentation, including authentication, app config, page config, AI session communication, projects, navigation, cache, metadata-driven dynamic tables, unified CRUD, DataView query, tree operations, batch jobs, and SSE notifications."
   },
   "servers": [
     {
@@ -58,15 +58,11 @@
     },
     {
       "name": "AI",
-      "description": "AI chat, component metadata, upload, and debug commands"
+      "description": "LLM turn transport and APP SSE coordination"
     },
     {
       "name": "AI Sessions",
       "description": "Stateful AI session and conversation APIs"
-    },
-    {
-      "name": "Diagnostics",
-      "description": "Frontend call error reports and diagnostics"
     },
     {
       "name": "Cache",
@@ -75,10 +71,6 @@
     {
       "name": "Logs",
       "description": "Browser/client log ingestion"
-    },
-    {
-      "name": "Scenario Functions",
-      "description": "AI scenario function execution"
     },
     {
       "name": "Filter Expression Cases",
@@ -454,149 +446,6 @@
         }
       }
     },
-    "/ai/chat/stream": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Stream AI chat response",
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/SseStream"
-          }
-        }
-      }
-    },
-    "/ai/upload": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Upload a file for AI workflows",
-        "requestBody": {
-          "$ref": "#/components/requestBodies/MultipartForm"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
-    "/ai/debug/screenshot-request": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Broadcast frontend screenshot request",
-        "security": [],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
-    "/ai/debug/screenshot-result": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Receive frontend screenshot result",
-        "security": [],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
-    "/ai/debug/route-request": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Broadcast frontend route request",
-        "security": [],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
-    "/ai/debug/route-result": {
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Receive frontend route result",
-        "security": [],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
-    "/ai/debug/fc-error-report": {
-      "post": {
-        "tags": [
-          "Diagnostics"
-        ],
-        "summary": "Report frontend function-call error",
-        "security": [],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
-    "/ai/debug/fc-error-reports": {
-      "get": {
-        "tags": [
-          "Diagnostics"
-        ],
-        "summary": "List frontend function-call error reports",
-        "security": [],
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      },
-      "delete": {
-        "tags": [
-          "Diagnostics"
-        ],
-        "summary": "Clear frontend function-call error reports",
-        "security": [],
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/Ok"
-          }
-        }
-      }
-    },
     "/ai/sessions": {
       "post": {
         "tags": [
@@ -656,6 +505,38 @@
         },
         "responses": {
           "202": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
+    },
+    "/ai/host-run/request": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Request APP Host Run through /api/events",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "202": {
+            "$ref": "#/components/responses/GenericJson"
+          }
+        }
+      }
+    },
+    "/ai/host-run/result": {
+      "post": {
+        "tags": [
+          "AI"
+        ],
+        "summary": "Report APP Host Run result",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/GenericJson"
+        },
+        "responses": {
+          "200": {
             "$ref": "#/components/responses/GenericJson"
           }
         }
@@ -735,27 +616,6 @@
         "responses": {
           "200": {
             "$ref": "#/components/responses/Ok"
-          }
-        }
-      }
-    },
-    "/ai/scenario-functions/{functionName}": {
-      "post": {
-        "tags": [
-          "Scenario Functions"
-        ],
-        "summary": "Execute scenario function",
-        "parameters": [
-          {
-            "$ref": "#/components/parameters/FunctionName"
-          }
-        ],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
           }
         }
       }

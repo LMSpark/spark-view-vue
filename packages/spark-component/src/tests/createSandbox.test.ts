@@ -208,7 +208,7 @@ describe('createSandbox — compileFunctions', () => {
     expect(fns['canEditField']!()).toBe(true)
   })
 
-  it('应支持通过 $components 使用 ID 寻址访问组件元数据', () => {
+  it('应支持通过 $components 使用 ID 寻址访问组件信息', () => {
     const ctx = createMockContext({
       $components: {
         get: vi.fn((id: string) => id === 'orders-table' ? { id, type: 'r-table' } : null),

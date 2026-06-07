@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-statistic
  * @description 统计数值展示组件，支持精度、前后缀和千分位分隔。
  */
 import { computed } from 'vue'

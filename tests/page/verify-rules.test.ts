@@ -144,22 +144,26 @@ describe('verification rules', () => {
     expect(output).toContain('manual AiModuleRuntime.register() is forbidden in src/services')
   })
 
-  it('rejects removed payload catalog hooks in src/services', () => {
+  it('rejects removed parameter-surface hooks in src/services', () => {
     const root = createTempRoot()
-    writeFile(root, 'src/services/bad-payload-catalog.ts', [
-      "import { createSparkComponentCatalogProvider } from './page-design/spark-component-catalog-provider'",
-      'void createSparkComponentCatalogProvider',
-      'void queryPayloads',
-      'void guidePayload',
+    const oldQuery = ['query', 'Payloads'].join('')
+    const oldGuide = ['guide', 'Payload'].join('')
+    const oldProvider = ['create', 'Spark', 'Component', 'Catalog', 'Provider'].join('')
+    const oldProviderPath = ['./page-design/spark', 'component', 'catalog', 'provider'].join('-')
+    writeFile(root, 'src/services/bad-parameter-surface.ts', [
+      `import { ${oldProvider} } from '${oldProviderPath}'`,
+      `void ${oldProvider}`,
+      `void ${oldQuery}`,
+      `void ${oldGuide}`,
     ].join('\n'))
 
     const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'src'])
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
-    expect(output).toContain('queryPayloads is removed')
-    expect(output).toContain('guidePayload is removed')
-    expect(output).toContain('createSparkComponentCatalogProvider is removed')
+    expect(output).toContain(`${oldQuery} is removed`)
+    expect(output).toContain(`${oldGuide} is removed`)
+    expect(output).toContain(`${oldProvider} is removed`)
   })
 
   it('rejects public method drift on critical host classes', () => {

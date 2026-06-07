@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-transfer
  * @description 穿梭框字段，绑定数组值，支持搜索过滤。
  */
 import { useOptionFieldState } from './composables/useOptionFieldState'

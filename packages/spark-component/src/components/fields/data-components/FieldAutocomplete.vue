@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-autocomplete
  * @description 自动补全输入字段，绑定 string 值。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

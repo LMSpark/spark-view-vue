@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-rate
  * @description 评分字段，绑定 number 值，支持半星模式。
  */
 import { useBasicFieldState } from './composables/useBasicFieldState'

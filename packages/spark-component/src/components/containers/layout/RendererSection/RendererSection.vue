@@ -82,7 +82,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-section
  * @description 分区容器，支持可选卡片化包装以及标题/描述/折叠/头部操作区。
  * @category container
  * @notes 头部操作区通过结构化 `header` 区域声明

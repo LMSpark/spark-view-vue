@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 /**
- * @skill code-editor
  * @description 代码编辑器组件，基于 CodeMirror 6 提供语法高亮编辑，加载失败时回退为 textarea。
  */
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'

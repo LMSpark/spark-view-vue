@@ -170,9 +170,6 @@
 </template>
 
 <script setup lang="ts">
-/**
- * @skill-description 集成开发环境，提供页面配置可视化编辑、代码编辑、预览和版本管理。
- */
 import { onMounted } from 'vue'
 import type { PageNodeFileName } from '@spark-appworks/spark-project-model'
 import { AiToolApprovalPanel } from '@spark-appworks/spark-component'

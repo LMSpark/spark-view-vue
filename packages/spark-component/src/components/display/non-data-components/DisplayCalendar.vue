@@ -15,7 +15,6 @@
 
 <script setup lang="ts">
 /**
- * @skill display-calendar
  * @description 日历展示组件，支持日期范围和选中绑定。
  */
 import { ref } from 'vue'

@@ -33,7 +33,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tour
  * @description 引导流程组件，管理引导打开/关闭状态。
  */
 import { ref, watch, computed } from 'vue'

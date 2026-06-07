@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-detail
  * @description 数据详情容器，与 r-form 结构一致但不可编辑。
  * @category container
  * @binding dataViewKey-driven

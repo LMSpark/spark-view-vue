@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-checkbox
  * @description 单个复选框字段，绑定 boolean 值，支持自定义选中/未选中显示文本。
  * @notes checkedText / uncheckedText - 自定义选中/未选中显示文本（代替 trueLabel / falseLabel）
  */

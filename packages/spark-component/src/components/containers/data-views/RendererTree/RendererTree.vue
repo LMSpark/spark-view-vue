@@ -78,7 +78,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tree
  * @description 树形容器，支持懒加载、节点操作和编辑器侧面板。
  * @category container
  * @binding dataViewKey-driven

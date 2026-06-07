@@ -344,7 +344,7 @@ export type {
 
 ---
 
-## 内置 SparkNode 组件目录（103 类型）
+## 内置 SparkNode 组件类型（103 类型）
 
 所有组件通过 `Spark.register()` 注册，在 `rule.json` 中以 `type` 引用。
 

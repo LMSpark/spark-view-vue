@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-date
  * @description 日期选择字段，绑定日期/字符串值。
  * @notes type - 选择器类型（'date'|'datetime'|'daterange' 等）
  * @notes format - 显示格式

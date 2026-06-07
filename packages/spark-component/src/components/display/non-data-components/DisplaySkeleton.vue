@@ -19,7 +19,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-skeleton
  * @description 骨架屏加载占位组件。
  */
 import { computed } from 'vue'

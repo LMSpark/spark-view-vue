@@ -17,7 +17,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tag
  * @description 标签展示组件，支持类型/尺寸/主题样式和可关闭功能。
  */
 import { computed } from 'vue'

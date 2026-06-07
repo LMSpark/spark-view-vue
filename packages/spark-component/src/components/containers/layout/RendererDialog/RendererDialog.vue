@@ -48,7 +48,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-dialog
  * @description 对话框容器，支持结构化 header/footer 区域和网格主体布局。
  * @category container
  * @notes 头部动作区与底部区域通过结构化 `header` / `footer` 声明

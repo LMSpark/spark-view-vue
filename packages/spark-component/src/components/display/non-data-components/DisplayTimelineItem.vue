@@ -23,7 +23,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-timeline-item
  * @description 时间线项。
  */
 import { computed } from 'vue'

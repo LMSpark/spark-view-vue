@@ -1,10 +1,10 @@
 # SPARK AI Server
 
-Java Spring Boot 后端，当前主要承载三类能力：统一 AI 会话接口 `/api/ai/sessions/*`、APP 公共 SSE 通道 `/api/events`、以及页面配置/导航/调试等平台后端能力。
+Java Spring Boot 后端。AI 相关职责只保留四件事：LLM 调用、APP 公共 SSE 通信、AI 会话记录落库、AI 会话查询。
 
 ## 数据目录约定
 
-- 页面配置与组件元数据位于 `spark-ai-server/data/`。
+- 页面配置位于 `spark-ai-server/data/`。
 - 当前正式页面配置路径是 `spark-ai-server/data/pages-config/`。
 - 仓库根目录若出现单独的 `data/` 目录，应视为本地运行态残留或误生成物，不作为现行结构依据。
 
@@ -130,19 +130,16 @@ $env:AI_MODEL        = "qwen-plus"
 | `DELETE` | `/api/ai/sessions/{sessionId}` | 销毁单个会话 |
 | `DELETE` | `/api/ai/sessions` | 批量销毁当前会话 |
 
-### 其他 AI 相关端点
+### `/api/ai/host-run/*`
 
 | Method | Path | 说明 |
 |---|---|---|
-| `POST` | `/api/ai/upload` | 上传聊天附件 |
-| `POST` | `/api/ai/debug/screenshot-request` | 触发截图调试请求 |
-| `POST` | `/api/ai/debug/screenshot-result` | 回传截图调试结果 |
-| `POST` | `/api/ai/debug/route-request` | 触发路由调试请求 |
-| `POST` | `/api/ai/debug/route-result` | 回传路由调试结果 |
+| `POST` | `/api/ai/host-run/request` | 通过 APP SSE 定向触发前端 Host Run |
+| `POST` | `/api/ai/host-run/result` | 前端回传 Host Run 执行结果 |
 
 ### `GET /api/events`
 
-APP 唯一 SSE 通道。页面配置、数据任务、通知、AI 调试事件和 AI turn 模型事件都通过这里广播；当前 AI turn 主链路使用 `llm-frame` 中性帧事件，旧 `ai-turn-*` 名称仅保留在历史/兼容会话接口中。
+APP 唯一 SSE 通道。页面配置、数据任务、通知、AI Host Run 事件和 AI turn 模型事件都通过这里广播；当前 AI turn 主链路使用 `llm-frame` 中性帧事件，旧 `ai-turn-*` 名称仅保留在历史/兼容会话接口中。
 
 ---
 

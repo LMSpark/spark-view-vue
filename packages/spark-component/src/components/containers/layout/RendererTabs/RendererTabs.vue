@@ -30,7 +30,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-tabs
  * @description 标签页容器，支持工具栏。
  * @category container
  * @notes children 内放 r-tab-pane，每个 tab-pane 内可嵌套任意组件

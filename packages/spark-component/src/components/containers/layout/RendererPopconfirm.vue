@@ -26,7 +26,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-popconfirm
  * @description 确认气泡组件。
  */
 import { computed } from 'vue'

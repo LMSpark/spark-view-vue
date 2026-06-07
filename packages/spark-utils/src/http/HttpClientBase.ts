@@ -394,9 +394,13 @@ export abstract class HttpClientBase {
     if (!isRecord(details)) return undefined
     const direct = details['nextAction']
     if (typeof direct === 'string' && direct.trim() !== '') return direct
-    const handoff = details['handoff']
-    if (isRecord(handoff) && typeof handoff['nextAction'] === 'string' && handoff['nextAction'].trim() !== '') {
-      return handoff['nextAction']
+    const responseDetails = details['details']
+    if (
+      isRecord(responseDetails)
+      && typeof responseDetails['nextAction'] === 'string'
+      && responseDetails['nextAction'].trim() !== ''
+    ) {
+      return responseDetails['nextAction']
     }
     return undefined
   }

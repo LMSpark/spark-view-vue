@@ -79,7 +79,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-column-group
  * @description 语境感知字段渲染代理，根据父容器类型（table/form/detail/tree）自动切换渲染模板，统一处理权限控制和校验规则。
  * @notes displayLabel - 分组标题（用于多级表头）
  * @notes children - 子字段组件数组（SparkNode[]）

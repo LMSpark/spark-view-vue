@@ -20,7 +20,6 @@
 
 <script setup lang="ts">
 /**
- * @skill json-editor
  * @description JSON 编辑器组件，基于 CodeMirror 集成 JSON Schema 校验和树形视图，用于配置数据编辑。
  */
 import { computed, onBeforeUnmount, onMounted, ref, shallowRef, watch } from 'vue'

@@ -14,7 +14,6 @@
 
 <script setup lang="ts">
 /**
- * @skill r-switch
  * @description 开关字段，绑定 boolean 值，支持自定义开/关文本说明。
  */
 import { computed } from 'vue'
