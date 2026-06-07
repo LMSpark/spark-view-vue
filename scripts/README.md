@@ -6,6 +6,7 @@
 
 - `start-dev.mjs`：一键启动项目 Docker MySQL、Java 后端和前端开发环境。
 - `build-all.mjs`：完整构建流水线（Java JAR + Vite 前端；不再启动后端上传组件元数据）。
+- `diagnose:component-catalog`（package.json）：生成 `tmp/component-catalog.json`，仅作 VCM 诊断；不接入 pageDesign LLM。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`：根应用链路验证脚本。
 - AI live 验证脚本放在根 `scripts/`，由脚本层自行持有 HTTP 与 APP SSE I/O。

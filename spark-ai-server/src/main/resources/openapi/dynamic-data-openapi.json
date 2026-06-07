@@ -343,7 +343,7 @@
         "tags": [
           "Cache"
         ],
-        "summary": "Clear component metadata cache",
+        "summary": "Clear legacy component metadata in-memory cache",
         "responses": {
           "200": {
             "$ref": "#/components/responses/GenericJson"
@@ -472,7 +472,7 @@
         "tags": [
           "AI"
         ],
-        "summary": "Get component metadata",
+        "summary": "Get legacy component metadata cache status (pageDesign LLM does not use this)",
         "security": [],
         "responses": {
           "200": {
@@ -484,7 +484,7 @@
         "tags": [
           "AI"
         ],
-        "summary": "Query component metadata",
+        "summary": "Write legacy component metadata cache (pageDesign LLM does not use this)",
         "security": [],
         "requestBody": {
           "$ref": "#/components/requestBodies/GenericJson"

@@ -1,13 +1,15 @@
 # @spark-appworks/vite-plugin-spark-catalog
 
-构建期使用的 Vite 插件工作区，用来从组件源码提取结构化元数据，并生成 AI 运行时和提示词所需的目录产物。
+构建期 Vite 插件：从组件源码提取 VCM 元数据，并生成两类产物：
+
+- **module metadata**（`generate:module-metadata` / `diagnose:module-metadata`）：pageDesign LLM 主路径输入，经 `AiModuleAdapter` 注册。
+- **component catalog**（`diagnose:component-catalog`）：写入 `tmp/component-catalog.json`，仅作 VCM/组件契约诊断，不注册为 AiModule 工具。
 
 ## 负责内容
 
 - 基于 VCM 的组件 props 元数据提取
-- 结构化组件目录生成
-- 扁平文本目录兼容转换
-- 构建期提示词拼装输入整理
+- pageDesign 等业务 module metadata 生成
+- 可选 component-catalog 诊断输出（非 LLM 主调用路径）
 
 ## 使用定位
 

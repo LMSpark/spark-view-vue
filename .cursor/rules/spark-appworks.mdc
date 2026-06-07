@@ -85,7 +85,7 @@ Never skip VCM function guides before writing node-tree or dataset mutations.
 Do not directly edit generated or large metadata files:
 
 - `packages/spark-ai/src/catalog/component-catalog.json`
-- `spark-ai-server/data/component-metadata.json`
+- `spark-ai-server/data/component-metadata.json` (legacy cache; pageDesign LLM does not read)
 
 ## Commit Format
 

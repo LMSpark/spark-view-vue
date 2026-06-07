@@ -327,6 +327,22 @@ function scanBusinessRegistrationRules(parsed, violations) {
     })
   }
 
+  for (const removedIdentifier of [
+    'queryPayloads',
+    'guidePayload',
+    'createPayloadCatalogModule',
+    'createSparkComponentCatalogProvider',
+    'upload-component-metadata',
+  ]) {
+    if (new RegExp(`\\b${removedIdentifier}\\b`, 'u').test(text)) {
+      violations.push({
+        file,
+        line: 1,
+        message: `${removedIdentifier} is removed; use VCM module_function_guide and module_script instead`,
+      })
+    }
+  }
+
   function visit(node) {
     if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
       const receiver = node.expression.expression.getText(sourceFile)

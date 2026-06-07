@@ -144,6 +144,24 @@ describe('verification rules', () => {
     expect(output).toContain('manual AiModuleRuntime.register() is forbidden in src/services')
   })
 
+  it('rejects removed payload catalog hooks in src/services', () => {
+    const root = createTempRoot()
+    writeFile(root, 'src/services/bad-payload-catalog.ts', [
+      "import { createSparkComponentCatalogProvider } from './page-design/spark-component-catalog-provider'",
+      'void createSparkComponentCatalogProvider',
+      'void queryPayloads',
+      'void guidePayload',
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'src'])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('queryPayloads is removed')
+    expect(output).toContain('guidePayload is removed')
+    expect(output).toContain('createSparkComponentCatalogProvider is removed')
+  })
+
   it('rejects public method drift on critical host classes', () => {
     const root = createTempRoot()
     writeFile(root, 'packages/spark-ai/src/modules/runtime/ai-module-runtime.ts', [
