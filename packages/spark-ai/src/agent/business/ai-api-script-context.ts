@@ -179,10 +179,10 @@ function createApiSurface(
           }
           return wrapResultApis(
             state.value.then(target => wrapAsyncApiActionValue(
-            target,
-            action,
-            normalizedArgs,
-            ctx,
+              target,
+              action,
+              normalizedArgs,
+              ctx,
             )),
             action.resultApis ?? [],
             ctx,
