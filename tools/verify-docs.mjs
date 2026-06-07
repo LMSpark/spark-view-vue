@@ -26,6 +26,8 @@ const standardMarkdownNames = new Set([
 
 const legacyMarkdownAllowlist = new Set([
   'docs/SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md',
+  'docs/SPARK_VIEW_PROJECT_DEEP_DIVE_ZH.md',
+  'docs/ai/AI_CODE_GENERATION_BEHAVIOR.en.md',
   'docs/architecture/DATAFLOW_ARCHITECTURE.md',
   'docs/architecture/PERMISSION_SYSTEM.md',
   'docs/architecture/PLATFORM_TENANT_ROUTING.md',
@@ -37,6 +39,8 @@ const legacyMarkdownAllowlist = new Set([
   'docs/guides/QUICKSTART.md',
   'docs/guides/SAVE_DATASET_ACTION.md',
   'docs/guides/TREE_CAPABILITY.md',
+  'packages/spark-project-model/src/MODEL-HIERARCHY.md',
+  'packages/spark-project-model/src/STRUCTURE.md',
   'packages/spark-ai/src/modules/DM-VCM-MODULE-METADATA-SCOPE.md',
   'packages/spark-ai/src/modules/MODULE-KIND-REGISTRATION.md',
   'packages/spark-utils/REQUEST_GUIDE.md',

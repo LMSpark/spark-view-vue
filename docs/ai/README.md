@@ -11,7 +11,7 @@
 
 ## 当前口径
 
-- VCM metadata 由源码注释和 TypeScript 类型生成，不手写组件目录、payload 指南或 runtime 路线图。
+- VCM metadata 由源码注释和 TypeScript 类型生成，不维护手写目录、参数说明或 runtime 路线图。
 - 后端 AI 只负责 LLM 通信、APP SSE 通信、会话记录落库和查询。
 - 页面设计业务只能通过 `spark-project-model` 的项目模型和 PageNode 子模型沉淀事实。
 - 生成代码必须服从：理念 > 逻辑 > AI 生成代码规则 > SSOT || SOLID > 该删则删 || 该合则合 || 该拆则拆 > 兼容。
