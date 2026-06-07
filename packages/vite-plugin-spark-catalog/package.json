@@ -3,7 +3,7 @@
     "version": "0.3.7",
     "type": "module",
     "private": true,
-    "description": "SPARK 组件 Props 目录生成 Vite 插件 — 构建时 VCM 类型提取 + 补充数据合并",
+    "description": "VCM module metadata 生成 — 产出 AiModuleAdapter 消费的 generated JSON",
     "main": "./src/index.ts",
     "types": "./src/index.ts",
     "exports": {

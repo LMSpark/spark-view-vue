@@ -564,7 +564,6 @@ page-design hardcode -> LLM 工具/指南
 - `tests/page/page-design-ai-runner.test.ts`
 - `packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts`
 - `packages/vite-plugin-spark-catalog/src/tests/dataset-crud-tool-reflection.test.ts`
-- `packages/vite-plugin-spark-catalog/src/tests/vcm-schema-json-schema.test.ts`
 
 推荐验证：
 

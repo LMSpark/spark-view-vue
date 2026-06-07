@@ -4,11 +4,9 @@ import { visualizer } from 'rollup-plugin-visualizer'
 import path from 'path'
 import { fileURLToPath } from 'node:url'
 import { sparkComponentsPlugin } from './tools/vite-plugin-spark-components'
-import { sparkCatalogPlugin } from './packages/vite-plugin-spark-catalog/src/plugin'
 import {
   COMPONENT_SCAN_PATTERNS,
   COMPONENT_EXCLUDE_PATTERNS,
-  CATALOG_FEATURE_EXCLUDE_PATTERNS,
   SYNC_COMPONENTS,
   ASYNC_COMPONENTS,
   SIZE_THRESHOLD
@@ -97,12 +95,6 @@ export default defineConfig({
       exclude: [...COMPONENT_EXCLUDE_PATTERNS],
       verbose: false
     } satisfies Parameters<typeof sparkComponentsPlugin>[0]),
-
-    // 📋 组件 Props 目录生成（独立插件）
-    sparkCatalogPlugin({
-      featurePatterns: [...COMPONENT_SCAN_PATTERNS],
-      exclude: [...COMPONENT_EXCLUDE_PATTERNS, ...CATALOG_FEATURE_EXCLUDE_PATTERNS],
-    }),
 
     ...(process.env['ANALYZE'] ? [visualizer({
       open: true,

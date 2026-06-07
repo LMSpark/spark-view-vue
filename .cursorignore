@@ -17,4 +17,4 @@ artifacts/
 !.env.local.example
 !.env.java.example
 
-packages/spark-ai/src/catalog/component-catalog.json
+src/services/page-design/page-design-module-metadata.runtime.generated.json

@@ -17,5 +17,5 @@ temp-*.txt
 temp-*.cjs
 temp-*.mts
 
-packages/spark-ai/src/catalog/component-catalog.json
+src/services/page-design/page-design-module-metadata.runtime.generated.json
 packages/vxe-table/helper/vetur/*.json

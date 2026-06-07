@@ -38,7 +38,7 @@ packages/
 ├── spark-component/    # Vue 渲染器、组件注册表、能力接线
 ├── spark-app/          # 应用壳、路由、认证、插件、启动引导
 ├── spark-ai/           # AI 运行时：SSE、Stills 执行、工具协议
-├── vite-plugin-spark-catalog/ # 构建期目录提取插件
+├── vite-plugin-spark-catalog/ # VCM module metadata 生成
 └── vxe-table/          # VXE Table 集成
 spark-ai-server/        # Spring Boot 后端（Java）— 非 Java 任务跳过
 src/                    # 应用入口、视图、启动引导
@@ -99,7 +99,7 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/spark-ai-complete-guide.m
 ## 大文件 — 不要直接修改
 
 这些目录文件很大，不应直接编辑：
-- `packages/spark-ai/src/catalog/component-catalog.json` (~94MB)
+- `src/services/page-design/page-design-module-metadata.runtime.generated.json`
 
 ## Commit Message 格式
 

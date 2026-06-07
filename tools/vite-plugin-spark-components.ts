@@ -225,7 +225,7 @@ function generateImportStatement(
 
 
 /* REMOVED: Props 提取（extractInterfaceBody, parseInterfaceProperties, applyDefaultsFromWithDefaults, parseComponentProps）
- * —— Props 结构化提取已迁移到 vite-plugin-spark-catalog（基于 vue-component-meta）
+ * Props 结构化提取由 vite-plugin-spark-catalog/module-metadata-generator 负责（VCM → AiModuleAdapter）。
  */
 
 /**

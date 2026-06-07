@@ -136,7 +136,7 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue'
 import { SparkCodeEditor, JsonTreeEditor } from '@spark-appworks/spark-component'
-import { createRuleJsonSchema, createRuleTreePolicy, componentCatalog, type RuleEditorComponentCatalog } from '@/services/project-model-artifacts'
+import { createRuleJsonSchema, createRuleTreePolicy } from '@/services/project-model-artifacts'
 import { ElMessageBox } from 'element-plus'
 import { useDevFileEditor } from './composables/useDevFileEditor'
 import type { DevState } from './useDevState'
@@ -144,9 +144,8 @@ import type { PageNodeFileName, PageNodeFileVersionSummary } from '@spark-appwor
 import NavIcon from '@/components/NavIcon.vue'
 import DevDataSetDesigner from './DevDataSetDesigner.vue'
 
-const pageDesignComponentCatalog: RuleEditorComponentCatalog = componentCatalog
-const rulePolicy = createRuleTreePolicy(pageDesignComponentCatalog)
-const RULE_JSON_SCHEMA = createRuleJsonSchema(pageDesignComponentCatalog)
+const rulePolicy = createRuleTreePolicy()
+const RULE_JSON_SCHEMA = createRuleJsonSchema()
 
 const props = withDefaults(defineProps<{
   state: DevState

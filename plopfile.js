@@ -26,7 +26,7 @@ export default function (plop) {
         choices: [
           { name: 'configurable — 可作为 SparkNode 页面配置组件', value: 'configurable' },
           { name: 'internal     — 仅技术目录保留，LLM 不可直接配置', value: 'internal' },
-          { name: 'ignore       — 完全不进入 component-catalog.json', value: 'ignore' }
+          { name: 'ignore       — 标记 @catalogIgnore，不参与 VCM module metadata', value: 'ignore' }
         ],
         default: 'configurable'
       },

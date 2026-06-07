@@ -207,10 +207,9 @@ Agent 不是超级用户。
 |---|---|
 | `*.api.generated.json` | 人工审查 + diagnostics；含 `resultApis` 深链 |
 | `*.runtime.generated.json` | `AiModuleAdapter` 消费 |
-| `tmp/component-catalog.json` | 可选 VCM 诊断产物（`pnpm run diagnose:component-catalog`）；不注册为 AiModule，LLM 不读取 |
 
 构建命令：`pnpm run generate:module-metadata`  
-诊断：`pnpm run diagnose:module-metadata`、`pnpm run diagnose:component-catalog`
+诊断：`pnpm run diagnose:module-metadata`
 
 **Java**：同一 `schemaVersion` 与 `$defs` 池化规则；提取器独立，输出合并进企业 metadata 仓库或 classpath resource。
 
