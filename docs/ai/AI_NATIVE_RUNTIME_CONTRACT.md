@@ -134,7 +134,6 @@ return {
 | `project` | `ProjectModel` | design | 项目根；策划投影、openPageDesign |
 | `config-page` | `ConfigPageNode` | design | 四文件编辑面 |
 | `node-tree` | `SparkNodeTree` | design (+runtime read) | rule 组件树 |
-| `component-catalog.json` | 组件 VCM 原始生成物/诊断输入；不注册为 AiModule 工具，不作为 LLM 主调用路径 |
 | `dataset` | `DataSetCrudTool` | both | 页级 DataSet 入口 |
 | `data-table` | `DataTable` | both | 表结构 + 视图容器 |
 | `data-view` | `DataView` | both | 行/筛选/聚合/CRUD 语义 |
@@ -208,10 +207,10 @@ Agent 不是超级用户。
 |---|---|
 | `*.api.generated.json` | 人工审查 + diagnostics；含 `resultApis` 深链 |
 | `*.runtime.generated.json` | `AiModuleAdapter` 消费 |
-| `component-catalog.json` | 组件 VCM 原始生成物/诊断输入；不注册为 AiModule 工具，不作为 LLM 主调用路径 |
+| `tmp/component-catalog.json` | 可选 VCM 诊断产物（`pnpm run diagnose:component-catalog`）；不注册为 AiModule，LLM 不读取 |
 
 构建命令：`pnpm run generate:module-metadata`  
-诊断：`pnpm run diagnose:module-metadata`
+诊断：`pnpm run diagnose:module-metadata`、`pnpm run diagnose:component-catalog`
 
 **Java**：同一 `schemaVersion` 与 `$defs` 池化规则；提取器独立，输出合并进企业 metadata 仓库或 classpath resource。
 

@@ -28,7 +28,6 @@ export function createDefaultExcluder(root) {
       || rel.includes('/node_modules/')
       || rel.includes('/.git/')
       || rel.endsWith('/component-catalog.json')
-      || rel.endsWith('/component-metadata.json')
   }
 }
 
