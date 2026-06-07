@@ -581,4 +581,4 @@ export function objectSchema(
 
 ## 7. 参考
 
-详细业务上下文和验证命令见 `docs/ai/spark-ai-complete-guide.md`。
+VCM metadata 生成链路见 `packages/vite-plugin-spark-catalog/README.md`；仓库验证命令见根目录 `package.json`。

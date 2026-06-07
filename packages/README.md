@@ -10,9 +10,8 @@
 - [spark-project-model/README.md](spark-project-model/README.md)：页面配置加载、脚本上下文与配置装配。
 - [spark-utils/README.md](spark-utils/README.md)：公共底层工具和能力键。
 
-## AI 与 module metadata
+## VCM module metadata
 
-- [../docs/ai/spark-ai-complete-guide.md](../docs/ai/spark-ai-complete-guide.md)：AI 运行时、VCM module metadata、Function Calling 与 pageDesign。
 - [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：VCM module metadata 生成（`AiModuleAdapter` 消费）。
 
 ## 插件与集成

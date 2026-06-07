@@ -60,7 +60,7 @@ ProjectModel（pageDesign.project）
 
 勿恢复独立 `NavigationDesign` 或 `PlanningModel`。
 
-AI-Native 运行态（Design / Runtime 双平面、Agent path、闸门）见 [AI_NATIVE_RUNTIME_CONTRACT.md](../../../docs/ai/AI_NATIVE_RUNTIME_CONTRACT.md)。
+AI/VCM 只消费这里暴露的项目模型入口，不在本包维护独立运行态路线图。
 
 ---
 

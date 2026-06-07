@@ -582,4 +582,4 @@ export function objectSchema(
 
 ## 7. References
 
-For detailed business context and verification commands, see `docs/ai/spark-ai-complete-guide.md`.
+For the VCM metadata generation chain, see `packages/vite-plugin-spark-catalog/README.md`; for repository verification commands, see the root `package.json`.

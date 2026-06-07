@@ -136,4 +136,4 @@ dataViewKey + dataMember + dataField
 - [architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md](architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
 - [architecture/DATAFLOW_ARCHITECTURE.md](architecture/DATAFLOW_ARCHITECTURE.md)
 - [guides/CONFIG_SYSTEM.md](guides/CONFIG_SYSTEM.md)
-- [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)
+- [ai/README.md](ai/README.md)

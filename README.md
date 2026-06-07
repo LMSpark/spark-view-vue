@@ -214,7 +214,7 @@ SPARK 不直接把原始 JSON 丢给组件，而是通过 DataSet、DataTable、
 - [项目整体认知](docs/SPARK_AppWorks_PROJECT_DEEP_DIVE_ZH.md)
 - [spark-project-model 架构](docs/architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)
 - [数据流架构](docs/architecture/DATAFLOW_ARCHITECTURE.md)
-- [AI 完整指南](docs/ai/spark-ai-complete-guide.md)
+- [AI 代码生成行为](docs/ai/ai-code-generation-behavior.md)
 
 ## 🤝 贡献
 

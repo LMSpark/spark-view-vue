@@ -70,7 +70,7 @@ tests/                  # 根级 Vitest 测试
 
 ## AI 代码生成行为准则
 
-Codex 生成或修改代码时，必须遵守 `docs/ai/spark-ai-complete-guide.md` 中的“AI 代码生成行为”章节。
+Codex 生成或修改代码时，必须遵守 `docs/ai/ai-code-generation-behavior.md`。
 
 核心方向：
 - 不要默认用 `interface` 搞一切。

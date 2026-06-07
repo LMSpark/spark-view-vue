@@ -10,7 +10,7 @@ SPARK AppWorks 是软件项目模型：一个项目由平铺项目节点组成�
 ProjectModel (design + runtime)
   -> ProjectNode 子类树 / NavigationIndex
   -> ConfigPageNode (rule / dataSet / script / style)
-  -> SparkPageRenderer / DevSystem / AI
+  -> SparkPageRenderer / DevSystem / VCM metadata
 ```
 
 后端 API 仍叫 `navigation`，但模型主语是 class 层级：`ProjectDesign` 持有节点与配置页；`ProjectEditor` 负责设计操作与落盘。配置页内容在 `ConfigPageNode`，不是独立文件模型。
@@ -21,13 +21,13 @@ ProjectModel (design + runtime)
 2. [SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md](SPARK_APPWORKS_PROJECT_DEEP_DIVE_ZH.md)：项目整体认知。
 3. [architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md](architecture/SPARK_PAGE_CONFIG_ARCHITECTURE.md)：项目模型、节点模型和配置页内容模型。
 4. [architecture/DATAFLOW_ARCHITECTURE.md](architecture/DATAFLOW_ARCHITECTURE.md)：从项目节点到渲染运行时的数据流。
-5. [ai/spark-ai-complete-guide.md](ai/spark-ai-complete-guide.md)：AI 运行时与业务模块注册。
+5. [ai/README.md](ai/README.md)：VCM metadata 生成口径与 AI 代码生成规则。
 
 ## 目录边界
 
 - [architecture/](architecture/README.md)：当前架构事实和跨包边界。
 - [guides/](guides/README.md)：仍然可执行的操作指南。
-- [ai/](ai/README.md)：AI 运行时、代码生成规则和业务闭环。
+- [ai/](ai/README.md)：VCM metadata 知识体系和代码生成规则。
 - 包内 README / API / ARCHITECTURE：只说明该包自己的公共面和边界。
 
 ## 写作规则
