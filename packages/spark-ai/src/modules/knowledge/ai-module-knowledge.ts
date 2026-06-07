@@ -55,7 +55,10 @@ import {
   buildHumanQuestion,
   createGuide,
   createKindLayer,
+  createPayloadLookupSteps,
+  discoverPayloadCatalogs,
   FIXED_PROTOCOL_TOOL_ROUTING_LINES,
+  formatPayloadBinding,
   formatPromptKindIndexLine,
   moduleSummaryGuidesMatchKeyword,
   normalizeOptionalText,
@@ -95,12 +98,14 @@ export class AiModuleKnowledgeProjector {
 
   // ── kindLayer 投影 ─────────────────────────────────────────
 
-  /** 为所有已注册模块生成知识层次结构（含属性/函数/子 kind 指南） */
+  /** 为所有已注册模块生成知识层次结构（含属性/函数/子kind/荷载指南） */
   public queryKindLayers(): readonly AiModuleKnowledgeKindLayer[] {
     const moduleKinds = this.kinds.list()
+    const payloadCatalogs = discoverPayloadCatalogs(moduleKinds)
     return moduleKinds.map((moduleKind) => createKindLayer({
       moduleKind,
       allKinds: moduleKinds,
+      payloadCatalogs,
     }))
   }
 
@@ -109,7 +114,7 @@ export class AiModuleKnowledgeProjector {
   /**
    * 查询单个 kind 的轻量指南。
    *
-   * 只返回模块用途、使用路线、属性/子模块摘要和函数说明。
+   * 只返回模块用途、使用路线、属性/子模块/payload 摘要和函数说明。
    * 单个属性的 schema/example 通过 module_attribute_guide(kind,attrName) 按需读取；
    * 单个函数的 paramsSchema、usageRules、failureModes 等细节通过
    * module_function_guide(kind,functionName) 按需读取。
@@ -137,6 +142,7 @@ export class AiModuleKnowledgeProjector {
     const layer = createKindLayer({
       moduleKind,
       allKinds,
+      payloadCatalogs: discoverPayloadCatalogs(allKinds),
     })
     return AiModuleResult.ok({
       knowledgeLevel: 'overview',
@@ -145,11 +151,8 @@ export class AiModuleKnowledgeProjector {
       description: layer.description,
       registeredPrompt: layer.description,
       ...(layer.parentKind === undefined ? {} : { parentKind: layer.parentKind }),
-      ...(layer.constructorSignature === undefined
-        ? {}
-        : { constructorSignature: layer.constructorSignature }),
       pathPattern: layer.pathPattern,
-      directoryFirstRule: '先用 module_query/module_guide 获取目录概要并选择目标，再用 module_attribute_guide/module_function_guide 获取具体契约。',
+      directoryFirstRule: '先用 module_query/module_guide 获取目录概要并选择目标，再用 module_attribute_guide/module_function_guide 或 payload guide 获取具体契约。',
       howToUse: [
         ...layer.instanceLookupSteps,
         ...layer.childLookupSteps,
@@ -178,6 +181,11 @@ export class AiModuleKnowledgeProjector {
         functionName: fn.functionName,
         description: fn.description,
         detailLookupStep: fn.detailLookupStep,
+      })),
+      payloads: moduleKind.payloads.map((payload) => ({
+        payloadRef: payload.payloadRef,
+        description: payload.description,
+        requiredForFunctions: payload.requiredForFunctions === undefined ? [] : [...payload.requiredForFunctions],
       })),
       children: [...moduleKind.children],
       childKinds: layer.childKinds.map((child) => ({
@@ -259,10 +267,12 @@ export class AiModuleKnowledgeProjector {
     const parentKindFilter = normalizeOptionalText(filter.parentKind)
     const keyword = normalizeOptionalText(filter.keyword)?.toLowerCase()
     const moduleKinds = this.kinds.list()
+    const payloadCatalogs = discoverPayloadCatalogs(moduleKinds)
     return moduleKinds.map((moduleKind) => {
       const layer = createKindLayer({
         moduleKind,
         allKinds: moduleKinds,
+        payloadCatalogs,
       })
       const attributeNames = moduleKind.attributes.map((attribute) => attribute.name)
       const functionNames = moduleKind.functions.map((fn) => fn.name)
@@ -281,6 +291,15 @@ export class AiModuleKnowledgeProjector {
           .map((attribute) => attribute.name),
         functionCount: moduleKind.functions.length,
         functionNames,
+        payloadCount: moduleKind.payloads.length,
+        payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
+        payloadFunctionRefs: moduleKind.payloads.map(formatPayloadBinding),
+        payloadLookupSteps: createPayloadLookupSteps({
+          kind: moduleKind.kind,
+          kindPath: resolveAiModulePath(moduleKind, moduleKinds),
+          payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
+          payloadCatalogs,
+        }),
         childKindCount: moduleKind.children.length,
         children: [...moduleKind.children],
         level: layer.level,
@@ -306,6 +325,9 @@ export class AiModuleKnowledgeProjector {
         || summary.description.toLowerCase().includes(keyword)
         || summary.attributeNames.some((attrName) => attrName.toLowerCase().includes(keyword))
         || summary.functionNames.some((functionName) => functionName.toLowerCase().includes(keyword))
+        || summary.payloadRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
+        || summary.payloadFunctionRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
+        || summary.payloadLookupSteps.some((step) => step.toLowerCase().includes(keyword))
         || summary.children.some((childKind) => childKind.toLowerCase().includes(keyword))
         || moduleSummaryGuidesMatchKeyword(summary, keyword)
     })
@@ -320,12 +342,15 @@ export class AiModuleKnowledgeProjector {
     const kindFilter = filter.kind?.trim()
     const keyword = filter.keyword?.trim().toLowerCase()
     const allKinds = this.kinds.list()
+    const payloadCatalogs = discoverPayloadCatalogs(allKinds)
     const summaries = allKinds.flatMap((moduleKind) => {
       const kindPath = resolveAiModulePath(moduleKind, allKinds)
       return moduleKind.functions.map((fn) => summarizeFunction({
         kind: moduleKind.kind,
         kindPath,
         fn,
+        payloads: moduleKind.payloads,
+        payloadCatalogs,
       }))
     })
     return summaries.filter((summary) => {
@@ -336,6 +361,8 @@ export class AiModuleKnowledgeProjector {
         || summary.functionName.toLowerCase().includes(keyword)
         || summary.description.toLowerCase().includes(keyword)
         || summary.functionLookupSteps.some((step) => step.toLowerCase().includes(keyword))
+        || summary.payloadRefs.some((payloadRef) => payloadRef.toLowerCase().includes(keyword))
+        || summary.payloadLookupSteps.some((step) => step.toLowerCase().includes(keyword))
     })
   }
 
@@ -379,6 +406,8 @@ export class AiModuleKnowledgeProjector {
       kind: parsed.kind,
       kindPath: actualKindPath,
       fn,
+      payloads: moduleKind.payloads,
+      payloadCatalogs: discoverPayloadCatalogs(allKinds),
     }))
   }
 
@@ -458,7 +487,7 @@ export class AiModuleKnowledgeProjector {
       ...FIXED_PROTOCOL_TOOL_ROUTING_LINES,
       ...promptKinds.map(formatPromptKindIndexLine),
       ...(hiddenKindCount > 0 ? [`...还有 ${String(hiddenKindCount)} 个 kind，使用 queryModules({ keyword }) 查询。`] : []),
-      '消费顺序：module_find 定位实例 -> module_query 选真实函数 -> module_function_guide 消费函数契约 -> 直接调用 functionName({path,args})；复杂改写优先 module_script 沿 VCM 原生对象 API 链式执行。',
+      '消费顺序：module_find 定位实例 -> module_query 选真实函数 -> module_function_guide 消费函数契约 -> 直接调用 functionName({path,args})；payload 也必须 queryPayloads 选 key -> guidePayload 取详情。',
     ]
     return lines.join('\n')
   }
