@@ -5,7 +5,7 @@
 ## 目录内容
 
 - `start-dev.mjs`：一键启动项目 Docker MySQL、Java 后端和前端开发环境。
-- `build-all.mjs`：完整构建流水线；需要临时后端上传元数据时会先启动项目 Docker MySQL。
+- `build-all.mjs`：完整构建流水线（Java JAR + Vite 前端；不再启动后端上传组件元数据）。
 - `publish-packages.mjs`：工作区包发布脚本。
 - `verify-dataset-remote-load.mjs`、`verify-sse-debug-loop.*`：根应用链路验证脚本。
 - AI live 验证脚本放在根 `scripts/`，由脚本层自行持有 HTTP 与 APP SSE I/O。

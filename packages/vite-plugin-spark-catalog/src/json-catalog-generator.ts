@@ -5,7 +5,7 @@
  * 1. 扫描 SPARK 组件源码；
  * 2. 通过 VCM 提取组件 Props / Emits / 元数据；
  * 3. 对高重复结构做共享池化；
- * 4. 产出 component-catalog.json 作为组件目录单一事实源。
+ * 4. 产出 tmp/component-catalog.json 作为 VCM 诊断产物（不接入 pageDesign LLM 主路径）。
  *
  * 设计原则：
  * - 运行时模型保留完整信息，便于审计与后续扩展；
