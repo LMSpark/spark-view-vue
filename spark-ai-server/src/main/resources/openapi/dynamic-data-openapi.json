@@ -338,19 +338,6 @@
         }
       }
     },
-    "/cache/clear-metadata": {
-      "post": {
-        "tags": [
-          "Cache"
-        ],
-        "summary": "Clear legacy component metadata in-memory cache",
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      }
-    },
     "/tenants/{tenantId}/projects": {
       "get": {
         "tags": [
@@ -463,35 +450,6 @@
         "responses": {
           "200": {
             "$ref": "#/components/responses/SseStream"
-          }
-        }
-      }
-    },
-    "/ai/component-metadata": {
-      "get": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Get legacy component metadata cache status (pageDesign LLM does not use this)",
-        "security": [],
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
-          }
-        }
-      },
-      "post": {
-        "tags": [
-          "AI"
-        ],
-        "summary": "Write legacy component metadata cache (pageDesign LLM does not use this)",
-        "security": [],
-        "requestBody": {
-          "$ref": "#/components/requestBodies/GenericJson"
-        },
-        "responses": {
-          "200": {
-            "$ref": "#/components/responses/GenericJson"
           }
         }
       }

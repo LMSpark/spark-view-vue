@@ -72,13 +72,6 @@
       <el-tab-pane label="后端缓存" name="backend">
         <div class="tab-toolbar">
           <el-button type="primary" :icon="Refresh" @click="loadBackendStats">刷新</el-button>
-          <el-button
-            type="danger"
-            :disabled="!beStats?.componentMetadata?.loaded"
-            @click="handleClearMetadata"
-          >
-            清除历史元数据缓存
-          </el-button>
           <el-button type="warning" @click="handleRefreshRoutes">
             刷新路由
           </el-button>
@@ -88,27 +81,6 @@
         </div>
 
         <el-row :gutter="20" style="margin-top: 16px">
-          <el-col :span="12">
-            <el-card header="历史组件元数据缓存（pageDesign LLM 不依赖）">
-              <el-descriptions :column="1" border size="small" v-loading="beLoading">
-                <el-descriptions-item label="是否已加载">
-                  <el-tag :type="beStats?.componentMetadata?.loaded ? 'success' : 'info'" size="small">
-                    {{ beStats?.componentMetadata?.loaded ? '✅ 已加载' : '❌ 未加载' }}
-                  </el-tag>
-                </el-descriptions-item>
-                <el-descriptions-item label="版本">
-                  {{ beStats?.componentMetadata?.version ?? '—' }}
-                </el-descriptions-item>
-                <el-descriptions-item label="构建时间">
-                  {{ beStats?.componentMetadata?.buildTime ?? '—' }}
-                </el-descriptions-item>
-                <el-descriptions-item label="组件数量">
-                  {{ beStats?.componentMetadata?.componentCount ?? '—' }}
-                </el-descriptions-item>
-              </el-descriptions>
-            </el-card>
-          </el-col>
-
           <el-col :span="12">
             <el-card header="数据库统计">
               <el-descriptions :column="1" border size="small" v-loading="beLoading">
@@ -131,7 +103,7 @@
 /**
  * @skill cache-manager
  * @catalogInternal
- * @description 缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。
+ * @description 缓存管理页面，查看前后端缓存统计并支持手动清理前端页面缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。
  */
 import { ref, computed, onMounted } from 'vue'
 import { ElMessage, ElMessageBox } from 'element-plus'
@@ -292,13 +264,6 @@ async function handleClearAllFrontend() {
 const beLoading = ref(false)
 
 type BackendStats = {
-  componentMetadata: {
-    legacy?: boolean
-    loaded: boolean
-    buildTime: string | null
-    version: string | null
-    componentCount: number
-  }
   database: {
     pageCount: number
     fileCount: number
@@ -314,23 +279,6 @@ async function loadBackendStats() {
     ElMessage.error(`加载后端统计失败: ${e instanceof Error ? e.message : String(e)}`)
   } finally {
     beLoading.value = false
-  }
-}
-
-async function handleClearMetadata() {
-  try {
-    await ElMessageBox.confirm(
-      '确定清除后端历史组件元数据内存缓存？pageDesign LLM 不依赖该缓存；重启后端或重新 POST 写入后可恢复。',
-      '清除历史元数据缓存',
-      { type: 'warning', confirmButtonText: '清除', cancelButtonText: '取消' },
-    )
-    await http.post('/api/cache/clear-metadata')
-    ElMessage.success('历史组件元数据内存缓存已清除')
-    await loadBackendStats()
-  } catch (e) {
-    if (e instanceof Error && e.message !== 'cancel') {
-      ElMessage.error(`操作失败: ${e.message}`)
-    }
   }
 }
 

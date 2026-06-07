@@ -18,4 +18,3 @@ artifacts/
 !.env.java.example
 
 packages/spark-ai/src/catalog/component-catalog.json
-spark-ai-server/data/component-metadata.json

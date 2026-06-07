@@ -17,8 +17,7 @@
     "**/.codex-tmp": true,
     "**/tmp": true,
     "**/*.log": true,
-    "packages/spark-ai/src/catalog/component-catalog.json": true,
-    "spark-ai-server/data/component-metadata.json": true
+    "packages/spark-ai/src/catalog/component-catalog.json": true
   },
 
   // 排除 Markdown 文件的某些检查

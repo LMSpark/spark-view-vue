@@ -135,8 +135,6 @@ $env:AI_MODEL        = "qwen-plus"
 | Method | Path | 说明 |
 |---|---|---|
 | `POST` | `/api/ai/upload` | 上传聊天附件 |
-| `POST` | `/api/ai/component-metadata` | 写入历史组件元数据缓存 |
-| `GET` | `/api/ai/component-metadata` | 查询历史组件元数据缓存状态 |
 | `POST` | `/api/ai/debug/screenshot-request` | 触发截图调试请求 |
 | `POST` | `/api/ai/debug/screenshot-result` | 回传截图调试结果 |
 | `POST` | `/api/ai/debug/route-request` | 触发路由调试请求 |

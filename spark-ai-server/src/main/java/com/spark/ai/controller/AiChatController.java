@@ -1,13 +1,11 @@
 package com.spark.ai.controller;
 
-import com.spark.ai.service.ComponentMetadataService;
 import com.spark.ai.service.SseService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -27,9 +25,7 @@ import java.util.UUID;
  * AI 端点控制器。
  *
  * <ul>
- *   <li>POST /api/ai/upload            — 文件上传（聊天附件）</li>
- *   <li>POST /api/ai/component-metadata — 组件元数据上传（历史兼容端点）</li>
- *   <li>GET  /api/ai/component-metadata — 元数据状态查询</li>
+ *   <li>POST /api/ai/upload — 文件上传（聊天附件）</li>
  * </ul>
  */
 @RestController
@@ -38,52 +34,14 @@ public class AiChatController {
 
     private static final Logger log = LoggerFactory.getLogger(AiChatController.class);
 
-    private final ComponentMetadataService metadataService;
     private final SseService sseService;
 
     @Value("${spark.pages.config-dir:./data/pages-config}")
     private String pagesConfigDir;
 
-    public AiChatController(ComponentMetadataService metadataService,
-                            SseService sseService) {
-        this.metadataService = metadataService;
+    public AiChatController(SseService sseService) {
         this.sseService = sseService;
     }
-
-    /**
-     * POST /api/ai/component-metadata
-     * 接收组件元数据 JSON（历史兼容端点；当前 pageDesign LLM 主路径不依赖此接口）。
-     */
-    @PostMapping("/component-metadata")
-    public ResponseEntity<Map<String, Object>> uploadMetadata(@RequestBody String body) {
-        Map<String, Object> result = metadataService.updateMetadata(body);
-        return ResponseEntity.ok(result);
-    }
-
-    /**
-     * GET /api/ai/component-metadata
-     * 查看当前存储的组件元数据摘要（调试用）。
-     */
-    @GetMapping("/component-metadata")
-    public ResponseEntity<Map<String, Object>> getMetadataStatus() {
-        if (!metadataService.hasMetadata()) {
-            return ResponseEntity.ok(Map.of(
-                    "hasMetadata", false,
-                    "message", "未加载组件元数据文件；当前 pageDesign LLM 主路径不依赖该历史缓存"
-            ));
-        }
-        return ResponseEntity.ok(Map.of(
-                "hasMetadata", true,
-                "legacy", true,
-                "buildTime", metadataService.getBuildTime(),
-                "version", metadataService.getVersion(),
-                "componentCount", metadataService.getComponentCount()
-        ));
-    }
-
-    // ─────────────────────────────────────────────────────────────────────────
-    // 文件上传（聊天附件）
-    // ─────────────────────────────────────────────────────────────────────────
 
     /**
      * POST /api/ai/upload

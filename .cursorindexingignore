@@ -18,5 +18,4 @@ temp-*.cjs
 temp-*.mts
 
 packages/spark-ai/src/catalog/component-catalog.json
-spark-ai-server/data/component-metadata.json
 packages/vxe-table/helper/vetur/*.json

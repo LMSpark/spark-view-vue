@@ -100,7 +100,6 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/spark-ai-complete-guide.m
 
 这些目录文件很大，不应直接编辑：
 - `packages/spark-ai/src/catalog/component-catalog.json` (~94MB)
-- `spark-ai-server/data/component-metadata.json` (~13MB，**历史兼容**缓存；pageDesign LLM 不读取)
 
 ## Commit Message 格式
 
