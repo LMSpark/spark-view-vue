@@ -10,14 +10,20 @@ type ApiMethod = (first: AiModulePathContext | AiJsonParams, second?: AiJsonPara
 type ApiProxyState = Readonly<{
   value: Promise<unknown>
   api: AiApiObjectMetadata
+  resolved: ResolvedValue
 }>
+
+type ResolvedValue = {
+  settled: boolean
+  value?: unknown
+}
 
 export function createAiApiScriptContext(
   instance: unknown,
   api: AiApiObjectMetadata,
   ctx: AiModulePathContext,
 ): Readonly<Record<string, unknown>> {
-  const proxy = createApiProxy({ value: Promise.resolve(instance), api }, ctx) as Readonly<Record<string, unknown>>
+  const proxy = createApiProxy(createApiProxyState(Promise.resolve(instance), api), ctx) as Readonly<Record<string, unknown>>
   const context: Record<string, unknown> = {}
   for (const action of api.actions) {
     context[action.name] = (...args: readonly unknown[]) => {
@@ -118,6 +124,15 @@ function createApiProxy(state: ApiProxyState, ctx: AiModulePathContext): unknown
   return createApiSurface(state, ctx, { awaitable: true })
 }
 
+function createApiProxyState(value: Promise<unknown>, api: AiApiObjectMetadata): ApiProxyState {
+  const resolved: ResolvedValue = { settled: false }
+  void value.then(target => {
+    resolved.settled = true
+    resolved.value = target
+  })
+  return { value, api, resolved }
+}
+
 function createApiSurface(
   state: ApiProxyState,
   ctx: AiModulePathContext,
@@ -148,22 +163,49 @@ function createApiSurface(
 
       const action = state.api.actions.find(candidate => candidate.name === property)
       if (action !== undefined) {
-        return (...args: readonly unknown[]) => wrapResultApis(
-          state.value.then(target => wrapAsyncApiActionValue(
+        return (...args: readonly unknown[]) => {
+          const normalizedArgs = normalizeScriptActionArgList(action, args)
+          if (state.resolved.settled) {
+            return wrapResultApis(
+              callApiActionInScriptValue(
+                state.resolved.value,
+                action,
+                normalizedArgs,
+                ctx,
+              ),
+              action.resultApis ?? [],
+              ctx,
+            )
+          }
+          return wrapResultApis(
+            state.value.then(target => wrapAsyncApiActionValue(
             target,
             action,
-            normalizeScriptActionArgList(action, args),
+            normalizedArgs,
             ctx,
-          )),
-          action.resultApis ?? [],
-          ctx,
-        )
+            )),
+            action.resultApis ?? [],
+            ctx,
+          )
+        }
       }
 
-      return createApiSurface({
-        value: state.value.then(target => readJsonProperty(target, property)),
-        api: resolvePropertyApi(state.api, property) ?? state.api,
-      }, ctx, options)
+      const propertyApi = resolvePropertyApi(state.api, property)
+      if (state.resolved.settled) {
+        const propertyValue = readJsonProperty(state.resolved.value, property)
+        return propertyApi === undefined
+          ? propertyValue
+          : createResolvedApiSurface(propertyValue, propertyApi, ctx, options)
+      }
+
+      return createApiSurface(
+        createApiProxyState(
+          state.value.then(target => readJsonProperty(target, property)),
+          propertyApi ?? state.api,
+        ),
+        ctx,
+        options,
+      )
     },
   })
 }
@@ -200,12 +242,12 @@ function createResolvedApiSurface(
       const action = api.actions.find(candidate => candidate.name === property)
       if (action !== undefined) {
         return (...args: readonly unknown[]) => wrapResultApis(
-          Promise.resolve().then(() => callApiActionInScriptValue(
+          callApiActionInScriptValue(
             target,
             action,
             normalizeScriptActionArgList(action, args),
             ctx,
-          )),
+          ),
           action.resultApis ?? [],
           ctx,
         )
@@ -280,7 +322,7 @@ function createResultPathSurface(
 ): unknown {
   const api = resultApis.find(ref => samePath(ref.resultPath, path))?.api
   if (api !== undefined) {
-    return createApiSurface({ value, api }, ctx, options)
+    return createApiSurface(createApiProxyState(value, api), ctx, options)
   }
   return new Proxy({}, {
     get(_target, property) {
