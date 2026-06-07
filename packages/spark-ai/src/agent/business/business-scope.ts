@@ -7,6 +7,7 @@
  *   AiAgentScope / AiAgentRuntimeContext 等作用域对象。
  *
  * 【设计原则】
+ *   - SSOT：AiAgentTarget 是业务坐标唯一来源；Scope/RuntimeContext/sessionId 都是它的投影
  *   - 所有输入字符串都经过 normalizeRequiredText 校验（非空、去空白）
  *   - sessionId = "kind:instanceId"（冒号拼接，全局唯一）
  *   - turnKey 用于一次对话 turn 的隔离（kind + instanceId + turnId）
@@ -62,17 +63,28 @@ export function normalizeAiAgentTarget(target: AiAgentTarget): AiAgentTarget {
 
 /** 生成会话 ID：格式为 "kind:instanceId" */
 export function createAiAgentSessionId(businessRegistrationId: string, businessInstanceId: string): string {
-  return `${businessRegistrationId}:${businessInstanceId}`
+  return createAiAgentSessionIdFromTarget(new AiAgentTarget(businessRegistrationId, businessInstanceId))
+}
+
+/** 从业务坐标生成会话 ID；内部 SSOT 入口，避免多处拼接字符串。 */
+export function createAiAgentSessionIdFromTarget(target: AiAgentTarget): string {
+  const normalized = normalizeAiAgentTarget(target)
+  return `${normalized.businessRegistrationId}:${normalized.businessInstanceId}`
 }
 
 /** 构造业务作用域（含输入校验） */
 export function createAiAgentScope(businessRegistrationId: string, businessInstanceId: string): AiAgentScope {
-  const target = normalizeAiAgentTarget(new AiAgentTarget(businessRegistrationId, businessInstanceId))
+  return createAiAgentScopeFromTarget(new AiAgentTarget(businessRegistrationId, businessInstanceId))
+}
+
+/** 从业务坐标构造 Scope；Scope 只承载投影字段，不再作为坐标 SSOT。 */
+export function createAiAgentScopeFromTarget(target: AiAgentTarget): AiAgentScope {
+  const normalized = normalizeAiAgentTarget(target)
   return new AiAgentScope(
-    target.businessRegistrationId,
-    target.businessInstanceId,
-    target.businessInstanceId,
-    target.businessInstanceId,
+    normalized.businessRegistrationId,
+    normalized.businessInstanceId,
+    normalized.businessInstanceId,
+    normalized.businessInstanceId,
   )
 }
 

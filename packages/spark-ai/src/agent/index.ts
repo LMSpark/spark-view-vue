@@ -46,7 +46,6 @@ export {
 } from './business/registration-types'
 
 export {
-  createAiBusinessKit,
   createSimpleInputContract,
 } from './business/business-kit'
 
@@ -80,9 +79,6 @@ export type {
 export type {
   AiBusinessInputOptions,
   AiBusinessIdOptions,
-  AiBusinessKit,
-  AiBusinessLifecycleOptions,
-  CreateAiBusinessKitOptions,
   CreateSimpleInputContractOptions,
 } from './business/business-kit'
 

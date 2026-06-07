@@ -163,6 +163,7 @@ function scanSource(parsed, violations) {
   scanPublicClassMethodSurfaces(parsed, violations)
   scanSignatureConventions(parsed, violations)
   scanLegacyProtocolLiterals(parsed, violations)
+  scanBusinessRegistrationRules(parsed, violations)
 
   for (const ref of collectModuleReferences(sourceFile)) {
     if (isForbiddenSparkAiSpecifier(ref.specifier)) {
@@ -282,6 +283,59 @@ function scanLegacyProtocolLiterals(parsed, violations) {
       }
     }
 
+    ts.forEachChild(node, visit)
+  }
+
+  visit(sourceFile)
+}
+
+const businessRegistrationAllowlist = new Set([
+  'src/services/page-design/spark-component-module.ts',
+])
+
+function scanBusinessRegistrationRules(parsed, violations) {
+  const { file, sourceFile, lineOffset } = parsed
+  if (!file.replace(/\\/gu, '/').includes('src/services/')) return
+  if (businessRegistrationAllowlist.has(file.replace(/\\/gu, '/'))) return
+
+  const text = sourceFile.getFullText()
+
+  if (/\bcreateAiBusinessKit\b/u.test(text)) {
+    violations.push({
+      file,
+      line: 1,
+      message: 'createAiBusinessKit is removed; register business AI through AiModuleAdapter only',
+    })
+  }
+
+  if (/\bnew\s+AiModule\s*\(/u.test(text)) {
+    violations.push({
+      file,
+      line: 1,
+      message: 'manual new AiModule() is forbidden in src/services; use AiModuleAdapter + VCM metadata',
+    })
+  }
+
+  if (/\bcompanionModules\b/u.test(text)) {
+    violations.push({
+      file,
+      line: 1,
+      message: 'companionModules is renamed to payloadCatalogModules; do not inject handwritten business modules',
+    })
+  }
+
+  function visit(node) {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression)) {
+      const receiver = node.expression.expression.getText(sourceFile)
+      const method = node.expression.name.text
+      if (receiver === 'runtime' && method === 'register') {
+        violations.push({
+          file,
+          line: lineFor(sourceFile, node, lineOffset),
+          message: 'manual AiModuleRuntime.register() is forbidden in src/services; use AiModuleAdapter',
+        })
+      }
+    }
     ts.forEachChild(node, visit)
   }
 

@@ -78,9 +78,11 @@ export class ProtocolResultProjector {
       name: result.data.name,
       description: result.data.description,
       ...(result.data.parentKind === undefined ? {} : { parentKind: result.data.parentKind }),
+      ...(result.data.constructorSignature === undefined
+        ? {}
+        : { constructorSignature: describeConstructorToJson(result.data.constructorSignature) }),
       attributes: result.data.attributes.map((attr) => describeAttributeToJson(attr)),
       functions: result.data.functions.map((fn) => describeFunctionToJson(fn)),
-      payloads: result.data.payloads.map((payload) => describePayloadToJson(payload)),
       children: [...result.data.children],
     }, result.checks, result.state)
   }
@@ -100,7 +102,28 @@ function describeAttributeToJson(attr: AiModuleDescription['attributes'][number]
     schema: jsonSchemaToJson(attr.schema),
   }
   if (attr.example !== undefined) out['example'] = attr.example
+  if (attr.api !== undefined) {
+    out['api'] = {
+      kind: attr.api.kind,
+      name: attr.api.name,
+      description: attr.api.description,
+      actions: attr.api.actions.map(action => ({
+        name: action.name,
+        description: action.description,
+        paramNames: [...action.paramNames],
+      })),
+    }
+  }
   return out
+}
+
+function describeConstructorToJson(
+  signature: NonNullable<AiModuleDescription['constructorSignature']>,
+): Record<string, AiJsonValue> {
+  return {
+    description: signature.description,
+    paramsSchema: jsonSchemaToJson(signature.paramsSchema),
+  }
 }
 
 /** 单个函数元数据 → JSON（含 paramsSchema/resultSchema/usageRules/failureModes） */
@@ -118,15 +141,6 @@ function describeFunctionToJson(fn: AiModuleDescription['functions'][number]): R
     example: fn.example === undefined ? null : unknownToJson(fn.example),
     examples: fn.examples === undefined ? [] : unknownToJson(fn.examples),
     antiExamples: fn.antiExamples === undefined ? [] : unknownToJson(fn.antiExamples),
-  }
-}
-
-/** 单个参数荷载元数据 → JSON */
-function describePayloadToJson(payload: AiModuleDescription['payloads'][number]): Record<string, AiJsonValue> {
-  return {
-    payloadRef: payload.payloadRef,
-    description: payload.description,
-    requiredForFunctions: payload.requiredForFunctions === undefined ? [] : [...payload.requiredForFunctions],
   }
 }
 

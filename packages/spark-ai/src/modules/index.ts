@@ -7,7 +7,6 @@
  *   1. 协议层值对象、运行上下文、元数据与请求 DTO
  *   2. AiModuleRuntime（运行时组合根）
  *   3. 知识投影与 OpenAI function tool 规约
- *   4. 模块参数荷载 provider 注册表
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -45,7 +44,6 @@ export type {
   AiModuleAttributeAccess,
   AiModuleAttributeMetadata,
   AiModuleOptions,
-  AiModulePayloadMetadata,
 } from './protocol/module-metadata'
 
 export type {
@@ -126,24 +124,3 @@ export type {
 export type {
   AiModuleDescription,
 } from './internal/navigator'
-
-// ── 6. 模块参数荷载 provider 注册表 ────────────────────────
-export {
-  AiModulePayloadRegistry,
-} from './payloads/module-parameter-payload-registry'
-
-export { createPayloadCatalogModule } from './payloads/create-payload-catalog-module'
-
-export type { CreatePayloadCatalogModuleOptions } from './payloads/create-payload-catalog-module'
-
-export {
-  PAYLOAD_GUIDE_FUNCTION_NAME,
-  PAYLOAD_QUERY_FUNCTION_NAME,
-} from './payloads/payload-catalog-constants'
-
-export type {
-  AiModulePayloadGuide,
-  AiModulePayloadProvider,
-  AiModulePayloadQueryFilter,
-  AiModulePayloadSummary,
-} from './payloads/module-parameter-payload-registry'

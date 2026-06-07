@@ -94,7 +94,6 @@ export class ProtocolToolRouter {
   private readonly knowledge: AiModuleKnowledgeProjector
   private readonly kinds: AiModuleRegistry
   private readonly memoryByScope = new Map<string, Map<string, AiJsonValue>>()
-  private readonly catalogQueryByScope = new Map<string, CatalogQueryCache>()
   private handleToolDispatcher?: AiModuleHandleToolDispatcher
 
   public constructor(options: ProtocolToolRouterOptions) {
@@ -318,8 +317,7 @@ export class ProtocolToolRouter {
     const normalized = normalizeModuleCallArgs(args, host, this.kinds)
     const path = AiModulePath.parse(this.argsParser.requireString(normalized, 'path'))
     const functionName = this.argsParser.requireString(normalized, 'functionName')
-    let callArgs = normalizeCatalogFunctionArgs(functionName, this.argsParser.requireObject(normalized, 'args'))
-    callArgs = this.applyCachedPayloadKey(functionName, callArgs, host)
+    const callArgs = this.argsParser.requireObject(normalized, 'args')
     const kindPath = path.segments.map((segment) => segment.kind)
     if (kindPath.length === 0) {
       return AiModuleResult.failCode(
@@ -335,7 +333,6 @@ export class ProtocolToolRouter {
       args: callArgs,
       ...(host === undefined ? {} : { host }),
     })
-    this.rememberCatalogQueryResults(host, functionName, callArgs, result)
     return result
   }
 
@@ -480,8 +477,7 @@ export class ProtocolToolRouter {
   ): Promise<AiModuleResult<AiJsonValue>> {
     const normalized = normalizeDirectFunctionCallArgs(args, host, this.kinds, functionName)
     const path = AiModulePath.parse(this.argsParser.requireString(normalized, 'path'))
-    let callArgs = this.argsParser.requireObject(normalized, 'args')
-    callArgs = this.applyCachedPayloadKey(functionName, callArgs, host)
+    const callArgs = this.argsParser.requireObject(normalized, 'args')
     const kindPath = path.segments.map((segment) => segment.kind)
     if (kindPath.length === 0) {
       return AiModuleResult.failCode(
@@ -497,7 +493,6 @@ export class ProtocolToolRouter {
       args: callArgs,
       ...(host === undefined ? {} : { host }),
     })
-    this.rememberCatalogQueryResults(host, functionName, callArgs, result)
     return result
   }
 
@@ -539,41 +534,6 @@ export class ProtocolToolRouter {
     return count === 1
   }
 
-  private scopeKey(host?: AiModuleHostContext): string {
-    if (host === undefined) return '__default__'
-    return `${host.moduleId}\u0000${host.moduleInstanceId}`
-  }
-
-  private applyCachedPayloadKey(
-    functionName: string,
-    callArgs: AiJsonParams,
-    host?: AiModuleHostContext,
-  ): AiJsonParams {
-    if (functionName !== 'guidePayload') return callArgs
-    if (readStringField(callArgs, 'key') !== undefined) return callArgs
-    const picked = pickPayloadKeyFromCatalogCache(this.catalogQueryByScope.get(this.scopeKey(host)), callArgs)
-    return picked === undefined ? callArgs : { ...callArgs, key: picked }
-  }
-
-  private rememberCatalogQueryResults(
-    host: AiModuleHostContext | undefined,
-    functionName: string,
-    queryArgs: AiJsonParams,
-    result: AiModuleResult<AiJsonValue>,
-  ): void {
-    if (functionName !== 'queryPayloads' || !result.ok || !Array.isArray(result.data)) return
-    const entries = result.data
-      .map(entry => readCatalogPayloadSummary(entry))
-      .filter((entry): entry is CatalogPayloadSummary => entry !== undefined)
-    if (entries.length === 0) return
-    const scopeKey = this.scopeKey(host)
-    const existing = this.catalogQueryByScope.get(scopeKey)
-    const merged = mergeCatalogPayloadSummaries(existing?.results ?? [], entries)
-    this.catalogQueryByScope.set(scopeKey, {
-      results: merged,
-      lastQuery: queryArgs,
-    })
-  }
 }
 
 const DIRECT_FUNCTION_RESERVED_KEYS = new Set(['path', 'args'])
@@ -592,11 +552,9 @@ function normalizeDirectFunctionCallArgs(
   const hasNestedArgs = nestedArgs !== undefined && !isEmptyJsonObject(nestedArgs)
 
   if (hasNestedArgs) {
-    const callArgs = functionName === undefined
-      ? nestedArgs
-      : normalizeCatalogFunctionArgs(functionName, nestedArgs)
-    if (pathRaw !== undefined && callArgs === nestedArgs) return args
-    const inferredPath = pathRaw ?? inferDefaultDirectFunctionPath(host, kinds, functionName)
+    const callArgs = nestedArgs
+    if (pathRaw !== undefined) return args
+    const inferredPath = inferDefaultDirectFunctionPath(host, kinds, functionName)
     return inferredPath === undefined
       ? { args: callArgs }
       : { path: inferredPath, args: callArgs }
@@ -606,9 +564,6 @@ function normalizeDirectFunctionCallArgs(
   if (Object.keys(businessArgs).length === 0 && functionName !== undefined) {
     const defaults = applyHostDefaultCallArgs(functionName, host)
     if (defaults !== undefined) businessArgs = defaults
-  }
-  if (functionName !== undefined) {
-    businessArgs = normalizeCatalogFunctionArgs(functionName, businessArgs)
   }
   if (Object.keys(businessArgs).length === 0) return args
 
@@ -630,44 +585,9 @@ function applyHostDefaultCallArgs(
   if (functionName === 'readPlanningProjection') {
     return {}
   }
-  if (functionName === 'queryPayloads') {
-    return { moduleKind: 'node-tree', payloadRef: 'spark.component' }
-  }
   return undefined
 }
 
-function applyDirectFunctionDefaultArgs(functionName: string, args: AiJsonParams): AiJsonParams {
-  if (functionName !== 'queryPayloads' && functionName !== 'guidePayload') return args
-  return {
-    moduleKind: 'node-tree',
-    payloadRef: 'spark.component',
-    ...args,
-  }
-}
-
-function normalizeCatalogFunctionArgs(functionName: string, args: AiJsonParams): AiJsonParams {
-  const withDefaults = applyDirectFunctionDefaultArgs(functionName, args)
-  if (functionName === 'guidePayload' || functionName === 'queryPayloads') {
-    return applyCatalogKeyAliases(withDefaults)
-  }
-  return withDefaults
-}
-
-function applyCatalogKeyAliases(args: AiJsonParams): AiJsonParams {
-  const existingKey = readStringField(args, 'key')
-  if (existingKey !== undefined) return args
-  for (const alias of ['type', 'payloadKey', 'componentType', 'component', 'name']) {
-    const value = readStringField(args, alias)
-    if (value === undefined) continue
-    return { ...args, key: value }
-  }
-  return args
-}
-
-function readStringField(args: AiJsonParams, key: string): string | undefined {
-  const value = args[key]
-  return typeof value === 'string' && value.trim().length > 0 ? value.trim() : undefined
-}
 
 function isEmptyJsonObject(value: AiJsonParams): boolean {
   return Object.keys(value).length === 0
@@ -745,9 +665,6 @@ function defaultRootFindQuery(
   childKind: string,
   host?: AiModuleHostContext,
 ): AiJsonParams | undefined {
-  if (childKind === 'spark-component') {
-    return { id: 'catalog' }
-  }
   if (childKind === 'project' && host !== undefined && host.moduleInstanceId.trim().length > 0) {
     return { id: host.moduleInstanceId }
   }
@@ -799,7 +716,6 @@ function defaultInstanceIdForKind(
   moduleKind: AiModule,
   host: AiModuleHostContext | undefined,
 ): string {
-  if (moduleKind.kind === 'spark-component') return 'catalog'
   if (host !== undefined && host.moduleInstanceId.trim().length > 0) {
     return host.moduleInstanceId
   }
@@ -843,90 +759,4 @@ function readOptionalObject(args: ProtocolToolArgs, key: string): AiJsonParams |
   const value = args[key]
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
   return value
-}
-
-type CatalogPayloadSummary = Readonly<{
-  moduleKind: string
-  payloadRef: string
-  key: string
-  category?: string
-  description?: string
-}>
-
-type CatalogQueryCache = Readonly<{
-  results: readonly CatalogPayloadSummary[]
-  lastQuery?: AiJsonParams
-}>
-
-function readCatalogPayloadSummary(value: unknown): CatalogPayloadSummary | undefined {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return undefined
-  const record = value as Readonly<Record<string, unknown>>
-  const key = readStringField(record as AiJsonParams, 'key')
-  const moduleKind = readStringField(record as AiJsonParams, 'moduleKind')
-  const payloadRef = readStringField(record as AiJsonParams, 'payloadRef')
-  if (key === undefined || moduleKind === undefined || payloadRef === undefined) return undefined
-  const category = readStringField(record as AiJsonParams, 'category')
-  const description = readStringField(record as AiJsonParams, 'description')
-  return {
-    moduleKind,
-    payloadRef,
-    key,
-    ...(category === undefined ? {} : { category }),
-    ...(description === undefined ? {} : { description }),
-  }
-}
-
-function mergeCatalogPayloadSummaries(
-  existing: readonly CatalogPayloadSummary[],
-  incoming: readonly CatalogPayloadSummary[],
-): readonly CatalogPayloadSummary[] {
-  const byIdentity = new Map<string, CatalogPayloadSummary>()
-  for (const entry of [...existing, ...incoming]) {
-    byIdentity.set(`${entry.moduleKind}\u0000${entry.payloadRef}\u0000${entry.key}`, entry)
-  }
-  return [...byIdentity.values()]
-}
-
-function pickPayloadKeyFromCatalogCache(
-  cache: CatalogQueryCache | undefined,
-  guideArgs: AiJsonParams,
-): string | undefined {
-  if (cache === undefined || cache.results.length === 0) return undefined
-  const moduleKind = readStringField(guideArgs, 'moduleKind') ?? 'node-tree'
-  const payloadRef = readStringField(guideArgs, 'payloadRef') ?? 'spark.component'
-  let candidates = cache.results.filter(
-    entry => entry.moduleKind === moduleKind && entry.payloadRef === payloadRef,
-  )
-  if (candidates.length === 0) return undefined
-
-  const category = readStringField(guideArgs, 'category')
-  if (category !== undefined) {
-    const byCategory = candidates.filter(entry => entry.category === category)
-    if (byCategory.length > 0) candidates = byCategory
-  }
-
-  const keyword = readStringField(guideArgs, 'keyword')
-  if (keyword !== undefined) {
-    const normalizedKeyword = keyword.toLowerCase()
-    const byKeyword = candidates.filter(entry => matchesPayloadKeyword(entry, normalizedKeyword))
-    if (byKeyword.length > 0) candidates = byKeyword
-  } else if (cache.lastQuery !== undefined) {
-    const lastKeyword = readStringField(cache.lastQuery, 'keyword')
-    if (lastKeyword !== undefined) {
-      const normalizedKeyword = lastKeyword.toLowerCase()
-      const byLastKeyword = candidates.filter(entry => matchesPayloadKeyword(entry, normalizedKeyword))
-      if (byLastKeyword.length === 1) return byLastKeyword[0]?.key
-      if (byLastKeyword.length > 1) candidates = byLastKeyword
-    }
-  }
-
-  if (candidates.length === 1) return candidates[0]?.key
-  return candidates[0]?.key
-}
-
-function matchesPayloadKeyword(entry: CatalogPayloadSummary, keyword: string): boolean {
-  if (entry.key.toLowerCase().includes(keyword)) return true
-  if (entry.category?.toLowerCase().includes(keyword) === true) return true
-  if (entry.description?.toLowerCase().includes(keyword) === true) return true
-  return false
 }

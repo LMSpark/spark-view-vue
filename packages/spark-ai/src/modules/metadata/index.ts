@@ -17,6 +17,12 @@ export { resolveModuleMetadataJson } from './resolve-api-object-metadata'
 export { toModuleFunctionResultApiMetadata } from './function-result-api-metadata'
 
 export {
+  toModuleAttributeMetadata,
+  toModuleFunctionMetadata,
+  toModuleNestedApiMetadata,
+} from './vcm-to-module-metadata'
+
+export {
   MODULE_METADATA_RUNTIME_JSON_SCHEMA,
   readModuleMetadataRuntimeDocument,
 } from './module-metadata-runtime-document'

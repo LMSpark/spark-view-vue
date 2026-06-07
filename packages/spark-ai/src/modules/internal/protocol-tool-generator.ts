@@ -138,7 +138,7 @@ export class ProtocolToolGenerator {
           properties: {
             kind: { type: 'string', description: 'Optional exact module kind filter.' },
             parentKind: { type: 'string', description: 'Optional parent kind filter. Use "root" for root modules.' },
-            keyword: { type: 'string', description: 'Optional keyword matching kind, name, description, payloads, attributes, functions, or children.' },
+            keyword: { type: 'string', description: 'Optional keyword matching kind, name, description, attributes, functions, or children.' },
             includeFunctions: {
               type: 'boolean',
               description: 'When true, also returns matching function summaries.',
@@ -159,7 +159,7 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.moduleGuide,
         description: [
           'Read overview guidance for one registered module kind.',
-          'Use this to inspect module metadata, attributes, children, payload refs, and declared function names.',
+          'Use this to inspect module metadata, attributes, children, and declared function names.',
           'For concrete contracts, call module_attribute_guide or module_function_guide after choosing from the directory.',
         ].join('\n'),
         parameters: {
@@ -208,7 +208,7 @@ export class ProtocolToolGenerator {
         name: PROTOCOL_TOOL_NAMES.moduleFunctionGuide,
         description: [
           'Read the exact contract for one declared function before calling the direct business function tool.',
-          'Requires both kind and functionName. Returns paramsSchema, requiredBeforeCall, usageRules, failureModes, recoveryHints, and payload lookup steps.',
+          'Requires both kind and functionName. Returns paramsSchema, resultApis, requiredBeforeCall, usageRules, failureModes, and recoveryHints.',
           'Use this after module_query(includeFunctions=true) selects a real functionName, and again after FUNCTION_NOT_DECLARED or SCHEMA_VALIDATION_FAILED.',
         ].join('\n'),
         parameters: {
@@ -386,7 +386,7 @@ export class ProtocolToolGenerator {
     const nameCounts = new Map<string, number>()
     for (const moduleKind of modules) {
       for (const fn of moduleKind.functions) {
-        if (!isDirectFunctionToolName(fn.name)) continue
+        if (!isDirectCallableFunction(fn.name, fn.directCallable)) continue
         nameCounts.set(fn.name, (nameCounts.get(fn.name) ?? 0) + 1)
       }
     }
@@ -395,7 +395,7 @@ export class ProtocolToolGenerator {
       const kindPath = resolveAiModulePath(moduleKind, modules)
       const pathPattern = kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
       return moduleKind.functions
-        .filter((fn) => nameCounts.get(fn.name) === 1 && isDirectFunctionToolName(fn.name))
+        .filter((fn) => nameCounts.get(fn.name) === 1 && isDirectCallableFunction(fn.name, fn.directCallable))
         .map((fn) => this.buildDeclaredFunctionTool({
           functionName: fn.name,
           kind: moduleKind.kind,
@@ -540,4 +540,8 @@ export function isProtocolToolName(name: string): name is ProtocolToolName {
 function isDirectFunctionToolName(name: string): boolean {
   if (isProtocolToolName(name)) return false
   return /^[A-Za-z0-9_-]{1,64}$/.test(name)
+}
+
+function isDirectCallableFunction(name: string, directCallable: boolean | undefined): boolean {
+  return directCallable !== false && isDirectFunctionToolName(name)
 }

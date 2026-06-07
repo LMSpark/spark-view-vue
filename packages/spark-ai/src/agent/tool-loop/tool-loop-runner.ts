@@ -77,7 +77,7 @@ const TOOL_PRODUCTION_LINE_PROMPT = [
 const PSEUDO_TOOL_CALL_NUDGE = [
   '上一次回复把工具调用写进了 assistant 正文（如 <tool_call> 标签），runtime 无法执行。',
   '请改用 OpenAI tool_calls 通道重新发起；module_script 的参数名必须是 script，不是 code。',
-  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 module_function_guide 或 queryPayloads 后重试。',
+  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 module_query/module_function_guide 后重试。',
 ].join('\n')
 
 const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
@@ -85,7 +85,7 @@ const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
 const PLAN_WITHOUT_TOOL_NUDGE = [
   '上一次 assistant 正文只是计划/说明，没有真实 OpenAI tool_calls，runtime 未执行任何工具。',
   '下一回合必须直接发起 tool_call（写页面时优先 module_script 或 openPageDesign），禁止再输出计划文字。',
-  '若已 queryPayloads/guidePayload，立即 module_script 调用 this.openPageDesign → page.editDataSet → page.editNodeTree。',
+  '若已读完 module_function_guide，立即 module_script 调用 this.openPageDesign → page.editDataSet → page.editNodeTree。',
 ].join('\n')
 
 const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3
@@ -96,8 +96,6 @@ const CATALOG_DISCOVERY_TOOL_NAMES = new Set<string>([
   'module_attribute_guide',
   'module_function_guide',
   'module_find',
-  'queryPayloads',
-  'guidePayload',
 ])
 
 const EXECUTION_TOOL_NAMES = new Set<string>([
@@ -111,7 +109,7 @@ const MAX_MODULE_SCRIPT_RETRY_NUDGES = 3
 
 function buildExecutionPhaseNudge(pageId: string): string {
   return [
-    `目录阶段已完成（queryPayloads/guidePayload 已成功），pageId="${pageId}"。禁止再重复 queryPayloads 或 module_function_guide。`,
+    `目录/指南阶段已完成，pageId="${pageId}"。禁止再重复查目录，直接执行 module_script。`,
     buildModuleScriptShapeReminder(pageId),
     'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
   ].join('\n')
@@ -130,7 +128,7 @@ function buildModuleScriptShapeReminder(pageId: string): string {
   return [
     `module_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
     'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
-    'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "<来自 guidePayload>", id: "...", props: { dataViewKey: "<table@viewId>", contextDataMember: "currentRow" } } }); });',
+    'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "<VCM 元数据声明的组件 type>", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });',
   ].join('\n')
 }
 
@@ -527,8 +525,6 @@ function mentionsPendingToolExecution(text: string): boolean {
     'openpagedesign',
     'editnodetree',
     'editdataset',
-    'querypayloads',
-    'guidepayload',
     '接下来我将',
     '我将使用',
     '我将调用',
@@ -548,24 +544,22 @@ function shouldNudgeExecutionPhase(
   if (executedToolCalls.length === 0) return false
 
   const history = sessionStore.getSessionHistory(context)
-  let guidePayloadSucceeded = false
+  let functionGuideSucceeded = false
   let executionStarted = false
-  let queryPayloadCount = 0
 
   for (const entry of history) {
     if (!isCompletedFunctionCall(entry)) continue
-    if (entry.toolName === 'guidePayload') guidePayloadSucceeded = true
-    if (entry.toolName === 'queryPayloads') queryPayloadCount += 1
+    if (entry.toolName === 'module_function_guide') functionGuideSucceeded = true
     if (EXECUTION_TOOL_NAMES.has(entry.toolName)) executionStarted = true
   }
 
-  if (!guidePayloadSucceeded || executionStarted) return false
+  if (!functionGuideSucceeded || executionStarted) return false
 
   const roundToolNames = executedToolCalls.map(call => call.function.name)
   const roundIsCatalogOnly = roundToolNames.every(name => CATALOG_DISCOVERY_TOOL_NAMES.has(name))
   if (!roundIsCatalogOnly) return false
 
-  return queryPayloadCount >= 1 || roundToolNames.includes('queryPayloads')
+  return roundToolNames.includes('module_function_guide') || functionGuideSucceeded
 }
 
 function shouldNudgeModuleScriptRetry(

@@ -13,17 +13,17 @@ import {
   AiModuleRuntime,
   mergeCompanionChildDeclarations,
   type AiModuleFunctionMetadata,
-  type AiModuleAttributeMetadata,
   type AiModuleInstanceQuery,
   type AiModuleInstanceRef,
   type AiModulePathContext,
 } from '../../modules'
 import {
   validateApiObjectMetadata,
-  toModuleFunctionResultApiMetadata,
-  type AiApiActionMetadata,
-  type AiApiAttributeMetadata,
+  resolveModuleMetadataJson,
+  toModuleAttributeMetadata,
+  toModuleFunctionMetadata,
   type AiApiObjectMetadata,
+  type AiApiActionMetadata,
   type AiModuleMetadataJson,
 } from '../../modules/metadata'
 import { DefaultAiAgentSessionStore } from '../session/default-session-store'
@@ -61,8 +61,6 @@ export type AiModuleAdapterRegisterOptions<T> = Readonly<{
   instance?: T
   constructArgs?: readonly unknown[]
   resolveInstance?: (context: AiModulePathContext) => T
-  /** 与 root 模块共用同一 runtime 的伴随 AiModule（如 spark-component catalog、guide-only 子 kind）。 */
-  companionModules?: readonly AiModule[]
   /** 模块 metadata 文档级 $defs；运行时 paramsSchema $ref 由 AJV 2020 解析。 */
   jsonSchemaDefs?: Readonly<Record<string, unknown>>
   inputContract?: AiAgentInputContract
@@ -105,7 +103,8 @@ export class AiModuleAdapter {
   }
 
   public static createRegistration<T>(command: AiModuleAdapterRegistrationCommand<T>): AiAgentRegistration {
-    validateApiObjectMetadata(command.metadata.rootApi)
+    const metadata = resolveModuleMetadataJson(command.metadata)
+    validateApiObjectMetadata(metadata.rootApi)
 
     const instance = command.options.resolveInstance === undefined
       ? command.options.instance ?? constructModuleInstance(command.moduleClass, command.options.constructArgs ?? [])
@@ -113,14 +112,18 @@ export class AiModuleAdapter {
     const adapter = new AiModuleAdapter()
     const runtime = new AiModuleRuntime()
     const rootModule = adapter.buildRootAiModule(
-      command.metadata.rootApi,
+      metadata.rootApi,
       createInstanceResolver(command.moduleClass, command.options, instance),
       command.options.jsonSchemaDefs,
     )
-    const companionModules = command.options.companionModules ?? []
-    const wiredModules = companionModules.length === 0
-      ? [rootModule]
-      : mergeCompanionChildDeclarations([rootModule, ...companionModules])
+    const vcmGuideModules = adapter.buildVcmGuideModules(metadata.rootApi)
+    const registeredModules = assembleRegisteredModules({
+      rootModule,
+      vcmGuideModules,
+    })
+    const wiredModules = registeredModules.length === 1
+      ? registeredModules
+      : mergeCompanionChildDeclarations(registeredModules)
     for (const moduleKind of wiredModules) {
       runtime.register(moduleKind)
     }
@@ -131,9 +134,9 @@ export class AiModuleAdapter {
     const afterFunctionCall = bindInstanceLifecycle(lifecycleOptions, instance, lifecycleOptions.afterFunctionCall)
     const onStartSession = bindInstanceLifecycle(lifecycleOptions, instance, lifecycleOptions.onStartSession)
     const registrationOptions: AiAgentRegistrationOptions = {
-      moduleId: command.options.moduleId ?? command.metadata.rootApi.kind,
-      name: command.metadata.rootApi.name,
-      description: command.metadata.rootApi.description,
+      moduleId: command.options.moduleId ?? metadata.rootApi.kind,
+      name: metadata.rootApi.name,
+      description: metadata.rootApi.description,
       runtime,
       sessionStore: command.options.sessionStore ?? new DefaultAiAgentSessionStore(),
       onEndBusinessInstance: async (context: AiAgentRuntimeContext, directive: AiAgentLifecycleDirective) => {
@@ -146,7 +149,7 @@ export class AiModuleAdapter {
         const resolved = resolveLifecycleInstance(
           lifecycleOptions,
           instance,
-          createRuntimeContextForModuleInstance(command.options.moduleId ?? command.metadata.rootApi.kind, moduleInstanceId),
+          createRuntimeContextForModuleInstance(command.options.moduleId ?? metadata.rootApi.kind, moduleInstanceId),
         )
         if (resolved !== undefined) {
           lifecycleOptions.releaseModuleInstance?.(resolved, moduleInstanceId)
@@ -174,8 +177,9 @@ export class AiModuleAdapter {
       kind: api.kind,
       name: api.name,
       description: api.description,
+      ...(api.constructorSignature === undefined ? {} : { constructorSignature: api.constructorSignature }),
       ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(toModuleAttributeMetadata) }),
-      functions: api.actions.map(toModuleFunctionMetadata),
+      functions: api.actions.map(action => toModuleFunctionMetadata(action, { directCallable: true })),
       find: (ctx, _childKind, query) => AiModuleResult.ok(
         filterRootInstanceRefs(createRootInstanceRefs(resolveInstance(ctx), api, ctx), query),
       ),
@@ -197,16 +201,121 @@ export class AiModuleAdapter {
       },
     })
   }
+
+  private buildVcmGuideModules(rootApi: AiApiObjectMetadata): readonly AiModule[] {
+    return collectVcmGuideApiRecords(rootApi).map(record => buildVcmGuideModule(record.api, record.parentKind))
+  }
 }
 
-function toModuleAttributeMetadata(attribute: AiApiAttributeMetadata): AiModuleAttributeMetadata {
-  return {
-    name: attribute.name,
-    description: attribute.description,
-    schema: attribute.schema,
-    readable: attribute.readable,
-    writable: attribute.writable,
+type VcmGuideApiRecord = Readonly<{
+  api: AiApiObjectMetadata
+  parentKind: string
+}>
+
+function buildVcmGuideModule(api: AiApiObjectMetadata, parentKind: string): AiModule {
+  return new AiModule({
+    kind: api.kind,
+    name: api.name,
+    description: api.description,
+    parentKind,
+    ...(api.constructorSignature === undefined ? {} : { constructorSignature: api.constructorSignature }),
+    ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(toModuleAttributeMetadata) }),
+    functions: api.actions.map(toVcmGuideFunctionMetadata),
+    runner: (_ctx, functionName) => AiModuleResult.failCode(
+      'VCM_RESULT_API_DIRECT_CALL_NOT_SUPPORTED',
+      `${api.kind}.${functionName} 是 VCM 返回对象 API 指南，不能通过实例 path 直接调用。`,
+      `先用 module_function_guide({ kind: "${api.kind}", functionName: "${functionName}" }) 查看参数；执行修改时在 module_script 中沿原生对象链式调用。`,
+    ),
+  })
+}
+
+function toVcmGuideFunctionMetadata(action: AiApiActionMetadata): AiModuleFunctionMetadata {
+  const base = toModuleFunctionMetadata(action, { directCallable: false })
+  const scriptRule = '该函数属于 VCM 返回对象 API：执行时通过 module_script 的原生对象链式调用，不使用 /kind[id] 实例 path 直调。'
+  const usageRules = [...(base.usageRules ?? [])]
+  if (!usageRules.includes(scriptRule)) {
+    usageRules.push(scriptRule)
   }
+  return {
+    ...base,
+    usageRules,
+  }
+}
+
+function collectVcmGuideApiRecords(rootApi: AiApiObjectMetadata): readonly VcmGuideApiRecord[] {
+  const records = new Map<string, VcmGuideApiRecord>()
+  const visited = new Set<string>([rootApi.kind])
+  collectChildApiRecords(rootApi, records, visited)
+  return [...records.values()]
+}
+
+function collectChildApiRecords(
+  ownerApi: AiApiObjectMetadata,
+  records: Map<string, VcmGuideApiRecord>,
+  visited: Set<string>,
+): void {
+  for (const attribute of ownerApi.attributes ?? []) {
+    if (attribute.api !== undefined) {
+      collectNestedApiRecord(attribute.api, ownerApi.kind, records, visited)
+    }
+  }
+
+  for (const action of ownerApi.actions) {
+    for (const resultApi of action.resultApis ?? []) {
+      if (resultApi.api !== undefined) {
+        collectNestedApiRecord(resultApi.api, ownerApi.kind, records, visited)
+      }
+    }
+  }
+}
+
+function collectNestedApiRecord(
+  api: AiApiObjectMetadata,
+  parentKind: string,
+  records: Map<string, VcmGuideApiRecord>,
+  visited: Set<string>,
+): void {
+  if (!records.has(api.kind)) {
+    records.set(api.kind, { api, parentKind })
+  }
+  if (visited.has(api.kind)) return
+
+  visited.add(api.kind)
+  try {
+    collectChildApiRecords(api, records, visited)
+  } finally {
+    visited.delete(api.kind)
+  }
+}
+
+type RegisteredModuleSource = 'root' | 'vcm-guide'
+
+type AssembleRegisteredModulesOptions = Readonly<{
+  rootModule: AiModule
+  vcmGuideModules: readonly AiModule[]
+}>
+
+function assembleRegisteredModules(options: AssembleRegisteredModulesOptions): readonly AiModule[] {
+  const sources = new Map<string, RegisteredModuleSource>()
+  const out: AiModule[] = []
+
+  const register = (moduleKind: AiModule, source: RegisteredModuleSource): void => {
+    const existing = sources.get(moduleKind.kind)
+    if (existing !== undefined) {
+      throw new Error(
+        `AiModuleAdapter: duplicate kind "${moduleKind.kind}" (${existing} vs ${source}). `
+        + 'Business API kinds must come from VCM metadata only.',
+      )
+    }
+    sources.set(moduleKind.kind, source)
+    out.push(moduleKind)
+  }
+
+  register(options.rootModule, 'root')
+  for (const moduleKind of options.vcmGuideModules) {
+    register(moduleKind, 'vcm-guide')
+  }
+  return out
 }
 
 function createInstanceResolver<T>(
@@ -225,19 +334,6 @@ function constructModuleInstance<T>(
 ): T {
   const construct = moduleClass as unknown as new (...args: unknown[]) => T
   return new construct(...args)
-}
-
-function toModuleFunctionMetadata(action: AiApiActionMetadata): AiModuleFunctionMetadata {
-  return {
-    name: action.name,
-    description: action.description,
-    paramsSchema: action.paramsSchema,
-    ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
-    ...(action.resultApis === undefined ? {} : { resultApis: action.resultApis.map(toModuleFunctionResultApiMetadata) }),
-    ...(action.usageRules === undefined ? {} : { usageRules: [...action.usageRules] }),
-    ...(action.requiredBeforeCall === undefined ? {} : { requiredBeforeCall: [...action.requiredBeforeCall] }),
-    ...(action.failureModes === undefined ? {} : { failureModes: action.failureModes.map(mode => ({ ...mode })) }),
-  }
 }
 
 function isIndexableObject(value: unknown): value is Readonly<Record<string, unknown>> {

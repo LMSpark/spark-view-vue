@@ -5,8 +5,12 @@
  * 继续可操作的 API-bearing 对象位置。@ai-visible
  */
 
-import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
-import type { AiModuleFunctionFailureMode } from '../protocol/module-metadata'
+import type { AiJsonSchema, AiJsonSchemaObject, AiJsonValue } from '../../json'
+import type {
+  AiModuleFunctionAntiExample,
+  AiModuleFunctionExample,
+  AiModuleFunctionFailureMode,
+} from '../protocol/module-metadata'
 
 /** API 对象元数据（根对象或 action 返回的嵌套对象）。 */
 export type AiApiObjectMetadata = Readonly<{
@@ -46,6 +50,10 @@ export type AiApiActionMetadata = Readonly<{
   usageRules?: readonly string[]
   requiredBeforeCall?: readonly string[]
   failureModes?: readonly AiModuleFunctionFailureMode[]
+  /** 旧版单参数示例；新代码优先 examples。 */
+  example?: AiJsonValue
+  examples?: readonly AiModuleFunctionExample[]
+  antiExamples?: readonly AiModuleFunctionAntiExample[]
 }>
 
 /** action 返回值中的 API-bearing 对象引用（runtime 紧凑格式用 $ref，解析后为 api）。 */

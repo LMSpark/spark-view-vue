@@ -29,8 +29,8 @@ import type {
   AiModuleFunctionMetadata,
   AiModuleFunctionResultApiMetadata,
   AiModuleFunctionResultSchema,
+  AiModuleConstructorMetadata,
   AiModule,
-  AiModulePayloadMetadata,
 } from '../protocol'
 
 export type AiModuleKnowledgeAttributeAccessMode = 'read' | 'write' | 'read-write' | 'none'
@@ -59,8 +59,6 @@ export type AiModuleKnowledgeLayerFunction = Readonly<{
   detailLookupStep: string
   lookupSteps: readonly string[]
   invokeStep: string
-  payloadRefs: readonly string[]
-  requiresPayloadGuide: boolean
 }>
 
 export type AiModuleKnowledgeChildAttributeSummary = Readonly<{
@@ -75,7 +73,6 @@ export type AiModuleKnowledgeChildFunctionSummary = Readonly<{
   knowledgeLevel: 'directory'
   functionName: string
   description: string
-  payloadRefs: readonly string[]
   detailLookupStep: string
 }>
 
@@ -85,7 +82,6 @@ export type AiModuleKnowledgeChildKindSummary = Readonly<{
   description: string
   functionNames: readonly string[]
   attributeNames: readonly string[]
-  payloadRefs: readonly string[]
   childKindNames: readonly string[]
   attributeSummaries: readonly AiModuleKnowledgeChildAttributeSummary[]
   functionSummaries: readonly AiModuleKnowledgeChildFunctionSummary[]
@@ -111,11 +107,6 @@ export type AiModuleKnowledgeKindGuideFunction = Readonly<{
   detailLookupStep: string
 }>
 
-export type AiModuleKnowledgeKindGuidePayload = Readonly<{
-  payloadRef: string
-  description: string
-  requiredForFunctions: readonly string[]
-}>
 
 export type AiModuleKnowledgeKindGuideChild = Readonly<{
   kind: string
@@ -130,13 +121,13 @@ export type AiModuleKnowledgeKindGuide = Readonly<{
   description: string
   registeredPrompt: string
   parentKind?: string
+  constructorSignature?: AiModuleConstructorMetadata
   pathPattern: string
   directoryFirstRule: string
   howToUse: readonly string[]
   nextSteps: readonly string[]
   attributes: readonly AiModuleKnowledgeKindGuideAttribute[]
   functions: readonly AiModuleKnowledgeKindGuideFunction[]
-  payloads: readonly AiModuleKnowledgeKindGuidePayload[]
   children: readonly string[]
   childKinds: readonly AiModuleKnowledgeKindGuideChild[]
 }>
@@ -157,6 +148,7 @@ export type AiModuleKnowledgeKindLayer = Readonly<{
   name: string
   description: string
   parentKind?: string
+  constructorSignature?: AiModuleConstructorMetadata
   level: number
   pathPattern: string
   instanceGuide: AiModuleKnowledgeInstanceGuide
@@ -164,7 +156,6 @@ export type AiModuleKnowledgeKindLayer = Readonly<{
   childLookupSteps: readonly string[]
   attributeLookupSteps: readonly string[]
   functionLookupSteps: readonly string[]
-  payloadLookupSteps: readonly string[]
   attributes: readonly AiModuleKnowledgeAttributeGuide[]
   functions: readonly AiModuleKnowledgeLayerFunction[]
   childKinds: readonly AiModuleKnowledgeChildKindSummary[]
@@ -181,10 +172,6 @@ export type AiModuleKnowledgeModuleSummary = Readonly<{
   writableAttributeNames: readonly string[]
   functionCount: number
   functionNames: readonly string[]
-  payloadCount: number
-  payloadRefs: readonly string[]
-  payloadFunctionRefs: readonly string[]
-  payloadLookupSteps: readonly string[]
   childKindCount: number
   children: readonly string[]
   level: number
@@ -221,9 +208,6 @@ export type AiModuleKnowledgeFunctionSummary = Readonly<{
   usageRuleCount: number
   failureModeCount: number
   functionLookupSteps: readonly string[]
-  payloadRefs: readonly string[]
-  requiresPayloadGuide: boolean
-  payloadLookupSteps: readonly string[]
 }>
 
 export type AiModuleKnowledgeFunctionGuide = Readonly<{
@@ -255,9 +239,6 @@ export type AiModuleKnowledgeFunctionGuide = Readonly<{
   failureModes: readonly AiModuleFunctionFailureMode[]
   recoveryHints: readonly string[]
   functionLookupSteps: readonly string[]
-  payloadRefs: readonly string[]
-  requiresPayloadGuide: boolean
-  payloadLookupSteps: readonly string[]
   examples: readonly AiModuleFunctionExample[]
   antiExamples: readonly AiModuleFunctionAntiExample[]
 }>
@@ -331,24 +312,16 @@ export type ParsedKnowledgeFunction = Readonly<{
   functionName: string
 }>
 
-export type PayloadCatalogDescriptor = Readonly<{
-  kind: string
-  kindPath: readonly string[]
-  parentKind?: string
-}>
 
 export type FunctionKnowledgeProjectionOptions = Readonly<{
   kind: string
   kindPath: readonly string[]
   fn: AiModuleFunctionMetadata
-  payloads: readonly AiModulePayloadMetadata[]
-  payloadCatalogs: readonly PayloadCatalogDescriptor[]
 }>
 
 export type KindLayerOptions = Readonly<{
   moduleKind: AiModule
   allKinds: readonly AiModule[]
-  payloadCatalogs: readonly PayloadCatalogDescriptor[]
 }>
 
 export type FunctionLookupStepsOptions = Readonly<{
@@ -357,10 +330,3 @@ export type FunctionLookupStepsOptions = Readonly<{
   functionName?: string
 }>
 
-export type PayloadLookupStepsOptions = Readonly<{
-  kind: string
-  kindPath: readonly string[]
-  functionName?: string
-  payloadRefs: readonly string[]
-  payloadCatalogs: readonly PayloadCatalogDescriptor[]
-}>

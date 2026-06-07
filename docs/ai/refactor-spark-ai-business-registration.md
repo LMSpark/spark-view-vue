@@ -1286,7 +1286,7 @@ AiModuleAdapter.register(host, 'manualLeave', LeaveRequestService, leaveRequestM
 1. **旧 `AiModule` + `AiModuleRuntime` 不删除**——供旧业务继续使用
 2. **旧 `host.register(alias, registration)` 不变**
 3. **旧 `children/parentKind/list/find` 机制保留在 AiModule 层**——供旧业务继续使用；新 adapter 不依赖该机制
-4. **旧 `createAiBusinessKit` 标记 `@deprecated`**
+4. **旧 `createAiBusinessKit` 已移除**；业务统一使用 `AiModuleAdapter`。
 
 ---
 

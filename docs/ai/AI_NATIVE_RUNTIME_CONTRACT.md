@@ -134,7 +134,7 @@ return {
 | `project` | `ProjectModel` | design | 项目根；策划投影、openPageDesign |
 | `config-page` | `ConfigPageNode` | design | 四文件编辑面 |
 | `node-tree` | `SparkNodeTree` | design (+runtime read) | rule 组件树 |
-| `spark-component` | `component-catalog.json` | design | Vue 组件只读目录模块 |
+| `component-catalog.json` | 组件 VCM 原始生成物/诊断输入；不注册为 AiModule 工具，不作为 LLM 主调用路径 |
 | `dataset` | `DataSetCrudTool` | both | 页级 DataSet 入口 |
 | `data-table` | `DataTable` | both | 表结构 + 视图容器 |
 | `data-view` | `DataView` | both | 行/筛选/聚合/CRUD 语义 |
@@ -208,7 +208,7 @@ Agent 不是超级用户。
 |---|---|
 | `*.api.generated.json` | 人工审查 + diagnostics；含 `resultApis` 深链 |
 | `*.runtime.generated.json` | `AiModuleAdapter` 消费 |
-| `component-catalog.json` | `spark-component` catalog 模块；`queryPayloads` / `guidePayload`（payloadRef=`spark.component`）；prop 用 `typeText` 展示 TS 类型，`schema.type` 为 JSON Schema |
+| `component-catalog.json` | 组件 VCM 原始生成物/诊断输入；不注册为 AiModule 工具，不作为 LLM 主调用路径 |
 
 构建命令：`pnpm run generate:module-metadata`  
 诊断：`pnpm run diagnose:module-metadata`
@@ -223,7 +223,7 @@ Agent 不是超级用户。
 
 ```text
 1. readPlanningProjection / module_query       → 确认 pageId、kind 与能力边界
-2. queryPayloads / guidePayload                → 组件/复杂参数（rule 节点）
+2. module_function_guide / module_attribute_guide → 确认函数、属性、schema 与 resultApis
 3. module_script({ script })                   → LLM 生成原生 JS，运行时执行
 4. 返回 ruleJson / pageDataJson / script / style → runner 读取四文件 projection
 5. agent_complete 或 human_question            → 完成或在闸门/歧义时中断
@@ -241,21 +241,21 @@ Agent 不是超级用户。
 ```text
 LLM FC 失败 (code/msg/fix/checks)
   → function-call-recovery-enricher 追加 RECOVERY_HINT checks
-  → module_function_guide / module_query / queryPayloads（目录 + 指南）
+  → module_function_guide / module_query（能力目录 + 函数指南）
   → promptSnapshot 固定 SOP（目录优先、禁止猜 functionName）
-  → *.runtime.generated.json + component-catalog.json（VCM 生成物）
-  → 源码 JSDoc：@usageRule / @requiredBeforeCall / @failureMode / @payloadRef
+  → *.runtime.generated.json（VCM 生成物）
+  → 源码 JSDoc：@usageRule / @requiredBeforeCall / @failureMode
 ```
 
 | 层 | 职责 |
 |---|---|
 | **JSDoc（真源）** | 在方法/属性首次声明处写 `@failureMode CODE when => fix`、`@usageRule`、`@requiredBeforeCall` |
 | **VCM 生成器** | `pnpm run generate:module-metadata` 提取为 `usageRules` / `failureModes` / `requiredBeforeCall` |
-| **指南投影** | `module_function_guide` 输出 `recoveryHints`、`functionLookupSteps`、`payloadLookupSteps` |
+| **指南投影** | `module_function_guide` 输出 `recoveryHints`、`functionLookupSteps`、`resultApis` 与 schema |
 | **Prompt Snapshot** | 只教“怎么查”，不内嵌大 schema；强调 FC 失败先 guide 再重试 |
 | **FC enricher** | `tool-call-executor` 在失败 tool result 中追加 `RECOVERY_HINT`，匹配 VCM `failureModes[code].fix` |
 
-**验收**：LLM 在 `SCHEMA_VALIDATION_FAILED` / `FUNCTION_NOT_DECLARED` 后，下一轮 tool_calls 应出现 `module_function_guide` 或 `queryPayloads`，而不是正文 `<tool_call>` 冒充调用。
+**验收**：LLM 在 `SCHEMA_VALIDATION_FAILED` / `FUNCTION_NOT_DECLARED` 后，下一轮 tool_calls 应出现 `module_function_guide` 或 `module_query`，而不是正文 `<tool_call>` 冒充调用。
 
 ---
 

@@ -2,28 +2,11 @@ import type {
   AiJsonParams,
   AiJsonSchemaObject,
 } from '../../json'
-import {
-  AiModuleRuntime,
-  type AiModule,
-  type AiModuleRuntimeInspectFinding,
-  type AiModuleRuntimeInspectReport,
-} from '../../modules'
-import { DefaultAiAgentSessionStore } from '../session/default-session-store'
-import type { AiAgentSessionStore } from '../session/session-types'
 import { createAiAgentScope } from './business-scope'
-import {
-  createAiAgentRegistration,
-  type AiAgentInputContract,
-  type AiAgentOrchestrationPlan,
-} from './business-task'
 import type {
-  AiAgentAfterFunctionCallOptions,
-  AiAgentBeforeFunctionCallDirective,
-  AiAgentBeforeFunctionCallOptions,
-  AiAgentLifecycleDirective,
-} from './lifecycle-types'
-import type { AiAgentRegistration } from './registration-types'
-import type { AiAgentRuntimeContext } from './scope-types'
+  AiAgentInputContract,
+  AiAgentOrchestrationPlan,
+} from './business-task'
 
 export type AiBusinessIdOptions = Readonly<{
   businessId: string
@@ -41,41 +24,6 @@ export type AiBusinessInputOptions<TInput extends AiJsonParams = AiJsonParams> =
 
 export type CreateSimpleInputContractOptions<TInput extends AiJsonParams = AiJsonParams> =
   AiBusinessIdOptions & AiBusinessInputOptions<TInput>
-
-export type AiBusinessLifecycleOptions = Readonly<{
-  systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
-  beforeFunctionCall?: (
-    options: AiAgentBeforeFunctionCallOptions,
-  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
-  afterFunctionCall?: (
-    options: AiAgentAfterFunctionCallOptions,
-  ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
-  onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>
-  onEndBusinessInstance?: (
-    context: AiAgentRuntimeContext,
-    directive: AiAgentLifecycleDirective,
-  ) => void | Promise<void>
-  releaseModuleInstance?: (moduleInstanceId: string) => void
-}>
-
-export type CreateAiBusinessKitOptions<TInput extends AiJsonParams = AiJsonParams> =
-  AiBusinessIdOptions & Readonly<{
-    name: string
-    description: string
-    rootModule: AiModule
-    modules?: readonly AiModule[]
-    runtime?: AiModuleRuntime
-    input: AiBusinessInputOptions<TInput>
-    sessionStore?: AiAgentSessionStore
-    lifecycle?: AiBusinessLifecycleOptions
-  }>
-
-export type AiBusinessKit<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
-  businessId: string
-  runtime: AiModuleRuntime
-  registration: AiAgentRegistration<TInput>
-  inspectReport: AiModuleRuntimeInspectReport
-}>
 
 export function createSimpleInputContract<TInput extends AiJsonParams = AiJsonParams>(
   options: CreateSimpleInputContractOptions<TInput>,
@@ -107,51 +55,13 @@ export function createSimpleInputContract<TInput extends AiJsonParams = AiJsonPa
   }
 }
 
-export function createAiBusinessKit<TInput extends AiJsonParams = AiJsonParams>(
-  options: CreateAiBusinessKitOptions<TInput>,
-): AiBusinessKit<TInput> {
-  const businessId = normalizeBusinessId(options)
-  const runtime = options.runtime ?? new AiModuleRuntime()
-  runtime.register(options.rootModule)
-  for (const moduleKind of options.modules ?? []) {
-    runtime.register(moduleKind)
-  }
-  const inspectReport = runtime.inspect()
-  assertInspectableRuntime(inspectReport, businessId)
-  const lifecycle = options.lifecycle
-  const inputContract = createSimpleInputContract<TInput>({
-    businessId,
-    ...options.input,
-  })
-  const registration = createAiAgentRegistration<TInput>({
-    kindID: businessId,
-    name: options.name,
-    description: options.description,
-    runtime,
-    inputContract,
-    sessionStore: options.sessionStore ?? new DefaultAiAgentSessionStore(),
-    ...(lifecycle?.systemPrompt === undefined ? {} : { systemPrompt: lifecycle.systemPrompt }),
-    ...(lifecycle?.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: lifecycle.beforeFunctionCall }),
-    ...(lifecycle?.afterFunctionCall === undefined ? {} : { afterFunctionCall: lifecycle.afterFunctionCall }),
-    ...(lifecycle?.onStartSession === undefined ? {} : { onStartSession: lifecycle.onStartSession }),
-    ...(lifecycle?.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: lifecycle.onEndBusinessInstance }),
-    ...(lifecycle?.releaseModuleInstance === undefined ? {} : { releaseModuleInstance: lifecycle.releaseModuleInstance }),
-  })
-  return {
-    businessId,
-    runtime,
-    registration,
-    inspectReport,
-  }
-}
-
 function normalizeBusinessId(options: AiBusinessIdOptions): string {
   return normalizeRequiredText(options.businessId, 'businessId')
 }
 
 function defaultNormalize<TInput extends AiJsonParams>(input: AiJsonParams): TInput {
   if (isSchemaValidatedInput<TInput>(input)) return input
-  throw new Error('[AiBusinessKit] input must match paramsSchema before normalization.')
+  throw new Error('[AiModuleAdapter] input must match paramsSchema before normalization.')
 }
 
 function isSchemaValidatedInput<TInput extends AiJsonParams>(input: AiJsonParams): input is TInput {
@@ -167,32 +77,13 @@ function normalizeInputField<TInput extends AiJsonParams>(
   return field
 }
 
-function assertInspectableRuntime(report: AiModuleRuntimeInspectReport, businessId: string): void {
-  if (report.status === 'ok') return
-  const finding = report.findings.find((item) => item.level === 'error')
-    ?? report.findings.find((item) => item.level === 'warn')
-  throw new Error(formatInspectFailure(report, businessId, finding))
-}
-
-function formatInspectFailure(
-  report: AiModuleRuntimeInspectReport,
-  businessId: string,
-  finding: AiModuleRuntimeInspectFinding | undefined,
-): string {
-  const rootKinds = report.rootKinds.length === 0 ? '(none)' : report.rootKinds.join(', ')
-  const summary = `AiBusinessKit runtime inspect failed for "${businessId}": status=${report.status}; moduleCount=${report.moduleCount}; rootKinds=[${rootKinds}]`
-  if (finding === undefined) return summary
-  const fix = finding.fix === undefined ? '' : `; fix=${finding.fix}`
-  return `${summary}; firstFinding=${finding.level}/${finding.code}: ${finding.message}${fix}`
-}
-
 function normalizeRequiredText(value: unknown, field: string): string {
   if (typeof value !== 'string') {
-    throw new Error(`[AiBusinessKit] ${field} must be a non-empty string.`)
+    throw new Error(`[AiModuleAdapter] ${field} must be a non-empty string.`)
   }
   const trimmed = value.trim()
   if (trimmed.length === 0) {
-    throw new Error(`[AiBusinessKit] ${field} must not be empty.`)
+    throw new Error(`[AiModuleAdapter] ${field} must not be empty.`)
   }
   return trimmed
 }
@@ -204,7 +95,7 @@ function readRequiredString<TInput extends AiJsonParams>(
 ): string {
   const value = input[field]
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error(`[AiBusinessKit] ${label} "${field}" must be a non-empty string.`)
+    throw new Error(`[AiModuleAdapter] ${label} "${field}" must be a non-empty string.`)
   }
   return value.trim()
 }

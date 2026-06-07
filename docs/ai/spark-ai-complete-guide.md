@@ -63,7 +63,7 @@ export {
 ```ts
 import { paramsSchema, stringSchema } from '@spark-appworks/spark-ai/json'
 import { AiModule, AiModuleResult, AiModuleRuntime } from '@spark-appworks/spark-ai/modules'
-import { createAiAgentHost, createAiBusinessKit } from '@spark-appworks/spark-ai/agent'
+import { createAiAgentHost, AiModuleAdapter, createSimpleInputContract } from '@spark-appworks/spark-ai/agent'
 ```
 
 ## 3. 总体架构
@@ -182,9 +182,11 @@ Agent 输入用 strict 模式；模块输出用宽松规整后再按 schema 校�
 
 ### 5.1 模块是什么
 
+> **业务方**：不要手工 `new AiModule` 注册业务能力；见 §9.5 `AiModuleAdapter`。以下示例说明协议构造规则，供内核测试参考。
+
 `AiModule` 是一个已构造的业务能力节点。它包含两类内容：
 
-- 元数据：kind、name、description、attributes、functions、children、payloads。
+- 元数据：kind、name、description、attributes、functions、children、resultApis。
 - 运行 delegate：attributeAccessor、runner、list、find。
 
 最小 root module：
@@ -338,6 +340,8 @@ attributes: [{
 
 ### 5.6 子模块与 find/list
 
+> **业务嵌套 API**：由 VCM `resultApis` 自动投影为 guide-only 子 kind，执行走 `module_script`，不手写 `children` 树。以下示例描述协议层静态子模块树，仅用于理解 inspect 与 path 规则。
+
 有子模块时：
 
 ```ts
@@ -371,7 +375,9 @@ runtime 会检查：
 
 ### 6.1 运行时组合根
 
-`AiModuleRuntime` 是 modules 层组合根：
+`AiModuleRuntime` 是 modules 层组合根。业务注册经 `AiModuleAdapter` 内部创建 runtime 并注册模块；业务代码不应直接 `runtime.register` 手写模块。
+
+协议层直接使用示例（测试 / factory）：
 
 ```ts
 const runtime = new AiModuleRuntime()
@@ -634,7 +640,6 @@ const report = runtime.inspect()
 - child parentKind 不匹配：`CHILD_PARENT_KIND_MISMATCH`
 - function params schema 根节点不是 object：`FUNCTION_PARAMS_SCHEMA_NOT_OBJECT`
 - 高风险函数缺少 usageRules / failureModes：warning
-- payloadRef 存在但没有 payload catalog module：warning
 
 建议在业务注册测试和 APP 启动日志中都输出 inspect 结果。
 
@@ -668,7 +673,7 @@ instanceId / runtimeInstanceId: 当前 Agent session 实例标识
 - `onEndBusinessInstance?`
 - `releaseModuleInstance?`
 
-底层 `createAiAgentRegistration` 必须显式注入 `sessionStore`。高阶 `createAiBusinessKit` 在未传入时会创建 `DefaultAiAgentSessionStore`。
+底层 `createAiAgentRegistration` 必须显式注入 `sessionStore`。`AiModuleAdapter.createRegistration` 在未传入时会创建 `DefaultAiAgentSessionStore`。
 
 ### 9.3 InputContract
 
@@ -727,42 +732,57 @@ const inputContract = createSimpleInputContract<TicketInput>({
 - `toScope` 使用 `createAiAgentScope(businessId, identity)`。
 - `toOrchestration.userMessage` 读取 `messageField`。
 
-### 9.5 createAiBusinessKit
+### 9.5 AiModuleAdapter（业务注册唯一入口）
 
-普通业务优先使用 `createAiBusinessKit`。它把 runtime、module 注册、input contract、inspect、registration 和默认 session store 组装起来。
+普通业务必须使用 `AiModuleAdapter` + VCM 生成的 `AiModuleMetadataJson`。禁止在业务层手工 `new AiModule` 或已移除的 `createAiBusinessKit`。
+
+构建期：`TS class + @moduleKind JSDoc` → `pnpm run generate:module-metadata` → `*.runtime.generated.json`。
 
 ```ts
-const kit = createAiBusinessKit<TicketInput>({
-  businessId: 'ticket',
-  name: '工单助手',
-  description: '处理工单。',
-  rootModule: ticketModule,
-  modules: [ticketLogModule],
-  input: {
-    paramsSchema: paramsSchema({
-      ticketId: stringSchema('工单 ID'),
-      message: stringSchema('用户消息'),
-    }, ['ticketId', 'message']),
-    identityField: 'ticketId',
-    messageField: 'message',
-    systemPrompt: (input) => `当前工单：${input.ticketId}`,
-  },
-  lifecycle: {
-    systemPrompt: () => '使用固定 module_* 工具协议处理工单。',
+import { AiModuleAdapter, createSimpleInputContract } from '@spark-appworks/spark-ai/agent'
+import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
+import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
+
+type TicketInput = AiJsonParams & Readonly<{ ticketId: string; message: string }>
+
+const registration = AiModuleAdapter.createRegistration({
+  moduleClass: TicketService,
+  metadata: ticketRuntimeMetadata, // AiModuleMetadataJson，来自生成 JSON
+  options: {
+    moduleId: 'ticket',
+    instance: ticketService,
+    jsonSchemaDefs: ticketRuntimeDocument.$defs,
+    inputContract: createSimpleInputContract<TicketInput>({
+      businessId: 'ticket',
+      paramsSchema: paramsSchema({
+        ticketId: stringSchema('工单 ID'),
+        message: stringSchema('用户消息'),
+      }, ['ticketId', 'message']),
+      identityField: 'ticketId',
+      messageField: 'message',
+      systemPrompt: (input) => `当前工单：${input.ticketId}`,
+    }),
+    systemPrompt: (_instance, context) => '使用固定 module_* 工具协议处理工单。',
   },
 })
 ```
 
 它会：
 
-1. 使用传入 runtime 或创建新 `AiModuleRuntime`。
-2. 注册 `rootModule`。
-3. 注册 `modules`。
-4. 执行 `runtime.inspect()`。
-5. inspect 非 ok 时 fail-fast，不允许带病注册。
-6. 由 `input` 生成 `AiAgentInputContract`。
-7. 创建 `AiAgentRegistration`。
-8. 若未传 `sessionStore`，使用 `DefaultAiAgentSessionStore`。
+1. `resolveModuleMetadataJson` 展开 `apiRegistry` `$ref`。
+2. `validateApiObjectMetadata` fail-fast 校验 root API。
+3. 构造 root `AiModule`（`directCallable: true`）并绑定 `TicketService` 方法。
+4. 从 `resultApis` 自动投影 guide-only 子 kind（仅指南，执行走 `module_script`）。
+5. `runtime.inspect()`；非 ok 时构造期抛错。
+6. 创建 `AiAgentRegistration`；未传 `sessionStore` 时使用 `DefaultAiAgentSessionStore`。
+
+注册到 Host：
+
+```ts
+const host = createAiAgentHost({ turnCallbacks, maxToolRounds: 8 })
+  .register('ticketAssistant', registration)
+// 或幂等：host.ensure('ticketAssistant', { moduleId: 'ticket', create: () => registration })
+```
 
 ## 10. Host 注册与运行
 
@@ -782,7 +802,7 @@ const host = createAiAgentHost({
 ### 10.2 register
 
 ```ts
-const nextHost = host.register('ticketAssistant', kit.registration)
+const nextHost = host.register('ticketAssistant', registration)
 ```
 
 规则：
@@ -800,7 +820,7 @@ const nextHost = host.register('ticketAssistant', kit.registration)
 ```ts
 const ensured = host.ensure('ticketAssistant', {
   moduleId: 'ticket',
-  create: () => kit.registration,
+  create: () => AiModuleAdapter.createRegistration({ /* 同上 */ }),
 })
 ```
 
@@ -1178,75 +1198,63 @@ class TicketService {
 }
 ```
 
-### 15.2 根模块
+### 15.2 业务 class 与 VCM metadata
+
+业务 class 实现 VCM 声明的 `methodName`；metadata 由构建期生成（示例为内联 JSON）：
 
 ```ts
-import {
-  AiModule,
-  AiModuleResult,
-  type AiModuleInstanceRef,
-} from '@spark-appworks/spark-ai/modules'
-import {
-  enumSchema,
-  paramsSchema,
-} from '@spark-appworks/spark-ai/json'
+import { AiModuleResult } from '@spark-appworks/spark-ai/modules'
+import { enumSchema, paramsSchema, stringSchema } from '@spark-appworks/spark-ai/json'
+import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
 
-function createTicketModule(service: TicketService): AiModule {
-  return new AiModule({
+/** @moduleKind ticket @moduleName 工单 */
+class TicketService {
+  private readonly tickets = new Map<string, Ticket>()
+
+  /** @usageRule 只能修改 path 指向的工单。 */
+  public setPriority(args: Readonly<{ priority: Ticket['priority'] }>, ticketId: string): AiModuleResult<Ticket> {
+    const current = this.tickets.get(ticketId)
+    if (current === undefined) {
+      return AiModuleResult.failCode('TICKET_NOT_FOUND', '工单不存在', '重新调用 module_find 定位工单。')
+    }
+    const next = { ...current, priority: args.priority }
+    this.tickets.set(ticketId, next)
+    return AiModuleResult.ok(next)
+  }
+}
+
+const ticketRuntimeMetadata: AiModuleMetadataJson = {
+  schemaVersion: 1,
+  rootApi: {
     kind: 'ticket',
     name: '工单',
     description: '当前工单的读取和修改能力。',
-    functions: [{
+    actions: [{
       name: 'setPriority',
+      methodName: 'setPriority',
       description: '设置当前工单优先级。',
       paramsSchema: paramsSchema({
         priority: enumSchema(['low', 'medium', 'high'], '优先级'),
       }, ['priority']),
       usageRules: ['只能修改 path 指向的工单。'],
-      requiredBeforeCall: ['调用前必须已经有 /ticket[<ticketId>] path。'],
       failureModes: [{
         code: 'TICKET_NOT_FOUND',
         when: '工单不存在',
         fix: '重新调用 module_find 定位工单。',
       }],
-      examples: [{
-        intent: '用户要求把工单优先级调高',
-        args: { priority: 'high' },
-      }],
-      antiExamples: [{
-        user: '查看工单状态',
-        reason: '只是查看，不应修改优先级。',
-      }],
     }],
-    runner: (ctx, functionName, args) => {
-      if (functionName !== 'setPriority') {
-        return AiModuleResult.failCode('FUNCTION_NOT_IMPLEMENTED', functionName)
-      }
-      const ticketId = ctx.segment?.id
-      if (ticketId === undefined) {
-        return AiModuleResult.failCode('TICKET_PATH_REQUIRED', '缺少工单 path')
-      }
-      const priority = args['priority']
-      if (priority !== 'low' && priority !== 'medium' && priority !== 'high') {
-        return AiModuleResult.failCode('INVALID_PRIORITY', 'priority 不合法')
-      }
-      return AiModuleResult.ok(service.setPriority(ticketId, priority))
-    },
-    find: (_ctx, childKind, query) => {
-      if (childKind !== 'ticket') return AiModuleResult.ok<readonly AiModuleInstanceRef[]>([])
-      const ticketId = typeof query['ticketId'] === 'string' ? query['ticketId'] : ''
-      if (ticketId === '') return AiModuleResult.ok([])
-      return AiModuleResult.ok([{ id: ticketId, label: `工单 ${ticketId}` }])
-    },
-  })
+  },
 }
 ```
 
-### 15.3 业务 kit
+生产环境应使用 `pnpm run generate:module-metadata` 产出 `*.runtime.generated.json`，不要长期维护手写 JSON。
+
+### 15.3 AiModuleAdapter 注册
 
 ```ts
 import {
-  createAiBusinessKit,
+  AiModuleAdapter,
+  createSimpleInputContract,
 } from '@spark-appworks/spark-ai/agent'
 
 type TicketInput = AiJsonParams & Readonly<{
@@ -1255,19 +1263,22 @@ type TicketInput = AiJsonParams & Readonly<{
 }>
 
 const service = new TicketService()
-const kit = createAiBusinessKit<TicketInput>({
-  businessId: 'ticket',
-  name: '工单助手',
-  description: '处理工单查询与修改。',
-  rootModule: createTicketModule(service),
-  input: {
-    paramsSchema: paramsSchema({
-      ticketId: stringSchema('工单 ID'),
-      message: stringSchema('用户消息'),
-    }, ['ticketId', 'message']),
-    identityField: 'ticketId',
-    messageField: 'message',
-    systemPrompt: (input) => `当前工单：${input.ticketId}。关闭、删除、提交等高风险操作必须先确认。`,
+const registration = AiModuleAdapter.createRegistration({
+  moduleClass: TicketService,
+  metadata: ticketRuntimeMetadata,
+  options: {
+    moduleId: 'ticket',
+    instance: service,
+    inputContract: createSimpleInputContract<TicketInput>({
+      businessId: 'ticket',
+      paramsSchema: paramsSchema({
+        ticketId: stringSchema('工单 ID'),
+        message: stringSchema('用户消息'),
+      }, ['ticketId', 'message']),
+      identityField: 'ticketId',
+      messageField: 'message',
+      systemPrompt: (input) => `当前工单：${input.ticketId}。关闭、删除、提交等高风险操作必须先确认。`,
+    }),
   },
 })
 ```
@@ -1278,7 +1289,7 @@ const kit = createAiBusinessKit<TicketInput>({
 const host = createAiAgentHost({
   turnCallbacks,
   maxToolRounds: 8,
-}).register('ticketAssistant', kit.registration)
+}).register('ticketAssistant', registration)
 
 const dryRun = host.dryRun('ticketAssistant', {
   ticketId: 'T-1001',
@@ -1310,17 +1321,10 @@ await host.run('ticketAssistant', {
 
 ```mermaid
 flowchart TD
-  Start["我要接入一个新业务"] --> One["只有一个业务对象吗?"]
-  One -- "是" --> RootFn["编写根 AiModule 函数"]
-  One -- "否" --> Child["编写 children 与子 AiModule"]
-  RootFn --> Complex["函数参数复杂吗?"]
-  Child --> Complex
-  Complex -- "是" --> Payload["声明 payloads / payloadRef，提供目录指南"]
-  Complex -- "否" --> Agent["需要连续对话吗?"]
-  Payload --> Agent
-  Agent -- "是" --> Registration["写 AiAgentRegistration 或 createAiBusinessKit"]
-  Agent -- "否" --> RuntimeOnly["只用 AiModuleRuntime.executeTool 测模块"]
-  Registration --> Host["注册到 AiAgentHost 别名"]
+  Start["我要接入一个新业务"] --> VCM["TS class + @moduleKind JSDoc"]
+  VCM --> Gen["generate:module-metadata → runtime JSON"]
+  Gen --> Adapter["AiModuleAdapter.createRegistration"]
+  Adapter --> Host["注册到 AiAgentHost 别名"]
 ```
 
 ## 17. 常见失败与修复
@@ -1332,8 +1336,8 @@ flowchart TD
 | `TOOL_ARGS_INVALID_JSON` | OpenAI tool call 的 `function.arguments` 不是 JSON 字符串 | APP 传输层必须保留合法 JSON object 字符串 |
 | `FUNCTION_NOT_FOUND` | functionName 未声明 | 检查 `functions` metadata 与 runner 分发一致 |
 | `SCHEMA_VALIDATION_FAILED` | args 不符合 paramsSchema | paramsSchema 写清 required 和 enum，guide 提供 examples |
-| `CHILD_KIND_NOT_REGISTERED` | 父模块声明 child，但 runtime 没注册 child module | 在 kit.modules 或 runtime.register 中补上 child |
-| `CHILD_PARENT_KIND_MISMATCH` | child.parentKind 和父模块声明不一致 | 修改 child module 的 `parentKind` |
+| `CHILD_KIND_NOT_REGISTERED` | VCM `resultApis` 引用的 kind 未在 apiRegistry 注册 | 重新生成 metadata，确保嵌套 API class 有 `@moduleKind` |
+| `CHILD_PARENT_KIND_MISMATCH` | guide-only 子 kind 的 parentKind 与 VCM 图不一致 | 检查生成器 resultApis 与 adapter 投影 |
 | `ROOT_KIND_REQUIRED` | 在 root 下查找了非 root kind | 先定位 root path，再找 child |
 | 达到 `maxToolRounds` | LLM 在错误路径上反复重试 | 增强 error fix、usageRules、failureModes，必要时降低上限 |
 
@@ -1346,7 +1350,7 @@ flowchart TD
 - `schema-validator.test.ts`: JSON Schema 校验和诊断。
 - `module-semantic-isolation.test.ts`: JSON coercion、registry、knowledge、inspect、path helper。
 - `module-semantic-runtime.test.ts`: 协议工具、direct function、module_query/guide/attribute_guide/function_guide/find/attr/call、未知工具拒绝。
-- `module-semantic-host.test.ts`: Host register/ensure/run/dryRun、business kit、session history。
+- `module-semantic-host.test.ts`: Host register/ensure/run/dryRun、AiModuleAdapter 注册、session history。
 - `session-diagnostics.test.ts`: summary/transcript。
 - `turn-event-collector.test.ts`: APP SSE 聚合、过滤、错误、超时、turnKey/streamKey。
 
@@ -1425,7 +1429,7 @@ pnpm run test
 - 不写“把值赋给变量”这类空注释。
 - VCM/LLM 可见语义必须优先在首次声明处用自然语言注释表达；只有机器无法从类型、签名、命名或 summary 稳定推断的语义才补结构化 tag。
 - `AiModule` metadata 不得承诺未注册的函数、属性或子模块。
-- 复杂参数必须通过 JSON Schema、payloadRef 或 guide 暴露，不能让模型猜实现代码。
+- 复杂参数必须通过 JSON Schema、属性指南或 resultApis 暴露，不能让模型猜实现代码。
 
 ### 20.4 spark-ai 边界
 

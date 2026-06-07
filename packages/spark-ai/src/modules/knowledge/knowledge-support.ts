@@ -4,15 +4,14 @@
  * ═══════════════════════════════════════════════════════════════
  *
  * 【架构定位】knowledge 层的 helper 函数库。被 AiModuleKnowledgeProjector
- *   独家消费，提供字符串处理、schema 查询、lookup 步骤生成、payload 目录发现、
+ *   独家消费，提供字符串处理、schema 查询、lookup 步骤生成、
  *   关键字匹配、guide 输入解析、函数/kind 层投影等基础能力。
  *
  * 【函数分类】
  *   字符串工具     — normalizeOptionalText / normalizeTextList / uniqueTexts / containsKeyword
  *   Schema 工具    — paramNames / requiredParamNames
- *   属性与 payload — attributeAccessMode / payloadRefsForFunction / formatPayloadBinding
- *   Lookup 步骤    — createFunctionLookupSteps / createPayloadLookupSteps / createInstanceLookupSteps 等
- *   Payload 目录   — discoverPayloadCatalogs / formatPayloadCatalogLocator
+ *   属性工具       — attributeAccessMode
+ *   Lookup 步骤    — createFunctionLookupSteps / createInstanceLookupSteps 等
  *   关键字匹配     — moduleSummaryGuidesMatchKeyword / childSummaryMatchesKeyword
  *   Guide 解析     — parseGuideInput / buildHumanQuestion
  *   投影函数       — summarizeFunction / createGuide / createKindLayer / summarizeChildKind
@@ -25,7 +24,7 @@
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
 import { resolveAiModulePath } from '../internal/ai-module-path'
 import { PROTOCOL_TOOL_NAMES } from '../internal/protocol-tool-generator'
-import type { AiModule, AiModuleFunctionMetadata, AiModulePayloadMetadata } from '../protocol'
+import type { AiModule, AiModuleFunctionMetadata } from '../protocol'
 import type {
   FunctionKnowledgeProjectionOptions,
   FunctionLookupStepsOptions,
@@ -41,30 +40,19 @@ import type {
   AiModuleKnowledgeLayerFunction,
   AiModuleKnowledgeModuleSummary,
   ParsedKnowledgeFunction,
-  PayloadCatalogDescriptor,
-  PayloadLookupStepsOptions,
 } from './knowledge-types'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 常量
 // ═══════════════════════════════════════════════════════════════
 
-import {
-  PAYLOAD_GUIDE_FUNCTION_NAME,
-  PAYLOAD_QUERY_FUNCTION_NAME,
-} from '../payloads/payload-catalog-constants'
-
-export {
-  PAYLOAD_GUIDE_FUNCTION_NAME,
-  PAYLOAD_QUERY_FUNCTION_NAME,
-}
 
 /** 固定协议工具路由描述（注入 LLM 系统 prompt） */
 export const FIXED_PROTOCOL_TOOL_ROUTING_LINES: readonly string[] = [
   '协议硬约束：调用 module_*、human_question 或业务函数时，必须使用 OpenAI function calling 的 tool_calls 通道；不要在正文中输出 {"tool_call":...}、module_call(...)、JSON 方案或代码块来冒充工具调用。',
   '如果下一步需要读取/写入/校验/创建任何注册能力事实，必须发起真实 tool_calls；正文只能用于没有工具调用后的最终总结。',
   '工具：目录=module_query；模块指南=module_guide；属性指南=module_attribute_guide；函数指南=module_function_guide；实例=module_find；属性=module_attr；脚本=module_script；临时记忆=module_memory；业务函数=直接调用 functionName({path,args})；旧函数路由 module_call 仅作兼容；反问=human_question。',
-  '所有知识都先目录概要后具体指南：先用 query 类工具选真实 kind/function/key，再用 guide 类工具读取具体契约。',
+  '所有知识都先目录概要后具体指南：先用 query 类工具选真实 kind/function，再用 guide 类工具读取具体契约。',
   'module_find 只定位实例，不代表已掌握函数表；首次调用某 kind/functionName 前，先 module_query({kind,includeFunctions:true}) 选真实函数，再 module_function_guide({kind,functionName}) 读具体契约。',
   '禁止猜 functionName/attrName；FUNCTION_NOT_DECLARED 或 ATTRIBUTE_NOT_DECLARED 后必须回到 module_query/module_guide，再按 module_function_guide/module_attribute_guide 返回的真实契约重试。',
 ]
@@ -150,7 +138,7 @@ export function requiredParamNames(schema: AiJsonSchemaObject): readonly string[
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 第 5 节 · 属性与 payload 工具
+// 第 5 节 · 属性工具
 // ═══════════════════════════════════════════════════════════════
 
 /** 根据 readable/writable 推导属性访问模式 */
@@ -162,26 +150,6 @@ export function attributeAccessMode(
   if (readable) return 'read'
   if (writable) return 'write'
   return 'none'
-}
-
-/** 获取模块声明中与指定函数关联的 payloadRef 列表 */
-export function payloadRefsForFunction(
-  payloads: readonly AiModulePayloadMetadata[],
-  functionName: string,
-): readonly string[] {
-  return payloads
-    .filter((payload) => {
-      const requiredForFunctions = payload.requiredForFunctions ?? []
-      return requiredForFunctions.length === 0 || requiredForFunctions.includes(functionName)
-    })
-    .map((payload) => payload.payloadRef)
-}
-
-/** 格式化 payload 绑定信息（用于展示） */
-export function formatPayloadBinding(payload: AiModulePayloadMetadata): string {
-  const functions = payload.requiredForFunctions ?? []
-  if (functions.length === 0) return payload.payloadRef
-  return `${payload.payloadRef}(functions=${functions.join('|')})`
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -200,70 +168,7 @@ export function createFunctionLookupSteps(options: FunctionLookupStepsOptions): 
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 第 7 节 · Payload 目录发现与格式化
-// ═══════════════════════════════════════════════════════════════
-
-/** 发现已注册的 payload 目录模块（同时声明 queryPayloads 和 guidePayload 的模块） */
-export function discoverPayloadCatalogs(kinds: readonly AiModule[]): readonly PayloadCatalogDescriptor[] {
-  return kinds
-    .filter((moduleKind) =>
-      moduleKind.functions.some((fn) => fn.name === PAYLOAD_QUERY_FUNCTION_NAME)
-      && moduleKind.functions.some((fn) => fn.name === PAYLOAD_GUIDE_FUNCTION_NAME)
-    )
-    .map((moduleKind) => ({
-      kind: moduleKind.kind,
-      kindPath: resolveAiModulePath(moduleKind, kinds),
-      ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
-    }))
-}
-
-/** 生成 payload 查找步骤（定位目录 → 查询 → 读取指南 → 构造参数） */
-export function createPayloadLookupSteps(options: PayloadLookupStepsOptions): readonly string[] {
-  if (options.payloadRefs.length === 0) return []
-  const payloadCatalogs = requirePayloadCatalogs(options)
-  const catalogLocator = formatPayloadCatalogLocator(payloadCatalogs)
-  const catalogFunctions = formatPayloadCatalogFunctionNames(payloadCatalogs)
-  const catalogPathPattern = formatPayloadCatalogPathPattern(payloadCatalogs)
-  const finalFunctionName = options.functionName ?? '<functionName>'
-  return options.payloadRefs.flatMap((payloadRef) => [
-    `先定位 payload 目录模块 ${catalogLocator}; 没有实例路径时用 module_find 获取目录实例。`,
-    `目录阶段：调用 ${catalogFunctions.queryPayloads}({ path: "${catalogPathPattern}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", keyword/category/key, limit } }) 查询概要并选择真实 key。`,
-    `具体阶段：调用 ${catalogFunctions.guidePayload}({ path: "${catalogPathPattern}", args: { moduleKind: "${options.kind}", payloadRef: "${payloadRef}", key } }) 读取 paramsSchema、usageRules 和 failureModes。`,
-    `最后调用 ${finalFunctionName}({ path, args }); 复杂参数只能按 guidePayload 返回的 schema 字段构造。`,
-  ])
-}
-
-/** 断言 payload 目录存在，否则抛出明确错误 */
-function requirePayloadCatalogs(options: PayloadLookupStepsOptions): readonly PayloadCatalogDescriptor[] {
-  if (options.payloadCatalogs.length > 0) return options.payloadCatalogs
-  throw new Error(
-    `AiModule "${options.kind}" declares payloadRef ${options.payloadRefs.join(', ')} but no payload catalog AiModule is registered. ` +
-    `Register a AiModule with functions "${PAYLOAD_QUERY_FUNCTION_NAME}" and "${PAYLOAD_GUIDE_FUNCTION_NAME}" before projecting knowledge.`,
-  )
-}
-
-function formatPayloadCatalogFunctionNames(catalogs: readonly PayloadCatalogDescriptor[]): { queryPayloads: string, guidePayload: string } {
-  const [catalog] = catalogs
-  if (catalog === undefined) throw new Error('payload catalog descriptor is required')
-  void catalog
-  return { queryPayloads: PAYLOAD_QUERY_FUNCTION_NAME, guidePayload: PAYLOAD_GUIDE_FUNCTION_NAME }
-}
-
-function formatPayloadCatalogPathPattern(catalogs: readonly PayloadCatalogDescriptor[]): string {
-  const [catalog] = catalogs
-  if (catalog === undefined) throw new Error('payload catalog descriptor is required')
-  return catalog.kindPath.map((kind) => `/${kind}[<${kind}Id>]`).join('')
-}
-
-function formatPayloadCatalogLocator(catalogs: readonly PayloadCatalogDescriptor[]): string {
-  if (catalogs.length === 0) throw new Error('payload catalog descriptor is required')
-  return catalogs.map((catalog) =>
-    catalog.parentKind === undefined ? catalog.kind : `${catalog.parentKind}/${catalog.kind}`
-  ).join('|')
-}
-
-// ═══════════════════════════════════════════════════════════════
-// 第 8 节 · 关键字匹配
+// 第 7 节 · 关键字匹配
 // ═══════════════════════════════════════════════════════════════
 
 /** 检查模块摘要是否匹配关键字（递归检查所有 guide 文本） */
@@ -300,7 +205,6 @@ export function moduleSummaryGuidesMatchKeyword(
       fn.detailLookupStep,
       fn.invokeStep,
       ...fn.lookupSteps,
-      ...fn.payloadRefs,
     ], keyword))
     || summary.childKindSummaries.some((child) => childSummaryMatchesKeyword(child, keyword))
     || summary.instanceGuide.queryExamples.some((example) =>
@@ -321,7 +225,6 @@ function childSummaryMatchesKeyword(
     child.description,
     ...child.functionNames,
     ...child.attributeNames,
-    ...child.payloadRefs,
     ...child.childKindNames,
   ], keyword)
     || child.attributeSummaries.some((attribute) => containsKeyword([
@@ -335,7 +238,6 @@ function childSummaryMatchesKeyword(
       fn.functionName,
       fn.description,
       fn.detailLookupStep,
-      ...fn.payloadRefs,
     ], keyword))
     || containsKeyword(child.detailLookupSteps, keyword)
 }
@@ -370,8 +272,7 @@ export function buildHumanQuestion(
 
 /** 投影单个函数为摘要 */
 export function summarizeFunction(options: FunctionKnowledgeProjectionOptions): AiModuleKnowledgeFunctionSummary {
-  const { kind, kindPath, fn, payloads, payloadCatalogs } = options
-  const payloadRefs = payloadRefsForFunction(payloads, fn.name)
+  const { kind, kindPath, fn } = options
   const toolName = functionToolName(kindPath, fn.name)
   const paramList = paramNames(fn.paramsSchema)
   return {
@@ -390,15 +291,6 @@ export function summarizeFunction(options: FunctionKnowledgeProjectionOptions): 
     usageRuleCount: fn.usageRules?.length ?? 0,
     failureModeCount: fn.failureModes?.length ?? 0,
     functionLookupSteps: createFunctionLookupSteps({ kind, kindPath, functionName: fn.name }),
-    payloadRefs,
-    requiresPayloadGuide: payloadRefs.length > 0,
-    payloadLookupSteps: createPayloadLookupSteps({
-      kind,
-      kindPath,
-      functionName: fn.name,
-      payloadRefs,
-      payloadCatalogs,
-    }),
   }
 }
 
@@ -425,17 +317,9 @@ export function createResultApiNavigationSteps(fn: AiModuleFunctionMetadata): re
 
 /** 投影单个函数为完整指南 */
 export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModuleKnowledgeFunctionGuide {
-  const { kind, kindPath, fn, payloads, payloadCatalogs } = options
-  const payloadRefs = payloadRefsForFunction(payloads, fn.name)
+  const { kind, kindPath, fn } = options
   const toolName = functionToolName(kindPath, fn.name)
   const pathPattern = formatPathPattern(kindPath)
-  const payloadLookupSteps = createPayloadLookupSteps({
-    kind,
-    kindPath,
-    functionName: fn.name,
-    payloadRefs,
-    payloadCatalogs,
-  })
   const resultApiNavigationSteps = createResultApiNavigationSteps(fn)
   return {
     knowledgeLevel: 'detail',
@@ -460,7 +344,7 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
       `再用 module_function_guide({ kind: "${kind}", functionName: "${fn.name}" }) 读取完整 paramsSchema/resultApis。`,
       '若直接调用能力，用 callPattern 组织 function call。',
       '若需要批量、组合或条件逻辑，调用 module_script；脚本中 this 就是模块上下文，协议 helper 也可从 this.$tools 访问，临时记忆可用 this.memory，args 必须满足 paramsSchema。',
-      '脚本执行前不要猜字段；复杂参数先查 payload/属性/函数指南。',
+      '脚本执行前不要猜字段；复杂参数先查属性/函数指南，返回对象 API 继续查 resultApis 对应 kind。',
       ...resultApiNavigationSteps,
     ],
     paramNames: paramNames(fn.paramsSchema),
@@ -476,12 +360,8 @@ export function createGuide(options: FunctionKnowledgeProjectionOptions): AiModu
       functionName: fn.name,
       requiredBeforeCall: fn.requiredBeforeCall ?? [],
       failureModes: fn.failureModes ?? [],
-      payloadLookupSteps,
     }),
     functionLookupSteps: createFunctionLookupSteps({ kind, kindPath, functionName: fn.name }),
-    payloadRefs,
-    requiresPayloadGuide: payloadRefs.length > 0,
-    payloadLookupSteps,
     examples: fn.examples ?? [],
     antiExamples: fn.antiExamples ?? [],
   }
@@ -492,14 +372,12 @@ function createFunctionRecoveryHints(options: Readonly<{
   functionName: string
   requiredBeforeCall: readonly string[]
   failureModes: ReadonlyArray<Readonly<{ code: string, fix: string }>>
-  payloadLookupSteps: readonly string[]
 }>): readonly string[] {
   return [
     `参数或路径失败时，先重新调用 module_function_guide({ kind: "${options.kind}", functionName: "${options.functionName}" }) 对照 paramsSchema、requiredBeforeCall 和 failureModes。`,
     '如果 path 不存在，先用 module_find 从根实例或父实例重新定位 path。',
     ...options.requiredBeforeCall.map((step) => `调用前置条件：${step}`),
     ...options.failureModes.map((mode) => `遇到 ${mode.code} 时：${mode.fix}`),
-    ...options.payloadLookupSteps.map((step) => `复杂参数恢复：${step}`),
   ]
 }
 
@@ -507,15 +385,18 @@ function createFunctionRecoveryHints(options: Readonly<{
 // 第 11 节 · Kind 层投影
 // ═══════════════════════════════════════════════════════════════
 
-/** 投影单个模块为知识层次结构（属性 + 函数 + 子kind + 荷载指南） */
+/** 投影单个模块为知识层次结构（属性 + 函数 + 子kind） */
 export function createKindLayer(options: KindLayerOptions): AiModuleKnowledgeKindLayer {
-  const { moduleKind, allKinds, payloadCatalogs } = options
+  const { moduleKind, allKinds } = options
   const kindPath = resolveAiModulePath(moduleKind, allKinds)
   return {
     kind: moduleKind.kind,
     name: moduleKind.name,
     description: moduleKind.description,
     ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
+    ...(moduleKind.constructorSignature === undefined
+      ? {}
+      : { constructorSignature: moduleKind.constructorSignature }),
     level: kindLayerLevel(moduleKind, allKinds),
     pathPattern: createPathPattern(moduleKind),
     instanceGuide: createInstanceGuide(moduleKind),
@@ -523,12 +404,6 @@ export function createKindLayer(options: KindLayerOptions): AiModuleKnowledgeKin
     childLookupSteps: createChildLookupSteps(moduleKind, allKinds),
     attributeLookupSteps: createAttributeLookupSteps(moduleKind),
     functionLookupSteps: createModuleFunctionLookupSteps(moduleKind, kindPath),
-    payloadLookupSteps: createPayloadLookupSteps({
-      kind: moduleKind.kind,
-      kindPath,
-      payloadRefs: moduleKind.payloads.map((payload) => payload.payloadRef),
-      payloadCatalogs,
-    }),
     attributes: createAttributeGuides(moduleKind),
     functions: createLayerFunctions(moduleKind, kindPath),
     childKinds: moduleKind.children.map((childKind) => summarizeChildKind(childKind, allKinds)),
@@ -546,6 +421,9 @@ export function createAttributeGuides(moduleKind: AiModule): readonly AiModuleKn
     writable: attribute.writable,
     detailToolName: PROTOCOL_TOOL_NAMES.moduleAttributeGuide,
     detailLookupStep: formatAttributeGuideLookupStep(moduleKind.kind, attribute.name),
+    ...(attribute.api === undefined
+      ? {}
+      : { hasNestedApi: true, nestedApiKind: attribute.api.kind }),
     ...(attribute.readable ? { readStep: `module_attr({ op: "get", path, attrName: "${attribute.name}" })` } : {}),
     ...(attribute.writable ? { writeStep: `module_attr({ op: "set", path, attrName: "${attribute.name}", value })` } : {}),
   }))
@@ -554,7 +432,6 @@ export function createAttributeGuides(moduleKind: AiModule): readonly AiModuleKn
 /** 为模块的每个函数生成层次函数指南 */
 export function createLayerFunctions(moduleKind: AiModule, kindPath: readonly string[]): readonly AiModuleKnowledgeLayerFunction[] {
   return moduleKind.functions.map((fn) => {
-    const payloadRefs = payloadRefsForFunction(moduleKind.payloads, fn.name)
     const toolName = functionToolName(kindPath, fn.name)
     return {
       knowledgeLevel: 'directory',
@@ -566,8 +443,6 @@ export function createLayerFunctions(moduleKind: AiModule, kindPath: readonly st
       detailLookupStep: formatFunctionGuideLookupStep(moduleKind.kind, fn.name),
       lookupSteps: createFunctionLookupSteps({ kind: moduleKind.kind, kindPath, functionName: fn.name }),
       invokeStep: formatInvokeStep(kindPath, fn.name),
-      payloadRefs,
-      requiresPayloadGuide: payloadRefs.length > 0,
     }
   })
 }
@@ -715,7 +590,6 @@ export function summarizeChildKind(
       description: '子 kind 已声明但未注册，当前仅保留声明名。',
       functionNames: [],
       attributeNames: [],
-      payloadRefs: [],
       childKindNames: [],
       attributeSummaries: [],
       functionSummaries: [],
@@ -730,7 +604,6 @@ export function summarizeChildKind(
     description: child.description,
     functionNames: child.functions.map((fn) => fn.name),
     attributeNames: child.attributes.map((attribute) => attribute.name),
-    payloadRefs: child.payloads.map((payload) => payload.payloadRef),
     childKindNames: [...child.children],
     attributeSummaries: child.attributes.map((attribute) => ({
       knowledgeLevel: 'directory',
@@ -743,7 +616,6 @@ export function summarizeChildKind(
       knowledgeLevel: 'directory',
       functionName: fn.name,
       description: fn.description,
-      payloadRefs: payloadRefsForFunction(child.payloads, fn.name),
       detailLookupStep: formatFunctionGuideLookupStep(child.kind, fn.name),
     })),
     detailLookupSteps: [
@@ -771,6 +643,5 @@ export function formatPromptKindIndexLine(layer: AiModuleKnowledgeKindLayer): st
   const prefix = layer.parentKind === undefined ? `root ${layer.kind}` : `${layer.parentKind}/${layer.kind}`
   const childKinds = layer.childKinds.map((child) => child.kind)
   const children = childKinds.length === 0 ? '' : ` -> [${childKinds.join('|')}]`
-  const payload = layer.payloadLookupSteps.length === 0 ? '' : '; payload=payloadLookupSteps'
-  return `${prefix}${children}${payload}`
+  return `${prefix}${children}`
 }

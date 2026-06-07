@@ -4347,18 +4347,13 @@
                         "openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。"
                       ],
                       "requiredBeforeCall": [
-                        "写 node-tree 前必须先 queryPayloads / guidePayload(spark.component)。"
+                        "写 node-tree 前必须先通过 VCM 元数据确认 SparkNode 结构、组件 type 和 props schema。"
                       ],
                       "failureModes": [
                         {
                           "code": "SCHEMA_VALIDATION_FAILED",
                           "when": "节点 props 不符合 SparkNode 契约",
-                          "fix": "重新 guidePayload 并按 schema 构造 props"
-                        },
-                        {
-                          "code": "PAYLOAD_GUIDE_REQUIRED",
-                          "when": "未查询组件目录",
-                          "fix": "先 queryPayloads 再 guidePayload 后重试"
+                          "fix": "按 paramsSchema 与组件原生 props schema 修正"
                         },
                         {
                           "code": "SCRIPT_EXECUTION_FAILED",

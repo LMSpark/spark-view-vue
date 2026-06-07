@@ -5,10 +5,8 @@ import { ProjectModel } from '@spark-appworks/spark-project-model'
 import {
   PAGE_DESIGN_MODULE_ID,
   resolvePageDesignPlanningContext,
-  validatePageDesignPayloadGuidesFromSession,
 } from '@/services/page-design-business'
 import { pageDesignRuntimeMetadataDocument } from '@/services/page-design/page-design-module-metadata.runtime'
-import { createPageDesignSparkComponentModuleBundle } from '@/services/page-design/spark-component-module'
 
 function readPageDesignProjectMetadata() {
   const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
@@ -99,27 +97,6 @@ describe('resolvePageDesignPlanningContext', () => {
   })
 })
 
-describe('validatePageDesignPayloadGuidesFromSession', () => {
-  it('requires both queryPayloads and guidePayload', () => {
-    expect(validatePageDesignPayloadGuidesFromSession({}, {
-      toolCalls: [{ toolName: 'queryPayloads' }],
-    })).toEqual({
-      ok: false,
-      matchedToolNames: ['queryPayloads'],
-      issue: 'session must record both queryPayloads and guidePayload before node-tree writes',
-    })
-
-    expect(validatePageDesignPayloadGuidesFromSession({}, {
-      toolCalls: [
-        { toolName: 'queryPayloads' },
-        { functionName: 'guidePayload' },
-      ],
-    })).toEqual({
-      ok: true,
-      matchedToolNames: ['queryPayloads', 'guidePayload'],
-    })
-  })
-})
 
 describe('pageDesign module_script model edit', () => {
   it('executes LLM-generated native code and returns four page files', async () => {
@@ -216,25 +193,3 @@ describe('pageDesign module_script model edit', () => {
   })
 })
 
-describe('createPageDesignSparkComponentModuleBundle', () => {
-  it('builds catalog and guide modules from runtime metadata', () => {
-    const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
-      module => module.rootApi.kind === 'project',
-    )
-    const bundle = createPageDesignSparkComponentModuleBundle(
-      projectModule?.apiRegistry === undefined
-        ? {}
-        : { apiRegistry: projectModule.apiRegistry },
-    )
-
-    expect(bundle.catalogModule.kind).toBe('spark-component')
-    expect(bundle.guideModules.map(module => module.kind)).toEqual(
-      expect.arrayContaining(['config-page', 'node-tree', 'dataset', 'data-table', 'data-view']),
-    )
-    const nodeTree = bundle.guideModules.find(module => module.kind === 'node-tree')
-    expect(nodeTree?.payloads[0]?.payloadRef).toBe('spark.component')
-    expect(nodeTree?.payloads[0]?.requiredForFunctions).toEqual(
-      expect.arrayContaining(['addNode', 'setProps']),
-    )
-  })
-})

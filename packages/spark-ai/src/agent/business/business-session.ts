@@ -34,8 +34,8 @@
 import type { AiJsonParams } from '../../json'
 import { AiAgentToolLoopRunner } from '../tool-loop/tool-loop-runner'
 import {
-  createAiAgentScope,
-  createAiAgentSessionId,
+  createAiAgentScopeFromTarget,
+  createAiAgentSessionIdFromTarget,
   latestUserInput,
   normalizeAiAgentTarget,
   toAiAgentRuntimeScope,
@@ -236,8 +236,8 @@ export class AiAgentSession {
     targetInput: AiAgentTarget,
   ) {
     this.target = normalizeAiAgentTarget(targetInput)
-    this.scope = createAiAgentScope(this.target.businessRegistrationId, this.target.businessInstanceId)
-    this.sessionId = createAiAgentSessionId(this.target.businessRegistrationId, this.target.businessInstanceId)
+    this.scope = createAiAgentScopeFromTarget(this.target)
+    this.sessionId = createAiAgentSessionIdFromTarget(this.target)
     this.senderCore = new AiAgentMessageSender(options)
   }
 

@@ -58,9 +58,9 @@ export type AiModuleDescription = Readonly<{
   name: string
   description: string
   parentKind?: string
+  constructorSignature?: AiModule['constructorSignature']
   attributes: readonly AiModuleAttributeMetadata[]
   functions: readonly AiModuleFunctionMetadata[]
-  payloads: AiModule['payloads']
   children: readonly string[]
 }>
 
@@ -295,9 +295,11 @@ function describeKindMeta(moduleKind: AiModule): AiModuleDescription {
     name: moduleKind.name,
     description: moduleKind.description,
     ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
+    ...(moduleKind.constructorSignature === undefined
+      ? {}
+      : { constructorSignature: moduleKind.constructorSignature }),
     attributes: moduleKind.attributes,
     functions: moduleKind.functions,
-    payloads: moduleKind.payloads,
     children: moduleKind.children,
   }
 }

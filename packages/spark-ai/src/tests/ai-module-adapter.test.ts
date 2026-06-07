@@ -202,6 +202,54 @@ describe('AiModuleAdapter', () => {
     })
   })
 
+  it('registers VCM result APIs as guide-only protocol modules', async () => {
+    const registration = AiModuleAdapter.createRegistration({
+      moduleClass: RootApi,
+      metadata: TEST_METADATA,
+      options: {},
+    })
+
+    const query = await registration.runtime.executeTool('module_query', {
+      kind: 'directory-api',
+      includeFunctions: true,
+    })
+
+    expect(query).toMatchObject({
+      ok: true,
+      data: {
+        modules: [expect.objectContaining({
+          kind: 'directory-api',
+          functionNames: ['search'],
+        })],
+        functions: [expect.objectContaining({
+          kind: 'directory-api',
+          functionName: 'search',
+        })],
+      },
+    })
+
+    const guide = await registration.runtime.executeTool('module_function_guide', {
+      kind: 'directory-api',
+      functionName: 'search',
+    })
+
+    expect(guide).toMatchObject({
+      ok: true,
+      data: {
+        kind: 'directory-api',
+        functionName: 'search',
+        paramsSchema: {
+          required: ['keyword'],
+        },
+      },
+    })
+
+    const toolNames = registration.runtime.getTools().map(tool => tool.function.name)
+    expect(toolNames).toContain('listDirectory')
+    expect(toolNames).not.toContain('search')
+    expect(registration.runtime.inspect().ok).toBe(true)
+  })
+
   it('exposes declared attributes through attribute guides', async () => {
     const registration = AiModuleAdapter.createRegistration({
       moduleClass: RootApi,
@@ -365,6 +413,62 @@ describe('AiModuleAdapter', () => {
     expect(result.ok).toBe(false)
     expect(result.checks?.[0]?.code).toBe('SCHEMA_VALIDATION_FAILED')
     expect(result.checks?.[1]?.code).toBe('SCRIPT_EXECUTION_FAILED')
+  })
+
+  it('projects VCM constructorSignature and function examples into module guides', async () => {
+    const registration = AiModuleAdapter.createRegistration({
+      moduleClass: RootApi,
+      metadata: {
+        schemaVersion: 1,
+        rootApi: {
+          kind: 'root-api',
+          name: 'Root API',
+          description: 'Root API for VCM bridge tests',
+          constructorSignature: {
+            description: 'Create root API instance.',
+            paramsSchema: {
+              type: 'object',
+              properties: { seed: { type: 'string' } },
+              required: ['seed'],
+            },
+          },
+          actions: [{
+            name: 'echo',
+            methodName: 'echo',
+            description: 'Echo text',
+            paramsSchema: {
+              type: 'object',
+              properties: { text: { type: 'string' } },
+              required: ['text'],
+            },
+            examples: [{ intent: '回显文本', args: { text: 'hi' } }],
+          }],
+        },
+      },
+      options: {},
+    })
+
+    const kindGuide = await registration.runtime.executeTool('module_guide', { kind: 'root-api' })
+    expect(kindGuide).toMatchObject({
+      ok: true,
+      data: {
+        constructorSignature: {
+          description: 'Create root API instance.',
+          paramsSchema: { type: 'object' },
+        },
+      },
+    })
+
+    const fnGuide = await registration.runtime.executeTool('module_function_guide', {
+      kind: 'root-api',
+      functionName: 'echo',
+    })
+    expect(fnGuide).toMatchObject({
+      ok: true,
+      data: {
+        examples: [{ intent: '回显文本', args: { text: 'hi' } }],
+      },
+    })
   })
 })
 

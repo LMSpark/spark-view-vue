@@ -9,7 +9,7 @@
  *          Host 层（构造具体业务 AiModule 子类）
  *
  * 三大职责：
- *   1. 元数据声明 — attributes / functions / payloads / children（声明"有什么"）
+ *   1. 元数据声明 — attributes / functions / children（声明"有什么"）
  *   2. 运行时委托 — attributeAccessor / functionRunner / childLister / instanceFinder（"如何执行"）
  *   3. 协议级校验 — fail-fast 构造 / JSON Schema 校验 / JSON 值规整 / 错误结果工厂
  *
@@ -37,7 +37,7 @@ import type {
   AiModuleFunctionMetadata,
   AiModuleAttributeMetadata,
   AiModuleOptions,
-  AiModulePayloadMetadata,
+  AiModuleConstructorMetadata,
 } from './module-metadata'
 import type {
   AiModuleAttributeAccessor,
@@ -129,10 +129,10 @@ export class AiModule {
   public readonly kind: string
   public readonly name: string
   public readonly description: string
+  public readonly constructorSignature?: AiModuleConstructorMetadata
   public readonly parentKind?: string
   public readonly attributes: readonly AiModuleAttributeMetadata[]
   public readonly functions: readonly AiModuleFunctionMetadata[]
-  public readonly payloads: readonly AiModulePayloadMetadata[]
   public readonly children: readonly string[]
 
   // name → metadata 索引（O(1) Map 查找，避免数组遍历。仅内部 + Navigator 使用）
@@ -153,7 +153,7 @@ export class AiModule {
    *
    *   第一阶段 — 规范化元数据（trim 空白 + 浅/深拷贝防外部污染 + 校验重复 name/自引用）
    *     所有字符串字段经过 normalizeRequiredText trim 处理，空字符串直接抛错。
-   *     attributes/functions/payloads/children 逐一深拷贝并构建索引 Map。
+   *     attributes/functions/children 逐一深拷贝并构建索引 Map。
    *
    *   第二阶段 — 属性委托必填校验
    *     如果声明了 attributes（长度 > 0），但没有提供 attributeAccessor，构造期直接抛错。
@@ -172,6 +172,9 @@ export class AiModule {
     this.kind = kind
     this.name = normalizeRequiredText(options.name, `name for "${kind}"`)
     this.description = normalizeRequiredText(options.description, `description for "${kind}"`)
+    if (options.constructorSignature !== undefined) {
+      this.constructorSignature = options.constructorSignature
+    }
     const parentKind = normalizeParentKind(options.parentKind, kind)
     if (parentKind !== undefined) {
       this.parentKind = parentKind
@@ -180,7 +183,6 @@ export class AiModule {
     this.moduleAttributeByName = createNamedMap(this.attributes, 'attribute')
     this.functions = normalizeFunctionMetadata(options.functions ?? [], kind)
     this.moduleFunctionByName = createNamedMap(this.functions, 'function')
-    this.payloads = normalizePayloadMetadata(options.payloads ?? [], kind)
     this.children = normalizeChildKinds(options.children ?? [], kind)
 
     // 【第二阶段】运行委托必填校验
@@ -228,10 +230,10 @@ export class AiModule {
       kind: this.kind,
       name: this.name,
       description: this.description,
+      ...(this.constructorSignature === undefined ? {} : { constructorSignature: this.constructorSignature }),
       ...(this.parentKind === undefined ? {} : { parentKind: this.parentKind }),
       ...(this.attributes.length === 0 ? {} : { attributes: this.attributes }),
       ...(this.functions.length === 0 ? {} : { functions: this.functions }),
-      ...(this.payloads.length === 0 ? {} : { payloads: this.payloads }),
       ...(this.children.length === 0 ? {} : { children: this.children }),
       attributeAccessor: this.attributeAccessor,
       runner: this.functionRunner,
@@ -469,7 +471,7 @@ export class AiModule {
 // 本节函数在 AiModule 构造函数的第一阶段被调用。职责：
 //   1. trim 空白 — 所有字符串字段经 normalizeRequiredText 处理，空字符串直接抛错
 //   2. 浅/深拷贝 — 数组和嵌套对象使用展开运算符或 map 拷贝，防止外部修改污染内部状态
-//   3. 校验去重 — 按 name/payloadRef/kind 等唯一键查重，重复即抛错
+//   3. 校验去重 — 按 name/kind 等唯一键查重，重复即抛错
 //   4. 自引用检测 — parentKind 和 children 不能指向自身
 //
 // 每个函数接收 ownKind 参数，用于生成可定位的错误消息（包含 kind 名 + 字段名）。
@@ -517,6 +519,18 @@ function normalizeAttributeMetadata(
     readable: attribute.readable,
     writable: attribute.writable,
     ...(attribute.example === undefined ? {} : { example: attribute.example }),
+    ...(attribute.api === undefined
+      ? {}
+      : { api: {
+        kind: attribute.api.kind,
+        name: attribute.api.name,
+        description: attribute.api.description,
+        actions: attribute.api.actions.map(action => ({
+          name: action.name,
+          description: action.description,
+          paramNames: [...action.paramNames],
+        })),
+      } }),
   }))
 }
 
@@ -534,6 +548,7 @@ function normalizeFunctionMetadata(
       `function "${fn.name}" description for "${ownKind}"`,
     ),
     paramsSchema: fn.paramsSchema,
+    ...(fn.directCallable === undefined ? {} : { directCallable: fn.directCallable }),
     ...(fn.resultSchema === undefined ? {} : { resultSchema: fn.resultSchema }),
     ...(fn.resultApis === undefined ? {} : { resultApis: fn.resultApis.map(resultApi => ({
       resultPath: [...resultApi.resultPath],
@@ -557,52 +572,6 @@ function normalizeFunctionMetadata(
       ? {}
       : { antiExamples: fn.antiExamples.map((example) => ({ ...example })) }),
   }))
-}
-
-// ── 参数荷载规范化 ──
-
-/** 对每条荷载元数据：trim payloadRef/description，去重 payloadRef，规范化关联函数名列表。 */
-function normalizePayloadMetadata(
-  payloads: readonly AiModulePayloadMetadata[],
-  ownKind: string,
-): readonly AiModulePayloadMetadata[] {
-  const seen = new Set<string>()
-  const out: AiModulePayloadMetadata[] = []
-  for (const payload of payloads) {
-    const payloadRef = normalizeRequiredText(payload.payloadRef, `payloadRef for "${ownKind}"`)
-    if (seen.has(payloadRef)) {
-      throw new Error(`duplicate payloadRef "${payloadRef}" on "${ownKind}"`)
-    }
-    const description = normalizeRequiredText(
-      payload.description,
-      `payloadRef "${payloadRef}" description for "${ownKind}"`,
-    )
-    const requiredForFunctions = normalizePayloadFunctionNames(
-      payload.requiredForFunctions ?? [],
-      ownKind,
-      payloadRef,
-    )
-    seen.add(payloadRef)
-    out.push({
-      payloadRef,
-      description,
-      ...(requiredForFunctions.length === 0 ? {} : { requiredForFunctions }),
-    })
-  }
-  return out
-}
-
-/** 荷载关联函数名列表：trim → 去重，fail-fast 拒绝空名/重复名。 */
-function normalizePayloadFunctionNames(
-  functionNames: readonly string[],
-  ownKind: string,
-  payloadRef: string,
-): readonly string[] {
-  return normalizeRequiredUniqueTexts({
-    values: functionNames,
-    field: `payload function for "${payloadRef}" on "${ownKind}"`,
-    duplicate: (functionName) => `duplicate payload function "${functionName}" for "${payloadRef}" on "${ownKind}"`,
-  })
 }
 
 // ── 父子关系规范化 ──

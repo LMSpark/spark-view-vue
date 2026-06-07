@@ -3,17 +3,16 @@
  *
  * 协议层级：第 4 层（依赖 module-context + schema）
  * 核心职责：定义 AiModule 的所有声明式元数据类型。它们是纯数据契约，描述一个业务能力模块
- *   "有什么"（属性、函数、荷载、子模块），不包含任何运行时行为。
+ *   "有什么"（属性、函数、子模块），不包含任何运行时行为。
  *   运行时行为由 module-context.ts 中的委托类型承载，通过 AiModuleOptions 在构造时注入。
  * 上游依赖：module-context（委托类型）、schema（AiJsonSchema 等）
  * 下游消费：module-kind（AiModule 构造函数 + 规范化函数）
  *
- * 文件结构（按概念从小到大：基础标量 → 属性 → 函数 → 荷载 → 构造选项）：
+ * 文件结构（按概念从小到大：基础标量 → 属性 → 函数 → 构造选项）：
  *   一、基础标量类型          — AiModuleFunctionFailureMode / AiModuleFunctionResultSchema
  *   二、属性元数据            — AiModuleAttributeMetadata / AiModuleAttributeAccess
  *   三、函数元数据            — AiModuleFunctionMetadata
- *   四、参数荷载元数据        — AiModulePayloadMetadata
- *   五、构造选项              — AiModuleOptions（汇集所有元数据 + 委托引用）
+ *   四、构造选项              — AiModuleOptions（汇集所有元数据 + 委托引用）
  */
 
 import type { AiJsonObject, AiJsonSchema, AiJsonSchemaObject, AiJsonValue } from '../../json'
@@ -30,7 +29,7 @@ export type { AiModuleAttributeAccessor } from './module-context'
 // ============================================================================
 // 一、基础标量类型
 //
-// 被属性、函数、荷载元数据共同引用的最小类型单元。
+// 被属性、函数元数据共同引用的最小类型单元。
 // ============================================================================
 
 /**
@@ -85,6 +84,24 @@ export type AiModuleFunctionResultApiMetadata = Readonly<{
   }>>
 }>
 
+/** VCM 嵌套 API 对象摘要（属性或 resultApis 指南投影）。 */
+export type AiModuleNestedApiMetadata = Readonly<{
+  kind: string
+  name: string
+  description: string
+  actions: ReadonlyArray<Readonly<{
+    name: string
+    description: string
+    paramNames: readonly string[]
+  }>>
+}>
+
+/** 模块实例构造函数元数据（VCM constructorSignature 投影）。 */
+export type AiModuleConstructorMetadata = Readonly<{
+  description: string
+  paramsSchema: AiJsonSchemaObject
+}>
+
 // ============================================================================
 // 二、属性元数据
 //
@@ -106,6 +123,8 @@ export type AiModuleAttributeMetadata = Readonly<{
   writable: boolean
   /** 示例值（可选，帮助 LLM 理解属性形状，如 "示例标题"） */
   example?: AiJsonValue
+  /** 属性值上的嵌套 API 对象指南（VCM attribute.api 投影）。 */
+  api?: AiModuleNestedApiMetadata
 }>
 
 /** 属性访问权限标记（从 AiModuleAttributeMetadata 中提取 readable/writable） */
@@ -135,6 +154,8 @@ export type AiModuleFunctionMetadata = Readonly<{
   resultSchema?: AiModuleFunctionResultSchema
   /** 返回值中真实声明的 API 对象引用；仅作元数据指南，不合成运行时子模块或 handle。 */
   resultApis?: readonly AiModuleFunctionResultApiMetadata[]
+  /** 是否允许 OpenAI direct function 直调；guide-only 模块设为 false。 */
+  directCallable?: boolean
   /** 使用规则（多条，LLM 在调用前阅读，如 "每次最多追加 100 行"） */
   usageRules?: readonly string[]
   /** 调用前必须完成的前置动作或确认步骤。 */
@@ -150,26 +171,7 @@ export type AiModuleFunctionMetadata = Readonly<{
 }>
 
 // ============================================================================
-// 四、参数荷载元数据
-//
-// 描述 AiModule 依赖的外部参数指南 provider。
-// Load（荷载）是独立于 attributes/functions 的第三类声明，
-// 用于向 LLM 注入外部知识（如组件目录清单、数据源列表等）。
-//
-// 例：spark.component 荷载提供所有可用组件的目录，LLM 在添加组件时参考。
-// ============================================================================
-
-export type AiModulePayloadMetadata = Readonly<{
-  /** provider 唯一命名空间（如 "spark.component"、"spark.datasource"） */
-  payloadRef: string
-  /** 该 payload 与当前模块的关系说明（LLM 可见，如 "可用组件目录"） */
-  description: string
-  /** 该 payload 服务的函数名列表；空表示模块级通用（对所有函数可见） */
-  requiredForFunctions?: readonly string[]
-}>
-
-// ============================================================================
-// 五、构造选项 — AiModuleOptions
+// 四、构造选项 — AiModuleOptions
 //
 // AiModule 构造函数的唯一入参，汇集所有元数据声明和运行时委托引用。
 // 这是"声明什么"（元数据）与"如何执行"（委托）的装配点。
@@ -187,14 +189,14 @@ export type AiModuleOptions = Readonly<{
   name: string
   /** 模块说明（LLM 可见，描述业务能力，如 "管理学校基本信息和班级配置"） */
   description: string
+  /** 实例构造函数签名（VCM constructorSignature 投影）。 */
+  constructorSignature?: AiModuleConstructorMetadata
   /** 父模块 kind（可选，表达模块层级关系，如 "workspace" 是 "board" 的 parentKind） */
   parentKind?: string
   /** 属性表（可选，声明 LLM 可读写的一组属性） */
   attributes?: readonly AiModuleAttributeMetadata[]
   /** 函数表（可选，声明 LLM 可调用的一组函数） */
   functions?: readonly AiModuleFunctionMetadata[]
-  /** 参数荷载引用（可选，声明依赖的外部参数指南 provider） */
-  payloads?: readonly AiModulePayloadMetadata[]
   /** 子模块 kind 列表（可选，声明允许包含的子模块类型） */
   children?: readonly string[]
   /** 属性读写委托（声明了 attributes 时必填，否则构造期抛错） */

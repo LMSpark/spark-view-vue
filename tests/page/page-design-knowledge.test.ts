@@ -1,51 +1,54 @@
 import { describe, expect, it } from 'vitest'
-import { AiModule, AiModuleResult, AiModuleRuntime, mergeCompanionChildDeclarations } from '@spark-appworks/spark-ai/modules'
+import { AiModuleAdapter } from '@spark-appworks/spark-ai/agent'
+import { AiModuleRuntime, resolveModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
+import { ProjectModel } from '@spark-appworks/spark-project-model'
 import { pageDesignRuntimeMetadataDocument } from '@/services/page-design/page-design-module-metadata.runtime'
-import { createPageDesignSparkComponentModuleBundle } from '@/services/page-design/spark-component-module'
 
-function createStubProjectModule(): AiModule {
-  return new AiModule({
-    kind: 'project',
-    name: 'ProjectModel',
-    description: 'pageDesign 根模块（测试桩）。',
-    find: () => AiModuleResult.ok([]),
+function readPageDesignProjectMetadata() {
+  const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
+    module => module.rootApi.kind === 'project',
+  )
+  if (projectModule === undefined) {
+    throw new Error('pageDesign runtime metadata missing ProjectModel rootApi.')
+  }
+  return resolveModuleMetadataJson(projectModule, {
+    inlineSchemaRefs: false,
+    ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+      ? {}
+      : { schemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
   })
 }
 
 function createPageDesignKnowledgeRuntime(): AiModuleRuntime {
-  const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
-    module => module.rootApi.kind === 'project',
-  )
-  const bundle = createPageDesignSparkComponentModuleBundle(
-    projectModule?.apiRegistry === undefined
-      ? {}
-      : { apiRegistry: projectModule.apiRegistry },
-  )
-
-  const runtime = new AiModuleRuntime()
-  const wiredModules = mergeCompanionChildDeclarations([
-    createStubProjectModule(),
-    bundle.catalogModule,
-    ...bundle.guideModules,
-  ])
-  for (const moduleKind of wiredModules) {
-    runtime.register(moduleKind)
-  }
-  return runtime
+  return AiModuleAdapter.createRegistration({
+    moduleClass: ProjectModel,
+    metadata: readPageDesignProjectMetadata(),
+    options: {
+      moduleId: 'pageDesign',
+      instance: new ProjectModel({ projectId: 'homepage' }),
+      ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+        ? {}
+        : { jsonSchemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
+    },
+  }).runtime
 }
 
 describe('pageDesign knowledge integration', () => {
-  it('projects spark-component and dataset kinds in prompt snapshot', () => {
+  it('projects VCM result kinds in prompt snapshot', () => {
     const runtime = createPageDesignKnowledgeRuntime()
     const snapshot = runtime.projectKnowledge()
+    const kinds = snapshot.modules.map(module => module.kind)
 
-    expect(snapshot.modules.some(module => module.kind === 'spark-component')).toBe(true)
-    expect(snapshot.modules.some(module => module.kind === 'dataset')).toBe(true)
-    expect(snapshot.promptSnapshot).toContain('spark-component')
+    expect(kinds).toContain('project')
+    expect(kinds).toContain('config-page')
+    expect(kinds).toContain('dataset')
+    expect(kinds).toContain('node-tree')
+    expect(snapshot.promptSnapshot).toContain('config-page')
+    expect(snapshot.promptSnapshot).toContain('module_script')
     expect(runtime.inspect().ok).toBe(true)
   })
 
-  it('addNode guide includes spark.component payload lookup steps', () => {
+  it('addNode guide comes from VCM metadata', () => {
     const runtime = createPageDesignKnowledgeRuntime()
     const guide = runtime.guideKnowledgeFunction({
       kind: 'node-tree',
@@ -56,10 +59,7 @@ describe('pageDesign knowledge integration', () => {
     if (!guide.ok || guide.data === undefined) {
       throw new Error('expected addNode guide')
     }
-
-    expect(guide.data.payloadRefs).toContain('spark.component')
-    expect(guide.data.payloadLookupSteps.some(step => step.includes('queryPayloads'))).toBe(true)
-    expect(guide.data.payloadLookupSteps.some(step => step.includes('guidePayload'))).toBe(true)
+    expect(guide.data.programmingFlow.some(step => step.includes('module_script'))).toBe(true)
   })
 
   it('getNodeTree guide deep-links to node-tree via resultApis', () => {
@@ -109,7 +109,6 @@ describe('pageDesign knowledge integration', () => {
     expect(guide.data.resultApis.map(resultApi => resultApi.kind)).toContain('node-tree')
     expect(guide.data.programmingFlow.some(step => step.includes('node-tree'))).toBe(true)
     expect(guide.data.usageRules.some(rule => rule.includes('module_script'))).toBe(true)
-    expect(guide.data.failureModes.some(mode => mode.code === 'PAYLOAD_GUIDE_REQUIRED')).toBe(true)
   })
 
   it('createColumn guide is available on dataset kind', () => {
@@ -127,6 +126,18 @@ describe('pageDesign knowledge integration', () => {
     expect(guide.data.kind).toBe('dataset')
     expect(guide.data.functionName).toBe('createColumn')
     expect(guide.data.programmingFlow.some(step => step.includes('module_script'))).toBe(true)
+  })
+
+  it('config-page guide exposes constructorSignature from VCM runtime metadata', () => {
+    const runtime = createPageDesignKnowledgeRuntime()
+    const configPage = runtime.describeKind('config-page')
+
+    expect(configPage.ok).toBe(true)
+    if (!configPage.ok || configPage.data === undefined) {
+      throw new Error('expected config-page description')
+    }
+    expect(configPage.data.constructorSignature?.paramsSchema.type).toBe('object')
+    expect(configPage.data.constructorSignature?.description.length).toBeGreaterThan(0)
   })
 
   it('openPageDesign metadata includes INVALID_TOOL_ARGS failureMode', () => {
@@ -148,26 +159,11 @@ describe('pageDesign knowledge integration', () => {
     expect(editNodeTree?.failureModes?.some(mode => mode.code === 'SCRIPT_EXECUTION_FAILED')).toBe(true)
   })
 
-  it('accepts flat queryPayloads args with inferred spark-component path', async () => {
-    const runtime = createPageDesignKnowledgeRuntime()
-    const host = { moduleId: 'pageDesign', moduleInstanceId: 'leave-page', instanceId: 'turn-1' }
-    const result = await runtime.executeTool('queryPayloads', {
-      moduleKind: 'node-tree',
-      payloadRef: 'spark.component',
-      keyword: 'form',
-      limit: 3,
-    }, host)
-
-    expect(result.ok).toBe(true)
-    if (!result.ok || !Array.isArray(result.data)) return
-    expect(result.data.length).toBeGreaterThan(0)
-  })
-
   it('defaults module_find root path when childKind and query are provided', async () => {
     const runtime = createPageDesignKnowledgeRuntime()
     const result = await runtime.executeTool('module_find', {
-      childKind: 'spark-component',
-      query: { id: 'catalog' },
+      childKind: 'project',
+      query: { id: 'homepage' },
     })
 
     expect(result.ok).toBe(true)
@@ -183,47 +179,5 @@ describe('pageDesign knowledge integration', () => {
     })
 
     expect(result.ok).toBe(true)
-  })
-
-  it('defaults queryPayloads catalog args when call is empty', async () => {
-    const runtime = createPageDesignKnowledgeRuntime()
-    const host = { moduleId: 'pageDesign', moduleInstanceId: 'leave-page', instanceId: 'turn-1' }
-    const result = await runtime.executeTool('queryPayloads', {}, host)
-    expect(result.ok).toBe(true)
-  })
-
-  it('defaults spark-component root find query when list mode is used', async () => {
-    const runtime = createPageDesignKnowledgeRuntime()
-    const result = await runtime.executeTool('module_find', {
-      path: '/',
-      childKind: 'spark-component',
-    })
-
-    expect(result.ok).toBe(true)
-    if (!result.ok || !Array.isArray(result.data)) return
-    expect(result.data.some(item => typeof item === 'object' && item !== null && !Array.isArray(item) && item['id'] === 'catalog')).toBe(true)
-  })
-
-  it('coalesces guidePayload type alias into key', async () => {
-    const runtime = createPageDesignKnowledgeRuntime()
-    const host = { moduleId: 'pageDesign', moduleInstanceId: 'leave-page', instanceId: 'turn-1' }
-    const result = await runtime.executeTool('guidePayload', {
-      type: 'r-form',
-    }, host)
-
-    expect(result.ok).toBe(true)
-  })
-
-  it('fills guidePayload key from prior queryPayloads cache', async () => {
-    const runtime = createPageDesignKnowledgeRuntime()
-    const host = { moduleId: 'pageDesign', moduleInstanceId: 'leave-page', instanceId: 'turn-2' }
-    const queryResult = await runtime.executeTool('queryPayloads', {
-      keyword: 'form',
-      limit: 5,
-    }, host)
-    expect(queryResult.ok).toBe(true)
-
-    const guideResult = await runtime.executeTool('guidePayload', {}, host)
-    expect(guideResult.ok).toBe(true)
   })
 })

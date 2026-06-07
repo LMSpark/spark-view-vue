@@ -72,8 +72,9 @@ export type {
   AiModuleAttributeAccessor,
   AiModuleAttributeAccess,
   AiModuleAttributeMetadata,
+  AiModuleConstructorMetadata,
+  AiModuleNestedApiMetadata,
   AiModuleOptions,
-  AiModulePayloadMetadata,
 } from './module-metadata'
 
 // ── 第 4 层：API 请求 DTO（依赖 module-context + module-path）──

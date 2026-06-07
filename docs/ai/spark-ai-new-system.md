@@ -189,8 +189,8 @@ pageDesign 写模型的固定顺序：
 
 ```text
 readPlanningProjection 确认 pageId / effectiveDescription
--> queryPayloads / guidePayload 确认组件 payload
--> module_script 生成并执行 JS
+-> module_function_guide 确认 openPageDesign / editDataSet / editNodeTree / addNode 契约
+-> module_script 生成并执行原生 JS
 -> 返回 ruleJson / pageDataJson / script / style
 -> runner 读取四文件 projection，可选 saveDirtyPageFiles
 ```
@@ -271,7 +271,7 @@ LLM 在调用函数前必须确认：
 
 - functionName 来自目录或指南。
 - args 完全来自 schema。
-- 复杂参数已经按 `$ref` / payload / 属性指南继续查过。
+- 复杂参数已经按 `$ref` / resultApis / 属性指南继续查过。
 - 写操作满足 usageRules 和 requiredBeforeCall。
 
 ### 3.6 属性知识
@@ -347,23 +347,20 @@ return await this.getTable({ tableName: "orders" })
 - 它不创建实例 id。
 - 它不生成 handle。
 
-### 3.9 Payload 知识
+### 3.9 组件与复杂参数知识
 
-payload 是外部目录型知识，例如组件目录、字段目录或可选资源。
+组件 type、SparkNode、props schema 与复杂参数结构都必须来自 VCM 生成 metadata 或 JSON Schema。
 
-pageDesign 中 Vue 组件目录已注册为 **`kind=spark-component`** 的只读 AiModule，与 `project` 并列出现在 kind 索引；provider 命名空间为 **`spark.component`**，消费方为 **`node-tree`** 的 `addNode` / `setProps` 等函数。
-
-LLM 使用 payload 的顺序：
+pageDesign 不再把 Vue 组件目录注册成并列 AiModule。LLM 的主路径是：
 
 ```text
-module_guide({ kind: "spark-component" })
--> queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component", keyword/category })
--> guidePayload({ key: "<component-type>" })
--> module_script on config-page / node-tree
+module_function_guide({ kind: "project", functionName: "openPageDesign" })
+-> module_function_guide({ kind: "config-page", functionName: "editNodeTree" })
+-> module_function_guide({ kind: "node-tree", functionName: "addNode" })
+-> module_script 生成 page.openPageDesign(...).editNodeTree(...) 原生链式代码
 ```
 
-payload 不应替代函数 schema。它只补充“某个字段可选什么、某类资源有哪些、某个 key 的详细配置是什么”。
-
+复杂参数不走额外目录工具，也不走实例 id path 链。schema 信息必须在函数契约、属性契约、resultApis 或 `$defs` 中暴露，模型按这些结构生成代码。
 ### 3.10 Prompt Snapshot
 
 Prompt Snapshot 的职责是让 LLM 知道“怎么查知识”，而不是携带完整知识。

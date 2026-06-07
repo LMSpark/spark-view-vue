@@ -108,7 +108,12 @@ type AiApiActionMetadata = {
   resultApis?: readonly AiApiResultApiRefMetadata[]
   usageRules?: readonly string[]
   requiredBeforeCall?: readonly string[]
-  failureModes?: readonly ModuleFailureModeMetadata[]}
+  failureModes?: readonly ModuleFailureModeMetadata[]
+  example?: unknown
+  examples?: readonly unknown[]
+  antiExamples?: readonly unknown[]
+}
+
 
 type AiApiAttributeMetadata = {
   name: string

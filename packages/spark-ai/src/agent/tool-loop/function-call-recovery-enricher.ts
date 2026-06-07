@@ -1,6 +1,6 @@
 /**
  * FC 失败反推 enricher：把 tool result 的 code/msg/fix 反查到 VCM 指南与目录步骤，
- * 以 RECOVERY_HINT checks 回灌 LLM，形成 FC → 错误 → guide → catalog 闭环。
+ * 以 RECOVERY_HINT checks 回灌 LLM，形成 FC → 错误 → guide → script 修复闭环。
  */
 import type { AiJsonParams } from '../../json'
 import { parseAiModulePath } from '../../modules'
@@ -25,11 +25,10 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   SCHEMA_VALIDATION_FAILED: [
     '契约恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    '复杂参数恢复：先 queryPayloads / guidePayload，再重试 function call 或 module_script。',
+    '复杂参数恢复：先 module_function_guide/module_attribute_guide 对照 schema，再重试 function call 或 module_script。',
   ],
   SCRIPT_EXECUTION_FAILED: [
     '脚本恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 核对 usageRules 与 resultApis。',
-    '若写 node-tree，必须先 queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component" }) 与 guidePayload({ key })',
     'module_script 参数名必须是 script；host.moduleId 不等于 kind 时 this 仍绑定 project 根模块。',
     'openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree => ...)/page.editDataSet(async ds => ...)，勿用 page.call()。',
   ],
@@ -57,7 +56,6 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   ROOT_LIST_REQUIRES_FIND: [
     '根路径列举实例：module_find({ path: "/", childKind: "<kind>", query: { id: "<id>" } })，不要用 list 模式。',
-    'spark-component 直接用 query: { id: "catalog" }；写 node-tree 时优先 queryPayloads，不必反复 module_find catalog。',
     '目录恢复：module_guide({ kind: "<kind>" }) 确认 kind 是否为根 kind。',
   ],
   DIRECT_CHILD_LIST_NOT_SUPPORTED: [
@@ -72,10 +70,6 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   KIND_NOT_REGISTERED: [
     '目录恢复：module_query({}) 或 module_find({ path: "/" }) 列出已注册 kind；勿猜 kind 名。',
-  ],
-  PAYLOAD_KEY_NOT_FOUND: [
-    '目录恢复：先 queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component" }) 列出真实 key，再 guidePayload。',
-    '禁止猜测 r-input 等 key；必须从 queryPayloads 返回条目选择 configurable key。',
   ],
 }
 
@@ -109,7 +103,6 @@ function collectRecoveryHints(command: EnrichFunctionCallFailureCommand): readon
   appendGuideRecoveryHints(hints, command, context)
   appendProtocolRecoveryHints(hints, command)
   appendGlobalRecoveryHints(hints, command.callResult.code, context)
-  appendPayloadRecoveryHints(hints, command, context)
 
   return uniqueHints(hints)
 }
@@ -156,13 +149,6 @@ function appendProtocolRecoveryHints(
     }
     return
   }
-  if (code === 'PAYLOAD_KEY_NOT_FOUND') {
-    hints.push('PAYLOAD_KEY_NOT_FOUND：先 queryPayloads 列出真实 key，勿猜测组件 type。')
-  }
-  if (code === 'SCHEMA_VALIDATION_FAILED' && (toolName === 'guidePayload' || toolName === 'queryPayloads')) {
-    hints.push(`${toolName} 必填 args.key（可先 queryPayloads）；type/payloadKey/componentType 会归一化为 key。`)
-    hints.push('形状：guidePayload({ path: "/spark-component[catalog]", args: { key: "<来自queryPayloads>", moduleKind: "node-tree", payloadRef: "spark.component" } })')
-  }
   if (code === 'SCRIPT_EXECUTION_FAILED' && toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
     if (command.callResult.msg.includes('toJSON')) {
       hints.push('脚本勿调 toJSON；用 openPageDesign → editDataSet/editNodeTree mutator 链式 API。')
@@ -176,7 +162,7 @@ function appendProtocolRecoveryHints(
     }
     if (command.callResult.msg.includes("reading 'includes'")) {
       hints.push('createTable 签名：createTable({ tableName: "<TableName>", columns: [{ name, type, label }] })；勿用 positional 参数。')
-      hints.push('先 editDataSet 建表与 default 视图 currentRow，再 editNodeTree 用 guidePayload 返回的 type 绑表单。')
+      hints.push('先 editDataSet 建表与 default 视图，再 editNodeTree 按 VCM 元数据声明的节点 type 和 props schema 构造节点。')
     }
     if (command.callResult.msg.includes('run is not a function')) {
       hints.push('editDataSet/editNodeTree 必须直接传函数：page.editDataSet(async ds => ...)；勿把 createTable 参数对象当成 run。')
@@ -185,15 +171,11 @@ function appendProtocolRecoveryHints(
   if (code !== 'INVALID_TOOL_ARGS' && code !== 'ROOT_LIST_REQUIRES_FIND') return
   if (toolName === PROTOCOL_TOOL_NAMES.moduleFind) {
     hints.push('module_find 形状：{ path: "/", childKind: "<kind>", query: { id: "<id>" } }；根查找可省略 path（默认 "/"）。')
-    hints.push('spark-component 缺 query 时会归一化为 { id: "catalog" }；catalog 查询请直接用 queryPayloads。')
     return
   }
   if (toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
     hints.push('module_script 形状：{ script: "<js body>" }；code 字段会归一化为 script。')
     return
-  }
-  if (toolName === 'queryPayloads' || toolName === 'guidePayload') {
-    hints.push(`${toolName} 形状：{ path: "/spark-component[catalog]", args: { ... } }；扁平业务字段会归一化进 args。`)
   }
 }
 
@@ -206,31 +188,6 @@ function appendGlobalRecoveryHints(
   if (templates === undefined) return
   for (const template of templates) {
     hints.push(substituteRecoveryTemplate(template, context))
-  }
-}
-
-function appendPayloadRecoveryHints(
-  hints: string[],
-  command: EnrichFunctionCallFailureCommand,
-  context: FailedFunctionContext,
-): void {
-  if (command.callResult.code !== 'SCHEMA_VALIDATION_FAILED'
-    && command.callResult.code !== 'SCRIPT_EXECUTION_FAILED') {
-    return
-  }
-  const catalogTool = command.protocolToolName === 'guidePayload' || command.protocolToolName === 'queryPayloads'
-  if (catalogTool) {
-    hints.push('Payload 目录：先 queryPayloads({ moduleKind: "node-tree", payloadRef: "spark.component" })，再 guidePayload({ key })')
-  }
-  if (context.kind === undefined || context.functionName === undefined) return
-  const summaries = command.runtime.queryKnowledgeFunctions({
-    kind: context.kind,
-    keyword: context.functionName,
-  })
-  const summary = summaries.find(item => item.functionName === context.functionName)
-  if (summary?.requiresPayloadGuide !== true) return
-  for (const step of summary.payloadLookupSteps) {
-    hints.push(`Payload 目录：${step}`)
   }
 }
 

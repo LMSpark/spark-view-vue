@@ -379,7 +379,7 @@ export type SparkNodeTreeMethodKey =
  * @moduleAttackSurface rule-tree-structure high 节点增删改移会改变 rule.json 渲染树、组件类型、props、数据绑定和事件入口。
  * @moduleAttackSurface handler-reference medium collectHandlerNames 会暴露页面事件处理入口名称，后续写入必须避免伪造不可用 handler。
  * @moduleTrustBoundary 调用方负责把当前页面 rule.json live model 映射为 SparkNodeTree 实例；本类只暴露节点树读写能力。
- * @moduleGuard 写入节点前必须确认目标节点、父节点、组件 type 和 payload 合法。
+ * @moduleGuard 写入节点前必须确认目标节点、父节点、组件 type、节点结构和 props 合法。
  * @moduleMutation rule.json read-write SparkNodeTree 公开写方法直接修改当前页面 rule.json live model。
  *
  * 设计目标：
@@ -783,7 +783,7 @@ export class SparkNodeTree {
    *
    * @moduleAction addNode
    * @moduleAttackSurface rule-tree-structure high 新增节点会改变页面渲染树和组件能力入口。
-   * @moduleGuard 必须先确认 parentComponentId、插入位置和 node payload 合法。
+   * @moduleGuard 必须先确认 parentComponentId、插入位置和节点结构合法。
    * @moduleMutation rule.json write 添加单个页面节点。
    */
   addNode(params: SparkNodeTreeAddParams): SparkNodeAddResult {
@@ -802,7 +802,7 @@ export class SparkNodeTree {
    *
    * @moduleAction addNodes
    * @moduleAttackSurface rule-tree-structure high 批量新增节点会改变页面渲染树和组件能力入口。
-   * @moduleGuard 必须先确认每个 node payload 合法，并确认批量插入顺序。
+   * @moduleGuard 必须先确认每个节点结构合法，并确认批量插入顺序。
    * @moduleMutation rule.json write 批量添加页面节点。
    */
   addNodes(params: SparkNodeTreeAddNodesParams): SparkNodeAddNodesResult {
@@ -858,7 +858,7 @@ export class SparkNodeTree {
    *
    * @moduleAction setProps
    * @moduleAttackSurface rule-props high props 写入会改变组件数据绑定、事件绑定、显示状态和交互行为。
-   * @moduleGuard 必须先通过 payload-catalog guidePayload 确认组件 props schema。
+   * @moduleGuard 必须先通过 VCM 元数据确认组件 type 与 props schema。
    * @moduleMutation rule.json write 修改单个页面节点 props。
    */
   setProps(params: SparkNodeTreeSetPropsParams): SparkNodeSetPropsResult {
@@ -898,7 +898,7 @@ export class SparkNodeTree {
    *
    * @moduleAction replaceNode
    * @moduleAttackSurface rule-tree-structure high 替换节点会改变组件类型、子树、props 和事件入口。
-   * @moduleGuard 必须确认目标 componentId 与新节点 payload，避免误替换容器或页面根。
+   * @moduleGuard 必须确认目标 componentId 与新节点结构，避免误替换容器或页面根。
    * @moduleMutation rule.json write 替换单个页面节点。
    */
   replaceNode(params: SparkNodeTreeReplaceParams): SparkNodeReplaceResult {
@@ -913,7 +913,7 @@ export class SparkNodeTree {
    *
    * @moduleAction replaceNodes
    * @moduleAttackSurface rule-tree-structure high 批量替换节点会同时改变多个组件子树和数据绑定入口。
-   * @moduleGuard 必须逐项确认目标 componentId 与新节点 payload。
+   * @moduleGuard 必须逐项确认目标 componentId 与新节点结构。
    * @moduleMutation rule.json write 批量替换页面节点。
    */
   replaceNodes(params: SparkNodeTreeReplaceNodesParams): SparkNodeReplaceNodesResult {

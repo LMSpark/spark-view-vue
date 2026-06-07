@@ -1,56 +1,23 @@
 # AiModule 注册
 
-> `packages/spark-ai/src/modules` 的当前源码说明。本文替代旧的动态工具注册说明。
+> 状态：有效。本文约束 VCM/LLM 可见的 AiModule 元数据边界与注册路径。
 
-## 边界
+## Scope
 
-SPARK AI 定义模块协议、固定工具、运行时 inspect 和 Agent 注册原语。业务 AI 在内核外消费这些原语。`pageDesign` 是业务层案例，不是 `packages/spark-ai` 内可复用的内核物料。
+**业务注册唯一入口**：`AiModuleAdapter` + VCM 生成的 `AiModuleMetadataJson`。禁止在 `src/services/**` 手工 `new AiModule` 或已移除的 `createAiBusinessKit`。
 
-旧 `core`、`runtime`、`protocol`、`adapter` subpath 只作为禁止旧入口出现。受支持的导入入口只限根入口、`json`、`modules`、`agent`。
+LLM 固定工具：`module_query`、`module_guide`、`module_attribute_guide`、`module_function_guide`、`module_find`、`module_attr`、`module_call`、`module_script`、`module_memory`、`human_question`、`agent_complete`，以及业务 direct function tools。
 
-## 注册形态
+嵌套 API（VCM `resultApis`）通过 `module_script` 执行；复杂参数通过 JSON Schema、属性契约和返回 API 契约暴露。
 
-- `AiModuleRuntime.register(module)` 只接受已经构造完成的 `AiModule`。
-- 基于构造参数的旧注册方式已移除。
-- 声明了 `functions` 的 `AiModule` 必须通过 `runner` 或 `runFunction` 提供执行 delegate。
-- 声明了可读/可写 `attributes` 的 `AiModule` 必须提供 `attributeAccessor`。
-- 声明了 `children` 的 `AiModule` 必须提供 `list` 和 `find`。
-- 根模块必须提供 `find`，让 `module_find({ path: "/", childKind, query })` 能解析当前业务实例。
+## Metadata Tags
 
-## 固定工具协议
+- `@moduleKind` / `@moduleName` / `@moduleDescription`
+- `@usageRule` / `@requiredBeforeCall` / `@failureMode`
+- `@attribute`
 
-运行时只暴露以下传输就绪工具：
+## Rules
 
-- `module_query`
-- `module_guide`
-- `module_attribute_guide`
-- `module_function_guide`
-- `module_find`
-- `module_attr`
-- `module_call`
-- `human_question`
-- 业务函数 direct tool：`<functionName>`
-
-业务函数优先导出为 OpenAI 标准 direct tool：`function.name` 就是真实业务函数名，
-`arguments` 只能包含 `path` 和 `args`。`module_call({ path, functionName, args })`
-保留为旧协议兼容路径。
-
-```json
-{
-  "name": "summarize",
-  "arguments": {
-    "path": "/ticket[T-1001]/detail[T-1001]",
-    "args": {
-      "includeHistory": true
-    }
-  }
-}
-```
-
-实例身份来自 `path` 与当前 Agent 会话 scope。协议层不支持旧的纯 identity 数组。
-
-## 会话契约
-
-`AiAgentSessionStore` 归 Agent registration 所有。底层注册必须显式注入；`createAiBusinessKit` 会在业务代码未提供时创建默认 store。它记录用户消息、助手消息、工具调用参数/结果/错误、停止原因、turn id 和 session 标识。`startSession` 会续接同一个业务实例历史，`send` 追加一个 turn，`stopSession` 只标记生命周期状态。
-
-业务包可以从 store 读取 transcript、summary 和 diagnostics，但不能维护第二份完整对话历史。
+- 元数据不得承诺未注册的函数、属性或子模块。
+- `AiModuleRuntime.register()` 仅供框架内部；业务方不得直接调用。
+- 会话历史由 `AiAgentSessionStore` 统一管理；业务包不维护第二份完整历史。

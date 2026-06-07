@@ -12,7 +12,6 @@ export type AiModuleRuntimeInspectFinding = Readonly<{
   kind?: string
   functionName?: string
   childKind?: string
-  payloadRef?: string
   fix?: string
 }>
 
@@ -23,7 +22,6 @@ export type AiModuleRuntimeInspectModule = Readonly<{
   parentKind?: string
   attributeCount: number
   functionCount: number
-  payloadCount: number
   children: readonly string[]
 }>
 
@@ -37,11 +35,6 @@ export type AiModuleRuntimeInspectReport = Readonly<{
   errorCount: number
   warningCount: number
 }>
-
-import {
-  PAYLOAD_GUIDE_FUNCTION_NAME,
-  PAYLOAD_QUERY_FUNCTION_NAME,
-} from '../payloads/payload-catalog-constants'
 
 const HIGH_RISK_FUNCTION_PATTERN = /archive|cancel|clear|close|delete|destroy|drop|remove|replace|reset|set|submit|update|write/iu
 const OPENAI_FUNCTION_NAME_PATTERN = /^[A-Za-z0-9_-]{1,64}$/
@@ -69,16 +62,10 @@ export function inspectAiModuleRuntime(modules: readonly AiModule[]): AiModuleRu
     })
   }
 
-  const hasPayloadCatalog = modules.some((moduleKind) =>
-    moduleKind.functions.some((fn) => fn.name === PAYLOAD_QUERY_FUNCTION_NAME)
-    && moduleKind.functions.some((fn) => fn.name === PAYLOAD_GUIDE_FUNCTION_NAME),
-  )
-
   for (const moduleKind of modules) {
     inspectParentRelation(moduleKind, byKind, findings)
     inspectChildren(moduleKind, byKind, findings)
     inspectFunctions(moduleKind, findings)
-    inspectPayloads(moduleKind, hasPayloadCatalog, findings)
   }
   inspectDirectFunctionTools(modules, findings)
 
@@ -97,7 +84,6 @@ export function inspectAiModuleRuntime(modules: readonly AiModule[]): AiModuleRu
       ...(moduleKind.parentKind === undefined ? {} : { parentKind: moduleKind.parentKind }),
       attributeCount: moduleKind.attributes.length,
       functionCount: moduleKind.functions.length,
-      payloadCount: moduleKind.payloads.length,
       children: [...moduleKind.children],
     })),
     findings,
@@ -113,6 +99,9 @@ function inspectDirectFunctionTools(
   const directNameUsages = new Map<string, Array<Readonly<{ kind: string }>>>()
   for (const moduleKind of modules) {
     for (const fn of moduleKind.functions) {
+      if (fn.directCallable === false) {
+        continue
+      }
       if (isProtocolToolName(fn.name)) {
         findings.push({
           level: 'info',
@@ -253,24 +242,6 @@ function inspectFunctions(moduleKind: AiModule, findings: AiModuleRuntimeInspect
         fix: '为高风险函数补充稳定错误码、触发条件和修复建议。',
       })
     }
-  }
-}
-
-function inspectPayloads(
-  moduleKind: AiModule,
-  hasPayloadCatalog: boolean,
-  findings: AiModuleRuntimeInspectFinding[],
-): void {
-  if (moduleKind.payloads.length === 0 || hasPayloadCatalog) return
-  for (const payload of moduleKind.payloads) {
-    findings.push({
-      level: 'warn',
-      code: 'PAYLOAD_WITHOUT_CATALOG_MODULE',
-      kind: moduleKind.kind,
-      payloadRef: payload.payloadRef,
-      message: `kind "${moduleKind.kind}" 声明 payloadRef "${payload.payloadRef}"，但 runtime 中未发现 payload catalog 模块。`,
-      fix: `注册一个同时声明 ${PAYLOAD_QUERY_FUNCTION_NAME}/${PAYLOAD_GUIDE_FUNCTION_NAME} 的 AiModule，或移除该 payloadRef。`,
-    })
   }
 }
 

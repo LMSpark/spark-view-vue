@@ -125,6 +125,25 @@ describe('verification rules', () => {
     expect(output).toContain('signature has too many positional parameters')
   })
 
+  it('rejects manual business AiModule registration in src/services', () => {
+    const root = createTempRoot()
+    writeFile(root, 'src/services/bad-business.ts', [
+      "import { AiModule, AiModuleResult, AiModuleRuntime } from '@spark-appworks/spark-ai/modules'",
+      "import { createAiBusinessKit } from '@spark-appworks/spark-ai/agent'",
+      'const runtime = new AiModuleRuntime()',
+      'runtime.register(new AiModule({ kind: "ticket", name: "t", description: "d", find: () => AiModuleResult.ok([]) }))',
+      'void createAiBusinessKit',
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'src'])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('manual new AiModule() is forbidden in src/services')
+    expect(output).toContain('createAiBusinessKit is removed')
+    expect(output).toContain('manual AiModuleRuntime.register() is forbidden in src/services')
+  })
+
   it('rejects public method drift on critical host classes', () => {
     const root = createTempRoot()
     writeFile(root, 'packages/spark-ai/src/modules/runtime/ai-module-runtime.ts', [
