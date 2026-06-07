@@ -42,6 +42,22 @@ export const COMPONENT_EXCLUDE_PATTERNS = [
   '**/src/views/app/dev-system/**/*.vue',
 ] as const
 
+/**
+ * 组件 catalog 生成时的额外排除模式（glob 格式）。
+ *
+ * 仅用于 component-catalog.json 生成链路（cli.ts / json-catalog-generator），
+ * 排除不应作为可配置组件暴露给 LLM 的基础设施/装饰类组件。
+ */
+export const CATALOG_FEATURE_EXCLUDE_PATTERNS = [
+  '**/src/components/AiChatWidget.vue',
+  '**/src/components/ErrorFallback.vue',
+  '**/src/components/IconPicker.vue',
+  '**/src/components/ModuleContextBadge.vue',
+  '**/src/components/NavIcon.vue',
+
+  '**/packages/spark-component/src/components/containers/support/**/*.vue',
+] as const
+
 /* ==========================================================================
  * 组件加载策略
  * ========================================================================== */

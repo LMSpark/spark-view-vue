@@ -171,7 +171,22 @@ export type AiModuleFunctionMetadata = Readonly<{
 }>
 
 // ============================================================================
-// 四、构造选项 — AiModuleOptions
+// 四、参数荷载元数据
+//
+// 描述某模块 function 在构造复杂参数前需要查阅的外部知识（如 Vue 组件 props 目录）。
+// ============================================================================
+
+export type AiModulePayloadMetadata = Readonly<{
+  /** provider 唯一命名空间（如 spark.component） */
+  payloadRef: string
+  /** 与当前模块的关系说明（LLM 可见） */
+  description: string
+  /** 服务的函数名列表；空表示模块级通用 */
+  requiredForFunctions?: readonly string[]
+}>
+
+// ============================================================================
+// 五、构造选项 — AiModuleOptions
 //
 // AiModule 构造函数的唯一入参，汇集所有元数据声明和运行时委托引用。
 // 这是"声明什么"（元数据）与"如何执行"（委托）的装配点。
@@ -197,6 +212,8 @@ export type AiModuleOptions = Readonly<{
   attributes?: readonly AiModuleAttributeMetadata[]
   /** 函数表（可选，声明 LLM 可调用的一组函数） */
   functions?: readonly AiModuleFunctionMetadata[]
+  /** 参数荷载目录绑定（可选，声明构造复杂参数前需查询的外部知识） */
+  payloads?: readonly AiModulePayloadMetadata[]
   /** 子模块 kind 列表（可选，声明允许包含的子模块类型） */
   children?: readonly string[]
   /** 属性读写委托（声明了 attributes 时必填，否则构造期抛错） */

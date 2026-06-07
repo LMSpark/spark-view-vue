@@ -245,7 +245,8 @@ describe('AiModuleAdapter', () => {
     })
 
     const toolNames = registration.runtime.getTools().map(tool => tool.function.name)
-    expect(toolNames).toContain('listDirectory')
+    expect(toolNames).toContain('module_script')
+    expect(toolNames).not.toContain('listDirectory')
     expect(toolNames).not.toContain('search')
     expect(registration.runtime.inspect().ok).toBe(true)
   })
@@ -348,53 +349,17 @@ describe('AiModuleAdapter', () => {
     })
   })
 
-  it('exposes root instances for module_find via projectId or host moduleInstanceId', async () => {
-    class ProjectLikeApi {
-      public readonly projectId = 'homepage'
-
-      public ping(): AiModuleResult<AiJsonValue> {
-        return AiModuleResult.ok({ ok: true })
-      }
-    }
-
+  it('projects metadata-first prompt snapshot without module_find guidance', async () => {
     const registration = AiModuleAdapter.createRegistration({
-      moduleClass: ProjectLikeApi,
-      metadata: {
-        schemaVersion: 1,
-        rootApi: {
-          kind: 'project',
-          name: 'ProjectModel',
-          description: 'Project root for find tests',
-          actions: [{
-            name: 'ping',
-            methodName: 'ping',
-            description: 'Ping',
-            paramsSchema: { type: 'object', properties: {}, required: [] },
-          }],
-        },
-      },
+      moduleClass: RootApi,
+      metadata: TEST_METADATA,
       options: {},
     })
 
-    const byProjectId = await registration.runtime.executeTool('module_find', {
-      path: '/',
-      childKind: 'project',
-      query: { id: 'homepage' },
-    }, { moduleId: 'demo-host', moduleInstanceId: 'orders-page', instanceId: 'turn-1' })
-
-    expect(byProjectId).toMatchObject({
-      ok: true,
-      data: [{ id: 'homepage', label: 'homepage' }],
-    })
-
-    const byKeyword = await registration.runtime.executeTool('module_find', {
-      path: '/',
-      childKind: 'project',
-      query: { keyword: 'home' },
-    }, { moduleId: 'demo-host', moduleInstanceId: 'orders-page', instanceId: 'turn-1' })
-
-    expect(byKeyword.ok).toBe(true)
-    expect(Array.isArray(byKeyword.data) && byKeyword.data.length).toBeGreaterThan(0)
+    const snapshot = registration.runtime.projectKnowledge().promptSnapshot
+    expect(snapshot).toContain('module_script')
+    expect(snapshot).not.toMatch(/module_find/)
+    expect(snapshot).not.toMatch(/moduleInstanceId/)
   })
 
   it('validates paramsSchema for script chain action calls before invoking business methods', async () => {

@@ -159,25 +159,12 @@ describe('pageDesign knowledge integration', () => {
     expect(editNodeTree?.failureModes?.some(mode => mode.code === 'SCRIPT_EXECUTION_FAILED')).toBe(true)
   })
 
-  it('defaults module_find root path when childKind and query are provided', async () => {
+  it('prompt snapshot includes script and payload catalog lookup guidance', () => {
     const runtime = createPageDesignKnowledgeRuntime()
-    const result = await runtime.executeTool('module_find', {
-      childKind: 'project',
-      query: { id: 'homepage' },
-    })
+    const snapshot = runtime.projectKnowledge().promptSnapshot
 
-    expect(result.ok).toBe(true)
-  })
-
-  it('coalesces flat module_find id when query is null', async () => {
-    const runtime = createPageDesignKnowledgeRuntime()
-    const result = await runtime.executeTool('module_find', {
-      path: '/',
-      childKind: 'project',
-      query: null,
-      id: 'homepage',
-    })
-
-    expect(result.ok).toBe(true)
+    expect(snapshot).toContain('module_script')
+    expect(snapshot).toContain('queryPayloads')
+    expect(snapshot).toContain('guidePayload')
   })
 })

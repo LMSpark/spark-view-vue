@@ -13,11 +13,10 @@ import {
   AiModuleRuntime,
   mergeCompanionChildDeclarations,
   type AiModuleFunctionMetadata,
-  type AiModuleInstanceQuery,
-  type AiModuleInstanceRef,
   type AiModulePathContext,
 } from '../../modules'
 import {
+  collectNestedApiRecords,
   validateApiObjectMetadata,
   resolveModuleMetadataJson,
   toModuleAttributeMetadata,
@@ -179,10 +178,7 @@ export class AiModuleAdapter {
       description: api.description,
       ...(api.constructorSignature === undefined ? {} : { constructorSignature: api.constructorSignature }),
       ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(toModuleAttributeMetadata) }),
-      functions: api.actions.map(action => toModuleFunctionMetadata(action, { directCallable: true })),
-      find: (ctx, _childKind, query) => AiModuleResult.ok(
-        filterRootInstanceRefs(createRootInstanceRefs(resolveInstance(ctx), api, ctx), query),
-      ),
+      functions: api.actions.map(action => toModuleFunctionMetadata(action, { directCallable: false })),
       scriptContext: ctx => createAiApiScriptContext(resolveInstance(ctx), api, ctx, schemaValidateOptions),
       runner: async (ctx, functionName, args) => {
         const instance = resolveInstance(ctx)
@@ -203,14 +199,9 @@ export class AiModuleAdapter {
   }
 
   private buildVcmGuideModules(rootApi: AiApiObjectMetadata): readonly AiModule[] {
-    return collectVcmGuideApiRecords(rootApi).map(record => buildVcmGuideModule(record.api, record.parentKind))
+    return collectNestedApiRecords(rootApi).map(record => buildVcmGuideModule(record.api, record.parentKind))
   }
 }
-
-type VcmGuideApiRecord = Readonly<{
-  api: AiApiObjectMetadata
-  parentKind: string
-}>
 
 function buildVcmGuideModule(api: AiApiObjectMetadata, parentKind: string): AiModule {
   return new AiModule({
@@ -239,52 +230,6 @@ function toVcmGuideFunctionMetadata(action: AiApiActionMetadata): AiModuleFuncti
   return {
     ...base,
     usageRules,
-  }
-}
-
-function collectVcmGuideApiRecords(rootApi: AiApiObjectMetadata): readonly VcmGuideApiRecord[] {
-  const records = new Map<string, VcmGuideApiRecord>()
-  const visited = new Set<string>([rootApi.kind])
-  collectChildApiRecords(rootApi, records, visited)
-  return [...records.values()]
-}
-
-function collectChildApiRecords(
-  ownerApi: AiApiObjectMetadata,
-  records: Map<string, VcmGuideApiRecord>,
-  visited: Set<string>,
-): void {
-  for (const attribute of ownerApi.attributes ?? []) {
-    if (attribute.api !== undefined) {
-      collectNestedApiRecord(attribute.api, ownerApi.kind, records, visited)
-    }
-  }
-
-  for (const action of ownerApi.actions) {
-    for (const resultApi of action.resultApis ?? []) {
-      if (resultApi.api !== undefined) {
-        collectNestedApiRecord(resultApi.api, ownerApi.kind, records, visited)
-      }
-    }
-  }
-}
-
-function collectNestedApiRecord(
-  api: AiApiObjectMetadata,
-  parentKind: string,
-  records: Map<string, VcmGuideApiRecord>,
-  visited: Set<string>,
-): void {
-  if (!records.has(api.kind)) {
-    records.set(api.kind, { api, parentKind })
-  }
-  if (visited.has(api.kind)) return
-
-  visited.add(api.kind)
-  try {
-    collectChildApiRecords(api, records, visited)
-  } finally {
-    visited.delete(api.kind)
   }
 }
 
@@ -334,10 +279,6 @@ function constructModuleInstance<T>(
 ): T {
   const construct = moduleClass as unknown as new (...args: unknown[]) => T
   return new construct(...args)
-}
-
-function isIndexableObject(value: unknown): value is Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object'
 }
 
 function bindOptionalLifecycle<T, TArgs extends readonly unknown[], TResult>(
@@ -403,56 +344,4 @@ function runtimeContextToModulePathContext(context: AiAgentRuntimeContext): AiMo
 
 function createRuntimeContextForModuleInstance(moduleId: string, moduleInstanceId: string): AiAgentRuntimeContext {
   return new AiAgentRuntimeContext(moduleId, moduleInstanceId, moduleInstanceId)
-}
-
-function createRootInstanceRefs<T>(
-  instance: T,
-  api: AiApiObjectMetadata,
-  ctx: AiModulePathContext,
-): readonly AiModuleInstanceRef[] {
-  const refs: AiModuleInstanceRef[] = []
-  const projectId = readInstanceProjectId(instance)
-  if (projectId !== null) {
-    refs.push({
-      id: projectId,
-      label: projectId,
-      summary: api.name,
-    })
-  }
-  const hostInstanceId = ctx.host === undefined ? '' : ctx.host.moduleInstanceId.trim()
-  if (hostInstanceId.length > 0 && !refs.some(ref => ref.id === hostInstanceId)) {
-    refs.push({
-      id: hostInstanceId,
-      label: hostInstanceId,
-      summary: `当前 ${api.kind} Host 实例`,
-    })
-  }
-  if (refs.length > 0) return refs
-  return [{
-    id: api.kind,
-    label: api.name,
-    summary: api.description,
-  }]
-}
-
-function readInstanceProjectId(instance: unknown): string | null {
-  if (!isIndexableObject(instance)) return null
-  const projectId = instance['projectId']
-  if (typeof projectId !== 'string') return null
-  const normalized = projectId.trim()
-  return normalized.length > 0 ? normalized : null
-}
-
-function filterRootInstanceRefs(
-  refs: readonly AiModuleInstanceRef[],
-  query: AiModuleInstanceQuery,
-): readonly AiModuleInstanceRef[] {
-  const id = typeof query['id'] === 'string' ? query['id'].trim() : ''
-  const keyword = typeof query['keyword'] === 'string' ? query['keyword'].trim().toLowerCase() : ''
-  return refs.filter((ref) => {
-    if (id.length > 0 && ref.id !== id) return false
-    if (keyword.length === 0) return true
-    const haystack = `${ref.id} ${ref.label} ${ref.summary ?? ''}`.toLowerCase()
-    return haystack.includes(keyword)
-  })
 }

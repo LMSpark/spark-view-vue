@@ -23,6 +23,17 @@ export {
 } from './vcm-to-module-metadata'
 
 export {
+  collectNestedApiRecords,
+  walkAiApiMetadataGraph,
+} from './metadata-graph'
+
+export type {
+  AiApiMetadataGraphEdge,
+  AiApiMetadataGraphNode,
+  AiApiNestedApiRecord,
+} from './metadata-graph'
+
+export {
   MODULE_METADATA_RUNTIME_JSON_SCHEMA,
   readModuleMetadataRuntimeDocument,
 } from './module-metadata-runtime-document'

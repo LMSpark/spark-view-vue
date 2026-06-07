@@ -38,6 +38,7 @@ import type {
   AiModuleAttributeMetadata,
   AiModuleOptions,
   AiModuleConstructorMetadata,
+  AiModulePayloadMetadata,
 } from './module-metadata'
 import type {
   AiModuleAttributeAccessor,
@@ -107,8 +108,8 @@ const EMPTY_CHILD_LISTER: AiModuleChildrenLister = () => AiModuleResult.failCode
 
 const EMPTY_INSTANCE_FINDER: AiModuleInstanceFinder = () => AiModuleResult.failCode(
   'INSTANCE_FINDER_NOT_REGISTERED',
-  'AiModule 未注册实例查询委托',
-  '根模块或声明 children 时必须在 AiModule 构造期提供 find 委托。',
+  '该 kind 不支持实例 path 寻址',
+  '根实例由会话 scope 钉死；子模型通过 module_script 对象链进入。请改用 module_query/module_guide 与 module_script。',
 )
 
 // ============================================================================
@@ -133,6 +134,7 @@ export class AiModule {
   public readonly parentKind?: string
   public readonly attributes: readonly AiModuleAttributeMetadata[]
   public readonly functions: readonly AiModuleFunctionMetadata[]
+  public readonly payloads: readonly AiModulePayloadMetadata[]
   public readonly children: readonly string[]
 
   // name → metadata 索引（O(1) Map 查找，避免数组遍历。仅内部 + Navigator 使用）
@@ -183,6 +185,7 @@ export class AiModule {
     this.moduleAttributeByName = createNamedMap(this.attributes, 'attribute')
     this.functions = normalizeFunctionMetadata(options.functions ?? [], kind)
     this.moduleFunctionByName = createNamedMap(this.functions, 'function')
+    this.payloads = normalizePayloadMetadata(options.payloads ?? [], kind)
     this.children = normalizeChildKinds(options.children ?? [], kind)
 
     // 【第二阶段】运行委托必填校验
@@ -195,8 +198,8 @@ export class AiModule {
     if (this.children.length > 0 && options.list === undefined) {
       throw new Error(`list for "${kind}" is required when children are declared`)
     }
-    if ((this.children.length > 0 || this.parentKind === undefined) && options.find === undefined) {
-      throw new Error(`find for "${kind}" is required for root modules and modules that declare children`)
+    if (this.children.length > 0 && options.find === undefined) {
+      throw new Error(`find for "${kind}" is required when children are declared`)
     }
 
     // 【第三阶段】填充默认委托
@@ -234,6 +237,7 @@ export class AiModule {
       ...(this.parentKind === undefined ? {} : { parentKind: this.parentKind }),
       ...(this.attributes.length === 0 ? {} : { attributes: this.attributes }),
       ...(this.functions.length === 0 ? {} : { functions: this.functions }),
+      ...(this.payloads.length === 0 ? {} : { payloads: this.payloads }),
       ...(this.children.length === 0 ? {} : { children: this.children }),
       attributeAccessor: this.attributeAccessor,
       runner: this.functionRunner,
@@ -587,6 +591,48 @@ function normalizeParentKind(parentKind: string | undefined, ownKind: string): s
 }
 
 /** children 列表校验：通过 normalizeRequiredUniqueTexts 统一处理 trim → validate（自引用检测）→ 去重 */
+function normalizePayloadMetadata(
+  payloads: readonly AiModulePayloadMetadata[],
+  ownKind: string,
+): readonly AiModulePayloadMetadata[] {
+  const seen = new Set<string>()
+  const out: AiModulePayloadMetadata[] = []
+  for (const payload of payloads) {
+    const payloadRef = normalizeRequiredText(payload.payloadRef, `payloadRef for "${ownKind}"`)
+    if (seen.has(payloadRef)) {
+      throw new Error(`duplicate payloadRef "${payloadRef}" on "${ownKind}"`)
+    }
+    const description = normalizeRequiredText(
+      payload.description,
+      `payloadRef "${payloadRef}" description for "${ownKind}"`,
+    )
+    const requiredForFunctions = normalizePayloadFunctionNames(
+      payload.requiredForFunctions ?? [],
+      ownKind,
+      payloadRef,
+    )
+    seen.add(payloadRef)
+    out.push({
+      payloadRef,
+      description,
+      ...(requiredForFunctions.length === 0 ? {} : { requiredForFunctions }),
+    })
+  }
+  return out
+}
+
+function normalizePayloadFunctionNames(
+  functionNames: readonly string[],
+  ownKind: string,
+  payloadRef: string,
+): readonly string[] {
+  return normalizeRequiredUniqueTexts({
+    values: functionNames,
+    field: `payload function for "${payloadRef}" on "${ownKind}"`,
+    duplicate: (functionName) => `duplicate payload function "${functionName}" for "${payloadRef}" on "${ownKind}"`,
+  })
+}
+
 function normalizeChildKinds(children: readonly string[], ownKind: string): readonly string[] {
   return normalizeRequiredUniqueTexts({
     values: children,

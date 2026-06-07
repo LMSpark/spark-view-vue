@@ -43,6 +43,7 @@ export type {
   AiModuleAttributeAccessor,
   AiModuleAttributeAccess,
   AiModuleAttributeMetadata,
+  AiModulePayloadMetadata,
   AiModuleOptions,
 } from './protocol/module-metadata'
 
@@ -105,6 +106,27 @@ export {
   readModuleMetadataRuntimeDocument,
   toModuleFunctionResultApiMetadata,
 } from './metadata'
+
+// ── 2b. 参数荷载目录 ─────────────────────────────────────────
+export {
+  AiModulePayloadRegistry,
+} from './payloads/module-parameter-payload-registry'
+
+export { createPayloadCatalogModule } from './payloads/create-payload-catalog-module'
+
+export type { CreatePayloadCatalogModuleOptions } from './payloads/create-payload-catalog-module'
+
+export {
+  PAYLOAD_GUIDE_FUNCTION_NAME,
+  PAYLOAD_QUERY_FUNCTION_NAME,
+} from './payloads/payload-catalog-constants'
+
+export type {
+  AiModulePayloadGuide,
+  AiModulePayloadProvider,
+  AiModulePayloadQueryFilter,
+  AiModulePayloadSummary,
+} from './payloads/module-parameter-payload-registry'
 
 // ── 3. 知识投影类型 ─────────────────────────────────────────
 export type {

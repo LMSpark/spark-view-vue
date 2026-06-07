@@ -1,22 +1,34 @@
 # AiModule Metadata Scope
 
-> 状态：有效。本文约束 VCM/LLM 可见的 AiModule 元数据边界。
+> 状态：有效。本文约束 VCM/LLM 可见的元数据边界与协议真源线。
+
+## Metadata Graph（协议真源线）
+
+VCM 元数据描述**对象图**，不是 `/kind[id]` 实例树：
+
+```text
+模型（AiApiObjectMetadata / rootApi）
+  ├─ 属性（attributes）── attribute.api ──→ 子模块
+  └─ 方法（actions）──── action.resultApis ──→ 子模块
+```
+
+- **发现**：`module_query` / `module_guide` / `module_attribute_guide` / `module_function_guide` 投影自 metadata 图（`metadata-graph.ts`）。
+- **执行**：`module_script`；`this` = 会话 scope 钉死的根实例；子模块经属性链或 `await action()` 返回值上的代理链访问（`native-script-context.ts`）。
+- **实例**：由会话 `registrationId + businessInstanceId`（运行时字段 `moduleInstanceId`，如 pageId）钉死；**禁止**在 LLM 知识或脚本中构造 `/kind[id]` path、`module_find` 或实例 id 链。
 
 ## Scope
 
-AiModule 元数据只描述业务能力、实例发现、参数契约和失败修复建议，不描述 Vue 组件实现、service 内部状态、runner 函数体或页面渲染细节。
+元数据只描述业务能力、参数契约、嵌套 API 与失败修复建议，不描述 Vue 组件实现、service 内部状态、runner 函数体或页面渲染细节。
 
 **业务注册唯一入口**：VCM 生成 JSON → `AiModuleAdapter`。禁止 `src/services/**` 手工 `new AiModule` 或已移除的 `createAiBusinessKit`。
 
-LLM 只能通过固定工具理解语义：
+LLM 固定工具（目标收敛形态）：
 
-- `module_query`、`module_guide`、`module_attribute_guide`、`module_function_guide`
-- `module_find`、`module_attr`、`module_call`
-- `module_script`、`module_memory`
-- `human_question`、`agent_complete`
-- 业务函数 direct tool：`<functionName>`
+- 发现：`module_query`、`module_guide`、`module_attribute_guide`、`module_function_guide`
+- 执行：`module_script`
+- 控制：`module_memory`、`human_question`、`agent_complete`
 
-嵌套 API（VCM `resultApis`）通过 `module_script` 链式调用；复杂参数通过 JSON Schema、属性契约和返回 API 契约暴露。
+LLM 知识层只教授 metadata 图 + `module_query` / `module_*_guide` + `module_script`；不再教授 `module_find`、`module_attr`、path 寻址或 direct function。运行时工具面迁移废除另行推进。
 
 ## Metadata Tags
 

@@ -565,8 +565,16 @@ describe('AiModule explicit delegate requirements', () => {
     expect(() => new AiModule({
       kind: 'root-without-find',
       name: '根模块',
-      description: '缺少 find',
-    })).toThrow('find for "root-without-find" is required')
+      description: '根模块可不提供 find',
+    })).not.toThrow()
+
+    expect(() => new AiModule({
+      kind: 'parent-without-find',
+      name: '父模块',
+      description: '声明 children 时仍需要 find',
+      children: ['child'],
+      list: () => AiModuleResult.ok([]),
+    })).toThrow('find for "parent-without-find" is required when children are declared')
   })
 
   it('keeps direct runtime APIs for internal callers', async () => {

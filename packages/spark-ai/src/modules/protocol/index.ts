@@ -74,6 +74,7 @@ export type {
   AiModuleAttributeMetadata,
   AiModuleConstructorMetadata,
   AiModuleNestedApiMetadata,
+  AiModulePayloadMetadata,
   AiModuleOptions,
 } from './module-metadata'
 

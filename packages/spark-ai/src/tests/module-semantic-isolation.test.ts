@@ -35,7 +35,7 @@ function createFunctionKind(): AiModule {
       name: 'doWork',
       description: 'Execute work.',
       paramsSchema: paramsSchema({ input: stringSchema('Work input.') }, ['input']),
-      requiredBeforeCall: ['先确认目标 task 实例 path。'],
+      requiredBeforeCall: ['先通过 module_guide 确认 task 模型契约。'],
       examples: [{
         intent: '用户要求执行工作',
         args: { input: 'demo' },
@@ -100,7 +100,7 @@ describe('AiModuleKnowledgeProjector', () => {
     const projector = new AiModuleKnowledgeProjector(registry)
 
     expect(projector.queryModules({ kind: 'workspace' })).toEqual([
-      expect.objectContaining({ kind: 'workspace', pathPattern: '/workspace[<workspaceId>]' }),
+      expect.objectContaining({ kind: 'workspace', pathPattern: 'workspace' }),
     ])
     expect(projector.queryFunctions({ keyword: 'work' })).toEqual([
       expect.objectContaining({
@@ -132,14 +132,14 @@ describe('AiModuleKnowledgeProjector', () => {
         directoryLookupStep: 'module_query({ kind: "task", keyword: "doWork", includeFunctions: true })',
         callPattern: {
           toolName: 'doWork',
-          path: '/task[<taskId>]',
+          path: 'model:task',
         },
-        requiredBeforeCall: ['先确认目标 task 实例 path。'],
+        requiredBeforeCall: ['先通过 module_guide 确认 task 模型契约。'],
         examples: [expect.objectContaining({ intent: '用户要求执行工作' })],
         antiExamples: [expect.objectContaining({ reason: '查看状态不应调用 doWork。' })],
         recoveryHints: expect.arrayContaining([
           expect.stringContaining('module_function_guide'),
-          expect.stringContaining('module_find'),
+          expect.stringContaining('module_script'),
         ]),
       },
     })
