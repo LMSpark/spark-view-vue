@@ -123,7 +123,7 @@ LLM 知识体系不是“把所有 metadata 一次塞进 prompt”。它是一�
 | --- | --- | --- | --- |
 | Prompt Snapshot | 初始导航 | system prompt | 固定工具路线、root kind 索引、禁止猜测规则 |
 | Directory | 选择真实对象 | `module_query` | kind/function/attribute 名称、摘要、计数、可继续查询的入口 |
-| Overview | 理解模块用途 | `module_guide` | 模块用途、属性目录、函数目录、payload、下一步路线 |
+| Overview | 理解模块用途 | `module_guide` | 模块用途、属性目录、函数目录、下一步路线 |
 | Detail | 构造调用 | `module_function_guide` / `module_attribute_guide` | schema、规则、失败模式、脚本模式、结果 API |
 | Scratchpad | 暂存当前任务选择 | `module_memory` / `this.memory` | 选中的 kind/function、guide 摘要、草稿 args、诊断结论 |
 
@@ -146,7 +146,7 @@ LLM 知识只来自三类真源：
    参数类型、返回类型、属性类型，经过 JSON Schema 转换与 `$ref` 池化。
 
 3. **运行时注册表**  
-   `AiModuleRuntime` 中已经注册的 `AiModule`、payload provider 和 direct function tools。
+   `AiModuleRuntime` 中已经注册的 `AiModule`、VCM guide-only 子 kind 和 direct function tools。
 
 不允许作为知识真源：
 

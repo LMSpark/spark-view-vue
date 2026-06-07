@@ -75,10 +75,10 @@ export type JsonCatalogOptions = {
 /**
  * 计算标准目录输出路径。
  *
- * component-catalog.json 是当前仓库组件目录的单一事实源，所有消费者都应从该路径读取。
+ * component-catalog.json 是临时组件 VCM 诊断产物，不作为 pageDesign LLM 主路径输入。
  */
 export function getCanonicalCatalogOutputPath(root: string): string {
-  return resolve(root, 'src/services/page-design/payload', CANONICAL_CATALOG_FILE)
+  return resolve(root, 'tmp', CANONICAL_CATALOG_FILE)
 }
 
 type SchemaOwner = 'workspace' | 'external'

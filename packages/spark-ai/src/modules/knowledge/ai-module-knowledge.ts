@@ -95,7 +95,7 @@ export class AiModuleKnowledgeProjector {
 
   // ── kindLayer 投影 ─────────────────────────────────────────
 
-  /** 为所有已注册模块生成知识层次结构（含属性/函数/子kind/荷载指南） */
+  /** 为所有已注册模块生成知识层次结构（含属性/函数/子 kind 指南） */
   public queryKindLayers(): readonly AiModuleKnowledgeKindLayer[] {
     const moduleKinds = this.kinds.list()
     return moduleKinds.map((moduleKind) => createKindLayer({

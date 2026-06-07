@@ -3,11 +3,10 @@
  * 独立 Catalog 生成命令（不依赖 Vite 运行时）
  *
  * 调用 json-catalog-generator 生成单一 rich component-catalog.json。
- * 输出写入 src/services/page-design/payload/，所有消费端按需投影。
+ * 输出写入 tmp/，仅作为组件 VCM 诊断产物；不接入 pageDesign LLM 主路径。
  *
  * 用法：
  *   npx tsx packages/vite-plugin-spark-catalog/src/cli.ts
- *   pnpm run generate:catalog
  */
 
 import { resolve } from 'node:path'

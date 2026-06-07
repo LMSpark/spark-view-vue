@@ -329,7 +329,7 @@ async function loadBackendStats() {
 async function handleClearMetadata() {
   try {
     await ElMessageBox.confirm(
-      '确定清除后端组件元数据内存缓存？相关配置能力将暂时不可用，直到重新上传元数据。',
+      '确定清除后端组件元数据内存缓存？该历史缓存会在后端下次从本地文件加载后恢复。',
       '清除元数据缓存',
       { type: 'warning', confirmButtonText: '清除', cancelButtonText: '取消' },
     )

@@ -1,9 +1,7 @@
 /**
  * SPARK 组件目录生成 Vite 插件
  *
- * 目录文件由 git 跟踪，始终存在。插件仅在两个场景生成：
- * - HMR：dev 时 .vue 变更自动重新生成
- * - CLI：`pnpm run generate:catalog`（build:check 中 vue-tsc 前调用）
+ * 组件 catalog 仅作为 VCM 诊断产物。插件在 dev 时 .vue 变更后写入 tmp/component-catalog.json；不接入 pageDesign LLM 主路径。
  *
  * configResolved 不扫描，避免每次 dev/build 重复开销。
  *

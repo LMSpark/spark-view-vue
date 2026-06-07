@@ -28,7 +28,7 @@ import java.util.UUID;
  *
  * <ul>
  *   <li>POST /api/ai/upload            — 文件上传（聊天附件）</li>
- *   <li>POST /api/ai/component-metadata — 组件元数据上传（构建时自动调用）</li>
+ *   <li>POST /api/ai/component-metadata — 组件元数据上传（历史兼容端点）</li>
  *   <li>GET  /api/ai/component-metadata — 元数据状态查询</li>
  * </ul>
  */
@@ -52,8 +52,7 @@ public class AiChatController {
 
     /**
      * POST /api/ai/component-metadata
-     * 接收前端构建输出的组件元数据 JSON（组件注册表 + Skill 目录 + 预构建 prompt）。
-     * 由 scripts/upload-component-metadata.mjs 在 vite build 后调用。
+     * 接收组件元数据 JSON（历史兼容端点；当前 pageDesign LLM 主路径不依赖此接口）。
      */
     @PostMapping("/component-metadata")
     public ResponseEntity<Map<String, Object>> uploadMetadata(@RequestBody String body) {
@@ -70,7 +69,7 @@ public class AiChatController {
         if (!metadataService.hasMetadata()) {
             return ResponseEntity.ok(Map.of(
                     "hasMetadata", false,
-                    "message", "尚未上传组件元数据，请执行 pnpm run build 后上传"
+                    "message", "未加载组件元数据文件；当前 pageDesign LLM 主路径不依赖该历史缓存"
             ));
         }
         return ResponseEntity.ok(Map.of(

@@ -5,7 +5,7 @@
  *
  * 【架构定位】modules 内部的拓扑工具。负责从 AiModule 图的 parentKind
  *   链推导出完整的 kind 路径（从根到目标）。被 knowledge 投影层消费，
- *   用于生成 LLM 可见的 toolName 和 payload 查找步骤。
+ *   用于生成 LLM 可见的 path pattern、函数调用示例和指南查找步骤。
  *
  * 【核心函数】
  *   resolveAiModulePath  — 从 moduleKind 沿 parentKind 链回溯至根，返回有序 kind 数组

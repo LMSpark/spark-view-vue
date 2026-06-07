@@ -21,9 +21,9 @@ import java.util.concurrent.atomic.AtomicReference;
 /**
  * 组件元数据存储服务。
  *
- * 前端构建时通过 POST /api/ai/component-metadata 上传 metadata JSON，
- * 服务端持久化到 data/component-metadata.json，供当前聊天相关提示词消费。
- * 启动时自动从文件加载，生产环境无需每次重新上传。
+ * 历史兼容：可通过 POST /api/ai/component-metadata 写入 metadata JSON，
+ * 服务端持久化到 data/component-metadata.json。当前 pageDesign LLM 主路径不依赖该缓存。
+ * 启动时自动从文件加载。
  */
 @Service
 public class ComponentMetadataService {
@@ -50,7 +50,7 @@ public class ComponentMetadataService {
     @PostConstruct
     void loadFromFile() {
         if (!Files.isRegularFile(METADATA_FILE)) {
-            log.info("[ComponentMetadata] 未找到 {}，等待构建上传", METADATA_FILE);
+            log.info("[ComponentMetadata] 未找到 {}，跳过历史组件元数据缓存", METADATA_FILE);
             return;
         }
         try {
@@ -59,12 +59,12 @@ public class ComponentMetadataService {
         } catch (IOException e) {
             log.warn("[ComponentMetadata] 读取 {} 失败: {}", METADATA_FILE, e.getMessage());
         } catch (IllegalArgumentException e) {
-            log.warn("[ComponentMetadata] {} 内容无效，已忽略并等待构建重新上传: {}", METADATA_FILE, e.getMessage());
+            log.warn("[ComponentMetadata] {} 内容无效，已忽略: {}", METADATA_FILE, e.getMessage());
         }
     }
 
     /**
-     * 接收并存储前端构建输出的组件元数据 JSON。
+     * 接收并存储历史组件元数据 JSON。
      * 同时持久化到 data/component-metadata.json。
      *
         * @param json 完整的 component-catalog.json 内容
@@ -207,7 +207,7 @@ public class ComponentMetadataService {
     }
 
     /**
-     * 清除所有内存缓存。下次 AI 请求将读取空值，直到重新上传或调用 loadFromFile。
+     * 清除所有内存缓存。下次 AI 请求将读取空值，直到重新调用 loadFromFile 或历史兼容写入端点。
      */
     public void clearInMemoryCache() {
         rawMetadata.set(null);
