@@ -50,3 +50,9 @@ AiModuleAdapter.register({
 ```
 
 构建期：`TS class + @moduleKind JSDoc` → `pnpm run generate:module-metadata` → `*.runtime.generated.json`。
+
+## 延伸阅读
+
+- VCM metadata 协议：[`DM-VCM-MODULE-METADATA-SCOPE.md`](DM-VCM-MODULE-METADATA-SCOPE.md)
+- native-runtime 与 Agent 全链路：[`../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)
+- 包架构 SSOT：[`../../ARCHITECTURE.md`](../../ARCHITECTURE.md)

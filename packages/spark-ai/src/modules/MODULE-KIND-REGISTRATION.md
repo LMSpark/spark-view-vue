@@ -21,3 +21,7 @@ LLM 固定工具：`module_query`、`module_guide`、`module_attribute_guide`、
 - 元数据不得承诺未注册的函数、属性或子模块。
 - `AiModuleRuntime.register()` 仅供框架内部；业务方不得直接调用。
 - 会话历史由 `AiAgentSessionStore` 统一管理；业务包不维护第二份完整历史。
+
+## 延伸阅读
+
+- 全链路深度说明：[`../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)

@@ -42,3 +42,10 @@ LLM 知识层只教授 metadata 图 + `module_query` / `module_*_guide` + `modul
 - 复杂参数必须通过结构化 schema、属性契约或 resultApis 暴露。
 - 失败消息必须包含可恢复的 `code/msg/fix/checks`。
 - 会话历史是诊断依据，业务包只读取 transcript/summary，不复制维护第二份历史。
+
+## 延伸阅读
+
+- 包内实现与消费方全链路（native-runtime、Adapter 注册、ToolLoop、传输、recovery、pageDesign）：[`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)
+- 传输与会话 V4：[`docs/TRANSPORT-AND-SESSION.zh-CN.md`](../../docs/TRANSPORT-AND-SESSION.zh-CN.md)
+- Generator / callbackApis：[`docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md`](../../docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md)
+- 包架构 SSOT：[`ARCHITECTURE.md`](../../ARCHITECTURE.md)

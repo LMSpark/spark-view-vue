@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 
 import { enrichFunctionCallResult } from '../agent/tool-loop/function-call-recovery-enricher'
+import { PROTOCOL_TOOL_NAMES } from '../modules/internal/protocol-tool-generator'
 import { paramsSchema, stringSchema } from '../json'
 import {
   AiModule,
@@ -19,7 +20,7 @@ function createTaskRuntime(): AiModuleRuntime {
       name: 'doWork',
       description: 'Execute work.',
       paramsSchema: paramsSchema({ input: stringSchema('Work input.') }, ['input']),
-      requiredBeforeCall: ['先确认目标 task 实例 path。'],
+      requiredBeforeCall: ['先确认目标 task 实例。'],
       usageRules: ['禁止在未 guide 前猜参数。'],
       failureModes: [
         { code: 'SCHEMA_VALIDATION_FAILED', when: '参数不符合 schema', fix: '重新读取 module_function_guide 并按 paramsSchema 构造 args。' },
@@ -37,7 +38,7 @@ describe('enrichFunctionCallResult', () => {
     const enriched = enrichFunctionCallResult({
       runtime,
       protocolToolName: 'doWork',
-      args: { path: '/task[task-1]', args: {} },
+      args: { input: '' },
       callResult: {
         ok: false,
         code: 'SCHEMA_VALIDATION_FAILED',
@@ -54,7 +55,7 @@ describe('enrichFunctionCallResult', () => {
     expect(enriched.checks?.some(check => check.message.includes('VCM failureMode(SCHEMA_VALIDATION_FAILED)'))).toBe(true)
   })
 
-  it('为 INVALID_TOOL_ARGS 与 ROOT_LIST_REQUIRES_FIND 回灌全局 recovery hints', () => {
+  it('为 INVALID_TOOL_ARGS 回灌 schema 与 module_script 形状提示（不含 path 语法）', () => {
     const runtime = createTaskRuntime()
     const invalidArgs = enrichFunctionCallResult({
       runtime,
@@ -68,20 +69,27 @@ describe('enrichFunctionCallResult', () => {
       },
     })
     if (invalidArgs.ok) return
-    expect(invalidArgs.checks?.some(check => check.message.includes('直接函数形状'))).toBe(true)
+    expect(invalidArgs.checks?.some(check => check.message.includes('module_function_guide'))).toBe(true)
+    expect(invalidArgs.checks?.some(check => check.message.includes('module_script 形状'))).toBe(true)
+    expect(invalidArgs.checks?.some(check => check.message.includes('直接函数形状'))).toBe(false)
+    expect(invalidArgs.checks?.some(check => check.message.includes('ROOT_LIST_REQUIRES_FIND'))).toBe(false)
+  })
 
-    const rootList = enrichFunctionCallResult({
+  it('为 SCRIPT_EXECUTION_FAILED 回灌 pageDesign 脚本提示', () => {
+    const runtime = createTaskRuntime()
+    const scriptFailed = enrichFunctionCallResult({
       runtime,
-      protocolToolName: 'module_find',
-      args: { path: '/', childKind: 'project' },
+      protocolToolName: PROTOCOL_TOOL_NAMES.moduleScript,
+      args: { script: 'page.editDataSet({})' },
       callResult: {
         ok: false,
-        code: 'ROOT_LIST_REQUIRES_FIND',
-        msg: 'use find',
-        fix: 'use findInstance',
+        code: 'SCRIPT_EXECUTION_FAILED',
+        msg: 'editDataSet is not a function',
+        fix: 'fix script',
       },
     })
-    if (rootList.ok) return
-    expect(rootList.checks?.some(check => check.message.includes('module_find({ path: "/"'))).toBe(true)
+    if (scriptFailed.ok) return
+    expect(scriptFailed.checks?.some(check => check.message.includes('openPageDesign'))).toBe(true)
+    expect(scriptFailed.checks?.some(check => check.message.includes('module_find'))).toBe(false)
   })
 })

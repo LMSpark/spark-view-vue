@@ -3,7 +3,6 @@
  * 以 RECOVERY_HINT checks 回灌 LLM，形成 FC → 错误 → guide → script 修复闭环。
  */
 import type { AiJsonParams } from '../../json'
-import { parseAiModulePath } from '../../modules'
 import { PROTOCOL_TOOL_NAMES } from '../../modules/internal/protocol-tool-generator'
 import type { AiModuleRuntime } from '../../modules/runtime/ai-module-runtime'
 import type {
@@ -25,7 +24,7 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   SCHEMA_VALIDATION_FAILED: [
     '契约恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    '复杂参数恢复：先 module_function_guide/module_attribute_guide 对照 schema，再重试 function call 或 module_script。',
+    '复杂参数恢复：先 module_function_guide/module_attribute_guide 对照 schema，再 module_script 重试。',
   ],
   SCRIPT_EXECUTION_FAILED: [
     '脚本恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 核对 usageRules 与 resultApis。',
@@ -34,12 +33,6 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   ],
   SCRIPT_ACTION_FAILED: [
     '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 module_function_guide 对照 paramsSchema。',
-  ],
-  INVALID_PATH_PATH_EMPTY: [
-    '路径恢复：module_find({ path: "/", childKind: "project", query: { id: "<projectId>" } }) 后再拼接子 path。',
-  ],
-  PATH_INVALID: [
-    '路径恢复：module_find 重新定位父实例；project 根 id 通常是 projectId（如 homepage），不是 pageId。',
   ],
   AI_TOOL_REJECTED_BEFORE_EXECUTION: [
     '策略恢复：检查 implGate / planningStatus / upstreamContractsSatisfied，必要时 human_question。',
@@ -51,25 +44,17 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
     '参数恢复：function.arguments 根节点必须是 object；对照 module_function_guide.paramsSchema 重发 tool_calls。',
   ],
   INVALID_TOOL_ARGS: [
-    '直接函数形状：{ "path": "/<kind>[<id>]/...", "args": { /* 业务参数 */ } }；勿把 pageId 等摊平在根级。',
     '契约恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-  ],
-  ROOT_LIST_REQUIRES_FIND: [
-    '根路径列举实例：module_find({ path: "/", childKind: "<kind>", query: { id: "<id>" } })，不要用 list 模式。',
-    '目录恢复：module_guide({ kind: "<kind>" }) 确认 kind 是否为根 kind。',
-  ],
-  DIRECT_CHILD_LIST_NOT_SUPPORTED: [
-    '该 kind 仅 guide 目录：用 module_guide / module_function_guide，勿 module_find list。',
+    'module_script 形状：{ script: "<js body>" }；参数名必须是 script，不是 code。',
   ],
   FUNCTION_NOT_FOUND: [
     '目录恢复：module_query({ kind: "<kind>", includeFunctions: true }) 列出真实 functionName。',
-    '勿把 module_find / module_call 等协议工具名当作 functionName。',
   ],
   INVALID_GUIDE_REQUEST: [
     'module_function_guide 需要 { kind, functionName }；functionName 必须是业务函数名。',
   ],
   KIND_NOT_REGISTERED: [
-    '目录恢复：module_query({}) 或 module_find({ path: "/" }) 列出已注册 kind；勿猜 kind 名。',
+    '目录恢复：module_query({}) 列出已注册 kind；勿猜 kind 名。',
   ],
 }
 
@@ -145,9 +130,12 @@ function appendProtocolRecoveryHints(
       hints.push(`"${fn}" 是协议工具名，不是 functionName；请 module_query({ includeFunctions: true }) 选择业务函数。`)
     }
     if (code === 'FUNCTION_NOT_FOUND') {
-      hints.push('functionName 必须是 project.openPageDesign 等业务函数，不能是 module_find / module_script 等协议工具。')
+      hints.push('functionName 必须是 openPageDesign 等业务函数，不能是 module_script 等协议工具。')
     }
     return
+  }
+  if (code === 'INVALID_TOOL_ARGS' && toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
+    hints.push('module_script 形状：{ script: "<js body>" }；code 字段会归一化为 script。')
   }
   if (code === 'SCRIPT_EXECUTION_FAILED' && toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
     if (command.callResult.msg.includes('toJSON')) {
@@ -167,15 +155,6 @@ function appendProtocolRecoveryHints(
     if (command.callResult.msg.includes('run is not a function')) {
       hints.push('editDataSet/editNodeTree 必须直接传函数：page.editDataSet(async ds => ...)；勿把 createTable 参数对象当成 run。')
     }
-  }
-  if (code !== 'INVALID_TOOL_ARGS' && code !== 'ROOT_LIST_REQUIRES_FIND') return
-  if (toolName === PROTOCOL_TOOL_NAMES.moduleFind) {
-    hints.push('module_find 形状：{ path: "/", childKind: "<kind>", query: { id: "<id>" } }；根查找可省略 path（默认 "/"）。')
-    return
-  }
-  if (toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
-    hints.push('module_script 形状：{ script: "<js body>" }；code 字段会归一化为 script。')
-    return
   }
 }
 
@@ -207,22 +186,6 @@ function resolveFailedFunctionContext(
   command: EnrichFunctionCallFailureCommand,
 ): FailedFunctionContext {
   const { protocolToolName, args, runtime } = command
-  if (protocolToolName === PROTOCOL_TOOL_NAMES.moduleCall) {
-    const functionName = readStringArg(args, 'functionName')
-    const path = readStringArg(args, 'path')
-    return buildFailedFunctionContext({
-      functionName,
-      kind: kindFromPath(path) ?? findKindByFunctionName(runtime, functionName),
-    })
-  }
-  if (protocolToolName === PROTOCOL_TOOL_NAMES.moduleScript) {
-    const path = readStringArg(args, 'path')
-    return buildFailedFunctionContext({ kind: kindFromPath(path) })
-  }
-  if (protocolToolName === PROTOCOL_TOOL_NAMES.moduleFind) {
-    const childKind = readStringArg(args, 'childKind')
-    return buildFailedFunctionContext({ kind: childKind })
-  }
   if (protocolToolName === PROTOCOL_TOOL_NAMES.moduleFunctionGuide) {
     return buildFailedFunctionContext({
       kind: readStringArg(args, 'kind'),
@@ -257,17 +220,6 @@ function findKindByFunctionName(runtime: AiModuleRuntime, functionName: string |
   const matches = runtime.queryKnowledgeFunctions({ keyword: functionName })
   const exact = matches.find(item => item.functionName === functionName)
   return exact?.kind
-}
-
-function kindFromPath(path: string | undefined): string | undefined {
-  if (path === undefined || path.trim().length === 0) return undefined
-  try {
-    const segments = parseAiModulePath(path)
-    if (segments.length === 0) return undefined
-    return segments[segments.length - 1]?.kind
-  } catch {
-    return undefined
-  }
 }
 
 function readStringArg(args: AiJsonParams, key: string): string | undefined {

@@ -291,6 +291,8 @@ executeAiNativeScript({ metadata, instance, script, schemaDefs })
 
 这条路径不经过 Host、Session、ToolLoop，也不要求 LLM 使用 `/kind[id]/...` 实例 path 链；它的目标是让 LLM 直接生成原生链式代码并由运行时执行。
 
+**展开参考**（Proxy 状态机、resultApis、pageDesign 链路、ToolLoop、recovery enricher、传输层、F8 迁移）：[`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)。
+
 ### 1.8 会话与历史模型
 
 ```text
@@ -326,6 +328,8 @@ flowchart TB
 ```
 
 `spark-ai` 定义纯契约与 key 格式；HTTP、SSE、模型调用由 APP 注入 `turnCallbacks` 完成。
+
+**展开参考**：[`docs/TRANSPORT-AND-SESSION.zh-CN.md`](docs/TRANSPORT-AND-SESSION.zh-CN.md)（session-turn / app-sse、V4 端点、排错）。
 
 ### 1.10 包级依赖
 
