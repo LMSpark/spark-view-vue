@@ -54,6 +54,16 @@ type DataSetCrudToolCreateTableOptions = TableSemanticMetadata & {
     views?: Record<string, ViewMetadata>}
 
 /**
+ * 字段更新项。
+ */
+type DataSetCrudToolColumnUpdate = {
+  /** 要更新的列名。 */
+  columnName: string
+  /** 要合并到列定义上的字段更新；不应包含 name 重命名。 */
+  updates: Partial<DataColumn>
+}
+
+/**
  * 更新数据表时的输入参数。
  */
 type DataSetCrudToolUpdateTableOptions = {
@@ -65,7 +75,7 @@ type DataSetCrudToolUpdateTableOptions = {
   /**
    * 需要更新的列定义。
    */
-  columnUpdates?: Array<{ columnName: string; updates: Partial<DataColumn> }>
+  columnUpdates?: DataSetCrudToolColumnUpdate[]
   /**
    * 需要删除的列名列表。
    */
@@ -106,10 +116,195 @@ type DataSetCrudToolUpdateTableOptions = {
  * 需要继续提供 parentField / childField 做字段级消歧。
  */
 type RelationSelector = {
+  /** 父表表名。 */
   parentTable: string
+  /** 子表表名。 */
   childTable: string
+  /** 父表关联字段；同一父子表存在多条关系时用于消歧。 */
   parentField?: string
+  /** 子表关联字段；同一父子表存在多条关系时用于消歧。 */
   childField?: string}
+
+/** 表名参数对象。 */
+type DataSetCrudToolTableNameParams = {
+  /** 表名。 */
+  tableName: string
+}
+
+/** 外部快照替换选项。 */
+type DataSetCrudToolReplaceFromJsonOptions = {
+  /** 是否将替换结果写入历史栈，默认 true。 */
+  commitHistory?: boolean
+}
+
+/** 表字段定位参数。 */
+type DataSetCrudToolColumnSelectorParams = DataSetCrudToolTableNameParams & {
+  /** 列名。 */
+  columnName: string
+}
+
+/** 新增字段参数。 */
+type DataSetCrudToolCreateColumnParams = DataSetCrudToolTableNameParams & {
+  /** 新列定义。 */
+  column: DataColumn
+}
+
+/** 更新字段参数。 */
+type DataSetCrudToolUpdateColumnParams = DataSetCrudToolColumnSelectorParams & {
+  /** 要合并到现有列定义上的更新内容。 */
+  updates: Partial<DataColumn>
+}
+
+/** 重命名字段参数。 */
+type DataSetCrudToolRenameColumnParams = DataSetCrudToolColumnSelectorParams & {
+  /** 新列名。 */
+  newColumnName: string
+}
+
+/** 更新表参数。 */
+type DataSetCrudToolUpdateTableParams = DataSetCrudToolTableNameParams & DataSetCrudToolUpdateTableOptions
+
+/** 重命名表参数。 */
+type DataSetCrudToolRenameTableParams = DataSetCrudToolTableNameParams & {
+  /** 新表名。 */
+  newTableName: string
+}
+
+/** 视图定位参数。 */
+type DataSetCrudToolViewSelectorParams = DataSetCrudToolTableNameParams & {
+  /** 视图 ID；省略时使用 default 视图。 */
+  viewId?: string
+}
+
+/** 创建视图参数。 */
+type DataSetCrudToolCreateViewParams = DataSetCrudToolTableNameParams & {
+  /** 新视图 ID。 */
+  viewId: string
+  /** 可选视图配置。 */
+  config?: ViewMetadata
+}
+
+/** 更新视图参数。 */
+type DataSetCrudToolUpdateViewParams = DataSetCrudToolViewSelectorParams & {
+  /** 要合并到视图配置上的更新内容。 */
+  updates: Partial<ViewMetadata>
+}
+
+/** 删除视图参数。 */
+type DataSetCrudToolDeleteViewParams = DataSetCrudToolTableNameParams & {
+  /** 要删除的视图 ID。 */
+  viewId: string
+}
+
+/** 聚合配置定位参数。 */
+type DataSetCrudToolAggregateSelectorParams = DataSetCrudToolViewSelectorParams & {
+  /** 聚合配置 key，即 aggregateResult 的输出字段名。 */
+  key: string
+}
+
+/** 新增聚合参数。 */
+type DataSetCrudToolAddAggregateParams = DataSetCrudToolAggregateSelectorParams & {
+  /** 聚合列配置。 */
+  config: AggregateColumnConfig
+}
+
+/** 更新聚合参数。 */
+type DataSetCrudToolUpdateAggregateParams = DataSetCrudToolAggregateSelectorParams & {
+  /** 要合并到聚合配置上的更新内容。 */
+  updates: Partial<AggregateColumnConfig>
+}
+
+/** 设置计算表达式参数。 */
+type DataSetCrudToolSetComputeExpressionParams = DataSetCrudToolColumnSelectorParams & {
+  /** 新计算表达式。 */
+  expression: string
+}
+
+/** 行定位参数。 */
+type DataSetCrudToolRowSelectorParams = DataSetCrudToolViewSelectorParams & {
+  /** 行主键值。 */
+  id: string | number
+}
+
+/** 新增行参数。 */
+type DataSetCrudToolCreateRowParams = DataSetCrudToolViewSelectorParams & {
+  /** 新行数据。 */
+  data: Partial<DataRow>
+}
+
+/** 批量新增行参数。 */
+type DataSetCrudToolCreateRowsParams = DataSetCrudToolViewSelectorParams & {
+  /** 待新增的行数据列表。 */
+  items: Array<Partial<DataRow>>
+}
+
+/** 更新行参数。 */
+type DataSetCrudToolUpdateRowParams = DataSetCrudToolRowSelectorParams & {
+  /** 要合并到目标行上的字段更新。 */
+  data: Partial<DataRow>
+}
+
+/** 批量更新行的单条输入。 */
+type DataSetCrudToolUpdateRowsItem = {
+  /** 目标行主键值。 */
+  id: string | number
+  /** 要合并到目标行上的字段更新。 */
+  data: Partial<DataRow>
+}
+
+/** 批量更新行参数。 */
+type DataSetCrudToolUpdateRowsParams = DataSetCrudToolViewSelectorParams & {
+  /** 待更新的行列表。 */
+  items: DataSetCrudToolUpdateRowsItem[]
+}
+
+/** 批量删除行参数。 */
+type DataSetCrudToolDeleteRowsParams = DataSetCrudToolViewSelectorParams & {
+  /** 待删除行的主键值列表。 */
+  ids: Array<string | number>
+}
+
+/** 创建表关系参数。 */
+type DataSetCrudToolCreateRelationParams = {
+  /** 父表表名。 */
+  parentTable: string
+  /** 子表表名。 */
+  childTable: string
+  /** 父表关联字段。 */
+  parentField: string
+  /** 子表关联字段。 */
+  childField: string
+  /** 可选关系名称。 */
+  relationName?: string
+}
+
+/** 更新表关系参数。 */
+type DataSetCrudToolUpdateRelationParams = {
+  /** 用于定位原关系的选择器。 */
+  selector: RelationSelector
+  /** 要合并到关系定义上的更新内容。 */
+  updates: Partial<TableRelation>
+}
+
+/** 视图依赖定位参数。 */
+type DataSetCrudToolDependencySelectorParams = {
+  /** 父表表名。 */
+  parentTable: string
+  /** 子表表名。 */
+  childTable: string
+}
+
+/** 创建视图依赖参数。 */
+type DataSetCrudToolCreateDependencyParams = {
+  /** 新视图依赖定义。 */
+  dependency: ViewDependency
+}
+
+/** 更新视图依赖参数。 */
+type DataSetCrudToolUpdateDependencyParams = DataSetCrudToolDependencySelectorParams & {
+  /** 要合并到依赖定义上的更新内容。 */
+  updates: Partial<ViewDependency>
+}
 
 /**
  * DataSet 级统一 CRUD facade。
@@ -325,8 +520,10 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-snapshot high 外部快照可整体替换 pagedata.json 数据集结构和行数据。
    * @moduleGuard snapshot 必须能被 DataSet.fromJson 解析为合法 DataSet 元数据。
    * @moduleMutation pagedata.json write 使用外部快照替换当前页面数据集。
+   * @param snapshot 外部 DataSet 元数据快照。
+   * @param options 替换写入选项。
    */
-  replaceFromJson(snapshot: DataSetMetadata | Record<string, unknown> | string, options?: { commitHistory?: boolean }): void {
+  replaceFromJson(snapshot: DataSetMetadata | Record<string, unknown> | string, options?: DataSetCrudToolReplaceFromJsonOptions): void {
     const normalizedSnapshot = DataSet.fromJson(snapshot).toJson()
     this._dataSet.replaceFromJson(normalizedSnapshot)
     if (options?.commitHistory === false) {
@@ -366,10 +563,11 @@ export class DataSetCrudTool {
    * 获取指定数据表。
    *
    * @moduleMutation pagedata.json read 读取当前页面数据集中的单个表。
+   * @param tableNameOrParams 表名字符串或表名参数对象。
    * @param tableName 表名。
    * @returns 命中的 DataTable；不存在时返回 undefined。
    */
-  getTable(tableNameOrParams: string | { tableName: string }): DataTable | undefined {
+  getTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataTable | undefined {
     return this.dataSet.getTable(this.normalizeTableNameArg(tableNameOrParams, 'getTable'))
   }
 
@@ -377,11 +575,12 @@ export class DataSetCrudTool {
    * 列出指定数据表的全部列定义。
    *
    * @moduleMutation pagedata.json read 列出指定表的全部字段。
+   * @param tableNameOrParams 表名字符串或表名参数对象。
    * @param tableName 表名。
    * @returns 列定义副本列表。
    * @throws 当表不存在时抛错。
    */
-  listColumns(tableNameOrParams: string | { tableName: string }): DataColumn[] {
+  listColumns(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataColumn[] {
     return [...this.getTableOrThrow(this.normalizeTableNameArg(tableNameOrParams, 'listColumns')).columns]
   }
 
@@ -389,12 +588,13 @@ export class DataSetCrudTool {
    * 获取指定数据表中的单个列定义。
    *
    * @moduleMutation pagedata.json read 读取指定表的单个字段定义。
+   * @param params 字段定位参数。
    * @param tableName 表名。
    * @param columnName 列名。
    * @returns 命中的列定义；不存在时返回 undefined。
    * @throws 当表不存在时抛错。
    */
-  getColumn(params: { tableName: string; columnName: string }): DataColumn | undefined {
+  getColumn(params: DataSetCrudToolColumnSelectorParams): DataColumn | undefined {
     const tableName = this.requireNonEmptyString(params.tableName, 'getColumn.tableName')
     const columnName = this.requireNonEmptyString(params.columnName, 'getColumn.columnName')
     return this.getTableOrThrow(tableName).columns.find(column => column.name === columnName)
@@ -406,12 +606,13 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-schema high 新增字段会改变数据绑定字段、校验器和视图列缓存。
    * @moduleGuard 新字段名必须在表内唯一，并与现有 dataField 绑定策略一致。
    * @moduleMutation pagedata.json write 向指定表追加字段。
+   * @param params 字段新增参数。
    * @param tableName 表名。
    * @param column 新列定义。
    * @returns 更新后的 DataTable。
    * @throws 当表不存在或列定义非法时抛错。
    */
-  createColumn(params: { tableName: string; column: DataColumn }): DataTable {
+  createColumn(params: DataSetCrudToolCreateColumnParams): DataTable {
     const tableName = this.requireNonEmptyString(params.tableName, 'createColumn.tableName')
     const column = this.requireObjectArg(params.column, 'createColumn.column')
     const table = this.getTableOrThrow(tableName)
@@ -427,13 +628,14 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-schema high 字段定义更新会改变数据类型、校验、显示和计算语义。
    * @moduleGuard 更新前必须确认列存在，且变更不会破坏既有 dataField 绑定。
    * @moduleMutation pagedata.json write 更新指定字段定义。
+   * @param params 字段更新参数。
    * @param tableName 表名。
    * @param columnName 列名。
    * @param updates 需要合并到现有列定义中的更新内容。
    * @returns 更新后的 DataTable。
    * @throws 当表或列不存在时抛错。
    */
-  updateColumn(params: { tableName: string; columnName: string; updates: Partial<DataColumn> }): DataTable {
+  updateColumn(params: DataSetCrudToolUpdateColumnParams): DataTable {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateColumn.tableName')
     const columnName = this.requireNonEmptyString(params.columnName, 'updateColumn.columnName')
     const updates = this.requireObjectArg(params.updates, 'updateColumn.updates')
@@ -453,7 +655,7 @@ export class DataSetCrudTool {
    * @param params 字段重命名参数。
    * @returns 重命名后的 DataTable。
    */
-  renameColumn(params: { tableName: string; columnName: string; newColumnName: string }): DataTable {
+  renameColumn(params: DataSetCrudToolRenameColumnParams): DataTable {
     const tableName = params.tableName.trim()
     const columnName = params.columnName.trim()
     const newColumnName = params.newColumnName.trim()
@@ -542,11 +744,12 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-schema high 删除字段会破坏依赖该字段的数据绑定、关系和视图配置。
    * @moduleGuard 删除前必须确认字段没有被组件、视图、关系或依赖引用。
    * @moduleMutation pagedata.json write 删除指定字段。
+   * @param params 字段定位参数。
    * @param tableName 表名。
    * @param columnName 列名。
    * @throws 当表或列不存在时抛错。
    */
-  deleteColumn(params: { tableName: string; columnName: string }): void {
+  deleteColumn(params: DataSetCrudToolColumnSelectorParams): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'deleteColumn.tableName')
     const columnName = this.requireNonEmptyString(params.columnName, 'deleteColumn.columnName')
     this.getTableOrThrow(tableName).removeColumn(columnName)
@@ -596,12 +799,13 @@ export class DataSetCrudTool {
    * @moduleAttackSurface remote-crud-config high api/crudConfig 更新会改变页面运行时远端 CRUD 行为。
    * @moduleGuard 修改前必须确认表存在，并检查 columnsToRemove/defaultRows 对现有绑定的影响。
    * @moduleMutation pagedata.json write 更新页面数据表结构和语义。
+   * @param params 表更新参数。
    * @param tableName 表名。
    * @param updates 更新内容。
    * @returns 更新后的 DataTable。
    * @throws 当表不存在或某项结构更新非法时抛错。
    */
-  updateTable(params: { tableName: string } & DataSetCrudToolUpdateTableOptions): DataTable {
+  updateTable(params: DataSetCrudToolUpdateTableParams): DataTable {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateTable.tableName')
     const table = this.getTableOrThrow(tableName)
 
@@ -648,7 +852,7 @@ export class DataSetCrudTool {
    * @param params 表重命名参数。
    * @returns 重命名后的 DataTable。
    */
-  renameTable(params: { tableName: string; newTableName: string }): DataTable {
+  renameTable(params: DataSetCrudToolRenameTableParams): DataTable {
     const tableName = params.tableName.trim()
     const newTableName = params.newTableName.trim()
 
@@ -723,10 +927,11 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-schema high 删除表会移除所有字段、视图、行数据和组件绑定入口。
    * @moduleGuard 删除前必须确认表未被 relation/dependency 和页面组件引用。
    * @moduleMutation pagedata.json write 删除页面数据表。
+   * @param tableNameOrParams 表名字符串或表名参数对象。
    * @param tableName 表名。
    * @throws 当表不存在，或仍被 relation / dependency 引用时抛错。
    */
-  deleteTable(tableNameOrParams: string | { tableName: string }): void {
+  deleteTable(tableNameOrParams: string | DataSetCrudToolTableNameParams): void {
     this.dataSet.removeTable(this.normalizeTableNameArg(tableNameOrParams, 'deleteTable'))
     this._afterWrite()
   }
@@ -739,11 +944,12 @@ export class DataSetCrudTool {
    * 列出某个数据表下的全部视图。
    *
    * @moduleMutation pagedata.json read 列出指定表下的全部视图。
+   * @param tableNameOrParams 表名字符串或表名参数对象。
    * @param tableName 表名。
    * @returns 视图实例列表。
    * @throws 当表不存在时抛错。
    */
-  listViews(tableNameOrParams: string | { tableName: string }): DataView[] {
+  listViews(tableNameOrParams: string | DataSetCrudToolTableNameParams): DataView[] {
     return Object.values(this.getTableOrThrow(this.normalizeTableNameArg(tableNameOrParams, 'listViews')).views)
   }
 
@@ -751,11 +957,12 @@ export class DataSetCrudTool {
    * 获取指定视图。
    *
    * @moduleMutation pagedata.json read 读取指定数据视图。
+   * @param params 视图定位参数。
    * @param tableName 表名。
    * @param viewId 视图 ID，默认 default。
    * @returns 视图实例；不存在时返回 undefined。
    */
-  getView(params: { tableName: string; viewId?: string }): DataView | undefined {
+  getView(params: DataSetCrudToolViewSelectorParams): DataView | undefined {
     const tableName = this.requireNonEmptyString(params.tableName, 'getView.tableName')
     return this.dataSet.getView(tableName, params.viewId ?? 'default')
   }
@@ -766,13 +973,14 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-view high 新建视图会新增可被页面组件绑定的 DataView。
    * @moduleGuard 不能创建 default 视图，viewId 必须在表内唯一。
    * @moduleMutation pagedata.json write 创建页面数据视图。
+   * @param params 视图创建参数。
    * @param tableName 表名。
    * @param viewId 视图 ID。
    * @param config 视图初始配置。
    * @returns 新创建的视图实例。
    * @throws 当表不存在，或试图创建 default 视图时抛错。
    */
-  createView(params: { tableName: string; viewId: string; config?: ViewMetadata }): DataView {
+  createView(params: DataSetCrudToolCreateViewParams): DataView {
     const tableName = this.requireNonEmptyString(params.tableName, 'createView.tableName')
     const viewId = this.requireNonEmptyString(params.viewId, 'createView.viewId')
     // default 视图在建表时就存在，单独创建会破坏约定，因此强制改走 updateView。
@@ -794,13 +1002,14 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-view high 视图配置更新会改变过滤、排序、分页、主键和绑定输出。
    * @moduleGuard 更新前必须确认 tableName/viewId 存在，并保持 DataViewKey 可解析。
    * @moduleMutation pagedata.json write 更新页面数据视图。
+   * @param params 视图更新参数。
    * @param tableName 表名。
    * @param viewId 视图 ID。
    * @param updates 要应用的视图配置。
    * @returns 更新后的视图实例。
    * @throws 当表或视图不存在时抛错。
    */
-  updateView(params: { tableName: string; viewId?: string; updates: Partial<ViewMetadata> }): DataView {
+  updateView(params: DataSetCrudToolUpdateViewParams): DataView {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateView.tableName')
     const viewId = params.viewId ?? 'default'
     const updates = this.requireObjectArg(params.updates, 'updateView.updates')
@@ -817,11 +1026,12 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-view high 删除视图会破坏引用该 viewId 的组件 dataViewKey。
    * @moduleGuard 不能删除 default 视图，删除前必须确认页面没有引用该视图。
    * @moduleMutation pagedata.json write 删除页面数据视图。
+   * @param params 视图删除参数。
    * @param tableName 表名。
    * @param viewId 视图 ID。
    * @throws 当表不存在，或试图删除 default 视图时抛错。
    */
-  deleteView(params: { tableName: string; viewId: string }): void {
+  deleteView(params: DataSetCrudToolDeleteViewParams): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'deleteView.tableName')
     const viewId = this.requireNonEmptyString(params.viewId, 'deleteView.viewId')
     // default 视图是 DataTable 基础组成部分，不允许删除。
@@ -839,7 +1049,7 @@ export class DataSetCrudTool {
    * @param params 聚合查询参数。
    * @returns 聚合 key 到聚合配置的映射。
    */
-  listAggregates(params: { tableName: string; viewId?: string }): Record<string, AggregateColumnConfig> {
+  listAggregates(params: DataSetCrudToolViewSelectorParams): Record<string, AggregateColumnConfig> {
     const tableName = this.requireNonEmptyString(params.tableName, 'listAggregates.tableName')
     const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
     return { ...view.aggregates }
@@ -852,7 +1062,7 @@ export class DataSetCrudTool {
    * @param params 聚合定位参数。
    * @returns 命中的聚合配置；不存在时返回 undefined。
    */
-  getAggregate(params: { tableName: string; viewId?: string; key: string }): AggregateColumnConfig | undefined {
+  getAggregate(params: DataSetCrudToolAggregateSelectorParams): AggregateColumnConfig | undefined {
     const tableName = this.requireNonEmptyString(params.tableName, 'getAggregate.tableName')
     const key = this.requireNonEmptyString(params.key, 'getAggregate.key')
     const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
@@ -867,7 +1077,7 @@ export class DataSetCrudTool {
    * @moduleMutation pagedata.json write 新增指定视图聚合配置。
    * @param params 聚合创建参数。
    */
-  addAggregate(params: { tableName: string; viewId?: string; key: string; config: AggregateColumnConfig }): void {
+  addAggregate(params: DataSetCrudToolAddAggregateParams): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'addAggregate.tableName')
     const key = this.requireNonEmptyString(params.key, 'addAggregate.key')
     const config = this.requireObjectArg(params.config, 'addAggregate.config')
@@ -888,7 +1098,7 @@ export class DataSetCrudTool {
    * @param params 聚合更新参数。
    */
   updateAggregate(
-    params: { tableName: string; viewId?: string; key: string; updates: Partial<AggregateColumnConfig> },
+    params: DataSetCrudToolUpdateAggregateParams,
   ): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateAggregate.tableName')
     const key = this.requireNonEmptyString(params.key, 'updateAggregate.key')
@@ -916,7 +1126,7 @@ export class DataSetCrudTool {
    * @moduleMutation pagedata.json write 删除指定视图聚合配置。
    * @param params 聚合删除参数。
    */
-  removeAggregate(params: { tableName: string; viewId?: string; key: string }): void {
+  removeAggregate(params: DataSetCrudToolAggregateSelectorParams): void {
     const tableName = this.requireNonEmptyString(params.tableName, 'removeAggregate.tableName')
     const key = this.requireNonEmptyString(params.key, 'removeAggregate.key')
     const view = this.getViewOrThrow(tableName, params.viewId ?? 'default')
@@ -935,7 +1145,7 @@ export class DataSetCrudTool {
    * @param params 字段定位参数。
    * @returns 字段计算表达式；未设置时返回 undefined。
    */
-  getComputeExpression(params: { tableName: string; columnName: string }): string | undefined {
+  getComputeExpression(params: DataSetCrudToolColumnSelectorParams): string | undefined {
     return this.getColumn(params)?.computeExpression
   }
 
@@ -948,7 +1158,7 @@ export class DataSetCrudTool {
    * @param params 计算表达式设置参数。
    * @returns 更新后的 DataTable。
    */
-  setComputeExpression(params: { tableName: string; columnName: string; expression: string }): DataTable {
+  setComputeExpression(params: DataSetCrudToolSetComputeExpressionParams): DataTable {
     const expression = this.requireNonEmptyString(params.expression, 'setComputeExpression.expression')
     return this.updateColumn({
       tableName: params.tableName,
@@ -966,7 +1176,7 @@ export class DataSetCrudTool {
    * @param params 字段定位参数。
    * @returns 更新后的 DataTable。
    */
-  clearComputeExpression(params: { tableName: string; columnName: string }): DataTable {
+  clearComputeExpression(params: DataSetCrudToolColumnSelectorParams): DataTable {
     const tableName = this.requireNonEmptyString(params.tableName, 'clearComputeExpression.tableName')
     const columnName = this.requireNonEmptyString(params.columnName, 'clearComputeExpression.columnName')
     const table = this.getTableOrThrow(tableName)
@@ -989,12 +1199,13 @@ export class DataSetCrudTool {
    * 列出指定视图当前持有的全部行。
    *
    * @moduleMutation pagedata.json read 列出指定视图行数据。
+   * @param params 视图定位参数。
    * @param tableName 表名。
    * @param viewId 视图 ID，默认 default。
    * @returns 行数组副本。
    * @throws 当表或视图不存在时抛错。
    */
-  listRows(params: { tableName: string; viewId?: string }): DataRow[] {
+  listRows(params: DataSetCrudToolViewSelectorParams): DataRow[] {
     const tableName = this.requireNonEmptyString(params.tableName, 'listRows.tableName')
     return [...this.getViewOrThrow(tableName, params.viewId ?? 'default').rows]
   }
@@ -1003,13 +1214,14 @@ export class DataSetCrudTool {
    * 通过主键查找一条行数据。
    *
    * @moduleMutation pagedata.json read 读取指定行数据。
+   * @param params 行定位参数。
    * @param tableName 表名。
    * @param id 主键值。
    * @param viewId 视图 ID，默认 default。
    * @returns 命中的行；不存在时返回 undefined。
    * @throws 当表或视图不存在时抛错。
    */
-  getRow(params: { tableName: string; id: string | number; viewId?: string }): DataRow | undefined {
+  getRow(params: DataSetCrudToolRowSelectorParams): DataRow | undefined {
     const tableName = this.requireNonEmptyString(params.tableName, 'getRow.tableName')
     const viewId = params.viewId ?? 'default'
     const view = this.getViewOrThrow(tableName, viewId)
@@ -1023,13 +1235,14 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-row-data medium 新增行会改变页面预览或静态数据源。
    * @moduleGuard data 必须匹配目标表字段和主键约束。
    * @moduleMutation pagedata.json write 新增指定视图行数据。
+   * @param params 新增行参数。
    * @param tableName 表名。
    * @param data 新行数据。
    * @param viewId 视图 ID，默认 default。
    * @returns 本地模式下通常返回 DataRow；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或创建失败时抛错。
    */
-  async createRow(params: { tableName: string; data: Partial<DataRow>; viewId?: string }): Promise<DataRow | CrudResult<DataRow>> {
+  async createRow(params: DataSetCrudToolCreateRowParams): Promise<DataRow | CrudResult<DataRow>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'createRow.tableName')
     const data = this.requireObjectArg(params.data, 'createRow.data')
     const viewId = params.viewId ?? 'default'
@@ -1050,8 +1263,9 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-row-data medium 批量新增行会改变页面预览或静态数据源。
    * @moduleGuard items 必须逐项匹配目标表字段和主键约束。
    * @moduleMutation pagedata.json write 批量新增指定视图行数据。
+   * @param params 批量新增行参数。
    */
-  async createRows(params: { tableName: string; items: Array<Partial<DataRow>>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+  async createRows(params: DataSetCrudToolCreateRowsParams): Promise<CrudResult<BatchResult>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'createRows.tableName')
     const items = this.requireNonEmptyArray(params.items, 'createRows.items')
     const viewId = params.viewId ?? 'default'
@@ -1070,6 +1284,7 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-row-data medium 更新行会改变页面预览或静态数据源。
    * @moduleGuard data 必须只包含目标表允许字段。
    * @moduleMutation pagedata.json write 更新指定行数据。
+   * @param params 更新行参数。
    * @param tableName 表名。
    * @param id 主键值。
    * @param data 要合并的字段更新。
@@ -1077,7 +1292,7 @@ export class DataSetCrudTool {
    * @returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或更新失败时抛错。
    */
-  async updateRow(params: { tableName: string; id: string | number; data: Partial<DataRow>; viewId?: string }): Promise<boolean | CrudResult<DataRow>> {
+  async updateRow(params: DataSetCrudToolUpdateRowParams): Promise<boolean | CrudResult<DataRow>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateRow.tableName')
     const data = this.requireObjectArg(params.data, 'updateRow.data')
     const viewId = params.viewId ?? 'default'
@@ -1097,8 +1312,9 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-row-data medium 批量更新行会改变页面预览或静态数据源。
    * @moduleGuard items 必须逐项匹配目标表字段和主键约束。
    * @moduleMutation pagedata.json write 批量更新指定视图行数据。
+   * @param params 批量更新行参数。
    */
-  async updateRows(params: { tableName: string; items: Array<{ id: string | number; data: Partial<DataRow> }>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+  async updateRows(params: DataSetCrudToolUpdateRowsParams): Promise<CrudResult<BatchResult>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'updateRows.tableName')
     const items = this.requireNonEmptyArray(params.items, 'updateRows.items')
     const viewId = params.viewId ?? 'default'
@@ -1120,13 +1336,14 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-row-data medium 删除行会改变页面预览或静态数据源。
    * @moduleGuard 删除前必须确认目标 id 对应的行不是页面示例或默认选项依赖。
    * @moduleMutation pagedata.json write 删除指定行数据。
+   * @param params 删除行参数。
    * @param tableName 表名。
    * @param id 主键值。
    * @param viewId 视图 ID，默认 default。
    * @returns 本地模式下通常返回 boolean；远端 CRUD 模式下可能返回 CrudResult。
    * @throws 当表或视图不存在，或删除失败时抛错。
    */
-  async deleteRow(params: { tableName: string; id: string | number; viewId?: string }): Promise<boolean | CrudResult<boolean>> {
+  async deleteRow(params: DataSetCrudToolRowSelectorParams): Promise<boolean | CrudResult<boolean>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'deleteRow.tableName')
     const viewId = params.viewId ?? 'default'
     const table = this.getTableOrThrow(tableName)
@@ -1142,8 +1359,9 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-row-data medium 批量删除行会改变页面预览或静态数据源。
    * @moduleGuard ids 必须逐项确认，避免误删示例或默认选项数据。
    * @moduleMutation pagedata.json write 批量删除指定视图行数据。
+   * @param params 批量删除行参数。
    */
-  async deleteRows(params: { tableName: string; ids: Array<string | number>; viewId?: string }): Promise<CrudResult<BatchResult>> {
+  async deleteRows(params: DataSetCrudToolDeleteRowsParams): Promise<CrudResult<BatchResult>> {
     const tableName = this.requireNonEmptyString(params.tableName, 'deleteRows.tableName')
     const ids = this.requireNonEmptyArray(params.ids, 'deleteRows.ids')
     const viewId = params.viewId ?? 'default'
@@ -1206,7 +1424,7 @@ export class DataSetCrudTool {
    * @returns 新创建的表关系。
    * @throws 当父表、子表、字段不存在或关系重复时抛错。
    */
-  createRelation(params: { parentTable: string; childTable: string; parentField: string; childField: string; relationName?: string }): TableRelation {
+  createRelation(params: DataSetCrudToolCreateRelationParams): TableRelation {
     this.dataSet.addRelation(params)
     this._afterWrite()
     const relation = this.getRelation(params)
@@ -1222,12 +1440,13 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-relation high 更新关系会改变主从表联动和组件数据依赖。
    * @moduleGuard selector 必须唯一命中，updates 不得指向不存在的表或字段。
    * @moduleMutation pagedata.json write 更新数据表关系。
+   * @param params 关系更新参数。
    * @param selector 用于定位原关系的选择器。
    * @param updates 关系更新内容。
    * @returns 更新后的表关系。
    * @throws 当关系不存在、选择器不唯一或更新后关系非法时抛错。
    */
-  updateRelation(params: { selector: RelationSelector; updates: Partial<TableRelation> }): TableRelation {
+  updateRelation(params: DataSetCrudToolUpdateRelationParams): TableRelation {
     const updates = this.requireObjectArg(params.updates, 'updateRelation.updates')
     const result = this.dataSet.updateRelation(params.selector, updates)
     this._afterWrite()
@@ -1271,11 +1490,12 @@ export class DataSetCrudTool {
    * 获取一条视图依赖。
    *
    * @moduleMutation pagedata.json read 读取指定数据视图依赖。
+   * @param params 依赖定位参数。
    * @param parentTable 父表名。
    * @param childTable 子表名。
    * @returns 命中的依赖；不存在时返回 undefined。
    */
-  getDependency(params: { parentTable: string; childTable: string }): ViewDependency | undefined {
+  getDependency(params: DataSetCrudToolDependencySelectorParams): ViewDependency | undefined {
     const parentTable = this.requireNonEmptyString(params.parentTable, 'getDependency.parentTable')
     const childTable = this.requireNonEmptyString(params.childTable, 'getDependency.childTable')
     return (this.dataSet.viewDependencies ?? []).find(
@@ -1293,7 +1513,7 @@ export class DataSetCrudTool {
    * @returns 新创建的依赖。
    * @throws 当依赖引用非法时抛错。
    */
-  createDependency(params: { dependency: ViewDependency }): ViewDependency {
+  createDependency(params: DataSetCrudToolCreateDependencyParams): ViewDependency {
     const dependencyInput = this.requireViewDependency(params.dependency, 'createDependency.dependency')
     this.dataSet.addDependency(dependencyInput)
     this._afterWrite()
@@ -1310,13 +1530,14 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-dependency high 更新依赖会改变父子视图刷新和过滤链路。
    * @moduleGuard 更新后仍必须引用存在表和字段，并避免循环依赖。
    * @moduleMutation pagedata.json write 更新数据视图依赖。
+   * @param params 依赖更新参数。
    * @param parentTable 原父表名。
    * @param childTable 原子表名。
    * @param updates 依赖更新内容。
    * @returns 更新后的依赖。
    * @throws 当依赖不存在或更新目标非法时抛错。
    */
-  updateDependency(params: { parentTable: string; childTable: string; updates: Partial<ViewDependency> }): ViewDependency {
+  updateDependency(params: DataSetCrudToolUpdateDependencyParams): ViewDependency {
     const parentTable = this.requireNonEmptyString(params.parentTable, 'updateDependency.parentTable')
     const childTable = this.requireNonEmptyString(params.childTable, 'updateDependency.childTable')
     const updates = this.requireObjectArg(params.updates, 'updateDependency.updates')
@@ -1331,11 +1552,12 @@ export class DataSetCrudTool {
    * @moduleAttackSurface dataset-dependency high 删除依赖会改变依赖视图的联动刷新行为。
    * @moduleGuard 删除前必须确认页面没有依赖该父子视图联动。
    * @moduleMutation pagedata.json write 删除数据视图依赖。
+   * @param params 依赖定位参数。
    * @param parentTable 父表名。
    * @param childTable 子表名。
    * @throws 当依赖不存在时抛错。
    */
-  deleteDependency(params: { parentTable: string; childTable: string }): void {
+  deleteDependency(params: DataSetCrudToolDependencySelectorParams): void {
     const parentTable = this.requireNonEmptyString(params.parentTable, 'deleteDependency.parentTable')
     const childTable = this.requireNonEmptyString(params.childTable, 'deleteDependency.childTable')
     this.dataSet.removeDependency(parentTable, childTable)

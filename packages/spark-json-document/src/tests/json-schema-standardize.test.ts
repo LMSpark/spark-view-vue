@@ -9,6 +9,16 @@ describe('standardizeJsonSchema', () => {
     })).toEqual({ $ref: '#/$defs/HttpEndpoint' })
   })
 
+  it('unwraps single-branch combinators without dropping wrapper descriptions', () => {
+    expect(standardizeJsonSchema({
+      allOf: [{ $ref: '#/$defs/QueryParams' }],
+      description: '查询参数。',
+    })).toEqual({
+      $ref: '#/$defs/QueryParams',
+      description: '查询参数。',
+    })
+  })
+
   it('normalizes boolean schemas without redundant enum', () => {
     expect(standardizeJsonSchema({
       type: 'boolean',

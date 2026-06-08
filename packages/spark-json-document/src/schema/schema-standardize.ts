@@ -62,7 +62,10 @@ export function standardizeJsonSchema(value: unknown): StandardJsonSchema {
   if (!isPlainObject(value)) return true
 
   if (typeof value.$ref === 'string' && value.$ref.trim().length > 0) {
-    return sortSchemaKeys({ $ref: value.$ref.trim() })
+    return sortSchemaKeys({
+      $ref: value.$ref.trim(),
+      ...pickReferenceSchemaMeta(value),
+    })
   }
 
   const literalOnly = normalizeLiteralOnlySchema(value)
@@ -76,7 +79,7 @@ export function standardizeJsonSchema(value: unknown): StandardJsonSchema {
   for (const keyword of ['anyOf', 'oneOf', 'allOf'] as const) {
     const branches = value[keyword]
     if (Array.isArray(branches) && branches.length === 1) {
-      return standardizeJsonSchema(branches[0])
+      return mergeSchemaAnnotations(standardizeJsonSchema(branches[0]), value)
     }
   }
 
@@ -217,6 +220,28 @@ function pickLiteralSchemaMeta(
     ...(source.description !== undefined ? { description: source.description } : {}),
     ...body,
   }
+}
+
+function pickReferenceSchemaMeta(source: StandardJsonSchemaObject): StandardJsonSchemaObject {
+  return {
+    ...(source.description !== undefined ? { description: source.description } : {}),
+  }
+}
+
+function mergeSchemaAnnotations(
+  schema: StandardJsonSchema,
+  source: StandardJsonSchemaObject,
+): StandardJsonSchema {
+  const description = typeof source.description === 'string' && source.description.trim().length > 0
+    ? source.description
+    : undefined
+  if (description === undefined) return schema
+  // 单分支 allOf/anyOf/oneOf 常用于“命名类型 $ref + 参数语义”包装；
+  // 展开时必须保留外层 description，否则 VCM 的 @param 语义会在池化前丢失。
+  if (schema === true) return { description }
+  if (schema === false) return schema
+  if (typeof schema.description === 'string' && schema.description.trim().length > 0) return schema
+  return sortSchemaKeys({ ...schema, description })
 }
 
 function isNullOnlySchema(branch: StandardJsonSchema): boolean {

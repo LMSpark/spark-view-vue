@@ -1,5 +1,5 @@
 import ts from 'typescript'
-import { standardizeJsonSchema } from '@spark-appworks/spark-json-document'
+import { standardizeJsonSchemaWithLocalDefs } from '@spark-appworks/spark-json-document'
 import {
   JsonSchemaDefinitionPool,
   isJsonSchemaPoolObject,
@@ -20,19 +20,48 @@ export type GeneratedJsonSchemaObject = JsonSchemaPoolObject & {
   readonly additionalProperties?: GeneratedJsonSchema
 }
 
-export function tsTypeToJsonSchema(checker: ts.TypeChecker, type: ts.Type): GeneratedJsonSchema {
-  const state = createJsonSchemaGenerationState()
-  const schema = typeToJsonSchema(checker, type, state, { inlineNamedObject: true })
-  return standardizeJsonSchema(attachDefinitions(schema, state))
+export type JsonSchemaDescriptionTodo = Readonly<{
+  path: readonly string[]
+  propertyName: string
+  typeText: string
+  file: string
+  line: number
+  declarationOwnerKind: 'type' | 'interface' | 'class' | 'inline-object'
+  declarationOwnerName?: string
+}>
+
+export type TsTypeToJsonSchemaOptions = Readonly<{
+  /**
+   * 只做语义缺口审计，不生成语义。
+   * JSON Schema description 只能来自源码 JSDoc/VCM 注释，反射层不会猜业务含义。
+   */
+  onMissingDescription?: (todo: JsonSchemaDescriptionTodo) => void
+  rootPath?: readonly string[]
+  skipMissingDescriptionPathLengthLessThan?: number
+}>
+
+export function tsTypeToJsonSchema(
+  checker: ts.TypeChecker,
+  type: ts.Type,
+  options: TsTypeToJsonSchemaOptions = {},
+): GeneratedJsonSchema {
+  const state = createJsonSchemaGenerationState(options)
+  const schema = typeToJsonSchema(checker, type, state, {
+    inlineNamedObject: true,
+    path: options.rootPath ?? [],
+  })
+  return standardizeJsonSchemaWithLocalDefs(attachDefinitions(schema, state))
 }
 
 type TypeToSchemaOptions = Readonly<{
   inlineNamedObject: boolean
+  path: readonly string[]
 }>
 
 type JsonSchemaGenerationState = {
   depth: number
   definitions: JsonSchemaDefinitionPool<GeneratedJsonSchema>
+  options: TsTypeToJsonSchemaOptions
 }
 
 const MAX_SCHEMA_DEPTH = 8
@@ -52,13 +81,18 @@ function typeToJsonSchema(
     return typeValue === undefined ? { enum: literalValues } : { type: typeValue, enum: literalValues }
   }
 
-  if (type.isUnion()) return unionToJsonSchema(checker, type, state)
+  if (type.isUnion()) return unionToJsonSchema(checker, type, state, options)
   if (isStringLike(type)) return { type: 'string' }
   if (isNumberLike(type)) return { type: 'number' }
   if (isBooleanLike(type)) return { type: 'boolean' }
   if (isFunctionLike(checker, type)) return true
-  if (isArrayLike(checker, type)) return arrayToJsonSchema(checker, type, state)
+  if (isArrayLike(checker, type)) return arrayToJsonSchema(checker, type, state, options)
   if (isRecordType(checker, type)) return { type: 'object', additionalProperties: true }
+  if (isBuiltInCollectionType(checker, type)) return { type: 'object', additionalProperties: true }
+  const externalObjectName = readExternalObjectName(checker, type)
+  if (externalObjectName !== undefined) {
+    return { type: 'object', title: externalObjectName, additionalProperties: true }
+  }
 
   const classInstanceName = readClassInstanceName(checker, type)
   if (classInstanceName !== undefined) return { type: 'object', title: classInstanceName }
@@ -69,17 +103,21 @@ function typeToJsonSchema(
     return { $ref: state.definitions.refFor(typeKey) }
   }
 
-  return objectToJsonSchema(checker, type, state)
+  return objectToJsonSchema(checker, type, state, options)
 }
 
 function unionToJsonSchema(
   checker: ts.TypeChecker,
   type: ts.UnionType,
   state: JsonSchemaGenerationState,
+  options: TypeToSchemaOptions,
 ): GeneratedJsonSchema {
   const schemas = type.types
     .filter(part => !isUndefinedLike(part))
-    .map(item => withNestedDepth(state, () => typeToJsonSchema(checker, item, state, { inlineNamedObject: false })))
+    .map(item => withNestedDepth(state, () => typeToJsonSchema(checker, item, state, {
+      inlineNamedObject: false,
+      path: options.path,
+    })))
   if (schemas.length === 0) return true
   if (schemas.length === 1) return schemas[0] ?? true
 
@@ -92,14 +130,18 @@ function arrayToJsonSchema(
   checker: ts.TypeChecker,
   type: ts.Type,
   state: JsonSchemaGenerationState,
+  options: TypeToSchemaOptions,
 ): GeneratedJsonSchema {
   if (checker.isTupleType(type)) {
     const elementTypes = readTypeReferenceArguments(type)
     if (elementTypes.length > 0) {
       return {
         type: 'array',
-        prefixItems: elementTypes.map(elementType =>
-          withNestedDepth(state, () => typeToJsonSchema(checker, elementType, state, { inlineNamedObject: false }))),
+        prefixItems: elementTypes.map((elementType, index) =>
+          withNestedDepth(state, () => typeToJsonSchema(checker, elementType, state, {
+            inlineNamedObject: false,
+            path: [...options.path, 'prefixItems', String(index)],
+          }))),
         items: false,
       }
     }
@@ -110,7 +152,10 @@ function arrayToJsonSchema(
     type: 'array',
     items: item === undefined
       ? true
-      : withNestedDepth(state, () => typeToJsonSchema(checker, item, state, { inlineNamedObject: false })),
+      : withNestedDepth(state, () => typeToJsonSchema(checker, item, state, {
+        inlineNamedObject: false,
+        path: [...options.path, 'items'],
+      })),
   }
 }
 
@@ -118,6 +163,7 @@ function objectToJsonSchema(
   checker: ts.TypeChecker,
   type: ts.Type,
   state: JsonSchemaGenerationState,
+  options: TypeToSchemaOptions,
 ): GeneratedJsonSchema {
   const properties = type.getProperties()
   if (properties.length === 0) return true
@@ -125,16 +171,112 @@ function objectToJsonSchema(
   const out: Record<string, GeneratedJsonSchema> = {}
   const required: string[] = []
   for (const property of properties) {
+    if (shouldSkipObjectSchemaProperty(checker, property)) continue
     const declaration = property.declarations?.[0]
     if (declaration === undefined) continue
     const propertyType = safeGetTypeOfSymbolAtLocation(checker, property, declaration)
     if (propertyType === undefined) continue
-    out[property.name] = withNestedDepth(state, () =>
-      typeToJsonSchema(checker, propertyType, state, { inlineNamedObject: false }))
+    const propertyPath = [...options.path, 'properties', property.name]
+    const propertySchema = withNestedDepth(state, () =>
+      typeToJsonSchema(checker, propertyType, state, { inlineNamedObject: false, path: propertyPath }))
+    const description = readSymbolJsDocDescription(checker, property)
+    if (description === undefined) {
+      pushMissingDescriptionTodo(checker, state, property, declaration, propertyType, propertyPath)
+    }
+    out[property.name] = withSchemaDescription(propertySchema, description)
     if ((property.flags & ts.SymbolFlags.Optional) === 0) required.push(property.name)
   }
 
   return { type: 'object', properties: out, required }
+}
+
+function shouldSkipObjectSchemaProperty(checker: ts.TypeChecker, property: ts.Symbol): boolean {
+  if (property.name.startsWith('#')) return true
+  const declaration = property.declarations?.[0]
+  if (declaration === undefined) return false
+  if (ts.isMethodDeclaration(declaration) || ts.isMethodSignature(declaration)) return true
+  const modifiers = ts.canHaveModifiers(declaration) ? ts.getModifiers(declaration) : undefined
+  if (modifiers?.some(modifier =>
+    modifier.kind === ts.SyntaxKind.PrivateKeyword
+    || modifier.kind === ts.SyntaxKind.ProtectedKeyword) === true) {
+    return true
+  }
+  const propertyType = safeGetTypeOfSymbolAtLocation(checker, property, declaration)
+  return propertyType !== undefined && isFunctionLike(checker, propertyType)
+}
+
+function withSchemaDescription(schema: GeneratedJsonSchema, description: string | undefined): GeneratedJsonSchema {
+  if (description === undefined || description.length === 0 || schema === false) return schema
+  if (schema === true) return { description }
+  if (typeof schema['description'] === 'string' && schema['description'].trim().length > 0) return schema
+  return { ...schema, description }
+}
+
+function readSymbolJsDocDescription(checker: ts.TypeChecker, symbol: ts.Symbol): string | undefined {
+  const text = ts.displayPartsToString(symbol.getDocumentationComment(checker)).trim()
+  return text.length === 0 ? undefined : text
+}
+
+function pushMissingDescriptionTodo(
+  checker: ts.TypeChecker,
+  state: JsonSchemaGenerationState,
+  property: ts.Symbol,
+  declaration: ts.Declaration,
+  propertyType: ts.Type,
+  path: readonly string[],
+): void {
+  const onMissingDescription = state.options.onMissingDescription
+  if (onMissingDescription === undefined) return
+  const minPathLength = state.options.skipMissingDescriptionPathLengthLessThan
+  if (minPathLength !== undefined && path.length < minPathLength) return
+  const sourceFile = declaration.getSourceFile()
+  const position = sourceFile.getLineAndCharacterOfPosition(declaration.getStart(sourceFile))
+  const owner = readDeclarationOwner(declaration)
+  onMissingDescription({
+    path,
+    propertyName: property.name,
+    typeText: safeTypeToString(checker, propertyType),
+    file: sourceFile.fileName,
+    line: position.line + 1,
+    ...owner,
+  })
+}
+
+function readDeclarationOwner(
+  declaration: ts.Declaration,
+): Pick<JsonSchemaDescriptionTodo, 'declarationOwnerKind' | 'declarationOwnerName'> {
+  const current = ts.findAncestor(declaration, node => node !== declaration && (
+    ts.isInterfaceDeclaration(node)
+    || ts.isTypeAliasDeclaration(node)
+    || ts.isParameter(node)
+    || ts.isMethodDeclaration(node)
+    || ts.isMethodSignature(node)
+    || ts.isClassDeclaration(node)
+  ))
+  if (current !== undefined && ts.isInterfaceDeclaration(current)) {
+    return { declarationOwnerKind: 'interface', declarationOwnerName: current.name.text }
+  }
+  if (current !== undefined && ts.isTypeAliasDeclaration(current)) {
+    return { declarationOwnerKind: 'type', declarationOwnerName: current.name.text }
+  }
+  if (current !== undefined && ts.isParameter(current)) {
+    const name = bindingNameText(current.name, current.getSourceFile())
+    return { declarationOwnerKind: 'inline-object', declarationOwnerName: `${name} 参数对象` }
+  }
+  if (current !== undefined && (ts.isMethodDeclaration(current) || ts.isMethodSignature(current))) {
+    const methodName = ts.isPrivateIdentifier(current.name)
+      ? `#${current.name.text}`
+      : current.name.getText(current.getSourceFile())
+    return { declarationOwnerKind: 'inline-object', declarationOwnerName: `${methodName} 返回对象` }
+  }
+  if (current !== undefined && ts.isClassDeclaration(current) && current.name !== undefined) {
+    return { declarationOwnerKind: 'class', declarationOwnerName: current.name.text }
+  }
+  return { declarationOwnerKind: 'inline-object' }
+}
+
+function bindingNameText(name: ts.BindingName, sourceFile: ts.SourceFile): string {
+  return ts.isIdentifier(name) ? name.text : name.getText(sourceFile)
 }
 
 function ensureDefinition(
@@ -143,7 +285,8 @@ function ensureDefinition(
   state: JsonSchemaGenerationState,
   typeKey: string,
 ): void {
-  state.definitions.ensure(typeKey, () => withNestedDepth(state, () => objectToJsonSchema(checker, type, state)))
+  state.definitions.ensure(typeKey, () => withNestedDepth(state, () =>
+    objectToJsonSchema(checker, type, state, { inlineNamedObject: false, path: ['$defs', typeKey] })))
 }
 
 function attachDefinitions(schema: GeneratedJsonSchema, state: JsonSchemaGenerationState): GeneratedJsonSchema {
@@ -154,10 +297,11 @@ function isSchemaObject(schema: GeneratedJsonSchema): schema is GeneratedJsonSch
   return isJsonSchemaPoolObject(schema)
 }
 
-function createJsonSchemaGenerationState(): JsonSchemaGenerationState {
+function createJsonSchemaGenerationState(options: TsTypeToJsonSchemaOptions): JsonSchemaGenerationState {
   return {
     depth: 0,
     definitions: new JsonSchemaDefinitionPool<GeneratedJsonSchema>(),
+    options,
   }
 }
 
@@ -185,6 +329,24 @@ function readClassInstanceName(checker: ts.TypeChecker, type: ts.Type): string |
   if (symbol.declarations?.some(ts.isClassDeclaration) !== true) return undefined
   const name = checker.symbolToString(symbol)
   return isUsefulDefinitionName(name) ? name : undefined
+}
+
+function readExternalObjectName(checker: ts.TypeChecker, type: ts.Type): string | undefined {
+  if (type.getProperties().length === 0) return undefined
+  const symbol = type.aliasSymbol ?? type.getSymbol()
+  if (symbol === undefined) return undefined
+  const declarations = symbol.declarations
+  if (declarations === undefined || declarations.length === 0) return undefined
+  if (!declarations.every(declaration => isExternalTypeDeclarationFile(declaration.getSourceFile().fileName))) {
+    return undefined
+  }
+  const name = checker.symbolToString(symbol)
+  return isUsefulDefinitionName(name) ? name : undefined
+}
+
+function isExternalTypeDeclarationFile(fileName: string): boolean {
+  const normalized = fileName.replace(/\\/g, '/')
+  return normalized.includes('/node_modules/') || /\/typescript\/lib\/lib\.[^/]+\.d\.ts$/u.test(normalized)
 }
 
 function isAnonymousObjectType(type: ts.Type): boolean {
@@ -247,6 +409,14 @@ function isUndefinedLike(type: ts.Type): boolean {
 function isRecordType(checker: ts.TypeChecker, type: ts.Type): boolean {
   const text = safeTypeToString(checker, type)
   return text.startsWith('Record<') || text === '{ [x: string]: unknown; }'
+}
+
+function isBuiltInCollectionType(checker: ts.TypeChecker, type: ts.Type): boolean {
+  const text = safeTypeToString(checker, type)
+
+  // Map/Set 是 JS 运行时集合，不是 VCM 业务数据模型；
+  // 在 JSON Schema 中强行反射其方法集合只会制造无用 defs 和递归噪音。
+  return /^(ReadonlyMap|Map|ReadonlySet|Set|WeakMap|WeakSet)</u.test(text)
 }
 
 function safeTypeToString(checker: ts.TypeChecker, type: ts.Type): string {

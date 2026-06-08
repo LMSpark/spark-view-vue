@@ -61,6 +61,11 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   private revisionCounter = 0
   private readonly listeners = new Set<ProjectModelEventListener>()
 
+  /**
+   * 创建项目根模型实例。
+   *
+   * @param options 项目导航、页面四文件与会话初始化参数。
+   */
   constructor(options: ProjectModelInitOptions) {
     this.design = new ProjectDesign<TNode>(options)
     this.session = new ProjectSession({
@@ -293,6 +298,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * 写入指定配置页四文件文本到内存模型。
    *
    * @moduleMutation page-files write 修改内存四文件；落盘由 ProjectWorkspace 编排。
+   * @param command 页面文件写入命令，包含目标 pageId、文件名和新文本。
    */
   writePageFile(command: ProjectPageFileWriteCommand): void {
     const page = this.requirePageDesign(command.pageId)

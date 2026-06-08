@@ -12,11 +12,37 @@ import type {
   AiModuleFunctionFailureMode,
 } from '../protocol/module-metadata'
 
+/** VCM 从源码 JSDoc 派生的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。 */
+export type AiApiJsDocMetadata = Readonly<{
+  raw?: string
+  /** compact runtime JSON 会省略与同级 description 重复的 summary。 */
+  summary?: string
+  /** compact runtime JSON 会省略空 tags。 */
+  tags?: readonly AiApiJsDocTagMetadata[]
+}>
+
+export type AiApiJsDocTagMetadata = Readonly<{
+  name: string
+  text: string
+  paramName?: string
+}>
+
+/** VCM 反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。 */
+export type AiApiSourceProvenanceMetadata = Readonly<{
+  file: string
+  line: number
+  className: string
+  memberName?: string
+  typeEntryFile?: string
+}>
+
 /** API 对象元数据（根对象或 action 返回的嵌套对象）。 */
 export type AiApiObjectMetadata = Readonly<{
   kind: string
   name: string
   description: string
+  jsdoc?: AiApiJsDocMetadata
+  provenance?: AiApiSourceProvenanceMetadata
   constructorSignature?: AiApiConstructorMetadata
   actions: readonly AiApiActionMetadata[]
   attributes?: readonly AiApiAttributeMetadata[]
@@ -25,6 +51,8 @@ export type AiApiObjectMetadata = Readonly<{
 /** API 对象构造函数元数据。 */
 export type AiApiConstructorMetadata = Readonly<{
   description: string
+  jsdoc?: AiApiJsDocMetadata
+  provenance?: AiApiSourceProvenanceMetadata
   paramsSchema: AiJsonSchemaObject
 }>
 
@@ -32,6 +60,8 @@ export type AiApiConstructorMetadata = Readonly<{
 export type AiApiAttributeMetadata = Readonly<{
   name: string
   description: string
+  jsdoc?: AiApiJsDocMetadata
+  provenance?: AiApiSourceProvenanceMetadata
   schema: AiJsonSchema
   readable: boolean
   writable: boolean
@@ -43,6 +73,8 @@ export type AiApiActionMetadata = Readonly<{
   name: string
   methodName: string
   description: string
+  jsdoc?: AiApiJsDocMetadata
+  provenance?: AiApiSourceProvenanceMetadata
   paramsSchema: AiJsonSchemaObject
   takesContext?: boolean
   resultSchema?: AiJsonSchema

@@ -80,6 +80,24 @@ type DataViewEventMap = Record<string, any[]> & {
     /** CRUD 提交后事件——业务脚本可根据 result 执行联动 */
     'crud:after': [CrudLifecycleEvent]}
 
+/** 手动重算计算列时的通知选项。 */
+export type DataViewRecomputeColumnsOptions = {
+  /** 是否发出 rowsChanged 及聚合通知；false 表示仅更新内部派生值。 */
+  emit?: boolean
+}
+
+/** 服务端行数据响应载荷。 */
+export type DataViewServerRowsPayload = {
+  /** 服务端返回的行数据列表。 */
+  rows?: DataRow[]
+  /** 服务端返回的总行数。 */
+  total?: number
+  /** 服务端返回或确认的当前页码。 */
+  page?: number
+  /** 服务端返回或确认的每页行数。 */
+  pageSize?: number
+}
+
 /** rowsChanged 事件按微任务合并，保证同一同步批次只通知一次，同时让 Vue nextTick 可观测。 */
 const REQUEST_SUPERSEDED_MESSAGE = 'Request superseded'
 
@@ -109,14 +127,14 @@ function dataRowsFromUnknown(value: unknown, context: string): DataRow[] {
 function normalizeServerRowsData(
   data: unknown,
   context: string,
-): { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } | DataRow[] {
+): DataViewServerRowsPayload | DataRow[] {
   if (Array.isArray(data)) return dataRowsFromUnknown(data, context)
   const record = isRecord(data) ? data : null
   if (record === null) {
     throw new Error(`${context}: 服务端响应必须是数组或对象`)
   }
 
-  const normalized: { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } = {}
+  const normalized: DataViewServerRowsPayload = {}
   if (record['rows'] !== undefined) normalized.rows = dataRowsFromUnknown(record['rows'], context)
   if (typeof record['total'] === 'number') normalized.total = record['total']
   if (typeof record['page'] === 'number') normalized.page = record['page']
@@ -303,32 +321,59 @@ export class DataView implements DataSource {
   // 选中状态操作（委托给 SelectionDelegate）
   // ─────────────────────────────────────────────
 
-  /** 设置当前行（自动提取主键存储，null 清除） */
+  /**
+   * 设置当前行（自动提取主键存储，null 清除）。
+   *
+   * @param row 要设为当前行的行对象；null 表示清除当前行。
+   * @param originatorId 可选变更来源标识，用于级联订阅方避免回环。
+   */
   setCurrentRow(row: DataRow | null, originatorId?: string): void {
     this.selectionDelegate.setCurrentRow(row, originatorId)
   }
 
-  /** 通过主键设置当前行（行不存在时返回 false） */
+  /**
+   * 通过主键设置当前行（行不存在时返回 false）。
+   *
+   * @param id 目标行主键值；null 表示清除当前行。
+   * @param originatorId 可选变更来源标识，用于级联订阅方避免回环。
+   */
   setCurrentRowById(id: string | number | null, originatorId?: string): boolean {
     return this.selectionDelegate.setCurrentRowById(id, originatorId)
   }
 
-  /** 设置多选行（覆盖式） */
+  /**
+   * 设置多选行（覆盖式）。
+   *
+   * @param rows 新的选中行列表。
+   * @param originatorId 可选变更来源标识，用于级联订阅方避免回环。
+   */
   setSelectedRows(rows: DataRow[], originatorId?: string): void {
     this.selectionDelegate.setSelectedRows(rows, originatorId)
   }
 
-  /** 追加多选行（返回实际新增数量） */
+  /**
+   * 追加多选行（返回实际新增数量）。
+   *
+   * @param rows 要追加到选中集的行列表。
+   */
   addSelectedRows(rows: DataRow[]): number {
     return this.selectionDelegate.addSelectedRows(rows)
   }
 
-  /** 移除多选行（返回实际移除数量） */
+  /**
+   * 移除多选行（返回实际移除数量）。
+   *
+   * @param rows 要从选中集中移除的行列表。
+   */
   removeSelectedRows(rows: DataRow[]): number {
     return this.selectionDelegate.removeSelectedRows(rows)
   }
 
-  /** 通过主键批量移除多选行（返回实际移除数量） */
+  /**
+   * 通过主键批量移除多选行（返回实际移除数量）。
+   *
+   * @param ids 要从选中集中移除的行主键值列表。
+   */
   removeSelectedRowsById(ids: Array<string | number>): number {
     return this.selectionDelegate.removeSelectedRowsById(ids)
   }
@@ -628,7 +673,11 @@ export class DataView implements DataSource {
   // 计算列
   // ─────────────────────────────────────────────
 
-  /** 设置计算列共享上下文（表达式中通过 ctx 引用），重新编译并对现有 rows 求值 */
+  /**
+   * 设置计算列共享上下文（表达式中通过 ctx 引用），重新编译并对现有 rows 求值。
+   *
+   * @param ctx 计算列表达式可通过 ctx 读取的共享上下文。
+   */
   setComputedContext(ctx: Record<string, unknown>): void {
     this._computedDelegate.setContext(ctx)
     this._applyComputedColumns(this.rows)
@@ -636,8 +685,12 @@ export class DataView implements DataSource {
     this.emitRowsChanged()
   }
 
-  /** 手动触发全量计算列重新求值 + 聚合重算。常规行操作已自动触发，仅用于特殊场景 */
-  recomputeColumns(options?: { emit?: boolean }): void {
+  /**
+   * 手动触发全量计算列重新求值 + 聚合重算。常规行操作已自动触发，仅用于特殊场景。
+   *
+   * @param options 重算通知选项。
+   */
+  recomputeColumns(options?: DataViewRecomputeColumnsOptions): void {
     this._applyComputedColumns(this.rows)
     const aggregateOptions = options?.emit === undefined ? undefined : { emit: options.emit }
     this.aggregateDelegate.recompute(this.rows, this.selectedRows, aggregateOptions)
@@ -1075,6 +1128,12 @@ export class DataView implements DataSource {
 
   protected logger = Logger('DataView')
 
+  /**
+   * 创建数据视图实例。
+   *
+   * @param tableName 视图所属表名。
+   * @param viewId 视图 ID，默认 `default` 表示主数据视图。
+   */
   constructor(tableName: string, viewId = 'default') {
     assertNoSeparator(tableName, 'tableName')
     assertNoSeparator(viewId, 'viewId')
@@ -1114,10 +1173,18 @@ export class DataView implements DataSource {
   /** 实际生效的主键字段名列表（不含合成列 `_pk`） */
   get effectivePkFields(): string[] { return this._primaryKeyDelegate.effectivePkFields }
 
-  /** 获取行的主键值（标量） */
+  /**
+   * 获取行的主键值（标量）。
+   *
+   * @param row 目标行。
+   */
   getPkKey(row: DataRow): string | number | undefined { return this._primaryKeyDelegate.getPkKey(row) }
 
-  /** 从行数据构建服务端 PK payload */
+  /**
+   * 从行数据构建服务端 PK payload。
+   *
+   * @param row 目标行。
+   */
   buildServerPk(row: DataRow): Record<string, unknown> { return this._primaryKeyDelegate.buildServerPk(row) }
 
   // ─────────────────────────────────────────────
@@ -1209,7 +1276,11 @@ export class DataView implements DataSource {
     }
   }
 
-  /** 从服务器拉取列表（带防重入 + 请求 ID 竞态保护） */
+  /**
+   * 从服务器拉取列表（带防重入 + 请求 ID 竞态保护）。
+   *
+   * @param params 查询参数；省略时由当前视图配置生成。
+   */
   async loadFromServer(params?: QueryParams): Promise<CrudResult> {
     this.checkDestroyed()
     if (this.requestState === RequestState.Loading) return { success: false, message: 'Already loading' }
@@ -1253,6 +1324,9 @@ export class DataView implements DataSource {
   /**
    * 按服务端 PK 拉取单条记录。
    * 默认会将结果同步回本地 rows；可选设为当前行。
+   *
+   * @param pk 服务端主键 payload。
+   * @param options 单条记录拉取后的同步选项。
    */
   async retrieveRecord(
     pk: Record<string, unknown>,
@@ -1269,6 +1343,9 @@ export class DataView implements DataSource {
   /**
    * 按本地主键值拉取单条记录。
    * 若本地已存在该行，会优先构造真实服务端 PK；否则回退到 `{ [primaryKey]: id }`。
+   *
+   * @param id 本地主键值。
+   * @param options 单条记录拉取后的同步选项。
    */
   async retrieveRecordById(
     id: string | number,
@@ -1336,7 +1413,12 @@ export class DataView implements DataSource {
     return this.requestData()
   }
 
-  /** 无 API 时的内存级联过滤（从 DataTable.rows 按依赖过滤条件写入视图）。 */
+  /**
+   * 无 API 时的内存级联过滤（从 DataTable.rows 按依赖过滤条件写入视图）。
+   *
+   * @param rel 父子视图依赖关系。
+   * @param parentRows 父视图当前参与级联的行列表。
+   */
   applyInMemoryCascade(rel: DataRelation, parentRows: readonly DataRow[]): void {
     // 从 DataTable.rows 读取全量静态源数据（可在多次父行切换中反复过滤）
     const srcRows: DataRow[] = this._dataTable?.rows ?? []
@@ -1364,27 +1446,44 @@ export class DataView implements DataSource {
   // 本地 CRUD（内存同步，不触发网络请求）
   // ─────────────────────────────────────────────
 
-  /** 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定 */
-  updateFromServer(data: { rows?: DataRow[]; total?: number; page?: number; pageSize?: number } | DataRow[]): void {
+  /**
+   * 将服务端响应同步到本地字段（rows / total / page / pageSize）——splice 保持数组引用稳定。
+   *
+   * @param data 服务端返回的行数组或行数据响应载荷。
+   */
+  updateFromServer(data: DataViewServerRowsPayload | DataRow[]): void {
     this.localMutationDelegate.updateFromServer(data)
     this.syncTreeManagerFromRows()
     this.emitRowsChanged()
   }
 
-  /** 本地追加一行，触发计算列求值 + 聚合重算 + rowsChanged */
+  /**
+   * 本地追加一行，触发计算列求值 + 聚合重算 + rowsChanged。
+   *
+   * @param row 要追加的行。
+   */
   appendRow(row: DataRow): void {
     this.localMutationDelegate.appendRow(row)
     this.syncTreeManagerFromRows()
   }
 
-  /** 本地按主键部分更新一行；返回是否成功（行不存在时 false） */
+  /**
+   * 本地按主键部分更新一行；返回是否成功（行不存在时 false）。
+   *
+   * @param id 目标行主键值。
+   * @param data 要合并到目标行上的字段更新。
+   */
   updateRowById(id: string | number, data: Partial<DataRow>): boolean {
     const updated = this.localMutationDelegate.updateRowById(id, data)
     if (updated) this.syncTreeManagerFromRows()
     return updated
   }
 
-  /** 本地按主键删除一行，清理选中引用；返回是否成功（行不存在时 false） */
+  /**
+   * 本地按主键删除一行，清理选中引用；返回是否成功（行不存在时 false）。
+   *
+   * @param id 目标行主键值。
+   */
   deleteRowById(id: string | number): boolean {
     const deleted = this.localMutationDelegate.deleteRowById(id)
     if (deleted) {
@@ -1393,7 +1492,11 @@ export class DataView implements DataSource {
     return deleted
   }
 
-  /** 本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态 */
+  /**
+   * 本地整批替换所有行，清理无效选中引用，清除 staged 模式的脏追踪状态。
+   *
+   * @param rows 新的完整行列表。
+   */
   replaceRows(rows: DataRow[]): void {
     this._dirtyTrackingDelegate?.clearAll()
     this.clearEditingState()
@@ -1405,18 +1508,30 @@ export class DataView implements DataSource {
   // 编辑态缓冲（UI 字段编辑 → apply → 手工编辑/脏追踪）
   // ─────────────────────────────────────────────
 
-  /** 是否存在编辑态变更。 */
+  /**
+   * 是否存在编辑态变更。
+   *
+   * @param id 可选行主键值；省略时检查是否存在任意编辑态变更。
+   */
   hasEditingChanges(id?: string | number): boolean {
     return id === undefined ? this._editingPatches.size > 0 : this._editingPatches.has(id)
   }
 
-  /** 获取指定行当前编辑态 patch。 */
+  /**
+   * 获取指定行当前编辑态 patch。
+   *
+   * @param id 目标行主键值。
+   */
   getEditingPatch(id: string | number): Partial<DataRow> | undefined {
     const patch = this._editingPatches.get(id)
     return patch ? { ...patch } : undefined
   }
 
-  /** 获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。 */
+  /**
+   * 获取指定行的编辑态 overlay；未编辑时返回当前 DataView 行。
+   *
+   * @param id 目标行主键值。
+   */
   getEditingRow(id: string | number): DataRow | null {
     const row = this.getRowById(id) ?? this._editingOriginalRows.get(id) ?? null
     if (!row) return null
@@ -1428,7 +1543,13 @@ export class DataView implements DataSource {
     return merged
   }
 
-  /** 将 UI 字段值写入编辑态，不直接污染 rows。 */
+  /**
+   * 将 UI 字段值写入编辑态，不直接污染 rows。
+   *
+   * @param id 目标行主键值。
+   * @param field 要编辑的字段名。
+   * @param value 新字段值。
+   */
   updateEditingValue(id: string | number, field: string, value: unknown): DataRow {
     this.checkDestroyed()
     const normalizedField = field.trim()
@@ -1487,7 +1608,11 @@ export class DataView implements DataSource {
     return editingRow
   }
 
-  /** 丢弃指定行或全部编辑态变更。 */
+  /**
+   * 丢弃指定行或全部编辑态变更。
+   *
+   * @param ids 可选行主键值列表；省略时丢弃全部编辑态变更。
+   */
   discardEditingRows(ids?: Array<string | number>): number {
     this.checkDestroyed()
     const targets = ids ?? [...this._editingPatches.keys()]
@@ -1501,7 +1626,11 @@ export class DataView implements DataSource {
     return discardedCount
   }
 
-  /** 将编辑态 patch 应用到现有 editRowById 管线。 */
+  /**
+   * 将编辑态 patch 应用到现有 editRowById 管线。
+   *
+   * @param ids 可选行主键值列表；省略时应用全部编辑态变更。
+   */
   async applyEditingRows(ids?: Array<string | number>): Promise<CrudResult<DataViewApplyEditingRowsResult>> {
     this.checkDestroyed()
     const targets = ids ?? [...this._editingPatches.keys()]
@@ -1545,6 +1674,8 @@ export class DataView implements DataSource {
   /**
    * 本地新增行。commitMode='staged' 时标记为 pending-create（saveChanges 统一提交）；
    * commitMode='immediate' 且已配置 API 时立即调用 crud.createRecord。
+   *
+   * @param data 新行数据。
    */
   async addRow(data: Partial<DataRow>): Promise<DataRow | CrudResult<DataRow>> {
     this.checkDestroyed()
@@ -1563,6 +1694,8 @@ export class DataView implements DataSource {
   /**
    * 本地删除行。commitMode='staged' 时标记为 pending-delete（saveChanges 统一提交）；
    * commitMode='immediate' 且已配置 API 时立即调用 crud.deleteRecord。
+   *
+   * @param id 目标行主键值。
    */
   async removeRow(id: string | number): Promise<boolean | CrudResult<boolean>> {
     this.checkDestroyed()
@@ -1582,6 +1715,9 @@ export class DataView implements DataSource {
    * 手工编辑指定行（标脏）。commitMode='staged' 时仅更新内存并标脏；
    * commitMode='immediate' 且已配置 API 时立即调用 crud.updateRecord。
    * 连续编辑同一行只保留首次编辑前的快照。
+   *
+   * @param id 目标行主键值。
+   * @param data 要合并到目标行上的字段更新。
    */
   async editRowById(
     id: string | number,
@@ -1616,14 +1752,22 @@ export class DataView implements DataSource {
     })
   }
 
-  /** 获取指定行的字段级变更明细（行不脏时返回 {}） */
+  /**
+   * 获取指定行的字段级变更明细（行不脏时返回 {}）。
+   *
+   * @param id 目标行主键值。
+   */
   getDirtyChanges(id: string | number): RowDiff {
     const current = this.rows.find(r => this._primaryKeyDelegate.getPkKey(r) === id)
     if (!current) return {}
     return this.dirtyTrackingDelegate.getDiff(id, current)
   }
 
-  /** 将待提交变更（新增→更新→删除）逐条保存到服务端。单行失败不中断后续行。 */
+  /**
+   * 将待提交变更（新增→更新→删除）逐条保存到服务端。单行失败不中断后续行。
+   *
+   * @param ids 可选行主键值列表；省略时保存全部脏行。
+   */
   async saveChanges(ids?: Array<string | number>): Promise<CrudResult<SaveChangesData>> {
     this.checkDestroyed()
     return this.dirtyTrackingDelegate.executeChanges(this, this.crudDelegate, ids)
@@ -1701,7 +1845,12 @@ export class DataView implements DataSource {
     return this.treeManager
   }
 
-  /** 拉取直接子节点并写入缓存（对应 /tree/children） */
+  /**
+   * 拉取直接子节点并写入缓存（对应 /tree/children）。
+   *
+   * @param parentId 父节点 ID；null 表示根级节点。
+   * @param limit 最大返回子节点数。
+   */
   loadTreeChildren(parentId: string | number | null, limit?: number): Promise<FlatTreeNode[]> {
     return this._ensureTreeManager().fetchChildren(parentId, limit).then(rows => {
       this.syncRowsFromTreeManager()
@@ -1709,18 +1858,27 @@ export class DataView implements DataSource {
     })
   }
 
-  /** 获取节点祖先链 ID（对应 /tree/path） */
+  /**
+   * 获取节点祖先链 ID（对应 /tree/path）。
+   *
+   * @param id 目标节点 ID。
+   */
   loadTreePath(id: string | number): Promise<TreePath> {
     return this._ensureTreeManager().fetchPath(id)
   }
 
-  /** 展开到目标节点，差量补齐缓存（对应 /tree/path + /tree/subtree） */
+  /**
+   * 展开到目标节点，差量补齐缓存（对应 /tree/path + /tree/subtree）。
+   *
+   * @param targetId 目标节点 ID。
+   */
   expandTreeToNode(targetId: string | number): Promise<void> {
     return this._ensureTreeManager().expandToNode(targetId).then(() => {
       this.syncRowsFromTreeManager()
     })
   }
 
+  // 内部树缓存写入入口；当前 VCM action 面不暴露该方法，避免和 SparkNodeTree.moveNode 混淆。
   moveTreeNode(nodeId: string | number, newParentId: string | number | null, index?: number): Promise<DataRow | null> {
     return this._ensureTreeManager().moveNode(nodeId, newParentId, index).then(() => {
       this.syncRowsFromTreeManager()
@@ -1728,7 +1886,12 @@ export class DataView implements DataSource {
     })
   }
 
-  /** 嵌套模式远端搜索（对应 /tree/nested/search） */
+  /**
+   * 嵌套模式远端搜索（对应 /tree/nested/search）。
+   *
+   * @param keyword 搜索关键字。
+   * @param limit 最大返回匹配节点数。
+   */
   searchTreeNested(keyword: string, limit?: number): Promise<NestedTreeSearchResult[]> {
     return this._ensureTreeManager().fetchNestedSearch(keyword, limit)
   }
@@ -1812,14 +1975,22 @@ export class DataView implements DataSource {
     return config
   }
 
-  /** 设置当前页；远端视图自动重新查询 */
+  /**
+   * 设置当前页；远端视图自动重新查询。
+   *
+   * @param page 新页码。
+   */
   async setPage(page: number): Promise<void> {
     this.page = page
     this.emitConfigChanged()
     if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
-  /** 设置每页条数并重置页码为 1；远端视图自动重新查询 */
+  /**
+   * 设置每页条数并重置页码为 1；远端视图自动重新查询。
+   *
+   * @param pageSize 新每页行数。
+   */
   async setPageSize(pageSize: number): Promise<void> {
     this.pageSize = pageSize
     this.page = 1
@@ -1827,7 +1998,11 @@ export class DataView implements DataSource {
     if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
-  /** 设置排序表达式；远端视图自动重新查询 */
+  /**
+   * 设置排序表达式；远端视图自动重新查询。
+   *
+   * @param sort 新排序表达式；undefined 表示清除排序。
+   */
   async setSort(sort: SortExpression | undefined): Promise<void> {
     if (sort === undefined) {
       delete this.sortExpression
@@ -1838,7 +2013,11 @@ export class DataView implements DataSource {
     if (!this._shouldApplyStaticLocalFilter()) await this.refresh()
   }
 
-  /** 设置过滤表达式并重置页码为 1；表达式变更后由数据层自动处理数据 */
+  /**
+   * 设置过滤表达式并重置页码为 1；表达式变更后由数据层自动处理数据。
+   *
+   * @param filter 新过滤表达式；undefined 表示清除过滤。
+   */
   async setFilter(filter: FilterExpression | undefined): Promise<void> {
     if (this._isSameFilterExpression(this.filterExpression, filter)) return
 
@@ -1859,6 +2038,8 @@ export class DataView implements DataSource {
 
   /**
    * 显式执行过滤：即使表达式未变化也会处理数据（用于“查询”按钮语义）。
+   *
+   * @param filter 要执行的过滤表达式；undefined 表示清除过滤。
    */
   async executeFilter(filter: FilterExpression | undefined): Promise<void> {
     const unchanged = this._isSameFilterExpression(this.filterExpression, filter)
@@ -1972,6 +2153,11 @@ export class DataView implements DataSource {
   // ─────────────────────────────────────────────
 
   /** 将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。 */
+  /**
+   * 将 ViewMetadata 配置字段应用到当前视图实例（不创建新实例，不处理 rows）。
+   *
+   * @param vc 要应用的视图配置片段。
+   */
   applyViewConfig(vc: Partial<ViewMetadata>): void {
     if (vc.filterExpression !== undefined) {
       this._validateFilterExpression(vc.filterExpression)

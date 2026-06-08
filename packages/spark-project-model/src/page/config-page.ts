@@ -35,6 +35,7 @@ export type PageNodeLike = {
 }
 
 export type ProjectConfigPageNodeModelOptions = ProjectNodeModelOptions & {
+  /** 配置页唯一 pageId；省略时从导航节点解析。 */
   pageId?: string
 }
 
@@ -65,6 +66,11 @@ export class ConfigPageNode extends ProjectNode {
   private readonly files: Record<PageNodeFileName, ConfigPageFileModel>
   private _isLoaded = false
 
+  /**
+   * 创建配置页节点实例，并初始化 rule/pagedata/script/style 四文件内存模型。
+   *
+   * @param options 配置页导航节点、pageId 与基础 ProjectNode 初始化参数。
+   */
   constructor(options: ProjectConfigPageNodeModelOptions) {
     super(options)
     const pageId = normalizeConfigPageId(options.pageId ?? resolvePageNodePageId(options.node))
@@ -141,6 +147,7 @@ export class ConfigPageNode extends ProjectNode {
    * 读取四文件文本。
    *
    * @moduleMutation page-files read 只读内存四文件文本。
+   * @param name 要读取的页面文件名。
    */
   getFileText(name: PageNodeFileName): string {
     return this.files[name].getText()
@@ -150,6 +157,8 @@ export class ConfigPageNode extends ProjectNode {
    * 写入四文件文本到内存模型。
    *
    * @moduleMutation page-files write 修改内存四文件文本，不直接落盘。
+   * @param name 要写入的页面文件名。
+   * @param text 新的文件文本内容。
    */
   setFileText(name: PageNodeFileName, text: string): void {
     switch (name) {
@@ -227,6 +236,7 @@ export class ConfigPageNode extends ProjectNode {
    * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。
    * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 按 paramsSchema 与组件原生 props schema 修正
    * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 page.editNodeTree / page.editDataSet 等方法
+   * @param run 节点树编辑回调；回调参数是当前页面 SparkNodeTree。
    */
   async editNodeTree(run: (tree: SparkNodeTreeModel) => void | Promise<void>): Promise<void> {
     await this.rule.editTree(run)
@@ -249,6 +259,7 @@ export class ConfigPageNode extends ProjectNode {
    * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。
    * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。
    * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约
+   * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {
     await this.dataSet.editTool(run)

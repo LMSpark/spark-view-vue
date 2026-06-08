@@ -12,7 +12,6 @@ import {
   type AiModuleAdapterRegisterOptions,
 } from '../agent'
 import {
-  AiModule,
   AiModuleResult,
   type AiModuleMetadataJson,
 } from '../modules'

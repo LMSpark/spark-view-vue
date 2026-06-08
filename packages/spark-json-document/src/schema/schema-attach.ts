@@ -10,10 +10,26 @@ export function attachJsonSchemaDefs(
   defs?: Readonly<Record<string, JsonSchema>>,
 ): unknown {
   if (defs === undefined || Object.keys(defs).length === 0) return schema
-  if (!isRecord(schema)) return schema
+  if (!isRecord(schema)) {
+    return {
+      allOf: [schema],
+      $defs: { ...defs },
+    }
+  }
   const existing = schema['$defs']
   const mergedDefs = isRecord(existing)
     ? { ...defs, ...existing }
     : { ...defs }
+
+  // Draft 2020-12 允许 $ref 旁边有 sibling，但本项目的 schema audit
+  // 约定 $ref 必须是唯一关键字，避免 LLM/运行时消费者解释不一致。
+  // 因此根节点是 $ref 时用 allOf 承载引用，再挂 document/local $defs。
+  if (typeof schema['$ref'] === 'string') {
+    return {
+      allOf: [{ $ref: schema['$ref'] }],
+      $defs: mergedDefs,
+    }
+  }
+
   return { ...schema, $defs: mergedDefs }
 }

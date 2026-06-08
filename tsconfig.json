@@ -44,6 +44,7 @@
       "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],
       "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],
       "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],
+      "@spark-appworks/spark-ai/vcm-native": ["./packages/spark-ai/src/vcm-native/index.ts"],
       "@spark-appworks/spark-project-model": ["./packages/spark-project-model/src/index.ts"],
       "@spark-appworks/spark-json-document": ["./packages/spark-json-document/src/index.ts"],
       "@spark-appworks/spark-json-document/schema": ["./packages/spark-json-document/src/schema/index.ts"],

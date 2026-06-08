@@ -6,7 +6,7 @@
  */
 
 import { createHash } from 'node:crypto'
-import { standardizeJsonSchema } from '@spark-appworks/spark-json-document'
+import { extractJsonSchemaLocalDefs, standardizeJsonSchema } from '@spark-appworks/spark-json-document'
 import { jsonSchemaDefinitionName } from './json-schema-pool'
 
 export const MODULE_METADATA_JSON_SCHEMA = 'https://json-schema.org/draft/2020-12/schema'
@@ -16,20 +16,22 @@ const SCHEMA_SLOT_KEYS = new Set(['paramsSchema', 'resultSchema', 'schema'])
 type JsonSchemaValue = boolean | JsonSchemaObject
 
 type JsonSchemaObject = {
-  readonly [keyword: string]: unknown
-  readonly $ref?: string
-  readonly $defs?: Readonly<Record<string, JsonSchemaValue>>
-  readonly type?: string | readonly string[]
-  readonly properties?: Readonly<Record<string, JsonSchemaValue>>
-  readonly required?: readonly string[]
-  readonly items?: JsonSchemaValue
-  readonly anyOf?: readonly JsonSchemaValue[]
-  readonly oneOf?: readonly JsonSchemaValue[]
-  readonly allOf?: readonly JsonSchemaValue[]
-  readonly prefixItems?: readonly JsonSchemaValue[]
-  readonly additionalProperties?: JsonSchemaValue
-  readonly enum?: readonly unknown[]
-  readonly title?: string
+  [keyword: string]: unknown
+  $ref?: string
+  $defs?: Record<string, JsonSchemaValue>
+  type?: string | string[]
+  properties?: Record<string, JsonSchemaValue>
+  required?: string[]
+  items?: JsonSchemaValue
+  anyOf?: JsonSchemaValue[]
+  oneOf?: JsonSchemaValue[]
+  allOf?: JsonSchemaValue[]
+  prefixItems?: JsonSchemaValue[]
+  additionalProperties?: JsonSchemaValue
+  enum?: unknown[]
+  const?: unknown
+  title?: string
+  description?: string
 }
 
 export type ModuleMetadataSchemaPoolResult<TModule> = Readonly<{
@@ -53,17 +55,18 @@ export type ModuleMetadataPooledDocument<TModule> = Readonly<{
   modules: readonly TModule[]
 }>
 
-export function poolModuleMetadataSchemas(module: unknown): ModuleMetadataSchemaPoolResult<unknown> {
+export function poolModuleMetadataSchemas<TModule>(module: TModule): ModuleMetadataSchemaPoolResult<TModule> {
   const pool = new Map<string, JsonSchemaObject>()
   const pooledModule = visitMetadataNode(module, pool)
   const reachable = collectReachableDefNames(pooledModule, pool)
   const defs: Record<string, JsonSchemaObject> = {}
   for (const name of [...reachable].sort((left, right) => left.localeCompare(right))) {
     const schema = pool.get(name)
-    if (schema !== undefined) defs[name] = finalizeSchema(schema)
+    const finalized = schema === undefined ? undefined : finalizeSchemaObject(schema)
+    if (finalized !== undefined) defs[name] = finalized
   }
   return {
-    module: pooledModule,
+    module: pooledModule as TModule,
     defs,
   }
 }
@@ -197,14 +200,16 @@ function externalizeSchema(
   pool: Map<string, JsonSchemaObject>,
   pending: Set<string>,
 ): JsonSchemaValue {
-  const standardizedInput = finalizeSchema(value)
+  const extracted = extractJsonSchemaLocalDefs(value)
+  hoistLocalDefinitionRecord(extracted.defs, pool, pending)
+  const standardizedInput = finalizeSchema(extracted.schema)
   if (typeof standardizedInput === 'boolean') return standardizedInput
   if (!isJsonSchemaObject(standardizedInput)) return true
 
   hoistLocalDefs(standardizedInput, pool, pending)
 
   if (typeof standardizedInput.$ref === 'string' && standardizedInput.$ref.length > 0) {
-    return finalizeSchema({ $ref: normalizeDefsRef(standardizedInput.$ref) })
+    return createReferenceSchema(normalizeDefsRef(standardizedInput.$ref), standardizedInput)
   }
 
   const { $defs: _localDefs, ...previewSource } = standardizedInput
@@ -219,27 +224,39 @@ function externalizeSchema(
 
   const name = resolveDefinitionName(normalizedPreview)
   if (pool.has(name)) {
-    return finalizeSchema({ $ref: `#/$defs/${name}` })
+    return createReferenceSchema(`#/$defs/${name}`, standardizedInput)
   }
   if (pending.has(name)) {
-    return finalizeSchema({ $ref: `#/$defs/${name}` })
+    return createReferenceSchema(`#/$defs/${name}`, standardizedInput)
   }
 
   pending.add(name)
   try {
     const canonical = finalizeSchema(canonicalizeSchemaBody(standardizedInput, pool, pending))
     if (!isJsonSchemaObject(canonical)) {
-      return finalizeSchema({ $ref: `#/$defs/${name}` })
+      return createReferenceSchema(`#/$defs/${name}`, standardizedInput)
     }
     mergeDefinition(pool, name, canonical)
-    return finalizeSchema({ $ref: `#/$defs/${name}` })
+    return createReferenceSchema(`#/$defs/${name}`, standardizedInput)
   } finally {
     pending.delete(name)
   }
 }
 
+function createReferenceSchema(ref: string, source?: JsonSchemaObject): JsonSchemaValue {
+  return finalizeSchema({
+    $ref: ref,
+    ...(source?.description === undefined ? {} : { description: source.description }),
+  })
+}
+
 function finalizeSchema(value: unknown): JsonSchemaValue {
-  return standardizeJsonSchema(value)
+  return standardizeJsonSchema(value) as JsonSchemaValue
+}
+
+function finalizeSchemaObject(value: unknown): JsonSchemaObject | undefined {
+  const finalized = finalizeSchema(value)
+  return isJsonSchemaObject(finalized) ? finalized : undefined
 }
 
 function externalizeArraySchema(
@@ -253,10 +270,10 @@ function externalizeArraySchema(
   }
   const name = resolveArrayDefinitionName(canonical)
   if (pool.has(name)) {
-    return finalizeSchema({ $ref: `#/$defs/${name}` })
+    return createReferenceSchema(`#/$defs/${name}`, value)
   }
   mergeDefinition(pool, name, canonical)
-  return finalizeSchema({ $ref: `#/$defs/${name}` })
+  return createReferenceSchema(`#/$defs/${name}`, value)
 }
 
 function resolveArrayDefinitionName(schema: JsonSchemaObject): string {
@@ -279,7 +296,7 @@ function resolveArrayDefinitionName(schema: JsonSchemaObject): string {
 }
 
 function resolveInlineItemArrayName(items: JsonSchemaObject): string | undefined {
-  if (items.const !== undefined) {
+  if (items['const'] !== undefined) {
     return `ArrayOf_${stableSchemaHash(items)}`
   }
   const keys = Object.keys(items).filter(key => key !== 'title' && key !== 'description')
@@ -300,6 +317,14 @@ function hoistLocalDefs(
 ): void {
   const localDefs = value.$defs
   if (localDefs === undefined) return
+  hoistLocalDefinitionRecord(localDefs, pool, pending)
+}
+
+function hoistLocalDefinitionRecord(
+  localDefs: Readonly<Record<string, unknown>>,
+  pool: Map<string, JsonSchemaObject>,
+  pending: Set<string>,
+): void {
   for (const [rawName, definition] of Object.entries(localDefs)) {
     const externalized = externalizeSchema(definition, pool, pending)
     if (typeof externalized === 'object' && typeof externalized.$ref === 'string') {
@@ -438,7 +463,7 @@ function mergeDefinition(
 function scoreSchemaRichness(schema: JsonSchemaObject): number {
   let score = 0
 
-  if (typeof schema.description === 'string' && schema.description.trim().length > 0) score += 1
+  if (typeof schema['description'] === 'string' && schema['description'].trim().length > 0) score += 1
   if (Array.isArray(schema.required)) score += schema.required.length
   if (Array.isArray(schema.enum)) score += schema.enum.length * 2
   if ('const' in schema) score += 2
@@ -512,8 +537,9 @@ function visitSchemaRefs(value: unknown, refs: Set<string>): void {
   }
   if (!isPlainObject(value)) return
 
-  if (typeof value.$ref === 'string' && value.$ref.startsWith('#/$defs/')) {
-    refs.add(value.$ref.slice('#/$defs/'.length))
+  const ref = value['$ref']
+  if (typeof ref === 'string' && ref.startsWith('#/$defs/')) {
+    refs.add(ref.slice('#/$defs/'.length))
   }
 
   for (const [key, child] of Object.entries(value)) {
@@ -537,6 +563,7 @@ function isJsonSchemaObject(value: unknown): value is JsonSchemaObject {
     || 'additionalProperties' in value
     || 'prefixItems' in value
     || 'title' in value
+    || 'description' in value
 }
 
 function isUsefulDefinitionName(name: string): boolean {
@@ -551,6 +578,7 @@ function shouldKeepSchemaInline(schema: JsonSchemaObject): boolean {
   }
 
   if (isTitleOnlyStub(schema)) return true
+  if (isAnnotationOnlySchema(schema)) return true
   if (isPrimitiveTypeSchema(schema)) return true
   if (isInlineEnumSchema(schema)) return true
   if (isConstSchema(schema)) return true
@@ -571,6 +599,13 @@ function isPrimitiveTypeSchema(schema: JsonSchemaObject): boolean {
   const typeValue = schema.type
   if (typeof typeValue === 'string') return true
   return Array.isArray(typeValue) && typeValue.length > 0
+}
+
+function isAnnotationOnlySchema(schema: JsonSchemaObject): boolean {
+  const keys = Object.keys(schema)
+  // description-only schema 是 Draft 2020-12 的“允许任意值 + 注释”形态。
+  // 这里必须内联保留，不能池化成匿名 $defs，否则函数参数/unknown 字段语义会掉成 true。
+  return keys.length > 0 && keys.every(key => key === 'title' || key === 'description')
 }
 
 function isInlineEnumSchema(schema: JsonSchemaObject): boolean {

@@ -1,7 +1,12 @@
 {
   "permissions": {
     "allow": [
-      "Bash(pnpm --dir packages/spark-project-model run typecheck)"
+      "Bash(pnpm --dir packages/spark-project-model run typecheck)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.runtime.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.api.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\payload\\\\component-catalog.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
+      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\data\\\\stills-metadata.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)"
     ]
   }
 }

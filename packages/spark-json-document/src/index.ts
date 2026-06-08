@@ -114,6 +114,9 @@ export {
   dereferenceJsonSchema,
   dereferenceSchemaSlotsInValue,
   attachJsonSchemaDefs,
+  extractJsonSchemaLocalDefs,
+  findMissingJsonSchemaDefRefs,
+  standardizeJsonSchemaWithLocalDefs,
 } from './schema/index'
 
 export type {
@@ -121,6 +124,7 @@ export type {
   StandardJsonSchemaObject,
   Draft2020AuditIssue,
   JsonSchemaDefs,
+  JsonSchemaLocalDefsExtraction,
 } from './schema/index'
 
 // ═══════════════════════════════════════════════════════════════

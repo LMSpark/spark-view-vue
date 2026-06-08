@@ -1,8 +1,8 @@
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-import { assertDraft2020Schema } from '@spark-appworks/spark-json-document'
+import { assertDraft2020Schema, findMissingJsonSchemaDefRefs } from '@spark-appworks/spark-json-document'
 import { auditModuleMetadataDocument } from '../module-metadata-draft2020-audit'
 import { poolModuleMetadataSchemas } from '../module-schema-pool'
 import { buildModuleMetadataRuntimeDocument } from '../module-schema-pool'
@@ -70,7 +70,13 @@ describe('Draft 2020-12 schema audit', () => {
         const document: unknown = JSON.parse(raw)
         const issues = auditModuleMetadataDocument(document)
         expect(issues, `${relativePath} audit pass ${pass}`).toEqual([])
+        expect(findMissingJsonSchemaDefRefs(document), `${relativePath} missing $defs pass ${pass}`).toEqual([])
       }
     }
+  })
+
+  it('does not emit a runtime audit generated JSON file', () => {
+    const relativePath = 'src/services/page-design/page-design-module-metadata.runtime.audit.generated.json'
+    expect(existsSync(resolve(process.cwd(), relativePath))).toBe(false)
   })
 })

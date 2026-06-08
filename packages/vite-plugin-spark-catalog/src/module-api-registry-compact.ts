@@ -14,6 +14,8 @@ type AiApiActionMetadata = Readonly<{
   name: string
   methodName: string
   description: string
+  jsdoc?: unknown
+  provenance?: unknown
   paramsSchema: unknown
   takesContext?: boolean
   resultSchema?: unknown
@@ -23,9 +25,18 @@ type AiApiActionMetadata = Readonly<{
   failureModes?: readonly unknown[]
 }>
 
+type AiApiConstructorMetadata = Readonly<{
+  description: string
+  jsdoc?: unknown
+  provenance?: unknown
+  paramsSchema: unknown
+}>
+
 type AiApiAttributeMetadata = Readonly<{
   name: string
   description: string
+  jsdoc?: unknown
+  provenance?: unknown
   schema: unknown
   readable: boolean
   writable: boolean
@@ -37,7 +48,9 @@ type AiApiObjectMetadata = Readonly<{
   kind: string
   name: string
   description: string
-  constructorSignature?: unknown
+  jsdoc?: unknown
+  provenance?: unknown
+  constructorSignature?: AiApiConstructorMetadata
   attributes?: readonly AiApiAttributeMetadata[]
   actions: readonly AiApiActionMetadata[]
 }>
@@ -47,11 +60,29 @@ export type AiApiResultApiRefCompact = Readonly<{
   $ref: string
 }>
 
-export type AiApiActionMetadataCompact = Readonly<Omit<AiApiActionMetadata, 'resultApis'>> & {
+type AiApiJsDocMetadataCompact = Readonly<{
+  summary?: string
+  tags?: readonly unknown[]
+}>
+
+export type AiApiActionMetadataCompact = Readonly<Omit<AiApiActionMetadata, 'resultApis' | 'jsdoc' | 'provenance'>> & {
+  jsdoc?: AiApiJsDocMetadataCompact
   resultApis?: readonly AiApiResultApiRefCompact[]
 }
 
-export type AiApiObjectMetadataCompact = Readonly<Omit<AiApiObjectMetadata, 'actions'>> & {
+export type AiApiConstructorMetadataCompact = Readonly<Omit<AiApiConstructorMetadata, 'jsdoc' | 'provenance'>> & {
+  jsdoc?: AiApiJsDocMetadataCompact
+}
+
+export type AiApiAttributeMetadataCompact = Readonly<Omit<AiApiAttributeMetadata, 'api' | 'jsdoc' | 'provenance'>> & {
+  jsdoc?: AiApiJsDocMetadataCompact
+  api?: AiApiObjectMetadataCompact
+}
+
+export type AiApiObjectMetadataCompact = Readonly<Omit<AiApiObjectMetadata, 'actions' | 'attributes' | 'constructorSignature' | 'jsdoc' | 'provenance'>> & {
+  jsdoc?: AiApiJsDocMetadataCompact
+  constructorSignature?: AiApiConstructorMetadataCompact
+  attributes?: readonly AiApiAttributeMetadataCompact[]
   actions: readonly AiApiActionMetadataCompact[]
 }
 
@@ -108,8 +139,9 @@ function compactApiObjectActions(api: AiApiObjectMetadata): AiApiObjectMetadataC
     kind: api.kind,
     name: api.name,
     description: api.description,
-    ...(api.constructorSignature === undefined ? {} : { constructorSignature: api.constructorSignature }),
-    ...(api.attributes === undefined ? {} : { attributes: api.attributes }),
+    ...compactJsDocProperty(api.jsdoc, api.description),
+    ...(api.constructorSignature === undefined ? {} : { constructorSignature: compactConstructorSignature(api.constructorSignature) }),
+    ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(compactAttribute) }),
     actions: api.actions.map(compactActionResultApis),
   }
 }
@@ -119,6 +151,7 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
     name: action.name,
     methodName: action.methodName,
     description: action.description,
+    ...compactJsDocProperty(action.jsdoc, action.description),
     paramsSchema: action.paramsSchema,
     ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
     ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
@@ -134,4 +167,53 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
     ...(action.requiredBeforeCall === undefined ? {} : { requiredBeforeCall: [...action.requiredBeforeCall] }),
     ...(action.failureModes === undefined ? {} : { failureModes: [...action.failureModes] }),
   }
+}
+
+function compactConstructorSignature(constructorSignature: AiApiConstructorMetadata): AiApiConstructorMetadataCompact {
+  return {
+    description: constructorSignature.description,
+    ...compactJsDocProperty(constructorSignature.jsdoc, constructorSignature.description),
+    paramsSchema: constructorSignature.paramsSchema,
+  }
+}
+
+function compactAttribute(attribute: AiApiAttributeMetadata): AiApiAttributeMetadataCompact {
+  return {
+    name: attribute.name,
+    description: attribute.description,
+    ...compactJsDocProperty(attribute.jsdoc, attribute.description),
+    schema: attribute.schema,
+    readable: attribute.readable,
+    writable: attribute.writable,
+    ...(attribute.api === undefined ? {} : { api: compactApiObjectActions(attribute.api) }),
+  }
+}
+
+function compactJsDocProperty(
+  jsdoc: unknown,
+  fallbackDescription: string,
+): { jsdoc?: AiApiJsDocMetadataCompact } {
+  const compact = compactJsDoc(jsdoc, fallbackDescription)
+  return compact === undefined ? {} : { jsdoc: compact }
+}
+
+function compactJsDoc(
+  jsdoc: unknown,
+  fallbackDescription: string,
+): AiApiJsDocMetadataCompact | undefined {
+  if (!isRecord(jsdoc)) return undefined
+  const summary = typeof jsdoc['summary'] === 'string' ? jsdoc['summary'] : undefined
+  const tags = Array.isArray(jsdoc['tags']) ? jsdoc['tags'] : undefined
+  const compact: { summary?: string; tags?: readonly unknown[] } = {}
+  if (summary !== undefined && summary !== fallbackDescription) {
+    compact.summary = summary
+  }
+  if (tags !== undefined && tags.length > 0) {
+    compact.tags = tags
+  }
+  return Object.keys(compact).length === 0 ? undefined : compact
+}
+
+function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

@@ -10,6 +10,17 @@ const VALID_SCHEMA_TYPES = new Set([
   'string',
 ])
 
+const REF_ANNOTATION_SIBLINGS = new Set([
+  'title',
+  'description',
+  '$comment',
+  'default',
+  'examples',
+  'deprecated',
+  'readOnly',
+  'writeOnly',
+])
+
 export type Draft2020AuditIssue = Readonly<{
   path: string
   rule: string
@@ -41,9 +52,9 @@ function visitSchema(value: unknown, path: string, issues: Draft2020AuditIssue[]
     if (!ref.startsWith('#/$defs/')) {
       issues.push({ path, rule: 'REF_TARGET', detail: 'schema $ref must target #/$defs/*' })
     }
-    const siblings = Object.keys(value).filter(key => key !== '$ref')
+    const siblings = Object.keys(value).filter(key => key !== '$ref' && !REF_ANNOTATION_SIBLINGS.has(key))
     if (siblings.length > 0) {
-      issues.push({ path, rule: 'REF_WITH_SIBLINGS', detail: `$ref must be the only keyword; found ${siblings.join(', ')}` })
+      issues.push({ path, rule: 'REF_WITH_STRUCTURAL_SIBLINGS', detail: `$ref may only have annotation siblings; found ${siblings.join(', ')}` })
     }
     return
   }

@@ -1,9 +1,12 @@
-import { existsSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
+import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync } from 'node:fs'
 import { tmpdir } from 'node:os'
 import { join } from 'node:path'
 import { afterEach, describe, expect, it } from 'vitest'
 
-import { generateModuleAbilityMetadata } from '../module-metadata-generator'
+import {
+  compareModuleMetadataForBuildConsistency,
+  generateModuleAbilityMetadata,
+} from '../module-metadata-generator'
 
 const tempRoots: string[] = []
 
@@ -42,6 +45,11 @@ class DemoDirectory {
  * @moduleKind demo-root
  */
 class DemoRootService {
+  /** Demo service label. */
+  public readonly label = 'demo'
+
+  // ===== constructor =====
+
   /**
    * Create demo root service.
    *
@@ -100,6 +108,22 @@ class DemoRootService {
       'helper',
     ])
     const rootModule = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-root')
+    expect(rootModule?.rootApi.jsdoc).toMatchObject({
+      summary: 'Demo root service.',
+      tags: [
+        { name: 'moduleAbility', text: 'demo.root' },
+        { name: 'moduleKind', text: 'demo-root' },
+      ],
+    })
+    expect(rootModule?.rootApi.provenance).toMatchObject({
+      file: 'sample.ts',
+      className: 'DemoRootService',
+    })
+    expect(rootModule?.rootApi.jsdoc?.raw).toContain('Demo root service.')
+    expect(rootModule?.rootApi.attributes?.[0]?.jsdoc).toMatchObject({
+      summary: 'Demo service label.',
+    })
+    expect(rootModule?.rootApi.attributes?.[0]?.jsdoc?.raw).toContain('Demo service label.')
     expect(result.abilities[0]?.constructorSignature).toMatchObject({
       description: 'Create demo root service.',
       params: [
@@ -118,12 +142,34 @@ class DemoRootService {
         required: ['name'],
       },
     })
+    expect(rootModule?.rootApi.constructorSignature?.jsdoc).toMatchObject({
+      summary: 'Create demo root service.',
+      tags: [
+        { name: 'param', text: 'Demo service name.' },
+        { name: 'param', text: 'Optional creation flags.' },
+      ],
+    })
+    expect(rootModule?.rootApi.constructorSignature?.jsdoc?.raw).toContain('Create demo root service.')
+    expect(rootModule?.rootApi.constructorSignature?.provenance).toMatchObject({
+      file: 'sample.ts',
+      className: 'DemoRootService',
+      memberName: 'constructor',
+    })
     expect(rootModule?.rootApi.actions.map(action => action.name)).toEqual([
       'describe',
       'submitDraft',
       'openDirectory',
       'helper',
     ])
+    expect(rootModule?.rootApi.actions[0]?.jsdoc).toMatchObject({
+      summary: 'Describe current state.',
+    })
+    expect(rootModule?.rootApi.actions[0]?.jsdoc?.raw).toContain('Describe current state.')
+    expect(rootModule?.rootApi.actions[0]?.provenance).toMatchObject({
+      file: 'sample.ts',
+      className: 'DemoRootService',
+      memberName: 'describe',
+    })
     expect(rootModule?.rootApi.actions[2]?.resultApis?.[0]?.api.kind).toBe('demo-directory')
     expect(result.diagnostics).toMatchObject({
       abilityCount: 1,
@@ -140,11 +186,229 @@ class DemoRootService {
 
     const generated = JSON.parse(readFileSync(join(root, 'out/modules.json'), 'utf8')) as {
       diagnostics: { resultApiCount: number }
-      modules: Array<{ rootApi: { kind: string } }>
+      modules: Array<{
+        rootApi: {
+          kind: string
+          jsdoc?: { raw?: string }
+          provenance?: { file?: string; className?: string }
+          constructorSignature?: { jsdoc?: { raw?: string } }
+          attributes?: Array<{ jsdoc?: { raw?: string } }>
+          actions: Array<{ jsdoc?: { raw?: string } }>
+        }
+      }>
     }
     expect(generated.diagnostics.resultApiCount).toBe(1)
     expect(generated.modules[0]?.rootApi.kind).toBe('demo-directory')
     expect(generated.modules[1]?.rootApi.kind).toBe('demo-root')
+    expect(generated.modules[1]?.rootApi.jsdoc?.raw).toContain('Demo root service.')
+    expect(generated.modules[1]?.rootApi.provenance).toMatchObject({
+      file: 'sample.ts',
+      className: 'DemoRootService',
+    })
+    expect(generated.modules[1]?.rootApi.constructorSignature?.jsdoc?.raw).toContain('Create demo root service.')
+    expect(generated.modules[1]?.rootApi.attributes?.[0]?.jsdoc?.raw).toContain('Demo service label.')
+    expect(generated.modules[1]?.rootApi.actions[0]?.jsdoc?.raw).toContain('Describe current state.')
+  })
+
+  it('prefers source class JSDoc over dist declaration files for reflected child APIs', () => {
+    const root = createTempRoot()
+    mkdirSync(join(root, 'dist/types'), { recursive: true })
+    mkdirSync(join(root, 'src'), { recursive: true })
+    writeFileSync(join(root, 'dist/types/child.d.ts'), `
+/**
+ * Old declaration child API.
+ *
+ * @moduleKind child-api
+ */
+export declare class ChildApi {
+  /** Old declaration constructor. */
+  constructor()
+
+  /** Old declaration search. */
+  search(): string
+}
+`, 'utf8')
+    writeFileSync(join(root, 'src/child.ts'), `
+/**
+ * Source child API.
+ *
+ * @moduleKind child-api
+ */
+export class ChildApi {
+  /**
+   * Source child constructor.
+   */
+  constructor() {}
+
+  /**
+   * Source child search.
+   */
+  public search(): string {
+    return 'ok'
+  }
+}
+`, 'utf8')
+    writeFileSync(join(root, 'root.ts'), `
+import type { ChildApi } from './dist/types/child'
+
+class AiModuleResult<T> {
+  readonly value?: T
+}
+
+/**
+ * Root API.
+ *
+ * @moduleKind root-api
+ */
+class RootApi {
+  /** Open child API. */
+  public openChild(): AiModuleResult<ChildApi> {
+    return new AiModuleResult()
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['root.ts', 'src/child.ts'],
+      outFile: 'out/abilities.json',
+      moduleOutFile: 'out/modules.json',
+      apiRoots: ['RootApi'],
+      extractResults: true,
+      writeFiles: false,
+    })
+
+    const childApi = result.moduleMetadata[0]?.rootApi.actions[0]?.resultApis?.[0]?.api
+    expect(childApi).toMatchObject({
+      kind: 'child-api',
+      provenance: {
+        file: 'src/child.ts',
+        className: 'ChildApi',
+        typeEntryFile: 'dist/types/child.d.ts',
+      },
+      jsdoc: {
+        summary: 'Source child API.',
+      },
+      constructorSignature: {
+        provenance: {
+          file: 'src/child.ts',
+          className: 'ChildApi',
+          memberName: 'constructor',
+          typeEntryFile: 'dist/types/child.d.ts',
+        },
+        jsdoc: {
+          summary: 'Source child constructor.',
+        },
+      },
+      actions: [
+        {
+          name: 'search',
+          provenance: {
+            file: 'src/child.ts',
+            className: 'ChildApi',
+            memberName: 'search',
+            typeEntryFile: 'dist/types/child.d.ts',
+          },
+          jsdoc: {
+            summary: 'Source child search.',
+          },
+        },
+      ],
+    })
+    expect(JSON.stringify(childApi)).not.toContain('Old declaration')
+
+    const typeEntryResult = generateModuleAbilityMetadata(root, {
+      sources: ['root.ts', 'src/child.ts'],
+      outFile: 'out/abilities.json',
+      moduleOutFile: 'out/modules.json',
+      apiRoots: ['RootApi'],
+      extractResults: true,
+      reflectionMode: 'type-entry',
+      writeFiles: false,
+    })
+    expect(compareModuleMetadataForBuildConsistency(result.moduleMetadata, typeEntryResult.moduleMetadata)).toContainEqual({
+      code: 'MODULE_METADATA_BUILD_CONSISTENCY_MISMATCH',
+      path: 'child-api.jsdoc.summary',
+      message: expect.stringContaining('Old declaration child API.'),
+    })
+  })
+
+  it('uses tsconfig.catalog paths to reflect cross-package source declarations without build output', () => {
+    const root = createTempRoot()
+    mkdirSync(join(root, 'src'), { recursive: true })
+    writeFileSync(join(root, 'tsconfig.catalog.json'), JSON.stringify({
+      compilerOptions: {
+        target: 'ES2020',
+        module: 'ESNext',
+        moduleResolution: 'Bundler',
+        baseUrl: '.',
+        paths: {
+          '@demo/child': ['src/child.ts'],
+        },
+      },
+    }), 'utf8')
+    writeFileSync(join(root, 'src/child.ts'), `
+/**
+ * Source-only child API.
+ *
+ * @moduleKind child-api
+ */
+export class ChildApi {
+  /**
+   * Source-only child constructor.
+   */
+  constructor() {}
+
+  /** Source-only search. */
+  public search(): string {
+    return 'ok'
+  }
+}
+`, 'utf8')
+    writeFileSync(join(root, 'root.ts'), `
+import type { ChildApi } from '@demo/child'
+
+class AiModuleResult<T> {
+  readonly value?: T
+}
+
+/**
+ * Root API.
+ *
+ * @moduleKind root-api
+ */
+class RootApi {
+  /** Open child API. */
+  public openChild(): AiModuleResult<ChildApi> {
+    return new AiModuleResult()
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['root.ts'],
+      outFile: 'out/abilities.json',
+      moduleOutFile: 'out/modules.json',
+      apiRoots: ['RootApi'],
+      extractResults: true,
+      writeFiles: false,
+    })
+
+    const childApi = result.moduleMetadata[0]?.rootApi.actions[0]?.resultApis?.[0]?.api
+    expect(childApi).toMatchObject({
+      kind: 'child-api',
+      provenance: {
+        file: 'src/child.ts',
+        className: 'ChildApi',
+      },
+      jsdoc: {
+        summary: 'Source-only child API.',
+      },
+      constructorSignature: {
+        jsdoc: {
+          summary: 'Source-only child constructor.',
+        },
+      },
+    })
   })
 
   it('discovers resultApis from script-only mutator callback parameter', () => {

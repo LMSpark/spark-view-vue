@@ -373,15 +373,19 @@ export type TreeApi = {
   move?: HttpEndpoint
   /** /tree/search — 扁平模式搜索（返回匹配节点 + pathIds），params: keyword, limit? */
   search?: HttpEndpoint & {
+    /** 最大返回匹配节点数，防止搜索结果过大 */
     limit?: number
   }
   /** /tree/nested — 获取嵌套层级树，params: rootId?, depthLimit?, limit?，response: NestedTreeNode[] */
   nested?: HttpEndpoint & {
+    /** 最大递归深度，用于限制嵌套树展开层级 */
     depthLimit?: number
+    /** 最大返回节点数，用于限制嵌套树总体体量 */
     limit?: number
   }
   /** /tree/nested/search — 层次模式搜索（返回匹配节点 + 嵌套祖先链），params: keyword, limit? */
   nestedSearch?: HttpEndpoint & {
+    /** 最大返回匹配节点数，防止层次搜索结果过大 */
     limit?: number
   }}
 
@@ -470,7 +474,10 @@ export type TableMetadata = TableSemanticMetadata & {
    * 视图集合；canonical 结构中必须包含 `default` 视图。
    * 视图级字段（rows, page, pageSize, filter, sort 等）全部下沉到 ViewMetadata。
    */
-  views: { default: ViewMetadata } & Record<string, ViewMetadata>}
+  views: {
+    /** canonical default 视图；表序列化结构必须包含该视图 */
+    default: ViewMetadata
+  } & Record<string, ViewMetadata>}
 
 // ═══════════════════════════════════════════════════════
 // 7. 过滤 & 排序
@@ -507,8 +514,54 @@ export type FilterValueExpression =
   | number
   | boolean
   | null
-  | { kind: 'field'; field: string }
+  | FilterFieldValueReference
   | FilterValueExpression[]
+
+/** 过滤值侧字段引用：运行时从父视图当前行或上下文行读取字段值。 */
+export type FilterFieldValueReference = {
+  /** 固定判别值，表示 value 不是常量，而是字段引用。 */
+  kind: 'field'
+  /** 被引用的字段名。 */
+  field: string
+}
+
+/** 过滤叶子条件：对单个字段执行一个比较操作。 */
+export type FilterLeafExpression = {
+  /** 被过滤的字段名。 */
+  field: string
+  /** 过滤操作符。 */
+  op: FilterOperator
+  /** 过滤右侧值，可为常量、字段引用或数组值。 */
+  value: FilterValueExpression
+}
+
+/** 过滤逻辑组合：用 AND/OR 组合多个子表达式。 */
+export type FilterLogicExpression = {
+  /** 逻辑组合类型。 */
+  type: 'and' | 'or'
+  /** 子过滤表达式列表。 */
+  children: FilterExpression[]
+}
+
+/** 过滤叶子条件取反：对单个字段比较结果执行 NOT。 */
+export type FilterNegatedConditionExpression = {
+  /** 固定判别值，表示该叶子条件取反。 */
+  type: '!condition'
+  /** 被过滤的字段名。 */
+  field: string
+  /** 过滤操作符。 */
+  op: FilterOperator
+  /** 过滤右侧值，可为常量、字段引用或数组值。 */
+  value: FilterValueExpression
+}
+
+/** 过滤逻辑组合取反：对 AND/OR 子表达式整体执行 NOT。 */
+export type FilterNegatedLogicExpression = {
+  /** 取反逻辑组合类型。 */
+  type: '!and' | '!or'
+  /** 子过滤表达式列表。 */
+  children: FilterExpression[]
+}
 
 /**
  * 过滤表达式——树形判别联合。
@@ -522,10 +575,10 @@ export type FilterValueExpression =
  * 叶子节点无 `type` 字段，通过是否存在 `field` 属性识别；组合节点通过 `type` 判别。
  */
 export type FilterExpression =
-  | { field: string; op: FilterOperator; value: FilterValueExpression }
-  | { type: 'and' | 'or'; children: FilterExpression[] }
-  | { type: '!condition'; field: string; op: FilterOperator; value: FilterValueExpression }
-  | { type: '!and' | '!or'; children: FilterExpression[] }
+  | FilterLeafExpression
+  | FilterLogicExpression
+  | FilterNegatedConditionExpression
+  | FilterNegatedLogicExpression
 
 /** 排序方向（小写） */
 export type SortDirection = 'asc' | 'desc'

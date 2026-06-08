@@ -50,7 +50,7 @@ describe('poolModuleMetadataSchemas', () => {
       required: ['pageId'],
     })
     expect(action?.resultSchema).toEqual({ type: 'object', title: 'ConfigPageNode' })
-    expect(pooled.defs.JsonSchema_string).toBeUndefined()
+    expect(pooled.defs['JsonSchema_string']).toBeUndefined()
     expect(JSON.stringify(pooled.module).includes('"$defs"')).toBe(false)
   })
 
@@ -76,7 +76,7 @@ describe('poolModuleMetadataSchemas', () => {
     }
 
     const pooled = poolModuleMetadataSchemas(module)
-    expect(pooled.defs.JsonSchema_string).toBeUndefined()
+    expect(pooled.defs['JsonSchema_string']).toBeUndefined()
     expect(pooled.module.rootApi.actions[0]?.paramsSchema).toEqual({
       type: 'object',
       properties: {
@@ -118,7 +118,7 @@ describe('poolModuleMetadataSchemas', () => {
 
     const pooled = poolModuleMetadataSchemas(module)
     expect(pooled.module.rootApi.actions[0]?.resultSchema).toEqual({ $ref: '#/$defs/DataViewRow' })
-    expect(pooled.defs.DataViewRow).toMatchObject({
+    expect(pooled.defs['DataViewRow']).toMatchObject({
       type: 'object',
       title: 'DataViewRow',
       properties: {
@@ -133,7 +133,120 @@ describe('poolModuleMetadataSchemas', () => {
         },
       },
     })
-    expect(pooled.defs.JsonSchema_string).toBeUndefined()
+    expect(pooled.defs['JsonSchema_string']).toBeUndefined()
+  })
+
+  it('preserves property descriptions when complex schemas become $ref', () => {
+    const module = {
+      schemaVersion: 2,
+      rootApi: {
+        kind: 'project',
+        actions: [
+          {
+            name: 'a',
+            paramsSchema: {
+              type: 'object',
+              properties: {
+                rows: {
+                  type: 'array',
+                  description: '服务端返回的行数据列表。',
+                  items: {
+                    type: 'object',
+                    title: 'DataRow',
+                    additionalProperties: true,
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      apiRegistry: {},
+    }
+
+    const pooled = poolModuleMetadataSchemas(module)
+    expect(pooled.module.rootApi.actions[0]?.paramsSchema).toEqual({
+      type: 'object',
+      properties: {
+        rows: {
+          $ref: '#/$defs/ArrayOf_DataRow',
+          description: '服务端返回的行数据列表。',
+        },
+      },
+    })
+  })
+
+  it('keeps annotation-only schemas inline', () => {
+    const module = {
+      schemaVersion: 2,
+      rootApi: {
+        kind: 'project',
+        actions: [
+          {
+            name: 'edit',
+            paramsSchema: {
+              type: 'object',
+              properties: {
+                run: { description: '节点树编辑回调。' },
+              },
+            },
+          },
+        ],
+      },
+      apiRegistry: {},
+    }
+
+    const pooled = poolModuleMetadataSchemas(module)
+    expect(pooled.module.rootApi.actions[0]?.paramsSchema).toEqual({
+      type: 'object',
+      properties: {
+        run: { description: '节点树编辑回调。' },
+      },
+    })
+  })
+
+  it('preserves parameter descriptions on single-branch $ref wrappers', () => {
+    const module = {
+      schemaVersion: 2,
+      rootApi: {
+        kind: 'project',
+        actions: [
+          {
+            name: 'load',
+            paramsSchema: {
+              type: 'object',
+              properties: {
+                params: {
+                  allOf: [{ $ref: '#/$defs/QueryParams' }],
+                  $defs: {
+                    QueryParams: {
+                      type: 'object',
+                      title: 'QueryParams',
+                      properties: {
+                        page: { type: 'number' },
+                      },
+                    },
+                  },
+                  description: '查询参数。',
+                },
+              },
+            },
+          },
+        ],
+      },
+      apiRegistry: {},
+    }
+
+    const pooled = poolModuleMetadataSchemas(module)
+    expect(pooled.module.rootApi.actions[0]?.paramsSchema).toEqual({
+      type: 'object',
+      properties: {
+        params: {
+          $ref: '#/$defs/QueryParams',
+          description: '查询参数。',
+        },
+      },
+    })
   })
 
   it('pools duplicate array wrappers into shared ArrayOf_* defs', () => {
@@ -163,7 +276,7 @@ describe('poolModuleMetadataSchemas', () => {
     const arrayRef = { $ref: '#/$defs/ArrayOf_ProjectPageNodeSummary' }
 
     expect(pooled.module.rootApi.actions[0]?.resultSchema).toEqual(arrayRef)
-    expect(pooled.defs.ArrayOf_ProjectPageNodeSummary).toEqual({
+    expect(pooled.defs['ArrayOf_ProjectPageNodeSummary']).toEqual({
       type: 'array',
       items: { $ref: '#/$defs/ProjectPageNodeSummary' },
     })
@@ -191,7 +304,7 @@ describe('poolModuleMetadataSchemas', () => {
     expect(pooled.module.rootApi.attributes?.[0]?.schema).toEqual({
       $ref: '#/$defs/ArrayOf_string',
     })
-    expect(pooled.defs.ArrayOf_string).toEqual({
+    expect(pooled.defs['ArrayOf_string']).toEqual({
       type: 'array',
       items: { type: 'string' },
     })
@@ -230,7 +343,7 @@ describe('poolModuleMetadataSchemas', () => {
     })
 
     const defs = mergeModuleSchemaDefs([first, second])
-    expect(defs.HttpEndpoint).toMatchObject({
+    expect(defs['HttpEndpoint']).toMatchObject({
       type: 'object',
       properties: {
         url: { type: 'string' },
@@ -261,9 +374,59 @@ describe('poolModuleMetadataSchemas', () => {
     expect(pooled.module.rootApi.attributes?.[0]?.schema).toEqual({
       $ref: '#/$defs/ArrayOf_any',
     })
-    expect(pooled.defs.ArrayOf_any).toEqual({
+    expect(pooled.defs['ArrayOf_any']).toEqual({
       type: 'array',
       items: true,
     })
+  })
+
+  it('hoists nested local defs before $ref standardization drops siblings', () => {
+    const module = {
+      schemaVersion: 2,
+      rootApi: {
+        kind: 'project',
+        actions: [
+          {
+            name: 'load',
+            paramsSchema: {
+              type: 'object',
+              properties: {
+                params: {
+                  $ref: '#/$defs/QueryParams',
+                  $defs: {
+                    QueryParams: {
+                      type: 'object',
+                      title: 'QueryParams',
+                      properties: {
+                        page: { type: 'number' },
+                      },
+                    },
+                  },
+                },
+              },
+            },
+          },
+        ],
+      },
+      apiRegistry: {},
+    }
+
+    const pooled = poolModuleMetadataSchemas(module)
+    const action = pooled.module.rootApi.actions[0]
+
+    expect(action?.paramsSchema).toEqual({
+      type: 'object',
+      properties: {
+        params: { $ref: '#/$defs/QueryParams' },
+      },
+    })
+    expect(pooled.defs['QueryParams']).toEqual({
+      type: 'object',
+      title: 'QueryParams',
+      properties: {
+        page: { type: 'number' },
+      },
+    })
+    expect(JSON.stringify(pooled.module)).not.toContain('"$defs"')
   })
 })

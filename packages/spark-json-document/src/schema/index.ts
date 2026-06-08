@@ -89,3 +89,13 @@ export type {
 export {
   attachJsonSchemaDefs,
 } from './schema-attach'
+
+export {
+  extractJsonSchemaLocalDefs,
+  findMissingJsonSchemaDefRefs,
+  standardizeJsonSchemaWithLocalDefs,
+} from './schema-defs'
+
+export type {
+  JsonSchemaLocalDefsExtraction,
+} from './schema-defs'

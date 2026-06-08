@@ -31,6 +31,14 @@ import { type CrudService, createCrudService } from './crud-service'
 import { normalizeTableMetadata } from './metadata'
 import { assertNoSeparator, resolveApi } from './core/utils'
 
+/** DataTable.addColumns 的执行结果摘要。 */
+export type DataTableAddColumnsResult = {
+  /** 实际追加成功的列名列表。 */
+  added: string[]
+  /** 因列名已存在而跳过的列名列表。 */
+  skipped: string[]
+}
+
 /**
  * DataTable - 管理单表的结构定义与配置
  *
@@ -143,8 +151,10 @@ export class DataTable {
   // ===== 构造函数 =====
 
   /**
-   * 创建 DataTable 实例
-   * - 自动创建 `default` DataView
+   * 创建 DataTable 实例，并自动创建 `default` DataView。
+   *
+   * @param tableName 表名，在所属 DataSet 内必须唯一。
+   * @param columns 初始列定义；后续列变更必须通过公开方法维护派生状态。
    */
   constructor(tableName: string, columns: DataColumn[] = []) {
     assertNoSeparator(tableName, 'tableName')
@@ -200,6 +210,8 @@ export class DataTable {
    *
   * 注意：`view.dataTable` 在视图创建时（构造函数 / getOrCreateView / fromJson）
    * 已确保赋值，此处不重复赋值，避免触发冗余的 syncFromConfig()。
+   *
+   * @param ds 所属 DataSet 实例。
    */
   setDataSet(ds: DataSet): void {
     this.dataSet = ds
@@ -255,6 +267,8 @@ export class DataTable {
   /**
    * 遍历所有视图（包含 default 和命名视图）——DataSet 的内部实现可选择此入口，
    * 避免直接访问 `views` 属性（封装内部集合）。
+   *
+   * @param cb 每个视图都会调用一次的回调函数。
    */
   forEachView(cb: (view: DataView) => void): void {
     for (const view of Object.values(this.views)) {
@@ -316,9 +330,11 @@ export class DataTable {
 
   /**
    * 向表追加列（同名列跳过不覆盖）。
+   *
+   * @param columns 待追加的列定义列表。
    * @returns `{ added, skipped }` — 分别列出实际追加和因同名跳过的列名
    */
-  addColumns(columns: DataColumn[]): { added: string[]; skipped: string[] } {
+  addColumns(columns: DataColumn[]): DataTableAddColumnsResult {
     const existingNames = new Set(this.columns.map((c) => c.name))
     const added: string[] = []
     const skipped: string[] = []
@@ -342,6 +358,9 @@ export class DataTable {
 
   /**
    * 修改单列属性（不允许改 name）。
+   *
+   * @param columnName 要更新的列名。
+   * @param updates 要合并到列定义上的字段更新；name 会被忽略。
    * @returns 被变更的字段名列表
    * @throws 列不存在时抛 Error
    */
@@ -359,6 +378,8 @@ export class DataTable {
 
   /**
    * 删除列。
+   *
+   * @param columnName 要删除的列名。
    * @throws 列不存在时抛 Error
    */
   removeColumn(columnName: string): void {
@@ -374,6 +395,8 @@ export class DataTable {
    * 写入内联静态行到 DataTable.rows 并同步到 default 视图。
    *
    * 追加模式：新行 append 到 table.rows 尾部，default 视图用完整 rows 替换。
+   *
+   * @param rows 要追加的行数据列表。
    * @returns 追加后的总行数
    */
   addRows(rows: DataRow[]): number {

@@ -2,8 +2,11 @@ export type {
   AiApiActionMetadata,
   AiApiAttributeMetadata,
   AiApiConstructorMetadata,
+  AiApiJsDocMetadata,
+  AiApiJsDocTagMetadata,
   AiApiObjectMetadata,
   AiApiResultApiRef,
+  AiApiSourceProvenanceMetadata,
   AiModuleMetadataJson,
 } from './ai-api-object-metadata-schema'
 

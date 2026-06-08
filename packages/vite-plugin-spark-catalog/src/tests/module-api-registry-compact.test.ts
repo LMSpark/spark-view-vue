@@ -9,11 +9,15 @@ describe('compactModuleMetadataApiRegistry', () => {
       kind: 'child-api',
       name: 'Child',
       description: 'Child API',
+      jsdoc: { raw: '/** Child API. */', summary: 'Child API', tags: [] },
+      provenance: { file: 'src/child.ts', line: 1, className: 'ChildApi' },
       actions: [
         {
           name: 'search',
           methodName: 'search',
           description: 'Search',
+          jsdoc: { raw: '/** Search child API. */', summary: 'Search child API', tags: [] },
+          provenance: { file: 'src/child.ts', line: 5, className: 'ChildApi', memberName: 'search' },
           paramsSchema: { type: 'object', properties: {}, required: [] },
         },
       ],
@@ -25,6 +29,24 @@ describe('compactModuleMetadataApiRegistry', () => {
         kind: 'root-api',
         name: 'Root',
         description: 'Root API',
+        jsdoc: { raw: '/** Root API. */', summary: 'Root API', tags: [] },
+        provenance: { file: 'src/root.ts', line: 1, className: 'RootApi' },
+        constructorSignature: {
+          description: 'Create root API.',
+          jsdoc: { raw: '/** Create root API. */', summary: 'Create root API.', tags: [] },
+          paramsSchema: { type: 'object', properties: {}, required: [] },
+        },
+        attributes: [
+          {
+            name: 'child',
+            description: 'Child attribute.',
+            jsdoc: { raw: '/** Child attribute. */', summary: 'Child attribute.', tags: [] },
+            schema: { type: 'object' },
+            readable: true,
+            writable: false,
+            api: childApi,
+          },
+        ],
         actions: [
           {
             name: 'listRefs',
@@ -47,10 +69,21 @@ describe('compactModuleMetadataApiRegistry', () => {
       { resultPath: ['first'], $ref: 'child-api' },
       { resultPath: ['second'], $ref: 'child-api' },
     ])
+    expect(compact.rootApi.jsdoc).toBeUndefined()
+    expect('provenance' in compact.rootApi).toBe(false)
+    expect(compact.rootApi.constructorSignature?.jsdoc).toBeUndefined()
+    expect(compact.rootApi.attributes?.[0]?.jsdoc).toBeUndefined()
     expect(Object.keys(compact.apiRegistry)).toEqual(['child-api'])
+    expect(compact.apiRegistry['child-api']?.jsdoc).toBeUndefined()
+    expect('provenance' in (compact.apiRegistry['child-api'] ?? {})).toBe(false)
     expect(compact.apiRegistry['child-api']?.actions[0]?.name).toBe('search')
+    expect(compact.apiRegistry['child-api']?.actions[0]?.jsdoc).toEqual({
+      summary: 'Search child API',
+    })
     const serialized = JSON.stringify(compact)
     expect(serialized.includes('"$ref":"child-api"')).toBe(true)
     expect(serialized.split('"$ref":"child-api"').length - 1).toBe(2)
+    expect(serialized).not.toContain('"raw"')
+    expect(serialized).not.toContain('"provenance"')
   })
 })
