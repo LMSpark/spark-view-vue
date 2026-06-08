@@ -315,26 +315,6 @@ const MODULE_MUTATION_MODES = ['read', 'write', 'delete', 'execute', 'read-write
 const MODULE_ATTACK_SURFACE_RISK_VALUES: ReadonlySet<string> = new Set(MODULE_ATTACK_SURFACE_RISKS)
 const MODULE_MUTATION_MODE_VALUES: ReadonlySet<string> = new Set(MODULE_MUTATION_MODES)
 
-const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
-  'packages/spark-project-model/src/project/project-model.ts',
-  'packages/spark-project-model/src/page/config-page.ts',
-  'packages/spark-data/src/dataset-crud-tool.ts',
-  'packages/spark-data/src/node-tree/spark-node-tree.ts',
-] as const
-
-const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
-
-const PAGE_DESIGN_MODEL_METADATA_OUT_FILE =
-  'src/services/page-design/page-design-module-metadata.generated.json'
-
-export function generatePageDesignModuleMetadata(root: string): ModuleMetadataGenerationResult {
-  return generateModuleAbilityMetadata(root, {
-    sources: PAGE_DESIGN_MODULE_METADATA_SOURCES,
-    vcmCatalogOutFile: PAGE_DESIGN_MODEL_METADATA_OUT_FILE,
-    apiRoots: PAGE_DESIGN_MODULE_METADATA_API_ROOTS,
-  })
-}
-
 export function generateModuleAbilityMetadata(
   root: string,
   options: ModuleAbilityMetadataGeneratorOptions,

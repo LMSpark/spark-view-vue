@@ -17,6 +17,12 @@ import {
   type ModuleMetadataSchemaDescriptionTodoLogEntry,
 } from './module-metadata-generator'
 import { createLogger } from './utils'
+import {
+  VCM_CONFIG_FILE_NAME,
+  createVcmTargetGeneratorOptions,
+  findVcmMetadataTarget,
+  readVcmMetadataConfig,
+} from './vcm-config'
 
 const logger = createLogger('module-metadata-cli')
 const root = resolve(import.meta.dirname, '../../..')
@@ -25,45 +31,29 @@ const trace = process.argv.includes('--trace')
 const verifyBuildConsistency = process.argv.includes('--verify-build-consistency')
 const extractResults = process.argv.includes('--extract-results') || !diagnoseOnly
 const extractResultSchemas = process.argv.includes('--extract-result-schemas') || !diagnoseOnly
+const configFile = readCliOption('--config') ?? VCM_CONFIG_FILE_NAME
+const targetId = readCliOption('--target') ?? 'page-design'
 
-const PAGE_DESIGN_MODULE_METADATA_SOURCES = [
-  'packages/spark-project-model/src/project/project-model.ts',
-  'packages/spark-project-model/src/page/config-page.ts',
-  'packages/spark-data/src/dataset-crud-tool.ts',
-  'packages/spark-data/src/node-tree/spark-node-tree.ts',
-] as const
+const vcmConfig = readVcmMetadataConfig(root, configFile)
+const vcmTarget = findVcmMetadataTarget(vcmConfig, targetId)
 
-const PAGE_DESIGN_MODULE_METADATA_API_ROOTS = ['ProjectModel'] as const
-
-const PAGE_DESIGN_VCM_CATALOG_OUT_FILE =
-  'src/services/page-design/page-design-module-metadata.generated.json'
-const PAGE_DESIGN_API_DIAGNOSTICS_OUT_FILE =
-  'src/services/page-design/page-design-module-metadata.api.generated.json'
-const PAGE_DESIGN_API_RUNTIME_OUT_FILE =
-  'src/services/page-design/page-design-module-metadata.runtime.generated.json'
-
-logger.info(diagnoseOnly ? '🚀 开始诊断 AI 能力模块元数据 ...' : '🚀 开始生成 AI 能力模块元数据 ...')
-const result = generateModuleAbilityMetadata(root, {
-  sources: PAGE_DESIGN_MODULE_METADATA_SOURCES,
-  vcmCatalogOutFile: PAGE_DESIGN_VCM_CATALOG_OUT_FILE,
-  moduleOutFile: PAGE_DESIGN_API_DIAGNOSTICS_OUT_FILE,
-  moduleRuntimeOutFile: PAGE_DESIGN_API_RUNTIME_OUT_FILE,
-  apiRoots: PAGE_DESIGN_MODULE_METADATA_API_ROOTS,
+logger.info(diagnoseOnly
+  ? `🚀 开始诊断 AI 能力模块元数据 ... config=${configFile} target=${vcmTarget.id}`
+  : `🚀 开始生成 AI 能力模块元数据 ... config=${configFile} target=${vcmTarget.id}`)
+const result = generateModuleAbilityMetadata(root, createVcmTargetGeneratorOptions(vcmTarget, {
   trace,
   extractResults,
   extractResultSchemas,
   writeFiles: !diagnoseOnly,
-})
+}))
 if (verifyBuildConsistency) {
-  const buildEntryResult = generateModuleAbilityMetadata(root, {
-    sources: PAGE_DESIGN_MODULE_METADATA_SOURCES,
-    apiRoots: PAGE_DESIGN_MODULE_METADATA_API_ROOTS,
+  const buildEntryResult = generateModuleAbilityMetadata(root, createVcmTargetGeneratorOptions(vcmTarget, {
     trace,
     extractResults,
     extractResultSchemas,
     reflectionMode: 'type-entry',
     writeFiles: false,
-  })
+  }))
   const issues = compareModuleMetadataForBuildConsistency(result.moduleMetadata, buildEntryResult.moduleMetadata)
   if (issues.length > 0) {
     const sample = issues.slice(0, 8).map(issue => `${issue.path} ${issue.message}`).join('\n')
@@ -76,11 +66,11 @@ if (diagnoseOnly) {
 } else {
   logger.info(`✅ VCM catalog 已写入 ${result.vcmCatalogOutFile}`)
   logger.info(`✅ API diagnostics 已写入 ${result.moduleOutFile}`)
-  logger.info(`✅ API runtime 已写入 ${PAGE_DESIGN_API_RUNTIME_OUT_FILE}`)
-  logger.info(`✅ API runtime entry 已写入 ${PAGE_DESIGN_API_RUNTIME_OUT_FILE.replace(/\.generated\.json$/u, '.ts')}`)
+  logger.info(`✅ API runtime 已写入 ${vcmTarget.outputs.runtime}`)
+  logger.info(`✅ API runtime entry 已写入 ${vcmTarget.outputs.runtime.replace(/\.generated\.json$/u, '.ts')}`)
   assertGeneratedModuleMetadataDraft2020(root, [
-    PAGE_DESIGN_API_DIAGNOSTICS_OUT_FILE,
-    PAGE_DESIGN_API_RUNTIME_OUT_FILE,
+    vcmTarget.outputs.apiDiagnostics,
+    vcmTarget.outputs.runtime,
   ])
 }
 logger.info([
@@ -169,6 +159,19 @@ function assertGeneratedModuleMetadataDraft2020(rootDir: string, relativeFiles: 
 
   const sample = allIssues.slice(0, 8).map(issue => `${issue.path} ${issue.rule} (${issue.detail})`).join('\n')
   throw new Error(`Draft 2020-12 schema audit failed with ${allIssues.length} issue(s):\n${sample}`)
+}
+
+function readCliOption(name: string): string | undefined {
+  const equalsPrefix = `${name}=`
+  const equalsArg = process.argv.find(arg => arg.startsWith(equalsPrefix))
+  if (equalsArg !== undefined) {
+    const value = equalsArg.slice(equalsPrefix.length).trim()
+    return value.length === 0 ? undefined : value
+  }
+  const index = process.argv.indexOf(name)
+  if (index < 0) return undefined
+  const value = process.argv[index + 1]?.trim()
+  return value === undefined || value.length === 0 || value.startsWith('--') ? undefined : value
 }
 
 type SchemaSemanticTodoGroup = Readonly<{

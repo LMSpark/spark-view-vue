@@ -1,0 +1,31 @@
+{
+  "$schema": "../schemas/vcm.schema.json",
+  "protocol": "spark-appworks.vcm.registry",
+  "schemaVersion": 1,
+  "metadataTargets": [
+    {
+      "id": "page-design",
+      "kind": "native-metadata",
+      "description": "pageDesign AI VCM-native metadata",
+      "source": {
+        "files": [
+          "packages/spark-project-model/src/project/project-model.ts",
+          "packages/spark-project-model/src/page/config-page.ts",
+          "packages/spark-data/src/dataset-crud-tool.ts",
+          "packages/spark-data/src/node-tree/spark-node-tree.ts"
+        ]
+      },
+      "roots": [
+        {
+          "className": "ProjectModel",
+          "kind": "project"
+        }
+      ],
+      "outputs": {
+        "vcmCatalog": "src/services/page-design/page-design-module-metadata.generated.json",
+        "apiDiagnostics": "src/services/page-design/page-design-module-metadata.api.generated.json",
+        "runtime": "src/services/page-design/page-design-module-metadata.runtime.generated.json"
+      }
+    }
+  ]
+}

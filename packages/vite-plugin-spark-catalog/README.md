@@ -10,6 +10,14 @@ pnpm run diagnose:module-metadata    # 仅诊断，不写文件
 ```
 
 CLI 入口：`src/module-metadata-cli.ts`
+默认读取根级 APP 配置协议文件：`config/ai/vcm.json`。
+
+可选参数：
+
+```bash
+pnpm run generate:module-metadata -- --target page-design
+pnpm run generate:module-metadata -- --config config/ai/vcm.json --target page-design
+```
 
 ## 产出
 
@@ -19,12 +27,31 @@ CLI 入口：`src/module-metadata-cli.ts`
 | `page-design-module-metadata.api.generated.json` | API / resultApis 诊断 |
 | `page-design-module-metadata.runtime.generated.json` | **`VcmNativeAgentAdapter` 消费** |
 
-## 源码扫描范围
+## VCM Registry 协议
 
-默认由 `module-metadata-cli.ts` 配置，当前以 pageDesign 主链为准：
+`config/ai/vcm.json` 使用协议头声明格式，target 声明由 APP 配置层拥有：
 
-- `ProjectModel` / `ConfigPageNode`
-- `DataSetCrudTool` / `SparkNodeTree`
+```json
+{
+  "protocol": "spark-appworks.vcm.registry",
+  "schemaVersion": 1,
+  "metadataTargets": [
+    {
+      "id": "page-design",
+      "kind": "native-metadata",
+      "source": { "files": ["..."] },
+      "roots": [{ "className": "ProjectModel", "kind": "project" }],
+      "outputs": {
+        "vcmCatalog": "...generated.json",
+        "apiDiagnostics": "...api.generated.json",
+        "runtime": "...runtime.generated.json"
+      }
+    }
+  ]
+}
+```
+
+Schema 文件：`config/schemas/vcm.schema.json`。
 
 ## 测试
 

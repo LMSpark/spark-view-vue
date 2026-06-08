@@ -530,7 +530,7 @@ export class DynamicRouter {
             routerLogger.debug(`Vue 组件路由已注册(nav): ${routePath}`)
           }
       } else if (node.nodeKind === 'system-page') {
-        routerLogger.warn('system-page 节点未在 componentMap / VUE_PAGE_MAP 中注册，使用显式错误页', {
+        routerLogger.warn('system-page 节点未在 componentMap / Vue 页面注册表中声明，使用显式错误页', {
           path: node.path,
           nodeId: node.id,
           pageId,

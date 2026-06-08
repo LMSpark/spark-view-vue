@@ -8,7 +8,6 @@
 
 export {
   generateModuleAbilityMetadata,
-  generatePageDesignModuleMetadata,
   type ModuleAbilityMetadataGeneratorOptions,
   type ModuleMetadataDiagnosticActionSummary,
   type ModuleMetadataDiagnosticFinding,

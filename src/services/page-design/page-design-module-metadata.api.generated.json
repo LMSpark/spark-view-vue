@@ -3003,7 +3003,7 @@
             "methodName": "openPageDesign",
             "description": "按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。",
             "jsdoc": {
-              "raw": "/**\n   * 按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。\n   *\n   * @moduleMutation config-page read 进入页面四文件编辑面，不直接落盘。\n   * @requiredBeforeCall 先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。\n   * @usageRule 进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。\n   * @failureMode PAGE_NOT_FOUND pageId 不存在 => 先 readPlanningProjection 确认 pageFeatures，必要时 human_question\n   * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 使用 { path: \"/project[<projectId>]\", args: { pageId: \"<pageId>\" } }，勿把 pageId 摊平在根级\n   * @param pageId 目标配置页 pageId，必须来自输入。\n   */",
+              "raw": "/**\n   * 按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。\n   *\n   * @moduleMutation config-page read 进入页面四文件编辑面，不直接落盘。\n   * @requiredBeforeCall 先用 vcm_query / vcm_model_guide 确认 project 能力，并确认 pageId 存在于 readPlanningProjection。\n   * @usageRule 进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。\n   * @failureMode PAGE_NOT_FOUND pageId 不存在 => 先 readPlanningProjection 确认 pageFeatures，必要时 human_question\n   * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 先读 vcm_action_guide，脚本内使用 this.openPageDesign({ pageId: \"<pageId>\" }) 或 this.openPageDesign(\"<pageId>\")\n   * @param pageId 目标配置页 pageId，必须来自输入。\n   */",
               "summary": "按 pageId 打开配置页设计上下文，返回 ConfigPageNode 四文件子模型。",
               "tags": [
                 {
@@ -3012,7 +3012,7 @@
                 },
                 {
                   "name": "requiredBeforeCall",
-                  "text": "先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
+                  "text": "先用 vcm_query / vcm_model_guide 确认 project 能力，并确认 pageId 存在于 readPlanningProjection。"
                 },
                 {
                   "name": "usageRule",
@@ -3024,7 +3024,7 @@
                 },
                 {
                   "name": "failureMode",
-                  "text": "INVALID_TOOL_ARGS 参数形状错误 => 使用 { path: \"/project[<projectId>]\", args: { pageId: \"<pageId>\" } }，勿把 pageId 摊平在根级"
+                  "text": "INVALID_TOOL_ARGS 参数形状错误 => 先读 vcm_action_guide，脚本内使用 this.openPageDesign({ pageId: \"<pageId>\" }) 或 this.openPageDesign(\"<pageId>\")"
                 },
                 {
                   "name": "param",
@@ -5643,7 +5643,7 @@
                       "methodName": "editNodeTree",
                       "description": "修改 rule.json 节点树。",
                       "jsdoc": {
-                        "raw": "/**\n   * 修改 rule.json 节点树。\n   *\n   * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。\n   * @vcmScriptOnly\n   * @requiredBeforeCall 写 node-tree 前必须先通过 VCM 元数据确认 SparkNode 结构、组件 type 和 props schema。\n   * @usageRule 结构批量改写优先 module_script；direct call 不支持。\n   * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。\n   * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 按 paramsSchema 与组件原生 props schema 修正\n   * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 page.editNodeTree / page.editDataSet 等方法\n   * @param run 节点树编辑回调；回调参数是当前页面 SparkNodeTree。\n   */",
+                        "raw": "/**\n   * 修改 rule.json 节点树。\n   *\n   * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。\n   * @vcmScriptOnly\n   * @requiredBeforeCall 写 node-tree 前必须先通过 VCM 元数据确认 SparkNode 结构、组件 type 和 props schema。\n   * @usageRule 结构批量改写优先 vcm_script；direct call 不支持。\n   * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。\n   * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 按 paramsSchema 与组件原生 props schema 修正\n   * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 page.editNodeTree / page.editDataSet 等方法\n   * @param run 节点树编辑回调；回调参数是当前页面 SparkNodeTree。\n   */",
                         "summary": "修改 rule.json 节点树。",
                         "tags": [
                           {
@@ -5660,7 +5660,7 @@
                           },
                           {
                             "name": "usageRule",
-                            "text": "结构批量改写优先 module_script；direct call 不支持。"
+                            "text": "结构批量改写优先 vcm_script；direct call 不支持。"
                           },
                           {
                             "name": "usageRule",
@@ -7569,8 +7569,8 @@
                         }
                       ],
                       "usageRules": [
-                        "Must use module_script; direct function call is not supported.",
-                        "结构批量改写优先 module_script；direct call 不支持。",
+                        "Must use vcm_script; direct function call is not supported.",
+                        "结构批量改写优先 vcm_script；direct call 不支持。",
                         "openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。"
                       ],
                       "requiredBeforeCall": [
@@ -115881,7 +115881,7 @@
                       "methodName": "editDataSet",
                       "description": "修改 pagedata.json 数据集模型。",
                       "jsdoc": {
-                        "raw": "/**\n   * 修改 pagedata.json 数据集模型。\n   *\n   * @moduleMutation pagedata.json write 在 mutator 内通过 DataSetCrudTool 修改 DataSet。\n   * @vcmScriptOnly\n   * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。\n   * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。\n   * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约\n   * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。\n   */",
+                        "raw": "/**\n   * 修改 pagedata.json 数据集模型。\n   *\n   * @moduleMutation pagedata.json write 在 mutator 内通过 DataSetCrudTool 修改 DataSet。\n   * @vcmScriptOnly\n   * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。\n   * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。\n   * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约\n   * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。\n   */",
                         "summary": "修改 pagedata.json 数据集模型。",
                         "tags": [
                           {
@@ -115902,7 +115902,7 @@
                           },
                           {
                             "name": "failureMode",
-                            "text": "TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约"
+                            "text": "TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约"
                           },
                           {
                             "name": "param",
@@ -224184,7 +224184,7 @@
                         }
                       ],
                       "usageRules": [
-                        "Must use module_script; direct function call is not supported.",
+                        "Must use vcm_script; direct function call is not supported.",
                         "DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。"
                       ],
                       "requiredBeforeCall": [
@@ -224194,7 +224194,7 @@
                         {
                           "code": "TABLE_NOT_FOUND",
                           "when": "表名不存在",
-                          "fix": "先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约"
+                          "fix": "先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约"
                         }
                       ]
                     }
@@ -224260,7 +224260,7 @@
               "进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。"
             ],
             "requiredBeforeCall": [
-              "先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
+              "先用 vcm_query / vcm_model_guide 确认 project 能力，并确认 pageId 存在于 readPlanningProjection。"
             ],
             "failureModes": [
               {
@@ -224271,7 +224271,7 @@
               {
                 "code": "INVALID_TOOL_ARGS",
                 "when": "参数形状错误",
-                "fix": "使用 { path: \"/project[<projectId>]\", args: { pageId: \"<pageId>\" } }，勿把 pageId 摊平在根级"
+                "fix": "先读 vcm_action_guide，脚本内使用 this.openPageDesign({ pageId: \"<pageId>\" }) 或 this.openPageDesign(\"<pageId>\")"
               }
             ]
           },

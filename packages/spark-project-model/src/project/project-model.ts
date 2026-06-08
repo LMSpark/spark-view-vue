@@ -135,7 +135,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * @requiredBeforeCall 先用 vcm_query / vcm_model_guide 确认 project 能力，并确认 pageId 存在于 readPlanningProjection。
    * @usageRule 进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。
    * @failureMode PAGE_NOT_FOUND pageId 不存在 => 先 readPlanningProjection 确认 pageFeatures，必要时 human_question
-   * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 使用 { path: "/project[<projectId>]", args: { pageId: "<pageId>" } }，勿把 pageId 摊平在根级
+   * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 先读 vcm_action_guide，脚本内使用 this.openPageDesign({ pageId: "<pageId>" }) 或 this.openPageDesign("<pageId>")
    * @param pageId 目标配置页 pageId，必须来自输入。
    */
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }

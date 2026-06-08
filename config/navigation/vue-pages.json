@@ -1,0 +1,123 @@
+{
+  "$schema": "../schemas/vue-pages.schema.json",
+  "protocol": "spark-appworks.vue-pages",
+  "schemaVersion": 1,
+  "pages": [
+    {
+      "path": "/",
+      "title": "平台首页",
+      "icon": "HomeFilled",
+      "scope": "public",
+      "source": "src/views/platform/HomePage.vue"
+    },
+    {
+      "path": "/login",
+      "title": "登录",
+      "icon": "Key",
+      "scope": "public",
+      "source": "src/views/platform/LoginView.vue",
+      "description": "用户登录页面",
+      "hidden": true
+    },
+    {
+      "path": "/about",
+      "title": "关于",
+      "icon": "InfoFilled",
+      "scope": "public",
+      "source": "src/views/platform/About.vue"
+    },
+    {
+      "path": "/demo/custom-r-table",
+      "title": "r-table Demo",
+      "icon": "Grid",
+      "scope": "public",
+      "source": "src/views/app/CustomRTableDemo.vue",
+      "description": "原始 RendererTable 与模板字段桥接演示",
+      "hidden": true
+    },
+    {
+      "path": "/demo/r-form-compare",
+      "title": "r-form Demo",
+      "icon": "Tickets",
+      "scope": "public",
+      "source": "src/views/app/RFormCompareDemo.vue",
+      "description": "原始 RendererForm 配置式与模板式对照演示",
+      "hidden": true
+    },
+    {
+      "path": "/demo/template-dsl",
+      "title": "Template DSL Demo",
+      "icon": "SetUp",
+      "scope": "app",
+      "source": "src/views/app/TemplateDslDemo.vue",
+      "description": "模板 DSL 演示页（system-page 路由占位）",
+      "hidden": true
+    },
+    {
+      "path": "/settings",
+      "title": "设置",
+      "icon": "Setting",
+      "scope": "tenant",
+      "source": "src/views/tenant/Settings.vue"
+    },
+    {
+      "path": "/cache-manager",
+      "title": "缓存管理",
+      "icon": "Coin",
+      "scope": "app",
+      "source": "src/views/tenant/CacheManager.vue"
+    },
+    {
+      "path": "/app-list",
+      "title": "应用列表",
+      "icon": "Grid",
+      "scope": "tenant",
+      "source": "src/views/tenant/AppList.vue"
+    },
+    {
+      "path": "/tenants",
+      "title": "租户管理",
+      "icon": "OfficeBuilding",
+      "scope": "tenant",
+      "source": "src/views/platform/PlatformTenantManagement.vue",
+      "description": "平台租户管理工作台"
+    },
+    {
+      "path": "/apps",
+      "title": "平台应用管理",
+      "icon": "Grid",
+      "scope": "tenant",
+      "source": "src/views/platform/PlatformApps.vue",
+      "description": "跨租户项目入口"
+    },
+    {
+      "path": "/dashboard",
+      "title": "仪表盘",
+      "icon": "DataBoard",
+      "scope": "app",
+      "source": "src/views/app/Dashboard.vue"
+    },
+    {
+      "path": "/capability-demo",
+      "title": "能力管理演示",
+      "icon": "SetUp",
+      "scope": "app",
+      "source": "src/views/app/CapabilityDemo.vue"
+    },
+    {
+      "path": "/dev",
+      "title": "开发工作台",
+      "icon": "Tools",
+      "scope": "app",
+      "source": "src/views/app/dev-system/DevSystem.vue"
+    },
+    {
+      "path": "/dbms",
+      "title": "数据库管理",
+      "icon": "DataBase",
+      "scope": "app",
+      "source": "src/views/app/DBMS.vue",
+      "description": "多层级数据源元数据管理（服务器→数据库→表→关系）"
+    }
+  ]
+}

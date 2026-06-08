@@ -6,6 +6,7 @@
 
 ```text
 TS 业务类 + @moduleKind JSDoc
+  -> APP 配置层 config/ai/vcm.json（VCM registry 协议）
   -> packages/vite-plugin-spark-catalog/src/module-metadata-generator.ts
   -> page-design-module-metadata.runtime.generated.json
   -> readModuleMetadataRuntimeDocument()
@@ -31,6 +32,34 @@ TS 业务类 + @moduleKind JSDoc
 | pooled schema | runtime document `$defs` |
 
 生成 JSON 是大文件，不手改；需要变更时改 generator 或源 JSDoc 后重新生成。
+
+## VCM Registry 协议
+
+`config/ai/vcm.json` 是 APP 配置层的注册表，不属于 spark-ai 内核。它声明构建期要生成哪些 VCM native metadata target。
+
+协议头：
+
+```json
+{
+  "protocol": "spark-appworks.vcm.registry",
+  "schemaVersion": 1
+}
+```
+
+target 结构：
+
+| 字段 | 说明 |
+|------|------|
+| `id` | target ID；CLI `--target` 使用 |
+| `kind` | 当前固定为 `native-metadata` |
+| `source.files` | TypeScript 源文件列表 |
+| `roots[].className` | 作为 VCM rootApi 抽取的 class 名 |
+| `roots[].kind` | 可选；用于人工核对 class 的 `@moduleKind` |
+| `outputs.vcmCatalog` | VCM catalog 诊断 JSON |
+| `outputs.apiDiagnostics` | API diagnostics JSON |
+| `outputs.runtime` | VCM-native runtime metadata JSON |
+
+CLI 默认读取 `config/ai/vcm.json`，也可传 `--config <file>`。
 
 ## ClassModel 投影
 
@@ -68,8 +97,11 @@ actions[].callbackApis // 仅 callback 参数子模型
 
 | 路径 | 职责 |
 |------|------|
+| `config/ai/vcm.json` | APP 配置层 VCM registry 协议文件 |
+| `config/schemas/vcm.schema.json` | VCM registry JSON Schema |
 | `packages/vite-plugin-spark-catalog/src/module-metadata-generator.ts` | TS / JSDoc -> runtime metadata |
-| `packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts` | pageDesign metadata 生成入口 |
+| `packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts` | 读取 VCM registry 并生成 metadata |
+| `packages/vite-plugin-spark-catalog/src/vcm-config.ts` | VCM registry 协议解析 |
 | `packages/spark-ai/src/vcm-native/metadata/ai-api-object-metadata-schema.ts` | metadata schema |
 | `packages/spark-ai/src/vcm-native/metadata/resolve-api-object-metadata.ts` | `$ref` 解析 |
 | `packages/spark-ai/src/vcm-native/class-model/from-runtime-metadata.ts` | runtime metadata -> ClassModel |

@@ -1,0 +1,255 @@
+/**
+ * Vue system-page registry.
+ *
+ * JSON config only declares pages. This registry binds those declarations to
+ * Vite component loaders and exposes the derived route/navigation helpers.
+ */
+import type { Component } from 'vue'
+import type { ProjectModelData } from '@spark-appworks/spark-project-model'
+import vuePagesDocument from '../../config/navigation/vue-pages.json'
+
+const VUE_PAGES_PROTOCOL = 'spark-appworks.vue-pages'
+const VUE_PAGES_SCHEMA_VERSION = 1
+
+export type PageScope = 'public' | 'tenant' | 'app'
+
+type VuePageConfigEntry = Readonly<{
+  path: string
+  title: string
+  icon?: string
+  description?: string
+  scope: PageScope
+  source: string
+  hidden?: boolean
+}>
+
+type VuePagesConfig = Readonly<{
+  $schema?: string
+  protocol: typeof VUE_PAGES_PROTOCOL
+  schemaVersion: typeof VUE_PAGES_SCHEMA_VERSION
+  pages: readonly VuePageConfigEntry[]
+}>
+
+type VuePageEntry = Readonly<Omit<VuePageConfigEntry, 'path'> & {
+  load: () => Promise<{ default: Component }>
+}>
+
+const PAGE_SCOPE_VALUES: ReadonlySet<string> = new Set(['public', 'tenant', 'app'])
+
+const vuePageModules = import.meta.glob<{ default: Component }>('../views/**/*.vue')
+const vuePagesConfig = parseVuePagesConfig(vuePagesDocument)
+
+/**
+ * 路径 -> Vue 组件页面注册表。
+ *
+ * key 是不含租户前缀的应用内路径；entry.load 由 source 绑定到 Vite 动态 import。
+ */
+const VUE_PAGE_REGISTRY: Readonly<Record<string, VuePageEntry>> = Object.fromEntries(
+  vuePagesConfig.pages.map(page => [page.path, createVuePageEntry(page)]),
+)
+
+export function getVuePageEntry(path: string): VuePageEntry | undefined {
+  return VUE_PAGE_REGISTRY[path]
+}
+
+export function hasVuePage(path: string): boolean {
+  return getVuePageEntry(path) !== undefined
+}
+
+/**
+ * 构建 componentMap（路径 -> Vue 组件实例）。
+ *
+ * 在 main.ts 启动阶段调用，并行加载所有组件模块后返回扁平映射。
+ */
+export async function buildComponentMap(): Promise<Record<string, Component>> {
+  const entries = Object.entries(VUE_PAGE_REGISTRY)
+  const modules = await Promise.all(
+    entries.map(async ([path, entry]) => {
+      const mod = await entry.load()
+      return [path, mod.default] as const
+    }),
+  )
+  return Object.fromEntries(modules)
+}
+
+/**
+ * 公共路径集合（用于路由守卫：未登录时只允许这些路径）。
+ */
+export function getPublicPaths(): Set<string> {
+  return new Set(
+    Object.entries(VUE_PAGE_REGISTRY)
+      .filter(([, entry]) => entry.scope === 'public')
+      .map(([path]) => path),
+  )
+}
+
+/**
+ * 从 public 页面声明自动构建登录前导航树。
+ */
+export function buildPreAuthNavTree(): ProjectModelData {
+  const children = Object.entries(VUE_PAGE_REGISTRY)
+    .filter(([, entry]) => entry.scope === 'public')
+    .map(([path, entry]) => ({
+      id: `platform-${path === '/' ? 'home' : path.slice(1)}`,
+      title: entry.title,
+      ...(entry.icon === undefined ? {} : { icon: entry.icon }),
+      path,
+      nodeKind: 'system-page' as const,
+      ...(entry.hidden === true ? { hidden: true } : {}),
+    }))
+
+  return { title: '', childPlacement: 'header' as const, homePath: '/', children }
+}
+
+/**
+ * 组件页面选项列表（纯元数据，不含组件引用）。
+ */
+export function getVuePageOptions(): Array<{
+  path: string
+  title: string
+  scope: PageScope
+  source: string
+  icon?: string
+  description?: string
+}> {
+  return Object.entries(VUE_PAGE_REGISTRY).map(([path, entry]) => ({
+    path,
+    title: entry.title,
+    scope: entry.scope,
+    source: entry.source,
+    ...(entry.icon === undefined ? {} : { icon: entry.icon }),
+    ...(entry.description === undefined ? {} : { description: entry.description }),
+  }))
+}
+
+function createVuePageEntry(page: VuePageConfigEntry): VuePageEntry {
+  const moduleKey = toVuePageModuleKey(page.source)
+  const load = vuePageModules[moduleKey]
+  if (load === undefined) {
+    throw new Error(`Vue page source is not importable: ${page.source}`)
+  }
+  return {
+    title: page.title,
+    scope: page.scope,
+    source: page.source,
+    load,
+    ...(page.icon === undefined ? {} : { icon: page.icon }),
+    ...(page.description === undefined ? {} : { description: page.description }),
+    ...(page.hidden === undefined ? {} : { hidden: page.hidden }),
+  }
+}
+
+function toVuePageModuleKey(source: string): string {
+  const prefix = 'src/views/'
+  if (!source.startsWith(prefix)) {
+    throw new Error(`Vue page source must start with ${prefix}: ${source}`)
+  }
+  return `../views/${source.slice(prefix.length)}`
+}
+
+function parseVuePagesConfig(document: unknown): VuePagesConfig {
+  const root = requireRecord(document, 'config/navigation/vue-pages.json')
+  const schema = optionalString(root, '$schema', 'config/navigation/vue-pages.json')
+  if (root['protocol'] !== VUE_PAGES_PROTOCOL) {
+    throw new Error(`config/navigation/vue-pages.json: protocol must be "${VUE_PAGES_PROTOCOL}".`)
+  }
+  if (root['schemaVersion'] !== VUE_PAGES_SCHEMA_VERSION) {
+    throw new Error(`config/navigation/vue-pages.json: schemaVersion must be ${String(VUE_PAGES_SCHEMA_VERSION)}.`)
+  }
+  const pagesValue = root['pages']
+  if (!Array.isArray(pagesValue) || pagesValue.length === 0) {
+    throw new Error('config/navigation/vue-pages.json: pages must be a non-empty array.')
+  }
+  const pages = pagesValue.map((page, index) => parseVuePage(page, `config/navigation/vue-pages.json:pages[${String(index)}]`))
+  assertUniquePaths(pages)
+  return {
+    ...(schema === undefined ? {} : { $schema: schema }),
+    protocol: VUE_PAGES_PROTOCOL,
+    schemaVersion: VUE_PAGES_SCHEMA_VERSION,
+    pages,
+  }
+}
+
+function parseVuePage(value: unknown, path: string): VuePageConfigEntry {
+  const page = requireRecord(value, path)
+  const routePath = requiredString(page, 'path', path)
+  if (!routePath.startsWith('/')) {
+    throw new Error(`${path}.path must start with "/".`)
+  }
+  const source = requiredString(page, 'source', path)
+  if (!source.startsWith('src/views/') || !source.endsWith('.vue')) {
+    throw new Error(`${path}.source must point to a Vue file under src/views/.`)
+  }
+  const scope = requiredString(page, 'scope', path)
+  if (!PAGE_SCOPE_VALUES.has(scope)) {
+    throw new Error(`${path}.scope must be one of public, tenant, app.`)
+  }
+  const hidden = optionalBoolean(page, 'hidden', path)
+  const icon = optionalString(page, 'icon', path)
+  const description = optionalString(page, 'description', path)
+  return {
+    path: routePath,
+    title: requiredString(page, 'title', path),
+    scope: scope as PageScope,
+    source,
+    ...(icon === undefined ? {} : { icon }),
+    ...(description === undefined ? {} : { description }),
+    ...(hidden === undefined ? {} : { hidden }),
+  }
+}
+
+function assertUniquePaths(pages: readonly VuePageConfigEntry[]): void {
+  const seen = new Set<string>()
+  for (const page of pages) {
+    if (seen.has(page.path)) {
+      throw new Error(`config/navigation/vue-pages.json: duplicated page path "${page.path}".`)
+    }
+    seen.add(page.path)
+  }
+}
+
+function requireRecord(value: unknown, path: string): Readonly<Record<string, unknown>> {
+  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
+    return value as Readonly<Record<string, unknown>>
+  }
+  throw new Error(`${path}: expected an object.`)
+}
+
+function requiredString(
+  record: Readonly<Record<string, unknown>>,
+  key: string,
+  path: string,
+): string {
+  const value = record[key]
+  if (typeof value !== 'string' || value.trim().length === 0) {
+    throw new Error(`${path}.${key} must be a non-empty string.`)
+  }
+  return value.trim()
+}
+
+function optionalString(
+  record: Readonly<Record<string, unknown>>,
+  key: string,
+  path: string,
+): string | undefined {
+  const value = record[key]
+  if (value === undefined) return undefined
+  if (typeof value !== 'string') {
+    throw new Error(`${path}.${key} must be a string when provided.`)
+  }
+  const trimmed = value.trim()
+  return trimmed.length === 0 ? undefined : trimmed
+}
+
+function optionalBoolean(
+  record: Readonly<Record<string, unknown>>,
+  key: string,
+  path: string,
+): boolean | undefined {
+  const value = record[key]
+  if (value === undefined) return undefined
+  if (typeof value !== 'boolean') {
+    throw new Error(`${path}.${key} must be a boolean when provided.`)
+  }
+  return value
+}

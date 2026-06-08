@@ -169,7 +169,7 @@ import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
 import { loadProjectUiSettings, saveProjectUiSettings } from '@/services/project-ui-settings'
 import { buildTenantPath, buildTenantRootPath, parseTenantScope, stripTenantScope } from '@/services/tenant-scope'
-import { getPublicPaths } from '@/config/vue-page-map'
+import { getPublicPaths } from '@/registries/vue-page-registry'
 
 const {
   AppPageUiHost,

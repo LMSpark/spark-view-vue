@@ -288,12 +288,12 @@ async function startApp() {
 
     startupLogger.info(`✅ 已加载 ${plugins.length} 个插件`)
 
-    // 4. 构建 Vue 组件页面映射（统一定义在 vue-page-map.ts，单一维护点）
+    // 4. 构建 Vue 组件页面注册表（数据来自根级 config/navigation/vue-pages.json）
     startupLogger.info('📄 构建 Vue 组件页面映射...')
-    const { buildComponentMap, buildPreAuthNavTree, getPublicPaths } = await import('./config/vue-page-map')
+    const { buildComponentMap, buildPreAuthNavTree, getPublicPaths } = await import('./registries/vue-page-registry')
     const componentMap = await buildComponentMap()
 
-    // 登录前导航树 — 从 VUE_PAGE_MAP scope='public' 自动派生
+    // 登录前导航树 — 从 Vue page registry scope='public' 自动派生
     const preAuthNavTree = buildPreAuthNavTree()
     // 公共路径集合 — 路由守卫用（未登录时只允许这些路径）
     const publicPaths = getPublicPaths()
@@ -386,7 +386,7 @@ async function startApp() {
         })
 
         // ── 认证路由守卫（租户隔离） ──
-        // publicPaths 从 VUE_PAGE_MAP scope='public' 自动派生，消除硬编码
+        // publicPaths 从 Vue page registry scope='public' 自动派生，消除硬编码
         router.beforeEach((to) => {
           const publicHomePath = preAuthNavTree.homePath ?? '/'
           const isPublicPath = publicPaths.has(to.path)

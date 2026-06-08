@@ -75,8 +75,8 @@ export const InvalidSystemPage = defineComponent({
       h('div', { style: cardStyle }, [
         h('p', { style: eyebrowStyle }, 'System Page Mapping Error'),
         h('h1', { style: titleStyle }, title.value),
-        h('p', { style: bodyStyle }, '该导航节点被声明为 system-page，但当前前端没有在 VUE_PAGE_MAP 中注册对应路径。路由层已停止把它误当成配置页加载，因此不会再继续触发 pages-config 404。'),
-        h('pre', { style: metaBlockStyle }, `path: ${path.value}\npageId: ${pageId.value}\nreason: route meta declares system-page, but no VUE_PAGE_MAP entry exists for this path`),
+        h('p', { style: bodyStyle }, '该导航节点被声明为 system-page，但当前前端没有在 Vue 页面注册表中声明对应路径。路由层已停止把它误当成配置页加载，因此不会再继续触发 pages-config 404。'),
+        h('pre', { style: metaBlockStyle }, `path: ${path.value}\npageId: ${pageId.value}\nreason: route meta declares system-page, but no Vue page registry entry exists for this path`),
       ]),
     ])
   },

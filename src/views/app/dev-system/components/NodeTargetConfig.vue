@@ -140,7 +140,7 @@ import type { ProjectNodeData } from '@spark-appworks/spark-project-model'
 import type { DevState } from '../useDevState'
 import { useNodeKindFlags } from '../composables/useNodeKindFlags'
 import NavIcon from '@/components/NavIcon.vue'
-import { getVuePageOptions, VUE_PAGE_MAP } from '@/config/vue-page-map'
+import { getVuePageEntry, getVuePageOptions } from '@/registries/vue-page-registry'
 
 const props = defineProps<{ state: DevState }>()
 const flags = useNodeKindFlags(props.state)
@@ -295,7 +295,7 @@ type NodeTargetStatus = {
  *
  * 判断顺序与 UI 目标选择时序保持一致：
  * 1. system-action：先匹配内置动作，未知动作作为自定义标识。
- * 2. system-page：检查 VUE_PAGE_MAP，允许导航标题与组件标题不同。
+ * 2. system-page：检查 Vue 页面注册表，允许导航标题与组件标题不同。
  * 3. page：检查配置页是否已存在，不存在时提示可新建。
  */
 const pathStatus = computed<NodeTargetStatus | null>(() => {
@@ -312,8 +312,8 @@ const pathStatus = computed<NodeTargetStatus | null>(() => {
   }
 
   if (flags.isSystemPageNode.value) {
-    if (path in VUE_PAGE_MAP) {
-      const entry = VUE_PAGE_MAP[path]!
+    const entry = getVuePageEntry(path)
+    if (entry !== undefined) {
       const nodeTitle = props.state.navEditDto.title.trim()
       if (nodeTitle && nodeTitle !== entry.title) {
         return {
@@ -324,7 +324,7 @@ const pathStatus = computed<NodeTargetStatus | null>(() => {
       }
       return { type: 'success', icon: 'SuccessFilled', text: `匹配 Vue 组件：${entry.title}` }
     }
-    return { type: 'warning', icon: 'WarningFilled', text: `路径 ${path} 未在 VUE_PAGE_MAP 中注册` }
+    return { type: 'warning', icon: 'WarningFilled', text: `路径 ${path} 未在 Vue 页面注册表中声明` }
   }
 
   // 配置页面：检查 pageList
