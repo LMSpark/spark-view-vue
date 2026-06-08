@@ -32,6 +32,7 @@
  */
 
 import type { AiJsonParams } from '../../json'
+import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
 import { createAiAgentSessionId, toAiAgentRuntimeScope } from '../business/business-scope'
 import type { AiAgentLifecycleDirective } from '../business/lifecycle-types'
 import type { AiAgentRegistration } from '../business/registration-types'
@@ -91,14 +92,14 @@ const PLAN_WITHOUT_TOOL_NUDGE = [
 const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3
 
 const CATALOG_DISCOVERY_TOOL_NAMES = new Set<string>([
-  'vcm_query',
-  'vcm_model_guide',
-  'vcm_attribute_guide',
-  'vcm_action_guide',
+  VCM_NATIVE_TOOL_NAMES.query,
+  VCM_NATIVE_TOOL_NAMES.modelGuide,
+  VCM_NATIVE_TOOL_NAMES.attributeGuide,
+  VCM_NATIVE_TOOL_NAMES.actionGuide,
 ])
 
 const EXECUTION_TOOL_NAMES = new Set<string>([
-  'vcm_script',
+  VCM_NATIVE_TOOL_NAMES.script,
   'openPageDesign',
   'readPlanningProjection',
 ])
@@ -520,7 +521,7 @@ function mentionsPendingToolExecution(text: string): boolean {
   const normalized = text.trim().toLowerCase()
   if (normalized.length === 0) return false
   const markers = [
-    'vcm_script',
+    VCM_NATIVE_TOOL_NAMES.script,
     'openpagedesign',
     'editnodetree',
     'editdataset',
@@ -548,7 +549,7 @@ function shouldNudgeExecutionPhase(
 
   for (const entry of history) {
     if (!isCompletedFunctionCall(entry)) continue
-    if (entry.toolName === 'vcm_action_guide') functionGuideSucceeded = true
+    if (entry.toolName === VCM_NATIVE_TOOL_NAMES.actionGuide) functionGuideSucceeded = true
     if (EXECUTION_TOOL_NAMES.has(entry.toolName)) executionStarted = true
   }
 
@@ -558,7 +559,7 @@ function shouldNudgeExecutionPhase(
   const roundIsCatalogOnly = roundToolNames.every(name => CATALOG_DISCOVERY_TOOL_NAMES.has(name))
   if (!roundIsCatalogOnly) return false
 
-  return roundToolNames.includes('vcm_action_guide') || functionGuideSucceeded
+  return roundToolNames.includes(VCM_NATIVE_TOOL_NAMES.actionGuide) || functionGuideSucceeded
 }
 
 function shouldNudgeModuleScriptRetry(
@@ -569,7 +570,7 @@ function shouldNudgeModuleScriptRetry(
   for (let index = history.length - 1; index >= 0; index -= 1) {
     const entry = history[index]
     if (entry?.kind !== 'functionCall') continue
-    return entry.toolName === 'vcm_script' && entry.status === 'failed'
+    return entry.toolName === VCM_NATIVE_TOOL_NAMES.script && entry.status === 'failed'
   }
   return false
 }

@@ -383,6 +383,26 @@ describe('vcm-native ClassModel projection', () => {
     ])
   })
 
+  it('rejects legacy module_* tool names as unknown VCM-native tools', async () => {
+    const runtime = new VcmNativeRuntime({
+      knowledge: {
+        query: () => ({ models: [] }),
+        modelGuide: () => 'class ProjectModel {}',
+        attributeGuide: () => 'projectId: string',
+        methodGuide: () => 'openPageDesign()',
+      },
+      scriptExecutor: (command) => command.script,
+    })
+
+    await expect(runtime.executeTool('module_find', { kind: 'project' })).resolves.toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({
+        code: 'UNKNOWN_VCM_NATIVE_TOOL',
+        message: expect.stringContaining('module_find'),
+      })],
+    })
+  })
+
   it('rejects old path/direct-call aliases at runtime', async () => {
     const runtime = new VcmNativeRuntime({
       knowledge: {

@@ -37,7 +37,7 @@ packages/
 ├── spark-project-model/  # 页面配置解析、脚本上下文、配置加载
 ├── spark-component/    # Vue 渲染器、组件注册表、能力接线
 ├── spark-app/          # 应用壳、路由、认证、插件、启动引导
-├── spark-ai/           # AI 运行时：SSE、Stills 执行、工具协议
+├── spark-ai/           # VCM-native AI 运行时：7 工具闭集、Host/ToolLoop、SSE 传输（见 packages/spark-ai/ARCHITECTURE.md）
 ├── vite-plugin-spark-catalog/ # VCM module metadata 生成
 └── vxe-table/          # VXE Table 集成
 spark-ai-server/        # Spring Boot 后端（Java）— 非 Java 任务跳过

@@ -73,8 +73,8 @@ Core rules:
 
 When constructing Spark UI nodes through pageDesign AI tools:
 
-1. Read `module_function_guide` for the target VCM kind (e.g. `node-tree` / `addNode`) and use its `paramsSchema` / `examples`.
-2. Build or mutate page structure via `module_script` on the native object chain (`openPageDesign` → `editNodeTree` / `editDataSet`), not `/kind[id]` path direct calls.
+1. Read `vcm_action_guide` for the target VCM kind (e.g. `node-tree` / `addNode`) and use its `paramsSchema` / `examples`.
+2. Build or mutate page structure via `vcm_script` on the native object chain (`openPageDesign` → `editNodeTree` / `editDataSet`), not `/kind[id]` path direct calls.
 3. Construct SparkNode `type` / `props` only from VCM-declared contracts and existing renderer patterns; do not invent props.
 4. Persist four files through the script return value; outer `ProjectWorkspace` handles save.
 

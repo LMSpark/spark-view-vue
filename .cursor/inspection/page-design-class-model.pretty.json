@@ -128,7 +128,7 @@
               },
               {
                 "name": "requiredBeforeCall",
-                "text": "先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
+                "text": "先 vcm_query 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
               },
               {
                 "name": "usageRule",
@@ -157,7 +157,7 @@
             }
           ],
           "requiredBeforeCall": [
-            "先 module_find 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
+            "先 vcm_query 定位 project 实例，并确认 pageId 存在于 readPlanningProjection。"
           ],
           "usageRules": [
             "进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。"
@@ -977,7 +977,7 @@
               },
               {
                 "name": "usageRule",
-                "text": "结构批量改写优先 module_script；direct call 不支持。"
+                "text": "结构批量改写优先 vcm_script；direct call 不支持。"
               },
               {
                 "name": "usageRule",
@@ -1012,8 +1012,8 @@
             "写 node-tree 前必须先通过 VCM 元数据确认 SparkNode 结构、组件 type 和 props schema。"
           ],
           "usageRules": [
-            "Must use module_script; direct function call is not supported.",
-            "结构批量改写优先 module_script；direct call 不支持。",
+            "Must use vcm_script; direct function call is not supported.",
+            "结构批量改写优先 vcm_script；direct call 不支持。",
             "openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。"
           ],
           "failureModes": [
@@ -1104,7 +1104,7 @@
               },
               {
                 "name": "failureMode",
-                "text": "TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约"
+                "text": "TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约"
               },
               {
                 "name": "param",
@@ -1127,14 +1127,14 @@
             "先 getDataSetTool 确认当前页 DataSet 已加载。"
           ],
           "usageRules": [
-            "Must use module_script; direct function call is not supported.",
+            "Must use vcm_script; direct function call is not supported.",
             "DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。"
           ],
           "failureModes": [
             {
               "code": "TABLE_NOT_FOUND",
               "when": "表名不存在",
-              "fix": "先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约"
+              "fix": "先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约"
             }
           ]
         }

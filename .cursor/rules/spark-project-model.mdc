@@ -1,9 +1,7 @@
 ---
 description: Rules for packages/spark-project-model changes.
-globs: "packages/spark-project-model/**/*"
 alwaysApply: false
 ---
-
 # spark-project-model Rules
 
 These rules apply to `packages/spark-project-model/`.

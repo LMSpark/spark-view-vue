@@ -59,7 +59,7 @@ describe('AiToolApprovalBridge', () => {
     })
 
     const first = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('vcm_script'))
-    const second = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('module_set'))
+    const second = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('vcm_model_guide'))
 
     expect(bridge.listPending().map((request) => request.id)).toEqual(['approval-1', 'approval-2'])
     expect(bridge.cancelPending('用户停止运行')).toBe(2)

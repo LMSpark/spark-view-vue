@@ -4,10 +4,12 @@
 
 这个目录不再维护手写 AI 体系指南。产品 AI 知识体系的 SSOT 是 VCM metadata 生成链路：
 
-1. [../../packages/vite-plugin-spark-catalog/README.md](../../packages/vite-plugin-spark-catalog/README.md)：VCM module metadata 生成器。
-2. [../../src/services/page-design/page-design-module-metadata.api.generated.json](../../src/services/page-design/page-design-module-metadata.api.generated.json)：页面设计 API metadata 生成物。
-3. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
-4. [AI_CODE_GENERATION_BEHAVIOR.en.md](AI_CODE_GENERATION_BEHAVIOR.en.md)：代码生成规则英文版。
+1. [../../packages/spark-ai/ARCHITECTURE.md](../../packages/spark-ai/ARCHITECTURE.md)：spark-ai 端到端架构 SSOT（VCM-native 七工具、Turn、知识双轨）。
+2. [SPARK_AI_WORKFLOW.md](SPARK_AI_WORKFLOW.md)：工作流速查 SOP。
+3. [../../packages/vite-plugin-spark-catalog/README.md](../../packages/vite-plugin-spark-catalog/README.md)：VCM module metadata 生成器。
+4. [../../src/services/page-design/page-design-module-metadata.api.generated.json](../../src/services/page-design/page-design-module-metadata.api.generated.json)：页面设计 API metadata 生成物。
+5. [ai-code-generation-behavior.md](ai-code-generation-behavior.md)：Codex / LLM 修改本仓库时必须遵守的代码生成规则。
+6. [AI_CODE_GENERATION_BEHAVIOR.en.md](AI_CODE_GENERATION_BEHAVIOR.en.md)：代码生成规则英文版。
 
 ## 当前口径
 

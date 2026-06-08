@@ -22,6 +22,7 @@
  */
 
 import { createAiAgentStreamKey, createAiAgentTurnKey } from '../business/business-scope'
+import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
 import type { AiAgentScope } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentStreamEvent, AiAgentTurnMeta } from '../chat/chat-types'
 import { stringifyAiAgentPayload } from './payload-codec'
@@ -106,7 +107,10 @@ export function eventModuleIdFromProtocolCall(
   toolName: string,
   args: Readonly<Record<string, unknown>>,
 ): string {
-  if ((toolName === 'vcm_model_guide' || toolName === 'vcm_attribute_guide' || toolName === 'vcm_action_guide' || toolName === 'vcm_query')
+  if ((toolName === VCM_NATIVE_TOOL_NAMES.modelGuide
+    || toolName === VCM_NATIVE_TOOL_NAMES.attributeGuide
+    || toolName === VCM_NATIVE_TOOL_NAMES.actionGuide
+    || toolName === VCM_NATIVE_TOOL_NAMES.query)
     && typeof args['kind'] === 'string'
     && args['kind'].trim().length > 0) {
     return args['kind']
