@@ -914,7 +914,7 @@ function buildActionUsageRules(
 ): string[] {
   const rules: string[] = []
   if (hasDocTag(tags, 'vcmScriptOnly') || paramsSchemaUsesCallback(paramsSchema)) {
-    rules.push('Must use module_script; direct function call is not supported.')
+    rules.push('Must use vcm_script; direct function call is not supported.')
   }
   for (const rule of tagTexts(tags, 'usageRule')) {
     if (rule.length > 0 && !rules.includes(rule)) {
@@ -1169,12 +1169,12 @@ function isVoidLikeType(type: ts.Type): boolean {
 function getInnerReturnType(checker: ts.TypeChecker, node: ts.MethodDeclaration): ts.Type | undefined {
   const signature = checker.getSignatureFromDeclaration(node)
   if (signature === undefined) return undefined
-  return unwrapAiModuleResult(checker, checker.getReturnTypeOfSignature(signature))
+  return unwrapAiAgentToolResult(checker, checker.getReturnTypeOfSignature(signature))
 }
 
-function unwrapAiModuleResult(checker: ts.TypeChecker, type: ts.Type): ts.Type {
+function unwrapAiAgentToolResult(checker: ts.TypeChecker, type: ts.Type): ts.Type {
   const awaited = checker.getAwaitedType(type) ?? type
-  if (!isTypeReferenceTo(checker, awaited, 'AiModuleResult')) return awaited
+  if (!isTypeReferenceTo(checker, awaited, 'AiAgentToolResult')) return awaited
   const args = readTypeReferenceArguments(awaited)
   return args[0] ?? awaited
 }
@@ -1848,7 +1848,7 @@ function createModuleMetadataDiagnostics(
         rule: 'module-actions-empty',
         target: module.kind,
         message: `${module.kind} 没有可调用 action。`,
-        fix: '确认 action 方法是 public、返回 AiModuleResult，并有自然语言 JSDoc summary。',
+        fix: '确认 action 方法是 public、返回 AiAgentToolResult，并有自然语言 JSDoc summary。',
       })
     }
     if (module.resultApiCount === 0) {
@@ -1870,7 +1870,7 @@ function createModuleMetadataDiagnostics(
         rule: 'ability-actions-empty',
         target: ability.abilityId,
         message: `${ability.abilityId} 没有提取到 action。`,
-        fix: '确认能力 class 的 public 方法返回 AiModuleResult，且有 JSDoc summary。',
+        fix: '确认能力 class 的 public 方法返回 AiAgentToolResult，且有 JSDoc summary。',
       })
     }
   }
@@ -2540,17 +2540,17 @@ function createRuntimeAttributeGuideSmoke(
 function createRuntimeMethodGuideSmoke(
   document: ReturnType<typeof createRuntimeGeneratedApiObjectMetadataDocument>,
   kind: string,
-  methodName: string,
+  actionName: string,
 ) {
   const apiByKind = runtimeApiByKind(document)
   const api = apiByKind.get(kind)
-  const action = readArray(api?.['actions']).map(readRecord).find(item => item['name'] === methodName)
+  const action = readArray(api?.['actions']).map(readRecord).find(item => item['name'] === actionName)
   if (api === undefined || action === undefined) return undefined
   return {
-    tool: 'vcm_method_guide',
+    tool: 'vcm_action_guide',
     kind,
-    methodName,
-    signature: `${methodName}(${runtimeParamsToText(action['paramsSchema'], action, apiByKind)}): ${runtimeReturnToTypeText(action, apiByKind)}`,
+    actionName,
+    signature: `${actionName}(${runtimeParamsToText(action['paramsSchema'], action, apiByKind)}): ${runtimeReturnToTypeText(action, apiByKind)}`,
   }
 }
 
@@ -2896,7 +2896,7 @@ function formatRuntimeMetadataTsModule(jsonFileName: string): string {
     ' * 构建审计在 generator 内存中完成，并通过 CLI 日志输出引用闭包、知识覆盖率和待补 JSDoc。',
     ' * VCM 提取在生成器 TS 程序内完成；resolveJsonModule 推断为窄字面量，此处一次性断言类型。',
     ' */',
-    "import type { ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/modules'",
+    "import type { ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'",
     `import runtimeDocumentJson from './${jsonFileName}'`,
     '',
     'export const pageDesignRuntimeMetadataDocument =',

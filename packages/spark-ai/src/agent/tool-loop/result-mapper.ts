@@ -3,14 +3,14 @@
  * │  AI HOST · 操作结果映射器                                                     │
  * │  Operation Result → Function Call Result Mapper                              │
  * │                                                                              │
- * │  本模块负责将 modules 层的 AiModuleResult 转换为 agent 层的                    │
+ * │  本模块负责将工具 runtime 的 AiAgentToolResult 转换为 agent 层的               │
  * │  AiAgentFunctionCallResult。两条链路的错误/成功结构不同，                      │
  * │  需要做语义投影。                                                             │
  * │                                                                              │
  * │  转换规则：                                                                   │
- * │    AiModuleResult.ok=true  → AiAgentFunctionCallResult.ok=true          │
+ * │    AiAgentToolResult.ok=true  → AiAgentFunctionCallResult.ok=true       │
  * │      从 checks 中提取第一条 info/warn 作为 summary                             │
- * │    AiModuleResult.ok=false → AiAgentFunctionCallResult.ok=false         │
+ * │    AiAgentToolResult.ok=false → AiAgentFunctionCallResult.ok=false      │
  * │      从 checks 中提取第一条 error 的 code/message/hint 作为 code/msg/fix      │
  * │      若没有 error 级 check → 回退到 PROTOCOL_FAILURE                          │
  * │                                                                              │
@@ -19,7 +19,7 @@
  */
 
 import type { AiJsonValue } from '../../json'
-import type { AiModuleCheck, AiModuleResult } from '../../modules'
+import type { AiAgentToolCheck, AiAgentToolResult } from '../tool-runtime'
 import type {
   AiAgentFunctionCallCheck,
   AiAgentFunctionCallFailure,
@@ -31,14 +31,14 @@ import type {
  * ----------------------------------------------------------------------------- */
 
 /**
- * 将 AiModuleResult 投影为 AiAgentFunctionCallResult。
+ * 将 AiAgentToolResult 投影为 AiAgentFunctionCallResult。
  *
  * 成功路径：从 checks 提取 info/warn 级 check 作为人类可读的 summary。
  * 失败路径：提取第一个 error 级 check 的 code/message/hint 填入 code/msg/fix，
  * 同时保留完整 checks，确保参数校验等工具失败细节会作为 tool result 回传给 LLM。
  */
 export function toFunctionCallResult(
-  result: AiModuleResult<AiJsonValue>,
+  result: AiAgentToolResult<AiJsonValue>,
 ): AiAgentFunctionCallResult<unknown> {
   if (result.ok) {
     const summary = firstInfoOrWarnSummary(result.checks)
@@ -56,7 +56,7 @@ export function toFunctionCallResult(
       ok: false,
       code: 'PROTOCOL_FAILURE',
       msg: '协议层返回失败但未携带 error 级 check',
-      fix: '请检查 AiModuleResult.checks 是否正确填充',
+      fix: '请检查 AiAgentToolResult.checks 是否正确填充',
       ...(result.checks === undefined ? {} : { checks: toFunctionCallChecks(result.checks) }),
     }
   }
@@ -93,16 +93,16 @@ export function failureFromCallResult(result: AiAgentFunctionCallResult<unknown>
  * ----------------------------------------------------------------------------- */
 
 /** 从 checks 中提取第一条 info 或 warn 级别的消息作为成功摘要 */
-function firstInfoOrWarnSummary(checks: readonly AiModuleCheck[] | undefined): string | undefined {
+function firstInfoOrWarnSummary(checks: readonly AiAgentToolCheck[] | undefined): string | undefined {
   return checks?.find((check) => check.level === 'info' || check.level === 'warn')?.message
 }
 
 /** 从 checks 中提取第一条 error 级别 */
-function pickFirstErrorCheck(checks: readonly AiModuleCheck[] | undefined): AiModuleCheck | undefined {
+function pickFirstErrorCheck(checks: readonly AiAgentToolCheck[] | undefined): AiAgentToolCheck | undefined {
   return checks?.find((check) => check.level === 'error')
 }
 
-function toFunctionCallChecks(checks: readonly AiModuleCheck[]): readonly AiAgentFunctionCallCheck[] {
+function toFunctionCallChecks(checks: readonly AiAgentToolCheck[]): readonly AiAgentFunctionCallCheck[] {
   return checks.map((check) => ({
     level: check.level,
     code: check.code,

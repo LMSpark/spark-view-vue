@@ -1,5 +1,5 @@
 /**
- * modules · VCM API 对象元数据校验
+ * vcm-native/metadata · VCM API 对象元数据校验
  *
  * Fail-fast 校验 VCM 生成的 API 对象图，避免 LLM 看见无法执行的 action 契约。
  */

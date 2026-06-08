@@ -14,7 +14,7 @@
  *   AiAgentStreamTurnResult    — AI turn 汇总结果
  *   AiAgentTurnCallbacks       — APP 层实现的 turn I/O 回调
  *
- * 【与 modules 的关系】
+ * 【与工具 runtime 的关系】
  *   本层的 ToolSpec 直接承载 runtime 输出的固定工具 JSON Schema。
  *
  * 【消费方】business-session、tool-loop-runner、APP 层 ai-turn bridge

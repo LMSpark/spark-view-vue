@@ -37,10 +37,10 @@ const allowedSparkAiSpecifiers = new Set([
   '@spark-appworks/spark-ai',
   '@spark-appworks/spark-ai/json',
   '@spark-appworks/spark-ai/agent',
-  '@spark-appworks/spark-ai/modules',
+  '@spark-appworks/spark-ai/vcm-native',
 ])
 
-const allowedSparkAiExportKeys = new Set(['.', './json', './agent', './modules'])
+const allowedSparkAiExportKeys = new Set(['.', './json', './agent', './vcm-native'])
 
 export function scanArchitectureRules(options = {}) {
   const root = options.root ?? process.cwd()

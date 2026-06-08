@@ -7,7 +7,7 @@ import type {
   AiApiResultApiRef,
   AiApiSourceProvenanceMetadata,
   AiModuleMetadataJson,
-} from '../../modules/metadata'
+} from '../metadata'
 import type {
   AttributeMeta,
   ChildModelLink,
@@ -35,8 +35,8 @@ type ApiRef = Readonly<{
 }>
 
 /**
- * 迁移期输入适配层：这里读取旧 runtime metadata 的池化结果和标准化 schema，
- * 但不会把 ClassModel 新协议写回旧 modules/* 体系。
+ * 输入适配层：这里读取 VCM runtime metadata 的池化结果和标准化 schema，
+ * 并投影为 ClassModel 新协议。
  */
 export function createClassModelDocumentFromRuntimeDocument(
   document: RuntimeDocumentInput,

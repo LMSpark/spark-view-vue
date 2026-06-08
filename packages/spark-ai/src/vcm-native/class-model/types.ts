@@ -1,5 +1,5 @@
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
-import type { AiModuleFunctionFailureMode } from '../../modules'
+import type { AiApiActionFailureMode } from '../metadata'
 
 /** ClassModel 投影版本；它独立于旧 runtime metadata 的 schemaVersion。 */
 export const CLASS_MODEL_DOCUMENT_VERSION = 1 as const
@@ -98,7 +98,7 @@ export type MethodMeta = Readonly<{
   childModels: readonly ChildModelLink[]
   requiredBeforeCall: readonly string[]
   usageRules: readonly string[]
-  failureModes: readonly AiModuleFunctionFailureMode[]
+  failureModes: readonly AiApiActionFailureMode[]
 }>
 
 /**

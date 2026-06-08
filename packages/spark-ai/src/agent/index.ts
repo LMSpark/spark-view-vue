@@ -51,8 +51,8 @@ export {
 } from './business/business-kit'
 
 export {
-  AiModuleAdapter,
-} from './business/ai-module-adapter'
+  VcmNativeAgentAdapter,
+} from './business/vcm-native-agent-adapter'
 
 export {
   AiAgentRuntimeContext,
@@ -71,11 +71,10 @@ export type {
 } from './business/registration-types'
 
 export type {
-  AiApiObjectHandle,
-  AiModuleAdapterRegistrationCommand,
-  AiModuleAdapterRegisterCommand,
-  AiModuleAdapterRegisterOptions,
-} from './business/ai-module-adapter'
+  VcmNativeAgentAdapterRegistrationCommand,
+  VcmNativeAgentAdapterRegisterCommand,
+  VcmNativeAgentAdapterRegisterOptions,
+} from './business/vcm-native-agent-adapter'
 
 export type {
   AiBusinessInputOptions,
@@ -106,6 +105,22 @@ export type {
 export type {
   AiAgentOptions,
 } from './business/host-options'
+
+export {
+  AiAgentToolCheck,
+  AiAgentToolResult,
+} from './tool-runtime'
+
+export type {
+  AiAgentRuntimeHostContext,
+  AiAgentToolCheckLevel,
+  AiAgentToolResultOptions,
+  AiAgentToolRuntime,
+  AiAgentToolRuntimeInspectFinding,
+  AiAgentToolRuntimeInspectReport,
+  AiAgentToolRuntimeKnowledgeProjection,
+  AiAgentToolSpec,
+} from './tool-runtime'
 
 // ── 2. 业务作用域工厂 ───────────────────────────────────────
 

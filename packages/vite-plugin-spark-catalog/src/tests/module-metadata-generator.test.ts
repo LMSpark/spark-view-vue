@@ -17,10 +17,10 @@ describe('module metadata generator', () => {
     }
   })
 
-  it('infers VCM actions from class annotations and public AiModuleResult methods', () => {
+  it('infers VCM actions from class annotations and public AiAgentToolResult methods', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -31,10 +31,10 @@ class AiModuleResult<T> {
  */
 class DemoDirectory {
   /** Search directory entries. */
-  public search(_ctx: unknown, args: { keyword?: string }): AiModuleResult<{ results: string[] }> {
+  public search(_ctx: unknown, args: { keyword?: string }): AiAgentToolResult<{ results: string[] }> {
     void _ctx
     void args
-    return new AiModuleResult()
+    return new AiAgentToolResult()
   }
 }
 
@@ -62,29 +62,29 @@ class DemoRootService {
   }
 
   /** Describe current state. */
-  public describe(_ctx: unknown): AiModuleResult<{ status: string }> {
+  public describe(_ctx: unknown): AiAgentToolResult<{ status: string }> {
     void _ctx
-    return new AiModuleResult()
+    return new AiAgentToolResult()
   }
 
   /**
    * Submit the current draft.
    */
-  public submitDraft(): AiModuleResult<{ submitted: boolean }> {
-    return new AiModuleResult()
+  public submitDraft(): AiAgentToolResult<{ submitted: boolean }> {
+    return new AiAgentToolResult()
   }
 
   /** Open the nested API object. */
-  public openDirectory(): AiModuleResult<DemoDirectory> {
-    return new AiModuleResult()
+  public openDirectory(): AiAgentToolResult<DemoDirectory> {
+    return new AiAgentToolResult()
   }
 
   /** Internal diagnostics are not LLM-visible.
    *
    * @internal
    */
-  public diagnostics(): AiModuleResult<{ ok: boolean }> {
-    return new AiModuleResult()
+  public diagnostics(): AiAgentToolResult<{ ok: boolean }> {
+    return new AiAgentToolResult()
   }
 
   /** Public documented helpers are action-like under class-only VCM extraction. */
@@ -251,7 +251,7 @@ export class ChildApi {
     writeFileSync(join(root, 'root.ts'), `
 import type { ChildApi } from './dist/types/child'
 
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -262,8 +262,8 @@ class AiModuleResult<T> {
  */
 class RootApi {
   /** Open child API. */
-  public openChild(): AiModuleResult<ChildApi> {
-    return new AiModuleResult()
+  public openChild(): AiAgentToolResult<ChildApi> {
+    return new AiAgentToolResult()
   }
 }
 `, 'utf8')
@@ -367,7 +367,7 @@ export class ChildApi {
     writeFileSync(join(root, 'root.ts'), `
 import type { ChildApi } from '@demo/child'
 
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -378,8 +378,8 @@ class AiModuleResult<T> {
  */
 class RootApi {
   /** Open child API. */
-  public openChild(): AiModuleResult<ChildApi> {
-    return new AiModuleResult()
+  public openChild(): AiAgentToolResult<ChildApi> {
+    return new AiAgentToolResult()
   }
 }
 `, 'utf8')
@@ -428,9 +428,9 @@ class DemoTree {
  */
 class DemoConfigPage {
   /**
-   * Edit node tree in module_script.
+   * Edit node tree in vcm_script.
    *
-   * @moduleMutation rule.json write Edit node tree in module_script.
+   * @moduleMutation rule.json write Edit node tree in vcm_script.
    * @vcmScriptOnly
    */
   public async editNodeTree(run: (tree: DemoTree) => void | Promise<void>): Promise<void> {
@@ -449,7 +449,7 @@ class DemoConfigPage {
     const configPage = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-config-page')
     const editNodeTree = configPage?.rootApi.actions.find(action => action.name === 'editNodeTree')
     expect(editNodeTree?.resultApis?.[0]?.api.kind).toBe('demo-tree')
-    expect(editNodeTree?.usageRules).toContain('Must use module_script; direct function call is not supported.')
+    expect(editNodeTree?.usageRules).toContain('Must use vcm_script; direct function call is not supported.')
   })
 
   it('writes a VCM object element catalog JSON', () => {
@@ -533,7 +533,7 @@ class QueryRoot {
   it('can diagnose extracted metadata without writing generated files', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -545,8 +545,8 @@ class AiModuleResult<T> {
  */
 class DemoDiagnosticsService {
   /** Ping current state. */
-  public ping(): AiModuleResult<{ ok: boolean }> {
-    return new AiModuleResult()
+  public ping(): AiAgentToolResult<{ ok: boolean }> {
+    return new AiAgentToolResult()
   }
 }
 `, 'utf8')
@@ -605,7 +605,7 @@ class DemoIgnoreService {
   it('pools complex parameter schemas into $defs refs', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -621,9 +621,9 @@ type TreeNode = {
  */
 class SchemaPoolingService {
   /** Configure recursive node metadata. */
-  public configure(args: { node: TreeNode; items: TreeNode[]; anything?: unknown }): AiModuleResult<{ ok: boolean }> {
+  public configure(args: { node: TreeNode; items: TreeNode[]; anything?: unknown }): AiAgentToolResult<{ ok: boolean }> {
     void args
-    return new AiModuleResult()
+    return new AiAgentToolResult()
   }
 }
 `, 'utf8')
@@ -665,7 +665,7 @@ class SchemaPoolingService {
   it('dedupes nested API objects while preserving sibling result paths', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -676,8 +676,8 @@ class AiModuleResult<T> {
  */
 class PooledChild {
   /** Return parent again. */
-  public parent(): AiModuleResult<PooledParent> {
-    return new AiModuleResult()
+  public parent(): AiAgentToolResult<PooledParent> {
+    return new AiAgentToolResult()
   }
 }
 
@@ -688,8 +688,8 @@ class PooledChild {
  */
 class PooledParent {
   /** Return two child handles. */
-  public listRefs(): AiModuleResult<{ first: PooledChild; second: PooledChild }> {
-    return new AiModuleResult()
+  public listRefs(): AiAgentToolResult<{ first: PooledChild; second: PooledChild }> {
+    return new AiAgentToolResult()
   }
 }
 `, 'utf8')
@@ -713,7 +713,7 @@ class PooledParent {
   it('extracts usageRule, requiredBeforeCall and failureMode tags from action JSDoc', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
-class AiModuleResult<T> {
+class AiAgentToolResult<T> {
   readonly value?: T
 }
 
@@ -730,8 +730,8 @@ class DemoRootService {
    * @requiredBeforeCall 先 readPlanningProjection 确认 pageId
    * @failureMode DRAFT_NOT_FOUND 草稿不存在 => 先调用 setDraftFields 创建草稿
    */
-  public submitDraft(): AiModuleResult<{ submitted: boolean }> {
-    return new AiModuleResult()
+  public submitDraft(): AiAgentToolResult<{ submitted: boolean }> {
+    return new AiAgentToolResult()
   }
 }
 `, 'utf8')

@@ -1,11 +1,15 @@
 import { readJsonProperty } from '@spark-appworks/spark-json-document'
 import { AiJsonSchemaValidator, type AiJsonParams, type AiJsonSchemaValidateOptions } from '../../json'
-import { AiModuleResult, type AiModulePathContext } from '../../modules'
-import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../modules/metadata'
+import { AiAgentToolResult, type AiAgentRuntimeHostContext } from '../tool-runtime'
+import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../vcm-native'
 
 type MethodTarget = Readonly<Record<string, unknown>>
 type ScriptCallable = (...args: readonly unknown[]) => unknown
-type ApiMethod = (first: AiModulePathContext | AiJsonParams, second?: AiJsonParams) => unknown
+type AiNativePathContext = Readonly<{
+  segments: readonly string[]
+  host?: AiAgentRuntimeHostContext
+}>
+type ApiMethod = (first: AiNativePathContext | AiJsonParams, second?: AiJsonParams) => unknown
 
 type ApiProxyState = Readonly<{
   value: Promise<unknown>
@@ -22,7 +26,7 @@ type ResolvedValue = {
 export function createAiApiScriptContext(
   instance: unknown,
   api: AiApiObjectMetadata,
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   validateOptions: AiJsonSchemaValidateOptions = {},
 ): Readonly<Record<string, unknown>> {
   const proxy = createApiProxy(
@@ -52,9 +56,9 @@ export async function executeAiApiAction(
   target: unknown,
   action: AiApiActionMetadata,
   args: AiJsonParams | ((...params: readonly unknown[]) => unknown),
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: AiJsonSchemaValidateOptions = {},
-): Promise<AiModuleResult<unknown>> {
+): Promise<AiAgentToolResult<unknown>> {
   return await executeAiApiActionValue(target, action, args, ctx, options)
 }
 
@@ -62,20 +66,20 @@ function executeAiApiActionValue(
   target: unknown,
   action: AiApiActionMetadata,
   args: AiJsonParams | ((...params: readonly unknown[]) => unknown),
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: AiJsonSchemaValidateOptions = {},
-): AiModuleResult<unknown> | Promise<AiModuleResult<unknown>> {
+): AiAgentToolResult<unknown> | Promise<AiAgentToolResult<unknown>> {
   const normalizedArgs = normalizeScriptActionArgs(action, args)
   const validation = AiJsonSchemaValidator.validateDeserializedParams(normalizedArgs, action.paramsSchema, options)
   if (!validation.ok) {
-    return AiModuleResult.failCode(
+    return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
       `${action.name} 参数不符合 paramsSchema: ${validation.issues.map(issue => issue.message).join('; ')}`,
-      '先读取 module_function_guide 或脚本上下文对应方法的 paramsSchema，再按 schema 修正参数。',
+      '先读取 vcm_action_guide 或脚本上下文对应方法的 paramsSchema，再按 schema 修正参数。',
     )
   }
   if (!isMethodTarget(target)) {
-    return AiModuleResult.failCode(
+    return AiAgentToolResult.failCode(
       'FUNCTION_NOT_IMPLEMENTED',
       `${action.name} 未实现方法 "${action.methodName}"`,
       '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
@@ -83,7 +87,7 @@ function executeAiApiActionValue(
   }
   const method = target[action.methodName]
   if (!isApiMethod(method)) {
-    return AiModuleResult.failCode(
+    return AiAgentToolResult.failCode(
       'FUNCTION_NOT_IMPLEMENTED',
       `${action.name} 未实现方法 "${action.methodName}"`,
       '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
@@ -100,21 +104,21 @@ async function wrapAsyncApiActionValue(
   target: unknown,
   action: AiApiActionMetadata,
   args: AiJsonParams,
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: AiJsonSchemaValidateOptions,
 ): Promise<unknown> {
   return unwrapActionResult(action.name, await executeAiApiAction(target, action, args, ctx, options))
 }
 
-function wrapRawActionResult(raw: unknown): AiModuleResult<unknown> {
-  if (raw instanceof AiModuleResult) return raw
-  return AiModuleResult.ok(raw)
+function wrapRawActionResult(raw: unknown): AiAgentToolResult<unknown> {
+  if (raw instanceof AiAgentToolResult) return raw
+  return AiAgentToolResult.ok(raw)
 }
 
 export class AiApiScriptActionFailure extends Error {
   public constructor(
     public readonly actionName: string,
-    public readonly result: AiModuleResult<unknown>,
+    public readonly result: AiAgentToolResult<unknown>,
   ) {
     const first = result.checks?.[0]
     super(first === undefined ? `${actionName} failed` : `${first.code}: ${first.message}`)
@@ -126,7 +130,7 @@ type ApiProxyOptions = Readonly<{
   awaitable: boolean
 }>
 
-function createApiProxy(state: ApiProxyState, ctx: AiModulePathContext): unknown {
+function createApiProxy(state: ApiProxyState, ctx: AiNativePathContext): unknown {
   return createApiSurface(state, ctx, { awaitable: true })
 }
 
@@ -145,7 +149,7 @@ function createApiProxyState(
 
 function createApiSurface(
   state: ApiProxyState,
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: ApiProxyOptions,
 ): unknown {
   return new Proxy({}, {
@@ -228,7 +232,7 @@ function createApiSurface(
 function createResolvedApiSurface(
   target: unknown,
   api: AiApiObjectMetadata,
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: ApiProxyOptions,
   validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
@@ -285,7 +289,7 @@ function callApiActionInScriptValue(
   target: unknown,
   action: AiApiActionMetadata,
   args: AiJsonParams,
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: AiJsonSchemaValidateOptions,
 ): unknown {
   const result = executeAiApiActionValue(target, action, args, ctx, options)
@@ -295,7 +299,7 @@ function callApiActionInScriptValue(
   return unwrapActionResult(action.name, result)
 }
 
-function unwrapActionResult(actionName: string, result: AiModuleResult<unknown>): unknown {
+function unwrapActionResult(actionName: string, result: AiAgentToolResult<unknown>): unknown {
   if (!result.ok) {
     throw new AiApiScriptActionFailure(actionName, result)
   }
@@ -305,7 +309,7 @@ function unwrapActionResult(actionName: string, result: AiModuleResult<unknown>)
 function wrapResultApis(
   value: unknown,
   resultApis: readonly AiApiResultApiRef[],
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   if (resultApis.length === 0) return value
@@ -319,7 +323,7 @@ function createResolvedResultProxy(
   value: unknown,
   resultApis: readonly AiApiResultApiRef[],
   path: readonly string[],
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   return createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: true }, validateOptions)
@@ -329,7 +333,7 @@ function createResultProxy(
   value: Promise<unknown>,
   resultApis: readonly AiApiResultApiRef[],
   path: readonly string[],
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
   return createResultPathSurface(value, resultApis, path, ctx, { awaitable: true }, validateOptions)
@@ -339,7 +343,7 @@ function createResultPathSurface(
   value: Promise<unknown>,
   resultApis: readonly AiApiResultApiRef[],
   path: readonly string[],
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: ApiProxyOptions,
   validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
@@ -386,7 +390,7 @@ function createResolvedResultPathSurface(
   value: unknown,
   resultApis: readonly AiApiResultApiRef[],
   path: readonly string[],
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   options: ApiProxyOptions,
   validateOptions: AiJsonSchemaValidateOptions,
 ): unknown {
@@ -461,7 +465,7 @@ function callApiMethod(
   method: ApiMethod,
   target: MethodTarget,
   action: AiApiActionMetadata,
-  ctx: AiModulePathContext,
+  ctx: AiNativePathContext,
   args: AiJsonParams,
 ): unknown {
   const mutatorRun = readMutatorRunArgument(action, args)
@@ -471,16 +475,16 @@ function callApiMethod(
   if (actionRequiresRun(action)) {
     const runValue = args['run']
     if (runValue !== undefined && typeof runValue !== 'function') {
-      return AiModuleResult.failCode(
+      return AiAgentToolResult.failCode(
         'SCHEMA_VALIDATION_FAILED',
         `${action.name}.run must be a function, received ${typeof runValue}.`,
-        '在 module_script 中使用 page.editDataSet(async ds => ...) / page.editNodeTree(async tree => ...)；勿把 createTable 参数对象当作 run。',
+        '在 vcm_script 中使用 page.editDataSet(async ds => ...) / page.editNodeTree(async tree => ...)；勿把 createTable 参数对象当作 run。',
       )
     }
-    return AiModuleResult.failCode(
+    return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
       `${action.name} requires a callback argument; compatible { run } must be a function.`,
-      '在 module_script 中使用 page.editDataSet(async ds => ...) / page.editNodeTree(async tree => ...)。',
+      '在 vcm_script 中使用 page.editDataSet(async ds => ...) / page.editNodeTree(async tree => ...)。',
     )
   }
   if (action.takesContext === true) return method.call(target, ctx, args)
@@ -519,7 +523,7 @@ function normalizeScriptActionArgList(
   return normalizePositionalScriptArgs(action, args)
 }
 
-/** module_script 常把 mutator 回调和原生对象参数直接传入；这里归一化为 VCM paramsSchema。 */
+/** vcm_script 常把 mutator 回调和原生对象参数直接传入；这里归一化为 VCM paramsSchema。 */
 function normalizeScriptActionArgs(
   action: AiApiActionMetadata,
   args: unknown,

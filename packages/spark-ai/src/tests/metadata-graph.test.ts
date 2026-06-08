@@ -4,7 +4,7 @@ import {
   collectNestedApiRecords,
   walkAiApiMetadataGraph,
   type AiApiObjectMetadata,
-} from '../modules/metadata'
+} from '../vcm-native'
 
 const CHILD_VIA_ACTION: AiApiObjectMetadata = {
   kind: 'config-page',

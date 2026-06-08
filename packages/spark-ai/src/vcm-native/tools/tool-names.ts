@@ -8,7 +8,7 @@ export const VCM_NATIVE_TOOL_NAMES = Object.freeze({
   query: 'vcm_query',
   modelGuide: 'vcm_model_guide',
   attributeGuide: 'vcm_attribute_guide',
-  methodGuide: 'vcm_method_guide',
+  actionGuide: 'vcm_action_guide',
   script: 'vcm_script',
   humanQuestion: 'human_question',
   agentComplete: 'agent_complete',
@@ -19,4 +19,3 @@ export type VcmNativeToolName = typeof VCM_NATIVE_TOOL_NAMES[keyof typeof VCM_NA
 export function isVcmNativeToolName(name: string): name is VcmNativeToolName {
   return Object.values(VCM_NATIVE_TOOL_NAMES).some(candidate => candidate === name)
 }
-

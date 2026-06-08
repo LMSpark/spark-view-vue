@@ -1,5 +1,5 @@
 /**
- * modules/runtime · 模块执行沙箱。
+ * agent/native-runtime · VCM-native 脚本执行沙箱。
  *
  * LLM 脚本中的 this 就是调用方提供的模块上下文；ctx 是同一对象的别名。
  * 这里的沙箱是统一执行上下文，不是高安全隔离；function calling 与脚本都可以进入它。
@@ -8,41 +8,41 @@
 
 import { toErrorMessage } from '@spark-appworks/spark-utils'
 import { coerceJsonValue, type AiJsonValue } from '../../json'
-import { AiModuleCheck, AiModuleResult } from '../protocol'
+import { AiAgentToolCheck, AiAgentToolResult } from '../tool-runtime'
 
-const SCRIPT_RECOVERY_HINT = '先 module_function_guide 读取 usageRules/paramsSchema；mutator 用 module_script({ script })，参数名必须是 script；失败时读 tool result 的 RECOVERY_HINT。'
+const SCRIPT_RECOVERY_HINT = '先 vcm_action_guide 读取 usageRules/paramsSchema；mutator 用 vcm_script({ script })，参数名必须是 script；失败时读 tool result 的 RECOVERY_HINT。'
 
-export type AiModuleScriptContext = Readonly<Record<string, unknown>>
+export type AiNativeScriptSandboxContext = Readonly<Record<string, unknown>>
 
 const GENERATED_STACK_LINE_FOR_SCRIPT_LINE_1 = 6
 
 export async function executeModuleScript(
   script: string,
-  context: AiModuleScriptContext,
-): Promise<AiModuleResult<AiJsonValue>> {
+  context: AiNativeScriptSandboxContext,
+): Promise<AiAgentToolResult<AiJsonValue>> {
   try {
     const result = await runScript(script, context)
     const data = coerceJsonValue(result)
     if (data === undefined) {
-      return AiModuleResult.failCode(
+      return AiAgentToolResult.failCode(
         'SCRIPT_RESULT_NOT_JSON',
         '脚本返回值不能序列化为 JSON。',
         '请返回字符串、数字、布尔、null、数组或普通对象。',
       )
     }
-    return AiModuleResult.ok(data)
+    return AiAgentToolResult.ok(data)
   } catch (error) {
     const location = findScriptErrorLocation(error)
-    const originalFailure = readOriginalAiModuleFailure(error)
+    const originalFailure = readOriginalToolFailure(error)
     if (originalFailure !== undefined) {
       const locationHint = location === undefined
         ? '脚本链式调用返回业务失败；先按原始错误码修正参数或业务状态。'
         : `脚本第 ${String(location.line)} 行的链式调用返回业务失败；先按原始错误码修正参数或业务状态。`
-      return AiModuleResult.fail([
+      return AiAgentToolResult.fail([
         ...(originalFailure.checks ?? [
-          AiModuleCheck.error('SCRIPT_ACTION_FAILED', toErrorMessage(error), locationHint),
+          AiAgentToolCheck.error('SCRIPT_ACTION_FAILED', toErrorMessage(error), locationHint),
         ]),
-        AiModuleCheck.error(
+        AiAgentToolCheck.error(
           'SCRIPT_EXECUTION_FAILED',
           location === undefined
             ? `脚本链式调用失败: ${toErrorMessage(error)}`
@@ -69,7 +69,7 @@ export async function executeModuleScript(
               : errorMessage.includes('received non-function run')
                 ? '勿把 createTable 参数对象传给 editDataSet；应 editDataSet(async ds => ds.createTable({...}))。'
                 : ''
-    return AiModuleResult.failCode(
+    return AiAgentToolResult.failCode(
       'SCRIPT_EXECUTION_FAILED',
       `脚本执行失败${locationText}: ${errorMessage}`,
       location === undefined
@@ -79,14 +79,14 @@ export async function executeModuleScript(
   }
 }
 
-function readOriginalAiModuleFailure(error: unknown): AiModuleResult<unknown> | undefined {
+function readOriginalToolFailure(error: unknown): AiAgentToolResult<unknown> | undefined {
   if (!isIndexableObject(error)) return undefined
   const result = error['result']
-  if (!(result instanceof AiModuleResult)) return undefined
+  if (!(result instanceof AiAgentToolResult)) return undefined
   return result.ok ? undefined : result
 }
 
-async function runScript(script: string, context: AiModuleScriptContext): Promise<unknown> {
+async function runScript(script: string, context: AiNativeScriptSandboxContext): Promise<unknown> {
   const contextWithSelf: Record<string, unknown> = { ...context }
   contextWithSelf['ctx'] = contextWithSelf
   const source = [
@@ -100,7 +100,7 @@ async function runScript(script: string, context: AiModuleScriptContext): Promis
     '  }',
     '}).call(__ctx)',
   ].join('\n')
-  const execute = new Function('__ctx', source) as (ctx: AiModuleScriptContext) => Promise<unknown>
+  const execute = new Function('__ctx', source) as (ctx: AiNativeScriptSandboxContext) => Promise<unknown>
   return execute(contextWithSelf)
 }
 

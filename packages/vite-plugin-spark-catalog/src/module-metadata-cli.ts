@@ -119,7 +119,7 @@ logger.info([
 ].join(' '))
 for (const example of result.runtimeAudit.knowledgeReadiness.smokeExamples) {
   const rendered = 'declaration' in example ? example.declaration : example.signature
-  logger.info(`  - ${example.tool} ${example.kind}.${'attributeName' in example ? example.attributeName : example.methodName}: ${rendered}`)
+  logger.info(`  - ${example.tool} ${example.kind}.${'attributeName' in example ? example.attributeName : example.actionName}: ${rendered}`)
 }
 if (result.runtimeAudit.knowledgeReadiness.schemaDescriptionTodo.length > 0) {
   logger.info(`🧭 schema description coverage gaps: entries=${String(result.runtimeAudit.knowledgeReadiness.schemaDescriptionTodo.length)} (see source semantic todo below)`)

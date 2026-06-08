@@ -6,7 +6,7 @@ import {
   executeAiNativeScript,
 } from '../agent/native-runtime'
 import { paramsSchema, type AiJsonParams } from '../json'
-import type { AiApiObjectMetadata } from '../modules/metadata'
+import type { AiApiObjectMetadata } from '../vcm-native'
 
 type ScriptCallableForTest = (...args: readonly unknown[]) => unknown
 

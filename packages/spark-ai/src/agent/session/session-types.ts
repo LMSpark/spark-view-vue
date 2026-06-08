@@ -49,7 +49,7 @@ export type AiAgentFunctionCallFailure = Readonly<{
 /**
  * 工具调用结果（联合类型）。
  * ok:true  → 成功，携带 data（可选）和 summary（可选）
- * ok:false → 失败，携带 code / msg / fix / checks（对齐 AiModuleResult 的错误 check，完整回传给 LLM）
+ * ok:false → 失败，携带 code / msg / fix / checks（对齐工具结果的错误 check，完整回传给 LLM）
  */
 export type AiAgentFunctionCallResult<TData> = Readonly<{
   ok: true

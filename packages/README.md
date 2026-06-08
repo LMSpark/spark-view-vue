@@ -12,7 +12,7 @@
 
 ## VCM module metadata
 
-- [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：VCM module metadata 生成（`AiModuleAdapter` 消费）。
+- [vite-plugin-spark-catalog/README.md](vite-plugin-spark-catalog/README.md)：VCM native metadata 生成（`VcmNativeAgentAdapter` 消费）。
 
 ## 插件与集成
 

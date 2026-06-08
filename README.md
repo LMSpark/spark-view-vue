@@ -68,7 +68,7 @@ packages/
 ├── spark-data/                  # 📊 数据空间（DataSet、DataView、TreeManager、关系与聚合）
 ├── spark-project-model/           # 📄 软件项目模型（ProjectModel、项目节点、配置页内容子模型）
 ├── spark-utils/                 # 🛠️ 共享工具（Logger、HTTP、能力键、基础类型）
-├── vite-plugin-spark-catalog/   # VCM module metadata 生成（AiModuleAdapter 消费）
+├── vite-plugin-spark-catalog/   # VCM native metadata 生成（VcmNativeAgentAdapter 消费）
 └── vxe-table/                   # 📋 表格插件工作区（VXE Table 集成与适配）
 ```
 

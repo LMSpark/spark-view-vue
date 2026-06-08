@@ -37,7 +37,7 @@ const allowedSparkAiSpecifiers = new Set([
   '@spark-appworks/spark-ai',
   '@spark-appworks/spark-ai/json',
   '@spark-appworks/spark-ai/agent',
-  '@spark-appworks/spark-ai/modules',
+  '@spark-appworks/spark-ai/vcm-native',
 ])
 
 const forbiddenAiModuleMembers = new Set([
@@ -80,11 +80,12 @@ const publicSurfaceAllowlist = new Set([
   // Schema 构造器会成对暴露值构造器与 Options 类型：
   // Options 名称能让公共函数签名保持简短，同时不隐藏契约。
   'packages/spark-ai/src/index.ts:./json',
-  // Agent 与 module 协议聚合出口是四个允许 @spark-appworks/spark-ai subpath 背后的显式公共门面。
+  // Agent 与 VCM-native 协议聚合出口是允许 @spark-appworks/spark-ai subpath 背后的显式公共门面。
   'packages/spark-ai/src/agent/index.ts:./business/ai-host',
   'packages/spark-ai/src/agent/index.ts:./business/business-kit',
-  'packages/spark-ai/src/modules/index.ts:./protocol/module-metadata',
-  'packages/spark-ai/src/modules/protocol/index.ts:./module-metadata',
+  'packages/spark-ai/src/vcm-native/index.ts:./class-model',
+  'packages/spark-ai/src/vcm-native/index.ts:./metadata',
+  'packages/spark-ai/src/vcm-native/index.ts:./knowledge',
   'packages/spark-ai/src/json/index.ts:./helpers',
   // Host session-types 与 transport-types 是完整类型契约模块；
   // 按主题再次 re-export 会制造额外间接层。
@@ -95,22 +96,9 @@ const publicSurfaceAllowlist = new Set([
 ])
 
 const publicClassMethodSurfaces = new Map([
-  ['packages/spark-ai/src/modules/runtime/ai-module-runtime.ts:AiModuleRuntime', new Set([
-    'register',
-    'inspect',
+  ['packages/spark-ai/src/vcm-native/runtime/vcm-native-runtime.ts:VcmNativeRuntime', new Set([
     'getTools',
     'executeTool',
-    'getAttribute',
-    'setAttribute',
-    'invokeFunction',
-    'listChildren',
-    'findInstance',
-    'describeKind',
-    'projectKnowledge',
-    'queryKnowledgeModules',
-    'queryKnowledgeFunctions',
-    'guideKnowledgeAttribute',
-    'guideKnowledgeFunction',
   ])],
 ])
 
@@ -298,7 +286,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'createAiBusinessKit is removed; register business AI through AiModuleAdapter only',
+      message: 'createAiBusinessKit is removed; register business AI through VcmNativeAgentAdapter only',
     })
   }
 
@@ -306,7 +294,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
     violations.push({
       file,
       line: 1,
-      message: 'manual new AiModule() is forbidden in src/services; use AiModuleAdapter + VCM metadata',
+      message: 'manual new AiModule() is forbidden in src/services; use VcmNativeAgentAdapter + VCM metadata',
     })
   }
 
@@ -340,7 +328,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
       violations.push({
         file,
         line: 1,
-        message: `${removedIdentifier} is removed; use VCM module_function_guide and module_script instead`,
+        message: `${removedIdentifier} is removed; use vcm_action_guide and vcm_script instead`,
       })
     }
   }
@@ -353,7 +341,7 @@ function scanBusinessRegistrationRules(parsed, violations) {
         violations.push({
           file,
           line: lineFor(sourceFile, node, lineOffset),
-          message: 'manual AiModuleRuntime.register() is forbidden in src/services; use AiModuleAdapter',
+          message: 'manual AiModuleRuntime.register() is forbidden in src/services; use VcmNativeAgentAdapter',
         })
       }
     }

@@ -232,7 +232,7 @@ export class ConfigPageNode extends ProjectNode {
    * @moduleMutation rule.json write 在 mutator 内修改 SparkNodeTree。
    * @vcmScriptOnly
    * @requiredBeforeCall 写 node-tree 前必须先通过 VCM 元数据确认 SparkNode 结构、组件 type 和 props schema。
-   * @usageRule 结构批量改写优先 module_script；direct call 不支持。
+   * @usageRule 结构批量改写优先 vcm_script；direct call 不支持。
    * @usageRule openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree=>...) / page.editDataSet(async ds=>...)，勿用 page.call()。
    * @failureMode SCHEMA_VALIDATION_FAILED 节点 props 不符合 SparkNode 契约 => 按 paramsSchema 与组件原生 props schema 修正
    * @failureMode SCRIPT_EXECUTION_FAILED 误用 call 链式代理 => 改用 page.editNodeTree / page.editDataSet 等方法
@@ -258,7 +258,7 @@ export class ConfigPageNode extends ProjectNode {
    * @vcmScriptOnly
    * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。
    * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。
-   * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 module_function_guide 查 getTable 契约
+   * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约
    * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {

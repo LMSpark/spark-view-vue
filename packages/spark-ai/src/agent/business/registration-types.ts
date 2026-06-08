@@ -4,20 +4,20 @@
  * │  Business Registration Contract                                              │
  * │                                                                              │
  * │  本文件定义业务接入 AI Host 的注册入口——外部系统将自身能力封装为                │
- * │  AiModuleRuntime 后，投影成 AiAgentRegistration，再交给 AiAgentHost              │
+ * │  AiAgentToolRuntime 后，投影成 AiAgentRegistration，再交给 AiAgentHost          │
  * │  register/ensure 按 alias 暴露给业务层运行。                                     │
  * │                                                                              │
  * │  数据流向：                                                                   │
- * │    外部系统 ──(封装)──> AiModuleRuntime                                  │
+ * │    外部系统 ──(封装)──> AiAgentToolRuntime                              │
  * │                    ──(包装)──> AiAgentRegistration                     │
  * │                    ──(注册)──> AiAgentHost.register/ensure ──> AiAgentBusiness  │
  * │                    ──(驱动)──> AiAgentToolLoopRunner ──> LLM                   │
  * └─────────────────────────────────────────────────────────────────────────────┘
  */
 
-import type { AiModuleRuntime } from '../../modules/runtime/ai-module-runtime'
 import type { AiJsonParams } from '../../json'
 import type { AiAgentSessionStore } from '../session/session-types'
+import type { AiAgentToolRuntime } from '../tool-runtime'
 import type { AiAgentInputContract } from './business-task'
 import type {
   AiAgentAfterFunctionCallOptions,
@@ -35,14 +35,14 @@ import type { AiAgentRuntimeContext } from './scope-types'
  * ----------------------------------------------------------------------------- */
 
 export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
-  /** 业务模块唯一标识，对应 AiModuleRuntime.moduleId */
+  /** 业务模块唯一标识，对应注册 runtime 的根业务 ID */
   moduleId: string
   /** 面向 LLM 的业务名称，出现在系统提示中 */
   name: string
   /** 面向 LLM 的业务描述，说明该业务能做什么 */
   description: string
-  /** 语义模块运行时——承载 moduleKinds、childKinds 等能力树 */
-  runtime: AiModuleRuntime
+  /** VCM-native 工具运行时——承载工具闭集、知识快照和脚本执行 */
+  runtime: AiAgentToolRuntime
   /** 注册化输入契约；新任务入口用它校验输入、定位实例并生成 LLM 编排规则 */
   inputContract?: AiAgentInputContract<TInput>
   /** 会话历史持久化存储；必须显式注入，registry 不再自动创建默认 store。 */
@@ -101,8 +101,8 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
 
   /* ── 能力运行时 ───────────────────────────────────────── */
 
-  /** 模块语义运行时——工具调用时从中查找 kind、执行 function */
-  public readonly runtime: AiModuleRuntime
+  /** 工具运行时——工具调用时从中读取知识并执行 vcm_script */
+  public readonly runtime: AiAgentToolRuntime
   /** kindID 的注册化输入契约；由 host.run[alias]() 的内部 task 创建使用 */
   public readonly inputContract?: AiAgentInputContract<TInput>
 

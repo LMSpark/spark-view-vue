@@ -1,31 +1,29 @@
 # business 层（Host 注册与业务适配）
 
-> VCM metadata → 可运行 `AiModule` 的唯一注册入口：`AiModuleAdapter`。
+> VCM runtime metadata → `ClassModelDocument` → `VcmNativeRuntime` → `AiAgentRegistration`。
 
 ## 核心文件
 
 | 文件 | 职责 |
 |------|------|
-| `ai-module-adapter.ts` | `AiModuleAdapter.register`：metadata → root `AiModule` + scriptContext |
+| `vcm-native-agent-adapter.ts` | `VcmNativeAgentAdapter.register`：metadata → ClassModel + VCM-native tool runtime |
 | `ai-host.ts` | `createAiAgentHost`：ToolLoop + session + turnCallbacks |
 | `business-session.ts` | `startSession` / `send` / `stopSession` |
 | `registration-types.ts` | `resolveInstance`、`beforeFunctionCall`、lifecycle |
 | `business-task.ts` | `AiAgentInputContract`、systemPrompt 拼接 |
 
-## AiModuleAdapter 注册流程
+## VcmNativeAgentAdapter 注册流程
 
 ```text
-AiModuleAdapter.register({ host, alias, moduleClass, metadata, options })
-  ├─ validateApiObjectMetadata(metadata)
-  ├─ buildRootAiModule()
-  │    ├─ functions ← metadata.actions（directCallable: false）
-  │    ├─ scriptContext ← createAiApiScriptContext(instance, rootApi, ctx)
-  │    └─ runner ← executeAiApiAction（单 action 直调，非 LLM 主路径）
-  ├─ mergeCompanionChildDeclarations（guide-only 子 kind）
+VcmNativeAgentAdapter.register({ host, alias, metadata, moduleClass, options })
+  ├─ resolveModuleMetadataJson(metadata)
+  ├─ createClassModelDocumentFromRuntimeDocument()
+  ├─ new VcmNativeRuntime({ document, knowledge, scriptExecutor })
+  │    └─ vcm_script → executeAiNativeScript(instance, rootApi, script)
   └─ host.register(AiAgentRegistration)
 ```
 
-**实例钉死**：`options.resolveInstance({ moduleInstanceId })` 在 `startSession` 时调用一次；`module_script` 的 `this` 绑定该实例，**不**经 path 解析。
+**实例钉死**：`options.resolveInstance({ moduleInstanceId })` 在执行 `vcm_script` 时解析业务实例；脚本 `this` 绑定该实例，**不**经 path 解析。
 
 ## APP 消费方（pageDesign）
 
@@ -40,5 +38,5 @@ DevSystem 端到端：[`docs/PAGEDESIGN-DEVSYSTEM.zh-CN.md`](../../../docs/PAGED
 
 ## 文档
 
-- 注册拓扑与 companion：[`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md) §6
-- 协议 SSOT：[`src/modules/DM-VCM-MODULE-METADATA-SCOPE.md`](../../modules/DM-VCM-MODULE-METADATA-SCOPE.md)
+- 注册拓扑：[`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)
+- VCM-native metadata：[`src/vcm-native/metadata`](../../vcm-native/metadata)

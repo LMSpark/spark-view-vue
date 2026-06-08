@@ -5,7 +5,7 @@
  * 构建审计在 generator 内存中完成，并通过 CLI 日志输出引用闭包、知识覆盖率和待补 JSDoc。
  * VCM 提取在生成器 TS 程序内完成；resolveJsonModule 推断为窄字面量，此处一次性断言类型。
  */
-import type { ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/modules'
+import type { ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'
 import runtimeDocumentJson from './page-design-module-metadata.runtime.generated.json'
 
 export const pageDesignRuntimeMetadataDocument =

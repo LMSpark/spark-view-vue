@@ -12,6 +12,36 @@ export type {
 } from './class-model'
 
 export {
+  AiApiObjectMetadataValidationError,
+  MODULE_METADATA_RUNTIME_JSON_SCHEMA,
+  collectNestedApiRecords,
+  readModuleMetadataRuntimeDocument,
+  resolveModuleMetadataJson,
+  validateApiObjectMetadata,
+  walkAiApiMetadataGraph,
+} from './metadata'
+
+export type {
+  AiApiActionAntiExample,
+  AiApiActionExample,
+  AiApiActionFailureMode,
+  AiApiActionMetadata,
+  AiApiAttributeMetadata,
+  AiApiConstructorMetadata,
+  AiApiJsDocMetadata,
+  AiApiJsDocTagMetadata,
+  AiApiObjectMetadata,
+  AiApiResultApiRef,
+  AiApiSourceProvenanceMetadata,
+  AiModuleMetadataJson,
+  AiApiMetadataGraphEdge,
+  AiApiMetadataGraphNode,
+  AiApiNestedApiRecord,
+  ApiObjectValidationFinding,
+  ModuleMetadataRuntimeDocument,
+} from './metadata'
+
+export {
   CLASS_MODEL_DOCUMENT_VERSION,
   compareClassModelDocumentsForBuildConsistency,
   createClassModelDocumentFromModuleMetadata,
@@ -79,6 +109,7 @@ export type {
   VcmNativeRuntimeOptions,
   VcmNativeScriptCommand,
   VcmNativeScriptExecutor,
+  VcmNativeScriptExecutorResult,
   VcmNativeToolArgs,
   VcmNativeToolCheck,
   VcmNativeToolResult,

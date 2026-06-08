@@ -9,6 +9,7 @@ import {
 import type {
   AiAgentHost,
   AiAgentHostRunResult,
+  AiAgentToolRuntime,
   AiAgentTurnCallbacks,
   AiAgentToolCallRecord,
 } from '@spark-appworks/spark-ai/agent'
@@ -21,8 +22,8 @@ import {
   AiAgentTask,
   createAiAgentHost,
   DefaultAiAgentSessionStore,
+  AiAgentToolResult,
 } from '@spark-appworks/spark-ai/agent'
-import { AiModuleRuntime } from '@spark-appworks/spark-ai/modules'
 import { HttpClientBase, type HttpResponse, type RequestConfig, type SparkCapabilityConsumer } from '@spark-appworks/spark-utils'
 import { runPageDesignAiSession } from '@/services/page-design-ai-runner'
 
@@ -107,7 +108,7 @@ function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
     moduleId,
     name: '页面设计',
     description: '页面设计',
-    runtime: new AiModuleRuntime(),
+    runtime: createStubRuntime(),
     sessionStore: store,
   })
   const registry = {
@@ -131,6 +132,20 @@ function createRunResult(instanceId = 'orders'): AiAgentHostRunResult {
     new AiAgentTarget(moduleId, instanceId),
   )
   return { task, session }
+}
+
+function createStubRuntime(): AiAgentToolRuntime {
+  return {
+    getTools: () => [],
+    executeTool: async () => AiAgentToolResult.ok(null),
+    projectKnowledge: () => ({ promptSnapshot: '' }),
+    inspect: () => ({
+      status: 'ok',
+      rootKinds: ['pageDesign'],
+      moduleCount: 1,
+      findings: [],
+    }),
+  }
 }
 
 function createToolCallRecord(): AiAgentToolCallRecord {

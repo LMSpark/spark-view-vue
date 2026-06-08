@@ -1,7 +1,7 @@
 /**
  * VCM module metadata 生成工具包。
  *
- * 产出 `page-design-module-metadata.*.generated.json`，供 `AiModuleAdapter` 注册 LLM 知识体系。
+ * 产出 `page-design-module-metadata.*.generated.json`，供 `VcmNativeAgentAdapter` 注册 LLM 知识体系。
  *
  * @module @spark-appworks/vite-plugin-spark-catalog
  */

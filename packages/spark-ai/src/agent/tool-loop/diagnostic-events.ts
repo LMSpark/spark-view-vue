@@ -93,31 +93,24 @@ export function emitToolResultEvent(input: ToolResultEventInput): void {
  * 根据 LLM 发起的工具调用名称和参数，推断该调用归属于哪个能力模块（kind）。
  *
  * 规则：
- *   · module_guide / module_attribute_guide / module_function_guide / module_query → 优先取 args.kind
- *   · path 工具    → 从 args.path 尾部提取 kind 名称（去除 [...] 过滤器）
+ *   · vcm_model_guide / vcm_attribute_guide / vcm_action_guide / vcm_query → 优先取 args.kind
  *   · 回退         → 使用 toolName 本身
  *
  * 典型示例：
- *   getNode({ path: "/node-tree[tree-1]", args: {} })                    → "node-tree"
- *   module_guide({ kind: "Table" })                                      → "Table"
- *   module_attribute_guide({ kind: "Table", attrName: "title" })          → "Table"
- *   module_function_guide({ kind: "Table", functionName: "listRows" })   → "Table"
- *   module_find({ path: "/root" })                                        → "root"
+ *   vcm_model_guide({ kind: "Table" })                                      → "Table"
+ *   vcm_attribute_guide({ kind: "Table", attributeName: "title" })          → "Table"
+ *   vcm_action_guide({ kind: "Table", actionName: "listRows" })             → "Table"
  * ----------------------------------------------------------------------------- */
 
 export function eventModuleIdFromProtocolCall(
   toolName: string,
   args: Readonly<Record<string, unknown>>,
 ): string {
-  if ((toolName === 'module_guide' || toolName === 'module_attribute_guide' || toolName === 'module_function_guide' || toolName === 'module_query')
+  if ((toolName === 'vcm_model_guide' || toolName === 'vcm_attribute_guide' || toolName === 'vcm_action_guide' || toolName === 'vcm_query')
     && typeof args['kind'] === 'string'
     && args['kind'].trim().length > 0) {
     return args['kind']
   }
-
-  const path = typeof args['path'] === 'string' ? args['path'] : ''
-  const pathKind = kindFromPathTail(path)
-  if (pathKind !== null) return pathKind
 
   return toolName
 }
@@ -148,25 +141,4 @@ function createScopedStreamEvent(input: ScopedStreamEventInput): AiAgentStreamEv
       turnId,
     },
   }
-}
-
-/**
- * 从路径尾部提取 kind 名称，去除方括号过滤器。
- *
- * 转换示例：
- *   "/root/TabBar"               →  "TabBar"
- *   "/root/Table[0]"             →  "Table"       （去除索引）
- *   "/root/Form[type=main]"      →  "Form"        （去除属性过滤）
- *   "" 或 "/"                    →  null          （无尾部路径）
- */
-function kindFromPathTail(path: string): string | null {
-  const trimmed = path.trim()
-  if (trimmed === '' || trimmed === '/') return null
-  // 按 '/' 分割后取最后一个非空段
-  const tail = trimmed.split('/').filter(Boolean).at(-1)
-  if (tail === undefined) return null
-  // 去除 [...] 方括号部分（索引或属性筛选）
-  const bracketIndex = tail.indexOf('[')
-  const kind = bracketIndex < 0 ? tail : tail.slice(0, bracketIndex)
-  return kind.trim().length > 0 ? kind : null
 }

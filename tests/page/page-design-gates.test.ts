@@ -82,24 +82,24 @@ describe('evaluatePageDesignMutationToolGate', () => {
   it('allows read-only tools when gate is closed', () => {
     const summary = createSummary({ implGate: 'closed' })
     expect(evaluatePageDesignMutationToolGate({
-      toolName: 'module_guide',
+      toolName: 'vcm_model_guide',
       summary,
     }).ok).toBe(true)
   })
 
-  it('rejects module_script when gate is closed', () => {
+  it('rejects vcm_script when gate is closed', () => {
     const summary = createSummary({ implGate: 'closed' })
     expect(evaluatePageDesignMutationToolGate({
-      toolName: 'module_script',
+      toolName: 'vcm_script',
       summary,
     }).ok).toBe(false)
   })
 })
 
 describe('isPageDesignMutationTool', () => {
-  it('detects module_script and writePageFile', () => {
-    expect(isPageDesignMutationTool('module_script')).toBe(true)
+  it('detects vcm_script and writePageFile', () => {
+    expect(isPageDesignMutationTool('vcm_script')).toBe(true)
     expect(isPageDesignMutationTool('writePageFile')).toBe(true)
-    expect(isPageDesignMutationTool('module_guide')).toBe(false)
+    expect(isPageDesignMutationTool('vcm_model_guide')).toBe(false)
   })
 })

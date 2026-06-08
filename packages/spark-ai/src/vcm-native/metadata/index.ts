@@ -1,4 +1,7 @@
 export type {
+  AiApiActionAntiExample,
+  AiApiActionExample,
+  AiApiActionFailureMode,
   AiApiActionMetadata,
   AiApiAttributeMetadata,
   AiApiConstructorMetadata,
@@ -16,14 +19,6 @@ export {
 } from './validate-api-object-metadata'
 
 export { resolveModuleMetadataJson } from './resolve-api-object-metadata'
-
-export { toModuleFunctionResultApiMetadata } from './function-result-api-metadata'
-
-export {
-  toModuleAttributeMetadata,
-  toModuleFunctionMetadata,
-  toModuleNestedApiMetadata,
-} from './vcm-to-module-metadata'
 
 export {
   collectNestedApiRecords,

@@ -11,6 +11,7 @@ export type {
   VcmNativeRuntimeOptions,
   VcmNativeScriptCommand,
   VcmNativeScriptExecutor,
+  VcmNativeScriptExecutorResult,
   VcmNativeToolArgs,
   VcmNativeToolCheck,
   VcmNativeToolResult,

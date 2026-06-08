@@ -15,9 +15,11 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
       'AiAgentSessionStore',
       'AiAgentTask',
       'AiAgentTarget',
+      'AiAgentToolCheck',
       'AiAgentToolLoopRunner',
-      'AiModuleAdapter',
+      'AiAgentToolResult',
       'DefaultAiAgentSessionStore',
+      'VcmNativeAgentAdapter',
       'createAiApiScriptContext',
       'createAiAgentHost',
       'createAiAgentRegistration',
@@ -53,6 +55,7 @@ describe('@spark-appworks/spark-ai/agent public surface', () => {
     expect(exposed.has('createAiAgentBusinessStorageKey')).toBe(false)
     expect(exposed.has('AiAgentRegistry')).toBe(false)
     expect(exposed.has('AiModuleToolCodec')).toBe(false)
+    expect(exposed.has('AiModuleAdapter')).toBe(false)
     expect(exposed.has('AiAgent')).toBe(false)
     expect(exposed.has('createAiAgent')).toBe(false)
     expect(exposed.has('createAiAgentStreamKey')).toBe(false)

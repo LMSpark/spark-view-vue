@@ -5,7 +5,7 @@
  *
  * 【架构定位】Agent 层的单次工具调用执行单元。将 LLM 返回的
  *   OpenAI-style tool_call（function.name + function.arguments）
- *   路由到 modules runtime 执行，收集结果并写回 sessionStore。
+ *   路由到 VCM-native runtime 执行，收集结果并写回 sessionStore。
  *
  * 【核心类】
  *   AiAgentToolCallExecutor — 工具调用执行器
@@ -18,7 +18,7 @@
  *   3. 解析 JSON 参数字符串 → Record<string, AiJsonValue>
  *   4. 调用 registration.beforeFunctionCall 做执行前策略裁决
  *   5. 调用 registration.runtime.executeTool 执行路由
- *   6. 将 AiModuleResult 转换为 AiAgentFunctionCallResult
+ *   6. 将 AiAgentToolResult 转换为 AiAgentFunctionCallResult
  *   7. 写入 sessionStore（appendFunctionCall）
  *   8. 调用业务方 afterFunctionCall 生命周期钩子
  *   9. 发送诊断事件（emitToolResultEvent）+ 业务回调（onToolCall）
@@ -29,7 +29,7 @@
  */
 
 import type { AiJsonParams } from '../../json'
-import { PROTOCOL_TOOL_NAMES } from '../../modules/internal/protocol-tool-generator'
+import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
 import { toAiAgentRuntimeScope } from '../business/business-scope'
 import type {
   AiAgentBeforeFunctionCallDirective,
@@ -147,7 +147,7 @@ export class AiAgentToolCallExecutor {
         runtimeContext,
         protocolToolName,
         args: parsedArgs.args,
-        callResult: applyFailureRecoveryEnrichment(input.registration.runtime, protocolToolName, parsedArgs.args, parsedArgs.result),
+        callResult: applyFailureRecoveryEnrichment(protocolToolName, parsedArgs.args, parsedArgs.result),
         started,
       })
     }
@@ -172,7 +172,6 @@ export class AiAgentToolCallExecutor {
         protocolToolName,
         args,
         callResult: applyFailureRecoveryEnrichment(
-          input.registration.runtime,
           protocolToolName,
           args,
           beforeFunctionCallFailureResult(beforeDirective),
@@ -197,7 +196,7 @@ export class AiAgentToolCallExecutor {
     const rawCallResult = toFunctionCallResult(operationResult)
     const callResult = rawCallResult.ok
       ? rawCallResult
-      : applyFailureRecoveryEnrichment(input.registration.runtime, protocolToolName, args, rawCallResult)
+      : applyFailureRecoveryEnrichment(protocolToolName, args, rawCallResult)
     const completeDirective = completeDirectiveFromToolResult(protocolToolName, callResult)
 
     return this.completeExecution({
@@ -383,14 +382,12 @@ function toolArgsFailureResult(error: ToolArgsParseError): AiAgentFunctionCallRe
 }
 
 function applyFailureRecoveryEnrichment(
-  runtime: AiAgentToolCallExecutionInput['registration']['runtime'],
   protocolToolName: string,
   args: AiJsonParams,
   callResult: AiAgentFunctionCallResult<unknown>,
 ): AiAgentFunctionCallResult<unknown> {
   if (callResult.ok) return callResult
   return enrichFunctionCallResult({
-    runtime,
     protocolToolName,
     args,
     callResult,
@@ -401,7 +398,7 @@ function completeDirectiveFromToolResult(
   toolName: string,
   result: AiAgentFunctionCallResult<unknown>,
 ): AiAgentLifecycleDirective | null {
-  if (toolName !== PROTOCOL_TOOL_NAMES.agentComplete || !result.ok) return null
+  if (toolName !== VCM_NATIVE_TOOL_NAMES.agentComplete || !result.ok) return null
   const data = result.data
   const summary = isRecord(data) && typeof data['summary'] === 'string'
     ? data['summary'].trim()

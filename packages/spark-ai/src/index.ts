@@ -5,7 +5,7 @@
  *
  * Use the focused public entries for new code:
  * - `@spark-appworks/spark-ai/json`
- * - `@spark-appworks/spark-ai/modules`
+ * - `@spark-appworks/spark-ai/vcm-native`
  * - `@spark-appworks/spark-ai/agent`
  */
 
@@ -16,10 +16,15 @@ export {
 } from './json'
 
 export {
-  AiModule,
-  AiModuleResult,
-  AiModuleRuntime,
-} from './modules'
+  VcmNativeRuntime,
+} from './vcm-native'
+
+export type {
+  AiModuleMetadataJson,
+  ClassModelDocument,
+  ModuleMetadataRuntimeDocument,
+  VcmNativeKnowledgeProvider,
+} from './vcm-native'
 
 export {
   DefaultAiAgentSessionStore,

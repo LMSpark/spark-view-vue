@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 
-import type { AiModuleMetadataJson } from '../modules/metadata/ai-api-object-metadata-schema'
-import { resolveModuleMetadataJson } from '../modules/metadata/resolve-api-object-metadata'
+import { resolveModuleMetadataJson, type AiModuleMetadataJson } from '../vcm-native'
 
 describe('resolveModuleMetadataJson', () => {
   it('expands apiRegistry $ref into inline resultApis for adapter consumption', () => {

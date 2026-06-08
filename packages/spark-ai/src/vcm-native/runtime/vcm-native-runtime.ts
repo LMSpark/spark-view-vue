@@ -7,11 +7,8 @@ import {
 } from '../knowledge'
 import { VCM_NATIVE_TOOL_NAMES, isVcmNativeToolName, type VcmNativeToolName } from '../tools'
 
-export type VcmNativeScriptExecutor = (command: VcmNativeScriptCommand) => AiJsonValue | Promise<AiJsonValue>
-
 export type VcmNativeScriptCommand = Readonly<{
   script: string
-  path?: string
   host?: unknown
 }>
 
@@ -47,10 +44,15 @@ export type VcmNativeToolCheck = Readonly<{
   hint?: string
 }>
 
+export type VcmNativeScriptExecutorResult = AiJsonValue | VcmNativeToolResult
+
+export type VcmNativeScriptExecutor =
+  (command: VcmNativeScriptCommand) => VcmNativeScriptExecutorResult | Promise<VcmNativeScriptExecutorResult>
+
 /**
  * VCM-native tool runtime。
  *
- * 这是 ClassModel 的运行时投影，不是旧 modules/runtime 的新分支。
+ * 这是 ClassModel 的运行时投影，不是旧 path/direct runtime 的新分支。
  * runtime 主要负责执行：暴露 7 个 OpenAI tools、校验参数、调度脚本执行器。
  * ClassModel 查询、索引和 guide 投影属于 knowledge 边界，可替换成 Web Worker provider。
  */
@@ -68,7 +70,7 @@ export class VcmNativeRuntime {
       buildVcmQueryTool(),
       buildVcmModelGuideTool(),
       buildVcmAttributeGuideTool(),
-      buildVcmMethodGuideTool(),
+      buildVcmActionGuideTool(),
       buildVcmScriptTool(),
       buildHumanQuestionTool(),
       buildAgentCompleteTool(),
@@ -104,34 +106,44 @@ export class VcmNativeRuntime {
     host?: unknown,
   ): Promise<VcmNativeToolResult> {
     switch (toolName) {
-      case VCM_NATIVE_TOOL_NAMES.query:
+      case VCM_NATIVE_TOOL_NAMES.query: {
+        rejectUnknownArgs(toolName, args, ['kind', 'keyword', 'includeMembers'])
         return okResult(await this.knowledge.query({
           ...optionalStringProperty(args, 'kind'),
           ...optionalStringProperty(args, 'keyword'),
           includeMembers: args['includeMembers'] === true,
         }))
-      case VCM_NATIVE_TOOL_NAMES.modelGuide:
+      }
+      case VCM_NATIVE_TOOL_NAMES.modelGuide: {
+        rejectUnknownArgs(toolName, args, ['kind'])
         return okResult(await this.knowledge.modelGuide({
           kind: requireString(args, 'kind'),
         }))
-      case VCM_NATIVE_TOOL_NAMES.attributeGuide:
+      }
+      case VCM_NATIVE_TOOL_NAMES.attributeGuide: {
+        rejectUnknownArgs(toolName, args, ['kind', 'attributeName'])
         return okResult(await this.knowledge.attributeGuide({
           kind: requireString(args, 'kind'),
-          attributeName: requireAliasedString(args, ['attributeName', 'attrName', 'name']),
+          attributeName: requireString(args, 'attributeName'),
         }))
-      case VCM_NATIVE_TOOL_NAMES.methodGuide:
+      }
+      case VCM_NATIVE_TOOL_NAMES.actionGuide: {
+        rejectUnknownArgs(toolName, args, ['kind', 'actionName', 'componentType'])
         return okResult(await this.knowledge.methodGuide({
           kind: requireString(args, 'kind'),
-          methodName: requireAliasedString(args, ['methodName', 'functionName', 'name']),
+          methodName: requireString(args, 'actionName'),
           ...optionalStringProperty(args, 'componentType'),
         }))
-      case VCM_NATIVE_TOOL_NAMES.script:
-        return okResult(await this.scriptExecutor({
-          script: requireAliasedString(args, ['script', 'code', 'javascript']),
-          ...optionalStringProperty(args, 'path'),
+      }
+      case VCM_NATIVE_TOOL_NAMES.script: {
+        rejectUnknownArgs(toolName, args, ['script'])
+        return normalizeScriptExecutionResult(await this.scriptExecutor({
+          script: requireString(args, 'script'),
           ...(host === undefined ? {} : { host }),
         }))
-      case VCM_NATIVE_TOOL_NAMES.humanQuestion:
+      }
+      case VCM_NATIVE_TOOL_NAMES.humanQuestion: {
+        rejectUnknownArgs(toolName, args, ['context', 'reason', 'missingFacts', 'candidateOptions'])
         return okResult({
           awaitingHuman: true,
           context: requireString(args, 'context'),
@@ -139,7 +151,9 @@ export class VcmNativeRuntime {
           ...optionalStringArrayProperty(args, 'missingFacts'),
           ...optionalStringArrayProperty(args, 'candidateOptions'),
         })
+      }
       case VCM_NATIVE_TOOL_NAMES.agentComplete: {
+        rejectUnknownArgs(toolName, args, ['summary'])
         const summary = requireString(args, 'summary').trim()
         return okResult({
           completed: true,
@@ -199,22 +213,22 @@ function buildVcmAttributeGuideTool(): VcmNativeToolSpec {
     description: 'Render one ClassModel attribute declaration with native JSDoc.',
     properties: {
       kind: { type: 'string', description: 'ClassModel kind.' },
-      attributeName: { type: 'string', description: 'Attribute name. Alias attrName/name is accepted at runtime.' },
+      attributeName: { type: 'string', description: 'Attribute name.' },
     },
     required: ['kind', 'attributeName'],
   })
 }
 
-function buildVcmMethodGuideTool(): VcmNativeToolSpec {
+function buildVcmActionGuideTool(): VcmNativeToolSpec {
   return toolSpec({
-    name: VCM_NATIVE_TOOL_NAMES.methodGuide,
-    description: 'Render one ClassModel public method declaration with native JSDoc and optional component catalog props.',
+    name: VCM_NATIVE_TOOL_NAMES.actionGuide,
+    description: 'Render one ClassModel public action declaration with native JSDoc and optional component catalog props.',
     properties: {
       kind: { type: 'string', description: 'ClassModel kind.' },
-      methodName: { type: 'string', description: 'Method name. Alias functionName/name is accepted at runtime.' },
+      actionName: { type: 'string', description: 'Action name.' },
       componentType: { type: 'string', description: 'Optional component type, such as r-table, to merge catalog props knowledge.' },
     },
-    required: ['kind', 'methodName'],
+    required: ['kind', 'actionName'],
   })
 }
 
@@ -223,8 +237,7 @@ function buildVcmScriptTool(): VcmNativeToolSpec {
     name: VCM_NATIVE_TOOL_NAMES.script,
     description: 'Execute vcm_script through the injected business script executor after reading relevant guides.',
     properties: {
-      path: { type: 'string', description: 'Optional business object path interpreted by the script executor.' },
-      script: { type: 'string', description: 'JavaScript body. Alias code/javascript is accepted at runtime.' },
+      script: { type: 'string', description: 'JavaScript body.' },
     },
     required: ['script'],
   })
@@ -301,18 +314,35 @@ function failResult(code: string, message: string, hint?: string): VcmNativeTool
   }
 }
 
+function normalizeScriptExecutionResult(result: VcmNativeScriptExecutorResult): VcmNativeToolResult {
+  return isVcmNativeToolResult(result) ? result : okResult(result)
+}
+
+function isVcmNativeToolResult(value: VcmNativeScriptExecutorResult): value is VcmNativeToolResult {
+  return value !== null
+    && typeof value === 'object'
+    && !Array.isArray(value)
+    && typeof (value as Readonly<Record<string, unknown>>)['ok'] === 'boolean'
+}
+
 function requireString(args: VcmNativeToolArgs, key: string): string {
   const value = optionalString(args, key)
   if (value === undefined) throw new VcmNativeToolArgsError(`参数 "${key}" 缺失或非字符串。`)
   return value
 }
 
-function requireAliasedString(args: VcmNativeToolArgs, keys: readonly string[]): string {
-  for (const key of keys) {
-    const value = optionalString(args, key)
-    if (value !== undefined) return value
-  }
-  throw new VcmNativeToolArgsError(`参数 "${keys[0]}" 缺失或非字符串。`)
+function rejectUnknownArgs(
+  toolName: VcmNativeToolName,
+  args: VcmNativeToolArgs,
+  allowedKeys: readonly string[],
+): void {
+  const allowed = new Set(allowedKeys)
+  const extra = Object.keys(args).filter(key => !allowed.has(key)).sort()
+  if (extra.length === 0) return
+  const allowedText = allowedKeys.length === 0 ? '(none)' : allowedKeys.join(', ')
+  throw new VcmNativeToolArgsError(
+    `工具 "${toolName}" 不接受参数: ${extra.join(', ')}。允许参数: ${allowedText}。`,
+  )
 }
 
 function optionalString(args: VcmNativeToolArgs, key: string): string | undefined {

@@ -61,7 +61,7 @@ function normalizeBusinessId(options: AiBusinessIdOptions): string {
 
 function defaultNormalize<TInput extends AiJsonParams>(input: AiJsonParams): TInput {
   if (isSchemaValidatedInput<TInput>(input)) return input
-  throw new Error('[AiModuleAdapter] input must match paramsSchema before normalization.')
+  throw new Error('[AiAgentInputContract] input must match paramsSchema before normalization.')
 }
 
 function isSchemaValidatedInput<TInput extends AiJsonParams>(input: AiJsonParams): input is TInput {
@@ -79,11 +79,11 @@ function normalizeInputField<TInput extends AiJsonParams>(
 
 function normalizeRequiredText(value: unknown, field: string): string {
   if (typeof value !== 'string') {
-    throw new Error(`[AiModuleAdapter] ${field} must be a non-empty string.`)
+    throw new Error(`[AiAgentInputContract] ${field} must be a non-empty string.`)
   }
   const trimmed = value.trim()
   if (trimmed.length === 0) {
-    throw new Error(`[AiModuleAdapter] ${field} must not be empty.`)
+    throw new Error(`[AiAgentInputContract] ${field} must not be empty.`)
   }
   return trimmed
 }
@@ -95,7 +95,7 @@ function readRequiredString<TInput extends AiJsonParams>(
 ): string {
   const value = input[field]
   if (typeof value !== 'string' || value.trim().length === 0) {
-    throw new Error(`[AiModuleAdapter] ${label} "${field}" must be a non-empty string.`)
+    throw new Error(`[AiAgentInputContract] ${label} "${field}" must be a non-empty string.`)
   }
   return value.trim()
 }

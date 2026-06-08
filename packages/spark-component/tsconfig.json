@@ -14,7 +14,7 @@
       "@spark-appworks/spark-ai": ["../spark-ai/src/index.ts"],
       "@spark-appworks/spark-ai/json": ["../spark-ai/src/json/index.ts"],
       "@spark-appworks/spark-ai/agent": ["../spark-ai/src/agent/index.ts"],
-      "@spark-appworks/spark-ai/modules": ["../spark-ai/src/modules/index.ts"]
+      "@spark-appworks/spark-ai/vcm-native": ["../spark-ai/src/vcm-native/index.ts"]
     },
     "outDir": "./dist",
     "composite": false,

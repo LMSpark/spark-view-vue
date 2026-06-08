@@ -19,7 +19,7 @@ sequenceDiagram
   Host->>TL: startSession(moduleInstanceId=pageId)
   TL->>Bridge: beforeFunctionCall（UI 审批）
   Bridge-->>TL: allow / reject / abort
-  TL->>NR: module_script → this.openPageDesign...
+  TL->>NR: vcm_script → this.openPageDesign...
   NR->>WS: 同一 editor.project 内存 mutation
   TL-->>UI: onToolCall / trace
   Note over UI,WS: 默认不 auto-save；用户手动保存
@@ -51,7 +51,7 @@ ensurePageDesignBusiness({
 
 `evaluatePageDesignMutationToolGate` 拦截：
 
-- `module_script`
+- `vcm_script`
 - `openPageDesign`（经 direct runner 或 script 内调用）
 - `writePageFile`
 

@@ -3,17 +3,14 @@ import type {
   AiJsonSchemaValidateOptions,
   AiJsonValue,
 } from '../../json'
-import type {
-  AiModuleHostContext,
-  AiModulePathContext,
-} from '../../modules'
-import { AiModuleResult } from '../../modules'
+import type { AiAgentRuntimeHostContext } from '../tool-runtime'
+import { AiAgentToolResult } from '../tool-runtime'
 import {
   resolveModuleMetadataJson,
   validateApiObjectMetadata,
   type AiModuleMetadataJson,
-} from '../../modules/metadata'
-import { executeModuleScript } from '../../modules/runtime/module-script-sandbox'
+} from '../../vcm-native'
+import { executeModuleScript } from './native-script-sandbox'
 import { createAiApiScriptContext } from './native-script-context'
 
 export type AiNativeRuntimeSchemaDefs = Readonly<Record<string, AiJsonSchema>>
@@ -21,7 +18,7 @@ export type AiNativeRuntimeSchemaDefs = Readonly<Record<string, AiJsonSchema>>
 export type AiNativeScriptContextCommand<TInstance = unknown> = Readonly<{
   instance: TInstance
   metadata: AiModuleMetadataJson
-  host?: AiModuleHostContext
+  host?: AiAgentRuntimeHostContext
   schemaDefs?: AiNativeRuntimeSchemaDefs
 }>
 
@@ -45,9 +42,9 @@ export function createAiNativeScriptContext(
 
 export async function executeAiNativeScript(
   command: AiNativeScriptRunCommand,
-): Promise<AiModuleResult<AiJsonValue>> {
+): Promise<AiAgentToolResult<AiJsonValue>> {
   if (command.script.trim().length === 0) {
-    return AiModuleResult.failCode(
+    return AiAgentToolResult.failCode(
       'SCRIPT_EMPTY',
       'native script body must not be empty.',
       '让 LLM 直接生成 async function body，例如 const page = await this.openPageDesign({ pageId }); return ...。',
@@ -57,7 +54,10 @@ export async function executeAiNativeScript(
   return await executeModuleScript(command.script, context)
 }
 
-function createNativePathContext(host: AiModuleHostContext | undefined): AiModulePathContext {
+function createNativePathContext(host: AiAgentRuntimeHostContext | undefined): Readonly<{
+  segments: readonly string[]
+  host?: AiAgentRuntimeHostContext
+}> {
   return host === undefined
     ? { segments: [] }
     : { segments: [], host }

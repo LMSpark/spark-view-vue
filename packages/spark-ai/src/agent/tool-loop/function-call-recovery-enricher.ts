@@ -1,65 +1,69 @@
 /**
- * FC 失败反推 enricher：把 tool result 的 code/msg/fix 反查到 VCM 指南与目录步骤，
- * 以 RECOVERY_HINT checks 回灌 LLM，形成 FC → 错误 → guide → script 修复闭环。
+ * FC 失败恢复提示：把 tool result 的 code/msg/fix 映射成 VCM-native
+ * 查询、guide 和 vcm_script 重试步骤，回灌给 LLM 形成失败自修复闭环。
  */
 import type { AiJsonParams } from '../../json'
-import { PROTOCOL_TOOL_NAMES } from '../../modules/internal/protocol-tool-generator'
-import type { AiModuleRuntime } from '../../modules/runtime/ai-module-runtime'
+import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
 import type {
   AiAgentFunctionCallCheck,
   AiAgentFunctionCallFailure,
   AiAgentFunctionCallResult,
 } from '../session/session-types'
 
-const PROTOCOL_TOOL_NAME_SET = new Set<string>(Object.values(PROTOCOL_TOOL_NAMES))
+const VCM_NATIVE_TOOL_NAME_SET = new Set<string>(Object.values(VCM_NATIVE_TOOL_NAMES))
 
 const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   FUNCTION_NOT_DECLARED: [
-    '目录恢复：module_query({ kind: "<kind>", includeFunctions: true }) 选择真实 functionName。',
-    '契约恢复：module_function_guide({ kind: "<kind>", functionName: "<真实函数名>" }) 读取 paramsSchema / usageRules / failureModes。',
+    '目录恢复：vcm_query({ kind: "<kind>", includeMembers: true }) 选择真实 actionName。',
+    '契约恢复：vcm_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 读取 paramsSchema / usageRules / failureModes。',
   ],
   ATTRIBUTE_NOT_DECLARED: [
-    '目录恢复：module_guide({ kind: "<kind>" }) 查看 attrName 目录。',
-    '契约恢复：module_attribute_guide({ kind: "<kind>", attrName: "<真实属性名>" }) 读取 schema 与读写规则。',
+    '目录恢复：vcm_model_guide({ kind: "<kind>" }) 查看 attributeName 目录。',
+    '契约恢复：vcm_attribute_guide({ kind: "<kind>", attributeName: "<attributeName>" }) 读取 schema 与读写规则。',
   ],
   SCHEMA_VALIDATION_FAILED: [
-    '契约恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    '复杂参数恢复：先 module_function_guide/module_attribute_guide 对照 schema，再 module_script 重试。',
+    '契约恢复：vcm_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
+    '复杂参数恢复：先 vcm_action_guide/vcm_attribute_guide 对照 schema，再 vcm_script 重试。',
   ],
   SCRIPT_EXECUTION_FAILED: [
-    '脚本恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 核对 usageRules 与 resultApis。',
-    'module_script 参数名必须是 script；host.moduleId 不等于 kind 时 this 仍绑定 project 根模块。',
+    '脚本恢复：vcm_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 核对 usageRules 与 resultApis。',
+    'vcm_script 参数名必须是 script；this 绑定当前业务根实例。',
     'openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree => ...)/page.editDataSet(async ds => ...)，勿用 page.call()。',
   ],
   SCRIPT_ACTION_FAILED: [
-    '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 module_function_guide 对照 paramsSchema。',
+    '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 vcm_action_guide 对照 paramsSchema。',
   ],
   AI_TOOL_REJECTED_BEFORE_EXECUTION: [
     '策略恢复：检查 implGate / planningStatus / upstreamContractsSatisfied，必要时 human_question。',
   ],
   TOOL_ARGS_INVALID_JSON: [
-    '参数恢复：function.arguments 必须是 JSON object 字符串；先 module_function_guide 读取 paramsSchema 再构造 args。',
+    '参数恢复：function.arguments 必须是 JSON object 字符串；先 vcm_action_guide 读取 paramsSchema 再构造 args。',
   ],
   TOOL_ARGS_NOT_OBJECT: [
-    '参数恢复：function.arguments 根节点必须是 object；对照 module_function_guide.paramsSchema 重发 tool_calls。',
+    '参数恢复：function.arguments 根节点必须是 object；对照 vcm_action_guide.paramsSchema 重发 tool_calls。',
+  ],
+  INVALID_VCM_NATIVE_TOOL_ARGS: [
+    '契约恢复：严格按当前工具 schema 重发；vcm_action_guide 使用 actionName，vcm_script 使用 script。',
   ],
   INVALID_TOOL_ARGS: [
-    '契约恢复：module_function_guide({ kind: "<kind>", functionName: "<functionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
-    'module_script 形状：{ script: "<js body>" }；参数名必须是 script，不是 code。',
+    '契约恢复：vcm_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 对照 paramsSchema 与 requiredBeforeCall。',
+    'vcm_script 形状：{ script: "<js body>" }；参数名必须是 script。',
   ],
   FUNCTION_NOT_FOUND: [
-    '目录恢复：module_query({ kind: "<kind>", includeFunctions: true }) 列出真实 functionName。',
+    '目录恢复：vcm_query({ kind: "<kind>", includeMembers: true }) 列出真实 actionName。',
   ],
   INVALID_GUIDE_REQUEST: [
-    'module_function_guide 需要 { kind, functionName }；functionName 必须是业务函数名。',
+    'vcm_action_guide 需要 { kind, actionName }；actionName 必须是业务 action 名。',
   ],
   KIND_NOT_REGISTERED: [
-    '目录恢复：module_query({}) 列出已注册 kind；勿猜 kind 名。',
+    '目录恢复：vcm_query({}) 列出已注册 kind；勿猜 kind 名。',
+  ],
+  UNKNOWN_VCM_NATIVE_TOOL: [
+    '工具恢复：只允许 vcm_query / vcm_model_guide / vcm_attribute_guide / vcm_action_guide / vcm_script / human_question / agent_complete。',
   ],
 }
 
 export type EnrichFunctionCallFailureCommand = Readonly<{
-  runtime: AiModuleRuntime
   protocolToolName: string
   args: AiJsonParams
   callResult: AiAgentFunctionCallFailure
@@ -69,15 +73,11 @@ export function enrichFunctionCallResult(
   command: EnrichFunctionCallFailureCommand,
 ): AiAgentFunctionCallResult<unknown> {
   const hints = collectRecoveryHints(command)
-  if (hints.length === 0) {
-    return command.callResult
-  }
-  const recoveryChecks = hints.map(toRecoveryCheck)
-  const matchedFix = pickFailureModeFix(command)
+  if (hints.length === 0) return command.callResult
   return {
     ...command.callResult,
-    fix: matchedFix ?? appendGuideLookupToFix(command.callResult.fix, command),
-    checks: mergeChecks(command.callResult.checks, recoveryChecks),
+    fix: appendGuideLookupToFix(command.callResult.fix, command),
+    checks: mergeChecks(command.callResult.checks, hints.map(toRecoveryCheck)),
   }
 }
 
@@ -85,37 +85,10 @@ function collectRecoveryHints(command: EnrichFunctionCallFailureCommand): readon
   const context = resolveFailedFunctionContext(command)
   const hints: string[] = []
 
-  appendGuideRecoveryHints(hints, command, context)
   appendProtocolRecoveryHints(hints, command)
   appendGlobalRecoveryHints(hints, command.callResult.code, context)
 
   return uniqueHints(hints)
-}
-
-function appendGuideRecoveryHints(
-  hints: string[],
-  command: EnrichFunctionCallFailureCommand,
-  context: FailedFunctionContext,
-): void {
-  if (context.kind === undefined || context.functionName === undefined) return
-  const guide = command.runtime.guideKnowledgeFunction({
-    kind: context.kind,
-    functionName: context.functionName,
-  })
-  if (!guide.ok || guide.data === undefined) return
-
-  hints.push(`指南恢复：module_function_guide({ kind: "${context.kind}", functionName: "${context.functionName}" })`)
-  hints.push(`目录恢复：${guide.data.directoryLookupStep}`)
-  for (const step of guide.data.functionLookupSteps) {
-    hints.push(`目录步骤：${step}`)
-  }
-  for (const recoveryHint of guide.data.recoveryHints) {
-    hints.push(recoveryHint)
-  }
-  const matchedMode = guide.data.failureModes.find(mode => mode.code === command.callResult.code)
-  if (matchedMode !== undefined) {
-    hints.push(`VCM failureMode(${matchedMode.code})：${matchedMode.fix}`)
-  }
 }
 
 function appendProtocolRecoveryHints(
@@ -124,20 +97,23 @@ function appendProtocolRecoveryHints(
 ): void {
   const toolName = command.protocolToolName
   const code = command.callResult.code
-  if (toolName === PROTOCOL_TOOL_NAMES.moduleFunctionGuide) {
-    const fn = readStringArg(command.args, 'functionName')
-    if (fn !== undefined && PROTOCOL_TOOL_NAME_SET.has(fn)) {
-      hints.push(`"${fn}" 是协议工具名，不是 functionName；请 module_query({ includeFunctions: true }) 选择业务函数。`)
+
+  if (toolName === VCM_NATIVE_TOOL_NAMES.actionGuide) {
+    const actionName = readStringArg(command.args, 'actionName')
+    if (actionName !== undefined && VCM_NATIVE_TOOL_NAME_SET.has(actionName)) {
+      hints.push(`"${actionName}" 是协议工具名，不是 actionName；请 vcm_query({ includeMembers: true }) 选择业务 action。`)
     }
     if (code === 'FUNCTION_NOT_FOUND') {
-      hints.push('functionName 必须是 openPageDesign 等业务函数，不能是 module_script 等协议工具。')
+      hints.push('actionName 必须是 openPageDesign 等业务 action，不能是 vcm_script 等协议工具。')
     }
     return
   }
-  if (code === 'INVALID_TOOL_ARGS' && toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
-    hints.push('module_script 形状：{ script: "<js body>" }；code 字段会归一化为 script。')
+
+  if (code === 'INVALID_VCM_NATIVE_TOOL_ARGS' && toolName === VCM_NATIVE_TOOL_NAMES.script) {
+    hints.push('vcm_script 形状：{ script: "<js body>" }；不再接受 code/javascript/path 等旧字段。')
   }
-  if (code === 'SCRIPT_EXECUTION_FAILED' && toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
+
+  if (code === 'SCRIPT_EXECUTION_FAILED' && toolName === VCM_NATIVE_TOOL_NAMES.script) {
     if (command.callResult.msg.includes('toJSON')) {
       hints.push('脚本勿调 toJSON；用 openPageDesign → editDataSet/editNodeTree mutator 链式 API。')
     }
@@ -146,7 +122,7 @@ function appendProtocolRecoveryHints(
     }
     if (command.callResult.msg.includes('editDataSet is not a function')
       || command.callResult.msg.includes('editNodeTree is not a function')) {
-      hints.push('module_script 必须先 await this.openPageDesign({ pageId }) 得到 page，再 await page.editDataSet(async ds => ...)。')
+      hints.push('vcm_script 必须先 await this.openPageDesign({ pageId }) 得到 page，再 await page.editDataSet(async ds => ...)。')
     }
     if (command.callResult.msg.includes("reading 'includes'")) {
       hints.push('createTable 签名：createTable({ tableName: "<TableName>", columns: [{ name, type, label }] })；勿用 positional 参数。')
@@ -170,57 +146,37 @@ function appendGlobalRecoveryHints(
   }
 }
 
-function pickFailureModeFix(command: EnrichFunctionCallFailureCommand): string | undefined {
-  const context = resolveFailedFunctionContext(command)
-  if (context.kind === undefined || context.functionName === undefined) return undefined
-  const guide = command.runtime.guideKnowledgeFunction({
-    kind: context.kind,
-    functionName: context.functionName,
-  })
-  if (!guide.ok || guide.data === undefined) return undefined
-  const matchedMode = guide.data.failureModes.find(mode => mode.code === command.callResult.code)
-  return matchedMode?.fix
-}
-
 function resolveFailedFunctionContext(
   command: EnrichFunctionCallFailureCommand,
 ): FailedFunctionContext {
-  const { protocolToolName, args, runtime } = command
-  if (protocolToolName === PROTOCOL_TOOL_NAMES.moduleFunctionGuide) {
+  if (command.protocolToolName === VCM_NATIVE_TOOL_NAMES.actionGuide) {
     return buildFailedFunctionContext({
-      kind: readStringArg(args, 'kind'),
-      functionName: readStringArg(args, 'functionName'),
+      kind: readStringArg(command.args, 'kind'),
+      actionName: readStringArg(command.args, 'actionName'),
     })
   }
-  if (PROTOCOL_TOOL_NAME_SET.has(protocolToolName)) {
-    return {}
-  }
-  return buildFailedFunctionContext({
-    functionName: protocolToolName,
-    kind: findKindByFunctionName(runtime, protocolToolName),
-  })
+  return {}
 }
 
 function buildFailedFunctionContext(
-  input: Readonly<{ kind?: string | undefined; functionName?: string | undefined }>,
+  input: Readonly<{
+    kind?: string | undefined
+    actionName?: string | undefined
+    attributeName?: string | undefined
+  }>,
 ): FailedFunctionContext {
   return {
     ...(input.kind === undefined ? {} : { kind: input.kind }),
-    ...(input.functionName === undefined ? {} : { functionName: input.functionName }),
+    ...(input.actionName === undefined ? {} : { actionName: input.actionName }),
+    ...(input.attributeName === undefined ? {} : { attributeName: input.attributeName }),
   }
 }
 
 type FailedFunctionContext = Readonly<{
   kind?: string
-  functionName?: string
+  actionName?: string
+  attributeName?: string
 }>
-
-function findKindByFunctionName(runtime: AiModuleRuntime, functionName: string | undefined): string | undefined {
-  if (functionName === undefined || functionName.trim().length === 0) return undefined
-  const matches = runtime.queryKnowledgeFunctions({ keyword: functionName })
-  const exact = matches.find(item => item.functionName === functionName)
-  return exact?.kind
-}
 
 function readStringArg(args: AiJsonParams, key: string): string | undefined {
   const value = args[key]
@@ -230,7 +186,8 @@ function readStringArg(args: AiJsonParams, key: string): string | undefined {
 function substituteRecoveryTemplate(template: string, context: FailedFunctionContext): string {
   return template
     .replaceAll('<kind>', context.kind ?? '<kind>')
-    .replaceAll('<functionName>', context.functionName ?? '<functionName>')
+    .replaceAll('<actionName>', context.actionName ?? '<actionName>')
+    .replaceAll('<attributeName>', context.attributeName ?? '<attributeName>')
 }
 
 function appendGuideLookupToFix(
@@ -238,9 +195,9 @@ function appendGuideLookupToFix(
   command: EnrichFunctionCallFailureCommand,
 ): string {
   const context = resolveFailedFunctionContext(command)
-  if (context.kind === undefined || context.functionName === undefined) return fix
-  const lookup = `module_function_guide({ kind: "${context.kind}", functionName: "${context.functionName}" })`
-  if (fix.includes('module_function_guide')) return fix
+  if (context.kind === undefined || context.actionName === undefined) return fix
+  const lookup = `vcm_action_guide({ kind: "${context.kind}", actionName: "${context.actionName}" })`
+  if (fix.includes('vcm_action_guide')) return fix
   return `${fix} 反查指南：${lookup}。`
 }
 

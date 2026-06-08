@@ -26,7 +26,6 @@
 
 import { defineCapability, isCallable, isRecord } from '@spark-appworks/spark-utils'
 import type { AiJsonParams } from '../../json'
-import type { AiModuleRuntimeInspectReport } from '../../modules'
 import { AiAgentRegistry } from './business-registry'
 import { runAiAgent, type AiAgentSession } from './business-session'
 import {
@@ -40,6 +39,7 @@ import type { AiAgentRegistration } from './registration-types'
 import type { AiAgentOptions } from './host-options'
 import type { AiAgentScope } from './scope-types'
 import type { AiAgentSessionRecord } from '../session/session-types'
+import type { AiAgentToolRuntimeInspectReport } from '../tool-runtime'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 公共类型 — Host 构造、运行、注册的输入/输出类型
@@ -77,11 +77,11 @@ export type AiAgentHostRegistrationSummary = Readonly<{
   description: string
   rootKinds: readonly string[]
   moduleCount: number
-  status: AiModuleRuntimeInspectReport['status']
+  status: AiAgentToolRuntimeInspectReport['status']
 }>
 
 export type AiAgentHostRegistrationDescription = AiAgentHostRegistrationSummary & Readonly<{
-  inspectReport: AiModuleRuntimeInspectReport
+  inspectReport: AiAgentToolRuntimeInspectReport
 }>
 
 export type AiAgentHostDryRunDiagnostic = Readonly<{
@@ -108,7 +108,7 @@ export type AiAgentHostDryRunResult = Readonly<
     orchestration: AiAgentOrchestrationPlan
     orchestrationSummary: AiAgentHostOrchestrationSummary
     tools: readonly string[]
-    inspectReport: AiModuleRuntimeInspectReport
+    inspectReport: AiAgentToolRuntimeInspectReport
     diagnostics: readonly AiAgentHostDryRunDiagnostic[]
   }
   | {
@@ -434,7 +434,7 @@ function summarizeOrchestration(orchestration: AiAgentOrchestrationPlan): AiAgen
   }
 }
 
-function diagnosticsFromInspectReport(report: AiModuleRuntimeInspectReport): readonly AiAgentHostDryRunDiagnostic[] {
+function diagnosticsFromInspectReport(report: AiAgentToolRuntimeInspectReport): readonly AiAgentHostDryRunDiagnostic[] {
   if (report.findings.length > 0) {
     return report.findings.map((finding) => ({
       level: finding.level,
@@ -446,7 +446,7 @@ function diagnosticsFromInspectReport(report: AiModuleRuntimeInspectReport): rea
   return [{
     level: 'info',
     code: 'RUNTIME_INSPECT_OK',
-    message: `AiModuleRuntime inspect passed: moduleCount=${report.moduleCount}; rootKinds=[${report.rootKinds.join(', ')}]`,
+    message: `VCM-native runtime inspect passed: moduleCount=${report.moduleCount}; rootKinds=[${report.rootKinds.join(', ')}]`,
   }]
 }
 

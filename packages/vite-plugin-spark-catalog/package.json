@@ -3,7 +3,7 @@
     "version": "0.3.7",
     "type": "module",
     "private": true,
-    "description": "VCM module metadata 生成 — 产出 AiModuleAdapter 消费的 generated JSON",
+  "description": "VCM native metadata 生成 — 产出 VcmNativeAgentAdapter 消费的 generated JSON",
     "main": "./src/index.ts",
     "types": "./src/index.ts",
     "exports": {

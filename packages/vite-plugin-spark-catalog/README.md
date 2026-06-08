@@ -1,6 +1,6 @@
 # @spark-appworks/vite-plugin-spark-catalog
 
-VCM **module metadata** 生成工具：从 TypeScript 能力类提取 JSDoc + 类型，产出 `AiModuleMetadataJson` 与 runtime document，供 `AiModuleAdapter` 构建 LLM 知识体系。
+VCM **native metadata** 生成工具：从 TypeScript 能力类提取 JSDoc + 类型，产出 `AiModuleMetadataJson` 与 runtime document，供 `VcmNativeAgentAdapter` 构建 LLM 知识体系。
 
 ## 命令
 
@@ -17,7 +17,7 @@ CLI 入口：`src/module-metadata-cli.ts`
 |---|---|
 | `page-design-module-metadata.generated.json` | VCM catalog 诊断 |
 | `page-design-module-metadata.api.generated.json` | API / resultApis 诊断 |
-| `page-design-module-metadata.runtime.generated.json` | **`AiModuleAdapter` 消费** |
+| `page-design-module-metadata.runtime.generated.json` | **`VcmNativeAgentAdapter` 消费** |
 
 ## 源码扫描范围
 

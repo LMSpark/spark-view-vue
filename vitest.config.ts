@@ -28,7 +28,7 @@ export default defineConfig({
       '@spark-appworks/spark-app': resolve(root, './packages/spark-app/src/index.ts'),
       '@spark-appworks/spark-ai/json': resolve(root, './packages/spark-ai/src/json/index.ts'),
       '@spark-appworks/spark-ai/agent': resolve(root, './packages/spark-ai/src/agent/index.ts'),
-      '@spark-appworks/spark-ai/modules': resolve(root, './packages/spark-ai/src/modules/index.ts'),
+      '@spark-appworks/spark-ai/vcm-native': resolve(root, './packages/spark-ai/src/vcm-native/index.ts'),
       '@spark-appworks/spark-ai': resolve(root, './packages/spark-ai/src/index.ts'),
       '@spark-appworks/vite-plugin-spark-catalog': resolve(root, './packages/vite-plugin-spark-catalog/src/index.ts')
     }

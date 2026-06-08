@@ -5,20 +5,22 @@
  * making spark-project-model depend on AI runtime or generated metadata files.
  */
 import {
-  AiModuleAdapter,
   createSimpleInputContract,
   type AiAgentBeforeFunctionCallDirective,
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
+  type AiAgentRuntimeContext,
+  VcmNativeAgentAdapter,
 } from '@spark-appworks/spark-ai/agent'
-import type { AiModuleMetadataJson, AiModulePathContext } from '@spark-appworks/spark-ai/modules'
-import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
+import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
+import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   evaluatePageDesignMutationToolGate,
 } from '@/services/page-design-gates'
 import { pageDesignRuntimeMetadataDocument } from './page-design/page-design-module-metadata.runtime'
+import { createPageDesignVcmKnowledgeProvider } from './page-design/page-design-vcm-knowledge-provider'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
@@ -90,11 +92,12 @@ export function resolvePageDesignPlanningContext(
 export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOptions): AiAgentHost {
   return options.host.ensure(PAGE_DESIGN_MODULE_ID, {
     moduleId: PAGE_DESIGN_MODULE_ID,
-    create: () => AiModuleAdapter.createRegistration({
+    create: () => VcmNativeAgentAdapter.createRegistration({
       moduleClass: ProjectModel,
       metadata: readPageDesignProjectMetadata(),
       options: {
         moduleId: PAGE_DESIGN_MODULE_ID,
+        knowledge: createPageDesignVcmKnowledgeProvider(),
         inputContract: createSimpleInputContract<PageDesignRunInput>({
           businessId: PAGE_DESIGN_MODULE_ID,
           identityField: 'pageId',
@@ -131,7 +134,7 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           readonlySteps: [
             '策划约束已注入 effectiveDescription（来自 readPlanningProjection）；禁止从 navigationRoot 或菜单节点拼接需求。',
             '先查询 ProjectModel 能力边界，再通过 openPageDesign(pageId) 进入 ConfigPageNode。',
-            '结构改写只走 module_script 原生对象链；函数参数以 VCM metadata schema 为准。',
+            '结构改写只走 vcm_script 原生对象链；函数参数以 VCM metadata schema 为准。',
           ],
         }),
         resolveInstance: ctx => resolvePageDesignProject(options, ctx),
@@ -161,28 +164,28 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     '策划约束（readPlanningProjection.effectiveDescription，勿从 navigation 树拼接）:',
     effectiveDescription,
     `用户本轮目标: ${input.description}`,
-    '写页面的主通道: 调用 module_script({ script })；script 是 async function body，由运行时执行，不要只输出计划文字。',
+    '写页面的主通道: 调用 vcm_script({ script })；script 是 async function body，由运行时执行，不要只输出计划文字。',
     'script 内 this 是当前 ProjectModel 脚本上下文；不要把 /kind[id]/ path 链作为主用法。',
-    `module_script 形状（pageId="${input.pageId}"，表名/字段按 effectiveDescription 与 VCM schema 决定）：`,
+    `vcm_script 形状（pageId="${input.pageId}"，表名/字段按 effectiveDescription 与 VCM schema 决定）：`,
     `const page = await this.openPageDesign({ pageId: "${input.pageId}" });`,
     `await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });`,
     `await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "r-table", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });`,
     `page.setFileText("script.js", ""); page.setFileText("style.css", "");`,
     `return { ruleJson: page.getFileText("rule.json"), pageDataJson: page.getFileText("pagedata.json"), script: page.getFileText("script.js"), style: page.getFileText("style.css") };`,
     '脚本代理支持原生形态：editDataSet(async ds=>...)、editNodeTree(async tree=>...)、createTable({ tableName, columns })、addNode({ parentComponentId, node })。',
-    'openPageDesign 必须 await；读取必要 VCM 函数 schema 后必须 module_script 生成四文件结果，最后 agent_complete。',
+    'openPageDesign 必须 await；读取必要 VCM 函数 schema 后必须 vcm_script 生成四文件结果，最后 agent_complete。',
     'pageId 来自当前输入；勿把 pageId 当成 projectId。',
     '元数据来源: generated pageDesign module metadata.',
-    '执行原则: LLM 生成代码 -> module_script 执行代码 -> ConfigPageNode 内存模型得到 rule.json / pagedata.json / script.js / style.css；落盘由外层 ProjectWorkspace 处理。',
+    '执行原则: LLM 生成代码 -> vcm_script 执行代码 -> ConfigPageNode 内存模型得到 rule.json / pagedata.json / script.js / style.css；落盘由外层 ProjectWorkspace 处理。',
   ].join('\n')
 }
 
 function resolvePageDesignProject(
   options: EnsurePageDesignBusinessOptions,
-  ctx: AiModulePathContext,
+  ctx: AiAgentRuntimeContext,
 ): ProjectModel {
-  const moduleInstanceId = ctx.host?.moduleInstanceId
-  if (moduleInstanceId === undefined || moduleInstanceId.trim().length === 0) {
+  const moduleInstanceId = ctx.moduleInstanceId
+  if (moduleInstanceId.trim().length === 0) {
     throw new Error('pageDesign ProjectModel requires host.moduleInstanceId.')
   }
   const host = options.getPageDesignEditor({ moduleInstanceId })

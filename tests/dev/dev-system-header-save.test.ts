@@ -143,7 +143,7 @@ describe('DevSystem header save action', () => {
   it('mounts the generic AI tool approval panel from app state', async () => {
     devSystemCtx.state.aiToolApprovalPending.value = [{
       id: 'approval-1',
-      toolName: 'module_call',
+      toolName: 'vcm_script',
       moduleId: 'pageDesign',
       argsPreview: '{}',
     }]

@@ -2,7 +2,7 @@
  * VCM metadata 对象图遍历。
  *
  * 协议真源线：模型（AiApiObjectMetadata）→ 属性 || 方法（action）→ 子模块（嵌套 api）。
- * 实例由会话 scope 钉死；LLM 发现走 metadata 图，执行走 module_script 对象链，不用 /kind[id] path。
+ * 实例由会话 scope 钉死；LLM 发现走 metadata 图，执行走 vcm_script 对象链，不用 /kind[id] path。
  */
 
 import type { AiApiObjectMetadata } from './ai-api-object-metadata-schema'

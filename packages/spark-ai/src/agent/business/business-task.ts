@@ -36,9 +36,9 @@ import {
   type AiJsonSchemaObject,
   type AiJsonValue,
 } from '../../json'
-import type { AiModuleRuntime } from '../../modules/runtime/ai-module-runtime'
 import type { AiAgentChatMessage, AiAgentChatRequest } from '../chat/chat-types'
 import type { AiAgentSessionStore } from '../session/session-types'
+import type { AiAgentToolRuntime } from '../tool-runtime'
 import type {
   AiAgentAfterFunctionCallOptions,
   AiAgentBeforeFunctionCallDirective,
@@ -77,7 +77,7 @@ export type AiAgentDefinition<TInput extends AiJsonParams = AiJsonParams> = Read
   kindID: string
   name: string
   description: string
-  runtime: AiModuleRuntime
+  runtime: AiAgentToolRuntime
   inputContract: AiAgentInputContract<TInput>
   sessionStore: AiAgentSessionStore
   systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined

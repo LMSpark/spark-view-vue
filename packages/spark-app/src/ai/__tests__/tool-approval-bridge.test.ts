@@ -7,7 +7,7 @@ import {
 } from '../tool-approval-bridge'
 
 function createBeforeFunctionCallOptions(
-  toolName = 'module_call',
+  toolName = 'vcm_script',
 ): AiAgentBeforeFunctionCallOptions {
   return {
     moduleId: 'pageDesign',
@@ -15,8 +15,7 @@ function createBeforeFunctionCallOptions(
     instanceId: 'orders',
     toolName,
     args: {
-      path: '/pageDesign[orders]/node-tree[orders]',
-      functionName: 'addNode',
+      script: 'return page.openPageDesign("orders")',
     },
   }
 }
@@ -39,10 +38,9 @@ describe('AiToolApprovalBridge', () => {
       moduleId: 'pageDesign',
       moduleInstanceId: 'orders',
       instanceId: 'orders',
-      toolName: 'module_call',
+      toolName: 'vcm_script',
       args: {
-        path: '/pageDesign[orders]/node-tree[orders]',
-        functionName: 'addNode',
+        script: 'return page.openPageDesign("orders")',
       },
       requestedAt: 100,
     }])
@@ -60,7 +58,7 @@ describe('AiToolApprovalBridge', () => {
       },
     })
 
-    const first = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('module_call'))
+    const first = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('vcm_script'))
     const second = bridge.beforeFunctionCall(createBeforeFunctionCallOptions('module_set'))
 
     expect(bridge.listPending().map((request) => request.id)).toEqual(['approval-1', 'approval-2'])

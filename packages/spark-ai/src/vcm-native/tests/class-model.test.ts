@@ -238,7 +238,7 @@ describe('vcm-native ClassModel projection', () => {
       'vcm_query',
       'vcm_model_guide',
       'vcm_attribute_guide',
-      'vcm_method_guide',
+      'vcm_action_guide',
       'vcm_script',
       'human_question',
       'agent_complete',
@@ -256,7 +256,6 @@ describe('vcm-native ClassModel projection', () => {
         return {
           executed: true,
           script: command.script,
-          path: command.path ?? null,
         }
       },
     })
@@ -265,7 +264,7 @@ describe('vcm-native ClassModel projection', () => {
       'vcm_query',
       'vcm_model_guide',
       'vcm_attribute_guide',
-      'vcm_method_guide',
+      'vcm_action_guide',
       'vcm_script',
       'human_question',
       'agent_complete',
@@ -287,9 +286,9 @@ describe('vcm-native ClassModel projection', () => {
     })
     expect(JSON.stringify(attributeGuide.data)).toContain('projectId: string')
 
-    const methodGuide = await runtime.executeTool('vcm_method_guide', {
+    const methodGuide = await runtime.executeTool('vcm_action_guide', {
       kind: 'node-tree',
-      methodName: 'addNode',
+      actionName: 'addNode',
       componentType: 'r-table',
     })
     expect(JSON.stringify(methodGuide.data)).toContain('type RTableProps = {')
@@ -297,7 +296,6 @@ describe('vcm-native ClassModel projection', () => {
     expect(JSON.stringify(methodGuide.data)).not.toContain('callbackApis')
 
     const script = await runtime.executeTool('vcm_script', {
-      path: 'rule.json',
       script: 'return true',
     })
     expect(script).toMatchObject({
@@ -305,7 +303,6 @@ describe('vcm-native ClassModel projection', () => {
       data: {
         executed: true,
         script: 'return true',
-        path: 'rule.json',
       },
     })
     expect(scriptCommands).toHaveLength(1)
@@ -366,9 +363,9 @@ describe('vcm-native ClassModel projection', () => {
       ok: true,
       data: { models: [{ kind: 'project' }] },
     })
-    expect(await runtime.executeTool('vcm_method_guide', {
+    expect(await runtime.executeTool('vcm_action_guide', {
       kind: 'project',
-      methodName: 'openPageDesign',
+      actionName: 'openPageDesign',
     })).toMatchObject({
       ok: true,
       data: 'openPageDesign()',
@@ -384,6 +381,40 @@ describe('vcm-native ClassModel projection', () => {
       'query:page',
       'method:project.openPageDesign',
     ])
+  })
+
+  it('rejects old path/direct-call aliases at runtime', async () => {
+    const runtime = new VcmNativeRuntime({
+      knowledge: {
+        query: () => ({ models: [] }),
+        modelGuide: () => 'class ProjectModel {}',
+        attributeGuide: () => 'projectId: string',
+        methodGuide: () => 'openPageDesign()',
+      },
+      scriptExecutor: (command) => command.script,
+    })
+
+    await expect(runtime.executeTool('vcm_script', {
+      code: 'return true',
+      path: '/project[demo]',
+    })).resolves.toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({
+        code: 'INVALID_VCM_NATIVE_TOOL_ARGS',
+        message: expect.stringContaining('code, path'),
+      })],
+    })
+
+    await expect(runtime.executeTool('vcm_action_guide', {
+      kind: 'project',
+      methodName: 'openPageDesign',
+    })).resolves.toMatchObject({
+      ok: false,
+      checks: [expect.objectContaining({
+        code: 'INVALID_VCM_NATIVE_TOOL_ARGS',
+        message: expect.stringContaining('methodName'),
+      })],
+    })
   })
 
   it('loads metadata inside knowledge worker API from URL and returns guide strings', async () => {

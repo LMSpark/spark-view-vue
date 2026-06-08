@@ -142,6 +142,7 @@ describe('verification rules', () => {
     expect(output).toContain('manual new AiModule() is forbidden in src/services')
     expect(output).toContain('createAiBusinessKit is removed')
     expect(output).toContain('manual AiModuleRuntime.register() is forbidden in src/services')
+    expect(output).toContain('VcmNativeAgentAdapter')
   })
 
   it('rejects removed parameter-surface hooks in src/services', () => {
@@ -166,24 +167,13 @@ describe('verification rules', () => {
     expect(output).toContain(`${oldProvider} is removed`)
   })
 
-  it('rejects public method drift on critical host classes', () => {
+  it('rejects public method drift on critical VCM-native classes', () => {
     const root = createTempRoot()
-    writeFile(root, 'packages/spark-ai/src/modules/runtime/ai-module-runtime.ts', [
-      'export class AiModuleRuntime {',
-      '  public register(): void {}',
+    writeFile(root, 'packages/spark-ai/src/vcm-native/runtime/vcm-native-runtime.ts', [
+      'export class VcmNativeRuntime {',
       '  public getTools(): void {}',
       '  public executeTool(): void {}',
-      '  public getAttribute(): void {}',
-      '  public setAttribute(): void {}',
-      '  public invokeFunction(): void {}',
-      '  public listChildren(): void {}',
-      '  public findInstance(): void {}',
-      '  public describeKind(): void {}',
-      '  public projectKnowledge(): void {}',
-      '  public queryKnowledgeModules(): void {}',
-      '  public queryKnowledgeFunctions(): void {}',
-      '  public guideKnowledgeFunction(): void {}',
-      '  public buildKnowledgePromptSnapshot(): string { return "" }',
+      '  public legacyPathCall(): void {}',
       '}',
     ].join('\n'))
 
@@ -191,8 +181,8 @@ describe('verification rules', () => {
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
-    expect(output).toContain('public method surface drift for AiModuleRuntime')
-    expect(output).toContain('extra=[buildKnowledgePromptSnapshot]')
+    expect(output).toContain('public method surface drift for VcmNativeRuntime')
+    expect(output).toContain('extra=[legacyPathCall]')
   })
 
   it('rejects framework imports inside framework-free packages', () => {
@@ -220,6 +210,7 @@ describe('verification rules', () => {
         './json': './dist/json/index.js',
         './agent': './dist/agent/index.js',
         './modules': './dist/modules/index.js',
+        './vcm-native': './dist/vcm-native/index.js',
         './core': './dist/core/index.js',
       },
     })
@@ -231,6 +222,7 @@ describe('verification rules', () => {
       '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
       '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
       '      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"],',
+      '      "@spark-appworks/spark-ai/vcm-native": ["./packages/spark-ai/src/vcm-native/index.ts"],',
       '      "@spark-appworks/spark-ai/core": ["./packages/spark-ai/src/core/index.ts"]',
       '    }',
       '  }',
@@ -253,7 +245,7 @@ describe('verification rules', () => {
         '.': './dist/index.js',
         './json': './dist/json/index.js',
         './agent': './dist/agent/index.js',
-        './modules': './dist/modules/index.js',
+        './vcm-native': './dist/vcm-native/index.js',
       },
     })
     writeFile(root, 'tsconfig.json', [
@@ -263,7 +255,7 @@ describe('verification rules', () => {
       '      "@spark-appworks/spark-ai": ["./packages/spark-ai/src/index.ts"],',
       '      "@spark-appworks/spark-ai/json": ["./packages/spark-ai/src/json/index.ts"],',
       '      "@spark-appworks/spark-ai/agent": ["./packages/spark-ai/src/agent/index.ts"],',
-      '      "@spark-appworks/spark-ai/modules": ["./packages/spark-ai/src/modules/index.ts"]',
+      '      "@spark-appworks/spark-ai/vcm-native": ["./packages/spark-ai/src/vcm-native/index.ts"]',
       '    }',
       '  }',
       '}',

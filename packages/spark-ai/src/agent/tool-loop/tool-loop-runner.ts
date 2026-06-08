@@ -38,7 +38,7 @@ import type { AiAgentRegistration } from '../business/registration-types'
 import type { AiAgentScope, AiAgentRuntimeContext } from '../business/scope-types'
 import type { AiAgentChatRequest, AiAgentTurnMeta } from '../chat/chat-types'
 import type { AiAgentHistoryEntry, AiAgentSessionStore } from '../session/session-types'
-import type { AiModuleToolSpec } from '../../modules/internal/protocol-tool-generator'
+import type { AiAgentToolSpec } from '../tool-runtime'
 import type {
   AiAgentTurnCallbacks,
   AiAgentTransportMessage,
@@ -54,7 +54,7 @@ import {
 } from './turn-event-collector'
 
 function toAiAgentTransportTools(
-  tools: readonly AiModuleToolSpec[],
+  tools: readonly AiAgentToolSpec[],
 ): readonly AiAgentTransportToolSpec[] {
   return tools.map((tool) => ({
     type: 'function',
@@ -76,30 +76,29 @@ const TOOL_PRODUCTION_LINE_PROMPT = [
 
 const PSEUDO_TOOL_CALL_NUDGE = [
   '上一次回复把工具调用写进了 assistant 正文（如 <tool_call> 标签），runtime 无法执行。',
-  '请改用 OpenAI tool_calls 通道重新发起；module_script 的参数名必须是 script，不是 code。',
-  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 module_query/module_function_guide 后重试。',
+  '请改用 OpenAI tool_calls 通道重新发起；vcm_script 的参数名必须是 script，不是 code。',
+  '若上一步失败，先读 tool result 里的 RECOVERY_HINT / fix，再 vcm_query/vcm_action_guide 后重试。',
 ].join('\n')
 
 const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
 
 const PLAN_WITHOUT_TOOL_NUDGE = [
   '上一次 assistant 正文只是计划/说明，没有真实 OpenAI tool_calls，runtime 未执行任何工具。',
-  '下一回合必须直接发起 tool_call（写页面时优先 module_script 或 openPageDesign），禁止再输出计划文字。',
-  '若已读完 module_function_guide，立即 module_script 调用 this.openPageDesign → page.editDataSet → page.editNodeTree。',
+  '下一回合必须直接发起 tool_call（写页面时优先 vcm_script 或 openPageDesign），禁止再输出计划文字。',
+  '若已读完 vcm_action_guide，立即 vcm_script 调用 this.openPageDesign → page.editDataSet → page.editNodeTree。',
 ].join('\n')
 
 const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3
 
 const CATALOG_DISCOVERY_TOOL_NAMES = new Set<string>([
-  'module_query',
-  'module_guide',
-  'module_attribute_guide',
-  'module_function_guide',
-  'module_find',
+  'vcm_query',
+  'vcm_model_guide',
+  'vcm_attribute_guide',
+  'vcm_action_guide',
 ])
 
 const EXECUTION_TOOL_NAMES = new Set<string>([
-  'module_script',
+  'vcm_script',
   'openPageDesign',
   'readPlanningProjection',
 ])
@@ -109,7 +108,7 @@ const MAX_MODULE_SCRIPT_RETRY_NUDGES = 3
 
 function buildExecutionPhaseNudge(pageId: string): string {
   return [
-    `目录/指南阶段已完成，pageId="${pageId}"。禁止再重复查目录，直接执行 module_script。`,
+    `目录/指南阶段已完成，pageId="${pageId}"。禁止再重复查目录，直接执行 vcm_script。`,
     buildModuleScriptShapeReminder(pageId),
     'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
   ].join('\n')
@@ -117,16 +116,16 @@ function buildExecutionPhaseNudge(pageId: string): string {
 
 function buildModuleScriptRetryNudge(pageId: string): string {
   return [
-    '上一次 module_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
+    '上一次 vcm_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
     buildModuleScriptShapeReminder(pageId),
     'createTable 签名是 createTable({ tableName, columns })，不是 createTable(name, columns)。',
   ].join('\n')
 }
 
-/** 通用 module_script 形状提醒；业务场景细节由 registration.systemPrompt 提供。 */
+/** 通用 vcm_script 形状提醒；业务场景细节由 registration.systemPrompt 提供。 */
 function buildModuleScriptShapeReminder(pageId: string): string {
   return [
-    `module_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
+    `vcm_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
     'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
     'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "<VCM 元数据声明的组件 type>", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });',
   ].join('\n')
@@ -158,7 +157,7 @@ export class AiAgentToolLoopRunner {
    * 执行工具循环主流程。
    *
    * 每轮（round）：
-   *   1. 读取 AiModuleRuntime 固定协议工具规约
+   *   1. 读取 VCM-native 固定协议工具规约
    *   2. 发送 LLM 诊断事件（llm-request）
    *   3. 调用 turnCallbacks.executeTurn 获取 AI 响应
    *   4. 将 AI 文本回复写入 sessionStore
@@ -521,7 +520,7 @@ function mentionsPendingToolExecution(text: string): boolean {
   const normalized = text.trim().toLowerCase()
   if (normalized.length === 0) return false
   const markers = [
-    'module_script',
+    'vcm_script',
     'openpagedesign',
     'editnodetree',
     'editdataset',
@@ -530,7 +529,7 @@ function mentionsPendingToolExecution(text: string): boolean {
     '我将调用',
     '下一步将',
     'next i will',
-    'i will use module_script',
+    'i will use vcm_script',
     'i will call',
   ]
   return markers.some(marker => normalized.includes(marker))
@@ -549,7 +548,7 @@ function shouldNudgeExecutionPhase(
 
   for (const entry of history) {
     if (!isCompletedFunctionCall(entry)) continue
-    if (entry.toolName === 'module_function_guide') functionGuideSucceeded = true
+    if (entry.toolName === 'vcm_action_guide') functionGuideSucceeded = true
     if (EXECUTION_TOOL_NAMES.has(entry.toolName)) executionStarted = true
   }
 
@@ -559,7 +558,7 @@ function shouldNudgeExecutionPhase(
   const roundIsCatalogOnly = roundToolNames.every(name => CATALOG_DISCOVERY_TOOL_NAMES.has(name))
   if (!roundIsCatalogOnly) return false
 
-  return roundToolNames.includes('module_function_guide') || functionGuideSucceeded
+  return roundToolNames.includes('vcm_action_guide') || functionGuideSucceeded
 }
 
 function shouldNudgeModuleScriptRetry(
@@ -570,7 +569,7 @@ function shouldNudgeModuleScriptRetry(
   for (let index = history.length - 1; index >= 0; index -= 1) {
     const entry = history[index]
     if (entry?.kind !== 'functionCall') continue
-    return entry.toolName === 'module_script' && entry.status === 'failed'
+    return entry.toolName === 'vcm_script' && entry.status === 'failed'
   }
   return false
 }

@@ -3,6 +3,7 @@ import type {
   AiAgentHostRunResult,
   AiAgentStreamEvent,
   AiAgentTaskChatOptions,
+  AiAgentToolRuntime,
   AiAgentToolCallRecord,
   AiAgentTurnCallbacks,
 } from '@spark-appworks/spark-ai/agent'
@@ -13,10 +14,10 @@ import {
   AiAgentSession,
   AiAgentTarget,
   AiAgentTask,
+  AiAgentToolResult,
   DefaultAiAgentSessionStore,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiJsonParams } from '@spark-appworks/spark-ai/json'
-import { AiModuleRuntime } from '@spark-appworks/spark-ai/modules'
 import {
   createAiRunAdapter,
   formatAiRunError,
@@ -42,12 +43,23 @@ function createRunResult(instanceId = 'session-1'): AiAgentHostRunResult {
   const moduleId = 'module-1'
   const store = new DefaultAiAgentSessionStore({ now: () => 1 })
   const context = new AiAgentRuntimeContext(moduleId, instanceId, instanceId)
+  const runtime: AiAgentToolRuntime = {
+    getTools: () => [],
+    executeTool: async () => AiAgentToolResult.ok(null),
+    projectKnowledge: () => ({ promptSnapshot: '' }),
+    inspect: () => ({
+      status: 'ok',
+      rootKinds: [],
+      moduleCount: 0,
+      findings: [],
+    }),
+  }
   store.startSession(context)
   const registration = new AiAgentRegistration({
     moduleId,
     name: '测试模块',
     description: '测试模块',
-    runtime: new AiModuleRuntime(),
+    runtime,
     sessionStore: store,
   })
   const registry = {

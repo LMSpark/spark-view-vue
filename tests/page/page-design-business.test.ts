@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest'
-import { AiModuleAdapter } from '@spark-appworks/spark-ai/agent'
-import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/modules'
+import { VcmNativeAgentAdapter } from '@spark-appworks/spark-ai/agent'
+import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import {
   PAGE_DESIGN_MODULE_ID,
@@ -98,10 +98,10 @@ describe('resolvePageDesignPlanningContext', () => {
 })
 
 
-describe('pageDesign module_script model edit', () => {
+describe('pageDesign vcm_script model edit', () => {
   it('executes LLM-generated native code and returns four page files', async () => {
     const project = new ProjectModel({ projectId: 'homepage' })
-    const registration = AiModuleAdapter.createRegistration({
+    const registration = VcmNativeAgentAdapter.createRegistration({
       moduleClass: ProjectModel,
       metadata: readPageDesignProjectMetadata(),
       options: {
@@ -113,7 +113,7 @@ describe('pageDesign module_script model edit', () => {
       },
     })
 
-    const result = await registration.runtime.executeTool('module_script', {
+    const result = await registration.runtime.executeTool('vcm_script', {
       script: `
         const pageId = 'orders-page'
         const page = await this.openPageDesign({ pageId })
@@ -161,7 +161,7 @@ describe('pageDesign module_script model edit', () => {
 
     expect(result.ok).toBe(true)
     if (!result.ok) {
-      throw new Error(result.checks?.map(check => `${check.code}: ${check.message}`).join('\n') ?? 'module_script failed')
+      throw new Error(result.checks?.map(check => `${check.code}: ${check.message}`).join('\n') ?? 'vcm_script failed')
     }
 
     const files = expectRecord(result.data)
@@ -192,4 +192,3 @@ describe('pageDesign module_script model edit', () => {
     expect(JSON.stringify(result.data)).not.toMatch(/\/[A-Za-z0-9_-]+\[/u)
   })
 })
-

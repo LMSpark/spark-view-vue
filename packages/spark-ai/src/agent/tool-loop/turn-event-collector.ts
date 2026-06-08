@@ -24,7 +24,6 @@
  */
 
 import type { AiAgentStreamEvent } from '../chat/chat-types'
-import { PROTOCOL_TOOL_NAMES } from '../../modules/internal/protocol-tool-generator'
 import type { AiAgentAppSseEvent } from '../transport/app-sse-events'
 import { isRecord } from '@spark-appworks/spark-utils'
 import type {
@@ -514,7 +513,7 @@ function recoverDsmlToolCallsFromText(text: string): readonly AiAgentTransportTo
   return calls
 }
 
-/** glm / TaoToken 等网关常见：<tool_call>module_find({"path":"/",...})（可无闭合标签）。 */
+/** 部分 OpenAI 兼容网关常见：<tool_call>vcm_script({"script":"..."})（可无闭合标签）。 */
 function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
   const calls: AiAgentTransportToolCall[] = []
   const openerPattern = /<tool_call>\s*([A-Za-z_][\w.-]*)\s*\(/gi
@@ -576,28 +575,10 @@ function createRecoveredToolCall(
 }
 
 function normalizeRecoveredToolArguments(
-  toolName: string,
+  _toolName: string,
   args: Record<string, unknown>,
 ): Record<string, unknown> {
-  if (toolName === PROTOCOL_TOOL_NAMES.moduleScript) {
-    const next: Record<string, unknown> = { ...args }
-    if (!Object.hasOwn(next, 'script')) {
-      if (typeof next['code'] === 'string') {
-        next['script'] = next['code']
-        delete next['code']
-      } else if (isRecord(next['args']) && typeof next['args']['script'] === 'string') {
-        next['script'] = next['args']['script']
-      }
-    }
-    return next
-  }
-  if (toolName !== 'module_find') return args
-  if (Object.hasOwn(args, 'childKind')) return args
-  const kind = args['kind']
-  if (typeof kind !== 'string' || kind.trim().length === 0) return args
-  const next: Record<string, unknown> = { ...args, childKind: kind.trim() }
-  delete next['kind']
-  return next
+  return args
 }
 
 function readDsmlParameters(body: string): Record<string, unknown> {

@@ -50,7 +50,7 @@ export class AiAgentTarget {
  * -------------------------------------------------------------------------------
  * 在业务定位基础上追加运行时标识，构成完整的"当前上下文坐标"：
  *   - instanceId：顶层实例 ID，参与 kind + instanceId 生成后端 sessionId
- *   - runtimeInstanceId：AiModuleRuntime 内部实例 ID（当前同顶层实例 ID）
+ *   - runtimeInstanceId：工具 runtime 内部实例 ID（当前同顶层实例 ID）
  *
  * Scope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期。
  * 同时也是 turnKey / streamKey 的数据来源——键由 Scope 字段编码生成。
@@ -59,7 +59,7 @@ export class AiAgentTarget {
 /**
  * 业务作用域（继承自定位基类），在业务定位基础上追加运行时标识。
  * instanceId        — 顶层实例 ID，参与 kind + instanceId 生成后端 sessionId
- * runtimeInstanceId — AiModuleRuntime 内部实例 ID（当前同顶层实例 ID）
+ * runtimeInstanceId — 工具 runtime 内部实例 ID（当前同顶层实例 ID）
  *
  * Scope 是 tool-loop-runner 的核心持有对象，贯穿整个会话生命周期，
  * 同时也是 turnKey / streamKey 的数据来源。
