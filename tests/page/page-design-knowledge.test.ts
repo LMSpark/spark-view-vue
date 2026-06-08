@@ -159,11 +159,12 @@ describe('pageDesign knowledge integration', () => {
     expect(editNodeTree?.failureModes?.some(mode => mode.code === 'SCRIPT_EXECUTION_FAILED')).toBe(true)
   })
 
-  it('prompt snapshot includes script and VCM knowledge lookup guidance', () => {
+  it('prompt snapshot includes script and payload catalog lookup guidance', () => {
     const runtime = createPageDesignKnowledgeRuntime()
     const snapshot = runtime.projectKnowledge().promptSnapshot
 
     expect(snapshot).toContain('module_script')
-    expect(snapshot).toMatch(/vcm_query|module_function_guide/)
+    expect(snapshot).toContain('queryPayloads')
+    expect(snapshot).toContain('guidePayload')
   })
 })

@@ -17,7 +17,6 @@ spark-ai-server/target/
 spark-ai-server/data/sparkdb*.db
 
 # VS and IDE
-.cursor/plans/
 .vs/
 *.user
 *.suo
