@@ -56,8 +56,8 @@ target 结构：
 | `roots[].className` | 作为 VCM rootApi 抽取的 class 名 |
 | `roots[].kind` | 可选；用于人工核对 class 的 `@moduleKind` |
 | `outputs.vcmCatalog` | VCM catalog 诊断 JSON |
-| `outputs.apiDiagnostics` | API diagnostics JSON |
 | `outputs.runtime` | VCM-native runtime metadata JSON |
+| `outputs.componentCatalog` | 组件 props catalog JSON |
 
 CLI 默认读取 `config/ai/vcm.json`，也可传 `--config <file>`。
 

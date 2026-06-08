@@ -58,10 +58,9 @@ describe('Draft 2020-12 schema audit', () => {
     expect(auditModuleMetadataDocument(document)).toEqual([])
   })
 
-  it('passes audit for generated runtime and api metadata three times each', () => {
+  it('passes audit for generated runtime metadata three times', () => {
     const files = [
       'src/services/page-design/page-design-module-metadata.runtime.generated.json',
-      'src/services/page-design/page-design-module-metadata.api.generated.json',
     ]
     for (const relativePath of files) {
       const absolutePath = resolve(process.cwd(), relativePath)

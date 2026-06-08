@@ -5,7 +5,8 @@ VCM **native metadata** 生成工具：从 TypeScript 能力类提取 JSDoc + �
 ## 命令
 
 ```bash
-pnpm run generate:module-metadata    # 写入 page-design-module-metadata.*.generated.json
+pnpm run generate:module-metadata    # 写入 runtime metadata 与 VCM catalog
+pnpm run generate:component-catalog  # 写入组件 props catalog
 pnpm run diagnose:module-metadata    # 仅诊断，不写文件
 ```
 
@@ -24,8 +25,8 @@ pnpm run generate:module-metadata -- --config config/ai/vcm.json --target page-d
 | 文件 | 用途 |
 |---|---|
 | `page-design-module-metadata.generated.json` | VCM catalog 诊断 |
-| `page-design-module-metadata.api.generated.json` | API / resultApis 诊断 |
 | `page-design-module-metadata.runtime.generated.json` | **`VcmNativeAgentAdapter` 消费** |
+| `payload/component-catalog.json` | **Worker 按需消费的组件 props 知识** |
 
 ## VCM Registry 协议
 
@@ -43,8 +44,8 @@ pnpm run generate:module-metadata -- --config config/ai/vcm.json --target page-d
       "roots": [{ "className": "ProjectModel", "kind": "project" }],
       "outputs": {
         "vcmCatalog": "...generated.json",
-        "apiDiagnostics": "...api.generated.json",
-        "runtime": "...runtime.generated.json"
+        "runtime": "...runtime.generated.json",
+        "componentCatalog": "payload/component-catalog.json"
       }
     }
   ]

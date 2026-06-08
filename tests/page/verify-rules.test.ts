@@ -263,12 +263,16 @@ describe('verification rules', () => {
     writeFile(root, 'packages/spark-ai/src/bad.ts', [
       "export const PAGE_DESIGN_TRACE = 'pageDesign should stay in business packages'",
     ].join('\n'))
+    writeFile(root, 'packages/spark-ai/src/vcm-native/tests/class-model.test.ts', [
+      "export const fixtureUrl = 'metadata://page-design-runtime'",
+    ].join('\n'))
 
     const result = runNode(['tools/verify-architecture.mjs', '--root', root])
     const output = `${result.stdout}\n${result.stderr}`
 
     expect(result.status).toBe(1)
     expect(output).toContain('spark-ai kernel must not contain business material')
+    expect(output).not.toContain('class-model.test.ts')
   })
 })
 

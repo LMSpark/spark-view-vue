@@ -1,7 +1,8 @@
 /**
  * SPARK 组件目录生成 Vite 插件
  *
- * 组件 catalog 仅作为 VCM 诊断产物。插件在 dev 时 .vue 变更后写入 tmp/component-catalog.json；不接入 pageDesign LLM 主路径。
+ * 组件 catalog 是 VCM-native props 知识轨。插件在 dev 时默认写入 tmp/component-catalog.json；
+ * pageDesign 运行时 payload 由 CLI 按 config/ai/vcm.json 的 target.outputs.componentCatalog 生成。
  *
  * configResolved 不扫描，避免每次 dev/build 重复开销。
  *
@@ -30,6 +31,8 @@ export type SparkCatalogPluginOptions = {
   verbose?: boolean
   /** 是否保留 VCM 全局 props（class/style/key/ref 等） */
   includeGlobalProps?: boolean
+  /** component-catalog.json 输出路径；默认 tmp/component-catalog.json。 */
+  catalogOutFile?: string
   /** 透传给 vue-component-meta createChecker 的选项 */
   vcmCheckerOptions?: CatalogVcmCheckerSettings}
 
@@ -66,6 +69,7 @@ export function sparkCatalogPlugin(options: SparkCatalogPluginOptions = {}): Plu
           exclude: options.exclude,
           verbose: options.verbose,
           includeGlobalProps: options.includeGlobalProps,
+          catalogOutFile: options.catalogOutFile,
           vcmCheckerOptions: options.vcmCheckerOptions,
         })
       }

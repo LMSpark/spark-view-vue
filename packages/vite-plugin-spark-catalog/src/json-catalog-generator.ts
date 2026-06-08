@@ -5,7 +5,7 @@
  * 1. 扫描 SPARK 组件源码；
  * 2. 通过 VCM 提取组件 Props / Emits / 元数据；
  * 3. 对高重复结构做共享池化；
- * 4. 产出 tmp/component-catalog.json 作为 VCM 诊断产物（不接入 pageDesign LLM 主路径）。
+ * 4. 产出 component-catalog.json，作为 VCM-native props 知识轨的独立 payload。
  *
  * 设计原则：
  * - 运行时模型保留完整信息，便于审计与后续扩展；
@@ -69,16 +69,18 @@ export type JsonCatalogOptions = {
   verbose?: boolean | undefined
   includeGlobalProps?: boolean | undefined
   vcmCheckerOptions?: VcmCheckerOptions | undefined
+  /** 输出路径；CLI 从 config/ai/vcm.json 的 target.outputs.componentCatalog 读取。 */
+  catalogOutFile?: string | undefined
   /** 质量审计选项（传入则自动运行审计） */
   audit?: AuditOptions | boolean | undefined}
 
 /**
  * 计算标准目录输出路径。
  *
- * component-catalog.json 是临时组件 VCM 诊断产物，不作为 pageDesign LLM 主路径输入。
+ * 未显式指定时写入 tmp/component-catalog.json；pageDesign 运行时 payload 由 VCM registry 指定。
  */
-export function getCanonicalCatalogOutputPath(root: string): string {
-  return resolve(root, 'tmp', CANONICAL_CATALOG_FILE)
+export function getCanonicalCatalogOutputPath(root: string, catalogOutFile?: string): string {
+  return resolve(root, catalogOutFile ?? `tmp/${CANONICAL_CATALOG_FILE}`)
 }
 
 type SchemaOwner = 'workspace' | 'external'
@@ -1727,6 +1729,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
     tsconfigPath = 'tsconfig.catalog.json',
     includeGlobalProps = false,
     vcmCheckerOptions = {},
+    catalogOutFile,
     audit,
   } = options
 
@@ -1759,7 +1762,7 @@ export function generateJsonCatalog(root: string, options: JsonCatalogOptions = 
   }
   const catalog = buildComponentCatalog(runtimeCatalog)
 
-  const outPath = getCanonicalCatalogOutputPath(root)
+  const outPath = getCanonicalCatalogOutputPath(root, catalogOutFile)
   mkdirSync(dirname(outPath), { recursive: true })
   writeFileSync(outPath, JSON.stringify(catalog, null, 2), 'utf-8')
   logger.info(`📦 ${catalog.componentCount} 组件已写入`)

@@ -73,16 +73,16 @@
                 "type": "string",
                 "minLength": 1
               },
-              "apiDiagnostics": {
+              "runtime": {
                 "type": "string",
                 "minLength": 1
               },
-              "runtime": {
+              "componentCatalog": {
                 "type": "string",
                 "minLength": 1
               }
             },
-            "required": ["vcmCatalog", "apiDiagnostics", "runtime"]
+            "required": ["vcmCatalog", "runtime", "componentCatalog"]
           }
         },
         "required": ["id", "kind", "source", "roots", "outputs"]

@@ -71,6 +71,7 @@ function checkSparkAiBusinessMaterial(root, exclude, violations) {
 
   for (const filePath of files) {
     const rel = relativePath(root, filePath)
+    if (isTestSourcePath(rel)) continue
     const lines = fs.readFileSync(filePath, 'utf8').split(/\r?\n/u)
     for (let index = 0; index < lines.length; index += 1) {
       const line = lines[index]
@@ -83,6 +84,12 @@ function checkSparkAiBusinessMaterial(root, exclude, violations) {
       })
     }
   }
+}
+
+function isTestSourcePath(rel) {
+  return rel.includes('/tests/')
+    || rel.includes('/__tests__/')
+    || /\.(?:test|spec)\.[cm]?[jt]sx?$/u.test(rel)
 }
 
 export function runArchitectureCli(argv = process.argv.slice(2)) {

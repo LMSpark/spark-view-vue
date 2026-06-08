@@ -23,8 +23,8 @@
       ],
       "outputs": {
         "vcmCatalog": "src/services/page-design/page-design-module-metadata.generated.json",
-        "apiDiagnostics": "src/services/page-design/page-design-module-metadata.api.generated.json",
-        "runtime": "src/services/page-design/page-design-module-metadata.runtime.generated.json"
+        "runtime": "src/services/page-design/page-design-module-metadata.runtime.generated.json",
+        "componentCatalog": "src/services/page-design/payload/component-catalog.json"
       }
     }
   ]

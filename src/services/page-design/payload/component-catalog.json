@@ -1,16 +1,14 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
   "version": "3.0.0",
-  "buildTime": "2026-06-06T20:06:07.536Z",
-  "componentCount": 107,
+  "buildTime": "2026-06-08T22:14:01.227Z",
+  "componentCount": 111,
   "components": {
     "about": {
       "type": "about",
       "filePath": "src/views/platform/About.vue",
       "category": "feature",
-      "description": "关于页面，展示系统版本、技术栈和项目信息；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"about\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "关于页面，展示系统版本、技术栈和项目信息；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"about\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -19,9 +17,7 @@
       "type": "app-list",
       "filePath": "src/views/tenant/AppList.vue",
       "category": "feature",
-      "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"app-list\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "应用列表页面，以卡片网格展示已创建的项目/应用及入口；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"app-list\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -75,9 +71,25 @@
       "type": "cache-manager",
       "filePath": "src/views/tenant/CacheManager.vue",
       "category": "feature",
-      "description": "缓存管理页面，查看缓存统计信息并支持手动清理元数据缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"cache-manager\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "缓存管理页面，查看前后端缓存统计并支持手动清理前端页面缓存；属于应用级路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"cache-manager\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "capability-demo": {
+      "type": "capability-demo",
+      "filePath": "src/views/app/CapabilityDemo.vue",
+      "category": "feature",
+      "description": "能力系统演示页，展示 sparkProvide/sparkConsume 能力链的运行时行为；仅用于开发演示，不进入组件配置目录。 配置入口：type=\"capability-demo\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
+    "custom-rtable-demo": {
+      "type": "custom-rtable-demo",
+      "filePath": "src/views/app/CustomRTableDemo.vue",
+      "category": "feature",
+      "description": "自定义表格演示，展示 r-table children 桥接机制和自定义列渲染能力；仅用于开发演示，不进入组件配置目录。 配置入口：type=\"custom-rtable-demo\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -86,9 +98,7 @@
       "type": "dashboard",
       "filePath": "src/views/app/Dashboard.vue",
       "category": "feature",
-      "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口；属于应用路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"dashboard\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "管理仪表盘，聚合展示关键业务指标、统计图表和快速操作入口；属于应用路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"dashboard\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -2210,9 +2220,7 @@
       "type": "home-page",
       "filePath": "src/views/platform/HomePage.vue",
       "category": "feature",
-      "description": "平台首页，展示系统介绍、功能亮点和快速开始入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"home-page\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "平台首页，展示系统介绍、功能亮点和快速开始入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"home-page\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -2352,9 +2360,7 @@
       "type": "login-view",
       "filePath": "src/views/platform/LoginView.vue",
       "category": "feature",
-      "description": "多租户登录页面，提供用户名/密码认证和租户选择入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"login-view\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "多租户登录页面，提供用户名/密码认证和租户选择入口；属于平台路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"login-view\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -13394,13 +13400,20 @@
       ],
       "source": "vcm+meta"
     },
+    "rform-compare-demo": {
+      "type": "rform-compare-demo",
+      "filePath": "src/views/app/RFormCompareDemo.vue",
+      "category": "feature",
+      "description": "表单渲染对比演示，对比配置驱动 r-form 与手写模板两种表单实现方式；仅用于开发演示，不进入组件配置目录。 配置入口：type=\"rform-compare-demo\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
+      "source": "vcm+meta"
+    },
     "settings": {
       "type": "settings",
       "filePath": "src/views/tenant/Settings.vue",
       "category": "feature",
-      "description": "系统设置面板，提供全局参数配置和偏好设置管理界面；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"settings\"，category=feature（功能组件）。 配置状态：internal/non-configurable，仅供技术目录和运行时引用，不应由 LLM 生成到页面配置。",
-      "internal": true,
-      "configurable": false,
+      "description": "系统设置面板，提供全局参数配置和偏好设置管理界面；属于租户路由页，不允许作为 SparkNode 组件配置生成。 配置入口：type=\"settings\"，category=feature（功能组件）。",
       "props": [],
       "emits": [],
       "source": "vcm+meta"
@@ -13620,6 +13633,15 @@
           "description": "Emitted when modelValue changes; 用于同步父级绑定值。"
         }
       ],
+      "source": "vcm+meta"
+    },
+    "template-dsl-demo": {
+      "type": "template-dsl-demo",
+      "filePath": "src/views/app/TemplateDslDemo.vue",
+      "category": "feature",
+      "description": "Template DSL demo placeholder; 仅用于路由占位和开发演示，不进入运行时组件扫描。 配置入口：type=\"template-dsl-demo\"，category=feature（功能组件）。",
+      "props": [],
+      "emits": [],
       "source": "vcm+meta"
     },
     "tenant-config-panel": {

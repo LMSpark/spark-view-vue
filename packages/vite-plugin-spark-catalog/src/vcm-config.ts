@@ -20,8 +20,8 @@ export type VcmMetadataTargetSource = Readonly<{
 
 export type VcmMetadataTargetOutputs = Readonly<{
   vcmCatalog: string
-  apiDiagnostics: string
   runtime: string
+  componentCatalog: string
 }>
 
 export type VcmMetadataTarget = Readonly<{
@@ -76,7 +76,6 @@ export function createVcmTargetGeneratorOptions(
     sources: target.source.files,
     apiRoots: target.roots.map(root => root.className),
     vcmCatalogOutFile: target.outputs.vcmCatalog,
-    moduleOutFile: target.outputs.apiDiagnostics,
     moduleRuntimeOutFile: target.outputs.runtime,
     ...overrides,
   }
@@ -162,8 +161,8 @@ function parseVcmMetadataTargetOutputs(value: unknown, path: string): VcmMetadat
   const outputs = requireRecord(value, path)
   return {
     vcmCatalog: requiredString(outputs, 'vcmCatalog', path),
-    apiDiagnostics: requiredString(outputs, 'apiDiagnostics', path),
     runtime: requiredString(outputs, 'runtime', path),
+    componentCatalog: requiredString(outputs, 'componentCatalog', path),
   }
 }
 
