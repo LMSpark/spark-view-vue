@@ -7,7 +7,6 @@
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, relative, basename } from 'node:path'
 import ts from 'typescript'
-import { createChecker } from 'vue-component-meta'
 import {
   tsTypeToJsonSchema,
   type GeneratedJsonSchema,
@@ -22,9 +21,9 @@ export type ModuleAbilityMetadataGeneratorOptions = {
   sources: readonly string[]
   outFile?: string
   moduleOutFile?: string
-  vcmCatalogOutFile?: string
   runtimeOutFile?: string
   moduleRuntimeOutFile?: string
+  jsdocTodoLogOutFile?: string
   apiRoots?: readonly string[]
   trace?: boolean
   extractResults?: boolean
@@ -173,15 +172,6 @@ type AiModuleMetadataJson = {
   schemaVersion: 1
   rootApi: AiApiObjectMetadata}
 
-type VcmComponentMeta = {
-  name: string
-  description: string
-  type: unknown
-  props: readonly unknown[]
-  events: readonly unknown[]
-  slots: readonly unknown[]
-  exposed: readonly unknown[]}
-
 type ModuleMetadataTrace = {
   enabled: boolean
   extractResults: boolean
@@ -298,8 +288,8 @@ export type ModuleMetadataGenerationResult = {
   jsdocTodoLog: readonly ModuleMetadataJsDocTodoLogEntry[]
   schemaDescriptionTodoLog: readonly ModuleMetadataSchemaDescriptionTodoLogEntry[]
   moduleOutFile?: string
-  vcmCatalogOutFile?: string
-  vcmCatalogElementCount?: number}
+  jsdocTodoLogOutFile?: string
+}
 
 export type ModuleMetadataRuntimeAudit = ReturnType<typeof createRuntimeGeneratedApiObjectMetadataAudit>
 
@@ -358,13 +348,12 @@ export function generateModuleAbilityMetadata(
   const runtimeAudit = createRuntimeGeneratedApiObjectMetadataAudit(moduleMetadata)
   const jsdocTodoLog = collectModuleMetadataJsDocTodoLog(moduleMetadata)
   const schemaDescriptionTodoLog = dedupeSchemaDescriptionTodoLog(schemaDescriptionTodoEntries)
-  const vcmCatalogElementCount = moduleMetadata.length
 
   const outFile = options.outFile === undefined ? undefined : resolve(root, options.outFile)
   const moduleOutFile = options.moduleOutFile === undefined ? undefined : resolve(root, options.moduleOutFile)
-  const vcmCatalogOutFile = options.vcmCatalogOutFile === undefined ? undefined : resolve(root, options.vcmCatalogOutFile)
   const runtimeOutFile = options.runtimeOutFile === undefined ? undefined : resolve(root, options.runtimeOutFile)
   const moduleRuntimeOutFile = options.moduleRuntimeOutFile === undefined ? undefined : resolve(root, options.moduleRuntimeOutFile)
+  const jsdocTodoLogOutFile = options.jsdocTodoLogOutFile === undefined ? undefined : resolve(root, options.jsdocTodoLogOutFile)
   if (options.writeFiles !== false) {
     if (outFile !== undefined) {
       mkdirSync(dirname(outFile), { recursive: true })
@@ -373,11 +362,6 @@ export function generateModuleAbilityMetadata(
     if (moduleOutFile !== undefined) {
       mkdirSync(dirname(moduleOutFile), { recursive: true })
       writeFileSync(moduleOutFile, formatGeneratedApiObjectMetadata(moduleMetadata, diagnostics), 'utf8')
-    }
-    if (vcmCatalogOutFile !== undefined) {
-      mkdirSync(dirname(vcmCatalogOutFile), { recursive: true })
-      const vcmMeta = extractVcmRootClassSchemas(root, options.sources, moduleMetadata)
-      writeFileSync(vcmCatalogOutFile, formatVcmObjectElementCatalog(moduleMetadata, vcmMeta), 'utf8')
     }
     if (runtimeOutFile !== undefined) {
       mkdirSync(dirname(runtimeOutFile), { recursive: true })
@@ -392,6 +376,14 @@ export function generateModuleAbilityMetadata(
         'utf8',
       )
     }
+    if (jsdocTodoLogOutFile !== undefined) {
+      mkdirSync(dirname(jsdocTodoLogOutFile), { recursive: true })
+      writeFileSync(
+        jsdocTodoLogOutFile,
+        formatModuleMetadataJsDocTodoLog(jsdocTodoLog, schemaDescriptionTodoLog),
+        'utf8',
+      )
+    }
   }
   return {
     abilities,
@@ -402,8 +394,7 @@ export function generateModuleAbilityMetadata(
     jsdocTodoLog,
     schemaDescriptionTodoLog,
     ...(moduleOutFile === undefined ? {} : { moduleOutFile }),
-    ...(vcmCatalogOutFile === undefined ? {} : { vcmCatalogOutFile }),
-    ...(vcmCatalogOutFile === undefined ? {} : { vcmCatalogElementCount }),
+    ...(jsdocTodoLogOutFile === undefined ? {} : { jsdocTodoLogOutFile }),
   }
 }
 
@@ -2134,145 +2125,21 @@ function formatGeneratedApiObjectMetadata(
   }, null, 2)}\n`
 }
 
-function formatVcmObjectElementCatalog(
-  moduleMetadata: readonly AiModuleMetadataJson[],
-  vcmMeta: VcmComponentMeta | undefined,
+function formatModuleMetadataJsDocTodoLog(
+  jsdocTodoLog: readonly ModuleMetadataJsDocTodoLogEntry[],
+  schemaDescriptionTodoLog: readonly ModuleMetadataSchemaDescriptionTodoLogEntry[],
 ): string {
-  return `${JSON.stringify(normalizeGeneratedJsonSchemaValue(vcmMeta ?? createFallbackVcmComponentMeta(moduleMetadata)), null, 2)}\n`
-}
-
-function extractVcmRootClassSchemas(
-  root: string,
-  sources: readonly string[],
-  moduleMetadata: readonly AiModuleMetadataJson[],
-): VcmComponentMeta | undefined {
-  const rootApis = moduleMetadata.map(module => module.rootApi)
-  if (rootApis.length === 0) return undefined
-  const tsconfigPath = resolve(root, 'tsconfig.catalog.json')
-  if (!existsSync(tsconfigPath)) return undefined
-
-  const sourceByClassName = findClassSourceFiles(root, sources, rootApis.map(api => api.className))
-  if (sourceByClassName.size === 0) return undefined
-
-  const virtualFile = resolve(root, '__spark_vcm_object_metadata_probe.vue').replace(/\\/g, '/')
-  const imports = rootApis
-    .map((api) => {
-      const source = sourceByClassName.get(api.className)
-      if (source === undefined) return undefined
-      return `import type { ${api.className} } from './${normalizePath(relative(root, source))}'`
-    })
-    .filter(isNotUndefined)
-  if (imports.length === 0) return undefined
-
-  const props = rootApis
-    .filter(api => sourceByClassName.has(api.className))
-    .map(api => `  ${api.className}: ${api.className}`)
-    .join('\n')
-  const source = `<script setup lang="ts">\n${imports.join('\n')}\n\ndefineProps<{\n${props}\n}>()\n</script>\n`
-
-  const checker = createChecker(tsconfigPath.replace(/\\/g, '/'), {
-    rawType: true,
-    schema: true,
-    noDeclarations: false,
-  })
-  checker.updateFile(virtualFile, source)
-  try {
-    const meta = checker.getComponentMeta(virtualFile)
-    return sanitizeVcmComponentMeta(meta)
-  } finally {
-    checker.deleteFile(virtualFile)
-  }
-}
-
-function findClassSourceFiles(
-  root: string,
-  sources: readonly string[],
-  classNames: readonly string[],
-): ReadonlyMap<string, string> {
-  const wanted = new Set(classNames)
-  const found = new Map<string, string>()
-  for (const source of sources) {
-    const file = resolve(root, source)
-    const program = ts.createProgram([file], {
-      target: ts.ScriptTarget.ES2020,
-      module: ts.ModuleKind.ESNext,
-      moduleResolution: ts.ModuleResolutionKind.Bundler,
-      skipLibCheck: true,
-      noEmit: true,
-    })
-    const sourceFile = program.getSourceFile(file)
-    if (sourceFile === undefined) continue
-    const visit = (node: ts.Node): void => {
-      if (ts.isClassDeclaration(node) && node.name !== undefined && wanted.has(node.name.text)) {
-        found.set(node.name.text, file)
-      }
-      ts.forEachChild(node, visit)
-    }
-    visit(sourceFile)
-  }
-  return found
-}
-
-function createFallbackVcmComponentMeta(moduleMetadata: readonly AiModuleMetadataJson[]): VcmComponentMeta {
-  return {
-    name: '',
-    description: '',
-    type: 1,
-    props: moduleMetadata.map(module => ({
-      name: module.rootApi.className,
-      global: false,
-      description: module.rootApi.description,
-      tags: [],
-      required: true,
-      type: module.rootApi.className,
-      schema: {
-        kind: 'object',
-        type: module.rootApi.className,
-        schema: {},
-      },
-    })),
-    events: [],
-    slots: [],
-    exposed: [],
-  }
-}
-
-function sanitizeVcmComponentMeta(meta: unknown): VcmComponentMeta {
-  return sanitizeVcmJsonValue(meta) as VcmComponentMeta
-}
-
-function sanitizeVcmJsonValue(value: unknown, seen = new WeakSet<object>()): unknown {
-  if (Array.isArray(value)) return value.map(item => sanitizeVcmJsonValue(item, seen))
-  if (!isIndexableObject(value)) return value
-  if (seen.has(value)) return undefined
-  seen.add(value)
-  const entries = Object.entries(value)
-    .filter(([key]) => !isNonSerializableVcmKey(key))
-    .map(([key, child]) => [key, sanitizeVcmJsonValue(child, seen)])
-    .filter(([, child]) => child !== undefined)
-  return Object.fromEntries(entries)
-}
-
-function isNonSerializableVcmKey(key: string): boolean {
-  return key === 'declarations'
-    || key === 'rawType'
-    || key === 'schemaSource'
-    || key === 'getDeclarations'
-    || key === 'getTypeObject'
-}
-
-function normalizeGeneratedJsonSchemaValue<T>(value: T): T {
-  if (Array.isArray(value)) {
-    const items = value as unknown[]
-    const normalized = items.map((item: unknown) => normalizeGeneratedJsonSchemaValue(item))
-    return normalized as unknown as T
-  }
-  if (!isIndexableObject(value)) return value
-
-  const entries = Object.entries(value)
-    .filter(([key, child]) => !(key === 'required' && Array.isArray(child) && child.length === 0))
-    .map(([key, child]) => [key, normalizeGeneratedJsonSchemaValue(child)])
-  return Object.fromEntries(entries) as T
+  return `${JSON.stringify({
+    schemaVersion: MODULE_METADATA_SCHEMA_VERSION,
+    generatedBy: 'packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts',
+    note: 'Human-facing JSDoc supplement log. Do not edit generated metadata; update source JSDoc and rerun pnpm run generate:module-metadata.',
+    summary: {
+      jsdocTodoCount: jsdocTodoLog.length,
+      schemaDescriptionTodoCount: schemaDescriptionTodoLog.length,
+    },
+    jsdocTodoLog,
+    schemaDescriptionTodoLog,
+  }, null, 2)}\n`
 }
 
 function formatRuntimeGeneratedMetadata(

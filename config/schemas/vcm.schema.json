@@ -69,11 +69,11 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
-              "vcmCatalog": {
+              "runtime": {
                 "type": "string",
                 "minLength": 1
               },
-              "runtime": {
+              "jsdocTodoLog": {
                 "type": "string",
                 "minLength": 1
               },
@@ -82,7 +82,7 @@
                 "minLength": 1
               }
             },
-            "required": ["vcmCatalog", "runtime", "componentCatalog"]
+            "required": ["runtime", "jsdocTodoLog", "componentCatalog"]
           }
         },
         "required": ["id", "kind", "source", "roots", "outputs"]

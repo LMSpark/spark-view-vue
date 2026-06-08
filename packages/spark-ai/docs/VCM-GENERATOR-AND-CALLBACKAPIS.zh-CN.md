@@ -55,8 +55,8 @@ target 结构：
 | `source.files` | TypeScript 源文件列表 |
 | `roots[].className` | 作为 VCM rootApi 抽取的 class 名 |
 | `roots[].kind` | 可选；用于人工核对 class 的 `@moduleKind` |
-| `outputs.vcmCatalog` | VCM catalog 诊断 JSON |
 | `outputs.runtime` | VCM-native runtime metadata JSON |
+| `outputs.jsdocTodoLog` | 源码 JSDoc / schema description 待补日志 |
 | `outputs.componentCatalog` | 组件 props catalog JSON |
 
 CLI 默认读取 `config/ai/vcm.json`，也可传 `--config <file>`。

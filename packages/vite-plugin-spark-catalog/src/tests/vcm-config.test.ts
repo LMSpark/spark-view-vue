@@ -32,8 +32,8 @@ describe('VCM registry config protocol', () => {
         },
         roots: [{ className: 'ProjectModel', kind: 'project' }],
         outputs: {
-          vcmCatalog: 'src/services/page-design/page-design-module-metadata.generated.json',
           runtime: 'src/services/page-design/page-design-module-metadata.runtime.generated.json',
+          jsdocTodoLog: 'src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json',
           componentCatalog: 'src/services/page-design/payload/component-catalog.json',
         },
       }],
@@ -48,8 +48,8 @@ describe('VCM registry config protocol', () => {
     expect(options).toMatchObject({
       sources: ['packages/spark-project-model/src/project/project-model.ts'],
       apiRoots: ['ProjectModel'],
-      vcmCatalogOutFile: 'src/services/page-design/page-design-module-metadata.generated.json',
       moduleRuntimeOutFile: 'src/services/page-design/page-design-module-metadata.runtime.generated.json',
+      jsdocTodoLogOutFile: 'src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json',
       writeFiles: false,
     })
   })

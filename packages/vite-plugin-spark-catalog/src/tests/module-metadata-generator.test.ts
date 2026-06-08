@@ -452,39 +452,17 @@ class DemoConfigPage {
     expect(editNodeTree?.usageRules).toContain('Must use vcm_script; direct function call is not supported.')
   })
 
-  it('writes a VCM object element catalog JSON', () => {
+  it('writes a human-facing JSDoc todo log JSON', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
-type TreeNode = {
-  id: string
-  child?: TreeNode
-}
-
-/**
- * Child model.
- *
- * @moduleKind query-child
- */
-class QueryChild {
-  private readonly _secret = 'secret'
-
-  /** Read child title. */
-  public title(): string {
-    return 'title'
-  }
-}
-
 /**
  * Root model.
  *
  * @moduleKind query-root
  */
 class QueryRoot {
-  /** Child model attribute. */
-  public readonly child = new QueryChild()
-
   /** Configure tree metadata. */
-  public configure(args: { node: TreeNode; items: TreeNode[] }): string {
+  public configure(args: { nodeId: string }): string {
     void args
     return 'ok'
   }
@@ -495,39 +473,26 @@ class QueryRoot {
       sources: ['sample.ts'],
       outFile: 'out/abilities.json',
       moduleOutFile: 'out/modules.json',
-      vcmCatalogOutFile: 'out/vcm-models.json',
+      jsdocTodoLogOutFile: 'out/jsdoc-todo.json',
       apiRoots: ['QueryRoot'],
     })
 
-    expect(result.vcmCatalogOutFile).toBe(join(root, 'out/vcm-models.json'))
-    expect(result.vcmCatalogElementCount).toBe(1)
-    const generated = JSON.parse(readFileSync(join(root, 'out/vcm-models.json'), 'utf8')) as {
-      props?: Array<{
-        name?: string
-        schema?: {
-          kind?: string
-          type?: string
-        }
+    expect(result.jsdocTodoLogOutFile).toBe(join(root, 'out/jsdoc-todo.json'))
+    const generated = JSON.parse(readFileSync(join(root, 'out/jsdoc-todo.json'), 'utf8')) as {
+      summary?: {
+        jsdocTodoCount?: number
+        schemaDescriptionTodoCount?: number
+      }
+      jsdocTodoLog?: Array<{
+        memberName?: string
+        reasons?: string[]
       }>
-      events?: unknown[]
-      slots?: unknown[]
-      exposed?: unknown[]
     }
-    expect(generated).toMatchObject({
-      props: expect.any(Array),
-      events: expect.any(Array),
-      slots: expect.any(Array),
-      exposed: expect.any(Array),
-    })
-    const rootProp = generated.props?.find(prop => prop.name === 'QueryRoot')
-    expect(rootProp).toMatchObject({
-      name: 'QueryRoot',
-      schema: {
-        kind: 'object',
-        type: 'QueryRoot',
-      },
-    })
-    expect(JSON.stringify(generated)).not.toContain('"required":[]')
+    expect(generated.summary?.jsdocTodoCount).toBeGreaterThan(0)
+    expect(generated.jsdocTodoLog?.some(entry =>
+      entry.memberName === 'configure'
+      && entry.reasons?.some(reason => reason.includes('missing @param')),
+    )).toBe(true)
   })
 
   it('can diagnose extracted metadata without writing generated files', () => {

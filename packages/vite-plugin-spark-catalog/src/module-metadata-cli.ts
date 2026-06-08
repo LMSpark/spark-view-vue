@@ -62,11 +62,11 @@ if (verifyBuildConsistency) {
   logger.info('✅ build consistency check passed: source reflection matches built type entry.')
 }
 if (diagnoseOnly) {
-  logger.info(`✅ 已完成元数据提取诊断；未写入 generated JSON。vcmOutput=${result.vcmCatalogOutFile}`)
+  logger.info(`✅ 已完成元数据提取诊断；未写入 generated JSON。runtimeOutput=${vcmTarget.outputs.runtime}`)
 } else {
-  logger.info(`✅ VCM catalog 已写入 ${result.vcmCatalogOutFile}`)
   logger.info(`✅ API runtime 已写入 ${vcmTarget.outputs.runtime}`)
   logger.info(`✅ API runtime entry 已写入 ${vcmTarget.outputs.runtime.replace(/\.generated\.json$/u, '.ts')}`)
+  logger.info(`✅ JSDoc todo log 已写入 ${vcmTarget.outputs.jsdocTodoLog}`)
   assertGeneratedModuleMetadataDraft2020(root, [
     vcmTarget.outputs.runtime,
   ])

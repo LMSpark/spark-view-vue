@@ -22,8 +22,8 @@
         }
       ],
       "outputs": {
-        "vcmCatalog": "src/services/page-design/page-design-module-metadata.generated.json",
         "runtime": "src/services/page-design/page-design-module-metadata.runtime.generated.json",
+        "jsdocTodoLog": "src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json",
         "componentCatalog": "src/services/page-design/payload/component-catalog.json"
       }
     }

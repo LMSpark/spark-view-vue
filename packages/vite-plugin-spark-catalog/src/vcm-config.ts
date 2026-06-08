@@ -19,8 +19,8 @@ export type VcmMetadataTargetSource = Readonly<{
 }>
 
 export type VcmMetadataTargetOutputs = Readonly<{
-  vcmCatalog: string
   runtime: string
+  jsdocTodoLog: string
   componentCatalog: string
 }>
 
@@ -75,8 +75,8 @@ export function createVcmTargetGeneratorOptions(
   return {
     sources: target.source.files,
     apiRoots: target.roots.map(root => root.className),
-    vcmCatalogOutFile: target.outputs.vcmCatalog,
     moduleRuntimeOutFile: target.outputs.runtime,
+    jsdocTodoLogOutFile: target.outputs.jsdocTodoLog,
     ...overrides,
   }
 }
@@ -160,8 +160,8 @@ function parseVcmMetadataRoot(value: unknown, path: string): VcmMetadataRoot {
 function parseVcmMetadataTargetOutputs(value: unknown, path: string): VcmMetadataTargetOutputs {
   const outputs = requireRecord(value, path)
   return {
-    vcmCatalog: requiredString(outputs, 'vcmCatalog', path),
     runtime: requiredString(outputs, 'runtime', path),
+    jsdocTodoLog: requiredString(outputs, 'jsdocTodoLog', path),
     componentCatalog: requiredString(outputs, 'componentCatalog', path),
   }
 }

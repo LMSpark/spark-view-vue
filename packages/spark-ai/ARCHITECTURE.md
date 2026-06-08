@@ -329,11 +329,11 @@ AI 默认只改 **内存** 四文件；DevSystem runner 需显式 `saveDirtyFile
 | 产物 | 生成命令 | 路径 | 消费者 |
 |------|----------|------|--------|
 | runtime metadata | `pnpm run generate:module-metadata` | `src/services/page-design/page-design-module-metadata.runtime.generated.json` | `VcmNativeAgentAdapter`、Worker `metadataUrl` |
-| VCM catalog | 同上 | `*.generated.json` | 生成器诊断 |
+| JSDoc todo log | 同上 | `src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json` | 人工补源码 JSDoc / schema description |
 | component catalog | `pnpm run generate:component-catalog` | `src/services/page-design/payload/component-catalog.json` | Worker lazy fetch；`vcm_action_guide({ componentType })` |
 | runtime TS 入口 | 生成 + 薄包装 | `page-design-module-metadata.runtime.ts` | APP import（类型断言） |
 
-Registry 配置：`config/ai/vcm.json`（`spark-appworks.vcm.registry`）。同一 target 同时声明 API metadata runtime/VCM catalog 输出和 `componentCatalog` 输出；数据仍双轨，生成路径同协议收口。
+Registry 配置：`config/ai/vcm.json`（`spark-appworks.vcm.registry`）。同一 target 声明运行时知识输出、JSDoc 待补日志输出和 `componentCatalog` 输出；数据仍双轨，生成路径同协议收口。
 
 **投影链：**
 
