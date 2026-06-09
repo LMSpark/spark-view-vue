@@ -22,7 +22,7 @@ describe('VCM registry config protocol', () => {
 
   it('reads capability-surface targets and maps them to generator options', () => {
     const root = createTempRoot()
-    writeJson(root, 'config/ai/vcm.json', {
+    writeJson(root, 'config/vcm/registry.json', {
       protocol: VCM_CONFIG_PROTOCOL,
       schemaVersion: 1,
       componentCatalogOutput: 'generated/vcm/component-catalog.json',
@@ -57,7 +57,7 @@ describe('VCM registry config protocol', () => {
 
   it('maps project-model surface separately from page surface', () => {
     const root = createTempRoot()
-    writeJson(root, 'config/ai/vcm.json', {
+    writeJson(root, 'config/vcm/registry.json', {
       protocol: VCM_CONFIG_PROTOCOL,
       schemaVersion: 1,
       metadataTargets: [
@@ -97,7 +97,7 @@ describe('VCM registry config protocol', () => {
 
   it('rejects non-protocol JSON early', () => {
     const root = createTempRoot()
-    writeJson(root, 'config/ai/vcm.json', {
+    writeJson(root, 'config/vcm/registry.json', {
       schemaVersion: 1,
       targets: [],
     })

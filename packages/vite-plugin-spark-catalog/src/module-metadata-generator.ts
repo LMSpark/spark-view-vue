@@ -2676,7 +2676,9 @@ function formatRuntimeMetadataTsModule(jsonFileName: string): string {
 function resolveRuntimeMetadataExportName(jsonFileName: string): string {
   const match = /^(.+?)-module-metadata\.runtime\.generated\.json$/u.exec(jsonFileName)
   if (match === null) return 'runtimeMetadataDocument'
-  return `${kebabSegmentToCamelCase(match[1])}RuntimeMetadataDocument`
+  const surfaceId = match[1]
+  if (surfaceId === undefined) return 'runtimeMetadataDocument'
+  return `${kebabSegmentToCamelCase(surfaceId)}RuntimeMetadataDocument`
 }
 
 function kebabSegmentToCamelCase(segment: string): string {

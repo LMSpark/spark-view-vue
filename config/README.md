@@ -12,7 +12,7 @@
 
 ## 当前配置
 
-- `ai/vcm.json`：AI VCM registry，声明构建期要生成的 native metadata target。
+- `vcm/registry.json`：VCM registry，声明构建期要生成的 native metadata target；不承载 AI business alias。
 - `navigation/vue-pages.json`：系统 Vue 页面声明，作为路由、公共路径、设计器页面选项的配置源。
 - `schemas/*.schema.json`：配置协议的 JSON Schema。
 

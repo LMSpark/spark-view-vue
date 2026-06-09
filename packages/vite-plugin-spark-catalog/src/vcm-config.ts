@@ -2,7 +2,7 @@ import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { ModuleAbilityMetadataGeneratorOptions } from './module-metadata-generator'
 
-export const VCM_CONFIG_FILE_NAME = 'config/ai/vcm.json'
+export const VCM_CONFIG_FILE_NAME = 'config/vcm/registry.json'
 export const VCM_CONFIG_PROTOCOL = 'spark-appworks.vcm.registry'
 export const VCM_CONFIG_SCHEMA_VERSION = 1
 export const VCM_METADATA_TARGET_KIND = 'native-metadata'

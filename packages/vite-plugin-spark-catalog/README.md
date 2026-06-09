@@ -12,7 +12,7 @@ pnpm run diagnose:module-metadata    # 仅诊断，不写文件
 ```
 
 CLI 入口：`src/module-metadata-cli.ts`
-默认读取根级 APP 配置协议文件：`config/ai/vcm.json`。
+默认读取根级 VCM 配置协议文件：`config/vcm/registry.json`。
 
 可选参数：
 
@@ -31,7 +31,7 @@ pnpm run generate:module-metadata -- --target project-page-surface
 
 ## VCM Registry 协议
 
-`config/ai/vcm.json` 使用协议头声明格式，target 声明由 APP 配置层拥有：
+`config/vcm/registry.json` 使用协议头声明格式，target 声明由 VCM 配置层拥有：
 
 ```json
 {

@@ -7,7 +7,7 @@
     {
       "id": "project-model",
       "kind": "native-metadata",
-      "description": "ProjectModel VCM surface (navigation / planning)",
+      "description": "ProjectModel native metadata surface",
       "source": {
         "files": [
           "packages/spark-project-model/src/project/project-model.ts"
@@ -27,7 +27,7 @@
     {
       "id": "project-page-surface",
       "kind": "native-metadata",
-      "description": "ProjectModel + ConfigPage + DataSet + NodeTree VCM surface",
+      "description": "ProjectModel plus page configuration native metadata surface",
       "source": {
         "files": [
           "packages/spark-project-model/src/project/project-model.ts",

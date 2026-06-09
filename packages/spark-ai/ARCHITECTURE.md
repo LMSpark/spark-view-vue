@@ -335,12 +335,9 @@ AI 默认只改 **内存** 四文件；DevSystem runner 需显式 `saveDirtyFile
 | component catalog | `pnpm run generate:component-catalog` | `generated/vcm/component-catalog.json` | pageDesign Worker lazy fetch |
 | runtime TS 入口 | 生成器写入 | `generated/vcm/<surface-id>/*.runtime.ts` | 业务层 import（类型断言） |
 
-Registry 配置：`config/ai/vcm.json`（`spark-appworks.vcm.registry`）。**VCM target 按能力面命名**（如 `project-model`、`project-page-surface`），与 `pageDesign` / `projectPlanning` 等业务 alias 解耦。`componentCatalogOutput` 在 registry 根级声明，不挂在 metadata target 上。
+Registry 配置：`config/vcm/registry.json`（`spark-appworks.vcm.registry`）。**VCM target 只按能力面命名**（如 `project-model`、`project-page-surface`），不声明 `pageDesign` / `projectPlanning` 等 AI business alias。`componentCatalogOutput` 在 registry 根级声明，不挂在 metadata target 上。
 
-| VCM 能力面 | 业务消费方 |
-|------------|------------|
-| `project-model` | `projectPlanning` |
-| `project-page-surface` | `pageDesign` |
+AI business 在各自 app-layer service 中选择要消费的 VCM artifact URL；这层映射不写回 VCM registry，避免构建期知识协议反向承载业务编排语义。
 
 **无 UI 运行（与 DevSystem 无关）：**
 

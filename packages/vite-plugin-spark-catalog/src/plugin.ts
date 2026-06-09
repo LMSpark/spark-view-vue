@@ -2,7 +2,7 @@
  * SPARK 组件目录生成 Vite 插件
  *
  * 组件 catalog 是 VCM-native props 知识轨。插件在 dev 时默认写入 tmp/component-catalog.json；
- * pageDesign 运行时 payload 由 CLI 按 config/ai/vcm.json 的 target.outputs.componentCatalog 生成。
+ * pageDesign 运行时 payload 由 CLI 按 config/vcm/registry.json 的 componentCatalogOutput 生成。
  *
  * configResolved 不扫描，避免每次 dev/build 重复开销。
  *

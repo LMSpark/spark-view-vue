@@ -6,7 +6,7 @@
 
 ```text
 TS 业务类 + @moduleKind JSDoc
-  -> APP 配置层 config/ai/vcm.json（VCM registry 协议）
+  -> VCM 配置层 config/vcm/registry.json（VCM registry 协议）
   -> packages/vite-plugin-spark-catalog/src/module-metadata-generator.ts
   -> page-design-module-metadata.runtime.generated.json
   -> readModuleMetadataRuntimeDocument()
@@ -28,14 +28,14 @@ TS 业务类 + @moduleKind JSDoc
 | public method | `actions[]` |
 | method params | `paramsSchema` |
 | return type | `resultSchema`、`resultApis` |
-| callback 首参 | 当前仍由 ClassModel 层识别为 `callback-param` child model |
+| callback 首参 | 当前由 ClassModel 层投影为 callback 参数签名 |
 | pooled schema | runtime document `$defs` |
 
 生成 JSON 是大文件，不手改；需要变更时改 generator 或源 JSDoc 后重新生成。
 
 ## VCM Registry 协议
 
-`config/ai/vcm.json` 是 APP 配置层的注册表，不属于 spark-ai 内核。它声明构建期要生成哪些 VCM native metadata target。
+`config/vcm/registry.json` 是 VCM 配置层的注册表，不属于 spark-ai 内核，也不承载 AI business alias。它声明构建期要生成哪些 VCM native metadata target。
 
 协议头：
 
@@ -57,9 +57,9 @@ target 结构：
 | `roots[].kind` | 可选；用于人工核对 class 的 `@moduleKind` |
 | `outputs.runtime` | VCM-native runtime metadata JSON |
 | `outputs.jsdocTodoLog` | 源码 JSDoc / schema description 待补日志 |
-| `outputs.componentCatalog` | 组件 props catalog JSON |
+| 根级 `componentCatalogOutput` | 组件 props catalog JSON |
 
-CLI 默认读取 `config/ai/vcm.json`，也可传 `--config <file>`。
+CLI 默认读取 `config/vcm/registry.json`，也可传 `--config <file>`。
 
 ## ClassModel 投影
 
@@ -77,7 +77,7 @@ Guide 输出是 d.ts-like 原生签名，不暴露 `resultApis`、`callbackApis`
 
 ## callbackApis 方向
 
-当前 `editNodeTree(run)`、`editDataSet(run)` 这类 callback 子模型已经在 ClassModel 里以 `callback-param` 边识别。后续 schemaVersion 迁移可以把它们从 result 语义中拆成显式 `callbackApis`。
+当前 `editNodeTree(run)`、`editDataSet(run)` 这类 callback 入口已经在 ClassModel 里投影为原生 callback 参数签名。后续 schemaVersion 迁移可以把它们从 result 语义中拆成显式 `callbackApis`。
 
 目标：
 
@@ -97,7 +97,7 @@ actions[].callbackApis // 仅 callback 参数子模型
 
 | 路径 | 职责 |
 |------|------|
-| `config/ai/vcm.json` | APP 配置层 VCM registry 协议文件 |
+| `config/vcm/registry.json` | VCM registry 协议文件 |
 | `config/schemas/vcm.schema.json` | VCM registry JSON Schema |
 | `packages/vite-plugin-spark-catalog/src/module-metadata-generator.ts` | TS / JSDoc -> runtime metadata |
 | `packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts` | 读取 VCM registry 并生成 metadata |

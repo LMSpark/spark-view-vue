@@ -3,7 +3,7 @@
  * 独立 Catalog 生成命令（不依赖 Vite 运行时）
  *
  * 调用 json-catalog-generator 生成单一 rich component-catalog.json。
- * 输出路径来自 config/ai/vcm.json 的 target.outputs.componentCatalog。
+ * 输出路径来自 config/vcm/registry.json 的 componentCatalogOutput。
  *
  * 用法：
  *   npx tsx packages/vite-plugin-spark-catalog/src/cli.ts

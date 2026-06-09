@@ -69,7 +69,7 @@ export type JsonCatalogOptions = {
   verbose?: boolean | undefined
   includeGlobalProps?: boolean | undefined
   vcmCheckerOptions?: VcmCheckerOptions | undefined
-  /** 输出路径；CLI 从 config/ai/vcm.json 的 target.outputs.componentCatalog 读取。 */
+  /** 输出路径；CLI 从 config/vcm/registry.json 的 componentCatalogOutput 读取。 */
   catalogOutFile?: string | undefined
   /** 质量审计选项（传入则自动运行审计） */
   audit?: AuditOptions | boolean | undefined}
@@ -77,7 +77,7 @@ export type JsonCatalogOptions = {
 /**
  * 计算标准目录输出路径。
  *
- * 未显式指定时写入 tmp/component-catalog.json；pageDesign 运行时 payload 由 VCM registry 指定。
+ * 未显式指定时写入 tmp/component-catalog.json；运行时 payload 由 VCM registry 指定。
  */
 export function getCanonicalCatalogOutputPath(root: string, catalogOutFile?: string): string {
   return resolve(root, catalogOutFile ?? `tmp/${CANONICAL_CATALOG_FILE}`)
