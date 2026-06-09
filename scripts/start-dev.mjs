@@ -148,7 +148,23 @@ async function findAvailablePort(startPort, maxAttempts = 20) {
   throw new Error(`未找到可用前端端口，起始端口=${startPort}`)
 }
 
+function assertDockerDaemonReady() {
+  const probe = spawnSync('docker', ['info'], {
+    cwd: ROOT_DIR,
+    encoding: 'utf8',
+    shell: process.platform === 'win32',
+  })
+  if (probe.status === 0) return
+  const detail = String(probe.stderr ?? probe.stdout ?? '').trim()
+  console.error('❌ Docker 守护进程未运行。请先启动 Docker Desktop，再执行 `pnpm run dev`。')
+  if (detail.length > 0) {
+    console.error(`   ${detail.split(/\r?\n/u)[0]}`)
+  }
+  process.exit(1)
+}
+
 function ensureMysqlService() {
+  assertDockerDaemonReady()
   console.log('\n🐬 确保 Docker MySQL 已启动: 127.0.0.1:3406/spark_ai')
   const result = spawnSync('docker', ['compose', '-f', COMPOSE_FILE, 'up', '-d', 'mysql'], {
     cwd: ROOT_DIR,
