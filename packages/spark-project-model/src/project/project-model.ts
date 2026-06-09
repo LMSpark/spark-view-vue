@@ -181,6 +181,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * 读取单个导航节点策划输入。
    *
    * @moduleMutation planning read 只读节点策划输入，不修改模型。
+   * @param nodeId 目标导航节点 id。
    */
   readNavigationNodePlanningInput(nodeId: string): NavigationPlanningInput {
     const model = this.findNodeById(nodeId)
