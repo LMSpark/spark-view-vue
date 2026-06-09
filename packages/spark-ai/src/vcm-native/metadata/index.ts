@@ -6,7 +6,6 @@ export type {
   AiApiAttributeMetadata,
   AiApiConstructorMetadata,
   AiApiJsDocMetadata,
-  AiApiJsDocTagMetadata,
   AiApiObjectMetadata,
   AiApiResultApiRef,
   AiApiSourceProvenanceMetadata,

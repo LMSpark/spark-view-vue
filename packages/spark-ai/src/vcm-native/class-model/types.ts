@@ -1,5 +1,4 @@
 import type { AiJsonSchema, AiJsonSchemaObject } from '../../json'
-import type { AiApiActionFailureMode } from '../metadata'
 
 /** ClassModel 投影版本；它独立于旧 runtime metadata 的 schemaVersion。 */
 export const CLASS_MODEL_DOCUMENT_VERSION = 1 as const
@@ -39,8 +38,6 @@ export type SourceProvenanceMeta = Readonly<{
 export type ClassModel = Readonly<{
   kind: string
   className: string
-  name: string
-  declaration: string
   jsdoc: JsDocMeta
   provenance?: SourceProvenanceMeta
   constructor?: ConstructorMeta
@@ -48,21 +45,9 @@ export type ClassModel = Readonly<{
   methods: readonly MethodMeta[]
 }>
 
-export type JsDocMeta = Readonly<{
-  raw?: string
-  summary: string
-  tags: readonly JsDocTagMeta[]
-}>
-
-export type JsDocTagMeta = Readonly<{
-  name: string
-  text: string
-  paramName?: string
-}>
+export type JsDocMeta = string
 
 export type ConstructorMeta = Readonly<{
-  signature: string
-  declaration: string
   paramsSchema: AiJsonSchemaObject
   jsdoc: JsDocMeta
   provenance?: SourceProvenanceMeta
@@ -70,57 +55,24 @@ export type ConstructorMeta = Readonly<{
 
 export type AttributeMeta = Readonly<{
   name: string
-  declaration: string
-  typeText: string
   schema: AiJsonSchema
   readable: boolean
   writable: boolean
   jsdoc: JsDocMeta
+  /** 嵌套 VCM class kind；签名在投影层由 kind 解析为 className。 */
+  valueKind?: string
   provenance?: SourceProvenanceMeta
-  childModels: readonly ChildModelLink[]
 }>
 
 export type MethodMeta = Readonly<{
   name: string
-  methodName: string
-  signature: string
-  declaration: string
   paramsSchema: AiJsonSchemaObject
-  returnTypeText: string
   returnSchema?: AiJsonSchema
   takesContext?: boolean
   jsdoc: JsDocMeta
+  /** 直接返回的 VCM class kind；void/primitive 时省略。 */
+  returnsKind?: string
+  /** run(callback) 受控编辑时 callback 首参对应的 VCM class kind。 */
+  callbackTargetKind?: string
   provenance?: SourceProvenanceMeta
-  /**
-   * methods 是 class 方法，不等于 OpenAI function tool。
-   * childModels 描述“调用/读取之后还能进入哪些 class model”。
-   */
-  childModels: readonly ChildModelLink[]
-  requiredBeforeCall: readonly string[]
-  usageRules: readonly string[]
-  failureModes: readonly AiApiActionFailureMode[]
 }>
-
-/**
- * callback-param 表示模型经回调参数进入，例如 editNodeTree(run)
- * 调用 run(tree) 时交给调用方的 tree。它不是方法返回值。
- */
-export type ChildModelLink =
-  | Readonly<{
-      source: 'attribute'
-      targetKind: string
-      path?: readonly string[]
-    }>
-  | Readonly<{
-      source: 'return'
-      targetKind: string
-      path: readonly string[]
-    }>
-  | Readonly<{
-      source: 'callback-param'
-      targetKind: string
-      methodParamName: string
-      methodParamIndex: number
-      callbackParamName: string
-      callbackParamIndex: number
-    }>

@@ -1,12 +1,10 @@
 export type {
   AttributeMeta,
-  ChildModelLink,
   ClassModel,
   ClassModelDiagnostic,
   ClassModelDocument,
   ConstructorMeta,
   JsDocMeta,
-  JsDocTagMeta,
   MethodMeta,
   SourceProvenanceMeta,
 } from './class-model'
@@ -29,7 +27,6 @@ export type {
   AiApiAttributeMetadata,
   AiApiConstructorMetadata,
   AiApiJsDocMetadata,
-  AiApiJsDocTagMetadata,
   AiApiObjectMetadata,
   AiApiResultApiRef,
   AiApiSourceProvenanceMetadata,
@@ -47,6 +44,7 @@ export {
   createClassModelDocumentFromModuleMetadata,
   createClassModelDocumentFromRuntimeDocument,
   jsonSchemaToTypeText,
+  renderMethodSignature,
 } from './class-model'
 
 export type {

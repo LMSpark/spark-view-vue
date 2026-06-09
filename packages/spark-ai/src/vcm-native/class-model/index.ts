@@ -4,13 +4,11 @@ export {
 
 export type {
   AttributeMeta,
-  ChildModelLink,
   ClassModel,
   ClassModelDiagnostic,
   ClassModelDocument,
   ConstructorMeta,
   JsDocMeta,
-  JsDocTagMeta,
   MethodMeta,
   SourceProvenanceMeta,
 } from './types'
@@ -31,3 +29,14 @@ export type {
 export {
   jsonSchemaToTypeText,
 } from './json-schema-to-type'
+
+export {
+  classNameForKind,
+  renderAttributeDeclarationLine,
+  renderAttributeTypeText,
+  renderConstructorSignature,
+  renderMethodDeclarationLine,
+  renderMethodParamsText,
+  renderMethodReturnTypeText,
+  renderMethodSignature,
+} from './signature-renderer'

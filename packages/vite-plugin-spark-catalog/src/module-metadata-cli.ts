@@ -102,7 +102,7 @@ logger.info([
   `attributes=${String(result.runtimeAudit.knowledgeReadiness.coverage.typedAttributeCount)}/${String(result.runtimeAudit.knowledgeReadiness.coverage.attributeCount)}`,
   `methodParams=${String(result.runtimeAudit.knowledgeReadiness.coverage.typedMethodParamCount)}/${String(result.runtimeAudit.knowledgeReadiness.coverage.methodCount)}`,
   `methodReturns=${String(result.runtimeAudit.knowledgeReadiness.coverage.methodReturnKnowledgeCount)}/${String(result.runtimeAudit.knowledgeReadiness.coverage.methodCount)}`,
-  `childModelMethods=${String(result.runtimeAudit.knowledgeReadiness.coverage.childModelMethodCount)}`,
+  `resultApiMethods=${String(result.runtimeAudit.knowledgeReadiness.coverage.resultApiMethodCount)}`,
   `schemaDescriptions=${String(result.runtimeAudit.knowledgeReadiness.coverage.schemaPropertyDescriptionCount)}/${String(result.runtimeAudit.knowledgeReadiness.coverage.schemaPropertyCount)}`,
 ].join(' '))
 for (const example of result.runtimeAudit.knowledgeReadiness.smokeExamples) {

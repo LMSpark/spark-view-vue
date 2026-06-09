@@ -7,6 +7,7 @@ import {
   createClassModelDocumentFromRuntimeDocument,
   renderAttributeGuide,
   renderMethodGuide,
+  renderMethodSignature,
   renderModelGuide,
   VCM_NATIVE_TOOL_NAMES,
   VcmNativeRuntime,
@@ -36,24 +37,16 @@ describe('vcm-native ClassModel projection', () => {
 
     for (const model of Object.values(classModel.models)) {
       for (const attribute of model.attributes) {
-        expect(attribute.jsdoc.summary, `${model.kind}.${attribute.name}`).not.toHaveLength(0)
+        expect(attribute.jsdoc.trim(), `${model.kind}.${attribute.name}`).not.toHaveLength(0)
       }
       for (const method of model.methods) {
-        expect(method.jsdoc.summary, `${model.kind}.${method.name}`).not.toHaveLength(0)
+        expect(method.jsdoc.trim(), `${model.kind}.${method.name}`).not.toHaveLength(0)
       }
     }
-    expect(classModel.models['data-table']?.constructor?.jsdoc).toMatchObject({
-      summary: '创建 DataTable 实例，并自动创建 `default` DataView。',
-    })
-    expect(classModel.models['data-table']?.constructor?.jsdoc.tags).toEqual(
-      expect.arrayContaining([{ name: 'param', paramName: 'tableName', text: expect.any(String) }]),
-    )
-    expect(classModel.models['data-view']?.constructor?.jsdoc).toMatchObject({
-      summary: '创建数据视图实例。',
-    })
-    expect(classModel.models['data-view']?.constructor?.jsdoc.tags).toEqual(
-      expect.arrayContaining([{ name: 'param', paramName: 'viewId', text: expect.any(String) }]),
-    )
+    expect(classModel.models['data-table']?.constructor?.jsdoc).toContain('创建 DataTable 实例，并自动创建 `default` DataView。')
+    expect(classModel.models['data-table']?.constructor?.jsdoc).toContain('@param tableName')
+    expect(classModel.models['data-view']?.constructor?.jsdoc).toContain('创建数据视图实例。')
+    expect(classModel.models['data-view']?.constructor?.jsdoc).toContain('@param viewId')
   })
 
   it('compares source and build-entry ClassModel documents for cross-build consistency', () => {
@@ -70,10 +63,7 @@ describe('vcm-native ClassModel projection', () => {
         ...sameDocument.models,
         project: {
           ...project,
-          jsdoc: {
-            ...project.jsdoc,
-            summary: 'stale d.ts summary',
-          },
+          jsdoc: '/** stale d.ts summary */',
         },
       },
     }
@@ -81,44 +71,25 @@ describe('vcm-native ClassModel projection', () => {
     expect(compareClassModelDocumentsForBuildConsistency(sourceDocument, staleBuildEntryDocument)).toEqual([
       {
         code: 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH',
-        path: 'project.jsdoc.summary',
+        path: 'project.jsdoc',
         message: expect.stringContaining('stale d.ts summary'),
       },
     ])
   })
 
-  it('normalizes return and callback child model edges', () => {
+  it('derives return and callback signatures without legacy edge protocol fields', () => {
     const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
 
-    expect(findMethod(classModel, 'project', 'openPageDesign')?.childModels).toEqual([
-      { source: 'return', targetKind: 'config-page', path: [] },
-    ])
-    expect(findMethod(classModel, 'config-page', 'getNodeTree')?.childModels).toEqual([
-      { source: 'return', targetKind: 'node-tree', path: [] },
-    ])
-    expect(findMethod(classModel, 'config-page', 'getDataSetTool')?.childModels).toEqual([
-      { source: 'return', targetKind: 'dataset', path: [] },
-    ])
-    expect(findMethod(classModel, 'config-page', 'editNodeTree')?.childModels).toEqual([
-      {
-        source: 'callback-param',
-        targetKind: 'node-tree',
-        methodParamName: 'run',
-        methodParamIndex: 0,
-        callbackParamName: 'tree',
-        callbackParamIndex: 0,
-      },
-    ])
-    expect(findMethod(classModel, 'config-page', 'editDataSet')?.childModels).toEqual([
-      {
-        source: 'callback-param',
-        targetKind: 'dataset',
-        methodParamName: 'run',
-        methodParamIndex: 0,
-        callbackParamName: 'tool',
-        callbackParamIndex: 0,
-      },
-    ])
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'project', 'openPageDesign')!)).toBe('openPageDesign(pageId: string): ConfigPageNode')
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'getNodeTree')!)).toBe('getNodeTree(): SparkNodeTree')
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'getDataSetTool')!)).toBe('getDataSetTool(): DataSetCrudTool')
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'editNodeTree')!)).toBe(
+      'editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void>',
+    )
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'editDataSet')!)).toBe(
+      'editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void>',
+    )
+    expect(JSON.stringify(classModel)).not.toContain(['child', 'Models'].join(''))
   })
 
   it('renders method guides as d.ts-like declarations with JSDoc, not protocol fields', () => {
@@ -199,11 +170,7 @@ describe('vcm-native ClassModel projection', () => {
         ...classModel.models,
         project: {
           ...project,
-          jsdoc: {
-            raw: '/** 原生 JSDoc：项目模型根。 */',
-            summary: 'summary should not replace raw',
-            tags: [],
-          },
+          jsdoc: '/** 原生 JSDoc：项目模型根。 */',
         },
       },
     }
@@ -495,11 +462,13 @@ describe('vcm-native ClassModel projection', () => {
             kind: 'project',
             className: 'ProjectModel',
             name: 'ProjectModel',
-            jsdoc: { summary: 'Project', tags: [] },
+            description: 'Project',
+            jsdoc: '/** Project */',
             actions: [],
             attributes: [{
               name: 'broken',
-              jsdoc: { summary: 'Broken', tags: [] },
+              description: 'Broken',
+              jsdoc: '/** Broken */',
               schema: { $ref: '#/$defs/MissingType' },
               readable: true,
               writable: false,

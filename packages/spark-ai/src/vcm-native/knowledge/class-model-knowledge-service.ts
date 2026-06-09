@@ -1,6 +1,10 @@
 import type { AiJsonValue } from '../../json'
 import type { ClassModelDocument } from '../class-model'
 import {
+  renderAttributeTypeText,
+  renderMethodSignature,
+} from '../class-model/signature-renderer'
+import {
   renderAttributeGuide,
   renderMethodGuide,
   renderModelGuide,
@@ -65,20 +69,18 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
       .map(model => ({
         kind: model.kind,
         className: model.className,
-        name: model.name,
-        summary: model.jsdoc.summary,
-        childModels: uniqueStrings(model.methods.flatMap(method => method.childModels.map(child => child.targetKind))),
+        summary: summarizeJsDoc(model.jsdoc),
         ...(input.includeMembers
           ? {
               attributes: model.attributes.map(attribute => ({
                 name: attribute.name,
-                summary: attribute.jsdoc.summary,
-                typeText: attribute.typeText,
+                summary: summarizeJsDoc(attribute.jsdoc),
+                typeText: renderAttributeTypeText(this.document, attribute),
               })),
               methods: model.methods.map(method => ({
                 name: method.name,
-                summary: method.jsdoc.summary,
-                signature: method.signature,
+                summary: summarizeJsDoc(method.jsdoc),
+                signature: renderMethodSignature(this.document, method),
               })),
             }
           : {}),
@@ -123,14 +125,19 @@ function modelMatchesKeyword(
   const haystacks = [
     model.kind,
     model.className,
-    model.name,
-    model.jsdoc.summary,
-    ...model.attributes.flatMap(attribute => [attribute.name, attribute.jsdoc.summary]),
-    ...model.methods.flatMap(method => [method.name, method.jsdoc.summary]),
+    summarizeJsDoc(model.jsdoc),
+    ...model.attributes.flatMap(attribute => [attribute.name, summarizeJsDoc(attribute.jsdoc)]),
+    ...model.methods.flatMap(method => [method.name, summarizeJsDoc(method.jsdoc)]),
   ]
   return haystacks.some(value => value.toLowerCase().includes(keyword))
 }
 
-function uniqueStrings(values: readonly string[]): string[] {
-  return [...new Set(values)].sort()
+function summarizeJsDoc(jsdoc: string): string {
+  const lines = jsdoc
+    .replace(/^\/\*\*/u, '')
+    .replace(/\*\/$/u, '')
+    .split(/\r?\n/u)
+    .map(line => line.replace(/^\s*\*\s?/u, '').trim())
+    .filter(line => line.length > 0 && !line.startsWith('@'))
+  return lines[0] ?? ''
 }

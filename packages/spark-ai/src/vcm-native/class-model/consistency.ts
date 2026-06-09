@@ -1,4 +1,9 @@
 import type { ClassModel, ClassModelDocument } from './types'
+import {
+  renderAttributeDeclarationLine,
+  renderConstructorSignature,
+  renderMethodSignature,
+} from './signature-renderer'
 
 export type ClassModelBuildConsistencyIssue = Readonly<{
   code: string
@@ -7,9 +12,9 @@ export type ClassModelBuildConsistencyIssue = Readonly<{
 }>
 
 /**
- * 跨构建对账只比较 ClassModel 稳定关键字段。
+ * 跨构建对账比较 ClassModel 稳定语义字段与投影签名。
  *
- * 源码反射是语义 SSOT；构建产物入口只用于确认 d.ts 没有滞后或丢声明。
+ * 源码反射是语义 SSOT；declaration/signature 在投影层即时渲染后再对账。
  */
 export function compareClassModelDocumentsForBuildConsistency(
   sourceDocument: ClassModelDocument,
@@ -26,7 +31,7 @@ export function compareClassModelDocumentsForBuildConsistency(
     const sourceModel = sourceDocument.models[kind]
     const buildModel = buildEntryDocument.models[kind]
     if (sourceModel === undefined || buildModel === undefined) continue
-    compareModel(issues, kind, sourceModel, buildModel)
+    compareModel(issues, kind, sourceDocument, buildEntryDocument, sourceModel, buildModel)
   }
   return issues
 }
@@ -34,18 +39,28 @@ export function compareClassModelDocumentsForBuildConsistency(
 function compareModel(
   issues: ClassModelBuildConsistencyIssue[],
   kind: string,
+  sourceDocument: ClassModelDocument,
+  buildEntryDocument: ClassModelDocument,
   sourceModel: ClassModel,
   buildModel: ClassModel,
 ): void {
   compareValue(issues, `${kind}.className`, sourceModel.className, buildModel.className)
-  compareValue(issues, `${kind}.name`, sourceModel.name, buildModel.name)
-  compareValue(issues, `${kind}.jsdoc.summary`, sourceModel.jsdoc.summary, buildModel.jsdoc.summary)
-  compareValue(issues, `${kind}.constructor.signature`, sourceModel.constructor?.signature, buildModel.constructor?.signature)
+  compareValue(issues, `${kind}.jsdoc`, sourceModel.jsdoc, buildModel.jsdoc)
   compareValue(
     issues,
-    `${kind}.constructor.jsdoc.summary`,
-    sourceModel.constructor?.jsdoc.summary,
-    buildModel.constructor?.jsdoc.summary,
+    `${kind}.constructor.signature`,
+    sourceModel.constructor === undefined
+      ? undefined
+      : renderConstructorSignature(sourceModel.constructor),
+    buildModel.constructor === undefined
+      ? undefined
+      : renderConstructorSignature(buildModel.constructor),
+  )
+  compareValue(
+    issues,
+    `${kind}.constructor.jsdoc`,
+    sourceModel.constructor?.jsdoc,
+    buildModel.constructor?.jsdoc,
   )
 
   compareValue(
@@ -60,14 +75,14 @@ function compareModel(
     compareValue(
       issues,
       `${kind}.attributes.${sourceAttribute.name}.declaration`,
-      sourceAttribute.declaration,
-      buildAttribute.declaration,
+      renderAttributeDeclarationLine(sourceDocument, sourceAttribute),
+      renderAttributeDeclarationLine(buildEntryDocument, buildAttribute),
     )
     compareValue(
       issues,
-      `${kind}.attributes.${sourceAttribute.name}.jsdoc.summary`,
-      sourceAttribute.jsdoc.summary,
-      buildAttribute.jsdoc.summary,
+      `${kind}.attributes.${sourceAttribute.name}.jsdoc`,
+      sourceAttribute.jsdoc,
+      buildAttribute.jsdoc,
     )
   }
 
@@ -83,14 +98,14 @@ function compareModel(
     compareValue(
       issues,
       `${kind}.methods.${sourceMethod.name}.signature`,
-      sourceMethod.signature,
-      buildMethod.signature,
+      renderMethodSignature(sourceDocument, sourceMethod),
+      renderMethodSignature(buildEntryDocument, buildMethod),
     )
     compareValue(
       issues,
-      `${kind}.methods.${sourceMethod.name}.jsdoc.summary`,
-      sourceMethod.jsdoc.summary,
-      buildMethod.jsdoc.summary,
+      `${kind}.methods.${sourceMethod.name}.jsdoc`,
+      sourceMethod.jsdoc,
+      buildMethod.jsdoc,
     )
   }
 }

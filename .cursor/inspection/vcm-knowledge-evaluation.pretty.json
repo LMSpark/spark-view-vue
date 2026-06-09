@@ -1,0 +1,163 @@
+{
+  "generatedAt": "2026-06-09T01:09:30.537Z",
+  "sources": {
+    "runtime": "src/services/page-design/page-design-module-metadata.runtime.generated.json",
+    "jsdocTodo": "src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json"
+  },
+  "runtimeEnvelope": {
+    "schemaVersion": 2,
+    "defsCount": 126,
+    "apiRegistryKinds": [
+      "config-page",
+      "data-table",
+      "data-view",
+      "dataset",
+      "node-tree"
+    ],
+    "rootKind": "project"
+  },
+  "classModelEnvelope": {
+    "schemaVersion": 1,
+    "rootKind": "project",
+    "modelKinds": [
+      "config-page",
+      "data-table",
+      "data-view",
+      "dataset",
+      "node-tree",
+      "project"
+    ],
+    "diagnostics": [],
+    "jsdocShape": "string"
+  },
+  "jsdocTodo": {
+    "jsdocTodoCount": 0,
+    "schemaDescriptionTodoCount": 0
+  },
+  "coverage": {
+    "attributeCount": 90,
+    "methodCount": 154,
+    "methodCounts": {
+      "config-page": 6,
+      "data-table": 15,
+      "data-view": 51,
+      "dataset": 51,
+      "node-tree": 27,
+      "project": 4
+    },
+    "attributeCounts": {
+      "config-page": 26,
+      "data-table": 12,
+      "data-view": 43,
+      "dataset": 2,
+      "node-tree": 5,
+      "project": 2
+    }
+  },
+  "resultApiGraph": {
+    "uniqueEdgeCount": 20,
+    "rawEdgeCount": 83,
+    "uniqueEdges": [
+      {
+        "from": "config-page.editDataSet",
+        "to": "dataset",
+        "className": "DataSetCrudTool"
+      },
+      {
+        "from": "config-page.editNodeTree",
+        "to": "node-tree",
+        "className": "SparkNodeTree"
+      },
+      {
+        "from": "config-page.getDataSetTool",
+        "to": "dataset",
+        "className": "DataSetCrudTool"
+      },
+      {
+        "from": "config-page.getNodeTree",
+        "to": "node-tree",
+        "className": "SparkNodeTree"
+      },
+      {
+        "from": "data-table.addView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "data-table.getOrCreateView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "data-table.getView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "dataset.clearComputeExpression",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.createColumn",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.createTable",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.createView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "dataset.getTable",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.getView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "dataset.renameColumn",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.renameTable",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.setComputeExpression",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.updateColumn",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.updateTable",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.updateView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "project.openPageDesign",
+        "to": "config-page",
+        "className": "ConfigPageNode"
+      }
+    ]
+  }
+}

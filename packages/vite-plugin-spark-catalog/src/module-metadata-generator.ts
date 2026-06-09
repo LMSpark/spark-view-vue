@@ -73,15 +73,7 @@ type ModuleFailureModeMetadata = {
   when: string
   fix: string}
 
-type JsDocMeta = {
-  raw?: string
-  summary: string
-  tags: readonly JsDocTagMeta[]}
-
-type JsDocTagMeta = {
-  name: string
-  text: string
-  paramName?: string}
+type JsDocMeta = string
 
 type ModuleActionMetadata = {
   name: string
@@ -476,12 +468,12 @@ function compareApiMetadata(
 ): void {
   compareBuildValue(issues, `${kind}.className`, sourceApi.className, buildEntryApi.className)
   compareBuildValue(issues, `${kind}.name`, sourceApi.name, buildEntryApi.name)
-  compareBuildValue(issues, `${kind}.jsdoc.summary`, sourceApi.jsdoc?.summary, buildEntryApi.jsdoc?.summary)
+  compareBuildValue(issues, `${kind}.jsdoc`, sourceApi.jsdoc, buildEntryApi.jsdoc)
   compareBuildValue(
     issues,
-    `${kind}.constructor.jsdoc.summary`,
-    sourceApi.constructorSignature?.jsdoc?.summary,
-    buildEntryApi.constructorSignature?.jsdoc?.summary,
+    `${kind}.constructor.jsdoc`,
+    sourceApi.constructorSignature?.jsdoc,
+    buildEntryApi.constructorSignature?.jsdoc,
   )
   compareBuildValue(
     issues,
@@ -650,7 +642,7 @@ function createApiObjectMetadata(
   if (explicitKind === undefined && summary === undefined) return undefined
   const kind = explicitKind ?? kebabCase(className)
   const description = firstTagText(tags, 'moduleDescription') ?? summary ?? kind
-  const jsdoc = createJsDocMeta(node, tags, description)
+  const jsdoc = createJsDocMeta(node)
   trace.log(`class ${className} -> kind=${kind}`)
   const api: MutableAiApiObjectMetadata = {
     className,
@@ -689,7 +681,7 @@ function createApiConstructorMetadata(
   if (constructorNode === undefined) return undefined
   const tags = readDocTags(constructorNode, constructorNode.getSourceFile())
   const description = readSummary(constructorNode) ?? `Create ${node.name?.text ?? 'module'} instance.`
-  const jsdoc = createJsDocMeta(constructorNode, tags, description)
+  const jsdoc = createJsDocMeta(constructorNode)
   const className = node.name?.text ?? '(anonymous)'
   return {
     description,
@@ -778,7 +770,7 @@ function createApiAttributeMetadataFromMember(
     rootPath: ['attributes', name, 'schema'],
   }))
   const api = createApiObjectFromType(checker, checker.getTypeAtLocation(member), visited, trace, state)
-  const jsdoc = createJsDocMeta(member, tags, description)
+  const jsdoc = createJsDocMeta(member)
   return {
     name,
     description,
@@ -857,7 +849,7 @@ function createApiActionMetadata(
   const failureModes = parseFailureModeTags(tags)
   const requiredBeforeCall = tagTexts(tags, 'requiredBeforeCall')
   const description = readSummary(node) ?? actionName
-  const jsdoc = createJsDocMeta(node, tags, description)
+  const jsdoc = createJsDocMeta(node)
   return {
     name: actionName,
     methodName: propertyNameText(node.name, sourceFile),
@@ -1495,22 +1487,8 @@ function readSummary(node: ts.Node): string | undefined {
   return rawSummary.length > 0 ? rawSummary : undefined
 }
 
-function createJsDocMeta(
-  node: ts.Node,
-  tags: readonly ModuleDocTag[],
-  summary: string,
-): JsDocMeta | undefined {
-  const raw = readRawJsDoc(node)
-  if (raw === undefined && summary.length === 0 && tags.length === 0) return undefined
-  return {
-    ...(raw === undefined ? {} : { raw }),
-    summary,
-    tags: tags.map(tag => ({
-      name: tag.name,
-      text: tag.text,
-      ...(tag.paramName === undefined ? {} : { paramName: tag.paramName }),
-    })),
-  }
+function createJsDocMeta(node: ts.Node): JsDocMeta | undefined {
+  return readRawJsDoc(node)
 }
 
 function readRawJsDoc(node: ts.Node): string | undefined {
@@ -2033,8 +2011,9 @@ function pushJsDocTodoLogEntry(
   expectedParams: readonly string[],
 ): void {
   if (provenance === undefined) return
-  const documentedParams = collectDocumentedParamNames(jsdoc)
-  const reasons = createJsDocTodoReasons(jsdoc, expectedParams, documentedParams)
+  const documentedParamDocs = collectDocumentedParamDocs(jsdoc)
+  const documentedParams = documentedParamDocs.map(param => param.name)
+  const reasons = createJsDocTodoReasons(jsdoc, expectedParams, documentedParamDocs)
   if (reasons.length === 0) return
   entries.push({
     kind,
@@ -2053,21 +2032,21 @@ function pushJsDocTodoLogEntry(
 function createJsDocTodoReasons(
   jsdoc: JsDocMeta | undefined,
   expectedParams: readonly string[],
-  documentedParams: readonly string[],
+  documentedParams: readonly JsDocParamDoc[],
 ): readonly string[] {
   const reasons: string[] = []
   if (jsdoc === undefined) {
     reasons.push('missing JSDoc')
-  } else if (jsdoc.summary.trim().length === 0) {
+  } else if (parseRawJsDocSummary(jsdoc).length === 0) {
     reasons.push('missing JSDoc summary')
   }
-  const documented = new Set(documentedParams)
+  const documented = new Set(documentedParams.map(param => param.name))
   const missingParams = expectedParams.filter(param => !documented.has(param))
   if (missingParams.length > 0) {
     reasons.push(`missing @param: ${missingParams.join(', ')}`)
   }
   const emptyParamDescriptions = expectedParams.filter((param) => {
-    return jsdoc?.tags.find(item => item.name === 'param' && item.paramName === param)?.text.trim().length === 0
+    return documentedParams.find(item => item.name === param)?.text.trim().length === 0
   })
   if (emptyParamDescriptions.length > 0) {
     reasons.push(`empty @param description: ${emptyParamDescriptions.join(', ')}`)
@@ -2075,12 +2054,43 @@ function createJsDocTodoReasons(
   return reasons
 }
 
-function collectDocumentedParamNames(jsdoc: JsDocMeta | undefined): readonly string[] {
+type JsDocParamDoc = Readonly<{
+  name: string
+  text: string
+}>
+
+function collectDocumentedParamDocs(jsdoc: JsDocMeta | undefined): readonly JsDocParamDoc[] {
   if (jsdoc === undefined) return []
-  return jsdoc.tags
-    .filter(tag => tag.name === 'param')
-    .map(tag => tag.paramName)
-    .filter(isNotUndefined)
+  const params: JsDocParamDoc[] = []
+  let current: { name: string; text: string[] } | undefined
+  const flush = () => {
+    if (current === undefined) return
+    params.push({ name: current.name, text: current.text.join('\n').trim() })
+    current = undefined
+  }
+
+  for (const line of normalizeRawJsDocLines(jsdoc)) {
+    const trimmed = line.trim()
+    if (!trimmed.startsWith('@')) {
+      if (current !== undefined && trimmed.length > 0) current.text.push(trimmed)
+      continue
+    }
+
+    flush()
+    const match = /^@param(?:\s+([\s\S]*))?$/u.exec(trimmed)
+    if (match === null) continue
+    const tagBody = match[1]?.trim() ?? ''
+    const paramMatch = /^(\S+)\s*(?:-\s*)?([\s\S]*)$/u.exec(tagBody)
+    const paramName = paramMatch?.[1]
+    if (paramName === undefined) continue
+    current = {
+      name: paramName,
+      text: [paramMatch?.[2]?.trim() ?? ''].filter(text => text.length > 0),
+    }
+  }
+
+  flush()
+  return params
 }
 
 function collectSchemaPropertyNames(schema: GeneratedJsonSchema): readonly string[] {
@@ -2231,35 +2241,19 @@ function createRuntimeSchemaRefAudit(document: ReturnType<typeof createRuntimeGe
 function createRuntimeRedundancyAudit(document: unknown) {
   const stats = {
     jsdocNodes: 0,
-    jsdocRawCount: 0,
-    jsdocRawBytes: 0,
-    jsdocTagCount: 0,
-    jsdocTagBytes: 0,
+    jsdocBytes: 0,
     descriptionCount: 0,
     descriptionBytes: 0,
-    descriptionEqualsJsdocSummary: 0,
     methodNameEqualsName: 0,
     provenanceNodes: 0,
     provenanceFileRepeats: new Map<string, number>(),
   }
 
   visitRuntimeAuditNode(document, (node) => {
-    const jsdoc = readRecord(node['jsdoc'])
-    if (Object.keys(jsdoc).length > 0) {
+    const jsdoc = readString(node['jsdoc'])
+    if (jsdoc !== undefined) {
       stats.jsdocNodes += 1
-      const raw = jsdoc['raw']
-      if (typeof raw === 'string') {
-        stats.jsdocRawCount += 1
-        stats.jsdocRawBytes += Buffer.byteLength(JSON.stringify(raw), 'utf8')
-      }
-      const tags = jsdoc['tags']
-      if (Array.isArray(tags)) {
-        stats.jsdocTagCount += tags.length
-        stats.jsdocTagBytes += Buffer.byteLength(JSON.stringify(tags), 'utf8')
-      }
-      if (typeof node['description'] === 'string' && node['description'] === jsdoc['summary']) {
-        stats.descriptionEqualsJsdocSummary += 1
-      }
+      stats.jsdocBytes += Buffer.byteLength(JSON.stringify(jsdoc), 'utf8')
     }
 
     if (typeof node['description'] === 'string') {
@@ -2282,13 +2276,9 @@ function createRuntimeRedundancyAudit(document: unknown) {
 
   return {
     jsdocNodes: stats.jsdocNodes,
-    jsdocRawCount: stats.jsdocRawCount,
-    jsdocRawBytes: stats.jsdocRawBytes,
-    jsdocTagCount: stats.jsdocTagCount,
-    jsdocTagBytes: stats.jsdocTagBytes,
+    jsdocBytes: stats.jsdocBytes,
     descriptionCount: stats.descriptionCount,
     descriptionBytes: stats.descriptionBytes,
-    descriptionEqualsJsdocSummary: stats.descriptionEqualsJsdocSummary,
     methodNameEqualsName: stats.methodNameEqualsName,
     provenanceNodes: stats.provenanceNodes,
     provenanceFiles: [...stats.provenanceFileRepeats.entries()]
@@ -2303,7 +2293,7 @@ function createRuntimeKnowledgeReadinessAudit(
   const apis = collectRuntimeAuditApis(document)
   const attributes = apis.flatMap(api => readArray(api['attributes']))
   const methods = apis.flatMap(api => readArray(api['actions']))
-  const methodsWithChildModel = methods.filter(actionValue => readArray(readRecord(actionValue)['resultApis']).length > 0)
+  const methodsWithResultApi = methods.filter(actionValue => readArray(readRecord(actionValue)['resultApis']).length > 0)
   const schemaDescriptions = collectRuntimeSchemaDescriptionStats(document)
   return {
     source: 'page-design-module-metadata.runtime.generated.json',
@@ -2319,7 +2309,7 @@ function createRuntimeKnowledgeReadinessAudit(
         const action = readRecord(actionValue)
         return action['resultSchema'] !== undefined || readArray(action['resultApis']).length > 0
       }).length,
-      childModelMethodCount: methodsWithChildModel.length,
+      resultApiMethodCount: methodsWithResultApi.length,
       schemaPropertyDescriptionCount: schemaDescriptions.described,
       schemaPropertyCount: schemaDescriptions.total,
     },
@@ -2529,7 +2519,6 @@ function createRuntimeAttributeKnowledgeAudit(attribute: Readonly<Record<string,
   const name = readString(attribute['name']) ?? ''
   const typeText = runtimeSchemaToTypeText(attribute['schema'])
   const writable = attribute['writable'] === true
-  const childModels = collectAttributeChildModelLinks([attribute])
   return omitUndefined({
     name,
     declaration: `${writable ? '' : 'readonly '}${name}: ${typeText}`,
@@ -2538,7 +2527,6 @@ function createRuntimeAttributeKnowledgeAudit(attribute: Readonly<Record<string,
     readable: attribute['readable'] === true,
     writable,
     jsdoc: runtimeJsDocAudit(attribute),
-    childModels: childModels.length === 0 ? undefined : childModels,
   })
 }
 
@@ -2549,7 +2537,6 @@ function createRuntimeMethodKnowledgeAudit(
   const name = readString(action['name']) ?? ''
   const paramsText = runtimeParamsToText(action['paramsSchema'], action, apiByKind)
   const returnTypeText = runtimeReturnToTypeText(action, apiByKind)
-  const childModels = createRuntimeMethodChildModels(action, apiByKind)
   const resultApiRefs = readArray(action['resultApis']).map(readRuntimeResultApiRef).filter(isNotUndefined)
   const usageRules = readArray(action['usageRules']).filter((value): value is string => typeof value === 'string')
   const requiredBeforeCall = readArray(action['requiredBeforeCall']).filter((value): value is string => typeof value === 'string')
@@ -2564,7 +2551,6 @@ function createRuntimeMethodKnowledgeAudit(
     resultSchema: action['resultSchema'],
     resultApiRefs: resultApiRefs.length === 0 ? undefined : resultApiRefs,
     jsdoc: runtimeJsDocAudit(action),
-    childModels: childModels.length === 0 ? undefined : childModels,
     usageRules: usageRules.length === 0 ? undefined : usageRules,
     requiredBeforeCall: requiredBeforeCall.length === 0 ? undefined : requiredBeforeCall,
     failureModes: failureModes.length === 0 ? undefined : failureModes,
@@ -2572,73 +2558,7 @@ function createRuntimeMethodKnowledgeAudit(
 }
 
 function runtimeJsDocAudit(value: Readonly<Record<string, unknown>>) {
-  const jsdoc = readRecord(value['jsdoc'])
-  const tags = readArray(jsdoc['tags'])
-    .map(tagValue => {
-      const tag = readRecord(tagValue)
-      return omitUndefined({
-        name: readString(tag['name']),
-        paramName: readString(tag['paramName']),
-        text: readString(tag['text']) ?? '',
-      })
-    })
-  return omitUndefined({
-    summary: readString(jsdoc['summary']) ?? readString(value['description']),
-    tags: tags.length === 0 ? undefined : tags,
-  })
-}
-
-function createRuntimeMethodChildModels(
-  action: Readonly<Record<string, unknown>>,
-  apiByKind: ReadonlyMap<string, Readonly<Record<string, unknown>>>,
-) {
-  const refs = readArray(action['resultApis']).map(readRuntimeResultApiRef).filter(isNotUndefined)
-  if (runtimeActionRequiresRunCallback(action)) {
-    return refs.map(ref => ({
-      source: 'callback-param',
-      targetKind: ref.targetKind,
-      methodParamName: 'run',
-      methodParamIndex: 0,
-      callbackParamName: inferRuntimeCallbackParamName(ref.targetKind),
-      callbackParamIndex: 0,
-      callbackTypeText: runtimeClassNameByKind(apiByKind, ref.targetKind),
-    }))
-  }
-  return refs.map(ref => ({
-    source: 'return',
-    targetKind: ref.targetKind,
-    path: ref.resultPath,
-    returnTypeText: runtimeClassNameByKind(apiByKind, ref.targetKind),
-  }))
-}
-
-function runtimeActionRequiresRunCallback(action: Readonly<Record<string, unknown>>): boolean {
-  const paramsSchema = readRecord(action['paramsSchema'])
-  const properties = readRecord(paramsSchema['properties'])
-  const required = readArray(paramsSchema['required'])
-  return properties['run'] !== undefined && required.includes('run')
-}
-
-function inferRuntimeCallbackParamName(targetKind: string): string {
-  if (targetKind === 'node-tree') return 'tree'
-  if (targetKind === 'dataset') return 'tool'
-  return 'model'
-}
-
-function collectAttributeChildModelLinks(attributes: readonly unknown[]) {
-  return attributes
-    .map(attributeValue => {
-      const attribute = readRecord(attributeValue)
-      const targetKind = readApiRef(attribute['api'])
-      return targetKind === undefined
-        ? undefined
-        : {
-            via: 'attribute',
-            name: readString(attribute['name']),
-            targetKind,
-          }
-    })
-    .filter(isNotUndefined)
+  return readString(value['jsdoc'])
 }
 
 function readApiRef(api: unknown): string | undefined {

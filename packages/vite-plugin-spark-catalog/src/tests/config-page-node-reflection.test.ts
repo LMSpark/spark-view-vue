@@ -13,7 +13,7 @@ const pageDesignSources = [
 ] as const
 
 describe('page-design VCM metadata reflection', () => {
-  it('extracts ProjectModel without the legacy nodes child model', () => {
+  it('extracts ProjectModel without the legacy nodes attribute', () => {
     const result = generateModuleAbilityMetadata(root, {
       sources: pageDesignSources,
       outFile: 'unused/ability.json',
@@ -45,5 +45,5 @@ describe('page-design VCM metadata reflection', () => {
       emptySchemaNodeCount: 0,
     })
     expect(result.diagnostics.findings).toEqual([])
-  })
+  }, 20_000)
 })

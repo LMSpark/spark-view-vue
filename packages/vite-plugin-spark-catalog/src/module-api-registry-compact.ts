@@ -60,27 +60,22 @@ export type AiApiResultApiRefCompact = Readonly<{
   $ref: string
 }>
 
-type AiApiJsDocMetadataCompact = Readonly<{
-  summary?: string
-  tags?: readonly unknown[]
-}>
-
 export type AiApiActionMetadataCompact = Readonly<Omit<AiApiActionMetadata, 'resultApis' | 'jsdoc' | 'provenance'>> & {
-  jsdoc?: AiApiJsDocMetadataCompact
+  jsdoc?: string
   resultApis?: readonly AiApiResultApiRefCompact[]
 }
 
 export type AiApiConstructorMetadataCompact = Readonly<Omit<AiApiConstructorMetadata, 'jsdoc' | 'provenance'>> & {
-  jsdoc?: AiApiJsDocMetadataCompact
+  jsdoc?: string
 }
 
 export type AiApiAttributeMetadataCompact = Readonly<Omit<AiApiAttributeMetadata, 'api' | 'jsdoc' | 'provenance'>> & {
-  jsdoc?: AiApiJsDocMetadataCompact
+  jsdoc?: string
   api?: AiApiObjectMetadataCompact
 }
 
 export type AiApiObjectMetadataCompact = Readonly<Omit<AiApiObjectMetadata, 'actions' | 'attributes' | 'constructorSignature' | 'jsdoc' | 'provenance'>> & {
-  jsdoc?: AiApiJsDocMetadataCompact
+  jsdoc?: string
   constructorSignature?: AiApiConstructorMetadataCompact
   attributes?: readonly AiApiAttributeMetadataCompact[]
   actions: readonly AiApiActionMetadataCompact[]
@@ -139,7 +134,7 @@ function compactApiObjectActions(api: AiApiObjectMetadata): AiApiObjectMetadataC
     kind: api.kind,
     name: api.name,
     description: api.description,
-    ...compactJsDocProperty(api.jsdoc, api.description),
+    ...compactJsDocProperty(api.jsdoc),
     ...(api.constructorSignature === undefined ? {} : { constructorSignature: compactConstructorSignature(api.constructorSignature) }),
     ...(api.attributes === undefined ? {} : { attributes: api.attributes.map(compactAttribute) }),
     actions: api.actions.map(compactActionResultApis),
@@ -151,7 +146,7 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
     name: action.name,
     methodName: action.methodName,
     description: action.description,
-    ...compactJsDocProperty(action.jsdoc, action.description),
+    ...compactJsDocProperty(action.jsdoc),
     paramsSchema: action.paramsSchema,
     ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
     ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
@@ -172,7 +167,7 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
 function compactConstructorSignature(constructorSignature: AiApiConstructorMetadata): AiApiConstructorMetadataCompact {
   return {
     description: constructorSignature.description,
-    ...compactJsDocProperty(constructorSignature.jsdoc, constructorSignature.description),
+    ...compactJsDocProperty(constructorSignature.jsdoc),
     paramsSchema: constructorSignature.paramsSchema,
   }
 }
@@ -181,7 +176,7 @@ function compactAttribute(attribute: AiApiAttributeMetadata): AiApiAttributeMeta
   return {
     name: attribute.name,
     description: attribute.description,
-    ...compactJsDocProperty(attribute.jsdoc, attribute.description),
+    ...compactJsDocProperty(attribute.jsdoc),
     schema: attribute.schema,
     readable: attribute.readable,
     writable: attribute.writable,
@@ -189,31 +184,6 @@ function compactAttribute(attribute: AiApiAttributeMetadata): AiApiAttributeMeta
   }
 }
 
-function compactJsDocProperty(
-  jsdoc: unknown,
-  fallbackDescription: string,
-): { jsdoc?: AiApiJsDocMetadataCompact } {
-  const compact = compactJsDoc(jsdoc, fallbackDescription)
-  return compact === undefined ? {} : { jsdoc: compact }
-}
-
-function compactJsDoc(
-  jsdoc: unknown,
-  fallbackDescription: string,
-): AiApiJsDocMetadataCompact | undefined {
-  if (!isRecord(jsdoc)) return undefined
-  const summary = typeof jsdoc['summary'] === 'string' ? jsdoc['summary'] : undefined
-  const tags = Array.isArray(jsdoc['tags']) ? jsdoc['tags'] : undefined
-  const compact: { summary?: string; tags?: readonly unknown[] } = {}
-  if (summary !== undefined && summary !== fallbackDescription) {
-    compact.summary = summary
-  }
-  if (tags !== undefined && tags.length > 0) {
-    compact.tags = tags
-  }
-  return Object.keys(compact).length === 0 ? undefined : compact
-}
-
-function isRecord(value: unknown): value is Readonly<Record<string, unknown>> {
-  return value !== null && typeof value === 'object' && !Array.isArray(value)
+function compactJsDocProperty(jsdoc: unknown): { jsdoc?: string } {
+  return typeof jsdoc === 'string' && jsdoc.trim().length > 0 ? { jsdoc } : {}
 }

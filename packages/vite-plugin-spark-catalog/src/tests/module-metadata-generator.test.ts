@@ -108,22 +108,14 @@ class DemoRootService {
       'helper',
     ])
     const rootModule = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-root')
-    expect(rootModule?.rootApi.jsdoc).toMatchObject({
-      summary: 'Demo root service.',
-      tags: [
-        { name: 'moduleAbility', text: 'demo.root' },
-        { name: 'moduleKind', text: 'demo-root' },
-      ],
-    })
+    expect(rootModule?.rootApi.jsdoc).toContain('Demo root service.')
+    expect(rootModule?.rootApi.jsdoc).toContain('@moduleAbility demo.root')
+    expect(rootModule?.rootApi.jsdoc).toContain('@moduleKind demo-root')
     expect(rootModule?.rootApi.provenance).toMatchObject({
       file: 'sample.ts',
       className: 'DemoRootService',
     })
-    expect(rootModule?.rootApi.jsdoc?.raw).toContain('Demo root service.')
-    expect(rootModule?.rootApi.attributes?.[0]?.jsdoc).toMatchObject({
-      summary: 'Demo service label.',
-    })
-    expect(rootModule?.rootApi.attributes?.[0]?.jsdoc?.raw).toContain('Demo service label.')
+    expect(rootModule?.rootApi.attributes?.[0]?.jsdoc).toContain('Demo service label.')
     expect(result.abilities[0]?.constructorSignature).toMatchObject({
       description: 'Create demo root service.',
       params: [
@@ -142,14 +134,9 @@ class DemoRootService {
         required: ['name'],
       },
     })
-    expect(rootModule?.rootApi.constructorSignature?.jsdoc).toMatchObject({
-      summary: 'Create demo root service.',
-      tags: [
-        { name: 'param', text: 'Demo service name.' },
-        { name: 'param', text: 'Optional creation flags.' },
-      ],
-    })
-    expect(rootModule?.rootApi.constructorSignature?.jsdoc?.raw).toContain('Create demo root service.')
+    expect(rootModule?.rootApi.constructorSignature?.jsdoc).toContain('Create demo root service.')
+    expect(rootModule?.rootApi.constructorSignature?.jsdoc).toContain('@param name Demo service name.')
+    expect(rootModule?.rootApi.constructorSignature?.jsdoc).toContain('@param options Optional creation flags.')
     expect(rootModule?.rootApi.constructorSignature?.provenance).toMatchObject({
       file: 'sample.ts',
       className: 'DemoRootService',
@@ -161,10 +148,7 @@ class DemoRootService {
       'openDirectory',
       'helper',
     ])
-    expect(rootModule?.rootApi.actions[0]?.jsdoc).toMatchObject({
-      summary: 'Describe current state.',
-    })
-    expect(rootModule?.rootApi.actions[0]?.jsdoc?.raw).toContain('Describe current state.')
+    expect(rootModule?.rootApi.actions[0]?.jsdoc).toContain('Describe current state.')
     expect(rootModule?.rootApi.actions[0]?.provenance).toMatchObject({
       file: 'sample.ts',
       className: 'DemoRootService',
@@ -189,25 +173,26 @@ class DemoRootService {
       modules: Array<{
         rootApi: {
           kind: string
-          jsdoc?: { raw?: string }
+          jsdoc?: string
           provenance?: { file?: string; className?: string }
-          constructorSignature?: { jsdoc?: { raw?: string } }
-          attributes?: Array<{ jsdoc?: { raw?: string } }>
-          actions: Array<{ jsdoc?: { raw?: string } }>
+          constructorSignature?: { jsdoc?: string }
+          attributes?: Array<{ jsdoc?: string }>
+          actions: Array<{ jsdoc?: string }>
         }
       }>
     }
     expect(generated.diagnostics.resultApiCount).toBe(1)
     expect(generated.modules[0]?.rootApi.kind).toBe('demo-directory')
     expect(generated.modules[1]?.rootApi.kind).toBe('demo-root')
-    expect(generated.modules[1]?.rootApi.jsdoc?.raw).toContain('Demo root service.')
+    expect(generated.modules[1]?.rootApi.jsdoc).toContain('Demo root service.')
     expect(generated.modules[1]?.rootApi.provenance).toMatchObject({
       file: 'sample.ts',
       className: 'DemoRootService',
     })
-    expect(generated.modules[1]?.rootApi.constructorSignature?.jsdoc?.raw).toContain('Create demo root service.')
-    expect(generated.modules[1]?.rootApi.attributes?.[0]?.jsdoc?.raw).toContain('Demo service label.')
-    expect(generated.modules[1]?.rootApi.actions[0]?.jsdoc?.raw).toContain('Describe current state.')
+    expect(generated.modules[1]?.rootApi.constructorSignature?.jsdoc).toContain('Create demo root service.')
+    expect(generated.modules[1]?.rootApi.attributes?.[0]?.jsdoc).toContain('Demo service label.')
+    expect(generated.modules[1]?.rootApi.actions[0]?.jsdoc).toContain('Describe current state.')
+    expect(JSON.stringify(generated.modules[1]?.rootApi.jsdoc)).not.toContain('"tags"')
   })
 
   it('prefers source class JSDoc over dist declaration files for reflected child APIs', () => {
@@ -285,18 +270,12 @@ class RootApi {
         className: 'ChildApi',
         typeEntryFile: 'dist/types/child.d.ts',
       },
-      jsdoc: {
-        summary: 'Source child API.',
-      },
       constructorSignature: {
         provenance: {
           file: 'src/child.ts',
           className: 'ChildApi',
           memberName: 'constructor',
           typeEntryFile: 'dist/types/child.d.ts',
-        },
-        jsdoc: {
-          summary: 'Source child constructor.',
         },
       },
       actions: [
@@ -308,12 +287,12 @@ class RootApi {
             memberName: 'search',
             typeEntryFile: 'dist/types/child.d.ts',
           },
-          jsdoc: {
-            summary: 'Source child search.',
-          },
         },
       ],
     })
+    expect(childApi?.jsdoc).toContain('Source child API.')
+    expect(childApi?.constructorSignature?.jsdoc).toContain('Source child constructor.')
+    expect(childApi?.actions[0]?.jsdoc).toContain('Source child search.')
     expect(JSON.stringify(childApi)).not.toContain('Old declaration')
 
     const typeEntryResult = generateModuleAbilityMetadata(root, {
@@ -327,7 +306,7 @@ class RootApi {
     })
     expect(compareModuleMetadataForBuildConsistency(result.moduleMetadata, typeEntryResult.moduleMetadata)).toContainEqual({
       code: 'MODULE_METADATA_BUILD_CONSISTENCY_MISMATCH',
-      path: 'child-api.jsdoc.summary',
+      path: 'child-api.jsdoc',
       message: expect.stringContaining('Old declaration child API.'),
     })
   })
@@ -400,15 +379,9 @@ class RootApi {
         file: 'src/child.ts',
         className: 'ChildApi',
       },
-      jsdoc: {
-        summary: 'Source-only child API.',
-      },
-      constructorSignature: {
-        jsdoc: {
-          summary: 'Source-only child constructor.',
-        },
-      },
     })
+    expect(childApi?.jsdoc).toContain('Source-only child API.')
+    expect(childApi?.constructorSignature?.jsdoc).toContain('Source-only child constructor.')
   })
 
   it('discovers resultApis from script-only mutator callback parameter', () => {

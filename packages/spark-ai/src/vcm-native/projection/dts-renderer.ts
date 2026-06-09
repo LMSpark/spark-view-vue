@@ -1,4 +1,9 @@
 import type { AttributeMeta, ClassModel, ClassModelDocument, JsDocMeta, MethodMeta } from '../class-model'
+import {
+  renderAttributeDeclarationLine,
+  renderConstructorSignature,
+  renderMethodDeclarationLine,
+} from '../class-model/signature-renderer'
 
 export type ModelGuideRenderInput = Readonly<{
   document: ClassModelDocument
@@ -56,19 +61,22 @@ type ComponentPropLike = Readonly<{
   description?: string
 }>
 
-export function renderClassModelDeclaration(model: ClassModel): string {
+export function renderClassModelDeclaration(
+  document: ClassModelDocument,
+  model: ClassModel,
+): string {
   const parts: string[] = []
   parts.push(renderJsDocMeta(model.jsdoc))
   parts.push(`class ${model.className} {`)
   if (model.constructor !== undefined) {
     parts.push(indent(renderJsDocMeta(model.constructor.jsdoc)))
-    parts.push(indent(model.constructor.declaration))
+    parts.push(indent(renderConstructorSignature(model.constructor)))
   }
   for (const attribute of model.attributes) {
-    parts.push(indent(renderAttributeDeclaration(attribute)))
+    parts.push(indent(renderAttributeDeclaration(document, attribute)))
   }
   for (const method of model.methods) {
-    parts.push(indent(renderMethodDeclaration(method)))
+    parts.push(indent(renderMethodDeclaration(document, method)))
   }
   parts.push('}')
   return parts.filter(part => part.length > 0).join('\n')
@@ -76,10 +84,10 @@ export function renderClassModelDeclaration(model: ClassModel): string {
 
 export function renderModelGuide(input: ModelGuideRenderInput): ModelGuide {
   const model = modelByKind(input.document, input.kind)
-  const text = renderClassModelDeclaration(model)
+  const text = renderClassModelDeclaration(input.document, model)
   return {
     kind: input.kind,
-    declaration: model.declaration,
+    declaration: `class ${model.className}`,
     text,
   }
 }
@@ -89,17 +97,18 @@ export function renderAttributeGuide(input: AttributeGuideRenderInput): Attribut
   const attribute = model.attributes.find(candidate => candidate.name === input.attributeName)
   if (attribute === undefined) throw new Error(`ClassModel attribute not found: ${input.kind}.${input.attributeName}`)
 
+  const declarationLine = renderAttributeDeclarationLine(input.document, attribute)
   const text = [
     renderJsDocMeta(model.jsdoc),
     `class ${model.className} {`,
-    indent(renderAttributeDeclaration(attribute)),
+    indent(renderAttributeDeclaration(input.document, attribute)),
     '}',
   ].join('\n')
 
   return {
     kind: input.kind,
     attributeName: input.attributeName,
-    declaration: attribute.declaration,
+    declaration: declarationLine,
     text,
   }
 }
@@ -109,11 +118,11 @@ export function renderMethodGuide(input: MethodGuideRenderInput): MethodGuide {
   const method = model.methods.find(candidate => candidate.name === input.methodName)
   if (method === undefined) throw new Error(`ClassModel method not found: ${input.kind}.${input.methodName}`)
 
-  // d.ts-like 文本只在给 LLM guide 前即时渲染，不写入 generated JSON 真源。
+  const declarationLine = renderMethodDeclarationLine(input.document, method)
   const chunks = [
     renderJsDocMeta(model.jsdoc),
     `class ${model.className} {`,
-    indent(renderMethodDeclaration(method)),
+    indent(renderMethodDeclaration(input.document, method)),
     '}',
   ]
 
@@ -128,22 +137,28 @@ export function renderMethodGuide(input: MethodGuideRenderInput): MethodGuide {
   return {
     kind: input.kind,
     methodName: input.methodName,
-    declaration: method.declaration,
+    declaration: declarationLine,
     text,
   }
 }
 
-export function renderMethodDeclaration(method: MethodMeta): string {
+export function renderMethodDeclaration(
+  document: ClassModelDocument,
+  method: MethodMeta,
+): string {
   return [
     renderJsDocMeta(method.jsdoc),
-    method.declaration,
+    renderMethodDeclarationLine(document, method),
   ].filter(part => part.length > 0).join('\n')
 }
 
-export function renderAttributeDeclaration(attribute: AttributeMeta): string {
+export function renderAttributeDeclaration(
+  document: ClassModelDocument,
+  attribute: AttributeMeta,
+): string {
   return [
     renderJsDocMeta(attribute.jsdoc),
-    attribute.declaration,
+    renderAttributeDeclarationLine(document, attribute),
   ].filter(part => part.length > 0).join('\n')
 }
 
@@ -175,16 +190,7 @@ function modelByKind(document: ClassModelDocument, kind: string): ClassModel {
 }
 
 function renderJsDocMeta(jsdoc: JsDocMeta): string {
-  const raw = jsdoc.raw?.trim()
-  if (raw !== undefined && raw.length > 0) return raw
-  return renderJsDoc(jsdoc.summary, jsdoc.tags.map(renderJsDocTag))
-}
-
-function renderJsDocTag(tag: JsDocMeta['tags'][number]): string {
-  if (tag.name === 'param' && tag.paramName !== undefined) {
-    return `@${tag.name} ${tag.paramName}${tag.text.length === 0 ? '' : ` ${tag.text}`}`
-  }
-  return `@${tag.name}${tag.text.length === 0 ? '' : ` ${tag.text}`}`
+  return jsdoc.trim()
 }
 
 function renderJsDoc(summary: string, tags: readonly string[] = []): string {

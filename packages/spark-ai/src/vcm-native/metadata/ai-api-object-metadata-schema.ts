@@ -36,20 +36,8 @@ export type AiApiActionAntiExample = Readonly<{
   args?: AiJsonValue
 }>
 
-/** VCM 从源码 JSDoc 派生的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。 */
-export type AiApiJsDocMetadata = Readonly<{
-  raw?: string
-  /** compact runtime JSON 会省略与同级 description 重复的 summary。 */
-  summary?: string
-  /** compact runtime JSON 会省略空 tags。 */
-  tags?: readonly AiApiJsDocTagMetadata[]
-}>
-
-export type AiApiJsDocTagMetadata = Readonly<{
-  name: string
-  text: string
-  paramName?: string
-}>
+/** VCM 从源码 JSDoc 原样拷贝的语义块；源码 JSDoc 是 SSOT，generated JSON 只是缓存快照。 */
+export type AiApiJsDocMetadata = string
 
 /** VCM 反射来源；file/line 指向源码声明，typeEntryFile 仅记录可能的 .d.ts 类型入口。 */
 export type AiApiSourceProvenanceMetadata = Readonly<{

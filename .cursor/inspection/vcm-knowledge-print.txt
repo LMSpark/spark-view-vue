@@ -1,0 +1,375 @@
+=== VCM 知识体系 (ClassModel) ===
+rootKind: project
+models: config-page, data-table, data-view, dataset, node-tree, project
+diagnostics: 0
+
+## config-page (ConfigPageNode)
+/**
+ * 配置页面节点。
+ *
+ * 持有当前页面的 rule.json、pagedata.json、script.js、style.css 子模型。
+ * 四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。
+ *
+ * @moduleKind config-page
+ * @moduleAbility pageDesign.configPage
+ * @moduleActionMode explicit
+ */
+constructor: constructor(options: { node: ProjectNodeData; pid: string; descriptionContext?: ArrayOf_ProjectDescriptionContext; pageId?: string })
+attributes (26):
+  - readonly family: "module" | "config-page" | "system-page" | "system-action" | "link" | "ref"
+  - readonly pid: string
+  - readonly id: string
+  - readonly name: string
+  - readonly title: string
+  - readonly version: string
+  - readonly nodeKind: "module" | "system-page" | "system-action" | "link" | "ref" | "system-directory" | "page" | "sub-page"
+  - readonly path: string
+  - readonly icon: string
+  - readonly dividerAfter: boolean
+  - readonly childPlacement: string
+  - readonly linkTarget: string
+  - readonly hidden: boolean
+  - readonly disabled: boolean
+  - readonly order: number
+  - readonly refId: string
+  - readonly refPath: string
+  - readonly refProjectId: string
+  - readonly refBroken: boolean
+  - readonly context: AnonSchema_5565cda14bbf
+  - readonly permissionMode: string
+  - readonly planningStatus: string
+  - readonly implGate: string
+  - readonly upstreamContractsSatisfied: boolean
+  - readonly description: string
+  - readonly pageId: string
+methods (6):
+  - getFileText(name: "rule.json" | "pagedata.json" | "script.js" | "style.css"): string
+  - setFileText(name: "rule.json" | "pagedata.json" | "script.js" | "style.css", text: string): void
+  - getNodeTree(): SparkNodeTree
+  - editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void>
+  - getDataSetTool(): DataSetCrudTool
+  - editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void>
+
+## data-table (DataTable)
+/**
+ * DataTable - 管理单表的结构定义与配置
+ *
+ * 说明：管理表结构（columns）、资源语义（resourceType/resourceId/businessCategory）、
+ * 视图集合（DataView）、CRUD 配置（api, crudConfig）；
+ * 其中 `api` 负责定义“各 CRUD 操作映射到哪个端点”，`crudConfig` 负责定义“调用这些端点时采用什么通用运行策略”。
+ * 数据操作由 DataView 负责。
+ *
+ * @moduleKind data-table
+ * @moduleName Data Table
+ */
+constructor: constructor(tableName: string, columns?: ArrayOf_DataColumn)
+attributes (12):
+  - dataSet: DataSet
+  - tableName: string
+  - columns: ArrayOf_DataColumn
+  - resourceType: string | object
+  - resourceId: string
+  - businessCategory: string | object
+  - api: CrudApi
+  - crudConfig: CrudOperationConfig
+  - readonly crudService: CrudService
+  - validator: DataValidator
+  - rows: ArrayOf_DataRow
+  - views: AnonSchema_d9833819eb9f
+methods (15):
+  - setDataSet(ds: DataSet): void
+  - onDataSetRelationsReady(): void
+  - getView(viewId: string): DataView
+  - getOrCreateView(viewId: string): DataView
+  - forEachView(cb: unknown): void
+  - setApi(api: AnonSchema_359bb71980d2): void
+  - setCrudConfig(config: { timeout?: number; retryCount?: number; skipPermissionCheck?: boolean; modelPermission?: ModelPermission; instancePermission?: InstancePermission; validateData?: boolean }): void
+  - toJson(): { resourceType?: string | object; resourceId?: string; businessCategory?: string | object; tableName: string; columns: ArrayOf_DataColumn; api?: AnonSchema_697ab2d05351; crudConfig?: CrudOperationConfig; views: { default: ViewMetadata } }
+  - addColumns(columns: ArrayOf_DataColumn): { added: ArrayOf_string; skipped: ArrayOf_string }
+  - updateColumn(columnName: string, updates: Partial): ArrayOf_string
+  - removeColumn(columnName: string): void
+  - addRows(rows: ArrayOf_DataRow): number
+  - addView(viewId: string): DataView
+  - destroyView(viewId: string): void
+  - destroy(): void
+
+## data-view (DataView)
+/**
+ * DataView - 单个表视图的数据操作子模块。
+ *
+ * @moduleKind data-view
+ * @moduleName Data View
+ */
+constructor: constructor(tableName: string, viewId?: string)
+attributes (43):
+  - readonly dataTable: null | object
+  - readonly primaryKey: string
+  - _currentRowId: null | number | string
+  - _selectedRowIds: ArrayOf_number_string
+  - valueField: ArrayOf_any
+  - labelField: string
+  - selectionDelimiter: string
+  - readonly isMultiSelect: boolean
+  - readonly currentRow: AnonSchema_6fb9a799bb03
+  - readonly selectedRows: ArrayOf_DataRow
+  - readonly value: string
+  - readonly labels: ArrayOf_string
+  - readonly label: null | string
+  - requestState: 0 | 1 | 2 | 3 | 4
+  - mutating: boolean
+  - mutatingError: null | object
+  - autoCurrentFirst: boolean
+  - autoSelectFirst: boolean
+  - treeConfig: TreeConfig
+  - autoLoad: boolean
+  - autoLoadConfigured: boolean
+  - commitMode: "immediate" | "staged"
+  - readonly aggregates: AnonSchema_d9833819eb9f
+  - readonly treeMode: "flat" | "nested"
+  - readonly columns: ArrayOf_DataColumn
+  - readonly aggregateResult: unknown
+  - readonly selectionAggregateResult: unknown
+  - rowIndexMap: AnonSchema_d9833819eb9f
+  - readonly selection: SelectionDelegate
+  - readonly mutation: LocalMutationDelegate
+  - readonly crud: CrudDelegate
+  - readonly dirtyTracking: DirtyTrackingDelegate
+  - readonly editingRows: ArrayOf_DataRow
+  - readonly events: Record<string, unknown>
+  - readonly destroyed: boolean
+  - readonly dataSet: DataSet
+  - readonly crudService: CrudService
+  - readonly crudConfig: CrudOperationConfig
+  - readonly validator: DataValidator
+  - readonly pk: PrimaryKeyDelegate
+  - readonly effectivePkFields: ArrayOf_string
+  - readonly dirtyRows: ArrayOf_DataRow
+  - readonly cascade: CascadeDelegate
+methods (51):
+  - resetPrimaryKey(): void
+  - setCurrentRow(row: AnonSchema_210d5166ea68, originatorId?: string): void
+  - setCurrentRowById(id: null | number | string, originatorId?: string): boolean
+  - setSelectedRows(rows: ArrayOf_DataRow, originatorId?: string): void
+  - addSelectedRows(rows: ArrayOf_DataRow): number
+  - removeSelectedRows(rows: ArrayOf_DataRow): number
+  - removeSelectedRowsById(ids: ArrayOf_number_string): number
+  - clearSelectedRows(): void
+  - setComputedContext(ctx: AnonSchema_7e8f50def4cf): void
+  - recomputeColumns(options?: DataViewRecomputeColumnsOptions): void
+  - getColumn(name: string): DataColumn
+  - getPkKey(row: { _perm?: InstancePermission }): number | string
+  - buildServerPk(row: { _perm?: InstancePermission }): AnonSchema_d9833819eb9f
+  - requestData(): void
+  - loadFromServer(params?: QueryParams): { success: boolean; data?: unknown; error?: Error; message?: string; code?: string; timestamp?: number }
+  - retrieveRecord(pk: AnonSchema_74ba3a3ec90f, options?: RetrieveRecordOptions): { success: boolean; data?: DataRow; error?: Error; message?: string; code?: string; timestamp?: number }
+  - retrieveRecordById(id: number | string, options?: RetrieveRecordOptions): { success: boolean; data?: DataRow; error?: Error; message?: string; code?: string; timestamp?: number }
+  - refresh(): void
+  - applyInMemoryCascade(rel: AnonSchema_4bc16f1a2043, parentRows: ArrayOf_DataRow): void
+  - updateFromServer(data: AnonSchema_e0b813b5975c): void
+  - appendRow(row: { _perm?: InstancePermission }): void
+  - updateRowById(id: number | string, data: Partial): boolean
+  - deleteRowById(id: number | string): boolean
+  - replaceRows(rows: ArrayOf_DataRow): void
+  - hasEditingChanges(id?: number | string): boolean
+  - getEditingPatch(id: number | string): Partial
+  - getEditingRow(id: number | string): AnonSchema_6fb9a799bb03
+  - updateEditingValue(id: number | string, field: string, value: unknown): { _perm?: InstancePermission }
+  - discardEditingRows(ids?: ArrayOf_number_string): number
+  - applyEditingRows(ids?: ArrayOf_number_string): { success: boolean; data?: DataViewApplyEditingRowsResult; error?: Error; message?: string; code?: string; timestamp?: number }
+  - addRow(data: Partial): AnonSchema_b77acb39ef4b
+  - removeRow(id: number | string): AnonSchema_96c7126c191e
+  - editRowById(id: number | string, data: Partial): AnonSchema_96c7126c191e
+  - getDirtyChanges(id: number | string): unknown
+  - saveChanges(ids?: ArrayOf_number_string): { success: boolean; data?: SaveChangesData; error?: Error; message?: string; code?: string; timestamp?: number }
+  - clearAll(): void
+  - resetState(): void
+  - cleanupInvalidSelections(): boolean
+  - loadTreeChildren(parentId: null | number | string, limit?: number): ArrayOf_FlatTreeNode
+  - loadTreePath(id: number | string): { pathIds: ArrayOf_number_string; pathNodes?: ArrayOf_FlatTreeNode }
+  - expandTreeToNode(targetId: number | string): void
+  - searchTreeNested(keyword: string, limit?: number): ArrayOf_NestedTreeSearchResult
+  - setPage(page: number): void
+  - setPageSize(pageSize: number): void
+  - setSort(sort: ArrayOf_SortField): void
+  - setFilter(filter: AnonSchema_0c121a46ffef): void
+  - executeFilter(filter: AnonSchema_7a775c54aa13): void
+  - destroy(): void
+  - isDestroyed(): boolean
+  - applyViewConfig(vc: Partial): void
+  - initAutoSelection(): void
+
+## dataset (DataSetCrudTool)
+/**
+ * DataSet 级统一 CRUD facade。
+ *
+ * 设计目标：
+ * 1. 构造时只要求 dataSetName，外部无需先手动拼装 DataSet。
+ * 2. 统一收口表、列、视图、行、关系、依赖这几类对象的常用操作。
+ * 3. 全部复用现有 DataSet/DataTable/DataView 能力，避免再造第二套状态模型。
+ * 4. 所有公开方法统一使用单一对象参数，便于 LLM / 动态调度直接传 JSON object。
+ *
+ * @moduleAbility pageDesign.dataset
+ * @moduleKind dataset
+ * @moduleName Page Design DataSet
+ * @moduleDescription 当前页面 DataSetCrudTool/pagedata.json 数据空间读写能力。
+ * @moduleEntity dataSet 页面数据集
+ * @moduleScope 当前 DataSetCrudTool 实例代表一个页面 pagedata.json 模型。
+ * @moduleAttackSurface dataset-schema high 表、列、视图、聚合、计算表达式、关系和依赖写入会改变页面 dataViewKey/dataMember/dataField 绑定语义。
+ * @moduleAttackSurface dataset-row-data medium 行数据和默认值会进入页面预览或静态数据源，必须保持 JSON 可序列化。
+ * @moduleAttackSurface remote-crud-config high api/crudConfig 写入会改变页面运行时远端 CRUD 访问目标。
+ * @moduleTrustBoundary 调用方负责把当前页面 pagedata.json live model 映射为 DataSetCrudTool 实例；本类只暴露数据集读写能力。
+ * @moduleGuard 修改结构前必须确认表、字段、视图和绑定链仍能解析；远端 CRUD 配置不得伪造未知接口。
+ * @moduleMutation pagedata.json read-write DataSetCrudTool 公开写方法直接修改当前页面 pagedata.json live model。
+ */
+constructor: constructor(dataSetName: string)
+attributes (2):
+  - readonly dataSet: DataSet
+  - readonly dataSetName: string
+methods (51):
+  - toJson(): AnonSchema_4a555eaa16b1
+  - getCanUndo(): boolean
+  - getCanRedo(): boolean
+  - getHistoryCursor(): number
+  - undo(): boolean
+  - redo(): boolean
+  - clearHistory(): void
+  - replaceFromJson(snapshot: AnonSchema_ca30194151fe, options?: DataSetCrudToolReplaceFromJsonOptions): void
+  - listTables(): ArrayOf_object
+  - getTable(tableNameOrParams: AnonSchema_179897f52d76): DataTable
+  - listColumns(tableNameOrParams: AnonSchema_179897f52d76): ArrayOf_DataColumn
+  - getColumn(params: { tableName: string; columnName: string }): DataColumn
+  - createColumn(params: { tableName: string; column: DataColumn }): DataTable
+  - updateColumn(params: { tableName: string; columnName: string; updates: Partial }): DataTable
+  - renameColumn(params: { tableName: string; columnName: string; newColumnName: string }): DataTable
+  - deleteColumn(params: { tableName: string; columnName: string }): void
+  - createTable(options: { resourceType?: string | object; resourceId?: string; businessCategory?: string | object; tableName: string; columns: ArrayOf_DataColumn; api?: AnonSchema_91a6ea392fac; crudConfig?: CrudOperationConfig; views?: AnonSchema_9be8a27893bf }): DataTable
+  - updateTable(params: AnonSchema_021e1594df5b): DataTable
+  - renameTable(params: { tableName: string; newTableName: string }): DataTable
+  - deleteTable(tableNameOrParams: AnonSchema_179897f52d76): void
+  - listViews(tableNameOrParams: AnonSchema_179897f52d76): ArrayOf_object
+  - getView(params: { tableName: string; viewId?: string }): DataView
+  - createView(params: { tableName: string; viewId: string; config?: ViewMetadata }): DataView
+  - updateView(params: { tableName: string; viewId?: string; updates: Partial }): DataView
+  - deleteView(params: { tableName: string; viewId: string }): void
+  - listAggregates(params: { tableName: string; viewId?: string }): AnonSchema_d9833819eb9f
+  - getAggregate(params: { tableName: string; viewId?: string; key: string }): AggregateColumnConfig
+  - addAggregate(params: { tableName: string; viewId?: string; key: string; config: AggregateColumnConfig }): void
+  - updateAggregate(params: { tableName: string; viewId?: string; key: string; updates: Partial }): void
+  - removeAggregate(params: { tableName: string; viewId?: string; key: string }): void
+  - getComputeExpression(params: { tableName: string; columnName: string }): string
+  - setComputeExpression(params: { tableName: string; columnName: string; expression: string }): DataTable
+  - clearComputeExpression(params: { tableName: string; columnName: string }): DataTable
+  - listRows(params: { tableName: string; viewId?: string }): ArrayOf_DataRow
+  - getRow(params: { tableName: string; viewId?: string; id: number | string }): DataRow
+  - createRow(params: { tableName: string; viewId?: string; data: Partial }): AnonSchema_b77acb39ef4b
+  - createRows(params: { tableName: string; viewId?: string; items: ArrayOf_Partial }): { success: boolean; data?: BatchResult; error?: Error; message?: string; code?: string; timestamp?: number }
+  - updateRow(params: { tableName: string; viewId?: string; id: number | string; data: Partial }): AnonSchema_96c7126c191e
+  - updateRows(params: { tableName: string; viewId?: string; items: ArrayOf_DataSetCrudToolUpdateRowsItem }): { success: boolean; data?: BatchResult; error?: Error; message?: string; code?: string; timestamp?: number }
+  - deleteRow(params: { tableName: string; viewId?: string; id: number | string }): AnonSchema_96c7126c191e
+  - deleteRows(params: { tableName: string; viewId?: string; ids: ArrayOf_number_string }): { success: boolean; data?: BatchResult; error?: Error; message?: string; code?: string; timestamp?: number }
+  - listRelations(filter?: Partial): ArrayOf_TableRelation
+  - getRelation(selector: { parentTable: string; childTable: string; parentField?: string; childField?: string }): TableRelation
+  - createRelation(params: { parentTable: string; childTable: string; parentField: string; childField: string; relationName?: string }): { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: AnonSchema_d562d897a52f; cascadeUpdate?: boolean; cascadeDelete?: boolean }
+  - updateRelation(params: { selector: RelationSelector; updates: Partial }): { relationName?: string; parentTable: string; childTable: string; childField?: string; parentField?: string; condition?: AnonSchema_d562d897a52f; cascadeUpdate?: boolean; cascadeDelete?: boolean }
+  - deleteRelation(selector: { parentTable: string; childTable: string; parentField?: string; childField?: string }): void
+  - listDependencies(filter?: Partial): ArrayOf_ViewDependency
+  - getDependency(params: { parentTable: string; childTable: string }): ViewDependency
+  - createDependency(params: { dependency: ViewDependency }): { parentTable: string; childTable: string; dependencyType?: string | object; autoLoad?: boolean }
+  - updateDependency(params: { parentTable: string; childTable: string; updates: Partial }): { parentTable: string; childTable: string; dependencyType?: string | object; autoLoad?: boolean }
+  - deleteDependency(params: { parentTable: string; childTable: string }): void
+
+## node-tree (SparkNodeTree)
+/**
+ * SparkNodeTree
+ *
+ * 面向单个组件实例（SparkNode）及其子树的结构编辑核心。
+ *
+ * 这里的 root 表示“当前被编辑的组件实例”。
+ * 它既可以是页面组件，也可以是页面中的任意子组件；页面只是递归 SparkNode 模型里的一个更大组件。
+ *
+ * 在上层设计里，SparkNodeTree 是设计时编辑能力的真实本体：
+ * 1. 调用方先查询组件列表，选择合适的组件 type；
+ * 2. 再根据组件规格构造一个 SparkNode 节点对象；
+ * 3. 最后调用 SparkNodeTree 的公开方法，把该节点写入当前子树，或对已有节点做查询与修改。
+ *
+ * 因此，这个类提供的不是“组件清单”，而是“树编辑能力集合”。
+ * 上层的 tool catalog / function 列表，只是在此基础上做协议投影。
+ *
+ * 当前公开能力大致可分为四类：
+ * 1. 节点查询：getNode / getLocation / hasNode / getParent / listChildren / findByType。
+ * 2. 子树统计：countNodes / collectDataViewKeys / collectHandlerNames。
+ * 3. 节点写入：addNode / addNodes / moveNode / replaceNode / replaceNodes / removeNode / removeNodes。
+ * 4. 属性写入：setProps / setPropsBatch。
+ *
+ * @moduleAbility pageDesign.nodeTree
+ * @moduleKind node-tree
+ * @moduleName Page Design Node Tree
+ * @moduleDescription 当前页面 SparkNodeTree/rule.json 结构读写能力。
+ * @moduleEntity pageNode 页面节点
+ * @moduleScope 当前 SparkNodeTree 实例代表一个页面 rule.json 根树。
+ * @moduleAttackSurface rule-tree-structure high 节点增删改移会改变 rule.json 渲染树、组件类型、props、数据绑定和事件入口。
+ * @moduleAttackSurface handler-reference medium collectHandlerNames 会暴露页面事件处理入口名称，后续写入必须避免伪造不可用 handler。
+ * @moduleTrustBoundary 调用方负责把当前页面 rule.json live model 映射为 SparkNodeTree 实例；本类只暴露节点树读写能力。
+ * @moduleGuard 写入节点前必须确认目标节点、父节点、组件 type、节点结构和 props 合法。
+ * @moduleMutation rule.json read-write SparkNodeTree 公开写方法直接修改当前页面 rule.json live model。
+ *
+ * 设计目标：
+ * 1. 构造时绑定一个当前组件实例，后续所有方法都围绕该组件及其子树工作。
+ * 2. 查询类方法不修改当前树状态。
+ * 3. 写操作通过不可变重写生成新子树，并回写到实例内部 root。
+ * 4. 全部公开方法只接受命名参数对象，不提供位置参数重载。
+ */
+constructor: constructor(params: { root: SparkNode; historyLimit?: number })
+attributes (5):
+  - readonly root: { type: string; id?: string; props?: AnonSchema_c69482b42398; children?: ArrayOf_AnonSchema_7ce51126f676 }
+  - readonly version: number
+  - readonly canUndo: boolean
+  - readonly canRedo: boolean
+  - readonly historyCursor: number
+methods (27):
+  - toJSON(): { type: string; id?: string; props?: AnonSchema_c69482b42398; children?: ArrayOf_AnonSchema_7ce51126f676 }
+  - getAllData(): { type: string; id?: string; props?: AnonSchema_c69482b42398; children?: ArrayOf_AnonSchema_7ce51126f676 }
+  - undo(): AnonSchema_a99cc47935a5
+  - redo(): AnonSchema_a99cc47935a5
+  - clearHistory(): void
+  - estimateHistorySize(): number
+  - getHistoryStats(): { length: number; cursor: number; canUndo: boolean; canRedo: boolean }
+  - loadRoot(newRoot: { type: string; id?: string; props?: AnonSchema_c69482b42398; children?: ArrayOf_AnonSchema_7ce51126f676 }): void
+  - replaceRoot(newRoot: { type: string; id?: string; props?: AnonSchema_c69482b42398; children?: ArrayOf_AnonSchema_7ce51126f676 }): void
+  - getNode(params: { componentId: string }): AnonSchema_a99cc47935a5
+  - getLocation(params: { componentId: string }): AnonSchema_81e8eb93a86d
+  - hasNode(params: { componentId: string }): boolean
+  - getParent(params: { componentId: string }): AnonSchema_a99cc47935a5
+  - listChildren(params?: { parentComponentId?: null | string }): ArrayOf_AnonSchema_7ce51126f676
+  - countNodes(): number
+  - collectDataViewKeys(): AnonSchema_d9833819eb9f
+  - collectHandlerNames(): AnonSchema_d9833819eb9f
+  - findByType(params: { type: string; startComponentId?: string; limit?: number }): { matches: ArrayOf_SparkNodeFindByTypeMatch; total: number }
+  - addNode(params: { parentComponentId?: null | string; node: SparkNode; index?: number }): { node: SparkNode; index: number }
+  - addNodes(params: { parentComponentId?: null | string; nodes: ArrayOf_SparkNode; index?: number }): { nodes: ArrayOf_SparkNode; indexes: ArrayOf_number }
+  - moveNode(params: { parentComponentId?: null | string; componentId: string; index?: number }): { componentId: string; fromParentComponentId: null | string; toParentComponentId: null | string; previousIndex: number; index: number }
+  - setProps(params: { componentId: string; props: AnonSchema_66e8f19671a9; merge?: boolean }): { node: SparkNode }
+  - setPropsBatch(params: { items: ArrayOf_SparkNodeTreeSetPropsBatchItem }): { nodes: ArrayOf_SparkNode }
+  - replaceNode(params: { componentId: string; node: SparkNode }): { node: SparkNode; previous: SparkNode }
+  - replaceNodes(params: { items: ArrayOf_SparkNodeTreeReplaceNodesItem }): { items: ArrayOf_SparkNodeReplaceResult }
+  - removeNode(params: { componentId: string }): { removed: SparkNode; index: number }
+  - removeNodes(params: { componentIds: ArrayOf_string }): { items: ArrayOf_SparkNodeRemoveResult }
+
+## project (ProjectModel)
+/**
+ * 项目模型根。
+ *
+ * @moduleAbility pageDesign.project
+ * @moduleKind project
+ * @moduleActionMode explicit
+ */
+constructor: constructor(options: { projectId: string; project?: ProjectInfoInput })
+attributes (2):
+  - readonly projectId: string
+  - readonly flatRows: ArrayOf_TNode
+methods (4):
+  - openPageDesign(pageId: string): ConfigPageNode
+  - readPlanningProjection(): ArrayOf_ProjectPageNodeSummary
+  - writePageFile(command: { pageId?: string; fileName: "rule.json" | "pagedata.json" | "script.js" | "style.css"; text: string }): void
+  - readPageFileText(fileName: "rule.json" | "pagedata.json" | "script.js" | "style.css", pageId?: string): string
+
