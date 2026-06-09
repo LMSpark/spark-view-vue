@@ -90,6 +90,8 @@ export type AiApiActionMetadata = Readonly<{
   paramsSchema: AiJsonSchemaObject
   takesContext?: boolean
   resultSchema?: AiJsonSchema
+  /** 构建期 TS 反射返回类型；void/primitive 不依赖 resultSchema。 */
+  returnTypeText?: string
   resultApis?: readonly AiApiResultApiRef[]
   usageRules?: readonly string[]
   requiredBeforeCall?: readonly string[]

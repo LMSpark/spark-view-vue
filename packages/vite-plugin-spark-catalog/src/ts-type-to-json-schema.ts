@@ -454,12 +454,17 @@ function isBuiltInCollectionType(checker: ts.TypeChecker, type: ts.Type): boolea
   return /^(ReadonlyMap|Map|ReadonlySet|Set|WeakMap|WeakSet)</u.test(text)
 }
 
-function safeTypeToString(checker: ts.TypeChecker, type: ts.Type): string {
+/** 构建期反射：把 TS 类型投影为 guide 可读的 type text，不进入 resultSchema 池。 */
+export function reflectTypeToText(checker: ts.TypeChecker, type: ts.Type): string {
   try {
     return checker.typeToString(type)
   } catch {
     return ''
   }
+}
+
+function safeTypeToString(checker: ts.TypeChecker, type: ts.Type): string {
+  return reflectTypeToText(checker, type)
 }
 
 function isArrayLike(checker: ts.TypeChecker, type: ts.Type): boolean {

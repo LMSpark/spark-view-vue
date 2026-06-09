@@ -19,6 +19,7 @@ type AiApiActionMetadata = Readonly<{
   paramsSchema: unknown
   takesContext?: boolean
   resultSchema?: unknown
+  returnTypeText?: string
   resultApis?: readonly AiApiResultApiRefMetadata[]
   usageRules?: readonly string[]
   requiredBeforeCall?: readonly string[]
@@ -150,6 +151,7 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
     paramsSchema: action.paramsSchema,
     ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
     ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
+    ...(action.returnTypeText === undefined ? {} : { returnTypeText: action.returnTypeText }),
     ...(action.resultApis === undefined
       ? {}
       : {

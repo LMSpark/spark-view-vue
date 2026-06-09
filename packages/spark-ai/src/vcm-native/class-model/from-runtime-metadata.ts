@@ -169,6 +169,7 @@ function createMethodMeta(
     name: action.name,
     paramsSchema: action.paramsSchema,
     ...(action.resultSchema === undefined ? {} : { returnSchema: action.resultSchema }),
+    ...(action.returnTypeText === undefined ? {} : { returnTypeText: action.returnTypeText }),
     ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
     jsdoc: jsdocFromAction(action),
     ...(navigation.returnsKind === undefined ? {} : { returnsKind: navigation.returnsKind }),

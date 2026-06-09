@@ -48,5 +48,8 @@ describe('page-design VCM metadata reflection', () => {
       emptySchemaNodeCount: 0,
     })
     expect(result.diagnostics.findings).toEqual([])
+    const writePageFile = projectApi?.actions.find(action => action.name === 'writePageFile')
+    expect(writePageFile?.resultSchema).toBeUndefined()
+    expect(writePageFile?.returnTypeText).toBe('void')
   }, 20_000)
 })

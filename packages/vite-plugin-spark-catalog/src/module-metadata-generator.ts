@@ -8,6 +8,7 @@ import { existsSync, mkdirSync, writeFileSync } from 'node:fs'
 import { dirname, resolve, relative, basename } from 'node:path'
 import ts from 'typescript'
 import {
+  reflectTypeToText,
   tsTypeToJsonSchema,
   type GeneratedJsonSchema,
   type GeneratedJsonSchemaObject,
@@ -123,6 +124,8 @@ type AiApiActionMetadata = {
   paramsSchema: GeneratedJsonSchema
   takesContext?: boolean
   resultSchema?: GeneratedJsonSchema
+  /** 构建期 TS 反射返回类型；void/primitive 不写入 resultSchema。 */
+  returnTypeText?: string
   resultApis?: readonly AiApiResultApiRefMetadata[]
   usageRules?: readonly string[]
   requiredBeforeCall?: readonly string[]
@@ -898,6 +901,9 @@ function createApiActionMetadata(command: CreateApiActionMetadataCommand): AiApi
   })
   const takesContext = hasLeadingContextParameter(checker, node)
   const resultType = trace.extractResults ? getInnerReturnType(checker, node) : undefined
+  const returnTypeText = resultType === undefined
+    ? undefined
+    : reflectTypeToText(checker, resultType).trim() || undefined
   const resultSchema = !trace.extractResultSchemas || resultType === undefined || isVoidLikeType(resultType)
     ? undefined
     : tsTypeToJsonSchema(checker, resultType, createSchemaDescriptionAuditOptions(state, {
@@ -936,6 +942,7 @@ function createApiActionMetadata(command: CreateApiActionMetadataCommand): AiApi
     }),
     paramsSchema,
     takesContext,
+    ...(returnTypeText === undefined ? {} : { returnTypeText }),
     ...(resultSchema === undefined ? {} : { resultSchema }),
     ...(resultApis === undefined ? {} : { resultApis }),
     usageRules,
@@ -2402,6 +2409,7 @@ function createRuntimeKnowledgeReadinessAudit(
   document: ReturnType<typeof createRuntimeGeneratedApiObjectMetadataDocument>,
 ) {
   const apis = collectRuntimeAuditApis(document)
+  const apiByKind = runtimeApiByKind(document)
   const attributes = apis.flatMap(api => readArray(api['attributes']))
   const methods = apis.flatMap(api => readArray(api['actions']))
   const methodsWithResultApi = methods.filter(actionValue => readArray(readRecord(actionValue)['resultApis']).length > 0)
@@ -2418,7 +2426,10 @@ function createRuntimeKnowledgeReadinessAudit(
       typedMethodParamCount: methods.filter(actionValue => readRecord(actionValue)['paramsSchema'] !== undefined).length,
       methodReturnKnowledgeCount: methods.filter((actionValue) => {
         const action = readRecord(actionValue)
-        return action['resultSchema'] !== undefined || readArray(action['resultApis']).length > 0
+        const reflectedReturn = readString(action['returnTypeText'])?.trim()
+        if (reflectedReturn !== undefined && reflectedReturn.length > 0) return true
+        if (action['resultSchema'] !== undefined || readArray(action['resultApis']).length > 0) return true
+        return runtimeReturnToTypeText(action, apiByKind) !== 'unknown'
       }).length,
       resultApiMethodCount: methodsWithResultApi.length,
       schemaPropertyDescriptionCount: schemaDescriptions.described,
@@ -2543,6 +2554,8 @@ function runtimeReturnToTypeText(
     if (readString(action['name'])?.startsWith('edit') === true) return 'Promise<void>'
     return runtimeClassNameByKind(apiByKind, childRef.targetKind)
   }
+  const reflectedReturn = readString(action['returnTypeText'])?.trim()
+  if (reflectedReturn !== undefined && reflectedReturn.length > 0) return reflectedReturn
   return runtimeSchemaToTypeText(action['resultSchema'], 'void')
 }
 
@@ -2658,7 +2671,7 @@ function createRuntimeMethodKnowledgeAudit(
     signature: `${name}(${paramsText}): ${returnTypeText}`,
     paramsText,
     paramsSchema: action['paramsSchema'],
-    returnTypeText,
+    returnTypeText: readString(action['returnTypeText']) ?? returnTypeText,
     resultSchema: action['resultSchema'],
     resultApiRefs: resultApiRefs.length === 0 ? undefined : resultApiRefs,
     jsdoc: runtimeJsDocAudit(action),

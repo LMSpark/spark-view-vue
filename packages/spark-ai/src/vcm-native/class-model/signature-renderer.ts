@@ -37,6 +37,9 @@ export function renderMethodReturnTypeText(
 ): string {
   if (method.callbackTargetKind !== undefined) return 'Promise<void>'
   if (method.returnsKind !== undefined) return classNameForKind(document, method.returnsKind)
+  if (method.returnTypeText !== undefined && method.returnTypeText.trim().length > 0) {
+    return method.returnTypeText
+  }
   return jsonSchemaToTypeText(method.returnSchema)
 }
 

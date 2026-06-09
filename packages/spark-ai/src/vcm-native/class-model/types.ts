@@ -68,6 +68,8 @@ export type MethodMeta = Readonly<{
   name: string
   paramsSchema: AiJsonSchemaObject
   returnSchema?: AiJsonSchema
+  /** 构建期 TS 反射返回类型；投影层优先于 returnSchema。 */
+  returnTypeText?: string
   takesContext?: boolean
   jsdoc: JsDocMeta
   /** 直接返回的 VCM class kind；void/primitive 时省略。 */
