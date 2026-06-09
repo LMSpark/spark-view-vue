@@ -32,7 +32,7 @@ const verifyBuildConsistency = process.argv.includes('--verify-build-consistency
 const extractResults = process.argv.includes('--extract-results') || !diagnoseOnly
 const extractResultSchemas = process.argv.includes('--extract-result-schemas') || !diagnoseOnly
 const configFile = readCliOption('--config') ?? VCM_CONFIG_FILE_NAME
-const targetId = readCliOption('--target') ?? 'page-design'
+const targetId = readCliOption('--target') ?? 'project-page-surface'
 
 const vcmConfig = readVcmMetadataConfig(root, configFile)
 const vcmTarget = findVcmMetadataTarget(vcmConfig, targetId)

@@ -16,8 +16,8 @@ const root = resolve(import.meta.dirname, '..')
 const outDir = resolve(root, '.cursor/inspection')
 mkdirSync(outDir, { recursive: true })
 
-const runtimePath = resolve(root, 'src/services/page-design/page-design-module-metadata.runtime.generated.json')
-const jsdocTodoPath = resolve(root, 'src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json')
+const runtimePath = resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json')
+const jsdocTodoPath = resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json')
 
 const raw = JSON.parse(readFileSync(runtimePath, 'utf8'))
 writeFileSync(
@@ -58,8 +58,8 @@ const kinds = Object.keys(classModel.models).sort()
 const evaluation = {
   generatedAt: new Date().toISOString(),
   sources: {
-    runtime: 'src/services/page-design/page-design-module-metadata.runtime.generated.json',
-    jsdocTodo: 'src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json',
+    runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+    jsdocTodo: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
   },
   runtimeEnvelope: {
     schemaVersion: runtime.schemaVersion,

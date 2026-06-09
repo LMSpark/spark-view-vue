@@ -54,8 +54,29 @@ DevSystem 左侧树不展示隐式 homepage 壳节点；项目首页与模块栏
 
 ```text
 ProjectModel（pageDesign.project）
-  → readPlanningProjection()     // 策划输入：pageFeatures + descriptionContext
-  → openPageDesign(pageId)       // 实现编辑：ConfigPageNode 四文件
+  → readProjectPlanningInput()   // 项目策划输入：根 description + planningAttachmentRef
+  → readPlanningProjection()     // 页面策划现状：pageFeatures + descriptionContext
+  → openPageDesign(pageId)       // 实现编辑：ConfigPageNode 四文件（后置）
+```
+
+#### 项目策划输入（先于页面设计）
+
+| 字段 | 来源 | 用途 |
+|---|---|---|
+| `requirement` | navigation 根节点 `description`；为空时回退 `project.description` | 项目级短需求 |
+| `planningAttachmentRef` | 根节点 `planningAttachmentRef`；为空时回退 `ProjectInfo.planningAttachmentRef` | 项目级详细说明附件 |
+| 节点 `description` | 每个 `ProjectNodeData.description` | 节点短需求 |
+| 节点 `planningAttachmentRef` | 每个 `ProjectNodeData.planningAttachmentRef` | 节点详细说明附件 |
+
+`readNavigationPlanningInputs()` / `readNavigationNodePlanningInput(nodeId)` 读取全部或单个节点策划输入。
+
+```text
+readProjectPlanningInput()
+  → { requirement, planningAttachmentRef? }
+  → runner 解析附件正文
+  → LLM 输出子模块/页面概要（title + description）
+  → 写入 navigation 节点 description
+  → planning_confirmed 后再进入 openPageDesign
 ```
 
 勿恢复独立 `NavigationDesign` 或 `PlanningModel`。

@@ -19,7 +19,7 @@ import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   evaluatePageDesignMutationToolGate,
 } from '@/services/page-design-gates'
-import { pageDesignRuntimeMetadataDocument } from './page-design/page-design-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
 import { createPageDesignVcmKnowledgeProvider } from './page-design/page-design-vcm-knowledge-provider'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
@@ -142,9 +142,9 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           instance,
           hookOptions,
         ),
-        ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+        ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
           ? {}
-          : { jsonSchemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
+          : { jsonSchemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
       },
     }),
   })
@@ -238,7 +238,7 @@ function evaluatePageDesignBeforeFunctionCall(
 }
 
 function readPageDesignProjectModule() {
-  return pageDesignRuntimeMetadataDocument.modules.find(
+  return projectPageSurfaceRuntimeMetadataDocument.modules.find(
     module => module.rootApi.kind === 'project',
   )
 }
@@ -250,8 +250,8 @@ function readPageDesignProjectMetadata(): AiModuleMetadataJson {
   }
   return resolveModuleMetadataJson(projectModule, {
     inlineSchemaRefs: false,
-    ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+    ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
       ? {}
-      : { schemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
+      : { schemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
   })
 }

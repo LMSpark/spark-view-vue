@@ -13,6 +13,9 @@ import {
   type NavigationNodeDraft,
   type NavigationNodeDraftApplyResult,
 } from '../navigation/navigation-edit'
+import {
+  readProjectNodeDescription,
+} from '../navigation/project-node'
 import type {
   ProjectModelData,
   ProjectNodeData,
@@ -33,6 +36,8 @@ import type {
   ProjectDirtyProjection,
   ProjectNavigationProjection,
   ProjectPageFileWriteCommand,
+  NavigationPlanningInput,
+  ProjectPlanningInput,
 } from './project-types'
 
 export type {
@@ -152,6 +157,45 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * @moduleMutation planning read 只读策划事实，不修改模型。
    */
   readPlanningProjection(): ProjectPageNodeSummary[] { return this.readPageSummaries() }
+
+  /**
+   * 读取项目级策划输入：navigation 根 description（短需求）+ 可选策划附件引用。
+   *
+   * @moduleMutation planning read 只读策划输入，不修改模型。
+   */
+  readProjectPlanningInput(): ProjectPlanningInput {
+    const navigationRoot = toNavigationRootNodeData(this.navigationRoot)
+    const rootRequirement = readProjectNodeDescription(navigationRoot)
+    const requirement = rootRequirement.length > 0 ? rootRequirement : this.description
+    const planningAttachmentRef = resolvePlanningAttachmentRef(
+      navigationRoot?.planningAttachmentRef,
+      this.projectInfo.planningAttachmentRef,
+    )
+    return {
+      requirement,
+      ...(planningAttachmentRef === undefined ? {} : { planningAttachmentRef }),
+    }
+  }
+
+  /**
+   * 读取单个导航节点策划输入。
+   *
+   * @moduleMutation planning read 只读节点策划输入，不修改模型。
+   */
+  readNavigationNodePlanningInput(nodeId: string): NavigationPlanningInput {
+    const model = this.findNodeById(nodeId)
+    if (model === null) throw new Error(`项目节点未找到: ${nodeId}`)
+    return toNavigationPlanningInput(model.toNodeData())
+  }
+
+  /**
+   * 读取全部导航节点策划输入（扁平遍历顺序）。
+   *
+   * @moduleMutation planning read 只读节点策划输入，不修改模型。
+   */
+  readNavigationPlanningInputs(): readonly NavigationPlanningInput[] {
+    return this.flatRows.map(model => toNavigationPlanningInput(model.toNodeData()))
+  }
 
   /**
    * 更新根模块 childPlacement（项目级 header / sidebar 布局）。
@@ -542,5 +586,38 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
 
   private publish(event: Parameters<ProjectModelEventListener>[0]): void {
     for (const listener of this.listeners) listener(event)
+  }
+}
+
+function toNavigationRootNodeData(root: ProjectModelData): ProjectNodeData | null {
+  const id = root.id?.trim()
+  if (id === undefined || id.length === 0) return null
+  return {
+    ...root,
+    id,
+    title: root.title,
+    nodeKind: root.nodeKind ?? 'module',
+  }
+}
+
+function resolvePlanningAttachmentRef(
+  primaryRef: string | undefined,
+  fallbackRef: string | undefined,
+): string | undefined {
+  const primary = primaryRef?.trim()
+  if (primary !== undefined && primary.length > 0) return primary
+  const fallback = fallbackRef?.trim()
+  return fallback === undefined || fallback.length === 0 ? undefined : fallback
+}
+
+function toNavigationPlanningInput(node: ProjectNodeData): NavigationPlanningInput {
+  const requirement = readProjectNodeDescription(node)
+  const planningAttachmentRef = resolvePlanningAttachmentRef(node.planningAttachmentRef, undefined)
+  return {
+    nodeId: node.id,
+    title: node.title,
+    nodeKind: node.nodeKind ?? 'page',
+    requirement,
+    ...(planningAttachmentRef === undefined ? {} : { planningAttachmentRef }),
   }
 }

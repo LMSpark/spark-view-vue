@@ -99,7 +99,7 @@ Codex 生成或修改代码时，必须遵守 `docs/ai/ai-code-generation-behavi
 ## 大文件 — 不要直接修改
 
 这些目录文件很大，不应直接编辑：
-- `src/services/page-design/page-design-module-metadata.runtime.generated.json`
+- `generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json`
 
 ## Commit Message 格式
 

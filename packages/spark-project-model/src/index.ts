@@ -19,6 +19,8 @@ export type {
   ProjectNavigationDirtyScope,
   ProjectInfo,
   ProjectInfoInput,
+  ProjectPlanningInput,
+  NavigationPlanningInput,
 } from './project/project-types'
 export type {
   ProjectWorkspaceOptions,

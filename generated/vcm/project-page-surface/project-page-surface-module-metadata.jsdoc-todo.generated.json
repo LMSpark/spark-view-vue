@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "generatedBy": "packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts",
+  "note": "Human-facing JSDoc supplement log. Do not edit generated metadata; update source JSDoc and rerun pnpm run generate:module-metadata.",
+  "summary": {
+    "jsdocTodoCount": 1,
+    "schemaDescriptionTodoCount": 0
+  },
+  "jsdocTodoLog": [
+    {
+      "kind": "project",
+      "className": "ProjectModel",
+      "memberType": "method",
+      "memberName": "readNavigationNodePlanningInput",
+      "file": "packages/spark-project-model/src/project/project-model.ts",
+      "line": 185,
+      "reasons": [
+        "missing @param: nodeId"
+      ],
+      "expectedParams": [
+        "nodeId"
+      ]
+    }
+  ],
+  "schemaDescriptionTodoLog": []
+}

@@ -5,8 +5,9 @@ VCM **native metadata** 生成工具：从 TypeScript 能力类提取 JSDoc + �
 ## 命令
 
 ```bash
-pnpm run generate:module-metadata    # 写入 runtime knowledge 与 JSDoc todo log
-pnpm run generate:component-catalog  # 写入组件 props catalog
+pnpm run generate:vcm-metadata       # 写入全部 VCM 能力面 metadata
+pnpm run generate:module-metadata    # 默认写入 project-page-surface
+pnpm run generate:component-catalog  # 写入 generated/vcm/component-catalog.json
 pnpm run diagnose:module-metadata    # 仅诊断，不写文件
 ```
 
@@ -16,17 +17,17 @@ CLI 入口：`src/module-metadata-cli.ts`
 可选参数：
 
 ```bash
-pnpm run generate:module-metadata -- --target page-design
-pnpm run generate:module-metadata -- --config config/ai/vcm.json --target page-design
+pnpm run generate:module-metadata -- --target project-model
+pnpm run generate:module-metadata -- --target project-page-surface
 ```
 
 ## 产出
 
 | 文件 | 用途 |
 |---|---|
-| `page-design-module-metadata.runtime.generated.json` | **`VcmNativeAgentAdapter` 消费** |
-| `page-design-module-metadata.jsdoc-todo.generated.json` | 源码 JSDoc / schema description 待补日志 |
-| `payload/component-catalog.json` | **Worker 按需消费的组件 props 知识** |
+| `generated/vcm/<surface-id>/*.runtime.generated.json` | **VCM 能力面知识制品** |
+| `generated/vcm/<surface-id>/*.jsdoc-todo.generated.json` | 源码 JSDoc / schema description 待补日志 |
+| `generated/vcm/component-catalog.json` | **pageDesign Worker 按需消费的组件 props** |
 
 ## VCM Registry 协议
 

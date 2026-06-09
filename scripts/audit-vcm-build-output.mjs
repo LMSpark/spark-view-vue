@@ -12,7 +12,7 @@ import {
 } from '../packages/spark-ai/src/vcm-native/index.ts'
 
 const root = resolve(import.meta.dirname, '..')
-const runtimePath = resolve(root, 'src/services/page-design/page-design-module-metadata.runtime.generated.json')
+const runtimePath = resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json')
 const raw = JSON.parse(readFileSync(runtimePath, 'utf8'))
 const runtime = readModuleMetadataRuntimeDocument(raw)
 const classModel = createClassModelDocumentFromRuntimeDocument(raw)

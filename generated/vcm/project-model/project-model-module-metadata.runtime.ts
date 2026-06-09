@@ -6,7 +6,7 @@
  * VCM 提取在生成器 TS 程序内完成；resolveJsonModule 推断为窄字面量，此处一次性断言类型。
  */
 import type { ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'
-import runtimeDocumentJson from './page-design-module-metadata.runtime.generated.json'
+import runtimeDocumentJson from './project-model-module-metadata.runtime.generated.json'
 
-export const pageDesignRuntimeMetadataDocument =
+export const projectModelRuntimeMetadataDocument =
   runtimeDocumentJson as ModuleMetadataRuntimeDocument

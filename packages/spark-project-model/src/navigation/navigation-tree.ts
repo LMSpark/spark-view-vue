@@ -75,6 +75,7 @@ type NormalizeNavRootInput = {
   children?: ProjectNodeData[] | undefined
   icon?: string | undefined
   description?: string | undefined
+  planningAttachmentRef?: string | undefined
   version?: string | undefined
   nodeKind?: 'module' | 'system-directory' | undefined
   homePath?: string | undefined
@@ -87,6 +88,9 @@ export function normalizeNavRoot(config: NormalizeNavRootInput): ProjectModelDat
     title: promoted.title ?? '',
     ...(promoted.icon === undefined || promoted.icon.trim() === '' ? {} : { icon: promoted.icon.trim() }),
     ...(promoted.description === undefined || promoted.description.trim() === '' ? {} : { description: promoted.description }),
+    ...(promoted.planningAttachmentRef === undefined || promoted.planningAttachmentRef.trim() === ''
+      ? {}
+      : { planningAttachmentRef: promoted.planningAttachmentRef.trim() }),
     ...(promoted.version === undefined || promoted.version.trim() === '' ? {} : { version: promoted.version.trim() }),
     ...(promoted.homePath === undefined || promoted.homePath.trim() === '' ? {} : { homePath: promoted.homePath.trim() }),
     nodeKind: promoted.nodeKind ?? 'module',
@@ -139,6 +143,7 @@ export function buildNavRoot(children: ProjectNodeData[], options?: Partial<Omit
     title: options?.title ?? '',
     icon: options?.icon,
     description: options?.description,
+    planningAttachmentRef: options?.planningAttachmentRef,
     version: options?.version,
     nodeKind: options?.nodeKind,
     homePath: options?.homePath,
@@ -286,6 +291,9 @@ export function buildProjectPageSummaries(
           nodeKind: node.nodeKind ?? 'page',
           designSurface: surface,
           description,
+          ...(node.planningAttachmentRef?.trim()
+            ? { planningAttachmentRef: node.planningAttachmentRef.trim() }
+            : {}),
           descriptionContext: nextContext,
           effectiveDescription: formatProjectDescriptionContext(nextContext),
           ...(node.icon !== undefined ? { icon: node.icon } : {}),

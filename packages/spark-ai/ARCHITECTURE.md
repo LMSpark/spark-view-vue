@@ -82,6 +82,8 @@ VCM metadata + component catalog
 | VCM Runtime | `vcm-native/runtime/vcm-native-runtime.ts` | 工具闭集校验、`executeTool` 路由 |
 | 知识 | `vcm-native/knowledge/*` | ClassModel 查询与 d.ts-like guide；可 Worker 化 |
 | pageDesign 业务 | `src/services/page-design-business.ts` | 注册 ProjectModel、systemPrompt、implGate 闸门 |
+| projectPlanning 业务 | `src/services/project-planning-business.ts` | 注册 ProjectModel（project-model 面）、策划 gate |
+| headless runner | `src/services/project-planning-ai-runner.ts` | 无 UI：`runProjectPlanningAiSession` → `host.run` |
 | Metadata 生成 | `packages/vite-plugin-spark-catalog/` | `generate:module-metadata`、component-catalog CLI |
 
 ---
@@ -328,12 +330,28 @@ AI 默认只改 **内存** 四文件；DevSystem runner 需显式 `saveDirtyFile
 
 | 产物 | 生成命令 | 路径 | 消费者 |
 |------|----------|------|--------|
-| runtime metadata | `pnpm run generate:module-metadata` | `src/services/page-design/page-design-module-metadata.runtime.generated.json` | `VcmNativeAgentAdapter`、Worker `metadataUrl` |
-| JSDoc todo log | 同上 | `src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json` | 人工补源码 JSDoc / schema description |
-| component catalog | `pnpm run generate:component-catalog` | `src/services/page-design/payload/component-catalog.json` | Worker lazy fetch；`vcm_action_guide({ componentType })` |
-| runtime TS 入口 | 生成 + 薄包装 | `page-design-module-metadata.runtime.ts` | APP import（类型断言） |
+| runtime metadata | `pnpm run generate:vcm-metadata` | `generated/vcm/<surface-id>/` | `VcmNativeAgentAdapter`、Worker `metadataUrl` |
+| JSDoc todo log | 同上 | `generated/vcm/<surface-id>/*.jsdoc-todo.generated.json` | 人工补源码 JSDoc / schema description |
+| component catalog | `pnpm run generate:component-catalog` | `generated/vcm/component-catalog.json` | pageDesign Worker lazy fetch |
+| runtime TS 入口 | 生成器写入 | `generated/vcm/<surface-id>/*.runtime.ts` | 业务层 import（类型断言） |
 
-Registry 配置：`config/ai/vcm.json`（`spark-appworks.vcm.registry`）。同一 target 声明运行时知识输出、JSDoc 待补日志输出和 `componentCatalog` 输出；数据仍双轨，生成路径同协议收口。
+Registry 配置：`config/ai/vcm.json`（`spark-appworks.vcm.registry`）。**VCM target 按能力面命名**（如 `project-model`、`project-page-surface`），与 `pageDesign` / `projectPlanning` 等业务 alias 解耦。`componentCatalogOutput` 在 registry 根级声明，不挂在 metadata target 上。
+
+| VCM 能力面 | 业务消费方 |
+|------------|------------|
+| `project-model` | `projectPlanning` |
+| `project-page-surface` | `pageDesign` |
+
+**无 UI 运行（与 DevSystem 无关）：**
+
+```text
+runProjectPlanningAiSession({ editor, host | consumeCapability })
+  → buildProjectPlanningAgentInput(project)
+  → ensureProjectPlanningBusiness
+  → createAiRunAdapter().run('projectPlanning', input)
+```
+
+SSE Host Run 见 `project-planning-host-run-provider.ts`（与 `page-design-host-run-provider.ts` 并列）。
 
 **投影链：**
 

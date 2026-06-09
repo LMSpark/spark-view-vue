@@ -21,7 +21,8 @@ export type VcmMetadataTargetSource = Readonly<{
 export type VcmMetadataTargetOutputs = Readonly<{
   runtime: string
   jsdocTodoLog: string
-  componentCatalog: string
+  /** @deprecated 使用根级 componentCatalogOutput；target 级字段仅作过渡读取。 */
+  componentCatalog?: string
 }>
 
 export type VcmMetadataTarget = Readonly<{
@@ -33,10 +34,14 @@ export type VcmMetadataTarget = Readonly<{
   outputs: VcmMetadataTargetOutputs
 }>
 
+export const VCM_DEFAULT_COMPONENT_CATALOG_OUTPUT = 'generated/vcm/component-catalog.json'
+
 export type VcmMetadataConfig = Readonly<{
   $schema?: string
   protocol: typeof VCM_CONFIG_PROTOCOL
   schemaVersion: typeof VCM_CONFIG_SCHEMA_VERSION
+  /** component-catalog CLI 输出；与 metadata target 解耦。 */
+  componentCatalogOutput?: string
   metadataTargets: readonly VcmMetadataTarget[]
 }>
 
@@ -66,6 +71,17 @@ export function findVcmMetadataTarget(
     throw new Error(`VCM target "${targetId}" not found. Available targets: ${config.metadataTargets.map(item => item.id).join(', ')}`)
   }
   return target
+}
+
+export function resolveComponentCatalogOutput(
+  config: VcmMetadataConfig,
+  target?: VcmMetadataTarget,
+): string {
+  const rootOutput = config.componentCatalogOutput?.trim()
+  if (rootOutput !== undefined && rootOutput.length > 0) return rootOutput
+  const legacyOutput = target?.outputs.componentCatalog?.trim()
+  if (legacyOutput !== undefined && legacyOutput.length > 0) return legacyOutput
+  return VCM_DEFAULT_COMPONENT_CATALOG_OUTPUT
 }
 
 export function createVcmTargetGeneratorOptions(
@@ -107,10 +123,12 @@ function parseVcmMetadataConfig(document: unknown, configPath: string): VcmMetad
   }
   const targets = targetsValue.map((target, index) => parseVcmMetadataTarget(target, `${configPath}:metadataTargets[${String(index)}]`))
   assertUniqueTargetIds(targets, configPath)
+  const componentCatalogOutput = optionalString(root, 'componentCatalogOutput', configPath)
   return {
     ...(schema === undefined ? {} : { $schema: schema }),
     protocol: VCM_CONFIG_PROTOCOL,
     schemaVersion: VCM_CONFIG_SCHEMA_VERSION,
+    ...(componentCatalogOutput === undefined ? {} : { componentCatalogOutput }),
     metadataTargets: targets,
   }
 }
@@ -159,10 +177,11 @@ function parseVcmMetadataRoot(value: unknown, path: string): VcmMetadataRoot {
 
 function parseVcmMetadataTargetOutputs(value: unknown, path: string): VcmMetadataTargetOutputs {
   const outputs = requireRecord(value, path)
+  const componentCatalog = optionalString(outputs, 'componentCatalog', path)
   return {
     runtime: requiredString(outputs, 'runtime', path),
     jsdocTodoLog: requiredString(outputs, 'jsdocTodoLog', path),
-    componentCatalog: requiredString(outputs, 'componentCatalog', path),
+    ...(componentCatalog === undefined ? {} : { componentCatalog }),
   }
 }
 

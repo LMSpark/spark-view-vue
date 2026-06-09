@@ -22,6 +22,7 @@
         "build:java": "node scripts/build-all.mjs --skip-fe",
         "build:analyze": "cross-env ANALYZE=true node scripts/build-frontend.mjs",
         "generate:module-metadata": "pnpm exec tsx --no-cache packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts",
+        "generate:vcm-metadata": "pnpm exec tsx --no-cache packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts -- --target project-model && pnpm exec tsx --no-cache packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts -- --target project-page-surface",
         "generate:component-catalog": "pnpm exec tsx --no-cache packages/vite-plugin-spark-catalog/src/cli.ts",
         "diagnose:module-metadata": "pnpm exec tsx --no-cache packages/vite-plugin-spark-catalog/src/module-metadata-cli.ts --diagnose-only",
         "build:check": "pnpm run generate:module-metadata && vue-tsc --noEmit --skipLibCheck && node scripts/build-frontend.mjs",

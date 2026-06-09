@@ -42,6 +42,7 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
   private projectTypeValue: string
   private projectIcon: string | undefined
   private projectDescriptionValue: string
+  private projectPlanningAttachmentRef: string | undefined
   private projectHomeNodeId: string | undefined
   private projectOrder: number
   private projectCreatedAt: string | undefined
@@ -88,6 +89,9 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
       projectType: this.projectType,
       ...(this.icon === undefined ? {} : { icon: this.icon }),
       description: this.description,
+      ...(this.projectPlanningAttachmentRef === undefined
+        ? {}
+        : { planningAttachmentRef: this.projectPlanningAttachmentRef }),
       ...(this.homeNodeId === undefined ? {} : { homeNodeId: this.homeNodeId }),
       order: this.order,
       ...(this.createdAt === undefined ? {} : { createdAt: this.createdAt }),
@@ -171,6 +175,10 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     }
     if (project.icon !== undefined) this.projectIcon = project.icon.trim() || undefined
     if (project.description !== undefined) this.projectDescriptionValue = project.description
+    if (project.planningAttachmentRef !== undefined) {
+      const ref = project.planningAttachmentRef.trim()
+      this.projectPlanningAttachmentRef = ref.length === 0 ? undefined : ref
+    }
     if (project.homeNodeId !== undefined) this.projectHomeNodeId = project.homeNodeId.trim() || undefined
     if (project.order !== undefined) this.projectOrder = project.order
     if (project.createdAt !== undefined) this.projectCreatedAt = project.createdAt

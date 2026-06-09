@@ -22,6 +22,7 @@ export type NavigationNodeDraftNode = {
   nodeKind: NavNodeKind
   dividerAfter: boolean
   description: string
+  planningAttachmentRef: string
   path: string
   linkTarget: NonNullable<ProjectNodeData['linkTarget']>
   childPlacement: string
@@ -112,6 +113,7 @@ export function createNavigationNodeDraft(navNode: ProjectNodeData): NavigationN
     nodeKind: navNode.nodeKind ?? 'page',
     dividerAfter: navNode.dividerAfter ?? false,
     description: navNode.description ?? '',
+    planningAttachmentRef: navNode.planningAttachmentRef ?? '',
     path: navNode.path ?? '',
     linkTarget: navNode.linkTarget === 'new-tab' || navNode.linkTarget === 'self' ? navNode.linkTarget : 'iframe',
     refId: navNode.refId ?? '',
@@ -237,6 +239,9 @@ export function createNavigationNodePatch(input: NavigationNodeDraft): Navigatio
     icon: nodeDto.icon,
     dividerAfter: nodeDto.dividerAfter,
     description: nodeDto.description,
+    ...(nodeDto.planningAttachmentRef.trim().length > 0
+      ? { planningAttachmentRef: nodeDto.planningAttachmentRef.trim() }
+      : {}),
     path: nodeDto.path,
     linkTarget: nodeDto.linkTarget,
     childPlacement: nodeDto.childPlacement,

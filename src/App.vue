@@ -163,7 +163,9 @@ import ThemeConfigurator from '@/layout/ThemeConfigurator.vue'
 import { createAiHostRunBridge } from '@/services/ai-host-run-bridge'
 import { appAiAgent } from '@/services/ai-host'
 import { createAuthHeaders } from '@/services/http'
+import { chainAiHostRunPrepare } from '@/services/ai-host-run-prepare'
 import { preparePageDesignHostRun } from '@/services/page-design-host-run-provider'
+import { prepareProjectPlanningHostRun } from '@/services/project-planning-host-run-provider'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -589,7 +591,10 @@ onMounted(() => {
   if (_stopAiHostRunBridge === null) {
     _stopAiHostRunBridge = createAiHostRunBridge({
       host: appAiAgent,
-      prepareRun: preparePageDesignHostRun,
+      prepareRun: chainAiHostRunPrepare(
+        preparePageDesignHostRun,
+        prepareProjectPlanningHostRun,
+      ),
     }).start()
   }
 

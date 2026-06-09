@@ -76,6 +76,24 @@ export type ProjectDirtyProjection = {
   hasAnyDirty: boolean
 }
 
+/** 项目级策划输入：短需求 + 可选详细说明附件引用。 */
+export type ProjectPlanningInput = Readonly<{
+  /** 项目级短需求；优先 navigation 根节点 description，否则 project.description。 */
+  requirement: string
+  /** 策划详细说明附件引用；正文由工作区解析后传给 LLM。 */
+  planningAttachmentRef?: string
+}>
+
+/** 单个导航节点策划输入：节点 description + 可选附件引用。 */
+export type NavigationPlanningInput = Readonly<{
+  nodeId: string
+  title: string
+  nodeKind: string
+  /** 节点短需求，即 navigation description。 */
+  requirement: string
+  planningAttachmentRef?: string
+}>
+
 export type ProjectInfo = {
   /** 租户 ID；多租户环境下用于隔离项目。 */
   tenantId?: string | undefined
@@ -89,6 +107,8 @@ export type ProjectInfo = {
   icon?: string | undefined
   /** 项目描述，供导航、规划和 AI 设计理解项目目标。 */
   description: string
+  /** 策划详细说明附件引用（文件 ID / 工作区路径等，由 IO 层约定）。 */
+  planningAttachmentRef?: string | undefined
   /** 项目首页导航节点 ID。 */
   homeNodeId?: string | undefined
   /** 项目排序值。 */

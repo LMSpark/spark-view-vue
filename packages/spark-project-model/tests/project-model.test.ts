@@ -415,4 +415,68 @@ describe('ProjectModel', () => {
       { url: '/api/navigation/nodes/orders/move', body: { newParentId: null, index: 0 } },
     ])
   })
+
+  it('reads project planning input from navigation root description and attachment ref', () => {
+    const workspace = createWorkspace()
+    const project = workspace.project
+    project.replaceProjectInfo({
+      description: '项目级描述回退',
+      planningAttachmentRef: 'attachments/project-fallback.md',
+    })
+    project.replaceNavigationRoot({
+      ...createRoot([]),
+      description: '根节点短需求',
+      planningAttachmentRef: 'attachments/spec-v1.md',
+    })
+
+    expect(project.readProjectPlanningInput()).toEqual({
+      requirement: '根节点短需求',
+      planningAttachmentRef: 'attachments/spec-v1.md',
+    })
+  })
+
+  it('reads navigation node planning inputs with per-node attachment refs', () => {
+    const workspace = createWorkspace()
+    const project = workspace.project
+    project.replaceNavigationRoot(createRoot([
+      {
+        id: 'orders',
+        title: '订单模块',
+        nodeKind: 'module',
+        description: '订单域',
+        planningAttachmentRef: 'attachments/orders.md',
+        children: [
+          {
+            id: 'orders-list',
+            title: '订单列表',
+            nodeKind: 'page',
+            path: '/orders',
+            description: '列表页需求',
+            planningAttachmentRef: 'attachments/orders-list.md',
+          },
+        ],
+      },
+    ]))
+
+    expect(project.readNavigationNodePlanningInput('orders-list')).toEqual({
+      nodeId: 'orders-list',
+      title: '订单列表',
+      nodeKind: 'page',
+      requirement: '列表页需求',
+      planningAttachmentRef: 'attachments/orders-list.md',
+    })
+    expect(project.readPlanningProjection().find(item => item.pageId === 'orders')?.planningAttachmentRef)
+      .toBe('attachments/orders-list.md')
+  })
+
+  it('falls back to project.description when navigation root description is empty', () => {
+    const workspace = createWorkspace()
+    const project = workspace.project
+    project.replaceProjectInfo({ description: '仅项目描述' })
+    project.replaceNavigationRoot(createRoot([]))
+
+    expect(project.readProjectPlanningInput()).toEqual({
+      requirement: '仅项目描述',
+    })
+  })
 })

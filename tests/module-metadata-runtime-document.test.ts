@@ -6,7 +6,7 @@ import { readModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-
 describe('readModuleMetadataRuntimeDocument', () => {
   it('parses generated pageDesign runtime metadata', () => {
     const raw: unknown = JSON.parse(readFileSync(
-      resolve(process.cwd(), 'src/services/page-design/page-design-module-metadata.runtime.generated.json'),
+      resolve(process.cwd(), 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
       'utf8',
     ))
     const document = readModuleMetadataRuntimeDocument(raw)

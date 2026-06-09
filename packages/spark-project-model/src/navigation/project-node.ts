@@ -73,6 +73,8 @@ export type ProjectNodeData = {
   title: string
   /** 节点业务描述，供 AI 策划和页面设计理解用途。 */
   description?: string | undefined
+  /** 节点策划详细说明附件引用；正文由工作区解析后传给 LLM。 */
+  planningAttachmentRef?: string | undefined
   /** 节点版本号或版本标签。 */
   version?: string | undefined
   /** 节点图标名。 */
@@ -128,6 +130,8 @@ export type ProjectNodeNavigationPatch = {
   dividerAfter?: boolean | undefined
   /** 新节点描述。 */
   description?: string | undefined
+  /** 新策划详细说明附件引用。 */
+  planningAttachmentRef?: string | undefined
   /** 新路由路径。 */
   path?: string | undefined
   /** link 节点新打开目标。 */
@@ -252,6 +256,8 @@ export type ProjectPageNodeSummary = Record<string, unknown> & {
   designSurface: ProjectPageSurface
   /** 页面节点自身描述。 */
   description: string
+  /** 页面节点策划详细说明附件引用。 */
+  planningAttachmentRef?: string
   /** 从祖先或上下文节点继承的描述列表。 */
   descriptionContext: ProjectDescriptionContext[]
   /** 聚合后的有效描述文本，供 AI 理解页面意图。 */
@@ -317,6 +323,7 @@ export class ProjectNode {
     if (!('nodeKind' in patch)) delete next.nodeKind
     if (!('refId' in patch)) delete next.refId
     if (!('permissionMode' in patch)) delete next.permissionMode
+    if (!('planningAttachmentRef' in patch)) delete next.planningAttachmentRef
     if (!('planningStatus' in patch)) delete next.planningStatus
     if (!('implGate' in patch)) delete next.implGate
     if (!('upstreamContractsSatisfied' in patch)) delete next.upstreamContractsSatisfied
@@ -325,6 +332,7 @@ export class ProjectNode {
 
     if (!next.icon) delete next.icon
     if (!next.description) delete next.description
+    if (!next.planningAttachmentRef) delete next.planningAttachmentRef
     if (!next.path) delete next.path
     if (next.nodeKind !== 'link' || !next.linkTarget) delete next.linkTarget
     if (!next.childPlacement) delete next.childPlacement
@@ -388,6 +396,8 @@ export class ProjectNode {
   get context(): ProjectNodeData['context'] { return this.#node.context }
   /** 权限不匹配时的展示策略。 */
   get permissionMode(): NavPermissionMode | undefined { return this.#node.permissionMode }
+  /** 节点策划详细说明附件引用。 */
+  get planningAttachmentRef(): string | undefined { return this.#node.planningAttachmentRef }
   /** Agent 策划闸门。 */
   get planningStatus(): ProjectPageNodeSummary['planningStatus'] { return this.#node.planningStatus }
   /** pageDesign 实现放行闸门。 */

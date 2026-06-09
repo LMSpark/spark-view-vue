@@ -6,10 +6,10 @@ import {
   PAGE_DESIGN_MODULE_ID,
   resolvePageDesignPlanningContext,
 } from '@/services/page-design-business'
-import { pageDesignRuntimeMetadataDocument } from '@/services/page-design/page-design-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
 
 function readPageDesignProjectMetadata() {
-  const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
+  const projectModule = projectPageSurfaceRuntimeMetadataDocument.modules.find(
     module => module.rootApi.kind === 'project',
   )
   if (projectModule === undefined) {
@@ -17,9 +17,9 @@ function readPageDesignProjectMetadata() {
   }
   return resolveModuleMetadataJson(projectModule, {
     inlineSchemaRefs: false,
-    ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+    ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
       ? {}
-      : { schemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
+      : { schemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
   })
 }
 
@@ -107,9 +107,9 @@ describe('pageDesign vcm_script model edit', () => {
       options: {
         moduleId: PAGE_DESIGN_MODULE_ID,
         instance: project,
-        ...(pageDesignRuntimeMetadataDocument.$defs === undefined
+        ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
           ? {}
-          : { jsonSchemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
+          : { jsonSchemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
       },
     })
 

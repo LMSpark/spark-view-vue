@@ -6,7 +6,7 @@
  * 输出路径来自 config/ai/vcm.json 的 target.outputs.componentCatalog。
  *
  * 用法：
- *   npx tsx packages/vite-plugin-spark-catalog/src/cli.ts --target page-design
+ *   npx tsx packages/vite-plugin-spark-catalog/src/cli.ts
  */
 
 import { resolve } from 'node:path'
@@ -19,8 +19,8 @@ import {
 } from './scan-config'
 import {
   VCM_CONFIG_FILE_NAME,
-  findVcmMetadataTarget,
   readVcmMetadataConfig,
+  resolveComponentCatalogOutput,
 } from './vcm-config'
 import { createLogger } from './utils'
 
@@ -28,9 +28,8 @@ const logger = createLogger('catalog-cli')
 
 const root = resolve(import.meta.dirname, '../../..')
 const configFile = readCliOption('--config') ?? VCM_CONFIG_FILE_NAME
-const targetId = readCliOption('--target') ?? 'page-design'
 const vcmConfig = readVcmMetadataConfig(root, configFile)
-const vcmTarget = findVcmMetadataTarget(vcmConfig, targetId)
+const catalogOutFile = resolveComponentCatalogOutput(vcmConfig)
 
 function parseBooleanEnv(name: string): boolean | undefined {
   const raw = process.env[name]
@@ -64,17 +63,17 @@ const vcmCheckerOptions: VcmCheckerOptions = pickDefinedVcmOptions({
 
 const includeGlobalProps = parseBooleanEnv('SPARK_CATALOG_INCLUDE_GLOBAL_PROPS') ?? false
 
-logger.info(`🚀 开始生成组件目录 ... config=${configFile} target=${vcmTarget.id}`)
+logger.info(`🚀 开始生成组件目录 ... config=${configFile} output=${catalogOutFile}`)
 
 generateJsonCatalog(root, {
   featurePatterns: [...COMPONENT_SCAN_PATTERNS],
   exclude: [...COMPONENT_EXCLUDE_PATTERNS, ...CATALOG_FEATURE_EXCLUDE_PATTERNS],
   includeGlobalProps,
-  catalogOutFile: vcmTarget.outputs.componentCatalog,
+  catalogOutFile,
   vcmCheckerOptions,
 })
 
-logger.info(`✅ component-catalog.json 已写入 ${vcmTarget.outputs.componentCatalog}`)
+logger.info(`✅ component-catalog.json 已写入 ${catalogOutFile}`)
 
 function readCliOption(name: string): string | undefined {
   const equalsPrefix = `${name}=`

@@ -3,12 +3,12 @@ import {
   createClassModelDocumentFromRuntimeDocument,
   VcmNativeRuntime,
 } from '@spark-appworks/spark-ai/vcm-native'
-import componentCatalogDocumentJson from '@/services/page-design/payload/component-catalog.json'
-import { pageDesignRuntimeMetadataDocument } from '@/services/page-design/page-design-module-metadata.runtime'
+import componentCatalogDocumentJson from '../../generated/vcm/component-catalog.json'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
 
 function createPageDesignVcmRuntime(): VcmNativeRuntime {
   return new VcmNativeRuntime({
-    document: createClassModelDocumentFromRuntimeDocument(pageDesignRuntimeMetadataDocument),
+    document: createClassModelDocumentFromRuntimeDocument(projectPageSurfaceRuntimeMetadataDocument),
     componentCatalog: componentCatalogDocumentJson,
     scriptExecutor: () => null,
   })
@@ -61,7 +61,7 @@ describe('pageDesign VCM-native knowledge integration', () => {
   })
 
   it('openPageDesign metadata includes INVALID_TOOL_ARGS failureMode', () => {
-    const projectModule = pageDesignRuntimeMetadataDocument.modules.find(
+    const projectModule = projectPageSurfaceRuntimeMetadataDocument.modules.find(
       module => module.rootApi.kind === 'project',
     )
     const openPageDesign = projectModule?.rootApi.actions.find(action => action.name === 'openPageDesign')
@@ -70,7 +70,7 @@ describe('pageDesign VCM-native knowledge integration', () => {
   })
 
   it('editNodeTree metadata guides native page callback usage', () => {
-    const configPageApi = pageDesignRuntimeMetadataDocument.modules
+    const configPageApi = projectPageSurfaceRuntimeMetadataDocument.modules
       .flatMap(module => Object.values(module.apiRegistry ?? {}))
       .find(api => api.kind === 'config-page')
     const editNodeTree = configPageApi?.actions.find(action => action.name === 'editNodeTree')

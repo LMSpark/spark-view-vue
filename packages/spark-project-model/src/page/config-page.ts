@@ -284,6 +284,9 @@ export class ConfigPageNode extends ProjectNode {
       nodeId: this.id, nodeKind: this.nodeKind,
       designSurface: resolveProjectPageSurface(node),
       description: this.description,
+      ...(this.planningAttachmentRef === undefined
+        ? {}
+        : { planningAttachmentRef: this.planningAttachmentRef }),
       descriptionContext: this.descriptionContext,
       effectiveDescription: this.effectiveDescription,
       ...(this.planningStatus !== undefined ? { planningStatus: this.planningStatus } : {}),
