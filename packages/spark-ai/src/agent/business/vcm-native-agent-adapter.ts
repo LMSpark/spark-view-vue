@@ -373,10 +373,40 @@ function resolveLifecycleInstance<T>(
 
 function readRuntimeContextFromLifecycleArgs(args: readonly unknown[]): AiAgentRuntimeContext {
   const candidate = args[0]
-  if (!(candidate instanceof AiAgentRuntimeContext)) {
-    throw new Error('VcmNativeAgentAdapter lifecycle callback expected AiAgentRuntimeContext as the first argument.')
+  if (candidate instanceof AiAgentRuntimeContext) {
+    return candidate
   }
-  return candidate
+  const contextFields = readRuntimeContextFields(candidate)
+  if (contextFields !== null) {
+    return new AiAgentRuntimeContext(
+      contextFields.moduleId,
+      contextFields.moduleInstanceId,
+      contextFields.instanceId,
+    )
+  }
+  throw new Error('VcmNativeAgentAdapter lifecycle callback expected AiAgentRuntimeContext as the first argument.')
+}
+
+function readRuntimeContextFields(value: unknown): Readonly<{
+  moduleId: string
+  moduleInstanceId: string
+  instanceId: string
+}> | null {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) {
+    return null
+  }
+  const moduleId = readReflectStringField(value, 'moduleId')
+  const moduleInstanceId = readReflectStringField(value, 'moduleInstanceId')
+  const instanceId = readReflectStringField(value, 'instanceId')
+  if (moduleId === null || moduleInstanceId === null || instanceId === null) {
+    return null
+  }
+  return { moduleId, moduleInstanceId, instanceId }
+}
+
+function readReflectStringField(value: object, key: string): string | null {
+  const field: unknown = Reflect.get(value, key)
+  return typeof field === 'string' ? field : null
 }
 
 function createRuntimeContextForModuleInstance(moduleId: string, moduleInstanceId: string): AiAgentRuntimeContext {
