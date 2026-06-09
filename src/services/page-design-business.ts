@@ -136,8 +136,8 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           title: input => `pageDesign:${input.pageId}`,
           readonlySteps: [
             '策划约束已注入 effectiveDescription（来自 readPlanningProjection）；禁止从 navigationRoot 或菜单节点拼接需求。',
-            '先查询 ProjectModel 能力边界，再通过 openPageDesign(pageId) 进入 ConfigPageNode。',
-            '结构改写只走 vcm_script 原生对象链；函数参数以 VCM metadata schema 为准。',
+            '先 vcm_query / vcm_action_guide 读 schema，再 vcm_script；vcm_query 只用 kind/keyword/includeMembers，勿传 member。',
+            '结构改写只走 vcm_script 原生对象链；r-form 绑 currentRow，字段用 props.field，dataViewKey 格式 table@viewId。',
           ],
         }),
         resolveInstance: ctx => resolvePageDesignProject(options, ctx),
@@ -205,7 +205,9 @@ function pageDesignScriptSopLines(pageId: string): readonly string[] {
   return [
     `vcm_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
     'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
+    'r-form 绑定草稿行：dataViewKey="<Table>@default"、dataMember="currentRow"（或 contextDataMember="currentRow"）；字段节点用 props.field，勿用 prop。',
     'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "r-table", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });',
+    '提交按钮优先 append-row 闭环；若用 script.js 处理提交，rule.json 仍需表单绑定与列表区。',
   ]
 }
 

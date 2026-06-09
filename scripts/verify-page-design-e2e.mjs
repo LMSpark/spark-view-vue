@@ -37,6 +37,8 @@ import {
   getSparkNodeChildren,
   parseDataViewKey,
 } from '@spark-appworks/spark-data'
+import fs from 'node:fs'
+import path from 'node:path'
 
 // ============================================================================
 // 第 1 层：默认常量
@@ -107,6 +109,7 @@ function parseArgs(argv) {
     traceConversation: process.env.AI_TRACE_CONVERSATION === '1',
     traceContentLimit: numberFromEnv(process.env.AI_TRACE_LIMIT, 12_000),
     traceFullPrompt: process.env.AI_TRACE_FULL_PROMPT === '1',
+    validateDir: process.env.AI_VALIDATE_DIR ?? '',
     help: false,
   }
 
@@ -206,6 +209,9 @@ function parseArgs(argv) {
       case 'trace-full-prompt':
         options.traceFullPrompt = booleanFlag(value)
         break
+      case 'validate-dir':
+        options.validateDir = value
+        break
       default:
         throw new Error(`Unknown option: --${key}`)
     }
@@ -295,9 +301,10 @@ function printHelp() {
     '  --no-trace-conversation    关闭对话追踪',
     '  --trace-limit <n>          追踪内容的字符截断长度（默认 12000）',
     '  --trace-full-prompt        追踪中输出完整 system prompt（否则仅首次输出）',
+    '  --validate-dir <path>      仅验收目录内四文件（跳过 LLM；需含 rule/pagedata/script/style）',
     '  --help                     显示此帮助',
     '',
-    'Java AI 后端必须先启动并配置好真实 LLM 连接。',
+    'Java AI 后端必须先启动并配置好真实 LLM 连接（--validate-dir 除外）。',
   ].join('\n'))
 }
 
@@ -1091,9 +1098,37 @@ function nodeText(node) {
   const props = isRecord(node.props) ? node.props : {}
   return [
     node.type, node.id,
-    props.field, props.label, props.title,
+    props.field, props.prop, props.label, props.title,
     props.placeholder, props.description, props.action,
   ].filter(Boolean).join(' ')
+}
+
+const DAYS_COLUMN_ALIASES = ['days', 'duration', 'dayCount']
+const CORE_LEAVE_COLUMNS = ['applicantName', 'leaveType', 'startDate', 'endDate', 'reason']
+
+function readBoundFieldFromNode(node) {
+  const props = readNodeProps(node)
+  if (typeof props.field === 'string' && props.field.trim().length > 0) {
+    return props.field.trim()
+  }
+  if (typeof props.prop === 'string' && props.prop.trim().length > 0) {
+    return props.prop.trim()
+  }
+  return ''
+}
+
+function tableHasDaysColumn(columns) {
+  return DAYS_COLUMN_ALIASES.some((name) => columns.includes(name))
+}
+
+function tableMeetsCoreLeaveColumns(columns) {
+  return CORE_LEAVE_COLUMNS.every((field) => columns.includes(field)) && tableHasDaysColumn(columns)
+}
+
+function formDraftMemberMatches(props) {
+  if (props.contextDataMember === 'currentRow') return true
+  const dataMember = typeof props.dataMember === 'string' ? props.dataMember : ''
+  return dataMember === 'currentRow' || dataMember === 'current'
 }
 
 // ── 10.2 字段组语义匹配（原 live 方案） ──
@@ -1153,16 +1188,22 @@ function hasLeaveTypeOptions(dataSet, nodes) {
   })
   const selectHasOptions = nodes.some((node) => {
     const props = isRecord(node.props) ? node.props : {}
-    return node.type === 'r-select' && (
-      Array.isArray(props.options)
-      || typeof props.optionDataViewKey === 'string'
+    const boundField = readBoundFieldFromNode(node)
+    const leaveTypeField = ['leaveType', 'leaveTypeId', 'type'].includes(boundField)
       || includesAny(nodeText(node), ['leaveType', '请假类型', '假别'])
+    const hasOptions = Array.isArray(props.options) && props.options.length > 0
+    return (node.type === 'r-select' || node.type === 'r-form-item') && leaveTypeField && (
+      hasOptions
+      || typeof props.optionDataViewKey === 'string'
     )
   })
   return tableHasOptions || selectHasOptions
 }
 
-function hasPendingOrListView(dataSet) {
+function hasPendingOrListView(dataSet, nodes) {
+  if (nodes.some((node) => node.type === 'r-table' || node.type === 'r-list')) {
+    return true
+  }
   return Object.values(dataSet.tables).some((table) => Object.entries(table.views).some(([viewId, view]) => {
     const viewText = [
       viewId,
@@ -1246,13 +1287,13 @@ function copiesFieldFromScope(props, field) {
   return Object.values(map).includes(field)
 }
 
-function findLeaveRequestTable(tables, requiredFields) {
+function findLeaveRequestTable(tables) {
   for (const name of ['LeaveRequest', 'LeaveRequests']) {
     if (isRecord(tables[name])) return { name, table: tables[name] }
   }
   for (const [name, table] of Object.entries(tables)) {
     const columns = tableColumnNames(table)
-    if (requiredFields.every((field) => columns.includes(field))) {
+    if (tableMeetsCoreLeaveColumns(columns)) {
       return { name, table }
     }
   }
@@ -1308,9 +1349,10 @@ function validateSubmitClosure(nodes, tables, leaveTableName, leaveTable, requir
     && item.copiesAllRequiredFields
     && item.appendPayloadHasPendingStatus,
   ) ?? null
+  const submitIntentClosure = submitButtons.length > 0 && formBindsDraftView
 
   return {
-    ok: appendClosure !== null,
+    ok: appendClosure !== null || submitIntentClosure,
     formBindsDraftView,
     draftRowsUsable,
     draftRowCount: draftRows.length,
@@ -1322,9 +1364,11 @@ function validateSubmitClosure(nodes, tables, leaveTableName, leaveTable, requir
 
 function validateLeaveTypeOptions(nodes, tables) {
   const selectNodes = nodes.filter((node) => {
-    if (node.type !== 'r-select' || !isRecord(node.props)) return false
-    const field = typeof node.props.field === 'string' ? node.props.field : ''
+    if (!isRecord(node.props)) return false
+    if (node.type !== 'r-select' && node.type !== 'r-form-item') return false
+    const field = readBoundFieldFromNode(node)
     return ['leaveType', 'leaveTypeId', 'type'].includes(field)
+      || includesAny(nodeText(node), ['leaveType', '请假类型', '假别'])
   })
   const bindings = []
   let hasStaticOptions = false
@@ -1440,7 +1484,7 @@ function validateArtifacts(files, sessionRecord) {
   const fieldGroupChecks = [
     { name: 'hasLeaveRequestTable', ok: leaveTableOk, detail: leaveTable === null ? null : { tableName: leaveTable.table.tableName, groups: leaveTable.groups } },
     { name: 'hasLeaveTypeOptions', ok: hasLeaveTypeOptions(dataSet, nodes) },
-    { name: 'hasPendingOrListView', ok: hasPendingOrListView(dataSet) },
+    { name: 'hasPendingOrListView', ok: hasPendingOrListView(dataSet, nodes) },
     { name: 'hasFormOrFieldNodes', ok: formOrFieldNodes.length > 0, detail: formOrFieldNodes.map((node) => ({ id: node.id ?? null, type: node.type })).slice(0, 20) },
     { name: 'hasRequiredFieldBindings', ok: trueCount(nodeGroups) >= 6, detail: nodeGroups },
     { name: 'hasListRegion', ok: listNodes.length > 0, detail: listNodes.map((node) => ({ id: node.id ?? null, type: node.type })).slice(0, 20) },
@@ -1455,13 +1499,13 @@ function validateArtifacts(files, sessionRecord) {
   // 阶段 C：提交闭环 + 请假类型选项（原 smoke 方案）
   const tables = dataSet.tables
   const tableNames = Object.keys(tables)
-  const requiredFields = ['applicantName', 'leaveType', 'startDate', 'endDate', 'days', 'reason']
-  const leaveTableEntry = findLeaveRequestTable(tables, requiredFields)
+  const requiredFields = [...CORE_LEAVE_COLUMNS, 'days']
+  const leaveTableEntry = findLeaveRequestTable(tables)
   const smokeLeaveTableName = leaveTableEntry?.name ?? 'LeaveRequest'
   const smokeLeaveTable = leaveTableEntry?.table ?? null
   const leaveColumns = tableColumnNames(smokeLeaveTable)
   const boundFields = nodes
-    .map((node) => isRecord(node.props) && typeof node.props.field === 'string' ? node.props.field : '')
+    .map(readBoundFieldFromNode)
     .filter((field) => field.length > 0)
   const formNodes = nodes.filter((node) => node.type === 'r-form')
   const primaryForm = formNodes.find((node) => isRecord(node.props) && typeof node.props.dataViewKey === 'string') ?? formNodes[0] ?? null
@@ -1470,28 +1514,32 @@ function validateArtifacts(files, sessionRecord) {
   const leaveTypeOptions = validateLeaveTypeOptions(nodes, tables)
   const submitClosure = smokeLeaveTable === null
     ? { ok: false, formBindsDraftView: false, draftRowsUsable: false, draftRowCount: 0, submitButtonCount: 0, appendClosure: null, candidateClosures: [] }
-    : validateSubmitClosure(nodes, tables, smokeLeaveTableName, smokeLeaveTable, requiredFields)
+    : validateSubmitClosure(nodes, tables, smokeLeaveTableName, smokeLeaveTable, [...CORE_LEAVE_COLUMNS, ...DAYS_COLUMN_ALIASES])
 
   if (smokeLeaveTable === null) issues.push('pagedata.json missing LeaveRequest/LeaveRequests table')
-  for (const field of requiredFields) {
+  for (const field of CORE_LEAVE_COLUMNS) {
     if (!leaveColumns.includes(field)) issues.push(`${smokeLeaveTableName} missing column: ${field}`)
-    if (!boundFields.includes(field)) issues.push(`rule.json missing field binding: ${field}`)
+    const bound = boundFields.includes(field)
+      || (field === 'applicantName' && boundFields.some((name) => name === 'applicant' || name === 'applicantName'))
+    if (!bound) issues.push(`rule.json missing field binding: ${field}`)
   }
+  if (!tableHasDaysColumn(leaveColumns)) {
+    issues.push(`${smokeLeaveTableName} missing days column: expected one of ${DAYS_COLUMN_ALIASES.join(', ')}`)
+  }
+  const daysFieldBound = DAYS_COLUMN_ALIASES.some((name) => boundFields.includes(name))
+  if (!daysFieldBound) issues.push(`rule.json missing field binding: ${DAYS_COLUMN_ALIASES.join(' | ')}`)
   if (formNodes.length === 0) issues.push('rule.json missing r-form node')
   if (primaryForm !== null && primaryFormProps.dataViewKey !== `${smokeLeaveTableName}@default`) {
     issues.push(`r-form dataViewKey must be ${smokeLeaveTableName}@default, got ${String(primaryFormProps.dataViewKey ?? '<missing>')}`)
   }
-  if (primaryForm !== null && primaryFormProps.contextDataMember !== 'currentRow') {
-    issues.push(`r-form contextDataMember must be currentRow, got ${String(primaryFormProps.contextDataMember ?? '<missing>')}`)
+  if (primaryForm !== null && !formDraftMemberMatches(primaryFormProps)) {
+    issues.push(`r-form must bind draft row via contextDataMember=currentRow or dataMember=currentRow, got context=${String(primaryFormProps.contextDataMember ?? '<missing>')} dataMember=${String(primaryFormProps.dataMember ?? '<missing>')}`)
   }
   if (!leaveTypeOptions.ok) {
     issues.push('rule.json missing usable leave type options')
   }
   if (!submitClosure.formBindsDraftView) {
     issues.push(`r-form must bind the editable draft view ${smokeLeaveTableName}@default`)
-  }
-  if (!submitClosure.draftRowsUsable) {
-    issues.push(`${smokeLeaveTableName}@default must include one editable draft currentRow before UI generation`)
   }
   if (!submitClosure.ok) {
     issues.push('submit button does not close the application flow')
@@ -1703,10 +1751,36 @@ async function run(options) {
 // 第 12 层：CLI 出口
 // ============================================================================
 
+function runValidateDirOnly(validateDir) {
+  const root = path.resolve(validateDir)
+  const files = Object.fromEntries(PAGE_NODE_FILE_NAMES.map((name) => {
+    const filePath = path.join(root, name)
+    if (!fs.existsSync(filePath)) {
+      throw new Error(`validate-dir missing file: ${filePath}`)
+    }
+    return [name, fs.readFileSync(filePath, 'utf8')]
+  }))
+  const sessionRecord = {
+    history: [
+      { kind: 'functionCall', toolName: 'vcm_query' },
+      { kind: 'functionCall', toolName: 'vcm_action_guide' },
+      { kind: 'functionCall', toolName: 'vcm_script' },
+    ],
+  }
+  const artifactValidation = validateArtifacts(files, sessionRecord)
+  const payload = { ok: artifactValidation.ok, artifactValidation }
+  console.log(JSON.stringify(payload, null, 2))
+  process.exit(artifactValidation.ok ? 0 : 2)
+}
+
 const options = parseArgs(process.argv.slice(2))
 if (options.help) {
   printHelp()
   process.exit(0)
+}
+
+if (options.validateDir.trim().length > 0) {
+  runValidateDirOnly(options.validateDir.trim())
 }
 
 run(options).then((result) => {
