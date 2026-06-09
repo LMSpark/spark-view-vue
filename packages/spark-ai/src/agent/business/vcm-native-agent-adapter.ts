@@ -40,7 +40,12 @@ import type {
 } from './lifecycle-types'
 import type { AiAgentHost } from './ai-host'
 import type { AiAgentInputContract } from './business-task'
-import { AiAgentRegistration, type AiAgentRegistrationOptions } from './registration-types'
+import {
+  AiAgentRegistration,
+  type AiAgentRegistrationOptions,
+  type AiAgentToolLoopNudgeContext,
+} from './registration-types'
+import type { EnrichFunctionCallFailureCommand } from '../tool-loop/function-call-recovery-enricher'
 import { AiAgentRuntimeContext } from './scope-types'
 
 type VcmNativeAgentAdapterConstructor<T> = new (...args: never[]) => T
@@ -85,6 +90,10 @@ export type VcmNativeAgentAdapterRegisterOptions<T> = Readonly<{
     directive: AiAgentLifecycleDirective,
   ) => void | Promise<void>
   releaseModuleInstance?: (instance: T, moduleInstanceId: string) => void
+  toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
+  executionToolNames?: ReadonlySet<string>
+  planWithoutToolMarkers?: readonly string[]
+  enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 
 export class VcmNativeAgentAdapter {
@@ -150,6 +159,10 @@ export class VcmNativeAgentAdapter {
       ...(beforeFunctionCall === undefined ? {} : { beforeFunctionCall }),
       ...(afterFunctionCall === undefined ? {} : { afterFunctionCall }),
       ...(onStartSession === undefined ? {} : { onStartSession }),
+      ...(command.options.toolLoopNudge === undefined ? {} : { toolLoopNudge: command.options.toolLoopNudge }),
+      ...(command.options.executionToolNames === undefined ? {} : { executionToolNames: command.options.executionToolNames }),
+      ...(command.options.planWithoutToolMarkers === undefined ? {} : { planWithoutToolMarkers: command.options.planWithoutToolMarkers }),
+      ...(command.options.enrichRecoveryHints === undefined ? {} : { enrichRecoveryHints: command.options.enrichRecoveryHints }),
     }
     return new AiAgentRegistration(registrationOptions)
   }

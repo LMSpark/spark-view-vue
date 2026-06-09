@@ -290,6 +290,14 @@ function scanBusinessRegistrationRules(parsed, violations) {
     })
   }
 
+  if (/\bcreateAiAgentRegistration\b/u.test(text)) {
+    violations.push({
+      file,
+      line: 1,
+      message: 'createAiAgentRegistration is forbidden in src/services; use VcmNativeAgentAdapter.createRegistration only',
+    })
+  }
+
   if (/\bnew\s+AiModule\s*\(/u.test(text)) {
     violations.push({
       file,

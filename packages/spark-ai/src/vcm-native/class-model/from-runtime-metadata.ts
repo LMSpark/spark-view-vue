@@ -95,7 +95,7 @@ function inlineApis(api: AiApiObjectMetadata): readonly AiApiObjectMetadata[] {
 
 function createClassModel(
   api: AiApiObjectMetadata,
-  apiByKind: ReadonlyMap<string, AiApiObjectMetadata>,
+  _apiByKind: ReadonlyMap<string, AiApiObjectMetadata>,
   diagnostics: ClassModelDiagnostic[],
 ): ClassModel {
   const attributes = (api.attributes ?? []).map(attribute => createAttributeMeta(attribute, diagnostics, api.kind))

@@ -145,6 +145,21 @@ describe('verification rules', () => {
     expect(output).toContain('VcmNativeAgentAdapter')
   })
 
+  it('rejects createAiAgentRegistration in src/services', () => {
+    const root = createTempRoot()
+    writeFile(root, 'src/services/bad-registration.ts', [
+      "import { createAiAgentRegistration } from '@spark-appworks/spark-ai/agent'",
+      'void createAiAgentRegistration',
+    ].join('\n'))
+
+    const result = runNode(['tools/verify-ai-codegen-rules.mjs', '--root', root, '--include-root', 'src'])
+    const output = `${result.stdout}\n${result.stderr}`
+
+    expect(result.status).toBe(1)
+    expect(output).toContain('createAiAgentRegistration is forbidden in src/services')
+    expect(output).toContain('VcmNativeAgentAdapter.createRegistration')
+  })
+
   it('rejects removed parameter-surface hooks in src/services', () => {
     const root = createTempRoot()
     const oldQuery = ['query', 'Payloads'].join('')
@@ -263,6 +278,9 @@ describe('verification rules', () => {
     writeFile(root, 'packages/spark-ai/src/bad.ts', [
       "export const PAGE_DESIGN_TRACE = 'pageDesign should stay in business packages'",
     ].join('\n'))
+    writeFile(root, 'packages/spark-ai/src/agent/native-runtime/native-script-sandbox.ts', [
+      "export const hint = 'await this.openPageDesign({ pageId })'",
+    ].join('\n'))
     writeFile(root, 'packages/spark-ai/src/vcm-native/tests/class-model.test.ts', [
       "export const fixtureUrl = 'metadata://page-design-runtime'",
     ].join('\n'))
@@ -272,6 +290,7 @@ describe('verification rules', () => {
 
     expect(result.status).toBe(1)
     expect(output).toContain('spark-ai kernel must not contain business material')
+    expect(output).toContain('openPageDesign')
     expect(output).not.toContain('class-model.test.ts')
   })
 })

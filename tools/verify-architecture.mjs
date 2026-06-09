@@ -67,6 +67,9 @@ function checkSparkAiBusinessMaterial(root, exclude, violations) {
     { pattern: /\bpageDesign\b/u, label: 'pageDesign' },
     { pattern: /\bPAGE_DESIGN_[A-Z0-9_]*\b/u, label: 'PAGE_DESIGN_*' },
     { pattern: /\bpage-design\b/u, label: 'page-design' },
+    { pattern: /\bopenPageDesign\b/u, label: 'openPageDesign' },
+    { pattern: /\beditDataSet\b/u, label: 'editDataSet' },
+    { pattern: /\beditNodeTree\b/u, label: 'editNodeTree' },
   ]
 
   for (const filePath of files) {
@@ -248,7 +251,7 @@ function checkSparkAiPublicSurface(root, violations) {
     assertExactSet(exportKeys, allowedSparkAiExportKeys, 'packages/spark-ai/package.json', 1, 'spark-ai package exports', violations)
   }
 
-  for (const file of ['tsconfig.json', 'tsconfig.typecheck.json', 'vite.config.ts', 'vitest.config.ts']) {
+  for (const file of ['tsconfig.json', 'tsconfig.typecheck.json', 'vite.config.ts', 'vite.codex-dev.mjs', 'vitest.config.ts', 'vitest.spark-ai.config.ts']) {
     const filePath = path.join(root, file)
     if (!fs.existsSync(filePath)) continue
     const content = fs.readFileSync(filePath, 'utf8')

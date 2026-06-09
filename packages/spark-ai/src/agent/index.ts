@@ -68,7 +68,13 @@ export {
 
 export type {
   AiAgentRegistrationOptions,
+  AiAgentToolLoopNudgeContext,
+  AiAgentToolLoopNudgeReason,
 } from './business/registration-types'
+
+export type {
+  EnrichFunctionCallFailureCommand,
+} from './tool-loop/function-call-recovery-enricher'
 
 export type {
   VcmNativeAgentAdapterRegistrationCommand,

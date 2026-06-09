@@ -28,7 +28,6 @@ const GLOBAL_ERROR_RECOVERY: Readonly<Record<string, readonly string[]>> = {
   SCRIPT_EXECUTION_FAILED: [
     '脚本恢复：vcm_action_guide({ kind: "<kind>", actionName: "<actionName>" }) 核对 usageRules 与 resultApis。',
     'vcm_script 参数名必须是 script；this 绑定当前业务根实例。',
-    'openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree => ...)/page.editDataSet(async ds => ...)，勿用 page.call()。',
   ],
   SCRIPT_ACTION_FAILED: [
     '脚本链式调用返回业务失败：按 tool result 原始 code 修正；必要时 vcm_action_guide 对照 paramsSchema。',
@@ -69,10 +68,15 @@ export type EnrichFunctionCallFailureCommand = Readonly<{
   callResult: AiAgentFunctionCallFailure
 }>
 
+export type EnrichFunctionCallResultOptions = Readonly<{
+  enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
+}>
+
 export function enrichFunctionCallResult(
   command: EnrichFunctionCallFailureCommand,
+  options: EnrichFunctionCallResultOptions = {},
 ): AiAgentFunctionCallResult<unknown> {
-  const hints = collectRecoveryHints(command)
+  const hints = collectRecoveryHints(command, options)
   if (hints.length === 0) return command.callResult
   return {
     ...command.callResult,
@@ -81,14 +85,29 @@ export function enrichFunctionCallResult(
   }
 }
 
-function collectRecoveryHints(command: EnrichFunctionCallFailureCommand): readonly string[] {
+function collectRecoveryHints(
+  command: EnrichFunctionCallFailureCommand,
+  options: EnrichFunctionCallResultOptions,
+): readonly string[] {
   const context = resolveFailedFunctionContext(command)
   const hints: string[] = []
 
   appendProtocolRecoveryHints(hints, command)
   appendGlobalRecoveryHints(hints, command.callResult.code, context)
+  appendBusinessRecoveryHints(hints, command, options.enrichRecoveryHints)
 
   return uniqueHints(hints)
+}
+
+function appendBusinessRecoveryHints(
+  hints: string[],
+  command: EnrichFunctionCallFailureCommand,
+  enrichRecoveryHints: EnrichFunctionCallResultOptions['enrichRecoveryHints'],
+): void {
+  if (enrichRecoveryHints === undefined) return
+  for (const hint of enrichRecoveryHints(command)) {
+    hints.push(hint)
+  }
 }
 
 function appendProtocolRecoveryHints(
@@ -104,33 +123,13 @@ function appendProtocolRecoveryHints(
       hints.push(`"${actionName}" 是协议工具名，不是 actionName；请 vcm_query({ includeMembers: true }) 选择业务 action。`)
     }
     if (code === 'FUNCTION_NOT_FOUND') {
-      hints.push('actionName 必须是 openPageDesign 等业务 action，不能是 vcm_script 等协议工具。')
+      hints.push('actionName 必须是业务 action（如 "<actionName>"），不能是 vcm_script 等协议工具。')
     }
     return
   }
 
   if (code === 'INVALID_VCM_NATIVE_TOOL_ARGS' && toolName === VCM_NATIVE_TOOL_NAMES.script) {
     hints.push('vcm_script 形状：{ script: "<js body>" }；不再接受 code/javascript/path 等旧字段。')
-  }
-
-  if (code === 'SCRIPT_EXECUTION_FAILED' && toolName === VCM_NATIVE_TOOL_NAMES.script) {
-    if (command.callResult.msg.includes('toJSON')) {
-      hints.push('脚本勿调 toJSON；用 openPageDesign → editDataSet/editNodeTree mutator 链式 API。')
-    }
-    if (command.callResult.msg.includes('.call is not a function')) {
-      hints.push('ConfigPageNode 无 call()；改用 page.editNodeTree(async tree => ...) / page.editDataSet(async ds => ...)。')
-    }
-    if (command.callResult.msg.includes('editDataSet is not a function')
-      || command.callResult.msg.includes('editNodeTree is not a function')) {
-      hints.push('vcm_script 必须先 await this.openPageDesign({ pageId }) 得到 page，再 await page.editDataSet(async ds => ...)。')
-    }
-    if (command.callResult.msg.includes("reading 'includes'")) {
-      hints.push('createTable 签名：createTable({ tableName: "<TableName>", columns: [{ name, type, label }] })；勿用 positional 参数。')
-      hints.push('先 editDataSet 建表与 default 视图，再 editNodeTree 按 VCM 元数据声明的节点 type 和 props schema 构造节点。')
-    }
-    if (command.callResult.msg.includes('run is not a function')) {
-      hints.push('editDataSet/editNodeTree 必须直接传函数：page.editDataSet(async ds => ...)；勿把 createTable 参数对象当成 run。')
-    }
   }
 }
 

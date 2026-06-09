@@ -56,19 +56,7 @@ export async function executeModuleScript(
     }
     const locationText = location === undefined ? '' : `，脚本第 ${String(location.line)} 行`
     const errorMessage = toErrorMessage(error)
-    const chainHint = errorMessage.includes('toJSON')
-      ? '勿对 DataSet/DataView/Tree 调 toJSON；先 const page = await this.openPageDesign({ pageId })，再 await page.editDataSet(async ds => ...)。'
-      : errorMessage.includes('.call is not a function')
-        ? 'openPageDesign 返回 ConfigPageNode 链式对象，用 page.editNodeTree(async tree => ...)/editDataSet(async ds => ...)，勿 page.call()。'
-        : errorMessage.includes('editDataSet is not a function') || errorMessage.includes('editNodeTree is not a function')
-          ? '必须先 await this.openPageDesign({ pageId }) 得到 page，再 page.editDataSet(async ds => ...)；勿省略 await。'
-          : errorMessage.includes("reading 'includes'")
-            ? 'DataSet 工具 API 用 t.createTable({ tableName, columns })；勿对 undefined 调 includes。'
-            : errorMessage.includes('run is not a function')
-              ? 'editDataSet/editNodeTree 直接传 callback：page.editDataSet(async ds => ...)；兼容 { run: fn }。'
-              : errorMessage.includes('received non-function run')
-                ? '勿把 createTable 参数对象传给 editDataSet；应 editDataSet(async ds => ds.createTable({...}))。'
-                : ''
+    const chainHint = resolveScriptChainHint(errorMessage)
     return AiAgentToolResult.failCode(
       'SCRIPT_EXECUTION_FAILED',
       `脚本执行失败${locationText}: ${errorMessage}`,
@@ -121,4 +109,26 @@ function findScriptErrorLocation(error: unknown): Readonly<{ line: number, colum
 
 function isIndexableObject(value: unknown): value is Readonly<Record<string, unknown>> {
   return value !== null && typeof value === 'object'
+}
+
+function resolveScriptChainHint(errorMessage: string): string {
+  if (errorMessage.includes('toJSON')) {
+    return '勿对复杂运行时对象调 toJSON；用 vcm_action_guide 查 mutator action 的 usageRules。'
+  }
+  if (errorMessage.includes('.call is not a function')) {
+    return '链式 API 对象勿用 .call()；用 vcm_action_guide 查 action 调用形状。'
+  }
+  if (errorMessage.includes(' is not a function')) {
+    return '脚本调用了非函数目标；先 await 前置 action 返回对象，再用 vcm_action_guide 核对 mutator 调用方式。'
+  }
+  if (errorMessage.includes("reading 'includes'")) {
+    return '参数或中间值为 undefined；用 vcm_action_guide 对照 paramsSchema 与 usageRules 后重试。'
+  }
+  if (errorMessage.includes('run is not a function')) {
+    return 'mutator action 需要 callback 参数；直接传 async 函数，兼容 { run: fn } 时 run 必须是函数。'
+  }
+  if (errorMessage.includes('received non-function run')) {
+    return '勿把业务参数对象当作 mutator run；callback 内再调用子 action。'
+  }
+  return ''
 }

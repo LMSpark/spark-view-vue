@@ -37,6 +37,7 @@ import { createAiAgentSessionId, toAiAgentRuntimeScope } from '../business/busin
 import type { AiAgentLifecycleDirective } from '../business/lifecycle-types'
 import type { AiAgentRegistration } from '../business/registration-types'
 import type { AiAgentScope, AiAgentRuntimeContext } from '../business/scope-types'
+import type { AiAgentToolLoopNudgeReason } from '../business/registration-types'
 import type { AiAgentChatRequest, AiAgentTurnMeta } from '../chat/chat-types'
 import type { AiAgentHistoryEntry, AiAgentSessionStore } from '../session/session-types'
 import type { AiAgentToolSpec } from '../tool-runtime'
@@ -83,10 +84,9 @@ const PSEUDO_TOOL_CALL_NUDGE = [
 
 const MAX_PSEUDO_TOOL_CALL_NUDGES = 2
 
-const PLAN_WITHOUT_TOOL_NUDGE = [
+const GENERIC_PLAN_WITHOUT_TOOL_NUDGE = [
   '上一次 assistant 正文只是计划/说明，没有真实 OpenAI tool_calls，runtime 未执行任何工具。',
-  '下一回合必须直接发起 tool_call（写页面时优先 vcm_script 或 openPageDesign），禁止再输出计划文字。',
-  '若已读完 vcm_action_guide，立即 vcm_script 调用 this.openPageDesign → page.editDataSet → page.editNodeTree。',
+  '下一回合必须直接发起 tool_call，禁止再输出计划文字。',
 ].join('\n')
 
 const MAX_PLAN_WITHOUT_TOOL_NUDGES = 3
@@ -98,39 +98,12 @@ const CATALOG_DISCOVERY_TOOL_NAMES = new Set<string>([
   VCM_NATIVE_TOOL_NAMES.actionGuide,
 ])
 
-const EXECUTION_TOOL_NAMES = new Set<string>([
+const DEFAULT_EXECUTION_TOOL_NAMES = new Set<string>([
   VCM_NATIVE_TOOL_NAMES.script,
-  'openPageDesign',
-  'readPlanningProjection',
 ])
 
 const MAX_EXECUTION_PHASE_NUDGES = 3
 const MAX_MODULE_SCRIPT_RETRY_NUDGES = 3
-
-function buildExecutionPhaseNudge(pageId: string): string {
-  return [
-    `目录/指南阶段已完成，pageId="${pageId}"。禁止再重复查目录，直接执行 vcm_script。`,
-    buildModuleScriptShapeReminder(pageId),
-    'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
-  ].join('\n')
-}
-
-function buildModuleScriptRetryNudge(pageId: string): string {
-  return [
-    '上一次 vcm_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
-    buildModuleScriptShapeReminder(pageId),
-    'createTable 签名是 createTable({ tableName, columns })，不是 createTable(name, columns)。',
-  ].join('\n')
-}
-
-/** 通用 vcm_script 形状提醒；业务场景细节由 registration.systemPrompt 提供。 */
-function buildModuleScriptShapeReminder(pageId: string): string {
-  return [
-    `vcm_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
-    'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
-    'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "<VCM 元数据声明的组件 type>", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });',
-  ].join('\n')
-}
 
 /* ── 输入/输出类型 ──────────────────────────────────────────── */
 
@@ -265,9 +238,12 @@ export class AiAgentToolLoopRunner {
           pendingMessages = [{ role: 'user', content: PSEUDO_TOOL_CALL_NUDGE }]
           continue
         }
-        if (mentionsPendingToolExecution(result.text) && planWithoutToolNudgeCount < MAX_PLAN_WITHOUT_TOOL_NUDGES) {
+        const planWithoutToolNudge = resolvePlanWithoutToolNudge(registration, runtimeContext)
+        if (planWithoutToolNudge !== undefined
+          && mentionsPendingToolExecution(result.text, registration.planWithoutToolMarkers)
+          && planWithoutToolNudgeCount < MAX_PLAN_WITHOUT_TOOL_NUDGES) {
           planWithoutToolNudgeCount += 1
-          pendingMessages = [{ role: 'user', content: PLAN_WITHOUT_TOOL_NUDGE }]
+          pendingMessages = [{ role: 'user', content: planWithoutToolNudge }]
           continue
         }
         sessionStore.appendMessage({
@@ -345,21 +321,25 @@ export class AiAgentToolLoopRunner {
 
       // V4 后端已通过 appendMessages 持久化本轮 assistant(tool_calls)+tool 结果；
       // 下一轮只需让后端基于 session.conversation 继续，避免重复发送同一批消息。
+      const executionPhaseNudge = resolveToolLoopNudge(registration, runtimeContext, 'execution_phase')
       if (
-        executionPhaseNudgeCount < MAX_EXECUTION_PHASE_NUDGES
-        && shouldNudgeExecutionPhase(sessionStore, runtimeContext, executedToolCalls)
+        executionPhaseNudge !== undefined
+        && executionPhaseNudgeCount < MAX_EXECUTION_PHASE_NUDGES
+        && shouldNudgeExecutionPhase(sessionStore, runtimeContext, executedToolCalls, registration.executionToolNames)
       ) {
         executionPhaseNudgeCount += 1
-        pendingMessages = [{ role: 'user', content: buildExecutionPhaseNudge(runtimeContext.moduleInstanceId) }]
+        pendingMessages = [{ role: 'user', content: executionPhaseNudge }]
         continue
       }
 
+      const moduleScriptRetryNudge = resolveToolLoopNudge(registration, runtimeContext, 'module_script_retry')
       if (
-        moduleScriptRetryNudgeCount < MAX_MODULE_SCRIPT_RETRY_NUDGES
+        moduleScriptRetryNudge !== undefined
+        && moduleScriptRetryNudgeCount < MAX_MODULE_SCRIPT_RETRY_NUDGES
         && shouldNudgeModuleScriptRetry(sessionStore, runtimeContext)
       ) {
         moduleScriptRetryNudgeCount += 1
-        pendingMessages = [{ role: 'user', content: buildModuleScriptRetryNudge(runtimeContext.moduleInstanceId) }]
+        pendingMessages = [{ role: 'user', content: moduleScriptRetryNudge }]
         continue
       }
 
@@ -517,14 +497,45 @@ function toLlmRoundTurn(turn: AiAgentTurnMeta, round: number): AiAgentTurnMeta {
   }
 }
 
-function mentionsPendingToolExecution(text: string): boolean {
+export function resolvePlanWithoutToolNudge<TInput extends AiJsonParams>(
+  registration: AiAgentRegistration<TInput>,
+  runtimeContext: AiAgentRuntimeContext,
+): string | undefined {
+  const businessNudge = registration.toolLoopNudge?.({
+    reason: 'plan_without_tool',
+    moduleInstanceId: runtimeContext.moduleInstanceId,
+    runtimeContext,
+  })
+  if (businessNudge === undefined || businessNudge.trim().length === 0) {
+    return undefined
+  }
+  return [GENERIC_PLAN_WITHOUT_TOOL_NUDGE, businessNudge.trim()].join('\n')
+}
+
+export function resolveToolLoopNudge<TInput extends AiJsonParams>(
+  registration: AiAgentRegistration<TInput>,
+  runtimeContext: AiAgentRuntimeContext,
+  reason: Extract<AiAgentToolLoopNudgeReason, 'execution_phase' | 'module_script_retry'>,
+): string | undefined {
+  const nudge = registration.toolLoopNudge?.({
+    reason,
+    moduleInstanceId: runtimeContext.moduleInstanceId,
+    runtimeContext,
+  })
+  if (nudge === undefined || nudge.trim().length === 0) {
+    return undefined
+  }
+  return nudge.trim()
+}
+
+function mentionsPendingToolExecution(
+  text: string,
+  extraMarkers: readonly string[] | undefined,
+): boolean {
   const normalized = text.trim().toLowerCase()
   if (normalized.length === 0) return false
   const markers = [
     VCM_NATIVE_TOOL_NAMES.script,
-    'openpagedesign',
-    'editnodetree',
-    'editdataset',
     '接下来我将',
     '我将使用',
     '我将调用',
@@ -532,17 +543,26 @@ function mentionsPendingToolExecution(text: string): boolean {
     'next i will',
     'i will use vcm_script',
     'i will call',
+    ...(extraMarkers ?? []),
   ]
-  return markers.some(marker => normalized.includes(marker))
+  return markers.some(marker => normalized.includes(marker.toLowerCase()))
+}
+
+function resolveExecutionToolNames(
+  executionToolNames: ReadonlySet<string> | undefined,
+): ReadonlySet<string> {
+  return executionToolNames ?? DEFAULT_EXECUTION_TOOL_NAMES
 }
 
 function shouldNudgeExecutionPhase(
   sessionStore: AiAgentSessionStore,
   context: AiAgentRuntimeContext,
   executedToolCalls: readonly AiAgentTransportToolCall[],
+  executionToolNames: ReadonlySet<string> | undefined,
 ): boolean {
   if (executedToolCalls.length === 0) return false
 
+  const executionNames = resolveExecutionToolNames(executionToolNames)
   const history = sessionStore.getSessionHistory(context)
   let functionGuideSucceeded = false
   let executionStarted = false
@@ -550,7 +570,7 @@ function shouldNudgeExecutionPhase(
   for (const entry of history) {
     if (!isCompletedFunctionCall(entry)) continue
     if (entry.toolName === VCM_NATIVE_TOOL_NAMES.actionGuide) functionGuideSucceeded = true
-    if (EXECUTION_TOOL_NAMES.has(entry.toolName)) executionStarted = true
+    if (executionNames.has(entry.toolName)) executionStarted = true
   }
 
   if (!functionGuideSucceeded || executionStarted) return false

@@ -45,7 +45,11 @@ import type {
   AiAgentBeforeFunctionCallOptions,
   AiAgentLifecycleDirective,
 } from './lifecycle-types'
-import { AiAgentRegistration } from './registration-types'
+import {
+  AiAgentRegistration,
+  type AiAgentToolLoopNudgeContext,
+} from './registration-types'
+import type { EnrichFunctionCallFailureCommand } from '../tool-loop/function-call-recovery-enricher'
 import { AiAgentTarget, type AiAgentRuntimeContext, type AiAgentScope } from './scope-types'
 
 // ═══════════════════════════════════════════════════════════════
@@ -93,6 +97,10 @@ export type AiAgentDefinition<TInput extends AiJsonParams = AiJsonParams> = Read
     directive: AiAgentLifecycleDirective,
   ) => void | Promise<void>
   releaseModuleInstance?: (moduleInstanceId: string) => void
+  toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
+  executionToolNames?: ReadonlySet<string>
+  planWithoutToolMarkers?: readonly string[]
+  enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 
 /** Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成） */
@@ -172,6 +180,10 @@ export function createAiAgentRegistration<TInput extends AiJsonParams = AiJsonPa
     ...(definition.onStartSession === undefined ? {} : { onStartSession: definition.onStartSession }),
     ...(definition.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: definition.onEndBusinessInstance }),
     ...(definition.releaseModuleInstance === undefined ? {} : { releaseModuleInstance: definition.releaseModuleInstance }),
+    ...(definition.toolLoopNudge === undefined ? {} : { toolLoopNudge: definition.toolLoopNudge }),
+    ...(definition.executionToolNames === undefined ? {} : { executionToolNames: definition.executionToolNames }),
+    ...(definition.planWithoutToolMarkers === undefined ? {} : { planWithoutToolMarkers: definition.planWithoutToolMarkers }),
+    ...(definition.enrichRecoveryHints === undefined ? {} : { enrichRecoveryHints: definition.enrichRecoveryHints }),
   })
 }
 

@@ -10,8 +10,11 @@ import {
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
   type AiAgentRuntimeContext,
+  type AiAgentToolLoopNudgeContext,
+  type EnrichFunctionCallFailureCommand,
   VcmNativeAgentAdapter,
 } from '@spark-appworks/spark-ai/agent'
+import { VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel, type ProjectWorkspace } from '@spark-appworks/spark-project-model'
@@ -276,12 +279,64 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
           instance,
           hookOptions,
         ),
+        executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
+        planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
+        toolLoopNudge: createProjectPlanningToolLoopNudge,
+        enrichRecoveryHints: enrichProjectPlanningRecoveryHints,
         ...(projectModelRuntimeMetadataDocument.$defs === undefined
           ? {}
           : { jsonSchemaDefs: projectModelRuntimeMetadataDocument.$defs }),
       },
     }),
   })
+}
+
+const PROJECT_PLANNING_EXECUTION_TOOL_NAMES = new Set<string>([
+  VCM_NATIVE_TOOL_NAMES.script,
+])
+
+const PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS = [
+  'readplanningprojection',
+  'readnavigationplanninginputs',
+  'applynavigationnodeedit',
+  'readprojectplanninginput',
+] as const
+
+function createProjectPlanningToolLoopNudge(context: AiAgentToolLoopNudgeContext): string | undefined {
+  const projectId = context.moduleInstanceId.trim()
+  if (projectId.length === 0) return undefined
+  switch (context.reason) {
+    case 'plan_without_tool':
+      return [
+        '策划阶段禁止只输出计划；下一回合必须发起真实 tool_call（vcm_script 或 vcm_action_guide）。',
+        `projectId="${projectId}"；只读写 navigation description，禁止 openPageDesign。`,
+      ].join('\n')
+    case 'execution_phase':
+      return [
+        `目录/指南阶段已完成，projectId="${projectId}"；直接 vcm_script 更新 navigation 策划文案。`,
+        '禁止 openPageDesign、editNodeTree、editDataSet；完成后 agent_complete({ summary })。',
+      ].join('\n')
+    case 'module_script_retry':
+      return [
+        '上一次 vcm_script 失败：按 RECOVERY_HINT 修正 navigation action 参数。',
+        '禁止 openPageDesign；只用 readProjectPlanningInput / applyNavigationNodeEdit 等策划 action。',
+      ].join('\n')
+    default:
+      return undefined
+  }
+}
+
+function enrichProjectPlanningRecoveryHints(command: EnrichFunctionCallFailureCommand): readonly string[] {
+  const { callResult } = command
+  const hints: string[] = []
+  const msg = callResult.msg.toLowerCase()
+  if (msg.includes('openpagedesign') || msg.includes('editnodetree') || msg.includes('editdataset')) {
+    hints.push('projectPlanning 阶段禁止 openPageDesign / editNodeTree / editDataSet；改用 navigation 策划 action。')
+  }
+  if (callResult.code === 'FUNCTION_NOT_FOUND') {
+    hints.push('策划 action 见 vcm_query({ kind: "project", includeMembers: true })；勿猜 pageDesign action 名。')
+  }
+  return hints
 }
 
 function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): string {

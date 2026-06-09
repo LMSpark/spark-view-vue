@@ -2,7 +2,7 @@ import { readdirSync, readFileSync, statSync } from 'node:fs'
 import { join } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
-const LEGACY_PROTOCOL_TOOL_PATTERN = /module_query|module_guide|module_attribute_guide|module_function_guide|module_find|module_attr|module_call|module_script|module_memory|PROTOCOL_TOOL_NAMES/u
+const LEGACY_PROTOCOL_TOOL_PATTERN = /\b(?:module_query|module_guide|module_attribute_guide|module_function_guide|module_find|module_attr|module_call|module_script|module_memory)\b|PROTOCOL_TOOL_NAMES/u
 
 /** 禁令句等刻意保留旧名引用的生产文件 */
 const ALLOWLIST = new Set([

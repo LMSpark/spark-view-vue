@@ -10,10 +10,13 @@ import {
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
   type AiAgentRuntimeContext,
+  type AiAgentToolLoopNudgeContext,
+  type AiAgentToolLoopNudgeReason,
+  type EnrichFunctionCallFailureCommand,
   VcmNativeAgentAdapter,
 } from '@spark-appworks/spark-ai/agent'
 import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
-import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
+import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
@@ -142,12 +145,109 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           instance,
           hookOptions,
         ),
+        executionToolNames: PAGE_DESIGN_EXECUTION_TOOL_NAMES,
+        planWithoutToolMarkers: PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS,
+        toolLoopNudge: createPageDesignToolLoopNudge,
+        enrichRecoveryHints: enrichPageDesignRecoveryHints,
         ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
           ? {}
           : { jsonSchemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
       },
     }),
   })
+}
+
+const PAGE_DESIGN_EXECUTION_TOOL_NAMES = new Set<string>([
+  VCM_NATIVE_TOOL_NAMES.script,
+])
+
+const PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS = [
+  'openpagedesign',
+  'editnodetree',
+  'editdataset',
+] as const
+
+function createPageDesignToolLoopNudge(context: AiAgentToolLoopNudgeContext): string | undefined {
+  const pageId = context.moduleInstanceId.trim()
+  if (pageId.length === 0) return undefined
+  return buildPageDesignToolLoopNudge(context.reason, pageId)
+}
+
+function buildPageDesignToolLoopNudge(
+  reason: AiAgentToolLoopNudgeReason,
+  pageId: string,
+): string | undefined {
+  const scriptShape = pageDesignScriptSopLines(pageId)
+  switch (reason) {
+    case 'plan_without_tool':
+      return [
+        '写页面时优先 vcm_script；若已读完 vcm_action_guide，立即执行脚本链。',
+        ...scriptShape,
+      ].join('\n')
+    case 'execution_phase':
+      return [
+        `目录/指南阶段已完成，pageId="${pageId}"。禁止再重复查目录，直接执行 vcm_script。`,
+        ...scriptShape,
+        'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
+      ].join('\n')
+    case 'module_script_retry':
+      return [
+        '上一次 vcm_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
+        ...scriptShape,
+        'createTable 签名是 createTable({ tableName, columns })，不是 createTable(name, columns)。',
+      ].join('\n')
+    default:
+      return undefined
+  }
+}
+
+function pageDesignScriptSopLines(pageId: string): readonly string[] {
+  return [
+    `vcm_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
+    'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
+    'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "r-table", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });',
+  ]
+}
+
+function enrichPageDesignRecoveryHints(command: EnrichFunctionCallFailureCommand): readonly string[] {
+  const hints: string[] = []
+  const { protocolToolName, callResult } = command
+
+  if (protocolToolName === VCM_NATIVE_TOOL_NAMES.actionGuide && callResult.code === 'FUNCTION_NOT_FOUND') {
+    hints.push('actionName 必须是 openPageDesign 等业务 action，不能是 vcm_script 等协议工具。')
+  }
+
+  if (callResult.code === 'SCRIPT_EXECUTION_FAILED' && protocolToolName === VCM_NATIVE_TOOL_NAMES.script) {
+    if (callResult.msg.includes('toJSON')) {
+      hints.push('脚本勿调 toJSON；用 openPageDesign → editDataSet/editNodeTree mutator 链式 API。')
+    }
+    if (callResult.msg.includes('.call is not a function')) {
+      hints.push('ConfigPageNode 无 call()；改用 page.editNodeTree(async tree => ...) / page.editDataSet(async ds => ...)。')
+    }
+    if (callResult.msg.includes('editDataSet is not a function')
+      || callResult.msg.includes('editNodeTree is not a function')) {
+      hints.push('vcm_script 必须先 await this.openPageDesign({ pageId }) 得到 page，再 await page.editDataSet(async ds => ...)。')
+    }
+    if (callResult.msg.includes("reading 'includes'")) {
+      hints.push('createTable 签名：createTable({ tableName: "<TableName>", columns: [{ name, type, label }] })；勿用 positional 参数。')
+      hints.push('先 editDataSet 建表与 default 视图，再 editNodeTree 按 VCM 元数据声明的节点 type 和 props schema 构造节点。')
+    }
+    if (callResult.msg.includes('run is not a function')) {
+      hints.push('editDataSet/editNodeTree 必须直接传函数：page.editDataSet(async ds => ...)；勿把 createTable 参数对象当成 run。')
+    }
+  }
+
+  if (callResult.code === 'SCRIPT_EXECUTION_FAILED') {
+    hints.push('openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree => ...)/page.editDataSet(async ds => ...)，勿用 page.call()。')
+  }
+
+  if (callResult.code === 'SCHEMA_VALIDATION_FAILED' && protocolToolName === VCM_NATIVE_TOOL_NAMES.script) {
+    if (callResult.msg.includes('requires a callback') || callResult.msg.includes('must be a function')) {
+      hints.push('editDataSet/editNodeTree 必须直接传 async callback；勿把 createTable 参数对象当作 run。')
+    }
+  }
+
+  return hints
 }
 
 function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
@@ -167,9 +267,7 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     '写页面的主通道: 调用 vcm_script({ script })；script 是 async function body，由运行时执行，不要只输出计划文字。',
     'script 内 this 是当前 ProjectModel 脚本上下文；不要把 /kind[id]/ path 链作为主用法。',
     `vcm_script 形状（pageId="${input.pageId}"，表名/字段按 effectiveDescription 与 VCM schema 决定）：`,
-    `const page = await this.openPageDesign({ pageId: "${input.pageId}" });`,
-    `await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });`,
-    `await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "r-table", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });`,
+    ...pageDesignScriptSopLines(input.pageId),
     `page.setFileText("script.js", ""); page.setFileText("style.css", "");`,
     `return { ruleJson: page.getFileText("rule.json"), pageDataJson: page.getFileText("pagedata.json"), script: page.getFileText("script.js"), style: page.getFileText("style.css") };`,
     '脚本代理支持原生形态：editDataSet(async ds=>...)、editNodeTree(async tree=>...)、createTable({ tableName, columns })、addNode({ parentComponentId, node })。',

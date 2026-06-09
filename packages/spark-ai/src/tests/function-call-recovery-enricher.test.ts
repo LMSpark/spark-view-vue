@@ -24,7 +24,7 @@ describe('enrichFunctionCallResult', () => {
     expect(invalidArgs.checks?.some(check => check.message.includes('module_'))).toBe(false)
   })
 
-  it('adds pageDesign script hints for script execution failures', () => {
+  it('adds VCM-native script recovery hints without business method names', () => {
     const scriptFailed = enrichFunctionCallResult({
       protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
       args: { script: 'page.editDataSet({})' },
@@ -38,8 +38,50 @@ describe('enrichFunctionCallResult', () => {
 
     expect(scriptFailed.ok).toBe(false)
     if (scriptFailed.ok) return
-    expect(scriptFailed.checks?.some(check => check.message.includes('openPageDesign'))).toBe(true)
+    expect(scriptFailed.checks?.some(check => check.message.includes('vcm_script'))).toBe(true)
+    expect(scriptFailed.checks?.some(check => check.message.includes('openPageDesign'))).toBe(false)
     expect(scriptFailed.checks?.some(check => check.message.includes('module_find'))).toBe(false)
+  })
+
+  it('merges business recovery hints when enrichRecoveryHints is provided', () => {
+    const scriptFailed = enrichFunctionCallResult(
+      {
+        protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+        args: { script: 'page.editDataSet({})' },
+        callResult: {
+          ok: false,
+          code: 'SCRIPT_EXECUTION_FAILED',
+          msg: 'editDataSet is not a function',
+          fix: 'fix script',
+        },
+      },
+      {
+        enrichRecoveryHints: () => [
+          '必须先 await this.openPageDesign({ pageId }) 得到 page，再 page.editDataSet(async ds => ...)。',
+        ],
+      },
+    )
+
+    expect(scriptFailed.ok).toBe(false)
+    if (scriptFailed.ok) return
+    expect(scriptFailed.checks?.some(check => check.message.includes('openPageDesign'))).toBe(true)
+  })
+
+  it('does not add mutator callback hints without enrichRecoveryHints', () => {
+    const schemaFailed = enrichFunctionCallResult({
+      protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+      args: { script: 'await page.editDataSet({ tableName: "x" })' },
+      callResult: {
+        ok: false,
+        code: 'SCHEMA_VALIDATION_FAILED',
+        msg: 'editDataSet requires a callback argument',
+        fix: 'fix callback',
+      },
+    })
+
+    expect(schemaFailed.ok).toBe(false)
+    if (schemaFailed.ok) return
+    expect(schemaFailed.checks?.some(check => check.message.includes('createTable'))).toBe(false)
   })
 
   it('rejects old script argument aliases in recovery guidance', () => {

@@ -478,13 +478,13 @@ function callApiMethod(
       return AiAgentToolResult.failCode(
         'SCHEMA_VALIDATION_FAILED',
         `${action.name}.run must be a function, received ${typeof runValue}.`,
-        '在 vcm_script 中使用 page.editDataSet(async ds => ...) / page.editNodeTree(async tree => ...)；勿把 createTable 参数对象当作 run。',
+        `在 vcm_script 中 ${action.name} 需要传 callback；勿把业务参数对象当作 run。`,
       )
     }
     return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
       `${action.name} requires a callback argument; compatible { run } must be a function.`,
-      '在 vcm_script 中使用 page.editDataSet(async ds => ...) / page.editNodeTree(async tree => ...)。',
+      `${action.name} 需要 callback 参数；先 vcm_action_guide 读 usageRules 与 paramsSchema。`,
     )
   }
   if (action.takesContext === true) return method.call(target, ctx, args)

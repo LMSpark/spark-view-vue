@@ -16,6 +16,7 @@
  */
 
 import type { AiJsonParams } from '../../json'
+import type { EnrichFunctionCallFailureCommand } from '../tool-loop/function-call-recovery-enricher'
 import type { AiAgentSessionStore } from '../session/session-types'
 import type { AiAgentToolRuntime } from '../tool-runtime'
 import type { AiAgentInputContract } from './business-task'
@@ -26,6 +27,17 @@ import type {
   AiAgentLifecycleDirective,
 } from './lifecycle-types'
 import type { AiAgentRuntimeContext } from './scope-types'
+
+export type AiAgentToolLoopNudgeReason =
+  | 'plan_without_tool'
+  | 'execution_phase'
+  | 'module_script_retry'
+
+export type AiAgentToolLoopNudgeContext = Readonly<{
+  reason: AiAgentToolLoopNudgeReason
+  moduleInstanceId: string
+  runtimeContext: AiAgentRuntimeContext
+}>
 
 /* -------------------------------------------------------------------------------
  * 一、注册参数类型
@@ -82,6 +94,14 @@ export type AiAgentRegistrationOptions<TInput extends AiJsonParams = AiJsonParam
    * 用于释放外部系统持有的资源（如关闭 WebSocket、清理临时文件等）。
    */
   releaseModuleInstance?: (moduleInstanceId: string) => void
+  /** tool-loop 回合纠偏：业务 SOP 由 app 层注入，内核只保留协议级 nudge。 */
+  toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
+  /** 视为“已进入执行阶段”的工具名；默认仅 vcm_script。 */
+  executionToolNames?: ReadonlySet<string>
+  /** 扩展 plan-without-tool 检测关键词（小写匹配）。 */
+  planWithoutToolMarkers?: readonly string[]
+  /** FC 失败恢复：业务域补充 RECOVERY_HINT。 */
+  enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 
 /* -------------------------------------------------------------------------------
@@ -132,6 +152,11 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
   ) => void | Promise<void>
   /** 资源释放 */
   public readonly releaseModuleInstance?: (moduleInstanceId: string) => void
+  /** tool-loop 业务纠偏 */
+  public readonly toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
+  public readonly executionToolNames?: ReadonlySet<string>
+  public readonly planWithoutToolMarkers?: readonly string[]
+  public readonly enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 
   /* ── 构造函数 ─────────────────────────────────────────── */
 
@@ -149,5 +174,9 @@ export class AiAgentRegistration<TInput extends AiJsonParams = AiJsonParams> {
     if (options.onStartSession !== undefined) this.onStartSession = options.onStartSession
     if (options.onEndBusinessInstance !== undefined) this.onEndBusinessInstance = options.onEndBusinessInstance
     if (options.releaseModuleInstance !== undefined) this.releaseModuleInstance = options.releaseModuleInstance
+    if (options.toolLoopNudge !== undefined) this.toolLoopNudge = options.toolLoopNudge
+    if (options.executionToolNames !== undefined) this.executionToolNames = options.executionToolNames
+    if (options.planWithoutToolMarkers !== undefined) this.planWithoutToolMarkers = options.planWithoutToolMarkers
+    if (options.enrichRecoveryHints !== undefined) this.enrichRecoveryHints = options.enrichRecoveryHints
   }
 }
