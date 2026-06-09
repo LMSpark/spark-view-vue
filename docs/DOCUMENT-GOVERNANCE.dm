@@ -312,6 +312,15 @@ section DirectoryRegistry {
     allowed_files: ["README.md"]
   }
 
+  entry config {
+    path: "config/"
+    owner: "app"
+    purpose: "仓库级手写配置说明与 JSON Schema 协议索引。"
+    index: "config/README.md"
+    allowed_files: ["README.md"]
+    new_file_rule: "配置数据用 JSON；说明文档只放 README，专题治理文档迁移到 docs/。"
+  }
+
   entry claude {
     path: ".claude/"
     owner: "ai-tooling"

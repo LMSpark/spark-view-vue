@@ -39,6 +39,11 @@ const legacyMarkdownAllowlist = new Set([
   'docs/guides/QUICKSTART.md',
   'docs/guides/SAVE_DATASET_ACTION.md',
   'docs/guides/TREE_CAPABILITY.md',
+  'docs/ai/SPARK_AI_WORKFLOW.md',
+  'packages/spark-ai/docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md',
+  'packages/spark-ai/docs/PAGEDESIGN-DEVSYSTEM.zh-CN.md',
+  'packages/spark-ai/docs/TRANSPORT-AND-SESSION.zh-CN.md',
+  'packages/spark-ai/docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md',
   'packages/spark-project-model/src/MODEL-HIERARCHY.md',
   'packages/spark-project-model/src/STRUCTURE.md',
   'packages/spark-utils/REQUEST_GUIDE.md',
@@ -94,6 +99,7 @@ const registeredDocPrefixes = [
   '.changeset/',
   '.claude/',
   '.github/',
+  'config/',
   'docs/',
   'packages/',
   'plans/',
@@ -152,6 +158,9 @@ function collectDocFiles(root) {
     return rel.includes('/.git/')
       || rel === '.git'
       || rel.startsWith('.git/')
+      || rel === '.cursor'
+      || rel.startsWith('.cursor/')
+      || rel.includes('/.cursor/')
       || rel === 'node_modules'
       || rel.startsWith('node_modules/')
       || rel.includes('/node_modules/')
