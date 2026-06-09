@@ -1,0 +1,41 @@
+#!/usr/bin/env node
+
+/**
+ * Offline pageDesign smoke verification.
+ *
+ * Exercises the VCM-native sandbox path (vcm_script) and app-layer registration
+ * hooks without LLM calls or a running dev server.
+ */
+
+import { spawnSync } from 'node:child_process'
+import path from 'node:path'
+import process from 'node:process'
+
+const ROOT = path.resolve(import.meta.dirname, '..')
+
+const testFiles = [
+  'tests/page/page-design-business.test.ts',
+  'tests/page/page-design-ai-runner.test.ts',
+  'tests/page/page-design-knowledge.test.ts',
+  'tests/page/page-design-gates.test.ts',
+  'packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts',
+  'packages/spark-ai/src/tests/native-script-sandbox.test.ts',
+  'packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts',
+]
+
+const result = spawnSync(
+  'pnpm',
+  ['exec', 'vitest', 'run', ...testFiles],
+  {
+    cwd: ROOT,
+    stdio: 'inherit',
+    shell: true,
+  },
+)
+
+if (result.error) {
+  console.error(result.error.message)
+  process.exit(1)
+}
+
+process.exit(result.status ?? 1)

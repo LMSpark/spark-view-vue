@@ -78,4 +78,17 @@ describe('pageDesign VCM-native knowledge integration', () => {
     expect(editNodeTree?.usageRules?.some(rule => rule.includes('page.editNodeTree'))).toBe(true)
     expect(editNodeTree?.failureModes?.some(mode => mode.code === 'SCRIPT_EXECUTION_FAILED')).toBe(true)
   })
+
+  it('setFileText guide exposes void return from reflected returnTypeText', async () => {
+    const runtime = createPageDesignVcmRuntime()
+    const guide = await runtime.executeTool('vcm_action_guide', {
+      kind: 'config-page',
+      actionName: 'setFileText',
+    })
+
+    expect(guide.ok).toBe(true)
+    expect(String(guide.data)).toContain('setFileText(')
+    expect(String(guide.data)).toContain(': void')
+    expect(String(guide.data)).not.toContain('resultSchema')
+  })
 })
