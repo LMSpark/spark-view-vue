@@ -326,7 +326,15 @@ function constructModuleInstance<T>(
   moduleClass: VcmNativeAgentAdapterConstructor<T>,
   args: readonly unknown[],
 ): T {
-  return new moduleClass(...(args as never[]))
+  const instance: unknown = Reflect.construct(moduleClass, [...args])
+  if (!isConstructedModuleInstance<T>(instance)) {
+    throw new Error('Failed to construct module instance.')
+  }
+  return instance
+}
+
+function isConstructedModuleInstance<T>(value: unknown): value is T {
+  return value !== null && (typeof value === 'object' || typeof value === 'function')
 }
 
 function bindOptionalLifecycle<T, TArgs extends readonly unknown[], TResult>(
