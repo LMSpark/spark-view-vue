@@ -508,13 +508,33 @@ type CompareBuildValueCommand = Readonly<{
 }>
 
 function compareBuildValue(command: CompareBuildValueCommand): void {
-  const { issues, path, sourceValue, buildEntryValue } = command
+  const { issues, path } = command
+  const sourceValue = isJsDocConsistencyPath(path)
+    ? normalizeJsDocForBuildConsistency(command.sourceValue)
+    : command.sourceValue
+  const buildEntryValue = isJsDocConsistencyPath(path)
+    ? normalizeJsDocForBuildConsistency(command.buildEntryValue)
+    : command.buildEntryValue
   if (sourceValue === buildEntryValue) return
   issues.push({
     code: 'MODULE_METADATA_BUILD_CONSISTENCY_MISMATCH',
     path,
-    message: `源码反射与构建产物入口不一致: source=${String(sourceValue)} buildEntry=${String(buildEntryValue)}`,
+    message: `源码反射与构建产物入口不一致: source=${String(command.sourceValue)} buildEntry=${String(command.buildEntryValue)}`,
   })
+}
+
+function isJsDocConsistencyPath(path: string): boolean {
+  return path === 'jsdoc' || path.endsWith('.jsdoc')
+}
+
+function normalizeJsDocForBuildConsistency(value: unknown): unknown {
+  if (typeof value !== 'string') return value
+  return value
+    .replace(/\r\n/gu, '\n')
+    .split('\n')
+    .map(line => line.trim())
+    .join('\n')
+    .trim()
 }
 
 type ExtractAbilityMetadataCommand = Readonly<{

@@ -92,6 +92,21 @@ describe('vcm-native ClassModel projection', () => {
     expect(JSON.stringify(classModel)).not.toContain(['child', 'Models'].join(''))
   })
 
+  it('keeps void mutator returns on reflected returnTypeText instead of resultSchema', () => {
+    const runtimeDocument = readRuntimeDocument()
+    const setFileText = findRuntimeAction(runtimeDocument, 'config-page', 'setFileText')
+    const writePageFile = findRuntimeAction(runtimeDocument, 'project', 'writePageFile')
+
+    expect(setFileText?.resultSchema).toBeUndefined()
+    expect(setFileText?.returnTypeText).toBe('void')
+    expect(writePageFile?.resultSchema).toBeUndefined()
+    expect(writePageFile?.returnTypeText).toBe('void')
+
+    const classModel = createClassModelDocumentFromRuntimeDocument(runtimeDocument)
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'setFileText')!)).toContain(': void')
+    expect(renderMethodSignature(classModel, findMethod(classModel, 'project', 'writePageFile')!)).toContain(': void')
+  })
+
   it('renders method guides as d.ts-like declarations with JSDoc, not protocol fields', () => {
     const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
     const guide = renderMethodGuide({
@@ -535,4 +550,12 @@ function findMethod(
   methodName: string,
 ) {
   return document.models[kind]?.methods.find(method => method.name === methodName)
+}
+
+function findRuntimeAction(
+  document: RuntimeDocumentForTest,
+  kind: string,
+  actionName: string,
+) {
+  return runtimeApisByKind(document).get(kind)?.actions.find(action => action.name === actionName)
 }
