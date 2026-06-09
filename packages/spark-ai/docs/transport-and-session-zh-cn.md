@@ -1,6 +1,6 @@
 # 传输层与会话（V4）
 
-> 状态：有效（2026-06）。展开 [`NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md) §12；类型 SSOT 见 [`transport-types.ts`](../src/agent/transport/transport-types.ts)。
+> 状态：有效（2026-06）。展开 [`native-runtime-and-agent-flow-zh-cn.md`](native-runtime-and-agent-flow-zh-cn.md) §12；类型 SSOT 见 [`transport-types.ts`](../src/agent/transport/transport-types.ts)。
 
 ## 分层职责
 

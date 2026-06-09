@@ -1,6 +1,6 @@
 # pageDesign × DevSystem 消费方
 
-> APP 层如何把 DevSystem 里的 `ProjectWorkspace` 接到 spark-ai Host。内核见 [`NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md) §7、§11。
+> APP 层如何把 DevSystem 里的 `ProjectWorkspace` 接到 spark-ai Host。内核见 [`native-runtime-and-agent-flow-zh-cn.md`](native-runtime-and-agent-flow-zh-cn.md) §7、§11。
 
 ## 数据流
 

@@ -14,4 +14,4 @@ Host 与 APP 之间的 **AI turn I/O 契约**（无 HTTP 实现）。
 
 ## 文档
 
-[`docs/TRANSPORT-AND-SESSION.zh-CN.md`](../../../docs/TRANSPORT-AND-SESSION.zh-CN.md)
+[`docs/transport-and-session-zh-cn.md`](../../../docs/transport-and-session-zh-cn.md)

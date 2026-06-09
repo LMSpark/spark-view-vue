@@ -378,7 +378,7 @@ SSE Host Run 见 `project-planning-host-run-provider.ts`（与 `page-design-host
 
 ## 待实现 / 规划项（代码尚未具备）
 
-以下在 [`.cursor/plans/全面解决方案.md`](../../.cursor/plans/全面解决方案.md) 与 [`docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md`](docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md) 中讨论，**当前源码未落地**：
+以下在 [`.cursor/plans/全面解决方案.md`](../../.cursor/plans/全面解决方案.md) 与 [`docs/vcm-generator-and-callbackapis-zh-cn.md`](docs/vcm-generator-and-callbackapis-zh-cn.md) 中讨论，**当前源码未落地**：
 
 | 项 | 现状 |
 |----|------|
@@ -417,11 +417,11 @@ pnpm run generate:module-metadata -- --verify-build-consistency
 | 文档 | 说明 |
 |------|------|
 | [`docs/README.md`](docs/README.md) | spark-ai 文档索引 |
-| [`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md) | native-runtime 与注册细节 |
-| [`docs/TRANSPORT-AND-SESSION.zh-CN.md`](docs/TRANSPORT-AND-SESSION.zh-CN.md) | V4 传输、session-turn / app-sse |
-| [`docs/PAGEDESIGN-DEVSYSTEM.zh-CN.md`](docs/PAGEDESIGN-DEVSYSTEM.zh-CN.md) | DevSystem 接线与排错 |
-| [`docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md`](docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md) | Generator 与 callbackApis 方向 |
-| [`../../docs/ai/SPARK_AI_WORKFLOW.md`](../../docs/ai/SPARK_AI_WORKFLOW.md) | 精简 SOP（本架构的速查版） |
+| [`docs/native-runtime-and-agent-flow-zh-cn.md`](docs/native-runtime-and-agent-flow-zh-cn.md) | native-runtime 与注册细节 |
+| [`docs/transport-and-session-zh-cn.md`](docs/transport-and-session-zh-cn.md) | V4 传输、session-turn / app-sse |
+| [`docs/pagedesign-devsystem-zh-cn.md`](docs/pagedesign-devsystem-zh-cn.md) | DevSystem 接线与排错 |
+| [`docs/vcm-generator-and-callbackapis-zh-cn.md`](docs/vcm-generator-and-callbackapis-zh-cn.md) | Generator 与 callbackApis 方向 |
+| [`../../docs/ai/spark-ai-workflow.md`](../../docs/ai/spark-ai-workflow.md) | 精简 SOP（本架构的速查版） |
 | [`../../AGENTS.md`](../../AGENTS.md) | 仓库全局规则与 DataSet 管线 |
 
 ---

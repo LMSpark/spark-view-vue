@@ -17,9 +17,9 @@ Spark AI agent runtime：JSON Schema 校验、VCM-native 工具闭集、Host 编
 |------|------|
 | [`ARCHITECTURE.md`](ARCHITECTURE.md) | 包架构 SSOT |
 | [`docs/README.md`](docs/README.md) | 文档索引与阅读顺序 |
-| [`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md) | native-runtime、Adapter、ToolLoop、pageDesign 全链路 |
-| [`docs/TRANSPORT-AND-SESSION.zh-CN.md`](docs/TRANSPORT-AND-SESSION.zh-CN.md) | V4 传输、session-turn / app-sse、`ai-turn-bridge` |
-| [`docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md`](docs/VCM-GENERATOR-AND-CALLBACKAPIS.zh-CN.md) | Generator 规则与 callbackApis 迁移设计 |
+| [`docs/native-runtime-and-agent-flow-zh-cn.md`](docs/native-runtime-and-agent-flow-zh-cn.md) | native-runtime、Adapter、ToolLoop、pageDesign 全链路 |
+| [`docs/transport-and-session-zh-cn.md`](docs/transport-and-session-zh-cn.md) | V4 传输、session-turn / app-sse、`ai-turn-bridge` |
+| [`docs/vcm-generator-and-callbackapis-zh-cn.md`](docs/vcm-generator-and-callbackapis-zh-cn.md) | Generator 规则与 callbackApis 迁移设计 |
 | [`src/vcm-native/metadata`](src/vcm-native/metadata) | VCM metadata 协议与解析实现 |
 
 ## APP 消费示例

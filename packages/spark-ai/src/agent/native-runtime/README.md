@@ -17,4 +17,4 @@ VCM metadata → 可执行脚本 API 的运行时层。
 
 ## 文档
 
-[`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)
+[`docs/native-runtime-and-agent-flow-zh-cn.md`](../../../docs/native-runtime-and-agent-flow-zh-cn.md)

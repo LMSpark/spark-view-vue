@@ -47,9 +47,9 @@ VcmNativeAgentAdapter.register({ host, alias, metadata, moduleClass, options })
 | `src/services/page-design-gates.ts` | mutation tool gate |
 | `src/services/ai-host.ts` | `appAiAgent` 生产 Host |
 
-DevSystem 端到端：[`docs/PAGEDESIGN-DEVSYSTEM.zh-CN.md`](../../../docs/PAGEDESIGN-DEVSYSTEM.zh-CN.md)
+DevSystem 端到端：[`docs/pagedesign-devsystem-zh-cn.md`](../../../docs/pagedesign-devsystem-zh-cn.md)
 
 ## 文档
 
-- 注册拓扑：[`docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md`](../../../docs/NATIVE-RUNTIME-AND-AGENT-FLOW.zh-CN.md)
+- 注册拓扑：[`docs/native-runtime-and-agent-flow-zh-cn.md`](../../../docs/native-runtime-and-agent-flow-zh-cn.md)
 - VCM-native metadata：[`src/vcm-native/metadata`](../../vcm-native/metadata)
