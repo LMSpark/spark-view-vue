@@ -29,6 +29,5 @@ export type {
 export {
   DefaultAiAgentSessionStore,
   createAiAgentHost,
-  createAiAgentRegistration,
   startAiAgentRegistrationSession,
 } from './agent'

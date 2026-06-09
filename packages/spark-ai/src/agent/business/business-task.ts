@@ -9,10 +9,8 @@
  *
  * 【核心类型/函数】
  *   AiAgentTask                 — 可执行任务对象（toChatRequest 生成 LLM 请求）
- *   AiAgentDefinition           — 业务注册所需的完整定义契约
  *   AiAgentInputContract        — 输入契约（schema + normalize + toScope + toOrchestration）
  *   AiAgentOrchestrationPlan    — 编排计划（userMessage + systemPrompt）
- *   createAiAgentRegistration   — 从 definition 构造注册对象
  *   createAiAgentTask           — 从注册表 + kindID + raw input 构造 Task
  *
  * 【数据流】
@@ -25,7 +23,7 @@
  *   7. contract.toOrchestration → 生成编排计划
  *   8. new AiAgentTask → 返回可执行任务
  *
- * 【消费方】ai-host.ts（createAiAgentTask / createAiAgentRegistration）
+ * 【消费方】ai-host.ts（createAiAgentTask）；注册对象由 VcmNativeAgentAdapter.createRegistration 构造
  * ═══════════════════════════════════════════════════════════════
  */
 
@@ -37,20 +35,8 @@ import {
   type AiJsonValue,
 } from '../../json'
 import type { AiAgentChatMessage, AiAgentChatRequest } from '../chat/chat-types'
-import type { AiAgentSessionStore } from '../session/session-types'
-import type { AiAgentToolRuntime } from '../tool-runtime'
-import type {
-  AiAgentAfterFunctionCallOptions,
-  AiAgentBeforeFunctionCallDirective,
-  AiAgentBeforeFunctionCallOptions,
-  AiAgentLifecycleDirective,
-} from './lifecycle-types'
-import {
-  AiAgentRegistration,
-  type AiAgentToolLoopNudgeContext,
-} from './registration-types'
-import type { EnrichFunctionCallFailureCommand } from '../tool-loop/function-call-recovery-enricher'
-import { AiAgentTarget, type AiAgentRuntimeContext, type AiAgentScope } from './scope-types'
+import type { AiAgentRegistration } from './registration-types'
+import { AiAgentTarget, type AiAgentScope } from './scope-types'
 
 // ═══════════════════════════════════════════════════════════════
 // 第 1 节 · 内部类型与公共 DTO
@@ -74,33 +60,6 @@ export type AiAgentInputContract<TInput extends AiJsonParams = AiJsonParams> = R
   normalize(input: AiJsonParams): TInput
   toScope(normalizedInput: TInput): AiAgentScope
   toOrchestration(normalizedInput: TInput): AiAgentOrchestrationPlan
-}>
-
-/** 业务注册所需的完整定义契约 */
-export type AiAgentDefinition<TInput extends AiJsonParams = AiJsonParams> = Readonly<{
-  kindID: string
-  name: string
-  description: string
-  runtime: AiAgentToolRuntime
-  inputContract: AiAgentInputContract<TInput>
-  sessionStore: AiAgentSessionStore
-  systemPrompt?: (context: AiAgentRuntimeContext) => string | undefined
-  beforeFunctionCall?: (
-    options: AiAgentBeforeFunctionCallOptions,
-  ) => AiAgentBeforeFunctionCallDirective | Promise<AiAgentBeforeFunctionCallDirective>
-  afterFunctionCall?: (
-    options: AiAgentAfterFunctionCallOptions,
-  ) => AiAgentLifecycleDirective | Promise<AiAgentLifecycleDirective>
-  onStartSession?: (context: AiAgentRuntimeContext) => void | Promise<void>
-  onEndBusinessInstance?: (
-    context: AiAgentRuntimeContext,
-    directive: AiAgentLifecycleDirective,
-  ) => void | Promise<void>
-  releaseModuleInstance?: (moduleInstanceId: string) => void
-  toolLoopNudge?: (context: AiAgentToolLoopNudgeContext) => string | undefined
-  executionToolNames?: ReadonlySet<string>
-  planWithoutToolMarkers?: readonly string[]
-  enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[]
 }>
 
 /** Chat 请求选项（剔除 historyMsgs 和 systemPrompt，由 Task 内部生成） */
@@ -157,35 +116,6 @@ export class AiAgentTask<TInput extends AiJsonParams = AiJsonParams> {
 // ═══════════════════════════════════════════════════════════════
 // 第 3 节 · 工厂函数
 // ═══════════════════════════════════════════════════════════════
-
-/**
- * 从 definition 构造注册对象。
- *
- * 负责字段映射和可选回调的安全传递。
- * 消费方：ai-host.ts 的 register/ensure 流程。
- */
-export function createAiAgentRegistration<TInput extends AiJsonParams = AiJsonParams>(
-  definition: AiAgentDefinition<TInput>,
-): AiAgentRegistration<TInput> {
-  return new AiAgentRegistration({
-    moduleId: normalizeRequiredText(definition.kindID, 'kindID'),
-    name: definition.name,
-    description: definition.description,
-    runtime: definition.runtime,
-    inputContract: definition.inputContract,
-    sessionStore: definition.sessionStore,
-    ...(definition.systemPrompt === undefined ? {} : { systemPrompt: definition.systemPrompt }),
-    ...(definition.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: definition.beforeFunctionCall }),
-    ...(definition.afterFunctionCall === undefined ? {} : { afterFunctionCall: definition.afterFunctionCall }),
-    ...(definition.onStartSession === undefined ? {} : { onStartSession: definition.onStartSession }),
-    ...(definition.onEndBusinessInstance === undefined ? {} : { onEndBusinessInstance: definition.onEndBusinessInstance }),
-    ...(definition.releaseModuleInstance === undefined ? {} : { releaseModuleInstance: definition.releaseModuleInstance }),
-    ...(definition.toolLoopNudge === undefined ? {} : { toolLoopNudge: definition.toolLoopNudge }),
-    ...(definition.executionToolNames === undefined ? {} : { executionToolNames: definition.executionToolNames }),
-    ...(definition.planWithoutToolMarkers === undefined ? {} : { planWithoutToolMarkers: definition.planWithoutToolMarkers }),
-    ...(definition.enrichRecoveryHints === undefined ? {} : { enrichRecoveryHints: definition.enrichRecoveryHints }),
-  })
-}
 
 /**
  * 从注册表构造 AiAgentTask。

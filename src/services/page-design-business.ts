@@ -190,7 +190,7 @@ function buildPageDesignToolLoopNudge(
         ...scriptShape,
         'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
       ].join('\n')
-    case 'module_script_retry':
+    case 'vcm_script_retry':
       return [
         '上一次 vcm_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
         ...scriptShape,

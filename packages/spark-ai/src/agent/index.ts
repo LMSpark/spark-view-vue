@@ -63,7 +63,6 @@ export {
 export {
   AiAgentTask,
   createAiAgentTask,
-  createAiAgentRegistration,
 } from './business/business-task'
 
 export type {
@@ -90,7 +89,6 @@ export type {
 
 export type {
   AiAgentInputContract,
-  AiAgentDefinition,
   AiAgentOrchestrationPlan,
   AiAgentTaskChatOptions,
 } from './business/business-task'

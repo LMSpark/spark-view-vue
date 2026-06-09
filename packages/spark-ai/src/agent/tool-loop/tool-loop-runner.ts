@@ -103,7 +103,7 @@ const DEFAULT_EXECUTION_TOOL_NAMES = new Set<string>([
 ])
 
 const MAX_EXECUTION_PHASE_NUDGES = 3
-const MAX_MODULE_SCRIPT_RETRY_NUDGES = 3
+const MAX_VCM_SCRIPT_RETRY_NUDGES = 3
 
 /* ── 输入/输出类型 ──────────────────────────────────────────── */
 
@@ -149,7 +149,7 @@ export class AiAgentToolLoopRunner {
     const maxRounds = this.maxToolRounds
     const sessionStore = requireSessionStore(registration)
 
-    // 拼接系统提示词：业务自定义 + 请求编排 + AiModule 知识快照
+    // 拼接系统提示词：业务自定义 + 请求编排 + VCM 知识快照
     const systemPrompt = [
       registration.systemPrompt?.(runtimeContext),
       request.systemPrompt,
@@ -173,7 +173,7 @@ export class AiAgentToolLoopRunner {
     let pseudoToolCallNudgeCount = 0
     let planWithoutToolNudgeCount = 0
     let executionPhaseNudgeCount = 0
-    let moduleScriptRetryNudgeCount = 0
+    let vcmScriptRetryNudgeCount = 0
 
     for (let round = 0; maxRounds === undefined || round < maxRounds; round += 1) {
       // AbortSignal 检查：外部取消信号触发时立即退出
@@ -339,14 +339,14 @@ export class AiAgentToolLoopRunner {
         continue
       }
 
-      const moduleScriptRetryNudge = resolveToolLoopNudge(registration, runtimeContext, 'module_script_retry')
+      const vcmScriptRetryNudge = resolveToolLoopNudge(registration, runtimeContext, 'vcm_script_retry')
       if (
-        moduleScriptRetryNudge !== undefined
-        && moduleScriptRetryNudgeCount < MAX_MODULE_SCRIPT_RETRY_NUDGES
+        vcmScriptRetryNudge !== undefined
+        && vcmScriptRetryNudgeCount < MAX_VCM_SCRIPT_RETRY_NUDGES
         && shouldNudgeModuleScriptRetry(sessionStore, runtimeContext)
       ) {
-        moduleScriptRetryNudgeCount += 1
-        pendingMessages = [{ role: 'user', content: moduleScriptRetryNudge }]
+        vcmScriptRetryNudgeCount += 1
+        pendingMessages = [{ role: 'user', content: vcmScriptRetryNudge }]
         continue
       }
 
@@ -522,7 +522,7 @@ export function resolvePlanWithoutToolNudge<TInput extends AiJsonParams>(
 export function resolveToolLoopNudge<TInput extends AiJsonParams>(
   registration: AiAgentRegistration<TInput>,
   runtimeContext: AiAgentRuntimeContext,
-  reason: Extract<AiAgentToolLoopNudgeReason, 'execution_phase' | 'module_script_retry'>,
+  reason: Extract<AiAgentToolLoopNudgeReason, 'execution_phase' | 'vcm_script_retry'>,
 ): string | undefined {
   const nudge = registration.toolLoopNudge?.({
     reason,

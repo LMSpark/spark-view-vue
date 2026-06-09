@@ -316,7 +316,7 @@ function createProjectPlanningToolLoopNudge(context: AiAgentToolLoopNudgeContext
         `目录/指南阶段已完成，projectId="${projectId}"；直接 vcm_script 更新 navigation 策划文案。`,
         '禁止 openPageDesign、editNodeTree、editDataSet；完成后 agent_complete({ summary })。',
       ].join('\n')
-    case 'module_script_retry':
+    case 'vcm_script_retry':
       return [
         '上一次 vcm_script 失败：按 RECOVERY_HINT 修正 navigation action 参数。',
         '禁止 openPageDesign；只用 readProjectPlanningInput / applyNavigationNodeEdit 等策划 action。',

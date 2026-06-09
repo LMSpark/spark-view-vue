@@ -31,7 +31,7 @@ import type { AiAgentRuntimeContext } from './scope-types'
 export type AiAgentToolLoopNudgeReason =
   | 'plan_without_tool'
   | 'execution_phase'
-  | 'module_script_retry'
+  | 'vcm_script_retry'
 
 export type AiAgentToolLoopNudgeContext = Readonly<{
   reason: AiAgentToolLoopNudgeReason

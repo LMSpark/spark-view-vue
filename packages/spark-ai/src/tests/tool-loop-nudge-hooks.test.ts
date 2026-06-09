@@ -44,7 +44,7 @@ describe('tool-loop nudge hooks', () => {
 
     expect(resolvePlanWithoutToolNudge(registration, runtimeContext)).toBeUndefined()
     expect(resolveToolLoopNudge(registration, runtimeContext, 'execution_phase')).toBeUndefined()
-    expect(resolveToolLoopNudge(registration, runtimeContext, 'module_script_retry')).toBeUndefined()
+    expect(resolveToolLoopNudge(registration, runtimeContext, 'vcm_script_retry')).toBeUndefined()
   })
 
   it('merges generic and business plan-without-tool nudges when hook is provided', () => {
@@ -69,6 +69,6 @@ describe('tool-loop nudge hooks', () => {
     })
 
     expect(resolveToolLoopNudge(registration, runtimeContext, 'execution_phase')).toBe('执行阶段 pageId=leave-page')
-    expect(resolveToolLoopNudge(registration, runtimeContext, 'module_script_retry')).toBeUndefined()
+    expect(resolveToolLoopNudge(registration, runtimeContext, 'vcm_script_retry')).toBeUndefined()
   })
 })

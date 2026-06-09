@@ -13,7 +13,6 @@ describe('@spark-appworks/spark-ai root public surface', () => {
       'DefaultAiAgentSessionStore',
       'VcmNativeRuntime',
       'createAiAgentHost',
-      'createAiAgentRegistration',
       'noParamsSchema',
       'paramsSchema',
       'startAiAgentRegistrationSession',
@@ -33,6 +32,7 @@ describe('@spark-appworks/spark-ai root public surface', () => {
     expect(exposed.has('AiAgent')).toBe(false)
     expect(exposed.has('createAiAgent')).toBe(false)
     expect(exposed.has('createAiAgentTask')).toBe(false)
+    expect(exposed.has('createAiAgentRegistration')).toBe(false)
     expect(exposed.has('createTurnEventCollector')).toBe(false)
   })
 })
