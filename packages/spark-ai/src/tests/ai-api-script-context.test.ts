@@ -91,14 +91,13 @@ describe('createAiApiScriptContext', () => {
     const openPageDesign = vi.fn(() => rawPage)
     const project = { openPageDesign }
     const ctx = { segments: [] as const }
-    const scriptContext = createAiApiScriptContext(project, projectApi, ctx)
-    const openPage = scriptContext['openPageDesign'] as (args: { pageId: string }) => Promise<Readonly<Record<string, (fn: () => void) => Promise<unknown>>>>
+    const scriptContext = createAiApiScriptContext({ instance: project, api: projectApi, ctx })
+    const openPage = readScriptContextCallable(scriptContext, 'openPageDesign')
     const page = await openPage({ pageId: 'leave-page' })
     expect(page).not.toBe(rawPage)
-    const editDataSetOnPage = page['editDataSet']
-    expect(editDataSetOnPage).toBeTypeOf('function')
+    const editDataSetOnPage = readScriptObjectCallable(page, 'editDataSet')
     const mutator = vi.fn()
-    await editDataSetOnPage!(mutator)
+    await editDataSetOnPage(mutator)
     expect(openPageDesign).toHaveBeenCalledWith('leave-page')
     expect(editDataSet).toHaveBeenCalledOnce()
     expect(typeof editDataSet.mock.calls[0]?.[0]).toBe('function')
@@ -114,18 +113,22 @@ describe('createAiApiScriptContext', () => {
     const getFileText = vi.fn(() => 'export default {}')
     const rawPage = { editDataSet, setFileText, getFileText }
     const project = { openPageDesign: vi.fn(() => rawPage) }
-    const scriptContext = createAiApiScriptContext(project, projectApi, { segments: [] })
-    const openPage = scriptContext['openPageDesign'] as (args: { pageId: string }) => Promise<Readonly<Record<string, ScriptCallableForTest>>>
+    const scriptContext = createAiApiScriptContext({
+      instance: project,
+      api: projectApi,
+      ctx: { segments: [] },
+    })
+    const openPage = readScriptContextCallable(scriptContext, 'openPageDesign')
     const page = await openPage({ pageId: 'orders-page' })
 
-    await page['editDataSet']!(async (ds: { createTable: ScriptCallableForTest }) => {
+    await readScriptObjectCallable(page, 'editDataSet')(async (ds: { createTable: ScriptCallableForTest }) => {
       ds.createTable({
         tableName: 'orders',
         columns: [],
       })
     })
-    page['setFileText']!('script.js', 'export default {}')
-    const script = page['getFileText']!('script.js')
+    readScriptObjectCallable(page, 'setFileText')('script.js', 'export default {}')
+    const script = readScriptObjectCallable(page, 'getFileText')('script.js')
 
     expect(createTable).toHaveBeenCalledWith({
       tableName: 'orders',
@@ -139,10 +142,14 @@ describe('createAiApiScriptContext', () => {
   it('rejects mistaken createTable args passed to editDataSet via script proxy', async () => {
     const editDataSet = vi.fn(async () => undefined)
     const rawPage = { editDataSet }
-    const scriptContext = createAiApiScriptContext({ openPageDesign: vi.fn(() => rawPage) }, projectApi, { segments: [] })
-    const openPage = scriptContext['openPageDesign'] as (args: { pageId: string }) => Promise<Readonly<Record<string, ScriptCallableForTest>>>
+    const scriptContext = createAiApiScriptContext({
+      instance: { openPageDesign: vi.fn(() => rawPage) },
+      api: projectApi,
+      ctx: { segments: [] },
+    })
+    const openPage = readScriptContextCallable(scriptContext, 'openPageDesign')
     const page = await openPage({ pageId: 'leave-page' })
-    await expect(async () => page['editDataSet']!({
+    await expect(async () => readScriptObjectCallable(page, 'editDataSet')({
       tableName: 'LeaveRequest',
       columns: [],
     })).rejects.toThrow()
@@ -154,7 +161,12 @@ describe('executeAiApiAction', () => {
   it('accepts direct callback when paramsSchema requires run', async () => {
     const editDataSet = vi.fn(async () => undefined)
     const action = readConfigPageAction('editDataSet')
-    const result = await executeAiApiAction({ editDataSet }, action, (() => undefined) as never, { segments: [] })
+    const result = await executeAiApiAction({
+      target: { editDataSet },
+      action,
+      args: () => undefined,
+      ctx: { segments: [] },
+    })
     expect(result.ok).toBe(true)
     expect(editDataSet).toHaveBeenCalledOnce()
   })
@@ -163,12 +175,12 @@ describe('executeAiApiAction', () => {
     const editDataSet = vi.fn(async () => undefined)
     const action = readConfigPageAction('editDataSet')
     const mutator = vi.fn()
-    const result = await executeAiApiAction(
-      { editDataSet },
+    const result = await executeAiApiAction({
+      target: { editDataSet },
       action,
-      { run: mutator } as unknown as AiJsonParams,
-      { segments: [] },
-    )
+      args: testAiJsonParams({ run: mutator }),
+      ctx: { segments: [] },
+    })
     expect(result.ok).toBe(true)
     expect(editDataSet).toHaveBeenCalledWith(mutator)
   })
@@ -176,12 +188,12 @@ describe('executeAiApiAction', () => {
   it('rejects non-function run before calling mutator method', async () => {
     const editDataSet = vi.fn(async () => undefined)
     const action = readConfigPageAction('editDataSet')
-    const result = await executeAiApiAction(
-      { editDataSet },
+    const result = await executeAiApiAction({
+      target: { editDataSet },
       action,
-      { run: { tableName: 'LeaveRequest' } } as unknown as AiJsonParams,
-      { segments: [] },
-    )
+      args: testAiJsonParams({ run: { tableName: 'LeaveRequest' } }),
+      ctx: { segments: [] },
+    })
     expect(result.ok).toBe(false)
     expect(editDataSet).not.toHaveBeenCalled()
   })
@@ -295,4 +307,38 @@ function readConfigPageAction(name: string) {
   const action = configPageApi.actions.find(candidate => candidate.name === name)
   if (action === undefined) throw new Error(`missing test action ${name}`)
   return action
+}
+
+function readScriptContextCallable(
+  context: Readonly<Record<string, unknown>>,
+  name: string,
+): ScriptCallableForTest {
+  const fn = context[name]
+  if (!isScriptCallable(fn)) {
+    throw new Error(`${name} is not callable in script context`)
+  }
+  return fn
+}
+
+function readScriptObjectCallable(value: unknown, name: string): ScriptCallableForTest {
+  if (!isRecord(value)) {
+    throw new Error('expected script proxy object')
+  }
+  return readScriptContextCallable(value, name)
+}
+
+function isScriptCallable(value: unknown): value is ScriptCallableForTest {
+  return typeof value === 'function'
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function testAiJsonParams(record: Record<string, unknown>): AiJsonParams {
+  return isAiJsonParams(record) ? record : {}
+}
+
+function isAiJsonParams(value: unknown): value is AiJsonParams {
+  return isRecord(value)
 }

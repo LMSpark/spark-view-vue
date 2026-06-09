@@ -4,7 +4,8 @@ import { AiAgentToolResult, type AiAgentRuntimeHostContext } from '../tool-runti
 import type { AiApiActionMetadata, AiApiObjectMetadata, AiApiResultApiRef } from '../../vcm-native'
 
 type MethodTarget = Readonly<Record<string, unknown>>
-type ScriptCallable = (...args: readonly unknown[]) => unknown
+type ScriptCallback = (...args: readonly unknown[]) => unknown
+type ScriptActionArg = AiJsonParams | ScriptCallback
 type AiNativePathContext = Readonly<{
   segments: readonly string[]
   host?: AiAgentRuntimeHostContext
@@ -23,91 +24,193 @@ type ResolvedValue = {
   value?: unknown
 }
 
+export type AiApiScriptContextCommand = Readonly<{
+  instance: unknown
+  api: AiApiObjectMetadata
+  ctx: AiNativePathContext
+  validateOptions?: AiJsonSchemaValidateOptions
+}>
+
+export type ExecuteAiApiActionCommand = Readonly<{
+  target: unknown
+  action: AiApiActionMetadata
+  args: ScriptActionArg
+  ctx: AiNativePathContext
+  validateOptions?: AiJsonSchemaValidateOptions
+}>
+
+type ExecuteAiApiActionValueCommand = Readonly<{
+  target: unknown
+  action: AiApiActionMetadata
+  args: ScriptActionArg
+  ctx: AiNativePathContext
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type WrapAsyncApiActionCommand = Readonly<{
+  target: unknown
+  action: AiApiActionMetadata
+  args: AiJsonParams
+  ctx: AiNativePathContext
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type CreateResolvedApiSurfaceCommand = Readonly<{
+  target: unknown
+  api: AiApiObjectMetadata
+  ctx: AiNativePathContext
+  options: ApiProxyOptions
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type CallApiActionInScriptCommand = Readonly<{
+  target: unknown
+  action: AiApiActionMetadata
+  args: AiJsonParams
+  ctx: AiNativePathContext
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type WrapResultApisCommand = Readonly<{
+  value: unknown
+  resultApis: readonly AiApiResultApiRef[]
+  ctx: AiNativePathContext
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type CreateResultProxyCommand = Readonly<{
+  value: Promise<unknown>
+  resultApis: readonly AiApiResultApiRef[]
+  path: readonly string[]
+  ctx: AiNativePathContext
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type CreateResolvedResultProxyCommand = Readonly<{
+  value: unknown
+  resultApis: readonly AiApiResultApiRef[]
+  path: readonly string[]
+  ctx: AiNativePathContext
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type CreateResultPathSurfaceCommand = CreateResultProxyCommand & Readonly<{
+  options: ApiProxyOptions
+}>
+
+type CreateResolvedResultPathSurfaceCommand = Readonly<{
+  value: unknown
+  resultApis: readonly AiApiResultApiRef[]
+  path: readonly string[]
+  ctx: AiNativePathContext
+  options: ApiProxyOptions
+  validateOptions: AiJsonSchemaValidateOptions
+}>
+
+type CallApiMethodCommand = Readonly<{
+  method: ApiMethod
+  target: MethodTarget
+  action: AiApiActionMetadata
+  ctx: AiNativePathContext
+  args: AiJsonParams
+}>
+
+type ApiProxyOptions = Readonly<{
+  /** true：可被 await；false：await 解包后的 facade，不再暴露 then 以免 Promise 递归采纳。 */
+  awaitable: boolean
+}>
+
 export function createAiApiScriptContext(
-  instance: unknown,
-  api: AiApiObjectMetadata,
-  ctx: AiNativePathContext,
-  validateOptions: AiJsonSchemaValidateOptions = {},
+  command: AiApiScriptContextCommand,
 ): Readonly<Record<string, unknown>> {
+  const validateOptions = command.validateOptions ?? {}
   const proxy = createApiProxy(
-    createApiProxyState(Promise.resolve(instance), api, validateOptions),
-    ctx,
-  ) as Readonly<Record<string, unknown>>
+    createApiProxyState(Promise.resolve(command.instance), command.api, validateOptions),
+    command.ctx,
+  )
   const context: Record<string, unknown> = {}
-  for (const action of api.actions) {
+  for (const action of command.api.actions) {
     context[action.name] = (...args: readonly unknown[]) => {
-      const fn = proxy[action.name]
+      const fn = readScriptProxyProperty(proxy, action.name)
       if (!isScriptCallable(fn)) {
-        throw new Error(`${api.kind}.${action.name} script proxy is not callable`)
+        throw new Error(`${command.api.kind}.${action.name} script proxy is not callable`)
       }
       return fn(...args)
     }
   }
-  for (const attribute of api.attributes ?? []) {
+  for (const attribute of command.api.attributes ?? []) {
     Object.defineProperty(context, attribute.name, {
       enumerable: true,
-      get: () => proxy[attribute.name],
+      get: () => readScriptProxyProperty(proxy, attribute.name),
     })
   }
   return context
 }
 
 export async function executeAiApiAction(
-  target: unknown,
-  action: AiApiActionMetadata,
-  args: AiJsonParams | ((...params: readonly unknown[]) => unknown),
-  ctx: AiNativePathContext,
-  options: AiJsonSchemaValidateOptions = {},
+  command: ExecuteAiApiActionCommand,
 ): Promise<AiAgentToolResult<unknown>> {
-  return await executeAiApiActionValue(target, action, args, ctx, options)
+  return await executeAiApiActionValue({
+    target: command.target,
+    action: command.action,
+    args: command.args,
+    ctx: command.ctx,
+    validateOptions: command.validateOptions ?? {},
+  })
 }
 
 function executeAiApiActionValue(
-  target: unknown,
-  action: AiApiActionMetadata,
-  args: AiJsonParams | ((...params: readonly unknown[]) => unknown),
-  ctx: AiNativePathContext,
-  options: AiJsonSchemaValidateOptions = {},
+  command: ExecuteAiApiActionValueCommand,
 ): AiAgentToolResult<unknown> | Promise<AiAgentToolResult<unknown>> {
-  const normalizedArgs = normalizeScriptActionArgs(action, args)
-  const validation = AiJsonSchemaValidator.validateDeserializedParams(normalizedArgs, action.paramsSchema, options)
+  const normalizedArgs = normalizeScriptActionArgs(command.action, command.args)
+  const validation = AiJsonSchemaValidator.validateDeserializedParams(
+    normalizedArgs,
+    command.action.paramsSchema,
+    command.validateOptions,
+  )
   if (!validation.ok) {
     return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
-      `${action.name} 参数不符合 paramsSchema: ${validation.issues.map(issue => issue.message).join('; ')}`,
+      `${command.action.name} 参数不符合 paramsSchema: ${validation.issues.map(issue => issue.message).join('; ')}`,
       '先读取 vcm_action_guide 或脚本上下文对应方法的 paramsSchema，再按 schema 修正参数。',
     )
   }
-  if (!isMethodTarget(target)) {
+  if (!isMethodTarget(command.target)) {
     return AiAgentToolResult.failCode(
       'FUNCTION_NOT_IMPLEMENTED',
-      `${action.name} 未实现方法 "${action.methodName}"`,
+      `${command.action.name} 未实现方法 "${command.action.methodName}"`,
       '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
     )
   }
-  const method = target[action.methodName]
+  const method = command.target[command.action.methodName]
   if (!isApiMethod(method)) {
     return AiAgentToolResult.failCode(
       'FUNCTION_NOT_IMPLEMENTED',
-      `${action.name} 未实现方法 "${action.methodName}"`,
+      `${command.action.name} 未实现方法 "${command.action.methodName}"`,
       '检查业务 class 是否实现了 VCM 元数据声明的 methodName。',
     )
   }
-  const raw = callApiMethod(method, target, action, ctx, normalizedArgs)
+  const raw = callApiMethod({
+    method,
+    target: command.target,
+    action: command.action,
+    ctx: command.ctx,
+    args: normalizedArgs,
+  })
   if (isPromiseLike(raw)) {
     return Promise.resolve(raw).then(value => wrapRawActionResult(value))
   }
   return wrapRawActionResult(raw)
 }
 
-async function wrapAsyncApiActionValue(
-  target: unknown,
-  action: AiApiActionMetadata,
-  args: AiJsonParams,
-  ctx: AiNativePathContext,
-  options: AiJsonSchemaValidateOptions,
-): Promise<unknown> {
-  return unwrapActionResult(action.name, await executeAiApiAction(target, action, args, ctx, options))
+async function wrapAsyncApiActionValue(command: WrapAsyncApiActionCommand): Promise<unknown> {
+  return unwrapActionResult(command.action.name, await executeAiApiAction({
+    target: command.target,
+    action: command.action,
+    args: command.args,
+    ctx: command.ctx,
+    validateOptions: command.validateOptions,
+  }))
 }
 
 function wrapRawActionResult(raw: unknown): AiAgentToolResult<unknown> {
@@ -124,11 +227,6 @@ export class AiApiScriptActionFailure extends Error {
     super(first === undefined ? `${actionName} failed` : `${first.code}: ${first.message}`)
   }
 }
-
-type ApiProxyOptions = Readonly<{
-  /** true：可被 await；false：await 解包后的 facade，不再暴露 then 以免 Promise 递归采纳。 */
-  awaitable: boolean
-}>
 
 function createApiProxy(state: ApiProxyState, ctx: AiNativePathContext): unknown {
   return createApiSurface(state, ctx, { awaitable: true })
@@ -156,18 +254,36 @@ function createApiSurface(
     get(_target, property) {
       if (options.awaitable && property === 'then') {
         return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => state.value.then(
-          target => onFulfilled?.(createResolvedApiSurface(target, state.api, ctx, { awaitable: false }, state.validateOptions)),
+          target => onFulfilled?.(createResolvedApiSurface({
+            target,
+            api: state.api,
+            ctx,
+            options: { awaitable: false },
+            validateOptions: state.validateOptions,
+          })),
           onRejected,
         )
       }
       if (options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => state.value.then(
-          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }, state.validateOptions),
+          target => createResolvedApiSurface({
+            target,
+            api: state.api,
+            ctx,
+            options: { awaitable: false },
+            validateOptions: state.validateOptions,
+          }),
         ).catch(onRejected)
       }
       if (options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => state.value.then(
-          target => createResolvedApiSurface(target, state.api, ctx, { awaitable: false }, state.validateOptions),
+          target => createResolvedApiSurface({
+            target,
+            api: state.api,
+            ctx,
+            options: { awaitable: false },
+            validateOptions: state.validateOptions,
+          }),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -180,31 +296,31 @@ function createApiSurface(
         return (...args: readonly unknown[]) => {
           const normalizedArgs = normalizeScriptActionArgList(action, args)
           if (state.resolved.settled) {
-            return wrapResultApis(
-              callApiActionInScriptValue(
-                state.resolved.value,
+            return wrapResultApis({
+              value: callApiActionInScriptValue({
+                target: state.resolved.value,
                 action,
-                normalizedArgs,
+                args: normalizedArgs,
                 ctx,
-                state.validateOptions,
-              ),
-              action.resultApis ?? [],
+                validateOptions: state.validateOptions,
+              }),
+              resultApis: action.resultApis ?? [],
               ctx,
-              state.validateOptions,
-            )
+              validateOptions: state.validateOptions,
+            })
           }
-          return wrapResultApis(
-            state.value.then(target => wrapAsyncApiActionValue(
+          return wrapResultApis({
+            value: state.value.then(target => wrapAsyncApiActionValue({
               target,
               action,
-              normalizedArgs,
+              args: normalizedArgs,
               ctx,
-              state.validateOptions,
-            )),
-            action.resultApis ?? [],
+              validateOptions: state.validateOptions,
+            })),
+            resultApis: action.resultApis ?? [],
             ctx,
-            state.validateOptions,
-          )
+            validateOptions: state.validateOptions,
+          })
         }
       }
 
@@ -213,7 +329,13 @@ function createApiSurface(
         const propertyValue = readJsonProperty(state.resolved.value, property)
         return propertyApi === undefined
           ? propertyValue
-          : createResolvedApiSurface(propertyValue, propertyApi, ctx, options, state.validateOptions)
+          : createResolvedApiSurface({
+            target: propertyValue,
+            api: propertyApi,
+            ctx,
+            options,
+            validateOptions: state.validateOptions,
+          })
       }
 
       return createApiSurface(
@@ -229,29 +351,41 @@ function createApiSurface(
   })
 }
 
-function createResolvedApiSurface(
-  target: unknown,
-  api: AiApiObjectMetadata,
-  ctx: AiNativePathContext,
-  options: ApiProxyOptions,
-  validateOptions: AiJsonSchemaValidateOptions,
-): unknown {
+function createResolvedApiSurface(command: CreateResolvedApiSurfaceCommand): unknown {
   return new Proxy({}, {
     get(_target, property) {
-      if (options.awaitable && property === 'then') {
-        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(target).then(
-          () => onFulfilled?.(createResolvedApiSurface(target, api, ctx, { awaitable: false }, validateOptions)),
+      if (command.options.awaitable && property === 'then') {
+        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(command.target).then(
+          () => onFulfilled?.(createResolvedApiSurface({
+            target: command.target,
+            api: command.api,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          })),
           onRejected,
         )
       }
-      if (options.awaitable && property === 'catch') {
+      if (command.options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(
-          createResolvedApiSurface(target, api, ctx, { awaitable: false }, validateOptions),
+          createResolvedApiSurface({
+            target: command.target,
+            api: command.api,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          }),
         ).catch(onRejected)
       }
-      if (options.awaitable && property === 'finally') {
+      if (command.options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => Promise.resolve(
-          createResolvedApiSurface(target, api, ctx, { awaitable: false }, validateOptions),
+          createResolvedApiSurface({
+            target: command.target,
+            api: command.api,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          }),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
@@ -259,44 +393,50 @@ function createResolvedApiSurface(
       }
       if (typeof property !== 'string') return undefined
 
-      const action = api.actions.find(candidate => candidate.name === property)
+      const action = command.api.actions.find(candidate => candidate.name === property)
       if (action !== undefined) {
-        return (...args: readonly unknown[]) => wrapResultApis(
-          callApiActionInScriptValue(
-            target,
+        return (...args: readonly unknown[]) => wrapResultApis({
+          value: callApiActionInScriptValue({
+            target: command.target,
             action,
-            normalizeScriptActionArgList(action, args),
-            ctx,
-            validateOptions,
-          ),
-          action.resultApis ?? [],
-          ctx,
-          validateOptions,
-        )
+            args: normalizeScriptActionArgList(action, args),
+            ctx: command.ctx,
+            validateOptions: command.validateOptions,
+          }),
+          resultApis: action.resultApis ?? [],
+          ctx: command.ctx,
+          validateOptions: command.validateOptions,
+        })
       }
 
-      const propertyValue = readJsonProperty(target, property)
-      const propertyApi = resolvePropertyApi(api, property)
+      const propertyValue = readJsonProperty(command.target, property)
+      const propertyApi = resolvePropertyApi(command.api, property)
       if (propertyApi !== undefined) {
-        return createResolvedApiSurface(propertyValue, propertyApi, ctx, options, validateOptions)
+        return createResolvedApiSurface({
+          target: propertyValue,
+          api: propertyApi,
+          ctx: command.ctx,
+          options: command.options,
+          validateOptions: command.validateOptions,
+        })
       }
       return propertyValue
     },
   })
 }
 
-function callApiActionInScriptValue(
-  target: unknown,
-  action: AiApiActionMetadata,
-  args: AiJsonParams,
-  ctx: AiNativePathContext,
-  options: AiJsonSchemaValidateOptions,
-): unknown {
-  const result = executeAiApiActionValue(target, action, args, ctx, options)
+function callApiActionInScriptValue(command: CallApiActionInScriptCommand): unknown {
+  const result = executeAiApiActionValue({
+    target: command.target,
+    action: command.action,
+    args: command.args,
+    ctx: command.ctx,
+    validateOptions: command.validateOptions,
+  })
   if (isPromiseLike(result)) {
-    return result.then(value => unwrapActionResult(action.name, value))
+    return result.then(value => unwrapActionResult(command.action.name, value))
   }
-  return unwrapActionResult(action.name, result)
+  return unwrapActionResult(command.action.name, result)
 }
 
 function unwrapActionResult(actionName: string, result: AiAgentToolResult<unknown>): unknown {
@@ -306,129 +446,176 @@ function unwrapActionResult(actionName: string, result: AiAgentToolResult<unknow
   return result.data
 }
 
-function wrapResultApis(
-  value: unknown,
-  resultApis: readonly AiApiResultApiRef[],
-  ctx: AiNativePathContext,
-  validateOptions: AiJsonSchemaValidateOptions,
-): unknown {
-  if (resultApis.length === 0) return value
-  if (!isPromiseLike(value)) {
-    return createResolvedResultProxy(value, resultApis, [], ctx, validateOptions)
+function wrapResultApis(command: WrapResultApisCommand): unknown {
+  if (command.resultApis.length === 0) return command.value
+  if (!isPromiseLike(command.value)) {
+    return createResolvedResultProxy({
+      value: command.value,
+      resultApis: command.resultApis,
+      path: [],
+      ctx: command.ctx,
+      validateOptions: command.validateOptions,
+    })
   }
-  return createResultProxy(Promise.resolve(value), resultApis, [], ctx, validateOptions)
+  return createResultProxy({
+    value: Promise.resolve(command.value),
+    resultApis: command.resultApis,
+    path: [],
+    ctx: command.ctx,
+    validateOptions: command.validateOptions,
+  })
 }
 
-function createResolvedResultProxy(
-  value: unknown,
-  resultApis: readonly AiApiResultApiRef[],
-  path: readonly string[],
-  ctx: AiNativePathContext,
-  validateOptions: AiJsonSchemaValidateOptions,
-): unknown {
-  return createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: true }, validateOptions)
+function createResolvedResultProxy(command: CreateResolvedResultProxyCommand): unknown {
+  return createResolvedResultPathSurface({
+    value: command.value,
+    resultApis: command.resultApis,
+    path: command.path,
+    ctx: command.ctx,
+    options: { awaitable: true },
+    validateOptions: command.validateOptions,
+  })
 }
 
-function createResultProxy(
-  value: Promise<unknown>,
-  resultApis: readonly AiApiResultApiRef[],
-  path: readonly string[],
-  ctx: AiNativePathContext,
-  validateOptions: AiJsonSchemaValidateOptions,
-): unknown {
-  return createResultPathSurface(value, resultApis, path, ctx, { awaitable: true }, validateOptions)
+function createResultProxy(command: CreateResultProxyCommand): unknown {
+  return createResultPathSurface({
+    value: command.value,
+    resultApis: command.resultApis,
+    path: command.path,
+    ctx: command.ctx,
+    options: { awaitable: true },
+    validateOptions: command.validateOptions,
+  })
 }
 
-function createResultPathSurface(
-  value: Promise<unknown>,
-  resultApis: readonly AiApiResultApiRef[],
-  path: readonly string[],
-  ctx: AiNativePathContext,
-  options: ApiProxyOptions,
-  validateOptions: AiJsonSchemaValidateOptions,
-): unknown {
-  const api = resultApis.find(ref => samePath(ref.resultPath, path))?.api
+function createResultPathSurface(command: CreateResultPathSurfaceCommand): unknown {
+  const api = command.resultApis.find(ref => samePath(ref.resultPath, command.path))?.api
   if (api !== undefined) {
-    return createApiSurface(createApiProxyState(value, api, validateOptions), ctx, options)
+    return createApiSurface(
+      createApiProxyState(command.value, api, command.validateOptions),
+      command.ctx,
+      command.options,
+    )
   }
   return new Proxy({}, {
     get(_target, property) {
-      if (options.awaitable && property === 'then') {
-        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => value.then(
-          target => onFulfilled?.(createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }, validateOptions)),
+      if (command.options.awaitable && property === 'then') {
+        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => command.value.then(
+          target => onFulfilled?.(createResolvedResultPathSurface({
+            value: target,
+            resultApis: command.resultApis,
+            path: command.path,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          })),
           onRejected,
         )
       }
-      if (options.awaitable && property === 'catch') {
-        return (onRejected?: ((reason: unknown) => unknown) | null) => value.then(
-          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }, validateOptions),
+      if (command.options.awaitable && property === 'catch') {
+        return (onRejected?: ((reason: unknown) => unknown) | null) => command.value.then(
+          target => createResolvedResultPathSurface({
+            value: target,
+            resultApis: command.resultApis,
+            path: command.path,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          }),
         ).catch(onRejected)
       }
-      if (options.awaitable && property === 'finally') {
-        return (onFinally?: (() => void) | null) => value.then(
-          target => createResolvedResultPathSurface(target, resultApis, path, ctx, { awaitable: false }, validateOptions),
+      if (command.options.awaitable && property === 'finally') {
+        return (onFinally?: (() => void) | null) => command.value.then(
+          target => createResolvedResultPathSurface({
+            value: target,
+            resultApis: command.resultApis,
+            path: command.path,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          }),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
         return undefined
       }
       if (typeof property !== 'string') return undefined
-      const nextPath = [...path, property]
-      return createResultPathSurface(
-        value.then(target => readJsonProperty(target, property)),
-        resultApis,
-        nextPath,
-        ctx,
-        options,
-        validateOptions,
-      )
+      const nextPath = [...command.path, property]
+      return createResultPathSurface({
+        value: command.value.then(target => readJsonProperty(target, property)),
+        resultApis: command.resultApis,
+        path: nextPath,
+        ctx: command.ctx,
+        options: command.options,
+        validateOptions: command.validateOptions,
+      })
     },
   })
 }
 
-function createResolvedResultPathSurface(
-  value: unknown,
-  resultApis: readonly AiApiResultApiRef[],
-  path: readonly string[],
-  ctx: AiNativePathContext,
-  options: ApiProxyOptions,
-  validateOptions: AiJsonSchemaValidateOptions,
-): unknown {
-  const api = resultApis.find(ref => samePath(ref.resultPath, path))?.api
+function createResolvedResultPathSurface(command: CreateResolvedResultPathSurfaceCommand): unknown {
+  const api = command.resultApis.find(ref => samePath(ref.resultPath, command.path))?.api
   if (api !== undefined) {
-    return createResolvedApiSurface(value, api, ctx, options, validateOptions)
+    return createResolvedApiSurface({
+      target: command.value,
+      api,
+      ctx: command.ctx,
+      options: command.options,
+      validateOptions: command.validateOptions,
+    })
   }
   return new Proxy({}, {
     get(_target, property) {
-      if (options.awaitable && property === 'then') {
-        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(value).then(
-          () => onFulfilled?.(createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }, validateOptions)),
+      if (command.options.awaitable && property === 'then') {
+        return (onFulfilled?: ((value: unknown) => unknown) | null, onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(command.value).then(
+          () => onFulfilled?.(createResolvedResultPathSurface({
+            value: command.value,
+            resultApis: command.resultApis,
+            path: command.path,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          })),
           onRejected,
         )
       }
-      if (options.awaitable && property === 'catch') {
+      if (command.options.awaitable && property === 'catch') {
         return (onRejected?: ((reason: unknown) => unknown) | null) => Promise.resolve(
-          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }, validateOptions),
+          createResolvedResultPathSurface({
+            value: command.value,
+            resultApis: command.resultApis,
+            path: command.path,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          }),
         ).catch(onRejected)
       }
-      if (options.awaitable && property === 'finally') {
+      if (command.options.awaitable && property === 'finally') {
         return (onFinally?: (() => void) | null) => Promise.resolve(
-          createResolvedResultPathSurface(value, resultApis, path, ctx, { awaitable: false }, validateOptions),
+          createResolvedResultPathSurface({
+            value: command.value,
+            resultApis: command.resultApis,
+            path: command.path,
+            ctx: command.ctx,
+            options: { awaitable: false },
+            validateOptions: command.validateOptions,
+          }),
         ).finally(onFinally)
       }
       if (property === 'then' || property === 'catch' || property === 'finally') {
         return undefined
       }
       if (typeof property !== 'string') return undefined
-      const nextPath = [...path, property]
-      return createResolvedResultPathSurface(
-        readJsonProperty(value, property),
-        resultApis,
-        nextPath,
-        ctx,
-        options,
-        validateOptions,
-      )
+      const nextPath = [...command.path, property]
+      return createResolvedResultPathSurface({
+        value: readJsonProperty(command.value, property),
+        resultApis: command.resultApis,
+        path: nextPath,
+        ctx: command.ctx,
+        options: command.options,
+        validateOptions: command.validateOptions,
+      })
     },
   })
 }
@@ -443,11 +630,18 @@ function resolvePropertyApi(api: AiApiObjectMetadata, property: string): AiApiOb
   return undefined
 }
 
+function readScriptProxyProperty(proxy: unknown, property: string): unknown {
+  if (proxy === null || (typeof proxy !== 'object' && typeof proxy !== 'function')) {
+    return undefined
+  }
+  return Reflect.get(proxy, property)
+}
+
 function isMethodTarget(value: unknown): value is MethodTarget {
   return value !== null && typeof value === 'object'
 }
 
-function isScriptCallable(value: unknown): value is ScriptCallable {
+function isScriptCallable(value: unknown): value is ScriptCallback {
   return typeof value === 'function'
 }
 
@@ -456,40 +650,38 @@ function isApiMethod(value: unknown): value is ApiMethod {
 }
 
 function isPromiseLike(value: unknown): value is PromiseLike<unknown> {
-  return value !== null
-    && (typeof value === 'object' || typeof value === 'function')
-    && typeof (value as { then?: unknown }).then === 'function'
+  if (value === null) return false
+  if (typeof value !== 'object' && typeof value !== 'function') return false
+  return typeof Reflect.get(value, 'then') === 'function'
 }
 
-function callApiMethod(
-  method: ApiMethod,
-  target: MethodTarget,
-  action: AiApiActionMetadata,
-  ctx: AiNativePathContext,
-  args: AiJsonParams,
-): unknown {
-  const mutatorRun = readMutatorRunArgument(action, args)
+function callApiMethod(command: CallApiMethodCommand): unknown {
+  const mutatorRun = readMutatorRunArgument(command.action, command.args)
   if (mutatorRun !== undefined) {
-    return Reflect.apply(method, target, [mutatorRun])
+    return Reflect.apply(command.method, command.target, [mutatorRun])
   }
-  if (actionRequiresRun(action)) {
-    const runValue = args['run']
+  if (actionRequiresRun(command.action)) {
+    const runValue = command.args['run']
     if (runValue !== undefined && typeof runValue !== 'function') {
       return AiAgentToolResult.failCode(
         'SCHEMA_VALIDATION_FAILED',
-        `${action.name}.run must be a function, received ${typeof runValue}.`,
-        `在 vcm_script 中 ${action.name} 需要传 callback；勿把业务参数对象当作 run。`,
+        `${command.action.name}.run must be a function, received ${typeof runValue}.`,
+        `在 vcm_script 中 ${command.action.name} 需要传 callback；勿把业务参数对象当作 run。`,
       )
     }
     return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
-      `${action.name} requires a callback argument; compatible { run } must be a function.`,
-      `${action.name} 需要 callback 参数；先 vcm_action_guide 读 usageRules 与 paramsSchema。`,
+      `${command.action.name} requires a callback argument; compatible { run } must be a function.`,
+      `${command.action.name} 需要 callback 参数；先 vcm_action_guide 读 usageRules 与 paramsSchema。`,
     )
   }
-  if (action.takesContext === true) return method.call(target, ctx, args)
-  if (action.takesContext === false) return Reflect.apply(method, target, projectPositionalArgs(action, args))
-  return method.length >= 2 ? method.call(target, ctx, args) : method.call(target, args)
+  if (command.action.takesContext === true) return command.method.call(command.target, command.ctx, command.args)
+  if (command.action.takesContext === false) {
+    return Reflect.apply(command.method, command.target, projectPositionalArgs(command.action, command.args))
+  }
+  return command.method.length >= 2
+    ? command.method.call(command.target, command.ctx, command.args)
+    : command.method.call(command.target, command.args)
 }
 
 function actionRequiresRun(action: AiApiActionMetadata): boolean {
@@ -500,7 +692,7 @@ function actionRequiresRun(action: AiApiActionMetadata): boolean {
 function readMutatorRunArgument(
   action: AiApiActionMetadata,
   args: AiJsonParams,
-): ((...params: readonly unknown[]) => unknown) | undefined {
+): ScriptCallback | undefined {
   if (!actionRequiresRun(action)) return undefined
   const runValue = args['run']
   return typeof runValue === 'function'
@@ -529,15 +721,15 @@ function normalizeScriptActionArgs(
   args: unknown,
 ): AiJsonParams {
   if (typeof args === 'function') {
-    if (actionRequiresRun(action)) return { run: args } as unknown as AiJsonParams
+    if (actionRequiresRun(action)) return paramsFromRecord({ run: args })
     return {}
   }
   const paramNames = actionParamNames(action)
   const paramName = paramNames[0]
   if (paramName !== undefined && paramNames.length === 1 && shouldWrapSingleNativeArgument(action, args)) {
-    return { [paramName]: args } as unknown as AiJsonParams
+    return paramsFromRecord({ [paramName]: args })
   }
-  return isRecord(args) ? args as AiJsonParams : {}
+  return isAiJsonParams(args) ? args : {}
 }
 
 function normalizePositionalScriptArgs(
@@ -551,7 +743,15 @@ function normalizePositionalScriptArgs(
     const paramName = paramNames[index]
     if (paramName !== undefined) next[paramName] = args[index]
   }
-  return next as unknown as AiJsonParams
+  return paramsFromRecord(next)
+}
+
+function paramsFromRecord(record: Record<string, unknown>): AiJsonParams {
+  return isAiJsonParams(record) ? record : {}
+}
+
+function isAiJsonParams(value: unknown): value is AiJsonParams {
+  return isRecord(value)
 }
 
 function shouldWrapSingleNativeArgument(action: AiApiActionMetadata, args: unknown): boolean {

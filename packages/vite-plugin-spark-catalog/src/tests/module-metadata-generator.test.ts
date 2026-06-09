@@ -168,19 +168,7 @@ class DemoRootService {
       resultApiCount: 1,
     })
 
-    const generated = JSON.parse(readFileSync(join(root, 'out/modules.json'), 'utf8')) as {
-      diagnostics: { resultApiCount: number }
-      modules: Array<{
-        rootApi: {
-          kind: string
-          jsdoc?: string
-          provenance?: { file?: string; className?: string }
-          constructorSignature?: { jsdoc?: string }
-          attributes?: Array<{ jsdoc?: string }>
-          actions: Array<{ jsdoc?: string }>
-        }
-      }>
-    }
+    const generated = parseGeneratedModulesDocument(readFileSync(join(root, 'out/modules.json'), 'utf8'))
     expect(generated.diagnostics.resultApiCount).toBe(1)
     expect(generated.modules[0]?.rootApi.kind).toBe('demo-directory')
     expect(generated.modules[1]?.rootApi.kind).toBe('demo-root')
@@ -451,16 +439,7 @@ class QueryRoot {
     })
 
     expect(result.jsdocTodoLogOutFile).toBe(join(root, 'out/jsdoc-todo.json'))
-    const generated = JSON.parse(readFileSync(join(root, 'out/jsdoc-todo.json'), 'utf8')) as {
-      summary?: {
-        jsdocTodoCount?: number
-        schemaDescriptionTodoCount?: number
-      }
-      jsdocTodoLog?: Array<{
-        memberName?: string
-        reasons?: string[]
-      }>
-    }
+    const generated = parseJsdocTodoLogDocument(readFileSync(join(root, 'out/jsdoc-todo.json'), 'utf8'))
     expect(generated.summary?.jsdocTodoCount).toBeGreaterThan(0)
     expect(generated.jsdocTodoLog?.some(entry =>
       entry.memberName === 'configure'
@@ -702,4 +681,70 @@ function createTempRoot(): string {
   const root = mkdtempSync(join(tmpdir(), 'spark-module-metadata-'))
   tempRoots.push(root)
   return root
+}
+
+type GeneratedModulesDocument = Readonly<{
+  diagnostics: { resultApiCount: number }
+  modules: ReadonlyArray<{
+    rootApi: {
+      kind: string
+      jsdoc?: string
+      provenance?: { file?: string; className?: string }
+      constructorSignature?: { jsdoc?: string }
+      attributes?: ReadonlyArray<{ jsdoc?: string }>
+      actions: ReadonlyArray<{ jsdoc?: string }>
+    }
+  }>
+}>
+
+type JsdocTodoLogDocument = Readonly<{
+  summary?: {
+    jsdocTodoCount?: number
+    schemaDescriptionTodoCount?: number
+  }
+  jsdocTodoLog?: ReadonlyArray<{
+    memberName?: string
+    reasons?: string[]
+  }>
+}>
+
+function parseGeneratedModulesDocument(raw: string): GeneratedModulesDocument {
+  const parsed: unknown = JSON.parse(raw)
+  if (!isGeneratedModulesDocument(parsed)) {
+    throw new Error('invalid generated modules document')
+  }
+  return parsed
+}
+
+function parseJsdocTodoLogDocument(raw: string): JsdocTodoLogDocument {
+  const parsed: unknown = JSON.parse(raw)
+  if (!isJsdocTodoLogDocument(parsed)) {
+    throw new Error('invalid jsdoc todo log document')
+  }
+  return parsed
+}
+
+function isGeneratedModulesDocument(value: unknown): value is GeneratedModulesDocument {
+  if (!isPlainObject(value)) return false
+  const diagnostics = value['diagnostics']
+  if (!isPlainObject(diagnostics) || typeof diagnostics['resultApiCount'] !== 'number') return false
+  const modules = value['modules']
+  if (!Array.isArray(modules)) return false
+  return modules.every(isGeneratedModuleEntry)
+}
+
+function isGeneratedModuleEntry(value: unknown): boolean {
+  if (!isPlainObject(value)) return false
+  const rootApi = value['rootApi']
+  if (!isPlainObject(rootApi) || typeof rootApi['kind'] !== 'string') return false
+  const actions = rootApi['actions']
+  return Array.isArray(actions)
+}
+
+function isJsdocTodoLogDocument(value: unknown): value is JsdocTodoLogDocument {
+  return isPlainObject(value)
+}
+
+function isPlainObject(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
 }

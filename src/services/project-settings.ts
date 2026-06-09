@@ -105,12 +105,15 @@ export async function loadProjectRuntimeSettings(
   }
 }
 
-export async function saveProjectRuntimeSettings(
-  tenantId: string,
-  projectId: string,
-  current: ProjectRuntimeSettings,
-  input: ProjectRuntimeSettingsInput,
-): Promise<void> {
+export type SaveProjectRuntimeSettingsCommand = Readonly<{
+  tenantId: string
+  projectId: string
+  current: ProjectRuntimeSettings
+  input: ProjectRuntimeSettingsInput
+}>
+
+export async function saveProjectRuntimeSettings(command: SaveProjectRuntimeSettingsCommand): Promise<void> {
+  const { tenantId, projectId, current, input } = command
   const homeChanged = (current.project.homeNodeId ?? '') !== (input.homeNodeId ?? '')
   const layoutChanged = current.childPlacement !== input.childPlacement
 

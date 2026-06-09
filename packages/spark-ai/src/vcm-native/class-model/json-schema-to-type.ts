@@ -21,12 +21,12 @@ export function jsonSchemaToTypeText(schema: AiJsonSchema | undefined): string {
 
   const anyOf = schema['anyOf']
   if (Array.isArray(anyOf) && anyOf.length > 0) {
-    return unique(anyOf.map(item => jsonSchemaToTypeText(item as AiJsonSchema))).join(' | ')
+    return unique(anyOf.map(item => jsonSchemaToTypeText(readJsonSchema(item)))).join(' | ')
   }
 
   const oneOf = schema['oneOf']
   if (Array.isArray(oneOf) && oneOf.length > 0) {
-    return unique(oneOf.map(item => jsonSchemaToTypeText(item as AiJsonSchema))).join(' | ')
+    return unique(oneOf.map(item => jsonSchemaToTypeText(readJsonSchema(item)))).join(' | ')
   }
 
   const type = schema['type']
@@ -56,7 +56,7 @@ function objectTypeText(schema: JsonRecord): string {
   const required = new Set(Array.isArray(schema['required']) ? schema['required'].filter(isString) : [])
   const parts = Object.entries(properties).map(([name, child]) => {
     const optional = required.has(name) ? '' : '?'
-    return `${quotePropertyName(name)}${optional}: ${jsonSchemaToTypeText(child as AiJsonSchema)}`
+    return `${quotePropertyName(name)}${optional}: ${jsonSchemaToTypeText(readJsonSchema(child))}`
   })
   return parts.length === 0 ? 'Record<string, unknown>' : `{ ${parts.join('; ')} }`
 }
@@ -76,6 +76,12 @@ function unique(values: readonly string[]): readonly string[] {
 
 function isRecord(value: unknown): value is JsonRecord {
   return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readJsonSchema(value: unknown): AiJsonSchema {
+  if (value === true || value === false) return value
+  if (isRecord(value)) return value
+  return true
 }
 
 function isString(value: unknown): value is string {

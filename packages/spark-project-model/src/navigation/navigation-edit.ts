@@ -239,7 +239,7 @@ export function createNavigationNodePatch(input: NavigationNodeDraft): Navigatio
     icon: nodeDto.icon,
     dividerAfter: nodeDto.dividerAfter,
     description: nodeDto.description,
-    ...(nodeDto.planningAttachmentRef.trim().length > 0
+    ...(typeof nodeDto.planningAttachmentRef === 'string' && nodeDto.planningAttachmentRef.trim().length > 0
       ? { planningAttachmentRef: nodeDto.planningAttachmentRef.trim() }
       : {}),
     path: nodeDto.path,

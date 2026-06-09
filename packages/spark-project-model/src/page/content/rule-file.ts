@@ -20,12 +20,7 @@ export class PageRuleFile {
 
   setText(text: string): void {
     if (text === this.getText()) return
-    const methodName = `replace${'Root'}` as keyof SparkNodeTreeModel
-    const replaceTree = this.tree[methodName]
-    if (typeof replaceTree !== 'function') {
-      throw new Error('SparkNodeTree 缺少根节点替换能力')
-    }
-    ;(replaceTree as (root: SparkNode) => void).call(this.tree, parseRuleText(text))
+    this.tree.replaceRoot(parseRuleText(text))
     this.dirty = true
   }
 

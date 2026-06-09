@@ -325,7 +325,14 @@ export class AiAgentToolLoopRunner {
       if (
         executionPhaseNudge !== undefined
         && executionPhaseNudgeCount < MAX_EXECUTION_PHASE_NUDGES
-        && shouldNudgeExecutionPhase(sessionStore, runtimeContext, executedToolCalls, registration.executionToolNames)
+        && shouldNudgeExecutionPhase({
+          sessionStore,
+          context: runtimeContext,
+          executedToolCalls,
+          ...(registration.executionToolNames === undefined
+            ? {}
+            : { executionToolNames: registration.executionToolNames }),
+        })
       ) {
         executionPhaseNudgeCount += 1
         pendingMessages = [{ role: 'user', content: executionPhaseNudge }]
@@ -554,12 +561,15 @@ function resolveExecutionToolNames(
   return executionToolNames ?? DEFAULT_EXECUTION_TOOL_NAMES
 }
 
-function shouldNudgeExecutionPhase(
-  sessionStore: AiAgentSessionStore,
-  context: AiAgentRuntimeContext,
-  executedToolCalls: readonly AiAgentTransportToolCall[],
-  executionToolNames: ReadonlySet<string> | undefined,
-): boolean {
+type ShouldNudgeExecutionPhaseCommand = Readonly<{
+  sessionStore: AiAgentSessionStore
+  context: AiAgentRuntimeContext
+  executedToolCalls: readonly AiAgentTransportToolCall[]
+  executionToolNames?: ReadonlySet<string>
+}>
+
+function shouldNudgeExecutionPhase(command: ShouldNudgeExecutionPhaseCommand): boolean {
+  const { sessionStore, context, executedToolCalls, executionToolNames } = command
   if (executedToolCalls.length === 0) return false
 
   const executionNames = resolveExecutionToolNames(executionToolNames)

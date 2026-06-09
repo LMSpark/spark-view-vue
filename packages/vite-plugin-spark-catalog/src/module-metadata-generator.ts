@@ -317,23 +317,23 @@ export function generateModuleAbilityMetadata(
     if (sourceFile === undefined) {
       throw new Error(`module metadata source not found: ${file}`)
     }
-    return extractAbilityMetadata(root, sourceFile, checker, trace)
+    return extractAbilityMetadata({ root, sourceFile, checker, trace })
   })
   const moduleMetadata = rootFiles.flatMap((file) => {
     const sourceFile = program.getSourceFile(file)
     if (sourceFile === undefined) {
       throw new Error(`module metadata source not found: ${file}`)
     }
-    return extractApiObjectMetadata(
+    return extractApiObjectMetadata({
       root,
       sourceFile,
       checker,
-      new Set(options.apiRoots ?? []),
+      apiRoots: new Set(options.apiRoots ?? []),
       trace,
       sourceClassIndex,
       reflectionMode,
-      schemaDescriptionTodoEntries,
-    )
+      schemaDescriptionTodoLog: schemaDescriptionTodoEntries,
+    })
   })
   validateGeneratedAbilities(abilities)
   const diagnostics = createModuleMetadataDiagnostics(abilities, moduleMetadata)
@@ -433,12 +433,17 @@ export function compareModuleMetadataForBuildConsistency(
   const issues: ModuleMetadataBuildConsistencyIssue[] = []
   const sourceApis = collectApiMetadataByKind(sourceModules)
   const buildEntryApis = collectApiMetadataByKind(buildEntryModules)
-  compareBuildValue(issues, 'apiKinds', [...sourceApis.keys()].sort().join(','), [...buildEntryApis.keys()].sort().join(','))
+  compareBuildValue({
+    issues,
+    path: 'apiKinds',
+    sourceValue: [...sourceApis.keys()].sort().join(','),
+    buildEntryValue: [...buildEntryApis.keys()].sort().join(','),
+  })
 
   for (const [kind, sourceApi] of sourceApis) {
     const buildEntryApi = buildEntryApis.get(kind)
     if (buildEntryApi === undefined) continue
-    compareApiMetadata(issues, kind, sourceApi, buildEntryApi)
+    compareApiMetadata({ issues, kind, sourceApi, buildEntryApi })
   }
   return issues
 }
@@ -460,41 +465,47 @@ function collectApiMetadataByKind(modules: readonly AiModuleMetadataJson[]): Map
   return result
 }
 
-function compareApiMetadata(
-  issues: ModuleMetadataBuildConsistencyIssue[],
-  kind: string,
-  sourceApi: AiApiObjectMetadata,
-  buildEntryApi: AiApiObjectMetadata,
-): void {
-  compareBuildValue(issues, `${kind}.className`, sourceApi.className, buildEntryApi.className)
-  compareBuildValue(issues, `${kind}.name`, sourceApi.name, buildEntryApi.name)
-  compareBuildValue(issues, `${kind}.jsdoc`, sourceApi.jsdoc, buildEntryApi.jsdoc)
-  compareBuildValue(
+type CompareApiMetadataCommand = Readonly<{
+  issues: ModuleMetadataBuildConsistencyIssue[]
+  kind: string
+  sourceApi: AiApiObjectMetadata
+  buildEntryApi: AiApiObjectMetadata
+}>
+
+function compareApiMetadata(command: CompareApiMetadataCommand): void {
+  const { issues, kind, sourceApi, buildEntryApi } = command
+  compareBuildValue({ issues, path: `${kind}.className`, sourceValue: sourceApi.className, buildEntryValue: buildEntryApi.className })
+  compareBuildValue({ issues, path: `${kind}.name`, sourceValue: sourceApi.name, buildEntryValue: buildEntryApi.name })
+  compareBuildValue({ issues, path: `${kind}.jsdoc`, sourceValue: sourceApi.jsdoc, buildEntryValue: buildEntryApi.jsdoc })
+  compareBuildValue({
     issues,
-    `${kind}.constructor.jsdoc`,
-    sourceApi.constructorSignature?.jsdoc,
-    buildEntryApi.constructorSignature?.jsdoc,
-  )
-  compareBuildValue(
+    path: `${kind}.constructor.jsdoc`,
+    sourceValue: sourceApi.constructorSignature?.jsdoc,
+    buildEntryValue: buildEntryApi.constructorSignature?.jsdoc,
+  })
+  compareBuildValue({
     issues,
-    `${kind}.attributes`,
-    (sourceApi.attributes ?? []).map(attribute => attribute.name).sort().join(','),
-    (buildEntryApi.attributes ?? []).map(attribute => attribute.name).sort().join(','),
-  )
-  compareBuildValue(
+    path: `${kind}.attributes`,
+    sourceValue: (sourceApi.attributes ?? []).map(attribute => attribute.name).sort().join(','),
+    buildEntryValue: (buildEntryApi.attributes ?? []).map(attribute => attribute.name).sort().join(','),
+  })
+  compareBuildValue({
     issues,
-    `${kind}.actions`,
-    sourceApi.actions.map(action => action.name).sort().join(','),
-    buildEntryApi.actions.map(action => action.name).sort().join(','),
-  )
+    path: `${kind}.actions`,
+    sourceValue: sourceApi.actions.map(action => action.name).sort().join(','),
+    buildEntryValue: buildEntryApi.actions.map(action => action.name).sort().join(','),
+  })
 }
 
-function compareBuildValue(
-  issues: ModuleMetadataBuildConsistencyIssue[],
-  path: string,
-  sourceValue: unknown,
-  buildEntryValue: unknown,
-): void {
+type CompareBuildValueCommand = Readonly<{
+  issues: ModuleMetadataBuildConsistencyIssue[]
+  path: string
+  sourceValue: unknown
+  buildEntryValue: unknown
+}>
+
+function compareBuildValue(command: CompareBuildValueCommand): void {
+  const { issues, path, sourceValue, buildEntryValue } = command
   if (sourceValue === buildEntryValue) return
   issues.push({
     code: 'MODULE_METADATA_BUILD_CONSISTENCY_MISMATCH',
@@ -503,12 +514,15 @@ function compareBuildValue(
   })
 }
 
-function extractAbilityMetadata(
-  root: string,
-  sourceFile: ts.SourceFile,
-  checker: ts.TypeChecker,
-  trace: ModuleMetadataTrace,
-): ModuleAbilityMetadata[] {
+type ExtractAbilityMetadataCommand = Readonly<{
+  root: string
+  sourceFile: ts.SourceFile
+  checker: ts.TypeChecker
+  trace: ModuleMetadataTrace
+}>
+
+function extractAbilityMetadata(command: ExtractAbilityMetadataCommand): ModuleAbilityMetadata[] {
+  const { root, sourceFile, checker, trace } = command
   const abilities: ModuleAbilityMetadata[] = []
 
   function visit(node: ts.Node): void {
@@ -534,18 +548,35 @@ function extractAbilityMetadata(
   return abilities
 }
 
-function extractApiObjectMetadata(
-  root: string,
-  sourceFile: ts.SourceFile,
-  checker: ts.TypeChecker,
-  apiRoots: ReadonlySet<string>,
-  trace: ModuleMetadataTrace,
-  sourceClassIndex: SourceClassIndex,
-  reflectionMode: ModuleMetadataReflectionMode,
-  schemaDescriptionTodoLog: ModuleMetadataSchemaDescriptionTodoLogEntry[],
-): AiModuleMetadataJson[] {
+type ExtractApiObjectMetadataCommand = Readonly<{
+  root: string
+  sourceFile: ts.SourceFile
+  checker: ts.TypeChecker
+  apiRoots: ReadonlySet<string>
+  trace: ModuleMetadataTrace
+  sourceClassIndex: SourceClassIndex
+  reflectionMode: ModuleMetadataReflectionMode
+  schemaDescriptionTodoLog: ModuleMetadataSchemaDescriptionTodoLogEntry[]
+}>
+
+function extractApiObjectMetadata(command: ExtractApiObjectMetadataCommand): AiModuleMetadataJson[] {
+  const {
+    root,
+    sourceFile,
+    checker,
+    apiRoots,
+    trace,
+    sourceClassIndex,
+    reflectionMode,
+    schemaDescriptionTodoLog,
+  } = command
   const modules: AiModuleMetadataJson[] = []
-  const state = createApiObjectExtractionState(root, sourceClassIndex, reflectionMode, schemaDescriptionTodoLog)
+  const state = createApiObjectExtractionState({
+    root,
+    sourceClassIndex,
+    reflectionMode,
+    schemaDescriptionTodoLog,
+  })
 
   function visit(node: ts.Node): void {
     if (ts.isClassDeclaration(node)) {
@@ -554,7 +585,7 @@ function extractApiObjectMetadata(
         ts.forEachChild(node, visit)
         return
       }
-      const api = createApiObjectMetadata(checker, node, new Set(), trace, state)
+      const api = createApiObjectMetadata({ checker, node, visited: new Set(), trace, state })
       if (api !== undefined) {
         modules.push({ schemaVersion: MODULE_METADATA_SCHEMA_VERSION, rootApi: api })
       }
@@ -566,20 +597,24 @@ function extractApiObjectMetadata(
   return modules
 }
 
+type CreateApiObjectExtractionStateOptions = Readonly<{
+  root?: string
+  sourceClassIndex?: SourceClassIndex
+  reflectionMode?: ModuleMetadataReflectionMode
+  schemaDescriptionTodoLog?: ModuleMetadataSchemaDescriptionTodoLogEntry[]
+}>
+
 function createApiObjectExtractionState(
-  root = process.cwd(),
-  sourceClassIndex: SourceClassIndex = new Map(),
-  reflectionMode: ModuleMetadataReflectionMode = 'source',
-  schemaDescriptionTodoLog: ModuleMetadataSchemaDescriptionTodoLogEntry[] = [],
+  options: CreateApiObjectExtractionStateOptions = {},
 ): ApiObjectExtractionState {
   return {
-    root,
-    reflectionMode,
+    root: options.root ?? process.cwd(),
+    reflectionMode: options.reflectionMode ?? 'source',
     apiByContextKey: new Map(),
     expandingKeys: new Set(),
-    sourceClassIndex,
+    sourceClassIndex: options.sourceClassIndex ?? new Map(),
     typeEntryFileBySourceClassKey: new Map(),
-    schemaDescriptionTodoLog,
+    schemaDescriptionTodoLog: options.schemaDescriptionTodoLog ?? [],
   }
 }
 
@@ -619,13 +654,22 @@ function symbolIdentityKey(symbol: ts.Symbol): string {
   return `${normalizePath(sourceFile.fileName)}:${String(declaration.pos)}:${symbol.getName()}`
 }
 
-function createApiObjectMetadata(
-  checker: ts.TypeChecker,
-  node: ts.ClassDeclaration,
-  visited: Set<ts.Symbol>,
-  trace: ModuleMetadataTrace = createModuleMetadataTrace(false),
-  state: ApiObjectExtractionState = createApiObjectExtractionState(),
-): AiApiObjectMetadata | undefined {
+type CreateApiObjectMetadataCommand = Readonly<{
+  checker: ts.TypeChecker
+  node: ts.ClassDeclaration
+  visited: Set<ts.Symbol>
+  trace?: ModuleMetadataTrace
+  state?: ApiObjectExtractionState
+}>
+
+function createApiObjectMetadata(command: CreateApiObjectMetadataCommand): AiApiObjectMetadata | undefined {
+  const {
+    checker,
+    node,
+    visited,
+    trace = createModuleMetadataTrace(false),
+    state = createApiObjectExtractionState(),
+  } = command
   const tags = readDocTags(node, node.getSourceFile())
   const className = node.name?.text
   if (className === undefined) return undefined
@@ -650,8 +694,8 @@ function createApiObjectMetadata(
     name: firstTagText(tags, 'moduleName') ?? className,
     description,
     ...(jsdoc === undefined ? {} : { jsdoc }),
-    provenance: createSourceProvenance(state, node, className),
-    attributes: createApiAttributeMetadata(checker, node, cacheVisited, trace, state),
+    provenance: createSourceProvenance({ state, node, className }),
+    attributes: createApiAttributeMetadata({ checker, node, visited: cacheVisited, trace, state }),
     actions: [],
   }
   const constructorSignature = createApiConstructorMetadata(checker, node, state)
@@ -664,7 +708,7 @@ function createApiObjectMetadata(
   }
   api.actions = node.members
     .filter(ts.isMethodDeclaration)
-    .map(method => createApiActionMetadata(checker, method, cacheVisited, trace, state))
+    .map(method => createApiActionMetadata({ checker, node: method, visited: cacheVisited, trace, state }))
     .filter(isNotUndefined)
   if (contextKey !== undefined) {
     state.expandingKeys.delete(contextKey)
@@ -686,26 +730,35 @@ function createApiConstructorMetadata(
   return {
     description,
     ...(jsdoc === undefined ? {} : { jsdoc }),
-    provenance: createSourceProvenance(state, constructorNode, className, 'constructor'),
-    paramsSchema: generateParamsSchema(checker, constructorNode, tags, state, {
-      kind: firstTagText(readDocTags(node, node.getSourceFile()), 'moduleKind') ?? kebabCase(className),
-      className,
-      memberType: 'constructor',
-      memberName: 'constructor',
-      schemaRole: 'params',
+    provenance: createSourceProvenance({ state, node: constructorNode, className, memberName: 'constructor' }),
+    paramsSchema: generateParamsSchema({
+      checker,
+      node: constructorNode,
+      tags,
+      state,
+      context: {
+        kind: firstTagText(readDocTags(node, node.getSourceFile()), 'moduleKind') ?? kebabCase(className),
+        className,
+        memberType: 'constructor',
+        memberName: 'constructor',
+        schemaRole: 'params',
+      },
     }),
   }
 }
 
-function createApiAttributeMetadata(
-  checker: ts.TypeChecker,
-  node: ts.ClassDeclaration,
-  visited: Set<ts.Symbol>,
-  trace: ModuleMetadataTrace,
-  state: ApiObjectExtractionState,
-): AiApiAttributeMetadata[] {
+type CreateApiAttributeMetadataCommand = Readonly<{
+  checker: ts.TypeChecker
+  node: ts.ClassDeclaration
+  visited: Set<ts.Symbol>
+  trace: ModuleMetadataTrace
+  state: ApiObjectExtractionState
+}>
+
+function createApiAttributeMetadata(command: CreateApiAttributeMetadataCommand): AiApiAttributeMetadata[] {
+  const { checker, node, visited, trace, state } = command
   return collectApiAttributeMembers(checker, node, state)
-    .map(member => createApiAttributeMetadataFromMember(checker, member, visited, trace, state))
+    .map(member => createApiAttributeMetadataFromMember({ checker, member, visited, trace, state }))
     .filter(isNotUndefined)
 }
 
@@ -747,13 +800,18 @@ function isApiAttributeMember(node: ts.ClassElement): node is ApiAttributeMember
   return ts.isPropertyDeclaration(node) || ts.isGetAccessorDeclaration(node)
 }
 
+type CreateApiAttributeMetadataFromMemberCommand = Readonly<{
+  checker: ts.TypeChecker
+  member: ApiAttributeMember
+  visited: Set<ts.Symbol>
+  trace: ModuleMetadataTrace
+  state: ApiObjectExtractionState
+}>
+
 function createApiAttributeMetadataFromMember(
-  checker: ts.TypeChecker,
-  member: ApiAttributeMember,
-  visited: Set<ts.Symbol>,
-  trace: ModuleMetadataTrace,
-  state: ApiObjectExtractionState,
+  command: CreateApiAttributeMetadataFromMemberCommand,
 ): AiApiAttributeMetadata | undefined {
+  const { checker, member, visited, trace, state } = command
   const sourceFile = member.getSourceFile()
   const tags = readDocTags(member, sourceFile)
   if (hasIgnoreActionTag(tags)) return undefined
@@ -769,18 +827,24 @@ function createApiAttributeMetadataFromMember(
     schemaRole: 'attribute',
     rootPath: ['attributes', name, 'schema'],
   }))
-  const api = createApiObjectFromType(checker, checker.getTypeAtLocation(member), visited, trace, state)
+  const api = createApiObjectFromType({
+    checker,
+    type: checker.getTypeAtLocation(member),
+    visited,
+    trace,
+    state,
+  })
   const jsdoc = createJsDocMeta(member)
   return {
     name,
     description,
     ...(jsdoc === undefined ? {} : { jsdoc }),
-    provenance: createSourceProvenance(
+    provenance: createSourceProvenance({
       state,
-      member,
-      classNameForMember(member),
-      name,
-    ),
+      node: member,
+      className: classNameForMember(member),
+      memberName: name,
+    }),
     schema,
     readable: true,
     writable: ts.isPropertyDeclaration(member) && !hasReadonlyModifier(member),
@@ -801,13 +865,16 @@ function hasReadonlyModifier(node: ts.PropertyDeclaration): boolean {
   return modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.ReadonlyKeyword) === true
 }
 
-function createApiActionMetadata(
-  checker: ts.TypeChecker,
-  node: ts.MethodDeclaration,
-  visited: Set<ts.Symbol>,
-  trace: ModuleMetadataTrace,
-  state: ApiObjectExtractionState,
-): AiApiActionMetadata | undefined {
+type CreateApiActionMetadataCommand = Readonly<{
+  checker: ts.TypeChecker
+  node: ts.MethodDeclaration
+  visited: Set<ts.Symbol>
+  trace: ModuleMetadataTrace
+  state: ApiObjectExtractionState
+}>
+
+function createApiActionMetadata(command: CreateApiActionMetadataCommand): AiApiActionMetadata | undefined {
+  const { checker, node, visited, trace, state } = command
   const sourceFile = node.getSourceFile()
   const tags = readDocTags(node, sourceFile)
   const actionName = resolveActionName({ checker, node, tags })
@@ -816,12 +883,18 @@ function createApiActionMetadata(
   const startedAt = Date.now()
   trace.log(`  action ${actionName}: params schema`)
   const className = classNameForMember(node)
-  const paramsSchema = generateParamsSchema(checker, node, tags, state, {
-    kind: readApiKindFromClassMember(node),
-    className,
-    memberType: 'method',
-    memberName: actionName,
-    schemaRole: 'params',
+  const paramsSchema = generateParamsSchema({
+    checker,
+    node,
+    tags,
+    state,
+    context: {
+      kind: readApiKindFromClassMember(node),
+      className,
+      memberType: 'method',
+      memberName: actionName,
+      schemaRole: 'params',
+    },
   })
   const takesContext = hasLeadingContextParameter(checker, node)
   const resultType = trace.extractResults ? getInnerReturnType(checker, node) : undefined
@@ -855,12 +928,12 @@ function createApiActionMetadata(
     methodName: propertyNameText(node.name, sourceFile),
     description,
     ...(jsdoc === undefined ? {} : { jsdoc }),
-    provenance: createSourceProvenance(
+    provenance: createSourceProvenance({
       state,
       node,
       className,
-      propertyNameText(node.name, sourceFile),
-    ),
+      memberName: propertyNameText(node.name, sourceFile),
+    }),
     paramsSchema,
     takesContext,
     ...(resultSchema === undefined ? {} : { resultSchema }),
@@ -1040,13 +1113,22 @@ function pushSchemaDescriptionTodoLogEntry(
   })
 }
 
-function generateParamsSchema(
-  checker: ts.TypeChecker,
-  node: ApiCallableDeclaration,
-  tags: readonly ModuleDocTag[] = [],
-  state?: ApiObjectExtractionState,
-  context?: SchemaDescriptionAuditContext,
-): GeneratedJsonSchema {
+type GenerateParamsSchemaCommand = Readonly<{
+  checker: ts.TypeChecker
+  node: ApiCallableDeclaration
+  tags?: readonly ModuleDocTag[]
+  state?: ApiObjectExtractionState
+  context?: SchemaDescriptionAuditContext
+}>
+
+function generateParamsSchema(command: GenerateParamsSchemaCommand): GeneratedJsonSchema {
+  const {
+    checker,
+    node,
+    tags = [],
+    state,
+    context,
+  } = command
   const paramDescriptions = readParamDescriptions(tags)
   const argsParam = readArgsObjectParameter(checker, node)
   if (argsParam !== undefined) {
@@ -1176,7 +1258,13 @@ function discoverResultApis(command: DiscoverResultApisCommand): AiApiResultApiR
     return results
   }
 
-  const api = createApiObjectFromType(command.checker, command.type, command.visited, command.trace, command.state)
+  const api = createApiObjectFromType({
+    checker: command.checker,
+    type: command.type,
+    visited: command.visited,
+    trace: command.trace,
+    state: command.state,
+  })
   if (api !== undefined) {
     results.push({ resultPath: command.resultPath, api })
     return results
@@ -1208,13 +1296,16 @@ function isNullishType(type: ts.Type): boolean {
   return (type.flags & (ts.TypeFlags.Null | ts.TypeFlags.Undefined)) !== 0
 }
 
-function createApiObjectFromType(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  visited: Set<ts.Symbol>,
-  trace: ModuleMetadataTrace,
-  state: ApiObjectExtractionState,
-): AiApiObjectMetadata | undefined {
+type CreateApiObjectFromTypeCommand = Readonly<{
+  checker: ts.TypeChecker
+  type: ts.Type
+  visited: Set<ts.Symbol>
+  trace: ModuleMetadataTrace
+  state: ApiObjectExtractionState
+}>
+
+function createApiObjectFromType(command: CreateApiObjectFromTypeCommand): AiApiObjectMetadata | undefined {
+  const { checker, type, visited, trace, state } = command
   const classDeclaration = resolveClassDeclarationFromType(type, state)
   if (classDeclaration !== undefined) {
     const symbol = readClassDeclarationSymbol(checker, classDeclaration) ?? type.getSymbol()
@@ -1223,7 +1314,7 @@ function createApiObjectFromType(
     if (firstTagText(tags, 'moduleKind') === undefined) return undefined
     const nextVisited = new Set(visited)
     nextVisited.add(symbol)
-    return createApiObjectMetadata(checker, classDeclaration, nextVisited, trace, state)
+    return createApiObjectMetadata({ checker, node: classDeclaration, visited: nextVisited, trace, state })
   }
   return undefined
 }
@@ -1423,12 +1514,15 @@ function sourceRef(root: string, sourceFile: ts.SourceFile, node: ts.Node): Modu
   }
 }
 
-function createSourceProvenance(
-  state: ApiObjectExtractionState,
-  node: ts.Node,
-  className: string,
-  memberName?: string,
-): ModuleSourceProvenance {
+type CreateSourceProvenanceCommand = Readonly<{
+  state: ApiObjectExtractionState
+  node: ts.Node
+  className: string
+  memberName?: string
+}>
+
+function createSourceProvenance(command: CreateSourceProvenanceCommand): ModuleSourceProvenance {
+  const { state, node, className, memberName } = command
   const owningClass = findOwningClassDeclaration(node)
   const typeEntryFile = owningClass === undefined
     ? undefined
@@ -1923,29 +2017,43 @@ function collectModuleMetadataJsDocTodoLog(
 ): readonly ModuleMetadataJsDocTodoLogEntry[] {
   const entries: ModuleMetadataJsDocTodoLogEntry[] = []
   for (const api of collectUniqueApiObjects(moduleMetadata)) {
-    pushJsDocTodoLogEntry(entries, api.kind, api.provenance, 'class', api.jsdoc, [])
+    pushJsDocTodoLogEntry({
+      entries,
+      kind: api.kind,
+      provenance: api.provenance,
+      memberType: 'class',
+      jsdoc: api.jsdoc,
+      expectedParams: [],
+    })
     if (api.constructorSignature !== undefined) {
-      pushJsDocTodoLogEntry(
+      pushJsDocTodoLogEntry({
         entries,
-        api.kind,
-        api.constructorSignature.provenance,
-        'constructor',
-        api.constructorSignature.jsdoc,
-        collectSchemaPropertyNames(api.constructorSignature.paramsSchema),
-      )
+        kind: api.kind,
+        provenance: api.constructorSignature.provenance,
+        memberType: 'constructor',
+        jsdoc: api.constructorSignature.jsdoc,
+        expectedParams: collectSchemaPropertyNames(api.constructorSignature.paramsSchema),
+      })
     }
     for (const attribute of api.attributes ?? []) {
-      pushJsDocTodoLogEntry(entries, api.kind, attribute.provenance, 'attribute', attribute.jsdoc, [])
+      pushJsDocTodoLogEntry({
+        entries,
+        kind: api.kind,
+        provenance: attribute.provenance,
+        memberType: 'attribute',
+        jsdoc: attribute.jsdoc,
+        expectedParams: [],
+      })
     }
     for (const action of api.actions) {
-      pushJsDocTodoLogEntry(
+      pushJsDocTodoLogEntry({
         entries,
-        api.kind,
-        action.provenance,
-        'method',
-        action.jsdoc,
-        collectSchemaPropertyNames(action.paramsSchema),
-      )
+        kind: api.kind,
+        provenance: action.provenance,
+        memberType: 'method',
+        jsdoc: action.jsdoc,
+        expectedParams: collectSchemaPropertyNames(action.paramsSchema),
+      })
     }
   }
   return entries.sort((left, right) =>
@@ -2002,14 +2110,17 @@ function collectUniqueApiObjects(moduleMetadata: readonly AiModuleMetadataJson[]
   return [...result.values()]
 }
 
-function pushJsDocTodoLogEntry(
-  entries: ModuleMetadataJsDocTodoLogEntry[],
-  kind: string,
-  provenance: ModuleSourceProvenance | undefined,
-  memberType: ModuleMetadataJsDocTodoLogEntry['memberType'],
-  jsdoc: JsDocMeta | undefined,
-  expectedParams: readonly string[],
-): void {
+type PushJsDocTodoLogEntryCommand = Readonly<{
+  entries: ModuleMetadataJsDocTodoLogEntry[]
+  kind: string
+  provenance: ModuleSourceProvenance | undefined
+  memberType: ModuleMetadataJsDocTodoLogEntry['memberType']
+  jsdoc: JsDocMeta | undefined
+  expectedParams: readonly string[]
+}>
+
+function pushJsDocTodoLogEntry(command: PushJsDocTodoLogEntryCommand): void {
+  const { entries, kind, provenance, memberType, jsdoc, expectedParams } = command
   if (provenance === undefined) return
   const documentedParamDocs = collectDocumentedParamDocs(jsdoc)
   const documentedParams = documentedParamDocs.map(param => param.name)
@@ -2628,8 +2739,12 @@ function readRecord(value: unknown): Readonly<Record<string, unknown>> {
   return isIndexableObject(value) ? value : {}
 }
 
-function omitUndefined<T extends Readonly<Record<string, unknown>>>(record: T): Partial<T> {
-  return Object.fromEntries(Object.entries(record).filter(([, value]) => value !== undefined)) as Partial<T>
+function omitUndefined(record: Readonly<Record<string, unknown>>): Readonly<Record<string, unknown>> {
+  const output: Record<string, unknown> = {}
+  for (const [key, value] of Object.entries(record)) {
+    if (value !== undefined) output[key] = value
+  }
+  return output
 }
 
 function visitRuntimeAuditNode(

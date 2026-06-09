@@ -4,6 +4,7 @@ import type {
   PageNodeLoadOptions,
   PageNodeFileName,
 } from './page-file'
+import { PAGE_NODE_FILE_NAMES } from './page-file'
 import {
   ProjectNode,
   type ProjectNodeFamily,
@@ -214,7 +215,7 @@ export class ConfigPageNode extends ProjectNode {
   }
 
   getDirtyFileNames(): PageNodeFileName[] {
-    return (Object.keys(this.files) as PageNodeFileName[]).filter(name => this.files[name].isDirty)
+    return PAGE_NODE_FILE_NAMES.filter(name => this.files[name].isDirty)
   }
 
   /**

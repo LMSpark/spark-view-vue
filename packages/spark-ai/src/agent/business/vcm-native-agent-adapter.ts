@@ -326,8 +326,7 @@ function constructModuleInstance<T>(
   moduleClass: VcmNativeAgentAdapterConstructor<T>,
   args: readonly unknown[],
 ): T {
-  const construct = moduleClass as unknown as new (...args: unknown[]) => T
-  return new construct(...args)
+  return new moduleClass(...(args as never[]))
 }
 
 function bindOptionalLifecycle<T, TArgs extends readonly unknown[], TResult>(

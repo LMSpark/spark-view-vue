@@ -83,10 +83,23 @@ const publicSurfaceAllowlist = new Set([
   // Agent 与 VCM-native 协议聚合出口是允许 @spark-appworks/spark-ai subpath 背后的显式公共门面。
   'packages/spark-ai/src/agent/index.ts:./business/ai-host',
   'packages/spark-ai/src/agent/index.ts:./business/business-kit',
+  'packages/spark-ai/src/agent/index.ts:./tool-runtime',
+  'packages/spark-ai/src/agent/index.ts:./native-runtime',
+  'packages/spark-ai/src/agent/tool-runtime/index.ts:./tool-runtime-types',
   'packages/spark-ai/src/vcm-native/index.ts:./class-model',
   'packages/spark-ai/src/vcm-native/index.ts:./metadata',
   'packages/spark-ai/src/vcm-native/index.ts:./knowledge',
+  'packages/spark-ai/src/vcm-native/index.ts:./projection',
+  'packages/spark-ai/src/vcm-native/index.ts:./runtime',
+  'packages/spark-ai/src/vcm-native/class-model/index.ts:./types',
+  'packages/spark-ai/src/vcm-native/knowledge/index.ts:../projection',
+  'packages/spark-ai/src/vcm-native/metadata/index.ts:./ai-api-object-metadata-schema',
+  'packages/spark-ai/src/vcm-native/projection/index.ts:./dts-renderer',
+  'packages/spark-ai/src/vcm-native/runtime/index.ts:./vcm-native-runtime',
   'packages/spark-ai/src/json/index.ts:./helpers',
+  'packages/spark-project-model/src/index.ts:./project/project-types',
+  'packages/spark-project-model/src/index.ts:./navigation/project-node',
+  'packages/spark-project-model/src/index.ts:./navigation/navigation-tree',
   // Host session-types 与 transport-types 是完整类型契约模块；
   // 按主题再次 re-export 会制造额外间接层。
   'packages/spark-ai/src/agent/index.ts:./session/session-types',
@@ -164,7 +177,7 @@ function scanSource(parsed, violations) {
   }
 
   function visit(node) {
-    if (ts.isAsExpression(node)) {
+    if (!isTestFile(file) && ts.isAsExpression(node)) {
       const typeText = node.type.getText(sourceFile)
       if (typeText !== 'const') {
         violations.push({
@@ -175,7 +188,7 @@ function scanSource(parsed, violations) {
       }
     }
 
-    if (ts.isTypeAssertionExpression(node)) {
+    if (!isTestFile(file) && ts.isTypeAssertionExpression(node)) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),

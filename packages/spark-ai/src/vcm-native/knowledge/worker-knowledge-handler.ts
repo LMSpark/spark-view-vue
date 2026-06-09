@@ -64,8 +64,13 @@ export function createVcmNativeKnowledgeWorkerApi(
   }
 }
 
-export function exposeVcmNativeKnowledgeWorker(workerGlobal: Endpoint = globalThis as unknown as Endpoint): void {
-  expose(createVcmNativeKnowledgeWorkerApi(), workerGlobal)
+export function exposeVcmNativeKnowledgeWorker(workerGlobal?: Endpoint): void {
+  const api = createVcmNativeKnowledgeWorkerApi()
+  if (workerGlobal === undefined) {
+    expose(api)
+    return
+  }
+  expose(api, workerGlobal)
 }
 
 class VcmNativeKnowledgeWorkerState {
@@ -90,9 +95,10 @@ class VcmNativeKnowledgeWorkerState {
   private async createCatalogProvider(): Promise<VcmNativeKnowledgeProvider> {
     if (this.componentCatalogUrl === undefined) return this.baseProvider
     const componentCatalog = await this.fetchJson(this.componentCatalogUrl)
+    if (!isComponentCatalogLike(componentCatalog)) return this.baseProvider
     return new ClassModelKnowledgeService({
       document: this.document,
-      componentCatalog: componentCatalog as ComponentCatalogLike,
+      componentCatalog,
     })
   }
 }
@@ -103,9 +109,10 @@ async function createWorkerStateFromInitInput(
 ): Promise<VcmNativeKnowledgeWorkerState> {
   const runtimeDocument = await fetchJson(input.metadataUrl)
   assertRuntimeMetadataSchemaRefs(runtimeDocument, input.metadataUrl)
-  const document = createClassModelDocumentFromRuntimeDocument(
-    runtimeDocument as Parameters<typeof createClassModelDocumentFromRuntimeDocument>[0],
-  )
+  if (!isRuntimeDocumentInput(runtimeDocument)) {
+    throw new Error(`VCM-native metadata is not a runtime document: ${input.metadataUrl}`)
+  }
+  const document = createClassModelDocumentFromRuntimeDocument(runtimeDocument)
 
   return new VcmNativeKnowledgeWorkerState(document, fetchJson, input.componentCatalogUrl)
 }
@@ -124,4 +131,14 @@ async function defaultFetchJson(url: string): Promise<unknown> {
     throw new Error(`Failed to load VCM-native knowledge JSON: ${url} ${String(response.status)}`)
   }
   return response.json()
+}
+
+function isComponentCatalogLike(value: unknown): value is ComponentCatalogLike {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function isRuntimeDocumentInput(value: unknown): value is Parameters<typeof createClassModelDocumentFromRuntimeDocument>[0] {
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
+  const modules: unknown = Reflect.get(value, 'modules')
+  return Array.isArray(modules) && modules.length > 0
 }

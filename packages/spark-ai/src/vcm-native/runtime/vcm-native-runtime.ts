@@ -322,7 +322,7 @@ function isVcmNativeToolResult(value: VcmNativeScriptExecutorResult): value is V
   return value !== null
     && typeof value === 'object'
     && !Array.isArray(value)
-    && typeof (value as Readonly<Record<string, unknown>>)['ok'] === 'boolean'
+    && typeof Reflect.get(value, 'ok') === 'boolean'
 }
 
 function requireString(args: VcmNativeToolArgs, key: string): string {

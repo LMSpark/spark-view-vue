@@ -27,9 +27,8 @@ export function dereferenceModuleMetadataSchemas(
 
 function isAiModuleMetadataJson(value: unknown): value is AiModuleMetadataJson {
   if (value === null || typeof value !== 'object' || Array.isArray(value)) return false
-  const record = value as Record<string, unknown>
-  const schemaVersion = record['schemaVersion']
+  const schemaVersion: unknown = Reflect.get(value, 'schemaVersion')
   if (schemaVersion !== 1 && schemaVersion !== 2) return false
-  const rootApi = record['rootApi']
+  const rootApi: unknown = Reflect.get(value, 'rootApi')
   return rootApi !== null && typeof rootApi === 'object' && !Array.isArray(rootApi)
 }

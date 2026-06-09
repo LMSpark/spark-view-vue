@@ -32,12 +32,12 @@ export function createAiNativeScriptContext(
 ): Readonly<Record<string, unknown>> {
   const metadata = resolveModuleMetadataJson(command.metadata)
   validateApiObjectMetadata(metadata.rootApi)
-  return createAiApiScriptContext(
-    command.instance,
-    metadata.rootApi,
-    createNativePathContext(command.host),
-    createSchemaValidateOptions(command.schemaDefs),
-  )
+  return createAiApiScriptContext({
+    instance: command.instance,
+    api: metadata.rootApi,
+    ctx: createNativePathContext(command.host),
+    validateOptions: createSchemaValidateOptions(command.schemaDefs),
+  })
 }
 
 export async function executeAiNativeScript(

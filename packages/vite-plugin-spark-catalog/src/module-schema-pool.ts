@@ -57,7 +57,8 @@ export type ModuleMetadataPooledDocument<TModule> = Readonly<{
 
 export function poolModuleMetadataSchemas<TModule>(module: TModule): ModuleMetadataSchemaPoolResult<TModule> {
   const pool = new Map<string, JsonSchemaObject>()
-  const pooledModule = visitMetadataNode(module, pool)
+  const pooledModule = structuredClone(module)
+  visitMetadataNodeInPlace(pooledModule, pool)
   const reachable = collectReachableDefNames(pooledModule, pool)
   const defs: Record<string, JsonSchemaObject> = {}
   for (const name of [...reachable].sort((left, right) => left.localeCompare(right))) {
@@ -66,7 +67,7 @@ export function poolModuleMetadataSchemas<TModule>(module: TModule): ModuleMetad
     if (finalized !== undefined) defs[name] = finalized
   }
   return {
-    module: pooledModule as TModule,
+    module: pooledModule,
     defs,
   }
 }
@@ -178,21 +179,20 @@ function collectReachableDefNamesFromModules(
   return refs
 }
 
-function visitMetadataNode(value: unknown, pool: Map<string, JsonSchemaObject>): unknown {
+function visitMetadataNodeInPlace(value: unknown, pool: Map<string, JsonSchemaObject>): void {
   if (Array.isArray(value)) {
-    return value.map(item => visitMetadataNode(item, pool))
+    for (const item of value) visitMetadataNodeInPlace(item, pool)
+    return
   }
-  if (!isPlainObject(value)) return value
+  if (!isPlainObject(value)) return
 
-  const output: Record<string, unknown> = {}
   for (const [key, child] of Object.entries(value)) {
     if (SCHEMA_SLOT_KEYS.has(key)) {
-      output[key] = externalizeSchema(child, pool, new Set())
+      value[key] = externalizeSchema(child, pool, new Set())
       continue
     }
-    output[key] = visitMetadataNode(child, pool)
+    visitMetadataNodeInPlace(child, pool)
   }
-  return output
 }
 
 function externalizeSchema(
@@ -251,7 +251,13 @@ function createReferenceSchema(ref: string, source?: JsonSchemaObject): JsonSche
 }
 
 function finalizeSchema(value: unknown): JsonSchemaValue {
-  return standardizeJsonSchema(value) as JsonSchemaValue
+  const standardized = standardizeJsonSchema(value)
+  if (isJsonSchemaValue(standardized)) return standardized
+  return true
+}
+
+function isJsonSchemaValue(value: unknown): value is JsonSchemaValue {
+  return typeof value === 'boolean' || isJsonSchemaObject(value)
 }
 
 function finalizeSchemaObject(value: unknown): JsonSchemaObject | undefined {

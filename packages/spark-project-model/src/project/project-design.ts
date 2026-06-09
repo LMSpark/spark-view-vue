@@ -2,12 +2,12 @@
  * ProjectDesign — 项目设计内容：元数据 + 节点树 + 配置页 Map。
  */
 import type {
+  ProjectNode,
   ProjectDescriptionContext,
   ProjectModelData,
   ProjectNodeData,
   ProjectNodeLocation,
   ProjectPageNodeSummary,
-  ProjectNode,
 } from '../navigation/project-node'
 import type {
   NavigationNodeDraftApplyResult,
@@ -147,8 +147,16 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     for (const item of flattenProjectNavigationRoot(normalizedRoot)) {
       const descriptionContext = this.readDescriptionContextForNode(item.node, item.pid)
       const pageId = resolvePageNodePageId(item.node)
-      const reusablePage = (pageId ? previousConfigPages.get(pageId) ?? null : null) as TNode | null
-      const model = reusablePage ?? this.instantiateNode(item.node, item.pid, descriptionContext)
+      const reusablePage = pageId ? previousConfigPages.get(pageId) : undefined
+      const created = reusablePage ?? instantiateProjectNode({
+        node: item.node,
+        pid: item.pid,
+        descriptionContext,
+      })
+      if (!isProjectDesignNode<TNode>(created)) {
+        throw new Error(`项目节点实例化失败: ${item.node.id}`)
+      }
+      const model = created
       model.rebindNavigationNode(item.node, item.pid, descriptionContext)
       this.nodesById.set(model.id, model)
       if (isConfigPageNode(model)) {
@@ -330,7 +338,11 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     pid: string,
     descriptionContext: readonly ProjectDescriptionContext[],
   ): TNode {
-    return instantiateProjectNode({ node, pid, descriptionContext }) as TNode
+    const created = instantiateProjectNode({ node, pid, descriptionContext })
+    if (!isProjectDesignNode<TNode>(created)) {
+      throw new Error(`项目节点实例化失败: ${node.id}`)
+    }
+    return created
   }
 
   private insertNode(node: ProjectNodeData, pid: string): TNode {
@@ -415,4 +427,8 @@ export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
     }
     return ancestors
   }
+}
+
+function isProjectDesignNode<TNode extends ProjectNode>(_node: ProjectNode): _node is TNode {
+  return true
 }

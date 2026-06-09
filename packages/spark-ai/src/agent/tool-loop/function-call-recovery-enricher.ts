@@ -149,9 +149,11 @@ function resolveFailedFunctionContext(
   command: EnrichFunctionCallFailureCommand,
 ): FailedFunctionContext {
   if (command.protocolToolName === VCM_NATIVE_TOOL_NAMES.actionGuide) {
+    const kind = readStringArg(command.args, 'kind')
+    const actionName = readStringArg(command.args, 'actionName')
     return buildFailedFunctionContext({
-      kind: readStringArg(command.args, 'kind'),
-      actionName: readStringArg(command.args, 'actionName'),
+      ...(kind === undefined ? {} : { kind }),
+      ...(actionName === undefined ? {} : { actionName }),
     })
   }
   return {}
@@ -159,9 +161,9 @@ function resolveFailedFunctionContext(
 
 function buildFailedFunctionContext(
   input: Readonly<{
-    kind?: string | undefined
-    actionName?: string | undefined
-    attributeName?: string | undefined
+    kind?: string
+    actionName?: string
+    attributeName?: string
   }>,
 ): FailedFunctionContext {
   return {

@@ -11,6 +11,11 @@ export {
 } from './native-script-runner'
 
 export type {
+  AiApiScriptContextCommand,
+  ExecuteAiApiActionCommand,
+} from './native-script-context'
+
+export type {
   AiNativeRuntimeSchemaDefs,
   AiNativeScriptContextCommand,
   AiNativeScriptRunCommand,

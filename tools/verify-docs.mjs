@@ -41,8 +41,6 @@ const legacyMarkdownAllowlist = new Set([
   'docs/guides/TREE_CAPABILITY.md',
   'packages/spark-project-model/src/MODEL-HIERARCHY.md',
   'packages/spark-project-model/src/STRUCTURE.md',
-  'packages/spark-ai/src/modules/DM-VCM-MODULE-METADATA-SCOPE.md',
-  'packages/spark-ai/src/modules/MODULE-KIND-REGISTRATION.md',
   'packages/spark-utils/REQUEST_GUIDE.md',
   'packages/vxe-table/.gitee/ISSUE_TEMPLATE.en.md',
   'packages/vxe-table/.gitee/ISSUE_TEMPLATE.md',

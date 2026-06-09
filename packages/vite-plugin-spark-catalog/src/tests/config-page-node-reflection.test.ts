@@ -29,6 +29,9 @@ describe('page-design VCM metadata reflection', () => {
     expect(projectApi?.actions.map(action => action.name)).toEqual([
       'openPageDesign',
       'readPlanningProjection',
+      'readProjectPlanningInput',
+      'readNavigationNodePlanningInput',
+      'readNavigationPlanningInputs',
       'writePageFile',
       'readPageFileText',
     ])

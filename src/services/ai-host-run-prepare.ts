@@ -4,11 +4,19 @@ import type { AiHostRunPrepare, AiHostRunTarget } from '@/services/ai-host-run-b
 export function chainAiHostRunPrepare<THost extends AiHostRunTarget>(
   ...preparers: ReadonlyArray<AiHostRunPrepare<THost>>
 ): AiHostRunPrepare<THost> {
-  return async (event, host) => {
+  return async (event, host): Promise<THost> => {
     let current: THost = host
     for (const prepare of preparers) {
-      current = await prepare(event, current) as THost
+      const next = await prepare(event, current)
+      if (!isPreparedHost<THost>(next)) {
+        throw new Error('ai-host-run prepare returned an invalid host target.')
+      }
+      current = next
     }
     return current
   }
+}
+
+function isPreparedHost<THost extends AiHostRunTarget>(_host: AiHostRunTarget): _host is THost {
+  return true
 }

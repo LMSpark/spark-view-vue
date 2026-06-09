@@ -6,15 +6,15 @@
  */
 import {
   createSimpleInputContract,
+  VcmNativeAgentAdapter,
   type AiAgentBeforeFunctionCallDirective,
   type AiAgentBeforeFunctionCallOptions,
   type AiAgentHost,
   type AiAgentRuntimeContext,
   type AiAgentToolLoopNudgeContext,
   type AiAgentToolLoopNudgeReason,
-  type EnrichFunctionCallFailureCommand,
-  VcmNativeAgentAdapter,
-} from '@spark-appworks/spark-ai/agent'
+} from '@/services/spark-ai-agent-bindings'
+import type { EnrichFunctionCallFailureCommand } from '@spark-appworks/spark-ai/agent'
 import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'

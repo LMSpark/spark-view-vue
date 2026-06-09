@@ -103,7 +103,12 @@ export async function runPageDesignAiSession(command: PageDesignAiRunCommand): P
   await adapter.run({
     host: pageDesignHost,
     alias: PAGE_DESIGN_MODULE_ID,
-    input: buildPageDesignRunInput(pageId, command.editor.project.projectId, command, planning),
+    input: buildPageDesignRunInput({
+      pageId,
+      projectId: command.editor.project.projectId,
+      options: command,
+      planning,
+    }),
     ...(command.beforeFunctionCall === undefined ? {} : { beforeFunctionCall: command.beforeFunctionCall }),
     ...(command.onAbort === undefined ? {} : { onAbort: command.onAbort }),
     trace: createPageDesignTraceSink({
@@ -181,12 +186,15 @@ function readDirtyFileNames(editor: ProjectWorkspace): PageNodeFileName[] {
   return Array.from(editor.project.readDirtyProjection().dirtyFiles)
 }
 
-function buildPageDesignRunInput(
-  pageId: string,
-  projectId: string,
-  options: PageDesignAiRunOptions,
-  planning: Pick<PageDesignRunInput, 'effectiveDescription' | 'planningTitle' | 'planningPath'>,
-): PageDesignRunInput {
+type BuildPageDesignRunInputCommand = Readonly<{
+  pageId: string
+  projectId: string
+  options: PageDesignAiRunOptions
+  planning: Pick<PageDesignRunInput, 'effectiveDescription' | 'planningTitle' | 'planningPath'>
+}>
+
+function buildPageDesignRunInput(command: BuildPageDesignRunInputCommand): PageDesignRunInput {
+  const { pageId, projectId, options, planning } = command
   const input: PageDesignRunInput = {
     pageId,
     description: options.description.trim(),

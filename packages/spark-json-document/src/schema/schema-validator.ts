@@ -27,6 +27,7 @@
 import Ajv2020, { type ErrorObject } from 'ajv/dist/2020.js'
 import { isRecord } from '@spark-appworks/spark-utils'
 import { attachJsonSchemaDefs } from './schema-attach'
+import { ensureJsonSchema } from './schema-defs'
 import type { JsonSchema, JsonSchemaObject } from './schema-types'
 
 // ═══════════════════════════════════════════════════════════════
@@ -140,7 +141,7 @@ export class JsonSchemaValidator {
     }
 
     // 步骤 ③④：AJV 编译并校验（$ref 由 AJV 2020 + 文档级 $defs 解析）
-    const validate = ajv.compile(attachSchemaDefs(schema, options?.schemaDefs) as JsonSchema)
+    const validate = ajv.compile(ensureJsonSchema(attachSchemaDefs(schema, options?.schemaDefs)))
     if (!validate(params)) {
       issues.push(...(validate.errors ?? []).map(JsonSchemaValidator.issueFromAjvError))
     }
@@ -157,7 +158,7 @@ export class JsonSchemaValidator {
     schema: JsonSchema,
     options?: JsonSchemaValidateOptions,
   ): JsonValidationResult {
-    const validate = ajv.compile(attachSchemaDefs(schema, options?.schemaDefs) as JsonSchema)
+    const validate = ajv.compile(ensureJsonSchema(attachSchemaDefs(schema, options?.schemaDefs)))
     if (validate(value)) {
       return { ok: true, issues: [] }
     }

@@ -13,12 +13,15 @@ import {
 } from '../page/page-file'
 import type { PageContentLoader } from '../io/page-content-loader'
 
-async function loadRuntimePageFile(
-  page: ConfigPageNode,
-  loader: PageContentLoader,
-  name: PageNodeFileName,
-  options: PageNodeLoadOptions = {},
-): Promise<void> {
+type LoadRuntimePageFileCommand = Readonly<{
+  page: ConfigPageNode
+  loader: PageContentLoader
+  name: PageNodeFileName
+  options?: PageNodeLoadOptions
+}>
+
+async function loadRuntimePageFile(command: LoadRuntimePageFileCommand): Promise<void> {
+  const { page, loader, name, options = {} } = command
   const result = await loader.loadPageFileContent(page.pageId, name, {
     forceReload: options.forceReload === true,
   })
@@ -36,7 +39,7 @@ async function loadRuntimePageFiles(
   const forceReload = options.forceReload === true
   if (page.isLoaded && !forceReload) return
   await Promise.all(
-    PAGE_NODE_FILE_NAMES.map(name => loadRuntimePageFile(page, loader, name, { forceReload })),
+    PAGE_NODE_FILE_NAMES.map(name => loadRuntimePageFile({ page, loader, name, options: { forceReload } })),
   )
   page.markLoaded()
 }

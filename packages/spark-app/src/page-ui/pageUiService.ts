@@ -10,9 +10,7 @@ import type {
   PageServiceCapability,
   PageUploadedFile,
   PageUploadFilesOptions,
-} from '@spark-appworks/spark-component'
-
-type PageSelectedEntity = PageSelectorOption
+} from './spark-component-page-bindings'
 type PageSelectorValue = PageSelectorOption['value']
 type PageSelectorCurrentValue = PageSelectorValue | PageSelectorValue[]
 
@@ -36,7 +34,7 @@ type SelectorState = {
   cancelText: string
   emptyText: string
   searchKeyword: string
-  options: PageSelectedEntity[]
+  options: PageSelectorOption[]
   selectedValues: string[]}
 
 const dialogState = reactive<DialogState>({
@@ -65,7 +63,7 @@ const selectorState = reactive<SelectorState>({
 })
 
 let dialogResolver: ((result: PageDialogResult) => void) | null = null
-let selectorResolver: ((result: PageSelectedEntity[]) => void) | null = null
+let selectorResolver: ((result: PageSelectorOption[]) => void) | null = null
 
 function mapFile(file: File): PageSelectedFile {
   return {
@@ -127,7 +125,7 @@ async function browseFiles(options?: PageBrowseFilesOptions): Promise<PageSelect
   })
 }
 
-async function selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectedEntity[]> {
+async function selectEntities(options: PageSelectEntitiesOptions): Promise<PageSelectorOption[]> {
   if (selectorResolver) {
     selectorResolver([])
   }
@@ -144,7 +142,7 @@ async function selectEntities(options: PageSelectEntitiesOptions): Promise<PageS
   selectorState.selectedValues = normalizeSelectorKeys(options.currentValue)
   selectorState.visible = true
 
-  return await new Promise<PageSelectedEntity[]>((resolve) => {
+  return await new Promise<PageSelectorOption[]>((resolve) => {
     selectorResolver = resolve
   })
 }
@@ -215,7 +213,7 @@ function resolveDialog(result: PageDialogResult): void {
   if (resolver) resolver(result)
 }
 
-function resolveSelector(result: PageSelectedEntity[]): void {
+function resolveSelector(result: PageSelectorOption[]): void {
   const resolver = selectorResolver
   selectorResolver = null
   selectorState.visible = false
@@ -249,8 +247,8 @@ export function closeAppDialog(): void {
 
 export function confirmAppSelector(): void {
   const selected = selectorState.selectedValues
-    .map((selectedValue) => selectorState.options.find((option: PageSelectedEntity) => String(option.value) === selectedValue) ?? null)
-    .filter((option): option is PageSelectedEntity => option !== null)
+    .map((selectedValue) => selectorState.options.find((option: PageSelectorOption) => String(option.value) === selectedValue) ?? null)
+    .filter((option): option is PageSelectorOption => option !== null)
   resolveSelector(selectorState.multiple ? selected : selected.slice(0, 1))
 }
 

@@ -88,8 +88,17 @@ async function runScript(script: string, context: AiNativeScriptSandboxContext):
     '  }',
     '}).call(__ctx)',
   ].join('\n')
-  const execute = new Function('__ctx', source) as (ctx: AiNativeScriptSandboxContext) => Promise<unknown>
-  return execute(contextWithSelf)
+  const executeUnknown: unknown = new Function('__ctx', source)
+  if (!isNativeScriptExecutor(executeUnknown)) {
+    throw new Error('native script compile failed')
+  }
+  return Promise.resolve(executeUnknown(contextWithSelf))
+}
+
+function isNativeScriptExecutor(
+  value: unknown,
+): value is (ctx: Record<string, unknown>) => unknown {
+  return typeof value === 'function'
 }
 
 function findScriptErrorLocation(error: unknown): Readonly<{ line: number, column?: number }> | undefined {

@@ -21,105 +21,135 @@ export function compareClassModelDocumentsForBuildConsistency(
   buildEntryDocument: ClassModelDocument,
 ): readonly ClassModelBuildConsistencyIssue[] {
   const issues: ClassModelBuildConsistencyIssue[] = []
-  compareValue(issues, 'rootKind', sourceDocument.rootKind, buildEntryDocument.rootKind)
+  compareValue({
+    issues,
+    path: 'rootKind',
+    sourceValue: sourceDocument.rootKind,
+    buildEntryValue: buildEntryDocument.rootKind,
+  })
 
   const sourceKinds = Object.keys(sourceDocument.models).sort()
   const buildKinds = Object.keys(buildEntryDocument.models).sort()
-  compareValue(issues, 'models', sourceKinds.join(','), buildKinds.join(','))
+  compareValue({
+    issues,
+    path: 'models',
+    sourceValue: sourceKinds.join(','),
+    buildEntryValue: buildKinds.join(','),
+  })
 
   for (const kind of sourceKinds) {
     const sourceModel = sourceDocument.models[kind]
     const buildModel = buildEntryDocument.models[kind]
     if (sourceModel === undefined || buildModel === undefined) continue
-    compareModel(issues, kind, sourceDocument, buildEntryDocument, sourceModel, buildModel)
+    compareModel({
+      issues,
+      kind,
+      sourceDocument,
+      buildEntryDocument,
+      sourceModel,
+      buildModel,
+    })
   }
   return issues
 }
 
-function compareModel(
-  issues: ClassModelBuildConsistencyIssue[],
-  kind: string,
-  sourceDocument: ClassModelDocument,
-  buildEntryDocument: ClassModelDocument,
-  sourceModel: ClassModel,
-  buildModel: ClassModel,
-): void {
-  compareValue(issues, `${kind}.className`, sourceModel.className, buildModel.className)
-  compareValue(issues, `${kind}.jsdoc`, sourceModel.jsdoc, buildModel.jsdoc)
-  compareValue(
+type CompareModelCommand = Readonly<{
+  issues: ClassModelBuildConsistencyIssue[]
+  kind: string
+  sourceDocument: ClassModelDocument
+  buildEntryDocument: ClassModelDocument
+  sourceModel: ClassModel
+  buildModel: ClassModel
+}>
+
+function compareModel(command: CompareModelCommand): void {
+  const { issues, kind, sourceDocument, buildEntryDocument, sourceModel, buildModel } = command
+  compareValue({
     issues,
-    `${kind}.constructor.signature`,
-    sourceModel.constructor === undefined
+    path: `${kind}.className`,
+    sourceValue: sourceModel.className,
+    buildEntryValue: buildModel.className,
+  })
+  compareValue({
+    issues,
+    path: `${kind}.jsdoc`,
+    sourceValue: sourceModel.jsdoc,
+    buildEntryValue: buildModel.jsdoc,
+  })
+  compareValue({
+    issues,
+    path: `${kind}.constructor.signature`,
+    sourceValue: sourceModel.constructor === undefined
       ? undefined
       : renderConstructorSignature(sourceModel.constructor),
-    buildModel.constructor === undefined
+    buildEntryValue: buildModel.constructor === undefined
       ? undefined
       : renderConstructorSignature(buildModel.constructor),
-  )
-  compareValue(
+  })
+  compareValue({
     issues,
-    `${kind}.constructor.jsdoc`,
-    sourceModel.constructor?.jsdoc,
-    buildModel.constructor?.jsdoc,
-  )
-
-  compareValue(
+    path: `${kind}.constructor.jsdoc`,
+    sourceValue: sourceModel.constructor?.jsdoc,
+    buildEntryValue: buildModel.constructor?.jsdoc,
+  })
+  compareValue({
     issues,
-    `${kind}.attributes`,
-    sourceModel.attributes.map(attribute => attribute.name).sort().join(','),
-    buildModel.attributes.map(attribute => attribute.name).sort().join(','),
-  )
+    path: `${kind}.attributes`,
+    sourceValue: sourceModel.attributes.map(attribute => attribute.name).sort().join(','),
+    buildEntryValue: buildModel.attributes.map(attribute => attribute.name).sort().join(','),
+  })
   for (const sourceAttribute of sourceModel.attributes) {
     const buildAttribute = buildModel.attributes.find(attribute => attribute.name === sourceAttribute.name)
     if (buildAttribute === undefined) continue
-    compareValue(
+    compareValue({
       issues,
-      `${kind}.attributes.${sourceAttribute.name}.declaration`,
-      renderAttributeDeclarationLine(sourceDocument, sourceAttribute),
-      renderAttributeDeclarationLine(buildEntryDocument, buildAttribute),
-    )
-    compareValue(
+      path: `${kind}.attributes.${sourceAttribute.name}.declaration`,
+      sourceValue: renderAttributeDeclarationLine(sourceDocument, sourceAttribute),
+      buildEntryValue: renderAttributeDeclarationLine(buildEntryDocument, buildAttribute),
+    })
+    compareValue({
       issues,
-      `${kind}.attributes.${sourceAttribute.name}.jsdoc`,
-      sourceAttribute.jsdoc,
-      buildAttribute.jsdoc,
-    )
+      path: `${kind}.attributes.${sourceAttribute.name}.jsdoc`,
+      sourceValue: sourceAttribute.jsdoc,
+      buildEntryValue: buildAttribute.jsdoc,
+    })
   }
-
-  compareValue(
+  compareValue({
     issues,
-    `${kind}.methods`,
-    sourceModel.methods.map(method => method.name).sort().join(','),
-    buildModel.methods.map(method => method.name).sort().join(','),
-  )
+    path: `${kind}.methods`,
+    sourceValue: sourceModel.methods.map(method => method.name).sort().join(','),
+    buildEntryValue: buildModel.methods.map(method => method.name).sort().join(','),
+  })
   for (const sourceMethod of sourceModel.methods) {
     const buildMethod = buildModel.methods.find(method => method.name === sourceMethod.name)
     if (buildMethod === undefined) continue
-    compareValue(
+    compareValue({
       issues,
-      `${kind}.methods.${sourceMethod.name}.signature`,
-      renderMethodSignature(sourceDocument, sourceMethod),
-      renderMethodSignature(buildEntryDocument, buildMethod),
-    )
-    compareValue(
+      path: `${kind}.methods.${sourceMethod.name}.signature`,
+      sourceValue: renderMethodSignature(sourceDocument, sourceMethod),
+      buildEntryValue: renderMethodSignature(buildEntryDocument, buildMethod),
+    })
+    compareValue({
       issues,
-      `${kind}.methods.${sourceMethod.name}.jsdoc`,
-      sourceMethod.jsdoc,
-      buildMethod.jsdoc,
-    )
+      path: `${kind}.methods.${sourceMethod.name}.jsdoc`,
+      sourceValue: sourceMethod.jsdoc,
+      buildEntryValue: buildMethod.jsdoc,
+    })
   }
 }
 
-function compareValue(
-  issues: ClassModelBuildConsistencyIssue[],
-  path: string,
-  sourceValue: unknown,
-  buildEntryValue: unknown,
-): void {
-  if (sourceValue === buildEntryValue) return
-  issues.push({
+type CompareValueCommand = Readonly<{
+  issues: ClassModelBuildConsistencyIssue[]
+  path: string
+  sourceValue: unknown
+  buildEntryValue: unknown
+}>
+
+function compareValue(command: CompareValueCommand): void {
+  if (command.sourceValue === command.buildEntryValue) return
+  command.issues.push({
     code: 'CLASS_MODEL_BUILD_CONSISTENCY_MISMATCH',
-    path,
-    message: `源码反射与构建入口不一致: source=${String(sourceValue)} buildEntry=${String(buildEntryValue)}`,
+    path: command.path,
+    message: `源码反射与构建入口不一致: source=${String(command.sourceValue)} buildEntry=${String(command.buildEntryValue)}`,
   })
 }

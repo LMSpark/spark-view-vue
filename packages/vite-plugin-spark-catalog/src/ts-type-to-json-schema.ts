@@ -46,9 +46,14 @@ export function tsTypeToJsonSchema(
   options: TsTypeToJsonSchemaOptions = {},
 ): GeneratedJsonSchema {
   const state = createJsonSchemaGenerationState(options)
-  const schema = typeToJsonSchema(checker, type, state, {
-    inlineNamedObject: true,
-    path: options.rootPath ?? [],
+  const schema = typeToJsonSchema({
+    checker,
+    type,
+    state,
+    options: {
+      inlineNamedObject: true,
+      path: options.rootPath ?? [],
+    },
   })
   return standardizeJsonSchemaWithLocalDefs(attachDefinitions(schema, state))
 }
@@ -56,6 +61,13 @@ export function tsTypeToJsonSchema(
 type TypeToSchemaOptions = Readonly<{
   inlineNamedObject: boolean
   path: readonly string[]
+}>
+
+type TypeToSchemaCommand = Readonly<{
+  checker: ts.TypeChecker
+  type: ts.Type
+  state: JsonSchemaGenerationState
+  options: TypeToSchemaOptions
 }>
 
 type JsonSchemaGenerationState = {
@@ -66,12 +78,8 @@ type JsonSchemaGenerationState = {
 
 const MAX_SCHEMA_DEPTH = 8
 
-function typeToJsonSchema(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  state: JsonSchemaGenerationState,
-  options: TypeToSchemaOptions,
-): GeneratedJsonSchema {
+function typeToJsonSchema(command: TypeToSchemaCommand): GeneratedJsonSchema {
+  const { checker, type, state, options } = command
   if (state.depth > MAX_SCHEMA_DEPTH) return true
 
   const literalValues = literalUnionValues(type)
@@ -81,12 +89,12 @@ function typeToJsonSchema(
     return typeValue === undefined ? { enum: literalValues } : { type: typeValue, enum: literalValues }
   }
 
-  if (type.isUnion()) return unionToJsonSchema(checker, type, state, options)
+  if (type.isUnion()) return unionToJsonSchema(command)
   if (isStringLike(type)) return { type: 'string' }
   if (isNumberLike(type)) return { type: 'number' }
   if (isBooleanLike(type)) return { type: 'boolean' }
   if (isFunctionLike(checker, type)) return true
-  if (isArrayLike(checker, type)) return arrayToJsonSchema(checker, type, state, options)
+  if (isArrayLike(checker, type)) return arrayToJsonSchema(command)
   if (isRecordType(checker, type)) return { type: 'object', additionalProperties: true }
   if (isBuiltInCollectionType(checker, type)) return { type: 'object', additionalProperties: true }
   const externalObjectName = readExternalObjectName(checker, type)
@@ -99,24 +107,26 @@ function typeToJsonSchema(
 
   const typeKey = readNamedObjectKey(checker, type)
   if (typeKey !== undefined && !options.inlineNamedObject) {
-    ensureDefinition(checker, type, state, typeKey)
+    ensureDefinition({ checker, type, state, typeKey })
     return { $ref: state.definitions.refFor(typeKey) }
   }
 
-  return objectToJsonSchema(checker, type, state, options)
+  return objectToJsonSchema(command)
 }
 
-function unionToJsonSchema(
-  checker: ts.TypeChecker,
-  type: ts.UnionType,
-  state: JsonSchemaGenerationState,
-  options: TypeToSchemaOptions,
-): GeneratedJsonSchema {
+function unionToJsonSchema(command: TypeToSchemaCommand): GeneratedJsonSchema {
+  const { checker, type, state, options } = command
+  if (!type.isUnion()) return true
   const schemas = type.types
     .filter(part => !isUndefinedLike(part))
-    .map(item => withNestedDepth(state, () => typeToJsonSchema(checker, item, state, {
-      inlineNamedObject: false,
-      path: options.path,
+    .map(item => withNestedDepth(state, () => typeToJsonSchema({
+      checker,
+      type: item,
+      state,
+      options: {
+        inlineNamedObject: false,
+        path: options.path,
+      },
     })))
   if (schemas.length === 0) return true
   if (schemas.length === 1) return schemas[0] ?? true
@@ -126,21 +136,22 @@ function unionToJsonSchema(
   return { anyOf: dedupeSchemas(schemas) }
 }
 
-function arrayToJsonSchema(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  state: JsonSchemaGenerationState,
-  options: TypeToSchemaOptions,
-): GeneratedJsonSchema {
+function arrayToJsonSchema(command: TypeToSchemaCommand): GeneratedJsonSchema {
+  const { checker, type, state, options } = command
   if (checker.isTupleType(type)) {
     const elementTypes = readTypeReferenceArguments(type)
     if (elementTypes.length > 0) {
       return {
         type: 'array',
         prefixItems: elementTypes.map((elementType, index) =>
-          withNestedDepth(state, () => typeToJsonSchema(checker, elementType, state, {
-            inlineNamedObject: false,
-            path: [...options.path, 'prefixItems', String(index)],
+          withNestedDepth(state, () => typeToJsonSchema({
+            checker,
+            type: elementType,
+            state,
+            options: {
+              inlineNamedObject: false,
+              path: [...options.path, 'prefixItems', String(index)],
+            },
           }))),
         items: false,
       }
@@ -152,19 +163,20 @@ function arrayToJsonSchema(
     type: 'array',
     items: item === undefined
       ? true
-      : withNestedDepth(state, () => typeToJsonSchema(checker, item, state, {
-        inlineNamedObject: false,
-        path: [...options.path, 'items'],
+      : withNestedDepth(state, () => typeToJsonSchema({
+        checker,
+        type: item,
+        state,
+        options: {
+          inlineNamedObject: false,
+          path: [...options.path, 'items'],
+        },
       })),
   }
 }
 
-function objectToJsonSchema(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  state: JsonSchemaGenerationState,
-  options: TypeToSchemaOptions,
-): GeneratedJsonSchema {
+function objectToJsonSchema(command: TypeToSchemaCommand): GeneratedJsonSchema {
+  const { checker, type, state, options } = command
   const properties = type.getProperties()
   if (properties.length === 0) return true
 
@@ -178,10 +190,22 @@ function objectToJsonSchema(
     if (propertyType === undefined) continue
     const propertyPath = [...options.path, 'properties', property.name]
     const propertySchema = withNestedDepth(state, () =>
-      typeToJsonSchema(checker, propertyType, state, { inlineNamedObject: false, path: propertyPath }))
+      typeToJsonSchema({
+        checker,
+        type: propertyType,
+        state,
+        options: { inlineNamedObject: false, path: propertyPath },
+      }))
     const description = readSymbolJsDocDescription(checker, property)
     if (description === undefined) {
-      pushMissingDescriptionTodo(checker, state, property, declaration, propertyType, propertyPath)
+      pushMissingDescriptionTodo({
+        checker,
+        state,
+        property,
+        declaration,
+        propertyType,
+        path: propertyPath,
+      })
     }
     out[property.name] = withSchemaDescription(propertySchema, description)
     if ((property.flags & ts.SymbolFlags.Optional) === 0) required.push(property.name)
@@ -217,14 +241,17 @@ function readSymbolJsDocDescription(checker: ts.TypeChecker, symbol: ts.Symbol):
   return text.length === 0 ? undefined : text
 }
 
-function pushMissingDescriptionTodo(
-  checker: ts.TypeChecker,
-  state: JsonSchemaGenerationState,
-  property: ts.Symbol,
-  declaration: ts.Declaration,
-  propertyType: ts.Type,
-  path: readonly string[],
-): void {
+type PushMissingDescriptionTodoCommand = Readonly<{
+  checker: ts.TypeChecker
+  state: JsonSchemaGenerationState
+  property: ts.Symbol
+  declaration: ts.Declaration
+  propertyType: ts.Type
+  path: readonly string[]
+}>
+
+function pushMissingDescriptionTodo(command: PushMissingDescriptionTodoCommand): void {
+  const { checker, state, property, declaration, propertyType, path } = command
   const onMissingDescription = state.options.onMissingDescription
   if (onMissingDescription === undefined) return
   const minPathLength = state.options.skipMissingDescriptionPathLengthLessThan
@@ -279,14 +306,22 @@ function bindingNameText(name: ts.BindingName, sourceFile: ts.SourceFile): strin
   return ts.isIdentifier(name) ? name.text : name.getText(sourceFile)
 }
 
-function ensureDefinition(
-  checker: ts.TypeChecker,
-  type: ts.Type,
-  state: JsonSchemaGenerationState,
-  typeKey: string,
-): void {
+type EnsureDefinitionCommand = Readonly<{
+  checker: ts.TypeChecker
+  type: ts.Type
+  state: JsonSchemaGenerationState
+  typeKey: string
+}>
+
+function ensureDefinition(command: EnsureDefinitionCommand): void {
+  const { checker, type, state, typeKey } = command
   state.definitions.ensure(typeKey, () => withNestedDepth(state, () =>
-    objectToJsonSchema(checker, type, state, { inlineNamedObject: false, path: ['$defs', typeKey] })))
+    objectToJsonSchema({
+      checker,
+      type,
+      state,
+      options: { inlineNamedObject: false, path: ['$defs', typeKey] },
+    })))
 }
 
 function attachDefinitions(schema: GeneratedJsonSchema, state: JsonSchemaGenerationState): GeneratedJsonSchema {

@@ -161,9 +161,11 @@ export {
 } from './native-runtime'
 
 export type {
+  AiApiScriptContextCommand,
   AiNativeRuntimeSchemaDefs,
   AiNativeScriptContextCommand,
   AiNativeScriptRunCommand,
+  ExecuteAiApiActionCommand,
 } from './native-runtime'
 
 // ── 5. 聊天 DTO ─────────────────────────────────────────────

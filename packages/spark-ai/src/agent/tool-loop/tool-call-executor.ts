@@ -147,7 +147,12 @@ export class AiAgentToolCallExecutor {
         runtimeContext,
         protocolToolName,
         args: parsedArgs.args,
-        callResult: applyFailureRecoveryEnrichment(input.registration, protocolToolName, parsedArgs.args, parsedArgs.result),
+        callResult: applyFailureRecoveryEnrichment({
+          registration: input.registration,
+          protocolToolName,
+          args: parsedArgs.args,
+          callResult: parsedArgs.result,
+        }),
         started,
       })
     }
@@ -171,12 +176,12 @@ export class AiAgentToolCallExecutor {
         runtimeContext,
         protocolToolName,
         args,
-        callResult: applyFailureRecoveryEnrichment(
-          input.registration,
+        callResult: applyFailureRecoveryEnrichment({
+          registration: input.registration,
           protocolToolName,
           args,
-          beforeFunctionCallFailureResult(beforeDirective),
-        ),
+          callResult: beforeFunctionCallFailureResult(beforeDirective),
+        }),
         started,
         skipAfterFunctionCall: true,
         metadata: beforeFunctionCallMetadata(beforeDirective),
@@ -197,7 +202,12 @@ export class AiAgentToolCallExecutor {
     const rawCallResult = toFunctionCallResult(operationResult)
     const callResult = rawCallResult.ok
       ? rawCallResult
-      : applyFailureRecoveryEnrichment(input.registration, protocolToolName, args, rawCallResult)
+      : applyFailureRecoveryEnrichment({
+        registration: input.registration,
+        protocolToolName,
+        args,
+        callResult: rawCallResult,
+      })
     const completeDirective = completeDirectiveFromToolResult(protocolToolName, callResult)
 
     return this.completeExecution({
@@ -382,22 +392,25 @@ function toolArgsFailureResult(error: ToolArgsParseError): AiAgentFunctionCallRe
   }
 }
 
+type ApplyFailureRecoveryEnrichmentCommand<TInput extends AiJsonParams> = Readonly<{
+  registration: AiAgentRegistration<TInput>
+  protocolToolName: string
+  args: AiJsonParams
+  callResult: AiAgentFunctionCallResult<unknown>
+}>
+
 function applyFailureRecoveryEnrichment<TInput extends AiJsonParams>(
-  registration: AiAgentRegistration<TInput>,
-  protocolToolName: string,
-  args: AiJsonParams,
-  callResult: AiAgentFunctionCallResult<unknown>,
+  command: ApplyFailureRecoveryEnrichmentCommand<TInput>,
 ): AiAgentFunctionCallResult<unknown> {
-  if (callResult.ok) return callResult
-  const command = {
-    protocolToolName,
-    args,
-    callResult,
-  }
-  return enrichFunctionCallResult(command, {
-    ...(registration.enrichRecoveryHints === undefined
+  if (command.callResult.ok) return command.callResult
+  return enrichFunctionCallResult({
+    protocolToolName: command.protocolToolName,
+    args: command.args,
+    callResult: command.callResult,
+  }, {
+    ...(command.registration.enrichRecoveryHints === undefined
       ? {}
-      : { enrichRecoveryHints: registration.enrichRecoveryHints }),
+      : { enrichRecoveryHints: command.registration.enrichRecoveryHints }),
   })
 }
 

@@ -193,35 +193,9 @@ import { deepClone, isRecord } from '@spark-appworks/spark-utils'
 import type { VxeTableInstance, VxeTablePropTypes } from 'vxe-table'
 import { useBasicFieldState } from '../fields/data-components/composables/useBasicFieldState'
 import { coerceStringValue } from '../fields/data-components/composables/fieldValueCoercion'
-import {
-  addChildNode,
-  addSiblingNode,
-  applyAutoPopulatePatches,
-  buildTreeModel,
-  deleteNode,
-  exportJsonDocument,
-  filterTreeNodes,
-  formatValuePreview,
-  rootOf,
-  parseJsonDocument,
-  renameNodeKey,
-  resolveSchemaInfoForPath,
-  serializeJsonDocument,
-  toDisplayRows,
-  updateNodeType,
-  updateNodeValue,
-  type JsonDocument,
-  type JsonNodeType,
-  type JsonObject,
-  type JsonPath,
-  type JsonTreePolicy,
-  type JsonValue,
-  type MutationResult,
-  type TreeModel,
-  type TreeDisplayNode,
-} from '@spark-appworks/spark-json-document'
+import * as Sjd from '@spark-appworks/spark-json-document'
 
-type DisplayRow = TreeDisplayNode & {
+type DisplayRow = Sjd.TreeDisplayNode & {
   displayKey: string
     valuePreview: string
     stringValue: string
@@ -234,14 +208,14 @@ type DisplayRow = TreeDisplayNode & {
     _schemaEnumValues: string[]
     _schemaEnumLabels: Record<string, string>}
 
-function isJsonValue(value: unknown): value is JsonValue {
+function isJsonValue(value: unknown): value is Sjd.JsonValue {
   if (typeof value === 'string' || typeof value === 'number' || typeof value === 'boolean' || value === null) return true
   if (Array.isArray(value)) return value.every(isJsonValue)
   if (!isRecord(value)) return false
   return Object.values(value).every(isJsonValue)
 }
 
-function isJsonDocument(value: unknown): value is JsonDocument {
+function isJsonDocument(value: unknown): value is Sjd.JsonDocument {
   if (Array.isArray(value)) return value.every(isJsonValue)
   return isRecord(value) && Object.values(value).every(isJsonValue)
 }
@@ -265,7 +239,7 @@ type JsonTreeEditorProps = {
   /** JSON 字符串内容 */
   modelValue?: string
   /** 已解析的 JSON 文档对象 */
-  documentValue?: JsonDocument | null
+  documentValue?: Sjd.JsonDocument | null
   /** 编辑器高度 */
   height?: number | string
   /** 是否只读 */
@@ -275,21 +249,21 @@ type JsonTreeEditorProps = {
   /** 筛选框占位文本 */
   filterPlaceholder?: string
   /** 策略聚合对象（复杂场景一次传入） */
-  policy?: JsonTreePolicy
+  policy?: Sjd.JsonTreePolicy
   /** 根节点标签 */
   rootLabel?: string
   /** 判断路径是否受保护 */
-  isProtected?: (path: JsonPath) => boolean
+  isProtected?: (path: Sjd.JsonPath) => boolean
   /** 判断路径是否可编辑键名 */
-  canEditKey?: (path: JsonPath) => boolean
+  canEditKey?: (path: Sjd.JsonPath) => boolean
   /** 判断路径是否可编辑类型 */
-  canEditType?: (path: JsonPath) => boolean
+  canEditType?: (path: Sjd.JsonPath) => boolean
   /** 推荐子节点键名 */
-  suggestChildKey?: (target: JsonObject, parentPath: JsonPath) => string
+  suggestChildKey?: (target: Sjd.JsonObject, parentPath: Sjd.JsonPath) => string
   /** 创建数组默认子项 */
-  createDefaultArrayItem?: (parentPath: JsonPath) => JsonValue
+  createDefaultArrayItem?: (parentPath: Sjd.JsonPath) => Sjd.JsonValue
   /** 创建对象默认子值 */
-  createDefaultObjectValue?: (parentPath: JsonPath, key: string) => JsonValue}
+  createDefaultObjectValue?: (parentPath: Sjd.JsonPath, key: string) => Sjd.JsonValue}
 
 const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
   value: '',
@@ -303,7 +277,7 @@ const props = withDefaults(defineProps<JsonTreeEditorProps>(), {
 
 const emit = defineEmits<{
   'update:modelValue': [value: string]
-  'update:documentValue': [value: JsonDocument]
+  'update:documentValue': [value: Sjd.JsonDocument]
 }>()
 
 // ── 字段能力接入 ────────────────────────────────────────────
@@ -328,7 +302,7 @@ const isEditable = computed(() =>
  * DATA_ROW[field] 可能是 string（JSON 文本）→ 反序列化；
  * 也可能是 object/array（已解析文档）→ 直接使用。
  */
-const effectiveFieldInput = computed<string | JsonDocument>(() => {
+const effectiveFieldInput = computed<string | Sjd.JsonDocument>(() => {
   if (props.field) {
     const raw: unknown = fieldValue.value
     if (isJsonDocument(raw)) return raw
@@ -338,7 +312,7 @@ const effectiveFieldInput = computed<string | JsonDocument>(() => {
 })
 // ── 合并 policy（平铺 props 优先） ──────────────────────────
 
-const mergedPolicy = computed<Partial<JsonTreePolicy>>(() => {
+const mergedPolicy = computed<Partial<Sjd.JsonTreePolicy>>(() => {
   const base = props.policy ?? {}
   return {
     ...base,
@@ -355,13 +329,13 @@ const mergedPolicy = computed<Partial<JsonTreePolicy>>(() => {
 const tableRef = ref<VxeTableInstance<DisplayRow> | null>(null)
 const keywordInput = ref('')
 const keyword = ref('')
-const typeFilter = ref<'all' | JsonNodeType>('all')
+const typeFilter = ref<'all' | Sjd.JsonNodeType>('all')
 const schemaOnly = ref(false)
 const keyInputDrafts = ref<Record<string, string>>({})
 const stringInputDrafts = ref<Record<string, string>>({})
 const parseError = ref<string | null>(null)
-const treeModelRef = shallowRef<TreeModel>(buildTreeModel({}))
-const currentRowId = ref(rootOf(treeModelRef.value))
+const treeModelRef = shallowRef<Sjd.TreeModel>(Sjd.buildTreeModel({}))
+const currentRowId = ref(Sjd.rootOf(treeModelRef.value))
 let keywordTimer: ReturnType<typeof setTimeout> | undefined
 let lastEmittedValue: string | null = null
 let tableStateInitialized = false
@@ -424,8 +398,8 @@ const hasActiveFilter = computed(() => {
 // ── 数据管线 ─────────────────────────────────────────────────
 
 const allRows = computed<DisplayRow[]>(() => {
-  const rawRows = toDisplayRows(treeModelRef.value, mergedPolicy.value)
-  const schemaCache = new Map<string, ReturnType<typeof resolveSchemaInfoForPath>>()
+  const rawRows = Sjd.toDisplayRows(treeModelRef.value, mergedPolicy.value)
+  const schemaCache = new Map<string, ReturnType<typeof Sjd.resolveSchemaInfoForPath>>()
   const rootLabel = mergedPolicy.value.rootLabel ?? '$'
   const policy = mergedPolicy.value
   return rawRows.map(row => enrichRow(row, { schemaCache, rootLabel, policy }))
@@ -438,7 +412,7 @@ const filteredRows = computed<DisplayRow[]>(() => {
 
   if (!hasFilter) return allRows.value
 
-  return filterTreeNodes<DisplayRow>(allRows.value, (row) => {
+  return Sjd.filterTreeNodes<DisplayRow>(allRows.value, (row) => {
     if (row.depth > 0 && typeFilter.value !== 'all' && row.type !== typeFilter.value) {
       return false
     }
@@ -482,7 +456,7 @@ onBeforeUnmount(() => {
 
 // ── 树状态捕获与恢复 ────────────────────────────────────────
 
-function serializePath(path: JsonPath): string {
+function serializePath(path: Sjd.JsonPath): string {
   return path.map(s => typeof s === 'number' ? `[${s}]` : s).join('/')
 }
 
@@ -506,56 +480,56 @@ function syncDocument(rawText: string): void {
   clearInputDrafts()
   if (rawText.trim() === '') {
     captureTreeState()
-    treeModelRef.value = buildTreeModel({}, mergedPolicy.value)
+    treeModelRef.value = Sjd.buildTreeModel({}, mergedPolicy.value)
     parseError.value = null
     return
   }
   try {
     captureTreeState()
-    const doc = parseJsonDocument(rawText)
-    treeModelRef.value = buildTreeModel(doc, mergedPolicy.value)
+    const doc = Sjd.parseJsonDocument(rawText)
+    treeModelRef.value = Sjd.buildTreeModel(doc, mergedPolicy.value)
     parseError.value = null
   } catch (error) {
     parseError.value = error instanceof Error ? error.message : String(error)
   }
 }
 
-function syncDocumentValue(value: JsonDocument): void {
+function syncDocumentValue(value: Sjd.JsonDocument): void {
   clearInputDrafts()
   const nextDocument = deepClone(value)
-  const nextText = serializeJsonDocument(nextDocument)
+  const nextText = Sjd.serializeJsonDocument(nextDocument)
   if (lastEmittedValue !== null && nextText === lastEmittedValue) {
     lastEmittedValue = null
     return
   }
   captureTreeState()
-  treeModelRef.value = buildTreeModel(nextDocument, mergedPolicy.value)
+  treeModelRef.value = Sjd.buildTreeModel(nextDocument, mergedPolicy.value)
   parseError.value = null
 }
 
 // ── 行增强（schema + 搜索文本）──────────────────────────────
 
 type EnrichRowContext = Readonly<{
-  schemaCache: Map<string, ReturnType<typeof resolveSchemaInfoForPath>>,
+  schemaCache: Map<string, ReturnType<typeof Sjd.resolveSchemaInfoForPath>>,
   rootLabel: string,
-  policy: Partial<JsonTreePolicy>
+  policy: Partial<Sjd.JsonTreePolicy>
 }>
 
 function enrichRow(
-  row: TreeDisplayNode,
+  row: Sjd.TreeDisplayNode,
   context: EnrichRowContext,
 ): DisplayRow {
   const { schemaCache, rootLabel, policy } = context
   const isContainer = row.type === 'object' || row.type === 'array'
   const displayKey = row.depth === 0 ? rootLabel
     : (typeof row.segment === 'number' ? `[${row.segment}]` : row.segment)
-  const valuePreview = formatValuePreview(row.type, isContainer ? null : row.value, row.childCount)
+  const valuePreview = Sjd.formatValuePreview(row.type, isContainer ? null : row.value, row.childCount)
   const stringValue = typeof row.value === 'string' ? row.value : ''
   const numberValue = typeof row.value === 'number' ? row.value : null
   const booleanValue = row.value === true
 
   const cacheKey = row.id
-  const schemaInfo = schemaCache.get(cacheKey) ?? resolveSchemaInfoForPath(props.schema, row.path)
+  const schemaInfo = schemaCache.get(cacheKey) ?? Sjd.resolveSchemaInfoForPath(props.schema, row.path)
   schemaCache.set(cacheKey, schemaInfo)
 
   // Policy 提供的值选项（仅当 Schema 无 enum 时使用）
@@ -624,7 +598,7 @@ function handleKeywordChange(value: string | undefined): void {
   }, 120)
 }
 
-function handleTypeFilterChange(value: 'all' | JsonNodeType): void {
+function handleTypeFilterChange(value: 'all' | Sjd.JsonNodeType): void {
   typeFilter.value = value
 }
 
@@ -678,7 +652,7 @@ function handleKeyChange(row: DisplayRow, value: string | number): void {
   const nextValue = typeof value === 'string' ? value : getKeyInputValue(row)
   delete keyInputDrafts.value[row.id]
   if (nextValue === row.displayKey || nextValue.trim().length === 0) return
-  mutateModel((current) => renameNodeKey({
+  mutateModel((current) => Sjd.renameNodeKey({
     model: current,
     uid: row.id,
     nextKeyInput: nextValue,
@@ -686,9 +660,9 @@ function handleKeyChange(row: DisplayRow, value: string | number): void {
   }))
 }
 
-function handleTypeChange(row: DisplayRow, value: JsonNodeType): void {
+function handleTypeChange(row: DisplayRow, value: Sjd.JsonNodeType): void {
   if (value === undefined || value === null) return
-  mutateModel((current) => updateNodeType({
+  mutateModel((current) => Sjd.updateNodeType({
     model: current,
     uid: row.id,
     nextType: value,
@@ -700,7 +674,7 @@ function handleStringUpdate(row: DisplayRow, value: string | undefined): void {
   const v = value ?? ''
   delete stringInputDrafts.value[row.id]
   mutateModel(
-    (current) => updateNodeValue(current, row.id, v),
+    (current) => Sjd.updateNodeValue(current, row.id, v),
     row.path,
     v,
   )
@@ -715,34 +689,34 @@ function handleStringChange(row: DisplayRow, value: string | number): void {
   const nextValue = typeof value === 'string' ? value : getStringInputValue(row)
   delete stringInputDrafts.value[row.id]
   if (nextValue === row.stringValue) return
-  mutateModel((current) => updateNodeValue(current, row.id, nextValue))
+  mutateModel((current) => Sjd.updateNodeValue(current, row.id, nextValue))
 }
 
 function handleNumberChange(row: DisplayRow, value: string | number | null | undefined): void {
   const nextValue = typeof value === 'number' ? value : Number(value)
-  mutateModel((current) => updateNodeValue(current, row.id, Number.isFinite(nextValue) ? nextValue : 0))
+  mutateModel((current) => Sjd.updateNodeValue(current, row.id, Number.isFinite(nextValue) ? nextValue : 0))
 }
 
 function handleBooleanChange(row: DisplayRow, value: boolean): void {
-  mutateModel((current) => updateNodeValue(current, row.id, value))
+  mutateModel((current) => Sjd.updateNodeValue(current, row.id, value))
 }
 
 function handleAddChild(row: DisplayRow): void {
-  mutateModel((current) => addChildNode(current, row.id, mergedPolicy.value))
+  mutateModel((current) => Sjd.addChildNode(current, row.id, mergedPolicy.value))
 }
 
 function handleAddSibling(row: DisplayRow): void {
-  mutateModel((current) => addSiblingNode(current, row.id, mergedPolicy.value))
+  mutateModel((current) => Sjd.addSiblingNode(current, row.id, mergedPolicy.value))
 }
 
 function handleDelete(row: DisplayRow): void {
-  mutateModel((current) => deleteNode(current, row.id, mergedPolicy.value))
+  mutateModel((current) => Sjd.deleteNode(current, row.id, mergedPolicy.value))
 }
 
 function mutateModel(
-  mutator: (current: TreeModel) => MutationResult,
-  changedPath?: JsonPath,
-  changedValue?: JsonValue,
+  mutator: (current: Sjd.TreeModel) => Sjd.MutationResult,
+  changedPath?: Sjd.JsonPath,
+  changedValue?: Sjd.JsonValue,
 ): void {
   if (!isEditable.value) return
   const result = mutator(treeModelRef.value)
@@ -756,17 +730,17 @@ function mutateModel(
   if (changedPath !== undefined && changedValue !== undefined) {
     const patches = mergedPolicy.value.getAutoPopulate?.(changedPath, changedValue)
     if (patches !== undefined && patches.length > 0) {
-      const doc = exportJsonDocument(model)
-      if (applyAutoPopulatePatches(doc, patches)) {
+      const doc = Sjd.exportJsonDocument(model)
+      if (Sjd.applyAutoPopulatePatches(doc, patches)) {
         captureTreeState()
-        model = buildTreeModel(doc, mergedPolicy.value)
+        model = Sjd.buildTreeModel(doc, mergedPolicy.value)
       }
     }
   }
 
   treeModelRef.value = model
-  const nextDocument = exportJsonDocument(model)
-  const nextText = serializeJsonDocument(nextDocument)
+  const nextDocument = Sjd.exportJsonDocument(model)
+  const nextText = Sjd.serializeJsonDocument(nextDocument)
   parseError.value = null
   lastEmittedValue = nextText
   emit('update:documentValue', deepClone(nextDocument))
@@ -777,7 +751,7 @@ function mutateModel(
 
 // ── 类型标签 ──────────────────────────────────────────────────
 
-function renderTypeLabel(type: JsonNodeType): string {
+function renderTypeLabel(type: Sjd.JsonNodeType): string {
   switch (type) {
     case 'object': return '对象'
     case 'array': return '数组'

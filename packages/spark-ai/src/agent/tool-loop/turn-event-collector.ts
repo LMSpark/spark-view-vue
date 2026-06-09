@@ -527,7 +527,7 @@ function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTrans
     try {
       const parsed: unknown = JSON.parse(jsonText)
       if (!isRecord(parsed)) continue
-      calls.push(createRecoveredToolCall(name, parsed, calls.length, 'call_inline'))
+      calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_inline' }))
     } catch {
       // Ignore malformed inline JSON tool calls.
     }
@@ -553,17 +553,20 @@ function recoverArgKeyTagToolCallsFromText(text: string): readonly AiAgentTransp
       if (key.length === 0) continue
       args[key] = pair[2]?.trim() ?? ''
     }
-    calls.push(createRecoveredToolCall(rawName, args, calls.length, 'call_argtag'))
+    calls.push(createRecoveredToolCall({ name: rawName, args, index: calls.length, idPrefix: 'call_argtag' }))
   }
   return calls
 }
 
-function createRecoveredToolCall(
-  name: string,
-  args: Record<string, unknown>,
-  index: number,
-  idPrefix: string,
-): AiAgentTransportToolCall {
+type CreateRecoveredToolCallCommand = Readonly<{
+  name: string
+  args: Record<string, unknown>
+  index: number
+  idPrefix: string
+}>
+
+function createRecoveredToolCall(command: CreateRecoveredToolCallCommand): AiAgentTransportToolCall {
+  const { name, args, index, idPrefix } = command
   return {
     id: `${idPrefix}_${String(index + 1)}`,
     type: 'function',

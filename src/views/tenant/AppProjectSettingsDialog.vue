@@ -110,12 +110,12 @@ async function handleSave(): Promise<void> {
   if (!snapshot.value || !form.value) return
   saving.value = true
   try {
-    await saveProjectRuntimeSettings(
-      props.tenantId,
-      props.projectId,
-      snapshot.value,
-      form.value,
-    )
+    await saveProjectRuntimeSettings({
+      tenantId: props.tenantId,
+      projectId: props.projectId,
+      current: snapshot.value,
+      input: form.value,
+    })
     ElMessage.success('项目设置已保存')
     visible.value = false
     emit('saved')

@@ -451,10 +451,6 @@ function isNavPermissionMode(value: unknown): value is NavPermissionMode {
   return value === 'none' || value === 'masked' || value === 'invisible'
 }
 
-type PageNodeWithHttpClient = PageNodeLike & {
-  getHttpClient(): HttpClientBase | undefined
-}
-
 sparkProvide(PAGE_PERMISSION_MODE, isNavPermissionMode(route.meta['permissionMode']) ? route.meta['permissionMode'] : 'masked')
 
 // ── DataSet ──
@@ -654,8 +650,15 @@ function applyNodeProps(pageId: string, nodeProps: PageNodeRenderConfig): void {
 }
 
 function readPageNodeHttpClient(pageNode: PageNodeLike): HttpClientBase | undefined {
-  const candidate = pageNode as Partial<PageNodeWithHttpClient>
-  return typeof candidate.getHttpClient === 'function' ? candidate.getHttpClient() : undefined
+  if (!('getHttpClient' in pageNode)) return undefined
+  const getHttpClient = Reflect.get(pageNode, 'getHttpClient')
+  if (typeof getHttpClient !== 'function') return undefined
+  const client: unknown = Reflect.apply(getHttpClient, pageNode, [])
+  return isHttpClientBase(client) ? client : undefined
+}
+
+function isHttpClientBase(value: unknown): value is HttpClientBase {
+  return value !== null && typeof value === 'object'
 }
 
 // ==================== 加载入口 ====================

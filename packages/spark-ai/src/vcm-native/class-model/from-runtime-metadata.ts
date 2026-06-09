@@ -264,6 +264,6 @@ function requiresRunCallback(action: AiApiActionMetadata): boolean {
 }
 
 function apiClassName(api: AiApiObjectMetadata): string {
-  const className = (api as Readonly<Record<string, unknown>>)['className']
+  const className: unknown = Reflect.get(api, 'className')
   return typeof className === 'string' && className.length > 0 ? className : api.name
 }

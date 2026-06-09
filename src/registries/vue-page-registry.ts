@@ -190,7 +190,7 @@ function parseVuePage(value: unknown, path: string): VuePageConfigEntry {
   return {
     path: routePath,
     title: requiredString(page, 'title', path),
-    scope: scope as PageScope,
+    scope: readPageScope(scope, path),
     source,
     ...(icon === undefined ? {} : { icon }),
     ...(description === undefined ? {} : { description }),
@@ -209,10 +209,17 @@ function assertUniquePaths(pages: readonly VuePageConfigEntry[]): void {
 }
 
 function requireRecord(value: unknown, path: string): Readonly<Record<string, unknown>> {
-  if (value !== null && typeof value === 'object' && !Array.isArray(value)) {
-    return value as Readonly<Record<string, unknown>>
-  }
+  if (isPlainRecord(value)) return value
   throw new Error(`${path}: expected an object.`)
+}
+
+function isPlainRecord(value: unknown): value is Readonly<Record<string, unknown>> {
+  return value !== null && typeof value === 'object' && !Array.isArray(value)
+}
+
+function readPageScope(value: string, path: string): PageScope {
+  if (value === 'public' || value === 'tenant' || value === 'app') return value
+  throw new Error(`${path}.scope must be one of public, tenant, app.`)
 }
 
 function requiredString(

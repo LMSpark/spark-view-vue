@@ -32,12 +32,10 @@ import {
   type ProjectPageNodeSummary,
   type NavigationNodeDraft,
   type NavigationNodeDraftNode as ProjectNavigationNodeDraftNode,
-} from '@spark-appworks/spark-project-model'
-import type {
-  ProjectWorkspace,
-  ProjectPageReference,
-  ProjectSummary,
-} from '@spark-appworks/spark-project-model'
+  type ProjectWorkspace,
+  type ProjectPageReference,
+  type ProjectSummary,
+} from '@/views/app/dev-system/project-model-dev-bindings'
 import {
   runPageDesignAiSession,
   type PageDesignAiRunOptions,
@@ -64,7 +62,8 @@ export type EditableProjectOption = ProjectSummary & {
 }
 
 function createLiveTargetProxy<T extends object>(readTarget: () => T): T {
-  return new Proxy({} as T, {
+  const initial = readTarget()
+  return new Proxy(initial, {
     get(_target, property) {
       const target = readTarget()
       const value: unknown = Reflect.get(target, property, target)

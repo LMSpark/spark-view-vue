@@ -44,7 +44,7 @@ export function standardizeJsonSchemaWithLocalDefs(value: unknown): JsonSchema {
       ensureJsonSchema(standardizeJsonSchema(definition)),
     ]),
   )
-  return attachJsonSchemaDefs(schema, defs) as JsonSchema
+  return ensureJsonSchema(attachJsonSchemaDefs(schema, defs))
 }
 
 /**
@@ -79,7 +79,7 @@ function extractSchemaNode(value: unknown, defs: Map<string, JsonSchema>): unkno
   return output
 }
 
-function ensureJsonSchema(value: unknown): JsonSchema {
+export function ensureJsonSchema(value: unknown): JsonSchema {
   if (typeof value === 'boolean') return value
   return isRecord(value) ? value : true
 }
