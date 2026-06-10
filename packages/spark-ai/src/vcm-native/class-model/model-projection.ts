@@ -52,9 +52,9 @@ export function listAttributeReachableKinds(document: ClassModelDocument): reado
     visited.add(api.kind)
     kinds.push(api.kind)
     for (const attribute of api.attributes ?? []) {
-      const childKind = attribute.api?.kind
-      if (childKind === undefined || childKind.length === 0) continue
-      const childApi = resolveModuleApiOrUndefined(document, childKind) ?? attribute.api
+      const childKind = readAttributeLinkedKind(attribute)
+      if (childKind === undefined) continue
+      const childApi = resolveModuleApiOrUndefined(document, childKind)
       if (childApi !== undefined) queue.push(childApi)
     }
   }
@@ -98,7 +98,9 @@ export function findNestedAttributeApi(
   const owner = resolveModuleApiOrUndefined(document, ownerKind)
   const attribute = owner?.attributes?.find(item => item.name === attributeName)
   if (attribute?.api === undefined) return undefined
-  return resolveModuleApiOrUndefined(document, attribute.api.kind) ?? attribute.api
+  const childKind = readAttributeLinkedKind(attribute)
+  if (childKind === undefined) return undefined
+  return resolveModuleApiOrUndefined(document, childKind)
 }
 
 export function collectModuleApiKinds(module: AiModuleMetadataJson): readonly string[] {
@@ -109,7 +111,15 @@ export function collectModuleApiKinds(module: AiModuleMetadataJson): readonly st
     if (api === undefined || kinds.has(api.kind)) continue
     kinds.add(api.kind)
     for (const attribute of api.attributes ?? []) {
-      if (attribute.api !== undefined) pending.push(attribute.api)
+      const childKind = readAttributeLinkedKind(attribute)
+      if (childKind !== undefined) {
+        const childApi = resolveModuleApiFromRegistry(module, childKind)
+        if (childApi !== undefined) pending.push(childApi)
+        continue
+      }
+      if (attribute.api !== undefined && 'kind' in attribute.api) {
+        pending.push(attribute.api)
+      }
     }
     for (const action of api.actions) {
       for (const ref of action.resultApis ?? []) {
@@ -200,4 +210,24 @@ function renderJsDoc(lines: readonly string[]): string {
 function apiClassName(api: AiApiObjectMetadata): string {
   const className: unknown = Reflect.get(api, 'className')
   return typeof className === 'string' && className.length > 0 ? className : api.name
+}
+
+/** bundle 分片 attribute.api 可能是 { $ref: kind } 紧凑引用。 */
+function readAttributeLinkedKind(attribute: AiApiAttributeMetadata): string | undefined {
+  const api = attribute.api
+  if (api === undefined) return undefined
+  if ('kind' in api && typeof api.kind === 'string' && api.kind.length > 0) return api.kind
+  if (!('kind' in api)) {
+    const ref: unknown = Reflect.get(api, '$ref')
+    if (typeof ref === 'string' && ref.trim().length > 0) return ref.trim()
+  }
+  return undefined
+}
+
+function resolveModuleApiFromRegistry(
+  module: AiModuleMetadataJson,
+  kind: string,
+): AiApiObjectMetadata | undefined {
+  if (module.rootApi.kind === kind) return module.rootApi
+  return module.apiRegistry?.[kind]
 }

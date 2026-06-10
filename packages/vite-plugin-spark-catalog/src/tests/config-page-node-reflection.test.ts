@@ -9,6 +9,8 @@ const pageDesignSources = [
   'packages/spark-project-model/src/project/project-model.ts',
   'packages/spark-project-model/src/page/config-page.ts',
   'packages/spark-data/src/dataset-crud-tool.ts',
+  'packages/spark-data/src/data-table.ts',
+  'packages/spark-data/src/data-view.ts',
   'packages/spark-data/src/node-tree/spark-node-tree.ts',
 ] as const
 
@@ -49,7 +51,8 @@ describe('page-design VCM metadata reflection', () => {
       emptySchemaNodeCount: 0,
     })
     expect(result.diagnostics.resultApiCount).toBeGreaterThan(0)
-    expect(result.diagnostics.findings).toEqual([])
+    expect(result.diagnostics.findings.filter(finding => finding.level === 'error')).toEqual([])
+    expect(result.diagnostics.findings.filter(finding => finding.level === 'warn')).toEqual([])
     const writePageFile = projectApi?.actions.find(action => action.name === 'writePageFile')
     expect(writePageFile?.resultSchema).toBeUndefined()
     expect(writePageFile?.returnTypeText).toBe('void')

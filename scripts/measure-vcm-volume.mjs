@@ -6,7 +6,7 @@ import {
   renderMethodSignature,
 } from '../packages/spark-ai/src/vcm-native/class-model/signature-renderer.ts'
 
-const raw = JSON.parse(readFileSync('generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json', 'utf8'))
+const raw = JSON.parse(readFileSync('generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json', 'utf8'))
 const cm = createClassModelDocumentFromRuntimeDocument(raw)
 
 function kb(bytes) {

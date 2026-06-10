@@ -317,6 +317,7 @@ type DataSetCrudToolUpdateDependencyParams = DataSetCrudToolDependencySelectorPa
  *
  * @moduleAbility pageDesign.dataset
  * @moduleKind dataset
+ * @vcmSerializable pagedata.json 快照；须 toJson + static fromJson。
  * @moduleName Page Design DataSet
  * @moduleDescription 当前页面 DataSetCrudTool/pagedata.json 数据空间读写能力。
  * @moduleEntity dataSet 页面数据集
@@ -582,6 +583,7 @@ export class DataSetCrudTool {
    * 列出指定数据表的全部列定义。
    *
    * @moduleMutation pagedata.json read 列出指定表的全部字段。
+   * @failureMode TABLE_NOT_FOUND 表名不存在 Table not found => 先 listTables 或 createTable 确认表名，必要时 vcm_action_guide dataset.listTables
    * @param tableNameOrParams 表名字符串或表名参数对象。
    * @param tableName 表名。
    * @returns 列定义副本列表。

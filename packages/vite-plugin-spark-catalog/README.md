@@ -1,18 +1,19 @@
 # @spark-appworks/vite-plugin-spark-catalog
 
-VCM **native metadata** 生成工具：从 TypeScript 能力类提取 JSDoc + 类型，产出 `AiModuleMetadataJson` 与 runtime document，供 `VcmNativeAgentAdapter` 构建 LLM 知识体系。
+VCM **native metadata** 生成工具：从 TypeScript 能力类提取 JSDoc + 类型，产出 runtime document 与 dist bundle，供 `VcmNativeAgentAdapter` / Worker 构建 LLM 知识体系。
 
 ## 命令
 
 ```bash
-pnpm run generate:vcm-metadata       # 写入全部 VCM 能力面 metadata
-pnpm run generate:module-metadata    # 默认写入 project-page-surface
+pnpm run generate:vcm-metadata       # 写入 registry 内全部 metadata target
+pnpm run generate:module-metadata    # 默认 target project-page-surface
 pnpm run generate:component-catalog  # 写入 generated/vcm/component-catalog.json
 pnpm run diagnose:module-metadata    # 仅诊断，不写文件
+pnpm run verify:vcm-native           # 生成 + audit + 单测门禁
 ```
 
-CLI 入口：`src/module-metadata-cli.ts`
-默认读取根级 VCM 配置协议文件：`config/vcm/registry.json`。
+CLI 入口：`src/module-metadata-cli.ts`  
+默认配置：`config/vcm/registry.json`。
 
 可选参数：
 
@@ -21,47 +22,51 @@ pnpm run generate:module-metadata -- --target project-model
 pnpm run generate:module-metadata -- --target project-page-surface
 ```
 
-## 产出
+## 产出（`generated/vcm/dist/<target-id>/`）
 
 | 文件 | 用途 |
 |---|---|
-| `generated/vcm/<surface-id>/*.runtime.generated.json` | **VCM 能力面知识制品** |
-| `generated/vcm/<surface-id>/*.jsdoc-todo.generated.json` | 源码 JSDoc / schema description 待补日志 |
-| `generated/vcm/component-catalog.json` | **pageDesign Worker 按需消费的组件 props** |
+| `manifest.json` + `kinds/*.json` + `$defs.json` | Worker 按需加载的 VCM bundle |
+| `*-module-metadata.runtime.generated.json` | 组装 monolithic runtime（dev/审计） |
+| `*-module-metadata.runtime.ts` | 业务层 static import 入口 |
+| `*-module-metadata.jsdoc-todo.generated.json` | 源码 JSDoc / schema 待补日志 |
+| `vcm-compile-report.json` | 编译门禁真源（`gates.*`） |
+| `generated/vcm/component-catalog.json` | 组件 props（registry 根级 `componentCatalogOutput`） |
 
 ## VCM Registry 协议
 
-`config/vcm/registry.json` 使用协议头声明格式，target 声明由 VCM 配置层拥有：
+`config/vcm/registry.json`（`spark-appworks.vcm.registry`）声明 metadata target；不承载 AI business alias。
 
 ```json
 {
   "protocol": "spark-appworks.vcm.registry",
   "schemaVersion": 1,
+  "componentCatalogOutput": "generated/vcm/component-catalog.json",
   "metadataTargets": [
     {
-      "id": "page-design",
+      "id": "project-page-surface",
       "kind": "native-metadata",
-      "source": { "files": ["..."] },
+      "source": { "files": ["packages/spark-project-model/src/project/project-model.ts"] },
       "roots": [{ "className": "ProjectModel", "kind": "project" }],
       "outputs": {
-        "runtime": "...runtime.generated.json",
-        "jsdocTodoLog": "...jsdoc-todo.generated.json",
-        "componentCatalog": "payload/component-catalog.json"
+        "distDir": "generated/vcm/dist/project-page-surface",
+        "runtime": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
+        "jsdocTodoLog": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
       }
     }
   ]
 }
 ```
 
-Schema 文件：`config/schemas/vcm.schema.json`。
+Schema：`config/schemas/vcm.schema.json`。规范：`docs/ai/VCM_NATIVE_CLASS_SPEC.md`。
 
 ## 测试
 
 ```bash
+pnpm run verify:vcm-native
 pnpm exec vitest run packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts
-pnpm exec vitest run tests/page/page-design-knowledge.test.ts
 ```
 
 ## VCM 注释
 
-能力类 JSDoc 须满足 `@moduleAction`、`@moduleMutation` 等仓库约定；当前 module metadata 生成器只读取 TypeScript 能力类，不读取 Vue 组件标签。
+能力类 JSDoc 须满足 `@moduleKind`、`@moduleAction`、`@moduleMutation` 等仓库约定；生成器只读取 TypeScript 能力类，不读取 Vue 组件标签。

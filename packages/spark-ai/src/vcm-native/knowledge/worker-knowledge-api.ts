@@ -7,8 +7,10 @@ import type {
 } from './class-model-knowledge-service'
 
 export type VcmNativeKnowledgeWorkerInitInput = Readonly<{
-  /** Worker 内部 fetch 的 runtime metadata URL；主线程只传路径，不传大 JSON。 */
-  metadataUrl: string
+  /** @deprecated 使用 manifestUrl + dist bundle 按需加载。 */
+  metadataUrl?: string
+  /** VCM dist manifest.json；Worker 按需 fetch kind 分片。 */
+  manifestUrl?: string
   /** Worker 记录该 URL；仅 methodGuide 需要组件 props 时才按需 fetch。 */
   componentCatalogUrl?: string
 }>

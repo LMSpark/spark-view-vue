@@ -1,5 +1,5 @@
 import { existsSync, readFileSync } from 'node:fs'
-import { resolve } from 'node:path'
+import { dirname, resolve } from 'node:path'
 import type { ModuleAbilityMetadataGeneratorOptions } from './module-metadata-generator'
 
 export const VCM_CONFIG_FILE_NAME = 'config/vcm/registry.json'
@@ -19,6 +19,8 @@ export type VcmMetadataTargetSource = Readonly<{
 }>
 
 export type VcmMetadataTargetOutputs = Readonly<{
+  /** VCM dist 根目录；默认取 runtime 文件所在目录。 */
+  distDir?: string
   runtime: string
   jsdocTodoLog: string
   /** @deprecated 使用根级 componentCatalogOutput；target 级字段仅作过渡读取。 */
@@ -88,11 +90,17 @@ export function createVcmTargetGeneratorOptions(
   target: VcmMetadataTarget,
   overrides: CreateVcmTargetGeneratorOptionsOverrides = {},
 ): ModuleAbilityMetadataGeneratorOptions {
+  const trimmedDistDir = target.outputs.distDir?.trim()
+  const distDir = trimmedDistDir && trimmedDistDir.length > 0
+    ? trimmedDistDir
+    : dirname(target.outputs.runtime)
   return {
     sources: target.source.files,
     apiRoots: target.roots.map(root => root.className),
     moduleRuntimeOutFile: target.outputs.runtime,
     jsdocTodoLogOutFile: target.outputs.jsdocTodoLog,
+    distDir,
+    targetId: target.id,
     ...overrides,
   }
 }
@@ -177,10 +185,12 @@ function parseVcmMetadataRoot(value: unknown, path: string): VcmMetadataRoot {
 
 function parseVcmMetadataTargetOutputs(value: unknown, path: string): VcmMetadataTargetOutputs {
   const outputs = requireRecord(value, path)
+  const distDir = optionalString(outputs, 'distDir', path)
   const componentCatalog = optionalString(outputs, 'componentCatalog', path)
   return {
     runtime: requiredString(outputs, 'runtime', path),
     jsdocTodoLog: requiredString(outputs, 'jsdocTodoLog', path),
+    ...(distDir === undefined ? {} : { distDir }),
     ...(componentCatalog === undefined ? {} : { componentCatalog }),
   }
 }

@@ -384,6 +384,7 @@ export type SparkNodeTreeMethodKey =
  *
  * @moduleAbility pageDesign.nodeTree
  * @moduleKind node-tree
+ * @vcmFilePersisted rule.json 经 config-page 文件 API（getFileText/setFileText）持久化，无实例 toJson。
  * @moduleName Page Design Node Tree
  * @moduleDescription 当前页面 SparkNodeTree/rule.json 结构读写能力。
  * @moduleEntity pageNode 页面节点
@@ -805,6 +806,7 @@ export class SparkNodeTree {
    *
    * 这是“先构造 SparkNode，再放入 SparkNodeTree”这条链路的最直接入口。
    *
+   * @failureMode NODE_NOT_FOUND 父节点或插入锚点不存在 Node not found => 先 hasNode/getNode 确认 componentId，必要时 vcm_action_guide node-tree.getNode
    * @moduleAction addNode
    * @moduleAttackSurface rule-tree-structure high 新增节点会改变页面渲染树和组件能力入口。
    * @moduleGuard 必须先确认 parentComponentId、插入位置和节点结构合法。
@@ -862,6 +864,7 @@ export class SparkNodeTree {
    *
    * 返回值只包含移动摘要，不回传完整节点子树，避免结果膨胀。
    *
+   * @failureMode NODE_NOT_FOUND 源节点或目标父节点不存在 Node not found => 先 getLocation/hasNode 确认 componentId，必要时 vcm_action_guide node-tree.getLocation
    * @moduleAction moveNode
    * @moduleAttackSurface rule-tree-structure high 移动节点会改变页面布局、容器归属和数据绑定上下文。
    * @moduleGuard 必须确认 componentId、目标父级和目标 index，避免循环移动或破坏容器结构。

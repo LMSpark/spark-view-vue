@@ -194,6 +194,7 @@ function getArrayFilterValue(value: unknown): unknown[] | null {
  * DataView - 单个表视图的数据操作子模块。
  *
  * @moduleKind data-view
+ * @vcmSerializable 视图元数据快照；须 toJson + static fromJson。
  * @moduleName Data View
  */
 export class DataView implements DataSource {

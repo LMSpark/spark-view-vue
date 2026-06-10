@@ -1,4 +1,8 @@
 export {
+  BundleClassModelKnowledgeService,
+} from './bundle-class-model-knowledge-service'
+
+export {
   ClassModelKnowledgeService,
 } from './class-model-knowledge-service'
 
@@ -10,6 +14,10 @@ export {
   createVcmNativeKnowledgeWorkerApi,
   exposeVcmNativeKnowledgeWorker,
 } from './worker-knowledge-handler'
+
+export type {
+  BundleClassModelKnowledgeServiceOptions,
+} from './bundle-class-model-knowledge-service'
 
 export type {
   ClassModelKnowledgeServiceOptions,

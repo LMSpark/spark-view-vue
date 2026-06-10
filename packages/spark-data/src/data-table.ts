@@ -48,6 +48,7 @@ export type DataTableAddColumnsResult = {
  * 数据操作由 DataView 负责。
  *
  * @moduleKind data-table
+ * @vcmSerializable 表元数据快照；须 toJson + static fromJson。
  * @moduleName Data Table
  */
 export class DataTable {

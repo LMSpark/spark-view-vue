@@ -57,6 +57,7 @@ export type {
  *
  * @moduleAbility pageDesign.project
  * @moduleKind project
+ * @vcmSession 编排会话；无整包 toJson；跨页经 openPageDesign 等 action。
  * @moduleActionMode explicit
  */
 export class ProjectModel<TNode extends ProjectNode = ProjectNode> {

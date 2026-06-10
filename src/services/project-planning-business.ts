@@ -18,7 +18,7 @@ import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel, type ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { evaluateProjectPlanningToolGate } from '@/services/project-planning-gates'
-import { projectModelRuntimeMetadataDocument } from '../../generated/vcm/project-model/project-model-module-metadata.runtime'
+import { projectModelRuntimeMetadataDocument } from '../../generated/vcm/dist/project-model/project-model-module-metadata.runtime'
 import { createProjectPlanningVcmKnowledgeProvider } from '@/services/project-planning-vcm-knowledge-provider'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'

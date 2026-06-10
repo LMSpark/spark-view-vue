@@ -48,6 +48,12 @@ export function resolveModuleMetadataJson(
   }
 }
 
+type CompactAttributeApiRef = Readonly<{
+  $ref: string
+  kind?: never
+  actions?: never
+}>
+
 function resolveApiObjectMetadata(
   api: AiApiObjectMetadata,
   registry: Readonly<Record<string, AiApiObjectMetadata>>,
@@ -62,11 +68,43 @@ function resolveApiObjectMetadata(
             ...attribute,
             ...(attribute.api === undefined
               ? {}
-              : { api: resolveApiObjectMetadata(attribute.api, registry, new Set(resolving)) }),
+              : { api: resolveAttributeApi(attribute.api, registry, resolving) }),
           })),
         }),
     actions: api.actions.map(action => resolveActionMetadata(action, registry, resolving)),
   }
+}
+
+function resolveAttributeApi(
+  api: unknown,
+  registry: Readonly<Record<string, AiApiObjectMetadata>>,
+  resolving: Set<string>,
+): AiApiObjectMetadata {
+  if (isCompactAttributeApiRef(api)) {
+    const kind = api.$ref.trim()
+    if (kind.length === 0) {
+      throw new Error('attribute.api $ref requires non-empty kind.')
+    }
+    const target = registry[kind]
+    if (target === undefined) {
+      throw new Error(`attribute.api $ref "${kind}" is missing from apiRegistry.`)
+    }
+    return resolveApiObjectMetadata(target, registry, new Set(resolving))
+  }
+  if (isInlineApiObjectMetadata(api)) {
+    return resolveApiObjectMetadata(api, registry, new Set(resolving))
+  }
+  throw new Error('attribute.api must be a compact $ref or inline API metadata.')
+}
+
+function isCompactAttributeApiRef(api: unknown): api is CompactAttributeApiRef {
+  if (api === null || typeof api !== 'object' || Array.isArray(api)) return false
+  return !('kind' in api) && typeof Reflect.get(api, '$ref') === 'string'
+}
+
+function isInlineApiObjectMetadata(api: unknown): api is AiApiObjectMetadata {
+  if (api === null || typeof api !== 'object' || Array.isArray(api)) return false
+  return typeof Reflect.get(api, 'kind') === 'string' && Array.isArray(Reflect.get(api, 'actions'))
 }
 
 function resolveActionMetadata(

@@ -34,8 +34,9 @@ describe('VCM registry config protocol', () => {
         },
         roots: [{ className: 'ProjectModel', kind: 'project' }],
         outputs: {
-          runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
-          jsdocTodoLog: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
+          distDir: 'generated/vcm/dist/project-page-surface',
+          runtime: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+          jsdocTodoLog: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
         },
       }],
     })
@@ -49,8 +50,10 @@ describe('VCM registry config protocol', () => {
     expect(options).toMatchObject({
       sources: ['packages/spark-project-model/src/project/project-model.ts'],
       apiRoots: ['ProjectModel'],
-      moduleRuntimeOutFile: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
-      jsdocTodoLogOutFile: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
+      moduleRuntimeOutFile: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+      jsdocTodoLogOutFile: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
+      distDir: 'generated/vcm/dist/project-page-surface',
+      targetId: 'project-page-surface',
       writeFiles: false,
     })
   })
@@ -67,8 +70,8 @@ describe('VCM registry config protocol', () => {
           source: { files: ['packages/spark-project-model/src/project/project-model.ts'] },
           roots: [{ className: 'ProjectModel', kind: 'project' }],
           outputs: {
-            runtime: 'generated/vcm/project-model/project-model-module-metadata.runtime.generated.json',
-            jsdocTodoLog: 'generated/vcm/project-model/project-model-module-metadata.jsdoc-todo.generated.json',
+            runtime: 'generated/vcm/dist/project-model/project-model-module-metadata.runtime.generated.json',
+            jsdocTodoLog: 'generated/vcm/dist/project-model/project-model-module-metadata.jsdoc-todo.generated.json',
           },
         },
         {
@@ -77,8 +80,8 @@ describe('VCM registry config protocol', () => {
           source: { files: ['packages/spark-project-model/src/project/project-model.ts'] },
           roots: [{ className: 'ProjectModel', kind: 'project' }],
           outputs: {
-            runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
-            jsdocTodoLog: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
+            runtime: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+            jsdocTodoLog: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
           },
         },
       ],
@@ -90,7 +93,9 @@ describe('VCM registry config protocol', () => {
 
     expect(target.source.files).toEqual(['packages/spark-project-model/src/project/project-model.ts'])
     expect(options).toMatchObject({
-      moduleRuntimeOutFile: 'generated/vcm/project-model/project-model-module-metadata.runtime.generated.json',
+      moduleRuntimeOutFile: 'generated/vcm/dist/project-model/project-model-module-metadata.runtime.generated.json',
+      distDir: 'generated/vcm/dist/project-model',
+      targetId: 'project-model',
       writeFiles: false,
     })
   })

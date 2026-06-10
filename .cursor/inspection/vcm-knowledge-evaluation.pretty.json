@@ -1,8 +1,8 @@
 {
   "generatedAt": "2026-06-10T02:53:51.889Z",
   "sources": {
-    "runtime": "generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
-    "jsdocTodo": "generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
+    "runtime": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
+    "jsdocTodo": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
   },
   "runtimeEnvelope": {
     "schemaVersion": 2,

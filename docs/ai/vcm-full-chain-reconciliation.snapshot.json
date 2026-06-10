@@ -1,0 +1,141 @@
+{
+  "generatedAt": "2026-06-10T04:35:22.266Z",
+  "headCommit": "9901f00bfe727d08d42f402eddf28ecb05a153e6",
+  "specRef": "docs/ai/VCM_NATIVE_CLASS_SPEC.md",
+  "regressionCount": 0,
+  "noRegression": true,
+  "checks": [
+    {
+      "id": "VCM-THREE-LAYER-SPEC",
+      "title": "VCM_NATIVE_CLASS_SPEC 声明结构/语义/缓存三层真源",
+      "status": "pass",
+      "evidence": "docs/ai/VCM_NATIVE_CLASS_SPEC.md"
+    },
+    {
+      "id": "VCM-RECOVERY-FAILURE-MODE-ONLY",
+      "title": "recovery 只读 metadata @failureMode，不遍历 ClassModel 图",
+      "status": "pass",
+      "evidence": "vcm-failure-mode-recovery.ts + vcm-native-agent-adapter.ts"
+    },
+    {
+      "id": "VCM-WORKER-CATALOG-FAIL-FAST",
+      "title": "Worker component catalog 拉取失败时 fail-fast（methodGuide + componentType）",
+      "status": "pass",
+      "evidence": "worker-knowledge-handler.ts"
+    },
+    {
+      "id": "VCM-NO-LEGACY-DIST",
+      "title": "无 generated/vcm/<id>/ 遗留产物（须走 dist/）",
+      "status": "pass",
+      "evidence": "no legacy dirs"
+    },
+    {
+      "id": "VCM-COMPILE-GATES-ZERO",
+      "title": "双 target compile-report gates 全 0",
+      "status": "pass",
+      "evidence": [
+        {
+          "targetId": "project-model",
+          "gates": {
+            "diagnosticErrorCount": 0,
+            "diagnosticWarnCount": 0,
+            "jsdocSourceTodoCount": 0,
+            "schemaSourceTodoCount": 0,
+            "lifecycleErrorCount": 0
+          }
+        },
+        {
+          "targetId": "project-page-surface",
+          "gates": {
+            "diagnosticErrorCount": 0,
+            "diagnosticWarnCount": 0,
+            "jsdocSourceTodoCount": 0,
+            "schemaSourceTodoCount": 0,
+            "lifecycleErrorCount": 0
+          }
+        }
+      ]
+    },
+    {
+      "id": "VCM-KEY-FAILURE-MODES",
+      "title": "page-surface 关键 action 已编译 @failureMode（含 when 可匹配英文 msg）",
+      "status": "pass",
+      "evidence": [
+        {
+          "kind": "project",
+          "action": "openPageDesign",
+          "code": "SCRIPT_EXECUTION_FAILED"
+        },
+        {
+          "kind": "dataset",
+          "action": "listColumns",
+          "code": "TABLE_NOT_FOUND"
+        },
+        {
+          "kind": "node-tree",
+          "action": "addNode",
+          "code": "NODE_NOT_FOUND"
+        }
+      ]
+    },
+    {
+      "id": "VCM-CROSS-TARGET-ROOT-PARITY",
+      "title": "project-model 与 project-page-surface 的 project rootApi action/failureMode 一致",
+      "status": "pass",
+      "evidence": "root actions aligned"
+    },
+    {
+      "id": "VCM-MANIFEST-KIND-CLOSURE",
+      "title": "project-page-surface manifest 覆盖属性链六 kind",
+      "status": "pass",
+      "evidence": {
+        "expected": [
+          "config-page",
+          "data-table",
+          "data-view",
+          "dataset",
+          "node-tree",
+          "project"
+        ],
+        "actual": [
+          "config-page",
+          "data-table",
+          "data-view",
+          "dataset",
+          "node-tree",
+          "project"
+        ]
+      }
+    },
+    {
+      "id": "VCM-CLASSMODEL-PURE-INDEX",
+      "title": "ClassModel 无第二知识通道（models/diagnostics/returnsKind）",
+      "status": "pass",
+      "evidence": "class-model/types.ts"
+    }
+  ],
+  "commands": [
+    {
+      "label": "audit:vcm-build-output",
+      "command": "node --import tsx scripts/audit-vcm-build-output.mjs",
+      "exitCode": 0,
+      "startedAt": "2026-06-10T04:35:22.330Z"
+    },
+    {
+      "label": "vitest-vcm-chain",
+      "command": "pnpm exec vitest run packages/spark-ai/src/vcm-native/tests/class-model-reflection-connectivity.test.ts packages/spark-ai/src/vcm-native/tests/vcm-failure-mode-recovery.test.ts packages/spark-ai/src/vcm-native/tests/vcm-bundle-knowledge-worker.test.ts packages/spark-ai/src/vcm-native/tests/vcm-bundle-assembler.test.ts",
+      "exitCode": 0,
+      "startedAt": "2026-06-10T04:35:23.010Z"
+    }
+  ],
+  "completionCriteria": {
+    "threeLayerSpecDocumented": true,
+    "recoveryFailureModeOnly": true,
+    "workerCatalogFailFast": true,
+    "compileGatesZero": true,
+    "keyFailureModesPresent": true,
+    "crossTargetRootParity": true,
+    "manifestKindClosure": true,
+    "auditAndVitestGreen": true
+  }
+}

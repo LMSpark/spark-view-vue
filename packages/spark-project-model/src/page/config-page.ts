@@ -54,6 +54,7 @@ type ConfigPageFileModel = {
  * 四文件持久化由 ProjectWorkspace 或 PageContentLoader 编排。
  *
  * @moduleKind config-page
+ * @vcmSession 当前页设计会话；四文件由文件 API 编排，无整包 toJson。
  * @moduleAbility pageDesign.configPage
  * @moduleActionMode explicit
  */
@@ -273,7 +274,7 @@ export class ConfigPageNode extends ProjectNode {
    * @vcmScriptOnly
    * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。
    * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。
-   * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约
+   * @failureMode TABLE_NOT_FOUND 表名不存在 Table not found => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约
    * @failureMode SCHEMA_VALIDATION_FAILED requires callback => editDataSet 必须直接传 async callback，勿把 createTable 参数对象当作 run
    * @failureMode SCRIPT_EXECUTION_FAILED run is not a function => editDataSet 直接传 async callback，勿把 createTable 参数对象当成 run
    * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。

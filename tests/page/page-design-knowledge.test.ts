@@ -5,7 +5,7 @@ import {
   VcmNativeRuntime,
 } from '@spark-appworks/spark-ai/vcm-native'
 import componentCatalogDocumentJson from '../../generated/vcm/component-catalog.json'
-import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime'
 
 function createPageDesignVcmRuntime(): VcmNativeRuntime {
   return new VcmNativeRuntime({

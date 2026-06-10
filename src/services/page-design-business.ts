@@ -21,7 +21,7 @@ import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   evaluatePageDesignMutationToolGate,
 } from '@/services/page-design-gates'
-import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime'
 import { createPageDesignVcmKnowledgeProvider } from './page-design/page-design-vcm-knowledge-provider'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'

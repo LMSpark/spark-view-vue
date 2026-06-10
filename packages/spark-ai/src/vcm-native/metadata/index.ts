@@ -39,6 +39,31 @@ export type {
   ModuleMetadataRuntimeDocument,
 } from './module-metadata-runtime-document'
 
+export {
+  assembleRuntimeDocumentFromBundle,
+  assembleRuntimeModuleFromBundle,
+  listManifestAttributeReachableKinds,
+  listManifestKindIds,
+  readVcmBundleManifest,
+  readVcmKindMetadataFile,
+} from './vcm-bundle-assembler'
+
+export {
+  compareVcmBundleWithMonolithicRuntime,
+  loadVcmBundlePartsFromDist,
+} from './vcm-bundle-parity'
+
+export { VcmBundleLoader, resolveBundleRelativeUrl } from './vcm-bundle-loader'
+
+export type { VcmBundleLoaderOptions } from './vcm-bundle-loader'
+
+export type {
+  VcmNativeJsonMetadata,
+  VcmNativeSessionClass,
+  VcmNativeSnapshotClass,
+  VcmNativeSnapshotFactory,
+} from './vcm-native-class-contract'
+
 export type {
   ApiObjectValidationFinding,
 } from './validate-api-object-metadata'

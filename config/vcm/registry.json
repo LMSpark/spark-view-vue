@@ -20,8 +20,9 @@
         }
       ],
       "outputs": {
-        "runtime": "generated/vcm/project-model/project-model-module-metadata.runtime.generated.json",
-        "jsdocTodoLog": "generated/vcm/project-model/project-model-module-metadata.jsdoc-todo.generated.json"
+        "distDir": "generated/vcm/dist/project-model",
+        "runtime": "generated/vcm/dist/project-model/project-model-module-metadata.runtime.generated.json",
+        "jsdocTodoLog": "generated/vcm/dist/project-model/project-model-module-metadata.jsdoc-todo.generated.json"
       }
     },
     {
@@ -33,6 +34,8 @@
           "packages/spark-project-model/src/project/project-model.ts",
           "packages/spark-project-model/src/page/config-page.ts",
           "packages/spark-data/src/dataset-crud-tool.ts",
+          "packages/spark-data/src/data-table.ts",
+          "packages/spark-data/src/data-view.ts",
           "packages/spark-data/src/node-tree/spark-node-tree.ts"
         ]
       },
@@ -43,8 +46,9 @@
         }
       ],
       "outputs": {
-        "runtime": "generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
-        "jsdocTodoLog": "generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
+        "distDir": "generated/vcm/dist/project-page-surface",
+        "runtime": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
+        "jsdocTodoLog": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
       }
     }
   ]

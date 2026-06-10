@@ -12,7 +12,7 @@ import {
   resolveScopedProjectPlanningRunInput,
 } from '@/services/project-planning-business'
 import { evaluateProjectPlanningToolGate } from '@/services/project-planning-gates'
-import { projectModelRuntimeMetadataDocument } from '../../generated/vcm/project-model/project-model-module-metadata.runtime'
+import { projectModelRuntimeMetadataDocument } from '../../generated/vcm/dist/project-model/project-model-module-metadata.runtime'
 
 vi.mock('@/services/project-planning-vcm-knowledge-provider', () => ({
   createProjectPlanningVcmKnowledgeProvider: () => ({

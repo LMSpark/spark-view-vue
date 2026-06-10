@@ -17,6 +17,9 @@ import {
 } from './ts-type-to-json-schema'
 import { compactModuleMetadataApiRegistry } from './module-api-registry-compact'
 import { buildModuleMetadataPooledDocument, buildModuleMetadataRuntimeDocument } from './module-schema-pool'
+import { writeVcmBundleDist } from './vcm-bundle-writer'
+import { buildVcmCompileReport, writeVcmCompileReport } from './vcm-compile-report'
+import { auditVcmNativeClassLifecycle } from './vcm-native-class-lifecycle-audit'
 
 export type ModuleAbilityMetadataGeneratorOptions = {
   sources: readonly string[]
@@ -25,6 +28,8 @@ export type ModuleAbilityMetadataGeneratorOptions = {
   runtimeOutFile?: string
   moduleRuntimeOutFile?: string
   jsdocTodoLogOutFile?: string
+  distDir?: string
+  targetId?: string
   apiRoots?: readonly string[]
   trace?: boolean
   extractResults?: boolean
@@ -341,7 +346,15 @@ export function generateModuleAbilityMetadata(
     })
   })
   validateGeneratedAbilities(abilities)
-  const diagnostics = createModuleMetadataDiagnostics(abilities, moduleMetadata)
+  const baseDiagnostics = createModuleMetadataDiagnostics(abilities, moduleMetadata)
+  const lifecycleFindings = auditVcmNativeClassLifecycle({
+    program,
+    apis: collectApisForLifecycleAudit(moduleMetadata),
+  })
+  const diagnostics: ModuleMetadataDiagnostics = {
+    ...baseDiagnostics,
+    findings: [...baseDiagnostics.findings, ...lifecycleFindings],
+  }
   const runtimeAudit = createRuntimeGeneratedApiObjectMetadataAudit(moduleMetadata)
   const jsdocTodoLog = collectModuleMetadataJsDocTodoLog(moduleMetadata)
   const schemaDescriptionTodoLog = dedupeSchemaDescriptionTodoLog(schemaDescriptionTodoEntries)
@@ -365,8 +378,40 @@ export function generateModuleAbilityMetadata(
       writeFileSync(runtimeOutFile, formatRuntimeGeneratedMetadata(abilities), 'utf8')
     }
     if (moduleRuntimeOutFile !== undefined) {
-      mkdirSync(dirname(moduleRuntimeOutFile), { recursive: true })
-      writeFileSync(moduleRuntimeOutFile, formatRuntimeGeneratedApiObjectMetadata(moduleMetadata, { pretty: false }), 'utf8')
+      const runtimeDocument = createRuntimeGeneratedApiObjectMetadataDocument(moduleMetadata)
+      const distDirOption = options.distDir
+      const targetIdOption = options.targetId
+      const useDistBundle = distDirOption !== undefined && targetIdOption !== undefined
+      if (useDistBundle) {
+        const distDir = resolve(root, distDirOption)
+        const bundle = writeVcmBundleDist({
+          distDir,
+          targetId: targetIdOption,
+          runtimeDocument,
+          assembledRuntimeFileName: basename(moduleRuntimeOutFile),
+        })
+        const compileReport = buildVcmCompileReport({
+          targetId: targetIdOption,
+          distDir,
+          result: {
+            abilities,
+            moduleMetadata,
+            diagnostics,
+            runtimeAudit,
+            jsdocTodoLog,
+            schemaDescriptionTodoLog,
+          },
+          runtimeAudit,
+          lifecycleFindings,
+          bundle,
+          jsdocSourceTodoCount: countUniqueJsDocSourceTodos(jsdocTodoLog),
+          schemaSourceTodoCount: countUniqueSchemaSourceTodos(schemaDescriptionTodoLog),
+        })
+        writeVcmCompileReport(distDir, compileReport)
+      } else {
+        mkdirSync(dirname(moduleRuntimeOutFile), { recursive: true })
+        writeFileSync(moduleRuntimeOutFile, formatRuntimeGeneratedApiObjectMetadata(moduleMetadata, { pretty: false }), 'utf8')
+      }
       writeFileSync(
         resolveRuntimeMetadataTsOutFile(moduleRuntimeOutFile),
         formatRuntimeMetadataTsModule(basename(moduleRuntimeOutFile)),
@@ -2972,4 +3017,51 @@ function kebabCase(value: string): string {
 
 function isNotUndefined<T>(value: T | undefined): value is T {
   return value !== undefined
+}
+
+function collectApisForLifecycleAudit(
+  moduleMetadata: readonly AiModuleMetadataJson[],
+): ReadonlyArray<Readonly<{ kind: string; className: string; actions: ReadonlyArray<Readonly<{ methodName: string }>> }>> {
+  const module = moduleMetadata[0]
+  if (module === undefined) return []
+  const apis = new Map<string, AiApiObjectMetadata>()
+  visitApiForLifecycleAudit(module.rootApi, apis)
+  return [...apis.values()].map(api => ({
+    kind: api.kind,
+    className: readApiClassName(api),
+    actions: api.actions.map(action => ({ methodName: action.methodName })),
+  }))
+}
+
+function visitApiForLifecycleAudit(api: AiApiObjectMetadata, apis: Map<string, AiApiObjectMetadata>): void {
+  if (apis.has(api.kind)) return
+  apis.set(api.kind, api)
+  for (const attribute of api.attributes ?? []) {
+    if (attribute.api !== undefined) visitApiForLifecycleAudit(attribute.api, apis)
+  }
+  for (const action of api.actions) {
+    for (const ref of action.resultApis ?? []) {
+      visitApiForLifecycleAudit(ref.api, apis)
+    }
+  }
+}
+
+function readApiClassName(api: AiApiObjectMetadata): string {
+  const className = Reflect.get(api, 'className')
+  return typeof className === 'string' && className.length > 0 ? className : api.name
+}
+
+function countUniqueJsDocSourceTodos(entries: readonly ModuleMetadataJsDocTodoLogEntry[]): number {
+  const keys = new Set(entries.map(entry => `${entry.file}:${String(entry.line)}:${entry.className}`))
+  return keys.size
+}
+
+function countUniqueSchemaSourceTodos(entries: readonly ModuleMetadataSchemaDescriptionTodoLogEntry[]): number {
+  const keys = new Set(entries.map(entry => [
+    entry.file,
+    String(entry.line),
+    entry.declarationOwnerKind,
+    entry.declarationOwnerName ?? '',
+  ].join(':')))
+  return keys.size
 }

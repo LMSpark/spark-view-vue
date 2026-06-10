@@ -1,7 +1,9 @@
 import { expose, type Endpoint } from 'comlink'
 import { findMissingJsonSchemaDefRefs } from '@spark-appworks/spark-json-document'
 import { createClassModelDocumentFromRuntimeDocument, type ClassModelDocument } from '../class-model'
+import { VcmBundleLoader } from '../metadata/vcm-bundle-loader'
 import type { ComponentCatalogLike } from '../projection'
+import { BundleClassModelKnowledgeService } from './bundle-class-model-knowledge-service'
 import {
   ClassModelKnowledgeService,
   type VcmNativeKnowledgeProvider,
@@ -18,9 +20,8 @@ export type CreateVcmNativeKnowledgeWorkerApiOptions = Readonly<{
 /**
  * 创建 Worker 端 knowledge API。
  *
- * Worker 内部负责 fetch metadata、复用 spark-json-document 做 $defs 审计、
- * 再构建 ClassModelKnowledgeService；component catalog 按需 lazy fetch。
- * 主线程不会 import 大 JSON 或 schema 公共包。
+ * manifestUrl：只拉 manifest + $defs，kind 分片按需 fetch。
+ * metadataUrl：legacy 整包 runtime JSON（兼容路径）。
  */
 export function createVcmNativeKnowledgeWorkerApi(
   options: CreateVcmNativeKnowledgeWorkerApiOptions = {},
@@ -77,14 +78,19 @@ class VcmNativeKnowledgeWorkerState {
   public readonly baseProvider: VcmNativeKnowledgeProvider
   public readonly componentCatalogUrl?: string
   private catalogProviderPromise?: Promise<VcmNativeKnowledgeProvider>
+  private readonly bundleLoader?: VcmBundleLoader
+  private readonly legacyDocument?: ClassModelDocument
 
-  public constructor(
-    private readonly document: ClassModelDocument,
-    private readonly fetchJson: (url: string) => Promise<unknown>,
-    componentCatalogUrl?: string,
-  ) {
-    this.baseProvider = new ClassModelKnowledgeService({ document })
-    if (componentCatalogUrl !== undefined) this.componentCatalogUrl = componentCatalogUrl
+  public constructor(options: Readonly<{
+    baseProvider: VcmNativeKnowledgeProvider
+    bundleLoader?: VcmBundleLoader
+    legacyDocument?: ClassModelDocument
+    componentCatalogUrl?: string
+  }>) {
+    this.baseProvider = options.baseProvider
+    if (options.bundleLoader !== undefined) this.bundleLoader = options.bundleLoader
+    if (options.legacyDocument !== undefined) this.legacyDocument = options.legacyDocument
+    if (options.componentCatalogUrl !== undefined) this.componentCatalogUrl = options.componentCatalogUrl
   }
 
   public catalogProvider(): Promise<VcmNativeKnowledgeProvider> {
@@ -94,12 +100,29 @@ class VcmNativeKnowledgeWorkerState {
 
   private async createCatalogProvider(): Promise<VcmNativeKnowledgeProvider> {
     if (this.componentCatalogUrl === undefined) return this.baseProvider
-    const componentCatalog = await this.fetchJson(this.componentCatalogUrl)
-    if (!isComponentCatalogLike(componentCatalog)) return this.baseProvider
-    return new ClassModelKnowledgeService({
-      document: this.document,
-      componentCatalog,
-    })
+    const response = await fetch(this.componentCatalogUrl)
+    if (!response.ok) {
+      throw new Error(
+        `Failed to load component catalog: ${this.componentCatalogUrl} ${String(response.status)}`,
+      )
+    }
+    const componentCatalog: unknown = await response.json()
+    if (!isComponentCatalogLike(componentCatalog)) {
+      throw new Error(`Component catalog JSON is not an object: ${this.componentCatalogUrl}`)
+    }
+    if (this.bundleLoader !== undefined) {
+      return new BundleClassModelKnowledgeService({
+        loader: this.bundleLoader,
+        componentCatalog,
+      })
+    }
+    if (this.legacyDocument !== undefined) {
+      return new ClassModelKnowledgeService({
+        document: this.legacyDocument,
+        componentCatalog,
+      })
+    }
+    return this.baseProvider
   }
 }
 
@@ -107,14 +130,33 @@ async function createWorkerStateFromInitInput(
   input: VcmNativeKnowledgeWorkerInitInput,
   fetchJson: (url: string) => Promise<unknown>,
 ): Promise<VcmNativeKnowledgeWorkerState> {
-  const runtimeDocument = await fetchJson(input.metadataUrl)
-  assertRuntimeMetadataSchemaRefs(runtimeDocument, input.metadataUrl)
+  if (input.manifestUrl !== undefined) {
+    const loader = new VcmBundleLoader({ manifestUrl: input.manifestUrl, fetchJson })
+    await loader.init()
+    const provider = new BundleClassModelKnowledgeService({ loader })
+    return new VcmNativeKnowledgeWorkerState({
+      baseProvider: provider,
+      bundleLoader: loader,
+      ...(input.componentCatalogUrl === undefined ? {} : { componentCatalogUrl: input.componentCatalogUrl }),
+    })
+  }
+
+  const metadataUrl = input.metadataUrl
+  if (metadataUrl === undefined) {
+    throw new Error('VCM-native knowledge worker init requires manifestUrl or metadataUrl.')
+  }
+  const runtimeDocument = await fetchJson(metadataUrl)
+  assertRuntimeMetadataSchemaRefs(runtimeDocument, metadataUrl)
   if (!isRuntimeDocumentInput(runtimeDocument)) {
-    throw new Error(`VCM-native metadata is not a runtime document: ${input.metadataUrl}`)
+    throw new Error(`VCM-native metadata is not a runtime document: ${metadataUrl}`)
   }
   const document = createClassModelDocumentFromRuntimeDocument(runtimeDocument)
-
-  return new VcmNativeKnowledgeWorkerState(document, fetchJson, input.componentCatalogUrl)
+  const provider = new ClassModelKnowledgeService({ document })
+  return new VcmNativeKnowledgeWorkerState({
+    baseProvider: provider,
+    legacyDocument: document,
+    ...(input.componentCatalogUrl === undefined ? {} : { componentCatalogUrl: input.componentCatalogUrl }),
+  })
 }
 
 function assertRuntimeMetadataSchemaRefs(runtimeDocument: unknown, metadataUrl: string): void {

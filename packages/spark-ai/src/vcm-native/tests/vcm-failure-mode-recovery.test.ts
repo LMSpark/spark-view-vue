@@ -9,7 +9,7 @@ function resolveProjectMetadata(): AiModuleMetadataJson {
   const root = resolve(import.meta.dirname, '../../../../..')
   const raw = JSON.parse(
     readFileSync(
-      resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
+      resolve(root, 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
       'utf8',
     ),
   )
@@ -49,6 +49,35 @@ describe('collectVcmFailureModeRecoveryHints', () => {
     })
 
     expect(hints.some(hint => hint.includes('editNodeTree'))).toBe(true)
+  })
+
+  it('derives listTables hint from dataset @failureMode when table is missing', () => {
+    const metadata = resolveProjectMetadata()
+    const datasetApi = metadata.apiRegistry?.['dataset']
+    if (datasetApi === undefined) {
+      throw new Error('dataset apiRegistry entry missing')
+    }
+    const listColumnsAction = datasetApi.actions.find(action => action.name === 'listColumns')
+    expect(listColumnsAction?.failureModes?.some(mode => mode.code === 'TABLE_NOT_FOUND')).toBe(true)
+
+    const hints = collectVcmFailureModeRecoveryHints(metadata, {
+      callResult: {
+        code: 'TABLE_NOT_FOUND',
+        msg: 'table "orders" not found',
+      },
+    })
+    expect(hints.some(hint => hint.includes('listTables') || hint.includes('createTable'))).toBe(true)
+  })
+
+  it('derives getNode hint from node-tree @failureMode when node is missing', () => {
+    const metadata = resolveProjectMetadata()
+    const hints = collectVcmFailureModeRecoveryHints(metadata, {
+      callResult: {
+        code: 'NODE_NOT_FOUND',
+        msg: 'Node "missing-panel" not found',
+      },
+    })
+    expect(hints.some(hint => hint.includes('getNode') || hint.includes('hasNode'))).toBe(true)
   })
 
   it('returns empty hints when code has no matching failureMode', () => {

@@ -5,7 +5,7 @@
  * 用法：
  *   pnpm run generate:module-metadata
  */
-import { readFileSync } from 'node:fs'
+import { existsSync, readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
 
 import type { Draft2020AuditIssue } from '@spark-appworks/spark-json-document'
@@ -70,6 +70,7 @@ if (diagnoseOnly) {
   assertGeneratedModuleMetadataDraft2020(root, [
     vcmTarget.outputs.runtime,
   ])
+  assertVcmCompileGates(result, vcmTarget)
 }
 logger.info([
   '📊 metadata diagnostics:',
@@ -138,6 +139,80 @@ for (const group of jsdocTodoGroups) {
 for (const finding of result.diagnostics.findings) {
   const suffix = finding.fix === undefined ? '' : ` fix=${finding.fix}`
   logger.info(`  [${finding.level}] ${finding.rule} ${finding.target}: ${finding.message}${suffix}`)
+}
+
+function assertVcmCompileGates(
+  metadataResult: ReturnType<typeof generateModuleAbilityMetadata>,
+  target: ReturnType<typeof findVcmMetadataTarget>,
+): void {
+  const errorFindings = metadataResult.diagnostics.findings.filter(finding => finding.level === 'error')
+  if (errorFindings.length > 0) {
+    const sample = errorFindings.slice(0, 6).map(finding => `${finding.rule} ${finding.target}: ${finding.message}`).join('\n')
+    throw new Error(`VCM compile gate failed with ${String(errorFindings.length)} error finding(s):\n${sample}`)
+  }
+  const trimmedDistDir = target.outputs.distDir?.trim()
+  const distDir = trimmedDistDir && trimmedDistDir.length > 0
+    ? trimmedDistDir
+    : target.outputs.runtime.replace(/[/\\][^/\\]+$/u, '')
+  const compileReportPath = resolve(root, distDir, 'vcm-compile-report.json')
+  if (!existsSync(compileReportPath)) {
+    throw new Error(`VCM compile report missing: ${compileReportPath}`)
+  }
+  logger.info(`✅ VCM compile report 已写入 ${distDir}/vcm-compile-report.json`)
+  const compileReport: unknown = JSON.parse(readFileSync(compileReportPath, 'utf8'))
+  const gates = readCompileReportGates(compileReport, compileReportPath)
+  const gateFailures: string[] = []
+  if (gates.diagnosticErrorCount > 0) {
+    gateFailures.push(`diagnosticErrorCount=${String(gates.diagnosticErrorCount)}`)
+  }
+  if (gates.lifecycleErrorCount > 0) {
+    gateFailures.push(`lifecycleErrorCount=${String(gates.lifecycleErrorCount)}`)
+  }
+  if (gates.jsdocSourceTodoCount > 0) {
+    gateFailures.push(`jsdocSourceTodoCount=${String(gates.jsdocSourceTodoCount)} see ${target.outputs.jsdocTodoLog}`)
+  }
+  if (gates.schemaSourceTodoCount > 0) {
+    gateFailures.push(`schemaSourceTodoCount=${String(gates.schemaSourceTodoCount)}`)
+  }
+  if (gateFailures.length > 0) {
+    throw new Error(`VCM compile report gates failed for ${target.id}:\n${gateFailures.join('\n')}`)
+  }
+}
+
+function readCompileReportGates(
+  report: unknown,
+  reportPath: string,
+): Readonly<{
+  diagnosticErrorCount: number
+  lifecycleErrorCount: number
+  jsdocSourceTodoCount: number
+  schemaSourceTodoCount: number
+}> {
+  if (report === null || typeof report !== 'object' || Array.isArray(report)) {
+    throw new Error(`Invalid VCM compile report at ${reportPath}`)
+  }
+  const gates: unknown = Reflect.get(report, 'gates')
+  if (gates === null || typeof gates !== 'object' || Array.isArray(gates)) {
+    throw new Error(`VCM compile report gates missing at ${reportPath}`)
+  }
+  return {
+    diagnosticErrorCount: readNonNegativeGateCount(gates, 'diagnosticErrorCount', reportPath),
+    lifecycleErrorCount: readNonNegativeGateCount(gates, 'lifecycleErrorCount', reportPath),
+    jsdocSourceTodoCount: readNonNegativeGateCount(gates, 'jsdocSourceTodoCount', reportPath),
+    schemaSourceTodoCount: readNonNegativeGateCount(gates, 'schemaSourceTodoCount', reportPath),
+  }
+}
+
+function readNonNegativeGateCount(
+  gates: object,
+  key: string,
+  reportPath: string,
+): number {
+  const value: unknown = Reflect.get(gates, key)
+  if (typeof value !== 'number' || !Number.isInteger(value) || value < 0) {
+    throw new Error(`VCM compile report gates.${key} must be a non-negative integer at ${reportPath}`)
+  }
+  return value
 }
 
 function assertGeneratedModuleMetadataDraft2020(rootDir: string, relativeFiles: readonly string[]): void {

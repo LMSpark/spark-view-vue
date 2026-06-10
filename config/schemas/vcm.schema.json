@@ -74,6 +74,11 @@
             "type": "object",
             "additionalProperties": false,
             "properties": {
+              "distDir": {
+                "type": "string",
+                "minLength": 1,
+                "description": "VCM dist 根目录；缺省时取 runtime 文件所在目录。"
+              },
               "runtime": {
                 "type": "string",
                 "minLength": 1

@@ -2,7 +2,7 @@ import {
   WorkerVcmNativeKnowledgeProvider,
   type VcmNativeKnowledgeProvider,
 } from '@spark-appworks/spark-ai/vcm-native'
-import { vcmProjectModelMetadataUrl } from '@/vcm/artifact-urls'
+import { vcmProjectModelManifestUrl } from '@/vcm/artifact-urls'
 
 export function createProjectPlanningVcmKnowledgeProvider(): VcmNativeKnowledgeProvider {
   const worker = new Worker(
@@ -11,6 +11,6 @@ export function createProjectPlanningVcmKnowledgeProvider(): VcmNativeKnowledgeP
   )
 
   return new WorkerVcmNativeKnowledgeProvider(worker, {
-    metadataUrl: vcmProjectModelMetadataUrl,
+    manifestUrl: vcmProjectModelManifestUrl,
   })
 }
