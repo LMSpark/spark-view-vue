@@ -58,7 +58,7 @@ describe('resolvePageDesignRecoveryHints', () => {
     expect(hints.some(hint => hint.includes(`pageId: "${FIXTURE_PAGE_ID}"`))).toBe(true)
   })
 
-  it('returns vcmQueryShape hint for invalid vcm_query member args', () => {
+  it('does not add protocol-tool recovery hints in business catalog', () => {
     const hints = resolvePageDesignRecoveryHints({
       protocolToolName: VCM_NATIVE_TOOL_NAMES.query,
       args: { member: 'rows' },
@@ -69,7 +69,7 @@ describe('resolvePageDesignRecoveryHints', () => {
         fix: 'fix args',
       },
     })
-    expect(hints).toContain(readPageDesignHint('vcmQueryShape'))
+    expect(hints).toEqual([])
   })
 
   it('covers every recovery rule with a matching command', () => {
@@ -80,11 +80,6 @@ describe('resolvePageDesignRecoveryHints', () => {
         callResult: { ok: false, code: 'FUNCTION_NOT_FOUND', msg: 'missing', fix: 'fix' },
       },
       1: {
-        protocolToolName: VCM_NATIVE_TOOL_NAMES.query,
-        args: { member: 'x' },
-        callResult: { ok: false, code: 'INVALID_VCM_NATIVE_TOOL_ARGS', msg: 'member invalid', fix: 'fix' },
-      },
-      2: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'function foo(){}' },
         callResult: {
@@ -94,12 +89,12 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      3: {
+      2: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'x.toJSON()' },
         callResult: { ok: false, code: 'SCRIPT_EXECUTION_FAILED', msg: 'toJSON failed', fix: 'fix' },
       },
-      4: {
+      3: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'page.call()' },
         callResult: {
@@ -109,7 +104,7 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      5: {
+      4: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'page.editDataSet({})' },
         callResult: {
@@ -119,7 +114,7 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      6: {
+      5: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'page.editNodeTree({})' },
         callResult: {
@@ -129,7 +124,7 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      7: {
+      6: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'ds.createTable("x")' },
         callResult: {
@@ -139,7 +134,7 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      8: {
+      7: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'page.editDataSet({ tableName: "x" })' },
         callResult: {
@@ -149,12 +144,12 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      9: {
+      8: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'throw 1' },
         callResult: { ok: false, code: 'SCRIPT_EXECUTION_FAILED', msg: 'boom', fix: 'fix' },
       },
-      10: {
+      9: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'page.editDataSet({})' },
         callResult: {
@@ -164,7 +159,7 @@ describe('resolvePageDesignRecoveryHints', () => {
           fix: 'fix',
         },
       },
-      11: {
+      10: {
         protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
         args: { script: 'page.editDataSet({})' },
         callResult: {

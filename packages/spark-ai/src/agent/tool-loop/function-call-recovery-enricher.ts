@@ -3,7 +3,7 @@
  * 查询、guide 和 vcm_script 重试步骤，回灌给 LLM 形成失败自修复闭环。
  */
 import type { AiJsonParams } from '../../json'
-import { VCM_NATIVE_TOOL_NAMES } from '../../vcm-native'
+import { VCM_NATIVE_TOOL_NAMES, buildVcmNativeToolSchemaRecoveryHint, isVcmNativeToolName } from '../../vcm-native'
 import type {
   AiAgentFunctionCallCheck,
   AiAgentFunctionCallFailure,
@@ -130,8 +130,12 @@ function appendProtocolRecoveryHints(
     return
   }
 
+  if (code === 'INVALID_VCM_NATIVE_TOOL_ARGS' && isVcmNativeToolName(toolName)) {
+    const schemaHint = buildVcmNativeToolSchemaRecoveryHint(toolName)
+    if (schemaHint !== undefined) hints.push(schemaHint)
+  }
   if (code === 'INVALID_VCM_NATIVE_TOOL_ARGS' && toolName === VCM_NATIVE_TOOL_NAMES.script) {
-    hints.push('vcm_script 形状：{ script: "<js body>" }；不再接受 code/javascript/path 等旧字段。')
+    hints.push('vcm_script 不再接受 code/javascript/path 等旧字段。')
   }
 }
 

@@ -119,3 +119,10 @@ app 层（page-design-business）→ toolLoopNudge / enrichRecoveryHints
 
 - `EnrichFunctionCallFailureCommand.moduleInstanceId` 由 `tool-call-executor` 注入
 - `openPageFirst` recovery hint 在 pageId 可用时插值具体 `pageId`
+
+## 协议 recovery 分层
+
+| 层 | SSOT | recovery 来源 |
+|----|------|----------------|
+| VCM 协议工具（`vcm_query` / `vcm_*_guide` / `vcm_script`） | [`vcm-native-tool-specs.ts`](../../packages/spark-ai/src/vcm-native/tools/vcm-native-tool-specs.ts) | 内核 `buildVcmNativeToolSchemaRecoveryHint` 从工具 schema 派生 |
+| pageDesign 业务脚本链 | ClassModel / `project-model` JSDoc（`@usageRule` / `@failureMode`） | `page-design-sop.ts` 仅承接**业务**失败模式，不硬编码协议参数字段 |

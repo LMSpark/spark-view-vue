@@ -84,6 +84,25 @@ describe('enrichFunctionCallResult', () => {
     expect(schemaFailed.checks?.some(check => check.message.includes('createTable'))).toBe(false)
   })
 
+  it('adds native tool schema recovery hint for invalid vcm_query args', () => {
+    const invalidQuery = enrichFunctionCallResult({
+      protocolToolName: VCM_NATIVE_TOOL_NAMES.query,
+      args: { member: 'rows' },
+      callResult: {
+        ok: false,
+        code: 'INVALID_VCM_NATIVE_TOOL_ARGS',
+        msg: '工具 "vcm_query" 不接受参数: member。允许参数: kind, keyword, includeMembers。',
+        fix: 'use schema',
+      },
+    })
+
+    expect(invalidQuery.ok).toBe(false)
+    if (invalidQuery.ok) return
+    expect(invalidQuery.checks?.some(check => check.message.includes('includeMembers'))).toBe(true)
+    expect(invalidQuery.checks?.some(check => check.message.includes('kind'))).toBe(true)
+    expect(invalidQuery.checks?.some(check => check.message.includes('openPageDesign'))).toBe(false)
+  })
+
   it('rejects old script argument aliases in recovery guidance', () => {
     const invalidScript = enrichFunctionCallResult({
       protocolToolName: VCM_NATIVE_TOOL_NAMES.script,

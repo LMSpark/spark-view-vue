@@ -5,8 +5,6 @@ import { VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 const PAGE_DESIGN_HINTS = {
   actionNameNotProtocolTool:
     'actionName 必须是 openPageDesign 等业务 action，不能是 vcm_script 等协议工具。',
-  vcmQueryShape:
-    'vcm_query 只接受 kind/keyword/includeMembers；查 config-page 用 kind:"config-page" 或 keyword，勿传 member/select/query。',
   scriptNoNamedFunction:
     'vcm_script 脚本体用 await 链式语句；勿写裸 function foo(){}，局部逻辑用 const fn = async () => {} 或直接内联 await。',
   scriptNoToJson:
@@ -51,12 +49,6 @@ export const PAGE_DESIGN_RECOVERY_RULES: readonly PageDesignRecoveryRule[] = [
     codes: ['FUNCTION_NOT_FOUND'],
     protocolToolName: VCM_NATIVE_TOOL_NAMES.actionGuide,
     hintKeys: ['actionNameNotProtocolTool'],
-  },
-  {
-    codes: ['INVALID_VCM_NATIVE_TOOL_ARGS'],
-    protocolToolName: VCM_NATIVE_TOOL_NAMES.query,
-    msgIncludes: ['member'],
-    hintKeys: ['vcmQueryShape'],
   },
   {
     codes: ['SCRIPT_EXECUTION_FAILED'],

@@ -92,11 +92,15 @@ export type {
 
 export {
   VCM_NATIVE_TOOL_NAMES,
+  buildVcmNativeToolSchemaRecoveryHint,
+  findVcmNativeToolSpec,
   isVcmNativeToolName,
+  listVcmNativeToolSpecs,
 } from './tools'
 
 export type {
   VcmNativeToolName,
+  VcmNativeToolSpec,
 } from './tools'
 
 export {
@@ -111,5 +115,4 @@ export type {
   VcmNativeToolArgs,
   VcmNativeToolCheck,
   VcmNativeToolResult,
-  VcmNativeToolSpec,
 } from './runtime'
