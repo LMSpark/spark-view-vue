@@ -3,6 +3,30 @@
 > 对账锚点：[`.cursor/plans/业务_nudge_下沉_7a9eee96.plan.md`](../../.cursor/plans/业务_nudge_下沉_7a9eee96.plan.md)（阶段 3）  
 > 机器快照：[`business-nudge-sink-reconciliation.snapshot.json`](./business-nudge-sink-reconciliation.snapshot.json)（由 `pnpm run verify:business-nudge-reconciliation` 生成）
 
+## 知识 SSOT（再次强调，不可偏离）
+
+**LLM 可见知识只能来自两条原生管线，禁止在 app 层手写第二份「知识副本」。**
+
+```text
+spark-project-model / spark-data 源码 JSDoc
+  → vite-plugin-spark-catalog（VCM 提取）
+  → generated *-module-metadata.runtime.json
+  → ClassModelDocument（jsdoc / usageRules / failureModes）
+  → vcm_query / vcm_*_guide 投影给 LLM
+
+VCM-native 协议工具闭集
+  → vcm-native-tool-specs.ts（function parameters schema）
+  → runtime 校验 + buildVcmNativeToolSchemaRecoveryHint
+```
+
+| 知识类型 | SSOT | 消费方式 |
+|----------|------|----------|
+| 业务 action / attribute 契约 | 源码 `/** ... @usageRule @failureMode */` | `vcm_action_guide` / `vcm_attribute_guide` 渲染原生 JSDoc |
+| 协议工具参数 | `vcm-native-tool-specs.ts` | 工具 schema + 内核 recovery |
+| pageDesign 编排（nudge 时机） | app 注册 hook | **只决定何时注入**；注入**内容**须引用上表，不得硬编码字段名 |
+
+**当前债务**：[`page-design-sop.ts`](../../src/services/page-design/page-design-sop.ts) 中 `PAGE_DESIGN_HINTS` 仍是 JSDoc 的手工副本（过渡）；目标态是按 `failureMode.code` 从 ClassModel 查 `fix` 派生，与 [`config-page.ts`](../../packages/spark-project-model/src/page/config-page.ts) / [`project-model.ts`](../../packages/spark-project-model/src/project/project-model.ts) 保持一处维护。
+
 ## 无回归声明
 
 在 **阶段 3 完成定义** 范围内，当前仓库 **无回归**：
@@ -41,8 +65,9 @@ pnpm run verify:business-nudge-reconciliation
 | 计划 | 实现 | 判定 |
 |------|------|------|
 | 四类 hook 注册 | `page-design-business.ts` `VcmNativeAgentAdapter.createRegistration` | ✅ |
-| SOP 从同一 helper 派生 | `page-design-sop.ts` → `systemPrompt` + `toolLoopNudge` + recovery | ✅（阶段 4） |
-| recovery 承接原 enricher 分支 | `resolvePageDesignRecoveryHints` + `PAGE_DESIGN_RECOVERY_RULES` | ✅ |
+| SOP 编排收敛 | `page-design-sop.ts` 统一 nudge/recovery 注入点 | ✅（阶段 4） |
+| 业务知识来自 JSDoc | `PAGE_DESIGN_HINTS` 仍为手工副本 | ⚠️ 债务 `DEBT-JSDOC-DUPLICATION` |
+| recovery 承接 enricher 分支 | `resolvePageDesignRecoveryHints` + 规则表 | ✅（编排层） |
 
 **DEBT-SOP-THREE-CHANNEL（已关闭）**：SOP 收敛至 [`src/services/page-design/page-design-sop.ts`](../../src/services/page-design/page-design-sop.ts)；`page-design-business.ts` 无内联 recovery 分支。守正策略维持：**冻结** iterate 失败驱动的新增 hint / E2E 放宽。
 
@@ -125,4 +150,4 @@ app 层（page-design-business）→ toolLoopNudge / enrichRecoveryHints
 | 层 | SSOT | recovery 来源 |
 |----|------|----------------|
 | VCM 协议工具（`vcm_query` / `vcm_*_guide` / `vcm_script`） | [`vcm-native-tool-specs.ts`](../../packages/spark-ai/src/vcm-native/tools/vcm-native-tool-specs.ts) | 内核 `buildVcmNativeToolSchemaRecoveryHint` 从工具 schema 派生 |
-| pageDesign 业务脚本链 | ClassModel / `project-model` JSDoc（`@usageRule` / `@failureMode`） | `page-design-sop.ts` 仅承接**业务**失败模式，不硬编码协议参数字段 |
+| pageDesign 业务脚本链 | **原生 JSDoc → VCM → ClassModel**（`@usageRule` / `@failureMode`） | 目标：按 `failureMode.code` 查 metadata；现状：`page-design-sop` 过渡副本（禁止再扩写） |

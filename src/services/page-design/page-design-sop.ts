@@ -1,3 +1,13 @@
+/**
+ * pageDesign SOP 编排：决定 systemPrompt / toolLoopNudge / recovery 何时拼装。
+ *
+ * 知识 SSOT 不在此文件——业务契约来自 spark-project-model 源码 JSDoc，
+ * 由 VCM 提取进 ClassModel（usageRules / failureModes），经 vcm_*_guide 暴露给 LLM。
+ * 协议工具参数来自 packages/spark-ai/src/vcm-native/tools/vcm-native-tool-specs.ts。
+ *
+ * PAGE_DESIGN_HINTS 为过渡性手工副本（DEBT-JSDOC-DUPLICATION），
+ * 新增 hint 应写回 JSDoc @failureMode，再改为从 ClassModel 派生。
+ */
 import type { EnrichFunctionCallFailureCommand } from '@spark-appworks/spark-ai/agent'
 import type { AiAgentToolLoopNudgeReason } from '@spark-appworks/spark-ai/agent'
 import { VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'

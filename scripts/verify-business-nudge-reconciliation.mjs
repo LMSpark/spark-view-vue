@@ -80,6 +80,21 @@ function readFileContains(relPath, needles) {
   return needles.every((needle) => text.includes(needle))
 }
 
+const FORBIDDEN_PROTOCOL_HINT_FRAGMENTS = [
+  'vcm_query 只接受',
+  'vcm_model_guide 只接受',
+  'vcm_attribute_guide 只接受',
+  '不接受参数: modelName',
+  '不接受参数: className',
+  '勿传 member/select',
+]
+
+function scanForbiddenProtocolHintsInBusinessSop() {
+  const abs = path.join(ROOT, 'src/services/page-design/page-design-sop.ts')
+  const text = fs.readFileSync(abs, 'utf8')
+  return FORBIDDEN_PROTOCOL_HINT_FRAGMENTS.filter((fragment) => text.includes(fragment))
+}
+
 function countInlineRecoveryMsgBranches(relPath) {
   const abs = path.join(ROOT, relPath)
   const text = fs.readFileSync(abs, 'utf8')
@@ -170,6 +185,29 @@ function main() {
   })
   if (!sopDebtCleared) regressionCount += 1
 
+  const protocolHintViolations = scanForbiddenProtocolHintsInBusinessSop()
+  const protocolHintsOk = protocolHintViolations.length === 0
+  checks.push({
+    id: 'PLAN-KNOWLEDGE-SSOT',
+    title: '业务 SOP 不硬编码 VCM 协议参数字段（知识来自原生 JSDoc / tool schema）',
+    status: protocolHintsOk ? 'pass' : 'regression',
+    evidence: protocolHintsOk
+      ? 'page-design-sop.ts 无协议参数字面量 hint'
+      : { forbiddenFragments: protocolHintViolations },
+  })
+  if (!protocolHintsOk) regressionCount += 1
+
+  checks.push({
+    id: 'DEBT-JSDOC-DUPLICATION',
+    title: 'PAGE_DESIGN_HINTS 仍为 JSDoc 手工副本，待改为 ClassModel failureModes 派生',
+    status: 'debt',
+    evidence: {
+      file: 'src/services/page-design/page-design-sop.ts',
+      target: 'spark-project-model JSDoc @failureMode / @usageRule via VCM ClassModel',
+    },
+    action: '新 hint 写回 JSDoc；禁止在 PAGE_DESIGN_HINTS 扩写协议或业务契约副本',
+  })
+
   checks.push({
     id: 'DEVIATION-REASON-NAME',
     title: 'nudge reason: plan module_script_retry → 实现 vcm_script_retry',
@@ -202,6 +240,7 @@ function main() {
       pageDesignSopInAppLayer: pageBizOk,
       sopCatalogSsot: sopCatalogOk,
       sopThreeChannelDebtCleared: sopDebtCleared,
+      knowledgeSsotNoProtocolHardcode: protocolHintsOk,
       testsAndVerifyArchGreen: commands.every((item) => item.exitCode === 0),
     },
   }

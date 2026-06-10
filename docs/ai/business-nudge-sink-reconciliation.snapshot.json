@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-10T01:11:50.961Z",
-  "headCommit": "892ee70c90e55a1a9510d4625d0043e748be10c3",
+  "generatedAt": "2026-06-10T01:14:39.825Z",
+  "headCommit": "44c079c55f1356c0f959fac98c423171323aaeb7",
   "planRef": ".cursor/plans/业务_nudge_下沉_7a9eee96.plan.md",
   "regressionCount": 0,
   "noRegression": true,
@@ -39,6 +39,22 @@
       }
     },
     {
+      "id": "PLAN-KNOWLEDGE-SSOT",
+      "title": "业务 SOP 不硬编码 VCM 协议参数字段（知识来自原生 JSDoc / tool schema）",
+      "status": "pass",
+      "evidence": "page-design-sop.ts 无协议参数字面量 hint"
+    },
+    {
+      "id": "DEBT-JSDOC-DUPLICATION",
+      "title": "PAGE_DESIGN_HINTS 仍为 JSDoc 手工副本，待改为 ClassModel failureModes 派生",
+      "status": "debt",
+      "evidence": {
+        "file": "src/services/page-design/page-design-sop.ts",
+        "target": "spark-project-model JSDoc @failureMode / @usageRule via VCM ClassModel"
+      },
+      "action": "新 hint 写回 JSDoc；禁止在 PAGE_DESIGN_HINTS 扩写协议或业务契约副本"
+    },
+    {
       "id": "DEVIATION-REASON-NAME",
       "title": "nudge reason: plan module_script_retry → 实现 vcm_script_retry",
       "status": "deviation-positive",
@@ -50,13 +66,13 @@
       "label": "verify:arch",
       "command": "pnpm run verify:arch",
       "exitCode": 0,
-      "startedAt": "2026-06-10T01:11:51.022Z"
+      "startedAt": "2026-06-10T01:14:39.882Z"
     },
     {
       "label": "vitest-nudge-suite",
       "command": "pnpm exec vitest run packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts tests/page/verify-rules.test.ts",
       "exitCode": 0,
-      "startedAt": "2026-06-10T01:11:52.845Z"
+      "startedAt": "2026-06-10T01:14:41.758Z"
     }
   ],
   "completionCriteria": {
@@ -64,6 +80,7 @@
     "pageDesignSopInAppLayer": true,
     "sopCatalogSsot": true,
     "sopThreeChannelDebtCleared": true,
+    "knowledgeSsotNoProtocolHardcode": true,
     "testsAndVerifyArchGreen": true
   }
 }
