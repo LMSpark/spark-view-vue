@@ -1,7 +1,6 @@
 export type {
   AttributeMeta,
   ClassModel,
-  ClassModelDiagnostic,
   ClassModelDocument,
   ConstructorMeta,
   JsDocMeta,
@@ -39,16 +38,24 @@ export type {
 } from './metadata'
 
 export {
+  auditClassModelReflectionConnectivity,
   CLASS_MODEL_DOCUMENT_VERSION,
+  collectModuleApiKinds,
   compareClassModelDocumentsForBuildConsistency,
   createClassModelDocumentFromModuleMetadata,
   createClassModelDocumentFromRuntimeDocument,
   jsonSchemaToTypeText,
+  listAttributeReachableKinds,
+  projectClassModelForGuide,
+  projectClassModelFromApi,
   renderMethodSignature,
+  resolveModuleApi,
+  resolveModuleApiOrUndefined,
 } from './class-model'
 
 export type {
   ClassModelBuildConsistencyIssue,
+  ClassModelReflectionConnectivityIssue,
 } from './class-model'
 
 export {
@@ -89,6 +96,15 @@ export type {
   VcmNativeMethodGuideInput,
   VcmNativeModelGuideInput,
 } from './knowledge'
+
+export {
+  collectVcmFailureModeRecoveryHints,
+} from './recovery'
+
+export type {
+  VcmFailureModeRecoveryCommand,
+  VcmFailureModeRecoveryContext,
+} from './recovery'
 
 export {
   VCM_NATIVE_TOOL_NAMES,

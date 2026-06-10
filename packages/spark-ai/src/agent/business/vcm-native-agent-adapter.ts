@@ -7,12 +7,16 @@
 
 import type { AiJsonSchemaObject, AiJsonValue } from '../../json'
 import {
+  auditClassModelReflectionConnectivity,
+  collectVcmFailureModeRecoveryHints,
   createClassModelDocumentFromModuleMetadata,
+  listAttributeReachableKinds,
   resolveModuleMetadataJson,
   validateApiObjectMetadata,
   VcmNativeRuntime,
   type AiModuleMetadataJson,
   type ClassModelDocument,
+  type ClassModelReflectionConnectivityIssue,
   type VcmNativeKnowledgeProvider,
   type VcmNativeToolCheck,
   type VcmNativeToolResult,
@@ -162,9 +166,26 @@ export class VcmNativeAgentAdapter {
       ...(command.options.toolLoopNudge === undefined ? {} : { toolLoopNudge: command.options.toolLoopNudge }),
       ...(command.options.executionToolNames === undefined ? {} : { executionToolNames: command.options.executionToolNames }),
       ...(command.options.planWithoutToolMarkers === undefined ? {} : { planWithoutToolMarkers: command.options.planWithoutToolMarkers }),
-      ...(command.options.enrichRecoveryHints === undefined ? {} : { enrichRecoveryHints: command.options.enrichRecoveryHints }),
+      enrichRecoveryHints: buildVcmNativeEnrichRecoveryHints(metadata, command.options.enrichRecoveryHints),
     }
     return new AiAgentRegistration(registrationOptions)
+  }
+}
+
+function buildVcmNativeEnrichRecoveryHints(
+  metadata: AiModuleMetadataJson,
+  enrichRecoveryHints?: (command: EnrichFunctionCallFailureCommand) => readonly string[],
+): (command: EnrichFunctionCallFailureCommand) => readonly string[] {
+  return command => {
+    const hints = collectVcmFailureModeRecoveryHints(metadata, {
+      callResult: {
+        code: command.callResult.code,
+        msg: command.callResult.msg,
+      },
+      ...(command.moduleInstanceId === undefined ? {} : { moduleInstanceId: command.moduleInstanceId }),
+    })
+    if (enrichRecoveryHints === undefined) return hints
+    return [...hints, ...enrichRecoveryHints(command)]
   }
 }
 
@@ -220,15 +241,17 @@ class VcmNativeAgentToolRuntime<T> implements AiAgentToolRuntime {
   }
 
   public inspect(): AiAgentToolRuntimeInspectReport {
-    const findings = this.adapterOptions.document.diagnostics.map(diagnostic => ({
-      level: diagnostic.level === 'warning' ? 'warn' as const : 'info' as const,
-      code: diagnostic.code,
-      message: diagnostic.message,
+    const findings = auditClassModelReflectionConnectivity(this.adapterOptions.document).map((issue: ClassModelReflectionConnectivityIssue) => ({
+      level: issue.code === 'REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES' ? 'warn' as const : 'info' as const,
+      code: issue.code,
+      message: issue.message,
     }))
     return {
       status: findings.some(finding => finding.level === 'warn') ? 'warning' : 'ok',
       rootKinds: [this.adapterOptions.document.rootKind],
-      moduleCount: Object.keys(this.adapterOptions.document.models).length,
+      moduleCount: this.adapterOptions.document.module.apiRegistry === undefined
+        ? 1
+        : Object.keys(this.adapterOptions.document.module.apiRegistry).length + 1,
       findings,
     }
   }
@@ -293,10 +316,11 @@ function toAgentToolSpec(tool: VcmNativeToolSpec): AiAgentToolSpec {
 }
 
 function createVcmNativePromptSnapshot(document: ClassModelDocument): string {
-  const kinds = Object.keys(document.models).sort()
+  const kinds = listAttributeReachableKinds(document)
   return [
     'VCM-native 工具闭集：vcm_query, vcm_model_guide, vcm_attribute_guide, vcm_action_guide, vcm_script, human_question, agent_complete。',
-    `根模型 kind="${document.rootKind}"；可查询模型: ${kinds.join(', ')}。`,
+    `根模型 kind="${document.rootKind}"；属性链可达模型（与 vcm_query 一致）: ${kinds.join(', ')}。`,
+    'vcm_query 只列 attribute.api 属性链可达 kind；动作入口与 callback 契约用 vcm_action_guide（含 resultApis）。',
     '执行前先用 vcm_query 定位 kind/member；读写或调用前用 vcm_attribute_guide/vcm_action_guide 查看 schema、usageRules、failureModes。',
     '唯一执行入口是 vcm_script({ script })；script 是 async function body，this 绑定当前业务根实例，沿原生对象链调用。',
     '任务完成必须调用 agent_complete({ summary })；不要使用旧 module_* 工具、path 直调或 direct function tool。',

@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
+  collectVcmFailureModeRecoveryHints,
   createClassModelDocumentFromRuntimeDocument,
   VcmNativeRuntime,
 } from '@spark-appworks/spark-ai/vcm-native'
@@ -67,6 +68,22 @@ describe('pageDesign VCM-native knowledge integration', () => {
     const openPageDesign = projectModule?.rootApi.actions.find(action => action.name === 'openPageDesign')
     expect(openPageDesign).toBeDefined()
     expect(openPageDesign?.failureModes?.some(mode => mode.code === 'INVALID_TOOL_ARGS')).toBe(true)
+  })
+
+  it('VCM auto recovery derives hint from @failureMode not ClassModel graph', () => {
+    const projectModule = projectPageSurfaceRuntimeMetadataDocument.modules.find(
+      module => module.rootApi.kind === 'project',
+    )
+    expect(projectModule).toBeDefined()
+    const hints = collectVcmFailureModeRecoveryHints(projectModule!, {
+      callResult: {
+        code: 'SCRIPT_EXECUTION_FAILED',
+        msg: 'editDataSet is not a function',
+      },
+      moduleInstanceId: 'smoke-page',
+    })
+    expect(hints.some(hint => hint.includes('openPageDesign'))).toBe(true)
+    expect(hints.some(hint => hint.includes('smoke-page'))).toBe(true)
   })
 
   it('editNodeTree metadata guides native page callback usage', () => {

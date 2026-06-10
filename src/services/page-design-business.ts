@@ -13,12 +13,7 @@ import {
   type AiAgentRuntimeContext,
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
-import {
-  buildPageDesignToolLoopNudge,
-  pageDesignScriptShapeLines,
-  pageDesignSystemPromptTailLines,
-  resolvePageDesignRecoveryHints,
-} from './page-design/page-design-sop'
+import { buildPageDesignToolLoopNudge } from './page-design/page-design-sop'
 import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
@@ -139,9 +134,8 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
           systemPrompt: createPageDesignSystemPrompt,
           title: input => `pageDesign:${input.pageId}`,
           readonlySteps: [
-            '策划约束已注入 effectiveDescription（来自 readPlanningProjection）；禁止从 navigationRoot 或菜单节点拼接需求。',
-            '先 vcm_query / vcm_action_guide 读 schema，再 vcm_script；vcm_query 只用 kind/keyword/includeMembers，勿传 member。',
-            '结构改写只走 vcm_script 原生对象链；r-form 绑 currentRow，字段用 props.field，dataViewKey 格式 table@viewId。',
+            '策划约束已注入 effectiveDescription（来自 readPlanningProjection）。',
+            '业务契约见 VCM ClassModel 知识索引（vcm_query / vcm_model_guide / vcm_action_guide）。',
           ],
         }),
         resolveInstance: ctx => resolvePageDesignProject(options, ctx),
@@ -152,7 +146,6 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
         executionToolNames: PAGE_DESIGN_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createPageDesignToolLoopNudge,
-        enrichRecoveryHints: resolvePageDesignRecoveryHints,
         ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
           ? {}
           : { jsonSchemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
@@ -188,14 +181,11 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
   return [
     `当前 pageDesign 页面: ${input.pageId}（${planningTitle}，path=${planningPath}）`,
     `projectId=${projectId}；pageId=${input.pageId}。`,
-    '策划约束（readPlanningProjection.effectiveDescription，勿从 navigation 树拼接）:',
+    '策划约束（readPlanningProjection.effectiveDescription）:',
     effectiveDescription,
     `用户本轮目标: ${input.description}`,
-    '写页面的主通道: 调用 vcm_script({ script })；script 是 async function body，由运行时执行，不要只输出计划文字。',
-    'script 内 this 是当前 ProjectModel 脚本上下文；不要把 /kind[id]/ path 链作为主用法。',
-    `vcm_script 形状（pageId="${input.pageId}"，表名/字段按 effectiveDescription 与 VCM schema 决定）：`,
-    ...pageDesignScriptShapeLines(input.pageId),
-    ...pageDesignSystemPromptTailLines(input.pageId),
+    '知识索引: VCM ClassModel（project → config-page → dataset / node-tree）；用 vcm_query / vcm_action_guide 读取契约后 vcm_script 执行。',
+    '元数据来源: generated pageDesign module metadata。',
   ].join('\n')
 }
 

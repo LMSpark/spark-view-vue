@@ -148,6 +148,11 @@ export class DataTable {
   /** 视图集合（包含 'default'） */
   views: Record<string, DataView> = {}
 
+  /** 当前表的全部视图实例。 */
+  get viewList(): DataView[] {
+    return Object.values(this.views)
+  }
+
   // ===== 构造函数 =====
 
   /**

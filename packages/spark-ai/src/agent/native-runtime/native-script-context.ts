@@ -666,13 +666,13 @@ function callApiMethod(command: CallApiMethodCommand): unknown {
       return AiAgentToolResult.failCode(
         'SCHEMA_VALIDATION_FAILED',
         `${command.action.name}.run must be a function, received ${typeof runValue}.`,
-        `在 vcm_script 中 ${command.action.name} 需要传 callback；勿把业务参数对象当作 run。`,
+        `在 vcm_script 中 ${command.action.name} 需要传 callback；见 vcm_action_guide 与 RECOVERY_HINT。`,
       )
     }
     return AiAgentToolResult.failCode(
       'SCHEMA_VALIDATION_FAILED',
       `${command.action.name} requires a callback argument; compatible { run } must be a function.`,
-      `${command.action.name} 需要 callback 参数；先 vcm_action_guide 读 usageRules 与 paramsSchema。`,
+      `${command.action.name} 需要 callback 参数；见 vcm_action_guide（ClassModel 知识索引）与 RECOVERY_HINT。`,
     )
   }
   if (command.action.takesContext === true) return command.method.call(command.target, command.ctx, command.args)

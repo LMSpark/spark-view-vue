@@ -5,7 +5,6 @@ export {
 export type {
   AttributeMeta,
   ClassModel,
-  ClassModelDiagnostic,
   ClassModelDocument,
   ConstructorMeta,
   JsDocMeta,
@@ -19,19 +18,36 @@ export {
 } from './from-runtime-metadata'
 
 export {
+  classNameForKind,
+  collectModuleApiKinds,
+  listAttributeReachableKinds,
+  projectClassModelForGuide,
+  projectClassModelFromApi,
+  resolveModuleApi,
+  resolveModuleApiOrUndefined,
+} from './model-projection'
+
+export {
   compareClassModelDocumentsForBuildConsistency,
 } from './consistency'
+
+export {
+  auditClassModelReflectionConnectivity,
+} from './reflection-connectivity'
 
 export type {
   ClassModelBuildConsistencyIssue,
 } from './consistency'
+
+export type {
+  ClassModelReflectionConnectivityIssue,
+} from './reflection-connectivity'
 
 export {
   jsonSchemaToTypeText,
 } from './json-schema-to-type'
 
 export {
-  classNameForKind,
   renderAttributeDeclarationLine,
   renderAttributeTypeText,
   renderConstructorSignature,

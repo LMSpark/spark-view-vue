@@ -2,6 +2,8 @@ import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
 import { resolve } from 'node:path'
 import {
   createClassModelDocumentFromRuntimeDocument,
+  listAttributeReachableKinds,
+  projectClassModelForGuide,
   readModuleMetadataRuntimeDocument,
   resolveModuleMetadataJson,
   walkAiApiMetadataGraph,
@@ -27,10 +29,10 @@ writeFileSync(
 )
 
 const runtime = readModuleMetadataRuntimeDocument(raw)
-const classModel = createClassModelDocumentFromRuntimeDocument(raw)
+const classModelDocument = createClassModelDocumentFromRuntimeDocument(raw)
 writeFileSync(
   resolve(outDir, 'page-design-class-model.pretty.json'),
-  `${JSON.stringify(classModel, null, 2)}\n`,
+  `${JSON.stringify(classModelDocument, null, 2)}\n`,
   'utf8',
 )
 
@@ -54,7 +56,22 @@ const resultApiEdges = metadataGraph.flatMap(node =>
 const uniqueEdges = [...new Map(resultApiEdges.map(edge => [`${edge.from}->${edge.to}`, edge])).values()]
   .sort((a, b) => a.from.localeCompare(b.from) || a.to.localeCompare(b.to))
 
-const kinds = Object.keys(classModel.models).sort()
+const attributeReachableKinds = listAttributeReachableKinds(classModelDocument)
+const attributeApiEdges = []
+for (const kind of attributeReachableKinds) {
+  const api = kind === classModelDocument.rootKind
+    ? classModelDocument.module.rootApi
+    : classModelDocument.module.apiRegistry?.[kind]
+  for (const attribute of api?.attributes ?? []) {
+    const childKind = attribute.api?.kind
+    if (childKind === undefined || childKind.length === 0) continue
+    attributeApiEdges.push({
+      from: `${kind}.${attribute.name}`,
+      to: childKind,
+    })
+  }
+}
+
 const evaluation = {
   generatedAt: new Date().toISOString(),
   sources: {
@@ -68,18 +85,25 @@ const evaluation = {
     rootKind: runtime.modules[0]?.rootApi.kind,
   },
   classModelEnvelope: {
-    schemaVersion: classModel.schemaVersion,
-    rootKind: classModel.rootKind,
-    modelKinds: kinds,
-    diagnostics: classModel.diagnostics,
-    jsdocShape: typeof classModel.models['project']?.jsdoc,
+    schemaVersion: classModelDocument.schemaVersion,
+    rootKind: classModelDocument.rootKind,
+    attributeReachableKinds,
+    jsdocShape: typeof classModelDocument.module.rootApi.jsdoc,
   },
   jsdocTodo: jsdocTodo.summary,
   coverage: {
-    attributeCount: Object.values(classModel.models).reduce((n, m) => n + m.attributes.length, 0),
-    methodCount: Object.values(classModel.models).reduce((n, m) => n + m.methods.length, 0),
-    methodCounts: Object.fromEntries(kinds.map(kind => [kind, classModel.models[kind].methods.length])),
-    attributeCounts: Object.fromEntries(kinds.map(kind => [kind, classModel.models[kind].attributes.length])),
+    attributeReachableModelCount: attributeReachableKinds.length,
+    projectedModels: Object.fromEntries(attributeReachableKinds.map(kind => {
+      const model = projectClassModelForGuide(classModelDocument, kind)
+      return [kind, {
+        attributeCount: model.attributes.length,
+        methodCount: model.methods.length,
+      }]
+    })),
+  },
+  attributeApiGraph: {
+    edgeCount: attributeApiEdges.length,
+    edges: attributeApiEdges,
   },
   resultApiGraph: {
     uniqueEdgeCount: uniqueEdges.length,
@@ -96,14 +120,13 @@ writeFileSync(
 
 const lines = []
 const log = (s = '') => lines.push(s)
-log('=== VCM 知识体系 (ClassModel) ===')
-log(`rootKind: ${classModel.rootKind}`)
-log(`models: ${kinds.join(', ')}`)
-log(`diagnostics: ${classModel.diagnostics.length}`)
+log('=== VCM 知识体系（ClassModel 按需投影）===')
+log(`rootKind: ${classModelDocument.rootKind}`)
+log(`attributeReachableKinds: ${attributeReachableKinds.join(', ')}`)
 log('')
 
-for (const kind of kinds) {
-  const model = classModel.models[kind]
+for (const kind of attributeReachableKinds) {
+  const model = projectClassModelForGuide(classModelDocument, kind)
   log(`## ${kind} (${model.className})`)
   log(model.jsdoc.trim())
   if (model.constructor) {
@@ -111,11 +134,11 @@ for (const kind of kinds) {
   }
   log(`attributes (${model.attributes.length}):`)
   for (const attr of model.attributes) {
-    log(`  - ${renderAttributeDeclarationLine(classModel, attr)}`)
+    log(`  - ${renderAttributeDeclarationLine(classModelDocument, kind, attr)}`)
   }
   log(`methods (${model.methods.length}):`)
   for (const method of model.methods) {
-    log(`  - ${renderMethodSignature(classModel, method)}`)
+    log(`  - ${renderMethodSignature(classModelDocument, kind, method)}`)
   }
   log('')
 }
@@ -130,6 +153,7 @@ console.log(JSON.stringify({
     'vcm-knowledge-evaluation.pretty.json',
     'vcm-knowledge-print.txt',
   ],
-  runtimeJsdocType: typeof runtime.modules[0]?.rootApi.actions[0]?.jsdoc,
-  classModelJsdocType: typeof classModel.models['project']?.jsdoc,
+  attributeReachableKinds,
+  attributeApiEdgeCount: attributeApiEdges.length,
+  resultApiUniqueEdgeCount: uniqueEdges.length,
 }, null, 2))

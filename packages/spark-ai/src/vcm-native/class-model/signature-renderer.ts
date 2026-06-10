@@ -1,5 +1,9 @@
 import type { AiJsonSchemaObject } from '../../json'
 import { jsonSchemaToTypeText } from './json-schema-to-type'
+import {
+  classNameForKind,
+  findNestedAttributeApi,
+} from './model-projection'
 import type {
   AttributeMeta,
   ClassModelDocument,
@@ -7,24 +11,55 @@ import type {
   MethodMeta,
 } from './types'
 
-export function classNameForKind(document: ClassModelDocument, kind: string): string {
-  return document.models[kind]?.className ?? kind
-}
+export { classNameForKind } from './model-projection'
 
 export function renderAttributeTypeText(
   document: ClassModelDocument,
+  ownerKind: string,
   attribute: AttributeMeta,
 ): string {
-  if (attribute.valueKind !== undefined) return classNameForKind(document, attribute.valueKind)
+  const nestedApi = findNestedAttributeApi(document, ownerKind, attribute.name)
+  if (nestedApi !== undefined) {
+    const elementTypeText = classNameForKind(document, nestedApi.kind)
+    return isArrayAttributeSchema(document, attribute.schema) ? `${elementTypeText}[]` : elementTypeText
+  }
   return jsonSchemaToTypeText(attribute.schema)
+}
+
+function isArrayAttributeSchema(
+  document: ClassModelDocument,
+  schema: AttributeMeta['schema'],
+): boolean {
+  const resolved = resolveAttributeSchemaShape(document, schema)
+  if (resolved === undefined) return false
+  const type = resolved.type
+  if (type === 'array') return true
+  return Array.isArray(type) && type.includes('array')
+}
+
+function resolveAttributeSchemaShape(
+  document: ClassModelDocument,
+  schema: AttributeMeta['schema'],
+): Readonly<{ type?: string | readonly string[] }> | undefined {
+  if (schema === true || schema === false) return undefined
+  if (typeof schema !== 'object' || Array.isArray(schema)) return undefined
+  const ref = schema.$ref
+  if (typeof ref === 'string' && ref.startsWith('#/$defs/')) {
+    const defName = ref.slice('#/$defs/'.length)
+    if (defName.startsWith('ArrayOf_')) return { type: 'array' }
+    const def = document.$defs?.[defName]
+    if (def !== undefined) return def
+  }
+  return schema
 }
 
 export function renderAttributeDeclarationLine(
   document: ClassModelDocument,
+  ownerKind: string,
   attribute: AttributeMeta,
 ): string {
   const readonlyText = attribute.writable ? '' : 'readonly '
-  return `${readonlyText}${attribute.name}: ${renderAttributeTypeText(document, attribute)}`
+  return `${readonlyText}${attribute.name}: ${renderAttributeTypeText(document, ownerKind, attribute)}`
 }
 
 export function renderConstructorSignature(constructor: ConstructorMeta): string {
@@ -32,11 +67,9 @@ export function renderConstructorSignature(constructor: ConstructorMeta): string
 }
 
 export function renderMethodReturnTypeText(
-  document: ClassModelDocument,
+  _document: ClassModelDocument,
   method: MethodMeta,
 ): string {
-  if (method.callbackTargetKind !== undefined) return 'Promise<void>'
-  if (method.returnsKind !== undefined) return classNameForKind(document, method.returnsKind)
   if (method.returnTypeText !== undefined && method.returnTypeText.trim().length > 0) {
     return method.returnTypeText
   }
@@ -44,19 +77,18 @@ export function renderMethodReturnTypeText(
 }
 
 export function renderMethodParamsText(
-  document: ClassModelDocument,
+  _document: ClassModelDocument,
   method: MethodMeta,
 ): string {
-  if (method.callbackTargetKind !== undefined) {
-    const typeName = classNameForKind(document, method.callbackTargetKind)
-    const paramName = inferCallbackParamName(method.callbackTargetKind)
-    return `run: (${paramName}: ${typeName}) => void | Promise<void>`
+  if (method.paramsTypeText !== undefined && method.paramsTypeText.trim().length > 0) {
+    return method.paramsTypeText
   }
   return paramsTextFromSchema(method.paramsSchema)
 }
 
 export function renderMethodSignature(
   document: ClassModelDocument,
+  _ownerKind: string,
   method: MethodMeta,
 ): string {
   return `${method.name}(${renderMethodParamsText(document, method)}): ${renderMethodReturnTypeText(document, method)}`
@@ -64,9 +96,10 @@ export function renderMethodSignature(
 
 export function renderMethodDeclarationLine(
   document: ClassModelDocument,
+  ownerKind: string,
   method: MethodMeta,
 ): string {
-  return renderMethodSignature(document, method)
+  return renderMethodSignature(document, ownerKind, method)
 }
 
 function paramsTextFromSchema(schema: AiJsonSchemaObject): string {
@@ -79,10 +112,4 @@ function paramsTextFromSchema(schema: AiJsonSchemaObject): string {
       return `${name}${optional}: ${jsonSchemaToTypeText(childSchema)}`
     })
     .join(', ')
-}
-
-function inferCallbackParamName(targetKind: string): string {
-  if (targetKind === 'node-tree') return 'tree'
-  if (targetKind === 'dataset') return 'tool'
-  return 'model'
 }

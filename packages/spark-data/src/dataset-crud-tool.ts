@@ -550,6 +550,13 @@ export class DataSetCrudTool {
   // ====================
 
   /**
+   * 当前 DataSet 中的全部数据表。
+   */
+  get tables(): DataTable[] {
+    return this.listTables()
+  }
+
+  /**
    * 列出当前 DataSet 中的全部数据表。
    *
    * @moduleMutation pagedata.json read 列出当前页面数据集中的全部表。
@@ -763,6 +770,7 @@ export class DataSetCrudTool {
    * @moduleAttackSurface remote-crud-config high 建表时写入 api/crudConfig 会改变远端访问目标。
    * @moduleGuard tableName 必须唯一，columns 必须包含合法字段定义。
    * @moduleMutation pagedata.json write 创建页面数据表。
+   * @failureMode SCRIPT_EXECUTION_FAILED reading includes => createTable 签名 createTable({ tableName, columns })，勿用 positional 参数
    * @param options 建表参数。
    * @returns 新创建的数据表实例。
    * @throws 当表已存在或配置非法时抛错。

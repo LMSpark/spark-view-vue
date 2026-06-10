@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-10T01:14:39.825Z",
-  "headCommit": "44c079c55f1356c0f959fac98c423171323aaeb7",
+  "generatedAt": "2026-06-10T02:51:01.363Z",
+  "headCommit": "0186c5fa3e1a0d11c001d652b30db2468e075af2",
   "planRef": ".cursor/plans/业务_nudge_下沉_7a9eee96.plan.md",
   "regressionCount": 0,
   "noRegression": true,
@@ -13,13 +13,19 @@
     },
     {
       "id": "PLAN-PAGE-DESIGN-HOOKS",
-      "title": "page-design-business 实现 hooks 并委托 page-design-sop catalog",
+      "title": "page-design-business 仅编排 nudge；recovery 由 VCM metadata 自动派生",
       "status": "pass",
       "evidence": "src/services/page-design-business.ts"
     },
     {
+      "id": "PLAN-VCM-AUTO-RECOVERY",
+      "title": "recovery 仅来自 metadata @failureMode，不遍历 ClassModel 图",
+      "status": "pass",
+      "evidence": "collectVcmFailureModeRecoveryHints + vcm-native-agent-adapter.ts"
+    },
+    {
       "id": "PLAN-SOP-CATALOG",
-      "title": "page-design-sop.ts 为 SOP SSOT",
+      "title": "page-design-sop.ts 仅保留 nudge 编排（无业务知识副本）",
       "status": "pass",
       "evidence": "src/services/page-design/page-design-sop.ts"
     },
@@ -31,11 +37,12 @@
     },
     {
       "id": "DEBT-SOP-THREE-CHANNEL",
-      "title": "SOP 三通道收敛至 page-design-sop.ts（business 无内联 recovery 分支）",
+      "title": "recovery 不再由 app SOP msg.includes 表驱动（VCM @failureMode 自动派生）",
       "status": "pass",
       "evidence": {
         "businessMsgIncludesBranches": 0,
-        "ssot": "src/services/page-design/page-design-sop.ts"
+        "sopMsgIncludesBranches": 0,
+        "vcmAutoRecovery": "packages/spark-ai/src/vcm-native/recovery/vcm-failure-mode-recovery.ts"
       }
     },
     {
@@ -45,14 +52,44 @@
       "evidence": "page-design-sop.ts 无协议参数字面量 hint"
     },
     {
+      "id": "PLAN-PROJECT-PLANNING-NO-HARDCODE",
+      "title": "project-planning-business 无手写 recovery / msg.includes 知识",
+      "status": "pass",
+      "evidence": "src/services/project-planning-business.ts"
+    },
+    {
+      "id": "PLAN-CLASSMODEL-PURE-INDEX",
+      "title": "ClassModel 纯知识索引：module + 属性链按需投影 + vcm_*_guide，无 diagnostics/图审计旁路",
+      "status": "pass",
+      "evidence": "ClassModelDocument.module + 属性链按需投影（无预存 models）"
+    },
+    {
+      "id": "PLAN-PROMPT-QUERY-KIND-ALIGN",
+      "title": "promptSnapshot 与 vcm_query 同列 attribute 链可达 kind",
+      "status": "pass",
+      "evidence": "createVcmNativePromptSnapshot → listAttributeReachableKinds"
+    },
+    {
+      "id": "PLAN-REFRESH-INSPECTION-CURRENT",
+      "title": "refresh-vcm-inspection 按属性链投影，不读 ClassModelDocument.models",
+      "status": "pass",
+      "evidence": "scripts/refresh-vcm-inspection.mjs"
+    },
+    {
+      "id": "PLAN-AUDIT-VCM-BUILD-WIRED",
+      "title": "audit-vcm-build-output 接入 verify:vcm-native 且属性链断路为 error",
+      "status": "pass",
+      "evidence": "package.json verify:vcm-native + scripts/audit-vcm-build-output.mjs"
+    },
+    {
       "id": "DEBT-JSDOC-DUPLICATION",
-      "title": "PAGE_DESIGN_HINTS 仍为 JSDoc 手工副本，待改为 ClassModel failureModes 派生",
+      "title": "ClassModel=知识索引(guide)；recovery=@failureMode；app 只注入动态上下文",
       "status": "debt",
       "evidence": {
-        "file": "src/services/page-design/page-design-sop.ts",
-        "target": "spark-project-model JSDoc @failureMode / @usageRule via VCM ClassModel"
+        "knowledgeIndex": "ClassModelDocument.module → 属性链投影 → vcm_query / vcm_*_guide",
+        "recovery": "packages/spark-ai/src/vcm-native/recovery/vcm-failure-mode-recovery.ts"
       },
-      "action": "新 hint 写回 JSDoc；禁止在 PAGE_DESIGN_HINTS 扩写协议或业务契约副本"
+      "action": "属性链已通 page-design 六 kind；持续在源码补 JSDoc/@failureMode，勿在 runtime 补旁路"
     },
     {
       "id": "DEVIATION-REASON-NAME",
@@ -66,20 +103,21 @@
       "label": "verify:arch",
       "command": "pnpm run verify:arch",
       "exitCode": 0,
-      "startedAt": "2026-06-10T01:14:39.882Z"
+      "startedAt": "2026-06-10T02:51:01.420Z"
     },
     {
       "label": "vitest-nudge-suite",
-      "command": "pnpm exec vitest run packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts tests/page/verify-rules.test.ts",
+      "command": "pnpm exec vitest run packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts packages/spark-ai/src/vcm-native/tests/vcm-failure-mode-recovery.test.ts packages/spark-ai/src/vcm-native/tests/class-model-reflection-connectivity.test.ts packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts tests/page/verify-rules.test.ts",
       "exitCode": 0,
-      "startedAt": "2026-06-10T01:14:41.758Z"
+      "startedAt": "2026-06-10T02:51:03.335Z"
     }
   ],
   "completionCriteria": {
     "kernelNoBusinessLiterals": true,
-    "pageDesignSopInAppLayer": true,
-    "sopCatalogSsot": true,
-    "sopThreeChannelDebtCleared": true,
+    "pageDesignNudgeOnlyInAppLayer": true,
+    "vcmAutoRecoveryWired": true,
+    "sopNudgeOrchestrationOnly": true,
+    "recoveryDebtCleared": true,
     "knowledgeSsotNoProtocolHardcode": true,
     "testsAndVerifyArchGreen": true
   }

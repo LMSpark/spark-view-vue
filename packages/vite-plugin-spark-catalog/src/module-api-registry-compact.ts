@@ -17,6 +17,7 @@ type AiApiActionMetadata = Readonly<{
   jsdoc?: unknown
   provenance?: unknown
   paramsSchema: unknown
+  paramsTypeText?: string
   takesContext?: boolean
   resultSchema?: unknown
   returnTypeText?: string
@@ -149,6 +150,7 @@ function compactActionResultApis(action: AiApiActionMetadata): AiApiActionMetada
     description: action.description,
     ...compactJsDocProperty(action.jsdoc),
     paramsSchema: action.paramsSchema,
+    ...(action.paramsTypeText === undefined ? {} : { paramsTypeText: action.paramsTypeText }),
     ...(action.takesContext === undefined ? {} : { takesContext: action.takesContext }),
     ...(action.resultSchema === undefined ? {} : { resultSchema: action.resultSchema }),
     ...(action.returnTypeText === undefined ? {} : { returnTypeText: action.returnTypeText }),

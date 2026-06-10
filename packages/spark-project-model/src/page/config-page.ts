@@ -219,6 +219,20 @@ export class ConfigPageNode extends ProjectNode {
   }
 
   /**
+   * rule.json 节点树根；结构读写入口。
+   */
+  get nodeTree(): SparkNodeTreeModel {
+    return this.getNodeTree()
+  }
+
+  /**
+   * pagedata.json 数据集 CRUD 工具入口。
+   */
+  get dataSetTool(): DataSetCrudTool {
+    return this.getDataSetTool()
+  }
+
+  /**
    * 读取 rule.json 节点树。
    *
    * @moduleMutation rule.json read 只读当前页面 SparkNodeTree。
@@ -260,6 +274,8 @@ export class ConfigPageNode extends ProjectNode {
    * @requiredBeforeCall 先 getDataSetTool 确认当前页 DataSet 已加载。
    * @usageRule DataViewKey 必须使用 table@viewId 格式；禁止旧成员拼接键。
    * @failureMode TABLE_NOT_FOUND 表名不存在 => 先在 dataset 上 createTable 或 vcm_action_guide 查 getTable 契约
+   * @failureMode SCHEMA_VALIDATION_FAILED requires callback => editDataSet 必须直接传 async callback，勿把 createTable 参数对象当作 run
+   * @failureMode SCRIPT_EXECUTION_FAILED run is not a function => editDataSet 直接传 async callback，勿把 createTable 参数对象当成 run
    * @param run 数据集编辑回调；回调参数是当前页面 DataSetCrudTool。
    */
   async editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void> {

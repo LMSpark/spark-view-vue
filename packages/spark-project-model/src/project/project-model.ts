@@ -117,6 +117,15 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   getChildNodes(nodeId?: string): TNode[] { return this.design.getChildNodes(nodeId) }
   /** 导航树扁平节点列表，按遍历顺序排列。 */
   get flatRows(): TNode[] { return this.design.flatRows }
+
+  /**
+   * 当前活动配置页；需先 openPageDesign(pageId) 才有值。
+   *
+   * @usageRule 页面四文件读写先取 activePage，再访问 nodeTree / dataSetTool。
+   */
+  get activePage(): ConfigPageNode | null {
+    return this.getActivePage()
+  }
   forEachNode(callback: (node: TNode) => void): void { this.design.forEachNode(callback) }
 
   replaceProjectInfo(project: ProjectInfoInput): ProjectInfo { return this.design.replaceProjectInfo(project) }
@@ -141,6 +150,7 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
    * @usageRule 进入 config-page 后再调用 getNodeTree / getDataSetTool / editNodeTree / editDataSet。
    * @failureMode PAGE_NOT_FOUND pageId 不存在 => 先 readPlanningProjection 确认 pageFeatures，必要时 human_question
    * @failureMode INVALID_TOOL_ARGS 参数形状错误 => 先读 vcm_action_guide，脚本内使用 this.openPageDesign({ pageId: "<pageId>" }) 或 this.openPageDesign("<pageId>")
+   * @failureMode SCRIPT_EXECUTION_FAILED editDataSet 或 editNodeTree is not a function => 必须先 await this.openPageDesign({ pageId: "<pageId>" }) 得到 page，再调用 page.editDataSet / page.editNodeTree
    * @param pageId 目标配置页 pageId，必须来自输入。
    */
   openPageDesign(pageId: string): ConfigPageNode { return this.design.openPageDesign(pageId) }

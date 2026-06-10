@@ -10,7 +10,7 @@ import { toErrorMessage } from '@spark-appworks/spark-utils'
 import { coerceJsonValue, type AiJsonValue } from '../../json'
 import { AiAgentToolCheck, AiAgentToolResult } from '../tool-runtime'
 
-const SCRIPT_RECOVERY_HINT = '先 vcm_action_guide 读取 usageRules/paramsSchema；mutator 用 vcm_script({ script })，参数名必须是 script；失败时读 tool result 的 RECOVERY_HINT。'
+const SCRIPT_RECOVERY_HINT = '按 tool result RECOVERY_HINT 修正；契约见 vcm_action_guide / vcm_model_guide（ClassModel 知识索引）。'
 
 export type AiNativeScriptSandboxContext = Readonly<Record<string, unknown>>
 
@@ -56,13 +56,12 @@ export async function executeModuleScript(
     }
     const locationText = location === undefined ? '' : `，脚本第 ${String(location.line)} 行`
     const errorMessage = toErrorMessage(error)
-    const chainHint = resolveScriptChainHint(errorMessage)
     return AiAgentToolResult.failCode(
       'SCRIPT_EXECUTION_FAILED',
       `脚本执行失败${locationText}: ${errorMessage}`,
       location === undefined
-        ? `检查脚本语法、this helper 名称和参数 schema 后重试。${chainHint}${SCRIPT_RECOVERY_HINT}`
-        : `检查脚本第 ${String(location.line)} 行附近的语法、this helper 名称和参数 schema 后重试。${chainHint}${SCRIPT_RECOVERY_HINT}`,
+        ? `检查脚本语法与 ClassModel 契约后重试。${SCRIPT_RECOVERY_HINT}`
+        : `检查脚本第 ${String(location.line)} 行附近语法与 ClassModel 契约后重试。${SCRIPT_RECOVERY_HINT}`,
     )
   }
 }
@@ -120,24 +119,3 @@ function isIndexableObject(value: unknown): value is Readonly<Record<string, unk
   return value !== null && typeof value === 'object'
 }
 
-function resolveScriptChainHint(errorMessage: string): string {
-  if (errorMessage.includes('toJSON')) {
-    return '勿对复杂运行时对象调 toJSON；用 vcm_action_guide 查 mutator action 的 usageRules。'
-  }
-  if (errorMessage.includes('.call is not a function')) {
-    return '链式 API 对象勿用 .call()；用 vcm_action_guide 查 action 调用形状。'
-  }
-  if (errorMessage.includes(' is not a function')) {
-    return '脚本调用了非函数目标；先 await 前置 action 返回对象，再用 vcm_action_guide 核对 mutator 调用方式。'
-  }
-  if (errorMessage.includes("reading 'includes'")) {
-    return '参数或中间值为 undefined；用 vcm_action_guide 对照 paramsSchema 与 usageRules 后重试。'
-  }
-  if (errorMessage.includes('run is not a function')) {
-    return 'mutator action 需要 callback 参数；直接传 async 函数，兼容 { run: fn } 时 run 必须是函数。'
-  }
-  if (errorMessage.includes('received non-function run')) {
-    return '勿把业务参数对象当作 mutator run；callback 内再调用子 action。'
-  }
-  return ''
-}

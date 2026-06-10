@@ -1,6 +1,10 @@
 import type { AiJsonValue } from '../../json'
 import type { ClassModelDocument } from '../class-model'
 import {
+  listAttributeReachableKinds,
+  projectClassModelForGuide,
+} from '../class-model/model-projection'
+import {
   renderAttributeTypeText,
   renderMethodSignature,
 } from '../class-model/signature-renderer'
@@ -44,14 +48,6 @@ export type ClassModelKnowledgeServiceOptions = Readonly<{
   componentCatalog?: ComponentCatalogLike
 }>
 
-/**
- * ClassModel 知识查询服务。
- *
- * 这里是“知识/索引/投影”边界，不是 tool runtime：
- * - 可以直接在主线程使用；
- * - 也可以被 Web Worker 包一层，通过消息协议远程调用；
- * - 不执行 vcm_script，不处理 agent 生命周期。
- */
 export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
   private readonly document: ClassModelDocument
   private readonly componentCatalog?: ComponentCatalogLike
@@ -63,8 +59,9 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
 
   public query(input: VcmNativeKnowledgeQueryInput): AiJsonValue {
     const keyword = input.keyword?.toLowerCase()
-    const models = Object.values(this.document.models)
-      .filter(model => input.kind === undefined || model.kind === input.kind)
+    const models = listAttributeReachableKinds(this.document)
+      .filter(kind => input.kind === undefined || kind === input.kind)
+      .map(kind => projectClassModelForGuide(this.document, kind))
       .filter(model => keyword === undefined || modelMatchesKeyword(model, keyword))
       .map(model => ({
         kind: model.kind,
@@ -75,12 +72,12 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
               attributes: model.attributes.map(attribute => ({
                 name: attribute.name,
                 summary: summarizeJsDoc(attribute.jsdoc),
-                typeText: renderAttributeTypeText(this.document, attribute),
+                typeText: renderAttributeTypeText(this.document, model.kind, attribute),
               })),
               methods: model.methods.map(method => ({
                 name: method.name,
                 summary: summarizeJsDoc(method.jsdoc),
-                signature: renderMethodSignature(this.document, method),
+                signature: renderMethodSignature(this.document, model.kind, method),
               })),
             }
           : {}),
@@ -118,10 +115,9 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
   }
 }
 
-function modelMatchesKeyword(
-  model: ClassModelDocument['models'][string],
-  keyword: string,
-): boolean {
+type ProjectedModel = ReturnType<typeof projectClassModelForGuide>
+
+function modelMatchesKeyword(model: ProjectedModel, keyword: string): boolean {
   const haystacks = [
     model.kind,
     model.className,

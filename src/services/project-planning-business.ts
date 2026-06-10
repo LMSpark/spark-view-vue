@@ -13,7 +13,6 @@ import {
   type AiAgentRuntimeContext,
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
-import type { EnrichFunctionCallFailureCommand } from '@spark-appworks/spark-ai/agent'
 import { VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
@@ -165,10 +164,7 @@ export function formatProjectPlanningPromptContext(input: ProjectPlanningRunInpu
       }
     }
   }
-  lines.push(
-    '',
-    '输出目标：为子模块与页面生成概要设计（title + description），写入 navigation 节点 description；本阶段不涉及四文件或 openPageDesign。',
-  )
+  lines.push('', '输出目标见 VCM ClassModel 知识索引与本轮 requirement。')
   return lines.join('\n')
 }
 
@@ -269,9 +265,8 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
           systemPrompt: createProjectPlanningSystemPrompt,
           title: input => `projectPlanning:${input.projectId}`,
           readonlySteps: [
-            '策划输入已注入 requirement 与 navigationNodes；禁止从 pageDesign 四文件或 openPageDesign 反推需求。',
-            '先 vcm_query / vcm_action_guide 确认 ProjectModel 策划 action，再用 vcm_script 读写 navigation description。',
-            '本阶段禁止 openPageDesign、writePageFile、editNodeTree、editDataSet；完成概要后 agent_complete。',
+            '策划输入已注入 requirement 与 navigationNodes。',
+            '业务契约见 VCM ClassModel 知识索引（vcm_query / vcm_action_guide）。',
           ],
         }),
         resolveInstance: ctx => resolveProjectPlanningProject(options, ctx),
@@ -282,7 +277,6 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
         executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createProjectPlanningToolLoopNudge,
-        enrichRecoveryHints: enrichProjectPlanningRecoveryHints,
         ...(projectModelRuntimeMetadataDocument.$defs === undefined
           ? {}
           : { jsonSchemaDefs: projectModelRuntimeMetadataDocument.$defs }),
@@ -307,36 +301,14 @@ function createProjectPlanningToolLoopNudge(context: AiAgentToolLoopNudgeContext
   if (projectId.length === 0) return undefined
   switch (context.reason) {
     case 'plan_without_tool':
-      return [
-        '策划阶段禁止只输出计划；下一回合必须发起真实 tool_call（vcm_script 或 vcm_action_guide）。',
-        `projectId="${projectId}"；只读写 navigation description，禁止 openPageDesign。`,
-      ].join('\n')
+      return `projectId="${projectId}"；禁止只输出计划，下一回合必须发起 tool_call（见 vcm_action_guide / RECOVERY_HINT）。`
     case 'execution_phase':
-      return [
-        `目录/指南阶段已完成，projectId="${projectId}"；直接 vcm_script 更新 navigation 策划文案。`,
-        '禁止 openPageDesign、editNodeTree、editDataSet；完成后 agent_complete({ summary })。',
-      ].join('\n')
+      return `projectId="${projectId}"；目录/指南阶段已完成，直接 vcm_script。`
     case 'vcm_script_retry':
-      return [
-        '上一次 vcm_script 失败：按 RECOVERY_HINT 修正 navigation action 参数。',
-        '禁止 openPageDesign；只用 readProjectPlanningInput / applyNavigationNodeEdit 等策划 action。',
-      ].join('\n')
+      return `projectId="${projectId}"；按 RECOVERY_HINT 修正后重试 vcm_script。`
     default:
       return undefined
   }
-}
-
-function enrichProjectPlanningRecoveryHints(command: EnrichFunctionCallFailureCommand): readonly string[] {
-  const { callResult } = command
-  const hints: string[] = []
-  const msg = callResult.msg.toLowerCase()
-  if (msg.includes('openpagedesign') || msg.includes('editnodetree') || msg.includes('editdataset')) {
-    hints.push('projectPlanning 阶段禁止 openPageDesign / editNodeTree / editDataSet；改用 navigation 策划 action。')
-  }
-  if (callResult.code === 'FUNCTION_NOT_FOUND') {
-    hints.push('策划 action 见 vcm_query({ kind: "project", includeMembers: true })；勿猜 pageDesign action 名。')
-  }
-  return hints
 }
 
 function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): string {
@@ -347,11 +319,8 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
   return [
     `当前 projectPlanning 项目: ${input.projectId}`,
     context,
-    '执行主通道: vcm_script({ script })；this 绑定当前 ProjectModel，只操作 navigation 策划面。',
-    '禁止: openPageDesign、四文件读写、SparkNode/DataSet 结构改写。',
-    '允许: readProjectPlanningInput、readNavigationPlanningInputs、readPlanningProjection、applyNavigationNodeEdit 等 navigation 策划 action。',
-    '元数据来源: generated projectPlanning module metadata（仅 ProjectModel，不含 config-page）。',
-    '完成后必须 agent_complete({ summary })。',
+    '知识索引: VCM ClassModel（project 根模型）；用 vcm_query / vcm_action_guide 读取契约后 vcm_script 执行。',
+    '元数据来源: generated projectPlanning module metadata。',
   ].join('\n')
 }
 

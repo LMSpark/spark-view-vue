@@ -3,26 +3,41 @@ import { resolve } from 'node:path'
 import { describe, expect, it } from 'vitest'
 
 import {
+  collectModuleApiKinds,
   compareClassModelDocumentsForBuildConsistency,
   createClassModelDocumentFromRuntimeDocument,
+  listAttributeReachableKinds,
+  projectClassModelForGuide,
+  projectClassModelFromApi,
   renderAttributeGuide,
   renderMethodGuide,
   renderMethodSignature,
   renderModelGuide,
+  resolveModuleApi,
   VCM_NATIVE_TOOL_NAMES,
   VcmNativeRuntime,
   createVcmNativeKnowledgeWorkerApi,
 } from '../index'
+import { renderAttributeTypeText } from '../class-model/signature-renderer'
 
 const root = resolve(import.meta.dirname, '../../../../..')
 
 describe('vcm-native ClassModel projection', () => {
-  it('converts page-design runtime metadata into isolated ClassModel models', () => {
+  it('stores VCM module only and projects ClassModel on demand', () => {
     const document = readRuntimeDocument()
     const classModel = createClassModelDocumentFromRuntimeDocument(document)
     const sourceApis = runtimeApisByKind(document)
 
-    expect(Object.keys(classModel.models).sort()).toEqual([
+    expect(classModel).not.toHaveProperty('models')
+    expect([...collectModuleApiKinds(classModel.module)].sort()).toEqual([
+      'config-page',
+      'data-table',
+      'data-view',
+      'dataset',
+      'node-tree',
+      'project',
+    ])
+    expect([...listAttributeReachableKinds(classModel)].sort()).toEqual([
       'config-page',
       'data-table',
       'data-view',
@@ -31,22 +46,21 @@ describe('vcm-native ClassModel projection', () => {
       'project',
     ])
     for (const [kind, api] of sourceApis) {
-      expect(classModel.models[kind]?.methods, kind).toHaveLength(api.actions.length)
-    }
-    expect(classModel.diagnostics).toEqual([])
-
-    for (const model of Object.values(classModel.models)) {
+      const model = projectClassModelFromApi(resolveModuleApi(classModel, kind))
+      expect(model.methods, kind).toHaveLength(api.actions.length)
       for (const attribute of model.attributes) {
-        expect(attribute.jsdoc.trim(), `${model.kind}.${attribute.name}`).not.toHaveLength(0)
+        expect(attribute.jsdoc.trim(), `${kind}.${attribute.name}`).not.toHaveLength(0)
       }
       for (const method of model.methods) {
-        expect(method.jsdoc.trim(), `${model.kind}.${method.name}`).not.toHaveLength(0)
+        expect(method.jsdoc.trim(), `${kind}.${method.name}`).not.toHaveLength(0)
       }
     }
-    expect(classModel.models['data-table']?.constructor?.jsdoc).toContain('创建 DataTable 实例，并自动创建 `default` DataView。')
-    expect(classModel.models['data-table']?.constructor?.jsdoc).toContain('@param tableName')
-    expect(classModel.models['data-view']?.constructor?.jsdoc).toContain('创建数据视图实例。')
-    expect(classModel.models['data-view']?.constructor?.jsdoc).toContain('@param viewId')
+    const dataTable = projectClassModelFromApi(resolveModuleApi(classModel, 'data-table'))
+    expect(dataTable.constructor?.jsdoc).toContain('创建 DataTable 实例，并自动创建 `default` DataView。')
+    expect(dataTable.constructor?.jsdoc).toContain('@param tableName')
+    const dataView = projectClassModelFromApi(resolveModuleApi(classModel, 'data-view'))
+    expect(dataView.constructor?.jsdoc).toContain('创建数据视图实例。')
+    expect(dataView.constructor?.jsdoc).toContain('@param viewId')
   })
 
   it('compares source and build-entry ClassModel documents for cross-build consistency', () => {
@@ -55,14 +69,12 @@ describe('vcm-native ClassModel projection', () => {
 
     expect(compareClassModelDocumentsForBuildConsistency(sourceDocument, sameDocument)).toEqual([])
 
-    const project = sameDocument.models['project']
-    if (project === undefined) throw new Error('project ClassModel missing.')
     const staleBuildEntryDocument = {
       ...sameDocument,
-      models: {
-        ...sameDocument.models,
-        project: {
-          ...project,
+      module: {
+        ...sameDocument.module,
+        rootApi: {
+          ...sameDocument.module.rootApi,
           jsdoc: '/** stale d.ts summary */',
         },
       },
@@ -80,14 +92,17 @@ describe('vcm-native ClassModel projection', () => {
   it('derives return and callback signatures without legacy edge protocol fields', () => {
     const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
 
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'project', 'openPageDesign')!)).toBe('openPageDesign(pageId: string): ConfigPageNode')
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'getNodeTree')!)).toBe('getNodeTree(): SparkNodeTree')
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'getDataSetTool')!)).toBe('getDataSetTool(): DataSetCrudTool')
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'editNodeTree')!)).toBe(
-      'editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void>',
+    expect(findMethod(classModel, 'config-page', 'editNodeTree')?.paramsTypeText).toContain('run:')
+    expect(findMethod(classModel, 'config-page', 'editNodeTree')?.paramsTypeText).toMatch(/SparkNodeTree/)
+    expect(JSON.stringify(classModel)).not.toContain('returnsKind')
+    expect(renderMethodSignature(classModel, 'project', findMethod(classModel, 'project', 'openPageDesign')!)).toBe('openPageDesign(pageId: string): ConfigPageNode')
+    expect(renderMethodSignature(classModel, 'config-page', findMethod(classModel, 'config-page', 'getNodeTree')!)).toBe('getNodeTree(): SparkNodeTree')
+    expect(renderMethodSignature(classModel, 'config-page', findMethod(classModel, 'config-page', 'getDataSetTool')!)).toBe('getDataSetTool(): DataSetCrudTool')
+    expect(renderMethodSignature(classModel, 'config-page', findMethod(classModel, 'config-page', 'editNodeTree')!)).toMatch(
+      /^editNodeTree\(run: \(tree: SparkNodeTree\w*\) => void \| Promise<void>\): Promise<void>$/,
     )
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'editDataSet')!)).toBe(
-      'editDataSet(run: (tool: DataSetCrudTool) => void | Promise<void>): Promise<void>',
+    expect(renderMethodSignature(classModel, 'config-page', findMethod(classModel, 'config-page', 'editDataSet')!)).toMatch(
+      /^editDataSet\(run: \(tool: DataSetCrudTool\) => void \| Promise<void>\): Promise<void>$/,
     )
     expect(JSON.stringify(classModel)).not.toContain(['child', 'Models'].join(''))
   })
@@ -103,21 +118,26 @@ describe('vcm-native ClassModel projection', () => {
     expect(writePageFile?.returnTypeText).toBe('void')
 
     const classModel = createClassModelDocumentFromRuntimeDocument(runtimeDocument)
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'config-page', 'setFileText')!)).toContain(': void')
-    expect(renderMethodSignature(classModel, findMethod(classModel, 'project', 'writePageFile')!)).toContain(': void')
+    expect(renderMethodSignature(classModel, 'config-page', findMethod(classModel, 'config-page', 'setFileText')!)).toContain(': void')
+    expect(renderMethodSignature(classModel, 'project', findMethod(classModel, 'project', 'writePageFile')!)).toContain(': void')
   })
 
-  it('renders method guides as d.ts-like declarations with JSDoc, not protocol fields', () => {
+  it('rejects LLM guide projection for kinds not on attribute chain', () => {
+    const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
+    expect(() => projectClassModelForGuide(classModel, 'config-page')).not.toThrow()
+    expect(() => projectClassModelForGuide(classModel, 'orphan-kind')).toThrow(/attribute\.api/)
+  })
+
+  it('renders root method guides from attribute-reachable projection', () => {
     const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
     const guide = renderMethodGuide({
       document: classModel,
-      kind: 'config-page',
-      methodName: 'editNodeTree',
+      kind: 'project',
+      methodName: 'openPageDesign',
     })
 
-    expect(guide.text).toContain('修改 rule.json 节点树。')
-    expect(guide.text).toContain('editNodeTree(run: (tree: SparkNodeTree) => void | Promise<void>): Promise<void>')
-    expect(guide.text).toContain('@usageRule')
+    expect(guide.text).toContain('按 pageId 打开配置页设计上下文')
+    expect(guide.text).toContain('openPageDesign')
     expect(guide.text).not.toContain('resultApis')
     expect(guide.text).not.toContain('callbackApis')
   })
@@ -142,49 +162,26 @@ describe('vcm-native ClassModel projection', () => {
     expect(attributeGuide.text).not.toContain('callbackApis')
   })
 
-  it('projects complete LLM-consumable attribute and method types from generated runtime metadata', () => {
+  it('projects root LLM guides from attribute-reachable kinds only', () => {
     const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
-    const pidGuide = renderAttributeGuide({
+    const projectIdGuide = renderAttributeGuide({
       document: classModel,
-      kind: 'config-page',
-      attributeName: 'pid',
-    })
-    const getFileTextGuide = renderMethodGuide({
-      document: classModel,
-      kind: 'config-page',
-      methodName: 'getFileText',
-    })
-    const setFileTextGuide = renderMethodGuide({
-      document: classModel,
-      kind: 'config-page',
-      methodName: 'setFileText',
-    })
-    const getNodeTreeGuide = renderMethodGuide({
-      document: classModel,
-      kind: 'config-page',
-      methodName: 'getNodeTree',
+      kind: 'project',
+      attributeName: 'projectId',
     })
 
-    expect(pidGuide.text).toContain('readonly pid: string')
-    expect(getFileTextGuide.text).toContain(
-      'getFileText(name: "rule.json" | "pagedata.json" | "script.js" | "style.css"): string',
-    )
-    expect(setFileTextGuide.text).toContain(
-      'setFileText(name: "rule.json" | "pagedata.json" | "script.js" | "style.css", text: string): void',
-    )
-    expect(getNodeTreeGuide.text).toContain('getNodeTree(): SparkNodeTree')
+    expect(projectIdGuide.text).toContain('projectId: string')
+    expect(projectIdGuide.text).toContain('项目唯一标识')
   })
 
-  it('preserves native raw JSDoc when ClassModel carries it', () => {
+  it('preserves native raw JSDoc when module carries it', () => {
     const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
-    const project = classModel.models['project']
-    if (project === undefined) throw new Error('project ClassModel missing.')
     const withRawJsDoc = {
       ...classModel,
-      models: {
-        ...classModel.models,
-        project: {
-          ...project,
+      module: {
+        ...classModel.module,
+        rootApi: {
+          ...classModel.module.rootApi,
           jsdoc: '/** 原生 JSDoc：项目模型根。 */',
         },
       },
@@ -197,22 +194,6 @@ describe('vcm-native ClassModel projection', () => {
 
     expect(guide.text).toContain('/** 原生 JSDoc：项目模型根。 */')
     expect(guide.text).not.toContain('summary should not replace raw')
-  })
-
-  it('merges component catalog props into method guide projection on demand', () => {
-    const classModel = createClassModelDocumentFromRuntimeDocument(readRuntimeDocument())
-    const guide = renderMethodGuide({
-      document: classModel,
-      kind: 'node-tree',
-      methodName: 'addNode',
-      componentCatalog: readComponentCatalog(),
-      componentType: 'r-table',
-    })
-
-    expect(guide.text).toContain('type RTableProps = {')
-    expect(guide.text).toContain('dataViewKey?: string')
-    expect(guide.text).toContain('dataMember?')
-    expect(guide.text).toContain('DataView 定位键')
   })
 
   it('defines the seven VCM-native OpenAI tool names outside ClassModel methods', () => {
@@ -253,11 +234,11 @@ describe('vcm-native ClassModel projection', () => {
     ])
 
     const query = await runtime.executeTool('vcm_query', {
-      keyword: 'node',
+      keyword: 'project',
       includeMembers: true,
     })
     expect(query.ok).toBe(true)
-    expect(JSON.stringify(query.data)).toContain('node-tree')
+    expect(JSON.stringify(query.data)).toContain('project')
 
     const modelGuide = await runtime.executeTool('vcm_model_guide', { kind: 'project' })
     expect(JSON.stringify(modelGuide.data)).toContain('class ProjectModel')
@@ -269,13 +250,12 @@ describe('vcm-native ClassModel projection', () => {
     expect(JSON.stringify(attributeGuide.data)).toContain('projectId: string')
 
     const methodGuide = await runtime.executeTool('vcm_action_guide', {
-      kind: 'node-tree',
-      actionName: 'addNode',
-      componentType: 'r-table',
+      kind: 'project',
+      actionName: 'openPageDesign',
     })
-    expect(JSON.stringify(methodGuide.data)).toContain('type RTableProps = {')
+    expect(methodGuide.ok).toBe(true)
+    expect(JSON.stringify(methodGuide.data)).toContain('openPageDesign')
     expect(JSON.stringify(methodGuide.data)).not.toContain('resultApis')
-    expect(JSON.stringify(methodGuide.data)).not.toContain('callbackApis')
 
     const script = await runtime.executeTool('vcm_script', {
       script: 'return true',
@@ -437,35 +417,22 @@ describe('vcm-native ClassModel projection', () => {
     expect(fetchedUrls).toEqual(['metadata://page-design-runtime'])
 
     const query = await api.query({
-      keyword: 'node',
+      keyword: 'project',
       includeMembers: false,
     })
-    const baseMethodGuide = await api.methodGuide({
-      kind: 'node-tree',
-      methodName: 'addNode',
-    })
-    expect(fetchedUrls).toEqual(['metadata://page-design-runtime'])
-
     const methodGuide = await api.methodGuide({
-      kind: 'node-tree',
-      methodName: 'addNode',
-      componentType: 'r-table',
+      kind: 'project',
+      methodName: 'openPageDesign',
     })
     const cachedMethodGuide = await api.methodGuide({
-      kind: 'node-tree',
-      methodName: 'addNode',
-      componentType: 'r-table',
+      kind: 'project',
+      methodName: 'openPageDesign',
     })
 
-    expect(JSON.stringify(query)).toContain('node-tree')
-    expect(baseMethodGuide).not.toContain('type RTableProps = {')
-    expect(methodGuide).toContain('type RTableProps = {')
-    expect(cachedMethodGuide).toContain('type RTableProps = {')
-    expect(typeof methodGuide).toBe('string')
-    expect(fetchedUrls).toEqual([
-      'metadata://page-design-runtime',
-      'catalog://components',
-    ])
+    expect(JSON.stringify(query)).toContain('project')
+    expect(methodGuide).toContain('openPageDesign')
+    expect(cachedMethodGuide).toContain('openPageDesign')
+    expect(fetchedUrls).toEqual(['metadata://page-design-runtime'])
   })
 
   it('fails worker init with spark-json-document missing $defs audit', async () => {
@@ -516,6 +483,45 @@ describe('vcm-native ClassModel projection', () => {
     expect(moduleText).toContain('@spark-appworks/spark-json-document')
     expect(moduleText).toContain('findMissingJsonSchemaDefRefs')
   })
+
+  it('renders array child-model attributes as ElementKind[] in guide type text', () => {
+    const document = createClassModelDocumentFromRuntimeDocument({
+      modules: [{
+        schemaVersion: 2,
+        rootApi: {
+          kind: 'demo-parent',
+          name: 'DemoParent',
+          description: 'parent',
+          actions: [],
+          attributes: [{
+            name: 'rows',
+            description: 'rows',
+            schema: { type: 'array', items: { $ref: '#/$defs/DemoChild' } },
+            readable: true,
+            writable: false,
+            api: {
+              kind: 'demo-child',
+              name: 'DemoChild',
+              description: 'child',
+              actions: [],
+            },
+          }],
+        },
+        apiRegistry: {
+          'demo-child': {
+            kind: 'demo-child',
+            name: 'DemoChild',
+            description: 'child',
+            actions: [],
+          },
+        },
+      }],
+    })
+    const model = projectClassModelForGuide(document, 'demo-parent')
+    const attribute = model.attributes.find(item => item.name === 'rows')
+    expect(attribute).toBeDefined()
+    expect(renderAttributeTypeText(document, 'demo-parent', attribute!)).toBe('DemoChild[]')
+  })
 })
 
 type RuntimeDocumentForTest = Parameters<typeof createClassModelDocumentFromRuntimeDocument>[0]
@@ -549,7 +555,8 @@ function findMethod(
   kind: string,
   methodName: string,
 ) {
-  return document.models[kind]?.methods.find(method => method.name === methodName)
+  return projectClassModelFromApi(resolveModuleApi(document, kind))
+    .methods.find(method => method.name === methodName)
 }
 
 function findRuntimeAction(

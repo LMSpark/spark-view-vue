@@ -122,6 +122,8 @@ type AiApiActionMetadata = {
   jsdoc?: JsDocMeta
   provenance?: ModuleSourceProvenance
   paramsSchema: GeneratedJsonSchema
+  /** 构建期 TS 反射参数列表；callback 方法签名真源。 */
+  paramsTypeText?: string
   takesContext?: boolean
   resultSchema?: GeneratedJsonSchema
   /** 构建期 TS 反射返回类型；void/primitive 不写入 resultSchema。 */
@@ -850,9 +852,10 @@ function createApiAttributeMetadataFromMember(
     schemaRole: 'attribute',
     rootPath: ['attributes', name, 'schema'],
   }))
+  const memberType = checker.getTypeAtLocation(member)
   const api = createApiObjectFromType({
     checker,
-    type: checker.getTypeAtLocation(member),
+    type: resolveApiBearingAttributeType(checker, memberType),
     visited,
     trace,
     state,
@@ -919,11 +922,12 @@ function createApiActionMetadata(command: CreateApiActionMetadataCommand): AiApi
       schemaRole: 'params',
     },
   })
+  const paramsTypeText = reflectMethodParamsToText(checker, node)
   const takesContext = hasLeadingContextParameter(checker, node)
   const resultType = trace.extractResults ? getInnerReturnType(checker, node) : undefined
   const returnTypeText = resultType === undefined
     ? undefined
-    : reflectTypeToText(checker, resultType).trim() || undefined
+    : reflectMethodReturnTypeText(checker, node, resultType)
   const resultSchema = !trace.extractResultSchemas || resultType === undefined || isVoidLikeType(resultType)
     ? undefined
     : tsTypeToJsonSchema(checker, resultType, createSchemaDescriptionAuditOptions(state, {
@@ -961,6 +965,7 @@ function createApiActionMetadata(command: CreateApiActionMetadataCommand): AiApi
       memberName: propertyNameText(node.name, sourceFile),
     }),
     paramsSchema,
+    ...(paramsTypeText === undefined ? {} : { paramsTypeText }),
     takesContext,
     ...(returnTypeText === undefined ? {} : { returnTypeText }),
     ...(resultSchema === undefined ? {} : { resultSchema }),
@@ -1010,6 +1015,35 @@ function parseFailureModeTagText(text: string): ModuleFailureModeMetadata | unde
   const when = left.slice(spaceIndex + 1).trim()
   if (code.length === 0 || when.length === 0) return undefined
   return { code, when, fix }
+}
+
+function reflectMethodReturnTypeText(
+  checker: ts.TypeChecker,
+  node: ts.MethodDeclaration,
+  innerType: ts.Type,
+): string | undefined {
+  const inner = reflectTypeToText(checker, innerType).trim()
+  if (inner.length === 0) return undefined
+  if (node.modifiers?.some(modifier => modifier.kind === ts.SyntaxKind.AsyncKeyword) === true) {
+    return `Promise<${inner}>`
+  }
+  return inner
+}
+
+function reflectMethodParamsToText(checker: ts.TypeChecker, node: ts.MethodDeclaration): string | undefined {
+  const params = node.parameters.filter(param => !isContextParameter(checker, param))
+  if (params.length === 0) return undefined
+  const sourceFile = node.getSourceFile()
+  const parts = params.map(param => {
+    const name = propertyNameText(param.name, sourceFile)
+    const optional = param.questionToken === undefined && param.initializer === undefined ? '' : '?'
+    const typeText = param.type !== undefined
+      ? param.type.getText(sourceFile)
+      : reflectTypeToText(checker, checker.getTypeAtLocation(param))
+    return `${name}${optional}: ${typeText}`
+  })
+  const text = parts.join(', ').trim()
+  return text.length === 0 ? undefined : text
 }
 
 function paramsSchemaUsesCallback(schema: GeneratedJsonSchema): boolean {
@@ -1298,7 +1332,17 @@ function discoverResultApis(command: DiscoverResultApisCommand): AiApiResultApiR
   }
   if (isClassInstanceType(command.type)) return results
 
-  if (isArrayLike(command.checker, command.type)) return results
+  const collectionElementType = readCollectionElementType(command.checker, command.type)
+  if (collectionElementType !== undefined) {
+    return discoverResultApis({
+      ...command,
+      type: collectionElementType,
+      resultPath: command.resultPath,
+      depth: depth + 1,
+      trace: command.trace,
+      seenTypes: new Set(command.seenTypes),
+    })
+  }
 
   for (const prop of command.type.getProperties()) {
     const declaration = prop.declarations?.[0]
@@ -2860,8 +2904,42 @@ function safeGetTypeOfSymbolAtLocation(
   }
 }
 
-function isArrayLike(checker: ts.TypeChecker, type: ts.Type): boolean {
-  return checker.isArrayType(type) || checker.isTupleType(type)
+/** 属性/返回值上的集合与可空类型解包，供 attribute.api 挂接子 module kind。 */
+function resolveApiBearingAttributeType(checker: ts.TypeChecker, type: ts.Type): ts.Type {
+  if (type.isUnion()) {
+    for (const part of type.types) {
+      if (isNullishType(part)) continue
+      return resolveApiBearingAttributeType(checker, part)
+    }
+    return type
+  }
+  const elementType = readCollectionElementType(checker, type)
+  return elementType ?? type
+}
+
+function readCollectionElementType(checker: ts.TypeChecker, type: ts.Type): ts.Type | undefined {
+  const arrayElement = readArrayElementType(checker, type)
+  if (arrayElement !== undefined) return arrayElement
+  return readIterableElementType(checker, type)
+}
+
+function readArrayElementType(checker: ts.TypeChecker, type: ts.Type): ts.Type | undefined {
+  if (checker.isArrayType(type) || checker.isTupleType(type)) {
+    return readTypeReferenceArguments(type)[0]
+  }
+  return undefined
+}
+
+function readIterableElementType(checker: ts.TypeChecker, type: ts.Type): ts.Type | undefined {
+  if (
+    isTypeReferenceTo(checker, type, 'Iterable')
+    || isTypeReferenceTo(checker, type, 'IterableIterator')
+    || isTypeReferenceTo(checker, type, 'ReadonlyArray')
+    || isTypeReferenceTo(checker, type, 'ArrayLike')
+  ) {
+    return readTypeReferenceArguments(type)[0]
+  }
+  return undefined
 }
 
 function isTsType(value: unknown): value is ts.Type {

@@ -1,15 +1,20 @@
 import { readFileSync } from 'node:fs'
 import { resolve } from 'node:path'
-import { findMissingJsonSchemaDefRefs } from '@spark-appworks/spark-json-document'
+import { findMissingJsonSchemaDefRefs } from '../packages/spark-json-document/src/schema/schema-defs.ts'
 import {
+  auditClassModelReflectionConnectivity,
+  collectModuleApiKinds,
   compareClassModelDocumentsForBuildConsistency,
   createClassModelDocumentFromRuntimeDocument,
+  listAttributeReachableKinds,
+  projectClassModelFromApi,
   readModuleMetadataRuntimeDocument,
+  resolveModuleApi,
   resolveModuleMetadataJson,
   validateApiObjectMetadata,
   walkAiApiMetadataGraph,
-  renderMethodSignature,
 } from '../packages/spark-ai/src/vcm-native/index.ts'
+import { renderMethodSignature } from '../packages/spark-ai/src/vcm-native/class-model/signature-renderer.ts'
 
 const root = resolve(import.meta.dirname, '..')
 const runtimePath = resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json')
@@ -51,23 +56,16 @@ try {
   fail('VALIDATE_ROOT_API', String(error))
 }
 
-// 4. ClassModel projection
-if (classModel.diagnostics.length > 0) {
-  fail('CLASS_MODEL_DIAGNOSTICS', JSON.stringify(classModel.diagnostics))
-}
-const modelKinds = Object.keys(classModel.models).sort()
+// 4. ClassModel 按需投影（document 只存 module，不预存 models）
+const modelKinds = collectModuleApiKinds(classModel.module).sort()
 if (modelKinds.join(',') !== [...expectedRegistry, 'project'].sort().join(',')) {
   fail('CLASS_MODEL_KINDS', modelKinds.join(','))
 }
 
-// 5. Member count parity runtime vs ClassModel
+// 5. Member count parity runtime vs on-demand projection
 const apisByKind = new Map([[module.rootApi.kind, module.rootApi], ...Object.entries(module.apiRegistry ?? {})])
 for (const [kind, api] of apisByKind) {
-  const model = classModel.models[kind]
-  if (model === undefined) {
-    fail('MISSING_CLASS_MODEL', kind)
-    continue
-  }
+  const model = projectClassModelFromApi(resolveModuleApi(classModel, kind))
   if (api.actions.length !== model.methods.length) {
     fail('METHOD_COUNT_MISMATCH', `${kind}: runtime=${api.actions.length} classModel=${model.methods.length}`)
   }
@@ -76,10 +74,23 @@ for (const [kind, api] of apisByKind) {
   }
 }
 
-// 6. Forbidden legacy shapes
-const serialized = JSON.stringify(classModel)
-for (const forbidden of ['childModels', 'vcmCatalog', 'callbackApis', '"signature"', '"declaration"', '"typeText"', '"usageRules"', '"failureModes"']) {
-  if (serialized.includes(forbidden)) warn('LEGACY_FIELD_IN_CLASS_MODEL', forbidden)
+// 6. Forbidden legacy shapes in on-demand ClassModel projection（module metadata 的 usageRules/failureModes 合法）
+const forbiddenProjectionFields = [
+  'childModels',
+  'returnsKind',
+  'callbackTargetKind',
+  'valueKind',
+  'vcmCatalog',
+  'callbackApis',
+  'resultApis',
+]
+for (const kind of modelKinds) {
+  const projected = JSON.stringify(projectClassModelFromApi(resolveModuleApi(classModel, kind)))
+  for (const forbidden of forbiddenProjectionFields) {
+    if (projected.includes(forbidden)) {
+      warn('LEGACY_FIELD_IN_CLASS_MODEL', `${kind}: ${forbidden}`)
+    }
+  }
 }
 
 // 7. jsdoc shape in runtime
@@ -103,7 +114,25 @@ for (const [kind, api] of Object.entries(module.apiRegistry ?? {})) {
   checkJsdocShape(api, `apiRegistry.${kind}`)
 }
 
-// 8. returnsKind / callbackTargetKind vs resultApis
+// 8. attribute.api 属性链 + 投影连通性（与 vcm_query / guide 门禁一致）
+const connectivityIssues = auditClassModelReflectionConnectivity(classModel)
+const attributeReachableKinds = [...listAttributeReachableKinds(classModel)].sort()
+const expectedReachableKinds = [...expectedRegistry, 'project'].sort()
+if (attributeReachableKinds.join(',') !== expectedReachableKinds.join(',')) {
+  fail(
+    'ATTRIBUTE_REACHABLE_KINDS',
+    `expected ${expectedReachableKinds.join(',')}, got ${attributeReachableKinds.join(',')}`,
+  )
+}
+for (const issue of connectivityIssues) {
+  if (issue.code === 'REFLECTION_MODEL_PROJECTION_FAILED' || issue.code === 'REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES') {
+    fail(issue.code, `${issue.path}: ${issue.message}`)
+  }
+  if (issue.code === 'REFLECTION_ATTRIBUTE_API_DISCONNECTED') {
+    fail(issue.code, `${issue.path}: ${issue.message}`)
+  }
+}
+
 const graph = walkAiApiMetadataGraph(resolved.rootApi)
 const uniqueEdges = new Map()
 for (const node of graph) {
@@ -111,26 +140,28 @@ for (const node of graph) {
     uniqueEdges.set(`${edge.parentKind}.${edge.viaName}->${edge.child.kind}`, edge)
   }
 }
-for (const [kind, model] of Object.entries(classModel.models)) {
+for (const kind of modelKinds) {
   const api = apisByKind.get(kind)
+  const model = projectClassModelFromApi(resolveModuleApi(classModel, kind))
   if (api === undefined) continue
   for (const method of model.methods) {
     const action = api.actions.find(a => a.name === method.name)
     if (action === undefined) continue
     const hasRun = action.paramsSchema?.required?.includes('run') === true
     if (hasRun) {
-      if (method.callbackTargetKind === undefined) {
-        warn('CALLBACK_KIND_MISSING', `${kind}.${method.name} has run param but no callbackTargetKind`)
+      if (method.paramsTypeText === undefined || method.paramsTypeText.trim().length === 0) {
+        warn('PARAMS_TYPE_TEXT_MISSING', `${kind}.${method.name} has run param but no paramsTypeText`)
       }
     } else {
       const returnRef = (action.resultApis ?? []).find(ref => (ref.resultPath ?? []).length === 0)
-      if (returnRef !== undefined && method.returnsKind === undefined) {
-        warn('RETURNS_KIND_MISSING', `${kind}.${method.name} has resultApi return but no returnsKind`)
+      const hasReturnTypeText = method.returnTypeText !== undefined && method.returnTypeText.trim().length > 0
+      if (returnRef !== undefined && !hasReturnTypeText && method.returnSchema === undefined) {
+        warn('RETURN_TYPE_TEXT_MISSING', `${kind}.${method.name} has resultApi return but no returnTypeText/returnSchema`)
       }
     }
-    if (method.returnsKind !== undefined || method.callbackTargetKind !== undefined) {
-      const sig = renderMethodSignature(classModel, method)
-      if (sig.includes('unknown') && !sig.includes('AnonSchema')) {
+    if (method.returnTypeText !== undefined || method.paramsTypeText !== undefined) {
+      const sig = renderMethodSignature(classModel, kind, method)
+      if (signatureContainsProblematicUnknown(sig)) {
         warn('SIGNATURE_UNKNOWN', `${kind}.${method.name}: ${sig}`)
       }
     }
@@ -144,11 +175,21 @@ if (selfIssues.length > 0) fail('CLASS_MODEL_SELF_CONSISTENCY', JSON.stringify(s
 // 10. Summary stats
 const stats = {
   defsCount: Object.keys(raw.$defs ?? {}).length,
-  methodCount: Object.values(classModel.models).reduce((n, m) => n + m.methods.length, 0),
-  attributeCount: Object.values(classModel.models).reduce((n, m) => n + m.attributes.length, 0),
+  methodCount: modelKinds.reduce((n, kind) => n + projectClassModelFromApi(resolveModuleApi(classModel, kind)).methods.length, 0),
+  attributeCount: modelKinds.reduce((n, kind) => n + projectClassModelFromApi(resolveModuleApi(classModel, kind)).attributes.length, 0),
+  attributeReachableKinds,
+  attributeConnectivityIssueCount: connectivityIssues.length,
   uniqueResultApiEdges: uniqueEdges.size,
-  classModelDiagnostics: classModel.diagnostics.length,
+  classModelKindCount: modelKinds.length,
   auditIssues: issues.length,
+}
+
+function signatureContainsProblematicUnknown(signature) {
+  if (signature.includes('AnonSchema')) return false
+  const normalized = signature
+    .replaceAll('Record<string, unknown>', '')
+    .replace(/value: unknown/g, '')
+  return /\bunknown\b/.test(normalized)
 }
 
 console.log(JSON.stringify({ ok: issues.filter(i => i.level === 'error').length === 0, stats, issues }, null, 2))

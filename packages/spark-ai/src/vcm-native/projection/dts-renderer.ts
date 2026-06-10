@@ -1,4 +1,5 @@
 import type { AttributeMeta, ClassModel, ClassModelDocument, JsDocMeta, MethodMeta } from '../class-model'
+import { projectClassModelForGuide } from '../class-model/model-projection'
 import {
   renderAttributeDeclarationLine,
   renderConstructorSignature,
@@ -73,17 +74,17 @@ export function renderClassModelDeclaration(
     parts.push(indent(renderConstructorSignature(model.constructor)))
   }
   for (const attribute of model.attributes) {
-    parts.push(indent(renderAttributeDeclaration(document, attribute)))
+    parts.push(indent(renderAttributeDeclaration(document, model.kind, attribute)))
   }
   for (const method of model.methods) {
-    parts.push(indent(renderMethodDeclaration(document, method)))
+    parts.push(indent(renderMethodDeclaration(document, model.kind, method)))
   }
   parts.push('}')
   return parts.filter(part => part.length > 0).join('\n')
 }
 
 export function renderModelGuide(input: ModelGuideRenderInput): ModelGuide {
-  const model = modelByKind(input.document, input.kind)
+  const model = projectClassModelForGuide(input.document, input.kind)
   const text = renderClassModelDeclaration(input.document, model)
   return {
     kind: input.kind,
@@ -93,15 +94,15 @@ export function renderModelGuide(input: ModelGuideRenderInput): ModelGuide {
 }
 
 export function renderAttributeGuide(input: AttributeGuideRenderInput): AttributeGuide {
-  const model = modelByKind(input.document, input.kind)
+  const model = projectClassModelForGuide(input.document, input.kind)
   const attribute = model.attributes.find(candidate => candidate.name === input.attributeName)
   if (attribute === undefined) throw new Error(`ClassModel attribute not found: ${input.kind}.${input.attributeName}`)
 
-  const declarationLine = renderAttributeDeclarationLine(input.document, attribute)
+  const declarationLine = renderAttributeDeclarationLine(input.document, input.kind, attribute)
   const text = [
     renderJsDocMeta(model.jsdoc),
     `class ${model.className} {`,
-    indent(renderAttributeDeclaration(input.document, attribute)),
+    indent(renderAttributeDeclaration(input.document, input.kind, attribute)),
     '}',
   ].join('\n')
 
@@ -114,15 +115,15 @@ export function renderAttributeGuide(input: AttributeGuideRenderInput): Attribut
 }
 
 export function renderMethodGuide(input: MethodGuideRenderInput): MethodGuide {
-  const model = modelByKind(input.document, input.kind)
+  const model = projectClassModelForGuide(input.document, input.kind)
   const method = model.methods.find(candidate => candidate.name === input.methodName)
   if (method === undefined) throw new Error(`ClassModel method not found: ${input.kind}.${input.methodName}`)
 
-  const declarationLine = renderMethodDeclarationLine(input.document, method)
+  const declarationLine = renderMethodDeclarationLine(input.document, input.kind, method)
   const chunks = [
     renderJsDocMeta(model.jsdoc),
     `class ${model.className} {`,
-    indent(renderMethodDeclaration(input.document, method)),
+    indent(renderMethodDeclaration(input.document, input.kind, method)),
     '}',
   ]
 
@@ -144,21 +145,23 @@ export function renderMethodGuide(input: MethodGuideRenderInput): MethodGuide {
 
 export function renderMethodDeclaration(
   document: ClassModelDocument,
+  ownerKind: string,
   method: MethodMeta,
 ): string {
   return [
     renderJsDocMeta(method.jsdoc),
-    renderMethodDeclarationLine(document, method),
+    renderMethodDeclarationLine(document, ownerKind, method),
   ].filter(part => part.length > 0).join('\n')
 }
 
 export function renderAttributeDeclaration(
   document: ClassModelDocument,
+  ownerKind: string,
   attribute: AttributeMeta,
 ): string {
   return [
     renderJsDocMeta(attribute.jsdoc),
-    renderAttributeDeclarationLine(document, attribute),
+    renderAttributeDeclarationLine(document, ownerKind, attribute),
   ].filter(part => part.length > 0).join('\n')
 }
 
@@ -181,12 +184,6 @@ export function renderComponentPropsDeclaration(
   }
   lines.push('}')
   return lines.join('\n')
-}
-
-function modelByKind(document: ClassModelDocument, kind: string): ClassModel {
-  const model = document.models[kind]
-  if (model === undefined) throw new Error(`ClassModel kind not found: ${kind}`)
-  return model
 }
 
 function renderJsDocMeta(jsdoc: JsDocMeta): string {

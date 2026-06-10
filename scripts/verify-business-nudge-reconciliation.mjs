@@ -28,6 +28,8 @@ const KERNEL_SCAN_ROOTS = [
 const VITEST_FILES = [
   'packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts',
   'packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts',
+  'packages/spark-ai/src/vcm-native/tests/vcm-failure-mode-recovery.test.ts',
+  'packages/spark-ai/src/vcm-native/tests/class-model-reflection-connectivity.test.ts',
   'packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts',
   'tests/page/verify-rules.test.ts',
 ]
@@ -133,27 +135,39 @@ function main() {
 
   const pageBizOk = readFileContains('src/services/page-design-business.ts', [
     'toolLoopNudge: createPageDesignToolLoopNudge',
-    'enrichRecoveryHints: resolvePageDesignRecoveryHints',
     './page-design/page-design-sop',
-  ])
+  ]) && !fs.readFileSync(path.join(ROOT, 'src/services/page-design-business.ts'), 'utf8').includes('enrichRecoveryHints:')
   checks.push({
     id: 'PLAN-PAGE-DESIGN-HOOKS',
-    title: 'page-design-business 实现 hooks 并委托 page-design-sop catalog',
+    title: 'page-design-business 仅编排 nudge；recovery 由 VCM metadata 自动派生',
     status: pageBizOk ? 'pass' : 'regression',
-    evidence: pageBizOk ? 'src/services/page-design-business.ts' : 'missing hook or catalog import',
+    evidence: pageBizOk ? 'src/services/page-design-business.ts' : 'missing nudge hook or still has enrichRecoveryHints',
   })
   if (!pageBizOk) regressionCount += 1
 
+  const adapterText = fs.readFileSync(path.join(ROOT, 'packages/spark-ai/src/agent/business/vcm-native-agent-adapter.ts'), 'utf8')
+  const vcmAutoRecoveryOk = adapterText.includes('collectVcmFailureModeRecoveryHints')
+    && adapterText.includes('buildVcmNativeEnrichRecoveryHints')
+    && !adapterText.includes('collectVcmClassModelRecoveryHints')
+    && !fs.existsSync(path.join(ROOT, 'packages/spark-ai/src/vcm-native/recovery/class-model-knowledge-index.ts'))
+  checks.push({
+    id: 'PLAN-VCM-AUTO-RECOVERY',
+    title: 'recovery 仅来自 metadata @failureMode，不遍历 ClassModel 图',
+    status: vcmAutoRecoveryOk ? 'pass' : 'regression',
+    evidence: vcmAutoRecoveryOk
+      ? 'collectVcmFailureModeRecoveryHints + vcm-native-agent-adapter.ts'
+      : 'recovery 仍绑定 ClassModel 或缺少 failureMode 派生',
+  })
+  if (!vcmAutoRecoveryOk) regressionCount += 1
+
   const sopCatalogOk = readFileContains('src/services/page-design/page-design-sop.ts', [
-    'PAGE_DESIGN_RECOVERY_RULES',
-    'pageDesignScriptShapeLines',
-    'resolvePageDesignRecoveryHints',
-  ])
+    'buildPageDesignToolLoopNudge',
+  ]) && !fs.readFileSync(path.join(ROOT, 'src/services/page-design/page-design-sop.ts'), 'utf8').includes('PAGE_DESIGN_RECOVERY_RULES')
   checks.push({
     id: 'PLAN-SOP-CATALOG',
-    title: 'page-design-sop.ts 为 SOP SSOT',
+    title: 'page-design-sop.ts 仅保留 nudge 编排（无业务知识副本）',
     status: sopCatalogOk ? 'pass' : 'regression',
-    evidence: sopCatalogOk ? 'src/services/page-design/page-design-sop.ts' : 'missing catalog exports',
+    evidence: sopCatalogOk ? 'src/services/page-design/page-design-sop.ts' : 'missing nudge exports or still has recovery rules',
   })
   if (!sopCatalogOk) regressionCount += 1
 
@@ -173,17 +187,19 @@ function main() {
   if (!regTypesOk) regressionCount += 1
 
   const businessRecoveryBranches = countInlineRecoveryMsgBranches('src/services/page-design-business.ts')
-  const sopDebtCleared = businessRecoveryBranches === 0 && sopCatalogOk
+  const sopRecoveryBranches = countInlineRecoveryMsgBranches('src/services/page-design/page-design-sop.ts')
+  const recoveryDebtCleared = businessRecoveryBranches === 0 && sopRecoveryBranches === 0
   checks.push({
     id: 'DEBT-SOP-THREE-CHANNEL',
-    title: 'SOP 三通道收敛至 page-design-sop.ts（business 无内联 recovery 分支）',
-    status: sopDebtCleared ? 'pass' : 'regression',
+    title: 'recovery 不再由 app SOP msg.includes 表驱动（VCM @failureMode 自动派生）',
+    status: recoveryDebtCleared ? 'pass' : 'regression',
     evidence: {
       businessMsgIncludesBranches: businessRecoveryBranches,
-      ssot: 'src/services/page-design/page-design-sop.ts',
+      sopMsgIncludesBranches: sopRecoveryBranches,
+      vcmAutoRecovery: 'packages/spark-ai/src/vcm-native/recovery/vcm-failure-mode-recovery.ts',
     },
   })
-  if (!sopDebtCleared) regressionCount += 1
+  if (!recoveryDebtCleared) regressionCount += 1
 
   const protocolHintViolations = scanForbiddenProtocolHintsInBusinessSop()
   const protocolHintsOk = protocolHintViolations.length === 0
@@ -197,15 +213,89 @@ function main() {
   })
   if (!protocolHintsOk) regressionCount += 1
 
+  const planningBizText = fs.readFileSync(path.join(ROOT, 'src/services/project-planning-business.ts'), 'utf8')
+  const planningRecoveryRemoved = !planningBizText.includes('enrichRecoveryHints:')
+    && !planningBizText.includes('callResult.msg.includes')
+  checks.push({
+    id: 'PLAN-PROJECT-PLANNING-NO-HARDCODE',
+    title: 'project-planning-business 无手写 recovery / msg.includes 知识',
+    status: planningRecoveryRemoved ? 'pass' : 'regression',
+    evidence: planningRecoveryRemoved ? 'src/services/project-planning-business.ts' : 'still has hardcoded recovery',
+  })
+  if (!planningRecoveryRemoved) regressionCount += 1
+
+  const classModelTypes = fs.readFileSync(path.join(ROOT, 'packages/spark-ai/src/vcm-native/class-model/types.ts'), 'utf8')
+  const fromRuntimeMetadata = fs.readFileSync(path.join(ROOT, 'packages/spark-ai/src/vcm-native/class-model/from-runtime-metadata.ts'), 'utf8')
+  const classModelIsPureIndex = !classModelTypes.includes('diagnostics:')
+    && !classModelTypes.includes('callbackTargetKind')
+    && !classModelTypes.includes('returnsKind')
+    && !classModelTypes.includes('models:')
+    && !fromRuntimeMetadata.includes('resolveMethodNavigation')
+    && !fs.existsSync(path.join(ROOT, 'packages/spark-ai/src/vcm-native/class-model/class-model-graph.ts'))
+    && !fromRuntimeMetadata.includes('assertClassModelGraph')
+    && !fromRuntimeMetadata.includes('auditClassModel')
+  checks.push({
+    id: 'PLAN-CLASSMODEL-PURE-INDEX',
+    title: 'ClassModel 纯知识索引：module + 属性链按需投影 + vcm_*_guide，无 diagnostics/图审计旁路',
+    status: classModelIsPureIndex ? 'pass' : 'regression',
+    evidence: classModelIsPureIndex
+      ? 'ClassModelDocument.module + 属性链按需投影（无预存 models）'
+      : '仍存在 diagnostics 或图审计旁路',
+  })
+  if (!classModelIsPureIndex) regressionCount += 1
+
+  const promptQueryKindAligned = adapterText.includes('listAttributeReachableKinds(document)')
+    && adapterText.includes('属性链可达模型（与 vcm_query 一致）')
+  checks.push({
+    id: 'PLAN-PROMPT-QUERY-KIND-ALIGN',
+    title: 'promptSnapshot 与 vcm_query 同列 attribute 链可达 kind',
+    status: promptQueryKindAligned ? 'pass' : 'regression',
+    evidence: promptQueryKindAligned
+      ? 'createVcmNativePromptSnapshot → listAttributeReachableKinds'
+      : 'prompt 仍列全 apiRegistry 或语义未对齐',
+  })
+  if (!promptQueryKindAligned) regressionCount += 1
+
+  const refreshInspectionPath = path.join(ROOT, 'scripts/refresh-vcm-inspection.mjs')
+  const refreshInspectionText = fs.readFileSync(refreshInspectionPath, 'utf8')
+  const refreshInspectionCurrent = refreshInspectionText.includes('listAttributeReachableKinds')
+    && refreshInspectionText.includes('projectClassModelForGuide')
+    && !refreshInspectionText.includes('classModel.models')
+  checks.push({
+    id: 'PLAN-REFRESH-INSPECTION-CURRENT',
+    title: 'refresh-vcm-inspection 按属性链投影，不读 ClassModelDocument.models',
+    status: refreshInspectionCurrent ? 'pass' : 'regression',
+    evidence: refreshInspectionCurrent ? 'scripts/refresh-vcm-inspection.mjs' : 'inspection 脚本仍依赖预存 models',
+  })
+  if (!refreshInspectionCurrent) regressionCount += 1
+
+  const auditScriptPath = path.join(ROOT, 'scripts/audit-vcm-build-output.mjs')
+  const auditScriptText = fs.readFileSync(auditScriptPath, 'utf8')
+  const auditScriptWired = auditScriptText.includes('listAttributeReachableKinds')
+    && auditScriptText.includes('REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES')
+    && auditScriptText.includes('signatureContainsProblematicUnknown')
+    && auditScriptText.includes('forbiddenProjectionFields')
+    && fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8').includes('"audit:vcm-build-output"')
+    && fs.readFileSync(path.join(ROOT, 'package.json'), 'utf8').includes('scripts/audit-vcm-build-output.mjs')
+  checks.push({
+    id: 'PLAN-AUDIT-VCM-BUILD-WIRED',
+    title: 'audit-vcm-build-output 接入 verify:vcm-native 且属性链断路为 error',
+    status: auditScriptWired ? 'pass' : 'regression',
+    evidence: auditScriptWired
+      ? 'package.json verify:vcm-native + scripts/audit-vcm-build-output.mjs'
+      : 'audit 脚本未接线或仍仅 warn 属性链',
+  })
+  if (!auditScriptWired) regressionCount += 1
+
   checks.push({
     id: 'DEBT-JSDOC-DUPLICATION',
-    title: 'PAGE_DESIGN_HINTS 仍为 JSDoc 手工副本，待改为 ClassModel failureModes 派生',
+    title: 'ClassModel=知识索引(guide)；recovery=@failureMode；app 只注入动态上下文',
     status: 'debt',
     evidence: {
-      file: 'src/services/page-design/page-design-sop.ts',
-      target: 'spark-project-model JSDoc @failureMode / @usageRule via VCM ClassModel',
+      knowledgeIndex: 'ClassModelDocument.module → 属性链投影 → vcm_query / vcm_*_guide',
+      recovery: 'packages/spark-ai/src/vcm-native/recovery/vcm-failure-mode-recovery.ts',
     },
-    action: '新 hint 写回 JSDoc；禁止在 PAGE_DESIGN_HINTS 扩写协议或业务契约副本',
+    action: '属性链已通 page-design 六 kind；持续在源码补 JSDoc/@failureMode，勿在 runtime 补旁路',
   })
 
   checks.push({
@@ -237,9 +327,10 @@ function main() {
     })),
     completionCriteria: {
       kernelNoBusinessLiterals: kernelOk,
-      pageDesignSopInAppLayer: pageBizOk,
-      sopCatalogSsot: sopCatalogOk,
-      sopThreeChannelDebtCleared: sopDebtCleared,
+      pageDesignNudgeOnlyInAppLayer: pageBizOk,
+      vcmAutoRecoveryWired: vcmAutoRecoveryOk,
+      sopNudgeOrchestrationOnly: sopCatalogOk,
+      recoveryDebtCleared,
       knowledgeSsotNoProtocolHardcode: protocolHintsOk,
       testsAndVerifyArchGreen: commands.every((item) => item.exitCode === 0),
     },

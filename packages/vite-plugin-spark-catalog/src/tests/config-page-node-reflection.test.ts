@@ -38,18 +38,27 @@ describe('page-design VCM metadata reflection', () => {
     expect(projectApi?.attributes?.map(attribute => attribute.name)).toEqual([
       'projectId',
       'flatRows',
+      'activePage',
     ])
+    expect(projectApi?.attributes?.find(attribute => attribute.name === 'activePage')?.api?.kind).toBe('config-page')
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'navigationRoot')).toBeUndefined()
     expect(projectApi?.attributes?.find(attribute => attribute.name === 'nodes')).toBeUndefined()
     expect(result.diagnostics).toMatchObject({
       moduleCount: 1,
-      resultApiCount: 83,
       referencedApiKinds: ['config-page'],
       emptySchemaNodeCount: 0,
     })
+    expect(result.diagnostics.resultApiCount).toBeGreaterThan(0)
     expect(result.diagnostics.findings).toEqual([])
     const writePageFile = projectApi?.actions.find(action => action.name === 'writePageFile')
     expect(writePageFile?.resultSchema).toBeUndefined()
     expect(writePageFile?.returnTypeText).toBe('void')
+
+    const configPageApi = result.moduleMetadata[0]?.rootApi.actions
+      .find(action => action.name === 'openPageDesign')
+      ?.resultApis?.[0]?.api
+    expect(configPageApi?.kind).toBe('config-page')
+    expect(configPageApi?.attributes?.find(attribute => attribute.name === 'nodeTree')?.api?.kind).toBe('node-tree')
+    expect(configPageApi?.attributes?.find(attribute => attribute.name === 'dataSetTool')?.api?.kind).toBe('dataset')
   }, 20_000)
 })

@@ -1,5 +1,9 @@
 # ClassModel 反射层方案审计
 
+> **历史审计稿（部分条目已过时）。** 现行定型以 `.cursor/plans/ClassModel反射图定型方案.md`（2026-06 修订）为准：
+> `ClassModelDocument` 只存 `module`；发现/guide 走 `attribute.api` BFS；动作契约走 `resultApis`/`vcm_action_guide`；无预存 `models`/`childModels`/`returnsKind`。
+> 验收：`class-model-reflection-connectivity.test.ts` + `verify:business-nudge-reconciliation` 中 `PLAN-PROMPT-QUERY-KIND-ALIGN` / `PLAN-REFRESH-INSPECTION-CURRENT`。
+
 > 审计对象：`.cursor/plans/ClassModel反射图定型方案.md` 与当前 `packages/spark-ai/src/vcm-native/` 实现。
 > 结论：第一阶段 ClassModel 投影层已对齐；结构化 JSDoc 语义、7 个 OpenAI tool 的独立 vcm-native runtime handler 已落地；构建阶段可生成并验证运行时可消费的 metadata。
 
@@ -184,8 +188,8 @@
 - 当前 `$defs` 池化闭包正确，体积主要来自必要 schema 与 action 面；不是 `$defs` 池化失败。
 - AI runtime 只保留 guide/Worker 消费所需内容；JSDoc raw 与 provenance 归构建阶段，不进入 AI 消费文件。
 - 已拆成 AI 消费 compact 产物与构建期日志诊断，不再让消息层/Worker 消费审计 JSON。
-- 新增知识完整性验收：从 `runtime.generated.json -> ClassModel -> guide` 能投影出属性类型、方法参数类型、返回类型与子模型类型，例如 `pid: string`、`getFileText(name: "rule.json" | ...): string`、`getNodeTree(): SparkNodeTree`。
-- 当前知识覆盖率：`attributes=69/69`、`methodParams=154/154`、`methodReturns=108/154`、`childModelMethods=20`、`schemaDescriptions=312/795`；剩余描述缺口必须回源码 JSDoc/VCM 注释补齐后重新生成。
+- 新增知识完整性验收：从 `runtime.generated.json -> ClassModel -> guide` 能投影出属性类型、方法参数类型、返回类型与子模型类型，例如 `pid: string`、`getFileText(name: "rule.json" | ...): string`、`setFileText(...): void`、`getNodeTree(): SparkNodeTree`（void/primitive 由 `returnTypeText` 反射，不进 `resultSchema`）。
+- 当前知识覆盖率：`attributes=91/91`、`methodParams=157/157`、`methodReturns=157/157`、`childModelMethods=20`、`schemaDescriptions=801/801`；void/primitive 返回走 `returnTypeText`，对象返回仍走 `resultSchema`/`resultApis`。
 
 ## 7. runtime / knowledge / Worker 边界
 
@@ -222,9 +226,8 @@
 
 问题复盘：
 
-- 构建日志已经能按源码首声明聚合待补项，但 runtime coverage 仍有 11 个 schema 描述缺口。
-- 逐项对账后确认：源码 JSDoc/VCM 语义已经进入原始 `moduleMetadata`，缺口发生在 `buildModuleMetadataPooledDocument` 池化/标准化阶段。
-- 因此这次不能继续“按日志补源码”；应修生成链路，否则日志为 0 但 AI 消费产物仍不闭环。
+- 构建日志已经能按源码首声明聚合待补项；池化/标准化链路修正后，`schemaDescriptions` 与 `methodReturns` 均已闭环。
+- 逐项对账确认：源码 JSDoc/VCM 语义进入原始 `moduleMetadata` 后，经 `buildModuleMetadataPooledDocument` 与 `returnTypeText` 反射可完整落到 runtime compact。
 
 已修正：
 
@@ -239,8 +242,8 @@
 
 - 命令：`pnpm run generate:module-metadata -- --verify-build-consistency`
 - build consistency：通过。
-- runtime audit：`models=6 defs=126 directDefRefs=74 reachableDefs=126 missingDefRefs=0 deadDefs=0`。
-- knowledge coverage：`attributes=90/90 methodParams=154/154 methodReturns=108/154 childModelMethods=20 schemaDescriptions=796/796`。
+- runtime audit：`models=6 defs=128 directDefRefs=76 reachableDefs=128 missingDefRefs=0 deadDefs=0`。
+- knowledge coverage：`attributes=91/91 methodParams=157/157 methodReturns=157/157 childModelMethods=20 schemaDescriptions=801/801`。
 - schema semantic todo：`sourceTodos=0 rawEntries=0`。
 - JSDoc todo：`sourceTodos=0 rawEntries=0`。
 - runtime compact：`208815 bytes`。

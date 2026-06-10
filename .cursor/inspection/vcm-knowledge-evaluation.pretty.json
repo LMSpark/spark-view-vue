@@ -1,12 +1,12 @@
 {
-  "generatedAt": "2026-06-09T01:09:30.537Z",
+  "generatedAt": "2026-06-10T02:53:51.889Z",
   "sources": {
-    "runtime": "src/services/page-design/page-design-module-metadata.runtime.generated.json",
-    "jsdocTodo": "src/services/page-design/page-design-module-metadata.jsdoc-todo.generated.json"
+    "runtime": "generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
+    "jsdocTodo": "generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
   },
   "runtimeEnvelope": {
     "schemaVersion": 2,
-    "defsCount": 126,
+    "defsCount": 128,
     "apiRegistryKinds": [
       "config-page",
       "data-table",
@@ -19,15 +19,14 @@
   "classModelEnvelope": {
     "schemaVersion": 1,
     "rootKind": "project",
-    "modelKinds": [
+    "attributeReachableKinds": [
+      "project",
       "config-page",
-      "data-table",
-      "data-view",
-      "dataset",
       "node-tree",
-      "project"
+      "dataset",
+      "data-table",
+      "data-view"
     ],
-    "diagnostics": [],
     "jsdocShape": "string"
   },
   "jsdocTodo": {
@@ -35,28 +34,62 @@
     "schemaDescriptionTodoCount": 0
   },
   "coverage": {
-    "attributeCount": 90,
-    "methodCount": 154,
-    "methodCounts": {
-      "config-page": 6,
-      "data-table": 15,
-      "data-view": 51,
-      "dataset": 51,
-      "node-tree": 27,
-      "project": 4
-    },
-    "attributeCounts": {
-      "config-page": 26,
-      "data-table": 12,
-      "data-view": 43,
-      "dataset": 2,
-      "node-tree": 5,
-      "project": 2
+    "attributeReachableModelCount": 6,
+    "projectedModels": {
+      "project": {
+        "attributeCount": 3,
+        "methodCount": 7
+      },
+      "config-page": {
+        "attributeCount": 29,
+        "methodCount": 6
+      },
+      "node-tree": {
+        "attributeCount": 5,
+        "methodCount": 27
+      },
+      "dataset": {
+        "attributeCount": 3,
+        "methodCount": 51
+      },
+      "data-table": {
+        "attributeCount": 13,
+        "methodCount": 15
+      },
+      "data-view": {
+        "attributeCount": 43,
+        "methodCount": 51
+      }
     }
   },
+  "attributeApiGraph": {
+    "edgeCount": 5,
+    "edges": [
+      {
+        "from": "project.activePage",
+        "to": "config-page"
+      },
+      {
+        "from": "config-page.nodeTree",
+        "to": "node-tree"
+      },
+      {
+        "from": "config-page.dataSetTool",
+        "to": "dataset"
+      },
+      {
+        "from": "dataset.tables",
+        "to": "data-table"
+      },
+      {
+        "from": "data-table.viewList",
+        "to": "data-view"
+      }
+    ]
+  },
   "resultApiGraph": {
-    "uniqueEdgeCount": 20,
-    "rawEdgeCount": 83,
+    "uniqueEdgeCount": 22,
+    "rawEdgeCount": 291,
     "uniqueEdges": [
       {
         "from": "config-page.editDataSet",
@@ -120,6 +153,16 @@
       },
       {
         "from": "dataset.getView",
+        "to": "data-view",
+        "className": "DataView"
+      },
+      {
+        "from": "dataset.listTables",
+        "to": "data-table",
+        "className": "DataTable"
+      },
+      {
+        "from": "dataset.listViews",
         "to": "data-view",
         "className": "DataView"
       },

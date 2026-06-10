@@ -35,7 +35,7 @@ VcmNativeAgentAdapter.register({ host, alias, metadata, moduleClass, options })
 | `toolLoopNudge` | plan-without-tool / execution-phase / module-script-retry 回合纠偏 |
 | `planWithoutToolMarkers` | 扩展「口头承诺要调工具」检测关键词 |
 | `executionToolNames` | 判定已进入执行阶段的工具名（默认 `vcm_script`） |
-| `enrichRecoveryHints` | FC / 脚本失败后的业务 RECOVERY_HINT |
+| `enrichRecoveryHints` | 可选追加 RECOVERY_HINT；默认由 `collectVcmFailureModeRecoveryHints` 从 metadata `@failureMode` 注入（不遍历 ClassModel 图） |
 
 ## APP 消费方
 

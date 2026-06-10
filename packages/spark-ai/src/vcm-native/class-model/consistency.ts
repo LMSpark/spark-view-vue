@@ -1,5 +1,10 @@
 import type { ClassModel, ClassModelDocument } from './types'
 import {
+  collectModuleApiKinds,
+  projectClassModelFromApi,
+  resolveModuleApiOrUndefined,
+} from './model-projection'
+import {
   renderAttributeDeclarationLine,
   renderConstructorSignature,
   renderMethodSignature,
@@ -11,11 +16,7 @@ export type ClassModelBuildConsistencyIssue = Readonly<{
   message: string
 }>
 
-/**
- * 跨构建对账比较 ClassModel 稳定语义字段与投影签名。
- *
- * 源码反射是语义 SSOT；declaration/signature 在投影层即时渲染后再对账。
- */
+/** 跨构建对账：按需投影 ClassModel 后比较稳定语义字段。 */
 export function compareClassModelDocumentsForBuildConsistency(
   sourceDocument: ClassModelDocument,
   buildEntryDocument: ClassModelDocument,
@@ -28,19 +29,31 @@ export function compareClassModelDocumentsForBuildConsistency(
     buildEntryValue: buildEntryDocument.rootKind,
   })
 
-  const sourceKinds = Object.keys(sourceDocument.models).sort()
-  const buildKinds = Object.keys(buildEntryDocument.models).sort()
+  const kinds = [...new Set([
+    ...collectModuleApiKinds(sourceDocument.module),
+    ...collectModuleApiKinds(buildEntryDocument.module),
+  ])].sort()
   compareValue({
     issues,
-    path: 'models',
-    sourceValue: sourceKinds.join(','),
-    buildEntryValue: buildKinds.join(','),
+    path: 'module.kinds',
+    sourceValue: collectModuleApiKinds(sourceDocument.module).join(','),
+    buildEntryValue: collectModuleApiKinds(buildEntryDocument.module).join(','),
   })
 
-  for (const kind of sourceKinds) {
-    const sourceModel = sourceDocument.models[kind]
-    const buildModel = buildEntryDocument.models[kind]
-    if (sourceModel === undefined || buildModel === undefined) continue
+  for (const kind of kinds) {
+    const sourceApi = resolveModuleApiOrUndefined(sourceDocument, kind)
+    const buildApi = resolveModuleApiOrUndefined(buildEntryDocument, kind)
+    if (sourceApi === undefined || buildApi === undefined) {
+      compareValue({
+        issues,
+        path: `${kind}.modulePresence`,
+        sourceValue: sourceApi === undefined ? 'missing' : 'present',
+        buildEntryValue: buildApi === undefined ? 'missing' : 'present',
+      })
+      continue
+    }
+    const sourceModel = projectClassModelFromApi(sourceApi)
+    const buildModel = projectClassModelFromApi(buildApi)
     compareModel({
       issues,
       kind,
@@ -104,8 +117,8 @@ function compareModel(command: CompareModelCommand): void {
     compareValue({
       issues,
       path: `${kind}.attributes.${sourceAttribute.name}.declaration`,
-      sourceValue: renderAttributeDeclarationLine(sourceDocument, sourceAttribute),
-      buildEntryValue: renderAttributeDeclarationLine(buildEntryDocument, buildAttribute),
+      sourceValue: renderAttributeDeclarationLine(sourceDocument, kind, sourceAttribute),
+      buildEntryValue: renderAttributeDeclarationLine(buildEntryDocument, kind, buildAttribute),
     })
     compareValue({
       issues,
@@ -126,8 +139,8 @@ function compareModel(command: CompareModelCommand): void {
     compareValue({
       issues,
       path: `${kind}.methods.${sourceMethod.name}.signature`,
-      sourceValue: renderMethodSignature(sourceDocument, sourceMethod),
-      buildEntryValue: renderMethodSignature(buildEntryDocument, buildMethod),
+      sourceValue: renderMethodSignature(sourceDocument, kind, sourceMethod),
+      buildEntryValue: renderMethodSignature(buildEntryDocument, kind, buildMethod),
     })
     compareValue({
       issues,

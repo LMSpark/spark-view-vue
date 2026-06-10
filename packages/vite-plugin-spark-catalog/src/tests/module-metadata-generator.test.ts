@@ -413,6 +413,86 @@ class DemoConfigPage {
     expect(editNodeTree?.usageRules).toContain('Must use vcm_script; direct function call is not supported.')
   })
 
+  it('binds attribute.api to element module kind for array and Iterable properties', () => {
+    const root = createTempRoot()
+    writeFileSync(join(root, 'sample.ts'), `
+/**
+ * @moduleKind demo-child
+ */
+class DemoChild {
+  /** Child label. */
+  public label = ''
+}
+
+/**
+ * @moduleKind demo-parent
+ * @moduleActionMode explicit
+ */
+class DemoParent {
+  /** Child rows. */
+  public get rows(): DemoChild[] {
+    return []
+  }
+
+  /** Lazy child pages. */
+  public get pages(): Iterable<DemoChild> {
+    return []
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['sample.ts'],
+      outFile: 'out/modules.json',
+      moduleOutFile: 'out/modules.json',
+      apiRoots: ['DemoParent'],
+      extractResults: true,
+    })
+
+    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-parent')
+    const rows = parent?.rootApi.attributes?.find(attribute => attribute.name === 'rows')
+    const pages = parent?.rootApi.attributes?.find(attribute => attribute.name === 'pages')
+    expect(rows?.api?.kind).toBe('demo-child')
+    expect(rows?.schema).toMatchObject({ type: 'array' })
+    expect(pages?.api?.kind).toBe('demo-child')
+  })
+
+  it('binds attribute.api through nullable union properties', () => {
+    const root = createTempRoot()
+    writeFileSync(join(root, 'sample.ts'), `
+/**
+ * @moduleKind demo-child
+ */
+class DemoChild {
+  /** Child label. */
+  public label = ''
+}
+
+/**
+ * @moduleKind demo-parent
+ * @moduleActionMode explicit
+ */
+class DemoParent {
+  /** Optional child page. */
+  public get activeChild(): DemoChild | null {
+    return null
+  }
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['sample.ts'],
+      outFile: 'out/modules.json',
+      moduleOutFile: 'out/modules.json',
+      apiRoots: ['DemoParent'],
+      extractResults: true,
+    })
+
+    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-parent')
+    const activeChild = parent?.rootApi.attributes?.find(attribute => attribute.name === 'activeChild')
+    expect(activeChild?.api?.kind).toBe('demo-child')
+  })
+
   it('writes a human-facing JSDoc todo log JSON', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `

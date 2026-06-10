@@ -77,6 +77,7 @@ export type AiApiAttributeMetadata = Readonly<{
   schema: AiJsonSchema
   readable: boolean
   writable: boolean
+  /** 子 module kind；标量对象与集合属性均指向元素/值类型的 API（schema.type=array 表示集合）。 */
   api?: AiApiObjectMetadata
 }>
 
@@ -88,6 +89,8 @@ export type AiApiActionMetadata = Readonly<{
   jsdoc?: AiApiJsDocMetadata
   provenance?: AiApiSourceProvenanceMetadata
   paramsSchema: AiJsonSchemaObject
+  /** 构建期 TS 反射参数列表；callback 方法签名真源，不单独投影 callback kind 边。 */
+  paramsTypeText?: string
   takesContext?: boolean
   resultSchema?: AiJsonSchema
   /** 构建期 TS 反射返回类型；void/primitive 不依赖 resultSchema。 */
