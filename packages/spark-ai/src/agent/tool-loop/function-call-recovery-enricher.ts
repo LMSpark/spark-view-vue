@@ -66,6 +66,8 @@ export type EnrichFunctionCallFailureCommand = Readonly<{
   protocolToolName: string
   args: AiJsonParams
   callResult: AiAgentFunctionCallFailure
+  /** 当前业务实例 ID；app 层 recovery hook 可用来插值实例级提示。 */
+  moduleInstanceId?: string
 }>
 
 export type EnrichFunctionCallResultOptions = Readonly<{

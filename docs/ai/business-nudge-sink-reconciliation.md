@@ -108,7 +108,13 @@ app 层（page-design-business）→ toolLoopNudge / enrichRecoveryHints
 - SOP SSOT：[`page-design-sop.ts`](../../src/services/page-design/page-design-sop.ts)
 - 测试：[`tests/page/page-design-sop.test.ts`](../../tests/page/page-design-sop.test.ts)
 
-## 后续（需单独授权）
+## 生成轨观测
 
-1. 生成轨 iterate 仅作观测报表，失败不自动改代码
-2. 可选：`EnrichFunctionCallFailureCommand` 扩展 `moduleInstanceId` 使 recovery hint 可插值 pageId
+- 脚本：`pnpm run report:page-design:e2e`（默认 3 轮，可用 `AI_E2E_ROUNDS` 覆盖）
+- 快照：[`page-design-e2e-observation.snapshot.json`](./page-design-e2e-observation.snapshot.json)
+- 退出码以落盘为准；E2E 成败仅记入 snapshot，**不驱动** SOP/架构改动
+
+## recovery pageId 插值
+
+- `EnrichFunctionCallFailureCommand.moduleInstanceId` 由 `tool-call-executor` 注入
+- `openPageFirst` recovery hint 在 pageId 可用时插值具体 `pageId`

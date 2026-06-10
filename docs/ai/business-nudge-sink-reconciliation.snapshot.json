@@ -1,6 +1,6 @@
 {
-  "generatedAt": "2026-06-10T00:27:39.253Z",
-  "headCommit": "e3df0259d3f2f77958730399b99e155029904de2",
+  "generatedAt": "2026-06-10T00:35:52.661Z",
+  "headCommit": "6864ec1af834ee5bcc941cf64e7776c740758d0c",
   "planRef": ".cursor/plans/业务_nudge_下沉_7a9eee96.plan.md",
   "regressionCount": 0,
   "noRegression": true,
@@ -50,13 +50,13 @@
       "label": "verify:arch",
       "command": "pnpm run verify:arch",
       "exitCode": 0,
-      "startedAt": "2026-06-10T00:27:39.314Z"
+      "startedAt": "2026-06-10T00:35:52.721Z"
     },
     {
       "label": "vitest-nudge-suite",
       "command": "pnpm exec vitest run packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts tests/page/verify-rules.test.ts",
       "exitCode": 0,
-      "startedAt": "2026-06-10T00:27:41.161Z"
+      "startedAt": "2026-06-10T00:35:54.630Z"
     }
   ],
   "completionCriteria": {

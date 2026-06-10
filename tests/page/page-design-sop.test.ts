@@ -43,6 +43,21 @@ describe('resolvePageDesignRecoveryHints', () => {
     expect(hints.some(hint => hint.includes(readPageDesignHint('openPageFirst')))).toBe(true)
   })
 
+  it('interpolates moduleInstanceId into openPageFirst recovery hint', () => {
+    const hints = resolvePageDesignRecoveryHints({
+      protocolToolName: VCM_NATIVE_TOOL_NAMES.script,
+      args: { script: 'page.editDataSet({})' },
+      moduleInstanceId: FIXTURE_PAGE_ID,
+      callResult: {
+        ok: false,
+        code: 'SCRIPT_EXECUTION_FAILED',
+        msg: 'editDataSet is not a function',
+        fix: 'fix script',
+      },
+    })
+    expect(hints.some(hint => hint.includes(`pageId: "${FIXTURE_PAGE_ID}"`))).toBe(true)
+  })
+
   it('returns vcmQueryShape hint for invalid vcm_query member args', () => {
     const hints = resolvePageDesignRecoveryHints({
       protocolToolName: VCM_NATIVE_TOOL_NAMES.query,

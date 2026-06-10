@@ -149,6 +149,7 @@ export class AiAgentToolCallExecutor {
         args: parsedArgs.args,
         callResult: applyFailureRecoveryEnrichment({
           registration: input.registration,
+          moduleInstanceId: runtimeContext.moduleInstanceId,
           protocolToolName,
           args: parsedArgs.args,
           callResult: parsedArgs.result,
@@ -178,6 +179,7 @@ export class AiAgentToolCallExecutor {
         args,
         callResult: applyFailureRecoveryEnrichment({
           registration: input.registration,
+          moduleInstanceId: runtimeContext.moduleInstanceId,
           protocolToolName,
           args,
           callResult: beforeFunctionCallFailureResult(beforeDirective),
@@ -204,6 +206,7 @@ export class AiAgentToolCallExecutor {
       ? rawCallResult
       : applyFailureRecoveryEnrichment({
         registration: input.registration,
+        moduleInstanceId: runtimeContext.moduleInstanceId,
         protocolToolName,
         args,
         callResult: rawCallResult,
@@ -394,6 +397,7 @@ function toolArgsFailureResult(error: ToolArgsParseError): AiAgentFunctionCallRe
 
 type ApplyFailureRecoveryEnrichmentCommand<TInput extends AiJsonParams> = Readonly<{
   registration: AiAgentRegistration<TInput>
+  moduleInstanceId: string
   protocolToolName: string
   args: AiJsonParams
   callResult: AiAgentFunctionCallResult<unknown>
@@ -403,10 +407,12 @@ function applyFailureRecoveryEnrichment<TInput extends AiJsonParams>(
   command: ApplyFailureRecoveryEnrichmentCommand<TInput>,
 ): AiAgentFunctionCallResult<unknown> {
   if (command.callResult.ok) return command.callResult
+  const moduleInstanceId = command.moduleInstanceId.trim()
   return enrichFunctionCallResult({
     protocolToolName: command.protocolToolName,
     args: command.args,
     callResult: command.callResult,
+    ...(moduleInstanceId.length === 0 ? {} : { moduleInstanceId }),
   }, {
     ...(command.registration.enrichRecoveryHints === undefined
       ? {}

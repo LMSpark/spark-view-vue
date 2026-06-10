@@ -118,8 +118,21 @@ export const PAGE_DESIGN_RECOVERY_RULES: readonly PageDesignRecoveryRule[] = [
   },
 ]
 
-function resolveHintLines(keys: readonly PageDesignHintKey[]): readonly string[] {
-  return keys.map((key) => PAGE_DESIGN_HINTS[key])
+function formatPageDesignHint(key: PageDesignHintKey, pageId?: string): string {
+  if (key === 'openPageFirst') {
+    const normalizedPageId = pageId?.trim() ?? ''
+    if (normalizedPageId.length > 0) {
+      return `vcm_script 必须先 await this.openPageDesign({ pageId: "${normalizedPageId}" }) 得到 page，再 await page.editDataSet(async ds => ...)。`
+    }
+  }
+  return PAGE_DESIGN_HINTS[key]
+}
+
+function resolveHintLines(
+  keys: readonly PageDesignHintKey[],
+  command: EnrichFunctionCallFailureCommand,
+): readonly string[] {
+  return keys.map((key) => formatPageDesignHint(key, command.moduleInstanceId))
 }
 
 function matchesRecoveryRule(
@@ -139,7 +152,7 @@ export function resolvePageDesignRecoveryHints(
   const hints: string[] = []
   for (const rule of PAGE_DESIGN_RECOVERY_RULES) {
     if (!matchesRecoveryRule(command, rule)) continue
-    for (const line of resolveHintLines(rule.hintKeys)) {
+    for (const line of resolveHintLines(rule.hintKeys, command)) {
       hints.push(line)
     }
   }
@@ -199,6 +212,6 @@ export function buildPageDesignToolLoopNudge(
   }
 }
 
-export function readPageDesignHint(key: PageDesignHintKey): string {
-  return PAGE_DESIGN_HINTS[key]
+export function readPageDesignHint(key: PageDesignHintKey, pageId?: string): string {
+  return formatPageDesignHint(key, pageId)
 }
