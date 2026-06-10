@@ -219,7 +219,16 @@ function enrichPageDesignRecoveryHints(command: EnrichFunctionCallFailureCommand
     hints.push('actionName 必须是 openPageDesign 等业务 action，不能是 vcm_script 等协议工具。')
   }
 
+  if (protocolToolName === VCM_NATIVE_TOOL_NAMES.query && callResult.code === 'INVALID_VCM_NATIVE_TOOL_ARGS') {
+    if (callResult.msg.includes('member')) {
+      hints.push('vcm_query 只接受 kind/keyword/includeMembers；查 config-page 用 kind:"config-page" 或 keyword，勿传 member/select/query。')
+    }
+  }
+
   if (callResult.code === 'SCRIPT_EXECUTION_FAILED' && protocolToolName === VCM_NATIVE_TOOL_NAMES.script) {
+    if (callResult.msg.includes('Function statements require a function name')) {
+      hints.push('vcm_script 脚本体用 await 链式语句；勿写裸 function foo(){}，局部逻辑用 const fn = async () => {} 或直接内联 await。')
+    }
     if (callResult.msg.includes('toJSON')) {
       hints.push('脚本勿调 toJSON；用 openPageDesign → editDataSet/editNodeTree mutator 链式 API。')
     }

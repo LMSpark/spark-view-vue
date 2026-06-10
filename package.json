@@ -44,6 +44,7 @@
         "verify:vcm-native:full": "pnpm --filter @spark-appworks/spark-utils run build && pnpm --filter @spark-appworks/spark-json-document run build && pnpm --filter @spark-appworks/spark-data run build && pnpm --filter @spark-appworks/spark-project-model run build && pnpm run generate:module-metadata -- --verify-build-consistency && pnpm --filter @spark-appworks/spark-ai run build && pnpm run verify:vcm-native && pnpm run typecheck",
         "verify:page-design": "node scripts/verify-page-design-offline.mjs",
         "verify:page-design:e2e": "node --import tsx scripts/verify-page-design-e2e.mjs",
+        "verify:page-design:artifacts": "node --import tsx scripts/verify-page-design-e2e.mjs --validate-dir tests/fixtures/page-design-leave-request-smoke",
         "iterate:page-design:e2e": "node scripts/iterate-page-design-e2e.mjs",
         "verify:rules": "pnpm run verify:arch && pnpm run verify:ai-codegen && pnpm run verify:docs",
         "migrate:nav:nodekind": "node scripts/migrate-nav-nodekind.mjs",
