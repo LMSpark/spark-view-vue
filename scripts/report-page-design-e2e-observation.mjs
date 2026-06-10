@@ -13,6 +13,7 @@ import { fileURLToPath } from 'node:url'
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const E2E_SCRIPT = path.join(ROOT, 'scripts/verify-page-design-e2e.mjs')
 const SNAPSHOT_PATH = path.join(ROOT, 'docs/ai/page-design-e2e-observation.snapshot.json')
+const SUMMARY_PATH = path.join(ROOT, 'docs/ai/page-design-e2e-observation.md')
 const rounds = Number(process.env.AI_E2E_ROUNDS ?? '3')
 const backendUrl = process.env.AI_BACKEND_URL ?? 'http://localhost:8180'
 
@@ -126,8 +127,57 @@ const snapshot = {
   })),
 }
 
+function buildObservationMarkdown(snapshotData) {
+  const lines = [
+    '# pageDesign 生成轨观测摘要',
+    '',
+    '> 机器快照：[`page-design-e2e-observation.snapshot.json`](./page-design-e2e-observation.snapshot.json)',
+    '> 命令：`pnpm run report:page-design:e2e`（可用 `AI_E2E_ROUNDS` 覆盖轮数）',
+    '',
+    '## 立场',
+    '',
+    '- **结构轨**（fixture + offline Vitest）为 CI 门禁，本观测**不驱动** SOP/架构改动。',
+    '- 失败模式仅作 LLM 协议稳定性输入，新增 recovery 须经 catalog 表驱动评审。',
+    '',
+    `## 本次运行（${snapshotData.generatedAt}）`,
+    '',
+    `- HEAD: \`${snapshotData.headCommit}\``,
+    `- 轮数: ${String(snapshotData.roundsCompleted)}/${String(snapshotData.roundsRequested)}`,
+    `- 成功: ${String(snapshotData.aggregate.successCount)}，失败: ${String(snapshotData.aggregate.failureCount)}`,
+    `- 首次成功轮: ${snapshotData.firstSuccessRound === null ? '无' : String(snapshotData.firstSuccessRound)}`,
+    '',
+    '## 分轮摘要',
+    '',
+  ]
+  for (const round of snapshotData.rounds) {
+    const brief = round.brief
+    lines.push(`### Round ${String(round.round)}`)
+    lines.push('')
+    lines.push(`- ok: ${String(brief.ok)}`)
+    lines.push(`- tools: ${String(brief.toolCallCount)}，failedTools: ${String(brief.failedToolCallCount)}`)
+    lines.push(`- pageId: ${brief.pageId ?? '—'}`)
+    lines.push(`- verifyArtifacts: ${String(brief.verifyArtifacts)}`)
+    lines.push(`- durationMs: ${String(brief.durationMs ?? '—')}`)
+    if (brief.failedTools.length > 0) {
+      lines.push('- failedTools:')
+      for (const tool of brief.failedTools) {
+        lines.push(`  - \`${tool.toolName}\` / ${tool.code}: ${tool.msg}`)
+      }
+    }
+    if (brief.failureReasons.length > 0) {
+      lines.push('- reasons:')
+      for (const reason of brief.failureReasons) {
+        lines.push(`  - ${reason}`)
+      }
+    }
+    lines.push('')
+  }
+  return `${lines.join('\n')}\n`
+}
+
 fs.mkdirSync(path.dirname(SNAPSHOT_PATH), { recursive: true })
 fs.writeFileSync(SNAPSHOT_PATH, `${JSON.stringify(snapshot, null, 2)}\n`, 'utf8')
+fs.writeFileSync(SUMMARY_PATH, buildObservationMarkdown(snapshot), 'utf8')
 
 console.log(JSON.stringify({
   ok: snapshot.aggregate.successCount > 0,

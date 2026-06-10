@@ -111,6 +111,7 @@ app 层（page-design-business）→ toolLoopNudge / enrichRecoveryHints
 ## 生成轨观测
 
 - 脚本：`pnpm run report:page-design:e2e`（默认 3 轮，可用 `AI_E2E_ROUNDS` 覆盖）
+- 摘要：[`page-design-e2e-observation.md`](./page-design-e2e-observation.md)
 - 快照：[`page-design-e2e-observation.snapshot.json`](./page-design-e2e-observation.snapshot.json)
 - 退出码以落盘为准；E2E 成败仅记入 snapshot，**不驱动** SOP/架构改动
 
