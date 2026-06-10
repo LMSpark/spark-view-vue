@@ -46,6 +46,7 @@
         "verify:page-design:e2e": "node --import tsx scripts/verify-page-design-e2e.mjs",
         "verify:page-design:artifacts": "node --import tsx scripts/verify-page-design-e2e.mjs --validate-dir tests/fixtures/page-design-leave-request-smoke",
         "iterate:page-design:e2e": "node scripts/iterate-page-design-e2e.mjs",
+        "verify:business-nudge-reconciliation": "node scripts/verify-business-nudge-reconciliation.mjs",
         "verify:rules": "pnpm run verify:arch && pnpm run verify:ai-codegen && pnpm run verify:docs",
         "migrate:nav:nodekind": "node scripts/migrate-nav-nodekind.mjs",
         "verify": "pnpm run build:packages && pnpm run typecheck && pnpm run lint && pnpm run verify:rules",

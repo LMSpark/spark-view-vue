@@ -1,0 +1,69 @@
+{
+  "generatedAt": "2026-06-10T00:27:39.253Z",
+  "headCommit": "e3df0259d3f2f77958730399b99e155029904de2",
+  "planRef": ".cursor/plans/业务_nudge_下沉_7a9eee96.plan.md",
+  "regressionCount": 0,
+  "noRegression": true,
+  "checks": [
+    {
+      "id": "PLAN-KERNEL-LITERALS",
+      "title": "spark-ai tool-loop / native-runtime 无业务方法字面量",
+      "status": "pass",
+      "evidence": "grep 0 hits"
+    },
+    {
+      "id": "PLAN-PAGE-DESIGN-HOOKS",
+      "title": "page-design-business 实现 hooks 并委托 page-design-sop catalog",
+      "status": "pass",
+      "evidence": "src/services/page-design-business.ts"
+    },
+    {
+      "id": "PLAN-SOP-CATALOG",
+      "title": "page-design-sop.ts 为 SOP SSOT",
+      "status": "pass",
+      "evidence": "src/services/page-design/page-design-sop.ts"
+    },
+    {
+      "id": "PLAN-REGISTRATION-CONTRACT",
+      "title": "registration-types 扩展四类 hook",
+      "status": "pass",
+      "evidence": "registration-types.ts"
+    },
+    {
+      "id": "DEBT-SOP-THREE-CHANNEL",
+      "title": "SOP 三通道收敛至 page-design-sop.ts（business 无内联 recovery 分支）",
+      "status": "pass",
+      "evidence": {
+        "businessMsgIncludesBranches": 0,
+        "ssot": "src/services/page-design/page-design-sop.ts"
+      }
+    },
+    {
+      "id": "DEVIATION-REASON-NAME",
+      "title": "nudge reason: plan module_script_retry → 实现 vcm_script_retry",
+      "status": "deviation-positive",
+      "evidence": "与 VCM 协议命名一致，非回归"
+    }
+  ],
+  "commands": [
+    {
+      "label": "verify:arch",
+      "command": "pnpm run verify:arch",
+      "exitCode": 0,
+      "startedAt": "2026-06-10T00:27:39.314Z"
+    },
+    {
+      "label": "vitest-nudge-suite",
+      "command": "pnpm exec vitest run packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts tests/page/verify-rules.test.ts",
+      "exitCode": 0,
+      "startedAt": "2026-06-10T00:27:41.161Z"
+    }
+  ],
+  "completionCriteria": {
+    "kernelNoBusinessLiterals": true,
+    "pageDesignSopInAppLayer": true,
+    "sopCatalogSsot": true,
+    "sopThreeChannelDebtCleared": true,
+    "testsAndVerifyArchGreen": true
+  }
+}

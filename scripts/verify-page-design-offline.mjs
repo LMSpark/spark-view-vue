@@ -20,6 +20,7 @@ const testFiles = [
   'tests/page/page-design-gates.test.ts',
   'tests/page/page-design-vcm-knowledge-provider.test.ts',
   'tests/page/page-design-e2e-artifacts.test.ts',
+  'tests/page/page-design-sop.test.ts',
   'packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts',
   'packages/spark-ai/src/tests/native-script-sandbox.test.ts',
   'packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts',

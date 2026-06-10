@@ -12,9 +12,13 @@ import {
   type AiAgentHost,
   type AiAgentRuntimeContext,
   type AiAgentToolLoopNudgeContext,
-  type AiAgentToolLoopNudgeReason,
 } from '@/services/spark-ai-agent-bindings'
-import type { EnrichFunctionCallFailureCommand } from '@spark-appworks/spark-ai/agent'
+import {
+  buildPageDesignToolLoopNudge,
+  pageDesignScriptShapeLines,
+  pageDesignSystemPromptTailLines,
+  resolvePageDesignRecoveryHints,
+} from './page-design/page-design-sop'
 import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
@@ -148,7 +152,7 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
         executionToolNames: PAGE_DESIGN_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createPageDesignToolLoopNudge,
-        enrichRecoveryHints: enrichPageDesignRecoveryHints,
+        enrichRecoveryHints: resolvePageDesignRecoveryHints,
         ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
           ? {}
           : { jsonSchemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
@@ -173,94 +177,6 @@ function createPageDesignToolLoopNudge(context: AiAgentToolLoopNudgeContext): st
   return buildPageDesignToolLoopNudge(context.reason, pageId)
 }
 
-function buildPageDesignToolLoopNudge(
-  reason: AiAgentToolLoopNudgeReason,
-  pageId: string,
-): string | undefined {
-  const scriptShape = pageDesignScriptSopLines(pageId)
-  switch (reason) {
-    case 'plan_without_tool':
-      return [
-        '写页面时优先 vcm_script；若已读完 vcm_action_guide，立即执行脚本链。',
-        ...scriptShape,
-      ].join('\n')
-    case 'execution_phase':
-      return [
-        `目录/指南阶段已完成，pageId="${pageId}"。禁止再重复查目录，直接执行 vcm_script。`,
-        ...scriptShape,
-        'openPageDesign 必须 await；editDataSet/editNodeTree 直接传 async callback；完成后 agent_complete({ summary })。',
-      ].join('\n')
-    case 'vcm_script_retry':
-      return [
-        '上一次 vcm_script 失败：按 RECOVERY_HINT 修正，禁止再查 catalog。',
-        ...scriptShape,
-        'createTable 签名是 createTable({ tableName, columns })，不是 createTable(name, columns)。',
-      ].join('\n')
-    default:
-      return undefined
-  }
-}
-
-function pageDesignScriptSopLines(pageId: string): readonly string[] {
-  return [
-    `vcm_script 主路径：const page = await this.openPageDesign({ pageId: "${pageId}" });`,
-    'await page.editDataSet(async (ds) => { ds.createTable({ tableName: "<TableName>", columns: [{ name, type, label }] }); });',
-    'r-form 绑定草稿行：dataViewKey="<Table>@default"、dataMember="currentRow"（或 contextDataMember="currentRow"）；字段节点用 props.field，勿用 prop。',
-    'await page.editNodeTree(async (tree) => { tree.addNode({ parentComponentId: null, node: { type: "r-table", id: "...", props: { dataViewKey: "<table@viewId>", dataMember: "rows" } } }); });',
-    '提交按钮优先 append-row 闭环；若用 script.js 处理提交，rule.json 仍需表单绑定与列表区。',
-  ]
-}
-
-function enrichPageDesignRecoveryHints(command: EnrichFunctionCallFailureCommand): readonly string[] {
-  const hints: string[] = []
-  const { protocolToolName, callResult } = command
-
-  if (protocolToolName === VCM_NATIVE_TOOL_NAMES.actionGuide && callResult.code === 'FUNCTION_NOT_FOUND') {
-    hints.push('actionName 必须是 openPageDesign 等业务 action，不能是 vcm_script 等协议工具。')
-  }
-
-  if (protocolToolName === VCM_NATIVE_TOOL_NAMES.query && callResult.code === 'INVALID_VCM_NATIVE_TOOL_ARGS') {
-    if (callResult.msg.includes('member')) {
-      hints.push('vcm_query 只接受 kind/keyword/includeMembers；查 config-page 用 kind:"config-page" 或 keyword，勿传 member/select/query。')
-    }
-  }
-
-  if (callResult.code === 'SCRIPT_EXECUTION_FAILED' && protocolToolName === VCM_NATIVE_TOOL_NAMES.script) {
-    if (callResult.msg.includes('Function statements require a function name')) {
-      hints.push('vcm_script 脚本体用 await 链式语句；勿写裸 function foo(){}，局部逻辑用 const fn = async () => {} 或直接内联 await。')
-    }
-    if (callResult.msg.includes('toJSON')) {
-      hints.push('脚本勿调 toJSON；用 openPageDesign → editDataSet/editNodeTree mutator 链式 API。')
-    }
-    if (callResult.msg.includes('.call is not a function')) {
-      hints.push('ConfigPageNode 无 call()；改用 page.editNodeTree(async tree => ...) / page.editDataSet(async ds => ...)。')
-    }
-    if (callResult.msg.includes('editDataSet is not a function')
-      || callResult.msg.includes('editNodeTree is not a function')) {
-      hints.push('vcm_script 必须先 await this.openPageDesign({ pageId }) 得到 page，再 await page.editDataSet(async ds => ...)。')
-    }
-    if (callResult.msg.includes("reading 'includes'")) {
-      hints.push('createTable 签名：createTable({ tableName: "<TableName>", columns: [{ name, type, label }] })；勿用 positional 参数。')
-      hints.push('先 editDataSet 建表与 default 视图，再 editNodeTree 按 VCM 元数据声明的节点 type 和 props schema 构造节点。')
-    }
-    if (callResult.msg.includes('run is not a function')) {
-      hints.push('editDataSet/editNodeTree 必须直接传函数：page.editDataSet(async ds => ...)；勿把 createTable 参数对象当成 run。')
-    }
-  }
-
-  if (callResult.code === 'SCRIPT_EXECUTION_FAILED') {
-    hints.push('openPageDesign 返回 ConfigPageNode 链式对象：用 page.editNodeTree(async tree => ...)/page.editDataSet(async ds => ...)，勿用 page.call()。')
-  }
-
-  if (callResult.code === 'SCHEMA_VALIDATION_FAILED' && protocolToolName === VCM_NATIVE_TOOL_NAMES.script) {
-    if (callResult.msg.includes('requires a callback') || callResult.msg.includes('must be a function')) {
-      hints.push('editDataSet/editNodeTree 必须直接传 async callback；勿把 createTable 参数对象当作 run。')
-    }
-  }
-
-  return hints
-}
-
 function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
   const effectiveDescription = input.effectiveDescription.trim()
   if (effectiveDescription.length === 0) {
@@ -278,14 +194,8 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     '写页面的主通道: 调用 vcm_script({ script })；script 是 async function body，由运行时执行，不要只输出计划文字。',
     'script 内 this 是当前 ProjectModel 脚本上下文；不要把 /kind[id]/ path 链作为主用法。',
     `vcm_script 形状（pageId="${input.pageId}"，表名/字段按 effectiveDescription 与 VCM schema 决定）：`,
-    ...pageDesignScriptSopLines(input.pageId),
-    `page.setFileText("script.js", ""); page.setFileText("style.css", "");`,
-    `return { ruleJson: page.getFileText("rule.json"), pageDataJson: page.getFileText("pagedata.json"), script: page.getFileText("script.js"), style: page.getFileText("style.css") };`,
-    '脚本代理支持原生形态：editDataSet(async ds=>...)、editNodeTree(async tree=>...)、createTable({ tableName, columns })、addNode({ parentComponentId, node })。',
-    'openPageDesign 必须 await；读取必要 VCM 函数 schema 后必须 vcm_script 生成四文件结果，最后 agent_complete。',
-    'pageId 来自当前输入；勿把 pageId 当成 projectId。',
-    '元数据来源: generated pageDesign module metadata.',
-    '执行原则: LLM 生成代码 -> vcm_script 执行代码 -> ConfigPageNode 内存模型得到 rule.json / pagedata.json / script.js / style.css；落盘由外层 ProjectWorkspace 处理。',
+    ...pageDesignScriptShapeLines(input.pageId),
+    ...pageDesignSystemPromptTailLines(input.pageId),
   ].join('\n')
 }
 
