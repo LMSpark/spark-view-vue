@@ -1,4 +1,7 @@
-/** PageDataSetFile——pagedata.json 的内存模型，负责 DataSet 的读写与撤销重做。 */
+/**
+ * PageDataSetFile——pagedata.json 的内存模型，负责 DataSet 的读写与撤销重做。
+ * @vcmSession 页面文件 IO 会话；序列化委托给 DataSet.toJson/fromJson，自身不持有独立 JSON 真源。
+ */
 import { DataSet, DataSetCrudTool } from '@spark-appworks/spark-data'
 import { parsePageDataText, serializeDataSet } from '../page-file'
 

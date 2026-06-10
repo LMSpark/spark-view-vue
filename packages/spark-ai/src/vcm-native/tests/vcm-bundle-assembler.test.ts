@@ -11,7 +11,7 @@ import { resolveModuleMetadataJson } from '../metadata/resolve-api-object-metada
 import { readModuleMetadataRuntimeDocument } from '../metadata/module-metadata-runtime-document'
 
 const root = resolve(import.meta.dirname, '../../../../..')
-const distDir = resolve(root, 'generated/vcm/dist/project-page-surface')
+const distDir = resolve(root, 'generated/vcm/project-page-surface')
 
 describe('VCM bundle assembler', () => {
   it('reassembles split kinds into the same module shape as monolithic runtime', () => {

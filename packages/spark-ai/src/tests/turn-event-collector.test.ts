@@ -335,6 +335,62 @@ describe('createTurnEventCollector', () => {
     })
   })
 
+  it('recovers bare VCM function-style tool calls emitted as assistant text', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    const call = 'vcm_action_guide({"kind":"project","actionName":"readProjectPlanningInput"})'
+    hub.emit(createTurnAppEvent('result', {
+      text: `${call}${call}`,
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_bare_1',
+        type: 'function',
+        function: {
+          name: 'vcm_action_guide',
+          arguments: JSON.stringify({
+            kind: 'project',
+            actionName: 'readProjectPlanningInput',
+          }),
+        },
+      }],
+    })
+  })
+
+  it('recovers bare vcm_script pseudo calls without renaming arguments', async () => {
+    const hub = createTestEventHub()
+    const collector = createTurnEventCollector({
+      input: createTurnInput(),
+      source: hub,
+      timeoutMs: 1_000,
+    })
+
+    hub.emit(createTurnAppEvent('result', {
+      text: 'vcm_script({"script":"return await this.readProjectPlanningInput()"})',
+    }))
+
+    await expect(collector.result).resolves.toEqual({
+      text: '',
+      toolCalls: [{
+        id: 'call_bare_1',
+        type: 'function',
+        function: {
+          name: 'vcm_script',
+          arguments: JSON.stringify({
+            script: 'return await this.readProjectPlanningInput()',
+          }),
+        },
+      }],
+    })
+  })
+
   it('keeps recovered arg_key blocks strict without old argument aliases', async () => {
     const hub = createTestEventHub()
     const collector = createTurnEventCollector({

@@ -6,7 +6,8 @@
       "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.api.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
       "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\page-design-module-metadata.generated.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
       "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\src\\\\services\\\\page-design\\\\payload\\\\component-catalog.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
-      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\data\\\\stills-metadata.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)"
+      "PowerShell(Get-ChildItem -Path \"d:\\\\SPARK_AppWorks\\\\data\\\\stills-metadata.json\" | Select-Object @{N='Lines';E={\\(Get-Content $_.FullName | Measure-Object -Line\\).Lines}}, @{N='LengthKB';E={[math]::Round\\($_.Length/1KB,1\\)}}, FullName)",
+      "Bash(exist \"d:\\\\SPARK_AppWorks\\\\generated\\\\declarations\" rmdir /s /q \"d:\\\\SPARK_AppWorks\\\\generated\\\\declarations\")"
     ]
   }
 }

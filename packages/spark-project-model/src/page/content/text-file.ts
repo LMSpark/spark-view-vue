@@ -1,4 +1,7 @@
-/** PageTextFile——script.js / style.css 的内存模型，负责文本内容的读写与撤销重做。 */
+/**
+ * PageTextFile——script.js / style.css 的内存模型，负责文本内容的读写与撤销重做。
+ * @vcmSession 纯文本 IO 会话；持久化走 getFileText / setText，无结构化 JSON 真源。
+ */
 import { SnapshotHistory } from '@spark-appworks/spark-utils'
 
 const TEXT_HISTORY_LIMIT = 100

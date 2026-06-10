@@ -18,25 +18,41 @@ import { createAppSseEventSource } from '@/services/sse-events'
 
 const AI_TURN_PROTOCOL_VERSION = 4
 const AI_TURN_EVENT_TIMEOUT_MS = 300_000
+const AI_TURN_IDLE_TIMEOUT_MS = 90_000
 const AI_SESSION_TURN_SAFE_RETRIES = 2
 const AI_SESSION_TURN_RETRY_BASE_MS = 800
 const AI_SESSION_API_BASE = '/api/ai/sessions'
 const AI_TURN_API = '/api/ai/turns'
+const MAX_AI_TURN_DIAGNOSTICS = 300
+
+type AiTurnBridgeDiagnostic = Readonly<{
+  at: number
+  type: string
+  sessionId?: string
+  turnId?: string
+  message?: string
+  details?: Record<string, unknown>
+}>
+
+const aiTurnDiagnostics: AiTurnBridgeDiagnostic[] = []
 
 export type AiAgentTurnBridgeOptions = Readonly<{
   transport?: 'app-sse' | 'session-turn'
   timeoutMs?: number
+  idleTimeoutMs?: number
   windowSize?: number
 }>
 
 export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {}): AiAgentTurnCallbacks {
   const transport = options.transport ?? 'app-sse'
   const timeoutMs = options.timeoutMs ?? AI_TURN_EVENT_TIMEOUT_MS
+  const idleTimeoutMs = options.idleTimeoutMs ?? AI_TURN_IDLE_TIMEOUT_MS
   const windowSize = normalizeWindowSize(options.windowSize)
 
   return {
     prepareSession: async (input) => {
       // The backend owns session lifecycle and persistence; APP only ensures it before a turn.
+      recordAiTurnDiagnostic('prepare-session-request', input.sessionId)
       const body = await http.post(AI_SESSION_API_BASE, {
         protocolVersion: AI_TURN_PROTOCOL_VERSION,
         sessionId: input.sessionId,
@@ -49,18 +65,24 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
         ...(windowSize === undefined ? {} : { windowSize }),
       }, signalConfig(input.signal))
       assertPreparedSession(body, input)
+      recordAiTurnDiagnostic('prepare-session-ok', input.sessionId)
     },
     executeTurn: async (input) => {
       if (transport === 'session-turn') {
         return executeSessionTurn(input, windowSize)
       }
 
+      const diagnosticInput = withTurnDiagnostics(input)
       const collector = createTurnEventCollector({
-        input,
+        input: diagnosticInput,
         source: createAppSseEventSource(),
         timeoutMs,
+        idleTimeoutMs,
       })
       try {
+        recordAiTurnDiagnostic('turn-start-request', input.sessionId, input.turn.turnId, undefined, {
+          messageCount: input.messages.length,
+        })
         const body = await http.post(AI_TURN_API, {
           sessionId: input.sessionId,
           turnId: input.turn.turnId,
@@ -69,8 +91,12 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
           ...(windowSize === undefined ? {} : { windowSize }),
         }, signalConfig(input.signal))
         assertTurnStart(body, input)
+        recordAiTurnDiagnostic('turn-start-accepted', input.sessionId, input.turn.turnId, undefined, {
+          started: isRecord(body) ? body['started'] : undefined,
+        })
         return await collector.result
       } catch (error) {
+        recordAiTurnDiagnostic('turn-error', input.sessionId, input.turn.turnId, errorMessage(error))
         collector.close()
         throw error
       }
@@ -84,6 +110,48 @@ export function createAiAgentTurnCallbacks(options: AiAgentTurnBridgeOptions = {
       })
       assertAppendMessages(body, input)
     },
+  }
+}
+
+export function readAiTurnBridgeDiagnostics(): readonly AiTurnBridgeDiagnostic[] {
+  return aiTurnDiagnostics.map(item => ({ ...item }))
+}
+
+export function clearAiTurnBridgeDiagnostics(): void {
+  aiTurnDiagnostics.length = 0
+}
+
+function withTurnDiagnostics(
+  input: SparkAiAgent.AiAgentStreamTurnInput,
+): SparkAiAgent.AiAgentStreamTurnInput {
+  return {
+    ...input,
+    onStreamEvent: (event) => {
+      recordAiTurnDiagnostic('turn-frame', input.sessionId, input.turn.turnId, undefined, {
+        frameType: event.type,
+      })
+      input.onStreamEvent?.(event)
+    },
+  }
+}
+
+function recordAiTurnDiagnostic(
+  type: string,
+  sessionId?: string,
+  turnId?: string,
+  message?: string,
+  details?: Record<string, unknown>,
+): void {
+  aiTurnDiagnostics.push({
+    at: Date.now(),
+    type,
+    ...(sessionId === undefined ? {} : { sessionId }),
+    ...(turnId === undefined ? {} : { turnId }),
+    ...(message === undefined ? {} : { message }),
+    ...(details === undefined ? {} : { details }),
+  })
+  while (aiTurnDiagnostics.length > MAX_AI_TURN_DIAGNOSTICS) {
+    aiTurnDiagnostics.shift()
   }
 }
 
@@ -279,4 +347,8 @@ function emitSyntheticSessionTurnEvent(input: SparkAiAgent.AiAgentStreamTurnInpu
 
 function readString(value: unknown, key: string): string | undefined {
   return isRecord(value) && typeof value[key] === 'string' ? value[key] : undefined
+}
+
+function errorMessage(error: unknown): string {
+  return error instanceof Error ? error.message : String(error)
 }

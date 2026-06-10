@@ -16,6 +16,10 @@ export function compareNavigationNodes(
   return a.order !== b.order ? a.order - b.order : a.id.localeCompare(b.id)
 }
 
+/**
+ * 导航索引：id → node 映射 + pid → children 查询。
+ * @vcmSession 由 ProjectDesign 维护的运行时索引；随导航树重建，无独立序列化。
+ */
 export class NavigationIndex<TNode extends NavigationTreeNodeLike> {
   private readonly nodesById: Map<string, TNode>
   private childrenByPid = new Map<string, TNode[]>()

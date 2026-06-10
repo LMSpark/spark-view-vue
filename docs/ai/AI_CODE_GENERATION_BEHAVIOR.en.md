@@ -131,6 +131,7 @@ Before adding or keeping an interface, answer three questions:
 
 - Classes carry state, lifecycle, caching, invariants, and default behavior.
 - Subclasses express genuine "is-a" relationships only — do not inherit just to reuse a few methods.
+- For serialization and deserialization requirements (three-section structure, constructor protocol, toJson output protocol, inheritance chain symmetry), see `docs/ai/AI_MODEL_SPEC.md`.
 
 ### Class Naming & Organization Hierarchy
 

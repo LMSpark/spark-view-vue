@@ -14,17 +14,20 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
 import { buildPageDesignToolLoopNudge } from './page-design/page-design-sop'
-import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
+import type { AiModuleMetadataJson, ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import {
   evaluatePageDesignMutationToolGate,
 } from '@/services/page-design-gates'
-import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
 import { createPageDesignVcmKnowledgeProvider } from './page-design/page-design-vcm-knowledge-provider'
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
+
+const pageDesignRuntimeMetadataDocument =
+  projectPageSurfaceRuntimeMetadataDocument as unknown as ModuleMetadataRuntimeDocument
 
 export type PageDesignRunMode = 'create' | 'update' | 'fix'
 
@@ -146,9 +149,9 @@ export function ensurePageDesignBusiness(options: EnsurePageDesignBusinessOption
         executionToolNames: PAGE_DESIGN_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createPageDesignToolLoopNudge,
-        ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
+        ...(pageDesignRuntimeMetadataDocument.$defs === undefined
           ? {}
-          : { jsonSchemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
+          : { jsonSchemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
       },
     }),
   })
@@ -247,7 +250,7 @@ function evaluatePageDesignBeforeFunctionCall(
 }
 
 function readPageDesignProjectModule() {
-  return projectPageSurfaceRuntimeMetadataDocument.modules.find(
+  return pageDesignRuntimeMetadataDocument.modules.find(
     module => module.rootApi.kind === 'project',
   )
 }
@@ -259,8 +262,8 @@ function readPageDesignProjectMetadata(): AiModuleMetadataJson {
   }
   return resolveModuleMetadataJson(projectModule, {
     inlineSchemaRefs: false,
-    ...(projectPageSurfaceRuntimeMetadataDocument.$defs === undefined
+    ...(pageDesignRuntimeMetadataDocument.$defs === undefined
       ? {}
-      : { schemaDefs: projectPageSurfaceRuntimeMetadataDocument.$defs }),
+      : { schemaDefs: pageDesignRuntimeMetadataDocument.$defs }),
   })
 }

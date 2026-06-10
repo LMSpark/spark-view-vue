@@ -34,7 +34,10 @@ export type ProjectDesignNodeEditResult<TNode extends ProjectNode = ProjectNode>
   result: NavigationNodeDraftApplyResult
 }
 
-/** 项目设计根：项目元数据、导航节点树与配置页缓存。 */
+/**
+ * 项目设计根：项目元数据、导航节点树与配置页缓存。
+ * @vcmSession 由 ProjectModel 持有的运行时设计状态；序列化走 NavigationClient + PageFileApi。
+ */
 export class ProjectDesign<TNode extends ProjectNode = ProjectNode> {
   private readonly projectIdValue: string
   private tenantIdValue: string | undefined

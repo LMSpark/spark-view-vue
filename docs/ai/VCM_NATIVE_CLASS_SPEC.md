@@ -1,6 +1,6 @@
 # AI 业务原生 Class 规范（VCM Native Class）
 
-> 状态：有效（2026-06）。**VCM = 基于 TypeScript Compiler API 的业务语义编译器**：TS 类型是结构真源，源码 JSDoc/VCM tag 是业务语义真源，`generated/vcm/dist/` 是缓存产物与门禁依据。
+> 状态：有效（2026-06）。**VCM = 基于 TypeScript Compiler API 的业务语义编译器**：TS 类型是结构真源，源码 JSDoc/VCM tag 是业务语义真源，`generated/vcm/` 是缓存产物与门禁依据。
 
 ## 0. 三层真源（禁止混层）
 
@@ -8,7 +8,7 @@
 |----|------|----------------|--------|
 | **结构** | TS 类型系统 | `typescript` Program + Checker → `paramsSchema` / `returnTypeText` / attribute 类型 / `$defs` | LLM guide 签名、AJV 校验 |
 | **业务语义** | 源码 JSDoc + VCM tag | `@moduleKind`、`@failureMode`、`@moduleGuard`、`@vcmSession` 等 tag 解析 | recovery hint、guard 约束、生命周期门禁 |
-| **缓存产物** | `generated/vcm/dist/` | 只写不手改；`vcm-compile-report.json` 汇总 gates | Worker 按需 fetch、audit、CI |
+| **缓存产物** | `generated/vcm/` | 只写不手改；`vcm-compile-report.json` 汇总 gates | Worker 按需 fetch、audit、CI |
 
 原则：
 
@@ -49,7 +49,7 @@
 | 类型检查（结构） | `paramsSchema` / `returnTypeText` / attribute 链 / `$defs` 闭包 |
 | 业务 lint（语义） | lifecycle audit、`@failureMode`、`jsdoc-todo` / `schema-todo` |
 | `tsc` | `pnpm run generate:vcm-metadata` |
-| `dist/*.js`（缓存） | `generated/vcm/dist/<target>/`（**非 authoring 真源**） |
+| `dist/*.js`（缓存） | `generated/vcm/<target>/`（**非 authoring 真源**） |
 | 类型/语义错误 | `vcm-compile-report.json` → `gates.*` |
 | `tsc --noEmit` + 链接 | `pnpm run audit:vcm-build-output` + `verify:vcm-native` |
 
@@ -113,7 +113,7 @@ JSON Schema：`config/schemas/vcm.schema.json`。分层约定见 `config/README.
 config/vcm/registry.json
   │
   ├─ generate:module-metadata [--target <id>]
-  │     └─ generated/vcm/dist/<id>/
+  │     └─ generated/vcm/<id>/
   │           manifest.json / kinds/*.json / $defs.json
   │           vcm-compile-report.json
   │           *-module-metadata.runtime.generated.json
@@ -142,7 +142,7 @@ config/vcm/registry.json
 
 1. 在 `config/vcm/registry.json` 增加或修改 `metadataTargets[]` 条目（`id` 全局唯一）。
 2. `source.files` 覆盖新 kind 所在 TS；`roots` 指向正确的 `@moduleKind` 根 class。
-3. `outputs.distDir` + `outputs.runtime` 指向 `generated/vcm/dist/<id>/`（**禁止**写入 `config/` 或手改产物）。
+3. `outputs.distDir` + `outputs.runtime` 指向 `generated/vcm/<id>/`（**禁止**写入 `config/` 或手改产物）。
 4. 运行 `pnpm run generate:vcm-metadata`（或 `--target <id>`），确认 `gates` 全 0。
 5. 在 `src/vcm/artifact-urls.ts` 增加 `manifestUrl`（及必要时 `metadataUrl`）。
 6. 新建或更新 `*VcmKnowledgeProvider`，传入 `manifestUrl`；主线程回退可 import `*-module-metadata.runtime.ts`。
@@ -164,7 +164,7 @@ config/vcm/registry.json
 ## 3. dist 产物（只读）
 
 ```text
-generated/vcm/dist/<target-id>/
+generated/vcm/<target-id>/
   manifest.json                 # bundle 索引
   $defs.json                    # JSON Schema 池
   kinds/<kind>.json             # 按 @moduleKind 拆分
@@ -218,6 +218,8 @@ export class DataSetCrudTool {
 - **建议**：实例 `toJson`；若仅经 `getFileText('rule.json')` 持久化，在 class JSDoc 标注 `@vcmFilePersisted`（说明文件 API 路径），否则编译器 **warn**（`lifecycle-tree-no-toJson`）
 
 类型说明（非强制 implements）：`packages/spark-ai/src/vcm-native/metadata/vcm-native-class-contract.ts`
+
+详见 `docs/ai/AI_MODEL_SPEC.md` 了解 constructor、discriminator 判别分发、toJson 输出形态的编写要求。
 
 ### 4.4 构造与守卫
 
@@ -297,7 +299,7 @@ CI / 本地以 `gates` 为准，不靠肉眼扫 50 万行 JSON。
 
 ## 8. 禁止事项
 
-- 手改 `generated/vcm/dist/**`
+- 手改 `generated/vcm/**`
 - 写入 `generated/vcm/<target-id>/`（无 `dist/` 的遗留路径；audit 报 `LEGACY_VCM_OUTPUT_PATH`）
 - 第二知识通道：`diagnostics`/`models` 预存、`returnsKind`、`callbackTargetKind`
 - 在 app 层补 recovery 图（只用 `@failureMode`）

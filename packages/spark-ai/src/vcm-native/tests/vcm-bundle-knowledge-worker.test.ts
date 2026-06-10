@@ -6,7 +6,7 @@ import { createVcmNativeKnowledgeWorkerApi } from '../knowledge/worker-knowledge
 import { resolveBundleRelativeUrl } from '../metadata/vcm-bundle-loader'
 
 const root = resolve(import.meta.dirname, '../../../../..')
-const distDir = resolve(root, 'generated/vcm/dist/project-page-surface')
+const distDir = resolve(root, 'generated/vcm/project-page-surface')
 const manifestUrl = 'bundle://project-page-surface/manifest.json'
 
 describe('VCM bundle knowledge worker', () => {

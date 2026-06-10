@@ -12,7 +12,7 @@ pnpm run diagnose:module-metadata    # 仅诊断，不写文件
 pnpm run verify:vcm-native           # 生成 + audit + 单测门禁
 ```
 
-CLI 入口：`src/module-metadata-cli.ts`  
+CLI 入口：`src/module-metadata-cli.ts`
 默认配置：`config/vcm/registry.json`。
 
 可选参数：
@@ -22,7 +22,7 @@ pnpm run generate:module-metadata -- --target project-model
 pnpm run generate:module-metadata -- --target project-page-surface
 ```
 
-## 产出（`generated/vcm/dist/<target-id>/`）
+## 产出（`generated/vcm/<target-id>/`）
 
 | 文件 | 用途 |
 |---|---|
@@ -49,9 +49,9 @@ pnpm run generate:module-metadata -- --target project-page-surface
       "source": { "files": ["packages/spark-project-model/src/project/project-model.ts"] },
       "roots": [{ "className": "ProjectModel", "kind": "project" }],
       "outputs": {
-        "distDir": "generated/vcm/dist/project-page-surface",
-        "runtime": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
-        "jsdocTodoLog": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
+        "distDir": "generated/vcm/project-page-surface",
+        "runtime": "generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
+        "jsdocTodoLog": "generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
       }
     }
   ]

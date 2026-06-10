@@ -30,8 +30,9 @@ const root = resolve(import.meta.dirname, '..')
 const config = readVcmMetadataConfig(root)
 
 const legacyVcmOutputDirs = [
+  'generated/vcm/dist/project-model',
+  'generated/vcm/dist/project-page-surface',
   'generated/vcm/project-model',
-  'generated/vcm/project-page-surface',
 ]
 
 const allIssues = []
@@ -281,7 +282,7 @@ for (const legacyDir of legacyVcmOutputDirs) {
     allIssues.push({
       level: 'error',
       code: 'LEGACY_VCM_OUTPUT_PATH',
-      message: `Remove legacy VCM output dir (use generated/vcm/dist/<target-id>/): ${legacyDir}`,
+      message: `Remove legacy VCM output dir (use generated/vcm/<target-id>/): ${legacyDir}`,
       targetId: '(registry)',
     })
   }

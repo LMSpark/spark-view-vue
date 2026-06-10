@@ -18,9 +18,9 @@ const root = resolve(import.meta.dirname, '..')
 const outDir = resolve(root, '.cursor/inspection')
 mkdirSync(outDir, { recursive: true })
 
-const runtimePath = resolve(root, 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json')
-const jsdocTodoPath = resolve(root, 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json')
-const manifestPath = resolve(root, 'generated/vcm/dist/project-page-surface/manifest.json')
+const runtimePath = resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json')
+const jsdocTodoPath = resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json')
+const manifestPath = resolve(root, 'generated/vcm/project-page-surface/manifest.json')
 
 const raw = JSON.parse(readFileSync(runtimePath, 'utf8'))
 writeFileSync(
@@ -76,9 +76,9 @@ for (const kind of attributeReachableKinds) {
 const evaluation = {
   generatedAt: new Date().toISOString(),
   sources: {
-    runtime: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
-    manifest: 'generated/vcm/dist/project-page-surface/manifest.json',
-    jsdocTodo: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
+    runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+    manifest: 'generated/vcm/project-page-surface/manifest.json',
+    jsdocTodo: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
   },
   runtimeEnvelope: {
     schemaVersion: runtime.schemaVersion,

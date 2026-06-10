@@ -60,7 +60,7 @@ describe('Draft 2020-12 schema audit', () => {
 
   it('passes audit for generated runtime metadata three times', () => {
     const files = [
-      'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+      'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
     ]
     for (const relativePath of files) {
       const absolutePath = resolve(process.cwd(), relativePath)

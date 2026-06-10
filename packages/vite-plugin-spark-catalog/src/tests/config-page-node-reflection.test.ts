@@ -29,6 +29,7 @@ describe('page-design VCM metadata reflection', () => {
     const projectApi = result.moduleMetadata[0]?.rootApi
     expect(projectApi?.kind).toBe('project')
     expect(projectApi?.actions.map(action => action.name)).toEqual([
+      'replaceNavigationChildren',
       'openPageDesign',
       'readPlanningProjection',
       'readProjectPlanningInput',

@@ -48,6 +48,7 @@ export type FetchNestedInput = Readonly<{
 /**
  * 树管理器类
  * 管理 DataView 中的树形数据视图
+ * @vcmSession 运行时树视图管理器；由 DataView 持有，无独立序列化。
  */
 export class TreeManager {
   // ===== 属性定义 =====

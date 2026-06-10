@@ -528,7 +528,7 @@ type RuntimeDocumentForTest = Parameters<typeof createClassModelDocumentFromRunt
 type RuntimeApiForTest = RuntimeDocumentForTest['modules'][number]['rootApi']
 
 function readRuntimeDocument(): RuntimeDocumentForTest {
-  return readJson('generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json') as RuntimeDocumentForTest
+  return readJson('generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json') as RuntimeDocumentForTest
 }
 
 function readComponentCatalog(): NonNullable<Parameters<typeof renderMethodGuide>[0]['componentCatalog']> {

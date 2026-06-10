@@ -45,6 +45,7 @@ import { addLogTransport, isRecord } from '@spark-appworks/spark-utils'
 import { isProjectNodeData, type ProjectModelData, type ProjectNodeData } from '@spark-appworks/spark-project-model'
 
 import {
+  clearAuth,
   consumePendingLogout,
   getUser,
   isAuthenticated,
@@ -72,8 +73,35 @@ const {
 const startupLogger = createLogger('main')
 const PLATFORM_PATH_PREFIX = '/platform'
 const PLATFORM_HOME_PATH = '/platform/dashboard'
+const AI_HOST_RUN_SMOKE_SEARCH_PARAM = 'sparkAiHostRun'
 
 consumePendingLogout()
+consumeAiHostRunSmokeLoginReset()
+
+function consumeAiHostRunSmokeLoginReset(): void {
+  if (!import.meta.env.DEV || typeof window === 'undefined') return
+  if (window.location.pathname !== '/login') return
+  const encoded = new URLSearchParams(window.location.search).get(AI_HOST_RUN_SMOKE_SEARCH_PARAM)
+  if (encoded === null || encoded.trim().length === 0) return
+  if (readAiHostRunSmokePayloadHasLogin(encoded)) clearAuth()
+}
+
+function readAiHostRunSmokePayloadHasLogin(encoded: string): boolean {
+  try {
+    const decoded = JSON.parse(decodeBase64UrlForSmoke(encoded)) as unknown
+    return isRecord(decoded) && isRecord(decoded['login'])
+  } catch {
+    return false
+  }
+}
+
+function decodeBase64UrlForSmoke(value: string): string {
+  const base64 = value.replace(/-/g, '+').replace(/_/g, '/')
+  const padded = base64.padEnd(Math.ceil(base64.length / 4) * 4, '=')
+  const binary = window.atob(padded)
+  const bytes = Uint8Array.from(binary, char => char.charCodeAt(0))
+  return new TextDecoder().decode(bytes)
+}
 
 // late-binding pageId（路由就绪后由 afterMount 注入）
 let _currentPageId: string | undefined

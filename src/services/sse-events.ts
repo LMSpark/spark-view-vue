@@ -182,6 +182,56 @@ export function createAppSseEventSource(): AiAgentAppSseEventSource {
   }
 }
 
+const DEFAULT_APP_SSE_READY_TIMEOUT_MS = 15_000
+
+/**
+ * 等待浏览器侧 `/api/events` 单例连接进入 OPEN。
+ * Host Run / AI turn 下发前必须先就绪，否则后端会返回 APP_SSE_NOT_CONNECTED。
+ */
+export function waitForAppSseConnection(timeoutMs = DEFAULT_APP_SSE_READY_TIMEOUT_MS): Promise<void> {
+  ensureConnection()
+  let eventSource = sharedEventSource
+  if (eventSource === null) {
+    return Promise.reject(new Error('APP SSE connection was not initialized.'))
+  }
+  if (eventSource.readyState === EventSource.CLOSED) {
+    teardownConnection()
+    ensureConnection()
+    eventSource = sharedEventSource
+    if (eventSource === null) {
+      return Promise.reject(new Error('APP SSE connection was not initialized.'))
+    }
+  }
+  if (eventSource.readyState === EventSource.OPEN) {
+    return Promise.resolve()
+  }
+
+  return new Promise((resolve, reject) => {
+    const activeSource = sharedEventSource
+    if (activeSource === null) {
+      reject(new Error('APP SSE connection was not initialized.'))
+      return
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      cleanup()
+      reject(new Error(`Timed out waiting for APP SSE connection (${timeoutMs}ms).`))
+    }, timeoutMs)
+
+    const onOpen = (): void => {
+      cleanup()
+      resolve()
+    }
+
+    const cleanup = (): void => {
+      window.clearTimeout(timeoutId)
+      activeSource.removeEventListener('open', onOpen)
+    }
+
+    activeSource.addEventListener('open', onOpen)
+  })
+}
+
 export function onPageConfigChange(
   callback: (event: FileChangeEvent) => void,
 ): () => void {
@@ -395,10 +445,12 @@ function normalizeServerEnvelopeEvent(
 }
 
 function isEnvelopeLike(payload: Record<string, unknown>): boolean {
+  const ok = payload['ok']
+  const hasData = Object.prototype.hasOwnProperty.call(payload, 'data')
+  const hasError = Object.prototype.hasOwnProperty.call(payload, 'error')
   return (
-    typeof payload['ok'] === 'boolean'
-    && Object.prototype.hasOwnProperty.call(payload, 'data')
-    && Object.prototype.hasOwnProperty.call(payload, 'error')
+    typeof ok === 'boolean'
+    && (ok ? hasData : hasError)
   )
 }
 

@@ -9,7 +9,7 @@ function resolveProjectMetadata(): AiModuleMetadataJson {
   const root = resolve(import.meta.dirname, '../../../../..')
   const raw = JSON.parse(
     readFileSync(
-      resolve(root, 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
+      resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
       'utf8',
     ),
   )

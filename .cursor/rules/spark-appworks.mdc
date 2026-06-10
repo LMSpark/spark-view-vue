@@ -84,7 +84,7 @@ Never skip VCM function guides before writing node-tree or dataset mutations.
 
 Do not directly edit generated or large metadata files:
 
-- `generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json`
+- `generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json`
 
 ## Commit Format
 

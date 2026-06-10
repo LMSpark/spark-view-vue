@@ -30,7 +30,8 @@
       "Bash(cp -r ../spark-project-model/src/* src/)",
       "Bash(code --install-extension Catppuccin.catppuccin-vsc)",
       "Bash(git restore *)",
-      "Bash(git clean *)"
+      "Bash(git clean *)",
+      "Bash(node tools/verify-ai-model-spec.mjs)"
     ],
     "additionalDirectories": [
       "D:\\SPARK_AppWorks\\.claude"

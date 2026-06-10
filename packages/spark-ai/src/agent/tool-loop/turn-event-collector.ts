@@ -372,6 +372,7 @@ function recoverToolCallsFromText(text: string): readonly AiAgentTransportToolCa
     ...recoverJsonToolCallsFromText(text),
     ...recoverDsmlToolCallsFromText(text),
     ...recoverInlineJsonToolCallsFromText(text),
+    ...recoverBareJsonToolCallsFromText(text),
     ...recoverArgKeyTagToolCallsFromText(text),
   ]
   const normalizedCalls = dedupeRecoveredToolCalls(calls)
@@ -389,6 +390,7 @@ export function containsPseudoToolCallText(text: string): boolean {
     || /<[|｜]DSML[|｜]tool_calls>/i.test(trimmed)
     || /"tool_call"\s*:/.test(trimmed)
     || /"tool_calls"\s*:/.test(trimmed)
+    || containsBareJsonToolCallText(trimmed)
 }
 
 function recoverJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
@@ -530,6 +532,46 @@ function recoverInlineJsonToolCallsFromText(text: string): readonly AiAgentTrans
       calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_inline' }))
     } catch {
       // Ignore malformed inline JSON tool calls.
+    }
+  }
+  return calls
+}
+
+const RECOVERABLE_BARE_TOOL_NAMES = [
+  'vcm_query',
+  'vcm_model_guide',
+  'vcm_attribute_guide',
+  'vcm_action_guide',
+  'vcm_script',
+  'human_question',
+  'agent_complete',
+] as const
+
+const BARE_JSON_TOOL_CALL_PATTERN = new RegExp(
+  `\\b(${RECOVERABLE_BARE_TOOL_NAMES.join('|')})\\s*\\(`,
+  'g',
+)
+
+function containsBareJsonToolCallText(text: string): boolean {
+  BARE_JSON_TOOL_CALL_PATTERN.lastIndex = 0
+  return BARE_JSON_TOOL_CALL_PATTERN.test(text)
+}
+
+function recoverBareJsonToolCallsFromText(text: string): readonly AiAgentTransportToolCall[] {
+  const calls: AiAgentTransportToolCall[] = []
+  BARE_JSON_TOOL_CALL_PATTERN.lastIndex = 0
+  for (const match of text.matchAll(BARE_JSON_TOOL_CALL_PATTERN)) {
+    const name = match[1]?.trim() ?? ''
+    const argsStart = match.index + match[0].length
+    const remainder = text.slice(argsStart).trimStart()
+    const jsonText = extractBalancedJsonCandidates(remainder)[0]
+    if (name.length === 0 || jsonText === undefined) continue
+    try {
+      const parsed: unknown = JSON.parse(jsonText)
+      if (!isRecord(parsed)) continue
+      calls.push(createRecoveredToolCall({ name, args: parsed, index: calls.length, idPrefix: 'call_bare' }))
+    } catch {
+      // Ignore malformed bare function-style pseudo tool calls.
     }
   }
   return calls

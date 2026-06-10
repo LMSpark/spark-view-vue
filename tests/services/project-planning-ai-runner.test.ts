@@ -132,6 +132,7 @@ describe('runProjectPlanningAiSession', () => {
     expect(result.navigationDirty).toBe(false)
     expect(result.savedNavigation).toBe(false)
     expect(result.input).toEqual({
+      projectScopeKey: 'demo',
       projectId: 'demo',
       requirement: '订单与库存管理',
       navigationNodes: [

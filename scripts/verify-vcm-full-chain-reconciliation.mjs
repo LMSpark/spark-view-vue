@@ -16,16 +16,10 @@ const SPEC_REF = 'docs/ai/VCM_NATIVE_CLASS_SPEC.md'
 
 const DIST_TARGETS = [
   {
-    id: 'project-model',
-    runtime: 'generated/vcm/dist/project-model/project-model-module-metadata.runtime.generated.json',
-    compileReport: 'generated/vcm/dist/project-model/vcm-compile-report.json',
-    manifest: 'generated/vcm/dist/project-model/manifest.json',
-  },
-  {
     id: 'project-page-surface',
-    runtime: 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
-    compileReport: 'generated/vcm/dist/project-page-surface/vcm-compile-report.json',
-    manifest: 'generated/vcm/dist/project-page-surface/manifest.json',
+    runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
+    compileReport: 'generated/vcm/project-page-surface/vcm-compile-report.json',
+    manifest: 'generated/vcm/project-page-surface/manifest.json',
   },
 ]
 
@@ -138,7 +132,7 @@ function main() {
   const specText = fs.readFileSync(path.join(ROOT, SPEC_REF), 'utf8')
   const threeLayerOk = specText.includes('三层真源')
     && specText.includes('TS 类型是结构真源')
-    && specText.includes('generated/vcm/dist/')
+    && specText.includes('generated/vcm/')
   checks.push({
     id: 'VCM-THREE-LAYER-SPEC',
     title: 'VCM_NATIVE_CLASS_SPEC 声明结构/语义/缓存三层真源',
@@ -174,12 +168,12 @@ function main() {
   })
   if (!catalogFailFast) regressionCount += 1
 
-  const legacyDirs = ['generated/vcm/project-model', 'generated/vcm/project-page-surface']
+  const legacyDirs = ['generated/vcm/dist/project-model', 'generated/vcm/dist/project-page-surface']
   const legacyHits = legacyDirs.filter(rel => fs.existsSync(path.join(ROOT, rel)))
   const legacyOk = legacyHits.length === 0
   checks.push({
     id: 'VCM-NO-LEGACY-DIST',
-    title: '无 generated/vcm/<id>/ 遗留产物（须走 dist/）',
+    title: '无 generated/vcm/dist/<id>/ 遗留产物（canonical 为 generated/vcm/<id>/）',
     status: legacyOk ? 'pass' : 'regression',
     evidence: legacyOk ? 'no legacy dirs' : legacyHits,
   })

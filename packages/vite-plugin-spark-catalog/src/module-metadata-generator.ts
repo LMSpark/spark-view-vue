@@ -183,6 +183,8 @@ type ModuleMetadataTrace = {
 type ApiObjectExtractionState = {
   readonly root: string
   readonly reflectionMode: ModuleMetadataReflectionMode
+  /** registry source.files：VCM 编译单元边界，与 tsc rootNames 同构，不跨文件展开 @moduleKind。 */
+  readonly allowedSourceFiles: ReadonlySet<string>
   readonly apiByContextKey: Map<string, MutableAiApiObjectMetadata>
   readonly expandingKeys: Set<string>
   readonly sourceClassIndex: SourceClassIndex

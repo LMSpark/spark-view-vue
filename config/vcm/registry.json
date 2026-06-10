@@ -5,27 +5,6 @@
   "componentCatalogOutput": "generated/vcm/component-catalog.json",
   "metadataTargets": [
     {
-      "id": "project-model",
-      "kind": "native-metadata",
-      "description": "ProjectModel native metadata surface",
-      "source": {
-        "files": [
-          "packages/spark-project-model/src/project/project-model.ts"
-        ]
-      },
-      "roots": [
-        {
-          "className": "ProjectModel",
-          "kind": "project"
-        }
-      ],
-      "outputs": {
-        "distDir": "generated/vcm/dist/project-model",
-        "runtime": "generated/vcm/dist/project-model/project-model-module-metadata.runtime.generated.json",
-        "jsdocTodoLog": "generated/vcm/dist/project-model/project-model-module-metadata.jsdoc-todo.generated.json"
-      }
-    },
-    {
       "id": "project-page-surface",
       "kind": "native-metadata",
       "description": "ProjectModel plus page configuration native metadata surface",
@@ -46,9 +25,9 @@
         }
       ],
       "outputs": {
-        "distDir": "generated/vcm/dist/project-page-surface",
-        "runtime": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
-        "jsdocTodoLog": "generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
+        "distDir": "generated/vcm/project-page-surface",
+        "runtime": "generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
+        "jsdocTodoLog": "generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json"
       }
     }
   ]

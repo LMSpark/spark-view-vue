@@ -77,7 +77,7 @@ function readPageDesignRuntimeDocument(): RuntimeDocumentForTest {
   const root = resolve(import.meta.dirname, '../../../../..')
   return JSON.parse(
     readFileSync(
-      resolve(root, 'generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
+      resolve(root, 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json'),
       'utf8',
     ),
   ) as RuntimeDocumentForTest

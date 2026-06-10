@@ -6,7 +6,7 @@ import {
   PAGE_DESIGN_MODULE_ID,
   resolvePageDesignPlanningContext,
 } from '@/services/page-design-business'
-import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
 
 function readPageDesignProjectMetadata() {
   const projectModule = projectPageSurfaceRuntimeMetadataDocument.modules.find(

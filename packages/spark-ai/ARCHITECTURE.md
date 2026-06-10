@@ -330,11 +330,11 @@ AI 默认只改 **内存** 四文件；DevSystem runner 需显式 `saveDirtyFile
 
 | 产物 | 生成命令 | 路径 | 消费者 |
 |------|----------|------|--------|
-| runtime metadata | `pnpm run generate:vcm-metadata` | `generated/vcm/dist/<target-id>/` | `VcmNativeAgentAdapter`、Worker `manifestUrl` |
-| VCM bundle 分片 | 同上 | `generated/vcm/dist/<target-id>/manifest.json`、`kinds/*.json`、`$defs.json` | Worker 按需 fetch |
-| JSDoc todo log | 同上 | `generated/vcm/dist/<target-id>/*.jsdoc-todo.generated.json` | 人工补源码 JSDoc / schema description |
+| runtime metadata | `pnpm run generate:vcm-metadata` | `generated/vcm/<target-id>/` | `VcmNativeAgentAdapter`、Worker `manifestUrl` |
+| VCM bundle 分片 | 同上 | `generated/vcm/<target-id>/manifest.json`、`kinds/*.json`、`$defs.json` | Worker 按需 fetch |
+| JSDoc todo log | 同上 | `generated/vcm/<target-id>/*.jsdoc-todo.generated.json` | 人工补源码 JSDoc / schema description |
 | component catalog | `pnpm run generate:component-catalog` | `generated/vcm/component-catalog.json` | pageDesign Worker lazy fetch |
-| runtime TS 入口 | 生成器写入 | `generated/vcm/dist/<target-id>/*.runtime.ts` | 业务层 import（类型断言） |
+| runtime TS 入口 | 生成器写入 | `generated/vcm/<target-id>/*.runtime.ts` | 业务层 import（类型断言） |
 
 Registry 配置：`config/vcm/registry.json`（`spark-appworks.vcm.registry`）。**VCM target 只按能力面命名**（如 `project-model`、`project-page-surface`），不声明 `pageDesign` / `projectPlanning` 等 AI business alias。`componentCatalogOutput` 在 registry 根级声明，不挂在 metadata target 上。
 

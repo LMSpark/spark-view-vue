@@ -166,6 +166,7 @@ import { createAuthHeaders } from '@/services/http'
 import { chainAiHostRunPrepare } from '@/services/ai-host-run-prepare'
 import { preparePageDesignHostRun } from '@/services/page-design-host-run-provider'
 import { prepareProjectPlanningHostRun } from '@/services/project-planning-host-run-provider'
+import { runAiHostRunSmokeLauncherFromUrl } from '@/services/ai-host-run-smoke-launcher'
 import { onPageConfigChange, type FileChangeEvent } from '@/services/sse-events'
 import { PROJECT_SWITCH_KEY } from '@/services/project-switch'
 import type { ProjectSwitchService } from '@/services/project-switch'
@@ -597,6 +598,7 @@ onMounted(() => {
       ),
     }).start()
   }
+  runAiHostRunSmokeLauncherFromUrl()
 
   unregisterShellNavListener = registerShellNavRootListener(applyNavTree)
 
@@ -610,7 +612,7 @@ onMounted(() => {
 
   // 暴露开发工具到 window.__sparkDev（清缓存页面使用）
   Object.defineProperty(window, '__sparkDev', {
-    value: { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes },
+    value: { reloadNavigation, clearAllPageCache, getPageCacheStats, refreshRoutes, router },
     configurable: true,
     writable: true,
   })

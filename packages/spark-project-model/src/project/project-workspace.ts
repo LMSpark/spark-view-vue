@@ -105,6 +105,10 @@ function toPageFilesApiBaseUrl(pageApi: string): string {
   return normalized || '/'
 }
 
+/**
+ * 项目 IO 编排层：将 ProjectModel 的操作委托到远端 API。
+ * @vcmSession IO 编排会话；序列化走 ProjectModel + NavigationClient + PageFileApi。
+ */
 export class ProjectWorkspace {
   readonly project: ProjectModel
   private readonly projectReferenceClient: ProjectReferenceClient | null

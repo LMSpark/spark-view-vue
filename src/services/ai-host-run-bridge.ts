@@ -16,6 +16,10 @@ import {
 import { coerceStrictJsonValue, type AiJsonParams, type AiJsonValue } from '@spark-appworks/spark-ai/json'
 import { http } from '@/services/http'
 import {
+  clearAiTurnBridgeDiagnostics,
+  readAiTurnBridgeDiagnostics,
+} from '@/services/ai-turn-bridge'
+import {
   onAiHostRunRequest,
   type AiHostRunRequestEvent,
   type AiHostRunResultStatus,
@@ -70,7 +74,9 @@ type AiHostRunResultPayload = {
   text?: string
   reasoning?: string
   toolCalls?: readonly AiAgentRunTraceToolCall[]
+  sseEvents?: readonly string[]
   error?: AiHostRunError
+  [key: string]: unknown
 }
 
 const AI_HOST_RUN_RESULT_API = '/api/ai/host-run/result'
@@ -105,6 +111,8 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
     }
 
     const startedAt = Date.now()
+    const trace = createAiAgentRunTrace()
+    const sseEvents = new Set<string>()
     if (activeRequestIds.size >= maxParallelRuns) {
       await completeRequest(completedResults, createFailureResult({
         event,
@@ -144,7 +152,7 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
       }
       const runHost = options.prepareRun === undefined
         ? options.host
-        : await options.prepareRun(event, options.host)
+        : await awaitAbortable(options.prepareRun(event, options.host), controller.signal)
 
       if (!runHost.has(event.alias)) {
         await completeRequest(completedResults, createFailureResult({
@@ -163,19 +171,23 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
         return
       }
 
-      const trace = createAiAgentRunTrace()
       trace.reset()
       trace.appendUserMessage(dryRun.orchestration.userMessage)
-      const runResult = await runHost.run(event.alias, args, {
+      clearAiTurnBridgeDiagnostics()
+      const runResult = await awaitAbortable(runHost.run(event.alias, args, {
         signal: controller.signal,
-        onStreamEvent: (streamEvent) => trace.appendEvent(streamEvent),
+        onStreamEvent: (streamEvent) => {
+          sseEvents.add('llm-frame')
+          trace.appendEvent(streamEvent)
+        },
         onDelta: (delta) => trace.appendDelta(delta),
         onReasoning: (reasoning) => trace.appendReasoning(reasoning),
         onToolCall: (record) => trace.appendToolCall(record),
-      })
+      }), controller.signal)
       trace.finish()
 
       const snapshot = trace.snapshot()
+      const resultExtras = readHostRunResultExtras(runResult)
       await completeRequest(completedResults, {
         requestId: event.requestId,
         alias: event.alias,
@@ -188,6 +200,9 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
         text: snapshot.streamText,
         reasoning: snapshot.reasoningText,
         toolCalls: snapshot.toolCalls,
+        sseEvents: Array.from(sseEvents),
+        aiTurnDiagnostics: readAiTurnBridgeDiagnostics(),
+        ...resultExtras,
       })
     } catch (error: unknown) {
       const failure = timeoutState.timedOut
@@ -199,6 +214,10 @@ export function createAiHostRunBridge<THost extends AiHostRunTarget>(
         startedAt,
         code: failure.code,
         message: errorMessage(error),
+        details: {
+          aiTurnDiagnostics: readAiTurnBridgeDiagnostics(),
+        },
+        extras: failureTraceExtras(trace, sseEvents),
       }))
     } finally {
       clearTimeout(timeoutId)
@@ -287,6 +306,7 @@ function createFailureResult(input: Readonly<{
   code: AiHostRunErrorCode
   message: string
   details?: Record<string, unknown>
+  extras?: Record<string, unknown>
 }>): AiHostRunResultPayload {
   return {
     requestId: input.event.requestId,
@@ -299,6 +319,21 @@ function createFailureResult(input: Readonly<{
       message: input.message,
       ...(input.details === undefined ? {} : { details: input.details }),
     },
+    ...(input.extras ?? {}),
+  }
+}
+
+function failureTraceExtras(
+  trace: ReturnType<typeof createAiAgentRunTrace>,
+  sseEvents: ReadonlySet<string>,
+): Record<string, unknown> {
+  const snapshot = trace.snapshot()
+  return {
+    text: snapshot.streamText,
+    reasoning: snapshot.reasoningText,
+    toolCalls: snapshot.toolCalls,
+    sseEvents: Array.from(sseEvents),
+    aiTurnDiagnostics: readAiTurnBridgeDiagnostics(),
   }
 }
 
@@ -332,6 +367,12 @@ async function postAiHostRunResult(payload: AiHostRunResultPayload): Promise<voi
   }
 }
 
+function readHostRunResultExtras(result: AiAgentHostRunResult): Record<string, unknown> {
+  const value = (result as { resultExtras?: unknown }).resultExtras
+  if (value === null || typeof value !== 'object' || Array.isArray(value)) return {}
+  return { ...value }
+}
+
 function normalizeTimeoutMs(value: number | undefined, fallback: number): number {
   if (value === undefined) return fallback
   if (!Number.isFinite(value) || value <= 0) return fallback
@@ -350,4 +391,21 @@ function elapsedSince(startedAt: number): number {
 
 function errorMessage(error: unknown): string {
   return error instanceof Error ? error.message : String(error)
+}
+
+async function awaitAbortable<T>(value: T | Promise<T>, signal: AbortSignal): Promise<T> {
+  if (signal.aborted) {
+    throw new Error('AI Host Run aborted')
+  }
+  const promise = Promise.resolve(value)
+  return Promise.race([
+    promise,
+    new Promise<T>((_, reject) => {
+      const onAbort = (): void => {
+        reject(new Error('AI Host Run aborted'))
+      }
+      signal.addEventListener('abort', onAbort, { once: true })
+      promise.finally(() => signal.removeEventListener('abort', onAbort)).catch(() => undefined)
+    }),
+  ])
 }

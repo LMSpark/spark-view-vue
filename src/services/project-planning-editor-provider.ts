@@ -13,8 +13,16 @@ export type ProjectPlanningEditorResolveContext = Readonly<{
   moduleInstanceId: string
 }>
 
-export function createHeadlessProjectPlanningEditor(projectId?: string): ProjectWorkspace {
-  const explicitProjectId = projectId?.trim()
+export type HeadlessProjectPlanningEditorScope = Readonly<{
+  tenantId?: string
+  projectId?: string
+}>
+
+export function createHeadlessProjectPlanningEditor(
+  scope?: string | HeadlessProjectPlanningEditorScope,
+): ProjectWorkspace {
+  const explicitTenantId = typeof scope === 'string' ? undefined : scope?.tenantId?.trim()
+  const explicitProjectId = (typeof scope === 'string' ? scope : scope?.projectId)?.trim()
   const defaultProjectId = getUser()?.defaultProjectId.trim()
   const resolvedProjectId = explicitProjectId !== undefined && explicitProjectId.length > 0
     ? explicitProjectId
@@ -24,8 +32,8 @@ export function createHeadlessProjectPlanningEditor(projectId?: string): Project
   return new ProjectWorkspace({
     projectId: resolvedProjectId,
     http,
-    getPageFilesApi: () => getProjectPageApi(resolvedProjectId),
-    getNavigationApi: () => getProjectNavigationApi(resolvedProjectId),
+    getPageFilesApi: () => getProjectPageApi(resolvedProjectId, explicitTenantId),
+    getNavigationApi: () => getProjectNavigationApi(resolvedProjectId, explicitTenantId),
     getHeaders: createAuthHeaders,
   })
 }

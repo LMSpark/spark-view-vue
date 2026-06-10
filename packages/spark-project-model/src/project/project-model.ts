@@ -57,7 +57,7 @@ export type {
  *
  * @moduleAbility pageDesign.project
  * @moduleKind project
- * @vcmSession 编排会话；无整包 toJson；跨页经 openPageDesign 等 action。
+ * @vcmSession 编排会话；无整包 toJson；跨页经显式 project action。
  * @moduleActionMode explicit
  */
 export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
@@ -130,6 +130,15 @@ export class ProjectModel<TNode extends ProjectNode = ProjectNode> {
   forEachNode(callback: (node: TNode) => void): void { this.design.forEachNode(callback) }
 
   replaceProjectInfo(project: ProjectInfoInput): ProjectInfo { return this.design.replaceProjectInfo(project) }
+
+  /**
+   * 替换导航根节点的 children，返回更新后的导航根数据。
+   *
+   * @moduleMutation navigation write 修改内存导航 children；是否持久化由外层工作区提交流程决定。
+   * @usageRule 只替换导航树结构与节点概要，不读取或写入配置页四文件。
+   * @failureMode INVALID_TOOL_ARGS children 结构错误 => 先读 replaceNavigationChildren 的 paramsSchema.children，再按数组组织导航节点
+   * @param children 新的导航 children 树；每个节点必须包含稳定 id、title、nodeKind。
+   */
   replaceNavigationChildren(children: ProjectNodeData[]): ProjectModelData {
     const root = this.design.replaceNavigationChildren(children)
     this.session.markNavigationDirty('root')

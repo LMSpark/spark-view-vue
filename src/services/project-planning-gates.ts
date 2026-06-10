@@ -14,6 +14,16 @@ const FORBIDDEN_SCRIPT_MARKERS = [
   'getDataSetTool',
 ] as const
 
+const PROJECT_ACTION_NAMES = [
+  'readProjectPlanningInput',
+  'readNavigationPlanningInputs',
+  'replaceNavigationChildren',
+] as const
+
+const PROJECT_PARAM_TYPE_NAMES = [
+  'ProjectNodeData',
+] as const
+
 export type ProjectPlanningGateValidationResult = Readonly<{
   ok: boolean
   reason?: string
@@ -24,6 +34,8 @@ export function evaluateProjectPlanningToolGate(
   options: Pick<AiAgentBeforeFunctionCallOptions, 'toolName' | 'args'>,
 ): ProjectPlanningGateValidationResult {
   const toolName = normalizeToolName(options.toolName)
+  const actionLookupGate = evaluateProjectActionLookupGate(toolName, options.args)
+  if (!actionLookupGate.ok) return actionLookupGate
   if (toolName !== 'vcm_script') {
     return { ok: true }
   }
@@ -38,7 +50,32 @@ export function evaluateProjectPlanningToolGate(
   return {
     ok: false,
     reason: `projectPlanning: vcm_script 禁止调用 ${marker}；本阶段只处理 navigation 策划，不涉及四文件或 openPageDesign。`,
-    fix: '改用 readProjectPlanningInput / readNavigationPlanningInputs / applyNavigationNodeEdit 等策划 action；完成概要后 agent_complete。',
+    fix: '改用 readProjectPlanningInput / readNavigationPlanningInputs / replaceNavigationChildren 等通用 ProjectModel action；完成概要后 agent_complete。',
+  }
+}
+
+function evaluateProjectActionLookupGate(
+  toolName: string,
+  args: AiAgentBeforeFunctionCallOptions['args'],
+): ProjectPlanningGateValidationResult {
+  if (toolName !== 'vcm_attribute_guide') return { ok: true }
+  const kind = readTextArg(args, 'kind')
+  if (kind !== 'project') return { ok: true }
+  const attributeName = readTextArg(args, 'attributeName')
+  if (attributeName === undefined || !isProjectActionName(attributeName)) {
+    if (attributeName !== undefined && isProjectParamTypeName(attributeName)) {
+      return {
+        ok: false,
+        reason: `projectPlanning: ${attributeName} 是参数结构名，不是 project attribute。`,
+        fix: '改用 vcm_action_guide({ kind: "project", actionName: "replaceNavigationChildren" }) 查看 paramsSchema.children，然后在 vcm_script 中构造 children 数组。',
+      }
+    }
+    return { ok: true }
+  }
+  return {
+    ok: false,
+    reason: `projectPlanning: ${attributeName} 是 ProjectModel action，不是 attribute。`,
+    fix: `改用 vcm_action_guide({ kind: "project", actionName: "${attributeName}" })，然后在 vcm_script 中通过 this.${attributeName}(...) 调用。`,
   }
 }
 
@@ -54,6 +91,21 @@ function findForbiddenScriptMarker(script: string): string | undefined {
     if (script.includes(marker)) return marker
   }
   return undefined
+}
+
+function readTextArg(args: AiAgentBeforeFunctionCallOptions['args'], key: string): string | undefined {
+  const value = args[key]
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function isProjectActionName(value: string): value is typeof PROJECT_ACTION_NAMES[number] {
+  return PROJECT_ACTION_NAMES.some(actionName => actionName === value)
+}
+
+function isProjectParamTypeName(value: string): value is typeof PROJECT_PARAM_TYPE_NAMES[number] {
+  return PROJECT_PARAM_TYPE_NAMES.some(typeName => typeName === value)
 }
 
 function normalizeToolName(toolName: string): string {

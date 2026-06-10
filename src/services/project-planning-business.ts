@@ -14,14 +14,17 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
 import { VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
-import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
+import type { AiModuleMetadataJson, ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
-import { ProjectModel, type ProjectWorkspace } from '@spark-appworks/spark-project-model'
+import { ProjectModel, type ProjectNodeData, type ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { evaluateProjectPlanningToolGate } from '@/services/project-planning-gates'
-import { projectModelRuntimeMetadataDocument } from '../../generated/vcm/dist/project-model/project-model-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
 import { createProjectPlanningVcmKnowledgeProvider } from '@/services/project-planning-vcm-knowledge-provider'
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
+
+const projectPlanningRuntimeMetadataDocument =
+  projectPageSurfaceRuntimeMetadataDocument as unknown as ModuleMetadataRuntimeDocument
 
 export type ProjectPlanningRunInput = Readonly<{
   projectId: string
@@ -37,6 +40,7 @@ export type ProjectPlanningRunInput = Readonly<{
 
 /** Host inputContract 用可变数组，满足 AiJsonParams。 */
 export type ProjectPlanningAgentInput = Readonly<{
+  projectScopeKey: string
   projectId: string
   requirement: string
   planningAttachmentRef?: string
@@ -65,6 +69,8 @@ export type NavigationPlanningRunInput = Readonly<{
 }>
 
 export type ResolveProjectPlanningRunInputOptions = Readonly<{
+  /** Host Run 可注入一次性需求，不写回 ProjectModel。 */
+  requirementOverride?: string
   /** 项目级附件正文。 */
   planningAttachmentText?: string
   /** 按 nodeId 提供节点附件正文。 */
@@ -91,7 +97,10 @@ export function resolveProjectPlanningRunInput(
   options: ResolveProjectPlanningRunInputOptions = {},
 ): ProjectPlanningRunInput {
   const planning = project.readProjectPlanningInput()
-  const requirement = planning.requirement.trim()
+  const overrideRequirement = options.requirementOverride?.trim()
+  const requirement = overrideRequirement !== undefined && overrideRequirement.length > 0
+    ? overrideRequirement
+    : planning.requirement.trim()
   if (requirement.length === 0) {
     throw new Error('projectPlanning: requirement is empty; set navigation root description or project.description.')
   }
@@ -141,6 +150,7 @@ export function resolveNavigationPlanningRunInput(
 export function formatProjectPlanningPromptContext(input: ProjectPlanningRunInput): string {
   const lines = [
     '项目策划输入（短需求 + 附件详细说明）：',
+    '策划阶段不涉及四文件，只产出导航/页面概要。',
     `projectId: ${input.projectId}`,
     'projectRequirement:',
     input.requirement,
@@ -207,6 +217,7 @@ export function buildProjectPlanningAgentInput(
 ): ProjectPlanningAgentInput {
   const scoped = resolveScopedProjectPlanningRunInput(project, options)
   return {
+    projectScopeKey: scoped.projectId,
     projectId: scoped.projectId,
     requirement: scoped.requirement,
     ...(scoped.planningAttachmentRef === undefined ? {} : { planningAttachmentRef: scoped.planningAttachmentRef }),
@@ -233,11 +244,12 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
         knowledge: createProjectPlanningVcmKnowledgeProvider(),
         inputContract: createSimpleInputContract<ProjectPlanningAgentInput>({
           businessId: PROJECT_PLANNING_MODULE_ID,
-          identityField: 'projectId',
+          identityField: 'projectScopeKey',
           messageField: 'requirement',
           paramsSchema: {
             type: 'object',
             properties: {
+              projectScopeKey: { type: 'string' },
               projectId: { type: 'string' },
               requirement: { type: 'string' },
               planningAttachmentRef: { type: 'string' },
@@ -259,7 +271,7 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
                 },
               },
             },
-            required: ['projectId', 'requirement', 'navigationNodes'],
+            required: ['projectScopeKey', 'projectId', 'requirement', 'navigationNodes'],
             additionalProperties: false,
           },
           systemPrompt: createProjectPlanningSystemPrompt,
@@ -277,9 +289,9 @@ export function ensureProjectPlanningBusiness(options: EnsureProjectPlanningBusi
         executionToolNames: PROJECT_PLANNING_EXECUTION_TOOL_NAMES,
         planWithoutToolMarkers: PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS,
         toolLoopNudge: createProjectPlanningToolLoopNudge,
-        ...(projectModelRuntimeMetadataDocument.$defs === undefined
+        ...(projectPlanningRuntimeMetadataDocument.$defs === undefined
           ? {}
-          : { jsonSchemaDefs: projectModelRuntimeMetadataDocument.$defs }),
+          : { jsonSchemaDefs: projectPlanningRuntimeMetadataDocument.$defs }),
       },
     }),
   })
@@ -292,7 +304,7 @@ const PROJECT_PLANNING_EXECUTION_TOOL_NAMES = new Set<string>([
 const PROJECT_PLANNING_PLAN_WITHOUT_TOOL_MARKERS = [
   'readplanningprojection',
   'readnavigationplanninginputs',
-  'applynavigationnodeedit',
+  'replacenavigationchildren',
   'readprojectplanninginput',
 ] as const
 
@@ -303,9 +315,9 @@ function createProjectPlanningToolLoopNudge(context: AiAgentToolLoopNudgeContext
     case 'plan_without_tool':
       return `projectId="${projectId}"；禁止只输出计划，下一回合必须发起 tool_call（见 vcm_action_guide / RECOVERY_HINT）。`
     case 'execution_phase':
-      return `projectId="${projectId}"；目录/指南阶段已完成，直接 vcm_script。`
+      return `projectId="${projectId}"；目录/指南阶段已完成，直接 vcm_script：根对象是 this，先 await this.readProjectPlanningInput() / await this.readNavigationPlanningInputs()，完成后 await this.replaceNavigationChildren({ children })；children 必须包含 module 及其 page 子节点，不能只有 module 壳；不要写 project.replaceNavigationChildren 或 project.projectPlanning。`
     case 'vcm_script_retry':
-      return `projectId="${projectId}"；按 RECOVERY_HINT 修正后重试 vcm_script。`
+      return `projectId="${projectId}"；按 RECOVERY_HINT 修正后重试 vcm_script；导航策划必须包含至少一个 nodeKind="page" 的页面概要。`
     default:
       return undefined
   }
@@ -319,9 +331,43 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
   return [
     `当前 projectPlanning 项目: ${input.projectId}`,
     context,
-    '知识索引: VCM ClassModel（project 根模型）；用 vcm_query / vcm_action_guide 读取契约后 vcm_script 执行。',
+    '知识索引: VCM ClassModel（project 根模型）；只把 VCM 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
+    '职责边界: LLM 只负责发出 vcm_script({ script }) tool_call；script 是 async function body；运行时负责把 this 绑定到 ProjectModel 并执行脚本。',
+    '执行规则: 不要把脚本写成普通文本回答；不要直接声明或访问 project 对象；不要用 project.xxx 路径；最终必须通过 vcm_script 的 script 字符串调用 this.xxx。',
+    '知识查询规则: action 只用 vcm_action_guide({ kind: "project", actionName }) 查询；attribute 才用 vcm_attribute_guide；replaceNavigationChildren/readProjectPlanningInput/readNavigationPlanningInputs 都是 action。',
+    '参数契约规则: 不要查询 project.ProjectNodeData；children 的结构来自 vcm_action_guide({ kind: "project", actionName: "replaceNavigationChildren" }) 的 paramsSchema.children。',
+    '执行前查询: vcm_action_guide({ kind: "project", actionName: "readProjectPlanningInput" }) + vcm_action_guide({ kind: "project", actionName: "readNavigationPlanningInputs" }) + vcm_action_guide({ kind: "project", actionName: "replaceNavigationChildren" })，然后 vcm_script 读取输入并写入 navigation children 概要。',
+    '导航结构规则: 顶层按业务域生成 module；每个主要 module 至少包含 1 个 nodeKind="page" 的 children 页面概要；禁止只生成一组 module 壳。',
+    '完成自检: agent_complete 前必须确认 navigationRoot.children 的业务 module 下存在 nodeKind="page"；如果没有 page，必须先重发 vcm_script 修正 children。',
+    ...projectPlanningScriptSopLines(input.projectId),
+    '输出要求: children 节点使用稳定英文 id/path，title/description 承载本轮产品需求的模块与页面概要；不调用 openPageDesign/writePageFile/readPageFileText。',
     '元数据来源: generated projectPlanning module metadata。',
   ].join('\n')
+}
+
+function projectPlanningScriptSopLines(projectId: string): readonly string[] {
+  return [
+    'vcm_script 标准写法：以下内容必须作为 tool_call 参数 script 的函数体交给运行时执行；不要作为自然语言回答。',
+    '根对象就是 this；不要访问 project.replaceNavigationChildren，不存在 project.projectPlanning。',
+    '业务功能不要只写 module；module 必须带 children page，页面概要必须使用 nodeKind: "page"。',
+    'const projectInput = await this.readProjectPlanningInput()',
+    'const existingNodes = await this.readNavigationPlanningInputs()',
+    'const children = [',
+    '  {',
+    '    id: "core-module",',
+    '    title: "核心模块",',
+    '    nodeKind: "module",',
+    '    path: "/core",',
+    '    description: projectInput.requirement,',
+    '    children: [',
+    '      { id: "core-overview", title: "核心总览", nodeKind: "page", path: "/core/overview", description: "核心模块总览与关键任务入口" }',
+    '    ]',
+    '  }',
+    ']',
+    'const navigationRoot = await this.replaceNavigationChildren({ children })',
+    'if (!JSON.stringify(navigationRoot.children).includes(\'"nodeKind":"page"\')) throw new Error("projectPlanning requires page nodes")',
+    `return { kind: "projectPlanningResult", projectId: "${projectId}", navigationRoot, previousNodeCount: existingNodes.length }`,
+  ]
 }
 
 function resolveProjectPlanningProject(
@@ -336,9 +382,12 @@ function resolveProjectPlanningProject(
 }
 
 function evaluateProjectPlanningBeforeFunctionCall(
-  _project: ProjectModel,
+  project: ProjectModel,
   options: AiAgentBeforeFunctionCallOptions,
 ): AiAgentBeforeFunctionCallDirective {
+  const completionGate = evaluateProjectPlanningCompletionGate(project, options)
+  if (completionGate !== undefined) return completionGate
+
   const gate = evaluateProjectPlanningToolGate(options)
   if (gate.ok) {
     return { status: 'allow' }
@@ -350,8 +399,44 @@ function evaluateProjectPlanningBeforeFunctionCall(
   }
 }
 
+function evaluateProjectPlanningCompletionGate(
+  project: ProjectModel,
+  options: AiAgentBeforeFunctionCallOptions,
+): AiAgentBeforeFunctionCallDirective | undefined {
+  if (options.toolName !== VCM_NATIVE_TOOL_NAMES.agentComplete) return undefined
+  if (!project.navigationDirty) {
+    return {
+      status: 'reject',
+      reason: 'projectPlanning: navigation children 尚未通过 vcm_script 写入，不能 agent_complete。',
+      fix: '先发起真实 vcm_script({ script }) tool_call，在 script 中 await this.readProjectPlanningInput() / await this.readNavigationPlanningInputs()，然后 await this.replaceNavigationChildren({ children })；完成写入后再 agent_complete。',
+    }
+  }
+  return evaluateProjectPlanningNavigationShapeForCompletion(project)
+}
+
+function evaluateProjectPlanningNavigationShapeForCompletion(
+  project: ProjectModel,
+): AiAgentBeforeFunctionCallDirective | undefined {
+  const pageCount = countNavigationNodesByKind(project.toTree(), 'page')
+  if (pageCount > 0) return undefined
+  return {
+    status: 'reject',
+    reason: 'projectPlanning: navigation 策划只有模块壳，缺少 nodeKind="page" 的页面概要，不能 agent_complete。',
+    fix: '重发 vcm_script({ script })，用 replaceNavigationChildren 写入 module + page 两级导航；每个主要业务 module 至少放入一个 page 子节点，page 只写 title/path/description 概要，不进入 pageDesign 四文件。',
+  }
+}
+
+function countNavigationNodesByKind(nodes: readonly ProjectNodeData[], nodeKind: string): number {
+  let count = 0
+  for (const node of nodes) {
+    if (node.nodeKind === nodeKind) count += 1
+    if (Array.isArray(node.children)) count += countNavigationNodesByKind(node.children, nodeKind)
+  }
+  return count
+}
+
 function readProjectPlanningProjectModule() {
-  return projectModelRuntimeMetadataDocument.modules.find(
+  return projectPlanningRuntimeMetadataDocument.modules.find(
     module => module.rootApi.kind === 'project',
   )
 }
@@ -363,8 +448,8 @@ function readProjectPlanningProjectMetadata(): AiModuleMetadataJson {
   }
   return resolveModuleMetadataJson(projectModule, {
     inlineSchemaRefs: false,
-    ...(projectModelRuntimeMetadataDocument.$defs === undefined
+    ...(projectPlanningRuntimeMetadataDocument.$defs === undefined
       ? {}
-      : { schemaDefs: projectModelRuntimeMetadataDocument.$defs }),
+      : { schemaDefs: projectPlanningRuntimeMetadataDocument.$defs }),
   })
 }

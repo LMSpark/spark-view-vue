@@ -48,11 +48,6 @@ export {
   readVcmKindMetadataFile,
 } from './vcm-bundle-assembler'
 
-export {
-  compareVcmBundleWithMonolithicRuntime,
-  loadVcmBundlePartsFromDist,
-} from './vcm-bundle-parity'
-
 export { VcmBundleLoader, resolveBundleRelativeUrl } from './vcm-bundle-loader'
 
 export type { VcmBundleLoaderOptions } from './vcm-bundle-loader'

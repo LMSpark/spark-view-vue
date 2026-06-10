@@ -1,7 +1,7 @@
 /**
  * VCM dist bundle 协议：manifest + 按 kind 拆分的 metadata 文件。
  *
- * 构建期写入 generated/vcm/dist/<target-id>/；Worker 按需 fetch kind 文件。
+ * 构建期写入 generated/vcm/<target-id>/；Worker 按需 fetch kind 文件。
  */
 
 import type { AiJsonSchemaObject } from '../../json'

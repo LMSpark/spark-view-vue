@@ -287,6 +287,10 @@ function cloneProjectNodeData(node: ProjectNodeData): ProjectNodeData {
   return cloned
 }
 
+/**
+ * 导航节点基类。
+ * @vcmSession 运行时导航会话节点；序列化走 ProjectNodeData + NavigationClient，无整包 toJson。
+ */
 export class ProjectNode {
   #node: ProjectNodeData
   #pid: string

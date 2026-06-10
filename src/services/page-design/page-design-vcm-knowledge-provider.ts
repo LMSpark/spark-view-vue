@@ -2,6 +2,7 @@ import {
   ClassModelKnowledgeService,
   WorkerVcmNativeKnowledgeProvider,
   createClassModelDocumentFromRuntimeDocument,
+  type ModuleMetadataRuntimeDocument,
   type VcmNativeKnowledgeProvider,
 } from '@spark-appworks/spark-ai/vcm-native'
 import {
@@ -9,7 +10,10 @@ import {
   vcmProjectPageSurfaceManifestUrl,
 } from '@/vcm/artifact-urls'
 import componentCatalogDocumentJson from '../../../generated/vcm/component-catalog.json'
-import { projectPageSurfaceRuntimeMetadataDocument } from '../../../generated/vcm/dist/project-page-surface/project-page-surface-module-metadata.runtime'
+import { projectPageSurfaceRuntimeMetadataDocument } from '../../../generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime'
+
+const pageDesignRuntimeMetadataDocument =
+  projectPageSurfaceRuntimeMetadataDocument as unknown as ModuleMetadataRuntimeDocument
 
 export function createPageDesignVcmKnowledgeProvider(): VcmNativeKnowledgeProvider {
   if (typeof Worker !== 'undefined') {
@@ -25,7 +29,7 @@ export function createPageDesignVcmKnowledgeProvider(): VcmNativeKnowledgeProvid
   }
 
   return new ClassModelKnowledgeService({
-    document: createClassModelDocumentFromRuntimeDocument(projectPageSurfaceRuntimeMetadataDocument),
+    document: createClassModelDocumentFromRuntimeDocument(pageDesignRuntimeMetadataDocument),
     componentCatalog: componentCatalogDocumentJson,
   })
 }
