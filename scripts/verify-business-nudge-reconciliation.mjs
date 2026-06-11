@@ -28,8 +28,7 @@ const KERNEL_SCAN_ROOTS = [
 const VITEST_FILES = [
   'packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts',
   'packages/spark-ai/src/tests/function-call-recovery-enricher.test.ts',
-  'packages/spark-ai/src/vcm-native/tests/vcm-failure-mode-recovery.test.ts',
-  'packages/spark-ai/src/vcm-native/tests/class-model-reflection-connectivity.test.ts',
+  'packages/spark-ai/src/vcm-native/tests/class-model.test.ts',
   'packages/spark-ai/src/tests/legacy-protocol-tool-names.test.ts',
   'tests/page/verify-rules.test.ts',
 ]

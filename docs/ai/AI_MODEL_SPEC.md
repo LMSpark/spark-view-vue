@@ -1,362 +1,315 @@
 # AI 生成模型规范（AI_MODEL_SPEC）
 
-> 状态：有效（2026-06）。**AI 不能什么都做**——本规范约束 AI 可生成的业务模型形态，确保每个模型可序列化、可恢复、可验证。
+> AI 要读写的 **business class** 长什么样。目录、命名、导出见 `docs/ai/ai-code-generation-behavior.md`。
 
-## 0. 治理定位
+**只有一套模型。** 凡 AI 可编辑的业务态，一律 `extends SparkAIModel` + 公开字段 + 属性链寻址；**禁止**再分「项目域 / 快照域」或并行 `fromJson` 编辑栈。
 
-本规范是 AI 代码生成规则的具体化，位于 `ai-code-generation-behavior.md` 之下：
+---
 
-```
-理念 > 逻辑 > AI 代码生成规则 > AI_MODEL_SPEC > SSOT || SOLID > 兼容
-```
+## 1. 协议基类
 
-规范层级四层：
-
-| 层 | 文档 | 职责 |
-|----|------|------|
-| **编写时** | AI_MODEL_SPEC.md（本文档） | 写什么代码：class 结构、序列化、继承 |
-| **编译时** | VCM_NATIVE_CLASS_SPEC.md | 编译器从代码产出什么 metadata |
-| **类型级** | vcm-native-class-contract.ts | 契约的结构化类型编码 |
-| **审计** | vcm-native-class-lifecycle-audit.ts | 编译时审计 + CI 门禁 |
-
-四层构成：**编写 → 契约 → 审计 → 门禁**。
-
-## 1. 三段式 class 结构
-
-每个业务模型 class 固定为三个区域，按顺序排列：
+凡 AI 要改数据的 class → **`extends SparkAIModel`**（`packages/spark-utils/src/ai-model.ts`）。
 
 ```typescript
-export class MyModel {
-  // ═══ 区域 1：constructor（反序列化入口 + 完整性验证） ═══
-  constructor(options: MyModelOptions) { /* ... */ }
-
-  // ═══ 区域 2：api ═══
-  // —— static api（工厂方法）——
-  static fromJson(json: MyModelMetadata | Record<string, unknown> | string): MyModel { /* ... */ }
-
-  // —— instance api（查询 / 命令 / 序列化）——
-  toJson(): MyModelMetadata { /* ... */ }
-  someCommand(param: ParamType): ResultType { /* ... */ }
-
-  // ═══ 区域 3：properties（仅公开 getter） ═══
-  get id(): string { return this.#id }
-  get name(): string { return this.#name }
-
-  // —— 私有字段（不出现在以上三个区域的公共签名中）——
-  #id: string
-  #name: string
-}
-```
-
-### 区域 1：constructor
-
-- 接受**结构化 options object**（如 `DataSetConfig`、`SparkNodeTreeRootParams`），**不直接**接受 JSON string。
-- 验证完整性：缺失必填字段立即 throw。不做静默兜底。
-- 参数遵循已有签名约束：最多 4 个 `public readonly` 参数属性，超出用 options object。
-- 禁止参数内嵌 JSDoc（移至类定义上方）。
-
-### 区域 2：api
-
-分两段，顺序固定：
-
-1. **static api**（工厂方法）：`static fromJson`、`static fromDataSet`、`static fromRuleJson` 等
-2. **instance api**（查询 / 命令 / 序列化）：`toJson()`、业务方法等
-
-### 区域 3：properties
-
-- **仅公开 getter**，无私有字段直接暴露。
-- 禁止 public setter 绕过 class 不变量。变异通过 instance api 方法。
-- 私有状态用 `#` 字段。子类访问父状态**只通过父 getter**，不直接引用 `#` 字段。
-
-### 禁止事项
-
-- 禁止第五个区域（辅助函数归入 instance api 或提取为模块级函数）。
-- 禁止在 properties 区域放置可写 public 字段。
-- 禁止 constructor 直接解析 JSON string（那是 `static fromJson` 的职责）。
-
-### 参考先例
-
-- `DataSet`：constructor 接受 `DataSetConfig` → `static fromJson(json: DataSetMetadata | Record<string, unknown> | string)` → getters → `toJson()` → 业务方法
-- `DataTable`：同上模式
-- `SparkNodeTree`：constructor → `static fromJson` / `fromRuleJson` / `fromPageChildren` → getters → 查询/写入 API
-
-## 2. constructor 反序列化协议
-
-### 职责分离
-
-| 方法 | 职责 | 输入 |
-|------|------|------|
-| `constructor` | 验证完整性 + 初始化状态 | 结构化 options object |
-| `static fromJson` | 解析 + 规范化 + 委托 constructor | `Metadata \| Record<string, unknown> \| string` |
-
-### fromJson 协议
-
-```typescript
-static fromJson(json: MyModelMetadata | Record<string, unknown> | string): MyModel {
-  // 1. string → parse
-  if (typeof json === 'string') {
-    const parsed: unknown = JSON.parse(json)
-    return MyModel.fromJson(isRecord(parsed) ? parsed : { value: parsed })
-  }
-
-  // 2. 防御性校验
-  const normalized = normalizeMyModelMetadata(json)
-
-  // 3. 委托 constructor
-  return new MyModel(normalized)
-}
-```
-
-规则：
-- `fromJson` 必须接受三种输入：metadata type、`Record<string, unknown>`、`string`。
-- 对 `string` 输入执行 `JSON.parse`，失败时 throw（错误消息包含"fromJson"前缀以便溯源）。
-- 对 `object` 输入做防御性校验（`isRecord`、字段类型检查、规范化）。
-- 最终委托 constructor 完成实例化，不在 fromJson 中绕过 constructor 的验证逻辑。
-
-### constructor 验证
-
-- 缺失必填字段立即 throw。
-- 类型不匹配立即 throw（不做隐式转换）。
-- 错误消息包含字段名 + 期望类型，便于 LLM 修正。
-- 禁止静默兜底（如 `name ?? 'unnamed'`）——缺失字段必须由调用方显式提供。
-
-## 3. toJson() 输出协议
-
-### 输出要求
-
-1. **返回纯对象**——非 class 实例，不含循环引用，不含 `undefined`（省略 key 代替）。
-2. **返回类型为 type alias**（如 `DataSetMetadata`、`TableMetadata`）——DTO 载体用 type，不用 class。
-3. **递归调用子模型 toJson()**——嵌套模型必须也输出纯对象。
-4. **输出符合 JSON Schema Draft 2020-12**——通过 `auditDraft2020Schema()` 结构审计 + `JsonSchemaValidator` 值验证。
-
-### 输出示例
-
-```typescript
-toJson(): DataSetMetadata {
-  const tables: Record<string, TableMetadata> = {}
-  for (const [name, table] of Object.entries(this.tables)) {
-    tables[name] = table.toJson() // 递归
-  }
-  const result: DataSetMetadata = {
-    schemaVersion: this.schemaVersion,
-    dataSetName: this.dataSetName,
-    tables,
-  }
-  // 可选字段：省略 key 代替 undefined
-  if (this.tableRelations !== undefined) result.tableRelations = this.tableRelations
-  if (this.version !== undefined) result.version = this.version
-  return result
-}
-```
-
-### 双向保证
-
-| 方向 | 保证 | 机制 |
-|------|------|------|
-| **输入侧** | constructor 验证完整性 | 必填字段缺失时 throw |
-| **输出侧** | toJson() 输出符合 Draft 2020-12 schema | `auditDraft2020Schema()` + `JsonSchemaValidator` |
-
-`fromJson(toJson())` 必须产生等价实例（幂等性）。这条规则不要求引用相等，只要求值相等。
-
-### 禁止事项
-
-- 禁止 toJson() 返回 class 实例。
-- 禁止 toJson() 输出含 `undefined` 值的 key（`{ name: undefined }` → 应省略 `name`）。
-- 禁止 toJson() 输出含循环引用的对象。
-- 禁止跳过子模型 toJson()（嵌套模型不可直接赋值 class 实例）。
-
-## 4. 继承链对称性
-
-### 判别分发模式
-
-父类 `static fromJson` 必须包含**判别分发（discriminator dispatch）**，根据判别字段路由到正确子类：
-
-```typescript
-abstract class BaseModel {
-  abstract get modelKind(): string
-
-  // 子类注册入口
-  static readonly #kindRegistry = new Map<string, typeof BaseModel>()
-
-  static registerKind(kind: string, ctor: typeof BaseModel): void {
-    BaseModel.#kindRegistry.set(kind, ctor)
-  }
-
-  static fromJson(json: Record<string, unknown> | string): BaseModel {
-    const parsed = typeof json === 'string' ? JSON.parse(json) : json
-    const kind = parsed['modelKind']
-    if (typeof kind !== 'string') throw new Error('Missing modelKind discriminator')
-
-    const ctor = BaseModel.#kindRegistry.get(kind)
-    if (!ctor) throw new Error(`Unknown modelKind: ${kind}`)
-
-    return ctor.fromJson(parsed)
-  }
-
+export abstract class SparkAIModel {
+  constructor(_options: Record<string, unknown>) { void _options }
   abstract toJson(): Record<string, unknown>
-}
-
-// 子类
-class ConfigModel extends BaseModel {
-  get modelKind(): string { return 'config' }
-
-  static {
-    BaseModel.registerKind('config', ConfigModel)
-  }
-
-  static fromJson(json: Record<string, unknown> | string): ConfigModel { /* ... */ }
-
-  toJson(): Record<string, unknown> {
-    return { modelKind: 'config', /* ... */ }
-  }
+  abstract validate(): void  // 结束编辑依据；失败 throw
 }
 ```
 
-### 规则
+协议强制 **`toJson`** 与 **`validate`**：
 
-1. 每个继承链的根 class 定义判别字段（如 `modelKind`、`nodeKind`）。
-2. 父类 `static fromJson` 读取判别字段并分发到对应子类 `fromJson`。
-3. 子类 `toJson()` **必须**包含判别字段。
-4. 实现模式二选一：
-   - **(a) registry map**：适合子类多、动态注册的场景（如插件体系）
-   - **(b) switch / if-else**：适合子类少、固定枚举的场景（如 `instantiateNavigationKindNode`）
-5. 判别字段的 metadata type 必须是 literal union（如 `'config' | 'module' | 'link'`），不用 `string`。
+- **`validate()`**：结束一轮编辑的前置条件；通过则无返回值，失败 `throw`。
+- **`save()`** 前须能通过 `validate()`（实现上 `save` 应自动调用）。
+- AI / UI：编辑中随意改字段；**认为编辑完成**时先 `validate()`，再 `save` 或交下一流程。
 
-### 对称性要求
+这是 **AI 编辑协议**，不是 DDD 领域基类。
 
-```
-instance.toJson() → fromJson(json) → 等价实例
-子类实例.toJson().modelKind === 子类.modelKind
-父类.fromJson(子类实例.toJson()) instanceof 子类
-```
+---
 
-### 参考先例
-
-- `instantiateNavigationKindNode`：按 `nodeKind` switch 分发到 `ModuleNode`、`ConfigPageNode` 等
-- `ConfigPageNode`/`ModuleNode` 继承 `ProjectNode`：当前通过 `nodeKind` getter 区分，但尚未实现 `fromJson` 多态分发
-
-## 5. type vs class 边界
-
-### 使用 type alias 的场景
-
-| 场景 | 示例 |
-|------|------|
-| DTO / input / output 数据载体 | `DataSetMetadata`、`TableMetadata`、`PageNodeData` |
-| JSON Schema 源类型 | `DataSetConfig`、`SparkNodeTreeRootParams` |
-| options / params 对象 | `ProjectModelInitOptions`、`DataSetSaveChangesOptions` |
-| 联合 / 映射 / 条件类型 | `'config' \| 'module' \| 'link'`、`Record<string, TableMetadata>` |
-| 无运行时行为的契约 | 跨模块数据形状约定 |
-
-### 使用 class 的场景
-
-| 场景 | 示例 |
-|------|------|
-| 有生命周期和不变量的业务模型 | `DataSet`、`DataTable`、`DataView` |
-| 拥有 toJson() / static fromJson() 的容器 | `DataSetCrudTool`、`SparkNodeTree` |
-| 需要私有状态或 getter 计算属性 | `ProjectNode`（#node + getters） |
-| 控制变异的方法 API | `DataSet.addTable()`、`ProjectNode.applyNavigationPatch()` |
-
-### 核心判断
-
-**有行为 → class；仅数据 → type。**
-
-当对象满足以下任一条件时，必须用 class：
-1. 有 `toJson()` 或 `static fromJson()` 方法
-2. 有私有状态需要通过 getter 控制访问
-3. 有业务不变量需要通过方法保证
-4. 有生命周期管理（缓存、订阅、销毁）
-
-不满足以上任何条件的数据载体，用 type alias。
-
-本规则扩展 `ai-code-generation-behavior.md` §1"interface 使用原则"——"data carriers use type alias"。interface 的 SPICE gate 不变；本节补充 type vs class 的选择标准。
-
-## 6. 与 VCM 生命周期契约对齐
-
-### 映射表
-
-| AI_MODEL_SPEC | VCM 契约 | 说明 |
-|---|---|---|
-| `toJson()` | `VcmNativeSnapshotClass.toJson()` | 同一方法，双重含义 |
-| `static fromJson()` | `VcmNativeSnapshotFactory.fromJson()` | 同一方法 |
-| 判别分发模式 | 无 VCM 对应 | 模型层约定，VCM metadata 不感知 |
-| `@vcmSession` | 豁免 toJson/fromJson | 会话模型不受本规范 §2/§3 约束 |
-| `@vcmFilePersisted` | 树模型有 `fromRuleJson` 等特殊工厂 | 持久化走文件 API，toJson 可选 |
-| `@vcmSerializable` | 快照模型必须 toJson + fromJson | 完全受本规范约束 |
-
-### 生命周期豁免
-
-标有 `@vcmSession` 的 class 不需要 `toJson()` / `static fromJson()`。但仍然必须遵守 §1 三段式结构（constructor / api / properties）。
-
-标有 `@vcmFilePersisted` 的 class 必须有 `static fromJson` 或 `fromRuleJson`，`toJson()` 建议但不强制。
-
-### 豁免声明方式
-
-在 class JSDoc 中标注：
+## 2. 子类
 
 ```typescript
-/**
- * 页面设计项目模型。
- * @moduleKind project
- * @vcmSession 编排会话；无整包 toJson。
- */
-export class ProjectModel { /* ... */ }
+export class 某模型 extends SparkAIModel {
+  constructor(options: { /* 结构化 object，不用 JSON string */ }) {
+    super(options)
+  }
+
+  // 公开字段（标量 + 子模型引用）
+  title: string
+  items: 行模型[]
+  leaf: 叶子模型 | null
+
+  toJson(): Record<string, unknown> { /* ... */ }
+  validate(): void { /* ... */ }  // 结束编辑依据
+  // 按需：save()、static load()、subscribe …
+}
 ```
 
-验证脚本检测 `@vcmSession` tag 后跳过 toJson/fromJson 检查。
+### 字段
 
-## 7. 验证
-
-| 命令 | 作用 |
+| 类型 | 例子 |
 |------|------|
-| `pnpm run verify:ai-model` | 静态检查（warn 模式） |
-| `pnpm run verify:ai-model:strict` | 静态检查（strict 模式，warn 升级为 error） |
-| `pnpm run verify:ai-model:schema` | 运行时 toJson() 输出的 Draft 2020-12 合规验证 |
-| `pnpm run verify:rules` | 含 verify:ai-model（总门禁） |
+| 标量 | `title`、`parentId`、`dirty`、`ruleJson`（文件原文 string） |
+| 子模型 | `leaf: 叶子 \| null`、`items: 行[]` — **class 实例**，不是 plain object |
 
-### 静态检查项
+- 树 = **`items[]` + `parentId`**，不用嵌套 `children` 当真源。
+- 页面四文件（`rule.json` / `pagedata.json` / `script.js` / `style.css`）= **`PageConfigModel` 上的 string 字段**，不是独立的节点树 / DataSet 模型。
+- AI / Vue **同一实例**，写字段或调 API；不要 draft、不要 projection DTO。
+- 根模型可加过程态（`selectedId`、`dirty`）+ `subscribe`；AI 无事件，靠字段/API 读。
+- **LLM 投影**：公开字段 + public 方法 + JSDoc **直接取**（见 §4）。
 
-1. 业务模型 class 是否有 `toJson()` 实例方法（`@vcmSession` 豁免）
-2. 业务模型 class 是否有 `static fromJson` / `fromDataSet` / `fromRuleJson` / `reconcileFromJson` 工厂方法（`@vcmSession` 豁免）
-3. `fromJson` 签名是否接受 `Metadata | Record<string, unknown> | string`
-4. 继承链父类 fromJson 是否包含判别分发（建议性 info）
+### 寻址（不靠 script 路径）
 
-### 运行时验证
+模型 **已具备寻址能力**：公开字段 + 子模型引用 + 集合下标，**不必**依赖 `vcm_script` 或 path 路径串作为唯一入口。
 
-利用 `spark-json-document` 的 `auditDraft2020Schema()` 对 `toJson()` 输出做 Draft 2020-12 合规检查。
+```typescript
+// 标量
+project.name
+row.title
 
-## 8. 渐进式落地
+// 集合下标 → 子模型
+project.navigationNodes[0]
+project.navigationNodes[i].pageConfig
 
-### 新增模型（立即生效）
+// 链式到达叶子字段（含四文件原文）
+project.navigationNodes[i].pageConfig!.ruleJson
+project.navigationNodes[i].pageConfig!.pageDataJson
+project.navigationNodes[i].pageConfig!.script   // 字段名 script，不是 script 工具
+```
 
-新增业务模型 class 必须遵守：
-1. 三段式结构（constructor / api / properties）
-2. `toJson()` 返回 metadata type
-3. `static fromJson()` 接受 JSON object | string
-4. 继承链使用判别分发
+| 手段 | 作用 |
+|------|------|
+| **`this.属性` / `this.属性[i]`** | **主寻址**；读写真源 |
+| **子模型字段** | 沿引用链深入 |
+| **instance API** | 辅助（查找、集合 CRUD、save）；**不替代**属性寻址 |
 
-### 现有模型迁移
+VCM / runtime 若提供 script 闭包，只是**可选执行壳**；**语义真源**仍是同一实例上的属性链。
 
-| Class | 当前状态 | 迁移动作 |
-|-------|----------|----------|
-| `DataSet` | 合规 | 无需修改 |
-| `DataTable` | 合规 | 无需修改 |
-| `DataView` | 合规 | 无需修改 |
-| `DataSetCrudTool` | 合规 | 无需修改 |
-| `SparkNodeTree` | 合规 | 无需修改 |
-| `ProjectNode` | 会话模型 | 确认 `@vcmSession` tag |
-| `ConfigPageNode` | 会话模型 | 已有 `@vcmSession` |
-| `ModuleNode` 等 | 会话模型子类 | 继承 `@vcmSession` 豁免 |
+### 禁止
 
-### 验证级别
+跳过 `SparkAIModel`；每模型一个 interface；IO / UI 进 class；机械多子类。
 
-- **初期**：`verify:ai-model`（warn 模式）集成到 `verify:rules`，warn 不阻塞 CI
-- **一个发布周期后**：切换到 `verify:ai-model:strict`（strict 模式），warn 升级为 error，阻塞 CI
+**禁止第二套 AI 模型（快照栈）：**
 
-## 9. 相关文档
+| 禁止 | 说明 |
+|------|------|
+| `DataSet` / `DataTable` / `DataView` / `DataSetCrudTool` 作为 AI 编辑面 | 它们是运行时解析/渲染管线，不是 LLM 另开的模型层 |
+| `SparkNodeTree` / `fromRuleJson` / `editNodeTree` 作为 AI 编辑面 | 节点 UI 真源是 `pageConfig.ruleJson` 字符串，不是嵌套节点 class |
+| 仅 `toJson` + `static fromJson`、无 `save`/`load` 的「快照类」 | 持久化边界统一走 `save({ … })` / `load({ … })` 或父模型字段赋值后父级 `save` |
+| `readXxxProjection()`、独立 snapshot DTO | 与公开字段重复的第二知识面 |
+| `@moduleKind`、kind id、`vcm_*_guide({ kind })` | 只用 **className** 索引（§4） |
 
-- AI 代码生成行为规范：`docs/ai/ai-code-generation-behavior.md`
-- VCM 原生 Class 规范：`docs/ai/VCM_NATIVE_CLASS_SPEC.md`
-- 生命周期契约类型：`packages/spark-ai/src/vcm-native/metadata/vcm-native-class-contract.ts`
-- 生命周期编译时审计：`packages/vite-plugin-spark-catalog/src/vcm-native-class-lifecycle-audit.ts`
-- JSON Schema Draft 2020-12 审计：`packages/spark-json-document/src/schema/schema-draft2020-audit.ts`
-- 序列化参考实现：`packages/spark-data/src/dataset.ts`、`packages/spark-data/src/data-table.ts`、`packages/spark-data/src/data-view.ts`
+运行时仍可在 **模型外部** 把 `pageDataJson` parse 成 `DataSet`、把 `ruleJson` parse 成渲染树供 Vue 使用；该 parse **不得**反客为主成为 AI 的编辑入口。
+
+---
+
+## 3. 持久化与序列化
+
+| 方法 | 何时有 | 规则 |
+|------|--------|------|
+| `toJson()` | **必有**（协议） | 纯 object；子模型递归 `toJson()`；无 `undefined` key |
+| `validate()` | **必有**（协议） | 结束编辑依据；失败 `throw`；`save` 前自动调用 |
+| `save()` | 有存储边界时 | 只写**本模型**；IO 在方法体内；可为 `async`；依赖经 **options 传入**，不挂公开字段 |
+| `static load()` | 同上 | 恢复本模型；`new 子模型` 挂到字段上；可为 `async` |
+
+- 父不替子 save；IO 依赖经 **options 传入**。具体操作流程写在对应模型 **class / 方法 JSDoc**（如 `PageConfigModel`）。
+- **`static fromJson()` 不是 AI 模型标准入口**；遗留代码中的 `fromJson` 仅作迁移/内部工具，新模型 **不要** 再靠它充当 load 替代品。
+
+---
+
+## 4. 标准模型 ↔ LLM 知识体系
+
+模型 **class** 是语义真源；VCM 编译产物是 LLM 可读索引；`vcm_script` 是同一实例上的执行壳。三者同构。
+
+**禁止 kind 体系：** 不用 `@moduleKind`、不用 kebab-case kind id、不用与 **className** 平行的第二套索引。知识体系只认 **`SparkAIModel` 子类的 class 名** + **public 字段 TS 类型**。
+
+### 4.1 两层分工
+
+| 层 | 真源 | 作用 |
+|----|------|------|
+| **模型形态** | `SparkAIModel` 子类源码 | 字段、寻址、validate/save；与 Vue 共实例 |
+| **知识编译** | `config/vcm/registry.json` + TS 类型解析 | 把字段类型图投影为 metadata → ClassModel → guide |
+
+进入 LLM 知识库：root **class** 须在 registry 的 `source.files` 扫描面内；子 model 由字段类型引用，须在扫描面内可解析。
+
+**子模型是谁** = 字段类型 `T extends SparkAIModel`（或 `T[]` 的元素类型）。**className 即索引**，无别名层。
+
+```text
+SparkAIModel 子类（public 字段 / 方法 / JSDoc）
+  → generate:module-metadata（registry：source.files + roots[].className）
+  → metadata（按 className 索引各 model class）
+  → projectClassModelForGuide（root 起沿子模型字段类型可达的 class 集合；见 §4.2.3）
+  → vcm_query / vcm_*_guide（参数 className，非 kind）
+  → vcm_script（this = Host 注入的根 model 实例）
+```
+
+> 实现收敛中：部分 JSON/工具参数仍含遗留字段名 `kind`；规范目标为 **仅 className**，与源码 class 名一致。
+
+### 4.2 机械对应表
+
+| 标准模型（源码） | 知识索引 | guide / 执行 |
+|------------------|----------|--------------|
+| `public` 标量字段 | 字段名 + schema | `this.field` / 赋值 |
+| `public` 字段 `T` / `T[]`，`T extends SparkAIModel` | 字段名 + **元素/值类型 className** | `this.field` / `this.field[i].…` |
+| `public` 方法 | 方法名 + paramsSchema | `await this.save(…)`（辅助） |
+| class / 方法 JSDoc | guide 正文 | 操作流程只读 JSDoc |
+| `@vcmIgnore` | — | LLM 不可见 |
+
+### 4.2.1 子模型：字段类型即绑定
+
+```typescript
+navigationNodes: NavigationRowModel[]
+pageConfig: PageConfigModel | null
+title: string
+```
+
+| 源码 | 知识体系 |
+|------|----------|
+| `field: T`，`T extends SparkAIModel` | 字段 `field` → 子 model **`T.name`**（如 `PageConfigModel`） |
+| `field: T[]` | 同上；`[i]` 只在 script |
+| 标量 | 无子 class |
+
+**可达 class** = 从 root class 出发，沿「类型为 SparkAIModel 子类的 public 字段」能走到的 **className 集合**（与 §2 属性链同构）。
+
+编译器：字段类型 `extends SparkAIModel` 才建立子 model 链接（`requireSparkAIModel: true`）。action `resultApis` 遗留 `@moduleKind` 路径待删。
+
+### 4.2.2 registry 与 class 图
+
+| 概念 | 含义 |
+|------|------|
+| **className** | `ProjectRootModel` 等；**唯一** model 索引 |
+| **root** | registry `roots[].className`；遍历起点 |
+| **metadata 表** | root 沿字段类型可达的各 SparkAIModel 子 class 的字段/方法/JSDoc |
+| **actions** | 不参与字段类型链扩展 |
+
+registry 只声明：**从哪个 root class 编译**、**哪些 `.ts` 在扫描面内**。不逐字段登记别名。
+
+`pageConfig: PageConfigModel | null` → 知识含义：字段 `pageConfig`，类型 **`PageConfigModel`**。
+
+### 4.2.3 可达 class（沿字段类型链）
+
+1. 队列初始：`roots[].className`（如 `ProjectRootModel`）。
+2. 弹出当前 class，记入已可达。
+3. 枚举 public 字段：类型（nullable/数组解包后）为 SparkAIModel 子 class → 该 **className** 入队。
+4. 至队列空。actions / openXxx **不建边**。
+
+```text
+Step 0  [ProjectRootModel]     已可达 { ProjectRootModel }
+Step 1  navigationNodes: NavigationRowModel[]  → NavigationRowModel
+Step 2  已可达 { ProjectRootModel, NavigationRowModel }
+        pageConfig: PageConfigModel | null       → PageConfigModel
+Step 3  已可达 { …, PageConfigModel }
+        ruleJson: string                         → 结束
+```
+
+- **`vcm_query`**：列出上述可达 **className**。
+- **`vcm_model_guide({ className: 'PageConfigModel' })`**：仅当该 class 在可达集合内。
+
+| 字段类型链 | script |
+|------------|--------|
+| `navigationNodes: NavigationRowModel[]` | `this.navigationNodes[i]` |
+| `pageConfig: PageConfigModel` | `row.pageConfig` |
+| `ruleJson: string` | `row.pageConfig.ruleJson = '…'` |
+
+**违规：** 字段类型链上出现 `ConfigPageNode` → `SparkNodeTree` / `DataSetCrudTool` 等 **不在标准栈里的 model class**（§4.4）。
+
+### 4.3 合规知识图（唯一栈）
+
+```text
+ProjectRootModel                    ← registry root
+  navigationNodes: NavigationRowModel[]
+  …
+
+NavigationRowModel                  ← 由 navigationNodes 元素类型关联
+  pageConfig: PageConfigModel | null
+
+PageConfigModel                     ← 由 pageConfig 字段类型关联
+  ruleJson, pageDataJson, script, style
+```
+
+```javascript
+const row = this.navigationNodes[i]
+row.pageConfig.ruleJson = '[ … ]'
+await row.pageConfig.validate()
+await row.pageConfig.save({ api: … })
+```
+
+合规：guide 只覆盖 **`ProjectRootModel` → `NavigationRowModel` → `PageConfigModel`** 字段类型链；不出现并列 `SparkNodeTree` / `DataSet` 等 model class。
+
+### 4.4 违规形态（一律改）
+
+| 违规 | 标准 |
+|------|------|
+| `@moduleKind` / kind id / `vcm_*_guide({ kind })` | 只用 **className** |
+| 字段链外并列 model class（快照栈） | 仅三层 SparkAIModel 栈 |
+| 主路径 action 替代写字段 | 字段 + 辅助 validate/save |
+| `readXxxProjection` | 读 public 字段 |
+| `flatRows: TNode[]` 且元素非栈内 class | `navigationNodes: NavigationRowModel[]` |
+
+parse 渲染（`ruleJson` → 树）在 model **外**，不注册为 model class。
+
+### 4.5 工具（执行壳）
+
+| 工具 | 作用 |
+|------|------|
+| `vcm_query` | 可达 **className** 列表（§4.2.3） |
+| `vcm_model_guide` | `{ className }` → 该 class 字段 + actions |
+| `vcm_attribute_guide` | `{ className, attributeName }` |
+| `vcm_action_guide` | 辅助方法 schema |
+| `vcm_script` | `this` = 根 model；语句 = §2 属性链 |
+
+### 4.6 分层
+
+```text
+AI      →  guide(className) + script 写字段
+模型    →  SparkAIModel 子 class + 公开字段
+知识编译 →  registry + metadata（className 索引）
+IO      →  save/load 内部
+UI      →  subscribe；parse 四文件（非 model class）
+```
+
+---
+
+## 5. 参考例子（唯一栈）
+
+三层即全部 AI 可编辑面；**无**并列快照域。
+
+```text
+项目根（ProjectRootModel）
+  projectId, name, tenantId          标量
+  navigationNodes: 行[]               子模型集合（扁平行，不是 children 树）
+  selectedNodeId, dirty, revision     过程态（根上）
+  + find/add/update/remove 导航       API（辅助）
+  + subscribe                         UI 刷新
+
+行（NavigationRowModel）
+  id, parentId, projectId, tenantId, title, description, nodeKind   标量
+  pageConfig: 页配置 | null            可选子模型
+
+页配置（PageConfigModel）— 叶子；四文件 = string 字段
+  pageId, ruleJson, pageDataJson, script, style   标量（磁盘原文）
+  save({ api }) / load({ pageId, loader })         操作流程见类 JSDoc
+```
+
+**从例子归纳：**
+
+| 点 | 模型 | 知识体系（§4） |
+|----|------|----------------|
+| 协议 | 各层 `extends SparkAIModel` | 可达 set = 字段类型链上的 **className** |
+| 字段 | `T extends SparkAIModel` | guide 用 className；子 model 由类型关联 |
+| 页面内容 | `PageConfigModel.ruleJson` 等 | 仅 `PageConfigModel`；无并列 model class |
+| 寻址 | 属性链 | script 同构 |
+| 不要 | 快照栈、projection | **禁止 kind / @moduleKind**、禁止主路径 action 替字段 |
+
+实现：`packages/spark-project-model/src/domain-model/`（子模型绑定见字段类型；进 LLM 须 root 进 registry `source.files`）。
+
+---
+
+## 6. 相关文档
+
+- 代码组织与命名：`docs/ai/ai-code-generation-behavior.md`
+- 知识编译（registry、audit、gates）：`docs/ai/VCM_NATIVE_CLASS_SPEC.md`
+- ClassModel 投影：`packages/spark-ai/src/vcm-native/class-model/model-projection.ts`
+- 协议基类：`packages/spark-utils/src/ai-model.ts`

@@ -39,8 +39,8 @@ describe('projectPlanning HR artifact assert (L4)', () => {
     artifact.result.toolCalls = [
       {
         toolName: 'vcm_action_guide',
-        argsPreview: JSON.stringify({ kind: 'project', actionName: 'readProjectPlanningInput' }),
-        resultSummary: 'ProjectModel docs mention openPageDesign as unrelated model knowledge.',
+        argsPreview: JSON.stringify({ className: 'ProjectRootModel', actionName: 'readProjectPlanningInput' }),
+        resultSummary: 'ProjectRootModel docs list navigationNodes field chain.',
       },
       {
         toolName: 'vcm_script',
@@ -58,7 +58,7 @@ describe('projectPlanning HR artifact assert (L4)', () => {
     artifact.result.toolCalls = [
       {
         toolName: 'vcm_script',
-        argsPreview: JSON.stringify({ script: 'await this.openPageDesign("demo")' }),
+        argsPreview: JSON.stringify({ script: 'await this.navigationNodes[0].pageConfig.validate()' }),
       },
     ]
 

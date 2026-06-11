@@ -8,6 +8,10 @@
 
 export { isRecord, isObject, isCallable } from './internal/guards'
 
+// ==================== AI 可编辑模型协议 ====================
+
+export { SparkAIModel } from './ai-model'
+
 // ==================== 页面脚本共享类型 ====================
 
 export type { FieldRenderConfig, ComponentInstanceSnapshot, ContextItem, ContextSnapshot } from './script-types'

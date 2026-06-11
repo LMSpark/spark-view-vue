@@ -131,7 +131,7 @@ Before adding or keeping an interface, answer three questions:
 
 - Classes carry state, lifecycle, caching, invariants, and default behavior.
 - Subclasses express genuine "is-a" relationships only — do not inherit just to reuse a few methods.
-- For serialization and deserialization requirements (three-section structure, constructor protocol, toJson output protocol, inheritance chain symmetry), see `docs/ai/AI_MODEL_SPEC.md`.
+- AI-editable model shape: `docs/ai/AI_MODEL_SPEC.md` (single `SparkAIModel` stack only; no parallel snapshot models such as DataSet/SparkNodeTree for LLM editing; page files are `PageConfigModel` string fields; LLM projection reads fields/methods/JSDoc directly).
 
 ### Class Naming & Organization Hierarchy
 

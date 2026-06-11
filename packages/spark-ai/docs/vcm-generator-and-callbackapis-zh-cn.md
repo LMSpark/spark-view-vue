@@ -5,7 +5,7 @@
 ## 位置
 
 ```text
-TS 业务类 + @moduleKind JSDoc
+TS 业务类（extends SparkAIModel + 公开字段）
   -> VCM 配置层 config/vcm/registry.json（VCM registry 协议）
   -> packages/vite-plugin-spark-catalog/src/module-metadata-generator.ts
   -> page-design-module-metadata.runtime.generated.json
@@ -23,7 +23,7 @@ TS 业务类 + @moduleKind JSDoc
 
 | 来源 | metadata 字段 |
 |------|---------------|
-| class JSDoc | `rootApi.jsdoc`、`kind`、`className` |
+| class JSDoc | `rootApi.jsdoc`、`className`（metadata `kind` 与 className 同构） |
 | public property | `attributes[]` |
 | public method | `actions[]` |
 | method params | `paramsSchema` |
@@ -53,8 +53,7 @@ target 结构：
 | `id` | target ID；CLI `--target` 使用 |
 | `kind` | 当前固定为 `native-metadata` |
 | `source.files` | TypeScript 源文件列表 |
-| `roots[].className` | 作为 VCM rootApi 抽取的 class 名 |
-| `roots[].kind` | 可选；用于人工核对 class 的 `@moduleKind` |
+| `roots[].className` | 作为 VCM rootApi 抽取的 class 名（唯一索引） |
 | `outputs.runtime` | VCM-native runtime metadata JSON |
 | `outputs.jsdocTodoLog` | 源码 JSDoc / schema description 待补日志 |
 | 根级 `componentCatalogOutput` | 组件 props catalog JSON |

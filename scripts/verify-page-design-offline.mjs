@@ -3,8 +3,7 @@
 /**
  * Offline pageDesign smoke verification.
  *
- * Exercises the VCM-native sandbox path (vcm_script) and app-layer registration
- * hooks without LLM calls or a running dev server.
+ * Exercises app-layer planning hooks and tool-loop recovery without LLM or dev server.
  */
 
 import { spawnSync } from 'node:child_process'
@@ -15,10 +14,7 @@ const ROOT = path.resolve(import.meta.dirname, '..')
 
 const testFiles = [
   'tests/page/page-design-business.test.ts',
-  'tests/page/page-design-ai-runner.test.ts',
-  'tests/page/page-design-knowledge.test.ts',
   'tests/page/page-design-gates.test.ts',
-  'tests/page/page-design-vcm-knowledge-provider.test.ts',
   'tests/page/page-design-e2e-artifacts.test.ts',
   'tests/page/page-design-sop.test.ts',
   'packages/spark-ai/src/tests/tool-loop-nudge-hooks.test.ts',

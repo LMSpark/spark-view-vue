@@ -39,8 +39,15 @@ function collectApiObjectMetadataFindings(
 
   if (api.kind.trim().length === 0) {
     findings.push({ level: 'error', rule: 'kind-required', message: `${location} kind 不能为空` })
-  } else if (api.kind !== api.kind.toLowerCase()) {
-    findings.push({ level: 'error', rule: 'kind-lowercase', message: `kind "${api.kind}" 必须全小写` })
+  } else if (api.className.trim().length > 0 && api.kind !== api.className) {
+    findings.push({
+      level: 'error',
+      rule: 'kind-className-parity',
+      message: `kind "${api.kind}" 必须与 className "${api.className}" 一致`,
+    })
+  }
+  if (api.className.trim().length === 0) {
+    findings.push({ level: 'error', rule: 'className-required', message: `${api.kind} className 不能为空` })
   }
   if (api.name.trim().length === 0) {
     findings.push({ level: 'error', rule: 'name-required', message: `${api.kind} name 不能为空` })

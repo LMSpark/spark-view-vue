@@ -17,30 +17,33 @@ import type {
 } from './types'
 
 /**
- * 按 kind 从 VCM module 取完整 API 元数据（apiRegistry 优先）。
- * 不在 ClassModelDocument 上预存 models；guide 投影时按需调用。
+ * 按 className 从 VCM module 取完整 API 元数据（apiRegistry 优先）。
+ * registry key 与 className 同构；仍兼容遗留 kebab-case kind 键。
  */
-export function resolveModuleApi(document: ClassModelDocument, kind: string): AiApiObjectMetadata {
-  const api = resolveModuleApiOrUndefined(document, kind)
+export function resolveModuleApi(document: ClassModelDocument, className: string): AiApiObjectMetadata {
+  const api = resolveModuleApiOrUndefined(document, className)
   if (api === undefined) {
-    throw new Error(`VCM module API not found for kind "${kind}".`)
+    throw new Error(`VCM module API not found for className "${className}".`)
   }
   return api
 }
 
 export function resolveModuleApiOrUndefined(
   document: ClassModelDocument,
-  kind: string,
+  className: string,
 ): AiApiObjectMetadata | undefined {
-  if (document.module.rootApi.kind === kind) return document.module.rootApi
-  return document.module.apiRegistry?.[kind]
+  const root = document.module.rootApi
+  if (root.kind === className || apiClassName(root) === className) return root
+  const fromRegistry = document.module.apiRegistry?.[className]
+  if (fromRegistry !== undefined) return fromRegistry
+  for (const api of Object.values(document.module.apiRegistry ?? {})) {
+    if (apiClassName(api) === className) return api
+  }
+  return undefined
 }
 
 /**
- * 从 root 沿 attribute.api 属性链可达的 kind（LLM 发现索引）。
- *
- * attribute.api 统一指向子 model kind：标量对象直接挂接；`T[]` / `Iterable<T>` 挂接元素 T 的 kind，
- * 集合语义由 attribute.schema.type === 'array' 表达，BFS 不区分标量/数组边。
+ * 从 root 沿子模型公开字段（attribute.api）属性链可达的 className（LLM 发现索引）。
  */
 export function listAttributeReachableKinds(document: ClassModelDocument): readonly string[] {
   const kinds: string[] = []
@@ -61,15 +64,18 @@ export function listAttributeReachableKinds(document: ClassModelDocument): reado
   return kinds
 }
 
-/** LLM guide 投影：仅当 kind 在属性链上（或为 root）时返回 ClassModel。 */
-export function projectClassModelForGuide(document: ClassModelDocument, kind: string): ClassModel {
+/** @alias listAttributeReachableKinds — registry kind 与 className 同构。 */
+export const listAttributeReachableClassNames = listAttributeReachableKinds
+
+/** LLM guide 投影：仅当 className 在属性链上（或为 root）时返回 ClassModel。 */
+export function projectClassModelForGuide(document: ClassModelDocument, className: string): ClassModel {
   const reachable = new Set(listAttributeReachableKinds(document))
-  if (!reachable.has(kind)) {
+  if (!reachable.has(className)) {
     throw new Error(
-      `ClassModel kind "${kind}" is not reachable from root "${document.rootKind}" via attribute.api; fix native planning model / VCM attribute reflection.`,
+      `ClassModel "${className}" is not reachable from root "${document.rootKind}" via submodel field chain; fix native planning model / VCM attribute reflection.`,
     )
   }
-  return projectClassModelFromApi(resolveModuleApi(document, kind))
+  return projectClassModelFromApi(resolveModuleApi(document, className))
 }
 
 export function projectClassModelFromApi(api: AiApiObjectMetadata): ClassModel {
@@ -85,9 +91,9 @@ export function projectClassModelFromApi(api: AiApiObjectMetadata): ClassModel {
   }
 }
 
-export function classNameForKind(document: ClassModelDocument, kind: string): string {
-  const api = resolveModuleApiOrUndefined(document, kind)
-  return api === undefined ? kind : apiClassName(api)
+export function classNameForKind(document: ClassModelDocument, registryKey: string): string {
+  const api = resolveModuleApiOrUndefined(document, registryKey)
+  return api === undefined ? registryKey : apiClassName(api)
 }
 
 export function findNestedAttributeApi(

@@ -66,15 +66,15 @@ LLM request
 
 | 工具 | 参数 |
 |------|------|
-| `vcm_query` | `kind?`, `keyword?`, `includeMembers?` |
-| `vcm_model_guide` | `kind` |
-| `vcm_attribute_guide` | `kind`, `attributeName` |
-| `vcm_action_guide` | `kind`, `actionName`, `componentType?` |
+| `vcm_query` | `className?`, `keyword?`, `includeMembers?`（兼容遗留 `kind`） |
+| `vcm_model_guide` | `className` |
+| `vcm_attribute_guide` | `className`, `attributeName` |
+| `vcm_action_guide` | `className`, `actionName`, `componentType?` |
 | `vcm_script` | `script` |
 | `human_question` | `context`, `reason`, `missingFacts?`, `candidateOptions?` |
 | `agent_complete` | `summary` |
 
-所有工具都运行时拒绝未知参数。旧别名不会被接受。
+所有工具都运行时拒绝未知参数。guide/query 短期仍接受遗留 `kind` 参数（值须为 className）。
 
 ## native-script-context
 
@@ -98,11 +98,10 @@ action call
 典型脚本：
 
 ```javascript
-const page = await this.openPageDesign({ pageId: 'orders' })
-await page.editDataSet(async (ds) => {
-  ds.createTable({ tableName: 'Orders', columns: [] })
-})
-return page.getFileText('pagedata.json')
+const row = this.navigationNodes[0]
+row.pageConfig.ruleJson = '...'
+await this.save({ client, fileApi })
+return row.pageConfig.toJson()
 ```
 
 执行链路：
@@ -137,7 +136,7 @@ DevSystem
   -> pageDesign registration
   -> VCM-native tools
   -> vcm_script
-  -> ProjectModel / ConfigPageNode / DataSetCrudTool / SparkNodeTree
+  -> ProjectRootModel / NavigationRowModel / PageConfigModel 字段链
 ```
 
 门禁：
@@ -149,7 +148,7 @@ DevSystem
 
 | 现象 | 处理 |
 |------|------|
-| LLM 传 `methodName` | 改用 `vcm_action_guide({ kind, actionName })` |
+| LLM 传 `methodName` | 改用 `vcm_action_guide({ className, actionName })` |
 | LLM 传 `code` | 改用 `vcm_script({ script })` |
 | LLM 传 `path` | 说明仍在旧 direct-call 思维，重新查 `vcm_model_guide` |
 | action 参数不对 | 先读 `vcm_action_guide`，按签名重写脚本 |

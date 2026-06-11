@@ -7,46 +7,49 @@ import {
 } from '../vcm-native'
 
 const CHILD_VIA_ACTION: AiApiObjectMetadata = {
-  kind: 'config-page',
-  name: 'Config Page',
-  description: 'Page editor API',
+  kind: 'ChildModel',
+  className: 'ChildModel',
+  name: 'ChildModel',
+  description: 'Child model API',
   actions: [{
-    name: 'editNodeTree',
-    methodName: 'editNodeTree',
-    description: 'Edit node tree',
+    name: 'mutate',
+    methodName: 'mutate',
+    description: 'Mutate child',
     paramsSchema: { type: 'object', properties: {}, required: [] },
   }],
 }
 
 const CHILD_VIA_ATTR: AiApiObjectMetadata = {
-  kind: 'dataset',
-  name: 'DataSet',
-  description: 'Dataset API',
+  kind: 'LeafModel',
+  className: 'LeafModel',
+  name: 'LeafModel',
+  description: 'Leaf model API',
   actions: [{
-    name: 'createTable',
-    methodName: 'createTable',
-    description: 'Create table',
+    name: 'touch',
+    methodName: 'touch',
+    description: 'Touch leaf',
     paramsSchema: { type: 'object', properties: {}, required: [] },
   }],
 }
 
 const ROOT: AiApiObjectMetadata = {
-  kind: 'project',
-  name: 'Project',
-  description: 'Root project API',
+  kind: 'RootModel',
+  className: 'RootModel',
+  name: 'RootModel',
+  description: 'Root model API',
   attributes: [{
-    name: 'activeDataSet',
-    description: 'Active dataset handle',
+    name: 'leaf',
+    description: 'Leaf handle',
     schema: { type: 'object' },
     readable: true,
     writable: false,
     api: CHILD_VIA_ATTR,
   }],
   actions: [{
-    name: 'openPageDesign',
-    methodName: 'openPageDesign',
-    description: 'Open page design',
-    paramsSchema: { type: 'object', properties: { pageId: { type: 'string' } }, required: ['pageId'] },
+    name: 'openChild',
+    methodName: 'openChild',
+    description: 'Open child',
+    paramsSchema: { type: 'object', properties: { id: { type: 'string' } }, required: ['id'] },
     resultApis: [{ resultPath: [], api: CHILD_VIA_ACTION }],
   }],
 }
@@ -55,18 +58,18 @@ describe('metadata-graph', () => {
   it('walks model -> attribute|action -> child submodule edges', () => {
     const nodes = walkAiApiMetadataGraph(ROOT)
     const root = nodes[0]
-    expect(root?.api.kind).toBe('project')
+    expect(root?.api.kind).toBe('RootModel')
     expect(root?.edges).toHaveLength(2)
-    expect(root?.edges.some(edge => edge.via === 'attribute' && edge.viaName === 'activeDataSet' && edge.child.kind === 'dataset')).toBe(true)
-    expect(root?.edges.some(edge => edge.via === 'action' && edge.viaName === 'openPageDesign' && edge.child.kind === 'config-page')).toBe(true)
+    expect(root?.edges.some(edge => edge.via === 'attribute' && edge.viaName === 'leaf' && edge.child.kind === 'LeafModel')).toBe(true)
+    expect(root?.edges.some(edge => edge.via === 'action' && edge.viaName === 'openChild' && edge.child.kind === 'ChildModel')).toBe(true)
   })
 
-  it('collectNestedApiRecords dedupes by kind and keeps first parent', () => {
+  it('collectNestedApiRecords dedupes by className key and keeps first parent', () => {
     const records = collectNestedApiRecords(ROOT)
-    expect(records.map(record => record.api.kind).sort()).toEqual(['config-page', 'dataset'])
-    const page = records.find(record => record.api.kind === 'config-page')
-    expect(page?.parentKind).toBe('project')
-    expect(page?.via).toBe('action')
-    expect(page?.viaName).toBe('openPageDesign')
+    expect(records.map(record => record.api.kind).sort()).toEqual(['ChildModel', 'LeafModel'])
+    const child = records.find(record => record.api.kind === 'ChildModel')
+    expect(child?.parentKind).toBe('RootModel')
+    expect(child?.via).toBe('action')
+    expect(child?.viaName).toBe('openChild')
   })
 })

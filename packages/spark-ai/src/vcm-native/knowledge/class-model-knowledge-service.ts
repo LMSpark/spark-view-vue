@@ -16,22 +16,22 @@ import {
 } from '../projection'
 
 export type VcmNativeKnowledgeQueryInput = Readonly<{
-  kind?: string
+  className?: string
   keyword?: string
   includeMembers: boolean
 }>
 
 export type VcmNativeModelGuideInput = Readonly<{
-  kind: string
+  className: string
 }>
 
 export type VcmNativeAttributeGuideInput = Readonly<{
-  kind: string
+  className: string
   attributeName: string
 }>
 
 export type VcmNativeMethodGuideInput = Readonly<{
-  kind: string
+  className: string
   methodName: string
   componentType?: string
 }>
@@ -59,12 +59,12 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
 
   public query(input: VcmNativeKnowledgeQueryInput): AiJsonValue {
     const keyword = input.keyword?.toLowerCase()
+    const filterClassName = input.className
     const models = listAttributeReachableKinds(this.document)
-      .filter(kind => input.kind === undefined || kind === input.kind)
-      .map(kind => projectClassModelForGuide(this.document, kind))
+      .filter(className => filterClassName === undefined || className === filterClassName)
+      .map(className => projectClassModelForGuide(this.document, className))
       .filter(model => keyword === undefined || modelMatchesKeyword(model, keyword))
       .map(model => ({
-        kind: model.kind,
         className: model.className,
         summary: summarizeJsDoc(model.jsdoc),
         ...(input.includeMembers
@@ -84,7 +84,7 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
       }))
 
     return {
-      rootKind: this.document.rootKind,
+      rootClassName: this.document.rootKind,
       models,
     }
   }
@@ -92,14 +92,14 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
   public modelGuide(input: VcmNativeModelGuideInput): string {
     return renderModelGuide({
       document: this.document,
-      kind: input.kind,
+      kind: input.className,
     }).text
   }
 
   public attributeGuide(input: VcmNativeAttributeGuideInput): string {
     return renderAttributeGuide({
       document: this.document,
-      kind: input.kind,
+      kind: input.className,
       attributeName: input.attributeName,
     }).text
   }
@@ -107,7 +107,7 @@ export class ClassModelKnowledgeService implements VcmNativeKnowledgeProvider {
   public methodGuide(input: VcmNativeMethodGuideInput): string {
     return renderMethodGuide({
       document: this.document,
-      kind: input.kind,
+      kind: input.className,
       methodName: input.methodName,
       ...(this.componentCatalog === undefined ? {} : { componentCatalog: this.componentCatalog }),
       ...(input.componentType === undefined ? {} : { componentType: input.componentType }),

@@ -4,12 +4,15 @@
  * AI 生成模型规范验证脚本。
  *
  * 检查业务模型 class 是否符合 docs/ai/AI_MODEL_SPEC.md 规范：
- * 1. 快照/树模型 class 是否有 toJson() 实例方法
- * 2. 快照/树模型 class 是否有 static fromJson（或 fromDataSet / fromRuleJson / reconcileFromJson）工厂方法
- * 3. fromJson 签名是否接受 Metadata | Record<string, unknown> | string
- * 4. 继承链父类 fromJson 是否包含判别分发（info 级别建议）
+ * 1. 模型 class 是否有 toJson()（extends SparkAIModel 或快照/树模型）
+ * 2. 快照/树模型（非 SparkAIModel 子类）是否有 static fromJson 等工厂方法
+ * 3. fromJson 签名是否接受 Record<string, unknown> | string
+ * 4. 继承链父类 fromJson 判别分发（info）
  *
- * 豁免：标有 @vcmSession 的 class 不需要 toJson / fromJson。
+ * SparkAIModel 子类：协议强制 toJson + validate；save/load 按需。
+ * 禁止第二套「快照 fromJson」AI 模型；见 docs/ai/AI_MODEL_SPEC.md。
+ *
+ * 豁免：标有 @vcmSession 的 class（遗留，待移除）。
  *
  * 用法：
  *   node tools/verify-ai-model-spec.mjs [--strict] [--root DIR]
@@ -137,6 +140,10 @@ function getExtendsClassName(decl) {
   return null
 }
 
+function extendsSparkAIModel(decl) {
+  return getExtendsClassName(decl) === 'SparkAIModel'
+}
+
 /**
  * 判断文件是否为测试文件。
  */
@@ -171,16 +178,21 @@ function scanModelClass(parsed, violations, strict) {
     const { instanceMethods, staticMethods } = extractClassMethods(node)
 
     const hasToJson = instanceMethods.has('toJson') || instanceMethods.has('toJSON')
+    const hasValidate = instanceMethods.has('validate')
     const hasStaticFactory = [...staticMethods].some(m => STATIC_FACTORY_NAMES.has(m))
+    const isSparkAIModel = extendsSparkAIModel(node)
 
-    // 只扫描：导出的 + (有状态 或 已有序列化方法) 的 class
+    // 只扫描：导出的 + (SparkAIModel 子类 或 有状态 或 已有序列化方法)
     if (!isExported) { ts.forEachChild(node, visit); return }
-    if (!hasState && !hasToJson && !hasStaticFactory) { ts.forEachChild(node, visit); return }
+    if (!isSparkAIModel && !hasState && !hasToJson && !hasStaticFactory) {
+      ts.forEachChild(node, visit)
+      return
+    }
 
     const isSession = hasLifecycleExemptTag(node, sourceFile)
     const level = strict ? 'error' : 'warn'
 
-    // Check 1: 快照/树模型缺少 toJson()
+    // Check 1: toJson
     if (!isSession && !hasToJson) {
       violations.push({
         file,
@@ -189,12 +201,21 @@ function scanModelClass(parsed, violations, strict) {
       })
     }
 
-    // Check 2: 快照/树模型缺少 static fromJson 工厂
-    if (!isSession && !hasStaticFactory) {
+    // Check 1b: SparkAIModel 子类须有 validate()
+    if (!isSession && isSparkAIModel && !hasValidate) {
       violations.push({
         file,
         line: lineFor(sourceFile, node, lineOffset),
-        message: `[${level}] ${className} has no static fromJson() factory; add static fromJson(json: ...) or mark @vcmSession`,
+        message: `[${level}] ${className} extends SparkAIModel but has no validate() instance method`,
+      })
+    }
+
+    // Check 2: 快照类缺少 static fromJson（SparkAIModel 持久化子类豁免）
+    if (!isSession && !hasStaticFactory && !isSparkAIModel) {
+      violations.push({
+        file,
+        line: lineFor(sourceFile, node, lineOffset),
+        message: `[${level}] ${className} has no static fromJson() factory; add static fromJson(json: ...) or extends SparkAIModel / mark @vcmSession`,
       })
     }
 

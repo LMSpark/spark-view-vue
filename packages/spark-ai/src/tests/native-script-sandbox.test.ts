@@ -24,7 +24,7 @@ describe('executeModuleScript', () => {
       instance: {},
       metadata: {
         schemaVersion: 1,
-        rootApi: { kind: 'demo', name: 'Demo', description: 'demo', actions: [] },
+        rootApi: { className: 'Demo', kind: 'Demo', name: 'Demo', description: 'demo', actions: [] },
       },
       script: '   ',
     })

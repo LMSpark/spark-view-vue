@@ -30,9 +30,9 @@ describe('VCM registry config protocol', () => {
         id: 'project-page-surface',
         kind: 'native-metadata',
         source: {
-          files: ['packages/spark-project-model/src/project/project-model.ts'],
+          files: ['packages/spark-project-model/src/domain-model/project-root-model.ts'],
         },
-        roots: [{ className: 'ProjectModel', kind: 'project' }],
+        roots: [{ className: 'ProjectRootModel' }],
         outputs: {
           distDir: 'generated/vcm/project-page-surface',
           runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
@@ -45,11 +45,11 @@ describe('VCM registry config protocol', () => {
     const target = findVcmMetadataTarget(config, 'project-page-surface')
     const options = createVcmTargetGeneratorOptions(target, { writeFiles: false })
 
-    expect(target.roots).toEqual([{ className: 'ProjectModel', kind: 'project' }])
+    expect(target.roots).toEqual([{ className: 'ProjectRootModel' }])
     expect(resolveComponentCatalogOutput(config)).toBe('generated/vcm/component-catalog.json')
     expect(options).toMatchObject({
-      sources: ['packages/spark-project-model/src/project/project-model.ts'],
-      apiRoots: ['ProjectModel'],
+      sources: ['packages/spark-project-model/src/domain-model/project-root-model.ts'],
+      apiRoots: ['ProjectRootModel'],
       moduleRuntimeOutFile: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
       jsdocTodoLogOutFile: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
       distDir: 'generated/vcm/project-page-surface',
@@ -67,8 +67,8 @@ describe('VCM registry config protocol', () => {
         {
           id: 'project-model',
           kind: 'native-metadata',
-          source: { files: ['packages/spark-project-model/src/project/project-model.ts'] },
-          roots: [{ className: 'ProjectModel', kind: 'project' }],
+          source: { files: ['packages/spark-project-model/src/domain-model/project-root-model.ts'] },
+          roots: [{ className: 'ProjectRootModel' }],
           outputs: {
             runtime: 'generated/vcm/project-model/project-model-module-metadata.runtime.generated.json',
             jsdocTodoLog: 'generated/vcm/project-model/project-model-module-metadata.jsdoc-todo.generated.json',
@@ -77,8 +77,8 @@ describe('VCM registry config protocol', () => {
         {
           id: 'project-page-surface',
           kind: 'native-metadata',
-          source: { files: ['packages/spark-project-model/src/project/project-model.ts'] },
-          roots: [{ className: 'ProjectModel', kind: 'project' }],
+          source: { files: ['packages/spark-project-model/src/domain-model/project-root-model.ts'] },
+          roots: [{ className: 'ProjectRootModel' }],
           outputs: {
             runtime: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json',
             jsdocTodoLog: 'generated/vcm/project-page-surface/project-page-surface-module-metadata.jsdoc-todo.generated.json',
@@ -91,7 +91,7 @@ describe('VCM registry config protocol', () => {
     const target = findVcmMetadataTarget(config, 'project-model')
     const options = createVcmTargetGeneratorOptions(target, { writeFiles: false })
 
-    expect(target.source.files).toEqual(['packages/spark-project-model/src/project/project-model.ts'])
+    expect(target.source.files).toEqual(['packages/spark-project-model/src/domain-model/project-root-model.ts'])
     expect(options).toMatchObject({
       moduleRuntimeOutFile: 'generated/vcm/project-model/project-model-module-metadata.runtime.generated.json',
       distDir: 'generated/vcm/project-model',

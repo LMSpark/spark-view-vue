@@ -31,7 +31,7 @@ function buildVcmQueryTool(): VcmNativeToolSpec {
     name: VCM_NATIVE_TOOL_NAMES.query,
     description: 'Query the VCM-native ClassModel catalog before choosing model, attribute, or method guides.',
     properties: {
-      kind: { type: 'string', description: 'Optional exact ClassModel kind.' },
+      className: { type: 'string', description: 'Optional exact SparkAIModel subclass className.' },
       keyword: { type: 'string', description: 'Optional keyword matched against model/member names and summaries.' },
       includeMembers: { type: 'boolean', description: 'When true, include compact attribute and method summaries.' },
     },
@@ -43,9 +43,9 @@ function buildVcmModelGuideTool(): VcmNativeToolSpec {
     name: VCM_NATIVE_TOOL_NAMES.modelGuide,
     description: 'Render one ClassModel as d.ts-like declaration with native JSDoc.',
     properties: {
-      kind: { type: 'string', description: 'ClassModel kind.' },
+      className: { type: 'string', description: 'SparkAIModel subclass className.' },
     },
-    required: ['kind'],
+    required: ['className'],
   })
 }
 
@@ -54,10 +54,10 @@ function buildVcmAttributeGuideTool(): VcmNativeToolSpec {
     name: VCM_NATIVE_TOOL_NAMES.attributeGuide,
     description: 'Render one ClassModel attribute declaration with native JSDoc.',
     properties: {
-      kind: { type: 'string', description: 'ClassModel kind.' },
+      className: { type: 'string', description: 'SparkAIModel subclass className.' },
       attributeName: { type: 'string', description: 'Attribute name.' },
     },
-    required: ['kind', 'attributeName'],
+    required: ['className', 'attributeName'],
   })
 }
 
@@ -66,11 +66,11 @@ function buildVcmActionGuideTool(): VcmNativeToolSpec {
     name: VCM_NATIVE_TOOL_NAMES.actionGuide,
     description: 'Render one ClassModel public action declaration with native JSDoc and optional component catalog props.',
     properties: {
-      kind: { type: 'string', description: 'ClassModel kind.' },
+      className: { type: 'string', description: 'SparkAIModel subclass className.' },
       actionName: { type: 'string', description: 'Action name.' },
       componentType: { type: 'string', description: 'Optional component type, such as r-table, to merge catalog props knowledge.' },
     },
-    required: ['kind', 'actionName'],
+    required: ['className', 'actionName'],
   })
 }
 

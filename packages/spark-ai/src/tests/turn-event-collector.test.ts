@@ -196,7 +196,7 @@ describe('createTurnEventCollector', () => {
           type: 'function',
           function: {
             name: 'vcm_query',
-            arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
+            arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
           },
         }],
       }),
@@ -209,7 +209,7 @@ describe('createTurnEventCollector', () => {
         type: 'function',
         function: {
           name: 'vcm_query',
-          arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
+          arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
         },
       }],
     })
@@ -228,7 +228,7 @@ describe('createTurnEventCollector', () => {
         '```json',
         JSON.stringify({
           tool_call: 'vcm_query',
-          args: { kind: 'project', keyword: 'sampleKind' },
+          args: { className: 'ProjectRootModel', keyword: 'sampleKind' },
         }),
         '```',
       ].join('\n'),
@@ -241,7 +241,7 @@ describe('createTurnEventCollector', () => {
         type: 'function',
         function: {
           name: 'vcm_query',
-          arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
+          arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
         },
       }],
     })
@@ -265,7 +265,7 @@ describe('createTurnEventCollector', () => {
             type: 'function',
             function: {
               name: 'vcm_query',
-              arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
+              arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
             },
           }],
         }),
@@ -292,7 +292,7 @@ describe('createTurnEventCollector', () => {
           type: 'function',
           function: {
             name: 'vcm_query',
-            arguments: JSON.stringify({ kind: 'project', keyword: 'sampleKind' }),
+            arguments: JSON.stringify({ className: 'ProjectRootModel', keyword: 'sampleKind' }),
           },
         },
         {
@@ -316,7 +316,7 @@ describe('createTurnEventCollector', () => {
     })
 
     hub.emit(createTurnAppEvent('result', {
-      text: '<tool_call>vcm_query({"kind":"project","keyword":"leave"})',
+      text: '<tool_call>vcm_query({"className":"ProjectRootModel","keyword":"leave"})',
     }))
 
     await expect(collector.result).resolves.toEqual({
@@ -327,7 +327,7 @@ describe('createTurnEventCollector', () => {
         function: {
           name: 'vcm_query',
           arguments: JSON.stringify({
-            kind: 'project',
+            className: 'ProjectRootModel',
             keyword: 'leave',
           }),
         },
@@ -343,7 +343,7 @@ describe('createTurnEventCollector', () => {
       timeoutMs: 1_000,
     })
 
-    const call = 'vcm_action_guide({"kind":"project","actionName":"readProjectPlanningInput"})'
+    const call = 'vcm_action_guide({"className":"ProjectRootModel","actionName":"readProjectPlanningInput"})'
     hub.emit(createTurnAppEvent('result', {
       text: `${call}${call}`,
     }))
@@ -356,7 +356,7 @@ describe('createTurnEventCollector', () => {
         function: {
           name: 'vcm_action_guide',
           arguments: JSON.stringify({
-            kind: 'project',
+            className: 'ProjectRootModel',
             actionName: 'readProjectPlanningInput',
           }),
         },

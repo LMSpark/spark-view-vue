@@ -90,7 +90,7 @@ function createRunResult(sessionId = 'session-1'): AiAgentHostRunResult {
 function createToolCallRecord(): AiAgentToolCallRecord {
   return {
     toolName: 'vcm_query',
-    args: { kind: 'project' },
+    args: { className: 'ProjectRootModel' },
     turnId: 'turn-1',
     round: 1,
     status: 'success',

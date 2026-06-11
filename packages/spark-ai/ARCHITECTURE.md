@@ -172,10 +172,10 @@ SSOT：`vcm-native/tools/tool-names.ts` → `VCM_NATIVE_TOOL_NAMES`。
 
 | 工具 | 用途 | 关键参数 |
 |------|------|----------|
-| `vcm_query` | 查 ClassModel 目录，定位 kind / member | `kind?`, `keyword?`, `includeMembers?` |
-| `vcm_model_guide` | 单模型 d.ts-like 声明 | `kind` |
-| `vcm_attribute_guide` | 单属性声明 + JSDoc | `kind`, `attributeName` |
-| `vcm_action_guide` | 单 action 声明；可合并组件 props | `kind`, `actionName`, `componentType?` |
+| `vcm_query` | 查 ClassModel 目录，定位 className / member | `className?`, `keyword?`, `includeMembers?` |
+| `vcm_model_guide` | 单模型 d.ts-like 声明 | `className` |
+| `vcm_attribute_guide` | 单属性声明 + JSDoc | `className`, `attributeName` |
+| `vcm_action_guide` | 单 action 声明；可合并组件 props | `className`, `actionName`, `componentType?` |
 | `vcm_script` | 执行业务脚本，`this` = 根实例 | `script`（**不是** `code`） |
 | `human_question` | 缺事实或需人工判断 | `context`, `reason`, … |
 | `agent_complete` | 结束生产线 | `summary` |
@@ -229,7 +229,7 @@ flowchart LR
 
 ### 推荐消费顺序
 
-1. **`vcm_query`** — 列出 rootKind、models、可选 `includeMembers: true` 看 action/attribute 摘要
+1. **`vcm_query`** — 列出 rootClassName、models、可选 `includeMembers: true` 看 action/attribute 摘要
 2. **`vcm_model_guide` / `vcm_attribute_guide`** — 读模型或属性契约
 3. **`vcm_action_guide`** — 读 action 的 `paramsSchema` / JSDoc；组装 UI 节点时对 `addNode` 等传 `componentType: "r-table"` 合并 props catalog
 4. **`vcm_script`** — 在 `this` 绑定根实例上沿原生链调用（如 `openPageDesign` → `editDataSet` / `editNodeTree`）

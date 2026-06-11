@@ -15,7 +15,7 @@ export type ClassModelReflectionConnectivityIssue = Readonly<{
 /**
  * 审计 VCM 反射与属性链是否断路。
  *
- * ClassModelDocument 不预存 models；registry kind 必须可投影，且非 root kind 须经 attribute.api 可达。
+ * ClassModelDocument 不预存 models；registry className 必须可投影，且非 root 须经子模型字段链可达。
  */
 export function auditClassModelReflectionConnectivity(
   document: ClassModelDocument,
@@ -53,7 +53,7 @@ export function auditClassModelReflectionConnectivity(
       issues.push({
         code: 'REFLECTION_KIND_UNREACHABLE_VIA_ATTRIBUTES',
         path: kind,
-        message: `kind "${kind}" 无法从 root "${document.rootKind}" 经 attribute.api 属性链到达。`,
+        message: `className "${kind}" 无法从 root "${document.rootKind}" 经子模型公开字段链到达。`,
       })
     }
   }
@@ -73,7 +73,7 @@ function auditAttributeReflection(command: Readonly<{
     command.issues.push({
       code: 'REFLECTION_ATTRIBUTE_API_DISCONNECTED',
       path: `${command.ownerKind}.attributes.${command.attribute.name}`,
-      message: `属性 "${command.attribute.name}" 反射到 kind "${nestedKind}"，但 module apiRegistry 无该 kind。`,
+      message: `属性 "${command.attribute.name}" 反射到 className "${nestedKind}"，但 module apiRegistry 无该 className。`,
     })
   }
 }

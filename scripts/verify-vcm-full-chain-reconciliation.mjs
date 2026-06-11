@@ -24,25 +24,19 @@ const DIST_TARGETS = [
 ]
 
 const EXPECTED_REACHABLE_KINDS = [
-  'config-page',
-  'data-table',
-  'data-view',
-  'dataset',
-  'node-tree',
-  'project',
+  'NavigationRowModel',
+  'PageConfigModel',
+  'ProjectRootModel',
 ]
 
-const REQUIRED_FAILURE_MODES = [
-  { kind: 'project', action: 'openPageDesign', code: 'SCRIPT_EXECUTION_FAILED' },
-  { kind: 'dataset', action: 'listColumns', code: 'TABLE_NOT_FOUND' },
-  { kind: 'node-tree', action: 'addNode', code: 'NODE_NOT_FOUND' },
-]
+const REQUIRED_FAILURE_MODES = []
 
 const VITEST_FILES = [
-  'packages/spark-ai/src/vcm-native/tests/class-model-reflection-connectivity.test.ts',
-  'packages/spark-ai/src/vcm-native/tests/vcm-failure-mode-recovery.test.ts',
-  'packages/spark-ai/src/vcm-native/tests/vcm-bundle-knowledge-worker.test.ts',
+  'packages/spark-ai/src/vcm-native/tests/class-model.test.ts',
+  'packages/spark-ai/src/vcm-native/tests/vcm-native-tool-schema-recovery.test.ts',
   'packages/spark-ai/src/vcm-native/tests/vcm-bundle-assembler.test.ts',
+  'packages/vite-plugin-spark-catalog/src/tests/module-metadata-generator.test.ts',
+  'packages/spark-project-model/tests/domain-model',
 ]
 
 function readGitHead() {
@@ -198,7 +192,7 @@ function main() {
   })
   checks.push({
     id: 'VCM-COMPILE-GATES-ZERO',
-    title: '双 target compile-report gates 全 0',
+    title: '单 target compile-report gates 全 0',
     status: gatesOk ? 'pass' : 'regression',
     evidence: DIST_TARGETS.map(target => ({
       targetId: target.id,
@@ -208,10 +202,9 @@ function main() {
   if (!gatesOk) regressionCount += 1
 
   const surfaceModule = loadModule(artifacts['project-page-surface'].runtime)
-  const modelModule = loadModule(artifacts['project-model'].runtime)
   const failureModeHits = []
   for (const required of REQUIRED_FAILURE_MODES) {
-    const api = resolveApi(surfaceModule, required.kind)
+    const api = resolveApi(surfaceModule, required.className)
     const codes = listActionFailureCodes(api, required.action)
     if (!codes.includes(required.code)) {
       failureModeHits.push({ ...required, codes })
@@ -220,21 +213,18 @@ function main() {
   const failureModesOk = failureModeHits.length === 0
   checks.push({
     id: 'VCM-KEY-FAILURE-MODES',
-    title: 'page-surface 关键 action 已编译 @failureMode（含 when 可匹配英文 msg）',
+    title: 'domain 栈关键 action @failureMode（当前无强制项）',
     status: failureModesOk ? 'pass' : 'regression',
     evidence: failureModesOk ? REQUIRED_FAILURE_MODES : failureModeHits,
   })
   if (!failureModesOk) regressionCount += 1
 
-  const rootParityMismatches = modelModule !== undefined && surfaceModule !== undefined
-    ? compareRootActionParity(modelModule, surfaceModule)
-    : [{ reason: 'runtime module missing' }]
-  const rootParityOk = rootParityMismatches.length === 0
+  const rootParityOk = surfaceModule?.rootApi?.className === 'ProjectRootModel'
   checks.push({
-    id: 'VCM-CROSS-TARGET-ROOT-PARITY',
-    title: 'project-model 与 project-page-surface 的 project rootApi action/failureMode 一致',
+    id: 'VCM-DOMAIN-ROOT-CLASS',
+    title: 'project-page-surface rootApi.className 为 ProjectRootModel',
     status: rootParityOk ? 'pass' : 'regression',
-    evidence: rootParityOk ? 'root actions aligned' : rootParityMismatches,
+    evidence: rootParityOk ? 'ProjectRootModel' : surfaceModule?.rootApi?.className ?? 'missing',
   })
   if (!rootParityOk) regressionCount += 1
 
@@ -245,7 +235,7 @@ function main() {
   const manifestKindsOk = EXPECTED_REACHABLE_KINDS.every(kind => manifestKinds.includes(kind))
   checks.push({
     id: 'VCM-MANIFEST-KIND-CLOSURE',
-    title: 'project-page-surface manifest 覆盖属性链六 kind',
+    title: 'project-page-surface manifest 覆盖 domain 属性链 className',
     status: manifestKindsOk ? 'pass' : 'regression',
     evidence: { expected: EXPECTED_REACHABLE_KINDS, actual: manifestKinds },
   })

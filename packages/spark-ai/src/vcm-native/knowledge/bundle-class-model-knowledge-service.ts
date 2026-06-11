@@ -41,17 +41,17 @@ export class BundleClassModelKnowledgeService implements VcmNativeKnowledgeProvi
   }
 
   public async modelGuide(input: VcmNativeModelGuideInput): Promise<string> {
-    const document = await this.buildDocument({ kind: input.kind, includeAllReachable: false })
+    const document = await this.buildDocument({ className: input.className, includeAllReachable: false })
     return this.delegate(document).modelGuide(input)
   }
 
   public async attributeGuide(input: VcmNativeAttributeGuideInput): Promise<string> {
-    const document = await this.buildDocument({ kind: input.kind, includeAllReachable: false })
+    const document = await this.buildDocument({ className: input.className, includeAllReachable: false })
     return this.delegate(document).attributeGuide(input)
   }
 
   public async methodGuide(input: VcmNativeMethodGuideInput): Promise<string> {
-    const document = await this.buildDocument({ kind: input.kind, includeAllReachable: false })
+    const document = await this.buildDocument({ className: input.className, includeAllReachable: false })
     return this.delegate(document).methodGuide(input)
   }
 
@@ -63,16 +63,16 @@ export class BundleClassModelKnowledgeService implements VcmNativeKnowledgeProvi
   }
 
   private async buildDocument(command: Readonly<{
-    kind?: string
+    className?: string
     includeAllReachable?: boolean
   }>): Promise<ClassModelDocument> {
     const manifest = await this.loader.init()
     const defs = await this.loader.getSchemaDefs()
     const baseKinds = command.includeAllReachable === true
       ? await this.loader.listAttributeReachableKinds()
-      : command.kind === undefined
+      : command.className === undefined
         ? [manifest.rootKind]
-        : [manifest.rootKind, command.kind]
+        : [manifest.rootKind, command.className]
     const kindsToLoad = expandBundleKindsWithImportKinds(manifest, baseKinds)
     await this.loader.ensureKinds(kindsToLoad)
     const kinds: Record<string, Awaited<ReturnType<VcmBundleLoader['ensureKind']>>> = {}

@@ -7,21 +7,18 @@
     {
       "id": "project-page-surface",
       "kind": "native-metadata",
-      "description": "ProjectModel plus page configuration native metadata surface",
+      "description": "SparkAIModel domain stack: ProjectRootModel navigation + PageConfigModel",
       "source": {
         "files": [
-          "packages/spark-project-model/src/project/project-model.ts",
-          "packages/spark-project-model/src/page/config-page.ts",
-          "packages/spark-data/src/dataset-crud-tool.ts",
-          "packages/spark-data/src/data-table.ts",
-          "packages/spark-data/src/data-view.ts",
-          "packages/spark-data/src/node-tree/spark-node-tree.ts"
+          "packages/spark-utils/src/ai-model.ts",
+          "packages/spark-project-model/src/domain-model/project/project-root-model.ts",
+          "packages/spark-project-model/src/domain-model/navigation/navigation-row-model.ts",
+          "packages/spark-project-model/src/domain-model/page/page-config-model.ts"
         ]
       },
       "roots": [
         {
-          "className": "ProjectModel",
-          "kind": "project"
+          "className": "ProjectRootModel"
         }
       ],
       "outputs": {

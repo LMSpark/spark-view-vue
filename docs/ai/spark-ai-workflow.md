@@ -27,8 +27,8 @@
 vcm_query → vcm_model_guide / vcm_attribute_guide / vcm_action_guide → vcm_script
 ```
 
-- 组装 UI：`vcm_action_guide({ kind: "node-tree", actionName: "addNode", componentType: "r-table" })`
-- **不要**用 `/kind[id]` path；**不要**用旧 `module_*` 工具名
+- 组装 UI：`vcm_action_guide({ className: "SparkNodeTree", actionName: "addNode", componentType: "r-table" })`
+- **不要**用 path 直调；**不要**用旧 `module_*` 工具名
 
 ## 相位门控（Host 自动 nudge）
 

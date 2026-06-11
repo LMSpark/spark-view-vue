@@ -103,3 +103,10 @@ export {
   canonicalizePageDataValue,
   canonicalizeDataSetMetadata,
 } from './page/canonicalize-page-data'
+
+// ── 极简领域模型（新栈；与 ProjectModel 并行，逐步收敛） ─────
+
+export { SparkAIModel } from '@spark-appworks/spark-utils'
+export { PageConfigModel } from './domain-model/page/page-config-model'
+export { NavigationRowModel } from './domain-model/navigation/navigation-row-model'
+export { ProjectRootModel, ProjectRootModelEvent } from './domain-model/project/project-root-model'

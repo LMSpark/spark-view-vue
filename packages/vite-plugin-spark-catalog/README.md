@@ -47,7 +47,7 @@ pnpm run generate:module-metadata -- --target project-page-surface
       "id": "project-page-surface",
       "kind": "native-metadata",
       "source": { "files": ["packages/spark-project-model/src/project/project-model.ts"] },
-      "roots": [{ "className": "ProjectModel", "kind": "project" }],
+      "roots": [{ "className": "ProjectRootModel" }],
       "outputs": {
         "distDir": "generated/vcm/project-page-surface",
         "runtime": "generated/vcm/project-page-surface/project-page-surface-module-metadata.runtime.generated.json",
@@ -69,4 +69,4 @@ pnpm exec vitest run packages/vite-plugin-spark-catalog/src/tests/module-metadat
 
 ## VCM 注释
 
-能力类 JSDoc 须满足 `@moduleKind`、`@moduleAction`、`@moduleMutation` 等仓库约定；生成器只读取 TypeScript 能力类，不读取 Vue 组件标签。
+业务 model class 须 `extends SparkAIModel` 并声明公开字段；metadata `kind` 与 **className** 同构。生成器只读取 TypeScript 能力类，不读取 Vue 组件标签。

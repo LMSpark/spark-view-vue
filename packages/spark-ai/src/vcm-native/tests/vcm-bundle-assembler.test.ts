@@ -24,19 +24,16 @@ describe('VCM bundle assembler', () => {
 
     expect(parityIssues).toEqual([])
     expect(listManifestAttributeReachableKinds(bundleParts.manifest)).toEqual([
-      'project',
-      'config-page',
-      'node-tree',
-      'dataset',
-      'data-table',
-      'data-view',
+      'ProjectRootModel',
+      'NavigationRowModel',
+      'PageConfigModel',
     ])
 
     const monolithic = readModuleMetadataRuntimeDocument(monolithicRaw)
     const resolvedMonolithic = resolveModuleMetadataJson(monolithic.modules[0]!, {
       ...(monolithic.$defs === undefined ? {} : { schemaDefs: monolithic.$defs }),
     })
-    expect(resolvedMonolithic.rootApi.kind).toBe('project')
+    expect(resolvedMonolithic.rootApi.className).toBe('ProjectRootModel')
   })
 })
 

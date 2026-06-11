@@ -14,7 +14,7 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
 import { buildPageDesignToolLoopNudge } from './page-design/page-design-sop'
-import type { AiModuleMetadataJson, ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'
+import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson, VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel } from '@spark-appworks/spark-project-model'
 import type { ProjectWorkspace } from '@spark-appworks/spark-project-model'
@@ -26,8 +26,7 @@ import { createPageDesignVcmKnowledgeProvider } from './page-design/page-design-
 
 export const PAGE_DESIGN_MODULE_ID = 'pageDesign'
 
-const pageDesignRuntimeMetadataDocument =
-  projectPageSurfaceRuntimeMetadataDocument as unknown as ModuleMetadataRuntimeDocument
+const pageDesignRuntimeMetadataDocument = projectPageSurfaceRuntimeMetadataDocument
 
 export type PageDesignRunMode = 'create' | 'update' | 'fix'
 
@@ -162,9 +161,9 @@ const PAGE_DESIGN_EXECUTION_TOOL_NAMES = new Set<string>([
 ])
 
 const PAGE_DESIGN_PLAN_WITHOUT_TOOL_MARKERS = [
-  'openpagedesign',
-  'editnodetree',
-  'editdataset',
+  'navigationnodes',
+  'pageconfig',
+  'rulejson',
 ] as const
 
 function createPageDesignToolLoopNudge(context: AiAgentToolLoopNudgeContext): string | undefined {
@@ -187,7 +186,7 @@ function createPageDesignSystemPrompt(input: PageDesignRunInput): string {
     '策划约束（readPlanningProjection.effectiveDescription）:',
     effectiveDescription,
     `用户本轮目标: ${input.description}`,
-    '知识索引: VCM ClassModel（project → config-page → dataset / node-tree）；用 vcm_query / vcm_action_guide 读取契约后 vcm_script 执行。',
+    '知识索引: VCM ClassModel（ProjectRootModel → NavigationRowModel → PageConfigModel）；用 vcm_query / vcm_action_guide 读取契约后 vcm_script 执行。',
     '元数据来源: generated pageDesign module metadata。',
   ].join('\n')
 }
@@ -251,14 +250,15 @@ function evaluatePageDesignBeforeFunctionCall(
 
 function readPageDesignProjectModule() {
   return pageDesignRuntimeMetadataDocument.modules.find(
-    module => module.rootApi.kind === 'project',
+    module => module.rootApi.className === 'ProjectRootModel'
+      || module.rootApi.kind === 'ProjectRootModel',
   )
 }
 
 function readPageDesignProjectMetadata(): AiModuleMetadataJson {
   const projectModule = readPageDesignProjectModule()
   if (projectModule === undefined) {
-    throw new Error('pageDesign runtime metadata missing ProjectModel rootApi.')
+    throw new Error('pageDesign runtime metadata missing ProjectRootModel rootApi.')
   }
   return resolveModuleMetadataJson(projectModule, {
     inlineSchemaRefs: false,

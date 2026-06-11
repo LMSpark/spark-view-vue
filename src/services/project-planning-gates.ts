@@ -54,20 +54,31 @@ export function evaluateProjectPlanningToolGate(
   }
 }
 
+function readTextArg(args: AiAgentBeforeFunctionCallOptions['args'], key: string): string | undefined {
+  const value = args[key]
+  if (typeof value !== 'string') return undefined
+  const normalized = value.trim()
+  return normalized.length > 0 ? normalized : undefined
+}
+
+function readModelClassNameArg(args: AiAgentBeforeFunctionCallOptions['args']): string | undefined {
+  return readTextArg(args, 'className') ?? readTextArg(args, 'kind')
+}
+
 function evaluateProjectActionLookupGate(
   toolName: string,
   args: AiAgentBeforeFunctionCallOptions['args'],
 ): ProjectPlanningGateValidationResult {
   if (toolName !== 'vcm_attribute_guide') return { ok: true }
-  const kind = readTextArg(args, 'kind')
-  if (kind !== 'project') return { ok: true }
+  const className = readModelClassNameArg(args)
+  if (className !== 'ProjectRootModel' && className !== 'ProjectModel') return { ok: true }
   const attributeName = readTextArg(args, 'attributeName')
   if (attributeName === undefined || !isProjectActionName(attributeName)) {
     if (attributeName !== undefined && isProjectParamTypeName(attributeName)) {
       return {
         ok: false,
-        reason: `projectPlanning: ${attributeName} 是参数结构名，不是 project attribute。`,
-        fix: '改用 vcm_action_guide({ kind: "project", actionName: "replaceNavigationChildren" }) 查看 paramsSchema.children，然后在 vcm_script 中构造 children 数组。',
+        reason: `projectPlanning: ${attributeName} 是参数结构名，不是 model attribute。`,
+        fix: '改用 vcm_action_guide({ className: "ProjectRootModel", actionName: "replaceNavigationChildren" }) 查看 paramsSchema.children，然后在 vcm_script 中构造 children 数组。',
       }
     }
     return { ok: true }
@@ -75,7 +86,7 @@ function evaluateProjectActionLookupGate(
   return {
     ok: false,
     reason: `projectPlanning: ${attributeName} 是 ProjectModel action，不是 attribute。`,
-    fix: `改用 vcm_action_guide({ kind: "project", actionName: "${attributeName}" })，然后在 vcm_script 中通过 this.${attributeName}(...) 调用。`,
+    fix: `改用 vcm_action_guide({ className: "ProjectRootModel", actionName: "${attributeName}" })，然后在 vcm_script 中通过 this.${attributeName}(...) 调用。`,
   }
 }
 
@@ -91,13 +102,6 @@ function findForbiddenScriptMarker(script: string): string | undefined {
     if (script.includes(marker)) return marker
   }
   return undefined
-}
-
-function readTextArg(args: AiAgentBeforeFunctionCallOptions['args'], key: string): string | undefined {
-  const value = args[key]
-  if (typeof value !== 'string') return undefined
-  const normalized = value.trim()
-  return normalized.length > 0 ? normalized : undefined
 }
 
 function isProjectActionName(value: string): value is typeof PROJECT_ACTION_NAMES[number] {

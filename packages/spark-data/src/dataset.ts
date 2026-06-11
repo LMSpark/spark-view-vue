@@ -17,7 +17,7 @@ import { RequestState } from './types'
 import type { DataSetAppServices } from './types'
 import type { DataView } from './data-view'
 import type { HttpClientBase } from '@spark-appworks/spark-utils'
-import { deepClone, Logger, isRecord } from '@spark-appworks/spark-utils'
+import { deepClone, Logger, isRecord, SparkAIModel } from '@spark-appworks/spark-utils'
 
 const dsLogger = Logger('DataSet')
 import {
@@ -405,7 +405,7 @@ function expandRelations(
   })
 }
 
-export class DataSet implements DataSetContract {
+export class DataSet extends SparkAIModel implements DataSetContract {
 
   // ===== 属性定义 =====
 
@@ -497,6 +497,7 @@ export class DataSet implements DataSetContract {
    * @param config 数据集配置
    */
   constructor(config: DataSetConfig) {
+    super({ dataSetName: config.dataSetName })
     assertNoSeparator(config.dataSetName, 'dataSetName')
     this.dataSetName = config.dataSetName
     this._applyNormalizedMetadata({
@@ -1799,6 +1800,13 @@ export class DataSet implements DataSetContract {
   }
 
   // ===== 序列化 =====
+
+  /** 结束编辑前校验：数据集名称非空。 */
+  validate(): void {
+    if (this.dataSetName.trim().length === 0) {
+      throw new Error('DataSet.validate: missing dataSetName')
+    }
+  }
 
   /**
    * 序列化为 JSON 友好的元数据对象

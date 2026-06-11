@@ -130,7 +130,7 @@ export class MongoUserRepository implements UserRepository {
 
 - class 用于承载状态、生命周期、缓存、不变量和默认行为。
 - 子类只表达明确的"是一种"关系，不为复用几个方法而继承。
-- 序列化与反序列化的具体要求（三段式结构、constructor 反序列化协议、toJson 输出协议、继承链对称性）见 `docs/ai/AI_MODEL_SPEC.md`。
+- AI 可编辑模型形态见 `docs/ai/AI_MODEL_SPEC.md`（**唯一一套** `SparkAIModel` 栈；禁止 DataSet/SparkNodeTree 等快照第二模型；四文件以 `PageConfigModel` string 字段为真源；LLM 投影直接取字段/方法/JSDoc）。
 
 ### class 命名与组织层次
 

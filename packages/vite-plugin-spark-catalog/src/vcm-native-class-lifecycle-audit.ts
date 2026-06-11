@@ -18,7 +18,11 @@ const VCM_SESSION_TAG = 'vcmSession'
 const VCM_SERIALIZABLE_TAG = 'vcmSerializable'
 const VCM_FILE_PERSISTED_TAG = 'vcmFilePersisted'
 
-const DEFAULT_SESSION_KINDS = new Set(['project', 'config-page'])
+const DEFAULT_SESSION_KINDS = new Set([
+  'ProjectRootModel',
+  'NavigationRowModel',
+  'PageConfigModel',
+])
 const SNAPSHOT_KINDS = new Set(['dataset', 'data-table', 'data-view'])
 const TREE_KINDS = new Set(['node-tree'])
 

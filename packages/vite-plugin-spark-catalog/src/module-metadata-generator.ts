@@ -183,7 +183,7 @@ type ModuleMetadataTrace = {
 type ApiObjectExtractionState = {
   readonly root: string
   readonly reflectionMode: ModuleMetadataReflectionMode
-  /** registry source.files：VCM 编译单元边界，与 tsc rootNames 同构，不跨文件展开 @moduleKind。 */
+  /** registry source.files：VCM 编译单元边界，与 tsc rootNames 同构。 */
   readonly allowedSourceFiles: ReadonlySet<string>
   readonly apiByContextKey: Map<string, MutableAiApiObjectMetadata>
   readonly expandingKeys: Set<string>
@@ -754,9 +754,10 @@ function createApiObjectMetadata(command: CreateApiObjectMetadataCommand): AiApi
     if (cached !== undefined) return cached
   }
   const summary = readSummary(node)
-  const explicitKind = firstTagText(tags, 'moduleKind')
-  if (explicitKind === undefined && summary === undefined) return undefined
-  const kind = explicitKind ?? kebabCase(className)
+  const explicitModuleKind = firstTagText(tags, 'moduleKind')
+  const isSparkAIModel = classExtendsSparkAIModel(checker, node)
+  if (summary === undefined && !isSparkAIModel && explicitModuleKind === undefined) return undefined
+  const kind = className
   const description = firstTagText(tags, 'moduleDescription') ?? summary ?? kind
   const jsdoc = createJsDocMeta(node)
   trace.log(`class ${className} -> kind=${kind}`)
@@ -809,7 +810,7 @@ function createApiConstructorMetadata(
       tags,
       state,
       context: {
-        kind: firstTagText(readDocTags(node, node.getSourceFile()), 'moduleKind') ?? kebabCase(className),
+        kind: classNameForMember(node),
         className,
         memberType: 'constructor',
         memberName: 'constructor',
@@ -906,6 +907,7 @@ function createApiAttributeMetadataFromMember(
     visited,
     trace,
     state,
+    requireSparkAIModel: true,
   })
   const jsdoc = createJsDocMeta(member)
   return {
@@ -1420,19 +1422,68 @@ type CreateApiObjectFromTypeCommand = Readonly<{
   visited: Set<ts.Symbol>
   trace: ModuleMetadataTrace
   state: ApiObjectExtractionState
+  /** 属性字段链：仅链接 extends SparkAIModel 的子 class。 */
+  requireSparkAIModel?: boolean
 }>
 
 function createApiObjectFromType(command: CreateApiObjectFromTypeCommand): AiApiObjectMetadata | undefined {
-  const { checker, type, visited, trace, state } = command
+  const { checker, type, visited, trace, state, requireSparkAIModel = false } = command
   const classDeclaration = resolveClassDeclarationFromType(type, state)
   if (classDeclaration !== undefined) {
     const symbol = readClassDeclarationSymbol(checker, classDeclaration) ?? type.getSymbol()
     if (symbol === undefined || visited.has(symbol)) return undefined
-    const tags = readDocTags(classDeclaration, classDeclaration.getSourceFile())
-    if (firstTagText(tags, 'moduleKind') === undefined) return undefined
+    if (requireSparkAIModel) {
+      if (!classExtendsSparkAIModel(checker, classDeclaration)) return undefined
+    } else {
+      const tags = readDocTags(classDeclaration, classDeclaration.getSourceFile())
+      if (firstTagText(tags, 'moduleKind') === undefined) return undefined
+    }
     const nextVisited = new Set(visited)
     nextVisited.add(symbol)
     return createApiObjectMetadata({ checker, node: classDeclaration, visited: nextVisited, trace, state })
+  }
+  return undefined
+}
+
+/** @see docs/ai/AI_MODEL_SPEC.md — 字段类型 T 挂接 attribute.api 当且仅当 T extends SparkAIModel */
+const SPARK_AI_MODEL_CLASS_NAME = 'SparkAIModel'
+
+function classExtendsSparkAIModel(checker: ts.TypeChecker, declaration: ts.ClassDeclaration): boolean {
+  let current: ts.ClassDeclaration | undefined = declaration
+  const visited = new Set<string>()
+  while (current !== undefined) {
+    const className = current.name?.text
+    if (className === undefined) return false
+    if (visited.has(className)) return false
+    visited.add(className)
+    if (className === SPARK_AI_MODEL_CLASS_NAME) return true
+    current = readExtendsClassDeclaration(checker, current)
+  }
+  return false
+}
+
+function readExtendsClassDeclaration(
+  checker: ts.TypeChecker,
+  declaration: ts.ClassDeclaration,
+): ts.ClassDeclaration | undefined {
+  const extendsClause = declaration.heritageClauses?.find(
+    clause => clause.token === ts.SyntaxKind.ExtendsKeyword,
+  )
+  const extendsType = extendsClause?.types[0]
+  if (extendsType === undefined) return undefined
+  const symbol = checker.getSymbolAtLocation(extendsType.expression)
+  if (symbol === undefined) return undefined
+  return resolveClassDeclarationFromSymbol(checker, symbol)
+}
+
+function resolveClassDeclarationFromSymbol(
+  checker: ts.TypeChecker,
+  symbol: ts.Symbol,
+): ts.ClassDeclaration | undefined {
+  const classDeclaration = symbol.declarations?.find(ts.isClassDeclaration)
+  if (classDeclaration !== undefined) return classDeclaration
+  if (symbol.flags & ts.SymbolFlags.Alias) {
+    return checker.getAliasedSymbol(symbol).declarations?.find(ts.isClassDeclaration)
   }
   return undefined
 }
@@ -1662,11 +1713,7 @@ function classNameForMember(node: ts.Node): string {
 }
 
 function readApiKindFromClassMember(node: ts.Node): string {
-  const owningClass = findOwningClassDeclaration(node)
-  const className = owningClass?.name?.text ?? classNameForMember(node)
-  return owningClass === undefined
-    ? kebabCase(className)
-    : firstTagText(readDocTags(owningClass, owningClass.getSourceFile()), 'moduleKind') ?? kebabCase(className)
+  return classNameForMember(node)
 }
 
 function sourceClassKey(declaration: ts.ClassDeclaration): string {
@@ -1999,7 +2046,7 @@ function createModuleMetadataDiagnostics(
         rule: 'module-kind-duplicate',
         target: module.kind,
         message: `重复的 API module kind: ${module.kind}`,
-        fix: '检查 @moduleKind 是否重复，或为嵌套 API class 使用唯一 kind。',
+        fix: '检查 module 内 SparkAIModel 子 class 的 className 是否重复。',
       })
     }
     moduleKinds.add(module.kind)
@@ -3007,14 +3054,6 @@ function isGeneratedSchemaObject(schema: GeneratedJsonSchema): schema is Exclude
 
 function normalizePath(path: string): string {
   return path.replace(/\\/g, '/')
-}
-
-function kebabCase(value: string): string {
-  return value
-    .replace(/([a-z0-9])([A-Z])/gu, '$1-$2')
-    .replace(/([A-Z])([A-Z][a-z])/gu, '$1-$2')
-    .replace(/[_\s]+/gu, '-')
-    .toLowerCase()
 }
 
 function isNotUndefined<T>(value: T | undefined): value is T {

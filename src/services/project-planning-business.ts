@@ -14,7 +14,7 @@ import {
   type AiAgentToolLoopNudgeContext,
 } from '@/services/spark-ai-agent-bindings'
 import { VCM_NATIVE_TOOL_NAMES } from '@spark-appworks/spark-ai/vcm-native'
-import type { AiModuleMetadataJson, ModuleMetadataRuntimeDocument } from '@spark-appworks/spark-ai/vcm-native'
+import type { AiModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { resolveModuleMetadataJson } from '@spark-appworks/spark-ai/vcm-native'
 import { ProjectModel, type ProjectNodeData, type ProjectWorkspace } from '@spark-appworks/spark-project-model'
 import { evaluateProjectPlanningToolGate } from '@/services/project-planning-gates'
@@ -23,8 +23,7 @@ import { createProjectPlanningVcmKnowledgeProvider } from '@/services/project-pl
 
 export const PROJECT_PLANNING_MODULE_ID = 'projectPlanning'
 
-const projectPlanningRuntimeMetadataDocument =
-  projectPageSurfaceRuntimeMetadataDocument as unknown as ModuleMetadataRuntimeDocument
+const projectPlanningRuntimeMetadataDocument = projectPageSurfaceRuntimeMetadataDocument
 
 export type ProjectPlanningRunInput = Readonly<{
   projectId: string
@@ -331,12 +330,12 @@ function createProjectPlanningSystemPrompt(input: ProjectPlanningAgentInput): st
   return [
     `当前 projectPlanning 项目: ${input.projectId}`,
     context,
-    '知识索引: VCM ClassModel（project 根模型）；只把 VCM 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
+    '知识索引: VCM ClassModel（ProjectRootModel 根模型）；只把 VCM 当作模型知识索引，项目策划语义只在 App 层本业务内编排。',
     '职责边界: LLM 只负责发出 vcm_script({ script }) tool_call；script 是 async function body；运行时负责把 this 绑定到 ProjectModel 并执行脚本。',
     '执行规则: 不要把脚本写成普通文本回答；不要直接声明或访问 project 对象；不要用 project.xxx 路径；最终必须通过 vcm_script 的 script 字符串调用 this.xxx。',
-    '知识查询规则: action 只用 vcm_action_guide({ kind: "project", actionName }) 查询；attribute 才用 vcm_attribute_guide；replaceNavigationChildren/readProjectPlanningInput/readNavigationPlanningInputs 都是 action。',
-    '参数契约规则: 不要查询 project.ProjectNodeData；children 的结构来自 vcm_action_guide({ kind: "project", actionName: "replaceNavigationChildren" }) 的 paramsSchema.children。',
-    '执行前查询: vcm_action_guide({ kind: "project", actionName: "readProjectPlanningInput" }) + vcm_action_guide({ kind: "project", actionName: "readNavigationPlanningInputs" }) + vcm_action_guide({ kind: "project", actionName: "replaceNavigationChildren" })，然后 vcm_script 读取输入并写入 navigation children 概要。',
+    '知识查询规则: action 只用 vcm_action_guide({ className: "ProjectRootModel", actionName }) 查询；attribute 才用 vcm_attribute_guide；replaceNavigationChildren/readProjectPlanningInput/readNavigationPlanningInputs 都是 action。',
+    '参数契约规则: 不要查询 ProjectNodeData 当作 attribute；children 的结构来自 vcm_action_guide({ className: "ProjectRootModel", actionName: "replaceNavigationChildren" }) 的 paramsSchema.children。',
+    '执行前查询: vcm_action_guide({ className: "ProjectRootModel", actionName: "readProjectPlanningInput" }) + vcm_action_guide({ className: "ProjectRootModel", actionName: "readNavigationPlanningInputs" }) + vcm_action_guide({ className: "ProjectRootModel", actionName: "replaceNavigationChildren" })，然后 vcm_script 读取输入并写入 navigation children 概要。',
     '导航结构规则: 顶层按业务域生成 module；每个主要 module 至少包含 1 个 nodeKind="page" 的 children 页面概要；禁止只生成一组 module 壳。',
     '完成自检: agent_complete 前必须确认 navigationRoot.children 的业务 module 下存在 nodeKind="page"；如果没有 page，必须先重发 vcm_script 修正 children。',
     ...projectPlanningScriptSopLines(input.projectId),
@@ -437,14 +436,15 @@ function countNavigationNodesByKind(nodes: readonly ProjectNodeData[], nodeKind:
 
 function readProjectPlanningProjectModule() {
   return projectPlanningRuntimeMetadataDocument.modules.find(
-    module => module.rootApi.kind === 'project',
+    module => module.rootApi.className === 'ProjectRootModel'
+      || module.rootApi.kind === 'ProjectRootModel',
   )
 }
 
 function readProjectPlanningProjectMetadata(): AiModuleMetadataJson {
   const projectModule = readProjectPlanningProjectModule()
   if (projectModule === undefined) {
-    throw new Error('projectPlanning runtime metadata missing ProjectModel rootApi.')
+    throw new Error('projectPlanning runtime metadata missing ProjectRootModel rootApi.')
   }
   return resolveModuleMetadataJson(projectModule, {
     inlineSchemaRefs: false,

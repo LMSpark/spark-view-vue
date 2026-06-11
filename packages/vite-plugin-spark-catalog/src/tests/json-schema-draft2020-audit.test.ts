@@ -26,7 +26,7 @@ describe('Draft 2020-12 schema audit', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        kind: 'ProjectRootModel',
         attributes: [{ name: 'projectId', schema: { type: 'string' }, readable: true, writable: false }],
         actions: [
           {

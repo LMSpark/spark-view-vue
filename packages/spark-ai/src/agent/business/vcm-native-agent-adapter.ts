@@ -316,12 +316,12 @@ function toAgentToolSpec(tool: VcmNativeToolSpec): AiAgentToolSpec {
 }
 
 function createVcmNativePromptSnapshot(document: ClassModelDocument): string {
-  const kinds = listAttributeReachableKinds(document)
+  const classNames = listAttributeReachableKinds(document)
   return [
     'VCM-native 工具闭集：vcm_query, vcm_model_guide, vcm_attribute_guide, vcm_action_guide, vcm_script, human_question, agent_complete。',
-    `根模型 kind="${document.rootKind}"；属性链可达模型（与 vcm_query 一致）: ${kinds.join(', ')}。`,
-    'vcm_query 只列 attribute.api 属性链可达 kind；动作入口与 callback 契约用 vcm_action_guide（含 resultApis）。',
-    '执行前先用 vcm_query 定位 kind/member；读写或调用前用 vcm_attribute_guide/vcm_action_guide 查看 schema、usageRules、failureModes。',
+    `根模型 className="${document.rootKind}"；属性链可达模型（与 vcm_query 一致）: ${classNames.join(', ')}。`,
+    'vcm_query 只列子模型公开字段链可达 className；动作入口与 callback 契约用 vcm_action_guide（含 resultApis）。',
+    '执行前先用 vcm_query 定位 className/member；读写或调用前用 vcm_attribute_guide/vcm_action_guide 查看 schema、usageRules、failureModes。',
     '唯一执行入口是 vcm_script({ script })；script 是 async function body，this 绑定当前业务根实例，沿原生对象链调用。',
     '任务完成必须调用 agent_complete({ summary })；不要使用旧 module_* 工具、path 直调或 direct function tool。',
   ].join('\n')

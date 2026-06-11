@@ -50,6 +50,9 @@ export type AiApiSourceProvenanceMetadata = Readonly<{
 
 /** API 对象元数据（根对象或 action 返回的嵌套对象）。 */
 export type AiApiObjectMetadata = Readonly<{
+  /** 与源码 class 名一致；VCM 索引主键。 */
+  className: string
+  /** 与 className 同值；兼容旧字段名。 */
   kind: string
   name: string
   description: string

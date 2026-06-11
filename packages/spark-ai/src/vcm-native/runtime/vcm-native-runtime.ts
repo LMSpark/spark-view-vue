@@ -7,6 +7,7 @@ import {
 } from '../knowledge'
 import { listVcmNativeToolSpecs, type VcmNativeToolSpec } from '../tools/vcm-native-tool-specs'
 import { VCM_NATIVE_TOOL_NAMES, isVcmNativeToolName, type VcmNativeToolName } from '../tools'
+import { ModelClassNameArgsError, readOptionalModelClassName, requireModelClassName } from './model-class-name'
 
 export type VcmNativeScriptCommand = Readonly<{
   script: string
@@ -79,7 +80,7 @@ export class VcmNativeRuntime {
     try {
       return await this.route(toolName, rawArgs, host)
     } catch (error) {
-      if (error instanceof VcmNativeToolArgsError) {
+      if (error instanceof VcmNativeToolArgsError || error instanceof ModelClassNameArgsError) {
         return failResult('INVALID_VCM_NATIVE_TOOL_ARGS', error.message, '请按工具 schema 补齐参数后重试。')
       }
       throw error
@@ -93,30 +94,31 @@ export class VcmNativeRuntime {
   ): Promise<VcmNativeToolResult> {
     switch (toolName) {
       case VCM_NATIVE_TOOL_NAMES.query: {
-        rejectUnknownArgs(toolName, args, ['kind', 'keyword', 'includeMembers'])
+        rejectUnknownArgs(toolName, args, ['className', 'kind', 'keyword', 'includeMembers'])
+        const className = readOptionalModelClassName(args)
         return okResult(await this.knowledge.query({
-          ...optionalStringProperty(args, 'kind'),
+          ...(className === undefined ? {} : { className }),
           ...optionalStringProperty(args, 'keyword'),
           includeMembers: args['includeMembers'] === true,
         }))
       }
       case VCM_NATIVE_TOOL_NAMES.modelGuide: {
-        rejectUnknownArgs(toolName, args, ['kind'])
+        rejectUnknownArgs(toolName, args, ['className', 'kind'])
         return okResult(await this.knowledge.modelGuide({
-          kind: requireString(args, 'kind'),
+          className: requireModelClassName(args),
         }))
       }
       case VCM_NATIVE_TOOL_NAMES.attributeGuide: {
-        rejectUnknownArgs(toolName, args, ['kind', 'attributeName'])
+        rejectUnknownArgs(toolName, args, ['className', 'kind', 'attributeName'])
         return okResult(await this.knowledge.attributeGuide({
-          kind: requireString(args, 'kind'),
+          className: requireModelClassName(args),
           attributeName: requireString(args, 'attributeName'),
         }))
       }
       case VCM_NATIVE_TOOL_NAMES.actionGuide: {
-        rejectUnknownArgs(toolName, args, ['kind', 'actionName', 'componentType'])
+        rejectUnknownArgs(toolName, args, ['className', 'kind', 'actionName', 'componentType'])
         return okResult(await this.knowledge.methodGuide({
-          kind: requireString(args, 'kind'),
+          className: requireModelClassName(args),
           methodName: requireString(args, 'actionName'),
           ...optionalStringProperty(args, 'componentType'),
         }))

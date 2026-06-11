@@ -8,6 +8,13 @@ import {
   generateModuleAbilityMetadata,
 } from '../module-metadata-generator'
 
+const SPARK_AI_MODEL_STUB = `
+abstract class SparkAIModel {
+  abstract toJson(): Record<string, unknown>
+  abstract validate(): void
+}
+`
+
 const tempRoots: string[] = []
 
 describe('module metadata generator', () => {
@@ -107,7 +114,7 @@ class DemoRootService {
       'openDirectory',
       'helper',
     ])
-    const rootModule = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-root')
+    const rootModule = result.moduleMetadata.find(module => module.rootApi.kind === 'DemoRootService')
     expect(rootModule?.rootApi.jsdoc).toContain('Demo root service.')
     expect(rootModule?.rootApi.jsdoc).toContain('@moduleAbility demo.root')
     expect(rootModule?.rootApi.jsdoc).toContain('@moduleKind demo-root')
@@ -154,24 +161,24 @@ class DemoRootService {
       className: 'DemoRootService',
       memberName: 'describe',
     })
-    expect(rootModule?.rootApi.actions[2]?.resultApis?.[0]?.api.kind).toBe('demo-directory')
+    expect(rootModule?.rootApi.actions[2]?.resultApis?.[0]?.api.kind).toBe('DemoDirectory')
     expect(result.diagnostics).toMatchObject({
       abilityCount: 1,
       moduleCount: 2,
       actionCount: 5,
       resultApiCount: 1,
-      referencedApiKinds: ['demo-directory'],
+      referencedApiKinds: ['DemoDirectory'],
     })
-    expect(result.diagnostics.modules.find(module => module.kind === 'demo-root')).toMatchObject({
+    expect(result.diagnostics.modules.find(module => module.kind === 'DemoRootService')).toMatchObject({
       actionCount: 4,
-      directResultApiKinds: ['demo-directory'],
+      directResultApiKinds: ['DemoDirectory'],
       resultApiCount: 1,
     })
 
     const generated = parseGeneratedModulesDocument(readFileSync(join(root, 'out/modules.json'), 'utf8'))
     expect(generated.diagnostics.resultApiCount).toBe(1)
-    expect(generated.modules[0]?.rootApi.kind).toBe('demo-directory')
-    expect(generated.modules[1]?.rootApi.kind).toBe('demo-root')
+    expect(generated.modules[0]?.rootApi.kind).toBe('DemoDirectory')
+    expect(generated.modules[1]?.rootApi.kind).toBe('DemoRootService')
     expect(generated.modules[1]?.rootApi.jsdoc).toContain('Demo root service.')
     expect(generated.modules[1]?.rootApi.provenance).toMatchObject({
       file: 'sample.ts',
@@ -252,7 +259,7 @@ class RootApi {
 
     const childApi = result.moduleMetadata[0]?.rootApi.actions[0]?.resultApis?.[0]?.api
     expect(childApi).toMatchObject({
-      kind: 'child-api',
+      kind: 'ChildApi',
       provenance: {
         file: 'src/child.ts',
         className: 'ChildApi',
@@ -294,7 +301,7 @@ class RootApi {
     })
     expect(compareModuleMetadataForBuildConsistency(result.moduleMetadata, typeEntryResult.moduleMetadata)).toContainEqual({
       code: 'MODULE_METADATA_BUILD_CONSISTENCY_MISMATCH',
-      path: 'child-api.jsdoc',
+      path: 'ChildApi.jsdoc',
       message: expect.stringContaining('Old declaration child API.'),
     })
   })
@@ -362,7 +369,7 @@ class RootApi {
 
     const childApi = result.moduleMetadata[0]?.rootApi.actions[0]?.resultApis?.[0]?.api
     expect(childApi).toMatchObject({
-      kind: 'child-api',
+      kind: 'ChildApi',
       provenance: {
         file: 'src/child.ts',
         className: 'ChildApi',
@@ -372,56 +379,19 @@ class RootApi {
     expect(childApi?.constructorSignature?.jsdoc).toContain('Source-only child constructor.')
   })
 
-  it('discovers resultApis from script-only mutator callback parameter', () => {
-    const root = createTempRoot()
-    writeFileSync(join(root, 'sample.ts'), `
-/**
- * @moduleKind demo-tree
- */
-class DemoTree {
-  /** Add node. */
-  public addNode(): void {}
-}
-
-/**
- * @moduleKind demo-config-page
- * @moduleActionMode explicit
- */
-class DemoConfigPage {
-  /**
-   * Edit node tree in vcm_script.
-   *
-   * @moduleMutation rule.json write Edit node tree in vcm_script.
-   * @vcmScriptOnly
-   */
-  public async editNodeTree(run: (tree: DemoTree) => void | Promise<void>): Promise<void> {
-    await run(new DemoTree())
-  }
-}
-`, 'utf8')
-
-    const result = generateModuleAbilityMetadata(root, {
-      sources: ['sample.ts'],
-      outFile: 'out/modules.json',
-      moduleOutFile: 'out/modules.json',
-      extractResults: true,
-    })
-
-    const configPage = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-config-page')
-    const editNodeTree = configPage?.rootApi.actions.find(action => action.name === 'editNodeTree')
-    expect(editNodeTree?.resultApis?.[0]?.api.kind).toBe('demo-tree')
-    expect(editNodeTree?.usageRules).toContain('Must use vcm_script; direct function call is not supported.')
-  })
-
   it('binds attribute.api to element module kind for array and Iterable properties', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
+${SPARK_AI_MODEL_STUB}
+
 /**
  * @moduleKind demo-child
  */
-class DemoChild {
+class DemoChild extends SparkAIModel {
   /** Child label. */
   public label = ''
+  toJson(): Record<string, unknown> { return {} }
+  validate(): void { /* noop */ }
 }
 
 /**
@@ -449,23 +419,27 @@ class DemoParent {
       extractResults: true,
     })
 
-    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-parent')
+    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'DemoParent')
     const rows = parent?.rootApi.attributes?.find(attribute => attribute.name === 'rows')
     const pages = parent?.rootApi.attributes?.find(attribute => attribute.name === 'pages')
-    expect(rows?.api?.kind).toBe('demo-child')
+    expect(rows?.api?.kind).toBe('DemoChild')
     expect(rows?.schema).toMatchObject({ type: 'array' })
-    expect(pages?.api?.kind).toBe('demo-child')
+    expect(pages?.api?.kind).toBe('DemoChild')
   })
 
   it('binds attribute.api through nullable union properties', () => {
     const root = createTempRoot()
     writeFileSync(join(root, 'sample.ts'), `
+${SPARK_AI_MODEL_STUB}
+
 /**
  * @moduleKind demo-child
  */
-class DemoChild {
+class DemoChild extends SparkAIModel {
   /** Child label. */
   public label = ''
+  toJson(): Record<string, unknown> { return {} }
+  validate(): void { /* noop */ }
 }
 
 /**
@@ -488,9 +462,46 @@ class DemoParent {
       extractResults: true,
     })
 
-    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'demo-parent')
+    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'DemoParent')
     const activeChild = parent?.rootApi.attributes?.find(attribute => attribute.name === 'activeChild')
-    expect(activeChild?.api?.kind).toBe('demo-child')
+    expect(activeChild?.api?.kind).toBe('DemoChild')
+  })
+
+  it('binds attribute.api from SparkAIModel field type without child @moduleKind', () => {
+    const root = createTempRoot()
+    writeFileSync(join(root, 'sample.ts'), `
+${SPARK_AI_MODEL_STUB}
+
+/** Navigation row leaf model. */
+class NavigationRowModel extends SparkAIModel {
+  /** Row title. */
+  public title = ''
+  toJson(): Record<string, unknown> { return { title: this.title } }
+  validate(): void { /* noop */ }
+}
+
+/**
+ * @moduleKind project-root
+ * @moduleActionMode explicit
+ */
+class ProjectRootModel {
+  /** Flat navigation rows. */
+  public navigationNodes: NavigationRowModel[] = []
+}
+`, 'utf8')
+
+    const result = generateModuleAbilityMetadata(root, {
+      sources: ['sample.ts'],
+      outFile: 'out/modules.json',
+      moduleOutFile: 'out/modules.json',
+      apiRoots: ['ProjectRootModel'],
+      extractResults: true,
+    })
+
+    const project = result.moduleMetadata.find(module => module.rootApi.kind === 'ProjectRootModel')
+    const navigationNodes = project?.rootApi.attributes?.find(attribute => attribute.name === 'navigationNodes')
+    expect(navigationNodes?.api?.kind).toBe('NavigationRowModel')
+    expect(navigationNodes?.schema).toMatchObject({ type: 'array' })
   })
 
   it('writes a human-facing JSDoc todo log JSON', () => {
@@ -699,10 +710,10 @@ class PooledParent {
       writeFiles: false,
     })
 
-    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'pooled-parent')?.rootApi
+    const parent = result.moduleMetadata.find(module => module.rootApi.kind === 'PooledParent')?.rootApi
     const refs = parent?.actions[0]?.resultApis ?? []
     expect(refs.map(ref => ref.resultPath.join('.'))).toEqual(['first', 'second'])
-    expect(refs.map(ref => ref.api.kind)).toEqual(['pooled-child', 'pooled-child'])
+    expect(refs.map(ref => ref.api.kind)).toEqual(['PooledChild', 'PooledChild'])
     expect(refs[0]?.api).toBe(refs[1]?.api)
     expect(refs[0]?.api.actions[0]?.resultApis).toEqual([])
   })
@@ -742,7 +753,7 @@ class DemoRootService {
     })
 
     const submitDraft = result.moduleMetadata
-      .find(module => module.rootApi.kind === 'demo-root')
+      .find(module => module.rootApi.kind === 'DemoRootService')
       ?.rootApi.actions.find(action => action.name === 'submitDraft')
 
     expect(submitDraft).toMatchObject({

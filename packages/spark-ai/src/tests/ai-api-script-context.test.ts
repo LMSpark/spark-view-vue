@@ -10,255 +10,235 @@ import type { AiApiObjectMetadata } from '../vcm-native'
 
 type ScriptCallableForTest = (...args: readonly unknown[]) => unknown
 
-const configPageApi: AiApiObjectMetadata = {
-  kind: 'config-page',
-  name: 'Config Page',
-  description: 'test',
+const toolApi: AiApiObjectMetadata = {
+  kind: 'ToolModel',
+  className: 'ToolModel',
+  name: 'ToolModel',
+  description: 'tool',
+  actions: [{
+    name: 'createItem',
+    methodName: 'createItem',
+    description: 'create item',
+    paramsSchema: paramsSchema({
+      options: {
+        type: 'object',
+        properties: {
+          name: { type: 'string' },
+          tags: { type: 'array' },
+        },
+        required: ['name', 'tags'],
+      },
+    }, ['options']),
+    takesContext: false,
+  }],
+}
+
+const childApi: AiApiObjectMetadata = {
+  kind: 'ChildModel',
+  className: 'ChildModel',
+  name: 'ChildModel',
+  description: 'child',
   actions: [
     {
-      name: 'setFileText',
-      methodName: 'setFileText',
-      description: 'write file',
+      name: 'setLabel',
+      methodName: 'setLabel',
+      description: 'write label',
       paramsSchema: paramsSchema({
-        name: { type: 'string' },
-        text: { type: 'string' },
-      }, ['name', 'text']),
+        label: { type: 'string' },
+      }, ['label']),
       takesContext: false,
     },
     {
-      name: 'getFileText',
-      methodName: 'getFileText',
-      description: 'read file',
-      paramsSchema: paramsSchema({
-        name: { type: 'string' },
-      }, ['name']),
+      name: 'getLabel',
+      methodName: 'getLabel',
+      description: 'read label',
+      paramsSchema: paramsSchema({}, []),
       takesContext: false,
     },
     {
-      name: 'editDataSet',
-      methodName: 'editDataSet',
-      description: 'mutate dataset',
+      name: 'editTool',
+      methodName: 'editTool',
+      description: 'mutate tool',
       paramsSchema: paramsSchema({ run: true }, ['run']),
       takesContext: false,
-      resultApis: [{
-        resultPath: [],
-        api: {
-          kind: 'dataset',
-          name: 'DataSet',
-          description: 'dataset',
-          actions: [{
-            name: 'createTable',
-            methodName: 'createTable',
-            description: 'create table',
-            paramsSchema: paramsSchema({
-              options: {
-                type: 'object',
-                properties: {
-                  tableName: { type: 'string' },
-                  columns: { type: 'array' },
-                },
-                required: ['tableName', 'columns'],
-              },
-            }, ['options']),
-            takesContext: false,
-          }],
-        },
-      }],
+      resultApis: [{ resultPath: [], api: toolApi }],
     },
   ],
 }
 
-const projectApi: AiApiObjectMetadata = {
-  kind: 'project',
-  name: 'Project',
-  description: 'test',
+const rootApi: AiApiObjectMetadata = {
+  kind: 'RootModel',
+  className: 'RootModel',
+  name: 'RootModel',
+  description: 'root',
   actions: [{
-    name: 'openPageDesign',
-    methodName: 'openPageDesign',
-    description: 'open page',
-    paramsSchema: paramsSchema({ pageId: { type: 'string' } }, ['pageId']),
+    name: 'openChild',
+    methodName: 'openChild',
+    description: 'open child',
+    paramsSchema: paramsSchema({ childId: { type: 'string' } }, ['childId']),
     takesContext: false,
-    resultApis: [{ resultPath: [], api: configPageApi }],
+    resultApis: [{ resultPath: [], api: childApi }],
   }],
 }
 
 describe('createAiApiScriptContext', () => {
-  it('coalesces mutator callback into { run } for nested config-page actions', async () => {
-    const editDataSet = vi.fn(async (run: (tool: { tag: string }) => void) => {
-      run({ tag: 'dataset' })
+  it('coalesces mutator callback into { run } for nested child actions', async () => {
+    const editTool = vi.fn(async (run: (tool: { tag: string }) => void) => {
+      run({ tag: 'tool' })
     })
-    const rawPage = { editDataSet }
-    const openPageDesign = vi.fn(() => rawPage)
-    const project = { openPageDesign }
-    const ctx = { segments: [] as const }
-    const scriptContext = createAiApiScriptContext({ instance: project, api: projectApi, ctx })
-    const openPage = readScriptContextCallable(scriptContext, 'openPageDesign')
-    const page = await openPage({ pageId: 'leave-page' })
-    expect(page).not.toBe(rawPage)
-    const editDataSetOnPage = readScriptObjectCallable(page, 'editDataSet')
+    const rawChild = { editTool }
+    const openChild = vi.fn(() => rawChild)
+    const root = { openChild }
+    const scriptContext = createAiApiScriptContext({ instance: root, api: rootApi, ctx: { segments: [] } })
+    const open = readScriptContextCallable(scriptContext, 'openChild')
+    const child = await open({ childId: 'row-1' })
+    expect(child).not.toBe(rawChild)
+    const editToolOnChild = readScriptObjectCallable(child, 'editTool')
     const mutator = vi.fn()
-    await editDataSetOnPage(mutator)
-    expect(openPageDesign).toHaveBeenCalledWith('leave-page')
-    expect(editDataSet).toHaveBeenCalledOnce()
-    expect(typeof editDataSet.mock.calls[0]?.[0]).toBe('function')
-    expect(mutator).toHaveBeenCalledWith({ tag: 'dataset' })
+    await editToolOnChild(mutator)
+    expect(openChild).toHaveBeenCalledWith('row-1')
+    expect(editTool).toHaveBeenCalledOnce()
+    expect(typeof editTool.mock.calls[0]?.[0]).toBe('function')
+    expect(mutator).toHaveBeenCalledWith({ tag: 'tool' })
   })
 
   it('wraps native object and positional arguments to generated paramsSchema names', async () => {
-    const createTable = vi.fn()
-    const editDataSet = vi.fn(async (run: (tool: { createTable: typeof createTable }) => void) => {
-      run({ createTable })
+    const createItem = vi.fn()
+    const editTool = vi.fn(async (run: (tool: { createItem: typeof createItem }) => void) => {
+      run({ createItem })
     })
-    const setFileText = vi.fn()
-    const getFileText = vi.fn(() => 'export default {}')
-    const rawPage = { editDataSet, setFileText, getFileText }
-    const project = { openPageDesign: vi.fn(() => rawPage) }
+    const setLabel = vi.fn()
+    const getLabel = vi.fn(() => 'ok')
+    const rawChild = { editTool, setLabel, getLabel }
+    const root = { openChild: vi.fn(() => rawChild) }
     const scriptContext = createAiApiScriptContext({
-      instance: project,
-      api: projectApi,
+      instance: root,
+      api: rootApi,
       ctx: { segments: [] },
     })
-    const openPage = readScriptContextCallable(scriptContext, 'openPageDesign')
-    const page = await openPage({ pageId: 'orders-page' })
+    const child = await readScriptContextCallable(scriptContext, 'openChild')({ childId: 'row-2' })
 
-    await readScriptObjectCallable(page, 'editDataSet')(async (ds: { createTable: ScriptCallableForTest }) => {
-      ds.createTable({
-        tableName: 'orders',
-        columns: [],
-      })
+    await readScriptObjectCallable(child, 'editTool')(async (tool: { createItem: ScriptCallableForTest }) => {
+      tool.createItem({ name: 'item-a', tags: [] })
     })
-    readScriptObjectCallable(page, 'setFileText')('script.js', 'export default {}')
-    const script = readScriptObjectCallable(page, 'getFileText')('script.js')
+    readScriptObjectCallable(child, 'setLabel')('label-a')
+    const label = readScriptObjectCallable(child, 'getLabel')()
 
-    expect(createTable).toHaveBeenCalledWith({
-      tableName: 'orders',
-      columns: [],
-    })
-    expect(setFileText).toHaveBeenCalledWith('script.js', 'export default {}')
-    expect(getFileText).toHaveBeenCalledWith('script.js')
-    expect(script).toBe('export default {}')
+    expect(createItem).toHaveBeenCalledWith({ name: 'item-a', tags: [] })
+    expect(setLabel).toHaveBeenCalledWith('label-a')
+    expect(label).toBe('ok')
   })
 
-  it('rejects mistaken createTable args passed to editDataSet via script proxy', async () => {
-    const editDataSet = vi.fn(async () => undefined)
-    const rawPage = { editDataSet }
+  it('rejects mistaken createItem args passed to editTool via script proxy', async () => {
+    const editTool = vi.fn(async () => undefined)
     const scriptContext = createAiApiScriptContext({
-      instance: { openPageDesign: vi.fn(() => rawPage) },
-      api: projectApi,
+      instance: { openChild: vi.fn(() => ({ editTool })) },
+      api: rootApi,
       ctx: { segments: [] },
     })
-    const openPage = readScriptContextCallable(scriptContext, 'openPageDesign')
-    const page = await openPage({ pageId: 'leave-page' })
-    await expect(async () => readScriptObjectCallable(page, 'editDataSet')({
-      tableName: 'LeaveRequest',
-      columns: [],
+    const child = await readScriptContextCallable(scriptContext, 'openChild')({ childId: 'row-3' })
+    await expect(async () => readScriptObjectCallable(child, 'editTool')({
+      name: 'bad',
+      tags: [],
     })).rejects.toThrow()
-    expect(editDataSet).not.toHaveBeenCalled()
+    expect(editTool).not.toHaveBeenCalled()
   })
 })
 
 describe('executeAiApiAction', () => {
   it('accepts direct callback when paramsSchema requires run', async () => {
-    const editDataSet = vi.fn(async () => undefined)
-    const action = readConfigPageAction('editDataSet')
+    const editTool = vi.fn(async () => undefined)
+    const action = readChildAction('editTool')
     const result = await executeAiApiAction({
-      target: { editDataSet },
+      target: { editTool },
       action,
       args: () => undefined,
       ctx: { segments: [] },
     })
     expect(result.ok).toBe(true)
-    expect(editDataSet).toHaveBeenCalledOnce()
+    expect(editTool).toHaveBeenCalledOnce()
   })
 
   it('unwraps { run } object for mutator methods', async () => {
-    const editDataSet = vi.fn(async () => undefined)
-    const action = readConfigPageAction('editDataSet')
+    const editTool = vi.fn(async () => undefined)
+    const action = readChildAction('editTool')
     const mutator = vi.fn()
     const result = await executeAiApiAction({
-      target: { editDataSet },
+      target: { editTool },
       action,
       args: testAiJsonParams({ run: mutator }),
       ctx: { segments: [] },
     })
     expect(result.ok).toBe(true)
-    expect(editDataSet).toHaveBeenCalledWith(mutator)
+    expect(editTool).toHaveBeenCalledWith(mutator)
   })
 
   it('rejects non-function run before calling mutator method', async () => {
-    const editDataSet = vi.fn(async () => undefined)
-    const action = readConfigPageAction('editDataSet')
+    const editTool = vi.fn(async () => undefined)
+    const action = readChildAction('editTool')
     const result = await executeAiApiAction({
-      target: { editDataSet },
+      target: { editTool },
       action,
-      args: testAiJsonParams({ run: { tableName: 'LeaveRequest' } }),
+      args: testAiJsonParams({ run: { name: 'bad' } }),
       ctx: { segments: [] },
     })
     expect(result.ok).toBe(false)
-    expect(editDataSet).not.toHaveBeenCalled()
+    expect(editTool).not.toHaveBeenCalled()
   })
 })
 
 describe('executeAiNativeScript', () => {
   it('runs script directly from VCM metadata without AiAgentHost', async () => {
-    const createTable = vi.fn()
-    const editDataSet = vi.fn(async (run: (tool: { createTable: typeof createTable }) => void) => {
-      run({ createTable })
+    const createItem = vi.fn()
+    const editTool = vi.fn(async (run: (tool: { createItem: typeof createItem }) => void) => {
+      run({ createItem })
     })
-    const rawPage = {
-      editDataSet,
-      getFileText: vi.fn((name: string) => name === 'script.js' ? 'export default {}' : '{}'),
+    const rawChild = {
+      editTool,
+      getLabel: vi.fn(() => 'saved'),
     }
-    const project = { openPageDesign: vi.fn(() => rawPage) }
+    const root = { openChild: vi.fn(() => rawChild) }
 
     const result = await executeAiNativeScript({
-      instance: project,
-      metadata: { schemaVersion: 1, rootApi: projectApi },
+      instance: root,
+      metadata: { schemaVersion: 1, rootApi },
       script: [
-        'const page = await this.openPageDesign({ pageId: "orders-page" })',
-        'await page.editDataSet(async (ds) => {',
-        '  ds.createTable({ tableName: "orders", columns: [] })',
+        'const child = await this.openChild({ childId: "row-4" })',
+        'await child.editTool(async (tool) => {',
+        '  tool.createItem({ name: "item-b", tags: [] })',
         '})',
-        'return { script: page.getFileText("script.js") }',
+        'return { label: await child.getLabel() }',
       ].join('\n'),
     })
 
     expect(result.ok).toBe(true)
-    expect(project.openPageDesign).toHaveBeenCalledWith('orders-page')
-    expect(createTable).toHaveBeenCalledWith({
-      tableName: 'orders',
-      columns: [],
-    })
-    expect(result.data).toEqual({ script: 'export default {}' })
+    expect(root.openChild).toHaveBeenCalledWith('row-4')
+    expect(createItem).toHaveBeenCalledWith({ name: 'item-b', tags: [] })
+    expect(result.data).toEqual({ label: 'saved' })
   })
 
   it('uses generated schemaDefs while validating nested native API calls', async () => {
     const metadataWithSchemaRef = {
       schemaVersion: 1,
       rootApi: {
-        ...projectApi,
+        ...rootApi,
         actions: [{
-          ...projectApi.actions[0]!,
+          ...rootApi.actions[0]!,
           resultApis: [{
             resultPath: [],
             api: {
-              ...configPageApi,
+              ...childApi,
               actions: [{
-                ...configPageApi.actions[2]!,
+                ...childApi.actions[2]!,
                 resultApis: [{
                   resultPath: [],
                   api: {
-                    kind: 'dataset',
-                    name: 'DataSet',
-                    description: 'dataset',
+                    ...toolApi,
                     actions: [{
-                      name: 'createTable',
-                      methodName: 'createTable',
-                      description: 'create table',
+                      ...toolApi.actions[0]!,
                       paramsSchema: paramsSchema({
-                        options: { $ref: '#/$defs/TableOptions' },
+                        options: { $ref: '#/$defs/ItemOptions' },
                       }, ['options']),
-                      takesContext: false,
                     }],
                   },
                 }],
@@ -268,43 +248,40 @@ describe('executeAiNativeScript', () => {
         }],
       },
     } as const
-    const createTable = vi.fn()
-    const editDataSet = vi.fn(async (run: (tool: { createTable: typeof createTable }) => void) => {
-      run({ createTable })
+    const createItem = vi.fn()
+    const editTool = vi.fn(async (run: (tool: { createItem: typeof createItem }) => void) => {
+      run({ createItem })
     })
-    const project = { openPageDesign: vi.fn(() => ({ editDataSet })) }
+    const root = { openChild: vi.fn(() => ({ editTool })) }
 
     const result = await executeAiNativeScript({
-      instance: project,
+      instance: root,
       metadata: metadataWithSchemaRef,
       schemaDefs: {
-        TableOptions: {
+        ItemOptions: {
           type: 'object',
           properties: {
-            tableName: { type: 'string' },
-            columns: { type: 'array' },
+            name: { type: 'string' },
+            tags: { type: 'array' },
           },
-          required: ['tableName', 'columns'],
+          required: ['name', 'tags'],
           additionalProperties: false,
         },
       },
       script: [
-        'const page = await this.openPageDesign({ pageId: "orders-page" })',
-        'await page.editDataSet(async (ds) => ds.createTable({ tableName: "orders", columns: [] }))',
+        'const child = await this.openChild({ childId: "row-5" })',
+        'await child.editTool(async (tool) => tool.createItem({ name: "item-c", tags: [] }))',
         'return { ok: true }',
       ].join('\n'),
     })
 
     expect(result.ok).toBe(true)
-    expect(createTable).toHaveBeenCalledWith({
-      tableName: 'orders',
-      columns: [],
-    })
+    expect(createItem).toHaveBeenCalledWith({ name: 'item-c', tags: [] })
   })
 })
 
-function readConfigPageAction(name: string) {
-  const action = configPageApi.actions.find(candidate => candidate.name === name)
+function readChildAction(name: string) {
+  const action = childApi.actions.find(candidate => candidate.name === name)
   if (action === undefined) throw new Error(`missing test action ${name}`)
   return action
 }

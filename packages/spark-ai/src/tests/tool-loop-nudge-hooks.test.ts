@@ -50,12 +50,12 @@ describe('tool-loop nudge hooks', () => {
   it('merges generic and business plan-without-tool nudges when hook is provided', () => {
     const registration = new AiAgentRegistration({
       ...createBareRegistrationOptions(),
-      toolLoopNudge: () => '立即 vcm_script 执行 openPageDesign 链。',
+      toolLoopNudge: () => '立即 vcm_script 沿 ProjectRootModel 字段链执行。',
     })
 
     const nudge = resolvePlanWithoutToolNudge(registration, runtimeContext)
     expect(nudge).toContain('没有真实 OpenAI tool_calls')
-    expect(nudge).toContain('openPageDesign')
+    expect(nudge).toContain('ProjectRootModel')
   })
 
   it('returns execution-phase nudge only from registration hook', () => {

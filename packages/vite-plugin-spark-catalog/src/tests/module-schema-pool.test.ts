@@ -7,7 +7,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         attributes: [
           {
             name: 'projectId',
@@ -58,7 +58,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           {
             name: 'a',
@@ -107,7 +107,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           { name: 'a', resultSchema: complexNode },
           { name: 'b', resultSchema: complexNode },
@@ -140,7 +140,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           {
             name: 'a',
@@ -180,7 +180,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           {
             name: 'edit',
@@ -209,7 +209,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           {
             name: 'load',
@@ -263,7 +263,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           { name: 'a', resultSchema: { type: 'array', items: element } },
           { name: 'b', resultSchema: { type: 'array', items: element } },
@@ -286,7 +286,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         attributes: [
           {
             name: 'tags',
@@ -328,7 +328,7 @@ describe('poolModuleMetadataSchemas', () => {
     const first = poolModuleMetadataSchemas({
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [{ name: 'a', resultSchema: stub }],
       },
       apiRegistry: {},
@@ -356,7 +356,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         attributes: [
           {
             name: 'tags',
@@ -384,7 +384,7 @@ describe('poolModuleMetadataSchemas', () => {
     const module = {
       schemaVersion: 2,
       rootApi: {
-        kind: 'project',
+        className: 'ProjectRootModel',
         actions: [
           {
             name: 'load',
