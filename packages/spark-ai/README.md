@@ -19,7 +19,7 @@ Spark AI agent runtime：JSON Schema 校验、ClassModel 工具闭集、Host 编
 | [`docs/README.md`](docs/README.md) | 文档索引与阅读顺序 |
 | [`docs/native-runtime-and-agent-flow-zh-cn.md`](docs/native-runtime-and-agent-flow-zh-cn.md) | native-runtime、Adapter、ToolLoop、pageDesign 全链路 |
 | [`docs/transport-and-session-zh-cn.md`](docs/transport-and-session-zh-cn.md) | V4 传输、session-turn / app-sse、`ai-turn-bridge` |
-| [`src/class-model`](src/class-model) | DTS ClassModel、guide 投影、Worker 知识索引 |
+| [`docs/END-TO-END-PLATFORM-zh-CN.md`](docs/END-TO-END-PLATFORM-zh-CN.md) | 端到端平台方案（.d.ts → 交付） |
 | [`src/agent/native-runtime`](src/agent/native-runtime) | model_script 脚本上下文与执行 |
 
 ## APP 消费示例
